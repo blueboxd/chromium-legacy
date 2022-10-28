@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,7 +8,9 @@
 #include <stddef.h>
 
 #include <iosfwd>
+#include <string>
 
+#include "components/webapps/browser/installable/installable_metrics.h"
 #include "third_party/blink/public/common/manifest/manifest.h"
 #include "third_party/blink/public/mojom/manifest/display_mode.mojom-forward.h"
 
@@ -31,6 +33,8 @@ namespace WebAppManagement {
 enum Type {
   kMinValue = 0,
   kSystem = kMinValue,
+  // Installed by Kiosk on Chrome OS.
+  kKiosk,
   kPolicy,
   kSubApp,
   kWebAppStore,
@@ -38,6 +42,7 @@ enum Type {
   // user-installed apps without overlaps this is the only source that will be
   // set.
   kSync,
+  kCommandLine,
   // This value is used by both the PreinstalledWebAppManager AND the
   // AndroidSmsAppSetupControllerImpl, which is a potential conflict in the
   // future.
@@ -134,6 +139,17 @@ enum class ExternalInstallSource {
   // are not installed via ExternallyManagedAppManager. This is used in
   // ExternallyInstalledWebAppPrefs to track navigation url to app_id entries.
   kArc = 4,
+
+  // Installed by Kiosk. There is no call to SynchronizeInstalledApps for this
+  // type because Kiosk apps are bound to their profiles. They will never be
+  // uninstalled in Kiosk sessions.
+  kKiosk = 5,
+
+  // Installed into a special lock screen app profile when the user selects a
+  // lock-screen-capable app to be used on the lock screen.
+  // The corresponding ExternallyManagedAppManager::SynchronizeInstalledApps
+  // call site is in ash::AppManagerImpl::AddAppToLockScreenProfile.
+  kExternalLockScreen = 6,
 };
 
 // Icon size in pixels.
@@ -248,6 +264,10 @@ enum class Result {
 };
 
 using ResultCallback = base::OnceCallback<void(Result)>;
+
+// Convert the uninstall source to string for easy printing.
+std::string ConvertUninstallSourceToStringType(
+    const webapps::WebappUninstallSource& uninstall_source);
 
 }  // namespace web_app
 

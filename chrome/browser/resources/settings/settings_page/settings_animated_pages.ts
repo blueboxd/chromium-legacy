@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -17,7 +17,7 @@
 import '//resources/polymer/v3_0/iron-pages/iron-pages.js';
 
 import {assert} from '//resources/js/assert_ts.js';
-import {focusWithoutInk} from '//resources/js/cr/ui/focus_without_ink.m.js';
+import {focusWithoutInk} from '//resources/js/cr/ui/focus_without_ink.js';
 // <if expr="chromeos_ash">
 import {loadTimeData} from '//resources/js/load_time_data.m.js';
 // </if>
@@ -29,6 +29,7 @@ import {FocusConfig} from '../focus_config.js';
 import {Route, RouteObserverMixin, RouteObserverMixinInterface, Router} from '../router.js';
 // <if expr="chromeos_ash">
 import {getSettingIdParameter} from '../setting_id_param_util.js';
+
 // </if>
 
 import {getTemplate} from './settings_animated_pages.html.js';
@@ -156,7 +157,7 @@ class SettingsAnimatedPagesElement extends SettingsAnimatedPagesElementBase {
             assert(element);
             pathConfig = element;
           }
-          focusWithoutInk(pathConfig as Element);
+          focusWithoutInk(pathConfig as HTMLElement);
         };
       }
       handler();

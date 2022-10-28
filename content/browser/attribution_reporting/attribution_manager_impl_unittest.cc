@@ -834,7 +834,7 @@ TEST_F(AttributionManagerImplTest, ClearData) {
     attribution_manager_->ClearData(
         start, start + base::Minutes(1),
         base::BindLambdaForTesting(
-            [match_url](const blink::StorageKey& _) { return match_url; }),
+            [match_url](const blink::StorageKey&) { return match_url; }),
         /*delete_rate_limit_data=*/true, run_loop.QuitClosure());
     run_loop.Run();
 
@@ -938,7 +938,7 @@ TEST_F(AttributionManagerImplTest, SessionOnlyOrigins_DataDeletedAtShutdown) {
   GURL session_only_origin("https://sessiononly.example");
   auto impression =
       SourceBuilder()
-          .SetImpressionOrigin(url::Origin::Create(session_only_origin))
+          .SetSourceOrigin(url::Origin::Create(session_only_origin))
           .Build();
 
   mock_storage_policy_->AddSessionOnly(session_only_origin);
@@ -963,11 +963,11 @@ TEST_F(AttributionManagerImplTest,
   // Create impressions which each have the session only origin as one of
   // impression/conversion/reporting origin.
   auto impression1 =
-      SourceBuilder().SetImpressionOrigin(session_only_origin).Build();
+      SourceBuilder().SetSourceOrigin(session_only_origin).Build();
   auto impression2 =
       SourceBuilder().SetReportingOrigin(session_only_origin).Build();
   auto impression3 =
-      SourceBuilder().SetConversionOrigin(session_only_origin).Build();
+      SourceBuilder().SetDestinationOrigin(session_only_origin).Build();
 
   // Create one  impression which is not session only.
   auto impression4 = SourceBuilder().Build();
@@ -1065,20 +1065,16 @@ TEST_F(AttributionManagerImplTest, HandleSource_NotifiesObservers) {
 
     EXPECT_CALL(observer, OnSourcesChanged);
     EXPECT_CALL(observer, OnReportsChanged).Times(0);
-    EXPECT_CALL(observer, OnSourceDeactivated).Times(0);
 
     EXPECT_CALL(checkpoint, Call(1));
 
     EXPECT_CALL(observer, OnSourcesChanged);
     EXPECT_CALL(observer, OnReportsChanged);
-    EXPECT_CALL(observer, OnSourceDeactivated).Times(0);
 
     EXPECT_CALL(checkpoint, Call(2));
 
     EXPECT_CALL(observer, OnSourcesChanged);
     EXPECT_CALL(observer, OnReportsChanged).Times(0);
-    EXPECT_CALL(observer, OnSourceDeactivated(
-                              builder.SetDefaultFilterData().BuildStored()));
   }
 
   attribution_manager_->HandleSource(source);
@@ -1091,7 +1087,7 @@ TEST_F(AttributionManagerImplTest, HandleSource_NotifiesObservers) {
 
   attribution_manager_->HandleSource(
       SourceBuilder().SetExpiry(kImpressionExpiry).SetSourceEventId(9).Build());
-  EXPECT_THAT(StoredSources(), SizeIs(1));
+  EXPECT_THAT(StoredSources(), SizeIs(2));
 }
 
 TEST_F(AttributionManagerImplTest, HandleTrigger_NotifiesObservers) {
@@ -1110,7 +1106,6 @@ TEST_F(AttributionManagerImplTest, HandleTrigger_NotifiesObservers) {
 
     EXPECT_CALL(observer, OnSourcesChanged);
     EXPECT_CALL(observer, OnReportsChanged).Times(0);
-    EXPECT_CALL(observer, OnSourceDeactivated).Times(0);
 
     EXPECT_CALL(checkpoint, Call(1));
 
@@ -1123,7 +1118,6 @@ TEST_F(AttributionManagerImplTest, HandleTrigger_NotifiesObservers) {
                   OnReportsChanged(
                       AttributionReport::ReportType::kAggregatableAttribution));
     }
-    EXPECT_CALL(observer, OnSourceDeactivated).Times(0);
 
     EXPECT_CALL(checkpoint, Call(2));
 
@@ -1198,7 +1192,7 @@ TEST_F(AttributionManagerImplTest, ClearData_NotifiesObservers) {
   base::RunLoop run_loop;
   attribution_manager_->ClearData(
       base::Time::Min(), base::Time::Max(),
-      base::BindRepeating([](const blink::StorageKey& _) { return false; }),
+      base::BindRepeating([](const blink::StorageKey&) { return false; }),
       /*delete_rate_limit_data=*/true, run_loop.QuitClosure());
   run_loop.Run();
 }
@@ -1221,8 +1215,8 @@ TEST_F(AttributionManagerImplTest,
   MockAttributionReportingContentBrowserClient browser_client;
   EXPECT_CALL(
       browser_client,
-      IsConversionMeasurementOperationAllowed(
-          _, ContentBrowserClient::ConversionMeasurementOperation::kImpression,
+      IsAttributionReportingOperationAllowed(
+          _, ContentBrowserClient::AttributionReportingOperation::kSource,
           Pointee(url::Origin::Create(GURL("https://impression.test/"))),
           IsNull(), Pointee(url::Origin::Create(GURL("https://report.test/")))))
       .WillOnce(Return(false));
@@ -1259,14 +1253,14 @@ TEST_F(AttributionManagerImplTest,
   MockAttributionReportingContentBrowserClient browser_client;
   EXPECT_CALL(
       browser_client,
-      IsConversionMeasurementOperationAllowed(
-          _, ContentBrowserClient::ConversionMeasurementOperation::kImpression,
-          _, _, _))
+      IsAttributionReportingOperationAllowed(
+          _, ContentBrowserClient::AttributionReportingOperation::kSource, _, _,
+          _))
       .WillRepeatedly(Return(true));
   EXPECT_CALL(
       browser_client,
-      IsConversionMeasurementOperationAllowed(
-          _, ContentBrowserClient::ConversionMeasurementOperation::kConversion,
+      IsAttributionReportingOperationAllowed(
+          _, ContentBrowserClient::AttributionReportingOperation::kTrigger,
           IsNull(),
           Pointee(url::Origin::Create(GURL("https://sub.conversion.test/"))),
           Pointee(url::Origin::Create(GURL("https://report.test/")))))
@@ -1288,18 +1282,16 @@ TEST_F(AttributionManagerImplTest, EmbedderDisallowsReporting_ReportNotSent) {
   MockAttributionReportingContentBrowserClient browser_client;
   EXPECT_CALL(
       browser_client,
-      IsConversionMeasurementOperationAllowed(
+      IsAttributionReportingOperationAllowed(
           _,
-          AnyOf(
-              ContentBrowserClient::ConversionMeasurementOperation::kImpression,
-              ContentBrowserClient::ConversionMeasurementOperation::
-                  kConversion),
+          AnyOf(ContentBrowserClient::AttributionReportingOperation::kSource,
+                ContentBrowserClient::AttributionReportingOperation::kTrigger),
           _, _, _))
       .WillRepeatedly(Return(true));
   EXPECT_CALL(
       browser_client,
-      IsConversionMeasurementOperationAllowed(
-          _, ContentBrowserClient::ConversionMeasurementOperation::kReport,
+      IsAttributionReportingOperationAllowed(
+          _, ContentBrowserClient::AttributionReportingOperation::kReport,
           Pointee(url::Origin::Create(GURL("https://impression.test/"))),
           Pointee(url::Origin::Create(GURL("https://sub.conversion.test/"))),
           Pointee(url::Origin::Create(GURL("https://report.test/")))))
@@ -1342,18 +1334,16 @@ TEST_F(AttributionManagerImplTest,
   MockAttributionReportingContentBrowserClient browser_client;
   EXPECT_CALL(
       browser_client,
-      IsConversionMeasurementOperationAllowed(
+      IsAttributionReportingOperationAllowed(
           _,
-          AnyOf(
-              ContentBrowserClient::ConversionMeasurementOperation::kImpression,
-              ContentBrowserClient::ConversionMeasurementOperation::
-                  kConversion),
+          AnyOf(ContentBrowserClient::AttributionReportingOperation::kSource,
+                ContentBrowserClient::AttributionReportingOperation::kTrigger),
           _, _, _))
       .WillRepeatedly(Return(true));
   EXPECT_CALL(
       browser_client,
-      IsConversionMeasurementOperationAllowed(
-          _, ContentBrowserClient::ConversionMeasurementOperation::kReport,
+      IsAttributionReportingOperationAllowed(
+          _, ContentBrowserClient::AttributionReportingOperation::kReport,
           Pointee(source_origin), Pointee(destination_origin),
           Pointee(reporting_origin)))
       .WillOnce(Return(false));
@@ -1361,8 +1351,8 @@ TEST_F(AttributionManagerImplTest,
 
   attribution_manager_->HandleSource(
       SourceBuilder()
-          .SetImpressionOrigin(source_origin)
-          .SetConversionOrigin(destination_origin)
+          .SetSourceOrigin(source_origin)
+          .SetDestinationOrigin(destination_origin)
           .SetReportingOrigin(reporting_origin)
           .SetDebugKey(123)
           .SetExpiry(kImpressionExpiry)

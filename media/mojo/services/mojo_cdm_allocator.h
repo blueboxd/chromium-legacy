@@ -1,4 +1,4 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,7 +11,7 @@
 #include <map>
 #include <memory>
 
-#include "base/memory/unsafe_shared_memory_region.h"
+#include "base/memory/read_only_shared_memory_region.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "media/cdm/cdm_allocator.h"
@@ -41,18 +41,20 @@ class MEDIA_MOJO_EXPORT MojoCdmAllocator final : public CdmAllocator {
   // make it efficient to find an available buffer of a particular size.
   // Regions in the map are unmapped.
   using AvailableRegionMap =
-      std::multimap<size_t, base::UnsafeSharedMemoryRegion>;
+      std::multimap<size_t, std::unique_ptr<base::MappedReadOnlyRegion>>;
 
   // Allocates a shmem region of at least |capacity| bytes.
-  base::UnsafeSharedMemoryRegion AllocateNewRegion(size_t capacity);
+  std::unique_ptr<base::MappedReadOnlyRegion> AllocateNewRegion(
+      size_t capacity);
 
   // Returns |region| to the map of available buffers, ready to be used the
   // next time CreateCdmBuffer() is called.
-  void AddRegionToAvailableMap(base::UnsafeSharedMemoryRegion region);
+  void AddRegionToAvailableMap(
+      std::unique_ptr<base::MappedReadOnlyRegion> region);
 
-  // Returns the base::UnsafeSharedMemoryRegion for a cdm::Buffer allocated by
-  // this class.
-  const base::UnsafeSharedMemoryRegion& GetRegionForTesting(
+  // Returns the base::MappedReadOnlyRegion for a cdm::Buffer allocated by this
+  // class.
+  const base::MappedReadOnlyRegion& GetRegionForTesting(
       cdm::Buffer* buffer) const;
 
   // Returns the number of buffers in |available_regions_|.

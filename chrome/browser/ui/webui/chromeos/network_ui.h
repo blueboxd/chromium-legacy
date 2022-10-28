@@ -1,12 +1,12 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #ifndef CHROME_BROWSER_UI_WEBUI_CHROMEOS_NETWORK_UI_H_
 #define CHROME_BROWSER_UI_WEBUI_CHROMEOS_NETWORK_UI_H_
 
-#include "ash/services/cellular_setup/public/mojom/esim_manager.mojom-forward.h"
 #include "base/values.h"
+#include "chromeos/ash/services/cellular_setup/public/mojom/esim_manager.mojom-forward.h"
 #include "chromeos/services/network_config/public/mojom/cros_network_config.mojom-forward.h"
 #include "chromeos/services/network_health/public/mojom/network_diagnostics.mojom-forward.h"
 #include "chromeos/services/network_health/public/mojom/network_health.mojom-forward.h"

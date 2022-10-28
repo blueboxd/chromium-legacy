@@ -13,7 +13,6 @@
 #include "base/base64.h"
 #include "base/bind.h"
 #include "base/command_line.h"
-#include "base/cxx17_backports.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/abseil_string_conversions.h"
@@ -51,8 +50,7 @@
 using jingle_xmpp::QName;
 using jingle_xmpp::XmlElement;
 
-namespace remoting {
-namespace protocol {
+namespace remoting::protocol {
 
 class ScopedAllowThreadJoinForWebRtcTransport
     : public base::ScopedAllowBaseSyncPrimitivesOutsideBlockingScope {};
@@ -147,8 +145,7 @@ TransportRoute::RouteType CandidateTypeToTransportRouteType(
 // Initializes default parameters for a sender that may be different from
 // WebRTC's defaults.
 void SetDefaultSenderParameters(
-    rtc::scoped_refptr<webrtc::RtpSenderInterface> sender,
-    int video_frame_rate) {
+    rtc::scoped_refptr<webrtc::RtpSenderInterface> sender) {
   if (sender->media_type() == cricket::MEDIA_TYPE_VIDEO) {
     webrtc::RtpParameters parameters = sender->GetParameters();
     if (parameters.encodings.empty()) {
@@ -157,7 +154,7 @@ void SetDefaultSenderParameters(
     }
 
     for (auto& encoding : parameters.encodings) {
-      encoding.max_framerate = video_frame_rate;
+      encoding.max_framerate = kTargetFrameRate;
     }
 
     webrtc::RTCError result = sender->SetParameters(parameters);
@@ -426,7 +423,7 @@ WebrtcTransport::WebrtcTransport(
 }
 
 WebrtcTransport::~WebrtcTransport() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   Close(OK);
 }
 
@@ -471,7 +468,7 @@ std::unique_ptr<MessagePipe> WebrtcTransport::CreateOutgoingChannel(
 void WebrtcTransport::Start(
     Authenticator* authenticator,
     SendTransportInfoCallback send_transport_info_callback) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(send_transport_info_callback_.is_null());
 
   webrtc::ThreadWrapper::EnsureForCurrentMessageLoop();
@@ -492,7 +489,7 @@ void WebrtcTransport::Start(
 }
 
 bool WebrtcTransport::ProcessTransportInfo(XmlElement* transport_info) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   if (transport_info->Name() != QName(kTransportNamespace, "transport"))
     return false;
@@ -611,7 +608,7 @@ bool WebrtcTransport::ProcessTransportInfo(XmlElement* transport_info) {
 }
 
 const SessionOptions& WebrtcTransport::session_options() const {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   return session_options_;
 }
 
@@ -724,7 +721,7 @@ void WebrtcTransport::ClosePeerConnection(
 }
 
 void WebrtcTransport::Close(ErrorCode error) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   if (!peer_connection_wrapper_)
     return;
 
@@ -743,17 +740,11 @@ void WebrtcTransport::Close(ErrorCode error) {
 }
 
 void WebrtcTransport::ApplySessionOptions(const SessionOptions& options) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   session_options_ = options;
   absl::optional<std::string> video_codec = options.Get("Video-Codec");
   if (video_codec) {
     preferred_video_codec_ = *video_codec;
-  }
-  absl::optional<int> frame_rate = session_options().GetInt("Video-Frame-Rate");
-  if (frame_rate) {
-    // Clamp the range to prevent a bad experience in case of a client bug.
-    frame_rate = base::clamp<int>(frame_rate.value(), kTargetFrameRate, 1000);
-    desired_video_frame_rate_ = frame_rate.value();
   }
 }
 
@@ -767,13 +758,13 @@ void WebrtcTransport::OnVideoTransceiverCreated(
   auto sender = transceiver->sender();
   auto [min_bitrate_bps, max_bitrate_bps] = BitratesForConnection();
   SetSenderBitrates(sender, min_bitrate_bps, max_bitrate_bps);
-  SetDefaultSenderParameters(sender, desired_video_frame_rate_);
+  SetDefaultSenderParameters(sender);
 }
 
 void WebrtcTransport::OnLocalSessionDescriptionCreated(
     std::unique_ptr<webrtc::SessionDescriptionInterface> description,
     const std::string& error) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   if (!peer_connection())
     return;
@@ -837,7 +828,7 @@ void WebrtcTransport::OnLocalSessionDescriptionCreated(
 
 void WebrtcTransport::OnLocalDescriptionSet(bool success,
                                             const std::string& error) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   if (!peer_connection())
     return;
@@ -855,14 +846,14 @@ void WebrtcTransport::OnLocalDescriptionSet(bool success,
   // maximum framerate.
   auto senders = peer_connection()->GetSenders();
   for (const auto& sender : senders) {
-    SetDefaultSenderParameters(sender, desired_video_frame_rate_);
+    SetDefaultSenderParameters(sender);
   }
 }
 
 void WebrtcTransport::OnRemoteDescriptionSet(bool send_answer,
                                              bool success,
                                              const std::string& error) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   if (!peer_connection())
     return;
@@ -888,24 +879,24 @@ void WebrtcTransport::OnRemoteDescriptionSet(bool send_answer,
 
 void WebrtcTransport::OnSignalingChange(
     webrtc::PeerConnectionInterface::SignalingState new_state) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 }
 
 void WebrtcTransport::OnAddStream(
     rtc::scoped_refptr<webrtc::MediaStreamInterface> stream) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   event_handler_->OnWebrtcTransportMediaStreamAdded(stream);
 }
 
 void WebrtcTransport::OnRemoveStream(
     rtc::scoped_refptr<webrtc::MediaStreamInterface> stream) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   event_handler_->OnWebrtcTransportMediaStreamRemoved(stream);
 }
 
 void WebrtcTransport::OnDataChannel(
     rtc::scoped_refptr<webrtc::DataChannelInterface> data_channel) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   std::string data_channel_name = data_channel->label();
   if (data_channel_name == kControlChannelName) {
     DCHECK(!control_data_channel_);
@@ -920,7 +911,7 @@ void WebrtcTransport::OnDataChannel(
 }
 
 void WebrtcTransport::OnRenegotiationNeeded() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   if (transport_context_->role() == TransportRole::SERVER) {
     RequestNegotiation();
@@ -933,7 +924,7 @@ void WebrtcTransport::OnRenegotiationNeeded() {
 
 void WebrtcTransport::OnIceConnectionChange(
     webrtc::PeerConnectionInterface::IceConnectionState new_state) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   if (!connected_ &&
       new_state == webrtc::PeerConnectionInterface::kIceConnectionConnected) {
@@ -952,12 +943,12 @@ void WebrtcTransport::OnIceConnectionChange(
 
 void WebrtcTransport::OnIceGatheringChange(
     webrtc::PeerConnectionInterface::IceGatheringState new_state) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 }
 
 void WebrtcTransport::OnIceCandidate(
     const webrtc::IceCandidateInterface* candidate) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   std::unique_ptr<XmlElement> candidate_element(
       new XmlElement(QName(kTransportNamespace, "candidate")));
@@ -979,7 +970,7 @@ void WebrtcTransport::OnIceCandidate(
 
 void WebrtcTransport::OnIceSelectedCandidatePairChanged(
     const cricket::CandidatePairChangeEvent& event) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   std::string transport_protocol =
       GetTransportProtocol(event.selected_candidate_pair);
@@ -1167,7 +1158,7 @@ void WebrtcTransport::SendOffer() {
 }
 
 void WebrtcTransport::EnsurePendingTransportInfoMessage() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   // |transport_info_timer_| must be running iff
   // |pending_transport_info_message_| exists.
@@ -1187,14 +1178,14 @@ void WebrtcTransport::EnsurePendingTransportInfoMessage() {
 }
 
 void WebrtcTransport::SendTransportInfo() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(pending_transport_info_message_);
 
   send_transport_info_callback_.Run(std::move(pending_transport_info_message_));
 }
 
 void WebrtcTransport::AddPendingCandidatesIfPossible() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   if (peer_connection()->signaling_state() ==
       webrtc::PeerConnectionInterface::kStable) {
@@ -1210,7 +1201,7 @@ void WebrtcTransport::AddPendingCandidatesIfPossible() {
 }
 
 void WebrtcTransport::StartRtcEventLogging() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   if (!peer_connection())
     return;
 
@@ -1222,12 +1213,11 @@ void WebrtcTransport::StartRtcEventLogging() {
 }
 
 void WebrtcTransport::StopRtcEventLogging() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   if (peer_connection()) {
     ScopedAllowThreadJoinForWebRtcTransport allow_wait;
     peer_connection()->StopRtcEventLog();
   }
 }
 
-}  // namespace protocol
-}  // namespace remoting
+}  // namespace remoting::protocol

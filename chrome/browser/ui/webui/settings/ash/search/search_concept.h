@@ -1,15 +1,15 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #ifndef CHROME_BROWSER_UI_WEBUI_SETTINGS_ASH_SEARCH_SEARCH_CONCEPT_H_
 #define CHROME_BROWSER_UI_WEBUI_SETTINGS_ASH_SEARCH_SEARCH_CONCEPT_H_
 
+#include "chrome/browser/ui/webui/settings/ash/os_settings_identifier.h"
 #include "chrome/browser/ui/webui/settings/ash/search/search.mojom.h"
 #include "chrome/browser/ui/webui/settings/ash/search/search_result_icon.mojom.h"
 #include "chrome/browser/ui/webui/settings/chromeos/constants/routes.mojom.h"
 #include "chrome/browser/ui/webui/settings/chromeos/constants/setting.mojom.h"
-#include "chrome/browser/ui/webui/settings/chromeos/os_settings_identifier.h"
 
 namespace chromeos {
 namespace settings {

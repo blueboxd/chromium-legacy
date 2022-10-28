@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -48,13 +48,13 @@ Navigator.prototype.share = function(data) {
 
   let url = undefined;
   if (data.hasOwnProperty('url')) {
-    url = data['url'];
+    url = data['url']?.toString();
 
     let proceed = false;
     if (url === undefined) {
       // Allow url key to be set without value.
       proceed = true;
-    } else if (typeof url === "string") {
+    } else {
       // file: URLs are not allowed.
       if (url.length >= 5 &&
           (url[0] == 'f' || url[0] == 'F') &&

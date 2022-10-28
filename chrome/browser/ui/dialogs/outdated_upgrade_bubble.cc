@@ -1,4 +1,4 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -125,7 +125,7 @@ void ShowOutdatedUpgradeBubble(Browser* browser, bool auto_update_enabled) {
               l10n_util::GetStringUTF16(auto_update_enabled
                                             ? IDS_REINSTALL_APP
                                             : IDS_REENABLE_UPDATES))
-          .AddBodyText(
+          .AddParagraph(
               ui::DialogModelLabel(IDS_UPGRADE_BUBBLE_TEXT).set_is_secondary())
           .SetDialogDestroyingCallback(base::BindOnce(&OnWindowClosing))
           .SetCloseActionCallback(base::BindOnce(

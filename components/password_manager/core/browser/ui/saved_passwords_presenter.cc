@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -14,6 +14,7 @@
 #include "base/bind.h"
 #include "base/check.h"
 #include "base/containers/cxx20_erase.h"
+#include "base/feature_list.h"
 #include "base/notreached.h"
 #include "base/observer_list.h"
 #include "base/ranges/algorithm.h"
@@ -25,6 +26,7 @@
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "components/password_manager/core/browser/password_manager_util.h"
 #include "components/password_manager/core/browser/ui/password_undo_helper.h"
+#include "components/password_manager/core/common/password_manager_features.h"
 #include "url/gurl.h"
 
 namespace {
@@ -208,19 +210,29 @@ SavedPasswordsPresenter::GetExpectedAddResult(
                entry.IsUsingAccountStore();
       };
 
-  bool existing_password_profile = base::ranges::any_of(
+  bool existing_credential_profile = base::ranges::any_of(
       passwords_, have_equal_username_and_realm_in_profile_store);
-  bool existing_password_account = base::ranges::any_of(
+  bool existing_credential_account = base::ranges::any_of(
       passwords_, have_equal_username_and_realm_in_account_store);
 
-  if (!existing_password_profile && !existing_password_account)
+  if (!existing_credential_profile && !existing_credential_account)
     return AddResult::kSuccess;
-  if (existing_password_profile && !existing_password_account)
-    return AddResult::kExistsInProfileStore;
-  if (existing_password_account && !existing_password_profile)
-    return AddResult::kExistsInAccountStore;
 
-  return AddResult::kExistsInProfileAndAccountStore;
+  auto have_exact_match =
+      [&credential, &have_equal_username_and_realm](const PasswordForm& entry) {
+        return have_equal_username_and_realm(entry) &&
+               credential.password == entry.password_value;
+      };
+
+  if (base::ranges::any_of(passwords_, have_exact_match))
+    return AddResult::kExactMatch;
+
+  if (!existing_credential_profile)
+    return AddResult::kConflictInAccountStore;
+  if (!existing_credential_account)
+    return AddResult::kConflictInProfileStore;
+
+  return AddResult::kConflictInProfileAndAccountStore;
 }
 
 void SavedPasswordsPresenter::AddCredentialAsync(
@@ -365,10 +377,16 @@ SavedPasswordsPresenter::EditSavedCredentials(
       new_form.password_issues.clear();
     }
 
-    if (note_changed) {
-      PasswordNoteAction note_action =
-          UpdateNoteInPasswordForm(new_form, updated_credential.note);
-      metrics_util::LogPasswordNoteActionInSettings(note_action);
+    if (base::FeatureList::IsEnabled(
+            password_manager::features::kPasswordNotes)) {
+      if (note_changed) {
+        PasswordNoteAction note_action =
+            UpdateNoteInPasswordForm(new_form, updated_credential.note);
+        metrics_util::LogPasswordNoteActionInSettings(note_action);
+      } else {
+        metrics_util::LogPasswordNoteActionInSettings(
+            PasswordNoteAction::kNoteNotChanged);
+      }
     }
 
     // An updated username implies a change in the primary key, thus we need

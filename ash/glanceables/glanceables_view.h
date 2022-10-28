@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -15,13 +15,17 @@ class Label;
 
 namespace ash {
 
+class GlanceablesRestoreView;
+class GlanceablesUpNextView;
 class GlanceablesWeatherView;
 class GlanceablesWelcomeLabel;
 
 // Container view for the "welcome back" glanceables screen shown on login.
 class ASH_EXPORT GlanceablesView : public views::View {
  public:
-  GlanceablesView();
+  // `show_session_restore` controls whether the session restore views are
+  // created.
+  explicit GlanceablesView(bool show_session_restore);
   GlanceablesView(const GlanceablesView&) = delete;
   GlanceablesView& operator=(const GlanceablesView&) = delete;
   ~GlanceablesView() override;
@@ -30,15 +34,16 @@ class ASH_EXPORT GlanceablesView : public views::View {
   void OnBoundsChanged(const gfx::Rect& previous_bounds) override;
   void OnThemeChanged() override;
 
-  GlanceablesWelcomeLabel* welcome_label_for_test() { return welcome_label_; }
-  GlanceablesWeatherView* weather_view_for_test() { return weather_view_; }
-
  private:
+  friend class GlanceablesTest;
+
   views::BoxLayout* layout_ = nullptr;
   GlanceablesWelcomeLabel* welcome_label_ = nullptr;
   GlanceablesWeatherView* weather_view_ = nullptr;
   views::Label* up_next_label_ = nullptr;
+  GlanceablesUpNextView* up_next_view_ = nullptr;
   views::Label* restore_session_label_ = nullptr;
+  GlanceablesRestoreView* restore_view_ = nullptr;
 };
 
 }  // namespace ash

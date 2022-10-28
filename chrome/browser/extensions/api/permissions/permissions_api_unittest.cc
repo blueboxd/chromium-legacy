@@ -1,4 +1,4 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -255,7 +255,7 @@ TEST_F(PermissionsAPIUnitTest, ContainsAndGetAllWithRuntimeHostPermissions) {
 
     const base::Value* origins_value =
         (*results)[0].FindKeyOfType("origins", base::Value::Type::LIST);
-    for (const auto& value : origins_value->GetListDeprecated())
+    for (const auto& value : origins_value->GetList())
       origins.push_back(value.GetString());
 
     return origins;

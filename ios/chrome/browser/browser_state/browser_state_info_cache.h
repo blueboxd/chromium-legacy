@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,10 +12,7 @@
 
 #include "base/files/file_path.h"
 #include "base/observer_list.h"
-
-namespace base {
-class Value;
-}
+#include "base/values.h"
 
 class BrowserStateInfoCacheObserver;
 class PrefRegistrySimple;
@@ -64,9 +61,9 @@ class BrowserStateInfoCache {
   static void RegisterPrefs(PrefRegistrySimple* registry);
 
  private:
-  const base::Value* GetInfoForBrowserStateAtIndex(size_t index) const;
+  const base::Value::Dict* GetInfoForBrowserStateAtIndex(size_t index) const;
   // Saves the browser state info to a cache.
-  void SetInfoForBrowserStateAtIndex(size_t index, base::Value info);
+  void SetInfoForBrowserStateAtIndex(size_t index, base::Value::Dict info);
 
   std::string CacheKeyFromBrowserStatePath(
       const base::FilePath& browser_state_path) const;

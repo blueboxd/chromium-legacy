@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -29,6 +29,11 @@ using ::testing::StrEq;
 
 TEST(ProtoEnumConversionsTest, GetAppListItemTypeString) {
   TestEnumStringsNonEmpty(sync_pb::AppListSpecifics::AppListItemType);
+}
+
+TEST(ProtoEnumConversionsTest, GetSegmentationPlatformTypeTypeString) {
+  TestEnumStringsNonEmpty(
+      sync_pb::SegmentationSpecifics::DeviceMetadata::PlatformType);
 }
 
 TEST(ProtoEnumConversionsTest, GetBrowserTypeString) {

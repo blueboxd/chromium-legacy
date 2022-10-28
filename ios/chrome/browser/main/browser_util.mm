@@ -1,15 +1,15 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #import "ios/chrome/browser/main/browser_util.h"
 
-#include <memory>
-#include <ostream>
-#include <set>
+#import <memory>
+#import <ostream>
+#import <set>
 
-#include "base/check_op.h"
-#include "ios/chrome/browser/browser_state/chrome_browser_state.h"
+#import "base/check_op.h"
+#import "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/main/browser.h"
 #import "ios/chrome/browser/main/browser_list.h"
 #import "ios/chrome/browser/main/browser_list_factory.h"
@@ -25,8 +25,8 @@
 
 namespace {
 
-// Given a set of |browsers|, finds the one with |tab_id|. Returns the browser
-// and |tab_index| of the tab within the returned browser’s WebStateList.
+// Given a set of `browsers`, finds the one with `tab_id`. Returns the browser
+// and `tab_index` of the tab within the returned browser’s WebStateList.
 Browser* FindBrowser(NSString* tab_id,
                      const std::set<Browser*>& browsers,
                      int& tab_index) {
@@ -45,9 +45,9 @@ Browser* FindBrowser(NSString* tab_id,
   return nullptr;
 }
 
-// Finds the browser in |browser_list| containing a tab with |tab_id|. Searches
-// incognito browsers if |incognito| is true, otherwise searches regular
-// browsers. Returns the browser and |tab_index| of the tab within the returned
+// Finds the browser in `browser_list` containing a tab with `tab_id`. Searches
+// incognito browsers if `incognito` is true, otherwise searches regular
+// browsers. Returns the browser and `tab_index` of the tab within the returned
 // browser's WebStateList.
 Browser* FindBrowser(NSString* tab_id,
                      BrowserList* browser_list,
@@ -59,8 +59,8 @@ Browser* FindBrowser(NSString* tab_id,
                                  tab_index);
 }
 
-// Moves snapshot associated with |snapshot_id| from |source_browser| to
-// |destination_browser|'s snapshot cache.
+// Moves snapshot associated with `snapshot_id` from `source_browser` to
+// `destination_browser`'s snapshot cache.
 void MoveSnapshot(NSString* snapshot_id,
                   Browser* source_browser,
                   Browser* destination_browser) {

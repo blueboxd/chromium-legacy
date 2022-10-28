@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -33,6 +33,19 @@ const base::Feature kAutofillAssistantVerifyGetActionsResponses{
 const base::Feature kAutofillAssistantSignGetActionsRequests{
     "AutofillAssistantSignGetActionsRequests",
     base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Controls whether RPC requests to the backend should be signed for
+// |GetNoRoundTripScriptsByHash| calls.
+const base::Feature kAutofillAssistantSignGetNoRoundTripScriptsByHashRequests{
+    "AutofillAssistantSignGetNoRoundTripByHashRequests",
+    base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Controls whether RPC responses from the backend should be verified for
+// |GetNoRoundTripScriptsByHash| calls.
+const base::Feature
+    kAutofillAssistantVerifyGetNoRoundTripScriptsByHashResponses{
+        "AutofillAssistantVerifyGetNoRoundTripByHashResponses",
+        base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Controls whether to enable dialog onboarding for Autofill Assistant
 const base::Feature kAutofillAssistantDialogOnboarding{
@@ -77,6 +90,13 @@ const base::Feature kAutofillAssistantGetPaymentsClientToken{
     "AutofillAssistantGetPaymentsClientToken",
     base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Whether Autofill Assistant should enable getting the list of trigger scripts
+// from the backend in a privacy sensitive way. This would enable in-CCT
+// triggering for users who have "Make Searches and Browsing Better" disabled.
+const base::Feature kAutofillAssistantGetTriggerScriptsByHashPrefix{
+    "AutofillAssistantGetTriggerScriptsByHashPrefix",
+    base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Whether Autofill Assistant should enable in-CCT triggering, i.e., requesting
 // and showing trigger scripts in CCTs without explicit user request. This
 // requires also specifying valid URL heuristics via
@@ -105,6 +125,11 @@ const base::Feature kAutofillAssistantLoadDFMForTriggerScripts{
 const base::Feature kAutofillAssistantProactiveHelp{
     "AutofillAssistantProactiveHelp", base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Enables assistant UI (once the feature is enabled, scripts need to use the
+// USE_ASSISTANT_UI=true flag to use the assistant UI).
+const base::Feature kAutofillAssistantRemoteAssistantUi{
+    "AutofillAssistantRemoteAssistantUi", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Used to configure URL heuristics for upcoming new features.
 extern const base::Feature kAutofillAssistantUrlHeuristic1{
     "AutofillAssistantUrlHeuristic1", base::FEATURE_DISABLED_BY_DEFAULT};
@@ -126,6 +151,17 @@ const base::Feature kAutofillAssistantUrlHeuristics{
 // Whether Autofill Assistant is enabled on desktop.
 const base::Feature kAutofillAssistantDesktop{"AutofillAssistantDesktop",
                                               base::FEATURE_ENABLED_BY_DEFAULT};
+
+// Controls whether to filter existing profiles in Collect User Data action
+const base::Feature kAutofillAssistantCudFilterProfiles{
+    "AutofillAssistantCudFilterProfiles", base::FEATURE_ENABLED_BY_DEFAULT};
+
+// Controls whether the DidFinishNavigation should be used instead of
+// PrimaryPageChanged. This is a just-in-case switch that will be removed once
+// we are confident using DidFinishNavigation is working properly. b/243897243
+const base::Feature kAutofillAssistantUseDidFinishNavigation{
+    "AutofillAssistantUseDidFinishNavigation",
+    base::FEATURE_ENABLED_BY_DEFAULT};
 
 }  // namespace features
 }  // namespace autofill_assistant

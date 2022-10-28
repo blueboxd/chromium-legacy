@@ -310,23 +310,25 @@ DesktopNativeWidgetAura::DesktopNativeWidgetAura(
 }
 
 DesktopNativeWidgetAura::~DesktopNativeWidgetAura() {
-  if (ownership_ == Widget::InitParams::NATIVE_WIDGET_OWNS_WIDGET)
-    delete native_widget_delegate_;
-  else
+  if (ownership_ == Widget::InitParams::NATIVE_WIDGET_OWNS_WIDGET) {
+    // `drop_helper_` and `window_reorderer_` hold a pointer to
+    // `native_widget_delegate_`'s root view. Reset them before deleting
+    // `native_widget_delegate_` to avoid holding a briefly dangling ptr.
+    drop_helper_.reset();
+    window_reorderer_.reset();
+    //  Use `ClearAndDelete` here to stop referencing the underlying pointer and
+    //  free its memory. Compared to raw delete calls, this avoids the raw_ptr
+    //  to be temporarily dangling.
+    native_widget_delegate_.ClearAndDelete();
+  } else {
     CloseNow();
+  }
 }
 
 // static
 DesktopNativeWidgetAura* DesktopNativeWidgetAura::ForWindow(
     aura::Window* window) {
   return window->GetProperty(kDesktopNativeWidgetAuraKey);
-}
-
-void DesktopNativeWidgetAura::SetDesktopWindowTreeHost(
-    std::unique_ptr<DesktopWindowTreeHost> desktop_window_tree_host) {
-  DCHECK(!desktop_window_tree_host_);
-  desktop_window_tree_host_ = desktop_window_tree_host.get();
-  host_.reset(desktop_window_tree_host.release()->AsWindowTreeHost());
 }
 
 void DesktopNativeWidgetAura::OnHostClosed() {
@@ -989,10 +991,8 @@ void DesktopNativeWidgetAura::Restore() {
 
 void DesktopNativeWidgetAura::SetFullscreen(bool fullscreen,
                                             int64_t target_display_id) {
-  // The `target_display_id` argument is unsupported in Aura.
-  DCHECK_EQ(target_display_id, display::kInvalidDisplayId);
   if (desktop_window_tree_host_)
-    desktop_window_tree_host_->SetFullscreen(fullscreen);
+    desktop_window_tree_host_->SetFullscreen(fullscreen, target_display_id);
 }
 
 bool DesktopNativeWidgetAura::IsFullscreen() const {

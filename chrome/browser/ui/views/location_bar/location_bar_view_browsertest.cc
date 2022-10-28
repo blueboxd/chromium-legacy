@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,6 +8,7 @@
 #include "base/feature_list.h"
 #include "base/files/file_path.h"
 #include "base/path_service.h"
+#include "base/ranges/algorithm.h"
 #include "base/run_loop.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -44,6 +45,7 @@
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/page/page_zoom.h"
 #include "ui/base/pointer/touch_ui_controller.h"
+#include "ui/views/test/views_test_utils.h"
 
 class LocationBarViewBrowserTest : public InProcessBrowserTest {
  public:
@@ -155,7 +157,7 @@ IN_PROC_BROWSER_TEST_F(TouchLocationBarViewBrowserTest, OmniboxViewViewsSize) {
       child->SetVisible(false);
   }
 
-  GetLocationBarView()->Layout();
+  views::test::RunScheduledLayout(GetLocationBarView());
   // Check |omnibox_view_views| is not wider than the LocationBarView with its
   // rounded ends removed.
   EXPECT_LE(omnibox_view_views->width(),
@@ -268,12 +270,9 @@ class LocationBarViewGeolocationBackForwardCacheBrowserTest
       ContentSettingImageModel::ImageType image_type) {
     LocationBarView* location_bar_view =
         BrowserView::GetBrowserViewForBrowser(browser())->GetLocationBarView();
-    return **std::find_if(
-        location_bar_view->GetContentSettingViewsForTest().begin(),
-        location_bar_view->GetContentSettingViewsForTest().end(),
-        [image_type](ContentSettingImageView* view) {
-          return view->GetTypeForTesting() == image_type;
-        });
+    return **base::ranges::find(
+        location_bar_view->GetContentSettingViewsForTest(), image_type,
+        &ContentSettingImageView::GetTypeForTesting);
   }
 
  private:

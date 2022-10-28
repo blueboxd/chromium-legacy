@@ -207,7 +207,7 @@ const net::NetworkTrafficAnnotationTag kNavigationUrlLoaderTrafficAnnotation =
 
 std::unique_ptr<network::ResourceRequest> CreateResourceRequest(
     const NavigationRequestInfo& request_info,
-    int frame_tree_node_id,
+    FrameTreeNode* frame_tree_node,
     mojo::PendingRemote<network::mojom::CookieAccessObserver> cookie_observer,
     mojo::PendingRemote<network::mojom::URLLoaderNetworkServiceObserver>
         url_loader_network_observer,
@@ -240,8 +240,6 @@ std::unique_ptr<network::ResourceRequest> CreateResourceRequest(
   new_request->headers.AddHeadersFromString(request_info.begin_params->headers);
   new_request->cors_exempt_headers = request_info.cors_exempt_headers;
   if (request_info.begin_params->web_bundle_token) {
-    FrameTreeNode* frame_tree_node =
-        FrameTreeNode::GloballyFindByID(frame_tree_node_id);
     DCHECK(frame_tree_node->parent());
     int render_process_id = frame_tree_node->parent()->GetProcess()->GetID();
     new_request->web_bundle_token_params =
@@ -294,8 +292,9 @@ std::unique_ptr<network::ResourceRequest> CreateResourceRequest(
   new_request->upgrade_if_insecure = request_info.upgrade_if_insecure;
   new_request->throttling_profile_id = request_info.devtools_frame_token;
   new_request->transition_type = request_info.common_params->transition;
-  new_request->devtools_request_id =
-      request_info.devtools_navigation_token.ToString();
+  devtools_instrumentation::MaybeAssignResourceRequestId(
+      frame_tree_node, request_info.devtools_navigation_token.ToString(),
+      *new_request);
   if (request_info.begin_params->trust_token_params) {
     new_request->trust_token_params =
         *request_info.begin_params->trust_token_params;
@@ -378,7 +377,6 @@ void CheckParsedHeadersEquals(const network::mojom::ParsedHeadersPtr& lhs,
   DCHECK_EQ(lhs->xfo, rhs->xfo);
   DCHECK(mojo::Equals(lhs->link_headers, rhs->link_headers));
   DCHECK(mojo::Equals(lhs->timing_allow_origin, rhs->timing_allow_origin));
-  DCHECK_EQ(lhs->bfcache_opt_in_unload, rhs->bfcache_opt_in_unload);
   DCHECK(mojo::Equals(lhs->reporting_endpoints, rhs->reporting_endpoints));
   DCHECK(mojo::Equals(lhs->variants_headers, rhs->variants_headers));
   DCHECK(mojo::Equals(lhs->content_language, rhs->content_language));
@@ -816,7 +814,9 @@ void NavigationURLLoaderImpl::OnReceiveEarlyHints(
 
 void NavigationURLLoaderImpl::OnReceiveResponse(
     network::mojom::URLResponseHeadPtr head,
-    mojo::ScopedDataPipeConsumerHandle response_body) {
+    mojo::ScopedDataPipeConsumerHandle response_body,
+    absl::optional<mojo_base::BigBuffer> cached_metadata) {
+  DCHECK(!cached_metadata);
   LogQueueTimeHistogram("Navigation.QueueTime.OnReceiveResponse",
                         resource_request_->is_outermost_main_frame);
   head_ = std::move(head);
@@ -981,11 +981,6 @@ void NavigationURLLoaderImpl::OnUploadProgress(
     int64_t current_position,
     int64_t total_size,
     OnUploadProgressCallback callback) {
-  NOTREACHED();
-}
-
-void NavigationURLLoaderImpl::OnReceiveCachedMetadata(
-    mojo_base::BigBuffer data) {
   NOTREACHED();
 }
 
@@ -1304,8 +1299,14 @@ NavigationURLLoaderImpl::NavigationURLLoaderImpl(
       accept_ch_frame_observer;
   accept_ch_frame_observers_.Add(
       this, accept_ch_frame_observer.InitWithNewPipeAndPassReceiver());
+
+  FrameTreeNode* frame_tree_node =
+      FrameTreeNode::GloballyFindByID(frame_tree_node_id_);
+  DCHECK(frame_tree_node);
+  DCHECK(frame_tree_node->navigation_request());
+
   resource_request_ = CreateResourceRequest(
-      *request_info_, frame_tree_node_id_, std::move(cookie_observer),
+      *request_info_, frame_tree_node, std::move(cookie_observer),
       std::move(url_loader_network_observer), std::move(devtools_observer),
       std::move(accept_ch_frame_observer));
 
@@ -1313,16 +1314,12 @@ NavigationURLLoaderImpl::NavigationURLLoaderImpl(
       GetContentClient()->browser()->GetAcceptLangs(browser_context_);
 
   // Check if a web UI scheme wants to handle this request.
-  FrameTreeNode* frame_tree_node =
-      FrameTreeNode::GloballyFindByID(frame_tree_node_id_);
   const ukm::SourceIdObj ukm_id = ukm::SourceIdObj::FromInt64(ukm_source_id_);
 
   const auto& schemes = URLDataManagerBackend::GetWebUISchemes();
   std::string scheme = resource_request_->url.scheme();
   mojo::PendingRemote<network::mojom::URLLoaderFactory> factory_for_webui;
   if (base::Contains(schemes, scheme)) {
-    DCHECK(frame_tree_node);
-    DCHECK(frame_tree_node->navigation_request());
     auto factory_receiver = factory_for_webui.InitWithNewPipeAndPassReceiver();
     GetContentClient()->browser()->WillCreateURLLoaderFactory(
         browser_context_, frame_tree_node->current_frame_host(),
@@ -1341,8 +1338,6 @@ NavigationURLLoaderImpl::NavigationURLLoaderImpl(
 
   mojo::PendingRemote<network::mojom::TrustedURLLoaderHeaderClient>
       header_client;
-  DCHECK(frame_tree_node);
-  DCHECK(frame_tree_node->navigation_request());
 
   // Initialize proxied factory remote/receiver if necessary.
   // This also populates `bypass_redirect_checks_`.

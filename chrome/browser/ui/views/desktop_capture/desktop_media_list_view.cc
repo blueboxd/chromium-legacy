@@ -1,14 +1,14 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome/browser/ui/views/desktop_capture/desktop_media_list_view.h"
 
-#include <algorithm>
 #include <string>
 #include <utility>
 
 #include "base/cxx17_backports.h"
+#include "base/ranges/algorithm.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/media/webrtc/desktop_media_list.h"
 #include "chrome/browser/media/webrtc/window_icon_util.h"
@@ -162,6 +162,13 @@ DesktopMediaListView::GetSourceListListener() {
   return this;
 }
 
+void DesktopMediaListView::ClearSelection() {
+  DesktopMediaSourceView* view = GetSelectedView();
+  if (view) {
+    view->ClearSelection();
+  }
+}
+
 void DesktopMediaListView::OnSourceAdded(size_t index) {
   const DesktopMediaList::Source& source = controller_->GetSource(index);
 
@@ -237,6 +244,14 @@ void DesktopMediaListView::OnSourceThumbnailChanged(size_t index) {
 
 void DesktopMediaListView::OnSourcePreviewChanged(size_t index) {}
 
+void DesktopMediaListView::OnDelegatedSourceListSelection() {
+  // If the SourceList is delegated, we will only have one (or zero), sources.
+  // As long as we have one source, select it once we get notified that the user
+  // made a selection in the delegated source list.
+  if (!children().empty())
+    children().front()->RequestFocus();
+}
+
 void DesktopMediaListView::SetStyle(DesktopMediaSourceViewStyle* style) {
   active_style_ = style;
   controller_->SetThumbnailSize(style->image_rect.size());
@@ -246,9 +261,9 @@ void DesktopMediaListView::SetStyle(DesktopMediaSourceViewStyle* style) {
 }
 
 DesktopMediaSourceView* DesktopMediaListView::GetSelectedView() {
-  const auto i = std::find_if(
-      children().cbegin(), children().cend(),
-      [](View* v) { return AsDesktopMediaSourceView(v)->GetSelected(); });
+  const auto i =
+      base::ranges::find_if(children(), &DesktopMediaSourceView::GetSelected,
+                            &AsDesktopMediaSourceView);
   return (i == children().cend()) ? nullptr : AsDesktopMediaSourceView(*i);
 }
 

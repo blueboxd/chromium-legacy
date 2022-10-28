@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -37,6 +37,7 @@
 #include "chrome/browser/ui/ash/capture_mode/chrome_capture_mode_delegate.h"
 #include "chrome/browser/ui/ash/chrome_accessibility_delegate.h"
 #include "chrome/browser/ui/ash/desks/chrome_desks_templates_delegate.h"
+#include "chrome/browser/ui/ash/glanceables/chrome_glanceables_delegate.h"
 #include "chrome/browser/ui/ash/keyboard/chrome_keyboard_ui.h"
 #include "chrome/browser/ui/ash/session_util.h"
 #include "chrome/browser/ui/ash/window_pin_util.h"
@@ -113,6 +114,12 @@ bool ChromeShellDelegate::CanShowWindowForUser(
 std::unique_ptr<ash::CaptureModeDelegate>
 ChromeShellDelegate::CreateCaptureModeDelegate() const {
   return std::make_unique<ChromeCaptureModeDelegate>();
+}
+
+std::unique_ptr<ash::GlanceablesDelegate>
+ChromeShellDelegate::CreateGlanceablesDelegate(
+    ash::GlanceablesController* controller) const {
+  return std::make_unique<ChromeGlanceablesDelegate>(controller);
 }
 
 ash::AccessibilityDelegate* ChromeShellDelegate::CreateAccessibilityDelegate() {

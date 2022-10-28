@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -297,8 +297,7 @@ class ChromeLabsViewControllerTest : public TestWithBrowserView {
 #endif
 
     std::unique_ptr<ChromeLabsBubbleView> bubble_view =
-        std::make_unique<ChromeLabsBubbleView>(chrome_labs_button(),
-                                               browser_view()->browser());
+        std::make_unique<ChromeLabsBubbleView>(chrome_labs_button());
     bubble_view_ = bubble_view.get();
     bubble_widget_ =
         views::BubbleDialogDelegateView::CreateBubble(std::move(bubble_view));
@@ -614,10 +613,10 @@ TEST_F(ChromeLabsViewControllerTest, DISABLED_ShowFeedbackPage) {
 TEST_F(ChromeLabsViewControllerTest, CleanUpNewBadgePrefsTest) {
   const base::Value::Dict& new_badge_prefs =
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-      browser_view()->browser()->profile()->GetPrefs()->GetValueDict(
+      browser_view()->browser()->profile()->GetPrefs()->GetDict(
           chrome_labs_prefs::kChromeLabsNewBadgeDictAshChrome);
 #else
-      g_browser_process->local_state()->GetValueDict(
+      g_browser_process->local_state()->GetDict(
           chrome_labs_prefs::kChromeLabsNewBadgeDict);
 #endif
 

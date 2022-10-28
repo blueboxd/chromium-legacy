@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -16,9 +16,9 @@
 // changes.
 class ActiveWebStateObservationForwarder : public WebStateListObserver {
  public:
-  // Creates an object which forwards observation methods to |observer| and
-  // tracks |web_state_list| to keep track of the currently-active WebState.
-  // |web_state_list| and |observer| must both outlive this object.
+  // Creates an object which forwards observation methods to `observer` and
+  // tracks `web_state_list` to keep track of the currently-active WebState.
+  // `web_state_list` and `observer` must both outlive this object.
   ActiveWebStateObservationForwarder(WebStateList* web_state_list,
                                      web::WebStateObserver* observer);
 

@@ -458,7 +458,7 @@ void AccessibilityWinBrowserTest::SetUpSampleParagraphHelper(
 BrowserAccessibility* AccessibilityWinBrowserTest::FindNode(
     ax::mojom::Role role,
     const std::string& name_or_value) {
-  BrowserAccessibility* root = GetManager()->GetRoot();
+  BrowserAccessibility* root = GetManager()->GetBrowserAccessibilityRoot();
   CHECK(root);
   return FindNodeInSubtree(*root, role, name_or_value);
 }
@@ -852,8 +852,8 @@ class NativeWinEventWaiter {
             type,
             manager,
             base::GetCurrentProcId(),
-            ui::AXTreeSelector(
-                manager->GetRoot()->GetTargetForNativeAccessibilityEvent()))),
+            ui::AXTreeSelector(manager->GetBrowserAccessibilityRoot()
+                                   ->GetTargetForNativeAccessibilityEvent()))),
         match_pattern_(match_pattern),
         browser_accessibility_manager_(manager) {
     event_recorder_->ListenToEvents(base::BindRepeating(
@@ -926,6 +926,8 @@ class WebContentsUIAParentNavigationInDestroyedWatcher
 
 IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
                        TestAlwaysFireFocusEventAfterNavigationComplete) {
+  testing::ScopedContentAXModeSetter ax_mode_setter(ui::kAXModeBasic.mode());
+
   ASSERT_TRUE(NavigateToURL(shell(), GURL(url::kAboutBlankURL)));
 
   // Users of Jaws or NVDA screen readers might not realize that the virtual
@@ -960,6 +962,8 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
                        TestLoadingAccessibilityTree) {
+  testing::ScopedContentAXModeSetter ax_mode_setter(ui::kAXModeBasic.mode());
+
   ASSERT_TRUE(NavigateToURL(shell(), GURL(url::kAboutBlankURL)));
 
   // The initial accessible returned should have state STATE_SYSTEM_BUSY while
@@ -3788,7 +3792,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
   ASSERT_EQ(13, n_characters);
 
   const std::u16string embedded_character(
-      1, BrowserAccessibilityComWin::kEmbeddedCharacter);
+      1, ui::AXPlatformNodeBase::kEmbeddedCharacter);
   const std::wstring expected_hypertext =
       L"Before" + base::UTF16ToWide(embedded_character) + L"after.";
 
@@ -3961,7 +3965,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
   Microsoft::WRL::ComPtr<IAccessibleText> paragraph_text;
   SetUpSampleParagraph(&paragraph_text);
   std::wstring embedded_character = base::UTF16ToWide(
-      std::u16string(1, BrowserAccessibilityComWin::kEmbeddedCharacter));
+      std::u16string(1, ui::AXPlatformNodeBase::kEmbeddedCharacter));
   std::vector<std::wstring> words = {
       L"Game ",    L"theory ",      L"is ",       L"\"",
       L"the ",     L"study ",       L"of ",       embedded_character,
@@ -4910,9 +4914,10 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinUIABrowserTest,
 
   // Content root node's parent's child should still be the content root node.
   Microsoft::WRL::ComPtr<IRawElementProviderFragment> content_root;
-  ASSERT_HRESULT_SUCCEEDED(
-      GetManager()->GetRoot()->GetNativeViewAccessible()->QueryInterface(
-          IID_PPV_ARGS(&content_root)));
+  ASSERT_HRESULT_SUCCEEDED(GetManager()
+                               ->GetBrowserAccessibilityRoot()
+                               ->GetNativeViewAccessible()
+                               ->QueryInterface(IID_PPV_ARGS(&content_root)));
 
   Microsoft::WRL::ComPtr<IRawElementProviderFragment> parent;
   ASSERT_HRESULT_SUCCEEDED(
@@ -4934,9 +4939,10 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinUIABrowserTest, TestGetFragmentRoot) {
       </html>)HTML");
 
   Microsoft::WRL::ComPtr<IRawElementProviderFragment> content_root;
-  ASSERT_HRESULT_SUCCEEDED(
-      GetManager()->GetRoot()->GetNativeViewAccessible()->QueryInterface(
-          IID_PPV_ARGS(&content_root)));
+  ASSERT_HRESULT_SUCCEEDED(GetManager()
+                               ->GetBrowserAccessibilityRoot()
+                               ->GetNativeViewAccessible()
+                               ->QueryInterface(IID_PPV_ARGS(&content_root)));
 
   Microsoft::WRL::ComPtr<IRawElementProviderFragmentRoot> fragment_root;
   ASSERT_HRESULT_SUCCEEDED(content_root->get_FragmentRoot(&fragment_root));
@@ -5258,7 +5264,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinUIABrowserTest,
   // Start by getting the root element for the HWND hosting the web content.
   HWND hwnd = view->host()
                   ->GetRootBrowserAccessibilityManager()
-                  ->GetRoot()
+                  ->GetBrowserAccessibilityRoot()
                   ->GetTargetForNativeAccessibilityEvent();
   ASSERT_NE(gfx::kNullAcceleratedWidget, hwnd);
   Microsoft::WRL::ComPtr<IUIAutomationElement> root;
@@ -5309,6 +5315,10 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinUIASelectivelyEnabledBrowserTest,
                   ->GetAccessibilityMode()
                   .is_mode_off());
 
+  // Start with AXMode::kWebContents. Later, a UIA call will cause kNativeAPIs
+  // to be added to the AXMode.
+  testing::ScopedContentAXModeSetter ax_mode_setter(ui::AXMode::kWebContents);
+
   // Request an automation element for the top-level window.
   Microsoft::WRL::ComPtr<IUIAutomation> uia;
   ASSERT_HRESULT_SUCCEEDED(CoCreateInstance(CLSID_CUIAutomation, nullptr,
@@ -5321,8 +5331,11 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinUIASelectivelyEnabledBrowserTest,
   uia->ElementFromHandle(hwnd, &root);
   ASSERT_NE(nullptr, root.Get());
 
-  // Native API support should now be enabled.
-  ui::AXMode expected_mode = ui::AXMode::kNativeAPIs;
+  // AXMode::kNativeAPIs should now be enabled in addition to kWebContents.
+  // (kAXModeBasic includes both kNativeAPIs and kWebContents). Importantly,
+  // this combination of AXModes allows RenderFrameHostImpl to create
+  // BrowserAccessibilityManagers.
+  ui::AXMode expected_mode = ui::kAXModeBasic.mode();
   EXPECT_EQ(expected_mode, content::BrowserAccessibilityStateImpl::GetInstance()
                                ->GetAccessibilityMode());
 

@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -111,7 +111,8 @@ void AppServiceProxyAsh::Initialize() {
 
   AppServiceProxyBase::Initialize();
 
-  if (!app_service_.is_connected()) {
+  if (!base::FeatureList::IsEnabled(kStopMojomAppService) &&
+      !app_service_.is_connected()) {
     return;
   }
 
@@ -161,7 +162,8 @@ AppServiceProxyAsh::BrowserAppInstanceRegistry() {
 void AppServiceProxyAsh::RegisterCrosApiSubScriber(
     SubscriberCrosapi* subscriber) {
   crosapi_subscriber_ = subscriber;
-  crosapi_subscriber_->OnApps(app_registry_cache_.GetAllApps());
+
+  crosapi_subscriber_->InitializeApps();
 
   // Initialise the Preferred Apps in the `crosapi_subscriber_` on register.
   if (preferred_apps_impl_ &&
@@ -190,7 +192,7 @@ void AppServiceProxyAsh::OnApps(std::vector<AppPtr> deltas,
                                 AppType app_type,
                                 bool should_notify_initialized) {
   if (crosapi_subscriber_) {
-    crosapi_subscriber_->OnApps(deltas);
+    crosapi_subscriber_->OnApps(deltas, app_type, should_notify_initialized);
   }
 
   AppServiceProxyBase::OnApps(std::move(deltas), app_type,
@@ -274,6 +276,14 @@ void AppServiceProxyAsh::UnpauseApps(const std::set<std::string>& app_ids) {
 }
 
 void AppServiceProxyAsh::SetResizeLocked(const std::string& app_id,
+                                         bool locked) {
+  auto* publisher = GetPublisher(app_registry_cache_.GetAppType(app_id));
+  if (publisher) {
+    publisher->SetResizeLocked(app_id, locked);
+  }
+}
+
+void AppServiceProxyAsh::SetResizeLocked(const std::string& app_id,
                                          apps::mojom::OptionalBool locked) {
   if (app_service_.is_connected()) {
     auto app_type = app_registry_cache_.GetAppType(app_id);
@@ -291,6 +301,32 @@ void AppServiceProxyAsh::SetArcIsRegistered() {
   if (publisher_host_) {
     publisher_host_->SetArcIsRegistered();
   }
+}
+
+void AppServiceProxyAsh::LaunchAppWithIntent(
+    const std::string& app_id,
+    int32_t event_flags,
+    IntentPtr intent,
+    LaunchSource launch_source,
+    WindowInfoPtr window_info,
+    base::OnceCallback<void(bool)> callback) {
+  // TODO(1359312): Apply DLP checks if possible
+  AppServiceProxyBase::LaunchAppWithIntent(
+      app_id, event_flags, std::move(intent), launch_source,
+      std::move(window_info), std::move(callback));
+}
+
+void AppServiceProxyAsh::LaunchAppWithIntent(
+    const std::string& app_id,
+    int32_t event_flags,
+    apps::mojom::IntentPtr intent,
+    apps::mojom::LaunchSource launch_source,
+    apps::mojom::WindowInfoPtr window_info,
+    apps::mojom::Publisher::LaunchAppWithIntentCallback callback) {
+  // TODO(1359312): Apply DLP checks if possible
+  AppServiceProxyBase::LaunchAppWithIntent(
+      app_id, event_flags, std::move(intent), launch_source,
+      std::move(window_info), std::move(callback));
 }
 
 void AppServiceProxyAsh::FlushMojoCallsForTesting() {

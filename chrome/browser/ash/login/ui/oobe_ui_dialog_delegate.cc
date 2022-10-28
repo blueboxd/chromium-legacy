@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -251,6 +251,11 @@ OobeUIDialogDelegate::OobeUIDialogDelegate(
 
 OobeUIDialogDelegate::~OobeUIDialogDelegate() {
   view_observer_.Reset();
+  // Reset scoped observation of the captive portal before closing the captive
+  // portal delegate as it posts the task which can trigger
+  // `OnAfterCaptivePortalHidden` to be called after `OobeUIDialogDelegate`
+  // destruction.
+  captive_portal_observer_.Reset();
   if (captive_portal_delegate_)
     captive_portal_delegate_->Close();
   if (controller_)

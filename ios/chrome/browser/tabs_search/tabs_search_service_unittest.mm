@@ -1,32 +1,32 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #import "ios/chrome/browser/tabs_search/tabs_search_service.h"
 
-#include <memory>
-#include <vector>
+#import <memory>
+#import <vector>
 
-#include "base/i18n/case_conversion.h"
-#include "base/strings/utf_string_conversions.h"
-#include "components/sessions/core/tab_restore_service_impl.h"
-#include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
-#include "ios/chrome/browser/browser_state/test_chrome_browser_state_manager.h"
+#import "base/i18n/case_conversion.h"
+#import "base/strings/utf_string_conversions.h"
+#import "components/sessions/core/tab_restore_service_impl.h"
+#import "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
+#import "ios/chrome/browser/browser_state/test_chrome_browser_state_manager.h"
 #import "ios/chrome/browser/main/browser_list.h"
 #import "ios/chrome/browser/main/browser_list_factory.h"
-#include "ios/chrome/browser/main/test_browser.h"
-#include "ios/chrome/browser/sessions/ios_chrome_tab_restore_service_client.h"
-#include "ios/chrome/browser/sessions/ios_chrome_tab_restore_service_factory.h"
+#import "ios/chrome/browser/main/test_browser.h"
+#import "ios/chrome/browser/sessions/ios_chrome_tab_restore_service_client.h"
+#import "ios/chrome/browser/sessions/ios_chrome_tab_restore_service_factory.h"
 #import "ios/chrome/browser/tabs/closing_web_state_observer_browser_agent.h"
 #import "ios/chrome/browser/tabs_search/tabs_search_service_factory.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
 #import "ios/chrome/browser/web_state_list/web_state_opener.h"
-#include "ios/chrome/test/ios_chrome_scoped_testing_chrome_browser_state_manager.h"
+#import "ios/chrome/test/ios_chrome_scoped_testing_chrome_browser_state_manager.h"
 #import "ios/web/public/test/fakes/fake_navigation_manager.h"
 #import "ios/web/public/test/fakes/fake_web_state.h"
-#include "ios/web/public/test/web_task_environment.h"
-#include "testing/platform_test.h"
-#include "url/gurl.h"
+#import "ios/web/public/test/web_task_environment.h"
+#import "testing/platform_test.h"
+#import "url/gurl.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -96,7 +96,7 @@ class TabsSearchServiceTest : public PlatformTest {
   }
 
  protected:
-  // Appends a new web state to the web state list of |browser|.
+  // Appends a new web state to the web state list of `browser`.
   web::WebState* AppendNewWebState(Browser* browser,
                                    const std::u16string& title,
                                    const GURL& url) {
@@ -543,7 +543,7 @@ TEST_F(TabsSearchServiceTest, RecentlyClosedMatchURL) {
 TEST_F(TabsSearchServiceTest, RecentlyClosedMatchTitleAllClosed) {
   AppendNewWebState(browser_.get(), kWebState1Title, GURL(kWebState1Url));
   AppendNewWebState(browser_.get(), kWebState2Title, GURL(kWebState2Url));
-  // Add a webstate which will not match |kSearchQueryMatchesAll|.
+  // Add a webstate which will not match `kSearchQueryMatchesAll`.
   AppendNewWebState(browser_.get(), u"X", GURL("http://abc.xyz"));
 
   browser_->GetWebStateList()->CloseAllWebStates(WebStateList::CLOSE_NO_FLAGS);

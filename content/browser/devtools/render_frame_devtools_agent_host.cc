@@ -197,17 +197,15 @@ void RenderFrameDevToolsAgentHost::AddAllAgentHosts(
     // ForEachRenderFrameHost.
     if (wc->GetOutermostWebContents() != wc)
       continue;
-    wc->GetPrimaryMainFrame()->ForEachRenderFrameHost(base::BindRepeating(
-        [](DevToolsAgentHost::List* result,
-           RenderFrameHost* render_frame_host) {
+    wc->GetPrimaryMainFrame()->ForEachRenderFrameHost(
+        [result](RenderFrameHostImpl* render_frame_host) {
           FrameTreeNode* node = FrameTreeNode::From(render_frame_host);
           if (!ShouldCreateDevToolsForNode(node))
             return;
           if (!render_frame_host->IsRenderFrameLive())
             return;
           result->push_back(RenderFrameDevToolsAgentHost::GetOrCreateFor(node));
-        },
-        result));
+        });
   }
 }
 
@@ -346,11 +344,15 @@ bool RenderFrameDevToolsAgentHost::AttachSession(DevToolsSession* session,
   session->CreateAndAddHandler<protocol::ServiceWorkerHandler>(
       /* allow_inspect_worker= */ may_attach_to_brower);
   session->CreateAndAddHandler<protocol::StorageHandler>();
-  session->CreateAndAddHandler<protocol::TargetHandler>(
+  auto* target_handler = session->CreateAndAddHandler<protocol::TargetHandler>(
       may_attach_to_brower
           ? protocol::TargetHandler::AccessMode::kRegular
           : protocol::TargetHandler::AccessMode::kAutoAttachOnly,
-      GetId(), auto_attacher_.get(), session->GetRootSession());
+      GetId(), auto_attacher_.get(), session);
+  if (session->session_mode() !=
+      DevToolsSession::Mode::kDoesNotSupportTabTarget) {
+    target_handler->DisableAutoAttachOfPortals();
+  }
   session->CreateAndAddHandler<protocol::PageHandler>(
       emulation_handler, browser_handler,
       session->GetClient()->AllowUnsafeOperations(),

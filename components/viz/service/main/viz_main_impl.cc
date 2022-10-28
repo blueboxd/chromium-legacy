@@ -1,4 +1,4 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -211,7 +211,7 @@ void VizMainImpl::CreateGpuService(
       gpu::GpuProcessActivityFlags(std::move(activity_flags_region)),
       gpu_init_->TakeDefaultOffscreenSurface(),
       dependencies_.sync_point_manager, dependencies_.shared_image_manager,
-      dependencies_.shutdown_event);
+      dependencies_.scheduler, dependencies_.shutdown_event);
   gpu_service_->Bind(std::move(pending_receiver));
 
   if (!pending_frame_sink_manager_params_.is_null()) {

@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,6 +8,7 @@
 
 #include "base/mac/foundation_util.h"
 #include "media/base/mac/color_space_util_mac.h"
+#include "ui/gfx/hdr_metadata_mac.h"
 
 namespace {
 
@@ -154,10 +155,9 @@ CFStringRef GetMatrix(media::VideoColorSpace::MatrixID matrix_id) {
 void SetContentLightLevelInfo(const gfx::HDRMetadata& hdr_metadata,
                               NSMutableDictionary<NSString*, id>* extensions) {
   if (@available(macos 10.13, *)) {
-    SetDictionaryValue(extensions,
-                       kCMFormatDescriptionExtension_ContentLightLevelInfo,
-                       base::mac::CFToNSCast(
-                           media::GenerateContentLightLevelInfo(hdr_metadata)));
+    SetDictionaryValue(
+        extensions, kCMFormatDescriptionExtension_ContentLightLevelInfo,
+        base::mac::CFToNSCast(gfx::GenerateContentLightLevelInfo(hdr_metadata)));
   } else {
     DLOG(WARNING) << "kCMFormatDescriptionExtension_ContentLightLevelInfo "
                      "unsupported prior to 10.13";
@@ -170,7 +170,7 @@ void SetColorVolumeMetadata(const gfx::HDRMetadata& hdr_metadata,
     SetDictionaryValue(
         extensions, kCMFormatDescriptionExtension_MasteringDisplayColorVolume,
         base::mac::CFToNSCast(
-            media::GenerateMasteringDisplayColorVolume(hdr_metadata)));
+            gfx::GenerateMasteringDisplayColorVolume(hdr_metadata)));
   } else {
     DLOG(WARNING) << "kCMFormatDescriptionExtension_"
                      "MasteringDisplayColorVolume unsupported prior to 10.13";

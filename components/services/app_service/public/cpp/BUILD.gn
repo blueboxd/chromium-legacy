@@ -1,4 +1,4 @@
-# Copyright 2019 The Chromium Authors. All rights reserved.
+# Copyright 2019 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -51,11 +51,15 @@ component("app_types") {
     "app_launch_util.h",
     "app_types.cc",
     "app_types.h",
+    "capability_access.cc",
+    "capability_access.h",
     "features.cc",
     "features.h",
     "intent_filter.cc",
     "intent_filter.h",
     "macros.h",
+    "menu.cc",
+    "menu.h",
     "permission.cc",
     "permission.h",
     "shortcut.cc",
@@ -271,7 +275,10 @@ source_set("publisher") {
     "publisher_base.h",
   ]
 
-  deps = [ "//components/services/app_service/public/mojom" ]
+  deps = [
+    ":app_types",
+    "//components/services/app_service/public/mojom",
+  ]
 }
 
 source_set("test_support") {
@@ -322,17 +329,20 @@ source_set("unit_tests") {
   testonly = true
 
   sources = [
+    "app_capability_access_cache_mojom_unittest.cc",
     "app_capability_access_cache_unittest.cc",
     "app_capability_access_cache_wrapper_unittest.cc",
     "app_launch_util_unittest.cc",
     "app_registry_cache_unittest.cc",
     "app_registry_cache_wrapper_unittest.cc",
     "app_update_unittest.cc",
+    "capability_access_update_mojom_unittest.cc",
     "capability_access_update_unittest.cc",
     "icon_cache_unittest.cc",
     "icon_coalescer_unittest.cc",
     "intent_filter_util_unittest.cc",
     "intent_util_unittest.cc",
+    "menu_unittest.cc",
     "preferred_apps_converter_unittest.cc",
     "preferred_apps_list_unittest.cc",
   ]

@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,6 +12,7 @@
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/first_run/first_run_dialog.h"
+#include "chrome/browser/headless/headless_mode_util.h"
 #include "chrome/browser/metrics/metrics_reporting_state.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/shell_integration.h"
@@ -46,6 +47,12 @@ void InitCrashReporterIfEnabled(bool enabled) {
 namespace first_run {
 
 void ShowFirstRunDialog(Profile* profile) {
+  // Don't show first run dialog when running in headless mode since this
+  // would effectively block the UI because there is no one to interact with
+  // the dialog.
+  if (headless::IsChromeNativeHeadless())
+    return;
+
 #if BUILDFLAG(IS_MAC)
   if (base::FeatureList::IsEnabled(features::kViewsFirstRunDialog))
     ShowFirstRunDialogViews(profile);

@@ -1,5 +1,4 @@
-
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 package org.chromium.android_webview.nonembedded;
@@ -16,16 +15,25 @@ import java.io.File;
     private static final String WEBVIEW_CRASH_PRODUCT_NAME = "AndroidWebView";
     private static final String NONEMBEDDED_WEBVIEW_MINIDUMP_FILE_PREFIX =
             "nonembeded-webview-minidump-";
+    private static boolean sCrashDirMade;
 
     public AwPureJavaExceptionReporter() {
-        super(SystemWideCrashDirectories.getOrCreateWebViewCrashDir(), /*attachLogcat=*/false);
-        // The reporter doesn't create a minidump if the crash dump directory doesn't exist, so make
-        // sure to create it.
-        // TODO(https://crbug.com/1293108): this should be shared with chrome as well and removed
-        // from here.
-        new File(SystemWideCrashDirectories.getOrCreateWebViewCrashDir(),
-                CrashFileManager.CRASH_DUMP_DIR)
-                .mkdirs();
+        super(/*attachLogcat=*/false);
+    }
+
+    @Override
+    protected File getCrashFilesDirectory() {
+        if (!sCrashDirMade) {
+            // The reporter doesn't create a minidump if the crash dump directory doesn't exist, so
+            // make sure to create it.
+            // TODO(https://crbug.com/1293108): this should be shared with chrome as well and
+            // removed from here.
+            new File(SystemWideCrashDirectories.getOrCreateWebViewCrashDir(),
+                    CrashFileManager.CRASH_DUMP_DIR)
+                    .mkdirs();
+            sCrashDirMade = true;
+        }
+        return SystemWideCrashDirectories.getWebViewCrashDir();
     }
 
     @Override

@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -71,8 +71,7 @@ class BASE_EXPORT JobTaskSource : public TaskSource {
   // TaskSource:
   ExecutionEnvironment GetExecutionEnvironment() override;
   size_t GetRemainingConcurrency() const override;
-  TaskSourceSortKey GetSortKey(
-      bool disable_fair_scheduling = false) const override;
+  TaskSourceSortKey GetSortKey() const override;
   TimeTicks GetDelayedSortKey() const override;
 
   bool IsActive() const;

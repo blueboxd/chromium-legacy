@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,10 +13,13 @@
 #include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
+#include "ash/system/notification_center/notification_center_tray.h"
 #include "ash/system/status_area_widget.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/unified/date_tray.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
+#include "base/containers/adapters.h"
+#include "base/ranges/algorithm.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/gfx/animation/tween.h"
@@ -33,7 +36,7 @@ namespace ash {
 namespace {
 
 constexpr int kPaddingBetweenItems = 8;
-constexpr int kPaddingOffsetBetweenDateAndSystemTray = -4;
+constexpr int kSystemTraysRightPaddingOffset = -4;
 
 class StatusAreaWidgetDelegateAnimationSettings
     : public ui::ScopedLayerAnimationSettings {
@@ -189,8 +192,8 @@ bool StatusAreaWidgetDelegate::CanActivate() const {
 }
 
 void StatusAreaWidgetDelegate::CalculateTargetBounds() {
-  const auto it = std::find_if(children().crbegin(), children().crend(),
-                               [](const View* v) { return v->GetVisible(); });
+  const auto it =
+      base::ranges::find(base::Reversed(children()), true, &View::GetVisible);
   const View* last_visible_child = it == children().crend() ? nullptr : *it;
 
   // Set the border for each child, with a different border for the edge child.
@@ -260,11 +263,14 @@ void StatusAreaWidgetDelegate::SetBorderOnChild(views::View* child,
   // is enabled).
   int right_edge = kPaddingBetweenItems;
 
-  // If this view is `DateTray`, apply the offset
-  // `kPaddingOffsetBetweenDateAndSystemTray` between it and
-  // `UnifiedSystemTray`.
-  if (child->GetClassName() == DateTray::kViewClassName) {
-    right_edge += kPaddingOffsetBetweenDateAndSystemTray;
+  // TODO(crbug/1354354): Refactor this hack to make it more efficient and less
+  // of a hack.
+  // If this view is `DateTray` or `NotificationCenterTray`, apply
+  // the offset `kSystemTraysRightPaddingOffset` between it and the tray on it's
+  // right.
+  if (child->GetClassName() == DateTray::kViewClassName ||
+      child->GetClassName() == NotificationCenterTray::kViewClassName) {
+    right_edge += kSystemTraysRightPaddingOffset;
   }
 
   if (is_child_on_edge) {

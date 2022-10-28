@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -47,7 +47,7 @@ class SyncInternalsMessageHandler : public web::WebUIIOSMessageHandler,
   // Fires an event to send the initial state of the "include specifics" flag.
   void HandleRequestIncludeSpecificsInitialState(const base::Value::List& args);
 
-  // Handler for getAllNodes message.  Needs a |request_id| argument.
+  // Handler for getAllNodes message.  Needs a `request_id` argument.
   void HandleGetAllNodes(const base::Value::List& args);
 
   // Handler for setting internal state of if specifics should be included in

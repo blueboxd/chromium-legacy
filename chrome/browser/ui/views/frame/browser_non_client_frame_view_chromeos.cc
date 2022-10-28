@@ -1,4 +1,4 @@
-// Copyright 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -811,6 +811,12 @@ void BrowserNonClientFrameViewChromeOS::OnProfileAvatarChanged(
 void BrowserNonClientFrameViewChromeOS::AddedToWidget() {
   if (!chromeos::features::IsDarkLightModeEnabled())
     return;
+
+  if (highlight_border_overlay_ ||
+      !GetWidget()->GetNativeWindow()->GetProperty(
+          chromeos::kShouldHaveHighlightBorderOverlay)) {
+    return;
+  }
 
   highlight_border_overlay_ =
       std::make_unique<HighlightBorderOverlay>(GetWidget());

@@ -1,5 +1,5 @@
-# Copyright 2021 The Chromium Authors.All rights reserved.
-# Use of this source code is governed by a BSD - style license that can be
+# Copyright 2021 The Chromium Authors
+# Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
 import("//third_party/protobuf/proto_library.gni")
@@ -147,21 +147,23 @@ source_set("heuristics_provider") {
 
 static_library("shopping_service") {
   sources = [
-    "pref_names.cc",
-    "pref_names.h",
     "price_tracking_utils.cc",
     "price_tracking_utils.h",
     "shopping_bookmark_model_observer.cc",
     "shopping_bookmark_model_observer.h",
+    "shopping_power_bookmark_data_provider.cc",
+    "shopping_power_bookmark_data_provider.h",
     "shopping_service.cc",
     "shopping_service.h",
     "web_wrapper.h",
   ]
 
   deps = [
+    ":account_checker",
     ":commerce_subscription_db_content_proto",
     ":feature_list",
     ":metrics",
+    ":pref_names",
     ":proto",
     "//base",
     "//components/bookmarks/browser",
@@ -172,9 +174,11 @@ static_library("shopping_service") {
     "//components/optimization_guide/proto:optimization_guide_proto",
     "//components/power_bookmarks/core",
     "//components/power_bookmarks/core:proto",
+    "//components/pref_registry",
     "//components/prefs:prefs",
     "//components/resources:components_resources_grit",
     "//components/session_proto_db:core",
+    "//components/signin/public/identity_manager:identity_manager",
     "//services/data_decoder/public/cpp",
     "//services/network/public/cpp:cpp",
     "//ui/base",
@@ -208,6 +212,8 @@ source_set("shopping_service_test_support") {
     "mock_shopping_service.h",
     "shopping_service_test_base.cc",
     "shopping_service_test_base.h",
+    "test_utils.cc",
+    "test_utils.h",
   ]
 
   # Expose all deps for test support.
@@ -246,5 +252,52 @@ source_set("shopping_service_unit_tests") {
   deps = [
     ":metrics",
     ":shopping_service_test_support",
+    "webui:unit_tests",
+  ]
+}
+
+source_set("pref_names") {
+  sources = [
+    "pref_names.cc",
+    "pref_names.h",
+  ]
+
+  deps = [ "//base" ]
+}
+
+source_set("account_checker") {
+  sources = [
+    "account_checker.cc",
+    "account_checker.h",
+  ]
+
+  deps = [
+    ":feature_list",
+    ":pref_names",
+    "//base",
+    "//components/endpoint_fetcher:endpoint_fetcher",
+    "//components/prefs:prefs",
+    "//components/signin/public/identity_manager:identity_manager",
+    "//components/unified_consent",
+    "//net/traffic_annotation:traffic_annotation",
+    "//services/data_decoder/public/cpp",
+    "//services/network/public/cpp:cpp",
+    "//ui/base",
+    "//url:url",
+  ]
+}
+
+source_set("account_checker_test_support") {
+  testonly = true
+
+  sources = [
+    "mock_account_checker.cc",
+    "mock_account_checker.h",
+  ]
+
+  deps = [
+    ":account_checker",
+    "//base",
+    "//services/network/public/cpp:cpp",
   ]
 }

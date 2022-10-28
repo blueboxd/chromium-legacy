@@ -12,7 +12,7 @@
 
   .peripheral-data-access-protection {
     /* Remove the unecessary spacing infront of the learn-more link. */
-    --cr-subsequent-anchors-of-span-margin: 0px;
+    --cr-subsequent-anchors-of-span-margin: 0;
   }
 </style>
 <settings-animated-pages id="pages" section="osPrivacy"
@@ -41,7 +41,7 @@
         </cr-link-row>
         <div class="hr"></div>
       </template>
-      <template is="dom-if" if="[[showPrivacyHub_]]" restamp>
+      <template is="dom-if" if="[[showPrivacyHubPage_]]" restamp>
         <cr-link-row id="privacyHubSubpageTrigger"
             on-click="onPrivacyHub_"
             label="$i18n{privacyHubTitle}"
@@ -73,14 +73,16 @@
       <div class="hr"></div>
     </template>
 </if>
-    <settings-toggle-button
-        id="suggested-content"
-        pref="{{prefs.settings.suggested_content_enabled}}"
-        label="$i18n{enableSuggestedContent}"
-        sub-label="$i18n{enableSuggestedContentDesc}"
-        learn-more-url="$i18n{suggestedContentLearnMoreURL}">
-    </settings-toggle-button>
-    <div class="hr"></div>
+    <template is="dom-if" if="[[!showPrivacyHubPage_]]" restamp>
+      <settings-toggle-button
+          id="suggested-content"
+          pref="{{prefs.settings.suggested_content_enabled}}"
+          label="$i18n{enableSuggestedContent}"
+          sub-label="$i18n{enableSuggestedContentDesc}"
+          learn-more-url="$i18n{suggestedContentLearnMoreURL}">
+      </settings-toggle-button>
+      <div class="hr"></div>
+    </template>
     <settings-toggle-button
         id="enableVerifiedAccess"
         pref="{{

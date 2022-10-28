@@ -1,4 +1,4 @@
-# Copyright 2018 The Chromium Authors. All rights reserved.
+# Copyright 2018 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -29,6 +29,8 @@ source_set("public") {
     "dns_query_type.h",
     "doh_provider_entry.cc",
     "doh_provider_entry.h",
+    "host_resolver_results.cc",
+    "host_resolver_results.h",
     "host_resolver_source.h",
     "mdns_listener_update_type.h",
     "resolve_error_info.cc",

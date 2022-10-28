@@ -1,4 +1,4 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -66,71 +66,6 @@ class AutofillMetrics {
     FILLABLE_FORM_AUTOFILLED_NONE_DID_SHOW_SUGGESTIONS,
     FILLABLE_FORM_AUTOFILLED_NONE_DID_NOT_SHOW_SUGGESTIONS,
     AUTOFILL_FORM_SUBMITTED_STATE_ENUM_SIZE,
-  };
-
-  enum CardUploadDecisionMetric {
-    // All the required conditions were satisfied using either the form fields
-    // or we prompted the user to fix one or more conditions in the card upload
-    // prompt.
-    UPLOAD_OFFERED = 1 << 0,
-    // CVC field was not found in the form.
-    CVC_FIELD_NOT_FOUND = 1 << 1,
-    // CVC field was found, but field did not have a value.
-    CVC_VALUE_NOT_FOUND = 1 << 2,
-    // CVC field had a value, but it was not valid for the card network.
-    INVALID_CVC_VALUE = 1 << 3,
-    // A field had a syntactically valid CVC value, but it was in a field that
-    // was not heuristically determined as |CREDIT_CARD_VERIFICATION_CODE|.
-    // Set only if |CVC_FIELD_NOT_FOUND| is not set.
-    FOUND_POSSIBLE_CVC_VALUE_IN_NON_CVC_FIELD = 1 << 4,
-    // No address profile was available.
-    // We don't know whether we would have been able to get upload details.
-    UPLOAD_NOT_OFFERED_NO_ADDRESS_PROFILE = 1 << 5,
-    // Found one or more address profiles but none were recently modified or
-    // recently used -i.e. not used in expected duration of a checkout flow.
-    // We don't know whether we would have been able to get upload details.
-    UPLOAD_NOT_OFFERED_NO_RECENTLY_USED_ADDRESS = 1 << 6,
-    // One or more recently used addresses were available but no zip code was
-    // found on any of the address(es). We don't know whether we would have
-    // been able to get upload details.
-    UPLOAD_NOT_OFFERED_NO_ZIP_CODE = 1 << 7,
-    // Multiple recently used addresses were available but the addresses had
-    // conflicting zip codes.We don't know whether we would have been able to
-    // get upload details.
-    UPLOAD_NOT_OFFERED_CONFLICTING_ZIPS = 1 << 8,
-    // One or more recently used addresses were available but no name was found
-    // on either the card or the address(es). We don't know whether the
-    // address(es) were otherwise valid nor whether we would have been able to
-    // get upload details.
-    UPLOAD_NOT_OFFERED_NO_NAME = 1 << 9,
-    // One or more recently used addresses were available but the names on the
-    // card and/or the addresses didn't match. We don't know whether the
-    // address(es) were otherwise valid nor whether we would have been able to
-    // get upload details.
-    UPLOAD_NOT_OFFERED_CONFLICTING_NAMES = 1 << 10,
-    // One or more valid addresses, and a name were available but the request to
-    // Payments for upload details failed.
-    UPLOAD_NOT_OFFERED_GET_UPLOAD_DETAILS_FAILED = 1 << 11,
-    // A textfield for the user to enter/confirm cardholder name was surfaced
-    // in the offer-to-save dialog.
-    USER_REQUESTED_TO_PROVIDE_CARDHOLDER_NAME = 1 << 12,
-    // The Autofill StrikeDatabase decided not to allow offering to save for
-    // this card. On mobile, that means no save prompt is shown at all.
-    UPLOAD_NOT_OFFERED_MAX_STRIKES_ON_MOBILE = 1 << 13,
-    // A pair of dropdowns for the user to select expiration date was surfaced
-    // in the offer-to-save dialog.
-    USER_REQUESTED_TO_PROVIDE_EXPIRATION_DATE = 1 << 14,
-    // All the required conditions were satisfied even though the form is
-    // unfocused after the user entered information into it.
-    UPLOAD_OFFERED_FROM_NON_FOCUSABLE_FIELD = 1 << 15,
-    // The card does not satisfy any of the ranges of supported BIN ranges.
-    UPLOAD_NOT_OFFERED_UNSUPPORTED_BIN_RANGE = 1 << 16,
-    // All the required conditions were satisfied even though the form is
-    // dynamic changed.
-    UPLOAD_OFFERED_FROM_DYNAMIC_CHANGE_FORM = 1 << 17,
-    // The legal message was invalid.
-    UPLOAD_NOT_OFFERED_INVALID_LEGAL_MESSAGE = 1 << 18,
-    // Update |kNumCardUploadDecisionMetrics| when adding new enum here.
   };
 
   enum DeveloperEngagementMetric {
@@ -253,46 +188,6 @@ class AutofillMetrics {
     NUM_UPLOAD_ACCEPTED_CARD_ORIGIN_METRICS,
   };
 
-  // Represents requesting expiration date reason.
-  enum class SaveCardRequestExpirationDateReasonMetric {
-    // Submitted card has empty month.
-    kMonthMissingOnly,
-    // Submitted card has empty year.
-    kYearMissingOnly,
-    // Submitted card has both empty month and year.
-    kMonthAndYearMissing,
-    // Submitted card has expired expiration date.
-    kExpirationDatePresentButExpired,
-    kMaxValue = kExpirationDatePresentButExpired,
-  };
-
-  // Metrics to track event when the save card prompt is offered.
-  enum SaveCardPromptOfferMetric {
-    // The prompt is actually shown.
-    SAVE_CARD_PROMPT_SHOWN,
-    // The prompt is not shown because the prompt has been declined by the user
-    // too many times.
-    SAVE_CARD_PROMPT_NOT_SHOWN_MAX_STRIKES_REACHED,
-    NUM_SAVE_CARD_PROMPT_OFFER_METRICS,
-  };
-
-  enum SaveCardPromptResultMetric {
-    // The user explicitly accepted the prompt by clicking the ok button.
-    SAVE_CARD_PROMPT_ACCEPTED,
-    // The user explicitly cancelled the prompt by clicking the cancel button.
-    SAVE_CARD_PROMPT_CANCELLED,
-    // The user explicitly closed the prompt with the close button or ESC.
-    SAVE_CARD_PROMPT_CLOSED,
-    // The user did not interact with the prompt.
-    SAVE_CARD_PROMPT_NOT_INTERACTED,
-    // The prompt lost focus and was deactivated.
-    SAVE_CARD_PROMPT_LOST_FOCUS,
-    // The reason why the prompt is closed is not clear. Possible reason is the
-    // logging function is invoked before the closed reason is correctly set.
-    SAVE_CARD_PROMPT_RESULT_UNKNOWN,
-    NUM_SAVE_CARD_PROMPT_RESULT_METRICS,
-  };
-
   // Metrics to track events in CardUnmaskAuthenticationSelectionDialog.
   enum class CardUnmaskAuthenticationSelectionDialogResultMetric {
     // These values are persisted to logs. Entries should not be renumbered and
@@ -327,37 +222,6 @@ class AutofillMetrics {
     // The failure icon is clicked and the save card failure bubble is shown.
     CREDIT_CARD_UPLOAD_FEEDBACK_FAILURE_BUBBLE_SHOWN,
     NUM_CREDIT_CARD_UPLOAD_FEEDBACK_METRICS,
-  };
-
-  // Metrics to measure user interaction with the virtual card manual fallback
-  // bubble after it has appeared upon unmasking and filling a virtual card.
-  enum class VirtualCardManualFallbackBubbleResultMetric {
-    // These values are persisted to logs. Entries should not be renumbered and
-    // numeric values should never be reused.
-
-    // The reason why the bubble is closed is not clear. Possible reason is the
-    // logging function is invoked before the closed reason is correctly set.
-    VIRTUAL_CARD_MANUAL_FALLBACK_BUBBLE_RESULT_UNKNOWN = 0,
-    // The user explicitly closed the bubble with the close button or ESC.
-    VIRTUAL_CARD_MANUAL_FALLBACK_BUBBLE_CLOSED = 1,
-    // The user did not interact with the bubble.
-    VIRTUAL_CARD_MANUAL_FALLBACK_BUBBLE_NOT_INTERACTED = 2,
-    // Deprecated: VIRTUAL_CARD_MANUAL_FALLBACK_BUBBLE_LOST_FOCUS = 3,
-    kMaxValue = VIRTUAL_CARD_MANUAL_FALLBACK_BUBBLE_NOT_INTERACTED,
-  };
-
-  // Metric to measure which field in the virtual card manual fallback bubble
-  // was selected by the user.
-  enum class VirtualCardManualFallbackBubbleFieldClickedMetric {
-    // These values are persisted to logs. Entries should not be renumbered and
-    // numeric values should never be reused.
-
-    VIRTUAL_CARD_MANUAL_FALLBACK_BUBBLE_FIELD_CLICKED_CARD_NUMBER = 0,
-    VIRTUAL_CARD_MANUAL_FALLBACK_BUBBLE_FIELD_CLICKED_EXPIRATION_MONTH = 1,
-    VIRTUAL_CARD_MANUAL_FALLBACK_BUBBLE_FIELD_CLICKED_EXPIRATION_YEAR = 2,
-    VIRTUAL_CARD_MANUAL_FALLBACK_BUBBLE_FIELD_CLICKED_CARDHOLDER_NAME = 3,
-    VIRTUAL_CARD_MANUAL_FALLBACK_BUBBLE_FIELD_CLICKED_CVC = 4,
-    kMaxValue = VIRTUAL_CARD_MANUAL_FALLBACK_BUBBLE_FIELD_CLICKED_CVC,
   };
 
   // Metrics measuring how well we predict field types.  These metric values are
@@ -820,27 +684,6 @@ class AutofillMetrics {
   // To record whether the upload event was sent.
   enum class UploadEventStatus { kNotSent, kSent, kMaxValue = kSent };
 
-  // Log all the scenarios that contribute to the decision of whether card
-  // upload is enabled or not.
-  enum class CardUploadEnabledMetric {
-    SYNC_SERVICE_NULL = 0,
-    SYNC_SERVICE_PERSISTENT_AUTH_ERROR = 1,
-    SYNC_SERVICE_MISSING_AUTOFILL_WALLET_DATA_ACTIVE_TYPE = 2,
-    SYNC_SERVICE_MISSING_AUTOFILL_PROFILE_ACTIVE_TYPE = 3,
-    // Deprecated: ACCOUNT_WALLET_STORAGE_UPLOAD_DISABLED = 4,
-    USING_EXPLICIT_SYNC_PASSPHRASE = 5,
-    LOCAL_SYNC_ENABLED = 6,
-    PAYMENTS_INTEGRATION_DISABLED = 7,
-    EMAIL_EMPTY = 8,
-    EMAIL_DOMAIN_NOT_SUPPORTED = 9,
-    // Deprecated: AUTOFILL_UPSTREAM_DISABLED = 10,
-    // Deprecated: CARD_UPLOAD_ENABLED = 11,
-    UNSUPPORTED_COUNTRY = 12,
-    ENABLED_FOR_COUNTRY = 13,
-    ENABLED_BY_FLAG = 14,
-    kMaxValue = ENABLED_BY_FLAG,
-  };
-
   // Enumerates the status of the  different requirements to successfully import
   // an address profile from a form submission.
   enum class AddressProfileImportRequirementMetric {
@@ -884,8 +727,12 @@ class AutofillMetrics {
     // state entry.
     ZIP_OR_STATE_REQUIREMENT_FULFILLED = 24,
     ZIP_OR_STATE_REQUIREMENT_VIOLATED = 25,
+    // If required by |CountryData|, the form must contain a either an address
+    // line 1 or a house number.
+    LINE1_OR_HOUSE_NUMBER_REQUIREMENT_FULFILLED = 26,
+    LINE1_OR_HOUSE_NUMBER_REQUIREMENT_VIOLATED = 27,
     // Must be set to the last entry.
-    kMaxValue = ZIP_OR_STATE_REQUIREMENT_VIOLATED,
+    kMaxValue = LINE1_OR_HOUSE_NUMBER_REQUIREMENT_VIOLATED,
   };
 
   // Represents the status of the field type requirements that are specific to
@@ -1086,15 +933,6 @@ class AutofillMetrics {
     bool cvc_ = false;
   };
 
-  // These values are persisted to logs. Entries should not be renumbered and
-  // numeric values should never be reused.
-  enum class SuggestionClickResult {
-    kAccepted = 0,
-    kIgnored = 1,
-    kAcceptedAfterIgnored = 2,
-    kMaxValue = kAcceptedAfterIgnored
-  };
-
   // Utility to log URL keyed form interaction events.
   class FormInteractionsUkmLogger {
    public:
@@ -1149,7 +987,8 @@ class AutofillMetrics {
                           AutofillFormSubmittedState state,
                           const base::TimeTicks& form_parsed_timestamp,
                           FormSignature form_signature,
-                          const FormInteractionCounts& form_interaction_counts);
+                          const FormInteractionCounts& form_interaction_counts,
+                          autofill_assistant::AutofillAssistantIntent intent);
     void LogKeyMetrics(const DenseSet<FormType>& form_types,
                        bool data_to_fill_available,
                        bool suggestions_shown,
@@ -1234,11 +1073,6 @@ class AutofillMetrics {
   static void LogSubmittedServerCardExpirationStatusMetric(
       SubmittedServerCardExpirationStatusMetric metric);
 
-  // When credit card save is not offered (either at all on mobile or by simply
-  // not showing the bubble on desktop), logs the occurrence.
-  static void LogCreditCardSaveNotOfferedDueToMaxStrikesMetric(
-      SaveTypeMetric metric);
-
   // When credit card upload is offered, logs whether the card being offered is
   // already a local card on the device or not.
   static void LogUploadOfferedCardOriginMetric(
@@ -1249,15 +1083,6 @@ class AutofillMetrics {
   static void LogUploadAcceptedCardOriginMetric(
       UploadAcceptedCardOriginMetric metric);
 
-  // When a cardholder name fix flow is shown during credit card upload, logs
-  // whether the cardholder name was prefilled or not.
-  static void LogSaveCardCardholderNamePrefilled(bool prefilled);
-
-  // When a cardholder name fix flow is shown during credit card upload and the
-  // user accepts upload, logs whether the final cardholder name was changed
-  // from its prefilled value or not.
-  static void LogSaveCardCardholderNameWasEdited(bool edited);
-
   // When the Card Unmask Authentication Selection Dialog is shown, logs the
   // result of what the user did with the dialog.
   static void LogCardUnmaskAuthenticationSelectionDialogResultMetric(
@@ -1267,30 +1092,11 @@ class AutofillMetrics {
   // shown.
   static void LogCardUnmaskAuthenticationSelectionDialogShown();
 
-  // |upload_decision_metrics| is a bitmask of |CardUploadDecisionMetric|.
-  static void LogCardUploadDecisionMetrics(int upload_decision_metrics);
   static void LogCreditCardInfoBarMetric(
       InfoBarMetric metric,
       bool is_uploading,
       AutofillClient::SaveCreditCardOptions options);
   static void LogCreditCardFillingInfoBarMetric(InfoBarMetric metric);
-  static void LogSaveCardRequestExpirationDateReasonMetric(
-      SaveCardRequestExpirationDateReasonMetric metric);
-  static void LogSaveCardPromptOfferMetric(
-      SaveCardPromptOfferMetric metric,
-      bool is_uploading,
-      bool is_reshow,
-      AutofillClient::SaveCreditCardOptions options,
-      security_state::SecurityLevel security_level,
-      AutofillSyncSigninState sync_state);
-  static void LogSaveCardPromptResultMetric(
-      SaveCardPromptResultMetric metric,
-      bool is_uploading,
-      bool is_reshow,
-      AutofillClient::SaveCreditCardOptions options,
-      security_state::SecurityLevel security_level,
-      AutofillSyncSigninState sync_state);
-  static void LogCreditCardUploadLegalMessageLinkClicked();
   static void LogCreditCardUploadFeedbackMetric(
       CreditCardUploadFeedbackMetric metric);
   static void LogScanCreditCardPromptMetric(ScanCreditCardPromptMetric metric);
@@ -1299,12 +1105,6 @@ class AutofillMetrics {
       AutofillProgressDialogType autofill_progress_dialog_type);
   static void LogProgressDialogShown(
       AutofillProgressDialogType autofill_progress_dialog_type);
-  static void LogVirtualCardManualFallbackBubbleShown(bool is_reshow);
-  static void LogVirtualCardManualFallbackBubbleResultMetric(
-      VirtualCardManualFallbackBubbleResultMetric metric,
-      bool is_reshow);
-  static void LogVirtualCardManualFallbackBubbleFieldClicked(
-      VirtualCardManualFallbackBubbleFieldClickedMetric metric);
 
   // Should be called when credit card scan is finished. |duration| should be
   // the time elapsed between launching the credit card scanner and getting back
@@ -1312,9 +1112,6 @@ class AutofillMetrics {
   // if the scan was cancelled.
   static void LogScanCreditCardCompleted(const base::TimeDelta& duration,
                                          bool completed);
-
-  static void LogSaveCardWithFirstAndLastNameOffered(bool is_local);
-  static void LogSaveCardWithFirstAndLastNameComplete(bool is_local);
 
   static void LogDeveloperEngagementMetric(DeveloperEngagementMetric metric);
 
@@ -1588,10 +1385,6 @@ class AutofillMetrics {
   // filling a form.
   static void LogAddressSuggestionsCount(size_t num_suggestions);
 
-  // Log whether a click was handled, ignored, or the followup of an ignored
-  // click.
-  static void LogSuggestionClick(SuggestionClickResult value);
-
   // Log the index of the selected Autofill suggestion in the popup.
   static void LogAutofillSuggestionAcceptedIndex(int index,
                                                  PopupType popup_type,
@@ -1640,7 +1433,8 @@ class AutofillMetrics {
       const base::TimeTicks& form_parsed_timestamp,
       FormSignature form_signature,
       FormInteractionsUkmLogger* form_interactions_ukm_logger,
-      const FormInteractionCounts& form_interaction_counts);
+      const FormInteractionCounts& form_interaction_counts,
+      const autofill_assistant::AutofillAssistantIntent intent);
 
   // Logs if every non-empty field in a submitted form was filled by Autofill.
   // If |is_address| an address was filled, otherwise it was a credit card.
@@ -1715,13 +1509,6 @@ class AutofillMetrics {
   static void LogUploadEvent(mojom::SubmissionSource submission_source,
                              bool was_sent);
 
-  // Logs the card upload decisions ukm for the specified |url|.
-  // |upload_decision_metrics| is a bitmask of |CardUploadDecisionMetric|.
-  static void LogCardUploadDecisionsUkm(ukm::UkmRecorder* ukm_recorder,
-                                        ukm::SourceId source_id,
-                                        const GURL& url,
-                                        int upload_decision_metrics);
-
   // Logs the developer engagement ukm for the specified |url| and autofill
   // fields in the form structure. |developer_engagement_metrics| is a bitmask
   // of |AutofillMetrics::DeveloperEngagementMetric|. |is_for_credit_card| is
@@ -1746,11 +1533,6 @@ class AutofillMetrics {
   // Records the fact that the server card link was clicked with information
   // about the current sync state.
   static void LogServerCardLinkClicked(AutofillSyncSigninState sync_state);
-
-  // Records the reason for why (or why not) card upload was enabled for the
-  // user.
-  static void LogCardUploadEnabledMetric(CardUploadEnabledMetric metric,
-                                         AutofillSyncSigninState sync_state);
 
   // Logs the status of an address import requirement defined by type.
   static void LogAddressFormImportRequirementMetric(
@@ -1819,10 +1601,14 @@ class AutofillMetrics {
   static void LogNewProfileImportDecision(
       AutofillClient::SaveAddressProfileOfferUserDecision decision);
 
-  // Logs the user decision for importing a new profile with auto complemented
+  // Logs the user decision for importing a new profile with a complemented
   // country.
-  // TODO(crbug.com/1297032): Cleanup when launched.
   static void LogNewProfileWithComplementedCountryImportDecision(
+      AutofillClient::SaveAddressProfileOfferUserDecision decision);
+
+  // Logs the user decision for importing a new profile, which could only
+  // be imported after an invalid country was ignored.
+  static void LogNewProfileWithIgnoredCountryImportDecision(
       AutofillClient::SaveAddressProfileOfferUserDecision decision);
 
   // Logs the user decision for importing a new profile, which was only possible
@@ -1835,7 +1621,6 @@ class AutofillMetrics {
   static void LogNewProfileEditedType(ServerFieldType edited_type);
 
   // Logs that the auto complemented country was edited in a save prompt.
-  // TODO(crbug.com/1297032): Cleanup when launched.
   static void LogNewProfileEditedComplementedCountry();
 
   // Logs the number of edited fields for an accepted profile save.
@@ -1845,10 +1630,14 @@ class AutofillMetrics {
   static void LogProfileUpdateImportDecision(
       AutofillClient::SaveAddressProfileOfferUserDecision decision);
 
-  // Logs the user decision for updating an exiting profile with auto
-  // complemented country.
-  // TODO(crbug.com/1297032): Cleanup when launched.
+  // Logs the user decision for updating an exiting profile with a complemented
+  // country.
   static void LogProfileUpdateWithComplementedCountryImportDecision(
+      AutofillClient::SaveAddressProfileOfferUserDecision decision);
+
+  // Logs the user decision for updating an exiting profile, which could only
+  // be imported after an invalid country was ignored.
+  static void LogProfileUpdateWithIgnoredCountryImportDecision(
       AutofillClient::SaveAddressProfileOfferUserDecision decision);
 
   // Logs the user decision for updating an existing profile, which was only
@@ -1868,7 +1657,6 @@ class AutofillMetrics {
   static void LogProfileUpdateEditedType(ServerFieldType edited_type);
 
   // Logs that the auto complemented country was edited in an update prompt.
-  // TODO(crbug.com/1297032): Cleanup when launched.
   static void LogProfileUpdateEditedComplementedCountry();
 
   // Logs the number of edited fields for an accepted profile update.
@@ -1955,10 +1743,6 @@ class AutofillMetrics {
   // Logs when the "Get New Code" button in the dialog is clicked and user is
   // requesting a new OTP.
   static void LogOtpInputDialogNewOtpRequested();
-
-  // The total number of values in the |CardUploadDecisionMetric| enum. Must be
-  // updated each time a new value is added.
-  static const int kNumCardUploadDecisionMetrics = 19;
 
   // Logs whether the submitted field value is same as the non-empty value
   // to be autofilled in the field, when the field had a different prefilled

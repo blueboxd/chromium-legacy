@@ -1,14 +1,15 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <algorithm>
 #include <map>
 #include <vector>
 
 #include "base/android/build_info.h"
+#include "base/containers/contains.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "base/ranges/algorithm.h"
 #include "base/run_loop.h"
 #include "base/test/task_environment.h"
 #include "media/base/bitstream_buffer.h"
@@ -47,11 +48,8 @@ class NdkVideoEncoderAcceleratorTest
     pixel_format_ = args.pixel_format;
 
     auto profiles = MakeNdkAccelerator()->GetSupportedProfiles();
-    bool codec_supported =
-        std::any_of(profiles.begin(), profiles.end(),
-                    [this](VideoEncodeAccelerator::SupportedProfile p) {
-                      return p.profile == profile_;
-                    });
+    bool codec_supported = base::Contains(
+        profiles, profile_, &VideoEncodeAccelerator::SupportedProfile::profile);
 
     if (!codec_supported) {
       GTEST_SKIP() << "Device doesn't have hw encoder for: "
@@ -116,17 +114,19 @@ class NdkVideoEncoderAcceleratorTest
     auto y = color & 0xFF;
     auto u = (color >> 8) & 0xFF;
     auto v = (color >> 16) & 0xFF;
-    libyuv::I420Rect(
-        frame->data(VideoFrame::kYPlane), frame->stride(VideoFrame::kYPlane),
-        frame->data(VideoFrame::kUPlane), frame->stride(VideoFrame::kUPlane),
-        frame->data(VideoFrame::kVPlane), frame->stride(VideoFrame::kVPlane),
-        0,                               // left
-        0,                               // top
-        frame->visible_rect().width(),   // right
-        frame->visible_rect().height(),  // bottom
-        y,                               // Y color
-        u,                               // U color
-        v);                              // V color
+    libyuv::I420Rect(frame->writable_data(VideoFrame::kYPlane),
+                     frame->stride(VideoFrame::kYPlane),
+                     frame->writable_data(VideoFrame::kUPlane),
+                     frame->stride(VideoFrame::kUPlane),
+                     frame->writable_data(VideoFrame::kVPlane),
+                     frame->stride(VideoFrame::kVPlane),
+                     0,                               // left
+                     0,                               // top
+                     frame->visible_rect().width(),   // right
+                     frame->visible_rect().height(),  // bottom
+                     y,                               // Y color
+                     u,                               // U color
+                     v);                              // V color
     return frame;
   }
 
@@ -147,7 +147,7 @@ class NdkVideoEncoderAcceleratorTest
     auto frame = VideoFrame::CreateFrame(PIXEL_FORMAT_XRGB, size,
                                          gfx::Rect(size), size, timestamp);
 
-    libyuv::ARGBRect(frame->data(VideoFrame::kARGBPlane),
+    libyuv::ARGBRect(frame->writable_data(VideoFrame::kARGBPlane),
                      frame->stride(VideoFrame::kARGBPlane),
                      0,                               // left
                      0,                               // top
@@ -291,7 +291,7 @@ TEST_P(NdkVideoEncoderAcceleratorTest, EncodeSeveralFrames) {
     EXPECT_GT(output.md.payload_size_bytes, 0u);
     auto span = mapping.GetMemoryAsSpan<uint8_t>();
     bool found_not_zero =
-        std::any_of(span.begin(), span.end(), [](uint8_t x) { return x != 0; });
+        base::ranges::any_of(span, [](uint8_t x) { return x != 0; });
     EXPECT_TRUE(found_not_zero);
   }
 }

@@ -1,4 +1,4 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -124,7 +124,7 @@ void KioskAppUpdateService::OnRebootRequested(Reason reason) {
 
 void KioskAppUpdateService::WillDestroyAutomaticRebootManager() {
   automatic_reboot_manager_->RemoveObserver(this);
-  automatic_reboot_manager_ = NULL;
+  automatic_reboot_manager_ = nullptr;
 }
 
 void KioskAppUpdateService::OnKioskAppCacheUpdated(const std::string& app_id) {
@@ -153,7 +153,7 @@ KioskAppUpdateService* KioskAppUpdateServiceFactory::GetForProfile(
   // This should never be called unless we are running in forced app mode.
   DCHECK(chrome::IsRunningInForcedAppMode());
   if (!chrome::IsRunningInForcedAppMode())
-    return NULL;
+    return nullptr;
 
   return static_cast<KioskAppUpdateService*>(
       GetInstance()->GetServiceForBrowserContext(profile, true));

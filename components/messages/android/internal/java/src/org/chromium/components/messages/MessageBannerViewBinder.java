@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,6 +8,7 @@ import static org.chromium.components.messages.MessageBannerProperties.ALPHA;
 import static org.chromium.components.messages.MessageBannerProperties.DESCRIPTION;
 import static org.chromium.components.messages.MessageBannerProperties.DESCRIPTION_ICON;
 import static org.chromium.components.messages.MessageBannerProperties.DESCRIPTION_MAX_LINES;
+import static org.chromium.components.messages.MessageBannerProperties.ELEVATION;
 import static org.chromium.components.messages.MessageBannerProperties.ICON;
 import static org.chromium.components.messages.MessageBannerProperties.ICON_RESOURCE_ID;
 import static org.chromium.components.messages.MessageBannerProperties.ICON_ROUNDED_CORNER_RADIUS_PX;
@@ -104,6 +105,8 @@ public class MessageBannerViewBinder {
             view.setTranslationX(model.get(TRANSLATION_X));
         } else if (propertyKey == TRANSLATION_Y) {
             view.setTranslationY(model.get(TRANSLATION_Y));
+        } else if (propertyKey == ELEVATION) {
+            view.setElevation(model.get(ELEVATION));
         }
     }
 }

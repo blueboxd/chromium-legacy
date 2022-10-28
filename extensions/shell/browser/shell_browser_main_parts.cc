@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -60,7 +60,6 @@
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-#include "ash/components/disks/disk_mount_manager.h"
 #include "chromeos/ash/components/audio/audio_devices_pref_handler_impl.h"
 #include "chromeos/ash/components/audio/cras_audio_handler.h"
 #include "chromeos/ash/components/dbus/audio/cras_audio_client.h"
@@ -68,6 +67,7 @@
 #include "chromeos/ash/components/dbus/dbus_thread_manager.h"
 #include "chromeos/ash/components/dbus/hermes/hermes_clients.h"
 #include "chromeos/ash/components/dbus/shill/shill_clients.h"
+#include "chromeos/ash/components/disks/disk_mount_manager.h"
 #include "chromeos/ash/components/network/network_handler.h"
 #include "chromeos/dbus/power/power_manager_client.h"
 #include "extensions/shell/browser/shell_audio_controller_chromeos.h"
@@ -108,8 +108,8 @@ void ShellBrowserMainParts::PostCreateMainMessageLoop() {
   // Perform initialization of D-Bus objects here rather than in the below
   // helper classes so those classes' tests can initialize stub versions of the
   // D-Bus objects.
-  chromeos::DBusThreadManager::Initialize();
-  dbus::Bus* bus = chromeos::DBusThreadManager::Get()->GetSystemBus();
+  ash::DBusThreadManager::Initialize();
+  dbus::Bus* bus = ash::DBusThreadManager::Get()->GetSystemBus();
 #elif BUILDFLAG(IS_CHROMEOS_LACROS)
   chromeos::LacrosDBusThreadManager::Initialize();
   dbus::Bus* bus = chromeos::LacrosDBusThreadManager::Get()->GetSystemBus();
@@ -315,7 +315,7 @@ void ShellBrowserMainParts::PostDestroyThreads() {
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-  chromeos::DBusThreadManager::Shutdown();
+  ash::DBusThreadManager::Shutdown();
 #elif BUILDFLAG(IS_CHROMEOS_LACROS)
   chromeos::LacrosDBusThreadManager::Shutdown();
 #endif

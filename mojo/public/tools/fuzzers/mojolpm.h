@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -17,7 +17,7 @@
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/platform/platform_handle.h"
-#include "mojo/public/cpp/system/core.h"
+#include "mojo/public/cpp/system/buffer.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "mojo/public/tools/fuzzers/mojolpm.pb.h"
 

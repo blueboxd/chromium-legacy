@@ -1,4 +1,4 @@
-// Copyright 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -30,7 +30,7 @@ class HudWithRootLayerChange : public HeadsUpDisplayTest {
     PostSetNeedsCommitToMainThread();
   }
 
-  void DidCommit() override {
+  void DidBeginMainFrame() override {
     ++num_commits_;
 
     ASSERT_TRUE(layer_tree_host()->hud_layer());

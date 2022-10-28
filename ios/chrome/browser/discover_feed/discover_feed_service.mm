@@ -1,8 +1,8 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ios/chrome/browser/discover_feed/discover_feed_service.h"
+#import "ios/chrome/browser/discover_feed/discover_feed_service.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -30,3 +30,5 @@ void DiscoverFeedService::NotifyDiscoverFeedModelRecreated() {
     observer.OnDiscoverFeedModelRecreated();
   }
 }
+
+void DiscoverFeedService::BrowsingHistoryCleared() {}

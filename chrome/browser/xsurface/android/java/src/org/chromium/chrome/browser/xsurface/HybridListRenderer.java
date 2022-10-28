@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -34,8 +34,25 @@ public interface HybridListRenderer {
      * @return
      */
     @Nullable
+    @Deprecated
     default View bind(ListContentManager manager, @Nullable ViewGroup viewport) {
         return bind(manager);
+    }
+
+    /**
+     * Binds a contentmanager with this renderer.
+     *
+     * @param manager the ListContentManager responsible for populating views
+     * @param viewport the ViewGroup containing the content. Views within the
+     *   bounds of this ViewGroup will be considered for view actions. If null,
+     *   the returned View will be used as the viewport.
+     * @param shouldUseStaggeredLayout whether to use Staggered layout for list.
+     * @return
+     */
+    @Nullable
+    default View bind(ListContentManager manager, @Nullable ViewGroup viewport,
+            boolean shouldUseStaggeredLayout) {
+        return bind(manager, viewport);
     }
 
     /**

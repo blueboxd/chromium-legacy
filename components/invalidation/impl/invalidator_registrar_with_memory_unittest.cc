@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -305,18 +305,15 @@ TEST(InvalidatorRegistrarWithMemoryTest,
      ClearsTopicsWithObsoleteOwnerNamesWhenPrefIsEmpty) {
   TestingPrefServiceSimple pref_service;
   InvalidatorRegistrarWithMemory::RegisterProfilePrefs(pref_service.registry());
-  ASSERT_TRUE(pref_service.GetValueDict(kTopicsToHandler).empty());
+  ASSERT_TRUE(pref_service.GetDict(kTopicsToHandler).empty());
 
   InvalidatorRegistrarWithMemory::ClearTopicsWithObsoleteOwnerNames(
       &pref_service);
 
-  ASSERT_TRUE(pref_service.GetValueDict(kTopicsToHandler).empty());
+  ASSERT_TRUE(pref_service.GetDict(kTopicsToHandler).empty());
 }
 
 TEST(InvalidatorRegistrarWithMemoryTest, ClearsTopicsWithObsoleteOwnerNames) {
-  constexpr char kTopicsToHandler[] =
-      "invalidation.per_sender_topics_to_handler";
-
   TestingPrefServiceSimple pref_service;
   InvalidatorRegistrarWithMemory::RegisterProfilePrefs(pref_service.registry());
 
@@ -345,8 +342,7 @@ TEST(InvalidatorRegistrarWithMemoryTest, ClearsTopicsWithObsoleteOwnerNames) {
 
   pref_service.Set(kTopicsToHandler, initial_stored_topics->Clone());
 
-  ASSERT_EQ(*initial_stored_topics,
-            pref_service.GetValueDict(kTopicsToHandler));
+  ASSERT_EQ(*initial_stored_topics, pref_service.GetDict(kTopicsToHandler));
 
   InvalidatorRegistrarWithMemory::ClearTopicsWithObsoleteOwnerNames(
       &pref_service);
@@ -368,8 +364,7 @@ TEST(InvalidatorRegistrarWithMemoryTest, ClearsTopicsWithObsoleteOwnerNames) {
   ASSERT_TRUE(expected_stored_topics.has_value())
       << expected_stored_topics.error().message;
 
-  EXPECT_EQ(*expected_stored_topics,
-            pref_service.GetValueDict(kTopicsToHandler));
+  EXPECT_EQ(*expected_stored_topics, pref_service.GetDict(kTopicsToHandler));
 }
 
 // This test verifies that topics are not unsubscribed after browser restart

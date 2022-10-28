@@ -14,6 +14,7 @@ import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.LinearLayout;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -23,10 +24,13 @@ import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModel;
 import androidx.lifecycle.ViewModelProvider;
 
+import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 
 import org.chromium.browserfragment.interfaces.IBrowserFragmentDelegate;
 import org.chromium.browserfragment.interfaces.IBrowserFragmentDelegateClient;
+import org.chromium.weblayer_private.interfaces.IObjectWrapper;
+import org.chromium.weblayer_private.interfaces.ObjectWrapper;
 
 /**
  * Fragment for rendering web content.
@@ -37,9 +41,10 @@ public class BrowserFragment extends Fragment {
     private SurfaceView mSurfaceView;
     private Browser mBrowser;
     private IBrowserFragmentDelegate mDelegate;
-    private final TabObserverDelegate mTabObserverDelegate = new TabObserverDelegate();
+    private final TabListObserverDelegate mTabListObserverDelegate = new TabListObserverDelegate();
     private ListenableFuture<TabManager> mFutureTabManager;
     private CallbackToFutureAdapter.Completer<TabManager> mTabManagerCompleter;
+    private TabManager mTabManager;
     private Bundle mInstanceState = new Bundle();
 
     private final IBrowserFragmentDelegateClient mClient =
@@ -53,7 +58,15 @@ public class BrowserFragment extends Fragment {
                 @Override
                 public void onStarted(Bundle instanceState) {
                     mInstanceState = instanceState;
-                    mTabManagerCompleter.set(new TabManager(mDelegate));
+                    mTabManager = new TabManager(mDelegate);
+                    mTabManagerCompleter.set(mTabManager);
+                }
+
+                @Override
+                public void onContentViewRenderViewReady(
+                        IObjectWrapper wrappedContentViewRenderView) {
+                    LinearLayout layout = (LinearLayout) BrowserFragment.super.getView();
+                    layout.addView(ObjectWrapper.unwrap(wrappedContentViewRenderView, View.class));
                 }
             };
 
@@ -113,12 +126,28 @@ public class BrowserFragment extends Fragment {
             model.mDelegate = mDelegate;
         }
 
+        if (mBrowser.isShutdown()) {
+            // This is likely due to an inactive fragment being attached after the Browser Sandbox
+            // has been killed.
+            invalidate();
+            return;
+        }
+
+        mBrowser.addFragment(this);
+
         AppCompatDelegate.create(getActivity(), null);
 
         try {
             mDelegate.setClient(mClient);
-            mDelegate.setTabObserverDelegate(mTabObserverDelegate);
-            mDelegate.onAttach();
+            mDelegate.setTabListObserverDelegate(mTabListObserverDelegate);
+            if (Browser.isInProcessMode(context)) {
+                // Pass the activity context for the in-process mode.
+                // This is because the Autofill Manager is only available with activity contexts.
+                // This will be cleaned up when the fragment is detached.
+                mDelegate.onAttachWithContext(ObjectWrapper.wrap(context));
+            } else {
+                mDelegate.onAttach();
+            }
         } catch (RemoteException e) {
         }
     }
@@ -135,7 +164,16 @@ public class BrowserFragment extends Fragment {
     @Override
     public View onCreateView(
             LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        return new BrowserSurfaceView(getActivity(), mSurfaceHolderCallback);
+        if (Browser.isInProcessMode(getActivity())) {
+            LinearLayout layout = new LinearLayout(getActivity());
+            try {
+                mDelegate.retrieveContentViewRenderView();
+            } catch (RemoteException e) {
+            }
+            return layout;
+        } else {
+            return new BrowserSurfaceView(getActivity(), mSurfaceHolderCallback);
+        }
     }
 
     @Override
@@ -151,6 +189,8 @@ public class BrowserFragment extends Fragment {
     @Override
     public void onDetach() {
         super.onDetach();
+
+        mBrowser.removeFragment(this);
         try {
             mDelegate.onDetach();
         } catch (RemoteException e) {
@@ -220,29 +260,42 @@ public class BrowserFragment extends Fragment {
     }
 
     /**
-     * Register a tab observer and returns if successful.
+     * Registers a browser observer and returns if successful.
      *
-     * @param tabObserver The TabObserver.
+     * @param tabListObserver The TabListObserver.
      *
      * @return true if observer was added to the list of observers.
      */
-    public boolean registerTabObserver(@NonNull TabObserver tabObserver) {
-        return mTabObserverDelegate.registerObserver(tabObserver);
+    public boolean registerTabListObserver(@NonNull TabListObserver tabListObserver) {
+        return mTabListObserverDelegate.registerObserver(tabListObserver);
     }
 
     /**
-     * Unregister a tab observer and returns if successful.
+     * Unregisters a browser observer and returns if successful.
      *
-     * @param tabObserver The TabObserver to remove.
+     * @param tabListObserver The TabListObserver to remove.
      *
      * @return true if observer was removed from the list of observers.
      */
-    public boolean unregisterTabObserver(@NonNull TabObserver tabObserver) {
-        return mTabObserverDelegate.unregisterObserver(tabObserver);
+    public boolean unregisterTabListObserver(@NonNull TabListObserver tabListObserver) {
+        return mTabListObserverDelegate.unregisterObserver(tabListObserver);
     }
 
     private BrowserViewModel getViewModel() {
         return new ViewModelProvider(this).get(BrowserViewModel.class);
+    }
+
+    void invalidate() {
+        // The fragment is synchronously removed so that the shutdown steps can complete.
+        getParentFragmentManager().beginTransaction().remove(this).commitNow();
+        mDelegate = null;
+        mBrowser = null;
+        mFutureTabManager = Futures.immediateFailedFuture(
+                new IllegalStateException("Browser has been destroyed"));
+        if (mTabManager != null) {
+            mTabManager.invalidate();
+            mTabManager = null;
+        }
     }
 
     /**
@@ -295,6 +348,9 @@ public class BrowserFragment extends Fragment {
                 } catch (RemoteException e) {
                 }
             }
+
+            mBrowser = null;
+            mDelegate = null;
         }
     }
 }

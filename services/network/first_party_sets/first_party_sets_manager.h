@@ -18,10 +18,10 @@
 #include "base/time/time.h"
 #include "base/timer/elapsed_timer.h"
 #include "net/base/schemeful_site.h"
-#include "net/cookies/first_party_set_entry.h"
-#include "net/cookies/first_party_set_metadata.h"
-#include "net/cookies/first_party_sets_context_config.h"
-#include "services/network/public/mojom/first_party_sets.mojom.h"
+#include "net/first_party_sets/first_party_set_entry.h"
+#include "net/first_party_sets/first_party_set_metadata.h"
+#include "net/first_party_sets/first_party_sets_context_config.h"
+#include "net/first_party_sets/public_sets.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace network {
@@ -30,7 +30,7 @@ namespace network {
 // answers queries about First-Party Sets after they've been loaded.
 class FirstPartySetsManager {
  public:
-  using OwnersResult =
+  using EntriesResult =
       base::flat_map<net::SchemefulSite, net::FirstPartySetEntry>;
   using FlattenedSets =
       base::flat_map<net::SchemefulSite, net::FirstPartySetEntry>;
@@ -63,7 +63,7 @@ class FirstPartySetsManager {
   //
   // Only the first call to SetCompleteSets can have any effect; subsequent
   // invocations are ignored.
-  void SetCompleteSets(mojom::PublicFirstPartySetsPtr public_sets);
+  void SetCompleteSets(net::PublicSets public_sets);
 
   // Sets the enabled_ attribute for testing.
   void SetEnabledForTesting(bool enabled);
@@ -80,10 +80,10 @@ class FirstPartySetsManager {
   // with the result. The callback will be invoked iff the return value is
   // nullopt; i.e. a result will be provided via return value or callback, but
   // not both, and not neither.
-  [[nodiscard]] absl::optional<OwnersResult> FindOwners(
+  [[nodiscard]] absl::optional<EntriesResult> FindEntries(
       const base::flat_set<net::SchemefulSite>& sites,
       const net::FirstPartySetsContextConfig& fps_context_config,
-      base::OnceCallback<void(OwnersResult)> callback);
+      base::OnceCallback<void(EntriesResult)> callback);
 
  private:
   // Same as `ComputeMetadata`, but plumbs the result into the callback. Must
@@ -125,17 +125,17 @@ class FirstPartySetsManager {
       const net::SchemefulSite& site,
       const net::FirstPartySetsContextConfig& fps_context_config) const;
 
-  // Same as `FindOwners`, but plumbs the result into the callback. Must only be
-  // called once the instance is fully initialized.
-  void FindOwnersAndInvoke(
+  // Same as `FindEntries`, but plumbs the result into the callback. Must only
+  // be called once the instance is fully initialized.
+  void FindEntriesAndInvoke(
       const base::flat_set<net::SchemefulSite>& sites,
       const net::FirstPartySetsContextConfig& fps_context_config,
-      base::OnceCallback<void(OwnersResult)> callback,
+      base::OnceCallback<void(EntriesResult)> callback,
       base::ElapsedTimer timer) const;
 
-  // Synchronous version of `FindOwners`, to be run only once the instance is
+  // Synchronous version of `FindEntries`, to be run only once the instance is
   // initialized.
-  OwnersResult FindOwnersInternal(
+  EntriesResult FindEntriesInternal(
       const base::flat_set<net::SchemefulSite>& sites,
       const net::FirstPartySetsContextConfig& fps_context_config) const;
 
@@ -146,18 +146,11 @@ class FirstPartySetsManager {
   // initialized.
   void InvokePendingQueries();
 
-  // Represents the mapping of site -> site, where keys are members of sets, and
-  // values are owners of the sets. Owners are explicitly represented as members
-  // of the set.
+  // The actual public sets data.
   //
-  // Optional because it is unset until all of the required inputs have been
-  // received.
-  absl::optional<FlattenedSets> sets_ GUARDED_BY_CONTEXT(sequence_checker_);
-
-  // The site aliases. Used to normalize a given SchemefulSite into its
-  // canonical representative, before looking it up in `sets_`.
-  base::flat_map<net::SchemefulSite, net::SchemefulSite> aliases_
-      GUARDED_BY_CONTEXT(sequence_checker_);
+  // Optional because it is unset until the data has been received from the
+  // browser process.
+  absl::optional<net::PublicSets> sets_ GUARDED_BY_CONTEXT(sequence_checker_);
 
   bool enabled_ GUARDED_BY_CONTEXT(sequence_checker_) = false;
 

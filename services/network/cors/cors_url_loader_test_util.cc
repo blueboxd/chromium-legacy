@@ -72,8 +72,8 @@ void TestURLLoaderFactory::NotifyClientOnReceiveResponse(
   for (const auto& header : extra_headers)
     response->headers->SetHeader(header.first, header.second);
 
-  client_remote_->OnReceiveResponse(std::move(response),
-                                    mojo::ScopedDataPipeConsumerHandle());
+  client_remote_->OnReceiveResponse(
+      std::move(response), mojo::ScopedDataPipeConsumerHandle(), absl::nullopt);
 }
 
 void TestURLLoaderFactory::NotifyClientOnComplete(int error_code) {
@@ -335,6 +335,23 @@ const net::NetLogEntry* CorsURLLoaderTestBase::FindEntryByType(
     }
   }
   return nullptr;
+}
+
+net::RedirectInfo CorsURLLoaderTestBase::CreateRedirectInfo(
+    int status_code,
+    base::StringPiece method,
+    const GURL& url,
+    base::StringPiece referrer,
+    net::ReferrerPolicy referrer_policy,
+    net::SiteForCookies site_for_cookies) {
+  net::RedirectInfo redirect_info;
+  redirect_info.status_code = status_code;
+  redirect_info.new_method = std::string{method};
+  redirect_info.new_url = url;
+  redirect_info.new_referrer = std::string{referrer};
+  redirect_info.new_referrer_policy = referrer_policy;
+  redirect_info.new_site_for_cookies = site_for_cookies;
+  return redirect_info;
 }
 
 }  // namespace network::cors

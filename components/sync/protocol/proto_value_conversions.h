@@ -1,4 +1,4 @@
-// Copyright 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -20,6 +20,7 @@ class AutofillProfileSpecifics;
 class AutofillSpecifics;
 class AutofillOfferSpecifics;
 class AutofillWalletSpecifics;
+class AutofillWalletUsageSpecifics;
 class BookmarkSpecifics;
 class ClientConfigParams;
 class ClientToServerMessage;
@@ -53,6 +54,7 @@ class PriorityPreferenceSpecifics;
 class ReadingListSpecifics;
 class SearchEngineSpecifics;
 class SecurityEventSpecifics;
+class SegmentationSpecifics;
 class SendTabToSelfSpecifics;
 class SessionHeader;
 class SessionSpecifics;
@@ -109,6 +111,10 @@ std::unique_ptr<base::DictionaryValue> AutofillSpecificsToValue(
 
 std::unique_ptr<base::DictionaryValue> AutofillWalletSpecificsToValue(
     const sync_pb::AutofillWalletSpecifics& autofill_wallet_specifics);
+
+std::unique_ptr<base::DictionaryValue> AutofillWalletUsageSpecificsToValue(
+    const sync_pb::AutofillWalletUsageSpecifics&
+        autofill_wallet_usage_specifics);
 
 std::unique_ptr<base::DictionaryValue> BookmarkSpecificsToValue(
     const sync_pb::BookmarkSpecifics& bookmark_specifics);
@@ -202,6 +208,9 @@ std::unique_ptr<base::DictionaryValue> ReadingListSpecificsToValue(
 
 std::unique_ptr<base::DictionaryValue> SearchEngineSpecificsToValue(
     const sync_pb::SearchEngineSpecifics& search_engine_specifics);
+
+std::unique_ptr<base::DictionaryValue> SegmentationSpecificsToValue(
+    const sync_pb::SegmentationSpecifics& segmentation_specifics);
 
 std::unique_ptr<base::DictionaryValue> SendTabToSelfSpecificsToValue(
     const sync_pb::SendTabToSelfSpecifics& send_tab_specifics);

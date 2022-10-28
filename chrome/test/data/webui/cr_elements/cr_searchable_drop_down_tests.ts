@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -37,14 +37,16 @@ suite('cr-searchable-drop-down', function() {
     const input = /** @type {!CrInputElement} */ (
         dropDown.shadowRoot!.querySelector('cr-input')!);
     input.value = searchTerm;
-    input.fire('input');
+    input.dispatchEvent(
+        new CustomEvent('input', {bubbles: true, composed: true}));
     flush();
   }
 
   function blur() {
     const input = /** @type {!CrInputElement} */ (
         dropDown.shadowRoot!.querySelector('cr-input')!);
-    input.fire('blur');
+    input.dispatchEvent(
+        new CustomEvent('blur', {bubbles: true, composed: true}));
     flush();
   }
 

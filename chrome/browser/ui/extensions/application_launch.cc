@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -119,7 +119,7 @@ class EnableViaDialogFlow : public ExtensionEnableFlowDelegate {
 const Extension* GetExtension(Profile* profile,
                               const apps::AppLaunchParams& params) {
   if (params.app_id.empty())
-    return NULL;
+    return nullptr;
   ExtensionRegistry* registry = ExtensionRegistry::Get(profile);
   return registry->GetExtensionById(
       params.app_id, ExtensionRegistry::ENABLED | ExtensionRegistry::DISABLED |
@@ -478,7 +478,7 @@ WebContents* OpenAppShortcutWindow(Profile* profile, const GURL& url) {
   WebContents* tab = OpenApplicationWindow(profile, launch_params, url);
 
   if (!tab)
-    return NULL;
+    return nullptr;
 
   return tab;
 }

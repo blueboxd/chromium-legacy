@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,6 +6,7 @@
  * All string resources in resources.h.
  */
 export enum I18nString {
+  ADD_NEW_PAGE_BUTTON = 'add_new_page_button',
   ARIA_ASPECT_RATIO_16_TO_9 = 'aria_aspect_ratio_16_to_9',
   ARIA_ASPECT_RATIO_4_TO_3 = 'aria_aspect_ratio_4_to_3',
   ARIA_CAMERA_MODE_GROUP = 'aria_camera_mode_group',
@@ -32,6 +33,7 @@ export enum I18nString {
   DELETE_BUTTON = 'delete_button',
   DELETE_CONFIRMATION_MSG = 'delete_confirmation_msg',
   DELETE_MULTI_CONFIRMATION_MSG = 'delete_multi_confirmation_msg',
+  DELETE_PAGE_BUTTON = 'delete_page_button',
   DESCRIPTION = 'description',
   DIALOG_CANCEL_BUTTON = 'dialog_cancel_button',
   DIALOG_OK_BUTTON = 'dialog_ok_button',
@@ -39,6 +41,7 @@ export enum I18nString {
   DOCUMENT_MODE_DIALOG_GOT_IT = 'document_mode_dialog_got_it',
   DOCUMENT_MODE_DIALOG_MSG = 'document_mode_dialog_msg',
   DOCUMENT_MODE_DIALOG_INTRO_TITLE = 'document_mode_dialog_intro_title',
+  DOCUMENT_MODE_MULTI_PAGE_TOAST = 'document_mode_multi_page_toast',
   DOWNLOADING_DOCUMENT_SCANNING_FEATURE =
       'downloading_document_scanning_feature',
   ERROR_MSG_CAMERA_PAUSED = 'error_msg_camera_paused',
@@ -116,6 +119,7 @@ export enum I18nString {
   LABEL_TIMER_3S = 'label_timer_3s',
   LABEL_OTHER_ASPECT_RATIO = 'label_other_aspect_ratio',
   LABEL_VIDEO_RESOLUTION = 'label_video_resolution',
+  LABEL_VIDEO_RESOLUTION_360P = 'label_video_resolution_360p',
   LABEL_VIDEO_RESOLUTION_4K = 'label_video_resolution_4k',
   LABEL_VIDEO_RESOLUTION_FULL_HD = 'label_video_resolution_full_hd',
   LABEL_VIDEO_RESOLUTION_HD = 'label_video_resolution_hd',
@@ -135,6 +139,7 @@ export enum I18nString {
   NEW_CONTROL_NAVIGATION = 'new_control_navigation',
   NEW_CONTROL_TOAST = 'new_control_toast',
   NEW_DOCUMENT_SCAN_TOAST = 'new_document_scan_toast',
+  NEXT_PAGE_COUNT = 'next_page_count',
   NO_DOCUMENT_GUIDE_MSG = 'no_document_guide_msg',
   OPEN_GRID_PANEL_BUTTON = 'open_grid_panel_button',
   OPEN_MIRROR_PANEL_BUTTON = 'open_mirror_panel_button',
@@ -158,6 +163,7 @@ export enum I18nString {
   ROTATE_COUNTERCLOCKWISE_BUTTON = 'rotate_counterclockwise_button',
   SCAN_DOCUMENT_OPTION = 'scan_document_option',
   SCAN_QRCODE_OPTION = 'scan_qrcode_option',
+  SELECT_PAGE_BUTTON = 'select_page_button',
   SETTINGS_BUTTON = 'settings_button',
   SNACKBAR_LINK_COPIED = 'snackbar_link_copied',
   SNACKBAR_TEXT_COPIED = 'snackbar_text_copied',

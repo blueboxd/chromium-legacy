@@ -1,36 +1,36 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #import "ios/chrome/browser/signin/authentication_service.h"
 
-#include "base/auto_reset.h"
-#include "base/bind.h"
-#include "base/location.h"
+#import "base/auto_reset.h"
+#import "base/bind.h"
+#import "base/location.h"
 #import "base/metrics/histogram_functions.h"
-#include "base/metrics/histogram_macros.h"
-#include "base/strings/sys_string_conversions.h"
-#include "base/task/single_thread_task_runner.h"
-#include "base/threading/thread_task_runner_handle.h"
-#include "components/pref_registry/pref_registry_syncable.h"
-#include "components/prefs/pref_service.h"
-#include "components/signin/ios/browser/features.h"
+#import "base/metrics/histogram_macros.h"
+#import "base/strings/sys_string_conversions.h"
+#import "base/task/single_thread_task_runner.h"
+#import "base/threading/thread_task_runner_handle.h"
+#import "components/pref_registry/pref_registry_syncable.h"
+#import "components/prefs/pref_service.h"
+#import "components/signin/ios/browser/features.h"
 #import "components/signin/public/base/signin_pref_names.h"
-#include "components/signin/public/identity_manager/account_info.h"
-#include "components/signin/public/identity_manager/device_accounts_synchronizer.h"
+#import "components/signin/public/identity_manager/account_info.h"
+#import "components/signin/public/identity_manager/device_accounts_synchronizer.h"
 #import "components/signin/public/identity_manager/primary_account_mutator.h"
-#include "components/sync/driver/sync_service.h"
-#include "components/sync/driver/sync_user_settings.h"
-#include "google_apis/gaia/gaia_auth_util.h"
-#import "ios/chrome/browser/application_context.h"
-#include "ios/chrome/browser/crash_report/crash_keys_helper.h"
+#import "components/sync/driver/sync_service.h"
+#import "components/sync/driver/sync_user_settings.h"
+#import "google_apis/gaia/gaia_auth_util.h"
+#import "ios/chrome/browser/application_context/application_context.h"
+#import "ios/chrome/browser/crash_report/crash_keys_helper.h"
+#import "ios/chrome/browser/flags/system_flags.h"
 #import "ios/chrome/browser/policy/policy_util.h"
-#include "ios/chrome/browser/pref_names.h"
+#import "ios/chrome/browser/prefs/pref_names.h"
 #import "ios/chrome/browser/signin/authentication_service_delegate.h"
 #import "ios/chrome/browser/signin/authentication_service_observer.h"
 #import "ios/chrome/browser/signin/signin_util.h"
-#include "ios/chrome/browser/sync/sync_setup_service.h"
-#include "ios/chrome/browser/system_flags.h"
+#import "ios/chrome/browser/sync/sync_setup_service.h"
 #import "ios/chrome/browser/ui/authentication/signin/signin_utils.h"
 #import "ios/public/provider/chrome/browser/signin/chrome_identity.h"
 
@@ -65,7 +65,7 @@ enum class IOSDeviceRestoreSignedinState : int {
   kMaxValue = kUserSignedInBeforeAndAfterDeviceRestore,
 };
 
-// Returns the account id associated with |identity|.
+// Returns the account id associated with `identity`.
 CoreAccountId ChromeIdentityToAccountID(
     signin::IdentityManager* identity_manager,
     ChromeIdentity* identity) {
@@ -123,13 +123,10 @@ void AuthenticationService::Initialize(
   HandleForgottenIdentity(nil, /*should_prompt=*/true,
                           device_restore_session == signin::Tribool::kTrue);
   if (!identity_manager_->HasPrimaryAccount(signin::ConsentLevel::kSignin)) {
-    // TODO(crbug.com/1305527): Remove this once this bug is fixed.
-    // For some reasons the approved account list might not be empty when the
-    // user is signed out. To avoid a DCHECK failure in
-    // AuthenticationService::OnPrimaryAccountChanged(), when the user will
-    // sign-in again, we need to clear this list.
-    // This if() can be removed, once we understand how this account list is not
-    // cleared out on sign-ou.
+    // If the user is signed out, the list is supposed to be empty. To avoid
+    // any issue if a crash happened between the sign-out and clearing out
+    // the list, it is better to clear out this list.
+    // See crbug.com/3862523.
     user_approved_account_list_manager_.ClearApprovedAccountList();
   }
 
@@ -157,7 +154,7 @@ void AuthenticationService::Initialize(
   // Reload credentials to ensure the accounts from the token service are
   // up-to-date.
   // As UpdateHaveAccountsChangedAtColdStart is only called while the
-  // application is cold starting, |keychain_reload| must be set to true.
+  // application is cold starting, `keychain_reload` must be set to true.
   ReloadCredentialsFromIdentities(/*keychain_reload=*/true);
 
   OnApplicationWillEnterForeground();
@@ -321,17 +318,7 @@ ChromeIdentity* AuthenticationService::GetPrimaryIdentity(
   return account_manager_service_->GetIdentityWithGaiaID(authenticated_gaia_id);
 }
 
-// TODO(crbug.com/1351423): Remove asynchronous callback from SignIn function,
-// since this is no longer used by existing callers.
-void AuthenticationService::SignIn(ChromeIdentity* identity,
-                                   signin_ui::CompletionCallback completion) {
-  SignInInternal(identity);
-  if (completion) {
-    completion(HasPrimaryIdentity(signin::ConsentLevel::kSignin));
-  }
-}
-
-void AuthenticationService::SignInInternal(ChromeIdentity* identity) {
+void AuthenticationService::SignIn(ChromeIdentity* identity) {
   ServiceStatus status = GetServiceStatus();
   CHECK(status == ServiceStatus::SigninAllowed ||
         status == ServiceStatus::SigninForcedByPolicy)
@@ -359,7 +346,7 @@ void AuthenticationService::SignInInternal(ChromeIdentity* identity) {
       identity_manager_->FindExtendedAccountInfoByAccountId(account_id);
   CHECK(!account_info.IsEmpty());
 
-  // |PrimaryAccountManager::SetAuthenticatedAccountId| simply ignores the call
+  // `PrimaryAccountManager::SetAuthenticatedAccountId` simply ignores the call
   // if there is already a signed in user. Check that there is no signed in
   // account or that the new signed in account matches the old one to avoid a
   // mismatch between the old and the new authenticated accounts.
@@ -367,7 +354,7 @@ void AuthenticationService::SignInInternal(ChromeIdentity* identity) {
     DCHECK(identity_manager_->GetPrimaryAccountMutator());
     // Initial sign-in to Chrome does not automatically turn on Sync features.
     // The Sync service will be enabled in a separate request to
-    // |GrantSyncConsent|.
+    // `GrantSyncConsent`.
     signin::PrimaryAccountMutator::PrimaryAccountError error =
         identity_manager_->GetPrimaryAccountMutator()->SetPrimaryAccount(
             account_id, signin::ConsentLevel::kSignin);
@@ -377,7 +364,7 @@ void AuthenticationService::SignInInternal(ChromeIdentity* identity) {
 
   // The primary account should now be set to the expected account_id.
   // If CHECK_EQ() fails, having the CHECK() before would help to understand if
-  // the primary account is empty or different that |account_id|.
+  // the primary account is empty or different that `account_id`.
   // Related to crbug.com/1308448.
   CoreAccountId primary_account =
       identity_manager_->GetPrimaryAccountId(signin::ConsentLevel::kSignin);
@@ -422,7 +409,7 @@ void AuthenticationService::GrantSyncConsent(ChromeIdentity* identity) {
   // Kick-off sync: The authentication error UI (sign in infobar and warning
   // badge in settings screen) check the sync auth error state. Sync
   // needs to be kicked off so that it resets the auth error quickly once
-  // |identity| is reauthenticated.
+  // `identity` is reauthenticated.
   sync_service_->GetUserSettings()->SetSyncRequested(true);
 }
 
@@ -542,6 +529,10 @@ void AuthenticationService::OnIdentityListChanged(bool need_user_approval) {
                      GetWeakPtr(), need_user_approval));
 }
 
+void AuthenticationService::OnServiceSupportedChanged() {
+  FireServiceStatusNotification();
+}
+
 bool AuthenticationService::HandleMDMNotification(ChromeIdentity* identity,
                                                   NSDictionary* user_info) {
   ios::ChromeIdentityService* identity_service =
@@ -591,11 +582,11 @@ void AuthenticationService::OnAccessTokenRefreshFailed(
   }
 
   // Handle the failure of access token refresh on the next message loop cycle.
-  // |identity| is now invalid and the authentication service might need to
+  // `identity` is now invalid and the authentication service might need to
   // react to this loss of identity.
-  // Note that no reload of the credentials is necessary here, as |identity|
-  // might still be accessible in SSO, and |OnIdentityListChanged| will handle
-  // this when |identity| will actually disappear from SSO.
+  // Note that no reload of the credentials is necessary here, as `identity`
+  // might still be accessible in SSO, and `OnIdentityListChanged` will handle
+  // this when `identity` will actually disappear from SSO.
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::BindOnce(&AuthenticationService::HandleForgottenIdentity,
                                 GetWeakPtr(), identity, /*should_prompt=*/true,
@@ -614,7 +605,7 @@ void AuthenticationService::HandleForgottenIdentity(
   ChromeIdentity* authenticated_identity =
       GetPrimaryIdentity(signin::ConsentLevel::kSignin);
   if (authenticated_identity && authenticated_identity != invalid_identity) {
-    // |authenticated_identity| exists and is a valid identity. Nothing to do
+    // `authenticated_identity` exists and is a valid identity. Nothing to do
     // here.
     return;
   }
@@ -642,6 +633,15 @@ void AuthenticationService::HandleForgottenIdentity(
     // Account removed from the device by another app or the token being
     // invalid.
     signout_source = signin_metrics::ACCOUNT_REMOVED_FROM_DEVICE;
+  }
+
+  // Store the pre-device-restore identity in-memory in order to prompt user
+  // to sign-in again later.
+  if (device_restore) {
+    AccountInfo extended_account_info =
+        identity_manager_->FindExtendedAccountInfoByAccountId(
+            account_info.account_id);
+    StorePreRestoreIdentity(extended_account_info);
   }
 
   // Sign the user out.

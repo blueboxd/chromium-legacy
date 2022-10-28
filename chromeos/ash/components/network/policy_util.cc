@@ -1,4 +1,4 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -38,7 +38,7 @@ std::string GetString(const base::Value& dict, const char* key) {
 
 // Removes all kFakeCredential values from sensitive fields (determined by
 // onc::FieldIsCredential) of |onc_object|.
-void RemoveFakeCredentials(const onc::OncValueSignature& signature,
+void RemoveFakeCredentials(const chromeos::onc::OncValueSignature& signature,
                            base::Value* onc_object) {
   std::vector<std::string> entries_to_remove;
   for (auto iter : onc_object->DictItems()) {
@@ -47,8 +47,8 @@ void RemoveFakeCredentials(const onc::OncValueSignature& signature,
 
     // If |value| is a dictionary, recurse.
     if (value->is_dict()) {
-      const onc::OncFieldSignature* field_signature =
-          onc::GetFieldSignature(signature, field_name);
+      const chromeos::onc::OncFieldSignature* field_signature =
+          chromeos::onc::GetFieldSignature(signature, field_name);
       if (field_signature)
         RemoveFakeCredentials(*field_signature->value_signature, value);
       else
@@ -57,7 +57,8 @@ void RemoveFakeCredentials(const onc::OncValueSignature& signature,
     }
 
     // If |value| is a string, check if it is a fake credential.
-    if (value->is_string() && onc::FieldIsCredential(signature, field_name)) {
+    if (value->is_string() &&
+        chromeos::onc::FieldIsCredential(signature, field_name)) {
       if (value->GetString() == kFakeCredential) {
         // The value wasn't modified by the UI, thus we remove the field to keep
         // the existing value that is stored in Shill.
@@ -177,7 +178,7 @@ base::Value CreateManagedONC(const base::Value* global_policy,
 
   // This call also removes credentials from policies.
   base::Value augmented_onc_network = onc::MergeSettingsAndPoliciesToAugmented(
-      onc::kNetworkConfigurationSignature, user_policy, device_policy,
+      chromeos::onc::kNetworkConfigurationSignature, user_policy, device_policy,
       nonshared_user_settings, shared_user_settings, active_settings);
 
   // If present, apply the Autoconnect policy only to networks that are not
@@ -194,6 +195,31 @@ base::Value CreateManagedONC(const base::Value* global_policy,
   }
 
   return augmented_onc_network;
+}
+
+// Ensures that |user_settings| contains a GUID `guid` for Ethernet
+// policy-managed networks.
+// Background:
+// In Chrome OS M-105 and older, it was possible to end up in a state that has
+// a different GUID in policy data and in the service's UIData dictionary.
+// This leads to issues in the UI layer, so fix up the GUID in UIData if it is
+// encountered.
+void FixupEthernetUIDataGUID(const base::Value::Dict& new_policy,
+                             const std::string& guid,
+                             base::Value* user_settings) {
+  DCHECK(user_settings);
+  const std::string* type = new_policy.FindString(::onc::network_config::kType);
+  if (!type || *type != ::onc::network_type::kEthernet)
+    return;
+
+  std::string* ui_data_guid =
+      user_settings->GetDict().FindString(::onc::network_config::kGUID);
+  if (!ui_data_guid)
+    return;
+  if (*ui_data_guid != guid) {
+    LOG(ERROR) << "Fixing Ethernet UIData GUID";
+    *ui_data_guid = guid;
+  }
 }
 
 void SetShillPropertiesForGlobalPolicy(
@@ -263,17 +289,18 @@ base::Value CreateShillConfiguration(const NetworkProfile& profile,
     NOTREACHED();
   }
 
-  RemoveFakeCredentials(onc::kNetworkConfigurationSignature, &effective);
+  RemoveFakeCredentials(chromeos::onc::kNetworkConfigurationSignature,
+                        &effective);
 
   effective.SetKey(::onc::network_config::kGUID, base::Value(guid));
 
   // Remove irrelevant fields.
   onc::Normalizer normalizer(true /* remove recommended fields */);
-  effective = normalizer.NormalizeObject(&onc::kNetworkConfigurationSignature,
-                                         effective);
+  effective = normalizer.NormalizeObject(
+      &chromeos::onc::kNetworkConfigurationSignature, effective);
 
   base::Value shill_dictionary = onc::TranslateONCObjectToShill(
-      &onc::kNetworkConfigurationSignature, effective);
+      &chromeos::onc::kNetworkConfigurationSignature, effective);
   shill_dictionary.SetKey(shill::kProfileProperty, base::Value(profile.path));
 
   // If AutoConnect is enabled by policy, set the ManagedCredentials property to
@@ -319,7 +346,14 @@ base::Value CreateShillConfiguration(const NetworkProfile& profile,
     const std::string credential_mask =
         saving_credentials ? kFakeCredential : std::string();
     base::Value sanitized_user_settings = onc::MaskCredentialsInOncObject(
-        onc::kNetworkConfigurationSignature, *user_settings, credential_mask);
+        chromeos::onc::kNetworkConfigurationSignature, *user_settings,
+        credential_mask);
+
+    if (network_policy) {
+      FixupEthernetUIDataGUID(network_policy->GetDict(), guid,
+                              &sanitized_user_settings);
+    }
+
     ui_data->SetUserSettingsDictionary(std::move(sanitized_user_settings));
   }
 

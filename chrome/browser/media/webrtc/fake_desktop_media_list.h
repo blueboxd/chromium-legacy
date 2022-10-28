@@ -1,4 +1,4 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,7 +12,8 @@
 
 class FakeDesktopMediaList : public DesktopMediaList {
  public:
-  explicit FakeDesktopMediaList(DesktopMediaList::Type type);
+  explicit FakeDesktopMediaList(DesktopMediaList::Type type,
+                                bool is_source_list_delegated = false);
 
   FakeDesktopMediaList(const FakeDesktopMediaList&) = delete;
   FakeDesktopMediaList& operator=(const FakeDesktopMediaList&) = delete;
@@ -26,6 +27,10 @@ class FakeDesktopMediaList : public DesktopMediaList {
   void SetSourceThumbnail(int index);
   void SetSourceName(int index, std::u16string name);
   void SetSourcePreview(int index, gfx::ImageSkia);
+  void OnDelegatedSourceListSelection();
+  void OnDelegatedSourceListDismissed();
+
+  bool is_focused() const { return is_focused_; }
 
   // DesktopMediaList implementation:
   void SetUpdatePeriod(base::TimeDelta period) override;
@@ -38,12 +43,17 @@ class FakeDesktopMediaList : public DesktopMediaList {
   DesktopMediaList::Type GetMediaListType() const override;
   void SetPreviewedSource(
       const absl::optional<content::DesktopMediaID>& id) override;
+  bool IsSourceListDelegated() const override;
+  void FocusList() override;
+  void HideList() override;
 
  private:
   std::vector<Source> sources_;
-  raw_ptr<DesktopMediaListObserver> observer_;
+  raw_ptr<DesktopMediaListObserver> observer_ = nullptr;
   gfx::ImageSkia thumbnail_;
   const DesktopMediaList::Type type_;
+  const bool is_source_list_delegated_;
+  bool is_focused_ = false;
 };
 
 #endif  // CHROME_BROWSER_MEDIA_WEBRTC_FAKE_DESKTOP_MEDIA_LIST_H_

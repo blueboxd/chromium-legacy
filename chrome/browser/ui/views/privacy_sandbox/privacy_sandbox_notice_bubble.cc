@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -99,7 +99,7 @@ void ShowPrivacySandboxNoticeBubble(Browser* browser) {
                        IDR_PRIVACY_SANDBOX_CONFIRMATION_BANNER)),
                    ui::ImageModel::FromImageSkia(*bundle.GetImageSkiaNamed(
                        IDR_PRIVACY_SANDBOX_CONFIRMATION_BANNER_DARK)))
-          .AddBodyText(
+          .AddParagraph(
               ui::DialogModelLabel::CreateWithLink(
                   IDS_PRIVACY_SANDBOX_BUBBLE_NOTICE_DESCRIPTION,
                   ui::DialogModelLabel::Link(
@@ -110,7 +110,7 @@ void ShowPrivacySandboxNoticeBubble(Browser* browser) {
                           base::Unretained(bubble_delegate)),
                       l10n_util::GetStringUTF16(
                           IDS_PRIVACY_SANDBOX_BUBBLE_NOTICE_DESCRIPTION_ESTIMATES_INTERESTS_LINK_A11Y_NAME))),
-              kPrivacySandboxLearnMoreTextForTesting)
+              std::u16string(), kPrivacySandboxLearnMoreTextForTesting)
           .AddOkButton(
               base::BindRepeating(
                   &PrivacySandboxNoticeBubbleModelDelegate::OnOkButtonPressed,

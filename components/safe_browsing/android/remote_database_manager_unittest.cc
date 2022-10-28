@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -24,8 +24,8 @@ class BlackHoleInterceptor : public safe_browsing::UrlCheckInterceptor {
  public:
   void Check(
       std::unique_ptr<SafeBrowsingApiHandlerBridge::ResponseCallback> callback,
-      const GURL& url) const override{};
-  ~BlackHoleInterceptor() override{};
+      const GURL& url) const override {}
+  ~BlackHoleInterceptor() override {}
 };
 
 }  // namespace

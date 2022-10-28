@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -17,6 +17,8 @@ class WinPlatformDelegate : public BasePlatformDelegate {
   // PlatformDelegate:
   bool ResolveFilePath(const base::FilePath& file_path,
                        base::FilePath* resolved_file_path) override;
+  absl::optional<std::string> GetSigningCertificatePublicKeyHash(
+      const base::FilePath& file_path) override;
 };
 
 }  // namespace device_signals

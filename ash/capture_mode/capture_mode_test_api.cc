@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -109,6 +109,10 @@ void CaptureModeTestApi::SetOnVideoRecordCountdownFinishedCallback(
 void CaptureModeTestApi::SetAudioRecordingEnabled(bool enabled) {
   DCHECK(!controller_->is_recording_in_progress());
   controller_->enable_audio_recording_ = enabled;
+}
+
+bool CaptureModeTestApi::GetAudioRecordingEnabled() const {
+  return controller_->GetAudioRecordingEnabled();
 }
 
 void CaptureModeTestApi::FlushRecordingServiceForTesting() {

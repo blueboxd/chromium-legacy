@@ -1,12 +1,10 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chromeos/ash/components/local_search_service/pref_names.h"
 
-namespace chromeos {
-namespace local_search_service {
-namespace prefs {
+namespace ash::local_search_service::prefs {
 
 // TODO(thanhdng): clean this up after LSS is sandboxed.
 const char kLocalSearchServiceSyncMetricsDailySample[] =
@@ -27,6 +25,4 @@ const char kLocalSearchServiceMetricsHelpAppLauncherCount[] =
 const char kLocalSearchServiceMetricsPersonalizationCount[] =
     "local_search_service.metrics.personalization_count";
 
-}  // namespace prefs
-}  // namespace local_search_service
-}  // namespace chromeos
+}  // namespace ash::local_search_service::prefs

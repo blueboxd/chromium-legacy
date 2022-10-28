@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -387,8 +387,8 @@ void ViewTreeHostRootView::UpdateSurface(const gfx::Rect& damage_rect,
 
   if (!damage_rect.IsEmpty()) {
     frame_sink_holder_->DamageExportedResources();
-    for (auto& resource : returned_resources_)
-      resource->damaged = true;
+    for (auto& returned_resource : returned_resources_)
+      returned_resource->damaged = true;
   }
 
   if (!pending_compositor_frame_ack_)

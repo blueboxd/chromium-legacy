@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -61,9 +61,10 @@ public interface FirstRunPageDelegate {
      * Notifies all interested parties that the user has accepted Chrome Terms of Service.
      * Must be called only after the delegate has fully initialized.
      * Does not automatically advance to the next page, call {@link #advanceToNextPage()} directly.
-     * @param allowCrashUpload True if the user allows to upload crash dumps and collect stats.
+     * @param allowMetricsAndCrashUploading True if the user allows to upload crash dumps and
+     *         collect stats.
      */
-    void acceptTermsOfService(boolean allowCrashUpload);
+    void acceptTermsOfService(boolean allowMetricsAndCrashUploading);
 
     /**
      * Show an informational web page. The page doesn't show navigation control.

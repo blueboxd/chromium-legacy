@@ -1,17 +1,17 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ios/chrome/browser/infobars/infobar_badge_tab_helper.h"
+#import "ios/chrome/browser/infobars/infobar_badge_tab_helper.h"
 
-#include "ios/chrome/browser/infobars/infobar_badge_tab_helper.h"
-#include "ios/chrome/browser/infobars/infobar_manager_impl.h"
+#import "ios/chrome/browser/infobars/infobar_badge_tab_helper.h"
+#import "ios/chrome/browser/infobars/infobar_manager_impl.h"
 #import "ios/chrome/browser/infobars/test/fake_infobar_ios.h"
 #import "ios/chrome/browser/ui/badges/badge_item.h"
 #import "ios/chrome/browser/ui/infobars/test_infobar_badge_tab_helper_delegate.h"
 #import "ios/web/public/test/fakes/fake_navigation_manager.h"
 #import "ios/web/public/test/fakes/fake_web_state.h"
-#include "testing/platform_test.h"
+#import "testing/platform_test.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."

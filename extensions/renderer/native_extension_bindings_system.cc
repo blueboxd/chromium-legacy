@@ -1,4 +1,4 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -187,8 +187,8 @@ void AddConsoleError(v8::Local<v8::Context> context, const std::string& error) {
 }
 
 // Returns the API schema indicated by |api_name|.
-const base::DictionaryValue& GetAPISchema(const std::string& api_name) {
-  const base::DictionaryValue* schema =
+const base::Value::Dict& GetAPISchema(const std::string& api_name) {
+  const base::Value::Dict* schema =
       ExtensionAPI::GetSharedInstance()->GetSchema(api_name);
   CHECK(schema) << api_name;
   return *schema;

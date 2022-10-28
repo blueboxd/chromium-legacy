@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -21,7 +21,7 @@ class ClientContext {
   // Updates the annotate DOM model context.
   virtual void UpdateAnnotateDomModelContext(int64_t model_version) {}
   // Updates whether the JS flow library is loaded.
-  virtual void UpdateJsFlowLibraryLoaded(bool js_flow_library_loaded){};
+  virtual void UpdateJsFlowLibraryLoaded(bool js_flow_library_loaded) {}
   // Returns the proto representation of this client context.
   virtual ClientContextProto AsProto() const = 0;
 };

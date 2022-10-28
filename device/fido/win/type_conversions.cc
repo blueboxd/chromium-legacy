@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -320,9 +320,6 @@ WinCredentialDetailsListToCredentialMetadata(
                 : absl::nullopt,
             user->pwszDisplayName
                 ? absl::make_optional(base::WideToUTF8(user->pwszDisplayName))
-                : absl::nullopt,
-            user->pwszIcon
-                ? absl::make_optional(GURL(base::WideToUTF8(user->pwszIcon)))
                 : absl::nullopt));
     metadata.system_created = !credential->bRemovable;
     result.push_back(std::move(metadata));

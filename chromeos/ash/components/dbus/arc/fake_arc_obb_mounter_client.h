@@ -1,4 +1,4 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -22,16 +22,16 @@ class COMPONENT_EXPORT(ASH_DBUS_ARC) FakeArcObbMounterClient
 
   ~FakeArcObbMounterClient() override;
 
-  // DBusClient override.
+  // chromeos::DBusClient override.
   void Init(dbus::Bus* bus) override;
 
   // ArcObbMounterClient override:
   void MountObb(const std::string& obb_file,
                 const std::string& mount_path,
                 int32_t owner_gid,
-                VoidDBusMethodCallback callback) override;
+                chromeos::VoidDBusMethodCallback callback) override;
   void UnmountObb(const std::string& mount_path,
-                  VoidDBusMethodCallback callback) override;
+                  chromeos::VoidDBusMethodCallback callback) override;
 };
 
 }  // namespace ash

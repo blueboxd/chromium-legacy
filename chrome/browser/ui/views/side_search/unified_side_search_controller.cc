@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -41,17 +41,8 @@ class SideSearchWebView : public views::WebView {
       return;
 
     auto* tab_web_contents = side_contents_helper->GetTabWebContents();
-
-    // (crbug.com/1348296) Do not clear side panel contents if the current tab's
-    // contextual entry is still active. This prevents the uaf bug also does not
-    // cause the side search to reload when switching back to a tab that has
-    // side search previously open.
-    auto* registry = SidePanelRegistry::Get(tab_web_contents);
-    if (registry && registry->active_entry().has_value() &&
-        registry->active_entry().value()->id() ==
-            SidePanelEntry::Id::kSideSearch) {
+    if (!tab_web_contents)
       return;
-    }
 
     auto* helper =
         SideSearchTabContentsHelper::FromWebContents(tab_web_contents);
@@ -92,7 +83,7 @@ void UnifiedSideSearchController::SidePanelAvailabilityChanged(
   if (should_close) {
     auto* registry = SidePanelRegistry::Get(web_contents());
     if (registry && registry->active_entry().has_value() &&
-        registry->active_entry().value()->id() ==
+        registry->active_entry().value()->key().id() ==
             SidePanelEntry::Id::kSideSearch) {
       registry->ResetActiveEntry();
     }
@@ -205,6 +196,7 @@ std::u16string UnifiedSideSearchController::GetSideSearchName() const {
 }
 
 void UnifiedSideSearchController::OpenSidePanel() {
+  UpdateSidePanel();
   auto* browser_view = GetBrowserView();
   if (browser_view) {
     browser_view->side_panel_coordinator()->Show(
@@ -254,8 +246,8 @@ void UnifiedSideSearchController::UpdateSidePanelRegistry(bool is_available) {
   auto* registry = SidePanelRegistry::Get(web_contents());
   if (!registry)
     return;
-  auto* current_entry =
-      registry->GetEntryForId(SidePanelEntry::Id::kSideSearch);
+  auto* current_entry = registry->GetEntryForKey(
+      SidePanelEntry::Key(SidePanelEntry::Id::kSideSearch));
   if (!current_entry && is_available) {
     auto entry = std::make_unique<SidePanelEntry>(
         SidePanelEntry::Id::kSideSearch, GetSideSearchName(),
@@ -270,7 +262,7 @@ void UnifiedSideSearchController::UpdateSidePanelRegistry(bool is_available) {
 
   if (current_entry && !is_available) {
     current_entry->RemoveObserver(this);
-    registry->Deregister(SidePanelEntry::Id::kSideSearch);
+    registry->Deregister(SidePanelEntry::Key(SidePanelEntry::Id::kSideSearch));
     RecordSideSearchAvailabilityChanged(
         SideSearchAvailabilityChangeType::kBecomeUnavailable);
   }

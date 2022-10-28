@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -131,6 +131,8 @@ namespace audio {
 class OutputDevice;
 }
 namespace blink {
+class CategorizedWorkerPoolImpl;
+class CategorizedWorkerPoolJob;
 class CategorizedWorkerPool;
 class DiskDataAllocator;
 class IdentifiabilityActiveSampler;
@@ -565,6 +567,8 @@ class BASE_EXPORT ScopedAllowBaseSyncPrimitives {
   friend class ::ChromeNSSCryptoModuleDelegate;
   friend class base::internal::GetAppOutputScopedAllowBaseSyncPrimitives;
   friend class base::SimpleThread;
+  friend class blink::CategorizedWorkerPoolImpl;
+  friend class blink::CategorizedWorkerPoolJob;
   friend class blink::IdentifiabilityActiveSampler;
   friend class blink::SourceStream;
   friend class blink::WorkerThread;
@@ -642,6 +646,8 @@ class BASE_EXPORT ScopedAllowBaseSyncPrimitivesOutsideBlockingScope {
   friend class base::internal::JobTaskSource;
   friend class base::ScopedAllowThreadRecallForStackSamplingProfiler;
   friend class base::StackSamplingProfiler;
+  friend class blink::CategorizedWorkerPoolImpl;
+  friend class blink::CategorizedWorkerPoolJob;
   friend class blink::CategorizedWorkerPool;
   friend class blink::RTCVideoDecoderAdapter;
   friend class blink::RTCVideoEncoder;

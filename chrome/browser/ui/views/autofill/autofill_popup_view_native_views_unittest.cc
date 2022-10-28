@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -299,7 +299,7 @@ TEST_F(AutofillPopupViewNativeViewsTest, VoiceOverTest) {
   const std::u16string voice_over_value = u"Password for user@gmail.com";
   // Create a realistic suggestion for a password.
   autofill::Suggestion suggestion(u"user@gmail.com");
-  suggestion.label = u"example.com";
+  suggestion.labels = {{autofill::Suggestion::Text(u"example.com")}};
   suggestion.voice_over = voice_over_value;
   suggestion.additional_label = u"\u2022\u2022\u2022\u2022";
   suggestion.frontend_id = autofill::POPUP_ITEM_ID_USERNAME_ENTRY;

@@ -1,10 +1,9 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome/browser/ui/webui/settings/settings_cookies_view_handler.h"
 
-#include <algorithm>
 #include <string>
 #include <utility>
 #include <vector>
@@ -12,6 +11,7 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/i18n/number_formatting.h"
+#include "base/ranges/algorithm.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/browsing_data/third_party_data_remover.h"
@@ -412,9 +412,8 @@ void CookiesViewHandler::HandleRemoveSite(const base::Value::List& args) {
 
 void CookiesViewHandler::RemoveSite(const std::u16string& site) {
   CookieTreeNode* parent = cookies_tree_model_->GetRoot();
-  const auto i = std::find_if(
-      parent->children().cbegin(), parent->children().cend(),
-      [&site](const auto& node) { return node->GetTitle() == site; });
+  const auto i =
+      base::ranges::find(parent->children(), site, &CookieTreeNode::GetTitle);
   if (i != parent->children().cend()) {
     cookies_tree_model_->DeleteCookieNode(i->get());
   }

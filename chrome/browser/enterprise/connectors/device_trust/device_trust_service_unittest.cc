@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -15,10 +15,10 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
 #include "base/values.h"
-#include "chrome/browser/enterprise/connectors/connectors_prefs.h"
 #include "chrome/browser/enterprise/connectors/device_trust/attestation/common/mock_attestation_service.h"
 #include "chrome/browser/enterprise/connectors/device_trust/device_trust_connector_service.h"
 #include "chrome/browser/enterprise/connectors/device_trust/device_trust_features.h"
+#include "chrome/browser/enterprise/connectors/device_trust/prefs.h"
 #include "chrome/browser/enterprise/connectors/device_trust/signals/mock_signals_service.h"
 #include "components/device_signals/core/common/signals_constants.h"
 #include "components/prefs/testing_pref_service.h"
@@ -85,7 +85,7 @@ class DeviceTrustServiceTest
       public ::testing::WithParamInterface<std::tuple<bool, bool>> {
  protected:
   void SetUp() override {
-    RegisterProfilePrefs(prefs_.registry());
+    RegisterDeviceTrustConnectorProfilePrefs(prefs_.registry());
 
     feature_list_.InitWithFeatureState(kDeviceTrustConnectorEnabled,
                                        is_flag_enabled());
@@ -98,13 +98,13 @@ class DeviceTrustServiceTest
   }
 
   void EnableServicePolicy() {
-    prefs_.SetUserPref(kContextAwareAccessSignalsAllowlistPref,
-                       base::Value(GetOrigins()));
+    prefs_.SetManagedPref(kContextAwareAccessSignalsAllowlistPref,
+                          base::Value(GetOrigins()));
   }
 
   void DisableServicePolicy() {
-    prefs_.SetUserPref(kContextAwareAccessSignalsAllowlistPref,
-                       base::Value(base::Value::List()));
+    prefs_.SetManagedPref(kContextAwareAccessSignalsAllowlistPref,
+                          base::Value(base::Value::List()));
   }
 
   std::unique_ptr<DeviceTrustService> CreateService() {

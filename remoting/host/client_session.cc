@@ -270,6 +270,10 @@ void ClientSession::SetCapabilities(
                             std::move(supported_actions)));
   }
 
+  // TODO(crbug.com/1326339): Remove this code when legacy VideoLayout messages
+  // are fully deprecated and no longer sent. We already start the monitor in
+  // OnConnectionChannelsConnected() so we don't need this block if the legacy
+  // message in multi-stream mode is no longer required.
   if (HasCapability(capabilities_, protocol::kMultiStreamCapability)) {
     if (desktop_display_info_.NumDisplays() != 0) {
       // If display info is already known, create the initial video streams.
@@ -288,12 +292,12 @@ void ClientSession::SetCapabilities(
 
     // Re-send the extended layout information so the client has information
     // needed to identify each stream.
-    // TODO(crbug.com/1326339): Remove this code when legacy VideoLayout
-    // messages are fully deprecated and no longer sent.
     if (desktop_display_info_.NumDisplays() != 0) {
       OnDesktopDisplayChanged(desktop_display_info_.GetVideoLayoutProto());
     }
   }
+
+  data_channel_manager_.OnRegistrationComplete();
 
   VLOG(1) << "Client capabilities: " << *client_capabilities_;
 
@@ -436,6 +440,10 @@ void ClientSession::ControlPeerConnection(
   }
 }
 
+void ClientSession::SetVideoLayout(const protocol::VideoLayout& video_layout) {
+  screen_controls_->SetVideoLayout(video_layout);
+}
+
 void ClientSession::OnConnectionAuthenticating() {
   event_handler_->OnSessionAuthenticating(this);
 }
@@ -516,14 +524,6 @@ void ClientSession::OnConnectionAuthenticated() {
   clipboard_echo_filter_.set_client_stub(connection_->client_stub());
 }
 
-#if defined(WEBRTC_USE_GIO)
-void ClientSession::ExtractAndSetInputInjectorMetadata(
-    webrtc::DesktopCaptureMetadata capture_metadata) {
-  input_injector_->SetMetadata(
-      {.session_details = std::move(capture_metadata.session_details)});
-}
-#endif
-
 void ClientSession::CreateMediaStreams() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
@@ -535,16 +535,6 @@ void ClientSession::CreateMediaStreams() {
     video_stream.composer = composer->GetWeakPtr();
     video_stream.stream =
         connection_->StartVideoStream(kStreamName, std::move(composer));
-#if defined(WEBRTC_USE_GIO)
-    if (webrtc::DesktopCapturer::IsRunningUnderWayland() &&
-        video_stream.composer) {
-      // Unretained(this) is safe because |this| owns the composer, which will
-      // not run any callback after it is destroyed.
-      video_stream.composer->GetMetadataAsync(
-          base::BindOnce(&ClientSession::ExtractAndSetInputInjectorMetadata,
-                         base::Unretained(this)));
-    }
-#endif  // defined(WEBRTC_USE_GIO)
   } else {
     video_stream.stream = connection_->StartVideoStream(
         kStreamName, desktop_environment_->CreateVideoCapturer());
@@ -669,6 +659,14 @@ void ClientSession::OnConnectionChannelsConnected() {
     pending_video_layout_message_.reset();
   }
 
+  // Query the OS for the display-info on a timer.
+  auto* display_info_monitor = desktop_environment_->GetDisplayInfoMonitor();
+  if (display_info_monitor) {
+    // In the multi-process case, |display_info_monitor| will be null and this
+    // will be handled instead by the DesktopSessionAgent.
+    display_info_monitor->Start();
+  }
+
   // Notify the event handler that all our channels are now connected.
   event_handler_->OnSessionChannelsConnected(this);
 }
@@ -742,8 +740,11 @@ void ClientSession::DisconnectSession(protocol::ErrorCode error) {
 void ClientSession::OnLocalKeyPressed(uint32_t usb_keycode) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   bool is_local = remote_input_filter_.LocalKeyPressed(usb_keycode);
-  if (is_local && desktop_environment_options_.terminate_upon_input())
+  if (is_local && desktop_environment_options_.terminate_upon_input()) {
+    LOG(WARNING)
+        << "Disconnecting CRD session because local input was detected.";
     DisconnectSession(protocol::OK);
+  }
 }
 
 void ClientSession::OnLocalPointerMoved(const webrtc::DesktopVector& position,
@@ -751,10 +752,13 @@ void ClientSession::OnLocalPointerMoved(const webrtc::DesktopVector& position,
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   bool is_local = remote_input_filter_.LocalPointerMoved(position, type);
   if (is_local) {
-    if (desktop_environment_options_.terminate_upon_input())
+    if (desktop_environment_options_.terminate_upon_input()) {
+      LOG(WARNING)
+          << "Disconnecting CRD session because local input was detected.";
       DisconnectSession(protocol::OK);
-    else
+    } else {
       desktop_and_cursor_composer_notifier_.OnLocalInput();
+    }
   }
 }
 

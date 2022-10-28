@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -69,12 +69,6 @@ class StatusBubble;
 class TabStripModel;
 class TabStripModelDelegate;
 class TabMenuModelDelegate;
-
-#if BUILDFLAG(ENABLE_SCREEN_AI_SERVICE)
-namespace screen_ai {
-class AXScreenAIAnnotator;
-}
-#endif
 
 namespace blink {
 enum class ProtocolHandlerSecurityLevel;
@@ -660,6 +654,7 @@ class Browser : public TabStripModelObserver,
   void TabStripEmpty() override;
 
   // Overridden from content::WebContentsDelegate:
+  void ActivateContents(content::WebContents* contents) override;
   void SetTopControlsShownRatio(content::WebContents* web_contents,
                                 float ratio) override;
   int GetTopControlsHeight() override;
@@ -756,10 +751,6 @@ class Browser : public TabStripModelObserver,
 
 #if BUILDFLAG(ENABLE_SCREEN_AI_SERVICE)
   void RunScreenAIAnnotator();
-
-  // Ownership will be transferred to browser.
-  void SetScreenAIAnnotatorForTesting(
-      std::unique_ptr<screen_ai::AXScreenAIAnnotator> annotator);
 #endif
 
  private:
@@ -828,10 +819,9 @@ class Browser : public TabStripModelObserver,
                       std::unique_ptr<content::WebContents> new_contents,
                       const GURL& target_url,
                       WindowOpenDisposition disposition,
-                      const gfx::Rect& initial_rect,
+                      const blink::mojom::WindowFeatures& window_features,
                       bool user_gesture,
                       bool* was_blocked) override;
-  void ActivateContents(content::WebContents* contents) override;
   void LoadingStateChanged(content::WebContents* source,
                            bool should_show_loading_ui) override;
   void CloseContents(content::WebContents* source) override;
@@ -1306,11 +1296,6 @@ class Browser : public TabStripModelObserver,
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   std::unique_ptr<extensions::ExtensionBrowserWindowHelper>
       extension_browser_window_helper_;
-#endif
-
-#if BUILDFLAG(ENABLE_SCREEN_AI_SERVICE)
-  // Manages the snapshot processing by ScreenAI, if enabled.
-  std::unique_ptr<screen_ai::AXScreenAIAnnotator> screen_ai_annotator_;
 #endif
 
   const base::ElapsedTimer creation_timer_;

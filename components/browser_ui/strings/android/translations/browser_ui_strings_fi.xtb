@@ -30,6 +30,7 @@
 <translation id="1717218214683051432">Liiketunnistimet</translation>
 <translation id="1743802530341753419">Pyydä lupaa, kun sivustot yrittävät yhdistää laitteeseen (suositus)</translation>
 <translation id="1779089405699405702">Kuvien dekooderi</translation>
+<translation id="1785415724048343560">Suositellaan parhaan kokemuksen saamiseksi</translation>
 <translation id="1818308510395330587">Laita kamera päälle myös <ph name="BEGIN_LINK" />Androidin asetuksista<ph name="END_LINK" />, jotta <ph name="APP_NAME" /> voi käyttää AR:ää.</translation>
 <translation id="1864927262126810325">Lähde: <ph name="SOURCE_NAME" /></translation>
 <translation id="1887786770086287077">Sijainti on pois päältä tällä laitteella. Voit laittaa sen päälle <ph name="BEGIN_LINK" />Android-asetuksista<ph name="END_LINK" />.</translation>
@@ -79,6 +80,7 @@
 <translation id="2653659639078652383">Lähetä</translation>
 <translation id="2677748264148917807">Poistu</translation>
 <translation id="2687403674020088961">Estä kaikki evästeet (ei suositella)</translation>
+<translation id="2692299144678073135">Salli aiheeseen liittyvien sivustojen muistaa sinut eri sivustoilla</translation>
 <translation id="2704606927547763573">Kopioitu</translation>
 <translation id="2713106313042589954">Sammuta kamera</translation>
 <translation id="2717722538473713889">Sähköpostiosoitteet</translation>
@@ -101,6 +103,7 @@
 <translation id="3115898365077584848">Näytä tiedot</translation>
 <translation id="3123473560110926937">Estetty tietyillä sivustoilla</translation>
 <translation id="3143754809889689516">Toista alusta</translation>
+<translation id="3162899666601560689">Sivustot voivat käyttää evästeitä selauskokemuksesi parantamiseen, esimerkiksi pitää sinut kirjautuneena tai muistaa ostoskorisi sisällön</translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT" /> tallennettua tietoa</translation>
 <translation id="3203366800380907218">Verkosta</translation>
 <translation id="321187648315454507">Ota ilmoitukset käyttöön myös <ph name="BEGIN_LINK" />Androidin asetuksista<ph name="END_LINK" />, jotta <ph name="APP_NAME" /> voi lähettää sinulle ilmoituksia.</translation>
@@ -138,6 +141,7 @@
 <translation id="4002066346123236978">Nimi</translation>
 <translation id="4008040567710660924">Salli evästeet tietyllä sivustolla.</translation>
 <translation id="4046123991198612571">Seuraava kappale</translation>
+<translation id="4048876521107516222">Aiheeseen liittyvät sivustot käyttävät evästeitä esimerkiksi pitääkseen sinut kirjautuneena sisään</translation>
 <translation id="4149994727733219643">Yksinkertaisempi sivunäkymä</translation>
 <translation id="4165986682804962316">Sivustoasetukset</translation>
 <translation id="4169549551965910670">Yhdistetty USB-laitteeseen</translation>
@@ -149,6 +153,7 @@
 <translation id="429312253194641664">Sivusto toistaa mediaa</translation>
 <translation id="42981349822642051">Laajenna</translation>
 <translation id="4336434711095810371">Poista kaikki data</translation>
+<translation id="4338831206024587507">Kaikki sivustot, jotka kuuluvat verkkotunnukseen <ph name="DOMAIN" /></translation>
 <translation id="4402755511846832236">Estä sivustoja tietämästä, kun käytät tätä laitetta aktiivisesti</translation>
 <translation id="4428065317363009941">Mainosten personointi</translation>
 <translation id="4434045419905280838">Ponn.ikkunat ja uudelleenohjaus</translation>
@@ -164,6 +169,7 @@
 <translation id="4751476147751820511">Liike- tai valotunnistimet</translation>
 <translation id="4811450222531576619">Lisätietoa lähteestä ja aiheesta</translation>
 <translation id="4836046166855586901">Kysy aina, kun sivusto pyytää lupaa nähdä, käytätkö tätä laitetta aktiivisesti</translation>
+<translation id="483914009762354899">Lisää kaikki tämän verkkotunnuksen sivustot</translation>
 <translation id="4883854917563148705">Ylläpidettyjä asetuksia ei voi nollata</translation>
 <translation id="4887024562049524730">Kysy, saavatko sivustot käyttää virtuaalitodellisuuslaitteitasi ja ‑dataasi (suositus)</translation>
 <translation id="4962975101802056554">Peru kaikki laitteen käyttöoikeudet</translation>
@@ -219,6 +225,7 @@
 <translation id="5887687176710214216">Avattu viimeksi eilen</translation>
 <translation id="5916664084637901428">Päällä</translation>
 <translation id="5922853908706496913">Näyttösi jaetaan</translation>
+<translation id="5922967540311291836">Estä kolmannen osapuolen evästeet:</translation>
 <translation id="5939518447894949180">Tyhjennä</translation>
 <translation id="5975083100439434680">Loitonna</translation>
 <translation id="5976059395673079613"><ph name="PERMISSION" /> – <ph name="WARNING_MESSAGE" /></translation>
@@ -302,6 +309,7 @@
 <translation id="7791543448312431591">Lisää</translation>
 <translation id="780301667611848630">Ei kiitos</translation>
 <translation id="7804248752222191302">Sivusto käyttää kameraasi</translation>
+<translation id="7816129586531226979">Aiheeseen liittyvät sivustot voivat muistaa sinut eri sivustoilla</translation>
 <translation id="7817023149356982970">Sinut kirjataan ulos tältä sivustolta.</translation>
 <translation id="7828557259026017104">Evästeet ovat avaamiesi verkkosivustojen luomia tiedostoja. Niiden avulla sivustot muistavat valintasi. Kolmannen osapuolen evästeitä luovat muut sivustot. Nämä sivustot omistavat mainoksia, kuvia tai muita sisältöjä, joita käytetään avaamallasi sivulla.</translation>
 <translation id="7835852323729233924">Toistetaan mediaa</translation>
@@ -309,6 +317,7 @@
 <translation id="7846076177841592234">Peru valinta</translation>
 <translation id="7846621471902887024">Sinut kirjataan ulos kaikilta sivustoilta.</translation>
 <translation id="7882806643839505685">Salli tietyn sivuston äänet.</translation>
+<translation id="789180354981963912">Estä kolmannen osapuolen evästeet incognito-tilassa:</translation>
 <translation id="7940722705963108451">Muistuta minua</translation>
 <translation id="7986741934819883144">Valitse yhteystieto</translation>
 <translation id="7999064672810608036">Haluatko varmasti tyhjentää kaikki paikalliset tiedot, mukaan lukien evästeet, ja nollata kaikki tämän verkkosivuston käyttöluvat?</translation>
@@ -331,6 +340,7 @@
 <translation id="8284326494547611709">Tekstitykset</translation>
 <translation id="8300705686683892304">Sovelluksen ylläpitämät</translation>
 <translation id="8324158725704657629">Älä kysy uudestaan</translation>
+<translation id="834785183489258869">Kun olet incognito-tilassa, sivustot eivät näe selaustoimintaasi eri sivustoilla evästeiden kautta esim. personoidakseen mainoksia. Joidenkin sivustojen ominaisuudet eivät välttämättä toimi.</translation>
 <translation id="8372893542064058268">Salli taustasynkronointi tietyllä sivustolla.</translation>
 <translation id="8376384591331888629">Mukaan lukien kolmannen osapuolen evästeet tällä sivustolla</translation>
 <translation id="83792324527827022">Sivusto käyttää kameraasi ja mikrofoniasi</translation>

@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -15,7 +15,8 @@ namespace ash {
 // ArcMidisClient is used to pass an FD to the midis daemon for the purpose
 // of setting up a Mojo channel. It is expected to be called once during browser
 // initialization.
-class COMPONENT_EXPORT(ASH_DBUS_ARC) ArcMidisClient : public DBusClient {
+class COMPONENT_EXPORT(ASH_DBUS_ARC) ArcMidisClient
+    : public chromeos::DBusClient {
  public:
   // Returns the global instance if initialized. May return null.
   static ArcMidisClient* Get();
@@ -34,8 +35,9 @@ class COMPONENT_EXPORT(ASH_DBUS_ARC) ArcMidisClient : public DBusClient {
 
   // Bootstrap the Mojo connection between Chrome and the MIDI service.
   // Should pass in the child end of the Mojo pipe.
-  virtual void BootstrapMojoConnection(base::ScopedFD fd,
-                                       VoidDBusMethodCallback callback) = 0;
+  virtual void BootstrapMojoConnection(
+      base::ScopedFD fd,
+      chromeos::VoidDBusMethodCallback callback) = 0;
 
  protected:
   // Initialize() should be used instead.

@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,15 +9,18 @@
 #include <string>
 #include <vector>
 
+#include "ash/constants/ash_features.h"
 #include "ash/public/cpp/default_user_image.h"
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/rand_util.h"
+#include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/system/sys_info.h"
+#include "chrome/common/webui_url_constants.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/chromeos/resources/grit/ui_chromeos_resources.h"
@@ -287,29 +290,10 @@ const DefaultImageSourceInfoIds kDefaultImageSourceInfoIds[] = {
 
 const char kDefaultUrlPrefix[] = "chrome://theme/IDR_LOGIN_DEFAULT_USER_";
 const char kZeroDefaultUrl[] = "chrome://theme/IDR_LOGIN_DEFAULT_USER";
-
-// Returns true if the string specified consists of the prefix and one of
-// the default images indices. Returns the index of the image in `image_id`
-// variable.
-bool IsDefaultImageString(const std::string& s,
-                          const std::string& prefix,
-                          int* image_id) {
-  DCHECK(image_id);
-  if (!base::StartsWith(s, prefix, base::CompareCase::SENSITIVE))
-    return false;
-
-  int image_index = -1;
-  if (base::StringToInt(
-          base::MakeStringPiece(s.begin() + prefix.length(), s.end()),
-          &image_index)) {
-    if (image_index < 0 || image_index >= kDefaultImagesCount)
-      return false;
-    *image_id = image_index;
-    return true;
-  }
-
-  return false;
-}
+// TODO(b/244369871): Support 1x/2x images based on pixel density.
+const char kGstaticImagePrefix[] =
+    "https://www.gstatic.com/chromecast/home/chromeos/avatars/"
+    "default_200_percent/";
 
 }  // namespace
 
@@ -338,17 +322,16 @@ const int kHistogramImagesCount =
     kDefaultImagesCount + kHistogramSpecialImagesMaxCount;
 
 GURL GetDefaultImageUrl(int index) {
-  if (index <= 0 || index >= kDefaultImagesCount)
+  DCHECK(index >= 0 && index < kDefaultImagesCount);
+
+  if (ash::features::IsAvatarsCloudMigrationEnabled()) {
+    return GURL(
+        base::StrCat({kGstaticImagePrefix, kDefaultImageInfo[index].path}));
+  }
+
+  if (index == 0)
     return GURL(kZeroDefaultUrl);
   return GURL(base::StringPrintf("%s%d", kDefaultUrlPrefix, index));
-}
-
-bool IsDefaultImageUrl(const std::string& url, int* image_id) {
-  if (url == kZeroDefaultUrl) {
-    *image_id = 0;
-    return true;
-  }
-  return IsDefaultImageString(url, kDefaultUrlPrefix, image_id);
 }
 
 const gfx::ImageSkia& GetDefaultImage(int index) {

@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -45,29 +45,31 @@ class ErrorBuilder {
 // type of rule/condition, while the internal format uses a "instanceType" key
 // for this. This function walks through all the conditions and rules to swap
 // the manifest key for the internal key.
-bool ConvertManifestRule(const DeclarativeManifestData::Rule& rule,
+bool ConvertManifestRule(DeclarativeManifestData::Rule& rule,
                          ErrorBuilder* error_builder) {
-  auto convert_list =
-      [error_builder](const std::vector<std::unique_ptr<base::Value>>& list) {
-        for (const std::unique_ptr<base::Value>& value : list) {
-          base::DictionaryValue* dictionary = nullptr;
-          if (!value->GetAsDictionary(&dictionary)) {
-            error_builder->Append("expected dictionary, got %s",
-                                  base::Value::GetTypeName(value->type()));
-            return false;
-          }
-          std::string type;
-          if (!dictionary->GetString("type", &type)) {
-            error_builder->Append("'type' is required and must be a string");
-            return false;
-          }
-          if (type == declarative_content_constants::kLegacyShowAction)
-            type = declarative_content_constants::kShowAction;
-          dictionary->RemoveKey("type");
-          dictionary->SetStringKey("instanceType", type);
-        }
-        return true;
-      };
+  auto convert_list = [error_builder](std::vector<base::Value>& list) {
+    for (base::Value& value : list) {
+      base::Value::Dict* dictionary = value.GetIfDict();
+      if (!dictionary) {
+        error_builder->Append("expected dictionary, got %s",
+                              base::Value::GetTypeName(value.type()));
+        return false;
+      }
+      std::string* type = dictionary->FindString("type");
+      if (!type) {
+        error_builder->Append("'type' is required and must be a string");
+        return false;
+      }
+      if (*type == declarative_content_constants::kLegacyShowAction) {
+        dictionary->Set("instanceType",
+                        declarative_content_constants::kShowAction);
+      } else {
+        dictionary->Set("instanceType", std::move(*type));
+      }
+      dictionary->Remove("type");
+    }
+    return true;
+  };
   return convert_list(rule.actions) && convert_list(rule.conditions);
 }
 
@@ -167,9 +169,8 @@ DeclarativeManifestData::RulesForEvent(const std::string& event) {
     // TODO(rdevlin.cronin): It would be nice if we could have the RulesRegistry
     // reference the rules owned here, but the ownership issues are a bit
     // tricky. Revisit this.
-    std::unique_ptr<base::DictionaryValue> rule_value = rule.ToValue();
     std::unique_ptr<DeclarativeManifestData::Rule> rule_copy =
-        DeclarativeManifestData::Rule::FromValue(*rule_value);
+        DeclarativeManifestData::Rule::FromValue(base::Value(rule.ToValue()));
     result.push_back(std::move(*rule_copy));
   }
   return result;

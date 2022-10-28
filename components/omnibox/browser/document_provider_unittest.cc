@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -264,7 +264,7 @@ TEST_F(DocumentProviderTest, IsDocumentProviderAllowed) {
   {
     AutocompleteInput input(u"text text", metrics::OmniboxEventProto::OTHER,
                             TestSchemeClassifier());
-    input.set_focus_type(OmniboxFocusType::ON_FOCUS);
+    input.set_focus_type(metrics::OmniboxFocusType::INTERACTION_FOCUS);
     EXPECT_FALSE(provider_->IsDocumentProviderAllowed(client_.get(), input));
   }
 
@@ -288,7 +288,7 @@ TEST_F(DocumentProviderTest, IsDocumentProviderAllowed) {
   {
     AutocompleteInput input(u"www.x.com", metrics::OmniboxEventProto::OTHER,
                             TestSchemeClassifier());
-    input.set_focus_type(OmniboxFocusType::ON_FOCUS);
+    input.set_focus_type(metrics::OmniboxFocusType::INTERACTION_FOCUS);
     EXPECT_FALSE(provider_->IsDocumentProviderAllowed(client_.get(), input));
   }
 }

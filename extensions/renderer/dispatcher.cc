@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -264,7 +264,7 @@ Dispatcher::PendingServiceWorker::PendingServiceWorker(
 
 Dispatcher::PendingServiceWorker::~PendingServiceWorker() = default;
 
-// Note that we can't use Blink public APIs in the constructor becase Blink
+// Note that we can't use Blink public APIs in the constructor because Blink
 // is not initialized at the point we create Dispatcher.
 Dispatcher::Dispatcher(std::unique_ptr<DispatcherDelegate> delegate)
     : delegate_(std::move(delegate)),
@@ -1295,7 +1295,7 @@ void Dispatcher::OnDeliverMessage(int worker_thread_id,
   DCHECK_EQ(kMainThreadId, worker_thread_id);
   bindings_system_->messaging_service()->DeliverMessage(
       script_context_set_.get(), target_port_id, message,
-      NULL);  // All render frames.
+      nullptr);  // All render frames.
 }
 
 void Dispatcher::OnDispatchOnConnect(
@@ -1309,7 +1309,7 @@ void Dispatcher::OnDispatchOnConnect(
 
   bindings_system_->messaging_service()->DispatchOnConnect(
       script_context_set_.get(), target_port_id, channel_name, source, info,
-      NULL);  // All render frames.
+      nullptr);  // All render frames.
 }
 
 void Dispatcher::OnDispatchOnDisconnect(int worker_thread_id,
@@ -1318,7 +1318,7 @@ void Dispatcher::OnDispatchOnDisconnect(int worker_thread_id,
   DCHECK_EQ(kMainThreadId, worker_thread_id);
   bindings_system_->messaging_service()->DispatchOnDisconnect(
       script_context_set_.get(), port_id, error_message,
-      NULL);  // All render frames.
+      nullptr);  // All render frames.
 }
 
 void Dispatcher::DispatchEvent(mojom::DispatchEventParamsPtr params,

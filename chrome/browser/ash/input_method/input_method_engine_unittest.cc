@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -106,7 +106,7 @@ class TestObserver : public StubInputMethodEngineObserver {
       const std::string& engine_id,
       const ui::KeyEvent& event,
       ui::IMEEngineHandlerInterface::KeyEventDoneCallback callback) override {
-    std::move(callback).Run(/* handled */ true);
+    std::move(callback).Run(ui::ime::KeyEventHandledState::kHandledByIME);
   }
   void OnCompositionBoundsChanged(
       const std::vector<gfx::Rect>& bounds) override {

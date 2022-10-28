@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -472,13 +472,13 @@ TEST_F(PrintingOAuth2AuthorizationZoneTest, CancellationDuringInitialization) {
   authorization_zone_->InitAuthorization("scope0", BindResult(cr_0));
   authorization_zone_->InitAuthorization("scope1", BindResult(cr_1));
   authorization_zone_->MarkAuthorizationZoneAsUntrusted();
-  EXPECT_EQ(cr_0.status, StatusCode::kUnknownAuthorizationServer);
-  EXPECT_EQ(cr_1.status, StatusCode::kUnknownAuthorizationServer);
+  EXPECT_EQ(cr_0.status, StatusCode::kUntrustedAuthorizationServer);
+  EXPECT_EQ(cr_1.status, StatusCode::kUntrustedAuthorizationServer);
 
   // Response from the server should not trigger anything.
   ProcessMetadataRequest();
-  EXPECT_EQ(cr_0.status, StatusCode::kUnknownAuthorizationServer);
-  EXPECT_EQ(cr_1.status, StatusCode::kUnknownAuthorizationServer);
+  EXPECT_EQ(cr_0.status, StatusCode::kUntrustedAuthorizationServer);
+  EXPECT_EQ(cr_1.status, StatusCode::kUntrustedAuthorizationServer);
 }
 
 TEST_F(PrintingOAuth2AuthorizationZoneTest, CancelExistingSessions) {
@@ -506,23 +506,8 @@ TEST_F(PrintingOAuth2AuthorizationZoneTest, CancelExistingSessions) {
 
   // Cancel the zone. All pending callbacks should return.
   authorization_zone_->MarkAuthorizationZoneAsUntrusted();
-  EXPECT_EQ(cr_0.status, StatusCode::kUnknownAuthorizationServer);
-  EXPECT_EQ(cr_1.status, StatusCode::kUnknownAuthorizationServer);
-}
-
-TEST_F(PrintingOAuth2AuthorizationZoneTest, PrefixInErrorMessage) {
-  CallbackResult cr;
-  CreateAuthorizationZone("");
-
-  // Respond with error to Metadata Request.
-  authorization_zone_->InitAuthorization("", BindResult(cr));
-  server_.ReceiveGET(metadata_uri_);
-  server_.ResponseWithJSON(net::HttpStatusCode::HTTP_INTERNAL_SERVER_ERROR, {});
-
-  // Check if the error message begins with the URI of the server.
-  EXPECT_EQ(cr.status, printing::oauth2::StatusCode::kServerError);
-  const std::string msg_prefix = "[" + authorization_server_uri_ + "]";
-  EXPECT_EQ(cr.data.substr(0, msg_prefix.length()), msg_prefix);
+  EXPECT_EQ(cr_0.status, StatusCode::kUntrustedAuthorizationServer);
+  EXPECT_EQ(cr_1.status, StatusCode::kUntrustedAuthorizationServer);
 }
 
 }  // namespace

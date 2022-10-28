@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -100,7 +100,7 @@ class AccessibilityFeaturesApiTest : public ExtensionApiTest,
       return ash::prefs::kDockedMagnifierEnabled;
     if (feature == "dictation")
       return ash::prefs::kAccessibilityDictationEnabled;
-    return NULL;
+    return nullptr;
   }
 
   // Initializes preferences before running the test extension.

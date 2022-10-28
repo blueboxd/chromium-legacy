@@ -1,30 +1,30 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #import "ios/chrome/browser/ui/first_run/first_run_util.h"
 
-#include "base/bind.h"
-#include "base/callback.h"
-#include "base/metrics/histogram_functions.h"
-#include "base/strings/sys_string_conversions.h"
-#include "base/task/thread_pool.h"
+#import "base/bind.h"
+#import "base/callback.h"
+#import "base/metrics/histogram_functions.h"
+#import "base/strings/sys_string_conversions.h"
+#import "base/task/thread_pool.h"
 #import "components/metrics/metrics_reporting_default_state.h"
 #import "components/policy/core/common/policy_loader_ios_constants.h"
-#include "components/signin/public/identity_manager/identity_manager.h"
+#import "components/signin/public/identity_manager/identity_manager.h"
 #import "ios/chrome/app/tests_hook.h"
-#import "ios/chrome/browser/application_context.h"
-#include "ios/chrome/browser/browser_state/chrome_browser_state.h"
+#import "ios/chrome/browser/application_context/application_context.h"
+#import "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/crash_report/crash_helper.h"
-#include "ios/chrome/browser/first_run/first_run.h"
+#import "ios/chrome/browser/first_run/first_run.h"
 #import "ios/chrome/browser/first_run/first_run_configuration.h"
-#include "ios/chrome/browser/first_run/first_run_metrics.h"
-#include "ios/chrome/browser/signin/identity_manager_factory.h"
-#include "ios/chrome/browser/system_flags.h"
+#import "ios/chrome/browser/first_run/first_run_metrics.h"
+#import "ios/chrome/browser/flags/system_flags.h"
+#import "ios/chrome/browser/signin/identity_manager_factory.h"
 #import "ios/chrome/browser/ui/settings/sync/utils/sync_util.h"
-#include "ios/chrome/browser/ui/ui_feature_flags.h"
-#include "ios/chrome/browser/ui/util/ui_util.h"
-#include "ios/web/public/thread/web_thread.h"
+#import "ios/chrome/browser/ui/ui_feature_flags.h"
+#import "ios/chrome/browser/ui/util/ui_util.h"
+#import "ios/web/public/thread/web_thread.h"
 #import "ui/gfx/ios/NSString+CrStringDrawing.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -229,9 +229,4 @@ void RecordMetricsReportingDefaultState() {
             ? metrics::EnableMetricsDefault::OPT_OUT
             : metrics::EnableMetricsDefault::OPT_IN);
   });
-}
-
-bool IsApplicationManaged() {
-  return [[[NSUserDefaults standardUserDefaults]
-             dictionaryForKey:kPolicyLoaderIOSConfigurationKey] count] > 0;
 }

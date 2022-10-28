@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -114,17 +114,16 @@ TEST(AudioServiceUtilsTest, ConvertDeviceFilterToMojomActiveState) {
   crosapi::mojom::DeviceFilterPtr result;
   auto input = std::make_unique<api::audio::DeviceFilter>();
 
-  input->is_active = nullptr;
   result = ConvertDeviceFilterToMojom(input.get());
   EXPECT_TRUE(result && (result->includedActiveState ==
                          crosapi::mojom::DeviceFilter::ActiveState::kUnset));
 
-  input->is_active = std::make_unique<bool>(false);
+  input->is_active = false;
   result = ConvertDeviceFilterToMojom(input.get());
   EXPECT_TRUE(result && (result->includedActiveState ==
                          crosapi::mojom::DeviceFilter::ActiveState::kInactive));
 
-  input->is_active = std::make_unique<bool>(true);
+  input->is_active = true;
   result = ConvertDeviceFilterToMojom(input.get());
   EXPECT_TRUE(result && (result->includedActiveState ==
                          crosapi::mojom::DeviceFilter::ActiveState::kActive));
@@ -134,11 +133,11 @@ TEST(AudioServiceUtilsTest, ConvertDeviceFilterToMojomStreamTypes) {
   crosapi::mojom::DeviceFilterPtr result;
   auto input = std::make_unique<api::audio::DeviceFilter>();
 
-  input->stream_types = nullptr;
+  input->stream_types = absl::nullopt;
   result = ConvertDeviceFilterToMojom(input.get());
   EXPECT_TRUE(result && !result->includedStreamTypes);
 
-  input->stream_types = std::make_unique<std::vector<api::audio::StreamType>>();
+  input->stream_types.emplace();
   result = ConvertDeviceFilterToMojom(input.get());
   EXPECT_TRUE(result && result->includedStreamTypes &&
               result->includedStreamTypes->empty());
@@ -146,11 +145,9 @@ TEST(AudioServiceUtilsTest, ConvertDeviceFilterToMojomStreamTypes) {
   std::vector<crosapi::mojom::StreamType> expected = {
       crosapi::mojom::StreamType::kOutput, crosapi::mojom::StreamType::kInput,
       crosapi::mojom::StreamType::kInput};
-  input->stream_types =
-      std::make_unique<std::vector<api::audio::StreamType>,
-                       std::initializer_list<api::audio::StreamType>>(
-          {api::audio::STREAM_TYPE_OUTPUT, api::audio::STREAM_TYPE_INPUT,
-           api::audio::STREAM_TYPE_INPUT});
+  input->stream_types.emplace({api::audio::STREAM_TYPE_OUTPUT,
+                               api::audio::STREAM_TYPE_INPUT,
+                               api::audio::STREAM_TYPE_INPUT});
   result = ConvertDeviceFilterToMojom(input.get());
   EXPECT_TRUE(result && result->includedStreamTypes &&
               (*result->includedStreamTypes == expected));
@@ -202,7 +199,7 @@ TEST(AudioServiceUtilsTest, ConvertAudioDeviceInfoToMojom) {
   input.device_name = test_device_name;
   input.is_active = test_is_active;
   input.level = test_level;
-  input.stable_device_id = std::make_unique<std::string>(test_stable_device_id);
+  input.stable_device_id = test_stable_device_id;
 
   auto result = ConvertAudioDeviceInfoToMojom(input);
   ASSERT_TRUE(result);

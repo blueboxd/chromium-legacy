@@ -167,7 +167,8 @@ class TestURLLoaderFactory : public mojom::URLLoaderFactory {
 
     mojo::Remote<mojom::URLLoaderClient> client(std::move(pending_client));
     mojom::URLResponseHeadPtr response_head = CreateCacheableURLResponseHead();
-    client->OnReceiveResponse(std::move(response_head), /*body=*/{});
+    client->OnReceiveResponse(std::move(response_head), /*body=*/{},
+                              absl::nullopt);
     client->OnComplete(URLLoaderCompletionStatus(net::OK));
   }
   void Clone(mojo::PendingReceiver<mojom::URLLoaderFactory> receiver) override {
@@ -826,9 +827,10 @@ TEST_F(NetworkServiceMemoryCacheTest, CanServe_DevToolsAttached) {
   request.trusted_params = ResourceRequest::TrustedParams();
   request.trusted_params->devtools_observer = devtools_observer.Bind();
 
-  LoaderPair pair = CreateLoaderAndStart(request);
-  pair.client->RunUntilComplete();
-  const URLLoaderCompletionStatus& status = pair.client->completion_status();
+  LoaderPair loader_pair = CreateLoaderAndStart(request);
+  loader_pair.client->RunUntilComplete();
+  const URLLoaderCompletionStatus& status =
+      loader_pair.client->completion_status();
   ASSERT_EQ(status.error_code, net::OK);
   ASSERT_TRUE(status.exists_in_memory_cache);
 
@@ -838,9 +840,9 @@ TEST_F(NetworkServiceMemoryCacheTest, CanServe_DevToolsAttached) {
   // Check whether the cached response has `Cache-Control: max-age=120` as the
   // original response had.
   bool has_expected_header = false;
-  for (const auto& pair : devtools_observer.response_headers()) {
-    if (base::EqualsCaseInsensitiveASCII(pair->key, "cache-control") &&
-        pair->value == "max-age=120") {
+  for (const auto& header_pair : devtools_observer.response_headers()) {
+    if (base::EqualsCaseInsensitiveASCII(header_pair->key, "cache-control") &&
+        header_pair->value == "max-age=120") {
       has_expected_header = true;
       break;
     }

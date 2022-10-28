@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -51,11 +51,11 @@ class TestPrefsUtil : public PrefsUtil {
     pref_object->key = name;
     pref_object->type = api::settings_private::PrefType::PREF_TYPE_LIST;
 
-    base::ListValue* value = new base::ListValue();
+    base::Value::List value;
     for (auto& email : user_list_) {
-      value->Append(email);
+      value.Append(email);
     }
-    pref_object->value.reset(value);
+    pref_object->value = base::Value(std::move(value));
 
     return pref_object;
   }
@@ -123,7 +123,8 @@ class UsersPrivateApiTest : public ExtensionApiTest {
     // OwnerSettingsServiceAsh is created.
     scoped_refptr<ownership::MockOwnerKeyUtil> owner_key_util =
         new ownership::MockOwnerKeyUtil();
-    owner_key_util->SetPrivateKey(crypto::RSAPrivateKey::Create(512));
+    owner_key_util->ImportPrivateKeyAndSetPublicKey(
+        crypto::RSAPrivateKey::Create(512));
 
     ash::OwnerSettingsServiceAshFactory::GetInstance()
         ->SetOwnerKeyUtilForTesting(owner_key_util);
@@ -171,7 +172,7 @@ class UsersPrivateApiTest : public ExtensionApiTest {
 };
 
 // static
-TestDelegate* UsersPrivateApiTest::s_test_delegate_ = NULL;
+TestDelegate* UsersPrivateApiTest::s_test_delegate_ = nullptr;
 
 class LoginStatusTestConfig {
  public:

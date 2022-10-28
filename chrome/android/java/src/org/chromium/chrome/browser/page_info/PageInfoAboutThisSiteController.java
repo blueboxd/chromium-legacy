@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -139,8 +139,7 @@ public class PageInfoAboutThisSiteController implements PageInfoSubpageControlle
         rowParams.subtitle = subtitle;
         rowParams.singleLineSubTitle = true;
         rowParams.visible = true;
-        rowParams.iconResId =
-                more_info_enabled ? R.drawable.ic_globe_24dp : R.drawable.ic_info_outline_grey_24dp;
+        rowParams.iconResId = R.drawable.ic_info_outline_grey_24dp;
         rowParams.decreaseIconSize = true;
         rowParams.clickCallback = this::onAboutThisSiteRowClicked;
         mRowView.setParams(rowParams);

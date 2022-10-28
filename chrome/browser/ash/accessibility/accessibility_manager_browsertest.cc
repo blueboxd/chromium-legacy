@@ -1,4 +1,4 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -299,7 +299,7 @@ void ClearDictationOfflineNudgePref(const std::string& locale) {
 }
 
 absl::optional<bool> GetDictationOfflineNudgePref(const std::string& locale) {
-  const base::Value::Dict& offline_nudges = GetActiveUserPrefs()->GetValueDict(
+  const base::Value::Dict& offline_nudges = GetActiveUserPrefs()->GetDict(
       prefs::kAccessibilityDictationLocaleOfflineNudge);
   return offline_nudges.FindBool(locale);
 }
@@ -1494,7 +1494,7 @@ IN_PROC_BROWSER_TEST_P(AccessibilityManagerUserTypeTest, BrailleWhenLoggedIn) {
   // activated.
   KeyEvent event;
   event.command = extensions::api::braille_display_private::KEY_COMMAND_DOTS;
-  event.braille_dots = std::make_unique<int>(0);
+  event.braille_dots = 0;
   braille_controller_.GetObserver()->OnBrailleKeyEvent(event);
   EXPECT_TRUE(IsBrailleImeCurrent());
 

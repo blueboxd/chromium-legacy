@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -18,6 +18,7 @@
 #include "base/scoped_observation.h"
 #include "base/sequence_checker.h"
 #include "base/supports_user_data.h"
+#include "components/commerce/core/account_checker.h"
 #include "components/commerce/core/proto/commerce_subscription_db_content.pb.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/optimization_guide/core/optimization_guide_decision.h"
@@ -52,6 +53,10 @@ namespace signin {
 class IdentityManager;
 }  // namespace signin
 
+namespace power_bookmarks {
+class PowerBookmarkService;
+}  // namespace power_bookmarks
+
 namespace commerce {
 
 extern const char kOgTitle[];
@@ -84,6 +89,7 @@ enum class ProductInfoFallback {
   kMaxValue = kPrice,
 };
 
+class ShoppingPowerBookmarkDataProvider;
 class ShoppingBookmarkModelObserver;
 class SubscriptionsManager;
 class WebWrapper;
@@ -155,7 +161,8 @@ class ShoppingService : public KeyedService, public base::SupportsUserData {
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       SessionProtoStorage<
           commerce_subscription_db::CommerceSubscriptionContentProto>*
-          subscription_proto_db);
+          subscription_proto_db,
+      power_bookmarks::PowerBookmarkService* power_bookmark_service);
   ~ShoppingService() override;
 
   ShoppingService(const ShoppingService&) = delete;
@@ -326,10 +333,18 @@ class ShoppingService : public KeyedService, public base::SupportsUserData {
 
   raw_ptr<bookmarks::BookmarkModel> bookmark_model_;
 
+  std::unique_ptr<AccountChecker> account_checker_;
+
+  raw_ptr<power_bookmarks::PowerBookmarkService> power_bookmark_service_;
+
   // The service's means of observing the bookmark model which is automatically
   // removed from the model when destroyed. This will be null if no
   // BookmarkModel is provided to the service.
   std::unique_ptr<ShoppingBookmarkModelObserver> shopping_bookmark_observer_;
+
+  // The service's means of providing data to power bookmarks.
+  std::unique_ptr<ShoppingPowerBookmarkDataProvider>
+      shopping_power_bookmark_data_provider_;
 
   // This is a cache that maps URL to a tuple of number of web wrappers the URL
   // is open in, whether the javascript fallback needs to run, and the product

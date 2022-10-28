@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -68,7 +68,7 @@ class SidePanelBorder : public views::Border {
     // Undo DSF so that we can be sure to draw an integral number of pixels for
     // the border. Integral scale factors should be unaffected by this, but for
     // fractional scale factors this ensures sharp lines.
-    gfx::ScopedCanvas scoped(canvas);
+    gfx::ScopedCanvas scoped_unscale(canvas);
     float dsf = canvas->UndoDeviceScaleFactor();
 
     gfx::RectF scaled_bounds = gfx::ConvertRectToPixels(
@@ -78,10 +78,12 @@ class SidePanelBorder : public views::Border {
         view.GetLayoutProvider()->GetCornerRadiusMetric(
             views::Emphasis::kMedium, view.GetContentsBounds().size()) *
         dsf;
-    gfx::InsetsF insets_in_pixels(
-        gfx::ToFlooredInsets(gfx::ConvertInsetsToPixels(GetInsets(), dsf)));
+    gfx::InsetsF insets_in_pixels(gfx::ConvertInsetsToPixels(GetInsets(), dsf));
     scaled_bounds.Inset(insets_in_pixels);
-    SkRRect rect = SkRRect::MakeRectXY(gfx::RectFToSkRect(scaled_bounds),
+    // Use ToEnclosedRect to make sure that the clip bounds never end up larger
+    // than the child view.
+    gfx::Rect clip_bounds = ToEnclosedRect(scaled_bounds);
+    SkRRect rect = SkRRect::MakeRectXY(gfx::RectToSkRect(clip_bounds),
                                        corner_radius, corner_radius);
 
     // Clip out the content area from the background about to be painted.
@@ -92,7 +94,7 @@ class SidePanelBorder : public views::Border {
       // Redo device-scale factor, the theme background is drawn in DIPs. Note
       // that the clip area above is in pixels, hence the
       // UndoDeviceScaleFactor() call before this.
-      gfx::ScopedCanvas scoped(canvas);
+      gfx::ScopedCanvas scoped_rescale(canvas);
       canvas->Scale(dsf, dsf);
 
       TopContainerBackground::PaintBackground(
@@ -112,8 +114,8 @@ class SidePanelBorder : public views::Border {
 
     // Outset half of the stroke thickness so that it's painted fully on the
     // outside of the clipping region.
-    scaled_bounds.Inset(gfx::InsetsF(-stroke_thickness / 2));
-    canvas->DrawRoundRect(scaled_bounds, corner_radius, flags);
+    clip_bounds.Inset(gfx::Insets(-stroke_thickness / 2));
+    canvas->DrawRoundRect(clip_bounds, corner_radius, flags);
   }
 
   gfx::Insets GetInsets() const override {

@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -20,6 +20,12 @@ COMPONENT_EXPORT(APP_TYPES)
 extern const base::Feature kAppServiceUninstallWithoutMojom;
 COMPONENT_EXPORT(APP_TYPES)
 extern const base::Feature kAppServiceWithoutMojom;
+COMPONENT_EXPORT(APP_TYPES)
+extern const base::Feature kAppServiceGetMenuWithoutMojom;
+COMPONENT_EXPORT(APP_TYPES)
+extern const base::Feature kAppServiceCapabilityAccessWithoutMojom;
+COMPONENT_EXPORT(APP_TYPES)
+extern const base::Feature kStopMojomAppService;
 
 }  // namespace apps
 

@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -516,14 +516,6 @@ void ExternalVkImageBacking::Update(std::unique_ptr<gfx::GpuFence> in_fence) {
   DCHECK(!in_fence);
   latest_content_ = kInSharedMemory;
   SetCleared();
-}
-
-bool ExternalVkImageBacking::ProduceLegacyMailbox(
-    MailboxManager* mailbox_manager) {
-  // It is not safe to produce a legacy mailbox because it would bypass the
-  // synchronization between Vulkan and GL that is implemented in the
-  // representation classes.
-  return false;
 }
 
 void ExternalVkImageBacking::AddSemaphoresToPendingListOrRelease(

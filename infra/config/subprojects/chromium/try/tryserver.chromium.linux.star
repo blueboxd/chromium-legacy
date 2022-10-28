@@ -1,4 +1,4 @@
-# Copyright 2021 The Chromium Authors. All rights reserved.
+# Copyright 2021 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 """Definitions of builders in the tryserver.chromium.linux builder group."""
@@ -19,6 +19,8 @@ try_.defaults.set(
     execution_timeout = try_.DEFAULT_EXECUTION_TIMEOUT,
     goma_backend = goma.backend.RBE_PROD,
     compilator_goma_jobs = goma.jobs.J150,
+    reclient_instance = reclient.instance.DEFAULT_UNTRUSTED,
+    compilator_reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
     os = os.LINUX_DEFAULT,
     pool = try_.DEFAULT_POOL,
     service_account = try_.DEFAULT_SERVICE_ACCOUNT,
@@ -106,6 +108,7 @@ try_.builder(
     ),
     builderless = False,
     goma_jobs = goma.jobs.J150,
+    reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
     tryjob = try_.job(
         experiment_percentage = 5,
     ),
@@ -208,6 +211,7 @@ try_.builder(
     tryjob = try_.job(),
     experiments = {
         "enable_weetbix_queries": 100,
+        "weetbix.retry_weak_exonerations": 100,
     },
 )
 
@@ -228,7 +232,8 @@ try_.orchestrator_builder(
     name = "linux-rel",
     compilator = "linux-rel-compilator",
     branch_selector = branches.STANDARD_MILESTONE,
-    check_for_flakiness = True,
+    # Disabling due to crbug.com/1359208
+    # check_for_flakiness = True,
     mirrors = [
         "ci/Linux Builder",
         "ci/Linux Tests",
@@ -247,7 +252,8 @@ try_.orchestrator_builder(
     experiments = {
         "remove_src_checkout_experiment": 100,
         "enable_weetbix_queries": 100,
-        "retry_findit_exonerations": 100,
+        "weetbix.retry_weak_exonerations": 100,
+        "weetbix.enable_weetbix_exonerations": 100,
     },
     use_orchestrator_pool = True,
 )
@@ -303,17 +309,8 @@ try_.builder(
     tryjob = try_.job(),
     experiments = {
         "enable_weetbix_queries": 100,
+        "weetbix.retry_weak_exonerations": 100,
     },
-)
-
-# b/236069482: Experimental builder to test reclient migration
-try_.builder(
-    name = "linux-wayland-rel-reclient",
-    mirrors = builder_config.copy_from("linux-wayland-rel"),
-    reclient_instance = reclient.instance.DEFAULT_UNTRUSTED,
-    tryjob = try_.job(
-        experiment_percentage = 5,
-    ),
 )
 
 try_.builder(
@@ -324,6 +321,13 @@ try_.builder(
     name = "linux-webkit-msan-rel",
     mirrors = [
         "ci/WebKit Linux MSAN",
+    ],
+)
+
+try_.builder(
+    name = "linux-wpt-content-shell-fyi-rel",
+    mirrors = [
+        "ci/linux-wpt-content-shell-fyi-rel",
     ],
 )
 
@@ -368,6 +372,7 @@ try_.orchestrator_builder(
     experiments = {
         "remove_src_checkout_experiment": 100,
         "enable_weetbix_queries": 100,
+        "weetbix.retry_weak_exonerations": 100,
     },
     use_orchestrator_pool = True,
 )
@@ -454,7 +459,7 @@ try_.builder(
             path = "linux_debug",
         ),
     ],
-    goma_jobs = goma.jobs.J150,
+    reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
     main_list_view = "try",
     tryjob = try_.job(),
 )
@@ -529,6 +534,7 @@ try_.orchestrator_builder(
     experiments = {
         "remove_src_checkout_experiment": 100,
         "enable_weetbix_queries": 100,
+        "weetbix.retry_weak_exonerations": 100,
     },
     use_orchestrator_pool = True,
 )
@@ -690,6 +696,33 @@ try_.gpu.optional_tests_builder(
 )
 
 # RTS builders
+try_.orchestrator_builder(
+    name = "linux-rel-inverse-fyi",
+    compilator = "linux-rel-compilator",
+    # Disabling due to crbug.com/1359208
+    # check_for_flakiness = True,
+    mirrors = [
+        "ci/Linux Builder",
+        "ci/Linux Tests",
+        "ci/GPU Linux Builder",
+        "ci/Linux Release (NVIDIA)",
+    ],
+    try_settings = builder_config.try_settings(
+        rts_config = builder_config.rts_config(
+            condition = builder_config.rts_condition.QUICK_RUN_ONLY,
+        ),
+    ),
+    use_clang_coverage = True,
+    coverage_test_types = ["unit", "overall"],
+    tryjob = try_.job(
+        experiment_percentage = 5,
+    ),
+    experiments = {
+        "remove_src_checkout_experiment": 100,
+        "chromium_rts.inverted_rts": 100,
+    },
+    use_orchestrator_pool = True,
+)
 
 # ML experimental builder, modifies RTS itself to use a ml model
 try_.builder(

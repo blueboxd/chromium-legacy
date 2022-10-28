@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -310,6 +310,7 @@ class MediaRouterMojoImpl : public MediaRouterBase, public mojom::MediaRouter {
 
   // mojom::MediaRouter implementation.
   void OnIssue(const IssueInfo& issue) override;
+  void ClearTopIssueForSink(const MediaSink::Id& sink_id) override;
   void OnRoutesUpdated(mojom::MediaRouteProviderId provider_id,
                        const std::vector<MediaRoute>& routes) override;
   void OnPresentationConnectionStateChanged(

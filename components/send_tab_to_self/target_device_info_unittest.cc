@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,9 +6,9 @@
 
 #include "base/test/scoped_feature_list.h"
 #include "components/send_tab_to_self/features.h"
-#include "components/sync/driver/test_sync_service.h"
 #include "components/sync/protocol/device_info_specifics.pb.h"
 #include "components/sync/protocol/sync_enums.pb.h"
+#include "components/sync/test/test_sync_service.h"
 #include "components/sync_device_info/device_info.h"
 #include "components/sync_device_info/device_info_util.h"
 #include "testing/gtest/include/gtest/gtest.h"

@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -21,7 +21,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/no_destructor.h"
 #include "base/notreached.h"
-#include "base/stl_util.h"
 #include "base/strings/pattern.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
@@ -32,6 +31,7 @@
 #include "base/time/default_tick_clock.h"
 #include "base/time/tick_clock.h"
 #include "base/time/time.h"
+#include "base/types/optional_util.h"
 #include "build/build_config.h"
 #include "net/base/address_family.h"
 #include "net/base/address_list.h"
@@ -47,9 +47,9 @@
 #include "net/dns/host_cache.h"
 #include "net/dns/host_resolver.h"
 #include "net/dns/host_resolver_manager.h"
-#include "net/dns/host_resolver_results.h"
 #include "net/dns/https_record_rdata.h"
 #include "net/dns/public/dns_query_type.h"
+#include "net/dns/public/host_resolver_results.h"
 #include "net/dns/public/host_resolver_source.h"
 #include "net/dns/public/mdns_listener_update_type.h"
 #include "net/dns/public/resolve_error_info.h"
@@ -218,13 +218,13 @@ class MockHostResolverBase::RequestImpl
 
   const AddressList* GetAddressResults() const override {
     DCHECK(complete_);
-    return base::OptionalOrNullptr(address_results_);
+    return base::OptionalToPtr(address_results_);
   }
 
   const std::vector<HostResolverEndpointResult>* GetEndpointResults()
       const override {
     DCHECK(complete_);
-    return base::OptionalOrNullptr(endpoint_results_);
+    return base::OptionalToPtr(endpoint_results_);
   }
 
   const absl::optional<std::vector<std::string>>& GetTextResults()
@@ -245,7 +245,7 @@ class MockHostResolverBase::RequestImpl
 
   const std::set<std::string>* GetDnsAliasResults() const override {
     DCHECK(complete_);
-    return base::OptionalOrNullptr(fixed_up_dns_alias_results_);
+    return base::OptionalToPtr(fixed_up_dns_alias_results_);
   }
 
   net::ResolveErrorInfo GetResolveErrorInfo() const override {

@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -194,7 +194,8 @@ MediaAppGuestUI::MediaAppGuestUI(content::WebUI* web_ui,
       CreateMediaAppUntrustedDataSource(web_ui, delegate);
 
   MaybeConfigureTestableDataSource(
-      untrusted_source, base::BindRepeating(&IsFontRequest),
+      untrusted_source, "media_app/untrusted",
+      base::BindRepeating(&IsFontRequest),
       base::BindRepeating(&MediaAppGuestUI::StartFontDataRequest,
                           weak_factory_.GetWeakPtr()));
 

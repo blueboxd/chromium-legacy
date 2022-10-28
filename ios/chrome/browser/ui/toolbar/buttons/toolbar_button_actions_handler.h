@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -54,8 +54,8 @@ class WebNavigationBrowserAgent;
 // Action when the stop button is tapped.
 - (void)stopAction;
 
-// Action when the search button is tapped.
-- (void)searchAction:(id)sender;
+// Action when the new tab button is tapped.
+- (void)newTabAction:(id)sender;
 
 // Action when the button to cancel the omnibox focus is tapped.
 - (void)cancelOmniboxFocusAction;

@@ -15,6 +15,7 @@
 #include "base/win/scoped_variant.h"
 #include "base/win/variant_vector.h"
 #include "ui/accessibility/ax_action_data.h"
+#include "ui/accessibility/ax_selection.h"
 #include "ui/accessibility/platform/ax_platform_node_delegate.h"
 #include "ui/accessibility/platform/ax_platform_tree_manager.h"
 
@@ -546,13 +547,45 @@ HRESULT AXPlatformNodeTextRangeProviderWin::GetAttributeValue(
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_TEXTRANGE_GETATTRIBUTEVALUE);
   WIN_ACCESSIBILITY_API_PERF_HISTOGRAM(UMA_API_TEXTRANGE_GETATTRIBUTEVALUE);
   UIA_VALIDATE_TEXTRANGEPROVIDER_CALL_1_OUT(value);
+
+  base::win::VariantVector attribute_value;
+
+  // When the range spans only a generated newline (a generated newline is not
+  // part of a node, but rather introduced by AXRange::GetText when at a
+  // paragraph boundary), it doesn't make sense to return the readonly value of
+  // the start or end anchor since the newline character is not part of any of
+  // those nodes. Thus, this attribute value is independent from these nodes.
+  //
+  // Instead, we should return the readonly attribute value of the common anchor
+  // for these two endpoints since the newline character has more in common with
+  // its ancestor than its siblings. Important: This might not be true for all
+  // attributes, but it appears to be reasonable enough for the readonly one.
+  //
+  // To determine if the range encompasses *only* a generated newline, we need
+  // to validate that both the start and end endpoints are around the same
+  // paragraph boundary.
+  if (attribute_id == UIA_IsReadOnlyAttributeId &&
+      start()->anchor_id() != end()->anchor_id() &&
+      start()->AtEndOfParagraph() && end()->AtStartOfParagraph() &&
+      *start()->AsLeafTextPositionBeforeCharacter() == *end()) {
+    AXPlatformNodeWin* common_anchor = GetLowestAccessibleCommonPlatformNode();
+    DCHECK(common_anchor);
+
+    HRESULT hr = common_anchor->GetTextAttributeValue(
+        attribute_id, absl::nullopt, absl::nullopt, &attribute_value);
+
+    if (FAILED(hr))
+      return E_FAIL;
+
+    *value = attribute_value.ReleaseAsScalarVariant();
+    return S_OK;
+  }
+
   // Use a cloned range so that GetAttributeValue does not introduce
   // side-effects while normalizing the original range.
   AXPositionInstance normalized_start = start()->Clone();
   AXPositionInstance normalized_end = end()->Clone();
   NormalizeTextRange(normalized_start, normalized_end);
-
-  base::win::VariantVector attribute_value;
 
   // The range is inclusive, so advance our endpoint to the next position
   const auto end_leaf_text_position = normalized_end->AsLeafTextPosition();
@@ -1265,42 +1298,62 @@ AXPlatformNodeTextRangeProviderWin::MoveEndpointByUnitHelper(
       (count > 0) ? ax::mojom::MoveDirection::kForward
                   : ax::mojom::MoveDirection::kBackward;
 
+  const AXNode* initial_endpoint = endpoint->GetAnchor();
+
   // Most of the methods used to create the next/previous position go back and
   // forth creating a leaf text position and rooting the result to the original
   // position's anchor; avoid this by normalizing to a leaf text position.
   AXPositionInstance current_endpoint = endpoint->AsLeafTextPosition();
+  AXPositionInstance next_endpoint = GetNextTextBoundaryPosition(
+      current_endpoint, boundary_type,
+      {AXBoundaryBehavior::kStopAtLastAnchorBoundary,
+       AXBoundaryDetection::kDontCheckInitialPosition},
+      boundary_direction);
+  DCHECK(next_endpoint->IsLeafTextPosition());
 
-  for (int iteration = 0; iteration < std::abs(count); ++iteration) {
-    do {
-      AXPositionInstance next_endpoint = GetNextTextBoundaryPosition(
-          current_endpoint, boundary_type,
-          {AXBoundaryBehavior::kStopAtLastAnchorBoundary,
-           AXBoundaryDetection::kDontCheckInitialPosition},
-          boundary_direction);
-      DCHECK(next_endpoint->IsLeafTextPosition());
+  bool is_ignored_for_text_navigation = false;
+  int iteration = 0;
+  // Since AXBoundaryBehavior::kStopAtLastAnchorBoundary forces the next
+  // text boundary position to be different than the input position, the
+  // only case where these are equal is when they're already located at the
+  // last anchor boundary. In such case, there is no next position to move
+  // to.
+  while (iteration < std::abs(count) &&
+         !(next_endpoint->GetAnchor() == current_endpoint->GetAnchor() &&
+           *next_endpoint == *current_endpoint)) {
+    is_ignored_for_text_navigation = false;
+    current_endpoint = std::move(next_endpoint);
 
-      // Since AXBoundaryBehavior::kStopAtLastAnchorBoundary forces the next
-      // text boundary position to be different than the input position, the
-      // only case where these are equal is when they're already located at the
-      // last anchor boundary. In such case, there is no next position to move
-      // to.
-      if (next_endpoint->GetAnchor() == current_endpoint->GetAnchor() &&
-          *next_endpoint == *current_endpoint) {
-        *units_moved = (count > 0) ? iteration : -iteration;
-        return current_endpoint;
-      }
-      current_endpoint = std::move(next_endpoint);
-      // Loop until we're not on a position that is ignored for text navigation.
-      // There is one exception for character navigation - since the ignored
-      // anchor is represented by an embedded object character, we allow
-      // navigation by character for consistency (i.e. you should be able to
-      // move by character the same number of characters that are represented by
-      // the ranges flat string buffer).
-    } while (boundary_type != ax::mojom::TextBoundary::kCharacter &&
-             current_endpoint->GetAnchor()->IsIgnoredForTextNavigation());
+    next_endpoint = GetNextTextBoundaryPosition(
+        current_endpoint, boundary_type,
+        {AXBoundaryBehavior::kStopAtLastAnchorBoundary,
+         AXBoundaryDetection::kDontCheckInitialPosition},
+        boundary_direction);
+    DCHECK(next_endpoint->IsLeafTextPosition());
+
+    // Loop until we're not on a position that is ignored for text navigation.
+    // There is one exception for character navigation - since the ignored
+    // anchor is represented by an embedded object character, we allow
+    // navigation by character for consistency (i.e. you should be able to
+    // move by character the same number of characters that are represented by
+    // the ranges flat string buffer).
+    is_ignored_for_text_navigation =
+        boundary_type != ax::mojom::TextBoundary::kCharacter &&
+        current_endpoint->GetAnchor()->IsIgnoredForTextNavigation();
+    if (!is_ignored_for_text_navigation)
+      iteration++;
   }
 
-  *units_moved = count;
+  *units_moved = (count > 0) ? iteration : -iteration;
+
+  if (is_ignored_for_text_navigation &&
+      initial_endpoint != current_endpoint->GetAnchor()) {
+    // If the last node in the tree is ignored for text navigation, we
+    // should still be able to return an endpoint located on that node. We
+    // also need to ensure that the value of |units_moved| is accurate.
+    *units_moved += (count > 0) ? 1 : -1;
+  }
+
   return current_endpoint;
 }
 
@@ -1314,7 +1367,7 @@ void AXPlatformNodeTextRangeProviderWin::NormalizeTextRange(
   // first snap them both to be unignored positions.
   NormalizeAsUnignoredTextRange(start, end);
 
-  // When a text range or one end of AXTree::Selection is inside the atomic text
+  // When a text range or one end of AXSelection is inside the atomic text
   // field, the precise state of the TextPattern must be preserved so that the
   // UIA client can handle scenarios such as determining which characters were
   // deleted. So normalization must be bypassed.
@@ -1381,7 +1434,7 @@ AXPlatformNodeDelegate* AXPlatformNodeTextRangeProviderWin::GetRootDelegate(
     const ui::AXTreeID tree_id) {
   const AXTreeManager* ax_tree_manager = AXTreeManager::FromID(tree_id);
   DCHECK(ax_tree_manager);
-  AXNode* root_node = ax_tree_manager->GetRootAsAXNode();
+  AXNode* root_node = ax_tree_manager->GetRoot();
   const AXPlatformNode* root_platform_node =
       GetOwner()->GetDelegate()->GetFromTreeIDAndNodeID(tree_id,
                                                         root_node->id());
@@ -1405,7 +1458,7 @@ void AXPlatformNodeTextRangeProviderWin::SetOwnerForTesting(
 
 AXNode* AXPlatformNodeTextRangeProviderWin::GetSelectionCommonAnchor() {
   AXPlatformNodeDelegate* delegate = GetOwner()->GetDelegate();
-  ui::AXTree::Selection unignored_selection = delegate->GetUnignoredSelection();
+  AXSelection unignored_selection = delegate->GetUnignoredSelection();
   AXPlatformNode* anchor_object =
       delegate->GetFromNodeID(unignored_selection.anchor_object_id);
   AXPlatformNode* focus_object =
@@ -1510,7 +1563,7 @@ bool AXPlatformNodeTextRangeProviderWin::
 
   // Return true when both ends of a text range are inside the atomic
   // text field (e.g. a caret perceived by the AT), or when either endpoint of
-  // the AXTree::Selection is inside the atomic text field.
+  // the AXSelection is inside the atomic text field.
   return (is_start_in_text_field && is_end_in_text_field) ||
          (is_start_in_text_field && start_delegate &&
           start_delegate->HasVisibleCaretOrSelection()) ||

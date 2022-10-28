@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -29,7 +29,6 @@ import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
-import org.robolectric.shadows.multidex.ShadowMultiDex;
 
 import org.chromium.base.Callback;
 import org.chromium.base.metrics.UmaRecorderHolder;
@@ -54,7 +53,7 @@ import java.util.concurrent.TimeUnit;
 /** Unit tests for {@link ExploreSitesBackgroundTask}. */
 @RunWith(BaseRobolectricTestRunner.class)
 @Config(manifest = Config.NONE,
-        shadows = {ShadowMultiDex.class, ShadowDeviceConditions.class,
+        shadows = {ShadowDeviceConditions.class,
                 ExploreSitesBackgroundTaskUnitTest.ShadowExploreSitesBridge.class})
 public class ExploreSitesBackgroundTaskUnitTest {
     /** Implementation of ExploreSitesBridge which does not rely on native. */

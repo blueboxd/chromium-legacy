@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,8 +9,6 @@ GEN_INCLUDE(['//chrome/test/data/webui/polymer_browser_test_base.js']);
 
 GEN('#include "build/build_config.h"');
 GEN('#include "content/public/test/browser_test.h"');
-
-/* eslint-disable no-var */
 
 /** Test fixture for shared Polymer 3 components using Mojo. */
 var CrComponentsMojoBrowserTest = class extends PolymerTest {

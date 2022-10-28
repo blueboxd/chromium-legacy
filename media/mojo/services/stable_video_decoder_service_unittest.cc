@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -82,7 +82,7 @@ class MockVideoDecoder : public mojom::VideoDecoder {
   }
   std::unique_ptr<MojoDecoderBufferReader> TakeMojoDecoderBufferReader() {
     return std::move(mojo_decoder_buffer_reader_);
-  };
+  }
 
   // mojom::VideoDecoder implementation.
   MOCK_METHOD1(GetSupportedConfigs, void(GetSupportedConfigsCallback callback));

@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,9 +7,10 @@
 #include "ash/quick_pair/common/logging.h"
 #include "ash/quick_pair/proto/fastpair.pb.h"
 #include "base/base64.h"
+#include "base/containers/contains.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
-#include "chromeos/services/bluetooth_config/public/cpp/device_image_info.h"
+#include "chromeos/ash/services/bluetooth_config/public/cpp/device_image_info.h"
 #include "device/bluetooth/bluetooth_device.h"
 
 namespace ash {
@@ -146,7 +147,7 @@ bool FakeFastPairRepository::EvictDeviceImages(
 }
 
 // Unimplemented.
-absl::optional<chromeos::bluetooth_config::DeviceImageInfo>
+absl::optional<bluetooth_config::DeviceImageInfo>
 FakeFastPairRepository::GetImagesForDevice(const std::string& device_id) {
   return absl::nullopt;
 }
@@ -160,6 +161,22 @@ void FakeFastPairRepository::SetSavedDevices(
 
 void FakeFastPairRepository::GetSavedDevices(GetSavedDevicesCallback callback) {
   std::move(callback).Run(status_, devices_);
+}
+
+void FakeFastPairRepository::SaveMacAddressToAccount(
+    const std::string& mac_address) {
+  saved_mac_addresses_.insert(mac_address);
+}
+
+void FakeFastPairRepository::IsDeviceSavedToAccount(
+    const std::string& mac_address,
+    IsDeviceSavedToAccountCallback callback) {
+  if (base::Contains(saved_mac_addresses_, mac_address)) {
+    std::move(callback).Run(true);
+    return;
+  }
+
+  std::move(callback).Run(false);
 }
 
 }  // namespace quick_pair

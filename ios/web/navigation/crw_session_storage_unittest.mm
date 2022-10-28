@@ -1,26 +1,26 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #import "ios/web/public/session/crw_session_storage.h"
 
-#include "base/ios/ios_util.h"
+#import "base/ios/ios_util.h"
 #import "base/mac/foundation_util.h"
-#include "base/strings/sys_string_conversions.h"
-#include "base/test/scoped_feature_list.h"
-#include "ios/web/common/features.h"
+#import "base/strings/sys_string_conversions.h"
+#import "base/test/scoped_feature_list.h"
+#import "ios/web/common/features.h"
 #import "ios/web/navigation/navigation_item_impl.h"
 #import "ios/web/navigation/navigation_item_storage_test_util.h"
 #import "ios/web/navigation/serializable_user_data_manager_impl.h"
-#include "ios/web/public/navigation/referrer.h"
+#import "ios/web/public/navigation/referrer.h"
 #import "ios/web/public/session/crw_navigation_item_storage.h"
 #import "ios/web/session/crw_session_user_data.h"
 #import "net/base/mac/url_conversions.h"
-#include "testing/gtest/include/gtest/gtest.h"
+#import "testing/gtest/include/gtest/gtest.h"
 #import "testing/gtest_mac.h"
-#include "testing/platform_test.h"
-#include "third_party/ocmock/gtest_support.h"
-#include "ui/base/page_transition_types.h"
+#import "testing/platform_test.h"
+#import "third_party/ocmock/gtest_support.h"
+#import "ui/base/page_transition_types.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -28,7 +28,7 @@
 
 namespace {
 
-// Checks for equality between the item storages in |items1| and |items2|.
+// Checks for equality between the item storages in `items1` and `items2`.
 BOOL ItemStorageListsAreEqual(NSArray* items1, NSArray* items2) {
   __block BOOL items_are_equal = items1.count == items2.count;
   if (!items_are_equal)
@@ -41,7 +41,7 @@ BOOL ItemStorageListsAreEqual(NSArray* items1, NSArray* items2) {
   return items_are_equal;
 }
 
-// Checks for equality between |session1| and |session2|.
+// Checks for equality between `session1` and `session2`.
 BOOL SessionStoragesAreEqual(CRWSessionStorage* session1,
                              CRWSessionStorage* session2) {
   // Check the rest of the properties.
@@ -69,7 +69,7 @@ CRWSessionUserData* SessionUserDataFromDictionary(
 class CRWSessionStorageTest : public PlatformTest {
  protected:
   CRWSessionStorageTest() : session_storage_([[CRWSessionStorage alloc] init]) {
-    // Set up |session_storage_|.
+    // Set up `session_storage_`.
     session_storage_.hasOpener = YES;
     session_storage_.lastCommittedItemIndex = 4;
     session_storage_.userAgentType = web::UserAgentType::DESKTOP;

@@ -1,4 +1,4 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -65,7 +65,7 @@ class MockTranslateBubbleModel : public TranslateBubbleModel {
     current_view_state_ = view_state;
   }
 
-  void ShowError(translate::TranslateErrors::Type error_type) override {
+  void ShowError(translate::TranslateErrors error_type) override {
     error_type_ = error_type;
   }
 
@@ -164,7 +164,7 @@ class MockTranslateBubbleModel : public TranslateBubbleModel {
   void ReportUIChange(bool is_ui_shown) override {}
 
   ViewState current_view_state_;
-  translate::TranslateErrors::Type error_type_;
+  translate::TranslateErrors error_type_;
   int source_language_index_;
   int target_language_index_;
   bool never_translate_language_;

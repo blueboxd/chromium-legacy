@@ -1,17 +1,19 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome/browser/dips/dips_utils.h"
 
 #include "base/cxx17_backports.h"
-#include "base/strings/strcat.h"
 #include "base/strings/string_piece.h"
 #include "base/time/time.h"
+#include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 
 // CookieAccessType:
 base::StringPiece CookieAccessTypeToString(CookieAccessType type) {
   switch (type) {
+    case CookieAccessType::kUnknown:
+      return "Unknown";
     case CookieAccessType::kNone:
       return "None";
     case CookieAccessType::kRead:
@@ -102,4 +104,10 @@ std::ostream& operator<<(std::ostream& os, DIPSRedirectType type) {
 
 int64_t BucketizeBounceDelay(base::TimeDelta delta) {
   return base::clamp(delta.InSeconds(), INT64_C(0), INT64_C(10));
+}
+
+std::string GetDIPSSite(const GURL& url) {
+  const auto domain = net::registry_controlled_domains::GetDomainAndRegistry(
+      url, net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES);
+  return domain.empty() ? url.host() : domain;
 }

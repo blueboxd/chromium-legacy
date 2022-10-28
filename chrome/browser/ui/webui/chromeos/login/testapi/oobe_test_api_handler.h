@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -36,6 +36,9 @@ class OobeTestAPIHandler : public BaseWebUIHandler {
   void LoginAsGuest();
   void ShowGaiaDialog();
   void HandleGetPrimaryDisplayName(const std::string& callback_id);
+
+  // Emulate that a USB Mouse and a USB Keyboard are connected for testing.
+  void EmulateDevicesConnectedForTesting();
   void OnGetDisplayUnitInfoList(
       const std::string& callback_id,
       std::vector<crosapi::mojom::DisplayUnitInfoPtr> info_list);

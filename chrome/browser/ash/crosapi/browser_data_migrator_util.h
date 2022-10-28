@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -245,6 +245,10 @@ constexpr const char* const kStateStorePaths[] = {
 constexpr char kStorageFilePath[] = "Storage";
 constexpr char kStorageExtFilePath[] = "ext";
 
+// Values used for the kBrowserDataMigrationMode flag.
+constexpr char kCopySwitchValue[] = "copy";  // Corresponds to kCopy.
+constexpr char kMoveSwitchValue[] = "move";  // Corresponds to KMove.
+
 // The type of LevelDB schema.
 enum class LevelDBType {
   kLocalStorage = 0,
@@ -296,7 +300,7 @@ constexpr const char* kLacrosOnlyPreferencesKeys[] = {
 };
 
 // List of data types in Sync Data that have to stay in Ash and Ash only.
-static_assert(40 == syncer::GetNumModelTypes(),
+static_assert(42 == syncer::GetNumModelTypes(),
               "If adding a new sync data type, update the lists below if"
               " you want to keep the new data type in Ash only.");
 constexpr syncer::ModelType kAshOnlySyncDataTypes[] = {

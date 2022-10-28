@@ -1,11 +1,11 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 // Subpages
 import './appearance_page/appearance_fonts_page.js';
 import './autofill_page/autofill_section.js';
-// <if expr="is_win">
+// <if expr="is_win or is_macosx">
 import './autofill_page/passkeys_subpage.js';
 // </if>
 import './autofill_page/password_check.js';
@@ -86,7 +86,7 @@ export {SettingsAutofillSectionElement} from './autofill_page/autofill_section.j
 export {BlockingRequestManager} from './autofill_page/blocking_request_manager.js';
 // </if>
 export {SettingsCreditCardEditDialogElement} from './autofill_page/credit_card_edit_dialog.js';
-// <if expr="is_win">
+// <if expr="is_win or is_macosx">
 export {Passkey, PasskeysBrowserProxy, PasskeysBrowserProxyImpl} from './autofill_page/passkeys_browser_proxy.js';
 export {SettingsPasskeysSubpageElement} from './autofill_page/passkeys_subpage.js';
 // </if>
@@ -102,7 +102,7 @@ export {PasswordRemoveDialogElement} from './autofill_page/password_remove_dialo
 export {PasswordViewElement} from './autofill_page/password_view.js';
 export {PasswordsDeviceSectionElement} from './autofill_page/passwords_device_section.js';
 export {PasswordsExportDialogElement} from './autofill_page/passwords_export_dialog.js';
-export {ImportDialogState, PasswordsImportDialogElement} from './autofill_page/passwords_import_dialog.js';
+export {IMPORT_HELP_LANDING_PAGE, ImportDialogState, PasswordsImportDialogElement} from './autofill_page/passwords_import_dialog.js';
 export {PasswordsSectionElement} from './autofill_page/passwords_section.js';
 export {PaymentsManagerImpl, PaymentsManagerProxy} from './autofill_page/payments_manager_proxy.js';
 export {SettingsPaymentsSectionElement} from './autofill_page/payments_section.js';
@@ -196,6 +196,7 @@ export {CookieDetails, cookieInfo} from './site_settings/cookie_info.js';
 export {SettingsEditExceptionDialogElement} from './site_settings/edit_exception_dialog.js';
 export {LocalDataBrowserProxy, LocalDataBrowserProxyImpl, LocalDataItem} from './site_settings/local_data_browser_proxy.js';
 export {AppHandlerEntry, AppProtocolEntry, HandlerEntry, ProtocolEntry, ProtocolHandlersElement} from './site_settings/protocol_handlers.js';
+export {SettingsReviewNotificationPermissionsElement} from './site_settings/review_notification_permissions.js';
 export {SettingsCategoryDefaultRadioGroupElement} from './site_settings/settings_category_default_radio_group.js';
 export {SiteDataElement} from './site_settings/site_data.js';
 export {SiteDataDetailsSubpageElement} from './site_settings/site_data_details_subpage.js';
@@ -204,7 +205,7 @@ export {SiteDetailsPermissionElement} from './site_settings/site_details_permiss
 export {SiteEntryElement} from './site_settings/site_entry.js';
 export {SiteListElement} from './site_settings/site_list.js';
 export {SiteListEntryElement} from './site_settings/site_list_entry.js';
-export {ChooserException, ContentSettingProvider, CookiePrimarySetting, DefaultContentSetting, OriginInfo, RawChooserException, RawSiteException, RecentSitePermissions, SiteException, SiteGroup, SiteSettingsPrefsBrowserProxy, SiteSettingsPrefsBrowserProxyImpl, ZoomLevelEntry} from './site_settings/site_settings_prefs_browser_proxy.js';
+export {ChooserException, ContentSettingProvider, CookiePrimarySetting, DefaultContentSetting, NotificationPermission, OriginInfo, RawChooserException, RawSiteException, RecentSitePermissions, SiteException, SiteGroup, SiteSettingsPrefsBrowserProxy, SiteSettingsPrefsBrowserProxyImpl, ZoomLevelEntry} from './site_settings/site_settings_prefs_browser_proxy.js';
 export {WebsiteUsageBrowserProxy, WebsiteUsageBrowserProxyImpl} from './site_settings/website_usage_browser_proxy.js';
 export {ZoomLevelsElement} from './site_settings/zoom_levels.js';
 export {SettingsRecentSitePermissionsElement} from './site_settings_page/recent_site_permissions.js';

@@ -1,4 +1,4 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,11 +9,6 @@
 #include <string>
 #include <utility>
 
-#include "ash/components/login/auth/challenge_response/cert_utils.h"
-#include "ash/components/login/auth/public/cryptohome_key_constants.h"
-#include "ash/components/login/auth/public/saml_password_attributes.h"
-#include "ash/components/login/auth/public/sync_trusted_vault_keys.h"
-#include "ash/components/login/auth/public/user_context.h"
 #include "ash/components/settings/cros_settings_names.h"
 #include "ash/constants/ash_features.h"
 #include "ash/constants/ash_switches.h"
@@ -85,6 +80,11 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/installer/util/google_update_settings.h"
+#include "chromeos/ash/components/login/auth/challenge_response/cert_utils.h"
+#include "chromeos/ash/components/login/auth/public/cryptohome_key_constants.h"
+#include "chromeos/ash/components/login/auth/public/saml_password_attributes.h"
+#include "chromeos/ash/components/login/auth/public/sync_trusted_vault_keys.h"
+#include "chromeos/ash/components/login/auth/public/user_context.h"
 #include "chromeos/components/onc/certificate_scope.h"
 #include "chromeos/components/security_token_pin/constants.h"
 #include "chromeos/components/security_token_pin/error_generator.h"
@@ -172,16 +172,16 @@ GaiaScreenHandler::GaiaScreenMode GetGaiaScreenMode(const std::string& email) {
   if (authentication_behavior ==
       em::LoginAuthenticationBehaviorProto::SAML_INTERSTITIAL) {
     if (email.empty())
-      return GaiaScreenHandler::GAIA_SCREEN_MODE_SAML_INTERSTITIAL;
+      return GaiaScreenHandler::GAIA_SCREEN_MODE_SAML_REDIRECT;
 
     // If there's a populated email, we must check first that this user is using
-    // SAML in order to decide whether to show the interstitial page.
+    // SAML in order to decide whether to do the redirect.
     const user_manager::User* user = user_manager::UserManager::Get()->FindUser(
         user_manager::known_user::GetAccountId(email, std::string() /* id */,
                                                AccountType::UNKNOWN));
 
     if (user && user->using_saml())
-      return GaiaScreenHandler::GAIA_SCREEN_MODE_SAML_INTERSTITIAL;
+      return GaiaScreenHandler::GAIA_SCREEN_MODE_SAML_REDIRECT;
   }
 
   return GaiaScreenHandler::GAIA_SCREEN_MODE_DEFAULT;
@@ -226,13 +226,13 @@ std::string GetChromeType() {
   }
 }
 
-void UpdateAuthParams(base::Value* params, bool is_restrictive_proxy) {
+void UpdateAuthParams(base::Value* params) {
   CrosSettings* cros_settings = CrosSettings::Get();
   bool allow_new_user = true;
   cros_settings->GetBoolean(kAccountsPrefAllowNewUser, &allow_new_user);
 
   // nosignup flow if new users are not allowed.
-  if (!allow_new_user || is_restrictive_proxy)
+  if (!allow_new_user)
     params->SetStringKey("flow", "nosignup");
 }
 
@@ -246,10 +246,6 @@ bool ShouldCheckUserTypeBeforeAllowing() {
                             &family_link_allowed);
 
   return family_link_allowed;
-}
-
-bool IsOnline(NetworkPortalDetector::CaptivePortalStatus status) {
-  return status == NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_ONLINE;
 }
 
 void GetVersionAndConsent(std::string* out_version, bool* out_consent) {
@@ -336,10 +332,6 @@ GaiaScreenHandler::~GaiaScreenHandler() {
     GetLoginScreenPinDialogManager()->RemovePinDialogHost(this);
 }
 
-void GaiaScreenHandler::DisableRestrictiveProxyCheckForTest() {
-  disable_restrictive_proxy_check_for_test_ = true;
-}
-
 void GaiaScreenHandler::LoadGaia(const login::GaiaContext& context) {
   auto partition_call = login::GetStartSigninSession(
       web_ui(), base::BindOnce(&GaiaScreenHandler::LoadGaiaWithPartition,
@@ -417,7 +409,7 @@ void GaiaScreenHandler::LoadGaiaWithPartitionAndVersionAndConsent(
   params.SetBoolKey("readOnlyEmail", true);
   params.SetStringKey("email", context.email);
 
-  UpdateAuthParams(&params, IsRestrictiveProxy());
+  UpdateAuthParams(&params);
 
   screen_mode_ = GetGaiaScreenMode(context.email);
   params.SetIntKey("screenMode", screen_mode_);
@@ -542,7 +534,7 @@ void GaiaScreenHandler::LoadGaiaWithPartitionAndVersionAndConsent(
   public_saml_url_fetcher_.reset();
 
   bool is_reauth = !context.email.empty();
-  if (is_reauth && features::IsGaiaReauthEndpointEnabled()) {
+  if (is_reauth) {
     const AccountId account_id =
         GetAccountId(context.email, context.gaia_id, AccountType::GOOGLE);
     auto* user = user_manager::UserManager::Get()->FindUser(account_id);
@@ -585,8 +577,7 @@ void GaiaScreenHandler::ReloadGaia(bool force_reload) {
   NetworkStateInformer::State state = network_state_informer_->state();
   if (state != NetworkStateInformer::ONLINE &&
       !signin_screen_handler_->proxy_auth_dialog_need_reload_) {
-    VLOG(1) << "Skipping reloading of Gaia since network state="
-            << NetworkStateInformer::StatusString(state);
+    VLOG(1) << "Skipping reloading of Gaia since network state=" << state;
     return;
   }
 
@@ -618,9 +609,7 @@ void GaiaScreenHandler::DeclareLocalizedValues(
                IDS_LOGIN_SAML_INTERSTITIAL_CHANGE_ACCOUNT_LINK_TEXT);
   builder->Add("samlInterstitialNextBtn",
                IDS_LOGIN_SAML_INTERSTITIAL_NEXT_BUTTON_TEXT);
-  builder->Add("samlNotice", features::IsRedirectToDefaultIdPEnabled()
-                                 ? IDS_LOGIN_SAML_NOTICE_SHORT
-                                 : IDS_LOGIN_SAML_NOTICE);
+  builder->Add("samlNotice", IDS_LOGIN_SAML_NOTICE_SHORT);
   builder->Add("samlNoticeWithVideo", IDS_LOGIN_SAML_NOTICE_WITH_VIDEO);
   builder->Add("samlChangeProviderMessage",
                IDS_LOGIN_SAML_CHANGE_PROVIDER_MESSAGE);
@@ -644,11 +633,6 @@ void GaiaScreenHandler::DeclareLocalizedValues(
                IDS_SAML_SECURITY_TOKEN_PIN_DIALOG_TITLE);
   builder->Add("securityTokenPinDialogSubtitle",
                IDS_SAML_SECURITY_TOKEN_PIN_DIALOG_SUBTITLE);
-}
-
-void GaiaScreenHandler::GetAdditionalParameters(base::Value::Dict* dict) {
-  dict->Set("isRedirectToDefaultIdPEnabled",
-            base::Value(features::IsRedirectToDefaultIdPEnabled()));
 }
 
 void GaiaScreenHandler::InitializeDeprecated() {
@@ -686,23 +670,6 @@ void GaiaScreenHandler::RegisterMessages() {
   AddCallback("passwordEntered", &GaiaScreenHandler::HandlePasswordEntered);
 
   BaseScreenHandler::RegisterMessages();
-}
-
-void GaiaScreenHandler::OnPortalDetectionCompleted(
-    const NetworkState* network,
-    const NetworkPortalDetector::CaptivePortalStatus status) {
-  VLOG(1) << "OnPortalDetectionCompleted "
-          << NetworkPortalDetector::CaptivePortalStatusString(status);
-
-  const NetworkPortalDetector::CaptivePortalStatus previous_status =
-      captive_portal_status_;
-  captive_portal_status_ = status;
-  if (IsOnline(captive_portal_status_) == IsOnline(previous_status) ||
-      disable_restrictive_proxy_check_for_test_ ||
-      GetCurrentScreen() != kScreenId)
-    return;
-
-  LoadAuthExtension(true /* force */);
 }
 
 void GaiaScreenHandler::HandleIdentifierEntered(const std::string& user_email) {
@@ -1022,6 +989,8 @@ void GaiaScreenHandler::HandleSecurityTokenPinEntered(
 
 void GaiaScreenHandler::HandleOnFatalError(int error_code,
                                            const base::Value::Dict& params) {
+  if (!LoginDisplayHost::default_host())
+    return;
   const base::Value params_value = base::Value(params.Clone());
   LoginDisplayHost::default_host()
       ->GetWizardController()
@@ -1407,11 +1376,6 @@ void GaiaScreenHandler::LoadAuthExtension(bool force) {
 void GaiaScreenHandler::UpdateState(NetworkError::ErrorReason reason) {
   if (signin_screen_handler_ && !hidden_)
     signin_screen_handler_->UpdateState(reason);
-}
-
-bool GaiaScreenHandler::IsRestrictiveProxy() const {
-  return !disable_restrictive_proxy_check_for_test_ &&
-         !IsOnline(captive_portal_status_);
 }
 
 void GaiaScreenHandler::OnGaiaReauthTokenFetched(

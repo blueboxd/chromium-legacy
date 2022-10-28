@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -42,7 +42,7 @@ bool EnterprisePolicyDelegateImpl::IsUserImageEnterpriseManaged() const {
 
 bool EnterprisePolicyDelegateImpl::IsWallpaperEnterpriseManaged() const {
   return WallpaperController::Get()->IsWallpaperControlledByPolicy(
-      GetUser(profile_)->GetAccountId());
+      GetAccountId(profile_));
 }
 
 void EnterprisePolicyDelegateImpl::AddObserver(
@@ -59,7 +59,7 @@ void EnterprisePolicyDelegateImpl::OnUserImageIsEnterpriseManagedChanged(
     const user_manager::User& user,
     bool is_enterprise_managed) {
   // Filter out updates from other users.
-  if (user.GetAccountId() != GetUser(profile_)->GetAccountId()) {
+  if (user.GetAccountId() != GetAccountId(profile_)) {
     return;
   }
 

@@ -1,4 +1,4 @@
-# Copyright 2020 The Chromium Authors. All rights reserved.
+# Copyright 2020 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -120,7 +120,7 @@ ts_library("build_ts") {
                     target_gen_dir),
   ]
   definitions = [
-    "//chrome/browser/resources/pdf/source_capabilities.d.ts",
+    "//tools/typescript/definitions/pending.d.ts",
     "//tools/typescript/definitions/mime_handler_private.d.ts",
   ]
   in_files = preprocessed_tests + non_preprocessed_tests

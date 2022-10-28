@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -25,6 +25,8 @@ constexpr char kFeedbackAppViewedMetrics[] =
     "Feedback.ChromeOSApp.ViewedMetrics";
 constexpr char kFeedbackAppViewedSystemAndAppInfo[] =
     "Feedback.ChromeOSApp.ViewedSystemAndAppInfo";
+constexpr char kFeedbackAppViewedHelpContent[] =
+    "Feedback.ChromeOSApp.ViewedHelpContent";
 constexpr char kFeedbackAppCanContactUser[] =
     "Feedback.ChromeOSApp.CanContactUser";
 constexpr char kFeedbackAppIncludedFile[] = "Feedback.ChromeOSApp.IncludedFile";
@@ -36,6 +38,16 @@ constexpr char kFeedbackAppIncludedSystemInfo[] =
 constexpr char kFeedbackAppDescriptionLength[] =
     "Feedback.ChromeOSApp.DescriptionLength";
 constexpr char kFeedbackAppExitPath[] = "Feedback.ChromeOSApp.ExitPath";
+constexpr char kFeedbackAppHelpContentOutcome[] =
+    "Feedback.ChromeOSApp.HelpContentOutcome";
+constexpr char kFeedbackAppTimeOnPageSearchPage[] =
+    "Feedback.ChromeOSApp.TimeOnPage.SearchPage";
+constexpr char kFeedbackAppTimeOnPageShareDataPage[] =
+    "Feedback.ChromeOSApp.TimeOnPage.ShareDataPage";
+constexpr char kFeedbackAppTimeOnPageConfirmationPage[] =
+    "Feedback.ChromeOSApp.TimeOnPage.ConfirmationPage";
+constexpr char kFeedbackAppHelpContentSearchResultCount[] =
+    "Feedback.ChromeOSApp.HelpContentSearchResultCount";
 
 // The enums below are used in histograms, do not remove/renumber entries. If
 // you're adding to any of these enums, update the corresponding enum listing in
@@ -69,6 +81,17 @@ void EmitFeedbackAppIncludedSystemInfo(bool included_system_info);
 void EmitFeedbackAppDescriptionLength(int length);
 
 void EmitFeedbackAppExitPath(mojom::FeedbackAppExitPath exit_path);
+
+void EmitFeedbackAppHelpContentOutcome(
+    mojom::FeedbackAppHelpContentOutcome outcome);
+
+void EmitFeedbackAppTimeOnSearchPage(const base::TimeDelta& time_elapsed);
+
+void EmitFeedbackAppTimeOnShareDataPage(const base::TimeDelta& time_elapsed);
+
+void EmitFeedbackAppTimeOnConfirmationPage(const base::TimeDelta& time_elapsed);
+
+void EmitFeedbackAppHelpContentSearchResultCount(int count);
 
 }  // namespace ash::os_feedback_ui::metrics
 

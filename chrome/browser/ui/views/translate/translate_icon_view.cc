@@ -1,4 +1,4 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -29,7 +29,8 @@ TranslateIconView::TranslateIconView(
     : PageActionIconView(command_updater,
                          IDC_TRANSLATE_PAGE,
                          icon_label_bubble_delegate,
-                         page_action_icon_delegate) {
+                         page_action_icon_delegate,
+                         "Translate") {
   SetID(VIEW_ID_TRANSLATE_BUTTON);
 }
 

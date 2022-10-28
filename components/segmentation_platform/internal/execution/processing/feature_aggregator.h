@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -24,8 +24,9 @@ class FeatureAggregator {
 
   // Calculate the aggregated result for the given feature metadata and samples.
   // Assumes that the all the provided samples are valid within the required
-  // time frame.
-  virtual std::vector<float> Process(
+  // time frame. Returns absl::nullopt if the aggregation cannot be applied on
+  // the provided samples.
+  virtual absl::optional<std::vector<float>> Process(
       proto::SignalType signal_type,
       proto::Aggregation aggregation,
       uint64_t length,

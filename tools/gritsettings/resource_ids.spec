@@ -168,7 +168,7 @@
     "META": {"sizes": {"includes": [5]}},
     "includes": [1490],
   },
-  "<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/commander/commander_resources.grd": {
+  "<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/commander/resources.grd": {
     "META": {"sizes": {"includes": [15]}},
     "includes": [1500],
   },
@@ -322,7 +322,7 @@
     "includes": [2100],
   },
   "<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/webui_gallery/resources.grd": {
-    "META": {"sizes": {"includes": [20]}},
+    "META": {"sizes": {"includes": [50]}},
     "includes": [2130],
   },
   "<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/whats_new/resources.grd": {
@@ -380,9 +380,13 @@
     "META": {"sizes": {"includes": [10]}},
     "includes": [2330],
   },
+  "<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/app_home/resources.grd": {
+    "META": {"sizes": {"includes": [10]}},
+    "includes": [2340],
+  },
   "<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/gaia_auth_host/resources.grd": {
     "META": {"sizes": {"includes": [10],}},
-    "includes": [2340],
+    "includes": [2350],
   },
   "<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/invalidations/resources.grd": {
     "META": {"sizes": {"includes": [10],}},
@@ -430,6 +434,10 @@
   },
   "components/resources/dev_ui_components_resources.grd": {
     "includes": [2560],
+  },
+  "<(SHARED_INTERMEDIATE_DIR)/content/browser/resources/indexed_db/resources.grd": {
+    "META": {"sizes": {"includes": [10]}},
+    "includes": [2570],
   },
   "<(SHARED_INTERMEDIATE_DIR)/content/browser/resources/media/resources.grd": {
     "META": {"sizes": {"includes": [10],}},
@@ -571,10 +579,9 @@
   "ash/webui/media_app_ui/resources/mock/media_app_bundle_mock_resources.grd": {
     "includes": [3120],
   },
-  "ash/webui/print_management/resources/print_management_resources.grd": {
-    "META": {"join": 2},
+  "<(SHARED_INTERMEDIATE_DIR)/ash/webui/print_management/resources/ash_print_management_resources.grd": {
+    "META": {"join": 2, "sizes": {"includes": [20]}},
     "includes": [3140],
-    "structures": [3160],
   },
   "<(SHARED_INTERMEDIATE_DIR)/ash/webui/sample_system_web_app_ui/resources/trusted/ash_sample_system_web_app_resources.grd": {
     "META": {"sizes": {"includes": [50],}},
@@ -622,14 +629,28 @@
     "META": {"sizes": {"includes": [50],}},
    "includes": [3360],
   },
-  "<(SHARED_INTERMEDIATE_DIR)/ash/webui/projector_app/resources/ash_projector_app_untrusted_resources.grd": {
+
+  "<(SHARED_INTERMEDIATE_DIR)/ash/webui/projector_app/resources/app/trusted/ash_projector_app_trusted_resources.grd": {
     "META": {"sizes": {"includes": [50],}},
     "includes": [3380],
   },
-  "<(SHARED_INTERMEDIATE_DIR)/ash/webui/projector_app/resources/ash_projector_app_trusted_resources.grd": {
+ "<(SHARED_INTERMEDIATE_DIR)/ash/webui/projector_app/resources/app/untrusted/ash_projector_app_untrusted_resources.grd": {
     "META": {"sizes": {"includes": [50],}},
-    "includes": [3400],
+    "includes": [3395],
   },
+  "<(SHARED_INTERMEDIATE_DIR)/ash/webui/projector_app/resources/annotator/untrusted/ash_projector_annotator_untrusted_resources.grd": {
+    "META": {"sizes": {"includes": [50],}},
+    "includes": [3405],
+  },
+  "<(SHARED_INTERMEDIATE_DIR)/ash/webui/projector_app/resources/annotator/trusted/ash_projector_annotator_trusted_resources.grd": {
+    "META": {"sizes": {"includes": [50],}},
+    "includes": [3410],
+  },
+  "<(SHARED_INTERMEDIATE_DIR)/ash/webui/projector_app/resources/common/ash_projector_common_resources.grd": {
+    "META": {"sizes": {"includes": [50],}},
+    "includes": [3415],
+  },
+
   # Both projector_app_bundle_resources.grd and projector_app_bundle_mock_resources.grd
   # start with the same id because only one of them is built depending on if
   # src_internal is available. Lower bound for number of resource ids is number
@@ -641,9 +662,23 @@
   "ash/webui/projector_app/resources/mock/projector_app_bundle_mock_resources.grd": {
     "includes": [3420],
   },
-  "<(SHARED_INTERMEDIATE_DIR)/ash/webui/facial_ml_app_ui/resources/trusted/ash_facial_ml_app_resources.grd": {
+  "<(SHARED_INTERMEDIATE_DIR)/ash/webui/face_ml_app_ui/resources/trusted/ash_face_ml_app_resources.grd": {
     "META": {"join": 2, "sizes": {"includes": [50],}},
     "includes": [3440],
+  },
+  # Both face_ml_app_bundle_resources.grd and face_ml_app_bundle_mock_resources.grd
+  # start with the same id because only one of them is built depending on if
+  # src_internal is available.
+  "ash/webui/face_ml_app_ui/resources/prod/face_ml_app_bundle_resources.grd": {
+    "META": {"sizes": {"includes": [120],}},  # Relies on src-internal.
+    "includes": [3460],
+  },
+  "ash/webui/face_ml_app_ui/resources/mock/face_ml_app_bundle_mock_resources.grd": {
+    "includes": [3460],
+  },
+  "<(SHARED_INTERMEDIATE_DIR)/ash/webui/face_ml_app_ui/resources/untrusted/ash_face_ml_app_untrusted_resources.grd": {
+    "META": {"join": 2, "sizes": {"includes": [50],}},
+    "includes": [3480],
   },
   # END chromeos/ section.
 

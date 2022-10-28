@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -20,7 +20,6 @@ const STANDARD_CONSENT_CONFIRMATION = 'Yes, I\'m in';
 const SIGNIN_INTERCEPT_CONSENT_CONFIRMATION = 'Turn on sync';
 
 const SETTINGS_CONSENT_CONFIRMATION = 'Settings';
-const MANAGE_SYNC_CONSENT_CONFIRMATION = 'Manage sync';
 const SYNC_SETTINGS_CONSENT_CONFIRMATION = 'Sync settings';
 
 const CONSENT_DESCRIPTION_TEXTS = [
@@ -148,9 +147,7 @@ suite(`SigninSyncConfirmationConsentRecordingTest`, function() {
     app.shadowRoot!.querySelector<HTMLElement>('#settingsButton')!.click();
     const [description, confirmation] =
         await browserProxy.whenCalled('goToSettings');
-    if (isSigninInterceptFreEnabled) {
-      assertEquals(MANAGE_SYNC_CONSENT_CONFIRMATION, confirmation);
-    } else if (isModalDialogDesignEnabled) {
+    if (isModalDialogDesignEnabled) {
       assertEquals(SETTINGS_CONSENT_CONFIRMATION, confirmation);
     } else {
       assertEquals(SYNC_SETTINGS_CONSENT_CONFIRMATION, confirmation);

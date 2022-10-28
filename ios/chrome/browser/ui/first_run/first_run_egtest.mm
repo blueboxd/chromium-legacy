@@ -1,12 +1,12 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/strings/string_util.h"
-#include "base/strings/sys_string_conversions.h"
-#include "components/policy/core/common/policy_loader_ios_constants.h"
-#include "components/policy/policy_constants.h"
-#include "components/signin/ios/browser/features.h"
+#import "base/strings/string_util.h"
+#import "base/strings/sys_string_conversions.h"
+#import "components/policy/core/common/policy_loader_ios_constants.h"
+#import "components/policy/policy_constants.h"
+#import "components/signin/ios/browser/features.h"
 #import "ios/chrome/browser/policy/policy_app_interface.h"
 #import "ios/chrome/browser/policy/policy_earl_grey_utils.h"
 #import "ios/chrome/browser/ui/authentication/authentication_constants.h"
@@ -16,28 +16,27 @@
 #import "ios/chrome/browser/ui/authentication/views/views_constants.h"
 #import "ios/chrome/browser/ui/first_run/first_run_app_interface.h"
 #import "ios/chrome/browser/ui/first_run/first_run_constants.h"
-#include "ios/chrome/browser/ui/first_run/fre_field_trial.h"
 #import "ios/chrome/browser/ui/settings/google_services/manage_sync_settings_constants.h"
-#include "ios/chrome/browser/ui/ui_feature_flags.h"
-#include "ios/chrome/common/string_util.h"
+#import "ios/chrome/browser/ui/ui_feature_flags.h"
+#import "ios/chrome/common/string_util.h"
 #import "ios/chrome/common/ui/promo_style/constants.h"
-#include "ios/chrome/grit/ios_chromium_strings.h"
-#include "ios/chrome/grit/ios_strings.h"
+#import "ios/chrome/grit/ios_chromium_strings.h"
+#import "ios/chrome/grit/ios_strings.h"
 #import "ios/chrome/test/earl_grey/chrome_actions.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_app_interface.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
-#include "ios/chrome/test/earl_grey/test_switches.h"
+#import "ios/chrome/test/earl_grey/test_switches.h"
 #import "ios/public/provider/chrome/browser/signin/fake_chrome_identity.h"
 #import "ios/public/provider/chrome/browser/signin/fake_chrome_identity_interaction_manager_constants.h"
 #import "ios/testing/earl_grey/app_launch_manager.h"
 #import "ios/testing/earl_grey/earl_grey_test.h"
-#include "ui/base/l10n/l10n_util.h"
+#import "ui/base/l10n/l10n_util.h"
 
 #import "ios/public/provider/chrome/browser/signin/fake_chrome_identity_service_constants.h"
-#include "ios/third_party/earl_grey2/src/CommonLib/Matcher/GREYLayoutConstraint.h"  // nogncheck
+#import "ios/third_party/earl_grey2/src/CommonLib/Matcher/GREYLayoutConstraint.h"  // nogncheck
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -748,15 +747,7 @@ GREYLayoutConstraint* BelowConstraint() {
 // If browser is already signed in and the user opens the advanced settings then
 // selects "No thanks", the user should stay signed in, but sync should be
 // turned off.
-// TODO(crbug.com/1352970): Flaky on iOS simulator.
-#if TARGET_IPHONE_SIMULATOR
-#define MAYBE_testAdvancedSettingsSignedInSyncOff \
-  DISABLED_testAdvancedSettingsSignedInSyncOff
-#else
-#define MAYBE_testAdvancedSettingsSignedInSyncOff \
-  testAdvancedSettingsSignedInSyncOff
-#endif
-- (void)MAYBE_testAdvancedSettingsSignedInSyncOff {
+- (void)testAdvancedSettingsSignedInSyncOff {
   // Sign-in browser.
   FakeChromeIdentity* fakeIdentity = [FakeChromeIdentity fakeIdentity1];
   [SigninEarlGreyUI signinWithFakeIdentity:fakeIdentity enableSync:NO];

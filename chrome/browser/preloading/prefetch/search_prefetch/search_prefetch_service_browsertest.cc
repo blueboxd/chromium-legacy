@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -3005,8 +3005,7 @@ class SearchPrefetchServiceBFCacheTest : public SearchPrefetchBaseBrowserTest {
     feature_list_.InitWithFeaturesAndParameters(
         {{kSearchPrefetchServicePrefetching, {{"cache_size", "1"}}},
          {{features::kBackForwardCache},
-          {{"enable_same_site", "true"},
-           {"ignore_outstanding_network_request_for_testing", "true"}}}},
+          {{"ignore_outstanding_network_request_for_testing", "true"}}}},
         // Allow BackForwardCache for all devices regardless of their memory.
         {features::kBackForwardCacheMemoryControls});
   }

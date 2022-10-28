@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -173,12 +173,17 @@ void ArcPlayStoreEnabledPreferenceHandler::UpdateArcSessionManager() {
   }
 
   if (ShouldArcAlwaysStart()) {
+    arc_session_manager_->AllowActivation();
     arc_session_manager_->RequestEnable();
   } else if (IsArcPlayStoreEnabledForProfile(profile_)) {
-    if (!ShouldArcStartManually())
+    if (!ShouldArcStartManually()) {
+      // TODO(b/246282398): Stop calling AllowActivation() on a regular boot
+      // once go/arc-on-demand-v1 is properly implemented.
+      arc_session_manager_->AllowActivation();
       arc_session_manager_->RequestEnable();
-    else
+    } else {
       VLOG(1) << "ARC is not started automatically";
+    }
   } else {
     arc_session_manager_->RequestDisableWithArcDataRemoval();
   }

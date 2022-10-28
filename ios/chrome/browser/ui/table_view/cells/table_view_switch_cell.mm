@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,8 +8,8 @@
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
 #import "ios/chrome/common/ui/table_view/table_view_cells_constants.h"
 #import "ios/chrome/common/ui/util/constraints_ui_util.h"
-#include "ios/chrome/grit/ios_strings.h"
-#include "ui/base/l10n/l10n_util_mac.h"
+#import "ios/chrome/grit/ios_strings.h"
+#import "ui/base/l10n/l10n_util_mac.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -53,6 +53,7 @@ const CGFloat kSwitchTrailingPadding = 22;
 
     _iconImageView = [[UIImageView alloc] init];
     _iconImageView.translatesAutoresizingMaskIntoConstraints = NO;
+    _iconImageView.contentMode = UIViewContentModeCenter;
     _iconImageView.hidden = YES;
     [self.contentView addSubview:_iconImageView];
 
@@ -174,11 +175,15 @@ const CGFloat kSwitchTrailingPadding = 22;
              : [UIColor colorNamed:kTextPrimaryColor];
 }
 
-- (void)setIconImage:(UIImage*)image {
+- (void)setIconImage:(UIImage*)image
+           tintColor:(UIColor*)tintColor
+     backgroundColor:(UIColor*)backgroundColor
+        cornerRadius:(CGFloat)cornerRadius {
   BOOL hidden = (image == nil);
-  if (hidden == self.iconImageView.hidden) {
-    return;
-  }
+
+  self.iconImageView.tintColor = tintColor;
+  self.iconImageView.backgroundColor = backgroundColor;
+  self.iconImageView.layer.cornerRadius = cornerRadius;
 
   self.iconImageView.image = image;
   self.iconImageView.hidden = hidden;
@@ -218,7 +223,7 @@ const CGFloat kSwitchTrailingPadding = 22;
 
   self.textLabel.text = nil;
   self.detailTextLabel.text = nil;
-  [self setIconImage:nil];
+  [self setIconImage:nil tintColor:nil backgroundColor:nil cornerRadius:0];
   [_switchView removeTarget:nil
                      action:nil
            forControlEvents:[_switchView allControlEvents]];

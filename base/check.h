@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -88,7 +88,7 @@ class BASE_EXPORT CheckError {
   // Stream for adding optional details to the error message.
   std::ostream& stream();
 
-  NOMERGE ~CheckError();
+  NOMERGE NOT_TAIL_CALLED ~CheckError();
 
   CheckError(const CheckError&) = delete;
   CheckError& operator=(const CheckError&) = delete;

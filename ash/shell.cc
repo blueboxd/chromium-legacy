@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -33,6 +33,7 @@
 #include "ash/child_accounts/parent_access_controller_impl.h"
 #include "ash/clipboard/clipboard_history_controller_impl.h"
 #include "ash/clipboard/control_v_histogram_recorder.h"
+#include "ash/color_enhancement/color_enhancement_controller.h"
 #include "ash/constants/ash_features.h"
 #include "ash/constants/ash_switches.h"
 #include "ash/controls/contextual_tooltip.h"
@@ -68,7 +69,7 @@
 #include "ash/frame/snap_controller_impl.h"
 #include "ash/frame_throttler/frame_throttling_controller.h"
 #include "ash/glanceables/glanceables_controller.h"
-#include "ash/high_contrast/high_contrast_controller.h"
+#include "ash/glanceables/glanceables_delegate.h"
 #include "ash/highlighter/highlighter_controller.h"
 #include "ash/host/ash_window_tree_host_init_params.h"
 #include "ash/hud_display/hud_display.h"
@@ -147,9 +148,9 @@
 #include "ash/system/power/power_prefs.h"
 #include "ash/system/power/power_status.h"
 #include "ash/system/power/video_activity_notifier.h"
+#include "ash/system/privacy/screen_switch_check_controller.h"
 #include "ash/system/privacy_hub/privacy_hub_controller.h"
 #include "ash/system/screen_layout_observer.h"
-#include "ash/system/screen_security/screen_switch_check_controller.h"
 #include "ash/system/session/logout_confirmation_controller.h"
 #include "ash/system/status_area_widget.h"
 #include "ash/system/system_notification_controller.h"
@@ -165,7 +166,7 @@
 #include "ash/wm/container_finder.h"
 #include "ash/wm/cursor_manager_chromeos.h"
 #include "ash/wm/desks/desks_controller.h"
-#include "ash/wm/desks/persistent_desks_bar_controller.h"
+#include "ash/wm/desks/persistent_desks_bar/persistent_desks_bar_controller.h"
 #include "ash/wm/event_client_impl.h"
 #include "ash/wm/float/float_controller.h"
 #include "ash/wm/gestures/back_gesture/back_gesture_event_handler.h"
@@ -193,6 +194,7 @@
 #include "ash/wm/window_util.h"
 #include "ash/wm/wm_shadow_controller_delegate.h"
 #include "ash/wm/workspace_controller.h"
+#include "ash/wm_mode/wm_mode_controller.h"
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/check.h"
@@ -592,10 +594,6 @@ Shell::Shell(std::unique_ptr<ShellDelegate> shell_delegate)
       native_cursor_manager_(nullptr) {
   AccelerometerReader::GetInstance()->Initialize();
 
-  if (features::AreGlanceablesEnabled()) {
-    glanceables_controller_ = std::make_unique<GlanceablesController>();
-  }
-
   login_screen_controller_ =
       std::make_unique<LoginScreenController>(system_tray_notifier_.get());
   display_manager_ = ScreenAsh::CreateDisplayManager();
@@ -691,6 +689,8 @@ Shell::~Shell() {
   views::ViewsTextServicesContextMenuChromeos::SetImplFactory(
       base::NullCallback());
 
+  wm_mode_controller_.reset();
+
   event_rewriter_controller_.reset();
 
   screen_orientation_controller_.reset();
@@ -782,7 +782,7 @@ Shell::~Shell() {
   // VideoDetector::Observer interface.
   video_activity_notifier_.reset();
   video_detector_.reset();
-  high_contrast_controller_.reset();
+  color_enhancement_controller_.reset();
 
   shadow_controller_.reset();
   resize_shadow_controller_.reset();
@@ -799,6 +799,10 @@ Shell::~Shell() {
 
   // Close all widgets (including the shelf) and destroy all window containers.
   CloseAllRootWindowChildWindows();
+
+  // Glanceables has a dependency on `tablet_mode_controller_`. Should be
+  // destroyed first to remove the tablet mode observer.
+  glanceables_controller_.reset();
 
   multitask_menu_nudge_controller_.reset();
   tablet_mode_controller_.reset();
@@ -1017,7 +1021,9 @@ void Shell::Init(
 
   // These controllers call Shell::Get() in their constructors, so they cannot
   // be in the member initialization list.
-  privacy_hub_controller_ = std::make_unique<PrivacyHubController>();
+  if (features::IsCrosPrivacyHubEnabled()) {
+    privacy_hub_controller_ = std::make_unique<PrivacyHubController>();
+  }
   touch_devices_controller_ = std::make_unique<TouchDevicesController>();
   if (!ash::features::IsBluetoothRevampEnabled()) {
     bluetooth_power_controller_ =
@@ -1337,7 +1343,8 @@ void Shell::Init(
 
   autoclick_controller_ = std::make_unique<AutoclickController>();
 
-  high_contrast_controller_ = std::make_unique<HighContrastController>();
+  color_enhancement_controller_ =
+      std::make_unique<ColorEnhancementController>();
 
   docked_magnifier_controller_ = std::make_unique<DockedMagnifierController>();
 
@@ -1453,11 +1460,20 @@ void Shell::Init(
         std::make_unique<DisplayAlignmentController>();
   }
 
+  if (features::AreGlanceablesEnabled()) {
+    glanceables_controller_ = std::make_unique<GlanceablesController>();
+    glanceables_controller_->Init(shell_delegate_->CreateGlanceablesDelegate(
+        glanceables_controller_.get()));
+  }
+
   if (chromeos::features::IsProjectorEnabled())
     projector_controller_ = std::make_unique<ProjectorControllerImpl>();
 
   if (chromeos::wm::features::IsFloatWindowEnabled())
     float_controller_ = std::make_unique<FloatController>();
+
+  if (features::IsWmModeEnabled())
+    wm_mode_controller_ = std::make_unique<WmModeController>();
 
   // Injects the factory which fulfills the implementation of the text context
   // menu exclusive to CrOS.
@@ -1618,13 +1634,6 @@ void Shell::OnFirstSessionStarted() {
   // the session starts.
   app_list_feature_usage_metrics_ =
       std::make_unique<AppListFeatureUsageMetrics>();
-
-  if (features::AreGlanceablesEnabled()) {
-    // Show glanceables after signin.
-    // TODO(crbug.com/1353119): Show only when session restore would trigger.
-    glanceables_controller_->CreateUi();
-    glanceables_controller_->FetchData();
-  }
 }
 
 void Shell::OnSessionStateChanged(session_manager::SessionState state) {

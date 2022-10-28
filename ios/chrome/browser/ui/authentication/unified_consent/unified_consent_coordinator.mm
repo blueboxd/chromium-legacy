@@ -1,10 +1,10 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ios/chrome/browser/ui/authentication/unified_consent/unified_consent_coordinator.h"
+#import "ios/chrome/browser/ui/authentication/unified_consent/unified_consent_coordinator.h"
 
-#include "base/check_op.h"
+#import "base/check_op.h"
 #import "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/main/browser.h"
 #import "ios/chrome/browser/signin/authentication_service.h"

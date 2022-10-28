@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -33,10 +33,9 @@
 #include "chrome/browser/ui/webui/chromeos/login/error_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
 #include "chrome/grit/browser_resources.h"
-#include "chromeos/ash/components/dbus/session_manager/session_manager_client.h"
 #include "chromeos/ash/components/network/network_connection_handler.h"
 #include "chromeos/ash/components/network/network_handler.h"
-#include "chromeos/ash/components/network/portal_detector/network_portal_detector.h"
+#include "chromeos/ash/components/network/network_state_handler.h"
 #include "chromeos/dbus/power/power_manager_client.h"
 #include "components/session_manager/core/session_manager.h"
 #include "components/web_modal/web_contents_modal_dialog_manager.h"
@@ -73,8 +72,6 @@ constexpr const char kUserActionConfigureCertsButtonClicked[] =
 constexpr const char kUserActionDiagnoseButtonClicked[] = "diagnose";
 constexpr const char kUserActionLaunchOobeGuestSessionClicked[] =
     "launch-oobe-guest";
-constexpr const char kUserActionLocalStateErrorPowerwashButtonClicked[] =
-    "local-state-error-powerwash";
 constexpr const char kUserActionRebootButtonClicked[] = "reboot";
 constexpr const char kUserActionShowCaptivePortalClicked[] =
     "show-captive-portal";
@@ -197,8 +194,8 @@ base::CallbackListSubscription ErrorScreen::RegisterConnectRequestCallback(
 void ErrorScreen::MaybeInitCaptivePortalWindowProxy(
     content::WebContents* web_contents) {
   if (!captive_portal_window_proxy_.get()) {
-    captive_portal_window_proxy_ = std::make_unique<CaptivePortalWindowProxy>(
-        network_state_informer_.get(), web_contents);
+    captive_portal_window_proxy_ =
+        std::make_unique<CaptivePortalWindowProxy>(web_contents);
   }
 }
 
@@ -255,7 +252,7 @@ void ErrorScreen::ShowImpl() {
   view_->Show();
   LOG(WARNING) << "Network error screen message is shown";
   session_manager::SessionManager::Get()->NotifyNetworkErrorScreenShown();
-  network_portal_detector::GetInstance()->StartPortalDetection();
+  NetworkHandler::Get()->network_state_handler()->RequestPortalDetection();
 }
 
 void ErrorScreen::HideImpl() {
@@ -282,8 +279,6 @@ void ErrorScreen::OnUserAction(const base::Value::List& args) {
     OnDiagnoseButtonClicked();
   } else if (action_id == kUserActionLaunchOobeGuestSessionClicked) {
     OnLaunchOobeGuestSession();
-  } else if (action_id == kUserActionLocalStateErrorPowerwashButtonClicked) {
-    OnLocalStateErrorPowerwashButtonClicked();
   } else if (action_id == kUserActionRebootButtonClicked) {
     OnRebootButtonClicked();
   } else if (action_id == kUserActionCancel) {
@@ -359,10 +354,6 @@ void ErrorScreen::OnLaunchOobeGuestSession() {
   DeviceSettingsService::Get()->GetOwnershipStatusAsync(
       base::BindOnce(&ErrorScreen::StartGuestSessionAfterOwnershipCheck,
                      weak_factory_.GetWeakPtr()));
-}
-
-void ErrorScreen::OnLocalStateErrorPowerwashButtonClicked() {
-  SessionManagerClient::Get()->StartDeviceWipe();
 }
 
 void ErrorScreen::OnRebootButtonClicked() {

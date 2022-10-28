@@ -1,5 +1,5 @@
-# Copyright 2022 The Chromium Authors.All rights reserved.
-# Use of this source code is governed by a BSD - style license that can be
+# Copyright 2022 The Chromium Authors
+# Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
 import("//build/config/android/rules.gni")
@@ -51,6 +51,7 @@ android_library("js_sandbox_java") {
     "java/src/androidx/javascriptengine/JavaScriptIsolate.java",
     "java/src/androidx/javascriptengine/JavaScriptSandbox.java",
     "java/src/androidx/javascriptengine/SandboxDeadException.java",
+    "java/src/androidx/javascriptengine/SandboxUnsupportedException.java",
   ]
 
   deps = [

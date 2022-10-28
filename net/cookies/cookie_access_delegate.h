@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -15,9 +15,9 @@
 #include "net/cookies/canonical_cookie.h"
 #include "net/cookies/cookie_constants.h"
 #include "net/cookies/cookie_partition_key.h"
-#include "net/cookies/first_party_set_entry.h"
-#include "net/cookies/first_party_set_metadata.h"
-#include "net/cookies/same_party_context.h"
+#include "net/first_party_sets/first_party_set_entry.h"
+#include "net/first_party_sets/first_party_set_metadata.h"
+#include "net/first_party_sets/same_party_context.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "url/gurl.h"
 
@@ -78,7 +78,7 @@ class NET_EXPORT CookieAccessDelegate {
   // not both, and not neither.
   [[nodiscard]] virtual absl::optional<
       base::flat_map<net::SchemefulSite, net::FirstPartySetEntry>>
-  FindFirstPartySetOwners(
+  FindFirstPartySetEntries(
       const base::flat_set<net::SchemefulSite>& sites,
       base::OnceCallback<
           void(base::flat_map<net::SchemefulSite, net::FirstPartySetEntry>)>

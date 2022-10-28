@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -84,7 +84,6 @@ void FakeProfileOAuth2TokenServiceDelegate::UpdateCredentials(
 void FakeProfileOAuth2TokenServiceDelegate::IssueRefreshTokenForUser(
     const CoreAccountId& account_id,
     const std::string& token) {
-  ScopedBatchChange batch(this);
   if (token.empty()) {
     base::Erase(account_ids_, account_id);
     refresh_tokens_.erase(account_id);

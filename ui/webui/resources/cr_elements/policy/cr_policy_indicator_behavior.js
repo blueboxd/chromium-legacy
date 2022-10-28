@@ -8,7 +8,7 @@
  * rework the "policy" naming scheme throughout this directory.
  */
 
-// #import {assertNotReached} from '../../js/assert.m.js';
+import {assertNotReached} from '../../js/assert.m.js';
 
 /**
  * Strings required for policy indicators. These must be set at runtime.
@@ -33,7 +33,7 @@ var CrPolicyStrings;
  * Possible policy indicators that can be shown in settings.
  * @enum {string}
  */
-/* #export */ const CrPolicyIndicatorType = {
+export const CrPolicyIndicatorType = {
   DEVICE_POLICY: 'devicePolicy',
   EXTENSION: 'extension',
   NONE: 'none',
@@ -46,7 +46,7 @@ var CrPolicyStrings;
 };
 
 /** @polymerBehavior */
-/* #export */ const CrPolicyIndicatorBehavior = {
+export const CrPolicyIndicatorBehavior = {
   // Properties exposed to all policy indicators.
   properties: {
     /**
@@ -156,4 +156,28 @@ var CrPolicyStrings;
     return '';
   },
 };
-/* #ignore */ console.warn('crbug/1173575, non-JS module files deprecated.');
+
+/** @interface */
+export class CrPolicyIndicatorBehaviorInterface {
+  constructor() {
+    /** @type {CrPolicyIndicatorType} */
+    this.indicatorType;
+
+    /** @type {string} */
+    this.indicatorSourceName;
+
+    /** @type {boolean} */
+    this.indicatorVisible;
+
+    /** @type {string} */
+    this.indicatorIcon;
+  }
+
+  /**
+   * @param {!CrPolicyIndicatorType} type
+   * @param {string} name
+   * @param {boolean=} matches
+   * @return {string}
+   */
+  getIndicatorTooltip(type, name, matches) {}
+}

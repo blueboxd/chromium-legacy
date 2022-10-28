@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -17,6 +17,7 @@
 #include "components/history_clusters/core/history_clusters_util.h"
 #include "components/omnibox/browser/actions/omnibox_action.h"
 #include "components/omnibox/browser/actions/omnibox_action_concepts.h"
+#include "components/omnibox/browser/autocomplete_match.h"
 #include "components/omnibox/browser/autocomplete_result.h"
 #include "components/optimization_guide/core/entity_metadata.h"
 #include "components/prefs/pref_service.h"
@@ -36,20 +37,6 @@
 namespace history_clusters {
 
 namespace {
-
-// Find the top relevance of either search or navigation matches. Returns 0 if
-// there are no search or navigation matches.
-int TopRelevance(const AutocompleteResult& result, bool search) {
-  DCHECK(!result.empty());
-  return base::ranges::max_element(
-             result, {},
-             [&](const auto& match) {
-               return AutocompleteMatch::IsSearchType(match.type) == search
-                          ? match.relevance
-                          : 0;
-             })
-      ->relevance;
-}
 
 // A template function for recording enum metrics for shown and used journey
 // chips as well as their CTR metrics.
@@ -79,6 +66,30 @@ int TransformKeywordScoreForUma(float keyword_score) {
 
 }  // namespace
 
+int TopRelevance(std::vector<AutocompleteMatch>::const_iterator matches_begin,
+                 std::vector<AutocompleteMatch>::const_iterator matches_end,
+                 TopRelevanceFilter filter) {
+  if (matches_begin == matches_end)
+    return 0;
+  std::vector<int> relevances(matches_end - matches_begin);
+  base::ranges::transform(
+      matches_begin, matches_end, relevances.begin(), [&](const auto& match) {
+        return AutocompleteMatch::IsSearchType(match.type) ==
+                       (filter == TopRelevanceFilter::FILTER_FOR_SEARCH_MATCHES)
+                   ? match.relevance
+                   : 0;
+      });
+  return base::ranges::max(relevances);
+}
+
+bool IsNavigationIntent(int top_search_relevance,
+                        int top_navigation_relevance) {
+  DCHECK(!GetConfig().omnibox_action_on_navigation_intents);
+  return top_navigation_relevance > top_search_relevance &&
+         top_navigation_relevance >
+             GetConfig().omnibox_action_navigation_intent_score_threshold;
+}
+
 HistoryClustersAction::HistoryClustersAction(
     const std::string& query,
     const history::ClusterKeywordData& matched_keyword_data)
@@ -91,7 +102,8 @@ HistoryClustersAction::HistoryClustersAction(
           GURL(base::StringPrintf(
               "chrome://history/journeys?q=%s",
               base::EscapeQueryParamValue(query, /*use_plus=*/false).c_str()))),
-      matched_keyword_data_(matched_keyword_data) {
+      matched_keyword_data_(matched_keyword_data),
+      query_(query) {
 #if BUILDFLAG(IS_ANDROID)
     CreateOrUpdateJavaObject(query);
 #endif
@@ -142,7 +154,7 @@ void HistoryClustersAction::RecordActionShown(size_t position,
 }
 
 void HistoryClustersAction::Execute(ExecutionContext& context) const {
-  if (context.client_.OpenJourneys()) {
+  if (context.client_.OpenJourneys(query_)) {
     // If the client opens Journeys in the Side Panel, we are done.
     return;
   }
@@ -205,21 +217,27 @@ void AttachHistoryClustersActions(
 
   // If there's a reasonably clear navigation intent, don't distract the user
   // with the actions chip.
-  if (!GetConfig().omnibox_action_on_navigation_intents) {
-    int top_search_relevance = TopRelevance(result, true);
-    int top_navigation_relevance = TopRelevance(result, false);
-    if (top_navigation_relevance > top_search_relevance &&
-        top_navigation_relevance >
-            GetConfig().omnibox_action_navigation_intent_score_threshold) {
-      return;
-    }
+  if (!GetConfig().omnibox_action_on_navigation_intents &&
+      IsNavigationIntent(
+          TopRelevance(result.begin(), result.end(),
+                       TopRelevanceFilter::FILTER_FOR_SEARCH_MATCHES),
+          TopRelevance(result.begin(), result.end(),
+                       TopRelevanceFilter::FILTER_FOR_NON_SEARCH_MATCHES))) {
+    return;
   }
 
   for (auto& match : result) {
     // Skip incompatible matches (like entities) or ones with existing actions.
-    // TODO(tommycli): Deduplicate this code with Pedals.
-    if (match.action ||
-        !AutocompleteMatch::IsActionCompatibleType(match.type)) {
+    // TODO(manukh): We don't use `AutocompleteMatch::IsActionCompatibleType()`
+    //  because we're not sure if we want to show on entities or not. Once we
+    //  decide, either share `IsActionCompatibleType()` or inline it to its
+    //  remaining callsite.
+    if (match.action)
+      continue;
+    if (match.type == AutocompleteMatchType::SEARCH_SUGGEST_TAIL)
+      continue;
+    if (!GetConfig().omnibox_action_on_entities &&
+        match.type == AutocompleteMatchType::SEARCH_SUGGEST_ENTITY) {
       continue;
     }
 

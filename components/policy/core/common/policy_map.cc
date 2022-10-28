@@ -1,4 +1,4 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,9 +10,9 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/logging.h"
-#include "base/stl_util.h"
 #include "base/strings/strcat.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/types/optional_util.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
@@ -155,11 +155,11 @@ base::Value* PolicyMap::Entry::value(base::Value::Type value_type) {
 }
 
 const base::Value* PolicyMap::Entry::value_unsafe() const {
-  return base::OptionalOrNullptr(value_);
+  return base::OptionalToPtr(value_);
 }
 
 base::Value* PolicyMap::Entry::value_unsafe() {
-  return base::OptionalOrNullptr(value_);
+  return base::OptionalToPtr(value_);
 }
 
 void PolicyMap::Entry::set_value(absl::optional<base::Value> val) {
@@ -307,7 +307,7 @@ const PolicyMap::Entry& PolicyMap::EntryConflict::entry() const {
 }
 
 PolicyMap::PolicyMap()
-    : details_callback_{base::BindRepeating(&GetChromePolicyDetails)} {};
+    : details_callback_{base::BindRepeating(&GetChromePolicyDetails)} {}
 PolicyMap::PolicyMap(PolicyMap&&) noexcept = default;
 PolicyMap& PolicyMap::operator=(PolicyMap&&) noexcept = default;
 PolicyMap::~PolicyMap() = default;
@@ -542,17 +542,16 @@ bool PolicyMap::IsPolicyExternal(const std::string& policy) {
   return false;
 }
 
-void PolicyMap::LoadFrom(const base::DictionaryValue* policies,
+void PolicyMap::LoadFrom(const base::Value::Dict& policies,
                          PolicyLevel level,
                          PolicyScope scope,
                          PolicySource source) {
-  for (base::DictionaryValue::Iterator it(*policies); !it.IsAtEnd();
-       it.Advance()) {
-    if (IsPolicyExternal(it.key())) {
-      LOG(WARNING) << "Ignoring external policy: " << it.key();
+  for (auto it : policies) {
+    if (IsPolicyExternal(it.first)) {
+      LOG(WARNING) << "Ignoring external policy: " << it.first;
       continue;
     }
-    Set(it.key(), level, scope, source, it.value().Clone(), nullptr);
+    Set(it.first, level, scope, source, it.second.Clone(), nullptr);
   }
 }
 

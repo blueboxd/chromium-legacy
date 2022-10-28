@@ -1,4 +1,4 @@
-# Copyright 2020 The Chromium Authors. All rights reserved.
+# Copyright 2020 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -55,7 +55,6 @@ chrome_java_resources = [
   "java/res/drawable-hdpi/incognito_splash.png",
   "java/res/drawable-hdpi/infobar_chrome.png",
   "java/res/drawable-hdpi/infobar_mobile_friendly.png",
-  "java/res/drawable-hdpi/infobar_restore.png",
   "java/res/drawable-hdpi/infobar_translate.png",
   "java/res/drawable-hdpi/location_bar_incognito_badge.png",
   "java/res/drawable-hdpi/menu_update.png",
@@ -125,7 +124,6 @@ chrome_java_resources = [
   "java/res/drawable-mdpi/incognito_splash.png",
   "java/res/drawable-mdpi/infobar_chrome.png",
   "java/res/drawable-mdpi/infobar_mobile_friendly.png",
-  "java/res/drawable-mdpi/infobar_restore.png",
   "java/res/drawable-mdpi/infobar_translate.png",
   "java/res/drawable-mdpi/location_bar_incognito_badge.png",
   "java/res/drawable-mdpi/menu_update.png",
@@ -207,7 +205,6 @@ chrome_java_resources = [
   "java/res/drawable-xhdpi/incognito_splash.png",
   "java/res/drawable-xhdpi/infobar_chrome.png",
   "java/res/drawable-xhdpi/infobar_mobile_friendly.png",
-  "java/res/drawable-xhdpi/infobar_restore.png",
   "java/res/drawable-xhdpi/infobar_translate.png",
   "java/res/drawable-xhdpi/location_bar_incognito_badge.png",
   "java/res/drawable-xhdpi/menu_update.png",
@@ -271,7 +268,6 @@ chrome_java_resources = [
   "java/res/drawable-xxhdpi/incognito_splash.png",
   "java/res/drawable-xxhdpi/infobar_chrome.png",
   "java/res/drawable-xxhdpi/infobar_mobile_friendly.png",
-  "java/res/drawable-xxhdpi/infobar_restore.png",
   "java/res/drawable-xxhdpi/infobar_translate.png",
   "java/res/drawable-xxhdpi/location_bar_incognito_badge.png",
   "java/res/drawable-xxhdpi/menu_update.png",
@@ -333,7 +329,6 @@ chrome_java_resources = [
   "java/res/drawable-xxxhdpi/incognito_splash.png",
   "java/res/drawable-xxxhdpi/infobar_chrome.png",
   "java/res/drawable-xxxhdpi/infobar_mobile_friendly.png",
-  "java/res/drawable-xxxhdpi/infobar_restore.png",
   "java/res/drawable-xxxhdpi/infobar_translate.png",
   "java/res/drawable-xxxhdpi/location_bar_incognito_badge.png",
   "java/res/drawable-xxxhdpi/menu_update.png",
@@ -466,6 +461,7 @@ chrome_java_resources = [
   "java/res/layout/autofill_server_card_editor.xml",
   "java/res/layout/autofill_server_data_edit_link.xml",
   "java/res/layout/autofill_server_data_label.xml",
+  "java/res/layout/autofill_server_data_text_label.xml",
   "java/res/layout/autofill_update_address_profile_prompt.xml",
   "java/res/layout/bookmark_action_bar.xml",
   "java/res/layout/bookmark_add_edit_folder_activity.xml",

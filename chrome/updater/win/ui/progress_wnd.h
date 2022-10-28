@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -169,6 +169,8 @@ class ProgressWnd : public CompleteWnd, public InstallProgressObserver {
 
   void DeterminePostInstallUrls(const ObserverCompletionInfo& info);
   CompletionCodes GetBundleOverallCompletionCode(
+      const ObserverCompletionInfo& info) const;
+  std::wstring GetBundleCompletionErrorMessages(
       const ObserverCompletionInfo& info) const;
 
   enum class States {

@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -28,6 +28,7 @@ class PrefixMatcher {
   typedef std::vector<gfx::Range> Hits;
 
   PrefixMatcher(const TokenizedString& query, const TokenizedString& text);
+  ~PrefixMatcher();
 
   PrefixMatcher(const PrefixMatcher&) = delete;
   PrefixMatcher& operator=(const PrefixMatcher&) = delete;

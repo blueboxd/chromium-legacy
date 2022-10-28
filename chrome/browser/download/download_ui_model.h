@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -319,6 +319,13 @@ class DownloadUIModel {
 
   // Change what's returned by WasUINotified().
   virtual void SetWasUINotified(bool should_notify);
+
+  // Returns |true| if the download was actioned on. This governs if the
+  // download should be shown in the Download Bubble's partial view.
+  virtual bool WasActionedOn() const;
+
+  // Change what's returned by WasActionedOn().
+  virtual void SetActionedOn(bool actioned_on);
 
   // Returns |true| if the Download Bubble UI has shown this download warning.
   // By default, this value is |false| and should be changed explicitly using

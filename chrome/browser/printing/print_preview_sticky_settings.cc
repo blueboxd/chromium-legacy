@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -48,7 +48,7 @@ void PrintPreviewStickySettings::SaveInPrefs(PrefService* prefs) const {
 
 void PrintPreviewStickySettings::RestoreFromPrefs(PrefService* prefs) {
   const base::Value::Dict& value =
-      prefs->GetValueDict(prefs::kPrintPreviewStickySettings);
+      prefs->GetDict(prefs::kPrintPreviewStickySettings);
   const std::string* app_state = value.FindString(kSettingAppState);
   if (app_state)
     StoreAppState(*app_state);

@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -72,12 +72,6 @@ const char kTrySupportedChannelLayouts[] = "try-supported-channel-layouts";
 
 // Number of buffers to use for WaveOut.
 const char kWaveOutBuffers[] = "waveout-buffers";
-
-// Emulates audio capture timestamps instead of using timestamps from the actual
-// audio device.
-// See crbug.com/1315231 for more details.
-const char kUseFakeAudioCaptureTimestamps[] =
-    "use-fake-audio-capture-timestamps";
 #endif  // BUILDFLAG(IS_WIN)
 
 #if BUILDFLAG(IS_FUCHSIA)
@@ -196,10 +190,12 @@ const char kOverrideEnabledCdmInterfaceVersion[] =
 
 // Overrides hardware secure codecs support for testing. If specified, real
 // platform hardware secure codecs check will be skipped. Valid codecs are:
-// - video: "vp8", "vp9", "avc1", "hevc", "dolbyvision"
+// - video: "vp8", "vp9", "avc1", "hevc", "dolbyvision", "av01"
+// - video that does not support clear lead: `<video>-no-clearlead`, where
+//   <video> is from the list above.
 // - audio: "mp4a", "vorbis"
 // Codecs are separated by comma. For example:
-//  --override-hardware-secure-codecs-for-testing=vp8,vp9,vorbis
+//  --override-hardware-secure-codecs-for-testing=vp8,vp9-no-clearlead,vorbis
 //  --override-hardware-secure-codecs-for-testing=avc1,mp4a
 // CENC encryption scheme is assumed to be supported for the specified codecs.
 // If no valid codecs specified, no hardware secure codecs are supported. This
@@ -275,7 +271,7 @@ const base::Feature kPictureInPicture{"PictureInPicture",
 #if BUILDFLAG(ENABLE_PLATFORM_HEVC)
 // Enables HEVC hardware accelerated decoding.
 const base::Feature kPlatformHEVCDecoderSupport{
-    "PlatformHEVCDecoderSupport", base::FEATURE_DISABLED_BY_DEFAULT};
+    "PlatformHEVCDecoderSupport", base::FEATURE_ENABLED_BY_DEFAULT};
 #endif  // BUILDFLAG(ENABLE_PLATFORM_HEVC)
 
 // Only decode preload=metadata elements upon visibility.
@@ -627,7 +623,7 @@ const base::Feature kLiveCaption{"LiveCaption",
 // tab instead" button is shown for chrome.desktopCapture captures.
 const base::Feature kShareThisTabInsteadButtonGetDisplayMedia{
     "ShareThisTabInsteadButtonGetDisplayMedia",
-    base::FEATURE_DISABLED_BY_DEFAULT};
+    base::FEATURE_ENABLED_BY_DEFAULT};
 
 // If kShareThisTabInsteadButtonGetDisplayMedia is ENABLED, this flag controls
 // whether a "Share this tab instead" button should be enabled for
@@ -897,6 +893,12 @@ const base::Feature kMediaFoundationClearPlayback{
 // https://docs.microsoft.com/en-us/windows/win32/api/audioclient/ne-audioclient-audclnt_streamoptions
 const base::Feature MEDIA_EXPORT kWasapiRawAudioCapture{
     "WASAPIRawAudioCapture", base::FEATURE_ENABLED_BY_DEFAULT};
+
+// Emulates audio capture timestamps instead of using timestamps from the actual
+// audio device.
+// See crbug.com/1315231 for more details.
+const base::Feature MEDIA_EXPORT kUseFakeAudioCaptureTimestamps{
+    "UseFakeAudioCaptureTimestamps", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enable VP9 kSVC decoding with HW decoder for webrtc use case on Windows.
 const base::Feature kD3D11Vp9kSVCHWDecoding{"D3D11Vp9kSVCHWDecoding",

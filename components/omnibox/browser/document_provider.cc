@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,7 +6,6 @@
 
 #include <stddef.h>
 
-#include <algorithm>
 #include <map>
 #include <numeric>
 #include <tuple>
@@ -16,6 +15,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/containers/adapters.h"
+#include "base/containers/contains.h"
 #include "base/containers/lru_cache.h"
 #include "base/feature_list.h"
 #include "base/i18n/case_conversion.h"
@@ -23,6 +23,7 @@
 #include "base/json/json_reader.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/ranges/algorithm.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
@@ -45,13 +46,13 @@
 #include "components/omnibox/common/omnibox_features.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
-#include "components/search_engines/omnibox_focus_type.h"
 #include "components/search_engines/search_engine_type.h"
 #include "components/search_engines/template_url_service.h"
 #include "components/strings/grit/components_strings.h"
 #include "net/base/url_util.h"
 #include "services/network/public/mojom/url_response_head.mojom.h"
 #include "third_party/metrics_proto/omnibox_event.pb.h"
+#include "third_party/metrics_proto/omnibox_focus_type.pb.h"
 #include "third_party/re2/src/re2/re2.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -174,7 +175,7 @@ struct FieldMatches {
   // Increments |count| and returns true if |words| includes a word equal to or
   // prefixed by |word|.
   bool Includes(const std::u16string& word) {
-    if (std::none_of(words.begin(), words.end(), [word](std::u16string w) {
+    if (base::ranges::none_of(words, [word](std::u16string w) {
           return base::StartsWith(w, word,
                                   base::CompareCase::INSENSITIVE_ASCII);
         }))
@@ -289,9 +290,8 @@ int BoostOwned(const int score,
   std::vector<const std::string*> owner_emails = ExtractResultList(
       result, "metadata.owner.emailAddresses", "emailAddress");
 
-  bool owned = std::any_of(
-      owner_emails.begin(), owner_emails.end(),
-      [owner](const std::string* email) { return owner == *email; });
+  bool owned = base::Contains(owner_emails, owner,
+                              [](const std::string* email) { return *email; });
 
   return std::max(score + (owned ? promotion : -demotion), 0);
 }
@@ -565,7 +565,7 @@ bool DocumentProvider::IsDocumentProviderAllowed(
 
   // There should be no document suggestions fetched for on-focus suggestion
   // requests, or if the input is empty.
-  if (input.focus_type() != OmniboxFocusType::DEFAULT ||
+  if (input.focus_type() != metrics::OmniboxFocusType::INTERACTION_DEFAULT ||
       input.type() == metrics::OmniboxInputType::EMPTY) {
     return false;
   }
@@ -1007,25 +1007,26 @@ ACMatches DocumentProvider::ParseDocumentSearchResults(
 
 void DocumentProvider::CopyCachedMatchesToMatches(
     size_t skip_n_most_recent_matches) {
-  std::for_each(std::next(matches_cache_.begin(), skip_n_most_recent_matches),
-                matches_cache_.end(), [&](const auto& cache_key_match_pair) {
-                  auto match = cache_key_match_pair.second;
-                  match.allowed_to_be_default_match = false;
-                  match.TryRichAutocompletion(
-                      base::UTF8ToUTF16(match.destination_url.spec()),
-                      match.contents, input_);
-                  match.contents_class =
-                      DocumentProvider::Classify(match.contents, input_.text());
-                  match.RecordAdditionalInfo("from cache", "true");
-                  matches_.push_back(match);
-                });
+  base::ranges::transform(
+      std::next(matches_cache_.begin(), skip_n_most_recent_matches),
+      matches_cache_.end(), std::back_inserter(matches_),
+      [this](auto match) {
+        match.allowed_to_be_default_match = false;
+        match.TryRichAutocompletion(
+            base::UTF8ToUTF16(match.destination_url.spec()), match.contents,
+            input_);
+        match.contents_class =
+            DocumentProvider::Classify(match.contents, input_.text());
+        match.RecordAdditionalInfo("from cache", "true");
+        return match;
+      },
+      &MatchesCache::value_type::second);
 }
 
 void DocumentProvider::SetCachedMatchesScoresTo0() {
-  std::for_each(matches_cache_.begin(), matches_cache_.end(),
-                [&](auto& cache_key_match_pair) {
-                  cache_key_match_pair.second.relevance = 0;
-                });
+  base::ranges::for_each(matches_cache_, [&](auto& cache_key_match_pair) {
+    cache_key_match_pair.second.relevance = 0;
+  });
 }
 
 void DocumentProvider::DemoteMatchesBeyondMax() {

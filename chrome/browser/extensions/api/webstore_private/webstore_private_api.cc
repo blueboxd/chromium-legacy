@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -385,7 +385,7 @@ enum class WebStoreInstallAllowlistParameter {
 
 // Track the value of the allowlist parameter received from Chrome Web Store.
 void ReportWebStoreInstallEsbAllowlistParameter(
-    const bool* allowlist_parameter) {
+    const absl::optional<bool>& allowlist_parameter) {
   WebStoreInstallAllowlistParameter value;
 
   if (!allowlist_parameter)
@@ -587,7 +587,7 @@ void WebstorePrivateBeginInstallWithManifest3Function::OnWebstoreParseSuccess(
                 : ExtensionInstallPrompt::EXTENSION_PENDING_REQUEST_PROMPT),
         ExtensionInstallPrompt::GetDefaultShowDialogCallback());
   } else {
-    ReportWebStoreInstallEsbAllowlistParameter(details().esb_allowlist.get());
+    ReportWebStoreInstallEsbAllowlistParameter(details().esb_allowlist);
 
     if (ShouldShowFrictionDialog(profile_)) {
       ShowInstallFrictionDialog(web_contents);

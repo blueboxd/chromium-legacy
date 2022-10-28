@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -20,12 +20,7 @@ class QueryTilesModelTest : public testing::Test {
     query_tile_model_ = std::make_unique<QueryTilesModel>();
   }
 
-  void TearDown() override {
-    query_tile_model_.reset();
-    RunUntilIdle();
-  }
-
-  void RunUntilIdle() { task_environment_.RunUntilIdle(); }
+  void TearDown() override { query_tile_model_.reset(); }
 
   void ExpectInitAndFetchModel() {
     base::RunLoop loop;

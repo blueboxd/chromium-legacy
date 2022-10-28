@@ -1,4 +1,4 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -25,6 +25,7 @@ class Image;
 
 namespace ui {
 class ColorProvider;
+class NativeTheme;
 }
 
 // A representation of a theme. All theme properties can be accessed through the
@@ -80,6 +81,8 @@ class CustomThemeSupplier
     // TODO(pkasting): All classes that override GetColor() should override
     // this.
   }
+
+  virtual ui::NativeTheme* GetNativeTheme() const;
 
  protected:
   ~CustomThemeSupplier() override;

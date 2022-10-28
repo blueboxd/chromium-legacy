@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -920,12 +920,6 @@ public class PaymentRequestTestRule extends ChromeTabbedActivityTestRule
     /* package */ View getEditorDialogView() throws Throwable {
         return ThreadUtils.runOnUiThreadBlocking(
                 () -> mUI.getEditorDialog().findViewById(R.id.editor_container));
-    }
-
-    /** Allows to skip UI into paymenthandler for"basic-card". */
-    protected void enableSkipUIForBasicCard() {
-        ThreadUtils.runOnUiThreadBlocking(
-                () -> mChromePaymentRequestDelegateImpl.setSkipUiForBasicCard());
     }
 
     @Override

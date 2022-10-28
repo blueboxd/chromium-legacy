@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,7 +7,7 @@
 #import "base/metrics/histogram_functions.h"
 #import "components/feed/core/shared_prefs/pref_names.h"
 #import "components/prefs/pref_service.h"
-#import "ios/chrome/browser/pref_names.h"
+#import "ios/chrome/browser/prefs/pref_names.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_feature.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)

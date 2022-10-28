@@ -3,8 +3,8 @@
 // found in the LICENSE file.
 
 import {assert} from 'chrome://resources/js/assert.m.js';
-import {decorate} from 'chrome://resources/js/cr/ui.m.js';
-import {Command} from 'chrome://resources/js/cr/ui/command.js';
+import {decorate} from 'chrome://resources/js/cr/ui.js';
+import {Command} from './ui/command.js';
 import {assertNotReached} from 'chrome://webui-test/chai_assert.js';
 
 import {createCrostiniForTest} from '../../background/js/mock_crostini.js';

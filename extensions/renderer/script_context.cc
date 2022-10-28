@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -14,6 +14,7 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/renderer/render_frame.h"
+#include "content/public/renderer/v8_value_converter.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/content_script_injection_url_getter.h"
 #include "extensions/common/extension.h"
@@ -273,7 +274,7 @@ content::RenderFrame* ScriptContext::GetRenderFrame() const {
   DCHECK(thread_checker_.CalledOnValidThread());
   if (web_frame_)
     return content::RenderFrame::FromWebFrame(web_frame_);
-  return NULL;
+  return nullptr;
 }
 
 void ScriptContext::SafeCallFunction(const v8::Local<v8::Function>& function,
@@ -302,8 +303,14 @@ void ScriptContext::SafeCallFunction(
         function->Call(v8_context(), global, argc, argv);
     v8::Local<v8::Value> result;
     if (!callback.is_null() && maybe_result.ToLocal(&result)) {
-      std::vector<v8::Local<v8::Value>> results(1, result);
-      std::move(callback).Run(results, start_time);
+      std::unique_ptr<base::Value> value =
+          content::V8ValueConverter::Create()->FromV8Value(result,
+                                                           v8_context());
+      std::move(callback).Run(
+          value ? absl::make_optional(
+                      base::Value::FromUniquePtrValue(std::move(value)))
+                : absl::nullopt,
+          start_time);
     }
   }
 }
@@ -332,7 +339,7 @@ Feature::Availability ScriptContext::GetAvailability(
   const Extension* extension = extension_.get();
   if (extension && extension->is_hosted_app() &&
       (api_name == "runtime.connect" || api_name == "runtime.sendMessage")) {
-    extension = NULL;
+    extension = nullptr;
   }
   return ExtensionAPI::GetSharedInstance()->IsAvailable(
       api_name, extension, context_type_, url(), check_alias,

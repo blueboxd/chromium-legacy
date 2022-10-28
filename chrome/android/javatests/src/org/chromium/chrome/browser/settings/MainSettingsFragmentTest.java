@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -399,7 +399,7 @@ public class MainSettingsFragmentTest {
         final SyncService syncService =
                 TestThreadUtils.runOnUiThreadBlockingNoException(SyncService::get);
         TestThreadUtils.runOnUiThreadBlocking(
-                () -> { syncService.setChosenDataTypes(false, new HashSet<>()); });
+                () -> { syncService.setSelectedTypes(false, new HashSet<>()); });
         CoreAccountInfo account = mSyncTestRule.addTestAccount();
         SigninTestUtil.signinAndEnableSync(account, syncService);
 

@@ -1,4 +1,4 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -109,6 +109,7 @@ void DeriveCommandLine(const GURL& start_url,
     ::switches::kDisableGpuWatchdog,
     ::switches::kDisableGpuCompositing,
     ::switches::kDisableGpuRasterization,
+    ::switches::kDisableMojoBroker,
     ::switches::kDisablePepper3DImageChromium,
     ::switches::kDisableTouchDragDrop,
     ::switches::kDisableVideoCaptureUseGpuMemoryBuffer,
@@ -185,6 +186,7 @@ void DeriveCommandLine(const GURL& start_url,
     blink::switches::kNumRasterThreads,
     switches::kAshPowerButtonPosition,
     switches::kAshSideVolumeButtonPosition,
+    switches::kCrosHealthdUsesServiceManager,
     switches::kDefaultWallpaperLarge,
     switches::kDefaultWallpaperSmall,
     switches::kGuestWallpaperLarge,
@@ -211,6 +213,7 @@ void DeriveCommandLine(const GURL& start_url,
     switches::kArcAvailability,
     switches::kArcAvailable,
     switches::kArcScale,
+    switches::kAshUseCrOSMojoServiceManager,
     chromeos::switches::kDbusStub,
     switches::kDisableArcDataWipe,
     switches::kDisableArcOptInVerification,

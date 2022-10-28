@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -435,9 +435,7 @@ dnr_api::ModifyHeaderInfo CreateModifyHeaderInfo(
 
   header_info.operation = operation;
   header_info.header = header;
-
-  if (value)
-    header_info.value = std::make_unique<std::string>(*value);
+  header_info.value = value;
 
   return header_info;
 }

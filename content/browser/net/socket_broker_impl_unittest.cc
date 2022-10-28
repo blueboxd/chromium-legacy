@@ -6,6 +6,7 @@
 
 #include "base/run_loop.h"
 #include "base/test/task_environment.h"
+#include "content/public/test/browser_task_environment.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "net/base/address_family.h"
 #include "net/base/completion_once_callback.h"
@@ -18,23 +19,18 @@
 namespace content {
 
 void DidCompleteCreateTest(base::RunLoop* run_loop,
-                           mojo::PlatformHandle fd,
+                           network::TransferableSocket socket,
                            int rv) {
-// TODO(https://crbug.com/1311014): Remove ifdef and expect a result of net::OK
-// on Windows.
-#if BUILDFLAG(IS_WIN)
-  EXPECT_EQ(rv, net::ERR_FAILED);
-#else
-  EXPECT_NE(fd.ReleaseFD(), net::kInvalidSocket);
+  EXPECT_NE(socket.TakeSocket(), net::kInvalidSocket);
   EXPECT_EQ(rv, net::OK);
-#endif
 
   run_loop->Quit();
 }
 
 TEST(SocketBrokerImplTest, TestCanOpenSocket) {
+  content::BrowserTaskEnvironment task_environment;
+
   SocketBrokerImpl socket_broker_impl;
-  base::test::TaskEnvironment task_environment;
   base::RunLoop run_loop;
   mojo::Remote<network::mojom::SocketBroker> remote(
       socket_broker_impl.BindNewRemote());

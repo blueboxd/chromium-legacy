@@ -106,15 +106,6 @@ bool IsSelectiveUIAEnablementEnabled() {
 #endif  // BUILDFLAG(IS_WIN)
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-const base::Feature kMagnifierContinuousMouseFollowingModeSetting{
-    "MagnifierContinuousMouseFollowingModeSetting",
-    base::FEATURE_ENABLED_BY_DEFAULT};
-
-bool IsMagnifierContinuousMouseFollowingModeSettingEnabled() {
-  return base::FeatureList::IsEnabled(
-      ::features::kMagnifierContinuousMouseFollowingModeSetting);
-}
-
 const base::Feature kDockedMagnifierResizing{"DockedMagnifierResizing",
                                              base::FEATURE_ENABLED_BY_DEFAULT};
 
@@ -153,11 +144,45 @@ bool IsEnhancedNetworkVoicesEnabled() {
 }
 
 const base::Feature kAccessibilityOSSettingsVisibility{
-    "AccessibilityOSSettingsVisibility", base::FEATURE_DISABLED_BY_DEFAULT};
+    "AccessibilityOSSettingsVisibility", base::FEATURE_ENABLED_BY_DEFAULT};
 
 bool IsAccessibilityOSSettingsVisibilityEnabled() {
   return base::FeatureList::IsEnabled(
       ::features::kAccessibilityOSSettingsVisibility);
+}
+
+const base::Feature kAccessibilityService{"AccessibilityService",
+                                          base::FEATURE_DISABLED_BY_DEFAULT};
+
+bool IsAccessibilityServiceEnabled() {
+  return base::FeatureList::IsEnabled(::features::kAccessibilityService);
+}
+
+const base::Feature kExperimentalAccessibilityColorEnhancementSettings{
+    "ExperimentalAccessibilityColorEnhancementSettings",
+    base::FEATURE_DISABLED_BY_DEFAULT};
+
+bool AreExperimentalAccessibilityColorEnhancementSettingsEnabled() {
+  return base::FeatureList::IsEnabled(
+      ::features::kExperimentalAccessibilityColorEnhancementSettings);
+}
+
+const base::Feature kAccessibilitySelectToSpeakPageMigration{
+    "AccessibilitySelectToSpeakPageMigration",
+    base::FEATURE_DISABLED_BY_DEFAULT};
+
+bool IsAccessibilitySelectToSpeakPageMigrationEnabled() {
+  return base::FeatureList::IsEnabled(
+      ::features::kAccessibilitySelectToSpeakPageMigration);
+}
+
+const base::Feature kAccessibilitySelectToSpeakPrefsMigration{
+    "AccessibilitySelectToSpeakPrefsMigration",
+    base::FEATURE_DISABLED_BY_DEFAULT};
+
+bool IsAccessibilitySelectToSpeakPrefsMigrationEnabled() {
+  return base::FeatureList::IsEnabled(
+      ::features::kAccessibilitySelectToSpeakPrefsMigration);
 }
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
@@ -183,12 +208,28 @@ bool IsAriaElementReflectionEnabled() {
   return base::FeatureList::IsEnabled(::features::kEnableAriaElementReflection);
 }
 
+const base::Feature kAblateSendPendingAccessibilityEvents{
+    "AblateSendPendingAccessibilityEvents", base::FEATURE_DISABLED_BY_DEFAULT};
+
+bool IsAblateSendPendingAccessibilityEventsEnabled() {
+  return base::FeatureList::IsEnabled(
+      ::features::kAblateSendPendingAccessibilityEvents);
+}
+
 #if BUILDFLAG(IS_ANDROID)
 const base::Feature kComputeAXMode{"ComputeAXMode",
                                    base::FEATURE_DISABLED_BY_DEFAULT};
 
 bool IsComputeAXModeEnabled() {
   return base::FeatureList::IsEnabled(::features::kComputeAXMode);
+}
+
+const base::Feature kOptimizeAccessibilityUiThreadWork{
+    "OptimizeAccessibilityUiThreadWork", base::FEATURE_DISABLED_BY_DEFAULT};
+
+bool IsOptimizeAccessibilityUiThreadWorkEnabled() {
+  return base::FeatureList::IsEnabled(
+      ::features::kOptimizeAccessibilityUiThreadWork);
 }
 #endif  // BUILDFLAG(IS_ANDROID)
 
@@ -225,6 +266,13 @@ const base::Feature kScreenAIDebugMode{"ScreenAIDebugMode",
 
 bool IsScreenAIDebugModeEnabled() {
   return base::FeatureList::IsEnabled(::features::kScreenAIDebugMode);
+}
+
+const base::Feature kScreenAIUseLayoutExtraction{
+    "ScreenAIUseLayoutExtraction", base::FEATURE_DISABLED_BY_DEFAULT};
+
+bool IsScreenAIUseLayoutExtractionEnabled() {
+  return base::FeatureList::IsEnabled(::features::kScreenAIUseLayoutExtraction);
 }
 
 const base::Feature kPdfOcr{"PdfOcr", base::FEATURE_DISABLED_BY_DEFAULT};

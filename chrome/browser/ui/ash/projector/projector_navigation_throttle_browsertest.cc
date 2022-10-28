@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -19,6 +19,7 @@
 #include "chrome/browser/ui/ash/system_web_apps/system_web_app_ui_utils.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/browser_list_observer.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
@@ -50,11 +51,15 @@ constexpr char kStartTime[] = "21 Jan 2022 10:00:00 GMT";
 // chrome://projector/app/      | Yes          | No
 // chrome-untrusted://projector | No           | No
 
-class ProjectorNavigationThrottleTest : public InProcessBrowserTest {
+class ProjectorNavigationThrottleTest : public InProcessBrowserTest,
+                                        public BrowserListObserver {
  public:
   ProjectorNavigationThrottleTest()
       : scoped_feature_list_(features::kProjector) {}
-  ~ProjectorNavigationThrottleTest() override = default;
+
+  ~ProjectorNavigationThrottleTest() override {
+    BrowserList::RemoveObserver(this);
+  }
 
   void SetUpOnMainThread() override {
     InProcessBrowserTest::SetUpOnMainThread();
@@ -68,14 +73,29 @@ class ProjectorNavigationThrottleTest : public InProcessBrowserTest {
     task_runner_->AdvanceMockTickClock(forward_by);
     apps::CommonAppsNavigationThrottle::SetClockForTesting(
         task_runner_->GetMockTickClock());
+    BrowserList::AddObserver(this);
+  }
+
+  void WaitForBrowserRemoved() {
+    base::RunLoop run_loop;
+    on_browser_removed_callback_ = run_loop.QuitClosure();
+    run_loop.Run();
   }
 
  protected:
+  // BrowserListObserver:
+  void OnBrowserRemoved(Browser* browser) override {
+    if (on_browser_removed_callback_) {
+      std::move(on_browser_removed_callback_).Run();
+    }
+  }
+
   Profile* profile() { return browser()->profile(); }
   scoped_refptr<base::TestMockTimeTaskRunner> task_runner_;
 
  private:
   base::test::ScopedFeatureList scoped_feature_list_;
+  base::OnceClosure on_browser_removed_callback_;
 };
 
 class ProjectorNavigationThrottleTestParameterized
@@ -117,7 +137,8 @@ IN_PROC_BROWSER_TEST_P(ProjectorNavigationThrottleTestParameterized,
         browser(), gurl, WindowOpenDisposition::CURRENT_TAB,
         ui_test_utils::BrowserTestWaitFlags::BROWSER_TEST_WAIT_FOR_BROWSER);
   }
-  FlushSystemWebAppLaunchesForTesting(profile());
+
+  WaitForBrowserRemoved();
 
   // During the navigation, we closed the previous browser to prevent dangling
   // about:blank pages and opened a new app browser for the Projector SWA.
@@ -142,7 +163,7 @@ IN_PROC_BROWSER_TEST_P(ProjectorNavigationThrottleTestParameterized,
             content::PAGE_TYPE_NORMAL);
 
   // Construct the new redirected URL.
-  std::string expected_url = kChromeUITrustedProjectorAppUrl;
+  std::string expected_url = kChromeUITrustedProjectorUrl;
   expected_url += kFilePath;
   // The timestamp corresponds to 21 Jan 2022 10:00:00 GMT in microseconds since
   // Unix epoch (Jan 1 1970).
@@ -190,7 +211,7 @@ IN_PROC_BROWSER_TEST_F(ProjectorNavigationThrottleTest,
       browser(), GURL(kChromeUIUntrustedProjectorPwaUrl),
       WindowOpenDisposition::CURRENT_TAB,
       ui_test_utils::BrowserTestWaitFlags::BROWSER_TEST_WAIT_FOR_BROWSER);
-  FlushSystemWebAppLaunchesForTesting(profile());
+  WaitForBrowserRemoved();
 
   // During the navigation, we closed the previous browser to prevent dangling
   // blank redirect pages and opened a new app browser for the Projector SWA.
@@ -214,7 +235,7 @@ IN_PROC_BROWSER_TEST_F(ProjectorNavigationThrottleTest,
   EXPECT_EQ(tab->GetController().GetVisibleEntry()->GetPageType(),
             content::PAGE_TYPE_NORMAL);
 
-  std::string expected_url = kChromeUITrustedProjectorAppUrl;
+  std::string expected_url = kChromeUITrustedProjectorUrl;
   expected_url += "?timestamp=1642759200000000%20bogo-microseconds";
   EXPECT_EQ(tab->GetVisibleURL().spec(), expected_url);
 }
@@ -222,10 +243,9 @@ IN_PROC_BROWSER_TEST_F(ProjectorNavigationThrottleTest,
 // Verifies that navigating to chrome-untrusted://projector does not redirect.
 IN_PROC_BROWSER_TEST_F(ProjectorNavigationThrottleTest,
                        UntrustedNavigationNoRedirect) {
-  GURL untrusted_url(kChromeUIUntrustedProjectorAppUrl);
+  GURL untrusted_url(kChromeUIUntrustedProjectorUrl);
 
   ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), untrusted_url));
-  FlushSystemWebAppLaunchesForTesting(profile());
 
   Browser* app_browser =
       FindSystemWebAppBrowser(profile(), SystemWebAppType::PROJECTOR);
@@ -246,12 +266,11 @@ IN_PROC_BROWSER_TEST_F(ProjectorNavigationThrottleTest,
 // launches the SWA.
 IN_PROC_BROWSER_TEST_F(ProjectorNavigationThrottleTest,
                        TrustedNavigationNoRedirect) {
-  GURL trusted_url(kChromeUITrustedProjectorAppUrl);
+  GURL trusted_url(kChromeUITrustedProjectorUrl);
 
   ui_test_utils::NavigateToURLWithDisposition(
       browser(), trusted_url, WindowOpenDisposition::NEW_WINDOW,
       ui_test_utils::BrowserTestWaitFlags::BROWSER_TEST_WAIT_FOR_BROWSER);
-  FlushSystemWebAppLaunchesForTesting(profile());
 
   Browser* app_browser =
       FindSystemWebAppBrowser(profile(), SystemWebAppType::PROJECTOR);
@@ -277,8 +296,6 @@ IN_PROC_BROWSER_TEST_F(ProjectorNavigationThrottleTest,
   content::WebContents* tab =
       browser()->tab_strip_model()->GetActiveWebContents();
   ASSERT_TRUE(tab);
-  EXPECT_EQ(tab->GetController().GetVisibleEntry()->GetPageType(),
-            content::PAGE_TYPE_ERROR);
   EXPECT_EQ(tab->GetVisibleURL(), untrusted_annotator_url);
 }
 
@@ -309,7 +326,6 @@ IN_PROC_BROWSER_TEST_F(ProjectorNavigationThrottleDisabledTest,
 
   // Simulate the user typing the url into the omnibox.
   ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), pwa_url));
-  FlushSystemWebAppLaunchesForTesting(profile());
 
   Browser* app_browser =
       FindSystemWebAppBrowser(profile(), SystemWebAppType::PROJECTOR);
@@ -330,7 +346,7 @@ IN_PROC_BROWSER_TEST_F(ProjectorNavigationThrottleDisabledTest,
 // disabled.
 IN_PROC_BROWSER_TEST_F(ProjectorNavigationThrottleDisabledTest,
                        UntrustedNavigationInvalidUrl) {
-  GURL untrusted_url(kChromeUIUntrustedProjectorAppUrl);
+  GURL untrusted_url(kChromeUIUntrustedProjectorUrl);
 
   ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), untrusted_url));
   content::WebContents* tab =
@@ -345,10 +361,9 @@ IN_PROC_BROWSER_TEST_F(ProjectorNavigationThrottleDisabledTest,
 // disabled.
 IN_PROC_BROWSER_TEST_F(ProjectorNavigationThrottleDisabledTest,
                        TrustedNavigationInvalidUrl) {
-  GURL trusted_url(kChromeUITrustedProjectorAppUrl);
+  GURL trusted_url(kChromeUITrustedProjectorUrl);
 
   ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), trusted_url));
-  FlushSystemWebAppLaunchesForTesting(profile());
 
   Browser* app_browser =
       FindSystemWebAppBrowser(profile(), SystemWebAppType::PROJECTOR);
@@ -405,7 +420,7 @@ IN_PROC_BROWSER_TEST_P(ProjectorNavigationThrottleLocaleTest,
                        UntrustedNavigationLocaleDetection) {
   g_browser_process->SetApplicationLocale(locale());
 
-  GURL untrusted_url(kChromeUIUntrustedProjectorAppUrl);
+  GURL untrusted_url(kChromeUIUntrustedProjectorUrl);
 
   ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), untrusted_url));
   content::WebContents* tab =

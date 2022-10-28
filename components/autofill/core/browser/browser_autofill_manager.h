@@ -1,4 +1,4 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -25,6 +25,7 @@
 #include "components/autofill/core/browser/autofill_driver.h"
 #include "components/autofill/core/browser/autofill_external_delegate.h"
 #include "components/autofill/core/browser/autofill_manager.h"
+#include "components/autofill/core/browser/fast_checkout_delegate.h"
 #include "components/autofill/core/browser/field_filler.h"
 #include "components/autofill/core/browser/form_types.h"
 #include "components/autofill/core/browser/metrics/form_events/address_form_event_logger.h"
@@ -328,6 +329,11 @@ class BrowserAutofillManager : public AutofillManager,
     touch_to_fill_delegate_ = std::move(touch_to_fill_delegate);
   }
 
+  void SetFastCheckoutDelegateForTest(
+      std::unique_ptr<FastCheckoutDelegate> fast_checkout_delegate) {
+    fast_checkout_delegate_ = std::move(fast_checkout_delegate);
+  }
+
   // A public wrapper that calls |DeterminePossibleFieldTypesForUpload| for
   // testing purposes only.
   static void DeterminePossibleFieldTypesForUploadForTest(
@@ -395,7 +401,7 @@ class BrowserAutofillManager : public AutofillManager,
       const gfx::RectF& transformed_box,
       int query_id,
       bool autoselect_first_suggestion,
-      TouchToFillEligible touch_to_fill_eligible) override;
+      FormElementWasClicked form_element_was_clicked) override;
   void OnSelectControlDidChangeImpl(const FormData& form,
                                     const FormFieldData& field,
                                     const gfx::RectF& bounding_box) override;
@@ -522,6 +528,22 @@ class BrowserAutofillManager : public AutofillManager,
       FormStructure* form_structure,
       AutofillField* autofill_field,
       bool is_refill = false);
+
+  // Returns true if the field value should not be overridden by Autofill.
+  // Selection fields are excluded from this check because they may have a
+  // non-empty value. If the initiating element had a prefilled value but the
+  // autofill suggestion is present that includes the currently filled value in
+  // the field as a substring, Autofill would override the filled value in that
+  // case.
+  [[nodiscard]] bool ShouldPreventAutofillFromOverridingPrefilledField(
+      mojom::RendererFormDataAction action,
+      const FormFieldData& initiating_field,
+      const FormFieldData& to_be_filled_field,
+      AutofillField* cached_field,
+      FormFieldData* field_data,
+      absl::variant<const AutofillProfile*, const CreditCard*>
+          profile_or_credit_card,
+      const std::u16string* optional_cvc);
 
   // Creates a FormStructure using the FormData received from the renderer. Will
   // return an empty scoped_ptr if the data should not be processed for upload
@@ -675,6 +697,7 @@ class BrowserAutofillManager : public AutofillManager,
   // Delegates to perform external processing (display, selection) on
   // our behalf.
   std::unique_ptr<AutofillExternalDelegate> external_delegate_;
+  std::unique_ptr<FastCheckoutDelegate> fast_checkout_delegate_;
   std::unique_ptr<TouchToFillDelegateImpl> touch_to_fill_delegate_;
 
   std::string app_locale_;

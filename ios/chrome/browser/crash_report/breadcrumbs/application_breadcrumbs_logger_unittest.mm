@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,15 +6,15 @@
 
 #import <UIKit/UIKit.h>
 
-#include <list>
-#include <string>
+#import <list>
+#import <string>
 
-#include "base/files/scoped_temp_dir.h"
-#include "base/test/task_environment.h"
-#include "components/breadcrumbs/core/breadcrumb_manager.h"
-#include "components/breadcrumbs/core/breadcrumb_util.h"
-#include "testing/gtest/include/gtest/gtest.h"
-#include "testing/platform_test.h"
+#import "base/files/scoped_temp_dir.h"
+#import "base/test/task_environment.h"
+#import "components/breadcrumbs/core/breadcrumb_manager.h"
+#import "components/breadcrumbs/core/breadcrumb_util.h"
+#import "testing/gtest/include/gtest/gtest.h"
+#import "testing/platform_test.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."

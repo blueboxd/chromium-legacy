@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -101,6 +101,7 @@
   X("ime")                                                               \
   X("IndexedDB")                                                         \
   X("input")                                                             \
+  X("catan_investigation")                                               \
   X("io")                                                                \
   X("ipc")                                                               \
   X("Java")                                                              \
@@ -192,6 +193,7 @@
   X(TRACE_DISABLED_BY_DEFAULT("blink.feature_usage"))                    \
   X(TRACE_DISABLED_BY_DEFAULT("blink.image_decoding"))                   \
   X(TRACE_DISABLED_BY_DEFAULT("blink.invalidation"))                     \
+  X(TRACE_DISABLED_BY_DEFAULT("identifiability"))                        \
   X(TRACE_DISABLED_BY_DEFAULT("cc"))                                     \
   X(TRACE_DISABLED_BY_DEFAULT("cc.debug"))                               \
   X(TRACE_DISABLED_BY_DEFAULT("cc.debug.cdp-perf"))                      \

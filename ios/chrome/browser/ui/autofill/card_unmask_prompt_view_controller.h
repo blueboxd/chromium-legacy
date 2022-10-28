@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -26,6 +26,16 @@ class CardUnmaskPromptViewBridge;
 - (instancetype)initWithBridge:(autofill::CardUnmaskPromptViewBridge*)bridge
     NS_DESIGNATED_INITIALIZER;
 - (instancetype)initWithStyle:(UITableViewStyle*)style NS_UNAVAILABLE;
+
+// Replaces the right button in the navigation bar with an activity indicator
+// and disables user interactions with the tableView.
+- (void)showLoadingState;
+
+// Displays an error alert with the given message.
+// `closeOnDismiss` indicates if the ViewController should be dismissed when the
+// alert is dismissed.
+- (void)showErrorAlertWithMessage:(NSString*)message
+                   closeOnDismiss:(BOOL)closeOnDismiss;
 
 @end
 #endif  // IOS_CHROME_BROWSER_UI_AUTOFILL_CARD_UNMASK_PROMPT_VIEW_CONTROLLER_H_

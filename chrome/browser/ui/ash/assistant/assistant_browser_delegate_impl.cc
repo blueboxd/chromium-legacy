@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -37,7 +37,7 @@
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
 #if BUILDFLAG(ENABLE_CROS_LIBASSISTANT)
-#include "chromeos/services/libassistant/public/mojom/service.mojom.h"
+#include "chromeos/ash/services/libassistant/public/mojom/service.mojom.h"
 #endif  // BUILDFLAG(ENABLE_CROS_LIBASSISTANT)
 
 AssistantBrowserDelegateImpl::AssistantBrowserDelegateImpl() {

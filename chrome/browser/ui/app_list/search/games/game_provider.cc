@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -43,6 +43,9 @@ constexpr bool kUseWeightedRatio = false;
 constexpr double kRelevanceThreshold = 0.65;
 constexpr size_t kMaxResults = 3u;
 constexpr double kEpsilon = 1e-5;
+
+// Flag to enable/disable diacritics stripping
+constexpr bool kStripDiacritics = true;
 
 // Outcome of a call to GameSearchProvider::Start. These values persist to logs.
 // Entries should not be renumbered and numeric values should not be reused.
@@ -99,7 +102,8 @@ double CalculateTitleRelevance(const TokenizedString& tokenized_query,
   }
 
   FuzzyTokenizedStringMatch match;
-  return match.Relevance(tokenized_query, tokenized_title, kUseWeightedRatio);
+  return match.Relevance(tokenized_query, tokenized_title, kUseWeightedRatio,
+                         kStripDiacritics);
 }
 
 std::vector<std::pair<const apps::Result*, double>> SearchGames(

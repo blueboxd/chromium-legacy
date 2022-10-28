@@ -12,6 +12,7 @@
 #include "build/build_config.h"
 #include "third_party/blink/renderer/core/frame/web_feature.h"
 #include "third_party/blink/renderer/core/layout/deferred_shaping.h"
+#include "third_party/blink/renderer/core/layout/deferred_shaping_controller.h"
 #include "third_party/blink/renderer/core/layout/layout_block_flow.h"
 #include "third_party/blink/renderer/core/layout/layout_inline.h"
 #include "third_party/blink/renderer/core/layout/layout_object.h"
@@ -530,22 +531,21 @@ void NGInlineNode::PrepareLayoutIfNeeded() const {
 
 void NGInlineNode::ShapeTextOrDefer(const NGConstraintSpace& space) const {
   if (Data().shaping_state_ != NGInlineNodeData::kShapingNone) {
-    if (ShouldBeReshaped()) {
-      ShapeTextIncludingFirstLine(NGInlineNodeData::kShapingDone, MutableData(),
-                                  nullptr, nullptr);
-    }
-    return;
+    if (!ShouldBeReshaped())
+      return;
   }
 
   NGInlineNodeData* data = MutableData();
-  auto& view = *GetLayoutBox()->GetFrameView();
+  auto& ds_controller = DeferredShapingController::From(*this);
   NGInlineNodeData::ShapingState new_state = NGInlineNodeData::kShapingDone;
-  if (view.AllowDeferredShaping() && !GetLayoutBox()->IsInsideFlowThread() &&
-      Style().IsContentVisibilityVisible()) {
+  if (ds_controller.AllowDeferredShaping() &&
+      !GetLayoutBox()->IsInsideFlowThread() &&
+      Style().IsContentVisibilityVisible() &&
+      Style().PageTransitionTag().IsEmpty()) {
     DCHECK(IsHorizontalWritingMode(Style().GetWritingMode()));
-    const LayoutUnit viewport_bottom = view.CurrentViewportBottom();
+    const LayoutUnit viewport_bottom = ds_controller.CurrentViewportBottom();
     DCHECK_NE(viewport_bottom, kIndefiniteSize) << GetLayoutBox();
-    LayoutUnit top = view.CurrentMinimumTop();
+    LayoutUnit top = ds_controller.CurrentMinimumTop();
     // For css2.1/t080301-c411-vt-mrgn-00-b.html we should apply negative
     // margin, but not positive margin because of margin collapse.
     NGBoxStrut margins = ComputeMarginsForSelf(space, Style());
@@ -556,8 +556,7 @@ void NGInlineNode::ShapeTextOrDefer(const NGConstraintSpace& space) const {
       new_state = NGInlineNodeData::kShapingDeferred;
 
       if (Element* element = DynamicTo<Element>(GetDOMNode())) {
-        // We can't call DisplayLockContext::SetRequestedState() during layout.
-        view.RequestToLockDeferred(*element);
+        ds_controller.RegisterDeferred(*element);
       } else {
         // We don't support deferring anonymous IFCs because DisplayLock
         // supports only elements.
@@ -1016,7 +1015,7 @@ const NGInlineNodeData& NGInlineNode::EnsureData() const {
 
 const NGOffsetMapping* NGInlineNode::ComputeOffsetMappingIfNeeded() const {
   DCHECK(!GetLayoutBlockFlow()->GetDocument().NeedsLayoutTreeUpdate() ||
-         GetLayoutBlockFlow()->IsLayoutNGObjectForCanvasFormattedText());
+         GetLayoutBlockFlow()->IsLayoutNGObjectForFormattedText());
 
   NGInlineNodeData* data = MutableData();
   if (!data->offset_mapping) {
@@ -1032,7 +1031,7 @@ void NGInlineNode::ComputeOffsetMapping(LayoutBlockFlow* layout_block_flow,
                                         NGInlineNodeData* data) {
   DCHECK(!data->offset_mapping);
   DCHECK(!layout_block_flow->GetDocument().NeedsLayoutTreeUpdate() ||
-         layout_block_flow->IsLayoutNGObjectForCanvasFormattedText());
+         layout_block_flow->IsLayoutNGObjectForFormattedText());
 
   const SvgTextChunkOffsets* chunk_offsets = nullptr;
   if (data->svg_node_data_ && data->svg_node_data_->chunk_offsets.size() > 0)
@@ -2026,29 +2025,12 @@ bool NGInlineNode::UseFirstLineStyle() const {
 bool NGInlineNode::ShouldBeReshaped() const {
   if (!Data().IsShapingDeferred())
     return false;
-  if (const auto* context = GetDisplayLockContext()) {
-    if (context->IsLocked())
-      return false;
-    // Need to check the request queue because
-    // 1. ShapeTextOrDefer() in ComputeMinMaxSizes() requested to lock an
-    //    element.
-    // 2. ShapeTextOrDefer() in Layout() calls this function before handling
-    //    the request queue.
-    return !GetLayoutBox()->GetFrameView()->LockDeferredRequested(
-        *To<Element>(GetDOMNode()));
-  }
-  // This is deferred, but not locked yet.
-  return false;
-}
-
-DisplayLockContext* NGInlineNode::GetDisplayLockContext() const {
-  return GetLayoutBox()->GetDisplayLockContext();
+  return !IsDisplayLocked();
 }
 
 bool NGInlineNode::IsDisplayLocked() const {
-  if (const auto* context = GetDisplayLockContext())
-    return context->IsLocked();
-  return false;
+  return DeferredShapingController::From(*this).IsRegisteredDeferred(
+      *To<Element>(GetDOMNode()));
 }
 
 void NGInlineNode::CheckConsistency() const {

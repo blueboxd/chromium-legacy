@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,6 +6,7 @@
 
 #include <string>
 
+#include "base/containers/contains.h"
 #include "base/containers/cxx20_erase.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -157,8 +158,7 @@ void TestPasswordsPrivateDelegate::RequestCredentialDetails(
     content::WebContents* web_contents) {
   api::passwords_private::PasswordUiEntry entry = CreateEntry(42);
   if (plaintext_password_.has_value()) {
-    entry.password = std::make_unique<std::string>(
-        base::UTF16ToUTF8(plaintext_password_.value()));
+    entry.password = base::UTF16ToUTF8(plaintext_password_.value());
     std::move(callback).Run(std::move(entry));
   } else {
     std::move(callback).Run(std::move(absl::nullopt));
@@ -223,8 +223,7 @@ TestPasswordsPrivateDelegate::GetCompromisedCredentials() {
   credential.urls.link = "https://example.com";
   credential.urls.signon_realm = "https://example.com";
   credential.is_android_credential = false;
-  credential.change_password_url =
-      std::make_unique<std::string>("https://example.com/change-password");
+  credential.change_password_url = "https://example.com/change-password";
   credential.compromised_info =
       std::make_unique<api::passwords_private::CompromisedInfo>();
   // Mar 03 2020 12:00:00 UTC
@@ -247,8 +246,7 @@ TestPasswordsPrivateDelegate::GetWeakCredentials() {
   credential.urls.shown = "example.com";
   credential.urls.link = "https://example.com";
   credential.is_android_credential = false;
-  credential.change_password_url =
-      std::make_unique<std::string>("https://example.com/change-password");
+  credential.change_password_url = "https://example.com/change-password";
   credential.stored_in = api::passwords_private::PASSWORD_STORE_SET_DEVICE;
   std::vector<api::passwords_private::PasswordUiEntry> credentials;
   credentials.push_back(std::move(credential));
@@ -302,18 +300,20 @@ api::passwords_private::PasswordCheckStatus
 TestPasswordsPrivateDelegate::GetPasswordCheckStatus() {
   api::passwords_private::PasswordCheckStatus status;
   status.state = api::passwords_private::PASSWORD_CHECK_STATE_RUNNING;
-  status.already_processed = std::make_unique<int>(5);
-  status.remaining_in_queue = std::make_unique<int>(10);
-  status.elapsed_time_since_last_check =
-      std::make_unique<std::string>(base::UTF16ToUTF8(
-          TimeFormat::Simple(TimeFormat::FORMAT_ELAPSED,
-                             TimeFormat::LENGTH_SHORT, base::Minutes(5))));
+  status.already_processed = 5;
+  status.remaining_in_queue = 10;
+  status.elapsed_time_since_last_check = base::UTF16ToUTF8(TimeFormat::Simple(
+      TimeFormat::FORMAT_ELAPSED, TimeFormat::LENGTH_SHORT, base::Minutes(5)));
   return status;
 }
 
 password_manager::InsecureCredentialsManager*
 TestPasswordsPrivateDelegate::GetInsecureCredentialsManager() {
   return nullptr;
+}
+
+void TestPasswordsPrivateDelegate::ExtendAuthValidity() {
+  authenticator_interacted_ = true;
 }
 
 void TestPasswordsPrivateDelegate::SetProfile(Profile* profile) {
@@ -350,10 +350,8 @@ void TestPasswordsPrivateDelegate::SendPasswordExceptionsList() {
 
 bool TestPasswordsPrivateDelegate::IsCredentialPresentInInsecureCredentialsList(
     const api::passwords_private::PasswordUiEntry& credential) {
-  return std::any_of(insecure_credentials_.begin(), insecure_credentials_.end(),
-                     [&credential](const auto& insecure_credential) {
-                       return insecure_credential.id == credential.id;
-                     });
+  return base::Contains(insecure_credentials_, credential.id,
+                        &api::passwords_private::PasswordUiEntry::id);
 }
 
 }  // namespace extensions

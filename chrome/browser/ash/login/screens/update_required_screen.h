@@ -1,4 +1,4 @@
-// Copyright (c) 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -51,10 +51,9 @@ class UpdateRequiredScreen : public BaseScreen,
   void OnWaitForRebootTimeElapsed() override;
   void PrepareForUpdateCheck() override;
   void ShowErrorMessage() override;
-  void UpdateErrorMessage(
-      const NetworkPortalDetector::CaptivePortalStatus status,
-      const NetworkError::ErrorState& error_state,
-      const std::string& network_name) override;
+  void UpdateErrorMessage(NetworkState::PortalState state,
+                          NetworkError::ErrorState error_state,
+                          const std::string& network_name) override;
   void DelayErrorMessage() override;
   void UpdateInfoChanged(
       const VersionUpdater::UpdateInfo& update_info) override;

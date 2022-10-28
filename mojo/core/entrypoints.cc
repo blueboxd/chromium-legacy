@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -417,8 +417,11 @@ Core* Core::Get() {
 }
 
 void InitializeCore() {
-  static base::NoDestructor<Core> core_instance;
-  g_core = core_instance.get();
+  g_core = new Core();
+}
+
+void ShutDownCore() {
+  delete std::exchange(g_core, nullptr);
 }
 
 const MojoSystemThunks2& GetSystemThunks() {

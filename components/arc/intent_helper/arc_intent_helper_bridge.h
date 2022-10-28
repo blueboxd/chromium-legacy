@@ -1,4 +1,4 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -105,8 +105,8 @@ class ArcIntentHelperBridge : public KeyedService,
   void IsChromeAppEnabled(arc::mojom::ChromeApp app,
                           IsChromeAppEnabledCallback callback) override;
   void OnSupportedLinksChanged(
-      std::vector<arc::mojom::SupportedLinksPtr> added_packages,
-      std::vector<arc::mojom::SupportedLinksPtr> removed_packages,
+      std::vector<arc::mojom::SupportedLinksPackagePtr> added_packages,
+      std::vector<arc::mojom::SupportedLinksPackagePtr> removed_packages,
       arc::mojom::SupportedLinkChangeSource source) override;
   void OnDownloadAdded(const std::string& relative_path,
                        const std::string& owner_package_name) override;

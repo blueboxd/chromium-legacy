@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -52,7 +52,9 @@ namespace autotestPrivate {
     Default,
     Sync,
     User,
-    SubApp
+    SubApp,
+    Kiosk,
+    CommandLine
   };
 
   // A mapping of apps::mojom::Readiness
@@ -262,8 +264,6 @@ namespace autotestPrivate {
   callback IsArcProvisionedCallback = void (boolean arcProvisioned);
 
   callback IsArcPackageListInitialRefreshedCallback = void (boolean refreshed);
-
-  callback IsLacrosPrimaryBrowserCallback = void (boolean primary);
 
   // A mapping of crosapi::BrowserManager::State
   enum LacrosState {
@@ -542,7 +542,13 @@ namespace autotestPrivate {
 
     OverviewInfo? overviewInfo;
 
+    // The identifier of the app associated with the window that was launched
+    // from full restore. This should be same as |appId| when the window was
+    // restored from full restore, otherwise null.
     DOMString? fullRestoreWindowAppId;
+
+    // The identifier of the app associated with the window.
+    DOMString? appId;
   };
 
   dictionary Accelerator {
@@ -603,6 +609,12 @@ namespace autotestPrivate {
     ScrollableShelfInfo scrollableShelfInfo;
   };
 
+  // Information about all desks.
+  dictionary DesksInfo {
+    long activeDeskIndex;
+    long numDesks;
+  };
+
   callback GetShelfItemsCallback = void (ShelfItem[] items);
 
   callback GetDefaultPinnedAppIdsCallback = void (DOMString[] items);
@@ -624,6 +636,8 @@ namespace autotestPrivate {
   callback DesksCallback = void (boolean success);
 
   callback GetDeskCountCallback = void (long count);
+
+  callback GetDesksInfoCallback = void (DesksInfo desks);
 
   callback GetScrollableShelfInfoForStateCallback = void (
       ScrollableShelfInfo info);
@@ -844,13 +858,6 @@ namespace autotestPrivate {
     // [deprecated="Use getArcState()"]
     [supportsPromises] static void isArcProvisioned(
         IsArcProvisionedCallback callback);
-
-    // Returns true if Lacros is the primary browser. This includes the case
-    // where Lacros is the only browser.
-    // NOTE: Because the answer depends on the policy, this function should
-    // be used only after profile initialization.
-    [supportsPromises] static void isLacrosPrimaryBrowser(
-        IsLacrosPrimaryBrowserCallback callback);
 
     // Gets various information about the state of lacros on the system.
     [supportsPromises] static void getLacrosInfo(
@@ -1308,6 +1315,12 @@ namespace autotestPrivate {
     // `callback`: callback that is passed the number of open desks.
     [supportsPromises] static void getDeskCount(
         GetDeskCountCallback callback
+    );
+
+    // Fetches info about the open desks at the time of the call.
+    // `callback`: callback that is passed desks information.
+    [supportsPromises] static void getDesksInfo(
+        GetDesksInfoCallback callback
     );
 
     // Create mouse events to cause a mouse click.

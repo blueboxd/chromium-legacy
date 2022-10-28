@@ -138,9 +138,9 @@
 <translation id="1812527064848182527">லேண்ட்ஸ்கேப்</translation>
 <translation id="1829244130665387512">இந்தப் பக்கத்தில் தேடு</translation>
 <translation id="1834891354138622109">நெடுவரிசை</translation>
-<translation id="1845944666972354496">செயல்படுத்த, இருமுறை தட்டவும்</translation>
 <translation id="1846771122725914429">புளூடூத் பிரெய்ல் காட்சி</translation>
 <translation id="1852018405765032699">நான்கு விரல்களால் திரையைத் தட்டினால் ChromeVox மெனுக்கள் திறக்கப்படும் மூடப்படும். கட்டளைகள் &amp; ஷார்ட்கட்கள் குறித்த உதவிகரமான தகவல்கள் அவற்றில் இருக்கும். மெனுக்கள் திறக்கப்பட்டதும் அவற்றில் உள்ளவற்றைப் பார்க்க ஒரு விரலால் ஸ்வைப் செய்யலாம், அவற்றைச் செயல்படுத்த இருமுறை தட்டலாம். தொடர, நான்கு விரல்களால் திரையைத் தட்டவும்.</translation>
+<translation id="1864430479908918647">Search+Space பட்டன்களை அழுத்தவும்</translation>
 <translation id="1865601187525349519">உரையின் இறுதி</translation>
 <translation id="1876229593313240038">doc</translation>
 <translation id="1902396333223336119">கலம்</translation>
@@ -529,6 +529,7 @@
 <translation id="4479068155583208887">ஃபயர் பிரிக்</translation>
 <translation id="4482330759234983253">முந்தைய அட்டவணை</translation>
 <translation id="4491109536499578614">படம்</translation>
+<translation id="4507332368061453500">தற்போது காட்டப்படுவதில் நீண்ட நேரம் கிளிக் செய்</translation>
 <translation id="4511186779140817916">பிலாஞ்ச்டு ஆல்மண்ட்</translation>
 <translation id="451510441928265982">முந்தைய 2ம் நிலை தலைப்பு எதுவும் இல்லை</translation>
 <translation id="4515799157838123044">பின்புலத்தில் உள்ளவற்றை மங்கலாக்கு</translation>
@@ -597,7 +598,6 @@
 <translation id="4993152509206108683">பேச்சு விகிதம் <ph name="PERCENT" /> சதவீதம்</translation>
 <translation id="4994420463726586413">தற்போதைய பேட்டரி நிலையைத் தெரிவிக்கும்</translation>
 <translation id="4997282455736854877"><ph name="NAME" />, ரேடியோ பட்டன் தேர்ந்தெடுக்கப்பட்டது</translation>
-<translation id="5011664330025416377">செயல்படுத்த, Search+Space விசைகளை அழுத்தவும்</translation>
 <translation id="5012724933919010465"><ph name="NAME" />, மெனு விருப்பம் ரேடியோ பட்டனுக்கான தேர்வு செய்யப்பட்டுள்ளது</translation>
 <translation id="5020651427400641814">பேச்சுப் பதிவை இயக்கவும்</translation>
 <translation id="5041394372352067729">பக்கத்தின் மேல்பகுதிக்கு பிரெய்ல் காட்சியை நகர்த்து</translation>
@@ -762,6 +762,7 @@
 <translation id="6100239002225743044">முந்தைய வரிக்குச் செல்</translation>
 <translation id="6118126368611144850">Chromeக்கான Android ஆப்ஸ். உங்கள் சாதனத்தில் Play Store இருந்தால், Android பயன்பாடுகளுடன்கூடிய ChromeVox இல் புத்தம்புதிய அம்சங்களைப் பெறுங்கள் (பொதுவில் வெளியாவதற்கு முன்பே). Play Storeரிலிருந்து Google Chrome Canaryஐப் பதிவிறக்கி, பரிசோதனைக்குரிய ஆதரவைப் பயன்படுத்திப் பார்க்கவும்.</translation>
 <translation id="611827076493383239">vtd</translation>
+<translation id="6119846243427417423">செயல்படுத்து</translation>
 <translation id="6122013438240733403">btn</translation>
 <translation id="6132506484792346370">பட்டியல்பெட்டி அல்லது சேர்க்கைப் பெட்டி</translation>
 <translation id="613344593214611552">முந்தைய வாக்கியத்தை நீக்கு</translation>
@@ -778,6 +779,7 @@
 <translation id="6236061028292614533">அடுத்த தலைப்பு</translation>
 <translation id="6254901459154107917">அடுத்த திருத்தக்கூடிய உரைப் பகுதி</translation>
 <translation id="6259464875943891919"><ph name="TYPE" /> இலிருந்து வெளியேறினார்.</translation>
+<translation id="6280088282605782512">இருமுறை தட்டவும்</translation>
 <translation id="6282062888058716985">nav</translation>
 <translation id="6295699829709583154">முக்கியமான விசைகள்: Search</translation>
 <translation id="6305702903308659374">ChromeVox பேசும் போது, இயல்பான ஒலியளவில் இயக்கு</translation>
@@ -981,6 +983,7 @@
 <translation id="7731785449856576010">அடுத்த ஊடக விட்ஜெட் எதுவும் இல்லை</translation>
 <translation id="7735498529470878067">'தொட்டு அறிக' அம்சத்தின் மூலம் திரையில் உள்ளவற்றை விரைவாக அறிந்துகொள்ளலாம்.</translation>
 <translation id="773906353055481349">ஒவ்வொரு கலத்திற்கும் செல்ல Search+Ctrl+Alt விசைகளையும் அம்புக்குறி விசைகளையும் அழுத்தவும்</translation>
+<translation id="7746976083433980639"><ph name="LABEL" /> - <ph name="ACTION" /></translation>
 <translation id="7763537600611320912"><ph name="FILE_NAME" /> ஃபைலின் பதிவிறக்கம் தொடங்கியது</translation>
 <translation id="7768784765476638775">பேசும் திரை</translation>
 <translation id="7776293189010177726">ChromeVox மெனுக்களைத் திறக்கும்</translation>

@@ -1,10 +1,9 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome/browser/ui/ash/wallpaper_controller_client_impl.h"
 
-#include <algorithm>
 #include <string>
 #include <utility>
 #include <vector>
@@ -28,6 +27,7 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/path_service.h"
 #include "base/rand_util.h"
+#include "base/ranges/algorithm.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/task/sequenced_task_runner.h"
 #include "base/task/thread_pool.h"
@@ -50,7 +50,7 @@
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/sync/sync_service_factory.h"
 #include "chrome/browser/ui/ash/system_web_apps/system_web_app_ui_utils.h"
-#include "chrome/browser/ui/webui/settings/chromeos/pref_names.h"
+#include "chrome/browser/ui/webui/settings/ash/pref_names.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/pref_names.h"
@@ -831,8 +831,8 @@ void WallpaperControllerClientImpl::OnGooglePhotosDailyAlbumFetched(
   base::RandomShuffle(photos.begin(), photos.end());
 
   // Get the first photo from the shuffled set that is not in the LRU cache.
-  auto selected_itr = std::find_if(
-      photos.begin(), photos.end(),
+  auto selected_itr = base::ranges::find_if(
+      photos,
       [&ids](
           const ash::personalization_app::mojom::GooglePhotosPhotoPtr& photo) {
         return ids.Peek(base::PersistentHash(photo->id)) == ids.end();

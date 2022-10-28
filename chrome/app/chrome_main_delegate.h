@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright 2011 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -24,13 +24,16 @@ namespace chromeos {
 class LacrosService;
 }
 
+namespace heap_profiling {
+class HeapProfilerController;
+}
+
 namespace tracing {
 class TracingSamplerProfiler;
 }
 
 class ChromeContentBrowserClient;
 class ChromeContentUtilityClient;
-class HeapProfilerController;
 
 // Chrome implementation of ContentMainDelegate.
 class ChromeMainDelegate : public content::ContentMainDelegate {
@@ -66,6 +69,7 @@ class ChromeMainDelegate : public content::ContentMainDelegate {
   absl::optional<int> PreBrowserMain() override;
   absl::optional<int> PostEarlyInitialization(InvokedIn invoked_in) override;
   bool ShouldCreateFeatureList(InvokedIn invoked_in) override;
+  bool ShouldInitializeMojo(InvokedIn invoked_in) override;
 #if BUILDFLAG(IS_WIN)
   bool ShouldHandleConsoleControlEvents() override;
 #endif
@@ -94,7 +98,8 @@ class ChromeMainDelegate : public content::ContentMainDelegate {
 
   // The controller schedules UMA heap profiles collections and forwarding down
   // the reporting pipeline.
-  std::unique_ptr<HeapProfilerController> heap_profiler_controller_;
+  std::unique_ptr<heap_profiling::HeapProfilerController>
+      heap_profiler_controller_;
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
   std::unique_ptr<chromeos::LacrosService> lacros_service_;

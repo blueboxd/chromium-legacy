@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -27,7 +27,6 @@ bool InstallableMetrics::IsReportableInstallSource(WebappInstallSource source) {
   switch (source) {
     case WebappInstallSource::AMBIENT_BADGE_BROWSER_TAB:
     case WebappInstallSource::AMBIENT_BADGE_CUSTOM_TAB:
-    case WebappInstallSource::RICH_INSTALL_UI_WEBLAYER:
     case WebappInstallSource::API_BROWSER_TAB:
     case WebappInstallSource::API_CUSTOM_TAB:
     case WebappInstallSource::ARC:
@@ -36,50 +35,21 @@ bool InstallableMetrics::IsReportableInstallSource(WebappInstallSource source) {
     case WebappInstallSource::CHROME_SERVICE:
     case WebappInstallSource::DEVTOOLS:
     case WebappInstallSource::EXTERNAL_DEFAULT:
+    case WebappInstallSource::EXTERNAL_LOCK_SCREEN:
     case WebappInstallSource::EXTERNAL_POLICY:
     case WebappInstallSource::INTERNAL_DEFAULT:
     case WebappInstallSource::MENU_BROWSER_TAB:
     case WebappInstallSource::MENU_CREATE_SHORTCUT:
     case WebappInstallSource::MENU_CUSTOM_TAB:
     case WebappInstallSource::OMNIBOX_INSTALL_ICON:
-    case WebappInstallSource::SYSTEM_DEFAULT:
-      return true;
-    case WebappInstallSource::MANAGEMENT_API:
-    case WebappInstallSource::SUB_APP:
-    case WebappInstallSource::SYNC:
-      return false;
-    case WebappInstallSource::COUNT:
-      NOTREACHED();
-      return false;
-  }
-}
-
-// static
-bool InstallableMetrics::IsUserInitiatedInstallSource(
-    WebappInstallSource source) {
-  switch (source) {
-    case WebappInstallSource::MENU_BROWSER_TAB:
-    case WebappInstallSource::MENU_CUSTOM_TAB:
-    case WebappInstallSource::AUTOMATIC_PROMPT_BROWSER_TAB:
-    case WebappInstallSource::AUTOMATIC_PROMPT_CUSTOM_TAB:
-    case WebappInstallSource::API_BROWSER_TAB:
-    case WebappInstallSource::API_CUSTOM_TAB:
-    case WebappInstallSource::AMBIENT_BADGE_BROWSER_TAB:
-    case WebappInstallSource::AMBIENT_BADGE_CUSTOM_TAB:
     case WebappInstallSource::RICH_INSTALL_UI_WEBLAYER:
-    case WebappInstallSource::ARC:
-    case WebappInstallSource::CHROME_SERVICE:
-    case WebappInstallSource::OMNIBOX_INSTALL_ICON:
-    case WebappInstallSource::MENU_CREATE_SHORTCUT:
-      return true;
-    case WebappInstallSource::DEVTOOLS:
-    case WebappInstallSource::MANAGEMENT_API:
-    case WebappInstallSource::INTERNAL_DEFAULT:
-    case WebappInstallSource::EXTERNAL_DEFAULT:
-    case WebappInstallSource::EXTERNAL_POLICY:
     case WebappInstallSource::SYSTEM_DEFAULT:
-    case WebappInstallSource::SYNC:
+    case WebappInstallSource::KIOSK:
+      return true;
+    case WebappInstallSource::ISOLATED_APP_DEV_INSTALL:
+    case WebappInstallSource::MANAGEMENT_API:
     case WebappInstallSource::SUB_APP:
+    case WebappInstallSource::SYNC:
       return false;
     case WebappInstallSource::COUNT:
       NOTREACHED();

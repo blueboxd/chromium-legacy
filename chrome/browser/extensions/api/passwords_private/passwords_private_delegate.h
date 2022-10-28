@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -234,6 +234,9 @@ class PasswordsPrivateDelegate : public KeyedService {
   // disk, since BulkLeakCheckService does not know about that step.
   virtual password_manager::InsecureCredentialsManager*
   GetInsecureCredentialsManager() = 0;
+
+  // Restarts the authentication timer if it is running.
+  virtual void ExtendAuthValidity() = 0;
 };
 
 }  // namespace extensions

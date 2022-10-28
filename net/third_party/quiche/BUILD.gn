@@ -1,4 +1,4 @@
-# Copyright (c) 2020 The Chromium Authors. All rights reserved.
+# Copyright 2020 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -30,6 +30,11 @@ import("//third_party/protobuf/proto_library.gni")
 
 build_epoll_based_tools = is_linux || is_chromeos
 
+# TODO(crbug.com/1344231): Set this to always true. At which point, this
+# variable can go away and the conditionals below that depends on it can be
+# simplified.
+_no_shadow_is_internal = is_linux || is_mac || is_win
+
 config("quiche_internal_config") {
   cflags = []
   if (is_clang) {
@@ -37,6 +42,10 @@ config("quiche_internal_config") {
       "-Wno-unused-private-field",
       "-Wno-sign-compare",
     ]
+  }
+
+  if (_no_shadow_is_internal) {
+    cflags += [ "-Wno-shadow" ]
   }
 }
 
@@ -49,7 +58,9 @@ config("quiche_config") {
     "src",
   ]
 
-  cflags = [ "-Wno-shadow" ]
+  if (!_no_shadow_is_internal) {
+    cflags = [ "-Wno-shadow" ]
+  }
 }
 
 component("quiche") {
@@ -106,6 +117,10 @@ component("quiche") {
     "src/quiche/common/quiche_data_writer.cc",
     "src/quiche/common/quiche_data_writer.h",
     "src/quiche/common/quiche_endian.h",
+    "src/quiche/common/quiche_ip_address.cc",
+    "src/quiche/common/quiche_ip_address.h",
+    "src/quiche/common/quiche_ip_address_family.cc",
+    "src/quiche/common/quiche_ip_address_family.h",
     "src/quiche/common/quiche_linked_hash_map.h",
     "src/quiche/common/quiche_mem_slice_storage.cc",
     "src/quiche/common/quiche_mem_slice_storage.h",
@@ -262,6 +277,7 @@ component("quiche") {
     "src/quiche/quic/core/congestion_control/uber_loss_algorithm.cc",
     "src/quiche/quic/core/congestion_control/uber_loss_algorithm.h",
     "src/quiche/quic/core/congestion_control/windowed_filter.h",
+    "src/quiche/quic/core/connection_id_generator.h",
     "src/quiche/quic/core/crypto/aead_base_decrypter.cc",
     "src/quiche/quic/core/crypto/aead_base_decrypter.h",
     "src/quiche/quic/core/crypto/aead_base_encrypter.cc",
@@ -362,6 +378,8 @@ component("quiche") {
     "src/quiche/quic/core/crypto/transport_parameters.h",
     "src/quiche/quic/core/crypto/web_transport_fingerprint_proof_verifier.cc",
     "src/quiche/quic/core/crypto/web_transport_fingerprint_proof_verifier.h",
+    "src/quiche/quic/core/deterministic_connection_id_generator.cc",
+    "src/quiche/quic/core/deterministic_connection_id_generator.h",
     "src/quiche/quic/core/frames/quic_ack_frame.cc",
     "src/quiche/quic/core/frames/quic_ack_frame.h",
     "src/quiche/quic/core/frames/quic_ack_frequency_frame.cc",
@@ -645,10 +663,6 @@ component("quiche") {
     "src/quiche/quic/platform/api/quic_flag_utils.h",
     "src/quiche/quic/platform/api/quic_flags.h",
     "src/quiche/quic/platform/api/quic_hostname_utils.h",
-    "src/quiche/quic/platform/api/quic_ip_address.cc",
-    "src/quiche/quic/platform/api/quic_ip_address.h",
-    "src/quiche/quic/platform/api/quic_ip_address_family.cc",
-    "src/quiche/quic/platform/api/quic_ip_address_family.h",
     "src/quiche/quic/platform/api/quic_logging.h",
     "src/quiche/quic/platform/api/quic_mutex.h",
     "src/quiche/quic/platform/api/quic_server_stats.h",
@@ -771,6 +785,8 @@ if (build_epoll_based_tools) {
       "src/quiche/common/platform/api/quiche_stream_buffer_allocator.h",
       "src/quiche/common/platform/api/quiche_udp_socket_platform_api.h",
       "src/quiche/common/platform/default/quiche_platform_impl/quiche_stream_buffer_allocator_impl.h",
+      "src/quiche/common/quiche_ip_address_family.cc",
+      "src/quiche/common/quiche_ip_address_family.h",
       "src/quiche/epoll_server/platform/api/epoll_bug.h",
       "src/quiche/epoll_server/platform/api/epoll_logging.h",
       "src/quiche/epoll_server/platform/api/epoll_thread.h",
@@ -821,8 +837,6 @@ if (build_epoll_based_tools) {
       "src/quiche/quic/masque/masque_utils.cc",
       "src/quiche/quic/masque/masque_utils.h",
       "src/quiche/quic/platform/api/quic_epoll.h",
-      "src/quiche/quic/platform/api/quic_ip_address_family.cc",
-      "src/quiche/quic/platform/api/quic_ip_address_family.h",
       "src/quiche/quic/platform/api/quic_udp_socket_platform_api.h",
       "src/quiche/quic/tools/connect_tunnel.cc",
       "src/quiche/quic/tools/connect_tunnel.h",
@@ -834,6 +848,8 @@ if (build_epoll_based_tools) {
       "src/quiche/quic/tools/quic_client_epoll_network_helper.h",
       "src/quiche/quic/tools/quic_default_client.cc",
       "src/quiche/quic/tools/quic_default_client.h",
+      "src/quiche/quic/tools/quic_name_lookup.cc",
+      "src/quiche/quic/tools/quic_name_lookup.h",
       "src/quiche/quic/tools/quic_server.cc",
       "src/quiche/quic/tools/quic_server.h",
     ]
@@ -951,8 +967,6 @@ if (build_epoll_based_tools) {
       "src/quiche/epoll_server/platform/api/epoll_address_test_utils.h",
       "src/quiche/epoll_server/platform/api/epoll_expect_bug.h",
       "src/quiche/epoll_server/platform/api/epoll_test.h",
-      "src/quiche/quic/test_tools/quic_client_peer.cc",
-      "src/quiche/quic/test_tools/quic_client_peer.h",
       "src/quiche/quic/test_tools/quic_server_peer.cc",
       "src/quiche/quic/test_tools/quic_server_peer.h",
       "src/quiche/quic/test_tools/quic_test_client.cc",
@@ -1407,6 +1421,7 @@ source_set("quiche_tests") {
     "src/quiche/common/quiche_data_reader_test.cc",
     "src/quiche/common/quiche_data_writer_test.cc",
     "src/quiche/common/quiche_endian_test.cc",
+    "src/quiche/common/quiche_ip_address_test.cc",
     "src/quiche/common/quiche_linked_hash_map_test.cc",
     "src/quiche/common/quiche_mem_slice_storage_test.cc",
     "src/quiche/common/quiche_text_utils_test.cc",
@@ -1602,7 +1617,6 @@ source_set("quiche_tests") {
     "src/quiche/quic/core/tls_client_handshaker_test.cc",
     "src/quiche/quic/core/uber_quic_stream_id_manager_test.cc",
     "src/quiche/quic/core/uber_received_packet_manager_test.cc",
-    "src/quiche/quic/platform/api/quic_ip_address_test.cc",
     "src/quiche/quic/platform/api/quic_socket_address_test.cc",
     "src/quiche/quic/test_tools/crypto_test_utils_test.cc",
     "src/quiche/quic/test_tools/quic_test_utils_test.cc",

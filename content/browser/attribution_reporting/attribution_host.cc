@@ -66,7 +66,7 @@ AttributionHost::AttributionHost(WebContents* web_contents)
 }
 
 AttributionHost::~AttributionHost() {
-  DCHECK_EQ(0u, navigation_impression_origins_.size());
+  DCHECK_EQ(0u, navigation_source_origins_.size());
 }
 
 void AttributionHost::DidStartNavigation(NavigationHandle* navigation_handle) {
@@ -105,15 +105,15 @@ void AttributionHost::DidStartNavigation(NavigationHandle* navigation_handle) {
           ->frame_tree()
           ->root()
           ->current_origin();
-  navigation_impression_origins_.emplace(navigation_handle->GetNavigationId(),
-                                         initiator_root_frame_origin);
+  navigation_source_origins_.emplace(navigation_handle->GetNavigationId(),
+                                     initiator_root_frame_origin);
 }
 
 void AttributionHost::DidRedirectNavigation(
     NavigationHandle* navigation_handle) {
   auto it =
-      navigation_impression_origins_.find(navigation_handle->GetNavigationId());
-  if (it == navigation_impression_origins_.end())
+      navigation_source_origins_.find(navigation_handle->GetNavigationId());
+  if (it == navigation_source_origins_.end())
     return;
 
   DCHECK(navigation_handle->GetImpression());
@@ -133,7 +133,7 @@ void AttributionHost::DidRedirectNavigation(
   if (!data_host_manager)
     return;
 
-  const url::Origin& impression_origin = it->second;
+  const url::Origin& source_origin = it->second;
 
   const std::vector<GURL>& redirect_chain =
       navigation_handle->GetRedirectChain();
@@ -150,7 +150,7 @@ void AttributionHost::DidRedirectNavigation(
 
   data_host_manager->NotifyNavigationRedirectRegistation(
       navigation_handle->GetImpression()->attribution_src_token, source_header,
-      std::move(reporting_origin), impression_origin);
+      std::move(reporting_origin), source_origin);
 }
 
 void AttributionHost::DidFinishNavigation(NavigationHandle* navigation_handle) {
@@ -166,15 +166,14 @@ void AttributionHost::DidFinishNavigation(NavigationHandle* navigation_handle) {
   AttributionManager* attribution_manager =
       AttributionManager::FromWebContents(web_contents());
   if (!attribution_manager) {
-    DCHECK(navigation_impression_origins_.empty());
+    DCHECK(navigation_source_origins_.empty());
     if (navigation_handle->GetImpression())
       RecordRegisterImpressionAllowed(false);
     return;
   }
 
-  ScopedMapDeleter<NavigationImpressionOriginMap>
-      navigation_impression_origin_it(&navigation_impression_origins_,
-                                      navigation_handle->GetNavigationId());
+  ScopedMapDeleter<NavigationSourceOriginMap> navigation_source_origin_it(
+      &navigation_source_origins_, navigation_handle->GetNavigationId());
 
   // Separate from above because we need to clear the navigation related state
   if (!navigation_handle->HasCommitted()) {
@@ -191,12 +190,12 @@ void AttributionHost::DidFinishNavigation(NavigationHandle* navigation_handle) {
 
   // If we were not able to access the impression origin, ignore the
   // navigation.
-  if (!navigation_impression_origin_it) {
+  if (!navigation_source_origin_it) {
     MaybeNotifyFailedSourceNavigation(navigation_handle);
     return;
   }
-  const url::Origin& impression_origin =
-      (*navigation_impression_origin_it.get())->second;
+  const url::Origin& source_origin =
+      (*navigation_source_origin_it.get())->second;
 
   DCHECK(navigation_handle->GetImpression());
   const blink::Impression& impression = *(navigation_handle->GetImpression());
@@ -209,7 +208,7 @@ void AttributionHost::DidFinishNavigation(NavigationHandle* navigation_handle) {
       navigation_handle->GetRenderFrameHost()->GetLastCommittedOrigin();
 
   data_host_manager->NotifyNavigationForDataHost(
-      impression.attribution_src_token, impression_origin, destination_origin);
+      impression.attribution_src_token, source_origin, destination_origin);
 }
 
 void AttributionHost::MaybeNotifyFailedSourceNavigation(
@@ -231,36 +230,6 @@ void AttributionHost::MaybeNotifyFailedSourceNavigation(
   data_host_manager->NotifyNavigationFailure(impression->attribution_src_token);
 }
 
-const url::Origin* AttributionHost::TopFrameOriginForSecureContext() {
-  RenderFrameHostImpl* render_frame_host =
-      static_cast<RenderFrameHostImpl*>(receivers_.GetCurrentTargetFrame());
-
-  const url::Origin& top_frame_origin =
-      render_frame_host->GetOutermostMainFrame()->GetLastCommittedOrigin();
-
-  // We need a potentially trustworthy origin here because we need to be able to
-  // store it as either the source or destination origin. Using
-  // `is_web_secure_context` would allow opaque origins to pass through, but
-  // they cannot be handled by the storage layer.
-  if (!network::IsOriginPotentiallyTrustworthy(top_frame_origin)) {
-    mojo::ReportBadMessage(
-        "blink.mojom.ConversionHost can only be used with a secure top-level "
-        "frame.");
-    return nullptr;
-  }
-
-  if (render_frame_host != render_frame_host->GetOutermostMainFrame() &&
-      !render_frame_host->policy_container_host()
-           ->policies()
-           .is_web_secure_context) {
-    mojo::ReportBadMessage(
-        "blink.mojom.ConversionHost can only be used in secure contexts.");
-    return nullptr;
-  }
-
-  return &top_frame_origin;
-}
-
 void AttributionHost::RegisterDataHost(
     mojo::PendingReceiver<blink::mojom::AttributionDataHost> data_host) {
   // If there is no attribution manager available, ignore any registrations.
@@ -269,16 +238,32 @@ void AttributionHost::RegisterDataHost(
   if (!attribution_manager)
     return;
 
-  AttributionDataHostManager* data_host_manager =
-      attribution_manager->GetDataHostManager();
-  if (!data_host_manager)
+  content::RenderFrameHost* render_frame_host =
+      receivers_.GetCurrentTargetFrame();
+
+  const url::Origin& frame_origin = render_frame_host->GetLastCommittedOrigin();
+  const url::Origin& top_frame_origin =
+      render_frame_host->GetOutermostMainFrame()->GetLastCommittedOrigin();
+
+  if (!network::IsOriginPotentiallyTrustworthy(top_frame_origin)) {
+    mojo::ReportBadMessage(
+        "blink.mojom.ConversionHost can only be used with a secure top-level "
+        "frame.");
+    return;
+  }
+
+  if (render_frame_host != render_frame_host->GetOutermostMainFrame() &&
+      !network::IsOriginPotentiallyTrustworthy(frame_origin)) {
+    mojo::ReportBadMessage(
+        "blink.mojom.ConversionHost can only be used in secure contexts.");
+    return;
+  }
+
+  if (!attribution_manager->GetDataHostManager())
     return;
 
-  const url::Origin* top_frame_origin = TopFrameOriginForSecureContext();
-  if (!top_frame_origin)
-    return;
-
-  data_host_manager->RegisterDataHost(std::move(data_host), *top_frame_origin);
+  attribution_manager->GetDataHostManager()->RegisterDataHost(
+      std::move(data_host), top_frame_origin);
 }
 
 void AttributionHost::RegisterNavigationDataHost(
@@ -290,12 +275,29 @@ void AttributionHost::RegisterNavigationDataHost(
   if (!attribution_manager)
     return;
 
-  AttributionDataHostManager* data_host_manager =
-      attribution_manager->GetDataHostManager();
-  if (!data_host_manager)
-    return;
+  content::RenderFrameHost* render_frame_host =
+      receivers_.GetCurrentTargetFrame();
 
-  if (!TopFrameOriginForSecureContext())
+  const url::Origin& frame_origin = render_frame_host->GetLastCommittedOrigin();
+  const url::Origin& top_frame_origin =
+      render_frame_host->GetOutermostMainFrame()->GetLastCommittedOrigin();
+
+  if (!network::IsOriginPotentiallyTrustworthy(top_frame_origin)) {
+    mojo::ReportBadMessage(
+        "blink.mojom.ConversionHost can only be used with a secure top-level "
+        "frame.");
+    return;
+  }
+
+  if (render_frame_host != render_frame_host->GetOutermostMainFrame() &&
+      !network::IsOriginPotentiallyTrustworthy(frame_origin)) {
+    mojo::ReportBadMessage(
+        "blink.mojom.ConversionHost can only be used in secure contexts.");
+    return;
+  }
+
+  auto* data_host_manager = attribution_manager->GetDataHostManager();
+  if (!data_host_manager)
     return;
 
   if (!data_host_manager->RegisterNavigationDataHost(std::move(data_host),

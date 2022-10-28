@@ -1,4 +1,4 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -130,7 +130,7 @@ class PasswordAutofillAgent : public content::RenderFrameObserver,
   mojom::PasswordManagerDriver& GetPasswordManagerDriver();
 
   // mojom::PasswordAutofillAgent:
-  void FillPasswordForm(const PasswordFormFillData& form_data) override;
+  void SetPasswordFillData(const PasswordFormFillData& form_data) override;
   void InformNoSavedCredentials(
       bool should_show_popup_without_passwords) override;
   void FillIntoFocusedField(bool is_password,

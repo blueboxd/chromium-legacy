@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -806,6 +806,8 @@ var defaultTests = [
         chrome.test.assertEq('Normal', window.frameMode);
         chrome.test.assertTrue(window.isFrameVisible);
         chrome.test.assertFalse(window.hasOwnProperty('overviewInfo'));
+        chrome.test.assertEq(null, window.fullRestoreWindowAppId);
+        chrome.test.assertEq('mgndgikekgjfcpckkfioiadnlibdjbkf', window.appId);
 
         var change = new Object();
         change.eventType = 'WMEventFullscreen';
@@ -1134,13 +1136,6 @@ var defaultTests = [
         });
       });
     });
-  },
-
-  function isLacrosPrimaryBrowser() {
-    chrome.autotestPrivate.isLacrosPrimaryBrowser(
-        chrome.test.callbackPass(function(primary) {
-          chrome.test.assertTrue(typeof primary === 'boolean');
-        }));
   },
 
   // KEEP |lockScreen()| TESTS AT THE BOTTOM OF THE defaultTests AS IT WILL

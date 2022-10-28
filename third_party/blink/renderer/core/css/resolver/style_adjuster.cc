@@ -34,6 +34,7 @@
 #include "third_party/blink/renderer/core/css/resolver/style_resolver.h"
 #include "third_party/blink/renderer/core/css/resolver/style_resolver_state.h"
 #include "third_party/blink/renderer/core/css/style_change_reason.h"
+#include "third_party/blink/renderer/core/css/style_engine.h"
 #include "third_party/blink/renderer/core/dom/container_node.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/element.h"
@@ -204,13 +205,6 @@ EDisplay DisplayOutside(EDisplay display) {
   }
   NOTREACHED();
   return EDisplay::kBlock;
-}
-
-inline bool HasFullNGFragmentationSupport() {
-  return RuntimeEnabledFeatures::LayoutNGPrintingEnabled() &&
-         RuntimeEnabledFeatures::LayoutNGFlexFragmentationEnabled() &&
-         RuntimeEnabledFeatures::LayoutNGGridFragmentationEnabled() &&
-         RuntimeEnabledFeatures::LayoutNGTableFragmentationEnabled();
 }
 
 }  // namespace
@@ -769,6 +763,7 @@ static void AdjustStyleForInert(ComputedStyle& style, Element* element) {
 
   if (element->IsInertRoot()) {
     style.SetIsInert(true);
+    style.SetIsInertIsInherited(false);
     return;
   }
 
@@ -778,10 +773,12 @@ static void AdjustStyleForInert(ComputedStyle& style, Element* element) {
     modal_element = Fullscreen::FullscreenElementFrom(document);
   if (modal_element == element) {
     style.SetIsInert(false);
+    style.SetIsInertIsInherited(false);
     return;
   }
   if (modal_element && element == document.documentElement()) {
     style.SetIsInert(true);
+    style.SetIsInertIsInherited(false);
     return;
   }
 }

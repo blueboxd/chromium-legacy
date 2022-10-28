@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -56,13 +56,12 @@ ChromeosInfoPrivateGetFunction::~ChromeosInfoPrivateGetFunction() {
 
 ExtensionFunction::ResponseAction ChromeosInfoPrivateGetFunction::Run() {
   EXTENSION_FUNCTION_VALIDATE(!args().empty() && args()[0].is_list());
-  base::Value::ConstListView list = args()[0].GetListDeprecated();
+  const base::Value::List& list = args()[0].GetList();
 
-  base::Value result(base::Value::Type::DICTIONARY);
   std::vector<std::string> property_names;
-  for (size_t i = 0; i < list.size(); ++i) {
-    EXTENSION_FUNCTION_VALIDATE(list[i].is_string());
-    std::string property_name = list[i].GetString();
+  for (const auto& property : list) {
+    EXTENSION_FUNCTION_VALIDATE(property.is_string());
+    std::string property_name = property.GetString();
     property_names.push_back(std::move(property_name));
   }
   auto callback =
@@ -84,7 +83,7 @@ ExtensionFunction::ResponseAction ChromeosInfoPrivateGetFunction::Run() {
 }
 
 void ChromeosInfoPrivateGetFunction::RespondWithResult(base::Value result) {
-  Respond(OneArgument(std::move(result)));
+  Respond(WithArguments(std::move(result)));
 }
 
 ChromeosInfoPrivateSetFunction::ChromeosInfoPrivateSetFunction() {
@@ -174,7 +173,7 @@ ChromeosInfoPrivateIsTabletModeEnabledFunction::Run() {
 
 void ChromeosInfoPrivateIsTabletModeEnabledFunction::RespondWithResult(
     bool enabled) {
-  Respond(OneArgument(base::Value(enabled)));
+  Respond(WithArguments(enabled));
 }
 
 }  // namespace extensions

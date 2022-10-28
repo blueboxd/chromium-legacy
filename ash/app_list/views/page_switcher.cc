@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -94,7 +94,7 @@ class PageSwitcherButton : public IconButton {
   PaintButtonInfo BuildPaintButtonInfo() {
     PaintButtonInfo info;
     info.color = AppListColorProvider::Get()->GetPageSwitcherButtonColor(
-        is_root_app_grid_page_switcher_);
+        is_root_app_grid_page_switcher_, GetWidget());
     if (selected_) {
       info.style = cc::PaintFlags::kFill_Style;
       info.radius = SkIntToScalar(kSelectedButtonRadius);
@@ -137,8 +137,7 @@ PageSwitcherButton* GetButtonByIndex(views::View* buttons, size_t index) {
 
 PageSwitcher::PageSwitcher(PaginationModel* model,
                            bool is_root_app_grid_page_switcher,
-                           bool is_tablet_mode,
-                           SkColor background_color)
+                           bool is_tablet_mode)
     : model_(model),
       buttons_(new views::View),
       is_root_app_grid_page_switcher_(is_root_app_grid_page_switcher),

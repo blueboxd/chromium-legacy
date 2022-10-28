@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -82,7 +82,7 @@ void LowDiskMetricsService::UpdateCurrentSessionLowDiskSeverity(
 }
 
 void LowDiskMetricsService::ReportPreviousSessionLowDiskSeverity() {
-  const auto& metrics_dict = prefs_->GetValueDict(prefs::kKioskMetrics);
+  const auto& metrics_dict = prefs_->GetDict(prefs::kKioskMetrics);
 
   const auto* severity_value = metrics_dict.Find(kKioskLowDiskSeverity);
   if (!severity_value) {

@@ -651,9 +651,7 @@ void NGBoxFragmentPainter::PaintObject(
     // AddURLRectIfNeeded() for LayoutInline.
     if (paint_info.ShouldAddUrlMetadata()) {
       const auto* layout_object = fragment.GetLayoutObject();
-      if (layout_object &&
-          (!layout_object->IsLayoutInline() ||
-           To<LayoutBoxModelObject>(layout_object)->HasSelfPaintingLayer())) {
+      if (layout_object && !layout_object->IsLayoutInline()) {
         NGFragmentPainter(fragment, GetDisplayItemClient())
             .AddURLRectIfNeeded(paint_info, paint_offset);
       }
@@ -1438,6 +1436,9 @@ void NGBoxFragmentPainter::PaintInlineItems(const PaintInfo& paint_info,
         NOTREACHED();
         cursor->MoveToNext();
         break;
+      case NGFragmentItem::kInvalid:
+        NOTREACHED();
+        break;
     }
   }
 }
@@ -1503,10 +1504,8 @@ void NGBoxFragmentPainter::PaintLineBoxChildren(
     return;
   }
 
-  // The only way an inline could paint like this is if it has a layer.
   const auto* layout_object = box_fragment_.GetLayoutObject();
-  DCHECK(!layout_object || layout_object->IsLayoutBlock() ||
-         (layout_object->IsLayoutInline() && layout_object->HasLayer()));
+  DCHECK(!layout_object || layout_object->IsLayoutBlock());
 
   if (paint_info.phase == PaintPhase::kForeground &&
       paint_info.ShouldAddUrlMetadata()) {
@@ -2009,6 +2008,8 @@ bool NGBoxFragmentPainter::NodeAtPoint(const HitTestContext& hit_test,
                 physical_offset - box_item_->OffsetInContainerFragment()))
           return true;
       } else {
+        if (UpdateHitTestResultForView(bounds_rect, hit_test))
+          return true;
         if (hit_test.AddNodeToResult(fragment.NodeForHitTest(), &box_fragment_,
                                      bounds_rect, physical_offset))
           return true;
@@ -2017,6 +2018,27 @@ bool NGBoxFragmentPainter::NodeAtPoint(const HitTestContext& hit_test,
   }
 
   return false;
+}
+
+bool NGBoxFragmentPainter::UpdateHitTestResultForView(
+    const PhysicalRect& bounds_rect,
+    const HitTestContext& hit_test) const {
+  const LayoutObject* layout_object = PhysicalFragment().GetLayoutObject();
+  if (!layout_object || !layout_object->IsLayoutView() ||
+      hit_test.result->InnerNode()) {
+    return false;
+  }
+  auto* element = layout_object->GetDocument().documentElement();
+  if (!element)
+    return false;
+  const auto children = PhysicalFragment().Children();
+  auto it = std::find_if(
+      children.begin(), children.end(),
+      [element](const NGLink& link) { return link->GetNode() == element; });
+  if (it == children.end())
+    return false;
+  return hit_test.AddNodeToResultWithContentOffset(
+      element, To<NGPhysicalBoxFragment>(**it), bounds_rect, it->Offset());
 }
 
 bool NGBoxFragmentPainter::HitTestAllPhases(

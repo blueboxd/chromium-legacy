@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -15,11 +15,11 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/notreached.h"
-#include "base/stl_util.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_tokenizer.h"
 #include "base/strings/string_util.h"
+#include "base/types/optional_util.h"
 #include "build/build_config.h"
 #include "net/base/features.h"
 #include "net/base/isolation_info.h"
@@ -30,8 +30,8 @@
 #include "net/cookies/cookie_inclusion_status.h"
 #include "net/cookies/cookie_monster.h"
 #include "net/cookies/cookie_options.h"
-#include "net/cookies/first_party_set_metadata.h"
-#include "net/cookies/same_party_context.h"
+#include "net/first_party_sets/first_party_set_metadata.h"
+#include "net/first_party_sets/same_party_context.h"
 #include "net/http/http_util.h"
 #include "url/gurl.h"
 #include "url/url_constants.h"
@@ -817,7 +817,7 @@ absl::optional<FirstPartySetMetadata> ComputeFirstPartySetMetadataMaybeAsync(
         request_site,
         force_ignore_top_frame_party
             ? nullptr
-            : base::OptionalOrNullptr(
+            : base::OptionalToPtr(
                   isolation_info.network_isolation_key().GetTopFrameSite()),
         isolation_info.party_context().value(), std::move(callback));
   }

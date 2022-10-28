@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -26,7 +26,7 @@ class OriginTrialsPersistenceProvider {
   // Save the list of enabled trial tokens for |origin|.
   virtual void SavePersistentTrialTokens(
       const url::Origin& origin,
-      const base::flat_set<PersistedTrialToken> tokens) = 0;
+      const base::flat_set<PersistedTrialToken>& tokens) = 0;
 };
 
 }  // namespace origin_trials

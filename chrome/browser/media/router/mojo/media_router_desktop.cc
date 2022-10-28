@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -37,7 +37,7 @@ constexpr char kLoggerComponent[] = "MediaRouterDesktop";
 
 MediaRouterDesktop::~MediaRouterDesktop() {
   if (media_sink_service_)
-    media_sink_service_->RemoveLogger();
+    media_sink_service_->RemoveLogger(GetLogger());
 }
 
 void MediaRouterDesktop::OnUserGesture() {
@@ -137,7 +137,7 @@ void MediaRouterDesktop::GetMediaSinkServiceStatus(
 void MediaRouterDesktop::Initialize() {
   MediaRouterMojoImpl::Initialize();
   if (media_sink_service_) {
-    media_sink_service_->BindLogger(GetLogger());
+    media_sink_service_->AddLogger(GetLogger());
     InitializeMediaRouteProviders();
 #if BUILDFLAG(IS_WIN)
     CanFirewallUseLocalPorts(

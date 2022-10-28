@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -74,9 +74,8 @@ class MockTranslateMetricsLoggerContainer
     mock_translate_metrics_logger_->LogTranslationStarted(translation_type);
   }
 
-  void LogTranslationFinished(
-      bool was_successful,
-      translate::TranslateErrors::Type error_type) override {
+  void LogTranslationFinished(bool was_successful,
+                              translate::TranslateErrors error_type) override {
     mock_translate_metrics_logger_->LogTranslationFinished(was_successful,
                                                            error_type);
   }

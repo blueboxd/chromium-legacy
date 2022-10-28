@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -90,6 +90,8 @@ COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kAuraLegacyPowerButton[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kCellularFirst[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kChildWallpaperLarge[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kChildWallpaperSmall[];
+COMPONENT_EXPORT(ASH_CONSTANTS)
+extern const char kCrosHealthdUsesServiceManager[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kCrosRegion[];
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const char kCryptohomeRecoveryReauthUrl[];
@@ -221,7 +223,13 @@ COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kLoginUser[];
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const char kBrowserDataMigrationForUser[];
 COMPONENT_EXPORT(ASH_CONSTANTS)
-extern const char kBrowserDataMigrationMoveMode[];
+extern const char kBrowserDataMigrationMode[];
+COMPONENT_EXPORT(ASH_CONSTANTS)
+extern const char kBrowserDataBackwardMigrationForUser[];
+COMPONENT_EXPORT(ASH_CONSTANTS)
+extern const char kBrowserDataBackwardMigrationMode[];
+COMPONENT_EXPORT(ASH_CONSTANTS)
+extern const char kForceBrowserDataBackwardMigration[];
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const char kForceBrowserDataMigrationForTesting[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kMarketingOptInUrl[];
@@ -283,6 +291,8 @@ COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kUnfilteredBluetoothDevices[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kUpdateRequiredAueForTest[];
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const char kWaitForInitialPolicyFetchForTest[];
+COMPONENT_EXPORT(ASH_CONSTANTS)
+extern const char kWebUiDataSourcePathForTesting[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kOndeviceHandwritingSwitch[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kGetAccessTokenForTest[];
 

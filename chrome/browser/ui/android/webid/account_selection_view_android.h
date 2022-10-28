@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,7 +7,6 @@
 
 #include <string>
 
-#include "base/android/scoped_java_ref.h"
 #include "base/callback.h"
 #include "chrome/browser/ui/webid/account_selection_view.h"
 
@@ -20,15 +19,16 @@ class AccountSelectionViewAndroid : public AccountSelectionView {
   ~AccountSelectionViewAndroid() override;
 
   // AccountSelectionView:
-  void Show(const std::string& rp_for_display,
-            const std::string& idp_for_display,
-            base::span<const Account> accounts,
-            const content::IdentityProviderMetadata& idp_metadata,
-            const content::ClientIdData& client_data,
-            Account::SignInMode sign_in_mode) override;
+  void Show(
+      const std::string& rp_for_display,
+      const std::vector<content::IdentityProviderData>& identity_provider_data,
+      Account::SignInMode sign_in_mode) override;
+  void ShowFailureDialog(const std::string& rp_for_display,
+                         const std::string& idp_for_display) override;
 
   void OnAccountSelected(
       JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& idp_config_url,
       const base::android::JavaParamRef<jobjectArray>& account_string_fields,
       const base::android::JavaParamRef<jobject>& account_picture_url,
       bool is_sign_in);

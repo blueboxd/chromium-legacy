@@ -1,9 +1,10 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "components/autofill/core/browser/test_autofill_client.h"
 
+#include "base/command_line.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
@@ -23,7 +24,14 @@ TestAutofillClient::TestAutofillClient(
     : test_personal_data_manager_(
           pdm ? std::move(pdm) : std::make_unique<TestPersonalDataManager>()),
       form_origin_(GURL("https://example.test")),
-      last_committed_url_(GURL("https://example.test")) {}
+      last_committed_url_(GURL("https://example.test")),
+      log_manager_(LogManager::Create(&log_router_, base::NullCallback())) {
+  mock_iban_manager_ = std::make_unique<testing::NiceMock<MockIBANManager>>(
+      test_personal_data_manager_.get());
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch("show-autofill-internals"))
+    scoped_logging_subscription_.Observe(&log_router_);
+}
 
 TestAutofillClient::~TestAutofillClient() = default;
 
@@ -38,6 +46,10 @@ TestPersonalDataManager* TestAutofillClient::GetPersonalDataManager() {
 AutocompleteHistoryManager*
 TestAutofillClient::GetAutocompleteHistoryManager() {
   return &mock_autocomplete_history_manager_;
+}
+
+IBANManager* TestAutofillClient::GetIBANManager() {
+  return mock_iban_manager_.get();
 }
 
 MerchantPromoCodeManager* TestAutofillClient::GetMerchantPromoCodeManager() {
@@ -266,6 +278,22 @@ bool TestAutofillClient::HasCreditCardScanFeature() {
 
 void TestAutofillClient::ScanCreditCard(CreditCardScanCallback callback) {}
 
+bool TestAutofillClient::IsFastCheckoutSupported() {
+  return false;
+}
+
+bool TestAutofillClient::IsFastCheckoutTriggerForm(const FormData& form,
+                                                   const FormFieldData& field) {
+  return false;
+}
+
+bool TestAutofillClient::ShowFastCheckout(
+    base::WeakPtr<FastCheckoutDelegate> delegate) {
+  return false;
+}
+
+void TestAutofillClient::HideFastCheckout() {}
+
 bool TestAutofillClient::IsTouchToFillCreditCardSupported() {
   return false;
 }
@@ -337,6 +365,10 @@ bool TestAutofillClient::AreServerCardsSupported() const {
 void TestAutofillClient::ExecuteCommand(int id) {}
 
 void TestAutofillClient::OpenPromoCodeOfferDetailsURL(const GURL& url) {}
+
+LogManager* TestAutofillClient::GetLogManager() const {
+  return log_manager_.get();
+}
 
 void TestAutofillClient::LoadRiskData(
     base::OnceCallback<void(const std::string&)> callback) {

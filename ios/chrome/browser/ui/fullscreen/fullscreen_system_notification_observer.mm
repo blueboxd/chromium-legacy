@@ -1,12 +1,12 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_system_notification_observer.h"
 
-#include <memory>
+#import <memory>
 
-#include "base/check.h"
+#import "base/check.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_controller.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_mediator.h"
 #import "ios/chrome/browser/ui/fullscreen/scoped_fullscreen_disabler.h"

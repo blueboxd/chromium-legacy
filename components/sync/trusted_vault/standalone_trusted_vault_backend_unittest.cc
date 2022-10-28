@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,7 +13,6 @@
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/raw_ptr.h"
-#include "base/test/bind.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/mock_callback.h"
 #include "base/test/scoped_feature_list.h"
@@ -24,6 +23,7 @@
 #include "components/signin/public/identity_manager/accounts_in_cookie_jar_info.h"
 #include "components/sync/base/features.h"
 #include "components/sync/driver/trusted_vault_histograms.h"
+#include "components/sync/protocol/local_trusted_vault.pb.h"
 #include "components/sync/trusted_vault/proto_string_bytes_conversion.h"
 #include "components/sync/trusted_vault/securebox.h"
 #include "components/sync/trusted_vault/trusted_vault_connection.h"
@@ -81,6 +81,17 @@ CoreAccountInfo MakeAccountInfoWithGaiaId(const std::string& gaia_id) {
   CoreAccountInfo account_info;
   account_info.gaia = gaia_id;
   return account_info;
+}
+
+bool WriteLocalTrustedVaultFile(const sync_pb::LocalTrustedVault& content,
+                                const base::FilePath& path) {
+  std::string encrypted_content;
+  if (!OSCrypt::EncryptString(content.SerializeAsString(),
+                              &encrypted_content)) {
+    return false;
+  }
+  return base::WriteFile(path, encrypted_content.c_str(),
+                         encrypted_content.size()) != -1;
 }
 
 sync_pb::LocalTrustedVault ReadLocalTrustedVaultFile(
@@ -259,16 +270,30 @@ TEST_F(StandaloneTrustedVaultBackendTest,
   backend()->WriteDegradedRecoverabilityState(degraded_recoverability_state);
 
   // Read the file from disk.
-  std::string ciphertext;
-  std::string decrypted_content;
-  sync_pb::LocalTrustedVault proto;
-  EXPECT_TRUE(base::ReadFileToString(file_path(), &ciphertext));
-  EXPECT_THAT(ciphertext, Ne(""));
-  EXPECT_TRUE(OSCrypt::DecryptString(ciphertext, &decrypted_content));
-  EXPECT_TRUE(proto.ParseFromString(decrypted_content));
+  sync_pb::LocalTrustedVault proto = ReadLocalTrustedVaultFile(file_path());
   ASSERT_THAT(proto.user_size(), Eq(1));
   EXPECT_THAT(proto.user(0).degraded_recoverability_state(),
               DegradedRecoverabilityStateEq(degraded_recoverability_state));
+}
+
+TEST_F(StandaloneTrustedVaultBackendTest, ShouldFindTheRecoverabilityDegraded) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(
+      kSyncTrustedVaultPeriodicDegradedRecoverabilityPolling);
+  // The TaskEnvironment is needed because this test initializes the handler,
+  // which works with time.
+  base::test::SingleThreadTaskEnvironment environment{
+      base::test::TaskEnvironment::TimeSource::MOCK_TIME};
+  const CoreAccountInfo account_info = MakeAccountInfoWithGaiaId("user");
+  backend()->SetPrimaryAccount(account_info,
+                               /*has_persistent_auth_error=*/false);
+  sync_pb::LocalTrustedVaultDegradedRecoverabilityState
+      degraded_recoverability_state;
+  degraded_recoverability_state.set_is_recoverability_degraded(true);
+  backend()->WriteDegradedRecoverabilityState(degraded_recoverability_state);
+  base::MockCallback<base::OnceCallback<void(bool)>> cb;
+  EXPECT_CALL(cb, Run(true));
+  backend()->GetIsRecoverabilityDegraded(account_info, cb.Get());
 }
 
 TEST_F(StandaloneTrustedVaultBackendTest, ShouldFetchEmptyKeys) {
@@ -297,12 +322,7 @@ TEST_F(StandaloneTrustedVaultBackendTest, ShouldReadAndFetchNonEmptyKeys) {
   user_data2->add_vault_key()->set_key_material(kKey2.data(), kKey2.size());
   user_data2->add_vault_key()->set_key_material(kKey3.data(), kKey3.size());
 
-  std::string encrypted_data;
-  ASSERT_TRUE(OSCrypt::EncryptString(initial_data.SerializeAsString(),
-                                     &encrypted_data));
-  ASSERT_NE(-1, base::WriteFile(file_path(), encrypted_data.c_str(),
-                                encrypted_data.size()));
-
+  ASSERT_TRUE(WriteLocalTrustedVaultFile(initial_data, file_path()));
   backend()->ReadDataFromDisk();
 
   // Keys should be fetched immediately for both accounts.
@@ -325,12 +345,7 @@ TEST_F(StandaloneTrustedVaultBackendTest, ShouldFilterOutConstantKey) {
       GetConstantTrustedVaultKey().data(), GetConstantTrustedVaultKey().size());
   user_data->add_vault_key()->set_key_material(kKey.data(), kKey.size());
 
-  std::string encrypted_data;
-  ASSERT_TRUE(OSCrypt::EncryptString(initial_data.SerializeAsString(),
-                                     &encrypted_data));
-  ASSERT_NE(-1, base::WriteFile(file_path(), encrypted_data.c_str(),
-                                encrypted_data.size()));
-
+  ASSERT_TRUE(WriteLocalTrustedVaultFile(initial_data, file_path()));
   backend()->ReadDataFromDisk();
 
   // Keys should be fetched immediately, constant key must be filtered out.
@@ -354,13 +369,7 @@ TEST_F(StandaloneTrustedVaultBackendTest, ShouldStoreKeys) {
   backend()->StoreKeys(kGaiaId2, {kKey3, kKey4}, /*last_key_version=*/9);
 
   // Read the file from disk.
-  std::string ciphertext;
-  std::string decrypted_content;
-  sync_pb::LocalTrustedVault proto;
-  EXPECT_TRUE(base::ReadFileToString(file_path(), &ciphertext));
-  EXPECT_THAT(ciphertext, Ne(""));
-  EXPECT_TRUE(OSCrypt::DecryptString(ciphertext, &decrypted_content));
-  EXPECT_TRUE(proto.ParseFromString(decrypted_content));
+  sync_pb::LocalTrustedVault proto = ReadLocalTrustedVaultFile(file_path());
   ASSERT_THAT(proto.user_size(), Eq(2));
   EXPECT_THAT(proto.user(0).vault_key(), ElementsAre(KeyMaterialEq(kKey1)));
   EXPECT_THAT(proto.user(0).last_vault_key_version(), Eq(7));
@@ -391,23 +400,12 @@ TEST_F(StandaloneTrustedVaultBackendTest,
   AssignBytesToProtoString(kKey2,
                            user_data2->add_vault_key()->mutable_key_material());
 
-  std::string encrypted_data;
-  ASSERT_TRUE(OSCrypt::EncryptString(initial_data.SerializeAsString(),
-                                     &encrypted_data));
-  ASSERT_NE(-1, base::WriteFile(file_path(), encrypted_data.c_str(),
-                                encrypted_data.size()));
-
+  ASSERT_TRUE(WriteLocalTrustedVaultFile(initial_data, file_path()));
   // Backend should fix corrupted data and write new state.
   backend()->ReadDataFromDisk();
 
   // Read the file from disk.
-  std::string ciphertext;
-  std::string decrypted_content;
-  sync_pb::LocalTrustedVault proto;
-  ASSERT_TRUE(base::ReadFileToString(file_path(), &ciphertext));
-  ASSERT_THAT(ciphertext, Ne(""));
-  ASSERT_TRUE(OSCrypt::DecryptString(ciphertext, &decrypted_content));
-  ASSERT_TRUE(proto.ParseFromString(decrypted_content));
+  sync_pb::LocalTrustedVault proto = ReadLocalTrustedVaultFile(file_path());
   ASSERT_THAT(proto.user_size(), Eq(2));
   // Constant key should be added for the first user.
   EXPECT_THAT(proto.user(0).vault_key(),
@@ -432,11 +430,7 @@ TEST_F(StandaloneTrustedVaultBackendTest,
   user_data1->set_keys_are_stale(true);
   user_data2->set_gaia_id(account_info_2.gaia);
   user_data2->set_keys_are_stale(true);
-  std::string encrypted_data;
-  ASSERT_TRUE(OSCrypt::EncryptString(initial_data.SerializeAsString(),
-                                     &encrypted_data));
-  ASSERT_NE(-1, base::WriteFile(file_path(), encrypted_data.c_str(),
-                                encrypted_data.size()));
+  ASSERT_TRUE(WriteLocalTrustedVaultFile(initial_data, file_path()));
 
   // Backend should reset |keys_are_stale| for both accounts and write new
   // state.
@@ -638,6 +632,61 @@ TEST_F(StandaloneTrustedVaultBackendTest, ShouldRegisterDevice) {
           base::make_span(registration_info.private_key_material())));
   EXPECT_THAT(key_pair->public_key().ExportToBytes(),
               Eq(serialized_public_device_key));
+}
+
+TEST_F(StandaloneTrustedVaultBackendTest,
+       ShouldHandleLocalDataObsoleteAndPersistState) {
+  const CoreAccountInfo account_info = MakeAccountInfoWithGaiaId("user");
+  const std::vector<uint8_t> kVaultKey = {1, 2, 3};
+  const int kLastKeyVersion = 1;
+
+  backend()->StoreKeys(account_info.gaia, {kVaultKey}, kLastKeyVersion);
+
+  TrustedVaultConnection::RegisterAuthenticationFactorCallback
+      device_registration_callback;
+  EXPECT_CALL(*connection(),
+              RegisterAuthenticationFactor(
+                  Eq(account_info), ElementsAre(kVaultKey), kLastKeyVersion, _,
+                  AuthenticationFactorType::kPhysicalDevice,
+                  /*authentication_factor_type_hint=*/Eq(absl::nullopt), _))
+      .WillOnce([&](const CoreAccountInfo&,
+                    const std::vector<std::vector<uint8_t>>&, int,
+                    const SecureBoxPublicKey& device_public_key,
+                    AuthenticationFactorType, absl::optional<int>,
+                    TrustedVaultConnection::RegisterAuthenticationFactorCallback
+                        callback) {
+        device_registration_callback = std::move(callback);
+        return std::make_unique<TrustedVaultConnection::Request>();
+      });
+
+  // Setting the primary account will trigger device registration.
+  backend()->SetPrimaryAccount(account_info,
+                               /*has_persistent_auth_error=*/false);
+  ASSERT_FALSE(device_registration_callback.is_null());
+
+  // Pretend that the registration failed with kLocalDataObsolete.
+  std::move(device_registration_callback)
+      .Run(TrustedVaultRegistrationStatus::kLocalDataObsolete);
+
+  // Verify persisted file state.
+  std::string ciphertext;
+  std::string decrypted_content;
+  sync_pb::LocalTrustedVault proto;
+  EXPECT_TRUE(base::ReadFileToString(file_path(), &ciphertext));
+  EXPECT_THAT(ciphertext, Ne(""));
+  EXPECT_TRUE(OSCrypt::DecryptString(ciphertext, &decrypted_content));
+  EXPECT_TRUE(proto.ParseFromString(decrypted_content));
+  ASSERT_THAT(proto.user_size(), Eq(1));
+  // Ensure that keys are marked as stale, regression test for
+  // crbug.com/1358015.
+  EXPECT_TRUE(proto.user(0).keys_are_stale());
+  // Additionally ensure that |local_device_registration_info| has correct
+  // state.
+  EXPECT_FALSE(
+      proto.user(0).local_device_registration_info().device_registered());
+  EXPECT_TRUE(proto.user(0)
+                  .local_device_registration_info()
+                  .has_private_key_material());
 }
 
 TEST_F(StandaloneTrustedVaultBackendTest,
@@ -1196,10 +1245,6 @@ TEST_F(StandaloneTrustedVaultBackendTest, ShouldRedoDeviceRegistration) {
 
 TEST_F(StandaloneTrustedVaultBackendTest,
        ShouldRedoDeviceRegistrationWithConstantKey) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(
-      kSyncTrustedVaultRedoDeviceRegistration);
-
   const CoreAccountInfo account_info = MakeAccountInfoWithGaiaId("user");
   const int kInitialServerConstantKeyVersion = 100;
 

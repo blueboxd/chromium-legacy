@@ -1,4 +1,4 @@
-# Copyright 2021 The Chromium Authors. All rights reserved.
+# Copyright 2021 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -9,20 +9,13 @@
 # To disable a specific test in chrome_all_tast_tests, add it the following
 # list and cite a bug.
 tast_disabled_tests_from_chrome_all = [
-  # crbug.com/1184931
-  "health.ProbeBatteryMetrics",
+  # b/246226666
+  "inputs.VirtualKeyboardAccessibility",
+  "inputs.VirtualKeyboardDeadKeys.french",
 
-  # crbug.com/1242415
-  "hwsec.AttestationEnrollOnly",
-  "hwsec.ChapsAttributePolicy",
-  "hwsec.ChapsPKCS1V15",
-  "policy.AccessibilityPolicies.sticky_keys",
-  "policy.AllowDinosaurEasterEgg",
-  "policy.DisableScreenshotsExtension",
-
-  # crbug.com/1238654
-  "lockscreen.KeyboardShortcut",
-  "camera.EncodeAccelJPEG",
+  # b/246199652
+  "inputs.PhysicalKeyboardAutocorrect.en_us_1",
+  "inputs.PhysicalKeyboardAutocorrect.en_us_2",
 
   # https://crbug.com/1252352
   "quicksettings.SignInScreen.battery",
@@ -34,9 +27,6 @@ tast_disabled_tests_from_chrome_all = [
 
   # crbug.com/1259127
   "ui.TabletOperations",
-
-  # crbug.com/1239838
-  "graphics.FPS",
 
   # crbug.com/1263233
   "security.SharedFilesystemState",
@@ -50,32 +40,16 @@ tast_disabled_tests_from_chrome_all = [
   "ui.ChromeCrashReporterMetrics.success_breakpad",
   "ui.ChromeCrashReporterMetrics.miss_breakpad",
 
-  # https://crbug.com/1269124: Flaky.
-  "quicksettings.LockScreen.no_battery",
-
-  # https://crbug.com/1273485: Flaky.
-  "printer.ProxyAdd.epson_software_collate",
-  "printer.ProxyAdd.epson_software_uncollated",
-
   # https://crbug.com/1279285: Flaky.
   "policy.AllowWakeLocks",
 
-  # https://crbug.com/1285206
-  "policy.DeveloperToolsAvailability",
-
   # https://crbug.com/1311242
   "policy.ImagesForURLCheck.allowlist",
-
-  # https://crbug.com/1281645
-  "quicksettings.LockScreen",
 
   # https://crbug.com/1282372
   "security.SELinuxFilesARC",
   "security.NetworkListenersARC",
   "security.SELinuxProcessesARC",
-
-  # https://crbug.com/1282370
-  "arc.Boot.vm_with_per_vcpu_core_scheduling",
 
   # https://crbug.com/1282481
   "quicksettings.OpenSettings",
@@ -100,20 +74,15 @@ tast_disabled_tests_from_chrome_all = [
   # https://crbug.com/1300941
   "ui.WebUIJSErrors",
 
-  # https://crbug.com/1351699
+  # https://crbug.com/1351654
   "ui.ForceRegion",
+  "ui.ForceRegion.lacros",
 
   # https://crbug.com/1306441
   "policy.UserAvatarImage",
 
   # https://crbug.com/1308288
   "policy.BasicAuthOverHTTPEnabled",
-  "policy.AllowCrossOriginAuthPrompt.lacros",
-  "policy.BlockThirdPartyCookies.lacros",
-  "policy.BookmarkBarEnabled.lacros",
-
-  # https://crbug.com/1310619
-  "policy.AutoOpenAllowedForURLs.lacros",
 
   # https://crbug.com/1307671
   "policy.SafeBrowsingProtectionLevel",
@@ -121,14 +90,8 @@ tast_disabled_tests_from_chrome_all = [
   # https://crbug.com/1309331
   "policy.CookiesAllowedForUrls",
 
-  # https://crbug.com/1307582
-  "policy.AccessibilityPolicies.docked_magnifier",
-
   # https://crbug.com/1307940
   "policy.URLCheck.blocklist",
-
-  # https://crbug.com/1309114
-  "policy.BlockThirdPartyCookies.lacros",
 
   # https://crbug.com/1309288
   "policy.AudioCaptureAllowed",
@@ -151,15 +114,9 @@ tast_disabled_tests_from_chrome_all = [
   # https://crbug.com/1309492
   "arc.DragDrop.chrome_to_android",
 
-  # https://crbug.com/1311081
-  "policy.AutoOpenAllowedForURLs.lacros",
-
   # https://crbug.com/1312121
   "policy.DefaultJavaScriptSetting",
   "policy.CookiesBlockedForUrls",
-
-  # https://crbug.com/1312965
-  "policy.AllowDinosaurEasterEggEnrolled",
 
   # https://crbug.com/1312908
   "policy.DefaultNotificationsSetting",
@@ -177,15 +134,8 @@ tast_disabled_tests_from_chrome_all = [
   # https://crbug.com/1326403
   "policy.AccessibilityPolicies.large_cursor",
 
-  # https://crbug.com/1327345
-  "policy.ChromePolicyPageStatusTimestamps.ash",
-
   # https://crbug.com/1327361
   "policy.FullscreenAllowed",
-
-  # https://crbug.com/1329734
-  "health.DiagnosticsList",
-  "health.DiagnosticsCancel.urandom",
 
   # https://crbug.com/1329761
   "policy.DefaultSerialGuardSetting",
@@ -198,33 +148,8 @@ tast_disabled_tests_from_chrome_all = [
   "health.DiagnosticsRun.dns_resolution",
   "health.DiagnosticsRun.dns_resolver_present",
 
-  # http://b234699971
-  "crostini.AppGeditUnshareFolder",
-
   # b/235279574
   "wmp.DragAndDropWindow",
-
-  # http://b/236312054
-  "crostini.AppGeditFilesharing",
-  "crostini.AppGeditFilesharing.stable",
-  "crostini.AppGeditFilesharing.clamshell_stable",
-
-  # http://b/236710501
-  "crostini.AppAndroidStudio.stable",
-  "crostini.AppGeditUnshareFolder.stable",
-  "crostini.AppGeditUnshareFolder.clamshell_stable",
-
-  # http://crbug.com/1339132
-  "crostini.AppEclipse",
-  "crostini.AppEmacs",
-  "crostini.AppVscode",
-  "crostini.BasicLxdNext.stable",
-  "crostini.RestartApp",
-  "crostini.RestartApp.stable",
-  "crostini.RestartApp.clamshell_stable",
-
-  # http://b/238600197
-  "crostini.FilesAppWatch.buster_stable",
 
   # http://crbug.com/1335213
   "arc.WindowState.clamshell",
@@ -263,46 +188,28 @@ tast_disabled_tests_from_chrome_all = [
   # https://crbug.com/1350191
   "arc.Print",
 
-  # https://crbug.com/1350880
-  "arc.PIPRoundedCornersUnderlay",
-
   # https://crbug.com/1352475
   "a11y.LiveCaption",
 
-  # https://crbug.com/1352476
-  "lacros.ShelfLaunch",
-  "lacros.ShelfLaunch.only",
-  "lacros.ShelfLaunch.primary",
+  # https://crbug.com/1352525
+  "apps.ContentPreview",
 
-  # https://crbug.com/1352477
-  "platform.PerfettoChromeConsumer.lacros",
+  # https://crbug.com/1362182
+  "feedback.AttachFile",
 
-  # https://crbug.com/1352478
-  "mlservice.WebHandwritingRecognitionNotSupported.lacros",
+  # https://crbug.com/1360968
+  "launcher.BubbleSmoke",
 
-  # http://b/242349028
-  "crostini.DragDrop.bullseye_stable",
-  "crostini.DragDrop.buster_stable",
+  # https://crbug.com/1360969
+  "launcher.SearchBuiltInApps.productivity_launcher_tablet_mode",
 
-  # http://b/242172965
-  "crostini.SSHFSMount.bullseye_stable",
-  "crostini.SSHFSMount.buster_stable",
+  # https://crbug.com/1361078
+  "shelf.HotseatSmoke",
 
-  # https://crbug.com/1353760
-  "crostini.RestartIcon.bullseye_stable",
-
-  # https://crbug.com/1354215
-  "lacros.Basic",
-
-  # https://crbug.com/1354230
-  "crostini.NoAccessToDrive.bullseye_stable_gaia",
-  "crostini.ShareDrive.bullseye_stable_gaia",
-  
-  # https://crbug.com/1368586
-  "u2fd.WebauthnUsingPassword.tpm1",
-  "u2fd.WebauthnUsingPassword.tpm1_lacros",
-  "u2fd.WebauthnUsingPassword.gsc",
-  "u2fd.WebauthnUsingPassword.gsc_lacros",
+  # https://crbug.com/1362184
+  "dlp.DataLeakPreventionRulesListClipboardHistory.ash",
+  "dlp.DataLeakPreventionRulesListClipboardOmni",
+  "dlp.DataLeakPreventionRulesListPrinting.ash_allowed",
 ]
 
 # To create filters to be used on specific builders add them like this:
@@ -316,15 +223,4 @@ tast_disabled_tests_from_chrome_all = [
 tast_disabled_tests_from_lacros_all = [
   # https://crbug.com/1329764
   "policy.HistoryClustersVisible",
-
-  # https://crbug.com/1352476
-  "lacros.ShelfLaunch",
-  "lacros.ShelfLaunch.only",
-  "lacros.ShelfLaunch.primary",
-
-  # https://crbug.com/1352478
-  "mlservice.WebHandwritingRecognition.lacros",
-
-  # https://crbug.com/1352477
-  "platform.PerfettoChromeConsumer.lacros",
 ]

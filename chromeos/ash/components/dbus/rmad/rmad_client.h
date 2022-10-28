@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -47,6 +47,9 @@ class COMPONENT_EXPORT(RMAD) RmadClient {
 
     // Called when power cable is plugged in or removed.
     virtual void PowerCableState(bool plugged_in) {}
+
+    // Called when an external disk is plugged in or removed.
+    virtual void ExternalDiskState(bool detected) {}
 
     // Called when hardware verification completes.
     virtual void HardwareVerificationResult(

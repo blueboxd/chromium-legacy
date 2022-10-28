@@ -1,4 +1,4 @@
-// Copyright 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -128,10 +128,13 @@ class ImmersiveModeController {
   base::ObserverList<Observer>::Unchecked observers_;
 };
 
+class BrowserView;
+
 namespace chrome {
 
 // Implemented in immersive_mode_controller_factory.cc.
-std::unique_ptr<ImmersiveModeController> CreateImmersiveModeController();
+std::unique_ptr<ImmersiveModeController> CreateImmersiveModeController(
+    const BrowserView* browser_view);
 
 }  // namespace chrome
 

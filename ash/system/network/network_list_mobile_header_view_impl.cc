@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -86,7 +86,7 @@ void NetworkListMobileHeaderViewImpl::AddExtraButtons() {
   add_esim_button_ = add_esim_button.get();
   container()->AddViewAt(TriView::Container::END, add_esim_button.release(),
                          /*index=*/0);
-};
+}
 
 void NetworkListMobileHeaderViewImpl::OnToggleToggled(bool is_on) {
   delegate()->OnMobileToggleClicked(is_on);

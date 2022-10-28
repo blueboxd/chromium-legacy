@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -18,8 +18,7 @@ namespace views {
 class Label;
 }  // namespace views
 
-namespace ash {
-namespace bubble_utils {
+namespace ash::bubble_utils {
 
 // Returns false if `event` should not close a bubble. Returns true if `event`
 // should close a bubble, or if more processing is required. Callers may also
@@ -34,6 +33,7 @@ enum class LabelStyle {
   kChipBody,
   kChipTitle,
   kHeader,
+  kSubheader,
   kSubtitle,
 };
 
@@ -46,7 +46,6 @@ std::unique_ptr<views::Label> CreateLabel(
     LabelStyle style,
     const std::u16string& text = std::u16string());
 
-}  // namespace bubble_utils
-}  // namespace ash
+}  // namespace ash::bubble_utils
 
 #endif  // ASH_BUBBLE_BUBBLE_UTILS_H_

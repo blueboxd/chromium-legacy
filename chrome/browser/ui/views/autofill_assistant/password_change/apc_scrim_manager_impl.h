@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -43,6 +43,9 @@ class ApcScrimManagerImpl : public ApcScrimManager,
   // views::ViewObserver:
   void OnViewBoundsChanged(views::View* observed_view) override;
 
+  // Whether the scrim was visible before a webcontents visibility change.
+  // This dictates if the scrim should be shown again or not.
+  bool scrim_visible_on_webcontents_hide_ = false;
   raw_ptr<views::View> GetContentsWebView();
   std::unique_ptr<views::View> CreateOverlayView();
 

@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -121,8 +121,7 @@ PrefServiceSyncable::CreateIncognitoPrefService(
       nullptr,  // command_line_prefs
       incognito_pref_store.get(),
       nullptr,  // recommended
-      forked_registry->defaults().get(), pref_notifier.get(),
-      /*delegate=*/nullptr);
+      forked_registry->defaults().get(), pref_notifier.get());
   return std::make_unique<PrefServiceSyncable>(
       std::move(pref_notifier), std::move(pref_value_store),
       std::move(incognito_pref_store),

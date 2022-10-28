@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -54,7 +54,7 @@ class TrustedVaultReauthenticationCoordinatorTest : public PlatformTest {
     identity_service->AddIdentity(identity);
     AuthenticationService* authentication_service =
         AuthenticationServiceFactory::GetForBrowserState(browser_state_.get());
-    authentication_service->SignIn(identity, nil);
+    authentication_service->SignIn(identity);
 
     browser_ = std::make_unique<TestBrowser>(browser_state_.get());
   }

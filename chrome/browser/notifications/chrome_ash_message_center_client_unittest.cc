@@ -1,4 +1,4 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -244,7 +244,8 @@ TEST_F(ChromeAshMessageCenterClientTest, SetWebPageNotifierEnabled) {
 
   ContentSetting default_setting =
       HostContentSettingsMapFactory::GetForProfile(profile)
-          ->GetDefaultContentSetting(ContentSettingsType::NOTIFICATIONS, NULL);
+          ->GetDefaultContentSetting(ContentSettingsType::NOTIFICATIONS,
+                                     nullptr);
   ASSERT_EQ(CONTENT_SETTING_ASK, default_setting);
 
   profile->SetPermissionControllerDelegate(

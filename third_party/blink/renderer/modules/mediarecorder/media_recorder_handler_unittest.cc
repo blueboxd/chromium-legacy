@@ -108,7 +108,7 @@ class MockMediaRecorder : public MediaRecorder {
                       CreateMediaStream(scope),
                       MediaRecorderOptions::Create(),
                       scope.GetExceptionState()) {}
-  virtual ~MockMediaRecorder() = default;
+  ~MockMediaRecorder() override = default;
 
   MOCK_METHOD4(WriteData, void(const char*, size_t, bool, double));
   MOCK_METHOD1(OnError, void(const String& message));
@@ -432,8 +432,8 @@ TEST_P(MediaRecorderHandlerTest, OpusEncodeAudioFrames) {
   const std::unique_ptr<media::AudioBus> audio_bus2 = NextAudioBus();
 
   media::AudioParameters params(
-      media::AudioParameters::AUDIO_PCM_LINEAR, media::CHANNEL_LAYOUT_STEREO,
-      kTestAudioSampleRate,
+      media::AudioParameters::AUDIO_PCM_LINEAR,
+      media::ChannelLayoutConfig::Stereo(), kTestAudioSampleRate,
       kTestAudioSampleRate * kTestAudioBufferDurationMs / 1000);
   SetAudioFormatForTesting(params);
 

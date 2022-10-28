@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -25,6 +25,7 @@ const char kJsonWifiConnectionStateKey[] = "wifi_connection_state";
 const char kJsonDebugModeKey[] = "debug_mode";
 const char kJsonGaiaIdKey[] = "gaia_id";
 const char kJsonDeviceTypeKey[] = "device_type";
+const char kJsonMeasureLatencyKey[] = "measure_latency";
 
 using chromeos::network_config::mojom::ConnectionStateType;
 // TODO(https://crbug.com/1164001): remove when it moved to ash.
@@ -82,6 +83,10 @@ void SystemInfoProvider::GetSystemInfo(
   json_dictionary.SetBoolKey(
       kJsonDebugModeKey,
       base::FeatureList::IsEnabled(features::kEcheSWADebugMode));
+
+  json_dictionary.SetBoolKey(
+      kJsonMeasureLatencyKey,
+      base::FeatureList::IsEnabled(features::kEcheSWAMeasureLatency));
 
   std::string json_message;
   base::JSONWriter::Write(json_dictionary, &json_message);

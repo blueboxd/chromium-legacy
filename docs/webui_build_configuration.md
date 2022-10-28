@@ -53,6 +53,9 @@ out_folder: Specifies the location to write the wrapped files. If not specified,
 minify: Whether to minify HTML/CSS with
         third_party/node/node_modules/html-minifier. Defaults to false.
 use_js: Whether to output .js files instead of .ts files. Defaults to false.
+scheme: One of ['chrome', 'relative']. Defaults to 'chrome'. Specifies whether
+        dependencies of the generated wrapper file should be imported with
+        "chrome://resources" or scheme-relative "//resources" URLs.
 ```
 
 #### **Example**
@@ -468,6 +471,8 @@ extra_grdp_deps: List of external generate_grd() targets that generate .grdp
                  resources.grd file. Optional parameter.
 extra_grdp_files: Output .grdp files of external generate_grd() targets. Must be
                   defined if |extra_grdp_deps| is defined.
+grit_output_dir: See |output_dir| in grit(). Optional parameter, defaults to
+                 "$root_gen_dir/chrome"
 ```
 
 #### **Example**

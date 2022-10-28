@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -219,8 +219,12 @@ bool AutotestDesksApi::IsWindowInDesk(aura::Window* window, int desk_index) {
   return desk_container->Contains(window);
 }
 
-int AutotestDesksApi::GetDeskCount() const {
-  return DesksController::Get()->desks().size();
+AutotestDesksApi::DesksInfo AutotestDesksApi::GetDesksInfo() const {
+  auto* controller = DesksController::Get();
+  DesksInfo info;
+  info.active_desk_index = controller->GetActiveDeskIndex();
+  info.num_desks = controller->desks().size();
+  return info;
 }
 
 }  // namespace ash

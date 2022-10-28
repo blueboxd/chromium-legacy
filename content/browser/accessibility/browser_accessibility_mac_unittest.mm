@@ -104,9 +104,10 @@ class BrowserAccessibilityMacTest : public ui::CocoaTest {
     child2.role = ax::mojom::Role::kHeading;
 
     manager_ = std::make_unique<BrowserAccessibilityManagerMac>(
-        MakeAXTreeUpdate(root_, child1, child2), nullptr);
+        MakeAXTreeUpdateForTesting(root_, child1, child2), nullptr);
     accessibility_.reset(
-        [manager_->GetRoot()->GetNativeViewAccessible() retain]);
+        [manager_->GetBrowserAccessibilityRoot()->GetNativeViewAccessible()
+            retain]);
   }
 
   void SetRootValue(std::string value) {
@@ -179,8 +180,10 @@ TEST_F(BrowserAccessibilityMacTest, TestComputeTextEdit) {
   root_.id = 1;
   root_.role = ax::mojom::Role::kTextField;
   manager_ = std::make_unique<BrowserAccessibilityManagerMac>(
-      MakeAXTreeUpdate(root_), nullptr);
-  accessibility_.reset([manager_->GetRoot()->GetNativeViewAccessible() retain]);
+      MakeAXTreeUpdateForTesting(root_), nullptr);
+  accessibility_.reset(
+      [manager_->GetBrowserAccessibilityRoot()->GetNativeViewAccessible()
+          retain]);
 
   // Insertion but no deletion.
 
@@ -265,7 +268,8 @@ TEST_F(BrowserAccessibilityMacTest, TableAPIs) {
   manager_ =
       std::make_unique<BrowserAccessibilityManagerMac>(initial_state, nullptr);
   base::scoped_nsobject<BrowserAccessibilityCocoa> ax_table_(
-      [manager_->GetRoot()->GetNativeViewAccessible() retain]);
+      [manager_->GetBrowserAccessibilityRoot()->GetNativeViewAccessible()
+          retain]);
   id children = [ax_table_ children];
   EXPECT_EQ(5U, [children count]);
 
@@ -319,8 +323,8 @@ TEST_F(BrowserAccessibilityMacTest, TableColumnsAndDescendants) {
   manager_ =
       std::make_unique<BrowserAccessibilityManagerMac>(initial_state, nullptr);
 
-  BrowserAccessibilityMac* root =
-      static_cast<BrowserAccessibilityMac*>(manager_->GetRoot());
+  BrowserAccessibilityMac* root = static_cast<BrowserAccessibilityMac*>(
+      manager_->GetBrowserAccessibilityRoot());
 
   // This triggers computation of the extra Mac table cells. 2 rows, 2 extra
   // columns, and 1 extra column header. This used to crash.

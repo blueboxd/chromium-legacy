@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,27 +7,27 @@
 #import <UIKit/UIKit.h>
 
 #import "base/mac/foundation_util.h"
-#include "base/test/task_environment.h"
-#include "components/prefs/pref_service.h"
-#include "components/sync/driver/mock_sync_service.h"
+#import "base/test/task_environment.h"
+#import "components/prefs/pref_service.h"
+#import "components/sync/test/mock_sync_service.h"
 #import "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #import "ios/chrome/browser/main/test_browser.h"
 #import "ios/chrome/browser/policy/policy_util.h"
-#include "ios/chrome/browser/pref_names.h"
+#import "ios/chrome/browser/prefs/pref_names.h"
 #import "ios/chrome/browser/signin/authentication_service_factory.h"
 #import "ios/chrome/browser/signin/authentication_service_fake.h"
-#include "ios/chrome/browser/sync/sync_service_factory.h"
-#include "ios/chrome/browser/sync/sync_setup_service_factory.h"
-#include "ios/chrome/browser/sync/sync_setup_service_mock.h"
-#include "ios/chrome/test/ios_chrome_scoped_testing_local_state.h"
+#import "ios/chrome/browser/sync/sync_service_factory.h"
+#import "ios/chrome/browser/sync/sync_setup_service_factory.h"
+#import "ios/chrome/browser/sync/sync_setup_service_mock.h"
+#import "ios/chrome/test/ios_chrome_scoped_testing_local_state.h"
 #import "ios/chrome/test/scoped_key_window.h"
 #import "ios/public/provider/chrome/browser/signin/fake_chrome_identity.h"
 #import "ios/public/provider/chrome/browser/signin/fake_chrome_identity_service.h"
-#include "testing/platform_test.h"
+#import "testing/platform_test.h"
 #import "third_party/ocmock/OCMock/OCMock.h"
-#include "third_party/ocmock/gtest_support.h"
-#include "ui/base/l10n/l10n_util.h"
-#include "ui/strings/grit/ui_strings.h"
+#import "third_party/ocmock/gtest_support.h"
+#import "ui/base/l10n/l10n_util.h"
+#import "ui/strings/grit/ui_strings.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -118,7 +118,7 @@ class SignoutActionSheetCoordinatorTest : public PlatformTest {
 // Tests that a signed-in user with Sync enabled will have an action sheet with
 // a sign-out title.
 TEST_F(SignoutActionSheetCoordinatorTest, SignedInUserWithSync) {
-  authentication_service()->SignIn(identity_, nil);
+  authentication_service()->SignIn(identity_);
   ON_CALL(*sync_service_mock_->GetMockUserSettings(), IsFirstSetupComplete())
       .WillByDefault(testing::Return(true));
 
@@ -131,7 +131,7 @@ TEST_F(SignoutActionSheetCoordinatorTest, SignedInUserWithSync) {
 // Tests that a signed-in user with Sync disabled will have an action sheet with
 // no title.
 TEST_F(SignoutActionSheetCoordinatorTest, SignedInUserWithoutSync) {
-  authentication_service()->SignIn(identity_, nil);
+  authentication_service()->SignIn(identity_);
   ON_CALL(*sync_service_mock_->GetMockUserSettings(), IsFirstSetupComplete())
       .WillByDefault(testing::Return(false));
 
@@ -148,7 +148,7 @@ TEST_F(SignoutActionSheetCoordinatorTest, SignedInUserWithForcedSignin) {
   GetLocalState()->SetInteger(prefs::kBrowserSigninPolicy,
                               static_cast<int>(BrowserSigninMode::kForced));
 
-  authentication_service()->SignIn(identity_, nil);
+  authentication_service()->SignIn(identity_);
   ON_CALL(*sync_service_mock_->GetMockUserSettings(), IsFirstSetupComplete())
       .WillByDefault(testing::Return(false));
 
@@ -162,7 +162,7 @@ TEST_F(SignoutActionSheetCoordinatorTest, SignedInUserWithForcedSignin) {
 // Tests that a signed-in managed user with Sync enabled will have an action
 // sheet with a sign-out title.
 TEST_F(SignoutActionSheetCoordinatorTest, SignedInManagedUserWithSync) {
-  authentication_service()->SignIn(identity_, nil);
+  authentication_service()->SignIn(identity_);
   ON_CALL(*sync_service_mock_->GetMockUserSettings(), IsFirstSetupComplete())
       .WillByDefault(testing::Return(true));
 
@@ -175,7 +175,7 @@ TEST_F(SignoutActionSheetCoordinatorTest, SignedInManagedUserWithSync) {
 // Tests that a signed-in managed user with Sync disabled will have an action
 // sheet with no title.
 TEST_F(SignoutActionSheetCoordinatorTest, SignedInManagedUserWithoutSync) {
-  authentication_service()->SignIn(identity_, nil);
+  authentication_service()->SignIn(identity_);
   ON_CALL(*sync_service_mock_->GetMockUserSettings(), IsFirstSetupComplete())
       .WillByDefault(testing::Return(false));
 

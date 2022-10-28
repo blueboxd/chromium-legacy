@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -32,14 +32,6 @@ class ChromeDataUseMeasurement {
   // histogram DataUse.Services.{Dimensions} with, services as the buckets.
   // |app_state| indicates the app state which can be foreground, or background.
   void ReportDataUsage(TrafficDirection dir, int64_t message_size_bytes);
-
-#if BUILDFLAG(IS_ANDROID)
-  // TODO(crbug.com/1339449): remove this after running experiment.
-  // Number of bytes received and sent by Chromium as reported by the network
-  // delegate since the operating system was last queried for traffic
-  // statistics.
-  int64_t bytes_transferred_since_last_traffic_stats_query_ = 0;
-#endif
 
   SEQUENCE_CHECKER(sequence_checker_);
 };

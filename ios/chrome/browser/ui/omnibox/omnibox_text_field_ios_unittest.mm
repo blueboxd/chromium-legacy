@@ -1,23 +1,23 @@
-// Copyright 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #import "ios/chrome/browser/ui/omnibox/omnibox_text_field_legacy.h"
 
-#include "base/command_line.h"
-#include "base/files/file_path.h"
-#include "base/files/file_util.h"
-#include "base/path_service.h"
-#include "base/strings/string_split.h"
-#include "base/strings/sys_string_conversions.h"
-#include "ios/chrome/browser/chrome_paths.h"
-#include "ios/chrome/browser/ui/util/uikit_ui_util.h"
-#include "ios/chrome/grit/ios_strings.h"
+#import "base/command_line.h"
+#import "base/files/file_path.h"
+#import "base/files/file_util.h"
+#import "base/path_service.h"
+#import "base/strings/string_split.h"
+#import "base/strings/sys_string_conversions.h"
+#import "ios/chrome/browser/paths/paths.h"
+#import "ios/chrome/browser/ui/util/uikit_ui_util.h"
+#import "ios/chrome/grit/ios_strings.h"
 #import "ios/web/common/uikit_ui_util.h"
-#include "testing/gtest_mac.h"
-#include "testing/platform_test.h"
+#import "testing/gtest_mac.h"
+#import "testing/platform_test.h"
 #import "third_party/ocmock/OCMock/OCMock.h"
-#include "ui/base/l10n/l10n_util_mac.h"
+#import "ui/base/l10n/l10n_util_mac.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."

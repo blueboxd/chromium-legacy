@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -317,9 +317,9 @@ void OpenH264VideoEncoder::Encode(scoped_refptr<VideoFrame> frame,
   picture.iPicHeight = frame->visible_rect().height();
   picture.iColorFormat = EVideoFormatType::videoFormatI420;
   picture.uiTimeStamp = frame->timestamp().InMilliseconds();
-  picture.pData[0] = frame->visible_data(VideoFrame::kYPlane);
-  picture.pData[1] = frame->visible_data(VideoFrame::kUPlane);
-  picture.pData[2] = frame->visible_data(VideoFrame::kVPlane);
+  picture.pData[0] = frame->GetWritableVisibleData(VideoFrame::kYPlane);
+  picture.pData[1] = frame->GetWritableVisibleData(VideoFrame::kUPlane);
+  picture.pData[2] = frame->GetWritableVisibleData(VideoFrame::kVPlane);
   picture.iStride[0] = frame->stride(VideoFrame::kYPlane);
   picture.iStride[1] = frame->stride(VideoFrame::kUPlane);
   picture.iStride[2] = frame->stride(VideoFrame::kVPlane);

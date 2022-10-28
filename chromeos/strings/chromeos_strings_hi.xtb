@@ -233,6 +233,7 @@
 <translation id="3283504360622356314">{0,plural, =1{फ़ाइल में बदलाव करें}one{फ़ाइल में बदलाव करें}other{फ़ाइलों में बदलाव करें}}</translation>
 <translation id="3286515922899063534"><ph name="CURRENT" />गीगाहर्ट्ज़</translation>
 <translation id="3291996639387199448">कुंजी का डायरेक्शन</translation>
+<translation id="3294437725009624529">अतिथि</translation>
 <translation id="3310640316857623290">डीएनएस, इंतज़ार की समयसीमा से बहुत ऊपर है</translation>
 <translation id="3328783797891415197">टेस्ट चल रहा है</translation>
 <translation id="3340011300870565703">डिवाइस के दाएं बड में <ph name="BATTERY_PERCENTAGE" />% बैटरी बची है.</translation>
@@ -584,7 +585,7 @@
 <translation id="6618744767048954150">जांच चल रही है</translation>
 <translation id="6620487321149975369">प्रिंट की गई फ़ाइलें तब तक इतिहास में दिखेंगी, जब तक इन्हें मैन्युअल तरीके से हटा नहीं दिया जाता</translation>
 <translation id="6624819909909965616">10 एमबी से बड़ी फ़ाइल अपलोड नहीं की जा सकती</translation>
-<translation id="6643016212128521049">मिटाएं</translation>
+<translation id="6643016212128521049">साफ़ करें</translation>
 <translation id="6647510110698214773">एन्क्रिप्शन का एल्गोरिदम</translation>
 <translation id="6650062777702288430">काना/अक्षर और अंक स्विच करने वाला बटन</translation>
 <translation id="6657585470893396449">पासवर्ड</translation>

@@ -11,13 +11,25 @@
 #include "ui/events/types/event_type.h"
 #include "ui/ozone/platform/wayland/common/wayland_util.h"
 #include "ui/ozone/platform/wayland/host/wayland_connection.h"
-#include "ui/ozone/platform/wayland/host/wayland_event_source.h"
 #include "ui/ozone/platform/wayland/host/wayland_serial_tracker.h"
 #include "ui/ozone/platform/wayland/host/wayland_window.h"
 
-// TODO(forney): Handle version 5 of wl_pointer.
-
 namespace ui {
+
+namespace {
+
+// TODO(https://crbug.com/1353873): Remove this method when Compositors other
+// than Exo comply with `wl_pointer.frame`.
+wl::EventDispatchPolicy EventDispatchPolicyForPlatform() {
+  return
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+      wl::EventDispatchPolicy::kOnFrame;
+#else
+      wl::EventDispatchPolicy::kImmediate;
+#endif
+}
+
+}  // namespace
 
 WaylandPointer::WaylandPointer(wl_pointer* pointer,
                                WaylandConnection* connection,
@@ -58,7 +70,7 @@ void WaylandPointer::Enter(void* data,
 
   pointer->delegate_->OnPointerFocusChanged(
       window, pointer->connection_->MaybeConvertLocation(location, window),
-      wl::EventDispatchPolicy::kOnFrame);
+      EventDispatchPolicyForPlatform());
 }
 
 // static
@@ -90,7 +102,8 @@ void WaylandPointer::Motion(void* data,
   const WaylandWindow* target = pointer->delegate_->GetPointerTarget();
 
   pointer->delegate_->OnPointerMotionEvent(
-      pointer->connection_->MaybeConvertLocation(location, target));
+      pointer->connection_->MaybeConvertLocation(location, target),
+      EventDispatchPolicyForPlatform());
 }
 
 // static
@@ -130,7 +143,9 @@ void WaylandPointer::Button(void* data,
     pointer->connection_->serial_tracker().UpdateSerial(
         wl::SerialType::kMousePress, serial);
   }
-  pointer->delegate_->OnPointerButtonEvent(type, changed_button);
+  pointer->delegate_->OnPointerButtonEvent(type, changed_button,
+                                           /*window=*/nullptr,
+                                           EventDispatchPolicyForPlatform());
 }
 
 // static

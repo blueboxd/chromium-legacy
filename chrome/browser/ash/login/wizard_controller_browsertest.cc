@@ -1,10 +1,9 @@
-// Copyright 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome/browser/ash/login/wizard_controller.h"
 
-#include "ash/components/geolocation/simple_geolocation_provider.h"
 #include "ash/components/settings/timezone_settings.h"
 #include "ash/components/timezone/timezone_request.h"
 #include "ash/constants/ash_features.h"
@@ -79,6 +78,7 @@
 #include "chrome/browser/ui/webui/chromeos/login/consolidated_consent_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/error_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/gaia_screen_handler.h"
+#include "chrome/browser/ui/webui/chromeos/login/local_state_error_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
 #include "chrome/browser/ui/webui/chromeos/login/reset_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
@@ -92,6 +92,7 @@
 #include "chromeos/ash/components/dbus/shill/fake_shill_manager_client.h"
 #include "chromeos/ash/components/dbus/system_clock/system_clock_client.h"
 #include "chromeos/ash/components/dbus/userdataauth/fake_install_attributes_client.h"
+#include "chromeos/ash/components/geolocation/simple_geolocation_provider.h"
 #include "chromeos/ash/components/install_attributes/stub_install_attributes.h"
 #include "chromeos/ash/components/network/network_state.h"
 #include "chromeos/ash/components/network/network_state_handler.h"
@@ -559,7 +560,7 @@ class WizardControllerFlowTest : public WizardControllerTest {
     mock_network_screen_view_ = std::make_unique<MockNetworkScreenView>();
     mock_network_screen_ =
         MockScreenExpectLifecycle(std::make_unique<MockNetworkScreen>(
-            mock_network_screen_view_.get(),
+            mock_network_screen_view_.get()->AsWeakPtr(),
             base::BindRepeating(&WizardController::OnNetworkScreenExit,
                                 base::Unretained(wizard_controller))));
 
@@ -647,7 +648,7 @@ class WizardControllerFlowTest : public WizardControllerTest {
         std::make_unique<MockConsolidatedConsentScreenView>();
     mock_consolidated_consent_screen_ = MockScreenExpectLifecycle(
         std::make_unique<MockConsolidatedConsentScreen>(
-            mock_consolidated_consent_screen_view_.get(),
+            mock_consolidated_consent_screen_view_.get()->AsWeakPtr(),
             base::BindRepeating(
                 &WizardController::OnConsolidatedConsentScreenExit,
                 base::Unretained(wizard_controller))));
@@ -2203,24 +2204,20 @@ class WizardControllerBrokenLocalStateTest : public WizardControllerTest {
 
 IN_PROC_BROWSER_TEST_F(WizardControllerBrokenLocalStateTest,
                        LocalStateCorrupted) {
-  // Checks that after wizard controller initialization error screen
-  // in the proper state is displayed.
-  ASSERT_EQ(GetErrorScreen(),
+  // Checks that after wizard controller initialization local error screen
+  // is displayed.
+  ASSERT_EQ(WizardController::default_controller()->GetScreen(
+                LocalStateErrorScreenView::kScreenId),
             WizardController::default_controller()->current_screen());
-  ASSERT_EQ(NetworkError::UI_STATE_LOCAL_STATE_ERROR,
-            GetErrorScreen()->GetUIState());
 
-  OobeScreenWaiter(ErrorScreenView::kScreenId).Wait();
+  OobeScreenWaiter(LocalStateErrorScreenView::kScreenId).Wait();
 
-  // Checks visibility of the error message and powerwash button.
-  test::OobeJS().ExpectVisible("error-message");
-  test::OobeJS().ExpectVisiblePath({"error-message", "powerwashButton"});
-  test::OobeJS().ExpectVisiblePath({"error-message", "localStateErrorText"});
-  test::OobeJS().ExpectVisiblePath({"error-message", "guestSessionText"});
+  // Checks visibility of the powerwash button.
+  test::OobeJS().ExpectVisiblePath({"local-state-error", "powerwashButton"});
 
   // Emulates user click on the "Restart and Powerwash" button.
   ASSERT_EQ(0, FakeSessionManagerClient::Get()->start_device_wipe_call_count());
-  test::OobeJS().TapOnPath({"error-message", "powerwashButton"});
+  test::OobeJS().TapOnPath({"local-state-error", "powerwashButton"});
   ASSERT_EQ(1, FakeSessionManagerClient::Get()->start_device_wipe_call_count());
 }
 
@@ -3104,7 +3101,7 @@ class WizardControllerOobeConfigurationTest : public WizardControllerTest {
     ASSERT_TRUE(chromeos::test_utils::GetTestDataPath(
         "oobe_configuration", "non_empty_configuration.json",
         &configuration_file));
-    command_line->AppendSwitchPath(switches::kFakeOobeConfiguration,
+    command_line->AppendSwitchPath(chromeos::switches::kFakeOobeConfiguration,
                                    configuration_file);
   }
 
@@ -3121,9 +3118,8 @@ IN_PROC_BROWSER_TEST_F(WizardControllerOobeConfigurationTest,
   OobeScreenWaiter(WelcomeView::kScreenId).Wait();
   WelcomeScreen* screen =
       WizardController::default_controller()->GetScreen<WelcomeScreen>();
-  base::Value* configuration = screen->GetConfigurationForTesting();
-  ASSERT_NE(configuration, nullptr);
-  EXPECT_FALSE(configuration->DictEmpty());
+  const base::Value::Dict& configuration = screen->GetConfigurationForTesting();
+  EXPECT_FALSE(configuration.empty());
 }
 
 class WizardControllerRollbackFlowTest : public WizardControllerFlowTest {
@@ -3159,7 +3155,7 @@ class WizardControllerRollbackFlowTest : public WizardControllerFlowTest {
     ASSERT_TRUE(chromeos::test_utils::GetTestDataPath(
         "oobe_configuration", "TestEnterpriseRollbackRecover.json",
         &configuration_file));
-    command_line->AppendSwitchPath(switches::kFakeOobeConfiguration,
+    command_line->AppendSwitchPath(chromeos::switches::kFakeOobeConfiguration,
                                    configuration_file);
   }
 

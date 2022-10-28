@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,6 +7,14 @@
 #include "base/memory/ptr_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/profile_metrics/browser_profile_type.h"
+
+const base::Feature kSystemProfileSelectionDefaultNone{
+    "SystemProfileSelectionDefaultNone",
+    base::FeatureState::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kGuestProfileSelectionDefaultNone{
+    "GuestProfileSlectionDefaultNone",
+    base::FeatureState::FEATURE_DISABLED_BY_DEFAULT};
 
 ProfileSelections::Builder::Builder()
     : selections_(base::WrapUnique(new ProfileSelections())) {}
@@ -60,6 +68,15 @@ ProfileSelections ProfileSelections::BuildNoProfilesSelected() {
 
 ProfileSelections ProfileSelections::BuildForRegularProfile() {
   return ProfileSelections::Builder()
+      .WithGuest(ProfileSelection::kNone)
+      .WithSystem(ProfileSelection::kNone)
+      .Build();
+}
+
+ProfileSelections
+ProfileSelections::BuildForRegularAndIncognitoNonExperimental() {
+  return ProfileSelections::Builder()
+      .WithRegular(ProfileSelection::kOwnInstance)
       .WithGuest(ProfileSelection::kNone)
       .WithSystem(ProfileSelection::kNone)
       .Build();
@@ -143,19 +160,37 @@ ProfileSelection ProfileSelections::GetProfileSelection(
     return regular_profile_selection_;
 
   if (profile->IsGuestSession()) {
+    // Default value depends on the experiment
+    // `kGuestProfileSelectionDefaultNone`. If experiment is active default
+    // value is ProfileSelection::kNone, otherwise the behavior is redirected to
+    // the `regular_profile_selection_` value (old default behavior).
+    ProfileSelection guest_profile_default =
+        base::FeatureList::IsEnabled(kGuestProfileSelectionDefaultNone)
+            ? ProfileSelection::kNone
+            : regular_profile_selection_;
+
     // If the default value for GuestProfile is overridden, use it.
     // otherwise, redirect to the old behavior (same as regular profile).
     // This is used for both original guest profile (not user visible) and for
     // the off-the-record guest (user visible, ui guest session).
-    return guest_profile_selection_.value_or(regular_profile_selection_);
+    return guest_profile_selection_.value_or(guest_profile_default);
   }
 
   if (profile->IsSystemProfile()) {
-    // If the default value for SystemProfile is overridden, use it.
-    // otherwise, redirect to the old behavior (same as regular profile).
+    // Default value depends on the experiment
+    // `kSystemProfileSelectionDefaultNone`. If experiment is active default
+    // value is ProfileSelection::kNone, otherwise the behavior is redirected to
+    // the `regular_profile_selection_` value (old default behavior).
+    ProfileSelection system_profile_default =
+        base::FeatureList::IsEnabled(kSystemProfileSelectionDefaultNone)
+            ? ProfileSelection::kNone
+            : regular_profile_selection_;
+
+    // If the value for SystemProfileSelection is set, use it.
+    // Otherwise, use the default value set above.
     // This is used for both original system profile (not user visible) and for
     // the off-the-record system profile (used in the Profile Picker).
-    return system_profile_selection_.value_or(regular_profile_selection_);
+    return system_profile_selection_.value_or(system_profile_default);
   }
 
   NOTREACHED();

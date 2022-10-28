@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,16 +9,13 @@
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/profiles/keep_alive/scoped_profile_keep_alive.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/chrome_web_modal_dialog_manager_delegate.h"
 #include "chrome/browser/ui/views/profiles/profile_picker_web_contents_host.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "content/public/browser/web_contents_delegate.h"
-#include "ui/color/color_provider_manager.h"
 
 struct CoreAccountInfo;
-class ProfilePickerDiceSignInToolbar;
-class ProfilePickerView;
+class ProfilePickerWebContentsHost;
 
 namespace content {
 struct ContextMenuParams;
@@ -45,8 +42,7 @@ class ProfilePickerDiceSignInProvider
                               std::unique_ptr<content::WebContents>,
                               bool is_saml)>;
 
-  ProfilePickerDiceSignInProvider(ProfilePickerView* host,
-                                  ProfilePickerDiceSignInToolbar* toolbar);
+  explicit ProfilePickerDiceSignInProvider(ProfilePickerWebContentsHost* host);
   ~ProfilePickerDiceSignInProvider() override;
   ProfilePickerDiceSignInProvider(const ProfilePickerDiceSignInProvider&) =
       delete;
@@ -68,14 +64,11 @@ class ProfilePickerDiceSignInProvider
   // Navigates back in the sign-in flow if applicable.
   void NavigateBack();
 
-  ui::ColorProviderManager::ThemeInitializerSupplier* GetCustomTheme() const;
-
-  // Returns nullptr if profile_ has not been created yet.
-  Profile* GetInitializedProfile();
-
   // Returns whether the flow is initialized (i.e. whether `profile_` has been
   // created).
   bool IsInitialized() const;
+
+  content::WebContents* contents() const { return contents_.get(); }
 
  private:
   // content::WebContentsDelegate:
@@ -85,7 +78,7 @@ class ProfilePickerDiceSignInProvider
                       std::unique_ptr<content::WebContents> new_contents,
                       const GURL& target_url,
                       WindowOpenDisposition disposition,
-                      const gfx::Rect& initial_rect,
+                      const blink::mojom::WindowFeatures& window_features,
                       bool user_gesture,
                       bool* was_blocked) override;
   bool HandleKeyboardEvent(
@@ -105,10 +98,9 @@ class ProfilePickerDiceSignInProvider
       const signin::PrimaryAccountChangeEvent& event_details) override;
 
   // Initializes the flow with the newly created profile.
-  void OnProfileCreated(
-      base::OnceCallback<void(bool)>& switch_finished_callback,
-      Profile* new_profile,
-      Profile::CreateStatus status);
+  void OnProfileInitialized(
+      base::OnceCallback<void(bool)> switch_finished_callback,
+      Profile* new_profile);
 
   // Finishes the sign-in (if there is a primary account with refresh tokens).
   void FinishFlowIfSignedIn();
@@ -119,11 +111,8 @@ class ProfilePickerDiceSignInProvider
 
   void OnSignInContentsFreedUp();
 
-  content::WebContents* contents() const { return contents_.get(); }
-
-  // The host and toolbar objects, must outlive this object.
-  const raw_ptr<ProfilePickerView> host_;
-  const raw_ptr<ProfilePickerDiceSignInToolbar> toolbar_;
+  // The host must outlive this object.
+  const raw_ptr<ProfilePickerWebContentsHost> host_;
   // Sign-in callback, valid until it's called.
   SignedInCallback callback_;
 

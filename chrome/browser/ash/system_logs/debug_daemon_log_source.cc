@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -51,7 +51,7 @@ constexpr struct UserLogs {
   bool pattern = false;
 } kUserLogs[] = {
     {"chrome_user_log", "log/chrome"},
-    {"chrome_user_log.PREVIOUS", "log/chrome_??????-??????", true},
+    {"chrome_user_log.PREVIOUS", "log/chrome_????????-??????", true},
     {"libassistant_user_log", "google-assistant-library/log/libassistant.log"},
     {"login-times", "login-times"},
     {"logout-times", "logout-times"},
@@ -89,7 +89,6 @@ std::string ReadUserLogFile(const base::FilePath& log_file_path) {
 std::string ReadUserLogFilePattern(
     const base::FilePath& log_file_path_pattern) {
   base::FilePath log_file_dir = log_file_path_pattern.DirName();
-  LOG(ERROR) << log_file_dir.value();
   base::FileEnumerator file_enumerator(
       log_file_dir, /*recursive=*/false, base::FileEnumerator::FILES,
       log_file_path_pattern.BaseName().value());

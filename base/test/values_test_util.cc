@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,8 +10,8 @@
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/memory/ptr_util.h"
-#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/types/optional_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
@@ -263,13 +263,13 @@ Value ParseJson(StringPiece json) {
 Value::Dict ParseJsonDict(StringPiece json) {
   absl::optional<Value> result =
       ParseJsonHelper(json, /*expected_type=*/Value::Type::DICT);
-  return result.has_value() ? std::move(result->GetDict()) : Value::Dict();
+  return result.has_value() ? std::move(*result).TakeDict() : Value::Dict();
 }
 
 Value::List ParseJsonList(StringPiece json) {
   absl::optional<Value> result =
       ParseJsonHelper(json, /*expected_type=*/Value::Type::LIST);
-  return result.has_value() ? std::move(result->GetList()) : Value::List();
+  return result.has_value() ? std::move(*result).TakeList() : Value::List();
 }
 
 std::unique_ptr<Value> ParseJsonDeprecated(StringPiece json) {

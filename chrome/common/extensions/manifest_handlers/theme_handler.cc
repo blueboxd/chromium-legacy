@@ -1,4 +1,4 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -24,29 +24,21 @@ namespace {
 bool LoadImages(const base::DictionaryValue* theme_value,
                 std::u16string* error,
                 ThemeInfo* theme_info) {
-  const base::DictionaryValue* images_value = NULL;
+  const base::DictionaryValue* images_value = nullptr;
   if (theme_value->GetDictionary(keys::kThemeImages, &images_value)) {
     // Validate that the images are all strings.
-    for (base::DictionaryValue::Iterator iter(*images_value); !iter.IsAtEnd();
-         iter.Advance()) {
+    for (const auto item : images_value->GetDict()) {
       // The value may be a dictionary of scales and files paths.
       // Or the value may be a file path, in which case a scale
       // of 100% is assumed.
-      if (iter.value().is_dict()) {
-        const base::DictionaryValue* inner_value = NULL;
-        if (iter.value().GetAsDictionary(&inner_value)) {
-          for (base::DictionaryValue::Iterator inner_iter(*inner_value);
-               !inner_iter.IsAtEnd(); inner_iter.Advance()) {
-            if (!inner_iter.value().is_string()) {
-              *error = errors::kInvalidThemeImages;
-              return false;
-            }
+      if (item.second.is_dict()) {
+        for (const auto inner_item : item.second.GetDict()) {
+          if (!inner_item.second.is_string()) {
+            *error = errors::kInvalidThemeImages;
+            return false;
           }
-        } else {
-          *error = errors::kInvalidThemeImages;
-          return false;
         }
-      } else if (!iter.value().is_string()) {
+      } else if (!item.second.is_string()) {
         *error = errors::kInvalidThemeImages;
         return false;
       }
@@ -103,19 +95,18 @@ bool LoadColors(const base::Value* theme_value,
 bool LoadTints(const base::DictionaryValue* theme_value,
                std::u16string* error,
                ThemeInfo* theme_info) {
-  const base::DictionaryValue* tints_value = NULL;
+  const base::DictionaryValue* tints_value = nullptr;
   if (!theme_value->GetDictionary(keys::kThemeTints, &tints_value))
     return true;
 
   // Validate that the tints are all reals.
-  for (base::DictionaryValue::Iterator iter(*tints_value); !iter.IsAtEnd();
-       iter.Advance()) {
-    if (!iter.value().is_list()) {
+  for (const auto item : tints_value->GetDict()) {
+    if (!item.second.is_list()) {
       *error = errors::kInvalidThemeTints;
       return false;
     }
 
-    base::Value::ConstListView tint_list = iter.value().GetListDeprecated();
+    base::Value::ConstListView tint_list = item.second.GetListDeprecated();
     if (tint_list.size() != 3) {
       *error = errors::kInvalidThemeTints;
       return false;
@@ -136,7 +127,7 @@ bool LoadTints(const base::DictionaryValue* theme_value,
 bool LoadDisplayProperties(const base::DictionaryValue* theme_value,
                            std::u16string* error,
                            ThemeInfo* theme_info) {
-  const base::DictionaryValue* display_properties_value = NULL;
+  const base::DictionaryValue* display_properties_value = nullptr;
   if (theme_value->GetDictionary(keys::kThemeDisplayProperties,
                                  &display_properties_value)) {
     theme_info->theme_display_properties_ = base::DictionaryValue::From(
@@ -160,26 +151,26 @@ ThemeInfo::~ThemeInfo() {
 // static
 const base::DictionaryValue* ThemeInfo::GetImages(const Extension* extension) {
   const ThemeInfo* theme_info = GetInfo(extension);
-  return theme_info ? theme_info->theme_images_.get() : NULL;
+  return theme_info ? theme_info->theme_images_.get() : nullptr;
 }
 
 // static
 const base::Value* ThemeInfo::GetColors(const Extension* extension) {
   const ThemeInfo* theme_info = GetInfo(extension);
-  return theme_info ? theme_info->theme_colors_.get() : NULL;
+  return theme_info ? theme_info->theme_colors_.get() : nullptr;
 }
 
 // static
 const base::DictionaryValue* ThemeInfo::GetTints(const Extension* extension) {
   const ThemeInfo* theme_info = GetInfo(extension);
-  return theme_info ? theme_info->theme_tints_.get() : NULL;
+  return theme_info ? theme_info->theme_tints_.get() : nullptr;
 }
 
 // static
 const base::DictionaryValue* ThemeInfo::GetDisplayProperties(
     const Extension* extension) {
   const ThemeInfo* theme_info = GetInfo(extension);
-  return theme_info ? theme_info->theme_display_properties_.get() : NULL;
+  return theme_info ? theme_info->theme_display_properties_.get() : nullptr;
 }
 
 ThemeHandler::ThemeHandler() {
@@ -189,7 +180,7 @@ ThemeHandler::~ThemeHandler() {
 }
 
 bool ThemeHandler::Parse(Extension* extension, std::u16string* error) {
-  const base::DictionaryValue* theme_value = NULL;
+  const base::DictionaryValue* theme_value = nullptr;
   if (!extension->manifest()->GetDictionary(keys::kTheme, &theme_value)) {
     *error = errors::kInvalidTheme;
     return false;
@@ -217,9 +208,8 @@ bool ThemeHandler::Validate(const Extension* extension,
     const base::DictionaryValue* images_value =
         extensions::ThemeInfo::GetImages(extension);
     if (images_value) {
-      for (base::DictionaryValue::Iterator iter(*images_value); !iter.IsAtEnd();
-           iter.Advance()) {
-        const std::string* val = iter.value().GetIfString();
+      for (const auto item : images_value->GetDict()) {
+        const std::string* val = item.second.GetIfString();
         if (val) {
           base::FilePath image_path =
               extension->path().Append(base::FilePath::FromUTF8Unsafe(*val));

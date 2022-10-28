@@ -1,4 +1,4 @@
-# Copyright 2021 The Chromium Authors. All rights reserved.
+# Copyright 2021 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -29,6 +29,7 @@ source_set("browser") {
     "//chrome/browser/enterprise/connectors/device_trust/key_management/core:util",
     "//chrome/browser/enterprise/connectors/device_trust/key_management/core/persistence",
     "//components/policy/core/common",
+    "//components/prefs",
     "//crypto",
     "//services/network/public/cpp",
     "//services/network/public/cpp:cpp_base",
@@ -75,6 +76,7 @@ source_set("unit_tests") {
     "//components/enterprise:test_support",
     "//components/policy/core/common",
     "//components/policy/core/common:test_support",
+    "//components/prefs:test_support",
     "//services/network:test_support",
     "//testing/gmock",
     "//testing/gtest",

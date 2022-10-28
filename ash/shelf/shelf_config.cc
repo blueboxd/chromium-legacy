@@ -1,4 +1,4 @@
-// Copyright (c) 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -476,10 +476,6 @@ SkColor ShelfConfig::GetShelfControlButtonColor() const {
   }
   return AshColorProvider::Get()->GetControlsLayerColor(
       AshColorProvider::ControlsLayerType::kControlBackgroundColorInactive);
-}
-
-SkColor ShelfConfig::GetShelfWithAppListColor() const {
-  return SkColorSetA(SK_ColorBLACK, 20);  // 8% opacity
 }
 
 SkColor ShelfConfig::GetMaximizedShelfColor() const {

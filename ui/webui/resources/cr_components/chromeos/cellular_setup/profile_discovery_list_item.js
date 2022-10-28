@@ -8,7 +8,18 @@
  * profile.
  */
 
+import '//resources/cr_elements/cr_shared_vars.css.js';
+import '//resources/polymer/v3_0/iron-flex-layout/iron-flex-layout-classes.js';
+import '//resources/polymer/v3_0/iron-icon/iron-icon.js';
+import '//resources/polymer/v3_0/iron-media-query/iron-media-query.js';
+import '//resources/polymer/v3_0/paper-spinner/paper-spinner-lite.js';
+import './cellular_setup_icons.js';
+
+import {I18nBehavior} from '//resources/cr_elements/i18n_behavior.js';
+import {html, Polymer} from '//resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+
 Polymer({
+  _template: html`{__html_template__}`,
   is: 'profile-discovery-list-item',
 
   behaviors: [I18nBehavior],

@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,7 +9,7 @@ import android.content.Context;
 import android.content.Intent;
 
 import org.chromium.base.BundleUtils;
-import org.chromium.base.annotations.IdentifierNameString;
+import org.chromium.build.annotations.IdentifierNameString;
 import org.chromium.chrome.browser.base.SplitCompatIntentService;
 
 /** See {@link NotificationServiceImpl}. */

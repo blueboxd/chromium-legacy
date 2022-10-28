@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,20 +10,24 @@
 #include "ash/public/cpp/holding_space/holding_space_constants.h"
 #include "ash/public/cpp/holding_space/holding_space_controller.h"
 #include "ash/public/cpp/holding_space/holding_space_metrics.h"
+#include "ash/public/cpp/holding_space/holding_space_util.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/style/ash_color_provider.h"
 #include "ash/system/holding_space/holding_space_item_chip_view.h"
+#include "ash/system/holding_space/holding_space_util.h"
 #include "base/bind.h"
 #include "base/callback_helpers.h"
+#include "base/i18n/rtl.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/color/color_id.h"
 #include "ui/compositor/layer.h"
+#include "ui/gfx/geometry/rect_f.h"
+#include "ui/gfx/geometry/rrect_f.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/focus_ring.h"
-#include "ui/views/controls/highlight_path_generator.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/box_layout.h"
@@ -31,26 +35,6 @@
 namespace ash {
 
 namespace {
-
-// CallbackPathGenerator -------------------------------------------------------
-
-class CallbackPathGenerator : public views::HighlightPathGenerator {
- public:
-  using Callback = base::RepeatingCallback<gfx::RRectF()>;
-
-  explicit CallbackPathGenerator(Callback callback) : callback_(callback) {}
-  CallbackPathGenerator(const CallbackPathGenerator&) = delete;
-  CallbackPathGenerator& operator=(const CallbackPathGenerator&) = delete;
-  ~CallbackPathGenerator() override = default;
-
- private:
-  // views::HighlightPathGenerator:
-  absl::optional<gfx::RRectF> GetRoundRect(const gfx::RectF& rect) override {
-    return callback_.Run();
-  }
-
-  Callback callback_;
-};
 
 // Header ----------------------------------------------------------------------
 
@@ -65,7 +49,7 @@ class Header : public views::Button {
 
     auto* layout = SetLayoutManager(std::make_unique<views::BoxLayout>(
         views::BoxLayout::Orientation::kHorizontal, gfx::Insets(),
-        kHoldingSpaceDownloadsHeaderSpacing));
+        kHoldingSpaceSectionHeaderSpacing));
 
     // Label.
     auto* label = AddChildView(bubble_utils::CreateLabel(
@@ -82,7 +66,7 @@ class Header : public views::Button {
     // Though the entirety of the header is focusable and behaves as a single
     // button, the focus ring is drawn as a circle around just the `chevron_`.
     views::FocusRing::Get(this)->SetPathGenerator(
-        std::make_unique<CallbackPathGenerator>(base::BindRepeating(
+        holding_space_util::CreateHighlightPathGenerator(base::BindRepeating(
             [](const views::View* chevron) {
               const float radius = chevron->width() / 2.f;
               gfx::RRectF path(gfx::RectF(chevron->bounds()), radius);
@@ -105,7 +89,7 @@ class Header : public views::Button {
 
     // Chevron.
     chevron_->SetImage(gfx::CreateVectorIcon(
-        kChevronRightIcon, kHoldingSpaceDownloadsChevronIconSize,
+        kChevronRightIcon, kHoldingSpaceSectionChevronIconSize,
         ash_color_provider->GetContentLayerColor(
             AshColorProvider::ContentLayerType::kIconColorPrimary)));
   }
@@ -126,17 +110,9 @@ class Header : public views::Button {
 // DownloadsSection ------------------------------------------------------------
 
 DownloadsSection::DownloadsSection(HoldingSpaceViewDelegate* delegate)
-    : HoldingSpaceItemViewsSection(
-          delegate,
-          /*supported_types=*/
-          {HoldingSpaceItem::Type::kArcDownload,
-           HoldingSpaceItem::Type::kDiagnosticsLog,
-           HoldingSpaceItem::Type::kDownload,
-           HoldingSpaceItem::Type::kLacrosDownload,
-           HoldingSpaceItem::Type::kNearbyShare,
-           HoldingSpaceItem::Type::kPrintedPdf, HoldingSpaceItem::Type::kScan,
-           HoldingSpaceItem::Type::kPhoneHubCameraRoll},
-          /*max_count=*/kMaxDownloads) {}
+    : HoldingSpaceItemViewsSection(delegate,
+                                   holding_space_util::DownloadSupportedTypes(),
+                                   /*max_count=*/kMaxDownloads) {}
 
 DownloadsSection::~DownloadsSection() = default;
 

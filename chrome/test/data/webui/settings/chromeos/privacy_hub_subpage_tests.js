@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,13 +6,14 @@ import '../../chai.js';
 
 import {PrivacyHubBrowserProxyImpl} from 'chrome://os-settings/chromeos/lazy_load.js';
 import {Router, routes} from 'chrome://os-settings/chromeos/os_settings.js';
+import {assert} from 'chrome://resources/js/assert.m.js';
 import {webUIListenerCallback} from 'chrome://resources/js/cr.m.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {getDeepActiveElement} from 'chrome://resources/js/util.m.js';
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 import {waitAfterNextRender} from 'chrome://test/test_util.js';
 
-import {assertEquals} from '../../chai_assert.js';
+import {assertEquals, assertNotReached} from '../../chai_assert.js';
 import {TestBrowserProxy} from '../../test_browser_proxy.js';
 
 /** @implements {PrivacyHubBrowserProxy} */
@@ -21,9 +22,11 @@ class TestPrivacyHubBrowserProxy extends TestBrowserProxy {
     super([
       'getInitialCameraHardwareToggleState',
       'getInitialMicrophoneHardwareToggleState',
+      'getInitialAvailabilityOfMicrophoneForSimpleUsage',
     ]);
     this.cameraToggleIsEnabled = false;
     this.microphoneToggleIsEnabled = false;
+    this.microphoneForSimpleUsageAvailable = false;
   }
 
   /** override */
@@ -37,9 +40,50 @@ class TestPrivacyHubBrowserProxy extends TestBrowserProxy {
     this.methodCalled('getInitialMicrophoneHardwareToggleState');
     return Promise.resolve(this.microphoneToggleIsEnabled);
   }
+
+  /** override */
+  getInitialAvailabilityOfMicrophoneForSimpleUsage() {
+    this.methodCalled('getInitialAvailabilityOfMicrophoneForSimpleUsage');
+    return Promise.resolve(this.microphoneForSimpleUsageAvailable);
+  }
 }
 
-suite('PrivacyHubSubpageTests', function() {
+const PrivacyHubVersion = {
+  Future: 'Privacy Hub with future (after MVP) features.',
+  MVP: 'Privacy Hub with MVP features.',
+  Dogfood: 'Privacy Hub with dogfooded features (camera and microphone only).',
+};
+
+function overridedValues(privacyHubVersion) {
+  switch (privacyHubVersion) {
+    case PrivacyHubVersion.Future: {
+      return {
+        showPrivacyHubPage: true,
+        showPrivacyHubMVPPage: true,
+        showPrivacyHubFuturePage: true,
+      };
+    }
+    case PrivacyHubVersion.Dogfood: {
+      return {
+        showPrivacyHubPage: true,
+        showPrivacyHubMVPPage: false,
+        showPrivacyHubFuturePage: false,
+      };
+    }
+    case PrivacyHubVersion.MVP: {
+      return {
+        showPrivacyHubPage: true,
+        showPrivacyHubMVPPage: true,
+        showPrivacyHubFuturePage: false,
+      };
+    }
+    default: {
+      assertNotReached(`Unsupported Privacy Hub version: {privacyHubVersion}`);
+    }
+  }
+}
+
+async function parametrizedPrivacyHubSubpageTestsuite(privacyHubVersion) {
   /** @type {SettingsPrivacyHubPage} */
   let privacyHubSubpage = null;
 
@@ -47,9 +91,7 @@ suite('PrivacyHubSubpageTests', function() {
   let privacyHubBrowserProxy = null;
 
   setup(async () => {
-    loadTimeData.overrideValues({
-      showPrivacyHub: true,
-    });
+    loadTimeData.overrideValues(overridedValues(privacyHubVersion));
 
     privacyHubBrowserProxy = new TestPrivacyHubBrowserProxy();
     PrivacyHubBrowserProxyImpl.setInstanceForTesting(privacyHubBrowserProxy);
@@ -100,6 +142,7 @@ suite('PrivacyHubSubpageTests', function() {
         'Microphone toggle should be focused for settingId=1117.');
   });
 
+
   test('Update camera setting sub-label', async () => {
     const params = new URLSearchParams();
     params.append('settingId', '1116');
@@ -144,9 +187,12 @@ suite('PrivacyHubSubpageTests', function() {
     params.append('settingId', '1117');
 
     privacyHubBrowserProxy.microphoneToggleIsEnabled = false;
+    privacyHubBrowserProxy.microphoneForSimpleUsageAvailable = false;
 
     await privacyHubBrowserProxy.whenCalled(
         'getInitialMicrophoneHardwareToggleState');
+    await privacyHubBrowserProxy.whenCalled(
+        'getInitialAvailabilityOfMicrophoneForSimpleUsage');
     Router.getInstance().navigateTo(routes.PRIVACY_HUB, params);
 
     flush();
@@ -158,9 +204,12 @@ suite('PrivacyHubSubpageTests', function() {
     await waitAfterNextRender(subLabel);
 
     chai.assert.match(
-        subLabel.textContent, /^\s*$/,
-        'The sublabel should only consist of whitespace');
+        subLabel.textContent, /^\s*No microphone connected\s*$/,
+        'The sublabel should contain the hint about no microphone being ' +
+            'connected.');
 
+    webUIListenerCallback(
+        'availability-of-microphone-for-simple-usage-changed', true);
     webUIListenerCallback('microphone-hardware-toggle-changed', true);
 
     await waitAfterNextRender(subLabel);
@@ -168,8 +217,12 @@ suite('PrivacyHubSubpageTests', function() {
     chai.assert.match(
         subLabel.textContent,
         /^\s*All microphones disabled by devices hardware switch\s*$/,
-        'The sublabel should contain the hint about the internal camera');
+        'The sublabel should contain the hint about the microphone hardware ' +
+            'switch being active.');
 
+
+    webUIListenerCallback(
+        'availability-of-microphone-for-simple-usage-changed', true);
     webUIListenerCallback('microphone-hardware-toggle-changed', false);
 
     await waitAfterNextRender(subLabel);
@@ -177,5 +230,78 @@ suite('PrivacyHubSubpageTests', function() {
     chai.assert.match(
         subLabel.textContent, /^\s*$/,
         'The sublabel should only consist of whitespace');
+
+    webUIListenerCallback(
+        'availability-of-microphone-for-simple-usage-changed', false);
+    webUIListenerCallback('microphone-hardware-toggle-changed', true);
+
+    await waitAfterNextRender(subLabel);
+
+    chai.assert.match(
+        subLabel.textContent,
+        /^\s*All microphones disabled by devices hardware switch\s*$/,
+        'The sublabel should contain the hint about the microphone hardware ' +
+            'switch being active.');
   });
-});
+
+  test('Suggested content, pref disabled', async () => {
+    privacyHubSubpage = document.createElement('settings-privacy-hub-page');
+    document.body.appendChild(privacyHubSubpage);
+    flush();
+
+    // The default state of the pref is disabled.
+    const suggestedContent = assert(
+        privacyHubSubpage.shadowRoot.querySelector('#suggested-content'));
+    assertFalse(suggestedContent.checked);
+  });
+
+  test('Suggested content, pref enabled', async () => {
+    // Update the backing pref to enabled.
+    privacyHubSubpage.prefs = {
+      'settings': {
+        'suggested_content_enabled': {
+          value: true,
+        },
+      },
+    };
+
+    flush();
+
+    // The checkbox reflects the updated pref state.
+    const suggestedContent = assert(
+        privacyHubSubpage.shadowRoot.querySelector('#suggested-content'));
+    assertTrue(suggestedContent.checked);
+  });
+
+  test('Deep link to Geolocation toggle on privacy hub', async () => {
+    const params = new URLSearchParams();
+    params.append('settingId', '1118');
+    Router.getInstance().navigateTo(routes.PRIVACY_HUB, params);
+
+    flush();
+
+    const toggleElement =
+        privacyHubSubpage.shadowRoot.querySelector('#geolocationToggle');
+    if (privacyHubVersion === PrivacyHubVersion.Dogfood) {
+      assertEquals(toggleElement, null);
+    } else {
+      const deepLinkElement =
+          toggleElement.shadowRoot.querySelector('cr-toggle');
+      await waitAfterNextRender(deepLinkElement);
+      assertEquals(
+          deepLinkElement, getDeepActiveElement(),
+          'Geolocation toggle should be focused for settingId=1118.');
+    }
+  });
+  //}
+}
+
+suite(
+    'PrivacyHubDogfoodSubpageTests',
+    () => parametrizedPrivacyHubSubpageTestsuite(PrivacyHubVersion.Dogfood));
+suite(
+    'PrivacyHubMVPSubpageTests',
+    () => parametrizedPrivacyHubSubpageTestsuite(PrivacyHubVersion.MVP));
+suite(
+    'PrivacyHubFutureSubpageTests',
+    () => parametrizedPrivacyHubSubpageTestsuite(PrivacyHubVersion.Future));

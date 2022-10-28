@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -16,7 +16,6 @@
 #include "base/process/launch.h"
 #include "base/process/process.h"
 #include "base/strings/string_number_conversions.h"
-#include "build/build_config.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/nacl/nacl_browsertest_util.h"
@@ -59,7 +58,8 @@ NACL_BROWSER_TEST_F(NaClBrowserTest, DISABLED_ExitStatus254, {
       "pm_exit_status_test.html?trigger=exit254&expected_exit=254"));
 })
 
-NACL_BROWSER_TEST_F(NaClBrowserTest, ExitStatusNeg2, {
+// TODO(https://crbug.com/1059468): Flaky.
+NACL_BROWSER_TEST_F(NaClBrowserTest, DISABLED_ExitStatusNeg2, {
   RunNaClIntegrationTest(FILE_PATH_LITERAL(
       "pm_exit_status_test.html?trigger=exitneg2&expected_exit=254"));
 })

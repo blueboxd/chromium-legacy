@@ -1,13 +1,13 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome/browser/chromeos/extensions/file_manager/device_event_router.h"
 
-#include "ash/components/disks/disk.h"
 #include "base/bind.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/ash/file_manager/volume_manager.h"
+#include "chromeos/ash/components/disks/disk.h"
 #include "content/public/browser/browser_thread.h"
 
 namespace file_manager {

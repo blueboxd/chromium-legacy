@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,6 +8,7 @@
 #define CHROME_BROWSER_EXTENSIONS_API_CONTEXT_MENUS_CONTEXT_MENUS_API_HELPERS_H_
 
 #include "base/notreached.h"
+#include "base/types/optional_util.h"
 #include "chrome/browser/extensions/menu_manager.h"
 #include "chrome/common/extensions/api/context_menus.h"
 #include "content/public/browser/browser_context.h"
@@ -86,7 +87,7 @@ bool CreateMenuItem(const PropertyWithEnumT& create_properties,
 
   // Contexts.
   MenuItem::ContextList contexts;
-  if (create_properties.contexts.get())
+  if (create_properties.contexts)
     contexts = GetContexts(*create_properties.contexts);
   else
     contexts.Add(MenuItem::PAGE);
@@ -111,7 +112,7 @@ bool CreateMenuItem(const PropertyWithEnumT& create_properties,
 
   // Title.
   std::string title;
-  if (create_properties.title.get())
+  if (create_properties.title)
     title = *create_properties.title;
 
   MenuItem::Type type = GetType(create_properties.type, MenuItem::NORMAL);
@@ -121,28 +122,21 @@ bool CreateMenuItem(const PropertyWithEnumT& create_properties,
   }
 
   // Visibility state.
-  bool visible = true;
-  if (create_properties.visible)
-    visible = *create_properties.visible;
+  bool visible = create_properties.visible.value_or(true);
 
   // Checked state.
-  bool checked = false;
-  if (create_properties.checked.get())
-    checked = *create_properties.checked;
+  bool checked = create_properties.checked.value_or(false);
 
   // Enabled.
-  bool enabled = true;
-  if (create_properties.enabled.get())
-    enabled = *create_properties.enabled;
+  bool enabled = create_properties.enabled.value_or(true);
 
   std::unique_ptr<MenuItem> item(
       new MenuItem(item_id, title, checked, visible, enabled, type, contexts));
 
   // URL Patterns.
   if (!item->PopulateURLPatterns(
-          create_properties.document_url_patterns.get(),
-          create_properties.target_url_patterns.get(),
-          error)) {
+          base::OptionalToPtr(create_properties.document_url_patterns),
+          base::OptionalToPtr(create_properties.target_url_patterns), error)) {
     return false;
   }
 
@@ -195,7 +189,7 @@ bool UpdateMenuItem(const PropertyWithEnumT& update_properties,
   }
 
   // Title.
-  if (update_properties.title.get()) {
+  if (update_properties.title) {
     std::string title(*update_properties.title);
     if (title.empty() && item->type() != MenuItem::SEPARATOR) {
       *error = kTitleNeededError;
@@ -205,7 +199,7 @@ bool UpdateMenuItem(const PropertyWithEnumT& update_properties,
   }
 
   // Checked state.
-  if (update_properties.checked.get()) {
+  if (update_properties.checked) {
     bool checked = *update_properties.checked;
     if (checked &&
         item->type() != MenuItem::CHECKBOX &&
@@ -236,12 +230,12 @@ bool UpdateMenuItem(const PropertyWithEnumT& update_properties,
     item->set_visible(*update_properties.visible);
 
   // Enabled.
-  if (update_properties.enabled.get())
+  if (update_properties.enabled)
     item->set_enabled(*update_properties.enabled);
 
   // Contexts.
   MenuItem::ContextList contexts;
-  if (update_properties.contexts.get()) {
+  if (update_properties.contexts) {
     contexts = GetContexts(*update_properties.contexts);
 
     if (contexts.Contains(MenuItem::LAUNCHER)) {
@@ -268,8 +262,8 @@ bool UpdateMenuItem(const PropertyWithEnumT& update_properties,
 
   // URL Patterns.
   if (!item->PopulateURLPatterns(
-          update_properties.document_url_patterns.get(),
-          update_properties.target_url_patterns.get(), error)) {
+          base::OptionalToPtr(update_properties.document_url_patterns),
+          base::OptionalToPtr(update_properties.target_url_patterns), error)) {
     return false;
   }
 

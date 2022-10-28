@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -18,6 +18,7 @@
 #include "base/values.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/browser/bookmark_node.h"
+#include "components/bookmarks/common/bookmark_metrics.h"
 #include "components/bookmarks/common/bookmark_pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "components/strings/grit/components_strings.h"
@@ -43,8 +44,7 @@ ManagedBookmarksTracker::ManagedBookmarksTracker(
 ManagedBookmarksTracker::~ManagedBookmarksTracker() {}
 
 base::Value::List ManagedBookmarksTracker::GetInitialManagedBookmarks() {
-  const base::Value::List& list =
-      prefs_->GetValueList(prefs::kManagedBookmarks);
+  const base::Value::List& list = prefs_->GetList(prefs::kManagedBookmarks);
   return list.Clone();
 }
 
@@ -105,11 +105,11 @@ std::u16string ManagedBookmarksTracker::GetBookmarksFolderTitle() const {
 
 void ManagedBookmarksTracker::ReloadManagedBookmarks() {
   // In case the user just signed into or out of the account.
-  model_->SetTitle(managed_node_, GetBookmarksFolderTitle());
+  model_->SetTitle(managed_node_, GetBookmarksFolderTitle(),
+                   bookmarks::metrics::BookmarkEditSource::kOther);
 
   // Recursively update all the managed bookmarks and folders.
-  const base::Value::List& list =
-      prefs_->GetValueList(prefs::kManagedBookmarks);
+  const base::Value::List& list = prefs_->GetList(prefs::kManagedBookmarks);
   UpdateBookmarks(managed_node_, list);
 }
 

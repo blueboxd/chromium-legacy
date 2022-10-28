@@ -1,4 +1,4 @@
-# Copyright 2018 The Chromium Authors. All rights reserved.
+# Copyright 2018 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -32,6 +32,7 @@ source_set("tab_grid") {
     "//ios/chrome/browser/browser_state",
     "//ios/chrome/browser/commerce:commerce",
     "//ios/chrome/browser/drag_and_drop",
+    "//ios/chrome/browser/flags:system_flags",
     "//ios/chrome/browser/main",
     "//ios/chrome/browser/policy:policy_util",
     "//ios/chrome/browser/search_engines",

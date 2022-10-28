@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -71,7 +71,7 @@ class SharedStoragePrivateSetFunction : public ExtensionFunction {
   // ExtensionFunction:
   ResponseAction Run() override;
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
-  void OnGet(base::DictionaryValue to_add, absl::optional<base::Value> items);
+  void OnGet(base::Value::Dict to_add, absl::optional<base::Value> items);
   void OnSet();
 #endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
 };

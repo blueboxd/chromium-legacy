@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,9 +11,9 @@
 namespace reporting {
 
 class AudioEventsObserver
-    : public reporting::CrosHealthdEventsObserverBase<
-          chromeos::cros_healthd::mojom::CrosHealthdAudioObserver>,
-      public chromeos::cros_healthd::mojom::CrosHealthdAudioObserver {
+    : public CrosHealthdEventsObserverBase<
+          ash::cros_healthd::mojom::CrosHealthdAudioObserver>,
+      public ash::cros_healthd::mojom::CrosHealthdAudioObserver {
  public:
   AudioEventsObserver();
 
@@ -22,7 +22,7 @@ class AudioEventsObserver
 
   ~AudioEventsObserver() override;
 
-  // chromeos::cros_healthd::mojom::CrosHealthdAudioObserver:
+  // ash::cros_healthd::mojom::CrosHealthdAudioObserver:
   void OnUnderrun() override;
 
   void OnSevereUnderrun() override;
@@ -31,6 +31,7 @@ class AudioEventsObserver
   // CrosHealthdEventsObserverBase
   void AddObserver() override;
 };
+
 }  // namespace reporting
 
 #endif  // CHROME_BROWSER_ASH_POLICY_REPORTING_METRICS_REPORTING_AUDIO_AUDIO_EVENTS_OBSERVER_H_

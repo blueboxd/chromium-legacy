@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -17,6 +17,7 @@
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "components/content_settings/core/common/content_settings_pattern_parser.h"
+#include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "net/base/url_util.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "url/gurl.h"
@@ -478,6 +479,43 @@ bool ContentSettingsPattern::IsNonWildcardDomainNonPortScheme(
   return false;
 }
 
+// static
+ContentSettingsPattern ContentSettingsPattern::ToDomainWildcardPattern(
+    const ContentSettingsPattern& pattern) {
+  DCHECK(pattern.IsValid());
+  std::string registrable_domain =
+      net::registry_controlled_domains::GetDomainAndRegistry(
+          pattern.GetHost(),
+          net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES);
+
+  if (registrable_domain.empty()) {
+    return CreateBuilder()->Invalid()->Build();
+  }
+
+  return CreateBuilder()
+      ->WithHost(registrable_domain)
+      ->WithDomainWildcard()
+      ->WithSchemeWildcard()
+      ->WithPortWildcard()
+      ->WithPathWildcard()
+      ->Build();
+}
+
+// static
+ContentSettingsPattern ContentSettingsPattern::ToHostOnlyPattern(
+    const ContentSettingsPattern& pattern) {
+  DCHECK(pattern.IsValid());
+  auto builder = CreateBuilder();
+  builder->WithHost(pattern.GetHost());
+  builder->WithSchemeWildcard();
+  builder->WithPortWildcard();
+  builder->WithPathWildcard();
+  if (pattern.HasDomainWildcard()) {
+    builder->WithDomainWildcard();
+  }
+  return builder->Build();
+}
+
 ContentSettingsPattern::ContentSettingsPattern()
   : is_valid_(false) {
 }
@@ -542,6 +580,10 @@ bool ContentSettingsPattern::Matches(
 
 bool ContentSettingsPattern::MatchesAllHosts() const {
   return parts_.has_domain_wildcard && parts_.host.empty();
+}
+
+bool ContentSettingsPattern::HasDomainWildcard() const {
+  return parts_.has_domain_wildcard && !parts_.host.empty();
 }
 
 std::string ContentSettingsPattern::ToString() const {

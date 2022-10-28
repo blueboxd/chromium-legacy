@@ -10,6 +10,7 @@
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "content/browser/direct_sockets/direct_sockets_service_impl.h"
+#include "content/public/browser/direct_sockets_delegate.h"
 #include "net/base/ip_endpoint.h"
 #include "net/http/http_response_headers.h"
 #include "net/net_buildflags.h"
@@ -80,7 +81,7 @@ void ResolveHostAndOpenSocket::Start() {
   DCHECK(!receiver_.is_bound());
   DCHECK(!resolver_.is_bound());
 
-  if (net::IPAddress().AssignFromIPLiteral(*options_->remote_hostname)) {
+  if (net::IPAddress().AssignFromIPLiteral(options_->remote_hostname)) {
     is_raw_address_ = true;
   }
 
@@ -90,19 +91,22 @@ void ResolveHostAndOpenSocket::Start() {
   network::mojom::ResolveHostParametersPtr parameters =
       network::mojom::ResolveHostParameters::New();
 #if BUILDFLAG(ENABLE_MDNS)
-  if (ResemblesMulticastDNSName(*options_->remote_hostname)) {
+  if (ResemblesMulticastDNSName(options_->remote_hostname)) {
     parameters->source = net::HostResolverSource::MULTICAST_DNS;
     is_mdns_name_ = true;
   }
 #endif  // !BUILDFLAG(ENABLE_MDNS)
+  // Intentionally using a HostPortPair because scheme isn't specified.
   resolver_->ResolveHost(
-      net::HostPortPair(*options_->remote_hostname, options_->remote_port),
+      network::mojom::HostResolverHost::NewHostPortPair(
+          net::HostPortPair(options_->remote_hostname, options_->remote_port)),
       net::NetworkIsolationKey::CreateTransient(), std::move(parameters),
       receiver_.BindNewPipeAndPassRemote());
-  receiver_.set_disconnect_handler(
-      base::BindOnce(&ResolveHostAndOpenSocket::OnComplete,
-                     base::Unretained(this), net::ERR_NAME_NOT_RESOLVED,
-                     net::ResolveErrorInfo(net::ERR_FAILED), absl::nullopt));
+  receiver_.set_disconnect_handler(base::BindOnce(
+      &ResolveHostAndOpenSocket::OnComplete, base::Unretained(this),
+      net::ERR_NAME_NOT_RESOLVED, net::ResolveErrorInfo(net::ERR_FAILED),
+      /*resolved_addresses=*/absl::nullopt,
+      /*endpoint_results_with_metadata=*/absl::nullopt));
 }
 
 // static
@@ -122,9 +126,28 @@ void ResolveHostAndOpenSocket::SetHttpsPortForTesting(
 void ResolveHostAndOpenSocket::OnComplete(
     int result,
     const net::ResolveErrorInfo& resolve_error_info,
-    const absl::optional<net::AddressList>& resolved_addresses) {
+    const absl::optional<net::AddressList>& resolved_addresses,
+    const absl::optional<net::HostResolverEndpointResults>&
+        endpoint_results_with_metadata) {
   DCHECK(receiver_.is_bound());
   receiver_.reset();
+
+  if (!service_) {
+    OpenSocket(net::ERR_UNEXPECTED, {});
+    return;
+  }
+
+  auto* frame = service_->GetFrameHost();
+  if (!frame) {
+    OpenSocket(net::ERR_UNEXPECTED, {});
+    return;
+  }
+
+  if (auto* delegate = DirectSocketsServiceImpl::GetDelegate();
+      delegate && delegate->ShouldSkipPostResolveChecks(frame)) {
+    OpenSocket(result, resolved_addresses);
+    return;
+  }
 
   // Reject hostnames that resolve to non-public exception unless a raw IP
   // address or a *.local hostname is entered by the user.
@@ -142,7 +165,7 @@ void ResolveHostAndOpenSocket::OnComplete(
       // Delegates to OpenSocket(...) after the check.
       // We cannot use the resolved address here since it causes problems
       // with SSL :(
-      PerformCORSCheck(*options_->remote_hostname, *resolved_addresses);
+      PerformCORSCheck(options_->remote_hostname, *resolved_addresses);
       return;
     }
   }
@@ -153,16 +176,7 @@ void ResolveHostAndOpenSocket::OnComplete(
 void ResolveHostAndOpenSocket::PerformCORSCheck(
     const std::string& address,
     net::AddressList resolved_addresses) {
-  if (!service_) {
-    OpenSocket(net::ERR_UNEXPECTED, {});
-    return;
-  }
-
   auto* frame = service_->GetFrameHost();
-  if (!frame) {
-    OpenSocket(net::ERR_UNEXPECTED, {});
-    return;
-  }
 
   mojo::Remote<network::mojom::URLLoaderFactory> factory;
   frame->CreateNetworkServiceDefaultFactory(

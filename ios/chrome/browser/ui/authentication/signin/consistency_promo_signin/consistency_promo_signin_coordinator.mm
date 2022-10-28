@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,12 +9,13 @@
 #import "components/signin/public/base/signin_metrics.h"
 #import "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/main/browser.h"
-#import "ios/chrome/browser/pref_names.h"
+#import "ios/chrome/browser/prefs/pref_names.h"
 #import "ios/chrome/browser/signin/authentication_service_factory.h"
 #import "ios/chrome/browser/signin/chrome_account_manager_service_factory.h"
 #import "ios/chrome/browser/signin/constants.h"
 #import "ios/chrome/browser/signin/identity_manager_factory.h"
 #import "ios/chrome/browser/ui/alert_coordinator/alert_coordinator.h"
+#import "ios/chrome/browser/ui/authentication/authentication_flow.h"
 #import "ios/chrome/browser/ui/authentication/signin/consistency_promo_signin/consistency_account_chooser/consistency_account_chooser_coordinator.h"
 #import "ios/chrome/browser/ui/authentication/signin/consistency_promo_signin/consistency_default_account/consistency_default_account_coordinator.h"
 #import "ios/chrome/browser/ui/authentication/signin/consistency_promo_signin/consistency_layout_delegate.h"
@@ -23,6 +24,8 @@
 #import "ios/chrome/browser/ui/authentication/signin/consistency_promo_signin/consistency_sheet/consistency_sheet_presentation_controller.h"
 #import "ios/chrome/browser/ui/authentication/signin/consistency_promo_signin/consistency_sheet/consistency_sheet_slide_transition_animator.h"
 #import "ios/chrome/browser/ui/authentication/signin/signin_coordinator+protected.h"
+#import "ios/chrome/browser/ui/commands/browsing_data_commands.h"
+#import "ios/chrome/browser/ui/commands/command_dispatcher.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
 #import "ios/chrome/grit/ios_strings.h"
 #import "ios/public/provider/chrome/browser/signin/chrome_identity.h"
@@ -291,8 +294,15 @@
 - (void)consistencyDefaultAccountCoordinatorSignin:
     (ConsistencyDefaultAccountCoordinator*)coordinator {
   DCHECK_EQ(coordinator, self.defaultAccountCoordinator);
+  AuthenticationFlow* authenticationFlow =
+      [[AuthenticationFlow alloc] initWithBrowser:self.browser
+                                         identity:self.selectedIdentity
+                                 postSignInAction:POST_SIGNIN_ACTION_NONE
+                         presentingViewController:self.navigationController];
+  authenticationFlow.dispatcher = HandlerForProtocol(
+      self.browser->GetCommandDispatcher(), BrowsingDataCommands);
   [self.consistencyPromoSigninMediator
-      signinWithIdentity:self.selectedIdentity];
+      signinWithAuthenticationFlow:authenticationFlow];
 }
 
 #pragma mark - ConsistencyLayoutDelegate
@@ -396,6 +406,7 @@
   NSString* errorMessage = nil;
   switch (error) {
     case ConsistencyPromoSigninMediatorErrorGeneric:
+    case ConsistencyPromoSigninMediatorErrorFailedToSignin:
       errorMessage =
           l10n_util::GetNSString(IDS_IOS_WEBSIGN_ERROR_GENERIC_ERROR);
       break;

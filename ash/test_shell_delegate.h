@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -37,6 +37,8 @@ class TestShellDelegate : public ShellDelegate {
   bool CanShowWindowForUser(const aura::Window* window) const override;
   std::unique_ptr<CaptureModeDelegate> CreateCaptureModeDelegate()
       const override;
+  std::unique_ptr<GlanceablesDelegate> CreateGlanceablesDelegate(
+      GlanceablesController* controller) const override;
   AccessibilityDelegate* CreateAccessibilityDelegate() override;
   std::unique_ptr<BackGestureContextualNudgeDelegate>
   CreateBackGestureContextualNudgeDelegate(

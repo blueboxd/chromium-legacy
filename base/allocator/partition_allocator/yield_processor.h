@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -16,6 +16,10 @@
 #if BUILDFLAG(IS_NACL)
 // Inline assembly not allowed.
 #define PA_YIELD_PROCESSOR ((void)0)
+#elif defined(COMPILER_MSVC) && !defined(__clang__)
+// MSVC is in its own assemblyless world (crbug.com/1351310#c6).
+#include <windows.h>
+#define PA_YIELD_PROCESSOR (YieldProcessor())
 #else
 
 #if defined(ARCH_CPU_X86_64) || defined(ARCH_CPU_X86)

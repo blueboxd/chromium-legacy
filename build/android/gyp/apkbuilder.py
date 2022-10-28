@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 #
-# Copyright (c) 2015 The Chromium Authors. All rights reserved.
+# Copyright 2015 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -20,9 +20,6 @@ import finalize_apk
 from util import build_utils
 from util import diff_utils
 from util import zipalign
-
-# Input dex.jar files are zipaligned.
-zipalign.ApplyZipFileZipAlignFix()
 
 
 # Taken from aapt's Package.cpp:

@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -20,6 +20,7 @@
 #include "components/sync/protocol/local_trusted_vault.pb.h"
 #include "components/sync/trusted_vault/trusted_vault_connection.h"
 #include "components/sync/trusted_vault/trusted_vault_degraded_recoverability_handler.h"
+#include "google_apis/gaia/google_service_auth_error.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace base {
@@ -70,7 +71,7 @@ class StandaloneTrustedVaultBackend
   void WriteDegradedRecoverabilityState(
       const sync_pb::LocalTrustedVaultDegradedRecoverabilityState&
           degraded_recoverability_state) override;
-  void OnDegradedRecoverabilityChanged(bool value) override;
+  void OnDegradedRecoverabilityChanged() override;
 
   // Restores state saved in |file_path_|, should be called before using the
   // object.
@@ -130,6 +131,8 @@ class StandaloneTrustedVaultBackend
                                             int version);
 
   void SetClockForTesting(base::Clock* clock);
+
+  void OnAuthErrorResolvedForAccount(const CoreAccountInfo& account_info);
 
  private:
   friend class base::RefCountedThreadSafe<StandaloneTrustedVaultBackend>;
@@ -244,6 +247,12 @@ class StandaloneTrustedVaultBackend
   // Used to determine current time, set to base::DefaultClock in prod and can
   // be overridden in tests.
   raw_ptr<base::Clock> clock_;
+
+  // Used to take care of polling the degraded recoverability state from the
+  // server for the |primary_account|. Instance changes whenever
+  // |primary_account| changes.
+  std::unique_ptr<TrustedVaultDegradedRecoverabilityHandler>
+      degraded_recoverability_handler_;
 
   std::vector<uint8_t> last_added_recovery_method_public_key_for_testing_;
 

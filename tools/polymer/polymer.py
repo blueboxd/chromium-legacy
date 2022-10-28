@@ -87,12 +87,14 @@ _preserve_url_scheme = False
 # Use an OrderedDict, since the order these redirects are applied matters.
 _chrome_redirects = OrderedDict([
     ('//resources/polymer/v1_0/', POLYMER_V1_DIR),
+    ('//resources/ash/common/', 'ash/webui/common/resources/'),
     ('//resources/', 'ui/webui/resources/'),
 ])
 
 _chrome_reverse_redirects = {
     POLYMER_V3_DIR: '//resources/polymer/v3_0/',
     'ui/webui/resources/': '//resources/',
+    'ash/webui/common/resources/': '//resources/ash/common/',
 }
 
 
@@ -166,6 +168,11 @@ class Dependency:
       return (self.html_path_normalized
           .replace(r'ui/webui/resources/html/', 'ui/webui/resources/js/')
           .replace(r'.html', extension))
+
+    # TODO(crbug.com/1184053): Remove when remaining OOBE files have been
+    # checked in as Polymer3.
+    if self.html_path_normalized == 'ui/webui/resources/cr_elements/icons.html':
+      return 'ui/webui/resources/cr_elements/icons.html.js'
 
     return self.html_path_normalized.replace(r'.html', extension)
 
@@ -512,7 +519,7 @@ def _process_style_module(js_file, html_file):
   # correctly. Without this they are resolved with respect to the main HTML
   # documents location (unlike Polymer2). Note: This is assuming that only style
   # modules under ui/webui/resources/ are processed by polymer_modulizer(), for
-  # example cr_icons_css.html.
+  # example cr_icons.css.html.
   js_template = \
 """%(js_imports)s
 const template = document.createElement('template');

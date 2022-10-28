@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -345,7 +345,7 @@ class NET_EXPORT URLRequestContextBuilder {
   }
 
   // Sets a ClientSocketFactory when the network service sandbox is enabled. The
-  // unique_ptr is moved to a URLRequestContextStorage once Build() is called.
+  // unique_ptr is moved to a URLRequestContext once Build() is called.
   void set_client_socket_factory(
       std::unique_ptr<ClientSocketFactory> client_socket_factory) {
     set_client_socket_factory(client_socket_factory.get());

@@ -1,11 +1,11 @@
-/* Copyright 2022 The Chromium Authors. All rights reserved.
+/* Copyright 2022 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file. */
 
 /* #css_wrapper_metadata_start
  * #type=style
- * #import=//resources/cr_elements/shared_style_css.m.js
- * #import=//resources/cr_elements/shared_vars_css.m.js
+ * #import=//resources/cr_elements/cr_shared_style.css.js
+ * #import=//resources/cr_elements/cr_shared_vars.css.js
  * #import=//resources/cr_elements/search_highlight_style.css.js
  * #import=./settings_vars.css.js
 <if expr='not chromeos_ash'>
@@ -84,7 +84,6 @@ span ~ a {
 
 a[href] {
   color: var(--cr-link-color);
-  text-decoration: none;
 }
 
 /* For elements that are simple out-links but don't look like anchors. */

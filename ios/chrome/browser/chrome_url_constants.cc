@@ -1,4 +1,4 @@
-// Copyright 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,6 +8,7 @@
 
 #include <iterator>
 
+#include "components/optimization_guide/optimization_guide_internals/webui/url_constants.h"
 #include "ios/components/webui/web_ui_url_constants.h"
 
 const char kChromeUIChromeURLsURL[] = "chrome://chrome-urls/";
@@ -78,6 +79,7 @@ const char* const kChromeHostURLs[] = {
     kChromeUITermsHost,
     kChromeUIUserActionsHost,
     kChromeUIVersionHost,
+    optimization_guide_internals::kChromeUIOptimizationGuideInternalsHost,
 };
 const size_t kNumberOfChromeHostURLs = std::size(kChromeHostURLs);
 

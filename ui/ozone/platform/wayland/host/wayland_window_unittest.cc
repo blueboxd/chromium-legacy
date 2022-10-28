@@ -47,6 +47,7 @@
 #include "ui/ozone/platform/wayland/common/wayland_util.h"
 #include "ui/ozone/platform/wayland/host/wayland_buffer_manager_host.h"
 #include "ui/ozone/platform/wayland/host/wayland_connection_test_api.h"
+#include "ui/ozone/platform/wayland/host/wayland_event_source.h"
 #include "ui/ozone/platform/wayland/host/wayland_output.h"
 #include "ui/ozone/platform/wayland/host/wayland_output_manager.h"
 #include "ui/ozone/platform/wayland/host/wayland_seat.h"
@@ -417,7 +418,6 @@ TEST_P(WaylandWindowTest, SetDecorationInsets) {
       gfx::ScaleToRoundedRect(kNormalBounds, kHiDpiScale).size();
   const BoundsChange kHiDpiBounds{true};
 
-  // TODO(crbug.com/1306688): Change this to SetBoundsInDIP.
   window_->SetBoundsInDIP(kNormalBounds);
 
   uint32_t serial = 0;
@@ -445,6 +445,10 @@ TEST_P(WaylandWindowTest, SetDecorationInsets) {
   // window geometry.  Emulate updating the visual size (sending the frame
   // update) for that.
   window_->UpdateVisualSize(kNormalBounds.size());
+  // Setting geometry is double buffered and requires commit called on the
+  // surface. In production, this is handled during commit of a next frame
+  // (which also updates visual size).
+  window_->root_surface()->Commit();
 
   Sync();
 
@@ -474,6 +478,10 @@ TEST_P(WaylandWindowTest, SetDecorationInsets) {
   // window geometry.  Emulate updating the visual size (sending the frame
   // update) for that.
   window_->UpdateVisualSize(kHiDpiSize);
+  // Setting geometry is double buffered and requires commit called on the
+  // surface. In production, this is handled during commit of a next frame
+  // (which also updates visual size).
+  window_->root_surface()->Commit();
 
   Sync();
 
@@ -485,6 +493,56 @@ TEST_P(WaylandWindowTest, SetDecorationInsets) {
                        state.get());
 
     Sync();
+  }
+}
+
+// Checks that when the window gets some of its edges tiled, it notifies the
+// delegate appropriately.
+TEST_P(WaylandWindowTest, HandleTiledEdges) {
+  // Only the stable XDG shell protocol supports tiled states.
+  if (GetParam().shell_version == wl::ShellVersion::kV6)
+    GTEST_SKIP();
+
+  constexpr gfx::Rect kWindowBounds{800, 600};
+  uint32_t serial = 0;
+
+  struct {
+    std::vector<xdg_toplevel_state> configured_states;
+    WindowTiledEdges expected_tiled_edges;
+  } kTestCases[]{
+      {{XDG_TOPLEVEL_STATE_TILED_LEFT}, {true, false, false, false}},
+      {{XDG_TOPLEVEL_STATE_TILED_RIGHT}, {false, true, false, false}},
+      {{XDG_TOPLEVEL_STATE_TILED_TOP}, {false, false, true, false}},
+      {{XDG_TOPLEVEL_STATE_TILED_BOTTOM}, {false, false, false, true}},
+      {{XDG_TOPLEVEL_STATE_TILED_LEFT, XDG_TOPLEVEL_STATE_TILED_TOP},
+       {true, false, true, false}},
+      {{XDG_TOPLEVEL_STATE_TILED_LEFT, XDG_TOPLEVEL_STATE_TILED_BOTTOM},
+       {true, false, false, true}},
+      {{XDG_TOPLEVEL_STATE_TILED_RIGHT, XDG_TOPLEVEL_STATE_TILED_TOP},
+       {false, true, true, false}},
+      {{XDG_TOPLEVEL_STATE_TILED_RIGHT, XDG_TOPLEVEL_STATE_TILED_BOTTOM},
+       {false, true, false, true}},
+      {{XDG_TOPLEVEL_STATE_TILED_LEFT, XDG_TOPLEVEL_STATE_TILED_TOP,
+        XDG_TOPLEVEL_STATE_TILED_BOTTOM},
+       {true, false, true, true}},
+      {{XDG_TOPLEVEL_STATE_TILED_RIGHT, XDG_TOPLEVEL_STATE_TILED_TOP,
+        XDG_TOPLEVEL_STATE_TILED_BOTTOM},
+       {false, true, true, true}},
+  };
+  for (const auto& test_case : kTestCases) {
+    auto configured_states = InitializeWlArrayWithActivatedState();
+    for (const auto additional_state : test_case.configured_states)
+      AddStateToWlArray(additional_state, configured_states.get());
+
+    EXPECT_CALL(delegate_,
+                OnWindowTiledStateChanged(test_case.expected_tiled_edges))
+        .Times(1);
+    SendConfigureEvent(xdg_surface_, kWindowBounds.size(), ++serial,
+                       configured_states.get());
+
+    Sync();
+
+    VerifyAndClearExpectations();
   }
 }
 
@@ -1459,6 +1517,7 @@ TEST_P(WaylandWindowTest, DispatchesLocatedEventsToCapturedWindow) {
   wl_pointer_send_motion(server_.seat()->pointer()->resource(), 1002,
                          wl_fixed_from_double(10.75),
                          wl_fixed_from_double(20.375));
+  wl_pointer_send_frame(server_.seat()->pointer()->resource());
 
   Sync();
 
@@ -1482,6 +1541,7 @@ TEST_P(WaylandWindowTest, DispatchesLocatedEventsToCapturedWindow) {
   wl_pointer_send_motion(server_.seat()->pointer()->resource(), 1002,
                          wl_fixed_from_double(10.75),
                          wl_fixed_from_double(20.375));
+  wl_pointer_send_frame(server_.seat()->pointer()->resource());
 
   Sync();
 
@@ -1492,6 +1552,7 @@ TEST_P(WaylandWindowTest, DispatchesLocatedEventsToCapturedWindow) {
   wl_pointer_send_motion(server_.seat()->pointer()->resource(), 1002,
                          wl_fixed_from_double(2.75),
                          wl_fixed_from_double(8.375));
+  wl_pointer_send_frame(server_.seat()->pointer()->resource());
 
   EXPECT_CALL(delegate_, DispatchEvent(_)).Times(0);
   std::unique_ptr<Event> event3;
@@ -1534,6 +1595,7 @@ TEST_P(WaylandWindowTest, DispatchesLocatedEventsToCapturedWindow) {
   wl_pointer_send_motion(server_.seat()->pointer()->resource(), 1002,
                          wl_fixed_from_double(2.75),
                          wl_fixed_from_double(8.375));
+  wl_pointer_send_frame(server_.seat()->pointer()->resource());
 
   Sync();
 
@@ -1541,6 +1603,52 @@ TEST_P(WaylandWindowTest, DispatchesLocatedEventsToCapturedWindow) {
   EXPECT_EQ(event4->AsLocatedEvent()->location(), gfx::Point(7, 16));
 
   menu_window.reset();
+}
+
+// Verify that located events are translated correctly when the windows have
+// geometry with non-zero offset.
+// See https://crbug.com/1292486.
+TEST_P(WaylandWindowTest, ConvertEventToTarget) {
+  // This first section repeats a part of SetDecorationInsets that sets
+  // decoration insets and ensures that they have been applied.
+  constexpr gfx::Rect kMainWindowBounds{956, 556};
+  const auto kMainWindowInsets = gfx::Insets::TLBR(24, 28, 32, 28);
+  auto bounds_with_insets = kMainWindowBounds;
+  bounds_with_insets.Inset(kMainWindowInsets);
+  EXPECT_CALL(delegate_, OnBoundsChanged(_)).Times(0);
+  EXPECT_CALL(*xdg_surface_, SetWindowGeometry(bounds_with_insets));
+  window_->SetDecorationInsets(&kMainWindowInsets);
+  // Setting the decoration insets does not trigger the immediate update of the
+  // window geometry.  Emulate updating the visual size (sending the frame
+  // update) for that.
+  window_->UpdateVisualSize(kMainWindowBounds.size());
+
+  Sync();
+
+  // Create a menu.
+  constexpr gfx::Rect kMenuBounds{100, 100, 80, 50};
+  MockWaylandPlatformWindowDelegate menu_window_delegate;
+  EXPECT_CALL(menu_window_delegate, GetMenuType())
+      .WillOnce(Return(MenuType::kRootContextMenu));
+  std::unique_ptr<WaylandWindow> menu_window = CreateWaylandWindowWithParams(
+      PlatformWindowType::kMenu, widget_, kMenuBounds, &menu_window_delegate);
+  EXPECT_TRUE(menu_window);
+
+  // Now translate the event located at (0, 0) in the parent window into the
+  // coordinate system of the menu.  Its coordinates must be equal to:
+  //     -(offset of parent geometry + offset of the menu).
+  constexpr gfx::PointF kParentPoint{0, 0};
+  ui::MouseEvent event(ui::EventType::ET_MOUSE_MOVED, kParentPoint,
+                       kParentPoint, {}, ui::EF_NONE, ui::EF_NONE);
+
+  ui::Event::DispatcherApi dispatcher_api(&event);
+  dispatcher_api.set_target(window_.get());
+
+  ui::WaylandEventSource::ConvertEventToTarget(menu_window.get(), &event);
+  EXPECT_EQ(event.AsLocatedEvent()->x(),
+            -(kMenuBounds.x() + kMainWindowInsets.left()));
+  EXPECT_EQ(event.AsLocatedEvent()->y(),
+            -(kMenuBounds.y() + kMainWindowInsets.top()));
 }
 
 // Tests that the event grabber gets the events processed by its toplevel parent
@@ -1587,6 +1695,7 @@ TEST_P(WaylandWindowTest,
   wl_pointer_send_motion(server_.seat()->pointer()->resource(), 1002,
                          wl_fixed_from_double(10.75),
                          wl_fixed_from_double(20.375));
+  wl_pointer_send_frame(server_.seat()->pointer()->resource());
 
   Sync();
 
@@ -1612,6 +1721,7 @@ TEST_P(WaylandWindowTest,
   wl_pointer_send_motion(server_.seat()->pointer()->resource(), 1002,
                          wl_fixed_from_double(10.75),
                          wl_fixed_from_double(20.375));
+  wl_pointer_send_frame(server_.seat()->pointer()->resource());
 
   Sync();
 
@@ -3113,6 +3223,7 @@ TEST_P(WaylandWindowTest, DoesNotGrabPopupUnlessParentHasGrab) {
   wl_pointer_send_frame(pointer_resource);
   wl_pointer_send_button(pointer_resource, 4u /*serial*/, 1, BTN_LEFT,
                          WL_POINTER_BUTTON_STATE_PRESSED);
+  wl_pointer_send_frame(pointer_resource);
   EXPECT_CALL(delegate, DispatchEvent(_)).Times(2);
   Sync();
   Mock::VerifyAndClearExpectations(&delegate);
@@ -3142,10 +3253,38 @@ TEST_P(WaylandWindowTest, InitialBounds) {
   testing::NiceMock<MockWaylandPlatformWindowDelegate> delegate_2;
   auto toplevel = CreateWaylandWindowWithParams(
       PlatformWindowType::kWindow, 0, gfx::Rect(10, 10, 200, 200), &delegate_2);
-  toplevel->HandleAuraToplevelConfigure(0, 0, 0, 0, false, false, true);
+  toplevel->HandleAuraToplevelConfigure(0, 0, 0, 0, {false, false, true});
   toplevel->HandleSurfaceConfigure(2);
   static_cast<WaylandToplevelWindow*>(toplevel.get())->ApplyPendingBounds();
   EXPECT_EQ(gfx::Rect(10, 10, 200, 200), toplevel->GetBoundsInDIP());
+}
+
+TEST_P(WaylandWindowTest, PrimarySnappedState) {
+  testing::NiceMock<MockWaylandPlatformWindowDelegate> delegate_2;
+  auto toplevel = CreateWaylandWindowWithParams(
+      PlatformWindowType::kWindow, 0, gfx::Rect(0, 0, 200, 200), &delegate_2);
+  toplevel->HandleAuraToplevelConfigure(0, 0, 100, 200,
+                                        {.is_maximized = false,
+                                         .is_fullscreen = false,
+                                         .is_activated = true,
+                                         .is_snapped_primary = true});
+  toplevel->HandleSurfaceConfigure(2);
+  static_cast<WaylandToplevelWindow*>(toplevel.get())->ApplyPendingBounds();
+  EXPECT_EQ(gfx::Rect(0, 0, 100, 200), toplevel->GetBoundsInDIP());
+}
+
+TEST_P(WaylandWindowTest, SecondarySnappedState) {
+  testing::NiceMock<MockWaylandPlatformWindowDelegate> delegate_2;
+  auto toplevel = CreateWaylandWindowWithParams(
+      PlatformWindowType::kWindow, 0, gfx::Rect(0, 0, 200, 200), &delegate_2);
+  toplevel->HandleAuraToplevelConfigure(100, 0, 100, 200,
+                                        {.is_maximized = false,
+                                         .is_fullscreen = false,
+                                         .is_activated = true,
+                                         .is_snapped_secondary = true});
+  toplevel->HandleSurfaceConfigure(2);
+  static_cast<WaylandToplevelWindow*>(toplevel.get())->ApplyPendingBounds();
+  EXPECT_EQ(gfx::Rect(100, 0, 100, 200), toplevel->GetBoundsInDIP());
 }
 
 namespace {
@@ -3168,6 +3307,7 @@ class WaylandSubsurfaceTest : public WaylandWindowTest {
 
     bool result = window->RequestSubsurface();
     EXPECT_TRUE(result);
+    connection_->Flush();
 
     WaylandSubsurface* wayland_subsurface =
         window->wayland_subsurfaces().begin()->get();
@@ -3181,8 +3321,8 @@ class WaylandSubsurfaceTest : public WaylandWindowTest {
     EXPECT_TRUE(mock_surface_subsurface);
     wayland_subsurface->ConfigureAndShowSurface(
         subsurface_bounds, gfx::RectF(0, 0, 640, 480) /*parent_bounds_px*/,
-        1.f /*buffer_scale*/, nullptr, nullptr);
-    connection_->ScheduleFlush();
+        absl::nullopt /*clip_rect_px*/, 1.f /*buffer_scale*/, nullptr, nullptr);
+    connection_->Flush();
 
     Sync();
 
@@ -3259,10 +3399,10 @@ TEST_P(WaylandSubsurfaceTest, NoDuplicateSubsurfaceRequests) {
   auto subsurfaces = RequestWaylandSubsurface(3);
   for (auto* subsurface : subsurfaces) {
     subsurface->ConfigureAndShowSurface(gfx::RectF(1.f, 2.f, 10.f, 20.f),
-                                        gfx::RectF(0.f, 0.f, 800.f, 600.f), 1.f,
-                                        nullptr, nullptr);
+                                        gfx::RectF(0.f, 0.f, 800.f, 600.f),
+                                        absl::nullopt, 1.f, nullptr, nullptr);
   }
-  connection_->ScheduleFlush();
+  connection_->Flush();
 
   Sync();
 
@@ -3292,16 +3432,16 @@ TEST_P(WaylandSubsurfaceTest, NoDuplicateSubsurfaceRequests) {
   EXPECT_CALL(*test_subs[2], SetPosition(_, _)).Times(0);
 
   // Stack subsurfaces[0] to be from bottom to top, and change its position.
-  subsurfaces[0]->ConfigureAndShowSurface(gfx::RectF(0.f, 0.f, 10.f, 20.f),
-                                          gfx::RectF(0.f, 0.f, 800.f, 600.f),
-                                          1.f, subsurfaces[2], nullptr);
-  subsurfaces[1]->ConfigureAndShowSurface(gfx::RectF(1.f, 2.f, 10.f, 20.f),
-                                          gfx::RectF(0.f, 0.f, 800.f, 600.f),
-                                          1.f, nullptr, subsurfaces[2]);
-  subsurfaces[2]->ConfigureAndShowSurface(gfx::RectF(1.f, 2.f, 10.f, 20.f),
-                                          gfx::RectF(0.f, 0.f, 800.f, 600.f),
-                                          1.f, nullptr, subsurfaces[0]);
-  connection_->ScheduleFlush();
+  subsurfaces[0]->ConfigureAndShowSurface(
+      gfx::RectF(0.f, 0.f, 10.f, 20.f), gfx::RectF(0.f, 0.f, 800.f, 600.f),
+      absl::nullopt, 1.f, subsurfaces[2], nullptr);
+  subsurfaces[1]->ConfigureAndShowSurface(
+      gfx::RectF(1.f, 2.f, 10.f, 20.f), gfx::RectF(0.f, 0.f, 800.f, 600.f),
+      absl::nullopt, 1.f, nullptr, subsurfaces[2]);
+  subsurfaces[2]->ConfigureAndShowSurface(
+      gfx::RectF(1.f, 2.f, 10.f, 20.f), gfx::RectF(0.f, 0.f, 800.f, 600.f),
+      absl::nullopt, 1.f, nullptr, subsurfaces[0]);
+  connection_->Flush();
 
   Sync();
   VerifyAndClearExpectations();
@@ -3337,7 +3477,7 @@ TEST_P(WaylandWindowTest, NoDuplicateViewporterRequests) {
   surface->SetViewportDestination({800, 600});
   surface->ApplyPendingState();
   surface->Commit();
-  connection_->ScheduleFlush();
+  connection_->Flush();
 
   Sync();
   VerifyAndClearExpectations();
@@ -3353,7 +3493,7 @@ TEST_P(WaylandWindowTest, NoDuplicateViewporterRequests) {
   surface->SetViewportDestination({800, 600});
   surface->ApplyPendingState();
   surface->Commit();
-  connection_->ScheduleFlush();
+  connection_->Flush();
 
   Sync();
   VerifyAndClearExpectations();
@@ -3369,7 +3509,7 @@ TEST_P(WaylandWindowTest, NoDuplicateViewporterRequests) {
   surface->SetViewportDestination({1024, 768});
   surface->ApplyPendingState();
   surface->Commit();
-  connection_->ScheduleFlush();
+  connection_->Flush();
 
   Sync();
   VerifyAndClearExpectations();
@@ -3385,7 +3525,7 @@ TEST_P(WaylandWindowTest, NoDuplicateViewporterRequests) {
   surface->SetViewportDestination({1024, 768});
   surface->ApplyPendingState();
   surface->Commit();
-  connection_->ScheduleFlush();
+  connection_->Flush();
 
   Sync();
   VerifyAndClearExpectations();
@@ -3633,12 +3773,15 @@ TEST_P(WaylandWindowTest, MAYBE_ChangeFocusDuringDispatch) {
   wl_pointer_send_frame(pointer->resource());
   wl_pointer_send_button(pointer->resource(), 2, 1004, BTN_LEFT,
                          WL_POINTER_BUTTON_STATE_PRESSED);
+  wl_pointer_send_frame(pointer->resource());
 
   int count = 0;
   EXPECT_CALL(delegate_, DispatchEvent(_)).WillRepeatedly([&](Event* event) {
     count++;
     if (event->type() == ui::ET_MOUSE_PRESSED) {
       wl_pointer_send_leave(pointer->resource(), 3, surface_->resource());
+      wl_pointer_send_frame(pointer->resource());
+
       wl_pointer_send_enter(pointer->resource(), 4, other_surface->resource(),
                             0, 0);
       wl_pointer_send_frame(pointer->resource());

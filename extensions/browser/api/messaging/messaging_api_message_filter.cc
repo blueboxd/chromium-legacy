@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,7 +6,7 @@
 
 #include "base/feature_list.h"
 #include "base/metrics/histogram_functions.h"
-#include "base/stl_util.h"
+#include "base/types/optional_util.h"
 #include "components/keyed_service/content/browser_context_keyed_service_shutdown_notifier_factory.h"
 #include "components/keyed_service/core/keyed_service_shutdown_notifier.h"
 #include "content/public/browser/child_process_security_policy.h"
@@ -146,6 +146,16 @@ bool IsValidSourceContext(RenderProcessHost& process,
     }
   }
 
+  // This function doesn't validate frame-flavoured `source_context`s, because
+  // PortContext::FrameContext only contains frame's `routing_id` and therefore
+  // inherently cannot spoof frames in another process (a frame is identified
+  // by its `routing_id` *and* the `process_id` of the Renderer process hosting
+  // the frame;  the latter is trustworthy / doesn't come from an IPC payload).
+
+  // This function doesn't validate native app `source_context`s, because
+  // `PortContext::ForNativeHost()` is called with trustoworthy inputs (e.g. it
+  // doesn't take input from IPCs sent by a Renderer process).
+
   return true;
 }
 
@@ -175,7 +185,7 @@ class ScopedExternalConnectionInfoCrashKeys {
       : target_id_(GetTargetIdCrashKey(), info.target_id),
         source_endpoint_(info.source_endpoint),
         source_origin_(GetSourceOriginCrashKey(),
-                       base::OptionalOrNullptr(info.source_origin)),
+                       base::OptionalToPtr(info.source_origin)),
         source_url_(GetSourceUrlCrashKey(),
                     info.source_url.possibly_invalid_spec()) {}
 
@@ -215,6 +225,18 @@ MessagingAPIMessageFilter::~MessagingAPIMessageFilter() {
 void MessagingAPIMessageFilter::Shutdown() {
   browser_context_ = nullptr;
   shutdown_notifier_subscription_ = {};
+}
+
+content::RenderProcessHost* MessagingAPIMessageFilter::GetRenderProcessHost() {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  if (!browser_context_)
+    return nullptr;
+
+  // The IPC might race with RenderProcessHost destruction.  This may only
+  // happen in scenarios that are already inherently racey, so returning nullptr
+  // (and dropping the IPC) is okay and won't lead to any additional risk of
+  // data loss.
+  return content::RenderProcessHost::FromID(render_process_id_);
 }
 
 void MessagingAPIMessageFilter::OverrideThreadForMessage(
@@ -262,19 +284,14 @@ void MessagingAPIMessageFilter::OnOpenChannelToExtension(
     const std::string& channel_name,
     const PortId& port_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  if (!browser_context_)
-    return;
-
-  // The IPC might race with RenderProcessHost destruction.  This may only
-  // happen in scenarios that are already inherently racey, so dropping the IPC
-  // is okay and won't lead to any additional risk of data loss.
-  auto* process = content::RenderProcessHost::FromID(render_process_id_);
+  auto* process = GetRenderProcessHost();
   if (!process)
     return;
   TRACE_EVENT("extensions", "MessageFilter::OnOpenChannelToExtension",
               ChromeTrackEvent::kRenderProcessHost, *process);
 
   ScopedExternalConnectionInfoCrashKeys info_crash_keys(info);
+  debug::ScopedPortContextCrashKeys port_context_crash_keys(source_context);
   if (!IsValidMessagingSource(*process, info.source_endpoint) ||
       !IsValidSourceContext(*process, source_context)) {
     return;
@@ -293,7 +310,14 @@ void MessagingAPIMessageFilter::OnOpenChannelToNativeApp(
     const std::string& native_app_name,
     const PortId& port_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  if (!browser_context_)
+  auto* process = GetRenderProcessHost();
+  if (!process)
+    return;
+  TRACE_EVENT("extensions", "MessageFilter::OnOpenChannelToNativeApp",
+              ChromeTrackEvent::kRenderProcessHost, *process);
+
+  debug::ScopedPortContextCrashKeys port_context_crash_keys(source_context);
+  if (!IsValidSourceContext(*process, source_context))
     return;
 
   ChannelEndpoint source_endpoint(browser_context_, render_process_id_,
@@ -309,8 +333,17 @@ void MessagingAPIMessageFilter::OnOpenChannelToTab(
     const std::string& channel_name,
     const PortId& port_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  if (!browser_context_)
+  auto* process = GetRenderProcessHost();
+  if (!process)
     return;
+  TRACE_EVENT("extensions", "MessageFilter::OnOpenChannelToTab",
+              ChromeTrackEvent::kRenderProcessHost, *process);
+
+  if (!util::CanRendererHostExtensionOrigin(render_process_id_, extension_id)) {
+    bad_message::ReceivedBadMessage(
+        process, bad_message::EMF_INVALID_EXTENSION_ID_FOR_TAB_MSG);
+    return;
+  }
 
   ChannelEndpoint source_endpoint(browser_context_, render_process_id_,
                                   source_context);

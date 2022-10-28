@@ -1,4 +1,4 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -41,6 +41,16 @@ ProtocolPageLoadMetricsObserver::OnFencedFramesStart(
   // All observing events are preprocessed by PageLoadTracker so that the
   // outermost page's observer instance sees gathered information. So, the
   // instance for FencedFrames doesn't need to do anything.
+  return STOP_OBSERVING;
+}
+
+page_load_metrics::PageLoadMetricsObserver::ObservePolicy
+ProtocolPageLoadMetricsObserver::OnPrerenderStart(
+    content::NavigationHandle* navigation_handle,
+    const GURL& currently_committed_url) {
+  // This observer is interested in comparing performance among several
+  // protocols. Including prerendering cases can be another factor to
+  // differentiate performance, and it will be a noise for the original goal.
   return STOP_OBSERVING;
 }
 

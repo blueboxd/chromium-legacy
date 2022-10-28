@@ -2,7 +2,7 @@ Name: Crashpad
 Short Name: crashpad
 URL: https://crashpad.chromium.org/
 Version: unknown
-Revision: 3e80b95054c868241ee3ec291603f5babda685e1
+Revision: ca3cf2f4e3b5df79182888711b01bf58c1142f28
 License: Apache 2.0
 License File: crashpad/LICENSE
 Security Critical: yes
@@ -49,3 +49,4 @@ Local Modifications:
  - Qualified calls to bit_cast<>() with base::.
  - MultiprocessExec.MultiprocessExec is disabled entirely on the Mac.
    https://crbug.com/1341377
+ - SystemSnapshotLinux.Basic is disabled on Android: https://crbug.com/1362091

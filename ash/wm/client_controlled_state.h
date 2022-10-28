@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -105,7 +105,7 @@ class ASH_EXPORT ClientControlledState : public BaseState {
   void UpdateWindowForTransitionEvents(
       WindowState* window_state,
       chromeos::WindowStateType next_state_type,
-      WMEventType event_type);
+      const WMEvent* event);
 
   std::unique_ptr<Delegate> delegate_;
 

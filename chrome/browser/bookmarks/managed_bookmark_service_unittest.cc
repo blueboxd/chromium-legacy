@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/memory/raw_ptr.h"
+#include "base/ranges/algorithm.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
@@ -151,18 +152,13 @@ class ManagedBookmarkServiceTest : public testing::Test {
 
     if (node->is_folder()) {
       const base::Value::List* children = dict.FindList("children");
-      if (!children || node->children().size() != children->size()) {
-        return false;
-      }
-      size_t i = 0;
-      return std::all_of(node->children().cbegin(), node->children().cend(),
-                         [children, &i](const auto& child_node) {
-                           const base::Value& child = (*children)[i++];
-                           if (!child.is_dict())
-                             return false;
-                           return NodeMatchesValue(child_node.get(),
-                                                   child.GetDict());
-                         });
+      return children &&
+             base::ranges::equal(
+                 *children, node->children(),
+                 [](const base::Value& child, const auto& child_node) {
+                   return child.is_dict() &&
+                          NodeMatchesValue(child_node.get(), child.GetDict());
+                 });
     }
     if (!node->is_url())
       return false;
@@ -233,7 +229,7 @@ TEST_F(ManagedBookmarkServiceTest, CreateNewNodes) {
   base::Value::List updated;
   updated.Append(CreateFolder("Container", CreateTestTree()));
 
-  EXPECT_CALL(observer_, BookmarkNodeAdded(model_.get(), _, _)).Times(5);
+  EXPECT_CALL(observer_, BookmarkNodeAdded(model_.get(), _, _, _)).Times(5);
   // The remaining nodes have been pushed to positions 1 and 2; they'll both be
   // removed when at position 1.
   const BookmarkNode* parent = managed_->managed_node();
@@ -291,10 +287,10 @@ TEST_F(ManagedBookmarkServiceTest, IsDescendantOfManagedNode) {
 TEST_F(ManagedBookmarkServiceTest, RemoveAllDoesntRemoveManaged) {
   EXPECT_EQ(2u, managed_->managed_node()->children().size());
 
-  EXPECT_CALL(observer_,
-              BookmarkNodeAdded(model_.get(), model_->bookmark_bar_node(), 0));
-  EXPECT_CALL(observer_,
-              BookmarkNodeAdded(model_.get(), model_->bookmark_bar_node(), 1));
+  EXPECT_CALL(observer_, BookmarkNodeAdded(model_.get(),
+                                           model_->bookmark_bar_node(), 0, _));
+  EXPECT_CALL(observer_, BookmarkNodeAdded(model_.get(),
+                                           model_->bookmark_bar_node(), 1, _));
   model_->AddURL(model_->bookmark_bar_node(), 0, u"Test",
                  GURL("http://google.com/"));
   model_->AddFolder(model_->bookmark_bar_node(), 1, u"Test Folder");

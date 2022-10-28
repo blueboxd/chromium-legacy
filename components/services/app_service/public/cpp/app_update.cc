@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -400,11 +400,13 @@ bool AppUpdate::InstalledInternally() const {
     case apps::InstallReason::kPolicy:
     case apps::InstallReason::kOem:
     case apps::InstallReason::kDefault:
+    case apps::InstallReason::kKiosk:
       return true;
     case apps::InstallReason::kUnknown:
     case apps::InstallReason::kSync:
     case apps::InstallReason::kUser:
     case apps::InstallReason::kSubApp:
+    case apps::InstallReason::kCommandLine:
       return false;
   }
 }

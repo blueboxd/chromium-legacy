@@ -1,11 +1,11 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #import "ios/chrome/browser/ui/ntp/new_tab_page_feature.h"
 
-#import "base/ios/ios_util.h"
 #import "base/metrics/field_trial_params.h"
+#import "ios/chrome/browser/prefs/pref_names.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_feature.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -43,11 +43,6 @@ const char kDiscoverFeedTopSyncPromoStyleCompact[] = "compact";
 const base::Feature kEnableFeedAblation{"FeedAblationEnabled",
                                         base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Flag that disables the feed for users on iOS 14.
-// TODO(crbug.com/1369142): Remove this when the issue is fixed.
-const base::Feature kDisableFeediOS14{"DisableFeediOS14",
-                                      base::FEATURE_ENABLED_BY_DEFAULT};
-
 bool IsDiscoverFeedPreviewEnabled() {
   return base::FeatureList::IsEnabled(kEnableDiscoverFeedPreview);
 }
@@ -71,7 +66,10 @@ bool IsDiscoverFeedTopSyncPromoCompact() {
 }
 
 bool IsFeedAblationEnabled() {
-  return base::FeatureList::IsEnabled(kEnableFeedAblation) ||
-         (base::FeatureList::IsEnabled(kDisableFeediOS14) &&
-          !base::ios::IsRunningOnIOS15OrLater());
+  return base::FeatureList::IsEnabled(kEnableFeedAblation);
+}
+
+bool IsContentSuggestionsForSupervisedUserEnabled(PrefService* pref_service) {
+  return pref_service->GetBoolean(
+      prefs::kNTPContentSuggestionsForSupervisedUserEnabled);
 }

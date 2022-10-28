@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -50,8 +50,14 @@ const base::Feature kEnableOverlayPrioritization {
 #endif
 };
 
-const base::Feature kUseMultipleOverlays{"UseMultipleOverlays",
-                                         base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kUseMultipleOverlays {
+  "UseMultipleOverlays",
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+      base::FEATURE_ENABLED_BY_DEFAULT
+#else
+      base::FEATURE_DISABLED_BY_DEFAULT
+#endif
+};
 const char kMaxOverlaysParam[] = "max_overlays";
 
 const base::Feature kDelegatedCompositing {
@@ -168,6 +174,28 @@ const base::Feature kMacCAOverlayQuad{"MacCAOverlayQuads",
 const base::FeatureParam<int> kMacCAOverlayQuadMaxNum{
     &kMacCAOverlayQuad, "MacCAOverlayQuadMaxNum", -1};
 #endif
+
+#if BUILDFLAG(IS_APPLE) || defined(USE_OZONE)
+const base::Feature kCanSkipRenderPassOverlay{"CanSkipRenderPassOverlay",
+                                              base::FEATURE_ENABLED_BY_DEFAULT};
+#endif
+
+// TODO(crbug.com/1357744): Solve the vulkan flakiness issue before enabling
+// this on Linux.
+const base::Feature kAllowUndamagedNonrootRenderPassToSkip{
+    "AllowUndamagedNonrootRenderPassToSkip", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Whether to:
+// - Perform periodic inactive frame culling.
+// - Cull *all* frames in case of critical memory pressure, rather than keeping
+//   one.
+const base::Feature kAggressiveFrameCulling{"AggressiveFrameCulling",
+                                            base::FEATURE_DISABLED_BY_DEFAULT};
+
+// If enabled, do not rely on surface garbage collection to happen
+// periodically, but trigger it eagerly, to avoid missing calls.
+const base::Feature kEagerSurfaceGarbageCollection{
+    "EagerSurfaceGarbageCollection", base::FEATURE_DISABLED_BY_DEFAULT};
 
 bool IsAdpfEnabled() {
   // TODO(crbug.com/1157620): Limit this to correct android version.
@@ -327,7 +355,7 @@ int MaxOverlaysConsidered() {
   }
 
   return base::GetFieldTrialParamByFeatureAsInt(kUseMultipleOverlays,
-                                                kMaxOverlaysParam, 2);
+                                                kMaxOverlaysParam, 8);
 }
 
 bool ShouldVideoDetectorIgnoreNonVideoFrames() {

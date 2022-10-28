@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -2241,37 +2241,6 @@ TEST_F(CookieMonsterTest, DeleteExpiredCookiesOnGet) {
                         "__Host-C=D; secure; path=/; partitioned; expires=Thu, "
                         "01-Jan-1970 00:00:00 GMT",
                         cookie_partition_key));
-
-  cookies =
-      GetAllCookiesForURL(cm.get(), https_www_bar_.url(),
-                          CookiePartitionKeyCollection(cookie_partition_key));
-  EXPECT_EQ(1u, cookies.size());
-}
-
-// Test that cookie expiration works when there are only partitioned cookies and
-// expiration happens without SetCookie.
-TEST_F(CookieMonsterTest, DeleteExpiredPartitionedCookiesOnlyOnGet) {
-  auto cm = std::make_unique<CookieMonster>(
-      /*store=*/nullptr, net::NetLog::Get(), kFirstPartySetsDefault);
-  auto cookie_partition_key =
-      CookiePartitionKey::FromURLForTesting(GURL("https://toplevelsite.com"));
-
-  EXPECT_TRUE(SetCookie(cm.get(), https_www_bar_.url(),
-                        "__Host-A=B; secure; path=/; partitioned",
-                        cookie_partition_key));
-  // Set a cookie with a Max-Age. Since we only parse integers for this
-  // attribute, 1 second is the minimum allowable time.
-  EXPECT_TRUE(SetCookie(cm.get(), https_www_bar_.url(),
-                        "__Host-C=D; secure; path=/; partitioned; max-age=1",
-                        cookie_partition_key));
-
-  CookieList cookies =
-      GetAllCookiesForURL(cm.get(), https_www_bar_.url(),
-                          CookiePartitionKeyCollection(cookie_partition_key));
-  EXPECT_EQ(2u, cookies.size());
-
-  // Sleep for entire Max-Age of the second cookie.
-  base::PlatformThread::Sleep(base::Seconds(1));
 
   cookies =
       GetAllCookiesForURL(cm.get(), https_www_bar_.url(),

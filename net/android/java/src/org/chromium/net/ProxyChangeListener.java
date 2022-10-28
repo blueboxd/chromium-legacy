@@ -1,4 +1,4 @@
-// Copyright 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -27,8 +27,8 @@ import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeClassQualifiedName;
 import org.chromium.base.annotations.NativeMethods;
-import org.chromium.base.annotations.UsedByReflection;
 import org.chromium.build.BuildConfig;
+import org.chromium.build.annotations.UsedByReflection;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -276,8 +276,13 @@ public class ProxyChangeListener {
             // Create a BroadcastReceiver that uses M+ APIs to fetch the proxy confuguration from
             // ConnectionManager.
             mRealProxyReceiver = new ProxyBroadcastReceiver(this);
-            ContextUtils.registerNonExportedBroadcastReceiver(
+            Intent intent = ContextUtils.registerNonExportedBroadcastReceiver(
                     ContextUtils.getApplicationContext(), mRealProxyReceiver, filter);
+            if (intent != null) {
+                // registerReceiver returns the last broadcasted intent for sticky broadcasts, so
+                // rather than wait for the first time the receiver is triggered, use this now.
+                updateProxyConfigFromConnectivityManager(intent);
+            }
         }
     }
 

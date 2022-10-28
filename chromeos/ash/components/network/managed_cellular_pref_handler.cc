@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -93,7 +93,7 @@ const std::string* ManagedCellularPrefHandler::GetSmdpAddressFromIccid(
     return nullptr;
   }
   const base::Value::Dict& iccid_smdp_pairs =
-      device_prefs_->GetValueDict(prefs::kManagedCellularIccidSmdpPair);
+      device_prefs_->GetDict(prefs::kManagedCellularIccidSmdpPair);
   return iccid_smdp_pairs.FindString(iccid);
 }
 

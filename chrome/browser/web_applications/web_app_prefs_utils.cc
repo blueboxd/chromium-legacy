@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -30,7 +30,7 @@ const base::Value::Dict* GetWebAppDictionary(const PrefService* pref_service,
                                              const AppId& app_id) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   const base::Value::Dict& web_apps_prefs =
-      pref_service->GetValueDict(prefs::kWebAppsPreferences);
+      pref_service->GetDict(prefs::kWebAppsPreferences);
 
   return web_apps_prefs.FindDict(app_id);
 }
@@ -297,7 +297,7 @@ bool ShouldShowIph(PrefService* pref_service, const AppId& app_id) {
   }
 
   const base::Value::Dict& dict =
-      pref_service->GetValueDict(prefs::kWebAppsAppAgnosticIphState);
+      pref_service->GetDict(prefs::kWebAppsAppAgnosticIphState);
 
   // Do not show IPH if the user ignored the last N+ promos for any app.
   int global_ignored_count = dict.FindInt(kIphIgnoreCount).value_or(0);

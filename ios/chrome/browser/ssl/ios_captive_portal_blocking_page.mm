@@ -1,20 +1,20 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ios/chrome/browser/ssl/ios_captive_portal_blocking_page.h"
+#import "ios/chrome/browser/ssl/ios_captive_portal_blocking_page.h"
 
-#include "base/i18n/rtl.h"
-#include "base/metrics/histogram_macros.h"
-#include "base/strings/string_number_conversions.h"
-#include "base/values.h"
-#include "components/captive_portal/core/captive_portal_detector.h"
-#include "components/captive_portal/core/captive_portal_metrics.h"
-#include "components/security_interstitials/core/controller_client.h"
-#include "components/strings/grit/components_strings.h"
-#include "components/url_formatter/url_formatter.h"
-#include "ios/chrome/browser/ssl/captive_portal_tab_helper.h"
-#include "ui/base/l10n/l10n_util.h"
+#import "base/i18n/rtl.h"
+#import "base/metrics/histogram_macros.h"
+#import "base/strings/string_number_conversions.h"
+#import "base/values.h"
+#import "components/captive_portal/core/captive_portal_detector.h"
+#import "components/captive_portal/core/captive_portal_metrics.h"
+#import "components/security_interstitials/core/controller_client.h"
+#import "components/strings/grit/components_strings.h"
+#import "components/url_formatter/url_formatter.h"
+#import "ios/chrome/browser/ssl/captive_portal_tab_helper.h"
+#import "ui/base/l10n/l10n_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -65,7 +65,7 @@ void IOSCaptivePortalBlockingPage::PopulateInterstitialStrings(
         IDS_CAPTIVE_PORTAL_PRIMARY_PARAGRAPH_NO_LOGIN_URL_WIFI);
   } else {
     // Portal redirection was done with HTTP redirects, so show the login URL.
-    // If |languages| is empty, punycode in |login_host| will always be decoded.
+    // If `languages` is empty, punycode in `login_host` will always be decoded.
     std::u16string login_host =
         url_formatter::IDNToUnicode(landing_url_.host());
     if (base::i18n::IsRTL())

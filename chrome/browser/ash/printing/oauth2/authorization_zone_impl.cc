@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -116,17 +116,6 @@ void NoDataForOK(StatusCallback callback,
   std::move(callback).Run(status, (status == StatusCode::kOK) ? "" : data);
 }
 
-// Calls `callback`. Adds a prefix with `context` to an error sent in `data`.
-void PrefixForError(StatusCallback callback,
-                    const std::string& context,
-                    StatusCode status,
-                    const std::string& data) {
-  std::string msg = status == StatusCode::kOK
-                        ? data
-                        : base::StrCat({"[", context, "] ", data});
-  std::move(callback).Run(status, msg);
-}
-
 }  // namespace
 
 AuthorizationZoneImpl::WaitingAuthorization::WaitingAuthorization(
@@ -154,7 +143,6 @@ AuthorizationZoneImpl::~AuthorizationZoneImpl() = default;
 void AuthorizationZoneImpl::InitAuthorization(const std::string& scope,
                                               StatusCallback callback) {
   DCHECK_LE(waiting_authorizations_.size(), kMaxNumberOfSessions);
-  AddContextToErrorMessage(callback);
 
   // If there are too many callbacks waiting, remove the oldest one.
   if (waiting_authorizations_.size() == kMaxNumberOfSessions) {
@@ -190,8 +178,6 @@ void AuthorizationZoneImpl::InitAuthorization(const std::string& scope,
 
 void AuthorizationZoneImpl::FinishAuthorization(const GURL& redirect_url,
                                                 StatusCallback callback) {
-  AddContextToErrorMessage(callback);
-
   // Parse the URL and retrieve the query segment.
   chromeos::Uri uri(redirect_url.spec());
   if (uri.GetLastParsingError().status !=
@@ -355,13 +341,13 @@ void AuthorizationZoneImpl::MarkAuthorizationZoneAsUntrusted() {
 
   // This method will call all callbacks from `waiting_authorizations_` and
   // empty it.
-  OnInitializeCallback(StatusCode::kUnknownAuthorizationServer, msg);
+  OnInitializeCallback(StatusCode::kUntrustedAuthorizationServer, msg);
 
   // Clear `sessions_`.
   for (std::unique_ptr<AuthorizationServerSession>& session : sessions_) {
     std::vector<StatusCallback> callbacks = session->TakeWaitingList();
     for (StatusCallback& callback : callbacks) {
-      std::move(callback).Run(StatusCode::kUnknownAuthorizationServer, msg);
+      std::move(callback).Run(StatusCode::kUntrustedAuthorizationServer, msg);
     }
   }
   sessions_.clear();
@@ -370,7 +356,7 @@ void AuthorizationZoneImpl::MarkAuthorizationZoneAsUntrusted() {
   for (auto& [_, ipp_endpoint] : ipp_endpoints_) {
     std::vector<StatusCallback> callbacks = ipp_endpoint->TakeWaitingList();
     for (StatusCallback& callback : callbacks) {
-      std::move(callback).Run(StatusCode::kUnknownAuthorizationServer, msg);
+      std::move(callback).Run(StatusCode::kUntrustedAuthorizationServer, msg);
     }
   }
   ipp_endpoints_.clear();
@@ -565,13 +551,6 @@ bool AuthorizationZoneImpl::FindAndRemovePendingAuthorization(
   code_verifier = std::move(it->code_verifier);
   pending_authorizations_.erase(it);
   return true;
-}
-
-void AuthorizationZoneImpl::AddContextToErrorMessage(StatusCallback& callback) {
-  // Wrap the `callback` with the function PrefixForError() defined above.
-  const std::string prefix = server_data_.AuthorizationServerURI().spec();
-  auto new_call = base::BindOnce(&PrefixForError, std::move(callback), prefix);
-  callback = std::move(new_call);
 }
 
 std::unique_ptr<AuthorizationZone> AuthorizationZone::Create(

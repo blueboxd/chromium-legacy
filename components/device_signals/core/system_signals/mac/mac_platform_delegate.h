@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,6 +13,17 @@ class MacPlatformDelegate : public PosixPlatformDelegate {
  public:
   MacPlatformDelegate();
   ~MacPlatformDelegate() override;
+
+  // PlatformDelegate:
+  bool ResolveFilePath(const base::FilePath& file_path,
+                       base::FilePath* resolved_file_path) override;
+  absl::optional<std::string> GetSigningCertificatePublicKeyHash(
+      const base::FilePath& file_path) override;
+
+  // Verifies if `file_path` points to an app bundle and then returns the
+  // executable path for the file inside the bundle. If `file_path` does not
+  // point to a bundle, it is returned as-is.
+  base::FilePath GetBinaryFilePath(const base::FilePath& file_path);
 };
 
 }  // namespace device_signals

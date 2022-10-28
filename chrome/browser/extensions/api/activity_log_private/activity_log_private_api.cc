@@ -1,4 +1,4 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -90,7 +90,7 @@ void ActivityLogAPI::StartOrStopListeningForExtensionActivities() {
 void ActivityLogAPI::OnExtensionActivity(scoped_refptr<Action> activity) {
   base::Value::List value;
   ExtensionActivity activity_arg = activity->ConvertToExtensionActivity();
-  value.Append(base::Value::FromUniquePtrValue(activity_arg.ToValue()));
+  value.Append(activity_arg.ToValue());
   auto event = std::make_unique<Event>(
       events::ACTIVITY_LOG_PRIVATE_ON_EXTENSION_ACTIVITY,
       activity_log_private::OnExtensionActivity::kEventName, std::move(value),

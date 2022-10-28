@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -53,8 +53,10 @@ extern const char kFocusModeConditionsMet[];
 
 // The side search panel was automatically triggered.
 extern const char kSideSearchAutoTriggered[];
-// The Side search panel was opened by the user.
+// The side search panel was opened by the user.
 extern const char kSideSearchOpened[];
+// The side search page action icon label was shown.
+extern const char kSideSearchPageActionLabelShown[];
 
 // Tab Search tab strip was opened by the user.
 extern const char kTabSearchOpened[];
@@ -73,6 +75,9 @@ extern const char kFocusHelpBubbleAcceleratorPressed[];
 // The screen reader promo for the "focus help bubble" accelerator was read to
 // the user.
 extern const char kFocusHelpBubbleAcceleratorPromoRead[];
+
+// The user has opened the battery saver bubble dialog
+extern const char kBatterySaverDialogShown[];
 
 #endif  // BUILDFLAG(IS_WIN) || BUILDFLAG(IS_APPLE) || BUILDFLAG(IS_LINUX) ||
         // BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_FUCHSIA)
@@ -102,8 +107,8 @@ extern const char kDiscoverFeedLoaded[];
 // The user has requested the desktop version of a page.
 extern const char kDesktopVersionRequested[];
 
-// The default site view tip is shown.
-extern const char kDefaultSiteViewShown[];
+// The default site view mode has been used.
+extern const char kDefaultSiteViewUsed[];
 
 // Autofill displayed password suggestions.
 extern const char kPasswordSuggestionsShown[];

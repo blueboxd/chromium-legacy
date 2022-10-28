@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -208,7 +208,7 @@ scoped_refptr<base::FieldTrial> CreateTrialAndAssociateId(
   if (trial) {
     // Ensure the trial is registered under the correct key so we can look it
     // up.
-    trial->group();
+    trial->Activate();
   }
 
   return trial;

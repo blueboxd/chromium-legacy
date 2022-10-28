@@ -33,6 +33,7 @@
 #include "services/network/public/cpp/web_sandbox_flags.h"
 #include "services/network/public/mojom/web_sandbox_flags.mojom-shared.h"
 #include "third_party/blink/public/common/features.h"
+#include "third_party/blink/public/common/frame/fenced_frame_sandbox_flags.h"
 #include "third_party/blink/public/common/loader/loader_constants.h"
 #include "third_party/blink/public/mojom/frame/user_activation_update_types.mojom.h"
 #include "third_party/blink/public/mojom/security_context/insecure_request_policy.mojom.h"
@@ -453,10 +454,6 @@ void FrameTreeNode::SetOriginalOpener(FrameTreeNode* opener) {
   }
 }
 
-void FrameTreeNode::SetCurrentURL(const GURL& url) {
-  current_frame_host()->SetLastCommittedUrl(url);
-}
-
 void FrameTreeNode::SetCollapsed(bool collapsed) {
   DCHECK(!IsMainFrame() || IsFencedFrameRoot());
   if (is_collapsed_ == collapsed)
@@ -489,6 +486,31 @@ void FrameTreeNode::SetPendingFramePolicy(blink::FramePolicy frame_policy) {
     mojo::ReportBadMessage(
         "FramePolicy properties dealing with fenced frames are considered "
         "immutable, and therefore should never be changed by the renderer.");
+    return;
+  }
+
+  // Inside of a fenced frame, the sandbox flags should not be able to change
+  // from its initial value. If the flags change, we have to assume the change
+  // came from a compromised renderer and terminate it.
+  // We will only do the check if the sandbox flags are already set to
+  // kFencedFrameForcedSandboxFlags. This is to allow the sandbox flags to
+  // be set initially (go from kNone -> kFencedFrameForcedSandboxFlags). Once
+  // it has been set, it cannot change to another value.
+  // Note: The bad message is only expected to hit for ShadowDOM fenced frames.
+  // For MPArch, the RFHI will detect that the change is not coming from the
+  // frame's parent in DidChangeFramePolicy() (an MPArch fenced frame parent
+  // is null since it's the root frame in its tree) and terminate the
+  // renderer before we reach this point.
+  // TODO(crbug.com/1262022) When ShadowDOM is removed, turn this into a DCHECK
+  // and remove the BadMessage call.
+  if (IsFencedFrameRoot() &&
+      pending_frame_policy_.sandbox_flags ==
+          blink::kFencedFrameForcedSandboxFlags &&
+      frame_policy.sandbox_flags != blink::kFencedFrameForcedSandboxFlags) {
+    DCHECK(frame_tree()->IsFencedFramesShadowDOMBased());
+    bad_message::ReceivedBadMessage(
+        current_frame_host()->GetProcess(),
+        bad_message::FF_FROZEN_SANDBOX_FLAGS_CHANGED);
     return;
   }
 
@@ -964,14 +986,15 @@ void FrameTreeNode::SetSrcdocValue(const std::string& srcdoc_value) {
   srcdoc_value_ = srcdoc_value;
 }
 
-FencedFrameURLMapping::SharedStorageBudgetMetadata*
+absl::optional<const FencedFrameURLMapping::SharedStorageBudgetMetadata*>
 FrameTreeNode::FindSharedStorageBudgetMetadata() {
   FrameTreeNode* node = this;
 
   while (true) {
-    if (node->shared_storage_budget_metadata()) {
+    if (node->fenced_frame_properties_ &&
+        node->fenced_frame_properties_->shared_storage_budget_metadata) {
       DCHECK(node->IsFencedFrameRoot());
-      return node->shared_storage_budget_metadata();
+      return node->fenced_frame_properties_->shared_storage_budget_metadata;
     }
 
     if (node->GetParentOrOuterDocument()) {
@@ -981,7 +1004,7 @@ FrameTreeNode::FindSharedStorageBudgetMetadata() {
     }
   }
 
-  return nullptr;
+  return absl::nullopt;
 }
 
 const scoped_refptr<BrowsingContextState>&

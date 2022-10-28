@@ -1,4 +1,4 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -374,7 +374,7 @@ network::mojom::URLLoaderFactory* KioskAppData::GetURLLoaderFactory() {
 
 bool KioskAppData::LoadFromCache() {
   PrefService* local_state = g_browser_process->local_state();
-  const base::Value::Dict& dict = local_state->GetValueDict(dictionary_name());
+  const base::Value::Dict& dict = local_state->GetDict(dictionary_name());
 
   if (!LoadFromDictionary(dict))
     return false;

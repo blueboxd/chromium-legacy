@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -60,9 +60,6 @@ class ManageProfileHandler : public settings::SettingsPageUIHandler,
   // Callback for the "getAvailableIcons" message.
   // Sends the array of default profile icon URLs and profile names to WebUI.
   void HandleGetAvailableIcons(const base::Value::List& args);
-
-  // Get all the available profile icons to choose from.
-  base::Value::List GetAvailableIcons();
 
   // Callback for the "setProfileIconToGaiaAvatar" message.
   void HandleSetProfileIconToGaiaAvatar(const base::Value::List& args);

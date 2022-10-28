@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,6 +11,7 @@
 #include "components/bookmarks/browser/bookmark_utils.h"
 #include "components/commerce/core/commerce_feature_list.h"
 #include "components/commerce/core/shopping_service_test_base.h"
+#include "components/commerce/core/test_utils.h"
 #include "components/optimization_guide/core/new_optimization_guide_decider.h"
 #include "components/optimization_guide/core/optimization_guide_decision.h"
 #include "components/optimization_guide/core/optimization_metadata.h"
@@ -43,29 +44,6 @@ const char kDetailsPageUrl[] = "http://example.com/merchant_details_page";
 const bool kHasReturnPolicy = true;
 const bool kContainsSensitiveContent = false;
 
-// Create a product bookmark with the specified cluster ID and place it in the
-// "other" bookmarks folder.
-const bookmarks::BookmarkNode* AddProductBookmark(
-    bookmarks::BookmarkModel* bookmark_model,
-    const std::u16string& title,
-    const GURL& url,
-    uint64_t cluster_id,
-    bool is_price_tracked) {
-  const bookmarks::BookmarkNode* node =
-      bookmark_model->AddURL(bookmark_model->other_node(), 0, title, url);
-  std::unique_ptr<power_bookmarks::PowerBookmarkMeta> meta =
-      std::make_unique<power_bookmarks::PowerBookmarkMeta>();
-  meta->set_type(power_bookmarks::PowerBookmarkType::SHOPPING);
-  power_bookmarks::ShoppingSpecifics* specifics =
-      meta->mutable_shopping_specifics();
-  specifics->set_product_cluster_id(cluster_id);
-  specifics->set_is_price_tracked(is_price_tracked);
-
-  power_bookmarks::SetNodePowerBookmarkMeta(bookmark_model, node,
-                                            std::move(meta));
-  return node;
-}
-
 }  // namespace
 
 class ShoppingServiceTest : public ShoppingServiceTestBase {
@@ -89,10 +67,10 @@ TEST_F(ShoppingServiceTest, TestProductInfoResponse) {
   opt_guide_->SetResponse(GURL(kProductUrl), OptimizationType::PRICE_TRACKING,
                           OptimizationGuideDecision::kTrue, meta);
 
-  bool callback_executed = false;
+  base::RunLoop run_loop;
   shopping_service_->GetProductInfoForUrl(
       GURL(kProductUrl), base::BindOnce(
-                             [](bool* callback_executed, const GURL& url,
+                             [](base::RunLoop* run_loop, const GURL& url,
                                 const absl::optional<ProductInfo>& info) {
                                ASSERT_EQ(kProductUrl, url.spec());
                                ASSERT_TRUE(info.has_value());
@@ -102,13 +80,10 @@ TEST_F(ShoppingServiceTest, TestProductInfoResponse) {
                                ASSERT_EQ(kOfferId, info->offer_id);
                                ASSERT_EQ(kClusterId, info->product_cluster_id);
                                ASSERT_EQ(kCountryCode, info->country_code);
-                               *callback_executed = true;
+                               run_loop->Quit();
                              },
-                             &callback_executed));
-
-  // Make sure the callback was actually run. In testing the callback is run
-  // immediately, this check ensures that is actually the case.
-  ASSERT_TRUE(callback_executed);
+                             &run_loop));
+  run_loop.Run();
 }
 
 // Test that no object is provided for a negative optimization guide response.
@@ -121,18 +96,17 @@ TEST_F(ShoppingServiceTest, TestProductInfoResponse_OptGuideFalse) {
                           OptimizationGuideDecision::kFalse,
                           OptimizationMetadata());
 
-  bool callback_executed = false;
+  base::RunLoop run_loop;
   shopping_service_->GetProductInfoForUrl(
       GURL(kProductUrl), base::BindOnce(
-                             [](bool* callback_executed, const GURL& url,
+                             [](base::RunLoop* run_loop, const GURL& url,
                                 const absl::optional<ProductInfo>& info) {
                                ASSERT_EQ(kProductUrl, url.spec());
                                ASSERT_FALSE(info.has_value());
-                               *callback_executed = true;
+                               run_loop->Quit();
                              },
-                             &callback_executed));
-
-  ASSERT_TRUE(callback_executed);
+                             &run_loop));
+  run_loop.Run();
 }
 
 // Test that the product info cache only keeps track of live tabs.
@@ -213,10 +187,10 @@ TEST_F(ShoppingServiceTest, TestProductInfoCacheFullLifecycle) {
   ASSERT_EQ(kCountryCode, cached_info->country_code);
 
   // The main API should still work.
-  bool callback_executed = false;
+  base::RunLoop run_loop;
   shopping_service_->GetProductInfoForUrl(
       GURL(kProductUrl), base::BindOnce(
-                             [](bool* callback_executed, const GURL& url,
+                             [](base::RunLoop* run_loop, const GURL& url,
                                 const absl::optional<ProductInfo>& info) {
                                ASSERT_EQ(kProductUrl, url.spec());
                                ASSERT_TRUE(info.has_value());
@@ -226,13 +200,10 @@ TEST_F(ShoppingServiceTest, TestProductInfoCacheFullLifecycle) {
                                ASSERT_EQ(kOfferId, info->offer_id);
                                ASSERT_EQ(kClusterId, info->product_cluster_id);
                                ASSERT_EQ(kCountryCode, info->country_code);
-                               *callback_executed = true;
+                               run_loop->Quit();
                              },
-                             &callback_executed));
-
-  // Make sure the callback was actually run. In testing the callback is run
-  // immediately, this check ensures that is actually the case.
-  ASSERT_TRUE(callback_executed);
+                             &run_loop));
+  run_loop.Run();
 
   // Close the "tab" and make sure the cache is empty.
   WebWrapperDestroyed(&web);
@@ -274,10 +245,10 @@ TEST_F(ShoppingServiceTest, TestProductInfoCacheFullLifecycleWithFallback) {
   ASSERT_EQ(kCountryCode, cached_info->country_code);
 
   // The main API should still work.
-  bool callback_executed = false;
+  base::RunLoop run_loop;
   shopping_service_->GetProductInfoForUrl(
       GURL(kProductUrl), base::BindOnce(
-                             [](bool* callback_executed, const GURL& url,
+                             [](base::RunLoop* run_loop, const GURL& url,
                                 const absl::optional<ProductInfo>& info) {
                                ASSERT_EQ(kProductUrl, url.spec());
                                ASSERT_TRUE(info.has_value());
@@ -287,19 +258,14 @@ TEST_F(ShoppingServiceTest, TestProductInfoCacheFullLifecycleWithFallback) {
                                ASSERT_EQ(kOfferId, info->offer_id);
                                ASSERT_EQ(kClusterId, info->product_cluster_id);
                                ASSERT_EQ(kCountryCode, info->country_code);
-                               *callback_executed = true;
+                               run_loop->Quit();
                              },
-                             &callback_executed));
+                             &run_loop));
+  run_loop.Run();
 
-  // Make sure the callback was actually run. In testing the callback is run
-  // immediately, this check ensures that is actually the case.
-  ASSERT_TRUE(callback_executed);
-
-  // Use a RunLoop here since this functionality depends on a JSON sanitizer
-  // running on a different thread internally.
-  base::RunLoop run_loop;
+  // Use a RunLoop here as well since this functionality depends on a JSON
+  // sanitizer running on a different thread internally.
   DidFinishLoad(&web);
-  run_loop.RunUntilIdle();
 
   // At this point we should have the image in the cache.
   cached_info =
@@ -324,11 +290,11 @@ TEST_F(ShoppingServiceTest, TestMerchantInfoResponse) {
                           OptimizationType::MERCHANT_TRUST_SIGNALS_V2,
                           OptimizationGuideDecision::kTrue, meta);
 
-  bool callback_executed = false;
+  base::RunLoop run_loop;
   shopping_service_->GetMerchantInfoForUrl(
       GURL(kMerchantUrl),
       base::BindOnce(
-          [](bool* callback_executed, const GURL& url,
+          [](base::RunLoop* run_loop, const GURL& url,
              absl::optional<MerchantInfo> info) {
             ASSERT_EQ(kMerchantUrl, url.spec());
             ASSERT_TRUE(info.has_value());
@@ -339,13 +305,10 @@ TEST_F(ShoppingServiceTest, TestMerchantInfoResponse) {
             ASSERT_EQ(kHasReturnPolicy, info->has_return_policy);
             ASSERT_EQ(kContainsSensitiveContent,
                       info->contains_sensitive_content);
-            *callback_executed = true;
+            run_loop->Quit();
           },
-          &callback_executed));
-
-  // Make sure the callback was actually run. In testing the callback is run
-  // immediately, this check ensures that is actually the case.
-  ASSERT_TRUE(callback_executed);
+          &run_loop));
+  run_loop.Run();
 }
 
 TEST_F(ShoppingServiceTest, TestGetUpdatedProductInfoForBookmarks) {

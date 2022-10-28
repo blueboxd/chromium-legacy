@@ -1,19 +1,19 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #import "ios/components/security_interstitials/lookalikes/lookalike_url_tab_helper.h"
 
-#include "base/feature_list.h"
-#include "components/lookalikes/core/features.h"
-#include "components/lookalikes/core/lookalike_url_ui_util.h"
-#include "components/lookalikes/core/lookalike_url_util.h"
-#include "components/reputation/core/safety_tips_config.h"
-#include "components/ukm/ios/ukm_url_recorder.h"
-#include "components/url_formatter/spoof_checks/top_domains/top_domain_util.h"
-#include "ios/components/security_interstitials/lookalikes/lookalike_url_container.h"
-#include "ios/components/security_interstitials/lookalikes/lookalike_url_error.h"
-#include "ios/components/security_interstitials/lookalikes/lookalike_url_tab_allow_list.h"
+#import "base/feature_list.h"
+#import "components/lookalikes/core/features.h"
+#import "components/lookalikes/core/lookalike_url_ui_util.h"
+#import "components/lookalikes/core/lookalike_url_util.h"
+#import "components/reputation/core/safety_tips_config.h"
+#import "components/ukm/ios/ukm_url_recorder.h"
+#import "components/url_formatter/spoof_checks/top_domains/top_domain_util.h"
+#import "ios/components/security_interstitials/lookalikes/lookalike_url_container.h"
+#import "ios/components/security_interstitials/lookalikes/lookalike_url_error.h"
+#import "ios/components/security_interstitials/lookalikes/lookalike_url_tab_allow_list.h"
 #import "ios/net/protocol_handler_util.h"
 #import "net/base/mac/url_conversions.h"
 
@@ -96,7 +96,7 @@ void LookalikeUrlTabHelper::ShouldAllowResponse(
   }
 
   // TODO(crbug.com/1104384): After site engagement has been componentized,
-  // fetch and set |engaged_sites| here so that an interstitial won't be
+  // fetch and set `engaged_sites` here so that an interstitial won't be
   // shown on engaged sites, and so that the interstitial will be shown on
   // lookalikes of engaged sites.
   std::vector<DomainInfo> engaged_sites;

@@ -1,4 +1,4 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,13 +7,12 @@
 #include <memory>
 #include <utility>
 
+#include "ash/components/arc/arc_features.h"
 #include "ash/components/arc/arc_util.h"
 #include "ash/components/arc/session/arc_bridge_service.h"
 #include "ash/components/arc/session/arc_service_manager.h"
 #include "ash/components/arc/test/connection_holder_util.h"
 #include "ash/components/arc/test/fake_file_system_instance.h"
-#include "ash/components/disks/disk.h"
-#include "ash/components/disks/disk_mount_manager.h"
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
@@ -48,6 +47,8 @@
 #include "chromeos/ash/components/dbus/concierge/concierge_client.h"
 #include "chromeos/ash/components/dbus/cros_disks/cros_disks_client.h"
 #include "chromeos/ash/components/dbus/seneschal/seneschal_client.h"
+#include "chromeos/ash/components/disks/disk.h"
+#include "chromeos/ash/components/disks/disk_mount_manager.h"
 #include "components/account_id/account_id.h"
 #include "components/drive/drive_pref_names.h"
 #include "components/user_manager/scoped_user_manager.h"
@@ -1079,6 +1080,48 @@ TEST_F(FileManagerPathUtilConvertUrlTest,
           &run_loop));
 }
 
+TEST_F(FileManagerPathUtilConvertUrlTest,
+       ConvertToContentUrls_AndroidFiles_GuestOs) {
+  base::test::ScopedFeatureList scoped_feature_list{
+      arc::kEnableVirtioBlkForData};
+  base::RunLoop run_loop;
+  ConvertToContentUrls(
+      ProfileManager::GetPrimaryUserProfile(),
+      std::vector<FileSystemURL>{
+          CreateExternalURL(base::FilePath::FromUTF8Unsafe(
+              "/media/fuse/android_files/Pictures/a/b.jpg"))},
+      base::BindOnce(
+          [](base::RunLoop* run_loop, const std::vector<GURL>& urls,
+             const std::vector<base::FilePath>& paths_to_share) {
+            run_loop->Quit();
+            ASSERT_EQ(1U, urls.size());
+            EXPECT_EQ(GURL("content://org.chromium.arc.volumeprovider/"
+                           "external_files/Pictures/a/b.jpg"),
+                      urls[0]);
+          },
+          &run_loop));
+}
+
+TEST_F(FileManagerPathUtilConvertUrlTest,
+       ConvertToContentUrls_InvalidAndroidFiles_GuestOs) {
+  base::test::ScopedFeatureList scoped_feature_list{
+      arc::kEnableVirtioBlkForData};
+  base::RunLoop run_loop;
+  ConvertToContentUrls(
+      ProfileManager::GetPrimaryUserProfile(),
+      std::vector<FileSystemURL>{
+          CreateExternalURL(base::FilePath::FromUTF8Unsafe(
+              "/run/arc/sdcard/write/emulated/0/Pictures/a/b.jpg"))},
+      base::BindOnce(
+          [](base::RunLoop* run_loop, const std::vector<GURL>& urls,
+             const std::vector<base::FilePath>& paths_to_share) {
+            run_loop->Quit();
+            ASSERT_EQ(1U, urls.size());
+            EXPECT_EQ(GURL(), urls[0]);  // Invalid URL.
+          },
+          &run_loop));
+}
+
 TEST_F(FileManagerPathUtilConvertUrlTest, ConvertToContentUrls_MultipleUrls) {
   base::RunLoop run_loop;
   ConvertToContentUrls(
@@ -1154,7 +1197,7 @@ TEST_F(FileManagerPathUtilTest, GetDisplayablePathTest) {
 
   volume_manager->AddVolumeForTesting(Volume::CreateForDocumentsProvider(
       "authority", "root_id", "document_id", "documents_provider_label",
-      "summary", {}, false));
+      "summary", {}, false, /*optional_fusebox_subdir=*/std::string()));
 
   volume_manager->AddVolumeForTesting(Volume::CreateForSftpGuestOs(
       "guest_os_label", base::FilePath("/mount_path/guest_os"),

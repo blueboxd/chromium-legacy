@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -653,6 +653,35 @@ TEST_F(ControllerTest, Autostart) {
                                    AutofillAssistantState::RUNNING,
                                    AutofillAssistantState::STOPPED));
   EXPECT_THAT(keyboard_states_, ElementsAre(true, true, false));
+}
+
+TEST_F(ControllerTest, AutostartWithoutKeyboardSuppression) {
+  SupportsScriptResponseProto script_response;
+  AddRunnableScript(&script_response, "runnable");
+  AddRunnableScript(&script_response, "autostart")
+      ->mutable_presentation()
+      ->set_autostart(true);
+  SetNextScriptResponse(script_response);
+
+  ActionsResponseProto autostart_script;
+  autostart_script.add_actions()->mutable_tell()->set_message("autostart");
+  autostart_script.add_actions()->mutable_stop();
+  SetupActionsForScript("autostart", autostart_script);
+
+  EXPECT_CALL(mock_client_, AttachUI());
+  TriggerContext::Options options;
+  // Turn off keyboard suppression.
+  options.suppress_browsing_features = false;
+  Start("http://a.example.com/path",
+        std::make_unique<TriggerContext>(
+            /* parameters = */ std::make_unique<ScriptParameters>(), options));
+  EXPECT_EQ(AutofillAssistantState::STOPPED, controller_->GetState());
+
+  // Full history state transitions
+  EXPECT_THAT(states_, ElementsAre(AutofillAssistantState::STARTING,
+                                   AutofillAssistantState::RUNNING,
+                                   AutofillAssistantState::STOPPED));
+  EXPECT_THAT(keyboard_states_, ElementsAre(false, false, false));
 }
 
 TEST_F(ControllerTest, InitialUrlLoads) {
@@ -2216,6 +2245,25 @@ TEST_F(ControllerTest, RegularScriptNotifiesStart) {
 
 TEST_F(ControllerTest, NotifyRuntimeManagerOnUiStateChange) {
   EXPECT_CALL(*mock_runtime_manager_, SetUIState(UIState::kShown));
+  controller_->SetUiShown(true);
+
+  EXPECT_CALL(*mock_runtime_manager_, SetUIState(UIState::kNotShown));
+  controller_->SetUiShown(false);
+}
+
+TEST_F(ControllerTest,
+       NotifyRuntimeManagerOnUiStateChangeWithoutBrowsingFeatureSuppression) {
+  // Simulate starting a script without browsing feature suppression.
+  TriggerContext::Options options;
+  options.suppress_browsing_features = false;
+  Start("https://www.example.fr",
+        std::make_unique<TriggerContext>(
+            /* parameters = */ std::make_unique<ScriptParameters>(), options));
+
+  // Then the "shown" state reflects that no browsing feature suppression is
+  // intended.
+  EXPECT_CALL(*mock_runtime_manager_,
+              SetUIState(UIState::kShownWithoutBrowsingFeatureSuppression));
   controller_->SetUiShown(true);
 
   EXPECT_CALL(*mock_runtime_manager_, SetUIState(UIState::kNotShown));

@@ -1,4 +1,4 @@
-# Copyright 2020 The Chromium Authors. All rights reserved.
+# Copyright 2020 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -58,6 +58,7 @@ defaults = args.defaults(
     # to the standard default.
     compilator_cores = args.DEFAULT,
     compilator_goma_jobs = args.DEFAULT,
+    compilator_reclient_jobs = args.DEFAULT,
     orchestrator_cores = args.DEFAULT,
 )
 
@@ -143,6 +144,9 @@ def try_builder(
 
     experiments = experiments or {}
 
+    # TODO(crbug.com/1346781): Enable everywhere.
+    experiments.setdefault("chromium_swarming.expose_merge_script_failures", 1)
+
     merged_resultdb_bigquery_exports = [
         resultdb.export_test_results(
             bq_table = "chrome-luci-data.chromium.try_test_results",
@@ -161,7 +165,7 @@ def try_builder(
             predicate = resultdb.test_result_predicate(
                 # Match the "blink_web_tests" target and all of its
                 # flag-specific versions, e.g. "vulkan_swiftshader_blink_web_tests".
-                test_id_regexp = "ninja://[^/]*blink_web_tests/.+",
+                test_id_regexp = "(ninja://[^/]*blink_web_tests/.+)|(ninja://[^/]*blink_wpt_tests/.+)",
             ),
         ),
     ]
@@ -300,6 +304,7 @@ def _orchestrator_builder(
     kwargs.setdefault("executable", "recipe:chromium/orchestrator")
 
     kwargs.setdefault("goma_backend", None)
+    kwargs.setdefault("reclient_instance", None)
     kwargs.setdefault("os", os.LINUX_DEFAULT)
     kwargs.setdefault("service_account", "chromium-orchestrator@chops-service-accounts.iam.gserviceaccount.com")
     kwargs.setdefault("ssd", None)
@@ -334,6 +339,7 @@ def _compilator_builder(*, name, **kwargs):
         * builderless: True on branches, False on main
         * cores: The compilator_cores module-level default.
         * goma_jobs: The compilator_goma_jobs module-level default.
+        * reclient_jobs: The compilator_reclient_jobs module-level default.
         * executable: "recipe:chromium/compilator"
         * ssd: True
     """
@@ -345,6 +351,7 @@ def _compilator_builder(*, name, **kwargs):
     kwargs.setdefault("cores", defaults.compilator_cores.get())
     kwargs.setdefault("executable", "recipe:chromium/compilator")
     kwargs.setdefault("goma_jobs", defaults.compilator_goma_jobs.get())
+    kwargs.setdefault("reclient_jobs", defaults.compilator_reclient_jobs.get())
     kwargs.setdefault("ssd", True)
 
     ret = try_.builder(name = name, **kwargs)

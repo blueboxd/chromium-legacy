@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,8 +8,8 @@ import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.FeatureList;
 import org.chromium.base.annotations.JNINamespace;
-import org.chromium.base.annotations.MainDex;
 import org.chromium.base.annotations.NativeMethods;
+import org.chromium.build.annotations.MainDex;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -264,11 +264,11 @@ public abstract class ChromeFeatureList {
             "CCTResizableAllowResizeByUserGesture";
     public static final String CCT_RESIZABLE_FOR_FIRST_PARTIES = "CCTResizableForFirstParties";
     public static final String CCT_RESIZABLE_FOR_THIRD_PARTIES = "CCTResizableForThirdParties";
+    public static final String CCT_RESIZABLE_WINDOW_ABOVE_NAVBAR = "CCTResizableWindowAboveNavbar";
     public static final String CCT_RESOURCE_PREFETCH = "CCTResourcePrefetch";
     public static final String CCT_RETAINING_STATE = "CCTRetainingState";
     public static final String CCT_REPORT_PARALLEL_REQUEST_STATUS =
             "CCTReportParallelRequestStatus";
-    public static final String CCT_SHOW_ABOUT_BLANK_URL = "CCTShowAboutBlankUrl";
     public static final String CCT_TOOLBAR_CUSTOMIZATIONS = "CCTToolbarCustomizations";
     public static final String CLOSE_TAB_SUGGESTIONS = "CloseTabSuggestions";
     public static final String DONT_AUTO_HIDE_BROWSER_CONTROLS = "DontAutoHideBrowserControls";
@@ -316,6 +316,8 @@ public abstract class ChromeFeatureList {
             "ContextualTriggersSelectionMenu";
     public static final String CONTEXTUAL_TRIGGERS_SELECTION_SIZE =
             "ContextualTriggersSelectionSize";
+    public static final String SYNC_ANDROID_LIMIT_NTP_PROMO_IMPRESSIONS =
+            "SyncAndroidLimitNTPPromoImpressions";
     public static final String SYNC_ANDROID_PROMOS_WITH_ALTERNATIVE_TITLE =
             "SyncAndroidPromosWithAlternativeTitle";
     public static final String SYNC_ANDROID_PROMOS_WITH_ILLUSTRATION =
@@ -323,12 +325,12 @@ public abstract class ChromeFeatureList {
     public static final String SYNC_ANDROID_PROMOS_WITH_SINGLE_BUTTON =
             "SyncAndroidPromosWithSingleButton";
     public static final String SYNC_ANDROID_PROMOS_WITH_TITLE = "SyncAndroidPromosWithTitle";
+    public static final String CREATE_SIGNIN_CHECKER_BEFORE_SYNC_CONSENT_FRAGMENT =
+            "CreateSigninCheckerBeforeSyncConsentFragment";
     public static final String CREATE_SAFEBROWSING_ON_STARTUP = "CreateSafebrowsingOnStartup";
     public static final String CRITICAL_PERSISTED_TAB_DATA = "CriticalPersistedTabData";
     public static final String DARKEN_WEBSITES_CHECKBOX_IN_THEMES_SETTING =
             "DarkenWebsitesCheckboxInThemesSetting";
-    public static final String DELAY_TOOLBAR_UPDATE_ON_LOAD_STARTED =
-            "DelayToolbarUpdateOnLoadStarted";
     public static final String DETAILED_LANGUAGE_SETTINGS = "DetailedLanguageSettings";
     public static final String DIRECT_ACTIONS = "DirectActions";
     public static final String DISABLE_COMPOSITED_PROGRESS_BAR = "DisableCompositedProgressBar";
@@ -473,7 +475,7 @@ public abstract class ChromeFeatureList {
     public static final String PORTALS = "Portals";
     public static final String PORTALS_CROSS_ORIGIN = "PortalsCrossOrigin";
     public static final String POST_TASK_FOCUS_TAB = "PostTaskFocusTab";
-    public static final String PWA_DEFAULT_OFFLINE_PAGE = "AndroidPWAsDefaultOfflinePage";
+    public static final String PWA_DEFAULT_OFFLINE_PAGE = "PWAsDefaultOfflinePage";
     public static final String BOOKMARKS_IMPROVED_SAVE_FLOW = "BookmarksImprovedSaveFlow";
     public static final String BOOKMARKS_REFRESH = "BookmarksRefresh";
     public static final String PREEMPTIVE_LINK_TO_TEXT_GENERATION =
@@ -484,6 +486,7 @@ public abstract class ChromeFeatureList {
             "PrefetchNotificationSchedulingIntegration";
     public static final String PRERENDER2 = "Prerender2";
     public static final String PRIVACY_GUIDE = "PrivacyGuideAndroid";
+    public static final String PRIVACY_SANDBOX_FPS_UI = "PrivacySandboxFirstPartySetsUI";
     public static final String PRIVACY_SANDBOX_SETTINGS_3 = "PrivacySandboxSettings3";
     public static final String PROBABILISTIC_CRYPTID_RENDERER = "ProbabilisticCryptidRenderer";
     public static final String PUSH_MESSAGING_DISALLOW_SENDER_IDS =
@@ -507,6 +510,10 @@ public abstract class ChromeFeatureList {
     public static final String RELATED_SEARCHES_SIMPLIFIED_UX = "RelatedSearchesSimplifiedUx";
     public static final String RELATED_SEARCHES_UI = "RelatedSearchesUi";
     public static final String REQUEST_DESKTOP_SITE_DEFAULTS = "RequestDesktopSiteDefaults";
+    public static final String REQUEST_DESKTOP_SITE_DEFAULTS_CONTROL =
+            "RequestDesktopSiteDefaultsControl";
+    public static final String REQUEST_DESKTOP_SITE_DEFAULTS_DOWNGRADE =
+            "RequestDesktopSiteDefaultsDowngrade";
     public static final String REQUEST_DESKTOP_SITE_FOR_TABLETS = "RequestDesktopSiteForTablets";
     public static final String SAFE_BROWSING_DELAYED_WARNINGS = "SafeBrowsingDelayedWarnings";
     public static final String SAFE_MODE_FOR_CACHED_FLAGS = "SafeModeForCachedFlags";
@@ -523,8 +530,11 @@ public abstract class ChromeFeatureList {
     public static final String SEND_TAB_TO_SELF_V2 = "SendTabToSelfV2";
     public static final String SHARE_BUTTON_IN_TOP_TOOLBAR = "ShareButtonInTopToolbar";
     public static final String SHARE_CROW_BUTTON = "ShareCrowButton";
+    public static final String SHARE_CROW_BUTTON_LAUNCH_TAB = "ShareCrowLaunchTab";
     public static final String SHARED_HIGHLIGHTING_AMP = "SharedHighlightingAmp";
     public static final String SHOPPING_LIST = "ShoppingList";
+    public static final String SHOPPING_LIST_ENABLE_DESYNC_RESOLUTION =
+            "ShoppingListEnableDesyncResolution";
     public static final String SHOW_EXTENDED_PRELOADING_SETTING = "ShowExtendedPreloadingSetting";
     public static final String SHOW_SCROLLABLE_MVT_ON_NTP_ANDROID = "ShowScrollableMVTOnNTPAndroid";
     public static final String SHOW_TRUSTED_PUBLISHER_URL = "ShowTrustedPublisherURL";
@@ -538,6 +548,7 @@ public abstract class ChromeFeatureList {
     public static final String START_SURFACE_ANDROID = "StartSurfaceAndroid";
     public static final String FEED_POSITION_ANDROID = "FeedPositionAndroid";
     public static final String SEARCH_RESUMPTION_MODULE_ANDROID = "SearchResumptionModuleAndroid";
+    public static final String START_SURFACE_RETURN_TIME = "StartSurfaceReturnTime";
     public static final String START_SURFACE_REFACTOR = "StartSurfaceRefactor";
     public static final String STORE_HOURS = "StoreHoursAndroid";
     public static final String SUGGESTION_ANSWERS_COLOR_REVERSE = "SuggestionAnswersColorReverse";
@@ -558,6 +569,7 @@ public abstract class ChromeFeatureList {
     public static final String TAB_SELECTION_EDITOR_V2 = "TabSelectionEditorV2";
     public static final String TAB_SWITCHER_ON_RETURN = "TabSwitcherOnReturn";
     public static final String TAB_TO_GTS_ANIMATION = "TabToGTSAnimation";
+    public static final String DISCOVER_MULTI_COLUMN = "DiscoverFeedMultiColumn";
     public static final String TAB_STRIP_IMPROVEMENTS = "TabStripImprovements";
     public static final String TEST_DEFAULT_DISABLED = "TestDefaultDisabled";
     public static final String TEST_DEFAULT_ENABLED = "TestDefaultEnabled";
@@ -568,6 +580,7 @@ public abstract class ChromeFeatureList {
     public static final String TOUCH_TO_FILL_PASSWORD_SUBMISSION = "TouchToFillPasswordSubmission";
     public static final String TRANSLATE_ASSIST_CONTENT = "TranslateAssistContent";
     public static final String TRANSLATE_INTENT = "TranslateIntent";
+    public static final String TRANSLATE_MESSAGE_UI = "TranslateMessageUI";
     public static final String TRANSLATE_TFLITE = "TFLiteLanguageDetectionEnabled";
     public static final String TRUSTED_WEB_ACTIVITY_POST_MESSAGE = "TrustedWebActivityPostMessage";
     public static final String TRUSTED_WEB_ACTIVITY_QUALITY_ENFORCEMENT =
@@ -632,6 +645,8 @@ public abstract class ChromeFeatureList {
             new CachedFlag(CCT_RESIZABLE_FOR_FIRST_PARTIES, true);
     public static final CachedFlag sCctResizableForThirdParties =
             new CachedFlag(CCT_RESIZABLE_FOR_THIRD_PARTIES, false);
+    public static final CachedFlag sCctResizableWindowAboveNavbar =
+            new CachedFlag(CCT_RESIZABLE_WINDOW_ABOVE_NAVBAR, true);
     public static final CachedFlag sCctToolbarCustomizations =
             new CachedFlag(CCT_TOOLBAR_CUSTOMIZATIONS, true);
     public static final CachedFlag sCloseTabSuggestions =
@@ -682,7 +697,9 @@ public abstract class ChromeFeatureList {
     public static final CachedFlag sQueryTilesOnStart = new CachedFlag(QUERY_TILES_ON_START, false);
     public static final CachedFlag sReadLater = new CachedFlag(READ_LATER, false);
     public static final CachedFlag sStartSurfaceAndroid =
-            new CachedFlag(START_SURFACE_ANDROID, false);
+            new CachedFlag(START_SURFACE_ANDROID, true);
+    public static final CachedFlag sStartSurfaceReturnTime =
+            new CachedFlag(START_SURFACE_RETURN_TIME, false);
     public static final CachedFlag sStartSurfaceRefactor =
             new CachedFlag(START_SURFACE_REFACTOR, false);
     public static final CachedFlag sStoreHoursAndroid = new CachedFlag(STORE_HOURS, false);
@@ -698,6 +715,8 @@ public abstract class ChromeFeatureList {
     public static final CachedFlag sTabStripImprovements =
             new CachedFlag(TAB_STRIP_IMPROVEMENTS, true);
     public static final CachedFlag sTabToGTSAnimation = new CachedFlag(TAB_TO_GTS_ANIMATION, true);
+    public static final CachedFlag sDiscoverMultiColumn =
+            new CachedFlag(DISCOVER_MULTI_COLUMN, false);
     public static final CachedFlag sTestDefaultDisabled =
             new CachedFlag(TEST_DEFAULT_DISABLED, false);
     public static final CachedFlag sTestDefaultEnabled = new CachedFlag(TEST_DEFAULT_ENABLED, true);

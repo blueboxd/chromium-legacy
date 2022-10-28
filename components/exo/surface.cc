@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -14,6 +14,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/notreached.h"
 #include "base/numerics/safe_conversions.h"
+#include "base/ranges/algorithm.h"
 #include "base/strings/stringprintf.h"
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/traced_value.h"
@@ -89,10 +90,7 @@ DEFINE_UI_CLASS_PROPERTY_KEY(bool, kStylusOnlyKey, false)
 // with |key|.
 template <typename T, typename U>
 typename T::iterator FindListEntry(T& list, U key) {
-  return std::find_if(list.begin(), list.end(),
-                      [key](const typename T::value_type& entry) {
-                        return entry.first == key;
-                      });
+  return base::ranges::find(list, key, &T::value_type::first);
 }
 
 // Helper function that returns true if |list| contains an entry with |key|.
@@ -544,6 +542,16 @@ void Surface::SetOverlayPriorityHint(OverlayPriority hint) {
   pending_state_.overlay_priority_hint = hint;
 }
 
+void Surface::SetClipRect(const absl::optional<gfx::RectF>& clip_rect) {
+  TRACE_EVENT1("exo", "Surface::SetClipRect", "clip_rect",
+               (clip_rect ? clip_rect->ToString() : "nullopt"));
+
+  if (pending_state_.clip_rect == clip_rect) {
+    return;
+  }
+  pending_state_.clip_rect = clip_rect;
+}
+
 void Surface::SetBackgroundColor(absl::optional<SkColor4f> background_color) {
   TRACE_EVENT0("exo", "Surface::SetBackgroundColor");
   pending_state_.basic_state.background_color = background_color;
@@ -700,6 +708,23 @@ std::string Surface::GetClientSurfaceId() const {
   return value ? *value : std::string();
 }
 
+void Surface::SetContainsVideo(bool contains_video) {
+  TRACE_EVENT1("exo", "Surface::SetContainsVideo", "contains_video",
+               contains_video ? "true" : "false");
+  pending_state_.basic_state.contains_video = contains_video;
+}
+
+bool Surface::ContainsVideo() {
+  if (state_.basic_state.contains_video)
+    return true;
+
+  for (auto& subsurface : sub_surfaces_) {
+    if (subsurface.first->ContainsVideo())
+      return true;
+  }
+  return false;
+}
+
 void Surface::SetWindowSessionId(int32_t window_session_id) {
   if (window_session_id > 0)
     window_->SetProperty(kWindowSessionId, window_session_id);
@@ -784,6 +809,7 @@ void Surface::Commit() {
   }
   cached_state_.rounded_corners_bounds = pending_state_.rounded_corners_bounds;
   cached_state_.overlay_priority_hint = pending_state_.overlay_priority_hint;
+  cached_state_.clip_rect = pending_state_.clip_rect;
   cached_state_.acquire_fence = std::move(pending_state_.acquire_fence);
   cached_state_.per_commit_explicit_release_callback_ =
       std::move(pending_state_.per_commit_explicit_release_callback_);
@@ -924,6 +950,7 @@ void Surface::CommitSurfaceHierarchy(bool synchronized) {
       }
       state_.rounded_corners_bounds = cached_state_.rounded_corners_bounds;
       state_.overlay_priority_hint = cached_state_.overlay_priority_hint;
+      state_.clip_rect = cached_state_.clip_rect;
       state_.acquire_fence = std::move(cached_state_.acquire_fence);
       state_.per_commit_explicit_release_callback_ =
           std::move(cached_state_.per_commit_explicit_release_callback_);
@@ -1315,6 +1342,15 @@ void Surface::AppendContentsToFrame(const gfx::PointF& origin,
     }
   }
 
+  absl::optional<gfx::Rect> quad_clip_rect;
+  if (state_.clip_rect) {
+    // The clip rect will later be rescaled by 1/device_scale_factor, and the
+    // enclosing rect used. Take the enclosed rect here to mitigate error.
+    gfx::RectF clip_rect_px(*state_.clip_rect);
+    clip_rect_px.Scale(device_scale_factor);
+    quad_clip_rect = gfx::ToEnclosedRect(clip_rect_px);
+  }
+
   state_.damage.Clear();
 
   gfx::PointF scale(content_size_.width(), content_size_.height());
@@ -1398,8 +1434,8 @@ void Surface::AppendContentsToFrame(const gfx::PointF& origin,
   viz::SharedQuadState* quad_state =
       render_pass->CreateAndAppendSharedQuadState();
   quad_state->SetAll(/*quad_layer_rect=*/quad_to_target_transform, quad_rect,
-                     /*visible_quad_layer_rect=*/quad_rect,
-                     /*mask_filter_info=*/msk, /*clip_rect=*/absl::nullopt,
+                     /*visible_layer_rect=*/quad_rect,
+                     /*filter_info=*/msk, /*clip=*/quad_clip_rect,
                      /*contents_opaque=*/are_contents_opaque,
                      /*opacity=*/state_.basic_state.alpha,
                      /*blend_mode=*/SkBlendMode::kSrcOver,

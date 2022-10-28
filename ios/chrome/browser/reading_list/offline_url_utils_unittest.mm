@@ -1,21 +1,21 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ios/chrome/browser/reading_list/offline_url_utils.h"
+#import "ios/chrome/browser/reading_list/offline_url_utils.h"
 
-#include <memory>
-#include <string>
+#import <memory>
+#import <string>
 
-#include "base/files/file_path.h"
-#include "base/strings/utf_string_conversions.h"
-#include "base/test/gtest_util.h"
-#include "base/time/default_clock.h"
-#include "components/reading_list/core/reading_list_entry.h"
-#include "components/reading_list/core/reading_list_model_impl.h"
-#include "testing/gtest/include/gtest/gtest.h"
-#include "testing/platform_test.h"
-#include "url/gurl.h"
+#import "base/files/file_path.h"
+#import "base/strings/utf_string_conversions.h"
+#import "base/test/gtest_util.h"
+#import "base/time/default_clock.h"
+#import "components/reading_list/core/reading_list_entry.h"
+#import "components/reading_list/core/reading_list_model_impl.h"
+#import "testing/gtest/include/gtest/gtest.h"
+#import "testing/platform_test.h"
+#import "url/gurl.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -60,7 +60,7 @@ TEST_F(OfflineURLUtilsTest, ParseOfflineURLWithVirtualURLTest) {
   EXPECT_TRUE(entry_url.is_empty());
 }
 
-// Checks that the offline URLs are correctly detected by |IsOfflineURL|.
+// Checks that the offline URLs are correctly detected by `IsOfflineURL`.
 TEST_F(OfflineURLUtilsTest, IsOfflineURL) {
   EXPECT_FALSE(reading_list::IsOfflineURL(GURL()));
   EXPECT_FALSE(reading_list::IsOfflineURL(GURL("chrome://")));
@@ -78,7 +78,7 @@ TEST_F(OfflineURLUtilsTest, IsOfflineURL) {
       GURL("chrome://offline/foobar?reload=http%3A%2F%2Ffoo.bar%2F")));
 }
 
-// Checks that the offline URLs are correctly detected by |IsOfflineEntryURL|.
+// Checks that the offline URLs are correctly detected by `IsOfflineEntryURL`.
 TEST_F(OfflineURLUtilsTest, IsOfflineEntryURL) {
   EXPECT_FALSE(reading_list::IsOfflineEntryURL(GURL()));
   EXPECT_FALSE(reading_list::IsOfflineEntryURL(GURL("chrome://")));
@@ -99,7 +99,7 @@ TEST_F(OfflineURLUtilsTest, IsOfflineEntryURL) {
       GURL("chrome://offline/foobar?reload=http%3A%2F%2Ffoo.bar%2F")));
 }
 
-// Checks that the offline URLs are correctly detected by |IsOfflineReloadURL|.
+// Checks that the offline URLs are correctly detected by `IsOfflineReloadURL`.
 TEST_F(OfflineURLUtilsTest, IsOfflineReloadURL) {
   EXPECT_FALSE(reading_list::IsOfflineReloadURL(GURL()));
   EXPECT_FALSE(reading_list::IsOfflineReloadURL(GURL("chrome://")));

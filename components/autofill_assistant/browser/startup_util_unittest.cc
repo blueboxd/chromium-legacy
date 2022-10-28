@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,6 +8,7 @@
 #include <memory>
 #include <ostream>
 
+#include "base/containers/contains.h"
 #include "base/containers/flat_map.h"
 #include "base/test/scoped_feature_list.h"
 #include "components/autofill_assistant/browser/features.h"
@@ -46,6 +47,7 @@ namespace {
 
 using features::kAutofillAssistant;
 using features::kAutofillAssistantChromeEntry;
+using features::kAutofillAssistantGetTriggerScriptsByHashPrefix;
 using features::kAutofillAssistantLoadDFMForTriggerScripts;
 using features::kAutofillAssistantProactiveHelp;
 using ::testing::Eq;
@@ -57,9 +59,10 @@ struct TestFeatureConfig {
 };
 
 // Shorthand for the full set of relevant features.
-const std::array<base::Feature, 4> kFullFeatureSet = {
+const std::array<base::Feature, 5> kFullFeatureSet = {
     kAutofillAssistant, kAutofillAssistantProactiveHelp,
-    kAutofillAssistantChromeEntry, kAutofillAssistantLoadDFMForTriggerScripts};
+    kAutofillAssistantChromeEntry, kAutofillAssistantLoadDFMForTriggerScripts,
+    kAutofillAssistantGetTriggerScriptsByHashPrefix};
 
 // Common script parameters to reuse.
 const base::flat_map<std::string, std::string> kRegularScript = {
@@ -76,13 +79,15 @@ const TriggerContext::Options kDefaultCCTOptions = {
     std::string(), /* is_cct = */ true,
     false,         false,
     std::string(), false,
-    false,         false};
+    false,         false,
+    true};
 
 const TriggerContext::Options kDefaultNonCCTOptions = {
     std::string(), /* is_cct = */ false,
     false,         false,
     std::string(), false,
-    false,         false};
+    false,         false,
+    true};
 
 // The set of feature combinations to test.
 const TestFeatureConfig kTestFeatureConfigs[] = {
@@ -160,6 +165,16 @@ class StartupUtilParametrizedTest
 
   void TearDown() override { scoped_feature_list_.reset(); }
 
+  bool IsAnyFeatureSetEnabled(
+      const std::vector<std::vector<base::Feature>>& feature_sets) {
+    for (const auto& features : feature_sets) {
+      if (AreFeaturesEnabled(features)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
   bool AreFeaturesEnabled(const std::vector<base::Feature>& features) const {
     for (const auto& feature : features) {
       if (!IsFeatureEnabled(feature)) {
@@ -171,11 +186,8 @@ class StartupUtilParametrizedTest
 
   // Returns whether |feature| is enabled for the current run.
   bool IsFeatureEnabled(const base::Feature& feature) const {
-    return std::find_if(GetParam().enabled_features.begin(),
-                        GetParam().enabled_features.end(),
-                        [&](const base::Feature& candidate) {
-                          return candidate.name == feature.name;
-                        }) != GetParam().enabled_features.end();
+    return base::Contains(GetParam().enabled_features, feature.name,
+                          &base::Feature::name);
   }
 
  private:
@@ -246,7 +258,12 @@ TEST_P(StartupUtilParametrizedTest, StartRpcTriggerScript) {
               ? StartupMode::START_RPC_TRIGGER_SCRIPT
               : StartupMode::FEATURE_DISABLED));
 
-  // CCT, MSBB is off.
+  // CCT, MSBB is off, but kAutofillAssistantGetTriggerScriptsByHashPrefix might
+  // be enabled.
+  StartupMode expectedStartupMode =
+      IsFeatureEnabled(kAutofillAssistantGetTriggerScriptsByHashPrefix)
+          ? StartupMode::START_RPC_TRIGGER_SCRIPT
+          : StartupMode::SETTING_DISABLED;
   EXPECT_THAT(
       StartupUtil().ChooseStartupModeForIntent(
           TriggerContext{
@@ -257,7 +274,7 @@ TEST_P(StartupUtilParametrizedTest, StartRpcTriggerScript) {
            .feature_module_installed = true}),
       MatchingStartupMode(AreFeaturesEnabled({kAutofillAssistant,
                                               kAutofillAssistantProactiveHelp})
-                              ? StartupMode::SETTING_DISABLED
+                              ? expectedStartupMode
                               : StartupMode::FEATURE_DISABLED));
 
   // CCT, Proactive help is off.
@@ -335,7 +352,7 @@ TEST_P(StartupUtilParametrizedTest, InvalidParameterCombinationsShouldFail) {
                       {"ENABLED", "true"}, {"START_IMMEDIATELY", "true"}}),
               {std::string(), /* is_cct = */ true, false, false,
                /* initial_url = */ "https://www.example.com", false, false,
-               false}},
+               false, true}},
           {.msbb_setting_enabled = true,
            .proactive_help_setting_enabled = true,
            .feature_module_installed = true}),

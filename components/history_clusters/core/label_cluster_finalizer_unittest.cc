@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -48,7 +48,8 @@ TEST_F(LabelClusterFinalizerTest, ClusterWithNoSearchTerms) {
 
   history::ClusterVisit visit3 = testing::CreateClusterVisit(
       testing::CreateDefaultAnnotatedVisit(3, GURL("https://baz.com/")));
-  visit3.duplicate_visits.push_back(visit);
+  visit3.duplicate_visits.push_back(
+      testing::ClusterVisitToDuplicateClusterVisit(visit));
   visit3.score = 0.8;
   visit3.annotated_visit.content_annotations.model_annotations.entities = {
       {"chosenlabel", 25}, {"someotherentity", 10}};

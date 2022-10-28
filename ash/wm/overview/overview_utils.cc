@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "ash/accessibility/accessibility_controller_impl.h"
 #include "ash/public/cpp/shelf_config.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/public/cpp/window_properties.h"
@@ -19,7 +20,9 @@
 #include "ash/wm/overview/delayed_animation_observer_impl.h"
 #include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/overview/overview_grid.h"
+#include "ash/wm/overview/overview_highlight_controller.h"
 #include "ash/wm/overview/overview_item.h"
+#include "ash/wm/overview/overview_session.h"
 #include "ash/wm/overview/scoped_overview_animation_settings.h"
 #include "ash/wm/splitview/split_view_controller.h"
 #include "ash/wm/splitview/split_view_utils.h"
@@ -165,10 +168,10 @@ void SetTransform(aura::Window* window, const gfx::Transform& transform) {
     aura::Window* parent_window = window_iter->parent();
     gfx::RectF original_bounds(window_iter->GetTargetBounds());
     ::wm::TranslateRectToScreen(parent_window, &original_bounds);
-    gfx::Transform new_transform =
-        TransformAboutPivot(gfx::Point(target_origin.x() - original_bounds.x(),
-                                       target_origin.y() - original_bounds.y()),
-                            transform);
+    const gfx::Transform new_transform = TransformAboutPivot(
+        gfx::PointF(target_origin.x() - original_bounds.x(),
+                    target_origin.y() - original_bounds.y()),
+        transform);
     window_iter->SetTransform(new_transform);
   }
 }
@@ -336,6 +339,34 @@ bool ShouldUseTabletModeGridLayout() {
 gfx::Rect ToStableSizeRoundedRect(const gfx::RectF& rect) {
   return gfx::Rect(gfx::ToRoundedPoint(rect.origin()),
                    gfx::ToRoundedSize(rect.size()));
+}
+
+void UpdateOverviewHighlightForFocus(OverviewHighlightableView* target_view) {
+  auto* highlight_controller = Shell::Get()
+                                   ->overview_controller()
+                                   ->overview_session()
+                                   ->highlight_controller();
+  DCHECK(highlight_controller);
+
+  if (highlight_controller->IsFocusHighlightVisible())
+    highlight_controller->MoveHighlightToView(target_view);
+}
+
+void UpdateOverviewHighlightForFocusAndSpokenFeedback(
+    OverviewHighlightableView* target_view) {
+  AccessibilityControllerImpl* a11y_controller =
+      Shell::Get()->accessibility_controller();
+  DCHECK(a11y_controller);
+  auto* highlight_controller = Shell::Get()
+                                   ->overview_controller()
+                                   ->overview_session()
+                                   ->highlight_controller();
+  DCHECK(highlight_controller);
+
+  if (highlight_controller->IsFocusHighlightVisible() ||
+      a11y_controller->spoken_feedback().enabled()) {
+    highlight_controller->MoveHighlightToView(target_view);
+  }
 }
 
 }  // namespace ash

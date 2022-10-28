@@ -30,6 +30,7 @@
 <translation id="1717218214683051432">移动传感器</translation>
 <translation id="1743802530341753419">需先询问，得到许可后才允许网站连接设备（推荐）</translation>
 <translation id="1779089405699405702">图片解码器</translation>
+<translation id="1785415724048343560">建议勾选此选项以获得最佳体验</translation>
 <translation id="1818308510395330587">若要允许 <ph name="APP_NAME" /> 使用 AR 功能，您还需在 <ph name="BEGIN_LINK" />Android 设置<ph name="END_LINK" />中开启摄像头。</translation>
 <translation id="1864927262126810325">来自<ph name="SOURCE_NAME" /></translation>
 <translation id="1887786770086287077">此设备的位置信息使用权已关闭；若想开启这项权限，请转到 <ph name="BEGIN_LINK" />Android 设置<ph name="END_LINK" />。</translation>
@@ -79,6 +80,7 @@
 <translation id="2653659639078652383">提交</translation>
 <translation id="2677748264148917807">离开</translation>
 <translation id="2687403674020088961">阻止所有 Cookie（不建议）</translation>
+<translation id="2692299144678073135">允许相关网站记住您在各个网站上的身份</translation>
 <translation id="2704606927547763573">已复制</translation>
 <translation id="2713106313042589954">关闭摄像头</translation>
 <translation id="2717722538473713889">电子邮件地址</translation>
@@ -101,6 +103,7 @@
 <translation id="3115898365077584848">显示信息</translation>
 <translation id="3123473560110926937">已禁止部分网站显示广告</translation>
 <translation id="3143754809889689516">从头播放</translation>
+<translation id="3162899666601560689">网站可以使用 Cookie 来提升您的浏览体验，例如让您保持登录状态或记住您购物车中的商品</translation>
 <translation id="3198916472715691905">已存储 <ph name="STORAGE_AMOUNT" /> 数据</translation>
 <translation id="3203366800380907218">来自网络</translation>
 <translation id="321187648315454507">若要允许 <ph name="APP_NAME" /> 向您发送通知，您还需在 <ph name="BEGIN_LINK" />Android 设置<ph name="END_LINK" />中开启通知。</translation>
@@ -138,6 +141,7 @@
 <translation id="4002066346123236978">标题</translation>
 <translation id="4008040567710660924">允许特定网站使用 Cookie。</translation>
 <translation id="4046123991198612571">下一曲</translation>
+<translation id="4048876521107516222">相关网站会使用 Cookie 协助您处理一些事项，例如让您保持登录状态</translation>
 <translation id="4149994727733219643">使用简化版视图查看网页</translation>
 <translation id="4165986682804962316">网站设置</translation>
 <translation id="4169549551965910670">已连接 USB 设备</translation>
@@ -149,6 +153,7 @@
 <translation id="429312253194641664">某个网站正在播放媒体内容</translation>
 <translation id="42981349822642051">展开</translation>
 <translation id="4336434711095810371">清除所有数据</translation>
+<translation id="4338831206024587507"><ph name="DOMAIN" /> 下的所有网站</translation>
 <translation id="4402755511846832236">禁止网站了解您何时在主动使用此设备</translation>
 <translation id="4428065317363009941">广告个性化</translation>
 <translation id="4434045419905280838">弹出式窗口和重定向</translation>
@@ -164,6 +169,7 @@
 <translation id="4751476147751820511">动态传感器或光传感器</translation>
 <translation id="4811450222531576619">了解其来源和主题</translation>
 <translation id="4836046166855586901">在网站想了解您何时在主动使用此设备时询问您</translation>
+<translation id="483914009762354899">包含该网域下的所有网站</translation>
 <translation id="4883854917563148705">无法重置受管理的设置</translation>
 <translation id="4887024562049524730">需先询问，得到许可后才允许网站使用您的虚拟实境设备和数据（推荐）</translation>
 <translation id="4962975101802056554">撤消设备的所有权限</translation>
@@ -219,6 +225,7 @@
 <translation id="5887687176710214216">上次访问时间：昨天</translation>
 <translation id="5916664084637901428">启用</translation>
 <translation id="5922853908706496913">正在共享您的屏幕</translation>
+<translation id="5922967540311291836">阻止第三方 Cookie：</translation>
 <translation id="5939518447894949180">重置</translation>
 <translation id="5975083100439434680">缩小</translation>
 <translation id="5976059395673079613"><ph name="PERMISSION" /> - <ph name="WARNING_MESSAGE" /></translation>
@@ -302,6 +309,7 @@
 <translation id="7791543448312431591">添加</translation>
 <translation id="780301667611848630">不用了，谢谢</translation>
 <translation id="7804248752222191302">有一个网站正在使用您的摄像头</translation>
+<translation id="7816129586531226979">相关网站可能会记住您在各个网站上的身份</translation>
 <translation id="7817023149356982970">您将会退出此网站。</translation>
 <translation id="7828557259026017104">Cookie 是由您访问过的网站创建的文件，供网站用来记住您的偏好；第三方 Cookie 是由其他网站创建而成，这些网站是您在所访问网页上看到的部分内容（比如广告或图片）的所有方。</translation>
 <translation id="7835852323729233924">正在播放媒体</translation>
@@ -309,6 +317,7 @@
 <translation id="7846076177841592234">取消选择</translation>
 <translation id="7846621471902887024">您将会自动退出所有网站。</translation>
 <translation id="7882806643839505685">允许特定网站播放声音。</translation>
+<translation id="789180354981963912">阻止无痕模式下的第三方 Cookie：</translation>
 <translation id="7940722705963108451">提醒我</translation>
 <translation id="7986741934819883144">选择联系人</translation>
 <translation id="7999064672810608036">确定要清除该网站的所有本地数据（包括 Cookie）并重置该网站的所有权限吗？</translation>
@@ -331,6 +340,7 @@
 <translation id="8284326494547611709">字幕</translation>
 <translation id="8300705686683892304">由应用管理</translation>
 <translation id="8324158725704657629">别再询问</translation>
+<translation id="834785183489258869">不过，在无痕模式下，网站无法使用 Cookie 查看您在各个不同网站上的浏览活动，因而无法实现某些功能或目的（例如为您展示个性化广告）。某些网站上的功能可能无法正常运行。</translation>
 <translation id="8372893542064058268">允许特定网站进行后台同步。</translation>
 <translation id="8376384591331888629">包括此网站上的第三方 Cookie</translation>
 <translation id="83792324527827022">有一个网站正在使用您的摄像头和麦克风</translation>

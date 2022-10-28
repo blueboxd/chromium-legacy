@@ -1,4 +1,4 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -262,6 +262,7 @@ ChromeShelfController::ChromeShelfController(Profile* profile,
     apps::AppServiceProxy* proxy =
         apps::AppServiceProxyFactory::GetForProfile(profile);
     DCHECK(proxy);
+    CHECK(proxy->BrowserAppInstanceRegistry());
     browser_app_shelf_controller_ = std::make_unique<BrowserAppShelfController>(
         profile, *proxy->BrowserAppInstanceRegistry(), *model_,
         *shelf_item_factory_, *shelf_spinner_controller_);

@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -14,7 +14,6 @@
 #include "base/trace_event/common/trace_event_common.h"
 #include "gpu/command_buffer/common/mailbox.h"
 #include "gpu/command_buffer/common/shared_image_usage.h"
-#include "gpu/command_buffer/service/mailbox_manager_impl.h"
 #include "gpu/command_buffer/service/shared_image/shared_image_factory.h"
 #include "gpu/command_buffer/service/shared_image/shared_image_representation.h"
 #include "gpu/ipc/common/surface_handle.h"
@@ -206,7 +205,6 @@ bool GpuMemoryAblationExperiment::InitGpu(GpuChannelManager* channel_manager) {
       channel_manager->gpu_preferences(),
       channel_manager->gpu_driver_bug_workarounds(),
       channel_manager->gpu_feature_info(), context_state_.get(),
-      channel_manager->mailbox_manager(),
       channel_manager->shared_image_manager(),
       gmb_factory ? gmb_factory->AsImageFactory() : nullptr, this,
       /*is_for_display_compositor=*/false);

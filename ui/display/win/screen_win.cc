@@ -7,14 +7,13 @@
 #include <windows.h>
 #include <shellscalingapi.h>
 
-#include <algorithm>
-
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/containers/contains.h"
 #include "base/cxx17_backports.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/numerics/safe_conversions.h"
+#include "base/ranges/algorithm.h"
 #include "base/trace_event/trace_event.h"
 #include "base/win/win_util.h"
 #include "base/win/windows_version.h"
@@ -706,6 +705,22 @@ void ScreenWin::SetDXGIInfo(gfx::mojom::DXGIInfoPtr dxgi_info) {
   }
 }
 
+// static
+ScreenWinDisplay ScreenWin::GetScreenWinDisplayWithDisplayId(int64_t id) {
+  if (!g_instance)
+    return ScreenWinDisplay();
+  const auto it = std::find_if(
+      g_instance->screen_win_displays_.cbegin(),
+      g_instance->screen_win_displays_.cend(),
+      [id](const auto& display) { return display.display().id() == id; });
+  // There is 1:1 correspondence between MONITORINFOEX and ScreenWinDisplay.
+  // If we found no screens, either there are no screens, or we're in the midst
+  // of updating our screens (see crbug.com/768845); either way, hand out the
+  // default display.
+  return (it == g_instance->screen_win_displays_.cend()) ? ScreenWinDisplay()
+                                                         : *it;
+}
+
 HWND ScreenWin::GetHWNDFromNativeWindow(gfx::NativeWindow window) const {
   NOTREACHED();
   return nullptr;
@@ -891,11 +906,10 @@ void ScreenWin::OnColorProfilesChanged() {
   // The color profile reader will often just confirm that our guess that the
   // color profile was sRGB was indeed correct. Avoid doing an update in these
   // cases.
-  if (std::any_of(
-          displays_.cbegin(), displays_.cend(), [this](const auto& display) {
-            return display.color_spaces().GetRasterColorSpace() !=
-                   color_profile_reader_->GetDisplayColorSpace(display.id());
-          }))
+  if (base::ranges::any_of(displays_, [this](const auto& display) {
+        return display.color_spaces().GetRasterColorSpace() !=
+               color_profile_reader_->GetDisplayColorSpace(display.id());
+      }))
     UpdateAllDisplaysAndNotify();
 }
 
@@ -904,7 +918,10 @@ void ScreenWin::UpdateAllDisplaysAndNotify() {
 
   std::vector<Display> old_displays = std::move(displays_);
   UpdateFromDisplayInfos(GetDisplayInfosFromSystem());
-  change_notifier_.NotifyDisplaysChanged(old_displays, displays_);
+  // It's possible notifying of display changes may trigger reentrancy. Copy
+  // `displays_` to ensure there are no problems if reentrancy happens.
+  std::vector<Display> displays_copy = displays_;
+  change_notifier_.NotifyDisplaysChanged(old_displays, displays_copy);
 }
 
 ScreenWinDisplay ScreenWin::GetScreenWinDisplayNearestHWND(HWND hwnd) const {

@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -45,6 +45,25 @@ std::string GetSwitchValueInLegacyFormat(const std::wstring& command_line,
   }
 
   return std::string();
+}
+
+TagParsingResult GetTagArgsFromLegacyCommandLine(
+    const std::wstring& command_line) {
+  std::string tag = GetSwitchValueInLegacyFormat(
+      command_line, base::ASCIIToWide(kHandoffSwitch));
+
+  if (tag.empty())
+    return {};
+
+  tagging::TagArgs tag_args;
+  const tagging::ErrorCode error =
+      tagging::Parse(tag,
+                     GetSwitchValueInLegacyFormat(
+                         command_line, base::ASCIIToWide(kAppArgsSwitch)),
+                     &tag_args);
+  VLOG_IF(1, error != tagging::ErrorCode::kSuccess)
+      << "Legacy tag parsing returned " << error << ".";
+  return {tag_args, error};
 }
 
 absl::optional<base::FilePath> GetBaseInstallDirectory(UpdaterScope scope) {

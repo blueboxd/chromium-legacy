@@ -836,7 +836,7 @@ experimental domain Audits
   # all cases except for success.
   type FederatedAuthRequestIssueReason extends string
     enum
-      ApprovalDeclined
+      ShouldEmbargo
       TooManyRequests
       ManifestListHttpNotFound
       ManifestListNoResponse
@@ -861,6 +861,7 @@ experimental domain Audits
       IdTokenInvalidRequest
       ErrorIdToken
       Canceled
+      RpPageNotVisible
 
   # This issue tracks client hints related issues. It's used to deprecate old
   # features, encourage the use of new ones, and provide general guidance.
@@ -2926,7 +2927,7 @@ domain DOM
     parameters
       # Id of the node that has changed.
       NodeId parentNodeId
-      # If of the previous siblint.
+      # Id of the previous sibling.
       NodeId previousNodeId
       # Inserted node data.
       Node node
@@ -8465,6 +8466,7 @@ domain Page
       # recorded when it fails to get the memory usage.
       FailToGetMemoryUsage
       DataSaverEnabled
+      HasEffectiveUrl
 
   # Fired when a prerender attempt is completed.
   experimental event prerenderAttemptCompleted
@@ -8473,9 +8475,9 @@ domain Page
       FrameId initiatingFrameId
       string prerenderingUrl
       PrerenderFinalStatus finalStatus
-      # This is used to give users more information about the cancellation details,
-      # and this will be formatted for display.
-      optional string reasonDetails
+      # This is used to give users more information about the name of the API call
+      # that is incompatible with prerender and has caused the cancellation of the attempt
+      optional string disallowedApiMethod
 
   event loadEventFired
     parameters

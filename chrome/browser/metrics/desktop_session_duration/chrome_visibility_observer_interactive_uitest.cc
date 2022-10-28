@@ -1,4 +1,4 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -43,14 +43,9 @@ class ChromeVisibilityObserverInteractiveTest
 
 // This test doesn't check whether switching between browser windows results in
 // separate sessions or not.
-// Disabled on Linux for being flaky. crbug.com/1311773
-#if BUILDFLAG(IS_LINUX)
-#define MAYBE_VisibilityTest DISABLED_VisibilityTest
-#else
-#define MAYBE_VisibilityTest VisibilityTest
-#endif
+// Disabled for being flaky. crbug.com/1311773
 IN_PROC_BROWSER_TEST_F(ChromeVisibilityObserverInteractiveTest,
-                       MAYBE_VisibilityTest) {
+                       DISABLED_VisibilityTest) {
   // Observer should now be active as there is one active browser.
   EXPECT_TRUE(is_active());
 

@@ -1,10 +1,9 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome/updater/update_service_impl.h"
 
-#include <algorithm>
 #include <iterator>
 #include <map>
 #include <string>
@@ -21,6 +20,7 @@
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/logging.h"
+#include "base/ranges/algorithm.h"
 #include "base/run_loop.h"
 #include "base/strings/string_util.h"
 #include "base/task/bind_post_task.h"
@@ -34,7 +34,6 @@
 #include "chrome/updater/check_for_updates_task.h"
 #include "chrome/updater/configurator.h"
 #include "chrome/updater/constants.h"
-#include "chrome/updater/device_management_task.h"
 #include "chrome/updater/installer.h"
 #include "chrome/updater/persisted_data.h"
 #include "chrome/updater/policy/service.h"
@@ -237,6 +236,13 @@ void UpdateServiceImpl::GetVersion(
       base::BindOnce(std::move(callback), base::Version(kUpdaterVersion)));
 }
 
+void UpdateServiceImpl::FetchPolicies(base::OnceCallback<void(int)> callback) {
+  VLOG(1) << __func__;
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  config_->GetPolicyService()->FetchPolicies(std::move(callback));
+}
+
 void UpdateServiceImpl::RegisterApp(
     const RegistrationRequest& request,
     base::OnceCallback<void(const RegistrationResponse&)> callback) {
@@ -306,11 +312,15 @@ void UpdateServiceImpl::RunPeriodicTasks(base::OnceClosure callback) {
                                          GetUpdaterScope(), persisted_data_)));
 
   new_tasks.push_back(base::BindOnce(
-      &DeviceManagementTask::RunRegisterDevice,
-      base::MakeRefCounted<DeviceManagementTask>(config_, main_task_runner_)));
-  new_tasks.push_back(base::BindOnce(
-      &DeviceManagementTask::RunFetchPolicy,
-      base::MakeRefCounted<DeviceManagementTask>(config_, main_task_runner_)));
+      [](scoped_refptr<UpdateServiceImpl> update_service_impl,
+         base::OnceClosure callback) {
+        update_service_impl->FetchPolicies(base::BindOnce(
+            [](base::OnceClosure callback, int /* ignore_result */) {
+              std::move(callback).Run();
+            },
+            std::move(callback)));
+      },
+      base::WrapRefCounted(this)));
   new_tasks.push_back(base::BindOnce(
       &CheckForUpdatesTask::Run,
       base::MakeRefCounted<CheckForUpdatesTask>(
@@ -367,13 +377,12 @@ void UpdateServiceImpl::ForceInstall(StateChangeCallback state_update,
   DCHECK(!force_install_apps.empty());
 
   std::vector<std::string> installed_app_ids = persisted_data_->GetAppIds();
-  std::sort(force_install_apps.begin(), force_install_apps.end());
-  std::sort(installed_app_ids.begin(), installed_app_ids.end());
+  base::ranges::sort(force_install_apps);
+  base::ranges::sort(installed_app_ids);
 
   std::vector<std::string> app_ids_to_install;
-  std::set_difference(force_install_apps.begin(), force_install_apps.end(),
-                      installed_app_ids.begin(), installed_app_ids.end(),
-                      std::back_inserter(app_ids_to_install));
+  base::ranges::set_difference(force_install_apps, installed_app_ids,
+                               std::back_inserter(app_ids_to_install));
   if (app_ids_to_install.empty()) {
     base::BindPostTask(main_task_runner_, std::move(callback))
         .Run(UpdateService::Result::kSuccess);
@@ -457,8 +466,9 @@ void UpdateServiceImpl::Install(const RegistrationRequest& registration,
                                 Priority priority,
                                 StateChangeCallback state_update,
                                 Callback callback) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   VLOG(1) << __func__;
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   int policy = kPolicyEnabled;
   if (IsUpdateDisabledByPolicy(registration.app_id, priority, true, policy)) {
     HandleUpdateDisabledByPolicy(registration.app_id, policy, true,
@@ -496,8 +506,8 @@ void UpdateServiceImpl::CancelInstalls(const std::string& app_id) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   VLOG(1) << __func__;
   auto range = cancellation_callbacks_.equal_range(app_id);
-  std::for_each(range.first, range.second,
-                [](const auto& i) { i.second.Run(); });
+  base::ranges::for_each(range.first, range.second,
+                         [](const auto& i) { i.second.Run(); });
 }
 
 void UpdateServiceImpl::RunInstaller(const std::string& app_id,
@@ -649,10 +659,9 @@ void UpdateServiceImpl::OnShouldBlockUpdateForMeteredNetwork(
           [&app_install_data_index]() {
             std::vector<std::string> app_ids;
             app_ids.reserve(app_install_data_index.size());
-            std::transform(app_install_data_index.begin(),
-                           app_install_data_index.end(),
-                           std::back_inserter(app_ids),
-                           [](const auto& param) { return param.first; });
+            base::ranges::transform(
+                app_install_data_index, std::back_inserter(app_ids),
+                [](const auto& param) { return param.first; });
             return app_ids;
           }(),
           base::BindOnce(&GetComponents, config_, persisted_data_,

@@ -1,4 +1,4 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,17 +9,17 @@
 
 import 'chrome://resources/cr_components/localized_link/localized_link.js';
 import 'chrome://resources/cr_elements/cr_button/cr_button.js';
-import 'chrome://resources/cr_elements/policy/cr_policy_indicator.m.js';
-import 'chrome://resources/cr_elements/policy/cr_tooltip_icon.m.js';
+import 'chrome://resources/cr_elements/policy/cr_policy_indicator.js';
+import 'chrome://resources/cr_elements/policy/cr_tooltip_icon.js';
 import '../../prefs/prefs.js';
 import '../../settings_shared.css.js';
 import './channel_switcher_dialog.js';
 import './consumer_auto_update_toggle_dialog.js';
 import './edit_hostname_dialog.js';
 
-import {CrPolicyIndicatorType} from 'chrome://resources/cr_elements/policy/cr_policy_indicator_behavior.m.js';
-import {assert} from 'chrome://resources/js/assert.m.js';
-import {focusWithoutInk} from 'chrome://resources/js/cr/ui/focus_without_ink.m.js';
+import {CrPolicyIndicatorType} from 'chrome://resources/cr_elements/policy/cr_policy_indicator_mixin.js';
+import {assert} from 'chrome://resources/js/assert_ts.js';
+import {focusWithoutInk} from 'chrome://resources/js/cr/ui/focus_without_ink.js';
 import {I18nMixin, I18nMixinInterface} from 'chrome://resources/js/i18n_mixin.js';
 import {WebUIListenerMixin, WebUIListenerMixinInterface} from 'chrome://resources/js/web_ui_listener_mixin.js';
 import {mixinBehaviors, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
@@ -414,13 +414,17 @@ class SettingsDetailedBuildInfoElement extends SettingsDetailedBuildInfoBase {
 
   private onChannelSwitcherDialogClosed_() {
     this.showChannelSwitcherDialog_ = false;
-    focusWithoutInk(assert(this.shadowRoot!.querySelector('cr-button'))!);
+    const button = this.shadowRoot!.querySelector('cr-button');
+    assert(button);
+    focusWithoutInk(button);
     this.updateChannelInfo_();
   }
 
   private onEditHostnameDialogClosed_() {
     this.showEditHostnameDialog_ = false;
-    focusWithoutInk(assert(this.shadowRoot!.querySelector('cr-button'))!);
+    const button = this.shadowRoot!.querySelector('cr-button');
+    assert(button);
+    focusWithoutInk(button);
   }
 }
 

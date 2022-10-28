@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -19,9 +19,9 @@ SavedDeskBuilder::SavedDeskBuilder()
       restore_data_(std::make_unique<app_restore::RestoreData>()) {
   desk_uuid_ = base::GUID::GenerateRandomV4();
   created_time_ = base::Time::Now();
-};
+}
 
-SavedDeskBuilder::~SavedDeskBuilder(){};
+SavedDeskBuilder::~SavedDeskBuilder() {}
 
 std::unique_ptr<ash::DeskTemplate> SavedDeskBuilder::Build() {
   auto desk_template = std::make_unique<ash::DeskTemplate>(

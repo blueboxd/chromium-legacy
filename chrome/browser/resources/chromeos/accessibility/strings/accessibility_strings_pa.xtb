@@ -138,9 +138,9 @@
 <translation id="1812527064848182527">ਲੈਂਡਸਕੇਪ</translation>
 <translation id="1829244130665387512">ਸਫ਼ੇ ਵਿੱਚ ਲੱਭੋ</translation>
 <translation id="1834891354138622109">ਕਾੱਲਮ</translation>
-<translation id="1845944666972354496">ਕਿਰਿਆਸ਼ੀਲ ਕਰਨ ਲਈ ਡਬਲ ਟੈਪ ਕਰੋ</translation>
 <translation id="1846771122725914429">ਬਲੂਟੁੱਥ ਬਰੇਲ ਡਿਸਪਲੇ</translation>
 <translation id="1852018405765032699">ਚਾਰ ਉਂਗਲਾਂ ਨਾਲ ਸਕ੍ਰੀਨ 'ਤੇ ਟੈਪ ਕਰਨ 'ਤੇ ChromeVox ਮੀਨੂ ਖੁੱਲ੍ਹੇਗਾ ਅਤੇ ਬੰਦ ਹੋਵੇਗਾ। ਇਹਨਾਂ ਮੀਨੂ ਵਿੱਚ ਆਦੇਸ਼ਾਂ ਅਤੇ ਸ਼ਾਰਟਕੱਟਾਂ ਬਾਰੇ ਲਾਹੇਵੰਦ ਜਾਣਕਾਰੀ ਸ਼ਾਮਲ ਹੈ। ਇੱਕ ਵਾਰ ਮੀਨੂ ਖੁੱਲ੍ਹ ਜਾਣ ਤੋਂ ਬਾਅਦ, ਤੁਸੀਂ ਆਈਟਮਾਂ ਰਾਹੀਂ ਨੈਵੀਗੇਟ ਕਰਨ ਲਈ ਇੱਕ ਉਂਗਲ ਨਾਲ ਸਵਾਈਪ ਕਰ ਸਕਦੇ ਹੋ ਅਤੇ ਆਈਟਮਾਂ ਨੂੰ ਕਿਰਿਆਸ਼ੀਲ ਕਰਨ ਲਈ ਡਬਲ ਟੈਪ ਕਰ ਸਕਦੇ ਹੋ। ਜਾਰੀ ਰੱਖਣ ਲਈ, ਸਕ੍ਰੀਨ 'ਤੇ ਚਾਰ ਉਂਗਲਾਂ ਨਾਲ ਟੈਪ ਕਰੋ।</translation>
+<translation id="1864430479908918647">Search+Space ਦਬਾਓ</translation>
 <translation id="1865601187525349519">ਟੈਕਸਟ ਦਾ ਅੰਤ</translation>
 <translation id="1876229593313240038">doc</translation>
 <translation id="1902396333223336119">ਸੈਲ</translation>
@@ -238,6 +238,7 @@
 <translation id="2619344480613750862">ਤੁਸੀਂ ਸਕ੍ਰੀਨ ਦੇ ਸੈਕਸ਼ਨਾਂ ਵਿਚਾਲੇ ਵੀ ਜਾ ਸਕਦੇ ਹੋ। ਉਦਾਹਰਨ ਲਈ, ਤੁਸੀਂ ਲਾਂਚਰ, ਸ਼ੈਲਫ ਅਤੇ ਆਪਣੀਆਂ Chrome ਟੈਬਾਂ ਦੇ ਵਿਚਕਾਰ ਜਾ ਸਕਦੇ ਹੋ। ਅਗਲੇ ਸੈਕਸ਼ਨ 'ਤੇ ਜਾਣ ਲਈ, ਚਾਰ ਉਂਗਲਾਂ ਨਾਲ ਖੱਬੇ ਤੋਂ ਸੱਜੇ ਸਵਾਈਪ ਕਰੋ। ਜਾਰੀ ਰੱਖਣ ਲਈ ਹੁਣੇ ਵਰਤ ਕੇ ਦੇਖੋ।</translation>
 <translation id="2624431853467395961">'ਸਿੱਖਣ ਲਈ ਮੋਡ' ਖੋਲ੍ਹੋ</translation>
 <translation id="2626530649491650971">ਕਲਿਕੇਬਲ</translation>
+<translation id="263637551280112393">Search+Shift+Space ਦਬਾਓ</translation>
 <translation id="2637227747952042642">ਮੈਥ</translation>
 <translation id="2638785836053527382"><ph name="FILE_NAME" /> ਦਾ ਡਾਊਨਲੋਡ ਮੁੜ-ਚਾਲੂ ਕੀਤਾ ਗਿਆ</translation>
 <translation id="2639750663247012216">ChromeVox ਸੰਸ਼ੋਧਕ</translation>
@@ -529,6 +530,7 @@
 <translation id="4479068155583208887">ਇੱਟ ਰੰਗਾ ਲਾਲ</translation>
 <translation id="4482330759234983253">ਪਿਛਲੀ ਸਾਰਨੀ</translation>
 <translation id="4491109536499578614">ਚਿੱਤਰ</translation>
+<translation id="4507332368061453500">ਮੌਜੂਦਾ ਆਈਟਮ 'ਤੇ ਲੰਬੇ ਸਮੇਂ ਤੱਕ ਕਲਿੱਕ ਕਰੋ</translation>
 <translation id="4511186779140817916">ਰਚਵਾਂ ਬਦਾਮੀ</translation>
 <translation id="451510441928265982">ਕੋਈ ਪਿਛਲਾ ਪੱਧਰ 2 ਸਿਰਲੇਖ ਨਹੀਂ</translation>
 <translation id="4515799157838123044">ਬੈਕਗ੍ਰਾਊਂਡ ਸਮੱਗਰੀ ਸ਼ੇਡ ਕਰੋ</translation>
@@ -597,7 +599,6 @@
 <translation id="4993152509206108683">ਰੇਟ <ph name="PERCENT" /> ਪ੍ਰਤਿਸ਼ਤ</translation>
 <translation id="4994420463726586413">ਬੈਟਰੀ ਦੀ ਮੌਜੂਦਾ ਸਥਿਤੀ ਦੱਸੋ</translation>
 <translation id="4997282455736854877"><ph name="NAME" />, ਰੇਡੀਓ ਬਟਨ ਚੁਣਿਆ</translation>
-<translation id="5011664330025416377">ਕਿਰਿਆਸ਼ੀਲ ਕਰਨ ਲਈ Search+Space ਦਬਾਓ</translation>
 <translation id="5012724933919010465"><ph name="NAME" />, ਮੀਨੂ ਆਈਟਮ ਰੇਡੀਓ ਬਟਨ ਚੁਣਿਆ ਗਿਆ</translation>
 <translation id="5020651427400641814">ਬੋਲੀ ਲੌਗਿੰਗ ਚਾਲੂ ਕਰੋ</translation>
 <translation id="5041394372352067729">ਸਫ਼ੇ ਦੇ ਟੌਪ ਤੇ ਬ੍ਰੇਲ ਡਿਸਪਲੇ ਮੂਵ ਕਰੋ</translation>
@@ -650,6 +651,7 @@
 <translation id="5355014376930441909">ਕੋਈ ਅਗਲਾ ਸੈਕਸ਼ਨ ਨਹੀਂ</translation>
 <translation id="5368000168321181111">ਈਅਰਕੋਂਸ ਬੰਦ</translation>
 <translation id="5368505757342402527"><ph name="FILE_NAME" /> ਦਾ <ph name="PROGRESS" />% ਡਾਊਨਲੋਡ ਪੂਰਾ ਹੋਇਆ। ਲਗਭਗ <ph name="TIME" /> <ph name="UNITS" /> ਬਾਕੀ।</translation>
+<translation id="5381388086899614489">ਲੰਬੇ ਸਮੇਂ ਤੱਕ ਕਲਿੱਕ ਕਰੋ</translation>
 <translation id="5400836586163650660">ਸਲੇਟੀ</translation>
 <translation id="5402367795255837559">ਬ੍ਰੇਲ</translation>
 <translation id="5402791055281059602">ਇੱਕ ਵਿਧੀਗਤ  ਚਿਤਾਵਨੀ </translation>
@@ -762,6 +764,7 @@
 <translation id="6100239002225743044">ਇੱਕ ਲਾਈਨ ਉੱਪਰ ਵੱਲ ਲਿਜਾਓ</translation>
 <translation id="6118126368611144850">Chrome ਲਈ Android ਐਪਾਂ। ਜੇਕਰ ਤੁਹਾਡੇ ਡੀਵਾਈਸ 'ਤੇ Play Store ਹੈ, ਤਾਂ Android ਐਪਾਂ ਵਾਲੇ ChromeVox 'ਤੇ ਇੱਕ ਝਾਤ ਮਾਰੋ। Play Store ਤੋਂ Google Chrome Canary ਡਾਊਨਲੋਡ ਕਰਕੇ ਇੱਕ ਪ੍ਰੋਯਗਮਈ ਸਹਾਇਤਾ ਅਜ਼ਮਾਓ।</translation>
 <translation id="611827076493383239">vtd</translation>
+<translation id="6119846243427417423">ਸਕਿਰਿਆ ਕਰੋ</translation>
 <translation id="6122013438240733403">btn</translation>
 <translation id="6132506484792346370">ਇੱਕ ਸੂਚੀ-ਬਾਕਸ ਜਾਂ ਕੌਂਬੋ ਬਾਕਸ</translation>
 <translation id="613344593214611552">ਪਿਛਲਾ ਵਾਕ ਮਿਟਾਓ</translation>
@@ -778,6 +781,7 @@
 <translation id="6236061028292614533">ਅਗਲਾ ਸਿਰਲੇਖ</translation>
 <translation id="6254901459154107917">ਅਗਲਾ ਸੰਪਾਦਨਯੋਗ ਲਿਖਤ ਖੇਤਰ</translation>
 <translation id="6259464875943891919">ਐਕਸਾਈਟਡ <ph name="TYPE" />।</translation>
+<translation id="6280088282605782512">ਡਬਲ ਟੈਪ ਕਰੋ</translation>
 <translation id="6282062888058716985">nav</translation>
 <translation id="6295699829709583154">ਅਹਿਮ ਕੁੰਜੀਆਂ: Search</translation>
 <translation id="6305702903308659374">ChromeVox ਬੋਲ ਰਿਹਾ ਹੋਵੇ ਤਾਂ ਵੀ ਸਧਾਰਨ ਵੌਲਿਊਮ 'ਤੇ ਚਲਾਓ</translation>
@@ -981,6 +985,7 @@
 <translation id="7731785449856576010">ਕੋਈ ਅਗਲਾ ਮੀਡੀਆ ਵਿਜੇਟ ਨਹੀਂ</translation>
 <translation id="7735498529470878067">ਸਪਰਸ਼ ਰਾਹੀਂ ਪੜਚੋਲ ਕਰਨਾ ਤੁਹਾਨੂੰ ਤੇਜ਼ੀ ਨਾਲ ਇਸ ਗੱਲ ਦਾ ਅਹਿਸਾਸ ਕਰਵਾਉਣ ਵਿੱਚ ਮਦਦ ਕਰ ਸਕਦਾ ਹੈ ਕਿ ਸਕ੍ਰੀਨ 'ਤੇ ਕੀ ਹੈ।</translation>
 <translation id="773906353055481349">ਸੈੱਲ ਰਾਹੀਂ ਨੈਵੀਗੇਟ ਕਰਨ ਲਈ ਤੀਰ ਕੁੰਜੀਆਂ ਨਾਲ Search+Ctrl+Alt ਦਬਾਓ</translation>
+<translation id="7746976083433980639"><ph name="ACTION" /> ਤੋਂ <ph name="LABEL" /></translation>
 <translation id="7763537600611320912"><ph name="FILE_NAME" /> ਦਾ ਡਾਊਨਲੋਡ ਸ਼ੁਰੂ ਹੋਇਆ</translation>
 <translation id="7768784765476638775">ਚੁਣੋ ਅਤੇ ਸੁਣੋ</translation>
 <translation id="7776293189010177726">ChromeVox ਮੀਨੂ ਖੋਲ੍ਹੋ</translation>

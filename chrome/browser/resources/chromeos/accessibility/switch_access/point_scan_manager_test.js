@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -51,8 +51,9 @@ AX_TEST_F(
       await new Promise(verifyChecked(false));
     });
 
+// TODO(crbug.com/1284450): Flaky.
 AX_TEST_F(
-    'SwitchAccessPointScanManagerTest', 'PointScanRightClick',
+    'SwitchAccessPointScanManagerTest', 'DISABLED_PointScanRightClick',
     async function() {
       const website = '<p>Kittens r cute</p>';
       const rootWebArea = await this.runWithLoadedTree(website);

@@ -1,4 +1,4 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -107,7 +107,18 @@ DesktopCaptureChooseDesktopMediaFunction::Run() {
       params->options->system_audio ==
           api::desktop_capture::SYSTEM_AUDIO_PREFERENCE_ENUM_EXCLUDE;
 
+  const bool exclude_self_browser_surface =
+      params->options &&
+      params->options->self_browser_surface ==
+          api::desktop_capture::SELF_CAPTURE_PREFERENCE_ENUM_EXCLUDE;
+
+  const bool suppress_local_audio_playback_intended =
+      params->options &&
+      params->options->suppress_local_audio_playback_intended;
+
   return Execute(params->sources, exclude_system_audio,
+                 exclude_self_browser_surface,
+                 suppress_local_audio_playback_intended,
                  target_render_frame_host, origin, target_name);
 }
 

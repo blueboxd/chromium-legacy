@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "third_party/blink/renderer/platform/scheduler/main_thread/main_thread.h"
+#include "third_party/blink/renderer/platform/scheduler/main_thread/main_thread_impl.h"
 
 #include <stddef.h>
 
@@ -58,8 +58,8 @@ class MainThreadTest : public testing::Test {
             base::sequence_manager::SequenceManager::Settings::Builder()
                 .SetTickClock(&clock_)
                 .Build()));
-    scheduler_overrider_ =
-        std::make_unique<ScopedSchedulerOverrider>(scheduler_.get());
+    scheduler_overrider_ = std::make_unique<ScopedSchedulerOverrider>(
+        scheduler_.get(), scheduler_->DefaultTaskRunner());
     thread_ = Thread::Current();
   }
 

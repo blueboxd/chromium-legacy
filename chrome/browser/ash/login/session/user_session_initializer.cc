@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -16,7 +16,6 @@
 #include "base/task/thread_pool.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "chrome/browser/ash/arc/session/arc_service_launcher.h"
-#include "chrome/browser/ash/bruschetta/bruschetta_service.h"
 #include "chrome/browser/ash/camera_mic/vm_camera_mic_manager.h"
 #include "chrome/browser/ash/child_accounts/child_status_reporting_service_factory.h"
 #include "chrome/browser/ash/child_accounts/child_user_service_factory.h"
@@ -41,9 +40,10 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/ash/calendar/calendar_keyed_service_factory.h"
 #include "chrome/browser/ui/ash/clipboard_image_model_factory_impl.h"
+#include "chrome/browser/ui/ash/glanceables/chrome_glanceables_delegate.h"
 #include "chrome/browser/ui/ash/holding_space/holding_space_keyed_service_factory.h"
 #include "chrome/browser/ui/ash/media_client_impl.h"
-#include "chrome/browser/ui/webui/settings/chromeos/peripheral_data_access_handler.h"
+#include "chrome/browser/ui/webui/settings/ash/peripheral_data_access_handler.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/ash/components/audio/cras_audio_handler.h"
 #include "chromeos/ash/components/dbus/pciguard/pciguard_client.h"
@@ -167,8 +167,8 @@ void UserSessionInitializer::InitRlz(Profile* profile) {
   // a guest session.
   if (!g_browser_process->local_state()->HasPrefPath(::prefs::kRLZBrand) ||
       g_browser_process->local_state()
-          ->Get(::prefs::kRLZBrand)
-          ->GetString()
+          ->GetValue(::prefs::kRLZBrand)
+          .GetString()
           .empty()) {
     // Read brand code asynchronously from an OEM data and repost ourselves.
     google_brand::chromeos::InitBrand(base::BindOnce(
@@ -232,10 +232,6 @@ void UserSessionInitializer::InitializePrimaryProfileServices(
       crostini::CrostiniManager::GetForProfile(profile);
   if (crostini_manager)
     crostini_manager->MaybeUpdateCrostini();
-  if (base::FeatureList::IsEnabled(features::kBruschetta)) {
-    // Ensure the Bruschetta Service is running.
-    bruschetta::BruschettaService::GetForProfile(profile);
-  }
 
   clipboard_image_model_factory_impl_ =
       std::make_unique<ClipboardImageModelFactoryImpl>(profile);
@@ -256,6 +252,11 @@ void UserSessionInitializer::OnUserSessionStarted(bool is_primary_user) {
 
   if (is_primary_user) {
     DCHECK_EQ(primary_profile_, profile);
+
+    if (ash::features::AreGlanceablesEnabled()) {
+      // Must be called after CalenderKeyedServiceFactory is initialized.
+      ChromeGlanceablesDelegate::Get()->OnPrimaryUserSessionStarted(profile);
+    }
 
     // Ensure that PhoneHubManager and EcheAppManager are created for the
     // primary profile.

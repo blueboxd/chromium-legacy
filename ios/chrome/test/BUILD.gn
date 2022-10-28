@@ -1,4 +1,4 @@
-# Copyright 2015 The Chromium Authors. All rights reserved.
+# Copyright 2015 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -125,9 +125,9 @@ source_set("ios_chrome_unit_test_suite") {
     "//base",
     "//base/test:test_support",
     "//components/content_settings/core/common",
-    "//ios/chrome/browser:chrome_paths",
     "//ios/chrome/browser:chrome_url_constants",
     "//ios/chrome/browser/browser_state:browser_state_impl",
+    "//ios/chrome/browser/paths",
     "//ios/chrome/browser/web/web_performance_metrics:unit_tests",
     "//ios/chrome/test:test_support",
     "//ios/components/webui:url_constants",
@@ -214,6 +214,7 @@ test("ios_chrome_unittests") {
     "//ios/chrome/browser/infobars/overlays/browser_agent/interaction_handlers/confirm:unit_tests",
     "//ios/chrome/browser/infobars/overlays/browser_agent/interaction_handlers/passwords:unit_tests",
     "//ios/chrome/browser/infobars/overlays/browser_agent/interaction_handlers/save_card:unit_tests",
+    "//ios/chrome/browser/infobars/overlays/browser_agent/interaction_handlers/tailored_security:unit_tests",
     "//ios/chrome/browser/infobars/overlays/browser_agent/interaction_handlers/translate:unit_tests",
     "//ios/chrome/browser/itunes_urls:unit_tests",
     "//ios/chrome/browser/json_parser:unit_tests",
@@ -237,6 +238,7 @@ test("ios_chrome_unittests") {
     "//ios/chrome/browser/promos_manager:unit_tests",
     "//ios/chrome/browser/reading_list:unit_tests",
     "//ios/chrome/browser/safe_browsing:unit_tests",
+    "//ios/chrome/browser/safe_browsing/tailored_security:unit_tests",
     "//ios/chrome/browser/safe_mode:unit_tests",
     "//ios/chrome/browser/screenshot:unit_tests",
     "//ios/chrome/browser/search_engines:unit_tests",
@@ -252,7 +254,6 @@ test("ios_chrome_unittests") {
     "//ios/chrome/browser/tabs:unit_tests",
     "//ios/chrome/browser/tabs_search:unit_tests",
     "//ios/chrome/browser/translate:unit_tests",
-    "//ios/chrome/browser/u2f:unit_tests",
     "//ios/chrome/browser/ui/activity_services:unit_tests",
     "//ios/chrome/browser/ui/activity_services/activities:unit_tests",
     "//ios/chrome/browser/ui/activity_services/data:unit_tests",
@@ -270,6 +271,7 @@ test("ios_chrome_unittests") {
     "//ios/chrome/browser/ui/authentication/signin_sync:unit_tests",
     "//ios/chrome/browser/ui/authentication/unified_consent:unit_tests",
     "//ios/chrome/browser/ui/authentication/unified_consent/identity_chooser:unit_tests",
+    "//ios/chrome/browser/ui/autofill:unit_tests",
     "//ios/chrome/browser/ui/autofill/cells:unit_tests",
     "//ios/chrome/browser/ui/autofill/form_input_accessory:unit_tests",
     "//ios/chrome/browser/ui/autofill/manual_fill:unit_tests",
@@ -323,6 +325,7 @@ test("ios_chrome_unittests") {
     "//ios/chrome/browser/ui/overlays/infobar_banner/passwords:unit_tests",
     "//ios/chrome/browser/ui/overlays/infobar_banner/permissions:unit_tests",
     "//ios/chrome/browser/ui/overlays/infobar_banner/save_card:unit_tests",
+    "//ios/chrome/browser/ui/overlays/infobar_banner/tailored_security:unit_tests",
     "//ios/chrome/browser/ui/overlays/infobar_banner/translate:unit_tests",
     "//ios/chrome/browser/ui/overlays/infobar_modal:unit_tests",
     "//ios/chrome/browser/ui/overlays/infobar_modal/autofill_address_profile:unit_tests",

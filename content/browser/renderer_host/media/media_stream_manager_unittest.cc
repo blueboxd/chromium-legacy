@@ -131,13 +131,15 @@ class MockAudioManager : public AudioManagerPlatform {
 
   media::AudioParameters GetDefaultOutputStreamParameters() override {
     return media::AudioParameters(media::AudioParameters::AUDIO_PCM_LOW_LATENCY,
-                                  media::CHANNEL_LAYOUT_STEREO, 48000, 128);
+                                  media::ChannelLayoutConfig::Stereo(), 48000,
+                                  128);
   }
 
   media::AudioParameters GetOutputStreamParameters(
       const std::string& device_id) override {
     return media::AudioParameters(media::AudioParameters::AUDIO_PCM_LOW_LATENCY,
-                                  media::CHANNEL_LAYOUT_STEREO, 48000, 128);
+                                  media::ChannelLayoutConfig::Stereo(), 48000,
+                                  128);
   }
 
   void SetNumAudioOutputDevices(size_t num_devices) {
@@ -173,7 +175,7 @@ class MockMediaObserver : public MediaObserver {
 class ScreenEnumeratorMock : public media::ScreenEnumerator {
  public:
   explicit ScreenEnumeratorMock(const size_t* screen_count)
-      : screen_count_(screen_count){};
+      : screen_count_(screen_count) {}
   ~ScreenEnumeratorMock() override = default;
 
   void EnumerateScreens(
@@ -1157,9 +1159,12 @@ TEST_F(MediaStreamManagerTest, MultiCaptureIntermediateErrorOnOpening) {
 
 class MediaStreamManagerTestForTransfers : public MediaStreamManagerTest {
  public:
-  void SetUp() override {
+  void CustomSetUp(const char* surface_type = "browser") {
     scoped_feature_list_.InitAndEnableFeature(
         features::kMediaStreamTrackTransfer);
+    base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+        switches::kUseFakeDeviceForMediaStream,
+        base::StringPrintf("display-media-type=%s", surface_type));
     media_stream_manager_->UseFakeUIFactoryForTests(base::BindRepeating([]() {
       return std::make_unique<FakeMediaStreamUIProxy>(
           /*tests_use_fake_render_frame_hosts=*/true);
@@ -1239,19 +1244,11 @@ class MediaStreamManagerTestForTransfers : public MediaStreamManagerTest {
     run_loop_.Run();
   }
 
-  void KeepDeviceAlive(bool device_should_be_found = true) {
+  bool KeepDeviceAlive() {
     // Call to KeepDeviceAlive from the first renderer.
-    media_stream_manager_->KeepDeviceAliveForTransfer(
+    return media_stream_manager_->KeepDeviceAliveForTransfer(
         render_process_id_, render_frame_id_, requester_id_,
-        existing_device_session_id_, transfer_id_,
-        base::BindOnce(
-            [](bool device_should_be_found, bool device_found) {
-              if (device_should_be_found)
-                EXPECT_TRUE(device_found);
-              else
-                EXPECT_FALSE(device_found);
-            },
-            device_should_be_found));
+        existing_device_session_id_, transfer_id_);
   }
 
   void StopDevice(bool should_stop = true) {
@@ -1284,39 +1281,59 @@ class MediaStreamManagerTestForTransfers : public MediaStreamManagerTest {
 };
 
 TEST_F(MediaStreamManagerTestForTransfers,
-       GetOpenDeviceForExistingDeviceReturnsDevice) {
-  RequestDeviceCaptureTypeAudioDevice();
-  // TODO(https://crbug.com/1288839): GetOpenDevice request for stream device
-  // of type DEVICE_CAPTURE should fail, once it is set as unsupported in the
-  // implementation.
+       GetOpenDeviceForScreenCaptureTypeStreamFails) {
+  CustomSetUp(/*surface_type=*/"monitor");
+  RequestDisplayCaptureTypeDevice();
   GetOpenDevice();
-  KeepDeviceAlive();
+  EXPECT_TRUE(KeepDeviceAlive());
   StopDevice();
 
-  EXPECT_EQ(result_, blink::mojom::MediaStreamRequestResult::OK);
-  EXPECT_EQ(transferred_device_.id, original_device_.id);
-  EXPECT_NE(transferred_device_.session_id(), existing_device_session_id_);
+  EXPECT_EQ(result_, blink::mojom::MediaStreamRequestResult::INVALID_STATE);
 }
 
 TEST_F(MediaStreamManagerTestForTransfers,
-       GetDisplayMediaAudioAndVideoAndGetOpenDeviceAudioReturnsDevice) {
+       GetOpenDeviceForWindowCaptureTypeStreamFails) {
+  CustomSetUp(/*surface_type=*/"window");
   RequestDisplayCaptureTypeDevice();
   GetOpenDevice();
   KeepDeviceAlive();
   StopDevice();
 
+  EXPECT_EQ(result_, blink::mojom::MediaStreamRequestResult::INVALID_STATE);
+}
+
+TEST_F(MediaStreamManagerTestForTransfers,
+       GetOpenDeviceForBrowserCaptureTypeStreamReturnsDevice) {
+  CustomSetUp(/*surface_type=*/"browser");
+  RequestDisplayCaptureTypeDevice();
+  GetOpenDevice();
+  EXPECT_TRUE(KeepDeviceAlive());
+  StopDevice();
+
   EXPECT_EQ(result_, blink::mojom::MediaStreamRequestResult::OK);
   EXPECT_EQ(transferred_device_.id, original_device_.id);
   EXPECT_NE(transferred_device_.session_id(), existing_device_session_id_);
 }
 
 TEST_F(MediaStreamManagerTestForTransfers,
+       GetOpenDeviceForDeviceCaptureTypeStreamFails) {
+  CustomSetUp();
+  RequestDeviceCaptureTypeAudioDevice();
+  GetOpenDevice();
+  KeepDeviceAlive();
+  StopDevice();
+
+  EXPECT_EQ(result_, blink::mojom::MediaStreamRequestResult::INVALID_STATE);
+}
+
+TEST_F(MediaStreamManagerTestForTransfers,
        GetDisplayMediaAudioAndVideoAndGetOpenDeviceVideoReturnsDevice) {
+  CustomSetUp();
   RequestDisplayCaptureTypeDevice(/*request_audio=*/true,
                                   /*request_video=*/true,
                                   /*transfer_audio=*/false);
   GetOpenDevice();
-  KeepDeviceAlive();
+  EXPECT_TRUE(KeepDeviceAlive());
   StopDevice();
 
   EXPECT_EQ(result_, blink::mojom::MediaStreamRequestResult::OK);
@@ -1326,11 +1343,12 @@ TEST_F(MediaStreamManagerTestForTransfers,
 
 TEST_F(MediaStreamManagerTestForTransfers,
        GetDisplayMediaVideoAndGetOpenDeviceVideoReturnsDevice) {
+  CustomSetUp();
   RequestDisplayCaptureTypeDevice(/*request_audio=*/false,
                                   /*request_video=*/true,
                                   /*transfer_audio=*/false);
   GetOpenDevice();
-  KeepDeviceAlive();
+  EXPECT_TRUE(KeepDeviceAlive());
   StopDevice();
 
   EXPECT_EQ(result_, blink::mojom::MediaStreamRequestResult::OK);
@@ -1340,9 +1358,10 @@ TEST_F(MediaStreamManagerTestForTransfers,
 
 TEST_F(MediaStreamManagerTestForTransfers,
        GetOpenDeviceWhenKeepAliveAfterStopDoesNotReturnDevice) {
+  CustomSetUp();
   RequestDisplayCaptureTypeDevice();
   StopDevice();
-  KeepDeviceAlive(/*device_should_be_found=*/false);
+  EXPECT_FALSE(KeepDeviceAlive());
   GetOpenDevice();
 
   EXPECT_EQ(result_, blink::mojom::MediaStreamRequestResult::INVALID_STATE);
@@ -1350,8 +1369,9 @@ TEST_F(MediaStreamManagerTestForTransfers,
 
 TEST_F(MediaStreamManagerTestForTransfers,
        GetOpenDeviceWhenKeepAliveBeforeStopReturnsDevice) {
+  CustomSetUp();
   RequestDisplayCaptureTypeDevice();
-  KeepDeviceAlive();
+  EXPECT_TRUE(KeepDeviceAlive());
   StopDevice();
   GetOpenDevice();
 
@@ -1362,6 +1382,7 @@ TEST_F(MediaStreamManagerTestForTransfers,
 
 TEST_F(MediaStreamManagerTestForTransfers,
        GetOpenDeviceWithoutKeepAliveReturnsDeviceButDoesNotStop) {
+  CustomSetUp();
   RequestDisplayCaptureTypeDevice();
   GetOpenDevice();
   StopDevice(/*should_stop=*/false);
@@ -1373,10 +1394,11 @@ TEST_F(MediaStreamManagerTestForTransfers,
 
 TEST_F(MediaStreamManagerTestForTransfers,
        GetOpenDeviceWithKeepAliveAfterStopReturnsDevice) {
+  CustomSetUp();
   RequestDisplayCaptureTypeDevice();
   GetOpenDevice();
   StopDevice();
-  KeepDeviceAlive();
+  EXPECT_TRUE(KeepDeviceAlive());
 
   EXPECT_EQ(result_, blink::mojom::MediaStreamRequestResult::OK);
   EXPECT_EQ(transferred_device_.id, original_device_.id);
@@ -1385,6 +1407,7 @@ TEST_F(MediaStreamManagerTestForTransfers,
 
 TEST_F(MediaStreamManagerTestForTransfers,
        GetOpenDeviceForNonExistentDeviceReturnsInvalidState) {
+  CustomSetUp();
   GetOpenDevice();
 
   EXPECT_EQ(result_, blink::mojom::MediaStreamRequestResult::INVALID_STATE);

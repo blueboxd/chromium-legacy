@@ -454,6 +454,7 @@
 <translation id="3435465986463792564">Олон цонхтой юу? Та тэдгээрийг эндээс удирдах боломжтой</translation>
 <translation id="3443221991560634068">Одоогийн хуудсыг дахин ачаалах</translation>
 <translation id="3444179773590444986">Сайтуудад зориулсан бараан загварын талаар cанал хүсэлт хуваалцах уу?</translation>
+<translation id="3452832259067974318">Таны нууцлалыг хамгаалахын тулд Chrome таныг нууц үгийг энэ талбарт автоматаар бөглөхгүй.</translation>
 <translation id="3469665409713263828">{FILE_COUNT,plural, =1{1 таталт товлосон}other{# таталт товлосон}}</translation>
 <translation id="3474624961160222204"><ph name="NAME" />-р үргэлжлүүлэх</translation>
 <translation id="3478363558367712427">Та хайлтын системээ сонгох боломжтой</translation>
@@ -679,6 +680,7 @@ Tаны Google бүртгэл <ph name="BEGIN_LINK" />history.google.com<ph name
 <translation id="4763480195061959176">видео</translation>
 <translation id="4766313118839197559">Нууц үгнүүдийг энэ төхөөрөмж дээр Нууц үгний менежерт хадгалдаг.</translation>
 <translation id="4766678251456904326">Төхөөрөмжид бүртгэл нэмэх</translation>
+<translation id="4787736314074622408">Та <ph name="ITEM_TITLE" />-г устгахыг хүсэж байна уу?</translation>
 <translation id="4791358705705538979">Танд тооцоо хийх зэрэг веб дээр ажил гүйцэтгэхэд тусална</translation>
 <translation id="4794291718671962615">(<ph name="MEGABYTES" />) <ph name="URL" /></translation>
 <translation id="4802417911091824046">Нэвтрэх үгийн шифрлэлтэд Google Pay-н төлбөрийн хэрэгслүүд болон хаягуудыг агуулдаггүй.
@@ -747,6 +749,7 @@ Tаны Google бүртгэл <ph name="BEGIN_LINK" />history.google.com<ph name
 <translation id="5091199029769593641">Удахгүй та шинэ таб нээх үедээ <ph name="SITE_NAME" />-с стори харна. Таны дагадаг сайтуудыг Google бүртгэлд тань хадгалдаг. Та тэдгээрийг Discover-н тохиргоонд удирдах боломжтой.</translation>
 <translation id="5091249083535528968">Өргөтгөсөн ашиглалтын өгөгдөл</translation>
 <translation id="509429900233858213">Алдаа гарлаа.</translation>
+<translation id="5099845111805573968">Таныг компьютерын сайтыг нэг удаа сонгох үед тохиргоог таныг зочлох бүрд сайтад хэрэгжүүлдэг</translation>
 <translation id="5102401324271069229">Хэрэв сайт таны нууц үгийг хулгайлахаар оролдох эсвэл таныг аюултай файл татах үед Chrome URL-г хуудасны бага зэрэг контентын хамт Аюулгүй үзэх рүү илгээж болзошгүй</translation>
 <translation id="510275257476243843">1 цаг үлдсэн</translation>
 <translation id="5115811374190515607"><ph name="PRODUCT_NAME" /> хаягт</translation>
@@ -906,6 +909,7 @@ Tаны Google бүртгэл <ph name="BEGIN_LINK" />history.google.com<ph name
 <translation id="5958275228015807058">Файл, хуудсаа Таталт хэсгээс хайна уу</translation>
 <translation id="5962718611393537961">Буулгахын тулд товших</translation>
 <translation id="5964869237734432770">Зургийн тайлбарыг зогсоох</translation>
+<translation id="5966233851250124270">Chrome таны сонголтыг санана</translation>
 <translation id="5979084224081478209">Нууц үгийг шалгах</translation>
 <translation id="5995726099713306770">Хуудсыг дахин татах уу?</translation>
 <translation id="6000066717592683814">Google хэвээр байлгах</translation>
@@ -1082,6 +1086,7 @@ Privacy Sandbox-н туршилт нь идэвхтэй хөгжүүлэлтэд
 <translation id="6820686453637990663">CVC</translation>
 <translation id="6824899148643461612"><ph name="TAB_TITLE" />, таб, сонгосон</translation>
 <translation id="6828070228333235514">Үнэ хянахыг зогсоох</translation>
+<translation id="6830728435402077660">Аюултай</translation>
 <translation id="6833996806551876956">Нууцлалын sandbox-н туршилт</translation>
 <translation id="6836206421467243968"><ph name="TITLE_OF_GROUP" /> табын бүлгийг шинэ дэвсгэр табын бүлгээр сэргээнэ үү.</translation>
 <translation id="6846298663435243399">Ачаалж байна...</translation>

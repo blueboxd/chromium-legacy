@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -100,8 +100,11 @@ ScopedJavaLocalRef<jobject> AutocompleteResult::GetOrCreateJavaObject(
   size_t index = 0;
   for (const auto& suggestion_group : suggestion_groups_map_) {
     group_ids[index] = static_cast<int>(suggestion_group.first);
-    group_names[index] = suggestion_group.second.header;
-    group_collapsed_states[index] = suggestion_group.second.hidden;
+    group_names[index] = base::UTF8ToUTF16(
+        suggestion_group.second.group_config_info.header_text());
+    group_collapsed_states[index] =
+        suggestion_group.second.group_config_info.visibility() ==
+        omnibox::GroupConfigInfo_Visibility_HIDDEN;
     ++index;
   }
 

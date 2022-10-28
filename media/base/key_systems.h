@@ -1,4 +1,4 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -127,6 +127,8 @@ MEDIA_EXPORT void AddCodecMaskForTesting(EmeMediaType media_type,
                                          uint32_t mask);
 MEDIA_EXPORT void AddMimeTypeCodecMaskForTesting(const std::string& mime_type,
                                                  uint32_t mask);
+// Resets and reinitializes the KeySystems for testing.
+MEDIA_EXPORT void ResetKeySystemsForTesting();
 #endif  // defined(UNIT_TEST)
 
 }  // namespace media

@@ -1,4 +1,4 @@
-# Copyright (c) 2012 The Chromium Authors. All rights reserved.
+# Copyright 2012 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -296,6 +296,7 @@ if (!is_ios) {
       "//base:i18n",
       "//base/test:test_support",
       "//crypto",
+      "//mojo/core:driver_for_ipcz_tests",
       "//mojo/core/test:test_support",
       "//testing/gtest",
       "//third_party/ipcz/src:ipcz_tests_sources_chromium",

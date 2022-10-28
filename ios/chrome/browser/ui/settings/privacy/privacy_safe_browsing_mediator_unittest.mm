@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,7 +11,7 @@
 #import "components/sync_preferences/testing_pref_service_syncable.h"
 #import "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #import "ios/chrome/browser/main/test_browser.h"
-#include "ios/chrome/browser/prefs/browser_prefs.h"
+#import "ios/chrome/browser/prefs/browser_prefs.h"
 #import "ios/chrome/browser/ui/list_model/list_model.h"
 #import "ios/chrome/browser/ui/settings/privacy/privacy_safe_browsing_mediator+internal.h"
 #import "ios/chrome/browser/ui/settings/privacy/privacy_safe_browsing_navigation_commands.h"
@@ -45,7 +45,7 @@ std::unique_ptr<sync_preferences::PrefServiceSyncable> CreatePrefService() {
   return prefs;
 }
 
-};  // anonymous namespace
+}  // anonymous namespace
 
 class PrivacySafeBrowsingMediatorTest : public PlatformTest {
  public:

@@ -1,26 +1,26 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #import "ios/web/public/test/fakes/fake_web_state.h"
 
 #import <Foundation/Foundation.h>
-#include <stdint.h>
+#import <stdint.h>
 
-#include "base/bind.h"
-#include "base/callback.h"
+#import "base/bind.h"
+#import "base/callback.h"
 #import "base/strings/sys_string_conversions.h"
-#include "base/threading/sequenced_task_runner_handle.h"
+#import "base/threading/sequenced_task_runner_handle.h"
 #import "ios/web/common/crw_content_view.h"
-#include "ios/web/js_messaging/web_frames_manager_impl.h"
-#include "ios/web/public/js_messaging/web_frame.h"
+#import "ios/web/js_messaging/web_frames_manager_impl.h"
+#import "ios/web/public/js_messaging/web_frame.h"
 #import "ios/web/public/navigation/web_state_policy_decider.h"
 #import "ios/web/public/session/crw_navigation_item_storage.h"
 #import "ios/web/public/session/crw_session_storage.h"
 #import "ios/web/public/session/serializable_user_data_manager.h"
 #import "ios/web/session/session_certificate_policy_cache_impl.h"
 #import "ios/web/web_state/policy_decision_state_tracker.h"
-#include "ui/gfx/image/image.h"
+#import "ui/gfx/image/image.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -120,6 +120,10 @@ void FakeWebState::DidRevealWebContent() {}
 
 base::Time FakeWebState::GetLastActiveTime() const {
   return last_active_time_;
+}
+
+base::Time FakeWebState::GetCreationTime() const {
+  return creation_time_;
 }
 
 void FakeWebState::WasShown() {
@@ -577,6 +581,11 @@ NSDictionary<NSNumber*, NSNumber*>* FakeWebState::GetStatesForAllPermissions()
     @(PermissionMicrophone) : @(microphone_permission_state_)
   };
 }
+
+void FakeWebState::DownloadCurrentPage(
+    NSString* destination_file,
+    id<CRWWebViewDownloadDelegate> delegate,
+    void (^handler)(id<CRWWebViewDownload>)) {}
 
 FakeWebStateWithPolicyCache::FakeWebStateWithPolicyCache(
     BrowserState* browser_state)

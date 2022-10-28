@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -22,6 +22,7 @@
 #include "ash/public/cpp/app_list/app_list_types.h"
 #include "ash/public/cpp/style/color_provider.h"
 #include "ash/strings/grit/ash_strings.h"
+#include "ash/style/ash_color_id.h"
 #include "ash/style/ash_color_provider.h"
 #include "ash/style/dot_indicator.h"
 #include "base/auto_reset.h"
@@ -44,8 +45,8 @@
 #include "ui/gfx/image/canvas_image_source.h"
 #include "ui/gfx/image/image_skia_operations.h"
 #include "ui/gfx/shadow_value.h"
-#include "ui/views/accessibility/accessibility_paint_checks.h"
 #include "ui/views/accessibility/view_accessibility.h"
+#include "ui/views/background.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/menu/menu_runner.h"
@@ -276,10 +277,6 @@ AppListItemView::AppListItemView(const AppListConfig* app_list_config,
       view_delegate_(view_delegate),
       context_(context) {
   DCHECK(app_list_config_);
-  // TODO(crbug.com/1218186): Remove this, this is in place temporarily to be
-  // able to submit accessibility checks. This crashes if fetching a11y node
-  // data during paint because message_view_ is null.
-  SetProperty(views::kSkipAccessibilityPaintChecks, true);
   DCHECK(grid_delegate_);
   DCHECK(view_delegate_);
   SetFocusBehavior(FocusBehavior::ALWAYS);
@@ -291,12 +288,13 @@ AppListItemView::AppListItemView(const AppListConfig* app_list_config,
   title->SetHandlesTooltips(false);
   title->SetFontList(app_list_config_->app_title_font());
   title->SetHorizontalAlignment(gfx::ALIGN_CENTER);
-  title->SetEnabledColor(AppListColorProvider::Get()->GetAppListItemTextColor(
-      grid_delegate_->IsInFolder()));
 
   icon_ = AddChildView(std::make_unique<IconImageView>());
 
   if (is_folder_) {
+    icon_->SetBackground(views::CreateThemedSolidBackground(
+        kColorAshControlBackgroundColorInactive));
+
     // Set background blur for folder icon and use mask layer to clip it into
     // circle. Note that blur is only enabled in tablet mode to improve dragging
     // smoothness.
@@ -307,7 +305,7 @@ AppListItemView::AppListItemView(const AppListConfig* app_list_config,
   }
 
   notification_indicator_ = AddChildView(
-      std::make_unique<DotIndicator>(item->GetNotificationBadgeColor()));
+      std::make_unique<DotIndicator>(item->GetNotificationBadgeColor(this)));
   notification_indicator_->SetVisible(item->has_notification_badge());
 
   title_ = AddChildView(std::move(title));
@@ -616,11 +614,18 @@ void AppListItemView::SetItemName(const std::u16string& display_name,
 }
 
 void AppListItemView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
-  if (!item_weak_)
-    return;
-
+  // When this item is being removed, there will still be an accessible object
+  // in the accessibility tree until it is destroyed. Populating AXNodeData
+  // with the information from the button makes it possible for assistive
+  // technologies to obtain the name and role/type of the control along with
+  // relevant states such as disabled. It is also necessary to pass the
+  // accessibility paint checks: items that claim to be focusable must have
+  // a valid role.
   DCHECK(node_data);
   Button::GetAccessibleNodeData(node_data);
+
+  if (!item_weak_)
+    return;
 
   auto app_status = item_weak_->app_status();
   switch (app_status) {
@@ -760,6 +765,7 @@ void AppListItemView::PaintButtonContents(gfx::Canvas* canvas) {
   if (drag_state_ != DragState::kNone)
     return;
 
+  const views::Widget* app_list_widget = GetWidget();
   if ((grid_delegate_->IsSelectedView(this) || HasFocus()) &&
       (view_delegate_->KeyboardTraversalEngaged() ||
        waiting_for_context_menu_options_ || IsShowingAppMenu())) {
@@ -774,18 +780,20 @@ void AppListItemView::PaintButtonContents(gfx::Canvas* canvas) {
             ? HasFocus()
             : view_delegate_->KeyboardTraversalEngaged();
     if (draw_focus_ring) {
-      flags.setColor(AppListColorProvider::Get()->GetFocusRingColor());
+      flags.setColor(
+          AppListColorProvider::Get()->GetFocusRingColor(app_list_widget));
       flags.setStyle(cc::PaintFlags::kStroke_Style);
       flags.setStrokeWidth(kFocusRingWidth);
     } else {
       // Draw a background highlight ("selected" in the UI spec).
       const AppListColorProvider* color_provider = AppListColorProvider::Get();
-      const SkColor bg_color = grid_delegate_->IsInFolder()
-                                   ? color_provider->GetFolderBackgroundColor()
-                                   : gfx::kPlaceholderColor;
-      flags.setColor(
-          SkColorSetA(color_provider->GetInkDropBaseColor(bg_color),
-                      color_provider->GetInkDropOpacity(bg_color) * 255));
+      const SkColor bg_color =
+          grid_delegate_->IsInFolder()
+              ? color_provider->GetFolderBackgroundColor(app_list_widget)
+              : gfx::kPlaceholderColor;
+      flags.setColor(SkColorSetA(
+          color_provider->GetInkDropBaseColor(app_list_widget, bg_color),
+          color_provider->GetInkDropOpacity(app_list_widget, bg_color) * 255));
       flags.setStyle(cc::PaintFlags::kFill_Style);
     }
     gfx::Rect selection_highlight_bounds = GetContentsBounds();
@@ -804,7 +812,8 @@ void AppListItemView::PaintButtonContents(gfx::Canvas* canvas) {
   cc::PaintFlags flags;
   flags.setStyle(cc::PaintFlags::kFill_Style);
   flags.setAntiAlias(true);
-  flags.setColor(AppListColorProvider::Get()->GetFolderBubbleColor());
+  flags.setColor(
+      GetColorProvider()->GetColor(kColorAshControlBackgroundColorInactive));
   canvas->DrawCircle(center, preview_circle_radius, flags);
 }
 
@@ -1001,10 +1010,11 @@ void AppListItemView::OnThemeChanged() {
   views::Button::OnThemeChanged();
   if (item_weak_) {
     item_weak_->RequestFolderIconUpdate();
-    notification_indicator_->SetColor(item_weak_->GetNotificationBadgeColor());
+    notification_indicator_->SetColor(
+        item_weak_->GetNotificationBadgeColor(this));
   }
   title_->SetEnabledColor(AppListColorProvider::Get()->GetAppListItemTextColor(
-      grid_delegate_->IsInFolder()));
+      grid_delegate_->IsInFolder(), GetWidget()));
   SchedulePaint();
 }
 
@@ -1258,7 +1268,8 @@ void AppListItemView::ItemBadgeVisibilityChanged() {
 }
 
 void AppListItemView::ItemBadgeColorChanged() {
-  notification_indicator_->SetColor(item_weak_->GetNotificationBadgeColor());
+  notification_indicator_->SetColor(
+      item_weak_->GetNotificationBadgeColor(this));
 }
 
 void AppListItemView::ItemIsNewInstallChanged() {

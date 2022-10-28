@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -151,6 +151,8 @@ enum DeviceManagementStatus {
   DM_STATUS_SERVICE_ENTERPRISE_TOS_HAS_NOT_BEEN_ACCEPTED = 907,
   // Service error: Illegal account for packaged EDU license.
   DM_STATUS_SERVICE_ILLEGAL_ACCOUNT_FOR_PACKAGED_EDU_LICENSE = 908,
+  // Service error: Packaged license device can't enroll KIOSK.
+  DM_STATUS_SERVICE_INVALID_PACKAGED_DEVICE_FOR_KIOSK = 909,
 };
 
 // List of modes that the device can be locked into.

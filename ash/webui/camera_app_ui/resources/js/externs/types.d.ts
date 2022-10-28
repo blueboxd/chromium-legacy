@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,19 +7,6 @@
 
 // ESLint doesn't like "declare class" without jsdoc.
 /* eslint-disable require-jsdoc */
-
-// This is currently a Chrome only API, and the spec is still in working draft
-// stage.
-// https://developer.mozilla.org/en-US/docs/Web/API/UIEvent/sourceCapabilities
-
-interface UIEvent extends Event {
-  readonly sourceCapabilities: InputDeviceCapabilities|null;
-}
-
-interface InputDeviceCapabilities {
-  readonly firesTouchEvents: boolean;
-  readonly pointerMovementScrolls: boolean;
-}
 
 // File System Access API: This is currently a Chrome only API, and the spec is
 // still in working draft stage.

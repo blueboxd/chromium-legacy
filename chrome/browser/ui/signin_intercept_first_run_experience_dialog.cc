@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,6 +9,7 @@
 #include "base/check_op.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/notreached.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/sync/sync_service_factory.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/themes/theme_service_factory.h"
@@ -21,7 +22,9 @@
 #include "chrome/browser/ui/webui/signin/login_ui_service_factory.h"
 #include "chrome/browser/ui/webui/signin/profile_customization_ui.h"
 #include "chrome/browser/ui/webui/signin/turn_sync_on_helper.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/common/webui_url_constants.h"
+#include "components/prefs/pref_service.h"
 #include "components/signin/public/base/signin_metrics.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents.h"
@@ -127,9 +130,13 @@ void SigninInterceptFirstRunExperienceDialog::
     return;
   }
 
-  if (dialog_->is_forced_intercept_) {
-    // Don't show the sync promo to users who went through the forced
-    // interception.
+  PrefService* local_state = g_browser_process->local_state();
+  if (dialog_->is_forced_intercept_ ||
+      (local_state &&
+       !local_state->GetBoolean(prefs::kPromotionalTabsEnabled))) {
+    // Don't show the sync promo if
+    // - the user went through the forced interception, or
+    // - promotional tabs are disabled by policy.
     dialog_->DoNextStep(Step::kTurnOnSync, Step::kProfileCustomization);
     std::move(callback).Run(LoginUIService::ABORT_SYNC);
     return;
@@ -345,7 +352,7 @@ void SigninInterceptFirstRunExperienceDialog::DoProfileCustomization() {
     // Modal dialog doesn't exist yet, create a new one.
     SetDialogDelegate(
         SigninViewControllerDelegate::CreateProfileCustomizationDelegate(
-            browser_));
+            browser_, /*is_local_profile_creation=*/false));
     return;
   }
 

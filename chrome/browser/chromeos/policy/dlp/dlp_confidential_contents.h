@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -39,6 +39,9 @@ struct DlpConfidentialContent {
   // Constructs DlpConfidentialContent from the title and icon obtained from
   // |window|, which cannot be null and |url|.
   DlpConfidentialContent(aura::Window* window, const GURL& url);
+  DlpConfidentialContent(const gfx::ImageSkia& icon,
+                         const std::u16string& title,
+                         const GURL& url);
   DlpConfidentialContent(const DlpConfidentialContent& other);
   DlpConfidentialContent& operator=(const DlpConfidentialContent& other);
   ~DlpConfidentialContent() = default;
@@ -101,6 +104,10 @@ class DlpConfidentialContents {
   void Add(content::WebContents* web_contents);
   // Same for |window| and |url| pair.
   void Add(aura::Window* window, const GURL& url);
+  // Same for |icon|, |title| and |url|.
+  void Add(const gfx::ImageSkia& icon,
+           const std::u16string& title,
+           const GURL& url);
 
   // Removes all stored confidential content, if there was any, and adds
   // |web_contents| converted to a DlpConfidentialContent.

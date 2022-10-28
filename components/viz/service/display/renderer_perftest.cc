@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -398,10 +398,10 @@ class RendererPerfTest : public VizPerfTest {
                 YUVVideoDrawQuad::kAPlaneResourceIdIndex,
             };
             const gfx::Size kSize[] = {
-                yuv_quad->ya_tex_size,
-                yuv_quad->uv_tex_size,
-                yuv_quad->uv_tex_size,
-                yuv_quad->ya_tex_size,
+                yuv_quad->ya_tex_size(),
+                yuv_quad->uv_tex_size(),
+                yuv_quad->uv_tex_size(),
+                yuv_quad->ya_tex_size(),
             };
             for (size_t ii = 0; ii < yuv_quad->resources.count; ++ii) {
               ResourceId recorded_id = yuv_quad->resources.ids[kIndex[ii]];

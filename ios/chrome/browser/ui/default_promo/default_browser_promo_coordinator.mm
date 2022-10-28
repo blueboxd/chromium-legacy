@@ -1,13 +1,13 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #import "ios/chrome/browser/ui/default_promo/default_browser_promo_coordinator.h"
 
-#include "base/feature_list.h"
-#include "base/metrics/histogram_functions.h"
-#include "base/metrics/user_metrics.h"
-#include "base/metrics/user_metrics_action.h"
+#import "base/feature_list.h"
+#import "base/metrics/histogram_functions.h"
+#import "base/metrics/user_metrics.h"
+#import "base/metrics/user_metrics_action.h"
 #import "ios/chrome/browser/ui/default_promo/default_browser_promo_view_controller.h"
 #import "ios/chrome/browser/ui/default_promo/default_browser_string_util.h"
 #import "ios/chrome/browser/ui/default_promo/default_browser_utils.h"

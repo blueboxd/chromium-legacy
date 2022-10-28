@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -127,6 +127,8 @@ ShillConnectResult ShillErrorToConnectResult(const std::string& error_name) {
     return ShillConnectResult::kErrorEapLocalTlsFailed;
   else if (error_name == shill::kErrorEapRemoteTlsFailed)
     return ShillConnectResult::kErrorEapRemoteTlsFailed;
+  else if (error_name == shill::kErrorResultWepNotSupported)
+    return ShillConnectResult::kErrorResultWepNotSupported;
 
   return ShillConnectResult::kUnknown;
 }

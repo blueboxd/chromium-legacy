@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -62,8 +62,7 @@ public class WebViewLayoutTest {
     // to how blink performs baseline optimizations. For more details see
     // third_party/blink/tools/blinkpy/common/checkout/baseline_optimizer.py.
     private static final List<String> BLINK_STABLE_FALLBACKS = Arrays.asList(
-            EXTERNAL_PREFIX + BASE_BLINK_TEST_PATH + "platform/generic/virtual/stable/"
-                    + GLOBAL_LISTING_FILE,
+            EXTERNAL_PREFIX + BASE_BLINK_TEST_PATH + "virtual/stable/" + GLOBAL_LISTING_FILE,
             EXTERNAL_PREFIX + BASE_BLINK_TEST_PATH + "platform/linux/virtual/stable/"
                     + GLOBAL_LISTING_FILE,
             EXTERNAL_PREFIX + BASE_BLINK_TEST_PATH + "platform/win/virtual/stable/"

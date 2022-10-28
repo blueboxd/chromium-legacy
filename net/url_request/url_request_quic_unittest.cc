@@ -1,4 +1,4 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -150,6 +150,9 @@ class URLRequestQuicTest
     context_builder_->set_http_network_session_params(params);
     context_builder_->SetCertVerifier(std::move(cert_verifier));
     context_builder_->set_net_log(NetLog::Get());
+
+    scoped_feature_list_.InitAndEnableFeature(
+        TransportSecurityState::kDynamicExpectCTFeature);
   }
 
   void TearDown() override {
@@ -285,6 +288,7 @@ class URLRequestQuicTest
   quic::QuicMemoryCacheBackend memory_cache_backend_;
   std::unique_ptr<URLRequestContextBuilder> context_builder_;
   quic::test::QuicFlagSaver flags_;  // Save/restore all QUIC flag values.
+  base::test::ScopedFeatureList scoped_feature_list_;
 };
 
 // A URLRequest::Delegate that checks LoadTimingInfo when response headers are
@@ -324,9 +328,9 @@ class CheckLoadTimingDelegate : public TestDelegate {
     EXPECT_EQ(load_timing_info.connect_timing.connect_end,
               load_timing_info.connect_timing.ssl_end);
     EXPECT_EQ(session_reused,
-              load_timing_info.connect_timing.dns_start.is_null());
+              load_timing_info.connect_timing.domain_lookup_start.is_null());
     EXPECT_EQ(session_reused,
-              load_timing_info.connect_timing.dns_end.is_null());
+              load_timing_info.connect_timing.domain_lookup_end.is_null());
   }
 
   bool session_reused_;

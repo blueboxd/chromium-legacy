@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -161,19 +161,17 @@ WebViewPermissionHelper::~WebViewPermissionHelper() {
 }
 
 // static
-WebViewPermissionHelper* WebViewPermissionHelper::FromFrameID(
-    int render_process_id,
-    int render_frame_id) {
-  WebViewGuest* web_view_guest =
-      WebViewGuest::FromFrameID(render_process_id, render_frame_id);
+WebViewPermissionHelper* WebViewPermissionHelper::FromRenderFrameHost(
+    content::RenderFrameHost* rfh) {
+  WebViewGuest* web_view_guest = WebViewGuest::FromRenderFrameHost(rfh);
   return web_view_guest ? web_view_guest->web_view_permission_helper()
                         : nullptr;
 }
 
 // static
-WebViewPermissionHelper* WebViewPermissionHelper::FromWebContents(
-    content::WebContents* web_contents) {
-  WebViewGuest* web_view_guest = WebViewGuest::FromWebContents(web_contents);
+WebViewPermissionHelper* WebViewPermissionHelper::FromRenderFrameHostId(
+    const content::GlobalRenderFrameHostId& rfh_id) {
+  WebViewGuest* web_view_guest = WebViewGuest::FromRenderFrameHostId(rfh_id);
   return web_view_guest ? web_view_guest->web_view_permission_helper()
                         : nullptr;
 }

@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -364,8 +364,12 @@ class AudioSinkAudioTrackImpl {
         mRenderingDelayBuffer.putLong(0, 0);
         mRenderingDelayBuffer.putLong(8, NO_TIMESTAMP);
 
-        mAudioTrackTimestampBuffer = ByteBuffer.allocateDirect(2 * 8); // 2 long
+        mAudioTrackTimestampBuffer = ByteBuffer.allocateDirect(3 * 8); // 3 long
         mAudioTrackTimestampBuffer.order(ByteOrder.nativeOrder());
+        // Initialize with zero frame position and system nano time.
+        mAudioTrackTimestampBuffer.putLong(0, 0);
+        mAudioTrackTimestampBuffer.putLong(8, 0);
+        mAudioTrackTimestampBuffer.putLong(16, System.nanoTime());
 
         AudioSinkAudioTrackImplJni.get().cacheDirectBufferAddress(mNativeAudioSinkAudioTrackImpl,
                 AudioSinkAudioTrackImpl.this, mPcmBuffer, mRenderingDelayBuffer,
@@ -559,16 +563,24 @@ class AudioSinkAudioTrackImpl {
     }
 
     @CalledByNative
+    public int getStartThresholdInFrames() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            return mAudioTrack.getStartThresholdInFrames();
+        }
+        return 0;
+    }
+
+    @CalledByNative
     public void getAudioTrackTimestamp() {
         AudioTimestamp timestamp = new AudioTimestamp();
         if (!mAudioTrack.getTimestamp(timestamp)) {
-            mAudioTrackTimestampBuffer.putLong(0, 0);
-            mAudioTrackTimestampBuffer.putLong(8, NO_TIMESTAMP);
+            // The timestamp is invalid. Do not update values.
             return;
         }
+        mAudioTrackTimestampBuffer.putLong(0, timestamp.framePosition);
         if (mPendingFramesWithoutTimestamp == null) {
-            mAudioTrackTimestampBuffer.putLong(0, timestamp.framePosition);
-            mAudioTrackTimestampBuffer.putLong(8, timestamp.nanoTime);
+            mAudioTrackTimestampBuffer.putLong(8, timestamp.framePosition);
+            mAudioTrackTimestampBuffer.putLong(16, timestamp.nanoTime);
             return;
         }
         while (!mPendingFramesWithoutTimestamp.isEmpty()
@@ -583,14 +595,14 @@ class AudioSinkAudioTrackImpl {
                 && timestamp.framePosition >= mPendingFramesWithoutTimestamp.peek().first) {
             // The reported position is in the middle of an audio buffer without timestamp. Use
             // the start position to calculate the accurate position.
-            mAudioTrackTimestampBuffer.putLong(0,
+            mAudioTrackTimestampBuffer.putLong(8,
                     mPendingFramesWithoutTimestamp.peek().first
                             - mTotalPlayedFramesWithoutTimestamp);
         } else {
             mAudioTrackTimestampBuffer.putLong(
-                    0, timestamp.framePosition - mTotalPlayedFramesWithoutTimestamp);
+                    8, timestamp.framePosition - mTotalPlayedFramesWithoutTimestamp);
         }
-        mAudioTrackTimestampBuffer.putLong(8, timestamp.nanoTime);
+        mAudioTrackTimestampBuffer.putLong(16, timestamp.nanoTime);
     }
 
     /** Returns the elapsed time from the given start_time until now, in nsec. */

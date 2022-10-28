@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -218,7 +218,7 @@ class AsyncExtensionBrowserTest : public ExtensionBrowserTest {
 class TestHangOAuth2MintTokenFlow : public OAuth2MintTokenFlow {
  public:
   TestHangOAuth2MintTokenFlow()
-      : OAuth2MintTokenFlow(NULL, OAuth2MintTokenFlow::Parameters()) {}
+      : OAuth2MintTokenFlow(nullptr, OAuth2MintTokenFlow::Parameters()) {}
 
   void Start(scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
              const std::string& access_token) override {
@@ -624,38 +624,37 @@ class IdentityGetAccountsFunctionTest : public IdentityTestWithSignin {
         ExtensionBuilder("Test").SetID(kExtensionId).Build().get());
     if (!utils::RunFunction(func.get(), std::string("[]"), browser(),
                             api_test_utils::NONE)) {
-      return GenerateFailureResult(gaia_ids, absl::nullopt)
+      return GenerateFailureResult(gaia_ids, nullptr)
              << "getAccounts did not return a result.";
     }
     const base::Value::List* callback_arguments_list = func->GetResultList();
     if (!callback_arguments_list)
-      return GenerateFailureResult(gaia_ids, absl::nullopt) << "NULL result";
+      return GenerateFailureResult(gaia_ids, nullptr) << "NULL result";
 
     if (callback_arguments_list->size() != 1u) {
-      return GenerateFailureResult(gaia_ids, absl::nullopt)
+      return GenerateFailureResult(gaia_ids, nullptr)
              << "Expected 1 argument but got "
              << callback_arguments_list->size();
     }
 
     if (!(*callback_arguments_list)[0].is_list())
-      GenerateFailureResult(gaia_ids, absl::nullopt)
-          << "Result was not an array";
-    base::Value::ConstListView results =
-        (*callback_arguments_list)[0].GetListDeprecated();
+      GenerateFailureResult(gaia_ids, nullptr) << "Result was not an array";
+    const base::Value::List& results = (*callback_arguments_list)[0].GetList();
 
     std::set<std::string> result_ids;
     for (const base::Value& item : results) {
       std::unique_ptr<api::identity::AccountInfo> info =
           api::identity::AccountInfo::FromValue(item);
-      if (info.get())
+      if (info.get()) {
         result_ids.insert(info->id);
-      else
-        return GenerateFailureResult(gaia_ids, results);
+      } else {
+        return GenerateFailureResult(gaia_ids, &results);
+      }
     }
 
     for (const std::string& gaia_id : gaia_ids) {
       if (result_ids.find(gaia_id) == result_ids.end())
-        return GenerateFailureResult(gaia_ids, results);
+        return GenerateFailureResult(gaia_ids, &results);
     }
 
     return testing::AssertionResult(true);
@@ -663,16 +662,16 @@ class IdentityGetAccountsFunctionTest : public IdentityTestWithSignin {
 
   testing::AssertionResult GenerateFailureResult(
       const ::std::vector<std::string>& gaia_ids,
-      absl::optional<base::Value::ConstListView> results) {
+      const base::Value::List* results) {
     testing::Message msg("Expected: ");
     for (const std::string& gaia_id : gaia_ids) {
       msg << gaia_id << " ";
     }
     msg << "Actual: ";
-    if (!results.has_value()) {
+    if (!results) {
       msg << "NULL";
     } else {
-      for (const auto& result : results.value()) {
+      for (const auto& result : *results) {
         std::unique_ptr<api::identity::AccountInfo> info =
             api::identity::AccountInfo::FromValue(result);
         if (info.get())
@@ -903,7 +902,7 @@ class GetAuthTokenFunctionTest
     OAuth2Info& oauth2_info =
         const_cast<OAuth2Info&>(OAuth2ManifestHandler::GetOAuth2Info(*ext));
     if ((fields_to_set & CLIENT_ID) != 0)
-      oauth2_info.client_id = std::make_unique<std::string>("client1");
+      oauth2_info.client_id = "client1";
     if ((fields_to_set & SCOPES) != 0) {
       oauth2_info.scopes.push_back("scope1");
       oauth2_info.scopes.push_back("scope2");
@@ -995,9 +994,9 @@ class GetAuthTokenFunctionTest
         api::identity::GetAuthTokenResult::FromValue(*result_value);
     ASSERT_TRUE(result);
 
-    EXPECT_NE(nullptr, result->token);
+    EXPECT_TRUE(result->token);
     *access_token = *result->token;
-    EXPECT_NE(nullptr, result->granted_scopes);
+    EXPECT_TRUE(result->granted_scopes);
     std::set<std::string> granted_scopes_map(result->granted_scopes->begin(),
                                              result->granted_scopes->end());
     *granted_scopes = std::move(granted_scopes_map);
@@ -1018,9 +1017,9 @@ class GetAuthTokenFunctionTest
         api::identity::GetAuthTokenResult::FromValue(result_value);
     ASSERT_TRUE(result);
 
-    ASSERT_NE(nullptr, result->token);
+    ASSERT_TRUE(result->token);
     *access_token = *result->token;
-    ASSERT_NE(nullptr, result->granted_scopes);
+    ASSERT_TRUE(result->granted_scopes);
     std::set<std::string> granted_scopes_map(result->granted_scopes->begin(),
                                              result->granted_scopes->end());
     *granted_scopes = std::move(granted_scopes_map);

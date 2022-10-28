@@ -1,4 +1,4 @@
-// Copyright 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,38 +6,40 @@
 
 #import <QuickLook/QuickLook.h>
 
-#include "base/bind.h"
-#include "base/files/file_path.h"
-#include "base/location.h"
-#include "base/logging.h"
-#include "base/mac/scoped_cftyperef.h"
-#include "base/metrics/histogram_macros.h"
-#include "base/metrics/user_metrics.h"
-#include "base/metrics/user_metrics_action.h"
-#include "base/sequence_checker.h"
-#include "base/strings/sys_string_conversions.h"
-#include "base/task/sequenced_task_runner.h"
-#include "base/task/thread_pool.h"
-#include "base/threading/scoped_blocking_call.h"
-#include "components/strings/grit/components_strings.h"
+#import "base/bind.h"
+#import "base/files/file_path.h"
+#import "base/location.h"
+#import "base/logging.h"
+#import "base/mac/scoped_cftyperef.h"
+#import "base/metrics/histogram_macros.h"
+#import "base/metrics/user_metrics.h"
+#import "base/metrics/user_metrics_action.h"
+#import "base/sequence_checker.h"
+#import "base/strings/sys_string_conversions.h"
+#import "base/task/sequenced_task_runner.h"
+#import "base/task/thread_pool.h"
+#import "base/threading/scoped_blocking_call.h"
+#import "components/strings/grit/components_strings.h"
 #import "ios/chrome/browser/ui/alert_coordinator/alert_coordinator.h"
+#import "ios/chrome/browser/ui/open_in/features.h"
 #import "ios/chrome/browser/ui/open_in/open_in_activity_delegate.h"
 #import "ios/chrome/browser/ui/open_in/open_in_activity_view_controller.h"
 #import "ios/chrome/browser/ui/open_in/open_in_controller_testing.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #import "ios/chrome/common/ui/util/constraints_ui_util.h"
-#include "ios/chrome/grit/ios_strings.h"
+#import "ios/chrome/grit/ios_strings.h"
+#import "ios/web/public/download/crw_web_view_download.h"
 #import "ios/web/public/ui/crw_web_view_proxy.h"
 #import "ios/web/public/ui/crw_web_view_scroll_view_proxy.h"
 #import "ios/web/public/web_state.h"
-#include "net/base/load_flags.h"
-#include "services/network/public/cpp/resource_request.h"
-#include "services/network/public/cpp/shared_url_loader_factory.h"
-#include "services/network/public/cpp/simple_url_loader.h"
-#include "ui/base/device_form_factor.h"
-#include "ui/base/l10n/l10n_util_mac.h"
+#import "net/base/load_flags.h"
+#import "services/network/public/cpp/resource_request.h"
+#import "services/network/public/cpp/shared_url_loader_factory.h"
+#import "services/network/public/cpp/simple_url_loader.h"
+#import "ui/base/device_form_factor.h"
+#import "ui/base/l10n/l10n_util_mac.h"
 #import "ui/gfx/ios/NSString+CrStringDrawing.h"
-#include "url/gurl.h"
+#import "url/gurl.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -174,6 +176,7 @@ BOOL CreateDestinationDirectoryAndRemoveObsoleteFiles() {
 }  // anonymous namespace
 
 @interface OpenInController () <CRWWebViewScrollViewProxyObserver,
+                                CRWWebViewDownloadDelegate,
                                 OpenInActivityDelegate> {
   // AlertCoordinator for showing an alert if no applications were found to open
   // the current document.
@@ -190,6 +193,12 @@ BOOL CreateDestinationDirectoryAndRemoveObsoleteFiles() {
 // Task runner on which file operations should happen.
 @property(nonatomic, assign) scoped_refptr<base::SequencedTaskRunner>
     sequencedTaskRunner;
+
+// Path where the downloaded file is saved.
+@property(nonatomic, strong) NSString* filePath;
+
+// CRWWebViewDownload instance that handle download interactions.
+@property(nonatomic, strong) id<CRWWebViewDownload> download;
 
 // SimpleURLLoader completion callback, when `urlLoader_` completes a request.
 - (void)urlLoadDidComplete:(const base::FilePath&)file_path;
@@ -430,7 +439,7 @@ BOOL CreateDestinationDirectoryAndRemoveObsoleteFiles() {
 
 - (void)startDownload {
   NSString* tempDirPath = GetTemporaryDocumentDirectory();
-  NSString* filePath =
+  self.filePath =
       [tempDirPath stringByAppendingPathComponent:_suggestedFilename];
 
   // In iPad the toolbar has to be displayed to anchor the "Open in" menu.
@@ -442,23 +451,42 @@ BOOL CreateDestinationDirectoryAndRemoveObsoleteFiles() {
   [self showDownloadOverlayView];
   _downloadCanceled = NO;
 
-  // Download the document and save it at `filePath`.
+  if (@available(iOS 14.5, *)) {
+    if (IsOpenInDownloadEnabled()) {
+      __weak OpenInController* weakSelf = self;
+      _webState->DownloadCurrentPage(self.filePath, self,
+                                     ^(id<CRWWebViewDownload> download) {
+                                       weakSelf.download = download;
+                                     });
+      return;
+    }
+  }
+
+  // Download the document and save it at `self.filePath`.
+  // TODO(crbug.com/1357553): Remove when Open In download experiment is
+  // finished.
   auto resourceRequest = std::make_unique<network::ResourceRequest>();
   resourceRequest->url = _documentURL;
   resourceRequest->load_flags = net::LOAD_SKIP_CACHE_VALIDATION;
 
   _urlLoader = network::SimpleURLLoader::Create(std::move(resourceRequest),
                                                 NO_TRAFFIC_ANNOTATION_YET);
-  _urlLoader->DownloadToFile(_urlLoaderFactory.get(),
-                             base::BindOnce(^(base::FilePath filePath) {
-                               [self urlLoadDidComplete:filePath];
-                             }),
-                             base::FilePath(base::SysNSStringToUTF8(filePath)));
+  _urlLoader->DownloadToFile(
+      _urlLoaderFactory.get(), base::BindOnce(^(base::FilePath filePath) {
+        [self urlLoadDidComplete:filePath];
+      }),
+      base::FilePath(base::SysNSStringToUTF8(self.filePath)));
 }
 
 - (void)handleTapOnOverlayedView:(UIGestureRecognizer*)gestureRecognizer {
   if ([gestureRecognizer state] != UIGestureRecognizerStateEnded)
     return;
+
+  if (@available(iOS 14.5, *)) {
+    if (IsOpenInDownloadWithWKDownload()) {
+      [self.download cancelDownload];
+    }
+  }
 
   [self removeOverlayedView];
   if (ui::GetDeviceFormFactor() == ui::DEVICE_FORM_FACTOR_TABLET)
@@ -672,6 +700,18 @@ BOOL CreateDestinationDirectoryAndRemoveObsoleteFiles() {
 
 - (NSString*)suggestedFilename {
   return _suggestedFilename;
+}
+
+#pragma mark - CRWWebViewDownloadDelegate
+
+- (void)downloadDidFinish {
+  [self urlLoadDidComplete:base::FilePath(
+                               base::SysNSStringToUTF8(self.filePath))];
+}
+
+- (void)downloadDidFailWithError:(NSError*)error {
+  [self urlLoadDidComplete:base::FilePath(
+                               base::SysNSStringToUTF8(self.filePath))];
 }
 
 @end

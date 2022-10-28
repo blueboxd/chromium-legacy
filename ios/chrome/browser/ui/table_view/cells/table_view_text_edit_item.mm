@@ -1,10 +1,10 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #import "ios/chrome/browser/ui/table_view/cells/table_view_text_edit_item.h"
 
-#include "base/notreached.h"
+#import "base/notreached.h"
 #import "ios/chrome/browser/ui/elements/extended_touch_target_button.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_text_edit_item_delegate.h"
 #import "ios/chrome/browser/ui/table_view/chrome_table_view_styler.h"
@@ -87,9 +87,8 @@ const CGFloat kErrorIconLength = 20;
   cell.textField.enabled = self.textFieldEnabled;
 
   if (self.hideIcon) {
-    cell.textField.textColor = self.textFieldEnabled
-                                   ? [UIColor colorNamed:kBlueColor]
-                                   : [UIColor colorNamed:kTextPrimaryColor];
+    cell.textField.textColor = [UIColor colorNamed:kTextPrimaryColor];
+
     [cell setIcon:TableViewTextEditItemIconTypeNone];
   } else {
     if (self.hasValidText) {

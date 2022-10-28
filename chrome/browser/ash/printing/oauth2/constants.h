@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,10 +9,11 @@ namespace ash {
 namespace printing {
 namespace oauth2 {
 
-// TODO(pawliczek) - this value is not known yet.
 // This is the (internal) URL which the internet browser must be redirected to
-// to complete the authorization procedure.
-constexpr char kRedirectURI[] = "https://TODO.set.redirect.uri/for/ipp/oauth2";
+// to complete the authorization procedure. This URI does not point to a real
+// page.
+constexpr char kRedirectURI[] =
+    "https://chromeos.test/printing/oauth2/redirectURI";
 
 // When required, ChromeOS tries to register to Authorization Server with this
 // name.

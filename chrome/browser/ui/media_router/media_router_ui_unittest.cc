@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -81,7 +81,7 @@ class MockControllerObserver : public CastDialogController::Observer {
   }
 
   MOCK_METHOD1(OnModelUpdated, void(const CastDialogModel& model));
-  void OnControllerInvalidated() {
+  void OnControllerInvalidated() override {
     controller_ = nullptr;
     OnControllerInvalidatedInternal();
   }
@@ -484,28 +484,7 @@ TEST_F(MediaRouterViewsUITest, AddAndRemoveIssue) {
 }
 #endif  // !BUILDFLAG(IS_ANDROID)
 
-TEST_F(MediaRouterViewsUITest, RouteCreationTimeoutForTab) {
-  StartCastingAndExpectTimeout(
-      MediaCastMode::TAB_MIRROR,
-      l10n_util::GetStringUTF8(
-          IDS_MEDIA_ROUTER_ISSUE_CREATE_ROUTE_TIMEOUT_FOR_TAB),
-      60);
-}
-
-TEST_F(MediaRouterViewsUITest, RouteCreationTimeoutForDesktop) {
-#if BUILDFLAG(IS_MAC)
-  if (base::mac::IsAtLeastOS10_15())
-    set_screen_capture_allowed_for_testing(true);
-#endif
-
-  StartCastingAndExpectTimeout(
-      MediaCastMode::DESKTOP_MIRROR,
-      l10n_util::GetStringUTF8(
-          IDS_MEDIA_ROUTER_ISSUE_CREATE_ROUTE_TIMEOUT_FOR_DESKTOP),
-      120);
-}
-
-TEST_F(MediaRouterViewsUITest, RouteCreationTimeoutForPresentation) {
+TEST_F(MediaRouterViewsUITest, RouteCreationTimeout) {
   content::PresentationRequest presentation_request(
       {0, 0}, {GURL("https://presentationurl.com")},
       url::Origin::Create(GURL("https://frameurl.fakeurl")));
@@ -513,9 +492,48 @@ TEST_F(MediaRouterViewsUITest, RouteCreationTimeoutForPresentation) {
       &presentation_request);
   StartCastingAndExpectTimeout(
       MediaCastMode::PRESENTATION,
-      l10n_util::GetStringFUTF8(IDS_MEDIA_ROUTER_ISSUE_CREATE_ROUTE_TIMEOUT,
-                                u"frameurl.fakeurl"),
+      l10n_util::GetStringFUTF8(
+          IDS_MEDIA_ROUTER_ISSUE_CREATE_ROUTE_TIMEOUT_WITH_HOSTNAME,
+          u"frameurl.fakeurl"),
       20);
+}
+
+TEST_F(MediaRouterViewsUITest, RouteCreationTimeoutIssueTitle) {
+  NiceMock<MockIssuesObserver> issues_observer(mock_router_->GetIssueManager());
+  issues_observer.Init();
+
+  EXPECT_CALL(issues_observer, OnIssue).WillOnce(Invoke([](const Issue& issue) {
+    EXPECT_EQ(l10n_util::GetStringFUTF8(
+                  IDS_MEDIA_ROUTER_ISSUE_CREATE_ROUTE_TIMEOUT_WITH_HOSTNAME,
+                  u"presentation_source_name"),
+              issue.info().title);
+  }));
+  ui_->SendIssueForRouteTimeout(MediaCastMode::PRESENTATION, "sink_id",
+                                u"presentation_source_name");
+  mock_router_->GetIssueManager()->ClearNonBlockingIssues();
+
+  EXPECT_CALL(issues_observer, OnIssue).WillOnce(Invoke([](const Issue& issue) {
+    EXPECT_EQ(l10n_util::GetStringUTF8(
+                  IDS_MEDIA_ROUTER_ISSUE_CREATE_ROUTE_TIMEOUT_FOR_TAB),
+              issue.info().title);
+  }));
+  ui_->SendIssueForRouteTimeout(MediaCastMode::TAB_MIRROR, "sink_id", u"");
+  mock_router_->GetIssueManager()->ClearNonBlockingIssues();
+
+  EXPECT_CALL(issues_observer, OnIssue).WillOnce(Invoke([](const Issue& issue) {
+    EXPECT_EQ(l10n_util::GetStringUTF8(
+                  IDS_MEDIA_ROUTER_ISSUE_CREATE_ROUTE_TIMEOUT_FOR_DESKTOP),
+              issue.info().title);
+  }));
+  ui_->SendIssueForRouteTimeout(MediaCastMode::DESKTOP_MIRROR, "sink_id", u"");
+  mock_router_->GetIssueManager()->ClearNonBlockingIssues();
+
+  EXPECT_CALL(issues_observer, OnIssue).WillOnce(Invoke([](const Issue& issue) {
+    EXPECT_EQ(
+        l10n_util::GetStringUTF8(IDS_MEDIA_ROUTER_ISSUE_CREATE_ROUTE_TIMEOUT),
+        issue.info().title);
+  }));
+  ui_->SendIssueForRouteTimeout(MediaCastMode::REMOTE_PLAYBACK, "sink_id", u"");
 }
 
 #if BUILDFLAG(IS_MAC)
@@ -659,10 +677,7 @@ TEST_F(MediaRouterViewsUITest, UpdateSinksWhenDialogMovesToAnotherDisplay) {
       .WillOnce(WithArg<0>([&](const CastDialogModel& model) {
         const auto& sinks = model.media_sinks();
         EXPECT_EQ(2u, sinks.size());
-        EXPECT_TRUE(std::find_if(sinks.begin(), sinks.end(),
-                                 [&](const UIMediaSink& sink) {
-                                   return sink.id == display_sink_id1;
-                                 }) == sinks.end());
+        EXPECT_FALSE(base::Contains(sinks, display_sink_id1, &UIMediaSink::id));
       }));
   ui_->UpdateSinks();
   Mock::VerifyAndClearExpectations(&observer);
@@ -673,10 +688,7 @@ TEST_F(MediaRouterViewsUITest, UpdateSinksWhenDialogMovesToAnotherDisplay) {
       .WillOnce(WithArg<0>([&](const CastDialogModel& model) {
         const auto& sinks = model.media_sinks();
         EXPECT_EQ(2u, sinks.size());
-        EXPECT_TRUE(std::find_if(sinks.begin(), sinks.end(),
-                                 [&](const UIMediaSink& sink) {
-                                   return sink.id == display_sink_id2;
-                                 }) == sinks.end());
+        EXPECT_FALSE(base::Contains(sinks, display_sink_id2, &UIMediaSink::id));
       }));
   display_observer->set_display(display2);
   ui_->UpdateSinks();

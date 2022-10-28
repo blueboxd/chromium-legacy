@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "content/browser/accessibility/browser_accessibility_auralinux.h"
+#include "ui/accessibility/ax_selection.h"
 #include "ui/accessibility/platform/ax_platform_node_auralinux.h"
 
 namespace content {
@@ -53,10 +54,9 @@ ui::AXTreeUpdate BrowserAccessibilityManagerAuraLinux::GetEmptyDocument() {
   return update;
 }
 
-void BrowserAccessibilityManagerAuraLinux::FireFocusEvent(
-    BrowserAccessibility* node) {
-  BrowserAccessibilityManager::FireFocusEvent(node);
-  FireEvent(node, ax::mojom::Event::kFocus);
+void BrowserAccessibilityManagerAuraLinux::FireFocusEvent(ui::AXNode* node) {
+  ui::AXTreeManager::FireFocusEvent(node);
+  FireEvent(GetFromAXNode(node), ax::mojom::Event::kFocus);
 }
 
 void BrowserAccessibilityManagerAuraLinux::FireSelectedEvent(
@@ -302,6 +302,7 @@ void BrowserAccessibilityManagerAuraLinux::FireGeneratedEvent(
       break;
 
     // Currently unused events on this platform.
+    case ui::AXEventGenerator::Event::NONE:
     case ui::AXEventGenerator::Event::ACCESS_KEY_CHANGED:
     case ui::AXEventGenerator::Event::ALERT:
     case ui::AXEventGenerator::Event::ATOMIC_CHANGED:
@@ -427,7 +428,7 @@ void BrowserAccessibilityManagerAuraLinux::OnFindInPageResult(int request_id,
 }
 
 void BrowserAccessibilityManagerAuraLinux::OnFindInPageTermination() {
-  static_cast<BrowserAccessibilityAuraLinux*>(GetRoot())
+  static_cast<BrowserAccessibilityAuraLinux*>(GetBrowserAccessibilityRoot())
       ->GetNode()
       ->TerminateFindInPage();
 }

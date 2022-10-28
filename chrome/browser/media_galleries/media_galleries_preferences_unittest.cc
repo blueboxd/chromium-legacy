@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -467,13 +467,13 @@ TEST_F(MediaGalleriesPreferencesTest, GalleryManagement) {
 
   // Lookup some galleries.
   EXPECT_TRUE(gallery_prefs()->LookUpGalleryByPath(
-      MakeMediaGalleriesTestingPath("new_auto"), NULL));
+      MakeMediaGalleriesTestingPath("new_auto"), nullptr));
   EXPECT_TRUE(gallery_prefs()->LookUpGalleryByPath(
-      MakeMediaGalleriesTestingPath("new_user"), NULL));
+      MakeMediaGalleriesTestingPath("new_user"), nullptr));
   EXPECT_TRUE(gallery_prefs()->LookUpGalleryByPath(
-      MakeMediaGalleriesTestingPath("new_scan"), NULL));
+      MakeMediaGalleriesTestingPath("new_scan"), nullptr));
   EXPECT_FALSE(gallery_prefs()->LookUpGalleryByPath(
-      MakeMediaGalleriesTestingPath("other"), NULL));
+      MakeMediaGalleriesTestingPath("other"), nullptr));
 
   // Check that we always get the gallery info.
   MediaGalleryPrefInfo gallery_info;

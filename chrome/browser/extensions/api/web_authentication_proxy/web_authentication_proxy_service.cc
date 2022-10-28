@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,8 +12,6 @@
 #include "base/sequence_checker.h"
 #include "chrome/browser/extensions/api/web_authentication_proxy/value_conversions.h"
 #include "chrome/common/extensions/api/web_authentication_proxy.h"
-#include "components/keyed_service/content/browser_context_dependency_manager.h"
-#include "components/keyed_service/content/browser_context_keyed_service_factory.h"
 #include "device/fido/public_key_credential_rp_entity.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/event_router_factory.h"
@@ -365,9 +363,9 @@ WebAuthenticationProxyServiceFactory::GetInstance() {
 }
 
 WebAuthenticationProxyServiceFactory::WebAuthenticationProxyServiceFactory()
-    : BrowserContextKeyedServiceFactory(
+    : ProfileKeyedServiceFactory(
           "WebAuthentcationProxyService",
-          BrowserContextDependencyManager::GetInstance()) {
+          ProfileSelections::BuildForRegularAndIncognito()) {
   DependsOn(EventRouterFactory::GetInstance());
   DependsOn(ExtensionRegistryFactory::GetInstance());
 }
@@ -386,12 +384,6 @@ WebAuthenticationProxyServiceFactory::GetForBrowserContext(
 KeyedService* WebAuthenticationProxyServiceFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
   return new WebAuthenticationProxyService(context);
-}
-
-content::BrowserContext*
-WebAuthenticationProxyServiceFactory::GetBrowserContextToUse(
-    content::BrowserContext* context) const {
-  return context;
 }
 
 }  // namespace extensions

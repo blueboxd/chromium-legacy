@@ -1,12 +1,12 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #import "ios/chrome/browser/tabs_search/tabs_search_service_factory.h"
 
-#include "components/keyed_service/ios/browser_state_dependency_manager.h"
-#include "ios/chrome/browser/browser_state/browser_state_otr_helper.h"
-#include "ios/chrome/browser/browser_state/chrome_browser_state.h"
+#import "components/keyed_service/ios/browser_state_dependency_manager.h"
+#import "ios/chrome/browser/browser_state/browser_state_otr_helper.h"
+#import "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/history/history_service_factory.h"
 #import "ios/chrome/browser/history/web_history_service_factory.h"
 #import "ios/chrome/browser/main/browser_list_factory.h"

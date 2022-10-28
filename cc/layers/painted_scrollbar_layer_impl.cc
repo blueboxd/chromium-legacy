@@ -1,4 +1,4 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -163,6 +163,28 @@ gfx::Rect PaintedScrollbarLayerImpl::GetEnclosingVisibleRectInTargetSpace()
     return gfx::Rect();
   DCHECK_GT(internal_contents_scale_, 0.f);
   return GetScaledEnclosingVisibleRectInTargetSpace(internal_contents_scale_);
+}
+
+gfx::Rect PaintedScrollbarLayerImpl::ComputeThumbQuadRect() const {
+  gfx::Rect thumb_rect = ScrollbarLayerImplBase::ComputeThumbQuadRect();
+
+  // Position composited Fluent scrollbar thumb in the center of the track.
+  if (IsFluentScrollbarEnabled()) {
+    const int track_thickness =
+        orientation() == ScrollbarOrientation::HORIZONTAL ? track_rect_.height()
+                                                          : track_rect_.width();
+    const int thumb_offset =
+        static_cast<int>((track_thickness - ThumbThickness()) / 2.0f);
+
+    if (orientation() == ScrollbarOrientation::HORIZONTAL) {
+      thumb_rect.Offset(0, thumb_offset);
+    } else {
+      thumb_rect.Offset(
+          is_left_side_vertical_scrollbar() ? -thumb_offset : thumb_offset, 0);
+    }
+  }
+
+  return thumb_rect;
 }
 
 void PaintedScrollbarLayerImpl::SetJumpOnTrackClick(bool jump_on_track_click) {

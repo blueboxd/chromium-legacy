@@ -1,4 +1,4 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -58,17 +58,25 @@ class FileManagerPrivateSelectFilesFunction : public LoggedExtensionFunction {
   DECLARE_EXTENSION_FUNCTION("fileManagerPrivate.selectFiles",
                              FILEMANAGERPRIVATE_SELECTFILES)
 
+  FileManagerPrivateSelectFilesFunction();
+
  protected:
-  ~FileManagerPrivateSelectFilesFunction() override = default;
+  ~FileManagerPrivateSelectFilesFunction() override;
 
   // ExtensionFunction overrides.
   ResponseAction Run() override;
 
  private:
+  void OnReSyncFile();
+
   // A callback method to handle the result of GetSelectedFileInfo.
   void GetSelectedFileInfoResponse(
       bool for_open,
       const std::vector<ui::SelectedFileInfo>& files);
+
+  bool should_return_local_path_;
+  std::vector<GURL> file_urls_;
+  int resync_files_remaining_ = 0;
 };
 
 // Get a list of Android picker apps.

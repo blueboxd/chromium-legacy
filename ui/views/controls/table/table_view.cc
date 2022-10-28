@@ -14,6 +14,7 @@
 #include "base/auto_reset.h"
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/containers/contains.h"
 #include "base/cxx17_backports.h"
 #include "base/i18n/rtl.h"
 #include "base/memory/ptr_util.h"
@@ -404,16 +405,13 @@ void TableView::SetSortDescriptors(const SortDescriptors& sort_descriptors) {
 }
 
 bool TableView::IsColumnVisible(int id) const {
-  const auto ids_match = [id](const auto& column) {
-    return column.column.id == id;
-  };
-  return std::any_of(visible_columns_.cbegin(), visible_columns_.cend(),
-                     ids_match);
+  return base::Contains(visible_columns_, id, [](const VisibleColumn& column) {
+    return column.column.id;
+  });
 }
 
 bool TableView::HasColumn(int id) const {
-  const auto ids_match = [id](const auto& column) { return column.id == id; };
-  return std::any_of(columns_.cbegin(), columns_.cend(), ids_match);
+  return base::Contains(columns_, id, &ui::TableColumn::id);
 }
 
 bool TableView::GetHasFocusIndicator() const {
@@ -1360,17 +1358,21 @@ void TableView::AdvanceSelection(AdvanceDirection direction) {
     ScheduleUpdateAccessibilityFocusIfNeeded();
     return;
   }
-  size_t view_index = ModelToView(selection_model_.active().value());
+  size_t active_index = selection_model_.active().value();
+  size_t view_index = ModelToView(active_index);
+  const GroupRange range(GetGroupRange(active_index));
+  size_t view_range_start = ModelToView(range.start);
   if (direction == AdvanceDirection::kDecrement) {
     bool make_header_active = header_ && view_index == 0;
     header_row_is_active_ = make_header_active;
     SelectByViewIndex(
         make_header_active
             ? absl::nullopt
-            : absl::make_optional(std::max(size_t{1}, view_index) - 1));
+            : absl::make_optional(std::max(size_t{1}, view_range_start) - 1));
   } else {
     header_row_is_active_ = false;
-    SelectByViewIndex(std::min(GetRowCount() - 1, view_index + 1));
+    SelectByViewIndex(
+        std::min(GetRowCount() - 1, view_range_start + range.length));
   }
 }
 

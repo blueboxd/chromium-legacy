@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -35,15 +35,10 @@ class TaskQueueWebView {
   // Called by TaskForwardingSequence.
   virtual void ScheduleOrRetainTask(base::OnceClosure task) = 0;
 
-  // Called by DeferredGpuCommandService to schedule delayed tasks.
-  // This should not be called when kVizForWebView is enabled.
+  // Called to schedule delayed tasks.
   virtual void ScheduleIdleTask(base::OnceClosure task) = 0;
 
-  // Called by both DeferredGpuCommandService and
-  // SkiaOutputSurfaceDisplayContext to post task to client thread.
-  void ScheduleClientTask(base::OnceClosure task) {
-    GetClientTaskRunner()->PostTask(FROM_HERE, std::move(task));
-  }
+  // Used to post task to client thread.
   virtual scoped_refptr<base::TaskRunner> GetClientTaskRunner() = 0;
 
  protected:

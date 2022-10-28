@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -49,6 +49,8 @@
 #include "components/app_restore/full_restore_save_handler.h"
 #include "components/app_restore/full_restore_utils.h"
 #include "components/arc/common/intent_helper/arc_intent_helper_package.h"
+#include "components/services/app_service/public/cpp/capability_access.h"
+#include "components/services/app_service/public/cpp/features.h"
 #include "components/services/app_service/public/cpp/icon_types.h"
 #include "components/services/app_service/public/cpp/intent.h"
 #include "components/services/app_service/public/cpp/intent_filter.h"
@@ -631,7 +633,8 @@ void ArcApps::Initialize() {
   }
 
   mojo::Remote<apps::mojom::AppService>& app_service = proxy()->AppService();
-  if (!app_service.is_bound()) {
+  if (!base::FeatureList::IsEnabled(kStopMojomAppService) &&
+      !app_service.is_bound()) {
     return;
   }
 
@@ -1031,6 +1034,51 @@ void ArcApps::Uninstall(const std::string& app_id,
   arc::UninstallArcApp(app_id, profile_);
 }
 
+void ArcApps::GetMenuModel(const std::string& app_id,
+                           MenuType menu_type,
+                           int64_t display_id,
+                           base::OnceCallback<void(MenuItems)> callback) {
+  ArcAppListPrefs* prefs = ArcAppListPrefs::Get(profile_);
+  if (!prefs) {
+    std::move(callback).Run(MenuItems());
+    return;
+  }
+  const std::unique_ptr<ArcAppListPrefs::AppInfo> app_info =
+      prefs->GetApp(app_id);
+  if (!app_info) {
+    std::move(callback).Run(MenuItems());
+    return;
+  }
+
+  MenuItems menu_items;
+
+  // Add Open item if the app is not opened and not suspended.
+  if (!base::Contains(app_id_to_task_ids_, app_id) && !app_info->suspended) {
+    AddCommandItem(ash::LAUNCH_NEW, IDS_APP_CONTEXT_MENU_ACTIVATE_ARC,
+                   menu_items);
+  }
+
+  if (app_info->shortcut) {
+    AddCommandItem(ash::UNINSTALL, IDS_APP_LIST_REMOVE_SHORTCUT, menu_items);
+  } else if (app_info->ready && !app_info->sticky) {
+    AddCommandItem(ash::UNINSTALL, IDS_APP_LIST_UNINSTALL_ITEM, menu_items);
+  }
+
+  // App Info item.
+  if (app_info->ready && ShouldShow(*app_info)) {
+    AddCommandItem(ash::SHOW_APP_INFO, IDS_APP_CONTEXT_MENU_SHOW_INFO,
+                   menu_items);
+  }
+
+  if (menu_type == MenuType::kShelf &&
+      base::Contains(app_id_to_task_ids_, app_id)) {
+    AddCommandItem(ash::MENU_CLOSE, IDS_SHELF_CONTEXT_MENU_CLOSE, menu_items);
+  }
+
+  BuildMenuForShortcut(app_info->package_name, std::move(menu_items),
+                       std::move(callback));
+}
+
 void ArcApps::OnPreferredAppSet(
     const std::string& app_id,
     IntentFilterPtr intent_filter,
@@ -1046,6 +1094,16 @@ void ArcApps::OnPreferredAppSet(
                   prefs);
   ResetVerifiedLinks(intent_filter, replaced_app_preferences,
                      arc_service_manager, prefs);
+}
+
+void ArcApps::SetResizeLocked(const std::string& app_id, bool locked) {
+  ArcAppListPrefs* prefs = ArcAppListPrefs::Get(profile_);
+  if (!prefs) {
+    return;
+  }
+  prefs->SetResizeLockState(app_id, locked
+                                        ? arc::mojom::ArcResizeLockState::ON
+                                        : arc::mojom::ArcResizeLockState::OFF);
 }
 
 void ArcApps::Connect(
@@ -1332,45 +1390,8 @@ void ArcApps::GetMenuModel(const std::string& app_id,
                            apps::mojom::MenuType menu_type,
                            int64_t display_id,
                            GetMenuModelCallback callback) {
-  ArcAppListPrefs* prefs = ArcAppListPrefs::Get(profile_);
-  if (!prefs) {
-    std::move(callback).Run(apps::mojom::MenuItems::New());
-    return;
-  }
-  const std::unique_ptr<ArcAppListPrefs::AppInfo> app_info =
-      prefs->GetApp(app_id);
-  if (!app_info) {
-    std::move(callback).Run(apps::mojom::MenuItems::New());
-    return;
-  }
-
-  apps::mojom::MenuItemsPtr menu_items = apps::mojom::MenuItems::New();
-
-  // Add Open item if the app is not opened and not suspended.
-  if (!base::Contains(app_id_to_task_ids_, app_id) && !app_info->suspended) {
-    AddCommandItem(ash::LAUNCH_NEW, IDS_APP_CONTEXT_MENU_ACTIVATE_ARC,
-                   &menu_items);
-  }
-
-  if (app_info->shortcut) {
-    AddCommandItem(ash::UNINSTALL, IDS_APP_LIST_REMOVE_SHORTCUT, &menu_items);
-  } else if (app_info->ready && !app_info->sticky) {
-    AddCommandItem(ash::UNINSTALL, IDS_APP_LIST_UNINSTALL_ITEM, &menu_items);
-  }
-
-  // App Info item.
-  if (app_info->ready && ShouldShow(*app_info)) {
-    AddCommandItem(ash::SHOW_APP_INFO, IDS_APP_CONTEXT_MENU_SHOW_INFO,
-                   &menu_items);
-  }
-
-  if (menu_type == apps::mojom::MenuType::kShelf &&
-      base::Contains(app_id_to_task_ids_, app_id)) {
-    AddCommandItem(ash::MENU_CLOSE, IDS_SHELF_CONTEXT_MENU_CLOSE, &menu_items);
-  }
-
-  BuildMenuForShortcut(app_info->package_name, std::move(menu_items),
-                       std::move(callback));
+  GetMenuModel(app_id, ConvertMojomMenuTypeToMenuType(menu_type), display_id,
+               MenuItemsToMojomMenuItemsCallback(std::move(callback)));
 }
 
 void ArcApps::ExecuteContextMenuCommand(const std::string& app_id,
@@ -1609,20 +1630,15 @@ void ArcApps::OnIntentFiltersUpdated(
   }
 }
 
-// This method calls App Service directly with a list of intent filters received
-// from ARC, rather than going through AppServiceProxy's
-// SetSupportedlinksPreference method. This is because recent changes to app
-// intent filters (such as after an install or update) may not have propagated
-// to AppServiceProxy's AppRegistryCache yet.
-// TODO(crbug.com/1265315): Use AppServiceProxy to set the preference once app
-// changes are synchronous within Ash.
 void ArcApps::OnArcSupportedLinksChanged(
-    const std::vector<arc::mojom::SupportedLinksPtr>& added,
-    const std::vector<arc::mojom::SupportedLinksPtr>& removed,
+    const std::vector<arc::mojom::SupportedLinksPackagePtr>& added,
+    const std::vector<arc::mojom::SupportedLinksPackagePtr>& removed,
     arc::mojom::SupportedLinkChangeSource source) {
-  mojo::Remote<apps::mojom::AppService>& app_service = proxy()->AppService();
-  if (!app_service.is_bound()) {
-    return;
+  if (!base::FeatureList::IsEnabled(kStopMojomAppService)) {
+    mojo::Remote<apps::mojom::AppService>& app_service = proxy()->AppService();
+    if (!app_service.is_bound()) {
+      return;
+    }
   }
 
   ArcAppListPrefs* prefs = ArcAppListPrefs::Get(profile_);
@@ -1633,7 +1649,7 @@ void ArcApps::OnArcSupportedLinksChanged(
   for (const auto& supported_link : added) {
     std::string app_id =
         prefs->GetAppIdByPackageName(supported_link->package_name);
-    if (app_id.empty() || !supported_link->filters.has_value()) {
+    if (app_id.empty()) {
       continue;
     }
 
@@ -1652,16 +1668,7 @@ void ArcApps::OnArcSupportedLinksChanged(
       continue;
     }
 
-    apps::IntentFilters app_service_filters;
-    for (const auto& arc_filter : supported_link->filters.value()) {
-      auto converted = apps_util::CreateIntentFilterForArc(arc_filter);
-      if (apps_util::IsSupportedLinkForApp(app_id, converted)) {
-        app_service_filters.push_back(std::move(converted));
-      }
-    }
-
-    proxy()->SetSupportedLinksPreference(app_id,
-                                         std::move(app_service_filters));
+    proxy()->SetSupportedLinksPreference(app_id);
   }
 
   for (const auto& supported_link : removed) {
@@ -1747,13 +1754,12 @@ void ArcApps::OnPrivacyItemsChanged(
   // access is stopped when they are not list in `privacy_items`. If they are
   // still accessing, they will exist in `privacy_items`, and be set as true in
   // the next loop for `privacy_items`.
-  base::flat_map<std::string, apps::mojom::CapabilityAccessPtr>
-      capability_accesses;
+  base::flat_map<std::string, CapabilityAccessPtr> capability_accesses;
   for (const auto& app_id : accessing_apps_) {
-    auto access = apps::mojom::CapabilityAccess::New();
+    auto access = std::make_unique<CapabilityAccess>(app_id);
     access->app_id = app_id;
-    access->camera = apps::mojom::OptionalBool::kFalse;
-    access->microphone = apps::mojom::OptionalBool::kFalse;
+    access->camera = false;
+    access->microphone = false;
     capability_accesses[app_id] = std::move(access);
   }
   accessing_apps_.clear();
@@ -1771,26 +1777,33 @@ void ArcApps::OnPrivacyItemsChanged(
     auto package_name = item->privacy_application->package_name;
     for (const auto& app_id : prefs->GetAppsForPackage(package_name)) {
       accessing_apps_.insert(app_id);
-      auto it = capability_accesses.find(app_id);
-      if (it == capability_accesses.end()) {
-        capability_accesses[app_id] = apps::mojom::CapabilityAccess::New();
-        it = capability_accesses.find(app_id);
-        it->second->app_id = app_id;
-      }
+      auto [it, inserted] = capability_accesses.try_emplace(
+          app_id, std::make_unique<CapabilityAccess>(app_id));
       if (permission == arc::mojom::AppPermissionGroup::CAMERA) {
-        it->second->camera = apps::mojom::OptionalBool::kTrue;
+        it->second->camera = true;
       }
       if (permission == arc::mojom::AppPermissionGroup::MICROPHONE) {
-        it->second->microphone = apps::mojom::OptionalBool::kTrue;
+        it->second->microphone = true;
       }
     }
   }
 
   // Write the record to `AppCapabilityAccessCache`.
+  if (base::FeatureList::IsEnabled(
+          apps::kAppServiceCapabilityAccessWithoutMojom)) {
+    std::vector<CapabilityAccessPtr> accesses;
+    for (auto& item : capability_accesses) {
+      accesses.push_back(std::move(item.second));
+    }
+    proxy()->OnCapabilityAccesses(std::move(accesses));
+    return;
+  }
+
   for (auto& subscriber : subscribers_) {
     std::vector<apps::mojom::CapabilityAccessPtr> accesses;
     for (const auto& item : capability_accesses) {
-      accesses.push_back(item.second->Clone());
+      accesses.push_back(
+          ConvertCapabilityAccessToMojomCapabilityAccess(item.second));
     }
     subscriber->OnCapabilityAccesses(std::move(accesses));
   }
@@ -2088,9 +2101,10 @@ void ArcApps::UpdateAppIntentFilters(
   }
 }
 
-void ArcApps::BuildMenuForShortcut(const std::string& package_name,
-                                   apps::mojom::MenuItemsPtr menu_items,
-                                   GetMenuModelCallback callback) {
+void ArcApps::BuildMenuForShortcut(
+    const std::string& package_name,
+    MenuItems menu_items,
+    base::OnceCallback<void(MenuItems)> callback) {
   // The previous request is cancelled, and start a new request if the callback
   // of the previous request is not called.
   arc_app_shortcuts_request_ =
@@ -2102,8 +2116,8 @@ void ArcApps::BuildMenuForShortcut(const std::string& package_name,
 
 void ArcApps::OnGetAppShortcutItems(
     const base::TimeTicks start_time,
-    apps::mojom::MenuItemsPtr menu_items,
-    GetMenuModelCallback callback,
+    MenuItems menu_items,
+    base::OnceCallback<void(MenuItems)> callback,
     std::unique_ptr<apps::AppShortcutItems> app_shortcut_items) {
   if (!app_shortcut_items || app_shortcut_items->empty()) {
     // No need log time for empty requests.
@@ -2123,14 +2137,14 @@ void ArcApps::OnGetAppShortcutItems(
                      std::tie(item2.type, item2.rank);
             });
 
-  AddSeparator(ui::DOUBLE_SEPARATOR, &menu_items);
+  AddSeparator(ui::DOUBLE_SEPARATOR, menu_items);
   int command_id = ash::LAUNCH_APP_SHORTCUT_FIRST;
   for (const auto& item : items) {
     if (command_id != ash::LAUNCH_APP_SHORTCUT_FIRST) {
-      AddSeparator(ui::PADDED_SEPARATOR, &menu_items);
+      AddSeparator(ui::PADDED_SEPARATOR, menu_items);
     }
     AddShortcutCommandItem(command_id++, item.shortcut_id, item.short_label,
-                           item.icon, &menu_items);
+                           item.icon, menu_items);
   }
   std::move(callback).Run(std::move(menu_items));
   arc_app_shortcuts_request_.reset();

@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -73,6 +73,12 @@ void VideoFrameMetadata::MergeMetadataFrom(
 
 #undef MERGE_VALUE_FIELD
 #undef MERGE_OPTIONAL_FIELD
+}
+
+void VideoFrameMetadata::ClearTextureFrameMedatada() {
+  is_webgpu_compatible = false;
+  texture_origin_is_top_left = true;
+  read_lock_fences_enabled = false;
 }
 
 }  // namespace media

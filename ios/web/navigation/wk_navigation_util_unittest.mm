@@ -1,26 +1,26 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #import "ios/web/navigation/wk_navigation_util.h"
 
-#include <memory>
-#include <vector>
+#import <memory>
+#import <vector>
 
-#include "base/json/json_reader.h"
-#include "base/strings/escape.h"
-#include "base/strings/stringprintf.h"
-#include "base/strings/sys_string_conversions.h"
-#include "base/strings/utf_string_conversions.h"
-#include "base/values.h"
-#include "ios/web/common/features.h"
+#import "base/json/json_reader.h"
+#import "base/strings/escape.h"
+#import "base/strings/stringprintf.h"
+#import "base/strings/sys_string_conversions.h"
+#import "base/strings/utf_string_conversions.h"
+#import "base/values.h"
+#import "ios/web/common/features.h"
 #import "ios/web/navigation/navigation_item_impl.h"
 #import "ios/web/public/navigation/navigation_item.h"
-#include "ios/web/test/test_url_constants.h"
+#import "ios/web/test/test_url_constants.h"
 #import "net/base/mac/url_conversions.h"
-#include "testing/gtest/include/gtest/gtest.h"
-#include "testing/platform_test.h"
-#include "url/scheme_host_port.h"
+#import "testing/gtest/include/gtest/gtest.h"
+#import "testing/platform_test.h"
+#import "url/scheme_host_port.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -44,7 +44,7 @@ void CreateTestNavigationItems(
   }
 }
 
-// Extracts session dictionary from |restore_session_url|.
+// Extracts session dictionary from `restore_session_url`.
 base::JSONReader::Result ExtractSessionDict(GURL restore_session_url) {
   NSString* fragment = net::NSURLWithGURL(restore_session_url).fragment;
   NSString* encoded_session =
@@ -155,7 +155,6 @@ TEST_F(WKNavigationUtilTest, CreateRestoreSessionUrl) {
 // In the past the math within CreateRestoreSessionUrl has had some edge case
 // crashes.  Ensure that nothing crashes.
 TEST_F(WKNavigationUtilTest, CreateRestoreSessionBruteForce) {
-  std::vector<std::unique_ptr<NavigationItem>> items;
   int first_index = 0;
   GURL restore_session_url;
   for (int num_items = 70; num_items < 80; num_items++) {
@@ -212,7 +211,7 @@ TEST_F(WKNavigationUtilTest, CreateRestoreSessionUrlForLargeSession) {
 }
 
 // Verifies that large session can be stored in NSURL and that extra items
-// are trimmed from the right side of |last_committed_item_index|.
+// are trimmed from the right side of `last_committed_item_index`.
 TEST_F(WKNavigationUtilTest, CreateRestoreSessionUrlForExtraLargeForwardList) {
   // Create restore session URL with large number of items that exceeds
   // kMaxSessionSize.
@@ -257,7 +256,7 @@ TEST_F(WKNavigationUtilTest, CreateRestoreSessionUrlForExtraLargeForwardList) {
 }
 
 // Verifies that large session can be stored in NSURL and that extra items
-// are trimmed from the left side of |last_committed_item_index|.
+// are trimmed from the left side of `last_committed_item_index`.
 TEST_F(WKNavigationUtilTest, CreateRestoreSessionUrlForExtraLargeBackList) {
   // Create restore session URL with large number of items that exceeds
   // kMaxSessionSize.
@@ -302,7 +301,7 @@ TEST_F(WKNavigationUtilTest, CreateRestoreSessionUrlForExtraLargeBackList) {
 }
 
 // Verifies that large session can be stored in NSURL and that extra items
-// are trimmed from the left and right sides of |last_committed_item_index|.
+// are trimmed from the left and right sides of `last_committed_item_index`.
 TEST_F(WKNavigationUtilTest,
        CreateRestoreSessionUrlForExtraLargeBackAndForwardList) {
   // Create restore session URL with large number of items that exceeds

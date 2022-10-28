@@ -10,13 +10,16 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/containers/flat_map.h"
 #include "base/feature_list.h"
+#include "base/ranges/algorithm.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/test/bind.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
+#include "base/test/values_test_util.h"
 #include "base/time/time.h"
 #include "content/common/private_aggregation_features.h"
 #include "content/services/auction_worklet/auction_v8_helper.h"
@@ -145,6 +148,20 @@ class TestScoreAdClient : public mojom::ScoreAdClient {
              scoring_signals_data_version, has_scoring_signals_data_version,
              debug_loss_report_url, debug_win_report_url,
              std::move(pa_requests), errors);
+  }
+
+  static ScoreAdCompleteCallback ScoreAdNeverInvokedCallback() {
+    return base::BindOnce([](double score,
+                             mojom::ComponentAuctionModifiedBidParamsPtr
+                                 component_auction_modified_bid_params,
+                             uint32_t scoring_signals_data_version,
+                             bool has_scoring_signals_data_version,
+                             const absl::optional<GURL>& debug_loss_report_url,
+                             const absl::optional<GURL>& debug_win_report_url,
+                             PrivateAggregationRequests pa_requests,
+                             const std::vector<std::string>& errors) {
+      ADD_FAILURE() << "Callback should not be invoked";
+    });
   }
 
  private:
@@ -373,17 +390,7 @@ class SellerWorkletTest : public testing::Test {
         seller_timeout_,
         /*trace_id=*/1,
         TestScoreAdClient::Create(
-            base::BindOnce([](double score,
-                              mojom::ComponentAuctionModifiedBidParamsPtr
-                                  component_auction_modified_bid_params,
-                              uint32_t scoring_signals_data_version,
-                              bool has_scoring_signals_data_version,
-                              const absl::optional<GURL>& debug_loss_report_url,
-                              const absl::optional<GURL>& debug_win_report_url,
-                              PrivateAggregationRequests pa_requests,
-                              const std::vector<std::string>& errors) {
-              ADD_FAILURE() << "This should not be invoked";
-            })));
+            TestScoreAdClient::ScoreAdNeverInvokedCallback()));
   }
 
   // Loads and runs a scode_ad() script, expecting the supplied result.
@@ -506,7 +513,16 @@ class SellerWorkletTest : public testing::Test {
                const base::flat_map<std::string, GURL>& ad_beacon_map,
                PrivateAggregationRequests pa_requests,
                const std::vector<std::string>& errors) {
-              EXPECT_EQ(expected_signals_for_winner, signals_for_winner);
+              if (signals_for_winner && expected_signals_for_winner) {
+                // If neither is null, used fancy base::Value comparison, which
+                // removes dependencies on JSON serialization order and format,
+                // and has better error output.
+                EXPECT_THAT(base::test::ParseJson(*signals_for_winner),
+                            base::test::IsJson(*expected_signals_for_winner));
+              } else {
+                // Otherwise, just compare the optional strings directly.
+                EXPECT_EQ(expected_signals_for_winner, signals_for_winner);
+              }
               EXPECT_EQ(expected_report_url, report_url);
               EXPECT_EQ(expected_ad_beacon_map, ad_beacon_map);
               EXPECT_EQ(expected_pa_requests, pa_requests);
@@ -2201,6 +2217,11 @@ TEST_F(SellerWorkletTest, ReportResultAuctionConfigParam) {
   auction_ad_config_non_shared_params_.all_buyers_timeout =
       base::Milliseconds(150);
 
+  auction_ad_config_non_shared_params_.per_buyer_priority_signals = {
+      {url::Origin::Create(GURL("https://a.com")), {{"signals_c", 0.5}}}};
+  auction_ad_config_non_shared_params_.all_buyers_priority_signals = {
+      {"signals_d", 0}};
+
   // Add and populate two component auctions, each with one the mandatory
   // `seller` and `decision_logic_url` fields filled in, one one extra field:
   // One that's directly a member of the AuctionAdConfig, and one that's in the
@@ -2226,22 +2247,27 @@ TEST_F(SellerWorkletTest, ReportResultAuctionConfigParam) {
       GURL("https://component2.com/signals.json");
 
   const char kExpectedJson[] =
-      R"({"seller":"https://example.com",)"
-      R"("decisionLogicUrl":"https://example.com/auction.js",)"
-      R"("trustedScoringSignalsUrl":"https://example.com/scoring_signals.json",)"
-      R"("interestGroupBuyers":["https://buyer1.com","https://another-buyer.com"],)"
-      R"("auctionSignals":{"is_auction_signals":true},)"
-      R"("sellerSignals":{"is_seller_signals":true},)"
-      R"("sellerTimeout":200,)"
-      R"("perBuyerSignals":{"https://a.com":{"signals_a":"A"},)"
-      R"("https://b.com":{"signals_b":"B"}},)"
-      R"("perBuyerTimeouts":{"https://a.com":100,"*":150},)"
-      R"("componentAuctions":[{"seller":"https://component1.com",)"
-      R"("decisionLogicUrl":"https://component1.com/script.js",)"
-      R"("sellerTimeout":111},)"
-      R"({"seller":"https://component2.com",)"
-      R"("decisionLogicUrl":"https://component2.com/script.js",)"
-      R"("trustedScoringSignalsUrl":"https://component2.com/signals.json"}]})";
+      R"({"seller":"https://example.com",
+          "decisionLogicUrl":"https://example.com/auction.js",
+          "trustedScoringSignalsUrl":"https://example.com/scoring_signals.json",
+          "interestGroupBuyers":["https://buyer1.com",
+                                 "https://another-buyer.com"],
+          "auctionSignals":{"is_auction_signals":true},
+          "sellerSignals":{"is_seller_signals":true},
+          "sellerTimeout":200,
+          "perBuyerSignals":{"https://a.com":{"signals_a":"A"},
+                             "https://b.com":{"signals_b":"B"}},
+          "perBuyerTimeouts":{"https://a.com":100,"*":150},
+          "perBuyerPrioritySignals":{"https://a.com":{"signals_c":0.5},
+                                     "*":            {"signals_d":0}},
+          "componentAuctions":[
+              {"seller":"https://component1.com",
+               "decisionLogicUrl":"https://component1.com/script.js",
+               "sellerTimeout":111},
+              {"seller":"https://component2.com",
+               "decisionLogicUrl":"https://component2.com/script.js",
+               "trustedScoringSignalsUrl":"https://component2.com/signals.json"}
+          ]})";
   RunReportResultCreatedScriptExpectingResult(
       "auctionConfig", /*extra_code=*/std::string(), kExpectedJson,
       /*expected_report_url=*/absl::nullopt);
@@ -2399,19 +2425,8 @@ TEST_F(SellerWorkletTest, DeleteBeforeScoreAdCallback) {
       seller_timeout_,
       /*trace_id=*/1,
       TestScoreAdClient::Create(
-          base::BindOnce(
-              [](double score,
-                 mojom::ComponentAuctionModifiedBidParamsPtr
-                     component_auction_modified_bid_params,
-                 uint32_t scoring_signals_data_version,
-                 bool has_scoring_signals_data_version,
-                 const absl::optional<GURL>& debug_loss_report_url,
-                 const absl::optional<GURL>& debug_win_report_url,
-                 PrivateAggregationRequests pa_requests,
-                 const std::vector<std::string>& errors) {
-                ADD_FAILURE()
-                    << "Callback should not be invoked since worklet deleted";
-              })));
+          // Callback should not be invoked since worklet deleted
+          TestScoreAdClient::ScoreAdNeverInvokedCallback()));
   base::RunLoop().RunUntilIdle();
   seller_worklet.reset();
   event_handle->Signal();
@@ -2585,7 +2600,7 @@ TEST_F(SellerWorkletTest, BasicV8Debug) {
 
   // Should not see scriptParsed before resume.
   std::list<TestChannel::Event> events1 = channel1->TakeAllEvents();
-  EXPECT_TRUE(std::none_of(events1.begin(), events1.end(), is_script_parsed));
+  EXPECT_TRUE(base::ranges::none_of(events1, is_script_parsed));
 
   // Unpause execution for #1.
   EXPECT_FALSE(run_loop1.AnyQuitCalled());
@@ -2604,7 +2619,7 @@ TEST_F(SellerWorkletTest, BasicV8Debug) {
 
   // There shouldn't be a parsed notification on channel 2, however.
   std::list<TestChannel::Event> events2 = channel2->TakeAllEvents();
-  EXPECT_TRUE(std::none_of(events2.begin(), events2.end(), is_script_parsed));
+  EXPECT_TRUE(base::ranges::none_of(events2, is_script_parsed));
 
   // Unpause execution for #2.
   EXPECT_FALSE(run_loop2.AnyQuitCalled());
@@ -2628,8 +2643,8 @@ TEST_F(SellerWorkletTest, BasicV8Debug) {
   // No other scriptParsed events should be on either channel.
   events1 = channel1->TakeAllEvents();
   events2 = channel2->TakeAllEvents();
-  EXPECT_TRUE(std::none_of(events1.begin(), events1.end(), is_script_parsed));
-  EXPECT_TRUE(std::none_of(events2.begin(), events2.end(), is_script_parsed));
+  EXPECT_TRUE(base::ranges::none_of(events1, is_script_parsed));
+  EXPECT_TRUE(base::ranges::none_of(events2, is_script_parsed));
 }
 
 TEST_F(SellerWorkletTest, ParseErrorV8Debug) {
@@ -2987,6 +3002,99 @@ TEST_F(SellerWorkletTest, UnloadWhilePaused) {
   worklet.reset();
 
   // This won't terminate if the V8 thread is still blocked in debugger.
+  task_environment_.RunUntilIdle();
+}
+
+// Test that cancelling the worklet before it runs but after the execution was
+// queued actually cancels the execution. This is done by trying to run a
+// while(true) {} script with a timeout that's bigger than the test timeout, so
+// if it doesn't get cancelled the *test* will timeout.
+TEST_F(SellerWorkletTest, Cancelation) {
+  seller_timeout_ = base::Days(360);
+  AddJavascriptResponse(&url_loader_factory_, decision_logic_url_,
+                        "while(true) {}");
+  mojo::Remote<mojom::SellerWorklet> seller_worklet = CreateWorklet();
+  // Let the script load.
+  task_environment_.RunUntilIdle();
+
+  // Now we no longer need it for parsing JS, wedge the V8 thread so we get a
+  // chance to cancel the script *before* it actually tries running.
+  base::WaitableEvent* event_handle = WedgeV8Thread(v8_helper_.get());
+
+  TestScoreAdClient client(TestScoreAdClient::ScoreAdNeverInvokedCallback());
+  mojo::Receiver<mojom::ScoreAdClient> client_receiver(&client);
+
+  seller_worklet->ScoreAd(
+      ad_metadata_, bid_, auction_ad_config_non_shared_params_,
+      browser_signals_other_seller_.Clone(),
+      browser_signal_interest_group_owner_, browser_signal_render_url_,
+      browser_signal_ad_components_, browser_signal_bidding_duration_msecs_,
+      seller_timeout_,
+      /*trace_id=*/1, client_receiver.BindNewPipeAndPassRemote());
+
+  // Cancel and then unwedge.
+  client_receiver.reset();
+  base::RunLoop().RunUntilIdle();
+  event_handle->Signal();
+
+  // Make sure cancellation happens before ~SellerWorklet.
+  task_environment_.RunUntilIdle();
+}
+
+// Test that queued tasks get cancelled at worklet destruction.
+TEST_F(SellerWorkletTest, CancelationDtor) {
+  seller_timeout_ = base::Days(360);
+
+  // ReportResult timeout isn't configurable the way scoreAd is.
+  v8_helper_->v8_runner()->PostTask(
+      FROM_HERE,
+      base::BindOnce(
+          [](scoped_refptr<AuctionV8Helper> v8_helper) {
+            v8_helper->set_script_timeout_for_testing(base::Days(360));
+          },
+          v8_helper_));
+
+  AddJavascriptResponse(&url_loader_factory_, decision_logic_url_,
+                        "while(true) {}");
+  mojo::Remote<mojom::SellerWorklet> seller_worklet = CreateWorklet();
+  // Let the script load.
+  task_environment_.RunUntilIdle();
+
+  // Now we no longer need it for parsing JS, wedge the V8 thread so we get a
+  // chance to cancel the script *before* it actually tries running.
+  base::WaitableEvent* event_handle = WedgeV8Thread(v8_helper_.get());
+
+  RunScoreAdOnWorkletExpectingCallbackNeverInvoked(seller_worklet.get());
+  RunReportResultExpectingCallbackNeverInvoked(seller_worklet.get());
+
+  // Destroy the worklet, then unwedge.
+  seller_worklet.reset();
+  base::RunLoop().RunUntilIdle();
+  event_handle->Signal();
+}
+
+// Test that cancelling execution before the script is fetched doesn't run it.
+TEST_F(SellerWorkletTest, CancelBeforeFetch) {
+  seller_timeout_ = base::Days(360);
+
+  mojo::Remote<mojom::SellerWorklet> seller_worklet = CreateWorklet();
+  TestScoreAdClient client(TestScoreAdClient::ScoreAdNeverInvokedCallback());
+  mojo::Receiver<mojom::ScoreAdClient> client_receiver(&client);
+
+  seller_worklet->ScoreAd(
+      ad_metadata_, bid_, auction_ad_config_non_shared_params_,
+      browser_signals_other_seller_.Clone(),
+      browser_signal_interest_group_owner_, browser_signal_render_url_,
+      browser_signal_ad_components_, browser_signal_bidding_duration_msecs_,
+      seller_timeout_,
+      /*trace_id=*/1, client_receiver.BindNewPipeAndPassRemote());
+  task_environment_.RunUntilIdle();
+  // Cancel and then make the script available.
+  client_receiver.reset();
+  AddJavascriptResponse(&url_loader_factory_, decision_logic_url_,
+                        "while (true) {}");
+
+  // Make sure cancellation happens before ~SellerWorklet.
   task_environment_.RunUntilIdle();
 }
 

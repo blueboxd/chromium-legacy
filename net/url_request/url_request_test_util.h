@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -30,8 +30,8 @@
 #include "net/cert/cert_verifier.h"
 #include "net/cert/ct_policy_enforcer.h"
 #include "net/cookies/cookie_monster.h"
-#include "net/cookies/same_party_context.h"
 #include "net/disk_cache/disk_cache.h"
+#include "net/first_party_sets/same_party_context.h"
 #include "net/http/http_auth_handler_factory.h"
 #include "net/http/http_cache.h"
 #include "net/http/http_network_layer.h"
@@ -45,7 +45,6 @@
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
-#include "net/url_request/url_request_context_storage.h"
 #include "net/url_request/url_request_interceptor.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "url/url_util.h"

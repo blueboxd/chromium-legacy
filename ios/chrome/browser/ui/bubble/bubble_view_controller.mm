@@ -1,11 +1,11 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #import "ios/chrome/browser/ui/bubble/bubble_view_controller.h"
 
 #import "base/notreached.h"
-#include "ios/chrome/browser/ui/util/animation_util.h"
+#import "ios/chrome/browser/ui/util/animation_util.h"
 #import "ios/chrome/common/material_timing.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -13,7 +13,7 @@
 #endif
 
 namespace {
-const CGFloat kAnimationDuration = ios::material::kDuration3;
+const CGFloat kAnimationDuration = kMaterialDuration3;
 // The vertical offset distance used in the sink-down animation.
 const CGFloat kVerticalOffset = 8.0f;
 

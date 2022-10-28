@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,9 +11,6 @@
 
 #include "ash/components/arc/arc_util.h"
 #include "ash/components/arc/enterprise/arc_data_snapshotd_manager.h"
-#include "ash/components/login/auth/public/auth_failure.h"
-#include "ash/components/login/auth/public/key.h"
-#include "ash/components/login/session/session_termination_manager.h"
 #include "ash/components/settings/cros_settings_names.h"
 #include "ash/constants/ash_features.h"
 #include "ash/constants/ash_pref_names.h"
@@ -102,6 +99,9 @@
 #include "chromeos/ash/components/dbus/session_manager/session_manager_client.h"
 #include "chromeos/ash/components/dbus/userdataauth/userdataauth_client.h"
 #include "chromeos/ash/components/hibernate/buildflags.h"
+#include "chromeos/ash/components/login/auth/public/auth_failure.h"
+#include "chromeos/ash/components/login/auth/public/key.h"
+#include "chromeos/ash/components/login/session/session_termination_manager.h"
 #include "chromeos/dbus/power/power_manager_client.h"
 #include "chromeos/strings/grit/chromeos_strings.h"
 #include "components/account_id/account_id.h"
@@ -534,12 +534,7 @@ void ExistingUserController::Observe(
 ////////////////////////////////////////////////////////////////////////////////
 // ExistingUserController, private:
 
-ExistingUserController::~ExistingUserController() {
-  if (browser_shutdown::IsTryingToQuit() || chrome::IsAttemptingShutdown())
-    return;
-  CHECK(UserSessionManager::GetInstance());
-  UserSessionManager::GetInstance()->DelegateDeleted(this);
-}
+ExistingUserController::~ExistingUserController() = default;
 
 ////////////////////////////////////////////////////////////////////////////////
 // ExistingUserController, LoginDisplay::Delegate implementation:
@@ -966,7 +961,7 @@ void ExistingUserController::ContinueAuthSuccessAfterResumeAttempt(
   UserSessionManager::GetInstance()->StartSession(
       user_context, start_session_type, has_auth_cookies,
       false,  // Start session for user.
-      this);
+      AsWeakPtr());
 
   // Update user's displayed email.
   if (!display_email_.empty()) {

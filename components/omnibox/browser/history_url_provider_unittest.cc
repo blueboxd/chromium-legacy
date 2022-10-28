@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -33,13 +33,13 @@
 #include "components/omnibox/common/omnibox_features.h"
 #include "components/prefs/pref_service.h"
 #include "components/search_engines/default_search_manager.h"
-#include "components/search_engines/omnibox_focus_type.h"
 #include "components/search_engines/template_url.h"
 #include "components/search_engines/template_url_service.h"
 #include "components/search_engines/template_url_starter_pack_data.h"
 #include "components/url_formatter/url_fixer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/metrics_proto/omnibox_event.pb.h"
+#include "third_party/metrics_proto/omnibox_focus_type.pb.h"
 #include "third_party/metrics_proto/omnibox_input_type.pb.h"
 #include "ui/base/page_transition_types.h"
 
@@ -290,10 +290,6 @@ bool HistoryURLProviderTest::SetUpImpl(bool create_history_db) {
   client_->set_history_service(
       history::CreateHistoryService(history_dir_.GetPath(), create_history_db));
   client_->set_bookmark_model(bookmarks::TestBookmarkClient::CreateModel());
-  client_->set_in_memory_url_index(std::make_unique<InMemoryURLIndex>(
-      client_->GetBookmarkModel(), client_->GetHistoryService(), nullptr,
-      history_dir_.GetPath(), SchemeSet()));
-  client_->GetInMemoryURLIndex()->Init();
   client_->set_template_url_service(
       std::make_unique<TemplateURLService>(nullptr, 0));
   if (!client_->GetHistoryService())
@@ -1021,7 +1017,7 @@ TEST_F(HistoryURLProviderTest, CrashDueToFixup) {
 TEST_F(HistoryURLProviderTest, DoesNotProvideMatchesOnFocus) {
   AutocompleteInput input(u"foo", metrics::OmniboxEventProto::OTHER,
                           TestSchemeClassifier());
-  input.set_focus_type(OmniboxFocusType::ON_FOCUS);
+  input.set_focus_type(metrics::OmniboxFocusType::INTERACTION_FOCUS);
   autocomplete_->Start(input, false);
   EXPECT_TRUE(autocomplete_->matches().empty());
 }

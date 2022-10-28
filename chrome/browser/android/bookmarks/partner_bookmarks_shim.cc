@@ -1,4 +1,4 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -255,7 +255,7 @@ void PartnerBookmarksShim::ReloadNodeMapping() {
     return;
 
   const base::Value::List& list =
-      prefs_->GetValueList(prefs::kPartnerBookmarkMappings);
+      prefs_->GetList(prefs::kPartnerBookmarkMappings);
 
   for (const auto& entry : list) {
     if (!entry.is_dict()) {

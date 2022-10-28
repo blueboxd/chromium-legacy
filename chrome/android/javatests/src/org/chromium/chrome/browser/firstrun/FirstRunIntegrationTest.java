@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -60,6 +60,7 @@ import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Criteria;
 import org.chromium.base.test.util.CriteriaHelper;
 import org.chromium.base.test.util.DisabledTest;
+import org.chromium.base.test.util.DoNotBatch;
 import org.chromium.base.test.util.JniMocker;
 import org.chromium.base.test.util.ScalableTimeout;
 import org.chromium.chrome.R;
@@ -112,6 +113,7 @@ import java.util.concurrent.TimeoutException;
  * Integration test suite for the first run experience.
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
+@DoNotBatch(reason = "This test interacts with startup, native initialization, and first run.")
 @CommandLineFlags.Add({ChromeSwitches.FORCE_DISABLE_SIGNIN_FRE})
 public class FirstRunIntegrationTest {
     private static final String TEST_URL = "https://test.com";

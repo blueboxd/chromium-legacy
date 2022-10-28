@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -35,11 +35,11 @@ class DeskModelWrapper : public DeskModel {
 
   // DeskModel:
   DeskModel::GetAllEntriesResult GetAllEntries() override;
-  void GetEntryByUUID(const std::string& uuid,
-                      GetEntryByUuidCallback callback) override;
+  DeskModel::GetEntryByUuidResult GetEntryByUUID(
+      const base::GUID& uuid) override;
   void AddOrUpdateEntry(std::unique_ptr<ash::DeskTemplate> new_entry,
                         AddOrUpdateEntryCallback callback) override;
-  void DeleteEntry(const std::string& uuid,
+  void DeleteEntry(const base::GUID& uuid,
                    DeleteEntryCallback callback) override;
   void DeleteAllEntries(DeleteEntryCallback callback) override;
   std::size_t GetEntryCount() const override;

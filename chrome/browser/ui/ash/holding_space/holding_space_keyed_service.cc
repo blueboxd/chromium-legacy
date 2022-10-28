@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,27 +6,22 @@
 
 #include <set>
 
-#include "ash/constants/ash_features.h"
 #include "ash/public/cpp/holding_space/holding_space_controller.h"
 #include "ash/public/cpp/holding_space/holding_space_item.h"
 #include "ash/public/cpp/holding_space/holding_space_metrics.h"
 #include "ash/public/cpp/holding_space/holding_space_prefs.h"
 #include "base/callback_helpers.h"
-#include "base/containers/cxx20_erase.h"
 #include "base/files/file_path.h"
 #include "chrome/browser/ash/drive/drive_integration_service.h"
-#include "chrome/browser/ash/file_manager/app_id.h"
-#include "chrome/browser/ash/file_manager/fileapi_util.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/ash/holding_space/holding_space_downloads_delegate.h"
 #include "chrome/browser/ui/ash/holding_space/holding_space_file_system_delegate.h"
 #include "chrome/browser/ui/ash/holding_space/holding_space_keyed_service_delegate.h"
+#include "chrome/browser/ui/ash/holding_space/holding_space_metrics_delegate.h"
 #include "chrome/browser/ui/ash/holding_space/holding_space_persistence_delegate.h"
 #include "chrome/browser/ui/ash/holding_space/holding_space_util.h"
 #include "components/account_id/account_id.h"
-#include "components/prefs/scoped_user_pref_update.h"
-#include "storage/browser/file_system/file_system_context.h"
 #include "storage/browser/file_system/file_system_url.h"
 #include "storage/common/file_system/file_system_types.h"
 
@@ -248,6 +243,13 @@ void HoldingSpaceKeyedService::AddNearbyShare(
   AddItemOfType(HoldingSpaceItem::Type::kNearbyShare, nearby_share_path);
 }
 
+const std::string& HoldingSpaceKeyedService::AddPhoneHubCameraRollItem(
+    const base::FilePath& item_path,
+    const HoldingSpaceProgress& progress) {
+  return AddItemOfType(HoldingSpaceItem::Type::kPhoneHubCameraRoll, item_path,
+                       progress);
+}
+
 void HoldingSpaceKeyedService::AddScan(const base::FilePath& file_path) {
   AddItemOfType(HoldingSpaceItem::Type::kScan, file_path);
 }
@@ -263,11 +265,11 @@ void HoldingSpaceKeyedService::AddScreenshot(
   AddItemOfType(HoldingSpaceItem::Type::kScreenshot, screenshot_file);
 }
 
-const std::string& HoldingSpaceKeyedService::AddPhoneHubCameraRollItem(
-    const base::FilePath& item_path,
-    const HoldingSpaceProgress& progress) {
-  return AddItemOfType(HoldingSpaceItem::Type::kPhoneHubCameraRoll, item_path,
-                       progress);
+void HoldingSpaceKeyedService::AddSuggestion(
+    HoldingSpaceItem::Type type,
+    const base::FilePath& suggestion_path) {
+  DCHECK(HoldingSpaceItem::IsSuggestion(type));
+  AddItemOfType(type, suggestion_path);
 }
 
 const std::string& HoldingSpaceKeyedService::AddItem(
@@ -404,6 +406,10 @@ void HoldingSpaceKeyedService::InitializeDelegates() {
 
   // The `HoldingSpaceFileSystemDelegate` monitors the file system for changes.
   delegates_.push_back(std::make_unique<HoldingSpaceFileSystemDelegate>(
+      this, &holding_space_model_));
+
+  // The `HoldingSpaceMetricsDelegate` records metrics.
+  delegates_.push_back(std::make_unique<HoldingSpaceMetricsDelegate>(
       this, &holding_space_model_));
 
   // The `HoldingSpacePersistenceDelegate` manages holding space persistence.

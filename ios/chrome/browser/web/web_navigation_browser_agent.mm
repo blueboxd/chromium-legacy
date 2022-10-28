@@ -1,16 +1,16 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #import "ios/chrome/browser/web/web_navigation_browser_agent.h"
 
-#include "components/feature_engagement/public/event_constants.h"
-#include "components/feature_engagement/public/tracker.h"
-#include "ios/chrome/browser/feature_engagement/tracker_factory.h"
+#import "components/feature_engagement/public/event_constants.h"
+#import "components/feature_engagement/public/tracker.h"
+#import "ios/chrome/browser/feature_engagement/tracker_factory.h"
 #import "ios/chrome/browser/web/web_navigation_ntp_delegate.h"
 #import "ios/chrome/browser/web/web_navigation_util.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
-#include "ios/web/common/user_agent.h"
+#import "ios/web/common/user_agent.h"
 #import "ios/web/public/navigation/navigation_item.h"
 #import "ios/web/public/web_state.h"
 
@@ -60,7 +60,7 @@ void WebNavigationBrowserAgent::Reload() {
   if (delegate_.NTPActiveForCurrentWebState) {
     [delegate_ reloadNTPForWebState:web_state_list_->GetActiveWebState()];
   } else {
-    // |check_for_repost| is true because the reload is explicitly initiated
+    // `check_for_repost` is true because the reload is explicitly initiated
     // by the user.
     web_state_list_->GetActiveWebState()->GetNavigationManager()->Reload(
         web::ReloadType::NORMAL, true /* check_for_repost */);

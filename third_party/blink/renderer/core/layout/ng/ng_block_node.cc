@@ -33,7 +33,6 @@
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_cursor.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_node.h"
 #include "third_party/blink/renderer/core/layout/ng/layout_ng_fieldset.h"
-#include "third_party/blink/renderer/core/layout/ng/layout_ng_view.h"
 #include "third_party/blink/renderer/core/layout/ng/legacy_layout_tree_walking.h"
 #include "third_party/blink/renderer/core/layout/ng/list/layout_ng_list_item.h"
 #include "third_party/blink/renderer/core/layout/ng/mathml/ng_math_fraction_layout_algorithm.h"
@@ -487,9 +486,8 @@ const NGLayoutResult* NGBlockNode::Layout(
 
   PrepareForLayout();
   DeferredShapingDisallowScope disallow_deferred(
-      *box_->GetFrameView(),
-      Style().HasTransform() ||
-          !IsHorizontalWritingMode(Style().GetWritingMode()));
+      *box_->View(), Style().HasTransform() ||
+                         !IsHorizontalWritingMode(Style().GetWritingMode()));
 
   NGLayoutAlgorithmParams params(*this, *fragment_geometry, constraint_space,
                                  break_token, early_break);
@@ -497,9 +495,10 @@ const NGLayoutResult* NGBlockNode::Layout(
 
   auto* block_flow = DynamicTo<LayoutBlockFlow>(box_.Get());
 
-  // Try to perform "simplified" layout.
+  // Try to perform "simplified" layout, unless it's a fragmentation context
+  // root (the simplified layout algorithm doesn't support fragmentainers).
   if (cache_status == NGLayoutCacheStatus::kNeedsSimplifiedLayout &&
-      !GetFlowThread(block_flow)) {
+      (!block_flow || !block_flow->IsFragmentationContextRoot())) {
     DCHECK(layout_result);
 #if DCHECK_IS_ON()
     const NGLayoutResult* previous_result = layout_result;
@@ -667,7 +666,9 @@ const NGLayoutResult* NGBlockNode::SimplifiedLayout(
   // to perform a full layout.
   if (old_fragment.Size() != new_fragment.Size())
     return nullptr;
-  if (old_fragment.Baseline() != new_fragment.Baseline())
+  if (old_fragment.FirstBaseline() != new_fragment.FirstBaseline())
+    return nullptr;
+  if (old_fragment.LastBaseline() != new_fragment.LastBaseline())
     return nullptr;
 
 #if DCHECK_IS_ON()
@@ -681,9 +682,8 @@ const NGLayoutResult* NGBlockNode::LayoutRepeatableRoot(
     const NGConstraintSpace& constraint_space,
     const NGBlockBreakToken* break_token) const {
   // We read and write the physical fragments vector in LayoutBox here, which
-  // isn't allowed if side-effects are disabled. However, if side-effects are
-  // disabled, we shouldn't be here anyway, since we shouldn't be performing
-  // block fragmentation then (and therefore never repeat content).
+  // isn't allowed if side-effects are disabled. Call-sites must make sure that
+  // we don't attempt to repeat content if side-effects are disabled.
   DCHECK(!NGDisableSideEffectsScope::IsDisabled());
 
   // When laying out repeatable content, we cannot at the same time allow it to
@@ -738,11 +738,12 @@ const NGLayoutResult* NGBlockNode::LayoutRepeatableRoot(
     DCHECK_GE(fragment_count, 1u);
     box_->ClearNeedsLayout();
     for (wtf_size_t i = 1; i < fragment_count; i++) {
-      const NGPhysicalBoxFragment& fragment = *box_->GetPhysicalFragment(i);
-      bool is_first = i == 1;
+      const NGPhysicalBoxFragment& physical_fragment =
+          *box_->GetPhysicalFragment(i);
+      is_first = i == 1;
       bool is_last = i + 1 == fragment_count;
       NGFragmentRepeater repeater(is_first, is_last);
-      repeater.CloneChildFragments(fragment);
+      repeater.CloneChildFragments(physical_fragment);
     }
   }
 
@@ -868,8 +869,7 @@ void NGBlockNode::FinishLayout(LayoutBlockFlow* block_flow,
     bool has_inline_children = items || HasInlineChildren(block_flow);
 
     // Don't consider display-locked objects as having any children.
-    if (has_inline_children && !block_flow->IsShapingDeferred() &&
-        box_->ChildLayoutBlockedByDisplayLock()) {
+    if (has_inline_children && box_->ChildLayoutBlockedByDisplayLock()) {
       has_inline_children = false;
       // It could be the case that our children are already clean at the time
       // the lock was acquired. This means that |box_| self dirty bits might be
@@ -946,9 +946,8 @@ MinMaxSizesResult NGBlockNode::ComputeMinMaxSizes(
   }
 
   DeferredShapingDisallowScope disallow_deferred(
-      *box_->GetFrameView(),
-      Style().HasTransform() ||
-          !IsHorizontalWritingMode(Style().GetWritingMode()));
+      *box_->View(), Style().HasTransform() ||
+                         !IsHorizontalWritingMode(Style().GetWritingMode()));
   bool is_orthogonal_flow_root =
       !IsParallelWritingMode(container_writing_mode, Style().GetWritingMode());
 
@@ -1703,17 +1702,6 @@ void NGBlockNode::CopyFragmentItemsToLayoutBox(
   }
 }
 
-bool NGBlockNode::IsPaginatedRoot() const {
-  const auto* view = DynamicTo<LayoutNGView>(box_.Get());
-  if (!view || !view->IsFragmentationContextRoot())
-    return false;
-  if (const LayoutObject* child = view->FirstChild()) {
-    if (child->ForceLegacyLayout())
-      return false;
-  }
-  return true;
-}
-
 bool NGBlockNode::IsInlineFormattingContextRoot(
     NGLayoutInputNode* first_child_out) const {
   if (const auto* block = DynamicTo<LayoutBlockFlow>(box_.Get())) {
@@ -2016,17 +2004,17 @@ void NGBlockNode::CopyBaselinesFromLegacyLayout(
     const NGConstraintSpace& constraint_space,
     NGBoxFragmentBuilder* builder) const {
   switch (constraint_space.BaselineAlgorithmType()) {
-    case NGBaselineAlgorithmType::kFirstLine: {
+    case NGBaselineAlgorithmType::kDefault: {
       LayoutUnit position = box_->FirstLineBoxBaseline();
       if (position != -1)
-        builder->SetBaseline(position);
+        builder->SetFirstBaseline(position);
       break;
     }
     case NGBaselineAlgorithmType::kInlineBlock: {
       LayoutUnit position =
           AtomicInlineBaselineFromLegacyLayout(constraint_space);
       if (position != -1)
-        builder->SetBaseline(position);
+        builder->SetFirstBaseline(position);
       break;
     }
   }

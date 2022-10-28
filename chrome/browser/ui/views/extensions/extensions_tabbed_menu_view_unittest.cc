@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -552,9 +552,8 @@ TEST_F(ExtensionsTabbedMenuViewUnitTest,
       installed_item->view_controller()));
 }
 
-// TODO(crbug.com/1304959): Test is flaky.
 TEST_F(ExtensionsTabbedMenuViewUnitTest,
-       DISABLED_InstalledTab_AddAndRemoveExtensionWhenMenuIsOpen) {
+       InstalledTab_AddAndRemoveExtensionWhenMenuIsOpen) {
   constexpr char kExtensionA[] = "A Extension";
   constexpr char kExtensionC[] = "C Extension";
   InstallExtension(kExtensionA);
@@ -941,9 +940,8 @@ TEST_F(
             kOnClickComboboxIndex);
 }
 
-// TODO(crbug.com/1304959): Test is flaky.
 TEST_F(ExtensionsTabbedMenuViewUnitTest,
-       DISABLED_SiteAccessTab_AddAndRemoveExtensionWhenMenuIsOpen) {
+       SiteAccessTab_AddAndRemoveExtensionWhenMenuIsOpen) {
   constexpr char kExtensionA[] = "A Extension";
   constexpr char kExtensionC[] = "C Extension";
   InstallExtensionWithHostPermissions(kExtensionA, {"<all_urls>"});

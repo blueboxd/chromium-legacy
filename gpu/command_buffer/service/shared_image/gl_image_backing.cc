@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,7 +10,6 @@
 #include "components/viz/common/resources/resource_sizes.h"
 #include "gpu/command_buffer/common/shared_image_trace_utils.h"
 #include "gpu/command_buffer/common/shared_image_usage.h"
-#include "gpu/command_buffer/service/mailbox_manager.h"
 #include "gpu/command_buffer/service/shared_context_state.h"
 #include "gpu/command_buffer/service/skia_utils.h"
 #include "third_party/skia/include/core/SkColorSpace.h"
@@ -173,7 +172,8 @@ sk_sp<SkSurface> SkiaGLCommonRepresentation::BeginWriteAccess(
     int final_msaa_count,
     const SkSurfaceProps& surface_props,
     std::vector<GrBackendSemaphore>* begin_semaphores,
-    std::vector<GrBackendSemaphore>* end_semaphores) {
+    std::vector<GrBackendSemaphore>* end_semaphores,
+    std::unique_ptr<GrBackendSurfaceMutableState>* end_state) {
   CheckContext();
   if (client_) {
     DCHECK(context_state_->GrContextIsGL());
@@ -233,7 +233,8 @@ void SkiaGLCommonRepresentation::EndWriteAccess(sk_sp<SkSurface> surface) {
 
 sk_sp<SkPromiseImageTexture> SkiaGLCommonRepresentation::BeginReadAccess(
     std::vector<GrBackendSemaphore>* begin_semaphores,
-    std::vector<GrBackendSemaphore>* end_semaphores) {
+    std::vector<GrBackendSemaphore>* end_semaphores,
+    std::unique_ptr<GrBackendSurfaceMutableState>* end_state) {
   CheckContext();
   if (client_) {
     DCHECK(context_state_->GrContextIsGL());
@@ -353,6 +354,14 @@ GLImageBacking::GLImageBacking(scoped_refptr<gl::GLImage> image,
       cleared_rect_(params.is_cleared ? gfx::Rect(size) : gfx::Rect()),
       weak_factory_(this) {
   DCHECK(image_);
+#if BUILDFLAG(IS_MAC)
+  // NOTE: Mac currently retains GLTexture and reuses it. Not sure if this is
+  // best approach as it can lead to issues with context losses.
+  if (!gl_texture_retained_for_legacy_mailbox_) {
+    RetainGLTexture();
+    gl_texture_retained_for_legacy_mailbox_ = true;
+  }
+#endif
 }
 
 GLImageBacking::~GLImageBacking() {
@@ -404,10 +413,6 @@ void GLImageBacking::ReleaseGLTexture(bool have_context) {
     }
   }
 
-  if (rgb_emulation_texture_) {
-    rgb_emulation_texture_->RemoveLightweightRef(have_context);
-    rgb_emulation_texture_ = nullptr;
-  }
   if (IsPassthrough()) {
     if (passthrough_texture_) {
       if (have_context) {
@@ -455,19 +460,20 @@ scoped_refptr<gfx::NativePixmap> GLImageBacking::GetNativePixmap() {
   return image_->GetNativePixmap();
 }
 
-void GLImageBacking::OnMemoryDump(const std::string& dump_name,
-                                  base::trace_event::MemoryAllocatorDump* dump,
-                                  base::trace_event::ProcessMemoryDump* pmd,
-                                  uint64_t client_tracing_id) {
+void GLImageBacking::OnMemoryDump(
+    const std::string& dump_name,
+    base::trace_event::MemoryAllocatorDumpGuid client_guid,
+    base::trace_event::ProcessMemoryDump* pmd,
+    uint64_t client_tracing_id) {
+  SharedImageBacking::OnMemoryDump(dump_name, client_guid, pmd,
+                                   client_tracing_id);
+
   // Add a |service_guid| which expresses shared ownership between the
   // various GPU dumps.
-  auto client_guid = GetSharedImageGUIDForTracing(mailbox());
   if (auto service_id = GetGLServiceId()) {
     auto service_guid = gl::GetGLTextureServiceGUIDForTracing(GetGLServiceId());
     pmd->CreateSharedGlobalAllocatorDump(service_guid);
-    // TODO(piman): coalesce constant with TextureManager::DumpTextureRef.
-    int importance = 2;  // This client always owns the ref.
-    pmd->AddOwnershipEdge(client_guid, service_guid, importance);
+    pmd->AddOwnershipEdge(client_guid, service_guid, kOwningEdgeImportance);
   }
   image_->OnMemoryDump(pmd, client_tracing_id, dump_name);
 }
@@ -487,19 +493,6 @@ void GLImageBacking::SetClearedRect(const gfx::Rect& cleared_rect) {
     texture_->SetLevelClearedRect(texture_->target(), 0, cleared_rect);
   else
     cleared_rect_ = cleared_rect;
-}
-
-bool GLImageBacking::ProduceLegacyMailbox(MailboxManager* mailbox_manager) {
-  if (!gl_texture_retained_for_legacy_mailbox_) {
-    RetainGLTexture();
-    gl_texture_retained_for_legacy_mailbox_ = true;
-  }
-
-  if (IsPassthrough())
-    mailbox_manager->ProduceTexture(mailbox(), passthrough_texture_.get());
-  else
-    mailbox_manager->ProduceTexture(mailbox(), texture_);
-  return true;
 }
 
 std::unique_ptr<GLTextureImageRepresentation> GLImageBacking::ProduceGLTexture(
@@ -615,56 +608,6 @@ std::unique_ptr<MemoryImageRepresentation> GLImageBacking::ProduceMemory(
       manager, this, tracker, base::WrapRefCounted(image_memory));
 }
 
-std::unique_ptr<GLTextureImageRepresentation>
-GLImageBacking::ProduceRGBEmulationGLTexture(SharedImageManager* manager,
-                                             MemoryTypeTracker* tracker) {
-  if (IsPassthrough())
-    return nullptr;
-
-  RetainGLTexture();
-  if (!rgb_emulation_texture_) {
-    const GLenum target = GetGLTarget();
-    gl::GLApi* api = gl::g_current_gl_context;
-    ScopedRestoreTexture scoped_restore(api, target);
-
-    // Set to false as this code path is only used on Mac.
-    const bool framebuffer_attachment_angle = false;
-    GLTextureImageBackingHelper::MakeTextureAndSetParameters(
-        target, 0 /* service_id */, framebuffer_attachment_angle, nullptr,
-        &rgb_emulation_texture_);
-    api->glBindTextureFn(target, rgb_emulation_texture_->service_id());
-
-    gles2::Texture::ImageState image_state = gles2::Texture::BOUND;
-    gl::GLImage* image = texture_->GetLevelImage(target, 0, &image_state);
-    DCHECK_EQ(image, image_.get());
-
-    DCHECK(image->ShouldBindOrCopy() == gl::GLImage::BIND);
-    const GLenum internal_format = GL_RGB;
-    if (!image->BindTexImageWithInternalformat(target, internal_format)) {
-      LOG(ERROR) << "Failed to bind image to rgb texture.";
-      rgb_emulation_texture_->RemoveLightweightRef(true /* have_context */);
-      rgb_emulation_texture_ = nullptr;
-      ReleaseGLTexture(true /* has_context */);
-      return nullptr;
-    }
-    GLenum format =
-        gles2::TextureManager::ExtractFormatFromStorageFormat(internal_format);
-    GLenum type =
-        gles2::TextureManager::ExtractTypeFromStorageFormat(internal_format);
-
-    const gles2::Texture::LevelInfo* info = texture_->GetLevelInfo(target, 0);
-    rgb_emulation_texture_->SetLevelInfo(target, 0, internal_format,
-                                         info->width, info->height, 1, 0,
-                                         format, type, info->cleared_rect);
-
-    rgb_emulation_texture_->SetLevelImage(target, 0, image, image_state);
-    rgb_emulation_texture_->SetImmutable(true, false);
-  }
-
-  return std::make_unique<GLTextureGLCommonRepresentation>(
-      manager, this, this, tracker, rgb_emulation_texture_);
-}
-
 void GLImageBacking::Update(std::unique_ptr<gfx::GpuFence> in_fence) {
   if (in_fence) {
     // TODO(dcastagna): Don't wait for the fence if the SharedImage is going
@@ -704,8 +647,16 @@ void GLImageBacking::GLTextureImageRepresentationEndAccess(bool readonly) {
   // between the CPU and GPU. The next time this texture is accessed we will
   // call BindTexImage to signal a LockIOSurface call before rendering to it via
   // the CPU.
-  if (IsPassthrough() &&
-      gl::GetANGLEImplementation() == gl::ANGLEImplementation::kSwiftShader &&
+  // Similarly, when ANGLE's metal backend is used, we have to signal a call to
+  // waitUntilScheduled() using the same method on EndAccess to ensure IOSurface
+  // synchronization.
+  // TODO(https://anglebug.com/7626): Enable on Metal only when CPU_READ or
+  // SCANOUT is specified.
+  bool needs_synchronization =
+      IsPassthrough() &&
+      (gl::GetANGLEImplementation() == gl::ANGLEImplementation::kSwiftShader ||
+       gl::GetANGLEImplementation() == gl::ANGLEImplementation::kMetal);
+  if (needs_synchronization &&
       image_->ShouldBindOrCopy() == gl::GLImage::BIND) {
     const GLenum target = GetGLTarget();
     gl::ScopedTextureBinder binder(target, passthrough_texture_->service_id());
@@ -771,16 +722,9 @@ bool GLImageBacking::BindOrCopyImageIfNeeded() {
   // Bind or copy the GLImage to the texture.
   gles2::Texture::ImageState new_state = gles2::Texture::UNBOUND;
   if (image_->ShouldBindOrCopy() == gl::GLImage::BIND) {
-    if (gl_params_.is_rgb_emulation) {
-      if (!image_->BindTexImageWithInternalformat(target, GL_RGB)) {
-        LOG(ERROR) << "Failed to bind GLImage to RGB target";
-        return false;
-      }
-    } else {
-      if (!image_->BindTexImage(target)) {
-        LOG(ERROR) << "Failed to bind GLImage to target";
-        return false;
-      }
+    if (!image_->BindTexImage(target)) {
+      LOG(ERROR) << "Failed to bind GLImage to target";
+      return false;
     }
     new_state = gles2::Texture::BOUND;
   } else {

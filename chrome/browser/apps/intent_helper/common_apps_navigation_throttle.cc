@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -115,7 +115,7 @@ GURL RedirectUrlIfSwa(Profile* profile,
   // Projector:
   if (app_id == ash::kChromeUITrustedProjectorSwaAppId &&
       url.GetWithEmptyPath() == GURL(ash::kChromeUIUntrustedProjectorPwaUrl)) {
-    std::string override_url = ash::kChromeUITrustedProjectorAppUrl;
+    std::string override_url = ash::kChromeUITrustedProjectorUrl;
     if (url.path().length() > 1)
       override_url += url.path().substr(1);
     std::stringstream ss;

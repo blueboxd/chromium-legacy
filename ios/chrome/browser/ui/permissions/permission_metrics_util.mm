@@ -1,11 +1,11 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #import "ios/chrome/browser/ui/permissions/permission_metrics_util.h"
-#include "base/metrics/histogram_functions.h"
-#include "base/metrics/user_metrics.h"
-#include "base/metrics/user_metrics_action.h"
+#import "base/metrics/histogram_functions.h"
+#import "base/metrics/user_metrics.h"
+#import "base/metrics/user_metrics_action.h"
 #import "ios/chrome/browser/ui/permissions/permission_info.h"
 #import "ios/web/public/permissions/permissions.h"
 

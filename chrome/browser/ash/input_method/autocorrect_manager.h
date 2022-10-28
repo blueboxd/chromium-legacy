@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,13 +13,15 @@
 #include "chrome/browser/ash/input_method/input_method_engine.h"
 #include "chrome/browser/ash/input_method/suggestion_handler_interface.h"
 #include "chrome/browser/ash/input_method/text_field_contextual_info_fetcher.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace ash {
 namespace input_method {
 
+// Must match with IMEAutocorrectActions in enums.xml
+//
 // These values are persisted to logs. Entries should not be renumbered and
-// numeric values should never be reused. Needs to match ImeAutocorrectActions
-// in enums.xml.
+// numeric values should never be reused.
 enum class AutocorrectActions {
   kWindowShown = 0,
   kUnderlined = 1,
@@ -38,6 +40,7 @@ class AutocorrectManager {
   // `suggestion_handler_` must be alive for the duration of the lifetime of
   // this instance.
   explicit AutocorrectManager(SuggestionHandlerInterface* suggestion_handler);
+  ~AutocorrectManager();
 
   AutocorrectManager(const AutocorrectManager&) = delete;
   AutocorrectManager& operator=(const AutocorrectManager&) = delete;
@@ -54,12 +57,19 @@ class AutocorrectManager {
                          const std::u16string& original_text,
                          const std::u16string& current_text);
 
-  // To hide the underline after enough keypresses, this class intercepts
-  // keystrokes. Returns whether the keypress has now been handled.
+  // Handles interactions with Undo UI.
   bool OnKeyEvent(const ui::KeyEvent& event);
 
   // Indicates a new text field is focused, used to save context ID.
   void OnFocus(int context_id);
+
+  // Handles OnBlur event and processes any pending autocorrect range.
+  void OnBlur();
+
+  // Processes the state where a user leaves or focuses a text field. At this
+  // stage any pending autocorrect range is cleared and relevant metrics are
+  // recorded.
+  void ProcessTextFieldChange();
 
   // To show the undo window when cursor is in an autocorrected word, this class
   // is notified of surrounding text changes.
@@ -96,24 +106,86 @@ class AutocorrectManager {
   // Highlights undo button of undo window if it is visible.
   void HighlightUndoButton();
 
+  // Processes the result of a set autocorrect range call. An unsuccessful
+  // result could mean that autocorrect was not supported by the text input
+  // client, so the autocorrect suggestion can be ignored. Otherwise, the
+  // autocorrect suggestion will be set as pending and its relevant
+  // interactions and metrics will be managed here.
+  void ProcessSetAutocorrectRangeDone(const gfx::Range& autocorrect_range,
+                                      const std::u16string& original_text,
+                                      const std::u16string& current_text,
+                                      bool set_range_success);
+
+  struct PendingAutocorrectState {
+    explicit PendingAutocorrectState(const std::u16string& original_text,
+                                     const std::u16string& suggested_text,
+                                     const base::TimeTicks& start_time,
+                                     bool virtual_keyboard_visible = false);
+    PendingAutocorrectState(const PendingAutocorrectState& other);
+    ~PendingAutocorrectState();
+
+    // Original text that is now corrected by autocorrect.
+    std::u16string original_text;
+
+    // Autocorrect suggestion that replaced original text.
+    std::u16string suggested_text;
+
+    // Specifies if the suggestion is validated in the surrounding text.
+    bool is_validated = false;
+
+    // Number of times that validation of autocorrect suggestion in the
+    // surrounding text failed.
+    int validation_tries = 0;
+
+    // Number of characters inserted anytime after setting the pending
+    // autocorrect range. Negative means no autocorrect range is pending or a
+    // range has just been set to pending with no OnSurroundingTextChanged
+    // called yet.
+    int num_inserted_chars = -1;
+
+    // Last known text length from OnSurroundingTextChanged after setting
+    // the pending autocorrect range. Negative means no autocorrect range is
+    // pending or a range has just been set to pending with no
+    // OnSurroundingTextChanged called yet.
+    int text_length = -1;
+
+    // Specifies if undo window is visible or not.
+    bool undo_window_visible = false;
+
+    // Specifies if undo button is highlighted or not.
+    bool undo_button_highlighted = false;
+
+    // Specifies if window_shown metric is already incremented for the pending
+    // autocorrect or not.
+    bool window_shown_logged = false;
+
+    // The time of setting the pending range.
+    base::TimeTicks start_time;
+
+    // Specifies if virtual keyboard was visible when suggesting the pending
+    // autocorrect or not.
+    bool virtual_keyboard_visible = false;
+  };
+
+  // State variable for pending autocorrect, nullopt means no autocorrect
+  // suggestion is pending. The state is kept to avoid issue where
+  // InputContext returns stale autocorrect range.
+  absl::optional<PendingAutocorrectState> pending_autocorrect_;
+
+  // Specifies if the last try for hiding undo window failed. This means
+  // undo window is possibly visible while it must not be.
+  bool error_on_hiding_undo_window_ = false;
+
   SuggestionHandlerInterface* suggestion_handler_;
   int context_id_ = 0;
-  int key_presses_until_underline_hide_ = 0;
-  std::u16string original_text_;
-  bool window_visible_ = false;
-  bool button_highlighted_ = false;
-  base::TimeTicks autocorrect_time_;
-
-  // Stores the state where there is a pending/unprocessed autocorrect
-  // suggestion. The state is kept to avoid issue where InputContext returns
-  // stale autocorrect range.
-  bool autocorrect_pending_ = false;
 
   DiacriticsInsensitiveStringComparator
       diacritics_insensitive_string_comparator_;
   bool in_diacritical_autocorrect_session_ = false;
 
   bool disabled_by_rule_ = false;
+
+  base::WeakPtrFactory<AutocorrectManager> weak_ptr_factory_{this};
 };
 
 }  // namespace input_method

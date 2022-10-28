@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -355,20 +355,6 @@ class ResetOnLoadObserverImpl : public prefs::mojom::ResetOnLoadObserver {
 }  // namespace
 
 namespace chrome_prefs {
-
-namespace internals {
-
-// Group modifications should be reflected in first_run_browsertest.cc and
-// pref_hash_browsertest.cc.
-const char kSettingsEnforcementTrialName[] = "SettingsEnforcement";
-const char kSettingsEnforcementGroupNoEnforcement[] = "no_enforcement";
-const char kSettingsEnforcementGroupEnforceAlways[] = "enforce_always";
-const char kSettingsEnforcementGroupEnforceAlwaysWithDSE[] =
-    "enforce_always_with_dse";
-const char kSettingsEnforcementGroupEnforceAlwaysWithExtensionsAndDSE[] =
-    "enforce_always_with_extensions_and_dse";
-
-}  // namespace internals
 
 std::unique_ptr<PrefService> CreateLocalState(
     const base::FilePath& pref_filename,

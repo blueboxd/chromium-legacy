@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -17,6 +17,7 @@ import org.chromium.chrome.browser.browser_controls.BrowserControlsSizer;
 import org.chromium.chrome.browser.fullscreen.FullscreenManager;
 import org.chromium.chrome.browser.layouts.LayoutManager;
 import org.chromium.chrome.browser.layouts.LayoutStateProvider;
+import org.chromium.chrome.browser.tab.TabObscuringHandler;
 import org.chromium.chrome.browser.toolbar.R;
 import org.chromium.chrome.browser.toolbar.bottom.BottomControlsViewBinder.ViewHolder;
 import org.chromium.components.browser_ui.widget.gesture.BackPressHandler;
@@ -58,6 +59,7 @@ public class BottomControlsCoordinator implements BackPressHandler {
      * @param fullscreenManager A {@link FullscreenManager} to listen for fullscreen changes.
      * @param root The parent {@link ViewGroup} for the bottom controls.
      * @param contentDelegate Delegate for bottom controls UI operations.
+     * @param tabObscuringHandler Delegate object handling obscuring views.
      * @param overlayPanelVisibilitySupplier Notifies overlay panel visibility event.
      * @param constraintsSupplier Used to access current constraints of the browser controls.
      */
@@ -66,7 +68,7 @@ public class BottomControlsCoordinator implements BackPressHandler {
             LayoutManager layoutManager, ResourceManager resourceManager,
             BrowserControlsSizer controlsSizer, FullscreenManager fullscreenManager,
             ScrollingBottomViewResourceFrameLayout root,
-            BottomControlsContentDelegate contentDelegate,
+            BottomControlsContentDelegate contentDelegate, TabObscuringHandler tabObscuringHandler,
             ObservableSupplier<Boolean> overlayPanelVisibilitySupplier,
             ObservableSupplier<Integer> constraintsSupplier) {
         root.setConstraintsSupplier(constraintsSupplier);
@@ -83,10 +85,10 @@ public class BottomControlsCoordinator implements BackPressHandler {
         View container = root.findViewById(R.id.bottom_container_slot);
         ViewGroup.LayoutParams params = container.getLayoutParams();
         params.height = root.getResources().getDimensionPixelOffset(bottomControlsHeightId);
-        mMediator =
-                new BottomControlsMediator(windowAndroid, model, controlsSizer, fullscreenManager,
-                        root.getResources().getDimensionPixelOffset(bottomControlsHeightId),
-                        overlayPanelVisibilitySupplier);
+        mMediator = new BottomControlsMediator(windowAndroid, model, controlsSizer,
+                fullscreenManager, tabObscuringHandler,
+                root.getResources().getDimensionPixelOffset(bottomControlsHeightId),
+                overlayPanelVisibilitySupplier);
 
         resourceManager.getDynamicResourceLoader().registerResource(
                 root.getId(), root.getResourceAdapter());

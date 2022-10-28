@@ -1,4 +1,4 @@
-# Copyright 2017 The Chromium Authors. All rights reserved.
+# Copyright 2017 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -18,9 +18,11 @@ source_set("ui") {
     "//ios/net",
     "//ios/third_party/webkit",
     "//ios/web:core",
+    "//ios/web/annotations",
     "//ios/web/browsing_data",
     "//ios/web/common",
     "//ios/web/common:uikit",
+    "//ios/web/download",
     "//ios/web/favicon",
     "//ios/web/find_in_page",
     "//ios/web/js_features/context_menu",

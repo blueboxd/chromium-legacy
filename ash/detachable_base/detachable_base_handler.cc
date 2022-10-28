@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -214,7 +214,7 @@ DetachableBaseHandler::GetLastUsedDeviceForUser(const UserInfo& user) const {
     return "";
 
   const base::Value::Dict& detachable_base_info =
-      local_state_->GetValueDict(prefs::kDetachableBaseDevices);
+      local_state_->GetDict(prefs::kDetachableBaseDevices);
   const base::Value::Dict* account_info =
       detachable_base_info.FindDictByDottedPath(
           GetKeyForPrefs(user.account_id));

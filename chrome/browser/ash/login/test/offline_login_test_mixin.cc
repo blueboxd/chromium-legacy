@@ -1,10 +1,9 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome/browser/ash/login/test/offline_login_test_mixin.h"
 
-#include "ash/components/login/auth/public/user_context.h"
 #include "ash/components/settings/cros_settings_names.h"
 #include "ash/components/settings/cros_settings_provider.h"
 #include "chrome/browser/ash/login/session/user_session_manager_test_api.h"
@@ -20,6 +19,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/ui/webui/chromeos/login/error_screen_handler.h"
 #include "chrome/test/base/mixin_based_in_process_browser_test.h"
+#include "chromeos/ash/components/login/auth/public/user_context.h"
 #include "chromeos/ash/components/network/network_state_test_helper.h"
 #include "content/public/test/test_utils.h"
 
@@ -58,10 +58,6 @@ OfflineLoginTestMixin::OfflineLoginTestMixin(
     : InProcessBrowserTestMixin(host) {}
 
 OfflineLoginTestMixin::~OfflineLoginTestMixin() = default;
-
-void OfflineLoginTestMixin::SetUpOnMainThread() {
-  LoginDisplayHostWebUI::DisableRestrictiveProxyCheckForTest();
-}
 
 void OfflineLoginTestMixin::TearDownOnMainThread() {
   GoOnline();

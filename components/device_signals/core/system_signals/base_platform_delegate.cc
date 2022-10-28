@@ -1,8 +1,10 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "components/device_signals/core/system_signals/base_platform_delegate.h"
+
+#include <memory>
 
 #include "base/containers/flat_map.h"
 #include "base/containers/flat_set.h"
@@ -12,6 +14,11 @@
 #include "components/device_signals/core/common/common_types.h"
 #include "components/device_signals/core/system_signals/platform_utils.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
+
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC)
+#include "base/file_version_info.h"
+#include "base/strings/utf_string_conversions.h"
+#endif  // BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC)
 
 namespace device_signals {
 
@@ -59,22 +66,43 @@ FilePathMap<bool> BasePlatformDelegate::AreExecutablesRunning(
   return running_map;
 }
 
-FilePathMap<ExecutableMetadata> BasePlatformDelegate::GetAllExecutableMetadata(
-    const FilePathSet& file_paths) {
-  FilePathMap<bool> files_are_running_map = AreExecutablesRunning(file_paths);
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC)
 
-  FilePathMap<ExecutableMetadata> file_paths_to_metadata_map;
-  for (const auto& file_path : file_paths) {
-    ExecutableMetadata executable_metadata;
+absl::optional<PlatformDelegate::ProductMetadata>
+BasePlatformDelegate::GetProductMetadata(const base::FilePath& file_path) {
+  std::unique_ptr<FileVersionInfo> version_info(
+      FileVersionInfo::CreateFileVersionInfo(file_path));
 
-    if (files_are_running_map.contains(file_path)) {
-      executable_metadata.is_running = files_are_running_map[file_path];
-    }
-
-    file_paths_to_metadata_map[file_path] = executable_metadata;
+  if (!version_info) {
+    return absl::nullopt;
   }
 
-  return file_paths_to_metadata_map;
+  std::u16string product_name;
+  if (!version_info->product_name().empty()) {
+    product_name = version_info->product_name();
+  } else if (!version_info->product_short_name().empty()) {
+    product_name = version_info->product_short_name();
+  }
+
+  std::u16string version;
+  if (!version_info->product_version().empty()) {
+    version = version_info->product_version();
+  } else if (!version_info->file_version().empty()) {
+    version = version_info->file_version();
+  }
+
+  PlatformDelegate::ProductMetadata product_metadata;
+  if (!product_name.empty()) {
+    product_metadata.name = base::UTF16ToUTF8(product_name);
+  }
+
+  if (!version.empty()) {
+    product_metadata.version = base::UTF16ToUTF8(version);
+  }
+
+  return product_metadata;
 }
+
+#endif  // BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC)
 
 }  // namespace device_signals

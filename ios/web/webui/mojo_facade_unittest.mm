@@ -1,22 +1,22 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #import "ios/web/webui/mojo_facade.h"
 
-#include <memory>
+#import <memory>
 
-#include "base/bind.h"
-#include "base/run_loop.h"
-#include "base/strings/string_number_conversions.h"
-#include "base/strings/sys_string_conversions.h"
+#import "base/bind.h"
+#import "base/run_loop.h"
+#import "base/strings/string_number_conversions.h"
+#import "base/strings/sys_string_conversions.h"
 #import "base/test/ios/wait_util.h"
 #import "ios/web/public/test/fakes/fake_web_frames_manager.h"
 #import "ios/web/public/test/fakes/fake_web_state.h"
-#include "ios/web/public/test/web_test.h"
+#import "ios/web/public/test/web_test.h"
 #import "ios/web/test/fakes/fake_web_frame_impl.h"
-#include "ios/web/test/mojo_test.mojom.h"
-#include "ios/web/web_state/web_state_impl.h"
+#import "ios/web/test/mojo_test.mojom.h"
+#import "ios/web/web_state/web_state_impl.h"
 #import "testing/gtest_mac.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -30,7 +30,7 @@ namespace web {
 
 namespace {
 
-// Serializes the given |object| to JSON string.
+// Serializes the given `object` to JSON string.
 std::string GetJson(id object) {
   NSData* json_as_data =
       [NSJSONSerialization dataWithJSONObject:object options:0 error:nil];
@@ -40,7 +40,7 @@ std::string GetJson(id object) {
   return base::SysNSStringToUTF8(json_as_string);
 }
 
-// Deserializes the given |json| to an object.
+// Deserializes the given `json` to an object.
 id GetObject(const std::string& json) {
   NSData* json_as_data =
       [base::SysUTF8ToNSString(json) dataUsingEncoding:NSUTF8StringEncoding];
@@ -201,8 +201,11 @@ TEST_F(MojoFacadeTest, Watch) {
   // Write to the other end of the pipe.
   NSDictionary* write = @{
     @"name" : @"MojoHandle.writeMessage",
-    @"args" :
-        @{@"handle" : @(handle1), @"handles" : @[], @"buffer" : @{@"0" : @0}},
+    @"args" : @{
+      @"handle" : @(handle1),
+      @"handles" : @[],
+      @"buffer" : @"QUJDRA=="  // "ABCD" in base-64
+    },
   };
   std::string result_as_string = facade()->HandleMojoMessage(GetJson(write));
   EXPECT_FALSE(result_as_string.empty());
@@ -238,7 +241,7 @@ TEST_F(MojoFacadeTest, ReadWrite) {
     @"args" : @{
       @"handle" : @(handle1),
       @"handles" : @[],
-      @"buffer" : @{@"0" : @9, @"1" : @2, @"2" : @2008}
+      @"buffer" : @"QUJDRA=="  // "ABCD" in base-64
     },
   };
   std::string result_as_string = facade()->HandleMojoMessage(GetJson(write));
@@ -257,7 +260,7 @@ TEST_F(MojoFacadeTest, ReadWrite) {
   NSDictionary* message = GetObject(facade()->HandleMojoMessage(GetJson(read)));
   EXPECT_TRUE([message isKindOfClass:[NSDictionary class]]);
   EXPECT_TRUE(message);
-  NSArray* expected_message = @[ @9, @2, @216 ];  // 2008 does not fit 8-bit.
+  NSArray* expected_message = @[ @65, @66, @67, @68 ];  // ASCII values for A, B, C, D
   EXPECT_NSEQ(expected_message, message[@"buffer"]);
   EXPECT_FALSE([message[@"handles"] count]);
   EXPECT_EQ(MOJO_RESULT_OK, [message[@"result"] unsignedIntValue]);

@@ -125,14 +125,16 @@ bool ParseAttributionFilterData(
     WTF::Vector<String> values;
 
     for (wtf_size_t j = 0; j < num_values; ++j) {
-      String value;
-      if (!array->at(j)->AsString(&value))
+      String value_str;
+      if (!array->at(j)->AsString(&value_str))
         return false;
 
-      if (value.CharactersSizeInBytes() > kMaxBytesPerAttributionFilterString)
+      if (value_str.CharactersSizeInBytes() >
+          kMaxBytesPerAttributionFilterString) {
         return false;
+      }
 
-      values.push_back(std::move(value));
+      values.push_back(std::move(value_str));
     }
 
     filter_data.filter_values.insert(entry.first, std::move(values));
@@ -292,18 +294,15 @@ bool ParseEventTriggerData(
     mojom::blink::EventTriggerDataPtr event_trigger =
         mojom::blink::EventTriggerData::New();
 
-    String trigger_data_string;
-    // A valid header must declare data for each sub-item.
-    if (!object_val->GetString("trigger_data", &trigger_data_string))
-      return false;
-    bool trigger_data_is_valid = false;
-    uint64_t trigger_data_value =
-        trigger_data_string.ToUInt64Strict(&trigger_data_is_valid);
+    // Treat invalid trigger data, priority and deduplication key as if they
+    // were not set.
 
-    // Default invalid data values to 0 so a report will get sent.
-    event_trigger->data = trigger_data_is_valid ? trigger_data_value : 0;
-
-    // Treat invalid priority and deduplication key as if they were not set.
+    if (String s; object_val->GetString("trigger_data", &s)) {
+      bool valid = false;
+      uint64_t trigger_data = s.ToUInt64Strict(&valid);
+      if (valid)
+        event_trigger->data = trigger_data;
+    }
 
     if (String s; object_val->GetString("priority", &s)) {
       bool valid = false;

@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,6 +8,11 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace enterprise_signals::features {
+
+bool IsHotfixOrAntiVirus(int i) {
+  return i == static_cast<int>(NewEvFunction::kHotfix) ||
+         i == static_cast<int>(NewEvFunction::kAntiVirus);
+}
 
 class SignalsFeaturesTest : public testing::Test {
  protected:
@@ -21,7 +26,8 @@ class SignalsFeaturesTest : public testing::Test {
 TEST_F(SignalsFeaturesTest, DisabledFeature) {
   scoped_features_.InitAndDisableFeature(kNewEvSignalsEnabled);
   for (int i = min_enum_value_; i <= max_enum_value_; i++) {
-    EXPECT_FALSE(IsNewFunctionEnabled(static_cast<NewEvFunction>(i)));
+    EXPECT_EQ(IsNewFunctionEnabled(static_cast<NewEvFunction>(i)),
+              IsHotfixOrAntiVirus(i));
   }
 }
 

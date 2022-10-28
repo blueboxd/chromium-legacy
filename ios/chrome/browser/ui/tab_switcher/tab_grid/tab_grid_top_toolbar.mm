@@ -1,19 +1,17 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/tab_grid_top_toolbar.h"
 
 #import "base/check_op.h"
-#import "base/feature_list.h"
-#import "base/ios/ios_util.h"
 #import "ios/chrome/browser/ui/icons/chrome_symbol.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/tab_grid_constants.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/tab_grid_page_control.h"
 #import "ios/chrome/browser/ui/thumb_strip/thumb_strip_feature.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
-#include "ios/chrome/grit/ios_strings.h"
-#include "ui/base/l10n/l10n_util.h"
+#import "ios/chrome/grit/ios_strings.h"
+#import "ui/base/l10n/l10n_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -28,25 +26,6 @@ const int kSearchBarTrailingSpace = 24;
 
 // The size of top toolbar search symbol image.
 const CGFloat kSymbolSearchImagePointSize = 22;
-
-// Kill switch guarding a workaround for broken UI around the dynamic island,
-// see crbug.com/1364629. This workaround makes the UIToolbar background
-// transparent and correctly frames a UIVisualEffectView.
-const base::Feature kDynamicIslandToolbarBlurFix{
-    "DynamicIslandToolbarBlurFix", base::FEATURE_ENABLED_BY_DEFAULT};
-
-// Kill switch guarding a workaround for broken UI around the dynamic island,
-// see crbug.com/1364629. This workaround manually resizes the incorrectly
-// framed UIVisualEffectView.
-const base::Feature kDynamicIslandToolbarManualOffsetFix{
-    "DynamicIslandToolbarManualOffsetFix", base::FEATURE_ENABLED_BY_DEFAULT};
-}  // namespace
-
-bool ShouldUseToolbarBlurFix() {
-  static bool dynamic_island_toolbar_blur_fix =
-      base::FeatureList::IsEnabled(kDynamicIslandToolbarBlurFix) &&
-      base::ios::HasDynamicIsland();
-  return dynamic_island_toolbar_blur_fix;
 }
 
 @interface TabGridTopToolbar () <UIToolbarDelegate>
@@ -246,53 +225,6 @@ bool ShouldUseToolbarBlurFix() {
   [self setItemsForTraitCollection:self.traitCollection];
 }
 
-- (void)layoutSubviews {
-  [super layoutSubviews];
-
-  // The following is a workaround for crbug.com/1364629, which appears to be a
-  // bug in the UIToolbar when using UIBarPositionTopAttached. Once this is
-  // fixed in a future release of iOS, everything below should be removed.
-  // However, everything below should also be safe to run, including when the
-  // incorrect negative offset is corrected.
-  static bool dynamic_island_toolbar_manual_offset_fix =
-      base::FeatureList::IsEnabled(kDynamicIslandToolbarManualOffsetFix) &&
-      base::ios::HasDynamicIsland();
-  if (!dynamic_island_toolbar_manual_offset_fix)
-    return;
-
-  // Sanity check that we are a UIToolbar with a background blur and content
-  // view.
-  if ([[self subviews] count] != 2)
-    return;
-
-  UIView* view = [self subviews][0];
-  NSString* className = NSStringFromClass([view class]);
-  // Another safety check -- but don't put the actual string in
-  // `_UIBarBackground`.
-  if (![className hasSuffix:@"BarBackground"])
-    return;
-
-  // Make sure we have the 'wrong' offset
-  CGRect frame = view.frame;
-#if defined(__IPHONE_16_0) && __IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_16_0
-  if (frame.origin.y != -54) {
-#else
-  if (frame.origin.y != -44) {
-#endif
-    return;
-  }
-
-  // The actual workaround.
-#if defined(__IPHONE_16_0) && __IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_16_0
-  const CGFloat kOffsetFix = 5;
-#else
-  const CGFloat kOffsetFix = 15;
-#endif
-  frame.origin.y -= kOffsetFix;
-  frame.size.height += kOffsetFix;
-  view.frame = frame;
-}
-
 #pragma mark - UIBarPositioningDelegate
 
 // Returns UIBarPositionTopAttached, otherwise the toolbar's translucent
@@ -430,12 +362,6 @@ bool ShouldUseToolbarBlurFix() {
   self.delegate = self;
   [self setShadowImage:[[UIImage alloc] init]
       forToolbarPosition:UIBarPositionAny];
-  if (ShouldUseToolbarBlurFix()) {
-    // Do this to make the toolbar transparent instead of translucent.
-    [self setBackgroundImage:[UIImage new]
-          forToolbarPosition:UIToolbarPositionAny
-                  barMetrics:UIBarMetricsDefault];
-  }
 
   _closeAllOrUndoButton = [[UIBarButtonItem alloc] init];
   _closeAllOrUndoButton.tintColor =

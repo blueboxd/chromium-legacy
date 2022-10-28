@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -84,11 +84,13 @@ using ::testing::WithArgs;
 
 namespace extensions {
 
-#if BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_WIN)
+#if BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || \
+    BUILDFLAG(IS_LINUX)
 
 constexpr char kNoError[] = "";
 
-#endif  // BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_WIN)
+#endif  // BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) ||
+        // BUILDFLAG(IS_LINUX)
 
 #if !BUILDFLAG(IS_CHROMEOS)
 
@@ -456,7 +458,7 @@ class EnterpriseReportingPrivateGetContextInfoTest
 #if BUILDFLAG(IS_WIN)
     EXPECT_TRUE(*info.chrome_cleanup_enabled);
 #else
-    EXPECT_EQ(nullptr, info.chrome_cleanup_enabled.get());
+    EXPECT_FALSE(info.chrome_cleanup_enabled.has_value());
 #endif
   }
   void ExpectDefaultThirdPartyBlockingEnabled(
@@ -464,7 +466,7 @@ class EnterpriseReportingPrivateGetContextInfoTest
 #if BUILDFLAG(IS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
     EXPECT_TRUE(*info.third_party_blocking_enabled);
 #else
-    EXPECT_EQ(info.third_party_blocking_enabled, nullptr);
+    EXPECT_FALSE(info.third_party_blocking_enabled.has_value());
 #endif
   }
 };
@@ -1127,8 +1129,7 @@ TEST_F(EnterpriseReportingPrivateEnqueueRecordFunctionTest,
       api::enterprise_reporting_private::EventType::EVENT_TYPE_USER;
 
   std::unique_ptr<base::ListValue> params = std::make_unique<base::ListValue>();
-  params->Append(
-      base::Value::FromUniquePtrValue(enqueue_record_request.ToValue()));
+  params->Append(base::Value(enqueue_record_request.ToValue()));
 
   // Set up DM token
   const auto dm_token =
@@ -1171,8 +1172,7 @@ TEST_F(EnterpriseReportingPrivateEnqueueRecordFunctionTest,
       api::enterprise_reporting_private::EventType::EVENT_TYPE_USER;
 
   std::unique_ptr<base::ListValue> params = std::make_unique<base::ListValue>();
-  params->Append(
-      base::Value::FromUniquePtrValue(enqueue_record_request.ToValue()));
+  params->Append(base::Value(enqueue_record_request.ToValue()));
 
   policy::SetDMTokenForTesting(
       policy::DMToken::CreateValidTokenForTesting(kTestDMTokenValue));
@@ -1202,8 +1202,7 @@ TEST_F(EnterpriseReportingPrivateEnqueueRecordFunctionTest,
       api::enterprise_reporting_private::EventType::EVENT_TYPE_USER;
 
   std::unique_ptr<base::ListValue> params = std::make_unique<base::ListValue>();
-  params->Append(
-      base::Value::FromUniquePtrValue(enqueue_record_request.ToValue()));
+  params->Append(base::Value(enqueue_record_request.ToValue()));
 
   policy::SetDMTokenForTesting(
       policy::DMToken::CreateValidTokenForTesting(kTestDMTokenValue));
@@ -1230,8 +1229,7 @@ TEST_F(EnterpriseReportingPrivateEnqueueRecordFunctionTest,
       api::enterprise_reporting_private::EventType::EVENT_TYPE_USER;
 
   std::unique_ptr<base::ListValue> params = std::make_unique<base::ListValue>();
-  params->Append(
-      base::Value::FromUniquePtrValue(enqueue_record_request.ToValue()));
+  params->Append(base::Value(enqueue_record_request.ToValue()));
 
   // Set up invalid DM token
   policy::SetDMTokenForTesting(policy::DMToken::CreateInvalidTokenForTesting());
@@ -1266,8 +1264,7 @@ TEST_F(EnterpriseReportingPrivateEnqueueRecordFunctionTest,
 
   // TODO (b/234559917): Use base::Value::List instead
   std::unique_ptr<base::ListValue> params = std::make_unique<base::ListValue>();
-  params->Append(
-      base::Value::FromUniquePtrValue(enqueue_record_request.ToValue()));
+  params->Append(base::Value(enqueue_record_request.ToValue()));
 
   // Set up invalid DM token
   policy::SetDMTokenForTesting(
@@ -1285,7 +1282,7 @@ TEST_F(EnterpriseReportingPrivateEnqueueRecordFunctionTest,
 }
 #endif  // BUILDFLAG(IS_CHROMEOS)
 
-#if BUILDFLAG(IS_WIN)
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX)
 
 namespace {
 
@@ -1295,15 +1292,6 @@ enterprise_reporting_private::UserContext GetFakeUserContext() {
   enterprise_reporting_private::UserContext user_context;
   user_context.user_id = kFakeUserId;
   return user_context;
-}
-
-std::string GetFakeUserContextJsonParams() {
-  auto user_context = GetFakeUserContext();
-  base::ListValue params;
-  params.Append(base::Value::FromUniquePtrValue(user_context.ToValue()));
-  std::string json_value;
-  base::JSONWriter::Write(params, &json_value);
-  return json_value;
 }
 
 std::unique_ptr<KeyedService> BuildMockAggregator(
@@ -1379,8 +1367,8 @@ class EnterpriseReportingPrivateGetFileSystemInfoTest
     enterprise_reporting_private::GetFileSystemInfoRequest request;
     request.user_context = GetFakeUserContext();
     request.options.push_back(GetFakeFileSystemOptionsParam());
-    base::ListValue params;
-    params.Append(base::Value::FromUniquePtrValue(request.ToValue()));
+    base::Value::List params;
+    params.Append(request.ToValue());
     std::string json_value;
     base::JSONWriter::Write(params, &json_value);
     return json_value;
@@ -1423,8 +1411,7 @@ TEST_F(EnterpriseReportingPrivateGetFileSystemInfoTest, Success) {
             fake_file_item.file_path.AsUTF8Unsafe());
   EXPECT_EQ(parsed_file_system_signal->presence,
             enterprise_reporting_private::PRESENCE_VALUE_FOUND);
-  EXPECT_EQ(*parsed_file_system_signal->sha256_hash.get(),
-            "c29tZSBoYXNoZWQgdmFsdWU");
+  EXPECT_EQ(*parsed_file_system_signal->sha256_hash, "c29tZSBoYXNoZWQgdmFsdWU");
 
   histogram_tester_.ExpectUniqueSample(
       "Enterprise.DeviceSignals.Collection.Success", signal_name(), 1);
@@ -1432,6 +1419,8 @@ TEST_F(EnterpriseReportingPrivateGetFileSystemInfoTest, Success) {
       "Enterprise.DeviceSignals.Collection.Success.FileSystemInfo.Items",
       /*number_of_items=*/1,
       /*number_of_occurrences=*/1);
+  histogram_tester_.ExpectTotalCount(
+      "Enterprise.DeviceSignals.Collection.Failure", 0);
 }
 
 TEST_F(EnterpriseReportingPrivateGetFileSystemInfoTest, TopLevelError) {
@@ -1455,6 +1444,8 @@ TEST_F(EnterpriseReportingPrivateGetFileSystemInfoTest, TopLevelError) {
       "TopLevelError",
       /*error=*/expected_error,
       /*number_of_occurrences=*/1);
+  histogram_tester_.ExpectTotalCount(
+      "Enterprise.DeviceSignals.Collection.Success", 0);
 }
 
 TEST_F(EnterpriseReportingPrivateGetFileSystemInfoTest, CollectionError) {
@@ -1481,6 +1472,8 @@ TEST_F(EnterpriseReportingPrivateGetFileSystemInfoTest, CollectionError) {
       "CollectionLevelError",
       /*error=*/expected_error,
       /*number_of_occurrences=*/1);
+  histogram_tester_.ExpectTotalCount(
+      "Enterprise.DeviceSignals.Collection.Success", 0);
 }
 
 class EnterpriseReportingPrivateGetFileSystemInfoDisabledTest
@@ -1502,6 +1495,194 @@ TEST_F(EnterpriseReportingPrivateGetFileSystemInfoDisabledTest,
   EXPECT_EQ(error, function_->GetError());
   EXPECT_EQ(error, device_signals::ErrorToString(
                        device_signals::SignalCollectionError::kUnsupported));
+}
+
+#endif  // BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX)
+
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC)
+
+// Tests for API enterprise.reportingPrivate.getSettings
+class EnterpriseReportingPrivateGetSettingsTest : public UserContextGatedTest {
+ protected:
+  void SetUp() override {
+    UserContextGatedTest::SetUp();
+
+    SetFeatureFlag();
+
+    function_ =
+        base::MakeRefCounted<EnterpriseReportingPrivateGetSettingsFunction>();
+  }
+
+  device_signals::SignalName signal_name() {
+    return device_signals::SignalName::kSystemSettings;
+  }
+
+  enterprise_reporting_private::GetSettingsOptions GetFakeSettingsOptionsParam()
+      const {
+    enterprise_reporting_private::GetSettingsOptions api_param;
+    api_param.path = "some path";
+    api_param.key = "some key";
+    api_param.get_value = true;
+
+    api_param.hive =
+        enterprise_reporting_private::REGISTRY_HIVE_HKEY_CURRENT_USER;
+
+    return api_param;
+  }
+
+  std::string GetFakeRequest() const {
+    enterprise_reporting_private::GetSettingsRequest request;
+    request.user_context = GetFakeUserContext();
+    request.options.push_back(GetFakeSettingsOptionsParam());
+    base::ListValue params;
+    params.Append(request.ToValue());
+    std::string json_value;
+    base::JSONWriter::Write(params, &json_value);
+    return json_value;
+  }
+
+  scoped_refptr<extensions::EnterpriseReportingPrivateGetSettingsFunction>
+      function_;
+};
+
+TEST_F(EnterpriseReportingPrivateGetSettingsTest, Success) {
+  device_signals::SettingsItem fake_settings_item;
+  fake_settings_item.path = "fake path";
+  fake_settings_item.key = "fake key";
+  fake_settings_item.presence = device_signals::PresenceValue::kFound;
+  base::Value setting_value(123);
+  std::string expected_json_value;
+  ASSERT_TRUE(base::JSONWriter::Write(setting_value, &expected_json_value));
+  fake_settings_item.setting_value = std::move(setting_value);
+  fake_settings_item.hive = device_signals::RegistryHive::kHkeyCurrentUser;
+
+  device_signals::SettingsResponse signal_response;
+  signal_response.settings_items.push_back(fake_settings_item);
+
+  device_signals::SignalsAggregationResponse expected_response;
+  expected_response.settings_response = signal_response;
+
+  SetFakeResponse(expected_response);
+
+  auto response = api_test_utils::RunFunctionAndReturnSingleResult(
+      function_.get(), GetFakeRequest(), profile());
+
+  EXPECT_EQ(function_->GetError(), kNoError);
+
+  ASSERT_TRUE(response);
+  ASSERT_TRUE(response->is_list());
+  const base::Value::List& list_value = response->GetList();
+  ASSERT_EQ(list_value.size(), signal_response.settings_items.size());
+
+  const base::Value& settings_value = list_value.front();
+  auto parsed_settings_signal =
+      enterprise_reporting_private::GetSettingsResponse::FromValue(
+          settings_value);
+  ASSERT_TRUE(parsed_settings_signal);
+  EXPECT_EQ(parsed_settings_signal->path, fake_settings_item.path);
+  EXPECT_EQ(parsed_settings_signal->presence,
+            enterprise_reporting_private::PRESENCE_VALUE_FOUND);
+  ASSERT_TRUE(parsed_settings_signal->value);
+  EXPECT_EQ(parsed_settings_signal->value.value(), expected_json_value);
+
+  ASSERT_TRUE(parsed_settings_signal->hive);
+  EXPECT_EQ(parsed_settings_signal->hive,
+            enterprise_reporting_private::REGISTRY_HIVE_HKEY_CURRENT_USER);
+
+  histogram_tester_.ExpectUniqueSample(
+      "Enterprise.DeviceSignals.Collection.Success", signal_name(), 1);
+  histogram_tester_.ExpectUniqueSample(
+      "Enterprise.DeviceSignals.Collection.Success.SystemSettings.Items",
+      /*number_of_items=*/1,
+      /*number_of_occurrences=*/1);
+  histogram_tester_.ExpectTotalCount(
+      "Enterprise.DeviceSignals.Collection.Failure", 0);
+}
+
+TEST_F(EnterpriseReportingPrivateGetSettingsTest, TopLevelError) {
+  device_signals::SignalCollectionError expected_error =
+      device_signals::SignalCollectionError::kConsentRequired;
+
+  device_signals::SignalsAggregationResponse expected_response;
+  expected_response.top_level_error = expected_error;
+  SetFakeResponse(expected_response);
+
+  auto error = api_test_utils::RunFunctionAndReturnError(
+      function_.get(), GetFakeRequest(), profile());
+
+  EXPECT_EQ(error, function_->GetError());
+  EXPECT_EQ(error, device_signals::ErrorToString(expected_error));
+
+  histogram_tester_.ExpectUniqueSample(
+      "Enterprise.DeviceSignals.Collection.Failure", signal_name(), 1);
+  histogram_tester_.ExpectUniqueSample(
+      "Enterprise.DeviceSignals.Collection.Failure.SystemSettings."
+      "TopLevelError",
+      /*error=*/expected_error,
+      /*number_of_occurrences=*/1);
+  histogram_tester_.ExpectTotalCount(
+      "Enterprise.DeviceSignals.Collection.Success", 0);
+}
+
+TEST_F(EnterpriseReportingPrivateGetSettingsTest, CollectionError) {
+  device_signals::SignalCollectionError expected_error =
+      device_signals::SignalCollectionError::kMissingSystemService;
+
+  device_signals::SettingsResponse signal_response;
+  signal_response.collection_error = expected_error;
+
+  device_signals::SignalsAggregationResponse expected_response;
+  expected_response.settings_response = signal_response;
+  SetFakeResponse(expected_response);
+
+  auto error = api_test_utils::RunFunctionAndReturnError(
+      function_.get(), GetFakeRequest(), profile());
+
+  EXPECT_EQ(error, function_->GetError());
+  EXPECT_EQ(error, device_signals::ErrorToString(expected_error));
+
+  histogram_tester_.ExpectUniqueSample(
+      "Enterprise.DeviceSignals.Collection.Failure", signal_name(), 1);
+  histogram_tester_.ExpectUniqueSample(
+      "Enterprise.DeviceSignals.Collection.Failure.SystemSettings."
+      "CollectionLevelError",
+      /*error=*/expected_error,
+      /*number_of_occurrences=*/1);
+  histogram_tester_.ExpectTotalCount(
+      "Enterprise.DeviceSignals.Collection.Success", 0);
+}
+
+class EnterpriseReportingPrivateGetSettingsDisabledTest
+    : public EnterpriseReportingPrivateGetSettingsTest {
+ protected:
+  // Overwrite this function to disable the feature flag for tests using this
+  // specific fixture.
+  void SetFeatureFlag() override {
+    scoped_features_.InitAndEnableFeatureWithParameters(
+        enterprise_signals::features::kNewEvSignalsEnabled,
+        {{"DisableSettings", "true"}});
+  }
+};
+
+TEST_F(EnterpriseReportingPrivateGetSettingsDisabledTest, FlagDisabled_Test) {
+  auto error = api_test_utils::RunFunctionAndReturnError(
+      function_.get(), GetFakeRequest(), profile());
+  EXPECT_EQ(error, function_->GetError());
+  EXPECT_EQ(error, device_signals::ErrorToString(
+                       device_signals::SignalCollectionError::kUnsupported));
+}
+
+#endif  // BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC)
+
+#if BUILDFLAG(IS_WIN)
+
+std::string GetFakeUserContextJsonParams() {
+  auto user_context = GetFakeUserContext();
+  base::ListValue params;
+  params.Append(base::Value(user_context.ToValue()));
+  std::string json_value;
+  base::JSONWriter::Write(params, &json_value);
+  return json_value;
 }
 
 // Tests for API enterprise.reportingPrivate.getAvInfo
@@ -1563,6 +1744,8 @@ TEST_F(EnterpriseReportingPrivateGetAvInfoTest, Success) {
       "Enterprise.DeviceSignals.Collection.Success.AntiVirus.Items",
       /*number_of_items=*/1,
       /*number_of_occurrences=*/1);
+  histogram_tester_.ExpectTotalCount(
+      "Enterprise.DeviceSignals.Collection.Failure", 0);
 }
 
 TEST_F(EnterpriseReportingPrivateGetAvInfoTest, TopLevelError) {
@@ -1585,6 +1768,8 @@ TEST_F(EnterpriseReportingPrivateGetAvInfoTest, TopLevelError) {
       "Enterprise.DeviceSignals.Collection.Failure.AntiVirus.TopLevelError",
       /*error=*/expected_error,
       /*number_of_occurrences=*/1);
+  histogram_tester_.ExpectTotalCount(
+      "Enterprise.DeviceSignals.Collection.Success", 0);
 }
 
 TEST_F(EnterpriseReportingPrivateGetAvInfoTest, CollectionError) {
@@ -1611,6 +1796,8 @@ TEST_F(EnterpriseReportingPrivateGetAvInfoTest, CollectionError) {
       "CollectionLevelError",
       /*error=*/expected_error,
       /*number_of_occurrences=*/1);
+  histogram_tester_.ExpectTotalCount(
+      "Enterprise.DeviceSignals.Collection.Success", 0);
 }
 
 class EnterpriseReportingPrivateGetAvInfoDisabledTest
@@ -1685,6 +1872,8 @@ TEST_F(EnterpriseReportingPrivateGetHotfixesTest, Success) {
       "Enterprise.DeviceSignals.Collection.Success.Hotfixes.Items",
       /*number_of_items=*/1,
       /*number_of_occurrences=*/1);
+  histogram_tester_.ExpectTotalCount(
+      "Enterprise.DeviceSignals.Collection.Failure", 0);
 }
 
 TEST_F(EnterpriseReportingPrivateGetHotfixesTest, TopLevelError) {
@@ -1707,6 +1896,8 @@ TEST_F(EnterpriseReportingPrivateGetHotfixesTest, TopLevelError) {
       "Enterprise.DeviceSignals.Collection.Failure.Hotfixes.TopLevelError",
       /*error=*/expected_error,
       /*number_of_occurrences=*/1);
+  histogram_tester_.ExpectTotalCount(
+      "Enterprise.DeviceSignals.Collection.Success", 0);
 }
 
 TEST_F(EnterpriseReportingPrivateGetHotfixesTest, CollectionError) {
@@ -1733,6 +1924,8 @@ TEST_F(EnterpriseReportingPrivateGetHotfixesTest, CollectionError) {
       "CollectionLevelError",
       /*error=*/expected_error,
       /*number_of_occurrences=*/1);
+  histogram_tester_.ExpectTotalCount(
+      "Enterprise.DeviceSignals.Collection.Success", 0);
 }
 
 class EnterpriseReportingPrivateGetHotfixesInfoDisabledTest

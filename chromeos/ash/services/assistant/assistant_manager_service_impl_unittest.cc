@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -29,9 +29,9 @@
 #include "chromeos/ash/services/assistant/test_support/mock_assistant_interaction_subscriber.h"
 #include "chromeos/ash/services/assistant/test_support/scoped_assistant_browser_delegate.h"
 #include "chromeos/ash/services/assistant/test_support/scoped_device_actions.h"
+#include "chromeos/ash/services/libassistant/public/cpp/assistant_timer.h"
+#include "chromeos/ash/services/libassistant/public/mojom/speaker_id_enrollment_controller.mojom.h"
 #include "chromeos/dbus/power/fake_power_manager_client.h"
-#include "chromeos/services/libassistant/public/cpp/assistant_timer.h"
-#include "chromeos/services/libassistant/public/mojom/speaker_id_enrollment_controller.mojom.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "services/media_session/public/mojom/media_session.mojom-shared.h"
@@ -121,9 +121,9 @@ class AssistantManagerServiceImplTest : public testing::Test {
   ~AssistantManagerServiceImplTest() override = default;
 
   void SetUp() override {
-    PowerManagerClient::InitializeFake();
-    FakePowerManagerClient::Get()->SetTabletMode(
-        PowerManagerClient::TabletMode::OFF, base::TimeTicks());
+    chromeos::PowerManagerClient::InitializeFake();
+    chromeos::FakePowerManagerClient::Get()->SetTabletMode(
+        chromeos::PowerManagerClient::TabletMode::OFF, base::TimeTicks());
 
     mojo::PendingRemote<device::mojom::BatteryMonitor> battery_monitor;
     delegate_.RequestBatteryMonitor(
@@ -139,7 +139,7 @@ class AssistantManagerServiceImplTest : public testing::Test {
     service_context_ = std::make_unique<FakeServiceContext>();
     service_context_
         ->set_main_task_runner(task_environment().GetMainThreadTaskRunner())
-        .set_power_manager_client(PowerManagerClient::Get())
+        .set_power_manager_client(chromeos::PowerManagerClient::Get())
         .set_assistant_state(&assistant_state_)
         .set_cras_audio_handler(&cras_audio_handler_.Get())
         .set_assistant_alarm_timer_controller(alarm_timer_controller_.get());
@@ -153,7 +153,7 @@ class AssistantManagerServiceImplTest : public testing::Test {
 
   void TearDown() override {
     assistant_manager_service_.reset();
-    PowerManagerClient::Shutdown();
+    chromeos::PowerManagerClient::Shutdown();
   }
 
   void CreateAssistantManagerServiceImpl(

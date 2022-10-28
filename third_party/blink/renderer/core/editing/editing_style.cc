@@ -761,7 +761,7 @@ static const CSSPropertyID kStaticBlockProperties[] = {
     CSSPropertyID::kPageBreakAfter, CSSPropertyID::kPageBreakBefore,
     CSSPropertyID::kPageBreakInside, CSSPropertyID::kTextAlign,
     CSSPropertyID::kTextAlignLast, CSSPropertyID::kTextIndent,
-    CSSPropertyID::kTextJustify, CSSPropertyID::kWidows};
+    CSSPropertyID::kWidows};
 
 static const Vector<const CSSProperty*>& BlockPropertiesVector(
     const ExecutionContext* execution_context) {
@@ -1820,7 +1820,9 @@ void StyleChange::ExtractTextStyles(Document* document,
   }
 
   if (style->GetPropertyCSSValue(CSSPropertyID::kColor)) {
-    apply_font_color_ = GetFontColor(style).Serialized();
+    // The <font> tag cannot handle rgb colors, so we need to serialize as hex
+    // here in order to continue supporting it.
+    apply_font_color_ = GetFontColor(style).SerializeAsCanvasColor();
     style->RemoveProperty(CSSPropertyID::kColor);
   }
 

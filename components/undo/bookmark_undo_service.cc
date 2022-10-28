@@ -1,4 +1,4 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -15,6 +15,7 @@
 #include "components/bookmarks/browser/bookmark_undo_provider.h"
 #include "components/bookmarks/browser/bookmark_utils.h"
 #include "components/bookmarks/browser/scoped_group_bookmark_actions.h"
+#include "components/bookmarks/common/bookmark_metrics.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/undo/undo_operation.h"
 
@@ -190,9 +191,11 @@ void BookmarkEditOperation::Undo() {
   const BookmarkNode* node = bookmarks::GetBookmarkNodeByID(model, node_id_);
   DCHECK(node);
 
-  model->SetTitle(node, original_bookmark_.elements[0].title);
+  model->SetTitle(node, original_bookmark_.elements[0].title,
+                  bookmarks::metrics::BookmarkEditSource::kOther);
   if (original_bookmark_.elements[0].is_url)
-    model->SetURL(node, original_bookmark_.elements[0].url);
+    model->SetURL(node, original_bookmark_.elements[0].url,
+                  bookmarks::metrics::BookmarkEditSource::kOther);
 }
 
 int BookmarkEditOperation::GetUndoLabelId() const {
@@ -378,7 +381,8 @@ void BookmarkUndoService::BookmarkNodeMoved(BookmarkModel* model,
 
 void BookmarkUndoService::BookmarkNodeAdded(BookmarkModel* model,
                                             const BookmarkNode* parent,
-                                            size_t index) {
+                                            size_t index,
+                                            bool added_by_user) {
   std::unique_ptr<UndoOperation> op(
       new BookmarkAddOperation(model, parent, index));
   undo_manager()->AddUndoOperation(std::move(op));

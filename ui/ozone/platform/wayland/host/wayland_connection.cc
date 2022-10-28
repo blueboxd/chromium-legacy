@@ -4,12 +4,14 @@
 
 #include "ui/ozone/platform/wayland/host/wayland_connection.h"
 
+#include <content-type-v1-client-protocol.h>
 #include <extended-drag-unstable-v1-client-protocol.h>
 #include <presentation-time-client-protocol.h>
 #include <xdg-shell-client-protocol.h>
 #include <xdg-shell-unstable-v6-client-protocol.h>
 
 #include <algorithm>
+#include <cstdint>
 #include <memory>
 #include <vector>
 
@@ -20,6 +22,7 @@
 #include "base/strings/string_util.h"
 #include "base/task/current_thread.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/events/devices/device_data_manager.h"
 #include "ui/events/devices/input_device.h"
 #include "ui/events/ozone/layout/keyboard_layout_engine_manager.h"
@@ -89,6 +92,7 @@ constexpr uint32_t kMaxExtendedDragVersion = 1;
 constexpr uint32_t kMaxXdgOutputManagerVersion = 3;
 constexpr uint32_t kMaxKeyboardShortcutsInhibitManagerVersion = 1;
 constexpr uint32_t kMaxStylusVersion = 2;
+constexpr uint32_t kMaxWpContentTypeVersion = 1;
 
 int64_t ConvertTimespecToMicros(const struct timespec& ts) {
   // On 32-bit systems, the calculation cannot overflow int64_t.
@@ -183,8 +187,10 @@ bool WaylandConnection::Initialize() {
                               &WaylandShm::Instantiate);
   RegisterGlobalObjectFactory(WaylandZAuraShell::kInterfaceName,
                               &WaylandZAuraShell::Instantiate);
-  RegisterGlobalObjectFactory(WaylandZcrColorManager::kInterfaceName,
-                              &WaylandZcrColorManager::Instantiate);
+  if (features::IsLacrosColorManagementEnabled()) {
+    RegisterGlobalObjectFactory(WaylandZcrColorManager::kInterfaceName,
+                                &WaylandZcrColorManager::Instantiate);
+  }
   RegisterGlobalObjectFactory(WaylandZcrCursorShapes::kInterfaceName,
                               &WaylandZcrCursorShapes::Instantiate);
   RegisterGlobalObjectFactory(WaylandZcrTouchpadHaptics::kInterfaceName,
@@ -273,20 +279,6 @@ bool WaylandConnection::Initialize() {
   return true;
 }
 
-void WaylandConnection::ScheduleFlush() {
-  // When we are in tests, the message loop is set later when the
-  // initialization of the OzonePlatform complete. Thus, just
-  // flush directly. This doesn't happen in normal run.
-  if (!base::CurrentUIThread::IsSet()) {
-    Flush();
-  } else if (!scheduled_flush_) {
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE,
-        base::BindOnce(&WaylandConnection::Flush, base::Unretained(this)));
-    scheduled_flush_ = true;
-  }
-}
-
 void WaylandConnection::RoundTripQueue() {
   if (roundtrip_closure_for_testing_) {
     roundtrip_closure_for_testing_.Run();
@@ -355,7 +347,6 @@ void WaylandConnection::RegisterGlobalObjectFactory(
 
 void WaylandConnection::Flush() {
   wl_display_flush(display_.get());
-  scheduled_flush_ = false;
 }
 
 void WaylandConnection::UpdateInputDevices() {
@@ -500,6 +491,14 @@ void WaylandConnection::Global(void* data,
       LOG(ERROR) << "Failed to bind zwp_linux_explicit_synchronization_v1";
       return;
     }
+  } else if (!connection->content_type_manager_v1_ &&
+             (strcmp(interface, "wp_content_type_manager_v1") == 0)) {
+    connection->content_type_manager_v1_ = wl::Bind<wp_content_type_manager_v1>(
+        registry, name, std::min(version, kMaxWpContentTypeVersion));
+    if (!connection->content_type_manager_v1_) {
+      LOG(ERROR) << "Failed to bind wp_content_type_v1";
+      return;
+    }
   } else if (!connection->presentation_ &&
              (strcmp(interface, "wp_presentation") == 0)) {
     connection->presentation_ = wl::Bind<wp_presentation>(
@@ -601,7 +600,7 @@ void WaylandConnection::Global(void* data,
 
   connection->available_globals_.emplace_back(interface, version);
 
-  connection->ScheduleFlush();
+  connection->Flush();
 }
 
 base::TimeTicks WaylandConnection::ConvertPresentationTime(uint32_t tv_sec_hi,
@@ -666,14 +665,14 @@ void WaylandConnection::PingV6(void* data,
                                uint32_t serial) {
   WaylandConnection* connection = static_cast<WaylandConnection*>(data);
   zxdg_shell_v6_pong(shell_v6, serial);
-  connection->ScheduleFlush();
+  connection->Flush();
 }
 
 // static
 void WaylandConnection::Ping(void* data, xdg_wm_base* shell, uint32_t serial) {
   WaylandConnection* connection = static_cast<WaylandConnection*>(data);
   xdg_wm_base_pong(shell, serial);
-  connection->ScheduleFlush();
+  connection->Flush();
 }
 
 // static

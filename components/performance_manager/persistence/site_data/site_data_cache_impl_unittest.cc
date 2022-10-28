@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -32,7 +32,7 @@ class MockSiteCache : public testing::NoopSiteDataStore {
   MockSiteCache(const MockSiteCache&) = delete;
   MockSiteCache& operator=(const MockSiteCache&) = delete;
 
-  ~MockSiteCache() = default;
+  ~MockSiteCache() override = default;
 
   MOCK_METHOD1(RemoveSiteDataFromStore, void(const std::vector<url::Origin>&));
   MOCK_METHOD0(ClearStore, void());

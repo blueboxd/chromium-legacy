@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# Copyright 2018 The Chromium Authors. All rights reserved.
+# Copyright 2018 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 """code generator for webgpu command buffers."""
@@ -77,6 +77,10 @@ _FUNCTION_INFO = {
   'DestroyServer': {
     'impl_func': False,
     'internal': True,
+  },
+  'SetExecutionContextToken': {
+    'impl_func': False,
+    'client_test': False,
   },
 }
 

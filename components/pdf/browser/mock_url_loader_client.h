@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -26,7 +26,8 @@ class MockURLLoaderClient : public network::mojom::URLLoaderClient {
   MOCK_METHOD(void,
               OnReceiveResponse,
               (network::mojom::URLResponseHeadPtr head,
-               mojo::ScopedDataPipeConsumerHandle body),
+               mojo::ScopedDataPipeConsumerHandle body,
+               absl::optional<mojo_base::BigBuffer> cached_metadata),
               (override));
   MOCK_METHOD(void,
               OnReceiveRedirect,
@@ -38,10 +39,6 @@ class MockURLLoaderClient : public network::mojom::URLLoaderClient {
               (int64_t current_position,
                int64_t total_size,
                OnUploadProgressCallback ack_callback),
-              (override));
-  MOCK_METHOD(void,
-              OnReceiveCachedMetadata,
-              (mojo_base::BigBuffer data),
               (override));
   MOCK_METHOD(void,
               OnTransferSizeUpdated,

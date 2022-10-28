@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -128,17 +128,19 @@ class SoftwareVideoEncoderTest
     auto y = color & 0xFF;
     auto u = (color >> 8) & 0xFF;
     auto v = (color >> 16) & 0xFF;
-    libyuv::I420Rect(
-        frame->data(VideoFrame::kYPlane), frame->stride(VideoFrame::kYPlane),
-        frame->data(VideoFrame::kUPlane), frame->stride(VideoFrame::kUPlane),
-        frame->data(VideoFrame::kVPlane), frame->stride(VideoFrame::kVPlane),
-        frame->visible_rect().x(),       // x
-        frame->visible_rect().y(),       // y
-        frame->visible_rect().width(),   // width
-        frame->visible_rect().height(),  // height
-        y,                               // Y color
-        u,                               // U color
-        v);                              // V color
+    libyuv::I420Rect(frame->writable_data(VideoFrame::kYPlane),
+                     frame->stride(VideoFrame::kYPlane),
+                     frame->writable_data(VideoFrame::kUPlane),
+                     frame->stride(VideoFrame::kUPlane),
+                     frame->writable_data(VideoFrame::kVPlane),
+                     frame->stride(VideoFrame::kVPlane),
+                     frame->visible_rect().x(),       // x
+                     frame->visible_rect().y(),       // y
+                     frame->visible_rect().width(),   // width
+                     frame->visible_rect().height(),  // height
+                     y,                               // Y color
+                     u,                               // U color
+                     v);                              // V color
     return frame;
   }
 
@@ -159,7 +161,7 @@ class SoftwareVideoEncoderTest
     auto frame = VideoFrame::CreateFrame(PIXEL_FORMAT_XRGB, size,
                                          gfx::Rect(size), size, timestamp);
 
-    libyuv::ARGBRect(frame->data(VideoFrame::kARGBPlane),
+    libyuv::ARGBRect(frame->writable_data(VideoFrame::kARGBPlane),
                      frame->stride(VideoFrame::kARGBPlane),
                      frame->visible_rect().x(),       // dst_x
                      frame->visible_rect().y(),       // dst_y
@@ -281,9 +283,9 @@ class SoftwareVideoEncoderTest
     size_t num_planes = VideoFrame::NumPlanes(format);
     gfx::Size visible_size = frame1.visible_rect().size();
     for (size_t plane = 0; plane < num_planes; ++plane) {
-      uint8_t* data1 = frame1.visible_data(plane);
+      const uint8_t* data1 = frame1.visible_data(plane);
       int stride1 = frame1.stride(plane);
-      uint8_t* data2 = frame2.visible_data(plane);
+      const uint8_t* data2 = frame2.visible_data(plane);
       int stride2 = frame2.stride(plane);
       size_t rows = VideoFrame::Rows(plane, format, visible_size.height());
       int row_bytes = VideoFrame::RowBytes(plane, format, visible_size.width());
@@ -915,6 +917,10 @@ INSTANTIATE_TEST_SUITE_P(VpxTemporalSvc,
 #endif  // ENABLE_LIBVPX
 
 #if BUILDFLAG(ENABLE_LIBAOM)
+#if !BUILDFLAG(ENABLE_AV1_DECODER)
+#error PrepareDecoder() requires an AV1 decoder.
+#endif
+
 SwVideoTestParams kAv1Params[] = {
     {VideoCodec::kAV1, AV1PROFILE_PROFILE_MAIN, PIXEL_FORMAT_I420},
     {VideoCodec::kAV1, AV1PROFILE_PROFILE_MAIN, PIXEL_FORMAT_NV12},

@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -215,10 +215,12 @@ void TextLogUploadList::ClearUploadList(const base::Time& begin,
     absl::optional<base::Value> json = base::JSONReader::Read(line);
     bool should_copy = false;
 
-    if (json.has_value())
-      should_copy = CheckJsonUploadListOutOfRange(json.value(), begin, end);
-    else
+    if (json.has_value()) {
+      should_copy = json->is_dict() &&
+                    CheckJsonUploadListOutOfRange(json.value(), begin, end);
+    } else {
       should_copy = CheckCsvUploadListOutOfRange(line, begin, end);
+    }
 
     if (should_copy)
       new_contents_stream << line << std::endl;

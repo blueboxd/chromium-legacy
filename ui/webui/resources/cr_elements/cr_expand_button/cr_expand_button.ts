@@ -7,14 +7,14 @@
  * 'cr-expand-button' is a chrome-specific wrapper around a button that toggles
  * between an opened (expanded) and closed state.
  */
-import '../cr_actionable_row_style.m.js';
+import '../cr_actionable_row_style.css.js';
 import '../cr_icon_button/cr_icon_button.js';
-import '../icons.m.js';
-import '../shared_vars_css.m.js';
+import '../cr_shared_vars.css.js';
+import '../icons.html.js';
 
 import {PolymerElement} from '//resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
-import {focusWithoutInk} from '../../js/cr/ui/focus_without_ink.m.js';
+import {focusWithoutInk} from '../../js/cr/ui/focus_without_ink.js';
 import {CrIconButtonElement} from '../cr_icon_button/cr_icon_button.js';
 
 import {getTemplate} from './cr_expand_button.html.js';

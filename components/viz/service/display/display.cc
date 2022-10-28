@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -66,14 +66,6 @@
 namespace viz {
 
 namespace {
-
-enum class TypeOfVideoInFrame {
-  kNoVideo = 0,
-  kVideo = 1,
-
-  // This should be the last entry/largest value above.
-  kMaxValue = kVideo,
-};
 
 const DrawQuad::Material kNonSplittableMaterials[] = {
     // Exclude debug quads from quad splitting
@@ -659,10 +651,7 @@ bool Display::DrawAndSwap(const DrawAndSwapParams& params) {
   if (params.max_pending_swaps >= 0 && skia_output_surface_ &&
       skia_output_surface_->capabilities()
           .supports_dynamic_frame_buffer_allocation) {
-    if (skia_output_surface_->EnsureMinNumberOfBuffers(
-            params.max_pending_swaps + 1)) {
-      renderer_->ReallocatedFrameBuffers();
-    }
+    renderer_->EnsureMinNumberOfBuffers(params.max_pending_swaps + 1);
   }
 
   gfx::OverlayTransform current_display_transform = gfx::OVERLAY_TRANSFORM_NONE;
@@ -722,14 +711,6 @@ bool Display::DrawAndSwap(const DrawAndSwapParams& params) {
     }
   }
   DebugDrawFrame(frame);
-
-  // Records whether the aggregated frame contains video or not.
-  // TODO(vikassoni) : Extend this capability to record whether a video frame is
-  // inline or fullscreen.
-  UMA_HISTOGRAM_ENUMERATION("Compositing.SurfaceAggregator.FrameContainsVideo",
-                            frame.may_contain_video
-                                ? TypeOfVideoInFrame::kVideo
-                                : TypeOfVideoInFrame::kNoVideo);
 
   if (frame.delegated_ink_metadata) {
     TRACE_EVENT_INSTANT1(
@@ -843,10 +824,9 @@ bool Display::DrawAndSwap(const DrawAndSwapParams& params) {
     }
 
     draw_timer.emplace();
-    renderer_->DecideRenderPassAllocationsForFrame(frame.render_pass_list);
     overlay_processor_->SetFrameSequenceNumber(frame_sequence_number_);
     overlay_processor_->SetIsVideoCaptureEnabled(frame.video_capture_enabled);
-    overlay_processor_->SetIsVideoFullscreen(frame.page_fullscreen_mode);
+    overlay_processor_->SetIsPageFullscreen(frame.page_fullscreen_mode);
     renderer_->DrawFrame(&frame.render_pass_list, device_scale_factor_,
                          current_surface_size, display_color_spaces_,
                          std::move(frame.surface_damage_rect_list_));

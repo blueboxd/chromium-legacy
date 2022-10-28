@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -59,6 +59,7 @@
 #include "components/guest_view/browser/guest_view_manager_delegate.h"
 #include "components/guest_view/browser/test_guest_view_manager.h"
 #include "components/lens/lens_features.h"
+#include "components/lens/lens_metadata.mojom.h"
 #include "components/policy/core/common/policy_pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "components/search_engines/template_url_data.h"
@@ -299,12 +300,15 @@ class ContextMenuBrowserTest : public InProcessBrowserTest {
     auto callback =
         [](std::vector<uint8_t>* response_image_data,
            gfx::Size* response_original_size,
-           std::string* response_file_extension, base::OnceClosure quit,
-           const std::vector<uint8_t>& image_data,
-           const gfx::Size& original_size, const std::string& file_extension) {
+           std::string* response_file_extension,
+           std::vector<lens::mojom::LatencyLogPtr>* response_log_data,
+           base::OnceClosure quit, const std::vector<uint8_t>& image_data,
+           const gfx::Size& original_size, const std::string& file_extension,
+           std::vector<lens::mojom::LatencyLogPtr> log_data) {
           *response_image_data = image_data;
           *response_original_size = original_size;
           *response_file_extension = file_extension;
+          *response_log_data = std::move(log_data);
           std::move(quit).Run();
         };
 
@@ -312,10 +316,12 @@ class ContextMenuBrowserTest : public InProcessBrowserTest {
     std::vector<uint8_t> response_image_data;
     gfx::Size response_original_size;
     std::string response_file_extension;
+    std::vector<lens::mojom::LatencyLogPtr> response_log_data;
     chrome_render_frame->RequestImageForContextNode(
         0, request_size, request_image_format,
         base::BindOnce(callback, &response_image_data, &response_original_size,
-                       &response_file_extension, run_loop.QuitClosure()));
+                       &response_file_extension, &response_log_data,
+                       run_loop.QuitClosure()));
     run_loop.Run();
 
     ASSERT_EQ(expected_original_size.width(), response_original_size.width());
@@ -446,18 +452,20 @@ class PdfPluginContextMenuBrowserTest : public InProcessBrowserTest {
                                "var l = document.getElementById('link1');"
                                "l.click();"));
 
-    // Wait for the guest contents of the PDF plugin is created.
-    WebContents* guest_contents =
-        test_guest_view_manager_->DeprecatedWaitForSingleGuestCreated();
-    TestMimeHandlerViewGuest* guest = static_cast<TestMimeHandlerViewGuest*>(
-        extensions::MimeHandlerViewGuest::FromWebContents(guest_contents));
-    ASSERT_TRUE(guest);
-    // Wait for the guest is attached to the embedder.
+    // Wait for the guest view of the PDF plugin to be created.
+    auto* guest_view =
+        test_guest_view_manager_->WaitForSingleGuestViewCreated();
+    ASSERT_TRUE(guest_view);
+    TestMimeHandlerViewGuest* guest =
+        static_cast<TestMimeHandlerViewGuest*>(guest_view);
+
+    // Wait for the guest to be attached to the embedder.
     guest->WaitForGuestAttached();
-    ASSERT_NE(web_contents, guest_contents);
+
     // Get the pdf plugin's main frame.
-    content::RenderFrameHost* frame = guest_contents->GetPrimaryMainFrame();
+    content::RenderFrameHost* frame = guest_view->GetGuestMainFrame();
     ASSERT_TRUE(frame);
+    ASSERT_NE(web_contents->GetPrimaryMainFrame(), frame);
 
     content::ContextMenuParams params;
     params.page_url = page_url;
@@ -1807,6 +1815,7 @@ class SearchByRegionBrowserTest : public InProcessBrowserTest {
     data.SetURL(GetNonGoogleRegionSearchURL().spec());
     data.image_url = GetNonGoogleRegionSearchURL().spec();
     data.image_url_post_params = kRegionSearchPostParams;
+    data.side_image_search_param = "sideimagesearch";
 
     TemplateURL* template_url = model->Add(std::make_unique<TemplateURL>(data));
     ASSERT_TRUE(template_url);
@@ -1821,8 +1830,16 @@ class SearchByRegionBrowserTest : public InProcessBrowserTest {
   std::unique_ptr<ContextMenuNotificationObserver> menu_observer_;
 };
 
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+// TODO(crbug.com/1356504): Failing on Chrome OS.
+#define MAYBE_LensRegionSearchWithValidRegionNewTab \
+  DISABLED_LensRegionSearchWithValidRegionNewTab
+#else
+#define MAYBE_LensRegionSearchWithValidRegionNewTab \
+  LensRegionSearchWithValidRegionNewTab
+#endif
 IN_PROC_BROWSER_TEST_F(SearchByRegionBrowserTest,
-                       LensRegionSearchWithValidRegionNewTab) {
+                       MAYBE_LensRegionSearchWithValidRegionNewTab) {
   SetupAndLoadPage("/empty.html");
   ui_test_utils::AllBrowserTabAddedWaiter add_tab;
 
@@ -1838,7 +1855,7 @@ IN_PROC_BROWSER_TEST_F(SearchByRegionBrowserTest,
   // Match the query parameters, without the value of start_time.
   EXPECT_THAT(new_tab_content, testing::MatchesRegex(
                                    expected_content.substr(0, query_start_pos) +
-                                   ".*ep=crs&s=&st=\\d+"));
+                                   ".*ep=crs&re=df&s=&st=\\d+"));
 }
 
 IN_PROC_BROWSER_TEST_F(SearchByRegionBrowserTest,
@@ -1858,7 +1875,7 @@ IN_PROC_BROWSER_TEST_F(SearchByRegionBrowserTest,
   // Match the query parameters, without the value of start_time.
   EXPECT_THAT(new_tab_content, testing::MatchesRegex(
                                    expected_content.substr(0, query_start_pos) +
-                                   ".*ep=crs&s=&st=\\d+"));
+                                   ".*ep=crs&re=df&s=&st=\\d+"));
 }
 
 IN_PROC_BROWSER_TEST_F(SearchByRegionBrowserTest,
@@ -1932,10 +1949,10 @@ class SearchByRegionWithSidePanelBrowserTest
     // Match strings up to the query.
     std::size_t query_start_pos = side_panel_content.find("?");
     // Match the query parameters, without the value of start_time.
-    EXPECT_THAT(
-        side_panel_content,
-        testing::MatchesRegex(expected_content.substr(0, query_start_pos) +
-                              ".*ep=crs&s=csp&st=\\d+"));
+    EXPECT_THAT(side_panel_content,
+                testing::MatchesRegex(
+                    expected_content.substr(0, query_start_pos) +
+                    ".*ep=crs&re=dcsp&s=csp&st=\\d+&sideimagesearch=1"));
     quit_closure_.Run();
   }
 
@@ -1954,8 +1971,15 @@ class SearchByRegionWithSidePanelBrowserTest
   base::RepeatingClosure quit_closure_;
 };
 
+#if BUILDFLAG(IS_CHROMEOS)
+#define MAYBE_LensRegionSearchWithValidRegionSidePanel \
+  DISABLED_LensRegionSearchWithValidRegionSidePanel
+#else
+#define MAYBE_LensRegionSearchWithValidRegionSidePanel \
+  LensRegionSearchWithValidRegionSidePanel
+#endif
 IN_PROC_BROWSER_TEST_F(SearchByRegionWithSidePanelBrowserTest,
-                       LensRegionSearchWithValidRegionSidePanel) {
+                       MAYBE_LensRegionSearchWithValidRegionSidePanel) {
   SetupAndLoadPage("/empty.html");
   // We need a base::RunLoop to ensure that our test does not finish until the
   // side panel has opened and we have verified the URL.
@@ -2005,7 +2029,7 @@ class SearchByRegionWithUnifiedSidePanelBrowserTest
     EXPECT_THAT(
         side_panel_content,
         testing::MatchesRegex(expected_content.substr(0, query_start_pos) +
-                              ".*ep=crs&s=csp&st=\\d+"));
+                              ".*ep=crs&re=dcsp&s=csp&st=\\d+"));
     quit_closure_.Run();
   }
 
@@ -2024,15 +2048,18 @@ class SearchByRegionWithUnifiedSidePanelBrowserTest
   base::RepeatingClosure quit_closure_;
 };
 
-#if BUILDFLAG(IS_CHROMEOS)
-#define MAYBE_LensRegionSearchWithValidRegionUnifiedSidePanel DISABLED_LensRegionSearchWithValidRegionUnifiedSidePanel
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+// TODO(crbug.com/1356584): Failing on Chrome OS.
+#define MAYBE_LensRegionSearchWithValidRegionUnifiedSidePanel \
+  DISABLED_LensRegionSearchWithValidRegionUnifiedSidePanel
 #else
-#define MAYBE_LensRegionSearchWithValidRegionUnifiedSidePanel LensRegionSearchWithValidRegionUnifiedSidePanel
+#define MAYBE_LensRegionSearchWithValidRegionUnifiedSidePanel \
+  LensRegionSearchWithValidRegionUnifiedSidePanel
 #endif
 IN_PROC_BROWSER_TEST_F(SearchByRegionWithUnifiedSidePanelBrowserTest,
                        MAYBE_LensRegionSearchWithValidRegionUnifiedSidePanel) {
-  lens::CreateLensUnifiedSidePanelEntryForTesting(browser());
   SetupAndLoadPage("/empty.html");
+  lens::CreateLensUnifiedSidePanelEntryForTesting(browser());
   // We need a base::RunLoop to ensure that our test does not finish until the
   // side panel has opened and we have verified the URL.
   base::RunLoop loop;
@@ -2118,6 +2145,7 @@ class SearchByImageBrowserTest : public InProcessBrowserTest {
     static const char kSearchURL[] = "/search?q={searchTerms}";
     static const char kImageSearchPostParams[] =
         "thumb={google:imageThumbnail}";
+    static const char kSideImageSearchParam[] = "sideimagesearch";
 
     TemplateURLService* model =
         TemplateURLServiceFactory::GetForProfile(browser()->profile());
@@ -2131,6 +2159,7 @@ class SearchByImageBrowserTest : public InProcessBrowserTest {
     data.SetURL(embedded_test_server()->GetURL(kSearchURL).spec());
     data.image_url = GetImageSearchURL().spec();
     data.image_url_post_params = kImageSearchPostParams;
+    data.side_image_search_param = kSideImageSearchParam;
 
     TemplateURL* template_url = model->Add(std::make_unique<TemplateURL>(data));
     ASSERT_TRUE(template_url);
@@ -2176,7 +2205,8 @@ IN_PROC_BROWSER_TEST_F(SearchByImageBrowserTest, ImageSearchWithCorruptImage) {
   auto callback = [](bool* response_received, base::OnceClosure quit,
                      const std::vector<uint8_t>& thumbnail_data,
                      const gfx::Size& original_size,
-                     const std::string& file_extension) {
+                     const std::string& file_extension,
+                     std::vector<lens::mojom::LatencyLogPtr> log_data) {
     *response_received = true;
     std::move(quit).Run();
   };
@@ -2212,7 +2242,8 @@ IN_PROC_BROWSER_TEST_F(SearchByImageBrowserTest,
   EXPECT_EQ(expected_content.substr(0, query_start_pos),
             new_tab_content.substr(0, query_start_pos));
   // Match the query parameters, without the value of start_time.
-  EXPECT_THAT(new_tab_content, testing::MatchesRegex(".*ep=ccm&s=&st=\\d+"));
+  EXPECT_THAT(new_tab_content,
+              testing::MatchesRegex(".*ep=ccm&re=df&s=&st=\\d+"));
 }
 
 #if BUILDFLAG(ENABLE_PDF)

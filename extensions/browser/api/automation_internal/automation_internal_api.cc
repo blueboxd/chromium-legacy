@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -329,11 +329,11 @@ ExtensionFunction::ResponseAction AutomationInternalEnableTabFunction::Run() {
   using api::automation_internal::EnableTab::Params;
   std::unique_ptr<Params> params(Params::Create(args()));
   EXTENSION_FUNCTION_VALIDATE(params.get());
-  content::WebContents* contents = NULL;
+  content::WebContents* contents = nullptr;
   AutomationInternalApiDelegate* automation_api_delegate =
       ExtensionsAPIClient::Get()->GetAutomationInternalApiDelegate();
   int tab_id = -1;
-  if (params->args.tab_id.get()) {
+  if (params->args.tab_id) {
     tab_id = *params->args.tab_id;
     std::string error_string;
     if (!automation_api_delegate->GetTabById(tab_id, browser_context(),
@@ -640,6 +640,9 @@ AutomationInternalPerformActionFunction::ConvertToAXActionData(
     case api::automation::ACTION_TYPE_SUSPENDMEDIA:
       action->action = ax::mojom::Action::kSuspendMedia;
       break;
+    case api::automation::ACTION_TYPE_LONGCLICK:
+      action->action = ax::mojom::Action::kLongClick;
+      break;
     case api::automation::ACTION_TYPE_ANNOTATEPAGEIMAGES:
     case api::automation::ACTION_TYPE_SIGNALENDOFTEST:
     case api::automation::ACTION_TYPE_INTERNALINVALIDATETREE:
@@ -730,14 +733,15 @@ AutomationInternalPerformActionFunction::Run() {
   std::unique_ptr<Params> params(Params::Create(args()));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
-  int* request_id_ptr = params->args.request_id.get();
-  int request_id = request_id_ptr ? *request_id_ptr : -1;
+  int request_id = params->args.request_id.value_or(-1);
 
   ui::AXActionData data;
   Result result = ConvertToAXActionData(
       ui::AXTreeID::FromString(params->args.tree_id),
       params->args.automation_node_id, params->args.action_type, request_id,
-      params->opt_args.additional_properties, extension_id(), &data);
+      base::Value::AsDictionaryValue(
+          base::Value(std::move(params->opt_args.additional_properties))),
+      extension_id(), &data);
 
   if (!result.validation_success) {
     // This macro has a built in |return|.

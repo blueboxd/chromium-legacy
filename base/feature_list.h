@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -44,7 +44,11 @@ enum FeatureState {
 // for a given feature name - generally defined as a constant global variable or
 // file static. It should never be used as a constexpr as it breaks
 // pointer-based identity lookup.
-// Note: New code should use CONSTINIT on the base::Feature declaration.
+//
+// Note: New code should use CONSTINIT on the base::Feature declaration, as in:
+//
+//   constexpr Feature kSomeFeature CONSTINIT{"FeatureName",
+//                                            FEATURE_DISABLED_BY_DEFAULT};
 //
 // Making Feature constants mutable allows them to contain a mutable member to
 // cache their override state, while still remaining declared as const. This
@@ -323,6 +327,17 @@ class BASE_EXPORT FeatureList {
   // getting the FieldTrial without requiring a struct Feature.
   base::FieldTrial* GetAssociatedFieldTrialByFeatureName(
       StringPiece name) const;
+
+  // DO NOT USE outside of internal field trial implementation code. Instead use
+  // GetAssociatedFieldTrialByFeatureName(), which performs some additional
+  // validation.
+  //
+  // Returns whether the given feature |name| is associated with a field trial.
+  // If the given feature |name| does not exist, return false. Unlike
+  // GetAssociatedFieldTrialByFeatureName(), this function must be called during
+  // |FeatureList| initialization; the returned value will report whether the
+  // provided |name| has been used so far.
+  bool HasAssociatedFieldTrialByFeatureName(StringPiece name) const;
 
   // Get associated field trial for the given feature |name| only if override
   // enables it.

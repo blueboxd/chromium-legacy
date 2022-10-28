@@ -1,12 +1,12 @@
-// Copyright 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #import "ios/chrome/browser/ui/ntp/incognito_view_controller.h"
 
-#include <string>
+#import <string>
 
-#include "components/content_settings/core/common/features.h"
+#import "components/content_settings/core/common/features.h"
 #import "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/ui/commands/browser_commands.h"
 #import "ios/chrome/browser/ui/ntp/incognito_view.h"

@@ -1,4 +1,4 @@
-# Copyright 2015 The Chromium Authors. All rights reserved.
+# Copyright 2015 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -10,61 +10,28 @@ import("//ios/chrome/features.gni")
 import("//rlz/buildflags/buildflags.gni")
 import("//third_party/protobuf/proto_library.gni")
 
-source_set("chrome_paths") {
-  configs += [ "//build/config/compiler:enable_arc" ]
-  sources = [
-    "chrome_paths.h",
-    "chrome_paths.mm",
-    "chrome_paths_internal.h",
-  ]
-
-  deps = [
-    "//base",
-    "//build:branding_buildflags",
-    "//components/gcm_driver",
-  ]
-}
-
-source_set("application_context") {
-  configs += [ "//build/config/compiler:enable_arc" ]
-  sources = [
-    "application_context.h",
-    "application_context.mm",
-  ]
-  deps = [ "//base" ]
-}
-
 source_set("browser") {
   configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
-    "arch_util.cc",
-    "arch_util.h",
     "browser_about_rewriter.cc",
     "browser_about_rewriter.h",
     "chrome_browser_provider_observer_bridge.h",
     "chrome_browser_provider_observer_bridge.mm",
     "chrome_constants.cc",
     "chrome_constants.h",
-    "chrome_root_coordinator.h",
-    "chrome_root_coordinator.mm",
     "chrome_url_util.h",
     "chrome_url_util.mm",
-    "install_time_util.h",
-    "install_time_util.mm",
     "installation_notifier.h",
     "installation_notifier.mm",
-    "ios_chrome_field_trials.h",
-    "ios_chrome_field_trials.mm",
     "ios_chrome_io_thread.h",
     "ios_chrome_io_thread.mm",
-    "notification_promo.cc",
-    "notification_promo.h",
   ]
 
   deps = [
     "//base",
     "//components/autofill/core/browser",
     "//components/autofill/ios/browser",
+    "//components/content_settings/core/browser",
     "//components/dom_distiller/core",
     "//components/feature_engagement",
     "//components/flags_ui",
@@ -97,9 +64,11 @@ source_set("browser") {
     "//components/version_info",
     "//components/webdata_services",
     "//google_apis",
+    "//ios/chrome/app:tests_hook",
     "//ios/chrome/app/strings",
     "//ios/chrome/browser/browser_state",
     "//ios/chrome/browser/complex_tasks",
+    "//ios/chrome/browser/content_settings",
     "//ios/chrome/browser/download/background_service",
     "//ios/chrome/browser/itunes_urls",
     "//ios/chrome/browser/resources:settings_resources",
@@ -107,7 +76,6 @@ source_set("browser") {
     "//ios/chrome/browser/ui:feature_flags",
     "//ios/chrome/browser/ui/coordinators:chrome_coordinators",
     "//ios/chrome/browser/ui/first_run:field_trial",
-    "//ios/chrome/browser/ui/fullscreen:feature_flags",
     "//ios/chrome/browser/ui/omnibox",
     "//ios/chrome/browser/ui/toolbar_container:feature_flags",
     "//ios/chrome/browser/web:feature_flags",
@@ -124,11 +92,11 @@ source_set("browser") {
     "//url",
   ]
   public_deps = [
-    ":application_context",
-    ":chrome_paths",
     ":chrome_url_constants",
-    ":pref_names",
     ":utils",
+    "//ios/chrome/browser/application_context",
+    "//ios/chrome/browser/paths",
+    "//ios/chrome/browser/prefs:pref_names",
   ]
   allow_circular_includes_from = [
     "//ios/chrome/browser/sync/glue",
@@ -142,13 +110,7 @@ source_set("browser") {
 
 source_set("utils") {
   configs += [ "//build/config/compiler:enable_arc" ]
-  sources = [
-    "chrome_switches.cc",
-    "chrome_switches.h",
-    "procedural_block_types.h",
-    "system_flags.h",
-    "system_flags.mm",
-  ]
+  sources = [ "procedural_block_types.h" ]
   deps = [
     "//base",
     "//build:branding_buildflags",
@@ -169,26 +131,15 @@ source_set("chrome_url_constants") {
 
   deps = [
     "//base",
+    "//components/optimization_guide/optimization_guide_internals/webui:url_constants",
     "//ios/components/webui:url_constants",
   ]
   frameworks = [ "UIKit.framework" ]
 }
 
-source_set("pref_names") {
-  configs += [ "//build/config/compiler:enable_arc" ]
-  sources = [
-    "pref_names.cc",
-    "pref_names.h",
-  ]
-}
-
 source_set("browser_impl") {
   configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
-    "application_context_impl.h",
-    "application_context_impl.mm",
-    "ios_chrome_main_parts.h",
-    "ios_chrome_main_parts.mm",
     "ios_thread_profiler.cc",
     "ios_thread_profiler.h",
   ]
@@ -227,6 +178,7 @@ source_set("browser_impl") {
     "//components/variations/service",
     "//components/version_info",
     "//ios/chrome/app:tests_hook",
+    "//ios/chrome/browser/application_context:application_context_impl",
     "//ios/chrome/browser/browser_state",
     "//ios/chrome/browser/browser_state:browser_state_impl",
     "//ios/chrome/browser/component_updater",
@@ -235,6 +187,7 @@ source_set("browser_impl") {
     "//ios/chrome/browser/crash_report/breadcrumbs:application_breadcrumbs_logger",
     "//ios/chrome/browser/first_run",
     "//ios/chrome/browser/flags",
+    "//ios/chrome/browser/flags:client_side",
     "//ios/chrome/browser/gcm",
     "//ios/chrome/browser/history",
     "//ios/chrome/browser/https_upgrades",
@@ -293,9 +246,7 @@ source_set("unit_tests") {
     "browser_about_rewriter_unittest.cc",
     "chrome_browser_provider_observer_bridge_unittest.mm",
     "chrome_url_util_unittest.mm",
-    "install_time_util_unittest.mm",
     "installation_notifier_unittest.mm",
-    "notification_promo_unittest.cc",
   ]
   deps = [
     ":browser",

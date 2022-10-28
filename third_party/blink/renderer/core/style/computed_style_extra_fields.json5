@@ -242,6 +242,9 @@
       custom_compare: true,
       computed_style_custom_functions: ["getter", "setter"],
     },
+    // Whether any non-universal highlight selectors were found when collecting
+    // rules for the originating element. Stored in the *originating* style, and
+    // needs to be restored *non-monotonically* in ApplyMatchedCache.
     {
       name: "HasNonUniversalHighlightPseudoStyles",
       field_template: "primitive",
@@ -399,24 +402,6 @@
       keywords: ["none", "auto", "dot", "circle", "double-circle", "triangle", "sesame", "custom"],
       field_group: "*",
       computed_style_custom_functions: ["getter", "setter"],
-    },
-    {
-      name: "TextIndentLine",
-      inherited: true,
-      field_template: "keyword",
-      type_name: "TextIndentLine",
-      keywords: ["first-line", "each-line"],
-      default_value: "first-line",
-      field_group: "*",
-    },
-    {
-      name: "TextIndentType",
-      inherited: true,
-      field_template: "keyword",
-      type_name: "TextIndentType",
-      keywords: ["normal", "hanging"],
-      default_value: "normal",
-      field_group: "*",
     },
     // Though will-change is not itself an inherited property, the intent
     // expressed by 'will-change: contents' includes descendants.
@@ -1116,6 +1101,13 @@
       default_value: "false",
     },
     {
+      name: "DependsOnStyleContainerQueries",
+      field_template: "primitive",
+      type_name: "bool",
+      field_group: "*",
+      default_value: "false",
+    },
+    {
       // Set to true if this ComputedStyle is for an element whose ::first-line
       // style depends on size container queries.
       name: "FirstLineDependsOnSizeContainerQueries",
@@ -1145,10 +1137,10 @@
       // https://html.spec.whatwg.org/multipage/interaction.html#inert
       name: "IsInert",
       inherited: true,
+      independent: true,
       field_template: "primitive",
       type_name: "bool",
       default_value: "false",
-      field_group: "*",
     },
     {
       // We need to go through LayoutObject::SetStyle with

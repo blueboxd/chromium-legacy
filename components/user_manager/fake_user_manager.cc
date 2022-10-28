@@ -1,16 +1,16 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "components/user_manager/fake_user_manager.h"
 
-#include <algorithm>
 #include <utility>
 
 #include "ash/constants/ash_switches.h"
 #include "base/callback.h"
 #include "base/command_line.h"
 #include "base/containers/contains.h"
+#include "base/ranges/algorithm.h"
 #include "base/system/sys_info.h"
 #include "base/task/single_thread_task_runner.h"
 #include "components/user_manager/user_names.h"
@@ -48,6 +48,17 @@ FakeUserManager::FakeUserManager()
 FakeUserManager::~FakeUserManager() {
 }
 
+std::string FakeUserManager::GetFakeUsernameHash(const AccountId& account_id) {
+  // Consistent with the
+  // kUserDataDirNameSuffix in fake_userdataauth_client.cc and
+  // UserDataAuthClient::GetStubSanitizedUsername.
+  // TODO(crbug.com/1347837): After resolving the dependent code,
+  // consolidate the all implementation to cryptohome utilities,
+  // and remove this.
+  DCHECK(account_id.is_valid());
+  return account_id.GetUserEmail() + "-hash";
+}
+
 const User* FakeUserManager::AddUser(const AccountId& account_id) {
   return AddUserWithAffiliation(account_id, false);
 }
@@ -66,8 +77,7 @@ const User* FakeUserManager::AddGuestUser(const AccountId& account_id) {
 
 const User* FakeUserManager::AddKioskAppUser(const AccountId& account_id) {
   User* user = User::CreateKioskAppUser(account_id);
-  // TODO: Merge with ProfileHelper::GetUserIdHashByUserIdForTesting.
-  user->set_username_hash(account_id.GetUserEmail() + "-hash");
+  user->set_username_hash(GetFakeUsernameHash(account_id));
   users_.push_back(user);
   return user;
 }
@@ -76,8 +86,7 @@ const User* FakeUserManager::AddUserWithAffiliation(const AccountId& account_id,
                                                     bool is_affiliated) {
   User* user = User::CreateRegularUser(account_id, USER_TYPE_REGULAR);
   user->SetAffiliation(is_affiliated);
-  // TODO: Merge with ProfileHelper::GetUserIdHashByUserIdForTesting.
-  user->set_username_hash(account_id.GetUserEmail() + "-hash");
+  user->set_username_hash(GetFakeUsernameHash(account_id));
   users_.push_back(user);
   return user;
 }
@@ -91,10 +100,8 @@ const user_manager::User* FakeUserManager::AddPublicAccountUser(
 }
 
 void FakeUserManager::RemoveUserFromList(const AccountId& account_id) {
-  const UserList::iterator it = std::find_if(
-      users_.begin(), users_.end(), [&account_id](const User* user) {
-        return user->GetAccountId() == account_id;
-      });
+  const UserList::iterator it =
+      base::ranges::find(users_, account_id, &User::GetAccountId);
   if (it != users_.end()) {
     if (primary_user_ == *it)
       primary_user_ = nullptr;

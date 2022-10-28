@@ -1,11 +1,23 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+
+// If we are running using SystemExtensionsApiBrowserTest then import the
+// test interface.
+importScripts(
+  'keyboard_codes.mojom-lite.js', 'event_constants.mojom-lite.js',
+  'geometry.mojom-lite.js',
+  'cros_window_management_test_helper.test-mojom-lite.js')
+
+globalThis.testHelper =
+  new systemExtensionsTest.mojom.CrosWindowManagementTestHelperRemote;
+testHelper.$.bindNewPipeAndPassReceiver().bindInBrowser('process');
 
 // We assume a single window only and apply cros_window API methods at index 0.
 async function assertSingleWindow() {
   let windows = await chromeos.windowManagement.getWindows();
-  assert_equals(windows.length, 1,
+  assert_equals(
+      windows.length, 1,
       `util functions restricted to testing with a single window.`);
 }
 
@@ -106,6 +118,13 @@ async function minimizeAndTest() {
   let [window] = await chromeos.windowManagement.getWindows();
   await window.minimize();
   await assertWindowState("minimized");
+}
+
+async function restoreAndTest() {
+  await assertSingleWindow();
+  let [window] = await chromeos.windowManagement.getWindows();
+  await window.restore();
+  await assertWindowState('normal');
 }
 
 async function focusAndTest() {

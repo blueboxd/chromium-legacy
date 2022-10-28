@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -32,6 +32,10 @@ base::Value ToValue(const ash::quick_start::ShapeList& list) {
 void QuickStartScreenHandler::SetShapes(
     const ash::quick_start::ShapeList& shape_list) {
   CallExternalAPI("setFigures", ToValue(shape_list));
+}
+
+void QuickStartScreenHandler::SetQRCode(base::Value::List blob) {
+  CallExternalAPI("setQRCode", std::move(blob));
 }
 
 void QuickStartScreenHandler::DeclareLocalizedValues(

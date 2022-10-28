@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -16,11 +16,11 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/ranges/algorithm.h"
-#include "base/stl_util.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/platform_thread.h"
+#include "base/types/optional_util.h"
 #include "build/build_config.h"
 #include "components/autofill/core/browser/autofill_field.h"
 #include "components/autofill/core/browser/autofill_type.h"
@@ -292,6 +292,11 @@ void PasswordManager::RegisterProfilePrefs(
   // Preferences for |PasswordChangeSuccessTracker|.
   registry->RegisterIntegerPref(prefs::kPasswordChangeSuccessTrackerVersion, 0);
   registry->RegisterListPref(prefs::kPasswordChangeSuccessTrackerFlows);
+
+#if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN)
+  registry->RegisterBooleanPref(prefs::kBiometricAuthenticationBeforeFilling,
+                                false);
+#endif
 }
 
 // static
@@ -299,6 +304,10 @@ void PasswordManager::RegisterLocalPrefs(PrefRegistrySimple* registry) {
 #if BUILDFLAG(IS_WIN)
   registry->RegisterInt64Pref(prefs::kOsPasswordLastChanged, 0);
   registry->RegisterBooleanPref(prefs::kOsPasswordBlank, false);
+  registry->RegisterBooleanPref(prefs::kIsBiometricAvailable, false);
+#endif
+#if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN)
+  registry->RegisterBooleanPref(prefs::kHadBiometricsAvailable, false);
 #endif
 }
 
@@ -360,6 +369,10 @@ void PasswordManager::SetGenerationElementAndTypeForForm(
     form_manager->SetGenerationElement(generation_element);
     form_manager->SetGenerationPopupWasShown(type);
   }
+}
+
+PasswordManagerClient* PasswordManager::GetClient() {
+  return client_;
 }
 
 void PasswordManager::MarkWasUnblocklistedInFormManagers(
@@ -790,8 +803,8 @@ void PasswordManager::PresaveGeneratedPassword(
     form_manager->PresaveGeneratedPassword(driver, form, generated_password,
                                            generation_element);
 
-    form_manager->ProvisionallySave(
-        form, driver, base::OptionalOrNullptr(possible_username_));
+    form_manager->ProvisionallySave(form, driver,
+                                    base::OptionalToPtr(possible_username_));
   }
 }
 
@@ -801,6 +814,10 @@ void PasswordManager::UpdateStateOnUserInput(
     FieldRendererId field_id,
     const std::u16string& field_value) {
   for (std::unique_ptr<PasswordFormManager>& manager : form_managers_) {
+    if (!manager->DoesManage(form_id, driver)) {
+      continue;
+    }
+
     if (manager->UpdateStateOnUserInput(form_id, field_id, field_value)) {
       ProvisionallySaveForm(*manager->observed_form(), driver, true);
       if (manager->is_submitted() && !manager->HasGeneratedPassword()) {
@@ -824,8 +841,6 @@ void PasswordManager::OnPasswordFormRemoved(
     const FieldDataManager& field_data_manager,
     FormRendererId form_id) {
   for (auto& manager : form_managers_) {
-    if (driver && !manager->GetDriver())
-      manager->SetDriver(driver->AsWeakPtr());
     // Find a form with corresponding renderer id.
     if (manager->DoesManage(form_id, driver)) {
       DetectPotentialSubmission(manager.get(), field_data_manager, driver);
@@ -853,6 +868,13 @@ void PasswordManager::PropagateFieldDataManagerInfo(
     const FieldDataManager& field_data_manager,
     const PasswordManagerDriver* driver) {
   for (auto& manager : form_managers_) {
+    // The current method can be called with the same driver for different
+    // forms. If the forms are in different frames, then only some of them will
+    // match the driver, since each frame has its own driver. Thus, we return
+    // early if the driver doesn't match the frame of the form.
+    if (manager->GetDriver().get() != driver) {
+      continue;
+    }
     if (!client_->IsSavingAndFillingEnabled(manager->GetURL())) {
       RecordProvisionalSaveFailure(
           PasswordManagerMetricsRecorder::SAVING_DISABLED, manager->GetURL());
@@ -1288,12 +1310,6 @@ PasswordFormManager* PasswordManager::GetMatchedManager(
     PasswordManagerDriver* driver,
     FormRendererId form_id) {
   for (auto& form_manager : form_managers_) {
-// Until support of cross-origin iframes is implemented, there is only one
-// driver on iOS. It needs to be set in order for filling to work.
-#if BUILDFLAG(IS_IOS)
-    if (driver && !form_manager->GetDriver())
-      form_manager->SetDriver(driver->AsWeakPtr());
-#endif
     if (form_manager->DoesManage(form_id, driver))
       return form_manager.get();
   }

@@ -1,14 +1,14 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "ash/in_session_auth/in_session_auth_dialog_controller_impl.h"
 
-#include "ash/components/login/auth/auth_performer.h"
 #include "ash/in_session_auth/authentication_dialog.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
 #include "chromeos/ash/components/dbus/userdataauth/userdataauth_client.h"
+#include "chromeos/ash/components/login/auth/auth_performer.h"
 
 namespace ash {
 

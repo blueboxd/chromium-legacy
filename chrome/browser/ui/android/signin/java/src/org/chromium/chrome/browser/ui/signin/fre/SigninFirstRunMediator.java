@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -83,7 +83,7 @@ public class SigninFirstRunMediator
     private AccountPickerDialogCoordinator mDialogCoordinator;
     private @Nullable String mSelectedAccountName;
     private @Nullable String mDefaultAccountName;
-    private boolean mAllowCrashUpload;
+    private boolean mAllowMetricsAndCrashUploading;
 
     SigninFirstRunMediator(Context context, ModalDialogManager modalDialogManager,
             Delegate delegate, PrivacyPreferencesManager privacyPreferencesManager) {
@@ -203,7 +203,7 @@ public class SigninFirstRunMediator
         mModel.set(SigninFirstRunProperties.IS_SIGNIN_SUPPORTED,
                 ExternalAuthUtils.getInstance().canUseGooglePlayServices()
                         && !isSigninDisabledByPolicy);
-        mAllowCrashUpload = !isMetricsReportingDisabledByPolicy;
+        mAllowMetricsAndCrashUploading = !isMetricsReportingDisabledByPolicy;
 
         mModel.set(SigninFirstRunProperties.FOOTER_STRING,
                 getFooterString(isMetricsReportingDisabledByPolicy));
@@ -234,12 +234,13 @@ public class SigninFirstRunMediator
 
     /** Implements {@link FreUMADialogCoordinator.Listener} */
     @Override
-    public void onAllowCrashUploadChecked(boolean allowCrashUpload) {
-        mAllowCrashUpload = allowCrashUpload;
+    public void onAllowMetricsAndCrashUploadingChecked(boolean allowMetricsAndCrashUploading) {
+        mAllowMetricsAndCrashUploading = allowMetricsAndCrashUploading;
     }
 
     private void openUmaDialog() {
-        new FreUMADialogCoordinator(mContext, mModalDialogManager, this, mAllowCrashUpload);
+        new FreUMADialogCoordinator(
+                mContext, mModalDialogManager, this, mAllowMetricsAndCrashUploading);
     }
 
     /**
@@ -261,14 +262,14 @@ public class SigninFirstRunMediator
 
         if (!mModel.get(SigninFirstRunProperties.IS_SIGNIN_SUPPORTED)) {
             if (mDelegate.getNativeInitializationPromise().isFulfilled()) {
-                mDelegate.acceptTermsOfService(mAllowCrashUpload);
+                mDelegate.acceptTermsOfService(mAllowMetricsAndCrashUploading);
                 mDelegate.advanceToNextPage();
             } else {
                 // Show the progress spinner while the native finishes loading.
                 mModel.set(SigninFirstRunProperties.SHOW_SIGNIN_PROGRESS_SPINNER, true);
                 mDelegate.getNativeInitializationPromise().then(ignored -> {
                     // When the native is loaded - mark ToS as accepted and move to the next page.
-                    mDelegate.acceptTermsOfService(mAllowCrashUpload);
+                    mDelegate.acceptTermsOfService(mAllowMetricsAndCrashUploading);
                     mDelegate.advanceToNextPage();
                 });
             }
@@ -296,7 +297,7 @@ public class SigninFirstRunMediator
         assert mDelegate.getNativeInitializationPromise().isFulfilled();
 
         // This is needed to get metrics/crash reports from the sign-in flow itself.
-        mDelegate.acceptTermsOfService(mAllowCrashUpload);
+        mDelegate.acceptTermsOfService(mAllowMetricsAndCrashUploading);
         if (mModel.get(SigninFirstRunProperties.IS_SELECTED_ACCOUNT_SUPERVISED)) {
             // Don't perform the sign-in here, as it will be handled by SigninChecker.
             mDelegate.advanceToNextPage();
@@ -368,7 +369,7 @@ public class SigninFirstRunMediator
         assert mDelegate.getNativeInitializationPromise().isFulfilled();
 
         mDelegate.recordFreProgressHistogram(MobileFreProgress.WELCOME_DISMISS);
-        mDelegate.acceptTermsOfService(mAllowCrashUpload);
+        mDelegate.acceptTermsOfService(mAllowMetricsAndCrashUploading);
         SigninPreferencesManager.getInstance().temporarilySuppressNewTabPagePromos();
         if (IdentityServicesProvider.get()
                         .getIdentityManager(Profile.getLastUsedRegularProfile())

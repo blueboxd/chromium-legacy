@@ -1,4 +1,4 @@
-/* Copyright 2014 The Chromium Authors. All rights reserved.
+/* Copyright 2014 The Chromium Authors
    Use of this source code is governed by a BSD-style license that can be
    found in the LICENSE file. */
 
@@ -9,6 +9,8 @@ body {
   --focused-details-button-border: rgba(26, 115, 232, 0.4);
   --header-color: var(--google-gray-900);
   --paragraph-color: var(--google-gray-700);
+  --callout-text-color: var(--google-gray-900);
+  --callout-bg-color: var(--google-gray-100);
   font-family: "Roboto", sans-serif;
   padding: 24px 24px 20px 24px;
 }
@@ -59,7 +61,7 @@ button:active {
 .details-button:active {
   background: var(--google-gray-50);
   box-shadow: 0 1px 2px 0 rgba(60, 64, 67, 0.3),
-              0 2px 6px 2px rgba(60, 64, 67, 0.15);
+    0 2px 6px 2px rgba(60, 64, 67, 0.15);
 }
 
 .details-button:focus {
@@ -101,13 +103,12 @@ p {
 }
 
 #family-link-kite {
-  content: -webkit-image-set(
-      url(../../resources/supervised_user_icon.png) 1x);
+  content: -webkit-image-set(url(../../resources/supervised_user_icon.png) 1x);
   height: 72px;
   width: 72px;
 }
 
-#illustration {
+.illustration {
   display: none;
 }
 
@@ -148,8 +149,7 @@ p {
 .avatar-img {
   border: 1px solid var(--avatar-stroke-color);
   border-radius: 50%;
-  content: -webkit-image-set(
-      url(default_100_percent/logo_avatar_circle_blue_color.png) 1x,
+  content: -webkit-image-set(url(default_100_percent/logo_avatar_circle_blue_color.png) 1x,
       url(default_200_percent/logo_avatar_circle_blue_color.png) 2x);
   float: left;
   height: 40px;
@@ -189,6 +189,15 @@ p {
   font-weight: bold;
 }
 
+#blocked-icon {
+  margin-right: 14px;
+}
+
+#block-reason {
+  /* Hidden unless the web filter interstitial refresh flag is enabled */
+  display: none;
+}
+
 /* Styles for when the web filter interstitial refresh flag is enabled. */
 .interstitial-refresh-enabled button {
   font-size: 13px;
@@ -225,7 +234,7 @@ picture {
   margin: auto;
 }
 
-.interstitial-refresh-enabled #illustration {
+.interstitial-refresh-enabled .illustration {
   display: inline;
 }
 
@@ -261,6 +270,33 @@ picture {
   font-size: 13px;
 }
 
+.interstitial-refresh-enabled #block-reason {
+  align-items: center;
+  background-color: var(--callout-bg-color);
+  border-radius: 8px;
+  color: var(--header-color);
+  display: flex;
+  justify-content: flex-start;
+  padding: 16px;
+  max-width: 276px;
+  margin: 20px auto 0;
+}
+
+.interstitial-refresh-enabled #block-reason-header {
+  font-weight: 500;
+  font-size: 16px;
+  line-height: 24px;
+  margin: 0;
+}
+
+.interstitial-refresh-enabled #block-reason-message {
+  color: var(--callout-text-color);
+  font-weight: 400;
+  font-size: 14px;
+  line-height: 20px;
+  margin: 0;
+}
+
 /* Local approvals button is only shown when the local web approvals flag
 is enabled. */
 .local-approvals-button {
@@ -274,7 +310,8 @@ is enabled. */
 
 /* Remove focus-visible outline styles, because forced focus is used for
 screen reader and chrome vox provides its own focus style. */
-.frame-blocked:focus-visible,button:focus-visible {
+.frame-blocked:focus-visible,
+button:focus-visible {
   outline: none;
 }
 
@@ -288,6 +325,8 @@ screen reader and chrome vox provides its own focus style. */
   body.supervised-user-block.interstitial-refresh-enabled {
     --header-color: #e9eaed;
     --paragraph-color: var(--google-gray-500);
+    --callout-bg-color: var(--google-gray-800);
+    --callout-text-color: var(--google-gray-200);
   }
 
   .interstitial-refresh-enabled .remote-approvals-button {
@@ -305,6 +344,7 @@ margin to 0. This will be useful for subframes. */
 }
 
 @media (max-width: 420px) {
+
   button,
   [dir='rtl'] button,
   .small-link {
@@ -334,13 +374,13 @@ enabled. */
     margin: 0 4px 16px 4px;
   }
 
-  .interstitial-refresh-enabled #illustration{
+  .interstitial-refresh-enabled .illustration {
     display: none;
   }
 
   .interstitial-refresh-enabled .frame-blocked {
     align-items: center;
-    background-color: rgba(232, 234, 237, .38);;
+    background-color: rgba(232, 234, 237, .38);
     border-radius: 12px;
     padding: 0 8px;
     width: 284px;

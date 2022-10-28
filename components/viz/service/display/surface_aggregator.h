@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -320,7 +320,7 @@ class VIZ_SERVICE_EXPORT SurfaceAggregator : public SurfaceObserver {
   // then store it in the |delegated_ink_metadata_| member.
   void TransformAndStoreDelegatedInkMetadata(
       const gfx::Transform& parent_quad_to_root_target_transform,
-      std::unique_ptr<gfx::DelegatedInkMetadata> metadata);
+      const gfx::DelegatedInkMetadata* metadata);
 
   // Preliminary check to see if a surface contained in |surface_quad| can
   // potentially merge its root render pass. If so, returns true.

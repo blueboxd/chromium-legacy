@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -24,6 +24,8 @@ class ChromeWebAuthnClientAndroid : public components::WebAuthnClientAndroid {
       const std::vector<device::DiscoverableCredentialMetadata>& credentials,
       base::OnceCallback<void(const std::vector<uint8_t>& id)> callback)
       override;
+
+  void CancelWebAuthnRequest(content::RenderFrameHost* frame_host) override;
 };
 
 #endif  // CHROME_BROWSER_WEBAUTHN_ANDROID_CHROME_WEBAUTHN_CLIENT_ANDROID_H_

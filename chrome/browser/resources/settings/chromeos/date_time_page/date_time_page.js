@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,8 +9,8 @@
  */
 
 import 'chrome://resources/cr_elements/cr_link_row/cr_link_row.js';
-import 'chrome://resources/cr_elements/policy/cr_policy_indicator.m.js';
-import 'chrome://resources/cr_elements/policy/cr_policy_pref_indicator.m.js';
+import 'chrome://resources/cr_elements/policy/cr_policy_indicator.js';
+import 'chrome://resources/cr_elements/policy/cr_policy_pref_indicator.js';
 import '../../controls/settings_toggle_button.js';
 import '../../settings_page/settings_subpage.js';
 import '../../settings_shared.css.js';
@@ -18,8 +18,8 @@ import './date_time_types.js';
 import './timezone_selector.js';
 import './timezone_subpage.js';
 
-import {I18nBehavior, I18nBehaviorInterface} from 'chrome://resources/js/i18n_behavior.m.js';
-import {WebUIListenerBehavior, WebUIListenerBehaviorInterface} from 'chrome://resources/js/web_ui_listener_behavior.m.js';
+import {I18nBehavior, I18nBehaviorInterface} from 'chrome://resources/cr_elements/i18n_behavior.js';
+import {WebUIListenerBehavior, WebUIListenerBehaviorInterface} from 'chrome://resources/cr_elements/web_ui_listener_behavior.js';
 import {html, mixinBehaviors, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {loadTimeData} from '../../i18n_setup.js';

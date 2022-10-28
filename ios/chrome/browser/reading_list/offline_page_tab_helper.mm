@@ -1,41 +1,41 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #import "ios/chrome/browser/reading_list/offline_page_tab_helper.h"
 
-#include "base/base64.h"
-#include "base/files/file_enumerator.h"
-#include "base/files/file_util.h"
-#include "base/memory/ptr_util.h"
-#include "base/metrics/histogram_macros.h"
-#include "base/strings/stringprintf.h"
-#include "base/strings/sys_string_conversions.h"
-#include "base/task/thread_pool.h"
-#include "base/timer/timer.h"
-#include "components/reading_list/core/offline_url_utils.h"
-#include "components/reading_list/core/reading_list_entry.h"
-#include "components/reading_list/core/reading_list_model.h"
-#include "ios/chrome/browser/browser_state/chrome_browser_state.h"
-#include "ios/chrome/browser/chrome_url_constants.h"
-#include "ios/chrome/browser/reading_list/offline_url_utils.h"
-#include "ios/chrome/browser/reading_list/reading_list_download_service.h"
-#include "ios/chrome/browser/reading_list/reading_list_download_service_factory.h"
-#include "ios/web/common/features.h"
+#import "base/base64.h"
+#import "base/files/file_enumerator.h"
+#import "base/files/file_util.h"
+#import "base/memory/ptr_util.h"
+#import "base/metrics/histogram_macros.h"
+#import "base/strings/stringprintf.h"
+#import "base/strings/sys_string_conversions.h"
+#import "base/task/thread_pool.h"
+#import "base/timer/timer.h"
+#import "components/reading_list/core/offline_url_utils.h"
+#import "components/reading_list/core/reading_list_entry.h"
+#import "components/reading_list/core/reading_list_model.h"
+#import "ios/chrome/browser/browser_state/chrome_browser_state.h"
+#import "ios/chrome/browser/chrome_url_constants.h"
+#import "ios/chrome/browser/reading_list/offline_url_utils.h"
+#import "ios/chrome/browser/reading_list/reading_list_download_service.h"
+#import "ios/chrome/browser/reading_list/reading_list_download_service_factory.h"
+#import "ios/web/common/features.h"
 #import "ios/web/public/navigation/navigation_context.h"
 #import "ios/web/public/navigation/navigation_item.h"
 #import "ios/web/public/navigation/navigation_manager.h"
-#include "ios/web/public/thread/web_task_traits.h"
-#include "ios/web/public/thread/web_thread.h"
-#include "net/base/mac/url_conversions.h"
-#include "ui/base/page_transition_types.h"
+#import "ios/web/public/thread/web_task_traits.h"
+#import "ios/web/public/thread/web_thread.h"
+#import "net/base/mac/url_conversions.h"
+#import "ui/base/page_transition_types.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
 
 namespace {
-// Gets the offline data at |offline_path|. The result is a single std::string
+// Gets the offline data at `offline_path`. The result is a single std::string
 // with all resources inlined.
 // This method access file system and cannot be called on UI thread.
 // TODO(crbug.com/1166398): Remove backwards compatibility after M95
@@ -143,7 +143,7 @@ void OfflinePageTabHelper::LoadData(int offline_navigation,
   dont_reload_online_on_next_navigation_ = true;
   web_state_->LoadData(ns_data, mime, offline_navigation_triggered_);
   // LoadData replace the last committed item and will set the URL to
-  // |offline_navigation_triggered_|. Set the VirtualURL to |url| so it is
+  // `offline_navigation_triggered_`. Set the VirtualURL to `url` so it is
   // displayed in the omnibox.
   web_state_->GetNavigationManager()->GetLastCommittedItem()->SetVirtualURL(
       url);

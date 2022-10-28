@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,10 +12,8 @@
 
 namespace ash {
 
-class NetworkState;
-
-// This is an interface for a chromeos portal detector that allows for
-// observation of captive portal state.
+// This is an interface class for the chromeos portal detector.
+// See network_portal_detector_impl.h for details.
 class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkPortalDetector {
  public:
   enum CaptivePortalStatus {
@@ -28,48 +26,10 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkPortalDetector {
     kMaxValue = CAPTIVE_PORTAL_STATUS_COUNT  // For UMA_HISTOGRAM_ENUMERATION
   };
 
-  class Observer {
-   public:
-    // Called when portal detection is completed for |network|, or
-    // when observers add themselves via AddAndFireObserver(). In the
-    // second case, |network| is the active network and |state| is a
-    // current portal state for the active network, which can be
-    // currently in the unknown state, for instance, if portal
-    // detection is in process for the active network. Note, that
-    // |network| may be null.
-    virtual void OnPortalDetectionCompleted(
-        const NetworkState* network,
-        const CaptivePortalStatus status) = 0;
-
-    // Called on Shutdown, allows removal of observers. Primarly used in tests.
-    virtual void OnShutdown() {}
-
-   protected:
-    virtual ~Observer() {}
-  };
-
   NetworkPortalDetector(const NetworkPortalDetector&) = delete;
   NetworkPortalDetector& operator=(const NetworkPortalDetector&) = delete;
 
   virtual ~NetworkPortalDetector() {}
-
-  // Adds |observer| to the observers list.
-  virtual void AddObserver(Observer* observer) = 0;
-
-  // Adds |observer| to the observers list and immediately calls
-  // OnPortalDetectionCompleted() with the active network (which may
-  // be null) and captive portal state for the active network (which
-  // may be unknown, if, for instance, portal detection is in process
-  // for the active network).
-  //
-  // WARNING: don't call this method from the Observer's ctors or
-  // dtors, as it implicitly calls OnPortalDetectionCompleted(), which
-  // is virtual.
-  // TODO (ygorshenin@): find a way to avoid this restriction.
-  virtual void AddAndFireObserver(Observer* observer) = 0;
-
-  // Removes |observer| from the observers list.
-  virtual void RemoveObserver(Observer* observer) = 0;
 
   // Returns CaptivePortalStatus for the the default network or UNKNOWN.
   virtual CaptivePortalStatus GetCaptivePortalStatus() = 0;
@@ -82,11 +42,6 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkPortalDetector {
   // 'disabled' while in that state. Once enabled, if a network is connected,
   // portal detection for the default network will be handled.
   virtual void Enable() = 0;
-
-  // Starts or restarts portal detection for the default network. If not
-  // currently in the idle state, does nothing. Returns true if a new portal
-  // detection attempt was started.
-  virtual void StartPortalDetection() = 0;
 
   // Returns non-localized string representation of |status|.
   static std::string CaptivePortalStatusString(CaptivePortalStatus status);

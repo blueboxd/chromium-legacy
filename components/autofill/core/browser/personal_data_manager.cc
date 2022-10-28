@@ -1,4 +1,4 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,7 +6,6 @@
 
 #include <stddef.h>
 
-#include <algorithm>
 #include <list>
 #include <map>
 #include <memory>
@@ -109,9 +108,9 @@ const T& Deref(const T& x) {
 template <typename C, typename StringType>
 typename C::const_iterator FindElementByGUID(const C& container,
                                              const StringType& guid) {
-  return std::find_if(
-      std::begin(container), std::end(container),
-      [&guid](const auto& element) { return Deref(element).guid() == guid; });
+  return base::ranges::find(container, guid, [](const auto& element) {
+    return Deref(element).guid();
+  });
 }
 
 template <typename C, typename StringType>
@@ -698,7 +697,7 @@ void PersonalDataManager::AddUpiId(const std::string& upi_id) {
     return;
 
   // Don't add a duplicate.
-  if (std::find(upi_ids_.begin(), upi_ids_.end(), upi_id) != upi_ids_.end())
+  if (base::Contains(upi_ids_, upi_id))
     return;
 
   database_helper_->GetLocalDatabase()->AddUpiId(upi_id);

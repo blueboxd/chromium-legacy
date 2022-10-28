@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -67,6 +67,7 @@ class TabListModel : public ui::TableModel,
   void OnSourceNameChanged(size_t index) override;
   void OnSourceThumbnailChanged(size_t index) override;
   void OnSourcePreviewChanged(size_t index) override;
+  void OnDelegatedSourceListSelection() override;
 
  private:
   TabListModel(const TabListModel&) = delete;
@@ -136,6 +137,12 @@ void TabListModel::OnSourceThumbnailChanged(size_t index) {
 void TabListModel::OnSourcePreviewChanged(size_t index) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   preview_updated_callback_.Run(index);
+}
+
+void TabListModel::OnDelegatedSourceListSelection() {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  NOTREACHED()
+      << "Tab Lists are not delegated, so should not get a selection event.";
 }
 
 // TableViewObserver implementation that bridges between the actual TableView
@@ -315,6 +322,12 @@ DesktopMediaListController::SourceListListener*
 DesktopMediaTabList::GetSourceListListener() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   return model_.get();
+}
+
+void DesktopMediaTabList::ClearSelection() {
+  // Changing the selection in the list will ensure that all appropriate change
+  // events are fired.
+  list_->Select(absl::nullopt);
 }
 
 void DesktopMediaTabList::ClearPreview() {

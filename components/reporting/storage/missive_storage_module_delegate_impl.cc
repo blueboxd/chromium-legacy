@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -35,18 +35,4 @@ void MissiveStorageModuleDelegateImpl::Flush(
     MissiveStorageModule::FlushCallback callback) {
   flush_.Run(priority, std::move(callback));
 }
-
-void MissiveStorageModuleDelegateImpl::ReportSuccess(
-    const SequenceInformation& sequence_information,
-    bool force) {
-  // Intended for upload, but called directly to MissiveClient.
-  DLOG(FATAL) << "Should never be called";
-}
-
-void MissiveStorageModuleDelegateImpl::UpdateEncryptionKey(
-    const SignedEncryptionInfo& signed_encryption_key) {
-  // Intended for upload, but called directly to MissiveClient.
-  DLOG(FATAL) << "Should never be called";
-}
-
 }  // namespace reporting

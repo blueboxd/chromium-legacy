@@ -47,8 +47,7 @@ ColorProviderManager::Key NativeTheme::GetColorProviderKey(
           : ColorProviderManager::ColorMode::kLight,
       UserHasContrastPreference() ? ColorProviderManager::ContrastMode::kHigh
                                   : ColorProviderManager::ContrastMode::kNormal,
-      is_custom_system_theme_ ? ColorProviderManager::SystemTheme::kCustom
-                              : ColorProviderManager::SystemTheme::kDefault,
+      system_theme_,
       use_custom_frame ? ui::ColorProviderManager::FrameType::kChromium
                        : ui::ColorProviderManager::FrameType::kNative,
       user_color_, std::move(custom_theme));
@@ -97,6 +96,15 @@ void NativeTheme::NotifyOnCaptionStyleUpdated() {
     observer.OnCaptionStyleUpdated();
 }
 
+void NativeTheme::NotifyOnPreferredContrastUpdated() {
+  // This specific method is prone to being mistakenly called on the wrong
+  // sequence, because it is often invoked from a platform-specific event
+  // listener, and those events may be delivered on unexpected sequences.
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  for (NativeThemeObserver& observer : native_theme_observers_)
+    observer.OnPreferredContrastChanged();
+}
+
 float NativeTheme::AdjustBorderWidthByZoom(float border_width,
                                            float zoom_level) const {
   float zoomed = floorf(border_width * zoom_level);
@@ -114,9 +122,9 @@ float NativeTheme::AdjustBorderRadiusByZoom(Part part,
 }
 
 NativeTheme::NativeTheme(bool should_use_dark_colors,
-                         bool is_custom_system_theme)
+                         ui::SystemTheme system_theme)
     : should_use_dark_colors_(should_use_dark_colors || IsForcedDarkMode()),
-      is_custom_system_theme_(is_custom_system_theme),
+      system_theme_(system_theme),
       forced_colors_(IsForcedHighContrast()),
       preferred_color_scheme_(CalculatePreferredColorScheme()),
       preferred_contrast_(CalculatePreferredContrast()) {}
@@ -155,6 +163,14 @@ NativeTheme::PreferredColorScheme NativeTheme::GetPreferredColorScheme() const {
 
 NativeTheme::PreferredContrast NativeTheme::GetPreferredContrast() const {
   return preferred_contrast_;
+}
+
+void NativeTheme::SetPreferredContrast(
+    NativeTheme::PreferredContrast preferred_contrast) {
+  if (preferred_contrast_ == preferred_contrast)
+    return;
+  preferred_contrast_ = preferred_contrast;
+  NotifyOnPreferredContrastUpdated();
 }
 
 bool NativeTheme::IsForcedDarkMode() const {
@@ -261,7 +277,7 @@ void NativeTheme::ColorSchemeNativeThemeObserver::OnNativeThemeUpdated(
     notify_observers = true;
   }
   if (theme_to_update_->GetPreferredContrast() != preferred_contrast) {
-    theme_to_update_->set_preferred_contrast(preferred_contrast);
+    theme_to_update_->SetPreferredContrast(preferred_contrast);
     notify_observers = true;
   }
 

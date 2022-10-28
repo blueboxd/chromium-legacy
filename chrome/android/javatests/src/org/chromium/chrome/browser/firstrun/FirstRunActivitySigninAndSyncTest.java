@@ -1,18 +1,23 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 package org.chromium.chrome.browser.firstrun;
 
 import static androidx.test.espresso.Espresso.onView;
+import static androidx.test.espresso.action.ViewActions.click;
 import static androidx.test.espresso.assertion.ViewAssertions.matches;
 import static androidx.test.espresso.matcher.ViewMatchers.isDisplayed;
+import static androidx.test.espresso.matcher.ViewMatchers.isEnabled;
+import static androidx.test.espresso.matcher.ViewMatchers.withEffectiveVisibility;
 import static androidx.test.espresso.matcher.ViewMatchers.withId;
 
+import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.when;
 
@@ -27,8 +32,10 @@ import android.view.View;
 import android.widget.TextView;
 
 import androidx.annotation.IdRes;
+import androidx.test.espresso.Espresso;
 import androidx.test.espresso.UiController;
 import androidx.test.espresso.ViewAction;
+import androidx.test.espresso.matcher.ViewMatchers.Visibility;
 import androidx.test.filters.LargeTest;
 import androidx.test.filters.MediumTest;
 
@@ -224,7 +231,9 @@ public class FirstRunActivitySigninAndSyncTest {
     // ChildAccountStatusSupplier uses AppRestrictions to quickly detect non-supervised cases,
     // adding at least one policy via AppRestrictions prevents that.
     @Policies.Add(@Policies.Item(key = "ForceSafeSearch", string = "true"))
-    public void continueButtonClickShowsSyncConsentPageWithChildAccount() {
+    @DisableFeatures({ChromeFeatureList.CREATE_SIGNIN_CHECKER_BEFORE_SYNC_CONSENT_FRAGMENT})
+    public void
+    continueButtonClickShowsSyncConsentPageWithChildAccountAndLateSigninCheckerCreation() {
         mAccountManagerTestRule.addAccount(CHILD_EMAIL);
         launchFirstRunActivityAndWaitForNativeInitialization();
         waitUntilCurrentPageIs(SigninFirstRunFragment.class);
@@ -233,6 +242,49 @@ public class FirstRunActivitySigninAndSyncTest {
         clickButton(R.id.signin_fre_continue_button);
 
         waitUntilCurrentPageIs(SyncConsentFirstRunFragment.class);
+    }
+
+    @Test
+    @MediumTest
+    // ChildAccountStatusSupplier uses AppRestrictions to quickly detect non-supervised cases,
+    // adding at least one policy via AppRestrictions prevents that.
+    @Policies.Add(@Policies.Item(key = "ForceSafeSearch", string = "true"))
+    @EnableFeatures({ChromeFeatureList.CREATE_SIGNIN_CHECKER_BEFORE_SYNC_CONSENT_FRAGMENT})
+    public void
+    continueButtonClickShowsSyncConsentPageWithChildAccountAndEarlySigninCheckerCreation() {
+        mAccountManagerTestRule.addAccount(CHILD_EMAIL);
+        launchFirstRunActivityAndWaitForNativeInitialization();
+        waitUntilCurrentPageIs(SigninFirstRunFragment.class);
+        onView(withId(R.id.signin_fre_selected_account)).check(matches(isDisplayed()));
+
+        // SigninChecker should have been created and have signed the user in.
+        CriteriaHelper.pollUiThread(() -> {
+            return IdentityServicesProvider.get()
+                    .getSigninManager(Profile.getLastUsedRegularProfile())
+                    .getIdentityManager()
+                    .hasPrimaryAccount(ConsentLevel.SIGNIN);
+        });
+
+        clickButton(R.id.signin_fre_continue_button);
+
+        waitUntilCurrentPageIs(SyncConsentFirstRunFragment.class);
+    }
+
+    @Test
+    @MediumTest
+    // ChildAccountStatusSupplier uses AppRestrictions to quickly detect non-supervised cases,
+    // adding at least one policy via AppRestrictions prevents that.
+    @Policies.Add(@Policies.Item(key = "ForceSafeSearch", string = "true"))
+    public void dismissButtonNotShownOnResetForChildAccount() {
+        mAccountManagerTestRule.addAccount(CHILD_EMAIL);
+        launchFirstRunActivityAndWaitForNativeInitialization();
+        waitUntilCurrentPageIs(SigninFirstRunFragment.class);
+        onView((withId(R.id.signin_fre_dismiss_button))).check(matches(not(isDisplayed())));
+
+        onView((withId(R.id.signin_fre_continue_button))).perform(click());
+        Espresso.pressBack();
+
+        onView((withId(R.id.signin_fre_dismiss_button))).check(matches(not(isDisplayed())));
     }
 
     @Test
@@ -390,7 +442,142 @@ public class FirstRunActivitySigninAndSyncTest {
         SyncTestUtil.waitForCanSyncFeatureStart();
     }
 
+    @Test
+    @MediumTest
+    // ChildAccountStatusSupplier uses AppRestrictions to quickly detect non-supervised cases,
+    // adding at least one policy via AppRestrictions prevents that.
+    @Policies.Add(@Policies.Item(key = "ForceSafeSearch", string = "true"))
+    @EnableFeatures({ChromeFeatureList.ALLOW_SYNC_OFF_FOR_CHILD_ACCOUNTS})
+    public void
+    acceptingSyncForChildAccountEndsFreAndEnablesSyncIfAllowSyncOffForChildAccountsFeatureEnabled() {
+        when(mExternalAuthUtilsMock.canUseGooglePlayServices(any())).thenReturn(true);
+        mAccountManagerTestRule.addAccount(CHILD_EMAIL);
+        launchFirstRunActivityAndWaitForNativeInitialization();
+        waitUntilCurrentPageIs(SigninFirstRunFragment.class);
+        onView(withId(R.id.signin_fre_selected_account)).check(matches(isDisplayed()));
+        clickButton(R.id.signin_fre_continue_button);
+        waitUntilCurrentPageIs(SyncConsentFirstRunFragment.class);
+
+        clickButton(R.id.positive_button);
+
+        ApplicationTestUtils.waitForActivityState(mFirstRunActivity, Stage.DESTROYED);
+        SyncTestUtil.waitForSyncFeatureEnabled();
+    }
+
+    @Test
+    @MediumTest
+    // ChildAccountStatusSupplier uses AppRestrictions to quickly detect non-supervised cases,
+    // adding at least one policy via AppRestrictions prevents that.
+    @Policies.Add(@Policies.Item(key = "ForceSafeSearch", string = "true"))
+    @EnableFeatures({ChromeFeatureList.ALLOW_SYNC_OFF_FOR_CHILD_ACCOUNTS})
+    public void
+    refusingSyncForChildAccountEndsFreAndDoesNotEnableSyncIfAllowSyncOffForChildAccountsFeatureEnabled() {
+        when(mExternalAuthUtilsMock.canUseGooglePlayServices(any())).thenReturn(true);
+        mAccountManagerTestRule.addAccount(CHILD_EMAIL);
+        launchFirstRunActivityAndWaitForNativeInitialization();
+        waitUntilCurrentPageIs(SigninFirstRunFragment.class);
+        onView(withId(R.id.signin_fre_selected_account)).check(matches(isDisplayed()));
+        clickButton(R.id.signin_fre_continue_button);
+        waitUntilCurrentPageIs(SyncConsentFirstRunFragment.class);
+
+        clickButton(R.id.negative_button);
+
+        ApplicationTestUtils.waitForActivityState(mFirstRunActivity, Stage.DESTROYED);
+
+        assertFalse(SyncTestUtil.canSyncFeatureStart());
+    }
+
+    @Test
+    @MediumTest
+    // ChildAccountStatusSupplier uses AppRestrictions to quickly detect non-supervised cases,
+    // adding at least one policy via AppRestrictions prevents that.
+    @Policies.Add(@Policies.Item(key = "ForceSafeSearch", string = "true"))
+    @DisableFeatures({ChromeFeatureList.ALLOW_SYNC_OFF_FOR_CHILD_ACCOUNTS})
+    public void
+    clickingSettingsThenCancelForChildAccountWithAllowSyncOffDisabledPartiallyEnablesSync() {
+        when(mExternalAuthUtilsMock.canUseGooglePlayServices(any())).thenReturn(true);
+        mAccountManagerTestRule.addAccount(CHILD_EMAIL);
+        launchFirstRunActivityAndWaitForNativeInitialization();
+        waitUntilCurrentPageIs(SigninFirstRunFragment.class);
+        clickButton(R.id.signin_fre_continue_button);
+        waitUntilCurrentPageIs(SyncConsentFirstRunFragment.class);
+
+        onView(withId(R.id.signin_details_description)).perform(new LinkClick());
+
+        ApplicationTestUtils.waitForActivityState(mFirstRunActivity, Stage.DESTROYED);
+
+        // Sync-the-feature can start but won't become enabled until the user clicks the "Confirm"
+        // button in settings.
+        SyncTestUtil.waitForCanSyncFeatureStart();
+
+        // Check that the sync consent has been cleared (but the user is still signed in), and that
+        // the sync service state changes have been undone.
+        CriteriaHelper.pollUiThread(() -> {
+            return IdentityServicesProvider.get()
+                    .getSigninManager(Profile.getLastUsedRegularProfile())
+                    .getIdentityManager()
+                    .hasPrimaryAccount(ConsentLevel.SYNC);
+        });
+
+        // Click the cancel button to exit the activity.
+        onView(withId(R.id.cancel_button)).perform(click());
+
+        // With this flag configuration the user must have sync enabled, so do not undo the sync
+        // consent. There is no straightforward way to recover, and this flag combination is
+        // going to be short-lived - for now we simply check that there is no crash.
+        assertTrue(SyncTestUtil.canSyncFeatureStart());
+    }
+
+    @Test
+    @MediumTest
+    // ChildAccountStatusSupplier uses AppRestrictions to quickly detect non-supervised cases,
+    // adding at least one policy via AppRestrictions prevents that.
+    @Policies.Add(@Policies.Item(key = "ForceSafeSearch", string = "true"))
+    @EnableFeatures({ChromeFeatureList.ALLOW_SYNC_OFF_FOR_CHILD_ACCOUNTS})
+    public void clickingSettingsThenCancelForChildAccountDoesNotEnableSync() {
+        when(mExternalAuthUtilsMock.canUseGooglePlayServices(any())).thenReturn(true);
+        mAccountManagerTestRule.addAccount(CHILD_EMAIL);
+        launchFirstRunActivityAndWaitForNativeInitialization();
+        waitUntilCurrentPageIs(SigninFirstRunFragment.class);
+        clickButton(R.id.signin_fre_continue_button);
+        waitUntilCurrentPageIs(SyncConsentFirstRunFragment.class);
+
+        onView(withId(R.id.signin_details_description)).perform(new LinkClick());
+
+        ApplicationTestUtils.waitForActivityState(mFirstRunActivity, Stage.DESTROYED);
+
+        // Sync-the-feature can start but won't become enabled until the user clicks the "Confirm"
+        // button in settings.
+        SyncTestUtil.waitForCanSyncFeatureStart();
+
+        // Check that the sync consent has been cleared (but the user is still signed in), and that
+        // the sync service state changes have been undone.
+        CriteriaHelper.pollUiThread(() -> {
+            return IdentityServicesProvider.get()
+                    .getSigninManager(Profile.getLastUsedRegularProfile())
+                    .getIdentityManager()
+                    .hasPrimaryAccount(ConsentLevel.SYNC);
+        });
+
+        // Click the cancel button to exit the activity.
+        onView(withId(R.id.cancel_button)).perform(click());
+
+        // Check that the sync consent has been cleared (but the user is still signed in), and that
+        // the sync service state changes have been undone.
+        CriteriaHelper.pollUiThread(() -> {
+            IdentityManager identityManager =
+                    IdentityServicesProvider.get()
+                            .getSigninManager(Profile.getLastUsedRegularProfile())
+                            .getIdentityManager();
+            return identityManager.hasPrimaryAccount(ConsentLevel.SIGNIN)
+                    && !identityManager.hasPrimaryAccount(ConsentLevel.SYNC);
+        });
+    }
+
     private void clickButton(@IdRes int buttonId) {
+        // Ensure that the button isn't hidden, and is enabled.
+        onView(allOf(withId(buttonId), withEffectiveVisibility(Visibility.VISIBLE)))
+                .check(matches(isEnabled()));
         // This helps to reduce flakiness on some marshmallow bots in comparison with
         // espresso click.
         TestThreadUtils.runOnUiThreadBlocking(

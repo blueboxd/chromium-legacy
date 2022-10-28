@@ -1,4 +1,4 @@
-// Copyright 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -48,6 +48,7 @@
 #include "gpu/command_buffer/client/shared_image_interface.h"
 #include "gpu/command_buffer/common/shared_image_usage.h"
 #include "media/base/video_frame.h"
+#include "media/base/video_types.h"
 #include "media/renderers/video_resource_updater.h"
 #include "media/video/half_float_maker.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -59,6 +60,7 @@
 #include "ui/gfx/color_transform.h"
 #include "ui/gfx/geometry/mask_filter_info.h"
 #include "ui/gfx/test/icc_profiles.h"
+#include "ui/gfx/video_types.h"
 
 namespace viz {
 namespace {
@@ -398,7 +400,7 @@ void CreateTestYUVVideoDrawQuad_FromVideoFrame(
   bool needs_blending = true;
 
   if (with_alpha) {
-    memset(video_frame->data(media::VideoFrame::kAPlane), alpha_value,
+    memset(video_frame->writable_data(media::VideoFrame::kAPlane), alpha_value,
            video_frame->stride(media::VideoFrame::kAPlane) *
                video_frame->rows(media::VideoFrame::kAPlane));
   }
@@ -445,29 +447,28 @@ void CreateTestYUVVideoDrawQuad_FromVideoFrame(
   ResourceId mapped_resource_u = resource_map[resource_u];
   ResourceId mapped_resource_v = resource_map[resource_v];
   ResourceId mapped_resource_a = kInvalidResourceId;
-  if (with_alpha)
-    mapped_resource_a = resource_map[resource_a];
-  const gfx::Size ya_tex_size = video_frame->coded_size();
-  const gfx::Size uv_tex_size = media::VideoFrame::PlaneSizeInSamples(
-      video_frame->format(), media::VideoFrame::kUPlane,
-      video_frame->coded_size());
-  DCHECK(uv_tex_size == media::VideoFrame::PlaneSizeInSamples(
-                            video_frame->format(), media::VideoFrame::kVPlane,
-                            video_frame->coded_size()));
+
   if (with_alpha) {
-    DCHECK(ya_tex_size == media::VideoFrame::PlaneSizeInSamples(
-                              video_frame->format(), media::VideoFrame::kAPlane,
-                              video_frame->coded_size()));
+    mapped_resource_a = resource_map[resource_a];
+  }
+  const gfx::Size uv_sample_size = media::VideoFrame::SampleSize(
+      video_frame->format(), media::VideoFrame::kUPlane);
+  const gfx::Size coded_size = video_frame->coded_size();
+  DCHECK_EQ(uv_sample_size,
+            media::VideoFrame::SampleSize(video_frame->format(),
+                                          media::VideoFrame::kVPlane));
+  if (with_alpha) {
+    DCHECK_EQ(gfx::Size(1, 1),
+              media::VideoFrame::SampleSize(video_frame->format(),
+                                            media::VideoFrame::kAPlane))
+        << "Expected A plane to have same size as Y plane.";
   }
 
-  gfx::RectF ya_tex_coord_rect(tex_coord_rect.x() * ya_tex_size.width(),
-                               tex_coord_rect.y() * ya_tex_size.height(),
-                               tex_coord_rect.width() * ya_tex_size.width(),
-                               tex_coord_rect.height() * ya_tex_size.height());
-  gfx::RectF uv_tex_coord_rect(tex_coord_rect.x() * uv_tex_size.width(),
-                               tex_coord_rect.y() * uv_tex_size.height(),
-                               tex_coord_rect.width() * uv_tex_size.width(),
-                               tex_coord_rect.height() * uv_tex_size.height());
+  const gfx::Rect video_visible_rect = gfx::ToNearestRect(
+      gfx::RectF(tex_coord_rect.x() * coded_size.width(),
+                 tex_coord_rect.y() * coded_size.height(),
+                 tex_coord_rect.width() * coded_size.width(),
+                 tex_coord_rect.height() * coded_size.height()));
 
   auto* yuv_quad = render_pass->CreateAndAppendDrawQuad<YUVVideoDrawQuad>();
   uint32_t bits_per_channel = 8;
@@ -494,11 +495,11 @@ void CreateTestYUVVideoDrawQuad_FromVideoFrame(
     bits_per_channel = 8;
   }
 
-  yuv_quad->SetNew(shared_state, rect, visible_rect, needs_blending,
-                   ya_tex_coord_rect, uv_tex_coord_rect, ya_tex_size,
-                   uv_tex_size, mapped_resource_y, mapped_resource_u,
-                   mapped_resource_v, mapped_resource_a, video_color_space,
-                   offset, multiplier, bits_per_channel);
+  yuv_quad->SetNew(shared_state, rect, visible_rect, needs_blending, coded_size,
+                   video_visible_rect, uv_sample_size, mapped_resource_y,
+                   mapped_resource_u, mapped_resource_v, mapped_resource_a,
+                   video_color_space, offset, multiplier, bits_per_channel,
+                   gfx::ProtectedVideoType::kClear, absl::nullopt);
 }
 
 void CreateTestY16TextureDrawQuad_FromVideoFrame(
@@ -569,7 +570,7 @@ scoped_refptr<media::VideoFrame> CreateHighbitVideoFrame(
        plane <= media::VideoFrame::kVPlane; ++plane) {
     int width = video_frame->row_bytes(plane);
     const uint8_t* src = video_frame->data(plane);
-    uint16_t* dst = reinterpret_cast<uint16_t*>(ret->data(plane));
+    uint16_t* dst = reinterpret_cast<uint16_t*>(ret->writable_data(plane));
     for (int row = 0; row < video_frame->rows(plane); row++) {
       for (int x = 0; x < width; x++) {
         // Replicate the top bits into the lower bits, this way
@@ -606,7 +607,7 @@ void CreateTestYUVVideoDrawQuad_Striped(
   uint8_t u_value = 0;
   uint8_t v_value = 0;
   for (int i = 0; i < video_frame->rows(media::VideoFrame::kYPlane); ++i) {
-    uint8_t* y_row = video_frame->data(media::VideoFrame::kYPlane) +
+    uint8_t* y_row = video_frame->writable_data(media::VideoFrame::kYPlane) +
                      video_frame->stride(media::VideoFrame::kYPlane) * i;
     for (int j = 0; j < video_frame->row_bytes(media::VideoFrame::kYPlane);
          ++j) {
@@ -614,9 +615,9 @@ void CreateTestYUVVideoDrawQuad_Striped(
     }
   }
   for (int i = 0; i < video_frame->rows(media::VideoFrame::kUPlane); ++i) {
-    uint8_t* u_row = video_frame->data(media::VideoFrame::kUPlane) +
+    uint8_t* u_row = video_frame->writable_data(media::VideoFrame::kUPlane) +
                      video_frame->stride(media::VideoFrame::kUPlane) * i;
-    uint8_t* v_row = video_frame->data(media::VideoFrame::kVPlane) +
+    uint8_t* v_row = video_frame->writable_data(media::VideoFrame::kVPlane) +
                      video_frame->stride(media::VideoFrame::kVPlane) * i;
     for (int j = 0; j < video_frame->row_bytes(media::VideoFrame::kUPlane);
          ++j) {
@@ -674,7 +675,7 @@ void CreateTestYUVVideoDrawQuad_TwoColor(
   int sample_size[] = {1, 2, 2};
 
   for (int i = 0; i < 3; ++i) {
-    memset(video_frame->data(planes[i]), yuv_background[i],
+    memset(video_frame->writable_data(planes[i]), yuv_background[i],
            video_frame->stride(planes[i]) * video_frame->rows(planes[i]));
   }
 
@@ -693,7 +694,7 @@ void CreateTestYUVVideoDrawQuad_TwoColor(
     for (int y = sample_rect.y(); y < sample_rect.bottom(); ++y) {
       for (int x = sample_rect.x(); x < sample_rect.right(); ++x) {
         size_t offset = y * video_frame->stride(planes[i]) + x;
-        video_frame->data(planes[i])[offset] = yuv_foreground[i];
+        video_frame->writable_data(planes[i])[offset] = yuv_foreground[i];
       }
     }
   }
@@ -727,13 +728,13 @@ void CreateTestYUVVideoDrawQuad_Solid(
 
   // YUV values of a solid, constant, color. Useful for testing that color
   // space/color range are being handled properly.
-  memset(video_frame->data(media::VideoFrame::kYPlane), y,
+  memset(video_frame->writable_data(media::VideoFrame::kYPlane), y,
          video_frame->stride(media::VideoFrame::kYPlane) *
              video_frame->rows(media::VideoFrame::kYPlane));
-  memset(video_frame->data(media::VideoFrame::kUPlane), u,
+  memset(video_frame->writable_data(media::VideoFrame::kUPlane), u,
          video_frame->stride(media::VideoFrame::kUPlane) *
              video_frame->rows(media::VideoFrame::kUPlane));
-  memset(video_frame->data(media::VideoFrame::kVPlane), v,
+  memset(video_frame->writable_data(media::VideoFrame::kVPlane), v,
          video_frame->stride(media::VideoFrame::kVPlane) *
              video_frame->rows(media::VideoFrame::kVPlane));
 
@@ -762,6 +763,8 @@ void CreateTestYUVVideoDrawQuad_NV12(
   const gfx::Size ya_tex_size = rect.size();
   const gfx::Size uv_tex_size = media::VideoFrame::PlaneSizeInSamples(
       media::PIXEL_FORMAT_NV12, media::VideoFrame::kUVPlane, rect.size());
+  const gfx::Size uv_sample_size = media::VideoFrame::SampleSize(
+      media::PIXEL_FORMAT_NV12, media::VideoFrame::kUVPlane);
 
   std::vector<uint8_t> y_pixels(ya_tex_size.GetArea(), y);
   ResourceId resource_y = CreateGpuResource(
@@ -787,20 +790,18 @@ void CreateTestYUVVideoDrawQuad_NV12(
   ResourceId mapped_resource_u = resource_map[resource_u];
   ResourceId mapped_resource_v = resource_map[resource_v];
 
-  gfx::RectF ya_tex_coord_rect(tex_coord_rect.x() * ya_tex_size.width(),
-                               tex_coord_rect.y() * ya_tex_size.height(),
-                               tex_coord_rect.width() * ya_tex_size.width(),
-                               tex_coord_rect.height() * ya_tex_size.height());
-  gfx::RectF uv_tex_coord_rect(tex_coord_rect.x() * uv_tex_size.width(),
-                               tex_coord_rect.y() * uv_tex_size.height(),
-                               tex_coord_rect.width() * uv_tex_size.width(),
-                               tex_coord_rect.height() * uv_tex_size.height());
+  const gfx::Rect video_frame_visible_rect = gfx::ToNearestRect(
+      gfx::RectF(tex_coord_rect.x() * ya_tex_size.width(),
+                 tex_coord_rect.y() * ya_tex_size.height(),
+                 tex_coord_rect.width() * ya_tex_size.width(),
+                 tex_coord_rect.height() * ya_tex_size.height()));
 
   auto* yuv_quad = render_pass->CreateAndAppendDrawQuad<YUVVideoDrawQuad>();
   yuv_quad->SetNew(shared_state, rect, visible_rect, needs_blending,
-                   ya_tex_coord_rect, uv_tex_coord_rect, ya_tex_size,
-                   uv_tex_size, mapped_resource_y, mapped_resource_u,
-                   mapped_resource_v, resource_a, color_space, 0.0f, 1.0f, 8);
+                   ya_tex_size, video_frame_visible_rect, uv_sample_size,
+                   mapped_resource_y, mapped_resource_u, mapped_resource_v,
+                   resource_a, color_space, 0.0f, 1.0f, 8,
+                   gfx::ProtectedVideoType::kClear, absl::nullopt);
 }
 
 void CreateTestY16TextureDrawQuad_TwoColor(
@@ -829,7 +830,7 @@ void CreateTestY16TextureDrawQuad_TwoColor(
   DCHECK_EQ(video_frame->stride(0) % 2, 0);
 
   for (int j = 0; j < video_frame->rows(0); ++j) {
-    uint8_t* row = video_frame->data(0) + j * video_frame->stride(0);
+    uint8_t* row = video_frame->writable_data(0) + j * video_frame->stride(0);
     if (j < foreground_rect.y() || j >= foreground_rect.bottom()) {
       for (int i = 0; i < video_frame->stride(0) / 2; ++i) {
         *row++ = i & 0xFF;  // Fill R with anything. It is not rendered.
@@ -4574,7 +4575,7 @@ TEST_P(GPURendererPixelTest, LinearGradientOnRenderPass) {
 
   gfx::RRectF rounded_corner_bounds(gfx::RectF(pass_rect), kCornerRadius);
   gfx::LinearGradient gradient_mask(330);
-  gradient_mask.AddStep(/*percent=*/0, /*alpha=*/0);
+  gradient_mask.AddStep(/*fraction=*/0, /*alpha=*/0);
   gradient_mask.AddStep(.5, 255);
   gradient_mask.AddStep(1, 255);
   SharedQuadState* pass_shared_state = CreateTestSharedQuadState(
@@ -4621,7 +4622,7 @@ TEST_P(GPURendererPixelTest, MultiLinearGradientOnRenderPass) {
   gfx::RRectF blue_rrect(gfx::RectF(blue_rect), kBlueCornerRadius);
   blue_rrect.Offset(blue_offset_from_target);
   gfx::LinearGradient blue_gradient(0);
-  blue_gradient.AddStep(/*percent=*/0, /*alpha=*/255);
+  blue_gradient.AddStep(/*fraction=*/0, /*alpha=*/255);
   blue_gradient.AddStep(1, 0);
 
   gfx::Transform quad_to_target_transform;
@@ -4643,7 +4644,7 @@ TEST_P(GPURendererPixelTest, MultiLinearGradientOnRenderPass) {
 
   gfx::RRectF rounded_corner_bounds(gfx::RectF(pass_rect), kCornerRadius);
   gfx::LinearGradient gradient_mask(-30);
-  gradient_mask.AddStep(/*percent=*/0, /*alpha=*/0);
+  gradient_mask.AddStep(/*fraction=*/0, /*alpha=*/0);
   gradient_mask.AddStep(.5, 255);
   gradient_mask.AddStep(1, 255);
   SharedQuadState* pass_shared_state = CreateTestSharedQuadState(
@@ -5188,8 +5189,8 @@ TEST_P(DelegatedInkWithPredictionTest, DrawOneTrailAndErase) {
   // DelegatedInkPoint sent.
   CreateAndSendMetadata(kFirstPoint, 3.5f, SkColors::kBlack, kFirstTimestamp,
                         gfx::RectF(0, 0, 175, 172));
-
-  // Confirm that the trail was drawn.
+  // Confirm that the trail was drawn. Test three times as
+  // the trail will persist for two more frames before being erased.
   EXPECT_TRUE(
       DrawAndTestTrail(FILE_PATH_LITERAL("delegated_ink_one_trail.png")));
 
@@ -5405,6 +5406,39 @@ TEST_P(DelegatedInkWithPredictionTest, DrawTrailsWithDifferentPointerIds) {
   // is no trail after another draw.
   EXPECT_TRUE(DrawAndTestTrail(FILE_PATH_LITERAL("white.png")));
 }
+
+// Draw a single trail and erase it, making sure that no bits of trail are left
+// behind.
+TEST_P(DelegatedInkWithPredictionTest,
+       IdenticalTrailDrawnAfterSameMetadataReceived) {
+  // Send some DelegatedInkPoints, numbers arbitrary. This will predict no
+  // points, so a trail made of 3 points will be drawn.
+  const gfx::PointF kFirstPoint(10, 10);
+  const base::TimeTicks kFirstTimestamp = base::TimeTicks::Now();
+  CreateAndSendPoint(kFirstPoint, kFirstTimestamp);
+  CreateAndSendPointFromLastPoint(gfx::PointF(75, 62));
+  CreateAndSendPointFromLastPoint(gfx::PointF(124, 45));
+
+  // Provide the metadata required to draw the trail, matching the first
+  // DelegatedInkPoint sent.
+  CreateAndSendMetadata(kFirstPoint, 3.5f, SkColors::kBlack, kFirstTimestamp,
+                        gfx::RectF(0, 0, 175, 172));
+  // Confirm that the trail was drawn. Test three times as
+  // the trail will persist for two more frames before being erased.
+  EXPECT_TRUE(
+      DrawAndTestTrail(FILE_PATH_LITERAL("delegated_ink_one_trail.png")));
+
+  // Send metadata again and expect the same trail to be drawn.
+  CreateAndSendMetadata(kFirstPoint, 3.5f, SkColors::kBlack, kFirstTimestamp,
+                        gfx::RectF(0, 0, 175, 172));
+  EXPECT_TRUE(
+      DrawAndTestTrail(FILE_PATH_LITERAL("delegated_ink_one_trail.png")));
+
+  // The metadata should have been cleared after drawing, so confirm that there
+  // is no trail after another draw.
+  EXPECT_TRUE(DrawAndTestTrail(FILE_PATH_LITERAL("white.png")));
+}
+
 #endif  // !BUILDFLAG(IS_ANDROID)
 
 }  // namespace

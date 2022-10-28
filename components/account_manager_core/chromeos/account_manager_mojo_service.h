@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -19,7 +19,6 @@
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
 #include "mojo/public/cpp/bindings/remote_set.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace chromeos {
 class SigninHelper;
@@ -87,6 +86,18 @@ class COMPONENT_EXPORT(ACCOUNT_MANAGER_CORE) AccountManagerMojoService
   void FinishAddAccount(const account_manager::AccountAdditionResult& result);
   // Deletes `request` from `pending_access_token_requests_`, if present.
   void DeletePendingAccessTokenFetchRequest(AccessTokenFetcher* request);
+
+  // Notifies observers about a change in the error status of `account_key`.
+  // Does nothing if `account_key` does not correspond to any account in
+  // `known_accounts`.
+  void MaybeNotifyAuthErrorObservers(
+      const account_manager::AccountKey& account_key,
+      const GoogleServiceAuthError& error,
+      const std::vector<account_manager::Account>& known_accounts);
+
+  // Notifies observers that the account addition / re-authentication dialog was
+  // closed (either successfully, or the user cancelled the flow).
+  void NotifySigninDialogClosed();
 
   void FlushMojoForTesting();
   int GetNumPendingAccessTokenRequests() const;

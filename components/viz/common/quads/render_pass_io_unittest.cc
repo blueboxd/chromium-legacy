@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -126,7 +126,7 @@ TEST(RenderPassIOTest, SharedQuadStateList) {
     gfx::Transform transform;
     transform.MakeIdentity();
     gfx::LinearGradient gradient_mask(40);
-    gradient_mask.AddStep(/*percent=*/0, /*alpha=*/0);
+    gradient_mask.AddStep(/*fraction=*/0, /*alpha=*/0);
     gradient_mask.AddStep(1, 255);
     sqs1->SetAll(
         transform, gfx::Rect(0, 0, 640, 480), gfx::Rect(10, 10, 600, 400),
@@ -260,9 +260,8 @@ TEST(RenderPassIOTest, QuadList) {
       quad->SetAll(
           render_pass0->shared_quad_state_list.ElementAt(sqs_index),
           gfx::Rect(0, 0, 800, 600), gfx::Rect(10, 15, 780, 570), false,
-          gfx::RectF(0.f, 0.f, 0.5f, 0.6f), gfx::RectF(0.1f, 0.2f, 0.7f, 0.8f),
-          gfx::Size(400, 200), gfx::Size(800, 400), ResourceId(1u),
-          ResourceId(2u), ResourceId(3u), ResourceId(4u),
+          gfx::Size(800, 400), gfx::Rect(10, 20, 300, 400), gfx::Size(2, 2),
+          ResourceId(1u), ResourceId(2u), ResourceId(3u), ResourceId(4u),
           gfx::ColorSpace::CreateCustom(primary_matrix, transfer_func), 3.f,
           1.1f, 12u, gfx::ProtectedVideoType::kClear, gfx::HDRMetadata());
       ++sqs_index;

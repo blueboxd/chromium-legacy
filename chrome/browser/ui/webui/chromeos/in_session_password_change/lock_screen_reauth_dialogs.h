@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -81,7 +81,7 @@ class LockScreenStartReauthDialog
  private:
   class ModalDialogManagerCleanup;
 
-  void OnProfileCreated(Profile* profile, Profile::CreateStatus status);
+  void OnProfileInitialized(Profile* profile);
   void DeleteLockScreenNetworkDialog();
 
   // BaseLockDialog:

@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -345,6 +345,9 @@ void PersonalizationAppUI::AddBooleans(content::WebUIDataSource* source) {
       "isRgbKeyboardSupported",
       features::IsRgbKeyboardEnabled() &&
           Shell::Get()->rgb_keyboard_manager()->IsRgbKeyboardSupported());
+
+  source->AddBoolean("isAvatarsCloudMigrationEnabled",
+                     features::IsAvatarsCloudMigrationEnabled());
 }
 
 WEB_UI_CONTROLLER_TYPE_IMPL(PersonalizationAppUI)

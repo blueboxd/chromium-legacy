@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -91,6 +91,8 @@ class PasswordManagerPorter : public ui::SelectFileDialog::Listener {
   void ImportPasswordsFromPath(const base::FilePath& path);
 
   void ExportPasswordsToPath(const base::FilePath& path);
+
+  void ImportDone(const password_manager::ImportResults&);
 
   std::unique_ptr<password_manager::PasswordManagerExporter> exporter_;
   std::unique_ptr<password_manager::PasswordImporter> importer_;

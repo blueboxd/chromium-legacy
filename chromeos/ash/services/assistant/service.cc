@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -33,8 +33,8 @@
 #include "chromeos/ash/services/assistant/public/cpp/device_actions.h"
 #include "chromeos/ash/services/assistant/public/cpp/features.h"
 #include "chromeos/ash/services/assistant/service_context.h"
+#include "chromeos/ash/services/libassistant/public/cpp/libassistant_loader.h"
 #include "chromeos/dbus/power_manager/power_supply_properties.pb.h"
-#include "chromeos/services/libassistant/public/cpp/libassistant_loader.h"
 #include "components/signin/public/base/consent_level.h"
 #include "components/signin/public/identity_manager/access_token_fetcher.h"
 #include "components/signin/public/identity_manager/access_token_info.h"
@@ -166,8 +166,8 @@ class Service::Context : public ServiceContext {
     return parent_->main_task_runner_;
   }
 
-  PowerManagerClient* power_manager_client() override {
-    return PowerManagerClient::Get();
+  chromeos::PowerManagerClient* power_manager_client() override {
+    return chromeos::PowerManagerClient::Get();
   }
 
   std::string primary_account_gaia_id() override {

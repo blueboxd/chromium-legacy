@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -24,6 +24,7 @@
 #include "base/timer/timer.h"
 #include "chromeos/dbus/power/power_manager_client.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/viz/privileged/mojom/compositing/frame_sink_video_capture.mojom-forward.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -92,7 +93,6 @@ class ASH_EXPORT CaptureModeController
     return capture_mode_session_.get();
   }
   gfx::Rect user_capture_region() const { return user_capture_region_; }
-  bool enable_audio_recording() const { return enable_audio_recording_; }
   bool is_recording_in_progress() const {
     return is_initializing_recording_ ||
            (video_recording_watcher_ &&
@@ -104,6 +104,14 @@ class ASH_EXPORT CaptureModeController
   // capture_mode_util::IsCaptureModeActive().
   bool IsActive() const;
 
+  // Returns true if audio recording is enabled. This takes into account the
+  // `AudioCaptureAllowed` policy.
+  bool GetAudioRecordingEnabled() const;
+
+  // Returns true if audio recording is forced disabled by the
+  // `AudioCaptureAllowed` policy.
+  bool IsAudioCaptureDisabledByPolicy() const;
+
   // Sets the capture source/type, which will be applied to an ongoing capture
   // session (if any), or to a future capture session when Start() is called.
   void SetSource(CaptureModeSource source);
@@ -111,7 +119,8 @@ class ASH_EXPORT CaptureModeController
 
   // Sets the audio recording flag, which will be applied to any future
   // recordings (cannot be set mid recording), or to a future capture mode
-  // session when Start() is called.
+  // session when Start() is called. The effective enabled state takes into
+  // account the `AudioCaptureAllowed` policy.
   void EnableAudioRecording(bool enable_audio_recording);
 
   // Starts a new capture session with the most-recently used |type_| and
@@ -213,15 +222,16 @@ class ASH_EXPORT CaptureModeController
   // otherwise.
   bool IsLinuxFilesPath(const base::FilePath& path) const;
 
-  // Returns the current parent window for
-  // `CaptureModeCameraController::camera_preview_widget_`.
-  aura::Window* GetCameraPreviewParentWindow() const;
+  // Returns the current parent window for the on-capture-surface widgets such
+  // as `CaptureModeCameraController::camera_preview_widget_` and
+  // `CaptureModeDemoToolsController::demo_tools_widget_`.
+  aura::Window* GetOnCaptureSurfaceWidgetParentWindow() const;
 
-  // Returns the camera preview's confine bounds, which actually indicates the
-  // bounds of the surface that will be recorded. The bounds is in screen
-  // coordinate when capture source is `kFullscreen` or 'kRegion', but in
-  // window's coordinate when it is 'kWindow' type.
-  gfx::Rect GetCameraPreviewConfineBounds() const;
+  // Returns the bounds, within which the on-capture-surface widgets (such as
+  // the camera preview and the demo tools widget) will be confined. The bounds
+  // is in screen coordinate when capture source is `kFullscreen` or 'kRegion',
+  // but in window's coordinate when it is 'kWindow' type.
+  gfx::Rect GetCaptureSurfaceConfineBounds() const;
 
   // recording::mojom::RecordingServiceClient:
   void OnRecordingEnded(recording::mojom::RecordingStatus status,
@@ -489,7 +499,9 @@ class ASH_EXPORT CaptureModeController
 
   // Remember the user selected audio preference of whether to record audio or
   // not for a video, between sessions. Initially, this value is set to false,
-  // ensuring that this is an opt-in feature.
+  // ensuring that this is an opt-in feature. Note that this value will always
+  // be overwritten by the `AudioCaptureAllowed` policy, when
+  // `GetAudioRecordingEnabled()` is called.
   bool enable_audio_recording_ = false;
 
   // If true, the 3-second countdown UI will be skipped, and video recording

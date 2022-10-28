@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -173,8 +173,8 @@ class ManifestUpdateTask final
                      content::WebContents* web_contents,
                      StoppedCallback stopped_callback,
                      bool hang_for_testing,
-                     const WebAppRegistrar& registrar,
-                     const WebAppIconManager& icon_manager,
+                     WebAppRegistrar& registrar,
+                     WebAppIconManager& icon_manager,
                      WebAppUiManager* ui_manager,
                      WebAppInstallFinalizer* install_finalizer,
                      OsIntegrationManager& os_integration_manager,
@@ -230,8 +230,8 @@ class ManifestUpdateTask final
                               OsHooksErrors os_hooks_errors);
   void DestroySelf(ManifestUpdateResult result);
 
-  const WebAppRegistrar& registrar_;
-  const WebAppIconManager& icon_manager_;
+  WebAppRegistrar& registrar_;
+  WebAppIconManager& icon_manager_;
   WebAppUiManager& ui_manager_;
   WebAppInstallFinalizer& install_finalizer_;
   OsIntegrationManager& os_integration_manager_;

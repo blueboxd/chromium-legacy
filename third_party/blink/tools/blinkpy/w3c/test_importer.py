@@ -193,9 +193,6 @@ class TestImporter(object):
         if not options.auto_update:
             return 0
 
-        if not self.record_version():
-            return 1
-
         if not self.run_commit_queue_for_cl():
             return 1
 
@@ -204,17 +201,6 @@ class TestImporter(object):
             return 1
 
         return 0
-
-    def record_version(self):
-        _log.info('Update external/Version to record upstream ToT.')
-        path_to_version = self.finder.path_from_web_tests('external', 'Version')
-        with open(path_to_version, "w") as f:
-            f.write("Version: %s\n" % self.wpt_revision)
-
-        message = 'Update revision'
-        self._commit_changes(message)
-        self._upload_patchset(message)
-        return True
 
     def update_expectations_for_cl(self):
         """Performs the expectation-updating part of an auto-import job.
@@ -667,14 +653,28 @@ class TestImporter(object):
         This is the same as invoking the `wpt-update-expectations` script.
         """
         _log.info('Adding test expectations lines to TestExpectations.')
-        self.rebaselined_tests, self.new_test_expectations = (
+        tests_to_rebaseline = set()
+
+        to_rebaseline, self.new_test_expectations = (
             self._expectations_updater.update_expectations())
+        tests_to_rebaseline.update(to_rebaseline)
 
         _log.info('Adding test expectations lines for disable-layout-ng')
-        self._expectations_updater.update_expectations_for_flag_specific('disable-layout-ng')
+        to_rebaseline, _ = (
+            self._expectations_updater.update_expectations_for_flag_specific(
+                'disable-layout-ng'))
+        tests_to_rebaseline.update(to_rebaseline)
 
         _log.info('Adding test expectations lines for disable-site-isolation-trials')
-        self._expectations_updater.update_expectations_for_flag_specific('disable-site-isolation-trials')
+        to_rebaseline, _ = (
+            self._expectations_updater.update_expectations_for_flag_specific(
+                'disable-site-isolation-trials'))
+        tests_to_rebaseline.update(to_rebaseline)
+
+        self._expectations_updater.download_text_baselines(
+            list(tests_to_rebaseline))
+
+        self.rebaselined_tests = sorted(tests_to_rebaseline)
 
     def _get_last_imported_wpt_revision(self):
         """Finds the last imported WPT revision."""

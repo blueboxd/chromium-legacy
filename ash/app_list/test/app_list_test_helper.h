@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -116,7 +116,8 @@ class AppListTestHelper {
   void WaitForFolderAnimation();
 
   // Adds `num_apps` to the app list model. These app items have transparent
-  // icons and their names are not set.
+  // icons. Their names are set so that the accessibility paint checker tests
+  // pass (focusable views are expected to have accessible names).
   void AddAppItems(int num_apps);
 
   // Similar to `AddAppItems()` but provides the options to set item icon colors
@@ -139,6 +140,9 @@ class AppListTestHelper {
 
   // Enables/Disables the app list nudge for testing.
   void DisableAppListNudge(bool disable);
+
+  // Accessibility helpers.
+  views::View* GetAccessibilityAnnounceView();
 
   // Fullscreen/peeking launcher helpers.
   AppListView* GetAppListView();

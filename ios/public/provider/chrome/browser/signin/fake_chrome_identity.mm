@@ -1,10 +1,10 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #import "ios/public/provider/chrome/browser/signin/fake_chrome_identity.h"
 
-#include "base/mac/foundation_util.h"
+#import "base/mac/foundation_util.h"
 #import "base/strings/sys_string_conversions.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -119,7 +119,7 @@ NSString* const kCoderHashedGaiaIDKey = @"HashedGaiaID";
   return YES;
 }
 
-// Overrides |isEqual| and |hash| methods to compare objects by values. This is
+// Overrides `isEqual` and `hash` methods to compare objects by values. This is
 // useful when the object is passed by value between processes in EG2.
 - (BOOL)isEqual:(id)object {
   if (self == object) {

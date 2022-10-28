@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -210,7 +210,7 @@ TabHelper::TabHelper(content::WebContents* web_contents)
   CreateSessionServiceTabHelper(web_contents);
   // The Unretained() is safe because ForEachRenderFrameHost() is synchronous.
   web_contents->ForEachRenderFrameHost(
-      base::BindRepeating(&TabHelper::SetTabId, base::Unretained(this)));
+      [this](content::RenderFrameHost* host) { SetTabId(host); });
   active_tab_permission_granter_ = std::make_unique<ActiveTabPermissionGranter>(
       web_contents, sessions::SessionTabHelper::IdForTab(web_contents).id(),
       profile_);
@@ -380,7 +380,7 @@ void TabHelper::OnContentScriptsExecuting(
 
 const Extension* TabHelper::GetExtension(const ExtensionId& extension_app_id) {
   if (extension_app_id.empty())
-    return NULL;
+    return nullptr;
 
   content::BrowserContext* context = web_contents()->GetBrowserContext();
   return ExtensionRegistry::Get(context)->enabled_extensions().GetByID(

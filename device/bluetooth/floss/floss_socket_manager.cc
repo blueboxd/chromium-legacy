@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 #include "device/bluetooth/floss/floss_socket_manager.h"
@@ -431,10 +431,10 @@ void FlossSocketManager::Close(const SocketId id,
 
 void FlossSocketManager::Init(dbus::Bus* bus,
                               const std::string& service_name,
-                              const std::string& adapter_path) {
+                              const int adapter_index) {
   bus_ = bus;
   service_name_ = service_name;
-  adapter_path_ = dbus::ObjectPath(adapter_path);
+  adapter_path_ = GenerateAdapterPath(adapter_index);
 
   dbus::ObjectProxy* object_proxy =
       bus_->GetObjectProxy(service_name_, adapter_path_);

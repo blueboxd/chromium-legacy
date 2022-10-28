@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -51,7 +51,7 @@ class ColorManagerColorSpace {
   explicit ColorManagerColorSpace(gfx::ColorSpace color_space)
       : color_space(color_space),
         eotf(ui::wayland::ToColorManagerEOTF(color_space.GetTransferID())),
-        primaries(color_space.GetColorSpacePrimaries()) {}
+        primaries(color_space.GetPrimaries()) {}
 
   ColorManagerColorSpace(gfx::ColorSpace color_space,
                          zcr_color_manager_v1_eotf_names eotf,
@@ -60,7 +60,6 @@ class ColorManagerColorSpace {
 
   virtual ~ColorManagerColorSpace() = default;
 
-  wl_resource* output_resource;
   const gfx::ColorSpace color_space;
   const zcr_color_manager_v1_eotf_names eotf;
   const SkColorSpacePrimaries primaries;
@@ -78,8 +77,6 @@ class ColorManagerColorSpace {
         static_cast<int>(FLOAT_TO_PARAM(primaries.fWX)),
         static_cast<int>(FLOAT_TO_PARAM(primaries.fWY)));
     zcr_color_space_v1_send_done(color_space_resource);
-    if (output_resource)
-      wl_output_send_done(output_resource);
   }
 
   virtual void SendCustomColorSpaceInfo(wl_resource* color_space_resource) {}
@@ -92,9 +89,7 @@ class NameBasedColorSpace final : public ColorManagerColorSpace {
       zcr_color_manager_v1_chromaticity_names chromaticity,
       zcr_color_manager_v1_eotf_names eotf,
       zcr_color_manager_v1_whitepoint_names whitepoint)
-      : ColorManagerColorSpace(color_space,
-                               eotf,
-                               color_space.GetColorSpacePrimaries()),
+      : ColorManagerColorSpace(color_space, eotf, color_space.GetPrimaries()),
         chromaticity(ui::wayland::ToColorManagerChromaticity(
             color_space.GetPrimaryID())),
         whitepoint(whitepoint) {}
@@ -249,8 +244,6 @@ void color_management_output_get_color_space(
   // create new zcr color space for the current color space of the output
   auto color_space = std::make_unique<ColorManagerColorSpace>(
       color_management_output_observer->GetColorSpace());
-  color_space->output_resource =
-      color_management_output_observer->GetOutputResource();
 
   wl_resource* color_space_resource =
       wl_resource_create(client, &zcr_color_space_v1_interface, 1, id);

@@ -49,7 +49,6 @@
         // Capabilities to be passed to WebEngine instances.
         "fuchsia.accessibility.semantics.SemanticsManager",
         "fuchsia.buildinfo.Provider",
-        // "fuchsia.camera3.DeviceWatcher",
         "fuchsia.device.NameProvider",
         "fuchsia.feedback.ComponentDataRegister",
         "fuchsia.feedback.CrashReportingProductRegister",
@@ -57,8 +56,8 @@
         "fuchsia.hwinfo.Product",
         "fuchsia.input.virtualkeyboard.ControllerCreator",
         "fuchsia.intl.PropertyProvider",
-        // "fuchsia.legacymetrics.MetricsRecorder",
-        // "fuchsia.media.Audio",
+        "fuchsia.kernel.VmexResource",
+        "fuchsia.legacymetrics.MetricsRecorder",
         "fuchsia.media.AudioDeviceEnumerator",
         "fuchsia.media.ProfileProvider",
         "fuchsia.media.SessionAudioConsumerFactory",
@@ -80,8 +79,10 @@
     {
       // Optional capabilities to be passed to WebEngine instances.
       protocol: [
+        "fuchsia.camera3.DeviceWatcher",
         "fuchsia.media.drm.PlayReady",
         "fuchsia.media.drm.Widevine",
+        "fuchsia.media.Audio",
       ],
       availability: "optional"
     },

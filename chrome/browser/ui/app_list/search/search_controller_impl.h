@@ -1,4 +1,4 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -31,7 +31,7 @@ enum class AppListSearchResultType;
 
 namespace app_list {
 
-class SearchMetricsObserver;
+class SearchMetricsManager;
 class SearchProvider;
 enum class RankingItemType;
 
@@ -58,7 +58,7 @@ class SearchControllerImpl : public SearchController,
   void StartSearch(const std::u16string& query) override;
   void StartZeroState(base::OnceClosure on_done,
                       base::TimeDelta timeout) override;
-  void ViewClosing() override;
+  void AppListClosing() override;
   void OpenResult(ChromeSearchResult* result, int event_flags) override;
   void InvokeResultAction(ChromeSearchResult* result,
                           ash::SearchResultActionType action) override;
@@ -114,7 +114,7 @@ class SearchControllerImpl : public SearchController,
   ResultsChangedCallback results_changed_callback_;
 
   std::unique_ptr<Mixer> mixer_;
-  std::unique_ptr<SearchMetricsObserver> metrics_observer_;
+  std::unique_ptr<SearchMetricsManager> metrics_observer_;
   using Providers = std::vector<std::unique_ptr<SearchProvider>>;
   Providers providers_;
   AppListControllerDelegate* list_controller_;

@@ -1,23 +1,23 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #import "ios/chrome/browser/ui/download/download_manager_mediator.h"
 
-#include <UIKit/UIKit.h>
+#import <UIKit/UIKit.h>
 
-#include "base/bind.h"
-#include "base/files/file_path.h"
-#include "base/files/file_util.h"
-#include "base/strings/sys_string_conversions.h"
-#include "base/strings/utf_string_conversions.h"
-#include "base/task/thread_pool.h"
-#include "ios/chrome/browser/download/download_directory_util.h"
+#import "base/bind.h"
+#import "base/files/file_path.h"
+#import "base/files/file_util.h"
+#import "base/strings/sys_string_conversions.h"
+#import "base/strings/utf_string_conversions.h"
+#import "base/task/thread_pool.h"
+#import "ios/chrome/browser/download/download_directory_util.h"
 #import "ios/chrome/browser/download/external_app_util.h"
-#include "ios/chrome/grit/ios_strings.h"
+#import "ios/chrome/grit/ios_strings.h"
 #import "ios/web/public/download/download_task.h"
-#include "net/base/net_errors.h"
-#include "ui/base/l10n/l10n_util.h"
+#import "net/base/net_errors.h"
+#import "ui/base/l10n/l10n_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."

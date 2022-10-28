@@ -1,4 +1,4 @@
-# Copyright 2019 The Chromium Authors. All rights reserved.
+# Copyright 2019 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -14,6 +14,7 @@ source_set("flags") {
   ]
 
   deps = [
+    ":system_flags",
     "//base",
     "//components/autofill/core/common",
     "//components/autofill/ios/browser",
@@ -30,6 +31,7 @@ source_set("flags") {
     "//components/omnibox/browser",
     "//components/omnibox/common",
     "//components/optimization_guide/core",
+    "//components/optimization_guide/core:features",
     "//components/password_manager/core/common:features",
     "//components/payments/core",
     "//components/policy:generated",
@@ -47,7 +49,7 @@ source_set("flags") {
     "//components/translate/core/common",
     "//components/unified_consent",
     "//components/variations",
-    "//ios/chrome/app:buildflags",
+    "//ios/chrome/app:background_mode_buildflags",
     "//ios/chrome/app/strings:ios_strings",
     "//ios/chrome/browser",
     "//ios/chrome/browser/browsing_data:feature_flags",
@@ -61,19 +63,24 @@ source_set("flags") {
     "//ios/chrome/browser/sessions:features",
     "//ios/chrome/browser/text_selection",
     "//ios/chrome/browser/ui:feature_flags",
+    "//ios/chrome/browser/ui/app_store_rating:features",
     "//ios/chrome/browser/ui/autofill:features",
     "//ios/chrome/browser/ui/bubble:features",
     "//ios/chrome/browser/ui/content_suggestions:feature_flags",
     "//ios/chrome/browser/ui/default_promo:utils",
     "//ios/chrome/browser/ui/download:features",
     "//ios/chrome/browser/ui/first_run:field_trial",
+    "//ios/chrome/browser/ui/first_run:field_trial_constants",
     "//ios/chrome/browser/ui/fullscreen:feature_flags",
     "//ios/chrome/browser/ui/ntp:feature_flags",
     "//ios/chrome/browser/ui/omnibox:features",
+    "//ios/chrome/browser/ui/open_in:features",
     "//ios/chrome/browser/ui/popup_menu/overflow_menu:feature_flags",
     "//ios/chrome/browser/ui/popup_menu/public:features",
+    "//ios/chrome/browser/ui/post_restore_signin:features",
     "//ios/chrome/browser/ui/start_surface:feature_flags",
     "//ios/chrome/browser/ui/toolbar_container:feature_flags",
+    "//ios/chrome/browser/ui/whats_new:feature_flags",
     "//ios/chrome/browser/web:feature_flags",
     "//ios/components/security_interstitials/https_only_mode:feature",
     "//ios/public/provider/chrome/browser/app_utils:app_utils_api",
@@ -86,6 +93,42 @@ source_set("flags") {
   if (ios_enable_screen_time) {
     deps += [ "//ios/chrome/browser/screen_time:feature_flags" ]
   }
+}
+
+source_set("system_flags") {
+  configs += [ "//build/config/compiler:enable_arc" ]
+  sources = [
+    "chrome_switches.cc",
+    "chrome_switches.h",
+    "system_flags.h",
+    "system_flags.mm",
+  ]
+  deps = [
+    "//base",
+    "//build:branding_buildflags",
+    "//components/autofill/core/common",
+    "//components/password_manager/core/common:features",
+    "//components/variations",
+    "//ios/chrome/browser/browsing_data:feature_flags",
+    "//ios/chrome/browser/ui:feature_flags",
+  ]
+}
+
+source_set("client_side") {
+  configs += [ "//build/config/compiler:enable_arc" ]
+  sources = [
+    "ios_chrome_field_trials.h",
+    "ios_chrome_field_trials.mm",
+  ]
+  deps = [
+    "//base",
+    "//components/metrics",
+    "//components/variations",
+    "//ios/chrome/app:tests_hook",
+    "//ios/chrome/browser/application_context",
+    "//ios/chrome/browser/paths",
+    "//ios/chrome/browser/ui/first_run:field_trial",
+  ]
 }
 
 source_set("unit_tests") {

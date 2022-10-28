@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,6 +8,7 @@
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/public/cpp/style/scoped_light_mode_as_default.h"
 #include "ash/style/ash_color_provider.h"
+#include "ash/style/color_util.h"
 #include "ash/style/default_color_constants.h"
 #include "ash/style/default_colors.h"
 #include "ash/wm/gestures/back_gesture/back_gesture_util.h"
@@ -129,7 +130,7 @@ class AffordanceView : public views::View {
     ripple_flags.setAntiAlias(true);
     ripple_flags.setStyle(cc::PaintFlags::kFill_Style);
     ScopedLightModeAsDefault scoped_light_mode_as_default;
-    ripple_flags.setColor(AshColorProvider::GetSecondToneColor(
+    ripple_flags.setColor(ColorUtil::GetSecondToneColor(
         AshColorProvider::Get()->GetControlsLayerColor(
             AshColorProvider::ControlsLayerType::
                 kControlBackgroundColorActive)));

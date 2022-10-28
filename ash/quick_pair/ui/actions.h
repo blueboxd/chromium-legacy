@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -15,6 +15,7 @@ enum class DiscoveryAction {
   kDismissedByUser = 1,
   kDismissed = 2,
   kLearnMore = 3,
+  kAlreadyDisplaying = 4,
 };
 
 enum class AssociateAccountAction {

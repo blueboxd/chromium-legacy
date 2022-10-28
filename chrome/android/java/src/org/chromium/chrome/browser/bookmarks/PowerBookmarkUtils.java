@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -16,6 +16,7 @@ import org.chromium.base.Callback;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.commerce.ShoppingServiceFactory;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.subscriptions.CommerceSubscription;
 import org.chromium.chrome.browser.subscriptions.CommerceSubscription.CommerceSubscriptionType;
@@ -114,7 +115,7 @@ public class PowerBookmarkUtils {
             PowerBookmarkMeta meta = bookmarkBridge.getPowerBookmarkMeta(productId);
 
             // Return any of the bookmarks with the given cluster id are price-tracked.
-            if (meta != null && meta.getType() == PowerBookmarkType.SHOPPING
+            if (meta != null && meta.hasShoppingSpecifics()
                     && meta.getShoppingSpecifics().getIsPriceTracked()) {
                 return true;
             }
@@ -161,7 +162,7 @@ public class PowerBookmarkUtils {
 
         bookmarkBridge.finishLoadingBookmarkModel(() -> {
             PowerBookmarkMeta meta = bookmarkBridge.getPowerBookmarkMeta(bookmarkId);
-            if (meta == null || meta.getType() != PowerBookmarkType.SHOPPING) return;
+            if (meta == null || !meta.hasShoppingSpecifics()) return;
 
             CommerceSubscription subscription =
                     createCommerceSubscriptionForPowerBookmarkMeta(meta);
@@ -308,7 +309,7 @@ public class PowerBookmarkUtils {
     /** @return Whether the price tracking flag is set in the bookmark's meta. */
     public static boolean isBookmarkPriceTracked(BookmarkModel model, BookmarkId id) {
         PowerBookmarkMeta meta = model.getPowerBookmarkMeta(id);
-        if (meta == null || meta.getType() != PowerBookmarkType.SHOPPING) return false;
+        if (meta == null || !meta.hasShoppingSpecifics()) return false;
 
         return meta.getShoppingSpecifics().getIsPriceTracked();
     }
@@ -321,7 +322,7 @@ public class PowerBookmarkUtils {
 
         for (BookmarkId product : products) {
             PowerBookmarkMeta meta = bookmarkBridge.getPowerBookmarkMeta(product);
-            if (meta == null || meta.getType() != PowerBookmarkType.SHOPPING) continue;
+            if (meta == null || !meta.hasShoppingSpecifics()) continue;
 
             Long productClusterId = meta.getShoppingSpecifics().getProductClusterId();
             if (productClusterId.equals(clusterId)) {
@@ -335,7 +336,7 @@ public class PowerBookmarkUtils {
     private static void setPriceTrackingEnabledInMetadata(@NonNull BookmarkBridge bookmarkBridge,
             @Nullable BookmarkId bookmarkId, boolean enabled) {
         PowerBookmarkMeta meta = bookmarkBridge.getPowerBookmarkMeta(bookmarkId);
-        if (meta == null || meta.getType() != PowerBookmarkType.SHOPPING) return;
+        if (meta == null || !meta.hasShoppingSpecifics()) return;
 
         bookmarkBridge.setPowerBookmarkMeta(bookmarkId,
                 PowerBookmarkMeta.newBuilder(meta)
@@ -376,6 +377,12 @@ public class PowerBookmarkUtils {
         if (subscriptionsManager == null || bookmarkBridge == null) return;
 
         Runnable updater = () -> {
+            // At this point native should be ready since the bookmark model has loaded.
+            if (!ChromeFeatureList.isEnabled(
+                        ChromeFeatureList.SHOPPING_LIST_ENABLE_DESYNC_RESOLUTION)) {
+                return;
+            }
+
             subscriptionsManager.getSubscriptions(
                     CommerceSubscriptionType.PRICE_TRACK, true, (subscriptions) -> {
                         doBookmarkedSubscriptionValidation(
@@ -434,7 +441,7 @@ public class PowerBookmarkUtils {
         // with the ones that the subscription manager thinks are tracked.
         for (BookmarkId product : products) {
             PowerBookmarkMeta meta = bookmarkBridge.getPowerBookmarkMeta(product);
-            if (meta.getType() != PowerBookmarkType.SHOPPING) continue;
+            if (!meta.hasShoppingSpecifics()) continue;
 
             ShoppingSpecifics specifics = meta.getShoppingSpecifics();
 

@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -130,7 +130,7 @@ class TestRasterInterface : public gpu::raster::RasterInterface {
       const SkImageInfo& dst_info,
       GLuint dst_row_bytes,
       unsigned char* out,
-      base::OnceCallback<void(GrSurfaceOrigin, bool)> readback_done) override {}
+      base::OnceCallback<void(bool)> readback_done) override {}
   void ReadbackYUVPixelsAsync(
       const gpu::Mailbox& source_mailbox,
       GLenum source_target,

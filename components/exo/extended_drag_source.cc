@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -205,7 +205,16 @@ void ExtendedDragSource::Drag(Surface* dragged_surface,
   dragged_window_holder_ =
       std::make_unique<DraggedWindowHolder>(dragged_surface, drag_offset, this);
 
-  // Drag process will be started once OnDragStarted gets called.
+  // Drag process will be started once OnToplevelWindowDragStarted() gets
+  // called, unless it is called (raced) prior to this one. In this case, we
+  // trigger the dragging here.
+  //
+  // TODO(https://crrev.com/1360884: Unify where tab-dragging is initiated.
+  if (pending_drag_start_ &&
+      dragged_window_holder_->toplevel_window() == drag_source_window_) {
+    StartDrag(dragged_window_holder_->toplevel_window());
+    pending_drag_start_ = false;
+  }
 }
 
 bool ExtendedDragSource::IsActive() const {
@@ -226,6 +235,8 @@ void ExtendedDragSource::OnToplevelWindowDragStarted(
   if (dragged_window_holder_ && dragged_window_holder_->toplevel_window() &&
       dragged_window_holder_->toplevel_window()->IsVisible()) {
     StartDrag(dragged_window_holder_->toplevel_window());
+  } else {
+    pending_drag_start_ = true;
   }
 }
 
@@ -305,19 +316,20 @@ void ExtendedDragSource::StartDrag(aura::Window* toplevel) {
                          : ::wm::WINDOW_MOVE_SOURCE_MOUSE;
 
   auto end_closure = base::BindOnce(
-      [](aura::Window* toplevel,
-         base::WeakPtr<ExtendedDragSource> extended_drag_source,
+      [](base::WeakPtr<ExtendedDragSource> self,
          ash::ToplevelWindowEventHandler::DragResult result) {
-        if (toplevel) {
-          toplevel->ClearProperty(ash::kIsDraggingTabsKey);
-          toplevel->ClearProperty(ash::kTabDraggingSourceWindowKey);
+        if (!self)
+          return;
+        if (auto* window_holder = self->dragged_window_holder_.get()) {
+          if (auto* toplevel = window_holder->toplevel_window()) {
+            toplevel->ClearProperty(ash::kIsDraggingTabsKey);
+            toplevel->ClearProperty(ash::kTabDraggingSourceWindowKey);
+          }
         }
-        if (extended_drag_source) {
-          extended_drag_source->dragged_window_holder_.reset();
-          extended_drag_source->event_blocker_.reset();
-        }
+        self->dragged_window_holder_.reset();
+        self->event_blocker_.reset();
       },
-      base::Unretained(toplevel), weak_factory_.GetWeakPtr());
+      weak_factory_.GetWeakPtr());
 
   // TODO(crbug.com/1167581): Experiment setting |update_gesture_target| back
   // to true when capture is removed from drag and drop.
@@ -398,6 +410,7 @@ void ExtendedDragSource::Cleanup() {
   if (drag_source_window_)
     drag_source_window_->RemoveObserver(this);
   drag_source_window_ = nullptr;
+  pending_drag_start_ = false;
   UnlockCursor();
 }
 

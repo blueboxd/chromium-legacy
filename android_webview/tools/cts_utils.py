@@ -1,4 +1,4 @@
-# Copyright 2020 The Chromium Authors. All rights reserved.
+# Copyright 2020 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 """Stage the Chromium checkout to update CTS test version."""
@@ -381,7 +381,7 @@ class ChromiumRepoHelper:
       IOError: If generation failed.
     """
     with chdir(self._root_dir):
-      ret = cmd_helper.RunCmd(['python', _GENERATE_BUILDBOT_JSON])
+      ret = cmd_helper.RunCmd(['vpython3', _GENERATE_BUILDBOT_JSON])
       if ret:
         raise IOError('Error while generating_buildbot_json.py')
 

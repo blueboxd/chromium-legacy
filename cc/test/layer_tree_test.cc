@@ -1,4 +1,4 @@
-// Copyright 2011 The Chromium Authors. All rights reserved.
+// Copyright 2011 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -130,8 +130,7 @@ class SynchronousLayerTreeFrameSink : public TestLayerTreeFrameSink {
   }
   void DispatchInvalidation() {
     frame_request_pending_ = false;
-    client_->OnDraw(gfx::Transform(SkMatrix::I()), viewport_,
-                    use_software_renderer_, false);
+    client_->OnDraw(gfx::Transform(), viewport_, use_software_renderer_, false);
   }
 
   bool frame_request_pending_ = false;
@@ -213,19 +212,22 @@ class LayerTreeHostImplForTesting : public LayerTreeHostImpl {
       CommitEarlyOutReason reason,
       std::vector<std::unique_ptr<SwapPromise>> swap_promises,
       const viz::BeginFrameArgs& args,
+      bool next_bmf,
       bool scroll_and_viewport_changes_synced) override {
     LayerTreeHostImpl::BeginMainFrameAborted(
-        reason, std::move(swap_promises), args,
+        reason, std::move(swap_promises), args, next_bmf,
         scroll_and_viewport_changes_synced);
     test_hooks_->BeginMainFrameAbortedOnThread(
         this, reason, scroll_and_viewport_changes_synced);
   }
 
   void ReadyToCommit(const viz::BeginFrameArgs& commit_args,
+                     bool scroll_and_viewport_changes_synced,
                      const BeginMainFrameMetrics* begin_main_frame_metrics,
                      bool commit_timeout) override {
-    LayerTreeHostImpl::ReadyToCommit(commit_args, begin_main_frame_metrics,
-                                     commit_timeout);
+    LayerTreeHostImpl::ReadyToCommit(commit_args,
+                                     scroll_and_viewport_changes_synced,
+                                     begin_main_frame_metrics, commit_timeout);
     test_hooks_->ReadyToCommitOnThread(this);
   }
 

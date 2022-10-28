@@ -1,4 +1,4 @@
-# Copyright (c) 2012 The Chromium Authors. All rights reserved.
+# Copyright 2012 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -42,7 +42,7 @@ _EXCLUDED_PATHS = (
     r"^v8[\\/].*",
     r".*MakeFile$",
     r".+_autogen\.h$",
-    r".+_pb2\.py$",
+    r".+_pb2(_grpc)?\.py$",
     r".+[\\/]pnacl_shim\.c$",
     r"^gpu[\\/]config[\\/].*_list_json\.cc$",
     r"tools[\\/]md_browser[\\/].*\.css$",
@@ -680,7 +680,7 @@ _BANNED_CPP_FUNCTIONS : Sequence[BanRule] = (
        '^gin/array_buffer\.(cc|h)',
        '^chrome/services/sharing/nearby/',
        # gRPC provides some C++ libraries that use std::shared_ptr<>.
-       '^chromeos/services/libassistant/grpc/',
+       '^chromeos/ash/services/libassistant/grpc/',
        '^chromecast/cast_core/grpc',
        '^chromecast/cast_core/runtime/browser',
        # Fuchsia provides C++ libraries that use std::shared_ptr<>.
@@ -1199,7 +1199,6 @@ _GENERIC_PYDEPS_FILES = [
     'components/module_installer/android/module_desc_java.pydeps',
     'content/public/android/generate_child_service.pydeps',
     'net/tools/testserver/testserver.pydeps',
-    'testing/scripts/run_wpt_tests.pydeps',
     'testing/scripts/run_isolated_script_test.pydeps',
     'testing/merge_scripts/standard_isolated_script_merge.pydeps',
     'testing/merge_scripts/standard_gtest_merge.pydeps',
@@ -4731,7 +4730,7 @@ def ChecksCommon(input_api, output_api):
             non_inclusive_terms=_NON_INCLUSIVE_TERMS))
 
     presubmit_py_filter = lambda f: input_api.FilterSourceFile(
-        f, files_to_check=[r'PRESUBMIT\.py$'])
+        f, files_to_check=[r'.*PRESUBMIT\.py$'])
     for f in input_api.AffectedFiles(include_deletes=False,
                                      file_filter=presubmit_py_filter):
         full_path = input_api.os_path.dirname(f.AbsoluteLocalPath())
@@ -5090,7 +5089,7 @@ def CheckForIncludeGuards(input_api, output_api):
                     # don't match the chromium style guide, but new files should
                     # get it right.
                     if guard_name != expected_guard:
-                        if not f.OldContents():
+                        if f.Action() == 'A':  # If file was just 'A'dded
                             errors.append(
                                 output_api.PresubmitPromptWarning(
                                     'Header using the wrong include guard name %s'

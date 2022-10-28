@@ -1,29 +1,29 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/strings/strcat.h"
+#import "base/strings/strcat.h"
 #import "base/test/ios/wait_util.h"
-#include "base/test/scoped_command_line.h"
-#include "components/policy/core/common/policy_test_utils.h"
+#import "base/test/scoped_command_line.h"
+#import "components/policy/core/common/policy_test_utils.h"
 #import "components/policy/policy_constants.h"
-#include "components/strings/grit/components_strings.h"
-#include "ios/chrome/browser/chrome_url_constants.h"
+#import "components/strings/grit/components_strings.h"
+#import "ios/chrome/browser/chrome_url_constants.h"
 #import "ios/chrome/browser/metrics/metrics_app_interface.h"
 #import "ios/chrome/browser/policy/policy_earl_grey_utils.h"
 #import "ios/chrome/browser/ui/content_suggestions/ntp_home_constant.h"
 #import "ios/chrome/browser/ui/popup_menu/popup_menu_constants.h"
-#include "ios/chrome/grit/ios_strings.h"
+#import "ios/chrome/grit/ios_strings.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
 #import "ios/testing/earl_grey/app_launch_manager.h"
 #import "ios/testing/earl_grey/earl_grey_test.h"
-#include "net/test/embedded_test_server/embedded_test_server.h"
-#include "net/test/embedded_test_server/http_request.h"
-#include "net/test/embedded_test_server/http_response.h"
-#include "ui/base/l10n/l10n_util.h"
+#import "net/test/embedded_test_server/embedded_test_server.h"
+#import "net/test/embedded_test_server/http_request.h"
+#import "net/test/embedded_test_server/http_response.h"
+#import "ui/base/l10n/l10n_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -383,8 +383,7 @@ BOOL WaitForHistoryToDisappear() {
   [self setNTPPolicyValue:expectedURL.spec()];
 
   // Open tab via the UI.
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::ShowTabsButton()]
-      performAction:grey_tap()];
+  [ChromeEarlGreyUI openTabGrid];
   [[EarlGrey selectElementWithMatcher:chrome_test_util::TabGridNewTabButton()]
       performAction:grey_tap()];
 

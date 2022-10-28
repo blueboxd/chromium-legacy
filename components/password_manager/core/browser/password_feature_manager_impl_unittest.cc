@@ -1,10 +1,12 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "components/password_manager/core/browser/password_feature_manager_impl.h"
 
 #include "base/test/scoped_feature_list.h"
+#include "build/build_config.h"
+#include "components/autofill_assistant/browser/public/prefs.h"
 #include "components/password_manager/core/browser/password_form.h"
 #include "components/password_manager/core/browser/password_manager_client.h"
 #include "components/password_manager/core/browser/password_manager_util.h"
@@ -14,7 +16,7 @@
 #include "components/prefs/testing_pref_service.h"
 #include "components/signin/public/identity_manager/account_info.h"
 #include "components/sync/driver/sync_service.h"
-#include "components/sync/driver/test_sync_service.h"
+#include "components/sync/test/test_sync_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 class PasswordFeatureManagerImplTest : public ::testing::Test {
@@ -26,6 +28,11 @@ class PasswordFeatureManagerImplTest : public ::testing::Test {
     account_.email = "account@gmail.com";
     account_.gaia = "account";
     account_.account_id = CoreAccountId::FromGaiaId(account_.gaia);
+
+#if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
+    pref_service_.registry()->RegisterBooleanPref(
+        autofill_assistant::prefs::kAutofillAssistantEnabled, true);
+#endif  // !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
   }
 
   ~PasswordFeatureManagerImplTest() override = default;
@@ -150,3 +157,23 @@ TEST_F(PasswordFeatureManagerImplTest,
   EXPECT_FALSE(password_feature_manager_
                    .AreRequirementsForAutomatedPasswordChangeFulfilled());
 }
+
+#if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
+TEST_F(PasswordFeatureManagerImplTest,
+       RequirementsForAutomatedPasswordChangeRespectAssistantPref) {
+  sync_service_.SetAccountInfo(account_);
+  sync_service_.SetHasSyncConsent(true);
+  sync_service_.SetDisableReasons({});
+  sync_service_.SetTransportState(syncer::SyncService::TransportState::ACTIVE);
+  sync_service_.SetActiveDataTypes(syncer::ModelTypeSet(syncer::PASSWORDS));
+
+  EXPECT_TRUE(password_feature_manager_
+                  .AreRequirementsForAutomatedPasswordChangeFulfilled());
+
+  // Switching off Autofill Assistant disables APC on Desktop.
+  pref_service_.SetBoolean(autofill_assistant::prefs::kAutofillAssistantEnabled,
+                           false);
+  EXPECT_FALSE(password_feature_manager_
+                   .AreRequirementsForAutomatedPasswordChangeFulfilled());
+}
+#endif  // !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)

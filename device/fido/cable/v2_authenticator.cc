@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -96,6 +96,7 @@ struct MakeCredRequest {
   RAW_PTR_EXCLUSION const cbor::Value::ArrayValue* cred_params;
   RAW_PTR_EXCLUSION const cbor::Value::ArrayValue* excluded_credentials;
   RAW_PTR_EXCLUSION const bool* resident_key;
+  RAW_PTR_EXCLUSION const std::string* device_public_key_attestation;
 };
 
 static constexpr StepOrByte<MakeCredRequest> kMakeCredParseSteps[] = {
@@ -129,6 +130,19 @@ static constexpr StepOrByte<MakeCredRequest> kMakeCredParseSteps[] = {
     IntKey<MakeCredRequest>(4),
     ELEMENT(Is::kOptional, MakeCredRequest, excluded_credentials),
     IntKey<MakeCredRequest>(5),
+
+    Map<MakeCredRequest>(Is::kOptional),
+    IntKey<MakeCredRequest>(6),
+      Map<MakeCredRequest>(Is::kOptional),
+      StringKey<MakeCredRequest>(), 'd', 'e', 'v', 'i', 'c', 'e',
+                                    'P', 'u', 'b', 'K', 'e', 'y', '\0',
+        // The presence of the attestation type is used to detect when DPK is
+        // requested.
+        ELEMENT(Is::kRequired, MakeCredRequest, device_public_key_attestation),
+        StringKey<MakeCredRequest>(), 'a', 't', 't', 'e', 's', 't', 'a', 't',
+                                      'i', 'o', 'n', '\0',
+      Stop<MakeCredRequest>(),
+    Stop<MakeCredRequest>(),
 
     Map<MakeCredRequest>(Is::kOptional),
     IntKey<MakeCredRequest>(7),
@@ -171,6 +185,7 @@ struct GetAssertionRequest {
   RAW_PTR_EXCLUSION const std::string* rp_id;
   RAW_PTR_EXCLUSION const std::vector<uint8_t>* client_data_hash;
   RAW_PTR_EXCLUSION const cbor::Value::ArrayValue* allowed_credentials;
+  RAW_PTR_EXCLUSION const std::string* device_public_key_attestation;
 };
 
 static constexpr StepOrByte<GetAssertionRequest> kGetAssertionParseSteps[] = {
@@ -183,6 +198,19 @@ static constexpr StepOrByte<GetAssertionRequest> kGetAssertionParseSteps[] = {
 
     ELEMENT(Is::kOptional, GetAssertionRequest, allowed_credentials),
     IntKey<GetAssertionRequest>(3),
+
+    Map<GetAssertionRequest>(Is::kOptional),
+    IntKey<GetAssertionRequest>(4),
+      Map<GetAssertionRequest>(Is::kOptional),
+      StringKey<GetAssertionRequest>(), 'd', 'e', 'v', 'i', 'c', 'e',
+                                        'P', 'u', 'b', 'K', 'e', 'y', '\0',
+        // The presence of the attestation type is used to detect when DPK is
+        // requested.
+        ELEMENT(Is::kRequired, GetAssertionRequest, device_public_key_attestation),
+        StringKey<GetAssertionRequest>(), 'a', 't', 't', 'e', 's', 't', 'a', 't',
+                                          'i', 'o', 'n', '\0',
+      Stop<GetAssertionRequest>(),
+    Stop<GetAssertionRequest>(),
 
     Stop<GetAssertionRequest>(),
     // clang-format on
@@ -207,8 +235,12 @@ std::vector<uint8_t> BuildGetInfoResponse() {
   transports.emplace_back("hybrid");
   transports.emplace_back("internal");
 
+  cbor::Value::ArrayValue extensions;
+  extensions.emplace_back("devicePubKey");
+
   cbor::Value::MapValue response_map;
   response_map.emplace(1, std::move(versions));
+  response_map.emplace(2, std::move(extensions));
   response_map.emplace(3, aaguid);
   response_map.emplace(4, std::move(options));
   response_map.emplace(9, std::move(transports));
@@ -237,7 +269,6 @@ class TunnelTransport : public Transport {
       network::mojom::NetworkContext* network_context,
       base::span<const uint8_t> secret,
       base::span<const uint8_t, device::kP256X962Length> peer_identity,
-      bool use_new_crypter_construction,
       GeneratePairingDataCallback generate_pairing_data)
       : protocol_revision_(protocol_revision),
         platform_(platform),
@@ -252,8 +283,7 @@ class TunnelTransport : public Transport {
         network_context_(network_context),
         peer_identity_(device::fido_parsing_utils::Materialize(peer_identity)),
         generate_pairing_data_(std::move(generate_pairing_data)),
-        secret_(fido_parsing_utils::Materialize(secret)),
-        use_new_crypter_construction_(use_new_crypter_construction) {
+        secret_(fido_parsing_utils::Materialize(secret)) {
     DCHECK_EQ(state_, State::kNone);
     state_ = State::kConnecting;
 
@@ -283,8 +313,7 @@ class TunnelTransport : public Transport {
             device::cablev2::DerivedValueType::kEIDKey)),
         network_context_(network_context),
         secret_(fido_parsing_utils::Materialize(secret)),
-        local_identity_(std::move(local_identity)),
-        use_new_crypter_construction_(protocol_revision_ >= 1) {
+        local_identity_(std::move(local_identity)) {
     DCHECK_EQ(state_, State::kNone);
 
     state_ = State::kConnectingPaired;
@@ -429,9 +458,6 @@ class TunnelTransport : public Transport {
         update_callback_.Run(Platform::Status::HANDSHAKE_COMPLETE);
         websocket_client_->Write(response);
         crypter_ = std::move(result->first);
-        if (use_new_crypter_construction_) {
-          crypter_->UseNewConstruction();
-        }
 
         cbor::Value::MapValue post_handshake_msg;
         post_handshake_msg.emplace(1, BuildGetInfoResponse());
@@ -610,7 +636,6 @@ class TunnelTransport : public Transport {
   GeneratePairingDataCallback generate_pairing_data_;
   const std::vector<uint8_t> secret_;
   bssl::UniquePtr<EC_KEY> local_identity_;
-  const bool use_new_crypter_construction_;
   GURL target_;
   std::unique_ptr<Platform::BLEAdvert> ble_advert_;
   base::RepeatingCallback<void(Update)> update_callback_;
@@ -754,6 +779,13 @@ class CTAP2Processor : public Transaction {
                : device::ResidentKeyRequirement::kDiscouraged,
             device::UserVerificationRequirement::kRequired);
 
+        if (make_cred_request.device_public_key_attestation) {
+          // Play Services doesn't support any of the devicePubKey parameters so
+          // this code doesn't bother parsing them nor passing them on.
+          params->device_public_key =
+              blink::mojom::DevicePublicKeyRequest::New();
+        }
+
         if (!CopyCredIds(make_cred_request.excluded_credentials,
                          &params->exclude_credentials)) {
           return Platform::Error::INTERNAL_ERROR;
@@ -821,6 +853,13 @@ class CTAP2Processor : public Transaction {
           return Platform::Error::INTERNAL_ERROR;
         }
 
+        if (get_assertion_request.device_public_key_attestation) {
+          // Play Services doesn't support any of the devicePubKey parameters so
+          // this code doesn't bother parsing them nor passing them on.
+          params->device_public_key =
+              blink::mojom::DevicePublicKeyRequest::New();
+        }
+
         transaction_received_ = true;
         const bool empty_allowlist = params->allow_credentials.empty();
         platform_->GetAssertion(
@@ -849,7 +888,8 @@ class CTAP2Processor : public Transaction {
   void OnMakeCredentialResponse(
       bool was_discoverable_credential_request,
       uint32_t ctap_status,
-      base::span<const uint8_t> attestation_object_bytes) {
+      base::span<const uint8_t> attestation_object_bytes,
+      absl::optional<base::span<const uint8_t>> device_public_key_signature) {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     DCHECK_LE(ctap_status, 0xFFu);
 
@@ -876,6 +916,13 @@ class CTAP2Processor : public Transaction {
       response_map.emplace(
           2, base::span<const uint8_t>(*attestation_object.auth_data));
       response_map.emplace(3, attestation_object.statement->Clone());
+
+      if (device_public_key_signature) {
+        cbor::Value::MapValue unsigned_extension_outputs;
+        unsigned_extension_outputs.emplace(kExtensionDevicePublicKey,
+                                           *device_public_key_signature);
+        response_map.emplace(6, std::move(unsigned_extension_outputs));
+      }
 
       absl::optional<std::vector<uint8_t>> response_payload =
           cbor::Writer::Write(cbor::Value(std::move(response_map)));
@@ -950,6 +997,14 @@ class CTAP2Processor : public Transaction {
         // This is the `userSelected` field, which indicates that additional
         // confirmation of the account selection isn't needed.
         response_map.emplace(6, true);
+      }
+
+      if (auth_response->device_public_key) {
+        cbor::Value::MapValue unsigned_extension_outputs;
+        unsigned_extension_outputs.emplace(
+            kExtensionDevicePublicKey,
+            auth_response->device_public_key->signature);
+        response_map.emplace(8, std::move(unsigned_extension_outputs));
       }
 
       absl::optional<std::vector<uint8_t>> response_payload =
@@ -1121,8 +1176,7 @@ std::unique_ptr<Transaction> TransactFromQRCode(
     const std::string& authenticator_name,
     base::span<const uint8_t, 16> qr_secret,
     base::span<const uint8_t, kP256X962Length> peer_identity,
-    absl::optional<std::vector<uint8_t>> contact_id,
-    bool use_new_crypter_construction) {
+    absl::optional<std::vector<uint8_t>> contact_id) {
   auto generate_pairing_data = PairingDataGenerator::GetClosure(
       root_secret, authenticator_name, std::move(contact_id));
 
@@ -1130,8 +1184,7 @@ std::unique_ptr<Transaction> TransactFromQRCode(
   return std::make_unique<CTAP2Processor>(
       std::make_unique<TunnelTransport>(
           protocol_revision, platform_ptr, network_context, qr_secret,
-          peer_identity, use_new_crypter_construction,
-          std::move(generate_pairing_data)),
+          peer_identity, std::move(generate_pairing_data)),
       std::move(platform));
 }
 

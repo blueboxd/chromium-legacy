@@ -1,8 +1,8 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ios/chrome/browser/optimization_guide/optimization_guide_validation_tab_helper.h"
+#import "ios/chrome/browser/optimization_guide/optimization_guide_validation_tab_helper.h"
 
 #import "base/metrics/histogram_functions.h"
 #import "components/optimization_guide/core/hints_processing_util.h"

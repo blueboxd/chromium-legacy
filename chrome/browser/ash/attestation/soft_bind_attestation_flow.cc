@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,7 +12,7 @@
 #include "chrome/browser/ash/settings/cros_settings.h"
 #include "chromeos/ash/components/cryptohome/cryptohome_parameters.h"
 #include "chromeos/ash/components/dbus/attestation/attestation_client.h"
-#include "chromeos/dbus/constants/attestation_constants.h"
+#include "chromeos/ash/components/dbus/constants/attestation_constants.h"
 #include "content/public/browser/browser_thread.h"
 #include "crypto/openssl_util.h"
 #include "crypto/random.h"
@@ -69,8 +69,9 @@ constexpr base::TimeDelta kLeafCertValidityWindow = base::Hours(72);
 // Trigger a new certificate if current certificate is nearing expiration.
 constexpr base::TimeDelta kExpiryThresholdDays = base::Days(30);
 
-// ECDSA p256 oid
-const uint8_t kEcdsa256Oid[] = {0x2a, 0x86, 0x48, 0xce, 0x3d, 0x04, 0x03, 0x02};
+// RSA SHA256 oid
+const uint8_t kRsaSha256Oid[] = {0x2a, 0x86, 0x48, 0x86, 0xf7,
+                                 0x0d, 0x01, 0x01, 0x0b};
 
 const uint8_t kBasicConstraintsOid[] = {0x55, 0x1d, 0x13};
 const uint8_t kKeyUsageOid[] = {0x55, 0x1d, 0x0f};
@@ -152,7 +153,7 @@ SoftBindAttestationFlow::SoftBindAttestationFlow()
     : attestation_client_(AttestationClient::Get()) {
   std::unique_ptr<ServerProxy> attestation_ca_client(new AttestationCAClient());
   attestation_flow_ = std::make_unique<AttestationFlow>(
-      std::move(attestation_ca_client), ::attestation::KEY_TYPE_ECC);
+      std::move(attestation_ca_client), ::attestation::KEY_TYPE_RSA);
 }
 
 SoftBindAttestationFlow::~SoftBindAttestationFlow() = default;
@@ -303,7 +304,7 @@ void SoftBindAttestationFlow::OnCertificateSigned(
                      tbs_cert.size()) ||
       !CBB_add_asn1(&signed_cert, &alg, CBS_ASN1_SEQUENCE) ||
       !CBB_add_asn1(&alg, &alg_oid, CBS_ASN1_OBJECT) ||
-      !CBB_add_bytes(&alg_oid, kEcdsa256Oid, 8) ||
+      !CBB_add_bytes(&alg_oid, kRsaSha256Oid, 9) ||
       !CBB_add_asn1(&alg, &alg_null, CBS_ASN1_NULL) ||
       !CBB_add_asn1(&signed_cert, &signature, CBS_ASN1_BITSTRING) ||
       !CBB_add_u8(&signature, 0) ||
@@ -433,7 +434,7 @@ bool SoftBindAttestationFlow::GenerateLeafCert(EVP_PKEY* key,
       !CBB_add_asn1_uint64(&cert, serial_number) ||
       !CBB_add_asn1(&cert, &alg, CBS_ASN1_SEQUENCE) ||
       !CBB_add_asn1(&alg, &alg_oid, CBS_ASN1_OBJECT) ||
-      !CBB_add_bytes(&alg_oid, kEcdsa256Oid, 8) ||
+      !CBB_add_bytes(&alg_oid, kRsaSha256Oid, 9) ||
       !CBB_add_asn1(&alg, &alg_null, CBS_ASN1_NULL) ||
       !net::x509_util::AddName(&cert, kLeafCertIssuerName) ||
       !CBB_add_asn1(&cert, &validity, CBS_ASN1_SEQUENCE) ||

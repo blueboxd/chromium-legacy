@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -158,7 +158,7 @@ class TabsMoveFunction : public ExtensionFunction {
   bool MoveTab(int tab_id,
                int* new_index,
                base::ListValue* tab_values,
-               int* window_id,
+               const absl::optional<int>& window_id,
                std::string* error);
   DECLARE_EXTENSION_FUNCTION("tabs.move", TABS_MOVE)
 };

@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -784,6 +784,7 @@ class StartupBrowserCreatorChromeAppShortcutTest
       case ChromeAppDeprecationFeatureValue::kEnabled:
         return false;
       case ChromeAppDeprecationFeatureValue::kDefault:
+        return !base::FeatureList::IsEnabled(features::kChromeAppsDeprecation);
       case ChromeAppDeprecationFeatureValue::kDisabled:
         return true;
     }
@@ -3186,9 +3187,14 @@ void StartupBrowserCreatorFirstRunTest::SetUpInProcessBrowserTestFixture() {
 #if (BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)) && \
     BUILDFLAG(GOOGLE_CHROME_BRANDING)
   // Set a policy that prevents the first-run dialog from being shown.
-  policy_map_.Set(policy::key::kMetricsReportingEnabled,
-                  policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
-                  policy::POLICY_SOURCE_CLOUD, base::Value(false), nullptr);
+  policy_map_.Set(
+#if BUILDFLAG(IS_CHROMEOS)
+      policy::key::kDeviceMetricsReportingEnabled,
+#else
+      policy::key::kMetricsReportingEnabled,
+#endif
+      policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
+      policy::POLICY_SOURCE_CLOUD, base::Value(false), nullptr);
   provider_.UpdateChromePolicy(policy_map_);
 #endif  // (BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)) &&
         // BUILDFLAG(GOOGLE_CHROME_BRANDING)

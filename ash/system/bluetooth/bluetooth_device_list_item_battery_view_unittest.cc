@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,7 +10,7 @@
 #include "ash/test/ash_test_base.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/test/scoped_feature_list.h"
-#include "chromeos/services/bluetooth_config/public/mojom/cros_bluetooth_config.mojom.h"
+#include "chromeos/ash/services/bluetooth_config/public/mojom/cros_bluetooth_config.mojom.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/image/image_unittest_util.h"
@@ -19,10 +19,6 @@
 #include "ui/views/widget/widget.h"
 
 namespace ash {
-namespace {
-using chromeos::bluetooth_config::mojom::BatteryProperties;
-using chromeos::bluetooth_config::mojom::BatteryPropertiesPtr;
-}  // namespace
 
 class BluetoothDeviceListItemBatteryViewTest : public AshTestBase {
  public:

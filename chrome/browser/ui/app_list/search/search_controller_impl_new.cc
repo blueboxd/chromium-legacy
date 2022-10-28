@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,19 +6,14 @@
 
 #include <algorithm>
 
-#include "ash/constants/ash_features.h"
 #include "ash/constants/ash_pref_names.h"
-#include "ash/public/cpp/app_list/app_list_config.h"
 #include "ash/public/cpp/app_list/app_list_features.h"
 #include "ash/public/cpp/app_list/app_list_metrics.h"
 #include "ash/public/cpp/app_list/app_list_types.h"
 #include "ash/public/cpp/tablet_mode.h"
 #include "base/bind.h"
-#include "base/metrics/field_trial_params.h"
 #include "base/metrics/metrics_hashes.h"
-#include "base/sequence_token.h"
 #include "base/strings/strcat.h"
-#include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "chrome/browser/profiles/profile.h"
@@ -29,9 +24,7 @@
 #include "chrome/browser/ui/app_list/search/cros_action_history/cros_action_recorder.h"
 #include "chrome/browser/ui/app_list/search/ranking/ranker_delegate.h"
 #include "chrome/browser/ui/app_list/search/ranking/scoring.h"
-#include "chrome/browser/ui/app_list/search/ranking/util.h"
-#include "chrome/browser/ui/app_list/search/search_features.h"
-#include "chrome/browser/ui/app_list/search/search_metrics_observer.h"
+#include "chrome/browser/ui/app_list/search/search_metrics_manager.h"
 #include "chrome/browser/ui/app_list/search/search_provider.h"
 #include "components/metrics/structured/structured_events.h"
 #include "components/prefs/pref_service.h"
@@ -63,8 +56,8 @@ SearchControllerImplNew::SearchControllerImplNew(
           base::BindRepeating(&SearchControllerImplNew::OnBurnInPeriodElapsed,
                               base::Unretained(this)))),
       ranker_(std::make_unique<RankerDelegate>(profile, this)),
-      metrics_observer_(
-          std::make_unique<SearchMetricsObserver>(profile, notifier)),
+      metrics_manager_(
+          std::make_unique<SearchMetricsManager>(profile, notifier)),
       model_updater_(model_updater),
       list_controller_(list_controller) {
   DCHECK(app_list_features::IsCategoricalSearchEnabled());
@@ -405,7 +398,7 @@ void SearchControllerImplNew::Train(LaunchData&& launch_data) {
   ranker_->Train(launch_data);
 }
 
-void SearchControllerImplNew::ViewClosing() {
+void SearchControllerImplNew::AppListClosing() {
   for (const auto& provider : providers_)
     provider->ViewClosing();
 }

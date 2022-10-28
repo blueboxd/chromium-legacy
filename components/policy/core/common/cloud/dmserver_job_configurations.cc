@@ -1,4 +1,4 @@
-// Copyright (c) 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -228,6 +228,8 @@ DMServerJobConfiguration::MapNetErrorAndResponseToDMStatus(
       return DM_STATUS_SERVICE_ENTERPRISE_TOS_HAS_NOT_BEEN_ACCEPTED;
     case DeviceManagementService::kIllegalAccountForPackagedEDULicense:
       return DM_STATUS_SERVICE_ILLEGAL_ACCOUNT_FOR_PACKAGED_EDU_LICENSE;
+    case DeviceManagementService::kInvalidPackagedDeviceForKiosk:
+      return DM_STATUS_SERVICE_INVALID_PACKAGED_DEVICE_FOR_KIOSK;
     default:
       // Handle all unknown 5xx HTTP error codes as temporary and any other
       // unknown error as one that needs more time to recover.

@@ -1,4 +1,4 @@
-# Copyright 2019 The Chromium Authors. All rights reserved.
+# Copyright 2019 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -53,6 +53,7 @@ source_set("send_tab_to_self_ui") {
     "//base",
     "//components/send_tab_to_self",
     "//ios/chrome/app/strings:ios_strings_grit",
+    "//ios/chrome/browser/ui/icons:symbols",
     "//ios/chrome/browser/ui/infobars/presentation:positioner",
     "//ios/chrome/browser/ui/overlays:util",
     "//ios/chrome/browser/ui/settings/cells",

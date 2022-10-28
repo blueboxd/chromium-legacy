@@ -1,4 +1,4 @@
-// Copyright 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -69,7 +69,7 @@ class TableManager : public base::RefCountedThreadSafe<TableManager> {
   friend class base::RefCountedThreadSafe<TableManager>;
 
   scoped_refptr<base::SequencedTaskRunner> db_task_runner_;
-  raw_ptr<sql::Database> db_;
+  raw_ptr<sql::Database, DanglingUntriaged> db_;
 };
 
 }  // namespace sqlite_proto

@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -23,6 +23,7 @@
 #include "components/browser_ui/util/android/url_constants.h"
 #include "components/browsing_data/content/local_storage_helper.h"
 #include "components/content_settings/browser/page_specific_content_settings.h"
+#include "components/content_settings/browser/ui/cookie_controls_controller.h"
 #include "components/content_settings/core/browser/content_settings_registry.h"
 #include "components/content_settings/core/browser/content_settings_utils.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
@@ -324,6 +325,15 @@ PageInfo::PageInfo(std::unique_ptr<PageInfoDelegate> delegate,
   // Record the time when the page info dialog is opened so the total time it is
   // open can be measured.
   start_time_ = base::TimeTicks::Now();
+
+#if !BUILDFLAG(IS_ANDROID)
+  if (web_contents) {
+    controller_ = delegate_->CreateCookieControlsController();
+    observation_.Observe(controller_.get());
+
+    controller_->Update(web_contents);
+  }
+#endif
 }
 
 PageInfo::~PageInfo() {
@@ -363,6 +373,33 @@ PageInfo::~PageInfo() {
                                                   safety_tip_info_.status),
         start_time_);
   }
+}
+
+void PageInfo::OnStatusChanged(CookieControlsStatus status,
+                               CookieControlsEnforcement enforcement,
+                               int allowed_cookies,
+                               int blocked_cookies) {
+#if !BUILDFLAG(IS_ANDROID)
+  if (base::FeatureList::IsEnabled(page_info::kPageInfoCookiesSubpage)) {
+    if (status != status_ || enforcement != enforcement_) {
+      status_ = status;
+      enforcement_ = enforcement;
+      PresentSiteData(base::DoNothing());
+    }
+  }
+#endif
+}
+
+void PageInfo::OnCookiesCountChanged(int allowed_cookies, int blocked_cookies) {
+}
+
+void PageInfo::OnThirdPartyToggleClicked(bool block_third_party_cookies) {
+  DCHECK(status_ != CookieControlsStatus::kDisabled);
+  DCHECK(status_ != CookieControlsStatus::kUninitialized);
+  RecordPageInfoAction(block_third_party_cookies
+                           ? PAGE_INFO_COOKIES_BLOCKED_FOR_SITE
+                           : PAGE_INFO_COOKIES_ALLOWED_FOR_SITE);
+  controller_->OnCookieBlockingEnabledForSite(block_third_party_cookies);
 }
 
 // static
@@ -550,12 +587,16 @@ void PageInfo::RecordPageInfoAction(PageInfoAction action) {
           base::UserMetricsAction("PageInfo.AboutThisSite.MoreAboutClicked"));
       break;
     case PAGE_INFO_COOKIES_PAGE_OPENED:
-      // TODO(crbug.com/1346305) Add recording action.
+      base::RecordAction(
+          base::UserMetricsAction("PageInfo.CookiesSubpage.Opened"));
       break;
     case PAGE_INFO_COOKIES_SETTINGS_OPENED:
-      // TODO(crbug.com/1346305) Add recording action.
-    case PAGE_INFO_ALL_SITES_OPENED:
-      // TODO(crbug.com/1346305) Add recording action.
+      base::RecordAction(base::UserMetricsAction(
+          "PageInfo.CookiesSubpage.SettingsLinkClicked"));
+      break;
+    case PAGE_INFO_ALL_SITES_WITH_FPS_FILTER_OPENED:
+      base::RecordAction(base::UserMetricsAction(
+          "PageInfo.CookiesSubpage.AllSitesFilteredOpened"));
       break;
   }
 }
@@ -689,12 +730,17 @@ void PageInfo::OpenCookiesSettingsView() {
 #endif
 }
 
-void PageInfo::OpenAllSitesView() {
+void PageInfo::OpenAllSitesViewFilteredToFps() {
 #if BUILDFLAG(IS_ANDROID)
   NOTREACHED();
 #else
-  RecordPageInfoAction(PAGE_INFO_ALL_SITES_OPENED);
-  delegate_->ShowAllSitesSettings();
+  auto fps_owner = delegate_->GetFpsOwner(site_url_);
+  RecordPageInfoAction(PAGE_INFO_ALL_SITES_WITH_FPS_FILTER_OPENED);
+  if (fps_owner)
+    delegate_->ShowAllSitesSettingsFilteredByFpsOwner(*fps_owner);
+  else
+    delegate_->ShowAllSitesSettingsFilteredByFpsOwner(std::u16string());
+
 #endif
 }
 
@@ -1067,8 +1113,8 @@ void PageInfo::PresentSitePermissions() {
     }
 
     permission_info.source = info.source;
-    permission_info.is_one_time =
-        (info.session_model == content_settings::SessionModel::OneTime);
+    permission_info.is_one_time = (info.metadata.session_model ==
+                                   content_settings::SessionModel::OneTime);
 
     if (info.primary_pattern == ContentSettingsPattern::Wildcard() &&
         info.secondary_pattern == ContentSettingsPattern::Wildcard()) {
@@ -1159,12 +1205,18 @@ void PageInfo::PresentSiteDataInternal(base::OnceClosure done) {
     cookies_info.blocked_sites_count =
         GetThirdPartySitesWithBlockedCookiesAccessCount(site_url_);
 
-    // TODO(crbug.com/1346305): Add dummy function for FPS information.
-    if (privacy_sandbox::kPrivacySandboxFirstPartySetsUISampleSets.Get() &&
-        site_url_.host() == "example.com") {
-      cookies_info.fps_info.owner_name = u"example.com";
-    }
+    if (base::FeatureList::IsEnabled(
+            privacy_sandbox::kPrivacySandboxFirstPartySetsUI)) {
+#if !BUILDFLAG(IS_ANDROID)
+      auto fps_owner = delegate_->GetFpsOwner(site_url_);
+      if (fps_owner)
+        cookies_info.fps_info = PageInfoUI::CookiesFpsInfo(*fps_owner);
 
+#endif
+    }
+    cookies_info.status = status_;
+    // cookies_info.enforcement = enforcement_;
+    cookies_info.enforcement = CookieControlsEnforcement::kEnforcedByPolicy;
     ui_->SetCookieInfo(cookies_info);
   } else {
     CookieInfoList cookie_info_list;

@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 #include "chromeos/ash/components/dbus/arc/arc_midis_client.h"
@@ -34,8 +34,9 @@ class ArcMidisClientImpl : public ArcMidisClient {
 
   ~ArcMidisClientImpl() override = default;
 
-  void BootstrapMojoConnection(base::ScopedFD fd,
-                               VoidDBusMethodCallback callback) override {
+  void BootstrapMojoConnection(
+      base::ScopedFD fd,
+      chromeos::VoidDBusMethodCallback callback) override {
     dbus::MethodCall method_call(midis::kMidisInterfaceName,
                                  midis::kBootstrapMojoConnectionMethod);
     dbus::MessageWriter writer(&method_call);
@@ -53,7 +54,7 @@ class ArcMidisClientImpl : public ArcMidisClient {
   }
 
  private:
-  void OnVoidDBusMethod(VoidDBusMethodCallback callback,
+  void OnVoidDBusMethod(chromeos::VoidDBusMethodCallback callback,
                         dbus::Response* response) {
     std::move(callback).Run(response != nullptr);
   }

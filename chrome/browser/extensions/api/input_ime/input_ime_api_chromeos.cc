@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -335,7 +335,7 @@ class ImeObserverChromeOS
     if (!ShouldForwardKeyEvent()) {
       // Continue processing the key event so that the physical keyboard can
       // still work.
-      std::move(callback).Run(false);
+      std::move(callback).Run(ui::ime::KeyEventHandledState::kNotHandled);
       return;
     }
 
@@ -354,25 +354,24 @@ class ImeObserverChromeOS
 
     // For legacy reasons, we still put a |requestID| into the keyData, even
     // though there is already a |requestID| argument in OnKeyEvent.
-    keyboard_event.request_id = std::make_unique<std::string>(request_id);
+    keyboard_event.request_id = request_id;
 
     // If the given key event is from VK, it means the key event was simulated.
     // Sets the |extension_id| value so that the IME extension can ignore it.
     auto* properties = event.properties();
     if (properties &&
         properties->find(ui::kPropertyFromVK) != properties->end())
-      keyboard_event.extension_id =
-          std::make_unique<std::string>(extension_id_);
+      keyboard_event.extension_id = extension_id_;
 
     keyboard_event.key = GetKeyFromEvent(event);
     keyboard_event.code = event.code() == ui::DomCode::NONE
                               ? ui::KeyboardCodeToDomKeycode(event.key_code())
                               : event.GetCodeString();
-    keyboard_event.alt_key = std::make_unique<bool>(event.IsAltDown());
-    keyboard_event.altgr_key = std::make_unique<bool>(event.IsAltGrDown());
-    keyboard_event.ctrl_key = std::make_unique<bool>(event.IsControlDown());
-    keyboard_event.shift_key = std::make_unique<bool>(event.IsShiftDown());
-    keyboard_event.caps_lock = std::make_unique<bool>(event.IsCapsLockOn());
+    keyboard_event.alt_key = event.IsAltDown();
+    keyboard_event.altgr_key = event.IsAltGrDown();
+    keyboard_event.ctrl_key = event.IsControlDown();
+    keyboard_event.shift_key = event.IsShiftDown();
+    keyboard_event.caps_lock = event.IsCapsLockOn();
 
     auto args(input_ime::OnKeyEvent::Create(component_id, keyboard_event,
                                             request_id));
@@ -415,11 +414,11 @@ class ImeObserverChromeOS
     base::Value::List bounds_list;
     bounds_list.reserve(bounds.size());
     for (const auto& bound : bounds) {
-      base::Value bounds_value(base::Value::Type::DICTIONARY);
-      bounds_value.SetIntKey("x", bound.x());
-      bounds_value.SetIntKey("y", bound.y());
-      bounds_value.SetIntKey("w", bound.width());
-      bounds_value.SetIntKey("h", bound.height());
+      base::Value::Dict bounds_value;
+      bounds_value.Set("x", bound.x());
+      bounds_value.Set("y", bound.y());
+      bounds_value.Set("w", bound.width());
+      bounds_value.Set("h", bound.height());
       bounds_list.Append(std::move(bounds_value));
     }
 
@@ -449,9 +448,9 @@ class ImeObserverChromeOS
     caret_bounds_arg.h = caret_bounds.height();
 
     DispatchEventToExtension(
-      extensions::events::INPUT_METHOD_PRIVATE_ON_CARET_BOUNDS_CHANGED,
-      input_method_private::OnCaretBoundsChanged::kEventName,
-      input_method_private::OnCaretBoundsChanged::Create(caret_bounds_arg));
+        extensions::events::INPUT_METHOD_PRIVATE_ON_CARET_BOUNDS_CHANGED,
+        input_method_private::OnCaretBoundsChanged::kEventName,
+        input_method_private::OnCaretBoundsChanged::Create(caret_bounds_arg));
   }
 
   void OnFocus(
@@ -492,8 +491,7 @@ class ImeObserverChromeOS
       // TODO(b/163645900): Add app type later.
       ash::input_method::TextFieldContextualInfo info;
       ash::input_method::GetTextFieldAppTypeAndKey(info);
-      private_api_input_context.app_key =
-          std::make_unique<std::string>(info.app_key);
+      private_api_input_context.app_key = info.app_key;
 
       auto args(
           input_method_private::OnFocus::Create(private_api_input_context));
@@ -1047,7 +1045,7 @@ InputImeSetAssistiveWindowPropertiesFunction::Run() {
                                        &error);
   if (!error.empty())
     return RespondNow(Error(InformativeError(error, static_function_name())));
-  return RespondNow(OneArgument(base::Value(true)));
+  return RespondNow(WithArguments(true));
 }
 
 ExtensionFunction::ResponseAction
@@ -1155,7 +1153,7 @@ InputImeSetCandidateWindowPropertiesFunction::Run() {
     engine->SetCandidateWindowProperty(params.engine_id, properties_out);
   }
 
-  return RespondNow(OneArgument(base::Value(true)));
+  return RespondNow(WithArguments(true));
 }
 
 ExtensionFunction::ResponseAction InputImeSetCandidatesFunction::Run() {
@@ -1352,7 +1350,7 @@ InputMethodPrivateGetCompositionBoundsFunction::Run() {
     bounds_list.Append(std::move(bounds_value));
   }
 
-  return RespondNow(OneArgument(base::Value(std::move(bounds_list))));
+  return RespondNow(WithArguments(std::move(bounds_list)));
 }
 
 void InputImeAPI::OnExtensionLoaded(content::BrowserContext* browser_context,

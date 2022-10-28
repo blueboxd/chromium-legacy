@@ -1,15 +1,15 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome/browser/ash/app_mode/kiosk_app_launch_error.h"
 
-#include "ash/components/login/auth/public/auth_failure.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "chrome/browser/ash/app_mode/kiosk_app_manager.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/grit/generated_resources.h"
+#include "chromeos/ash/components/login/auth/public/auth_failure.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -98,7 +98,7 @@ KioskAppLaunchError::Error KioskAppLaunchError::Get() {
   s_last_error = Error::kNone;
   PrefService* local_state = g_browser_process->local_state();
   const base::Value::Dict& dict =
-      local_state->GetValueDict(KioskAppManager::kKioskDictionaryName);
+      local_state->GetDict(KioskAppManager::kKioskDictionaryName);
 
   absl::optional<int> error = dict.FindInt(kKeyLaunchError);
   if (error.has_value()) {

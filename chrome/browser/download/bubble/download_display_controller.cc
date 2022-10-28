@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 #include "chrome/browser/download/bubble/download_display_controller.h"
@@ -10,8 +10,11 @@
 #include "chrome/browser/download/bubble/download_bubble_prefs.h"
 #include "chrome/browser/download/bubble/download_display.h"
 #include "chrome/browser/download/bubble/download_icon_state.h"
+#include "chrome/browser/download/download_core_service.h"
+#include "chrome/browser/download/download_core_service_factory.h"
 #include "chrome/browser/download/download_item_model.h"
 #include "chrome/browser/download/download_prefs.h"
+#include "chrome/browser/download/download_ui_controller.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/download/download_item_mode.h"
@@ -70,6 +73,17 @@ int InProgressDownloadCount(
     }
   }
   return in_progress_count;
+}
+
+int PausedDownloadCount(
+    std::vector<std::unique_ptr<DownloadUIModel>>& all_models) {
+  int paused_count = 0;
+  for (const auto& model : all_models) {
+    if (IsModelInProgress(model.get()) && model->IsPaused()) {
+      paused_count++;
+    }
+  }
+  return paused_count;
 }
 }  // namespace
 
@@ -164,6 +178,16 @@ void DownloadDisplayController::OnManagerGoingDown(
 }
 
 void DownloadDisplayController::OnButtonPressed() {
+  DownloadUIController* download_ui_controller =
+      DownloadCoreServiceFactory::GetForBrowserContext(
+          browser_->profile()->GetOriginalProfile())
+          ->GetDownloadUIController();
+  if (download_ui_controller) {
+    download_ui_controller->OnButtonClicked();
+  }
+}
+
+void DownloadDisplayController::HandleButtonPressed() {
   // If the current state is kComplete, set the icon to inactive because of the
   // user action.
   if (icon_info_.icon_state == DownloadIconState::kComplete) {
@@ -220,13 +244,14 @@ void DownloadDisplayController::UpdateToolbarButtonState(
     return;
   }
   int in_progress_count = InProgressDownloadCount(all_models);
+  int paused_count = PausedDownloadCount(all_models);
   bool has_deep_scanning_download = HasDeepScanningDownload(all_models);
   base::Time last_complete_time =
       GetLastCompleteTime(bubble_controller_->GetOfflineItems());
 
   if (in_progress_count > 0) {
     icon_info_.icon_state = DownloadIconState::kProgress;
-    icon_info_.is_active = true;
+    icon_info_.is_active = paused_count >= in_progress_count ? false : true;
   } else {
     icon_info_.icon_state = DownloadIconState::kComplete;
     if (HasRecentCompleteDownload(kToolbarIconActiveTimeInterval,

@@ -1,4 +1,4 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -679,17 +679,37 @@ bool LoopbackServer::HandleCommitRequest(
     DCHECK(iter != entities_.end());
     committed_model_types.Put(iter->second->GetModelType());
 
-    // Notify observers about history having been synced. "History" sync is
-    // guarded by the user's selection in the settings page. This also excludes
-    // custom passphrase users who, in addition to HISTORY_DELETE_DIRECTIVES not
-    // being enabled, will commit encrypted specifics and hence cannot be
-    // iterated over.
-    if (observer_for_tests_ && iter->second->GetModelType() == SESSIONS &&
-        enabled_types.Has(HISTORY_DELETE_DIRECTIVES) &&
-        enabled_types.Has(TYPED_URLS)) {
-      for (const sync_pb::TabNavigation& navigation :
-           client_entity.specifics().session().tab().navigation()) {
-        observer_for_tests_->OnHistoryCommit(navigation.virtual_url());
+    // Notify observers about history having been synced. There are two
+    // iterations of "History sync" both guarded by the user's selection in the
+    // settings page:
+    // 1) The "old" one based on SESSIONS data, only enabled if TYPED_URLS and
+    //    HISTORY_DELETE_DIRECTIVES are also enabled. Note that for custom
+    //    passphrase users, HISTORY_DELETE_DIRECTIVES will not be enabled (and
+    //    since they commit encrypted specifics, the server couldn't inspect the
+    //    data anyway).
+    // 2) The "new" one based on a dedicated HISTORY data type. This data type
+    //    is itself disabled for custom passphrase users.
+    // In practice, at most one of TYPED_URLS or HISTORY can be enabled at the
+    // same time, so OnHistoryCommit() gets called at most once per URL.
+    DCHECK(!(enabled_types.Has(TYPED_URLS) && enabled_types.Has(HISTORY)));
+    if (observer_for_tests_) {
+      if (iter->second->GetModelType() == SESSIONS &&
+          enabled_types.Has(HISTORY_DELETE_DIRECTIVES) &&
+          enabled_types.Has(TYPED_URLS)) {
+        // "Old" history sync.
+        for (const sync_pb::TabNavigation& navigation :
+             client_entity.specifics().session().tab().navigation()) {
+          observer_for_tests_->OnHistoryCommit(navigation.virtual_url());
+        }
+      } else if (iter->second->GetModelType() == HISTORY) {
+        // "New" history sync.
+        const sync_pb::HistorySpecifics& specifics =
+            client_entity.specifics().history();
+        // The last entry of the redirect chain is the "actual" URL. In the case
+        // of no redirects, the "chain" has only a single entry.
+        observer_for_tests_->OnHistoryCommit(
+            specifics.redirect_entries(specifics.redirect_entries_size() - 1)
+                .url());
       }
     }
   }
@@ -759,10 +779,11 @@ LoopbackServer::GetEntitiesAsDictionaryValue() {
   std::unique_ptr<base::DictionaryValue> dictionary(
       new base::DictionaryValue());
 
-  // Initialize an empty ListValue for all ModelTypes.
+  // Initialize an empty Value::List for all ModelTypes.
   ModelTypeSet all_types = ModelTypeSet::All();
   for (ModelType type : all_types) {
-    dictionary->SetKey(ModelTypeToDebugString(type), base::ListValue());
+    dictionary->SetKey(ModelTypeToDebugString(type),
+                       base::Value(base::Value::Type::LIST));
   }
 
   for (const auto& [id, entity] : entities_) {
@@ -772,9 +793,9 @@ LoopbackServer::GetEntitiesAsDictionaryValue() {
       // consider them.
       continue;
     }
-    base::ListValue* list_value;
-    if (!dictionary->GetList(ModelTypeToDebugString(entity->GetModelType()),
-                             &list_value)) {
+    base::Value* list_value;
+    if (!dictionary->Get(ModelTypeToDebugString(entity->GetModelType()),
+                         &list_value)) {
       return nullptr;
     }
     // TODO(pvalenzuela): Store more data for each entity so additional

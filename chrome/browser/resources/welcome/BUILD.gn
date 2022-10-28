@@ -1,4 +1,4 @@
-# Copyright 2018 The Chromium Authors. All rights reserved.
+# Copyright 2018 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -93,6 +93,8 @@ build_webui("build") {
     "shared/navi_colors.css",
     "shared/splash_pages_shared.css",
   ]
+
+  icons_html_files = [ "shared/icons.html" ]
 
   ts_composite = true
   ts_definitions = [

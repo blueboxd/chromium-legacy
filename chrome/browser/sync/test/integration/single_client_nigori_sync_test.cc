@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -42,9 +42,9 @@
 #include "components/sync/engine/nigori/key_derivation_params.h"
 #include "components/sync/engine/nigori/nigori.h"
 #include "components/sync/nigori/cryptographer_impl.h"
-#include "components/sync/nigori/nigori_test_utils.h"
+#include "components/sync/test/fake_security_domains_server.h"
 #include "components/sync/test/fake_server_nigori_helper.h"
-#include "components/sync/trusted_vault/fake_security_domains_server.h"
+#include "components/sync/test/nigori_test_utils.h"
 #include "components/sync/trusted_vault/securebox.h"
 #include "components/sync/trusted_vault/trusted_vault_connection.h"
 #include "components/sync/trusted_vault/trusted_vault_server_constants.h"

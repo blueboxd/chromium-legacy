@@ -77,6 +77,13 @@ set(LIBEXSLT_VERSION ${LIBEXSLT_DOTTED_VERSION})
 
 set(MODULE_EXTENSION "${CMAKE_SHARED_LIBRARY_SUFFIX}")
 
+if(CMAKE_C_COMPILER_ID MATCHES "Clang" OR CMAKE_C_COMPILER_ID STREQUAL "GNU")
+	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Wextra -Wshadow \
+-Wpointer-arith -Wcast-align -Wwrite-strings -Waggregate-return \
+-Wstrict-prototypes -Wmissing-prototypes -Wnested-externs -Winline \
+-Wredundant-decls -Wno-long-long -Wno-format-extra-args")
+endif()
+
 if(LIBXSLT_WITH_CRYPTO AND NOT WIN32)
 	list(APPEND CMAKE_REQUIRED_LIBRARIES Gcrypt::Gcrypt)
 endif()
@@ -193,6 +200,10 @@ set(
 add_library(LibXslt ${LIBXSLT_HDRS} ${LIBXSLT_SRCS})
 add_library(LibXslt::LibXslt ALIAS LibXslt)
 
+if(NOT BUILD_SHARED_LIBS)
+	target_compile_definitions(LibXslt INTERFACE LIBXSLT_STATIC)
+endif()
+
 target_include_directories(
 	LibXslt
 	PUBLIC
@@ -275,6 +286,10 @@ set(
 
 add_library(LibExslt ${LIBEXSLT_HDRS} ${LIBEXSLT_SRCS})
 add_library(LibXslt::LibExslt ALIAS LibExslt)
+
+if(NOT BUILD_SHARED_LIBS)
+	target_compile_definitions(LibExslt INTERFACE LIBEXSLT_STATIC)
+endif()
 
 target_include_directories(
 	LibExslt

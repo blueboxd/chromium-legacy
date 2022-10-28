@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,9 +8,7 @@
 
 #include "mojo/public/cpp/system/platform_handle.h"
 
-namespace chromeos {
-namespace cros_healthd {
-namespace connectivity {
+namespace ash::cros_healthd::connectivity {
 
 constexpr char kDevNull[] = "/dev/null";
 
@@ -20,6 +18,4 @@ constexpr char kDevNull[] = "/dev/null";
       base::ScopedPlatformFile(open(kDevNull, O_RDONLY)));
 }
 
-}  // namespace connectivity
-}  // namespace cros_healthd
-}  // namespace chromeos
+}  // namespace ash::cros_healthd::connectivity

@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,13 +8,13 @@
  * reject the request
  */
 
-import 'chrome://resources/cr_elements/cr_lottie/cr_lottie.m.js';
+import 'chrome://resources/cr_elements/cr_lottie/cr_lottie.js';
 import '../../shared/nearby_page_template.js';
 import '../../shared/nearby_device.js';
 import '../../shared/nearby_preview.js';
 import '../../shared/nearby_progress.js';
 
-import {I18nBehavior, I18nBehaviorInterface} from 'chrome://resources/js/i18n_behavior.m.js';
+import {I18nBehavior, I18nBehaviorInterface} from 'chrome://resources/cr_elements/i18n_behavior.js';
 import {html, mixinBehaviors, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 /**

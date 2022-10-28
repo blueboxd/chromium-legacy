@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -255,7 +255,7 @@ base::TimeDelta ItemSuggestCache::GetDelay() {
                                       : kShortDelayMinutes);
 }
 
-void ItemSuggestCache::UpdateCache() {
+void ItemSuggestCache::MaybeUpdateCache() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   update_start_time_ = base::TimeTicks::Now();
 
@@ -298,6 +298,13 @@ void ItemSuggestCache::UpdateCache() {
                      weak_factory_.GetWeakPtr()),
       signin::PrimaryAccountAccessTokenFetcher::Mode::kImmediate,
       signin::ConsentLevel::kSync);
+}
+
+void ItemSuggestCache::UpdateCacheWithJsonForTest(
+    const std::string json_response) {
+  data_decoder::DataDecoder::ParseJsonIsolated(
+      json_response, base::BindOnce(&ItemSuggestCache::OnJsonParsed,
+                                    weak_factory_.GetWeakPtr()));
 }
 
 void ItemSuggestCache::OnTokenReceived(GoogleServiceAuthError error,

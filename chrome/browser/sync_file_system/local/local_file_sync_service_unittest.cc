@@ -1,4 +1,4 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -290,8 +290,7 @@ TEST_F(LocalFileSyncServiceTest, RemoteSyncStepsSimple) {
             file_system_->DirectoryExists(kDir));
 }
 
-// TODO(https://crbug.com/1344927): Flaky.
-TEST_F(LocalFileSyncServiceTest, DISABLED_LocalChangeObserver) {
+TEST_F(LocalFileSyncServiceTest, LocalChangeObserver) {
   const FileSystemURL kFile(file_system_->URL("file"));
   const FileSystemURL kDir(file_system_->URL("dir"));
   const char kTestFileData[] = "0123456789";

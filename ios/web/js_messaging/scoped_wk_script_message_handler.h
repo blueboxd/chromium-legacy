@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -19,17 +19,17 @@ using ScriptMessageCallback =
 // deconstruction respectively.
 class ScopedWKScriptMessageHandler {
  public:
-  // Registers |script_handler_name| with |user_content_controller|. |callback|
+  // Registers `script_handler_name` with `user_content_controller`. `callback`
   // will be called whenever JavaScript sends a post message to
-  // |script_handler_name| within the page content world.
+  // `script_handler_name` within the page content world.
   // Ex: window.webkit.messageHandlers['script_handler_name'].postMessage(10);
   ScopedWKScriptMessageHandler(WKUserContentController* user_content_controller,
                                NSString* script_handler_name,
                                ScriptMessageCallback callback);
 
-  // Registers |script_handler_name| with |user_content_controller| within
-  // |content_world|. |callback| will be called whenever JavaScript
-  // sends a post message to |script_handler_name| within |content_world|
+  // Registers `script_handler_name` with `user_content_controller` within
+  // `content_world`. `callback` will be called whenever JavaScript
+  // sends a post message to `script_handler_name` within `content_world`
   // Ex: window.webkit.messageHandlers['script_handler_name'].postMessage(10);
   ScopedWKScriptMessageHandler(WKUserContentController* user_content_controller,
                                NSString* script_handler_name,

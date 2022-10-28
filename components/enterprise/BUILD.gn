@@ -1,4 +1,4 @@
-# Copyright 2020 The Chromium Authors. All rights reserved.
+# Copyright 2020 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -161,11 +161,12 @@ source_set("unit_tests") {
     ]
   }
 
-  if (!is_android) {
+  if (!is_android && !is_ios) {
     sources += [ "browser/reporting/real_time_uploader_unittest.cc" ]
     deps += [
       "//base",
       "//components/enterprise/common/proto:extensions_workflow_events_proto",
+      "//components/reporting/client:mock_report_queue_provider",
       "//components/reporting/client:test_support",
     ]
   }

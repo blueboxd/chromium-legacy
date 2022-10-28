@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,6 +10,7 @@
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
 #include "base/strings/string_util.h"
+#include "base/strings/utf_string_conversions.h"
 #include "build/branding_buildflags.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
@@ -48,22 +49,18 @@
 #include "components/prefs/pref_service.h"
 #include "components/profile_metrics/browser_profile_type.h"
 #include "components/search/ntp_features.h"
-#include "components/search_engines/omnibox_focus_type.h"
 #include "components/search_engines/template_url_service.h"
 #include "components/sessions/content/session_tab_helper.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/vector_icons/vector_icons.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "net/cookies/cookie_util.h"
+#include "third_party/metrics_proto/omnibox_focus_type.pb.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/webui/resource_path.h"
 #include "ui/base/webui/web_ui_util.h"
 #include "ui/gfx/vector_icon_types.h"
 #include "ui/resources/grit/webui_generated_resources.h"
-
-#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
-#include "chrome/app/vector_icons/vector_icons.h"
-#endif
 
 namespace {
 
@@ -129,7 +126,8 @@ CreateSuggestionGroupsMap(const AutocompleteResult& result,
   for (const auto& pair : suggestion_groups_map) {
     realbox::mojom::SuggestionGroupPtr suggestion_group =
         realbox::mojom::SuggestionGroup::New();
-    suggestion_group->header = pair.second.header;
+    suggestion_group->header =
+        base::UTF8ToUTF16(pair.second.group_config_info.header_text());
     suggestion_group->hidden =
         result.IsSuggestionGroupHidden(prefs, pair.first);
     suggestion_group->show_group_a11y_label = l10n_util::GetStringFUTF16(
@@ -213,8 +211,8 @@ std::vector<realbox::mojom::AutocompleteMatchPtr> CreateAutocompleteMatches(
                                                      description_class.style));
     }
     mojom_match->destination_url = match.destination_url;
-    mojom_match->suggestion_group_id = static_cast<int>(
-        match.suggestion_group_id.value_or(SuggestionGroupId::kInvalid));
+    mojom_match->suggestion_group_id =
+        match.suggestion_group_id.value_or(omnibox::GroupId::INVALID);
     const bool is_bookmarked =
         bookmark_model->IsBookmarked(match.destination_url);
     mojom_match->icon_url =
@@ -302,22 +300,20 @@ void RealboxHandler::SetupWebUIDataSource(content::WebUIDataSource* source) {
       {"showSuggestions", IDS_TOOLTIP_HEADER_SHOW_SUGGESTIONS_BUTTON}};
   source->AddLocalizedStrings(kStrings);
 
-  source->AddInteger(
-      "realboxMatchOmniboxThemeVariant",
-      base::GetFieldTrialParamByFeatureAsInt(
-          ntp_features::kRealboxMatchOmniboxTheme,
-          ntp_features::kRealboxMatchOmniboxThemeVariantParam, 0));
   source->AddBoolean(
       "realboxMatchOmniboxTheme",
       base::FeatureList::IsEnabled(ntp_features::kRealboxMatchOmniboxTheme));
+
+  source->AddBoolean(
+      "realboxMatchSearchboxTheme",
+      base::FeatureList::IsEnabled(ntp_features::kRealboxMatchSearchboxTheme));
+
   source->AddBoolean(
       "roundCorners",
       base::GetFieldTrialParamByFeatureAsInt(
           ntp_features::kRealboxMatchSearchboxTheme,
           ntp_features::kRealboxMatchSearchboxThemeParam, 0) == 1);
-  source->AddBoolean(
-      "realboxMatchSearchboxTheme",
-      base::FeatureList::IsEnabled(ntp_features::kRealboxMatchSearchboxTheme));
+
   source->AddString(
       "realboxDefaultIcon",
       base::FeatureList::IsEnabled(ntp_features::kRealboxUseGoogleGIcon)
@@ -418,16 +414,16 @@ std::string RealboxHandler::PedalVectorIconToResourceName(
     return kDriveSlidesIconResourceName;
   }
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
-  if (icon.name == kGoogleCalendarIcon.name) {
+  if (icon.name == vector_icons::kGoogleCalendarIcon.name) {
     return kGoogleCalendarIconResourceName;
   }
-  if (icon.name == kGoogleKeepNoteIcon.name) {
+  if (icon.name == vector_icons::kGoogleKeepNoteIcon.name) {
     return kGoogleKeepNoteIconResourceName;
   }
-  if (icon.name == kGoogleSitesIcon.name) {
+  if (icon.name == vector_icons::kGoogleSitesIcon.name) {
     return kGoogleSitesIconResourceName;
   }
-  if (icon.name == kGoogleSuperGIcon.name) {
+  if (icon.name == vector_icons::kGoogleSuperGIcon.name) {
     return kGoogleGTransparentIconResourceName;
   }
 #endif
@@ -514,8 +510,9 @@ void RealboxHandler::QueryAutocomplete(const std::u16string& input,
   AutocompleteInput autocomplete_input(
       input, metrics::OmniboxEventProto::NTP_REALBOX,
       ChromeAutocompleteSchemeClassifier(profile_));
-  autocomplete_input.set_focus_type(is_on_focus ? OmniboxFocusType::ON_FOCUS
-                                                : OmniboxFocusType::DEFAULT);
+  autocomplete_input.set_focus_type(
+      is_on_focus ? metrics::OmniboxFocusType::INTERACTION_FOCUS
+                  : metrics::OmniboxFocusType::INTERACTION_DEFAULT);
   autocomplete_input.set_prevent_inline_autocomplete(
       prevent_inline_autocomplete);
 
@@ -625,7 +622,8 @@ void RealboxHandler::OpenAutocompleteMatch(
           : default_time_delta;
 
   OmniboxLog log(
-      /*text=*/input.focus_type() != OmniboxFocusType::DEFAULT
+      /*text=*/input.focus_type() !=
+              metrics::OmniboxFocusType::INTERACTION_DEFAULT
           ? std::u16string()
           : input.text(),
       /*just_deleted_text=*/input.prevent_inline_autocomplete(),
@@ -667,7 +665,8 @@ void RealboxHandler::OpenURL(const GURL& destination_url,
                              bool destination_url_entered_without_scheme,
                              const std::u16string&,
                              const AutocompleteMatch&,
-                             const AutocompleteMatch&) {
+                             const AutocompleteMatch&,
+                             IDNA2008DeviationCharacter) {
   web_contents_->OpenURL(content::OpenURLParams(
       destination_url, content::Referrer(), disposition, transition, false));
 }
@@ -687,14 +686,12 @@ void RealboxHandler::DeleteAutocompleteMatch(uint8_t line) {
 
 void RealboxHandler::ToggleSuggestionGroupIdVisibility(
     int32_t suggestion_group_id) {
-  if (!autocomplete_controller_)
+  if (!autocomplete_controller_) {
     return;
+  }
 
-  // It should be safe to cast |suggestion_group_id| to SuggestionGroupId type,
-  // since the group ID was originally passed to the page by the browser.
-  // TODO(crbug.com/1343512): Investigate migrating this enum to a proto enum
-  // to take advantage of its built-in check for conversion from int32 type.
-  const auto& group_id = static_cast<SuggestionGroupId>(suggestion_group_id);
+  const auto& group_id = GroupIdForNumber(suggestion_group_id);
+  DCHECK_NE(omnibox::GroupId::INVALID, group_id);
   const bool current_visibility =
       autocomplete_controller_->result().IsSuggestionGroupHidden(
           profile_->GetPrefs(), group_id);

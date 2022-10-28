@@ -1,4 +1,4 @@
-// Copyright (c) 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -484,8 +484,27 @@ NET_EXPORT extern const base::FeatureParam<int>
 // granted if the storage is partitioned.
 NET_EXPORT extern const base::FeatureParam<bool>
     kStorageAccessAPIGrantsUnpartitionedStorage;
+// Whether to auto-grant storage access requests when the top level origin and
+// the requesting origin are in the same First-Party Set.
+NET_EXPORT extern const base::FeatureParam<bool>
+    kStorageAccessAPIAutoGrantInFPS;
+// Whether to auto-deny storage access requests when the top level origin and
+// the requesting origin are not in the same First-Party Set.
+NET_EXPORT extern const base::FeatureParam<bool>
+    kStorageAccessAPIAutoDenyOutsideFPS;
 
 NET_EXPORT extern const base::Feature kThirdPartyStoragePartitioning;
+
+// Whether ALPS parsing is on for any type of frame.
+NET_EXPORT extern const base::Feature kAlpsParsing;
+
+// Whether ALPS parsing is on for client hint parsing specifically.
+NET_EXPORT extern const base::Feature kAlpsClientHintParsing;
+
+// Whether to kill the session on Error::kAcceptChMalformed.
+NET_EXPORT extern const base::Feature kShouldKillSessionOnAcceptChMalformed;
+
+NET_EXPORT extern const base::Feature kCaseInsensitiveCookiePrefix;
 
 }  // namespace net::features
 

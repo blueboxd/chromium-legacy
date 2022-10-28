@@ -1,4 +1,4 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -191,7 +191,7 @@ TEST_F(ExtensionLocalizationPeerTest, CreateWithWrongMimeType) {
 
 TEST_F(ExtensionLocalizationPeerTest, CreateWithValidInput) {
   SetUpExtensionLocalizationPeer("text/css", GURL(kExtensionUrl_1));
-  EXPECT_TRUE(NULL != filter_peer_.get());
+  EXPECT_TRUE(nullptr != filter_peer_.get());
 }
 
 MATCHER_P(IsURLRequestEqual, status, "") {

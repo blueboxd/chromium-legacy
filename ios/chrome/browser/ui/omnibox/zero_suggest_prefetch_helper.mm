@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -88,7 +88,8 @@ using web::WebStateObserverBridge;
   AutocompleteInput autocomplete_input(
       u"", metrics::OmniboxEventProto::NTP_ZPS_PREFETCH,
       AutocompleteSchemeClassifierImpl());
-  autocomplete_input.set_focus_type(OmniboxFocusType::ON_FOCUS);
+  autocomplete_input.set_focus_type(
+      metrics::OmniboxFocusType::INTERACTION_FOCUS);
   self.autocompleteController->StartPrefetch(autocomplete_input);
 }
 

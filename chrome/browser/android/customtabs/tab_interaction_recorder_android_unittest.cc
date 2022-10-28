@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -90,6 +90,7 @@ class AutofillObserverImplTest : public testing::Test {
 
  protected:
   base::test::TaskEnvironment task_environment_;
+  autofill::test::AutofillEnvironment autofill_environment_;
   NiceMock<MockAutofillClient> client_;
   std::unique_ptr<MockAutofillDriver> driver_;
   std::unique_ptr<MockAutofillManager> manager_;
@@ -165,11 +166,11 @@ class TabInteractionRecorderAndroidTest
   MockAutofillManager* autofill_manager() { return manager_.get(); }
 
  protected:
+  base::test::ScopedFeatureList test_feature_list_;
+  autofill::test::AutofillEnvironment autofill_environment_;
   NiceMock<MockAutofillClient> client_;
   std::unique_ptr<MockAutofillDriver> driver_;
   std::unique_ptr<MockAutofillManager> manager_;
-
-  base::test::ScopedFeatureList test_feature_list_;
 };
 
 TEST_F(TabInteractionRecorderAndroidTest, HadFormInteraction) {

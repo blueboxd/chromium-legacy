@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,7 +13,6 @@
 #include "components/viz/common/resources/resource_sizes.h"
 #include "gpu/command_buffer/common/mailbox.h"
 #include "gpu/command_buffer/common/shared_image_trace_utils.h"
-#include "gpu/command_buffer/service/mailbox_manager.h"
 #include "gpu/command_buffer/service/memory_tracking.h"
 #include "gpu/command_buffer/service/shared_context_state.h"
 #include "gpu/command_buffer/service/shared_image/shared_image_manager.h"
@@ -27,6 +26,7 @@
 #include "ui/gfx/buffer_format_util.h"
 #include "ui/gfx/color_space.h"
 #include "ui/gfx/geometry/size.h"
+#include "ui/gl/gl_image_memory.h"
 
 namespace gpu {
 namespace {
@@ -57,6 +57,27 @@ class MemoryImageRepresentationImpl : public MemoryImageRepresentation {
   }
 };
 
+class OverlayImageRepresentationImpl : public OverlayImageRepresentation {
+ public:
+  OverlayImageRepresentationImpl(SharedImageManager* manager,
+                                 SharedImageBacking* backing,
+                                 MemoryTypeTracker* tracker,
+                                 scoped_refptr<gl::GLImage> gl_image)
+      : OverlayImageRepresentation(manager, backing, tracker),
+        gl_image_(std::move(gl_image)) {}
+
+  ~OverlayImageRepresentationImpl() override = default;
+
+ private:
+  bool BeginReadAccess(gfx::GpuFenceHandle& acquire_fence) override {
+    return true;
+  }
+  void EndReadAccess(gfx::GpuFenceHandle release_fence) override {}
+  gl::GLImage* GetGLImage() override { return gl_image_.get(); }
+
+  scoped_refptr<gl::GLImage> gl_image_;
+};
+
 }  // namespace
 
 SharedMemoryImageBacking::~SharedMemoryImageBacking() = default;
@@ -68,12 +89,6 @@ void SharedMemoryImageBacking::Update(std::unique_ptr<gfx::GpuFence> in_fence) {
 const SharedMemoryRegionWrapper&
 SharedMemoryImageBacking::shared_memory_wrapper() {
   return shared_memory_wrapper_;
-}
-
-bool SharedMemoryImageBacking::ProduceLegacyMailbox(
-    MailboxManager* mailbox_manager) {
-  NOTREACHED();
-  return false;
 }
 
 SharedImageBackingType SharedMemoryImageBacking::GetType() const {
@@ -124,8 +139,19 @@ std::unique_ptr<SkiaImageRepresentation> SharedMemoryImageBacking::ProduceSkia(
 std::unique_ptr<OverlayImageRepresentation>
 SharedMemoryImageBacking::ProduceOverlay(SharedImageManager* manager,
                                          MemoryTypeTracker* tracker) {
-  NOTIMPLEMENTED_LOG_ONCE();
-  return nullptr;
+  if (!shared_memory_wrapper_.IsValid())
+    return nullptr;
+
+  auto gl_image = base::MakeRefCounted<gl::GLImageMemory>(size());
+  if (!gl_image->Initialize(shared_memory_wrapper_.GetMemory(),
+                            viz::BufferFormat(format()),
+                            shared_memory_wrapper_.GetStride(),
+                            /*disable_pbo_upload=*/true)) {
+    DLOG(ERROR) << "Failed to initialize GLImageMemory";
+    return nullptr;
+  }
+  return std::make_unique<OverlayImageRepresentationImpl>(
+      manager, this, tracker, std::move(gl_image));
 }
 
 std::unique_ptr<VaapiImageRepresentation>
@@ -149,16 +175,18 @@ SharedMemoryImageBacking::ProduceMemory(SharedImageManager* manager,
 
 void SharedMemoryImageBacking::OnMemoryDump(
     const std::string& dump_name,
-    base::trace_event::MemoryAllocatorDump* dump,
+    base::trace_event::MemoryAllocatorDumpGuid client_guid,
     base::trace_event::ProcessMemoryDump* pmd,
     uint64_t client_tracing_id) {
+  SharedImageBacking::OnMemoryDump(dump_name, client_guid, pmd,
+                                   client_tracing_id);
+
   // Add a |shared_memory_guid| which expresses shared ownership between the
   // various GPU dumps.
   auto shared_memory_guid = shared_memory_wrapper_.GetMappingGuid();
   if (!shared_memory_guid.is_empty()) {
-    auto client_guid = GetSharedImageGUIDForTracing(mailbox());
     pmd->CreateSharedMemoryOwnershipEdge(client_guid, shared_memory_guid,
-                                         0 /* importance */);
+                                         kNonOwningEdgeImportance);
   }
 }
 

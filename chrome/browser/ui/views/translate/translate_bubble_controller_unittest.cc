@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -35,7 +35,7 @@ class FakeTranslateBubbleModel : public TranslateBubbleModel {
     current_view_state_ = view_state;
   }
 
-  void ShowError(translate::TranslateErrors::Type error_type) override {}
+  void ShowError(translate::TranslateErrors error_type) override {}
 
   int GetNumberOfSourceLanguages() const override { return 1000; }
 
@@ -121,7 +121,7 @@ class FakePartialTranslateBubbleModel : public PartialTranslateBubbleModel {
     current_view_state_ = view_state;
   }
 
-  void ShowError(translate::TranslateErrors::Type error_type) override {}
+  void ShowError(translate::TranslateErrors error_type) override {}
 
   int GetNumberOfSourceLanguages() const override { return 1000; }
 
@@ -142,6 +142,10 @@ class FakePartialTranslateBubbleModel : public PartialTranslateBubbleModel {
   int GetTargetLanguageIndex() const override { return 2; }
 
   void UpdateTargetLanguageIndex(int index) override {}
+
+  std::string GetSourceLanguageCode() const override { return "en"; }
+
+  std::string GetTargetLanguageCode() const override { return "en"; }
 
   void Translate() override {}
 
@@ -218,7 +222,7 @@ TEST_F(TranslateBubbleControllerTest, ShowFullPageThenPartialTranslateBubble) {
   controller_->ShowTranslateBubble(
       anchor_widget_->GetContentsView(), nullptr,
       translate::TranslateStep::TRANSLATE_STEP_BEFORE_TRANSLATE, "fr", "en",
-      translate::TranslateErrors::Type::NONE,
+      translate::TranslateErrors::NONE,
       LocationBarBubbleDelegateView::DisplayReason::AUTOMATIC);
 
   EXPECT_THAT(controller_->GetTranslateBubble(), testing::NotNull());
@@ -228,7 +232,7 @@ TEST_F(TranslateBubbleControllerTest, ShowFullPageThenPartialTranslateBubble) {
   controller_->ShowPartialTranslateBubble(
       anchor_widget_->GetContentsView(), nullptr,
       PartialTranslateBubbleModel::ViewState::VIEW_STATE_BEFORE_TRANSLATE, "fr",
-      "en", std::u16string(), translate::TranslateErrors::Type::NONE);
+      "en", std::u16string(), translate::TranslateErrors::NONE);
   base::RunLoop().RunUntilIdle();
   EXPECT_THAT(controller_->GetPartialTranslateBubble(), testing::NotNull());
   EXPECT_THAT(controller_->GetTranslateBubble(), testing::IsNull());
@@ -247,7 +251,7 @@ TEST_F(TranslateBubbleControllerTest, ShowPartialThenFullPageTranslateBubble) {
   controller_->ShowPartialTranslateBubble(
       anchor_widget_->GetContentsView(), nullptr,
       PartialTranslateBubbleModel::ViewState::VIEW_STATE_BEFORE_TRANSLATE, "fr",
-      "en", std::u16string(), translate::TranslateErrors::Type::NONE);
+      "en", std::u16string(), translate::TranslateErrors::NONE);
   EXPECT_THAT(controller_->GetPartialTranslateBubble(), testing::NotNull());
 
   // Showing the Full Page Translate bubble while the Partial Translate bubble
@@ -255,7 +259,7 @@ TEST_F(TranslateBubbleControllerTest, ShowPartialThenFullPageTranslateBubble) {
   controller_->ShowTranslateBubble(
       anchor_widget_->GetContentsView(), nullptr,
       translate::TranslateStep::TRANSLATE_STEP_BEFORE_TRANSLATE, "fr", "en",
-      translate::TranslateErrors::Type::NONE,
+      translate::TranslateErrors::NONE,
       LocationBarBubbleDelegateView::DisplayReason::AUTOMATIC);
   base::RunLoop().RunUntilIdle();
   EXPECT_THAT(controller_->GetTranslateBubble(), testing::NotNull());

@@ -46,6 +46,9 @@
         <include name="IDR_ARC_SUPPORT_BUBBLE_BUTTON_CSS" file="chromeos/arc_support/bubble_button.css" type="chrome_html" />
         <include name="IDR_ARC_SUPPORT_CONTROLLED_INDICATOR_JS" file="chromeos/arc_support/controlled_indicator.js" type="BINDATA" />
         <include name="IDR_ARC_SUPPORT_CONTROLLED_INDICATOR_CSS" file="chromeos/arc_support/controlled_indicator.css" flattenhtml="true" type="chrome_html" />
+        <include name="IDR_ARC_SUPPORT_CR_JS" file="chromeos/arc_support/cr.js" type="chrome_html" />
+        <include name="IDR_ARC_SUPPORT_I18N_TEMPLATE_NO_PROCESS_JS" file="chromeos/arc_support/i18n_template_no_process.js" type="chrome_html" />
+        <include name="IDR_ARC_SUPPORT_EVENT_TRACKER_JS" file="chromeos/arc_support/event_tracker.js" type="chrome_html" />
         <include name="IDR_ARC_SUPPORT_MAIN_CSS" file="chromeos/arc_support/main.css" type="BINDATA" />
         <include name="IDR_ARC_SUPPORT_MAIN_JS" file="chromeos/arc_support/main.js" type="BINDATA" />
         <include name="IDR_ARC_SUPPORT_OVERLAY_CSS" file="chromeos/arc_support/overlay.css" type="BINDATA" />
@@ -55,7 +58,8 @@
         <include name="IDR_ARC_SUPPORT_PLAYSTORE_LOGO" file="chromeos/arc_support/icon/playstore.svg" type="BINDATA" />
         <include name="IDR_ARC_SUPPORT_PROGRESSBAR_CSS" file="chromeos/arc_support/progressbar.css" type="BINDATA" />
         <include name="IDR_ARC_SUPPORT_PROGRESSBAR_JS" file="chromeos/arc_support/progressbar.js" type="BINDATA" />
-        <include name="IDR_ARC_SUPPORT_FOCUS_MANAGER_JS" file="chromeos/arc_support/arc_optin_focus_manager.js" type="BINDATA" />
+        <include name="IDR_ARC_SUPPORT_ARC_OPTIN_FOCUS_MANAGER_JS" file="chromeos/arc_support/arc_optin_focus_manager.js" type="BINDATA" />
+        <include name="IDR_ARC_SUPPORT_FOCUS_MANAGER_JS" file="chromeos/arc_support/focus_manager.js" type="BINDATA" />
         <include name="IDR_ARC_SUPPORT_LAYOUT_STYLE" file="chromeos/arc_support/layout_style.css" type="BINDATA" />
         <include name="IDR_ARC_SUPPORT_MAIN" file="chromeos/arc_support/main.html" allowexternalscript="true" flattenhtml="true" type="BINDATA" />
         <include name="IDR_ARC_SUPPORT_ICON_32" file="chromeos/arc_support/icon/32.png" type="BINDATA" />
@@ -66,6 +70,7 @@
         <include name="IDR_ARC_SUPPORT_RECOMMEND_APP_LIST_VIEW_JS" file="chromeos/arc_support/recommend_app_list_view.js" type="BINDATA" />
         <!-- TODO(crbug.com/1261902): Remove. -->
         <include name="IDR_ARC_SUPPORT_RECOMMEND_APP_LIST_VIEW_HTML" file="chromeos/arc_support/recommend_app_list_view.html" type="chrome_html" flattenhtml="true" />
+        <include name="IDR_ARC_SUPPORT_UI_JS" file="chromeos/arc_support/ui.js" type="chrome_html" />
         <include name="IDS_ARC_INPUT_OVERLAY_ONBOARDING_ILLUSTRATION" file="chromeos/arc_input_overlay/onboarding_illustration.png" type="BINDATA" />
         <include name="IDS_ARC_INPUT_OVERLAY_ONBOARDING_ILLUSTRATION_DARK" file="chromeos/arc_input_overlay/onboarding_illustration_dark.png" type="BINDATA" />
       </if>

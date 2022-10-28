@@ -1,10 +1,10 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #import "ios/chrome/browser/ui/settings/table_cell_catalog_view_controller.h"
 
-#include "base/mac/foundation_util.h"
+#import "base/mac/foundation_util.h"
 #import "ios/chrome/browser/net/crurl.h"
 #import "ios/chrome/browser/signin/constants.h"
 #import "ios/chrome/browser/signin/signin_util.h"
@@ -14,7 +14,6 @@
 #import "ios/chrome/browser/ui/autofill/cells/autofill_edit_item.h"
 #import "ios/chrome/browser/ui/icons/chrome_icon.h"
 #import "ios/chrome/browser/ui/icons/chrome_symbol.h"
-#import "ios/chrome/browser/ui/icons/custom_symbol.h"
 #import "ios/chrome/browser/ui/settings/cells/account_sign_in_item.h"
 #import "ios/chrome/browser/ui/settings/cells/copied_to_chrome_item.h"
 #import "ios/chrome/browser/ui/settings/cells/settings_check_cell.h"
@@ -38,12 +37,12 @@
 #import "ios/chrome/browser/ui/table_view/chrome_table_view_styler.h"
 #import "ios/chrome/browser/ui/table_view/table_view_model.h"
 #import "ios/chrome/browser/ui/table_view/table_view_utils.h"
-#include "ios/chrome/browser/ui/ui_feature_flags.h"
+#import "ios/chrome/browser/ui/ui_feature_flags.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
 #import "ios/chrome/common/ui/util/image_util.h"
 #import "ios/public/provider/chrome/browser/signin/signin_resources_api.h"
-#include "url/gurl.h"
+#import "url/gurl.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -135,11 +134,11 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
   TableViewDetailIconItem* symbolItem =
       [[TableViewDetailIconItem alloc] initWithType:ItemTypeTextSettingsDetail];
-  symbolItem.text = @"Detail Icon using SF Symbols";
-  UIView* symbolImageView = ElevatedTableViewSymbolWithBackground(
-      DefaultSymbolWithPointSize(kGearShapeSymbol, 18),
-      UIColorFromRGB(0xFBBC04));
-  symbolItem.symbolView = symbolImageView;
+  symbolItem.text = @"Detail Icon using custom background";
+  symbolItem.iconImage = DefaultSymbolWithPointSize(kGearShapeSymbol, 18);
+  symbolItem.iconBackgroundColor = UIColorFromRGB(0xFBBC04);
+  symbolItem.iconTintColor = UIColor.whiteColor;
+  symbolItem.iconCornerRadius = 7;
   [model addItem:symbolItem toSectionWithIdentifier:SectionIdentifierText];
 
   TableViewTextItem* textItem =
@@ -268,14 +267,15 @@ typedef NS_ENUM(NSInteger, ItemType) {
   TableViewDetailIconItem* detailIconItem =
       [[TableViewDetailIconItem alloc] initWithType:ItemTypeTextSettingsDetail];
   detailIconItem.text = @"Detail Icon Item Cell";
-  detailIconItem.iconImageName = @"settings_article_suggestions";
+  detailIconItem.iconImage =
+      [UIImage imageNamed:@"settings_article_suggestions"];
   detailIconItem.detailText = @"Short";
   [model addItem:detailIconItem toSectionWithIdentifier:SectionIdentifierText];
 
   TableViewDetailIconItem* detailIconItemVerticalTextLayout =
       [[TableViewDetailIconItem alloc] initWithType:ItemTypeTextSettingsDetail];
-  detailIconItemVerticalTextLayout.iconImageName =
-      @"settings_article_suggestions";
+  detailIconItemVerticalTextLayout.iconImage =
+      [UIImage imageNamed:@"settings_article_suggestions"];
   detailIconItemVerticalTextLayout.text = @"Detail Icon Item Cell";
   detailIconItemVerticalTextLayout.detailText = @"Short subtitle";
   detailIconItemVerticalTextLayout.textLayoutConstraintAxis =
@@ -429,7 +429,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
           initWithType:ItemTypeTableViewInfoButtonWithImage];
   tableViewInfoButtonItemWithLeadingImage.text = @"Info button item";
   tableViewInfoButtonItemWithLeadingImage.statusText = @"Status";
-  tableViewInfoButtonItemWithLeadingImage.image =
+  tableViewInfoButtonItemWithLeadingImage.iconImage =
       [UIImage imageNamed:@"settings_article_suggestions"];
   [model addItem:tableViewInfoButtonItemWithLeadingImage
       toSectionWithIdentifier:SectionIdentifierSettings];
@@ -475,7 +475,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   checkFinishedWithLeadingImage.detailText =
       @"This is very long description of check item. Another line of "
       @"description.";
-  checkFinishedWithLeadingImage.leadingImage = [[ChromeIcon infoIcon]
+  checkFinishedWithLeadingImage.leadingIcon = [[ChromeIcon infoIcon]
       imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
   checkFinishedWithLeadingImage.enabled = YES;
   checkFinishedWithLeadingImage.indicatorHidden = YES;
@@ -500,7 +500,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   checkDisabledWithLeadingImage.detailText =
       @"This is very long description of check item. Another line of "
       @"description.";
-  checkDisabledWithLeadingImage.leadingImage = [[ChromeIcon infoIcon]
+  checkDisabledWithLeadingImage.leadingIcon = [[ChromeIcon infoIcon]
       imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
   checkDisabledWithLeadingImage.enabled = NO;
   [model addItem:checkDisabledWithLeadingImage

@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -18,6 +18,7 @@
 #include "chrome/browser/ui/views/side_panel/read_later_side_panel_web_view.h"
 #include "chrome/browser/ui/views/side_panel/side_panel.h"
 #include "chrome/browser/ui/views/side_panel/side_panel_coordinator.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/views/accessibility/view_accessibility.h"
@@ -37,7 +38,15 @@ SidePanelToolbarButton::SidePanelToolbarButton(Browser* browser)
           std::make_unique<DotBoundsUpdater>(dot_indicator_, image())),
       reading_list_model_(
           ReadingListModelFactory::GetForBrowserContext(browser_->profile())) {
-  SetVectorIcons(kSidePanelIcon, kSidePanelTouchIcon);
+  if (base::FeatureList::IsEnabled(features::kUnifiedSidePanel)) {
+    pref_change_registrar_.Init(browser_->profile()->GetPrefs());
+
+    pref_change_registrar_.Add(
+        prefs::kSidePanelHorizontalAlignment,
+        base::BindRepeating(&SidePanelToolbarButton::UpdateToolbarButtonIcon,
+                            base::Unretained(this)));
+  }
+  UpdateToolbarButtonIcon();
   button_controller()->set_notify_action(
       views::ButtonController::NotifyAction::kOnPress);
   GetViewAccessibility().OverrideHasPopup(ax::mojom::HasPopup::kMenu);
@@ -102,7 +111,7 @@ void SidePanelToolbarButton::ReadingListDidApplyChanges(
 void SidePanelToolbarButton::ButtonPressed() {
   BrowserView* const browser_view =
       BrowserView::GetBrowserViewForBrowser(browser_);
-  DCHECK(browser_view->right_aligned_side_panel());
+  DCHECK(browser_view->unified_side_panel());
 
   if (browser_view->side_panel_coordinator()) {
     browser_view->side_panel_coordinator()->Toggle();
@@ -123,8 +132,7 @@ void SidePanelToolbarButton::ButtonPressed() {
         browser_, base::BindRepeating(&SidePanelToolbarButton::ButtonPressed,
                                       base::Unretained(this)));
     side_panel_webview_ =
-        browser_view->right_aligned_side_panel()->AddChildView(
-            std::move(webview));
+        browser_view->unified_side_panel()->AddChildView(std::move(webview));
     if (reading_list_model_->loaded())
       reading_list_model_->MarkAllSeen();
     dot_indicator_->Hide();
@@ -134,13 +142,22 @@ void SidePanelToolbarButton::ButtonPressed() {
 void SidePanelToolbarButton::HideSidePanel() {
   BrowserView* const browser_view =
       BrowserView::GetBrowserViewForBrowser(browser_);
-  DCHECK(browser_view->right_aligned_side_panel());
+  DCHECK(browser_view->unified_side_panel());
   if (side_panel_webview_) {
-    browser_view->right_aligned_side_panel()->RemoveChildViewT(
+    browser_view->unified_side_panel()->RemoveChildViewT(
         side_panel_webview_.get());
     side_panel_webview_ = nullptr;
     browser_view->RightAlignedSidePanelWasClosed();
   }
+}
+
+void SidePanelToolbarButton::UpdateToolbarButtonIcon() {
+  const bool is_right_aligned = browser_->profile()->GetPrefs()->GetBoolean(
+      prefs::kSidePanelHorizontalAlignment);
+  if (is_right_aligned)
+    SetVectorIcons(kSidePanelIcon, kSidePanelTouchIcon);
+  else
+    SetVectorIcons(kSidePanelLeftIcon, kSidePanelLeftTouchIcon);
 }
 
 bool SidePanelToolbarButton::ShouldShowInkdropAfterIphInteraction() {

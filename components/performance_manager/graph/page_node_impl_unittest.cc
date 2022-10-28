@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -227,7 +227,7 @@ class LenientMockObserver : public PageNodeImpl::Observer {
                void(const PageNode*, const FrameNode*));
   MOCK_METHOD3(OnEmbedderFrameNodeChanged,
                void(const PageNode*, const FrameNode*, EmbeddingType));
-  MOCK_METHOD1(OnTypeChanged, void(const PageNode*));
+  MOCK_METHOD2(OnTypeChanged, void(const PageNode*, PageType));
   MOCK_METHOD1(OnIsVisibleChanged, void(const PageNode*));
   MOCK_METHOD1(OnIsAudibleChanged, void(const PageNode*));
   MOCK_METHOD2(OnLoadingStateChanged,

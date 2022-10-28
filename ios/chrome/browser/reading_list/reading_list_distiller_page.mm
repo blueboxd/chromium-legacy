@@ -1,29 +1,29 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ios/chrome/browser/reading_list/reading_list_distiller_page.h"
+#import "ios/chrome/browser/reading_list/reading_list_distiller_page.h"
 
-#include "base/bind.h"
-#include "base/mac/foundation_util.h"
-#include "base/strings/string_util.h"
-#include "base/strings/sys_string_conversions.h"
-#include "base/strings/utf_string_conversions.h"
-#include "base/threading/thread_task_runner_handle.h"
-#include "base/values.h"
-#include "components/favicon/ios/web_favicon_driver.h"
-#include "components/google/core/common/google_util.h"
-#include "ios/chrome/browser/reading_list/favicon_web_state_dispatcher_impl.h"
+#import "base/bind.h"
+#import "base/mac/foundation_util.h"
+#import "base/strings/string_util.h"
+#import "base/strings/sys_string_conversions.h"
+#import "base/strings/utf_string_conversions.h"
+#import "base/threading/thread_task_runner_handle.h"
+#import "base/values.h"
+#import "components/favicon/ios/web_favicon_driver.h"
+#import "components/google/core/common/google_util.h"
+#import "ios/chrome/browser/reading_list/favicon_web_state_dispatcher_impl.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #import "ios/web/public/js_messaging/web_frame.h"
 #import "ios/web/public/js_messaging/web_frame_util.h"
 #import "ios/web/public/navigation/navigation_item.h"
 #import "ios/web/public/navigation/navigation_manager.h"
-#include "ios/web/public/security/ssl_status.h"
+#import "ios/web/public/security/ssl_status.h"
 #import "ios/web/public/web_state.h"
 #import "net/base/mac/url_conversions.h"
-#include "net/cert/cert_status_flags.h"
-#include "url/url_constants.h"
+#import "net/cert/cert_status_flags.h"
+#import "url/url_constants.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -261,7 +261,7 @@ void ReadingListDistillerPage::HandleGoogleCachedAMPPage() {
 
 void ReadingListDistillerPage::OnHandleGoogleCachedAMPPageResult(
     const base::Value* value,
-    bool error) {
+    NSError* error) {
   if (!error && value->is_string()) {
     GURL new_gurl(value->GetString());
     if (new_gurl.is_valid()) {
@@ -270,7 +270,7 @@ void ReadingListDistillerPage::OnHandleGoogleCachedAMPPageResult(
       CurrentWebState()->GetNavigationManager()->LoadURLWithParams(params);
 
       // If there is no error, the navigation completion will
-      // trigger a new |OnLoadURLDone| call that will resume
+      // trigger a new `OnLoadURLDone` call that will resume
       // the distillation.
       return;
     }

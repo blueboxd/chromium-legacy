@@ -1273,6 +1273,9 @@
       <message name="IDS_IME_NAME_TRANSLITERATION_HI" desc="Input method name, shown in system tray menu, settings page, etc. following this template: “|language| (|variant|) |IME| with |layout| keyboard” which means “an input method that supports typing in the |variant| of |language|, using |IME| and a keyboard with |layout|. When a part in this template is unambiguous, it’s dropped for brevity. Translations should strive for similar consistency in structure among input method names. Note: On ChromeOS, an “input method” is a suite of all input functionalities. |IME| in the template refers to an optional aspect of an “input method” on ChromeOS, i.e. sophisticated transforms into text in |language| when using a keyboard layout not designed for |language|." meaning="Input method name">
         Hindi
       </message>
+      <message name="IDS_IME_NAME_KEYBOARD_HINDI_INSCRIPT" desc="Input method name, shown in system tray menu, settings page, etc. following this template: “|language| (|variant|) |IME| with |layout| keyboard” which means “an input method that supports typing in the |variant| of |language|, using |IME| and a keyboard with |layout|. When a part in this template is unambiguous, it’s dropped for brevity. Translations should strive for similar consistency in structure among input method names. Note: On ChromeOS, an “input method” is a suite of all input functionalities. |IME| in the template refers to an optional aspect of an “input method” on ChromeOS, i.e. sophisticated transforms into text in |language| when using a keyboard layout not designed for |language|." meaning="Input method name">
+        Hindi with InScript keyboard
+      </message>
       <message name="IDS_IME_NAME_TRANSLITERATION_KN" desc="Input method name, shown in system tray menu, settings page, etc. following this template: “|language| (|variant|) |IME| with |layout| keyboard” which means “an input method that supports typing in the |variant| of |language|, using |IME| and a keyboard with |layout|. When a part in this template is unambiguous, it’s dropped for brevity. Translations should strive for similar consistency in structure among input method names. Note: On ChromeOS, an “input method” is a suite of all input functionalities. |IME| in the template refers to an optional aspect of an “input method” on ChromeOS, i.e. sophisticated transforms into text in |language| when using a keyboard layout not designed for |language|." meaning="Input method name">
         Kannada Transliteration
       </message>
@@ -1388,6 +1391,9 @@
       </message>
       <message name="IDS_CHROMEOS_NETWORK_ERROR_WRONG_STATE" desc="Network error details in notifications: NOT_REGISTERED. Error when a connect attempt fails because the modem is in a busy state.">
         Device is busy
+      </message>
+      <message name="IDS_CHROMEOS_NETWORK_ERROR_WEP_NOT_SUPPORTED" desc="Network error details in notifications: WEP_NOT_SUPPORTED. Error when a connect attempt fails because WEP networks are not supported.">
+        WEP networks are not supported
       </message>
       <message name="IDS_NETWORK_UNRECOGNIZED_ERROR" desc="Unrecognized Network error text">
         Unrecognized error: <ph name="desc">$1<ex>ShillErrorString</ex></ph>
@@ -1727,6 +1733,9 @@
       </message>
       <message name="IDS_SETTINGS_INTERNET_NETWORK_PROXY_PORT_INPUT_ACCESSIBILITY_LABEL" desc="Settings > Internet > Network details: Accessibility only label for proxy port number input field.">
         <ph name="INPUT_LABEL">$1<ex>HTTP Proxy</ex></ph> - Port
+      </message>
+      <message name="IDS_SETTINGS_INTERNET_NETWORK_SETTING_MANAGED_BY_ADMIN_TOOLTIP" desc="Text displayed in the controlled settings bubble when a setting's value is managed by policy.">
+        This setting is managed by your administrator.
       </message>
 
       <!-- Settings > Internet > SIM lock/unlock dialog -->

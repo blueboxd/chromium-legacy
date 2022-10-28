@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -279,6 +279,7 @@ class RenderViewContextMenu
   bool IsAddANoteEnabled() const;
 
   // Command execution functions.
+  void ExecSearchWebInSidePanel(const GURL& url);
   void ExecOpenWebApp();
   void ExecProtocolHandler(int event_flags, int handler_index);
   void ExecOpenLinkInProfile(int profile_index);

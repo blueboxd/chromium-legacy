@@ -1,33 +1,33 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #import "ios/chrome/browser/crash_report/breadcrumbs/breadcrumb_manager_browser_agent.h"
 
-#include "base/bind.h"
-#include "components/breadcrumbs/core/breadcrumb_manager_keyed_service.h"
-#include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
-#include "ios/chrome/browser/browser_state/test_chrome_browser_state_manager.h"
-#include "ios/chrome/browser/crash_report/breadcrumbs/breadcrumb_manager_keyed_service_factory.h"
+#import "base/bind.h"
+#import "components/breadcrumbs/core/breadcrumb_manager_keyed_service.h"
+#import "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
+#import "ios/chrome/browser/browser_state/test_chrome_browser_state_manager.h"
+#import "ios/chrome/browser/crash_report/breadcrumbs/breadcrumb_manager_keyed_service_factory.h"
 #import "ios/chrome/browser/crash_report/breadcrumbs/breadcrumb_manager_tab_helper.h"
 #import "ios/chrome/browser/download/confirm_download_replacing_overlay.h"
-#include "ios/chrome/browser/infobars/infobar_manager_impl.h"
+#import "ios/chrome/browser/infobars/infobar_manager_impl.h"
 #import "ios/chrome/browser/main/test_browser.h"
 #import "ios/chrome/browser/overlays/public/overlay_request.h"
 #import "ios/chrome/browser/overlays/public/overlay_request_queue.h"
 #import "ios/chrome/browser/overlays/public/web_content_area/app_launcher_overlay.h"
 #import "ios/chrome/browser/overlays/public/web_content_area/http_auth_overlay.h"
 #import "ios/chrome/browser/overlays/public/web_content_area/java_script_dialog_overlay.h"
-#include "ios/chrome/browser/overlays/test/fake_overlay_presentation_context.h"
+#import "ios/chrome/browser/overlays/test/fake_overlay_presentation_context.h"
 #import "ios/chrome/browser/ui/commands/command_dispatcher.h"
-#include "ios/chrome/browser/web_state_list/web_state_list.h"
+#import "ios/chrome/browser/web_state_list/web_state_list.h"
 #import "ios/chrome/browser/web_state_list/web_state_opener.h"
-#include "ios/chrome/test/ios_chrome_scoped_testing_chrome_browser_state_manager.h"
+#import "ios/chrome/test/ios_chrome_scoped_testing_chrome_browser_state_manager.h"
 #import "ios/web/public/test/fakes/fake_web_state.h"
 #import "ios/web/public/test/web_task_environment.h"
-#include "ios/web/public/ui/java_script_dialog_type.h"
+#import "ios/web/public/ui/java_script_dialog_type.h"
 #import "ios/web/public/web_state.h"
-#include "testing/platform_test.h"
+#import "testing/platform_test.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -78,20 +78,20 @@ class BreadcrumbManagerBrowserAgentTest : public PlatformTest {
 // Tests that an event logged by the BrowserAgent is returned with events for
 // the associated `browser_state_`.
 TEST_F(BreadcrumbManagerBrowserAgentTest, LogEvent) {
-  ASSERT_EQ(0ul, breadcrumb_service_->GetEvents(0).size());
+  ASSERT_EQ(0ul, breadcrumb_service_->GetEvents().size());
 
   BreadcrumbManagerBrowserAgent::CreateForBrowser(browser_.get());
 
   InsertWebState(browser_.get());
 
-  EXPECT_EQ(1ul, breadcrumb_service_->GetEvents(0).size());
+  EXPECT_EQ(1ul, breadcrumb_service_->GetEvents().size());
 }
 
 // Tests that events logged through BrowserAgents associated with different
 // Browser instances are returned with events for the associated
 // `browser_state_` and are uniquely identifiable.
 TEST_F(BreadcrumbManagerBrowserAgentTest, MultipleBrowsers) {
-  ASSERT_EQ(0ul, breadcrumb_service_->GetEvents(0).size());
+  ASSERT_EQ(0ul, breadcrumb_service_->GetEvents().size());
 
   BreadcrumbManagerBrowserAgent::CreateForBrowser(browser_.get());
 
@@ -106,7 +106,7 @@ TEST_F(BreadcrumbManagerBrowserAgentTest, MultipleBrowsers) {
   // Insert WebState into `browser2`.
   InsertWebState(browser2.get());
 
-  std::list<std::string> events = breadcrumb_service_->GetEvents(0);
+  std::list<std::string> events = breadcrumb_service_->GetEvents();
   EXPECT_EQ(2ul, events.size());
 
   // Seperately compare the start and end of the event strings to ensure
@@ -140,7 +140,7 @@ TEST_F(BreadcrumbManagerBrowserAgentTest, BatchOperations) {
         InsertWebState(browser_.get());
       }));
 
-  std::list<std::string> events = breadcrumb_service_->GetEvents(0);
+  std::list<std::string> events = breadcrumb_service_->GetEvents();
   ASSERT_EQ(1ul, events.size());
   EXPECT_NE(std::string::npos, events.front().find("Inserted 2 tabs"))
       << events.front();
@@ -154,7 +154,7 @@ TEST_F(BreadcrumbManagerBrowserAgentTest, BatchOperations) {
         /*index=*/0, WebStateList::ClosingFlags::CLOSE_NO_FLAGS);
   }));
 
-  events = breadcrumb_service_->GetEvents(0);
+  events = breadcrumb_service_->GetEvents();
   ASSERT_EQ(2ul, events.size());
   EXPECT_NE(std::string::npos, events.back().find("Closed 2 tabs"))
       << events.back();
@@ -177,7 +177,7 @@ TEST_F(BreadcrumbManagerBrowserAgentTest, JavaScriptAlertOverlay) {
       /*default_text_field_value=*/nil));
   queue->CancelAllRequests();
 
-  std::list<std::string> events = breadcrumb_service_->GetEvents(0);
+  std::list<std::string> events = breadcrumb_service_->GetEvents();
   ASSERT_EQ(1ul, events.size());
 
   EXPECT_NE(std::string::npos, events.back().find(kBreadcrumbOverlay))
@@ -203,7 +203,7 @@ TEST_F(BreadcrumbManagerBrowserAgentTest, JavaScriptConfirmOverlay) {
       /*default_text_field_value=*/nil));
   queue->CancelAllRequests();
 
-  std::list<std::string> events = breadcrumb_service_->GetEvents(0);
+  std::list<std::string> events = breadcrumb_service_->GetEvents();
   ASSERT_EQ(1ul, events.size());
 
   EXPECT_NE(std::string::npos, events.back().find(kBreadcrumbOverlay))
@@ -229,7 +229,7 @@ TEST_F(BreadcrumbManagerBrowserAgentTest, JavaScriptPromptOverlay) {
       /*default_text_field_value=*/nil));
   queue->CancelAllRequests();
 
-  std::list<std::string> events = breadcrumb_service_->GetEvents(0);
+  std::list<std::string> events = breadcrumb_service_->GetEvents();
   ASSERT_EQ(1ul, events.size());
 
   EXPECT_NE(std::string::npos, events.back().find(kBreadcrumbOverlay))
@@ -252,7 +252,7 @@ TEST_F(BreadcrumbManagerBrowserAgentTest, HttpAuthOverlay) {
           GURL::EmptyGURL(), "message", "default text"));
   queue->CancelAllRequests();
 
-  std::list<std::string> events = breadcrumb_service_->GetEvents(0);
+  std::list<std::string> events = breadcrumb_service_->GetEvents();
   ASSERT_EQ(1ul, events.size());
 
   EXPECT_NE(std::string::npos, events.back().find(kBreadcrumbOverlay))
@@ -275,7 +275,7 @@ TEST_F(BreadcrumbManagerBrowserAgentTest, AppLaunchOverlay) {
       /*is_repeated_request=*/false));
   queue->CancelAllRequests();
 
-  std::list<std::string> events = breadcrumb_service_->GetEvents(0);
+  std::list<std::string> events = breadcrumb_service_->GetEvents();
   ASSERT_EQ(1ul, events.size());
 
   EXPECT_NE(std::string::npos, events.back().find(kBreadcrumbOverlay))
@@ -297,7 +297,7 @@ TEST_F(BreadcrumbManagerBrowserAgentTest, AlertOverlay) {
   queue->AddRequest(
       OverlayRequest::CreateWithConfig<ConfirmDownloadReplacingRequest>());
 
-  std::list<std::string> events = breadcrumb_service_->GetEvents(0);
+  std::list<std::string> events = breadcrumb_service_->GetEvents();
   ASSERT_EQ(1ul, events.size());
 
   EXPECT_NE(std::string::npos, events.back().find(kBreadcrumbOverlay))
@@ -309,13 +309,13 @@ TEST_F(BreadcrumbManagerBrowserAgentTest, AlertOverlay) {
 
   // Switching tabs should log new overlay presentations.
   InsertWebState(browser_.get());
-  events = breadcrumb_service_->GetEvents(0);
+  events = breadcrumb_service_->GetEvents();
   ASSERT_EQ(2ul, events.size());
   EXPECT_NE(std::string::npos, events.back().find("Insert active Tab"))
       << events.back();
 
   browser_->GetWebStateList()->ActivateWebStateAt(0);
-  events = breadcrumb_service_->GetEvents(0);
+  events = breadcrumb_service_->GetEvents();
   ASSERT_EQ(4ul, events.size());
   auto activation = std::next(events.begin(), 2);
   EXPECT_NE(std::string::npos, activation->find(kBreadcrumbOverlay))

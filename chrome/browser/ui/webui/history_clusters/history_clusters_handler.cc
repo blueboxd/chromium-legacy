@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -127,9 +127,8 @@ mojom::URLVisitPtr VisitToMojom(Profile* profile,
   visit_mojom->raw_visit_data = mojom::RawVisitData::New(
       annotated_visit.url_row.url(), annotated_visit.visit_row.visit_time);
   for (const auto& duplicate : visit.duplicate_visits) {
-    visit_mojom->duplicates.push_back(mojom::RawVisitData::New(
-        duplicate.annotated_visit.url_row.url(),
-        duplicate.annotated_visit.visit_row.visit_time));
+    visit_mojom->duplicates.push_back(
+        mojom::RawVisitData::New(duplicate.url, duplicate.visit_time));
   }
 
   visit_mojom->page_title = base::UTF16ToUTF8(annotated_visit.url_row.title());
@@ -208,6 +207,24 @@ absl::optional<mojom::SearchQueryPtr> SearchQueryToMojom(
   search_query_mojom->query = search_query;
   search_query_mojom->url = GURL(url);
   return search_query_mojom;
+}
+
+void ShowSurveyAndLogMetrics(HatsService* service,
+                             content::WebContents* contents,
+                             const std::string& trigger,
+                             base::TimeDelta delay) {
+  DCHECK(service);
+  DCHECK(contents);
+
+  base::UmaHistogramBoolean("History.Clusters.Survey.CanShowAnySurvey",
+                            service->CanShowAnySurvey(/*user_prompted=*/false));
+  base::UmaHistogramBoolean("History.Clusters.Survey.CanShowSurvey",
+                            service->CanShowSurvey(trigger));
+
+  bool success = service->LaunchDelayedSurveyForWebContents(
+      kHatsSurveyTriggerJourneysHistoryEntrypoint, contents,
+      delay.InMilliseconds());
+  base::UmaHistogramBoolean("History.Clusters.Survey.Success", success);
 }
 
 }  // namespace
@@ -379,11 +396,13 @@ void HistoryClustersHandler::RemoveVisits(
 
   std::vector<history::BrowsingHistoryService::HistoryEntry> items_to_remove;
   for (const auto& visit : visits) {
-    history::BrowsingHistoryService::HistoryEntry entry;
-    entry.url = visit->raw_visit_data->url;
-    entry.all_timestamps.insert(
-        visit->raw_visit_data->visit_time.ToInternalValue());
-    items_to_remove.push_back(std::move(entry));
+    {
+      history::BrowsingHistoryService::HistoryEntry entry;
+      entry.url = visit->raw_visit_data->url;
+      entry.all_timestamps.insert(
+          visit->raw_visit_data->visit_time.ToInternalValue());
+      items_to_remove.push_back(std::move(entry));
+    }
     for (const auto& duplicate : visit->duplicates) {
       history::BrowsingHistoryService::HistoryEntry entry;
       entry.url = duplicate->url;
@@ -505,21 +524,33 @@ void HistoryClustersHandler::LaunchJourneysSurvey() {
     return;
   }
 
+  constexpr char kHistoryClustersSurveyRequestedUmaName[] =
+      "History.Clusters.Survey.Requested";
+  // These values must match enums.xml, and should not be modified.
+  enum HistoryClustersSurvey {
+    kHistoryEntrypoint = 0,
+    kOmniboxEntrypoint = 1,
+    kMaxValue = kOmniboxEntrypoint,
+  };
   if (*initial_state ==
           history_clusters::HistoryClustersInitialState::kSameDocument &&
       base::FeatureList::IsEnabled(kJourneysSurveyForHistoryEntrypoint)) {
     // Same document navigation basically means clicking over from History.
-    hats_service->LaunchDelayedSurveyForWebContents(
-        kHatsSurveyTriggerJourneysHistoryEntrypoint, web_contents_,
-        kJourneysSurveyForHistoryEntrypointDelay.Get().InMilliseconds());
+    ShowSurveyAndLogMetrics(hats_service, web_contents_,
+                            kHatsSurveyTriggerJourneysHistoryEntrypoint,
+                            kJourneysSurveyForHistoryEntrypointDelay.Get());
+    base::UmaHistogramEnumeration(kHistoryClustersSurveyRequestedUmaName,
+                                  kHistoryEntrypoint);
   } else if (*initial_state == history_clusters::HistoryClustersInitialState::
                                    kIndirectNavigation &&
              base::FeatureList::IsEnabled(
                  kJourneysSurveyForOmniboxEntrypoint)) {
     // Indirect navigation basically means from the omnibox.
-    hats_service->LaunchDelayedSurveyForWebContents(
-        kHatsSurveyTriggerJourneysOmniboxEntrypoint, web_contents_,
-        kJourneysSurveyForOmniboxEntrypointDelay.Get().InMilliseconds());
+    ShowSurveyAndLogMetrics(hats_service, web_contents_,
+                            kHatsSurveyTriggerJourneysOmniboxEntrypoint,
+                            kJourneysSurveyForOmniboxEntrypointDelay.Get());
+    base::UmaHistogramEnumeration(kHistoryClustersSurveyRequestedUmaName,
+                                  kOmniboxEntrypoint);
   }
 }
 

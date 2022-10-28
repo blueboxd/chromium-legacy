@@ -1,17 +1,26 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome/browser/enterprise/connectors/device_trust/signals/decorators/ash/ash_signals_decorator.h"
 
+#include "ash/constants/ash_pref_names.h"
 #include "base/check.h"
 #include "base/time/time.h"
 #include "base/values.h"
+#include "chrome/browser/ash/crosapi/crosapi_ash.h"
+#include "chrome/browser/ash/crosapi/crosapi_manager.h"
+#include "chrome/browser/ash/crosapi/crosapi_util.h"
+#include "chrome/browser/ash/crosapi/networking_attributes_ash.h"
 #include "chrome/browser/ash/policy/core/browser_policy_connector_ash.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/enterprise/connectors/device_trust/signals/decorators/common/metrics_utils.h"
 #include "chrome/browser/enterprise/connectors/device_trust/signals/decorators/common/signals_decorator.h"
+#include "chrome/browser/profiles/profile.h"
+#include "chromeos/ash/components/network/device_state.h"
 #include "components/device_signals/core/common/signals_constants.h"
 #include "components/policy/proto/device_management_backend.pb.h"
+#include "components/prefs/pref_service.h"
 
 namespace enterprise_connectors {
 
@@ -21,12 +30,31 @@ using policy::BrowserPolicyConnectorAsh;
 
 constexpr char kLatencyHistogramVariant[] = "Ash";
 
+const ash::DeviceState* GetCurrentlyActiveDeviceState(Profile* profile) {
+  if (!crosapi::browser_util::IsSigninProfileOrBelongsToAffiliatedUser(
+          profile)) {
+    return nullptr;
+  }
+
+  ash::NetworkStateHandler* network_state_handler =
+      ash::NetworkHandler::Get()->network_state_handler();
+  const chromeos::NetworkState* network =
+      network_state_handler->DefaultNetwork();
+  if (!network) {
+    // Not connected to a network.
+    return nullptr;
+  }
+  return network_state_handler->GetDeviceState(network->device_path());
+}
+
 }  // namespace
 
 AshSignalsDecorator::AshSignalsDecorator(
-    policy::BrowserPolicyConnectorAsh* browser_policy_connector)
-    : browser_policy_connector_(browser_policy_connector) {
+    policy::BrowserPolicyConnectorAsh* browser_policy_connector,
+    Profile* profile)
+    : browser_policy_connector_(browser_policy_connector), profile_(profile) {
   DCHECK(browser_policy_connector_);
+  DCHECK(profile_);
 }
 
 AshSignalsDecorator::~AshSignalsDecorator() = default;
@@ -42,6 +70,65 @@ void AshSignalsDecorator::Decorate(base::Value::Dict& signals,
               browser_policy_connector_->GetObfuscatedCustomerID());
   signals.Set(device_signals::names::kEnrollmentDomain,
               browser_policy_connector_->GetEnterpriseDomainManager());
+  signals.Set(device_signals::names::kAllowScreenLock,
+              profile_->GetPrefs()->GetBoolean(ash::prefs::kAllowScreenLock));
+
+  const ash::DeviceState* device_state =
+      GetCurrentlyActiveDeviceState(profile_);
+  if (device_state) {
+    base::Value::List imei_list;
+    imei_list.Append(device_state->imei());
+    signals.Set(device_signals::names::kImei, std::move(imei_list));
+
+    base::Value::List meid_list;
+    meid_list.Append(device_state->meid());
+    signals.Set(device_signals::names::kMeid, std::move(meid_list));
+  }
+
+  if (!crosapi::CrosapiManager::Get() ||
+      !crosapi::CrosapiManager::Get()->crosapi_ash() ||
+      !crosapi::CrosapiManager::Get()
+           ->crosapi_ash()
+           ->networking_attributes_ash()) {
+    LogSignalsCollectionLatency(kLatencyHistogramVariant, start_time);
+
+    std::move(done_closure).Run();
+    return;
+  }
+
+  auto callback =
+      base::BindOnce(&AshSignalsDecorator::OnNetworkInfoRetrieved,
+                     weak_ptr_factory_.GetWeakPtr(), std::ref(signals),
+                     start_time, std::move(done_closure));
+
+  crosapi::CrosapiManager::Get()
+      ->crosapi_ash()
+      ->networking_attributes_ash()
+      ->GetNetworkDetails(std::move(callback));
+}
+
+void AshSignalsDecorator::OnNetworkInfoRetrieved(
+    base::Value::Dict& signals,
+    base::TimeTicks start_time,
+    base::OnceClosure done_closure,
+    crosapi::mojom::GetNetworkDetailsResultPtr result) {
+  using Result = crosapi::mojom::GetNetworkDetailsResult;
+  switch (result->which()) {
+    case Result::Tag::kErrorMessage:
+      break;
+    case Result::Tag::kNetworkDetails:
+      absl::optional<net::IPAddress> ipv4_address =
+          result->get_network_details()->ipv4_address;
+      absl::optional<net::IPAddress> ipv6_address =
+          result->get_network_details()->ipv6_address;
+      if (ipv6_address.has_value()) {
+        signals.Set(device_signals::names::kIpAddress,
+                    ipv6_address.value().ToString());
+      } else if (ipv4_address.has_value()) {
+        signals.Set(device_signals::names::kIpAddress,
+                    ipv4_address.value().ToString());
+      }
+  }
 
   LogSignalsCollectionLatency(kLatencyHistogramVariant, start_time);
 

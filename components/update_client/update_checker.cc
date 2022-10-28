@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,7 +6,6 @@
 
 #include <stddef.h>
 
-#include <algorithm>
 #include <functional>
 #include <memory>
 #include <string>
@@ -19,6 +18,7 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/memory/raw_ptr.h"
+#include "base/ranges/algorithm.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/thread_checker.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -157,11 +157,11 @@ void UpdateCheckerImpl::CheckForUpdatesHelper(
   DCHECK(!context->components.empty());
   const bool is_foreground =
       context->components.cbegin()->second->is_foreground();
-  DCHECK(
-      std::all_of(context->components.cbegin(), context->components.cend(),
-                  [is_foreground](IdToComponentPtrMap::const_reference& elem) {
-                    return is_foreground == elem.second->is_foreground();
-                  }));
+  DCHECK(base::ranges::all_of(
+      context->components,
+      [is_foreground](IdToComponentPtrMap::const_reference& elem) {
+        return is_foreground == elem.second->is_foreground();
+      }));
 
   std::vector<std::string> sent_ids;
 

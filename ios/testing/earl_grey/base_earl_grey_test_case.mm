@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,9 +7,9 @@
 #import <UIKit/UIKit.h>
 #import <objc/runtime.h>
 
-#include "base/feature_list.h"
-#include "base/logging.h"
-#include "base/strings/sys_string_conversions.h"
+#import "base/feature_list.h"
+#import "base/logging.h"
+#import "base/strings/sys_string_conversions.h"
 #import "ios/testing/earl_grey/app_launch_configuration.h"
 #import "ios/testing/earl_grey/app_launch_manager.h"
 #import "ios/testing/earl_grey/base_earl_grey_test_case_app_interface.h"
@@ -17,7 +17,7 @@
 #import "ios/testing/earl_grey/earl_grey_test.h"
 
 #if DCHECK_IS_ON()
-#include "ui/display/screen_base.h"
+#import "ui/display/screen_base.h"
 #endif
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)

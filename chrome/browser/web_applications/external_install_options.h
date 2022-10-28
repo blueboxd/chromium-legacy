@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -133,6 +133,10 @@ struct ExternalInstallOptions {
   // that passes basic validity checks. This is ignored when |app_info_factory|
   // is used.
   bool require_manifest = false;
+
+  // The web app should be installed as a shortcut, as if done via the
+  // "Create Shortcut..." option in desktop browser GUI.
+  bool install_as_shortcut = false;
 
   // Whether the app should be reinstalled even if it is already installed.
   bool force_reinstall = false;

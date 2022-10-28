@@ -1,4 +1,4 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -36,10 +36,10 @@
 #include "components/sync/driver/glue/sync_transport_data_prefs.h"
 #include "components/sync/engine/net/http_bridge.h"
 #include "components/sync/engine/sync_manager_factory.h"
-#include "components/sync/invalidations/mock_sync_invalidations_service.h"
 #include "components/sync/invalidations/sync_invalidations_service.h"
 #include "components/sync/protocol/sync_invalidations_payload.pb.h"
 #include "components/sync/test/fake_sync_manager.h"
+#include "components/sync/test/mock_sync_invalidations_service.h"
 #include "components/sync/test/sync_engine_host_stub.h"
 #include "services/network/test/test_network_connection_tracker.h"
 #include "testing/gmock/include/gmock/gmock.h"

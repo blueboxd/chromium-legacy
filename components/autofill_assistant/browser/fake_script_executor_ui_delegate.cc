@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -181,6 +181,7 @@ bool FakeScriptExecutorUiDelegate::SupportsExternalActions() {
 
 void FakeScriptExecutorUiDelegate::ExecuteExternalAction(
     const external::Action& external_action,
+    bool is_interrupt,
     base::OnceCallback<void(ExternalActionDelegate::DomUpdateCallback)>
         start_dom_checks_callback,
     base::OnceCallback<void(const external::Result& result)>

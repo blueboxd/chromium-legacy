@@ -12,6 +12,7 @@
 #include "base/containers/flat_set.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/scoped_refptr.h"
+#include "base/ranges/algorithm.h"
 #include "base/trace_event/trace_event.h"
 #include "base/win/win_util.h"
 #include "base/win/windows_version.h"
@@ -506,9 +507,10 @@ void DesktopWindowTreeHostWin::FrameTypeChanged() {
   message_handler_->FrameTypeChanged();
 }
 
-void DesktopWindowTreeHostWin::SetFullscreen(bool fullscreen) {
+void DesktopWindowTreeHostWin::SetFullscreen(bool fullscreen,
+                                             int64_t target_display_id) {
   auto weak_ptr = GetWeakPtr();
-  message_handler_->SetFullscreen(fullscreen);
+  message_handler_->SetFullscreen(fullscreen, target_display_id);
   if (!weak_ptr)
     return;
   // TODO(sky): workaround for ScopedFullscreenVisibility showing window
@@ -1210,8 +1212,7 @@ bool DesktopWindowTreeHostWin::IsModalWindowActive() const {
     return child->GetProperty(aura::client::kModalKey) != ui::MODAL_TYPE_NONE &&
            child->TargetVisibility();
   };
-  return std::any_of(window()->children().cbegin(), window()->children().cend(),
-                     is_active);
+  return base::ranges::any_of(window()->children(), is_active);
 }
 
 void DesktopWindowTreeHostWin::CheckForMonitorChange() {

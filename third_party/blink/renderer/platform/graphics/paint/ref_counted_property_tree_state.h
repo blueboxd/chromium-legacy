@@ -89,6 +89,8 @@ class PLATFORM_EXPORT RefCountedPropertyTreeState
     return static_cast<const EffectPaintPropertyNode&>(node);
   }
 
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wundefined-bool-conversion"
   void SetTransform(const TransformPaintPropertyNode& transform) {
     DCHECK(&transform);
     transform_ = &transform;
@@ -101,6 +103,7 @@ class PLATFORM_EXPORT RefCountedPropertyTreeState
     DCHECK(&effect);
     effect_ = &effect;
   }
+#pragma clang diagnostic pop
 
   PropertyTreeState GetPropertyTreeState() const {
     return PropertyTreeState(Transform(), Clip(), Effect());

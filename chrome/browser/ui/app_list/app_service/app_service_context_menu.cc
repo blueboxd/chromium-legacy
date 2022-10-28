@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -40,6 +40,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/ui/base/tablet_state.h"
 #include "components/app_constants/constants.h"
+#include "components/services/app_service/public/cpp/features.h"
 #include "components/services/app_service/public/cpp/types_util.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -165,11 +166,18 @@ void AppServiceContextMenu::GetMenuModel(GetMenuModelCallback callback) {
     return;
   }
 
-  proxy_->GetMenuModel(
-      app_id(), apps::mojom::MenuType::kAppList,
-      controller()->GetAppListDisplayId(),
-      base::BindOnce(&AppServiceContextMenu::OnGetMenuModel,
-                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+  if (base::FeatureList::IsEnabled(apps::kAppServiceGetMenuWithoutMojom)) {
+    proxy_->GetMenuModel(
+        app_id(), apps::MenuType::kAppList, controller()->GetAppListDisplayId(),
+        base::BindOnce(&AppServiceContextMenu::OnGetMenuModel,
+                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+  } else {
+    proxy_->GetMenuModel(
+        app_id(), apps::mojom::MenuType::kAppList,
+        controller()->GetAppListDisplayId(),
+        base::BindOnce(&AppServiceContextMenu::OnGetMojomMenuModel,
+                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+  }
 }
 
 void AppServiceContextMenu::ExecuteCommand(int command_id, int event_flags) {
@@ -258,8 +266,12 @@ void AppServiceContextMenu::ExecuteCommand(int command_id, int event_flags) {
           command_id < ash::USE_LAUNCH_TYPE_COMMAND_END) {
         if (app_type_ == apps::AppType::kWeb &&
             command_id == ash::USE_LAUNCH_TYPE_TABBED_WINDOW) {
-          proxy_->SetWindowMode(app_id(),
-                                apps::mojom::WindowMode::kTabbedWindow);
+          if (base::FeatureList::IsEnabled(apps::kAppServiceWithoutMojom)) {
+            proxy_->SetWindowMode(app_id(), apps::WindowMode::kTabbedWindow);
+          } else {
+            proxy_->SetWindowMode(app_id(),
+                                  apps::mojom::WindowMode::kTabbedWindow);
+          }
           return;
         }
 
@@ -349,14 +361,13 @@ bool AppServiceContextMenu::IsCommandIdEnabled(int command_id) const {
   return AppContextMenu::IsCommandIdEnabled(command_id);
 }
 
-void AppServiceContextMenu::OnGetMenuModel(
-    GetMenuModelCallback callback,
-    apps::mojom::MenuItemsPtr menu_items) {
+void AppServiceContextMenu::OnGetMenuModel(GetMenuModelCallback callback,
+                                           apps::MenuItems menu_items) {
   auto menu_model = std::make_unique<ui::SimpleMenuModel>(this);
   submenu_ = std::make_unique<ui::SimpleMenuModel>(this);
   size_t index = 0;
-  if (apps::PopulateNewItemFromMojoMenuItems(
-          menu_items->items, menu_model.get(), submenu_.get(),
+  if (apps::PopulateNewItemFromMenuItems(
+          menu_items, menu_model.get(), submenu_.get(),
           base::BindOnce(&AppServiceContextMenu::GetMenuItemVectorIcon))) {
     index = 1;
   }
@@ -382,16 +393,15 @@ void AppServiceContextMenu::OnGetMenuModel(
     BuildExtensionAppShortcutsMenu(menu_model.get());
 
   app_shortcut_items_ = std::make_unique<apps::AppShortcutItems>();
-  for (size_t i = index; i < menu_items->items.size(); i++) {
-    if (menu_items->items[i]->type == apps::mojom::MenuItemType::kCommand) {
+  for (size_t i = index; i < menu_items.items.size(); i++) {
+    if (menu_items.items[i]->type == apps::MenuItemType::kCommand) {
       AddContextMenuOption(
           menu_model.get(),
-          static_cast<ash::CommandId>(menu_items->items[i]->command_id),
-          menu_items->items[i]->string_id);
+          static_cast<ash::CommandId>(menu_items.items[i]->command_id),
+          menu_items.items[i]->string_id);
     } else {
-      apps::PopulateItemFromMojoMenuItems(std::move(menu_items->items[i]),
-                                          menu_model.get(),
-                                          app_shortcut_items_.get());
+      apps::PopulateItemFromMenuItem(menu_items.items[i], menu_model.get(),
+                                     app_shortcut_items_.get());
     }
   }
 
@@ -426,6 +436,13 @@ void AppServiceContextMenu::OnGetMenuModel(
   }
 
   std::move(callback).Run(std::move(menu_model));
+}
+
+void AppServiceContextMenu::OnGetMojomMenuModel(
+    GetMenuModelCallback callback,
+    apps::mojom::MenuItemsPtr menu_items) {
+  OnGetMenuModel(std::move(callback),
+                 apps::ConvertMojomMenuItemsToMenuItems(menu_items));
 }
 
 void AppServiceContextMenu::BuildExtensionAppShortcutsMenu(
@@ -466,9 +483,13 @@ void AppServiceContextMenu::SetLaunchType(int command_id) {
       apps::WindowMode user_window_mode =
           ConvertUseLaunchTypeCommandToWindowMode(command_id);
       if (user_window_mode != apps::WindowMode::kUnknown) {
-        proxy_->SetWindowMode(
-            app_id(),
-            apps::ConvertWindowModeToMojomWindowMode(user_window_mode));
+        if (base::FeatureList::IsEnabled(apps::kAppServiceWithoutMojom)) {
+          proxy_->SetWindowMode(app_id(), user_window_mode);
+        } else {
+          proxy_->SetWindowMode(
+              app_id(),
+              apps::ConvertWindowModeToMojomWindowMode(user_window_mode));
+        }
       }
       return;
     }

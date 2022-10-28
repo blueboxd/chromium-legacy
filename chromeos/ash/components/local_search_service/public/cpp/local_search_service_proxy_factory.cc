@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,8 +8,7 @@
 #include "chromeos/ash/components/local_search_service/public/cpp/local_search_service_proxy.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 
-namespace chromeos {
-namespace local_search_service {
+namespace ash::local_search_service {
 
 namespace {
 
@@ -58,5 +57,4 @@ KeyedService* LocalSearchServiceProxyFactory::BuildServiceInstanceFor(
   return new LocalSearchServiceProxy();
 }
 
-}  // namespace local_search_service
-}  // namespace chromeos
+}  // namespace ash::local_search_service

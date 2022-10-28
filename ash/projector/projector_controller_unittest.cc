@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -197,12 +197,13 @@ TEST_F(ProjectorControllerTest, OnAudioNodesChanged) {
 
   const AudioNodeInfo kInternalMic[] = {
       {true, 55555, "Fake Mic", "INTERNAL_MIC", "Internal Mic"}};
-  const AudioNode audio_node = AudioNode(
-      kInternalMic->is_input, kInternalMic->id,
-      /*has_v2_stable_device_id=*/false, kInternalMic->id,
-      /*stable_device_id_v2=*/0, kInternalMic->device_name, kInternalMic->type,
-      kInternalMic->name, /*active=*/false,
-      /*plugged_time=*/0, /*max_supported_channels=*/1, /*audio_effect=*/1);
+  const AudioNode audio_node =
+      AudioNode(kInternalMic->is_input, kInternalMic->id,
+                /*has_v2_stable_device_id=*/false, kInternalMic->id,
+                /*stable_device_id_v2=*/0, kInternalMic->device_name,
+                kInternalMic->type, kInternalMic->name, /*active=*/false,
+                /*plugged_time=*/0, /*max_supported_channels=*/1,
+                /*audio_effect=*/1, /*number_of_volume_steps=*/25);
   FakeCrasAudioClient::Get()->SetAudioNodesForTesting({audio_node});
 
   CrasAudioHandler::Get()->SetActiveInputNodes({kInternalMic->id});
@@ -284,6 +285,9 @@ TEST_F(ProjectorControllerTest, RecordingEnded) {
   base::RunLoop runLoop;
   controller_->CreateScreencastContainerFolder(base::BindLambdaForTesting(
       [&](const base::FilePath& screencast_file_path_no_extension) {
+        // Expects screencast files name equals to it's parent folder name:
+        EXPECT_EQ(screencast_file_path_no_extension.BaseName(),
+                  screencast_file_path_no_extension.DirName().BaseName());
         EXPECT_CALL(
             mock_client_,
             OnNewScreencastPreconditionChanged(NewScreencastPrecondition(
@@ -372,7 +376,9 @@ TEST_P(ProjectorOnDlpRestrictionCheckedAtVideoEndTest, WrapUpRecordingOnce) {
                   // Screencast file name without extension.
                   .Append(expected_screencast_name);
           EXPECT_EQ(screencast_file_path_no_extension, expected_path);
-          // Verify that save metadata only triggered once.
+          // Verify that save metadata only triggered once. The path will not
+          // change as the clock advances.
+          task_environment()->AdvanceClock(base::Minutes(1));
           EXPECT_CALL(*mock_metadata_controller_, SaveMetadata(expected_path))
               .Times(1);
           // Verify that thumbnail file is saved.

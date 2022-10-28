@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -25,13 +25,13 @@
 #import "components/reading_list/ios/reading_list_model_bridge_observer.h"
 #import "components/search_engines/template_url.h"
 #import "components/strings/grit/components_strings.h"
-#import "ios/chrome/browser/application_context.h"
+#import "ios/chrome/browser/application_context/application_context.h"
 #import "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/chrome_url_constants.h"
 #import "ios/chrome/browser/ntp/new_tab_page_tab_helper.h"
 #import "ios/chrome/browser/ntp_tiles/most_visited_sites_observer_bridge.h"
 #import "ios/chrome/browser/policy/policy_util.h"
-#import "ios/chrome/browser/pref_names.h"
+#import "ios/chrome/browser/prefs/pref_names.h"
 #import "ios/chrome/browser/signin/authentication_service.h"
 #import "ios/chrome/browser/signin/authentication_service_factory.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
@@ -42,7 +42,6 @@
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_most_visited_item.h"
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_return_to_recent_tab_item.h"
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_tile_constants.h"
-#import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_whats_new_item.h"
 #import "ios/chrome/browser/ui/content_suggestions/cells/query_suggestion_view.h"
 #import "ios/chrome/browser/ui/content_suggestions/cells/suggested_content.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_category_wrapper.h"
@@ -57,9 +56,8 @@
 #import "ios/chrome/browser/ui/main/scene_state.h"
 #import "ios/chrome/browser/ui/main/scene_state_browser_agent.h"
 #import "ios/chrome/browser/ui/ntp/feed_delegate.h"
-#import "ios/chrome/browser/ui/ntp/metrics.h"
+#import "ios/chrome/browser/ui/ntp/metrics/metrics.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_feature.h"
-#import "ios/chrome/browser/ui/ntp/notification_promo_whats_new.h"
 #import "ios/chrome/browser/ui/ntp/ntp_tile_saver.h"
 #import "ios/chrome/browser/ui/start_surface/start_surface_features.h"
 #import "ios/chrome/browser/ui/start_surface/start_surface_util.h"
@@ -91,7 +89,6 @@ const NSInteger kMaxNumMostVisitedTiles = 4;
                                           ReadingListModelBridgeObserver> {
   std::unique_ptr<ntp_tiles::MostVisitedSites> _mostVisitedSites;
   std::unique_ptr<ntp_tiles::MostVisitedSitesObserverBridge> _mostVisitedBridge;
-  std::unique_ptr<NotificationPromoWhatsNew> _notificationPromo;
   std::unique_ptr<ReadingListModelBridge> _readingListModelBridge;
   std::unique_ptr<StartSuggestServiceResponseBridge>
       _startSuggestServiceResponseBridge;
@@ -130,9 +127,6 @@ const NSInteger kMaxNumMostVisitedTiles = 4;
 // Item for the "Return to Recent Tab" tile.
 @property(nonatomic, strong)
     ContentSuggestionsReturnToRecentTabItem* returnToRecentTabItem;
-// Section Info for the What's New promo section.
-@property(nonatomic, strong)
-    ContentSuggestionsSectionInformation* promoSectionInfo;
 // Section Info for the Most Visited section.
 @property(nonatomic, strong)
     ContentSuggestionsSectionInformation* mostVisitedSectionInfo;
@@ -156,9 +150,6 @@ const NSInteger kMaxNumMostVisitedTiles = 4;
     BOOL showMostRecentTabStartSurfaceTile;
 // Whether the incognito mode is available.
 @property(nonatomic, assign) BOOL incognitoAvailable;
-// Whether the user already tapped on the NTP promo and therefore should be
-// hidden.
-@property(nonatomic, assign) BOOL shouldHidePromoAfterTap;
 // Recorder for the metrics related to the NTP.
 @property(nonatomic, strong) NTPHomeMetrics* NTPMetrics;
 // Browser reference.
@@ -197,12 +188,7 @@ const NSInteger kMaxNumMostVisitedTiles = 4;
                   largeIconCache:largeIconCache];
 
     _logoSectionInfo = LogoSectionInformation();
-    _promoSectionInfo = PromoSectionInformation();
     _mostVisitedSectionInfo = MostVisitedSectionInformation();
-
-    _notificationPromo = std::make_unique<NotificationPromoWhatsNew>(
-        GetApplicationContext()->GetLocalState());
-    _notificationPromo->Init();
 
     _mostVisitedSites = std::move(mostVisitedSites);
     _mostVisitedBridge =
@@ -226,7 +212,6 @@ const NSInteger kMaxNumMostVisitedTiles = 4;
   return self;
 }
 
-// TODO: Whats this
 + (void)registerBrowserStatePrefs:(user_prefs::PrefRegistrySyncable*)registry {
   registry->RegisterInt64Pref(prefs::kIosDiscoverFeedLastRefreshTime, 0);
 }
@@ -245,13 +230,6 @@ const NSInteger kMaxNumMostVisitedTiles = 4;
 - (void)reloadAllData {
   if (!self.consumer) {
     return;
-  }
-  if (_notificationPromo->CanShow()) {
-    ContentSuggestionsWhatsNewItem* item =
-        [[ContentSuggestionsWhatsNewItem alloc] init];
-    item.icon = _notificationPromo->GetIcon();
-    item.text = base::SysUTF8ToNSString(_notificationPromo->promo_text());
-    [self.consumer showWhatsNewViewWithConfig:item];
   }
   if (self.returnToRecentTabItem) {
     [self.consumer
@@ -276,10 +254,6 @@ const NSInteger kMaxNumMostVisitedTiles = 4;
 - (void)allowMostVisitedURL:(GURL)URL {
   _mostVisitedSites->AddOrRemoveBlockedUrl(URL, false);
   [self useFreshMostVisited];
-}
-
-- (NotificationPromoWhatsNew*)notificationPromo {
-  return _notificationPromo.get();
 }
 
 - (void)setConsumer:(id<ContentSuggestionsConsumer>)consumer {
@@ -344,11 +318,6 @@ const NSInteger kMaxNumMostVisitedTiles = 4;
   }
 }
 
-- (void)hidePromo {
-  self.shouldHidePromoAfterTap = YES;
-  [self.consumer hideWhatsNewView];
-}
-
 #pragma mark - ContentSuggestionsCommands
 
 - (void)openMostVisitedItem:(NSObject*)item
@@ -397,41 +366,6 @@ const NSInteger kMaxNumMostVisitedTiles = 4;
   UrlLoadParams params = UrlLoadParams::InCurrentTab(mostVisitedItem.URL);
   params.web_params.transition_type = ui::PAGE_TRANSITION_AUTO_BOOKMARK;
   UrlLoadingBrowserAgent::FromBrowser(self.browser)->Load(params);
-}
-
-// TODO(crbug.com/761096) : Promo handling should be tested.
-- (void)handlePromoTapped {
-  NotificationPromoWhatsNew* notificationPromo = _notificationPromo.get();
-  DCHECK(notificationPromo);
-  notificationPromo->HandleClosed();
-  [self.NTPMetrics recordAction:new_tab_page_uma::ACTION_OPENED_PROMO];
-
-  if (notificationPromo->IsURLPromo()) {
-    UrlLoadParams params = UrlLoadParams::InNewTab(notificationPromo->url());
-    params.append_to = kCurrentTab;
-    UrlLoadingBrowserAgent::FromBrowser(self.browser)->Load(params);
-    return;
-  }
-
-  if (notificationPromo->IsChromeCommandPromo()) {
-    // "What's New" promo that runs a command can be added here by calling
-    // self.dispatcher.
-    if (notificationPromo->command() == kSetDefaultBrowserCommand) {
-      base::RecordAction(
-          base::UserMetricsAction("IOS.DefaultBrowserNTPPromoTapped"));
-      [[UIApplication sharedApplication]
-                    openURL:
-                        [NSURL URLWithString:UIApplicationOpenSettingsURLString]
-                    options:{}
-          completionHandler:nil];
-      return;
-    }
-
-    DCHECK_EQ(kTestWhatsNewCommand, notificationPromo->command())
-        << "Promo command is not valid.";
-    return;
-  }
-  NOTREACHED() << "Promo type is neither URL or command.";
 }
 
 - (void)loadSuggestedQuery:(QuerySuggestionConfig*)config {

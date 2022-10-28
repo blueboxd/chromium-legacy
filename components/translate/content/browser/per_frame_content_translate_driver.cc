@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -121,7 +121,7 @@ void PerFrameContentTranslateDriver::PendingRequestStats::Report() {
       UMA_HISTOGRAM_PERCENTAGE(kTranslateSubframeSuccessPercentage,
                                success_percentage_as_int);
     }
-    for (TranslateErrors::Type error_type : frame_errors) {
+    for (TranslateErrors error_type : frame_errors) {
       UMA_HISTOGRAM_ENUMERATION(kTranslateSubframeErrorType, error_type,
                                 TranslateErrors::TRANSLATE_ERROR_MAX);
     }
@@ -152,9 +152,11 @@ void PerFrameContentTranslateDriver::TranslatePage(
   translate_seq_no_ = IncrementSeqNo(translate_seq_no_);
 
   web_contents()->GetPrimaryMainFrame()->ForEachRenderFrameHost(
-      base::BindRepeating(&PerFrameContentTranslateDriver::TranslateFrame,
-                          base::Unretained(this), translate_script, source_lang,
-                          target_lang, translate_seq_no_));
+      [this, &translate_script, &source_lang,
+       &target_lang](content::RenderFrameHost* render_frame_host) {
+        TranslateFrame(translate_script, source_lang, target_lang,
+                       translate_seq_no_, render_frame_host);
+      });
 }
 
 void PerFrameContentTranslateDriver::TranslateFrame(
@@ -191,8 +193,9 @@ void PerFrameContentTranslateDriver::RevertTranslation(int page_seq_no) {
   translate_seq_no_ = IncrementSeqNo(translate_seq_no_);
 
   web_contents()->GetPrimaryMainFrame()->ForEachRenderFrameHost(
-      base::BindRepeating(&PerFrameContentTranslateDriver::RevertFrame,
-                          base::Unretained(this)));
+      [this](content::RenderFrameHost* render_frame_host) {
+        RevertFrame(render_frame_host);
+      });
 }
 
 void PerFrameContentTranslateDriver::RevertFrame(
@@ -459,7 +462,7 @@ void PerFrameContentTranslateDriver::OnFrameTranslated(
     bool cancelled,
     const std::string& source_lang,
     const std::string& translated_lang,
-    TranslateErrors::Type error_type) {
+    TranslateErrors error_type) {
   if (cancelled)
     return;
 

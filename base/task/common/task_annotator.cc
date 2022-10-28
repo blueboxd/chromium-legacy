@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -56,10 +56,8 @@ TaskAnnotator::TaskAnnotator() = default;
 TaskAnnotator::~TaskAnnotator() = default;
 
 void TaskAnnotator::WillQueueTask(perfetto::StaticString trace_event_name,
-                                  PendingTask* pending_task,
-                                  const char* task_queue_name) {
+                                  PendingTask* pending_task) {
   DCHECK(pending_task);
-  DCHECK(task_queue_name);
   TRACE_EVENT_INSTANT(
       "toplevel.flow", trace_event_name,
       perfetto::Flow::ProcessScoped(GetTaskTraceID(*pending_task)));

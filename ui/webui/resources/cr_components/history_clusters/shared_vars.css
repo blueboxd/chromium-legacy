@@ -4,7 +4,7 @@
 
 /* #css_wrapper_metadata_start
  * #type=vars
- * #import=../../cr_elements/shared_vars_css.m.js
+ * #import=../../cr_elements/cr_shared_vars.css.js
  * #import=chrome://resources/polymer/v3_0/paper-styles/color.js
  * #css_wrapper_metadata_end */
 
@@ -16,6 +16,7 @@ html {
   --grey-fill-color: var(--google-grey-100);
   --icon-color: var(--google-grey-600);
   --url-color: var(--google-blue-600);
+  --side-panel-url-color: var(--google-grey-700);
 }
 
 @media (prefers-color-scheme: dark) {

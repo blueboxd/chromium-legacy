@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,14 +7,14 @@
 #import "base/values.h"
 #import "ios/web/common/crw_viewport_adjustment.h"
 #import "ios/web/common/crw_viewport_adjustment_container.h"
-#include "ios/web/common/features.h"
+#import "ios/web/common/features.h"
 #import "ios/web/js_features/context_menu/context_menu_params_utils.h"
 #import "ios/web/public/ui/context_menu_params.h"
 #import "ios/web/public/web_state.h"
 #import "ios/web/public/web_state_delegate.h"
 #import "ios/web/web_state/ui/crw_context_menu_element_fetcher.h"
-#include "ui/gfx/geometry/rect_f.h"
-#include "ui/gfx/image/image.h"
+#import "ui/gfx/geometry/rect_f.h"
+#import "ui/gfx/image/image.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -175,7 +175,7 @@ void __attribute__((noinline)) ContextMenuNestedCFRunLoop() {
                       animator:(id<UIContextMenuInteractionAnimating>)animator {
   __weak UIView* weakScreenshotView = self.screenshotView;
   [animator addCompletion:^{
-    // Check if |self.screenshotView| has already been replaced and removed.
+    // Check if `self.screenshotView` has already been replaced and removed.
     if (self.screenshotView && self.screenshotView == weakScreenshotView) {
       [self.screenshotView removeFromSuperview];
     }
@@ -198,7 +198,7 @@ void __attribute__((noinline)) ContextMenuNestedCFRunLoop() {
   }
 }
 
-// Fetches the context menu params for the element at |locationInWebView|. The
+// Fetches the context menu params for the element at `locationInWebView`. The
 // returned params can be empty.
 - (absl::optional<web::ContextMenuParams>)fetchContextMenuParamsAtLocation:
     (CGPoint)locationInWebView {

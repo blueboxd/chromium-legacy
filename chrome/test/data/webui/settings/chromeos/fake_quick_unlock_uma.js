@@ -1,8 +1,8 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {LockScreenProgress} from 'chrome://resources/cr_components/chromeos/quick_unlock/lock_screen_constants.m.js';
+import {LockScreenProgress} from 'chrome://resources/cr_components/chromeos/quick_unlock/lock_screen_constants.js';
 
 /**
  * @fileoverview Fake implementation of chrome histogram recording for testing.

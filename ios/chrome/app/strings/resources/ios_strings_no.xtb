@@ -202,7 +202,7 @@ Nettsteder kan ikke bruke informasjonskapsler til å se nettleseraktiviteten din
 <translation id="2704606927547763573">Kopiert</translation>
 <translation id="2709516037105925701">Autofyll</translation>
 <translation id="2712127207578915686">Kan ikke åpne filen</translation>
-<translation id="2718352093833049315">Bare når Wifi er på</translation>
+<translation id="2718352093833049315">Bare når Wi-Fi er på</translation>
 <translation id="2747003861858887689">Forrige felt</translation>
 <translation id="2749231692441336879">Følger <ph name="CHANNEL_NAME" /></translation>
 <translation id="2764831210418622012">nå nettopp</translation>
@@ -393,6 +393,7 @@ Se eventuelt instruksjonene fra den aktuelle søkemotoren om hvordan du sletter 
 <translation id="430793432425771671">Synkroniser alt</translation>
 <translation id="4309403553630140242">Dobbelttrykk for å se mer informasjon</translation>
 <translation id="430967081421617822">Alle datoer</translation>
+<translation id="4324952538601951430">Her finner du nå blant annet bokmerker, passord og innstillinger du har lagret</translation>
 <translation id="4334428914252001502">1 ulest artikkel.</translation>
 <translation id="4338650699862464074">Sender Google nettadressene til sider du besøker.</translation>
 <translation id="4343046787186034850">Kamera- og mikrofontilgang er tillatt</translation>
@@ -471,6 +472,7 @@ For å endre denne innstillingen, <ph name="BEGIN_LINK" />tilbakestill synkronis
 <translation id="4901778704868714008">Lagre</translation>
 <translation id="4904877109095351937">Merk som lest</translation>
 <translation id="4908869848243824489">Discover fra Google</translation>
+<translation id="4916679969857390442">Forstørrelsesglass</translation>
 <translation id="4930714375720679147">Slå på</translation>
 <translation id="4941089862236492464">Det oppsto et problem under delingen av artikkelen.</translation>
 <translation id="4944543191714094452">Finn på siden</translation>
@@ -766,7 +768,6 @@ Når du er i Inkognito, kan ikke nettsteder bruke informasjonskapsler til å se 
 <translation id="7192050974311852563">Start loggføring</translation>
 <translation id="7203585745079012652">Svar med tale</translation>
 <translation id="7207023858769244910">Synkroniser for å få innhold basert på interessene dine.</translation>
-<translation id="7207383424303353046">Nyhet: Åpne nettsteder i Chrome automatisk ved å angi den som standard nettleserapp. <ph name="BEGIN_LINK" />Åpne Innstillinger<ph name="END_LINK" /></translation>
 <translation id="721597782417389033">Ugyldig kallenavn på kortet</translation>
 <translation id="722454870747268814">Ny inkognitofane</translation>
 <translation id="7265758999917665941">Aldri for dette nettstedet</translation>
@@ -916,7 +917,6 @@ Nettsteder kan bruke informasjonskapsler til å se nettleseraktiviteten din på 
 <translation id="8533670235862049797">Safe Browsing er på</translation>
 <translation id="8534481786647257214">Google+-innlegget er fullført.</translation>
 <translation id="8548878600947630424">Finn på siden</translation>
-<translation id="8574235780160508979">Vilkårene for bruk av Chrome endres 31. mars. <ph name="BEGIN_LINK" />Les gjennom dem<ph name="END_LINK" /></translation>
 <translation id="8588404856427128947">Av</translation>
 <translation id="8590913940444621808">Spør aldri</translation>
 <translation id="8591976964826315682">Blokkér informasjonskapsler fra tredjepart i inkognitomodus</translation>

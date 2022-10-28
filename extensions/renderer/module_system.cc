@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -518,7 +518,7 @@ void ModuleSystem::SetLazyField(v8::Local<v8::Object> object,
                      ToV8StringUnsafe(GetIsolate(), module_field.c_str()));
   auto maybe = object->SetAccessor(
       context, ToV8StringUnsafe(GetIsolate(), field.c_str()),
-      &ModuleSystem::LazyFieldGetter, NULL, parameters);
+      &ModuleSystem::LazyFieldGetter, nullptr, parameters);
   CHECK(v8_helpers::IsTrue(maybe));
 }
 

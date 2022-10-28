@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -14,7 +14,6 @@
 #include "url/gurl.h"
 
 class ConfirmInfoBarDelegate;
-class HungRendererInfoBarDelegate;
 class ThemeInstalledInfoBarDelegate;
 
 namespace blocked_content {
@@ -77,7 +76,7 @@ class InfoBarDelegate {
     // Removed: DOWNLOAD_REQUEST_INFOBAR_DELEGATE_ANDROID = 5,
     // Removed: FULLSCREEN_INFOBAR_DELEGATE = 6,
     HUNG_PLUGIN_INFOBAR_DELEGATE = 7,
-    HUNG_RENDERER_INFOBAR_DELEGATE_ANDROID = 8,
+    // Removed: HUNG_RENDERER_INFOBAR_DELEGATE_ANDROID = 8,
     // Removed: MEDIA_STREAM_INFOBAR_DELEGATE_ANDROID = 9,
     // Removed: MEDIA_THROTTLE_INFOBAR_DELEGATE = 10,
     // Removed: REQUEST_QUOTA_INFOBAR_DELEGATE = 11,
@@ -100,7 +99,7 @@ class InfoBarDelegate {
     PERMISSION_UPDATE_INFOBAR_DELEGATE_ANDROID = 28,
     // Removed: DURABLE_STORAGE_PERMISSION_INFOBAR_DELEGATE_ANDROID = 29,
     // Removed: NPAPI_REMOVAL_INFOBAR_DELEGATE = 30,
-    OUTDATED_PLUGIN_INFOBAR_DELEGATE = 31,
+    // Removed: OUTDATED_PLUGIN_INFOBAR_DELEGATE = 31,
     // Removed: PLUGIN_METRO_MODE_INFOBAR_DELEGATE = 32,
     RELOAD_PLUGIN_INFOBAR_DELEGATE = 33,
     PLUGIN_OBSERVER_INFOBAR_DELEGATE = 34,
@@ -139,7 +138,7 @@ class InfoBarDelegate {
     INSTANT_APPS_INFOBAR_DELEGATE_ANDROID = 67,
     // Removed: DATA_REDUCTION_PROXY_PREVIEW_INFOBAR_DELEGATE = 68,
     // Removed: SCREEN_CAPTURE_INFOBAR_DELEGATE_ANDROID = 69,
-    GROUPED_PERMISSION_INFOBAR_DELEGATE_ANDROID = 70,
+    PERMISSION_INFOBAR_DELEGATE_ANDROID = 70,
     OFFLINE_PAGE_INFOBAR_DELEGATE_ANDROID = 71,
     SEARCH_GEOLOCATION_DISCLOSURE_INFOBAR_DELEGATE_ANDROID = 72,
     AUTOMATION_INFOBAR_DELEGATE = 73,
@@ -180,6 +179,7 @@ class InfoBarDelegate {
     IOS_PERMISSIONS_INFOBAR_DELEGATE = 108,
     SUPPORTED_LINKS_INFOBAR_DELEGATE_CHROMEOS = 109,
     AUTOFILL_VIRTUAL_CARD_ENROLLMENT_INFOBAR_DELEGATE_MOBILE = 110,
+    TAILORED_SECURITY_SERVICE_INFOBAR_DELEGATE = 111,
   };
 
   // Describes navigation events, used to decide whether infobars should be
@@ -274,7 +274,6 @@ class InfoBarDelegate {
 
   // Type-checking downcast routines:
   virtual ConfirmInfoBarDelegate* AsConfirmInfoBarDelegate();
-  virtual HungRendererInfoBarDelegate* AsHungRendererInfoBarDelegate();
   virtual blocked_content::PopupBlockedInfoBarDelegate*
   AsPopupBlockedInfoBarDelegate();
   virtual ThemeInstalledInfoBarDelegate* AsThemePreviewInfobarDelegate();

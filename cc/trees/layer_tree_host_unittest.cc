@@ -1,4 +1,4 @@
-// Copyright 2011 The Chromium Authors. All rights reserved.
+// Copyright 2011 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7262,7 +7262,7 @@ class LayerTreeHostTestCrispUpAfterPinchEnds : public LayerTreeHostTest {
       float quad_scale =
           quad->tex_coord_rect.width() / static_cast<float>(quad->rect.width());
       float transform_scale = SkScalarToFloat(
-          quad->shared_quad_state->quad_to_target_transform.matrix().rc(0, 0));
+          quad->shared_quad_state->quad_to_target_transform.rc(0, 0));
       float scale = quad_scale / transform_scale;
       if (frame_scale != 0.f && frame_scale != scale)
         return 0.f;
@@ -7538,7 +7538,7 @@ class LayerTreeHostTestContinuousDrawWhenCreatingVisibleTiles
       float quad_scale =
           quad->tex_coord_rect.width() / static_cast<float>(quad->rect.width());
       float transform_scale = SkScalarToFloat(
-          quad->shared_quad_state->quad_to_target_transform.matrix().rc(0, 0));
+          quad->shared_quad_state->quad_to_target_transform.rc(0, 0));
       float scale = quad_scale / transform_scale;
       if (frame_scale != 0.f && frame_scale != scale)
         return 0.f;
@@ -9279,12 +9279,15 @@ class LayerTreeHostTestEventsMetrics : public LayerTreeHostTest {
     tick_clock.Advance(base::Microseconds(10));
     base::TimeTicks event_time = tick_clock.NowTicks();
     tick_clock.Advance(base::Microseconds(10));
+    base::TimeTicks arrived_in_browser_main_timestamp = tick_clock.NowTicks();
+    tick_clock.Advance(base::Microseconds(10));
     std::unique_ptr<EventMetrics> metrics =
         ScrollUpdateEventMetrics::CreateForTesting(
             ui::ET_GESTURE_SCROLL_UPDATE, ui::ScrollInputType::kWheel,
             /*is_inertial=*/false,
             ScrollUpdateEventMetrics::ScrollUpdateType::kContinued,
-            /*delta=*/10.0f, event_time, &tick_clock);
+            /*delta=*/10.0f, event_time, arrived_in_browser_main_timestamp,
+            &tick_clock);
     DCHECK_NE(metrics, nullptr);
     {
       tick_clock.Advance(base::Microseconds(10));

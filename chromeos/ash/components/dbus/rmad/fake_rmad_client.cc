@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -418,6 +418,11 @@ void FakeRmadClient::TriggerHardwareWriteProtectionStateObservation(
 void FakeRmadClient::TriggerPowerCableStateObservation(bool plugged_in) {
   for (auto& observer : observers_)
     observer.PowerCableState(plugged_in);
+}
+
+void FakeRmadClient::TriggerExternalDiskStateObservation(bool detected) {
+  for (auto& observer : observers_)
+    observer.ExternalDiskState(detected);
 }
 
 void FakeRmadClient::TriggerHardwareVerificationResultObservation(

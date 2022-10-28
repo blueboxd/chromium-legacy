@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,6 +11,7 @@
 #include <wrl/event.h>
 
 #include <memory>
+#include <string>
 
 #include "base/callback_forward.h"
 #include "base/containers/flat_map.h"
@@ -18,8 +19,10 @@
 #include "base/no_destructor.h"
 #include "base/sequence_checker.h"
 #include "base/task/sequenced_task_runner.h"
+#include "device/gamepad/gamepad_id_list.h"
 #include "device/gamepad/public/mojom/gamepad.mojom.h"
 #include "device/gamepad/wgi_gamepad_device.h"
+#include "device/gamepad/xinput_data_fetcher_win.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace device {
@@ -88,10 +91,19 @@ class DEVICE_GAMEPAD_EXPORT WgiDataFetcherWin final
   void OnGamepadRemoved(IInspectable* /* sender */,
                         ABI::Windows::Gaming::Input::IGamepad* gamepad);
 
+  // WgiDataFetcherWin has its own instance of XInputDataFetcherWin to query for
+  // the meta button state.
+  std::unique_ptr<XInputDataFetcherWin> xinput_data_fetcher_;
+
   static ActivationFactoryFunctionCallback&
   GetActivationFactoryFunctionCallback();
 
   std::u16string GetGamepadDisplayName(
+      ABI::Windows::Gaming::Input::IGamepad* gamepad);
+
+  std::u16string BuildGamepadIdString(
+      GamepadId gamepad_id,
+      const std::u16string& display_name,
       ABI::Windows::Gaming::Input::IGamepad* gamepad);
 
   Microsoft::WRL::ComPtr<ABI::Windows::Gaming::Input::IRawGameController>

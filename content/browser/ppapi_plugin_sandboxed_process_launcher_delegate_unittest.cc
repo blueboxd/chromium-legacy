@@ -64,9 +64,9 @@ TEST_P(PpapiPluginFeatureSandboxWinTest, PpapiGeneratedPolicyTest) {
           handles_to_inherit, &test_ppapi_delegate, policy.get());
   ASSERT_EQ(::sandbox::ResultCode::SBOX_ALL_OK, result);
 
-  ValidateSecurityLevels(policy.get());
-  ValidatePolicyFlagSettings(policy.get());
-  ValidateAppContainerSettings(policy.get());
+  ValidateSecurityLevels(policy->GetConfig());
+  ValidatePolicyFlagSettings(policy->GetConfig());
+  ValidateAppContainerSettings(policy->GetConfig());
 }
 
 INSTANTIATE_TEST_SUITE_P(

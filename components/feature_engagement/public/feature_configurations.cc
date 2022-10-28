@@ -1,4 +1,4 @@
-/// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -122,6 +122,19 @@ absl::optional<FeatureConfig> GetClientSideFeatureConfig(
         EventConfig("intent_chip_trigger", Comparator(EQUAL, 0), 30, 360);
     config->used =
         EventConfig("intent_chip_opened_app", Comparator(EQUAL, 0), 360, 360);
+    return config;
+  }
+
+  if (kIPHBatterySaverModeFeature.name == feature->name) {
+    // Show promo once a year when the battery saver toolbar icon is visible.
+    absl::optional<FeatureConfig> config = FeatureConfig();
+    config->valid = true;
+    config->availability = Comparator(ANY, 0);
+    config->session_rate = Comparator(ANY, 0);
+    config->trigger = EventConfig("battery_saver_info_triggered",
+                                  Comparator(EQUAL, 0), 360, 360);
+    config->used =
+        EventConfig("battery_saver_info_shown", Comparator(EQUAL, 0), 360, 360);
     return config;
   }
 
@@ -935,6 +948,27 @@ absl::optional<FeatureConfig> GetClientSideFeatureConfig(
 #endif  // BUILDFLAG(IS_WIN) || BUILDFLAG(IS_APPLE) || BUILDFLAG(IS_LINUX) ||
         // BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_ANDROID) ||
         // BUILDFLAG(IS_FUCHSIA)
+
+#if BUILDFLAG(IS_IOS)
+  if (kIPHDefaultSiteViewFeature.name == feature->name) {
+    // A config that shows an IPH on the overflow menu button advertising the
+    // Default Page Mode feature when the user has requested the Desktop version
+    // of a website 3 times in 60 days. It will be shown every other year unless
+    // the user interacted with the setting in the past 2 years.
+    absl::optional<FeatureConfig> config = FeatureConfig();
+    config->valid = true;
+    config->availability = Comparator(ANY, 0);
+    config->session_rate = Comparator(ANY, 0);
+    config->used =
+        EventConfig("default_site_view_used", Comparator(EQUAL, 0), 720, 720);
+    config->trigger =
+        EventConfig("default_site_view_shown", Comparator(EQUAL, 0), 720, 720);
+    config->event_configs.insert(
+        EventConfig("desktop_version_requested",
+                    Comparator(GREATER_THAN_OR_EQUAL, 3), 60, 60));
+    return config;
+  }
+#endif  // BUILDFLAG(IS_IOS)
 
   if (kIPHDummyFeature.name == feature->name) {
     // Only used for tests. Various magic tricks are used below to ensure this

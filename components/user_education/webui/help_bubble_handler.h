@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -87,7 +87,9 @@ class HelpBubbleHandlerBase : public help_bubble::mojom::HelpBubbleHandler {
                                          bool visible) final;
   void HelpBubbleButtonPressed(const std::string& identifier_name,
                                uint8_t button) final;
-  void HelpBubbleClosed(const std::string& identifier_name, bool by_user) final;
+  void HelpBubbleClosed(
+      const std::string& identifier_name,
+      help_bubble::mojom::HelpBubbleClosedReason reason) final;
 
   ElementData* GetDataByName(const std::string& identifier_name,
                              ui::ElementIdentifier* found_identifier = nullptr);

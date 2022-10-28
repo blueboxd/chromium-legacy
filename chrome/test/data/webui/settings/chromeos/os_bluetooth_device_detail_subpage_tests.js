@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,7 +6,7 @@ import 'chrome://os-settings/strings.m.js';
 
 import {Router, routes} from 'chrome://os-settings/chromeos/os_settings.js';
 import {setBluetoothConfigForTesting} from 'chrome://resources/cr_components/chromeos/bluetooth/cros_bluetooth_config.js';
-import {AudioOutputCapability, BluetoothSystemProperties, DeviceConnectionState, DeviceType, SystemPropertiesObserverInterface} from 'chrome://resources/mojo/chromeos/services/bluetooth_config/public/mojom/cros_bluetooth_config.mojom-webui.js';
+import {AudioOutputCapability, BluetoothSystemProperties, DeviceConnectionState, DeviceType, SystemPropertiesObserverInterface} from 'chrome://resources/mojo/chromeos/ash/services/bluetooth_config/public/mojom/cros_bluetooth_config.mojom-webui.js';
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 import {createDefaultBluetoothDevice, FakeBluetoothConfig} from 'chrome://test/cr_components/chromeos/bluetooth/fake_bluetooth_config.js';
 import {eventToPromise, waitBeforeNextRender} from 'chrome://test/test_util.js';
@@ -627,9 +627,7 @@ suite('OsBluetoothDeviceDetailPageTest', function() {
         getBluetoothConnectDisconnectBtn().textContent.trim());
   });
 
-
   test('Connect/Disconnect/forget states and error message', async function() {
-    loadTimeData.overrideValues({'enableFastPairFlag': false});
     init();
     bluetoothConfig.setBluetoothEnabledState(/*enabled=*/ true);
 
@@ -827,56 +825,10 @@ suite('OsBluetoothDeviceDetailPageTest', function() {
 
     // Forget device.
     getBluetoothForgetBtn().click();
+    await flushAsync();
+    bluetoothDeviceDetailPage.$$('#forgetDeviceDialog').$$('#forget').click();
 
     await flushAsync();
-    bluetoothConfig.completeForget(/*success=*/ true);
-    await windowPopstatePromise;
-
-    // Device and device Id should be null after navigating backward.
-    assertFalse(!!bluetoothDeviceDetailPage.getDeviceForTest());
-    assertFalse(!!bluetoothDeviceDetailPage.getDeviceIdForTest());
-  });
-
-  test('Forget button with Fast Pair flag', async function() {
-    loadTimeData.overrideValues({'enableFastPairFlag': true});
-    init();
-    bluetoothConfig.setBluetoothEnabledState(/*enabled=*/ true);
-
-    const windowPopstatePromise = eventToPromise('popstate', window);
-
-    const getBluetoothForgetBtn = () =>
-        bluetoothDeviceDetailPage.shadowRoot.querySelector('#forgetBtn');
-    const getBluetoothDialogForgetButton = () =>
-        bluetoothDeviceDetailPage.shadowRoot
-            .querySelector('#forgetDeviceDialog')
-            .shadowRoot.querySelector('#forget');
-    const id = '12//345&6789';
-
-    const device1 = createDefaultBluetoothDevice(
-        /*id=*/ id,
-        /*publicName=*/ 'BeatsX',
-        /*connectionState=*/
-        DeviceConnectionState.kConnecting,
-        /*opt_nickname=*/ 'device1',
-        /*opt_audioCapability=*/
-        AudioOutputCapability.kCapableOfAudioOutput,
-        /*opt_deviceType=*/ DeviceType.kMouse);
-
-    bluetoothConfig.appendToPairedDeviceList([device1]);
-    await flushAsync();
-
-    const params = new URLSearchParams();
-    params.append('id', id);
-    Router.getInstance().navigateTo(routes.BLUETOOTH_DEVICE_DETAIL, params);
-
-    await flushAsync();
-
-    // Forget device.
-    getBluetoothForgetBtn().click();
-    await flushAsync();
-    getBluetoothDialogForgetButton().click();
-    await flushAsync();
-
     bluetoothConfig.completeForget(/*success=*/ true);
     await windowPopstatePromise;
 

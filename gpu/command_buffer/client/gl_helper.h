@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -164,6 +164,8 @@ class GPU_EXPORT GLHelper {
                             GLenum texture_target,
                             const gfx::Size& dst_size,
                             unsigned char* out,
+                            size_t row_stride_bytes,
+                            bool flip_y,
                             GLenum format,
                             base::OnceCallback<void(bool)> callback);
 

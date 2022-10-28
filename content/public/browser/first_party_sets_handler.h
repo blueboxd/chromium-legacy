@@ -5,9 +5,13 @@
 #ifndef CONTENT_PUBLIC_BROWSER_FIRST_PARTY_SETS_HANDLER_H_
 #define CONTENT_PUBLIC_BROWSER_FIRST_PARTY_SETS_HANDLER_H_
 
+#include <string>
+
 #include "base/callback.h"
 #include "base/files/file.h"
+#include "base/types/expected.h"
 #include "base/values.h"
+#include "base/version.h"
 #include "content/common/content_export.h"
 #include "net/base/schemeful_site.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -18,11 +22,13 @@ class FirstPartySetEntry;
 
 namespace content {
 
+class BrowserContext;
+
 // The FirstPartySetsHandler class allows an embedder to provide
 // First-Party Sets inputs from custom sources.
 class CONTENT_EXPORT FirstPartySetsHandler {
  public:
-  enum class ParseError {
+  enum class ParseErrorType {
     // The set definition was not the correct data type.
     kInvalidType,
     // A string in the set was not a registrable domain.
@@ -35,18 +41,56 @@ class CONTENT_EXPORT FirstPartySetsHandler {
     kRepeatedDomain,
   };
 
-  enum class PolicySetType { kReplacement, kAddition };
-
-  struct CONTENT_EXPORT PolicyParsingError {
-    bool operator==(const PolicyParsingError& other) const;
-
-    // The kind of error that was found when parsing the policy sets.
-    ParseError error;
-    // The field of the policy that was being parsed when the error was found.
-    PolicySetType set_type;
-    // The index of the set in the 'set_type' list where the error was found.
-    int error_index;
+  enum class ParseWarningType {
+    // The "ccTLDs" map has a key that isn't a canonical site (present in the
+    // set).
+    kCctldKeyNotCanonical,
+    // The "ccTLDs" maps a site that differs from its canonical key beyond just
+    // TLD.
+    kAliasNotCctldVariant,
   };
+
+  // Contains metadata about an <T> issue for later use in outputting
+  // descriptive messages about the issue.
+  template <typename T>
+  class IssueWithMetadata {
+   public:
+    IssueWithMetadata<T>(
+        const T& issue_type,
+        const std::vector<absl::variant<int, std::string>>& issue_path)
+        : issue_type_(issue_type), issue_path_(issue_path) {}
+    ~IssueWithMetadata<T>() = default;
+    IssueWithMetadata<T>(const IssueWithMetadata<T>&) = default;
+
+    bool operator==(const IssueWithMetadata<T>& other) const {
+      return std::tie(issue_type_, issue_path_) ==
+             std::tie(other.issue_type_, other.issue_path_);
+    }
+
+    // Inserts path_prefix at the beginning of the path stored for this issue.
+    void PrependPath(
+        const std::vector<absl::variant<int, std::string>>& path_prefix) {
+      issue_path_.insert(issue_path_.begin(), path_prefix.begin(),
+                         path_prefix.end());
+    }
+
+    // The type of issue that was found when parsing the policy sets.
+    T type() const { return issue_type_; }
+
+    // The path within the policy that was being parsed when the issue was
+    // found. Based on the policy::PolicyErrorPath type defined in
+    // components/policy.
+    std::vector<absl::variant<int, std::string>> path() const {
+      return issue_path_;
+    }
+
+   private:
+    T issue_type_;
+    std::vector<absl::variant<int, std::string>> issue_path_;
+  };
+
+  using ParseError = IssueWithMetadata<ParseErrorType>;
+  using ParseWarning = IssueWithMetadata<ParseWarningType>;
 
   // The keys are member sites and the values are their entries in the final
   // list of First-Party Sets that result from combining the public sets and
@@ -62,15 +106,15 @@ class CONTENT_EXPORT FirstPartySetsHandler {
   static FirstPartySetsHandler* GetInstance();
 
   // Validates the First-Party Sets Overrides enterprise policy in `policy`,
-  // and may return an error containing information about why the policy is
-  // invalid.
+  // and outputs warnings that arise when parsing and an optional error that is
+  // present if `policy` was invalid.
   //
   // This validation only checks that all sets in this policy are valid
   // First-Party Sets and disjoint from each other. It doesn't require
   // disjointness with other sources, such as the public sets, since this policy
   // will be used override First-Party Sets in those sources.
-  static absl::optional<PolicyParsingError> ValidateEnterprisePolicy(
-      const base::Value::Dict& policy);
+  static std::pair<absl::optional<ParseError>, std::vector<ParseWarning>>
+  ValidateEnterprisePolicy(const base::Value::Dict& policy);
 
   // Returns whether First-Party Sets is enabled.
   //
@@ -81,6 +125,9 @@ class CONTENT_EXPORT FirstPartySetsHandler {
   // FirstPartySets instance. `sets_file` is expected to contain a sequence of
   // newline-delimited JSON records. Each record is a set declaration in the
   // format specified here: https://github.com/privacycg/first-party-sets.
+  // `version` is the version of the sets file used for comparison. If the
+  // file changed between browser runs, those files must have different
+  // associated `base::Version`.
   //
   // Embedder should call this method as early as possible during browser
   // startup if First-Party Sets are enabled, since no First-Party Sets queries
@@ -89,7 +136,8 @@ class CONTENT_EXPORT FirstPartySetsHandler {
   // `ContentBrowserClient::IsFrstpartySetsEnabled` returns false.
   //
   // Must be called at most once.
-  virtual void SetPublicFirstPartySets(base::File sets_file) = 0;
+  virtual void SetPublicFirstPartySets(const base::Version& version,
+                                       base::File sets_file) = 0;
 
   // Resets the state on the instance for testing.
   virtual void ResetForTesting() = 0;
@@ -104,6 +152,24 @@ class CONTENT_EXPORT FirstPartySetsHandler {
   virtual void GetCustomizationForPolicy(
       const base::Value::Dict& policy,
       base::OnceCallback<void(PolicyCustomization)> callback) = 0;
+
+  // Clear site state of sites that have a FPS membership change for the browser
+  // context represented by `browser_context_id`. Sites joining FPSs for the
+  // first time will not be cleared.
+  //
+  // `browser_context_getter` is needed to get a BrowsingDataRemover to handle
+  // the clearing work. `policy_customization` should be the return value from
+  // `GetCustomizationForPolicy` if an Overrides enterprise policy is provided,
+  // or null if one is not provided. `callback` will be invoked once the
+  // clearing is done. If non-null, `policy_customization` must live until
+  // callback is called.
+  //
+  // Embedder must call this before First-Party Sets queries can be answered.
+  virtual void ClearSiteDataOnChangedSetsForContext(
+      base::RepeatingCallback<BrowserContext*()> browser_context_getter,
+      const std::string& browser_context_id,
+      const PolicyCustomization* policy_customization,
+      base::OnceClosure callback) = 0;
 };
 
 }  // namespace content

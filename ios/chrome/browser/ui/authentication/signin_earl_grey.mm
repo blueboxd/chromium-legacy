@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,10 +8,10 @@
 #import "components/signin/public/base/consent_level.h"
 #import "ios/chrome/browser/ui/authentication/signin_earl_grey_app_interface.h"
 #import "ios/chrome/browser/ui/settings/settings_table_view_controller_constants.h"
-#include "ios/chrome/grit/ios_strings.h"
+#import "ios/chrome/grit/ios_strings.h"
 #import "ios/public/provider/chrome/browser/signin/fake_chrome_identity.h"
 #import "ios/testing/earl_grey/earl_grey_test.h"
-#include "ui/base/l10n/l10n_util_mac.h"
+#import "ui/base/l10n/l10n_util_mac.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -109,11 +109,6 @@ using base::test::ios::WaitUntilConditionOrTimeout;
       WaitUntilConditionOrTimeout(base::test::ios::kWaitForActionTimeout,
                                   condition),
       @"Unexpected signed in user");
-}
-
-- (void)verifyAuthenticated {
-  EG_TEST_HELPER_ASSERT_TRUE([SigninEarlGreyAppInterface hasPrimaryIdentity],
-                             @"User is not signed in");
 }
 
 - (void)verifySyncUIEnabled:(BOOL)enabled {

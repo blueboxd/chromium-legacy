@@ -3,13 +3,12 @@
 // found in the LICENSE file.
 
 import {assert, assertNotReached} from 'chrome://resources/js/assert.m.js';
-import {Command} from 'chrome://resources/js/cr/ui/command.js';
-import {List} from 'chrome://resources/js/cr/ui/list.m.js';
+import {Command} from './ui/command.js';
 
 import {getDisallowedTransfers, startIOTask} from '../../common/js/api.js';
 import {FileType} from '../../common/js/file_type.js';
 import {ProgressCenterItem, ProgressItemState, ProgressItemType} from '../../common/js/progress_center_common.js';
-import {getEnabledTrashVolumeURLs} from '../../common/js/trash.js';
+import {getEnabledTrashVolumeURLs, isAllTrashEntries, TrashEntry} from '../../common/js/trash.js';
 import {str, strf, util} from '../../common/js/util.js';
 import {VolumeManagerCommon} from '../../common/js/volume_manager_types.js';
 import {FileOperationManager} from '../../externs/background/file_operation_manager.js';
@@ -26,6 +25,7 @@ import {FileSelectionHandler} from './file_selection.js';
 import {MetadataModel} from './metadata/metadata_model.js';
 import {DirectoryItem, DirectoryTree} from './ui/directory_tree.js';
 import {DragSelector} from './ui/drag_selector.js';
+import {List} from './ui/list.js';
 import {ListContainer} from './ui/list_container.js';
 import {TreeItem} from './ui/tree.js';
 
@@ -164,12 +164,6 @@ export class FileTransferController {
     this.touching_ = false;
 
     /**
-     * Count of the SourceNotFound error.
-     * @private {number}
-     */
-    this.sourceNotFoundErrorCount_ = 0;
-
-    /**
      * @private {!Command}
      * @const
      */
@@ -302,10 +296,17 @@ export class FileTransferController {
     if (!currentDirEntry) {
       return;
     }
-    const volumeInfo = this.volumeManager_.getVolumeInfo(
-        util.isRecentRoot(currentDirEntry) ?
-            this.selectionHandler_.selection.entries[0] :
-            currentDirEntry);
+    let entry = currentDirEntry;
+    if (util.isRecentRoot(currentDirEntry)) {
+      entry = this.selectionHandler_.selection.entries[0];
+    } else if (util.isTrashRoot(currentDirEntry)) {
+      // In the event the entry resides in the Trash root, delegate to the item
+      // in .Trash/files to get the source filesystem.
+      const trashEntry = /** @type {TrashEntry|Entry} */ (
+          this.selectionHandler_.selection.entries[0]);
+      entry = trashEntry.filesEntry;
+    }
+    const volumeInfo = this.volumeManager_.getVolumeInfo(entry);
     if (!volumeInfo) {
       return;
     }
@@ -335,6 +336,16 @@ export class FileTransferController {
     clipboardData.setData('fs/tag', 'filemanager-data');
     clipboardData.setData(
         `fs/${SOURCE_ROOT_URL}`, sourceVolumeInfo.fileSystem.root.toURL());
+
+    // In the event a cut event has begun from the TrashRoot, the sources should
+    // be delegated to the underlying files to ensure any validation done
+    // onDrop_ (e.g. DLP scanning) is done on the actual file.
+    if (entries.every(util.isTrashEntry)) {
+      entries = entries.map(e => {
+        const trashEntry = /** @type {TrashEntry|Entry} */ (e);
+        return trashEntry.filesEntry;
+      });
+    }
 
     const sourceURLs = util.entriesToURLs(entries);
     clipboardData.setData('fs/sources', sourceURLs.join('\n'));
@@ -378,27 +389,13 @@ export class FileTransferController {
    * @private
    */
   getDragAndDropGlobalData_() {
-    if (window.isSWA) {
-      const storage = window.localStorage;
-      const sourceRootURL =
-          storage.getItem(`${DRAG_AND_DROP_GLOBAL_DATA}.${SOURCE_ROOT_URL}`);
-      const missingFileContents = storage.getItem(
-          `${DRAG_AND_DROP_GLOBAL_DATA}.${MISSING_FILE_CONTENTS}`);
-      if (sourceRootURL !== null && missingFileContents !== null) {
-        return {sourceRootURL, missingFileContents};
-      }
-    } else {
-      // TODO(b/198106171): Remove this code.
-      if (window[DRAG_AND_DROP_GLOBAL_DATA]) {
-        return window[DRAG_AND_DROP_GLOBAL_DATA];
-      }
-      // Dragging from other tabs/windows.
-      const views = chrome.extension.getViews();
-      for (let i = 0; i < views.length; i++) {
-        if (views[i][DRAG_AND_DROP_GLOBAL_DATA]) {
-          return views[i][DRAG_AND_DROP_GLOBAL_DATA];
-        }
-      }
+    const storage = window.localStorage;
+    const sourceRootURL =
+        storage.getItem(`${DRAG_AND_DROP_GLOBAL_DATA}.${SOURCE_ROOT_URL}`);
+    const missingFileContents = storage.getItem(
+        `${DRAG_AND_DROP_GLOBAL_DATA}.${MISSING_FILE_CONTENTS}`);
+    if (sourceRootURL !== null && missingFileContents !== null) {
+      return {sourceRootURL, missingFileContents};
     }
     return null;
   }
@@ -458,13 +455,13 @@ export class FileTransferController {
     const sourceEntries = await pastePlan.resolveEntries();
     let disallowedTransfers = [];
     try {
-      const destinationDir =
+      if (util.isDlpEnabled()) {
+        const destinationDir =
           /** @type{!DirectoryEntry} */ (
               assert(util.unwrapEntry(pastePlan.destinationEntry)));
-
-      // TODO(crbug.com/1297603): Avoid calling the api if DLP isn't enabled.
-      disallowedTransfers =
-          await getDisallowedTransfers(sourceEntries, destinationDir);
+        disallowedTransfers =
+            await getDisallowedTransfers(sourceEntries, destinationDir);
+      }
     } catch (error) {
       disallowedTransfers = [];
       console.warn(error);
@@ -598,112 +595,49 @@ export class FileTransferController {
     const toMove = pastePlan.isMove;
     const destinationEntry = pastePlan.destinationEntry;
 
-    let entries = [];
-    let shareEntries;
-    const taskId = this.fileOperationManager_.generateTaskId();
 
-    pastePlan.resolveEntries()
-        .then(sourceEntries => {
-          // The promise is not rejected, so it's safe to not remove the
-          // early progress center item here.
-          return this.fileOperationManager_.filterSameDirectoryEntry(
-              sourceEntries, destinationEntry, toMove);
-        })
-        .then(/**
-               * @param {!Array<Entry>} filteredEntries
-               */
-              async filteredEntries => {
-                entries = filteredEntries;
-                if (entries.length === 0) {
-                  return Promise.reject('ABORT');
-                }
-                if (window.isSWA) {
-                  const taskType = toMove ?
-                      chrome.fileManagerPrivate.IOTaskType.MOVE :
-                      chrome.fileManagerPrivate.IOTaskType.COPY;
-                  try {
-                    // TODO(crbug/1290197): Start tracking the copy/move
-                    // operation starting here as both the legacy taskId and
-                    // IOTask taskId are available.
-                    await startIOTask(
-                        taskType, entries,
-                        {destinationFolder: destinationEntry});
-                  } catch (e) {
-                    console.error(`Failed to start ${taskType} io task:`, e);
-                  }
-                  return;
-                }
+    // Execute the IOTask in asynchronously.
+    (async () => {
+      try {
+        const sourceEntries = await pastePlan.resolveEntries();
+        const entries =
+            await this.fileOperationManager_.filterSameDirectoryEntry(
+                sourceEntries, destinationEntry, toMove);
 
-                this.pendingTaskIds.push(taskId);
-                const item = new ProgressCenterItem();
-                item.id = taskId;
-                item.itemCount = entries.length;
-                if (toMove) {
-                  item.type = ProgressItemType.MOVE;
-                  if (entries.length === 1) {
-                    item.message = strf('MOVE_FILE_NAME', entries[0].name);
-                  } else {
-                    item.message = strf('MOVE_ITEMS_REMAINING', entries.length);
-                  }
-                } else {
-                  item.type = ProgressItemType.COPY;
-                  if (entries.length === 1) {
-                    item.message = strf('COPY_FILE_NAME', entries[0].name);
-                  } else {
-                    item.message = strf('COPY_ITEMS_REMAINING', entries.length);
-                  }
-                }
-                // Store the source name or count for display in messages.
-                if (entries.length === 1) {
-                  item.sourceMessage = entries[0].name;
-                } else {
-                  item.sourceMessage = entries.length.toString();
-                }
-                // Store the destination name for display in messages.
-                const destinationLocationInfo =
-                    this.volumeManager_.getLocationInfo(destinationEntry);
-                const destinationName = util.getEntryLabel(
-                    destinationLocationInfo, destinationEntry);
-                // Root of removable volumes can result in an empty string,
-                // so use the filesystem name in that case.
-                if (destinationName === '') {
-                  if (destinationLocationInfo) {
-                    item.destinationMessage =
-                        util.getRootTypeLabel(destinationLocationInfo);
-                  }
-                } else {
-                  item.destinationMessage = destinationName;
-                }
-                this.progressCenter_.updateItem(item);
-
-                // Start the pasting operation.
-                this.fileOperationManager_.paste(
-                    entries, destinationEntry, toMove, taskId);
-                this.pendingTaskIds.splice(
-                    this.pendingTaskIds.indexOf(taskId), 1);
-              })
-        .catch(error => {
-          if (error !== 'ABORT') {
-            console.warn(error.stack ? error.stack : error);
+        if (entries.length > 0) {
+          if (isAllTrashEntries(entries, this.volumeManager_)) {
+            await startIOTask(
+                chrome.fileManagerPrivate.IOTaskType.RESTORE_TO_DESTINATION,
+                entries, {destinationFolder: destinationEntry});
+            return;
           }
-        })
-        .finally(() => {
-          // Publish source not found error item.
-          for (let i = 0; i < pastePlan.failureUrls.length; i++) {
-            const fileName = decodeURIComponent(
-                pastePlan.failureUrls[i].replace(/^.+\//, ''));
-            const item = new ProgressCenterItem();
-            item.id = 'source-not-found-' + this.sourceNotFoundErrorCount_;
-            if (toMove) {
-              item.message = strf('MOVE_SOURCE_NOT_FOUND_ERROR', fileName);
-            } else {
-              item.message = strf('COPY_SOURCE_NOT_FOUND_ERROR', fileName);
-            }
-            item.state = ProgressItemState.ERROR;
-            this.progressCenter_.updateItem(item);
-            this.sourceNotFoundErrorCount_++;
-          }
-        });
+
+          const taskType = toMove ? chrome.fileManagerPrivate.IOTaskType.MOVE :
+                                    chrome.fileManagerPrivate.IOTaskType.COPY;
+          // TODO(crbug/1290197): Start tracking the copy/move operation
+          // starting here.
+          await startIOTask(
+              taskType, entries, {destinationFolder: destinationEntry});
+        }
+      } catch (error) {
+        console.warn(error.stack ? error.stack : error);
+      } finally {
+        // Publish source not found error item.
+        for (let i = 0; i < pastePlan.failureUrls.length; i++) {
+          const url = pastePlan.failureUrls[i];
+          // Extract the file name.
+          const fileName = decodeURIComponent(url.replace(/^.+\//, ''));
+          const item = new ProgressCenterItem();
+          item.id = `source-not-found-${url}`;
+          item.state = ProgressItemState.ERROR;
+          item.message = toMove ?
+              strf('MOVE_SOURCE_NOT_FOUND_ERROR', fileName) :
+              strf('COPY_SOURCE_NOT_FOUND_ERROR', fileName);
+          this.progressCenter_.updateItem(item);
+        }
+      }
+    })();
+
     return toMove ? 'move' : 'copy';
   }
 
@@ -802,22 +736,13 @@ export class FileTransferController {
 
     dataTransfer.setDragImage(thumbnail.element, thumbnail.x, thumbnail.y);
 
-    if (window.isSWA) {
-      const storage = window.localStorage;
-      storage.setItem(
-          `${DRAG_AND_DROP_GLOBAL_DATA}.${SOURCE_ROOT_URL}`,
-          dataTransfer.getData(`fs/${SOURCE_ROOT_URL}`));
-      storage.setItem(
-          `${DRAG_AND_DROP_GLOBAL_DATA}.${MISSING_FILE_CONTENTS}`,
-          dataTransfer.getData(`fs/${MISSING_FILE_CONTENTS}`));
-    } else {
-      // TODO(b/198106171): Remove this code.
-      window[DRAG_AND_DROP_GLOBAL_DATA] = {
-        sourceRootURL: dataTransfer.getData(`fs/${SOURCE_ROOT_URL}`),
-        missingFileContents:
-            dataTransfer.getData(`fs/${MISSING_FILE_CONTENTS}`),
-      };
-    }
+    const storage = window.localStorage;
+    storage.setItem(
+        `${DRAG_AND_DROP_GLOBAL_DATA}.${SOURCE_ROOT_URL}`,
+        dataTransfer.getData(`fs/${SOURCE_ROOT_URL}`));
+    storage.setItem(
+        `${DRAG_AND_DROP_GLOBAL_DATA}.${MISSING_FILE_CONTENTS}`,
+        dataTransfer.getData(`fs/${MISSING_FILE_CONTENTS}`));
   }
 
   /**
@@ -833,15 +758,9 @@ export class FileTransferController {
     const container = this.document_.body.querySelector('#drag-container');
     container.textContent = '';
     this.clearDropTarget_();
-    if (window.isSWA) {
-      const storage = window.localStorage;
-      storage.removeItem(`${DRAG_AND_DROP_GLOBAL_DATA}.${SOURCE_ROOT_URL}`);
-      storage.removeItem(
-          `${DRAG_AND_DROP_GLOBAL_DATA}.${MISSING_FILE_CONTENTS}`);
-    } else {
-      // TODO(b/198106171): Remove this code.
-      delete window[DRAG_AND_DROP_GLOBAL_DATA];
-    }
+    const storage = window.localStorage;
+    storage.removeItem(`${DRAG_AND_DROP_GLOBAL_DATA}.${SOURCE_ROOT_URL}`);
+    storage.removeItem(`${DRAG_AND_DROP_GLOBAL_DATA}.${MISSING_FILE_CONTENTS}`);
   }
 
   /**
@@ -1230,6 +1149,11 @@ export class FileTransferController {
       return false;
     }
     if (this.selectionHandler_.selection.entries.length <= 0) {
+      return false;
+    }
+    // Trash entries are only allowed to be restored which is analogous to a
+    // cut event, so disallow the copy.
+    if (this.selectionHandler_.selection.entries.every(util.isTrashEntry)) {
       return false;
     }
     const entries = this.selectionHandler_.selection.entries;

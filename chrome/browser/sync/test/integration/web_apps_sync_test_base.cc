@@ -1,10 +1,14 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome/browser/sync/test/integration/web_apps_sync_test_base.h"
 
 #include "build/chromeos_buildflags.h"
+
+#if BUILDFLAG(IS_CHROMEOS)
+#include "chrome/browser/apps/intent_helper/intent_picker_features.h"
+#endif
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "ash/constants/ash_features.h"
@@ -20,11 +24,20 @@ namespace web_app {
 
 WebAppsSyncTestBase::WebAppsSyncTestBase(TestType test_type)
     : SyncTest(test_type) {
+  std::vector<base::Feature> disabled_features;
+
+#if BUILDFLAG(IS_CHROMEOS)
+  // TODO(crbug.com/1357905): Update test driver to work with new UI.
+  disabled_features.push_back(apps::features::kLinkCapturingUiUpdate);
+#endif
+
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   // Disable WebAppsCrosapi, so that Web Apps get synced in the Ash browser.
-  scoped_feature_list_.InitWithFeatures(
-      {}, {features::kWebAppsCrosapi, chromeos::features::kLacrosPrimary});
+  disabled_features.push_back(features::kWebAppsCrosapi);
+  disabled_features.push_back(chromeos::features::kLacrosPrimary);
 #endif
+
+  scoped_feature_list_.InitWithFeatures({}, disabled_features);
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
   SkipMainProfileCheckForTesting();

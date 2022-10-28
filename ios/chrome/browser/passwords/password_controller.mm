@@ -1,107 +1,106 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #import "ios/chrome/browser/passwords/password_controller.h"
 
-#include <stddef.h>
+#import <stddef.h>
 
-#include <algorithm>
-#include <map>
-#include <memory>
-#include <string>
-#include <utility>
-#include <vector>
+#import <algorithm>
+#import <map>
+#import <memory>
+#import <string>
+#import <utility>
+#import <vector>
 
-#include "base/bind.h"
-#include "base/mac/foundation_util.h"
-#include "base/metrics/histogram_functions.h"
-#include "base/strings/sys_string_conversions.h"
-#include "base/strings/utf_string_conversions.h"
-#include "base/time/time.h"
-#include "base/timer/timer.h"
-#include "base/values.h"
-#include "components/autofill/core/browser/ui/popup_item_ids.h"
-#include "components/autofill/core/common/autofill_features.h"
-#include "components/autofill/core/common/form_data.h"
-#include "components/autofill/core/common/password_form_fill_data.h"
-#include "components/autofill/core/common/password_form_generation_data.h"
-#include "components/autofill/core/common/signatures.h"
-#include "components/autofill/core/common/unique_ids.h"
-#include "components/autofill/ios/browser/autofill_util.h"
+#import "base/bind.h"
+#import "base/mac/foundation_util.h"
+#import "base/metrics/histogram_functions.h"
+#import "base/strings/sys_string_conversions.h"
+#import "base/strings/utf_string_conversions.h"
+#import "base/time/time.h"
+#import "base/timer/timer.h"
+#import "base/values.h"
+#import "components/autofill/core/browser/ui/popup_item_ids.h"
+#import "components/autofill/core/common/autofill_features.h"
+#import "components/autofill/core/common/form_data.h"
+#import "components/autofill/core/common/password_form_fill_data.h"
+#import "components/autofill/core/common/password_form_generation_data.h"
+#import "components/autofill/core/common/signatures.h"
+#import "components/autofill/core/common/unique_ids.h"
+#import "components/autofill/ios/browser/autofill_util.h"
 #import "components/autofill/ios/form_util/form_activity_observer_bridge.h"
-#include "components/autofill/ios/form_util/form_activity_params.h"
-#include "components/autofill/ios/form_util/unique_id_data_tab_helper.h"
-#include "components/infobars/core/infobar_manager.h"
-#include "components/password_manager/core/browser/password_bubble_experiment.h"
-#include "components/password_manager/core/browser/password_form.h"
-#include "components/password_manager/core/browser/password_form_manager_for_ui.h"
-#include "components/password_manager/core/browser/password_generation_frame_helper.h"
-#include "components/password_manager/core/browser/password_manager.h"
-#include "components/password_manager/core/browser/password_manager_client.h"
-#include "components/password_manager/core/browser/password_manager_driver.h"
-#include "components/password_manager/core/common/password_manager_features.h"
-#include "components/password_manager/ios/account_select_fill_data.h"
+#import "components/autofill/ios/form_util/form_activity_params.h"
+#import "components/autofill/ios/form_util/unique_id_data_tab_helper.h"
+#import "components/infobars/core/infobar_manager.h"
+#import "components/password_manager/core/browser/password_bubble_experiment.h"
+#import "components/password_manager/core/browser/password_form.h"
+#import "components/password_manager/core/browser/password_form_manager_for_ui.h"
+#import "components/password_manager/core/browser/password_generation_frame_helper.h"
+#import "components/password_manager/core/browser/password_manager.h"
+#import "components/password_manager/core/browser/password_manager_client.h"
+#import "components/password_manager/core/common/password_manager_features.h"
+#import "components/password_manager/ios/account_select_fill_data.h"
+#import "components/password_manager/ios/password_controller_driver_helper.h"
 #import "components/password_manager/ios/password_form_helper.h"
 #import "components/password_manager/ios/password_suggestion_helper.h"
 #import "components/password_manager/ios/shared_password_controller.h"
-#include "components/strings/grit/components_strings.h"
-#include "components/sync/driver/sync_service.h"
+#import "components/strings/grit/components_strings.h"
+#import "components/sync/driver/sync_service.h"
 #import "components/ukm/ios/ukm_url_recorder.h"
 #import "ios/chrome/browser/autofill/form_input_accessory_view_handler.h"
-#include "ios/chrome/browser/browser_state/chrome_browser_state.h"
-#include "ios/chrome/browser/infobars/infobar_ios.h"
-#include "ios/chrome/browser/infobars/infobar_manager_impl.h"
+#import "ios/chrome/browser/browser_state/chrome_browser_state.h"
+#import "ios/chrome/browser/infobars/infobar_ios.h"
+#import "ios/chrome/browser/infobars/infobar_manager_impl.h"
 #import "ios/chrome/browser/infobars/infobar_type.h"
 #import "ios/chrome/browser/main/browser.h"
 #import "ios/chrome/browser/passwords/ios_chrome_save_password_infobar_delegate.h"
 #import "ios/chrome/browser/passwords/notify_auto_signin_view_controller.h"
-#include "ios/chrome/browser/signin/authentication_service.h"
-#include "ios/chrome/browser/signin/authentication_service_factory.h"
-#include "ios/chrome/browser/sync/sync_service_factory.h"
+#import "ios/chrome/browser/signin/authentication_service.h"
+#import "ios/chrome/browser/signin/authentication_service_factory.h"
+#import "ios/chrome/browser/sync/sync_service_factory.h"
 #import "ios/chrome/browser/ui/alert_coordinator/action_sheet_coordinator.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/commands/command_dispatcher.h"
 #import "ios/chrome/browser/ui/commands/password_breach_commands.h"
 #import "ios/chrome/browser/ui/commands/password_protection_commands.h"
 #import "ios/chrome/browser/ui/commands/password_suggestion_commands.h"
-#include "ios/chrome/grit/ios_google_chrome_strings.h"
-#include "ios/chrome/grit/ios_strings.h"
-#include "ios/web/common/url_scheme_util.h"
-#include "ios/web/public/js_messaging/web_frame.h"
-#include "ios/web/public/js_messaging/web_frame_util.h"
-#include "ios/web/public/navigation/navigation_context.h"
+#import "ios/chrome/grit/ios_google_chrome_strings.h"
+#import "ios/chrome/grit/ios_strings.h"
+#import "ios/web/common/url_scheme_util.h"
+#import "ios/web/public/js_messaging/web_frame.h"
+#import "ios/web/public/js_messaging/web_frame_util.h"
+#import "ios/web/public/navigation/navigation_context.h"
 #import "ios/web/public/web_state.h"
-#include "services/network/public/cpp/shared_url_loader_factory.h"
-#include "ui/base/device_form_factor.h"
-#include "ui/base/l10n/l10n_util_mac.h"
-#include "url/gurl.h"
+#import "services/network/public/cpp/shared_url_loader_factory.h"
+#import "ui/base/device_form_factor.h"
+#import "ui/base/l10n/l10n_util_mac.h"
+#import "url/gurl.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
 
+using autofill::FieldRendererId;
 using autofill::FormActivityObserverBridge;
 using autofill::FormData;
-using autofill::PasswordFormGenerationData;
-using password_manager::PasswordForm;
 using autofill::FormRendererId;
-using autofill::FieldRendererId;
+using autofill::PasswordFormGenerationData;
 using base::SysNSStringToUTF16;
 using base::SysUTF16ToNSString;
 using base::SysUTF8ToNSString;
 using l10n_util::GetNSString;
 using l10n_util::GetNSStringF;
-using password_manager::metrics_util::LogPasswordDropdownShown;
-using password_manager::metrics_util::PasswordDropdownState;
 using password_manager::AccountSelectFillData;
 using password_manager::FillData;
 using password_manager::GetPageURLAndCheckTrustLevel;
+using password_manager::PasswordForm;
 using password_manager::PasswordFormManagerForUI;
 using password_manager::PasswordGenerationFrameHelper;
 using password_manager::PasswordManager;
 using password_manager::PasswordManagerClient;
-using password_manager::PasswordManagerDriver;
+using password_manager::metrics_util::LogPasswordDropdownShown;
+using password_manager::metrics_util::PasswordDropdownState;
 using web::WebFrame;
 using web::WebState;
 
@@ -131,14 +130,14 @@ BOOL IsPasswordManagerBrandingUpdateEnabled() {
 // Tracks current potential generated password until accepted or rejected.
 @property(nonatomic, copy) NSString* generatedPotentialPassword;
 
-// Displays infobar for |form| with |type|. If |type| is UPDATE, the user
-// is prompted to update the password. If |type| is SAVE, the user is prompted
+// Displays infobar for `form` with `type`. If `type` is UPDATE, the user
+// is prompted to update the password. If `type` is SAVE, the user is prompted
 // to save the password.
 - (void)showInfoBarForForm:(std::unique_ptr<PasswordFormManagerForUI>)form
                infoBarType:(PasswordInfoBarType)type
                     manual:(BOOL)manual;
 
-// Removes infobar for given |type| if it exists. If it is not found the
+// Removes infobar for given `type` if it exists. If it is not found the
 // request is silently ignored (because that use case is expected).
 - (void)removeInfoBarOfType:(PasswordInfoBarType)type manual:(BOOL)manual;
 
@@ -152,7 +151,6 @@ BOOL IsPasswordManagerBrandingUpdateEnabled() {
 @implementation PasswordController {
   std::unique_ptr<PasswordManager> _passwordManager;
   std::unique_ptr<PasswordManagerClient> _passwordManagerClient;
-  std::unique_ptr<PasswordManagerDriver> _passwordManagerDriver;
 
   // The WebState this instance is observing. Will be null after
   // -webStateDestroyed: has been called.
@@ -194,15 +192,16 @@ BOOL IsPasswordManagerBrandingUpdateEnabled() {
     PasswordFormHelper* formHelper =
         [[PasswordFormHelper alloc] initWithWebState:webState];
     PasswordSuggestionHelper* suggestionHelper =
-        [[PasswordSuggestionHelper alloc] init];
+        [[PasswordSuggestionHelper alloc] initWithWebState:_webState];
+    PasswordControllerDriverHelper* driverHelper =
+        [[PasswordControllerDriverHelper alloc] initWithWebState:_webState];
     _sharedPasswordController = [[SharedPasswordController alloc]
         initWithWebState:_webState
                  manager:_passwordManager.get()
               formHelper:formHelper
-        suggestionHelper:suggestionHelper];
+        suggestionHelper:suggestionHelper
+            driverHelper:driverHelper];
     _sharedPasswordController.delegate = self;
-    _passwordManagerDriver.reset(new IOSPasswordManagerDriver(
-        _sharedPasswordController, _passwordManager.get()));
   }
   return self;
 }
@@ -222,10 +221,6 @@ BOOL IsPasswordManagerBrandingUpdateEnabled() {
 
 - (PasswordManagerClient*)passwordManagerClient {
   return _passwordManagerClient.get();
-}
-
-- (PasswordManagerDriver*)passwordManagerDriver {
-  return _passwordManagerDriver.get();
 }
 
 #pragma mark - CRWWebStateObserver
@@ -253,7 +248,6 @@ BOOL IsPasswordManagerBrandingUpdateEnabled() {
     _webStateObserverBridge.reset();
     _webState = nullptr;
   }
-  _passwordManagerDriver.reset();
   _passwordManager.reset();
   _passwordManagerClient.reset();
 }
@@ -335,7 +329,7 @@ BOOL IsPasswordManagerBrandingUpdateEnabled() {
   if (![_delegate displaySignInNotification:self.notifyAutoSigninViewController
                                   fromTabId:_webState->GetStableIdentifier()]) {
     // The notification was not shown. Store the password form in
-    // |_pendingAutoSigninPasswordForm| to show the notification later.
+    // `_pendingAutoSigninPasswordForm` to show the notification later.
     _pendingAutoSigninPasswordForm = std::move(formSignedIn);
     self.notifyAutoSigninViewController = nil;
     return;

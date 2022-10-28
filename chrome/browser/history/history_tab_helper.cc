@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,10 +13,12 @@
 #include "chrome/browser/preloading/prefetch/no_state_prefetch/no_state_prefetch_manager_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/renderer_host/chrome_navigation_ui_data.h"
+#include "chrome/browser/translate/chrome_translate_client.h"
 #include "components/history/content/browser/history_context_helper.h"
 #include "components/history/core/browser/history_constants.h"
 #include "components/history/core/browser/history_service.h"
 #include "components/history/core/browser/history_types.h"
+#include "components/history/core/browser/url_row.h"
 #include "components/no_state_prefetch/browser/no_state_prefetch_manager.h"
 #include "components/sessions/content/navigation_task_id.h"
 #include "components/sessions/content/session_tab_helper.h"
@@ -143,11 +145,30 @@ history::VisitContextAnnotations::BrowserType GetBrowserType(
 #endif  // BUILDFLAG(IS_ANDROID)
 }
 
+history::VisitContentAnnotations::PasswordState
+ConvertSessionsPasswordStateToHistory(
+    sessions::SerializedNavigationEntry::PasswordState password_state) {
+  switch (password_state) {
+    case sessions::SerializedNavigationEntry::PASSWORD_STATE_UNKNOWN:
+      return history::VisitContentAnnotations::PasswordState::kUnknown;
+    case sessions::SerializedNavigationEntry::NO_PASSWORD_FIELD:
+      return history::VisitContentAnnotations::PasswordState::kNoPasswordField;
+    case sessions::SerializedNavigationEntry::HAS_PASSWORD_FIELD:
+      return history::VisitContentAnnotations::PasswordState::kHasPasswordField;
+  }
+}
+
 }  // namespace
 
 HistoryTabHelper::HistoryTabHelper(WebContents* web_contents)
     : content::WebContentsObserver(web_contents),
-      content::WebContentsUserData<HistoryTabHelper>(*web_contents) {}
+      content::WebContentsUserData<HistoryTabHelper>(*web_contents) {
+  // A translate client is not always attached to web contents (e.g. tests).
+  if (ChromeTranslateClient* translate_client =
+          ChromeTranslateClient::FromWebContents(web_contents)) {
+    translate_observation_.Observe(translate_client->GetTranslateDriver());
+  }
+}
 
 HistoryTabHelper::~HistoryTabHelper() = default;
 
@@ -264,6 +285,20 @@ history::HistoryAddPageArgs HistoryTabHelper::CreateHistoryAddPageArgs(
       add_page_args.redirects.back() = virtual_url;
   }
   return add_page_args;
+}
+
+void HistoryTabHelper::OnPasswordStateUpdated(
+    sessions::SerializedNavigationEntry::PasswordState password_state) {
+  if (history::HistoryService* hs = GetHistoryService()) {
+    NavigationEntry* entry =
+        web_contents()->GetController().GetLastCommittedEntry();
+    if (entry) {
+      hs->SetPasswordStateForVisit(
+          history::ContextIDForWebContents(web_contents()),
+          entry->GetUniqueID(), web_contents()->GetLastCommittedURL(),
+          ConvertSessionsPasswordStateToHistory(password_state));
+    }
+  }
 }
 
 void HistoryTabHelper::DidFinishNavigation(
@@ -385,6 +420,20 @@ void HistoryTabHelper::DidOpenRequestedURL(
   new_history_tab_helper->opener_web_contents_ = web_contents()->GetWeakPtr();
 }
 
+void HistoryTabHelper::OnLanguageDetermined(
+    const translate::LanguageDetectionDetails& details) {
+  if (history::HistoryService* hs = GetHistoryService()) {
+    NavigationEntry* entry =
+        web_contents()->GetController().GetLastCommittedEntry();
+    if (entry) {
+      hs->SetPageLanguageForVisit(
+          history::ContextIDForWebContents(web_contents()),
+          entry->GetUniqueID(), web_contents()->GetLastCommittedURL(),
+          details.adopted_language);
+    }
+  }
+}
+
 void HistoryTabHelper::TitleWasSet(NavigationEntry* entry) {
   if (!entry)
     return;
@@ -411,13 +460,15 @@ history::HistoryService* HistoryTabHelper::GetHistoryService() {
   Profile* profile =
       Profile::FromBrowserContext(web_contents()->GetBrowserContext());
   if (profile->IsOffTheRecord())
-    return NULL;
+    return nullptr;
 
   return HistoryServiceFactory::GetForProfile(
       profile, ServiceAccessType::IMPLICIT_ACCESS);
 }
 
 void HistoryTabHelper::WebContentsDestroyed() {
+  translate_observation_.Reset();
+
   // We update the history for this URL.
   WebContents* tab = web_contents();
   Profile* profile = Profile::FromBrowserContext(tab->GetBrowserContext());

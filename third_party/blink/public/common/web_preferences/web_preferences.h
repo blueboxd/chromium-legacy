@@ -67,7 +67,6 @@ struct BLINK_COMMON_EXPORT WebPreferences {
   bool allow_scripts_to_close_windows;
   bool remote_fonts_enabled;
   bool javascript_can_access_clipboard;
-  bool xslt_enabled;
   // We don't use dns_prefetching_enabled to disable DNS prefetching.  Instead,
   // we disable the feature at a lower layer so that we catch non-WebKit uses
   // of DNS prefetch as well.
@@ -356,6 +355,10 @@ struct BLINK_COMMON_EXPORT WebPreferences {
   // window.open or via <a target=...>) should be renderer-wide (i.e. going
   // beyond the usual opener-relationship-based BrowsingInstance boundaries).
   bool renderer_wide_named_frame_lookup = false;
+
+  // Whether MIME type checking for worker scripts is strict (true) or lax
+  // (false). Used by StrictMimetypeCheckForWorkerScriptsEnabled policy.
+  bool strict_mime_type_check_for_worker_scripts_enabled = true;
 
   // We try to keep the default values the same as the default values in
   // chrome, except for the cases where it would require lots of extra work for

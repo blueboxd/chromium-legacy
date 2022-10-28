@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef ABSL_CONTAINER_INTERNAL_INLINED_VECTOR_INTERNAL_H_
-#define ABSL_CONTAINER_INTERNAL_INLINED_VECTOR_INTERNAL_H_
+#ifndef ABSL_CONTAINER_INTERNAL_INLINED_VECTOR_H_
+#define ABSL_CONTAINER_INTERNAL_INLINED_VECTOR_H_
 
 #include <algorithm>
 #include <cstddef>
@@ -641,8 +641,8 @@ auto Storage<T, N, A>::Insert(ConstIterator<A> pos, ValueAdapter values,
                               SizeType<A> insert_count) -> Iterator<A> {
   StorageView<A> storage_view = MakeStorageView();
 
-  SizeType<A> insert_index =
-      std::distance(ConstIterator<A>(storage_view.data), pos);
+  auto insert_index = static_cast<SizeType<A>>(
+      std::distance(ConstIterator<A>(storage_view.data), pos));
   SizeType<A> insert_end_index = insert_index + insert_count;
   SizeType<A> new_size = storage_view.size + insert_count;
 
@@ -950,4 +950,4 @@ auto Storage<T, N, A>::Swap(Storage* other_storage_ptr) -> void {
 ABSL_NAMESPACE_END
 }  // namespace absl
 
-#endif  // ABSL_CONTAINER_INTERNAL_INLINED_VECTOR_INTERNAL_H_
+#endif  // ABSL_CONTAINER_INTERNAL_INLINED_VECTOR_H_

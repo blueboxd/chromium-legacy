@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -242,15 +242,6 @@ class COMPONENTS_PREFS_EXPORT PrefService {
   std::string GetString(const std::string& path) const;
   base::FilePath GetFilePath(const std::string& path) const;
 
-  // DEPRECATED: Prefer GetValue(), GetValueDict(), and GetValueList().
-  // Returns the branch if it exists, or the registered default value otherwise.
-  // Note that |path| must point to a registered preference. In that case, these
-  // functions will never return NULL.
-  // TODO(https://crbug.com/1334665): Remove these methods.
-  const base::Value* Get(const std::string& path) const;
-  const base::Value* GetDictionary(const std::string& path) const;
-  const base::Value* GetList(const std::string& path) const;
-
   // Returns the branch if it exists, or the registered default value otherwise.
   // `path` must point to a registered preference (DCHECK).
   const base::Value& GetValue(const std::string& path) const;
@@ -258,12 +249,12 @@ class COMPONENTS_PREFS_EXPORT PrefService {
   // Returns the branch if it exists, or the registered default value otherwise.
   // `path` must point to a registered preference whose value and registered
   // default are of type `base::Value::Type::DICT (DCHECK).
-  const base::Value::Dict& GetValueDict(const std::string& path) const;
+  const base::Value::Dict& GetDict(const std::string& path) const;
 
   // Returns the branch if it exists, or the registered default value otherwise.
   // `path` must point to a registered preference whose value and registered
   // default are of type `base::Value::Type::LIST (DCHECK).
-  const base::Value::List& GetValueList(const std::string& path) const;
+  const base::Value::List& GetList(const std::string& path) const;
 
   // Removes a user pref and restores the pref to its default value.
   void ClearPref(const std::string& path);
@@ -382,21 +373,6 @@ class COMPONENTS_PREFS_EXPORT PrefService {
   // Invoked when the store is deleted from disk. Allows this PrefService
   // to tangentially cleanup data it may have saved outside the store.
   void OnStoreDeletionFromDisk();
-
-  // Add new pref stores to the existing PrefValueStore. Only adding new
-  // stores are allowed. If a corresponding store already exists, calling this
-  // will cause DCHECK failures. If the newly added stores already contain
-  // values, PrefNotifier associated with this object will be notified with
-  // these values. |delegate| can be passed to observe events of the new
-  // PrefValueStore.
-  // TODO(qinmin): packaging all the input params in a struct, and do the same
-  // for the constructor.
-  void ChangePrefValueStore(
-      PrefStore* managed_prefs,
-      PrefStore* supervised_user_prefs,
-      PrefStore* extension_prefs,
-      PrefStore* recommended_prefs,
-      std::unique_ptr<PrefValueStore::Delegate> delegate = nullptr);
 
   // A low level function for registering an observer for every single
   // preference changed notification. The caller must ensure that the observer

@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -18,9 +18,14 @@ extern const base::Feature kImageSearchSuggestionThumbnail;
 extern const base::Feature kOmniboxRemoveSuggestionsFromClipboard;
 extern const base::Feature kAndroidAuxiliarySearch;
 
-// Flags that affect the "twiddle" step of AutocompleteResult, i.e. SortAndCull.
+// Flags that affect the "twiddle" step of AutocompleteResult, e.g.,
+// `SortAndCull()`.
 extern const base::Feature kAutocompleteStability;
+extern const base::Feature kDocumentProviderDedupingOptimization;
 extern const base::Feature kOmniboxDemoteByType;
+extern const base::Feature kPreserveDefault;
+extern const base::Feature kStrippedGurlOptimization;
+extern const base::Feature kUpdateResultDebounce;
 
 // Features below this line should be sorted alphabetically by their comments.
 
@@ -48,6 +53,7 @@ extern const base::Feature kZeroSuggestOnNTPForSignedOutUsers;
 extern const base::Feature kZeroSuggestPrefetching;
 extern const base::Feature kZeroSuggestPrefetchingOnSRP;
 extern const base::Feature kZeroSuggestPrefetchingOnWeb;
+extern const base::Feature kZeroSuggestInMemoryCaching;
 // Related, kMaxZeroSuggestMatches.
 
 // On Device Head Suggest.
@@ -56,7 +62,6 @@ extern const base::Feature kOnDeviceHeadProviderNonIncognito;
 
 // Provider-specific - These features change the behavior of specific providers.
 extern const base::Feature kOmniboxExperimentalSuggestScoring;
-extern const base::Feature kHistoryQuickProviderAblateInMemoryURLIndexCacheFile;
 extern const base::Feature kDisableCGIParamMatching;
 extern const base::Feature kShortBookmarkSuggestions;
 extern const base::Feature kShortBookmarkSuggestionsByTotalInputLength;
@@ -66,6 +71,8 @@ extern const base::Feature kShortcutExpanding;
 // TODO(crbug.com/1202964): Clean up feature flag used in staged roll-out of
 // various CLs related to the contents/description clean-up work.
 extern const base::Feature kStoreTitleInContentsAndUrlInDescription;
+extern const base::Feature
+    kHistoryQuickProviderSpecificityScoreCountUniqueHosts;
 
 // Document provider
 extern const base::Feature kDocumentProvider;
@@ -74,7 +81,6 @@ extern const base::Feature kDocumentProviderAso;
 // Suggestions UI - these affect the UI or function of the suggestions popup.
 extern const base::Feature kAdaptiveSuggestionsCount;
 extern const base::Feature kClipboardSuggestionContentHidden;
-extern const base::Feature kDocumentProviderDedupingOptimization;
 extern const base::Feature kSuggestionAnswersColorReverse;
 extern const base::Feature kMostVisitedTiles;
 extern const base::Feature kMostVisitedTilesDynamicSpacing;
@@ -89,7 +95,6 @@ extern const base::Feature kOmniboxRemoveSuggestionHeaderCapitalization;
 extern const base::Feature kOmniboxRemoveSuggestionHeaderChevron;
 extern const base::Feature kOmniboxMostVisitedTilesFadingOnTablet;
 extern const base::Feature kOmniboxMostVisitedTilesOnSrp;
-extern const base::Feature kStrippedGurlOptimization;
 
 // Omnibox UI - these affect the UI or function of the location bar (not the
 // popup).

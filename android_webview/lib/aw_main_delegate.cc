@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -50,6 +50,7 @@
 #include "components/variations/variations_ids_provider.h"
 #include "components/version_info/android/channel_getter.h"
 #include "components/viz/common/features.h"
+#include "content/public/app/initialize_mojo_core.h"
 #include "content/public/browser/android/media_url_interceptor_register.h"
 #include "content/public/browser/browser_main_runner.h"
 #include "content/public/browser/browser_thread.h"
@@ -429,6 +430,10 @@ bool AwMainDelegate::ShouldCreateFeatureList(InvokedIn invoked_in) {
   return absl::holds_alternative<InvokedInChildProcess>(invoked_in);
 }
 
+bool AwMainDelegate::ShouldInitializeMojo(InvokedIn invoked_in) {
+  return ShouldCreateFeatureList(invoked_in);
+}
+
 variations::VariationsIdsProvider*
 AwMainDelegate::CreateVariationsIdsProvider() {
   return variations::VariationsIdsProvider::Create(
@@ -442,6 +447,7 @@ absl::optional<int> AwMainDelegate::PostEarlyInitialization(
   if (is_browser_process) {
     InitIcuAndResourceBundleBrowserSide();
     aw_feature_list_creator_->CreateFeatureListAndFieldTrials();
+    content::InitializeMojoCore();
   }
 
   version_info::Channel channel = version_info::android::GetChannel();
@@ -487,6 +493,11 @@ gpu::SharedImageManager* GetSharedImageManager() {
   return GpuServiceWebView::GetInstance()->shared_image_manager();
 }
 
+gpu::Scheduler* GetScheduler() {
+  DCHECK(GpuServiceWebView::GetInstance());
+  return GpuServiceWebView::GetInstance()->scheduler();
+}
+
 viz::VizCompositorThreadRunner* GetVizCompositorThreadRunner() {
   return VizCompositorThreadRunnerWebView::GetInstance();
 }
@@ -497,6 +508,7 @@ content::ContentGpuClient* AwMainDelegate::CreateContentGpuClient() {
   content_gpu_client_ = std::make_unique<AwContentGpuClient>(
       base::BindRepeating(&GetSyncPointManager),
       base::BindRepeating(&GetSharedImageManager),
+      base::BindRepeating(&GetScheduler),
       base::BindRepeating(&GetVizCompositorThreadRunner));
   return content_gpu_client_.get();
 }

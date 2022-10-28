@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -44,10 +44,6 @@ class SecureEnclaveHelper {
   // Uses the SecItemDelete API to delete the key retrieved with the `query`.
   // Returns true if the key was deleted and false otherwise.
   virtual bool Delete(CFDictionaryRef query) = 0;
-
-  // Uses the SecKeychainCopyDefault API to check if the keychain is unlocked.
-  // Returns true when the keychain is unlocked and false otherwise.
-  virtual bool CheckKeychainUnlocked() = 0;
 
   // Uses the crypto library to check whether the Secure Enclave is supported on
   // the device. Returns true if it is supported and false otherwise.

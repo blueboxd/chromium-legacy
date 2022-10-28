@@ -19,29 +19,13 @@ reviewer.
 
 <histograms>
 
-<histogram name="Privacy.AboutThisSite.BannerInteraction"
-    enum="AboutThisSiteBannerInteraction" expires_after="2022-08-21">
+<histogram name="Privacy.AboutThisSite.PageLoadValidation"
+    enum="AboutThisSiteStatus" expires_after="2022-12-21">
   <owner>dullweber@chromium.org</owner>
-  <owner>harrisonsean@chromium.org</owner>
+  <owner>olesiamarukhno@chromium.org</owner>
   <summary>
-    Recorded when a user interacts with an AboutThisSite banner.
-  </summary>
-</histogram>
-
-<histogram name="Privacy.AboutThisSite.BannerStatus"
-    enum="AboutThisSiteBannerStatus" expires_after="2022-08-21">
-  <owner>dullweber@chromium.org</owner>
-  <owner>harrisonsean@chromium.org</owner>
-  <summary>Whether an AboutThisSiteBanner was shown on pageload.</summary>
-</histogram>
-
-<histogram name="Privacy.AboutThisSite.BannerValidation"
-    enum="AboutThisSiteStatus" expires_after="2022-08-21">
-  <owner>dullweber@chromium.org</owner>
-  <owner>harrisonsean@chromium.org</owner>
-  <summary>
-    Whether an AboutThisSiteBanner had a valid proto. Recorded when optimization
-    hints are available on pageload.
+    Whether AboutThisSite had a valid proto. Recorded when optimization hints
+    are available on pageload.
   </summary>
 </histogram>
 
@@ -328,7 +312,7 @@ reviewer.
 
 <histogram name="PrivacySandbox.AggregationService.KeyFetcher.Status2"
     enum="PrivacySandboxAggregationServiceKeyFetcherStatus"
-    expires_after="2022-12-23">
+    expires_after="2023-03-05">
   <owner>alexmt@chromium.org</owner>
   <owner>linnan@chromium.org</owner>
   <summary>
@@ -338,7 +322,7 @@ reviewer.
 
 <histogram name="PrivacySandbox.AggregationService.ReportAssembler.Status"
     enum="PrivacySandboxAggregationServiceReportAssemblerStatus"
-    expires_after="2023-01-01">
+    expires_after="2023-03-05">
   <owner>alexmt@chromium.org</owner>
   <owner>linnan@chromium.org</owner>
   <summary>

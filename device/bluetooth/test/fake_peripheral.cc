@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,6 +10,7 @@
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
+#include "base/ranges/algorithm.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "build/build_config.h"
@@ -72,12 +73,10 @@ void FakePeripheral::SetNextGATTDiscoveryResponse(uint16_t code) {
 
 bool FakePeripheral::AllResponsesConsumed() {
   return !next_connection_response_ && !next_discovery_response_ &&
-         std::all_of(gatt_services_.begin(), gatt_services_.end(),
-                     [](const auto& e) {
-                       FakeRemoteGattService* fake_remote_gatt_service =
-                           static_cast<FakeRemoteGattService*>(e.second.get());
-                       return fake_remote_gatt_service->AllResponsesConsumed();
-                     });
+         base::ranges::all_of(gatt_services_, [](const auto& e) {
+           return static_cast<FakeRemoteGattService*>(e.second.get())
+               ->AllResponsesConsumed();
+         });
 }
 
 void FakePeripheral::SimulateGATTDisconnection() {

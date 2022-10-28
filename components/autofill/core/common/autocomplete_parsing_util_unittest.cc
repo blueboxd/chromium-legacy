@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -26,53 +26,63 @@ class AutocompleteAttributeProcessingUtilTest
 
 // In general, `ParseAutocompleteAttribute()` returns absl::nullopt if one of
 // the tokens cannot be parsed. The exception is the field type, which defaults
-// to HTML_TYPE_UNRECOGNIZED.
+// to HtmlFieldType::kUnrecognized.
 const AutocompleteAttributeTestcase kAutocompleteTestcases[]{
     // Only the field type:
-    {"name", {{"", HTML_MODE_NONE, HTML_TYPE_NAME}}},
-    {"autofill", {{"", HTML_MODE_NONE, HTML_TYPE_UNRECOGNIZED}}},
+    {"name", {{"", HtmlFieldMode::kNone, HtmlFieldType::kName}}},
+    {"autofill", {{"", HtmlFieldMode::kNone, HtmlFieldType::kUnrecognized}}},
     // autocomplete=off is ignored completely.
     {"off", absl::nullopt},
 
     // Rationalization based on the field's max_length is done.
-    {"cc-exp-year", {{"", HTML_MODE_NONE, HTML_TYPE_CREDIT_CARD_EXP_YEAR}}},
     {"cc-exp-year",
-     {{"", HTML_MODE_NONE, HTML_TYPE_CREDIT_CARD_EXP_2_DIGIT_YEAR}},
+     {{"", HtmlFieldMode::kNone, HtmlFieldType::kCreditCardExpYear}}},
+    {"cc-exp-year",
+     {{"", HtmlFieldMode::kNone, HtmlFieldType::kCreditCardExp2DigitYear}},
      /*max_length=*/2},
 
     // Type hints:
     // They are parsed and validated, but otherwise unused. Type hints are only
     // valid before tel* and email.
-    {"home email", {{"", HTML_MODE_NONE, HTML_TYPE_EMAIL}}},
-    {"work email", {{"", HTML_MODE_NONE, HTML_TYPE_EMAIL}}},
+    {"home email", {{"", HtmlFieldMode::kNone, HtmlFieldType::kEmail}}},
+    {"work email", {{"", HtmlFieldMode::kNone, HtmlFieldType::kEmail}}},
     {"work cc-number", absl::nullopt},
     {"unrecognized_type_hint email", absl::nullopt},
 
     // Billing and shipping modes:
-    {"billing country", {{"", HTML_MODE_BILLING, HTML_TYPE_COUNTRY_CODE}}},
-    {"shipping country", {{"", HTML_MODE_SHIPPING, HTML_TYPE_COUNTRY_CODE}}},
-    {"billing unrecognized", {{"", HTML_MODE_BILLING, HTML_TYPE_UNRECOGNIZED}}},
+    {"billing country",
+     {{"", HtmlFieldMode::kBilling, HtmlFieldType::kCountryCode}}},
+    {"shipping country",
+     {{"", HtmlFieldMode::kShipping, HtmlFieldType::kCountryCode}}},
+    {"billing unrecognized",
+     {{"", HtmlFieldMode::kBilling, HtmlFieldType::kUnrecognized}}},
     {"shipping work tel-local",
-     {{"", HTML_MODE_SHIPPING, HTML_TYPE_TEL_LOCAL}}},
+     {{"", HtmlFieldMode::kShipping, HtmlFieldType::kTelLocal}}},
     {"unrecognized_mode country", absl::nullopt},
     {"unrecognized_mode unrecognized", absl::nullopt},
 
     // Sections:
-    {"section-one tel", {{"one", HTML_MODE_NONE, HTML_TYPE_TEL}}},
-    {"section-one shipping tel", {{"one", HTML_MODE_SHIPPING, HTML_TYPE_TEL}}},
+    {"section-one tel", {{"one", HtmlFieldMode::kNone, HtmlFieldType::kTel}}},
+    {"section-one shipping tel",
+     {{"one", HtmlFieldMode::kShipping, HtmlFieldType::kTel}}},
     {"section-one shipping home tel",
-     {{"one", HTML_MODE_SHIPPING, HTML_TYPE_TEL}}},
-    {"section- tel", {{"", HTML_MODE_NONE, HTML_TYPE_TEL}}},
+     {{"one", HtmlFieldMode::kShipping, HtmlFieldType::kTel}}},
+    {"section- tel", {{"", HtmlFieldMode::kNone, HtmlFieldType::kTel}}},
     {"section tel", absl::nullopt},
     {"no_section tel", absl::nullopt},
     {"no_section work tel", absl::nullopt},
-    {"section-random", {{"", HTML_MODE_NONE, HTML_TYPE_UNRECOGNIZED}}},
+    {"section-random",
+     {{"", HtmlFieldMode::kNone, HtmlFieldType::kUnrecognized}}},
 
-    // "webauthn" shouldn't prevent parsing, but is otherwise ignored.
-    {"name webauthn", {{"", HTML_MODE_NONE, HTML_TYPE_NAME}}},
+    // "webauthn" token:
+    {"name webauthn",
+     {{"", HtmlFieldMode::kNone, HtmlFieldType::kName, /*webauthn=*/true}}},
     {"section-one shipping home tel webauthn",
-     {{"one", HTML_MODE_SHIPPING, HTML_TYPE_TEL}}},
-    {"webauthn", absl::nullopt},
+     {{"one", HtmlFieldMode::kShipping, HtmlFieldType::kTel,
+       /*webauthn=*/true}}},
+    {"webauthn",
+     {{"", HtmlFieldMode::kNone, HtmlFieldType::kUnspecified,
+       /*webauthn=*/true}}},
 
     // Too many tokens.
     {"hello section-one shipping home tel webauthn", absl::nullopt}};
@@ -91,13 +101,9 @@ TEST_P(AutocompleteAttributeProcessingUtilTest, ParseAutocompleteAttribute) {
   if (test.max_length)
     field.max_length = test.max_length;
 
-  auto result = ParseAutocompleteAttribute(field);
-  ASSERT_EQ(result.has_value(), test.expected_result.has_value());
-  if (result.has_value()) {
-    EXPECT_EQ(result->section, test.expected_result->section);
-    EXPECT_EQ(result->mode, test.expected_result->mode);
-    EXPECT_EQ(result->field_type, test.expected_result->field_type);
-  }
+  auto result = ParseAutocompleteAttribute(field.autocomplete_attribute,
+                                           field.max_length);
+  EXPECT_EQ(result, test.expected_result);
 }
 
 }  // namespace autofill

@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -40,6 +40,7 @@
 #include "components/sync/protocol/proto_visitors.h"
 #include "components/sync/protocol/reading_list_specifics.pb.h"
 #include "components/sync/protocol/search_engine_specifics.pb.h"
+#include "components/sync/protocol/segmentation_specifics.pb.h"
 #include "components/sync/protocol/send_tab_to_self_specifics.pb.h"
 #include "components/sync/protocol/session_specifics.pb.h"
 #include "components/sync/protocol/sharing_message_specifics.pb.h"
@@ -150,11 +151,11 @@ class ToValueVisitor {
              const char* field_name,
              const google::protobuf::RepeatedPtrField<F>& repeated_field) {
     if (!repeated_field.empty()) {
-      std::unique_ptr<base::ListValue> list(new base::ListValue());
+      base::Value::List list;
       for (const auto& field : repeated_field) {
-        list->Append(base::Value::FromUniquePtrValue(ToValue(field)));
+        list.Append(base::Value::FromUniquePtrValue(ToValue(field)));
       }
-      value_->Set(field_name, std::move(list));
+      value_->Set(field_name, std::make_unique<base::Value>(std::move(list)));
     }
   }
 
@@ -163,11 +164,11 @@ class ToValueVisitor {
              const char* field_name,
              const google::protobuf::RepeatedField<F>& repeated_field) {
     if (!repeated_field.empty()) {
-      std::unique_ptr<base::ListValue> list(new base::ListValue());
+      base::Value::List list;
       for (const auto& field : repeated_field) {
-        list->Append(base::Value::FromUniquePtrValue(ToValue(field)));
+        list.Append(base::Value::FromUniquePtrValue(ToValue(field)));
       }
-      value_->Set(field_name, std::move(list));
+      value_->Set(field_name, std::make_unique<base::Value>(std::move(list)));
     }
   }
 
@@ -330,6 +331,7 @@ IMPLEMENT_PROTO_TO_VALUE(AutofillOfferSpecifics)
 IMPLEMENT_PROTO_TO_VALUE(AutofillProfileSpecifics)
 IMPLEMENT_PROTO_TO_VALUE(AutofillSpecifics)
 IMPLEMENT_PROTO_TO_VALUE(AutofillWalletSpecifics)
+IMPLEMENT_PROTO_TO_VALUE(AutofillWalletUsageSpecifics)
 IMPLEMENT_PROTO_TO_VALUE(BookmarkSpecifics)
 IMPLEMENT_PROTO_TO_VALUE(ClientConfigParams)
 IMPLEMENT_PROTO_TO_VALUE(ContactInfoSpecifics)
@@ -365,6 +367,7 @@ IMPLEMENT_PROTO_TO_VALUE(ReadingListSpecifics)
 IMPLEMENT_PROTO_TO_VALUE(SearchEngineSpecifics)
 IMPLEMENT_PROTO_TO_VALUE(SecurityEventSpecifics)
 IMPLEMENT_PROTO_TO_VALUE(SendTabToSelfSpecifics)
+IMPLEMENT_PROTO_TO_VALUE(SegmentationSpecifics)
 IMPLEMENT_PROTO_TO_VALUE(SessionHeader)
 IMPLEMENT_PROTO_TO_VALUE(SessionSpecifics)
 IMPLEMENT_PROTO_TO_VALUE(SessionTab)

@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,7 +6,9 @@
 
 namespace autofill_assistant {
 
-FakeCommonDependencies::FakeCommonDependencies() = default;
+FakeCommonDependencies::FakeCommonDependencies(
+    signin::IdentityManager* identity_manager)
+    : identity_manager_(identity_manager) {}
 FakeCommonDependencies::~FakeCommonDependencies() = default;
 
 std::unique_ptr<AssistantFieldTrialUtil>
@@ -60,7 +62,12 @@ bool FakeCommonDependencies::IsWebLayer() const {
 
 signin::IdentityManager* FakeCommonDependencies::GetIdentityManager(
     content::BrowserContext* browser_context) const {
-  return nullptr;
+  return identity_manager_;
+}
+
+consent_auditor::ConsentAuditor* FakeCommonDependencies::GetConsentAuditor(
+    content::BrowserContext* browser_context) const {
+  return consent_auditor_.get();
 }
 
 version_info::Channel FakeCommonDependencies::GetChannel() const {

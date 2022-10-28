@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,7 +13,7 @@
 #include "base/callback_helpers.h"
 #include "base/format_macros.h"
 #include "base/memory/aligned_memory.h"
-#include "base/memory/unsafe_shared_memory_region.h"
+#include "base/memory/read_only_shared_memory_region.h"
 #include "base/strings/stringprintf.h"
 #include "build/build_config.h"
 #include "gpu/command_buffer/common/mailbox_holder.h"
@@ -150,14 +150,14 @@ void InitializeYV12Frame(VideoFrame* frame, double white_to_black) {
   EXPECT_EQ(PIXEL_FORMAT_YV12, frame->format());
   const int first_black_row =
       static_cast<int>(frame->coded_size().height() * white_to_black);
-  uint8_t* y_plane = frame->data(VideoFrame::kYPlane);
+  uint8_t* y_plane = frame->writable_data(VideoFrame::kYPlane);
   for (int row = 0; row < frame->coded_size().height(); ++row) {
     int color = (row < first_black_row) ? 0xFF : 0x00;
     memset(y_plane, color, frame->stride(VideoFrame::kYPlane));
     y_plane += frame->stride(VideoFrame::kYPlane);
   }
-  uint8_t* u_plane = frame->data(VideoFrame::kUPlane);
-  uint8_t* v_plane = frame->data(VideoFrame::kVPlane);
+  uint8_t* u_plane = frame->writable_data(VideoFrame::kUPlane);
+  uint8_t* v_plane = frame->writable_data(VideoFrame::kVPlane);
   for (int row = 0; row < frame->coded_size().height(); row += 2) {
     memset(u_plane, 0x80, frame->stride(VideoFrame::kUPlane));
     memset(v_plane, 0x80, frame->stride(VideoFrame::kVPlane));
@@ -229,7 +229,7 @@ void ExpectFrameExtents(VideoPixelFormat format, const char* expected_hash) {
     EXPECT_TRUE(frame->row_bytes(plane));
     EXPECT_TRUE(frame->columns(plane));
 
-    memset(frame->data(plane), kFillByte,
+    memset(frame->writable_data(plane), kFillByte,
            frame->stride(plane) * frame->rows(plane));
   }
 
@@ -336,14 +336,14 @@ TEST(VideoFrame, CreateBlackFrame) {
   EXPECT_EQ(kHeight, frame->coded_size().height());
 
   // Test frames themselves.
-  uint8_t* y_plane = frame->data(VideoFrame::kYPlane);
+  uint8_t* y_plane = frame->writable_data(VideoFrame::kYPlane);
   for (int y = 0; y < frame->coded_size().height(); ++y) {
     EXPECT_EQ(0, memcmp(kExpectedYRow, y_plane, std::size(kExpectedYRow)));
     y_plane += frame->stride(VideoFrame::kYPlane);
   }
 
-  uint8_t* u_plane = frame->data(VideoFrame::kUPlane);
-  uint8_t* v_plane = frame->data(VideoFrame::kVPlane);
+  uint8_t* u_plane = frame->writable_data(VideoFrame::kUPlane);
+  uint8_t* v_plane = frame->writable_data(VideoFrame::kVPlane);
   for (int y = 0; y < frame->coded_size().height() / 2; ++y) {
     EXPECT_EQ(0, memcmp(kExpectedUVRow, u_plane, std::size(kExpectedUVRow)));
     EXPECT_EQ(0, memcmp(kExpectedUVRow, v_plane, std::size(kExpectedUVRow)));
@@ -441,20 +441,21 @@ TEST(VideoFrame, WrapExternalData) {
 // Create a frame that wraps read-only shared memory.
 TEST(VideoFrame, WrapSharedMemory) {
   const size_t kDataSize = 2 * 256 * 256;
-  base::UnsafeSharedMemoryRegion region =
-      base::UnsafeSharedMemoryRegion::Create(kDataSize);
-  ASSERT_TRUE(region.IsValid());
-  base::WritableSharedMemoryMapping mapping = region.Map();
-  ASSERT_TRUE(mapping.IsValid());
+  base::MappedReadOnlyRegion mapped_region =
+      base::ReadOnlySharedMemoryRegion::Create(kDataSize);
+  ASSERT_TRUE(mapped_region.IsValid());
   gfx::Size coded_size(256, 256);
   gfx::Rect visible_rect(coded_size);
-  CreateTestY16Frame(coded_size, visible_rect, mapping.memory());
+  CreateTestY16Frame(coded_size, visible_rect, mapped_region.mapping.memory());
   auto timestamp = base::Milliseconds(1);
   auto frame = VideoFrame::WrapExternalData(
       PIXEL_FORMAT_Y16, coded_size, visible_rect, visible_rect.size(),
-      mapping.GetMemoryAsSpan<uint8_t>().data(), kDataSize, timestamp);
-  frame->BackWithSharedMemory(&region);
+      mapped_region.mapping.GetMemoryAsSpan<uint8_t>().data(), kDataSize,
+      timestamp);
+  EXPECT_EQ(frame->storage_type(), VideoFrame::STORAGE_UNOWNED_MEMORY);
 
+  frame->BackWithSharedMemory(&mapped_region.region);
+  EXPECT_EQ(frame->storage_type(), VideoFrame::STORAGE_SHMEM);
   EXPECT_EQ(frame->coded_size(), coded_size);
   EXPECT_EQ(frame->visible_rect(), visible_rect);
   EXPECT_EQ(frame->timestamp(), timestamp);
@@ -781,6 +782,26 @@ TEST(VideoFrameMetadata, MergeMetadata) {
   // Merging full metadata into empty metadata should fill it up.
   empty_metadata.MergeMetadataFrom(full_metadata);
   VerifyVideoFrameMetadataEquality(empty_metadata, reference_metadata);
+}
+
+TEST(VideoFrameMetadata, ClearTextureMetadata) {
+  VideoFrameMetadata reference_md = GetFullVideoFrameMetadata();
+  reference_md.is_webgpu_compatible = true;
+  reference_md.texture_origin_is_top_left = false;
+  reference_md.read_lock_fences_enabled = true;
+
+  VideoFrameMetadata copy_md;
+  copy_md.MergeMetadataFrom(reference_md);
+
+  copy_md.ClearTextureFrameMedatada();
+  EXPECT_FALSE(copy_md.is_webgpu_compatible);
+  EXPECT_TRUE(copy_md.texture_origin_is_top_left);
+  EXPECT_FALSE(copy_md.read_lock_fences_enabled);
+
+  reference_md.is_webgpu_compatible = false;
+  reference_md.texture_origin_is_top_left = true;
+  reference_md.read_lock_fences_enabled = false;
+  VerifyVideoFrameMetadataEquality(copy_md, reference_md);
 }
 
 TEST(VideoFrameMetadata, PartialMergeMetadata) {

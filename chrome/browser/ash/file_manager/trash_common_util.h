@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -25,6 +25,10 @@ extern const char kFilesFolderName[];
 
 // Constant representing the ".trashinfo" extension for metadata files.
 extern const char kTrashInfoExtension[];
+
+// Constant representing the extended attribute "user.TrackedDirectoryName" used
+// to track the files and info directories for deletion by cryptohome.
+extern const char kTrackedDirectoryName[];
 
 struct TrashLocation {
   TrashLocation(const base::FilePath supplied_relative_folder_path,

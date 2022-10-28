@@ -1,4 +1,4 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -19,6 +19,7 @@
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/browsing_data/browsing_data_lifetime_policy_handler.h"
+#include "chrome/browser/enterprise/connectors/device_trust/prefs.h"
 #include "chrome/browser/first_party_sets/first_party_sets_overrides_policy_handler.h"
 #include "chrome/browser/first_party_sets/first_party_sets_pref_names.h"
 #include "chrome/browser/net/disk_cache_dir_policy_handler.h"
@@ -54,6 +55,7 @@
 #include "components/autofill/core/browser/autofill_address_policy_handler.h"
 #include "components/autofill/core/browser/autofill_credit_card_policy_handler.h"
 #include "components/autofill/core/browser/autofill_policy_handler.h"
+#include "components/autofill_assistant/browser/public/prefs.h"
 #include "components/blocked_content/pref_names.h"
 #include "components/bookmarks/common/bookmark_pref_names.h"
 #include "components/bookmarks/managed/managed_bookmarks_policy_handler.h"
@@ -79,6 +81,7 @@
 #include "components/omnibox/browser/omnibox_prefs.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "components/payments/core/payment_prefs.h"
+#include "components/performance_manager/public/user_tuning/prefs.h"
 #include "components/policy/core/browser/configuration_policy_handler.h"
 #include "components/policy/core/browser/configuration_policy_handler_list.h"
 #include "components/policy/core/browser/configuration_policy_handler_parameters.h"
@@ -314,6 +317,9 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kAmbientAuthenticationInPrivateModesEnabled,
     prefs::kAmbientAuthenticationInPrivateModesEnabled,
     base::Value::Type::INTEGER },
+  { key::kAssistantWebEnabled,
+    autofill_assistant::prefs::kAutofillAssistantEnabled,
+    base::Value::Type::BOOLEAN },
   { key::kAudioCaptureAllowed,
     prefs::kAudioCaptureAllowed,
     base::Value::Type::BOOLEAN },
@@ -1328,6 +1334,9 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kDevicePowerAdaptiveChargingEnabled,
     ash::prefs::kPowerAdaptiveChargingEnabled,
     base::Value::Type::BOOLEAN },
+  { key::kDevicePrintingClientNameTemplate,
+    prefs::kPrintingClientNameTemplate,
+    base::Value::Type::STRING },
 #endif // BUILDFLAG(IS_CHROMEOS_ASH)
 
 #if BUILDFLAG(IS_LINUX)
@@ -1577,6 +1586,9 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kLacrosSecondaryProfilesAllowed,
     prefs::kLacrosSecondaryProfilesAllowed,
     base::Value::Type::BOOLEAN },
+  { key::kLacrosDataBackwardMigrationMode,
+    prefs::kLacrosDataBackwardMigrationMode,
+    base::Value::Type::STRING },
   { key::kClientCertificateManagementAllowed,
     prefs::kClientCertificateManagementAllowed,
     base::Value::Type::INTEGER },
@@ -1632,12 +1644,6 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
     extensions::pref_names::kBlockExternalExtensions,
     base::Value::Type::BOOLEAN },
 #endif // !BUILDFLAG(IS_CHROMEOS) && BUILDFLAG(ENABLE_EXTENSIONS)
-
-#if BUILDFLAG(BUILTIN_CERT_VERIFIER_POLICY_SUPPORTED)
-  { key::kBuiltinCertificateVerifierEnabled,
-    prefs::kBuiltinCertificateVerifierEnabled,
-    base::Value::Type::BOOLEAN },
-#endif  // BUILDFLAG(BUILTIN_CERT_VERIFIER_POLICY_SUPPORTED)
 
 #if BUILDFLAG(CHROME_ROOT_STORE_POLICY_SUPPORTED)
   { key::kChromeRootStoreEnabled,
@@ -1725,6 +1731,20 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kPrefixedStorageInfoEnabled,
     storage::kPrefixedStorageInfoEnabled,
     base::Value::Type::BOOLEAN },
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX)
+  { key::kHighEfficiencyModeEnabled,
+    performance_manager::user_tuning::prefs::kHighEfficiencyModeEnabled,
+    base::Value::Type::BOOLEAN },
+  { key::kBatterySaverModeAvailability,
+    performance_manager::user_tuning::prefs::kBatterySaverModeState,
+    base::Value::Type::INTEGER },
+  { key::kTabDiscardingExceptions,
+    performance_manager::user_tuning::prefs::kManagedTabDiscardingExceptions,
+    base::Value::Type::LIST },
+#endif  // BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX)
+  { key::kStrictMimetypeCheckForWorkerScriptsEnabled,
+    prefs::kStrictMimetypeCheckForWorkerScriptsEnabled,
+    base::Value::Type::BOOLEAN},
 };
 // clang-format on
 

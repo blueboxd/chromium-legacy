@@ -1,17 +1,17 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #import "ios/web/session/session_certificate_policy_cache_impl.h"
 
-#include "base/bind.h"
-#include "ios/web/public/browser_state.h"
-#include "ios/web/public/security/certificate_policy_cache.h"
+#import "base/bind.h"
+#import "ios/web/public/browser_state.h"
+#import "ios/web/public/security/certificate_policy_cache.h"
 #import "ios/web/public/session/crw_session_certificate_policy_cache_storage.h"
-#include "ios/web/public/thread/web_task_traits.h"
-#include "ios/web/public/thread/web_thread.h"
-#include "net/cert/x509_util.h"
-#include "net/cert/x509_util_apple.h"
+#import "ios/web/public/thread/web_task_traits.h"
+#import "ios/web/public/thread/web_thread.h"
+#import "net/cert/x509_util.h"
+#import "net/cert/x509_util_apple.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -77,9 +77,9 @@ void SessionCertificatePolicyCacheImpl::RegisterAllowedCertificate(
   DCHECK_CURRENTLY_ON(WebThread::UI);
   // Store user decisions with the leaf cert, ignoring any intermediates.
   // This is because WKWebView returns the verified certificate chain in
-  // |webView:didReceiveAuthenticationChallenge:completionHandler:|,
+  // `webView:didReceiveAuthenticationChallenge:completionHandler:`,
   // but the server-supplied chain in
-  // |webView:didFailProvisionalNavigation:withError:|.
+  // `webView:didFailProvisionalNavigation:withError:`.
   if (!certificate->intermediate_buffers().empty()) {
     certificate = net::X509Certificate::CreateFromBuffer(
         bssl::UpRef(certificate->cert_buffer()), {});

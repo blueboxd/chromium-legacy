@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -18,14 +18,21 @@
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/services/app_service/public/cpp/app_launch_util.h"
 #include "components/services/app_service/public/cpp/app_types.h"
+#include "components/services/app_service/public/cpp/capability_access.h"
 #include "components/services/app_service/public/cpp/icon_types.h"
+#include "components/services/app_service/public/cpp/menu.h"
 #include "components/services/app_service/public/cpp/permission.h"
 #include "components/services/app_service/public/cpp/publisher_base.h"
 #include "components/services/app_service/public/mojom/app_service.mojom-forward.h"
 #include "components/services/app_service/public/mojom/types.mojom-forward.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/bindings/remote_set.h"
+
+namespace apps {
+struct MenuItems;
+}
 
 namespace base {
 class Location;
@@ -105,6 +112,12 @@ class WebAppsCrosapi : public KeyedService,
                  UninstallSource uninstall_source,
                  bool clear_site_data,
                  bool report_abuse) override;
+  void GetMenuModel(const std::string& app_id,
+                    MenuType menu_type,
+                    int64_t display_id,
+                    base::OnceCallback<void(MenuItems)> callback) override;
+  void SetWindowMode(const std::string& app_id,
+                     WindowMode window_mode) override;
 
   // apps::PublisherBase overrides.
   void Connect(mojo::PendingRemote<apps::mojom::Subscriber> subscriber_remote,
@@ -148,8 +161,7 @@ class WebAppsCrosapi : public KeyedService,
   void OnApps(std::vector<AppPtr> deltas) override;
   void RegisterAppController(
       mojo::PendingRemote<crosapi::mojom::AppController> controller) override;
-  void OnCapabilityAccesses(
-      std::vector<apps::mojom::CapabilityAccessPtr> deltas) override;
+  void OnCapabilityAccesses(std::vector<CapabilityAccessPtr> deltas) override;
 
   bool LogIfNotConnected(const base::Location& from_here);
 
@@ -158,9 +170,9 @@ class WebAppsCrosapi : public KeyedService,
 
   void OnGetMenuModelFromCrosapi(
       const std::string& app_id,
-      apps::mojom::MenuType menu_type,
-      apps::mojom::MenuItemsPtr menu_items,
-      GetMenuModelCallback callback,
+      MenuType menu_type,
+      MenuItems menu_items,
+      base::OnceCallback<void(MenuItems)> callback,
       crosapi::mojom::MenuItemsPtr crosapi_menu_items);
 
   void OnLoadIcon(IconType icon_type,

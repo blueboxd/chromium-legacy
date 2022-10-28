@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,6 +10,7 @@
 #include "base/containers/contains.h"
 #include "base/memory/raw_ptr.h"
 #include "base/observer_list.h"
+#include "base/ranges/algorithm.h"
 #include "components/media_router/browser/media_router.h"
 #include "components/media_router/browser/media_sinks_observer.h"
 #include "content/public/browser/browser_thread.h"
@@ -51,8 +52,6 @@ class QueryResultManager::MediaSourceMediaSinksObserver
     DCHECK(sink_ids);
     *sink_ids = latest_sink_ids_;
   }
-
-  MediaCastMode cast_mode() const { return cast_mode_; }
 
  private:
   const MediaCastMode cast_mode_;
@@ -270,12 +269,11 @@ bool QueryResultManager::AreSourcesValidForCastMode(
   bool has_cast_mode = cast_mode_it != cast_mode_sources_.end();
   // If a source has already been registered, then it must be associated with
   // |cast_mode|.
-  return std::find_if(sources.begin(), sources.end(),
-                      [=](const MediaSource& source) {
-                        return base::Contains(sinks_observers_, source) &&
-                               (!has_cast_mode ||
-                                !base::Contains(cast_mode_it->second, source));
-                      }) == sources.end();
+  return base::ranges::find_if(sources, [=](const MediaSource& source) {
+           return base::Contains(sinks_observers_, source) &&
+                  (!has_cast_mode ||
+                   !base::Contains(cast_mode_it->second, source));
+         }) == sources.end();
 }
 
 void QueryResultManager::NotifyOnResultsUpdated() {

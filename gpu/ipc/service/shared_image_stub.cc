@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -14,7 +14,6 @@
 #include "base/trace_event/memory_dump_manager.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
-#include "gpu/command_buffer/service/mailbox_manager.h"
 #include "gpu/command_buffer/service/scheduler.h"
 #include "gpu/command_buffer/service/shared_image/shared_image_factory.h"
 #include "gpu/ipc/common/command_buffer_id.h"
@@ -505,7 +504,6 @@ ContextResult SharedImageStub::MakeContextCurrentAndCreateFactory() {
       channel_manager->gpu_preferences(),
       channel_manager->gpu_driver_bug_workarounds(),
       channel_manager->gpu_feature_info(), context_state_.get(),
-      channel_manager->mailbox_manager(),
       channel_manager->shared_image_manager(),
       gmb_factory ? gmb_factory->AsImageFactory() : nullptr, this,
       /*is_for_display_compositor=*/false);
@@ -549,10 +547,11 @@ bool SharedImageStub::OnMemoryDump(
   if (!factory_)
     return true;
 
+  std::string dump_name =
+      base::StringPrintf("gpu/shared_images/client_0x%" PRIX32, ClientId());
+
   if (args.level_of_detail ==
       base::trace_event::MemoryDumpLevelOfDetail::BACKGROUND) {
-    std::string dump_name =
-        base::StringPrintf("gpu/shared_images/client_0x%" PRIX32, ClientId());
     base::trace_event::MemoryAllocatorDump* dump =
         pmd->CreateAllocatorDump(dump_name);
     dump->AddScalar(base::trace_event::MemoryAllocatorDump::kNameSize,
@@ -562,7 +561,7 @@ bool SharedImageStub::OnMemoryDump(
     return true;
   }
 
-  return factory_->OnMemoryDump(args, pmd, ClientId(), ClientTracingId());
+  return factory_->OnMemoryDump(args, pmd, dump_name, ClientTracingId());
 }
 
 SharedImageStub::SharedImageDestructionCallback

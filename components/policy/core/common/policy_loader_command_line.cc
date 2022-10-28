@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -38,9 +38,8 @@ std::unique_ptr<PolicyBundle> PolicyLoaderCommandLine::Load() {
   }
 
   bundle->Get(PolicyNamespace(POLICY_DOMAIN_CHROME, std::string()))
-      .LoadFrom(&base::Value::AsDictionaryValue(*policies),
-                POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
-                POLICY_SOURCE_COMMAND_LINE);
+      .LoadFrom(policies->GetDict(), POLICY_LEVEL_MANDATORY,
+                POLICY_SCOPE_MACHINE, POLICY_SOURCE_COMMAND_LINE);
   return bundle;
 }
 

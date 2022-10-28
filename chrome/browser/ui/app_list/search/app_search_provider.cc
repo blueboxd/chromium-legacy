@@ -1,4 +1,4 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -38,8 +38,8 @@
 #include "chrome/browser/ui/app_list/chrome_app_list_item.h"
 #include "chrome/browser/ui/app_list/internal_app/internal_app_metadata.h"
 #include "chrome/browser/ui/app_list/search/app_service_app_result.h"
+#include "chrome/browser/ui/app_list/search/ranking/ranking_item_util.h"
 #include "chrome/browser/ui/app_list/search/search_result_ranker/app_search_result_ranker.h"
-#include "chrome/browser/ui/app_list/search/search_result_ranker/ranking_item_util.h"
 #include "chrome/browser/ui/app_list/search/search_tags_util.h"
 #include "chrome/browser/web_applications/web_app_id_constants.h"
 #include "chrome/grit/generated_resources.h"
@@ -76,6 +76,9 @@ constexpr double kRelevanceThreshold = 0.32;
 constexpr const char* const ranked_default_app_ids[] = {
     web_app::kOsSettingsAppId, web_app::kHelpAppId, arc::kPlayStoreAppId,
     web_app::kCanvasAppId, web_app::kCameraAppId};
+
+// Flag to enable/disable diacritics stripping
+constexpr bool kStripDiacritics = true;
 
 // A selection of apps are designated as default recommended apps, and these are
 // ranked in a priority order. Determine the rank of the app corresponding to
@@ -216,7 +219,8 @@ class AppSearchProvider::App {
     } else {
       FuzzyTokenizedStringMatch match;
       for (auto& curr_text : tokenized_indexed_searchable_text_) {
-        if (match.Relevance(query, *curr_text, kUseWeightedRatio) >=
+        if (match.Relevance(query, *curr_text, kUseWeightedRatio,
+                            kStripDiacritics) >=
             std::max(kRelevanceThreshold, relevance_threshold())) {
           return true;
         }
@@ -569,9 +573,8 @@ void AppSearchProvider::UpdateQueriedResults() {
 
   const TokenizedString query_terms(query_);
   const bool use_exact_match =
-      (!app_list_features::IsFuzzyAppSearchEnabled()) ||
-      (app_list_features::IsExactMatchForNonLatinLocaleEnabled() &&
-       IsNonLatinLocale(base::i18n::GetConfiguredLocale()));
+      app_list_features::IsExactMatchForNonLatinLocaleEnabled() &&
+      IsNonLatinLocale(base::i18n::GetConfiguredLocale());
 
   for (auto& app : apps_) {
     if (!app->searchable())
@@ -601,8 +604,8 @@ void AppSearchProvider::UpdateQueriedResults() {
       MaybeAddResult(&new_results, std::move(result), &seen_or_filtered_apps);
     } else {
       FuzzyTokenizedStringMatch match;
-      const double relevance =
-          match.Relevance(query_terms, *indexed_name, kUseWeightedRatio);
+      const double relevance = match.Relevance(
+          query_terms, *indexed_name, kUseWeightedRatio, kStripDiacritics);
       if (relevance >= kRelevanceThreshold ||
           app->MatchSearchableText(query_terms, use_exact_match)) {
         std::unique_ptr<AppResult> result = app->data_source()->CreateResult(

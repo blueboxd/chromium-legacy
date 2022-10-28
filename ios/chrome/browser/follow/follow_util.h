@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -19,7 +19,7 @@ extern NSString* const kFollowIPHHost;
 // Key used to store the date when showing the follow in-product help (IPH).
 extern NSString* const kFollowIPHDate;
 
-// Returns the Follow action state for |webState|.
+// Returns the Follow action state for `webState`.
 FollowActionState GetFollowActionState(web::WebState* webState);
 
 #pragma mark - For Follow IPH

@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -37,6 +37,7 @@ struct ContextInfo {
   std::vector<std::string> on_file_attached_providers;
   std::vector<std::string> on_file_downloaded_providers;
   std::vector<std::string> on_bulk_data_entry_providers;
+  std::vector<std::string> on_print_providers;
   std::vector<std::string> on_security_event_providers;
   safe_browsing::EnterpriseRealTimeUrlCheckMode realtime_url_check_mode;
   std::string browser_version;

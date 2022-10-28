@@ -1,14 +1,14 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import 'chrome://resources/cr_elements/hidden_style_css.m.js';
+import 'chrome://resources/cr_elements/cr_hidden_style.css.js';
 import './strings.m.js';
 
 import {ClickInfo, Command} from 'chrome://resources/js/browser_command/browser_command.mojom-webui.js';
 import {BrowserCommandProxy} from 'chrome://resources/js/browser_command/browser_command_proxy.js';
 import {isChromeOS} from 'chrome://resources/js/cr.m.js';
-import {EventTracker} from 'chrome://resources/js/event_tracker.m.js';
+import {EventTracker} from 'chrome://resources/js/event_tracker.js';
 import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {getTemplate} from './whats_new_app.html.js';

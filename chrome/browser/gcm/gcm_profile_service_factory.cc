@@ -1,4 +1,4 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,12 +10,10 @@
 #include "base/task/sequenced_task_runner.h"
 #include "base/task/thread_pool.h"
 #include "build/build_config.h"
-#include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_key.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "components/gcm_driver/gcm_profile_service.h"
-#include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/offline_pages/buildflags/buildflags.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -97,7 +95,7 @@ GCMProfileService* GCMProfileServiceFactory::GetForProfile(
     content::BrowserContext* profile) {
   // GCM is not supported in incognito mode.
   if (profile->IsOffTheRecord())
-    return NULL;
+    return nullptr;
 
   return static_cast<GCMProfileService*>(
       GetInstance()->GetServiceForBrowserContext(profile, true));
@@ -110,9 +108,9 @@ GCMProfileServiceFactory* GCMProfileServiceFactory::GetInstance() {
 }
 
 GCMProfileServiceFactory::GCMProfileServiceFactory()
-    : BrowserContextKeyedServiceFactory(
-        "GCMProfileService",
-        BrowserContextDependencyManager::GetInstance()) {
+    : ProfileKeyedServiceFactory(
+          "GCMProfileService",
+          ProfileSelections::BuildForRegularAndIncognito()) {
   DependsOn(IdentityManagerFactory::GetInstance());
 #if BUILDFLAG(ENABLE_OFFLINE_PAGES)
   DependsOn(offline_pages::PrefetchServiceFactory::GetInstance());
@@ -164,11 +162,6 @@ KeyedService* GCMProfileServiceFactory::BuildServiceInstanceFor(
 #endif  // BUILDFLAG(ENABLE_OFFLINE_PAGES)
 
   return service.release();
-}
-
-content::BrowserContext* GCMProfileServiceFactory::GetBrowserContextToUse(
-    content::BrowserContext* context) const {
-  return chrome::GetBrowserContextOwnInstanceInIncognito(context);
 }
 
 }  // namespace gcm

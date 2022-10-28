@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -21,7 +21,7 @@ class CaptivePortalTabHelper
 
   ~CaptivePortalTabHelper() override;
 
-  // Displays the Captive Portal Login page at |landing_url|.
+  // Displays the Captive Portal Login page at `landing_url`.
   void DisplayCaptivePortalLoginPage(GURL landing_url);
 
   void SetTabInsertionBrowserAgent(TabInsertionBrowserAgent* insertionAgent);

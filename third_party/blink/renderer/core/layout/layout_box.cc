@@ -1269,7 +1269,9 @@ void LayoutBox::UpdateAfterLayout() {
 
   Document& document = GetDocument();
   document.IncLayoutCallsCounter();
-  document.GetFrame()->GetInputMethodController().DidUpdateLayout(*this);
+  GetFrame()->GetInputMethodController().DidUpdateLayout(*this);
+  if (IsPositioned())
+    GetFrame()->GetInputMethodController().DidLayoutSubtree(*this);
   if (IsLayoutNGObject())
     document.IncLayoutCallsCounterNG();
 }
@@ -2059,8 +2061,7 @@ bool LayoutBox::MapVisualRectToContainer(
   if (has_perspective && container_object != NearestAncestorForElement()) {
     has_perspective = false;
 
-    if (StyleRef().Preserves3D() || transform.M13() != 0.0 ||
-        transform.M23() != 0.0 || transform.M43() != 0.0) {
+    if (StyleRef().Preserves3D() || transform.Creates3D()) {
       UseCounter::Count(GetDocument(),
                         WebFeature::kDifferentPerspectiveCBOrParent);
     }
@@ -8080,8 +8081,17 @@ BackgroundPaintLocation LayoutBox::ComputeBackgroundPaintLocationIfComposited()
   return paint_location;
 }
 
-bool LayoutBox::IsFixedToView() const {
-  return IsFixedPositioned() && Container() == View();
+bool LayoutBox::IsFixedToView(
+    const LayoutObject* container_for_fixed_position) const {
+  if (!IsFixedPositioned())
+    return false;
+
+  const auto* container = container_for_fixed_position;
+  if (!container)
+    container = Container();
+  else
+    DCHECK_EQ(container, Container());
+  return container->IsLayoutView();
 }
 
 PhysicalRect LayoutBox::ComputeStickyConstrainingRect() const {

@@ -1,4 +1,4 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,6 +13,7 @@
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/lifetime/browser_shutdown.h"
 #include "chrome/browser/profiles/profile_shortcut_manager.h"
 #include "chrome/browser/ui/webui/chrome_web_ui_controller_factory.h"
 #include "chrome/browser/update_client/chrome_update_query_params_delegate.h"
@@ -81,13 +82,15 @@ class ChromeUnitTestSuiteInitializer : public testing::EmptyTestEventListener {
     TestingBrowserProcess::DeleteInstance();
     // Some tests cause ChildThreadImpl to initialize a PowerMonitor.
     base::PowerMonitor::ShutdownForTesting();
-    DCHECK(ui::AXPlatformNode::GetAccessibilityMode() == 0)
-        << "Please use ScopedAxModeSetter, or add a call to "
-           "AXPlatformNode::ResetAxModeForTesting() at the end of your test.";
+    DCHECK(ui::AXPlatformNode::GetAccessibilityMode() == ui::AXMode::kNone)
+        << "Please use ScopedAXModeSetter, or add a call to "
+           "AXPlatformNode::SetAXMode(ui::AXMode::kNone) at the end of your "
+           "test.";
 #if BUILDFLAG(IS_CHROMEOS_ASH)
     arc::ClearArcAllowedCheckForTesting();
     crypto::ResetTokenManagerForTesting();
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+    browser_shutdown::ResetShutdownGlobalsForTesting();
   }
 };
 

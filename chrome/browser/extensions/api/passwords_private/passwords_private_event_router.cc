@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -74,10 +74,10 @@ void PasswordsPrivateEventRouter::OnPasswordsExportProgress(
     const std::string& folder_name) {
   api::passwords_private::PasswordExportProgress params;
   params.status = status;
-  params.folder_name = std::make_unique<std::string>(std::move(folder_name));
+  params.folder_name = std::move(folder_name);
 
   base::Value::List event_value;
-  event_value.Append(base::Value::FromUniquePtrValue(params.ToValue()));
+  event_value.Append(params.ToValue());
 
   auto extension_event = std::make_unique<Event>(
       events::PASSWORDS_PRIVATE_ON_PASSWORDS_FILE_EXPORT_PROGRESS,

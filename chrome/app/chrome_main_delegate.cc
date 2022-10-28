@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -20,6 +20,7 @@
 #include "base/i18n/rtl.h"
 #include "base/immediate_crash.h"
 #include "base/lazy_instance.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/notreached.h"
 #include "base/path_service.h"
 #include "base/process/memory.h"
@@ -70,6 +71,7 @@
 #include "components/services/heap_profiling/public/cpp/profiling_client.h"
 #include "components/startup_metric_utils/browser/startup_metric_utils.h"
 #include "components/version_info/version_info.h"
+#include "content/public/app/initialize_mojo_core.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_constants.h"
 #include "content/public/common/content_paths.h"
@@ -196,6 +198,11 @@
 #if BUILDFLAG(ENABLE_PDF)
 #include "chrome/child/pdf_child_init.h"
 #endif
+
+#if !BUILDFLAG(IS_ANDROID)
+#include "chrome/browser/chrome_process_singleton.h"
+#include "chrome/browser/process_singleton.h"
+#endif  // !BUILDFLAG(IS_ANDROID)
 
 #if BUILDFLAG(ENABLE_GWP_ASAN)
 #include "components/gwp_asan/client/gwp_asan.h"  // nogncheck
@@ -433,7 +440,7 @@ void SIGTERMProfilingShutdown(int signal) {
   struct sigaction sigact;
   memset(&sigact, 0, sizeof(sigact));
   sigact.sa_handler = SIG_DFL;
-  CHECK_EQ(sigaction(SIGTERM, &sigact, NULL), 0);
+  CHECK_EQ(sigaction(SIGTERM, &sigact, nullptr), 0);
   raise(signal);
 }
 
@@ -442,7 +449,7 @@ void SetUpProfilingShutdownHandler() {
   sigact.sa_handler = SIGTERMProfilingShutdown;
   sigact.sa_flags = SA_RESETHAND;
   sigemptyset(&sigact.sa_mask);
-  CHECK_EQ(sigaction(SIGTERM, &sigact, NULL), 0);
+  CHECK_EQ(sigaction(SIGTERM, &sigact, nullptr), 0);
 }
 #endif  // !BUILDFLAG(IS_MAC) && !BUILDFLAG(IS_ANDROID)
 
@@ -624,6 +631,52 @@ absl::optional<int> ChromeMainDelegate::PostEarlyInitialization(
     return absl::nullopt;
   }
 
+#if !BUILDFLAG(IS_ANDROID)
+  // Configure the early process singleton experiment.
+  const base::CommandLine& command_line =
+      *base::CommandLine::ForCurrentProcess();
+  ChromeProcessSingleton::SetupEarlySingletonFeature(command_line);
+
+  if (ChromeProcessSingleton::IsEarlySingletonFeatureEnabled()) {
+    // Take the Chrome process singleton lock. The process can become the
+    // Browser process if it succeed to take the lock. Otherwise, the
+    // command-line is sent to the actual Browser process and the current
+    // process can be exited.
+    base::FilePath user_data_dir;
+    if (!base::PathService::Get(chrome::DIR_USER_DATA, &user_data_dir)) {
+      return chrome::RESULT_CODE_MISSING_DATA;
+    }
+
+    ChromeProcessSingleton::CreateInstance(user_data_dir);
+
+    ProcessSingleton::NotifyResult notify_result =
+        ChromeProcessSingleton::GetInstance()->NotifyOtherProcessOrCreate();
+    UMA_HISTOGRAM_ENUMERATION("Chrome.ProcessSingleton.NotifyResult",
+                              notify_result,
+                              ProcessSingleton::kNumNotifyResults);
+    switch (notify_result) {
+      case ProcessSingleton::PROCESS_NONE:
+        // No process already running, continue on to starting a new one.
+        break;
+
+      case ProcessSingleton::PROCESS_NOTIFIED:
+        printf("%s\n", "Opening in existing browser session.");
+        return chrome::RESULT_CODE_NORMAL_EXIT_PROCESS_NOTIFIED;
+
+      case ProcessSingleton::PROFILE_IN_USE:
+        return chrome::RESULT_CODE_PROFILE_IN_USE;
+
+      case ProcessSingleton::LOCK_ERROR:
+        LOG(ERROR) << "Failed to create a ProcessSingleton for your profile "
+                      "directory. This means that running multiple instances "
+                      "would start multiple browser processes rather than "
+                      "opening a new window in the existing process. Aborting "
+                      "now to avoid profile corruption.";
+        return chrome::RESULT_CODE_PROFILE_IN_USE;
+    }
+  }
+#endif
+
 #if BUILDFLAG(IS_WIN)
   // Initialize the cleaner of left-behind tmp files now that the main thread
   // has its SequencedTaskRunner; see https://crbug.com/1075917.
@@ -651,7 +704,19 @@ absl::optional<int> ChromeMainDelegate::PostEarlyInitialization(
 #elif BUILDFLAG(IS_CHROMEOS_LACROS)
   // Initialize D-Bus for Lacros.
   chromeos::LacrosInitializeDBus();
+#endif
 
+  // The DBus initialization above is needed for FeatureList creation here;
+  // features are needed for Mojo initialization; and Mojo initialization is
+  // needed for LacrosService initialization below.
+  ChromeFeatureListCreator* chrome_feature_list_creator =
+      chrome_content_browser_client_->startup_data()
+          ->chrome_feature_list_creator();
+  chrome_feature_list_creator->CreateFeatureList();
+
+  content::InitializeMojoCore();
+
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
   // LacrosService instance needs the sequence of the main thread,
   // and needs to be created earlier than incoming Mojo invitation handling.
   // This also needs ThreadPool sequences to post some tasks internally.
@@ -688,12 +753,8 @@ absl::optional<int> ChromeMainDelegate::PostEarlyInitialization(
       }
     }
   }
-#endif
+#endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
 
-  ChromeFeatureListCreator* chrome_feature_list_creator =
-      chrome_content_browser_client_->startup_data()
-          ->chrome_feature_list_creator();
-  chrome_feature_list_creator->CreateFeatureList();
   CommonEarlyInitialization();
 
   // Initializes the resource bundle and determines the locale.
@@ -743,6 +804,10 @@ bool ChromeMainDelegate::ShouldCreateFeatureList(InvokedIn invoked_in) {
   return absl::holds_alternative<InvokedInChildProcess>(invoked_in);
 }
 
+bool ChromeMainDelegate::ShouldInitializeMojo(InvokedIn invoked_in) {
+  return ShouldCreateFeatureList(invoked_in);
+}
+
 void ChromeMainDelegate::CommonEarlyInitialization() {
   std::string process_type =
       base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
@@ -784,9 +849,10 @@ void ChromeMainDelegate::CommonEarlyInitialization() {
 
   // Start heap profiling as early as possible so it can start recording
   // memory allocations.
-  heap_profiler_controller_ = std::make_unique<HeapProfilerController>(
-      channel,
-      GetProfileParamsProcess(*base::CommandLine::ForCurrentProcess()));
+  heap_profiler_controller_ =
+      std::make_unique<heap_profiling::HeapProfilerController>(
+          channel,
+          GetProfileParamsProcess(*base::CommandLine::ForCurrentProcess()));
   heap_profiler_controller_->StartIfEnabled();
 
   if (is_browser_process) {
@@ -1307,7 +1373,7 @@ void ChromeMainDelegate::PreSandboxStartup() {
 #else
     const std::string loaded_locale =
         ui::ResourceBundle::InitSharedInstanceWithLocale(
-            locale, NULL, ui::ResourceBundle::LOAD_COMMON_RESOURCES);
+            locale, nullptr, ui::ResourceBundle::LOAD_COMMON_RESOURCES);
 
     base::FilePath resources_pack_path;
     base::PathService::Get(chrome::FILE_RESOURCES_PACK, &resources_pack_path);
@@ -1431,6 +1497,11 @@ absl::variant<int, content::MainFunctionParams> ChromeMainDelegate::RunProcess(
 }
 
 void ChromeMainDelegate::ProcessExiting(const std::string& process_type) {
+#if !BUILDFLAG(IS_ANDROID)
+  if (ChromeProcessSingleton::IsEarlySingletonFeatureEnabled())
+    ChromeProcessSingleton::DeleteInstance();
+#endif  // !BUILDFLAG(IS_ANDROID)
+
   if (SubprocessNeedsResourceBundle(process_type))
     ui::ResourceBundle::CleanupSharedInstance();
 #if !BUILDFLAG(IS_ANDROID)

@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -50,7 +50,8 @@ class MockActionDelegate : public ActionDelegate {
   }
   void ShortWaitForElementWithSlowWarning(
       const Selector& selector,
-      base::OnceCallback<void(const ClientStatus&, base::TimeDelta)> callback) {
+      base::OnceCallback<void(const ClientStatus&, base::TimeDelta)> callback)
+      override {
     OnShortWaitForElement(selector, callback);
   }
   MOCK_METHOD2(

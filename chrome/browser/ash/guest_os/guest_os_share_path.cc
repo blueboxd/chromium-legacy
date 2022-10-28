@@ -1,12 +1,11 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome/browser/ash/guest_os/guest_os_share_path.h"
 
+#include "ash/components/arc/arc_features.h"
 #include "ash/components/arc/arc_util.h"
-#include "ash/components/drivefs/mojom/drivefs.mojom.h"
-#include "base/atomic_ref_count.h"
 #include "base/bind.h"
 #include "base/containers/contains.h"
 #include "base/files/file_util.h"
@@ -27,6 +26,7 @@
 #include "chrome/browser/ash/smb_client/smbfs_share.h"
 #include "chromeos/ash/components/dbus/concierge/concierge_service.pb.h"
 #include "chromeos/ash/components/dbus/seneschal/seneschal_client.h"
+#include "chromeos/ash/components/drivefs/mojom/drivefs.mojom.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -243,12 +243,14 @@ void GuestOsSharePath::CallSeneschalSharePath(const std::string& vm_name,
   ash::smb_client::SmbFsShare* smb_share = nullptr;
   base::FilePath smbfs_mount_point_path;
   base::FilePath smbfs_mount_name;
+  auto* vmgr = file_manager::VolumeManager::Get(profile_);
+  base::WeakPtr<file_manager::Volume> volume;
 
   // Allow MyFiles directory and subdirs.
   bool allowed_path = false;
   base::FilePath my_files =
       file_manager::util::GetMyFilesFolderForProfile(profile_);
-  base::FilePath android_files(file_manager::util::kAndroidFilesPath);
+  base::FilePath android_files(file_manager::util::GetAndroidFilesPath());
   base::FilePath removable_media(file_manager::util::kRemovableMediaPath);
   base::FilePath linux_files =
       file_manager::util::GetCrostiniMountDirectory(profile_);
@@ -318,7 +320,9 @@ void GuestOsSharePath::CallSeneschalSharePath(const std::string& vm_name,
     // Allow Android files and subdirs.
     allowed_path = true;
     request.set_storage_location(
-        vm_tools::seneschal::SharePathRequest::PLAY_FILES);
+        base::FeatureList::IsEnabled(arc::kEnableVirtioBlkForData)
+            ? vm_tools::seneschal::SharePathRequest::PLAY_FILES_GUEST_OS
+            : vm_tools::seneschal::SharePathRequest::PLAY_FILES);
   } else if (removable_media.AppendRelativePath(path, &relative_path)) {
     // Allow subdirs of /media/removable.
     allowed_path = true;
@@ -350,6 +354,17 @@ void GuestOsSharePath::CallSeneschalSharePath(const std::string& vm_name,
     allowed_path = true;
     request.set_storage_location(vm_tools::seneschal::SharePathRequest::SMBFS);
     request.set_smbfs_mount_name(smbfs_mount_name.value());
+  } else if (vmgr && (volume = vmgr->FindVolumeFromPath(path)) &&
+             volume->type() == file_manager::VOLUME_TYPE_GUEST_OS &&
+             AppendRelativePath(volume->mount_path(), path, &relative_path)) {
+    allowed_path = true;
+    // Allow GuestOs files and subdirs.
+    base::FilePath mount_name;
+    fuse_fs_root_path.AppendRelativePath(volume->mount_path(), &mount_name);
+    request.set_storage_location(
+        vm_tools::seneschal::SharePathRequest::GUEST_OS_FILES);
+    request.set_owner_id(crostini::CryptohomeIdForProfile(profile_));
+    request.set_guest_os_mount_name(mount_name.value());
   }
 
   if (!allowed_path) {
@@ -542,7 +557,7 @@ std::vector<base::FilePath> GuestOsSharePath::GetPersistedSharedPaths(
   CHECK(profile_->GetPrefs());
   // |shared_paths| format is {'path': ['vm1', vm2']}.
   const base::Value::Dict& shared_paths =
-      profile_->GetPrefs()->GetValueDict(prefs::kGuestOSPathsSharedToVms);
+      profile_->GetPrefs()->GetDict(prefs::kGuestOSPathsSharedToVms);
   for (const auto it : shared_paths) {
     base::FilePath path(it.first);
     for (const auto& vm : it.second.GetListDeprecated()) {
@@ -633,7 +648,7 @@ void GuestOsSharePath::OnVolumeMounted(ash::MountError error_code,
   // Check if any persisted paths match volume.mount_path() or are children
   // of it then share them with any running VMs.
   const base::Value::Dict& shared_paths =
-      profile_->GetPrefs()->GetValueDict(prefs::kGuestOSPathsSharedToVms);
+      profile_->GetPrefs()->GetDict(prefs::kGuestOSPathsSharedToVms);
   for (const auto it : shared_paths) {
     base::FilePath path(it.first);
     if (path != volume.mount_path() && !volume.mount_path().IsParent(path)) {

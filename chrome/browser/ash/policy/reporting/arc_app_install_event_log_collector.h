@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -48,6 +48,10 @@ class ArcAppInstallEventLogCollector : public InstallEventLogCollectorBase,
         bool gather_disk_space_info,
         std::unique_ptr<enterprise_management::AppInstallReportLogEvent>
             event) = 0;
+
+    // Uses a package's installation status to update policy success rate data.
+    virtual void UpdatePolicySuccessRate(const std::string& package,
+                                         bool success) = 0;
 
    protected:
     virtual ~Delegate() = default;

@@ -12,7 +12,6 @@
 
 #include "base/files/file_path.h"
 #include "base/memory/raw_ptr.h"
-#include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
 #include "base/thread_annotations.h"
 #include "content/browser/attribution_reporting/attribution_report.h"
@@ -59,10 +58,10 @@ class CONTENT_EXPORT AttributionStorageSql : public AttributionStorage {
 
   AttributionStorageSql(const base::FilePath& path_to_database,
                         std::unique_ptr<AttributionStorageDelegate> delegate);
-  AttributionStorageSql(const AttributionStorageSql& other) = delete;
-  AttributionStorageSql& operator=(const AttributionStorageSql& other) = delete;
-  AttributionStorageSql(AttributionStorageSql&& other) = delete;
-  AttributionStorageSql& operator=(AttributionStorageSql&& other) = delete;
+  AttributionStorageSql(const AttributionStorageSql&) = delete;
+  AttributionStorageSql& operator=(const AttributionStorageSql&) = delete;
+  AttributionStorageSql(AttributionStorageSql&&) = delete;
+  AttributionStorageSql& operator=(AttributionStorageSql&&) = delete;
   ~AttributionStorageSql() override;
 
   void set_ignore_errors_for_testing(bool ignore_for_testing) {
@@ -101,9 +100,7 @@ class CONTENT_EXPORT AttributionStorageSql : public AttributionStorage {
   };
 
   // AttributionStorage:
-  StoreSourceResult StoreSource(
-      const StorableSource& source,
-      int deactivated_source_return_limit = -1) override;
+  StoreSourceResult StoreSource(const StorableSource& source) override;
   CreateReportResult MaybeCreateAndStoreReport(
       const AttributionTrigger& trigger) override;
   std::vector<AttributionReport> GetAttributionReports(
@@ -128,12 +125,10 @@ class CONTENT_EXPORT AttributionStorageSql : public AttributionStorage {
   void ClearAllDataAllTime(bool delete_rate_limit_data)
       VALID_CONTEXT_REQUIRED(sequence_checker_);
 
-  // Deactivates active, converted sources with the given conversion destination
-  // and reporting origin. Returns at most `limit` of those, or null on error.
-  [[nodiscard]] absl::optional<std::vector<StoredSource>> DeactivateSources(
-      const std::string& serialized_conversion_destination,
-      const std::string& serialized_reporting_origin,
-      int return_limit) VALID_CONTEXT_REQUIRED(sequence_checker_);
+  // Deactivates the given sources. Returns false on error.
+  [[nodiscard]] bool DeactivateSources(
+      const std::vector<StoredSource::Id>& sources)
+      VALID_CONTEXT_REQUIRED(sequence_checker_);
 
   // Returns false on failure.
   [[nodiscard]] bool DeleteSources(
@@ -219,12 +214,6 @@ class CONTENT_EXPORT AttributionStorageSql : public AttributionStorage {
       base::Time max_report_time,
       int limit) VALID_CONTEXT_REQUIRED(sequence_checker_);
 
-  [[nodiscard]] bool UpdateReportForSendFailure(sql::StatementID id,
-                                                const char* sql,
-                                                int64_t report_id,
-                                                base::Time new_report_time)
-      VALID_CONTEXT_REQUIRED(sequence_checker_);
-
   absl::optional<base::Time> GetNextReportTime(sql::StatementID id,
                                                const char* sql,
                                                base::Time time)
@@ -251,7 +240,8 @@ class CONTENT_EXPORT AttributionStorageSql : public AttributionStorage {
   bool FindMatchingSourceForTrigger(
       const AttributionTrigger& trigger,
       absl::optional<StoredSource::Id>& source_id_to_attribute,
-      std::vector<StoredSource::Id>& source_ids_to_delete)
+      std::vector<StoredSource::Id>& source_ids_to_delete,
+      std::vector<StoredSource::Id>& source_ids_to_deactivate)
       VALID_CONTEXT_REQUIRED(sequence_checker_);
 
   AttributionTrigger::EventLevelResult MaybeCreateEventLevelReport(
@@ -373,8 +363,6 @@ class CONTENT_EXPORT AttributionStorageSql : public AttributionStorage {
       AttributionReport::AggregatableAttributionData::Id report_id)
       VALID_CONTEXT_REQUIRED(sequence_checker_);
 
-  static bool g_run_in_memory_;
-
   // If set, database errors will not crash the client when run in debug mode.
   bool ignore_errors_for_testing_ = false;
 
@@ -409,7 +397,6 @@ class CONTENT_EXPORT AttributionStorageSql : public AttributionStorage {
       GUARDED_BY_CONTEXT(sequence_checker_);
 
   SEQUENCE_CHECKER(sequence_checker_);
-  base::WeakPtrFactory<AttributionStorageSql> weak_factory_{this};
 };
 
 }  // namespace content

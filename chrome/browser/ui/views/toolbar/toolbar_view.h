@@ -1,4 +1,4 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -42,6 +42,7 @@
 
 class AppMenuButton;
 class AvatarToolbarButton;
+class BatterySaverButton;
 class BrowserAppMenuButton;
 class Browser;
 class DownloadToolbarButtonView;
@@ -157,6 +158,9 @@ class ToolbarView : public views::AccessiblePaneView,
   ToolbarButton* left_side_panel_button() { return left_side_panel_button_; }
   LocationBarView* location_bar() const { return location_bar_; }
   CustomTabBarView* custom_tab_bar() { return custom_tab_bar_; }
+  BatterySaverButton* battery_saver_button() const {
+    return battery_saver_button_;
+  }
   media_router::CastToolbarButton* cast_button() const { return cast_; }
   SidePanelToolbarButton* side_panel_button() const {
     return side_panel_button_;
@@ -286,6 +290,7 @@ class ToolbarView : public views::AccessiblePaneView,
   raw_ptr<LocationBarView> location_bar_ = nullptr;
   raw_ptr<ExtensionsToolbarContainer> extensions_container_ = nullptr;
   raw_ptr<ChromeLabsButton> chrome_labs_button_ = nullptr;
+  raw_ptr<BatterySaverButton> battery_saver_button_ = nullptr;
   raw_ptr<media_router::CastToolbarButton> cast_ = nullptr;
   raw_ptr<SidePanelToolbarButton> side_panel_button_ = nullptr;
   raw_ptr<ToolbarAccountIconContainerView> toolbar_account_icon_container_ =

@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,6 +10,7 @@
 #import "base/scoped_observation.h"
 #import "components/feature_engagement/public/event_constants.h"
 #import "components/feature_engagement/public/tracker.h"
+#import "components/password_manager/core/common/password_manager_features.h"
 #import "components/profile_metrics/browser_profile_type.h"
 #import "components/safe_browsing/core/common/features.h"
 #import "components/signin/ios/browser/active_state_manager.h"
@@ -35,6 +36,7 @@
 #import "ios/chrome/browser/prerender/preload_controller_delegate.h"
 #import "ios/chrome/browser/prerender/prerender_service.h"
 #import "ios/chrome/browser/prerender/prerender_service_factory.h"
+#import "ios/chrome/browser/promos_manager/features.h"
 #import "ios/chrome/browser/signin/account_consistency_browser_agent.h"
 #import "ios/chrome/browser/signin/account_consistency_service_factory.h"
 #import "ios/chrome/browser/ssl/captive_portal_tab_helper.h"
@@ -49,6 +51,7 @@
 #import "ios/chrome/browser/ui/authentication/enterprise/enterprise_prompt/enterprise_prompt_coordinator.h"
 #import "ios/chrome/browser/ui/authentication/enterprise/enterprise_prompt/enterprise_prompt_type.h"
 #import "ios/chrome/browser/ui/autofill/form_input_accessory/form_input_accessory_coordinator.h"
+#import "ios/chrome/browser/ui/autofill/manual_fill/manual_fill_password_coordinator.h"
 #import "ios/chrome/browser/ui/badges/badge_popup_menu_coordinator.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_interaction_controller.h"
 #import "ios/chrome/browser/ui/browser_container/browser_container_coordinator.h"
@@ -112,6 +115,7 @@
 #import "ios/chrome/browser/ui/popup_menu/popup_menu_coordinator.h"
 #import "ios/chrome/browser/ui/presenters/vertical_animation_container.h"
 #import "ios/chrome/browser/ui/print/print_controller.h"
+#import "ios/chrome/browser/ui/promos_manager/promos_manager_coordinator.h"
 #import "ios/chrome/browser/ui/qr_generator/qr_generator_coordinator.h"
 #import "ios/chrome/browser/ui/qr_scanner/qr_scanner_legacy_coordinator.h"
 #import "ios/chrome/browser/ui/reading_list/reading_list_coordinator.h"
@@ -120,6 +124,8 @@
 #import "ios/chrome/browser/ui/safe_browsing/safe_browsing_coordinator.h"
 #import "ios/chrome/browser/ui/send_tab_to_self/send_tab_to_self_coordinator.h"
 #import "ios/chrome/browser/ui/settings/autofill/autofill_add_credit_card_coordinator.h"
+#import "ios/chrome/browser/ui/settings/password/password_settings/password_settings_coordinator.h"
+#import "ios/chrome/browser/ui/settings/password/password_settings/password_settings_coordinator_delegate.h"
 #import "ios/chrome/browser/ui/sharing/sharing_coordinator.h"
 #import "ios/chrome/browser/ui/side_swipe/side_swipe_controller.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_strip/tab_strip_coordinator.h"
@@ -139,8 +145,11 @@
 #import "ios/chrome/browser/ui/voice/text_to_speech_playback_controller.h"
 #import "ios/chrome/browser/ui/voice/text_to_speech_playback_controller_factory.h"
 #import "ios/chrome/browser/ui/webui/net_export_coordinator.h"
+#import "ios/chrome/browser/ui/whats_new/feature_flags.h"
+#import "ios/chrome/browser/ui/whats_new/whats_new_coordinator.h"
 #import "ios/chrome/browser/url_loading/url_loading_browser_agent.h"
 #import "ios/chrome/browser/url_loading/url_loading_params.h"
+#import "ios/chrome/browser/web/annotations/annotations_tab_helper.h"
 #import "ios/chrome/browser/web/font_size/font_size_tab_helper.h"
 #import "ios/chrome/browser/web/page_placeholder_tab_helper.h"
 #import "ios/chrome/browser/web/print/print_tab_helper.h"
@@ -185,6 +194,7 @@ const char kChromeAppStoreUrl[] = "https://apps.apple.com/app/id535886823";
                                   PageInfoPresentation,
                                   PasswordBreachCommands,
                                   PasswordProtectionCommands,
+                                  PasswordSettingsCoordinatorDelegate,
                                   PasswordSuggestionCommands,
                                   PasswordSuggestionCoordinatorDelegate,
                                   PolicyChangeCommands,
@@ -284,6 +294,10 @@ const char kChromeAppStoreUrl[] = "https://apps.apple.com/app/id535886823";
 @property(nonatomic, strong)
     PasswordProtectionCoordinator* passwordProtectionCoordinator;
 
+// Coordinator for the password settings UI presentation.
+@property(nonatomic, strong)
+    PasswordSettingsCoordinator* passwordSettingsCoordinator;
+
 // Coordinator for the password suggestion UI presentation.
 @property(nonatomic, strong)
     PasswordSuggestionCoordinator* passwordSuggestionCoordinator;
@@ -292,14 +306,14 @@ const char kChromeAppStoreUrl[] = "https://apps.apple.com/app/id535886823";
 // TODO(crbug.com/910017): Convert to coordinator.
 @property(nonatomic, strong) PrintController* printController;
 
+// Coordinator for app-wide promos.
+@property(nonatomic, strong) PromosManagerCoordinator* promosManagerCoordinator;
+
 // Coordinator for the QR scanner.
 @property(nonatomic, strong) QRScannerLegacyCoordinator* qrScannerCoordinator;
 
-// Coordinator for the QR scanner.
+// Coordinator for the popup menu.
 @property(nonatomic, strong) PopupMenuCoordinator* popupMenuCoordinator;
-
-// Coordinator that manages Lens features.
-@property(nonatomic, strong) LensCoordinator* lensCoordinator;
 
 // Coordinator for displaying the Reading List.
 @property(nonatomic, strong) ReadingListCoordinator* readingListCoordinator;
@@ -352,6 +366,10 @@ const char kChromeAppStoreUrl[] = "https://apps.apple.com/app/id535886823";
 
 // The coordinator used for the Text Fragments feature.
 @property(nonatomic, strong) TextFragmentsCoordinator* textFragmentsCoordinator;
+
+// The coordinator used for What's New feature.
+@property(nonatomic, strong) WhatsNewCoordinator* whatsNewCoordinator;
+
 @end
 
 @implementation BrowserCoordinator {
@@ -369,6 +387,7 @@ const char kChromeAppStoreUrl[] = "https://apps.apple.com/app/id535886823";
   BubblePresenter* _bubblePresenter;
   ToolbarAccessoryPresenter* _toolbarAccessoryPresenter;
   NewTabPageCoordinator* _ntpCoordinator;
+  LensCoordinator* _lensCoordinator;
   ToolbarCoordinatorAdaptor* _toolbarCoordinatorAdaptor;
   PrimaryToolbarCoordinator* _primaryToolbarCoordinator;
   SecondaryToolbarCoordinator* _secondaryToolbarCoordinator;
@@ -492,6 +511,10 @@ const char kChromeAppStoreUrl[] = "https://apps.apple.com/app/id535886823";
 
   [_sendTabToSelfCoordinator stop];
   _sendTabToSelfCoordinator = nil;
+
+  [self.passwordSettingsCoordinator stop];
+  self.passwordSettingsCoordinator.delegate = nil;
+  self.passwordSettingsCoordinator = nil;
 
   [self.viewController clearPresentedStateWithCompletion:completion
                                           dismissOmnibox:dismissOmnibox];
@@ -668,7 +691,7 @@ const char kChromeAppStoreUrl[] = "https://apps.apple.com/app/id535886823";
   self.popupMenuCoordinator.UIUpdater = _toolbarCoordinatorAdaptor;
   // Coordinator `start` is executed before setting it's `baseViewController`.
   // It is done intentionally, since this does not affecting the coordinator's
-  // behavior but helps command hanlders setup below.
+  // behavior but helps command handler setup below.
   [self.popupMenuCoordinator start];
 
   _primaryToolbarCoordinator.longPressDelegate = self.popupMenuCoordinator;
@@ -694,6 +717,8 @@ const char kChromeAppStoreUrl[] = "https://apps.apple.com/app/id535886823";
   _ntpCoordinator.toolbarDelegate = _toolbarCoordinatorAdaptor;
   _ntpCoordinator.bubblePresenter = _bubblePresenter;
 
+  _lensCoordinator = [[LensCoordinator alloc] initWithBrowser:self.browser];
+
   _textZoomHandler = HandlerForProtocol(_dispatcher, TextZoomCommands);
   _helpHandler = HandlerForProtocol(_dispatcher, HelpCommands);
   _popupMenuCommandsHandler =
@@ -711,6 +736,7 @@ const char kChromeAppStoreUrl[] = "https://apps.apple.com/app/id535886823";
   _viewControllerDependencies.downloadManagerCoordinator =
       self.downloadManagerCoordinator;
   _viewControllerDependencies.ntpCoordinator = _ntpCoordinator;
+  _viewControllerDependencies.lensCoordinator = _lensCoordinator;
   _viewControllerDependencies.primaryToolbarCoordinator =
       _primaryToolbarCoordinator;
   _viewControllerDependencies.secondaryToolbarCoordinator =
@@ -751,6 +777,9 @@ const char kChromeAppStoreUrl[] = "https://apps.apple.com/app/id535886823";
 
   _ntpCoordinator.baseViewController = self.viewController;
 
+  _lensCoordinator.baseViewController = self.viewController;
+  [_lensCoordinator start];
+
   [_dispatcher startDispatchingToTarget:self.viewController
                             forProtocol:@protocol(BrowserCommands)];
 }
@@ -763,6 +792,7 @@ const char kChromeAppStoreUrl[] = "https://apps.apple.com/app/id535886823";
   _viewControllerDependencies.popupMenuCoordinator = nil;
   _viewControllerDependencies.downloadManagerCoordinator = nil;
   _viewControllerDependencies.ntpCoordinator = nil;
+  _viewControllerDependencies.lensCoordinator = nil;
   _viewControllerDependencies.primaryToolbarCoordinator = nil;
   _viewControllerDependencies.secondaryToolbarCoordinator = nil;
   _viewControllerDependencies.tabStripCoordinator = nil;
@@ -797,6 +827,9 @@ const char kChromeAppStoreUrl[] = "https://apps.apple.com/app/id535886823";
 
   [self.qrScannerCoordinator stop];
   self.qrScannerCoordinator = nil;
+
+  [_lensCoordinator stop];
+  _lensCoordinator = nil;
 
   [self.downloadManagerCoordinator stop];
   self.downloadManagerCoordinator = nil;
@@ -846,16 +879,25 @@ const char kChromeAppStoreUrl[] = "https://apps.apple.com/app/id535886823";
   self.printController =
       [[PrintController alloc] initWithBaseViewController:self.viewController];
 
-  self.lensCoordinator =
-      [[LensCoordinator alloc] initWithBaseViewController:self.viewController
-                                                  browser:self.browser];
-  [self.lensCoordinator start];
+  if (IsFullscreenPromosManagerEnabled()) {
+    self.promosManagerCoordinator = [[PromosManagerCoordinator alloc]
+        initWithBaseViewController:self.viewController
+                           browser:self.browser];
+    [self.promosManagerCoordinator start];
+  }
+
+  // Help should only show in regular, non-incognito.
+  if (!self.browser->GetBrowserState()->IsOffTheRecord()) {
+    [self.popupMenuCoordinator startPopupMenuHelpCoordinator];
+  }
 
   /* NetExportCoordinator is created and started by a delegate method */
 
   /* passwordBreachCoordinator is created and started by a BrowserCommand */
 
   /* passwordProtectionCoordinator is created and started by a BrowserCommand */
+
+  /* passwordSettingsCoordinator is created and started by a delegate method */
 
   /* passwordSuggestionCoordinator is created and started by a BrowserCommand */
 
@@ -864,6 +906,8 @@ const char kChromeAppStoreUrl[] = "https://apps.apple.com/app/id535886823";
   /* RecentTabsCoordinator is created and started by a BrowserCommand */
 
   /* RepostFormCoordinator is created and started by a delegate method */
+
+  /* WhatsNewCoordinator is created and started by a BrowserCommand */
 
   // TODO(crbug.com/1298934): Should start when the Sad Tab UI appears.
   self.sadTabCoordinator =
@@ -964,8 +1008,10 @@ const char kChromeAppStoreUrl[] = "https://apps.apple.com/app/id535886823";
 
   self.printController = nil;
 
-  [self.lensCoordinator stop];
-  self.lensCoordinator = nil;
+  if (IsFullscreenPromosManagerEnabled()) {
+    [self.promosManagerCoordinator stop];
+    self.promosManagerCoordinator = nil;
+  }
 
   [self.readingListCoordinator stop];
   self.readingListCoordinator = nil;
@@ -1023,6 +1069,13 @@ const char kChromeAppStoreUrl[] = "https://apps.apple.com/app/id535886823";
 
   [_sendTabToSelfCoordinator stop];
   _sendTabToSelfCoordinator = nil;
+
+  [self.whatsNewCoordinator stop];
+  self.whatsNewCoordinator = nil;
+
+  [self.passwordSettingsCoordinator stop];
+  self.passwordSettingsCoordinator.delegate = nil;
+  self.passwordSettingsCoordinator = nil;
 }
 
 // Starts mediators owned by this coordinator.
@@ -1322,6 +1375,17 @@ const char kChromeAppStoreUrl[] = "https://apps.apple.com/app/id535886823";
   }
 }
 
+- (void)showWhatsNew {
+  if (!base::FeatureList::IsEnabled(kWhatsNewIOS)) {
+    return;
+  }
+
+  self.whatsNewCoordinator = [[WhatsNewCoordinator alloc]
+      initWithBaseViewController:self.viewController
+                         browser:self.browser];
+  [self.whatsNewCoordinator start];
+}
+
 #pragma mark - DefaultPromoCommands
 
 - (void)showTailoredPromoStaySafe {
@@ -1489,9 +1553,22 @@ const char kChromeAppStoreUrl[] = "https://apps.apple.com/app/id535886823";
 #pragma mark - FormInputAccessoryCoordinatorNavigator
 
 - (void)openPasswordSettings {
-  [HandlerForProtocol(self.dispatcher, ApplicationCommands)
-      showSavedPasswordsSettingsFromViewController:self.viewController
-                                  showCancelButton:YES];
+  // TODO(crbug.com/1361357) Remove call to
+  // `showSavedPasswordsSettingsFromViewController` once `kIOSPasswordUISplit`
+  // is on by default.
+  if (base::FeatureList::IsEnabled(
+          password_manager::features::kIOSPasswordUISplit)) {
+    DCHECK(!self.passwordSettingsCoordinator);
+    self.passwordSettingsCoordinator = [[PasswordSettingsCoordinator alloc]
+        initWithBaseViewController:self.viewController
+                           browser:self.browser];
+    self.passwordSettingsCoordinator.delegate = self;
+    [self.passwordSettingsCoordinator start];
+  } else {
+    [HandlerForProtocol(self.dispatcher, ApplicationCommands)
+        showSavedPasswordsSettingsFromViewController:self.viewController
+                                    showCancelButton:YES];
+  }
 }
 
 - (void)openAddressSettings {
@@ -1797,6 +1874,11 @@ const char kChromeAppStoreUrl[] = "https://apps.apple.com/app/id535886823";
     NewTabPageTabHelper::FromWebState(webState)->SetDelegate(
         self.viewController);
   }
+
+  if (AnnotationsTabHelper::FromWebState(webState)) {
+    AnnotationsTabHelper::FromWebState(webState)->SetBaseViewController(
+        self.viewController);
+  }
 }
 
 // Uninstalls delegates for `webState`.
@@ -1834,6 +1916,10 @@ const char kChromeAppStoreUrl[] = "https://apps.apple.com/app/id535886823";
 
   if (NewTabPageTabHelper::FromWebState(webState)) {
     NewTabPageTabHelper::FromWebState(webState)->SetDelegate(nil);
+  }
+
+  if (AnnotationsTabHelper::FromWebState(webState)) {
+    AnnotationsTabHelper::FromWebState(webState)->SetBaseViewController(nil);
   }
 }
 
@@ -2278,6 +2364,16 @@ const char kChromeAppStoreUrl[] = "https://apps.apple.com/app/id535886823";
 
 - (CGPoint)convertToPresentationCoordinatesForOrigin:(CGPoint)origin {
   return [self.viewController.view convertPoint:origin fromView:nil];
+}
+
+#pragma mark - PasswordSettingsCoordinatorDelegate
+
+- (void)passwordSettingsCoordinatorDidRemove:
+    (PasswordSettingsCoordinator*)coordinator {
+  DCHECK_EQ(self.passwordSettingsCoordinator, coordinator);
+  [self.passwordSettingsCoordinator stop];
+  self.passwordSettingsCoordinator.delegate = nil;
+  self.passwordSettingsCoordinator = nil;
 }
 
 @end

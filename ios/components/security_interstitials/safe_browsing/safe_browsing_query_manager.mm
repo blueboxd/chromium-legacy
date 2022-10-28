@@ -1,16 +1,16 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #import "ios/components/security_interstitials/safe_browsing/safe_browsing_query_manager.h"
 
-#include "base/callback_helpers.h"
-#include "base/check_op.h"
-#include "ios/components/security_interstitials/safe_browsing/safe_browsing_client.h"
-#include "ios/components/security_interstitials/safe_browsing/safe_browsing_service.h"
-#include "ios/web/public/thread/web_task_traits.h"
-#include "ios/web/public/thread/web_thread.h"
-#include "services/network/public/mojom/fetch_api.mojom.h"
+#import "base/callback_helpers.h"
+#import "base/check_op.h"
+#import "ios/components/security_interstitials/safe_browsing/safe_browsing_client.h"
+#import "ios/components/security_interstitials/safe_browsing/safe_browsing_service.h"
+#import "ios/web/public/thread/web_task_traits.h"
+#import "ios/web/public/thread/web_thread.h"
+#import "services/network/public/mojom/fetch_api.mojom.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -98,7 +98,7 @@ void SafeBrowsingQueryManager::StoreUnsafeResource(
   // that when there are repeated pending queries (e.g., when a page has
   // multiple iframes with the same URL), it is not possible to determine
   // which of these queries will receive a response first. As a result,
-  // |resource| must be stored with every corresponding query, not just the
+  // `resource` must be stored with every corresponding query, not just the
   // first.
   for (auto& pair : results_) {
     if (pair.first.url == resource.url &&
@@ -125,7 +125,7 @@ void SafeBrowsingQueryManager::UrlCheckFinished(const Query query,
   // execution of its completion block.
   DCHECK(!show_error_page || result.resource);
 
-  // Notify observers of the completed URL check. |this| might get destroyed
+  // Notify observers of the completed URL check. `this` might get destroyed
   // when an observer is notified.
   auto weak_this = weak_factory_.GetWeakPtr();
   for (auto& observer : observers_) {

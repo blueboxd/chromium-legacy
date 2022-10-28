@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright 2011 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -18,6 +18,7 @@
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/bookmarks/browser/bookmark_model.h"
+#import "components/bookmarks/common/bookmark_metrics.h"
 #include "components/bookmarks/test/bookmark_test_helpers.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #import "testing/gtest_mac.h"
@@ -122,8 +123,8 @@ TEST_F(BookmarkMenuBridgeTest, TestBookmarkMenuAutoSeparator) {
 TEST_F(BookmarkMenuBridgeTest, TestClearBookmarkMenu) {
   AddTestMenuItem(menu_, @"hi mom", nil);
   AddTestMenuItem(menu_, @"not", @selector(openBookmarkMenuItem:));
-  NSMenuItem* item = AddTestMenuItem(menu_, @"hi mom", nil);
-  [item setSubmenu:[[[NSMenu alloc] initWithTitle:@"bar"] autorelease]];
+  NSMenuItem* test_item = AddTestMenuItem(menu_, @"hi mom", nil);
+  [test_item setSubmenu:[[[NSMenu alloc] initWithTitle:@"bar"] autorelease]];
   AddTestMenuItem(menu_, @"not", @selector(openBookmarkMenuItem:));
   AddTestMenuItem(menu_, @"zippy", @selector(length));
   [menu_ addItem:[NSMenuItem separatorItem]];
@@ -367,7 +368,8 @@ TEST_F(BookmarkMenuBridgeTest, TestChangeTitle) {
   NSMenuItem* item = [menu_ itemWithTitle:@"Test Item"];
   EXPECT_TRUE([item image]);
 
-  model->SetTitle(node, u"New Title");
+  model->SetTitle(node, u"New Title",
+                  bookmarks::metrics::BookmarkEditSource::kOther);
 
   item = [menu_ itemWithTitle:@"Test Item"];
   EXPECT_FALSE(item);

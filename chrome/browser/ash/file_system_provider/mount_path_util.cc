@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -58,7 +58,7 @@ base::FilePath GetMountPath(Profile* profile,
       user_manager::UserManager::IsInitialized()
           ? ProfileHelper::Get()->GetUserByProfile(
                 profile->GetOriginalProfile())
-          : NULL;
+          : nullptr;
   const std::string safe_file_system_id = EscapeFileSystemId(file_system_id);
   const std::string username_suffix = user ? user->username_hash() : "";
   return base::FilePath(kProvidedMountPointRoot)
@@ -83,8 +83,7 @@ bool IsFileSystemProviderLocalPath(const base::FilePath& local_path) {
 }
 
 FileSystemURLParser::FileSystemURLParser(const storage::FileSystemURL& url)
-    : url_(url), file_system_(NULL) {
-}
+    : url_(url), file_system_(nullptr) {}
 
 FileSystemURLParser::~FileSystemURLParser() {
 }
@@ -105,11 +104,17 @@ bool FileSystemURLParser::Parse() {
 
   // Convert fusebox URL to its backing (FSP) file system provider URL.
   if (url_.type() == storage::kFileSystemTypeFuseBox) {
-    const int prefix = strlen(file_manager::util::kFuseBox);
-    filesystem_id = filesystem_id.substr(prefix);
-    std::string virtual_path(url_.virtual_path().value().substr(prefix));
-    path = base::FilePath::FromUTF8Unsafe(
-        base::JoinString({kProvidedMountPointRoot, virtual_path}, "/"));
+    const size_t prefix_len =
+        strlen(file_manager::util::kFuseBoxMountNamePrefix) +
+        strlen(file_manager::util::kFuseBoxSubdirPrefixFSP);
+    const std::string& virtual_path = url_.virtual_path().value();
+    if ((filesystem_id.size() < prefix_len) ||
+        (virtual_path.size() < prefix_len)) {
+      return false;
+    }
+    filesystem_id = filesystem_id.substr(prefix_len);
+    path = base::FilePath::FromUTF8Unsafe(base::JoinString(
+        {kProvidedMountPointRoot, virtual_path.substr(prefix_len)}, "/"));
   }
 
   // Find the service that handles the provider URL mount point.
@@ -154,8 +159,7 @@ bool FileSystemURLParser::Parse() {
 
 LocalPathParser::LocalPathParser(Profile* profile,
                                  const base::FilePath& local_path)
-    : profile_(profile), local_path_(local_path), file_system_(NULL) {
-}
+    : profile_(profile), local_path_(local_path), file_system_(nullptr) {}
 
 LocalPathParser::~LocalPathParser() {
 }

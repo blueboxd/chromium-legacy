@@ -1,8 +1,8 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/command_line.h"
+#import "base/command_line.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
 #import "ios/chrome/test/variations_smoke_test/variations_smoke_test_app_interface.h"
 #import "ios/testing/earl_grey/earl_grey_test.h"
@@ -52,6 +52,15 @@ static const NSTimeInterval kWaitForFetchTimeout = 30.0;
              @"Failed to fetch variations seed within timeout.");
   // Writes prefs to Local State file. This might be used in launcher script.
   [VariationsSmokeTestAppInterface localStatePrefsCommitPendingWrite];
+
+  // TODO(crbug.com/1354249): in iOS 16 beta, there seems to be an issue with
+  // commits not persisted to disk immediately. Waiting for 5 seconds after disk
+  // write to temporarily get around the issue for now. We should revisit after
+  // iOS 16 launch.
+  if (@available(iOS 16, *)) {
+    [[NSRunLoop currentRunLoop]
+        runUntilDate:[NSDate dateWithTimeIntervalSinceNow:5]];
+  }
 }
 
 @end

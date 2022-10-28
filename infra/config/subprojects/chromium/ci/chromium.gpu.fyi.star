@@ -1,4 +1,4 @@
-# Copyright 2021 The Chromium Authors. All rights reserved.
+# Copyright 2021 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 """Definitions of builders in the chromium.gpu.fyi builder group."""
@@ -59,6 +59,24 @@ def gpu_fyi_windows_builder(*, name, **kwargs):
 
 ci.thin_tester(
     name = "Android FYI Release (NVIDIA Shield TV)",
+    builder_spec = builder_config.builder_spec(
+        execution_mode = builder_config.execution_mode.TEST,
+        gclient_config = builder_config.gclient_config(
+            config = "chromium",
+            apply_configs = [
+                "android",
+                "enable_reclient",
+            ],
+        ),
+        chromium_config = builder_config.chromium_config(
+            config = "android",
+            target_platform = builder_config.target_platform.ANDROID,
+        ),
+        android_config = builder_config.android_config(
+            config = "main_builder_rel_mb",
+        ),
+        run_tests_serially = True,
+    ),
     console_view_entry = consoles.console_view_entry(
         category = "Android|P32|NVDA",
         short_name = "STV",
@@ -68,6 +86,23 @@ ci.thin_tester(
 
 ci.thin_tester(
     name = "Android FYI Release (Nexus 5)",
+    builder_spec = builder_config.builder_spec(
+        execution_mode = builder_config.execution_mode.TEST,
+        gclient_config = builder_config.gclient_config(
+            config = "chromium",
+            apply_configs = [
+                "android",
+                "enable_reclient",
+            ],
+        ),
+        chromium_config = builder_config.chromium_config(
+            config = "android",
+            target_platform = builder_config.target_platform.ANDROID,
+        ),
+        android_config = builder_config.android_config(
+            config = "main_builder_rel_mb",
+        ),
+    ),
     console_view_entry = consoles.console_view_entry(
         category = "Android|L32",
         short_name = "N5",
@@ -77,6 +112,26 @@ ci.thin_tester(
 
 ci.thin_tester(
     name = "Android FYI Release (Nexus 5X)",
+    builder_spec = builder_config.builder_spec(
+        execution_mode = builder_config.execution_mode.TEST,
+        gclient_config = builder_config.gclient_config(
+            config = "chromium",
+            apply_configs = [
+                "android",
+                "enable_reclient",
+            ],
+        ),
+        chromium_config = builder_config.chromium_config(
+            config = "android",
+            apply_configs = [
+                "download_vr_test_apks",
+            ],
+            target_platform = builder_config.target_platform.ANDROID,
+        ),
+        android_config = builder_config.android_config(
+            config = "arm64_builder_rel_mb",
+        ),
+    ),
     console_view_entry = consoles.console_view_entry(
         category = "Android|M64|QCOM",
         short_name = "N5X",
@@ -86,6 +141,23 @@ ci.thin_tester(
 
 ci.thin_tester(
     name = "Android FYI Release (Pixel 2)",
+    builder_spec = builder_config.builder_spec(
+        execution_mode = builder_config.execution_mode.TEST,
+        gclient_config = builder_config.gclient_config(
+            config = "chromium",
+            apply_configs = [
+                "android",
+                "enable_reclient",
+            ],
+        ),
+        chromium_config = builder_config.chromium_config(
+            config = "android",
+            target_platform = builder_config.target_platform.ANDROID,
+        ),
+        android_config = builder_config.android_config(
+            config = "main_builder_rel_mb",
+        ),
+    ),
     console_view_entry = consoles.console_view_entry(
         category = "Android|P32|QCOM",
         short_name = "P2",
@@ -95,6 +167,23 @@ ci.thin_tester(
 
 ci.thin_tester(
     name = "Android FYI Release (Pixel 4)",
+    builder_spec = builder_config.builder_spec(
+        execution_mode = builder_config.execution_mode.TEST,
+        gclient_config = builder_config.gclient_config(
+            config = "chromium",
+            apply_configs = [
+                "android",
+                "enable_reclient",
+            ],
+        ),
+        chromium_config = builder_config.chromium_config(
+            config = "android",
+            target_platform = builder_config.target_platform.ANDROID,
+        ),
+        android_config = builder_config.android_config(
+            config = "main_builder_rel_mb",
+        ),
+    ),
     console_view_entry = consoles.console_view_entry(
         category = "Android|R32|QCOM",
         short_name = "P4",
@@ -107,11 +196,84 @@ ci.thin_tester(
     # TODO(crbug.com/1280418): Revert this to the default once more Pixel 6
     # capacity is deployed.
     execution_timeout = 8 * time.hour,
+    builder_spec = builder_config.builder_spec(
+        execution_mode = builder_config.execution_mode.TEST,
+        gclient_config = builder_config.gclient_config(
+            config = "chromium",
+            apply_configs = [
+                "android",
+                "enable_reclient",
+            ],
+        ),
+        chromium_config = builder_config.chromium_config(
+            config = "android",
+            apply_configs = [
+                "download_vr_test_apks",
+            ],
+            target_platform = builder_config.target_platform.ANDROID,
+        ),
+        android_config = builder_config.android_config(
+            config = "arm64_builder_rel_mb",
+        ),
+        run_tests_serially = True,
+    ),
     console_view_entry = consoles.console_view_entry(
         category = "Android|S64|ARM",
         short_name = "P6",
     ),
     triggered_by = ["GPU FYI Android arm64 Builder"],
+)
+
+ci.thin_tester(
+    name = "Android FYI Release (Samsung A13)",
+    builder_spec = builder_config.builder_spec(
+        execution_mode = builder_config.execution_mode.TEST,
+        gclient_config = builder_config.gclient_config(
+            config = "chromium",
+            apply_configs = [
+                "android",
+                "enable_reclient",
+            ],
+        ),
+        chromium_config = builder_config.chromium_config(
+            config = "android",
+            target_platform = builder_config.target_platform.ANDROID,
+        ),
+        android_config = builder_config.android_config(
+            config = "main_builder_rel_mb",
+        ),
+    ),
+    console_view_entry = consoles.console_view_entry(
+        category = "Android|S32|ARM",
+        short_name = "A13",
+    ),
+    triggered_by = ["GPU FYI Android arm Builder"],
+)
+
+ci.thin_tester(
+    name = "Android FYI Release (Samsung A23)",
+    builder_spec = builder_config.builder_spec(
+        execution_mode = builder_config.execution_mode.TEST,
+        gclient_config = builder_config.gclient_config(
+            config = "chromium",
+            apply_configs = [
+                "android",
+                "enable_reclient",
+            ],
+        ),
+        chromium_config = builder_config.chromium_config(
+            config = "android",
+            target_platform = builder_config.target_platform.ANDROID,
+        ),
+        android_config = builder_config.android_config(
+            config = "main_builder_rel_mb",
+        ),
+    ),
+    console_view_entry = consoles.console_view_entry(
+        category = "Android|S32|QCOM",
+        short_name = "A23",
+    ),
+    triggered_by = ["GPU FYI Android arm Builder"],
 )
 
 ci.gpu.linux_builder(
@@ -186,19 +348,6 @@ ci.gpu.linux_builder(
 
 ci.gpu.linux_builder(
     name = "GPU Flake Finder",
-    builder_spec = builder_config.builder_spec(
-        gclient_config = builder_config.gclient_config(
-            config = "chromium",
-        ),
-        chromium_config = builder_config.chromium_config(
-            config = "chromium",
-            apply_configs = [
-                "mb",
-            ],
-            build_config = builder_config.build_config.RELEASE,
-            target_bits = 64,
-        ),
-    ),
     console_view_entry = consoles.console_view_entry(
         short_name = "flk",
     ),
@@ -231,6 +380,22 @@ ci.gpu.linux_builder(
 
 ci.gpu.linux_builder(
     name = "GPU FYI Android arm Builder",
+    builder_spec = builder_config.builder_spec(
+        gclient_config = builder_config.gclient_config(
+            config = "chromium",
+            apply_configs = [
+                "android",
+                "enable_reclient",
+            ],
+        ),
+        chromium_config = builder_config.chromium_config(
+            config = "android",
+            target_platform = builder_config.target_platform.ANDROID,
+        ),
+        android_config = builder_config.android_config(
+            config = "main_builder_rel_mb",
+        ),
+    ),
     console_view_entry = consoles.console_view_entry(
         category = "Android|Builder",
         short_name = "arm",
@@ -240,6 +405,25 @@ ci.gpu.linux_builder(
 
 ci.gpu.linux_builder(
     name = "GPU FYI Android arm64 Builder",
+    builder_spec = builder_config.builder_spec(
+        gclient_config = builder_config.gclient_config(
+            config = "chromium",
+            apply_configs = [
+                "android",
+                "enable_reclient",
+            ],
+        ),
+        chromium_config = builder_config.chromium_config(
+            config = "android",
+            apply_configs = [
+                "download_vr_test_apks",
+            ],
+            target_platform = builder_config.target_platform.ANDROID,
+        ),
+        android_config = builder_config.android_config(
+            config = "arm64_builder_rel_mb",
+        ),
+    ),
     console_view_entry = consoles.console_view_entry(
         category = "Android|Builder",
         short_name = "arm64",
@@ -304,8 +488,6 @@ ci.gpu.mac_builder(
         category = "Mac|Builder",
         short_name = "rel",
     ),
-    goma_backend = goma.backend.RBE_PROD,
-    reclient_instance = None,
 )
 
 ci.gpu.mac_builder(
@@ -314,8 +496,6 @@ ci.gpu.mac_builder(
         category = "Mac|Builder",
         short_name = "asn",
     ),
-    goma_backend = goma.backend.RBE_PROD,
-    reclient_instance = None,
 )
 
 ci.gpu.mac_builder(
@@ -324,8 +504,6 @@ ci.gpu.mac_builder(
         category = "Mac|Builder",
         short_name = "dbg",
     ),
-    goma_backend = goma.backend.RBE_PROD,
-    reclient_instance = None,
 )
 
 ci.gpu.mac_builder(
@@ -349,8 +527,7 @@ ci.gpu.mac_builder(
         category = "Mac|Builder",
         short_name = "arm",
     ),
-    goma_backend = goma.backend.RBE_PROD,
-    reclient_instance = None,
+    goma_backend = None,
 )
 
 ci.thin_tester(
@@ -531,10 +708,10 @@ ci.thin_tester(
         run_tests_serially = True,
     ),
     # Uncomment this entry when this experimental tester is actually in use.
-    # console_view_entry = consoles.console_view_entry(
-    #     category = "Mac|Apple",
-    #     short_name = "exp",
-    # ),
+    console_view_entry = consoles.console_view_entry(
+        category = "Mac|Apple",
+        short_name = "exp",
+    ),
     list_view = "chromium.gpu.experimental",
     triggered_by = ["GPU FYI Mac arm64 Builder"],
 )
@@ -542,10 +719,10 @@ ci.thin_tester(
 ci.thin_tester(
     name = "Mac FYI Experimental Release (Intel)",
     # Uncomment this entry when this experimental tester is actually in use.
-    # console_view_entry = consoles.console_view_entry(
-    #     category = "Mac|Intel",
-    #     short_name = "exp",
-    # ),
+    console_view_entry = consoles.console_view_entry(
+        category = "Mac|Intel",
+        short_name = "exp",
+    ),
     list_view = "chromium.gpu.experimental",
     triggered_by = ["GPU FYI Mac Builder"],
 )

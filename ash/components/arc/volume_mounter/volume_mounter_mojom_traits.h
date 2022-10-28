@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,7 +6,7 @@
 #define ASH_COMPONENTS_ARC_VOLUME_MOUNTER_VOLUME_MOUNTER_MOJOM_TRAITS_H_
 
 #include "ash/components/arc/mojom/volume_mounter.mojom-shared.h"
-#include "ash/components/disks/disk_mount_manager.h"
+#include "chromeos/ash/components/disks/disk_mount_manager.h"
 
 namespace mojo {
 

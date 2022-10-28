@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -129,7 +129,8 @@ class ImageContextImpl final : public ExternalUseClient::ImageContext {
 
   // The |promise_image_texture| is used for fulfilling the promise image. It is
   // used on GPU thread.
-  raw_ptr<SkPromiseImageTexture> promise_image_texture_ = nullptr;
+  raw_ptr<SkPromiseImageTexture, DanglingUntriaged> promise_image_texture_ =
+      nullptr;
 };
 
 }  // namespace viz

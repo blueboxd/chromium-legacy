@@ -8,11 +8,13 @@
 
 #include "base/memory/raw_ptr.h"
 #include "base/strings/stringprintf.h"
+#include "base/test/bind.h"
 #include "base/test/scoped_command_line.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/display/display.h"
 #include "ui/display/display_observer.h"
 #include "ui/display/display_switches.h"
+#include "ui/display/types/display_constants.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/native_widget_types.h"
@@ -65,16 +67,26 @@ class TestDisplayObserver : public display::DisplayObserver {
     removed_display_ = old_display;
   }
 
+  void OnDidRemoveDisplays() override {
+    if (did_remove_display_closure_)
+      did_remove_display_closure_.Run();
+  }
+
   void OnDisplayMetricsChanged(const display::Display& display,
                                uint32_t changed_metrics) override {
     changed_metrics_ = changed_metrics;
     display_ = display;
   }
 
+  void set_did_remove_display_closure(base::RepeatingClosure closure) {
+    did_remove_display_closure_ = std::move(closure);
+  }
+
  private:
   uint32_t changed_metrics_ = 0;
   display::Display display_;
   display::Display removed_display_;
+  base::RepeatingClosure did_remove_display_closure_{};
 };
 
 }  // namespace
@@ -541,6 +553,30 @@ TEST_P(WaylandScreenTest, GetDisplayMatching) {
   Sync();
 }
 
+// Regression test for https://crbug.com/1362872.
+TEST_P(WaylandScreenTest, GetPrimaryDisplayAfterRemoval) {
+  TestDisplayObserver observer;
+  platform_screen_->AddObserver(&observer);
+
+  const display::Display primary_display =
+      platform_screen_->GetPrimaryDisplay();
+
+  ASSERT_NE(primary_display.id(), display::kInvalidDisplayId);
+  ASSERT_EQ(1u, platform_screen_->GetAllDisplays().size());
+
+  // This results in an ASAN error unless GetPrimaryDisplay() is correctly
+  // implemented for empty display list. More details in the crbug above.
+  observer.set_did_remove_display_closure(base::BindLambdaForTesting([&]() {
+    ASSERT_EQ(0u, platform_screen_->GetAllDisplays().size());
+    auto display = platform_screen_->GetPrimaryDisplay();
+    EXPECT_EQ(display::kDefaultDisplayId, display.id());
+  }));
+  output_->DestroyGlobal();
+  Sync();
+
+  platform_screen_->RemoveObserver(&observer);
+}
+
 TEST_P(WaylandScreenTest, GetDisplayForAcceleratedWidget) {
   TestDisplayObserver observer;
   platform_screen_->AddObserver(&observer);
@@ -641,6 +677,7 @@ TEST_P(WaylandScreenTest, GetCursorScreenPoint) {
   wl_pointer_send_frame(pointer->resource());
   wl_pointer_send_motion(pointer->resource(), ++time, wl_fixed_from_int(10),
                          wl_fixed_from_int(20));
+  wl_pointer_send_frame(pointer->resource());
 
   Sync();
 
@@ -658,6 +695,7 @@ TEST_P(WaylandScreenTest, GetCursorScreenPoint) {
   wl_pointer_send_frame(pointer->resource());
   wl_pointer_send_motion(pointer->resource(), ++time, wl_fixed_from_int(20),
                          wl_fixed_from_int(10));
+  wl_pointer_send_frame(pointer->resource());
 
   Sync();
 
@@ -701,6 +739,7 @@ TEST_P(WaylandScreenTest, GetCursorScreenPoint) {
   wl_pointer_send_frame(pointer->resource());
   wl_pointer_send_motion(pointer->resource(), ++time, wl_fixed_from_int(2),
                          wl_fixed_from_int(1));
+  wl_pointer_send_frame(pointer->resource());
 
   Sync();
 
@@ -720,6 +759,7 @@ TEST_P(WaylandScreenTest, GetCursorScreenPoint) {
   wl_pointer_send_frame(pointer->resource());
   wl_pointer_send_motion(pointer->resource(), ++time, wl_fixed_from_int(1912),
                          wl_fixed_from_int(1071));
+  wl_pointer_send_frame(pointer->resource());
 
   Sync();
 
@@ -752,6 +792,7 @@ TEST_P(WaylandScreenTest, GetCursorScreenPoint) {
   wl_pointer_send_frame(pointer->resource());
   wl_pointer_send_motion(pointer->resource(), ++time, wl_fixed_from_int(2),
                          wl_fixed_from_int(3));
+  wl_pointer_send_frame(pointer->resource());
 
   Sync();
 
@@ -767,6 +808,7 @@ TEST_P(WaylandScreenTest, GetCursorScreenPoint) {
   wl_pointer_send_frame(pointer->resource());
   wl_pointer_send_motion(pointer->resource(), ++time, wl_fixed_from_int(2),
                          wl_fixed_from_int(1));
+  wl_pointer_send_frame(pointer->resource());
 
   Sync();
 

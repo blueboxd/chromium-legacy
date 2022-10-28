@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -956,4 +956,32 @@ static jboolean JNI_WebsitePreferenceBridge_GetLocationAllowedByPolicy(
   return GetHostContentSettingsMap(jbrowser_context_handle)
              ->GetDefaultContentSetting(ContentSettingsType::GEOLOCATION,
                                         nullptr) == CONTENT_SETTING_ALLOW;
+}
+
+static ScopedJavaLocalRef<jstring>
+JNI_WebsitePreferenceBridge_ToDomainWildcardPattern(
+    JNIEnv* env,
+    const JavaParamRef<jstring>& pattern) {
+  std::string pattern_string = ConvertJavaStringToUTF8(env, pattern);
+  ContentSettingsPattern original_pattern =
+      ContentSettingsPattern::FromString(pattern_string);
+  ContentSettingsPattern domain_wildcard_pattern =
+      ContentSettingsPattern::ToDomainWildcardPattern(original_pattern);
+  std::string domain_wildcard_pattern_string =
+      domain_wildcard_pattern.IsValid()
+          ? domain_wildcard_pattern.ToString()
+          : ContentSettingsPattern::ToHostOnlyPattern(original_pattern)
+                .ToString();
+  return ConvertUTF8ToJavaString(env, domain_wildcard_pattern_string);
+}
+
+static ScopedJavaLocalRef<jstring>
+JNI_WebsitePreferenceBridge_ToHostOnlyPattern(
+    JNIEnv* env,
+    const JavaParamRef<jstring>& pattern) {
+  std::string pattern_string = ConvertJavaStringToUTF8(env, pattern);
+  ContentSettingsPattern host_only_pattern =
+      ContentSettingsPattern::ToHostOnlyPattern(
+          ContentSettingsPattern::FromString(pattern_string));
+  return ConvertUTF8ToJavaString(env, host_only_pattern.ToString());
 }

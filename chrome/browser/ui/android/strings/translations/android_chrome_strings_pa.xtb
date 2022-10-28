@@ -343,7 +343,7 @@
 <translation id="2886836735871983413">ਵੈੱਬ 'ਤੇ ਬ੍ਰਾਊਜ਼ ਕਰਦੇ ਹੋਏ ਸਾਈਟਾਂ ਦੀ ਸੂਚੀ ਇੱਥੇ ਦਿਸੇਗੀ</translation>
 <translation id="2888126860611144412">Chrome ਬਾਰੇ</translation>
 <translation id="2891154217021530873">ਲੋਡ ਕਰਨ ਤੋਂ ਪਹਿਲਾਂ ਰੁਕੋ</translation>
-<translation id="2893180576842394309">Google Search ਅਤੇ ਹੋਰਾਂ Google ਸੇਵਾਵਾਂ ਨੂੰ ਵਿਅਕਤੀਗਤ ਬਣਾਉਣ ਲਈ ਤੁਹਾਡੇ ਇਤਿਹਾਸ ਦੀ ਵਰਤੋਂ ਕਰ ਸਕਦਾ ਹੈ</translation>
+<translation id="2893180576842394309">Google ਖੋਜ ਅਤੇ ਹੋਰਾਂ Google ਸੇਵਾਵਾਂ ਨੂੰ ਵਿਅਕਤੀਗਤ ਬਣਾਉਣ ਲਈ ਤੁਹਾਡੇ ਇਤਿਹਾਸ ਦੀ ਵਰਤੋਂ ਕਰ ਸਕਦਾ ਹੈ</translation>
 <translation id="2900528713135656174">ਵਰਤਾਰਾ ਬਣਾਓ</translation>
 <translation id="2901411048554510387"><ph name="WEBSITE_TITLE" /> ਲਈ ਸੁਝਾਅ ਦਿਖਾਏ ਜਾ ਰਹੇ ਹਨ</translation>
 <translation id="2904414404539560095">ਕਿਸੇ ਟੈਬ ਨੂੰ ਸਾਂਝਾ ਕਰਨ ਵਾਲੇ ਡੀਵਾਈਸਾਂ ਦੀ ਸੂਚੀ ਪੂਰੀ ਉਚਾਈ 'ਤੇ ਖੁੱਲ੍ਹੀ ਹੋਈ ਹੈ।</translation>
@@ -401,7 +401,7 @@
 <translation id="314939179385989105">Chrome ਦਾ ਹੋਮਪੇਜ</translation>
 <translation id="3166827708714933426">ਟੈਬ ਅਤੇ ਵਿੰਡੋ ਸ਼ਾਰਟਕੱਟ</translation>
 <translation id="316694332262407393">Chrome ਪਹਿਲਾਂ ਹੀ ਇੱਥੇ ਚੱਲ ਰਿਹਾ ਹੈ।</translation>
-<translation id="3169472444629675720">Discover</translation>
+<translation id="3169472444629675720">ਖੋਜੋ</translation>
 <translation id="3187472288455401631">ਵਿਗਿਆਪਨ ਮੁਲਾਂਕਣ</translation>
 <translation id="3207960819495026254">ਬੁੱਕਮਾਰਕ ਕੀਤੇ</translation>
 <translation id="3208584281581115441">ਹੁਣ ਜਾਂਚ ਕਰੋ</translation>
@@ -454,6 +454,7 @@
 <translation id="3435465986463792564">ਕੀ ਬਹੁਤ ਸਾਰੀਆਂ ਵਿੰਡੋ ਖੁੱਲ੍ਹੀਆਂ ਹੋਈਆਂ ਹਨ? ਤੁਸੀਂ ਇੱਥੇ ਉਨ੍ਹਾਂ ਦਾ ਪ੍ਰਬੰਧਨ ਕਰ ਸਕਦੇ ਹੋ</translation>
 <translation id="3443221991560634068">ਮੌਜੂਦਾ ਪੰਨੇ ਨੂੰ ਮੁੜ-ਲੋਡ ਕਰੋ</translation>
 <translation id="3444179773590444986">ਕੀ ਸਾਈਟਾਂ ਲਈ ਗੂੜ੍ਹੇ ਥੀਮ ਬਾਰੇ ਵਿਚਾਰ ਸਾਂਝਾ ਕਰਨਾ ਹੈ?</translation>
+<translation id="3452832259067974318">ਤੁਹਾਡੀ ਪਰਦੇਦਾਰੀ ਦੀ ਸੁਰੱਖਿਆ ਲਈ, Chrome ਇਸ ਖੇਤਰ ਵਿੱਚ ਤੁਹਾਡੇ ਪਾਸਵਰਡ ਨੂੰ ਆਟੋਫਿਲ ਨਹੀਂ ਕਰੇਗਾ।</translation>
 <translation id="3469665409713263828">{FILE_COUNT,plural, =1{1 ਡਾਊਨਲੋਡ ਨੂੰ ਨਿਯਤ ਕੀਤਾ ਗਿਆ}one{# ਡਾਊਨਲੋਡ ਨੂੰ ਨਿਯਤ ਕੀਤਾ ਗਿਆ}other{# ਡਾਊਨਲੋਡਾਂ ਨੂੰ ਨਿਯਤ ਕੀਤਾ ਗਿਆ}}</translation>
 <translation id="3474624961160222204"><ph name="NAME" /> ਵਜੋਂ ਜਾਰੀ ਰੱਖੋ</translation>
 <translation id="3478363558367712427">ਤੁਸੀਂ ਆਪਣਾ ਖੋਜ ਇੰਜਣ ਚੁਣ ਸਕਦੇ ਹੋ</translation>
@@ -679,6 +680,7 @@
 <translation id="4763480195061959176">ਵੀਡਿਓ</translation>
 <translation id="4766313118839197559">ਪਾਸਵਰਡ ਇਸ ਡੀਵਾਈਸ ਦੇ ਪਾਸਵਰਡ ਪ੍ਰਬੰਧਕ ਵਿੱਚ ਰੱਖਿਅਤ ਕੀਤੇ ਗਏ ਹਨ</translation>
 <translation id="4766678251456904326">ਡੀਵਾਈਸ ਵਿੱਚ ਖਾਤਾ ਸ਼ਾਮਲ ਕਰੋ</translation>
+<translation id="4787736314074622408">ਕੀ ਤੁਸੀਂ <ph name="ITEM_TITLE" /> ਨੂੰ ਮਿਟਾਉਣਾ ਚਾਹੁੰਦੇ ਹੋ?</translation>
 <translation id="4791358705705538979">ਤੁਹਾਨੂੰ ਵੈੱਬ ਵਿੱਚ ਕਾਰਜ, ਜਿਵੇਂ ਕਿ ਚੈੱਕ-ਆਊਟ, ਪੂਰੇ ਕਰਨ ਵਿੱਚ ਮਦਦ ਕਰਦਾ ਹੈ</translation>
 <translation id="4794291718671962615">(<ph name="MEGABYTES" />) <ph name="URL" /></translation>
 <translation id="4802417911091824046">ਪਾਸਫਰੇਜ਼ ਇਨਕ੍ਰਿਪਸ਼ਨ ਵਿੱਚ Google Pay ਦੀਆਂ ਭੁਗਤਾਨ ਵਿਧੀਆਂ ਅਤੇ ਪਤੇ ਸ਼ਾਮਲ ਨਹੀਂ ਹਨ।
@@ -748,6 +750,7 @@
 <translation id="5091199029769593641">ਜਲਦ ਹੀ, ਤੁਹਾਨੂੰ ਨਵੀਂ ਟੈਬ ਖੋਲ੍ਹਣ 'ਤੇ <ph name="SITE_NAME" /> ਦੀਆਂ ਕਹਾਣੀਆਂ ਦਿਖਾਈ ਦੇਣਗੀਆਂ। ਤੁਹਾਡੇ ਵੱਲੋਂ ਅਨੁਸਰਣ ਕੀਤੀਆਂ ਸਾਈਟਾਂ ਤੁਹਾਡੇ Google ਖਾਤੇ ਵਿੱਚ ਰੱਖਿਅਤ ਕੀਤੀਆਂ ਜਾਂਦੀਆਂ ਹਨ। ਤੁਸੀਂ ਉਨ੍ਹਾਂ ਦਾ ਪ੍ਰਬੰਧਨ ਡਿਸਕਵਰ ਸੈਟਿੰਗਾਂ ਵਿੱਚ ਜਾ ਕੇ ਕਰ ਸਕਦੇ ਹੋ।</translation>
 <translation id="5091249083535528968">ਵਿਸਤ੍ਰਿਤ ਵਰਤੋਂ ਡਾਟਾ</translation>
 <translation id="509429900233858213">ਇੱਕ ਗੜਬੜ ਹੋਈ</translation>
+<translation id="5099845111805573968">ਜਦੋਂ ਤੁਸੀਂ ਇੱਕ ਵਾਰ ਡੈਸਕਟਾਪ ਸਾਈਟ ਦੀ ਚੋਣ ਕਰ ਲੈਂਦੇ ਹੋ, ਤਾਂ ਇਹ ਸੈਟਿੰਗ ਸਾਈਟ 'ਤੇ ਤੁਹਾਡੀ ਹਰ ਫੇਰੀ ਸਮੇਂ ਲਾਗੂ ਹੁੰਦੀ ਹੈ</translation>
 <translation id="5102401324271069229">ਜੇ ਕੋਈ ਸਾਈਟ ਤੁਹਾਡੇ ਪਾਸਵਰਡ ਨੂੰ ਚੋਰੀ ਕਰਨ ਦੀ ਕੋਸ਼ਿਸ਼ ਕਰਦੀ ਹੈ ਜਾਂ ਜਦੋਂ ਤੁਸੀਂ ਕੋਈ ਨੁਕਸਾਨਦੇਹ ਫ਼ਾਈਲ ਡਾਊਨਲੋਡ ਕਰਦੇ ਹੋ, ਤਾਂ Chrome ਸੁਰੱਖਿਅਤ ਬ੍ਰਾਊਜ਼ਿੰਗ ਨੂੰ ਪੰਨੇ ਦੀ ਸਮੱਗਰੀ ਸਮੇਤ URL ਵੀ ਭੇਜ ਸਕਦਾ ਹੈ</translation>
 <translation id="510275257476243843">1 ਘੰਟਾ ਬਾਕੀ</translation>
 <translation id="5115811374190515607"><ph name="PRODUCT_NAME" /> ਵੱਲ</translation>
@@ -907,6 +910,7 @@
 <translation id="5958275228015807058">ਡਾਊਨਲੋਡਾਂ ਵਿੱਚ ਆਪਣੀਆਂ ਫ਼ਾਈਲਾਂ ਅਤੇ ਪੰਨਿਆਂ ਨੂੰ ਲੱਭੋ</translation>
 <translation id="5962718611393537961">ਸਮੇਟਣ ਲਈ ਟੈਪ ਕਰੋ</translation>
 <translation id="5964869237734432770">ਚਿੱਤਰ ਦੇ ਵਰਣਨ ਬੰਦ ਕਰੋ</translation>
+<translation id="5966233851250124270">Chrome ਤੁਹਾਡੀ ਚੋਣ ਨੂੰ ਯਾਦ ਰੱਖੇਗਾ</translation>
 <translation id="5979084224081478209">ਪਾਸਵਰਡਾਂ ਦੀ ਜਾਂਚ ਕਰੋ</translation>
 <translation id="5995726099713306770">ਕੀ ਪੰਨਾ ਦੁਬਾਰਾ ਡਾਊਨਲੋਡ ਕਰਨਾ ਹੈ?</translation>
 <translation id="6000066717592683814">Google ਰੱਖੋ</translation>
@@ -1083,6 +1087,7 @@
 <translation id="6820686453637990663">CVC</translation>
 <translation id="6824899148643461612"><ph name="TAB_TITLE" /> ਟੈਬ ਨੂੰ ਚੁਣਿਆ ਗਿਆ</translation>
 <translation id="6828070228333235514">ਕੀਮਤ ਨੂੰ ਟਰੈਕ ਕਰਨਾ ਬੰਦ ਕਰੋ</translation>
+<translation id="6830728435402077660">ਸੁਰੱਖਿਅਤ ਨਹੀਂ</translation>
 <translation id="6833996806551876956">ਪਰਦੇਦਾਰੀ ਸੈਂਡਬਾਕਸ ਪਰਖ</translation>
 <translation id="6836206421467243968">ਟੈਬ ਗਰੁੱਪ <ph name="TITLE_OF_GROUP" /> ਨੂੰ ਨਵੇਂ ਬੈਕਗ੍ਰਾਊਂਡ ਟੈਬ ਗਰੁੱਪ ਵਜੋਂ ਮੁੜ-ਬਹਾਲ ਕਰੋ।</translation>
 <translation id="6846298663435243399">ਲੋਡ ਹੋ ਰਿਹਾ ਹੈ...</translation>

@@ -1,11 +1,10 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 GEN('#include "chrome/browser/ui/ui_features.h"');
 GEN('#include "content/public/test/browser_test.h"');
 GEN('#include "services/network/public/cpp/features.h"');
 
-// eslint-disable-next-line no-var
 var MetricsReporterTest = class extends testing.Test {
   /** @override */
   get browsePreload() {

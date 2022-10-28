@@ -14,7 +14,6 @@
 #include "content/browser/attribution_reporting/attribution_test_utils.h"
 #include "content/browser/storage_partition_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
-#include "content/public/common/content_client.h"
 #include "content/public/test/test_renderer_host.h"
 #include "content/public/test/test_utils.h"
 #include "content/test/navigation_simulator_impl.h"
@@ -44,11 +43,7 @@ class AttributionHostTestPeer {
 
 namespace {
 
-using ConversionMeasurementOperation =
-    ::content::ContentBrowserClient::ConversionMeasurementOperation;
-
 using testing::_;
-using testing::Mock;
 using testing::Return;
 
 const char kConversionUrl[] = "https://b.com";
@@ -253,26 +248,26 @@ namespace {
 const char kLocalHost[] = "http://localhost";
 
 struct OriginTrustworthyChecksTestCase {
-  const char* impression_origin;
-  const char* conversion_origin;
+  const char* source_origin;
+  const char* destination_origin;
   bool impression_expected;
 };
 
 const OriginTrustworthyChecksTestCase kOriginTrustworthyChecksTestCases[] = {
-    {.impression_origin = kLocalHost,
-     .conversion_origin = kLocalHost,
+    {.source_origin = kLocalHost,
+     .destination_origin = kLocalHost,
      .impression_expected = true},
-    {.impression_origin = "http://127.0.0.1",
-     .conversion_origin = "http://127.0.0.1",
+    {.source_origin = "http://127.0.0.1",
+     .destination_origin = "http://127.0.0.1",
      .impression_expected = true},
-    {.impression_origin = kLocalHost,
-     .conversion_origin = "http://insecure.com",
+    {.source_origin = kLocalHost,
+     .destination_origin = "http://insecure.com",
      .impression_expected = true},
-    {.impression_origin = "http://insecure.com",
-     .conversion_origin = kLocalHost,
+    {.source_origin = "http://insecure.com",
+     .destination_origin = kLocalHost,
      .impression_expected = true},
-    {.impression_origin = "https://secure.com",
-     .conversion_origin = "https://secure.com",
+    {.source_origin = "https://secure.com",
+     .destination_origin = "https://secure.com",
      .impression_expected = true},
 };
 
@@ -289,9 +284,9 @@ TEST_P(AttributionHostOriginTrustworthyChecksTest,
   EXPECT_CALL(*mock_data_host_manager(), NotifyNavigationForDataHost)
       .Times(test_case.impression_expected);
 
-  contents()->NavigateAndCommit(GURL(test_case.impression_origin));
+  contents()->NavigateAndCommit(GURL(test_case.source_origin));
   auto navigation = NavigationSimulatorImpl::CreateRendererInitiated(
-      GURL(test_case.conversion_origin), main_rfh());
+      GURL(test_case.destination_origin), main_rfh());
 
   navigation->set_impression(blink::Impression());
   navigation->SetInitiatorFrame(main_rfh());

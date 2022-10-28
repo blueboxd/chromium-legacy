@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -196,6 +196,7 @@
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/page_state/page_state.h"
 #include "third_party/blink/public/common/web_preferences/web_preferences.h"
+#include "third_party/blink/public/mojom/window_features/window_features.mojom.h"
 #include "ui/base/l10n/l10n_util.h"
 
 #if BUILDFLAG(USE_NSS_CERTS)
@@ -1008,16 +1009,16 @@ class SSLUITestWithExtendedReporting : public SSLUITest {
     // Certificate reports are only sent from official builds, unless this has
     // been called.
     CertReportHelper::SetFakeOfficialBuildForTesting();
+
+    // CertReportHelper::ShouldReportCertificateError checks the value of this
+    // variation. Ensure reporting is enabled.
+    variations::testing::VariationParamsManager::SetVariationParams(
+        "ReportCertificateErrors", "ShowAndPossiblySend",
+        {{"sendingThreshold", "1.0"}});
   }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
     SSLUITest::SetUpCommandLine(command_line);
-
-    // CertReportHelper::ShouldReportCertificateError checks the value of this
-    // variation. Ensure reporting is enabled.
-    variations::testing::VariationParamsManager::AppendVariationParams(
-        "ReportCertificateErrors", "ShowAndPossiblySend",
-        {{"sendingThreshold", "1.0"}}, command_line);
   }
 };
 
@@ -4757,13 +4758,14 @@ IN_PROC_BROWSER_TEST_F(SSLNetworkTimeBrowserTest,
 
 class CommonNameMismatchBrowserTest : public CertVerifierBrowserTest {
  public:
-  CommonNameMismatchBrowserTest() : CertVerifierBrowserTest() {}
+  CommonNameMismatchBrowserTest() : CertVerifierBrowserTest() {
+    // Enable finch experiment for SSL common name mismatch handling.
+    base::FieldTrialList::CreateFieldTrial("SSLCommonNameMismatchHandling",
+                                           "Enabled");
+  }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
     CertVerifierBrowserTest::SetUpCommandLine(command_line);
-    // Enable finch experiment for SSL common name mismatch handling.
-    command_line->AppendSwitchASCII(switches::kForceFieldTrials,
-                                    "SSLCommonNameMismatchHandling/Enabled/");
   }
 
   void SetUpOnMainThread() override {
@@ -5272,9 +5274,9 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, RestoreHasSSLState) {
   WebContents::CreateParams params(tab->GetBrowserContext());
   std::unique_ptr<WebContents> tab2 = WebContents::Create(params);
   WebContents* raw_tab2 = tab2.get();
-  tab->GetDelegate()->AddNewContents(nullptr, std::move(tab2), url,
-                                     WindowOpenDisposition::NEW_FOREGROUND_TAB,
-                                     gfx::Rect(), false, nullptr);
+  tab->GetDelegate()->AddNewContents(
+      nullptr, std::move(tab2), url, WindowOpenDisposition::NEW_FOREGROUND_TAB,
+      blink::mojom::WindowFeatures(), false, nullptr);
   std::vector<std::unique_ptr<content::NavigationEntry>> entries;
   entries.push_back(std::move(restored_entry));
   content::TestNavigationObserver observer(raw_tab2);

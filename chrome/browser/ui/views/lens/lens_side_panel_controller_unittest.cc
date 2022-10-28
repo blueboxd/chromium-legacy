@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -77,7 +77,7 @@ TEST_F(LensSidePanelControllerTest, OpenWithURLRecordsMultipleLensQueries) {
 
 TEST_F(LensSidePanelControllerTest, OpenWithURLHidesChromeSidePanel) {
   base::UserActionTester user_action_tester;
-  browser_view()->right_aligned_side_panel()->SetVisible(true);
+  browser_view()->unified_side_panel()->SetVisible(true);
 
   controller_->OpenWithURL(
       content::OpenURLParams(GURL("http://foo.com"), content::Referrer(),

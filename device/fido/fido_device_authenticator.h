@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -133,6 +133,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoDeviceAuthenticator
   bool SupportsHMACSecretExtension() const override;
   bool SupportsEnterpriseAttestation() const override;
   bool SupportsCredBlobOfSize(size_t num_bytes) const override;
+  bool SupportsDevicePublicKey() const override;
   const absl::optional<AuthenticatorSupportedOptions>& Options() const override;
   absl::optional<FidoTransportProtocol> AuthenticatorTransport() const override;
   bool IsInPairingMode() const override;

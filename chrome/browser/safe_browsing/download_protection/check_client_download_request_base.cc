@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,6 +10,7 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/rand_util.h"
+#include "base/ranges/algorithm.h"
 #include "base/strings/strcat.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/api/safe_browsing_private/safe_browsing_private_event_router.h"
@@ -289,9 +290,8 @@ void CheckClientDownloadRequestBase::OnRequestBuilt(
        client_download_request_->download_type() ==
            ClientDownloadRequest::RAR_COMPRESSED_EXECUTABLE) &&
       client_download_request_->archive_valid() &&
-      std::all_of(
-          client_download_request_->archived_binary().begin(),
-          client_download_request_->archived_binary().end(),
+      base::ranges::all_of(
+          client_download_request_->archived_binary(),
           [](const ClientDownloadRequest::ArchivedBinary& archived_binary) {
             return !archived_binary.is_executable() &&
                    !archived_binary.is_archive();
@@ -527,7 +527,8 @@ void CheckClientDownloadRequestBase::OnURLLoaderComplete(
             std::make_unique<ClientDownloadResponse>(response)));
 
     if (!token.empty())
-      SetDownloadPingToken(token);
+      SetDownloadProtectionData(token, response.verdict(),
+                                response.tailored_verdict());
 
     bool upload_requested = response.upload();
     MaybeStorePingsForDownload(result, upload_requested,

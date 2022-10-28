@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,6 +11,8 @@
 #include "ash/ash_export.h"
 #include "ash/public/cpp/session/session_observer.h"
 #include "components/account_id/account_id.h"
+
+class PrefRegistrySimple;
 
 namespace ash {
 
@@ -26,6 +28,9 @@ class ASH_EXPORT CalendarController : public SessionObserver {
   CalendarController(const CalendarController& other) = delete;
   CalendarController& operator=(const CalendarController& other) = delete;
   ~CalendarController() override;
+
+  // Registers profile prefs for Calendar client.
+  static void RegisterProfilePrefs(PrefRegistrySimple* registry);
 
   // Adds a client to it's corresponding user account id in a map.
   void RegisterClientForUser(const AccountId& account_id,

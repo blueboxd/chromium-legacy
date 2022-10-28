@@ -1,4 +1,4 @@
-// Copyright (c) 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -65,36 +65,38 @@ base::TimeDelta GetExtraTimeAbsolute() {
 }  // namespace dns_httpssvc_experiment
 
 const base::Feature kUseDnsHttpsSvcb{"UseDnsHttpsSvcb",
-                                     base::FEATURE_DISABLED_BY_DEFAULT};
+                                     base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::FeatureParam<bool> kUseDnsHttpsSvcbHttpUpgrade{
-    &kUseDnsHttpsSvcb, "UseDnsHttpsSvcbHttpUpgrade", false};
+    &kUseDnsHttpsSvcb, "UseDnsHttpsSvcbHttpUpgrade", true};
 
 const base::FeatureParam<bool> kUseDnsHttpsSvcbEnforceSecureResponse{
     &kUseDnsHttpsSvcb, "UseDnsHttpsSvcbEnforceSecureResponse", false};
 
 const base::FeatureParam<bool> kUseDnsHttpsSvcbEnableInsecure{
-    &kUseDnsHttpsSvcb, "UseDnsHttpsSvcbEnableInsecure", false};
+    &kUseDnsHttpsSvcb, "UseDnsHttpsSvcbEnableInsecure", true};
 
 const base::FeatureParam<base::TimeDelta> kUseDnsHttpsSvcbInsecureExtraTimeMax{
     &kUseDnsHttpsSvcb, "UseDnsHttpsSvcbInsecureExtraTimeMax",
-    base::TimeDelta()};
+    base::Milliseconds(50)};
 
 const base::FeatureParam<int> kUseDnsHttpsSvcbInsecureExtraTimePercent{
-    &kUseDnsHttpsSvcb, "UseDnsHttpsSvcbInsecureExtraTimePercent", 0};
+    &kUseDnsHttpsSvcb, "UseDnsHttpsSvcbInsecureExtraTimePercent", 20};
 
 const base::FeatureParam<base::TimeDelta> kUseDnsHttpsSvcbInsecureExtraTimeMin{
     &kUseDnsHttpsSvcb, "UseDnsHttpsSvcbInsecureExtraTimeMin",
-    base::TimeDelta()};
+    base::Milliseconds(5)};
 
 const base::FeatureParam<base::TimeDelta> kUseDnsHttpsSvcbSecureExtraTimeMax{
-    &kUseDnsHttpsSvcb, "UseDnsHttpsSvcbSecureExtraTimeMax", base::TimeDelta()};
+    &kUseDnsHttpsSvcb, "UseDnsHttpsSvcbSecureExtraTimeMax",
+    base::Milliseconds(50)};
 
 const base::FeatureParam<int> kUseDnsHttpsSvcbSecureExtraTimePercent{
-    &kUseDnsHttpsSvcb, "UseDnsHttpsSvcbSecureExtraTimePercent", 0};
+    &kUseDnsHttpsSvcb, "UseDnsHttpsSvcbSecureExtraTimePercent", 20};
 
 const base::FeatureParam<base::TimeDelta> kUseDnsHttpsSvcbSecureExtraTimeMin{
-    &kUseDnsHttpsSvcb, "UseDnsHttpsSvcbSecureExtraTimeMin", base::TimeDelta()};
+    &kUseDnsHttpsSvcb, "UseDnsHttpsSvcbSecureExtraTimeMin",
+    base::Milliseconds(5)};
 
 const base::FeatureParam<base::TimeDelta> kUseDnsHttpsSvcbExtraTimeAbsolute{
     &kUseDnsHttpsSvcb, "UseDnsHttpsSvcbExtraTimeAbsolute", base::TimeDelta()};
@@ -339,9 +341,26 @@ const base::FeatureParam<bool> kStorageAccessAPIGrantsUnpartitionedStorage(
     &kStorageAccessAPI,
     "storage-access-api-grants-unpartitioned-storage",
     false);
+const base::FeatureParam<bool> kStorageAccessAPIAutoGrantInFPS{
+    &kStorageAccessAPI, "storage_access_api_auto_grant_in_fps", true};
+const base::FeatureParam<bool> kStorageAccessAPIAutoDenyOutsideFPS{
+    &kStorageAccessAPI, "storage_access_api_auto_deny_outside_fps", true};
 
 // Enables partitioning of third party storage (IndexedDB, CacheStorage, etc.)
 // by the top level site to reduce fingerprinting.
 const base::Feature kThirdPartyStoragePartitioning{
     "ThirdPartyStoragePartitioning", base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kAlpsParsing{"AlpsParsing",
+                                 base::FEATURE_ENABLED_BY_DEFAULT};
+
+const base::Feature kAlpsClientHintParsing{"AlpsClientHintParsing",
+                                           base::FEATURE_ENABLED_BY_DEFAULT};
+
+const base::Feature kShouldKillSessionOnAcceptChMalformed{
+    "ShouldKillSessionOnAcceptChMalformed", base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kCaseInsensitiveCookiePrefix{
+    "CaseInsensitiveCookiePrefix", base::FEATURE_ENABLED_BY_DEFAULT};
+
 }  // namespace net::features

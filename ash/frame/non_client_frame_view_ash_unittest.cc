@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -41,6 +41,7 @@
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/base/accelerators/test_accelerator_target.h"
 #include "ui/base/ui_base_features.h"
+#include "ui/chromeos/styles/cros_tokens_color_mappings.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/test/draw_waiter_for_test.h"
 #include "ui/events/test/event_generator.h"
@@ -48,6 +49,7 @@
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/image/image_unittest_util.h"
 #include "ui/gfx/vector_icon_types.h"
+#include "ui/views/test/views_test_utils.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
 #include "ui/views/window/caption_button_layout_constants.h"
@@ -562,7 +564,7 @@ TEST_F(NonClientFrameViewAshTest, FrameVisibility) {
   EXPECT_EQ(client_bounds, widget->client_view()->GetLocalBounds().size());
 
   non_client_frame_view->SetFrameEnabled(false);
-  widget->GetRootView()->Layout();
+  views::test::RunScheduledLayout(widget->GetRootView());
   EXPECT_EQ(gfx::Size(200, 100),
             widget->client_view()->GetLocalBounds().size());
   EXPECT_FALSE(non_client_frame_view->GetFrameEnabled());
@@ -571,7 +573,7 @@ TEST_F(NonClientFrameViewAshTest, FrameVisibility) {
       non_client_frame_view->GetClientBoundsForWindowBounds(window_bounds));
 
   non_client_frame_view->SetFrameEnabled(true);
-  widget->GetRootView()->Layout();
+  views::test::RunScheduledLayout(widget->GetRootView());
   EXPECT_EQ(client_bounds, widget->client_view()->GetLocalBounds().size());
   EXPECT_TRUE(non_client_frame_view->GetFrameEnabled());
   EXPECT_EQ(32, delegate->GetNonClientFrameViewTopBorderHeight());
@@ -766,20 +768,20 @@ TEST_F(NonClientFrameViewAshTest, WideFrameButton) {
                test_api.size_button()->icon_definition_for_test()->name);
 
   widget->SetFullscreen(true);
-  header_view->Layout();
+  views::test::RunScheduledLayout(header_view);
   EXPECT_STREQ(views::kWindowControlRestoreIcon.name,
                test_api.size_button()->icon_definition_for_test()->name);
   {
     WMEvent event(WM_EVENT_PIN);
     WindowState::Get(widget->GetNativeWindow())->OnWMEvent(&event);
-    header_view->Layout();
+    views::test::RunScheduledLayout(header_view);
     EXPECT_STREQ(views::kWindowControlRestoreIcon.name,
                  test_api.size_button()->icon_definition_for_test()->name);
   }
   {
     WMEvent event(WM_EVENT_TRUSTED_PIN);
     WindowState::Get(widget->GetNativeWindow())->OnWMEvent(&event);
-    header_view->Layout();
+    views::test::RunScheduledLayout(header_view);
     EXPECT_STREQ(views::kWindowControlRestoreIcon.name,
                  test_api.size_button()->icon_definition_for_test()->name);
   }
@@ -961,7 +963,6 @@ TEST_P(NonClientFrameViewAshFrameColorTest, WideFrameInitialColor) {
 TEST_P(NonClientFrameViewAshFrameColorTest, DefaultFrameColorsDarkAndLight) {
   base::test::ScopedFeatureList scoped_feature_list(
       chromeos::features::kDarkLightMode);
-  auto* color_provider = AshColorProvider::Get();
   auto* dark_light_mode_controller = DarkLightModeControllerImpl::Get();
   dark_light_mode_controller->OnActiveUserPrefServiceChanged(
       Shell::Get()->session_controller()->GetActivePrefService());
@@ -973,10 +974,11 @@ TEST_P(NonClientFrameViewAshFrameColorTest, DefaultFrameColorsDarkAndLight) {
   std::unique_ptr<views::Widget> widget = CreateTestWidget(delegate);
   aura::Window* window = widget->GetNativeWindow();
 
-  const SkColor initial_active_default =
-      color_provider->GetActiveDialogTitleBarColor();
-  const SkColor initial_inactive_default =
-      color_provider->GetInactiveDialogTitleBarColor();
+  auto* color_provider = delegate->non_client_frame_view()->GetColorProvider();
+  SkColor dialog_title_bar_color =
+      color_provider->GetColor(cros_tokens::kDialogTitleBarColor);
+  const SkColor initial_active_default = dialog_title_bar_color;
+  const SkColor initial_inactive_default = dialog_title_bar_color;
   SkColor active_color = window->GetProperty(kFrameActiveColorKey);
   SkColor inactive_color = window->GetProperty(kFrameInactiveColorKey);
 
@@ -987,10 +989,14 @@ TEST_P(NonClientFrameViewAshFrameColorTest, DefaultFrameColorsDarkAndLight) {
   dark_light_mode_controller->ToggleColorMode();
   ASSERT_NE(initial_dark_mode_status,
             dark_light_mode_controller->IsDarkModeEnabled());
+  // Get the `color_provider` again as it might have changed because of the
+  // color mode change.
+  color_provider = delegate->non_client_frame_view()->GetColorProvider();
+  dialog_title_bar_color =
+      color_provider->GetColor(cros_tokens::kDialogTitleBarColor);
 
-  const SkColor active_default = color_provider->GetActiveDialogTitleBarColor();
-  const SkColor inactive_default =
-      color_provider->GetInactiveDialogTitleBarColor();
+  const SkColor active_default = dialog_title_bar_color;
+  const SkColor inactive_default = dialog_title_bar_color;
   active_color = window->GetProperty(kFrameActiveColorKey);
   inactive_color = window->GetProperty(kFrameInactiveColorKey);
 

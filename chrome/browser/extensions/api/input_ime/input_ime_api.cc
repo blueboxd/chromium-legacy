@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -169,7 +169,7 @@ ExtensionFunction::ResponseAction InputImeSetCompositionFunction::Run() {
     return RespondNow(ErrorWithArguments(
         std::move(results), InformativeError(error, static_function_name())));
   }
-  return RespondNow(OneArgument(base::Value(true)));
+  return RespondNow(WithArguments(true));
 }
 
 ExtensionFunction::ResponseAction InputImeCommitTextFunction::Run() {
@@ -189,7 +189,7 @@ ExtensionFunction::ResponseAction InputImeCommitTextFunction::Run() {
     return RespondNow(ErrorWithArguments(
         std::move(results), InformativeError(error, static_function_name())));
   }
-  return RespondNow(OneArgument(base::Value(true)));
+  return RespondNow(WithArguments(true));
 }
 
 ExtensionFunction::ResponseAction InputImeSendKeyEventsFunction::Run() {

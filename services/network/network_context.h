@@ -36,9 +36,9 @@
 #include "net/base/network_isolation_key.h"
 #include "net/cert/cert_verifier.h"
 #include "net/cert/cert_verify_result.h"
-#include "net/cookies/first_party_set_metadata.h"
 #include "net/dns/host_resolver.h"
 #include "net/dns/public/dns_config_overrides.h"
+#include "net/first_party_sets/first_party_set_metadata.h"
 #include "net/http/http_auth_preferences.h"
 #include "net/net_buildflags.h"
 #include "services/network/cors/preflight_controller.h"
@@ -391,7 +391,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
   void CreateNetLogExporter(
       mojo::PendingReceiver<mojom::NetLogExporter> receiver) override;
   void ResolveHost(
-      const net::HostPortPair& host,
+      mojom::HostResolverHostPtr host,
       const net::NetworkIsolationKey& network_isolation_key,
       mojom::ResolveHostParametersPtr optional_parameters,
       mojo::PendingRemote<mojom::ResolveHostClient> response_client) override;
@@ -494,6 +494,11 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
       const std::string& realm,
       LookupProxyAuthCredentialsCallback callback) override;
 #endif
+  void ComputeFirstPartySetMetadata(
+      const net::SchemefulSite& site,
+      const absl::optional<net::SchemefulSite>& top_frame_site,
+      const std::vector<net::SchemefulSite>& party_context,
+      ComputeFirstPartySetMetadataCallback callback) override;
 
   // Destroys |request| when a proxy lookup completes.
   void OnProxyLookupComplete(ProxyLookupRequest* proxy_lookup_request);

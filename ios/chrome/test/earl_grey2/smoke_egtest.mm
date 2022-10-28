@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,10 +6,10 @@
 #import <UIKit/UIKit.h>
 
 #import "base/ios/ios_util.h"
-#include "ios/chrome/browser/pref_names.h"
+#import "ios/chrome/browser/prefs/pref_names.h"
 #import "ios/chrome/browser/ui/settings/password/passwords_table_view_constants.h"
 #import "ios/chrome/browser/ui/ui_feature_flags.h"
-#include "ios/chrome/grit/ios_strings.h"
+#import "ios/chrome/grit/ios_strings.h"
 #import "ios/chrome/test/earl_grey/chrome_actions.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_app_interface.h"
@@ -19,7 +19,7 @@
 #import "ios/testing/earl_grey/app_launch_manager.h"
 #import "ios/testing/earl_grey/earl_grey_test.h"
 #import "ios/web/common/features.h"
-#include "ui/base/l10n/l10n_util_mac.h"
+#import "ui/base/l10n/l10n_util_mac.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -238,7 +238,8 @@
 }
 
 // Tests gracefully kill through AppLaunchManager.
-- (void)testAppLaunchManagerForceRelaunchByCleanShutdown {
+// TODO(crbug.com/1354554): Test flaky on smoke.
+- (void)DISABLED_testAppLaunchManagerForceRelaunchByCleanShutdown {
   [ChromeEarlGrey openNewTab];
   [[AppLaunchManager sharedManager] ensureAppLaunchedWithFeaturesEnabled:{}
       disabled:{}
@@ -275,11 +276,9 @@
   [self disableMockAuthentication];
   [ChromeEarlGrey openNewTab];
   // No relauch when feature list isn't changed.
-  AppLaunchConfiguration config = [super appConfigurationForTestCase];
-  [[AppLaunchManager sharedManager]
-      ensureAppLaunchedWithFeaturesEnabled:config.features_enabled
-                                  disabled:config.features_disabled
-                            relaunchPolicy:NoForceRelaunchAndKeepState];
+  [[AppLaunchManager sharedManager] ensureAppLaunchedWithFeaturesEnabled:{}
+      disabled:{}
+      relaunchPolicy:NoForceRelaunchAndKeepState];
   [ChromeEarlGrey waitForMainTabCount:2];
   [[EarlGrey selectElementWithMatcher:grey_text(@"Restore")]
       assertWithMatcher:grey_notVisible()];

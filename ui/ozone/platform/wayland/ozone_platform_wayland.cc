@@ -241,16 +241,18 @@ class OzonePlatformWayland : public OzonePlatform,
     menu_utils_ = std::make_unique<WaylandMenuUtils>(connection_.get());
     wayland_utils_ = std::make_unique<WaylandUtils>(connection_.get());
 
-    GetInputMethodContextFactoryForOzone() = base::BindRepeating(
-        [](WaylandConnection* connection,
-           WaylandKeyboard::Delegate* key_delegate,
-           LinuxInputMethodContextDelegate* ime_delegate)
-            -> std::unique_ptr<LinuxInputMethodContext> {
-          return std::make_unique<WaylandInputMethodContext>(
-              connection, key_delegate, ime_delegate);
-        },
-        base::Unretained(connection_.get()),
-        base::Unretained(connection_->event_source()));
+    if (connection_->text_input_manager_v1()) {
+      GetInputMethodContextFactoryForOzone() = base::BindRepeating(
+          [](WaylandConnection* connection,
+             WaylandKeyboard::Delegate* key_delegate,
+             LinuxInputMethodContextDelegate* ime_delegate)
+              -> std::unique_ptr<LinuxInputMethodContext> {
+            return std::make_unique<WaylandInputMethodContext>(
+                connection, key_delegate, ime_delegate);
+          },
+          base::Unretained(connection_.get()),
+          base::Unretained(connection_->event_source()));
+    }
 
     return true;
   }
@@ -349,6 +351,7 @@ class OzonePlatformWayland : public OzonePlatform,
           buffer_manager_->supports_viewporter();
       properties.supports_native_pixmaps =
           surface_factory_->SupportsNativePixmaps();
+      properties.supports_clip_rect = buffer_manager_->supports_clip_rect();
     }
     return properties;
   }

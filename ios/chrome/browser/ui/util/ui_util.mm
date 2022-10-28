@@ -1,19 +1,19 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #import "ios/chrome/browser/ui/util/ui_util.h"
 
 #import <UIKit/UIKit.h>
-#include <cmath>
-#include <limits>
+#import <cmath>
+#import <limits>
 
-#include "base/feature_list.h"
-#include "base/ios/ios_util.h"
-#include "ios/chrome/app/tests_hook.h"
+#import "base/feature_list.h"
+#import "base/ios/ios_util.h"
+#import "ios/chrome/app/tests_hook.h"
 #import "ios/chrome/browser/ui/ui_feature_flags.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
-#include "ui/gfx/ios/uikit_util.h"
+#import "ui/gfx/ios/uikit_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."

@@ -1,17 +1,17 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #import "ios/chrome/browser/ui/menu/browser_action_factory.h"
 
 #import "base/test/metrics/histogram_tester.h"
-#include "base/test/scoped_feature_list.h"
+#import "base/test/scoped_feature_list.h"
 #import "base/test/task_environment.h"
-#include "components/sync_preferences/testing_pref_service_syncable.h"
-#include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
+#import "components/sync_preferences/testing_pref_service_syncable.h"
+#import "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #import "ios/chrome/browser/main/test_browser.h"
 #import "ios/chrome/browser/policy/policy_util.h"
-#include "ios/chrome/browser/pref_names.h"
+#import "ios/chrome/browser/prefs/pref_names.h"
 #import "ios/chrome/browser/sessions/test_session_service.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/commands/browser_coordinator_commands.h"
@@ -24,7 +24,7 @@
 #import "ios/chrome/browser/ui/main/scene_state_browser_agent.h"
 #import "ios/chrome/browser/ui/menu/menu_action_type.h"
 #import "ios/chrome/browser/ui/menu/menu_histograms.h"
-#include "ios/chrome/browser/ui/ui_feature_flags.h"
+#import "ios/chrome/browser/ui/ui_feature_flags.h"
 #import "ios/chrome/browser/url_loading/url_loading_params.h"
 #import "ios/chrome/browser/window_activities/window_activity_helpers.h"
 #import "ios/chrome/grit/ios_strings.h"

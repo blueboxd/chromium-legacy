@@ -67,6 +67,7 @@
 <translation id="5308226104666789935">Chromium nu poate căuta actualizări.</translation>
 <translation id="5396916991083608703">Setezi Chromium ca browser prestabilit?</translation>
 <translation id="5521125884468363740">Pentru a vedea toate filele tale deschise în Chromium, conectează-te și activează sincronizarea</translation>
+<translation id="5522297504975449419">Unele funcții Chromium nu vor mai fi disponibile.</translation>
 <translation id="5573014823074921752">Sfat pentru Chromium: pentru mai multe opțiuni de file, atinge lung butonul Afișează filele din bara de instrumente, care se află în partea de sus sau de jos a ecranului.</translation>
 <translation id="5700709190537129682">Chromium nu îți poate verifica parolele</translation>
 <translation id="5777187867430702742">Pagină Chromium</translation>
@@ -95,6 +96,7 @@
 <translation id="7175400662502680481">Parola a fost expusă în urma încălcării securității datelor. Managerul de parole îți recomandă să schimbi parola acum.</translation>
 <translation id="7208566199746267865">Folosind Chromium, economisești timp, deoarece te conectează la conturi și pe web. Poți să adaugi sau să elimini conturi din Setări.</translation>
 <translation id="725427773388857052">Chromium te protejează împotriva încălcării securității datelor, a site-urilor nesigure și nu numai.</translation>
+<translation id="7255976941681861701">Familiarizează-te cu noul meniu Chromium</translation>
 <translation id="7269362888766543920">Unele suplimente blochează Chromium. Încearcă să le dezinstalezi.</translation>
 <translation id="7313655110045230863">Pentru a seta Chromium ca browser prestabilit, deschide Setările. Atinge Aplicația browser prestabilită și selectează Chromium.</translation>
 <translation id="7337881442233988129">Chromium</translation>
@@ -113,7 +115,6 @@
 <translation id="7980860476903281594">Chromium trimite locația ta către site-urile pe care le permiți.</translation>
 <translation id="8013573822802650211">Conectează-te pe toate dispozitivele ca să vezi toate filele tale deschise în Chromium</translation>
 <translation id="8073677936375100957">Ștergi datele tale Chromium de pe dispozitiv?</translation>
-<translation id="8175055321229419309">Sfat: <ph name="BEGIN_LINK" />mută Chromium în bara de andocare<ph name="END_LINK" /></translation>
 <translation id="8240981428553046115">Chromium nu a putut căuta actualizări. Încearcă din nou mai târziu.</translation>
 <translation id="8308172444429103994">Sfat pentru Chromium. Conectează-te mai rapid selectând parola salvată în partea de sus a tastaturii.</translation>
 <translation id="858114650497379505">Poți folosi parolele salvate în Managerul de parole în alte aplicații de pe iPhone.</translation>

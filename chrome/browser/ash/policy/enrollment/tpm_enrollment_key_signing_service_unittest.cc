@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -55,8 +55,7 @@ TEST_F(TpmEnrollmentKeySigningServiceTest, SigningSuccess) {
       ->AllowlistSignSimpleChallengeKey(
           /*username=*/"",
           ash::attestation::GetKeyNameForProfile(
-              chromeos::attestation::PROFILE_ENTERPRISE_ENROLLMENT_CERTIFICATE,
-              ""));
+              ash::attestation::PROFILE_ENTERPRISE_ENROLLMENT_CERTIFICATE, ""));
 
   base::RunLoop run_loop;
   bool returned_success = false;

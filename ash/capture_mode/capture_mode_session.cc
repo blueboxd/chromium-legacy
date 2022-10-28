@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -883,7 +883,7 @@ void CaptureModeSession::ReportSessionHistograms() {
 
   RecordCaptureModeSwitchesFromInitialMode(capture_source_changed_);
   RecordCaptureModeConfiguration(controller_->type(), controller_->source(),
-                                 controller_->enable_audio_recording(),
+                                 controller_->GetAudioRecordingEnabled(),
                                  is_in_projector_mode_);
 }
 
@@ -978,7 +978,8 @@ void CaptureModeSession::OnDefaultCaptureFolderSelectionChanged() {
   capture_mode_settings_view_->OnDefaultCaptureFolderSelectionChanged();
 }
 
-aura::Window* CaptureModeSession::GetCameraPreviewParentWindow() const {
+aura::Window* CaptureModeSession::GetOnCaptureSurfaceWidgetParentWindow()
+    const {
   auto* controller = CaptureModeController::Get();
   DCHECK(!controller->is_recording_in_progress());
   auto* menu_container =
@@ -998,12 +999,12 @@ aura::Window* CaptureModeSession::GetCameraPreviewParentWindow() const {
   }
 }
 
-gfx::Rect CaptureModeSession::GetCameraPreviewConfineBounds() const {
+gfx::Rect CaptureModeSession::GetCaptureSurfaceConfineBounds() const {
   auto* controller = CaptureModeController::Get();
   DCHECK(!controller->is_recording_in_progress());
   switch (controller->source()) {
     case CaptureModeSource::kFullscreen: {
-      auto* parent = GetCameraPreviewParentWindow();
+      auto* parent = GetOnCaptureSurfaceWidgetParentWindow();
       DCHECK(parent);
       return display::Screen::GetScreen()
           ->GetDisplayNearestWindow(parent)

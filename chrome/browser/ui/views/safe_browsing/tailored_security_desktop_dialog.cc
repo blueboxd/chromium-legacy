@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -41,13 +41,12 @@ class DisabledDialogModelDelegate : public ui::DialogModelDelegate {
     base::UmaHistogramEnumeration(kDisabledDialogOutcome,
                                   TailoredSecurityOutcome::kAccepted);
   }
-  void OnDialogRejected(content::WebContents* web_contents) {
+  void OnDialogRejected(Browser* browser) {
     // Redirect to the Chrome safe browsing settings page.
     base::UmaHistogramEnumeration(kDisabledDialogOutcome,
                                   TailoredSecurityOutcome::kSettings);
 
-    chrome::ShowSafeBrowsingEnhancedProtection(
-        chrome::FindBrowserWithWebContents(web_contents));
+    chrome::ShowSafeBrowsingEnhancedProtection(browser);
   }
 };
 
@@ -60,18 +59,16 @@ class EnabledDialogModelDelegate : public ui::DialogModelDelegate {
     base::UmaHistogramEnumeration(kEnabledDialogOutcome,
                                   TailoredSecurityOutcome::kAccepted);
   }
-  void OnDialogRejected(content::WebContents* web_contents) {
+  void OnDialogRejected(Browser* browser) {
     // Redirect to the Chrome safe browsing settings page.
     base::UmaHistogramEnumeration(kEnabledDialogOutcome,
                                   TailoredSecurityOutcome::kSettings);
 
-    chrome::ShowSafeBrowsingEnhancedProtection(
-        chrome::FindBrowserWithWebContents(web_contents));
+    chrome::ShowSafeBrowsingEnhancedProtection(browser);
   }
 };
 
-void ShowEnabledDialogForWebContents(Browser* browser,
-                                     content::WebContents* web_contents) {
+void ShowEnabledDialogForBrowser(Browser* browser) {
   auto model_delegate = std::make_unique<EnabledDialogModelDelegate>();
   auto* model_delegate_ptr = model_delegate.get();
 
@@ -92,24 +89,25 @@ void ShowEnabledDialogForWebContents(Browser* browser,
           .SetInternalName(kTailoredSecurityNoticeDialog)
           .SetBannerImage(std::move(banner_image_light),
                           std::move(banner_image_dark))
-          .AddBodyText(body_text, kBodyText)
+          .AddParagraph(body_text, std::u16string(), kBodyText)
           .AddOkButton(
               base::BindOnce(&EnabledDialogModelDelegate::OnDialogAccepted,
                              base::Unretained(model_delegate_ptr)))
           .AddCancelButton(
               base::BindOnce(&EnabledDialogModelDelegate::OnDialogRejected,
-                             base::Unretained(model_delegate_ptr),
-                             web_contents),
+                             base::Unretained(model_delegate_ptr), browser),
               l10n_util::GetStringUTF16(
                   IDS_TAILORED_SECURITY_DIALOG_SETTINGS_BUTTON))
           .Build();
 
+  // `window` should always be non-null unless this is called before
+  // CreateBrowserWindow().
+  DCHECK(browser->window());
   constrained_window::ShowBrowserModal(std::move(dialog_model),
                                        browser->window()->GetNativeWindow());
 }
 
-void ShowDisabledDialogForWebContents(Browser* browser,
-                                      content::WebContents* web_contents) {
+void ShowDisabledDialogForBrowser(Browser* browser) {
   auto model_delegate = std::make_unique<DisabledDialogModelDelegate>();
   auto* model_delegate_ptr = model_delegate.get();
 
@@ -123,7 +121,7 @@ void ShowDisabledDialogForWebContents(Browser* browser,
           .SetTitle(l10n_util::GetStringUTF16(
               IDS_TAILORED_SECURITY_DISABLED_DIALOG_TITLE))
           .SetInternalName(kTailoredSecurityNoticeDialog)
-          .AddBodyText(body_text, kBodyText)
+          .AddParagraph(body_text, std::u16string(), kBodyText)
           .AddOkButton(
               base::BindOnce(&DisabledDialogModelDelegate::OnDialogAccepted,
                              base::Unretained(model_delegate_ptr)),
@@ -131,12 +129,14 @@ void ShowDisabledDialogForWebContents(Browser* browser,
                   IDS_TAILORED_SECURITY_DISABLED_DIALOG_ACCEPT_BUTTON))
           .AddCancelButton(
               base::BindOnce(&DisabledDialogModelDelegate::OnDialogRejected,
-                             base::Unretained(model_delegate_ptr),
-                             web_contents),
+                             base::Unretained(model_delegate_ptr), browser),
               l10n_util::GetStringUTF16(
                   IDS_TAILORED_SECURITY_DIALOG_SETTINGS_BUTTON))
           .Build();
 
+  // `window` should always be non-null unless this is called before
+  // CreateBrowserWindow().
+  DCHECK(browser->window());
   constrained_window::ShowBrowserModal(std::move(dialog_model),
                                        browser->window()->GetNativeWindow());
 }

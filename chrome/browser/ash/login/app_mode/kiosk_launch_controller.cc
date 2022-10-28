@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,6 +9,8 @@
 #include "ash/public/cpp/login_accelerators.h"
 #include "base/callback.h"
 #include "base/callback_helpers.h"
+#include "base/feature_list.h"
+#include "base/immediate_crash.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/syslog_logging.h"
@@ -18,6 +20,8 @@
 #include "chrome/browser/ash/app_mode/startup_app_launcher.h"
 #include "chrome/browser/ash/app_mode/web_app/web_kiosk_app_launcher.h"
 #include "chrome/browser/ash/app_mode/web_app/web_kiosk_app_manager.h"
+#include "chrome/browser/ash/app_mode/web_app/web_kiosk_app_service_launcher.h"
+#include "chrome/browser/ash/crosapi/browser_util.h"
 #include "chrome/browser/ash/crosapi/crosapi_ash.h"
 #include "chrome/browser/ash/crosapi/crosapi_manager.h"
 #include "chrome/browser/ash/login/enterprise_user_session_metrics.h"
@@ -297,8 +301,16 @@ void KioskLaunchController::OnProfileLoaded(Profile* profile) {
       case KioskAppType::kWebApp:
         // Make keyboard config sync with the `VirtualKeyboardFeatures` policy.
         ChromeKeyboardControllerClient::Get()->SetKeyboardConfigFromPref(true);
-        app_launcher_ = std::make_unique<WebKioskAppLauncher>(
-            profile, this, *kiosk_app_id_.account_id);
+        // TODO(b/242023891): |WebKioskAppServiceLauncher| does not support
+        // Lacros until App Service installation API is available.
+        if (base::FeatureList::IsEnabled(features::kKioskEnableAppService) &&
+            !crosapi::browser_util::IsLacrosEnabled()) {
+          app_launcher_ = std::make_unique<WebKioskAppServiceLauncher>(
+              profile, this, *kiosk_app_id_.account_id);
+        } else {
+          app_launcher_ = std::make_unique<WebKioskAppLauncher>(
+              profile, this, *kiosk_app_id_.account_id);
+        }
         break;
     }
   }
@@ -458,7 +470,7 @@ void KioskLaunchController::OnAppPrepared() {
     StartTimerToWaitForExtensions();
 
     // Initialize and start Lacros for preparing force-installed extensions.
-    crosapi::BrowserManager::Get()->InitializeAndStart();
+    crosapi::BrowserManager::Get()->InitializeAndStartIfNeeded();
     return;
   }
 
@@ -547,7 +559,14 @@ void KioskLaunchController::OnLaunchFailed(KioskAppLaunchError::Error error) {
   DCHECK_NE(KioskAppLaunchError::Error::kNone, error);
   SYSLOG(ERROR) << "Kiosk launch failed, error=" << static_cast<int>(error);
 
-  if (kiosk_app_id_.type == KioskAppType::kWebApp) {
+  // App Service launcher requires the web app to be installed. Temporary issues
+  // like URL redirection should not stop the app from being installed as
+  // placeholder. Force launching the app is not possible in case installation
+  // fails.
+  if (kiosk_app_id_.type == KioskAppType::kWebApp &&
+      error == KioskAppLaunchError::Error::kUnableToInstall &&
+      (!base::FeatureList::IsEnabled(features::kKioskEnableAppService) ||
+       crosapi::browser_util::IsLacrosEnabled())) {
     HandleWebAppInstallFailed();
     return;
   }

@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -126,6 +126,9 @@ MEDIA_SHMEM_EXPORT std::string FourccToString(uint32_t fourcc);
 
 // Returns true if |format| is a YUV format with multiple planes.
 MEDIA_SHMEM_EXPORT bool IsYuvPlanar(VideoPixelFormat format);
+
+// Returns true if |format| is an RGB format.
+MEDIA_SHMEM_EXPORT bool IsRGB(VideoPixelFormat format);
 
 // Returns true if |format| has no Alpha channel (hence is always opaque).
 MEDIA_SHMEM_EXPORT bool IsOpaque(VideoPixelFormat format);

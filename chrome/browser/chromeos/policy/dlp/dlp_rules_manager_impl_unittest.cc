@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -1005,6 +1005,8 @@ TEST_F(DlpRulesManagerImplTest,
   src_urls1.Append(kExampleUrl);
   base::Value dst_urls1(base::Value::Type::LIST);
   dst_urls1.Append(kWildCardMatching);
+  // Since there is a wildcard, all specific destinations will be ignored.
+  dst_urls1.Append(kCompanyUrl);
   base::Value restrictions1(base::Value::Type::LIST);
   restrictions1.Append(dlp_test_util::CreateRestrictionWithLevel(
       dlp::kFilesRestriction, dlp::kBlockLevel));
@@ -1036,8 +1038,6 @@ TEST_F(DlpRulesManagerImplTest, GetAggregatedDestinations_MixedLevels) {
   src_urls1.Append(kExampleUrl);
   base::Value dst_urls1(base::Value::Type::LIST);
   dst_urls1.Append(kCompanyUrl);
-  // Since there is a wildcard, all specific destinations will be ignored.
-  dst_urls1.Append(kWildCardMatching);
   base::Value restrictions1(base::Value::Type::LIST);
   restrictions1.Append(dlp_test_util::CreateRestrictionWithLevel(
       dlp::kClipboardRestriction, dlp::kBlockLevel));
@@ -1077,9 +1077,61 @@ TEST_F(DlpRulesManagerImplTest, GetAggregatedDestinations_MixedLevels) {
   auto result = dlp_rules_manager_.GetAggregatedDestinations(
       GURL(kExampleUrl), DlpRulesManager::Restriction::kClipboard);
   std::map<DlpRulesManager::Level, std::set<std::string>> expected;
-  expected[DlpRulesManager::Level::kBlock].insert(kWildCardMatching);
+  expected[DlpRulesManager::Level::kBlock].insert(kCompanyUrl);
   expected[DlpRulesManager::Level::kWarn].insert(kGmailUrl);
   expected[DlpRulesManager::Level::kReport].insert(kGoogleUrl);
+
+  EXPECT_EQ(result, expected);
+}
+
+TEST_F(DlpRulesManagerImplTest, GetAggregatedDestinations_MixedWithWildcard) {
+  base::Value rules(base::Value::Type::LIST);
+
+  base::Value src_urls1(base::Value::Type::LIST);
+  src_urls1.Append(kExampleUrl);
+  base::Value dst_urls1(base::Value::Type::LIST);
+  dst_urls1.Append(kCompanyUrl);
+  base::Value restrictions1(base::Value::Type::LIST);
+  restrictions1.Append(dlp_test_util::CreateRestrictionWithLevel(
+      dlp::kClipboardRestriction, dlp::kBlockLevel));
+  rules.Append(dlp_test_util::CreateRule(
+      "rule #1", "Block Clipboard", std::move(src_urls1), std::move(dst_urls1),
+      /*dst_components=*/base::Value(base::Value::Type::LIST),
+      std::move(restrictions1)));
+
+  base::Value src_urls2(base::Value::Type::LIST);
+  src_urls2.Append(kExampleUrl);
+  base::Value dst_urls2(base::Value::Type::LIST);
+  dst_urls2.Append(kWildCardMatching);
+  base::Value restrictions2(base::Value::Type::LIST);
+  restrictions2.Append(dlp_test_util::CreateRestrictionWithLevel(
+      dlp::kClipboardRestriction, dlp::kWarnLevel));
+  rules.Append(dlp_test_util::CreateRule(
+      "rule #2", "Warn Clipboard", std::move(src_urls2), std::move(dst_urls2),
+      /*dst_components=*/base::Value(base::Value::Type::LIST),
+      std::move(restrictions2)));
+
+  base::Value src_urls3(base::Value::Type::LIST);
+  src_urls3.Append(kExampleUrl);
+  base::Value dst_urls3(base::Value::Type::LIST);
+  // Ignored because of "*" at warn level.
+  dst_urls3.Append(kGoogleUrl);
+  dst_urls3.Append(kWildCardMatching);
+  base::Value restrictions3(base::Value::Type::LIST);
+  restrictions3.Append(dlp_test_util::CreateRestrictionWithLevel(
+      dlp::kClipboardRestriction, dlp::kReportLevel));
+  rules.Append(dlp_test_util::CreateRule(
+      "rule #2", "Report Clipboard", std::move(src_urls3), std::move(dst_urls3),
+      /*dst_components=*/base::Value(base::Value::Type::LIST),
+      std::move(restrictions3)));
+
+  UpdatePolicyPref(std::move(rules));
+
+  auto result = dlp_rules_manager_.GetAggregatedDestinations(
+      GURL(kExampleUrl), DlpRulesManager::Restriction::kClipboard);
+  std::map<DlpRulesManager::Level, std::set<std::string>> expected;
+  expected[DlpRulesManager::Level::kBlock].insert(kCompanyUrl);
+  expected[DlpRulesManager::Level::kWarn].insert(kWildCardMatching);
 
   EXPECT_EQ(result, expected);
 }
@@ -1138,6 +1190,40 @@ TEST_F(DlpRulesManagerImplTest, FilesRestriction_GetAggregatedComponents) {
       DlpRulesManager::Component::kDrive);
 
   EXPECT_EQ(result, expected);
+
+  chromeos::DlpClient::Shutdown();
+}
+
+// This is a test for the crash on the login screen for files policy rule with
+// no url destinations crbug.com/1358504.
+TEST_F(DlpRulesManagerImplTest, SetFilesPolicyWithOnlyComponents) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(
+      features::kDataLeakPreventionFilesRestriction);
+  chromeos::DlpClient::InitializeFake();
+
+  base::Value rules(base::Value::Type::LIST);
+
+  base::Value src_urls(base::Value::Type::LIST);
+  src_urls.Append(kExampleUrl);
+  base::Value dst_components(base::Value::Type::LIST);
+  dst_components.Append("ARC");
+  dst_components.Append("CROSTINI");
+  base::Value restrictions(base::Value::Type::LIST);
+  restrictions.Append(dlp_test_util::CreateRestrictionWithLevel(
+      dlp::kFilesRestriction, dlp::kBlockLevel));
+  rules.Append(dlp_test_util::CreateRule(
+      "rule #1", "Block Files", std::move(src_urls), absl::nullopt,
+      std::move(dst_components), std::move(restrictions)));
+
+  UpdatePolicyPref(std::move(rules));
+
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(dlp_rules_manager_.IsFilesPolicyEnabled());
+  EXPECT_EQ(chromeos::DlpClient::Get()
+                ->GetTestInterface()
+                ->GetSetDlpFilesPolicyCount(),
+            1);
 
   chromeos::DlpClient::Shutdown();
 }

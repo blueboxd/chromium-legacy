@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,10 +6,11 @@ import 'chrome://resources/polymer/v3_0/paper-spinner/paper-spinner-lite.js';
 import './base_page.js';
 import './shimless_rma_shared_css.js';
 
-import {I18nBehavior, I18nBehaviorInterface} from 'chrome://resources/js/i18n_behavior.m.js';
+import {I18nBehavior, I18nBehaviorInterface} from 'chrome://resources/cr_elements/i18n_behavior.js';
 import {html, mixinBehaviors, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {RmadErrorCode} from './shimless_rma_types.js';
+import {focusPageTitle} from './shimless_rma_util.js';
 
 // The displayed value for how many seconds you wait before the reboot or shut
 // down.
@@ -47,6 +48,13 @@ export class RebootPage extends RebootPageBase {
         type: Object,
       },
     };
+  }
+
+  /** @override */
+  ready() {
+    super.ready();
+
+    focusPageTitle(this);
   }
 
   /**

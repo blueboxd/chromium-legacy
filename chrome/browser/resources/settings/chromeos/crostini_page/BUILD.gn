@@ -1,4 +1,4 @@
-# Copyright 2018 The Chromium Authors. All rights reserved.
+# Copyright 2018 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -24,6 +24,7 @@ js_type_check("closure_compile_module") {
     ":crostini_page",
     ":crostini_port_forwarding",
     ":crostini_port_forwarding_add_port_dialog",
+    ":crostini_shared_usb_devices",
     ":crostini_subpage",
   ]
 }
@@ -36,13 +37,14 @@ js_library("crostini_arc_adb") {
     "..:os_route",
     "..:route_observer_behavior",
     "../..:router",
-    "//ui/webui/resources/cr_elements/cr_button:cr_button",
-    "//ui/webui/resources/cr_elements/policy:cr_policy_indicator.m",
-    "//ui/webui/resources/cr_elements/policy:cr_policy_indicator.m",
-    "//ui/webui/resources/cr_elements/policy:cr_policy_indicator_behavior.m",
-    "//ui/webui/resources/js:i18n_behavior.m",
+    "//ui/webui/resources/cr_elements:i18n_behavior",
+    "//ui/webui/resources/cr_elements:web_ui_listener_behavior",
+    "//ui/webui/resources/cr_elements/policy:cr_policy_indicator_behavior",
     "//ui/webui/resources/js:load_time_data.m",
-    "//ui/webui/resources/js:web_ui_listener_behavior.m",
+  ]
+  externs_list = [
+    "//ui/webui/resources/cr_elements/cr_button/cr_button_externs.js",
+    "//ui/webui/resources/cr_elements/policy/cr_policy_indicator_externs.js",
   ]
 }
 
@@ -50,9 +52,11 @@ js_library("crostini_arc_adb_confirmation_dialog") {
   deps = [
     ":crostini_browser_proxy",
     "..:metrics_recorder",
-    "//ui/webui/resources/cr_elements/cr_button:cr_button",
-    "//ui/webui/resources/cr_elements/cr_dialog:cr_dialog",
-    "//ui/webui/resources/js:i18n_behavior.m",
+    "//ui/webui/resources/cr_elements:i18n_behavior",
+  ]
+  externs_list = [
+    "//ui/webui/resources/cr_elements/cr_button/cr_button_externs.js",
+    "//ui/webui/resources/cr_elements/cr_dialog/cr_dialog_externs.js",
   ]
 }
 
@@ -60,10 +64,11 @@ js_library("crostini_browser_proxy") {
   deps = [
     "../guest_os:guest_os_browser_proxy",
     "//skia/public/mojom:mojom_js_library_for_compile",
-    "//ui/webui/resources/cr_elements/cr_input:cr_input",
     "//ui/webui/resources/js:cr.m",
     "//ui/webui/resources/js:load_time_data.m",
   ]
+  externs_list =
+      [ "//ui/webui/resources/cr_elements/cr_input/cr_input_externs.js" ]
 }
 
 js_library("crostini_confirmation_dialog") {
@@ -77,22 +82,25 @@ js_library("crostini_disk_resize_dialog") {
   deps = [
     ":crostini_browser_proxy",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
-    "//ui/webui/resources/cr_elements/cr_button:cr_button",
-    "//ui/webui/resources/cr_elements/cr_dialog:cr_dialog",
-    "//ui/webui/resources/js:i18n_behavior.m",
-    "//ui/webui/resources/js:web_ui_listener_behavior.m",
+    "//ui/webui/resources/cr_elements:i18n_behavior",
+    "//ui/webui/resources/cr_elements:web_ui_listener_behavior",
   ]
-  externs_list =
-      [ "//ui/webui/resources/cr_elements/cr_slider/cr_slider_externs.js" ]
+  externs_list = [
+    "//ui/webui/resources/cr_elements/cr_button/cr_button_externs.js",
+    "//ui/webui/resources/cr_elements/cr_dialog/cr_dialog_externs.js",
+    "//ui/webui/resources/cr_elements/cr_slider/cr_slider_externs.js",
+  ]
 }
 
 js_library("crostini_disk_resize_confirmation_dialog") {
   deps = [
     ":crostini_browser_proxy",
-    "//ui/webui/resources/cr_elements/cr_button:cr_button",
-    "//ui/webui/resources/cr_elements/cr_dialog:cr_dialog",
-    "//ui/webui/resources/js:i18n_behavior.m",
-    "//ui/webui/resources/js:web_ui_listener_behavior.m",
+    "//ui/webui/resources/cr_elements:i18n_behavior",
+    "//ui/webui/resources/cr_elements:web_ui_listener_behavior",
+  ]
+  externs_list = [
+    "//ui/webui/resources/cr_elements/cr_button/cr_button_externs.js",
+    "//ui/webui/resources/cr_elements/cr_dialog/cr_dialog_externs.js",
   ]
 }
 
@@ -106,19 +114,22 @@ js_library("crostini_export_import") {
     "../..:router",
     "../guest_os:guest_os_browser_proxy",
     "../guest_os:guest_os_container_select",
-    "//ui/webui/resources/cr_elements/cr_button:cr_button",
-    "//ui/webui/resources/js:i18n_behavior.m",
-    "//ui/webui/resources/js:web_ui_listener_behavior.m",
+    "//ui/webui/resources/cr_elements:i18n_behavior",
+    "//ui/webui/resources/cr_elements:web_ui_listener_behavior",
   ]
+  externs_list =
+      [ "//ui/webui/resources/cr_elements/cr_button/cr_button_externs.js" ]
 }
 
 js_library("crostini_import_confirmation_dialog") {
   deps = [
     ":crostini_browser_proxy",
     "../guest_os:guest_os_browser_proxy",
-    "//ui/webui/resources/cr_elements/cr_button:cr_button",
-    "//ui/webui/resources/cr_elements/cr_dialog:cr_dialog",
-    "//ui/webui/resources/js:i18n_behavior.m",
+    "//ui/webui/resources/cr_elements:i18n_behavior",
+  ]
+  externs_list = [
+    "//ui/webui/resources/cr_elements/cr_button/cr_button_externs.js",
+    "//ui/webui/resources/cr_elements/cr_dialog/cr_dialog_externs.js",
   ]
 }
 
@@ -130,6 +141,7 @@ js_library("crostini_page") {
     ":crostini_export_import",
     ":crostini_extra_containers",
     ":crostini_port_forwarding",
+    ":crostini_shared_usb_devices",
     ":crostini_subpage",
     "..:deep_linking_behavior",
     "..:os_route",
@@ -138,11 +150,12 @@ js_library("crostini_page") {
     "../..:router",
     "../guest_os:guest_os_shared_paths",
     "../guest_os:guest_os_shared_usb_devices",
-    "//ui/webui/resources/cr_elements/cr_button:cr_button",
-    "//ui/webui/resources/cr_elements/cr_icon_button:cr_icon_button",
-    "//ui/webui/resources/cr_elements/policy:cr_policy_indicator.m",
-    "//ui/webui/resources/js:i18n_behavior.m",
-    "//ui/webui/resources/js:web_ui_listener_behavior.m",
+    "//ui/webui/resources/cr_elements:i18n_behavior",
+    "//ui/webui/resources/cr_elements:web_ui_listener_behavior",
+  ]
+  externs_list = [
+    "//ui/webui/resources/cr_elements/cr_button/cr_button_externs.js",
+    "//ui/webui/resources/cr_elements/policy/cr_policy_indicator_externs.js",
   ]
 }
 
@@ -155,10 +168,9 @@ js_library("crostini_port_forwarding") {
     "../guest_os:guest_os_browser_proxy",
     "../guest_os:guest_os_container_select",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
-    "//ui/webui/resources/cr_elements/cr_icon_button:cr_icon_button",
-    "//ui/webui/resources/js:i18n_behavior.m",
+    "//ui/webui/resources/cr_elements:i18n_behavior",
+    "//ui/webui/resources/cr_elements:web_ui_listener_behavior",
     "//ui/webui/resources/js:load_time_data.m",
-    "//ui/webui/resources/js:web_ui_listener_behavior.m",
   ]
 
   externs_list = [
@@ -173,12 +185,14 @@ js_library("crostini_port_forwarding_add_port_dialog") {
     "..:metrics_recorder",
     "../guest_os:guest_os_browser_proxy",
     "../guest_os:guest_os_container_select",
-    "//ui/webui/resources/cr_elements/cr_button:cr_button",
-    "//ui/webui/resources/cr_elements/cr_dialog:cr_dialog",
-    "//ui/webui/resources/cr_elements/cr_input:cr_input",
+    "//ui/webui/resources/cr_elements:i18n_behavior",
     "//ui/webui/resources/js:cr.m",
-    "//ui/webui/resources/js:i18n_behavior.m",
     "//ui/webui/resources/js:load_time_data.m",
+  ]
+  externs_list = [
+    "//ui/webui/resources/cr_elements/cr_button/cr_button_externs.js",
+    "//ui/webui/resources/cr_elements/cr_dialog/cr_dialog_externs.js",
+    "//ui/webui/resources/cr_elements/cr_input/cr_input_externs.js",
   ]
 }
 
@@ -190,10 +204,9 @@ js_library("crostini_extra_containers") {
     "..:prefs_behavior",
     "../guest_os:guest_os_browser_proxy",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
-    "//ui/webui/resources/cr_elements/cr_icon_button:cr_icon_button",
-    "//ui/webui/resources/js:i18n_behavior.m",
+    "//ui/webui/resources/cr_elements:i18n_behavior",
+    "//ui/webui/resources/cr_elements:web_ui_listener_behavior",
     "//ui/webui/resources/js:load_time_data.m",
-    "//ui/webui/resources/js:web_ui_listener_behavior.m",
   ]
 
   externs_list = [
@@ -207,8 +220,8 @@ js_library("crostini_extra_containers_create_dialog") {
     "..:metrics_recorder",
     "../guest_os:guest_os_browser_proxy",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
+    "//ui/webui/resources/cr_elements:i18n_behavior",
     "//ui/webui/resources/js:cr.m",
-    "//ui/webui/resources/js:i18n_behavior.m",
   ]
 }
 
@@ -227,12 +240,22 @@ js_library("crostini_subpage") {
     "..:route_observer_behavior",
     "..:route_origin_behavior",
     "../..:router",
-    "//ui/webui/resources/cr_elements/cr_button:cr_button",
-    "//ui/webui/resources/js:i18n_behavior.m",
+    "//ui/webui/resources/cr_elements:i18n_behavior",
+    "//ui/webui/resources/cr_elements:web_ui_listener_behavior",
     "//ui/webui/resources/js:load_time_data.m",
-    "//ui/webui/resources/js:web_ui_listener_behavior.m",
   ]
-  externs_list = [ "../settings_controls_types.js" ]
+  externs_list = [
+    "../settings_controls_types.js",
+    "//ui/webui/resources/cr_elements/cr_button/cr_button_externs.js",
+  ]
+}
+
+js_library("crostini_shared_usb_devices") {
+  deps = [
+    ":crostini_browser_proxy",
+    "../guest_os:guest_os_shared_usb_devices",
+    "//ui/webui/resources/js:load_time_data.m",
+  ]
 }
 
 js_library("bruschetta_subpage") {
@@ -244,12 +267,14 @@ js_library("bruschetta_subpage") {
     "..:route_observer_behavior",
     "..:route_origin_behavior",
     "../..:router",
-    "//ui/webui/resources/cr_elements/cr_button:cr_button",
-    "//ui/webui/resources/js:i18n_behavior.m",
+    "//ui/webui/resources/cr_elements:i18n_behavior",
+    "//ui/webui/resources/cr_elements:web_ui_listener_behavior",
     "//ui/webui/resources/js:load_time_data.m",
-    "//ui/webui/resources/js:web_ui_listener_behavior.m",
   ]
-  externs_list = [ "../settings_controls_types.js" ]
+  externs_list = [
+    "../settings_controls_types.js",
+    "//ui/webui/resources/cr_elements/cr_button/cr_button_externs.js",
+  ]
 }
 
 html_to_js("web_components") {

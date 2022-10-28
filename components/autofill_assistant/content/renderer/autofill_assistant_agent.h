@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -76,6 +76,11 @@ class AutofillAssistantAgent : public content::RenderFrameObserver,
                       mojom::ModelStatus model_status,
                       base::File model,
                       const std::string& overrides_policy);
+
+  void SetElementAttribute(int32_t backend_node_id,
+                           const std::u16string& attribute_value,
+                           const std::u16string& value,
+                           bool send_events);
 
   mojo::AssociatedRemote<mojom::AutofillAssistantDriver> driver_;
 

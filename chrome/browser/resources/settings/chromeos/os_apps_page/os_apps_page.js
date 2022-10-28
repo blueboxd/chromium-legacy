@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,7 +10,7 @@
 import 'chrome://resources/cr_elements/cr_button/cr_button.js';
 import 'chrome://resources/cr_elements/cr_icon_button/cr_icon_button.js';
 import 'chrome://resources/cr_elements/cr_link_row/cr_link_row.js';
-import 'chrome://resources/cr_elements/policy/cr_policy_pref_indicator.m.js';
+import 'chrome://resources/cr_elements/policy/cr_policy_pref_indicator.js';
 import '../../settings_page/settings_animated_pages.js';
 import '../../settings_page/settings_subpage.js';
 import '../../settings_shared.css.js';
@@ -28,7 +28,7 @@ import '../../controls/settings_dropdown_menu.js';
 import {AppManagementEntryPoint, AppManagementEntryPointsHistogramName} from 'chrome://resources/cr_components/app_management/constants.js';
 import {getAppIcon, getSelectedApp} from 'chrome://resources/cr_components/app_management/util.js';
 import {assert, assertNotReached} from 'chrome://resources/js/assert.m.js';
-import {I18nBehavior, I18nBehaviorInterface} from 'chrome://resources/js/i18n_behavior.m.js';
+import {I18nBehavior, I18nBehaviorInterface} from 'chrome://resources/cr_elements/i18n_behavior.js';
 import {html, mixinBehaviors, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {loadTimeData} from '../../i18n_setup.js';
@@ -44,22 +44,21 @@ import {AppManagementStoreClient, AppManagementStoreClientInterface} from './app
 import {getAppNotificationProvider} from './app_notifications_page/mojo_interface_provider.js';
 
 /**
- * @param {!chromeos.settings.appNotification.mojom.App} app
+ * @param {!ash.settings.appNotification.mojom.App} app
  * @return {boolean}
  */
 export function isAppInstalled(app) {
   switch (app.readiness) {
-    case chromeos.settings.appNotification.mojom.Readiness.kReady:
-    case chromeos.settings.appNotification.mojom.Readiness.kDisabledByBlocklist:
-    case chromeos.settings.appNotification.mojom.Readiness.kDisabledByPolicy:
-    case chromeos.settings.appNotification.mojom.Readiness.kDisabledByUser:
-    case chromeos.settings.appNotification.mojom.Readiness.kTerminated:
+    case ash.settings.appNotification.mojom.Readiness.kReady:
+    case ash.settings.appNotification.mojom.Readiness.kDisabledByBlocklist:
+    case ash.settings.appNotification.mojom.Readiness.kDisabledByPolicy:
+    case ash.settings.appNotification.mojom.Readiness.kDisabledByUser:
+    case ash.settings.appNotification.mojom.Readiness.kTerminated:
       return true;
-    case chromeos.settings.appNotification.mojom.Readiness.kUninstalledByUser:
-    case chromeos.settings.appNotification.mojom.Readiness
-        .kUninstalledByMigration:
-    case chromeos.settings.appNotification.mojom.Readiness.kRemoved:
-    case chromeos.settings.appNotification.mojom.Readiness.kUnknown:
+    case ash.settings.appNotification.mojom.Readiness.kUninstalledByUser:
+    case ash.settings.appNotification.mojom.Readiness.kUninstalledByMigration:
+    case ash.settings.appNotification.mojom.Readiness.kRemoved:
+    case ash.settings.appNotification.mojom.Readiness.kUnknown:
       return false;
   }
   assertNotReached();
@@ -236,21 +235,20 @@ class OsSettingsAppsPageElement extends OsSettingsAppsPageElementBase {
     });
 
     /**
-     * @private {!chromeos.settings.appNotification.mojom.AppNotificationsHandlerInterface}
+     * @private {!ash.settings.appNotification.mojom.AppNotificationsHandlerInterface}
      */
     this.mojoInterfaceProvider_ = getAppNotificationProvider();
 
     /**
-     * @private {!chromeos.settings.appNotification.mojom.AppNotificationsObserverReceiver}
+     * @private {!ash.settings.appNotification.mojom.AppNotificationsObserverReceiver}
      */
     this.appNotificationsObserverReceiver_ =
-        new chromeos.settings.appNotification.mojom
-            .AppNotificationsObserverReceiver(
-                /**
-                 * @type {!chromeos.settings.appNotification.mojom.
-                 * AppNotificationsObserverInterface}
-                 */
-                (this));
+        new ash.settings.appNotification.mojom.AppNotificationsObserverReceiver(
+            /**
+             * @type {!ash.settings.appNotification.mojom.
+             * AppNotificationsObserverInterface}
+             */
+            (this));
 
     this.mojoInterfaceProvider_.addObserver(
         this.appNotificationsObserverReceiver_.$.bindNewPipeAndPassRemote());
@@ -337,7 +335,7 @@ class OsSettingsAppsPageElement extends OsSettingsAppsPageElementBase {
         isKeyboardAction);
   }
 
-  /** Override chromeos.settings.appNotification.onNotificationAppChanged */
+  /** Override ash.settings.appNotification.onNotificationAppChanged */
   onNotificationAppChanged(updatedApp) {
     const foundIdx = this.appsWithNotifications_.findIndex(app => {
       return app.id === updatedApp.id;
@@ -357,7 +355,7 @@ class OsSettingsAppsPageElement extends OsSettingsAppsPageElementBase {
     this.splice('appsWithNotifications_', foundIdx, 1);
   }
 
-  /** Override chromeos.settings.appNotification.onQuietModeChanged */
+  /** Override ash.settings.appNotification.onQuietModeChanged */
   onQuietModeChanged(enabled) {
     this.isDndEnabled_ = enabled;
   }

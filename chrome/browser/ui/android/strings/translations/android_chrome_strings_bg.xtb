@@ -748,6 +748,7 @@
 <translation id="5091199029769593641">Скоро ще виждате материали от <ph name="SITE_NAME" />, когато отворите нов раздел. Сайтовете, които следвате, се запазват в профила ви в Google. Можете да ги управлявате от настройките за Discover.</translation>
 <translation id="5091249083535528968">Разширени данни за употребата</translation>
 <translation id="509429900233858213">Възникна грешка.</translation>
+<translation id="5099845111805573968">След като изберете настолната версия веднъж, настройката се прилага за сайта при всяко посещение</translation>
 <translation id="5102401324271069229">Ако сайт се опита да открадне паролата ви или ако изтеглите опасен файл, Chrome може да изпрати до Безопасно сърфиране URL адресите и част от съдържанието на страницата</translation>
 <translation id="510275257476243843">Остава 1 час</translation>
 <translation id="5115811374190515607">до <ph name="PRODUCT_NAME" /></translation>
@@ -907,6 +908,7 @@
 <translation id="5958275228015807058">Намерете файловете и страниците си в „Изтегляния“</translation>
 <translation id="5962718611393537961">Докоснете за свиване</translation>
 <translation id="5964869237734432770">Спиране на описанията</translation>
+<translation id="5966233851250124270">Chrome ще запомни избора ви</translation>
 <translation id="5979084224081478209">Проверка на паролите</translation>
 <translation id="5995726099713306770">Искате ли отново да изтеглите страницата?</translation>
 <translation id="6000066717592683814">Запазване на Google</translation>
@@ -1083,6 +1085,7 @@
 <translation id="6820686453637990663">Код за сигурност</translation>
 <translation id="6824899148643461612">Избрахте раздела <ph name="TAB_TITLE" /></translation>
 <translation id="6828070228333235514">Проследяване на цената: Спиране</translation>
+<translation id="6830728435402077660">Няма защита</translation>
 <translation id="6833996806551876956">Пробен период за Privacy Sandbox</translation>
 <translation id="6836206421467243968">Възстановяване на групата раздели „<ph name="TITLE_OF_GROUP" />“ като нова група на заден план.</translation>
 <translation id="6846298663435243399">Зарежда се…</translation>

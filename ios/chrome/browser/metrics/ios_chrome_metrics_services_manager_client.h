@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -48,8 +48,8 @@ class IOSChromeMetricsServicesManagerClient
   bool IsMetricsConsentGiven() override;
   bool IsOffTheRecordSessionActive() override;
 
-  // Static helper for |IsOffTheRecordSessionActive()|, suitable for binding
-  // into callbacks. |true| if any browser states have any incognito WebStates
+  // Static helper for `IsOffTheRecordSessionActive()`, suitable for binding
+  // into callbacks. `true` if any browser states have any incognito WebStates
   // in any Browser.
   static bool AreIncognitoTabsPresent();
 

@@ -67,6 +67,17 @@ constexpr char kAddIframeScript[] = R"({
     })();
   })";
 
+GURL AddAndVerifyFencedFrameURL(
+    FencedFrameURLMapping* fenced_frame_url_mapping,
+    const GURL& https_url,
+    const ReportingMetadata& reporting_metadata = ReportingMetadata()) {
+  absl::optional<GURL> urn_uuid = fenced_frame_url_mapping->AddFencedFrameURL(
+      https_url, reporting_metadata);
+  EXPECT_TRUE(urn_uuid.has_value());
+  EXPECT_TRUE(urn_uuid->is_valid());
+  return urn_uuid.value();
+}
+
 }  // namespace
 
 class FencedFrameMPArchBrowserTest : public ContentBrowserTest {
@@ -1146,16 +1157,29 @@ IN_PROC_BROWSER_TEST_F(FencedFrameMPArchBrowserTest,
 
 class FencedFrameWithSiteIsolationDisabledBrowserTest
     : public FencedFrameMPArchBrowserTest,
-      public testing::WithParamInterface<bool> {
+      public testing::WithParamInterface<std::tuple<bool, bool>> {
  public:
   FencedFrameWithSiteIsolationDisabledBrowserTest() {
-    std::vector<base::Feature> enabled_features = {
-        GetParam() ? features::kProcessSharingWithDefaultSiteInstances
-                   : features::kProcessSharingWithStrictSiteInstances};
-    std::vector<base::Feature> disabled_features = {
-        GetParam() ? features::kProcessSharingWithStrictSiteInstances
-                   : features::kProcessSharingWithDefaultSiteInstances};
-    feature_list_.InitWithFeatures(enabled_features, disabled_features);
+    std::vector<base::Feature> enabled_features;
+    std::vector<base::Feature> disabled_features;
+
+    if (std::get<0>(GetParam())) {
+      enabled_features.push_back(
+          features::kProcessSharingWithDefaultSiteInstances);
+      disabled_features.push_back(
+          features::kProcessSharingWithStrictSiteInstances);
+    } else {
+      enabled_features.push_back(
+          features::kProcessSharingWithStrictSiteInstances);
+      disabled_features.push_back(
+          features::kProcessSharingWithDefaultSiteInstances);
+    }
+
+    if (std::get<1>(GetParam())) {
+      enabled_features.push_back(features::kIsolateFencedFrames);
+    } else {
+      disabled_features.push_back(features::kIsolateFencedFrames);
+    }
   }
 
   ~FencedFrameWithSiteIsolationDisabledBrowserTest() override = default;
@@ -1169,13 +1193,18 @@ class FencedFrameWithSiteIsolationDisabledBrowserTest
   base::test::ScopedFeatureList feature_list_;
 };
 
-INSTANTIATE_TEST_SUITE_P(All,
-                         FencedFrameWithSiteIsolationDisabledBrowserTest,
-                         testing::Bool(),
-                         [](const testing::TestParamInfo<bool>& info) {
-                           return info.param ? "DefaultSiteInstances"
-                                             : "StrictSiteInstances";
-                         });
+INSTANTIATE_TEST_SUITE_P(
+    All,
+    FencedFrameWithSiteIsolationDisabledBrowserTest,
+    testing::Combine(testing::Bool(), testing::Bool()),
+    [](const testing::TestParamInfo<std::tuple<bool, bool>>& info) {
+      return base::StringPrintf("%s_%s",
+                                std::get<0>(info.param) ? "DefaultSiteInstances"
+                                                        : "StrictSiteInstances",
+                                std::get<1>(info.param)
+                                    ? "IsolatedFencedFrames"
+                                    : "UnisolatedFencedFrames");
+    });
 
 IN_PROC_BROWSER_TEST_P(FencedFrameWithSiteIsolationDisabledBrowserTest,
                        ProcessAllocationWithSiteIsolationDisabled) {
@@ -1342,6 +1371,206 @@ IN_PROC_BROWSER_TEST_P(FencedFrameWithSiteIsolationDisabledBrowserTest,
   RenderFrameHost* ff_rfh =
       fenced_frame_test_helper().CreateFencedFrame(popup_rfh, fenced_frame_url);
   ASSERT_EQ(ff_rfh->GetProcess(), primary_main_frame_host()->GetProcess());
+}
+
+class FencedFrameProcessIsolationBrowserTest
+    : public FencedFrameMPArchBrowserTest {
+ public:
+  FencedFrameProcessIsolationBrowserTest() {
+    feature_list_.InitWithFeatures({features::kIsolateFencedFrames}, {});
+  }
+  ~FencedFrameProcessIsolationBrowserTest() override = default;
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
+};
+
+IN_PROC_BROWSER_TEST_F(FencedFrameProcessIsolationBrowserTest, BasicTest) {
+  IsolateAllSitesForTesting(base::CommandLine::ForCurrentProcess());
+  ASSERT_TRUE(AreAllSitesIsolatedForTesting());
+  ASSERT_TRUE(https_server()->Start());
+  const GURL main_url = https_server()->GetURL("a.test", "/title1.html");
+  const GURL fenced_frame_url =
+      https_server()->GetURL("a.test", "/fenced_frames/title1.html");
+
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+  RenderFrameHostImpl* ff_rfh = static_cast<RenderFrameHostImpl*>(
+      fenced_frame_test_helper().CreateFencedFrame(primary_main_frame_host(),
+                                                   fenced_frame_url));
+  EXPECT_TRUE(ff_rfh->GetSiteInstance()->GetSiteInfo().is_fenced());
+  EXPECT_NE(ff_rfh->GetProcess(), primary_main_frame_host()->GetProcess());
+}
+
+// Tests that fenced frames that are same-origin with each other are put in
+// the same process.
+IN_PROC_BROWSER_TEST_F(FencedFrameProcessIsolationBrowserTest,
+                       SameOriginFencedFramesArePutInTheSameProcess) {
+  IsolateAllSitesForTesting(base::CommandLine::ForCurrentProcess());
+  ASSERT_TRUE(AreAllSitesIsolatedForTesting());
+  ASSERT_TRUE(https_server()->Start());
+
+  const GURL main_url = https_server()->GetURL("a.test", "/title1.html");
+  const GURL fenced_frame_url =
+      https_server()->GetURL("b.test", "/fenced_frames/title1.html");
+
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+  RenderFrameHostImpl* ff_rfh_1 = static_cast<RenderFrameHostImpl*>(
+      fenced_frame_test_helper().CreateFencedFrame(primary_main_frame_host(),
+                                                   fenced_frame_url));
+  RenderFrameHostImpl* ff_rfh_2 = static_cast<RenderFrameHostImpl*>(
+      fenced_frame_test_helper().CreateFencedFrame(primary_main_frame_host(),
+                                                   fenced_frame_url));
+
+  EXPECT_NE(ff_rfh_1->GetProcess(), primary_main_frame_host()->GetProcess());
+  EXPECT_NE(ff_rfh_1->GetSiteInstance(), ff_rfh_2->GetSiteInstance());
+  EXPECT_EQ(ff_rfh_1->GetProcess(), ff_rfh_2->GetProcess());
+}
+
+// Tests that fenced frames that are cross-origin with each other are put in
+// different processes.
+IN_PROC_BROWSER_TEST_F(FencedFrameProcessIsolationBrowserTest,
+                       CrossOriginFencedFramesArePutInDifferentProcesses) {
+  IsolateAllSitesForTesting(base::CommandLine::ForCurrentProcess());
+  ASSERT_TRUE(AreAllSitesIsolatedForTesting());
+  ASSERT_TRUE(https_server()->Start());
+
+  const GURL main_url = https_server()->GetURL("a.test", "/title1.html");
+  const GURL ff_url_1 =
+      https_server()->GetURL("b.test", "/fenced_frames/title1.html");
+  const GURL ff_url_2 =
+      https_server()->GetURL("c.test", "/fenced_frames/title1.html");
+
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+  RenderFrameHostImpl* ff_rfh_1 = static_cast<RenderFrameHostImpl*>(
+      fenced_frame_test_helper().CreateFencedFrame(primary_main_frame_host(),
+                                                   ff_url_1));
+  RenderFrameHostImpl* ff_rfh_2 = static_cast<RenderFrameHostImpl*>(
+      fenced_frame_test_helper().CreateFencedFrame(primary_main_frame_host(),
+                                                   ff_url_2));
+
+  EXPECT_NE(ff_rfh_1->GetProcess(), primary_main_frame_host()->GetProcess());
+  EXPECT_NE(ff_rfh_2->GetProcess(), primary_main_frame_host()->GetProcess());
+  EXPECT_NE(ff_rfh_1->GetProcess(), ff_rfh_2->GetProcess());
+}
+
+// Tests that a subframe inside a primary page is allocated to a separate
+// process from a subframe inside a fenced frame.
+IN_PROC_BROWSER_TEST_F(FencedFrameProcessIsolationBrowserTest,
+                       SubframeIsolation) {
+  IsolateAllSitesForTesting(base::CommandLine::ForCurrentProcess());
+  ASSERT_TRUE(AreAllSitesIsolatedForTesting());
+  ASSERT_TRUE(https_server()->Start());
+
+  const GURL main_url = https_server()->GetURL("a.test", "/title1.html");
+  const GURL ff_url =
+      https_server()->GetURL("b.test", "/fenced_frames/title1.html");
+  const GURL subframe_url = https_server()->GetURL("c.test", "/title2.html");
+
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+  RenderFrameHostImpl* ff_rfh = static_cast<RenderFrameHostImpl*>(
+      fenced_frame_test_helper().CreateFencedFrame(primary_main_frame_host(),
+                                                   ff_url));
+
+  // Add iframe in primary main frame.
+  EXPECT_TRUE(ExecJs(primary_main_frame_host(),
+                     JsReplace(kAddIframeScript, subframe_url)));
+  RenderFrameHost* primary_subframe =
+      ChildFrameAt(primary_main_frame_host(), 0);
+
+  // Add iframe in fenced frame.
+  EXPECT_TRUE(ExecJs(ff_rfh, JsReplace(kAddIframeScript, subframe_url)));
+  RenderFrameHost* ff_subframe = ChildFrameAt(ff_rfh, 0);
+
+  // Both subframes should be in separate processes (despite being same-site).
+  EXPECT_NE(primary_subframe->GetProcess(), ff_subframe->GetProcess());
+  EXPECT_NE(primary_subframe->GetSiteInstance(),
+            ff_subframe->GetSiteInstance());
+  EXPECT_FALSE(static_cast<RenderFrameHostImpl*>(primary_subframe)
+                   ->GetSiteInstance()
+                   ->GetSiteInfo()
+                   .is_fenced());
+  EXPECT_TRUE(static_cast<RenderFrameHostImpl*>(ff_subframe)
+                  ->GetSiteInstance()
+                  ->GetSiteInfo()
+                  .is_fenced());
+}
+
+// Tests process assignment in the following scenario:
+// a.com
+//   <fencedframe src=a.com>
+//     <iframe src=a.com>
+//       <fencedframe src=a.com>
+IN_PROC_BROWSER_TEST_F(FencedFrameProcessIsolationBrowserTest,
+                       NestedFencedFrames) {
+  IsolateAllSitesForTesting(base::CommandLine::ForCurrentProcess());
+  ASSERT_TRUE(AreAllSitesIsolatedForTesting());
+  ASSERT_TRUE(https_server()->Start());
+
+  const GURL main_url = https_server()->GetURL("a.test", "/title1.html");
+  const GURL subframe_url = https_server()->GetURL("a.test", "/title2.html");
+  const GURL fenced_frame_url =
+      https_server()->GetURL("a.test", "/fenced_frames/title1.html");
+
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+
+  // Create outer fenced frame and add same-origin subframe.
+  RenderFrameHostImpl* outer_ff_rfh = static_cast<RenderFrameHostImpl*>(
+      fenced_frame_test_helper().CreateFencedFrame(primary_main_frame_host(),
+                                                   fenced_frame_url));
+  EXPECT_TRUE(ExecJs(outer_ff_rfh, JsReplace(kAddIframeScript, subframe_url)));
+  RenderFrameHost* outer_ff_subframe = ChildFrameAt(outer_ff_rfh, 0);
+
+  // Create nested fenced frame.
+  RenderFrameHostImpl* inner_ff_rfh = static_cast<RenderFrameHostImpl*>(
+      fenced_frame_test_helper().CreateFencedFrame(outer_ff_subframe,
+                                                   fenced_frame_url));
+
+  EXPECT_EQ(outer_ff_rfh->GetSiteInstance(),
+            outer_ff_subframe->GetSiteInstance());
+  EXPECT_NE(outer_ff_subframe->GetSiteInstance(),
+            inner_ff_rfh->GetSiteInstance());
+
+  // All frames will share the same process (except the primary main frame).
+  EXPECT_NE(primary_main_frame_host()->GetProcess(),
+            outer_ff_rfh->GetProcess());
+  EXPECT_EQ(outer_ff_rfh->GetProcess(), outer_ff_subframe->GetProcess());
+  EXPECT_EQ(outer_ff_subframe->GetProcess(), inner_ff_rfh->GetProcess());
+}
+
+// Tests that error pages inside fenced frames are process-isolated from the
+// embedding page.
+IN_PROC_BROWSER_TEST_F(FencedFrameProcessIsolationBrowserTest, ErrorPage) {
+  IsolateAllSitesForTesting(base::CommandLine::ForCurrentProcess());
+  ASSERT_TRUE(AreAllSitesIsolatedForTesting());
+  ASSERT_TRUE(https_server()->Start());
+
+  const GURL main_url = https_server()->GetURL("a.test", "/title1.html");
+  const GURL fenced_frame_url =
+      https_server()->GetURL("a.test", "/title2.html");
+
+  ASSERT_TRUE(NavigateToURL(shell(), main_url));
+
+  // Loading the fenced frame should fail due to the absence of a
+  // "Supports-Loading-Mode" header.
+  RenderFrameHostImpl* ff_rfh = static_cast<RenderFrameHostImpl*>(
+      fenced_frame_test_helper().CreateFencedFrame(
+          primary_main_frame_host(), fenced_frame_url, net::ERR_ABORTED));
+  ASSERT_NE(ff_rfh, nullptr);
+  EXPECT_TRUE(ff_rfh->IsErrorDocument());
+
+  const SiteInfo& ff_site_info = ff_rfh->GetSiteInstance()->GetSiteInfo();
+  EXPECT_TRUE(ff_site_info.is_error_page());
+  EXPECT_TRUE(ff_site_info.is_fenced());
+
+  EXPECT_NE(ff_rfh->GetProcess(), primary_main_frame_host()->GetProcess());
+
+  // Create another fenced frame that loads an error page.
+  RenderFrameHostImpl* ff_rfh_2 = static_cast<RenderFrameHostImpl*>(
+      fenced_frame_test_helper().CreateFencedFrame(
+          primary_main_frame_host(), fenced_frame_url, net::ERR_ABORTED));
+  ASSERT_NE(ff_rfh_2, nullptr);
+  // Both fenced frame error pages should share a process.
+  EXPECT_EQ(ff_rfh_2->GetProcess(), ff_rfh->GetProcess());
 }
 
 namespace {
@@ -1967,12 +2196,15 @@ class FencedFrameParameterizedBrowserTest
 // Tests that the fenced frame gets navigated to an actual url given a urn:uuid.
 IN_PROC_BROWSER_TEST_P(FencedFrameParameterizedBrowserTest,
                        CheckFencedFrameNavigationWithUUID) {
+  base::HistogramTester histogram_tester;
   GURL main_url = https_server()->GetURL("b.test", "/hello.html");
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
   // It is safe to obtain the root frame tree node here, as it doesn't change.
   FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
                             ->GetPrimaryFrameTree()
                             .root();
+  histogram_tester.ExpectTotalCount(
+      "Navigation.BrowserMappedUrnUuidInIframeOrFencedFrame", 0);
 
   {
     EXPECT_TRUE(ExecJs(root,
@@ -1991,23 +2223,55 @@ IN_PROC_BROWSER_TEST_P(FencedFrameParameterizedBrowserTest,
       https_server()->GetURL("a.test", "/fenced_frames/title1.html"));
   FencedFrameURLMapping& url_mapping =
       root->current_frame_host()->GetPage().fenced_frame_urls_map();
-  GURL urn_uuid = url_mapping.AddFencedFrameURL(https_url);
-  EXPECT_TRUE(urn_uuid.is_valid());
+  auto urn_uuid = AddAndVerifyFencedFrameURL(&url_mapping, https_url);
 
   std::string navigate_urn_script = JsReplace("f.src = $1;", urn_uuid);
 
+  WebContentsConsoleObserver console_error_observer(shell()->web_contents());
+  auto error_filter =
+      [](const content::WebContentsConsoleObserver::Message& message) {
+        return message.log_level == blink::mojom::ConsoleMessageLevel::kError;
+      };
+  console_error_observer.SetFilter(base::BindRepeating(error_filter));
+  console_error_observer.SetPattern("Supports-Loading-Mode*");
+
   {
-    TestFrameNavigationObserver observer(fenced_frame_root_node);
+    TestFrameNavigationObserver navigation_observer(fenced_frame_root_node);
+    WebContentsConsoleObserver console_observer(web_contents());
+    auto filter =
+        [](const content::WebContentsConsoleObserver::Message& message) {
+          return message.log_level ==
+                 blink::mojom::ConsoleMessageLevel::kWarning;
+        };
+    console_observer.SetFilter(base::BindRepeating(filter));
+    console_observer.SetPattern(
+        "FLEDGE will deprecate supporting iframes to render the winning ad*");
     EXPECT_EQ(urn_uuid.spec(), EvalJs(root, navigate_urn_script));
-    observer.WaitForCommit();
+    navigation_observer.WaitForCommit();
+    // No console warning is emitted for urn::uuid navigation in fenced frames.
+    EXPECT_TRUE(console_observer.messages().empty());
   }
 
+  content::FetchHistogramsFromChildProcesses();
+  histogram_tester.ExpectTotalCount(
+      "Blink.FencedFrame.CreationOrNavigationOutcome", 1);
+  // Fenced frame creation succeeded (opaque ads mode)
+  histogram_tester.ExpectBucketCount(
+      "Blink.FencedFrame.CreationOrNavigationOutcome", 1, 1);
+  // Fenced frame navigation succeeded, no response header opted-in error
+  histogram_tester.ExpectBucketCount(
+      "Blink.FencedFrame.CreationOrNavigationOutcome", 7, 0);
+  histogram_tester.ExpectBucketCount(
+      "Navigation.BrowserMappedUrnUuidInIframeOrFencedFrame", 0, 1);
   EXPECT_EQ(
       https_url,
       fenced_frame_root_node->current_frame_host()->GetLastCommittedURL());
   EXPECT_EQ(
       url::Origin::Create(https_url),
       fenced_frame_root_node->current_frame_host()->GetLastCommittedOrigin());
+  // Fenced frame navigation with opt-in 'Supports-Loading-Mode: fenced-frame'
+  // should not emit console errors.
+  EXPECT_TRUE(console_error_observer.messages().empty());
 
   // Parent will still see the src as the urn_uuid and not the mapped url.
   EXPECT_EQ(urn_uuid.spec(), EvalJs(root, "f.src"));
@@ -2132,9 +2396,9 @@ IN_PROC_BROWSER_TEST_P(
 
   EXPECT_TRUE(url_mapping.HasObserverForTesting(urn_uuid, request));
 
-  auto* budget_metadata =
+  auto budget_metadata =
       fenced_frame_root_node->FindSharedStorageBudgetMetadata();
-  EXPECT_FALSE(budget_metadata);
+  EXPECT_FALSE(budget_metadata.has_value());
 
   // Trigger the mapping to resume the deferred navigation.
   SimulateSharedStorageURNMappingComplete(
@@ -2151,10 +2415,10 @@ IN_PROC_BROWSER_TEST_P(
       fenced_frame_root_node->current_frame_host()->GetLastCommittedURL());
 
   budget_metadata = fenced_frame_root_node->FindSharedStorageBudgetMetadata();
-  EXPECT_TRUE(budget_metadata);
-  EXPECT_EQ(budget_metadata->origin,
+  EXPECT_TRUE(budget_metadata.has_value());
+  EXPECT_EQ((*budget_metadata)->origin,
             url::Origin::Create(GURL("https://bar.com")));
-  EXPECT_DOUBLE_EQ(budget_metadata->budget_to_charge, 2.0);
+  EXPECT_DOUBLE_EQ((*budget_metadata)->budget_to_charge, 2.0);
 }
 
 // Test the scenario where the FF navigation is deferred and then resumed, and
@@ -2223,8 +2487,9 @@ IN_PROC_BROWSER_TEST_P(
   observer.Wait();
   EXPECT_EQ(observer.last_net_error_code(), net::ERR_BLOCKED_BY_RESPONSE);
 
-  auto* metadata = fenced_frame_root_node->FindSharedStorageBudgetMetadata();
-  EXPECT_FALSE(metadata);
+  // Despite the error, the budget metadata should be valid.
+  auto metadata = fenced_frame_root_node->FindSharedStorageBudgetMetadata();
+  EXPECT_TRUE(metadata);
 }
 
 IN_PROC_BROWSER_TEST_P(
@@ -2331,8 +2596,7 @@ IN_PROC_BROWSER_TEST_P(FencedFrameParameterizedBrowserTest,
       https_server()->GetURL("a.test", "/fenced_frames/title1.html"));
   FencedFrameURLMapping& url_mapping =
       root_rfh->GetPage().fenced_frame_urls_map();
-  GURL urn_uuid = url_mapping.AddFencedFrameURL(https_url);
-  EXPECT_TRUE(urn_uuid.is_valid());
+  auto urn_uuid = AddAndVerifyFencedFrameURL(&url_mapping, https_url);
 
   std::string navigate_urn_script = JsReplace("f.src = $1;", urn_uuid);
   NavigateFrameInsideFencedFrameTreeAndWaitForFinishedLoad(
@@ -2413,8 +2677,7 @@ IN_PROC_BROWSER_TEST_P(FencedFrameParameterizedBrowserTest,
       https_server()->GetURL("a.test", "/fenced_frames/title1.html"));
   FencedFrameURLMapping& url_mapping =
       root_rfh->GetPage().fenced_frame_urls_map();
-  GURL urn_uuid = url_mapping.AddFencedFrameURL(https_url);
-  EXPECT_TRUE(urn_uuid.is_valid());
+  auto urn_uuid = AddAndVerifyFencedFrameURL(&url_mapping, https_url);
 
   std::string navigate_urn_script = JsReplace("f.src = $1;", urn_uuid);
   NavigateFrameInsideFencedFrameTreeAndWaitForFinishedLoad(
@@ -2734,6 +2997,7 @@ IN_PROC_BROWSER_TEST_P(FencedFrameParameterizedBrowserTest,
 
 IN_PROC_BROWSER_TEST_P(FencedFrameParameterizedBrowserTest,
                        CheckFencedFrameNotNavigatedWithoutOptIn) {
+  base::HistogramTester histogram_tester;
   GURL main_url = https_server()->GetURL("b.test", "/hello.html");
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
   // It is safe to obtain the root frame tree node here, as it doesn't change.
@@ -2754,17 +3018,41 @@ IN_PROC_BROWSER_TEST_P(FencedFrameParameterizedBrowserTest,
   GURL https_url(https_server()->GetURL("a.test", "/title1.html"));
   FencedFrameURLMapping& url_mapping =
       root->current_frame_host()->GetPage().fenced_frame_urls_map();
-  GURL urn_uuid = url_mapping.AddFencedFrameURL(https_url);
-  EXPECT_TRUE(urn_uuid.is_valid());
+  auto urn_uuid = AddAndVerifyFencedFrameURL(&url_mapping, https_url);
+
+  WebContentsConsoleObserver console_observer(shell()->web_contents());
+  auto filter =
+      [](const content::WebContentsConsoleObserver::Message& message) {
+        return message.log_level == blink::mojom::ConsoleMessageLevel::kError;
+      };
+  console_observer.SetFilter(base::BindRepeating(filter));
+  console_observer.SetPattern("Supports-Loading-Mode*");
 
   std::string navigate_urn_script = JsReplace("f.src = $1;", urn_uuid);
   NavigateFrameInsideFencedFrameTreeAndWaitForFinishedLoad(
       fenced_frame_root_node, urn_uuid, navigate_urn_script,
       net::ERR_BLOCKED_BY_RESPONSE);
+
+  EXPECT_FALSE(console_observer.messages().empty());
+  EXPECT_EQ(
+      console_observer.GetMessageAt(0),
+      "Supports-Loading-Mode HTTP response header 'fenced-frame' is required "
+      "to load the fenced frame root and its nested iframes.");
+  content::FetchHistogramsFromChildProcesses();
+  histogram_tester.ExpectTotalCount(
+      "Blink.FencedFrame.CreationOrNavigationOutcome", 2);
+  // Fenced frame creation succeeded (opaque ads mode)
+  histogram_tester.ExpectBucketCount(
+      "Blink.FencedFrame.CreationOrNavigationOutcome", 1, 1);
+  // Fenced frame navigation failed (Supports-Loading-Mode response header
+  // 'fenced-frame' not opted-in)
+  histogram_tester.ExpectBucketCount(
+      "Blink.FencedFrame.CreationOrNavigationOutcome", 7, 1);
 }
 
 IN_PROC_BROWSER_TEST_P(FencedFrameParameterizedBrowserTest,
                        CheckNestedIframeNotNavigatedWithoutOptIn) {
+  base::HistogramTester histogram_tester;
   GURL main_url = https_server()->GetURL("b.test", "/hello.html");
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
   // It is safe to obtain the root frame tree node here, as it doesn't change.
@@ -2791,11 +3079,35 @@ IN_PROC_BROWSER_TEST_P(FencedFrameParameterizedBrowserTest,
         fenced_frame_root_node, fenced_frame_url, navigate_script);
   }
 
+  WebContentsConsoleObserver console_observer(shell()->web_contents());
+  auto filter =
+      [](const content::WebContentsConsoleObserver::Message& message) {
+        return message.log_level == blink::mojom::ConsoleMessageLevel::kError;
+      };
+  console_observer.SetFilter(base::BindRepeating(filter));
+  console_observer.SetPattern("Supports-Loading-Mode*");
+
   // Add a nested iframe inside the fenced frame and navigate.
   AddIframeInFencedFrame(fenced_frame_root_node, 0);
   GURL iframe_url(https_server()->GetURL("a.test", "/title1.html"));
   NavigateIframeInFencedFrame(fenced_frame_root_node->child_at(0), iframe_url,
                               net::ERR_BLOCKED_BY_RESPONSE);
+
+  EXPECT_FALSE(console_observer.messages().empty());
+  EXPECT_EQ(
+      console_observer.GetMessageAt(0),
+      "Supports-Loading-Mode HTTP response header 'fenced-frame' is required "
+      "to load the fenced frame root and its nested iframes.");
+  content::FetchHistogramsFromChildProcesses();
+  histogram_tester.ExpectTotalCount(
+      "Blink.FencedFrame.CreationOrNavigationOutcome", 2);
+  // Fenced frame creation succeeded (default mode)
+  histogram_tester.ExpectBucketCount(
+      "Blink.FencedFrame.CreationOrNavigationOutcome", 0, 1);
+  // Fenced frame navigation failed (Supports-Loading-Mode response header
+  // 'fenced-frame' not opted-in)
+  histogram_tester.ExpectBucketCount(
+      "Blink.FencedFrame.CreationOrNavigationOutcome", 7, 1);
 }
 
 IN_PROC_BROWSER_TEST_P(FencedFrameParameterizedBrowserTest,
@@ -2867,8 +3179,7 @@ IN_PROC_BROWSER_TEST_P(FencedFrameParameterizedBrowserTest,
       https_server()->GetURL("a.test", "/fenced_frames/redirect.html"));
   FencedFrameURLMapping& url_mapping =
       root->current_frame_host()->GetPage().fenced_frame_urls_map();
-  GURL urn_uuid = url_mapping.AddFencedFrameURL(fenced_frame_url);
-  EXPECT_TRUE(urn_uuid.is_valid());
+  auto urn_uuid = AddAndVerifyFencedFrameURL(&url_mapping, fenced_frame_url);
 
   std::string navigate_script = JsReplace("f.src = $1;", urn_uuid.spec());
   NavigateFrameInsideFencedFrameTreeAndWaitForFinishedLoad(
@@ -2920,8 +3231,7 @@ IN_PROC_BROWSER_TEST_P(FencedFrameParameterizedBrowserTest,
       https_server()->GetURL("a.test", "/fenced_frames/title1.html"));
   FencedFrameURLMapping& url_mapping =
       root->current_frame_host()->GetPage().fenced_frame_urls_map();
-  GURL urn_uuid = url_mapping.AddFencedFrameURL(fenced_frame_url);
-  EXPECT_TRUE(urn_uuid.is_valid());
+  auto urn_uuid = AddAndVerifyFencedFrameURL(&url_mapping, fenced_frame_url);
 
   std::string navigate_script = JsReplace("f.src = $1;", urn_uuid.spec());
   NavigateFrameInsideFencedFrameTreeAndWaitForFinishedLoad(
@@ -3750,8 +4060,7 @@ IN_PROC_BROWSER_TEST_P(FencedFrameParameterizedBrowserTest,
         https_server()->GetURL("b.test", "/fenced_frames/title1.html"));
     FencedFrameURLMapping& url_mapping =
         root->current_frame_host()->GetPage().fenced_frame_urls_map();
-    GURL urn_uuid = url_mapping.AddFencedFrameURL(https_url);
-    EXPECT_TRUE(urn_uuid.is_valid());
+    auto urn_uuid = AddAndVerifyFencedFrameURL(&url_mapping, https_url);
 
     std::string navigate_urn_script = JsReplace("f.src = $1;", urn_uuid);
 
@@ -4374,9 +4683,8 @@ class FencedFrameReportEventBrowserTest
                                                  step.destination.path);
       GURL expect_url = navigate_url;
       if (step.is_opaque) {
-        GURL urn_uuid =
-            url_mapping.AddFencedFrameURL(navigate_url, fenced_frame_reporting);
-        EXPECT_TRUE(urn_uuid.is_valid());
+        auto urn_uuid = AddAndVerifyFencedFrameURL(&url_mapping, navigate_url,
+                                                   fenced_frame_reporting);
         navigate_url = urn_uuid;
       }
       FrameTreeNode* navigation_target_node = fenced_frame_root_node;
@@ -4721,9 +5029,8 @@ IN_PROC_BROWSER_TEST_P(FencedFrameReportEventBrowserTest,
       https_server()->GetURL("a.test", "/fenced_frames/title1.html"));
   FencedFrameURLMapping& url_mapping =
       root->current_frame_host()->GetPage().fenced_frame_urls_map();
-  GURL urn_uuid =
-      url_mapping.AddFencedFrameURL(https_url, fenced_frame_reporting);
-  EXPECT_TRUE(urn_uuid.is_valid());
+  auto urn_uuid = AddAndVerifyFencedFrameURL(&url_mapping, https_url,
+                                             fenced_frame_reporting);
 
   TestFencedFrameURLMappingResultObserver mapping_observer;
   url_mapping.ConvertFencedFrameURNToURL(urn_uuid, &mapping_observer);
@@ -4815,9 +5122,12 @@ class UUIDFrameTreeBrowserTest : public ContentBrowserTest,
 
 IN_PROC_BROWSER_TEST_P(UUIDFrameTreeBrowserTest,
                        CheckIframeNavigationWithUUID) {
+  base::HistogramTester histogram_tester;
   GURL main_url = https_server()->GetURL("b.test", "/hello.html");
   GURL initial_frame_url = https_server()->GetURL("a.test", "/hello.html");
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
+  histogram_tester.ExpectTotalCount(
+      "Navigation.BrowserMappedUrnUuidInIframeOrFencedFrame", 0);
 
   // It is safe to obtain the root frame tree node here, as it doesn't change.
   FrameTreeNode* root = web_contents()->GetPrimaryFrameTree().root();
@@ -4832,22 +5142,48 @@ IN_PROC_BROWSER_TEST_P(UUIDFrameTreeBrowserTest,
   // Initially navigate the iframe to somewhere specific.
   EXPECT_TRUE(NavigateIframeAndCheckURL(web_contents(), "test_iframe",
                                         initial_frame_url, initial_frame_url));
+  histogram_tester.ExpectTotalCount(
+      "Navigation.BrowserMappedUrnUuidInIframeOrFencedFrame", 0);
 
   GURL frame_url(
       https_server()->GetURL("a.test", "/fenced_frames/title1.html"));
   FencedFrameURLMapping& url_mapping =
       root->current_frame_host()->GetPage().fenced_frame_urls_map();
-  GURL urn_uuid = url_mapping.AddFencedFrameURL(frame_url);
-  EXPECT_TRUE(urn_uuid.is_valid());
+  auto urn_uuid = AddAndVerifyFencedFrameURL(&url_mapping, frame_url);
+
+  WebContentsConsoleObserver console_observer(web_contents());
+  auto filter =
+      [](const content::WebContentsConsoleObserver::Message& message) {
+        return message.log_level == blink::mojom::ConsoleMessageLevel::kWarning;
+      };
+  console_observer.SetFilter(base::BindRepeating(filter));
+  console_observer.SetPattern(
+      "FLEDGE will deprecate supporting iframes to render the winning ad*");
 
   if (GetParam()) {
     // If the feature is enabled, we should navigate to the mapped page.
     EXPECT_TRUE(NavigateIframeAndCheckURL(web_contents(), "test_iframe",
                                           urn_uuid, frame_url));
+    histogram_tester.ExpectBucketCount(
+        "Navigation.BrowserMappedUrnUuidInIframeOrFencedFrame", 1, 1);
+    // A console warning is emitted during navigation. This will be removed
+    // once navigation support for urn::uuid in iframes is deprecated.
+    // TODO(crbug.com/1355857)
+    EXPECT_FALSE(console_observer.messages().empty());
+    EXPECT_EQ(
+        console_observer.GetMessageAt(0),
+        "FLEDGE will deprecate supporting iframes to render the winning ad. "
+        "Please use fenced frames instead. See "
+        "https://developer.chrome.com/en/docs/privacy-sandbox/fenced-frame/"
+        "#examples");
   } else {
     // If the feature is disabled, navigation should fail.
     EXPECT_FALSE(NavigateIframeAndCheckURL(web_contents(), "test_iframe",
                                            urn_uuid, GURL()));
+    histogram_tester.ExpectBucketCount(
+        "Navigation.BrowserMappedUrnUuidInIframeOrFencedFrame", 1, 0);
+    // No console warning is emitted if the feature is disabled.
+    EXPECT_TRUE(console_observer.messages().empty());
   }
 
   // Parent will still see the src as the urn_uuid and not the mapped url.
@@ -4906,8 +5242,7 @@ IN_PROC_BROWSER_TEST_P(UUIDFrameTreeBrowserTest,
       https_server()->GetURL("a.test", "/fenced_frames/title1.html"));
   FencedFrameURLMapping& url_mapping =
       root->current_frame_host()->GetPage().fenced_frame_urls_map();
-  GURL urn_uuid = url_mapping.AddFencedFrameURL(frame_url);
-  EXPECT_TRUE(urn_uuid.is_valid());
+  auto urn_uuid = AddAndVerifyFencedFrameURL(&url_mapping, frame_url);
 
   // Top page navigation to a URN should fail regardless of if the feature is
   // enabled.

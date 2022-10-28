@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,9 +7,6 @@
 
 // Audience for the ContentSuggestions, getting informations from it.
 @protocol ContentSuggestionsViewControllerAudience
-
-// Notifies the audience that the promo has been shown.
-- (void)promoShown;
 
 // Notifies the audience of the UIKit viewDidDisappear: callback.
 - (void)viewDidDisappear;

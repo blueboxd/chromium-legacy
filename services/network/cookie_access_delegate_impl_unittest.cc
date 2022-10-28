@@ -6,8 +6,8 @@
 
 #include "base/test/task_environment.h"
 #include "net/base/schemeful_site.h"
-#include "net/cookies/first_party_set_metadata.h"
-#include "net/cookies/same_party_context.h"
+#include "net/first_party_sets/first_party_set_metadata.h"
+#include "net/first_party_sets/same_party_context.h"
 #include "services/network/first_party_sets/first_party_sets_manager.h"
 #include "services/network/public/mojom/cookie_manager.mojom-shared.h"
 #include "testing/gmock/include/gmock/gmock-matchers.h"
@@ -53,9 +53,9 @@ TEST_F(CookieAccessDelegateImplTest, NullFirstPartySetsManager) {
               Optional(std::ref(expected_metadata)));
 
   EXPECT_THAT(
-      delegate().FindFirstPartySetOwners(
+      delegate().FindFirstPartySetEntries(
           {site},
-          base::BindOnce([](FirstPartySetsManager::OwnersResult) { FAIL(); })),
+          base::BindOnce([](FirstPartySetsManager::EntriesResult) { FAIL(); })),
       Optional(IsEmpty()));
 }
 

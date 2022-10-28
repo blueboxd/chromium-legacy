@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -23,7 +23,6 @@
 #include "gpu/command_buffer/common/shared_image_trace_utils.h"
 #include "gpu/command_buffer/common/shared_image_usage.h"
 #include "gpu/command_buffer/service/feature_info.h"
-#include "gpu/command_buffer/service/mailbox_manager.h"
 #include "gpu/command_buffer/service/shared_context_state.h"
 #include "gpu/command_buffer/service/shared_image/shared_image_backing.h"
 #include "gpu/command_buffer/service/shared_image/shared_image_representation.h"
@@ -145,10 +144,6 @@ class WrappedSkImage : public ClearTrackingSharedImageBacking {
     return SharedImageBackingType::kWrappedSkImage;
   }
 
-  bool ProduceLegacyMailbox(MailboxManager* mailbox_manager) override {
-    return false;
-  }
-
   void Update(std::unique_ptr<gfx::GpuFence> in_fence) override {
     NOTREACHED();
   }
@@ -164,27 +159,17 @@ class WrappedSkImage : public ClearTrackingSharedImageBacking {
   }
 
   void OnMemoryDump(const std::string& dump_name,
-                    base::trace_event::MemoryAllocatorDump* dump,
+                    base::trace_event::MemoryAllocatorDumpGuid client_guid,
                     base::trace_event::ProcessMemoryDump* pmd,
                     uint64_t client_tracing_id) override {
+    SharedImageBacking::OnMemoryDump(dump_name, client_guid, pmd,
+                                     client_tracing_id);
+
     // Add a |service_guid| which expresses shared ownership between the
     // various GPU dumps.
-    auto client_guid = GetSharedImageGUIDForTracing(mailbox());
     auto service_guid = gl::GetGLTextureServiceGUIDForTracing(tracing_id_);
     pmd->CreateSharedGlobalAllocatorDump(service_guid);
-
-    std::string format_dump_name =
-        base::StringPrintf("%s/format=%d", dump_name.c_str(), format());
-    base::trace_event::MemoryAllocatorDump* format_dump =
-        pmd->CreateAllocatorDump(format_dump_name);
-    format_dump->AddScalar(
-        base::trace_event::MemoryAllocatorDump::kNameSize,
-        base::trace_event::MemoryAllocatorDump::kUnitsBytes,
-        static_cast<uint64_t>(EstimatedSizeForMemTracking()));
-
-    // TODO(piman): coalesce constant with TextureManager::DumpTextureRef.
-    int importance = 2;  // This client always owns the ref.
-    pmd->AddOwnershipEdge(client_guid, service_guid, importance);
+    pmd->AddOwnershipEdge(client_guid, service_guid, kOwningEdgeImportance);
   }
 
   SkColorType GetSkColorType() {
@@ -257,6 +242,8 @@ class WrappedSkImage : public ClearTrackingSharedImageBacking {
     DCHECK_NE(format(), viz::ResourceFormat::ETC1);
     auto mipmap = usage() & SHARED_IMAGE_USAGE_MIPMAP ? GrMipMapped::kYes
                                                       : GrMipMapped::kNo;
+    const std::string label = "WrappedSkImageBackingFactory_Initialize" +
+                              CreateLabelForSharedImageUsage(usage());
 #if DCHECK_IS_ON() && !BUILDFLAG(IS_LINUX)
     // Initializing to bright green makes it obvious if the pixels are not
     // properly set before they are displayed (e.g. https://crbug.com/956555).
@@ -267,11 +254,11 @@ class WrappedSkImage : public ClearTrackingSharedImageBacking {
     // TODO(crbug.com/1330278): add it back.
     backend_texture_ = context_state_->gr_context()->createBackendTexture(
         size().width(), size().height(), GetSkColorType(), SkColors::kBlue,
-        mipmap, GrRenderable::kYes, GrProtected::kNo);
+        mipmap, GrRenderable::kYes, GrProtected::kNo, nullptr, nullptr, label);
 #else
     backend_texture_ = context_state_->gr_context()->createBackendTexture(
         size().width(), size().height(), GetSkColorType(), mipmap,
-        GrRenderable::kYes, GrProtected::kNo);
+        GrRenderable::kYes, GrProtected::kNo, label);
 #endif
 
     if (!backend_texture_.isValid()) {
@@ -310,8 +297,12 @@ class WrappedSkImage : public ClearTrackingSharedImageBacking {
       if (!stride)
         stride = info.minRowBytes();
       SkPixmap pixmap(info, pixels.data(), stride);
+      const std::string label =
+          "WrappedSkImageBackingFactory_InitializeWithData" +
+          CreateLabelForSharedImageUsage(usage());
       backend_texture_ = context_state_->gr_context()->createBackendTexture(
-          pixmap, GrRenderable::kYes, GrProtected::kNo);
+          pixmap, GrRenderable::kYes, GrProtected::kNo, nullptr, nullptr,
+          label);
     }
 
     if (!backend_texture_.isValid())
@@ -366,7 +357,8 @@ class WrappedSkImage::SkiaImageRepresentationImpl
       int final_msaa_count,
       const SkSurfaceProps& surface_props,
       std::vector<GrBackendSemaphore>* begin_semaphores,
-      std::vector<GrBackendSemaphore>* end_semaphores) override {
+      std::vector<GrBackendSemaphore>* end_semaphores,
+      std::unique_ptr<GrBackendSurfaceMutableState>* end_state) override {
     auto surface = wrapped_sk_image()->GetSkSurface(
         final_msaa_count, surface_props, context_state_);
     if (!surface)
@@ -397,7 +389,8 @@ class WrappedSkImage::SkiaImageRepresentationImpl
 
   sk_sp<SkPromiseImageTexture> BeginReadAccess(
       std::vector<GrBackendSemaphore>* begin_semaphores,
-      std::vector<GrBackendSemaphore>* end_semaphores) override {
+      std::vector<GrBackendSemaphore>* end_semaphores,
+      std::unique_ptr<GrBackendSurfaceMutableState>* end_state) override {
     DCHECK(!write_surface_);
     return wrapped_sk_image()->promise_texture();
   }
@@ -513,11 +506,11 @@ bool WrappedSkImageBackingFactory::CanUseWrappedSkImage(
 bool WrappedSkImageBackingFactory::IsSupported(
     uint32_t usage,
     viz::ResourceFormat format,
+    const gfx::Size& size,
     bool thread_safe,
     gfx::GpuMemoryBufferType gmb_type,
     GrContextType gr_context_type,
-    bool* allow_legacy_mailbox,
-    bool is_pixel_used) {
+    base::span<const uint8_t> pixel_data) {
   // Note that this backing support thread safety only for vulkan mode because
   // the underlying vulkan resources like vulkan images can be shared across
   // multiple vulkan queues. Also note that this backing currently only supports
@@ -545,7 +538,6 @@ bool WrappedSkImageBackingFactory::IsSupported(
     return false;
   }
 
-  *allow_legacy_mailbox = false;
   return true;
 }
 

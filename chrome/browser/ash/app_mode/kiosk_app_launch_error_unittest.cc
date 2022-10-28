@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,11 +6,11 @@
 
 #include <string>
 
-#include "ash/components/login/auth/public/auth_failure.h"
 #include "chrome/browser/ash/app_mode/kiosk_app_manager.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/test/base/scoped_testing_local_state.h"
 #include "chrome/test/base/testing_browser_process.h"
+#include "chromeos/ash/components/login/auth/public/auth_failure.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -29,7 +29,7 @@ constexpr char kKeyCryptohomeFailure[] = "cryptohome_failure";
 
 // Get Kiosk dictionary value. It is replaced after each update.
 const base::Value::Dict& GetKioskDictionary() {
-  return g_browser_process->local_state()->GetValueDict(
+  return g_browser_process->local_state()->GetDict(
       KioskAppManager::kKioskDictionaryName);
 }
 

@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -19,11 +19,13 @@
 #include "base/memory/raw_ptr.h"
 #include "base/numerics/checked_math.h"
 #include "base/trace_event/trace_event.h"
+#include "base/unguessable_token.h"
 #include "build/build_config.h"
 #include "components/viz/common/resources/resource_format_utils.h"
 #include "gpu/command_buffer/common/mailbox.h"
 #include "gpu/command_buffer/common/webgpu_cmd_format.h"
 #include "gpu/command_buffer/service/command_buffer_service.h"
+#include "gpu/command_buffer/service/dawn_caching_interface.h"
 #include "gpu/command_buffer/service/dawn_instance.h"
 #include "gpu/command_buffer/service/dawn_platform.h"
 #include "gpu/command_buffer/service/dawn_service_memory_transfer_service.h"
@@ -37,6 +39,7 @@
 #include "gpu/command_buffer/service/webgpu_decoder.h"
 #include "gpu/config/gpu_preferences.h"
 #include "gpu/webgpu/callback.h"
+#include "third_party/blink/public/common/tokens/tokens.h"
 #include "third_party/skia/include/core/SkPromiseImageTexture.h"
 #include "third_party/skia/include/gpu/GrBackendSemaphore.h"
 #include "ui/gl/gl_context_egl.h"
@@ -85,13 +88,15 @@ WGPUAdapterType PowerPreferenceToDawnAdapterType(
 
 class WebGPUDecoderImpl final : public WebGPUDecoder {
  public:
-  WebGPUDecoderImpl(DecoderClient* client,
-                    CommandBufferServiceBase* command_buffer_service,
-                    SharedImageManager* shared_image_manager,
-                    MemoryTracker* memory_tracker,
-                    gles2::Outputter* outputter,
-                    const GpuPreferences& gpu_preferences,
-                    scoped_refptr<SharedContextState> shared_context_state);
+  WebGPUDecoderImpl(
+      DecoderClient* client,
+      CommandBufferServiceBase* command_buffer_service,
+      SharedImageManager* shared_image_manager,
+      MemoryTracker* memory_tracker,
+      gles2::Outputter* outputter,
+      const GpuPreferences& gpu_preferences,
+      scoped_refptr<SharedContextState> shared_context_state,
+      std::unique_ptr<DawnCachingInterface> dawn_caching_interface_factory);
 
   WebGPUDecoderImpl(const WebGPUDecoderImpl&) = delete;
   WebGPUDecoderImpl& operator=(const WebGPUDecoderImpl&) = delete;
@@ -398,6 +403,7 @@ class WebGPUDecoderImpl final : public WebGPUDecoder {
   std::vector<std::string> force_enabled_toggles_;
   std::vector<std::string> force_disabled_toggles_;
   bool allow_unsafe_apis_;
+  blink::ExecutionContextToken execution_context_token_;
 
   std::unique_ptr<dawn::wire::WireServer> wire_server_;
   std::unique_ptr<DawnServiceSerializer> wire_serializer_;
@@ -474,6 +480,10 @@ class WebGPUDecoderImpl final : public WebGPUDecoder {
       // If we have write access, flush any writes by uploading
       // into the SkSurface.
       if ((usage_ & kAllowedWritableMailboxTextureUsages) != 0) {
+        // Before using the shared context, ensure it is current if we're on GL.
+        if (shared_context_state_->GrContextIsGL()) {
+          shared_context_state_->MakeCurrent(/* gl_surface */ nullptr);
+        }
         if (UploadContentsToSkia()) {
           // Upload to skia was successful. Mark the contents as initialized.
           representation_->SetCleared();
@@ -940,10 +950,27 @@ WebGPUDecoder* CreateWebGPUDecoderImpl(
     MemoryTracker* memory_tracker,
     gles2::Outputter* outputter,
     const GpuPreferences& gpu_preferences,
-    scoped_refptr<SharedContextState> shared_context_state) {
-  return new WebGPUDecoderImpl(
-      client, command_buffer_service, shared_image_manager, memory_tracker,
-      outputter, gpu_preferences, std::move(shared_context_state));
+    scoped_refptr<SharedContextState> shared_context_state,
+    const DawnCacheOptions& dawn_cache_options) {
+  // Construct a Dawn caching interface if the Dawn configurations enables it.
+  // If a handle was set, pass the relevant handle and DecoderClient so that
+  // writing to disk is enabled. Otherwise pass an incognito in-memory version.
+  std::unique_ptr<webgpu::DawnCachingInterface> dawn_caching_interface =
+      nullptr;
+  if (auto* caching_interface_factory =
+          dawn_cache_options.caching_interface_factory) {
+    if (dawn_cache_options.handle) {
+      dawn_caching_interface = caching_interface_factory->CreateInstance(
+          *dawn_cache_options.handle, client);
+    } else {
+      dawn_caching_interface = caching_interface_factory->CreateInstance();
+    }
+  }
+
+  return new WebGPUDecoderImpl(client, command_buffer_service,
+                               shared_image_manager, memory_tracker, outputter,
+                               gpu_preferences, std::move(shared_context_state),
+                               std::move(dawn_caching_interface));
 }
 
 WebGPUDecoderImpl::WebGPUDecoderImpl(
@@ -953,7 +980,8 @@ WebGPUDecoderImpl::WebGPUDecoderImpl(
     MemoryTracker* memory_tracker,
     gles2::Outputter* outputter,
     const GpuPreferences& gpu_preferences,
-    scoped_refptr<SharedContextState> shared_context_state)
+    scoped_refptr<SharedContextState> shared_context_state,
+    std::unique_ptr<DawnCachingInterface> dawn_caching_interface)
     : WebGPUDecoder(client, command_buffer_service, outputter),
       shared_context_state_(std::move(shared_context_state)),
       gr_context_type_(gpu_preferences.gr_context_type),
@@ -961,7 +989,7 @@ WebGPUDecoderImpl::WebGPUDecoderImpl(
           std::make_unique<SharedImageRepresentationFactory>(
               shared_image_manager,
               memory_tracker)),
-      dawn_platform_(new DawnPlatform()),
+      dawn_platform_(new DawnPlatform(std::move(dawn_caching_interface))),
       dawn_instance_(
           DawnInstance::Create(dawn_platform_.get(), gpu_preferences)),
       memory_transfer_service_(new DawnServiceMemoryTransferService(this)),
@@ -1527,6 +1555,11 @@ WebGPUDecoderImpl::AssociateMailboxUsingSkiaFallback(const Mailbox& mailbox,
                                                      MailboxFlags flags,
                                                      WGPUDevice device,
                                                      WGPUTextureUsage usage) {
+  // Before using the shared context, ensure it is current if we're on GL.
+  if (shared_context_state_->GrContextIsGL()) {
+    shared_context_state_->MakeCurrent(/* gl_surface */ nullptr);
+  }
+
   // Produce a Skia image from the mailbox.
   std::unique_ptr<SkiaImageRepresentation> shared_image =
       shared_image_representation_factory_->ProduceSkia(
@@ -1707,6 +1740,42 @@ error::Error WebGPUDecoderImpl::HandleDissociateMailboxForPresent(
   }
 
   associated_shared_image_map_.erase(it);
+  return error::kNoError;
+}
+
+error::Error WebGPUDecoderImpl::HandleSetExecutionContextToken(
+    uint32_t immediate_data_size,
+    const volatile void* cmd_data) {
+  const volatile webgpu::cmds::SetExecutionContextToken& c =
+      *static_cast<const volatile webgpu::cmds::SetExecutionContextToken*>(
+          cmd_data);
+  uint32_t type(c.type);
+  uint64_t high = uint64_t(c.high_high) << 32 | uint64_t(c.high_low);
+  uint64_t low = uint64_t(c.low_high) << 32 | uint64_t(c.low_low);
+  base::UnguessableToken token = base::UnguessableToken::Deserialize(high, low);
+  switch (type) {
+    // TODO(dawn:549) LocalFrameToken is a temp solution for initial testing.
+    // It will not be used in the final product because it can produce
+    // known races. The use of LocalFrameToken should only be enabled through
+    // --enable-unsafe-webgpu for now for testing. Once DocumentToken is ready,
+    // this should be migrated before enabling by default.
+    case blink::ExecutionContextToken::Base::template TypeIndex<
+        blink::LocalFrameToken>::kValue: {
+      DCHECK(enable_unsafe_webgpu_);
+      execution_context_token_ =
+          blink::ExecutionContextToken(blink::LocalFrameToken(token));
+      break;
+    }
+    case blink::ExecutionContextToken::Base::template TypeIndex<
+        blink::DedicatedWorkerToken>::kValue: {
+      execution_context_token_ =
+          blink::ExecutionContextToken(blink::DedicatedWorkerToken(token));
+      break;
+    }
+    default:
+      NOTREACHED();
+      return error::kInvalidArguments;
+  }
   return error::kNoError;
 }
 

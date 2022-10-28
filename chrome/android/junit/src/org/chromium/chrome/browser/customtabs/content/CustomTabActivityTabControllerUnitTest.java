@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -327,6 +327,7 @@ public class CustomTabActivityTabControllerUnitTest {
         for (TabObserver observer : tabObservers) {
             observer.onHidden(env.tabProvider.getTab(), TabHidingType.CHANGED_TABS);
             observer.onHidden(env.tabProvider.getTab(), TabHidingType.REPARENTED);
+            observer.onHidden(env.tabProvider.getTab(), TabHidingType.OVERVIEW_SHOWN);
         }
         verify(env.connection, never()).notifyDidGetUserInteraction(eq(env.session), eq(false));
     }

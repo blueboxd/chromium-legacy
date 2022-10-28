@@ -1,9 +1,10 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome/browser/power_bookmarks/power_bookmark_service_factory.h"
 
+#include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/power_bookmarks/core/power_bookmark_service.h"
 
@@ -23,11 +24,14 @@ PowerBookmarkServiceFactory* PowerBookmarkServiceFactory::GetInstance() {
 PowerBookmarkServiceFactory::PowerBookmarkServiceFactory()
     : BrowserContextKeyedServiceFactory(
           "PowerBookmarkService",
-          BrowserContextDependencyManager::GetInstance()) {}
+          BrowserContextDependencyManager::GetInstance()) {
+  DependsOn(BookmarkModelFactory::GetInstance());
+}
 
 PowerBookmarkServiceFactory::~PowerBookmarkServiceFactory() = default;
 
 KeyedService* PowerBookmarkServiceFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
-  return new power_bookmarks::PowerBookmarkService();
+  return new power_bookmarks::PowerBookmarkService(
+      BookmarkModelFactory::GetInstance()->GetForBrowserContext(context));
 }

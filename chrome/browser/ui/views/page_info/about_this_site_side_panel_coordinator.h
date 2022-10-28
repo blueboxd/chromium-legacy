@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -33,22 +33,43 @@ class AboutThisSideSidePanelCoordinator
       const AboutThisSideSidePanelCoordinator&) = delete;
   ~AboutThisSideSidePanelCoordinator() override;
 
+  // Registers ATS entry in the side panel but does not show it.
+  void RegisterEntry(const GURL& more_about_url);
+
   // Registers ATS entry in the side panel and shows side panel with ATS
   // selected if its not shown.
-  void RegisterEntryAndShow(const content::OpenURLParams& params);
+  void RegisterEntryAndShow(const GURL& more_about_url);
 
  private:
   friend class content::WebContentsUserData<AboutThisSideSidePanelCoordinator>;
 
   BrowserView* GetBrowserView() const;
 
+  // Called when SidePanel is opened.
   std::unique_ptr<views::View> CreateAboutThisSiteWebView();
 
   // content::WebContentsObserver:
+  // Override DidFinishNavigation to ensure that the AboutThisSide side panel
+  // is closed when the user navigates to a different site and that cached
+  // data is cleaned up.
   void DidFinishNavigation(
       content::NavigationHandle* navigation_handle) override;
 
-  absl::optional<content::OpenURLParams> last_url_params_;
+  // Stores the |url_params| for the AbouThisSide SidePanel and the
+  // |context_url| that they are associated with.
+  struct URLInfo {
+    GURL context_url;
+    content::OpenURLParams url_params;
+  };
+
+  // Stores the OpenURLParams that were last registered and the URL of the
+  // site that these params belong to.
+  absl::optional<URLInfo> last_url_info_;
+
+  // Stores whether a SidePanel entry has been shown yet or is just registered
+  // at pageload. Used to differentiate SidePanels previously opened or opened
+  // from PageInfo from panels opened directly through the SidePanel dropdown.
+  bool registered_but_not_shown_ = false;
 
   base::WeakPtr<AboutThisSiteSidePanelView> about_this_site_side_panel_view_;
 

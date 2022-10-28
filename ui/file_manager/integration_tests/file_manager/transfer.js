@@ -144,6 +144,7 @@ async function transferBetweenVolumes(transferInfo) {
       BASIC_DRIVE_ENTRY_SET.concat([
         ENTRIES.sharedDirectory,
         ENTRIES.sharedDirectoryFile,
+        ENTRIES.docxFile,
       ]);
 
   // Open files app.
@@ -245,6 +246,7 @@ const TRANSFER_LOCATIONS = {
     volumeName: 'drive',
     initialEntries: BASIC_DRIVE_ENTRY_SET.concat([
       ENTRIES.sharedDirectory,
+      ENTRIES.docxFile,
     ]),
   }),
 
@@ -342,6 +344,17 @@ Object.freeze(TRANSFER_LOCATIONS);
 testcase.transferFromDriveToDownloads = () => {
   return transferBetweenVolumes(new TransferInfo({
     fileToTransfer: ENTRIES.hello,
+    source: TRANSFER_LOCATIONS.drive,
+    destination: TRANSFER_LOCATIONS.downloads,
+  }));
+};
+
+/**
+ * Tests copying an office file from Drive to Downloads.
+ */
+testcase.transferOfficeFileFromDriveToDownloads = () => {
+  return transferBetweenVolumes(new TransferInfo({
+    fileToTransfer: ENTRIES.docxFile,
     source: TRANSFER_LOCATIONS.drive,
     destination: TRANSFER_LOCATIONS.downloads,
   }));
@@ -1104,9 +1117,6 @@ testcase.transferInfoIsRemembered = async () => {
   const primaryText = panel.attributes['primary-text'];
   const secondaryText = panel.attributes['secondary-text'];
 
-  // Close the Files app window.
-  await remoteCall.closeWindowAndWait(appId);
-
   // Open a Files app window again.
   appId = await setupAndWaitUntilReady(RootPath.DOWNLOADS);
 
@@ -1211,9 +1221,6 @@ testcase.transferDismissedErrorIsRemembered = async () => {
   chrome.test.assertTrue(await remoteCall.callRemoteTestUtil(
       'fakeMouseClick', appId,
       [['#progress-panel', 'xf-panel-item', 'xf-button#secondary-action']]));
-
-  // Close the Files app window.
-  await remoteCall.closeWindowAndWait(appId);
 
   // Open a Files app window again.
   appId = await setupAndWaitUntilReady(RootPath.DOWNLOADS, [entry], []);

@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -29,7 +29,7 @@ suite('SafetyCheckUnusedSitePermissionsUiTests', function() {
     // Ensure the elements are correct.
     assertSafetyCheckChild({
       page: page,
-      iconStatus: SafetyCheckIconStatus.WARNING,
+      iconStatus: SafetyCheckIconStatus.UNUSED_SITE_PERMISSIONS,
       label: 'Permissions removed from unused websites',
       buttonLabel: 'Review',
       buttonAriaLabel: 'Review',
@@ -63,7 +63,7 @@ suite('SafetyCheckNotificationPermissionsUiTests', function() {
     // Ensure the elements are correct.
     assertSafetyCheckChild({
       page: page,
-      iconStatus: SafetyCheckIconStatus.WARNING,
+      iconStatus: SafetyCheckIconStatus.NOTIFICATION_PERMISSIONS,
       label: 'Review sites that recently sent a lot of notifications',
       buttonLabel: 'Review',
       buttonAriaLabel: 'Review',

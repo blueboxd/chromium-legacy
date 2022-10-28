@@ -1,4 +1,4 @@
-// Copyright (c) 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -181,7 +181,7 @@ TEST_F(TriggerThrottlerTest, TriggerQuotaPersistence) {
   // Check the pref directly, it should reflect the events for each trigger.
   PrefService* prefs = get_pref_service();
   const base::Value::Dict& event_dict =
-      prefs->GetValueDict(prefs::kSafeBrowsingTriggerEventTimestamps);
+      prefs->GetDict(prefs::kSafeBrowsingTriggerEventTimestamps);
 
   const std::string kAdSampleKey = "2";
   const base::Value* ad_sample_events = event_dict.Find(kAdSampleKey);

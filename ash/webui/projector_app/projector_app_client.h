@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -175,6 +175,10 @@ class ProjectorAppClient {
 
   // Clears the contents of the annotator canvas.
   virtual void Clear() = 0;
+
+  // Called with true by the initiation and false by the destruction of
+  // projector trusted UI .
+  virtual void NotifyAppUIActive(bool active) = 0;
 
  protected:
   ProjectorAppClient();

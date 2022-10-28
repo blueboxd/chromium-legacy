@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -33,7 +33,7 @@ class AddressProfileSaveManager;
 
 // Manages logic for importing address profiles and credit card information from
 // web forms into the user's Autofill profile via the PersonalDataManager.
-// Owned by BrowserAutofillManager.
+// Owned by `ChromeAutofillClient`.
 class FormDataImporter : public PersonalDataManagerObserver {
  public:
   // Record type of the credit card imported from the form, if one exists.
@@ -72,12 +72,6 @@ class FormDataImporter : public PersonalDataManagerObserver {
   // duplicated field types in the form.
   CreditCard ExtractCreditCardFromForm(const FormStructure& form);
 
-  // Checks suitability of |profile| for adding to the user's set of profiles.
-  static bool IsValidLearnableProfile(const AutofillProfile& profile,
-                                      const std::string& predicted_country_code,
-                                      const std::string& app_locale,
-                                      LogBuffer* import_log_buffer);
-
   // Cache the last four of the fetched virtual card so we don't offer saving
   // them.
   void CacheFetchedVirtualCard(const std::u16string& last_four);
@@ -100,6 +94,21 @@ class FormDataImporter : public PersonalDataManagerObserver {
   // PersonalDataManagerObserver
   void OnBrowsingHistoryCleared(
       const history::DeletionInfo& deletion_info) override;
+
+  // See `FormAssociator::GetFormAssociations()`.
+  absl::optional<FormStructure::FormAssociations> GetFormAssociations(
+      FormSignature form_signature) const {
+    return form_associator_.GetFormAssociations(form_signature);
+  }
+
+  ImportedCreditCardRecordType imported_credit_card_record_type_for_testing()
+      const {
+    return imported_credit_card_record_type_;
+  }
+  void set_imported_credit_card_record_type_for_testing(
+      ImportedCreditCardRecordType imported_credit_card_record_type) {
+    imported_credit_card_record_type_ = imported_credit_card_record_type;
+  }
 
  protected:
   // Exposed for testing.
@@ -136,13 +145,12 @@ class FormDataImporter : public PersonalDataManagerObserver {
     ProfileImportMetadata import_metadata;
   };
 
-  // Scans the given |form| for importable Autofill data. If the form includes
-  // sufficient address data for a new profile, it is immediately imported and
-  // this function returns true. This function also returns true in cases where
-  // FormDataImporter::ImportCreditCard() returns true, please refer to the
-  // comment above that function for more details. If the form contains UPI data
-  // and |credit_card_autofill_enabled| is true, the UPI ID will be stored into
-  // |imported_upi_id| and this function will also return true.
+  // Scans the given `form` for importable Autofill data and stores it in the
+  // function's out parameters. The function returns true if at least one piece
+  // of importable address or credit card information was found.
+  // If the form contains UPI data and `credit_card_autofill_enabled` is true,
+  // the UPI ID will be stored into `imported_upi_id`. In this case, the
+  // function will return true as well.
   bool ImportFormData(const FormStructure& form,
                       bool profile_autofill_enabled,
                       bool credit_card_autofill_enabled,
@@ -152,12 +160,13 @@ class FormDataImporter : public PersonalDataManagerObserver {
                           address_profile_import_candidates,
                       absl::optional<std::string>* imported_upi_id);
 
-  // Go through the |form| fields and attempt to extract and import valid
-  // address profiles. Returns true on extraction success of at least one
-  // profile. There are many reasons that extraction may fail (see
-  // implementation).  The function returns true if at least one complete
-  // address profile was found.
-  bool ImportAddressProfiles(
+  // Attempts to construct AddressProfileImportCandidates by extracting values
+  // from the fields in the `form`'s sections. Extraction can fail if the
+  // fields' values don't pass validation. Apart from complete address profiles,
+  // partial profiles for silent updates are extracted. All are stored in
+  // `import_candidates`.
+  // The function returns the number of _complete_ extracted profiles.
+  size_t ImportAddressProfiles(
       const FormStructure& form,
       std::vector<AddressProfileImportCandidate>& import_candidates);
 
@@ -231,10 +240,9 @@ class FormDataImporter : public PersonalDataManagerObserver {
       const CreditCard* imported_credit_card,
       bool is_credit_card_upload_enabled);
 
-  // If `kAutofillComplementCountryCodeOnImport` is enabled and the `profile`'s
-  // country is not empty, complements it with `predicted_country_code`. To give
-  // users the opportunity to edit, this is only done with explicit save prompts
-  // enabled.
+  // If the `profile`'s country is not empty, complements it with
+  // `predicted_country_code`. To give users the opportunity to edit, this is
+  // only done with explicit save prompts enabled.
   // Returns true if the country was complemented.
   bool ComplementCountry(AutofillProfile& profile,
                          const std::string& predicted_country_code);
@@ -242,17 +250,13 @@ class FormDataImporter : public PersonalDataManagerObserver {
   // Sets the `profile`'s PHONE_HOME_WHOLE_NUMBER to the `combined_phone`, if
   // possible. Deduces the region based on `predicted_country_code`.
   // Returns false if the provided `combined_phone` is invalid.
-  // TODO(crbug.com/1297032): Remove `predicted_country_code` when launched.
   bool SetPhoneNumber(AutofillProfile& profile,
                       PhoneNumber::PhoneCombineHelper& combined_phone,
                       const std::string& predicted_country_code);
 
   // Clears all setting-inaccessible values from `profile` if
   // `kAutofillRemoveInaccessibleProfileValues` is enabled.
-  // TODO(crbug.com/1297032): Remove `predicted_country_code` when launched.
-  void RemoveInaccessibleProfileValues(
-      AutofillProfile& profile,
-      const std::string& predicted_country_code);
+  void RemoveInaccessibleProfileValues(AutofillProfile& profile);
 
   // Whether a dynamic change form is imported.
   bool from_dynamic_change_form_ = false;
@@ -301,6 +305,9 @@ class FormDataImporter : public PersonalDataManagerObserver {
   // Enables importing from multi-step import flows.
   MultiStepImportMerger multistep_importer_;
 
+  // Enables associating recently submitted forms with each other.
+  FormAssociator form_associator_;
+
   friend class AutofillMergeTest;
   friend class FormDataImporterTest;
   friend class FormDataImporterTestBase;
@@ -308,7 +315,6 @@ class FormDataImporter : public PersonalDataManagerObserver {
   friend class SaveCardBubbleViewsFullFormBrowserTest;
   friend class SaveCardInfobarEGTestHelper;
   friend class ::SaveCardOfferObserver;
-  FRIEND_TEST_ALL_PREFIXES(AutofillMergeTest, MergeProfiles);
   FRIEND_TEST_ALL_PREFIXES(FormDataImporterNonParameterizedTest,
                            ProcessCreditCardImportCandidate_EmptyCreditCard);
   FRIEND_TEST_ALL_PREFIXES(
@@ -316,84 +322,6 @@ class FormDataImporter : public PersonalDataManagerObserver {
       ProcessCreditCardImportCandidate_VirtualCardEligible);
   FRIEND_TEST_ALL_PREFIXES(FormDataImporterNonParameterizedTest,
                            ShouldOfferUploadCardOrLocalCardSave);
-  FRIEND_TEST_ALL_PREFIXES(FormDataImporterTest,
-                           AllowDuplicateMaskedServerCardIfFlagEnabled);
-  FRIEND_TEST_ALL_PREFIXES(
-      FormDataImporterTest,
-      DuplicateFullServerCardWhileContainingLocalCardCopies);
-  FRIEND_TEST_ALL_PREFIXES(FormDataImporterTest, DuplicateMaskedServerCard);
-  FRIEND_TEST_ALL_PREFIXES(
-      FormDataImporterTest,
-      ImportCreditCard_DuplicateServerCards_ExtractFullCard);
-  FRIEND_TEST_ALL_PREFIXES(
-      FormDataImporterTest,
-      ImportCreditCard_DuplicateServerCards_ExtractMaskedCard);
-  FRIEND_TEST_ALL_PREFIXES(FormDataImporterTest,
-                           ImportFormData_AddressesDisabledOneCreditCard);
-  FRIEND_TEST_ALL_PREFIXES(FormDataImporterTest,
-                           ImportFormData_AddressCreditCardDisabled);
-  FRIEND_TEST_ALL_PREFIXES(FormDataImporterTest,
-                           ImportFormData_HiddenCreditCardFormAfterEntered);
-  FRIEND_TEST_ALL_PREFIXES(
-      FormDataImporterTest,
-      ImportFormData_ImportCreditCardRecordType_FullServerCard);
-  FRIEND_TEST_ALL_PREFIXES(FormDataImporterTest,
-                           ImportFormData_ImportCreditCardRecordType_LocalCard);
-  FRIEND_TEST_ALL_PREFIXES(
-      FormDataImporterTest,
-      ImportFormData_ImportCreditCardRecordType_MaskedServerCard);
-  FRIEND_TEST_ALL_PREFIXES(FormDataImporterTest,
-                           ImportFormData_ImportCreditCardRecordType_NewCard);
-  FRIEND_TEST_ALL_PREFIXES(
-      FormDataImporterTest,
-      ImportFormData_ImportCreditCardRecordType_NoCard_ExpiredCard_EditableExpDateOff);
-  FRIEND_TEST_ALL_PREFIXES(
-      FormDataImporterTest,
-      ImportFormData_ImportCreditCardRecordType_NewCard_ExpiredCard_WithExpDateFixFlow);
-  FRIEND_TEST_ALL_PREFIXES(
-      FormDataImporterTest,
-      ImportFormData_ImportCreditCardRecordType_NoCard_InvalidCardNumber);
-  FRIEND_TEST_ALL_PREFIXES(
-      FormDataImporterTest,
-      ImportFormData_ImportCreditCardRecordType_NoCard_VirtualCard);
-  FRIEND_TEST_ALL_PREFIXES(
-      FormDataImporterTest,
-      ImportFormData_ImportCreditCardRecordType_NoCard_NoCardOnForm);
-  FRIEND_TEST_ALL_PREFIXES(FormDataImporterTest,
-                           ImportFormData_OneAddressCreditCardDisabled);
-  FRIEND_TEST_ALL_PREFIXES(FormDataImporterTest,
-                           ImportFormData_OneAddressOneCreditCard);
-  FRIEND_TEST_ALL_PREFIXES(
-      FormDataImporterTest,
-      ImportFormData_SecondImportResetsCreditCardRecordType);
-  FRIEND_TEST_ALL_PREFIXES(FormDataImporterTest,
-                           ImportFormData_TwoAddressesOneCreditCard);
-  FRIEND_TEST_ALL_PREFIXES(FormDataImporterTest,
-                           ImportFormData_DontSetUpiIdWhenOnlyCreditCardExists);
-  FRIEND_TEST_ALL_PREFIXES(
-      FormDataImporterTest,
-      Metrics_SubmittedServerCardExpirationStatus_FullServerCardMatch);
-  FRIEND_TEST_ALL_PREFIXES(
-      FormDataImporterTest,
-      Metrics_SubmittedServerCardExpirationStatus_FullServerCardMismatch);
-  FRIEND_TEST_ALL_PREFIXES(
-      FormDataImporterTest,
-      Metrics_SubmittedServerCardExpirationStatus_MaskedServerCardMatch);
-  FRIEND_TEST_ALL_PREFIXES(
-      FormDataImporterTest,
-      Metrics_SubmittedServerCardExpirationStatus_MaskedServerCardMismatch);
-  FRIEND_TEST_ALL_PREFIXES(
-      FormDataImporterTest,
-      Metrics_SubmittedServerCardExpirationStatus_EmptyExpirationMonth);
-  FRIEND_TEST_ALL_PREFIXES(
-      FormDataImporterTest,
-      Metrics_SubmittedServerCardExpirationStatus_EmptyExpirationYear);
-  FRIEND_TEST_ALL_PREFIXES(
-      FormDataImporterTest,
-      Metrics_SubmittedDifferentServerCardExpirationStatus_EmptyExpirationYear);
-  FRIEND_TEST_ALL_PREFIXES(FormDataImporterTest, ImportUpiId);
-  FRIEND_TEST_ALL_PREFIXES(FormDataImporterTest, ImportUpiIdDisabled);
-  FRIEND_TEST_ALL_PREFIXES(FormDataImporterTest, ImportUpiIdIgnoreNonUpiId);
 };
 
 }  // namespace autofill

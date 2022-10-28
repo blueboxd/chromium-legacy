@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -18,7 +18,7 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) MockNetworkStateHandler
   MockNetworkStateHandler(const MockNetworkStateHandler&) = delete;
   MockNetworkStateHandler& operator=(const MockNetworkStateHandler&) = delete;
 
-  virtual ~MockNetworkStateHandler();
+  ~MockNetworkStateHandler() override;
 
   // Constructs and initializes an instance for testing.
   static std::unique_ptr<MockNetworkStateHandler> InitializeForTest();

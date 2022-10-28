@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -300,6 +300,13 @@ NotificationGroupingController::CreateCopyForParentNotification(
       parent_notification.rich_notification_data().settings_button_handler);
   copy->set_fullscreen_visibility(parent_notification.fullscreen_visibility());
   copy->set_delegate(parent_notification.delegate());
+  copy->set_vector_small_image(parent_notification.parent_vector_small_image());
+
+  if (parent_notification.accent_color_id().has_value())
+    copy->set_accent_color_id(parent_notification.accent_color_id().value());
+
+  if (parent_notification.accent_color().has_value())
+    copy->set_accent_color(parent_notification.accent_color().value());
 
   // After copying, set to be a group parent.
   copy->SetGroupParent();
@@ -383,8 +390,7 @@ void NotificationGroupingController::OnNotificationAdded(
       return;
     }
 
-    Notification* parent_notification =
-        MessageCenter::Get()->FindNotificationById(parent_id);
+    parent_notification = MessageCenter::Get()->FindNotificationById(parent_id);
     parent_id = SetupParentNotification(parent_notification, parent_id);
   }
 

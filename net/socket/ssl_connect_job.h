@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -19,7 +19,7 @@
 #include "net/base/net_export.h"
 #include "net/base/network_isolation_key.h"
 #include "net/base/privacy_mode.h"
-#include "net/dns/host_resolver_results.h"
+#include "net/dns/public/host_resolver_results.h"
 #include "net/dns/public/resolve_error_info.h"
 #include "net/socket/connect_job.h"
 #include "net/socket/connection_attempts.h"

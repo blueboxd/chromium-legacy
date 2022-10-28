@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "base/check_op.h"
+#include "base/containers/contains.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/notreached.h"
 #include "build/build_config.h"
@@ -137,8 +138,7 @@ class ImageTransferCacheEntryTest
       NOTREACHED();
       return {};
     }
-    if (std::all_of(plane_images.cbegin(), plane_images.cend(),
-                    [](sk_sp<SkImage> plane) { return !!plane; })) {
+    if (!base::Contains(plane_images, nullptr)) {
       return plane_images;
     }
     return {};

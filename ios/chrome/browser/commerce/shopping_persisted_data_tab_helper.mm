@@ -1,16 +1,16 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #import "ios/chrome/browser/commerce/shopping_persisted_data_tab_helper.h"
 
-#include "base/metrics/histogram_functions.h"
-#include "base/strings/string_number_conversions.h"
-#include "base/strings/stringprintf.h"
-#include "base/strings/sys_string_conversions.h"
-#include "base/strings/utf_string_conversions.h"
-#include "components/optimization_guide/core/optimization_metadata.h"
-#import "ios/chrome/browser/application_context.h"
+#import "base/metrics/histogram_functions.h"
+#import "base/strings/string_number_conversions.h"
+#import "base/strings/stringprintf.h"
+#import "base/strings/sys_string_conversions.h"
+#import "base/strings/utf_string_conversions.h"
+#import "components/optimization_guide/core/optimization_metadata.h"
+#import "ios/chrome/browser/application_context/application_context.h"
 #import "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/commerce/price_alert_util.h"
 #import "ios/chrome/browser/optimization_guide/optimization_guide_service.h"
@@ -98,8 +98,7 @@ void ShoppingPersistedDataTabHelper::CreateForWebState(
 
 const ShoppingPersistedDataTabHelper::PriceDrop*
 ShoppingPersistedDataTabHelper::GetPriceDrop() {
-  if (!IsPriceAlertsEligible(web_state_->GetBrowserState()) ||
-      !IsPriceAlertsEnabled())
+  if (!IsPriceAlertsEligible(web_state_->GetBrowserState()))
     return nullptr;
   const GURL& url = web_state_->GetLastCommittedURL().is_valid()
                         ? web_state_->GetLastCommittedURL()
@@ -180,8 +179,7 @@ std::u16string ShoppingPersistedDataTabHelper::FormatPrice(
 void ShoppingPersistedDataTabHelper::DidFinishNavigation(
     web::WebState* web_state,
     web::NavigationContext* navigation_context) {
-  if (!IsPriceAlertsEligible(web_state->GetBrowserState()) ||
-      !IsPriceAlertsEnabled())
+  if (!IsPriceAlertsEligible(web_state->GetBrowserState()))
     return;
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 

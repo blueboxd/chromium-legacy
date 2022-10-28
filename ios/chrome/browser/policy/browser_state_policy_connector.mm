@@ -1,12 +1,12 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #import "ios/chrome/browser/policy/browser_state_policy_connector.h"
 
-#include "components/policy/core/common/policy_service_impl.h"
-#include "components/policy/core/common/schema_registry.h"
-#include "ios/chrome/browser/policy/browser_policy_connector_ios.h"
+#import "components/policy/core/common/policy_service_impl.h"
+#import "components/policy/core/common/schema_registry.h"
+#import "ios/chrome/browser/policy/browser_policy_connector_ios.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -22,7 +22,7 @@ void BrowserStatePolicyConnector::Init(
   schema_registry_ = schema_registry;
 
   // The object returned by GetPlatformConnector() may or may not be in the list
-  // returned by GetPolicyProviders().  Explicitly add it to |policy_providers_|
+  // returned by GetPolicyProviders().  Explicitly add it to `policy_providers_`
   // here in case it will not be added by the loop below (for example, this
   // could happen if the platform provider is overridden for testing)..
   policy::ConfigurationPolicyProvider* platform_provider =

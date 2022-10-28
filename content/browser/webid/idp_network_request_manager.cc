@@ -5,6 +5,7 @@
 #include "content/browser/webid/idp_network_request_manager.h"
 
 #include "base/base64.h"
+#include "base/containers/flat_set.h"
 #include "base/json/json_writer.h"
 #include "base/strings/escape.h"
 #include "content/browser/renderer_host/render_frame_host_impl.h"
@@ -55,6 +56,7 @@ constexpr char kTokenEndpointKey[] = "id_token_endpoint";
 constexpr char kAccountsEndpointKey[] = "accounts_endpoint";
 constexpr char kClientMetadataEndpointKey[] = "client_metadata_endpoint";
 constexpr char kRevocationEndpoint[] = "revocation_endpoint";
+constexpr char kMetricsEndpoint[] = "metrics_endpoint";
 
 // Keys in fedcm.json 'branding' dictionary.
 constexpr char kIdpBrandingBackgroundColor[] = "background_color";
@@ -132,50 +134,6 @@ void AddCsrfHeader(network::ResourceRequest* request) {
   request->headers.SetHeader(kSecFedCmCsrfHeader, kSecFedCmCsrfHeaderValue);
 }
 
-std::unique_ptr<network::ResourceRequest> CreateCredentialedResourceRequest(
-    GURL target_url,
-    bool send_referrer,
-    url::Origin rp_origin,
-    network::mojom::ClientSecurityStatePtr client_security_state) {
-  auto resource_request = std::make_unique<network::ResourceRequest>();
-  auto target_origin = url::Origin::Create(target_url);
-  auto site_for_cookies = net::SiteForCookies::FromOrigin(target_origin);
-  AddCsrfHeader(resource_request.get());
-  // We set the initiator to nullopt to denote browser-initiated so that this
-  // request is considered first-party. We want to send first-party cookies
-  // because this is not a real third-party request as it is mediated by the
-  // browser, and third-party cookies will be going away with 3pc deprecation,
-  // but we still need to send cookies in these requests.
-  // We use nullopt instead of target_origin because we want to send a
-  // `Sec-Fetch-Site: none` header instead of `Sec-Fetch-Site: same-origin`.
-  resource_request->request_initiator = absl::nullopt;
-  resource_request->url = target_url;
-  resource_request->site_for_cookies = site_for_cookies;
-  if (send_referrer) {
-    resource_request->referrer = rp_origin.GetURL();
-    // Since referrer_policy only affects redirects and we disable redirects
-    // below, we don't need to set referrer_policy here.
-  }
-  // TODO(cbiesinger): Not following redirects is important for security because
-  // this bypasses CORB. Ensure there is a test added.
-  // https://crbug.com/1155312.
-  resource_request->redirect_mode = network::mojom::RedirectMode::kError;
-  resource_request->headers.SetHeader(net::HttpRequestHeaders::kAccept,
-                                      kResponseBodyContentType);
-
-  resource_request->credentials_mode =
-      network::mojom::CredentialsMode::kInclude;
-  resource_request->trusted_params = network::ResourceRequest::TrustedParams();
-  resource_request->trusted_params->isolation_info = net::IsolationInfo::Create(
-      net::IsolationInfo::RequestType::kOther, target_origin, target_origin,
-      site_for_cookies);
-  DCHECK(client_security_state);
-  resource_request->trusted_params->client_security_state =
-      std::move(client_security_state);
-
-  return resource_request;
-}
-
 absl::optional<content::IdentityRequestAccount> ParseAccount(
     const base::Value& account,
     const std::string& client_id) {
@@ -223,13 +181,18 @@ bool ParseAccounts(const base::Value* accounts,
   if (!accounts->is_list())
     return false;
 
+  base::flat_set<std::string> account_ids;
   for (auto& account : accounts->GetListDeprecated()) {
     if (!account.is_dict())
       return false;
 
     auto parsed_account = ParseAccount(account, client_id);
-    if (parsed_account)
+    if (parsed_account) {
+      if (account_ids.count(parsed_account->id))
+        return false;
       account_list.push_back(parsed_account.value());
+      account_ids.insert(parsed_account->id);
+    }
   }
   return !account_list.empty();
 }
@@ -391,7 +354,8 @@ void OnManifestListParsed(
   std::move(callback).Run(FetchStatus::kSuccess, urls);
 }
 
-void OnManifestParsed(absl::optional<int> idp_brand_icon_ideal_size,
+void OnManifestParsed(const GURL& provider,
+                      absl::optional<int> idp_brand_icon_ideal_size,
                       absl::optional<int> idp_brand_icon_minimum_size,
                       IdpNetworkRequestManager::FetchManifestCallback callback,
                       FetchStatus fetch_status,
@@ -416,9 +380,11 @@ void OnManifestParsed(absl::optional<int> idp_brand_icon_ideal_size,
   endpoints.accounts = ExtractEndpoint(kAccountsEndpointKey);
   endpoints.client_metadata = ExtractEndpoint(kClientMetadataEndpointKey);
   endpoints.revocation = ExtractEndpoint(kRevocationEndpoint);
+  endpoints.metrics = ExtractEndpoint(kMetricsEndpoint);
 
   const base::Value* idp_metadata_value = response.FindKey(kIdpBrandingKey);
   IdentityProviderMetadata idp_metadata;
+  idp_metadata.config_url = provider;
   if (idp_metadata_value) {
     ParseIdentityProviderMetadata(*idp_metadata_value,
                                   idp_brand_icon_ideal_size,
@@ -516,7 +482,6 @@ constexpr char IdpNetworkRequestManager::kManifestFilePath[];
 
 // static
 std::unique_ptr<IdpNetworkRequestManager> IdpNetworkRequestManager::Create(
-    const GURL& provider,
     RenderFrameHostImpl* host) {
   // Use the browser process URL loader factory because it has cross-origin
   // read blocking disabled. This is safe because even though these are
@@ -524,18 +489,16 @@ std::unique_ptr<IdpNetworkRequestManager> IdpNetworkRequestManager::Create(
   // leak the values to the renderer. The renderer should only learn information
   // when the user selects an account to sign in.
   return std::make_unique<IdpNetworkRequestManager>(
-      provider, host->GetLastCommittedOrigin(),
+      host->GetLastCommittedOrigin(),
       host->GetStoragePartition()->GetURLLoaderFactoryForBrowserProcess(),
       host->BuildClientSecurityState());
 }
 
 IdpNetworkRequestManager::IdpNetworkRequestManager(
-    const GURL& provider,
     const url::Origin& relying_party_origin,
     scoped_refptr<network::SharedURLLoaderFactory> loader_factory,
     network::mojom::ClientSecurityStatePtr client_security_state)
-    : provider_(provider),
-      relying_party_origin_(relying_party_origin),
+    : relying_party_origin_(relying_party_origin),
       loader_factory_(loader_factory),
       client_security_state_(std::move(client_security_state)) {
   DCHECK(client_security_state_);
@@ -573,9 +536,10 @@ absl::optional<GURL> IdpNetworkRequestManager::ComputeManifestListUrl(
 }
 
 void IdpNetworkRequestManager::FetchManifestList(
+    const GURL& provider,
     FetchManifestListCallback callback) {
   absl::optional<GURL> manifest_list_url =
-      IdpNetworkRequestManager::ComputeManifestListUrl(provider_);
+      IdpNetworkRequestManager::ComputeManifestListUrl(provider);
 
   if (!manifest_list_url) {
     base::SequencedTaskRunnerHandle::Get()->PostTask(
@@ -585,28 +549,32 @@ void IdpNetworkRequestManager::FetchManifestList(
     return;
   }
 
-  std::unique_ptr<network::SimpleURLLoader> url_loader =
-      CreateUncredentialedUrlLoader(*manifest_list_url,
-                                    /* send_referrer= */ false,
-                                    /* follow_redirects= */ true);
+  std::unique_ptr<network::ResourceRequest> resource_request =
+      CreateUncredentialedResourceRequest(*manifest_list_url,
+                                          /*send_referrer=*/false,
+                                          /* follow_redirects= */ true);
   DownloadJsonAndParse(
-      std::move(url_loader),
+      std::move(resource_request),
+      /*url_encoded_post_data=*/absl::nullopt,
       base::BindOnce(&OnManifestListParsed, std::move(callback)),
       maxResponseSizeInKiB * 1024);
 }
 
 void IdpNetworkRequestManager::FetchManifest(
+    const GURL& provider,
     absl::optional<int> idp_brand_icon_ideal_size,
     absl::optional<int> idp_brand_icon_minimum_size,
     FetchManifestCallback callback) {
   GURL target_url =
-      provider_.Resolve(IdpNetworkRequestManager::kManifestFilePath);
+      provider.Resolve(IdpNetworkRequestManager::kManifestFilePath);
 
-  std::unique_ptr<network::SimpleURLLoader> url_loader =
-      CreateUncredentialedUrlLoader(target_url, /* send_referrer= */ false);
+  std::unique_ptr<network::ResourceRequest> resource_request =
+      CreateUncredentialedResourceRequest(target_url,
+                                          /* send_referrer= */ false);
   DownloadJsonAndParse(
-      std::move(url_loader),
-      base::BindOnce(&OnManifestParsed, idp_brand_icon_ideal_size,
+      std::move(resource_request),
+      /*url_encoded_post_data=*/absl::nullopt,
+      base::BindOnce(&OnManifestParsed, provider, idp_brand_icon_ideal_size,
                      idp_brand_icon_minimum_size, std::move(callback)),
       maxResponseSizeInKiB * 1024);
 }
@@ -615,10 +583,12 @@ void IdpNetworkRequestManager::SendAccountsRequest(
     const GURL& accounts_url,
     const std::string& client_id,
     AccountsRequestCallback callback) {
-  std::unique_ptr<network::SimpleURLLoader> url_loader =
-      CreateCredentialedUrlLoader(accounts_url, /* send_referrer= */ false);
+  std::unique_ptr<network::ResourceRequest> resource_request =
+      CreateCredentialedResourceRequest(accounts_url,
+                                        /* send_referrer= */ false);
   DownloadJsonAndParse(
-      std::move(url_loader),
+      std::move(resource_request),
+      /*url_encoded_post_data=*/absl::nullopt,
       base::BindOnce(&OnAccountsRequestParsed, client_id, std::move(callback)),
       maxResponseSizeInKiB * 1024);
 }
@@ -628,14 +598,52 @@ void IdpNetworkRequestManager::SendTokenRequest(
     const std::string& account,
     const std::string& url_encoded_post_data,
     TokenRequestCallback callback) {
-  std::unique_ptr<network::SimpleURLLoader> url_loader =
-      CreateCredentialedUrlLoader(token_url,
-                                  /* send_referrer= */ true,
-                                  url_encoded_post_data);
+  std::unique_ptr<network::ResourceRequest> resource_request =
+      CreateCredentialedResourceRequest(token_url,
+                                        /* send_referrer= */ true);
   DownloadJsonAndParse(
-      std::move(url_loader),
+      std::move(resource_request), url_encoded_post_data,
       base::BindOnce(&OnTokenRequestParsed, std::move(callback)),
       maxResponseSizeInKiB * 1024);
+}
+
+void IdpNetworkRequestManager::SendSuccessfulTokenRequestMetrics(
+    const GURL& metrics_endpoint_url,
+    base::TimeDelta api_call_to_show_dialog_time,
+    base::TimeDelta show_dialog_to_continue_clicked_time,
+    base::TimeDelta account_selected_to_token_response_time,
+    base::TimeDelta api_call_to_token_response_time) {
+  std::string url_encoded_post_data = base::StringPrintf(
+      "time_to_show_ui=%d"
+      "&time_to_continue=%d"
+      "&time_to_receive_token=%d"
+      "&turnaround_time=%d",
+      static_cast<int>(api_call_to_show_dialog_time.InMilliseconds()),
+      static_cast<int>(show_dialog_to_continue_clicked_time.InMilliseconds()),
+      static_cast<int>(
+          account_selected_to_token_response_time.InMilliseconds()),
+      static_cast<int>(api_call_to_token_response_time.InMilliseconds()));
+
+  std::unique_ptr<network::ResourceRequest> resource_request =
+      CreateCredentialedResourceRequest(metrics_endpoint_url,
+                                        /* send_referrer= */ true);
+  DownloadJsonAndParse(std::move(resource_request), url_encoded_post_data,
+                       IdpNetworkRequestManager::ParseJsonCallback(),
+                       maxResponseSizeInKiB * 1024);
+}
+
+void IdpNetworkRequestManager::SendFailedTokenRequestMetrics(
+    const GURL& metrics_endpoint_url,
+    MetricsEndpointErrorCode error_code) {
+  std::string url_encoded_post_data =
+      base::StringPrintf("error_code=%d", static_cast<int>(error_code));
+  std::unique_ptr<network::ResourceRequest> resource_request =
+      CreateUncredentialedResourceRequest(metrics_endpoint_url,
+                                          /*send_referrer=*/false);
+
+  DownloadJsonAndParse(std::move(resource_request), url_encoded_post_data,
+                       IdpNetworkRequestManager::ParseJsonCallback(),
+                       maxResponseSizeInKiB * 1024);
 }
 
 std::string CreateRevokeRequestBody(const std::string& client_id,
@@ -668,34 +676,44 @@ void IdpNetworkRequestManager::SendLogout(const GURL& logout_url,
   // TODO(kenrb): Add browser test verifying that the response to this can
   // clear cookies. https://crbug.com/1155312.
 
-  auto resource_request = CreateCredentialedResourceRequest(
-      logout_url, /* send_referrer= */ false, relying_party_origin_,
-      client_security_state_.Clone());
+  auto resource_request =
+      CreateCredentialedResourceRequest(logout_url, /* send_referrer= */ false);
   resource_request->headers.SetHeader(net::HttpRequestHeaders::kAccept, "*/*");
 
-  auto traffic_annotation = CreateTrafficAnnotation();
-
-  std::unique_ptr<network::SimpleURLLoader> url_loader =
-      network::SimpleURLLoader::Create(std::move(resource_request),
-                                       traffic_annotation);
-  DownloadUrl(std::move(url_loader),
+  DownloadUrl(std::move(resource_request),
+              /*url_encoded_post_data=*/absl::nullopt,
               base::BindOnce(&OnLogoutCompleted, std::move(callback)),
               maxResponseSizeInKiB * 1024);
 }
 
 void IdpNetworkRequestManager::DownloadJsonAndParse(
-    std::unique_ptr<network::SimpleURLLoader> url_loader,
+    std::unique_ptr<network::ResourceRequest> resource_request,
+    absl::optional<std::string> url_encoded_post_data,
     ParseJsonCallback parse_json_callback,
     size_t max_download_size) {
-  DownloadUrl(std::move(url_loader),
+  DownloadUrl(std::move(resource_request), std::move(url_encoded_post_data),
               base::BindOnce(&OnDownloadedJson, std::move(parse_json_callback)),
               max_download_size);
 }
 
 void IdpNetworkRequestManager::DownloadUrl(
-    std::unique_ptr<network::SimpleURLLoader> url_loader,
+    std::unique_ptr<network::ResourceRequest> resource_request,
+    absl::optional<std::string> url_encoded_post_data,
     DownloadCallback callback,
     size_t max_download_size) {
+  if (url_encoded_post_data) {
+    resource_request->method = net::HttpRequestHeaders::kPostMethod;
+    resource_request->headers.SetHeader(net::HttpRequestHeaders::kContentType,
+                                        kUrlEncodedContentType);
+  }
+  std::unique_ptr<network::SimpleURLLoader> url_loader =
+      network::SimpleURLLoader::Create(std::move(resource_request),
+                                       CreateTrafficAnnotation());
+  if (url_encoded_post_data) {
+    url_loader->AttachStringForUpload(*url_encoded_post_data,
+                                      kUrlEncodedContentType);
+  }
+
   network::SimpleURLLoader* url_loader_ptr = url_loader.get();
   // Callback is a member of IdpNetworkRequestManager in order to cancel
   // callback if IdpNetworkRequestManager object is destroyed prior to callback
@@ -728,23 +746,22 @@ void IdpNetworkRequestManager::FetchClientMetadata(
   GURL target_url = endpoint.Resolve(
       "?client_id=" + base::EscapeQueryParamValue(client_id, true));
 
-  std::unique_ptr<network::SimpleURLLoader> url_loader =
-      CreateUncredentialedUrlLoader(target_url, /* send_referrer= */ true);
+  std::unique_ptr<network::ResourceRequest> resource_request =
+      CreateUncredentialedResourceRequest(target_url,
+                                          /* send_referrer= */ true);
 
   DownloadJsonAndParse(
-      std::move(url_loader),
+      std::move(resource_request),
+      /*url_encoded_post_data=*/absl::nullopt,
       base::BindOnce(&OnClientMetadataParsed, std::move(callback)),
       maxResponseSizeInKiB * 1024);
 }
 
-std::unique_ptr<network::SimpleURLLoader>
-IdpNetworkRequestManager::CreateUncredentialedUrlLoader(
+std::unique_ptr<network::ResourceRequest>
+IdpNetworkRequestManager::CreateUncredentialedResourceRequest(
     const GURL& target_url,
     bool send_referrer,
     bool follow_redirects) const {
-  net::NetworkTrafficAnnotationTag traffic_annotation =
-      CreateTrafficAnnotation();
-
   auto resource_request = std::make_unique<network::ResourceRequest>();
 
   resource_request->url = target_url;
@@ -774,33 +791,49 @@ IdpNetworkRequestManager::CreateUncredentialedUrlLoader(
   DCHECK(client_security_state_);
   resource_request->trusted_params->client_security_state =
       client_security_state_.Clone();
-
-  return network::SimpleURLLoader::Create(std::move(resource_request),
-                                          traffic_annotation);
+  return resource_request;
 }
 
-std::unique_ptr<network::SimpleURLLoader>
-IdpNetworkRequestManager::CreateCredentialedUrlLoader(
+std::unique_ptr<network::ResourceRequest>
+IdpNetworkRequestManager::CreateCredentialedResourceRequest(
     const GURL& target_url,
-    bool send_referrer,
-    absl::optional<std::string> url_encoded_post_data) const {
-  auto resource_request = CreateCredentialedResourceRequest(
-      target_url, send_referrer, relying_party_origin_,
-      client_security_state_.Clone());
-  if (url_encoded_post_data) {
-    resource_request->method = net::HttpRequestHeaders::kPostMethod;
-    resource_request->headers.SetHeader(net::HttpRequestHeaders::kContentType,
-                                        kUrlEncodedContentType);
+    bool send_referrer) const {
+  auto resource_request = std::make_unique<network::ResourceRequest>();
+  auto target_origin = url::Origin::Create(target_url);
+  auto site_for_cookies = net::SiteForCookies::FromOrigin(target_origin);
+  AddCsrfHeader(resource_request.get());
+  // We set the initiator to nullopt to denote browser-initiated so that this
+  // request is considered first-party. We want to send first-party cookies
+  // because this is not a real third-party request as it is mediated by the
+  // browser, and third-party cookies will be going away with 3pc deprecation,
+  // but we still need to send cookies in these requests.
+  // We use nullopt instead of target_origin because we want to send a
+  // `Sec-Fetch-Site: none` header instead of `Sec-Fetch-Site: same-origin`.
+  resource_request->request_initiator = absl::nullopt;
+  resource_request->url = target_url;
+  resource_request->site_for_cookies = site_for_cookies;
+  if (send_referrer) {
+    resource_request->referrer = relying_party_origin_.GetURL();
+    // Since referrer_policy only affects redirects and we disable redirects
+    // below, we don't need to set referrer_policy here.
   }
+  // TODO(cbiesinger): Not following redirects is important for security because
+  // this bypasses CORB. Ensure there is a test added.
+  // https://crbug.com/1155312.
+  resource_request->redirect_mode = network::mojom::RedirectMode::kError;
+  resource_request->headers.SetHeader(net::HttpRequestHeaders::kAccept,
+                                      kResponseBodyContentType);
 
-  auto traffic_annotation = CreateTrafficAnnotation();
-  std::unique_ptr<network::SimpleURLLoader> loader =
-      network::SimpleURLLoader::Create(std::move(resource_request),
-                                       traffic_annotation);
-  if (url_encoded_post_data)
-    loader->AttachStringForUpload(*url_encoded_post_data,
-                                  kUrlEncodedContentType);
-  return loader;
+  resource_request->credentials_mode =
+      network::mojom::CredentialsMode::kInclude;
+  resource_request->trusted_params = network::ResourceRequest::TrustedParams();
+  resource_request->trusted_params->isolation_info = net::IsolationInfo::Create(
+      net::IsolationInfo::RequestType::kOther, target_origin, target_origin,
+      site_for_cookies);
+  DCHECK(client_security_state_);
+  resource_request->trusted_params->client_security_state =
+      client_security_state_.Clone();
+  return resource_request;
 }
 
 }  // namespace content

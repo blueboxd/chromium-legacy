@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -234,7 +234,7 @@ std::set<scoped_refptr<DevicePermissionEntry>> GetDevicePermissionEntries(
     ExtensionPrefs* prefs,
     const std::string& extension_id) {
   std::set<scoped_refptr<DevicePermissionEntry>> result;
-  const base::ListValue* devices = NULL;
+  const base::ListValue* devices = nullptr;
   if (!prefs->ReadPrefAsList(extension_id, kDevices, &devices)) {
     return result;
   }
@@ -635,7 +635,7 @@ DevicePermissions* DevicePermissionsManager::GetInternal(
     return it->second;
   }
 
-  return NULL;
+  return nullptr;
 }
 
 void DevicePermissionsManager::RemoveEntryByDeviceGUID(

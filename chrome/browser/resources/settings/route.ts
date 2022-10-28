@@ -1,4 +1,4 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -157,7 +157,7 @@ function createBrowserSettingsRoutes(): Partial<SettingsRoutes> {
     r.PAYMENTS = r.AUTOFILL.createChild('/payments');
     r.ADDRESSES = r.AUTOFILL.createChild('/addresses');
 
-    // <if expr="is_win">
+    // <if expr="is_win or is_macosx">
     r.PASSKEYS = r.AUTOFILL.createChild('/passkeys');
     // </if>
   }
@@ -234,6 +234,14 @@ function createBrowserSettingsRoutes(): Partial<SettingsRoutes> {
             r.RESET.createChild('/incompatibleApplications');
       }
       // </if>
+    }
+
+    if (visibility.performance !== false &&
+        ((loadTimeData.getBoolean('highEfficiencyModeAvailable')) ||
+         (loadTimeData.getBoolean('batterySaverModeAvailable')))) {
+      r.PERFORMANCE = r.ADVANCED!.createSection(
+          '/performance', 'performance',
+          loadTimeData.getString('performancePageTitle'));
     }
   }
   return r;

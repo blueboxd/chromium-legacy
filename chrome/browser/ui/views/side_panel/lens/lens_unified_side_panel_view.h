@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,6 +8,7 @@
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
+#include "components/search_engines/template_url_service.h"
 #include "content/public/browser/navigation_handle.h"
 #include "ui/views/layout/flex_layout_view.h"
 
@@ -56,13 +57,20 @@ class LensUnifiedSidePanelView : public views::FlexLayoutView,
  private:
   void CreateAndInstallFooter();
 
+  TemplateURLService* GetTemplateURLService();
+
+  bool IsDefaultSearchProviderGoogle();
+
   // Shows / hides the lens results and the loading view to avoid showing
   // loading artifacts. If the visible bool is false, show loading view else
-  // show lens results view.
-  void SetContentVisible(bool visible);
+  // show lens results view. Also enables/disables the new tab button depending
+  // if the lens results page is showing.
+  void SetContentAndNewTabButtonVisible(bool visible,
+                                        bool enable_new_tab_button);
 
   // content::WebContentsObserver:
-  void LoadProgressChanged(double progress) override;
+  void DocumentOnLoadCompletedInPrimaryMainFrame() override;
+  void PrimaryPageChanged(content::Page& page) override;
 
   // content::WebContentsDelegate:
   bool HandleContextMenu(content::RenderFrameHost& render_frame_host,

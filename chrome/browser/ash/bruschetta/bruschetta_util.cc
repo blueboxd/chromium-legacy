@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -23,6 +23,11 @@ const char* BruschettaResultString(const BruschettaResult res) {
   }
 #undef ENTRY
   return "unknown code";
+}
+
+guest_os::GuestId GetBruschettaId() {
+  return guest_os::GuestId{guest_os::VmType::BRUSCHETTA, kBruschettaVmName,
+                           "penguin"};
 }
 
 }  // namespace bruschetta

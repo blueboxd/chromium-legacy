@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -170,6 +170,14 @@ public class CustomTabIntentDataProvider extends BrowserServicesIntentDataProvid
             "androidx.browser.customtabs.extra.INITIAL_ACTIVITY_HEIGHT_IN_PIXEL";
 
     /**
+     * Extra that, if set in combination with
+     * {@link CustomTabsIntent#EXTRA_INITIAL_ACTIVITY_HEIGHT_PX}, defines the resize behavior of
+     * the Custom Tab Activity’s height when it behaves as a bottom sheet.
+     */
+    public static final String EXTRA_ACTIVITY_RESIZE_BEHAVIOR =
+            "androidx.browser.customtabs.extra.ACTIVITY_RESIZE_BEHAVIOR";
+
+    /**
      * Extra that, if set, makes the toolbar's top corner radii to be x pixels. This will only have
      * effect if the custom tab is behaving as a bottom sheet. Currently, this is capped at 16dp.
      */
@@ -249,6 +257,8 @@ public class CustomTabIntentDataProvider extends BrowserServicesIntentDataProvid
 
     private final @Px int mInitialActivityHeight;
     private final @Px int mPartialTabToolbarCornerRadius;
+
+    private final boolean mIsPartialCustomTabFixedHeight;
 
     /**
      * Add extras to customize menu items for opening Reader Mode UI custom tab from Chrome.
@@ -401,6 +411,13 @@ public class CustomTabIntentDataProvider extends BrowserServicesIntentDataProvid
         } else {
             mPartialTabToolbarCornerRadius = defaultToolbarCornerRadius;
         }
+
+        // The default behavior is that the pcct is resizable.
+        @ActivityResizeBehavior
+        int activityResizeBehavior = IntentUtils.safeGetIntExtra(
+                intent, EXTRA_ACTIVITY_RESIZE_BEHAVIOR, ACTIVITY_HEIGHT_DEFAULT);
+        mIsPartialCustomTabFixedHeight =
+                activityResizeBehavior == ACTIVITY_HEIGHT_FIXED ? true : false;
     }
 
     private void updateExtraMenuItems(List<Bundle> menuItems) {
@@ -642,7 +659,15 @@ public class CustomTabIntentDataProvider extends BrowserServicesIntentDataProvid
     @Override
     @Nullable
     public String getClientPackageName() {
-        return CustomTabsConnection.getInstance().getClientPackageNameForSession(mSession);
+        String packageNameForSession =
+                CustomTabsConnection.getInstance().getClientPackageNameForSession(mSession);
+        if (!TextUtils.isEmpty(packageNameForSession)) return packageNameForSession;
+
+        String packageNameFromIntent = IntentUtils.safeGetStringExtra(
+                mIntent, IntentHandler.EXTRA_CALLING_ACTIVITY_PACKAGE);
+        if (!TextUtils.isEmpty(packageNameFromIntent)) return packageNameFromIntent;
+
+        return null;
     }
 
     @Override
@@ -913,5 +938,10 @@ public class CustomTabIntentDataProvider extends BrowserServicesIntentDataProvid
     @Override
     public int getPartialTabToolbarCornerRadius() {
         return mPartialTabToolbarCornerRadius;
+    }
+
+    @Override
+    public boolean isPartialCustomTabFixedHeight() {
+        return mIsPartialCustomTabFixedHeight;
     }
 }

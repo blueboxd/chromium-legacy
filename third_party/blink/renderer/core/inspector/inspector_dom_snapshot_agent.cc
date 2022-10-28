@@ -33,7 +33,6 @@
 #include "third_party/blink/renderer/core/inspector/inspector_dom_agent.h"
 #include "third_party/blink/renderer/core/inspector/inspector_dom_debugger_agent.h"
 #include "third_party/blink/renderer/core/inspector/legacy_dom_snapshot_agent.h"
-#include "third_party/blink/renderer/core/inspector/thread_debugger.h"
 #include "third_party/blink/renderer/core/layout/layout_embedded_content.h"
 #include "third_party/blink/renderer/core/layout/layout_object.h"
 #include "third_party/blink/renderer/core/layout/layout_text.h"
@@ -41,6 +40,7 @@
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_paint_order_iterator.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
+#include "third_party/blink/renderer/platform/bindings/thread_debugger.h"
 #include "third_party/blink/renderer/platform/bindings/v8_binding.h"
 #include "v8/include/v8-inspector.h"
 
@@ -664,7 +664,7 @@ int InspectorDOMSnapshotAgent::BuildLayoutTreeNode(
     if (include_blended_background_colors_) {
       if (colors.size()) {
         layout_tree_snapshot->getBlendedBackgroundColors(nullptr)->emplace_back(
-            AddString(colors[0].Serialized()));
+            AddString(colors[0].SerializeAsCSSColor()));
       } else {
         layout_tree_snapshot->getBlendedBackgroundColors(nullptr)->emplace_back(
             -1);
@@ -732,7 +732,7 @@ std::unique_ptr<protocol::Array<int>>
 InspectorDOMSnapshotAgent::BuildStylesForNode(Node* node) {
   DCHECK(
       !node->GetDocument().NeedsLayoutTreeUpdateForNodeIncludingDisplayLocked(
-          *node, true /* ignore_adjacent_style */));
+          *node));
   auto result = std::make_unique<protocol::Array<int>>();
   auto* layout_object = node->GetLayoutObject();
   if (!layout_object)

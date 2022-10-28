@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -201,7 +201,7 @@ void OpenUrl(content::WebContents* current_web_contents,
 int64_t GetNavigationIDFromPrefsByOrigin(PrefService* prefs,
                                          const Origin& origin) {
   const base::Value::Dict& unhandled_sync_password_reuses =
-      prefs->GetValueDict(prefs::kSafeBrowsingUnhandledGaiaPasswordReuses);
+      prefs->GetDict(prefs::kSafeBrowsingUnhandledGaiaPasswordReuses);
 
   const base::Value* navigation_id_value =
       unhandled_sync_password_reuses.Find(origin.Serialize());
@@ -373,9 +373,8 @@ bool ChromePasswordProtectionService::ShouldShowPasswordReusePageInfoBubble(
          password_type == PasswordType::OTHER_GAIA_PASSWORD);
   // Otherwise, checks if there's any unhandled sync password reuses matches
   // this origin.
-  const auto& unhandled_sync_password_reuses =
-      profile->GetPrefs()->GetValueDict(
-          prefs::kSafeBrowsingUnhandledGaiaPasswordReuses);
+  const auto& unhandled_sync_password_reuses = profile->GetPrefs()->GetDict(
+      prefs::kSafeBrowsingUnhandledGaiaPasswordReuses);
   return unhandled_sync_password_reuses.Find(web_contents->GetPrimaryMainFrame()
                                                  ->GetLastCommittedOrigin()
                                                  .Serialize());
@@ -1013,15 +1012,26 @@ void ChromePasswordProtectionService::OpenChangePasswordUrl(
       ReusedPasswordAccountType::NON_GAIA_ENTERPRISE) {
     // Directly open enterprise change password page for enterprise password
     // reuses.
+    RecordAction(UserMetricsAction(
+        "PasswordProtection.NonGaiaEnterprise.ChangePasswordButtonClicked"));
     OpenUrl(web_contents, GetEnterpriseChangePasswordURL(), content::Referrer(),
             /*in_new_tab=*/true);
     web_contents_with_unhandled_enterprise_reuses_.erase(web_contents);
   } else if (password_type.account_type() !=
              ReusedPasswordAccountType::SAVED_PASSWORD) {
     // Opens accounts.google.com in a new tab.
+    if (password_type.account_type() == ReusedPasswordAccountType::GMAIL) {
+      RecordAction(UserMetricsAction(
+          "PasswordProtection.Gmail.ChangePasswordButtonClicked"));
+    } else {
+      RecordAction(UserMetricsAction(
+          "PasswordProtection.GSuite.ChangePasswordButtonClicked"));
+    }
     OpenUrl(web_contents, GetDefaultChangePasswordURL(), content::Referrer(),
             /*in_new_tab=*/true);
   } else {
+    RecordAction(UserMetricsAction(
+        "PasswordProtection.SavedPassword.ChangePasswordButtonClicked"));
 #if BUILDFLAG(IS_ANDROID)
     JNIEnv* env = base::android::AttachCurrentThread();
     PasswordCheckupLauncherHelper::LaunchLocalCheckup(

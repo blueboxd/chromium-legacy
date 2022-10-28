@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -112,7 +112,7 @@ void GuestViewManager::set_factory_for_testing(
   g_factory = factory;
 }
 
-content::WebContents* GuestViewManager::GetGuestByInstanceIDSafely(
+GuestViewBase* GuestViewManager::GetGuestByInstanceIDSafely(
     int guest_instance_id,
     int embedder_render_process_id) {
   if (!CanEmbedderAccessInstanceIDMaybeKill(embedder_render_process_id,
@@ -127,7 +127,7 @@ void GuestViewManager::AttachGuest(int embedder_process_id,
                                    int guest_instance_id,
                                    const base::Value::Dict& attach_params) {
   auto* guest_view =
-      GuestViewBase::From(embedder_process_id, guest_instance_id);
+      GuestViewBase::FromInstanceID(embedder_process_id, guest_instance_id);
   if (!guest_view)
     return;
 
@@ -166,7 +166,8 @@ void GuestViewManager::CreateGuest(const std::string& view_type,
   guest->Init(create_params, std::move(callback));
 }
 
-content::WebContents* GuestViewManager::CreateGuestWithWebContentsParams(
+std::unique_ptr<content::WebContents>
+GuestViewManager::CreateGuestWithWebContentsParams(
     const std::string& view_type,
     content::WebContents* owner_web_contents,
     const content::WebContents::CreateParams& create_params) {
@@ -176,12 +177,12 @@ content::WebContents* GuestViewManager::CreateGuestWithWebContentsParams(
   content::WebContents::CreateParams guest_create_params(create_params);
   guest_create_params.guest_delegate = guest;
 
-  // TODO(erikchen): Fix ownership semantics for this class.
-  // https://crbug.com/832879.
   std::unique_ptr<content::WebContents> guest_web_contents =
       WebContents::Create(guest_create_params);
   guest->InitWithWebContents(base::Value::Dict(), guest_web_contents.get());
-  return guest_web_contents.release();
+  // Ownership of the guest WebContents goes to the content layer until we get
+  // it back in AddNewContents.
+  return guest_web_contents;
 }
 
 SiteInstance* GuestViewManager::GetGuestSiteInstance(
@@ -239,14 +240,12 @@ void GuestViewManager::AddGuest(int guest_instance_id,
 }
 
 void GuestViewManager::RemoveGuest(int guest_instance_id) {
-  auto it = guest_web_contents_by_instance_id_.find(guest_instance_id);
-  DCHECK(it != guest_web_contents_by_instance_id_.end());
-  guest_web_contents_by_instance_id_.erase(it);
+  guest_web_contents_by_instance_id_.erase(guest_instance_id);
 
   auto id_iter = reverse_instance_id_map_.find(guest_instance_id);
   if (id_iter != reverse_instance_id_map_.end()) {
     const ElementInstanceKey& instance_id_key = id_iter->second;
-    instance_id_map_.erase(instance_id_map_.find(instance_id_key));
+    instance_id_map_.erase(instance_id_key);
     reverse_instance_id_map_.erase(id_iter);
   }
 
@@ -263,13 +262,13 @@ void GuestViewManager::RemoveGuest(int guest_instance_id) {
       int instance_id = *iter;
       // The sparse invalid IDs must not lie within
       // [0, last_instance_id_removed_]
-      DCHECK(instance_id > last_instance_id_removed_);
+      DCHECK_GT(instance_id, last_instance_id_removed_);
       if (instance_id != last_instance_id_removed_ + 1)
         break;
       ++last_instance_id_removed_;
       removed_instance_ids_.erase(iter++);
     }
-  } else {
+  } else if (guest_instance_id > last_instance_id_removed_) {
     removed_instance_ids_.insert(guest_instance_id);
   }
 }
@@ -413,12 +412,11 @@ void GuestViewManager::DispatchEvent(
   delegate_->DispatchEvent(event_name, std::move(args), guest, instance_id);
 }
 
-content::WebContents* GuestViewManager::GetGuestByInstanceID(
-    int guest_instance_id) {
+GuestViewBase* GuestViewManager::GetGuestByInstanceID(int guest_instance_id) {
   auto it = guest_web_contents_by_instance_id_.find(guest_instance_id);
   if (it == guest_web_contents_by_instance_id_.end())
     return nullptr;
-  return it->second;
+  return GuestViewBase::FromWebContents(it->second);
 }
 
 bool GuestViewManager::CanEmbedderAccessInstanceIDMaybeKill(

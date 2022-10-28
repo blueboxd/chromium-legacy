@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -83,9 +83,8 @@ using State = password_manager::BulkLeakCheckService::State;
 constexpr char kPasswordCheckScriptsCacheStateUmaKey[] =
     "PasswordManager.BulkCheck.ScriptsCacheState";
 
-std::unique_ptr<std::string> GetChangePasswordUrl(const GURL& url) {
-  return std::make_unique<std::string>(
-      password_manager::CreateChangePasswordUrl(url).spec());
+std::string GetChangePasswordUrl(const GURL& url) {
+  return password_manager::CreateChangePasswordUrl(url).spec();
 }
 
 }  // namespace
@@ -477,7 +476,7 @@ PasswordCheckDelegate::GetPasswordCheckStatus() const {
                last_completed_weak_check_);
   if (!last_check_completed.is_null()) {
     result.elapsed_time_since_last_check =
-        std::make_unique<std::string>(FormatElapsedTime(last_check_completed));
+        FormatElapsedTime(last_check_completed);
   }
 
   State state = bulk_leak_check_service_adapter_.GetBulkLeakCheckState();
@@ -487,13 +486,12 @@ PasswordCheckDelegate::GetPasswordCheckStatus() const {
     result.state = api::passwords_private::PASSWORD_CHECK_STATE_RUNNING;
 
     if (password_check_progress_) {
-      result.already_processed =
-          std::make_unique<int>(password_check_progress_->already_processed());
+      result.already_processed = password_check_progress_->already_processed();
       result.remaining_in_queue =
-          std::make_unique<int>(password_check_progress_->remaining_in_queue());
+          password_check_progress_->remaining_in_queue();
     } else {
-      result.already_processed = std::make_unique<int>(0);
-      result.remaining_in_queue = std::make_unique<int>(0);
+      result.already_processed = 0;
+      result.remaining_in_queue = 0;
     }
 
     return result;
@@ -644,20 +642,24 @@ PasswordCheckDelegate::ConstructInsecureCredential(
   } else {
     api_credential.change_password_url = GetChangePasswordUrl(entry.url);
   }
-  // For the time being, the automated password change is restricted to
-  // compromised credentials. In the future, this requirement may be relaxed.
-  if ((entry.IsPhished() || entry.IsLeaked()) &&
-      IsAutomatedPasswordChangeFromSettingsEnabled() &&
-      !entry.username.empty()) {
+
+  api_credential.has_startable_script = false;
+  if (entry.username.empty() ||
+      !IsAutomatedPasswordChangeFromSettingsEnabled()) {
+    return api_credential;
+  }
+
+  if (entry.IsPhished() || entry.IsLeaked() ||
+      password_manager::features::kPasswordChangeInSettingsWeakCredentialsParam
+          .Get()) {
     GURL url = api_credential.is_android_credential
                    ? GURL(entry.affiliated_web_realm)
                    : entry.url;
     api_credential.has_startable_script =
         !url.is_empty() && GetPasswordScriptsFetcher()->IsScriptAvailable(
                                url::Origin::Create(entry.url));
-  } else {
-    api_credential.has_startable_script = false;
   }
+
   return api_credential;
 }
 

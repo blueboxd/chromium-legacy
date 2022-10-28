@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -497,7 +497,6 @@ void WebApkInstallTask::OnInstallComplete(
 
   const bool success = result == arc::mojom::WebApkInstallResult::kSuccess;
   const bool is_update = package_name_to_update_.has_value();
-  RecordWebApkArcResult(is_update, result);
   if (success) {
     if (is_update) {
       webapk_prefs::SetUpdateNeededForApp(profile_, app_id_,

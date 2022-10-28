@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -163,7 +163,7 @@ std::string GetSessionStateJson() {
   PrefService* local_state = g_browser_process->local_state();
   DCHECK(local_state);
   const base::Value::Dict& state =
-      local_state->GetValueDict(tracing::kBackgroundTracingSessionState);
+      local_state->GetDict(tracing::kBackgroundTracingSessionState);
   std::string json;
   EXPECT_TRUE(base::JSONWriter::Write(state, &json));
   return json;
@@ -503,7 +503,11 @@ static const char* const kDefaultConfigText = R"({
 class ChromeTracingDelegateBrowserTestOnStartup
     : public ChromeTracingDelegateBrowserTest {
  protected:
-  ChromeTracingDelegateBrowserTestOnStartup() {}
+  ChromeTracingDelegateBrowserTestOnStartup() {
+    variations::testing::VariationParamsManager::SetVariationParams(
+        "BackgroundTracing", "TestGroup",
+        {{"config", "default_config_for_testing"}});
+  }
 
   static std::string FieldTrialConfigTextFilter(
       const std::string& config_text) {
@@ -513,12 +517,6 @@ class ChromeTracingDelegateBrowserTestOnStartup
       return kDefaultConfigText;
     }
     return config_text;
-  }
-
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    variations::testing::VariationParamsManager::AppendVariationParams(
-        "BackgroundTracing", "TestGroup",
-        {{"config", "default_config_for_testing"}}, command_line);
   }
 
   void CreatedBrowserMainParts(

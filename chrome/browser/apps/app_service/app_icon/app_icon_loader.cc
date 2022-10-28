@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -348,11 +348,10 @@ void AppIconLoader::ApplyBadges(IconEffects icon_effects, IconValuePtr iv) {
   std::move(callback_).Run(std::move(iv));
 }
 
-void AppIconLoader::LoadWebAppIcon(
-    const std::string& web_app_id,
-    const GURL& launch_url,
-    const web_app::WebAppIconManager& icon_manager,
-    Profile* profile) {
+void AppIconLoader::LoadWebAppIcon(const std::string& web_app_id,
+                                   const GURL& launch_url,
+                                   web_app::WebAppIconManager& icon_manager,
+                                   Profile* profile) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   fallback_favicon_url_ = launch_url;

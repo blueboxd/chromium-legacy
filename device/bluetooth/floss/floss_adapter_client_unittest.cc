@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -133,7 +133,7 @@ class FlossAdapterClientTest : public testing::Test {
   FlossAdapterClientTest() = default;
 
   void SetUpMocks() {
-    adapter_path_ = FlossManagerClient::GenerateAdapterPath(adapter_index_);
+    adapter_path_ = FlossDBusClient::GenerateAdapterPath(adapter_index_);
     adapter_object_proxy_ = base::MakeRefCounted<::dbus::MockObjectProxy>(
         bus_.get(), kAdapterInterface, adapter_path_);
     exported_callbacks_ = base::MakeRefCounted<::dbus::MockExportedObject>(
@@ -145,9 +145,26 @@ class FlossAdapterClientTest : public testing::Test {
     EXPECT_CALL(*bus_.get(), GetExportedObject)
         .WillRepeatedly(::testing::Return(exported_callbacks_.get()));
 
-    // Make sure we export all callbacks. This will need to be updated once new
-    // callbacks are added.
-    EXPECT_CALL(*exported_callbacks_.get(), ExportMethod).Times(11);
+    // Exported callback methods that we don't need to invoke.
+    // This will need to be updated once new callbacks are added.
+    EXPECT_CALL(*exported_callbacks_.get(), ExportMethod).Times(8);
+
+    // Save the method handlers of exported callbacks that we need to invoke in
+    // test.
+    EXPECT_CALL(
+        *exported_callbacks_.get(),
+        ExportMethod(adapter::kCallbackInterface, adapter::kOnAddressChanged,
+                     testing::_, testing::_))
+        .WillOnce(testing::SaveArg<2>(&on_address_changed_));
+    EXPECT_CALL(*exported_callbacks_.get(),
+                ExportMethod(adapter::kCallbackInterface,
+                             adapter::kOnNameChanged, testing::_, testing::_))
+        .WillOnce(testing::SaveArg<2>(&on_name_changed_));
+    EXPECT_CALL(
+        *exported_callbacks_.get(),
+        ExportMethod(adapter::kCallbackInterface,
+                     adapter::kOnDiscoverableChanged, testing::_, testing::_))
+        .WillOnce(testing::SaveArg<2>(&on_discoverable_changed_));
 
     // Handle method calls on the object proxy
     ON_CALL(
@@ -259,7 +276,7 @@ class FlossAdapterClientTest : public testing::Test {
       writer.AppendString(address);
     }
 
-    client_->OnAddressChanged(&method_call, std::move(response));
+    on_address_changed_.Run(&method_call, std::move(response));
   }
 
   void SendNameChangeCallback(bool error,
@@ -273,7 +290,7 @@ class FlossAdapterClientTest : public testing::Test {
       writer.AppendString(name);
     }
 
-    client_->OnNameChanged(&method_call, std::move(response));
+    on_name_changed_.Run(&method_call, std::move(response));
   }
 
   void SendDiscoverableChangeCallback(
@@ -288,7 +305,7 @@ class FlossAdapterClientTest : public testing::Test {
       writer.AppendBool(discoverable);
     }
 
-    client_->OnDiscoverableChanged(&method_call, std::move(response));
+    on_discoverable_changed_.Run(&method_call, std::move(response));
   }
 
   void SendDiscoveringChangeCallback(
@@ -422,6 +439,10 @@ class FlossAdapterClientTest : public testing::Test {
   scoped_refptr<::dbus::MockObjectProxy> adapter_object_proxy_;
   std::unique_ptr<FlossAdapterClient> client_;
 
+  dbus::ExportedObject::MethodCallCallback on_address_changed_;
+  dbus::ExportedObject::MethodCallCallback on_name_changed_;
+  dbus::ExportedObject::MethodCallCallback on_discoverable_changed_;
+
   base::test::TaskEnvironment task_environment_;
   base::WeakPtrFactory<FlossAdapterClientTest> weak_ptr_factory_{this};
 };
@@ -453,7 +474,7 @@ TEST_F(FlossAdapterClientTest, InitializesCorrectly) {
               DoCallMethodWithErrorResponse(
                   HasMemberOf(adapter::kRegisterCallback), _, _))
       .Times(1);
-  client_->Init(bus_.get(), kAdapterInterface, adapter_path_.value());
+  client_->Init(bus_.get(), kAdapterInterface, adapter_index_);
 
   // Make sure the address is initialized correctly
   EXPECT_EQ(test_observer.address_changed_count_, 1);
@@ -469,7 +490,7 @@ TEST_F(FlossAdapterClientTest, InitializesCorrectly) {
 
 TEST_F(FlossAdapterClientTest, HandlesAddressChanges) {
   TestAdapterObserver test_observer(client_.get());
-  client_->Init(bus_.get(), kAdapterInterface, adapter_path_.value());
+  client_->Init(bus_.get(), kAdapterInterface, adapter_index_);
   EXPECT_EQ(test_observer.address_changed_count_, 1);
 
   SendAddressChangeCallback(
@@ -492,7 +513,7 @@ TEST_F(FlossAdapterClientTest, HandlesAddressChanges) {
 
 TEST_F(FlossAdapterClientTest, HandlesNameChanges) {
   TestAdapterObserver test_observer(client_.get());
-  client_->Init(bus_.get(), kAdapterInterface, adapter_path_.value());
+  client_->Init(bus_.get(), kAdapterInterface, adapter_index_);
 
   std::string test_name("floss_test_name");
   SendNameChangeCallback(
@@ -505,7 +526,7 @@ TEST_F(FlossAdapterClientTest, HandlesNameChanges) {
 
 TEST_F(FlossAdapterClientTest, HandlesDiscoverableChanges) {
   TestAdapterObserver test_observer(client_.get());
-  client_->Init(bus_.get(), kAdapterInterface, adapter_path_.value());
+  client_->Init(bus_.get(), kAdapterInterface, adapter_index_);
   EXPECT_EQ(test_observer.discoverable_changed_count_, 1);
 
   SendDiscoverableChangeCallback(
@@ -529,7 +550,7 @@ TEST_F(FlossAdapterClientTest, HandlesDiscoverableChanges) {
 
 TEST_F(FlossAdapterClientTest, HandlesDiscoveryChanges) {
   TestAdapterObserver test_observer(client_.get());
-  client_->Init(bus_.get(), kAdapterInterface, adapter_path_.value());
+  client_->Init(bus_.get(), kAdapterInterface, adapter_index_);
   EXPECT_EQ(test_observer.discovering_changed_count_, 0);
 
   SendDiscoveringChangeCallback(
@@ -559,7 +580,7 @@ TEST_F(FlossAdapterClientTest, HandlesDiscoveryChanges) {
 
 TEST_F(FlossAdapterClientTest, HandlesFoundDevices) {
   TestAdapterObserver test_observer(client_.get());
-  client_->Init(bus_.get(), kAdapterInterface, adapter_path_.value());
+  client_->Init(bus_.get(), kAdapterInterface, adapter_index_);
   EXPECT_EQ(test_observer.found_device_count_, 0);
 
   FlossDeviceId device_id = {.address = "66:55:44:33:22:11", .name = "First"};
@@ -582,7 +603,7 @@ TEST_F(FlossAdapterClientTest, HandlesFoundDevices) {
 
 TEST_F(FlossAdapterClientTest, HandlesClearedDevices) {
   TestAdapterObserver test_observer(client_.get());
-  client_->Init(bus_.get(), kAdapterInterface, adapter_path_.value());
+  client_->Init(bus_.get(), kAdapterInterface, adapter_index_);
   EXPECT_EQ(test_observer.cleared_device_count_, 0);
 
   FlossDeviceId device_id = {.address = "66:55:44:33:22:11", .name = "First"};
@@ -605,7 +626,7 @@ TEST_F(FlossAdapterClientTest, HandlesClearedDevices) {
 
 TEST_F(FlossAdapterClientTest, HandlesSsp) {
   TestAdapterObserver test_observer(client_.get());
-  client_->Init(bus_.get(), kAdapterInterface, adapter_path_.value());
+  client_->Init(bus_.get(), kAdapterInterface, adapter_index_);
   EXPECT_EQ(test_observer.ssp_request_count_, 0);
 
   FlossDeviceId device_id = {.address = "11:22:33:66:55:44", .name = "Foobar"};
@@ -633,7 +654,7 @@ TEST_F(FlossAdapterClientTest, HandlesSsp) {
 }
 
 TEST_F(FlossAdapterClientTest, CreateBond) {
-  client_->Init(bus_.get(), kAdapterInterface, adapter_path_.value());
+  client_->Init(bus_.get(), kAdapterInterface, adapter_index_);
 
   FlossDeviceId bond = {.address = "00:22:44:11:33:55", .name = "James"};
   auto transport = FlossAdapterClient::BluetoothTransport::kBrEdr;
@@ -654,7 +675,7 @@ TEST_F(FlossAdapterClientTest, CreateBond) {
 }
 
 TEST_F(FlossAdapterClientTest, CallAdapterMethods) {
-  client_->Init(bus_.get(), kAdapterInterface, adapter_path_.value());
+  client_->Init(bus_.get(), kAdapterInterface, adapter_index_);
 
   // Method of 0 parameters with no return.
   EXPECT_CALL(*adapter_object_proxy_.get(),
@@ -771,7 +792,7 @@ TEST_F(FlossAdapterClientTest, CallAdapterMethods) {
 }
 
 TEST_F(FlossAdapterClientTest, GenericMethodGetConnectionState) {
-  client_->Init(bus_.get(), kAdapterInterface, adapter_path_.value());
+  client_->Init(bus_.get(), kAdapterInterface, adapter_index_);
 
   // Method of 1 parameter with uint32_t return.
   EXPECT_CALL(*adapter_object_proxy_.get(),
@@ -808,7 +829,7 @@ TEST_F(FlossAdapterClientTest, GenericMethodGetConnectionState) {
 
 TEST_F(FlossAdapterClientTest,
        GenericMethodConnectAndDisconnectAllEnabledProfiles) {
-  client_->Init(bus_.get(), kAdapterInterface, adapter_path_.value());
+  client_->Init(bus_.get(), kAdapterInterface, adapter_index_);
 
   // Method of 1 parameter with no return.
   EXPECT_CALL(*adapter_object_proxy_.get(),
@@ -864,7 +885,7 @@ TEST_F(FlossAdapterClientTest,
 }
 
 TEST_F(FlossAdapterClientTest, GenericMethodSetPairingConfirmation) {
-  client_->Init(bus_.get(), kAdapterInterface, adapter_path_.value());
+  client_->Init(bus_.get(), kAdapterInterface, adapter_index_);
 
   // Method of 2 parameters with no return.
   EXPECT_CALL(*adapter_object_proxy_.get(),
@@ -900,7 +921,7 @@ TEST_F(FlossAdapterClientTest, GenericMethodSetPairingConfirmation) {
 }
 
 TEST_F(FlossAdapterClientTest, GenericMethodSetPasskey) {
-  client_->Init(bus_.get(), kAdapterInterface, adapter_path_.value());
+  client_->Init(bus_.get(), kAdapterInterface, adapter_index_);
 
   // Method of 3 parameters with no return.
   EXPECT_CALL(
@@ -943,7 +964,7 @@ TEST_F(FlossAdapterClientTest, GenericMethodSetPasskey) {
 }
 
 TEST_F(FlossAdapterClientTest, GenericMethodGetRemoteUuids) {
-  client_->Init(bus_.get(), kAdapterInterface, adapter_path_.value());
+  client_->Init(bus_.get(), kAdapterInterface, adapter_index_);
 
   // Method of 1 parameter with UUID response.
   EXPECT_CALL(*adapter_object_proxy_.get(),
@@ -986,7 +1007,7 @@ TEST_F(FlossAdapterClientTest, GenericMethodGetRemoteUuids) {
 }
 
 TEST_F(FlossAdapterClientTest, GenericMethodGetRemoteType) {
-  client_->Init(bus_.get(), kAdapterInterface, adapter_path_.value());
+  client_->Init(bus_.get(), kAdapterInterface, adapter_index_);
 
   // Method of 1 parameter with BluetoothDeviceType response.
   EXPECT_CALL(
@@ -1025,7 +1046,7 @@ TEST_F(FlossAdapterClientTest, GenericMethodGetRemoteType) {
 
 TEST_F(FlossAdapterClientTest, OnAdapterPropertyChanged) {
   TestAdapterObserver test_observer(client_.get());
-  client_->Init(bus_.get(), kAdapterInterface, adapter_path_.value());
+  client_->Init(bus_.get(), kAdapterInterface, adapter_index_);
   EXPECT_EQ(test_observer.found_device_count_, 0);
 
   // Method of no parameters with vector of FlossDeviceId response.

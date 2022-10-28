@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -115,17 +115,19 @@ class VideoEncodeAcceleratorAdapterTest
                                          gfx::Rect(size), size, timestamp);
 
     // Green I420 frame (Y:0x96, U:0x40, V:0x40)
-    libyuv::I420Rect(
-        frame->data(VideoFrame::kYPlane), frame->stride(VideoFrame::kYPlane),
-        frame->data(VideoFrame::kUPlane), frame->stride(VideoFrame::kUPlane),
-        frame->data(VideoFrame::kVPlane), frame->stride(VideoFrame::kVPlane),
-        0,                               // left
-        0,                               // top
-        frame->visible_rect().width(),   // right
-        frame->visible_rect().height(),  // bottom
-        0x96,                            // Y color
-        0x40,                            // U color
-        0x40);                           // V color
+    libyuv::I420Rect(frame->writable_data(VideoFrame::kYPlane),
+                     frame->stride(VideoFrame::kYPlane),
+                     frame->writable_data(VideoFrame::kUPlane),
+                     frame->stride(VideoFrame::kUPlane),
+                     frame->writable_data(VideoFrame::kVPlane),
+                     frame->stride(VideoFrame::kVPlane),
+                     0,                               // left
+                     0,                               // top
+                     frame->visible_rect().width(),   // right
+                     frame->visible_rect().height(),  // bottom
+                     0x96,                            // Y color
+                     0x40,                            // U color
+                     0x40);                           // V color
 
     return frame;
   }
@@ -136,7 +138,7 @@ class VideoEncodeAcceleratorAdapterTest
                                          gfx::Rect(size), size, timestamp);
 
     // Green XRGB frame (R:0x3B, G:0xD9, B:0x24)
-    libyuv::ARGBRect(frame->data(VideoFrame::kARGBPlane),
+    libyuv::ARGBRect(frame->writable_data(VideoFrame::kARGBPlane),
                      frame->stride(VideoFrame::kARGBPlane),
                      0,                               // left
                      0,                               // top
@@ -388,6 +390,17 @@ TEST_P(VideoEncodeAcceleratorAdapterTest, TwoFramesResize) {
   gfx::Size small_size(480, 320);
   gfx::Size large_size(800, 600);
   auto pixel_format = GetParam();
+  auto small_frame =
+      CreateGreenFrame(small_size, pixel_format, base::Milliseconds(1));
+  auto large_frame =
+      CreateGreenFrame(large_size, pixel_format, base::Milliseconds(2));
+
+  VideoPixelFormat expected_input_format = PIXEL_FORMAT_I420;
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
+  if (pixel_format != PIXEL_FORMAT_I420 || !small_frame->IsMappable())
+    expected_input_format = PIXEL_FORMAT_NV12;
+#endif
+
   VideoEncoder::OutputCB output_cb = base::BindLambdaForTesting(
       [&](VideoEncoderOutput, absl::optional<VideoEncoder::CodecDescription>) {
         outputs_count++;
@@ -395,23 +408,13 @@ TEST_P(VideoEncodeAcceleratorAdapterTest, TwoFramesResize) {
 
   vea()->SetEncodingCallback(base::BindLambdaForTesting(
       [&](BitstreamBuffer&, bool keyframe, scoped_refptr<VideoFrame> frame) {
-#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
-        EXPECT_EQ(frame->format(),
-                  IsYuvPlanar(pixel_format) ? pixel_format : PIXEL_FORMAT_I420);
-#else
-        // Everywhere except on Linux resize switches frame into CPU mode.
-        EXPECT_EQ(frame->format(), PIXEL_FORMAT_I420);
-#endif
+        EXPECT_EQ(frame->format(), expected_input_format);
         EXPECT_EQ(frame->coded_size(), options.frame_size);
         return BitstreamBufferMetadata(1, keyframe, frame->timestamp());
       }));
   adapter()->Initialize(profile_, options, std::move(output_cb),
                         ValidatingStatusCB());
 
-  auto small_frame =
-      CreateGreenFrame(small_size, pixel_format, base::Milliseconds(1));
-  auto large_frame =
-      CreateGreenFrame(large_size, pixel_format, base::Milliseconds(2));
   adapter()->Encode(small_frame, true, ValidatingStatusCB());
   adapter()->Encode(large_frame, false, ValidatingStatusCB());
   RunUntilIdle();
@@ -463,6 +466,11 @@ TEST_P(VideoEncodeAcceleratorAdapterTest, RunWithAllPossibleInputConversions) {
           : VideoEncodeAcceleratorAdapter::InputBufferKind::CpuMemBuf;
   adapter()->SetInputBufferPreferenceForTesting(input_kind);
 
+  const VideoPixelFormat expected_input_format =
+      input_kind == VideoEncodeAcceleratorAdapter::InputBufferKind::GpuMemBuf
+          ? PIXEL_FORMAT_NV12
+          : PIXEL_FORMAT_I420;
+
   VideoEncoder::OutputCB output_cb = base::BindLambdaForTesting(
       [&](VideoEncoderOutput, absl::optional<VideoEncoder::CodecDescription>) {
         outputs_count++;
@@ -470,8 +478,7 @@ TEST_P(VideoEncodeAcceleratorAdapterTest, RunWithAllPossibleInputConversions) {
 
   vea()->SetEncodingCallback(base::BindLambdaForTesting(
       [&](BitstreamBuffer&, bool keyframe, scoped_refptr<VideoFrame> frame) {
-        EXPECT_EQ(frame->format(),
-                  IsYuvPlanar(pixel_format) ? pixel_format : PIXEL_FORMAT_I420);
+        EXPECT_EQ(frame->format(), expected_input_format);
         EXPECT_EQ(frame->coded_size(), options.frame_size);
         return BitstreamBufferMetadata(1, keyframe, frame->timestamp());
       }));

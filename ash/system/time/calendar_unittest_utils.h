@@ -1,12 +1,14 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #ifndef ASH_SYSTEM_TIME_CALENDAR_UNITTEST_UTILS_H_
 #define ASH_SYSTEM_TIME_CALENDAR_UNITTEST_UTILS_H_
 
+#include <set>
 #include <string>
 
+#include "ash/calendar/calendar_client.h"
 #include "base/time/time.h"
 #include "google_apis/calendar/calendar_api_response_types.h"
 
@@ -170,6 +172,44 @@ const char* kAllTimeZones[] = {"Pacific/Midway",
                                "Pacific/Tongatapu",
                                "Pacific/Apia",
                                "Pacific/Kiritimati"};
+
+// These are from "third_party/fontconfig/include/fc-lang/fclang.h" data.
+// Locales "und-zmth" and "und-zsye" are omitted since they cannot be set.
+const char* kLocales[] = {
+    "aa",     "ab",     "af",     "ak",    "am",    "an",    "ar",    "as",
+    "ast",    "av",     "ay",     "az-az", "az-ir", "ba",    "be",    "ber-dz",
+    "ber-ma", "bg",     "bh",     "bho",   "bi",    "bin",   "bm",    "bn",
+    "bo",     "br",     "brx",    "bs",    "bua",   "byn",   "ca",    "ce",
+    "ch",     "chm",    "chr",    "co",    "crh",   "cs",    "csb",   "cu",
+    "cv",     "cy",     "da",     "de",    "doi",   "dv",    "dz",    "ee",
+    "el",     "en",     "eo",     "es",    "et",    "eu",    "fa",    "fat",
+    "ff",     "fi",     "fil",    "fj",    "fo",    "fr",    "fur",   "fy",
+    "ga",     "gd",     "gez",    "gl",    "gn",    "gu",    "gv",    "ha",
+    "haw",    "he",     "hi",     "hne",   "ho",    "hr",    "hsb",   "ht",
+    "hu",     "hy",     "hz",     "ia",    "id",    "ie",    "ig",    "ii",
+    "ik",     "io",     "is",     "it",    "iu",    "ja",    "jv",    "ka",
+    "kaa",    "kab",    "ki",     "kj",    "kk",    "kl",    "km",    "kn",
+    "ko",     "kok",    "kr",     "ks",    "ku-am", "ku-iq", "ku-ir", "ku-tr",
+    "kum",    "kv",     "kw",     "kwm",   "ky",    "la",    "lah",   "lb",
+    "lez",    "lg",     "li",     "ln",    "lo",    "lt",    "lv",    "mai",
+    "mg",     "mh",     "mi",     "mk",    "ml",    "mn-cn", "mn-mn", "mni",
+    "mo",     "mr",     "ms",     "mt",    "my",    "na",    "nb",    "nds",
+    "ne",     "ng",     "nl",     "nn",    "no",    "nqo",   "nr",    "nso",
+    "nv",     "ny",     "oc",     "om",    "or",    "os",    "ota",   "pa",
+    "pa-pk",  "pap-an", "pap-aw", "pl",    "ps-af", "ps-pk", "pt",    "qu",
+    "quz",    "rm",     "rn",     "ro",    "ru",    "rw",    "sa",    "sah",
+    "sat",    "sc",     "sco",    "sd",    "se",    "sel",   "sg",    "sh",
+    "shs",    "si",     "sid",    "sk",    "sl",    "sm",    "sma",   "smj",
+    "smn",    "sms",    "sn",     "so",    "sq",    "sr",    "ss",    "st",
+    "su",     "sv",     "sw",     "syr",   "ta",    "te",    "tg",    "th",
+    "ti-er",  "ti-et",  "tig",    "tk",    "tl",    "tn",    "to",    "tr",
+    "ts",     "tt",     "tw",     "ty",    "tyv",   "ug",    "uk",    "ur",
+    "uz",     "ve",     "vi",     "vo",    "vot",   "wa",    "wal",   "wen",
+    "wo",     "xh",     "yap",    "yi",    "yo",    "za",    "zh-cn", "zh-hk",
+    "zh-mo",  "zh-sg",  "zh-tw",  "zu"};
+
+std::set<std::string> kLocalesWithUniqueNumerals{"bn", "fa", "mr", "pa-pk"};
+
 }  // namespace
 
 namespace calendar_test_utils {
@@ -214,6 +254,37 @@ bool IsTheSameMonth(const base::Time& date_a, const base::Time& date_b);
 
 // Returns the `base:Time` from the given string.
 base::Time GetTimeFromString(const char* start_time);
+
+// A mock `CalendarClient` which uses `SetEventList` and `SetError` to set the
+// response. This mock client's `GetEventList` waits for a short duration to
+// mock the fetching process. This client can be used in calendar unittests to
+// mock the process of fetching events and getting back event list or error
+// message. It needs to be registered to a calendar client in `SetUp`.
+class CalendarClientTestImpl : public CalendarClient {
+ public:
+  CalendarClientTestImpl();
+  CalendarClientTestImpl(const CalendarClientTestImpl& other) = delete;
+  CalendarClientTestImpl& operator=(const CalendarClientTestImpl& other) =
+      delete;
+  ~CalendarClientTestImpl() override;
+
+  // CalendarClient:
+  base::OnceClosure GetEventList(
+      google_apis::calendar::CalendarEventListCallback callback,
+      const base::Time& start_time,
+      const base::Time& end_time) override;
+
+  // Sets `events` as the fetched event list.
+  void SetEventList(std::unique_ptr<google_apis::calendar::EventList> events);
+
+  // Sets `error` as the error message. The value of `error` is
+  // `google_apis::HTTP_SUCCESS` by default.
+  void SetError(google_apis::ApiErrorCode error) { error_ = error; }
+
+ private:
+  google_apis::ApiErrorCode error_ = google_apis::HTTP_SUCCESS;
+  std::unique_ptr<google_apis::calendar::EventList> events_ = nullptr;
+};
 
 }  // namespace calendar_test_utils
 

@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -215,6 +215,8 @@ class ASH_EXPORT WindowSnapWMEvent : public WMEvent {
   WindowSnapWMEvent& operator=(const WindowSnapWMEvent&) = delete;
 
   ~WindowSnapWMEvent() override;
+
+  static float GetFloatValueForSnapRatio(SnapRatio snap_ratio);
 
   // WMEvent:
   bool IsSnapInfoAvailable() const override;

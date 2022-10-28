@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,12 +6,12 @@
 
 #include <stddef.h>
 
-#include <algorithm>
 #include <utility>
 
 #include "base/check.h"
 #include "base/containers/adapters.h"
 #include "base/metrics/histogram_functions.h"
+#include "base/ranges/algorithm.h"
 #include "base/time/time.h"
 #include "chrome/browser/download/download_ui_model.h"
 #include "chrome/browser/themes/theme_properties.h"
@@ -249,8 +249,9 @@ void DownloadShelfView::MouseMovedOutOfHost() {
 }
 
 void DownloadShelfView::AutoClose() {
-  if (std::all_of(download_views_.cbegin(), download_views_.cend(),
-                  [](const auto* view) { return view->model()->GetOpened(); }))
+  if (base::ranges::all_of(download_views_, [](const auto* view) {
+        return view->model()->GetOpened();
+      }))
     mouse_watcher_.Start(GetWidget()->GetNativeWindow());
 }
 

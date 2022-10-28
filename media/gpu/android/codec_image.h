@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -85,12 +85,6 @@ class MEDIA_GPU_EXPORT CodecImage
                     const std::string& dump_name) override;
   std::unique_ptr<base::android::ScopedHardwareBufferFenceSync>
   GetAHardwareBuffer() override;
-
-  // If we re-use one CodecImage with different output buffers, then we must
-  // not claim to have mutable state.  Otherwise, CopyTexImage is only called
-  // once.  For pooled shared images, this must return false.  For single-use
-  // images, it works either way.
-  bool HasMutableState() const override;
 
   // Notify us that we're no longer in-use for display, and may be pointed at
   // another output buffer via a call to Initialize.

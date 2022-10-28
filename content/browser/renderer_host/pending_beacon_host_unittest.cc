@@ -15,6 +15,7 @@
 #include "content/public/test/mock_permission_manager.h"
 #include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_renderer_host.h"
+#include "mojo/public/cpp/system/functions.h"
 #include "net/http/http_request_headers.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "services/network/public/mojom/fetch_api.mojom.h"

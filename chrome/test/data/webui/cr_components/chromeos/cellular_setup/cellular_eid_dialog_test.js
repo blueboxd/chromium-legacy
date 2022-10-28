@@ -1,11 +1,11 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 import 'chrome://os-settings/strings.m.js';
-import 'chrome://resources/cr_components/chromeos/cellular_setup/cellular_eid_dialog.m.js';
+import 'chrome://resources/cr_components/chromeos/cellular_setup/cellular_eid_dialog.js';
 
-import {setESimManagerRemoteForTesting} from 'chrome://resources/cr_components/chromeos/cellular_setup/mojo_interface_provider.m.js';
+import {setESimManagerRemoteForTesting} from 'chrome://resources/cr_components/chromeos/cellular_setup/mojo_interface_provider.js';
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {assertDeepEquals, assertEquals, assertTrue} from '../../../chai_assert.js';

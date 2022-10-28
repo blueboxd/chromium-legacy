@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -161,7 +161,7 @@ TEST_F(
       testDone();
     });
 
-class PersonalizationAppAmbientModeDisllowedBrowserTest extends
+class PersonalizationAppAmbientModeDisallowedBrowserTest extends
     PersonalizationAppBrowserTest {
   /** @override */
   get testGenPreamble() {
@@ -171,11 +171,11 @@ class PersonalizationAppAmbientModeDisllowedBrowserTest extends
   }
 }
 
-this[PersonalizationAppAmbientModeDisllowedBrowserTest.name] =
-    PersonalizationAppAmbientModeDisllowedBrowserTest;
+this[PersonalizationAppAmbientModeDisallowedBrowserTest.name] =
+    PersonalizationAppAmbientModeDisallowedBrowserTest;
 
 TEST_F(
-    'PersonalizationAppAmbientModeDisllowedBrowserTest',
+    'PersonalizationAppAmbientModeDisallowedBrowserTest',
     'NotShowAmbientPreview', () => {
       const preview = document.querySelector('personalization-router')
                           .shadowRoot.querySelector('personalization-main')
@@ -185,7 +185,7 @@ TEST_F(
     });
 
 TEST_F(
-    'PersonalizationAppAmbientModeDisllowedBrowserTest',
+    'PersonalizationAppAmbientModeDisallowedBrowserTest',
     'NotShowAmbientSubpageLink', () => {
       const ambientSubpageLink =
           document.querySelector('personalization-router')

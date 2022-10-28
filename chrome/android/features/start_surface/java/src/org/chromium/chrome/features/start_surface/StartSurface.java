@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -33,6 +33,16 @@ public interface StartSurface {
      * Called when activity is being destroyed.
      */
     void destroy();
+
+    /**
+     * Show the Start surface homepage. Used only when refactor is enabled.
+     */
+    void show(boolean animate);
+
+    /**
+     * Hide the Start surface homepage. Used only when refactor is enabled.
+     */
+    void hide(boolean animate);
 
     /**
      * Called when the Start surface is hidden. It hides TasksSurfaces which are created when the

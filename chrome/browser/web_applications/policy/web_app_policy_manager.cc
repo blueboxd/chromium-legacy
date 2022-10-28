@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -118,7 +118,7 @@ void WebAppPolicyManager::Start() {
 
 void WebAppPolicyManager::ReinstallPlaceholderAppIfNecessary(const GURL& url) {
   const base::Value::List& web_apps =
-      pref_service_->GetValueList(prefs::kWebAppInstallForceList);
+      pref_service_->GetList(prefs::kWebAppInstallForceList);
   const auto& web_apps_list = web_apps;
 
   const auto it =
@@ -127,7 +127,12 @@ void WebAppPolicyManager::ReinstallPlaceholderAppIfNecessary(const GURL& url) {
                      return entry.FindKey(kUrlKey)->GetString() == url.spec();
                    });
 
-  if (it == web_apps_list.end())
+  bool is_placeholder_url =
+      app_registrar_
+          ->LookupPlaceholderAppId(GURL(url.spec()), WebAppManagement::kPolicy)
+          .has_value();
+
+  if (it == web_apps_list.end() || !is_placeholder_url)
     return;
 
   ExternalInstallOptions install_options = ParseInstallPolicyEntry(*it);
@@ -233,7 +238,7 @@ void WebAppPolicyManager::RefreshPolicyInstalledApps() {
   custom_manifest_values_by_url_.clear();
 
   const base::Value::List& web_apps =
-      pref_service_->GetValueList(prefs::kWebAppInstallForceList);
+      pref_service_->GetList(prefs::kWebAppInstallForceList);
   std::vector<ExternalInstallOptions> install_options_list;
   // No need to validate the types or values of the policy members because we
   // are using a SimpleSchemaValidatingPolicyHandler which should validate them
@@ -268,7 +273,6 @@ void WebAppPolicyManager::RefreshPolicyInstalledApps() {
         install_options.force_reinstall = true;
       }
     }
-
     install_options_list.push_back(std::move(install_options));
   }
 
@@ -282,7 +286,7 @@ void WebAppPolicyManager::RefreshPolicySettings() {
   // No need to validate the types or values of the policy members because we
   // are using a WebAppSettingsPolicyHandler which should validate them for us.
   const base::Value::List& web_apps_list =
-      pref_service_->GetValueList(prefs::kWebAppSettings);
+      pref_service_->GetList(prefs::kWebAppSettings);
 
   settings_by_url_.clear();
   default_settings_ = std::make_unique<WebAppPolicyManager::WebAppSetting>();
@@ -358,6 +362,7 @@ ExternalInstallOptions WebAppPolicyManager::ParseInstallPolicyEntry(
   const base::Value* fallback_app_name = entry.FindKey(kFallbackAppNameKey);
   const base::Value* uninstall_and_replace =
       entry.FindKey(kUninstallAndReplaceKey);
+  const base::Value* install_as_shortcut = entry.FindKey(kInstallAsShortcut);
 
   DCHECK(!default_launch_container ||
          default_launch_container->GetString() ==
@@ -408,6 +413,9 @@ ExternalInstallOptions WebAppPolicyManager::ParseInstallPolicyEntry(
       }
     }
   }
+
+  install_options.install_as_shortcut =
+      install_as_shortcut ? install_as_shortcut->GetBool() : false;
 
 #if BUILDFLAG(IS_CHROMEOS)
   const base::Value* custom_name = entry.FindKey(kCustomNameKey);
@@ -641,8 +649,7 @@ void WebAppPolicyManager::PopulateDisabledWebAppsIdsLists() {
     return;
 
   const base::Value::List& disabled_system_features_pref =
-      local_state->GetValueList(
-          policy::policy_prefs::kSystemFeaturesDisableList);
+      local_state->GetList(policy::policy_prefs::kSystemFeaturesDisableList);
 
   for (const auto& entry : disabled_system_features_pref) {
     switch (static_cast<policy::SystemFeature>(entry.GetInt())) {

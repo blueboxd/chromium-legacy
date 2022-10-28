@@ -1,19 +1,19 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #import "ios/chrome/test/wpt/cwt_webdriver_app_interface.h"
 
-#include <signal.h>
+#import <signal.h>
 
-#include "base/files/file.h"
-#include "base/files/file_path.h"
-#include "base/json/json_writer.h"
-#include "base/strings/stringprintf.h"
-#include "base/strings/sys_string_conversions.h"
-#include "base/strings/utf_string_conversions.h"
+#import "base/files/file.h"
+#import "base/files/file_path.h"
+#import "base/json/json_writer.h"
+#import "base/strings/stringprintf.h"
+#import "base/strings/sys_string_conversions.h"
+#import "base/strings/utf_string_conversions.h"
 #import "base/test/ios/wait_util.h"
-#include "base/values.h"
+#import "base/values.h"
 #import "ios/chrome/app/main_controller.h"
 #import "ios/chrome/browser/main/browser.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
@@ -25,8 +25,8 @@
 #import "ios/web/public/test/navigation_test_util.h"
 #import "ios/web/public/ui/crw_web_view_proxy.h"
 #import "ios/web/public/web_state.h"
-#include "ui/gfx/geometry/rect_f.h"
-#include "ui/gfx/image/image.h"
+#import "ui/gfx/geometry/rect_f.h"
+#import "ui/gfx/image/image.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -206,8 +206,8 @@ void DispatchSyncOnMainThread(void (^block)(void)) {
                          "'%s.result', %s: value}); }",
                          command.c_str(), kMessageResultKey.c_str());
 
-  // Construct a script that calls the given |function| with
-  // |scriptCompletionHandler| as an argument.
+  // Construct a script that calls the given `function` with
+  // `scriptCompletionHandler` as an argument.
   std::string scriptFunctionWithCompletionHandler = base::StringPrintf(
       "(%s).call(null, %s)", base::SysNSStringToUTF8(function).c_str(),
       scriptCompletionHandler.c_str());
@@ -219,8 +219,8 @@ void DispatchSyncOnMainThread(void (^block)(void)) {
                             /*sender_frame*/ web::WebFrame*) {
         const base::Value* result = value.FindKey(kMessageResultKey);
 
-        // |result| will be null when the computed result in JavaScript is
-        // |undefined|. This happens, for example, when injecting a script that
+        // `result` will be null when the computed result in JavaScript is
+        // `undefined`. This happens, for example, when injecting a script that
         // performs some action (like setting the document's title) but doesn't
         // return any value.
         if (result)

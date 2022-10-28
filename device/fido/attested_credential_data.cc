@@ -1,14 +1,14 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "device/fido/attested_credential_data.h"
 
-#include <algorithm>
 #include <utility>
 
 #include "base/memory/raw_ptr_exclusion.h"
 #include "base/numerics/safe_math.h"
+#include "base/ranges/algorithm.h"
 #include "components/cbor/reader.h"
 #include "components/device_event_log/device_event_log.h"
 #include "device/fido/cbor_extract.h"
@@ -220,12 +220,15 @@ AttestedCredentialData& AttestedCredentialData::operator=(
 AttestedCredentialData::~AttestedCredentialData() = default;
 
 bool AttestedCredentialData::IsAaguidZero() const {
-  return std::all_of(aaguid_.begin(), aaguid_.end(),
-                     [](uint8_t v) { return v == 0; });
+  return base::ranges::all_of(aaguid_, [](uint8_t v) { return v == 0; });
 }
 
-void AttestedCredentialData::DeleteAaguid() {
+bool AttestedCredentialData::DeleteAaguid() {
+  if (IsAaguidZero()) {
+    return false;
+  }
   std::fill(aaguid_.begin(), aaguid_.end(), 0);
+  return true;
 }
 
 std::vector<uint8_t> AttestedCredentialData::SerializeAsBytes() const {

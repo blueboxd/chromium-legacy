@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -27,7 +27,6 @@ import org.robolectric.Robolectric;
 import org.robolectric.android.controller.ActivityController;
 import org.robolectric.annotation.Config;
 import org.robolectric.annotation.LooperMode;
-import org.robolectric.shadows.multidex.ShadowMultiDex;
 
 import org.chromium.base.metrics.UmaRecorder;
 import org.chromium.base.metrics.UmaRecorderHolder;
@@ -48,7 +47,7 @@ import org.chromium.components.signin.identitymanager.IdentityManager;
  * first run.
  */
 @RunWith(BaseRobolectricTestRunner.class)
-@Config(manifest = Config.NONE, shadows = {ShadowMultiDex.class})
+@Config(manifest = Config.NONE)
 @LooperMode(LooperMode.Mode.LEGACY)
 public class FirstRunFlowSequencerTest {
     private static final String ADULT_ACCOUNT_NAME = "adult.account@gmail.com";

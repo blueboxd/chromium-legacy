@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -301,6 +301,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoAuthenticator {
   virtual bool SupportsHMACSecretExtension() const;
   virtual bool SupportsEnterpriseAttestation() const;
   virtual bool SupportsCredBlobOfSize(size_t num_bytes) const;
+  virtual bool SupportsDevicePublicKey() const;
   virtual const absl::optional<AuthenticatorSupportedOptions>& Options()
       const = 0;
   virtual absl::optional<FidoTransportProtocol> AuthenticatorTransport()

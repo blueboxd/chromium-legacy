@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -60,8 +60,8 @@ class DisplayOverlayController : public ui::EventHandler,
                       MessageType message_type);
   void RemoveEditMessage();
 
-  void OnBindingChange(Action* action,
-                       std::unique_ptr<InputElement> input_element);
+  void OnInputBindingChange(Action* action,
+                            std::unique_ptr<InputElement> input_element);
 
   // Save the changes when users press the save button after editing.
   void OnCustomizeSave();
@@ -82,6 +82,8 @@ class DisplayOverlayController : public ui::EventHandler,
 
   // ash::ColorModeObserver:
   void OnColorModeChanged(bool dark_mode_enabled) override;
+
+  const TouchInjector* touch_injector() const { return touch_injector_; }
 
  private:
   friend class ::arc::ArcInputOverlayManagerTest;
@@ -136,8 +138,6 @@ class DisplayOverlayController : public ui::EventHandler,
   // For test:
   gfx::Rect GetInputMappingViewBoundsForTesting();
   void DismissEducationalViewForTesting();
-
-  TouchInjector* touch_injector() { return touch_injector_; }
 
   const raw_ptr<TouchInjector> touch_injector_;
 

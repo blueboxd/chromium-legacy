@@ -151,6 +151,16 @@ class ChromiumDepGraph {
             isShipped: false,  // Annotations are stripped by R8.
             licenseName: 'CDDLv1.0',
             licensePath: 'licenses/CDDLv1.0.txt'),
+        net_bytebuddy_byte_buddy: new PropertyOverride(
+            url: 'https://github.com/raphw/byte-buddy',
+            licenseUrl: 'https://raw.githubusercontent.com/raphw/byte-buddy/master/LICENSE',
+            licenseName: 'Apache 2.0',
+            overrideLatest: true),
+        net_bytebuddy_byte_buddy_agent: new PropertyOverride(
+            url: 'https://github.com/raphw/byte-buddy',
+            licenseUrl: 'https://raw.githubusercontent.com/raphw/byte-buddy/master/LICENSE',
+            licenseName: 'Apache 2.0',
+            overrideLatest: true),
         net_sf_kxml_kxml2: new PropertyOverride(
             licenseUrl: 'https://raw.githubusercontent.com/stefanhaustein/kxml2/master/license.txt',
             licenseName: 'MIT'),
@@ -170,6 +180,14 @@ class ChromiumDepGraph {
             cpePrefix: 'cpe:/a:jsoup:jsoup:1.14.3',
             licenseUrl: 'https://raw.githubusercontent.com/jhy/jsoup/master/LICENSE',
             licenseName: 'The MIT License'),
+        org_mockito_mockito_core: new PropertyOverride(
+            licenseUrl: 'https://raw.githubusercontent.com/mockito/mockito/main/LICENSE',
+            licenseName: 'The MIT License'),
+        org_objenesis_objenesis: new PropertyOverride(
+            url: 'http://objenesis.org/index.html',
+            licenseUrl: 'https://www.apache.org/licenses/LICENSE-2.0.txt',
+            licenseName: 'Apache 2.0',
+            overrideLatest: true),
         org_ow2_asm_asm: new PropertyOverride(
             licenseUrl: 'https://gitlab.ow2.org/asm/asm/raw/master/LICENSE.txt',
             licenseName: 'BSD'),
@@ -216,9 +234,6 @@ class ChromiumDepGraph {
             licensePath: 'licenses/Codehaus_License-2009.txt',
             licenseName: 'MIT'),
         org_robolectric_shadows_framework: new PropertyOverride(
-            licensePath: 'licenses/Codehaus_License-2009.txt',
-            licenseName: 'MIT'),
-        org_robolectric_shadows_multidex: new PropertyOverride(
             licensePath: 'licenses/Codehaus_License-2009.txt',
             licenseName: 'MIT'),
         org_robolectric_shadows_playservices: new PropertyOverride(
@@ -699,6 +714,13 @@ class ChromiumDepGraph {
     }
 
     private void checkDownloadable(String url) {
+        // file: URLs happen when using fetch_all_androidx.py --local-repo.
+        if (url.startsWith('file:')) {
+            if (!new File(new URI(url).getPath()).exists()) {
+                throw new RuntimeException("File not found: " + url)
+            }
+            return
+        }
         // Use a background thread to avoid slowing down main thread.
         // Saves about 80 seconds currently.
         new Thread().start(() -> {

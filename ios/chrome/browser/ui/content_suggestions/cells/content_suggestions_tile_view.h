@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,7 +13,7 @@
 @interface ContentSuggestionsTileView : UIView <UIPointerInteractionDelegate>
 
 // Initializer that will lay itself out as placeholder tile with no text or
-// favicon if |isPlaceholder| is YES.
+// favicon if `isPlaceholder` is YES.
 - (instancetype)initWithFrame:(CGRect)frame placeholder:(BOOL)isPlaceholder;
 
 // Container for the image view. Used in subclasses.

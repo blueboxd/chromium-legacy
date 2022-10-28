@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -420,7 +420,7 @@ AppActivityRegistry::GenerateAppActivityReport(
   }
 
   const base::Value::List& list =
-      pref_service_->GetValueList(prefs::kPerAppTimeLimitsAppActivities);
+      pref_service_->GetList(prefs::kPerAppTimeLimitsAppActivities);
 
   const std::vector<PersistedAppInfo> applications_info =
       PersistedAppInfo::PersistedAppInfosFromList(
@@ -1068,7 +1068,7 @@ void AppActivityRegistry::InitializeRegistryFromPref() {
 
 void AppActivityRegistry::InitializeAppActivities() {
   const base::Value::List& list =
-      pref_service_->GetValueList(prefs::kPerAppTimeLimitsAppActivities);
+      pref_service_->GetList(prefs::kPerAppTimeLimitsAppActivities);
 
   const std::vector<PersistedAppInfo> applications_info =
       PersistedAppInfo::PersistedAppInfosFromList(

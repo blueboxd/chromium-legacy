@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -32,6 +32,7 @@
 #include "ipc/ipc_sync_channel.h"
 #include "mojo/public/cpp/bindings/generic_pending_associated_receiver.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gl/gl_share_group.h"
@@ -45,7 +46,6 @@ namespace gpu {
 class DCOMPTexture;
 class GpuChannelManager;
 class GpuChannelMessageFilter;
-class ImageDecodeAcceleratorStub;
 class ImageDecodeAcceleratorWorker;
 class Scheduler;
 class SharedImageStub;
@@ -140,6 +140,8 @@ class GPU_IPC_SERVICE_EXPORT GpuChannel : public IPC::Listener {
   // Called to remove a listener for a particular message routing ID.
   void RemoveRoute(int32_t route_id);
 
+  absl::optional<gpu::GpuDiskCacheHandle> GetCacheHandleForType(
+      gpu::GpuDiskCacheType type);
   void RegisterCacheHandle(const gpu::GpuDiskCacheHandle& handle);
   void CacheBlob(gpu::GpuDiskCacheType type,
                  const std::string& key,
@@ -171,8 +173,6 @@ class GPU_IPC_SERVICE_EXPORT GpuChannel : public IPC::Listener {
       mojom::GpuChannel::WaitForGetOffsetInRangeCallback callback);
 
   mojom::GpuChannel& GetGpuChannelForTesting();
-
-  ImageDecodeAcceleratorStub* GetImageDecodeAcceleratorStubForTesting() const;
 
 #if BUILDFLAG(IS_ANDROID)
   const CommandBufferStub* GetOneStub() const;

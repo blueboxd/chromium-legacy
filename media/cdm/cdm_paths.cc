@@ -1,4 +1,4 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -15,7 +15,12 @@ namespace media {
 // Name of the ClearKey CDM library.
 const char kClearKeyCdmLibraryName[] = "clearkeycdm";
 
-const char kClearKeyCdmBaseDirectory[] = "ClearKeyCdm";
+const char kClearKeyCdmBaseDirectory[] =
+#if BUILDFLAG(IS_FUCHSIA)
+    "lib/"
+#endif
+    "ClearKeyCdm";
+
 const char kClearKeyCdmDisplayName[] = "Clear Key CDM";
 
 const CdmType kClearKeyCdmType{0x3a2e0fadde4bd1b7ull, 0xcb90df3e240d1694ull};

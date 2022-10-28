@@ -1,4 +1,4 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,6 +10,7 @@
 #include <tuple>
 #include <utility>
 
+#include "ash/components/arc/arc_features.h"
 #include "ash/components/arc/arc_prefs.h"
 #include "ash/components/arc/arc_util.h"
 #include "ash/components/arc/metrics/arc_metrics_constants.h"
@@ -46,8 +47,8 @@
 #include "chrome/browser/ui/app_list/app_list_client_impl.h"
 #include "chrome/browser/ui/app_list/arc/intent.h"
 #include "chrome/browser/ui/app_list/search/ranking/launch_data.h"
+#include "chrome/browser/ui/app_list/search/ranking/ranking_item_util.h"
 #include "chrome/browser/ui/app_list/search/search_controller.h"
-#include "chrome/browser/ui/app_list/search/search_result_ranker/ranking_item_util.h"
 #include "chrome/browser/ui/ash/shelf/arc_app_shelf_id.h"
 #include "chrome/browser/ui/ash/shelf/arc_shelf_spinner_item_controller.h"
 #include "chrome/browser/ui/ash/shelf/chrome_shelf_controller.h"
@@ -202,6 +203,10 @@ std::string ConstructArcAppShortcutUrl(const std::string& app_id,
   return "appshortcutsearch://" + app_id + "/" + shortcut_id;
 }
 
+bool IsFixupWindowEnabled() {
+  return base::FeatureList::IsEnabled(arc::kFixupWindowFeature);
+}
+
 }  // namespace
 
 // Package names, kept in sorted order.
@@ -312,7 +317,11 @@ bool LaunchAppWithIntent(content::BrowserContext* context,
   ArcAppListPrefs* const prefs = ArcAppListPrefs::Get(context);
   std::unique_ptr<ArcAppListPrefs::AppInfo> app_info = prefs->GetApp(app_id);
   absl::optional<std::string> launch_intent_to_send = launch_intent;
-  if (app_info && !app_info->ready) {
+
+  // Some apps need fixup when ARC version upgrade e.g. from ARC P to ARC R.
+  // Before fixup finishes, the |app_info->ready| is true but not launchable.
+  if (app_info &&
+      ((IsFixupWindowEnabled() && app_info->need_fixup) || !app_info->ready)) {
     if (!IsArcPlayStoreEnabledForProfile(profile)) {
       if (prefs->IsDefault(app_id)) {
         // The setting can fail if the preference is managed.  However, the
@@ -351,6 +360,7 @@ bool LaunchAppWithIntent(content::BrowserContext* context,
       }
     }
 
+    // TODO(sstan): Triage ghost window for different launch source.
     // App launched by user rather than full restore.
     if (window_info &&
         window_info->window_id <=
@@ -358,8 +368,17 @@ bool LaunchAppWithIntent(content::BrowserContext* context,
       arc::ArcBootPhaseMonitorBridge::RecordFirstAppLaunchDelayUMA(context);
     }
 
-    if (full_restore::features::IsArcWindowPredictorEnabled() &&
-        IsArcVmEnabled()) {
+    if (IsFixupWindowEnabled() && app_info->need_fixup) {
+      // TODO(sstan): Use different UI after UX design finalized.
+      if (LaunchArcAppWithGhostWindow(profile, app_id, *app_info, event_flags,
+                                      user_action, window_info)) {
+        prefs->SetLastLaunchTime(app_id);
+        return true;
+      }
+      // Block launch request if failed to launch ghost window.
+      return false;
+    } else if (full_restore::features::IsArcWindowPredictorEnabled() &&
+               IsArcVmEnabled()) {
       if (LaunchArcAppWithGhostWindow(profile, app_id, *app_info, event_flags,
                                       user_action, window_info)) {
         prefs->SetLastLaunchTime(app_id);
@@ -482,7 +501,7 @@ std::vector<std::string> GetSelectedPackagesFromPrefs(
   const PrefService* prefs = profile->GetPrefs();
 
   const base::Value::List& selected_package_prefs =
-      prefs->GetValueList(arc::prefs::kArcFastAppReinstallPackages);
+      prefs->GetList(arc::prefs::kArcFastAppReinstallPackages);
   for (const base::Value& item : selected_package_prefs) {
     std::string item_str = item.is_string() ? item.GetString() : std::string();
     packages.push_back(std::move(item_str));

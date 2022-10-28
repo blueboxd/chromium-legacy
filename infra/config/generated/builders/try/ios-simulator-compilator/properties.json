@@ -67,10 +67,6 @@
     ]
   },
   "builder_group": "tryserver.chromium.mac",
-  "orchestrator": {
-    "builder_group": "tryserver.chromium.mac",
-    "builder_name": "ios-simulator"
-  },
-  "recipe": "chromium/compilator",
-  "xcode_build_version": "14a5294g"
+  "recipe": "chromium_trybot",
+  "xcode_build_version": "14a309"
 }

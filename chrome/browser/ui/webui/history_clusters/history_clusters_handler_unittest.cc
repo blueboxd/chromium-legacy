@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,7 +11,6 @@
 #include "base/test/bind.h"
 #include "base/time/time.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
-#include "chrome/browser/ui/webui/history_clusters/history_clusters_handler.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/history/core/browser/history_types.h"
 #include "components/history/core/browser/url_row.h"

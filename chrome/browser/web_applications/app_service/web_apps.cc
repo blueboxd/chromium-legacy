@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,6 +8,7 @@
 
 #include "base/callback.h"
 #include "base/callback_helpers.h"
+#include "base/feature_list.h"
 #include "chrome/browser/apps/app_service/app_launch_params.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/intent_util.h"
@@ -24,6 +25,7 @@
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_pattern.h"
 #include "components/content_settings/core/common/content_settings_types.h"
+#include "components/services/app_service/public/cpp/features.h"
 #include "components/webapps/browser/installable/installable_metrics.h"
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -49,20 +51,6 @@ namespace web_app {
 
 namespace {
 
-apps::AppType GetWebAppType() {
-// After moving the ordinary Web Apps to Lacros chrome, the remaining web
-// apps in ash Chrome will be only System Web Apps. Change the app type
-// to kSystemWeb for this case and the kWeb app type will be published from
-// the publisher for Lacros web apps.
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-  if (crosapi::browser_util::IsLacrosEnabled() && IsWebAppsCrosapiEnabled()) {
-    return apps::AppType::kSystemWeb;
-  }
-#endif
-
-  return apps::AppType::kWeb;
-}
-
 bool ShouldObserveMediaRequests() {
   return true;
 }
@@ -73,22 +61,18 @@ WebApps::WebApps(apps::AppServiceProxy* proxy)
     : apps::AppPublisher(proxy),
       profile_(proxy->profile()),
       provider_(WebAppProvider::GetForLocalAppsUnchecked(profile_)),
-      app_service_(proxy->AppService().get()),
-      app_type_(GetWebAppType()),
 #if BUILDFLAG(IS_CHROMEOS_ASH)
       instance_registry_(&proxy->InstanceRegistry()),
       publisher_helper_(
           profile_,
           provider_,
           ash::SystemWebAppManager::GetForLocalAppsUnchecked(profile_),
-          app_type_,
           this,
           ShouldObserveMediaRequests())
 #else
       publisher_helper_(profile_,
                         provider_,
                         /*swa_manager=*/nullptr,
-                        app_type_,
                         this,
                         ShouldObserveMediaRequests())
 #endif
@@ -119,7 +103,7 @@ void WebApps::Initialize(
   DCHECK(provider_);
 
   PublisherBase::Initialize(app_service,
-                            apps::ConvertAppTypeToMojomAppType(app_type_));
+                            apps::ConvertAppTypeToMojomAppType(app_type()));
 
   provider_->on_registry_ready().Post(
       FROM_HERE, base::BindOnce(&WebApps::InitWebApps, AsWeakPtr()));
@@ -194,7 +178,71 @@ void WebApps::Uninstall(const std::string& app_id,
   publisher_helper().UninstallWebApp(web_app, uninstall_source, clear_site_data,
                                      report_abuse);
 }
+
+void WebApps::GetMenuModel(const std::string& app_id,
+                           apps::MenuType menu_type,
+                           int64_t display_id,
+                           base::OnceCallback<void(apps::MenuItems)> callback) {
+  const auto* web_app = GetWebApp(app_id);
+  if (!web_app) {
+    std::move(callback).Run(apps::MenuItems());
+    return;
+  }
+
+  apps::MenuItems menu_items;
+  if (web_app->IsSystemApp()) {
+    DCHECK(web_app->client_data().system_web_app_data.has_value());
+    ash::SystemWebAppType swa_type =
+        web_app->client_data().system_web_app_data->system_app_type;
+
+    auto* system_app =
+        ash::SystemWebAppManager::Get(profile())->GetSystemApp(swa_type);
+    if (system_app && system_app->ShouldShowNewWindowMenuOption()) {
+      apps::AddCommandItem(ash::LAUNCH_NEW,
+                           IDS_APP_LIST_CONTEXT_MENU_NEW_WINDOW, menu_items);
+    }
+  } else {
+    apps::CreateOpenNewSubmenu(
+        publisher_helper().GetWindowMode(app_id) == apps::WindowMode::kBrowser
+            ? IDS_APP_LIST_CONTEXT_MENU_NEW_TAB
+            : IDS_APP_LIST_CONTEXT_MENU_NEW_WINDOW,
+        menu_items);
+  }
+
+  if (app_id == guest_os::kTerminalSystemAppId) {
+    guest_os::AddTerminalMenuItems(profile_, menu_items);
+  }
+
+  if (menu_type == apps::MenuType::kShelf &&
+      instance_registry_->ContainsAppId(app_id)) {
+    apps::AddCommandItem(ash::MENU_CLOSE, IDS_SHELF_CONTEXT_MENU_CLOSE,
+                         menu_items);
+  }
+
+  if (web_app->CanUserUninstallWebApp()) {
+    apps::AddCommandItem(ash::UNINSTALL, IDS_APP_LIST_UNINSTALL_ITEM,
+                         menu_items);
+  }
+
+  if (!web_app->IsSystemApp()) {
+    apps::AddCommandItem(ash::SHOW_APP_INFO, IDS_APP_CONTEXT_MENU_SHOW_INFO,
+                         menu_items);
+  }
+
+  if (app_id == guest_os::kTerminalSystemAppId) {
+    guest_os::AddTerminalMenuShortcuts(profile_, ash::LAUNCH_APP_SHORTCUT_FIRST,
+                                       std::move(menu_items),
+                                       std::move(callback));
+  } else {
+    GetAppShortcutMenuModel(app_id, std::move(menu_items), std::move(callback));
+  }
+}
 #endif
+
+void WebApps::SetWindowMode(const std::string& app_id,
+                            apps::WindowMode window_mode) {
+  publisher_helper().SetWindowMode(app_id, window_mode);
+}
 
 void WebApps::Connect(
     mojo::PendingRemote<apps::mojom::Subscriber> subscriber_remote,
@@ -251,7 +299,8 @@ void WebApps::OpenNativeSettings(const std::string& app_id) {
 
 void WebApps::SetWindowMode(const std::string& app_id,
                             apps::mojom::WindowMode window_mode) {
-  publisher_helper().SetWindowMode(app_id, window_mode);
+  publisher_helper().SetWindowMode(
+      app_id, apps::ConvertMojomWindowModeToWindowMode(window_mode));
 }
 
 void WebApps::SetRunOnOsLoginMode(
@@ -275,7 +324,7 @@ void WebApps::PublishWebApps(std::vector<apps::AppPtr> apps) {
     mojom_apps.push_back(apps::ConvertAppToMojomApp(app));
   }
 
-  apps::AppPublisher::Publish(std::move(apps), app_type_,
+  apps::AppPublisher::Publish(std::move(apps), app_type(),
                               /*should_notify_initialized=*/false);
 
   const bool should_notify_initialized = false;
@@ -334,8 +383,16 @@ void WebApps::ModifyWebAppCapabilityAccess(
     const std::string& app_id,
     absl::optional<bool> accessing_camera,
     absl::optional<bool> accessing_microphone) {
-  ModifyCapabilityAccess(subscribers_, app_id, std::move(accessing_camera),
-                         std::move(accessing_microphone));
+  if (base::FeatureList::IsEnabled(
+          apps::kAppServiceCapabilityAccessWithoutMojom)) {
+    apps::AppPublisher::ModifyCapabilityAccess(
+        app_id, std::move(accessing_camera), std::move(accessing_microphone));
+    return;
+  }
+
+  PublisherBase::ModifyCapabilityAccess(subscribers_, app_id,
+                                        std::move(accessing_camera),
+                                        std::move(accessing_microphone));
 }
 
 std::vector<apps::AppPtr> WebApps::CreateWebApps() {
@@ -362,10 +419,10 @@ void WebApps::ConvertWebApps(std::vector<apps::mojom::AppPtr>* apps_out) {
 void WebApps::InitWebApps() {
   is_ready_ = true;
 
-  RegisterPublisher(app_type_);
+  RegisterPublisher(app_type());
 
   std::vector<apps::AppPtr> apps = CreateWebApps();
-  apps::AppPublisher::Publish(std::move(apps), app_type_,
+  apps::AppPublisher::Publish(std::move(apps), app_type(),
                               /*should_notify_initialized=*/true);
 }
 
@@ -379,7 +436,7 @@ void WebApps::StartPublishingWebApps(
   mojo::Remote<apps::mojom::Subscriber> subscriber(
       std::move(subscriber_remote));
   subscriber->OnApps(std::move(apps),
-                     apps::ConvertAppTypeToMojomAppType(app_type_),
+                     apps::ConvertAppTypeToMojomAppType(app_type()),
                      true /* should_notify_initialized */);
 
   subscribers_.Add(std::move(subscriber));
@@ -412,67 +469,18 @@ void WebApps::GetMenuModel(const std::string& app_id,
                            apps::mojom::MenuType menu_type,
                            int64_t display_id,
                            GetMenuModelCallback callback) {
-  const auto* web_app = GetWebApp(app_id);
-  if (!web_app) {
-    std::move(callback).Run(apps::mojom::MenuItems::New());
-    return;
-  }
-
-  apps::mojom::MenuItemsPtr menu_items = apps::mojom::MenuItems::New();
-  if (web_app->IsSystemApp()) {
-    DCHECK(web_app->client_data().system_web_app_data.has_value());
-    ash::SystemWebAppType swa_type =
-        web_app->client_data().system_web_app_data->system_app_type;
-
-    auto* system_app =
-        ash::SystemWebAppManager::Get(profile())->GetSystemApp(swa_type);
-    if (system_app && system_app->ShouldShowNewWindowMenuOption()) {
-      apps::AddCommandItem(ash::LAUNCH_NEW,
-                           IDS_APP_LIST_CONTEXT_MENU_NEW_WINDOW, &menu_items);
-    }
-  } else {
-    apps::CreateOpenNewSubmenu(
-        publisher_helper().GetWindowMode(app_id) == apps::WindowMode::kBrowser
-            ? IDS_APP_LIST_CONTEXT_MENU_NEW_TAB
-            : IDS_APP_LIST_CONTEXT_MENU_NEW_WINDOW,
-        &menu_items);
-  }
-
-  if (app_id == guest_os::kTerminalSystemAppId) {
-    guest_os::AddTerminalMenuItems(profile_, &menu_items);
-  }
-
-  if (menu_type == apps::mojom::MenuType::kShelf &&
-      instance_registry_->ContainsAppId(app_id)) {
-    apps::AddCommandItem(ash::MENU_CLOSE, IDS_SHELF_CONTEXT_MENU_CLOSE,
-                         &menu_items);
-  }
-
-  if (web_app->CanUserUninstallWebApp()) {
-    apps::AddCommandItem(ash::UNINSTALL, IDS_APP_LIST_UNINSTALL_ITEM,
-                         &menu_items);
-  }
-
-  if (!web_app->IsSystemApp()) {
-    apps::AddCommandItem(ash::SHOW_APP_INFO, IDS_APP_CONTEXT_MENU_SHOW_INFO,
-                         &menu_items);
-  }
-
-  if (app_id == guest_os::kTerminalSystemAppId) {
-    guest_os::AddTerminalMenuShortcuts(profile_, ash::LAUNCH_APP_SHORTCUT_FIRST,
-                                       std::move(menu_items),
-                                       std::move(callback));
-  } else {
-    GetAppShortcutMenuModel(app_id, std::move(menu_items), std::move(callback));
-  }
+  GetMenuModel(app_id, apps::ConvertMojomMenuTypeToMenuType(menu_type),
+               display_id,
+               apps::MenuItemsToMojomMenuItemsCallback(std::move(callback)));
 }
 
-void WebApps::GetAppShortcutMenuModel(const std::string& app_id,
-                                      apps::mojom::MenuItemsPtr menu_items,
-                                      GetMenuModelCallback callback) {
+void WebApps::GetAppShortcutMenuModel(
+    const std::string& app_id,
+    apps::MenuItems menu_items,
+    base::OnceCallback<void(apps::MenuItems)> callback) {
   const WebApp* web_app = GetWebApp(app_id);
   if (!web_app) {
-    std::move(callback).Run(apps::mojom::MenuItems::New());
+    std::move(callback).Run(apps::MenuItems());
     return;
   }
 
@@ -489,16 +497,16 @@ void WebApps::GetAppShortcutMenuModel(const std::string& app_id,
 
 void WebApps::OnShortcutsMenuIconsRead(
     const std::string& app_id,
-    apps::mojom::MenuItemsPtr menu_items,
-    GetMenuModelCallback callback,
+    apps::MenuItems menu_items,
+    base::OnceCallback<void(apps::MenuItems)> callback,
     ShortcutsMenuIconBitmaps shortcuts_menu_icon_bitmaps) {
   const WebApp* web_app = GetWebApp(app_id);
   if (!web_app) {
-    std::move(callback).Run(apps::mojom::MenuItems::New());
+    std::move(callback).Run(apps::MenuItems());
     return;
   }
 
-  apps::AddSeparator(ui::DOUBLE_SEPARATOR, &menu_items);
+  apps::AddSeparator(ui::DOUBLE_SEPARATOR, menu_items);
 
   size_t menu_item_index = 0;
 
@@ -516,7 +524,7 @@ void WebApps::OnShortcutsMenuIconsRead(
     }
 
     if (menu_item_index != 0) {
-      apps::AddSeparator(ui::PADDED_SEPARATOR, &menu_items);
+      apps::AddSeparator(ui::PADDED_SEPARATOR, menu_items);
     }
 
     gfx::ImageSkia icon;
@@ -540,7 +548,7 @@ void WebApps::OnShortcutsMenuIconsRead(
     publisher_helper().StoreShortcutId(shortcut_id, menu_item_info);
 
     apps::AddShortcutCommandItem(command_id, shortcut_id, label, icon,
-                                 &menu_items);
+                                 menu_items);
 
     ++menu_item_index;
   }

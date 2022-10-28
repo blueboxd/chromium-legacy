@@ -385,14 +385,16 @@ CanvasResourceDispatcher* OffscreenCanvas::GetOrCreateResourceDispatcher() {
   // OffscreenCanvas, and it should not have a placeholder.
   if (!frame_dispatcher_) {
     scoped_refptr<base::SingleThreadTaskRunner>
-        agent_group_scheduler_compositor_task_runner =
-            GetTopExecutionContext()
-                ->GetAgentGroupSchedulerCompositorTaskRunner();
+        agent_group_scheduler_compositor_task_runner;
+    if (auto* top_execution_context = GetTopExecutionContext()) {
+      agent_group_scheduler_compositor_task_runner =
+          top_execution_context->GetAgentGroupSchedulerCompositorTaskRunner();
 
-    // AgentGroupSchedulerCompositorTaskRunner will be null for
-    // SharedWorkers, but for windows and other workers it should be non-null.
-    DCHECK(GetTopExecutionContext()->IsSharedWorkerGlobalScope() ||
-           agent_group_scheduler_compositor_task_runner);
+      // AgentGroupSchedulerCompositorTaskRunner will be null for
+      // SharedWorkers, but for windows and other workers it should be non-null.
+      DCHECK(top_execution_context->IsSharedWorkerGlobalScope() ||
+             agent_group_scheduler_compositor_task_runner);
+    }
 
     // The frame dispatcher connects the current thread of OffscreenCanvas
     // (either main or worker) to the browser process and remains unchanged
@@ -553,8 +555,18 @@ UkmParameters OffscreenCanvas::GetUkmParameters() {
 }
 
 void OffscreenCanvas::NotifyGpuContextLost() {
-  if (context_)
+  if (context_ && !context_->isContextLost()) {
+    // This code path is used only by 2D canvas, because NotifyGpuContextLost
+    // is called by Canvas2DLayerBridge rather than the rendering context
+    DCHECK(context_->IsRenderingContext2D());
     context_->LoseContext(CanvasRenderingContext::kRealLostContext);
+  }
+  if (frame_dispatcher_) {
+    // We'll need to recreate a new frame dispatcher once the context is
+    // restored in order to reestablish the compositor frame sink mojo
+    // channel.
+    frame_dispatcher_ = nullptr;
+  }
 }
 
 FontSelector* OffscreenCanvas::GetFontSelector() {

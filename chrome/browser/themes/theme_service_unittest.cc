@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -52,7 +52,8 @@
 
 #if BUILDFLAG(IS_LINUX)
 #include "ui/linux/linux_ui.h"
-#include "ui/linux/linux_ui_factory.h"  // nogncheck
+#include "ui/linux/linux_ui_factory.h"
+#include "ui/linux/linux_ui_getter.h"
 #include "ui/ozone/public/ozone_platform.h"
 #endif
 
@@ -102,6 +103,25 @@ class ThemeScoper {
   std::string extension_id_;
   base::ScopedTempDir temp_dir_;
 };
+
+#if BUILDFLAG(IS_LINUX)
+class LinuxUiGetterImpl : public ui::LinuxUiGetter {
+ public:
+  explicit LinuxUiGetterImpl(bool use_system_theme)
+      : linux_ui_theme_(use_system_theme ? ui::GetDefaultLinuxUiTheme()
+                                         : nullptr) {}
+  ~LinuxUiGetterImpl() override = default;
+  ui::LinuxUiTheme* GetForWindow(aura::Window* window) override {
+    return linux_ui_theme_;
+  }
+  ui::LinuxUiTheme* GetForProfile(Profile* profile) override {
+    return linux_ui_theme_;
+  }
+
+ private:
+  ui::LinuxUiTheme* const linux_ui_theme_;
+};
+#endif
 
 }  // namespace
 
@@ -202,9 +222,9 @@ class ColorProviderTest
       ui::OzonePlatform::InitParams ozone_params;
       ozone_params.single_process = true;
       ui::OzonePlatform::InitializeForUI(ozone_params);
-      auto linux_ui = ui::CreateLinuxUi();
+      auto* linux_ui = ui::GetDefaultLinuxUi();
       ASSERT_TRUE(linux_ui);
-      ui::LinuxUi::SetInstance(std::move(linux_ui));
+      ui::LinuxUi::SetInstance(linux_ui);
 #endif  // BUILDFLAG(IS_LINUX)
 
       // Add the Chrome ColorMixers after native ColorMixers.
@@ -214,11 +234,8 @@ class ColorProviderTest
       initialized_mixers = true;
     }
 #if BUILDFLAG(IS_LINUX)
-    ui::LinuxUi::instance()->SetUseSystemThemeCallback(base::BindRepeating(
-        [](bool use_system_theme, aura::Window* window) {
-          return use_system_theme;
-        },
-        std::get<SystemTheme>(GetParam()) == SystemTheme::kCustom));
+    linux_ui_getter_ = std::make_unique<LinuxUiGetterImpl>(
+        std::get<SystemTheme>(GetParam()) == SystemTheme::kCustom);
 #endif  // BUILDFLAG(IS_LINUX)
 
     const auto param_tuple = GetParam();
@@ -230,10 +247,8 @@ class ColorProviderTest
     // this to reflect test params and propagate any updates.
     native_theme_ = ui::NativeTheme::GetInstanceForNativeUi();
 #if BUILDFLAG(IS_LINUX)
-    if (system_theme == SystemTheme::kCustom) {
-      const auto* linux_ui = ui::LinuxUi::instance();
-      native_theme_ = linux_ui->GetNativeTheme(nullptr);
-    }
+    if (system_theme == SystemTheme::kCustom)
+      native_theme_ = ui::GetDefaultLinuxUiTheme()->GetNativeTheme();
 #endif
     original_forced_colors_ = native_theme_->InForcedColorsMode();
     original_preferred_contrast_ = native_theme_->GetPreferredContrast();
@@ -245,7 +260,7 @@ class ColorProviderTest
       color_scheme = ui::NativeTheme::ColorScheme::kPlatformHighContrast;
     native_theme_->set_forced_colors(high_contrast);
 #endif  // BUILDFLAG(IS_WIN)
-    native_theme_->set_preferred_contrast(
+    native_theme_->SetPreferredContrast(
         high_contrast ? ui::NativeTheme::PreferredContrast::kMore
                       : ui::NativeTheme::PreferredContrast::kNoPreference);
     native_theme_->set_use_dark_colors(color_scheme ==
@@ -274,7 +289,7 @@ class ColorProviderTest
   void TearDown() override {
     // Restore the original NativeTheme parameters.
     native_theme_->set_forced_colors(original_forced_colors_);
-    native_theme_->set_preferred_contrast(original_preferred_contrast_);
+    native_theme_->SetPreferredContrast(original_preferred_contrast_);
     native_theme_->set_use_dark_colors(original_should_use_dark_colors_);
     native_theme_->NotifyOnNativeThemeUpdated();
     ThemeServiceTest::TearDown();
@@ -330,6 +345,9 @@ class ColorProviderTest
       ui::NativeTheme::PreferredContrast::kNoPreference;
   bool original_should_use_dark_colors_ = false;
   raw_ptr<ui::NativeTheme> native_theme_;
+#if BUILDFLAG(IS_LINUX)
+  std::unique_ptr<ui::LinuxUiGetter> linux_ui_getter_;
+#endif
 };
 
 INSTANTIATE_TEST_SUITE_P(

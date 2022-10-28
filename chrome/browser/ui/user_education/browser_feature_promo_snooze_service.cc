@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -66,8 +66,7 @@ BrowserFeaturePromoSnoozeService::ReadSnoozeData(
     const base::Feature& iph_feature) {
   std::string path_prefix = std::string(iph_feature.name) + ".";
 
-  const auto& pref_data =
-      profile_->GetPrefs()->GetValueDict(kIPHSnoozeDataPath);
+  const auto& pref_data = profile_->GetPrefs()->GetDict(kIPHSnoozeDataPath);
   absl::optional<bool> is_dismissed =
       pref_data.FindBoolByDottedPath(path_prefix + kIPHIsDismissedPath);
   absl::optional<base::Time> show_time = base::ValueToTime(

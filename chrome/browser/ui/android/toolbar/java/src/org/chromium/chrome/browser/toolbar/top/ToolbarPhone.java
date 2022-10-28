@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -42,7 +42,7 @@ import androidx.annotation.IntDef;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
-import androidx.appcompat.graphics.drawable.DrawableWrapper;
+import androidx.appcompat.graphics.drawable.DrawableWrapperCompat;
 import androidx.core.widget.ImageViewCompat;
 
 import org.chromium.base.ApiCompatibilityUtils;
@@ -143,6 +143,7 @@ public class ToolbarPhone extends ToolbarLayout implements OnClickListener, TabC
     protected ImageView mToolbarShadow;
     private OptionalButtonCoordinator mOptionalButton;
     private boolean mOptionalButtonUsesTint;
+    private boolean mShouldShowModernizeVisualUpdate;
 
     @ViewDebug.ExportedProperty(category = "chrome")
     protected int mTabSwitcherState;
@@ -286,7 +287,8 @@ public class ToolbarPhone extends ToolbarLayout implements OnClickListener, TabC
      */
     public ToolbarPhone(Context context, AttributeSet attrs) {
         super(context, attrs);
-        final int edgePaddingRes = OmniboxFeatures.shouldShowModernizeVisualUpdate(context)
+        mShouldShowModernizeVisualUpdate = OmniboxFeatures.shouldShowModernizeVisualUpdate(context);
+        final int edgePaddingRes = mShouldShowModernizeVisualUpdate
                 ? R.dimen.toolbar_edge_padding_modern
                 : R.dimen.toolbar_edge_padding;
         mToolbarSidePadding = getResources().getDimensionPixelOffset(edgePaddingRes);
@@ -383,6 +385,17 @@ public class ToolbarPhone extends ToolbarLayout implements OnClickListener, TabC
     private int getLocationBarColorForToolbarColor(int toolbarColor) {
         return ThemeUtils.getTextBoxColorForToolbarBackgroundInNonNativePage(
                 getContext(), toolbarColor, isIncognito());
+    }
+
+    /**
+     * Get the toolbar default color depending on the toolbar's status.
+     */
+    private int getToolbarDefaultColor() {
+        if (mShouldShowModernizeVisualUpdate && mLocationBar.getPhoneCoordinator().hasFocus()) {
+            return isIncognito() ? mLocationBar.getSuggestionsIncognitoBackgroundColor()
+                                 : mLocationBar.getSuggestionsStandardBackgroundColor();
+        }
+        return ChromeColors.getDefaultThemeColor(getContext(), isIncognito());
     }
 
     private void inflateTabSwitchingResources() {
@@ -1019,7 +1032,7 @@ public class ToolbarPhone extends ToolbarLayout implements OnClickListener, TabC
             // Only transition theme colors if in static tab mode that is not the NTP. In practice
             // this only runs when you focus the omnibox on a web page.
             if (!isLocationBarShownInNTP() && mTabSwitcherState == STATIC_TAB) {
-                int defaultColor = ChromeColors.getDefaultThemeColor(getContext(), isIncognito());
+                int defaultColor = getToolbarDefaultColor();
                 int defaultLocationBarColor = getLocationBarColorForToolbarColor(defaultColor);
                 int primaryColor = getToolbarDataProvider().getPrimaryColor();
                 int themedLocationBarColor = getLocationBarColorForToolbarColor(primaryColor);
@@ -1813,7 +1826,7 @@ public class ToolbarPhone extends ToolbarLayout implements OnClickListener, TabC
         animator.setInterpolator(BakedBezierInterpolator.TRANSFORM_CURVE);
         animators.add(animator);
 
-        mLocationBar.getPhoneCoordinator().populateFadeAnimations(
+        mLocationBar.getPhoneCoordinator().populateFadeAnimation(
                 animators, 0, URL_FOCUS_CHANGE_ANIMATION_DURATION_MS, 0);
 
         float density = getContext().getResources().getDisplayMetrics().density;
@@ -1873,7 +1886,7 @@ public class ToolbarPhone extends ToolbarLayout implements OnClickListener, TabC
             animators.add(animator);
         }
 
-        mLocationBar.getPhoneCoordinator().populateFadeAnimations(
+        mLocationBar.getPhoneCoordinator().populateFadeAnimation(
                 animators, URL_FOCUS_TOOLBAR_BUTTONS_DURATION_MS, URL_CLEAR_FOCUS_MENU_DELAY_MS, 1);
 
         if (isLocationBarShownInNTP() && mNtpSearchBoxScrollFraction == 0f) return;
@@ -2437,7 +2450,7 @@ public class ToolbarPhone extends ToolbarLayout implements OnClickListener, TabC
      * NTP.  This allows animations to continue as the drawable is switched between the two owning
      * views.
      */
-    private static class NtpSearchBoxDrawable extends DrawableWrapper {
+    private static class NtpSearchBoxDrawable extends DrawableWrapperCompat {
         private final Drawable.Callback mCallback;
 
         private int mBoundsLeft;

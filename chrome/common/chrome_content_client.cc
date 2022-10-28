@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,10 +6,8 @@
 
 #include <stdint.h>
 
-#include <map>
 #include <memory>
 #include <string>
-#include <tuple>
 #include <utility>
 
 #include "base/bind.h"
@@ -22,7 +20,6 @@
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/version.h"
 #include "build/branding_buildflags.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
@@ -77,11 +74,11 @@
 #if BUILDFLAG(ENABLE_NACL)
 #include "components/nacl/common/nacl_constants.h"
 #include "components/nacl/common/nacl_process_type.h"
+#include "ppapi/shared_impl/ppapi_permissions.h"  // nogncheck
 #endif
 
-#if BUILDFLAG(ENABLE_PPAPI)
-#include "content/public/common/pepper_plugin_info.h"
-#include "ppapi/shared_impl/ppapi_permissions.h"  // nogncheck
+#if BUILDFLAG(ENABLE_PLUGINS)
+#include "content/public/common/content_plugin_info.h"
 #endif
 
 #if BUILDFLAG(ENABLE_PDF)
@@ -100,79 +97,23 @@
 
 namespace {
 
-#if BUILDFLAG(ENABLE_PPAPI)
-#if BUILDFLAG(ENABLE_PDF)
-const char kPDFPluginExtension[] = "pdf";
-const char kPDFPluginDescription[] = "Portable Document Format";
-#endif  // BUILDFLAG(ENABLE_PDF)
-
 #if BUILDFLAG(ENABLE_NACL)
-content::PepperPluginInfo::GetInterfaceFunc g_nacl_get_interface;
-content::PepperPluginInfo::PPP_InitializeModuleFunc g_nacl_initialize_module;
-content::PepperPluginInfo::PPP_ShutdownModuleFunc g_nacl_shutdown_module;
+content::ContentPluginInfo::GetInterfaceFunc g_nacl_get_interface;
+content::ContentPluginInfo::PPP_InitializeModuleFunc g_nacl_initialize_module;
+content::ContentPluginInfo::PPP_ShutdownModuleFunc g_nacl_shutdown_module;
 #endif
-
-// Appends the known built-in plugins to the given vector. Some built-in
-// plugins are "internal" which means they are compiled into the Chrome binary,
-// and some are extra shared libraries distributed with the browser (these are
-// not marked internal, aside from being automatically registered, they're just
-// regular plugins).
-void ComputeBuiltInPlugins(std::vector<content::PepperPluginInfo>* plugins) {
-#if BUILDFLAG(ENABLE_PDF)
-  // TODO(thestig): Figure out how to make the PDF Viewer work without this
-  // PPAPI plugin registration.
-  content::PepperPluginInfo pdf_info;
-  pdf_info.is_internal = true;
-  pdf_info.is_out_of_process = true;
-  pdf_info.name = ChromeContentClient::kPDFInternalPluginName;
-  pdf_info.description = kPDFPluginDescription;
-  pdf_info.path = base::FilePath(ChromeContentClient::kPDFPluginPath);
-  content::WebPluginMimeType pdf_mime_type(
-      pdf::kInternalPluginMimeType, kPDFPluginExtension, kPDFPluginDescription);
-  pdf_info.mime_types.push_back(pdf_mime_type);
-  plugins->push_back(pdf_info);
-#endif  // BUILDFLAG(ENABLE_PDF)
-
-#if BUILDFLAG(ENABLE_NACL)
-  // Handle Native Client just like the PDF plugin. This means that it is
-  // enabled by default for the non-portable case.  This allows apps installed
-  // from the Chrome Web Store to use NaCl even if the command line switch
-  // isn't set.  For other uses of NaCl we check for the command line switch.
-  content::PepperPluginInfo nacl;
-  // The nacl plugin is now built into the Chromium binary.
-  nacl.is_internal = true;
-  nacl.path = base::FilePath(ChromeContentClient::kNaClPluginFileName);
-  nacl.name = nacl::kNaClPluginName;
-  content::WebPluginMimeType nacl_mime_type(nacl::kNaClPluginMimeType,
-                                            nacl::kNaClPluginExtension,
-                                            nacl::kNaClPluginDescription);
-  nacl.mime_types.push_back(nacl_mime_type);
-  content::WebPluginMimeType pnacl_mime_type(nacl::kPnaclPluginMimeType,
-                                             nacl::kPnaclPluginExtension,
-                                             nacl::kPnaclPluginDescription);
-  nacl.mime_types.push_back(pnacl_mime_type);
-  nacl.internal_entry_points.get_interface = g_nacl_get_interface;
-  nacl.internal_entry_points.initialize_module = g_nacl_initialize_module;
-  nacl.internal_entry_points.shutdown_module = g_nacl_shutdown_module;
-  nacl.permissions = ppapi::PERMISSION_PRIVATE | ppapi::PERMISSION_DEV;
-  plugins->push_back(nacl);
-#endif  // BUILDFLAG(ENABLE_NACL)
-}
-#endif  // BUILDFLAG(ENABLE_PPAPI)
 
 }  // namespace
 
-ChromeContentClient::ChromeContentClient() {
-}
+ChromeContentClient::ChromeContentClient() = default;
 
-ChromeContentClient::~ChromeContentClient() {
-}
+ChromeContentClient::~ChromeContentClient() = default;
 
 #if BUILDFLAG(ENABLE_NACL)
 void ChromeContentClient::SetNaClEntryFunctions(
-    content::PepperPluginInfo::GetInterfaceFunc get_interface,
-    content::PepperPluginInfo::PPP_InitializeModuleFunc initialize_module,
-    content::PepperPluginInfo::PPP_ShutdownModuleFunc shutdown_module) {
+    content::ContentPluginInfo::GetInterfaceFunc get_interface,
+    content::ContentPluginInfo::PPP_InitializeModuleFunc initialize_module,
+    content::ContentPluginInfo::PPP_ShutdownModuleFunc shutdown_module) {
   g_nacl_get_interface = get_interface;
   g_nacl_initialize_module = initialize_module;
   g_nacl_shutdown_module = shutdown_module;
@@ -193,32 +134,47 @@ void ChromeContentClient::SetGpuInfo(const gpu::GPUInfo& gpu_info) {
   gpu::SetKeysForCrashLogging(gpu_info);
 }
 
-#if BUILDFLAG(ENABLE_PPAPI)
-// static
-content::PepperPluginInfo* ChromeContentClient::FindMostRecentPlugin(
-    const std::vector<std::unique_ptr<content::PepperPluginInfo>>& plugins) {
-  if (plugins.empty())
-    return nullptr;
+void ChromeContentClient::AddPlugins(
+    std::vector<content::ContentPluginInfo>* plugins) {
+#if BUILDFLAG(ENABLE_PDF)
+  static constexpr char kPDFPluginExtension[] = "pdf";
+  static constexpr char kPDFPluginDescription[] = "Portable Document Format";
+  content::ContentPluginInfo pdf_info;
+  pdf_info.is_internal = true;
+  pdf_info.is_out_of_process = true;
+  pdf_info.name = ChromeContentClient::kPDFInternalPluginName;
+  pdf_info.description = kPDFPluginDescription;
+  pdf_info.path = base::FilePath(ChromeContentClient::kPDFPluginPath);
+  content::WebPluginMimeType pdf_mime_type(
+      pdf::kInternalPluginMimeType, kPDFPluginExtension, kPDFPluginDescription);
+  pdf_info.mime_types.push_back(pdf_mime_type);
+  plugins->push_back(pdf_info);
+#endif  // BUILDFLAG(ENABLE_PDF)
 
-  using PluginSortKey = std::tuple<base::Version, bool>;
-
-  std::map<PluginSortKey, content::PepperPluginInfo*> plugin_map;
-
-  for (auto& plugin : plugins) {
-    base::Version version(plugin->version);
-    DCHECK(version.IsValid());
-    plugin_map[PluginSortKey(version, plugin->is_external)] = plugin.get();
-  }
-
-  return plugin_map.rbegin()->second;
-}
-#endif  // BUILDFLAG(ENABLE_PPAPI)
-
-void ChromeContentClient::AddPepperPlugins(
-    std::vector<content::PepperPluginInfo>* plugins) {
-#if BUILDFLAG(ENABLE_PPAPI)
-  ComputeBuiltInPlugins(plugins);
-#endif  // BUILDFLAG(ENABLE_PPAPI)
+#if BUILDFLAG(ENABLE_NACL)
+  // Handle Native Client just like the PDF plugin. This means that it is
+  // enabled by default for the non-portable case.  This allows apps installed
+  // from the Chrome Web Store to use NaCl even if the command line switch
+  // isn't set.  For other uses of NaCl we check for the command line switch.
+  content::ContentPluginInfo nacl;
+  // The nacl plugin is now built into the Chromium binary.
+  nacl.is_internal = true;
+  nacl.path = base::FilePath(nacl::kInternalNaClPluginFileName);
+  nacl.name = nacl::kNaClPluginName;
+  content::WebPluginMimeType nacl_mime_type(nacl::kNaClPluginMimeType,
+                                            nacl::kNaClPluginExtension,
+                                            nacl::kNaClPluginDescription);
+  nacl.mime_types.push_back(nacl_mime_type);
+  content::WebPluginMimeType pnacl_mime_type(nacl::kPnaclPluginMimeType,
+                                             nacl::kPnaclPluginExtension,
+                                             nacl::kPnaclPluginDescription);
+  nacl.mime_types.push_back(pnacl_mime_type);
+  nacl.internal_entry_points.get_interface = g_nacl_get_interface;
+  nacl.internal_entry_points.initialize_module = g_nacl_initialize_module;
+  nacl.internal_entry_points.shutdown_module = g_nacl_shutdown_module;
+  nacl.permissions = ppapi::PERMISSION_PRIVATE | ppapi::PERMISSION_DEV;
+  plugins->push_back(nacl);
+#endif  // BUILDFLAG(ENABLE_NACL)
 }
 
 void ChromeContentClient::AddContentDecryptionModules(

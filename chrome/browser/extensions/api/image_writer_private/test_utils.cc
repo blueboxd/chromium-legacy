@@ -1,4 +1,4 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -19,11 +19,11 @@
 #include "chrome/common/chrome_paths.h"
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-#include "ash/components/disks/disk.h"
 #include "chromeos/ash/components/dbus/concierge/concierge_client.h"
 #include "chromeos/ash/components/dbus/dbus_thread_manager.h"  // nogncheck
 #include "chromeos/ash/components/dbus/image_burner/fake_image_burner_client.h"
 #include "chromeos/ash/components/dbus/image_burner/image_burner_client.h"
+#include "chromeos/ash/components/disks/disk.h"
 #endif
 
 namespace extensions {

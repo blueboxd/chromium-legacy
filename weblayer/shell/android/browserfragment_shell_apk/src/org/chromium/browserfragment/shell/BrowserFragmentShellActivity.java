@@ -24,7 +24,10 @@ import org.chromium.base.Log;
 import org.chromium.browserfragment.Browser;
 import org.chromium.browserfragment.BrowserFragment;
 import org.chromium.browserfragment.FragmentParams;
+import org.chromium.browserfragment.Navigation;
+import org.chromium.browserfragment.NavigationObserver;
 import org.chromium.browserfragment.Tab;
+import org.chromium.browserfragment.TabListObserver;
 import org.chromium.browserfragment.TabManager;
 import org.chromium.browserfragment.TabObserver;
 import org.chromium.browserfragment.WebMessageCallback;
@@ -43,6 +46,7 @@ public class BrowserFragmentShellActivity extends AppCompatActivity {
 
     private Context mContext;
 
+    private Browser mBrowser;
     private TabManager mTabManager;
 
     @Override
@@ -66,6 +70,7 @@ public class BrowserFragmentShellActivity extends AppCompatActivity {
 
         final Button createTabButton = findViewById(R.id.create_tab);
         final Button navigateButton = findViewById(R.id.navigate_tab);
+        final Button shutdownButton = findViewById(R.id.shut_down);
 
         createTabButton.setOnClickListener((View v) -> {
             if (mTabManager != null) {
@@ -86,32 +91,91 @@ public class BrowserFragmentShellActivity extends AppCompatActivity {
                 }, mContext.getMainExecutor());
             }
         });
+
+        shutdownButton.setOnClickListener((View v) -> {
+            if (mBrowser != null) {
+                mBrowser.shutdown();
+            }
+        });
     }
 
     private void onBrowserReady(Browser browser, Bundle savedInstanceState) {
+        mBrowser = browser;
         browser.setRemoteDebuggingEnabled(true);
 
         BrowserFragment fragment = getOrCreateBrowserFragment(browser, savedInstanceState);
 
-        fragment.registerTabObserver(new TabObserver() {
+        fragment.registerTabListObserver(new TabListObserver() {
             @Override
             public void onActiveTabChanged(@Nullable Tab activeTab) {
-                Log.i(TAG, "received 'onActiveTabChanged'-event");
+                Log.i(TAG, "received BrowserEvent: 'onActiveTabChanged'-event");
             }
 
             @Override
             public void onTabAdded(@NonNull Tab tab) {
-                Log.i(TAG, "received 'onTabAdded'-event");
+                Log.i(TAG, "received BrowserEvent: 'onTabAdded'-event");
+                tab.registerTabObserver(new TabObserver() {
+                    @Override
+                    public void onVisibleUriChanged(@NonNull String uri) {
+                        Log.i(TAG, "received TabEvent: 'onVisibleUriChanged(" + uri + ")'");
+                    }
+
+                    @Override
+                    public void onTitleUpdated(@NonNull String title) {
+                        Log.i(TAG, "received TabEvent: 'onTitleUpdated(" + title + ")'");
+                    }
+
+                    @Override
+                    public void onRenderProcessGone() {
+                        Log.i(TAG, "received TabEvent: 'onRenderProcessGone()'");
+                    }
+                });
+
+                tab.getNavigationController().registerNavigationObserver(new NavigationObserver() {
+                    @Override
+                    public void onNavigationFailed(@NonNull Navigation navigation) {
+                        Log.i(TAG, "received NavigationEvent: 'onNavigationFailed()';");
+                        Log.i(TAG,
+                                "Navigation: url:" + navigation.getUri()
+                                        + ", HTTP-StatusCode: " + navigation.getStatusCode()
+                                        + ", samePage: " + navigation.isSameDocument());
+                    }
+
+                    @Override
+                    public void onNavigationCompleted(@NonNull Navigation navigation) {
+                        Log.i(TAG, "received NavigationEvent: 'onNavigationCompleted()';");
+                        Log.i(TAG,
+                                "Navigation: url:" + navigation.getUri()
+                                        + ", HTTP-StatusCode: " + navigation.getStatusCode()
+                                        + ", samePage: " + navigation.isSameDocument());
+                    }
+
+                    @Override
+                    public void onNavigationStarted(@NonNull Navigation navigation) {
+                        Log.i(TAG, "received NavigationEvent: 'onNavigationStarted()'");
+                        Log.i(TAG,
+                                "Navigation: url:" + navigation.getUri()
+                                        + ", HTTP-StatusCode: " + navigation.getStatusCode()
+                                        + ", samePage: " + navigation.isSameDocument());
+                    }
+
+                    @Override
+                    public void onLoadProgressChanged(double progress) {
+                        Log.i(TAG,
+                                "received NavigationEvent: 'onLoadProgressChanged(" + progress
+                                        + ")'");
+                    }
+                });
             }
 
             @Override
             public void onTabRemoved(@NonNull Tab tab) {
-                Log.i(TAG, "received 'onTabRemoved'-event");
+                Log.i(TAG, "received BrowserEvent: 'onTabRemoved'-event");
             }
 
             @Override
             public void onWillDestroyBrowserAndAllTabs() {
-                Log.i(TAG, "received 'onWillDestroyBrowserAndAllTabs'-event");
+                Log.i(TAG, "received BrowserEvent: 'onWillDestroyBrowserAndAllTabs'-event");
             }
         });
         ListenableFuture<TabManager> tabManagerFuture = fragment.getTabManager();

@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 #include "components/autofill/core/browser/ui/suggestion_selection.h"
@@ -126,7 +126,7 @@ std::vector<Suggestion> GetPrefixMatchedSuggestions(
       }
 
       suggestions.emplace_back(value);
-      suggestions.back().payload = profile->guid();
+      suggestions.back().payload = Suggestion::BackendId(profile->guid());
       suggestions.back().match = prefix_matched_suggestion
                                      ? Suggestion::PREFIX_MATCH
                                      : Suggestion::SUBSTRING_MATCH;
@@ -311,8 +311,10 @@ void PrepareSuggestions(const std::vector<std::u16string>& labels,
       // produced for it may both be a zip code.
       if (!comparator.Compare(
               (*suggestions)[index_to_add_suggestion].main_text.value,
-              labels[i])) {
-        (*suggestions)[index_to_add_suggestion].label = labels[i];
+              labels[i]) &&
+          !labels[i].empty()) {
+        (*suggestions)[index_to_add_suggestion].labels = {
+            {Suggestion::Text(labels[i])}};
       }
       ++index_to_add_suggestion;
     }

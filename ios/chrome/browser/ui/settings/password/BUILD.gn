@@ -1,4 +1,4 @@
-# Copyright 2019 The Chromium Authors. All rights reserved.
+# Copyright 2019 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -13,10 +13,9 @@ source_set("password") {
     "passwords_coordinator.mm",
     "passwords_mediator.h",
     "passwords_mediator.mm",
-    "saved_passwords_presenter_observer.h",
-    "saved_passwords_presenter_observer.mm",
   ]
   deps = [
+    ":common",
     ":password_ui",
     "//base",
     "//components/autofill/core/common",
@@ -36,6 +35,7 @@ source_set("password") {
     "//ios/chrome/browser/ui/commands",
     "//ios/chrome/browser/ui/coordinators:chrome_coordinators",
     "//ios/chrome/browser/ui/settings/password/password_details",
+    "//ios/chrome/browser/ui/settings/password/password_settings",
     "//ios/chrome/browser/ui/settings/password/passwords_in_other_apps",
     "//ios/chrome/browser/ui/settings/utils",
     "//ios/chrome/browser/ui/table_view",
@@ -48,6 +48,18 @@ source_set("password") {
     "//url",
   ]
   frameworks = [ "MobileCoreServices.framework" ]
+}
+
+source_set("common") {
+  configs += [ "//build/config/compiler:enable_arc" ]
+  sources = [
+    "saved_passwords_presenter_observer.h",
+    "saved_passwords_presenter_observer.mm",
+  ]
+  deps = [
+    "//base",
+    "//components/password_manager/core/browser",
+  ]
 }
 
 source_set("password_ui") {
@@ -86,6 +98,7 @@ source_set("password_ui") {
     "//ios/chrome/app/strings",
     "//ios/chrome/browser",
     "//ios/chrome/browser/browser_state",
+    "//ios/chrome/browser/flags:system_flags",
     "//ios/chrome/browser/main:public",
     "//ios/chrome/browser/net:crurl",
     "//ios/chrome/browser/passwords",
@@ -263,6 +276,7 @@ source_set("eg2_tests") {
     "//ios/chrome/browser/ui/authentication:eg_test_support+eg2",
     "//ios/chrome/browser/ui/settings:settings_root_constants",
     "//ios/chrome/browser/ui/settings/google_services:constants",
+    "//ios/chrome/browser/ui/settings/password/password_settings:password_settings_constants",
     "//ios/chrome/browser/ui/util",
     "//ios/chrome/common/ui/reauthentication",
     "//ios/chrome/common/ui/table_view:cells_constants",

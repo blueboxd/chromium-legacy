@@ -182,7 +182,7 @@ void OneShotAccessibilityTreeSearch::SearchByWalkingTree() {
       // This needs to be handled carefully. If not, there is a chance of
       // getting into infinite loop.
       if (can_wrap_to_last_element_ && !stop_node &&
-          node->manager()->GetRoot() == node) {
+          node->manager()->GetBrowserAccessibilityRoot() == node) {
         stop_node = node;
       }
       node = tree_->PreviousInTreeOrder(node, can_wrap_to_last_element_);
@@ -370,6 +370,9 @@ bool AccessibilityLandmarkPredicate(BrowserAccessibility* start,
     case ax::mojom::Role::kBanner:
     case ax::mojom::Role::kComplementary:
     case ax::mojom::Role::kContentInfo:
+    case ax::mojom::Role::kFooter:
+    case ax::mojom::Role::kForm:
+    case ax::mojom::Role::kHeader:
     case ax::mojom::Role::kMain:
     case ax::mojom::Role::kNavigation:
     case ax::mojom::Role::kRegion:

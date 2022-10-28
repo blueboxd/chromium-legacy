@@ -150,6 +150,7 @@ struct WavyParams {
   float resolved_thickness;
   bool spelling_grammar;
   Color color;
+  DISALLOW_NEW();
 };
 
 float WavyDecorationSizing(const WavyParams& params) {
@@ -537,12 +538,6 @@ ETextDecorationStyle TextDecorationInfo::DecorationStyle() const {
 }
 
 Color TextDecorationInfo::LineColor() const {
-  // TODO(rego): Allow customize the spelling and grammar error color with
-  // text-decoration-color property.
-  if (line_data_.line == TextDecorationLine::kSpellingError)
-    return LayoutTheme::GetTheme().PlatformSpellingMarkerUnderlineColor();
-  if (line_data_.line == TextDecorationLine::kGrammarError)
-    return LayoutTheme::GetTheme().PlatformGrammarMarkerUnderlineColor();
   if (highlight_override_)
     return *highlight_override_;
 
@@ -627,6 +622,7 @@ void TextDecorationInfo::ComputeWavyLineData(
     WavyParams key;
     gfx::RectF pattern_rect;
     sk_sp<cc::PaintRecord> tile_record;
+    DISALLOW_NEW();
   };
 
   DEFINE_STATIC_LOCAL(absl::optional<WavyCache>, wavy_cache, (absl::nullopt));

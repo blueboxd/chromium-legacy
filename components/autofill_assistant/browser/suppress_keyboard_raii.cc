@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -37,7 +37,9 @@ void SuppressKeyboardRAII::RenderFrameCreated(
 
 void SuppressKeyboardRAII::SuppressKeyboard(bool suppress) {
   web_contents()->GetPrimaryMainFrame()->ForEachRenderFrameHost(
-      base::BindRepeating(&SuppressKeyboardForFrame, suppress));
+      [suppress](content::RenderFrameHost* rfh) {
+        SuppressKeyboardForFrame(suppress, rfh);
+      });
 }
 
 }  // namespace autofill_assistant

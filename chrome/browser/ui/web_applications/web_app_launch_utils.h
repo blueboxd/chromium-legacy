@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -50,6 +50,9 @@ Browser* ReparentWebContentsIntoAppBrowser(content::WebContents* contents,
 // that is part of an app.
 void SetWebContentsActingAsApp(content::WebContents* contents,
                                const AppId& app_id);
+
+// Marks the web contents as being the pinned home tab of a tabbed web app.
+void SetWebContentsIsPinnedHomeTab(content::WebContents* contents);
 
 // Set preferences that are unique to app windows.
 void SetAppPrefsForWebContents(content::WebContents* web_contents);

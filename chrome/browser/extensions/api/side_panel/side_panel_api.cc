@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -44,7 +44,7 @@ ExtensionFunction::ResponseAction SidePanelGetOptionsFunction::RunFunction() {
                     : absl::nullopt;
   const api::side_panel::PanelOptions& options =
       GetService()->GetOptions(*extension(), tab_id);
-  return RespondNow(OneArgument(std::move(*options.ToValue())));
+  return RespondNow(OneArgument(base::Value(options.ToValue())));
 }
 
 ExtensionFunction::ResponseAction SidePanelSetOptionsFunction::RunFunction() {

@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -18,6 +18,7 @@ class BruschettaServiceFactory : public ProfileKeyedServiceFactory {
  public:
   static bruschetta::BruschettaService* GetForProfile(Profile* profile);
   static BruschettaServiceFactory* GetInstance();
+  static void EnableForTesting(Profile* profile);
 
   BruschettaServiceFactory(const BruschettaServiceFactory&) = delete;
   BruschettaServiceFactory& operator=(const BruschettaServiceFactory&) = delete;
@@ -31,6 +32,9 @@ class BruschettaServiceFactory : public ProfileKeyedServiceFactory {
   // BrowserContextKeyedServiceFactory:
   KeyedService* BuildServiceInstanceFor(
       content::BrowserContext* context) const override;
+
+  bool ServiceIsCreatedWithBrowserContext() const override;
+  bool ServiceIsNULLWhileTesting() const override;
 };
 
 }  // namespace bruschetta

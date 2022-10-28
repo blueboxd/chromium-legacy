@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -111,8 +111,6 @@ absl::optional<ArcFeatures> ParseFeaturesJson(base::StringPiece input_json) {
 
 absl::optional<ArcFeatures> ReadOnFileThread(const base::FilePath& file_path) {
   DCHECK(!file_path.empty());
-  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
-                                                base::BlockingType::MAY_BLOCK);
 
   std::string input_json;
   {

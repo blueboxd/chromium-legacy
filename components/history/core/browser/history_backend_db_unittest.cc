@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -2828,6 +2828,33 @@ TEST_F(HistoryBackendDBTest, MigrateAnnotationsAddColumnsForSync) {
   }
 }
 
+TEST_F(HistoryBackendDBTest, MigrateVisitsAddIsKnownToSyncColumn) {
+  ASSERT_NO_FATAL_FAILURE(CreateDBVersion(58));
+
+  // Open the old version of the DB and make sure the new columns don't exist
+  // yet. Also add some visits marked as from SYNC in the old style.
+  {
+    sql::Database db;
+    ASSERT_TRUE(db.Open(history_dir_.Append(kHistoryFilename)));
+    ASSERT_FALSE(db.DoesColumnExist("visits", "is_known_to_sync"));
+  }
+
+  // Re-open the db, triggering migration.
+  CreateBackendAndDatabase();
+
+  // The version should have been updated.
+  ASSERT_GE(HistoryDatabase::GetCurrentVersion(), 59);
+
+  DeleteBackend();
+
+  // Open the db manually again and make sure the new columns exist.
+  {
+    sql::Database db;
+    ASSERT_TRUE(db.Open(history_dir_.Append(kHistoryFilename)));
+    EXPECT_TRUE(db.DoesColumnExist("visits", "is_known_to_sync"));
+  }
+}
+
 // ^^^ NEW MIGRATION TESTS GO HERE ^^^
 
 // Preparation for the next DB migration: This test verifies that the test DB
@@ -2839,6 +2866,15 @@ TEST_F(HistoryBackendDBTest, MigrateAnnotationsAddColumnsForSync) {
 // pre-exists, so adding the NEXT migration doesn't require reverse engineering.
 // If you introduce a new migration, add a test for it above, and add a new
 // history.n.sql file for the new DB layout so that this test keeps passing.
+// SQL schemas can change without migrations, so make sure to verify the
+// history.n-1.sql is up-to-date by re-creating. The flow to create a migration
+// n should be:
+// 1) There should already exist history.n-1.sql.
+// 2) Re-create history.n-1.sql to make sure it hasn't changed since it was
+//    created.
+// 3) Add a migration test beginning with `CreateDBVersion(n-1)` and ending with
+//    `ASSERT_GE(HistoryDatabase::GetCurrentVersion(), n);`
+// 4) Create history.n.sql.
 TEST_F(HistoryBackendDBTest, VerifyTestSQLFileForCurrentVersionAlreadyExists) {
   ASSERT_NO_FATAL_FAILURE(
       CreateDBVersion(HistoryDatabase::GetCurrentVersion()));

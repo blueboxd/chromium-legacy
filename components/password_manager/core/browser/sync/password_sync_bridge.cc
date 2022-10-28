@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -29,6 +29,7 @@
 #include "components/sync/model/in_memory_metadata_change_list.h"
 #include "components/sync/model/metadata_batch.h"
 #include "components/sync/model/metadata_change_list.h"
+#include "components/sync/model/model_error.h"
 #include "components/sync/model/model_type_change_processor.h"
 #include "components/sync/model/mutable_data_batch.h"
 #include "components/sync/model/sync_metadata_store_change_list.h"
@@ -343,6 +344,11 @@ void PasswordSyncBridge::ActOnPasswordStoreChanges(
       }
     }
   }
+
+  if (absl::optional<syncer::ModelError> error =
+          metadata_change_list.TakeError()) {
+    change_processor()->ReportError(*error);
+  }
 }
 
 std::unique_ptr<syncer::MetadataChangeList>
@@ -526,12 +532,12 @@ absl::optional<syncer::ModelError> PasswordSyncBridge::MergeSyncData(
           "PasswordManager.MergeSyncData.AddLoginSyncError",
           add_credential_error);
 
-      // TODO(crbug.com/939302): It's not yet clear if the DCHECK_LE below is
-      // legit. However, recent crashes suggest that 2 changes are returned
-      // when trying to AddCredentialSync (details are in the bug). Once this is
-      // resolved, we should update the call the UpdateStorageKey() if
-      // necessary and remove unnecessary DCHECKs below.
-      // DCHECK_LE(changes.size(), 1U);
+      // In almost all cases, `AddCredentialSync` should have returned exactly 1
+      // change, corresponding to the new addition. There might be 0 in case of
+      // a DB error, or there might be 2 in a specific edge case: A matching
+      // local password (same client tag) already exists in the DB, but wasn't
+      // returned by the `ReadAllCredentials` call above. This can happen if the
+      // password data in un-decryptable.
       DCHECK_LE(changes.size(), 2U);
       if (changes.empty()) {
         DCHECK_NE(add_credential_error, AddCredentialError::kNone);

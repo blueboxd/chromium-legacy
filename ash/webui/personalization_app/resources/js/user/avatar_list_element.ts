@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,7 +12,7 @@ import {Url} from 'chrome://resources/mojo/url/mojom/url.mojom-webui.js';
 
 import {DefaultUserImage, UserImage} from '../personalization_app.mojom-webui.js';
 import {WithPersonalizationStore} from '../personalization_store.js';
-import {decodeString16, isNonEmptyArray, isSelectionEvent} from '../utils.js';
+import {decodeString16, getSanitizedDefaultImageUrl, isNonEmptyArray, isSelectionEvent} from '../utils.js';
 
 import {AvatarCamera, AvatarCameraMode} from './avatar_camera_element.js';
 import {getTemplate} from './avatar_list_element.html.js';
@@ -54,6 +54,10 @@ type Option = EnumeratedOption|DefaultOption;
 function isDefaultOption(option: Option): option is DefaultOption {
   return option &&
       typeof (option as DefaultOption).defaultImageIndex === 'number';
+}
+
+function camelToKebab(className: string): string {
+  return className.replace(/[A-Z]/g, m => '-' + m.toLowerCase());
 }
 
 export class AvatarList extends WithPersonalizationStore {
@@ -160,7 +164,7 @@ export class AvatarList extends WithPersonalizationStore {
       icon: 'personalization:folder',
       title: this.i18n('chooseAFile'),
     });
-    if (profileImage) {
+    if (profileImage && profileImage.url) {
       options.push({
         id: OptionId.PROFILE_IMAGE,
         class: 'image-container',
@@ -183,7 +187,7 @@ export class AvatarList extends WithPersonalizationStore {
         options.push({
           id: `defaultUserImage-${defaultImage.index}`,
           class: 'image-container',
-          imgSrc: defaultImage.url.url,
+          imgSrc: getSanitizedDefaultImageUrl(defaultImage.url).url,
           icon: 'personalization:checkmark',
           title: decodeString16(defaultImage.title),
           defaultImageIndex: defaultImage.index,
@@ -348,15 +352,11 @@ export class AvatarList extends WithPersonalizationStore {
     }
   }
 
-  private camelToKebab_(className: string): string {
-    return className.replace(/[A-Z]/g, m => '-' + m.toLowerCase());
-  }
-
   private getOptionInnerContainerClass_(option: Option, image: UserImage|null):
       string {
     const defaultClass = option ? option.class : 'image-container';
     return this.getAriaSelected_(option, image) === 'true' ?
-        `${defaultClass} tast-selected-${this.camelToKebab_(option.id)}` :
+        `${defaultClass} tast-selected-${camelToKebab(option.id)}` :
         defaultClass;
   }
 }

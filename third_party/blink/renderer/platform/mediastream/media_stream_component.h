@@ -32,12 +32,13 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_MEDIASTREAM_MEDIA_STREAM_COMPONENT_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_MEDIASTREAM_MEDIA_STREAM_COMPONENT_H_
 
+#include "third_party/blink/public/platform/modules/mediastream/web_media_stream_sink.h"
 #include "third_party/blink/public/platform/modules/mediastream/web_media_stream_track.h"
+#include "third_party/blink/public/web/modules/mediastream/media_stream_video_sink.h"
 #include "third_party/blink/renderer/platform/audio/audio_source_provider.h"
 #include "third_party/blink/renderer/platform/heap/collection_support/heap_vector.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/heap/prefinalizer.h"
-#include "third_party/blink/renderer/platform/mediastream/media_constraints.h"
 #include "third_party/blink/renderer/platform/mediastream/media_stream_source.h"
 #include "third_party/blink/renderer/platform/mediastream/media_stream_track_platform.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
@@ -78,16 +79,30 @@ class PLATFORM_EXPORT MediaStreamComponent : public GarbageCollectedMixin {
 
   virtual MediaStreamTrackPlatform* GetPlatformTrack() const = 0;
 
-  // Deprecated - use the MediaStreamComponentImpl constructor which takes a
-  // MediaStreamTrackPlatform instead.
-  // TODO(crbug.com/1302689): Remove once all callers have been migrated.
-  [[deprecated]] virtual void SetPlatformTrack(
-      std::unique_ptr<MediaStreamTrackPlatform> platform_track) = 0;
+  // Add an audio sink to the underlying platform track. This function must only
+  // be called if the component has an audio platform track. It will trigger a
+  // OnSetFormat() call on the |sink| before the first chunk of audio is
+  // delivered.
+  // TODO(crbug.com/1354563) Create separate MSC types for audio and video
+  virtual void AddSink(WebMediaStreamAudioSink* sink) = 0;
+  // Add a video sink to the underlying platform track. This function must only
+  // be called if the component has a video platform track.  The |sink| will
+  // receive video track state changes on the main render thread and video
+  // frames in the |callback| method on the IO-thread.  |callback| will be reset
+  // on the render thread.
+  // TODO(crbug.com/1354563) Create separate MSC types for audio and video
+  virtual void AddSink(WebMediaStreamSink* sink,
+                       const VideoCaptureDeliverFrameCB& callback,
+                       MediaStreamVideoSink::IsSecure is_secure,
+                       MediaStreamVideoSink::UsesAlpha uses_alpha) = 0;
+
   virtual void GetSettings(MediaStreamTrackPlatform::Settings&) = 0;
   virtual MediaStreamTrackPlatform::CaptureHandle GetCaptureHandle() = 0;
 
   virtual WebLocalFrame* CreationFrame() = 0;
   virtual void SetCreationFrame(WebLocalFrame* creation_frame) = 0;
+
+  virtual void AddSourceObserver(MediaStreamSource::Observer*) = 0;
 
   virtual String ToString() const = 0;
 };

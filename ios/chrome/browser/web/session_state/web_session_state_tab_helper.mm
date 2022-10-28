@@ -1,35 +1,35 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #import "ios/chrome/browser/web/session_state/web_session_state_tab_helper.h"
 
-#include "base/feature_list.h"
-#include "base/files/file_path.h"
-#include "base/files/file_util.h"
+#import "base/feature_list.h"
+#import "base/files/file_path.h"
+#import "base/files/file_util.h"
 #import "base/logging.h"
-#include "base/mac/foundation_util.h"
-#include "base/memory/ptr_util.h"
-#include "base/metrics/histogram_macros.h"
-#include "base/path_service.h"
-#include "base/strings/string_util.h"
-#include "base/task/sequenced_task_runner.h"
-#include "base/threading/thread_restrictions.h"
+#import "base/mac/foundation_util.h"
+#import "base/memory/ptr_util.h"
+#import "base/metrics/histogram_macros.h"
+#import "base/path_service.h"
+#import "base/strings/string_util.h"
+#import "base/task/sequenced_task_runner.h"
+#import "base/threading/thread_restrictions.h"
 #import "build/branding_buildflags.h"
-#include "components/strings/grit/components_strings.h"
-#include "ios/chrome/browser/browser_state/chrome_browser_state.h"
-#include "ios/chrome/browser/chrome_url_constants.h"
-#include "ios/chrome/browser/web/features.h"
+#import "components/strings/grit/components_strings.h"
+#import "ios/chrome/browser/browser_state/chrome_browser_state.h"
+#import "ios/chrome/browser/chrome_url_constants.h"
+#import "ios/chrome/browser/web/features.h"
 #import "ios/chrome/browser/web/session_state/web_session_state_cache.h"
 #import "ios/chrome/browser/web/session_state/web_session_state_cache_factory.h"
-#include "ios/web/common/features.h"
+#import "ios/web/common/features.h"
 #import "ios/web/public/js_messaging/web_frame.h"
-#include "ios/web/public/navigation/navigation_context.h"
+#import "ios/web/public/navigation/navigation_context.h"
 #import "ios/web/public/navigation/navigation_manager.h"
 #import "ios/web/public/session/serializable_user_data_manager.h"
-#include "ios/web/public/web_client.h"
+#import "ios/web/public/web_client.h"
 #import "ios/web/public/web_state.h"
-#include "ui/base/l10n/l10n_util.h"
+#import "ui/base/l10n/l10n_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -118,7 +118,7 @@ void WebSessionStateTabHelper::SaveSessionState() {
     WebSessionStateCache* cache =
         WebSessionStateCacheFactory::GetForBrowserState(GetBrowserState());
     // To prevent very large session states from using too much space, don't
-    // persist any |data| larger than 5MB.  If this happens, remove the now
+    // persist any `data` larger than 5MB.  If this happens, remove the now
     // stale session state data.
     if (size_kb > kMaxSessionState) {
       [cache removeSessionStateDataForWebState:web_state_];
@@ -156,7 +156,7 @@ void WebSessionStateTabHelper::WebFrameDidBecomeAvailable(
     return;
 
   // -WebFrameDidBecomeAvailable is called much more often than navigations, so
-  // check if either |item_count_| or |last_committed_item_index_| has changed
+  // check if either `item_count_` or `last_committed_item_index_` has changed
   // before marking a page as stale.
   web::NavigationManager* navigation_manager =
       web_state->GetNavigationManager();

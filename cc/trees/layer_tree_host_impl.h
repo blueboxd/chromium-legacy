@@ -1,4 +1,4 @@
-// Copyright 2011 The Chromium Authors. All rights reserved.
+// Copyright 2011 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -148,6 +148,8 @@ class LayerTreeHostImplClient {
       bool needs_first_draw_on_activation) = 0;
   // Called when a requested image decode completes.
   virtual void NotifyImageDecodeRequestFinished() = 0;
+
+  virtual void NotifyTransitionRequestFinished(uint32_t sequence_id) = 0;
 
   // Called when a presentation time is requested. |frame_token| identifies
   // the frame that was presented. |callbacks| holds both impl side and main
@@ -330,9 +332,11 @@ class CC_EXPORT LayerTreeHostImpl : public TileManagerClient,
       CommitEarlyOutReason reason,
       std::vector<std::unique_ptr<SwapPromise>> swap_promises,
       const viz::BeginFrameArgs& args,
+      bool next_bmf,
       bool scroll_and_viewport_changes_synced);
   virtual void ReadyToCommit(
       const viz::BeginFrameArgs& commit_args,
+      bool scroll_and_viewport_changes_synced,
       const BeginMainFrameMetrics* begin_main_frame_metrics,
       bool commit_timeout = false);
   virtual void BeginCommit(int source_frame_number, uint64_t trace_id);
@@ -698,7 +702,8 @@ class CC_EXPORT LayerTreeHostImpl : public TileManagerClient,
 
   // During commit, processes and returns changes in the compositor since the
   // last commit.
-  std::unique_ptr<CompositorCommitData> ProcessCompositorDeltas();
+  std::unique_ptr<CompositorCommitData> ProcessCompositorDeltas(
+      const MutatorHost* main_thread_mutator_host);
 
   DroppedFrameCounter* dropped_frame_counter() {
     return &dropped_frame_counter_;
@@ -823,9 +828,6 @@ class CC_EXPORT LayerTreeHostImpl : public TileManagerClient,
   std::vector<std::pair<int, bool>> TakeCompletedImageDecodeRequests();
   // Returns mutator events to be handled by BeginMainFrame.
   std::unique_ptr<MutatorEvents> TakeMutatorEvents();
-
-  // Returns all of the transition request sequence ids that were finished.
-  std::vector<uint32_t> TakeFinishedTransitionRequestSequenceIds();
 
   void ClearHistory();
   size_t CommitDurationSampleCountForTesting() const;
@@ -1307,8 +1309,6 @@ class CC_EXPORT LayerTreeHostImpl : public TileManagerClient,
   // When enabled, calculates which frame sinks can be throttled based on
   // some pre-defined criteria.
   ThrottleDecider throttle_decider_;
-
-  std::vector<uint32_t> finished_transition_request_sequence_ids_;
 
   bool downsample_metrics_ = true;
   base::MetricsSubSampler metrics_subsampler_;

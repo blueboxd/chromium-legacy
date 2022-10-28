@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -29,24 +29,67 @@ namespace {
 
 // Converts help bubble arrow to WebUI bubble position. This is not a complete
 // mapping as many HelpBubbleArrow options are not (yet) supported in WebUI.
-help_bubble::mojom::HelpBubblePosition HelpBubbleArrowToPosition(
+help_bubble::mojom::HelpBubbleArrowPosition HelpBubbleArrowToPosition(
     HelpBubbleArrow arrow) {
   switch (arrow) {
     case HelpBubbleArrow::kBottomLeft:
+      return help_bubble::mojom::HelpBubbleArrowPosition::BOTTOM_LEFT;
     case HelpBubbleArrow::kBottomCenter:
+      return help_bubble::mojom::HelpBubbleArrowPosition::BOTTOM_CENTER;
     case HelpBubbleArrow::kBottomRight:
-      return help_bubble::mojom::HelpBubblePosition::ABOVE;
+      return help_bubble::mojom::HelpBubbleArrowPosition::BOTTOM_RIGHT;
+
+    case HelpBubbleArrow::kTopLeft:
+      return help_bubble::mojom::HelpBubbleArrowPosition::TOP_LEFT;
+    case HelpBubbleArrow::kTopCenter:
+      return help_bubble::mojom::HelpBubbleArrowPosition::TOP_CENTER;
+    case HelpBubbleArrow::kTopRight:
+      return help_bubble::mojom::HelpBubbleArrowPosition::TOP_RIGHT;
+
     case HelpBubbleArrow::kLeftTop:
+      return help_bubble::mojom::HelpBubbleArrowPosition::LEFT_TOP;
     case HelpBubbleArrow::kLeftCenter:
+      return help_bubble::mojom::HelpBubbleArrowPosition::LEFT_CENTER;
     case HelpBubbleArrow::kLeftBottom:
-      return help_bubble::mojom::HelpBubblePosition::RIGHT;
+      return help_bubble::mojom::HelpBubbleArrowPosition::LEFT_BOTTOM;
+
     case HelpBubbleArrow::kRightTop:
+      return help_bubble::mojom::HelpBubbleArrowPosition::RIGHT_TOP;
     case HelpBubbleArrow::kRightCenter:
+      return help_bubble::mojom::HelpBubbleArrowPosition::RIGHT_CENTER;
     case HelpBubbleArrow::kRightBottom:
-      return help_bubble::mojom::HelpBubblePosition::LEFT;
+      return help_bubble::mojom::HelpBubbleArrowPosition::RIGHT_BOTTOM;
+
     default:
-      return help_bubble::mojom::HelpBubblePosition::BELOW;
+      NOTIMPLEMENTED();
   }
+  return help_bubble::mojom::HelpBubbleArrowPosition::TOP_CENTER;
+}
+
+std::string SnakeCaseFromCamelCase(std::string input) {
+  std::string output;
+  output.reserve(input.size());
+  for (const char c : input) {
+    if (std::isupper(c) && !output.empty())
+      output.push_back('_');
+    output.push_back(std::tolower(c));
+  }
+  return output;
+}
+
+// Retrieve the file name from the generated gfx::VectorIcon name
+// - Remove the 'k' prefix and 'Icon' suffix from gfx::VectorIcon.name
+// - The remaining portion of the name is converted from CamelCase to
+//      snake_case to yield the original file name
+std::string GetFileNameFromIcon(raw_ptr<const gfx::VectorIcon> icon) {
+  std::string icon_name = icon->name;
+  constexpr char kPrefix[] = "k";
+  constexpr char kSuffix[] = "Icon";
+  DCHECK(base::StartsWith(icon_name, kPrefix));
+  DCHECK(base::EndsWith(icon_name, kSuffix));
+  icon_name.erase(0, strlen(kPrefix));
+  icon_name.erase(icon_name.length() - strlen(kSuffix));
+  return SnakeCaseFromCamelCase(icon_name);
 }
 
 }  // namespace
@@ -126,15 +169,23 @@ std::unique_ptr<HelpBubbleWebUI> HelpBubbleHandlerBase::CreateHelpBubble(
   mojom_params->close_button_alt_text =
       base::UTF16ToUTF8(data.params->close_button_alt_text);
   mojom_params->force_close_button = data.params->force_close_button;
+  auto timeout = data.params->timeout.value_or(
+      data.params->buttons.empty() ? kDefaultTimeoutWithoutButtons
+                                   : kDefaultTimeoutWithButtons);
+  if (!timeout.is_zero())
+    mojom_params->timeout = timeout;
+  if (data.params->body_icon)
+    mojom_params->body_icon_name = GetFileNameFromIcon(data.params->body_icon);
+  mojom_params->body_icon_alt_text =
+      base::UTF16ToUTF8(data.params->body_icon_alt_text);
   mojom_params->position = HelpBubbleArrowToPosition(data.params->arrow);
   if (data.params->progress) {
     mojom_params->progress = help_bubble::mojom::Progress::New();
     mojom_params->progress->current = data.params->progress->first;
     mojom_params->progress->total = data.params->progress->second;
   }
-  if (!data.params->title_text.empty()) {
+  if (!data.params->title_text.empty())
     mojom_params->title_text = base::UTF16ToUTF8(data.params->title_text);
-  }
   for (auto& button : data.params->buttons) {
     auto mojom_button = help_bubble::mojom::HelpBubbleButtonParams::New();
     mojom_button->text = base::UTF16ToUTF8(button.text);
@@ -178,7 +229,9 @@ void HelpBubbleHandlerBase::HelpBubbleAnchorVisibilityChanged(
       // has additional code which executes after it. If that changes, the weak
       // pointer can be moved closer to the top of this method.
       auto weak_ptr = weak_ptr_factory_.GetWeakPtr();
-      HelpBubbleClosed(identifier_name, false);
+      HelpBubbleClosed(
+          identifier_name,
+          help_bubble::mojom::HelpBubbleClosedReason::kPageChanged);
       if (!weak_ptr)
         return;
     }
@@ -227,8 +280,9 @@ void HelpBubbleHandlerBase::HelpBubbleButtonPressed(
   data->closing = false;
 }
 
-void HelpBubbleHandlerBase::HelpBubbleClosed(const std::string& identifier_name,
-                                             bool by_user) {
+void HelpBubbleHandlerBase::HelpBubbleClosed(
+    const std::string& identifier_name,
+    help_bubble::mojom::HelpBubbleClosedReason reason) {
   ElementData* const data = GetDataByName(identifier_name);
   if (!data)
     return;
@@ -244,13 +298,22 @@ void HelpBubbleHandlerBase::HelpBubbleClosed(const std::string& identifier_name,
   auto weak_ptr = weak_ptr_factory_.GetWeakPtr();
   data->closing = true;
 
-  if (by_user) {
-    base::OnceClosure callback = std::move(data->params->dismiss_callback);
-    if (callback) {
-      std::move(callback).Run();
-      if (!weak_ptr)
-        return;
-    }
+  base::OnceClosure callback;
+  switch (reason) {
+    case help_bubble::mojom::HelpBubbleClosedReason::kDismissedByUser:
+      callback = std::move(data->params->dismiss_callback);
+      break;
+    case help_bubble::mojom::HelpBubbleClosedReason::kTimedOut:
+      callback = std::move(data->params->timeout_callback);
+      break;
+    case help_bubble::mojom::HelpBubbleClosedReason::kPageChanged:
+      break;
+  }
+
+  if (callback) {
+    std::move(callback).Run();
+    if (!weak_ptr)
+      return;
   }
 
   // This could also theoretically trigger callbacks.

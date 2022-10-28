@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -330,7 +330,8 @@ bool CastAudioOutputDevice::SetVolume(double volume) {
   return ::media::OutputDeviceInfo(
       std::string(), ::media::OUTPUT_DEVICE_STATUS_OK,
       ::media::AudioParameters(::media::AudioParameters::AUDIO_PCM_LOW_LATENCY,
-                               ::media::CHANNEL_LAYOUT_STEREO, 48000, 480));
+                               ::media::ChannelLayoutConfig::Stereo(), 48000,
+                               480));
 }
 
 void CastAudioOutputDevice::GetOutputDeviceInfoAsync(

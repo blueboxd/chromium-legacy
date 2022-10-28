@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,7 +13,9 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
-namespace cros_healthd = chromeos::cros_healthd::mojom;
+namespace reporting::test {
+
+namespace cros_healthd = ::ash::cros_healthd::mojom;
 using ::testing::Eq;
 using ::testing::StrEq;
 
@@ -32,9 +34,6 @@ struct MemoryEncryptionTestCase {
   int64_t max_keys;
   int64_t key_length;
 };
-
-namespace reporting {
-namespace test {
 
 // Memory constants.
 constexpr int64_t kTmeMaxKeys = 2;
@@ -162,6 +161,74 @@ cros_healthd::TelemetryInfoPtr CreateInputInfo(
   return telemetry_info;
 }
 
+cros_healthd::EmbeddedDisplayInfoPtr CreateEmbeddedDisplay(
+    bool privacy_screen_supported,
+    int display_width,
+    int display_height,
+    int resolution_horizontal,
+    int resolution_vertical,
+    double refresh_rate,
+    std::string manufacturer,
+    int model_id,
+    int manufacture_year,
+    std::string display_name) {
+  return cros_healthd::EmbeddedDisplayInfo::New(
+      privacy_screen_supported, /*privacy_screen_enabled*/ false,
+      cros_healthd::NullableUint32::New(display_width),
+      cros_healthd::NullableUint32::New(display_height),
+      cros_healthd::NullableUint32::New(resolution_horizontal),
+      cros_healthd::NullableUint32::New(resolution_vertical),
+      cros_healthd::NullableDouble::New(refresh_rate), manufacturer,
+      cros_healthd::NullableUint16::New(model_id),
+      /*serial_number*/ cros_healthd::NullableUint32::New(12345),
+      /*manufacture_week*/ cros_healthd::NullableUint8::New(10),
+      cros_healthd::NullableUint16::New(manufacture_year),
+      /*edid_version*/ "V2.0",
+      /*input_type*/ cros_healthd::DisplayInputType::kDigital, display_name);
+}
+
+cros_healthd::ExternalDisplayInfoPtr CreateExternalDisplay(
+    int display_width,
+    int display_height,
+    int resolution_horizontal,
+    int resolution_vertical,
+    double refresh_rate,
+    std::string manufacturer,
+    int model_id,
+    int manufacture_year,
+    std::string display_name) {
+  return cros_healthd::ExternalDisplayInfo ::New(
+      cros_healthd::NullableUint32::New(display_width),
+      cros_healthd::NullableUint32::New(display_height),
+      cros_healthd::NullableUint32::New(resolution_horizontal),
+      cros_healthd::NullableUint32::New(resolution_vertical),
+      cros_healthd::NullableDouble::New(refresh_rate), manufacturer,
+      cros_healthd::NullableUint16::New(model_id),
+      /*serial_number*/ cros_healthd::NullableUint32::New(12345),
+      /*manufacture_week*/ cros_healthd::NullableUint8::New(10),
+      cros_healthd::NullableUint16::New(manufacture_year),
+      /*edid_version*/ "V2.0",
+      /*input_type*/ cros_healthd::DisplayInputType::kDigital, display_name);
+}
+
+cros_healthd::TelemetryInfoPtr CreateDisplayResult(
+    cros_healthd::EmbeddedDisplayInfoPtr embedded_display,
+    std::vector<cros_healthd::ExternalDisplayInfoPtr> external_displays) {
+  auto telemetry_info = cros_healthd::TelemetryInfo::New();
+  telemetry_info->display_result = cros_healthd::DisplayResult::NewDisplayInfo(
+      cros_healthd::DisplayInfo::New(std::move(embedded_display),
+                                     std::move(external_displays)));
+  return telemetry_info;
+}
+
+cros_healthd::TelemetryInfoPtr CreatePrivacyScreenResult(bool supported) {
+  auto telemetry_info = cros_healthd::TelemetryInfo::New();
+  telemetry_info->display_result = cros_healthd::DisplayResult::NewDisplayInfo(
+      cros_healthd::DisplayInfo::New(cros_healthd::EmbeddedDisplayInfo::New(
+          supported, /*privacy_screen_enabled*/ false)));
+  return telemetry_info;
+}
+
 absl::optional<MetricData> CollectData(
     cros_healthd::TelemetryInfoPtr telemetry_info,
     cros_healthd::ProbeCategoryEnum probe_category,
@@ -186,7 +253,7 @@ class CrosHealthdMetricSamplerTest : public testing::Test {
   }
 
  protected:
-  base::test::SingleThreadTaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_;
 };
 
 class CrosHealthdMetricSamplerTbtTest
@@ -481,6 +548,24 @@ TEST_F(CrosHealthdMetricSamplerTest, TestMojomError) {
       std::move(telemetry_info), cros_healthd::ProbeCategoryEnum::kInput,
       CrosHealthdMetricSampler::MetricType::kInfo);
   EXPECT_FALSE(input_data.has_value());
+
+  telemetry_info = cros_healthd::TelemetryInfo::New();
+  telemetry_info->display_result =
+      cros_healthd::DisplayResult::NewError(cros_healthd::ProbeError::New(
+          cros_healthd::ErrorType::kFileReadError, ""));
+  const absl::optional<MetricData> display_info_data = CollectData(
+      std::move(telemetry_info), cros_healthd::ProbeCategoryEnum::kDisplay,
+      CrosHealthdMetricSampler::MetricType::kInfo);
+  EXPECT_FALSE(display_info_data.has_value());
+
+  telemetry_info = cros_healthd::TelemetryInfo::New();
+  telemetry_info->display_result =
+      cros_healthd::DisplayResult::NewError(cros_healthd::ProbeError::New(
+          cros_healthd::ErrorType::kFileReadError, ""));
+  const absl::optional<MetricData> display_telemetry_data = CollectData(
+      std::move(telemetry_info), cros_healthd::ProbeCategoryEnum::kDisplay,
+      CrosHealthdMetricSampler::MetricType::kTelemetry);
+  EXPECT_FALSE(display_telemetry_data.has_value());
 }
 
 TEST_F(CrosHealthdMetricSamplerTest, TestAudioNormalTest) {
@@ -743,6 +828,224 @@ TEST_F(CrosHealthdMetricSamplerTest, TestTouchScreenInfoDisabled) {
   ASSERT_FALSE(optional_result.has_value());
 }
 
+TEST_F(CrosHealthdMetricSamplerTest, TestPrivacyScreenNormalTest) {
+  const absl::optional<MetricData> optional_result =
+      CollectData(CreatePrivacyScreenResult(/*privacy_screen_supported*/ true),
+                  cros_healthd::ProbeCategoryEnum::kDisplay,
+                  CrosHealthdMetricSampler::MetricType::kInfo);
+
+  ASSERT_TRUE(optional_result.has_value());
+  const MetricData& result = optional_result.value();
+
+  ASSERT_TRUE(result.has_info_data());
+  ASSERT_TRUE(result.info_data().has_privacy_screen_info());
+  ASSERT_TRUE(result.info_data().privacy_screen_info().supported());
+}
+
+TEST_F(CrosHealthdMetricSamplerTest, TestDisplayInfoOnlyInternalDisplay) {
+  bool kPrivacyScreenSupported = true;
+  auto kDisplayWidth = 1080;
+  auto kDisplayHeight = 27282;
+  constexpr char kDisplayManufacture[] = "Samsung";
+  auto kDisplayManufactureYear = 2020;
+  auto kDisplayModelId = 54321;
+  constexpr char kDisplayName[] = "Internal display";
+
+  const absl::optional<MetricData> optional_result = CollectData(
+      CreateDisplayResult(CreateEmbeddedDisplay(
+                              kPrivacyScreenSupported, kDisplayWidth,
+                              kDisplayHeight, /*resolution_horizontal*/ 1000,
+                              /*resolution_vertical*/ 500, /*refresh_rate*/ 100,
+                              kDisplayManufacture, kDisplayModelId,
+                              kDisplayManufactureYear, kDisplayName),
+                          std::vector<cros_healthd::ExternalDisplayInfoPtr>()),
+      cros_healthd::ProbeCategoryEnum::kDisplay,
+      CrosHealthdMetricSampler::MetricType::kInfo);
+
+  ASSERT_TRUE(optional_result.has_value());
+  const MetricData& result = optional_result.value();
+
+  ASSERT_TRUE(result.has_info_data());
+  ASSERT_TRUE(result.info_data().has_display_info());
+  ASSERT_EQ(result.info_data().display_info().display_device_size(), 1);
+
+  ASSERT_TRUE(result.info_data().has_privacy_screen_info());
+  ASSERT_TRUE(result.info_data().privacy_screen_info().supported());
+
+  auto internal_display = result.info_data().display_info().display_device(0);
+  EXPECT_EQ(internal_display.display_name(), kDisplayName);
+  EXPECT_EQ(internal_display.manufacturer(), kDisplayManufacture);
+  EXPECT_EQ(internal_display.display_width(), kDisplayWidth);
+  EXPECT_EQ(internal_display.display_height(), kDisplayHeight);
+  EXPECT_EQ(internal_display.model_id(), kDisplayModelId);
+  EXPECT_EQ(internal_display.manufacture_year(), kDisplayManufactureYear);
+}
+
+TEST_F(CrosHealthdMetricSamplerTest, TestDisplayInfoMultipleDisplays) {
+  bool kPrivacyScreenSupported = false;
+  auto kDisplayWidth = 1080;
+  auto kDisplayHeight = 27282;
+  constexpr char kDisplayManufacture[] = "Samsung";
+  auto kDisplayManufactureYear = 2020;
+  auto kDisplayModelId = 54321;
+  constexpr char kDisplayName[] = "Internal display";
+
+  std::vector<cros_healthd::ExternalDisplayInfoPtr> external_displays;
+  external_displays.push_back(CreateExternalDisplay(
+      kDisplayWidth, kDisplayHeight, /*resolution_horizontal*/ 1000,
+      /*resolution_vertical*/ 500, /*refresh_rate*/ 100, kDisplayManufacture,
+      kDisplayModelId, kDisplayManufactureYear, kDisplayName));
+  external_displays.push_back(CreateExternalDisplay(
+      kDisplayWidth, kDisplayHeight, /*resolution_horizontal*/ 1000,
+      /*resolution_vertical*/ 500, /*refresh_rate*/ 100, kDisplayManufacture,
+      kDisplayModelId, kDisplayManufactureYear, kDisplayName));
+
+  const absl::optional<MetricData> optional_result = CollectData(
+      CreateDisplayResult(CreateEmbeddedDisplay(
+                              kPrivacyScreenSupported, kDisplayWidth,
+                              kDisplayHeight, /*resolution_horizontal*/ 1000,
+                              /*resolution_vertical*/ 500, /*refresh_rate*/ 100,
+                              kDisplayManufacture, kDisplayModelId,
+                              kDisplayManufactureYear, kDisplayName),
+                          std::move(external_displays)),
+      cros_healthd::ProbeCategoryEnum::kDisplay,
+      CrosHealthdMetricSampler::MetricType::kInfo);
+
+  ASSERT_TRUE(optional_result.has_value());
+  const MetricData& result = optional_result.value();
+
+  ASSERT_TRUE(result.has_info_data());
+  ASSERT_TRUE(result.info_data().has_display_info());
+  ASSERT_EQ(result.info_data().display_info().display_device_size(), 3);
+
+  ASSERT_TRUE(result.info_data().has_privacy_screen_info());
+  ASSERT_FALSE(result.info_data().privacy_screen_info().supported());
+
+  auto internal_display = result.info_data().display_info().display_device(0);
+  EXPECT_EQ(internal_display.display_name(), kDisplayName);
+  EXPECT_EQ(internal_display.manufacturer(), kDisplayManufacture);
+  EXPECT_EQ(internal_display.display_width(), kDisplayWidth);
+  EXPECT_EQ(internal_display.display_height(), kDisplayHeight);
+  EXPECT_EQ(internal_display.model_id(), kDisplayModelId);
+  EXPECT_EQ(internal_display.manufacture_year(), kDisplayManufactureYear);
+
+  auto external_display_1 = result.info_data().display_info().display_device(1);
+  EXPECT_EQ(external_display_1.display_name(), kDisplayName);
+  EXPECT_EQ(external_display_1.manufacturer(), kDisplayManufacture);
+  EXPECT_EQ(external_display_1.display_width(), kDisplayWidth);
+  EXPECT_EQ(external_display_1.display_height(), kDisplayHeight);
+  EXPECT_EQ(external_display_1.model_id(), kDisplayModelId);
+  EXPECT_EQ(external_display_1.manufacture_year(), kDisplayManufactureYear);
+
+  auto external_display_2 = result.info_data().display_info().display_device(2);
+  EXPECT_EQ(external_display_2.display_name(), kDisplayName);
+  EXPECT_EQ(external_display_2.manufacturer(), kDisplayManufacture);
+  EXPECT_EQ(external_display_2.display_width(), kDisplayWidth);
+  EXPECT_EQ(external_display_2.display_height(), kDisplayHeight);
+  EXPECT_EQ(external_display_2.model_id(), kDisplayModelId);
+  EXPECT_EQ(external_display_2.manufacture_year(), kDisplayManufactureYear);
+}
+
+TEST_F(CrosHealthdMetricSamplerTest, TestDisplayTelemetryOnlyInternalDisplay) {
+  auto kResolutionHorizontal = 1080;
+  auto kResolutionVertical = 27282;
+  auto kRefreshRate = 54321;
+  constexpr char kDisplayName[] = "Internal display";
+
+  const absl::optional<MetricData> optional_result = CollectData(
+      CreateDisplayResult(CreateEmbeddedDisplay(
+                              /*privacy_screen_supported*/ false,
+                              /*display_width*/ 1000,
+                              /*display_height*/ 900, kResolutionHorizontal,
+                              kResolutionVertical, kRefreshRate,
+                              /*manufacturer*/ "Samsung",
+                              /*model_id*/ 100,
+                              /*manufacture_year*/ 2020, kDisplayName),
+                          std::vector<cros_healthd::ExternalDisplayInfoPtr>()),
+      cros_healthd::ProbeCategoryEnum::kDisplay,
+      CrosHealthdMetricSampler::MetricType::kTelemetry);
+
+  ASSERT_TRUE(optional_result.has_value());
+  const MetricData& result = optional_result.value();
+
+  ASSERT_TRUE(result.has_telemetry_data());
+  ASSERT_TRUE(result.telemetry_data().has_displays_telemetry());
+  ASSERT_EQ(result.telemetry_data().displays_telemetry().display_status_size(),
+            1);
+
+  auto internal_display =
+      result.telemetry_data().displays_telemetry().display_status(0);
+  EXPECT_EQ(internal_display.display_name(), kDisplayName);
+  EXPECT_EQ(internal_display.resolution_horizontal(), kResolutionHorizontal);
+  EXPECT_EQ(internal_display.resolution_vertical(), kResolutionVertical);
+  EXPECT_EQ(internal_display.refresh_rate(), kRefreshRate);
+}
+
+TEST_F(CrosHealthdMetricSamplerTest, TestDisplayTelemetryMultipleDisplays) {
+  auto kResolutionHorizontal = 1080;
+  auto kResolutionVertical = 27282;
+  auto kRefreshRate = 54321;
+  constexpr char kDisplayName[] = "Internal display";
+
+  std::vector<cros_healthd::ExternalDisplayInfoPtr> external_displays;
+  external_displays.push_back(CreateExternalDisplay(
+      /*display_width*/ 1000,
+      /*display_height*/ 900, kResolutionHorizontal, kResolutionVertical,
+      kRefreshRate,
+      /*manufacturer*/ "Samsung",
+      /*model_id*/ 100,
+      /*manufacture_year*/ 2020, kDisplayName));
+  external_displays.push_back(CreateExternalDisplay(
+      /*display_width*/ 1000,
+      /*display_height*/ 900, kResolutionHorizontal, kResolutionVertical,
+      kRefreshRate,
+      /*manufacturer*/ "Samsung",
+      /*model_id*/ 100,
+      /*manufacture_year*/ 2020, kDisplayName));
+
+  const absl::optional<MetricData> optional_result = CollectData(
+      CreateDisplayResult(CreateEmbeddedDisplay(
+                              /*privacy_screen_supported*/ false,
+                              /*display_width*/ 1000,
+                              /*display_height*/ 900, kResolutionHorizontal,
+                              kResolutionVertical, kRefreshRate,
+                              /*manufacturer*/ "Samsung",
+                              /*model_id*/ 100,
+                              /*manufacture_year*/ 2020, kDisplayName),
+                          std::move(external_displays)),
+      cros_healthd::ProbeCategoryEnum::kDisplay,
+      CrosHealthdMetricSampler::MetricType::kTelemetry);
+
+  ASSERT_TRUE(optional_result.has_value());
+  const MetricData& result = optional_result.value();
+
+  ASSERT_TRUE(result.has_telemetry_data());
+  ASSERT_TRUE(result.telemetry_data().has_displays_telemetry());
+  ASSERT_EQ(result.telemetry_data().displays_telemetry().display_status_size(),
+            3);
+
+  auto internal_display =
+      result.telemetry_data().displays_telemetry().display_status(0);
+  EXPECT_EQ(internal_display.display_name(), kDisplayName);
+  EXPECT_EQ(internal_display.resolution_horizontal(), kResolutionHorizontal);
+  EXPECT_EQ(internal_display.resolution_vertical(), kResolutionVertical);
+  EXPECT_EQ(internal_display.refresh_rate(), kRefreshRate);
+
+  auto external_display_1 =
+      result.telemetry_data().displays_telemetry().display_status(1);
+  EXPECT_EQ(external_display_1.display_name(), kDisplayName);
+  EXPECT_EQ(external_display_1.resolution_horizontal(), kResolutionHorizontal);
+  EXPECT_EQ(external_display_1.resolution_vertical(), kResolutionVertical);
+  EXPECT_EQ(external_display_1.refresh_rate(), kRefreshRate);
+
+  auto external_display_2 =
+      result.telemetry_data().displays_telemetry().display_status(2);
+  EXPECT_EQ(external_display_2.display_name(), kDisplayName);
+  EXPECT_EQ(external_display_2.resolution_horizontal(), kResolutionHorizontal);
+  EXPECT_EQ(external_display_2.resolution_vertical(), kResolutionVertical);
+  EXPECT_EQ(external_display_2.refresh_rate(), kRefreshRate);
+}
+
 INSTANTIATE_TEST_SUITE_P(
     CrosHealthdMetricSamplerTbtTests,
     CrosHealthdMetricSamplerTbtTest,
@@ -833,5 +1136,5 @@ INSTANTIATE_TEST_SUITE_P(
         CrosHealthdMetricSamplerMemoryEncryptionTest::ParamType>& info) {
       return info.param.test_name;
     });
-}  // namespace test
-}  // namespace reporting
+
+}  // namespace reporting::test

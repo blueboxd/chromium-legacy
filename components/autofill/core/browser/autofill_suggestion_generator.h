@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,7 +11,8 @@
 
 #include "base/gtest_prod_util.h"
 #include "base/memory/raw_ptr.h"
-#include "base/types/strong_alias.h"
+#include "base/types/id_type.h"
+#include "components/autofill/core/browser/ui/suggestion.h"
 
 namespace base {
 class Time;
@@ -28,9 +29,8 @@ struct FormFieldData;
 class FormStructure;
 class IBAN;
 class PersonalDataManager;
-struct Suggestion;
 
-using InternalId = base::StrongAlias<class InternalIdTag, int>;
+using InternalId = base::IdType32<class InternalIdTag>;
 
 // Helper class to generate Autofill suggestions, such as for credit card and
 // address profile Autofill.
@@ -83,13 +83,15 @@ class AutofillSuggestionGenerator {
 
   // Methods for packing and unpacking credit card and profile IDs for sending
   // and receiving to and from the renderer process.
-  int MakeFrontendId(const std::string& cc_backend_id,
-                     const std::string& profile_backend_id) const;
+  int MakeFrontendId(const Suggestion::BackendId& cc_backend_id,
+                     const Suggestion::BackendId& profile_backend_id);
   void SplitFrontendId(int frontend_id,
-                       std::string* cc_backend_id,
-                       std::string* profile_backend_id) const;
+                       Suggestion::BackendId* cc_backend_id,
+                       Suggestion::BackendId* profile_backend_id);
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(AutofillSuggestionGeneratorTest,
+                           BackendIdAndInternalIdMappings);
   FRIEND_TEST_ALL_PREFIXES(AutofillSuggestionGeneratorTest,
                            CreateCreditCardSuggestion_LocalCard);
   FRIEND_TEST_ALL_PREFIXES(AutofillSuggestionGeneratorTest,
@@ -133,11 +135,11 @@ class AutofillSuggestionGenerator {
   const CreditCard* GetServerCardForLocalCard(
       const CreditCard* local_card) const;
 
-  // Maps suggestion backend ID to and from an integer identifying it. Two of
-  // these intermediate integers are packed by MakeFrontendID to make the IDs
-  // that this class generates for the UI and for IPC.
-  InternalId BackendIdToInternalId(const std::string& backend_id) const;
-  std::string InternalIdToBackendId(InternalId int_id) const;
+  // Maps suggestion backend ID to and from an internal ID identifying it. Two
+  // of these intermediate internal IDs are packed by MakeFrontendID to make the
+  // IDs that this class generates for the UI and for IPC.
+  InternalId BackendIdToInternalId(const Suggestion::BackendId& backend_id);
+  Suggestion::BackendId InternalIdToBackendId(InternalId internal_id);
 
   // autofill_client_ and the generator are both one per tab, and have the same
   // lifecycle.
@@ -146,11 +148,12 @@ class AutofillSuggestionGenerator {
   // personal_data_ should outlive the generator.
   raw_ptr<PersonalDataManager> personal_data_;
 
-  // Suggestion backend ID to ID mapping. We keep two maps to convert back and
-  // forth. These should be used only by BackendIDToInt and IntToBackendID.
-  // Note that the integers are not frontend IDs.
-  mutable std::map<std::string, InternalId> backend_to_int_map_;
-  mutable std::map<InternalId, std::string> int_to_backend_map_;
+  // Suggestion backend ID to internal ID mapping. We keep two maps to convert
+  // back and forth. These should be used only by BackendIdToInternalId and
+  // InternalIdToBackendId.
+  // Note that the internal IDs are not frontend IDs.
+  std::map<Suggestion::BackendId, InternalId> backend_to_internal_map_;
+  std::map<InternalId, Suggestion::BackendId> internal_to_backend_map_;
 };
 
 }  // namespace autofill

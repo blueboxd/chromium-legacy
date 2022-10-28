@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -72,14 +72,13 @@ void SaveSiteToOAuthSignedInList(PrefService* pref_service, const GURL& url) {
 }
 
 bool IsSiteInOAuthSignedInList(PrefService* pref_service, const GURL& url) {
-  return pref_service->GetValueDict(kOAuthSignedInSitesPref)
+  return pref_service->GetDict(kOAuthSignedInSitesPref)
       .contains(GetSiteNameForURL(url));
 }
 
 std::vector<url::Origin> GetOAuthSignedInSites(PrefService* pref_service) {
   std::vector<url::Origin> sites;
-  for (const auto site_entry :
-       pref_service->GetValueDict(kOAuthSignedInSitesPref)) {
+  for (const auto site_entry : pref_service->GetDict(kOAuthSignedInSitesPref)) {
     sites.push_back(url::Origin::Create(GURL(site_entry.first)));
   }
   return sites;

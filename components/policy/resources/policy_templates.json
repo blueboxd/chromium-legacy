@@ -1003,6 +1003,7 @@
         'ReportDeviceNetworkTelemetryCollectionRateMs',
         'ReportDeviceNetworkTelemetryEventCheckingRateMs',
         'ReportDeviceAudioStatusCheckingRateMs',
+        'ReportDeviceSignalStrengthEventDrivenTelemetry',
       ],
     },
     {
@@ -1163,6 +1164,7 @@
         'DevicePrintersAccessMode',
         'DevicePrintersBlocklist',
         'DevicePrintersAllowlist',
+        'DevicePrintingClientNameTemplate',
         'PrintPreviewUseSystemDefaultPrinter',
         'UserNativePrintersAllowed',
         'UserPrintersAllowed',
@@ -1244,6 +1246,7 @@
         'VoiceInteractionHotwordEnabled',
         'AssistantVoiceMatchEnabledDuringOobe',
         'VoiceInteractionQuickAnswersEnabled',
+        'AssistantWebEnabled',
       ]
     },
     {
@@ -3169,6 +3172,36 @@
       'caption': '''Restrict background graphics printing mode''',
       'tags': [],
       'desc': '''Restricts background graphics printing mode. Unset policy is treated as no restriction.''',
+    },
+    {
+      'name': 'DevicePrintingClientNameTemplate',
+      'owners': ['ust@google.com', 'srad@google.com'],
+      'type': 'string',
+      'schema': { 'type': 'string' },
+      'future_on': ['chrome_os'],
+      'device_only': True,
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': False,
+      },
+      'example_value': 'chromebook-${DEVICE_ASSET_ID}',
+      'id': 1007,
+      'caption': '''Template for the <ph name="CLIENT_NAME_IPP_ATTRIBUTE">'client-name'</ph> <ph name="INTERNET_PRINTING_PROTOCOL">Internet Printing Protocol</ph> <ph name="IPP_ATTRIBUTE">attribute</ph>''',
+      'tags': [],
+      'desc': '''This policy controls the value of the <ph name="CLIENT_INFO_IPP_ATTRIBUTE">'client-info'</ph> <ph name="IPP_PROTOCOL">IPP</ph> (<ph name="INTERNET_PRINTING_PROTOCOL">Internet Printing Protocol</ph>) <ph name="IPP_ATTRIBUTE">attribute</ph> in print jobs.
+
+      Setting the policy to a string has the effect of adding an additional <ph name="CLIENT_INFO_IPP_ATTRIBUTE">'client-info'</ph> item to every print job. The <ph name="CLIENT_NAME_IPP_ATTRIBUTE">'client-name'</ph> member of the added <ph name="CLIENT_INFO_IPP_ATTRIBUTE">'client-info'</ph> item will be set to the value of the policy after substitution of variables.
+
+      Supported variables are <ph name="DIRECTORY_ID_PLACEHOLDER">${DEVICE_DIRECTORY_ID}</ph>, <ph name="SERIAL_NUMBER_PLACEHOLDER">${DEVICE_SERIAL_NUMBER}</ph>, <ph name="ASSET_ID_PLACEHOLDER">${DEVICE_ASSET_ID}</ph>, <ph name="ANNOTATED_LOCATION_PLACEHOLDER">${DEVICE_ANNOTATED_LOCATION}</ph>. Unsupported placeholder variables will not be substituted.
+
+      The resulting value after substitution of variables is considered valid if it consists only of <ph name="ASCII">ASCII</ph> printable characters and its length does not exceed 255.
+
+      Note that, for privacy reasons, this policy applies only when communicating with a printer using <ph name="IPPS_PROTOCOL">IPPS</ph>, <ph name="HTTPS_PROTOCOL">HTTPS</ph>, <ph name="USB_PROTOCOL">USB</ph> or <ph name="IPP_USB_PROTOCOL">IPP-over-USB</ph> protocols. Also, note that this policy only applies to printers that support <ph name="CLIENT_NAME_IPP_ATTRIBUTE">'client-name'</ph>.
+
+      The policy only applies to affiliated users.
+
+      If the policy is unset, set to an empty or invalid value, an additional <ph name="CLIENT_INFO_PLACEHOLDER">'client-info'</ph> will not be added to print job requests.
+      ''',
     },
     {
       'name': 'PrintingColorDefault',
@@ -9315,7 +9348,7 @@
     },
     {
       'name': 'ChromeOsLockOnIdleSuspend',
-      'owners': ['xiyuan@chromium.org', 'ultrotter@chromium.org'],
+      'owners': ['xiyuan@chromium.org', 'ultrotter@chromium.org', 'chromeos-power@google.com'],
       'type': 'main',
       'schema': { 'type': 'boolean' },
       'supported_on': ['chrome_os:9-'],
@@ -9327,27 +9360,33 @@
       'items': [
         {
           'value': True,
-          'caption': 'Lock the device when it becomes idle or suspended',
+          'caption': 'Lock the device when it suspends or the lid is closed',
         },
         {
           'value': False,
-          'caption': 'Prevent the device from locking when it becomes idle or suspended',
+          'caption': 'Do not lock the device when it suspends or the lid is closed',
         },
         {
           'value': None,
-          'caption': 'Allow users to decide whether the device should lock when it becomes idle or suspended',
+          'caption': 'Allow users to decide whether the device should lock when it suspends or the lid is closed',
         },
       ],
       'example_value': True,
       'default': None,
       'id': 61,
-      'caption': '''Enable lock when the device become idle or suspended''',
+      'caption': '''Enable lock when the device suspends or the lid is closed''',
       'tags': [],
-      'desc': '''Setting the policy to Enabled means <ph name="PRODUCT_OS_NAME">$2<ex>Google ChromeOS</ex></ph> asks users for a password to unlock the device when it becomes idle.
+      'desc': '''Setting the policy to Enabled means <ph name="PRODUCT_OS_NAME">$2<ex>Google ChromeOS</ex></ph> asks users for a password to unlock the device when it suspends or the lid is closed.
 
-      Setting the policy to Disabled means users are not asked for a password to unlock the device from sleep.
+      Devices will lock when the lid is closed except if they are docked (using an external monitor).  In such a case, the device will not lock when the lid closes, but will lock if the external monitor is removed and the lid is still closed.
 
-      Leaving the policy unset lets the user choose whether to be prompted for a password to unlock the device from sleep.''',
+      Until <ph name="PRODUCT_OS_NAME">$2<ex>Google ChromeOS</ex></ph> M106, this policy would only lock the device when it suspends.  From M106 onwards, this policy will lock the device when it suspends or the lid is closed.
+
+      By setting this policy to true, and <ph name="LID_CLOSE_ACTION_POLICY_NAME">LidCloseAction</ph> to <ph name="LID_CLOSE_ACTION_ENUM_DO_NOTHING">LidCloseActionDoNothing</ph>, a device will lock when the lid is closed, but will only suspend if and when configured to do so in <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME">PowerManagementIdleSettings</ph>.
+
+      Setting the policy to Disabled means users are not asked for a password to unlock the device.
+
+      Leaving the policy unset lets the user choose whether to be prompted for a password to unlock the device.''',
     },
     {
       'name': 'ChromeOsMultiProfileUserBehavior',
@@ -11268,7 +11307,8 @@
       'owners': ['file://components/policy/resources/OWNERS', 'pmarko@chromium.org'],
       'type': 'main',
       'schema': { 'type': 'boolean' },
-      'supported_on': ['chrome_os:77-83', 'chrome.linux:79-83', 'chrome.mac:83-'],
+      'supported_on': ['chrome_os:77-83', 'chrome.linux:79-83', 'chrome.mac:83-106'],
+      'deprecated': True,
       'features': {
         'dynamic_refresh': False,
         'per_profile': False,
@@ -11292,12 +11332,11 @@
       'id': 575,
       'caption': '''Determines whether the built-in certificate verifier will be used to verify server certificates''',
       'tags': [],
-      'desc': '''When this setting is enabled, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will perform verification of server certificates using the built-in certificate verifier.
-      When this setting is disabled, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will perform verification of server certificates using the legacy certificate verifier provided by the platform, unless <ph name="CHROME_ROOT_STORE_ENABLED_POLICY_NAME">ChromeRootStoreEnabled</ph> is enabled.
-      When this setting is not set, the built-in or the legacy certificate verifier may be used.
+      'desc': '''This policy is no longer supported, however the related policy <ph name="CHROME_ROOT_STORE_ENABLED_POLICY_NAME">ChromeRootStoreEnabled</ph> may be supported on certain platforms.
 
-      This policy is planned to be removed in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> for <ph name="MAC_OS_NAME">macOS</ph> version 107, when support for the legacy certificate verifier on <ph name="MAC_OS_NAME">macOS</ph> is planned to be removed.
-      ''',
+      When this setting is enabled, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will perform verification of server certificates using the built-in certificate verifier.
+      When this setting is disabled, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will perform verification of server certificates using the legacy certificate verifier provided by the platform, unless <ph name="CHROME_ROOT_STORE_ENABLED_POLICY_NAME">ChromeRootStoreEnabled</ph> is enabled.
+      When this setting is not set, the built-in or the legacy certificate verifier may be used.''',
     },
     {
       'name': 'ChromeRootStoreEnabled',
@@ -12107,6 +12146,16 @@
       'features': {
         'dynamic_refresh': True,
       },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Enable device power status reporting',
+        },
+        {
+          'value': False,
+          'caption': 'Disable device power status reporting',
+        },
+      ],
       'example_value': False,
       'id': 512,
       'caption': '''Report power status''',
@@ -12158,6 +12207,16 @@
       'features': {
         'dynamic_refresh': True,
       },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Enable device storage status reporting',
+        },
+        {
+          'value': False,
+          'caption': 'Disable device storage status reporting',
+        },
+      ],
       'example_value': False,
       'id': 513,
       'caption': '''Report storage status''',
@@ -12179,6 +12238,16 @@
       'features': {
         'dynamic_refresh': True,
       },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Enable device board status reporting',
+        },
+        {
+          'value': False,
+          'caption': 'Disable device board status reporting',
+        },
+      ],
       'example_value': False,
       'id': 514,
       'caption': '''Report board status''',
@@ -12199,6 +12268,16 @@
       'features': {
         'dynamic_refresh': True,
       },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Enable device CPU info reporting',
+        },
+        {
+          'value': False,
+          'caption': 'Disable device CPU info reporting',
+        },
+      ],
       'example_value': False,
       'id': 656,
       'caption': '''Report CPU info''',
@@ -12220,6 +12299,16 @@
       'features': {
         'dynamic_refresh': True,
       },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Enable device timezone info reporting',
+        },
+        {
+          'value': False,
+          'caption': 'Disable device timezone info reporting',
+        },
+      ],
       'example_value': False,
       'id': 671,
       'caption': '''Report Timezone info''',
@@ -12241,6 +12330,16 @@
       'features': {
         'dynamic_refresh': True,
       },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Enable device memory info reporting',
+        },
+        {
+          'value': False,
+          'caption': 'Disable device memory info reporting',
+        },
+      ],
       'example_value': False,
       'id': 682,
       'caption': '''Report memory info''',
@@ -12262,6 +12361,16 @@
       'features': {
         'dynamic_refresh': True,
       },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Enable device backlight info reporting',
+        },
+        {
+          'value': False,
+          'caption': 'Disable device backlight info reporting',
+        },
+      ],
       'example_value': False,
       'id': 686,
       'caption': '''Report backlight info''',
@@ -12283,6 +12392,16 @@
       'features': {
         'dynamic_refresh': True,
       },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Enable device app info reporting',
+        },
+        {
+          'value': False,
+          'caption': 'Disable device app info reporting',
+        },
+      ],
       'example_value': False,
       'id': 702,
       'caption': '''Report applications information''',
@@ -12304,6 +12423,16 @@
       'features': {
         'dynamic_refresh': True,
       },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Enable device Bluetooth info reporting',
+        },
+        {
+          'value': False,
+          'caption': 'Disable device Bluetooth info reporting',
+        },
+      ],
       'example_value': False,
       'id': 708,
       'caption': '''Report Bluetooth info''',
@@ -12325,6 +12454,16 @@
       'features': {
         'dynamic_refresh': True,
       },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Enable device fan info reporting',
+        },
+        {
+          'value': False,
+          'caption': 'Disable device fan info reporting',
+        },
+      ],
       'example_value': False,
       'id': 709,
       'caption': '''Report fan info''',
@@ -12346,6 +12485,16 @@
       'features': {
         'dynamic_refresh': True,
       },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Enable device VPD info reporting',
+        },
+        {
+          'value': False,
+          'caption': 'Disable device VPD info reporting',
+        },
+      ],
       'example_value': False,
       'id': 710,
       'caption': '''Report VPD info''',
@@ -12368,6 +12517,16 @@
       'features': {
         'dynamic_refresh': True,
       },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Enable device system info reporting',
+        },
+        {
+          'value': False,
+          'caption': 'Disable device system info reporting',
+        },
+      ],
       'example_value': False,
       'id': 741,
       'caption': '''Report system info''',
@@ -12551,6 +12710,52 @@
       'desc': '''If <ph name="LINUX_OS_NAME">Linux</ph> app support is on, setting the policy to Enabled sends information about <ph name="LINUX_OS_NAME">Linux</ph> apps usage back to the server.
 
       Setting the policy to Disabled or leaving it unset means no usage information is reported.''',
+    },
+    {
+      'name': 'ReportDeviceSignalStrengthEventDrivenTelemetry',
+      'owners': ['anasr@google.com', 'cros-reporting-team@google.com'],
+      'type': 'string-enum-list',
+      'schema': {
+        'type': 'array',
+        'items': {
+          'type': 'string',
+          'enum': [
+            'network_telemetry',
+            'https_latency',
+          ]
+        },
+      },
+      'items': [
+        {
+          'name': 'network_telemetry',
+          'value': 'network_telemetry',
+          'caption': '''Network Telemetry''',
+        },
+        {
+          'name': 'https_latency',
+          'value': 'https_latency',
+          'caption': '''Https Latency''',
+        },
+      ],
+      'future_on': ['chrome_os'],
+      'supported_chrome_os_management': ['google_cloud'],
+      'device_only': True,
+      'features': {
+        'cloud_only': True,
+        'dynamic_refresh': True,
+        'unlisted': True,
+      },
+      'example_value': ['https_latency'],
+      'id': 1008,
+      'caption': '''Telemetry data to report on signal strength event.''',
+      'tags': ['admin-sharing'],
+      'desc': '''List of telemetry data to be reported on signal strength change events.
+
+      Each telemetry data specified will only be reported if it was not disabled by its controlling policy.
+      Controlling policy for https_latency and network_telemetry is ReportDeviceNetworkStatus.
+
+      If not set, no additional telemetry data will be reported on signal strength change events.''',
+      'arc_support': 'This policy has no effect on the logging done by Android.',
     },
     {
       'name': 'HeartbeatEnabled',
@@ -17102,7 +17307,7 @@
       'owners': ['andreydav@google.com', 'chromeos-commercial-identity@google.com'],
       'type': 'string',
       'schema': { 'type': 'string' },
-      'future_on': ['chrome_os'],
+      'supported_on': ['chrome_os:107-'],
       'supported_chrome_os_management': ['google_cloud' ],
       'device_only': True,
       'features': {
@@ -18108,7 +18313,7 @@
         {
           'name': 'SAML_INTERSTITIAL',
           'value': 1,
-          'caption': '''Redirect to SAML IdP after user confirmation''',
+          'caption': '''Redirect to SAML IdP by default (prior to <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> 99 user confirmation is needed)''',
         },
       ],
       'supported_on': ['chrome_os:51-'],
@@ -18125,7 +18330,9 @@
 
       If set to GAIA, login will be done via the normal GAIA authentication flow.
 
-      If set to SAML_INTERSTITIAL, login will show an interstitial screen offering the user to go forward with authentication via the SAML IdP of the device's enrollment domain, or go back to the normal GAIA login flow.'''
+      If set to SAML_INTERSTITIAL, login will automatically redirect to SAML IdP by default. The user is still allowed to go back to the normal GAIA login flow.
+
+      Note: the additional user confirmation screen, which was shown on <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> until version 99, isn't displayed anymore. If SAML IdP isn't configured and this policy is set to SAML_INTERSTITIAL, redirect will fail with the 400 error.'''
     },
     {
       'name': 'UsbDetachableWhitelist',
@@ -18353,7 +18560,7 @@
     },
     {
       'name': 'DeviceShowLowDiskSpaceNotification',
-      'owners': ['vsavu@chromium.org'],
+      'owners': ['vsavu@google.com'],
       'type': 'main',
       'schema': { 'type': 'boolean' },
       'supported_on': ['chrome_os:86-'],
@@ -22000,7 +22207,7 @@
     },
     {
       'name': 'CrostiniArcAdbSideloadingAllowed',
-      'owners': ['janagrill@chromium.org', 'okalitova@chromium.org'],
+      'owners': ['janagrill@google.com', 'okalitova@chromium.org'],
       'type': 'int-enum',
       'schema': {
         'type': 'integer',
@@ -22038,7 +22245,7 @@
     },
     {
       'name': 'DeviceCrostiniArcAdbSideloadingAllowed',
-      'owners': ['janagrill@chromium.org', 'okalitova@chromium.org'],
+      'owners': ['janagrill@google.com', 'okalitova@chromium.org'],
       'device_only': True,
       'type': 'int-enum',
       'schema': {
@@ -22567,6 +22774,7 @@
         'dynamic_refresh': True,
         'per_profile': True,
       },
+      'deprecated': True,
       'default': True,
       'example_value': True,
       'id': 727,
@@ -23106,7 +23314,7 @@
 
       Setting the policy to Disabled results in no URL-keyed anonymized data collection.
 
-      If you set the policy, users can't change. If not set, then URL-keyed anonymized data collection at first, but users can change it.''',
+      If this policy is left unset, the user will be able to change this setting manually.''',
     },
     {
       'id': 462,
@@ -23274,6 +23482,7 @@
               },
               'required': ['url', 'hash']
             },
+            'install_as_shortcut': { 'type': 'boolean' },
           },
           'required': ['url']
         }
@@ -23296,9 +23505,10 @@
         'default_launch_container': 'window',
         'fallback_app_name': 'Editor'
       }, {
-        'url': 'https://docs.google.com/sheets',
+        'url': 'https://docs.google.com/document/d/ds187akjqih89',
         'default_launch_container': 'window',
-        'custom_name': 'Spreadsheets'
+        'install_as_shortcut': True,
+        'custom_name': 'My important document'
       }, {
         'url': 'https://weather.example.com',
         'custom_icon': {
@@ -23314,7 +23524,7 @@
       Each list item of the policy is an object with a mandatory member:
       <ph name="URL_LABEL">url</ph> (the URL of the web app to install)
 
-      and 5 optional members:
+      and 6 optional members:
       - <ph name="DEFAULT_LAUNCH_CONTAINER_LABEL">default_launch_container</ph>
       (for how the web app opens—a new tab is the default)
 
@@ -23345,6 +23555,16 @@
       formats: jpeg, png, gif, webp, ico. The hash value has to be the SHA256
       hash of the icon file. Currently only supported on
       <ph name="PRODUCT_OS_NAME">$2<ex>Google ChromeOS</ex></ph>.)
+
+      - <ph name="INSTALL_AS_SHORTCUT_LABEL">install_as_shortcut</ph>
+      (Starting with <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>
+      version 107). If enabled the given <ph name="URL_LABEL">url</ph>
+      will be installed as a shortcut, as if done via the "Create Shortcut..."
+      option in the desktop browser GUI.
+      Note that when installed as a shortcut it won't be updated if the
+      manifest in <ph name="URL_LABEL">url</ph> changes.
+      If disabled or unset, the web app at the given
+      <ph name="URL_LABEL">url</ph> will be installed normally.
 
       See <ph name="PINNED_LAUNCHER_APPS_POLICY_NAME">PinnedLauncherApps</ph> for pinning apps to the <ph name="PRODUCT_OS_NAME">$2<ex>Google ChromeOS</ex></ph> shelf.''',
       'label': '''URLs for Web Apps to be silently installed.''',
@@ -24152,7 +24372,7 @@
     },
     {
       'name': 'UserPluginVmAllowed',
-      'owners': ['okalitova@chromium.org', 'janagrill@chromium.org'],
+      'owners': ['okalitova@chromium.org', 'janagrill@google.com'],
       'type': 'main',
       'schema': { 'type': 'boolean' },
       'supported_on': ['chrome_os:84-'],
@@ -24244,7 +24464,7 @@
     },
     {
       'name': 'PluginVmDataCollectionAllowed',
-      'owners': ['okalitova@chromium.org', 'janagrill@chromium.org'],
+      'owners': ['okalitova@chromium.org', 'janagrill@google.com'],
       'type': 'main',
       'schema': { 'type': 'boolean' },
       'supported_on': ['chrome_os:85-'],
@@ -24263,7 +24483,7 @@
     },
     {
       'name': 'PluginVmRequiredFreeDiskSpace',
-      'owners': ['okalitova@chromium.org', 'janagrill@chromium.org'],
+      'owners': ['okalitova@chromium.org', 'janagrill@google.com'],
       'type': 'int',
       'schema': {
         'type': 'integer',
@@ -24570,6 +24790,46 @@
       'desc': '''Setting the policy to Enabled lets show Google Assistant voice match flow during initial setup. Setting the policy to Disabled keeps Google Assistant from showing voice match flow during initial setup.
 
       Leaving the policy unset means it is Enabled.''',
+    },
+    {
+      'name': 'AssistantWebEnabled',
+      'owners': ['file://components/autofill_assistant/OWNERS', 'brunobraga@google.com', 'jkeitel@google.com'],
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'supported_on': [
+        'chrome.*:107-',
+        'chrome_os:107-',
+      ],
+      'future_on': ['fuchsia'],
+      'features': {
+        'can_be_recommended': False,
+        'dynamic_refresh': True,
+        'per_profile': True,
+      },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Allow using <ph name="ASSISTANT_PRODUCT_NAME">Google Assistant</ph> on the web',
+        },
+        {
+          'value': False,
+          'caption': 'Do not allow using <ph name="ASSISTANT_PRODUCT_NAME">Google Assistant</ph> on the web',
+        },
+        {
+          'value': None,
+          'caption': 'Allow the user to decide',
+        },
+      ],
+      'example_value': True,
+      'default': None,
+      'id': 1011,
+      'caption': '''Allow using <ph name="ASSISTANT_PRODUCT_NAME">Google Assistant</ph> on the web, e.g. to enable changing passwords automatically''',
+      'tags': [],
+      'desc': '''Setting the policy to Enabled allows users to use <ph name="ASSISTANT_PRODUCT_NAME">Google Assistant</ph> on the web, e.g. for faster checkout and password changes. Using <ph name="ASSISTANT_PRODUCT_NAME">Google Assistant</ph> requires additional user consent and <ph name="ASSISTANT_PRODUCT_NAME">Google Assistant</ph> will only run if users choose to give this consent, even if the policy is set to Enabled.
+
+      Setting the policy to Disabled means users cannot use <ph name="ASSISTANT_PRODUCT_NAME">Google Assistant</ph> on the web.
+
+      If the policy is not set, the user can turn off <ph name="ASSISTANT_PRODUCT_NAME">Google Assistant</ph>.''',
     },
     {
       'name': 'VoiceInteractionQuickAnswersEnabled',
@@ -25018,7 +25278,7 @@
 
       For ChromeOS, this policy is related to remote attestation where a certificate is automatically generated and uploaded to the Device Management Server.
 
-      For detailed information on valid <ph name="URL_LABEL">URL</ph> patterns, please see https: //cloud.google.com/docs/chrome-enterprise/policies/url-patterns.''',
+      For detailed information on valid <ph name="URL_LABEL">URL</ph> patterns, please see https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns.''',
     },
     {
       'name': 'DeviceLoginScreenContextAwareAccessSignalsAllowlist',
@@ -25050,7 +25310,7 @@
 
       This policy will only impact the attestation flow on the login and lock screen. To change the in-session attestation flow, please use the <ph name="CONTEXT_AWARE_ACCESS_SIGNALS_ALLOWLIST_POLICY_NAME">ContextAwareAccessSignalsAllowlist</ph> policy.
 
-      For detailed information on valid <ph name="URL_LABEL">URL</ph> patterns, please see https: //cloud.google.com/docs/chrome-enterprise/policies/url-patterns.''',
+      For detailed information on valid <ph name="URL_LABEL">URL</ph> patterns, please see https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns.''',
     },
     {
       'name': 'DeviceQuickFixBuildToken',
@@ -29645,6 +29905,61 @@ If you disable this policy, web page scrolling to specific text fragments via UR
       In the future it will be possible to make <ph name="LACROS_NAME">Lacros</ph> the only available browser in <ph name="PRODUCT_OS_NAME">$2<ex>Google ChromeOS</ex></ph> with <ph name="LACROS_AVAILABILITY_LACROS_ONLY_VALUE">lacros_only</ph> value.''',
     },
     {
+      'name': 'LacrosDataBackwardMigrationMode',
+      'owners': ['janagrill@google.com', 'vsavu@google.com'],
+      'type': 'string-enum',
+      'schema': {
+        'type': 'string',
+        'enum': [
+          'none',
+          'keep_none',
+          'keep_safe_data',
+          'keep_all'
+        ],
+      },
+      'items': [
+        {
+          'name': 'none',
+          'value': 'none',
+          'caption': '''After <ph name="LACROS_NAME">Lacros</ph> is disabled, data migration is not performed. The <ph name="LACROS_NAME">Lacros</ph> folder is removed and users continue using the remaining data.''',
+        },
+        {
+          'name': 'keep_none',
+          'value': 'keep_none',
+          'caption': '''After <ph name="LACROS_NAME">Lacros</ph> is disabled, all user data is removed on next login.''',
+        },
+        {
+          'name': 'keep_safe_data',
+          'value': 'keep_safe_data',
+          'caption': '''After <ph name="LACROS_NAME">Lacros</ph> is disabled, we attempt to keep as much user data as possible, while removing all browser data.''',
+        },
+        {
+          'name': 'keep_all',
+          'value': 'keep_all',
+          'caption': '''After <ph name="LACROS_NAME">Lacros</ph> is disabled, we attempt to migrate all data.''',
+        },
+      ],
+      'future_on': ['chrome_os'],
+      'features': {
+        'dynamic_refresh': False,
+        'per_profile': False,
+      },
+      'example_value': "keep_all",
+      'default': "none",
+      'id': 1012,
+      'caption': '''Choose what happens with user data after <ph name="LACROS_NAME">Lacros</ph> is disabled''',
+      'tags': [],
+      'desc': '''This setting decides how much user data is kept after <ph name="LACROS_NAME">Lacros</ph> is disabled.
+
+      If the policy is set to <ph name="LACROS_BACKWARD_MIGRATION_NONE">none</ph>, backward data migration is not performed.
+
+      If the policy is set to <ph name="LACROS_BACKWARD_MIGRATION_KEEP_NONE">keep_none</ph>, all user data is removed. This is the safest option.
+
+      If the policy is set to <ph name="LACROS_BACKWARD_MIGRATION_KEEP_SAFE_DATA">keep_safe_data</ph>, most user data is removed. Only browser independent files are kept (such as Downloads).
+
+      If the policy is set to <ph name="LACROS_BACKWARD_MIGRATION_KEEP_ALL">keep_all</ph>, all user data is kept. This option has a high risk of failure, requiring a powerwash to recover.''',
+    },
+    {
       'name': 'IntegratedWebAuthenticationAllowed',
       'owners': ['acostinas@chromium.org', 'pmarko@chromium.org'],
       'type': 'main',
@@ -30609,10 +30924,10 @@ When this policy is set, <ph name="PRODUCT_OS_NAME">$2<ex>Google ChromeOS</ex></
       'tags': [],
       'desc': '''
 Default behavior (Policy unset)
-When an account is added in the content area a small dialog may appear asking the user to create a new profile.  This dialog is dismissable.
+When an account is added in the content area a small dialog may appear asking the user to create a new profile. This dialog is dismissable.
 
 <ph name="MANAGED_ACCOUNTS_SIGNIN_RESTRICTION_POLICY_NAME">ManagedAccountsSigninRestriction</ph> = <ph name="POLICY_VALUE_PRIMARY_ACCOUNT">'primary_account'</ph>
-If a user signs into a Google service for the first time in a <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> browser, a dialog will appear asking the user to create a new profile for their enterprise account. The user may click Cancel and get signed out, or Continue to create a new profile. Any existing browsing data will not be added to the new profile.   The newly created profile is allowed to have secondary accounts, for example the user can sign into another account in the content area.
+If a user signs into a Google service for the first time in a <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> browser, a dialog will appear asking the user to create a new profile for their enterprise account. The user may click Cancel and get signed out, or Continue to create a new profile. Any existing browsing data will not be added to the new profile. The newly created profile is allowed to have secondary accounts, for example the user can sign into another account in the content area.
 
 <ph name="MANAGED_ACCOUNTS_SIGNIN_RESTRICTION_POLICY_NAME">ManagedAccountsSigninRestriction</ph> = <ph name="POLICY_VALUE_PRIMARY_ACCOUNT_STRICT">'primary_account_strict'</ph>
 This is the same behavior as <ph name="POLICY_VALUE_PRIMARY_ACCOUNT">'primary_account'</ph> except the newly created profile is not allowed to have secondary accounts.
@@ -30659,7 +30974,8 @@ This is the same behavior as <ph name="POLICY_VALUE_PRIMARY_ACCOUNT_KEEP_EXISTIN
       'desc': '''
       Setting the policy to Enabled (True) lets <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> asks for managed users' consent prior to sharing device signals on unmanaged devices in order to gain access.
 
-      Setting the policy to Disabled (False) or leaving it unset disallows <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> from collecting device signals
+      Setting the policy to Disabled (False) or leaving it unset disallows <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> from collecting device signals.
+
       Examples of device signals include (but are not limited to) OS information, registry, file presesnce.''',
     },
     {
@@ -32001,28 +32317,72 @@ This is the same behavior as <ph name="POLICY_VALUE_PRIMARY_ACCOUNT_KEEP_EXISTIN
             'items': {
               'type': 'object',
               'properties': {
-                'owner': { 'type': 'string' },
-                'members': {
-                  'type': 'array',
-                  'items': { 'type': 'string' }
+                'primary': {
+                  'type': 'string'
                 },
+                'associatedSites': {
+                  'type': 'array',
+                  'items': {
+                    'type': 'string'
+                  }
+                },
+                'serviceSites': {
+                  'type': 'array',
+                  'items': {
+                    'type': 'string'
+                  }
+                },
+                'ccTLDs': {
+                  'type': 'object',
+                  'additionalProperties': {
+                    'type': 'array',
+                    'items': {
+                      'type': 'string'
+                    }
+                  }
+                }
               },
-              'required': ['owner', 'members']
-            },
+              'required': [
+                'primary',
+                'associatedSites'
+              ]
+            }
           },
           'additions': {
             'type': 'array',
             'items': {
               'type': 'object',
               'properties': {
-                'owner': { 'type': 'string' },
-                'members': {
-                  'type': 'array',
-                  'items': { 'type': 'string' }
+                'primary': {
+                  'type': 'string'
                 },
+                'associatedSites': {
+                  'type': 'array',
+                  'items': {
+                    'type': 'string'
+                  }
+                },
+                'serviceSites': {
+                  'type': 'array',
+                  'items': {
+                    'type': 'string'
+                  }
+                },
+                'ccTLDs': {
+                  'type': 'object',
+                  'additionalProperties': {
+                    'type': 'array',
+                    'items': {
+                      'type': 'string'
+                    }
+                  }
+                }
               },
-              'required': ['owner', 'members']
-            },
+              'required': [
+                'primary',
+                'associatedSites'
+              ]
+            }
           }
         }
       },
@@ -32030,14 +32390,34 @@ This is the same behavior as <ph name="POLICY_VALUE_PRIMARY_ACCOUNT_KEEP_EXISTIN
       'example_value': {
         'replacements': [
           {
-            "owner": "https://owner1.test",
-            "members": ["https://member1.test", "https://member2.test"]
+            "primary": "https://primary1.test",
+            "associatedSites": [
+              "https://associate1.test"
+            ],
+            "serviceSites": [
+              "https://associate1-content.test"
+            ],
+            "ccTLDs": {
+              "https://associate1.test": [
+                "https://associate1.co.uk"
+              ]
+            }
           }
         ],
         'additions': [
           {
-            "owner": "https://owner2.test",
-            "members": ["https://member3.test"]
+            "primary": "https://primary2.test",
+            "associatedSites": [
+              "https://associate2.test"
+            ],
+            "serviceSites": [
+              "https://associate2-content.test"
+            ],
+            "ccTLDs": {
+              "https://associate2.test": [
+                "https://associate2.com"
+              ]
+            }
           }
         ]
       },
@@ -32052,11 +32432,12 @@ This is the same behavior as <ph name="POLICY_VALUE_PRIMARY_ACCOUNT_KEEP_EXISTIN
       'desc': '''This policy provides a way to override the list of sets the browser uses for First-Party Sets features.
 
       Each set in the browser's list of First-Party Sets must meet the requirements of a First-Party Set.
-      A First-Party Set consists of an owner and one or more member sites. All sites in a First-Party Set must
-      be a registrable domain served over HTTPS, regardless of whether it is an owner or member site.
-      Each site in a First-Party Set must also be unique, meaning a site cannot be both owner and member, nor
-      listed more than once as a member of a First-Party Set.
-      See https://github.com/privacycg/first-party-sets for more information on First-Party Sets.
+      A First-Party Set must contain an owner site and one or more member sites.
+      A set can also contain a list of service sites that it owns, as well as a map from a site to all of its ccTLD variants.
+      See https: //github.com/WICG/first-party-sets for more information on First-Party Sets are used by <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.
+
+      All sites in a First-Party Set must be a registrable domain served over HTTPS. Each site in a First-Party Set must also be unique,
+      meaning a site cannot be listed more than once in a First-Party Set.
 
       When this policy is given an empty dictionary, the browser uses the public list of First-Party Sets.
 
@@ -32233,7 +32614,7 @@ This is the same behavior as <ph name="POLICY_VALUE_PRIMARY_ACCOUNT_KEEP_EXISTIN
       'owners': ['ayui@chromium.org', 'chrome-owp-storage@google.com'],
       'type': 'main',
       'schema': { 'type': 'boolean' },
-      'supported_on': ['android:105-110', 'chrome.*:105-110', 'chrome_os:105-110'],
+      'supported_on': ['android:105-', 'chrome.*:105-', 'chrome_os:105-'],
       'future_on': ['fuchsia'],
       'features': {
         'dynamic_refresh': False,
@@ -32254,9 +32635,9 @@ This is the same behavior as <ph name="POLICY_VALUE_PRIMARY_ACCOUNT_KEEP_EXISTIN
       'id': 993,
       'caption': '''Force WebSQL in non-secure contexts to be enabled.''',
       'tags': [],
-      'desc': '''WebSQL in non-secure contexts is off by default as of M107 and will be fully removed in M110.
-          If this policy is set to false or unset, WebSQL in non-secure contexts will remain on until the end of M106, then off from M107.
-          If this policy is set to true, WebSQL in non-secure contexts will be enabled.''',
+      'desc': '''WebSQL in non-secure contexts is on by default as of M105, but can be disabled via Chrome flag.
+          If this policy is set to false or unset, WebSQL in non-secure contexts can be disabled.
+          If this policy is set to true, WebSQL cannot be disabled.''',
     },
     {
       'name': 'SetTimeoutWithout1MsClampEnabled',
@@ -32578,6 +32959,7 @@ This is the same behavior as <ph name="POLICY_VALUE_PRIMARY_ACCOUNT_KEEP_EXISTIN
       'type': 'main',
       'schema': { 'type': 'boolean' },
       'supported_on': ['chrome_os:104-106', 'chrome.*:104-106', 'android:104-106'],
+      'deprecated': True,
       'future_on': ['fuchsia'],
       'features': {
         'per_profile': True,
@@ -32736,8 +33118,10 @@ This policy has no effect if the option to keep existing browsing data is not av
       'id': 1002,
       'caption': '''Force persistent quota to be enabled''',
       'tags': [],
-      'desc': '''Starting M106 persistent quota will no longer be supported. This policy will re-enable persistent quota functionality until M107.
+      'desc': '''Starting in M106 persistent quota will no longer be supported. This policy will re-enable persistent quota functionality until M107.
+
       If this policy is set to enabled, webkitRequestFileSystem with persistent type will operate with persistent quota.
+
       If this policy is unset or disabled, webkitRequestFileSystem with persistent type will operate with temporary quota.
       ''',
     },
@@ -32772,7 +33156,146 @@ This policy has no effect if the option to keep existing browsing data is not av
       If this policy is set to Enabled, the window.webkitStorageInfo API will be available.
       If this policy is set to Disabled or not set, the window.webkitStorageInfo API will be unavailable.
       ''',
-    }
+    },
+    {
+      'name': 'HighEfficiencyModeEnabled',
+      'owners': ['anthonyvd@chromium.org', 'file://components/performance_manager/OWNERS'],
+      'caption': 'Enable High Efficiency Mode',
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'future_on': ['chrome.*' ],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': False,
+      },
+      'items': [
+        {
+          'value': True,
+          'caption': 'High Efficiency Mode will be enabled.',
+        },
+        {
+          'value': False,
+          'caption': 'High Efficiency Mode will be disabled.',
+        },
+        {
+          'value': None,
+          'caption': 'The end user can enable or disable High Efficiency Mode.',
+        }
+      ],
+      'default': None,
+      'example_value': False,
+      'id': 1006,
+      'tags': [],
+      'desc': '''This policy enables or disables the High Efficiency Mode setting. This setting makes it so that tabs are discarded after some period of time in the background to reclaim memory.
+      If this policy is unset, the end user can control this setting in chrome://settings/performance.
+      ''',
+    },
+    {
+      'name': 'BatterySaverModeAvailability',
+      'owners': ['anthonyvd@chromium.org', 'file://components/performance_manager/OWNERS'],
+      'caption': 'Enable Battery Saver Mode',
+      'type': 'int-enum',
+      'schema': {
+        'type': 'integer',
+        'enum': [ 0, 1, 2 ],
+      },
+      'future_on': ['chrome.*' ],
+      'features': {
+        'can_be_recommended': True,
+        'dynamic_refresh': True,
+        'per_profile': False,
+      },
+      'items': [
+        {
+          'name': 'Disabled',
+          'value': 0,
+          'caption': 'Battery Saver Mode will be disabled.',
+        },
+        {
+          'name': 'EnabledBelowThreshold',
+          'value': 1,
+          'caption': 'Battery Saver Mode will be enabled when the device is on battery power and battery level is low.',
+        },
+        {
+          'name': 'EnabledOnBattery',
+          'value': 2,
+          'caption': 'Battery Saver Mode will be enabled when the device is on battery power.',
+        }
+      ],
+      'default': None,
+      'example_value': 1,
+      'id': 1009,
+      'tags': [],
+      'desc': '''This policy enables or disables the Battery Saver Mode setting. This setting makes it so that frame rate is throttled to lower power consumption.
+      If this policy is unset, the end user can control this setting in chrome://settings/performance.
+      The different levels are:
+      <ph name="BATTERY_SAVER_MODE_DISABLED">Disabled</ph> (0): Battery Saver Mode will be disabled.
+      <ph name="BATTERY_SAVER_MODE_ENABLED_BELOW_THRESHOLD">EnabledBelowThreshold</ph> (1): Battery Saver Mode will be enabled when the device is on battery power and battery level is low.
+      <ph name="BATTERY_SAVER_MODE_ENABLED_ON_BATTERY">EnabledOnBattery</ph> (2): Battery Saver Mode will be enabled when the device is on battery power.
+      ''',
+    },
+    {
+      'name': 'TabDiscardingExceptions',
+      'owners': ['anthonyvd@chromium.org', 'file://components/performance_manager/OWNERS'],
+      'caption': 'URL pattern Exceptions to tab discarding',
+      'type': 'list',
+      'schema': {
+        'type': 'array',
+        'items': { 'type': 'string' }
+      },
+      'future_on': ['chrome.*' ],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': True,
+      },
+      'example_value': ['example.com', 'https://*', '*'],
+      'id': 1010,
+      'tags': [],
+      'desc': '''This policy makes it so that any URL matching one or more of the patterns it specifies (using the <ph name="URL_BLOCKLIST_POLICY_NAME">URLBlocklist</ph> filter format) will never be discarded by the browser.
+      This applies to memory pressure and high efficiency mode discarding.
+      A discarded page is unloaded and its resources fully reclaimed. The tab its associated with remains in the tabstrip, but making it visible will trigger a full reload.
+      ''',
+    },
+    {
+      'name': 'StrictMimetypeCheckForWorkerScriptsEnabled',
+      'owners': [
+        'vogelheim@chromium.org',
+        'chrome-security-owp-team@google.com'
+      ],
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'example_value': False,
+      'default': True,
+      'items': [
+        {
+          'value': True,
+          'caption': 'Scripts for workers (Web Workers, Service Workers, etc.) require a JavaScript MIME type, like <ph name="MIMETYPE_TEXT_JAVASCRIPT">text/javascript</ph>. Worker scripts with legacy MIME types, like <ph name="MIMETYPE_TEXT_ASCII">text/ascii</ph>, will be rejected.'
+        },
+        {
+          'value': False,
+          'caption': 'Scripts for workers (Web Workers, Service Workers, etc.) use lax MIME type checking. Worker scripts with legacy MIME types, like <ph name="MIMETYPE_TEXT_ASCII">text/ascii</ph>, will work.'
+        }
+      ],
+      'features': {
+        'per_profile': True,
+        'dynamic_refresh': True,
+      },
+      'id': 1013,
+      'supported_on': ['chrome.*:107-', 'chrome_os:107-', 'android:107-'],
+      'future_on': ['fuchsia'],
+      'tags': [],
+      'caption': '''Enable strict MIME type checking for worker scripts''',
+      'desc': '''This policy enables strict MIME type checking for worker scripts.
+
+      When enabled or unset, then worker scripts will use strict MIME type checking for JavaScript, which is the new default behaviour. Worker scripts with legacy MIME types will be rejected.
+
+      When disabled, then worker scripts will use lax MIME type checking, so that worker scripts with legacy MIME types, e.g. <ph name="MIMETYPE_TEXT_ASCII">text/ascii</ph>, will continue to be loaded and executed.
+
+      Browsers traditionally used lax MIME type checking, so that resources with a number of legacy MIME types were supported. E.g. for JavaScript resources, <ph name="MIMETYPE_TEXT_ASCII">text/ascii</ph> is a legacy supported MIME type. This may cause security issues, by allowing to load resources as scripts that were never intended to be used as such. Chrome will transition to use strict MIME type checking in the near future. The enabled policy will track the default behaviour. Disabling this policy allows administrators to retain the legacy behaviour, if desired.
+
+      See https://html.spec.whatwg.org/multipage/scripting.html#scriptingLanguage for details about JavaScript / ECMAScript media types.
+      '''
+    },
   ],
   'messages': {
     # Messages that are not associated to any policies.
@@ -33171,6 +33694,7 @@ The recommended way to configure policy on Windows is via GPO, although provisio
     'ReportDeviceNetworkTelemetryCollectionRateMs': 'device_reporting.report_network_telemetry_collection_rate_ms',
     'ReportDeviceNetworkTelemetryEventCheckingRateMs': 'device_reporting.report_network_telemetry_event_checking_rate_ms',
     'ReportDeviceAudioStatusCheckingRateMs': 'device_reporting.report_device_audio_status_checking_rate_ms',
+    'ReportDeviceSignalStrengthEventDrivenTelemetry': 'device_reporting.report_signal_strength_event_driven_telemetry.entries',
     'ReportUploadFrequency': 'device_reporting.device_status_frequency',
     'DeviceLoginScreenPowerManagement': 'login_screen_power_management.login_screen_power_management',
     'DeviceChromeVariations': 'device_chrome_variations_type.value',
@@ -33247,7 +33771,8 @@ The recommended way to configure policy on Windows is via GPO, although provisio
     'DeviceRunAutomaticCleanupOnLogin': 'device_run_automatic_cleanup_on_login.value',
     'DeviceEncryptedReportingPipelineEnabled': 'device_reporting.encrypted_reporting_pipeline_enabled',
     'DeviceAutofillSAMLUsername': 'saml_username.url_parameter_to_autofill_saml_username',
-    'DeviceLoginScreenContextAwareAccessSignalsAllowlist': 'device_login_screen_context_aware_access_signals_allowlist.value'
+    'DeviceLoginScreenContextAwareAccessSignalsAllowlist': 'device_login_screen_context_aware_access_signals_allowlist.value',
+    'DevicePrintingClientNameTemplate': 'device_printing_client_name_template.client_name_template',
   },
   'policy_atomic_group_definitions': [
     {
@@ -33779,6 +34304,6 @@ The recommended way to configure policy on Windows is via GPO, although provisio
   'placeholders': [],
   'deleted_policy_ids': [114, 115, 204, 205, 206, 341, 412, 438, 476, 544, 546, 562, 569, 578, 583, 585, 586, 587, 588, 589, 590, 591, 600, 668, 669, 872],
   'deleted_atomic_policy_group_ids': [19],
-  'highest_id_currently_used': 1005,
+  'highest_id_currently_used': 1013,
   'highest_atomic_group_id_currently_used': 43
 }

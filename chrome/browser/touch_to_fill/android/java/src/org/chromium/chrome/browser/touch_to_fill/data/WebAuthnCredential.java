@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,27 +12,20 @@ import org.chromium.base.annotations.CalledByNative;
  */
 public class WebAuthnCredential {
     private final String mUsername;
-    private final String mDisplayName;
     private final String mId;
 
     /**
      * @param username Username shown to the user.
      * @param id Unique identifier for the credential.
      */
-    public WebAuthnCredential(String username, String displayName, String id) {
+    public WebAuthnCredential(String username, String id) {
         mUsername = username;
-        mDisplayName = displayName;
         mId = id;
     }
 
     @CalledByNative
     public String getUsername() {
         return mUsername;
-    }
-
-    @CalledByNative
-    public String getDisplayName() {
-        return mDisplayName;
     }
 
     @CalledByNative

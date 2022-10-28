@@ -67,6 +67,7 @@
 <translation id="5308226104666789935">Chromium kan ikke se etter oppdateringer</translation>
 <translation id="5396916991083608703">Vil du angi Chromium som standard?</translation>
 <translation id="5521125884468363740">For å se fanene dine overalt hvor du bruker Chromium, logg på og slå på synkronisering</translation>
+<translation id="5522297504975449419">Enkelte Chromium-funksjoner kommer ikke til å være tilgjengelige lenger.</translation>
 <translation id="5573014823074921752">Chromium-tips. For flere fanealternativer, trykk og hold inne Vis faner-knappen på verktøylinjen, som du finner nederst eller øverst på skjermen.</translation>
 <translation id="5700709190537129682">Chromium kan ikke sjekke passordene dine</translation>
 <translation id="5777187867430702742">Chromium-side</translation>
@@ -95,6 +96,7 @@
 <translation id="7175400662502680481">Passordet ditt har vært avdekket i et databrudd. Passordlagring anbefaler at du endrer det nå.</translation>
 <translation id="7208566199746267865">Med Chromium kan du spare tid, siden du får tilgang til kontoene dine på nettet. Du kan legge til eller fjerne kontoer i Innstillinger.</translation>
 <translation id="725427773388857052">Chromium kan beskytte deg mot databrudd, utrygge nettsteder med mer.</translation>
+<translation id="7255976941681861701">Bli kjent med den nye Chromium-menyen</translation>
 <translation id="7269362888766543920">Noen tillegg fører til at Chromium krasjer. Prøv å avinstallere dem.</translation>
 <translation id="7313655110045230863">For å gjøre Chromium til standardnettleseren din, åpne Innstillinger. Trykk på Standard nettleserapp, og velg Chromium.</translation>
 <translation id="7337881442233988129">Chromium</translation>
@@ -113,7 +115,6 @@
 <translation id="7980860476903281594">Chromium deler posisjonen din med nettsteder du tillater.</translation>
 <translation id="8013573822802650211">For å se fanene dine overalt hvor du bruker Chromium, logg på alle enhetene dine</translation>
 <translation id="8073677936375100957">Vil du fjerne Chromium-dataene dine fra denne enheten?</translation>
-<translation id="8175055321229419309">Tips: <ph name="BEGIN_LINK" />Flytt Chromium til dokken<ph name="END_LINK" /></translation>
 <translation id="8240981428553046115">Chromium kunne ikke se etter oppdateringer. Prøv på nytt senere.</translation>
 <translation id="8308172444429103994">Chromium-tips. Logg på raskere ved å velge det lagrede passordet ditt øverst på tastaturet.</translation>
 <translation id="858114650497379505">Du kan bruke passordene du har lagret i Passordlagring, i andre apper på iPhonen din.</translation>

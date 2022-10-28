@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -62,12 +62,12 @@ class DEVICE_BLUETOOTH_EXPORT FlossManagerClient
       if (cb_) {
         std::move(cb_).Run(base::unexpected(Error(kErrorNoResponse, "")));
       }
-    };
+    }
     void RunNoError() {
       if (cb_) {
         std::move(cb_).Run(Void{});
       }
-    };
+    }
 
    private:
     void PostDelayedError();
@@ -76,9 +76,6 @@ class DEVICE_BLUETOOTH_EXPORT FlossManagerClient
     int timeout_ms_;
     base::WeakPtrFactory<PoweredCallback> weak_ptr_factory_{this};
   };
-
-  // Convert adapter number to object path.
-  static dbus::ObjectPath GenerateAdapterPath(int adapter);
 
   // Creates the instance.
   static std::unique_ptr<FlossManagerClient> Create();
@@ -115,7 +112,7 @@ class DEVICE_BLUETOOTH_EXPORT FlossManagerClient
   // Initializes the manager client.
   void Init(dbus::Bus* bus,
             const std::string& service_name,
-            const std::string& adapter_path) override;
+            const int adapter_index) override;
 
  protected:
   friend class FlossManagerClientTest;

@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -167,7 +167,7 @@ MoveMigrator::ResumeStep MoveMigrator::GetResumeStep(
     PrefService* local_state,
     const std::string& user_id_hash) {
   return static_cast<ResumeStep>(
-      local_state->GetValueDict(kMoveMigrationResumeStepPref)
+      local_state->GetDict(kMoveMigrationResumeStepPref)
           .FindInt(user_id_hash)
           .value_or(0));
 }
@@ -185,7 +185,7 @@ void MoveMigrator::SetResumeStep(PrefService* local_state,
 int MoveMigrator::UpdateResumeAttemptCountForUser(
     PrefService* local_state,
     const std::string& user_id_hash) {
-  int count = local_state->GetValueDict(kMoveMigrationResumeCountPref)
+  int count = local_state->GetDict(kMoveMigrationResumeCountPref)
                   .FindIntByDottedPath(user_id_hash)
                   .value_or(0);
   count += 1;

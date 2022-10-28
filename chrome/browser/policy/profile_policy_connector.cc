@@ -1,4 +1,4 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -44,7 +44,6 @@
 #include "chrome/browser/ash/policy/core/device_local_account_policy_provider.h"
 #include "chrome/browser/ash/policy/login/login_profile_policy_provider.h"
 #include "chrome/browser/browser_process_platform_part.h"
-#include "components/policy/core/common/proxy_policy_provider.h"
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
 #endif

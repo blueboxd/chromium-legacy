@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -18,6 +18,7 @@
 #include "base/logging.h"
 #include "base/strings/stringize_macros.h"
 #include "build/branding_buildflags.h"
+#include "google_apis/buildflags.h"
 #include "google_apis/gaia/gaia_config.h"
 #include "google_apis/gaia/gaia_switches.h"
 
@@ -205,7 +206,7 @@ class APIKeyCache {
   }
 
   std::string api_key() const { return api_key_; }
-#if BUILDFLAG(IS_IOS) || BUILDFLAG(IS_FUCHSIA)
+#if BUILDFLAG(SUPPORT_EXTERNAL_GOOGLE_API_KEY)
   void set_api_key(const std::string& api_key) { api_key_ = api_key; }
 #endif
   std::string api_key_non_stable() const { return api_key_non_stable_; }
@@ -301,12 +302,12 @@ class APIKeyCache {
     }
 
     if (key_value == DUMMY_API_TOKEN) {
+// TODO(crbug.com/1294915): Rewrite this condition using
+// BUILDFLAG(SUPPORT_EXTERNAL_GOOGLE_API_KEY).
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING) && !BUILDFLAG(IS_FUCHSIA)
       // No key should be unset in an official build except the
       // GOOGLE_DEFAULT_* keys.  The default keys don't trigger this
       // check as their "unset" value is not DUMMY_API_TOKEN.
-      // Exclude Fuchsia to match BUILD.gn.
-      // TODO(crbug.com/1171510): Update Fuchsia exclusion when bug is fixed.
       CHECK(false);
 #endif
       if (default_if_unset.size() > 0) {
@@ -369,7 +370,7 @@ std::string GetFresnelAPIKey() {
   return g_api_key_cache.Get().api_key_fresnel();
 }
 
-#if BUILDFLAG(IS_IOS) || BUILDFLAG(IS_FUCHSIA)
+#if BUILDFLAG(SUPPORT_EXTERNAL_GOOGLE_API_KEY)
 void SetAPIKey(const std::string& api_key) {
   g_api_key_cache.Get().set_api_key(api_key);
 }

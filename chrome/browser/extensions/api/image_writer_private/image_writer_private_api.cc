@@ -1,4 +1,4 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -90,7 +90,7 @@ ImageWriterPrivateWriteFromUrlFunction::Run() {
     return RespondNow(Error(image_writer::error::kUrlInvalid));
 
   std::string hash;
-  if (params->options.get() && params->options->image_hash.get()) {
+  if (params->options.get() && params->options->image_hash) {
     hash = *params->options->image_hash;
   }
 

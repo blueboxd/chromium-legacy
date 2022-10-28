@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -493,7 +493,7 @@ std::unique_ptr<Renderer> PipelineIntegrationTestBase::CreateDefaultRenderer(
       task_environment_.GetMainThreadTaskRunner(), video_sink_.get(),
       base::BindRepeating(&CreateVideoDecodersForTest, &media_log_,
                           prepend_video_decoders_cb_),
-      false, &media_log_, nullptr);
+      false, &media_log_, nullptr, 0);
 
   if (!clockless_playback_) {
     DCHECK(!mono_output_) << " NullAudioSink doesn't specify output parameters";
@@ -501,13 +501,14 @@ std::unique_ptr<Renderer> PipelineIntegrationTestBase::CreateDefaultRenderer(
     audio_sink_ =
         new NullAudioSink(task_environment_.GetMainThreadTaskRunner());
   } else {
-    ChannelLayout output_layout =
-        mono_output_ ? CHANNEL_LAYOUT_MONO : CHANNEL_LAYOUT_STEREO;
+    ChannelLayoutConfig output_layout_config =
+        mono_output_ ? ChannelLayoutConfig::Mono()
+                     : ChannelLayoutConfig::Stereo();
 
     clockless_audio_sink_ = new ClocklessAudioSink(
         OutputDeviceInfo("", OUTPUT_DEVICE_STATUS_OK,
                          AudioParameters(AudioParameters::AUDIO_PCM_LOW_LATENCY,
-                                         output_layout, 44100, 512)));
+                                         output_layout_config, 44100, 512)));
 
     // Say "not optimized for hardware parameters" to disallow renderer
     // resampling. Hashed tests need this avoid platform dependent floating
@@ -526,7 +527,7 @@ std::unique_ptr<Renderer> PipelineIntegrationTestBase::CreateDefaultRenderer(
       base::BindRepeating(&CreateAudioDecodersForTest, &media_log_,
                           task_environment_.GetMainThreadTaskRunner(),
                           prepend_audio_decoders_cb_),
-      &media_log_, nullptr);
+      &media_log_, 0, nullptr);
   if (hashing_enabled_) {
     if (clockless_playback_)
       clockless_audio_sink_->StartAudioHashForTesting();

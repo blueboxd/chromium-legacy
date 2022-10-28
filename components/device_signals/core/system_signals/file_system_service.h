@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -14,6 +14,7 @@ class FilePath;
 
 namespace device_signals {
 
+class ExecutableMetadataService;
 enum class PresenceValue;
 class PlatformDelegate;
 struct FileSystemItem;
@@ -25,7 +26,8 @@ class FileSystemService {
 
   // Creates a FileSystemService instance using the given `delegate`.
   static std::unique_ptr<FileSystemService> Create(
-      std::unique_ptr<PlatformDelegate> delegate);
+      std::unique_ptr<PlatformDelegate> delegate,
+      std::unique_ptr<ExecutableMetadataService> executable_metadata_service);
 
   // Collects and returns the file system items' signals as requested by
   // `options`.

@@ -1,4 +1,4 @@
-# Copyright 2019 The Chromium Authors. All rights reserved.
+# Copyright 2019 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -227,6 +227,7 @@ test("cast_runner_integration_tests") {
     ":cast_runner_test_core",
     "//base/test:test_support",
     "//components/cast/message_port",
+    "//fuchsia_web/common",
     "//fuchsia_web/common/test:run_all_integration_tests",
     "//fuchsia_web/common/test:test_support",
     "//fuchsia_web/runners/cast/test:integration",
@@ -268,6 +269,7 @@ test("cast_runner_integration_tests_cfv1") {
     ":cast_runner_test_core",
     "//base/test:test_support",
     "//components/cast/message_port",
+    "//fuchsia_web/common",
     "//fuchsia_web/common/test:run_all_integration_tests",
     "//fuchsia_web/common/test:test_support",
     "//fuchsia_web/runners/cast/test:cfv1_integration",
@@ -325,6 +327,7 @@ test("cast_runner_browsertests") {
   test_runner_shard =
       "//build/config/fuchsia/test/elf_test_ambient_exec_runner.shard.test-cml"
   additional_manifest_fragments = [
+    "//build/config/fuchsia/test/mark_vmo_executable.shard.test-cml",
     "//build/config/fuchsia/test/network.shard.test-cml",
     "//third_party/fuchsia-sdk/sdk/pkg/vulkan/client.shard.cml",
   ]

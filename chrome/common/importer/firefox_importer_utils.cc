@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -178,7 +178,7 @@ bool GetFirefoxVersionAndPathFromProfile(const base::FilePath& profile_path,
 }
 
 bool ReadPrefFile(const base::FilePath& path, std::string* content) {
-  if (content == NULL)
+  if (content == nullptr)
     return false;
 
   base::ReadFileToString(path, content);

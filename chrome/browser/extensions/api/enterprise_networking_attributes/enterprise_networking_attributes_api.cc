@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -97,16 +97,13 @@ void EnterpriseNetworkingAttributesGetNetworkDetailsFunction::OnResult(
 
       network_details.mac_address = result->get_network_details()->mac_address;
       if (ipv4_address.has_value()) {
-        network_details.ipv4 =
-            std::make_unique<std::string>(ipv4_address->ToString());
+        network_details.ipv4 = ipv4_address->ToString();
       }
       if (ipv6_address.has_value()) {
-        network_details.ipv6 =
-            std::make_unique<std::string>(ipv6_address->ToString());
+        network_details.ipv6 = ipv6_address->ToString();
       }
 
-      Respond(OneArgument(
-          base::Value::FromUniquePtrValue(network_details.ToValue())));
+      Respond(WithArguments(network_details.ToValue()));
       return;
   }
 }

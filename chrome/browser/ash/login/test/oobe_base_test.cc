@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -146,8 +146,6 @@ void OobeBaseTest::SetUpOnMainThread() {
       UserSessionManager::GetInstance());
   session_manager_test_api.SetShouldObtainTokenHandleInTests(false);
 
-  LoginDisplayHostWebUI::DisableRestrictiveProxyCheckForTest();
-
   if (ShouldWaitForOobeUI()) {
     MaybeWaitForLoginScreenLoad();
   }
@@ -205,6 +203,7 @@ void OobeBaseTest::WaitForSigninScreen() {
 
   MaybeWaitForLoginScreenLoad();
 }
+
 void OobeBaseTest::CheckJsExceptionErrors(int number) {
   test::OobeJS().ExpectEQ("cr.ErrorStore.getInstance().length", number);
 }

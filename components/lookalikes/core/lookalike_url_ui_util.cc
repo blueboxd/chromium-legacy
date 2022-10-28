@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -95,7 +95,9 @@ void PopulateLookalikeUrlBlockingPageStrings(base::Value::Dict& load_time_data,
     }
 #endif
   }
-  load_time_data.Set("lookalikeRequestHostname", request_url.host());
+  load_time_data.Set(
+      "lookalikeConsoleMessage",
+      lookalikes::GetConsoleMessage(request_url, /*is_new_heuristic=*/false));
 }
 
 void PopulateStringsForSharedHTML(base::Value::Dict& load_time_data) {

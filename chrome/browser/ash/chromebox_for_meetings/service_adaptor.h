@@ -1,11 +1,11 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #ifndef CHROME_BROWSER_ASH_CHROMEBOX_FOR_MEETINGS_SERVICE_ADAPTOR_H_
 #define CHROME_BROWSER_ASH_CHROMEBOX_FOR_MEETINGS_SERVICE_ADAPTOR_H_
 
-#include "ash/services/chromebox_for_meetings/public/mojom/cfm_service_manager.mojom.h"
+#include "chromeos/ash/services/chromebox_for_meetings/public/mojom/cfm_service_manager.mojom.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 

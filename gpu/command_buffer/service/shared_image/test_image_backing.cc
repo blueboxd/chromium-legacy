@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,6 +11,7 @@
 #include "third_party/skia/include/core/SkPromiseImageTexture.h"
 #include "third_party/skia/include/gpu/GrBackendSurface.h"
 #include "third_party/skia/include/gpu/mock/GrMockTypes.h"
+#include "ui/gl/gl_image.h"
 
 namespace gpu {
 namespace {
@@ -67,7 +68,8 @@ class TestSkiaImageRepresentation : public SkiaImageRepresentation {
       int final_msaa_count,
       const SkSurfaceProps& surface_props,
       std::vector<GrBackendSemaphore>* begin_semaphores,
-      std::vector<GrBackendSemaphore>* end_semaphores) override {
+      std::vector<GrBackendSemaphore>* end_semaphores,
+      std::unique_ptr<GrBackendSurfaceMutableState>* end_state) override {
     if (!static_cast<TestImageBacking*>(backing())->can_access()) {
       return nullptr;
     }
@@ -82,22 +84,31 @@ class TestSkiaImageRepresentation : public SkiaImageRepresentation {
     if (!static_cast<TestImageBacking*>(backing())->can_access()) {
       return nullptr;
     }
-    GrBackendTexture backend_tex(size().width(), size().height(),
-                                 GrMipMapped::kNo, GrMockTextureInfo());
-    return SkPromiseImageTexture::Make(backend_tex);
+
+    return SkPromiseImageTexture::Make(backend_tex());
   }
   void EndWriteAccess(sk_sp<SkSurface> surface) override {}
   sk_sp<SkPromiseImageTexture> BeginReadAccess(
       std::vector<GrBackendSemaphore>* begin_semaphores,
-      std::vector<GrBackendSemaphore>* end_semaphores) override {
+      std::vector<GrBackendSemaphore>* end_semaphores,
+      std::unique_ptr<GrBackendSurfaceMutableState>* end_state) override {
     if (!static_cast<TestImageBacking*>(backing())->can_access()) {
       return nullptr;
     }
-    GrBackendTexture backend_tex(size().width(), size().height(),
-                                 GrMipMapped::kNo, GrMockTextureInfo());
-    return SkPromiseImageTexture::Make(backend_tex);
+
+    return SkPromiseImageTexture::Make(backend_tex());
   }
   void EndReadAccess() override {}
+
+ private:
+  GrBackendTexture backend_tex() {
+    return GrBackendTexture(
+        size().width(), size().height(), GrMipMapped::kNo,
+        GrGLTextureInfo{GL_TEXTURE_EXTERNAL_OES,
+                        static_cast<TestImageBacking*>(backing())->service_id(),
+                        static_cast<GrGLenum>(viz::TextureStorageFormat(
+                            format(), /*use_angle_rgbx_format=*/false))});
+  }
 };
 
 class TestDawnImageRepresentation : public DawnImageRepresentation {
@@ -130,7 +141,14 @@ class TestOverlayImageRepresentation : public OverlayImageRepresentation {
     return true;
   }
   void EndReadAccess(gfx::GpuFenceHandle release_fence) override {}
-  gl::GLImage* GetGLImage() override { return nullptr; }
+
+  gl::GLImage* GetGLImage() override {
+    gl_image_ = base::MakeRefCounted<gl::GLImage>();
+    return gl_image_.get();
+  }
+
+ private:
+  scoped_refptr<gl::GLImage> gl_image_;
 };
 
 }  // namespace
@@ -206,6 +224,10 @@ bool TestImageBacking::GetUploadFromMemoryCalledAndReset() {
   return std::exchange(upload_from_memory_called_, false);
 }
 
+bool TestImageBacking::GetReadbackToMemoryCalledAndReset() {
+  return std::exchange(readback_to_memory_called_, false);
+}
+
 SharedImageBackingType TestImageBacking::GetType() const {
   return SharedImageBackingType::kTest;
 }
@@ -223,8 +245,9 @@ bool TestImageBacking::UploadFromMemory(const SkPixmap& pixmap) {
   return true;
 }
 
-bool TestImageBacking::ProduceLegacyMailbox(MailboxManager* mailbox_manager) {
-  return false;
+bool TestImageBacking::ReadbackToMemory(SkPixmap& pixmap) {
+  readback_to_memory_called_ = true;
+  return true;
 }
 
 std::unique_ptr<GLTextureImageRepresentation>

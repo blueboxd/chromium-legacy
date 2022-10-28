@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,8 +7,6 @@
 #include <string>
 #include <utility>
 
-#include "ash/components/login/auth/public/key.h"
-#include "ash/components/login/auth/public/user_context.h"
 #include "ash/constants/ash_switches.h"
 #include "ash/public/cpp/login_screen_test_api.h"
 #include "base/bind.h"
@@ -46,6 +44,8 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "chromeos/ash/components/login/auth/public/key.h"
+#include "chromeos/ash/components/login/auth/public/user_context.h"
 #include "components/account_id/account_id.h"
 #include "components/javascript_dialogs/tab_modal_dialog_manager.h"
 #include "components/prefs/pref_service.h"
@@ -359,7 +359,7 @@ class OAuth2Test : public OobeBaseTest {
       const std::string& email) const {
     PrefService* local_state = g_browser_process->local_state();
     const base::Value::Dict& prefs_oauth_status =
-        local_state->GetValueDict("OAuthTokenStatus");
+        local_state->GetDict("OAuthTokenStatus");
 
     absl::optional<int> oauth_token_status = prefs_oauth_status.FindInt(email);
     if (!oauth_token_status.has_value())
@@ -926,7 +926,7 @@ class MergeSessionTest : public OAuth2Test,
         extensions::ProcessManager::Get(GetProfile());
     extensions::ExtensionHost* host =
         manager->GetBackgroundHostForExtension(extension_id);
-    if (host == NULL) {
+    if (host == nullptr) {
       ADD_FAILURE() << "Extension " << extension_id
                     << " has no background page.";
       return;
@@ -958,7 +958,7 @@ class MergeSessionTest : public OAuth2Test,
         extensions::ProcessManager::Get(GetProfile());
     extensions::ExtensionHost* host =
         manager->GetBackgroundHostForExtension(extension_id);
-    if (host == NULL) {
+    if (host == nullptr) {
       ADD_FAILURE() << "Extension " << extension_id
                     << " has no background page.";
       return;

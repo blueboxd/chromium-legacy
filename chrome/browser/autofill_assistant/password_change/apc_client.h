@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,7 +12,6 @@
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
 class GURL;
-class PrefRegistrySimple;
 
 namespace content {
 class WebContents;
@@ -33,10 +32,6 @@ class ApcClient {
     // Value for Autofill Assistant's `DEBUG_SOCKET_ID`.
     std::string socket_id;
   };
-
-  // Registers the prefs that are related to automated password change on
-  // Desktop.
-  static void RegisterPrefs(PrefRegistrySimple* registry);
 
   // Static method that acts as a factory function. It is actually implemented
   // `ApcClientImpl`.

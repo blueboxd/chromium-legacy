@@ -7,18 +7,19 @@ module network.mojom;
 import "services/network/public/mojom/schemeful_site.mojom";
 
 // This struct should match net::FirstPartySetEntry::SiteIndex in
-// //net/cookies/first_party_set_entry.h
+// //net/first_party_sets/first_party_set_entry.h
 struct SiteIndex {
   uint32 value;
 };
 
-// This enum should match //net/cookies/first_party_set_entry.h.
+// This enum should match //net/first_party_sets/first_party_set_entry.h.
 enum SiteType {
   kPrimary,
   kAssociated,
+  kService,
 };
 
-// This struct should match //net/cookies/first_party_set_entry.h.
+// This struct should match //net/first_party_sets/first_party_set_entry.h.
 struct FirstPartySetEntry {
   SchemefulSite primary;
   SiteType site_type;
@@ -41,7 +42,7 @@ struct SamePartyContext {
 };
 
 // This struct must match the class fields defined in
-// //net/cookies/first_party_set_metadata.h.
+// //net/first_party_sets/first_party_set_metadata.h.
 struct FirstPartySetMetadata {
   SamePartyContext context;
   // absl::nullopt indicates that the frame's site is not associated with any
@@ -52,9 +53,8 @@ struct FirstPartySetMetadata {
   FirstPartySetEntry? top_frame_entry;
 };
 
-// This struct holds all of the info associated with the public First-Party
-// Sets, after they've been parsed. This is suitable for plumbing from the
-// browser process to the network service.
+// This struct must match the class fields defined in
+// //net/first_party_sets/public_sets.h.
 struct PublicFirstPartySets {
   // The mapping from site to FPS entry.
   map<SchemefulSite, FirstPartySetEntry> sets;

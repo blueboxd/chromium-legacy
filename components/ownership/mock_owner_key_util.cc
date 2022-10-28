@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -14,11 +14,9 @@
 
 namespace ownership {
 
-MockOwnerKeyUtil::MockOwnerKeyUtil() {
-}
+MockOwnerKeyUtil::MockOwnerKeyUtil() = default;
 
-MockOwnerKeyUtil::~MockOwnerKeyUtil() {
-}
+MockOwnerKeyUtil::~MockOwnerKeyUtil() = default;
 
 bool MockOwnerKeyUtil::ImportPublicKey(std::vector<uint8_t>* output) {
   *output = public_key_;
@@ -52,7 +50,7 @@ void MockOwnerKeyUtil::SetPublicKeyFromPrivateKey(
   CHECK(key.ExportPublicKey(&public_key_));
 }
 
-void MockOwnerKeyUtil::SetPrivateKey(
+void MockOwnerKeyUtil::ImportPrivateKeyAndSetPublicKey(
     std::unique_ptr<crypto::RSAPrivateKey> key) {
   crypto::EnsureNSSInit();
 

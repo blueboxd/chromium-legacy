@@ -67,6 +67,7 @@
 <translation id="5308226104666789935">Pārlūkā Chromium nevar pārbaudīt atjauninājumu pieejamību.</translation>
 <translation id="5396916991083608703">Vai iestatīt Chromium kā noklusējuma pārlūku?</translation>
 <translation id="5521125884468363740">Lai skatītu cilnes no visām ierīcēm, kurās izmantojat pārlūku Chromium, pierakstieties un ieslēdziet sinhronizāciju.</translation>
+<translation id="5522297504975449419">Dažas Chromium funkcijas vairs nebūs pieejamas.</translation>
 <translation id="5573014823074921752">Chromium padoms. Lai iegūtu vairāk ciļņu iespēju, rīkjoslā, kas atrodas ekrāna apakšdaļā vai augšdaļā, pieskarieties pogai Rādīt cilnes un turiet to.</translation>
 <translation id="5700709190537129682">Pārlūkprogrammā Chromium nevar pārbaudīt jūsu paroles.</translation>
 <translation id="5777187867430702742">Chromium lapa</translation>
@@ -95,6 +96,7 @@
 <translation id="7175400662502680481">Jūsu parole tika atklāta datu aizsardzības pārkāpuma dēļ. Paroļu pārvaldnieks iesaka to nekavējoties nomainīt.</translation>
 <translation id="7208566199746267865">Chromium ietaupa jūsu laiku, pievienojot jūsu kontus tīmeklim. Kontus varat pievienot vai noņemt sadaļā Iestatījumi.</translation>
 <translation id="725427773388857052">Chromium var palīdzēt aizsargāt jūs pret datu pārkāpumiem, nedrošām vietnēm un citiem apdraudējumiem.</translation>
+<translation id="7255976941681861701">Uzziniet vairāk par jauno Chromium izvēlni</translation>
 <translation id="7269362888766543920">Daži papildinājumi var izraisīt pārlūka Chromium avarēšanu. Lūdzu, atinstalējiet tos.</translation>
 <translation id="7313655110045230863">Lai iestatītu Chromium kā noklusējuma pārlūku, atveriet iestatījumus. Pieskarieties vienumam “Noklusējuma pārlūka lietotne” un pēc tam atlasiet Chromium.</translation>
 <translation id="7337881442233988129">Chromium</translation>
@@ -113,7 +115,6 @@
 <translation id="7980860476903281594">Chromium kopīgo jūsu atrašanās vietu ar vietnēm, kam atļaujat saņemt šo informāciju.</translation>
 <translation id="8013573822802650211">Lai skatītu cilnes no ierīcēm, kurās lietojat pārlūku Chromium, pierakstieties visās savās ierīcēs.</translation>
 <translation id="8073677936375100957">Vai dzēst jūsu Chromium datus no šīs ierīces?</translation>
-<translation id="8175055321229419309">Padoms. <ph name="BEGIN_LINK" />Pārvietojiet pārlūku Chromium uz savu doku<ph name="END_LINK" />.</translation>
 <translation id="8240981428553046115">Pārlūkā Chromium nevarēja pārbaudīt atjauninājumu pieejamību. Vēlāk mēģiniet vēlreiz.</translation>
 <translation id="8308172444429103994">Chromium padoms. Lai ātrāk pierakstītos, tastatūras augšdaļā atlasiet saglabāto paroli.</translation>
 <translation id="858114650497379505">Paroļu pārvaldniekā saglabātās paroles varat izmantot citās iPhone tālruņa lietotnēs.</translation>

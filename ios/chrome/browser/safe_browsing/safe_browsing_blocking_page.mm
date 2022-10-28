@@ -1,31 +1,31 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #import "ios/chrome/browser/safe_browsing/safe_browsing_blocking_page.h"
 
-#include "base/logging.h"
-#include "base/memory/ptr_util.h"
-#include "base/strings/string_number_conversions.h"
-#include "base/time/time.h"
-#include "components/prefs/pref_service.h"
-#include "components/safe_browsing/core/browser/safe_browsing_metrics_collector.h"
-#include "components/safe_browsing/core/common/features.h"
-#include "components/safe_browsing/core/common/safe_browsing_prefs.h"
+#import "base/logging.h"
+#import "base/memory/ptr_util.h"
+#import "base/strings/string_number_conversions.h"
+#import "base/time/time.h"
+#import "components/prefs/pref_service.h"
+#import "components/safe_browsing/core/browser/safe_browsing_metrics_collector.h"
+#import "components/safe_browsing/core/common/features.h"
+#import "components/safe_browsing/core/common/safe_browsing_prefs.h"
 #import "components/safe_browsing/ios/browser/safe_browsing_url_allow_list.h"
-#include "components/security_interstitials/core/base_safe_browsing_error_ui.h"
-#include "components/security_interstitials/core/metrics_helper.h"
-#include "components/security_interstitials/core/safe_browsing_loud_error_ui.h"
-#include "ios/chrome/browser/application_context.h"
-#include "ios/chrome/browser/browser_state/chrome_browser_state.h"
+#import "components/security_interstitials/core/base_safe_browsing_error_ui.h"
+#import "components/security_interstitials/core/metrics_helper.h"
+#import "components/security_interstitials/core/safe_browsing_loud_error_ui.h"
+#import "ios/chrome/browser/application_context/application_context.h"
+#import "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/safe_browsing/safe_browsing_metrics_collector_factory.h"
-#include "ios/components/security_interstitials/ios_blocking_page_metrics_helper.h"
+#import "ios/components/security_interstitials/ios_blocking_page_metrics_helper.h"
 #import "ios/components/security_interstitials/safe_browsing/safe_browsing_tab_helper.h"
 #import "ios/components/security_interstitials/safe_browsing/unsafe_resource_util.h"
 #import "ios/web/public/web_state.h"
-#include "ui/base/resource/resource_bundle.h"
-#include "ui/base/webui/jstemplate_builder.h"
-#include "ui/base/webui/web_ui_util.h"
+#import "ui/base/resource/resource_bundle.h"
+#import "ui/base/webui/jstemplate_builder.h"
+#import "ui/base/webui/web_ui_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -38,7 +38,7 @@ using security_interstitials::IOSBlockingPageMetricsHelper;
 using security_interstitials::SafeBrowsingLoudErrorUI;
 
 namespace {
-// Creates a metrics helper for |resource|.
+// Creates a metrics helper for `resource`.
 std::unique_ptr<IOSBlockingPageMetricsHelper> CreateMetricsHelper(
     const UnsafeResource& resource) {
   security_interstitials::MetricsHelper::ReportDetails reporting_info;
@@ -131,7 +131,7 @@ void SafeBrowsingBlockingPage::HandleCommand(
     web::WebFrame* sender_frame) {
   error_ui_->HandleCommand(command);
   if (command == security_interstitials::CMD_DONT_PROCEED) {
-    // |error_ui_| handles recording PROCEED and
+    // `error_ui_` handles recording PROCEED and
     // OPEN_ENHANCED_PROTECTION_SETTINGS decisions.
     client_->metrics_helper()->RecordUserDecision(
         security_interstitials::MetricsHelper::DONT_PROCEED);

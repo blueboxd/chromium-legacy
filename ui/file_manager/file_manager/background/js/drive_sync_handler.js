@@ -2,19 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {NativeEventTarget as EventTarget} from 'chrome://resources/js/cr/event_target.m.js';
+import {NativeEventTarget as EventTarget} from 'chrome://resources/js/cr/event_target.js';
 
 import {AsyncUtil} from '../../common/js/async_util.js';
 import {ProgressCenterItem, ProgressItemState, ProgressItemType} from '../../common/js/progress_center_common.js';
 import {getFilesAppIconURL, toFilesAppURL} from '../../common/js/url_constants.js';
-import {str, strf} from '../../common/js/util.js';
+import {str, strf, util} from '../../common/js/util.js';
 import {xfm} from '../../common/js/xfm.js';
 import {DriveSyncHandler} from '../../externs/background/drive_sync_handler.js';
 import {ProgressCenter} from '../../externs/background/progress_center.js';
 import {DriveDialogControllerInterface} from '../../externs/drive_dialog_controller.js';
 
 import {fileOperationUtil} from './file_operation_util.js';
-import {launcher, LaunchType} from './launcher.js';
 
 /**
  * Handler of the background page for the Drive sync events.
@@ -163,10 +162,6 @@ export class DriveSyncHandlerImpl extends EventTarget {
         this.onFileTransfersStatusReceived_.bind(this, this.pinItem_));
     chrome.fileManagerPrivate.onDriveSyncError.addListener(
         this.onDriveSyncError_.bind(this));
-    if (!window.isSWA) {
-      chrome.fileManagerPrivate.onDriveConfirmDialog.addListener(
-          this.onDriveConfirmDialog_.bind(this));
-    }
     xfm.notifications.onButtonClicked.addListener(
         this.onNotificationButtonClicked_.bind(this));
     xfm.notifications.onClosed.addListener(
@@ -231,6 +226,12 @@ export class DriveSyncHandlerImpl extends EventTarget {
    */
   async onFileTransfersStatusReceived_(item, status) {
     if (!this.isProcessableEvent(status)) {
+      return;
+    }
+    if (!status.showNotification) {
+      // Hide the notification by settings its state to Canceled.
+      item.state = ProgressItemState.CANCELED;
+      this.progressCenter_.updateItem(item);
       return;
     }
     switch (status.transferState) {
@@ -313,7 +314,7 @@ export class DriveSyncHandlerImpl extends EventTarget {
 
   /**
    * Attempts to infer of the given event is processable by the drive sync
-   * handler. It uses fileUrl and window.isSwa flag to make a decision. It
+   * handler. It uses fileUrl to make a decision. It
    * errs on the side of 'yes', when passing the judgement.
    * @param {!Object} event
    * @return {boolean} Whether or not the event should be processed.
@@ -350,7 +351,9 @@ export class DriveSyncHandlerImpl extends EventTarget {
           break;
         case 'no_server_space':
           item.message = strf('SYNC_NO_SERVER_SPACE');
-          item.learnMoreLink = str('GOOGLE_DRIVE_MANAGE_STORAGE_URL');
+          item.setExtraButton(
+              ProgressItemState.ERROR, str('LEARN_MORE_LABEL'),
+              () => util.visitURL(str('GOOGLE_DRIVE_MANAGE_STORAGE_URL')));
 
           // This error will reappear every time sync is retried, so we use
           // a fixed ID to avoid spamming the user.
@@ -359,7 +362,9 @@ export class DriveSyncHandlerImpl extends EventTarget {
           break;
         case 'no_server_space_organization':
           item.message = strf('SYNC_NO_SERVER_SPACE_ORGANIZATION');
-          item.learnMoreLink = str('GOOGLE_DRIVE_MANAGE_STORAGE_URL');
+          item.setExtraButton(
+              ProgressItemState.ERROR, str('LEARN_MORE_LABEL'),
+              () => util.visitURL(str('GOOGLE_DRIVE_MANAGE_STORAGE_URL')));
 
           // This error will reappear every time sync is retried, so we use
           // a fixed ID to avoid spamming the user.
@@ -414,53 +419,6 @@ export class DriveSyncHandlerImpl extends EventTarget {
       chrome.fileManagerPrivate.notifyDriveDialogResult(
           chrome.fileManagerPrivate.DriveDialogResult.DISMISS);
       this.dialogs_.delete(appId);
-    }
-  }
-
-  /**
-   * Handles showing dialogs from Drive.
-   * @param {chrome.fileManagerPrivate.DriveConfirmDialogEvent} event
-   * @private
-   */
-  async onDriveConfirmDialog_(event) {
-    if (!this.isProcessableEvent(event)) {
-      return;
-    }
-    let appId = null;
-    // When a file manager is launched, its dialog will be added to dialogs_, so
-    // check it to see if there is already a window open.
-    if (this.dialogs_.size > 0) {
-      // launchFileManager() should always return a string, but this is not
-      // shown in the closure type.
-      // TODO(austinct): Change launchFileManager() to have return type
-      // Promise<?string>.
-      appId = /** @type {?string} */ (await launcher.launchFileManager(
-          /*appState=*/ {},
-          /*id=*/ undefined, LaunchType.FOCUS_ANY_OR_CREATE));
-    }
-    if (!appId) {
-      xfm.notifications.create(
-          DriveSyncHandlerImpl.ENABLE_DOCS_OFFLINE_NOTIFICATION_ID_, {
-            type: 'basic',
-            title: str('FILEMANAGER_APP_NAME'),
-            message: str('OFFLINE_ENABLE_MESSAGE'),
-            iconUrl: getFilesAppIconURL().toString(),
-            buttons: [
-              {title: str('OFFLINE_ENABLE_REJECT')},
-              {title: str('OFFLINE_ENABLE_ACCEPT')},
-            ],
-          },
-          () => {});
-      this.savedDialogEvent_ = event;
-      return;
-    }
-
-    if (this.dialogs_.has(appId)) {
-      this.dialogs_.get(appId).showDialog(event);
-    } else {
-      // File manager is still being launched, so save the event for later when
-      // it has fully initialized.
-      this.savedDialogEvent_ = event;
     }
   }
 

@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -61,7 +61,7 @@ void DeviceSettingsTestBase::SetUp() {
   ConciergeClient::InitializeFake(/*fake_cicerone_client=*/nullptr);
   UserDataAuthClient::InitializeFake();
   CryptohomeMiscClient::InitializeFake();
-  PowerManagerClient::InitializeFake();
+  chromeos::PowerManagerClient::InitializeFake();
   chromeos::TpmManagerClient::InitializeFake();
   OwnerSettingsServiceAshFactory::SetDeviceSettingsServiceForTesting(
       device_settings_service_.get());
@@ -86,7 +86,7 @@ void DeviceSettingsTestBase::TearDown() {
   device_settings_service_->UnsetSessionManager();
   device_settings_service_.reset();
   chromeos::TpmManagerClient::Shutdown();
-  PowerManagerClient::Shutdown();
+  chromeos::PowerManagerClient::Shutdown();
   CryptohomeMiscClient::Shutdown();
   UserDataAuthClient::Shutdown();
   ConciergeClient::Shutdown();

@@ -29,6 +29,7 @@
 #include "third_party/blink/renderer/modules/webgpu/gpu_compute_pipeline.h"
 #include "third_party/blink/renderer/modules/webgpu/gpu_device_lost_info.h"
 #include "third_party/blink/renderer/modules/webgpu/gpu_external_texture.h"
+#include "third_party/blink/renderer/modules/webgpu/gpu_internal_error.h"
 #include "third_party/blink/renderer/modules/webgpu/gpu_out_of_memory_error.h"
 #include "third_party/blink/renderer/modules/webgpu/gpu_pipeline_layout.h"
 #include "third_party/blink/renderer/modules/webgpu/gpu_query_set.h"
@@ -260,6 +261,9 @@ void GPUDevice::OnUncapturedError(WGPUErrorType errorType,
   } else if (errorType == WGPUErrorType_OutOfMemory) {
     init->setError(MakeGarbageCollected<GPUOutOfMemoryError>(
         StringFromASCIIAndUTF8(message)));
+  } else if (errorType == WGPUErrorType_Internal) {
+    init->setError(MakeGarbageCollected<GPUInternalError>(
+        StringFromASCIIAndUTF8(message)));
   } else {
     return;
   }
@@ -307,6 +311,8 @@ void GPUDevice::OnDeviceLostError(WGPUDeviceLostReason reason,
     return;
   AddConsoleWarning(message);
 
+  // Invalidate the adapter given that a device was lost.
+  adapter_->invalidate();
   if (lost_property_->GetState() == LostProperty::kPending) {
     auto* device_lost_info = MakeGarbageCollected<GPUDeviceLostInfo>(
         reason, StringFromASCIIAndUTF8(message));
@@ -496,9 +502,9 @@ ScriptPromise GPUDevice::createComputePipelineAsync(
   ScriptPromise promise = resolver->Promise();
 
   std::string label;
-  OwnedProgrammableStageDescriptor computeStageDescriptor;
+  OwnedProgrammableStage computeStage;
   WGPUComputePipelineDescriptor dawn_desc =
-      AsDawnType(this, descriptor, &label, &computeStageDescriptor);
+      AsDawnType(this, descriptor, &label, &computeStage);
 
   auto* callback =
       BindWGPUOnceCallback(&GPUDevice::OnCreateComputePipelineAsyncCallback,
@@ -571,6 +577,10 @@ void GPUDevice::OnPopErrorScopeCallback(ScriptPromiseResolver* resolver,
       break;
     case WGPUErrorType_Validation:
       resolver->Resolve(MakeGarbageCollected<GPUValidationError>(
+          StringFromASCIIAndUTF8(message)));
+      break;
+    case WGPUErrorType_Internal:
+      resolver->Resolve(MakeGarbageCollected<GPUInternalError>(
           StringFromASCIIAndUTF8(message)));
       break;
     case WGPUErrorType_Unknown:

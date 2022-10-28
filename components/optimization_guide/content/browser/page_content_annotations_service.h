@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -144,6 +144,10 @@ class PageContentAnnotationsService : public KeyedService,
   // test_page_content_annotator.h for an implementation designed for testing.
   void OverridePageContentAnnotatorForTesting(PageContentAnnotator* annotator);
 
+  OptimizationGuideLogger* optimization_guide_logger() const {
+    return optimization_guide_logger_;
+  }
+
  private:
 #if BUILDFLAG(BUILD_WITH_TFLITE_LIB)
   // Callback invoked when a single |visit| has been annotated.
@@ -224,20 +228,12 @@ class PageContentAnnotationsService : public KeyedService,
       continuous_search::SearchResultExtractorClientStatus status,
       continuous_search::mojom::CategoryResultsPtr results);
 
-  // Persist |entities| for |visit| in |history_service_|.
-  //
-  // Virtualized for testing.
-  virtual void PersistRemotePageEntities(
-      const HistoryVisit& visit,
-      const std::vector<history::VisitContentModelAnnotations::Category>&
-          entities);
-
-  // Persist |page_metadata| for |visit| in |history_service_|.
+  // Persist |page_entities_metadata| for |visit| in |history_service_|.
   //
   // Virtualized for testing.
   virtual void PersistRemotePageMetadata(
       const HistoryVisit& visit,
-      const proto::PageEntitiesMetadata& page_metadata);
+      const proto::PageEntitiesMetadata& page_entities_metadata);
 
   // Called when entity metadata for |entity_id| that had weight |weight| on
   // page with |url| has been retrieved.
@@ -263,6 +259,13 @@ class PageContentAnnotationsService : public KeyedService,
                     PersistAnnotationsCallback callback,
                     PageContentAnnotationsType annotation_type,
                     history::QueryURLResult url_result);
+
+  // The allowlist of page categories that are allowed to be persisted.
+  const base::flat_set<std::string> page_categories_persistence_allowlist_;
+
+  // The minimum score that an allowlisted page category must have for it to be
+  // persisted.
+  const int min_page_category_score_to_persist_;
 
   // A metadata-only provider for page entities (as opposed to |model_manager_|
   // which does both entity model execution and metadata providing) that uses a

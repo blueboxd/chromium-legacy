@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -126,10 +126,6 @@ void SideSearchTabContentsHelper::DidFinishNavigation(
     // navigation completes.
     last_search_url_ = url;
 
-    // Allow the page action label to be shown next time the entrypoint is
-    // revealed.
-    can_show_page_action_label_ = true;
-
     // If the navigation to a search results page succeeds we should update the
     // side panel availability bit accordingly.
     // TODO(tluk): If we continue to use a service check for side search SRP
@@ -210,16 +206,6 @@ void SideSearchTabContentsHelper::SetDelegate(
   delegate_ = std::move(delegate);
 }
 
-void SideSearchTabContentsHelper::DidShowPageActionLabel() {
-  ++page_action_label_shown_count_;
-}
-
-bool SideSearchTabContentsHelper::GetAndResetCanShowPageActionLabel() {
-  const bool initial_can_show_page_action_label = can_show_page_action_label_;
-  can_show_page_action_label_ = false;
-  return initial_can_show_page_action_label;
-}
-
 void SideSearchTabContentsHelper::SetSidePanelContentsForTesting(
     std::unique_ptr<content::WebContents> side_panel_contents) {
   side_panel_contents_ = std::move(side_panel_contents);
@@ -243,6 +229,32 @@ SideSearchTabContentsHelper::GetSideContentsHelper() {
   DCHECK(side_panel_contents_);
   return SideSearchSideContentsHelper::FromWebContents(
       side_panel_contents_.get());
+}
+
+void SideSearchTabContentsHelper::OpenSidePanelFromContextMenuSearch(
+    const GURL& url) {
+  DCHECK(url.is_valid());
+  last_search_url_ = url;
+  // Updates SidePanelContents if it exists. Otherwise its creation will be
+  // deferred to Views code.
+  if (side_panel_contents_)
+    UpdateSideContentsNavigation();
+  delegate_->OpenSidePanel();
+}
+
+bool SideSearchTabContentsHelper::CanShowSidePanelFromContextMenuSearch() {
+  if (!delegate_)
+    return false;
+
+  SideSearchConfig* config =
+      SideSearchConfig::Get(web_contents()->GetBrowserContext());
+  // Make sure the menu option appears on tabs that have no logged SRP.
+  // TODO(pengchaocai): Revise the use of this availability bit.
+  config->set_is_side_panel_srp_available(true);
+
+  //  Show the context menu option under only if side search can be shown
+  //  for the current page (ignore SRP / NTP pages etc).
+  return config->CanShowSidePanelForURL(web_contents()->GetLastCommittedURL());
 }
 
 void SideSearchTabContentsHelper::CreateSidePanelContents() {

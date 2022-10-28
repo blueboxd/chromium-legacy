@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -37,7 +37,7 @@ class PolicyWatcherBrowserAgent
   void SignInUIDismissed();
 
   // Starts observing the kSigninAllowed pref and trigger a SignOut if the pref
-  // has changed before the BrowserAgent start the observation. |handler| is
+  // has changed before the BrowserAgent start the observation. `handler` is
   // used to send UI commands when the SignOut is done.
   void Initialize(id<PolicyChangeCommands> handler);
 
@@ -47,18 +47,18 @@ class PolicyWatcherBrowserAgent
 
   explicit PolicyWatcherBrowserAgent(Browser* browser);
 
-  // Handler for changes to kSigninAllowed. When the pref changes to |false|,
+  // Handler for changes to kSigninAllowed. When the pref changes to `false`,
   // sends a command to the SceneController to dismiss any in-progress sign-in
   // UI.
   void ForceSignOutIfSigninDisabled();
 
-  // Handler for change to kSyncManaged. When the pref changes to |true|,
+  // Handler for change to kSyncManaged. When the pref changes to `true`,
   // sends a command to the handler to show a prompt.
   void ShowSyncDisabledPromptIfNeeded();
 
   // Handler for changes to kAllowChromeDataInBackups. Excludes the entire app
-  // container from iCloud backup when the pref changes to |false|, and removes
-  // this exclusion when the pref changs to |true|.
+  // container from iCloud backup when the pref changes to `false`, and removes
+  // this exclusion when the pref changs to `true`.
   void UpdateAppContainerBackupExclusion();
 
   // Callback called when the sign out is complete.

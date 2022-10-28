@@ -27,6 +27,7 @@ chromium-metrics-reviews@google.com.
   <variant name="Assistant"/>
   <variant name="Bookmarks"/>
   <variant name="CustomizeChrome"/>
+  <variant name="Extension"/>
   <variant name="Feed"/>
   <variant name="HistoryClusters"/>
   <variant name="Lens"/>
@@ -34,6 +35,7 @@ chromium-metrics-reviews@google.com.
   <variant name="ReadingList"/>
   <variant name="SideSearch"/>
   <variant name="UserNotes"/>
+  <variant name="WebView"/>
 </variants>
 
 <variants name="TabSwitchingType">
@@ -52,7 +54,7 @@ chromium-metrics-reviews@google.com.
 </variants>
 
 <histogram name="Browser.AnyWindowHasName" enum="Boolean"
-    expires_after="2022-12-25">
+    expires_after="2023-02-26">
   <owner>ellyjones@chromium.org</owner>
   <owner>lgrey@chromium.org</owner>
   <summary>
@@ -129,7 +131,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Browser.DarkModeStatus" enum="DarkModeStatus"
-    expires_after="2023-01-01">
+    expires_after="2023-03-05">
   <owner>lgrey@chromium.org</owner>
   <owner>robliao@chromium.org</owner>
   <summary>
@@ -260,7 +262,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Browser.PaintPreview.Player.LinkClicked" enum="BooleanSuccess"
-    expires_after="2022-12-18">
+    expires_after="2023-02-19">
   <owner>ckitagawa@chromium.org</owner>
   <owner>fredmello@chromium.org</owner>
   <owner>chrome-fdt@google.com</owner>
@@ -279,7 +281,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Browser.PaintPreview.TabbedPlayer.CompositorFailureReason"
-    enum="TabbedPaintPreviewCompositorFailureReason" expires_after="2022-12-18">
+    enum="TabbedPaintPreviewCompositorFailureReason" expires_after="2023-02-19">
   <owner>ckitagawa@chromium.org</owner>
   <owner>fredmello@chromium.org</owner>
   <owner>chrome-fdt@google.com</owner>
@@ -302,7 +304,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Browser.PaintPreview.TabbedPlayer.FirstPaintBeforeTabLoad"
-    enum="Boolean" expires_after="2022-12-18">
+    enum="Boolean" expires_after="2023-02-19">
   <owner>ckitagawa@chromium.org</owner>
   <owner>fredmello@chromium.org</owner>
   <owner>chrome-fdt@google.com</owner>
@@ -325,7 +327,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Browser.PaintPreview.TabbedPlayer.SnackbarCount" units="units"
-    expires_after="2022-12-18">
+    expires_after="2023-02-19">
   <owner>ckitagawa@chromium.org</owner>
   <owner>fredmello@chromium.org</owner>
   <owner>chrome-fdt@google.com</owner>
@@ -385,7 +387,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Browser.Responsiveness.IOJanksTotalPerMinute" units="janks"
-    expires_after="2022-12-25">
+    expires_after="2023-02-26">
   <owner>gab@chromium.org</owner>
   <owner>olivierli@chromium.org</owner>
   <summary>
@@ -399,7 +401,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Browser.Responsiveness.IOJankyIntervalsPerMinute"
-    units="janks" expires_after="2022-12-18">
+    units="janks" expires_after="2023-02-19">
   <owner>gab@chromium.org</owner>
   <owner>olivierli@chromium.org</owner>
   <summary>
@@ -545,7 +547,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Browser.Tabs.SelectionToVisibilityRequestTime"
-    units="microseconds" expires_after="2023-01-01">
+    units="microseconds" expires_after="2023-03-05">
   <owner>jonross@chromium.org</owner>
   <owner>sky@chromium.org</owner>
   <summary>
@@ -683,7 +685,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Browser.WindowCount.Guest" units="units"
-    expires_after="2022-12-25">
+    expires_after="2023-02-26">
   <owner>rhalavati@chromium.org</owner>
   <owner>chrome-privacy-core@google.com</owner>
   <summary>
@@ -695,7 +697,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Browser.WindowCount.Incognito" units="units"
-    expires_after="2022-12-25">
+    expires_after="2023-02-26">
   <owner>rhalavati@chromium.org</owner>
   <owner>chrome-privacy-core@google.com</owner>
   <summary>
@@ -863,7 +865,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="BrowserServices.BrowsableIntentCheck" units="ms"
-    expires_after="M108">
+    expires_after="M114">
   <owner>peconn@chromium.org</owner>
   <owner>peter@chromium.org</owner>
   <summary>
@@ -874,7 +876,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="BrowserServices.ClientAppDataLoad" units="ms"
-    expires_after="M108">
+    expires_after="M114">
   <owner>peconn@chromium.org</owner>
   <owner>peter@chromium.org</owner>
   <summary>
@@ -885,7 +887,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="BrowserServices.ServiceTabResolveInfoQuery" units="ms"
-    expires_after="2022-12-18">
+    expires_after="2023-02-19">
   <owner>peconn@chromium.org</owner>
   <owner>peter@chromium.org</owner>
   <summary>
@@ -895,7 +897,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="BrowserServices.TwaOpenTime.V2" units="ms"
-    expires_after="M108">
+    expires_after="M114">
   <owner>peconn@chromium.org</owner>
   <owner>peter@chromium.org</owner>
   <summary>
@@ -905,7 +907,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="BrowserServices.VerificationResult"
-    enum="BrowserServicesVerificationResult" expires_after="M108">
+    enum="BrowserServicesVerificationResult" expires_after="M114">
   <owner>peconn@chromium.org</owner>
   <owner>peter@chromium.org</owner>
   <summary>
@@ -915,7 +917,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="BrowserServices.VerificationTime.Offline" units="ms"
-    expires_after="M108">
+    expires_after="M114">
   <owner>peconn@chromium.org</owner>
   <owner>peter@chromium.org</owner>
   <summary>
@@ -926,7 +928,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="BrowserServices.VerificationTime.Online" units="ms"
-    expires_after="M108">
+    expires_after="M114">
   <owner>peconn@chromium.org</owner>
   <owner>peter@chromium.org</owner>
   <summary>
@@ -1092,6 +1094,16 @@ chromium-metrics-reviews@google.com.
     Whether there is a wildcard (&quot;*&quot;) rule in the
     BrowserSwitcherUrlList policy. Measured when the BrowserSwitcherUrlList
     policy gets updated. Desktop Chrome only.
+  </summary>
+</histogram>
+
+<histogram name="DigitalAssetLinks.NumFingerprints" units="NumFingerprints"
+    expires_after="M116">
+  <owner>swestphal@chromium.org</owner>
+  <owner>rayankans@chromium.org</owner>
+  <summary>
+    Records the number of fingerprints in assetlinks.json for every performed
+    Digital Asset Link validation with a valid `sha256_cert_fingerprints`-entry.
   </summary>
 </histogram>
 

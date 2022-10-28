@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -820,5 +820,25 @@ TEST_F(AccessibilityNodeInfoDataWrapperTest, CustomActions) {
       ax::mojom::StringListAttribute::kCustomActionDescriptions,
       &result_labels));
   EXPECT_EQ(std::vector<std::string>({"This is label"}), result_labels);
+}
+
+TEST_F(AccessibilityNodeInfoDataWrapperTest, ActionLabel) {
+  AXNodeInfoData root;
+  root.id = 1;
+  AccessibilityNodeInfoDataWrapper wrapper(tree_source(), &root);
+
+  // Check if labels for click and long click are serialized as kDoDefaultLabel
+  // and kLongClickLabel.
+  AddStandardAction(&root, AXActionType::CLICK, "click label");
+  AddStandardAction(&root, AXActionType::LONG_CLICK, "long click label");
+
+  ui::AXNodeData data = CallSerialize(wrapper);
+  std::string val;
+  EXPECT_TRUE(data.GetStringAttribute(
+      ax::mojom::StringAttribute::kDoDefaultLabel, &val));
+  EXPECT_EQ("click label", val);
+  EXPECT_TRUE(data.GetStringAttribute(
+      ax::mojom::StringAttribute::kLongClickLabel, &val));
+  EXPECT_EQ("long click label", val);
 }
 }  // namespace arc

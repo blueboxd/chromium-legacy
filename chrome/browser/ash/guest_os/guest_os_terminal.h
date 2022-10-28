@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -14,6 +14,10 @@
 #include "components/services/app_service/public/mojom/app_service.mojom.h"
 #include "components/services/app_service/public/mojom/types.mojom.h"
 #include "ui/display/types/display_constants.h"
+
+namespace apps {
+struct MenuItems;
+}
 
 class Profile;
 
@@ -173,15 +177,14 @@ std::vector<std::pair<std::string, std::string>> GetSSHConnections(
     Profile* profile);
 
 // Add terminal menu items (Settings, Shut down Linux).
-void AddTerminalMenuItems(Profile* profile,
-                          apps::mojom::MenuItemsPtr* menu_items);
+void AddTerminalMenuItems(Profile* profile, apps::MenuItems& menu_items);
 
 // Add terminal shortcut items in menu.
 void AddTerminalMenuShortcuts(
     Profile* profile,
     int next_command_id,
-    apps::mojom::MenuItemsPtr menu_items,
-    apps::mojom::Publisher::GetMenuModelCallback callback,
+    apps::MenuItems menu_items,
+    base::OnceCallback<void(apps::MenuItems)> callback,
     std::vector<gfx::ImageSkia> icons = {});
 
 // Called when user clicks on terminal menu items. Returns true if |shortcut_id|

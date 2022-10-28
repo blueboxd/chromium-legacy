@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -568,11 +568,22 @@ public class PaymentRequestService
         }
         PaymentMethodData spcMethodData = methodData.get(MethodStrings.SECURE_PAYMENT_CONFIRMATION);
         if (spcMethodData.securePaymentConfirmation == null) return false;
-        if (spcMethodData.securePaymentConfirmation.payeeOrigin == null) return false;
-        Origin origin = new Origin(spcMethodData.securePaymentConfirmation.payeeOrigin);
-        if (origin.isOpaque()) return false;
-        if (origin.getScheme() == null) return false;
-        return origin.getScheme().equals("https");
+
+        // TODO(crbug.com/1342686): Update checks to match desktop browser-side logic.
+        if ((spcMethodData.securePaymentConfirmation.payeeOrigin == null
+                    && spcMethodData.securePaymentConfirmation.payeeName == null)
+                || (spcMethodData.securePaymentConfirmation.payeeName != null
+                        && spcMethodData.securePaymentConfirmation.payeeName.isEmpty())) {
+            return false;
+        }
+
+        if (spcMethodData.securePaymentConfirmation.payeeOrigin != null) {
+            Origin origin = new Origin(spcMethodData.securePaymentConfirmation.payeeOrigin);
+            if (origin.isOpaque()) return false;
+            if (!"https".equals(origin.getScheme())) return false;
+        }
+
+        return true;
     }
 
     private void startPaymentAppService() {
@@ -893,6 +904,9 @@ public class PaymentRequestService
             PaymentMethodData spcMethodData =
                     mSpec.getMethodData().get(MethodStrings.SECURE_PAYMENT_CONFIRMATION);
             assert spcMethodData != null;
+            Origin payeeOrigin = spcMethodData.securePaymentConfirmation.payeeOrigin != null
+                    ? new Origin(spcMethodData.securePaymentConfirmation.payeeOrigin)
+                    : null;
             boolean success = mSpcAuthnUiController.show(
                     mBrowserPaymentRequest.getSelectedPaymentApp().getDrawableIcon(),
                     mBrowserPaymentRequest.getSelectedPaymentApp().getLabel(),
@@ -908,7 +922,7 @@ public class PaymentRequestService
                         }
 
                         mSpcAuthnUiController = null;
-                    }, new Origin(spcMethodData.securePaymentConfirmation.payeeOrigin));
+                    }, spcMethodData.securePaymentConfirmation.payeeName, payeeOrigin);
 
             if (success) {
                 mJourneyLogger.setShown();

@@ -1,20 +1,16 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "components/lookalikes/core/lookalike_url_util.h"
 
+#include <algorithm>
 #include <utility>
 
-#include "base/bind.h"
 #include "base/callback.h"
 #include "base/containers/contains.h"
-#include "base/feature_list.h"
 #include "base/hash/sha1.h"
 #include "base/i18n/char_iterator.h"
-#include "base/memory/scoped_refptr.h"
-#include "base/memory/singleton.h"
-#include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_piece.h"
@@ -22,12 +18,9 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/task/thread_pool.h"
-#include "base/time/default_clock.h"
 #include "base/trace_event/trace_event.h"
 #include "base/values.h"
 #include "build/build_config.h"
-#include "components/lookalikes/core/features.h"
 #include "components/reputation/core/safety_tips_config.h"
 #include "components/security_interstitials/core/pref_names.h"
 #include "components/url_formatter/spoof_checks/common_words/common_words_util.h"
@@ -690,16 +683,34 @@ bool IsComboSquatting(
     auto brand_skeleton = brand.second;
     DCHECK(IsComboSquattingCandidate(brand_name));
     for (auto& skeleton : navigated_domain.domain_without_registry_skeletons) {
+      size_t brand_skeleton_pos = skeleton.find(brand_skeleton);
       if (skeleton.size() == brand_skeleton.size() ||
-          skeleton.find(brand_skeleton) == std::string::npos) {
+          brand_skeleton_pos == std::string::npos) {
         continue;
       }
 
       for (size_t j = 0; j < combo_squatting_params.num_popular_keywords; j++) {
         auto* const keyword = combo_squatting_params.popular_keywords[j];
-        if (skeleton.find(keyword) != std::string::npos &&
-            std::string(brand_skeleton).find(keyword) == std::string::npos &&
-            std::string(keyword).find(brand_skeleton) == std::string::npos) {
+        size_t keyword_pos = skeleton.find(keyword);
+        if (keyword_pos == std::string::npos) {
+          // Keyword not found, ignore.
+          continue;
+        }
+
+        if (std::string(brand_skeleton).find(keyword) != std::string::npos ||
+            std::string(keyword).find(brand_skeleton) != std::string::npos) {
+          // Keyword is a substring of brand or vice versa, ignore.
+          continue;
+        }
+
+        if ((keyword_pos > brand_skeleton_pos &&
+             keyword_pos < brand_skeleton_pos + brand_skeleton.size()) ||
+            (brand_skeleton_pos > keyword_pos &&
+             brand_skeleton_pos < keyword_pos + strlen(keyword))) {
+          // Keyword and brand overlap, ignore.
+          continue;
+        }
+
           if (is_hard_coded) {
             *matched_domain = FindMatchedDomainForHardCodedComboSquatting(
                 brand_name, navigated_domain);
@@ -708,7 +719,6 @@ bool IsComboSquatting(
                 brand_name, navigated_domain, engaged_sites);
           }
           return true;
-        }
       }
     }
   }
@@ -1300,10 +1310,11 @@ bool ShouldBlockBySpoofCheckResult(const DomainInfo& navigated_domain) {
 
 bool IsAllowedByEnterprisePolicy(const PrefService* pref_service,
                                  const GURL& url) {
-  const auto* list =
+  const base::Value::List& list =
       pref_service->GetList(prefs::kLookalikeWarningAllowlistDomains);
-  for (const auto& domain_val : list->GetListDeprecated()) {
-    auto domain = domain_val.GetString();
+
+  for (const auto& domain_val : list) {
+    const std::string& domain = domain_val.GetString();
     if (url.DomainIs(domain)) {
       return true;
     }

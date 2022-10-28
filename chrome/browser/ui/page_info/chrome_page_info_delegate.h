@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -51,14 +51,17 @@ class ChromePageInfoDelegate : public PageInfoDelegate {
   permissions::PermissionResult GetPermissionResult(
       blink::PermissionType permission,
       const url::Origin& origin) override;
-
 #if !BUILDFLAG(IS_ANDROID)
+  absl::optional<std::u16string> GetFpsOwner(const GURL& site_url) override;
   bool CreateInfoBarDelegate() override;
+  std::unique_ptr<content_settings::CookieControlsController>
+  CreateCookieControlsController() override;
   // In Chrome's case, this may show the site settings page or an app settings
   // page, depending on context.
   void ShowSiteSettings(const GURL& site_url) override;
   void ShowCookiesSettings() override;
-  void ShowAllSitesSettings() override;
+  void ShowAllSitesSettingsFilteredByFpsOwner(
+      const std::u16string& fps_owner) override;
   void OpenCookiesDialog() override;
   void OpenCertificateDialog(net::X509Certificate* certificate) override;
   void OpenConnectionHelpCenterPage(const ui::Event& event) override;
@@ -86,17 +89,23 @@ class ChromePageInfoDelegate : public PageInfoDelegate {
 
  private:
   Profile* GetProfile() const;
+
 #if BUILDFLAG(FULL_SAFE_BROWSING)
   safe_browsing::ChromePasswordProtectionService*
   GetChromePasswordProtectionService() const;
 #endif
-  raw_ptr<content::WebContents> web_contents_;
+
 #if !BUILDFLAG(IS_ANDROID)
+  // Focus the window and tab for the web contents.
+  void FocusWebContents();
+
   // The sentiment service is owned by the profile and will outlive this. The
   // service cannot be retrieved via |web_contents_| as that may be destroyed
   // before this is.
   raw_ptr<TrustSafetySentimentService> sentiment_service_;
 #endif
+
+  raw_ptr<content::WebContents> web_contents_;
   security_state::SecurityLevel security_level_for_tests_;
   security_state::VisibleSecurityState visible_security_state_for_tests_;
   bool security_state_for_tests_set_ = false;

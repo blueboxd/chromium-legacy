@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {decorate} from 'chrome://resources/js/cr/ui.m.js';
-import {Command} from 'chrome://resources/js/cr/ui/command.js';
+import {decorate} from 'chrome://resources/js/cr/ui.js';
+import {Command} from '../command.js';
 import {assertEquals} from 'chrome://webui-test/chai_assert.js';
 
 import {mockUtilVisitURL} from '../../../../common/js/mock_util.js';

@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -116,6 +116,10 @@ class PasswordsPrivateApiTest : public ExtensionApiTest {
 
   const std::vector<int>& last_moved_passwords() const {
     return s_test_delegate_->last_moved_passwords();
+  }
+
+  bool get_authenticator_interaction_status() const {
+    return s_test_delegate_->get_authenticator_interaction_status();
   }
 
  private:
@@ -349,4 +353,9 @@ IN_PROC_BROWSER_TEST_F(PasswordsPrivateApiTest, MovePasswordsToAccount) {
   EXPECT_EQ(42, last_moved_passwords()[0]);
 }
 
+IN_PROC_BROWSER_TEST_F(PasswordsPrivateApiTest, ExtendAuthValidity) {
+  EXPECT_FALSE(get_authenticator_interaction_status());
+  EXPECT_TRUE(RunPasswordsSubtest("extendAuthValidity")) << message_;
+  EXPECT_TRUE(get_authenticator_interaction_status());
+}
 }  // namespace extensions

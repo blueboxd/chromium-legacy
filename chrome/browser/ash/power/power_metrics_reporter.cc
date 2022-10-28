@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -88,7 +88,7 @@ void PowerMetricsReporter::RegisterLocalStatePrefs(
 }
 
 PowerMetricsReporter::PowerMetricsReporter(
-    PowerManagerClient* power_manager_client,
+    chromeos::PowerManagerClient* power_manager_client,
     PrefService* local_state_pref_service)
     : power_manager_client_(power_manager_client),
       pref_service_(local_state_pref_service),

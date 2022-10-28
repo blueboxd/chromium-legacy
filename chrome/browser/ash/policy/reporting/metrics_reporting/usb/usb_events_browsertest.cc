@@ -1,11 +1,13 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include <memory>
 #include <string>
+
 #include "ash/components/settings/cros_settings_names.h"
 #include "ash/constants/ash_switches.h"
+#include "base/containers/contains.h"
 #include "chrome/browser/ash/login/test/fake_gaia_mixin.h"
 #include "chrome/browser/ash/login/test/login_manager_mixin.h"
 #include "chrome/browser/ash/login/test/session_manager_state_waiter.h"
@@ -28,6 +30,8 @@
 
 namespace chromeos {
 namespace {
+
+namespace cros_healthd = ::ash::cros_healthd;
 
 // Browser test that validate Usb added/removed events and telemetry collection
 // when the`ReportDevicePeripherals policy is set/unset. These tests cases only
@@ -71,10 +75,8 @@ class UsbEventsBrowserTest : public ::policy::DevicePolicyCrosBrowserTest {
   }
 
   bool NoUsbEventsEnqueued(const std::vector<::reporting::Record>& records) {
-    return std::none_of(
-        records.begin(), records.end(), [](::reporting::Record r) {
-          return r.destination() == ::reporting::Destination::PERIPHERAL_EVENTS;
-        });
+    return !base::Contains(records, ::reporting::Destination::PERIPHERAL_EVENTS,
+                           &::reporting::Record::destination);
   }
 
   void LoginAffiliatedUser() {
@@ -138,7 +140,7 @@ IN_PROC_BROWSER_TEST_F(
 
   LoginAffiliatedUser();
 
-  MissiveClientTestObserver missive_observer_(
+  chromeos::MissiveClientTestObserver missive_observer_(
       ::reporting::Destination::PERIPHERAL_EVENTS);
 
   cros_healthd::FakeCrosHealthd::Get()->EmitUsbAddEventForTesting();
@@ -161,12 +163,12 @@ IN_PROC_BROWSER_TEST_F(
     UsbTelemetryCollectedWhenPolicyEnabledWithAffiliatedUser) {
   EnableUsbPolicy();
 
-  MissiveClientTestObserver missive_observer_(
+  chromeos::MissiveClientTestObserver missive_observer_(
       ::reporting::Destination::PERIPHERAL_EVENTS);
 
   auto usb_telemetry = CreateUsbTelemetry();
-  ash::cros_healthd::FakeCrosHealthd::Get()
-      ->SetProbeTelemetryInfoResponseForTesting(usb_telemetry);
+  cros_healthd::FakeCrosHealthd::Get()->SetProbeTelemetryInfoResponseForTesting(
+      usb_telemetry);
 
   // This triggers USB telemetry collection, a.k.a USB status updates
   LoginAffiliatedUser();
@@ -194,14 +196,14 @@ IN_PROC_BROWSER_TEST_F(
     NoUsbEventsOrTelemetryWhenPolicyEnabledWithUnaffiliatedUser) {
   EnableUsbPolicy();
 
-  MissiveClientTestObserver missive_observer_(
+  chromeos::MissiveClientTestObserver missive_observer_(
       ::reporting::Destination::PERIPHERAL_EVENTS);
 
   LoginUnaffiliatedUser();
 
   cros_healthd::FakeCrosHealthd::Get()->EmitUsbAddEventForTesting();
   EXPECT_TRUE(NoUsbEventsEnqueued(
-      MissiveClient::Get()->GetTestInterface()->GetEnqueuedRecords(
+      chromeos::MissiveClient::Get()->GetTestInterface()->GetEnqueuedRecords(
           ::reporting::Priority::SECURITY)));
 }
 
@@ -216,7 +218,7 @@ IN_PROC_BROWSER_TEST_F(
 
   // Shouldn't be any USB event related records in the MissiveClient queue
   EXPECT_TRUE(NoUsbEventsEnqueued(
-      MissiveClient::Get()->GetTestInterface()->GetEnqueuedRecords(
+      chromeos::MissiveClient::Get()->GetTestInterface()->GetEnqueuedRecords(
           ::reporting::Priority::SECURITY)));
 }
 
@@ -231,7 +233,7 @@ IN_PROC_BROWSER_TEST_F(
 
   // Shouldn't be any USB event related records in the MissiveClient queue
   EXPECT_TRUE(NoUsbEventsEnqueued(
-      MissiveClient::Get()->GetTestInterface()->GetEnqueuedRecords(
+      chromeos::MissiveClient::Get()->GetTestInterface()->GetEnqueuedRecords(
           ::reporting::Priority::SECURITY)));
 }
 

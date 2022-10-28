@@ -1,4 +1,4 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -32,7 +32,6 @@
 #include "content/public/app/content_main.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/render_process_host.h"
 #include "content/public/common/content_switches.h"
 #include "headless/app/headless_shell.h"
 #include "headless/app/headless_shell_switches.h"
@@ -332,8 +331,6 @@ void HeadlessShell::ShutdownSoon() {
 
 void HeadlessShell::Shutdown() {
   DCHECK(!web_contents_);
-  if (content::RenderProcessHost::run_renderer_in_process())
-    content::RenderProcessHost::ShutDownInProcessRenderer();
   browser_->Shutdown();
 }
 

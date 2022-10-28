@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,10 +6,6 @@
 
 #include <cctype>
 
-#include "ash/components/login/auth/auth_performer.h"
-#include "ash/components/login/auth/mock_auth_performer.h"
-#include "ash/components/login/auth/public/auth_factors_data.h"
-#include "ash/components/login/auth/public/cryptohome_key_constants.h"
 #include "ash/public/cpp/in_session_auth_token_provider.h"
 #include "ash/public/cpp/test/mock_in_session_auth_token_provider.h"
 #include "ash/test/ash_test_base.h"
@@ -19,6 +15,11 @@
 #include "chromeos/ash/components/cryptohome/common_types.h"
 #include "chromeos/ash/components/cryptohome/cryptohome_parameters.h"
 #include "chromeos/ash/components/dbus/userdataauth/userdataauth_client.h"
+#include "chromeos/ash/components/login/auth/auth_performer.h"
+#include "chromeos/ash/components/login/auth/mock_auth_performer.h"
+#include "chromeos/ash/components/login/auth/public/auth_factors_data.h"
+#include "chromeos/ash/components/login/auth/public/authentication_error.h"
+#include "chromeos/ash/components/login/auth/public/cryptohome_key_constants.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/events/keycodes/keyboard_codes_posix.h"
@@ -47,7 +48,8 @@ class AuthenticationDialogTest : public AshTestBase {
   }
 
   void StartAuthSession(std::unique_ptr<UserContext> user_context,
-                        bool ephemeral,
+                        bool /*ephemeral*/,
+                        AuthSessionIntent /*intent*/,
                         AuthPerformer::StartSessionCallback callback) {
     user_context->SetAuthFactorsData(
         AuthFactorsData{{cryptohome::KeyDefinition::CreateForPassword(
@@ -168,7 +170,7 @@ TEST_F(AuthenticationDialogTest, IncorrectPasswordProvidedThenCorrect) {
             std::move(user_context),
             password == kExpectedPassword
                 ? absl::nullopt
-                : absl::optional<CryptohomeError>{CryptohomeError{
+                : absl::optional<AuthenticationError>{AuthenticationError{
                       user_data_auth::
                           CRYPTOHOME_ERROR_AUTHORIZATION_KEY_NOT_FOUND}});
       });
@@ -203,7 +205,7 @@ TEST_F(AuthenticationDialogTest, AuthSessionRestartedWhenExpired) {
             std::move(user_context),
             number_of_calls++
                 ? absl::nullopt
-                : absl::optional<CryptohomeError>{CryptohomeError{
+                : absl::optional<AuthenticationError>{AuthenticationError{
                       user_data_auth::CRYPTOHOME_INVALID_AUTH_SESSION_TOKEN}});
       });
 

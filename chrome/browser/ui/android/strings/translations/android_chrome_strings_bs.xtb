@@ -454,6 +454,7 @@ Kada izbrišete historiju pregledanja, cijelu ili samo za određene web lokacije
 <translation id="3435465986463792564">Imate mnogo prozora? Možete upravljati njima odavde</translation>
 <translation id="3443221991560634068">Ponovo učitajte trenutnu stranicu</translation>
 <translation id="3444179773590444986">Dijeliti povratne informacije o tamnoj temi za web lokacije?</translation>
+<translation id="3452832259067974318">Da bi zaštitio vašu privatnost, Chrome neće automatski popuniti zaporku u ovom polju.</translation>
 <translation id="3469665409713263828">{FILE_COUNT,plural, =1{Zakazano je 1 preuzimanje}one{Zakazano je # preuzimanje}few{Zakazana su # preuzimanja}other{Zakazano je # preuzimanja}}</translation>
 <translation id="3474624961160222204">Nastavi kao <ph name="NAME" /></translation>
 <translation id="3478363558367712427">Možete odabrati svoj pretraživač</translation>
@@ -679,6 +680,7 @@ Vaš Google račun može imati druge oblike historije pregledanja kao što su pr
 <translation id="4763480195061959176">videozapis</translation>
 <translation id="4766313118839197559">Lozinke se pohranjuju u Upravitelju lozinki na ovom uređaju.</translation>
 <translation id="4766678251456904326">Dodajte račun na uređaj</translation>
+<translation id="4787736314074622408">Želite li izbrisati <ph name="ITEM_TITLE" />?</translation>
 <translation id="4791358705705538979">Pomaže vam s izvršavanjem zadataka na internetu, kao što je plaćanje</translation>
 <translation id="4794291718671962615">(<ph name="MEGABYTES" />) <ph name="URL" /></translation>
 <translation id="4802417911091824046">Enkripcija šifrom ne uključuje načine plaćanja i adrese s Google Paya.
@@ -748,6 +750,7 @@ Da biste promijenili tu postavku, <ph name="BEGIN_LINK" />poništite sinkronizac
 <translation id="5091199029769593641">Uskoro ćete vidjeti priče s web lokacije <ph name="SITE_NAME" /> kada otvorite novu karticu. Web lokacije koje pratite se pohranjuju na vaš Google račun. Njima možete upravljati u postavkama Discovera.</translation>
 <translation id="5091249083535528968">Prošireni podaci o korištenju</translation>
 <translation id="509429900233858213">Došlo je do greške.</translation>
+<translation id="5099845111805573968">Kada jednom odaberete web lokaciju za računar, postavka se primjenjuje na web lokaciju svaki put kada je posjetite</translation>
 <translation id="5102401324271069229">Ako web lokacija pokuša ukrasti vašu lozinku ili kada preuzimate štetan fajl, Chrome može slati URL-ove, uključujući dijelove sadržaja stranice, u Sigurno pregledanje</translation>
 <translation id="510275257476243843">Još 1 sat</translation>
 <translation id="5115811374190515607">u: <ph name="PRODUCT_NAME" /></translation>
@@ -907,6 +910,7 @@ Da biste promijenili tu postavku, <ph name="BEGIN_LINK" />poništite sinkronizac
 <translation id="5958275228015807058">Pronađite svoje fajlove i stranice u meniju Preuzimanja</translation>
 <translation id="5962718611393537961">Dodirnite da suzite</translation>
 <translation id="5964869237734432770">Zaustavi opise slika</translation>
+<translation id="5966233851250124270">Chrome će zapamtiti vaš izbor</translation>
 <translation id="5979084224081478209">Provjeri lozinke</translation>
 <translation id="5995726099713306770">Ponovo preuzeti stranicu?</translation>
 <translation id="6000066717592683814">Zadrži Google</translation>
@@ -1083,6 +1087,7 @@ Tokeni povjerenja poboljšavaju privatnosti na webu i ne mogu se koristi za utvr
 <translation id="6820686453637990663">CVC</translation>
 <translation id="6824899148643461612"><ph name="TAB_TITLE" />, kartica, odabrana</translation>
 <translation id="6828070228333235514">Zaustavi praćenje cijene</translation>
+<translation id="6830728435402077660">Nije sigurno</translation>
 <translation id="6833996806551876956">Probni period Zaštićenog okruženja za privatnost</translation>
 <translation id="6836206421467243968">Vratite grupu kartica <ph name="TITLE_OF_GROUP" /> kao novu pozadinsku grupu kartica.</translation>
 <translation id="6846298663435243399">Učitavanje…</translation>

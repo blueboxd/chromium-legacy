@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -570,7 +570,9 @@ enum class PasswordNoteAction {
   // Note changed from non-empty to empty from the password edit dialog in
   // settings.
   kNoteRemovedInEditDialog = 3,
-  kMaxValue = kNoteRemovedInEditDialog,
+  // Note did not change.
+  kNoteNotChanged = 4,
+  kMaxValue = kNoteNotChanged,
 };
 
 std::string GetPasswordAccountStorageUserStateHistogramSuffix(
@@ -616,7 +618,15 @@ enum class PasswordViewPageInteractions {
   // The credential's username, password or note is edited in settings password
   // view page.
   kCredentialEdited = 8,
-  kMaxValue = kCredentialEdited,
+  // The password view page is closed while the edit dialog is open after
+  // an authentication timeout.
+  kTimedOutInEditDialog = 9,
+  // The password view page is closed while the edit dialog is closed after
+  // an authentication timeout.
+  kTimedOutInViewPage = 10,
+  // The credential is requested by typing the URL.
+  kCredentialRequestedByUrl = 11,
+  kMaxValue = kCredentialRequestedByUrl,
 };
 
 std::string GetPasswordAccountStorageUsageLevelHistogramSuffix(

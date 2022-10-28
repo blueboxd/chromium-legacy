@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,6 +8,7 @@
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/services/screen_ai/public/mojom/screen_ai_service.mojom.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
 
 namespace screen_ai {
@@ -20,11 +21,13 @@ class ScreenAIServiceRouter : public KeyedService {
   ~ScreenAIServiceRouter() override;
 
   void BindScreenAIAnnotator(
-      mojo::PendingReceiver<screen_ai::mojom::ScreenAIAnnotator> receiver);
+      mojo::PendingReceiver<mojom::ScreenAIAnnotator> receiver);
+
+  void BindScreenAIAnnotatorClient(
+      mojo::PendingRemote<mojom::ScreenAIAnnotatorClient> remote);
 
   void BindMainContentExtractor(
-      mojo::PendingReceiver<screen_ai::mojom::Screen2xMainContentExtractor>
-          receiver);
+      mojo::PendingReceiver<mojom::Screen2xMainContentExtractor> receiver);
 
   void LaunchIfNotRunning();
 

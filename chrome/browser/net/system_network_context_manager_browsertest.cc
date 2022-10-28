@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -261,10 +261,10 @@ class SystemNetworkContextManagerWithFirstPartySetComponentBrowserTest
 
  private:
   std::string GetComponentContents() const {
-    return "{\"owner\": \"https://a.test\", \"members\": [ "
-           "\"https://b.test\", \"https://member1.test\"]}\n"
-           "{\"owner\": \"https://c.test\", \"members\": [ "
-           "\"https://d.test\", \"https://member2.test\"]}";
+    return "{\"primary\": \"https://a.test\", \"associatedSites\": [ "
+           "\"https://b.test\", \"https://associatedsite1.test\"]}\n"
+           "{\"primary\": \"https://c.test\", \"associatedSites\": [ "
+           "\"https://d.test\", \"https://associatedsite2.test\"]}";
   }
 
   base::test::ScopedFeatureList feature_list_;

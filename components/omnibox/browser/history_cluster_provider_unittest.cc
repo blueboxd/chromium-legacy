@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -17,36 +17,30 @@
 #include "components/omnibox/browser/autocomplete_match.h"
 #include "components/omnibox/browser/autocomplete_provider.h"
 #include "components/omnibox/browser/autocomplete_provider_listener.h"
+#include "components/omnibox/browser/fake_autocomplete_provider.h"
 #include "components/omnibox/browser/fake_autocomplete_provider_client.h"
+#include "components/omnibox/browser/omnibox_triggered_feature_service.h"
 #include "components/omnibox/browser/search_provider.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/testing_pref_service.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-class FakeSearchProvider : public SearchProvider {
- public:
-  explicit FakeSearchProvider(AutocompleteProviderClient* client,
-                              AutocompleteProviderListener* listener)
-      : SearchProvider(client, listener) {}
-
-  using SearchProvider::done_;
-  using SearchProvider::matches_;
-
- private:
-  ~FakeSearchProvider() override = default;
-};
-
-AutocompleteMatch CreateMatch(std::u16string contents) {
+AutocompleteMatch CreateMatch(std::u16string contents,
+                              bool is_search = true,
+                              int relevance = 100) {
   AutocompleteMatch match;
   match.contents = contents;
+  match.type = is_search ? AutocompleteMatchType::SEARCH_SUGGEST
+                         : AutocompleteMatchType::HISTORY_URL;
+  match.relevance = relevance;
   return match;
 }
 
 class HistoryClustersProviderTest : public testing::Test,
                                     public AutocompleteProviderListener {
  public:
-  HistoryClustersProviderTest() {
+  void SetUp() override {
     config_.is_journeys_enabled_no_locale_check = true;
     config_.omnibox_history_cluster_provider = true;
     history_clusters::SetConfigForTesting(config_);
@@ -79,10 +73,15 @@ class HistoryClustersProviderTest : public testing::Test,
         ->RegisterBooleanPref(history_clusters::prefs::kVisible, true);
 
     search_provider_ =
-        new FakeSearchProvider(autocomplete_provider_client_.get(), this);
-    provider_ = new HistoryClusterProvider(autocomplete_provider_client_.get(),
-                                           this, search_provider_.get());
-  };
+        new FakeAutocompleteProvider(AutocompleteProvider::Type::TYPE_SEARCH);
+    history_url_provider_ = new FakeAutocompleteProvider(
+        AutocompleteProvider::Type::TYPE_HISTORY_URL);
+    history_quick_provider_ = new FakeAutocompleteProvider(
+        AutocompleteProvider::Type::TYPE_HISTORY_QUICK);
+    provider_ = new HistoryClusterProvider(
+        autocomplete_provider_client_.get(), this, search_provider_.get(),
+        history_url_provider_.get(), history_quick_provider_.get());
+  }
 
   ~HistoryClustersProviderTest() override {
     // The provider will kick off an async task to refresh the keyword cache.
@@ -95,7 +94,22 @@ class HistoryClustersProviderTest : public testing::Test,
   void OnProviderUpdate(bool updated_matches,
                         const AutocompleteProvider* provider) override {
     on_provider_update_calls_.push_back(updated_matches);
-  };
+  }
+
+  void VerifyFeatureTriggered(bool expected) {
+    auto* triggered_feature_service =
+        autocomplete_provider_client_->GetOmniboxTriggeredFeatureService();
+    OmniboxTriggeredFeatureService::Features triggered_features;
+    triggered_feature_service->RecordToLogs(&triggered_features);
+    triggered_feature_service->ResetSession();
+    if (expected) {
+      ASSERT_TRUE(!triggered_features.empty());
+      EXPECT_EQ(
+          *triggered_features.begin(),
+          OmniboxTriggeredFeatureService::Feature::kHistoryClusterSuggestion);
+    } else
+      EXPECT_TRUE(triggered_features.empty());
+  }
 
   // Tracks `OnProviderUpdate()` invocations.
   std::vector<bool> on_provider_update_calls_;
@@ -109,7 +123,9 @@ class HistoryClustersProviderTest : public testing::Test,
 
   std::unique_ptr<FakeAutocompleteProviderClient> autocomplete_provider_client_;
 
-  scoped_refptr<FakeSearchProvider> search_provider_;
+  scoped_refptr<FakeAutocompleteProvider> search_provider_;
+  scoped_refptr<FakeAutocompleteProvider> history_url_provider_;
+  scoped_refptr<FakeAutocompleteProvider> history_quick_provider_;
   scoped_refptr<HistoryClusterProvider> provider_;
 
   std::unique_ptr<history_clusters::HistoryClustersServiceTestApi>
@@ -169,7 +185,7 @@ TEST_F(HistoryClustersProviderTest, AsyncSearchMatches) {
   provider_->Start(input, false);
   EXPECT_FALSE(provider_->done());
 
-  // Calling `Start()` or `OnProviderUpdate()` should process search matches
+  // Calling `Start()` or `OnProviderUpdate()` should not process search matches
   // if the search provider is not done when called.
   search_provider_->matches_ = {CreateMatch(u"keyword")};
   provider_->Start(input, false);
@@ -272,7 +288,7 @@ TEST_F(HistoryClustersProviderTest, MultipassSyncSearchMatches) {
   EXPECT_THAT(on_provider_update_calls_, testing::ElementsAre(true));
 }
 
-TEST_F(HistoryClustersProviderTest, NoKeyworddMatches) {
+TEST_F(HistoryClustersProviderTest, NoKeywordMatches) {
   // Test the case where none of the search matches match a keyword.
 
   AutocompleteInput input;
@@ -310,4 +326,128 @@ TEST_F(HistoryClustersProviderTest, MultipleKeyworddMatches) {
   // Also test that `provider_` does not call `OnProviderUpdate()` when it
   // completes syncly, even if it has matches.
   EXPECT_TRUE(on_provider_update_calls_.empty());
+}
+
+TEST_F(HistoryClustersProviderTest, NavIntent_TopAndHighScoringNav) {
+  // When there is a nav suggest that is both high scoring (>1300) and top
+  // scoring, don't provide history cluster suggestions.
+  AutocompleteInput input;
+  input.set_omit_asynchronous_matches(false);
+
+  search_provider_->done_ = false;
+  history_url_provider_->done_ = false;
+  provider_->Start(input, false);
+
+  // Simulate history URL provider completing.
+  history_url_provider_->matches_ = {CreateMatch(u"history", false, 1500)};
+  history_url_provider_->done_ = true;
+  provider_->OnProviderUpdate(true, nullptr);
+  EXPECT_FALSE(provider_->done());
+
+  // Simulate search provider completing.
+  search_provider_->matches_ = {CreateMatch(u"keyword", true, 1499)};
+  search_provider_->done_ = true;
+  provider_->OnProviderUpdate(true, nullptr);
+
+  EXPECT_TRUE(provider_->done());
+  EXPECT_TRUE(provider_->matches().empty());
+  EXPECT_THAT(on_provider_update_calls_, testing::ElementsAre(false));
+}
+
+TEST_F(HistoryClustersProviderTest, SearchIntent_TopScoringNav) {
+  // When there is a nav suggest that is top scoring but not high scoring
+  // (>1300), provide history cluster suggestions.
+
+  AutocompleteInput input;
+  input.set_omit_asynchronous_matches(false);
+
+  search_provider_->done_ = false;
+  history_url_provider_->done_ = false;
+  provider_->Start(input, false);
+
+  // Simulate history URL provider completing.
+  history_url_provider_->matches_ = {CreateMatch(u"history", false, 1200)};
+  history_url_provider_->done_ = true;
+  provider_->OnProviderUpdate(true, nullptr);
+  EXPECT_FALSE(provider_->done());
+
+  // Simulate search provider completing.
+  search_provider_->matches_ = {CreateMatch(u"keyword", true, 100)};
+  search_provider_->done_ = true;
+  provider_->OnProviderUpdate(true, nullptr);
+
+  EXPECT_TRUE(provider_->done());
+  ASSERT_EQ(provider_->matches().size(), 1u);
+  EXPECT_THAT(on_provider_update_calls_, testing::ElementsAre(true));
+}
+
+TEST_F(HistoryClustersProviderTest, SearchIntent_HighScoringNav) {
+  // When there is a nav suggest that is high scoring (>1300) but not top
+  // scoring, provide history cluster suggestions.
+
+  AutocompleteInput input;
+  input.set_omit_asynchronous_matches(false);
+
+  search_provider_->done_ = false;
+  history_quick_provider_->done_ = false;
+  provider_->Start(input, false);
+
+  // Simulate history URL provider completing.
+  history_quick_provider_->matches_ = {CreateMatch(u"history", false, 1500)};
+  history_quick_provider_->done_ = true;
+  provider_->OnProviderUpdate(true, nullptr);
+  EXPECT_FALSE(provider_->done());
+
+  // Simulate search provider completing.
+  search_provider_->matches_ = {CreateMatch(u"keyword", true, 1501)};
+  search_provider_->done_ = true;
+  provider_->OnProviderUpdate(true, nullptr);
+
+  EXPECT_TRUE(provider_->done());
+  ASSERT_EQ(provider_->matches().size(), 1u);
+  EXPECT_THAT(on_provider_update_calls_, testing::ElementsAre(true));
+}
+
+TEST_F(HistoryClustersProviderTest, Counterfactual_Disabled) {
+  AutocompleteInput input;
+  input.set_omit_asynchronous_matches(false);
+
+  // When there are no matches, should not log the feature triggered.
+  search_provider_->done_ = true;
+  provider_->Start(input, false);
+  EXPECT_TRUE(provider_->matches().empty());
+  VerifyFeatureTriggered(false);
+
+  // When there are matches, should log the feature triggered.
+  search_provider_->matches_ = {CreateMatch(u"keyword")};
+  provider_->Start(input, false);
+  EXPECT_FALSE(provider_->matches().empty());
+  VerifyFeatureTriggered(true);
+}
+
+class HistoryClustersProviderCounterfactualTest
+    : public HistoryClustersProviderTest {
+ public:
+  void SetUp() override {
+    config_.omnibox_history_cluster_provider_counterfactual = true;
+    HistoryClustersProviderTest::SetUp();
+  }
+};
+
+TEST_F(HistoryClustersProviderCounterfactualTest, Counterfactual_Enabled) {
+  AutocompleteInput input;
+  input.set_omit_asynchronous_matches(false);
+
+  // When there are no matches, should not log the feature triggered.
+  search_provider_->done_ = true;
+  provider_->Start(input, false);
+  EXPECT_TRUE(provider_->matches().empty());
+  VerifyFeatureTriggered(false);
+
+  // When there are matches, should (a) log the feature triggered and (b) hide
+  // the matches.
+  search_provider_->matches_ = {CreateMatch(u"keyword")};
+  provider_->Start(input, false);
+  EXPECT_TRUE(provider_->matches().empty());
+  VerifyFeatureTriggered(true);
 }

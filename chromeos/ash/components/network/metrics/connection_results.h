@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -82,8 +82,9 @@ enum class ShillConnectResult {
   kErrorEapAuthenticationFailed = 54,
   kErrorEapLocalTlsFailed = 55,
   kErrorEapRemoteTlsFailed = 56,
+  kErrorResultWepNotSupported = 57,
 
-  kMaxValue = kErrorEapRemoteTlsFailed,
+  kMaxValue = kErrorResultWepNotSupported,
 };
 
 // This enum is used to track user-initiated connection results from

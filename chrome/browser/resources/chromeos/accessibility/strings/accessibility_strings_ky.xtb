@@ -138,9 +138,9 @@
 <translation id="1812527064848182527">туурасынан</translation>
 <translation id="1829244130665387512">Ушул беттен табыңыз</translation>
 <translation id="1834891354138622109">Тилке</translation>
-<translation id="1845944666972354496">Жандыруу үчүн эки жолу таптаңыз</translation>
 <translation id="1846771122725914429">Bluetooth брайль дисплейи</translation>
 <translation id="1852018405765032699">Экранды төрт манжаңыз менен бассаңыз, ChromeVox менюлары ачылат. Бул менюларда буйруктар жана ыкчам баскычтар тууралуу пайдалуу маалымат камтылат. Менюлар ачылганда бир манжаңыз менен элементтерге өтүп, аларды иштетүү үчүн эки жолу басыңыз. Улантуу үчүн экранды төрт манжаңыз менен басыңыз.</translation>
+<translation id="1864430479908918647">Издөө + Боштук баскычтарын басыңыз</translation>
 <translation id="1865601187525349519">Тексттин аягы</translation>
 <translation id="1876229593313240038">doc</translation>
 <translation id="1902396333223336119">Уяча</translation>
@@ -529,6 +529,7 @@
 <translation id="4479068155583208887">Бышкан кыш түстүү кызыл</translation>
 <translation id="4482330759234983253">Мурунку таблица</translation>
 <translation id="4491109536499578614">Сүрөт</translation>
+<translation id="4507332368061453500">Учурдагы элементти коё бербей басуу</translation>
 <translation id="4511186779140817916">Тазаланган бадам түстүү назик сары</translation>
 <translation id="451510441928265982">Мурунку 2-деңгээлдеги башкы аталыш жок</translation>
 <translation id="4515799157838123044">Фондогу мазмунду көлөкөлөтүү</translation>
@@ -597,7 +598,6 @@
 <translation id="4993152509206108683">Тездиги <ph name="PERCENT" /> пайыз</translation>
 <translation id="4994420463726586413">Батареянын учурдагы абалын жарыялоо</translation>
 <translation id="4997282455736854877"><ph name="NAME" />, радио баскыч тандалды</translation>
-<translation id="5011664330025416377">Жандыруу үчүн Search+Space'ти басыңыз.</translation>
 <translation id="5012724933919010465"><ph name="NAME" />, менюдагы нерсенин радио баскычы тандалды</translation>
 <translation id="5020651427400641814">Айтылган сөздү киргизүүнү иштетүү</translation>
 <translation id="5041394372352067729">Брайл дисплейин барактын башына жылдыруу</translation>
@@ -762,6 +762,7 @@
 <translation id="6100239002225743044">Бир сап өйдө жылдыруу</translation>
 <translation id="6118126368611144850">Chrome'го арналган Android колдонмолору. Эгер түзмөгүңүздө Play Store орнотулган болсо, ChromeVox'ту Android колдонмолору менен пайдаланып көрүңүз. Play Storeдөн Google Chrome Canary'ни жүктөп алып, тажрыйбалуу колдоону байкап көрүңүз.</translation>
 <translation id="611827076493383239">vtd</translation>
+<translation id="6119846243427417423">жандыруу</translation>
 <translation id="6122013438240733403">btn</translation>
 <translation id="6132506484792346370">Тизме кутусу же айкалыштырылган куту</translation>
 <translation id="613344593214611552">мурунку сүйлөмдү өчүрүү</translation>
@@ -778,6 +779,7 @@
 <translation id="6236061028292614533">Кийинки баш аты</translation>
 <translation id="6254901459154107917">Кийинки түзөтмө текст аймагы</translation>
 <translation id="6259464875943891919"><ph name="TYPE" /> чыкты.</translation>
+<translation id="6280088282605782512">Эки жолу таптаңыз</translation>
 <translation id="6282062888058716985">nav</translation>
 <translation id="6295699829709583154">Негизги баскычтар: Издөө</translation>
 <translation id="6305702903308659374">ChromeVox сүйлөп жатса дагы аудионун үнүнүн катуулугу өзгөрүлбөсүн</translation>
@@ -981,6 +983,7 @@
 <translation id="7731785449856576010">Кийинки медиа виджети жок</translation>
 <translation id="7735498529470878067">Аудиокөмөк экрандагы нерсе тууралуу ыкчам маалымат алууга жардам берет.</translation>
 <translation id="773906353055481349">Уяча боюнча чабыттоо үчүн Search+Ctrl+Alt баскычтарын жана тийиштүү жебени басыңыз</translation>
+<translation id="7746976083433980639"><ph name="ACTION" /> – <ph name="LABEL" /></translation>
 <translation id="7763537600611320912"><ph name="FILE_NAME" /> файлын жүктөп алуу башталды</translation>
 <translation id="7768784765476638775">Басып туруп угуу</translation>
 <translation id="7776293189010177726">ChromeVox менюларын ачуу</translation>

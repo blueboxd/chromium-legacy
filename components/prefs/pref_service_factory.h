@@ -1,4 +1,4 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -79,13 +79,7 @@ class COMPONENTS_PREFS_EXPORT PrefServiceFactory {
   // Creates a PrefService object initialized with the parameters from
   // this factory.
   std::unique_ptr<PrefService> Create(
-      scoped_refptr<PrefRegistry> pref_registry,
-      std::unique_ptr<PrefValueStore::Delegate> delegate = nullptr);
-
-  // Add pref stores from this object to the |pref_service|.
-  void ChangePrefValueStore(
-      PrefService* pref_service,
-      std::unique_ptr<PrefValueStore::Delegate> delegate = nullptr);
+      scoped_refptr<PrefRegistry> pref_registry);
 
  protected:
   scoped_refptr<PrefStore> managed_prefs_;

@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -133,18 +133,17 @@ const char* const kKnownSettings[] = {
     kReportDeviceCrashReportInfo,
     kReportDeviceCpuInfo,
     kReportDeviceFanInfo,
-    kReportDeviceHardwareStatus,
     kReportDeviceLocation,
     kReportDevicePeripherals,
     kReportDevicePowerStatus,
     kReportDeviceStorageStatus,
     kReportDeviceNetworkConfiguration,
-    kReportDeviceNetworkInterfaces,
     kReportDeviceNetworkStatus,
     kReportDeviceNetworkTelemetryCollectionRateMs,
     kReportDeviceNetworkTelemetryEventCheckingRateMs,
     kReportDeviceSessionStatus,
     kReportDeviceSecurityStatus,
+    kReportDeviceSignalStrengthEventDrivenTelemetry,
     kReportDeviceTimezoneInfo,
     kReportDeviceGraphicsStatus,
     kReportDeviceMemoryInfo,
@@ -686,11 +685,6 @@ void DecodeReportingPolicies(const em::ChromeDeviceSettingsProto& policy,
           kReportDeviceNetworkConfiguration,
           reporting_policy.report_network_configuration());
     }
-    if (reporting_policy.has_report_network_interfaces()) {
-      new_values_cache->SetBoolean(
-          kReportDeviceNetworkInterfaces,
-          reporting_policy.report_network_interfaces());
-    }
     if (reporting_policy.has_report_network_status()) {
       new_values_cache->SetBoolean(kReportDeviceNetworkStatus,
                                    reporting_policy.report_network_status());
@@ -698,10 +692,6 @@ void DecodeReportingPolicies(const em::ChromeDeviceSettingsProto& policy,
     if (reporting_policy.has_report_users()) {
       new_values_cache->SetBoolean(kReportDeviceUsers,
                                    reporting_policy.report_users());
-    }
-    if (reporting_policy.has_report_hardware_status()) {
-      new_values_cache->SetBoolean(kReportDeviceHardwareStatus,
-                                   reporting_policy.report_hardware_status());
     }
     if (reporting_policy.has_report_session_status()) {
       new_values_cache->SetBoolean(kReportDeviceSessionStatus,
@@ -806,6 +796,17 @@ void DecodeReportingPolicies(const em::ChromeDeviceSettingsProto& policy,
       new_values_cache->SetInteger(
           kReportDeviceAudioStatusCheckingRateMs,
           reporting_policy.report_device_audio_status_checking_rate_ms());
+    }
+    if (reporting_policy.has_report_signal_strength_event_driven_telemetry()) {
+      base::Value::List signal_strength_telemetry_list;
+      for (const std::string& telemetry_entry :
+           reporting_policy.report_signal_strength_event_driven_telemetry()
+               .entries()) {
+        signal_strength_telemetry_list.Append(telemetry_entry);
+      }
+      new_values_cache->SetValue(
+          kReportDeviceSignalStrengthEventDrivenTelemetry,
+          base::Value(std::move(signal_strength_telemetry_list)));
     }
   }
 }

@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,10 +10,8 @@
 #include "chrome/browser/ui/views/webid/fake_delegate.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "chrome/test/views/chrome_views_test_base.h"
 #include "content/public/common/content_features.h"
 #include "content/public/test/browser_test.h"
-#include "net/test/embedded_test_server/embedded_test_server.h"
 
 class FedCmAccountSelectionViewBrowserTest : public DialogBrowserTest {
  public:
@@ -29,13 +27,13 @@ class FedCmAccountSelectionViewBrowserTest : public DialogBrowserTest {
   }
 
   void ShowUi(const std::string& name) override {
-    std::vector<const content::IdentityRequestAccount> accounts = {
+    std::vector<content::IdentityRequestAccount> accounts = {
         {"id", "email", "name", "given_name", GURL::EmptyGURL()}};
-    content::IdentityProviderMetadata idp_metadata;
-    content::ClientIdData client_data(GURL::EmptyGURL(), GURL::EmptyGURL());
-    account_selection_view()->Show("rp-example.com", "idp-example.com",
-                                   accounts, idp_metadata, client_data,
-                                   Account::SignInMode::kExplicit);
+    account_selection_view()->Show(
+        "rp-example.com",
+        {{"idp-example.com", accounts, content::IdentityProviderMetadata(),
+          content::ClientIdData(GURL::EmptyGURL(), GURL::EmptyGURL())}},
+        Account::SignInMode::kExplicit);
   }
 
   void Show() {

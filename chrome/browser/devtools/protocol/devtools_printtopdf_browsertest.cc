@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -39,7 +39,7 @@ class PrintToPdfProtocolTest : public DevToolsProtocolTest,
   static constexpr int kColorChannels = 4;
   static constexpr int kDpi = 300;
 
-  bool headless() const { return GetParam(); };
+  bool headless() const { return GetParam(); }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
     DevToolsProtocolTest::SetUpCommandLine(command_line);
@@ -279,9 +279,8 @@ class PrintToPdfScaleTest : public PrintToPdfProtocolTest {
 
     PrintToPdfAndRenderPage(std::move(params), 0);
 
-    int x = 0;
     int y = bitmap_height() / 2;
-    uint32_t start_clr = GetPixelRGB(x, y);
+    uint32_t start_clr = GetPixelRGB(0, y);
     EXPECT_EQ(start_clr, 0x123456u);
 
     int red_square_width = 0;

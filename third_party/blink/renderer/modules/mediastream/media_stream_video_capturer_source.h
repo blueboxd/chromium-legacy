@@ -55,11 +55,6 @@ class MODULES_EXPORT MediaStreamVideoCapturerSource
 
   ~MediaStreamVideoCapturerSource() override;
 
-  void KeepDeviceAliveForTransfer(
-      base::UnguessableToken session_id,
-      base::UnguessableToken transfer_id,
-      KeepDeviceAliveForTransferCallback keep_alive_cb) override;
-
   void SetDeviceCapturerFactoryCallbackForTesting(
       DeviceCapturerFactoryCallback testing_factory_callback);
 
@@ -92,8 +87,6 @@ class MODULES_EXPORT MediaStreamVideoCapturerSource
   void StopSourceForRestartImpl() override;
   void RestartSourceImpl(const media::VideoCaptureFormat& new_format) override;
   absl::optional<media::VideoCaptureFormat> GetCurrentFormat() const override;
-  absl::optional<media::VideoCaptureParams> GetCurrentCaptureParams()
-      const override;
   void ChangeSourceImpl(const MediaStreamDevice& new_device) override;
 #if !BUILDFLAG(IS_ANDROID)
   void Crop(const base::Token& crop_id,

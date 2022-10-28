@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -199,7 +199,10 @@ bool InitializeCrashpadImpl(bool initial_client,
     g_database =
         crashpad::CrashReportDatabase::Initialize(database_path).release();
 
-#if !BUILDFLAG(IS_CHROMEOS_ASH) && !BUILDFLAG(IS_IOS)
+#if !BUILDFLAG(IS_CHROMEOS_ASH) && !BUILDFLAG(IS_IOS) && !BUILDFLAG(IS_ANDROID)
+    // On Android crashpad doesn't handle uploads. Android uses
+    // //components/minidump_uploader which queries metrics sample/consent opt
+    // in from preferences.
     CrashReporterClient* crash_reporter_client = GetCrashReporterClient();
     SetUploadConsent(crash_reporter_client->GetCollectStatsConsent());
 #endif

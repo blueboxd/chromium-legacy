@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -102,9 +102,12 @@ class CheckClientDownloadRequestBase {
   // for concrete sub classes to implement, rather than having three separate
   // hooks with slightly different logic when they are called.
 
-  // Called with the download ping token as returned by the server, if one was
-  // returned.
-  virtual void SetDownloadPingToken(const std::string& token) = 0;
+  // Called with the client download response as returned by the server, if one
+  // was returned and the returned verdict is unsafe (i.e. not safe or unknown).
+  virtual void SetDownloadProtectionData(
+      const std::string& token,
+      const ClientDownloadResponse::Verdict& verdict,
+      const ClientDownloadResponse::TailoredVerdict& tailored_verdict) = 0;
 
   // Called when a valid response has been received from the server.
   virtual void MaybeStorePingsForDownload(DownloadCheckResult result,

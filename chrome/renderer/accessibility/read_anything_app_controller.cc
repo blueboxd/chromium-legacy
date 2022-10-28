@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -52,6 +52,17 @@ void SetAXNodeDataId(v8::Isolate* isolate,
   gin::ConvertFromV8(isolate, v8_id, &ax_node_data->id);
 }
 
+void SetAXNodeDataLanguage(v8::Isolate* isolate,
+                           gin::Dictionary* v8_dict,
+                           ui::AXNodeData* ax_node_data) {
+  v8::Local<v8::Value> v8_language;
+  v8_dict->Get("language", &v8_language);
+  std::string language;
+  gin::ConvertFromV8(isolate, v8_language, &language);
+  ax_node_data->AddStringAttribute(ax::mojom::StringAttribute::kLanguage,
+                                   language);
+}
+
 void SetAXNodeDataName(v8::Isolate* isolate,
                        gin::Dictionary* v8_dict,
                        ui::AXNodeData* ax_node_data) {
@@ -85,10 +96,10 @@ void SetAXNodeDataRole(v8::Isolate* isolate,
 void SetAXNodeDataHtmlTag(v8::Isolate* isolate,
                           gin::Dictionary* v8_dict,
                           ui::AXNodeData* ax_node_data) {
-  v8::Local<v8::Value> v8_url;
-  v8_dict->Get("htmlTag", &v8_url);
+  v8::Local<v8::Value> v8_html_tag;
+  v8_dict->Get("htmlTag", &v8_html_tag);
   std::string html_tag;
-  gin::Converter<std::string>::FromV8(isolate, v8_url, &html_tag);
+  gin::Converter<std::string>::FromV8(isolate, v8_html_tag, &html_tag);
   ax_node_data->AddStringAttribute(ax::mojom::StringAttribute::kHtmlTag,
                                    html_tag);
 }
@@ -101,6 +112,41 @@ void SetAXNodeDataUrl(v8::Isolate* isolate,
   std::string url;
   gin::ConvertFromV8(isolate, v8_url, &url);
   ax_node_data->AddStringAttribute(ax::mojom::StringAttribute::kUrl, url);
+}
+
+void SetSelectionAnchorObjectId(v8::Isolate* isolate,
+                                gin::Dictionary* v8_dict,
+                                ui::AXTreeData* ax_tree_data) {
+  v8::Local<v8::Value> v8_anchor_object_id;
+  v8_dict->Get("anchor_object_id", &v8_anchor_object_id);
+  gin::ConvertFromV8(isolate, v8_anchor_object_id,
+                     &ax_tree_data->sel_anchor_object_id);
+}
+
+void SetSelectionFocusObjectId(v8::Isolate* isolate,
+                               gin::Dictionary* v8_dict,
+                               ui::AXTreeData* ax_tree_data) {
+  v8::Local<v8::Value> v8_focus_object_id;
+  v8_dict->Get("focus_object_id", &v8_focus_object_id);
+  gin::ConvertFromV8(isolate, v8_focus_object_id,
+                     &ax_tree_data->sel_focus_object_id);
+}
+
+void SetSelectionAnchorOffset(v8::Isolate* isolate,
+                              gin::Dictionary* v8_dict,
+                              ui::AXTreeData* ax_tree_data) {
+  v8::Local<v8::Value> v8_anchor_offset;
+  v8_dict->Get("anchor_offset", &v8_anchor_offset);
+  gin::ConvertFromV8(isolate, v8_anchor_offset,
+                     &ax_tree_data->sel_anchor_offset);
+}
+
+void SetSelectionFocusOffset(v8::Isolate* isolate,
+                             gin::Dictionary* v8_dict,
+                             ui::AXTreeData* ax_tree_data) {
+  v8::Local<v8::Value> v8_focus_offset;
+  v8_dict->Get("focus_offset", &v8_focus_offset);
+  gin::ConvertFromV8(isolate, v8_focus_offset, &ax_tree_data->sel_focus_offset);
 }
 
 void SetAXTreeUpdateRootId(v8::Isolate* isolate,
@@ -135,9 +181,24 @@ ui::AXTreeUpdate GetSnapshotFromV8SnapshotLite(
     SetAXNodeDataName(isolate, &v8_node_dict, &ax_node_data);
     SetAXNodeDataChildIds(isolate, &v8_node_dict, &ax_node_data);
     SetAXNodeDataHtmlTag(isolate, &v8_node_dict, &ax_node_data);
+    SetAXNodeDataLanguage(isolate, &v8_node_dict, &ax_node_data);
     SetAXNodeDataUrl(isolate, &v8_node_dict, &ax_node_data);
     snapshot.nodes.push_back(ax_node_data);
   }
+
+  v8::Local<v8::Value> v8_selection;
+  v8_snapshot_dict.Get("selection", &v8_selection);
+  gin::Dictionary v8_selection_dict(isolate);
+  if (!gin::ConvertFromV8(isolate, v8_selection, &v8_selection_dict))
+    return snapshot;
+  ui::AXTreeData ax_tree_data;
+  SetSelectionAnchorObjectId(isolate, &v8_selection_dict, &ax_tree_data);
+  SetSelectionFocusObjectId(isolate, &v8_selection_dict, &ax_tree_data);
+  SetSelectionAnchorOffset(isolate, &v8_selection_dict, &ax_tree_data);
+  SetSelectionFocusOffset(isolate, &v8_selection_dict, &ax_tree_data);
+  snapshot.has_tree_data = true;
+  snapshot.tree_data = ax_tree_data;
+
   return snapshot;
 }
 
@@ -193,6 +254,42 @@ void ReadAnythingAppController::OnAXTreeDistilled(
   if (!tree_->Unserialize(snapshot))
     NOTREACHED() << tree_->error();
 
+  // Store state about the selection for easy access later. Selection state
+  // comes from the tree data rather than AXPosition, as AXPosition requires
+  // a valid and registered AXTreeID, which exists only when accessibility is
+  // enabled. As Read Anything does not enable accessibility, it is not able to
+  // use AXPosition.
+  const ui::AXTreeData tree_data = snapshot.tree_data;
+  has_selection_ = snapshot.has_tree_data &&
+                   tree_data.sel_anchor_object_id != ui::kInvalidAXNodeID &&
+                   tree_data.sel_focus_object_id != ui::kInvalidAXNodeID;
+  if (has_selection_) {
+    ui::AXNode* anchor_node = GetAXNode(tree_data.sel_anchor_object_id);
+    DCHECK(anchor_node);
+    ui::AXNode* focus_node = GetAXNode(tree_data.sel_focus_object_id);
+    DCHECK(focus_node);
+    start_node_ = tree_data.sel_is_backward ? focus_node : anchor_node;
+    end_node_ = tree_data.sel_is_backward ? anchor_node : focus_node;
+    start_offset_ = tree_data.sel_is_backward ? tree_data.sel_focus_offset
+                                              : tree_data.sel_anchor_offset;
+    end_offset_ = tree_data.sel_is_backward ? tree_data.sel_anchor_offset
+                                            : tree_data.sel_focus_offset;
+
+    // Store the lowest common ancestor between the start and end nodes as
+    // the selection node ID. This is the lowest node in the tree which entirely
+    // contains the selection.
+    ui::AXNode* common_ancestor =
+        start_node_->GetLowestCommonAncestor(*end_node_);
+    selection_node_ids_.push_back(common_ancestor->id());
+  } else {
+    // Reset selection-related state to default values.
+    selection_node_ids_.clear();
+    start_node_ = nullptr;
+    end_node_ = nullptr;
+    start_offset_ = -1;
+    end_offset_ = -1;
+  }
+
   // TODO(abigailbklein): Use v8::Function rather than javascript. If possible,
   // replace this function call with firing an event.
   std::string script = "chrome.readAnything.updateContent();";
@@ -215,7 +312,7 @@ gin::ObjectTemplateBuilder ReadAnythingAppController::GetObjectTemplateBuilder(
     v8::Isolate* isolate) {
   return gin::Wrappable<ReadAnythingAppController>::GetObjectTemplateBuilder(
              isolate)
-      .SetProperty("contentNodeIds", &ReadAnythingAppController::ContentNodeIds)
+      .SetProperty("displayNodeIds", &ReadAnythingAppController::DisplayNodeIds)
       .SetProperty("fontName", &ReadAnythingAppController::FontName)
       .SetProperty("fontSize", &ReadAnythingAppController::FontSize)
       .SetProperty("foregroundColor",
@@ -224,6 +321,7 @@ gin::ObjectTemplateBuilder ReadAnythingAppController::GetObjectTemplateBuilder(
                    &ReadAnythingAppController::BackgroundColor)
       .SetMethod("getChildren", &ReadAnythingAppController::GetChildren)
       .SetMethod("getHtmlTag", &ReadAnythingAppController::GetHtmlTag)
+      .SetMethod("getLanguage", &ReadAnythingAppController::GetLanguage)
       .SetMethod("getTextContent", &ReadAnythingAppController::GetTextContent)
       .SetMethod("getUrl", &ReadAnythingAppController::GetUrl)
       .SetMethod("onConnected", &ReadAnythingAppController::OnConnected)
@@ -233,7 +331,9 @@ gin::ObjectTemplateBuilder ReadAnythingAppController::GetObjectTemplateBuilder(
                  &ReadAnythingAppController::SetThemeForTesting);
 }
 
-std::vector<ui::AXNodeID> ReadAnythingAppController::ContentNodeIds() {
+std::vector<ui::AXNodeID> ReadAnythingAppController::DisplayNodeIds() {
+  if (has_selection_)
+    return selection_node_ids_;
   return content_node_ids_;
 }
 
@@ -261,7 +361,11 @@ std::vector<ui::AXNodeID> ReadAnythingAppController::GetChildren(
     return std::vector<ui::AXNodeID>();
   for (auto it = ax_node->UnignoredChildrenBegin();
        it != ax_node->UnignoredChildrenEnd(); ++it) {
-    child_ids.push_back(it->id());
+    // If there is no selection, always add the node ID to the list. If there
+    // is a selection and the node is partially or entirely contained in the
+    // selection, also add the node ID to the list.
+    if (!has_selection_ || SelectionContainsNode(&*it))
+      child_ids.push_back(it->id());
   }
   return child_ids;
 }
@@ -273,11 +377,27 @@ std::string ReadAnythingAppController::GetHtmlTag(ui::AXNodeID ax_node_id) {
   return ax_node->GetStringAttribute(ax::mojom::StringAttribute::kHtmlTag);
 }
 
+std::string ReadAnythingAppController::GetLanguage(ui::AXNodeID ax_node_id) {
+  ui::AXNode* ax_node = GetAXNode(ax_node_id);
+  if (!ax_node)
+    return std::string();
+  return ax_node->GetLanguage();
+}
+
 std::string ReadAnythingAppController::GetTextContent(ui::AXNodeID ax_node_id) {
   ui::AXNode* ax_node = GetAXNode(ax_node_id);
   if (!ax_node)
     return std::string();
-  return ax_node->GetTextContentUTF8();
+  std::string text_content = ax_node->GetTextContentUTF8();
+  // If this node is the start or end node, truncate the text content by the
+  // corresponding offset.
+  if (has_selection_) {
+    if (ax_node == start_node_)
+      text_content.erase(0, start_offset_);
+    if (ax_node == end_node_)
+      text_content.resize(end_offset_);
+  }
+  return text_content;
 }
 
 std::string ReadAnythingAppController::GetUrl(ui::AXNodeID ax_node_id) {
@@ -319,4 +439,12 @@ ui::AXNode* ReadAnythingAppController::GetAXNode(ui::AXNodeID ax_node_id) {
   if (!tree_)
     return nullptr;
   return tree_->GetFromId(ax_node_id);
+}
+
+bool ReadAnythingAppController::SelectionContainsNode(ui::AXNode* ax_node) {
+  DCHECK(has_selection_);
+  return (start_node_->IsDescendantOf(ax_node) ||
+          end_node_->IsDescendantOf(ax_node) ||
+          (ax_node->CompareTo(*start_node_) > 0 &&
+           ax_node->CompareTo(*end_node_) < 0));
 }

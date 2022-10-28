@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -21,7 +21,7 @@ class COMPONENT_EXPORT(ASH_DBUS_ARC) FakeArcAppfuseProviderClient
 
   ~FakeArcAppfuseProviderClient() override;
 
-  // DBusClient override.
+  // chromeos::DBusClient override.
   void Init(dbus::Bus* bus) override;
 
   // ArcAppfuseProviderClient override:
@@ -30,7 +30,7 @@ class COMPONENT_EXPORT(ASH_DBUS_ARC) FakeArcAppfuseProviderClient
              chromeos::DBusMethodCallback<base::ScopedFD> callback) override;
   void Unmount(uint32_t uid,
                int32_t mount_id,
-               VoidDBusMethodCallback callback) override;
+               chromeos::VoidDBusMethodCallback callback) override;
   void OpenFile(uint32_t uid,
                 int32_t mount_id,
                 int32_t file_id,

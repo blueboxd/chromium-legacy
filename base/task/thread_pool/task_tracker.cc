@@ -1,4 +1,4 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -323,7 +323,7 @@ bool TaskTracker::WillPostTask(Task* task,
   }
 
   // TODO(scheduler-dev): Record the task traits here.
-  task_annotator_.WillQueueTask("ThreadPool_PostTask", task, "");
+  task_annotator_.WillQueueTask("ThreadPool_PostTask", task);
 
   return true;
 }

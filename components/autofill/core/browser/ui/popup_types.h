@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -66,7 +66,9 @@ enum class PopupHidingReason {
   kOverlappingWithTouchToFillSurface = 18,
   // The context menu is shown instead of the autofill suggestions.
   kOverlappingWithAutofillContextMenu = 19,
-  kMaxValue = kOverlappingWithAutofillContextMenu
+  // The Fast Checkout surface is shown instead of autofill suggestions.
+  kOverlappingWithFastCheckoutSurface = 20,
+  kMaxValue = kOverlappingWithFastCheckoutSurface
 };
 
 }  // namespace autofill

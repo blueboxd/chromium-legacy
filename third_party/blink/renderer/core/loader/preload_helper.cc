@@ -175,6 +175,11 @@ void PreloadHelper::DnsPrefetchIfNeeded(
                 String("DNS prefetch triggered for " + params.href.Host())),
             document, frame);
       }
+      if (caller == kLinkCalledFromHeader &&
+          base::FeatureList::IsEnabled(
+              network::features::kPreconnectInNetworkService)) {
+        return;
+      }
       WebPrescientNetworking* web_prescient_networking =
           frame ? frame->PrescientNetworking() : nullptr;
       if (web_prescient_networking) {
@@ -217,6 +222,11 @@ void PreloadHelper::PreconnectIfNeeded(
                             : "use-credentials")),
             document, frame);
       }
+    }
+    if (caller == kLinkCalledFromHeader &&
+        base::FeatureList::IsEnabled(
+            network::features::kPreconnectInNetworkService)) {
+      return;
     }
     WebPrescientNetworking* web_prescient_networking =
         frame ? frame->PrescientNetworking() : nullptr;
@@ -622,9 +632,6 @@ void PreloadHelper::PrefetchIfNeeded(const LinkLoadParameters& params,
         document.GetExecutionContext()->GetSecurityOrigin(),
         params.cross_origin);
   }
-  link_fetch_params.SetSignedExchangePrefetchCacheEnabled(
-      RuntimeEnabledFeatures::SignedExchangeSubresourcePrefetchEnabled(
-          document.GetExecutionContext()));
   Resource* resource =
       LinkPrefetchResource::Fetch(link_fetch_params, document.Fetcher());
   if (pending_preload)
@@ -667,8 +674,6 @@ void PreloadHelper::LoadLinksFromHeader(
 
     if (alternate_resource_info && params.rel.IsLinkPreload()) {
       DCHECK(document);
-      DCHECK(RuntimeEnabledFeatures::SignedExchangeSubresourcePrefetchEnabled(
-          document->GetExecutionContext()));
       KURL url = params.href;
       absl::optional<ResourceType> resource_type =
           PreloadHelper::GetResourceTypeFromAsAttribute(params.as);

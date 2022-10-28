@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -791,11 +791,9 @@ class PrefHashBrowserTestChangedAtomic : public PrefHashBrowserTestBase {
 // Preferences.
 #if !BUILDFLAG(IS_CHROMEOS_ASH)
     // Explicitly verify the result of reported resets.
-    EXPECT_EQ(protection_level_ >= PROTECTION_ENABLED_BASIC ? 0U : 2U,
-              profile()
-                  ->GetPrefs()
-                  ->GetValueList(prefs::kURLsToRestoreOnStartup)
-                  .size());
+    EXPECT_EQ(
+        protection_level_ >= PROTECTION_ENABLED_BASIC ? 0U : 2U,
+        profile()->GetPrefs()->GetList(prefs::kURLsToRestoreOnStartup).size());
 #endif
 
     // Nothing else should have triggered.

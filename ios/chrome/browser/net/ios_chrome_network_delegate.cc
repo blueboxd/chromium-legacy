@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -18,13 +18,13 @@
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/prefs/pref_member.h"
 #include "components/prefs/pref_service.h"
-#include "ios/chrome/browser/pref_names.h"
+#import "ios/chrome/browser/prefs/pref_names.h"
 #include "ios/web/public/thread/web_task_traits.h"
 #include "ios/web/public/thread/web_thread.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
 #include "net/cookies/cookie_options.h"
-#include "net/cookies/same_party_context.h"
+#include "net/first_party_sets/same_party_context.h"
 #include "net/http/http_status_code.h"
 #include "net/url_request/url_request.h"
 

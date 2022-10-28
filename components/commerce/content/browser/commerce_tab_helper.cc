@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -54,6 +54,16 @@ void CommerceTabHelper::WebContentsDestroyed() {
     shopping_service_->WebWrapperDestroyed(web_wrapper_.get());
 
   web_wrapper_->ClearWebContentsPointer();
+}
+
+void CommerceTabHelper::SetShoppingServiceForTesting(KeyedService* service) {
+  auto* shopping_service = static_cast<commerce::ShoppingService*>(service);
+
+  shopping_service_ = shopping_service;
+
+  if (shopping_service_) {
+    shopping_service_->WebWrapperCreated(web_wrapper_.get());
+  }
 }
 
 WEB_CONTENTS_USER_DATA_KEY_IMPL(CommerceTabHelper);

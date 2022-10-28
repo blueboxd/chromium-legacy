@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -31,6 +31,24 @@ class PasswordProtectionRequest;
 using ReusedPasswordAccountType =
     LoginReputationClientRequest::PasswordReuseEvent::ReusedPasswordAccountType;
 using password_manager::metrics_util::PasswordType;
+
+using PasswordReuseEvent =
+    safe_browsing::LoginReputationClientRequest::PasswordReuseEvent;
+using ReusedPasswordType = safe_browsing::LoginReputationClientRequest::
+    PasswordReuseEvent::ReusedPasswordType;
+using SyncAccountType =
+    LoginReputationClientRequest::PasswordReuseEvent::SyncAccountType;
+
+struct PasswordReuseInfo {
+  PasswordReuseInfo();
+  PasswordReuseInfo(const PasswordReuseInfo& other);
+  ~PasswordReuseInfo();
+  bool matches_signin_password;
+  ReusedPasswordAccountType reused_password_account_type;
+  std::vector<std::string> matching_domains;
+  uint64_t reused_password_hash;
+  int count{0};
+};
 
 class PasswordProtectionService : public PasswordProtectionServiceBase {
   using PasswordProtectionServiceBase::PasswordProtectionServiceBase;
@@ -109,6 +127,13 @@ class PasswordProtectionService : public PasswordProtectionServiceBase {
   std::unique_ptr<PasswordProtectionCommitDeferringCondition>
   MaybeCreateCommitDeferringCondition(
       content::NavigationHandle& navigation_handle);
+
+  // Exports the password reuse event info to a struct.
+  PasswordReuseInfo ConstructPasswordReuseInfo(
+      uint64_t reused_password_hash,
+      const std::string& username,
+      PasswordType reuse_password_type,
+      std::vector<std::string> matching_domains);
 
  protected:
   void RemoveWarningRequestsByWebContents(content::WebContents* web_contents);

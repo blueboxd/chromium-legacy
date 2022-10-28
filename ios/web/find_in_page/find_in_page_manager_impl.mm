@@ -1,21 +1,21 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #import "ios/web/find_in_page/find_in_page_manager_impl.h"
 
-#include "base/metrics/user_metrics.h"
-#include "base/metrics/user_metrics_action.h"
+#import "base/metrics/user_metrics.h"
+#import "base/metrics/user_metrics_action.h"
 #import "base/strings/sys_string_conversions.h"
-#include "base/values.h"
+#import "base/values.h"
 #import "ios/web/find_in_page/find_in_page_constants.h"
 #import "ios/web/find_in_page/find_in_page_java_script_feature.h"
 #import "ios/web/public/find_in_page/find_in_page_manager_delegate.h"
 #import "ios/web/public/js_messaging/web_frame.h"
-#include "ios/web/public/js_messaging/web_frame_util.h"
+#import "ios/web/public/js_messaging/web_frame_util.h"
 #import "ios/web/public/js_messaging/web_frames_manager.h"
-#include "ios/web/public/thread/web_task_traits.h"
-#include "ios/web/public/thread/web_thread.h"
+#import "ios/web/public/thread/web_task_traits.h"
+#import "ios/web/public/thread/web_thread.h"
 #import "ios/web/web_state/web_state_impl.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)

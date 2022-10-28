@@ -175,10 +175,10 @@ TEST(AttributionSimulatorInputParserTest, ValidSourceParses) {
                    .SetSourceType(AttributionSourceType::kNavigation)
                    .SetReportingOrigin(
                        url::Origin::Create(GURL("https://a.r.test")))
-                   .SetImpressionOrigin(
+                   .SetSourceOrigin(
                        url::Origin::Create(GURL("https://a.s.test")))
                    .SetSourceEventId(123)
-                   .SetConversionOrigin(
+                   .SetDestinationOrigin(
                        url::Origin::Create(GURL("https://a.d.test")))
                    .SetExpiry(base::Days(10))
                    .SetPriority(-5)
@@ -189,10 +189,10 @@ TEST(AttributionSimulatorInputParserTest, ValidSourceParses) {
                    .SetSourceType(AttributionSourceType::kEvent)
                    .SetReportingOrigin(
                        url::Origin::Create(GURL("https://b.r.test")))
-                   .SetImpressionOrigin(
+                   .SetSourceOrigin(
                        url::Origin::Create(GURL("https://b.s.test")))
                    .SetSourceEventId(0)  // default
-                   .SetConversionOrigin(
+                   .SetDestinationOrigin(
                        url::Origin::Create(GURL("https://b.d.test")))
                    .SetExpiry(base::Days(30))   // default
                    .SetPriority(0)              // default
@@ -204,10 +204,10 @@ TEST(AttributionSimulatorInputParserTest, ValidSourceParses) {
                   .SetSourceType(AttributionSourceType::kEvent)
                   .SetReportingOrigin(
                       url::Origin::Create(GURL("https://c.r.test")))
-                  .SetImpressionOrigin(
+                  .SetSourceOrigin(
                       url::Origin::Create(GURL("https://c.s.test")))
                   .SetSourceEventId(789)
-                  .SetConversionOrigin(
+                  .SetDestinationOrigin(
                       url::Origin::Create(GURL("https://c.d.test")))
                   .SetExpiry(base::Days(10))  // rounded to whole number of days
                   .SetPriority(0)             // default
@@ -224,10 +224,10 @@ TEST(AttributionSimulatorInputParserTest, ValidSourceParses) {
                   .SetSourceType(AttributionSourceType::kEvent)
                   .SetReportingOrigin(
                       url::Origin::Create(GURL("https://c.r.test")))
-                  .SetImpressionOrigin(
+                  .SetSourceOrigin(
                       url::Origin::Create(GURL("https://c.s.test")))
                   .SetSourceEventId(789)
-                  .SetConversionOrigin(
+                  .SetDestinationOrigin(
                       url::Origin::Create(GURL("https://c.d.test")))
                   .SetExpiry(base::Days(10))  // rounded to whole number of days
                   .SetPriority(0)             // default

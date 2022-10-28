@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -64,8 +64,8 @@ class AppListOverlayBackground : public views::Background {
 
     cc::PaintFlags flags;
     flags.setStyle(cc::PaintFlags::kFill_Style);
-    flags.setColor(
-        ash::AppListColorProvider::Get()->GetContentsBackgroundColor());
+    flags.setColor(ash::AppListColorProvider::Get()->GetContentsBackgroundColor(
+        view->GetWidget()));
     canvas->DrawRoundRect(view->GetContentsBounds(),
                           kAppListOverlayBorderRadius, flags);
   }

@@ -36,6 +36,7 @@
 #include "third_party/blink/renderer/modules/mediastream/media_stream_track.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/platform/heap/collection_support/heap_hash_set.h"
+#include "third_party/blink/renderer/platform/mediastream/media_constraints.h"
 #include "third_party/blink/renderer/platform/mediastream/media_stream_descriptor.h"
 #include "third_party/blink/renderer/platform/mediastream/media_stream_source.h"
 #include "third_party/blink/renderer/platform/scheduler/public/frame_scheduler.h"
@@ -129,8 +130,7 @@ class MODULES_EXPORT MediaStreamTrackImpl : public MediaStreamTrack,
 
   ImageCapture* GetImageCapture() override { return image_capture_; }
 
-  absl::optional<base::UnguessableToken> serializable_session_id()
-      const override;
+  absl::optional<const MediaStreamDevice> device() const override;
 
   void BeingTransferred(const base::UnguessableToken& transfer_id) override;
 

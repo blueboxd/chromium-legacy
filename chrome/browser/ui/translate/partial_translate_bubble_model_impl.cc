@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -37,7 +37,7 @@ void PartialTranslateBubbleModelImpl::SetViewState(
 }
 
 void PartialTranslateBubbleModelImpl::ShowError(
-    translate::TranslateErrors::Type error_type) {
+    translate::TranslateErrors error_type) {
   // TODO(crbug/1314825): implement when partial translate specific
   // metrics are added.
 }
@@ -81,6 +81,14 @@ void PartialTranslateBubbleModelImpl::UpdateTargetLanguageIndex(int index) {
   // Add 1 to account for unknown language option at index 0 in
   // TranslateUIDelegate language list.
   ui_delegate_->UpdateTargetLanguageIndex(index + 1);
+}
+
+std::string PartialTranslateBubbleModelImpl::GetSourceLanguageCode() const {
+  return ui_delegate_->GetSourceLanguageCode();
+}
+
+std::string PartialTranslateBubbleModelImpl::GetTargetLanguageCode() const {
+  return ui_delegate_->GetTargetLanguageCode();
 }
 
 void PartialTranslateBubbleModelImpl::Translate() {

@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -252,8 +252,6 @@ void OnDeviceClusteringBackend::ProcessVisits(
     if (entity_metadata_provider_) {
       cluster_visit.annotated_visit.content_annotations.model_annotations
           .entities.clear();
-      cluster_visit.annotated_visit.content_annotations.model_annotations
-          .categories.clear();
       base::flat_map<std::string, int> inserted_categories;
       for (const auto& entity :
            visit.content_annotations.model_annotations.entities) {
@@ -270,27 +268,6 @@ void OnDeviceClusteringBackend::ProcessVisits(
             .entities.push_back(rewritten_entity);
         human_readable_entity_name_to_metadata_map[rewritten_entity.id] =
             entity_metadata_it->second;
-
-        for (const auto& category :
-             entity_metadata_it->second.human_readable_categories) {
-          auto category_it = inserted_categories.find(category.first);
-          int category_score =
-              static_cast<int>(category.second * entity.weight);
-          // Just take the max category score (which is weighted by entity) as
-          // the canonical score for the category.
-          if (category_it == inserted_categories.end() ||
-              category_it->second < category_score) {
-            inserted_categories[category.first] = category_score;
-          }
-        }
-      }
-
-      // Only add the category to the visit if it exceeds the threshold.
-      for (const auto& category : inserted_categories) {
-        if (category.second > GetConfig().category_relevance_threshold) {
-          cluster_visit.annotated_visit.content_annotations.model_annotations
-              .categories.push_back({category.first, category.second});
-        }
       }
     }
 
@@ -419,6 +396,12 @@ OnDeviceClusteringBackend::ClusterVisitsOnBackgroundThread(
   for (auto& cluster : clusters) {
     for (const auto& finalizer : cluster_finalizers) {
       finalizer->FinalizeCluster(cluster);
+    }
+    if (GetConfig()
+            .should_show_all_clusters_unconditionally_on_prominent_ui_surfaces) {
+      // Override the `should_show_on_prominent_ui_surfaces` bit if set by
+      // config.
+      cluster.should_show_on_prominent_ui_surfaces = true;
     }
     visits_in_clusters.emplace_back(cluster.visits.size());
     keyword_sizes.emplace_back(cluster.keyword_to_data_map.size());

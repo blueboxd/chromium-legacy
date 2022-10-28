@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "ash/accessibility/accessibility_controller_impl.h"
+#include "ash/constants/ash_features.h"
 #include "ash/drag_drop/scoped_drag_drop_observer.h"
 #include "ash/public/cpp/holding_space/holding_space_client.h"
 #include "ash/public/cpp/holding_space/holding_space_constants.h"
@@ -34,6 +35,7 @@
 #include "base/containers/contains.h"
 #include "base/containers/cxx20_erase.h"
 #include "base/pickle.h"
+#include "base/ranges/algorithm.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "ui/base/clipboard/custom_data_helper.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
@@ -309,7 +311,9 @@ views::View* HoldingSpaceTray::GetTooltipHandlerForPoint(
 }
 
 std::u16string HoldingSpaceTray::GetTooltipText(const gfx::Point& point) const {
-  return l10n_util::GetStringUTF16(IDS_ASH_HOLDING_SPACE_TITLE);
+  return features::IsHoldingSpaceRebrandEnabled()
+             ? l10n_util::GetStringUTF16(IDS_ASH_HOLDING_SPACE_TITLE_REBRAND)
+             : l10n_util::GetStringUTF16(IDS_ASH_HOLDING_SPACE_TITLE);
 }
 
 void HoldingSpaceTray::HandleLocaleChange() {
@@ -481,7 +485,9 @@ void HoldingSpaceTray::OnThemeChanged() {
 
   // Default tray icon.
   default_tray_icon_->SetImage(gfx::CreateVectorIcon(
-      kHoldingSpaceIcon, kHoldingSpaceTrayIconSize, color));
+      features::IsHoldingSpaceRebrandEnabled() ? kHoldingSpaceRebrandIcon
+                                               : kHoldingSpaceIcon,
+      kHoldingSpaceTrayIconSize, color));
 
   // Drop target icon.
   drop_target_icon_->SetImage(
@@ -500,13 +506,23 @@ void HoldingSpaceTray::UpdateVisibility() {
     return;
   }
 
-  // The holding space tray should always be shown if the `model` contains fully
-  // initialized items. Otherwise, it should only be visible if the pinned files
-  // section is going to show a placeholder.
+  // If the predictability flag is enabled, always show the holding space tray.
+  if (features::IsHoldingSpacePredictabilityEnabled()) {
+    SetVisiblePreferred(true);
+    return;
+  }
+
+  // The holding space tray should always be shown if the `model` contains
+  // fully initialized items, or if the predictability feature flag is enabled.
+  // Otherwise, it should only be visible if the time of first add has been
+  // marked, but a file has never been pinned, and the Files app chip has never
+  // been pressed.
   auto* prefs = Shell::Get()->session_controller()->GetActivePrefService();
   SetVisiblePreferred(
       ModelContainsInitializedItems(model) ||
-      (prefs && PinnedFilesSection::ShouldShowPlaceholder(prefs)));
+      (prefs && holding_space_prefs::GetTimeOfFirstAdd(prefs) &&
+       !holding_space_prefs::GetTimeOfFirstPin(prefs) &&
+       !holding_space_prefs::GetTimeOfFirstFilesAppChipPress(prefs)));
 }
 
 void HoldingSpaceTray::FirePreviewsUpdateTimerIfRunningForTesting() {
@@ -585,8 +601,8 @@ void HoldingSpaceTray::OnHoldingSpaceItemsAdded(
   // holding space tray should bounce in (if it isn't already visible) and
   // previews should be animated.
   if (!Shell::Get()->session_controller()->IsUserSessionBlocked()) {
-    const bool has_initialized_item = std::any_of(
-        items.begin(), items.end(),
+    const bool has_initialized_item = base::ranges::any_of(
+        items,
         [](const HoldingSpaceItem* item) { return item->IsInitialized(); });
     if (has_initialized_item)
       SetShouldAnimate(true);
@@ -601,8 +617,8 @@ void HoldingSpaceTray::OnHoldingSpaceItemsRemoved(
   // If an initialized holding space item is removed from the model mid-session,
   // the holding space tray should animate updates.
   if (!Shell::Get()->session_controller()->IsUserSessionBlocked()) {
-    const bool has_initialized_item = std::any_of(
-        items.begin(), items.end(),
+    const bool has_initialized_item = base::ranges::any_of(
+        items,
         [](const HoldingSpaceItem* item) { return item->IsInitialized(); });
     if (has_initialized_item)
       SetShouldAnimate(true);

@@ -1,4 +1,4 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,9 +11,11 @@
 #include "base/run_loop.h"
 #include "mojo/public/cpp/bindings/message.h"
 #include "mojo/public/cpp/bindings/struct_ptr.h"
-#include "mojo/public/cpp/system/core.h"
 
 namespace mojo {
+
+class MessagePipeHandle;
+
 namespace test {
 
 // This overload is used for mojom structures with struct traits. The C++

@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -172,7 +172,7 @@ class MediaEngagementAutoplayBrowserTest
     cmd.AppendArgPath(input_path);
     cmd.AppendArgPath(output_path);
     base::Process process = base::LaunchProcess(cmd, base::LaunchOptions());
-    EXPECT_TRUE(process.WaitForExit(0));
+    EXPECT_TRUE(process.WaitForExit(nullptr));
 
     // Load the preloaded list.
     EXPECT_TRUE(

@@ -82,7 +82,7 @@ class MockSurfaceGpu : public WaylandSurfaceGpu {
   MockSurfaceGpu(const MockSurfaceGpu&) = delete;
   MockSurfaceGpu& operator=(const MockSurfaceGpu&) = delete;
 
-  ~MockSurfaceGpu() { buffer_manager_->UnregisterSurface(widget_); }
+  ~MockSurfaceGpu() override { buffer_manager_->UnregisterSurface(widget_); }
 
   MOCK_METHOD3(OnSubmission,
                void(uint32_t buffer_id,
@@ -573,24 +573,82 @@ TEST_P(WaylandBufferManagerTest, CommitOverlaysNonsensicalBoundsRect) {
                  window_->GetBoundsInPixels().width(),
                  std::numeric_limits<float>::infinity())};
 
-  for (const auto& bounds_rect : bounds_rect_test_data) {
-    CreateDmabufBasedBufferAndSetTerminateExpectation(false /*fail*/, 1u);
-    ProcessCreatedBufferResourcesWithExpectation(1u /* expected size */,
-                                                 false /* fail */);
+  constexpr bool config[2] = {/*root_has_nan_bounds=*/true,
+                              /*non_root_overlay_has_nan_bounds=*/false};
+  constexpr uint32_t kBufferId1 = 1;
+  constexpr uint32_t kBufferId2 = 2;
+  constexpr uint32_t kBufferId3 = 3;
 
-    // Can't commit for bounds rect containing NaN
-    SetTerminateCallbackExpectationAndDestroyChannel(&callback_, true /*fail*/);
+  for (bool should_root_have_nan_bounds : config) {
+    for (const auto& faulty_bounds_rect : bounds_rect_test_data) {
+      CreateDmabufBasedBufferAndSetTerminateExpectation(false /*fail*/,
+                                                        kBufferId1);
+      CreateDmabufBasedBufferAndSetTerminateExpectation(false /*fail*/,
+                                                        kBufferId2);
+      CreateDmabufBasedBufferAndSetTerminateExpectation(false /*fail*/,
+                                                        kBufferId3);
+      ProcessCreatedBufferResourcesWithExpectation(3u /* expected size */,
+                                                   false /* fail */);
 
-    std::vector<wl::WaylandOverlayConfig> overlay_configs;
-    overlay_configs.emplace_back(
-        CreateBasicWaylandOverlayConfig(1u, 1u, bounds_rect));
-    buffer_manager_gpu_->CommitOverlays(window_->GetWidget(), 1u,
-                                        std::move(overlay_configs));
+      // Can't commit for bounds rect containing NaN
+      SetTerminateCallbackExpectationAndDestroyChannel(&callback_,
+                                                       true /*fail*/);
 
-    Sync();
+      size_t z_order = 0;
+      std::vector<wl::WaylandOverlayConfig> overlay_configs;
+      if (should_root_have_nan_bounds) {
+        // The root surface has nan bounds.
+        overlay_configs.emplace_back(CreateBasicWaylandOverlayConfig(
+            INT32_MIN, kBufferId1, faulty_bounds_rect));
+        overlay_configs.emplace_back(CreateBasicWaylandOverlayConfig(
+            z_order++, kBufferId2, window_->GetBoundsInPixels()));
+        overlay_configs.emplace_back(CreateBasicWaylandOverlayConfig(
+            z_order++, kBufferId3, window_->GetBoundsInPixels()));
+      } else {
+        // Overlays have nan bounds. Given playback starts with the biggest
+        // z-order number, add two more overlays around the faulty overlay
+        // config so that the test ensures no further playback happens and it
+        // doesn't crash.
+        overlay_configs.emplace_back(CreateBasicWaylandOverlayConfig(
+            INT32_MIN, kBufferId1, window_->GetBoundsInPixels()));
+        overlay_configs.emplace_back(CreateBasicWaylandOverlayConfig(
+            z_order++, kBufferId2, window_->GetBoundsInPixels()));
+        overlay_configs.emplace_back(CreateBasicWaylandOverlayConfig(
+            z_order++, kBufferId3, faulty_bounds_rect));
+        overlay_configs.emplace_back(CreateBasicWaylandOverlayConfig(
+            z_order++, kBufferId2, window_->GetBoundsInPixels()));
+      }
+      buffer_manager_gpu_->CommitOverlays(window_->GetWidget(), 1u,
+                                          std::move(overlay_configs));
 
-    EXPECT_EQ("Overlay bounds_rect is invalid (NaN or infinity).",
-              channel_destroyed_error_message_);
+      Sync();
+
+      if (!should_root_have_nan_bounds &&
+          !connection_->linux_explicit_synchronization_v1()) {
+        // This case submits kBufferId2 twice. So, a second handle is requested
+        // during a frame playback if explicit sync is unavailable.
+        ProcessCreatedBufferResourcesWithExpectation(1u /* expected size */,
+                                                     false /* fail */);
+        Sync();
+      }
+
+      EXPECT_EQ("Overlay bounds_rect is invalid (NaN or infinity).",
+                channel_destroyed_error_message_);
+
+      // Clear all the possible frame and release callbacks.
+      auto* mock_surface = server_.GetObject<wl::MockSurface>(
+          window_->root_surface()->GetSurfaceId());
+      for (auto& subsurface : window_->wayland_subsurfaces_) {
+        auto* mock_surface_of_subsurface = server_.GetObject<wl::MockSurface>(
+            subsurface->wayland_surface()->GetSurfaceId());
+        EXPECT_TRUE(mock_surface_of_subsurface);
+        mock_surface_of_subsurface->SendFrameCallback();
+        mock_surface_of_subsurface->ClearBufferReleases();
+      }
+
+      mock_surface->SendFrameCallback();
+      mock_surface->ClearBufferReleases();
+    }
   }
 }
 
@@ -2312,6 +2370,8 @@ TEST_P(WaylandBufferManagerTest, CanSubmitOverlayPriority) {
        OVERLAY_PRIORITIZED_SURFACE_OVERLAY_PRIORITY_NONE},
       {gfx::OverlayPriorityHint::kRegular,
        OVERLAY_PRIORITIZED_SURFACE_OVERLAY_PRIORITY_REGULAR},
+      {gfx::OverlayPriorityHint::kVideo,
+       OVERLAY_PRIORITIZED_SURFACE_OVERLAY_PRIORITY_REGULAR},
       {gfx::OverlayPriorityHint::kLowLatencyCanvas,
        OVERLAY_PRIORITIZED_SURFACE_OVERLAY_PRIORITY_PREFERRED_LOW_LATENCY_CANVAS},
       {gfx::OverlayPriorityHint::kHardwareProtection,
@@ -2563,6 +2623,42 @@ TEST_P(WaylandBufferManagerTest, ExecutesTasksAfterInitialization) {
   base::RunLoop().RunUntilIdle();
 
   EXPECT_TRUE(buffer_manager_gpu_->pending_tasks_.empty());
+}
+
+TEST_P(WaylandBufferManagerTest, DoesNotRequestReleaseForSolidColorBuffers) {
+  if (!connection_->linux_explicit_synchronization_v1())
+    GTEST_SKIP();
+
+  server_.EnsureSurfaceAugmenter();
+
+  Sync();
+
+  MockSurfaceGpu mock_surface_gpu(buffer_manager_gpu_.get(), widget_);
+
+  const auto solid_color_buffer_id = buffer_manager_gpu_->AllocateBufferID();
+  buffer_manager_gpu_->CreateSolidColorBuffer(
+      SkColor4f::FromColor(SK_ColorBLUE), gfx::Size(1, 1),
+      solid_color_buffer_id);
+
+  Sync();
+
+  auto* mock_surface = server_.GetObject<wl::MockSurface>(
+      window_->root_surface()->GetSurfaceId());
+
+  std::vector<wl::WaylandOverlayConfig> overlay_configs;
+  auto bounds = window_->GetBoundsInPixels();
+  overlay_configs.emplace_back(CreateBasicWaylandOverlayConfig(
+      INT32_MIN, solid_color_buffer_id, bounds));
+  buffer_manager_gpu_->CommitOverlays(widget_, 1u, std::move(overlay_configs));
+
+  constexpr uint32_t kNumberOfCommits = 1;
+  EXPECT_CALL(*mock_surface, Attach(_, _, _)).Times(kNumberOfCommits);
+  EXPECT_CALL(*mock_surface, Frame(_)).Times(kNumberOfCommits);
+  EXPECT_CALL(*mock_surface, Commit()).Times(kNumberOfCommits);
+
+  Sync();
+
+  EXPECT_FALSE(mock_surface->has_linux_buffer_release());
 }
 
 class WaylandBufferManagerViewportTest : public WaylandBufferManagerTest {

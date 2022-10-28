@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,8 +9,8 @@
 #include "chromeos/ash/services/assistant/public/cpp/assistant_browser_delegate.h"
 #include "chromeos/ash/services/assistant/public/cpp/assistant_service.h"
 #include "chromeos/ash/services/assistant/public/cpp/features.h"
+#include "chromeos/ash/services/libassistant/public/mojom/media_controller.mojom.h"
 #include "chromeos/services/assistant/public/shared/utils.h"
-#include "chromeos/services/libassistant/public/mojom/media_controller.mojom.h"
 
 namespace ash::assistant {
 

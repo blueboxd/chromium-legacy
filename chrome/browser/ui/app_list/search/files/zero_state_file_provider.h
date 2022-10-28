@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -90,6 +90,9 @@ class ZeroStateFileProvider : public SearchProvider,
   // A file needs to have been modified more recently than this to be considered
   // valid.
   const base::TimeDelta max_last_modified_time_;
+
+  // Path to the downloads folder for this profile.
+  const base::FilePath downloads_path_;
 
   base::ScopedObservation<file_manager::file_tasks::FileTasksNotifier,
                           file_manager::file_tasks::FileTasksObserver>

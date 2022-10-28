@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,9 +9,7 @@
 
 #include "mojo/public/cpp/bindings/receiver.h"
 
-namespace chromeos {
-namespace cros_healthd {
-namespace connectivity {
+namespace ash::cros_healthd::connectivity {
 
 class LocalStateImpl : public LocalState, public mojom::State {
  public:
@@ -57,6 +55,4 @@ std::unique_ptr<LocalState> LocalState::Create(
   return std::make_unique<LocalStateImpl>(std::move(receiver));
 }
 
-}  // namespace connectivity
-}  // namespace cros_healthd
-}  // namespace chromeos
+}  // namespace ash::cros_healthd::connectivity

@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,7 +8,6 @@
 
 #include <memory>
 
-#include "ash/components/login/auth/public/user_context.h"
 #include "ash/components/multidevice/logging/logging.h"
 #include "ash/components/multidevice/remote_device.h"
 #include "ash/components/multidevice/remote_device_cache.h"
@@ -37,6 +36,7 @@
 #include "chrome/browser/ash/login/session/user_session_manager.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/common/pref_names.h"
+#include "chromeos/ash/components/login/auth/public/user_context.h"
 #include "chromeos/login/login_state/login_state.h"
 
 namespace ash {
@@ -225,7 +225,7 @@ AccountId EasyUnlockServiceSignin::GetAccountId() const {
   return account_id_;
 }
 
-const base::ListValue* EasyUnlockServiceSignin::GetRemoteDevices() const {
+const base::Value::List* EasyUnlockServiceSignin::GetRemoteDevices() const {
   const UserData* data = FindLoadedDataForCurrentUser();
   if (!data)
     return nullptr;

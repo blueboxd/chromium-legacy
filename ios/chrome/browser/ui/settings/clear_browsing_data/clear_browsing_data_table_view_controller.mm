@@ -1,22 +1,24 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #import "ios/chrome/browser/ui/settings/clear_browsing_data/clear_browsing_data_table_view_controller.h"
 
-#include "base/mac/foundation_util.h"
+#import "base/mac/foundation_util.h"
 #import "base/metrics/histogram_functions.h"
-#include "base/metrics/user_metrics.h"
-#include "base/metrics/user_metrics_action.h"
-#include "components/browsing_data/core/pref_names.h"
-#include "components/prefs/pref_service.h"
+#import "base/metrics/user_metrics.h"
+#import "base/metrics/user_metrics_action.h"
+#import "components/browsing_data/core/pref_names.h"
+#import "components/prefs/pref_service.h"
 #import "components/signin/public/base/signin_metrics.h"
 #import "components/signin/public/base/signin_switches.h"
 #import "components/signin/public/identity_manager/objc/identity_manager_observer_bridge.h"
-#include "ios/chrome/browser/browser_state/chrome_browser_state.h"
-#include "ios/chrome/browser/browsing_data/browsing_data_features.h"
-#include "ios/chrome/browser/browsing_data/browsing_data_remove_mask.h"
-#include "ios/chrome/browser/chrome_url_constants.h"
+#import "ios/chrome/browser/browser_state/chrome_browser_state.h"
+#import "ios/chrome/browser/browsing_data/browsing_data_features.h"
+#import "ios/chrome/browser/browsing_data/browsing_data_remove_mask.h"
+#import "ios/chrome/browser/chrome_url_constants.h"
+#import "ios/chrome/browser/discover_feed/discover_feed_service.h"
+#import "ios/chrome/browser/discover_feed/discover_feed_service_factory.h"
 #import "ios/chrome/browser/main/browser.h"
 #import "ios/chrome/browser/net/crurl.h"
 #import "ios/chrome/browser/signin/identity_manager_factory.h"
@@ -26,12 +28,12 @@
 #import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/commands/browsing_data_commands.h"
 #import "ios/chrome/browser/ui/elements/chrome_activity_overlay_coordinator.h"
-#include "ios/chrome/browser/ui/settings/cells/clear_browsing_data_constants.h"
+#import "ios/chrome/browser/ui/settings/cells/clear_browsing_data_constants.h"
 #import "ios/chrome/browser/ui/settings/cells/table_view_clear_browsing_data_item.h"
 #import "ios/chrome/browser/ui/settings/clear_browsing_data/clear_browsing_data_consumer.h"
 #import "ios/chrome/browser/ui/settings/clear_browsing_data/clear_browsing_data_manager.h"
 #import "ios/chrome/browser/ui/settings/clear_browsing_data/clear_browsing_data_ui_constants.h"
-#include "ios/chrome/browser/ui/settings/clear_browsing_data/clear_browsing_data_ui_delegate.h"
+#import "ios/chrome/browser/ui/settings/clear_browsing_data/clear_browsing_data_ui_delegate.h"
 #import "ios/chrome/browser/ui/settings/clear_browsing_data/time_range_selector_table_view_controller.h"
 #import "ios/chrome/browser/ui/settings/settings_navigation_controller.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_text_button_item.h"
@@ -40,9 +42,9 @@
 #import "ios/chrome/browser/ui/table_view/table_view_utils.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
 #import "ios/chrome/common/ui/table_view/table_view_cells_constants.h"
-#include "ios/chrome/grit/ios_chromium_strings.h"
-#include "ios/chrome/grit/ios_strings.h"
-#include "ui/base/l10n/l10n_util.h"
+#import "ios/chrome/grit/ios_chromium_strings.h"
+#import "ios/chrome/grit/ios_strings.h"
+#import "ui/base/l10n/l10n_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -424,6 +426,9 @@
     browserState->GetPrefs()->SetInt64(
         browsing_data::prefs::kLastClearBrowsingDataTime,
         base::Time::Now().ToTimeT());
+
+    DiscoverFeedServiceFactory::GetForBrowserState(browserState)
+        ->BrowsingHistoryCleared();
   }
 
   [self.dispatcher
@@ -544,6 +549,7 @@
                             rect:itemView.frame
                             view:itemView
                       withSource:signout_source_metric];
+  _signoutCoordinator.showUnavailableFeatureDialogHeader = YES;
   __weak ClearBrowsingDataTableViewController* weakSelf = self;
   _signoutCoordinator.completion = ^(BOOL success) {
     [weakSelf handleAuthenticationOperationDidFinish];

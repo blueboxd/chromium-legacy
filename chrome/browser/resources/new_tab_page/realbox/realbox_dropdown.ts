@@ -1,20 +1,19 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 import './realbox_match.js';
+import './realbox_dropdown_shared_style.css.js';
 import 'chrome://resources/polymer/v3_0/iron-selector/iron-selector.js';
 import 'chrome://resources/cr_elements/cr_icon_button/cr_icon_button.js';
-import 'chrome://resources/cr_elements/cr_icons_css.m.js';
+import 'chrome://resources/cr_elements/cr_icons.css.js';
 
-import {assert} from 'chrome://resources/js/assert.m.js';
-import {skColorToRgba} from 'chrome://resources/js/color_utils.js';
 import {Url} from 'chrome://resources/mojo/url/mojom/url.mojom-webui.js';
 import {IronSelectorElement} from 'chrome://resources/polymer/v3_0/iron-selector/iron-selector.js';
 import {DomRepeat, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {loadTimeData} from '../i18n_setup.js';
-import {AutocompleteMatch, AutocompleteResult, PageCallbackRouter, PageHandlerInterface, SearchBoxTheme} from '../realbox.mojom-webui.js';
+import {AutocompleteMatch, AutocompleteResult, PageCallbackRouter, PageHandlerInterface} from '../realbox.mojom-webui.js';
 import {decodeString16} from '../utils.js';
 
 import {RealboxBrowserProxy} from './realbox_browser_proxy.js';
@@ -62,11 +61,6 @@ export class RealboxDropdownElement extends PolymerElement {
         notify: true,
       },
 
-      theme: {
-        type: Object,
-        observer: 'onThemeChange_',
-      },
-
       //========================================================================
       // Private properties
       //========================================================================
@@ -94,7 +88,6 @@ export class RealboxDropdownElement extends PolymerElement {
   result: AutocompleteResult;
   roundCorners: boolean;
   selectedMatchIndex: number;
-  theme: SearchBoxTheme;
   private groupIds_: number[];
   private hiddenGroupIds_: number[];
   private selectableMatchElements_: Element[];
@@ -209,29 +202,6 @@ export class RealboxDropdownElement extends PolymerElement {
       composed: true,
       detail: window.performance.now(),
     }));
-  }
-
-  private onThemeChange_() {
-    if (!loadTimeData.getBoolean('realboxMatchOmniboxTheme')) {
-      return;
-    }
-
-    this.updateStyles({
-      '--search-box-icon-selected':
-          skColorToRgba(assert(this.theme.iconSelected)),
-      '--search-box-icon': skColorToRgba(assert(this.theme.icon)),
-      '--search-box-results-bg-hovered':
-          skColorToRgba(assert(this.theme.resultsBgHovered)),
-      '--search-box-results-bg': skColorToRgba(assert(this.theme.resultsBg)),
-      '--search-box-results-dim-selected':
-          skColorToRgba(assert(this.theme.resultsDimSelected)),
-      '--search-box-results-dim': skColorToRgba(assert(this.theme.resultsDim)),
-      '--search-box-results-text':
-          skColorToRgba(assert(this.theme.resultsText)),
-      '--search-box-results-url-selected':
-          skColorToRgba(assert(this.theme.resultsUrlSelected)),
-      '--search-box-results-url': skColorToRgba(assert(this.theme.resultsUrl)),
-    });
   }
 
   //============================================================================
@@ -362,6 +332,14 @@ export class RealboxDropdownElement extends PolymerElement {
             this.result.suggestionGroupsMap[groupId].hideGroupA11yLabel) :
         decodeString16(
             this.result.suggestionGroupsMap[groupId].showGroupA11yLabel);
+  }
+
+  private expandIconNameForGroup_(groupId: number): string {
+    if (!this.groupHasHeader_(groupId)) {
+      return '';
+    }
+    return this.groupIsHidden_(groupId) ? 'icon-expand-more' :
+                                          'icon-expand-less';
   }
 }
 

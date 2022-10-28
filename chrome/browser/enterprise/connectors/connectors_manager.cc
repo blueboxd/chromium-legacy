@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -179,7 +179,7 @@ void ConnectorsManager::CacheAnalysisConnectorPolicy(
   DCHECK(pref);
 
   const base::Value::List& policy_value =
-      pref_change_registrar_.prefs()->GetValueList(pref);
+      pref_change_registrar_.prefs()->GetList(pref);
   for (const base::Value& service_settings : policy_value)
     analysis_connector_settings_[connector].emplace_back(
         service_settings, *service_provider_config_);
@@ -194,7 +194,7 @@ void ConnectorsManager::CacheReportingConnectorPolicy(
   DCHECK(pref);
 
   const base::Value::List& policy_value =
-      pref_change_registrar_.prefs()->GetValueList(pref);
+      pref_change_registrar_.prefs()->GetList(pref);
   for (const base::Value& service_settings : policy_value)
     reporting_connector_settings_[connector].emplace_back(
         service_settings, *service_provider_config_);
@@ -209,7 +209,7 @@ void ConnectorsManager::CacheFileSystemConnectorPolicy(
   DCHECK(pref);
 
   const base::Value::List& policy_value =
-      pref_change_registrar_.prefs()->GetValueList(pref);
+      pref_change_registrar_.prefs()->GetList(pref);
   for (const base::Value& service_settings : policy_value)
     file_system_connector_settings_[connector].emplace_back(
         service_settings, *service_provider_config_);
@@ -314,6 +314,25 @@ std::vector<std::string> ConnectorsManager::GetReportingServiceProviderNames(
     return {reporting_connector_settings_.at(connector)
                 .at(0)
                 .service_provider_name()};
+  }
+
+  return {};
+}
+
+std::vector<const AnalysisConfig*> ConnectorsManager::GetAnalysisServiceConfigs(
+    AnalysisConnector connector) {
+  if (IsConnectorEnabled(connector)) {
+    if (analysis_connector_settings_.count(connector) == 0) {
+      CacheAnalysisConnectorPolicy(connector);
+    }
+
+    if (analysis_connector_settings_.count(connector) &&
+        !analysis_connector_settings_.at(connector).empty()) {
+      // There can only be one provider right now, but the system is designed to
+      // support multiples, so return a vector.
+      return {
+          analysis_connector_settings_.at(connector).at(0).GetAnalysisConfig()};
+    }
   }
 
   return {};

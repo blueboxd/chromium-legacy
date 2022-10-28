@@ -4,9 +4,13 @@
 
 #include "third_party/blink/renderer/extensions/chromeos/system_extensions/window_management/cros_window_management.h"
 
+#include <algorithm>
+
+#include "third_party/blink/public/mojom/chromeos/system_extensions/window_management/cros_window_management.mojom-forward.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/bindings/extensions_chromeos/v8/v8_cros_accelerator_event_init.h"
+#include "third_party/blink/renderer/bindings/extensions_chromeos/v8/v8_cros_window_event_init.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
@@ -15,6 +19,7 @@
 #include "third_party/blink/renderer/extensions/chromeos/system_extensions/window_management/cros_accelerator_event.h"
 #include "third_party/blink/renderer/extensions/chromeos/system_extensions/window_management/cros_screen.h"
 #include "third_party/blink/renderer/extensions/chromeos/system_extensions/window_management/cros_window.h"
+#include "third_party/blink/renderer/extensions/chromeos/system_extensions/window_management/cros_window_event.h"
 
 namespace blink {
 
@@ -153,6 +158,61 @@ void CrosWindowManagement::DispatchAcceleratorEvent(
           ? event_type_names::kAcceleratordown
           : event_type_names::kAcceleratorup;
   DispatchEvent(*CrosAcceleratorEvent::Create(type, event_init));
+}
+
+void CrosWindowManagement::DispatchWindowOpenedEvent(
+    mojom::blink::CrosWindowInfoPtr window) {
+  WTF::String opened_id = WTF::String(window->id.ToString());
+
+  // TODO(b/245442671): Currently event is dispatched asynchronously due to
+  // waiting for CrosWindowManagementContext::GetCrosWindowManagement to
+  // dispatch. This allows a race condition between populating the `windows_`
+  // cache and dispatching open event. In the future, this shouldn't happen and
+  // we should DCHECK() the newly opened window does not exist in cache.
+  auto* cached_window_ptr =
+      std::find_if(windows_.begin(), windows_.end(),
+                   [&opened_id](Member<CrosWindow> window) {
+                     return window->id() == opened_id;
+                   });
+
+  auto* event_init = CrosWindowEventInit::Create();
+  if (cached_window_ptr == windows_.end()) {
+    auto* cros_window =
+        MakeGarbageCollected<CrosWindow>(this, std::move(window));
+    windows_.push_back(cros_window);
+    event_init->setWindow(cros_window);
+  } else {
+    cached_window_ptr->Get()->Update(std::move(window));
+    event_init->setWindow(cached_window_ptr->Get());
+  }
+
+  DispatchEvent(
+      *CrosWindowEvent::Create(event_type_names::kWindowopened, event_init));
+}
+
+void CrosWindowManagement::DispatchWindowClosedEvent(
+    mojom::blink::CrosWindowInfoPtr window) {
+  WTF::String closed_window_id_string = WTF::String(window->id.ToString());
+  Member<CrosWindow>* window_ptr =
+      std::find_if(windows_.begin(), windows_.end(),
+                   [&closed_window_id_string](Member<CrosWindow> cros_window) {
+                     return cros_window->id() == closed_window_id_string;
+                   });
+
+  auto* event_init = CrosWindowEventInit::Create();
+  if (window_ptr == windows_.end()) {
+    event_init->setWindow(
+        MakeGarbageCollected<CrosWindow>(this, std::move(window)));
+  } else {
+    // Update cached CrosWindow member with CrosWindowInfoPtr with nulled
+    // attributes.
+    window_ptr->Get()->Update(std::move(window));
+    event_init->setWindow(window_ptr->Get());
+    windows_.erase(window_ptr);
+  }
+
+  DispatchEvent(
+      *CrosWindowEvent::Create(event_type_names::kWindowclosed, event_init));
 }
 
 }  // namespace blink

@@ -1,12 +1,10 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include <memory>
 #include <utility>
 
-#include "ash/components/login/auth/public/key.h"
-#include "ash/components/login/auth/public/user_context.h"
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/test/task_environment.h"
@@ -18,6 +16,8 @@
 #include "chrome/browser/ui/webui/chromeos/login/encryption_migration_screen_handler.h"
 #include "chromeos/ash/components/dbus/cryptohome/account_identifier_operators.h"
 #include "chromeos/ash/components/dbus/userdataauth/fake_userdataauth_client.h"
+#include "chromeos/ash/components/login/auth/public/key.h"
+#include "chromeos/ash/components/login/auth/public/user_context.h"
 #include "chromeos/dbus/power/fake_power_manager_client.h"
 #include "chromeos/dbus/power/power_policy_controller.h"
 #include "components/account_id/account_id.h"
@@ -122,9 +122,10 @@ class EncryptionMigrationScreenTest : public testing::Test {
     // Set up fake dbus clients.
     UserDataAuthClient::InitializeFake();
     fake_userdataauth_client_ = FakeUserDataAuthClient::Get();
-    PowerManagerClient::InitializeFake();
+    chromeos::PowerManagerClient::InitializeFake();
 
-    PowerPolicyController::Initialize(PowerManagerClient::Get());
+    chromeos::PowerPolicyController::Initialize(
+        chromeos::PowerManagerClient::Get());
 
     // Build dummy user context.
     user_context_.SetAccountId(account_id_);
@@ -144,8 +145,8 @@ class EncryptionMigrationScreenTest : public testing::Test {
   void TearDown() override {
     encryption_migration_screen_.reset();
 
-    PowerPolicyController::Shutdown();
-    PowerManagerClient::Shutdown();
+    chromeos::PowerPolicyController::Shutdown();
+    chromeos::PowerManagerClient::Shutdown();
     UserDataAuthClient::Shutdown();
   }
 
@@ -181,5 +182,4 @@ class EncryptionMigrationScreenTest : public testing::Test {
 };
 
 }  // namespace
-
 }  // namespace ash

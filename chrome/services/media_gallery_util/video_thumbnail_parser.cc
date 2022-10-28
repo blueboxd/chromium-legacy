@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -17,7 +17,6 @@
 #include "media/filters/android/video_frame_extractor.h"
 #include "media/filters/vpx_video_decoder.h"
 #include "media/media_buildflags.h"
-#include "media/mojo/common/mojo_shared_buffer_video_frame.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace {
@@ -38,8 +37,7 @@ void OnSoftwareVideoFrameDecoded(
 
   std::move(video_frame_callback)
       .Run(chrome::mojom::ExtractVideoFrameResult::New(
-          chrome::mojom::VideoFrameData::NewDecodedFrame(
-              media::MojoSharedBufferVideoFrame::CreateFromYUVFrame(*frame)),
+          chrome::mojom::VideoFrameData::NewDecodedFrame(std::move(frame)),
           config));
 }
 

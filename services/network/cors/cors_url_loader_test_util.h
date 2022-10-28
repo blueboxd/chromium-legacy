@@ -15,6 +15,7 @@
 #include "base/check.h"
 #include "base/memory/weak_ptr.h"
 #include "base/test/task_environment.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "net/http/http_request_headers.h"
 #include "net/log/test_net_log.h"
 #include "services/network/public/cpp/cors/origin_access_list.h"
@@ -289,6 +290,14 @@ class CorsURLLoaderTestBase : public testing::Test {
   const net::NetLogEntry* FindEntryByType(
       const std::vector<net::NetLogEntry>& entries,
       net::NetLogEventType type);
+
+  static net::RedirectInfo CreateRedirectInfo(
+      int status_code,
+      base::StringPiece method,
+      const GURL& url,
+      base::StringPiece referrer = base::StringPiece(),
+      net::ReferrerPolicy referrer_policy = net::ReferrerPolicy::NO_REFERRER,
+      net::SiteForCookies site_for_cookies = net::SiteForCookies());
 
  private:
   // Test environment.

@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -43,7 +43,7 @@ BookmarkExpandedStateTracker::GetExpandedNodes() {
     return nodes;
 
   const base::Value::List& value =
-      pref_service_->GetValueList(prefs::kBookmarkEditorExpandedNodes);
+      pref_service_->GetList(prefs::kBookmarkEditorExpandedNodes);
 
   bool changed = false;
   for (const auto& entry : value) {

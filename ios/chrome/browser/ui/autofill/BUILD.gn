@@ -1,4 +1,4 @@
-# Copyright 2016 The Chromium Authors. All rights reserved.
+# Copyright 2016 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -23,6 +23,7 @@ source_set("autofill") {
     "//components/leveldb_proto",
     "//components/password_manager/core/browser",
     "//components/password_manager/core/common",
+    "//components/password_manager/ios",
     "//components/prefs",
     "//components/security_state/ios",
     "//components/strings",
@@ -55,7 +56,6 @@ source_set("autofill") {
     "//ios/public/provider/chrome/browser/risk_data:risk_data_api",
     "//ios/third_party/material_components_ios",
     "//ios/web/common",
-    "//ios/web/public/deprecated",
     "//ios/web/public/js_messaging",
     "//ui/base",
   ]
@@ -63,8 +63,16 @@ source_set("autofill") {
   frameworks = [ "UIKit.framework" ]
 }
 
+# TODO(crbug.com/1344830): Migrate away from deprecated MDC APIs.
+config("disable_deprecated_declarations") {
+  cflags = [ "-Wno-deprecated-declarations" ]
+}
+
 source_set("bridges") {
-  configs += [ "//build/config/compiler:enable_arc" ]
+  configs += [
+    ":disable_deprecated_declarations",
+    "//build/config/compiler:enable_arc",
+  ]
   sources = [
     "card_expiration_date_fix_flow_view_bridge.h",
     "card_expiration_date_fix_flow_view_bridge.mm",
@@ -85,6 +93,7 @@ source_set("bridges") {
     "//base",
     "//components/autofill/core/browser",
     "//components/strings",
+    "//ios/chrome/browser/net:crurl",
     "//ios/chrome/browser/ui/autofill/cells",
     "//ios/chrome/browser/ui/collection_view/cells",
     "//ios/chrome/browser/ui/list_model",
@@ -95,6 +104,7 @@ source_set("bridges") {
     "//ios/third_party/material_components_ios",
     "//ios/web",
     "//ui/base",
+    "//url",
   ]
   public_deps = [
     "//ios/chrome/browser/ui/collection_view",
@@ -108,26 +118,6 @@ source_set("autofill_ui") {
   sources = [
     "expiration_date_picker.h",
     "expiration_date_picker.mm",
-  ]
-  deps = [
-    ":autofill_message",
-    "//base",
-    "//base:i18n",
-    "//components/autofill/core/browser",
-    "//components/strings:components_strings_grit",
-    "//ios/chrome/app/theme",
-    "//ios/chrome/browser",
-    "//ios/chrome/browser/infobars",
-    "//ios/chrome/browser/infobars:public",
-    "//ios/chrome/browser/ui:feature_flags",
-    "//ios/chrome/browser/ui/image_util",
-    "//ios/chrome/browser/ui/toolbar/public",
-    "//ios/chrome/browser/ui/util",
-    "//ios/chrome/common",
-    "//ios/chrome/common/ui/colors",
-    "//ios/chrome/common/ui/util",
-    "//ios/third_party/material_components_ios",
-    "//ui/base",
   ]
   frameworks = [ "UIKit.framework" ]
 }
@@ -253,4 +243,21 @@ source_set("features") {
     "features.h",
   ]
   public_deps = [ "//base" ]
+}
+
+source_set("unit_tests") {
+  testonly = true
+  sources = [ "card_unmask_prompt_view_controller_unittest.mm" ]
+  deps = [
+    ":bridges",
+    "//base/test:test_support",
+    "//components/autofill/core/browser",
+    "//components/prefs:test_support",
+    "//ios/chrome/browser/ui/autofill/cells",
+    "//ios/chrome/browser/ui/table_view:test_support",
+    "//ios/chrome/test:test_support",
+    "//testing/gmock",
+    "//testing/gtest",
+  ]
+  configs += [ "//build/config/compiler:enable_arc" ]
 }

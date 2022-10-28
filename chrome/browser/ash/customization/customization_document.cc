@@ -1,10 +1,9 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome/browser/ash/customization/customization_document.h"
 
-#include <algorithm>
 #include <memory>
 #include <utility>
 
@@ -19,6 +18,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/path_service.h"
+#include "base/ranges/algorithm.h"
 #include "base/strings/pattern.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
@@ -409,8 +409,7 @@ void StartupCustomizationDocument::Init(
       initial_locale_, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
 
   // Convert ICU locale to chrome ("en_US" to "en-US", etc.).
-  std::for_each(configured_locales_.begin(), configured_locales_.end(),
-                base::i18n::GetCanonicalLocale);
+  base::ranges::for_each(configured_locales_, base::i18n::GetCanonicalLocale);
 
   // Let's always have configured_locales_.front() a valid entry.
   if (configured_locales_.size() == 0)
@@ -800,7 +799,7 @@ extensions::ExternalLoader* ServicesCustomizationDocument::CreateExternalLoader(
     SetOemFolderName(profile, *root_);
   } else {
     const base::Value::Dict& root =
-        profile->GetPrefs()->GetValueDict(kServicesCustomizationKey);
+        profile->GetPrefs()->GetDict(kServicesCustomizationKey);
     if (root.FindString(kVersionAttr)) {
       // If version exists, profile has cached version of customization.
       loader->SetCurrentApps(GetDefaultAppsInProviderFormat(root));

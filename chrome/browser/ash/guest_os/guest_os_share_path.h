@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,7 +10,6 @@
 #include <set>
 #include <vector>
 
-#include "ash/components/drivefs/drivefs_host_observer.h"
 #include "base/callback.h"
 #include "base/files/file_path.h"
 #include "base/files/file_path_watcher.h"
@@ -21,6 +20,7 @@
 #include "chrome/browser/ash/file_manager/volume_manager_observer.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chromeos/ash/components/dbus/seneschal/seneschal_service.pb.h"
+#include "chromeos/ash/components/drivefs/drivefs_host_observer.h"
 #include "components/keyed_service/core/keyed_service.h"
 
 namespace guest_os {

@@ -1,4 +1,4 @@
-# Copyright 2019 The Chromium Authors. All rights reserved.
+# Copyright 2019 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -32,6 +32,8 @@ source_set("browser") {
     "observers/layout_page_load_metrics_observer.h",
     "observers/prerender_page_load_metrics_observer.cc",
     "observers/prerender_page_load_metrics_observer.h",
+    "observers/shared_storage_page_load_metrics_observer.cc",
+    "observers/shared_storage_page_load_metrics_observer.h",
     "observers/use_counter/ukm_features.cc",
     "observers/use_counter/webdev_metrics_ukm_features.cc",
     "observers/use_counter_page_load_metrics_observer.cc",

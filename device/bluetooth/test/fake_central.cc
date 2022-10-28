@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,6 +11,7 @@
 
 #include "base/bind.h"
 #include "base/location.h"
+#include "base/ranges/algorithm.h"
 #include "build/build_config.h"
 #include "device/bluetooth/bluetooth_device.h"
 #include "device/bluetooth/bluetooth_discovery_filter.h"
@@ -197,12 +198,10 @@ void FakeCentral::SetNextGATTDiscoveryResponse(
 }
 
 bool FakeCentral::AllResponsesConsumed() {
-  return std::all_of(devices_.begin(), devices_.end(), [](const auto& e) {
+  return base::ranges::all_of(devices_, [](const auto& e) {
     // static_cast is safe because the parent class's devices_ is only
     // populated via this FakeCentral, and only with FakePeripherals.
-    FakePeripheral* fake_peripheral =
-        static_cast<FakePeripheral*>(e.second.get());
-    return fake_peripheral->AllResponsesConsumed();
+    return static_cast<FakePeripheral*>(e.second.get())->AllResponsesConsumed();
   });
 }
 
@@ -603,7 +602,7 @@ void FakeCentral::ConnectDevice(
     const std::string& address,
     const absl::optional<device::BluetoothDevice::AddressType>& address_type,
     ConnectDeviceCallback callback,
-    ErrorCallback error_callback) {
+    ConnectDeviceErrorCallback error_callback) {
   NOTREACHED();
 }
 #endif

@@ -1,17 +1,17 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "ash/components/timezone/timezone_provider.h"
 
-#include <algorithm>
 #include <iterator>
 #include <utility>
 
-#include "ash/components/geolocation/geoposition.h"
 #include "base/bind.h"
 #include "base/check.h"
 #include "base/memory/ptr_util.h"
+#include "base/ranges/algorithm.h"
+#include "chromeos/ash/components/geolocation/geoposition.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
 namespace ash {
@@ -46,11 +46,8 @@ void TimeZoneProvider::OnTimezoneResponse(
     TimeZoneRequest::TimeZoneResponseCallback callback,
     std::unique_ptr<TimeZoneResponseData> timezone,
     bool server_error) {
-  std::vector<std::unique_ptr<TimeZoneRequest>>::iterator position =
-      std::find_if(requests_.begin(), requests_.end(),
-                   [request](const std::unique_ptr<TimeZoneRequest>& req) {
-                     return req.get() == request;
-                   });
+  auto position = base::ranges::find(requests_, request,
+                                     &std::unique_ptr<TimeZoneRequest>::get);
   DCHECK(position != requests_.end());
   if (position != requests_.end()) {
     std::swap(*position, *requests_.rbegin());

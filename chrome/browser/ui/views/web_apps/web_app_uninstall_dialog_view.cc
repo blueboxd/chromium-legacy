@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -183,7 +183,7 @@ void WebAppUninstallDialogDelegateView::ClearWebAppSiteData() {
                          /*clear_storage=*/true, /*clear_cache=*/true,
                          /*avoid_closing_connections=*/false,
                          /*cookie_partition_key=*/absl::nullopt,
-                         base::DoNothing());
+                         /*storage_key=*/absl::nullopt, base::DoNothing());
 }
 
 void WebAppUninstallDialogDelegateView::ProcessAutoConfirmValue() {
@@ -296,16 +296,14 @@ WebAppUninstallDialogViews::UninstallStarted() {
   view_ = nullptr;
   return base::BindOnce(
       [](OnWebAppUninstallDialogClosed callback,
-         webapps::UninstallResultCode code) {
-        std::move(callback).Run(code == webapps::UninstallResultCode::kSuccess);
-      },
+         webapps::UninstallResultCode code) { std::move(callback).Run(code); },
       std::move(closed_callback_));
 }
 
 void WebAppUninstallDialogViews::UninstallCancelled() {
   DCHECK(closed_callback_);
   view_ = nullptr;
-  std::move(closed_callback_).Run(/*uninstalled=*/false);
+  std::move(closed_callback_).Run(webapps::UninstallResultCode::kCancelled);
 }
 
 // static

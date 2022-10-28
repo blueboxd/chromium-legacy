@@ -1,10 +1,11 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 #ifndef DEVICE_BLUETOOTH_FLOSS_EXPORTED_CALLBACK_MANAGER_H_
 #define DEVICE_BLUETOOTH_FLOSS_EXPORTED_CALLBACK_MANAGER_H_
 
 #include <memory>
+#include <type_traits>
 #include <unordered_map>
 #include <utility>
 
@@ -72,10 +73,11 @@ class CallbackForwarder {
                    base::OnceCallback<void(Args...)> delegate,
                    dbus::ExportedObject::ResponseSender response_sender,
                    BuiltArgs... params) {
-      FirstType data;
+      std::decay_t<FirstType> data;
       if (!floss::FlossDBusClient::ReadDBusParam(reader, &data)) {
         std::stringstream message;
-        floss::DBusTypeInfo type_info = floss::GetDBusTypeInfo<FirstType>();
+        floss::DBusTypeInfo type_info =
+            floss::GetDBusTypeInfo<std::decay_t<FirstType>>();
         std::string next_data_type =
             reader->HasMoreData() ? ("'" + reader->GetDataSignature() + "'")
                                   : "none";
@@ -95,7 +97,7 @@ class CallbackForwarder {
                             TypeList<BuiltArgs..., FirstType>>::
           Do(reader, method_call, std::move(delegate),
              std::move(response_sender), std::forward<BuiltArgs>(params)...,
-             std::move(data));
+             data);
     }
   };
 

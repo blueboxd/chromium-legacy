@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -266,8 +266,8 @@ void NearbyShareContactManagerImpl::AddDownloadContactsObserver(
 std::set<std::string> NearbyShareContactManagerImpl::GetAllowedContacts()
     const {
   std::set<std::string> allowlist;
-  for (const base::Value& id : pref_service_->GetValueList(
-           prefs::kNearbySharingAllowedContactsPrefName)) {
+  for (const base::Value& id :
+       pref_service_->GetList(prefs::kNearbySharingAllowedContactsPrefName)) {
     allowlist.insert(id.GetString());
   }
   return allowlist;

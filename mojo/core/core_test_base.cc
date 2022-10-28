@@ -1,4 +1,4 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -63,7 +63,8 @@ class MockDispatcher : public Dispatcher {
   }
 
   MojoResult BeginWriteData(void** buffer,
-                            uint32_t* buffer_num_bytes) override {
+                            uint32_t* buffer_num_bytes,
+                            MojoBeginWriteDataFlags flags) override {
     info_->IncrementBeginWriteDataCallCount();
     return MOJO_RESULT_UNIMPLEMENTED;
   }

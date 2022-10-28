@@ -14,9 +14,11 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "base/callback_helpers.h"
 #include "base/containers/flat_map.h"
 #include "base/containers/unique_ptr_adapters.h"
 #include "base/memory/scoped_refptr.h"
+#include "base/task/cancelable_task_tracker.h"
 #include "base/time/time.h"
 #include "content/common/content_export.h"
 #include "content/services/auction_worklet/auction_v8_helper.h"
@@ -26,6 +28,7 @@
 #include "content/services/auction_worklet/trusted_signals.h"
 #include "content/services/auction_worklet/trusted_signals_request_manager.h"
 #include "content/services/auction_worklet/worklet_loader.h"
+#include "mojo/public/cpp/bindings/associated_remote.h"
 #include "mojo/public/cpp/bindings/pending_associated_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
@@ -113,7 +116,8 @@ class CONTENT_EXPORT BidderWorklet : public mojom::BidderWorklet {
       mojom::BiddingBrowserSignalsPtr bidding_browser_signals,
       base::Time auction_start_time,
       uint64_t trace_id,
-      GenerateBidCallback generate_bid_callback) override;
+      mojo::PendingAssociatedRemote<mojom::GenerateBidClient>
+          generate_bid_client) override;
   void SendPendingSignalsRequests() override;
   void ReportWin(
       const std::string& interest_group_name,
@@ -139,6 +143,9 @@ class CONTENT_EXPORT BidderWorklet : public mojom::BidderWorklet {
     GenerateBidTask();
     ~GenerateBidTask();
 
+    base::CancelableTaskTracker::TaskId task_id =
+        base::CancelableTaskTracker::kBadTaskId;
+
     mojom::BidderWorkletNonSharedParamsPtr bidder_worklet_non_shared_params;
     url::Origin interest_group_join_origin;
     absl::optional<std::string> auction_signals_json;
@@ -160,7 +167,12 @@ class CONTENT_EXPORT BidderWorklet : public mojom::BidderWorklet {
     // reported on bid completion.
     absl::optional<std::string> trusted_bidding_signals_error_msg;
 
-    GenerateBidCallback callback;
+    // Set to true once the callback sent to the OnBiddingSignalsReceived()
+    // method of `generate_bid_client` has been invoked. the Javascript
+    // generateBid() method will not be run until that happens.
+    bool signals_received_callback_invoked = false;
+
+    mojo::AssociatedRemote<mojom::GenerateBidClient> generate_bid_client;
   };
 
   using GenerateBidTaskList = std::list<GenerateBidTask>;
@@ -247,6 +259,7 @@ class CONTENT_EXPORT BidderWorklet : public mojom::BidderWorklet {
         base::Time auction_start_time,
         scoped_refptr<TrustedSignals::Result> trusted_bidding_signals_result,
         uint64_t trace_id,
+        base::ScopedClosureRunner cleanup_generate_bid_task,
         GenerateBidCallbackInternal callback);
 
     void ConnectDevToolsAgent(
@@ -314,6 +327,15 @@ class CONTENT_EXPORT BidderWorklet : public mojom::BidderWorklet {
       scoped_refptr<TrustedSignals::Result> result,
       absl::optional<std::string> error_msg);
 
+  // Invoked when the GenerateBidClient associated with `task` is destroyed.
+  // Cancels bid generation.
+  void OnGenerateBidClientDestroyed(GenerateBidTaskList::iterator task);
+
+  // Callback passed to mojom::GenerateBidClient::OnSignalsReceived. Sets
+  // `task->signals_received_callback_invoked` to true, and invokes
+  // GenerateBidIfReady().
+  void SignalsReceivedCallback(GenerateBidTaskList::iterator task);
+
   // Checks if the script has been loaded successfully, and the
   // TrustedSignals load has finished (successfully or not). If so, calls
   // generateBid(), and invokes `load_script_and_generate_bid_callback_` with
@@ -334,6 +356,11 @@ class CONTENT_EXPORT BidderWorklet : public mojom::BidderWorklet {
       absl::optional<double> set_priority,
       PrivateAggregationRequests pa_requests,
       std::vector<std::string> error_msgs);
+
+  // Removes `task` from `generate_bid_tasks_` only. Used in case where the
+  // V8 work for task was cancelled only (via the `cleanup_generate_bid_task`
+  // parameter getting destroyed).
+  void CleanUpBidTaskOnUserThread(GenerateBidTaskList::iterator task);
 
   // Invokes the `callback` of `task` with the provided values, and removes
   // `task` from `report_win_tasks_`.
@@ -387,6 +414,8 @@ class CONTENT_EXPORT BidderWorklet : public mojom::BidderWorklet {
 
   // Errors that occurred while loading the code, if any.
   std::vector<std::string> load_code_error_msgs_;
+
+  base::CancelableTaskTracker cancelable_task_tracker_;
 
   SEQUENCE_CHECKER(user_sequence_checker_);
 

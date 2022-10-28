@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -37,7 +37,6 @@ constexpr int kBorderThichness = 2;
 KSVSearchBoxView::KSVSearchBoxView(QueryHandler query_handler)
     : query_handler_(std::move(query_handler)) {
   SetSearchBoxBackgroundCornerRadius(kBorderCornerRadius);
-  UpdateBackgroundColor(GetBackgroundColor());
   search_box()->SetBackgroundColor(SK_ColorTRANSPARENT);
   search_box()->SetColor(GetPrimaryTextColor());
   SetPlaceholderTextAttributes();
@@ -128,12 +127,10 @@ void KSVSearchBoxView::UpdateSearchBoxBorder() {
   if (ShouldUseFocusedColors()) {
     SetBorder(views::CreateRoundedRectBorder(
         kBorderThichness, kBorderCornerRadius, GetBorderColor()));
-    UpdateBackgroundColor(GetBackgroundColor());
     return;
   }
   SetBorder(views::CreateRoundedRectBorder(
       kBorderThichness, kBorderCornerRadius, GetBorderColor()));
-  UpdateBackgroundColor(GetBackgroundColor());
 }
 
 void KSVSearchBoxView::OnSearchBoxActiveChanged(bool active) {
@@ -170,7 +167,8 @@ SkColor KSVSearchBoxView::GetBackgroundColor() {
 
   return ShouldUseFocusedColors()
              ? gfx::kGoogleGrey100
-             : ash::AppListColorProvider::Get()->GetSearchBoxBackgroundColor();
+             : ash::AppListColorProvider::Get()->GetSearchBoxBackgroundColor(
+                   GetWidget());
 }
 
 SkColor KSVSearchBoxView::GetBorderColor() {
@@ -181,7 +179,7 @@ SkColor KSVSearchBoxView::GetBorderColor() {
   constexpr SkColor kActiveBorderLightColor =
       SkColorSetARGB(0x7F, 0x1A, 0x73, 0xE8);
   const SkColor kActiveBorderDarkColor =
-      ash::AppListColorProvider::Get()->GetFocusRingColor();
+      ash::AppListColorProvider::Get()->GetFocusRingColor(GetWidget());
 
   return ShouldUseDarkThemeColors() ? kActiveBorderDarkColor
                                     : kActiveBorderLightColor;

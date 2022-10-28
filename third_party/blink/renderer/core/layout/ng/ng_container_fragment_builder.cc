@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/layout/ng/ng_container_fragment_builder.h"
 
+#include "base/containers/contains.h"
 #include "third_party/blink/renderer/core/layout/ng/exclusions/ng_exclusion_space.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_physical_line_box_fragment.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_absolute_utils.h"
@@ -34,6 +35,37 @@ void NGContainerFragmentBuilder::ReplaceChild(
   children_[index] = NGLogicalLink{std::move(&new_child), offset};
 }
 
+NGLogicalAnchorQuery& NGContainerFragmentBuilder::EnsureAnchorQuery() {
+  if (!anchor_query_)
+    anchor_query_ = MakeGarbageCollected<NGLogicalAnchorQuery>();
+  return *anchor_query_;
+}
+
+void NGContainerFragmentBuilder::PropagateChildAnchors(
+    const NGPhysicalFragment& child,
+    const LogicalOffset& child_offset) {
+  if (child.IsBox()) {
+    // Set the child's `anchor-name` before propagating its descendants', so
+    // that ancestors have precedence over their descendants.
+    if (const AtomicString& anchor_name = child.Style().AnchorName();
+        !anchor_name.IsNull()) {
+      DCHECK(RuntimeEnabledFeatures::CSSAnchorPositioningEnabled());
+      EnsureAnchorQuery().Set(
+          anchor_name, child,
+          LogicalRect{child_offset,
+                      child.Size().ConvertToLogical(GetWritingMode())});
+    }
+  }
+
+  // Propagate any descendants' anchor references.
+  if (const NGPhysicalAnchorQuery* anchor_query = child.AnchorQuery()) {
+    const WritingModeConverter converter(GetWritingDirection(), child.Size());
+    EnsureAnchorQuery().SetFromPhysical(
+        *anchor_query, converter, child_offset,
+        /* is_invalid */ child.IsOutOfFlowPositioned());
+  }
+}
+
 // Propagate data in |child| to this fragment. The |child| will then be added as
 // a child fragment or a child fragment item.
 void NGContainerFragmentBuilder::PropagateChildData(
@@ -42,19 +74,9 @@ void NGContainerFragmentBuilder::PropagateChildData(
     LogicalOffset relative_offset,
     const NGInlineContainer<LogicalOffset>* inline_container,
     absl::optional<LayoutUnit> adjustment_for_oof_propagation) {
-  // Set the child's `anchor-name` before propagating its descendants', so
-  // that ancestors have precedence over their descendants. Descendants' anchors
-  // are propagated in |PropagateOOFPositionedInfo| below.
-  if (child.IsBox()) {
-    if (const AtomicString& anchor_name = child.Style().AnchorName();
-        !anchor_name.IsNull()) {
-      DCHECK(RuntimeEnabledFeatures::CSSAnchorPositioningEnabled());
-      anchor_query_.Set(
-          anchor_name, child,
-          LogicalRect{child_offset + relative_offset,
-                      child.Size().ConvertToLogical(GetWritingMode())});
-    }
-  }
+  // Propagate anchors from the |child|. Anchors are in |OutOfFlowData| but the
+  // |child| itself may have an anchor.
+  PropagateChildAnchors(child, child_offset + relative_offset);
 
   if (adjustment_for_oof_propagation &&
       child.NeedsOOFPositionedInfoPropagation()) {
@@ -379,7 +401,16 @@ void NGContainerFragmentBuilder::PropagateOOFPositionedInfo(
           relative_offset - fixedpos_containing_block->RelativeOffset();
       if (fixedpos_inline_container)
         static_position.offset -= fixedpos_inline_container->relative_offset;
-      if (fixedpos_containing_block && fixedpos_containing_block->Fragment()) {
+      // The containing block for fixed-positioned elements should normally
+      // already be laid out, and therefore have a fragment - with one
+      // exception: If this is the pagination root, it obviously won't have a
+      // fragment, since it hasn't finished layout yet. But we still need to
+      // propagate the fixed-positioned descendant, so that it gets laid out
+      // inside the fragmentation context (and repeated on every page), instead
+      // of becoming a direct child of the LayoutNGView fragment (and thus a
+      // sibling of the page fragments).
+      if (fixedpos_containing_block &&
+          (fixedpos_containing_block->Fragment() || node_.IsPaginatedRoot())) {
         NGInlineContainer<LogicalOffset> new_fixedpos_inline_container;
         if (fixedpos_inline_container)
           new_fixedpos_inline_container = *fixedpos_inline_container;
@@ -393,19 +424,10 @@ void NGContainerFragmentBuilder::PropagateOOFPositionedInfo(
     static_position.offset += adjusted_offset;
 
     // |oof_positioned_candidates_| should not have duplicated entries.
-    DCHECK(std::none_of(
-        oof_positioned_candidates_.begin(), oof_positioned_candidates_.end(),
-        [&node](const NGLogicalOutOfFlowPositionedNode& oof_node) {
-          return oof_node.Node() == node;
-        }));
+    DCHECK(!base::Contains(oof_positioned_candidates_, node,
+                           &NGLogicalOutOfFlowPositionedNode::Node));
     oof_positioned_candidates_.emplace_back(node, static_position,
                                             new_inline_container);
-  }
-
-  // Collect any anchor references.
-  if (const NGPhysicalAnchorQuery* anchor_query = fragment.AnchorQuery()) {
-    anchor_query_.SetFromPhysical(*anchor_query, converter, adjusted_offset,
-                                  fragment.IsPositioned());
   }
 
   NGFragmentedOutOfFlowData* oof_data = fragment.FragmentedOutOfFlowData();

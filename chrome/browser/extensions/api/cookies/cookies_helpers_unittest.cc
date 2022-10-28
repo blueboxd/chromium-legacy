@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -31,12 +31,11 @@ TEST(CookiesHelperUnittest, CookieConversionWithInfiniteExpirationDate) {
   // expiration date, which should be converted to the maximum value.
   api::cookies::Cookie serialized_cookie =
       cookies_helpers::CreateCookie(*cookie, "1");
-  std::unique_ptr<base::Value> value_cookie = serialized_cookie.ToValue();
-  ASSERT_TRUE(value_cookie);
-  base::Value* expiration_time =
-      value_cookie->FindKeyOfType("expirationDate", base::Value::Type::DOUBLE);
+  base::Value::Dict value_cookie = serialized_cookie.ToValue();
+  absl::optional<double> expiration_time =
+      value_cookie.FindDouble("expirationDate");
   ASSERT_TRUE(expiration_time);
-  EXPECT_EQ(std::numeric_limits<double>::max(), expiration_time->GetDouble());
+  EXPECT_EQ(std::numeric_limits<double>::max(), *expiration_time);
 }
 
 }  // namespace extensions

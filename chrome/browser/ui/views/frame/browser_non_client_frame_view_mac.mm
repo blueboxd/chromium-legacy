@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -75,7 +75,7 @@ BrowserNonClientFrameViewMac::BrowserNonClientFrameViewMac(
             &BrowserNonClientFrameViewMac::UpdateFullscreenTopUI,
             base::Unretained(this)));
   }
-  if (!base::FeatureList::IsEnabled(features::kImmersiveFullscreen)) {
+  if (!browser_view->UsesImmersiveFullscreenMode()) {
     fullscreen_toolbar_controller_.reset(
         [[FullscreenToolbarController alloc] initWithBrowserView:browser_view]);
     [fullscreen_toolbar_controller_
@@ -116,7 +116,7 @@ BrowserNonClientFrameViewMac::~BrowserNonClientFrameViewMac() {
 // BrowserNonClientFrameViewMac, BrowserNonClientFrameView implementation:
 
 void BrowserNonClientFrameViewMac::OnFullscreenStateChanged() {
-  if (base::FeatureList::IsEnabled(features::kImmersiveFullscreen)) {
+  if (browser_view()->UsesImmersiveFullscreenMode()) {
     browser_view()->immersive_mode_controller()->SetEnabled(
         browser_view()->IsFullscreen());
     return;
@@ -211,7 +211,7 @@ int BrowserNonClientFrameViewMac::GetThemeBackgroundXInset() const {
 }
 
 void BrowserNonClientFrameViewMac::UpdateFullscreenTopUI() {
-  if (base::FeatureList::IsEnabled(features::kImmersiveFullscreen))
+  if (browser_view()->UsesImmersiveFullscreenMode())
     return;
 
   FullscreenToolbarStyle old_style =
@@ -287,7 +287,18 @@ void BrowserNonClientFrameViewMac::OnThemeChanged() {
 // BrowserNonClientFrameViewMac, views::NonClientFrameView implementation:
 
 gfx::Rect BrowserNonClientFrameViewMac::GetBoundsForClientView() const {
-  return bounds();
+  // Because of the z-ordering of our child views (the client view is positioned
+  // over the non-client frame view), if the client view ever overlaps the frame
+  // view visually (as it does for the browser window), then NSAccessibility
+  // accessibilityHitTest will not be able to find the window controls, such as
+  // WebAppFrameToolbarView.
+  // TODO(crbug/1361945): Make accessibilityHitTest support the window controls
+  // overlay mode.
+  gfx::Rect client_view_bounds = bounds();
+  int top_inset =
+      browser_view()->IsWindowControlsOverlayEnabled() ? 0 : GetTopInset(false);
+  client_view_bounds.Inset(gfx::Insets::TLBR(top_inset, 0, 0, 0));
+  return client_view_bounds;
 }
 
 gfx::Rect BrowserNonClientFrameViewMac::GetWindowBoundsForClientBounds(
@@ -499,7 +510,7 @@ int BrowserNonClientFrameViewMac::TopUIFullscreenYOffset() const {
   CGFloat title_bar_height =
       NSHeight([NSWindow frameRectForContentRect:NSZeroRect
                                        styleMask:NSWindowStyleMaskTitled]);
-  if (base::FeatureList::IsEnabled(features::kImmersiveFullscreen))
+  if (browser_view()->UsesImmersiveFullscreenMode())
     return menu_bar_height == 0 ? 0 : menu_bar_height + title_bar_height;
   return [[fullscreen_toolbar_controller_ menubarTracker] menubarFraction] *
          (menu_bar_height + title_bar_height);

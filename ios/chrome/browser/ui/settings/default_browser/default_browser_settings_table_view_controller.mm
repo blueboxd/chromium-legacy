@@ -1,12 +1,12 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #import "ios/chrome/browser/ui/settings/default_browser/default_browser_settings_table_view_controller.h"
 
-#include "base/metrics/histogram_functions.h"
-#include "base/metrics/user_metrics.h"
-#include "base/metrics/user_metrics_action.h"
+#import "base/metrics/histogram_functions.h"
+#import "base/metrics/user_metrics.h"
+#import "base/metrics/user_metrics_action.h"
 #import "ios/chrome/browser/ui/settings/settings_table_view_controller_constants.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_detail_icon_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_image_item.h"
@@ -14,8 +14,8 @@
 #import "ios/chrome/browser/ui/table_view/cells/table_view_text_item.h"
 #import "ios/chrome/browser/ui/table_view/table_view_utils.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
-#include "ios/chrome/grit/ios_strings.h"
-#include "ui/base/l10n/l10n_util_mac.h"
+#import "ios/chrome/grit/ios_strings.h"
+#import "ui/base/l10n/l10n_util_mac.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -89,7 +89,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
       [[TableViewDetailIconItem alloc] initWithType:ItemTypeOpenSettingsStep];
   openSettingsStepItem.text =
       l10n_util::GetNSString(IDS_IOS_SETTINGS_OPEN_SETTINGS_STEP);
-  openSettingsStepItem.iconImageName = kSettingsImageName;
+  openSettingsStepItem.iconImage = [UIImage imageNamed:kSettingsImageName];
   [self.tableViewModel addItem:openSettingsStepItem
        toSectionWithIdentifier:SectionIdentifierSteps];
 
@@ -98,7 +98,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
           initWithType:ItemTypeTapDefaultBrowserAppStep];
   tapDefaultBrowserAppStepItem.text =
       l10n_util::GetNSString(IDS_IOS_SETTINGS_TAP_DEFAULT_BROWSER_APP_STEP);
-  tapDefaultBrowserAppStepItem.iconImageName = kSettingsImageName;
+  tapDefaultBrowserAppStepItem.iconImage =
+      [UIImage imageNamed:kSettingsImageName];
   [self.tableViewModel addItem:tapDefaultBrowserAppStepItem
        toSectionWithIdentifier:SectionIdentifierSteps];
 
@@ -106,7 +107,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
       [[TableViewDetailIconItem alloc] initWithType:ItemTypeSelectChromeStep];
   selectChromeStepItem.text =
       l10n_util::GetNSString(IDS_IOS_SETTINGS_SELECT_CHROME_STEP);
-  selectChromeStepItem.iconImageName = kSelectChromeStepImageName;
+  selectChromeStepItem.iconImage =
+      [UIImage imageNamed:kSelectChromeStepImageName];
   [self.tableViewModel addItem:selectChromeStepItem
        toSectionWithIdentifier:SectionIdentifierSteps];
 

@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -16,10 +16,6 @@ CloudUploadPageHandler::CloudUploadPageHandler(
       callback_{std::move(callback)} {}
 
 CloudUploadPageHandler::~CloudUploadPageHandler() = default;
-
-void CloudUploadPageHandler::GetUploadPath(GetUploadPathCallback callback) {
-  std::move(callback).Run(std::move(base::FilePath("/from Chromebook")));
-}
 
 void CloudUploadPageHandler::RespondAndClose(mojom::UserAction action) {
   if (callback_) {

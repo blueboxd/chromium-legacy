@@ -1,4 +1,4 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -43,18 +43,18 @@ constexpr int kDefaultMinimumPinLength = 6;
 bool HasPolicyValue(const PrefService* pref_service,
                     Purpose purpose,
                     const char* value) {
-  const base::Value* factors = nullptr;
+  const base::Value::List* factors = nullptr;
   switch (purpose) {
     case Purpose::kUnlock:
-      factors = pref_service->GetList(prefs::kQuickUnlockModeAllowlist);
+      factors = &pref_service->GetList(prefs::kQuickUnlockModeAllowlist);
       break;
     case Purpose::kWebAuthn:
-      factors = pref_service->GetList(prefs::kWebAuthnFactors);
+      factors = &pref_service->GetList(prefs::kWebAuthnFactors);
       break;
     default:
       return false;
   }
-  return base::Contains(factors->GetListDeprecated(), base::Value(value));
+  return base::Contains(*factors, base::Value(value));
 }
 
 // Check if fingerprint is disabled for a specific purpose (so not including
@@ -238,11 +238,6 @@ bool IsFingerprintSupported() {
       base::CommandLine::ForCurrentProcess();
   return base::FeatureList::IsEnabled(features::kQuickUnlockFingerprint) &&
          command_line->HasSwitch(switches::kFingerprintSensorLocation);
-}
-
-bool IsLeftOfPowerButtonTopRightFingerprint() {
-  return GetFingerprintLocation() ==
-         FingerprintLocation::LEFT_OF_POWER_BUTTON_TOP_RIGHT;
 }
 
 bool IsFingerprintEnabled(Profile* profile, Purpose purpose) {

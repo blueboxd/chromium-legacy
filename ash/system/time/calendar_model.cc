@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -165,7 +165,7 @@ void CalendarModel::UploadLifetimeMetrics() {
 
 void CalendarModel::FetchEvents(base::Time start_of_month) {
   // Early return if it's not a valid user/user-session.
-  if (!calendar_utils::IsActiveUser())
+  if (!calendar_utils::ShouldFetchEvents())
     return;
 
   // Bail out early if there is no CalendarClient.  This will be the case in
@@ -442,11 +442,15 @@ SingleDayEventList CalendarModel::FindEvents(base::Time day) const {
 
 CalendarModel::FetchingStatus CalendarModel::FindFetchingStatus(
     base::Time start_time) const {
-  if (!calendar_utils::IsActiveUser())
+  if (!calendar_utils::ShouldFetchEvents())
     return kNa;
 
-  if (pending_fetches_.count(start_time))
+  if (pending_fetches_.count(start_time)) {
+    if (event_months_.count(start_time))
+      return kRefetching;
+
     return kFetching;
+  }
 
   if (event_months_.count(start_time))
     return kSuccess;
@@ -513,14 +517,6 @@ void CalendarModel::PruneEventCache() {
     months_fetched_.erase(lru_month);
     mru_months_.pop_back();
   }
-}
-
-void CalendarModel::InsertPendingFetchesForTesting(base::Time start_of_month) {
-  pending_fetches_.emplace(start_of_month, nullptr);
-}
-
-void CalendarModel::DeletePendingFetchesForTesting(base::Time start_of_month) {
-  pending_fetches_.erase(start_of_month);
 }
 
 void CalendarModel::DebugDumpOnEventFetched(

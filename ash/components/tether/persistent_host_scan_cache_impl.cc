@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -101,7 +101,7 @@ PersistentHostScanCacheImpl::~PersistentHostScanCacheImpl() = default;
 std::unordered_map<std::string, HostScanCacheEntry>
 PersistentHostScanCacheImpl::GetStoredCacheEntries() {
   const base::Value::List& cache_entry_list =
-      pref_service_->GetValueList(prefs::kHostScanCache);
+      pref_service_->GetList(prefs::kHostScanCache);
 
   std::unordered_map<std::string, HostScanCacheEntry> entries;
   std::unordered_set<std::string> ids_processed_so_far;

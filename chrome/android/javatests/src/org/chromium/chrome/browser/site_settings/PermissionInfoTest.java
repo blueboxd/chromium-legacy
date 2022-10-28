@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -16,6 +16,7 @@ import org.chromium.base.test.util.Batch;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.CriteriaHelper;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.RequiresRestart;
 import org.chromium.chrome.browser.browsing_data.BrowsingDataBridge;
@@ -131,6 +132,7 @@ public class PermissionInfoTest {
     @SmallTest
     @Feature({"Preferences"})
     @RequiresRestart
+    @DisabledTest(message = "https://crbug.com/1342630")
     public void testResetDSEGeolocation_RegularProfile_DefaultsToAskFromBlock() throws Throwable {
         Profile regularProfile = getRegularProfile();
         setSettingAndExpectValue(ContentSettingsType.GEOLOCATION, DSE_ORIGIN, null,
@@ -142,6 +144,7 @@ public class PermissionInfoTest {
     @Test
     @SmallTest
     @Feature({"Preferences"})
+    @DisabledTest(message = "https://crbug.com/1342630")
     public void testResetDSENotification_InPrimaryOTRProfile_DefaultsToAskFromBlock()
             throws Throwable {
         Profile primaryOTRProfile = getPrimaryOTRProfile();
@@ -157,6 +160,7 @@ public class PermissionInfoTest {
     @Test
     @SmallTest
     @Feature({"Preferences"})
+    @DisabledTest(message = "https://crbug.com/1342630")
     public void testResetDSENotification_InNonPrimaryOTRProfile_DefaultsToAskFromBlock()
             throws Throwable {
         Profile nonPrimaryOTRProfile = getNonPrimaryOTRProfile();

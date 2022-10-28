@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -20,15 +20,10 @@ class MockNetworkPortalDetector : public NetworkPortalDetector {
 
   ~MockNetworkPortalDetector() override;
 
-  MOCK_METHOD1(AddObserver, void(NetworkPortalDetector::Observer* observer));
-  MOCK_METHOD1(RemoveObserver, void(NetworkPortalDetector::Observer* observer));
-  MOCK_METHOD1(AddAndFireObserver,
-               void(NetworkPortalDetector::Observer* observer));
   MOCK_METHOD0(GetCaptivePortalStatus,
                NetworkPortalDetector::CaptivePortalStatus());
   MOCK_METHOD0(IsEnabled, bool());
   MOCK_METHOD0(Enable, void());
-  MOCK_METHOD0(StartPortalDetection, void());
 };
 
 }  // namespace ash

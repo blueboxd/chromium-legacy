@@ -74,6 +74,13 @@ bool ThrowIfValidName(const AtomicString& name,
 
 }  // namespace
 
+// static
+CustomElementRegistry* CustomElementRegistry::Create(
+    ScriptState* script_state) {
+  return MakeGarbageCollected<CustomElementRegistry>(
+      LocalDOMWindow::From(script_state));
+}
+
 CustomElementRegistry::CustomElementRegistry(const LocalDOMWindow* owner)
     : element_definition_is_running_(false),
       owner_(owner),
@@ -217,11 +224,8 @@ CustomElementDefinition* CustomElementRegistry::DefineInternal(
   // 16: when-defined promise processing
   const auto& entry = when_defined_promise_map_.find(name);
   if (entry != when_defined_promise_map_.end()) {
-    ScriptPromiseResolver* resolver = entry->value;
+    entry->value->Resolve(definition->GetConstructorForScript());
     when_defined_promise_map_.erase(entry);
-    // Resolve() may run synchronous JavaScript that invalidates iterators of
-    // |when_defined_promise_map_|, so it must be called after erasing |entry|.
-    resolver->Resolve(definition->GetConstructorForScript());
   }
 
   return definition;

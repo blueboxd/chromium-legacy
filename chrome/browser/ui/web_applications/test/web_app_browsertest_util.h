@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -161,6 +161,9 @@ class UpdateAwaiter : public WebAppInstallManagerObserver {
   base::ScopedObservation<WebAppInstallManager, WebAppInstallManagerObserver>
       scoped_observation_{this};
 };
+
+// Creates a temporary file with the |extension|.
+base::FilePath CreateTestFileWithExtension(base::StringPiece extension);
 
 }  // namespace web_app
 

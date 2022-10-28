@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,7 +7,7 @@
 // clang-format off
 import 'chrome://settings/lazy_load.js';
 
-import {isChromeOS, isLacros, webUIListenerCallback} from 'chrome://resources/js/cr.m.js';
+import {isMac, isWindows, isChromeOS, isLacros, webUIListenerCallback} from 'chrome://resources/js/cr.m.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 import {PasswordsSectionElement} from 'chrome://settings/lazy_load.js';
@@ -247,7 +247,7 @@ suite('PasswordsSection', function() {
     loadTimeData.overrideValues({
       enableAutomaticPasswordChangeInSettings: false,
       enablePasswordViewPage: false,
-      unifiedPasswordManagerEnabled: false,
+      biometricAuthenticationForFilling: false,
     });
   });
 
@@ -267,6 +267,26 @@ suite('PasswordsSection', function() {
     assertTrue(
         !!element.shadowRoot!.querySelector('#passwordsExtensionIndicator'));
   });
+
+  if (isMac || isWindows) {
+    test('testBiometricAuthenticationForFillingToggleVisibility', function() {
+      loadTimeData.overrideValues({biometricAuthenticationForFilling: false});
+      const passwordsSectionBiometricForFillingDisabled =
+          elementFactory.createPasswordsSection(passwordManager, [], []);
+      assertFalse(
+          isVisible(passwordsSectionBiometricForFillingDisabled.shadowRoot!
+                        .querySelector<HTMLElement>(
+                            '#biometricAuthenticationForFillingToggle')));
+
+      loadTimeData.overrideValues({biometricAuthenticationForFilling: true});
+      const passwordsSectionBiometricForFillingEnabled =
+          elementFactory.createPasswordsSection(passwordManager, [], []);
+      assertTrue(
+          isVisible(passwordsSectionBiometricForFillingEnabled.shadowRoot!
+                        .querySelector<HTMLElement>(
+                            '#biometricAuthenticationForFillingToggle')));
+    });
+  }
 
   test('verifyNoSavedPasswords', function() {
     const passwordsSection =
@@ -964,7 +984,7 @@ suite('PasswordsSection', function() {
         passwordManager, passwordList, []);
 
     validatePasswordList(passwordsSection, passwordList);
-    assertTrue(passwordsSection.$.menuExportPassword.hidden);
+    assertTrue(passwordsSection.$.menuExportPassword.disabled);
   });
 
   test(
@@ -1250,44 +1270,6 @@ suite('PasswordsSection', function() {
       assertEquals(chrome.passwordsPrivate.PasswordStoreSet.DEVICE, fromStores);
     });
   }
-
-  test('hideLinkToPasswordManagerWhenEncrypted', function() {
-    const passwordsSection =
-        elementFactory.createPasswordsSection(passwordManager, [], []);
-    const syncPrefs = getSyncAllPrefs();
-    syncPrefs.encryptAllData = true;
-    webUIListenerCallback('sync-prefs-changed', syncPrefs);
-    simulateSyncStatus({signedIn: true, statusAction: StatusAction.NO_ACTION});
-    flush();
-    assertTrue(passwordsSection.$.manageLink.hidden);
-  });
-
-  test('showLinkToPasswordManagerWhenNotEncrypted', function() {
-    const passwordsSection =
-        elementFactory.createPasswordsSection(passwordManager, [], []);
-    const syncPrefs = getSyncAllPrefs();
-    syncPrefs.encryptAllData = false;
-    webUIListenerCallback('sync-prefs-changed', syncPrefs);
-    flush();
-    assertFalse(passwordsSection.$.manageLink.hidden);
-  });
-
-  test('hideLinkToPasswordManagerWhenUnifiedPasswordManagerEnabled', () => {
-    loadTimeData.overrideValues({unifiedPasswordManagerEnabled: true});
-    const passwordsSection =
-        elementFactory.createPasswordsSection(passwordManager, [], []);
-    assertTrue(passwordsSection.$.manageLink.hidden);
-  });
-
-  test('showLinkToPasswordManagerWhenNotSignedIn', function() {
-    const passwordsSection =
-        elementFactory.createPasswordsSection(passwordManager, [], []);
-    const syncPrefs = getSyncAllPrefs();
-    simulateSyncStatus({signedIn: false, statusAction: StatusAction.NO_ACTION});
-    webUIListenerCallback('sync-prefs-changed', syncPrefs);
-    flush();
-    assertFalse(passwordsSection.$.manageLink.hidden);
-  });
 
   test(
       'showPasswordCheckBannerWhenNotCheckedBeforeAndSignedInAndHavePasswords',
@@ -1635,5 +1617,25 @@ suite('PasswordsSection', function() {
     document.body.removeChild(passwordsSection);
     flush();
     assertFalse(toastManager.open);
+  });
+
+  test('routingWithAuthTimeoutParamShowsRemovalDialog', function() {
+    const passwordEntry =
+        createPasswordEntry({url: 'goo.gl', username: 'bart'});
+    const passwordsSection = elementFactory.createPasswordsSection(
+        passwordManager, [passwordEntry], []);
+    const authTimeoutDialog = passwordsSection.$.authTimeoutDialog;
+
+    const params = new URLSearchParams();
+    params.set('authTimeout', 'true');
+    Router.getInstance().navigateTo(routes.PASSWORDS, params);
+
+    flush();
+    assertTrue(authTimeoutDialog.open);
+
+    authTimeoutDialog.close();
+    flush();
+    assertFalse(authTimeoutDialog.open);
+    assertFalse(!!Router.getInstance().getQueryParameters().get('authTimeout'));
   });
 });

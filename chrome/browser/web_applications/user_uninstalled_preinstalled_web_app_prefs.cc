@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -57,8 +57,8 @@ absl::optional<AppId>
 UserUninstalledPreinstalledWebAppPrefs::LookUpAppIdByInstallUrl(
     const GURL& url) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  const base::Value::Dict& ids_to_urls = pref_service_->GetValueDict(
-      prefs::kUserUninstalledPreinstalledWebAppPref);
+  const base::Value::Dict& ids_to_urls =
+      pref_service_->GetDict(prefs::kUserUninstalledPreinstalledWebAppPref);
 
   if (!url.is_valid())
     return absl::nullopt;
@@ -80,8 +80,8 @@ UserUninstalledPreinstalledWebAppPrefs::LookUpAppIdByInstallUrl(
 bool UserUninstalledPreinstalledWebAppPrefs::DoesAppIdExist(
     const AppId& app_id) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  const base::Value::Dict& ids_to_urls = pref_service_->GetValueDict(
-      prefs::kUserUninstalledPreinstalledWebAppPref);
+  const base::Value::Dict& ids_to_urls =
+      pref_service_->GetDict(prefs::kUserUninstalledPreinstalledWebAppPref);
 
   return ids_to_urls.contains(app_id);
 }
@@ -90,8 +90,8 @@ void UserUninstalledPreinstalledWebAppPrefs::AppendExistingInstallUrlsPerAppId(
     const AppId& app_id,
     base::flat_set<GURL>& urls) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  const base::Value::Dict& ids_to_urls = pref_service_->GetValueDict(
-      prefs::kUserUninstalledPreinstalledWebAppPref);
+  const base::Value::Dict& ids_to_urls =
+      pref_service_->GetDict(prefs::kUserUninstalledPreinstalledWebAppPref);
 
   if (!ids_to_urls.contains(app_id))
     return;
@@ -110,8 +110,8 @@ void UserUninstalledPreinstalledWebAppPrefs::AppendExistingInstallUrlsPerAppId(
 
 int UserUninstalledPreinstalledWebAppPrefs::Size() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  const base::Value::Dict& ids_to_urls = pref_service_->GetValueDict(
-      prefs::kUserUninstalledPreinstalledWebAppPref);
+  const base::Value::Dict& ids_to_urls =
+      pref_service_->GetDict(prefs::kUserUninstalledPreinstalledWebAppPref);
 
   return ids_to_urls.size();
 }
@@ -120,8 +120,8 @@ bool UserUninstalledPreinstalledWebAppPrefs::RemoveByInstallUrl(
     const AppId& app_id,
     const GURL& install_url) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  const base::Value::Dict& ids_to_urls = pref_service_->GetValueDict(
-      prefs::kUserUninstalledPreinstalledWebAppPref);
+  const base::Value::Dict& ids_to_urls =
+      pref_service_->GetDict(prefs::kUserUninstalledPreinstalledWebAppPref);
 
   // Prefs are empty, so no need of removal.
 
@@ -155,6 +155,20 @@ bool UserUninstalledPreinstalledWebAppPrefs::RemoveByInstallUrl(
   return true;
 }
 
+bool UserUninstalledPreinstalledWebAppPrefs::RemoveByAppId(
+    const AppId& app_id) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  const base::Value::Dict& ids_to_urls =
+      pref_service_->GetDict(prefs::kUserUninstalledPreinstalledWebAppPref);
+
+  // Pref does not contain the app_id, so no need of removal.
+  if (!ids_to_urls.contains(app_id))
+    return false;
+  DictionaryPrefUpdate update(pref_service_,
+                              prefs::kUserUninstalledPreinstalledWebAppPref);
+  return update->RemoveKey(app_id);
+}
+
 bool UserUninstalledPreinstalledWebAppPrefs::AppIdContainsAllUrls(
     const AppId& app_id,
     const base::flat_map<WebAppManagement::Type,
@@ -164,8 +178,8 @@ bool UserUninstalledPreinstalledWebAppPrefs::AppIdContainsAllUrls(
   if (url_map.empty())
     return false;
 
-  const base::Value::Dict& ids_to_urls = pref_service_->GetValueDict(
-      prefs::kUserUninstalledPreinstalledWebAppPref);
+  const base::Value::Dict& ids_to_urls =
+      pref_service_->GetDict(prefs::kUserUninstalledPreinstalledWebAppPref);
 
   const base::Value::List* current_list = ids_to_urls.FindList(app_id);
   if (!current_list)

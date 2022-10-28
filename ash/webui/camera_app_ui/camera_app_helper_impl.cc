@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -220,7 +220,7 @@ void CameraAppHelperImpl::OnConvertedToDocument(
       return;
     case DocumentOutputFormat::PDF: {
       std::vector<uint8_t> pdf_data;
-      if (!chromeos::ConvertJpgImageToPdf(processed_jpeg_image, &pdf_data)) {
+      if (!chromeos::ConvertJpgImagesToPdf({processed_jpeg_image}, &pdf_data)) {
         LOG(ERROR) << "Failed to convert jpeg image to PDF format";
         std::move(callback).Run({});
         return;
@@ -307,14 +307,13 @@ void CameraAppHelperImpl::GetDocumentScannerReadyState(
       camera_app::mojom::DocumentScannerReadyState::SUPPORTED_BUT_NOT_READY);
 }
 
-void CameraAppHelperImpl::RegisterDocumentScannerReadyCallback(
-    RegisterDocumentScannerReadyCallbackCallback callback) {
+void CameraAppHelperImpl::CheckDocumentModeReadiness(
+    CheckDocumentModeReadinessCallback callback) {
   if (document_scanner_service_ == nullptr) {
     std::move(callback).Run(false);
     return;
   }
-  document_scanner_service_->RegisterDocumentScannerReadyCallback(
-      std::move(callback));
+  document_scanner_service_->CheckDocumentModeReadiness(std::move(callback));
 }
 
 void CameraAppHelperImpl::ScanDocumentCorners(
@@ -371,15 +370,20 @@ void CameraAppHelperImpl::ConvertToDocument(
                      std::move(callback)));
 }
 
-void CameraAppHelperImpl::ConvertToPdf(const std::vector<uint8_t>& jpeg_data,
-                                       ConvertToPdfCallback callback) {
+void CameraAppHelperImpl::ConvertToPdf(
+    const std::vector<std::vector<uint8_t>>& jpegs_data,
+    ConvertToPdfCallback callback) {
   std::vector<uint8_t> pdf_data;
-  if (!chromeos::ConvertJpgImageToPdf(jpeg_data, &pdf_data)) {
+  if (!chromeos::ConvertJpgImagesToPdf(jpegs_data, &pdf_data)) {
     LOG(ERROR) << "Failed to convert jpeg image to PDF format";
     std::move(callback).Run({});
     return;
   }
   std::move(callback).Run(std::move(pdf_data));
+}
+
+void CameraAppHelperImpl::MaybeTriggerSurvey() {
+  camera_app_ui_->delegate()->MaybeTriggerSurvey();
 }
 
 void CameraAppHelperImpl::OnTabletModeStarted() {

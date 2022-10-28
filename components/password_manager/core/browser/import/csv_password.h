@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -28,19 +28,27 @@ class CSVPassword {
   using ColumnMap = base::flat_map<size_t, Label>;
 
   // Status describes parsing errors.
-  enum class Status { kOK, kSyntaxError, kSemanticError };
+  enum class Status {
+    kOK = 0,
+    kSyntaxError = 1,
+    kSemanticError = 2,
+  };
 
   // Number of values in the Label enum.
   static constexpr size_t kLabelCount = 3;
 
   explicit CSVPassword();
   explicit CSVPassword(const ColumnMap& map, base::StringPiece csv_row);
-  explicit CSVPassword(GURL url, std::string username, std::string password);
+  explicit CSVPassword(GURL url,
+                       std::string username,
+                       std::string password,
+                       Status status);
   // This constructor creates a valid CSVPassword but with an invalid_url, i.e.
   // the url is not a valid GURL.
   explicit CSVPassword(std::string invalid_url,
                        std::string username,
-                       std::string password);
+                       std::string password,
+                       Status status);
   CSVPassword(const CSVPassword&);
   CSVPassword(CSVPassword&&);
   CSVPassword& operator=(const CSVPassword&);

@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,8 +9,7 @@ namespace chromecast {
 RuntimeApplication::~RuntimeApplication() = default;
 
 std::ostream& operator<<(std::ostream& os, const RuntimeApplication& app) {
-  return os << "app_id=" << app.GetAppConfig().app_id() << " ("
-            << app.GetAppConfig().display_name()
+  return os << "app_id=" << app.GetAppId() << " (" << app.GetDisplayName()
             << "), session_id=" << app.GetCastSessionId();
 }
 

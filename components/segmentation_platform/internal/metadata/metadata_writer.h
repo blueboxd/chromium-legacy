@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -32,6 +32,8 @@ class MetadataWriter {
     const proto::Aggregation aggregation{proto::Aggregation::UNKNOWN};
     const size_t enum_ids_size{0};
     const int32_t* const accepted_enum_ids = nullptr;
+    const size_t default_values_size{0};
+    const float* const default_values = nullptr;
 
     static constexpr UMAFeature FromUserAction(const char* name,
                                                uint64_t bucket_count) {
@@ -47,14 +49,18 @@ class MetadataWriter {
     static constexpr UMAFeature FromValueHistogram(
         const char* name,
         uint64_t bucket_count,
-        proto::Aggregation aggregation) {
+        proto::Aggregation aggregation,
+        size_t default_values_size = 0,
+        const float* const default_values = nullptr) {
       return MetadataWriter::UMAFeature{
           .signal_type = proto::SignalType::HISTOGRAM_VALUE,
           .name = name,
           .bucket_count = bucket_count,
           .tensor_length = 1,
           .aggregation = aggregation,
-          .enum_ids_size = 0};
+          .enum_ids_size = 0,
+          .default_values_size = default_values_size,
+          .default_values = default_values};
     }
 
     static constexpr UMAFeature FromEnumHistogram(const char* name,
@@ -109,12 +115,30 @@ class MetadataWriter {
                                  const std::pair<float, int>* mappings,
                                  size_t mappings_size);
 
+  // Appends a boolean segmentation mapping, where the model returns 1 or 0 for
+  // segment selection.
+  void AddBooleanSegmentDiscreteMapping(const std::string& key);
+
+  // Appends a boolean mapping and a subsegment mapping. Set the threshold to
+  // the cutoff segment value, and for any value strictly less than `threshold`,
+  // then the selection will return no. The `max_value` is set to the max enum
+  // value returned by the model.
+  void AddBooleanSegmentDiscreteMappingWithSubsegments(const std::string& key,
+                                                       float threshold,
+                                                       int max_value);
+
   // Writes the model metadata with the given parameters.
   void SetSegmentationMetadataConfig(proto::TimeUnit time_unit,
                                      uint64_t bucket_duration,
                                      int64_t signal_storage_length,
                                      int64_t min_signal_collection_length,
                                      int64_t result_time_to_live);
+
+  // Uses default setting for model metadata using DAY time unit and 1 day
+  // buckets.
+  void SetDefaultSegmentationMetadataConfig(
+      int min_signal_collection_length_days = 7,
+      int signal_storage_length_days = 28);
 
  private:
   const raw_ptr<proto::SegmentationModelMetadata> metadata_;

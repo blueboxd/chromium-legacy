@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -125,6 +125,8 @@ class MockPasswordManagerClient : public StubPasswordManagerClient {
   }
 
   PrefService* GetPrefs() const override { return prefs_.get(); }
+
+  PrefService* GetLocalStatePrefs() const override { return prefs_.get(); }
 
   const PasswordManager* GetPasswordManager() const override {
     return &password_manager_;

@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -110,6 +110,10 @@ TEST(ScriptParametersTest, SpecialScriptParameters) {
        {"CALLER", "3"},
        {"SOURCE", "4"},
        {"EXPERIMENT_IDS", "123,456,789"},
+       {"FIELD_TRIAL_1", "1234"},
+       {"FIELD_TRIAL_3", "5555"},
+       {"RUN_HEADLESS", "true"},
+       {"USE_ASSISTANT_UI", "false"},
        {"DISABLE_RPC_SIGNING", "true"},
        {"DETAILS_SHOW_INITIAL", "true"},
        {"DETAILS_TITLE", "title"},
@@ -136,6 +140,11 @@ TEST(ScriptParametersTest, SpecialScriptParameters) {
   EXPECT_THAT(
       parameters.GetExperiments(),
       UnorderedElementsAreArray(std::vector<std::string>{"123", "456", "789"}));
+  EXPECT_THAT(parameters.GetFieldTrialGroup(1), Eq("1234"));
+  EXPECT_THAT(parameters.GetFieldTrialGroup(3), Eq("5555"));
+  EXPECT_THAT(parameters.GetFieldTrialGroup(2).has_value(), Eq(false));
+  EXPECT_THAT(parameters.GetRunHeadless(), Eq(true));
+  EXPECT_THAT(parameters.GetUseAssistantUi(), Eq(false));
   EXPECT_THAT(parameters.GetDisableRpcSigning(), Eq(true));
   EXPECT_THAT(parameters.GetDetailsShowInitial(), Eq(true));
   EXPECT_THAT(parameters.GetDetailsTitle(), Eq("title"));
@@ -264,7 +273,7 @@ TEST(ScriptParametersTest, InvalidFormat) {
   ScriptParameters parameters = {
       {{"ENABLED", "not_a_boolean"}, {"CALLER", "not_an_integer"}}};
 
-  EXPECT_THAT(parameters.GetEnabled(), Eq(absl::nullopt));
+  EXPECT_THAT(parameters.GetEnabled(), Eq(false));
   EXPECT_THAT(parameters.GetCaller(), Eq(absl::nullopt));
 }
 
@@ -272,7 +281,8 @@ TEST(ScriptParametersTest, MissingValues) {
   ScriptParameters parameters;
 
   // Just one test per data type here for brevity.
-  EXPECT_THAT(parameters.GetEnabled(), Eq(absl::nullopt));
+  EXPECT_THAT(parameters.HasStartImmediately(), Eq(false));
+  EXPECT_THAT(parameters.GetEnabled(), Eq(false));
   EXPECT_THAT(parameters.GetIntent(), Eq(absl::nullopt));
   EXPECT_THAT(parameters.GetCaller(), Eq(absl::nullopt));
   EXPECT_THAT(parameters.GetExperiments(), IsEmpty());

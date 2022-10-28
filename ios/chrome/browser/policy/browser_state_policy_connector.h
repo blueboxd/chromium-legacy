@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -50,7 +50,7 @@ class BrowserStatePolicyConnector {
  private:
   friend class BrowserStatePolicyConnectorMock;
 
-  // |policy_providers_| contains a list of the policy providers available for
+  // `policy_providers_` contains a list of the policy providers available for
   // the PolicyService of this connector, in decreasing order of priority.
   //
   // Note: All the providers appended to this vector must eventually become

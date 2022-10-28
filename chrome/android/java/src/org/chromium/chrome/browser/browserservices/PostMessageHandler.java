@@ -1,4 +1,4 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -14,9 +14,9 @@ import androidx.browser.customtabs.PostMessageBackend;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.task.PostTask;
-import org.chromium.chrome.browser.browserservices.verification.OriginVerifier;
-import org.chromium.chrome.browser.browserservices.verification.OriginVerifier.OriginVerificationListener;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.components.digital_asset_links.OriginVerifier;
+import org.chromium.components.digital_asset_links.OriginVerifier.OriginVerificationListener;
 import org.chromium.components.embedder_support.util.Origin;
 import org.chromium.content_public.browser.GlobalRenderFrameHostId;
 import org.chromium.content_public.browser.LifecycleState;

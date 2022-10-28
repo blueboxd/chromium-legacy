@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -182,6 +182,9 @@ void HistoryClustersServiceTaskGetMostRecentClusters::
 
 void HistoryClustersServiceTaskGetMostRecentClusters::
     OnGotMostRecentPersistedClusters(std::vector<history::Cluster> clusters) {
+  // TODO(manukh): If the most recent cluster is invalid (due to DB corruption),
+  //  `GetMostRecentClusters()` will return no clusters. We should handle this
+  //  case and not assume we've exhausted history.
   auto continuation_params =
       clusters.empty() ? QueryClustersContinuationParams::DoneParams()
                        : QueryClustersContinuationParams{

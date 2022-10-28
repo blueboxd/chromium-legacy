@@ -1,4 +1,4 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,8 +10,8 @@
 import 'chrome://resources/cr_elements/cr_button/cr_button.js';
 import 'chrome://resources/cr_elements/cr_dialog/cr_dialog.js';
 import 'chrome://resources/cr_elements/cr_search_field/cr_search_field.js';
-import 'chrome://resources/cr_elements/icons.m.js';
-import 'chrome://resources/cr_elements/shared_style_css.m.js';
+import 'chrome://resources/cr_elements/icons.html.js';
+import 'chrome://resources/cr_elements/cr_shared_style.css.js';
 import 'chrome://resources/polymer/v3_0/iron-icon/iron-icon.js';
 import 'chrome://resources/polymer/v3_0/iron-list/iron-list.js';
 import 'chrome://resources/polymer/v3_0/paper-spinner/paper-spinner-lite.js';
@@ -20,7 +20,7 @@ import './site_data_entry.js';
 
 import {CrDialogElement} from 'chrome://resources/cr_elements/cr_dialog/cr_dialog.js';
 import {assert} from 'chrome://resources/js/assert_ts.js';
-import {focusWithoutInk} from 'chrome://resources/js/cr/ui/focus_without_ink.m.js';
+import {focusWithoutInk} from 'chrome://resources/js/cr/ui/focus_without_ink.js';
 import {ListPropertyUpdateMixin} from 'chrome://resources/js/list_property_update_mixin.js';
 import {WebUIListenerMixin} from 'chrome://resources/js/web_ui_listener_mixin.js';
 import {IronListElement} from 'chrome://resources/polymer/v3_0/iron-list/iron-list.js';
@@ -191,8 +191,8 @@ export class SiteDataElement extends SiteDataElementBase {
     ironList.focusItem(index);
     const siteToSelect = this.sites[index].site.replace(/[.]/g, '\\.');
     const button =
-        this.$$(`#siteItem_${siteToSelect}`)!.shadowRoot!.querySelector(
-            '.subpage-arrow');
+        this.$$(`#siteItem_${siteToSelect}`)!.shadowRoot!
+            .querySelector<HTMLElement>('.subpage-arrow');
     assert(button);
     focusWithoutInk(button);
   }

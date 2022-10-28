@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,11 +8,6 @@
 #import <UIKit/UIKit.h>
 
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/tab_grid_paging.h"
-
-// Kill switch guarding a workaround for broken UI around the dynamic island,
-// see crbug.com/1364629. This workaround makes the UIToolbar background
-// transparent and correctly frames a UIVisualEffectView.
-bool ShouldUseToolbarBlurFix();
 
 @class TabGridPageControl;
 

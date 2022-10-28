@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,6 +10,7 @@
 #include "ash/public/cpp/session/session_observer.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
+#include "ash/system/privacy_hub/privacy_hub_controller.h"
 #include "base/bind.h"
 #include "base/check.h"
 #include "components/prefs/pref_service.h"
@@ -49,12 +50,18 @@ void VCDPrivacyAdapter::SetCameraSWPrivacySwitch(
 }  // namespace
 
 CameraPrivacySwitchController::CameraPrivacySwitchController()
-    : switch_api_(std::make_unique<VCDPrivacyAdapter>()) {
+    : switch_api_(std::make_unique<VCDPrivacyAdapter>()),
+      camera_privacy_switch_state_(media::CameraHalDispatcherImpl::GetInstance()
+                                       ->AddCameraPrivacySwitchObserver(this))
+
+{
   Shell::Get()->session_controller()->AddObserver(this);
 }
 
 CameraPrivacySwitchController::~CameraPrivacySwitchController() {
   Shell::Get()->session_controller()->RemoveObserver(this);
+  media::CameraHalDispatcherImpl::GetInstance()
+      ->RemoveCameraPrivacySwitchObserver(this);
 }
 
 void CameraPrivacySwitchController::OnActiveUserPrefServiceChanged(
@@ -83,12 +90,27 @@ CameraPrivacySwitchController::GetUserSwitchPreference() {
 
   return allowed ? CameraSWPrivacySwitchSetting::kEnabled
                  : CameraSWPrivacySwitchSetting::kDisabled;
-};
+}
 
 void CameraPrivacySwitchController::SetCameraPrivacySwitchAPIForTest(
     std::unique_ptr<CameraPrivacySwitchAPI> switch_api) {
   DCHECK(switch_api);
   switch_api_ = std::move(switch_api);
+}
+
+void CameraPrivacySwitchController::OnCameraHWPrivacySwitchStatusChanged(
+    int32_t camera_id,
+    cros::mojom::CameraPrivacySwitchState state) {
+  camera_privacy_switch_state_ = state;
+  Shell::Get()
+      ->privacy_hub_controller()
+      ->frontend()
+      .CameraHardwareToggleChanged(state);
+}
+
+cros::mojom::CameraPrivacySwitchState
+CameraPrivacySwitchController::HWSwitchState() const {
+  return camera_privacy_switch_state_;
 }
 
 }  // namespace ash

@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -237,7 +237,8 @@ base::Value TranslateNetworkStateToONC(const NetworkState* network) {
       ->FindPolicyByGUID(user_id_hash, network->guid(), &onc_source);
 
   base::Value onc_dictionary = onc::TranslateShillServiceToONCPart(
-      shill_dictionary, onc_source, &onc::kNetworkWithStateSignature, network);
+      shill_dictionary, onc_source, &chromeos::onc::kNetworkWithStateSignature,
+      network);
 
   // Remove IPAddressConfigType/NameServersConfigType as these were
   // historically not provided by TranslateNetworkStateToONC.

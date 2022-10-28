@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -18,6 +18,26 @@ bool CustomFilePathComparator::operator()(const base::FilePath& a,
   // On Windows and Mac, the file system is case insensitive.
   return base::FilePath::CompareLessIgnoreCase(a.value(), b.value());
 #endif
+}
+
+PlatformDelegate::ProductMetadata::ProductMetadata() = default;
+
+PlatformDelegate::ProductMetadata::ProductMetadata(
+    const PlatformDelegate::ProductMetadata&) = default;
+PlatformDelegate::ProductMetadata& PlatformDelegate::ProductMetadata::operator=(
+    const PlatformDelegate::ProductMetadata&) = default;
+
+PlatformDelegate::ProductMetadata::~ProductMetadata() = default;
+
+absl::optional<PlatformDelegate::ProductMetadata>
+PlatformDelegate::GetProductMetadata(const base::FilePath& file_path) {
+  return absl::nullopt;
+}
+
+absl::optional<std::string>
+PlatformDelegate::GetSigningCertificatePublicKeyHash(
+    const base::FilePath& file_path) {
+  return absl::nullopt;
 }
 
 }  // namespace device_signals

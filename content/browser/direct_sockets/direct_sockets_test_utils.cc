@@ -7,10 +7,10 @@
 #include "base/bind.h"
 #include "base/json/json_reader.h"
 #include "base/notreached.h"
-#include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/test_future.h"
 #include "base/threading/sequenced_task_runner_handle.h"
+#include "base/types/optional_util.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/web_contents_tester.h"
 
@@ -28,7 +28,7 @@ MockHostResolver::MockHostResolver(
 MockHostResolver::~MockHostResolver() = default;
 
 void MockHostResolver::ResolveHost(
-    const ::net::HostPortPair& host,
+    network::mojom::HostResolverHostPtr host,
     const ::net::NetworkIsolationKey& network_isolation_key,
     network::mojom::ResolveHostParametersPtr optional_parameters,
     ::mojo::PendingRemote<network::mojom::ResolveHostClient>
@@ -36,11 +36,19 @@ void MockHostResolver::ResolveHost(
   DCHECK(!internal_request_);
   DCHECK(!response_client_.is_bound());
 
-  internal_request_ = internal_resolver_->CreateRequest(
-      host, network_isolation_key,
-      net::NetLogWithSource::Make(net::NetLog::Get(),
-                                  net::NetLogSourceType::NONE),
-      absl::nullopt);
+  internal_request_ =
+      host->is_host_port_pair()
+          ? internal_resolver_->CreateRequest(
+                host->get_host_port_pair(), network_isolation_key,
+                net::NetLogWithSource::Make(net::NetLog::Get(),
+                                            net::NetLogSourceType::NONE),
+                absl::nullopt)
+          : internal_resolver_->CreateRequest(
+                host->get_scheme_host_port(), network_isolation_key,
+                net::NetLogWithSource::Make(net::NetLog::Get(),
+                                            net::NetLogSourceType::NONE),
+                absl::nullopt);
+
   mojo::Remote<network::mojom::ResolveHostClient> response_client(
       std::move(pending_response_client));
 
@@ -49,7 +57,8 @@ void MockHostResolver::ResolveHost(
   if (rv != net::ERR_IO_PENDING) {
     response_client->OnComplete(
         rv, internal_request_->GetResolveErrorInfo(),
-        base::OptionalFromPtr(internal_request_->GetAddressResults()));
+        base::OptionalFromPtr(internal_request_->GetAddressResults()),
+        /*endpoint_results_with_metadata=*/absl::nullopt);
     return;
   }
 
@@ -70,7 +79,8 @@ void MockHostResolver::OnComplete(int error) {
 
   response_client_->OnComplete(
       error, internal_request_->GetResolveErrorInfo(),
-      base::OptionalFromPtr(internal_request_->GetAddressResults()));
+      base::OptionalFromPtr(internal_request_->GetAddressResults()),
+      /*endpoint_results_with_metadata=*/absl::nullopt);
   response_client_.reset();
 }
 
@@ -201,7 +211,7 @@ bool IsolatedAppContentBrowserClient::ShouldUrlUseApplicationIsolationLevel(
   return true;
 }
 
-blink::ParsedPermissionsPolicy
+absl::optional<blink::ParsedPermissionsPolicy>
 IsolatedAppContentBrowserClient::GetPermissionsPolicyForIsolatedApp(
     content::BrowserContext* browser_context,
     const url::Origin& app_origin) {

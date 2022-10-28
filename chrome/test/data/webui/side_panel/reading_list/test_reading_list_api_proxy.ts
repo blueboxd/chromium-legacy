@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -19,6 +19,7 @@ export class TestReadingListApiProxy extends TestBrowserProxy implements
       'openURL',
       'updateReadStatus',
       'addCurrentTab',
+      'markCurrentTabAsRead',
       'removeEntry',
       'showContextMenuForURL',
       'updateCurrentPageActionButtonState',
@@ -47,6 +48,10 @@ export class TestReadingListApiProxy extends TestBrowserProxy implements
 
   addCurrentTab() {
     this.methodCalled('addCurrentTab');
+  }
+
+  markCurrentTabAsRead() {
+    this.methodCalled('markCurrentTabAsRead');
   }
 
   removeEntry(url: Url) {

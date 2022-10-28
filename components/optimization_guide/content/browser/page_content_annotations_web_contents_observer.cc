@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,22 +13,18 @@
 #include "components/optimization_guide/content/browser/optimization_guide_decider.h"
 #include "components/optimization_guide/content/browser/page_content_annotations_service.h"
 #include "components/optimization_guide/core/optimization_guide_features.h"
+#include "components/optimization_guide/core/optimization_guide_logger.h"
 #include "components/optimization_guide/core/optimization_guide_switches.h"
 #include "components/optimization_guide/proto/page_entities_metadata.pb.h"
 #include "components/search_engines/template_url_service.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/page_user_data.h"
+#include "third_party/blink/public/mojom/opengraph/metadata.mojom.h"
 
 namespace optimization_guide {
 
 namespace {
-
-// Return whether or not we should fetch remote metadata.
-bool FetchRemoteMetadataEnabled() {
-  return features::RemotePageEntitiesEnabled() ||
-         features::RemotePageMetadataEnabled();
-}
 
 // Returns search metadata if |url| is a valid Search URL according to
 // |template_url_service|.
@@ -125,12 +121,14 @@ PageContentAnnotationsWebContentsObserver::
       content::WebContentsUserData<PageContentAnnotationsWebContentsObserver>(
           *web_contents),
       page_content_annotations_service_(page_content_annotations_service),
+      salient_image_retriever_(
+          page_content_annotations_service_->optimization_guide_logger()),
       template_url_service_(template_url_service),
       optimization_guide_decider_(optimization_guide_decider),
       no_state_prefetch_manager_(no_state_prefetch_manager) {
   DCHECK(page_content_annotations_service_);
 
-  if (FetchRemoteMetadataEnabled() && optimization_guide_decider_) {
+  if (features::RemotePageMetadataEnabled() && optimization_guide_decider_) {
     optimization_guide_decider_->RegisterOptimizationTypes(
         {proto::PAGE_ENTITIES});
   }
@@ -138,6 +136,10 @@ PageContentAnnotationsWebContentsObserver::
 
 PageContentAnnotationsWebContentsObserver::
     ~PageContentAnnotationsWebContentsObserver() = default;
+
+void PageContentAnnotationsWebContentsObserver::DidStopLoading() {
+  salient_image_retriever_.GetOgImage(web_contents());
+}
 
 void PageContentAnnotationsWebContentsObserver::DidFinishNavigation(
     content::NavigationHandle* navigation_handle) {
@@ -165,7 +167,7 @@ void PageContentAnnotationsWebContentsObserver::DidFinishNavigation(
   optimization_guide::HistoryVisit history_visit = optimization_guide::
       PageContentAnnotationsService::CreateHistoryVisitFromWebContents(
           web_contents(), navigation_handle->GetNavigationId());
-  if (FetchRemoteMetadataEnabled() && optimization_guide_decider_) {
+  if (features::RemotePageMetadataEnabled() && optimization_guide_decider_) {
     optimization_guide_decider_->CanApplyOptimizationAsync(
         navigation_handle, proto::PAGE_ENTITIES,
         base::BindOnce(&PageContentAnnotationsWebContentsObserver::
@@ -288,33 +290,9 @@ void PageContentAnnotationsWebContentsObserver::OnRemotePageMetadataReceived(
   if (!page_entities_metadata)
     return;
 
-  // Persist entities to VisitContentModelAnnotations if that feature is
-  // enabled.
-  if (page_entities_metadata->entities().size() != 0 &&
-      features::RemotePageEntitiesEnabled()) {
-    std::vector<history::VisitContentModelAnnotations::Category> entities;
-    for (const auto& entity : page_entities_metadata->entities()) {
-      if (entity.entity_id().empty())
-        continue;
-
-      if (entity.score() < 0 || entity.score() > 100)
-        continue;
-
-      entities.emplace_back(history::VisitContentModelAnnotations::Category(
-          entity.entity_id(), entity.score()));
-    }
-    page_content_annotations_service_->PersistRemotePageEntities(history_visit,
-                                                                 entities);
-  }
-  if (!features::RemotePageMetadataEnabled()) {
-    return;
-  }
-  // Persist any other metadata to VisitContentAnnotations.
-  page_entities_metadata->clear_entities();
-  if (page_entities_metadata->has_alternative_title()) {
-    page_content_annotations_service_->PersistRemotePageMetadata(
-        history_visit, *page_entities_metadata);
-  }
+  // Persist remote page metadata.
+  page_content_annotations_service_->PersistRemotePageMetadata(
+      history_visit, *page_entities_metadata);
 }
 
 WEB_CONTENTS_USER_DATA_KEY_IMPL(PageContentAnnotationsWebContentsObserver);

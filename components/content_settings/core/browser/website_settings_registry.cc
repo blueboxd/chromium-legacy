@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -197,13 +197,6 @@ void WebsiteSettingsRegistry::Init() {
            base::Value(), WebsiteSettingsInfo::UNSYNCABLE,
            WebsiteSettingsInfo::NOT_LOSSY,
            WebsiteSettingsInfo::TOP_ORIGIN_ONLY_SCOPE, DESKTOP,
-           WebsiteSettingsInfo::DONT_INHERIT_IN_INCOGNITO);
-  // TODO(crbug.com/1341356) Move this to deprecated settings since it's no
-  // longer used.
-  Register(ContentSettingsType::INSTALLED_WEB_APP_METADATA,
-           "installed-web-app-metadata", base::Value(),
-           WebsiteSettingsInfo::UNSYNCABLE, WebsiteSettingsInfo::LOSSY,
-           WebsiteSettingsInfo::GENERIC_SINGLE_ORIGIN_SCOPE, DESKTOP,
            WebsiteSettingsInfo::DONT_INHERIT_IN_INCOGNITO);
   Register(
       ContentSettingsType::BLUETOOTH_CHOOSER_DATA, "bluetooth-chooser-data",

@@ -1,12 +1,12 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #import "ios/chrome/browser/ui/main_content/main_content_ui_state.h"
 
 #import "ios/chrome/browser/ui/broadcaster/chrome_broadcaster.h"
-#include "ios/chrome/browser/ui/util/ui_util.h"
-#include "testing/platform_test.h"
+#import "ios/chrome/browser/ui/util/ui_util.h"
+#import "testing/platform_test.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."

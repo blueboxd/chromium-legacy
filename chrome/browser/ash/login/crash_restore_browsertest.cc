@@ -1,4 +1,4 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,7 +6,6 @@
 #include <utility>
 #include <vector>
 
-#include "ash/components/login/auth/public/user_context.h"
 #include "ash/constants/ash_switches.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
@@ -33,8 +32,10 @@
 #include "chromeos/ash/components/dbus/session_manager/fake_session_manager_client.h"
 #include "chromeos/ash/components/dbus/session_manager/session_manager_client.h"
 #include "chromeos/ash/components/dbus/userdataauth/userdataauth_client.h"
+#include "chromeos/ash/components/login/auth/public/user_context.h"
 #include "components/account_id/account_id.h"
 #include "components/session_manager/core/session_manager.h"
+#include "components/user_manager/fake_user_manager.h"
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
 #include "content/public/test/browser_test.h"
@@ -208,10 +209,9 @@ class CrashRestoreComplexTest : public CrashRestoreSimpleTest {
     base::FilePath user_data_dir;
     ASSERT_TRUE(base::PathService::Get(chrome::DIR_USER_DATA, &user_data_dir));
 
-    const char* kTestUserIds[] = {kUserId1, kUserId2, kUserId3};
-    for (auto* user_id : kTestUserIds) {
+    for (const auto& account_id : {account_id1_, account_id2_, account_id3_}) {
       const std::string user_id_hash =
-          ProfileHelper::GetUserIdHashByUserIdForTesting(user_id);
+          user_manager::FakeUserManager::GetFakeUsernameHash(account_id);
       const base::FilePath user_profile_path =
           user_data_dir.Append(ProfileHelper::GetUserProfileDir(user_id_hash));
       ASSERT_TRUE(base::CreateDirectory(user_profile_path));

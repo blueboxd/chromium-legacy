@@ -1,41 +1,41 @@
-// Copyright 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #import <UIKit/UIKit.h>
 
-#include "ios/chrome/browser/prerender/preload_controller.h"
+#import "ios/chrome/browser/prerender/preload_controller.h"
 
-#include "base/check_op.h"
-#include "base/ios/device_util.h"
-#include "base/metrics/field_trial.h"
-#include "base/metrics/histogram_macros.h"
-#include "base/strings/sys_string_conversions.h"
-#include "base/time/time.h"
+#import "base/check_op.h"
+#import "base/ios/device_util.h"
+#import "base/metrics/field_trial.h"
+#import "base/metrics/histogram_macros.h"
+#import "base/strings/sys_string_conversions.h"
+#import "base/time/time.h"
 #import "components/prefs/ios/pref_observer_bridge.h"
-#include "components/prefs/pref_service.h"
+#import "components/prefs/pref_service.h"
 #import "components/signin/ios/browser/account_consistency_service.h"
 #import "ios/chrome/browser/app_launcher/app_launcher_tab_helper.h"
-#include "ios/chrome/browser/browser_state/chrome_browser_state.h"
-#include "ios/chrome/browser/crash_report/crash_report_helper.h"
-#include "ios/chrome/browser/download/mime_type_util.h"
+#import "ios/chrome/browser/browser_state/chrome_browser_state.h"
+#import "ios/chrome/browser/crash_report/crash_report_helper.h"
+#import "ios/chrome/browser/download/mime_type_util.h"
 #import "ios/chrome/browser/history/history_tab_helper.h"
 #import "ios/chrome/browser/itunes_urls/itunes_urls_handler_tab_helper.h"
-#include "ios/chrome/browser/pref_names.h"
-#include "ios/chrome/browser/prerender/preload_controller_delegate.h"
+#import "ios/chrome/browser/prefs/pref_names.h"
+#import "ios/chrome/browser/prerender/preload_controller_delegate.h"
 #import "ios/chrome/browser/prerender/prerender_pref.h"
 #import "ios/chrome/browser/signin/account_consistency_service_factory.h"
 #import "ios/chrome/browser/tabs/tab_helper_util.h"
 #import "ios/web/public/navigation/navigation_item.h"
 #import "ios/web/public/navigation/navigation_manager.h"
 #import "ios/web/public/navigation/web_state_policy_decider_bridge.h"
-#include "ios/web/public/thread/web_thread.h"
+#import "ios/web/public/thread/web_thread.h"
 #import "ios/web/public/ui/java_script_dialog_presenter.h"
-#include "ios/web/public/web_client.h"
+#import "ios/web/public/web_client.h"
 #import "ios/web/public/web_state.h"
 #import "ios/web/public/web_state_observer_bridge.h"
 #import "net/base/mac/url_conversions.h"
-#include "ui/base/page_transition_types.h"
+#import "ui/base/page_transition_types.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -89,7 +89,7 @@ bool IsPrerenderTabEvictionExperimentalGroup() {
   return trial && trial->group_name() == kPrerenderTabEvictionTrialGroup;
 }
 
-// Returns whether |url| can be prerendered.
+// Returns whether `url` can be prerendered.
 bool CanPrerenderURL(const GURL& url) {
   // Prerendering is only enabled for http and https URLs.
   return url.is_valid() &&
@@ -250,7 +250,7 @@ void DestroyPrerenderingWebState(std::unique_ptr<web::WebState> web_state) {
   std::unique_ptr<web::JavaScriptDialogPresenter> _dialogPresenter;
 
   // A weak pointer to the webState that will be replaced with the prerendered
-  // one. This is needed by |startPrerender| to build the new webstate with the
+  // one. This is needed by `startPrerender` to build the new webstate with the
   // same sessions.
   web::WebState* _webStateToReplace;
 
@@ -260,7 +260,7 @@ void DestroyPrerenderingWebState(std::unique_ptr<web::WebState> web_state) {
 // The ChromeBrowserState passed on initialization.
 @property(nonatomic) ChromeBrowserState* browserState;
 
-// Redefine property as readwrite.  The URL that is prerendered in |_webState|.
+// Redefine property as readwrite.  The URL that is prerendered in `_webState`.
 // This can be different from the value returned by WebState last committed
 // navigation item, for example in cases where there was a redirect.
 //
@@ -299,10 +299,10 @@ void DestroyPrerenderingWebState(std::unique_ptr<web::WebState> web_state) {
 // Called to start any scheduled prerendering requests.
 - (void)startPrerender;
 
-// Destroys the preview Tab and resets |prerenderURL_| to the empty URL.
+// Destroys the preview Tab and resets `prerenderURL_` to the empty URL.
 - (void)destroyPreviewContents;
 
-// Removes any scheduled prerender requests and resets |scheduledURL| to the
+// Removes any scheduled prerender requests and resets `scheduledURL` to the
 // empty URL.
 - (void)removeScheduledPrerenderRequests;
 
@@ -427,7 +427,7 @@ void DestroyPrerenderingWebState(std::unique_ptr<web::WebState> web_state) {
 
   [self removeScheduledPrerenderRequests];
   _webStateToReplace = currentWebState;
-  // Observing the |_webStateToReplace| to make sure that if it's destructed
+  // Observing the `_webStateToReplace` to make sure that if it's destructed
   // the pre-rendering will be canceled.
   if (_webStateToReplace) {
     _webStateToReplace->AddObserver(_webStateToReplaceObserver.get());
@@ -556,7 +556,7 @@ void DestroyPrerenderingWebState(std::unique_ptr<web::WebState> web_state) {
 
 - (void)webState:(web::WebState*)webState
     didFinishNavigation:(web::NavigationContext*)navigation {
-  // the |_webStateToReplace| is observed for destruction event only.
+  // the `_webStateToReplace` is observed for destruction event only.
   if (_webStateToReplace == webState)
     return;
   DCHECK_EQ(webState, _webState.get());
@@ -566,7 +566,7 @@ void DestroyPrerenderingWebState(std::unique_ptr<web::WebState> web_state) {
 
 - (void)webState:(web::WebState*)webState
     didLoadPageWithSuccess:(BOOL)loadSuccess {
-  // the |_webStateToReplace| is observed for destruction event only.
+  // the `_webStateToReplace` is observed for destruction event only.
   if (_webStateToReplace == webState)
     return;
 
@@ -682,7 +682,7 @@ void DestroyPrerenderingWebState(std::unique_ptr<web::WebState> web_state) {
   [self destroyPreviewContents];
   self.prerenderedURL = self.scheduledURL;
   std::unique_ptr<PrerenderRequest> request = std::move(_scheduledRequest);
-  // No need to observer the destruction of the |_webStateToReplace| anymore
+  // No need to observer the destruction of the `_webStateToReplace` anymore
   // as it will be used here.
   if (_webStateToReplace) {
     _webStateToReplace->RemoveObserver(_webStateToReplaceObserver.get());

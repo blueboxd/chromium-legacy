@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -19,8 +19,8 @@ import './multidevice_smartlock_subpage.js';
 import './multidevice_subpage.js';
 
 import {assert, assertNotReached} from 'chrome://resources/js/assert.m.js';
-import {I18nBehavior, I18nBehaviorInterface} from 'chrome://resources/js/i18n_behavior.m.js';
-import {WebUIListenerBehavior, WebUIListenerBehaviorInterface} from 'chrome://resources/js/web_ui_listener_behavior.m.js';
+import {I18nBehavior, I18nBehaviorInterface} from 'chrome://resources/cr_elements/i18n_behavior.js';
+import {WebUIListenerBehavior, WebUIListenerBehaviorInterface} from 'chrome://resources/cr_elements/web_ui_listener_behavior.js';
 import {beforeNextRender, html, mixinBehaviors, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {loadTimeData} from '../../i18n_setup.js';
@@ -679,7 +679,6 @@ class SettingsMultidevicePageElement extends
     let params = undefined;
     if (!nearbyEnabled) {
       if (onboardingComplete) {
-
         // If we have already run onboarding at least once, we don't need to do
         // it again, just enabled the feature in place.
         this.setPrefValue('nearby_sharing.enabled', true);
@@ -716,13 +715,7 @@ class SettingsMultidevicePageElement extends
     if (!this.showPhonePermissionSetupDialog_) {
       return false;
     }
-    if (this.pageContentData.isPhoneHubPermissionsDialogSupported) {
-      this.browserProxy_.logPhoneHubPermissionSetUpScreenAction(
-          PhoneHubPermissionsSetupFlowScreens.INTRO,
-          PhoneHubPermissionsSetupAction.SHOWN);
-      return true;
-    }
-    return false;
+    return this.pageContentData.isPhoneHubPermissionsDialogSupported;
   }
 
   /** @private */
@@ -778,8 +771,7 @@ class SettingsMultidevicePageElement extends
    */
   computeShouldEnableNearbyShareBackgroundScanningRevamp_(
       is_hardware_supported) {
-    return loadTimeData.getBoolean('isNearbyShareBackgroundScanningEnabled') &&
-        is_hardware_supported;
+    return is_hardware_supported;
   }
 
   /**

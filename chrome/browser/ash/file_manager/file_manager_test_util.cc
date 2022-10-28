@@ -1,10 +1,9 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome/browser/ash/file_manager/file_manager_test_util.h"
 
-#include "ash/constants/ash_features.h"
 #include "base/files/file_enumerator.h"
 #include "base/files/file_util.h"
 #include "base/path_service.h"
@@ -74,19 +73,6 @@ OpenOperationResult FolderInMyFiles::Open(const base::FilePath& file) {
       }));
   run_loop.Run();
 
-  // On ChromeOS, the OpenOperationResult is determined in
-  // OpenFileMimeTypeAfterTasksListed() which also invokes
-  // ExecuteFileTaskForUrl(). For WebApps like chrome://media-app, that invokes
-  // WebApps::LaunchAppWithFiles() via AppServiceProxy.
-  // Depending how the mime type of |path| is determined (e.g. extension,
-  // metadata sniffing), there may be a number of asynchronous steps involved
-  // before the call to ExecuteFileTaskForUrl(). After that, the OpenItem
-  // callback is invoked, which exits the RunLoop above.
-  // That used to be enough to also launch a Browser for the WebApp. However,
-  // since https://crrev.com/c/2121860, ExecuteFileTaskForUrl() goes through the
-  // mojoAppService, so it's necessary to flush those calls for WebApps to open.
-  ash::FlushSystemWebAppLaunchesForTesting(profile_);
-
   return open_result;
 }
 
@@ -119,20 +105,6 @@ void AddDefaultComponentExtensionsOnMainThread(Profile* profile) {
   // for the duration of the test. Note this may result in immediately
   // uninstalling an extension just installed above.
   service->UninstallMigratedExtensionsForTest();
-
-  if (!ash::features::IsFileManagerSwaEnabled()) {
-    // The File Manager component extension should have been added for loading
-    // into the user profile, but not into the sign-in profile.
-    CHECK(extensions::ExtensionSystem::Get(profile)
-              ->extension_service()
-              ->component_loader()
-              ->Exists(kFileManagerAppId));
-    CHECK(!extensions::ExtensionSystem::Get(
-               ash::ProfileHelper::GetSigninProfile())
-               ->extension_service()
-               ->component_loader()
-               ->Exists(kFileManagerAppId));
-  }
 }
 
 namespace {

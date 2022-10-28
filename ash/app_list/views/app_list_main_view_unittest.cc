@@ -1,4 +1,4 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -23,6 +23,7 @@
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
+#include "base/ranges/algorithm.h"
 #include "base/test/scoped_feature_list.h"
 #include "ui/compositor/layer.h"
 #include "ui/events/base_event_utils.h"
@@ -30,6 +31,7 @@
 #include "ui/events/types/event_type.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/test/button_test_api.h"
+#include "ui/views/test/views_test_utils.h"
 #include "ui/views/view_model.h"
 
 namespace ash {
@@ -70,8 +72,8 @@ class AppListMainViewTest : public AshTestBase,
   AppListItemView* GetItemViewAtPointInGrid(AppsGridView* grid_view,
                                             const gfx::Point& point) {
     const auto& entries = grid_view->view_model()->entries();
-    const auto iter = std::find_if(
-        entries.begin(), entries.end(), [&point](const auto& entry) {
+    const auto iter =
+        base::ranges::find_if(entries, [&point](const auto& entry) {
           return entry.view->bounds().Contains(point);
         });
     return iter == entries.end() ? nullptr
@@ -145,7 +147,7 @@ class AppListMainViewTest : public AshTestBase,
     // Prepare single folder with a single item in it.
     AppListFolderItem* folder_item =
         GetTestModel()->CreateSingleItemFolder("single_item_folder", "single");
-    GetRootGridView()->Layout();
+    views::test::RunScheduledLayout(GetRootGridView());
     EXPECT_EQ(folder_item,
               GetTestModel()->FindFolderItem("single_item_folder"));
     EXPECT_EQ(AppListFolderItem::kItemType, folder_item->GetItemType());
@@ -268,7 +270,7 @@ TEST_P(AppListMainViewTest, DragReparentItemOntoPageSwitcher) {
   // 20).
   const size_t kNumApps = 30;
   GetTestModel()->PopulateApps(kNumApps);
-  GetRootGridView()->Layout();
+  views::test::RunScheduledLayout(GetRootGridView());
 
   EXPECT_EQ(1u, GetFolderViewModel()->view_size());
   EXPECT_EQ(kNumApps + 1, GetRootViewModel()->view_size());

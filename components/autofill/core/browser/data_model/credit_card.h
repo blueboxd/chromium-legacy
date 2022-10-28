@@ -1,4 +1,4 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -250,8 +250,16 @@ class CreditCard : public AutofillDataModel {
   // Returns whether the card is expired based on |current_time|.
   bool IsExpired(const base::Time& current_time) const;
 
+  // Returns whether the card is a masked card. Such cards will only have
+  // the last 4 digits of the card number.
+  bool masked() const;
+
   // Whether the card expiration date should be updated.
   bool ShouldUpdateExpiration() const;
+
+  // Complete = contains number, expiration date and name on card.
+  // Valid = unexpired with valid number format.
+  bool IsCompleteValidCard() const;
 
   const std::string& billing_address_id() const { return billing_address_id_; }
   void set_billing_address_id(const std::string& id) {
@@ -311,6 +319,11 @@ class CreditCard : public AutofillDataModel {
   std::u16string CardIdentifierStringForAutofillDisplay(
       std::u16string customized_nickname = std::u16string(),
       int obfuscation_length = 4) const;
+  // A name to identify this card. It is the nickname if available, or the
+  // product description. If neither are available, it falls back to the issuer
+  // network.
+  std::u16string CardNameForAutofillDisplay(
+      const std::u16string& customized_nickname = std::u16string()) const;
 
 #if BUILDFLAG(IS_ANDROID)
   // Label for the card to be displayed in the manual filling view on Android.
@@ -401,12 +414,6 @@ class CreditCard : public AutofillDataModel {
   // digits of the card.
   std::u16string NicknameAndLastFourDigits(
       std::u16string customized_nickname = std::u16string(),
-      int obfuscation_length = 4) const;
-
-  // A label for the card formatted as 'Product description  ****LastFour' like
-  // 'ABC Bank XYZ Card  ****1234'. Check that product description exists before
-  // calling this method. By default, the `obfuscation_length` is set to 4.
-  std::u16string ProductDescriptionAndLastFourdigits(
       int obfuscation_length = 4) const;
 
   // Sets the name_on_card_ value based on the saved name parts.

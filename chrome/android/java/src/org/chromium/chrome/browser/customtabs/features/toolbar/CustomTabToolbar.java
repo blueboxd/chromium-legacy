@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -1023,11 +1023,7 @@ public class CustomTabToolbar extends ToolbarLayout implements View.OnLongClickL
         private void updateTitleBar() {
             if (mCurrentlyShowingBranding) return;
             String title = mLocationBarDataProvider.getTitle();
-
-            // If the url is about:blank, we shouldn't show a title as it is prone to spoofing.
-            if (!mLocationBarDataProvider.hasTab() || TextUtils.isEmpty(title)
-                    || (shouldShowAboutBlankUrl()
-                            && ContentUrlConstants.ABOUT_BLANK_DISPLAY_URL.equals(getUrl()))) {
+            if (!mLocationBarDataProvider.hasTab() || TextUtils.isEmpty(title)) {
                 mTitleBar.setText("");
                 return;
             }
@@ -1055,19 +1051,19 @@ public class CustomTabToolbar extends ToolbarLayout implements View.OnLongClickL
                         UrlBarData.EMPTY, UrlBar.ScrollType.NO_SCROLL, SelectionState.SELECT_ALL);
                 return;
             }
-
+            String publisherUrl = TrustedCdn.getPublisherUrl(tab);
+            String url = publisherUrl != null ? publisherUrl : tab.getUrl().getSpec().trim();
             if (mState == STATE_TITLE_ONLY) {
                 if (!TextUtils.isEmpty(mLocationBarDataProvider.getTitle())) {
                     updateTitleBar();
                 }
             }
 
-            String publisherUrl = TrustedCdn.getPublisherUrl(tab);
-            String url = getUrl();
-            // Don't show anything for Chrome URLs.
+            // Don't show anything for Chrome URLs and "about:blank".
+            // If we have taken a pre-initialized WebContents, then the starting URL
+            // is "about:blank". We should not display it.
             if (NativePage.isNativePageUrl(url, getCurrentTab().isIncognito())
-                    || (!shouldShowAboutBlankUrl()
-                            && ContentUrlConstants.ABOUT_BLANK_DISPLAY_URL.equals(url))) {
+                    || ContentUrlConstants.ABOUT_BLANK_DISPLAY_URL.equals(url)) {
                 mUrlCoordinator.setUrlBarData(
                         UrlBarData.EMPTY, UrlBar.ScrollType.NO_SCROLL, SelectionState.SELECT_ALL);
                 return;
@@ -1098,18 +1094,6 @@ public class CustomTabToolbar extends ToolbarLayout implements View.OnLongClickL
             mUrlCoordinator.setUrlBarData(
                     UrlBarData.create(url, displayText, originStart, originEnd, url),
                     UrlBar.ScrollType.SCROLL_TO_TLD, SelectionState.SELECT_ALL);
-        }
-
-        private String getUrl() {
-            Tab tab = getCurrentTab();
-            if (tab == null) return "";
-
-            String publisherUrl = TrustedCdn.getPublisherUrl(tab);
-            return publisherUrl != null ? publisherUrl : tab.getUrl().getSpec().trim();
-        }
-
-        private boolean shouldShowAboutBlankUrl() {
-            return ChromeFeatureList.isEnabled(ChromeFeatureList.CCT_SHOW_ABOUT_BLANK_URL);
         }
 
         private void updateColors() {

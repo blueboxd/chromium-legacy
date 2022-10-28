@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -42,7 +42,7 @@ class ASH_EXPORT MultideviceFeatureOptInView
 
   // Calculates whether this view should be visible and updates its visibility
   // accordingly.
-  void UpdateVisibility();
+  void UpdateVisibility(bool was_visible);
 
   phonehub::MultideviceFeatureAccessManager*
       multidevice_feature_access_manager_;

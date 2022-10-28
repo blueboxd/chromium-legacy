@@ -1,0 +1,30 @@
+# Copyright 2022 The Chromium Authors
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+source_set("app_store_rating") {
+  configs += [ "//build/config/compiler:enable_arc" ]
+  sources = [
+    "app_store_rating_scene_agent.h",
+    "app_store_rating_scene_agent.mm",
+  ]
+  frameworks = [ "Foundation.framework" ]
+  deps = [
+    "//base",
+    "//components/password_manager/core/browser",
+    "//components/prefs",
+    "//ios/chrome/browser/browser_state",
+    "//ios/chrome/browser/ui/default_promo:utils",
+    "//ios/chrome/browser/ui/main:browser_interface_provider",
+    "//ios/chrome/browser/ui/main:observing_scene_agent",
+  ]
+}
+
+source_set("features") {
+  configs += [ "//build/config/compiler:enable_arc" ]
+  sources = [
+    "features.h",
+    "features.mm",
+  ]
+  deps = [ "//base" ]
+}

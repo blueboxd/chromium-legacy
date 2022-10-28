@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -53,7 +53,7 @@ void ChromeTemplateURLServiceClient::SetKeywordSearchTermsForURL(
 void ChromeTemplateURLServiceClient::AddKeywordGeneratedVisit(const GURL& url) {
   if (history_service_)
     history_service_->AddPage(
-        url, base::Time::Now(), /*context_id=*/NULL, /*nav_entry_id=*/0,
+        url, base::Time::Now(), /*context_id=*/nullptr, /*nav_entry_id=*/0,
         /*referrer=*/GURL(), history::RedirectList(),
         ui::PAGE_TRANSITION_KEYWORD_GENERATED, history::SOURCE_BROWSED,
         /*did_replace_entry=*/false);

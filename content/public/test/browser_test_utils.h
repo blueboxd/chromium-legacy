@@ -152,6 +152,12 @@ void NavigateToURLBlockUntilNavigationsComplete(
     const GURL& url,
     int number_of_navigations,
     bool ignore_uncommitted_navigations = true);
+// Same, but allows specifying the full LoadURLParams instead of just the URL.
+void NavigateToURLBlockUntilNavigationsComplete(
+    WebContents* web_contents,
+    const NavigationController::LoadURLParams& params,
+    int number_of_navigations,
+    bool ignore_uncommitted_navigations = true);
 
 // Perform a renderer-initiated navigation of |window| to |url|, blocking
 // until the navigation finishes.  The navigation is done by assigning
@@ -168,6 +174,13 @@ void NavigateToURLBlockUntilNavigationsComplete(
 [[nodiscard]] bool NavigateToURLFromRendererWithoutUserGesture(
     const ToRenderFrameHost& adapter,
     const GURL& url);
+// Similar to above but takes in an additional URL, |expected_commit_url|, to
+// which the navigation should eventually commit. (See the browser-initiated
+// counterpart for more details).
+[[nodiscard]] bool NavigateToURLFromRendererWithoutUserGesture(
+    const ToRenderFrameHost& adapter,
+    const GURL& url,
+    const GURL& expected_commit_url);
 
 // Perform a renderer-initiated navigation of |window| to |url|. Unlike the
 // previous set of helpers, does not block. The navigation is done by assigning
@@ -321,12 +334,21 @@ void SimulateTouchscreenPinch(WebContents* web_contents,
 #endif  // !BUILDFLAG(IS_MAC)
 
 // Sends a GesturePinch Begin/Update/End sequence.
+void SimulateGesturePinchSequence(RenderWidgetHost* render_widget_host,
+                                  const gfx::Point& point,
+                                  float scale,
+                                  blink::WebGestureDevice source_device);
+
 void SimulateGesturePinchSequence(WebContents* web_contents,
                                   const gfx::Point& point,
                                   float scale,
                                   blink::WebGestureDevice source_device);
 
 // Sends a simple, three-event (Begin/Update/End) gesture scroll.
+void SimulateGestureScrollSequence(RenderWidgetHost* render_widget_host,
+                                   const gfx::Point& point,
+                                   const gfx::Vector2dF& delta);
+
 void SimulateGestureScrollSequence(WebContents* web_contents,
                                    const gfx::Point& point,
                                    const gfx::Vector2dF& delta);
@@ -1350,6 +1372,7 @@ class RenderFrameSubmissionObserver
       RenderFrameMetadataProviderImpl* render_frame_metadata_provider);
   explicit RenderFrameSubmissionObserver(FrameTreeNode* node);
   explicit RenderFrameSubmissionObserver(WebContents* web_contents);
+  explicit RenderFrameSubmissionObserver(RenderFrameHost* rfh);
   ~RenderFrameSubmissionObserver() override;
 
   // Resets the current |render_frame_count|;
@@ -2030,7 +2053,7 @@ void EnsureCookiesFlushed(BrowserContext* browser_context);
 // Performs a simple auto-resize flow and ensures that the embedder gets a
 // single response messages back from the guest, with the expected values.
 bool TestGuestAutoresize(WebContents* embedder_web_contents,
-                         WebContents* guest_web_contents);
+                         RenderFrameHost* guest_main_frame);
 
 // Class to intercept SynchronizeVisualProperties method. This allows the
 // message to continue to the target child so that processing can be verified by
@@ -2292,6 +2315,13 @@ RegisterWebContentsCreationCallback(
 [[nodiscard]] bool HistoryGoToOffset(WebContents* wc, int offset);
 [[nodiscard]] bool HistoryGoBack(WebContents* wc);
 [[nodiscard]] bool HistoryGoForward(WebContents* wc);
+
+#if BUILDFLAG(IS_MAC)
+// Grant native windows the ability to activate, allowing them to become key
+// and/or main. This can be useful to enable when the process hosting the window
+// is a standalone executable without an Info.plist.
+bool EnableNativeWindowActivation();
+#endif  // BUILDFLAG(IS_MAC)
 
 }  // namespace content
 

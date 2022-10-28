@@ -1,4 +1,4 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,15 +11,21 @@
 #include "ash/constants/ash_features.h"
 #include "ash/constants/ash_switches.h"
 #include "ash/constants/notifier_catalogs.h"
+#include "ash/glanceables/glanceables_controller.h"
 #include "ash/hud_display/hud_display.h"
 #include "ash/public/cpp/accelerators.h"
 #include "ash/public/cpp/debug_utils.h"
 #include "ash/public/cpp/system/toast_data.h"
+#include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
+#include "ash/style/dark_light_mode_controller_impl.h"
 #include "ash/system/toast/toast_manager_impl.h"
 #include "ash/touch/touch_devices_controller.h"
 #include "ash/wallpaper/wallpaper_controller_impl.h"
+#include "ash/wm/float/float_controller.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
+#include "ash/wm/window_state.h"
+#include "ash/wm/window_util.h"
 #include "base/command_line.h"
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
@@ -31,6 +37,7 @@
 #include "ui/gfx/geometry/skia_conversions.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/image/image_skia_rep.h"
+#include "ui/native_theme/native_theme.h"
 #include "ui/views/widget/widget.h"
 
 namespace ash {
@@ -106,6 +113,52 @@ void HandleDumpCalendarModel() {
   accelerators::DumpCalendarModel();
 }
 
+void HandleToggleDarkMode() {
+  // Toggling dark mode requires that the active user session has started
+  // since the feature is backed by user preferences.
+  if (auto* controller = Shell::Get()->session_controller();
+      !(controller && controller->IsActiveUserSessionStarted())) {
+    return;
+  }
+
+  if (auto* controller = DarkLightModeControllerImpl::Get())
+    controller->ToggleColorMode();
+}
+
+void HandleToggleDynamicColor() {
+  if (!ash::features::IsJellyEnabled()) {
+    // Only toggle colors when Dynamic Colors are enabled.
+    return;
+  }
+  static int index = 0;
+  SkColor color;
+  switch (++index % 2) {
+    case 0:
+      color = SK_ColorGREEN;
+      break;
+    case 1:
+      color = SK_ColorRED;
+      break;
+  }
+
+  // This behavior is similar to the way that color changes in production, but
+  // it may not match exactly.
+  auto* theme = ui::NativeTheme::GetInstanceForNativeUi();
+  theme->set_user_color(color);
+  theme->NotifyOnNativeThemeUpdated();
+}
+
+void HandleToggleGlanceables() {
+  if (!features::AreGlanceablesEnabled())
+    return;
+  auto* controller = Shell::Get()->glanceables_controller();
+  DCHECK(controller);
+  if (controller->IsShowing())
+    controller->DestroyUi();
+  else
+    controller->CreateUi();
+}
+
 void HandleToggleKeyboardBacklight() {
   if (ash::features::IsKeyboardBacklightToggleEnabled()) {
     base::RecordAction(base::UserMetricsAction("Accel_Keyboard_Backlight"));
@@ -142,6 +195,23 @@ void HandleTriggerCrash() {
 
 void HandleTriggerHUDDisplay() {
   hud_display::HUDDisplayView::Toggle();
+}
+
+void HandleFloatFling(AcceleratorAction action) {
+  aura::Window* window = window_util::GetActiveWindow();
+  DCHECK(window);
+
+  auto* window_state = WindowState::Get(window);
+  if (!window_state)
+    return;
+
+  auto* float_controller = Shell::Get()->float_controller();
+
+  if (!window_state->IsFloated())
+    float_controller->ToggleFloat(window);
+
+  float_controller->OnFlingOrSwipeForTablet(
+      window, /*left=*/action == DEBUG_FLOAT_FLING_LEFT, /*up=*/true);
 }
 
 }  // namespace
@@ -195,6 +265,15 @@ void PerformDebugActionIfEnabled(AcceleratorAction action) {
           /*visible_on_lock_screen=*/false, /*has_dismiss_button=*/true,
           /*custom_dismiss_text=*/u"Dismiss"));
       break;
+    case DEBUG_TOGGLE_DARK_MODE:
+      HandleToggleDarkMode();
+      break;
+    case DEBUG_TOGGLE_DYNAMIC_COLOR:
+      HandleToggleDynamicColor();
+      break;
+    case DEBUG_TOGGLE_GLANCEABLES:
+      HandleToggleGlanceables();
+      break;
     case DEBUG_TOGGLE_TOUCH_PAD:
       HandleToggleTouchpad();
       break;
@@ -212,6 +291,10 @@ void PerformDebugActionIfEnabled(AcceleratorAction action) {
       break;
     case DEBUG_TOGGLE_HUD_DISPLAY:
       HandleTriggerHUDDisplay();
+      break;
+    case DEBUG_FLOAT_FLING_LEFT:
+    case DEBUG_FLOAT_FLING_RIGHT:
+      HandleFloatFling(action);
       break;
     default:
       break;

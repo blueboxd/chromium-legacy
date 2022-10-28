@@ -1,25 +1,25 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_collection_utils.h"
 
-#include "base/i18n/rtl.h"
-#include "components/strings/grit/components_strings.h"
+#import "base/i18n/rtl.h"
+#import "components/strings/grit/components_strings.h"
 #import "ios/chrome/browser/ui/content_suggestions/ntp_home_constant.h"
 #import "ios/chrome/browser/ui/icons/chrome_symbol.h"
 #import "ios/chrome/browser/ui/location_bar/location_bar_constants.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_header_constants.h"
 #import "ios/chrome/browser/ui/start_surface/start_surface_features.h"
 #import "ios/chrome/browser/ui/toolbar/public/toolbar_utils.h"
-#include "ios/chrome/browser/ui/ui_feature_flags.h"
+#import "ios/chrome/browser/ui/ui_feature_flags.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
 #import "ios/chrome/common/ui/util/pointer_interaction_util.h"
-#include "ios/chrome/grit/ios_strings.h"
-#include "ios/components/ui_util/dynamic_type_util.h"
-#include "ui/base/device_form_factor.h"
-#include "ui/base/l10n/l10n_util.h"
+#import "ios/chrome/grit/ios_strings.h"
+#import "ios/components/ui_util/dynamic_type_util.h"
+#import "ui/base/device_form_factor.h"
+#import "ui/base/l10n/l10n_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -32,6 +32,8 @@ const CGFloat kSearchFieldLarge = 432;
 const CGFloat kSearchFieldSmall = 343;
 const CGFloat kSearchFieldSmallMin = 304;
 const CGFloat kSearchFieldMinMargin = 8;
+
+const CGFloat kTopSpacingMaterial = 24;
 
 // Top margin for the doodle.
 const CGFloat kDoodleTopMarginRegularXRegular = 162;
@@ -48,8 +50,6 @@ const CGFloat kShrunkLogoSearchFieldTopMargin = 22;
 // Bottom margin for the search field.
 const CGFloat kNTPSearchFieldBottomPadding = 18;
 const CGFloat kNTPShrunkLogoSearchFieldBottomPadding = 20;
-
-const CGFloat kTopSpacingMaterial = 24;
 
 // Height for the logo and doodle frame.
 const CGFloat kGoogleSearchDoodleHeight = 120;
@@ -92,9 +92,7 @@ CGFloat doodleHeight(BOOL logoIsShowing,
   return kGoogleSearchDoodleHeight;
 }
 
-CGFloat doodleTopMargin(BOOL toolbarPresent,
-                        CGFloat topInset,
-                        UITraitCollection* traitCollection) {
+CGFloat doodleTopMargin(CGFloat topInset, UITraitCollection* traitCollection) {
   if (IsRegularXRegularSizeClass(traitCollection))
     return kDoodleTopMarginRegularXRegular;
   if (IsCompactHeight(traitCollection) && !ShouldShrinkLogoForStartSurface())
@@ -129,12 +127,10 @@ CGFloat searchFieldWidth(CGFloat superviewWidth,
 
 CGFloat heightForLogoHeader(BOOL logoIsShowing,
                             BOOL doodleIsShowing,
-                            BOOL promoCanShow,
-                            BOOL toolbarPresent,
                             CGFloat topInset,
                             UITraitCollection* traitCollection) {
   CGFloat headerHeight =
-      doodleTopMargin(toolbarPresent, topInset, traitCollection) +
+      doodleTopMargin(topInset, traitCollection) +
       doodleHeight(logoIsShowing, doodleIsShowing, traitCollection) +
       searchFieldTopMargin() +
       ToolbarExpandedHeight(
@@ -149,9 +145,8 @@ CGFloat heightForLogoHeader(BOOL logoIsShowing,
     return ntp_home::kIdentityAvatarDimension +
            2 * ntp_home::kIdentityAvatarMargin;
   }
-  if (!promoCanShow) {
-    headerHeight += kTopSpacingMaterial;
-  }
+
+  headerHeight += kTopSpacingMaterial;
 
   return headerHeight;
 }
@@ -199,6 +194,34 @@ void configureVoiceSearchButton(UIButton* voiceSearchButton,
   voiceSearchButton.pointerInteractionEnabled = YES;
   // Make the pointer shape fit the location bar's semi-circle end shape.
   voiceSearchButton.pointerStyleProvider =
+      CreateLiftEffectCirclePointerStyleProvider();
+}
+
+void ConfigureLensButton(UIButton* lens_button, UIView* search_tap_target) {
+  lens_button.translatesAutoresizingMaskIntoConstraints = NO;
+  [search_tap_target addSubview:lens_button];
+
+  if (@available(iOS 16, *)) {
+  } else {
+    // Set adjustsImageWhenHighlighted on ios 15 and lower.
+    lens_button.adjustsImageWhenHighlighted = NO;
+  }
+
+  UIImage* camera_image =
+      UseSymbols() ? CustomSymbolWithPointSize(
+                         kCameraLensSymbol, kSymbolContentSuggestionsPointSize)
+                   : [UIImage imageNamed:@"location_bar_camera_lens"];
+  camera_image =
+      [camera_image imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
+
+  [lens_button setImage:camera_image forState:UIControlStateNormal];
+  lens_button.tintColor = [UIColor colorNamed:kGrey500Color];
+  lens_button.accessibilityLabel = l10n_util::GetNSString(IDS_IOS_ACCNAME_LENS);
+  lens_button.accessibilityIdentifier = @"Lens";
+
+  lens_button.pointerInteractionEnabled = YES;
+  // Make the pointer shape fit the location bar's semi-circle end shape.
+  lens_button.pointerStyleProvider =
       CreateLiftEffectCirclePointerStyleProvider();
 }
 

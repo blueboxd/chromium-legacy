@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -142,8 +142,6 @@ namespace {
 const char kDebuggerTestPage[] = "/devtools/debugger_test_page.html";
 const char kPauseWhenLoadingDevTools[] =
     "/devtools/pause_when_loading_devtools.html";
-const char kPauseWhenScriptIsRunning[] =
-    "/devtools/pause_when_script_is_running.html";
 const char kPageWithContentScript[] = "/devtools/page_with_content_script.html";
 const char kNavigateBackTestPage[] = "/devtools/navigate_back.html";
 const char kWindowOpenTestPage[] = "/devtools/window_open.html";
@@ -1742,24 +1740,6 @@ IN_PROC_BROWSER_TEST_F(DevToolsTest, MAYBE_TestPauseWhenLoadingDevTools) {
   RunTest("testPauseWhenLoadingDevTools", kPauseWhenLoadingDevTools);
 }
 
-// Tests that pressing 'Pause' will pause script execution if the script
-// is already running.
-#if (BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)) && \
-    defined(ARCH_CPU_ARM_FAMILY)
-// Timing out on linux ARM bot: https://crbug/238453
-#define MAYBE_TestPauseWhenScriptIsRunning DISABLED_TestPauseWhenScriptIsRunning
-#elif BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
-// Timing out on Linux and ChromeOS MSan: https://crbug.com/1181692
-// Flaky failures: https://crbug/1289529
-#define MAYBE_TestPauseWhenScriptIsRunning DISABLED_TestPauseWhenScriptIsRunning
-#else
-#define MAYBE_TestPauseWhenScriptIsRunning TestPauseWhenScriptIsRunning
-#endif
-IN_PROC_BROWSER_TEST_F(DevToolsTest,
-                       MAYBE_TestPauseWhenScriptIsRunning) {
-  RunTest("testPauseWhenScriptIsRunning", kPauseWhenScriptIsRunning);
-}
-
 // Tests network timing.
 IN_PROC_BROWSER_TEST_F(DevToolsTest, TestNetworkTiming) {
   RunTest("testNetworkTiming", kSlowTestPage);
@@ -1810,7 +1790,7 @@ bool InterceptURLLoad(content::URLLoaderInterceptor::RequestParams* params) {
   EXPECT_EQ(mojo::CreateDataPipe(nullptr, producer_handle, consumer_handle),
             MOJO_RESULT_OK);
   params->client->OnReceiveResponse(std::move(response),
-                                    std::move(consumer_handle));
+                                    std::move(consumer_handle), absl::nullopt);
   params->client->OnComplete(network::URLLoaderCompletionStatus());
   return true;
 }
@@ -3013,11 +2993,10 @@ IN_PROC_BROWSER_TEST_F(DevToolsTest, HostBindingsSyncIntegration) {
               DevToolsSettings::kSyncDevToolsPreferencesFrontendName)));
 
   const base::Value::Dict& synced_settings =
-      browser()->profile()->GetPrefs()->GetValueDict(
+      browser()->profile()->GetPrefs()->GetDict(
           prefs::kDevToolsSyncedPreferencesSyncDisabled);
   const base::Value::Dict& unsynced_settings =
-      browser()->profile()->GetPrefs()->GetValueDict(
-          prefs::kDevToolsPreferences);
+      browser()->profile()->GetPrefs()->GetDict(prefs::kDevToolsPreferences);
   EXPECT_EQ(*synced_settings.FindString("synced_setting"), "synced value");
   EXPECT_EQ(*unsynced_settings.FindString("unsynced_setting"),
             "unsynced value");

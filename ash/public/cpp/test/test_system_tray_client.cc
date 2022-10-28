@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -108,8 +108,6 @@ void TestSystemTrayClient::ShowFirmwareUpdate() {
   show_firmware_update_count_++;
 }
 
-void TestSystemTrayClient::RequestRestartForUpdate() {}
-
 void TestSystemTrayClient::SetLocaleAndExit(
     const std::string& locale_iso_code) {}
 
@@ -120,7 +118,9 @@ void TestSystemTrayClient::ShowCalendarEvent(
     const absl::optional<GURL>& event_url,
     const base::Time& date,
     bool& opened_pwa,
-    GURL& final_event_url) {}
+    GURL& final_event_url) {
+  show_calendar_event_count_++;
+}
 
 void TestSystemTrayClient::ShowChannelInfoAdditionalDetails() {}
 

@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -55,6 +55,12 @@ class BrowserFrameViewLinux : public OpaqueBrowserFrameView,
 
  private:
   const raw_ptr<BrowserFrameViewLayoutLinux> layout_;
+
+  base::ScopedObservation<ui::LinuxUiTheme,
+                          ui::WindowButtonOrderObserver,
+                          &ui::LinuxUiTheme::AddWindowButtonOrderObserver,
+                          &ui::LinuxUiTheme::RemoveWindowButtonOrderObserver>
+      window_button_order_observation_{this};
 };
 
 #endif  // CHROME_BROWSER_UI_VIEWS_FRAME_BROWSER_FRAME_VIEW_LINUX_H_

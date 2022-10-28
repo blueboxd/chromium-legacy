@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -84,7 +84,7 @@ void CreateOobeCompleteFlagFile() {
   const base::FilePath oobe_complete_flag_path = GetOobeCompleteFlagPath();
   if (!base::PathExists(oobe_complete_flag_path)) {
     FILE* oobe_flag_file = base::OpenFile(oobe_complete_flag_path, "w+b");
-    if (oobe_flag_file == NULL)
+    if (oobe_flag_file == nullptr)
       DLOG(WARNING) << oobe_complete_flag_path.value() << " doesn't exist.";
     else
       base::CloseFile(oobe_flag_file);

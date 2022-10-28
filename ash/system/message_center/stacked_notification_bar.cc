@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,6 +13,7 @@
 #include "ash/system/message_center/message_center_style.h"
 #include "ash/system/tray/tray_constants.h"
 #include "base/bind.h"
+#include "base/ranges/algorithm.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/color/color_id.h"
@@ -46,7 +47,7 @@ class StackingBarLabelButton : public PillButton {
       : PillButton(
             std::move(callback),
             text,
-            PillButton::Type::kIconlessAccentFloating,
+            PillButton::Type::kAccentFloatingWithoutIcon,
             /*icon=*/nullptr,
             kNotificationPillButtonHorizontalSpacing,
             /*use_light_colors=*/!features::IsNotificationsRefreshEnabled(),
@@ -262,7 +263,7 @@ StackedNotificationBar::StackedNotificationBar(
           views::BoxLayout::Orientation::kHorizontal,
           features::IsNotificationsRefreshEnabled() ? kNotificationBarPadding
                                                     : gfx::Insets()))) {
-  SetVisible(false);
+  UpdateVisibility();
 
   layout_manager_->set_cross_axis_alignment(
       views::BoxLayout::CrossAxisAlignment::kStretch);
@@ -385,12 +386,11 @@ void StackedNotificationBar::OnIconAnimatedOut(std::string notification_id,
 
 StackedNotificationBar::StackedNotificationBarIcon*
 StackedNotificationBar::GetFrontIcon(bool animating_out) {
-  const auto i = std::find_if(
-      notification_icons_container_->children().cbegin(),
-      notification_icons_container_->children().cend(), [&](const auto* v) {
-        return animating_out ==
-               static_cast<const StackedNotificationBarIcon*>(v)
-                   ->is_animating_out();
+  const auto i = base::ranges::find(
+      notification_icons_container_->children(), animating_out,
+      [](const auto* v) {
+        return static_cast<const StackedNotificationBarIcon*>(v)
+            ->is_animating_out();
       });
 
   return (i == notification_icons_container_->children().cend()

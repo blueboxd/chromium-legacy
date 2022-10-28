@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -68,7 +68,6 @@ public class PaymentRequestShowPromiseDigitalGoodsTest implements MainActivitySt
                 "https://bobpay.com", AppPresence.HAVE_APPS, FactorySpeed.FAST_FACTORY);
         mRule.openPage();
         mRule.executeJavaScriptAndWaitForResult("create('https://bobpay.com');");
-        mRule.enableSkipUIForBasicCard();
 
         mRule.openPageAndClickNodeAndWait("buy", mRule.getDismissed());
 
@@ -83,7 +82,6 @@ public class PaymentRequestShowPromiseDigitalGoodsTest implements MainActivitySt
                 FactorySpeed.SLOW_FACTORY, AppSpeed.SLOW_APP);
         mRule.openPage();
         mRule.executeJavaScriptAndWaitForResult("create('https://bobpay.com');");
-        mRule.enableSkipUIForBasicCard();
 
         mRule.openPageAndClickNodeAndWait("buy", mRule.getDismissed());
 

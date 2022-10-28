@@ -15,8 +15,8 @@
 #include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_functions.h"
-#include "content/browser/first_party_sets/first_party_set_parser.h"
 #include "net/base/schemeful_site.h"
+#include "net/first_party_sets/first_party_set_entry.h"
 #include "sql/database.h"
 #include "sql/error_delegate_util.h"
 #include "sql/meta_table.h"
@@ -34,6 +34,16 @@ const int kCurrentVersionNumber = 1;
 const char kRunCountKey[] = "run_count";
 
 [[nodiscard]] bool InitSchema(sql::Database& db) {
+  static constexpr char kPublicSetsSql[] =
+      "CREATE TABLE IF NOT EXISTS public_sets("
+      "site TEXT NOT NULL,"
+      "primary_site TEXT NOT NULL,"
+      "site_type INTEGER NOT NULL,"
+      "PRIMARY KEY(site)"
+      ")WITHOUT ROWID";
+  if (!db.Execute(kPublicSetsSql))
+    return false;
+
   static constexpr char kBrowserContextSitesToClearSql[] =
       "CREATE TABLE IF NOT EXISTS browser_context_sites_to_clear("
       "browser_context_id TEXT NOT NULL,"
@@ -81,6 +91,16 @@ void RecordInitializationStatus(FirstPartySetsDatabase::InitStatus status) {
   base::UmaHistogramEnumeration("FirstPartySets.Database.InitStatus", status);
 }
 
+absl::optional<net::SiteType> DeserializeSiteType(int value) {
+  switch (value) {
+    case static_cast<int>(net::SiteType::kPrimary):
+      return net::SiteType::kPrimary;
+    case static_cast<int>(net::SiteType::kAssociated):
+      return net::SiteType::kAssociated;
+  }
+  return absl::nullopt;
+}
+
 }  // namespace
 
 FirstPartySetsDatabase::FirstPartySetsDatabase(base::FilePath db_path)
@@ -90,6 +110,41 @@ FirstPartySetsDatabase::FirstPartySetsDatabase(base::FilePath db_path)
 
 FirstPartySetsDatabase::~FirstPartySetsDatabase() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+}
+
+bool FirstPartySetsDatabase::SetPublicSets(
+    const FirstPartySetsDatabase::FlattenedSets& sets) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  if (!LazyInit())
+    return false;
+
+  sql::Transaction transaction(db_.get());
+  if (!transaction.Begin())
+    return false;
+
+  static constexpr char kDeleteSql[] = "DELETE FROM public_sets";
+  sql::Statement delete_statement(
+      db_->GetCachedStatement(SQL_FROM_HERE, kDeleteSql));
+  if (!delete_statement.Run())
+    return false;
+
+  for (const auto& [site, entry] : sets) {
+    DCHECK(!site.opaque());
+    DCHECK(!entry.primary().opaque());
+    static constexpr char kInsertSql[] =
+        "INSERT INTO public_sets(site,primary_site,site_type)"
+        "VALUES(?,?,?)";
+    sql::Statement insert_statement(
+        db_->GetCachedStatement(SQL_FROM_HERE, kInsertSql));
+    insert_statement.BindString(0, site.Serialize());
+    insert_statement.BindString(1, entry.primary().Serialize());
+    insert_statement.BindInt(2, static_cast<int>(entry.site_type()));
+
+    if (!insert_statement.Run())
+      return false;
+  }
+  return transaction.Commit();
 }
 
 bool FirstPartySetsDatabase::InsertSitesToClear(
@@ -148,7 +203,8 @@ bool FirstPartySetsDatabase::InsertBrowserContextCleared(
 bool FirstPartySetsDatabase::InsertPolicyModifications(
     const std::string& browser_context_id,
     const base::flat_map<net::SchemefulSite,
-                         absl::optional<net::SchemefulSite>>& modificatons) {
+                         absl::optional<net::FirstPartySetEntry>>&
+        modificatons) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   if (!LazyInit())
@@ -160,9 +216,10 @@ bool FirstPartySetsDatabase::InsertPolicyModifications(
 
   static constexpr char kDeleteSql[] =
       "DELETE FROM policy_modifications WHERE browser_context_id=?";
-  sql::Statement statement(db_->GetCachedStatement(SQL_FROM_HERE, kDeleteSql));
-  statement.BindString(0, browser_context_id);
-  if (!statement.Run())
+  sql::Statement delete_statement(
+      db_->GetCachedStatement(SQL_FROM_HERE, kDeleteSql));
+  delete_statement.BindString(0, browser_context_id);
+  if (!delete_statement.Run())
     return false;
 
   for (const auto& [site, owner] : modificatons) {
@@ -170,20 +227,58 @@ bool FirstPartySetsDatabase::InsertPolicyModifications(
     static constexpr char kInsertSql[] =
         "INSERT INTO policy_modifications(browser_context_id,site,site_owner)"
         "VALUES(?,?,?)";
-    sql::Statement statement(
+    sql::Statement insert_statement(
         db_->GetCachedStatement(SQL_FROM_HERE, kInsertSql));
-    statement.BindString(0, browser_context_id);
-    statement.BindString(1, site.Serialize());
+    insert_statement.BindString(0, browser_context_id);
+    insert_statement.BindString(1, site.Serialize());
     if (owner.has_value()) {
-      statement.BindString(2, owner.value().Serialize());
+      insert_statement.BindString(2, owner.value().primary().Serialize());
     } else {
-      statement.BindNull(2);
+      insert_statement.BindNull(2);
     }
 
-    if (!statement.Run())
+    if (!insert_statement.Run())
       return false;
   }
   return transaction.Commit();
+}
+
+FirstPartySetsDatabase::FlattenedSets FirstPartySetsDatabase::GetPublicSets() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  if (!LazyInit())
+    return {};
+
+  std::vector<std::pair<net::SchemefulSite, net::FirstPartySetEntry>> results;
+  static constexpr char kSelectSql[] =
+      "SELECT site,primary_site,site_type FROM public_sets";
+  sql::Statement statement(db_->GetCachedStatement(SQL_FROM_HERE, kSelectSql));
+
+  while (statement.Step()) {
+    absl::optional<net::SchemefulSite> site =
+        FirstPartySetParser::CanonicalizeRegisteredDomain(
+            statement.ColumnString(0), /*emit_errors=*/false);
+
+    absl::optional<net::SchemefulSite> primary =
+        FirstPartySetParser::CanonicalizeRegisteredDomain(
+            statement.ColumnString(1), /*emit_errors=*/false);
+
+    absl::optional<net::SiteType> site_type =
+        DeserializeSiteType(statement.ColumnInt(2));
+
+    // TODO(crbug.com/1314039): Invalid entries should be rare case but
+    // possible. Consider deleting them from DB.
+    if (site.has_value() && primary.has_value() && site_type.has_value()) {
+      results.emplace_back(
+          std::move(site.value()),
+          net::FirstPartySetEntry(primary.value(), site_type.value(),
+                                  /*site_index=*/absl::nullopt));
+    }
+  }
+  if (!statement.Succeeded())
+    return {};
+
+  return results;
 }
 
 std::vector<net::SchemefulSite> FirstPartySetsDatabase::FetchSitesToClear(
@@ -236,7 +331,7 @@ FirstPartySetsDatabase::FetchAllSitesToClearFilter(
   if (!LazyInit())
     return {};
 
-  base::flat_map<net::SchemefulSite, int64_t> results;
+  std::vector<std::pair<net::SchemefulSite, int64_t>> results;
   static constexpr char kSelectSql[] =
       // clang-format off
       "SELECT site,marked_at_run FROM browser_context_sites_to_clear "
@@ -253,7 +348,7 @@ FirstPartySetsDatabase::FetchAllSitesToClearFilter(
     // TODO(crbug/1314039): Invalid sites should be rare case but possible.
     // Consider deleting them from DB.
     if (site.has_value()) {
-      results.emplace(std::move(site.value()), statement.ColumnInt(1));
+      results.emplace_back(std::move(site.value()), statement.ColumnInt(1));
     }
   }
 
@@ -263,7 +358,7 @@ FirstPartySetsDatabase::FetchAllSitesToClearFilter(
   return results;
 }
 
-base::flat_map<net::SchemefulSite, absl::optional<net::SchemefulSite>>
+base::flat_map<net::SchemefulSite, absl::optional<net::FirstPartySetEntry>>
 FirstPartySetsDatabase::FetchPolicyModifications(
     const std::string& browser_context_id) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -271,7 +366,8 @@ FirstPartySetsDatabase::FetchPolicyModifications(
   if (!LazyInit())
     return {};
 
-  base::flat_map<net::SchemefulSite, absl::optional<net::SchemefulSite>>
+  std::vector<
+      std::pair<net::SchemefulSite, absl::optional<net::FirstPartySetEntry>>>
       results;
   static constexpr char kSelectSql[] =
       // clang-format off
@@ -294,9 +390,23 @@ FirstPartySetsDatabase::FetchPolicyModifications(
 
     // TODO(crbug/1314039): Invalid sites should be rare case but possible.
     // Consider deleting them from DB.
-    if (site.has_value())
-      results.emplace(std::move(site.value()), maybe_site_owner);
+    if (site.has_value()) {
+      results.emplace_back(
+          std::move(site.value()),
+          maybe_site_owner.has_value()
+              ? absl::make_optional(net::FirstPartySetEntry(
+                    maybe_site_owner.value(),
+                    // TODO(https://crbug.com/1219656): May change to use the
+                    // real site_type and site_index in the future, depending on
+                    // the design details. Use kAssociated as default site type
+                    // and null site index for now.
+                    net::SiteType::kAssociated, absl::nullopt))
+              : absl::nullopt);
+    }
   }
+  if (!statement.Succeeded())
+    return {};
+
   return results;
 }
 

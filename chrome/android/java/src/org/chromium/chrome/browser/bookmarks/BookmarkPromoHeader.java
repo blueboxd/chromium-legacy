@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -187,7 +187,7 @@ public class BookmarkPromoHeader implements SyncService.SyncStateChangedListener
                 SharedPreferencesManager.getInstance().readInt(
                         ChromePreferenceKeys.SIGNIN_AND_SYNC_PROMO_SHOW_COUNT)
                 < MAX_SIGNIN_AND_SYNC_PROMO_SHOW_COUNT;
-        if ((!mSyncService.isSyncRequested() || mSyncService.getChosenDataTypes().isEmpty())
+        if ((!mSyncService.isSyncRequested() || mSyncService.getSelectedTypes().isEmpty())
                 && impressionLimitNotReached) {
             return SyncPromoState.PROMO_FOR_SYNC_TURNED_OFF_STATE;
         }

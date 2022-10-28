@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -290,14 +290,13 @@ bool AppManagerImpl::LaunchLockScreenApp() {
     return false;
   }
 
-  auto action_data =
-      std::make_unique<extensions::api::app_runtime::ActionData>();
-  action_data->action_type =
+  extensions::api::app_runtime::ActionData action_data;
+  action_data.action_type =
       extensions::api::app_runtime::ActionType::ACTION_TYPE_NEW_NOTE;
-  action_data->is_lock_screen_action = std::make_unique<bool>(true);
-  action_data->restore_last_action_state =
-      std::make_unique<bool>(primary_profile_->GetPrefs()->GetBoolean(
-          prefs::kRestoreLastLockScreenNote));
+  action_data.is_lock_screen_action = true;
+  action_data.restore_last_action_state =
+      primary_profile_->GetPrefs()->GetBoolean(
+          prefs::kRestoreLastLockScreenNote);
   apps::LaunchPlatformAppWithAction(lock_screen_profile_, app,
                                     std::move(action_data));
   return true;

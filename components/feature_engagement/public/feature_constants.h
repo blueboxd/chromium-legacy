@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -33,8 +33,10 @@ extern const base::Feature kEnableIPH;
 
 #if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_APPLE) || BUILDFLAG(IS_LINUX) || \
     BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_FUCHSIA)
+extern const base::Feature kIPHBatterySaverModeFeature;
 extern const base::Feature kIPHDesktopSharedHighlightingFeature;
 extern const base::Feature kIPHDesktopTabGroupsNewGroupFeature;
+extern const base::Feature kIPHExtensionsMenuFeature;
 extern const base::Feature kIPHFocusHelpBubbleScreenReaderPromoFeature;
 extern const base::Feature kIPHGMCCastStartStopFeature;
 extern const base::Feature kIPHLiveCaptionFeature;
@@ -47,6 +49,7 @@ extern const base::Feature kIPHReadingListInSidePanelFeature;
 extern const base::Feature kIPHReopenTabFeature;
 extern const base::Feature kIPHSideSearchAutoTriggeringFeature;
 extern const base::Feature kIPHSideSearchFeature;
+extern const base::Feature kIPHSideSearchPageActionLabelFeature;
 extern const base::Feature kIPHTabSearchFeature;
 extern const base::Feature kIPHWebUITabStripFeature;
 extern const base::Feature kIPHDesktopSnoozeFeature;

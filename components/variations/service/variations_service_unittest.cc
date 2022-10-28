@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -818,7 +818,7 @@ TEST_F(VariationsServiceTest, LoadPermanentConsistencyCountry) {
       expected_list.Append(component);
     }
     const base::Value::List& pref_list =
-        prefs_.GetValueList(prefs::kVariationsPermanentConsistencyCountry);
+        prefs_.GetList(prefs::kVariationsPermanentConsistencyCountry);
     EXPECT_EQ(ListToString(expected_list), ListToString(pref_list))
         << test.permanent_consistency_country_before << ", " << test.version
         << ", " << test.latest_country_code;

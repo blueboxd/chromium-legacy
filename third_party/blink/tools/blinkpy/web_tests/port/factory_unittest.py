@@ -101,6 +101,12 @@ class FactoryTest(unittest.TestCase):
             factory.PortFactory(host).get_from_builder_name(
                 'My Fake Mac11 Builder').name(), 'mac-mac11')
 
+    def test_options_is_unchanged(self):
+        host = MockHost()
+        options = optparse.Values()
+        factory.PortFactory(host).get(options=options)
+        self.assertEqual(options, optparse.Values())
+
     def get_port(self, target=None, configuration=None, files=None):
         host = MockHost()
         finder = PathFinder(host.filesystem)
@@ -190,3 +196,7 @@ class FactoryTest(unittest.TestCase):
                 target='Debug',
                 configuration='Release',
                 files={'out/Debug/toolchain.ninja': ''})
+
+    def test_no_target_has_correct_config(self):
+        port = self.get_port(files={'out/Release/args.gn': 'is_debug = true'})
+        self.assertEqual(port._options.configuration, 'Debug')

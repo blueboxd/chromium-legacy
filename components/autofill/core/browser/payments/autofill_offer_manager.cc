@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -53,8 +53,8 @@ void AutofillOfferManager::UpdateSuggestionsWithOffers(
 
   // Update |offer_label| for each suggestion.
   for (auto& suggestion : suggestions) {
-    std::string id = suggestion.GetPayload<std::string>();
-    if (eligible_offers_map.count(id)) {
+    if (eligible_offers_map.count(
+            suggestion.GetPayload<Suggestion::BackendId>().value())) {
       suggestion.offer_label =
           l10n_util::GetStringUTF16(IDS_AUTOFILL_OFFERS_CASHBACK);
     }

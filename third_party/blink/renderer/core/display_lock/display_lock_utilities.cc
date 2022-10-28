@@ -47,9 +47,7 @@ Element* NearestLockedExclusiveAncestor(const Node& node) {
     if (!ancestor_element)
       continue;
     if (auto* context = ancestor_element->GetDisplayLockContext()) {
-      if (context->IsLocked() &&
-          (!ancestor_element->GetLayoutObject() ||
-           !ancestor_element->GetLayoutObject()->IsShapingDeferred()))
+      if (context->IsLocked())
         return ancestor_element;
     }
   }
@@ -68,9 +66,7 @@ const Element* NearestLockedInclusiveAncestor(const Node& node) {
     return nullptr;
   }
   if (auto* context = element->GetDisplayLockContext()) {
-    if (context->IsLocked() &&
-        (!element->GetLayoutObject() ||
-         !element->GetLayoutObject()->IsShapingDeferred()))
+    if (context->IsLocked())
       return element;
   }
   return NearestLockedExclusiveAncestor(node);
@@ -188,7 +184,7 @@ bool DisplayLockUtilities::ActivateFindInPageMatchRangeIfNeeded(
   // This means we only need to traverse up from one node in the range, in this
   // case we are traversing from the start position of the range.
   Element* enclosing_block =
-      EnclosingBlock(range.StartPosition(), kCannotCrossEditingBoundary);
+      EnclosingBlock(range.StartPosition(), kCanCrossEditingBoundary);
   // Note that we don't check the `range.EndPosition()` since we just activate
   // the beginning of the range. In find-in-page cases, the end position is the
   // same since the matches cannot cross block boundaries. However, in
@@ -853,8 +849,7 @@ bool DisplayLockUtilities::IsDisplayLockedPreventingPaint(
         // IsLockedForAccessibility by recording whether this context is locked
         // but allow paint. However, that situation is not possible since all
         // locked contexts always prevent paint except for DeferredShaping.
-        DCHECK(!context->IsLocked() || !context->ShouldPaintChildren() ||
-               context->IsShapingDeferred());
+        DCHECK(!context->IsLocked() || !context->ShouldPaintChildren());
         if (!context->ShouldPaintChildren()) {
           memoizer_->NotifyLocked(previous_ancestor);
           return true;
@@ -914,6 +909,20 @@ bool DisplayLockUtilities::IsUnlockedQuickCheck(const Node& node) {
     if (result)
       return !*result;
   }
+  return false;
+}
+
+bool DisplayLockUtilities::IsPotentialStyleRecalcRoot(const Node& node) {
+  auto* element = DynamicTo<Element>(node);
+  if (!element)
+    return false;
+  auto* context = element->GetDisplayLockContext();
+  if (!context)
+    return false;
+  if (context->StyleTraversalWasBlocked())
+    return true;
+  if (!context->ShouldStyleChildren())
+    return context->IsElementDirtyForStyleRecalc();
   return false;
 }
 

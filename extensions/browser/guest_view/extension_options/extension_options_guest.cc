@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -135,7 +135,8 @@ void ExtensionOptionsGuest::OnPreferredSizeChanged(const gfx::Size& pref_size) {
   options.height = PhysicalPixelsToLogicalPixels(pref_size.height());
   DispatchEventToView(std::make_unique<GuestViewEvent>(
       api::extension_options_internal::OnPreferredSizeChanged::kEventName,
-      options.ToValue()));
+      base::DictionaryValue::From(
+          base::Value::ToUniquePtrValue(base::Value(options.ToValue())))));
 }
 
 void ExtensionOptionsGuest::AddNewContents(
@@ -143,7 +144,7 @@ void ExtensionOptionsGuest::AddNewContents(
     std::unique_ptr<WebContents> new_contents,
     const GURL& target_url,
     WindowOpenDisposition disposition,
-    const gfx::Rect& initial_rect,
+    const blink::mojom::WindowFeatures& window_features,
     bool user_gesture,
     bool* was_blocked) {
   // |new_contents| is potentially used as a non-embedded WebContents, so we
@@ -155,7 +156,7 @@ void ExtensionOptionsGuest::AddNewContents(
     return;
 
   embedder_web_contents()->GetDelegate()->AddNewContents(
-      source, std::move(new_contents), target_url, disposition, initial_rect,
+      source, std::move(new_contents), target_url, disposition, window_features,
       user_gesture, was_blocked);
 }
 

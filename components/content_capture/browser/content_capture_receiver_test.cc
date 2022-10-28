@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -30,11 +30,9 @@ class ContentCaptureReceiverTest : public content::RenderViewHostTestHarness,
                                    public ::testing::WithParamInterface<bool> {
  public:
   void SetUp() override {
-    // TODO (crbug.com/1115234): Remove the param when BFCache same site feature
-    // launched.
     if (GetParam()) {
       scoped_feature_list_.InitWithFeaturesAndParameters(
-          {{{features::kBackForwardCache}, {{"enable_same_site", "true"}}}},
+          {{{features::kBackForwardCache}, {}}},
           // Allow BackForwardCache for all devices regardless of their memory.
           {features::kBackForwardCacheMemoryControls});
     }

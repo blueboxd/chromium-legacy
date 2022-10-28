@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -43,7 +43,7 @@ enum ProfileSignout : int {
   // Signed out because credentials are invalid and force-sign-in is enabled.
   AUTHENTICATION_FAILED_WITH_FORCE_SIGNIN = 7,
   // The user disables sync from the DICE UI.
-  USER_TUNED_OFF_SYNC_FROM_DICE_UI = 8,
+  // Deprecated: USER_TUNED_OFF_SYNC_FROM_DICE_UI = 8,
   // Signout forced because the account was removed from the device.
   ACCOUNT_REMOVED_FROM_DEVICE = 9,
   // Signin is no longer allowed when the profile is initialized.
@@ -289,7 +289,9 @@ enum class AccountConsistencyPromoAction : int {
   TIMEOUT_ERROR_SHOWN = 17,
   // The web sign-in is not shown because the user is already signed in.
   SUPPRESSED_ALREADY_SIGNED_IN = 18,
-  MAX = 18,
+  // AuthenticationFlow failed to sign-in.
+  SIGN_IN_FAILED = 19,
+  kMaxValue = SIGN_IN_FAILED,
 };
 #endif  // BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_IOS)
 

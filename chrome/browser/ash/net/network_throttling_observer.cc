@@ -1,4 +1,4 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -40,7 +40,7 @@ void NetworkThrottlingObserver::OnPreferenceChanged(
   DCHECK(pref_name == prefs::kNetworkThrottlingEnabled);
 
   const base::Value::Dict& throttling_policy =
-      local_state_->GetValueDict(prefs::kNetworkThrottlingEnabled);
+      local_state_->GetDict(prefs::kNetworkThrottlingEnabled);
 
   // Default is to disable throttling if the policy is not found.
   const bool enabled = throttling_policy.FindBool("enabled").value_or(false);

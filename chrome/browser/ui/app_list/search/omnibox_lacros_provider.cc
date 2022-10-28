@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,7 +6,6 @@
 
 #include "ash/public/cpp/app_list/app_list_features.h"
 #include "base/bind.h"
-#include "base/callback_forward.h"
 #include "chrome/browser/ash/crosapi/crosapi_ash.h"
 #include "chrome/browser/ash/crosapi/crosapi_manager.h"
 #include "chrome/browser/ash/crosapi/search_provider_ash.h"
@@ -126,9 +125,7 @@ void OmniboxLacrosProvider::OnResultsReceived(
     } else if (!crosapi::OptionalBoolIsTrue(search_result->is_answer)) {
       // Omnibox result.
       list_results.emplace_back(std::make_unique<OmniboxResult>(
-          profile_, list_controller_, base::DoNothing(),
-          std::move(search_result), last_query_,
-          /*is_zero_suggestion=*/false));
+          profile_, list_controller_, std::move(search_result), last_query_));
     } else if (!ShouldFilterAnswer(search_result, last_query_)) {
       // Answer result.
       new_results.emplace_back(std::make_unique<OmniboxAnswerResult>(

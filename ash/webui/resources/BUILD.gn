@@ -1,8 +1,9 @@
-# Copyright 2021 The Chromium Authors. All rights reserved.
+# Copyright 2021 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
 import("//ash/webui/eche_app_ui/eche_app_ui.gni")
+import("//ash/webui/face_ml_app_ui/face_ml_app_ui.gni")
 import("//ash/webui/help_app_ui/help_app_ui.gni")
 import("//ash/webui/media_app_ui/media_app_ui.gni")
 import("//ash/webui/projector_app/projector_app.gni")
@@ -97,13 +98,14 @@ ash_generated_grit("system_extensions_internals_resources") {
   deps = [ "//ash/webui/system_extensions_internals_ui:build_grd" ]
 }
 
-if (!is_official_build) {
-  # Resources used by chrome://demo-mode-app
-  ash_generated_grit("demo_mode_app_resources") {
-    source = "$root_gen_dir/ash/webui/demo_mode_app_ui/ash_demo_mode_app_resources.grd"
-    deps = [ "//ash/webui/demo_mode_app_ui:build_grd" ]
-  }
+# Resources used by chrome-untrusted://demo-mode-app
+ash_generated_grit("demo_mode_app_resources") {
+  source =
+      "$root_gen_dir/ash/webui/demo_mode_app_ui/ash_demo_mode_app_resources.grd"
+  deps = [ "//ash/webui/demo_mode_app_ui:build_grd" ]
+}
 
+if (!is_official_build) {
   # Resources used by chrome://sample-system-web-app
   ash_generated_grit("sample_system_web_app_resources") {
     source = "$root_gen_dir/ash/webui/sample_system_web_app_ui/resources/trusted/ash_sample_system_web_app_resources.grd"
@@ -266,38 +268,27 @@ grit("media_app_bundle_resources") {
   output_dir = "$root_gen_dir/chromeos"
 }
 
-grit("print_management_resources") {
-  source =
-      "//ash/webui/print_management/resources/print_management_resources.grd"
-
-  deps = [
-    "//ash/webui/print_management/mojom:mojom_js",
-    "//ash/webui/print_management/resources:web_components",
-  ]
-
-  outputs = [
-    "grit/ash_print_management_resources.h",
-    "grit/ash_print_management_resources_map.cc",
-    "grit/ash_print_management_resources_map.h",
-    "ash_print_management_resources.pak",
-  ]
-
-  output_dir = "$ash_webui_grit_output_dir"
+ash_generated_grit("print_management_resources") {
+  source = "$root_gen_dir/ash/webui/print_management/resources/ash_print_management_resources.grd"
+  deps = [ "//ash/webui/print_management/resources:build_grd" ]
 }
 
 # Resources used by chrome-untrusted://projector SWA.
 ash_generated_grit("projector_app_untrusted_resources") {
-  source = "$root_gen_dir/ash/webui/projector_app/resources/ash_projector_app_untrusted_resources.grd"
-  deps = [ "//ash/webui/projector_app/resources:build_untrusted_grd" ]
+  source = "$root_gen_dir/ash/webui/projector_app/resources/app/untrusted/ash_projector_app_untrusted_resources.grd"
+  deps = [
+    "//ash/webui/projector_app/resources/app/untrusted:build_untrusted_grd",
+  ]
 }
 
 # Resources used by chrome://projector SWA.
 ash_generated_grit("projector_app_trusted_resources") {
-  source = "$root_gen_dir/ash/webui/projector_app/resources/ash_projector_app_trusted_resources.grd"
-  deps = [ "//ash/webui/projector_app/resources:build_trusted_grd" ]
+  source = "$root_gen_dir/ash/webui/projector_app/resources/app/trusted/ash_projector_app_trusted_resources.grd"
+  deps = [ "//ash/webui/projector_app/resources/app/trusted:build_trusted_grd" ]
 }
 
 # Resources automatically served by the chrome-untrusted://projector bundle, obtained via DEPS.
+# TODO(b/216523790): Split up the projector_app_bundle_resource into app_bundle and annotator_bundle.
 grit("projector_app_bundle_resources") {
   if (enable_cros_projector_app) {
     # Obtained via an internal CIPD package in src/DEPS.
@@ -319,10 +310,57 @@ grit("projector_app_bundle_resources") {
   output_dir = "$root_gen_dir/chromeos"
 }
 
-# Resources used by chrome://facial-ml
-ash_generated_grit("facial_ml_app_resources") {
-  source = "$root_gen_dir/ash/webui/facial_ml_app_ui/resources/trusted/ash_facial_ml_app_resources.grd"
-  deps = [ "//ash/webui/facial_ml_app_ui/resources/trusted:trusted_grd" ]
+# Resources used by chrome://face-ml
+ash_generated_grit("face_ml_app_resources") {
+  source = "$root_gen_dir/ash/webui/face_ml_app_ui/resources/trusted/ash_face_ml_app_resources.grd"
+  deps = [ "//ash/webui/face_ml_app_ui/resources/trusted:trusted_grd" ]
+}
+
+# Resources used by chrome-untrusted://face-ml
+ash_generated_grit("face_ml_app_untrusted_resources") {
+  source = "$root_gen_dir/ash/webui/face_ml_app_ui/resources/untrusted/ash_face_ml_app_untrusted_resources.grd"
+  deps = [ "//ash/webui/face_ml_app_ui/resources/untrusted:untrusted_grd" ]
+}
+
+# Resources automatically served by the chrome-untrusted://face-ml bundle, obtained via DEPS.
+grit("face_ml_app_bundle_resources") {
+  if (enable_cros_face_ml) {
+    # Obtained via an internal CIPD package in src/DEPS.
+    source = "//ash/webui/face_ml_app_ui/resources/prod/face_ml_app_bundle_resources.grd"
+  } else {
+    source = "//ash/webui/face_ml_app_ui/resources/mock/face_ml_app_bundle_mock_resources.grd"
+  }
+
+  use_brotli = true
+
+  outputs = [
+    "grit/ash_face_ml_app_bundle_resources.h",
+    "grit/ash_face_ml_app_bundle_resources_map.cc",
+    "grit/ash_face_ml_app_bundle_resources_map.h",
+    "ash_face_ml_app_bundle_resources.pak",
+  ]
+
+  output_dir = "$ash_webui_grit_output_dir"
+}
+
+# Resources used by chrome-untrusted://projector-annotator SWA.
+ash_generated_grit("projector_annotator_untrusted_resources") {
+  source = "$root_gen_dir/ash/webui/projector_app/resources/annotator/untrusted/ash_projector_annotator_untrusted_resources.grd"
+  deps = [ "//ash/webui/projector_app/resources/annotator/untrusted:build_untrusted_grd" ]
+}
+
+# Resources used by chrome://projector-annotator SWA.
+ash_generated_grit("projector_annotator_trusted_resources") {
+  source = "$root_gen_dir/ash/webui/projector_app/resources/annotator/trusted/ash_projector_annotator_trusted_resources.grd"
+  deps = [
+    "//ash/webui/projector_app/resources/annotator/trusted:build_trusted_grd",
+  ]
+}
+
+# Resources used by chrome://projector and chrome://projector-annotator SWA.
+ash_generated_grit("projector_common_resources") {
+  source = "$root_gen_dir/ash/webui/projector_app/resources/common/ash_projector_common_resources.grd"
+  deps = [ "//ash/webui/projector_app/resources/common:build_common_grd" ]
 }
 
 # Resources used by chrome://eche-app

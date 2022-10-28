@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -25,6 +25,9 @@ extern const base::Feature kSmartSortingNewOverflowMenu;
 // Feature to add a "Share Chrome App" action to the overflow menu
 extern const base::Feature kNewOverflowMenuShareChromeAction;
 
+// Feature to use the alternate overflow IPH flow.
+extern const base::Feature kNewOverflowMenuAlternateIPH;
+
 // Whether the NewOverflowMenu feature is enabled.
 bool IsNewOverflowMenuEnabled();
 
@@ -48,5 +51,8 @@ bool IsSmartSortingNewOverflowMenuEnabled();
 
 // Whether or not the NewOverflowMenuShareChromeAction is enabled.
 bool IsNewOverflowMenuShareChromeActionEnabled();
+
+// Whether or not the alternate overflow menu IPH flow is enabled.
+bool IsNewOverflowMenuAlternateIPHEnabled();
 
 #endif  // IOS_CHROME_BROWSER_UI_POPUP_MENU_OVERFLOW_MENU_FEATURE_FLAGS_H_

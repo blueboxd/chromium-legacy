@@ -1,4 +1,4 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -403,6 +403,36 @@ TEST_F(ClientControlledStateTest, SnapInSecondaryDisplay) {
   EXPECT_EQ(first_display.id(), delegate()->display_id());
   EXPECT_EQ(gfx::Rect(0, 0, 400, 600 - ShelfConfig::Get()->shelf_size()),
             delegate()->requested_bounds());
+}
+
+TEST_F(ClientControlledStateTest, SnapMinimizeAndUnminimize) {
+  UpdateDisplay("800x600");
+  widget_delegate()->EnableSnap();
+
+  const WindowSnapWMEvent snap_left_event(WM_EVENT_CYCLE_SNAP_PRIMARY);
+  window_state()->OnWMEvent(&snap_left_event);
+  state()->EnterNextState(window_state(), delegate()->new_state());
+  EXPECT_EQ(gfx::Rect(0, 0, 400, 600 - ShelfConfig::Get()->shelf_size()),
+            delegate()->requested_bounds());
+  EXPECT_EQ(WindowStateType::kPrimarySnapped, delegate()->new_state());
+
+  const gfx::Rect resized_bounds(0, 0, 300,
+                                 600 - ShelfConfig::Get()->shelf_size());
+  const SetBoundsWMEvent set_bounds_event(resized_bounds,
+                                          delegate()->display_id());
+  window_state()->OnWMEvent(&set_bounds_event);
+  state()->set_bounds_locally(true);
+  window()->SetBounds(resized_bounds);
+  state()->set_bounds_locally(false);
+  EXPECT_EQ(resized_bounds, delegate()->requested_bounds());
+
+  widget()->Minimize();
+  state()->EnterNextState(window_state(), delegate()->new_state());
+
+  ::wm::Unminimize(widget()->GetNativeWindow());
+  state()->EnterNextState(window_state(), delegate()->new_state());
+  EXPECT_EQ(WindowStateType::kPrimarySnapped, delegate()->new_state());
+  EXPECT_EQ(resized_bounds, delegate()->requested_bounds());
 }
 
 // Pin events should be applied immediately.

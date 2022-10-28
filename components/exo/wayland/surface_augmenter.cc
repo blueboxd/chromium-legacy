@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -180,6 +180,15 @@ class AugmentedSubSurface : public SubSurfaceObserver {
     sub_surface_->SetPosition(gfx::PointF(x, y));
   }
 
+  void SetClipRect(float x, float y, float width, float height) {
+    absl::optional<gfx::RectF> clip_rect;
+    if (x >= 0 && y >= 0 && width >= 0 && height >= 0) {
+      clip_rect = gfx::RectF(x, y, width, height);
+    }
+    // TODO(rivr): Should we send a protocol error if there are invalid values?
+    sub_surface_->SetClipRect(clip_rect);
+  }
+
   // SurfaceObserver:
   void OnSubSurfaceDestroying(SubSurface* sub_surface) override {
     sub_surface->RemoveSubSurfaceObserver(this);
@@ -202,9 +211,21 @@ void augmented_sub_surface_set_position(wl_client* client,
       wl_fixed_to_double(x), wl_fixed_to_double(y));
 }
 
+void augmented_sub_surface_set_clip_rect(wl_client* client,
+                                         wl_resource* resource,
+                                         wl_fixed_t x,
+                                         wl_fixed_t y,
+                                         wl_fixed_t width,
+                                         wl_fixed_t height) {
+  GetUserDataAs<AugmentedSubSurface>(resource)->SetClipRect(
+      wl_fixed_to_double(x), wl_fixed_to_double(y), wl_fixed_to_double(width),
+      wl_fixed_to_double(height));
+}
+
 const struct augmented_sub_surface_interface
-    augmented_sub_surface_implementation = {augmented_sub_surface_destroy,
-                                            augmented_sub_surface_set_position};
+    augmented_sub_surface_implementation = {
+        augmented_sub_surface_destroy, augmented_sub_surface_set_position,
+        augmented_sub_surface_set_clip_rect};
 
 ////////////////////////////////////////////////////////////////////////////////
 // wl_buffer_interface:

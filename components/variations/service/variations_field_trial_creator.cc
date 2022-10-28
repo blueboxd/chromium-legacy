@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -390,8 +390,8 @@ std::string VariationsFieldTrialCreator::LoadPermanentConsistencyCountry(
     return permanent_overridden_country;
   }
 
-  const base::Value::List& list_value = local_state()->GetValueList(
-      prefs::kVariationsPermanentConsistencyCountry);
+  const base::Value::List& list_value =
+      local_state()->GetList(prefs::kVariationsPermanentConsistencyCountry);
   const std::string* stored_version_string = nullptr;
   const std::string* stored_country = nullptr;
 

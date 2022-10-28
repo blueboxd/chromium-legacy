@@ -1,10 +1,11 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "components/password_manager/core/browser/fake_password_store_backend.h"
 
 #include "base/notreached.h"
+#include "base/ranges/algorithm.h"
 #include "base/task/sequenced_task_runner.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "components/password_manager/core/browser/password_form.h"
@@ -231,9 +232,8 @@ PasswordStoreChangeList FakePasswordStoreBackend::AddLoginInternal(
     const PasswordForm& form) {
   PasswordStoreChangeList changes;
   auto& passwords_for_signon_realm = stored_passwords_[form.signon_realm];
-  auto iter = std::find_if(
-      passwords_for_signon_realm.begin(), passwords_for_signon_realm.end(),
-      [&form](const auto& password) {
+  auto iter = base::ranges::find_if(
+      passwords_for_signon_realm, [&form](const auto& password) {
         return ArePasswordFormUniqueKeysEqual(form, password);
       });
 

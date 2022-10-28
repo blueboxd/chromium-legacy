@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -47,12 +47,14 @@
 #include "chrome/browser/ui/web_applications/app_browser_controller.h"
 #include "chrome/browser/ui/web_applications/web_app_dialog_utils.h"
 #include "chrome/browser/ui/web_applications/web_app_launch_utils.h"
+#include "chrome/browser/ui/web_applications/web_app_tabbed_utils.h"
 #include "chrome/browser/ui/webui/inspect_ui.h"
 #include "chrome/browser/web_applications/web_app_install_params.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/content_restriction.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
+#include "chrome/common/webui_url_constants.h"
 #include "components/bookmarks/common/bookmark_pref_names.h"
 #include "components/dom_distiller/core/dom_distiller_features.h"
 #include "components/prefs/pref_service.h"
@@ -778,6 +780,9 @@ bool BrowserCommandController::ExecuteCommandWithDisposition(
     case IDC_MANAGE_EXTENSIONS:
       ShowExtensions(browser_, std::string());
       break;
+    case IDC_PERFORMANCE:
+      ShowSettingsSubPage(browser_, chrome::kPerformanceSubPage);
+      break;
     case IDC_OPTIONS:
       ShowSettings(browser_);
       break;
@@ -902,7 +907,7 @@ bool BrowserCommandController::ExecuteCommandWithDisposition(
       break;
     // Hosted App commands
     case IDC_COPY_URL:
-      CopyURL(browser_);
+      CopyURL(browser_->tab_strip_model()->GetActiveWebContents());
       break;
     case IDC_OPEN_IN_CHROME:
       OpenInChrome(browser_);
@@ -1121,6 +1126,7 @@ void BrowserCommandController::InitCommandState() {
   DCHECK(!profile()->IsSystemProfile())
       << "Ought to never have browser for the system profile.";
   const bool normal_window = browser_->is_type_normal();
+  command_updater_.UpdateCommandEnabled(IDC_PERFORMANCE, true);
   command_updater_.UpdateCommandEnabled(IDC_OPEN_FILE, CanOpenFile(browser_));
   UpdateCommandsForDevTools();
   command_updater_.UpdateCommandEnabled(IDC_TASK_MANAGER, CanOpenTaskManager());
@@ -1349,8 +1355,13 @@ void BrowserCommandController::UpdateCommandsForTabState() {
   bool is_isolated_app = current_web_contents->GetPrimaryMainFrame()
                              ->GetWebExposedIsolationLevel() >=
                          WebExposedIsolationLevel::kMaybeIsolatedApplication;
+  bool is_pinned_home_tab =
+      web_app::AppBrowserController::IsWebApp(browser_) &&
+      web_app::IsPinnedHomeTab(browser_->tab_strip_model(),
+                               browser_->tab_strip_model()->active_index());
   command_updater_.UpdateCommandEnabled(
-      IDC_OPEN_IN_CHROME, IsWebAppOrCustomTab() && !is_isolated_app);
+      IDC_OPEN_IN_CHROME,
+      IsWebAppOrCustomTab() && !is_isolated_app && !is_pinned_home_tab);
 
   command_updater_.UpdateCommandEnabled(
       IDC_TOGGLE_REQUEST_TABLET_SITE,

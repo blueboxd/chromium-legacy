@@ -205,7 +205,7 @@ function runGenericSensorTests(sensorName,
     assert_false(sensor.hasReading);
 
     const mockSensor = await sensorProvider.getCreatedSensor(sensorName);
-    await mockSensor.setSensorReading(readings);
+    mockSensor.setSensorReading(readings);
 
     await sensorWatcher.wait_for("reading");
     const expected = new RingBuffer(expectedReadings).next().value;
@@ -229,7 +229,7 @@ function runGenericSensorTests(sensorName,
     sensor2.start();
 
     const mockSensor = await sensorProvider.getCreatedSensor(sensorName);
-    await mockSensor.setSensorReading(readings);
+    mockSensor.setSensorReading(readings);
 
     await Promise.all([sensorWatcher1.wait_for("reading"),
                        sensorWatcher2.wait_for("reading")]);
@@ -255,7 +255,7 @@ function runGenericSensorTests(sensorName,
     sensor.start();
 
     const mockSensor = await sensorProvider.getCreatedSensor(sensorName);
-    await mockSensor.setSensorReading(readings);
+    mockSensor.setSensorReading(readings);
 
     await sensorWatcher.wait_for("reading");
     const cachedTimeStamp1 = sensor.timestamp;
@@ -316,7 +316,7 @@ function runGenericSensorTests(sensorName,
     sensor.start();
 
     const mockSensor = await sensorProvider.getCreatedSensor(sensorName);
-    await mockSensor.setSensorReading(readings);
+    mockSensor.setSensorReading(readings);
 
     const expectedBuffer = new RingBuffer(expectedReadings);
     await sensorWatcher.wait_for("reading");
@@ -353,7 +353,7 @@ function runGenericSensorTests(sensorName,
 //    sensor.start();
 
 //    const mockSensor = await sensorProvider.getCreatedSensor(sensorName);
-//    await mockSensor.setSensorReading(readings);
+//    mockSensor.setSensorReading(readings);
 
 //    await sensorWatcher.wait_for("reading");
 //    const expected = new RingBuffer(expectedReadings).next().value;
@@ -382,7 +382,7 @@ function runGenericSensorTests(sensorName,
     await eventWatcher.wait_for("activate");
 
     const mockSensor = await sensorProvider.getCreatedSensor(sensorName);
-    await mockSensor.setSensorReading(readings);
+    mockSensor.setSensorReading(readings);
 
     // We need |fastSensorFrequency| because 60Hz might be higher than a sensor
     // type's maximum allowed frequency.
@@ -406,6 +406,45 @@ function runGenericSensorTests(sensorName,
       return mockSensor.getSamplingFrequency() === slowSensorFrequency;
     }, "Sampling frequency has dropped to slowSensor's requested frequency");
   }, `${sensorName}: frequency hint works.`);
+
+  sensor_test(async (t, sensorProvider) => {
+    assert_implements(sensorName in self, `${sensorName} is not supported.`);
+
+    const sensor1 = new sensorType();
+    const sensor2 = new sensorType();
+
+    return new Promise((resolve, reject) => {
+      sensor1.addEventListener('reading', () => {
+        sensor2.addEventListener('activate', () => {
+          try {
+            assert_true(sensor1.activated);
+            assert_true(sensor1.hasReading);
+            assert_false(verificationFunction(null, sensor1, /*isNull=*/true));
+            assert_not_equals(sensor1.timestamp, null);
+
+            assert_true(sensor2.activated);
+            assert_false(verificationFunction(null, sensor2, /*isNull=*/true));
+            assert_not_equals(sensor2.timestamp, null);
+          } catch (e) {
+            reject(e);
+          }
+        }, { once: true });
+        sensor2.addEventListener('reading', () => {
+          try {
+            assert_true(sensor2.activated);
+            assert_true(sensor2.hasReading);
+            assert_sensor_equals(sensor1, sensor2);
+            resolve();
+          } catch (e) {
+            reject(e);
+          }
+        }, { once: true });
+        sensor2.start();
+      }, { once: true });
+      sensor1.start();
+    });
+  }, `${sensorName}: Readings delivered by shared platform sensor are\
+ immediately accessible to all sensors.`);
 
 //  Re-enable after https://github.com/w3c/sensors/issues/361 is fixed.
 //  test(() => {
@@ -452,7 +491,7 @@ function runGenericSensorTests(sensorName,
     sensor2.start();
 
     const mockSensor = await sensorProvider.getCreatedSensor(sensorName);
-    await mockSensor.setSensorReading(readings);
+    mockSensor.setSensorReading(readings);
 
     await Promise.all([sensorWatcher1.wait_for("reading"),
                        sensorWatcher2.wait_for("reading")]);

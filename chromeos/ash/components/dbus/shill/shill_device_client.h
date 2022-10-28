@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -116,7 +116,7 @@ class COMPONENT_EXPORT(SHILL_CLIENT) ShillDeviceClient {
   // |callback| is called after the method call finishes.
   virtual void ClearProperty(const dbus::ObjectPath& device_path,
                              const std::string& name,
-                             VoidDBusMethodCallback callback) = 0;
+                             chromeos::VoidDBusMethodCallback callback) = 0;
 
   // Calls the RequirePin method.
   // |callback| is called after the method call finishes.

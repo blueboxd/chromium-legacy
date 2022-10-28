@@ -1,4 +1,4 @@
-# Copyright 2021 The Chromium Authors. All rights reserved.
+# Copyright 2021 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -16,12 +16,13 @@ template("ios_toolchain") {
 
     sdk_developer_dir = ios_sdk_developer_dir
     deployment_target = ios_deployment_target
-    sdk_name = ios_sdk_name
+    target_environment = target_environment
     bin_path = ios_bin_path
     strip_with_lipo = true
 
     toolchain_args = {
       forward_variables_from(invoker.toolchain_args, "*")
+      xcode_build = xcode_build
       current_os = "ios"
     }
   }

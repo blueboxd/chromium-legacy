@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -71,7 +71,7 @@ void ClipboardRestrictionService::UpdateSettings() {
   }
 
   const base::Value::Dict& settings =
-      pref_service_->GetValueDict(enterprise::content::kCopyPreventionSettings);
+      pref_service_->GetDict(enterprise::content::kCopyPreventionSettings);
   const base::Value::List* enable = settings.FindList(
       enterprise::content::kCopyPreventionSettingsEnableFieldName);
   const base::Value::List* disable = settings.FindList(

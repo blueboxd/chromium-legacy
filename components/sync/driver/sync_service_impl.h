@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -146,7 +146,7 @@ class SyncServiceImpl : public SyncService,
   bool QueryDetailedSyncStatusForDebugging(SyncStatus* result) const override;
   base::Time GetLastSyncedTimeForDebugging() const override;
   SyncCycleSnapshot GetLastCycleSnapshotForDebugging() const override;
-  std::unique_ptr<base::Value> GetTypeStatusMapForDebugging() const override;
+  base::Value::List GetTypeStatusMapForDebugging() const override;
   void GetEntityCountsForDebugging(
       base::OnceCallback<void(const std::vector<TypeEntitiesCount>&)> callback)
       const override;

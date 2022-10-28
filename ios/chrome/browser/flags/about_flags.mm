@@ -1,107 +1,112 @@
-// Copyright 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 // Implementation of about_flags for iOS that sets flags based on experimental
 // settings.
 
-#include "ios/chrome/browser/flags/about_flags.h"
+#import "ios/chrome/browser/flags/about_flags.h"
 
 #import <UIKit/UIKit.h>
-#include <stddef.h>
-#include <stdint.h>
+#import <stddef.h>
+#import <stdint.h>
 
-#include "base/base_switches.h"
-#include "base/bind.h"
-#include "base/callback_helpers.h"
-#include "base/check_op.h"
+#import "base/base_switches.h"
+#import "base/bind.h"
+#import "base/callback_helpers.h"
+#import "base/check_op.h"
 #import "base/debug/debugging_buildflags.h"
 #import "base/mac/foundation_util.h"
-#include "base/no_destructor.h"
-#include "base/strings/stringprintf.h"
-#include "base/strings/sys_string_conversions.h"
-#include "base/system/sys_info.h"
-#include "components/autofill/core/common/autofill_features.h"
-#include "components/autofill/core/common/autofill_payments_features.h"
-#include "components/autofill/core/common/autofill_switches.h"
-#include "components/autofill/ios/browser/autofill_switches.h"
-#include "components/breadcrumbs/core/features.h"
-#include "components/commerce/core/commerce_feature_list.h"
-#include "components/commerce/core/flag_descriptions.h"
-#include "components/content_settings/core/common/features.h"
-#include "components/dom_distiller/core/dom_distiller_switches.h"
-#include "components/enterprise/browser/enterprise_switches.h"
-#include "components/feature_engagement/public/feature_constants.h"
-#include "components/feature_engagement/public/feature_list.h"
-#include "components/feed/feed_feature_list.h"
-#include "components/flags_ui/feature_entry.h"
-#include "components/flags_ui/feature_entry_macros.h"
-#include "components/flags_ui/flags_storage.h"
-#include "components/flags_ui/flags_ui_switches.h"
-#include "components/invalidation/impl/invalidation_switches.h"
-#include "components/ntp_tiles/switches.h"
-#include "components/omnibox/browser/omnibox_field_trial.h"
-#include "components/omnibox/common/omnibox_features.h"
-#include "components/optimization_guide/core/optimization_guide_features.h"
-#include "components/password_manager/core/common/password_manager_features.h"
-#include "components/payments/core/features.h"
-#include "components/policy/core/common/features.h"
+#import "base/no_destructor.h"
+#import "base/strings/stringprintf.h"
+#import "base/strings/sys_string_conversions.h"
+#import "base/system/sys_info.h"
+#import "components/autofill/core/common/autofill_features.h"
+#import "components/autofill/core/common/autofill_payments_features.h"
+#import "components/autofill/core/common/autofill_switches.h"
+#import "components/autofill/ios/browser/autofill_switches.h"
+#import "components/breadcrumbs/core/features.h"
+#import "components/commerce/core/commerce_feature_list.h"
+#import "components/commerce/core/flag_descriptions.h"
+#import "components/content_settings/core/common/features.h"
+#import "components/dom_distiller/core/dom_distiller_switches.h"
+#import "components/enterprise/browser/enterprise_switches.h"
+#import "components/feature_engagement/public/feature_constants.h"
+#import "components/feature_engagement/public/feature_list.h"
+#import "components/feed/feed_feature_list.h"
+#import "components/flags_ui/feature_entry.h"
+#import "components/flags_ui/feature_entry_macros.h"
+#import "components/flags_ui/flags_storage.h"
+#import "components/flags_ui/flags_ui_switches.h"
+#import "components/invalidation/impl/invalidation_switches.h"
+#import "components/ntp_tiles/switches.h"
+#import "components/omnibox/browser/omnibox_field_trial.h"
+#import "components/omnibox/common/omnibox_features.h"
+#import "components/optimization_guide/core/optimization_guide_features.h"
+#import "components/optimization_guide/core/optimization_guide_switches.h"
+#import "components/password_manager/core/common/password_manager_features.h"
+#import "components/payments/core/features.h"
+#import "components/policy/core/common/features.h"
 #import "components/policy/core/common/policy_loader_ios_constants.h"
-#include "components/policy/policy_constants.h"
-#include "components/safe_browsing/core/common/features.h"
+#import "components/policy/policy_constants.h"
+#import "components/safe_browsing/core/common/features.h"
 #import "components/send_tab_to_self/features.h"
-#include "components/shared_highlighting/core/common/shared_highlighting_features.h"
-#include "components/signin/core/browser/account_reconcilor.h"
-#include "components/signin/ios/browser/features.h"
-#include "components/signin/public/base/signin_switches.h"
-#include "components/strings/grit/components_strings.h"
-#include "components/sync/base/command_line_switches.h"
-#include "components/sync/base/features.h"
-#include "components/sync/base/pref_names.h"
-#include "components/translate/core/browser/translate_prefs.h"
-#include "components/translate/core/common/translate_util.h"
+#import "components/shared_highlighting/core/common/shared_highlighting_features.h"
+#import "components/signin/core/browser/account_reconcilor.h"
+#import "components/signin/ios/browser/features.h"
+#import "components/signin/public/base/signin_switches.h"
+#import "components/strings/grit/components_strings.h"
+#import "components/sync/base/command_line_switches.h"
+#import "components/sync/base/features.h"
+#import "components/sync/base/pref_names.h"
+#import "components/translate/core/browser/translate_prefs.h"
+#import "components/translate/core/common/translate_util.h"
 #import "ios/chrome/app/background_mode_buildflags.h"
-#include "ios/chrome/browser/browsing_data/browsing_data_features.h"
-#include "ios/chrome/browser/chrome_switches.h"
-#include "ios/chrome/browser/crash_report/features.h"
-#include "ios/chrome/browser/flags/ios_chrome_flag_descriptions.h"
+#import "ios/chrome/browser/browsing_data/browsing_data_features.h"
+#import "ios/chrome/browser/crash_report/features.h"
+#import "ios/chrome/browser/flags/chrome_switches.h"
+#import "ios/chrome/browser/flags/ios_chrome_flag_descriptions.h"
+#import "ios/chrome/browser/flags/system_flags.h"
 #import "ios/chrome/browser/ntp/features.h"
 #import "ios/chrome/browser/policy/cloud/user_policy_switch.h"
-#include "ios/chrome/browser/policy/policy_util.h"
+#import "ios/chrome/browser/policy/policy_util.h"
 #import "ios/chrome/browser/promos_manager/features.h"
-#include "ios/chrome/browser/screen_time/screen_time_buildflags.h"
+#import "ios/chrome/browser/screen_time/screen_time_buildflags.h"
 #import "ios/chrome/browser/sessions/session_features.h"
-#include "ios/chrome/browser/system_flags.h"
 #import "ios/chrome/browser/text_selection/text_selection_util.h"
-#include "ios/chrome/browser/ui/autofill/features.h"
-#include "ios/chrome/browser/ui/bubble/bubble_features.h"
+#import "ios/chrome/browser/ui/app_store_rating/features.h"
+#import "ios/chrome/browser/ui/autofill/features.h"
+#import "ios/chrome/browser/ui/bubble/bubble_features.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_feature.h"
 #import "ios/chrome/browser/ui/default_promo/default_browser_utils.h"
 #import "ios/chrome/browser/ui/download/features.h"
-#include "ios/chrome/browser/ui/first_run/fre_field_trial.h"
+#import "ios/chrome/browser/ui/first_run/field_trial_constants.h"
 #import "ios/chrome/browser/ui/first_run/trending_queries_field_trial.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_features.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_feature.h"
 #import "ios/chrome/browser/ui/omnibox/omnibox_ui_features.h"
+#import "ios/chrome/browser/ui/open_in/features.h"
 #import "ios/chrome/browser/ui/popup_menu/overflow_menu/feature_flags.h"
 #import "ios/chrome/browser/ui/popup_menu/public/features.h"
+#import "ios/chrome/browser/ui/post_restore_signin/features.h"
 #import "ios/chrome/browser/ui/start_surface/start_surface_features.h"
 #import "ios/chrome/browser/ui/toolbar_container/toolbar_container_features.h"
-#include "ios/chrome/browser/ui/ui_feature_flags.h"
-#include "ios/chrome/browser/web/features.h"
-#include "ios/chrome/grit/ios_strings.h"
-#include "ios/components/security_interstitials/https_only_mode/feature.h"
-#include "ios/public/provider/chrome/browser/app_utils/app_utils_api.h"
-#include "ios/web/common/features.h"
-#include "ios/web/common/user_agent.h"
-#include "ios/web/common/web_view_creation_util.h"
+#import "ios/chrome/browser/ui/ui_feature_flags.h"
+#import "ios/chrome/browser/ui/whats_new/feature_flags.h"
+#import "ios/chrome/browser/web/features.h"
+#import "ios/chrome/grit/ios_strings.h"
+#import "ios/components/security_interstitials/https_only_mode/feature.h"
+#import "ios/public/provider/chrome/browser/app_utils/app_utils_api.h"
+#import "ios/web/common/features.h"
+#import "ios/web/common/user_agent.h"
+#import "ios/web/common/web_view_creation_util.h"
 
 #if BUILDFLAG(IOS_SCREEN_TIME_ENABLED)
-#include "ios/chrome/browser/screen_time/features.h"
+#import "ios/chrome/browser/screen_time/features.h"
 #endif
 
 #if !defined(OFFICIAL_BUILD)
-#include "components/variations/variations_switches.h"
+#import "components/variations/variations_switches.h"
 #endif
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -559,6 +564,29 @@ const FeatureEntry::FeatureVariation kDmTokenDeletionVariation[] = {
     {"(Forced)", kDmTokenDeletionParam, std::size(kDmTokenDeletionParam),
      nullptr}};
 
+const FeatureEntry::FeatureParam kOpenInDownloadWithWKDownload[] = {
+    {kOpenInDownloadWithWKDownloadParam, "true"}};
+const FeatureEntry::FeatureParam kOpenInDownloadWithV2[] = {
+    {kOpenInDownloadWithV2Param, "true"}};
+const FeatureEntry::FeatureVariation kOpenInDownloadVariations[] = {
+    {"With WKDownload", kOpenInDownloadWithWKDownload,
+     std::size(kOpenInDownloadWithWKDownload), nullptr},
+    {"With V2", kOpenInDownloadWithV2, std::size(kOpenInDownloadWithV2),
+     nullptr},
+};
+
+const FeatureEntry::FeatureParam kAutofillBrandingIOSMonotone[] = {
+    {autofill::features::kAutofillBrandingIOSParam, "true"}};
+const FeatureEntry::FeatureVariation kAutofillBrandingIOSVariations[] = {
+    {"(Monotone)", kAutofillBrandingIOSMonotone,
+     std::size(kAutofillBrandingIOSMonotone), nullptr}};
+
+const FeatureEntry::FeatureParam kIOSNewPostRestoreExperienceMinimal[] = {
+    {post_restore_signin::features::kIOSNewPostRestoreExperienceParam, "true"}};
+const FeatureEntry::FeatureVariation kIOSNewPostRestoreExperienceVariations[] =
+    {{"minimal", kIOSNewPostRestoreExperienceMinimal,
+      std::size(kIOSNewPostRestoreExperienceMinimal), nullptr}};
+
 // To add a new entry, add to the end of kFeatureEntries. There are four
 // distinct types of entries:
 // . ENABLE_DISABLE_VALUE: entry is either enabled, disabled, or uses the
@@ -758,6 +786,11 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kOmniboxNewImplementationName,
      flag_descriptions::kOmniboxNewImplementationDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(kIOSNewOmniboxImplementation)},
+    {"omnibox-fuzzy-url-suggestions",
+     flag_descriptions::kOmniboxFuzzyUrlSuggestionsName,
+     flag_descriptions::kOmniboxFuzzyUrlSuggestionsDescription,
+     flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(omnibox::kOmniboxFuzzyUrlSuggestions)},
     {"omnibox-new-popup-ui", flag_descriptions::kIOSOmniboxUpdatedPopupUIName,
      flag_descriptions::kIOSOmniboxUpdatedPopupUIDescription, flags_ui::kOsIos,
      FEATURE_WITH_PARAMS_VALUE_TYPE(kIOSOmniboxUpdatedPopupUI,
@@ -839,6 +872,10 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
     {"new-overflow-menu", flag_descriptions::kNewOverflowMenuName,
      flag_descriptions::kNewOverflowMenuDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(kNewOverflowMenu)},
+    {"new-overflow-menu-alternate-iph",
+     flag_descriptions::kNewOverflowMenuAlternateIPHName,
+     flag_descriptions::kNewOverflowMenuAlternateIPHDescription,
+     flags_ui::kOsIos, FEATURE_VALUE_TYPE(kNewOverflowMenuAlternateIPH)},
     {"new-overflow-menu-settings-action",
      flag_descriptions::kNewOverflowMenuSettingsActionName,
      flag_descriptions::kNewOverflowMenuSettingsActionDescription,
@@ -920,18 +957,12 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kSynthesizedRestoreSessionName,
      flag_descriptions::kSynthesizedRestoreSessionDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(web::features::kSynthesizedRestoreSession)},
-    {"remove-extra-ntps", flag_descriptions::kRemoveExcessNTPsExperimentName,
-     flag_descriptions::kRemoveExcessNTPsExperimentDescription,
-     flags_ui::kOsIos, FEATURE_VALUE_TYPE(kRemoveExcessNTPs)},
     {"enable-password-manager-branding-update",
      flag_descriptions::kIOSEnablePasswordManagerBrandingUpdateName,
      flag_descriptions::kIOSEnablePasswordManagerBrandingUpdateDescription,
      flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(
          password_manager::features::kIOSEnablePasswordManagerBrandingUpdate)},
-    {"default-mode-ua", flag_descriptions::kAddSettingForDefaultPageModeName,
-     flag_descriptions::kAddSettingForDefaultPageModeDescription,
-     flags_ui::kOsIos, FEATURE_VALUE_TYPE(kAddSettingForDefaultPageMode)},
     {"ios-media-permissions-control",
      flag_descriptions::kMediaPermissionsControlName,
      flag_descriptions::kMediaPermissionsControlDescription, flags_ui::kOsIos,
@@ -964,6 +995,9 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableFaviconForPasswordsDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(
          password_manager::features::kEnableFaviconForPasswords)},
+    {"enable-password-grouping", flag_descriptions::kPasswordsGroupingName,
+     flag_descriptions::kPasswordsGroupingDescription, flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(password_manager::features::kPasswordsGrouping)},
     {"autofill-enable-sending-bcn-in-get-upload-details",
      flag_descriptions::kAutofillEnableSendingBcnInGetUploadDetailsName,
      flag_descriptions::kAutofillEnableSendingBcnInGetUploadDetailsDescription,
@@ -1008,9 +1042,6 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(
          autofill::features::kAutofillEnforceDelaysInStrikeDatabase)},
-    {"download-calendar", flag_descriptions::kDownloadCalendarName,
-     flag_descriptions::kDownloadCalendarDescription, flags_ui::kOsIos,
-     FEATURE_VALUE_TYPE(kDownloadCalendar)},
     {"autofill-upstream-allow-additional-email-domains",
      flag_descriptions::kAutofillUpstreamAllowAdditionalEmailDomainsName,
      flag_descriptions::kAutofillUpstreamAllowAdditionalEmailDomainsDescription,
@@ -1027,6 +1058,11 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kTFLiteLanguageDetectionName,
      flag_descriptions::kTFLiteLanguageDetectionDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(translate::kTFLiteLanguageDetectionEnabled)},
+    {"optimization-guide-debug-logs",
+     flag_descriptions::kOptimizationGuideDebugLogsName,
+     flag_descriptions::kOptimizationGuideDebugLogsDescription,
+     flags_ui::kOsIos,
+     SINGLE_VALUE_TYPE(optimization_guide::switches::kDebugLoggingEnabled)},
     {"optimization-guide-model-downloading",
      flag_descriptions::kOptimizationGuideModelDownloadingName,
      flag_descriptions::kOptimizationGuideModelDownloadingDescription,
@@ -1080,13 +1116,6 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kAutofillEnableRankingFormulaDescription,
      flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(autofill::features::kAutofillEnableRankingFormula)},
-    {"autofill-remove-card-expiry-from-downstream-suggestion",
-     flag_descriptions::kAutofillRemoveCardExpiryFromDownstreamSuggestionName,
-     flag_descriptions::
-         kAutofillRemoveCardExpiryFromDownstreamSuggestionDescription,
-     flags_ui::kOsIos,
-     FEATURE_VALUE_TYPE(autofill::features::
-                            kAutofillRemoveCardExpiryFromDownstreamSuggestion)},
     {"enable-feed-ablation", flag_descriptions::kEnableFeedAblationName,
      flag_descriptions::kEnableFeedAblationDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(kEnableFeedAblation)},
@@ -1144,7 +1173,8 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kAutofillEnableNewCardUnmaskPromptViewName,
      flag_descriptions::kAutofillEnableNewCardUnmaskPromptViewDescription,
      flags_ui::kOsIos,
-     FEATURE_VALUE_TYPE(kAutofillEnableNewCardUnmaskPromptView)},
+     FEATURE_VALUE_TYPE(
+         autofill::features::kAutofillEnableNewCardUnmaskPromptView)},
     {"omnibox-paste-button", flag_descriptions::kOmniboxPasteButtonName,
      flag_descriptions::kOmniboxPasteButtonDescription, flags_ui::kOsIos,
      FEATURE_WITH_PARAMS_VALUE_TYPE(kOmniboxPasteButton,
@@ -1198,9 +1228,38 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
     {"enable-cbd-sign-out", flag_descriptions::kEnableCBDSignOutName,
      flag_descriptions::kEnableCBDSignOutDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(switches::kEnableCbdSignOut)},
-    {"disable-feed-ios14", flag_descriptions::kDisableFeediOS14Name,
-     flag_descriptions::kDisableFeediOS14Description, flags_ui::kOsIos,
-     FEATURE_VALUE_TYPE(kDisableFeediOS14)},
+    {"enable-open-in-download", flag_descriptions::kEnableOpenInDownloadName,
+     flag_descriptions::kEnableOpenInDownloadDescription, flags_ui::kOsIos,
+     FEATURE_WITH_PARAMS_VALUE_TYPE(kEnableOpenInDownload,
+                                    kOpenInDownloadVariations,
+                                    "EnableOpenInDownload")},
+    {"whats-new-ios", flag_descriptions::kWhatsNewIOSName,
+     flag_descriptions::kWhatsNewIOSDescription, flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(kWhatsNewIOS)},
+    {"ios-autofill-branding", flag_descriptions::kAutofillBrandingIOSName,
+     flag_descriptions::kAutofillBrandingIOSDescription, flags_ui::kOsIos,
+     FEATURE_WITH_PARAMS_VALUE_TYPE(autofill::features::kAutofillBrandingIOS,
+                                    kAutofillBrandingIOSVariations,
+                                    "AutofillBrandingIOS")},
+    {"app-store-rating", flag_descriptions::kAppStoreRatingName,
+     flag_descriptions::kAppStoreRatingDescription, flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(kAppStoreRating)},
+    {"ios-new-post-restore-experience",
+     flag_descriptions::kIOSNewPostRestoreExperienceName,
+     flag_descriptions::kIOSNewPostRestoreExperienceDescription,
+     flags_ui::kOsIos,
+     FEATURE_WITH_PARAMS_VALUE_TYPE(
+         post_restore_signin::features::kIOSNewPostRestoreExperience,
+         kIOSNewPostRestoreExperienceVariations,
+         "IOSNewPostRestoreExperience")},
+    {"most-visited-tiles", flag_descriptions::kMostVisitedTilesName,
+     flag_descriptions::kMostVisitedTilesDescription, flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(omnibox::kMostVisitedTiles)},
+    {"enable-tflite-language-detection-ignore",
+     flag_descriptions::kTFLiteLanguageDetectionIgnoreName,
+     flag_descriptions::kTFLiteLanguageDetectionIgnoreDescription,
+     flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(translate::kTFLiteLanguageDetectionIgnoreEnabled)},
 };
 
 bool SkipConditionalFeatureEntry(const flags_ui::FeatureEntry& entry) {
@@ -1404,7 +1463,7 @@ NSString* TestingPoliciesHash() {
 }
 }  // namespace
 
-// Add all switches from experimental flags to |command_line|.
+// Add all switches from experimental flags to `command_line`.
 void AppendSwitchesFromExperimentalSettings(base::CommandLine* command_line) {
   NSUserDefaults* defaults = [NSUserDefaults standardUserDefaults];
 

@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,8 +11,8 @@
  *   <settings-dropdown-menu pref="{{prefs.foo}}">
  *   </settings-dropdown-menu>
  */
-import '//resources/cr_elements/md_select_css.m.js';
-import '//resources/cr_elements/policy/cr_policy_pref_indicator.m.js';
+import '//resources/cr_elements/md_select.css.js';
+import '//resources/cr_elements/policy/cr_policy_pref_indicator.js';
 import '../settings_shared.css.js';
 import '../settings_vars.css.js';
 

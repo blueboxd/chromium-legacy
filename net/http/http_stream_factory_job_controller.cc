@@ -1,4 +1,4 @@
-// Copyright (c) 2016 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -1338,7 +1338,7 @@ void HttpStreamFactory::JobController::ReportAlternateProtocolUsage(
   if (job == dns_alpn_h3_job_.get()) {
     if (job->using_existing_quic_session()) {
       HistogramAlternateProtocolUsage(
-          ALTERNATE_PROTOCOL_USAGE_DNS_ALPN_H3_JOB_WON_WITOUT_RACE,
+          ALTERNATE_PROTOCOL_USAGE_DNS_ALPN_H3_JOB_WON_WITHOUT_RACE,
           is_google_host);
       return;
     }

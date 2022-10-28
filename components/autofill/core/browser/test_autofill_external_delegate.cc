@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -97,7 +97,7 @@ void TestAutofillExternalDelegate::CheckSuggestions(
               suggestions_[i].main_text.value);
     EXPECT_EQ(expected_suggestions[i].minor_text.value,
               suggestions_[i].minor_text.value);
-    EXPECT_EQ(expected_suggestions[i].label, suggestions_[i].label);
+    EXPECT_EQ(expected_suggestions[i].labels, suggestions_[i].labels);
     EXPECT_EQ(expected_suggestions[i].icon, suggestions_[i].icon);
     EXPECT_EQ(expected_suggestions[i].frontend_id, suggestions_[i].frontend_id);
   }

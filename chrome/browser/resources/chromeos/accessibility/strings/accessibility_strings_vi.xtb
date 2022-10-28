@@ -138,9 +138,9 @@
 <translation id="1812527064848182527">ngang</translation>
 <translation id="1829244130665387512">Tìm trong trang</translation>
 <translation id="1834891354138622109">Cột</translation>
-<translation id="1845944666972354496">Nhấn đúp để kích hoạt</translation>
 <translation id="1846771122725914429">Màn hình chữ nổi Bluetooth</translation>
 <translation id="1852018405765032699">Thao tác nhấn vào màn hình bằng 4 ngón tay sẽ mở và đóng các trình đơn của ChromeVox. Những trình đơn này có chứa thông tin hữu ích về các lệnh và phím tắt. Sau khi các trình đơn này mở ra, bạn có thể vuốt bằng một ngón tay để di chuyển qua các mục và nhấn đúp để kích hoạt các mục. Để tiếp tục, hãy nhấn vào màn hình bằng 4 ngón tay.</translation>
+<translation id="1864430479908918647">Nhấn tổ hợp phím Tìm kiếm+Dấu cách</translation>
 <translation id="1865601187525349519">Cuối văn bản</translation>
 <translation id="1876229593313240038">doc</translation>
 <translation id="1902396333223336119">Ô</translation>
@@ -238,6 +238,7 @@
 <translation id="2619344480613750862">Bạn cũng có thể di chuyển giữa các phần của màn hình. Ví dụ: bạn có thể di chuyển giữa trình chạy, kệ và các thẻ Chrome của mình. Để chuyển đến phần tiếp theo, hãy vuốt từ trái sang phải bằng 4 ngón tay. Hãy thử ngay bây giờ để tiếp tục.</translation>
 <translation id="2624431853467395961">Mở chế độ học</translation>
 <translation id="2626530649491650971">có thể nhấp được</translation>
+<translation id="263637551280112393">Nhấn tổ hợp phím Tìm kiếm+Shift+Cách</translation>
 <translation id="2637227747952042642">Toán học</translation>
 <translation id="2638785836053527382">Đã tiếp tục tải <ph name="FILE_NAME" /> xuống</translation>
 <translation id="2639750663247012216">Phím bổ trợ ChromeVox</translation>
@@ -529,6 +530,7 @@
 <translation id="4479068155583208887">Màu gạch lửa</translation>
 <translation id="4482330759234983253">Bảng trước</translation>
 <translation id="4491109536499578614">Hình ảnh</translation>
+<translation id="4507332368061453500">Nhấp và giữ vào mục hiện tại</translation>
 <translation id="4511186779140817916">Màu cam nâu nhạt</translation>
 <translation id="451510441928265982">Không có tiêu đề cấp 2 nào trước đó</translation>
 <translation id="4515799157838123044">Làm tối nội dung trong nền</translation>
@@ -597,7 +599,6 @@
 <translation id="4993152509206108683">Tốc độ <ph name="PERCENT" /> phần trăm</translation>
 <translation id="4994420463726586413">Cho biết tình trạng pin hiện tại</translation>
 <translation id="4997282455736854877"><ph name="NAME" />, nút radio đã được chọn</translation>
-<translation id="5011664330025416377">Nhấn tổ hợp phím Tìm kiếm + Dấu cách để kích hoạt</translation>
 <translation id="5012724933919010465">Đã chọn nút chọn cho mục trong trình đơn <ph name="NAME" /></translation>
 <translation id="5020651427400641814">Bật tính năng ghi nhật ký bằng lời nói</translation>
 <translation id="5041394372352067729">Di chuyển màn hình chữ nổi về đầu trang</translation>
@@ -650,6 +651,7 @@
 <translation id="5355014376930441909">Không có phần nào tiếp theo</translation>
 <translation id="5368000168321181111">Âm báo đang tắt</translation>
 <translation id="5368505757342402527">Đã tải <ph name="FILE_NAME" /> được <ph name="PROGRESS" />%. Còn khoảng <ph name="TIME" /> <ph name="UNITS" /> nữa.</translation>
+<translation id="5381388086899614489">nhấp và giữ</translation>
 <translation id="5400836586163650660">Màu xám</translation>
 <translation id="5402367795255837559">Chữ nổi</translation>
 <translation id="5402791055281059602">Thông báo theo thể thức</translation>
@@ -762,6 +764,7 @@
 <translation id="6100239002225743044">Chuyển lên một dòng</translation>
 <translation id="6118126368611144850">Ứng dụng Android dành cho Chrome. Nếu thiết bị của bạn có Cửa hàng Play, hãy dùng thử ChromeVox với các ứng dụng Android. Để dùng thử các tính năng thử nghiệm được hỗ trợ, hãy tải Google Chrome Canary xuống từ Cửa hàng Play.</translation>
 <translation id="611827076493383239">vtd</translation>
+<translation id="6119846243427417423">kích hoạt</translation>
 <translation id="6122013438240733403">btn</translation>
 <translation id="6132506484792346370">Hộp danh sách hoặc hộp kết hợp</translation>
 <translation id="613344593214611552">xoá câu trước</translation>
@@ -778,6 +781,7 @@
 <translation id="6236061028292614533">Tiêu đề tiếp theo</translation>
 <translation id="6254901459154107917">Vùng văn bản có thể chỉnh sửa tiếp theo</translation>
 <translation id="6259464875943891919">Đã thoát <ph name="TYPE" />.</translation>
+<translation id="6280088282605782512">Nhấn đúp</translation>
 <translation id="6282062888058716985">điều hướng</translation>
 <translation id="6295699829709583154">Các phím cơ bản: Tìm kiếm</translation>
 <translation id="6305702903308659374">Phát ở âm lượng bình thường ngay cả khi ChromeVox đang nói</translation>
@@ -981,6 +985,7 @@
 <translation id="7731785449856576010">Không có tiện ích nghe nhìn nào tiếp theo</translation>
 <translation id="7735498529470878067">Tính năng Khám phá bằng cách chạm có thể giúp bạn nhanh chóng nắm được nội dung trên màn hình.</translation>
 <translation id="773906353055481349">Nhấn tổ hợp phím Tìm kiếm + Ctrl + Alt cùng với các mũi tên để di chuyển theo ô</translation>
+<translation id="7746976083433980639"><ph name="ACTION" /> để <ph name="LABEL" /></translation>
 <translation id="7763537600611320912">Đã bắt đầu tải <ph name="FILE_NAME" /> xuống</translation>
 <translation id="7768784765476638775">Chọn để nói</translation>
 <translation id="7776293189010177726">Mở menu ChromeVox</translation>

@@ -1,4 +1,4 @@
-// Copyright 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -347,7 +347,8 @@ class CC_EXPORT ResourcePool : public base::trace_event::MemoryDumpProvider {
     void OnMemoryDump(base::trace_event::ProcessMemoryDump* pmd,
                       int tracing_id,
                       const viz::ClientResourceProvider* resource_provider,
-                      bool is_free) const;
+                      bool is_free,
+                      bool is_busy) const;
 
     void set_debug_name(const std::string& name) { debug_name_ = name; }
     const std::string& debug_name() const { return debug_name_; }

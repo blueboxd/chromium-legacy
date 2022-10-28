@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,7 +13,6 @@
 #include <vector>
 
 #include "ash/components/arc/session/arc_service_manager.h"
-#include "ash/components/disks/disk_mount_manager.h"
 #include "ash/components/settings/timezone_settings.h"
 #include "ash/public/cpp/tablet_mode_observer.h"
 #include "base/gtest_prod_util.h"
@@ -33,6 +32,7 @@
 #include "chrome/browser/chromeos/extensions/file_manager/drivefs_event_router.h"
 #include "chrome/browser/chromeos/extensions/file_manager/system_notification_manager.h"
 #include "chrome/common/extensions/api/file_manager_private.h"
+#include "chromeos/ash/components/disks/disk_mount_manager.h"
 #include "components/arc/intent_helper/arc_intent_helper_observer.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "extensions/browser/extension_registry_observer.h"
@@ -220,6 +220,7 @@ class EventRouter
 
  private:
   FRIEND_TEST_ALL_PREFIXES(EventRouterTest, PopulateCrostiniEvent);
+  friend class ScopedSuppressDriveNotificationsForPath;
 
   // Starts observing file system change events.
   void ObserveEvents();
@@ -284,6 +285,13 @@ class EventRouter
   void DisplayDriveConfirmDialog(
       const drivefs::mojom::DialogReason& reason,
       base::OnceCallback<void(drivefs::mojom::DialogResult)> callback);
+
+  // Used by `file_manager::ScopedSuppressDriveNotificationsForPath` to prevent
+  // Drive notifications for a given file identified by its relative Drive path.
+  void SuppressDriveNotificationsForFilePath(
+      const base::FilePath& relative_drive_path);
+  void RestoreDriveNotificationsForFilePath(
+      const base::FilePath& relative_drive_path);
 
   // Called to refresh the list of guests and broadcast it.
   void OnMountableGuestsChanged();

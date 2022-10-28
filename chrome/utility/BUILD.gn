@@ -1,4 +1,4 @@
-# Copyright 2014 The Chromium Authors. All rights reserved.
+# Copyright 2014 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -202,8 +202,8 @@ static_library("utility") {
       deps += [
         "//chromeos/ash/services/assistant/audio_decoder:lib",
         "//chromeos/ash/services/assistant/public/mojom",
-        "//chromeos/services/libassistant",
-        "//chromeos/services/libassistant/public/mojom",
+        "//chromeos/ash/services/libassistant",
+        "//chromeos/ash/services/libassistant/public/mojom",
       ]
     }
   }

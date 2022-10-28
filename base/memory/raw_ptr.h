@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -120,6 +120,12 @@ struct RawPtrNoOpImpl {
             typename = std::enable_if_t<offset_type<Z>, void>>
   static ALWAYS_INLINE T* Advance(T* wrapped_ptr, Z delta_elems) {
     return wrapped_ptr + delta_elems;
+  }
+
+  template <typename T>
+  static ALWAYS_INLINE ptrdiff_t GetDeltaElems(T* wrapped_ptr1,
+                                               T* wrapped_ptr2) {
+    return wrapped_ptr1 - wrapped_ptr2;
   }
 
   // Returns a copy of a wrapped pointer, without making an assertion on whether
@@ -272,6 +278,14 @@ struct MTECheckedPtrImpl {
             typename = std::enable_if_t<offset_type<Z>, void>>
   static ALWAYS_INLINE T* Advance(T* wrapped_ptr, Z delta_elems) {
     return wrapped_ptr + delta_elems;
+  }
+
+  template <typename T>
+  static ALWAYS_INLINE ptrdiff_t GetDeltaElems(T* wrapped_ptr1,
+                                               T* wrapped_ptr2) {
+    // Ensure that both pointers come from the same allocation.
+    CHECK(ExtractTag(wrapped_ptr1) == ExtractTag(wrapped_ptr2));
+    return wrapped_ptr1 - wrapped_ptr2;
   }
 
   // Returns a copy of a wrapped pointer, without making an assertion
@@ -462,6 +476,7 @@ struct BackupRefPtrImpl {
     // rewrapped the pointer (wrapped the new pointer and unwrapped the old
     // one).
     uintptr_t address = partition_alloc::UntagPtr(wrapped_ptr);
+    // TODO(bartekn): Consider adding support for non-BRP pool too.
     if (IsSupportedAndNotNull(address))
       CHECK(IsValidDelta(address, delta_elems * static_cast<Z>(sizeof(T))));
     return wrapped_ptr + delta_elems;
@@ -492,6 +507,22 @@ struct BackupRefPtrImpl {
     // end-of-allocation address belongs to the same slot.
     static_assert(false);
 #endif
+  }
+
+  template <typename T>
+  static ALWAYS_INLINE ptrdiff_t GetDeltaElems(T* wrapped_ptr1,
+                                               T* wrapped_ptr2) {
+    uintptr_t address1 = partition_alloc::UntagPtr(wrapped_ptr1);
+    uintptr_t address2 = partition_alloc::UntagPtr(wrapped_ptr2);
+    // Ensure that both pointers are within the same slot, and pool!
+    // TODO(bartekn): Consider adding support for non-BRP pool too.
+    if (IsSupportedAndNotNull(address1)) {
+      CHECK(IsSupportedAndNotNull(address2));
+      CHECK(IsValidDelta(address2, address1 - address2));
+    } else {
+      CHECK(!IsSupportedAndNotNull(address2));
+    }
+    return wrapped_ptr1 - wrapped_ptr2;
   }
 
   // Returns a copy of a wrapped pointer, without making an assertion on whether
@@ -584,6 +615,12 @@ struct AsanBackupRefPtrImpl {
             typename = std::enable_if_t<offset_type<Z>, void>>
   static ALWAYS_INLINE T* Advance(T* wrapped_ptr, Z delta_elems) {
     return wrapped_ptr + delta_elems;
+  }
+
+  template <typename T>
+  static ALWAYS_INLINE ptrdiff_t GetDeltaElems(T* wrapped_ptr1,
+                                               T* wrapped_ptr2) {
+    return wrapped_ptr1 - wrapped_ptr2;
   }
 
   // Returns a copy of a wrapped pointer, without making an assertion on whether
@@ -1009,16 +1046,35 @@ class TRIVIAL_ABI GSL_POINTER raw_ptr {
     --(*this);
     return result;
   }
-  template <typename Z,
-            typename = std::enable_if_t<internal::offset_type<Z>, void>>
+  template <typename Z, typename = std::enable_if_t<internal::offset_type<Z>>>
   ALWAYS_INLINE raw_ptr& operator+=(Z delta_elems) {
     wrapped_ptr_ = Impl::Advance(wrapped_ptr_, delta_elems);
     return *this;
   }
-  template <typename Z,
-            typename = std::enable_if_t<internal::offset_type<Z>, void>>
+  template <typename Z, typename = std::enable_if_t<internal::offset_type<Z>>>
   ALWAYS_INLINE raw_ptr& operator-=(Z delta_elems) {
     return *this += -delta_elems;
+  }
+
+  template <typename Z, typename = std::enable_if_t<internal::offset_type<Z>>>
+  friend ALWAYS_INLINE raw_ptr operator+(const raw_ptr& p, Z delta_elems) {
+    raw_ptr result = p;
+    return result += delta_elems;
+  }
+  template <typename Z, typename = std::enable_if_t<internal::offset_type<Z>>>
+  friend ALWAYS_INLINE raw_ptr operator-(const raw_ptr& p, Z delta_elems) {
+    raw_ptr result = p;
+    return result -= delta_elems;
+  }
+  friend ALWAYS_INLINE ptrdiff_t operator-(const raw_ptr& p1,
+                                           const raw_ptr& p2) {
+    return Impl::GetDeltaElems(p1.wrapped_ptr_, p2.wrapped_ptr_);
+  }
+  friend ALWAYS_INLINE ptrdiff_t operator-(T* p1, const raw_ptr& p2) {
+    return Impl::GetDeltaElems(p1, p2.wrapped_ptr_);
+  }
+  friend ALWAYS_INLINE ptrdiff_t operator-(const raw_ptr& p1, T* p2) {
+    return Impl::GetDeltaElems(p1.wrapped_ptr_, p2);
   }
 
   // Stop referencing the underlying pointer and free its memory. Compared to
@@ -1239,6 +1295,15 @@ ALWAYS_INLINE bool operator>=(const raw_ptr<U, I>& lhs,
   return lhs.GetForComparison() >= rhs.GetForComparison();
 }
 
+template <typename T>
+struct IsRawPtr : std::false_type {};
+
+template <typename T, typename I>
+struct IsRawPtr<raw_ptr<T, I>> : std::true_type {};
+
+template <typename T>
+inline constexpr bool IsRawPtrV = IsRawPtr<T>::value;
+
 // Template helpers for working with T* or raw_ptr<T>.
 template <typename T>
 struct IsPointer : std::false_type {};
@@ -1349,6 +1414,18 @@ struct less<raw_ptr<T, Impl>> {
     Impl::IncrementLessCountForTest();
     return lhs < rhs;
   }
+};
+
+// Define for cases where raw_ptr<T> holds a pointer to an array of type T.
+// This is consistent with definition of std::iterator_traits<T*>.
+// Algorithms like std::binary_search need that.
+template <typename T, typename Impl>
+struct iterator_traits<raw_ptr<T, Impl>> {
+  using difference_type = ptrdiff_t;
+  using value_type = std::remove_cv_t<T>;
+  using pointer = T*;
+  using reference = T&;
+  using iterator_category = std::random_access_iterator_tag;
 };
 
 }  // namespace std

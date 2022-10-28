@@ -1,8 +1,9 @@
-// Copyright 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "base/memory/raw_ptr.h"
+#include "chrome/browser/favicon/favicon_utils.h"
 #include "chrome/browser/ui/bookmarks/bookmark_drag_drop.h"
 
 #include "base/bind.h"
@@ -239,10 +240,8 @@ class BookmarkDragHelper : public bookmarks::BaseBookmarkModelObserver {
       gfx::ImageSkia drag_image(
           std::make_unique<BookmarkDragImageSource>(
               color_provider, drag_node->GetTitle(),
-              icon.IsEmpty()
-                  ? *ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
-                        IDR_DEFAULT_FAVICON)
-                  : icon.Rasterize(&color_provider),
+              icon.IsEmpty() ? favicon::GetDefaultFavicon().AsImageSkia()
+                             : icon.Rasterize(&color_provider),
               count_),
           BookmarkDragImageSource::kBookmarkDragImageSize);
 

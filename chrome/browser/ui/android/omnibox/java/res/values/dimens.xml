@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Copyright 2021 The Chromium Authors. All rights reserved.
-     Use of this source code is governed by a BSD-style license that can be
-     found in the LICENSE file. -->
+<!--
+Copyright 2021 The Chromium Authors
+Use of this source code is governed by a BSD-style license that can be
+found in the LICENSE file.
+-->
 
 <resources xmlns:tools="http://schemas.android.com/tools">
 
@@ -76,10 +78,12 @@
     <dimen name="omnibox_suggestion_refine_view_modern_end_padding">4dp</dimen>
     <dimen name="omnibox_suggestion_carousel_spacing_maximum">8dp</dimen>
 
-    <dimen name="omnibox_suggestion_bg_elevation">@dimen/default_elevation_1</dimen>
+    <dimen name="omnibox_suggestion_bg_elevation">@dimen/default_elevation_0</dimen>
     <dimen name="omnibox_suggestion_bg_round_corner_radius">16dp</dimen>
     <dimen name="omnibox_suggestion_bg_rectangle_corner_radius">0dp</dimen>
     <dimen name="omnibox_suggestion_vertical_spacing">2dp</dimen>
+
+    <dimen name="omnibox_suggestion_dropdown_bg_elevation">@dimen/default_elevation_1</dimen>
 
     <!-- Adding search engine logo to the omnibox. -->
     <!-- Max size which will fit completely in the composed/rounded bg. -->

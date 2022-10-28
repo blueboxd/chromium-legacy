@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -129,8 +129,7 @@ void WontCompile() {
   WeakPtr<Unrelated> ptr = AsWeakPtr(&f);
 }
 
-#elif defined(NCTEST_AMBIGUOUS_ANCESTORS)  // [r"fatal error: (use of undeclared identifier|no matching function for call to) 'AsWeakPtrImpl'"]
-// TODO(crbug.com/1155145): Update expectation after rolling clang.
+#elif defined(NCTEST_AMBIGUOUS_ANCESTORS)  // [r"fatal error: no matching function for call to 'AsWeakPtrImpl'"]
 
 void WontCompile() {
   MultiplyDerivedProducer f;

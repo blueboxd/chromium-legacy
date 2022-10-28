@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -545,7 +545,7 @@ public class TabStripTest {
         // Open enough regular tabs to cause the tabs to cascade or the strip to scroll depending
         // on which stacker is being used.
         ChromeTabUtils.newTabsFromMenu(
-                InstrumentationRegistry.getInstrumentation(), sActivityTestRule.getActivity(), 10);
+                InstrumentationRegistry.getInstrumentation(), sActivityTestRule.getActivity(), 20);
 
         // Switch to the ScrollingStripStacker.
         setShouldCascadeTabsAndCheckTabStrips(false);
@@ -554,7 +554,7 @@ public class TabStripTest {
         assertSetTabStripScrollOffset(0);
         TabModel model = sActivityTestRule.getActivity().getTabModelSelector().getModel(false);
         StripLayoutTab tab = TabStripUtils.findStripLayoutTab(
-                sActivityTestRule.getActivity(), false, model.getTabAt(10).getId());
+                sActivityTestRule.getActivity(), false, model.getTabAt(20).getId());
         assertTabVisibility(false, tab);
 
         // Create visibility callback helper.
@@ -595,7 +595,7 @@ public class TabStripTest {
         // Open enough regular tabs to cause the tabs to cascade or the strip to scroll depending
         // on which stacker is being used.
         ChromeTabUtils.newTabsFromMenu(
-                InstrumentationRegistry.getInstrumentation(), sActivityTestRule.getActivity(), 10);
+                InstrumentationRegistry.getInstrumentation(), sActivityTestRule.getActivity(), 20);
 
         // Switch to the ScrollingStripStacker.
         setShouldCascadeTabsAndCheckTabStrips(false);
@@ -617,7 +617,7 @@ public class TabStripTest {
         // Open enough regular tabs to cause the tabs to cascade or the strip to scroll depending
         // on which stacker is being used.
         ChromeTabUtils.newTabsFromMenu(
-                InstrumentationRegistry.getInstrumentation(), sActivityTestRule.getActivity(), 10);
+                InstrumentationRegistry.getInstrumentation(), sActivityTestRule.getActivity(), 20);
 
         // Select the first tab by setting the index directly. It may not be visible, so don't
         // try to tap on it.
@@ -1179,7 +1179,7 @@ public class TabStripTest {
     private void assertSetTabStripScrollOffset(final int scrollOffset) throws ExecutionException {
         final StripLayoutHelper strip =
                 TabStripUtils.getActiveStripLayoutHelper(sActivityTestRule.getActivity());
-        TestThreadUtils.runOnUiThreadBlocking(() -> { strip.setScrollOffset(scrollOffset); });
+        TestThreadUtils.runOnUiThreadBlocking(() -> { strip.testSetScrollOffset(scrollOffset); });
 
         Assert.assertEquals(
                 "Tab strip scroll incorrect.", scrollOffset, strip.getScrollOffset(), 0);

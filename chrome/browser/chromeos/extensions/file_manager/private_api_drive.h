@@ -1,4 +1,4 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -13,11 +13,11 @@
 #include <string>
 #include <vector>
 
-#include "ash/components/drivefs/mojom/drivefs.mojom-forward.h"
 #include "base/files/file.h"
 #include "base/time/time.h"
 #include "chrome/browser/ash/file_manager/fileapi_util.h"
 #include "chrome/browser/chromeos/extensions/file_manager/logged_extension_function.h"
+#include "chromeos/ash/components/drivefs/mojom/drivefs.mojom-forward.h"
 #include "components/drive/file_errors.h"
 
 namespace google_apis {

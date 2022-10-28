@@ -1,4 +1,4 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -16,7 +16,7 @@ import '../../settings_vars.css.js';
 
 import {getInstance as getAnnouncerInstance} from 'chrome://resources/cr_elements/cr_a11y_announcer/cr_a11y_announcer.js';
 import {assert} from 'chrome://resources/js/assert.m.js';
-import {I18nBehavior, I18nBehaviorInterface} from 'chrome://resources/js/i18n_behavior.m.js';
+import {I18nBehavior, I18nBehaviorInterface} from 'chrome://resources/cr_elements/i18n_behavior.js';
 import {html, mixinBehaviors, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 /**
@@ -130,7 +130,8 @@ class SettingsUsersAddUserDialogElement extends
         return;
       }
 
-      getAnnouncerInstance().announce(this.i18n('userAddedMessage', userEmail));
+      /** @type {!CrA11yAnnouncerElement} */ (getAnnouncerInstance())
+          .announce(this.i18n('userAddedMessage', userEmail));
 
       this.$.dialog.close();
       this.usersPrivate_.addUser(

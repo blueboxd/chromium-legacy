@@ -49,10 +49,12 @@
 
 namespace blink {
 
+class CSSScrollTimeline;
 class CSSTransitionData;
 class Element;
 class StylePropertyShorthand;
 class StyleResolver;
+class StyleTimeline;
 
 class CORE_EXPORT CSSAnimations final {
   DISALLOW_NEW();
@@ -71,6 +73,9 @@ class CORE_EXPORT CSSAnimations final {
                                             KeyframeEffect::Priority);
   static bool IsAnimatingFontAffectingProperties(const ElementAnimations*);
   static bool IsAnimatingRevert(const ElementAnimations*);
+  static void CalculateTimelineUpdate(CSSAnimationUpdate&,
+                                      Element& animating_element,
+                                      const ComputedStyle&);
   static void CalculateAnimationUpdate(CSSAnimationUpdate&,
                                        const Element& animating_element,
                                        Element&,
@@ -109,6 +114,7 @@ class CORE_EXPORT CSSAnimations final {
                                    CSSAnimationUpdate&,
                                    ComputedStyle& style);
 
+  const CSSAnimationUpdate& PendingUpdate() const { return pending_update_; }
   void SetPendingUpdate(const CSSAnimationUpdate& update) {
     ClearPendingUpdate();
     pending_update_.Copy(update);
@@ -122,6 +128,7 @@ class CORE_EXPORT CSSAnimations final {
     return running_animations_.IsEmpty() && transitions_.IsEmpty() &&
            pending_update_.IsEmpty();
   }
+  bool HasTimelines() const { return !timeline_data_.IsEmpty(); }
   void Cancel();
 
   void Trace(Visitor*) const;
@@ -174,6 +181,38 @@ class CORE_EXPORT CSSAnimations final {
     scoped_refptr<const ComputedStyle> reversing_adjusted_start_value;
     double reversing_shortening_factor;
   };
+
+  class TimelineData {
+    DISALLOW_NEW();
+
+   public:
+    void SetScrollTimeline(CSSScrollTimeline* timeline) {
+      scroll_timeline_ = timeline;
+    }
+    CSSScrollTimeline* GetScrollTimeline() const {
+      return scroll_timeline_.Get();
+    }
+    void SetViewTimeline(const AtomicString& name, CSSViewTimeline*);
+    CSSViewTimeline* GetViewTimeline(const AtomicString& name) const;
+    const CSSViewTimelineMap& GetViewTimelines() const {
+      return view_timelines_;
+    }
+
+    bool IsEmpty() const {
+      return !scroll_timeline_ && view_timelines_.IsEmpty();
+    }
+    void Clear() {
+      scroll_timeline_ = nullptr;
+      view_timelines_.clear();
+    }
+    void Trace(Visitor*) const;
+
+   private:
+    Member<CSSScrollTimeline> scroll_timeline_;
+    CSSViewTimelineMap view_timelines_;
+  };
+
+  TimelineData timeline_data_;
 
   HeapVector<Member<RunningAnimation>> running_animations_;
 
@@ -235,6 +274,37 @@ class CORE_EXPORT CSSAnimations final {
   static void CalculateTransitionActiveInterpolations(
       CSSAnimationUpdate&,
       const Element& animating_element);
+
+  static void CalculateScrollTimelineUpdate(CSSAnimationUpdate&,
+                                            Element& animating_element,
+                                            const ComputedStyle&);
+  static void CalculateViewTimelineUpdate(CSSAnimationUpdate&,
+                                          Element& animating_element,
+                                          const ComputedStyle&);
+
+  static const TimelineData* GetTimelineData(const Element&);
+
+  static ScrollTimeline* FindTimelineForNode(const AtomicString& name,
+                                             Node*,
+                                             const CSSAnimationUpdate*);
+  static CSSScrollTimeline* FindScrollTimelineForElement(
+      const AtomicString& name,
+      Element&,
+      const CSSAnimationUpdate*,
+      const TimelineData*);
+  static CSSViewTimeline* FindViewTimelineForElement(const AtomicString& name,
+                                                     Element&,
+                                                     const CSSAnimationUpdate*,
+                                                     const TimelineData*);
+
+  static ScrollTimeline* FindPreviousSiblingAncestorTimeline(
+      const AtomicString& name,
+      Node*,
+      const CSSAnimationUpdate*);
+
+  static AnimationTimeline* ComputeTimeline(Element*,
+                                            const StyleTimeline& timeline_name,
+                                            const CSSAnimationUpdate&);
 
   // The before-change style is defined as the computed values of all properties
   // on the element as of the previous style change event, except with any

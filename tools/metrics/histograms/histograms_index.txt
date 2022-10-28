@@ -46,6 +46,7 @@ tools/metrics/histograms/metadata/families/histograms.xml
 tools/metrics/histograms/metadata/feature_engagement/histograms.xml
 tools/metrics/histograms/metadata/file/histograms.xml
 tools/metrics/histograms/metadata/fingerprint/histograms.xml
+tools/metrics/histograms/metadata/game_mode/histograms.xml
 tools/metrics/histograms/metadata/gcm/histograms.xml
 tools/metrics/histograms/metadata/geolocation/histograms.xml
 tools/metrics/histograms/metadata/google/histograms.xml
@@ -62,6 +63,7 @@ tools/metrics/histograms/metadata/interstitial/histograms.xml
 tools/metrics/histograms/metadata/invalidation/histograms.xml
 tools/metrics/histograms/metadata/ios/histograms.xml
 tools/metrics/histograms/metadata/kerberos/histograms.xml
+tools/metrics/histograms/metadata/kiosk/histograms.xml
 tools/metrics/histograms/metadata/language/histograms.xml
 tools/metrics/histograms/metadata/leveldb_proto/histograms.xml
 tools/metrics/histograms/metadata/local/histograms.xml
@@ -132,6 +134,7 @@ tools/metrics/histograms/metadata/update_engine/histograms.xml
 tools/metrics/histograms/metadata/v8/histograms.xml
 tools/metrics/histograms/metadata/variations/histograms.xml
 tools/metrics/histograms/metadata/video_tutorials/histograms.xml
+tools/metrics/histograms/metadata/views/histograms.xml
 tools/metrics/histograms/metadata/web_apk/histograms.xml
 tools/metrics/histograms/metadata/web_audio/histograms.xml
 tools/metrics/histograms/metadata/web_core/histograms.xml

@@ -1,4 +1,4 @@
-# Copyright 2018 The Chromium Authors. All rights reserved.
+# Copyright 2018 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -193,6 +193,7 @@ chrome_ios_eg2_test("ios_chrome_ui_eg2tests_module") {
     "//ios/chrome/browser/ui/toolbar:eg2_tests",
     "//ios/chrome/browser/ui/webui:eg2_tests",
     "//ios/chrome/browser/ui/webui/interstitials:eg2_tests",
+    "//ios/chrome/browser/ui/webui/optimization_guide_internals:eg2_tests",
   ]
   data_deps = [ ":ios_chrome_eg2tests" ]
 }
@@ -237,7 +238,7 @@ source_set("eg2_tests") {
 
   deps = [
     "//ios/chrome/app/strings",
-    "//ios/chrome/browser:pref_names",
+    "//ios/chrome/browser/prefs:pref_names",
     "//ios/chrome/browser/ui:feature_flags",
     "//ios/chrome/browser/ui/settings/password:password_constants",
     "//ios/chrome/test/earl_grey:eg_test_support+eg2",

@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,6 +12,7 @@
 #include "device/bluetooth/bluetooth_common.h"
 #include "device/bluetooth/bluetooth_device.h"
 #include "device/bluetooth/bluetooth_export.h"
+#include "device/bluetooth/bluetooth_socket_thread.h"
 #include "device/bluetooth/floss/bluetooth_pairing_floss.h"
 #include "device/bluetooth/floss/floss_adapter_client.h"
 
@@ -30,8 +31,11 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDeviceFloss
   BluetoothDeviceFloss(const BluetoothDeviceFloss&) = delete;
   BluetoothDeviceFloss& operator=(const BluetoothDeviceFloss&) = delete;
 
-  BluetoothDeviceFloss(BluetoothAdapterFloss* adapter,
-                       const FlossDeviceId& device);
+  BluetoothDeviceFloss(
+      BluetoothAdapterFloss* adapter,
+      const FlossDeviceId& device,
+      scoped_refptr<base::SequencedTaskRunner> ui_task_runner,
+      scoped_refptr<device::BluetoothSocketThread> socket_thread);
   ~BluetoothDeviceFloss() override;
 
   // BluetoothDevice override
@@ -100,9 +104,13 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDeviceFloss
 #endif  // BUILDFLAG(IS_CHROMEOS)
 
   FlossDeviceId AsFlossDeviceId() const;
+  // Floss always distinguishes between IsBonded and IsPaired so provide
+  // a publicly accessible implementation.
+  bool IsBondedImpl() const;
   void SetName(const std::string& name);
   void SetBondState(FlossAdapterClient::BondState bond_state);
   void SetIsConnected(bool is_connected);
+  void SetConnectionState(uint32_t state);
   void ConnectAllEnabledProfiles();
   void ResetPairing();
   // Triggers the pending callback of Connect() method.
@@ -128,6 +136,9 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDeviceFloss
                                       ErrorCallback error_callback,
                                       DBusResult<Void> ret);
 
+  void OnConnectToServiceError(ConnectToServiceErrorCallback error_callback,
+                               const std::string& error_message);
+
   absl::optional<ConnectCallback> pending_callback_on_connect_profiles_ =
       absl::nullopt;
 
@@ -151,12 +162,22 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDeviceFloss
       FlossAdapterClient::BondState::kNotBonded;
 
   // Whether the device is connected at link layer level (not profile level).
-  // Mirrors the connection state of Floss:
-  // 0 if not connected; 1 if connected and > 1 if connection is encrypted
+  // Updated via |SetIsConnected| only.
+  bool is_acl_connected_ = false;
+
+  // Similar to is_acl_connected_ but contains the full connection state
+  // (including encryption). This is updated when |SetConnectionState| is called
+  // or when |SetIsConnected| is called.
   // (https://android.googlesource.com/platform/system/bt/+/refs/heads/android10-c2f2-release/btif/src/btif_dm.cc#737),
-  // but squashing all connected states >= 1 as a single "connected" since it's
-  // not used in the Chrome layer.
-  bool is_connected_ = false;
+  // This is used for determining if the device is paired.
+  uint32_t connection_state_ = 0;
+
+  // Number of ongoing calls to Connect().
+  int num_connecting_calls_ = 0;
+
+  // UI thread task runner and socket thread used to create sockets.
+  scoped_refptr<base::SequencedTaskRunner> ui_task_runner_;
+  scoped_refptr<device::BluetoothSocketThread> socket_thread_;
 
   // Represents currently ongoing pairing with this remote device.
   std::unique_ptr<BluetoothPairingFloss> pairing_;

@@ -70,20 +70,6 @@ void V8MetricsRecorder::AddMainThreadEvent(
       .Record(ukm->recorder);
 }
 
-void V8MetricsRecorder::AddMainThreadEvent(
-    const v8::metrics::WasmModuleTieredUp& event,
-    v8::metrics::Recorder::ContextId context_id) {
-  auto ukm = GetUkmRecorderAndSourceId(context_id);
-  if (!ukm)
-    return;
-  ukm::builders::V8_Wasm_ModuleTieredUp(ukm->source_id)
-      .SetLazy(event.lazy ? 1 : 0)
-      .SetCodeSize(
-          ukm::GetExponentialBucketMinForBytes(event.code_size_in_bytes))
-      .SetWallClockDuration(event.wall_clock_duration_in_us)
-      .Record(ukm->recorder);
-}
-
 namespace {
 
 // Helper function to convert a byte count to a KB count, capping at
@@ -321,9 +307,9 @@ void V8MetricsRecorder::AddMainThreadEvent(
 
     // Report efficacy metrics:
     DEFINE_THREAD_SAFE_STATIC_LOCAL(
-        CustomCountHistogram, efficacy_histogram,
+        CustomCountHistogram, efficacy_cpp_histogram,
         ("V8.GC.Cycle.Efficiency.Full.Cpp", kMinSize, kMaxSize, kNumBuckets));
-    efficacy_histogram.Count(
+    efficacy_cpp_histogram.Count(
         CappedEfficacyInKBPerMs(event.efficiency_cpp_in_bytes_per_us));
 
     DEFINE_THREAD_SAFE_STATIC_LOCAL(
@@ -334,9 +320,9 @@ void V8MetricsRecorder::AddMainThreadEvent(
         event.main_thread_efficiency_cpp_in_bytes_per_us));
 
     DEFINE_THREAD_SAFE_STATIC_LOCAL(
-        CustomCountHistogram, collection_rate_histogram,
+        CustomCountHistogram, collection_rate_cpp_histogram,
         ("V8.GC.Cycle.CollectionRate.Full.Cpp", 1, 100, 20));
-    collection_rate_histogram.Count(
+    collection_rate_cpp_histogram.Count(
         base::saturated_cast<base::Histogram::Sample>(
             100 * event.collection_rate_cpp_in_percent));
   }

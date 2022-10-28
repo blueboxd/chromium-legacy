@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -83,8 +83,6 @@ class DialMediaSinkServiceImpl : public MediaSinkServiceBase,
   // Marked virtual for tests.
   virtual std::vector<MediaSinkInternal> GetAvailableSinks(
       const std::string& app_name) const;
-
-  void BindLogger(mojo::PendingRemote<mojom::Logger> pending_remote);
 
  protected:
   void SetDescriptionServiceForTest(
@@ -187,11 +185,6 @@ class DialMediaSinkServiceImpl : public MediaSinkServiceBase,
   // Set of sink queries keyed by app name.
   base::flat_map<std::string, std::unique_ptr<SinkQueryByAppCallbackList>>
       sink_queries_;
-
-  // Mojo Remote to the logger owned by the Media Router. The Remote is not
-  // bound until |BindLogger()| is called. Always check if |logger_.is_bound()|
-  // is true before using.
-  mojo::Remote<mojom::Logger> logger_;
 
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
 

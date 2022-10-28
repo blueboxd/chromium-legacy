@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -43,13 +43,13 @@ class TouchSelectionMenuRunnerChromeOS
 
   // Tries to establish connection with ARC to perform text classification. True
   // if a query to ARC was made, false otherwise.
-  bool RequestTextSelection(ui::TouchSelectionMenuClient* client,
+  bool RequestTextSelection(base::WeakPtr<ui::TouchSelectionMenuClient> client,
                             const gfx::Rect& anchor_rect,
                             const gfx::Size& handle_image_size,
                             aura::Window* context);
 
   // views::TouchSelectionMenuRunnerViews.
-  void OpenMenu(ui::TouchSelectionMenuClient* client,
+  void OpenMenu(base::WeakPtr<ui::TouchSelectionMenuClient> client,
                 const gfx::Rect& anchor_rect,
                 const gfx::Size& handle_image_size,
                 aura::Window* context) override;

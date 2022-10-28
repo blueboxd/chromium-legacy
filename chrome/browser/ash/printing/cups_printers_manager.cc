@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -410,20 +410,24 @@ class CupsPrintersManagerImpl
   }
 
   // Callback for FetchPrinterStatus
-  void OnPrinterInfoFetched(const std::string& printer_id,
-                            PrinterStatusCallback cb,
-                            PrinterQueryResult result,
-                            const ::printing::PrinterStatus& printer_status,
-                            const std::string& make_and_model,
-                            const std::vector<std::string>& document_formats,
-                            bool ipp_everywhere) {
-    SendPrinterStatus(printer_id, std::move(cb), result, printer_status);
+  void OnPrinterInfoFetched(
+      const std::string& printer_id,
+      PrinterStatusCallback cb,
+      PrinterQueryResult result,
+      const ::printing::PrinterStatus& printer_status,
+      const std::string& make_and_model,
+      const std::vector<std::string>& document_formats,
+      bool ipp_everywhere,
+      const chromeos::PrinterAuthenticationInfo& auth_info) {
+    SendPrinterStatus(printer_id, std::move(cb), result, printer_status,
+                      auth_info);
   }
 
   void SendPrinterStatus(const std::string& printer_id,
                          PrinterStatusCallback cb,
                          PrinterQueryResult result,
-                         const ::printing::PrinterStatus& printer_status) {
+                         const ::printing::PrinterStatus& printer_status,
+                         const chromeos::PrinterAuthenticationInfo& auth_info) {
     base::UmaHistogramEnumeration("Printing.CUPS.PrinterStatusQueryResult",
                                   result);
     switch (result) {
@@ -462,7 +466,8 @@ class CupsPrintersManagerImpl
 
         // Convert printing::PrinterStatus to printing::CupsPrinterStatus
         CupsPrinterStatus cups_printers_status =
-            PrinterStatusToCupsPrinterStatus(printer_id, printer_status);
+            PrinterStatusToCupsPrinterStatus(printer_id, printer_status,
+                                             auth_info);
 
         // Save the PrinterStatus so it can be attached along side future
         // Printer retrievals.
@@ -841,6 +846,8 @@ void CupsPrintersManager::RegisterProfilePrefs(
 // static
 void CupsPrintersManager::RegisterLocalStatePrefs(
     PrefRegistrySimple* registry) {
+  registry->RegisterStringPref(prefs::kPrintingClientNameTemplate,
+                               std::string());
   PrintServersProvider::RegisterLocalStatePrefs(registry);
 }
 

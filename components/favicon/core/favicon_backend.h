@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -115,6 +115,10 @@ class FaviconBackend {
       const GURL& page_url_to_read,
       const favicon_base::IconTypeSet& icon_types,
       const base::flat_set<GURL>& page_urls_to_write);
+
+  // Returns all icon URLs associated with the given `page_url`. In case there
+  // are multiple, they're ordered in descending order of IconType.
+  std::vector<GURL> GetFaviconUrlsForUrl(const GURL& page_url);
 
   // See function of same name in HistoryService for details.
   SetFaviconsResult SetOnDemandFavicons(const GURL& page_url,

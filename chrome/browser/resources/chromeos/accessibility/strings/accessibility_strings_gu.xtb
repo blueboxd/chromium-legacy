@@ -138,9 +138,9 @@
 <translation id="1812527064848182527">લૅન્ડસ્કેપ</translation>
 <translation id="1829244130665387512">આ પેજમાં શોધો</translation>
 <translation id="1834891354138622109">કૉલમ</translation>
-<translation id="1845944666972354496">સક્રિય કરવા માટે બે વાર ટૅપ કરો</translation>
 <translation id="1846771122725914429">બ્લૂટૂથનું બ્રેઇલ પ્રદર્શન</translation>
 <translation id="1852018405765032699">સ્ક્રીન પર ચાર આંગળી વડે ટૅપ કરવાથી ChromeVox મેનૂ ખુલશે અને બંધ થશે. આ મેનૂમાં આદેશો અને શૉર્ટકટ વિશે સહાયરૂપ માહિતી શામેલ છે. એકવાર મેનૂ ખૂલે પછી, આઇટમ પર નૅવિગેટ કરવા માટે તમે એક આંગળી વડે સ્વાઇપ કરી અને આઇટમ સક્રિય કરવા માટે બે વાર ટૅપ કરી શકો છો. ચાલુ રાખવા માટે, સ્ક્રીન પર ચાર આંગળી વડે ટૅપ કરો.</translation>
+<translation id="1864430479908918647">Search+Space કી દબાવો</translation>
 <translation id="1865601187525349519">ટેક્સ્ટના અંતે</translation>
 <translation id="1876229593313240038">doc</translation>
 <translation id="1902396333223336119">કોષ</translation>
@@ -529,6 +529,7 @@
 <translation id="4479068155583208887">આગમાંની ઈંટ જેવો</translation>
 <translation id="4482330759234983253">પાછલું કોષ્ટક</translation>
 <translation id="4491109536499578614">છબી</translation>
+<translation id="4507332368061453500">વર્તમાન આઇટમ પર લાંબો સમય ક્લિક કરો</translation>
 <translation id="4511186779140817916">આછો બદામી</translation>
 <translation id="451510441928265982">કોઈ પાછલું 'લેવલ 2' મથાળું નથી</translation>
 <translation id="4515799157838123044">બૅકગ્રાઉન્ડના કન્ટેન્ટનો રંગ ઝાંખો કરો</translation>
@@ -597,7 +598,6 @@
 <translation id="4993152509206108683">દર <ph name="PERCENT" /> ટકા</translation>
 <translation id="4994420463726586413">બૅટરીનું હાલનું સ્ટેટસ જણાવો</translation>
 <translation id="4997282455736854877"><ph name="NAME" />, રેડિયો બટન પસંદ કર્યું</translation>
-<translation id="5011664330025416377">સક્રિય કરવા માટે Search+Space દબાવો</translation>
 <translation id="5012724933919010465"><ph name="NAME" />, મેનૂ આઇટમ રેડિયો બટન પસંદ કર્યું</translation>
 <translation id="5020651427400641814">સ્પીચ લૉગ ઇન ચાલુ કરો</translation>
 <translation id="5041394372352067729">બ્રેઇલ ડિસ્પ્લેને પેજમાં સૌથી ઉપર ખસેડો</translation>
@@ -762,6 +762,7 @@
 <translation id="6100239002225743044">એક લાઇન ઉપર ખસેડો</translation>
 <translation id="6118126368611144850">Chrome માટેની Android ઍપ. જો તમારા ડિવાઇસમાં Play Store હોય, તો Android ઍપ ધરાવતા ChromeVoxની ઝલક મેળવો. Play Store પરથી Google Chrome Canary ડાઉનલોડ કરીને પ્રયોગાત્મક સહાયનો અનુભવ મેળવો.</translation>
 <translation id="611827076493383239">vtd</translation>
+<translation id="6119846243427417423">સક્રિય કરો</translation>
 <translation id="6122013438240733403">btn</translation>
 <translation id="6132506484792346370">સૂચિબોક્સ અથવા કોમ્બો બોક્સ</translation>
 <translation id="613344593214611552">પાછલું વાક્ય ડિલીટ કરો</translation>
@@ -778,6 +779,7 @@
 <translation id="6236061028292614533">આગલું મથાળું</translation>
 <translation id="6254901459154107917">આગલું સંપાદનયોગ્ય ટેક્સ્ટ ક્ષેત્ર</translation>
 <translation id="6259464875943891919"><ph name="TYPE" /> થી બહાર નીકળ્યાં છે.</translation>
+<translation id="6280088282605782512">બે વાર ટૅપ કરો</translation>
 <translation id="6282062888058716985">nav</translation>
 <translation id="6295699829709583154">આવશ્યક કી: Search</translation>
 <translation id="6305702903308659374">ChromeVox બોલી રહ્યું હોય ત્યારે પણ સામાન્ય અવાજે ચલાવો</translation>
@@ -981,6 +983,7 @@
 <translation id="7731785449856576010">કોઈ આગલું મીડિયા વિજેટ નથી</translation>
 <translation id="7735498529470878067">'ટચ કરીને શોધખોળ કરો' સુવિધા તમને સ્ક્રીન પર શું છે તે ઝડપથી સમજવામાં સહાય કરે છે.</translation>
 <translation id="773906353055481349">સેલ મુજબ નૅવિગેટ કરવા માટે ઍરો કી સાથે Search+Ctrl+Alt દબાવો</translation>
+<translation id="7746976083433980639"><ph name="ACTION" />થી <ph name="LABEL" /></translation>
 <translation id="7763537600611320912"><ph name="FILE_NAME" />નું ડાઉનલોડ શરૂ થયું</translation>
 <translation id="7768784765476638775">સાંભળવા માટે પસંદ કરો</translation>
 <translation id="7776293189010177726">ChromeVox મેનૂ ખોલો</translation>
@@ -1146,7 +1149,7 @@
 <translation id="89720367119469899">બહાર નીકળો</translation>
 <translation id="8978496506222343566">tltip</translation>
 <translation id="898089897833732740"><ph name="PHRASE" /> ડિલીટ કરો</translation>
-<translation id="8986362086234534611">ભૂલી જાઓ</translation>
+<translation id="8986362086234534611">ભૂલી ગયા</translation>
 <translation id="8989104346085848538">કોઈપણ વર્તમાન ChromeVox સ્પીચ રોકવા માટે, Control કી દબાવો.</translation>
 <translation id="8993737615451556423">વાંચવાના અવાજની ઝડપ વધારવા, ધીમી કરવા અને થોભાવવા મટે નિયંત્રણો પ્રદાન કરે છે</translation>
 <translation id="9014206344398081366">ChromeVoxનું ટ્યૂટૉરિઅલ</translation>

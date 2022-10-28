@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -32,6 +32,7 @@
 #include "base/callback_helpers.h"
 #include "base/check.h"
 #include "base/containers/contains.h"
+#include "base/ranges/algorithm.h"
 #include "base/strings/stringprintf.h"
 #include "base/time/time.h"
 #include "media/capture/video/video_capture_device_descriptor.h"
@@ -103,10 +104,8 @@ bool DidDevicesChange(
   ModelIdToCountMap cam_models_map;
   for (const auto& incoming_camera : incoming_list) {
     const auto& device_id = incoming_camera.descriptor.device_id;
-    const auto iter = std::find_if(current_list.begin(), current_list.end(),
-                                   [device_id](const CameraInfo& info) {
-                                     return info.device_id == device_id;
-                                   });
+    const auto iter =
+        base::ranges::find(current_list, device_id, &CameraInfo::device_id);
     if (iter == current_list.end())
       return true;
 
@@ -169,16 +168,15 @@ bool ShouldCameraActLikeAMirror(const CameraInfo& camera_info) {
 // nullptr if no such item exists.
 const CameraInfo* GetCameraInfoById(const CameraId& id,
                                     const CameraInfoList& list) {
-  const auto iter = std::find_if(
-      list.begin(), list.end(),
-      [&id](const CameraInfo& info) { return info.camera_id == id; });
+  const auto iter = base::ranges::find(list, id, &CameraInfo::camera_id);
   return iter == list.end() ? nullptr : &(*iter);
 }
 
 // Returns the widget init params needed to create the camera preview widget.
 views::Widget::InitParams CreateWidgetParams(const gfx::Rect& bounds) {
   views::Widget::InitParams params(views::Widget::InitParams::TYPE_POPUP);
-  params.parent = CaptureModeController::Get()->GetCameraPreviewParentWindow();
+  params.parent =
+      CaptureModeController::Get()->GetOnCaptureSurfaceWidgetParentWindow();
   params.bounds = bounds;
   params.name = "CameraPreviewWidget";
   return params;
@@ -191,7 +189,7 @@ void AdjustBoundsWithinConfinedBounds(const gfx::Rect& confined_bounds,
   const int x = preview_bounds.x();
   if (int offset = x - confined_bounds.x(); offset < 0) {
     preview_bounds.set_x(x - offset);
-  } else if (int offset = confined_bounds.right() - preview_bounds.right();
+  } else if (offset = confined_bounds.right() - preview_bounds.right();
              offset < 0) {
     preview_bounds.set_x(x + offset);
   }
@@ -199,7 +197,7 @@ void AdjustBoundsWithinConfinedBounds(const gfx::Rect& confined_bounds,
   const int y = preview_bounds.y();
   if (int offset = y - confined_bounds.y(); offset < 0) {
     preview_bounds.set_y(y - offset);
-  } else if (int offset = confined_bounds.bottom() - preview_bounds.bottom();
+  } else if (offset = confined_bounds.bottom() - preview_bounds.bottom();
              offset < 0) {
     preview_bounds.set_y(y + offset);
   }
@@ -495,7 +493,7 @@ void CaptureModeCameraController::MaybeReparentPreviewWidget() {
 
   const bool was_visible_before = camera_preview_widget_->IsVisible();
   auto* controller = CaptureModeController::Get();
-  auto* parent = controller->GetCameraPreviewParentWindow();
+  auto* parent = controller->GetOnCaptureSurfaceWidgetParentWindow();
   DCHECK(parent);
   if (parent != native_window->parent())
     views::Widget::ReparentNativeView(native_window, parent);
@@ -527,7 +525,7 @@ void CaptureModeCameraController::MaybeUpdatePreviewWidget(bool animate) {
 
   auto* controller = CaptureModeController::Get();
   DCHECK(controller->IsActive() || controller->is_recording_in_progress());
-  const gfx::Rect confine_bounds = controller->GetCameraPreviewConfineBounds();
+  const gfx::Rect confine_bounds = controller->GetCaptureSurfaceConfineBounds();
 
   const capture_mode_util::CameraPreviewSizeSpecs size_specs =
       capture_mode_util::CalculateCameraPreviewSizeSpecs(
@@ -600,7 +598,7 @@ void CaptureModeCameraController::ContinueDraggingPreview(
   current_bounds.Offset(
       gfx::ToRoundedVector2d(screen_location - previous_location_in_screen_));
   AdjustBoundsWithinConfinedBounds(
-      CaptureModeController::Get()->GetCameraPreviewConfineBounds(),
+      CaptureModeController::Get()->GetCaptureSurfaceConfineBounds(),
       current_bounds);
   camera_preview_widget_->SetBounds(current_bounds);
   previous_location_in_screen_ = screen_location;
@@ -913,7 +911,7 @@ gfx::Rect CaptureModeCameraController::CalculatePreviewWidgetTargetBounds(
   aura::Window* parent =
       camera_preview_widget_
           ? camera_preview_widget_->GetNativeWindow()->parent()
-          : controller->GetCameraPreviewParentWindow();
+          : controller->GetOnCaptureSurfaceWidgetParentWindow();
   DCHECK(parent);
   const gfx::Rect collision_rect_screen =
       GetCollisionAvoidanceRect(parent->GetRootWindow());
@@ -1010,7 +1008,7 @@ CaptureModeCameraController::CalculateSnapPositionOnDragEnded() const {
       GetCurrentBoundsMatchingConfineBoundsCoordinates().CenterPoint();
   const gfx::Point center_point_of_confine_bounds =
       CaptureModeController::Get()
-          ->GetCameraPreviewConfineBounds()
+          ->GetCaptureSurfaceConfineBounds()
           .CenterPoint();
 
   if (center_point_of_preview_widget.x() < center_point_of_confine_bounds.x()) {

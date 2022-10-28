@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -93,10 +93,6 @@ extern const base::Feature kRemoveExcessNTPs;
 // Chrome.
 extern const base::Feature kEnableShortenedPasswordAutoFillInstruction;
 
-// Feature flag to show the setting allowing the user to choose the mode
-// (Desktop/Mobile) in which the pages will be requested by default.
-extern const base::Feature kAddSettingForDefaultPageMode;
-
 // Feature flag to switch images to SFSymbols when enabled.
 extern const base::Feature kUseSFSymbols;
 
@@ -114,9 +110,5 @@ extern const base::Feature kMapsExperienceKit;
 
 // Feature flag to enable Mini Map in experience kit.
 extern const base::Feature kEnableMiniMap;
-
-// Feature flag to enable sending variation data with search by image requests.
-// This is a temporary kill-switch flag for M106.
-extern const base::Feature kSendVariationDataWithSearchByImage;
 
 #endif  // IOS_CHROME_BROWSER_UI_UI_FEATURE_FLAGS_H_

@@ -1,19 +1,19 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/bind.h"
-#include "base/strings/stringprintf.h"
+#import "base/bind.h"
+#import "base/strings/stringprintf.h"
 #import "ios/testing/embedded_test_server_handlers.h"
 #import "ios/web/public/test/navigation_test_util.h"
 #import "ios/web/public/test/web_test_with_web_state.h"
 #import "ios/web/public/test/web_view_content_test_util.h"
-#include "net/test/embedded_test_server/embedded_test_server.h"
-#include "net/test/embedded_test_server/http_request.h"
-#include "net/test/embedded_test_server/http_response.h"
-#include "net/test/embedded_test_server/request_handler_util.h"
-#include "testing/gtest/include/gtest/gtest.h"
-#include "url/gurl.h"
+#import "net/test/embedded_test_server/embedded_test_server.h"
+#import "net/test/embedded_test_server/http_request.h"
+#import "net/test/embedded_test_server/http_response.h"
+#import "net/test/embedded_test_server/request_handler_util.h"
+#import "testing/gtest/include/gtest/gtest.h"
+#import "url/gurl.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -64,7 +64,7 @@ class MetaTagTest : public WebTestWithWebState,
 };
 
 // Tests that if a page contains <meta HTTP-EQUIV='REFRESH' content='time;url'>,
-// the page will redirect to |url| after |time| seconds.
+// the page will redirect to `url` after `time` seconds.
 TEST_P(MetaTagTest, HttpEquivRefresh) {
   const GURL origin_url = server_.GetURL(kOriginRelativeUrl);
   const GURL destination_url = server_.GetURL(kDestinationRelativeUrl);

@@ -308,6 +308,24 @@ constexpr int kRenderFrameProxyHostIndices[] = {1, 2, 3, 4, 5, 6, -1};
 constexpr MessageInfo kRenderFrameProxyHost = {kRenderFrameProxyHostIndices,
                                                nullptr};
 
+// Proto Message: AndroidView
+constexpr int kAndroidViewIndices[] = {1, 2, 3, 4, 5, 6, -1};
+constexpr MessageInfo kAndroidView = {kAndroidViewIndices, nullptr};
+
+// Proto Message: AndroidActivity
+constexpr int kAndroidActivityIndices[] = {1, 2, -1};
+constexpr MessageInfo const* kAndroidActivityComplexMessages[] = {
+    nullptr, &kAndroidView};
+constexpr MessageInfo kAndroidActivity = {kAndroidActivityIndices,
+                                          kAndroidActivityComplexMessages};
+
+// Proto Message: AndroidViewDump
+constexpr int kAndroidViewDumpIndices[] = {1, -1};
+constexpr MessageInfo const* kAndroidViewDumpComplexMessages[] = {
+    &kAndroidActivity};
+constexpr MessageInfo kAndroidViewDump = {kAndroidViewDumpIndices,
+                                          kAndroidViewDumpComplexMessages};
+
 // Proto Message: ParkableStringCompressInBackground
 constexpr int kParkableStringCompressInBackgroundIndices[] = {1, -1};
 constexpr MessageInfo kParkableStringCompressInBackground = {
@@ -340,14 +358,20 @@ constexpr MessageInfo kProcessSingleton = {kProcessSingletonIndices, nullptr};
 constexpr int kAndroidIPCIndices[] = {1, 2, -1};
 constexpr MessageInfo kAndroidIPC = {kAndroidIPCIndices, nullptr};
 
+// Proto Message: ChromeSqlDiagnostics
+constexpr int kChromeSqlDiagnosticsIndices[] = {1, 2, 3, 4,  5, 6,
+                                                7, 8, 9, 10, -1};
+constexpr MessageInfo kChromeSqlDiagnostics = {kChromeSqlDiagnosticsIndices,
+                                               nullptr};
+
 // Proto Message: TrackEvent
 constexpr int kTrackEventIndices[] = {
-    1,    2,    3,    5,    6,    9,    10,   11,   12,   16,   17,
-    22,   23,   24,   25,   26,   27,   28,   29,   30,   31,   32,
-    33,   34,   35,   36,   38,   39,   40,   41,   42,   43,   47,
-    48,   1001, 1002, 1003, 1004, 1005, 1006, 1007, 1008, 1009, 1010,
-    1011, 1012, 1013, 1014, 1015, 1016, 1017, 1018, 1019, 1020, 1021,
-    1023, 1024, 1025, 1031, 1032, 1033, 1034, 1036, 1038, -1};
+    1,    2,    3,    5,    6,    9,    10,   11,   12,   16,   17,   22,
+    23,   24,   25,   26,   27,   28,   29,   30,   31,   32,   33,   34,
+    35,   36,   38,   39,   40,   41,   42,   43,   47,   48,   1001, 1002,
+    1003, 1004, 1005, 1006, 1007, 1008, 1009, 1010, 1011, 1012, 1013, 1014,
+    1015, 1016, 1017, 1018, 1019, 1020, 1021, 1022, 1023, 1024, 1025, 1031,
+    1032, 1033, 1034, 1036, 1038, 1039, -1};
 constexpr MessageInfo const* kTrackEventComplexMessages[] = {
     nullptr,
     nullptr,
@@ -404,6 +428,7 @@ constexpr MessageInfo const* kTrackEventComplexMessages[] = {
     &kSiteInstance,
     &kRenderViewHost,
     &kRenderFrameProxyHost,
+    &kAndroidViewDump,
     &kParkableStringCompressInBackground,
     &kParkableStringUnpark,
     &kChromeSamplingProfilerSampleCollected,
@@ -412,7 +437,8 @@ constexpr MessageInfo const* kTrackEventComplexMessages[] = {
     &kProcessSingleton,
     &kSiteInstanceGroup,
     nullptr,
-    &kAndroidIPC};
+    &kAndroidIPC,
+    &kChromeSqlDiagnostics};
 constexpr MessageInfo kTrackEvent = {kTrackEventIndices,
                                      kTrackEventComplexMessages};
 
@@ -587,7 +613,7 @@ constexpr MessageInfo kTrackDescriptor = {kTrackDescriptorIndices,
 
 // Proto Message: TracePacket
 constexpr int kTracePacketIndices[] = {6,  8,  10, 11, 12, 13, 35, 36, 41, 42,
-                                       43, 44, 51, 54, 56, 58, 59, 60, -1};
+                                       43, 44, 51, 54, 56, 58, 59, 60, 87, -1};
 constexpr MessageInfo const* kTracePacketComplexMessages[] = {
     &kClockSnapshot,
     nullptr,
@@ -606,7 +632,8 @@ constexpr MessageInfo const* kTracePacketComplexMessages[] = {
     &kHeapGraph,
     nullptr,
     &kTracePacketDefaults,
-    &kTrackDescriptor};
+    &kTrackDescriptor,
+    nullptr};
 constexpr MessageInfo kTracePacket = {kTracePacketIndices,
                                       kTracePacketComplexMessages};
 

@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -15,7 +15,7 @@
 #include "chrome/browser/ui/ash/assistant/device_actions_delegate.h"
 #include "chromeos/ash/services/assistant/public/cpp/assistant_service.h"
 #include "chromeos/ash/services/assistant/public/cpp/device_actions.h"
-#include "chromeos/services/bluetooth_config/public/mojom/cros_bluetooth_config.mojom.h"
+#include "chromeos/ash/services/bluetooth_config/public/mojom/cros_bluetooth_config.mojom.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
 #include "mojo/public/cpp/bindings/remote_set.h"
@@ -67,7 +67,7 @@ class DeviceActions : public ash::AndroidIntentHelper,
   base::ObserverList<ash::assistant::AppListEventSubscriber>
       app_list_subscribers_;
 
-  mojo::Remote<chromeos::bluetooth_config::mojom::CrosBluetoothConfig>
+  mojo::Remote<ash::bluetooth_config::mojom::CrosBluetoothConfig>
       remote_cros_bluetooth_config_;
 };
 

@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,10 +8,10 @@
 #include <string>
 #include <vector>
 
-#include "ash/components/disks/disk.h"
 #include "base/run_loop.h"
 #include "base/test/task_environment.h"
 #include "chrome/browser/ash/file_manager/volume_manager.h"
+#include "chromeos/ash/components/disks/disk.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace file_manager {

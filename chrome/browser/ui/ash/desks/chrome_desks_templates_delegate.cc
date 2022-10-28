@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -426,18 +426,6 @@ bool ChromeDesksTemplatesDelegate::IsWindowSupportedForDeskTemplate(
 
   // Exclude incognito browser window.
   return !IsIncognitoWindow(window);
-}
-
-void ChromeDesksTemplatesDelegate::OpenFeedbackDialog(
-    const std::string& extra_diagnostics) {
-  // Shows a feedback dialog which prompts users to help us identify which
-  // template(s) and app(s) are problematic.
-  chrome::ShowFeedbackPage(
-      /*browser=*/nullptr, chrome::kFeedbackSourceDesksTemplates,
-      /*description_template=*/
-      "#SavedDesks",
-      /*description_placeholder_text=*/std::string(),
-      /*category_tag=*/std::string(), extra_diagnostics);
 }
 
 std::string ChromeDesksTemplatesDelegate::GetAppShortName(

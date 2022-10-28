@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,6 +11,7 @@
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
 class DesktopMediaPickerViews;
+class DesktopMediaListController;
 
 namespace ui {
 class KeyEvent;
@@ -44,8 +45,10 @@ class DesktopMediaPickerViewsTestApi {
   bool HasSourceAtIndex(size_t index) const;
   void FocusSourceAtIndex(size_t index, bool select = true);
   void DoubleTapSourceAtIndex(size_t index);
+  DesktopMediaList::Type GetSelectedSourceListType() const;
   absl::optional<int> GetSelectedSourceId() const;
   views::View* GetSelectedListView();
+  DesktopMediaListController* GetSelectedController();
 
  private:
   const views::View* GetSourceAtIndex(size_t index) const;

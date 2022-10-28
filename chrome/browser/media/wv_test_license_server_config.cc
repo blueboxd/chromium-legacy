@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -145,7 +145,7 @@ bool WVTestLicenseServerConfig::SelectServerPort() {
   for (uint16_t i = 0; i < kPortRangeSize; ++i) {
     try_port = kMinPort + (start_seed + i) % kPortRangeSize;
     net::NetLogSource source;
-    net::TCPServerSocket sock(NULL, source);
+    net::TCPServerSocket sock(nullptr, source);
     if (sock.Listen(net::IPEndPoint(net::IPAddress::IPv4Localhost(), try_port),
                     1) == net::OK) {
       port_ = try_port;

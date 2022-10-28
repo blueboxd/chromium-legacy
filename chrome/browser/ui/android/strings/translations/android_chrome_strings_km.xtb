@@ -748,6 +748,7 @@
 <translation id="5091199029769593641">ក្នុងពេលឆាប់ៗនេះ អ្នកនឹងមើលឃើញអត្ថបទពី <ph name="SITE_NAME" /> នៅពេលអ្នកបើកផ្ទាំងថ្មី។ គេហទំព័រដែលអ្នកតាមដានត្រូវបានរក្សាទុកនៅក្នុងគណនី Google របស់អ្នក។ អ្នកអាចគ្រប់គ្រងគេហទំព័រទាំងនេះនៅក្នុងការកំណត់ Discover។</translation>
 <translation id="5091249083535528968">ទិន្នន័យប្រើប្រាស់​បន្ថែម</translation>
 <translation id="509429900233858213">កំហុសឆ្គងបានកើតឡើង។</translation>
+<translation id="5099845111805573968">នៅពេល​អ្នក​ជ្រើសរើស​គេហទំព័រ​កុំព្យូទ័រ​ម្ដង ការកំណត់​ត្រូវបាន​អនុវត្ត​ចំពោះ​គេហទំព័រ​រាល់ពេល​ដែល​អ្នក​ចូលមើល</translation>
 <translation id="5102401324271069229">ប្រសិនបើ​គេហទំព័រណាមួយ​ព្យាយាមលួចពាក្យសម្ងាត់​របស់អ្នក ឬនៅពេលអ្នកទាញយក​ឯកសារដែល​អាចបង្កគ្រោះថ្នាក់នោះ Chrome អាចបញ្ជូន URL រួមជាមួយផ្នែកនៃ​ខ្លឹមសារទំព័រ ទៅការរុករក​ដោយសុវត្ថិភាព</translation>
 <translation id="510275257476243843">នៅសល់ 1 ម៉ោងទៀត</translation>
 <translation id="5115811374190515607">ទៅ <ph name="PRODUCT_NAME" /></translation>
@@ -907,6 +908,7 @@
 <translation id="5958275228015807058">ស្វែងរក​ឯកសារ​ និងទំព័ររបស់អ្នកនៅក្នុង ទាញយក</translation>
 <translation id="5962718611393537961">ចុច​ដើម្បី​លាក់</translation>
 <translation id="5964869237734432770">ឈប់យក​ការពណ៌នា​អំពីរូបភាព</translation>
+<translation id="5966233851250124270">Chrome នឹង​ចងចាំ​ជម្រើស​របស់អ្នក</translation>
 <translation id="5979084224081478209">ពិនិត្យពាក្យសម្ងាត់</translation>
 <translation id="5995726099713306770">ទាញយកទំព័រម្ដងទៀត?</translation>
 <translation id="6000066717592683814">រក្សា Google ដដែល</translation>
@@ -1083,6 +1085,7 @@
 <translation id="6820686453637990663">CVC</translation>
 <translation id="6824899148643461612"><ph name="TAB_TITLE" />, ផ្ទាំង, បានជ្រើសរើស</translation>
 <translation id="6828070228333235514">ឈប់តាមដានតម្លៃ</translation>
+<translation id="6830728435402077660">គ្មានសុវត្ថិភាព</translation>
 <translation id="6833996806551876956">ការសាកល្បង​ប្រើ Privacy Sandbox</translation>
 <translation id="6836206421467243968">ស្ដារ​ក្រុម​ផ្ទាំង "<ph name="TITLE_OF_GROUP" />" ជា​ក្រុម​ផ្ទាំង​ផ្ទៃខាងក្រោយ​ថ្មី។</translation>
 <translation id="6846298663435243399">កំពុងដំណើរការ...</translation>

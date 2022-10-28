@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -68,10 +68,10 @@ class IdleEventNotifierTest : public testing::Test {
   ~IdleEventNotifierTest() override = default;
 
   void SetUp() override {
-    PowerManagerClient::InitializeFake();
+    chromeos::PowerManagerClient::InitializeFake();
     mojo::PendingRemote<viz::mojom::VideoDetectorObserver> observer;
     idle_event_notifier_ = std::make_unique<IdleEventNotifier>(
-        PowerManagerClient::Get(), &user_activity_detector_,
+        chromeos::PowerManagerClient::Get(), &user_activity_detector_,
         observer.InitWithNewPipeAndPassReceiver());
     ac_power_.set_external_power(
         power_manager::PowerSupplyProperties_ExternalPower_AC);
@@ -81,7 +81,7 @@ class IdleEventNotifierTest : public testing::Test {
 
   void TearDown() override {
     idle_event_notifier_.reset();
-    PowerManagerClient::Shutdown();
+    chromeos::PowerManagerClient::Shutdown();
   }
 
  protected:

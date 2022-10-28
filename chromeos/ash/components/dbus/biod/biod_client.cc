@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -29,7 +29,8 @@ namespace {
 BiodClient* g_instance = nullptr;
 
 // D-Bus response handler for methods that use void callbacks.
-void OnVoidResponse(VoidDBusMethodCallback callback, dbus::Response* response) {
+void OnVoidResponse(chromeos::VoidDBusMethodCallback callback,
+                    dbus::Response* response) {
   std::move(callback).Run(response != nullptr);
 }
 
@@ -60,7 +61,7 @@ class BiodClientImpl : public BiodClient {
 
   void StartEnrollSession(const std::string& user_id,
                           const std::string& label,
-                          ObjectPathCallback callback) override {
+                          chromeos::ObjectPathCallback callback) override {
     // If we are already in enroll session, just return an invalid ObjectPath.
     // The one who initially start the enroll session will have control
     // over the life cycle of the session.
@@ -96,7 +97,7 @@ class BiodClientImpl : public BiodClient {
                        weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
   }
 
-  void DestroyAllRecords(VoidDBusMethodCallback callback) override {
+  void DestroyAllRecords(chromeos::VoidDBusMethodCallback callback) override {
     dbus::MethodCall method_call(
         biod::kBiometricsManagerInterface,
         biod::kBiometricsManagerDestroyAllRecordsMethod);
@@ -106,7 +107,7 @@ class BiodClientImpl : public BiodClient {
         base::BindOnce(&OnVoidResponse, std::move(callback)));
   }
 
-  void StartAuthSession(ObjectPathCallback callback) override {
+  void StartAuthSession(chromeos::ObjectPathCallback callback) override {
     // If we are already in auth session, just return an invalid ObjectPath.
     // The one who initially start the auth session will have control
     // over the life cycle of the session.
@@ -138,7 +139,7 @@ class BiodClientImpl : public BiodClient {
                        weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
   }
 
-  void CancelEnrollSession(VoidDBusMethodCallback callback) override {
+  void CancelEnrollSession(chromeos::VoidDBusMethodCallback callback) override {
     if (!current_enroll_session_path_) {
       std::move(callback).Run(true);
       return;
@@ -154,7 +155,7 @@ class BiodClientImpl : public BiodClient {
     current_enroll_session_path_.reset();
   }
 
-  void EndAuthSession(VoidDBusMethodCallback callback) override {
+  void EndAuthSession(chromeos::VoidDBusMethodCallback callback) override {
     if (!current_auth_session_path_) {
       std::move(callback).Run(true);
       return;
@@ -172,7 +173,7 @@ class BiodClientImpl : public BiodClient {
 
   void SetRecordLabel(const dbus::ObjectPath& record_path,
                       const std::string& label,
-                      VoidDBusMethodCallback callback) override {
+                      chromeos::VoidDBusMethodCallback callback) override {
     dbus::MethodCall method_call(biod::kRecordInterface,
                                  biod::kRecordSetLabelMethod);
     dbus::MessageWriter writer(&method_call);
@@ -186,7 +187,7 @@ class BiodClientImpl : public BiodClient {
   }
 
   void RemoveRecord(const dbus::ObjectPath& record_path,
-                    VoidDBusMethodCallback callback) override {
+                    chromeos::VoidDBusMethodCallback callback) override {
     dbus::MethodCall method_call(biod::kRecordInterface,
                                  biod::kRecordRemoveMethod);
 
@@ -249,7 +250,7 @@ class BiodClientImpl : public BiodClient {
   }
 
  private:
-  void OnStartEnrollSession(ObjectPathCallback callback,
+  void OnStartEnrollSession(chromeos::ObjectPathCallback callback,
                             dbus::Response* response) {
     dbus::ObjectPath result;
     if (response) {
@@ -279,7 +280,7 @@ class BiodClientImpl : public BiodClient {
     std::move(callback).Run(result);
   }
 
-  void OnStartAuthSession(ObjectPathCallback callback,
+  void OnStartAuthSession(chromeos::ObjectPathCallback callback,
                           dbus::Response* response) {
     dbus::ObjectPath result;
     if (response) {

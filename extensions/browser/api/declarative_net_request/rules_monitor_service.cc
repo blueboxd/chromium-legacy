@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -670,9 +670,9 @@ void RulesMonitorService::UpdateSessionRulesInternal(
     }
   }
 
-  std::unique_ptr<base::ListValue> new_rules_value = base::ListValue::From(
-      json_schema_compiler::util::CreateValueFromArray(new_rules));
-  DCHECK(new_rules_value);
+  std::unique_ptr<base::ListValue> new_rules_value =
+      base::ListValue::From(base::Value::ToUniquePtrValue(base::Value(
+          json_schema_compiler::util::CreateValueFromArray(new_rules))));
 
   std::string error;
   std::unique_ptr<RulesetMatcher> matcher =

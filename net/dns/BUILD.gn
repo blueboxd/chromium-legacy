@@ -1,4 +1,4 @@
-# Copyright 2018 The Chromium Authors. All rights reserved.
+# Copyright 2018 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -64,7 +64,6 @@ source_set("dns") {
     "host_resolver_mdns_task.h",
     "host_resolver_proc.cc",
     "host_resolver_proc.h",
-    "host_resolver_results.cc",
     "https_record_rdata.cc",
     "httpssvc_metrics.cc",
     "httpssvc_metrics.h",
@@ -216,7 +215,6 @@ source_set("host_resolver") {
     "dns_config.h",
     "host_cache.h",
     "host_resolver.h",
-    "host_resolver_results.h",
     "mapped_host_resolver.h",
   ]
   public = []
@@ -296,7 +294,7 @@ source_set("dns_client") {
     # chrome/browser/ash/smb_client/discovery/mdns_host_locator.cc
     # Result parsing for results read through MdnsClient.
     # TODO(crbug.com/902531): Remove once migrated to network service.
-    "//chrome/browser/chromeos",
+    "//chrome/browser/ash",
 
     # Tests and test support
     "//chrome/browser:test_support",
@@ -357,7 +355,7 @@ source_set("mdns_client") {
     # chrome/browser/ash/smb_client/discovery/mdns_host_locator.cc
     # Makes MDNS queries using MDnsClient.
     # TODO(crbug.com/902531): Remove once migrated to network service.
-    "//chrome/browser/chromeos",
+    "//chrome/browser/ash",
 
     # Tests and test support
     "//chrome/browser:test_support",

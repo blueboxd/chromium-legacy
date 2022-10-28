@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -54,7 +54,7 @@ class TranslateModalRequestConfig
 
   // The InfoBar causing this modal.
   InfoBarIOS* infobar_ = nullptr;
-  // Configuration data extracted from |infobar_|'s translate delegate.
+  // Configuration data extracted from `infobar_`'s translate delegate.
   translate::TranslateStep current_step_;
   std::u16string source_language_name_;
   std::u16string target_language_name_;

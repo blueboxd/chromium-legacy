@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,13 +6,13 @@
 #define CHROME_BROWSER_UI_APP_LIST_APP_SYNC_UI_STATE_FACTORY_H_
 
 #include "base/memory/singleton.h"
-#include "components/keyed_service/content/browser_context_keyed_service_factory.h"
+#include "chrome/browser/profiles/profile_keyed_service_factory.h"
 
 class AppSyncUIState;
 class Profile;
 
 // Singleton that owns all AppSyncUIStates and associates them with profiles.
-class AppSyncUIStateFactory : public BrowserContextKeyedServiceFactory {
+class AppSyncUIStateFactory : public ProfileKeyedServiceFactory {
  public:
   AppSyncUIStateFactory(const AppSyncUIStateFactory&) = delete;
   AppSyncUIStateFactory& operator=(const AppSyncUIStateFactory&) = delete;

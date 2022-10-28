@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -19,9 +19,9 @@ ash::UpdateEngineClient* GetUpdateEngineClient() {
   return update_engine_client;
 }
 
-ash::PowerManagerClient* GetPowerManagerClient() {
-  ash::PowerManagerClient* power_manager_client =
-      ash::PowerManagerClient::Get();
+chromeos::PowerManagerClient* GetPowerManagerClient() {
+  chromeos::PowerManagerClient* power_manager_client =
+      chromeos::PowerManagerClient::Get();
   DCHECK(power_manager_client);
   return power_manager_client;
 }

@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -65,6 +65,8 @@ class ManifestUpdateManager final : public WebAppInstallManagerObserver {
                    const absl::optional<AppId>& app_id,
                    content::WebContents* web_contents);
   bool IsUpdateConsumed(const AppId& app_id);
+  // bool ResetUpdateStateForTesting(const AppId& app_id)
+  bool IsUpdateTaskPending(const AppId& app_id);
 
   // WebAppInstallManagerObserver:
   void OnWebAppWillBeUninstalled(const AppId& app_id) override;

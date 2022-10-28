@@ -1,9 +1,9 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 import {assert, assertNotReached} from 'chrome://resources/js/assert_ts.js';
-import {EventTracker} from 'chrome://resources/js/event_tracker.m.js';
+import {EventTracker} from 'chrome://resources/js/event_tracker.js';
 import {hasKeyModifiers, isRTL} from 'chrome://resources/js/util.m.js';
 
 import {ExtendedKeyEvent, FittingType, Point} from './constants.js';

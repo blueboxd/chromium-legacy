@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -52,8 +52,7 @@ struct UniquePtrComparator {
 // Example usage:
 //   std::vector<std::unique_ptr<Foo>> vector;
 //   Foo* element = ...
-//   auto iter = std::find_if(vector.begin(), vector.end(),
-//                            MatchesUniquePtr(element));
+//   auto iter = base::ranges::find_if(vector, MatchesUniquePtr(element));
 //
 // Example of erasing from container:
 //   EraseIf(v, MatchesUniquePtr(element));
@@ -67,7 +66,7 @@ struct UniquePtrMatcher {
   }
 
  private:
-  const raw_ptr<T> t_;
+  const raw_ptr<T, DanglingUntriaged> t_;
 };
 
 template <class T, class Deleter = std::default_delete<T>>

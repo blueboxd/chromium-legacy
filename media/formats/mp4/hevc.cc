@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -75,20 +75,18 @@ bool HEVCDecoderConfigurationRecord::ParseInternal(BufferReader* reader,
   uint32_t general_constraint_indicator_flags_hi = 0;
   uint16_t general_constraint_indicator_flags_lo = 0;
   uint8_t misc = 0;
-  RCHECK(reader->Read1(&configurationVersion) && configurationVersion == 1 &&
+  RCHECK(reader->Read1(&configurationVersion) &&
+         (configurationVersion == 0 || configurationVersion == 1) &&
          reader->Read1(&profile_indication) &&
          reader->Read4(&general_profile_compatibility_flags) &&
          reader->Read4(&general_constraint_indicator_flags_hi) &&
          reader->Read2(&general_constraint_indicator_flags_lo) &&
          reader->Read1(&general_level_idc) &&
          reader->Read2(&min_spatial_segmentation_idc) &&
-         reader->Read1(&parallelismType) &&
-         reader->Read1(&chromaFormat) &&
+         reader->Read1(&parallelismType) && reader->Read1(&chromaFormat) &&
          reader->Read1(&bitDepthLumaMinus8) &&
-         reader->Read1(&bitDepthChromaMinus8) &&
-         reader->Read2(&avgFrameRate) &&
-         reader->Read1(&misc) &&
-         reader->Read1(&numOfArrays));
+         reader->Read1(&bitDepthChromaMinus8) && reader->Read2(&avgFrameRate) &&
+         reader->Read1(&misc) && reader->Read1(&numOfArrays));
 
   general_profile_space = profile_indication >> 6;
   general_tier_flag = (profile_indication >> 5) & 1;
@@ -236,7 +234,7 @@ bool HEVC::InsertParamSetsAnnexB(
   if (subsamples && !subsamples->empty()) {
     int subsample_index = AVC::FindSubsampleIndex(*buffer, subsamples,
                                                   &(*config_insert_point));
-    // Update the size of the subsample where SPS/PPS is to be inserted.
+    // Update the size of the subsample where VPS/SPS/PPS is to be inserted.
     (*subsamples)[subsample_index].clear_bytes += param_sets.size();
   }
 
@@ -303,6 +301,8 @@ BitstreamConverter::AnalysisResult HEVC::AnalyzeAnnexB(
   // Rec. ITU-T H.265 v5 (02/2018)
   // 7.4.2.4.4 Order of NAL units and coded pictures and their association to
   // access units
+  // F.7.4.2.4.4 Order of NAL units and coded pictures and association to access
+  // units
   while (true) {
     H265NaluParser::Result h265_result = parser.AdvanceToNextNALU(&nalu);
     if (h265_result == H265NaluParser::kEOStream) {
@@ -317,14 +317,6 @@ BitstreamConverter::AnalysisResult HEVC::AnalyzeAnnexB(
 
     DVLOG(3) << "nal_unit_type " << nalu.nal_unit_type;
 
-    // Definition of "access unit" and "base layer" is only applied to NALs with
-    // nuh_layer_id equals 0.
-    if (nalu.nuh_layer_id != 0) {
-      LOG(WARNING) << "Unrecognized layer ID " << nalu.nuh_layer_id
-                   << ", skip.";
-      continue;
-    }
-
     if (order_state == kNoMoreDataAllowed) {
       DVLOG(1) << "No more data is allowed after EOB_NUT.";
       return result;
@@ -337,10 +329,9 @@ BitstreamConverter::AnalysisResult HEVC::AnalyzeAnnexB(
     }
 
     switch (nalu.nal_unit_type) {
-      // When an access unit delimiter NAL unit with nuh_layer_id equal to 0 is
-      // present, it shall be the first NAL unit. There shall be at most one
-      // access unit delimiter NAL unit with nuh_layer_id equal to 0 in any
-      // access unit.
+      // When an access unit delimiter NAL unit is present, it shall be the
+      // first NAL unit. There shall be at most one access unit delimiter NAL
+      // unit in any access unit.
       case H265NALU::AUD_NUT:
         if (order_state > kAUDAllowed) {
           DVLOG(1) << "Unexpected AUD in order_state " << order_state;
@@ -401,9 +392,8 @@ BitstreamConverter::AnalysisResult HEVC::AnalyzeAnnexB(
         }
         break;
 
-      // When an end of sequence NAL unit with nuh_layer_id equal to 0 is
-      // present, it shall be the last NAL unit among all NAL units with
-      // nuh_layer_id equal to 0 in the access unit other than an end of
+      // When an end of sequence NAL unit is present, it shall be the last NAL
+      // unit among all NAL units in the access unit other than an end of
       // bitstream NAL unit (when present).
       case H265NALU::EOS_NUT:
         if (order_state != kAfterFirstVCL) {

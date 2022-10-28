@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -107,7 +107,7 @@ void AdaptiveChargingNotificationController::Click(
   if (!button_index.has_value())
     return;
   if (button_index.value() == 0) {
-    PowerManagerClient::Get()->ChargeNowForAdaptiveCharging();
+    chromeos::PowerManagerClient::Get()->ChargeNowForAdaptiveCharging();
     CloseAdaptiveChargingNotification(/*by_user=*/true);
   } else {
     NOTREACHED() << "Unknown button index value";

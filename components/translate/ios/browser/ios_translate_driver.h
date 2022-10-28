@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -91,10 +91,10 @@ class IOSTranslateDriver
   bool IsPageValid(int page_seq_no) const;
 
   // TranslateController::Observer methods.
-  void OnTranslateScriptReady(TranslateErrors::Type error_type,
+  void OnTranslateScriptReady(TranslateErrors error_type,
                               double load_time,
                               double ready_time) override;
-  void OnTranslateComplete(TranslateErrors::Type error_type,
+  void OnTranslateComplete(TranslateErrors error_type,
                            const std::string& source_language,
                            double translation_time) override;
 

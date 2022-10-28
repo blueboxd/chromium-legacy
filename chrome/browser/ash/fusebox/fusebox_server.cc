@@ -1,4 +1,4 @@
-// Copyright (c) 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,6 +13,7 @@
 #include "base/strings/string_util.h"
 #include "base/task/bind_post_task.h"
 #include "chrome/browser/ash/file_manager/fileapi_util.h"
+#include "chrome/browser/ash/file_manager/path_util.h"
 #include "chrome/browser/ash/fusebox/fusebox_errno.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -114,13 +115,16 @@ ParseResult ParseFileSystemURL(fusebox::MonikerMap& moniker_map,
   auto extract_token_result =
       fusebox::MonikerMap::ExtractToken(fs_url_as_string);
   switch (extract_token_result.result_type) {
-    case ResultType::OK:
-      fs_url = moniker_map.Resolve(extract_token_result.token);
-      if (!fs_url.is_valid()) {
+    case ResultType::OK: {
+      auto resolved = moniker_map.Resolve(extract_token_result.token);
+      if (!resolved.first.is_valid()) {
         LOG(ERROR) << "Unresolvable Moniker";
         return ParseResult(base::File::Error::FILE_ERROR_NOT_FOUND);
       }
+      fs_url = std::move(resolved.first);
+      read_only = resolved.second;
       break;
+    }
     case ResultType::NOT_A_MONIKER_FS_URL: {
       auto resolved = ResolvePrefixMap(prefix_map, fs_url_as_string);
       if (resolved.first.empty()) {
@@ -223,6 +227,7 @@ void ReadOnIOThread(scoped_refptr<storage::FileSystemContext> fs_context,
 void RunReadDirCallback(
     Server::ReadDirCallback callback,
     scoped_refptr<storage::FileSystemContext> fs_context,  // See § above.
+    bool read_only,
     uint64_t cookie,
     base::File::Error error_code,
     storage::AsyncFileUtil::EntryList entry_list,
@@ -231,10 +236,11 @@ void RunReadDirCallback(
 
   fusebox::DirEntryListProto protos;
   for (const auto& entry : entry_list) {
+    bool is_directory = entry.type == filesystem::mojom::FsFileType::DIRECTORY;
     auto* proto = protos.add_entries();
-    proto->set_is_directory(entry.type ==
-                            filesystem::mojom::FsFileType::DIRECTORY);
+    proto->set_is_directory(is_directory);
     proto->set_name(entry.name.value());
+    proto->set_mode_bits(Server::MakeModeBits(is_directory, read_only));
   }
 
   callback.Run(cookie, FileErrorToErrno(error_code), std::move(protos),
@@ -265,6 +271,15 @@ Server* Server::GetInstance() {
   return g_server_instance;
 }
 
+// static
+uint32_t Server::MakeModeBits(bool is_directory, bool read_only) {
+  uint32_t mode_bits = is_directory
+                           ? (S_IFDIR | 0110)  // 0110 are the "--x--x---" bits.
+                           : S_IFREG;
+  mode_bits |= read_only ? 0440 : 0660;  // "r--r-----" versus "rw-rw----".
+  return mode_bits;
+}
+
 Server::Server(Delegate* delegate) : delegate_(delegate) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(!g_server_instance);
@@ -277,10 +292,11 @@ Server::~Server() {
   g_server_instance = nullptr;
 }
 
-fusebox::Moniker Server::CreateMoniker(storage::FileSystemURL target) {
+fusebox::Moniker Server::CreateMoniker(storage::FileSystemURL target,
+                                       bool read_only) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  return moniker_map_.CreateMoniker(target);
+  return moniker_map_.CreateMoniker(target, read_only);
 }
 
 void Server::DestroyMoniker(fusebox::Moniker moniker) {
@@ -316,6 +332,23 @@ void Server::UnregisterFSURLPrefix(const std::string& subdir) {
   if (delegate_) {
     delegate_->OnUnregisterFSURLPrefix(subdir);
   }
+}
+
+storage::FileSystemURL Server::ResolveFilename(Profile* profile,
+                                               const std::string& filename) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  if (!base::StartsWith(filename, file_manager::util::kFuseBoxMediaSlashPath)) {
+    return storage::FileSystemURL();
+  }
+  auto resolved = ResolvePrefixMap(
+      prefix_map_,
+      filename.substr(strlen(file_manager::util::kFuseBoxMediaSlashPath)));
+  if (resolved.first.empty()) {
+    return storage::FileSystemURL();
+  }
+  return file_manager::util::GetFileManagerFileSystemContext(profile)
+      ->CrackURLInFirstPartyContext(GURL(resolved.first));
 }
 
 void Server::Close(std::string fs_url_as_string, CloseCallback callback) {
@@ -378,10 +411,10 @@ void Server::ReadDir(std::string fs_url_as_string,
     return;
   }
 
-  auto outer_callback =
-      base::BindPostTask(base::SequencedTaskRunnerHandle::Get(),
-                         base::BindRepeating(&RunReadDirCallback, callback,
-                                             common.fs_context, cookie));
+  auto outer_callback = base::BindPostTask(
+      base::SequencedTaskRunnerHandle::Get(),
+      base::BindRepeating(&RunReadDirCallback, callback, common.fs_context,
+                          common.read_only, cookie));
 
   content::GetIOThreadTaskRunner({})->PostTask(
       FROM_HERE,

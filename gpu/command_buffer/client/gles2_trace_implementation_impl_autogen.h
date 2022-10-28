@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -2395,17 +2395,6 @@ GLuint GLES2TraceImplementation::CreateAndTexStorage2DSharedImageCHROMIUM(
   TRACE_EVENT_BINARY_EFFICIENT0(
       "gpu", "GLES2Trace::CreateAndTexStorage2DSharedImageCHROMIUM");
   return gl_->CreateAndTexStorage2DSharedImageCHROMIUM(mailbox);
-}
-
-GLuint GLES2TraceImplementation::
-    CreateAndTexStorage2DSharedImageWithInternalFormatCHROMIUM(
-        const GLbyte* mailbox,
-        GLenum internalformat) {
-  TRACE_EVENT_BINARY_EFFICIENT0(
-      "gpu",
-      "GLES2Trace::CreateAndTexStorage2DSharedImageWithInternalFormatCHROMIUM");
-  return gl_->CreateAndTexStorage2DSharedImageWithInternalFormatCHROMIUM(
-      mailbox, internalformat);
 }
 
 void GLES2TraceImplementation::BeginSharedImageAccessDirectCHROMIUM(

@@ -1,15 +1,17 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome/browser/ui/webui/chromeos/parent_access/parent_access_ui_handler_impl.h"
 
 #include <string>
+#include <utility>
 
 #include "base/base64.h"
 #include "base/notreached.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/ui/webui/chromeos/parent_access/parent_access_callback.pb.h"
+#include "chrome/browser/ui/webui/chromeos/parent_access/parent_access_dialog.h"
 #include "chrome/browser/ui/webui/chromeos/parent_access/parent_access_ui.mojom.h"
 #include "components/signin/public/base/consent_level.h"
 #include "components/signin/public/identity_manager/access_token_fetcher.h"
@@ -69,6 +71,13 @@ void ParentAccessUIHandlerImpl::OnAccessTokenFetchComplete(
   std::move(callback).Run(
       parent_access_ui::mojom::GetOAuthTokenStatus::kSuccess,
       access_token_info.token);
+}
+
+void ParentAccessUIHandlerImpl::GetParentAccessParams(
+    GetParentAccessParamsCallback callback) {
+  std::move(callback).Run(
+      ParentAccessDialog::GetInstance()->CloneParentAccessParams());
+  return;
 }
 
 void ParentAccessUIHandlerImpl::OnParentAccessCallbackReceived(

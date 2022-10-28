@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -161,10 +161,8 @@ void ThreadControllerImpl::BindToCurrentThread(
   NOTREACHED();
 }
 
-void ThreadControllerImpl::WillQueueTask(PendingTask* pending_task,
-                                         const char* task_queue_name) {
-  task_annotator_.WillQueueTask("SequenceManager PostTask", pending_task,
-                                task_queue_name);
+void ThreadControllerImpl::WillQueueTask(PendingTask* pending_task) {
+  task_annotator_.WillQueueTask("SequenceManager PostTask", pending_task);
 }
 
 void ThreadControllerImpl::DoWork(WorkType work_type) {
@@ -216,6 +214,7 @@ void ThreadControllerImpl::DoWork(WorkType work_type) {
             if (selected_task->task_execution_trace_logger)
               selected_task->task_execution_trace_logger.Run(
                   ctx, selected_task->task);
+            SequenceManagerImpl::EmitTaskPriority(ctx, selected_task->priority);
           });
       if (!weak_ptr)
         return;

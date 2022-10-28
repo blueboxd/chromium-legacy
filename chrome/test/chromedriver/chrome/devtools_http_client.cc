@@ -1,4 +1,4 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -59,7 +59,7 @@ const WebViewInfo* WebViewsInfo::GetForId(const std::string& id) const {
     if (views_info[i].id == id)
       return &views_info[i];
   }
-  return NULL;
+  return nullptr;
 }
 
 DevToolsHttpClient::DevToolsHttpClient(

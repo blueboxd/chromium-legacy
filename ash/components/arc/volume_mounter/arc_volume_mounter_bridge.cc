@@ -1,4 +1,4 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -14,8 +14,6 @@
 #include "ash/components/arc/session/arc_bridge_service.h"
 #include "ash/components/arc/session/arc_service_manager.h"
 #include "ash/components/arc/session/arc_vm_client_adapter.h"
-#include "ash/components/disks/disk.h"
-#include "ash/components/disks/disk_mount_manager.h"
 #include "base/bind.h"
 #include "base/feature_list.h"
 #include "base/logging.h"
@@ -28,6 +26,8 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "chromeos/ash/components/cryptohome/cryptohome_parameters.h"
 #include "chromeos/ash/components/dbus/upstart/upstart_client.h"
+#include "chromeos/ash/components/disks/disk.h"
+#include "chromeos/ash/components/disks/disk_mount_manager.h"
 #include "chromeos/components/disks/disks_prefs.h"
 #include "components/prefs/pref_service.h"
 #include "components/user_prefs/user_prefs.h"
@@ -184,7 +184,7 @@ void ArcVolumeMounterBridge::SendMountEventForMyFiles() {
 bool ArcVolumeMounterBridge::IsVisibleToAndroidApps(
     const std::string& uuid) const {
   const base::Value::List& uuid_list =
-      pref_service_->GetValueList(prefs::kArcVisibleExternalStorages);
+      pref_service_->GetList(prefs::kArcVisibleExternalStorages);
   for (auto& value : uuid_list) {
     if (value.is_string() && value.GetString() == uuid)
       return true;

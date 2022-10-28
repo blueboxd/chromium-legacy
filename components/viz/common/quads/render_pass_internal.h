@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -62,9 +62,13 @@ class VIZ_COMMON_EXPORT RenderPassInternal {
 
   // If true we might reuse the texture if there is no damage.
   bool cache_render_pass = false;
+
   // Indicates whether there is accumulated damage from contributing render
   // surface or layer or surface quad. Not including property changes on itself.
-  bool has_damage_from_contributing_content = false;
+  // TODO(crbug.com/1358700): By default we assume the pass is damaged. Remove
+  // this field in favour of using |damage_rect| for feature
+  // kAllowUndamagedNonrootRenderPassToSkip.
+  bool has_damage_from_contributing_content = true;
 
   // Generate mipmap for trilinear filtering, applied to render pass' texture.
   bool generate_mipmap = false;

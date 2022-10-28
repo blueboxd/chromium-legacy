@@ -1,13 +1,13 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ios/chrome/common/app_group/app_group_constants.h"
+#import "ios/chrome/common/app_group/app_group_constants.h"
 
-#include "base/check.h"
-#include "base/strings/sys_string_conversions.h"
-#include "components/version_info/version_info.h"
-#include "ios/chrome/common/ios_app_bundle_id_prefix_buildflags.h"
+#import "base/check.h"
+#import "base/strings/sys_string_conversions.h"
+#import "components/version_info/version_info.h"
+#import "ios/chrome/common/ios_app_bundle_id_prefix_buildflags.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."

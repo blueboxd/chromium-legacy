@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -37,7 +37,6 @@
 #include "ash/constants/ash_features.h"
 #include "chrome/browser/ash/crosapi/browser_util.h"
 #include "chrome/browser/nearby_sharing/common/nearby_share_features.h"
-#include "chrome/common/url_constants.h"
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
@@ -206,6 +205,9 @@ void AddPersonalizationOptionsStrings(content::WebUIDataSource* html_source) {
     {"driveSuggestPrefDesc", IDS_DRIVE_SUGGEST_PREF_DESC},
     {"autofillAssistantPref", IDS_SETTINGS_AUTOFILL_ASSISTANT_PREF},
     {"autofillAssistantPrefDesc", IDS_SETTINGS_AUTOFILL_ASSISTANT_PREF_DESC},
+    {"priceEmailNotificationsPref", IDS_PRICE_TRACKING_SETTINGS_TITLE},
+    {"priceEmailNotificationsPrefDesc",
+     IDS_PRICE_TRACKING_SETTINGS_EMAIL_DESCRIPTION},
   };
   html_source->AddLocalizedStrings(kLocalizedStrings);
 }

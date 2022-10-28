@@ -1,4 +1,4 @@
-# Copyright 2014 The Chromium Authors. All rights reserved.
+# Copyright 2014 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -64,11 +64,6 @@ config("compiler") {
   # Without this, the constructors and destructors of a C++ object inside
   # an Objective C struct won't be called, which is very bad.
   cflags_objcc = [ "-fobjc-call-cxx-cdtors" ]
-
-  # TODO(crbug.com/1331345) Disable sprintf errors in Xcode 14 beta 1.
-  if (xcode_version_int >= 1400) {
-    cflags += [ "-Wno-deprecated-declarations" ]
-  }
 
   ldflags = common_flags
 }

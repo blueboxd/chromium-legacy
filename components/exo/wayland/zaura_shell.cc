@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,7 +9,6 @@
 #include <wayland-server-protocol-core.h>
 #include <xdg-shell-server-protocol.h>
 
-#include <algorithm>
 #include <limits>
 #include <memory>
 #include <utility>
@@ -18,6 +17,7 @@
 #include "ash/public/cpp/window_properties.h"
 #include "ash/wm/window_state.h"
 #include "base/logging.h"
+#include "base/ranges/algorithm.h"
 #include "base/strings/string_number_conversions.h"
 #include "build/chromeos_buildflags.h"
 #include "chromeos/ui/base/window_properties.h"
@@ -794,6 +794,9 @@ void AuraToplevel::OnConfigure(const gfx::Rect& bounds,
   if (state_type == chromeos::WindowStateType::kSecondarySnapped)
     AddState(&states, ZAURA_TOPLEVEL_STATE_SNAPPED_SECONDARY);
 
+  if (state_type == chromeos::WindowStateType::kFloated)
+    AddState(&states, ZAURA_TOPLEVEL_STATE_FLOATED);
+
   if (state_type == chromeos::WindowStateType::kMinimized)
     AddState(&states, ZAURA_TOPLEVEL_STATE_MINIMIZED);
 
@@ -873,9 +876,8 @@ bool AuraOutput::SendDisplayMetrics(const display::Display& display,
         display::GetDisplayZoomFactors(active_mode);
 
     // Ensure that the current zoom factor is a part of the list.
-    auto it = std::find_if(
-        zoom_factors.begin(), zoom_factors.end(),
-        [&display_info](float zoom_factor) -> bool {
+    auto it =
+        base::ranges::find_if(zoom_factors, [&display_info](float zoom_factor) {
           return std::abs(display_info.zoom_factor() - zoom_factor) <=
                  std::numeric_limits<float>::epsilon();
         });

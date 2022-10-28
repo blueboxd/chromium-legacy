@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -14,12 +14,12 @@
 #include "base/gtest_prod_util.h"
 #include "base/memory/raw_ptr.h"
 #include "base/time/time.h"
-#include "components/search_engines/omnibox_focus_type.h"
 #include "components/search_engines/search_engine_type.h"
 #include "components/search_engines/template_url_data.h"
 #include "components/search_engines/template_url_id.h"
 #include "third_party/metrics_proto/chrome_searchbox_stats.pb.h"
 #include "third_party/metrics_proto/omnibox_event.pb.h"
+#include "third_party/metrics_proto/omnibox_focus_type.pb.h"
 #include "third_party/metrics_proto/omnibox_input_type.pb.h"
 #include "ui/gfx/geometry/size.h"
 #include "url/gurl.h"
@@ -192,7 +192,8 @@ class TemplateURLRef {
     metrics::OmniboxInputType input_type = metrics::OmniboxInputType::EMPTY;
 
     // Specifies how the user last interacted with the searchbox UI element.
-    OmniboxFocusType focus_type = OmniboxFocusType::DEFAULT;
+    metrics::OmniboxFocusType focus_type =
+        metrics::OmniboxFocusType::INTERACTION_DEFAULT;
 
     // The optional assisted query stats, aka AQS, used for logging purposes.
     // This string contains impressions of all autocomplete matches shown
@@ -717,6 +718,17 @@ class TemplateURL {
   const std::string& side_search_param() const {
     return data_.side_search_param;
   }
+  const std::string& side_image_search_param() const {
+    return data_.side_image_search_param;
+  }
+  const std::string& image_search_favicon_url() const {
+    return data_.image_search_favicon_url;
+  }
+  const std::u16string& image_search_branding_label() const {
+    return !data_.image_search_branding_label.empty()
+               ? data_.image_search_branding_label
+               : short_name();
+  }
   const std::vector<std::string>& alternate_urls() const {
     return data_.alternate_urls;
   }
@@ -850,11 +862,23 @@ class TemplateURL {
   // Returns true if this search engine supports the side search feature.
   bool IsSideSearchSupported() const;
 
+  // Returns true if this search engine supports the side image search feature.
+  bool IsSideImageSearchSupported() const;
+
   // Takes a search URL belonging to this search engine and generates the URL
   // appropriate for the side search side panel.
   GURL GenerateSideSearchURL(const GURL& search_url,
                              const std::string& version,
                              const SearchTermsData& search_terms_data) const;
+
+  // Takes a search URL belonging to this image search engine and generates the
+  // URL appropriate for the image search in the side panel.
+  GURL GenerateSideImageSearchURL(const GURL& image_search_url,
+                                  const std::string& version) const;
+
+  // Takes a search URL that belongs to this image search in the side panel and
+  // removes the side image search param from the URL.
+  GURL RemoveSideImageSearchParamFromURL(const GURL& image_search_url) const;
 
   // TemplateURL internally caches values derived from a passed SearchTermsData
   // to make its functions quick. This method invalidates any cached values and

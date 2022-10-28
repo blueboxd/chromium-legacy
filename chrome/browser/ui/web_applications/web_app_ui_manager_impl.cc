@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -38,6 +38,7 @@
 #include "components/services/app_service/public/cpp/features.h"
 #include "components/services/app_service/public/cpp/types_util.h"
 #include "components/webapps/browser/installable/installable_metrics.h"
+#include "components/webapps/browser/uninstall_result_code.h"
 #include "extensions/browser/app_sorting.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
@@ -56,7 +57,6 @@
 #if BUILDFLAG(IS_WIN)
 #include "base/process/process.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/web_applications/web_app_install_finalizer.h"
 #include "components/keep_alive_registry/keep_alive_types.h"
 #include "components/keep_alive_registry/scoped_keep_alive.h"
@@ -94,7 +94,7 @@ void UninstallWebAppWithDialogFromStartupSwitch(const AppId& app_id,
         app_id, webapps::WebappUninstallSource::kOsSettings,
         gfx::kNullNativeWindow,
         base::BindOnce([](std::unique_ptr<ScopedKeepAlive> scoped_keep_alive,
-                          bool success) {},
+                          webapps::UninstallResultCode code) {},
                        std::move(scoped_keep_alive)));
   } else {
     // There is a chance that a previous invalid uninstall operation (due

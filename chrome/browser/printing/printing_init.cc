@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -20,7 +20,7 @@
 
 namespace printing {
 
-void InitializePrinting(content::WebContents* web_contents) {
+void InitializePrintingForWebContents(content::WebContents* web_contents) {
   // Native Headless mode uses a minimalistic Print Manager implementation that
   // shortcuts most of the callbacks providing only print to PDF functionality.
   if (headless::IsChromeNativeHeadless()) {

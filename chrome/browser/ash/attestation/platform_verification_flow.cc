@@ -1,4 +1,4 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -100,9 +100,9 @@ PlatformVerificationFlow::ChallengeContext::ChallengeContext(
 PlatformVerificationFlow::ChallengeContext::~ChallengeContext() = default;
 
 PlatformVerificationFlow::PlatformVerificationFlow()
-    : attestation_flow_(NULL),
+    : attestation_flow_(nullptr),
       attestation_client_(AttestationClient::Get()),
-      delegate_(NULL),
+      delegate_(nullptr),
       timeout_delay_(base::Seconds(kTimeoutInSeconds)) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   std::unique_ptr<ServerProxy> attestation_ca_client(new AttestationCAClient());

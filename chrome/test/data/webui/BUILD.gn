@@ -1,4 +1,4 @@
-# Copyright 2017 The Chromium Authors. All rights reserved.
+# Copyright 2017 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -27,13 +27,17 @@ if (include_js_tests) {
     sources = [
       "bookmarks/bookmarks_focus_test.js",
       "cr_elements/cr_elements_focus_test.js",
-      "cr_focus_row_behavior_interactive_test.js",
+      "cr_focus_row_mixin_interactive_test.js",
       "extensions/cr_extensions_interactive_ui_tests.js",
       "history/history_focus_test.js",
       "print_preview/print_preview_interactive_ui_tests.js",
       "settings/cr_settings_interactive_ui_tests.js",
       "tab_search/tab_search_interactive_ui_tests.js",
     ]
+
+    if (is_chromeos_ash) {
+      sources += [ "cr_focus_row_behavior_interactive_test.js" ]
+    }
 
     if (!is_chromeos_ash) {
       sources += [ "signin/local_profile_customization_interactive_ui_test.js" ]
@@ -92,6 +96,7 @@ if (include_js_tests) {
       "color_provider_css_colors_browsertest.js",
       "cr_components/cr_components_browsertest.js",
       "cr_elements/cr_elements_browsertest.js",
+      "gaia_auth_host/gaia_auth_host_browsertest.js",
       "histograms/histograms_internals_ui_browsertest.js",
       "history/history_browsertest.js",
       "invalidations/about_invalidations_browsertest.js",
@@ -101,6 +106,7 @@ if (include_js_tests) {
       "media_internals/media_internals_ui_browsertest.js",
       "net_internals/net_internals_browsertest.js",
       "ntp4.js",
+      "password_manager/password_manager_browsertest.js",
       "privacy_sandbox/privacy_sandbox_dialog_browsertest.js",
       "resources/webui_resources_browsertest.js",
       "sandboxstatus_browsertest.js",
@@ -109,7 +115,6 @@ if (include_js_tests) {
       "settings/privacy_sandbox_browsertest.js",
       "settings/settings_idle_load_browsertest.js",
       "text_defaults_browsertest.js",
-      "webui_resource_async_browsertest.js",
       "whats_new/whats_new_browsertest.js",
     ]
 
@@ -158,13 +163,13 @@ if (include_js_tests) {
         "../../../browser/ui/webui/chromeos/certificate_manager_dialog_browsertest.js",
         "chromeos/account_manager/account_manager_browsertest.js",
         "chromeos/arc_account_picker/arc_account_picker_browsertest.js",
+        "chromeos/ash_common/post_message_api/post_message_api_browsertest.js",
         "chromeos/edu_coexistence/edu_coexistence_browsertest.js",
         "chromeos/emoji_picker/emoji_picker_browsertest.js",
         "chromeos/gaia_action_buttons/gaia_action_buttons_browsertest.js",
         "chromeos/internet_detail_dialog_browsertest.js",
         "cr_components/chromeos/cr_components_chromeos_v3_browsertest.js",
         "js/i18n_process_test.js",
-        "post_message_api/post_message_api_browsertest.js",
         "set_time_dialog_browsertest.js",
         "settings/chromeos/a11y/v3_os_a11y_browsertest.js",
         "settings/chromeos/os_settings_v3_browsertest.js",
@@ -227,15 +232,14 @@ if (include_js_tests) {
 
       sources = [
         "chromeos/ash_common/ash_common_browsertest.js",
+        "chromeos/cloud_upload/cloud_upload_browsertest.js",
         "chromeos/crostini_installer_browsertest.js",
         "chromeos/crostini_upgrader_browsertest.js",
         "chromeos/diagnostics/diagnostics_browsertest.js",
         "chromeos/firmware_update/firmware_update_browsertest.js",
         "chromeos/os_feedback_ui/os_feedback_browsertest.js",
-        "chromeos/print_management/print_management_browsertest.js",
         "chromeos/scanning/scanning_app_browsertest.js",
         "chromeos/shimless_rma/shimless_rma_browsertest.js",
-        "chromeos/shortcut_customization/shortcut_customization_browsertest.js",
         "nearby_share/nearby_browsertest.js",
         "nearby_share/shared/nearby_shared_v3_browsertest.js",
       ]
@@ -247,7 +251,6 @@ if (include_js_tests) {
   js2gtest("browser_tests_js_mojo_webui") {
     test_type = "mojo_webui"
     sources = [
-      "bluetooth_internals/bluetooth_internals_browsertest.js",
       "cr_components/cr_components_mojo_browsertest.js",
       "downloads/downloads_browsertest.js",
       "engagement/site_engagement_browsertest.js",
@@ -265,7 +268,12 @@ if (include_js_tests) {
         "chromeos/parent_access/parent_access_browsertest.js",
         "chromeos/personalization_app/personalization_app_component_browsertest.js",
         "chromeos/personalization_app/personalization_app_controller_browsertest.js",
+        "chromeos/print_management/print_management_browsertest.js",
+        "chromeos/shortcut_customization/shortcut_customization_browsertest.js",
       ]
+    }
+    if (!is_chromeos_lacros) {
+      sources += [ "bluetooth_internals/bluetooth_internals_browsertest.js" ]
     }
     if (is_win || is_mac || is_linux || is_fuchsia) {
       sources += [ "app_settings/app_settings_browsertest.js" ]
@@ -289,7 +297,6 @@ if (include_js_tests) {
     extra_js_files = [
       "../../../renderer/resources/extensions/notifications_custom_bindings.js",
       "../../../renderer/resources/extensions/notifications_test_util.js",
-      "//ui/webui/resources/js/cr.js",
     ]
   }
 }
@@ -303,7 +310,6 @@ group("closure_compile") {
     deps += [
       "chromeos:closure_compile",
       "cr_components/chromeos:closure_compile",
-      "js/cr/ui:closure_compile",
       "nearby_share:closure_compile",
       "nearby_share/shared:closure_compile",
       "settings/chromeos:closure_compile",
@@ -336,7 +342,7 @@ js_library("mock_timer") {
 js_library("test_util") {
   deps = [
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
-    "//ui/webui/resources/js/cr:event_target.m",
+    "//ui/webui/resources/js/cr:event_target",
   ]
 }
 
@@ -437,14 +443,17 @@ ts_library("build_ts") {
     "chrome_timeticks_test.ts",
     "color_provider_css_colors_test.ts",
     "color_provider_css_colors_test_chromeos.ts",
-    "cr_focus_row_behavior_test.ts",
+    "cr_focus_row_mixin_test.ts",
     "resources/list_property_update_mixin_tests.ts",
     "text_defaults_test.ts",
     "test_store_ts.ts",
   ]
 
   if (is_chromeos_ash) {
-    in_files += [ "resources/list_property_update_behavior_tests.ts" ]
+    in_files += [
+      "cr_focus_row_behavior_test.ts",
+      "resources/list_property_update_behavior_tests.ts",
+    ]
   }
 
   deps = [ "//ui/webui/resources:library" ]
@@ -482,11 +491,13 @@ generate_grd("build_grd") {
     "cr_components:build_grdp",
     "cr_elements:build_grdp",
     "downloads:build_grdp",
+    "gaia_auth_host:build_grdp",
     "history:build_grdp",
     "js:build_grdp",
     "metrics_reporter:build_grdp",
     "net_internals:build_grdp",
     "new_tab_page:build_grdp",
+    "password_manager:build_grdp",
     "privacy_sandbox:build_grdp",
     "settings:build_grdp",
     "side_panel:build_grdp",
@@ -497,8 +508,10 @@ generate_grd("build_grd") {
     "$target_gen_dir/bookmarks/resources.grdp",
     "$target_gen_dir/chai_resources.grdp",
     "$target_gen_dir/commander/resources.grdp",
+    "$target_gen_dir/password_manager/resources.grdp",
     "$target_gen_dir/cr_components/resources.grdp",
     "$target_gen_dir/cr_elements/resources.grdp",
+    "$target_gen_dir/gaia_auth_host/resources.grdp",
     "$target_gen_dir/downloads/resources.grdp",
     "$target_gen_dir/js/resources.grdp",
     "$target_gen_dir/history/resources.grdp",
@@ -573,13 +586,19 @@ generate_grd("build_grd") {
   if (is_chromeos_ash) {
     input_files += [ "test_store.js" ]
     deps += [
+      "chromeos/cloud_upload:build_grdp",
       "chromeos/manage_mirrorsync:build_grdp",
       "chromeos/personalization_app:build_grdp",
+      "chromeos/print_management:build_grdp",
+      "chromeos/shortcut_customization:build_grdp",
       "//ui/file_manager:build_tests_gen_grdp",
       "//ui/file_manager:build_tests_grdp",
     ]
     grdp_files += [
+      "$target_gen_dir/chromeos/cloud_upload/resources.grdp",
       "$target_gen_dir/chromeos/personalization_app/resources.grdp",
+      "$target_gen_dir/chromeos/shortcut_customization/resources.grdp",
+      "$target_gen_dir/chromeos/print_management/resources.grdp",
       "$target_gen_dir/chromeos/manage_mirrorsync/resources.grdp",
       "$root_gen_dir/ui/file_manager/tests_resources.grdp",
       "$root_gen_dir/ui/file_manager/tests_gen_resources.grdp",

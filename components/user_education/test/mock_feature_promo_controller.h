@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -26,16 +26,23 @@ class MockFeaturePromoController : public FeaturePromoController {
                BubbleCloseCallback),
               (override));
   MOCK_METHOD(bool,
+              MaybeShowStartupPromo,
+              (const base::Feature&,
+               FeaturePromoSpecification::StringReplacements,
+               StartupPromoCallback,
+               BubbleCloseCallback),
+              (override));
+  MOCK_METHOD(bool,
               MaybeShowPromoForDemoPage,
               (const base::Feature*,
                FeaturePromoSpecification::StringReplacements,
                BubbleCloseCallback),
               (override));
-  MOCK_METHOD(bool,
-              IsPromoActive,
-              (const base::Feature&, bool),
+  MOCK_METHOD(FeaturePromoStatus,
+              GetPromoStatus,
+              (const base::Feature&),
               (const, override));
-  MOCK_METHOD(bool, CloseBubble, (const base::Feature&), (override));
+  MOCK_METHOD(bool, EndPromo, (const base::Feature&), (override));
   MOCK_METHOD(FeaturePromoHandle,
               CloseBubbleAndContinuePromo,
               (const base::Feature&),

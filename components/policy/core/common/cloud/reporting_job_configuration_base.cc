@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -244,9 +244,10 @@ void ReportingJobConfigurationBase::OnURLLoadComplete(
     }
   }
 
-  auto response_dict = response && response->is_dict()
-                           ? absl::make_optional(std::move(response->GetDict()))
-                           : absl::nullopt;
+  auto response_dict =
+      response && response->is_dict()
+          ? absl::make_optional(std::move(*response).TakeDict())
+          : absl::nullopt;
   std::move(callback_).Run(job, status, response_code,
                            std::move(response_dict));
 }

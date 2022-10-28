@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -84,8 +84,6 @@ import org.chromium.components.messages.MessageDispatcherProvider;
 import org.chromium.components.messages.MessageIdentifier;
 import org.chromium.components.messages.MessageStateHandler;
 import org.chromium.components.messages.MessagesTestHelper;
-import org.chromium.content_public.browser.GlobalRenderFrameHostId;
-import org.chromium.content_public.browser.LifecycleState;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.NavigationHandle;
 import org.chromium.content_public.browser.WebContentsObserver;
@@ -946,11 +944,9 @@ public class UrlOverridingTest {
     @LargeTest
     @Features.EnableFeatures({"BackForwardCache<Study"})
     @Features.DisableFeatures({"BackForwardCacheMemoryControls"})
-    @CommandLineFlags.Add({"force-fieldtrials=Study/Group",
-            "force-fieldtrial-params=Study.Group:enable_same_site/true"})
+    @CommandLineFlags.Add({"force-fieldtrials=Study/Group"})
     @Restriction(Restriction.RESTRICTION_TYPE_NON_LOW_END_DEVICE)
-    public void
-    testNoRedirectWithBFCache() throws Exception {
+    public void testNoRedirectWithBFCache() throws Exception {
         final CallbackHelper finishCallback = new CallbackHelper();
         final CallbackHelper syncHelper = new CallbackHelper();
         AtomicReference<NavigationHandle> mLastNavigationHandle = new AtomicReference<>(null);
@@ -1087,9 +1083,8 @@ public class UrlOverridingTest {
         final CallbackHelper frameFinishCallback = new CallbackHelper();
         WebContentsObserver observer = new WebContentsObserver() {
             @Override
-            public void didFinishLoad(GlobalRenderFrameHostId rfhId, GURL url, boolean isKnownValid,
-                    boolean isInPrimaryMainFrame, @LifecycleState int rfhLifecycleState) {
-                if (!isInPrimaryMainFrame) frameFinishCallback.notifyCalled();
+            public void didStopLoading(GURL url, boolean isKnownValid) {
+                frameFinishCallback.notifyCalled();
             }
         };
         TestThreadUtils.runOnUiThreadBlocking(

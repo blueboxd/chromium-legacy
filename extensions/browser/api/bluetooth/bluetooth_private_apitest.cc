@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -104,7 +104,7 @@ class BluetoothPrivateApiTest : public ExtensionApiTest {
   void DispatchPairingEvent(bt_private::PairingEventType pairing_event_type) {
     bt_private::PairingEvent pairing_event;
     pairing_event.pairing = pairing_event_type;
-    pairing_event.device.name = std::make_unique<std::string>(kDeviceName);
+    pairing_event.device.name = kDeviceName;
     pairing_event.device.address = mock_device_->GetAddress();
     pairing_event.device.vendor_id_source = bt::VENDOR_ID_SOURCE_USB;
     pairing_event.device.type = bt::DEVICE_TYPE_PHONE;

@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -73,10 +73,6 @@ class SecureEnclaveClient {
   virtual bool SignDataWithKey(SecKeyRef key,
                                base::span<const uint8_t> data,
                                std::vector<uint8_t>& output) = 0;
-
-  // Verifies whether the keychain is currently unlocked. Returns true
-  // if it is unlocked and false otherwise.
-  virtual bool VerifyKeychainUnlocked() = 0;
 
   // Verifies whether the Secure Enclave is supported for the device.
   // Returns true if the Secure Enclave is supported and false otherwise.

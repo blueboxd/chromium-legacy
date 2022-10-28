@@ -8,10 +8,13 @@
  * implementation detail and subject to change (you should not add them to your
  * components directly).
  */
-import 'chrome://resources/cr_elements/cr_button/cr_button.js';
-import 'chrome://resources/cr_elements/cr_icon_button/cr_icon_button.js';
-import 'chrome://resources/cr_elements/hidden_style_css.m.js';
-import 'chrome://resources/cr_elements/icons.m.js';
+import '//resources/cr_elements/cr_button/cr_button.js';
+import '//resources/cr_elements/cr_hidden_style.css.js';
+import '//resources/cr_elements/cr_icon_button/cr_icon_button.js';
+import '//resources/cr_elements/cr_shared_vars.css.js';
+import '//resources/cr_elements/icons.html.js';
+import '//resources/polymer/v3_0/iron-icon/iron-icon.js';
+import './help_bubble_icons.html.js';
 
 import {CrButtonElement} from '//resources/cr_elements/cr_button/cr_button.js';
 import {CrIconButtonElement} from '//resources/cr_elements/cr_icon_button/cr_icon_button.js';
@@ -20,13 +23,14 @@ import {isWindows} from '//resources/js/cr.m.js';
 import {DomRepeatEvent, PolymerElement} from '//resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {getTemplate} from './help_bubble.html.js';
-import {HelpBubbleButtonParams, HelpBubblePosition, Progress} from './help_bubble.mojom-webui.js';
+import {HelpBubbleArrowPosition, HelpBubbleButtonParams, Progress} from './help_bubble.mojom-webui.js';
 
 const ANCHOR_HIGHLIGHT_CLASS = 'help-anchor-highlight';
 
 const ACTION_BUTTON_ID_PREFIX = 'action-button-';
 
 export const HELP_BUBBLE_DISMISSED_EVENT = 'help-bubble-dismissed';
+export const HELP_BUBBLE_TIMED_OUT_EVENT = 'help-bubble-timed-out';
 
 export type HelpBubbleDismissedEvent = CustomEvent<{
   anchorId: string,
@@ -34,11 +38,16 @@ export type HelpBubbleDismissedEvent = CustomEvent<{
   buttonIndex?: number,
 }>;
 
+export type HelpBubbleTimedOutEvent = CustomEvent<{
+  anchorId: string,
+}>;
+
 export interface HelpBubbleElement {
   $: {
     arrow: HTMLElement,
     buttons: HTMLElement,
     close: CrIconButtonElement,
+    bodyIcon: HTMLElement,
     main: HTMLElement,
     progress: HTMLElement,
     topContainer: HTMLElement,
@@ -65,8 +74,8 @@ export class HelpBubbleElement extends PolymerElement {
       closeText: String,
 
       position: {
-        type: HelpBubblePosition,
-        value: HelpBubblePosition.BELOW,
+        type: HelpBubbleArrowPosition,
+        value: HelpBubbleArrowPosition.TOP_CENTER,
         reflectToAttribute: true,
       },
     };
@@ -75,12 +84,15 @@ export class HelpBubbleElement extends PolymerElement {
   anchorId: string;
   bodyText: string;
   titleText: string;
-  closeText: string;
-  position: HelpBubblePosition;
+  closeButtonAltText: string;
+  position: HelpBubbleArrowPosition;
   buttons: HelpBubbleButtonParams[] = [];
   progress: Progress|null = null;
-  infoIcon: string|null = null;
+  bodyIconName: string|null;
+  bodyIconAltText: string;
   forceCloseButton: boolean;
+  timeoutMs: number|null = null;
+  timeoutTimerId: number|null = null;
 
   /**
    * HTMLElement corresponding to |this.anchorId|.
@@ -117,6 +129,17 @@ export class HelpBubbleElement extends PolymerElement {
     this.removeAttribute('aria-hidden');
     this.updatePosition_();
     this.setAnchorHighlight_(true);
+
+    if (this.timeoutMs !== null) {
+      const timedOutCallback = () => {
+        this.dispatchEvent(new CustomEvent(HELP_BUBBLE_TIMED_OUT_EVENT, {
+          detail: {
+            anchorId: this.anchorId,
+          },
+        }));
+      };
+      this.timeoutTimerId = setTimeout(timedOutCallback, this.timeoutMs);
+    }
   }
 
   /**
@@ -132,6 +155,10 @@ export class HelpBubbleElement extends PolymerElement {
     this.setAttribute('aria-hidden', 'true');
     this.setAnchorHighlight_(false);
     this.anchorElement_ = null;
+    if (this.timeoutTimerId !== null) {
+      clearInterval(this.timeoutTimerId);
+      this.timeoutTimerId = null;
+    }
   }
 
   /**
@@ -193,10 +220,8 @@ export class HelpBubbleElement extends PolymerElement {
     return buttons.length === 0 || forceCloseButton;
   }
 
-  private shouldShowInfoIcon_(progress: Progress|null, infoIcon: string):
-      boolean {
-    // TODO(mickeyburks): Info icon needs to be added to HelpBubbleParams
-    return !progress && infoIcon !== null && infoIcon !== '';
+  private shouldShowBodyIcon_(bodyIconName: string): boolean {
+    return bodyIconName !== null && bodyIconName !== '';
   }
 
   private onButtonClick_(e: DomRepeatEvent<HelpBubbleButtonParams>) {
@@ -241,19 +266,67 @@ export class HelpBubbleElement extends PolymerElement {
     return 0;
   }
 
-  private getArrowClass_(position: HelpBubblePosition): string {
+  /**
+   * Determine classes that describe the arrow position relative to the
+   * HelpBubble
+   */
+  private getArrowClass_(position: HelpBubbleArrowPosition): string {
+    let classList = '';
+    // `*-edge` classes move arrow to a HelpBubble edge
     switch (position) {
-      case HelpBubblePosition.ABOVE:
-        return 'above';
-      case HelpBubblePosition.BELOW:
-        return 'below';
-      case HelpBubblePosition.LEFT:
-        return 'left';
-      case HelpBubblePosition.RIGHT:
-        return 'right';
+      case HelpBubbleArrowPosition.TOP_LEFT:
+      case HelpBubbleArrowPosition.TOP_CENTER:
+      case HelpBubbleArrowPosition.TOP_RIGHT:
+        classList = 'top-edge ';
+        break;
+      case HelpBubbleArrowPosition.BOTTOM_LEFT:
+      case HelpBubbleArrowPosition.BOTTOM_CENTER:
+      case HelpBubbleArrowPosition.BOTTOM_RIGHT:
+        classList = 'bottom-edge ';
+        break;
+      case HelpBubbleArrowPosition.LEFT_TOP:
+      case HelpBubbleArrowPosition.LEFT_CENTER:
+      case HelpBubbleArrowPosition.LEFT_BOTTOM:
+        classList = 'left-edge ';
+        break;
+      case HelpBubbleArrowPosition.RIGHT_TOP:
+      case HelpBubbleArrowPosition.RIGHT_CENTER:
+      case HelpBubbleArrowPosition.RIGHT_BOTTOM:
+        classList = 'right-edge ';
+        break;
       default:
         assertNotReached('Unknown help bubble position: ' + position);
     }
+    // `*-position` classes move arrow along the HelpBubble edge
+    switch (position) {
+      case HelpBubbleArrowPosition.TOP_LEFT:
+      case HelpBubbleArrowPosition.BOTTOM_LEFT:
+        classList += 'left-position';
+        break;
+      case HelpBubbleArrowPosition.TOP_CENTER:
+      case HelpBubbleArrowPosition.BOTTOM_CENTER:
+        classList += 'horizontal-center-position';
+        break;
+      case HelpBubbleArrowPosition.TOP_RIGHT:
+      case HelpBubbleArrowPosition.BOTTOM_RIGHT:
+        classList += 'right-position';
+        break;
+      case HelpBubbleArrowPosition.LEFT_TOP:
+      case HelpBubbleArrowPosition.RIGHT_TOP:
+        classList += 'top-position';
+        break;
+      case HelpBubbleArrowPosition.LEFT_CENTER:
+      case HelpBubbleArrowPosition.RIGHT_CENTER:
+        classList += 'vertical-center-position';
+        break;
+      case HelpBubbleArrowPosition.LEFT_BOTTOM:
+      case HelpBubbleArrowPosition.RIGHT_BOTTOM:
+        classList += 'bottom-position';
+        break;
+      default:
+        assertNotReached('Unknown help bubble position: ' + position);
+    }
+    return classList;
   }
 
   /**
@@ -264,52 +337,90 @@ export class HelpBubbleElement extends PolymerElement {
     assert(
         this.anchorElement_, 'Update position: expected valid anchor element.');
 
+    // How far HelpBubble is from anchorElement
+    const ANCHOR_OFFSET = 16;
+    const ARROW_WIDTH = 16;
+    // The nearest an arrow can be to the adjacent HelpBubble edge
+    const ARROW_OFFSET_FROM_EDGE = 22 + (ARROW_WIDTH / 2);
+
     // Inclusive of 8px visible arrow and 8px margin.
-    const parentRect = this.offsetParent!.getBoundingClientRect();
     const anchorRect = this.anchorElement_.getBoundingClientRect();
-    const anchorLeft = anchorRect.left - parentRect.left;
-    const anchorHorizontalCenter = anchorLeft + anchorRect.width / 2;
-    const anchorTop = anchorRect.top - parentRect.top;
-    const ARROW_OFFSET = 16;
-    const LEFT_MARGIN = 8;
-    const HELP_BUBBLE_WIDTH = 362;
+    const helpBubbleRect = this.getBoundingClientRect();
 
-    let helpLeft: string = '';
-    let helpTop: string = '';
-
+    let transform = '';
+    // Move HelpBubble to correct side of the anchorElement
     switch (this.position) {
-      case HelpBubblePosition.ABOVE:
-        // Anchor the help bubble to the top center of the anchor element.
-        helpTop = `${anchorTop - ARROW_OFFSET}px`;
-        helpLeft = `${
-            Math.max(
-                LEFT_MARGIN,
-                anchorHorizontalCenter - HELP_BUBBLE_WIDTH / 2)}px`;
+      case HelpBubbleArrowPosition.TOP_LEFT:
+      case HelpBubbleArrowPosition.TOP_CENTER:
+      case HelpBubbleArrowPosition.TOP_RIGHT:
+        transform += `translateY(${
+          anchorRect.height
+        }px) translateY(${ANCHOR_OFFSET}px) `;
         break;
-      case HelpBubblePosition.BELOW:
-        // Anchor the help bubble to the bottom center of the anchor element.
-        helpTop = `${anchorTop + anchorRect.height + ARROW_OFFSET}px`;
-        helpLeft = `${
-            Math.max(
-                LEFT_MARGIN,
-                anchorHorizontalCenter - HELP_BUBBLE_WIDTH / 2)}px`;
+      case HelpBubbleArrowPosition.BOTTOM_LEFT:
+      case HelpBubbleArrowPosition.BOTTOM_CENTER:
+      case HelpBubbleArrowPosition.BOTTOM_RIGHT:
+        transform += `translateY(-100%) translateY(-${ANCHOR_OFFSET}px) `;
         break;
-      case HelpBubblePosition.LEFT:
-        // Anchor the help bubble to the center left of the anchor element.
-        helpTop = `${anchorTop + anchorRect.height / 2}px`;
-        helpLeft = `${anchorLeft - ARROW_OFFSET}px`;
+      case HelpBubbleArrowPosition.LEFT_TOP:
+      case HelpBubbleArrowPosition.LEFT_CENTER:
+      case HelpBubbleArrowPosition.LEFT_BOTTOM:
+        transform += `translateX(${
+          anchorRect.width
+        }px) translateX(${ANCHOR_OFFSET}px) `;
         break;
-      case HelpBubblePosition.RIGHT:
-        // Anchor the help bubble to the center right of the anchor element.
-        helpTop = `${anchorTop + anchorRect.height / 2}px`;
-        helpLeft = `${anchorLeft + anchorRect.width + ARROW_OFFSET}px`;
+      case HelpBubbleArrowPosition.RIGHT_TOP:
+      case HelpBubbleArrowPosition.RIGHT_CENTER:
+      case HelpBubbleArrowPosition.RIGHT_BOTTOM:
+        transform += `translateX(-100%) translateX(-${ANCHOR_OFFSET}px) `;
         break;
       default:
         assertNotReached();
     }
-
-    this.style.top = helpTop;
-    this.style.left = helpLeft;
+    // Move HelpBubble along the anchorElement edge according to arrow position
+    switch (this.position) {
+      case HelpBubbleArrowPosition.TOP_LEFT:
+      case HelpBubbleArrowPosition.BOTTOM_LEFT:
+        transform += `translateX(${
+          (anchorRect.width / 2) - ARROW_OFFSET_FROM_EDGE
+        }px)`;
+        break;
+      case HelpBubbleArrowPosition.TOP_CENTER:
+      case HelpBubbleArrowPosition.BOTTOM_CENTER:
+        transform += `translateX(${
+          (anchorRect.width / 2) - (helpBubbleRect.width / 2)
+        }px)`;
+        break;
+      case HelpBubbleArrowPosition.TOP_RIGHT:
+      case HelpBubbleArrowPosition.BOTTOM_RIGHT:
+        transform += `translateX(${
+          (anchorRect.width / 2)
+          - (helpBubbleRect.width - ARROW_OFFSET_FROM_EDGE)
+        }px)`;
+        break;
+      case HelpBubbleArrowPosition.LEFT_TOP:
+      case HelpBubbleArrowPosition.RIGHT_TOP:
+        transform += `translateY(${
+          (anchorRect.height / 2) - ARROW_OFFSET_FROM_EDGE
+        }px)`;
+        break;
+      case HelpBubbleArrowPosition.LEFT_CENTER:
+      case HelpBubbleArrowPosition.RIGHT_CENTER:
+        transform += `translateY(${
+          (anchorRect.height / 2) - (helpBubbleRect.height / 2)
+        }px)`;
+        break;
+      case HelpBubbleArrowPosition.LEFT_BOTTOM:
+      case HelpBubbleArrowPosition.RIGHT_BOTTOM:
+        transform += `translateY(${
+          (anchorRect.height / 2)
+          - (helpBubbleRect.height - ARROW_OFFSET_FROM_EDGE)
+        }px)`;
+        break;
+      default:
+        assertNotReached();
+    }
+    this.style.transform = transform;
   }
 
   /**
@@ -332,5 +443,6 @@ declare global {
   }
   interface HTMLElementEventMap {
     [HELP_BUBBLE_DISMISSED_EVENT]: HelpBubbleDismissedEvent;
+    [HELP_BUBBLE_TIMED_OUT_EVENT]: HelpBubbleTimedOutEvent;
   }
 }

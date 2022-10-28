@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,9 +7,9 @@ import {UnitLabel} from 'chrome://sys-internals/line_chart/unit_label.js';
 import {assertCloseTo} from '../test_util.js';
 
 suite('LineChart_UnitLabel', function() {
-  var TEST_MEM_UNIT;
-  var TEST_MEM_UNITBASE;
-  var testLabel;
+  let TEST_MEM_UNIT;
+  let TEST_MEM_UNITBASE;
+  let testLabel;
 
   suiteSetup(function() {
     TEST_MEM_UNIT = ['B', 'KB', 'MB', 'GB', 'TB', 'PB'];

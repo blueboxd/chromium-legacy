@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,8 +7,8 @@
 
 #include "base/feature_list.h"
 
-// Feature to download Calendar files.
-extern const base::Feature kDownloadCalendar;
+// Kill switch for Calendar support.
+extern const base::Feature kCalendarKillSwitch;
 
 // Kill switch for Vcard support.
 extern const base::Feature kVCardKillSwitch;

@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -257,10 +257,6 @@ CodecImage::GetAHardwareBuffer() {
   RenderToTextureOwnerFrontBuffer(BindingsMode::kDontBindImage,
                                   0 /* service_id */);
   return output_buffer_renderer_->texture_owner()->GetAHardwareBuffer();
-}
-
-bool CodecImage::HasMutableState() const {
-  return false;
 }
 
 CodecImageHolder::CodecImageHolder(

@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,12 +6,12 @@ import 'chrome://resources/cr_elements/cr_button/cr_button.js';
 import './shimless_rma_shared_css.js';
 import './base_page.js';
 
-import {I18nBehavior, I18nBehaviorInterface} from 'chrome://resources/js/i18n_behavior.m.js';
+import {I18nBehavior, I18nBehaviorInterface} from 'chrome://resources/cr_elements/i18n_behavior.js';
 import {html, mixinBehaviors, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {getShimlessRmaService} from './mojo_interface_provider.js';
 import {FinalizationError, FinalizationObserverInterface, FinalizationObserverReceiver, FinalizationStatus, RmadErrorCode, ShimlessRmaServiceInterface, StateResult} from './shimless_rma_types.js';
-import {executeThenTransitionState} from './shimless_rma_util.js';
+import {executeThenTransitionState, focusPageTitle} from './shimless_rma_util.js';
 
 /** @type {!Object<!FinalizationStatus, string>} */
 const finalizationStatusTextKeys = {
@@ -63,7 +63,7 @@ export class WrapupFinalizePage extends WrapupFinalizePageBase {
     /** @private {ShimlessRmaServiceInterface} */
     this.shimlessRmaService_ = getShimlessRmaService();
     /**
-     * Receiver responsible for observing hardware write protection state.
+     * Receiver responsible for observing finalization progress and state.
      * @private {?FinalizationObserverReceiver}
      */
     this.finalizationObserverReceiver_ = new FinalizationObserverReceiver(
@@ -71,6 +71,13 @@ export class WrapupFinalizePage extends WrapupFinalizePageBase {
 
     this.shimlessRmaService_.observeFinalizationStatus(
         this.finalizationObserverReceiver_.$.bindNewPipeAndPassRemote());
+  }
+
+  /** @override */
+  ready() {
+    super.ready();
+
+    focusPageTitle(this);
   }
 
   /**

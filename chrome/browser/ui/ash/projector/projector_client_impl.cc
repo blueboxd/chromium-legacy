@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -49,7 +49,7 @@ inline const std::string& GetLocale() {
 void ProjectorClientImpl::InitForProjectorAnnotator(views::WebView* web_view) {
   if (!ash::features::IsProjectorAnnotatorEnabled())
     return;
-  web_view->LoadInitialURL(GURL(ash::kChromeUITrustedAnnotatorAppUrl));
+  web_view->LoadInitialURL(GURL(ash::kChromeUITrustedAnnotatorUrl));
 }
 
 // Using base::Unretained for callback is safe since the ProjectorClientImpl
@@ -127,7 +127,8 @@ bool ProjectorClientImpl::IsDriveFsMountFailed() const {
 }
 
 void ProjectorClientImpl::OpenProjectorApp() const {
-  LaunchProjectorAppWithFiles(/*files=*/{});
+  auto* profile = ProfileManager::GetActiveUserProfile();
+  ash::LaunchSystemWebAppAsync(profile, ash::SystemWebAppType::PROJECTOR);
 }
 
 void ProjectorClientImpl::MinimizeProjectorApp() const {

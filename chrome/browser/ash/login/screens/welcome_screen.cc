@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -24,6 +24,7 @@
 #include "chrome/browser/ash/login/configuration_keys.h"
 #include "chrome/browser/ash/login/demo_mode/demo_setup_controller.h"
 #include "chrome/browser/ash/login/login_pref_names.h"
+#include "chrome/browser/ash/login/oobe_quick_start/target_device_bootstrap_controller.h"
 #include "chrome/browser/ash/login/oobe_screen.h"
 #include "chrome/browser/ash/login/ui/input_events_blocker.h"
 #include "chrome/browser/ash/login/wizard_controller.h"
@@ -383,12 +384,23 @@ void WelcomeScreen::ShowImpl() {
       base::DefaultTickClock::GetInstance(), this);
   if (view_)
     view_->Show();
+  if (features::IsOobeQuickStartEnabled()) {
+    bootstrap_controller_ =
+        LoginDisplayHost::default_host()->GetQuickStartBootstrapController();
+    bootstrap_controller_->GetFeatureSupportStatusAsync(
+        base::BindOnce(&WelcomeScreen::OnFeatureSupportStatusDetermined,
+                       weak_ptr_factory_.GetWeakPtr()));
+  }
 }
 
 void WelcomeScreen::HideImpl() {
   if (view_)
     view_->Hide();
   CancelChromeVoxHintIdleDetection();
+
+  if (features::IsOobeQuickStartEnabled()) {
+    bootstrap_controller_.reset();
+  }
 }
 
 void WelcomeScreen::OnUserActionDeprecated(const std::string& action_id) {
@@ -483,10 +495,11 @@ bool WelcomeScreen::HandleAccelerator(LoginAcceleratorAction action) {
       return true;
     if (!view_)
       return true;
-    const auto* key = context()->configuration.FindKeyOfType(
-        configuration::kEnableDemoMode, base::Value::Type::BOOLEAN);
-    const bool value = key && key->GetBool();
-    if (value) {
+    const auto key =
+        context()
+            ->configuration.FindBool(configuration::kEnableDemoMode)
+            .value_or(false);
+    if (key) {
       OnSetupDemoMode();
       return true;
     }
@@ -526,6 +539,18 @@ void WelcomeScreen::InputMethodChanged(
     view_->SetInputMethodId(
         manager->GetActiveIMEState()->GetCurrentInputMethod().id());
   }
+}
+
+void WelcomeScreen::OnFeatureSupportStatusDetermined(
+    quick_start::TargetDeviceConnectionBroker::FeatureSupportStatus status) {
+  if (status != quick_start::TargetDeviceConnectionBroker::
+                    FeatureSupportStatus::kSupported) {
+    return;
+  }
+  if (!view_) {
+    return;
+  }
+  view_->SetQuickStartEnabled();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

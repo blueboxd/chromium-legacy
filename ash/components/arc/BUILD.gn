@@ -1,4 +1,4 @@
-# Copyright 2015 The Chromium Authors. All rights reserved.
+# Copyright 2015 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -118,7 +118,6 @@ static_library("arc") {
   deps = [
     "//ash",
     "//ash/components/arc/vector_icons",
-    "//ash/components/disks",
     "//ash/keyboard/ui",
     "//ash/public/cpp",
     "//ash/public/cpp/external_arc:external_arc",
@@ -137,6 +136,7 @@ static_library("arc") {
     "//chromeos/ash/components/dbus/upstart:upstart",
     "//chromeos/ash/components/dbus/userdataauth",
     "//chromeos/ash/components/dbus/userdataauth:userdataauth_proto",
+    "//chromeos/ash/components/disks",
     "//chromeos/ash/components/network",
     "//chromeos/components/disks:prefs",
     "//chromeos/components/sensors:sensors",
@@ -161,6 +161,7 @@ static_library("arc") {
     "//ui/base/ime/ash",
     "//ui/chromeos/strings",
     "//ui/chromeos/styles:cros_styles_views",
+    "//ui/chromeos/styles:cros_tokens_color_mappings",
     "//ui/display/manager",
     "//ui/display/util",
     "//ui/events/ozone",
@@ -437,7 +438,6 @@ source_set("unit_tests") {
     "//ash/components/arc/enterprise",
     "//ash/components/arc/media_session",
     "//ash/components/arc/video_accelerator:common",
-    "//ash/components/disks:test_support",
     "//ash/components/policy",
     "//ash/constants",
     "//ash/keyboard/ui",
@@ -449,6 +449,7 @@ source_set("unit_tests") {
     "//chromeos/ash/components/cryptohome",
     "//chromeos/ash/components/dbus/arc",
     "//chromeos/ash/components/dbus/concierge",
+    "//chromeos/ash/components/dbus/dlcservice",
     "//chromeos/ash/components/dbus/patchpanel",
     "//chromeos/ash/components/dbus/patchpanel:patchpanel_proto",
     "//chromeos/ash/components/dbus/resourced",
@@ -456,8 +457,8 @@ source_set("unit_tests") {
     "//chromeos/ash/components/dbus/session_manager:login_manager_proto",
     "//chromeos/ash/components/dbus/shill",
     "//chromeos/ash/components/dbus/upstart",
+    "//chromeos/ash/components/disks:test_support",
     "//chromeos/ash/components/network:test_support",
-    "//chromeos/dbus/dlcservice",
     "//chromeos/dbus/permission_broker",
     "//chromeos/dbus/power",
     "//chromeos/dbus/power:power_manager_proto",

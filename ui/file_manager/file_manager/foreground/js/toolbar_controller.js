@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 import {assert, assertInstanceof} from 'chrome://resources/js/assert.m.js';
-import {Command} from 'chrome://resources/js/cr/ui/command.js';
+import {Command} from './ui/command.js';
 
 import {str, strf, util} from '../../common/js/util.js';
 import {VolumeManagerCommon} from '../../common/js/volume_manager_types.js';
@@ -83,13 +83,6 @@ export class ToolbarController {
      */
     this.restoreFromTrashButton_ =
         util.queryRequiredElement('#restore-from-trash-button', this.toolbar_);
-
-    /**
-     * @private {!HTMLElement}
-     * @const
-     */
-    this.emptyTrashButton_ =
-        util.queryRequiredElement('#empty-trash-button', this.toolbar_);
 
     /**
      * @private {!HTMLElement}
@@ -259,9 +252,6 @@ export class ToolbarController {
     this.restoreFromTrashButton_.addEventListener(
         'click', this.onRestoreFromTrashButtonClicked_.bind(this));
 
-    this.emptyTrashButton_.addEventListener(
-        'click', this.onEmptyTrashButtonClicked_.bind(this));
-
     this.sharesheetButton_.addEventListener(
         'click', this.onSharesheetButtonClicked_.bind(this));
 
@@ -295,14 +285,15 @@ export class ToolbarController {
         this.volumeManager_.getLocationInfo(currentDirectory);
     // Normally, isReadOnly can be used to show the label. This property
     // is always true for fake volumes (eg. Google Drive root). However, "Linux
-    // files" is a fake volume on first access until the VM is loaded and the
-    // mount point is initialised. The volume is technically read-only since the
-    // temportary fake volume can (and should) not be written to. However,
-    // showing the read only label is not appropriate since the volume will
-    // become read-write once all loading has completed.
+    // files" and GuestOS volumes are fake volume on first access until the VM
+    // is loaded and the mount point is initialised. The volume is technically
+    // read-only since the temporary fake volume can (and should) not be
+    // written to. However, showing the read only label is not appropriate since
+    // the volume will become read-write once all loading has completed.
     this.readOnlyIndicator_.hidden =
         !(locationInfo && locationInfo.isReadOnly &&
-          locationInfo.rootType !== VolumeManagerCommon.RootType.CROSTINI);
+          locationInfo.rootType !== VolumeManagerCommon.RootType.CROSTINI &&
+          locationInfo.rootType !== VolumeManagerCommon.RootType.GUEST_OS);
   }
 
   /** @private */
@@ -361,11 +352,6 @@ export class ToolbarController {
         this.directoryModel_.getCurrentRootType() !==
             VolumeManagerCommon.RootType.TRASH;
 
-    // Update visibility of the empty-trash button.
-    this.emptyTrashButton_.hidden =
-        this.directoryModel_.getCurrentRootType() !==
-        VolumeManagerCommon.RootType.TRASH;
-
     this.togglePinnedCommand_.canExecuteChange(this.listContainer_.currentList);
 
     // Set .selecting class to containing element to change the view
@@ -423,16 +409,6 @@ export class ToolbarController {
     this.restoreFromTrashCommand_.canExecuteChange(
         this.listContainer_.currentList);
     this.restoreFromTrashCommand_.execute(this.listContainer_.currentList);
-  }
-
-  /**
-   * Handles click event for empty trash button to empty the trash.
-   * command.
-   * @private
-   */
-  onEmptyTrashButtonClicked_() {
-    this.emptyTrashCommand_.canExecuteChange(this.listContainer_.currentList);
-    this.emptyTrashCommand_.execute(this.listContainer_.currentList);
   }
 
   /**

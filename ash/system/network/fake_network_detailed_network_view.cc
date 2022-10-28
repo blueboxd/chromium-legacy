@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,6 +10,7 @@
 #include "ash/system/network/network_list_item_view.h"
 #include "ash/system/network/network_list_mobile_header_view_impl.h"
 #include "ash/system/network/network_list_network_item_view.h"
+#include "ash/system/network/network_list_view_controller_impl.h"
 #include "ash/system/network/network_list_wifi_header_view_impl.h"
 
 namespace ash {
@@ -27,7 +28,7 @@ void FakeNetworkDetailedNetworkView::NotifyNetworkListChanged() {
 
 views::View* FakeNetworkDetailedNetworkView::network_list() {
   return network_list_.get();
-};
+}
 
 views::View* FakeNetworkDetailedNetworkView::GetAsView() {
   return this;
@@ -41,22 +42,32 @@ NetworkListNetworkItemView*
 FakeNetworkDetailedNetworkView::AddNetworkListItem() {
   return network_list_->AddChildView(
       new NetworkListNetworkItemView(/*listener=*/nullptr));
-};
+}
 
 NetworkListWifiHeaderView*
 FakeNetworkDetailedNetworkView::AddWifiSectionHeader() {
-  return network_list_->AddChildView(
-      new FakeNetworkListWifiHeaderView(/*delegate=*/nullptr));
-};
+  std::unique_ptr<FakeNetworkListWifiHeaderView> wifi_header_view =
+      std::make_unique<FakeNetworkListWifiHeaderView>(/*delegate=*/nullptr);
+  wifi_header_view->SetID(static_cast<int>(
+      NetworkListViewControllerImpl::NetworkListViewControllerViewChildId::
+          kWifiSectionHeader));
+
+  return network_list_->AddChildView(std::move(wifi_header_view));
+}
 
 NetworkListMobileHeaderView*
 FakeNetworkDetailedNetworkView::AddMobileSectionHeader() {
-  return network_list_->AddChildView(
-      new FakeNetworkListMobileHeaderView(/*delegate=*/nullptr));
+  std::unique_ptr<FakeNetworkListMobileHeaderView> mobile_header_view =
+      std::make_unique<FakeNetworkListMobileHeaderView>(/*delegate=*/nullptr);
+  mobile_header_view->SetID(static_cast<int>(
+      NetworkListViewControllerImpl::NetworkListViewControllerViewChildId::
+          kMobileSectionHeader));
+
+  return network_list_->AddChildView(std::move(mobile_header_view));
 }
 
 void FakeNetworkDetailedNetworkView::UpdateScanningBarVisibility(bool visible) {
   last_scan_bar_visibility_ = visible;
-};
+}
 
 }  // namespace ash

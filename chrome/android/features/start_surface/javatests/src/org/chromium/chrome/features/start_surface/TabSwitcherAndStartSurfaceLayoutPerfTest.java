@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -325,7 +325,7 @@ public class TabSwitcherAndStartSurfaceLayoutPerfTest {
     @Test
     @EnormousTest
     @CommandLineFlags.Add({BASE_PARAMS})
-    @DisableIf.Build(message = "See https://crbug.com/1184787", supported_abis_includes = "x86")
+    @DisabledTest(message = "https://crbug.com/1184787 and https://crbug.com/1363755")
     public void testGridToTabToCurrentNTP() throws InterruptedException, TimeoutException {
         prepareTabs(1, NTP_URL);
         reportGridToTabPerf(false, false, "Grid-to-Tab to current NTP");

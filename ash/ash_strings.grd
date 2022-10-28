@@ -316,19 +316,19 @@ This file contains the strings for ash.
         VPN Settings
       </message>
       <message name="IDS_ASH_STATUS_TRAY_AUTOZOOM_BUTTON_LABEL" desc="The shorter label used for the button in the status tray to toggle the Autozoom feature (which controls if camera auto zoom to faces) on or off. [CHAR_LIMIT=14]">
-        Autozoom
+        Camera framing
       </message>
       <message name="IDS_ASH_STATUS_TRAY_AUTOZOOM_TOGGLE_TOOLTIP" desc="The tooltip text used for the button in the status tray to toggle the Autozoom feature (which controls if camera auto zoom to faces) on or off.">
-        Toggle autozoom. <ph name="STATE_TEXT">$1<ex>Autozoom is on.</ex></ph>
+        Toggle camera framing. <ph name="STATE_TEXT">$1<ex>Camera framing is on.</ex></ph>
       </message>
       <message name="IDS_ASH_STATUS_TRAY_AUTOZOOM_TOGGLE_ACCESSIBILITY_DESCRIPTION" desc="The accessible description for the button in the status tray to toggle the Autozoom feature (which controls if camera auto zoom to faces) on or off.">
         Adjust camera to put you in the center of the screen.
       </message>
       <message name="IDS_ASH_STATUS_TRAY_AUTOZOOM_OFF_STATE_TOOLTIP" desc="The tooltip text indicating the Autozoom feature is off.">
-        Autozoom is off.
+        Camera framing is off.
       </message>
       <message name="IDS_ASH_STATUS_TRAY_AUTOZOOM_ON_STATE_TOOLTIP" desc="The tooltip text indicating the Autozoom feature is on.">
-        Autozoom is on.
+        Camera framing is on.
       </message>
       <message name="IDS_ASH_STATUS_TRAY_AUTOZOOM_OFF_STATE" desc="Button label for the Autozoom feature." meaning="Autozoom feature is off. [CHAR_LIMIT=14]">
         Off
@@ -337,10 +337,10 @@ This file contains the strings for ash.
         On
       </message>
       <message name="IDS_ASH_STATUS_TRAY_AUTOZOOM_TOAST_ON_STATE" desc="The text for the toast after autozoom centers the camera.">
-        Autozoom centered the camera
+        Camera frame automatically centered
       </message>
       <message name="IDS_ASH_STATUS_TRAY_AUTOZOOM_EDUCATIONAL_NUDGE_TEXT" desc="The text for the educational nudge for autozoom.">
-        Try autozoom so you'll be in the center of the screen. Turn it on in Quick Settings.
+        Try camera framing so you’ll be in the center of the screen on video calls. Turn it on in Quick Settings.
       </message>
       <message name="IDS_ASH_STATUS_TRAY_BRAILLE_DISPLAY_CONNECTED" desc="The message shown on a notification when a braille display is connected">
         Braille display connected.
@@ -1317,6 +1317,9 @@ This file contains the strings for ash.
       <message name="IDS_ASH_HOLDING_SPACE_TITLE" desc="Title of the holding space tray and bubble.">
         Tote
       </message>
+      <message name="IDS_ASH_HOLDING_SPACE_TITLE_REBRAND" desc="Title of the holding space tray and bubble when rebranding is enabled.">
+        Quick Files
+      </message>
       <message name="IDS_ASH_HOLDING_SPACE_PINNED_TITLE" desc="Title of the pinned files area in the holding space bubble.">
         Pinned files
       </message>
@@ -1325,6 +1328,9 @@ This file contains the strings for ash.
       </message>
       <message name="IDS_ASH_HOLDING_SPACE_PINNED_FILES_APP_CHIP_TEXT" desc="Text for chip which opens the Files app shown in the pinned files area of the holding space bubble if the user has no pinned files.">
         Open Files
+      </message>
+      <message name="IDS_ASH_HOLDING_SPACE_SUGGESTIONS_TITLE" desc="Title of the suggestions area in the holding space bubble.">
+        Suggested for you
       </message>
       <message name="IDS_ASH_HOLDING_SPACE_DOWNLOADS_TITLE" desc="Title of the downloads area in the holding space bubble.">
         Downloads
@@ -1761,6 +1767,9 @@ This file contains the strings for ash.
       </message>
       <message name="IDS_ASH_SEARCH_RESULT_CATEGORY_LABEL_GAMES" desc="Category title for the list of video game search results shown in launcher search that are relevant to but not the best match for the query in the search box.">
         Games
+      </message>
+      <message name="IDS_ASH_SEARCH_RESULT_CATEGORY_LABEL_IMAGES" desc="Category title for the list of image results shown in launcher search relevant to the query in the search box.">
+        Images
       </message>
       <message name="IDS_ASH_SEARCH_RESULT_SEPARATOR" desc="Separator between the title and details text in ash search result view.">
         ''' - '''
@@ -3568,11 +3577,11 @@ Connect your device to power.
 
       <!-- Calendar  -->
       <message name="IDS_ASH_CALENDAR_BUBBLE_ACCESSIBLE_DESCRIPTION" desc="The accessible description of the calendar bubble and the information in it.">
-        Calendar, <ph name="current_month_year">$1<ex>August 2021</ex></ph>
+        Calendar, <ph name="current_month_year">$1<ex>Wednesday, August 17, 2022</ex></ph>
       </message>
 
       <message name="IDS_ASH_CALENDAR_ENTRY_ACCESSIBLE_DESCRIPTION" desc="The accessible description of the calendar entry button.">
-       <ph name="current_time">$1<ex>Aug 2021 11:25AM</ex></ph>, Press enter key to open Calendar view
+       <ph name="current_time">$1<ex>Tuesday, August 31, 2021 at 11:25:12 AM</ex></ph>, Press enter key to open Calendar view
       </message>
 
       <message name="IDS_ASH_CALENDAR_TITLE" desc="The label used as the title of the unified system tray calendar view.">
@@ -3624,19 +3633,19 @@ Connect your device to power.
       </message>
 
       <message name="IDS_ASH_CALENDAR_DATE_CELL_TOOLTIP" desc="The tooltip of a calendar date cell, which is with 0 or 1 event.">
-        <ph name="date">$1<ex>August 31, 2021</ex></ph>, <ph name="number">$2<ex>0</ex></ph> event
+        <ph name="date">$1<ex>Tuesday, August 31, 2021</ex></ph>, <ph name="number">$2<ex>0</ex></ph> event
       </message>
 
       <message name="IDS_ASH_CALENDAR_DATE_CELL_PLURAL_EVENTS_TOOLTIP" desc="The tooltip of a calendar date cell, which is with more than 1 event.">
-        <ph name="date">$1<ex>August 31, 2021</ex></ph>, <ph name="number">$2<ex>8</ex></ph> events
+        <ph name="date">$1<ex>Tuesday, August 31, 2021</ex></ph>, <ph name="number">$2<ex>8</ex></ph> events
       </message>
 
       <message name="IDS_ASH_CALENDAR_DATE_CELL_LOADING_TOOLTIP" desc="The tooltip of a calendar date cell when the events are loading.">
-        <ph name="date">$1<ex>August 31, 2021</ex></ph>, Loading events.
+        <ph name="date">$1<ex>Tuesday, August 31, 2021</ex></ph>, Loading events.
       </message>
 
       <message name="IDS_ASH_CALENDAR_DATE_CELL_ON_FOCUS_ACCESSIBLE_DESCRIPTION" desc="The accessible label of a calendar date cell, which is on focused for the first time.">
-        <ph name="date_cell_tool_tip">$1<ex>August 31, 2021, 2 events</ex></ph>. Use arrow keys to navigate between dates.
+        <ph name="date_cell_tool_tip">$1<ex>Tuesday, August 31, 2021, 2 events</ex></ph>. Use arrow keys to navigate between dates.
       </message>
 
       <message name="IDS_ASH_CALENDAR_SELECTED_DATE_CELL_ACCESSIBLE_DESCRIPTION" desc="The accessible label of the selected calendar date cell.">
@@ -4557,6 +4566,9 @@ Here are some things you can try to get started.
       <message name="IDS_ASH_ACCESSIBILITY_SETTING_SUBTITLE_SODA_DOWNLOAD_ERROR" desc="Description explaining that there was an error with the speech recognition library download.">
         Can't download speech files. Try again later.
       </message>
+      <message name="IDS_ASH_ACCESSIBILITY_SETTING_SUBTITLE_SODA_DOWNLOAD_ERROR_REBOOT_REQUIRED" desc="Error message shown when a OS reboot is required to install the Live Caption files.">
+        Restart needed to install speech files.
+      </message>
       <message name="IDS_ASH_ACCESSIBILITY_DICTATION_BUTTON_TOOLTIP_SODA_DOWNLOADING" desc="A tooltip explaining that speech recognition files are downloading." >
         Downloading speech files
       </message>
@@ -4795,9 +4807,6 @@ New install
       </message>
       <message name="IDS_APP_LIST_FOLDER_CLOSE_FOLDER_ACCESSIBILE_NAME" desc="The spoken feedback text for closing an app launcher folder">
         Close folder
-      </message>
-      <message name="IDS_APP_LIST_EXPAND_BUTTON" desc="Tooltip for the button that expands the app list from suggested apps to a fullscreen view which shows all apps.">
-        Expand to all apps
       </message>
       <message name="IDS_APP_LIST_ALL_APPS_ACCESSIBILITY_ANNOUNCEMENT" desc="The accessibility announcement that notifies users that all of their apps are showing, as opposed to showing only suggested apps">
         Launcher, all apps
@@ -5170,6 +5179,15 @@ New install
       </message>
       <message name="IDS_GLANCEABLES_RESTORE_SESSION" desc="Section header for a button that restores the last user session windows. Used on the glanceables surface (welcome screen).">
         Restore last session
+      </message>
+      <message name="IDS_GLANCEABLES_RESTORE" desc="Label for button that restores the last user session windows. Used on the glanceables surface (welcome screen).">
+        Restore
+      </message>
+      <message name="IDS_GLANCEABLES_UP_NEXT_NO_EVENTS" desc="Text label used in the up next section in case if there are no (more) calendar events for today.">
+        No events today
+      </message>
+      <message name="IDS_GLANCEABLES_UP_NEXT_EVENT_EMPTY_TITLE" desc="Placeholder text for calendar events without title.">
+        (No title)
       </message>
     </messages>
   </release>

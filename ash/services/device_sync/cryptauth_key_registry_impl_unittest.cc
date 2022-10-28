@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -34,7 +34,7 @@ class DeviceSyncCryptAuthKeyRegistryImplTest : public testing::Test {
   // Verify that changing the in-memory key bundle map updates the pref.
   void VerifyPrefValue(const base::Value& expected_dict) {
     const base::Value::Dict& dict =
-        pref_service_.GetValueDict(prefs::kCryptAuthKeyRegistry);
+        pref_service_.GetDict(prefs::kCryptAuthKeyRegistry);
     EXPECT_EQ(expected_dict, dict);
   }
 

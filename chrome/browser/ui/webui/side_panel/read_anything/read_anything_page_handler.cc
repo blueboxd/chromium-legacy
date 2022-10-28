@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -41,18 +41,19 @@ ReadAnythingPageHandler::ReadAnythingPageHandler(
 }
 
 ReadAnythingPageHandler::~ReadAnythingPageHandler() {
-  delegate_ = static_cast<ReadAnythingPageHandler::Delegate*>(
-      coordinator_->GetController());
-  if (delegate_)
-    delegate_->OnUIDestroyed();
+  if (!coordinator_)
+    return;
 
   // If |this| is destroyed before the |ReadAnythingCoordinator|, then remove
   // |this| from the observer lists. In the cases where the coordinator is
   // destroyed first, these will have been destroyed before this call.
-  if (coordinator_) {
-    coordinator_->RemoveObserver(this);
-    coordinator_->RemoveModelObserver(this);
-  }
+  coordinator_->RemoveObserver(this);
+  coordinator_->RemoveModelObserver(this);
+
+  delegate_ = static_cast<ReadAnythingPageHandler::Delegate*>(
+      coordinator_->GetController());
+  if (delegate_)
+    delegate_->OnUIDestroyed();
 }
 
 void ReadAnythingPageHandler::OnCoordinatorDestroyed() {

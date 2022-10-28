@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -197,7 +197,6 @@
 
 #if BUILDFLAG(ENABLE_PLUGINS)
 #include "chrome/browser/plugins/chrome_plugin_service_filter.h"
-#include "chrome/browser/plugins/plugin_finder.h"
 #include "content/public/browser/plugin_service.h"
 #endif
 
@@ -392,7 +391,7 @@ BrowserProcessImpl::~BrowserProcessImpl() {
   KeepAliveRegistry::GetInstance()->RemoveObserver(this);
 #endif
 
-  g_browser_process = NULL;
+  g_browser_process = nullptr;
 }
 
 #if !BUILDFLAG(IS_ANDROID)
@@ -987,12 +986,6 @@ void BrowserProcessImpl::RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterBooleanPref(prefs::kEulaAccepted, false);
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_ANDROID)
 
-  // TODO(brettw,*): this comment about ResourceBundle was here since
-  // initial commit.  This comment seems unrelated, bit-rotten and
-  // a candidate for removal.
-  // Initialize ResourceBundle which handles files loaded from external
-  // sources. This has to be done before uninstall code path and before prefs
-  // are registered.
   registry->RegisterStringPref(language::prefs::kApplicationLocale,
                                std::string());
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -1172,11 +1165,8 @@ void BrowserProcessImpl::PreMainMessageLoopRun() {
 #endif
 
 #if BUILDFLAG(ENABLE_PLUGINS)
-  auto* plugin_service = content::PluginService::GetInstance();
-  plugin_service->SetFilter(ChromePluginServiceFilter::GetInstance());
-
-  // Triggers initialization of the singleton instance on UI thread.
-  PluginFinder::GetInstance();
+  content::PluginService::GetInstance()->SetFilter(
+      ChromePluginServiceFilter::GetInstance());
 #endif  // BUILDFLAG(ENABLE_PLUGINS)
 
 #if !BUILDFLAG(IS_ANDROID)

@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -38,8 +38,8 @@ extern const base::Feature kPageInfoAboutThisSiteMoreInfo;
 // with kPageInfoAboutThisSiteMoreInfo.
 extern const base::Feature kPageInfoAboutThisSiteDescriptionPlaceholder;
 
-// Enables the "About this site" banner.
-extern const base::Feature kAboutThisSiteBanner;
+// Enables the persistent "About this site" entry in the side panel.
+extern const base::Feature kAboutThisSitePersistentSidePanelEntry;
 
 #if !BUILDFLAG(IS_ANDROID)
 // Enables the history section for Page Info on desktop.

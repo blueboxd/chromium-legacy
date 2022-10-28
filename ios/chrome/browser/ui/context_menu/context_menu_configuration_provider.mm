@@ -1,25 +1,25 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #import "ios/chrome/browser/ui/context_menu/context_menu_configuration_provider.h"
 
-#include "base/ios/ios_util.h"
-#include "base/metrics/histogram_functions.h"
-#include "base/metrics/histogram_macros.h"
+#import "base/ios/ios_util.h"
+#import "base/metrics/histogram_functions.h"
+#import "base/metrics/histogram_macros.h"
 #import "base/metrics/user_metrics.h"
-#include "components/prefs/pref_service.h"
-#include "components/search_engines/template_url_service.h"
-#include "components/url_param_filter/core/features.h"
-#include "components/url_param_filter/core/url_param_filterer.h"
-#include "ios/chrome/browser/browser_state/chrome_browser_state.h"
+#import "components/prefs/pref_service.h"
+#import "components/search_engines/template_url_service.h"
+#import "components/url_param_filter/core/features.h"
+#import "components/url_param_filter/core/url_param_filterer.h"
+#import "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/favicon/favicon_loader.h"
 #import "ios/chrome/browser/favicon/ios_chrome_favicon_loader_factory.h"
 #import "ios/chrome/browser/main/browser.h"
 #import "ios/chrome/browser/policy/policy_util.h"
-#include "ios/chrome/browser/pref_names.h"
-#include "ios/chrome/browser/search_engines/search_engines_util.h"
-#include "ios/chrome/browser/search_engines/template_url_service_factory.h"
+#import "ios/chrome/browser/prefs/pref_names.h"
+#import "ios/chrome/browser/search_engines/search_engines_util.h"
+#import "ios/chrome/browser/search_engines/template_url_service_factory.h"
 #import "ios/chrome/browser/ui/alert_coordinator/action_sheet_coordinator.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/commands/browser_commands.h"
@@ -36,7 +36,7 @@
 #import "ios/chrome/browser/ui/main/scene_state_browser_agent.h"
 #import "ios/chrome/browser/ui/menu/browser_action_factory.h"
 #import "ios/chrome/browser/ui/menu/menu_histograms.h"
-#include "ios/chrome/browser/ui/ui_feature_flags.h"
+#import "ios/chrome/browser/ui/ui_feature_flags.h"
 #import "ios/chrome/browser/ui/util/pasteboard_util.h"
 #import "ios/chrome/browser/ui/util/url_with_title.h"
 #import "ios/chrome/browser/url_loading/image_search_param_generator.h"
@@ -46,14 +46,14 @@
 #import "ios/chrome/browser/web/web_navigation_util.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
 #import "ios/chrome/common/ui/favicon/favicon_constants.h"
-#include "ios/chrome/grit/ios_strings.h"
-#include "ios/public/provider/chrome/browser/context_menu/context_menu_api.h"
-#include "ios/public/provider/chrome/browser/lens/lens_api.h"
-#include "ios/web/common/features.h"
+#import "ios/chrome/grit/ios_strings.h"
+#import "ios/public/provider/chrome/browser/context_menu/context_menu_api.h"
+#import "ios/public/provider/chrome/browser/lens/lens_api.h"
+#import "ios/web/common/features.h"
 #import "ios/web/common/url_scheme_util.h"
 #import "ios/web/public/ui/context_menu_params.h"
 #import "ios/web/public/web_state.h"
-#include "ui/base/l10n/l10n_util.h"
+#import "ui/base/l10n/l10n_util.h"
 #import "url/gurl.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -410,15 +410,11 @@ NSString* const kContextMenuEllipsis = @"…";
   const BOOL isIncognito = self.browser->GetBrowserState()->IsOffTheRecord();
 
   // Apply variation header data to the params.
-  // This flag guard is only for M106 and can be used as a killswitch in case
-  // this causes issues.
-  if (base::FeatureList::IsEnabled(kSendVariationDataWithSearchByImage)) {
-    NSMutableDictionary* combinedExtraHeaders =
-        [web_navigation_util::VariationHeadersForURL(webParams.url, isIncognito)
-            mutableCopy];
-    [combinedExtraHeaders addEntriesFromDictionary:webParams.extra_headers];
-    webParams.extra_headers = [combinedExtraHeaders copy];
-  }
+  NSMutableDictionary* combinedExtraHeaders =
+      [web_navigation_util::VariationHeadersForURL(webParams.url, isIncognito)
+          mutableCopy];
+  [combinedExtraHeaders addEntriesFromDictionary:webParams.extra_headers];
+  webParams.extra_headers = [combinedExtraHeaders copy];
 
   UrlLoadParams params = UrlLoadParams::InNewTab(webParams);
   params.in_incognito = isIncognito;

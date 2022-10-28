@@ -1,10 +1,9 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome/browser/web_applications/externally_managed_app_manager.h"
 
-#include <algorithm>
 #include <map>
 #include <memory>
 #include <utility>
@@ -12,6 +11,7 @@
 
 #include "base/callback_helpers.h"
 #include "base/containers/contains.h"
+#include "base/ranges/algorithm.h"
 #include "base/stl_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/chromeos_buildflags.h"
@@ -89,8 +89,8 @@ void ExternallyManagedAppManager::SynchronizeInstalledApps(
     ExternalInstallSource install_source,
     SynchronizeCallback callback) {
   DCHECK(registrar_);
-  DCHECK(std::all_of(
-      desired_apps_install_options.begin(), desired_apps_install_options.end(),
+  DCHECK(base::ranges::all_of(
+      desired_apps_install_options,
       [&install_source](const ExternalInstallOptions& install_options) {
         return install_options.install_source == install_source;
       }));

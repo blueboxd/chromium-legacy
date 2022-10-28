@@ -1,4 +1,4 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 #include <algorithm>
@@ -103,7 +103,7 @@ IN_PROC_BROWSER_TEST_F(DevToolsAndroidBridgeTest, DefaultValues) {
   service->ClearPref(prefs::kDevToolsTCPDiscoveryConfig);
 
   const base::Value::List& targets =
-      service->GetValueList(prefs::kDevToolsTCPDiscoveryConfig);
+      service->GetList(prefs::kDevToolsTCPDiscoveryConfig);
   EXPECT_EQ(2ul, targets.size());
 
   std::set<std::string> actual;

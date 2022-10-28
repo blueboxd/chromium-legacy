@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -240,8 +240,8 @@ base::Value Details::GetDebugContext() const {
 }
 
 bool Details::UpdateFromParameters(const ScriptParameters& script_parameters) {
-  absl::optional<bool> show_initial = script_parameters.GetDetailsShowInitial();
-  if (show_initial.has_value() && !*show_initial) {
+  if (script_parameters.HasDetailsShowInitial() &&
+      !script_parameters.GetDetailsShowInitial()) {
     return false;
   }
 

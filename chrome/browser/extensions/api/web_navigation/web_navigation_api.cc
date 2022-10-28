@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -437,17 +437,15 @@ void WebNavigationTabObserver::RenderFrameHostPendingDeletion(
   // The |pending_delete_rfh| and its children are now pending deletion.
   // Stop tracking them.
 
-  pending_delete_rfh->ForEachRenderFrameHost(base::BindRepeating(
-      [](WebNavigationTabObserver* observer,
-         content::RenderFrameHost* render_frame_host) {
+  pending_delete_rfh->ForEachRenderFrameHost(
+      [this](content::RenderFrameHost* render_frame_host) {
         auto* navigation_state =
             FrameNavigationState::GetForCurrentDocument(render_frame_host);
         if (navigation_state) {
-          observer->RenderFrameDeleted(render_frame_host);
+          RenderFrameDeleted(render_frame_host);
           FrameNavigationState::DeleteForCurrentDocument(render_frame_host);
         }
-      },
-      this));
+      });
 }
 
 ExtensionFunction::ResponseAction WebNavigationGetFrameFunction::Run() {
@@ -538,8 +536,8 @@ ExtensionFunction::ResponseAction WebNavigationGetFrameFunction::Run() {
   // Only set the parentDocumentId value if we have a parent.
   if (content::RenderFrameHost* parent_frame_host =
           render_frame_host->GetParentOrOuterDocument()) {
-    frame_details.parent_document_id = std::make_unique<std::string>(
-        ExtensionApiFrameIdMap::GetDocumentId(parent_frame_host).ToString());
+    frame_details.parent_document_id =
+        ExtensionApiFrameIdMap::GetDocumentId(parent_frame_host).ToString();
   }
   frame_details.frame_type =
       ExtensionApiFrameIdMap::GetFrameType(render_frame_host);
@@ -567,11 +565,10 @@ ExtensionFunction::ResponseAction WebNavigationGetAllFramesFunction::Run() {
 
   // We currently do not expose back/forward cached frames in the GetAllFrames
   // API, but we do explicitly include prerendered frames.
-  web_contents->ForEachRenderFrameHost(
-      base::BindRepeating(
-          [](content::WebContents* web_contents,
-             std::vector<GetAllFrames::Results::DetailsType>& result_list,
-             content::RenderFrameHost* render_frame_host) {
+  web_contents
+      ->ForEachRenderFrameHostWithAction(
+          [web_contents,
+           &result_list](content::RenderFrameHost* render_frame_host) {
             // Don't expose inner WebContents for the getFrames API.
             if (content::WebContents::FromRenderFrameHost(render_frame_host) !=
                 web_contents) {
@@ -607,9 +604,9 @@ ExtensionFunction::ResponseAction WebNavigationGetAllFramesFunction::Run() {
             // Only set the parentDocumentId value if we have a parent.
             if (content::RenderFrameHost* parent_frame_host =
                     render_frame_host->GetParentOrOuterDocument()) {
-              frame.parent_document_id = std::make_unique<std::string>(
+              frame.parent_document_id =
                   ExtensionApiFrameIdMap::GetDocumentId(parent_frame_host)
-                      .ToString());
+                      .ToString();
             }
             frame.frame_type =
                 ExtensionApiFrameIdMap::GetFrameType(render_frame_host);
@@ -619,8 +616,7 @@ ExtensionFunction::ResponseAction WebNavigationGetAllFramesFunction::Run() {
             frame.error_occurred = navigation_state->GetErrorOccurredInFrame();
             result_list.push_back(std::move(frame));
             return content::RenderFrameHost::FrameIterationAction::kContinue;
-          },
-          web_contents, std::ref(result_list)));
+          });
 
   return RespondNow(ArgumentList(GetAllFrames::Results::Create(result_list)));
 }

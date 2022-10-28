@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -23,12 +23,10 @@ export class EmojiSearch extends PolymerElement {
     return {
       /** @type {EmojiGroupData} */
       categoriesData: {type: Array, readonly: true},
-      /** @type {!string} */
-      search: {type: String, notify: true},
       /** @type {!boolean} */
       lazyIndexing: {type: Boolean, value: true},
       /** @private {EmojiGroupData} */
-      searchResults: {type: Array, computed: 'computeSearchResults(search)'},
+      searchResults: {type: Array},
       /** @private {!boolean} */
       v2Enabled: {
         type: Boolean,
@@ -77,7 +75,7 @@ export class EmojiSearch extends PolymerElement {
   }
 
   onSearch(newSearch) {
-    this.search = newSearch;
+    this.searchResults = this.computeSearchResults(newSearch);
   }
 
   /**
@@ -161,7 +159,7 @@ export class EmojiSearch extends PolymerElement {
   onSearchKeyDown(ev) {
     const resultsCount = this.getNumSearchResults();
     // if not searching or no results, do nothing.
-    if (!this.search || resultsCount === 0) {
+    if (!this.$['search'].getValue() || resultsCount === 0) {
       return;
     }
 
@@ -357,8 +355,30 @@ export class EmojiSearch extends PolymerElement {
    * @returns {number} Number of search results.
    */
   getNumSearchResults() {
-    return this.searchResults.reduce(
-      (acc, item) => acc + item.emoji.length, 0);
+    return this.searchResults ?
+        this.searchResults.reduce((acc, item) => acc + item.emoji.length, 0) :
+        0;
+  }
+
+  /**
+   * Checks if the search query is empty
+   *
+   * @param {!EmojiGroupData} searchResults Search results is not used but
+   *     function needs to be run when searchResults updated.
+   * @returns {boolean} True if the search is empty
+   */
+  searchNotEmpty(searchResults) {
+    return this.$['search'].getValue() !== '';
+  }
+
+  /**
+   * Sets the search query
+   *
+   * @param {!string} value for the search query
+   */
+  setSearchQuery(value) {
+    /** @type {{setValue: function(string)}} */ (this.$['search'])
+        .setValue(value);
   }
 }
 

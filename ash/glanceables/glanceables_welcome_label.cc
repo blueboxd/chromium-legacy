@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,9 +12,9 @@
 #include "ash/strings/grit/ash_strings.h"
 #include "base/check.h"
 #include "base/strings/utf_string_conversions.h"
-#include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
+#include "ui/gfx/color_palette.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/font_list.h"
 #include "ui/views/controls/label.h"
@@ -24,8 +24,8 @@ namespace ash {
 GlanceablesWelcomeLabel::GlanceablesWelcomeLabel() {
   SetAutoColorReadabilityEnabled(false);
   // TODO(crbug.com/1353488): Make font size customizable.
-  SetFontList(gfx::FontList({"Google Sans"}, gfx::Font::FontStyle::NORMAL, 48,
-                            gfx::Font::Weight::BOLD));
+  SetFontList(gfx::FontList({"Google Sans"}, gfx::Font::FontStyle::NORMAL, 28,
+                            gfx::Font::Weight::MEDIUM));
   SetHorizontalAlignment(gfx::HorizontalAlignment::ALIGN_LEFT);
   SetMultiLine(false);
   // TODO(crbug.com/1353488): Change to dynamic greeting based on system time.
@@ -36,7 +36,7 @@ GlanceablesWelcomeLabel::GlanceablesWelcomeLabel() {
 void GlanceablesWelcomeLabel::OnThemeChanged() {
   views::Label::OnThemeChanged();
   // TODO(crbug.com/1353488): Use color provider.
-  SetEnabledColor(SK_ColorWHITE);
+  SetEnabledColor(gfx::kGoogleGrey200);
 }
 
 std::u16string GlanceablesWelcomeLabel::GetUserGivenName() const {
@@ -47,8 +47,7 @@ std::u16string GlanceablesWelcomeLabel::GetUserGivenName() const {
 
   const auto account_id = session_controller->GetActiveAccountId();
   if (account_id.empty()) {
-    // Prevents failures in `GlanceablesViewTest` and
-    // `GlanceablesControllerTest`.
+    // Prevents failures in `GlanceablesTest`.
     // TODO(crbug.com/1353119): Remove this after switching to `AshTestBase`.
     return u"";
   }

@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -47,14 +47,9 @@ enum class WebApkUninstallSource {
 
 extern const char kWebApkInstallResultHistogram[];
 extern const char kWebApkUpdateResultHistogram[];
-extern const char kWebApkArcInstallResultHistogram[];
-extern const char kWebApkArcUpdateResultHistogram[];
 
 // Records the overall result of installing/updating a WebAPK to UMA.
 void RecordWebApkInstallResult(bool is_update, WebApkInstallStatus result);
-// Records the detailed result of installing/updating a WebAPK in ARC to UMA.
-void RecordWebApkArcResult(bool is_update,
-                           arc::mojom::WebApkInstallResult result);
 
 }  // namespace apps
 

@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -249,6 +249,13 @@ export class GooglePhotosPhotos extends WithPersonalizationStore {
 
     // Fetch the next page of photos.
     fetchGooglePhotosPhotos(this.wallpaperProvider_, this.getStore());
+  }
+
+  /** Invoked on mouse down of a grid row. */
+  private onGridRowMouseDown_(e: Event) {
+    // Prevent the odd behavior of auto jumping to the focused photo when the
+    // user clicks on any grid row.
+    e.preventDefault();
   }
 
   /** Invoked on focus of a grid row. */
@@ -540,18 +547,6 @@ export class GooglePhotosPhotos extends WithPersonalizationStore {
   /** Returns the aria posinset index for the photo at index |i|. */
   private getPhotoAriaIndex_(i: number): number {
     return i + 1;
-  }
-
-  /**
-   * Returns 'true' or 'false' depending on whether the specified |photo| is
-   * currently selected.
-   */
-  private getPhotoAriaSelected_(
-      photo: GooglePhotosPhoto|null,
-      currentSelected: GooglePhotosPhotos['currentSelected_'],
-      pendingSelected: GooglePhotosPhotos['pendingSelected_']): string {
-    return this.isPhotoSelected_(photo, currentSelected, pendingSelected)
-        .toString();
   }
 
   /** Returns whether the title for the specified grid |row| is visible. */

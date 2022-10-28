@@ -55,14 +55,6 @@ const base::Feature kLowPriorityForHiddenFrame{
     "BlinkSchedulerLowPriorityForHiddenFrame",
     base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Used along with |kLowPriorityForHiddenFrame|,
-// |kLowPriorityForSubFrameThrottleableTask|, |kLowPriorityForThrottleableTask|,
-// |kLowPriorityForSubFrame| to enable one of these experiments only during the
-// load use case.
-const base::Feature kFrameExperimentOnlyWhenLoading{
-    "BlinkSchedulerFrameExperimentOnlyWhenLoading",
-    base::FEATURE_DISABLED_BY_DEFAULT};
-
 // Enables setting the priority of an ad frame to low priority.
 const base::Feature kLowPriorityForAdFrame{
     "BlinkSchedulerLowPriorityForAdFrame", base::FEATURE_DISABLED_BY_DEFAULT};
@@ -72,27 +64,10 @@ const base::Feature kBestEffortPriorityForAdFrame{
     "BlinkSchedulerBestEffortPriorityForAdFrame",
     base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Used along with |kLowPriorityForAdFrame| or |kBestEffortPriorityForAdFrame|
-// to enable one of these experiments only during the load use case.
-const base::Feature kAdFrameExperimentOnlyWhenLoading{
-    "BlinkSchedulerAdFrameExperimentOnlyWhenLoading",
-    base::FEATURE_DISABLED_BY_DEFAULT};
-
-// Enables using a resource's fetch priority to determine the priority of the
-// resource's loading tasks posted to blink's scheduler.
-const base::Feature kUseResourceFetchPriority{
-    "BlinkSchedulerResourceFetchPriority", base::FEATURE_DISABLED_BY_DEFAULT};
-
 // Enables setting the priority of cross-origin task queues to
 // low priority.
 const base::Feature kLowPriorityForCrossOrigin{
     "BlinkSchedulerLowPriorityForCrossOrigin",
-    base::FEATURE_DISABLED_BY_DEFAULT};
-
-// Enables setting the priority of cross-origin task queues to
-// low priority during loading only.
-const base::Feature kLowPriorityForCrossOriginOnlyWhenLoading{
-    "BlinkSchedulerLowPriorityForCrossOriginOnlyWhenLoading",
     base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Prioritizes loading and compositing tasks while loading.
@@ -156,33 +131,6 @@ const base::Feature kMbiCompositorTaskRunnerPerAgentSchedulingGroup{
 // Interval between Javascript timer wake ups when the "ThrottleForegroundTimers"
 // feature is enabled.
 PLATFORM_EXPORT base::TimeDelta GetForegroundTimersThrottledWakeUpInterval();
-
-// Deprioritizes JS timer tasks during a particular phase of page loading.
-PLATFORM_EXPORT extern const base::Feature
-    kDeprioritizeDOMTimersDuringPageLoading;
-
-// The phase in which we deprioritize JS timer tasks.
-enum class DeprioritizeDOMTimersPhase {
-  // Until the DOMContentLoaded event is fired.
-  kOnDOMContentLoaded,
-  // Until First Contentful Paint is reached.
-  kFirstContentfulPaint,
-  // Until the load event is fired.
-  kOnLoad,
-};
-
-PLATFORM_EXPORT extern const base::FeatureParam<
-    DeprioritizeDOMTimersPhase>::Option kDeprioritizeDOMTimersPhaseOptions[];
-
-PLATFORM_EXPORT extern const base::FeatureParam<DeprioritizeDOMTimersPhase>
-    kDeprioritizeDOMTimersPhase;
-
-// Killswitch for prioritizing cross-process postMessage forwarding.
-//
-// TODO(crbug.com/1212894): Remove after M95.
-const base::Feature kDisablePrioritizedPostMessageForwarding{
-    "DisablePrioritizedPostMessageForwarding",
-    base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Finch flag for preventing rendering starvation during threaded scrolling.
 // With this feature enabled, the existing delay-based rendering anti-starvation

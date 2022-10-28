@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -22,7 +22,8 @@ class OmniboxTriggeredFeatureService {
     kBookmarkPaths = 1,
     kShortBookmarkSuggestionsByTotalInputLength = 2,
     kFuzzyUrlSuggestions = 3,
-    kMaxValue = kFuzzyUrlSuggestions,
+    kHistoryClusterSuggestion = 4,
+    kMaxValue = kHistoryClusterSuggestion,
   };
   using Features = std::set<Feature>;
 

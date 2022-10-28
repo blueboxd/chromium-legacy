@@ -1,4 +1,4 @@
-# Copyright 2021 The Chromium Authors. All rights reserved.
+# Copyright 2021 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -333,6 +333,7 @@ android_resources("java_resources") {
     "java/res/layout/url_action_container.xml",
     "java/res/values/colors.xml",
     "java/res/values/dimens.xml",
+    "java/res/values/drawables.xml",
     "java/res/values/ids.xml",
     "java/res/values/styles.xml",
   ]
@@ -404,6 +405,7 @@ robolectric_library("junit") {
     "java/src/org/chromium/chrome/browser/omnibox/suggestions/DropdownItemViewInfoListBuilderUnitTest.java",
     "java/src/org/chromium/chrome/browser/omnibox/suggestions/DropdownItemViewInfoListManagerUnitTest.java",
     "java/src/org/chromium/chrome/browser/omnibox/suggestions/FaviconFetcherUnitTest.java",
+    "java/src/org/chromium/chrome/browser/omnibox/suggestions/OmniboxSuggestionsDropdownUnitTest.java",
     "java/src/org/chromium/chrome/browser/omnibox/suggestions/answer/AnswerSuggestionProcessorUnitTest.java",
     "java/src/org/chromium/chrome/browser/omnibox/suggestions/answer/AnswerTextNewLayoutUnitTest.java",
     "java/src/org/chromium/chrome/browser/omnibox/suggestions/base/BaseSuggestionProcessorUnitTest.java",

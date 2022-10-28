@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -608,7 +608,7 @@ public class FeedSurfaceCoordinator
         RecyclerView view;
         if (mHybridListRenderer != null) {
             // XSurface returns a View, but it should be a RecyclerView.
-            view = (RecyclerView) mHybridListRenderer.bind(mContentManager, mViewportView);
+            view = (RecyclerView) mHybridListRenderer.bind(mContentManager, mViewportView, false);
             view.setId(R.id.feed_stream_recycler_view);
             view.setClipToPadding(false);
             view.setBackgroundColor(SemanticColorUtils.getDefaultBgColor(mActivity));

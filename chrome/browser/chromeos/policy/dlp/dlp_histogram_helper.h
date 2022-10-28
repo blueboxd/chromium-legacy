@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/metrics/histogram_functions.h"
 #include "chrome/browser/chromeos/policy/dlp/dlp_rules_manager.h"
 
 namespace policy {
@@ -24,6 +25,9 @@ constexpr char kDataTransferControllerStartedUMA[] =
 constexpr char kDlpPolicyPresentUMA[] = "DlpPolicyPresent";
 constexpr char kDragDropBlockedUMA[] = "DragDropBlocked";
 constexpr char kFilesDaemonStartedUMA[] = "FilesDaemonStarted";
+constexpr char kFileActionBlockedUMA[] = "FileActionBlocked";
+constexpr char kFileActionWarnedUMA[] = "FileActionWarned";
+constexpr char kFileActionWarnProceededUMA[] = "FileActionWarnProceeded";
 constexpr char kPrintingBlockedUMA[] = "PrintingBlocked";
 constexpr char kPrintingWarnedUMA[] = "PrintingWarned";
 constexpr char kPrintingWarnProceededUMA[] = "PrintingWarnProceeded";
@@ -63,6 +67,11 @@ void DlpConfidentialContentsCountHistogram(const std::string& suffix,
                                            int max);
 
 void DlpRestrictionConfiguredHistogram(DlpRulesManager::Restriction value);
+
+template <typename T>
+void DlpHistogramEnumeration(const std::string& suffix, T sample) {
+  base::UmaHistogramEnumeration(GetDlpHistogramPrefix() + suffix, sample);
+}
 
 }  // namespace policy
 

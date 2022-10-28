@@ -1,19 +1,19 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #import "ios/chrome/browser/ui/bookmarks/bookmark_utils_ios.h"
 
-#include <memory>
-#include <vector>
+#import <memory>
+#import <vector>
 
-#include "base/strings/sys_string_conversions.h"
-#include "base/strings/utf_string_conversions.h"
-#include "base/time/time.h"
-#include "components/bookmarks/browser/bookmark_model.h"
-#include "ios/chrome/browser/system_flags.h"
-#include "ios/chrome/browser/ui/bookmarks/bookmark_ios_unittest.h"
-#include "testing/gtest_mac.h"
+#import "base/strings/sys_string_conversions.h"
+#import "base/strings/utf_string_conversions.h"
+#import "base/time/time.h"
+#import "components/bookmarks/browser/bookmark_model.h"
+#import "ios/chrome/browser/flags/system_flags.h"
+#import "ios/chrome/browser/ui/bookmarks/bookmark_ios_unittest.h"
+#import "testing/gtest_mac.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."

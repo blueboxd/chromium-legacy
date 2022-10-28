@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,6 +11,7 @@
 #include "chrome/browser/extensions/extension_action_icon_factory.h"
 #include "chrome/browser/extensions/extension_context_menu_model.h"
 #include "chrome/browser/extensions/site_permissions_helper.h"
+#include "chrome/browser/ui/toolbar/toolbar_action_hover_card_types.h"
 #include "chrome/browser/ui/toolbar/toolbar_action_view_controller.h"
 #include "extensions/browser/extension_host.h"
 #include "extensions/browser/extension_host_observer.h"
@@ -69,6 +70,8 @@ class ExtensionActionViewController
   std::u16string GetAccessibleName(
       content::WebContents* web_contents) const override;
   std::u16string GetTooltip(content::WebContents* web_contents) const override;
+  ToolbarActionViewController::HoverCardState GetHoverCardState(
+      content::WebContents* web_contents) const override;
   extensions::SitePermissionsHelper::SiteInteraction GetSiteInteraction(
       content::WebContents* web_contents) const override;
   bool IsEnabled(content::WebContents* web_contents) const override;
@@ -85,6 +88,8 @@ class ExtensionActionViewController
   void ExecuteUserAction(InvocationSource source) override;
   void TriggerPopupForAPI(ShowPopupCallback callback) override;
   void UpdateState() override;
+  void UpdateHoverCard(ToolbarActionView* action_view,
+                       ToolbarActionHoverCardUpdateType update_type) override;
   void RegisterCommand() override;
   void UnregisterCommand() override;
 

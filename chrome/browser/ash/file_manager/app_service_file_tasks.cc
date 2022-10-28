@@ -1,4 +1,4 @@
-// Copyright (c) 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,11 +10,13 @@
 #include <vector>
 
 #include "ash/constants/ash_features.h"
+#include "ash/webui/file_manager/url_constants.h"
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/feature_list.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
+#include "base/ranges/algorithm.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_restrictions.h"
@@ -23,6 +25,7 @@
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/apps/app_service/launch_utils.h"
 #include "chrome/browser/ash/crostini/crostini_features.h"
+#include "chrome/browser/ash/file_manager/app_id.h"
 #include "chrome/browser/ash/file_manager/file_tasks.h"
 #include "chrome/browser/ash/file_manager/fileapi_util.h"
 #include "chrome/browser/ash/file_manager/filesystem_api_util.h"
@@ -71,10 +74,11 @@ TaskType GetTaskType(apps::AppType app_type) {
       return TASK_TYPE_FILE_HANDLER;
     case apps::AppType::kCrostini:
       return TASK_TYPE_CROSTINI_APP;
+    case apps::AppType::kPluginVm:
+      return TASK_TYPE_PLUGIN_VM_APP;
     case apps::AppType::kUnknown:
     case apps::AppType::kBuiltIn:
     case apps::AppType::kMacOs:
-    case apps::AppType::kPluginVm:
     case apps::AppType::kStandaloneBrowser:
     case apps::AppType::kRemote:
     case apps::AppType::kBorealis:
@@ -130,6 +134,28 @@ Profile* GetProfileWithAppService(Profile* profile) {
   }
 }
 
+// TODO(petermarshall): This can be removed along with ParseFilesAppActionId()
+// in file_tasks.cc as the legacy files app has been removed.
+std::string ToSwaActionId(const std::string& action_id) {
+  return std::string(ash::file_manager::kChromeUIFileManagerURL) + "?" +
+         action_id;
+}
+
+// True if |launch_entry| represents a task which opens the file by getting the
+// URL for a file rather than by opening the local contents of the file.
+bool IsFilesAppUrlOpener(const apps::IntentLaunchInfo& launch_entry) {
+  if (launch_entry.app_id != kFileManagerSwaAppId) {
+    return false;
+  }
+  return launch_entry.activity_name == ToSwaActionId(kActionIdOpenInOffice) ||
+         launch_entry.activity_name ==
+             ToSwaActionId(kActionIdWebDriveOfficeWord) ||
+         launch_entry.activity_name ==
+             ToSwaActionId(kActionIdWebDriveOfficeExcel) ||
+         launch_entry.activity_name ==
+             ToSwaActionId(kActionIdWebDriveOfficePowerPoint);
+}
+
 void FindAppServiceTasks(Profile* profile,
                          const std::vector<extensions::EntryInfo>& entries,
                          const std::vector<GURL>& file_urls,
@@ -148,15 +174,10 @@ void FindAppServiceTasks(Profile* profile,
   // present. "System" Web Apps are an exception: we have more control over what
   // they can do, so tasks provided by System Web Apps are the only ones
   // permitted at present. See https://crbug.com/1079065.
-  bool has_non_native_file = false;
-  bool has_pdf_file = false;
-  for (const auto& entry : entries) {
-    if (!has_non_native_file &&
-        util::IsUnderNonNativeLocalPath(profile, entry.path))
-      has_non_native_file = true;
-    if (!has_pdf_file && entry.path.MatchesExtension(".pdf"))
-      has_pdf_file = true;
-  }
+  const bool has_non_native_file =
+      base::ranges::any_of(entries, [profile](const auto& entry) {
+        return util::IsUnderNonNativeLocalPath(profile, entry.path);
+      });
 
   // App Service doesn't exist in Incognito mode but we still want to find
   // handlers to open a download from its notification from Incognito mode. Use
@@ -194,6 +215,7 @@ void FindAppServiceTasks(Profile* profile,
   if (ash::features::ShouldArcAndGuestOsFileTasksUseAppService()) {
     supported_app_types.push_back(apps::AppType::kArc);
     supported_app_types.push_back(apps::AppType::kCrostini);
+    supported_app_types.push_back(apps::AppType::kPluginVm);
   }
   for (auto& launch_entry : intent_launch_info) {
     auto app_type = proxy->AppRegistryCache().GetAppType(launch_entry.app_id);
@@ -203,18 +225,13 @@ void FindAppServiceTasks(Profile* profile,
 
     if (app_type == apps::AppType::kWeb ||
         app_type == apps::AppType::kSystemWeb) {
-      // Media app and other SWAs can handle "non-native" files.
+      // Media app and other SWAs can handle "non-native" files, as can special
+      // tasks which only access the file via URL.
       if (has_non_native_file &&
-          !web_app::IsSystemAppIdWithFileHandlers(launch_entry.app_id)) {
+          !(web_app::IsSystemAppIdWithFileHandlers(launch_entry.app_id) ||
+            IsFilesAppUrlOpener(launch_entry))) {
         continue;
       }
-
-      // "Hide" the media app task (i.e. skip the rest of this loop which would
-      // add it as a handler) when the flag to handle PDF is off.
-      if (launch_entry.app_id == web_app::kMediaAppId &&
-          ((!base::FeatureList::IsEnabled(ash::features::kMediaAppHandlesPdf) &&
-            has_pdf_file)))
-        continue;
 
       // Check the origin trial and feature flag for file handling in web apps.
       // TODO(1240018): Remove when this feature is fully launched. This check
@@ -238,7 +255,9 @@ void FindAppServiceTasks(Profile* profile,
         continue;
     }
 
-    if (app_type == apps::AppType::kCrostini && !files_shareable_to_vm) {
+    if ((app_type == apps::AppType::kCrostini ||
+         app_type == apps::AppType::kPluginVm) &&
+        !files_shareable_to_vm) {
       continue;
     }
 

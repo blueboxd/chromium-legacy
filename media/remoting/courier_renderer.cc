@@ -1,4 +1,4 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -57,6 +57,25 @@ constexpr base::TimeDelta kStabilizationPeriod = base::Seconds(2);
 // data flow rates for metrics.
 constexpr base::TimeDelta kDataFlowPollPeriod = base::Seconds(10);
 
+// base::Bind* doesn't understand openscreen::WeakPtr, so we must manually
+// check the RpcMessenger pointer before calling into it.
+void RegisterForRpcTask(
+    openscreen::WeakPtr<openscreen::cast::RpcMessenger> rpc_messenger,
+    int rpc_handle,
+    openscreen::cast::RpcMessenger::ReceiveMessageCallback message_cb) {
+  if (rpc_messenger) {
+    rpc_messenger->RegisterMessageReceiverCallback(rpc_handle,
+                                                   std::move(message_cb));
+  }
+}
+void DeregisterFromRpcTask(
+    openscreen::WeakPtr<openscreen::cast::RpcMessenger> rpc_messenger,
+    int rpc_handle) {
+  if (rpc_messenger) {
+    rpc_messenger->UnregisterMessageReceiverCallback(rpc_handle);
+  }
+}
+
 }  // namespace
 
 CourierRenderer::CourierRenderer(
@@ -77,27 +96,15 @@ CourierRenderer::CourierRenderer(
   // Note: The constructor is running on the main thread, but will be destroyed
   // on the media thread. Therefore, all weak pointers must be dereferenced on
   // the media thread.
-  rpc_messenger_->RegisterMessageReceiverCallback(
-      rpc_handle_,
-      [runner = media_task_runner_, ptr = weak_factory_.GetWeakPtr()](
-          std::unique_ptr<openscreen::cast::RpcMessage> message) {
-        if (ptr) {
-          CourierRenderer::OnMessageReceivedOnMainThread(runner, ptr,
-                                                         std::move(message));
-        } else {
-          LOG(WARNING) << "Invalid weak factory pointer.";
-        }
-      });
+  media_task_runner_->PostTask(
+      FROM_HERE, base::BindOnce(&CourierRenderer::RegisterForRpcMessaging,
+                                weak_factory_.GetWeakPtr()));
 }
 
 CourierRenderer::~CourierRenderer() {
   DCHECK(media_task_runner_->BelongsToCurrentThread());
 
-  // Post task on main thread to unregister message receiver.
-  main_task_runner_->PostTask(
-      FROM_HERE, base::BindOnce(&CourierRenderer::DeregisterFromRpcMessaging,
-                                weak_factory_.GetWeakPtr()));
-
+  DeregisterFromRpcMessaging();
   if (video_renderer_sink_) {
     video_renderer_sink_->PaintSingleFrame(
         VideoFrame::CreateBlackFrame(gfx::Size(1280, 720)));
@@ -812,10 +819,28 @@ bool CourierRenderer::IsWaitingForDataFromDemuxers() const {
            !audio_demuxer_stream_adapter_->is_data_pending()));
 }
 
+void CourierRenderer::RegisterForRpcMessaging() {
+  DCHECK(media_task_runner_->BelongsToCurrentThread());
+  auto receive_callback = BindToCurrentLoop(base::BindRepeating(
+      &CourierRenderer::OnReceivedRpc, weak_factory_.GetWeakPtr()));
+
+  main_task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(
+          &RegisterForRpcTask, rpc_messenger_, rpc_handle_,
+          [cb = std::move(receive_callback)](
+
+              std::unique_ptr<openscreen::cast::RpcMessage> message) {
+            cb.Run(std::move(message));
+          }));
+}
+
 void CourierRenderer::DeregisterFromRpcMessaging() {
   DCHECK(media_task_runner_->BelongsToCurrentThread());
   if (rpc_messenger_) {
-    rpc_messenger_->UnregisterMessageReceiverCallback(rpc_handle_);
+    main_task_runner_->PostTask(
+        FROM_HERE,
+        base::BindOnce(&DeregisterFromRpcTask, rpc_messenger_, rpc_handle_));
   }
 }
 

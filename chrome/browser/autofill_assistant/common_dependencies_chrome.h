@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -52,6 +52,9 @@ class CommonDependenciesChrome : public CommonDependencies {
   bool IsWebLayer() const override;
 
   signin::IdentityManager* GetIdentityManager(
+      content::BrowserContext* browser_context) const override;
+
+  consent_auditor::ConsentAuditor* GetConsentAuditor(
       content::BrowserContext* browser_context) const override;
 
   version_info::Channel GetChannel() const override;

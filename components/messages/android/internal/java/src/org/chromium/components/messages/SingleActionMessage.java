@@ -1,14 +1,14 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 package org.chromium.components.messages;
 
 import android.animation.Animator;
-import android.annotation.SuppressLint;
 import android.view.LayoutInflater;
 import android.view.View;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 
@@ -83,10 +83,13 @@ public class SingleActionMessage implements MessageStateHandler, MessageContaine
 
     /**
      * Show a message view on the given {@link MessageContainer}.
+     * @param fromIndex The initial position of the message view.
+     * @param endIndex The target position of the message view.
+     * @return The animator to move the message view.
      */
-    @SuppressLint("ClickableViewAccessibility")
+    @NonNull
     @Override
-    public void show() {
+    public Animator show(int fromIndex, int endIndex) {
         if (mMessageBanner == null) {
             mView = (MessageBannerView) LayoutInflater.from(mContainer.getContext())
                             .inflate(R.layout.message_banner_view, mContainer, false);
@@ -98,26 +101,36 @@ public class SingleActionMessage implements MessageStateHandler, MessageContaine
                     mAnimatorStartCallback, mAutodismissDurationMs,
                     () -> { mDismissHandler.invoke(mModel, DismissReason.TIMER); });
         }
-        mContainer.addMessage(mView);
-        mContainer.setA11yDelegate(this);
 
-        // Wait until the message and the container are measured before showing the message. This
-        // is required in case the animation set-up requires the height of the container, e.g.
-        // showing messages without the top controls visible.
-        mContainer.runAfterInitialMessageLayout(mMessageBanner::show);
+        // Update elevation to ensure background view is always behind the front one.
+        int elevationDimen = endIndex == Position.FRONT ? R.dimen.message_banner_elevation
+                                                        : R.dimen.message_banner_back_elevation;
+        mModel.set(MessageBannerProperties.ELEVATION,
+                mView.getResources().getDimension(elevationDimen));
+        // #show can be called multiple times when its own index is updated.
+        if (mContainer.indexOfChild(mView) == -1) {
+            mContainer.addMessage(mView);
+        }
+
+        if (endIndex == Position.FRONT) {
+            mContainer.setA11yDelegate(this);
+        }
+
         mMessageShownTime = MessagesMetrics.now();
+        return mMessageBanner.show();
     }
 
     /**
      * Hide the message view shown on the given {@link MessageContainer}.
+     * @param fromIndex The initial position of the message view.
+     * @param endIndex The target position of the message view.
+     * @param animate Whether to show animation.
+     * @return The animator to move the message view.
      */
+    @Nullable
     @Override
-    public void hide(boolean animate, Runnable hiddenCallback) {
-        Runnable hiddenRunnable = () -> {
-            mContainer.removeMessage(mView);
-            if (hiddenCallback != null) hiddenCallback.run();
-        };
-        mMessageBanner.hide(animate, hiddenRunnable);
+    public Animator hide(int fromIndex, int endIndex, boolean animate) {
+        return mMessageBanner.hide(animate, () -> mContainer.removeMessage(mView));
     }
 
     /**

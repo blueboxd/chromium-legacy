@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,6 +13,7 @@
 #import "base/compiler_specific.h"
 #import "base/metrics/histogram_macros.h"
 #import "base/strings/sys_string_conversions.h"
+#import "base/time/time.h"
 #import "ios/web/common/features.h"
 #import "ios/web/js_messaging/web_view_js_utils.h"
 #import "ios/web/navigation/crw_error_page_helper.h"
@@ -98,6 +99,12 @@ void WebStateImpl::RealizedWebState::Init(const CreateParams& params,
     // saved in CRWSessionStorage) and thus the WebState can be considered
     // "infinitely" old.
     last_active_time_ = session_storage.lastActiveTime;
+
+    // Restore the last active time, even if it is null, as that would mean
+    // the session predates M-107 (when the creation time started to be saved in
+    // CRWSessionStorage) and thus the WebState can be considered "infinitely"
+    // old.
+    creation_time_ = session_storage.creationTime;
   } else {
     certificate_policy_cache_ =
         std::make_unique<SessionCertificatePolicyCacheImpl>(
@@ -105,6 +112,8 @@ void WebStateImpl::RealizedWebState::Init(const CreateParams& params,
 
     // Generate a random stable identifier. Ensure it is immutable.
     stable_identifier_ = [[[NSUUID UUID] UUIDString] copy];
+
+    creation_time_ = base::Time::Now();
   }
 
   // Let CreateParams override the last active time.
@@ -502,6 +511,13 @@ void WebStateImpl::RealizedWebState::WebFrameBecameUnavailable(
   NotifyObserversAndRemoveWebFrame(frame);
 }
 
+void WebStateImpl::RealizedWebState::RetrieveExistingFrames() {
+  // This call must be sent to the webstate directly, because the result of this
+  // call will create the WebFrames. (Thus, the WebFrames do not yet exist and
+  // can not be used to call JavaScript.)
+  ExecuteJavaScript(u"__gCrWeb.message.getExistingFrames();");
+}
+
 void WebStateImpl::RealizedWebState::RemoveAllWebFrames() {
   for (WebFrame* frame : GetWebFramesManager().GetAllWebFrames()) {
     NotifyObserversAndRemoveWebFrame(frame);
@@ -547,6 +563,10 @@ void WebStateImpl::RealizedWebState::DidRevealWebContent() {
 
 base::Time WebStateImpl::RealizedWebState::GetLastActiveTime() const {
   return last_active_time_;
+}
+
+base::Time WebStateImpl::RealizedWebState::GetCreationTime() const {
+  return creation_time_;
 }
 
 void WebStateImpl::RealizedWebState::WasShown() {
@@ -816,7 +836,7 @@ bool WebStateImpl::RealizedWebState::SetSessionStateData(NSData* data) {
 
   // If this fails (e.g., see crbug.com/1019672 for a previous failure), this
   // may be a bug in WebKit session restoration, or a bug in generating the
-  // |cached_data_| blob.
+  // `cached_data_` blob.
   if (navigation_manager_->GetItemCount() == 0) {
     return false;
   }

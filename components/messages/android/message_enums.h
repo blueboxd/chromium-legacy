@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -112,6 +112,7 @@ enum class MessageIdentifier {
   FRAMEBUST_BLOCKED = 32,
   DESKTOP_SITE_GLOBAL_DEFAULT_OPT_OUT = 33,
   DESKTOP_SITE_GLOBAL_OPT_IN = 34,
+  PASSWORD_MANAGER_ERROR = 35,
 
   // Insert new values before this line.
   COUNT

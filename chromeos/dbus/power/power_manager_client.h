@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -17,6 +17,7 @@
 #include "base/power_monitor/power_observer.h"
 #include "base/time/time.h"
 #include "chromeos/dbus/common/dbus_method_call_status.h"
+#include "chromeos/dbus/power_manager/charge_history_state.pb.h"
 #include "chromeos/dbus/power_manager/peripheral_battery_status.pb.h"
 #include "chromeos/dbus/power_manager/policy.pb.h"
 #include "chromeos/dbus/power_manager/power_supply_properties.pb.h"
@@ -388,6 +389,10 @@ class COMPONENT_EXPORT(DBUS_POWER) PowerManagerClient {
   // execution which does nothing).
   virtual void ChargeNowForAdaptiveCharging() = 0;
 
+  // Get charge history for Adaptive Charging.
+  virtual void GetChargeHistoryForAdaptiveCharging(
+      DBusMethodCallback<power_manager::ChargeHistoryState> callback) = 0;
+
   PowerManagerClient();
 
   PowerManagerClient(const PowerManagerClient&) = delete;
@@ -409,10 +414,5 @@ class COMPONENT_EXPORT(DBUS_POWER) PowerManagerClient {
 };
 
 }  // namespace chromeos
-
-// TODO(https://crbug.com/1164001): remove when moved to ash.
-namespace ash {
-using ::chromeos::PowerManagerClient;
-}
 
 #endif  // CHROMEOS_DBUS_POWER_POWER_MANAGER_CLIENT_H_

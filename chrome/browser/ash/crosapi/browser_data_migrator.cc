@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -265,21 +265,6 @@ bool BrowserDataMigratorImpl::MaybeRestartToMigrateInternal(
     return false;
   }
 
-  // If the user is a new user, then there shouldn't be anything to migrate.
-  // Also mark the user as migration completed.
-  if (user_manager::UserManager::Get()->IsCurrentUserNew()) {
-    crosapi::browser_util::RecordDataVer(local_state, user_id_hash,
-                                         version_info::GetVersion());
-
-    crosapi::browser_util::SetProfileMigrationCompletedForUser(
-        local_state, user_id_hash,
-        crosapi::browser_util::GetMigrationMode(user, policy_init_state));
-    // TODO(crbug.com/1277848): Once `BrowserDataMigrator` stabilises, remove
-    // this log message.
-    LOG(WARNING) << "Setting migration as completed since it is a new user.";
-    return false;
-  }
-
   int attempts = GetMigrationAttemptCountForUser(local_state, user_id_hash);
   // TODO(crbug.com/1178702): Once BrowserDataMigrator stabilises, reduce the
   // log level to VLOG(1).
@@ -343,11 +328,16 @@ bool BrowserDataMigratorImpl::RestartToMigrate(
           crosapi::browser_util::MigrationMode::kMove ||
       MoveMigrator::ResumeRequired(local_state, user_id_hash);
 
+  std::string mode = browser_data_migrator_util::kCopySwitchValue;
+  if (is_move) {
+    mode = browser_data_migrator_util::kMoveSwitchValue;
+  }
+
   // TODO(crbug.com/1277848): Once `BrowserDataMigrator` stabilises, remove
   // this log message.
   LOG(WARNING) << "Making a dbus method call to session_manager";
   bool success = SessionManagerClient::Get()->RequestBrowserDataMigration(
-      cryptohome::CreateAccountIdentifierFromAccountId(account_id), is_move);
+      cryptohome::CreateAccountIdentifierFromAccountId(account_id), mode);
 
   // TODO(crbug.com/1261730): Add an UMA.
   if (!success) {
@@ -500,7 +490,7 @@ void BrowserDataMigratorImpl::UpdateMigrationAttemptCountForUser(
 int BrowserDataMigratorImpl::GetMigrationAttemptCountForUser(
     PrefService* local_state,
     const std::string& user_id_hash) {
-  return local_state->GetValueDict(kMigrationAttemptCountPref)
+  return local_state->GetDict(kMigrationAttemptCountPref)
       .FindInt(user_id_hash)
       .value_or(0);
 }

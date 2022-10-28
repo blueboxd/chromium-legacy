@@ -1,4 +1,4 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -14,9 +14,7 @@
 #include "ash/public/cpp/tablet_mode.h"
 #include "base/bind.h"
 #include "base/metrics/metrics_hashes.h"
-#include "base/sequence_token.h"
 #include "base/strings/strcat.h"
-#include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "chrome/browser/profiles/profile.h"
@@ -25,16 +23,12 @@
 #include "chrome/browser/ui/app_list/search/chrome_search_result.h"
 #include "chrome/browser/ui/app_list/search/common/string_util.h"
 #include "chrome/browser/ui/app_list/search/cros_action_history/cros_action_recorder.h"
-#include "chrome/browser/ui/app_list/search/search_metrics_observer.h"
+#include "chrome/browser/ui/app_list/search/ranking/ranking_item_util.h"
+#include "chrome/browser/ui/app_list/search/search_metrics_manager.h"
 #include "chrome/browser/ui/app_list/search/search_provider.h"
-#include "chrome/browser/ui/app_list/search/search_result_ranker/chip_ranker.h"
-#include "chrome/browser/ui/app_list/search/search_result_ranker/histogram_util.h"
-#include "chrome/browser/ui/app_list/search/search_result_ranker/ranking_item_util.h"
 #include "chrome/browser/ui/app_list/search/search_result_ranker/search_result_ranker.h"
 #include "components/metrics/structured/structured_events.h"
 #include "components/prefs/pref_service.h"
-#include "content/public/browser/browser_task_traits.h"
-#include "content/public/browser/browser_thread.h"
 
 namespace app_list {
 
@@ -46,7 +40,7 @@ SearchControllerImpl::SearchControllerImpl(
     : profile_(profile),
       mixer_(std::make_unique<Mixer>(model_updater, this)),
       metrics_observer_(
-          std::make_unique<SearchMetricsObserver>(profile, notifier)),
+          std::make_unique<SearchMetricsManager>(profile, notifier)),
       list_controller_(list_controller),
       notifier_(notifier) {
   DCHECK(!app_list_features::IsCategoricalSearchEnabled());
@@ -93,7 +87,7 @@ void SearchControllerImpl::StartZeroState(base::OnceClosure on_done,
       FROM_HERE, std::move(on_done), timeout);
 }
 
-void SearchControllerImpl::ViewClosing() {
+void SearchControllerImpl::AppListClosing() {
   for (const auto& provider : providers_)
     provider->ViewClosing();
 }

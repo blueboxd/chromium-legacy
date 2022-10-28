@@ -1,10 +1,10 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 import 'chrome://resources/cr_elements/cr_icon_button/cr_icon_button.js';
 import 'chrome://resources/cr_elements/cr_link_row/cr_link_row.js';
-import 'chrome://resources/cr_elements/shared_style_css.m.js';
+import 'chrome://resources/cr_elements/cr_shared_style.css.js';
 import './collapse_radio_button.js';
 import './secure_dns.js';
 import '../controls/settings_radio_group.js';
@@ -15,7 +15,7 @@ import '../settings_shared.css.js';
 import './disable_safebrowsing_dialog.js';
 
 import {assert} from 'chrome://resources/js/assert_ts.js';
-import {focusWithoutInk} from 'chrome://resources/js/cr/ui/focus_without_ink.m.js';
+import {focusWithoutInk} from 'chrome://resources/js/cr/ui/focus_without_ink.js';
 import {I18nMixin, I18nMixinInterface} from 'chrome://resources/js/i18n_mixin.js';
 import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
@@ -195,7 +195,8 @@ export class SettingsSecurityPageElement extends
     // <if expr="use_nss_certs">
     if (routes.CERTIFICATES) {
       this.focusConfig.set(routes.CERTIFICATES.path, () => {
-        const toFocus = this.shadowRoot!.querySelector('#manageCertificates');
+        const toFocus =
+            this.shadowRoot!.querySelector<HTMLElement>('#manageCertificates');
         assert(toFocus);
         focusWithoutInk(toFocus);
       });
@@ -205,7 +206,8 @@ export class SettingsSecurityPageElement extends
     if (routes.SECURITY_KEYS) {
       this.focusConfig.set(routes.SECURITY_KEYS.path, () => {
         const toFocus =
-            this.shadowRoot!.querySelector('#security-keys-subpage-trigger');
+            this.shadowRoot!.querySelector<HTMLElement>(
+                '#security-keys-subpage-trigger');
         assert(toFocus);
         focusWithoutInk(toFocus);
       });

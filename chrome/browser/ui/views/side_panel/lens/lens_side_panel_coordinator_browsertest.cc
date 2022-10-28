@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -49,16 +49,27 @@
 namespace {
 
 constexpr char kCloseAction[] = "LensUnifiedSidePanel.HideSidePanel";
+constexpr char kExpectedSidePanelContentUrlRegex[] =
+    ".*ep=ccm&re=dcsp&s=csp&st=\\d+&p=somepayload&sideimagesearch=1";
 
 // Maintains image search test state. In particular, note that |menu_observer_|
 // must live until the right-click completes asynchronously.
 class SearchImageWithUnifiedSidePanel : public InProcessBrowserTest {
  protected:
   void SetUp() override {
+    // The test server must start first, so that we know the port that the test
+    // server is using.
+    ASSERT_TRUE(embedded_test_server()->Start());
+
+    // Lens side panel throttle requests outside of the initial subdomain so
+    // need to set the HomepageURLForLens to be the same host as our embedded
+    // test server.
     base::test::ScopedFeatureList features;
     features.InitWithFeaturesAndParameters(
         {{lens::features::kLensStandalone,
-          {{lens::features::kEnableSidePanelForLens.name, "true"}}},
+          {{lens::features::kEnableSidePanelForLens.name, "true"},
+           {lens::features::kHomepageURLForLens.name,
+            GetLensImageSearchURL().spec()}}},
          {features::kUnifiedSidePanel, {{}}},
          {lens::features::kLensUnifiedSidePanelFooter, {{}}}},
         {});
@@ -66,17 +77,17 @@ class SearchImageWithUnifiedSidePanel : public InProcessBrowserTest {
   }
 
   void SetupUnifiedSidePanel() {
-    // ensures that the lens side panel coordinator is open and is valid when
-    // running the search
-    lens::CreateLensUnifiedSidePanelEntryForTesting(browser());
     SetupAndLoadValidImagePage();
+    // Ensures that the lens side panel coordinator is open and is valid when
+    // running the search.
+    lens::CreateLensUnifiedSidePanelEntryForTesting(browser());
     // The browser should open a side panel with the image.
     AttemptLensImageSearch();
 
-    // We need to verify the contents before opening the side panel
+    // We need to verify the contents before opening the side panel.
     content::WebContents* contents =
         lens::GetLensUnifiedSidePanelWebContentsForTesting(browser());
-    // // Wait for the side panel to open and finish loading web contents.
+    // Wait for the side panel to open and finish loading web contents.
     content::TestNavigationObserver nav_observer(contents);
     nav_observer.Wait();
   }
@@ -87,9 +98,6 @@ class SearchImageWithUnifiedSidePanel : public InProcessBrowserTest {
   }
 
   void SetupAndLoadImagePage(const std::string& image_path) {
-    // The test server must start first, so that we know the port that the test
-    // server is using.
-    ASSERT_TRUE(embedded_test_server()->Start());
     SetupImageSearchEngine();
 
     // Go to a page with an image in it. The test server doesn't serve the image
@@ -125,6 +133,11 @@ class SearchImageWithUnifiedSidePanel : public InProcessBrowserTest {
     return embedded_test_server()->GetURL(kLensImageSearchURL);
   }
 
+  GURL GetBadLensImageSearchURL() {
+    constexpr char kBadLensImageSearchURL[] = "/imagesearch";
+    return embedded_test_server()->GetURL(kBadLensImageSearchURL);
+  }
+
   void SetupImageSearchEngine() {
     constexpr char16_t kShortName[] = u"test";
     constexpr char kSearchURL[] = "/search?q={searchTerms}";
@@ -142,6 +155,7 @@ class SearchImageWithUnifiedSidePanel : public InProcessBrowserTest {
     data.SetURL(embedded_test_server()->GetURL(kSearchURL).spec());
     data.image_url = GetImageSearchURL().spec();
     data.image_url_post_params = kImageSearchPostParams;
+    data.side_image_search_param = "sideimagesearch";
 
     TemplateURL* template_url = model->Add(std::make_unique<TemplateURL>(data));
     ASSERT_TRUE(template_url);
@@ -161,9 +175,9 @@ class SearchImageWithUnifiedSidePanel : public InProcessBrowserTest {
     return LensSidePanelCoordinator::GetOrCreateForBrowser(browser());
   }
 
-  SidePanel* GetRightAlignedSidePanel() {
+  SidePanel* GetUnifiedSidePanel() {
     auto* browser_view = BrowserView::GetBrowserViewForBrowser(browser());
-    return browser_view->right_aligned_side_panel();
+    return browser_view->unified_side_panel();
   }
 
   std::unique_ptr<ContextMenuNotificationObserver> menu_observer_;
@@ -173,7 +187,7 @@ class SearchImageWithUnifiedSidePanel : public InProcessBrowserTest {
 IN_PROC_BROWSER_TEST_F(SearchImageWithUnifiedSidePanel,
                        ImageSearchWithValidImageOpensUnifiedSidePanel) {
   SetupUnifiedSidePanel();
-  EXPECT_TRUE(GetRightAlignedSidePanel()->GetVisible());
+  EXPECT_TRUE(GetUnifiedSidePanel()->GetVisible());
 
   content::WebContents* contents =
       lens::GetLensUnifiedSidePanelWebContentsForTesting(browser());
@@ -187,17 +201,19 @@ IN_PROC_BROWSER_TEST_F(SearchImageWithUnifiedSidePanel,
   EXPECT_TRUE(GetLensSidePanelCoordinator()->IsLaunchButtonEnabledForTesting());
   // Match the query parameters, without the value of start_time.
   EXPECT_THAT(side_panel_content,
-              testing::MatchesRegex(".*ep=ccm&s=csp&st=\\d+&p=somepayload"));
+              testing::MatchesRegex(kExpectedSidePanelContentUrlRegex));
 }
 
 IN_PROC_BROWSER_TEST_F(SearchImageWithUnifiedSidePanel,
-                       DisableOpenInNewTabForBadUrl) {
+                       EnablesOpenInNewTabForAnyUrlForNonGoogleDse) {
   SetupUnifiedSidePanel();
-  EXPECT_TRUE(GetRightAlignedSidePanel()->GetVisible());
+  EXPECT_TRUE(GetUnifiedSidePanel()->GetVisible());
 
-  auto url = content::OpenURLParams(GURL("http://foo.com"), content::Referrer(),
-                                    WindowOpenDisposition::NEW_FOREGROUND_TAB,
-                                    ui::PAGE_TRANSITION_LINK, false);
+  // Make URL have no payload param ("p=")
+  auto url =
+      content::OpenURLParams(GetBadLensImageSearchURL(), content::Referrer(),
+                             WindowOpenDisposition::NEW_FOREGROUND_TAB,
+                             ui::PAGE_TRANSITION_LINK, false);
   auto load_url_params = content::NavigationController::LoadURLParams(url);
   lens::GetLensUnifiedSidePanelWebContentsForTesting(browser())
       ->GetController()
@@ -208,24 +224,23 @@ IN_PROC_BROWSER_TEST_F(SearchImageWithUnifiedSidePanel,
       lens::GetLensUnifiedSidePanelWebContentsForTesting(browser()));
   nav_observer.Wait();
 
-  EXPECT_FALSE(
-      GetLensSidePanelCoordinator()->IsLaunchButtonEnabledForTesting());
+  EXPECT_TRUE(GetLensSidePanelCoordinator()->IsLaunchButtonEnabledForTesting());
 }
 
 IN_PROC_BROWSER_TEST_F(SearchImageWithUnifiedSidePanel,
                        ClosingSidePanelDeregistersLensViewAndLogsCloseMetric) {
   SetupUnifiedSidePanel();
-  EXPECT_TRUE(GetRightAlignedSidePanel()->GetVisible());
+  EXPECT_TRUE(GetUnifiedSidePanel()->GetVisible());
 
   GetSidePanelCoordinator()->Close();
 
-  EXPECT_FALSE(GetRightAlignedSidePanel()->GetVisible());
+  EXPECT_FALSE(GetUnifiedSidePanel()->GetVisible());
   auto* last_active_entry =
       GetSidePanelCoordinator()->GetCurrentSidePanelEntryForTesting();
   EXPECT_EQ(last_active_entry, nullptr);
   EXPECT_EQ(
-      GetSidePanelCoordinator()->GetGlobalSidePanelRegistry()->GetEntryForId(
-          SidePanelEntry::Id::kLens),
+      GetSidePanelCoordinator()->GetGlobalSidePanelRegistry()->GetEntryForKey(
+          SidePanelEntry::Key(SidePanelEntry::Id::kLens)),
       nullptr);
   EXPECT_EQ(1, user_action_tester.GetActionCount(kCloseAction));
 }
@@ -233,23 +248,29 @@ IN_PROC_BROWSER_TEST_F(SearchImageWithUnifiedSidePanel,
 IN_PROC_BROWSER_TEST_F(SearchImageWithUnifiedSidePanel,
                        OpenInNewTabOpensInNewTabAndClosesSidePanel) {
   SetupUnifiedSidePanel();
-  EXPECT_TRUE(GetRightAlignedSidePanel()->GetVisible());
+  EXPECT_TRUE(GetUnifiedSidePanel()->GetVisible());
 
   auto did_open_results =
       GetLensSidePanelCoordinator()->OpenResultsInNewTabForTesting();
 
   EXPECT_TRUE(did_open_results);
-  EXPECT_FALSE(GetRightAlignedSidePanel()->GetVisible());
+  EXPECT_FALSE(GetUnifiedSidePanel()->GetVisible());
 }
 
 class SearchImageWithUnifiedSidePanelFooterDisabled
     : public SearchImageWithUnifiedSidePanel {
  protected:
   void SetUp() override {
+    // The test server must start first, so that we know the port that the test
+    // server is using.
+    ASSERT_TRUE(embedded_test_server()->Start());
+
     base::test::ScopedFeatureList features;
     features.InitWithFeaturesAndParameters(
         {{lens::features::kLensStandalone,
-          {{lens::features::kEnableSidePanelForLens.name, "true"}}},
+          {{lens::features::kEnableSidePanelForLens.name, "true"},
+           {lens::features::kHomepageURLForLens.name,
+            GetLensImageSearchURL().spec()}}},
          {features::kUnifiedSidePanel, {{}}}},
         {lens::features::kLensUnifiedSidePanelFooter});
     InProcessBrowserTest::SetUp();
@@ -259,7 +280,7 @@ class SearchImageWithUnifiedSidePanelFooterDisabled
 IN_PROC_BROWSER_TEST_F(SearchImageWithUnifiedSidePanelFooterDisabled,
                        ImageSearchWithValidImageOpensUnifiedSidePanel) {
   SetupUnifiedSidePanel();
-  EXPECT_TRUE(GetRightAlignedSidePanel()->GetVisible());
+  EXPECT_TRUE(GetUnifiedSidePanel()->GetVisible());
 
   content::WebContents* contents =
       lens::GetLensUnifiedSidePanelWebContentsForTesting(browser());
@@ -274,7 +295,7 @@ IN_PROC_BROWSER_TEST_F(SearchImageWithUnifiedSidePanelFooterDisabled,
       GetLensSidePanelCoordinator()->IsLaunchButtonEnabledForTesting());
   // Match the query parameters, without the value of start_time.
   EXPECT_THAT(side_panel_content,
-              testing::MatchesRegex(".*ep=ccm&s=csp&st=\\d+&p=somepayload"));
+              testing::MatchesRegex(kExpectedSidePanelContentUrlRegex));
 }
 
 }  // namespace

@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -98,7 +98,7 @@ void TPMTokenInfoGetter::Continue() {
       NOTREACHED();
       break;
     case STATE_STARTED:
-      TpmManagerClient::Get()->GetTpmNonsensitiveStatus(
+      chromeos::TpmManagerClient::Get()->GetTpmNonsensitiveStatus(
           ::tpm_manager::GetTpmNonsensitiveStatusRequest(),
           base::BindOnce(&TPMTokenInfoGetter::OnGetTpmStatus,
                          weak_factory_.GetWeakPtr()));

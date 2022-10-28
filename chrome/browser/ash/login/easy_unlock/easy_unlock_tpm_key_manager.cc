@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -118,7 +118,7 @@ void SignDataOnWorkerThread(
     return;
   }
 
-  crypto::ScopedSECItem sign_result(SECITEM_AllocItem(NULL, NULL, 0));
+  crypto::ScopedSECItem sign_result(SECITEM_AllocItem(nullptr, nullptr, 0));
   if (SEC_SignData(sign_result.get(),
                    reinterpret_cast<const unsigned char*>(data.data()),
                    data.size(), private_key.get(),
@@ -263,7 +263,7 @@ std::string EasyUnlockTpmKeyManager::GetPublicTpmKey(
   if (!local_state_)
     return std::string();
   const base::Value::Dict& dict =
-      local_state_->GetValueDict(prefs::kEasyUnlockLocalStateTpmKeys);
+      local_state_->GetDict(prefs::kEasyUnlockLocalStateTpmKeys);
   const std::string* key = dict.FindString(account_id.GetUserEmail());
   std::string decoded;
   base::Base64Decode(key ? *key : std::string(), &decoded);

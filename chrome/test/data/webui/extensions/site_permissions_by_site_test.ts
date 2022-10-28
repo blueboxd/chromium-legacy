@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -23,12 +23,12 @@ suite('SitePermissionsBySite', function() {
       numExtensions: 0,
       sites: [
         {
-          siteList: chrome.developerPrivate.UserSiteSet.PERMITTED,
+          siteSet: chrome.developerPrivate.SiteSet.USER_PERMITTED,
           numExtensions: 0,
           site: 'https://images.google.ca',
         },
         {
-          siteList: chrome.developerPrivate.UserSiteSet.RESTRICTED,
+          siteSet: chrome.developerPrivate.SiteSet.USER_RESTRICTED,
           numExtensions: 0,
           site: 'http://google.ca',
         },
@@ -38,7 +38,7 @@ suite('SitePermissionsBySite', function() {
       etldPlusOne: 'example.com',
       numExtensions: 0,
       sites: [{
-        siteList: chrome.developerPrivate.UserSiteSet.PERMITTED,
+        siteSet: chrome.developerPrivate.SiteSet.USER_PERMITTED,
         numExtensions: 0,
         site: 'http://example.com',
       }],
@@ -101,7 +101,7 @@ suite('SitePermissionsBySite', function() {
           etldPlusOne: 'random.com',
           numExtensions: 0,
           sites: [{
-            siteList: chrome.developerPrivate.UserSiteSet.RESTRICTED,
+            siteSet: chrome.developerPrivate.SiteSet.USER_RESTRICTED,
             numExtensions: 0,
             site: 'http://www.random.com',
           }],
@@ -128,6 +128,7 @@ suite('SitePermissionsBySite', function() {
           etldPlusOne: 'random.com',
           numExtensions: 1,
           sites: [{
+            siteSet: chrome.developerPrivate.SiteSet.EXTENSION_SPECIFIED,
             numExtensions: 1,
             site: 'http://www.random.com',
           }],

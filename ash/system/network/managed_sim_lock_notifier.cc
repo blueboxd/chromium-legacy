@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -76,7 +76,8 @@ void ManagedSimLockNotifier::OnGetDeviceStateList(
 
   // Remove Notification and reset |primary_iccid_| if no cellular device or
   // the cellular device is currently not enabled.
-  if (!cellular_device ||
+  if (!cellular_device || !cellular_device->sim_lock_status ||
+      !cellular_device->sim_infos ||
       cellular_device->device_state !=
           chromeos::network_config::mojom::DeviceStateType::kEnabled) {
     primary_iccid_.clear();

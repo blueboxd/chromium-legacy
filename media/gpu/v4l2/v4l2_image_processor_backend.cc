@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -205,7 +205,6 @@ v4l2_memory InputStorageTypeToV4L2Memory(VideoFrame::StorageType storage_type) {
     case VideoFrame::STORAGE_OWNED_MEMORY:
     case VideoFrame::STORAGE_UNOWNED_MEMORY:
     case VideoFrame::STORAGE_SHMEM:
-    case VideoFrame::STORAGE_MOJO_SHARED_BUFFER:
       return V4L2_MEMORY_USERPTR;
     case VideoFrame::STORAGE_DMABUFS:
     case VideoFrame::STORAGE_GPU_MEMORY_BUFFER:
@@ -921,16 +920,35 @@ bool V4L2ImageProcessorBackend::EnqueueInputRecord(
 
   switch (input_memory_type_) {
     case V4L2_MEMORY_USERPTR: {
+      VideoFrame& frame = *job_record->input_frame;
       const size_t num_planes = V4L2Device::GetNumPlanesOfV4L2PixFmt(
           input_config_.fourcc.ToV4L2PixFmt());
       std::vector<void*> user_ptrs(num_planes);
+      if (frame.storage_type() == VideoFrame::STORAGE_SHMEM) {
+        // TODO(b/243883312): This copies the video frame to a writable buffer
+        // since the USERPTR API requires writable permission. Remove this
+        // workaround once the unreasonable permission is fixed.
+        const size_t buffer_size = frame.shm_region()->GetSize();
+        std::vector<uint8_t> writable_buffer(buffer_size);
+        std::memcpy(writable_buffer.data(), frame.data(0), buffer_size);
+        for (size_t i = 0; i < num_planes; ++i) {
+          const std::intptr_t plane_offset =
+              reinterpret_cast<std::intptr_t>(frame.data(i)) -
+              reinterpret_cast<std::intptr_t>(frame.data(0));
+          user_ptrs[i] = writable_buffer.data() + plane_offset;
+        }
+        job_record->input_frame->AddDestructionObserver(base::BindOnce(
+            [](std::vector<uint8_t>) {}, std::move(writable_buffer)));
+      } else {
+        for (size_t i = 0; i < num_planes; ++i)
+          user_ptrs[i] = frame.writable_data(i);
+      }
+
       for (size_t i = 0; i < num_planes; ++i) {
         int bytes_used =
-            VideoFrame::PlaneSize(job_record->input_frame->format(), i,
-                                  input_config_.size)
+            VideoFrame::PlaneSize(frame.format(), i, input_config_.size)
                 .GetArea();
         buffer.SetPlaneBytesUsed(i, bytes_used);
-        user_ptrs[i] = job_record->input_frame->data(i);
       }
       std::move(buffer).QueueUserPtr(user_ptrs);
       break;

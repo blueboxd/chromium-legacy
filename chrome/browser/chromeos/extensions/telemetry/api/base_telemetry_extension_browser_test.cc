@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -85,11 +85,11 @@ std::string BaseTelemetryExtensionBrowserTest::public_key() const {
 }
 
 std::string BaseTelemetryExtensionBrowserTest::pwa_page_url() const {
-  return "http://www.google.com";
+  return "http://googlechromelabs.github.io";
 }
 
 std::string BaseTelemetryExtensionBrowserTest::matches_origin() const {
-  return "*://www.google.com/*";
+  return "*://googlechromelabs.github.io/*";
 }
 
 }  // namespace chromeos

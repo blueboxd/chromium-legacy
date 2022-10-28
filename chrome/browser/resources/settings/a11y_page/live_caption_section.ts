@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,7 +10,7 @@
  * other versions of Windows.
  */
 
-import '//resources/cr_elements/shared_style_css.m.js';
+import '//resources/cr_elements/cr_shared_style.css.js';
 import '../controls/settings_toggle_button.js';
 import '../settings_shared.css.js';
 

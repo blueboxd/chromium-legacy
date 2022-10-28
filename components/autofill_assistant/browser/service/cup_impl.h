@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -50,10 +50,16 @@ class CUPImpl : public CUP {
   client_update_protocol::Ecdsa& GetQuerySigner();
 
  private:
-  std::string PackGetActionsRequest(const std::string& original_request);
-
-  absl::optional<std::string> UnpackGetActionsResponse(
+  // ResponseProtoType can be any proto containing a CUPResponseData message
+  // called |cup_data|
+  template <class ResponseProtoType>
+  absl::optional<std::string> InternalUnpackResponse(
       const std::string& original_response);
+
+  // RequestProtoType can be any proto containing a CUPRequestData message
+  // called |cup_data|
+  template <class RequestProtoType>
+  std::string InternalPackAndSignRequest(const std::string& original_request);
 
   std::unique_ptr<client_update_protocol::Ecdsa> query_signer_;
   RpcType rpc_type_;

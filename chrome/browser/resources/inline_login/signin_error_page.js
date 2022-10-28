@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 /**
@@ -10,7 +10,9 @@
 import 'chrome://resources/cr_elements/cr_button/cr_button.js';
 import './account_manager_shared_css.js';
 
-import {html, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+
+import {getTemplate} from './signin_error_page.html.js';
 
 /** @polymer */
 export class SigninErrorPageElement extends PolymerElement {
@@ -19,7 +21,7 @@ export class SigninErrorPageElement extends PolymerElement {
   }
 
   static get template() {
-    return html`{__html_template__}`;
+    return getTemplate();
   }
 }
 

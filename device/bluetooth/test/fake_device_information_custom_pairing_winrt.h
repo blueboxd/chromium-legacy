@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -87,9 +87,9 @@ class FakeDeviceInformationCustomPairingWinrt
 
   ABI::Windows::Devices::Enumeration::DevicePairingKinds pairing_kind() const {
     return pairing_kind_;
-  };
+  }
 
-  const std::string& pin() const { return display_pin_; };
+  const std::string& pin() const { return display_pin_; }
 
   void SetConfirmed() { confirmed_ = true; }
 

@@ -23,6 +23,7 @@
 #include "ui/gfx/overlay_transform.h"
 #include "ui/ozone/platform/wayland/common/wayland_object.h"
 
+struct wp_content_type_v1;
 struct zwp_keyboard_shortcuts_inhibitor_v1;
 struct zwp_linux_buffer_release_v1;
 struct zcr_blending_v1;
@@ -38,7 +39,7 @@ class WaylandBufferHandle;
 class WaylandSurface {
  public:
   using ExplicitReleaseCallback =
-      base::RepeatingCallback<void(wl_buffer*, base::ScopedFD)>;
+      base::OnceCallback<void(wl_buffer*, base::ScopedFD)>;
 
   WaylandSurface(WaylandConnection* connection, WaylandWindow* ro_window);
   WaylandSurface(const WaylandSurface&) = delete;
@@ -62,12 +63,8 @@ class WaylandSurface {
     return entered_outputs_;
   }
 
-  bool has_explicit_release_callback() const {
-    return !explicit_release_callback_.is_null();
-  }
-  void set_explicit_release_callback(ExplicitReleaseCallback callback) {
-    explicit_release_callback_ = callback;
-  }
+  // Requests an explicit release for the next commit.
+  void RequestExplicitRelease(ExplicitReleaseCallback callback);
 
   // Returns an id that identifies the |wl_surface_|.
   uint32_t GetSurfaceId() const;
@@ -162,6 +159,9 @@ class WaylandSurface {
   // side.
   void SetBackgroundColor(absl::optional<SkColor4f> background_color);
 
+  // Sets whether this surface contains a video.
+  void SetContainsVideo(bool contains_video);
+
   // Validates the |pending_state_| and generates the corresponding requests.
   // Then copy |pending_states_| to |states_|.
   void ApplyPendingState();
@@ -186,7 +186,8 @@ class WaylandSurface {
   struct ExplicitReleaseInfo {
     ExplicitReleaseInfo(
         wl::Object<zwp_linux_buffer_release_v1>&& linux_buffer_release,
-        wl_buffer* buffer);
+        wl_buffer* buffer,
+        ExplicitReleaseCallback explicit_release_callback);
     ~ExplicitReleaseInfo();
 
     ExplicitReleaseInfo(const ExplicitReleaseInfo&) = delete;
@@ -198,12 +199,14 @@ class WaylandSurface {
     wl::Object<zwp_linux_buffer_release_v1> linux_buffer_release;
     // The buffer associated with this explicit release.
     raw_ptr<wl_buffer> buffer;
+    // The associated release callback with this request.
+    ExplicitReleaseCallback explicit_release_callback;
   };
 
   struct State {
     State();
     State(const State& other) = delete;
-    State& operator=(State& other);
+    State& operator=(const State& other);
     ~State();
 
     std::vector<gfx::Rect> damage_px;
@@ -254,6 +257,9 @@ class WaylandSurface {
     // can be used by Wayland compositor to correctly display delegated textures
     // which require background color applied.
     absl::optional<SkColor4f> background_color;
+
+    // Whether or not this surface contains video, for wp_content_type_v1.
+    bool contains_video = false;
   };
 
   // Tracks the last sent src and dst values across wayland protocol s.t. we
@@ -293,9 +299,10 @@ class WaylandSurface {
   wl::Object<zwp_linux_surface_synchronization_v1> surface_sync_;
   wl::Object<overlay_prioritized_surface> overlay_priority_surface_;
   wl::Object<augmented_surface> augmented_surface_;
+  wl::Object<wp_content_type_v1> content_type_;
   base::flat_map<zwp_linux_buffer_release_v1*, ExplicitReleaseInfo>
       linux_buffer_releases_;
-  ExplicitReleaseCallback explicit_release_callback_;
+  ExplicitReleaseCallback next_explicit_release_request_;
 
   // For top level window, stores outputs that the window is currently rendered
   // at.

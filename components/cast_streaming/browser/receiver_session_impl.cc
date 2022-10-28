@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -141,6 +141,15 @@ void ReceiverSessionImpl::OnVideoBufferReceived(
   DVLOG(3) << __func__;
   DCHECK(video_demuxer_stream_data_provider_);
   video_demuxer_stream_data_provider_->ProvideBuffer(std::move(buffer));
+}
+
+void ReceiverSessionImpl::OnSessionReinitializationPending() {
+  if (audio_demuxer_stream_data_provider_) {
+    audio_demuxer_stream_data_provider_->WaitForNewStreamInfo();
+  }
+  if (video_demuxer_stream_data_provider_) {
+    video_demuxer_stream_data_provider_->WaitForNewStreamInfo();
+  }
 }
 
 void ReceiverSessionImpl::OnSessionReinitialization(

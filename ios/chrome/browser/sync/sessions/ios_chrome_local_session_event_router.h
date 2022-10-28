@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -97,7 +97,7 @@ class IOSChromeLocalSessionEventRouter
   // Called when a tab is parented.
   void OnTabParented(web::WebState* web_state);
 
-  // Called on observation of a change in |web_state|.
+  // Called on observation of a change in `web_state`.
   void OnWebStateChange(web::WebState* web_state);
 
   sync_sessions::LocalSessionEventHandler* handler_;

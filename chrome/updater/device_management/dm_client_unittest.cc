@@ -1,12 +1,10 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome/updater/device_management/dm_client.h"
 
-#include <stdint.h>
-
-#include <algorithm>
+#include <cstdint>
 #include <memory>
 #include <string>
 #include <utility>
@@ -25,7 +23,6 @@
 #include "chrome/updater/device_management/dm_policy_builder_for_testing.h"
 #include "chrome/updater/device_management/dm_response_validator.h"
 #include "chrome/updater/device_management/dm_storage.h"
-#include "chrome/updater/policy/manager.h"
 #include "chrome/updater/policy/service.h"
 #include "chrome/updater/protos/omaha_settings.pb.h"
 #include "chrome/updater/unittest_util.h"
@@ -50,7 +47,6 @@
 using base::test::RunClosure;
 
 namespace updater {
-
 namespace {
 
 class TestTokenService : public TokenServiceInterface {
@@ -62,6 +58,8 @@ class TestTokenService : public TokenServiceInterface {
 
   // Overrides for TokenServiceInterface.
   std::string GetDeviceID() const override { return "test-device-id"; }
+
+  bool IsEnrollmentMandatory() const override { return false; }
 
   bool StoreEnrollmentToken(const std::string& enrollment_token) override {
     enrollment_token_ = enrollment_token;
@@ -110,16 +108,10 @@ class TestConfigurator : public DMClient::Configurator {
   const std::string server_url_;
 };
 
-// A policy service with default values.
-scoped_refptr<PolicyService> CreateTestPolicyService() {
-  PolicyService::PolicyManagerVector managers;
-  managers.push_back(GetDefaultValuesPolicyManager());
-  return base::MakeRefCounted<PolicyService>(std::move(managers));
-}
-
 TestConfigurator::TestConfigurator(const GURL& url)
     : network_fetcher_factory_(base::MakeRefCounted<NetworkFetcherFactory>(
-          CreateTestPolicyService())),
+          PolicyServiceProxyConfiguration::Get(
+              test::CreateTestPolicyService()))),
       server_url_(url.spec()) {}
 
 class DMRequestCallbackHandler

@@ -1,4 +1,4 @@
-# Copyright 2021 The Chromium Authors. All rights reserved.
+# Copyright 2021 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 """Definitions of builders in the chromium.packager builder group."""
@@ -233,6 +233,10 @@ ci.builder(
                 "cipd_yaml": "third_party/android_sdk/cipd/system_images/android-30/google_apis_playstore/x86.yaml",
             },
             # use x86_64 since sdkmanager don't ship x86 for android-31 and above.
+            {
+                "sdk_package_name": "system-images;android-31;google_apis;arm64-v8a",
+                "cipd_yaml": "third_party/android_sdk/cipd/system_images/android-31/google_apis/arm64.yaml",
+            },
             {
                 "sdk_package_name": "system-images;android-31;google_apis;x86_64",
                 "cipd_yaml": "third_party/android_sdk/cipd/system_images/android-31/google_apis/x86_64.yaml",

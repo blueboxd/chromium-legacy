@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -145,22 +145,21 @@ void AppendDeviceState(
   properties->type = private_api::ParseNetworkType(type);
   properties->state = state;
   if (device && state == private_api::DEVICE_STATE_TYPE_ENABLED)
-    properties->scanning = std::make_unique<bool>(device->scanning());
+    properties->scanning = device->scanning();
   if (device && type == ::onc::network_config::kCellular) {
     bool sim_present = !device->IsSimAbsent();
-    properties->sim_present = std::make_unique<bool>(sim_present);
+    properties->sim_present = sim_present;
     if (sim_present) {
       auto sim_lock_status = std::make_unique<private_api::SIMLockStatus>();
       sim_lock_status->lock_enabled = device->sim_lock_enabled();
       sim_lock_status->lock_type = device->sim_lock_type();
-      sim_lock_status->retries_left =
-          std::make_unique<int>(device->sim_retries_left());
+      sim_lock_status->retries_left = device->sim_retries_left();
       properties->sim_lock_status = std::move(sim_lock_status);
     }
   }
   if (device && type == ::onc::network_config::kWiFi) {
-    properties->managed_network_available = std::make_unique<bool>(
-        GetStateHandler()->GetAvailableManagedWifiNetwork());
+    properties->managed_network_available =
+        GetStateHandler()->GetAvailableManagedWifiNetwork();
   }
   device_state_list->push_back(std::move(properties));
 }
@@ -227,9 +226,9 @@ private_api::Certificate GetCertDictionary(
   api_cert.hardware_backed = cert.hardware_backed;
   api_cert.device_wide = cert.device_wide;
   if (!cert.pem.empty())
-    api_cert.pem = std::make_unique<std::string>(cert.pem);
+    api_cert.pem = cert.pem;
   if (!cert.pkcs11_id.empty())
-    api_cert.pkcs11_id = std::make_unique<std::string>(cert.pkcs11_id);
+    api_cert.pkcs11_id = cert.pkcs11_id;
   return api_cert;
 }
 
@@ -752,7 +751,8 @@ void NetworkingPrivateChromeOS::GetCertificateLists(
           ->client_certificates();
   for (const auto& cert : user_certs)
     result.user_certificates.push_back(GetCertDictionary(cert));
-  std::move(callback).Run(result.ToValue());
+  std::move(callback).Run(
+      base::Value::ToUniquePtrValue(base::Value(result.ToValue())));
 }
 
 void NetworkingPrivateChromeOS::EnableNetworkType(const std::string& type,

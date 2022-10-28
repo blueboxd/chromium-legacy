@@ -1,12 +1,12 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #import "ios/chrome/browser/download/vcard_tab_helper.h"
 
 #import "base/files/file_path.h"
-#include "base/strings/sys_string_conversions.h"
-#include "ios/chrome/browser/download/mime_type_util.h"
+#import "base/strings/sys_string_conversions.h"
+#import "ios/chrome/browser/download/mime_type_util.h"
 #import "ios/chrome/browser/download/vcard_tab_helper_delegate.h"
 #import "ios/web/public/download/download_task.h"
 #import "net/base/mac/url_conversions.h"

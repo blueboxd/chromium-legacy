@@ -19,6 +19,7 @@
 #include "services/network/public/mojom/cross_origin_embedder_policy.mojom-forward.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/service_worker/service_worker_status_code.h"
+#include "third_party/blink/public/mojom/service_worker/service_worker_ancestor_frame_type.mojom.h"
 
 class GURL;
 
@@ -79,6 +80,7 @@ class CONTENT_EXPORT ServiceWorkerProcessManager {
       const GURL& script_url,
       network::mojom::CrossOriginEmbedderPolicyValue coep_value,
       bool can_use_existing_process,
+      blink::mojom::AncestorFrameType ancestor_frame_type,
       AllocatedProcessInfo* out_info);
 
   // Drops a reference to a process that was running a Service Worker, and its
@@ -132,7 +134,7 @@ class CONTENT_EXPORT ServiceWorkerProcessManager {
   // All fields below are only accessed on the UI thread.
 
   // May be null during initialization and in unit tests.
-  raw_ptr<StoragePartitionImpl, DanglingUntriaged> storage_partition_;
+  raw_ptr<StoragePartitionImpl> storage_partition_;
 
   // Maps the ID of a running EmbeddedWorkerInstance to the SiteInstance whose
   // renderer process it's running inside. Since the embedded workers themselves

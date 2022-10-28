@@ -1,4 +1,4 @@
-# Copyright 2019 The Chromium Authors. All rights reserved.
+# Copyright 2019 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 """
@@ -68,6 +68,12 @@ def write_file(path, contents):
 def read_file(path):
     with open(path, 'r') as f:
         return f.read()
+
+
+def zip(out, path):
+    shutil.move(
+        shutil.make_archive('{}.zip.tmp'.format(os.path.basename(out)), 'zip',
+                            path), out)
 
 
 def set_executable(path):

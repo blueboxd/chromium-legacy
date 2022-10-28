@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -74,7 +74,9 @@ ENUM(InstallReason,
      kDefault,  // Preinstalled by default, but is not considered a system app.
      kSync,     // Installed by sync.
      kUser,     // Installed by user action.
-     kSubApp    // Installed by the SubApp API call.
+     kSubApp,   // Installed by the SubApp API call.
+     kKiosk,    // Installed by Kiosk on Chrome OS.
+     kCommandLine  // Installed by command line argument.
 )
 
 // Where the app was installed from.

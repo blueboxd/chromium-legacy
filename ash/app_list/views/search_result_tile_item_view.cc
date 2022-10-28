@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -21,6 +21,7 @@
 #include "ash/public/cpp/ash_typography.h"
 #include "ash/public/cpp/pagination/pagination_model.h"
 #include "ash/strings/grit/ash_strings.h"
+#include "ash/style/ash_color_id.h"
 #include "base/bind.h"
 #include "base/i18n/number_formatting.h"
 #include "base/metrics/histogram_macros.h"
@@ -30,12 +31,12 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/image_model.h"
 #include "ui/base/themed_vector_icon.h"
+#include "ui/chromeos/styles/cros_styles.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/image/image_skia_operations.h"
 #include "ui/gfx/paint_vector_icon.h"
-#include "ui/views/accessibility/accessibility_paint_checks.h"
 #include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/background.h"
 #include "ui/views/controls/image_view.h"
@@ -86,10 +87,6 @@ SearchResultTileItemView::SearchResultTileItemView(
   SetCallback(base::BindRepeating(&SearchResultTileItemView::OnButtonPressed,
                                   base::Unretained(this)));
   SetFocusBehavior(FocusBehavior::ALWAYS);
-  // TODO(crbug.com/1218186): Remove this, this is in place temporarily to be
-  // able to submit accessibility checks, but this focusable View needs to
-  // add a name so that the screen reader knows what to announce.
-  SetProperty(views::kSkipAccessibilityPaintChecks, true);
 
   // When |result_| is null, the tile is invisible. Calling SetSearchResult with
   // a non-null item makes the tile visible.
@@ -108,18 +105,14 @@ SearchResultTileItemView::SearchResultTileItemView(
   badge_->SetVisible(false);
 
   title_ = AddChildView(std::make_unique<views::Label>());
+  title_->SetEnabledColorId(cros_tokens::kTextColorSecondary);
   title_->SetAutoColorReadabilityEnabled(false);
-  title_->SetEnabledColor(AppListColorProvider::Get()->GetSearchBoxTextColor(
-      /*default_color*/ SK_ColorWHITE));
   title_->SetLineHeight(kTileTextLineHeight);
   title_->SetHorizontalAlignment(gfx::ALIGN_CENTER);
   title_->SetHandlesTooltips(false);
   title_->SetAllowCharacterBreak(true);
 
   rating_ = AddChildView(std::make_unique<views::Label>());
-  rating_->SetEnabledColor(
-      AppListColorProvider::Get()->GetSearchBoxSecondaryTextColor(
-          /*default_color*/ gfx::kGoogleGrey700));
   rating_->SetLineHeight(kTileTextLineHeight);
   rating_->SetHorizontalAlignment(gfx::ALIGN_RIGHT);
   rating_->SetVisible(false);
@@ -127,16 +120,10 @@ SearchResultTileItemView::SearchResultTileItemView(
   rating_star_ = AddChildView(std::make_unique<views::ImageView>());
   rating_star_->SetCanProcessEventsWithinSubtree(false);
   rating_star_->SetVerticalAlignment(views::ImageView::Alignment::kLeading);
-  rating_star_->SetImage(gfx::CreateVectorIcon(
-      kBadgeRatingIcon, kSearchRatingStarSize,
-      AppListColorProvider::Get()->GetSearchBoxSecondaryTextColor(
-          gfx::kGoogleGrey700)));
   rating_star_->SetVisible(false);
 
   price_ = AddChildView(std::make_unique<views::Label>());
-  price_->SetEnabledColor(
-      AppListColorProvider::Get()->GetSearchBoxSecondaryTextColor(
-          /*default_color*/ gfx::kGoogleGreen600));
+  price_->SetEnabledColorId(cros_tokens::kTextColorSecondary);
   price_->SetLineHeight(kTileTextLineHeight);
   price_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   price_->SetVisible(false);
@@ -191,9 +178,7 @@ void SearchResultTileItemView::OnResultChanged() {
   } else {
     title_->SetFontList(font);
   }
-  title_->SetEnabledColor(AppListColorProvider::Get()->GetSearchBoxTextColor(
-      /*default_color*/ gfx::kGoogleGrey900));
-
+  title_->SetEnabledColorId(cros_tokens::kTextColorPrimary);
   title_->SetMaxLines(2);
   title_->SetMultiLine(
       (result()->display_type() == SearchResultDisplayType::kTile ||
@@ -263,11 +248,19 @@ void SearchResultTileItemView::PaintButtonContents(gfx::Canvas* canvas) {
   flags.setAntiAlias(true);
   flags.setStyle(cc::PaintFlags::kStroke_Style);
   flags.setStrokeWidth(kSelectionRingWidth);
-  flags.setColor(AppListColorProvider::Get()->GetFocusRingColor());
+  flags.setColor(AppListColorProvider::Get()->GetFocusRingColor(GetWidget()));
 
   gfx::RectF selection_ring = GetSelectionRingBounds();
   selection_ring.Inset(gfx::InsetsF::VH(kSelectionRingWidth / 2.0, 0));
   canvas->DrawRoundRect(selection_ring, kIconSelectedCornerRadius, flags);
+}
+
+void SearchResultTileItemView::OnThemeChanged() {
+  SearchResultBaseView::OnThemeChanged();
+  rating_star_->SetImage(gfx::CreateVectorIcon(
+      kBadgeRatingIcon, kSearchRatingStarSize,
+      AppListColorProvider::Get()->GetSearchBoxSecondaryTextColor(
+          gfx::kGoogleGrey700, GetWidget())));
 }
 
 gfx::RectF SearchResultTileItemView::GetSelectionRingBounds() const {

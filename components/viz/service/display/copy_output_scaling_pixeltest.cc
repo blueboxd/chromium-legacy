@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -177,7 +177,6 @@ class CopyOutputScalingPixelTest
       request->set_result_task_runner(base::SequencedTaskRunnerHandle::Get());
       list.back()->copy_requests.push_back(std::move(request));
 
-      renderer()->DecideRenderPassAllocationsForFrame(list);
       SurfaceDamageRectList surface_damage_rect_list;
       renderer()->DrawFrame(&list, 1.0f, viewport_size,
                             gfx::DisplayColorSpaces(),

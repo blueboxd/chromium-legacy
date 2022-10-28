@@ -1,4 +1,4 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,7 +8,6 @@
 
 #include <memory>
 
-#include "ash/components/login/auth/fake_extended_authenticator.h"
 #include "ash/constants/ash_features.h"
 #include "ash/constants/ash_pref_names.h"
 #include "ash/services/device_sync/public/cpp/fake_device_sync_client.h"
@@ -45,6 +44,7 @@
 #include "chromeos/ash/components/cryptohome/system_salt_getter.h"
 #include "chromeos/ash/components/dbus/userdataauth/fake_cryptohome_misc_client.h"
 #include "chromeos/ash/components/dbus/userdataauth/fake_userdataauth_client.h"
+#include "chromeos/ash/components/login/auth/fake_extended_authenticator.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/testing_pref_service.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
@@ -332,7 +332,7 @@ class QuickUnlockPrivateUnitTest
     QuickUnlockModeList modes;
 
     EXPECT_TRUE(result->is_list());
-    for (const base::Value& value : result->GetListDeprecated()) {
+    for (const base::Value& value : result->GetList()) {
       EXPECT_TRUE(value.is_string());
       modes.push_back(
           quick_unlock_private::ParseQuickUnlockMode(value.GetString()));
@@ -350,7 +350,7 @@ class QuickUnlockPrivateUnitTest
     QuickUnlockModeList modes;
 
     EXPECT_TRUE(result->is_list());
-    for (const base::Value& value : result->GetListDeprecated()) {
+    for (const base::Value& value : result->GetList()) {
       EXPECT_TRUE(value.is_string());
       modes.push_back(
           quick_unlock_private::ParseQuickUnlockMode(value.GetString()));

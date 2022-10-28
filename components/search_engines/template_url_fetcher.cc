@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "base/ranges/algorithm.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
@@ -276,10 +277,8 @@ void TemplateURLFetcher::ScheduleDownload(
 }
 
 void TemplateURLFetcher::RequestCompleted(RequestDelegate* request) {
-  auto i = std::find_if(requests_.begin(), requests_.end(),
-                        [request](const std::unique_ptr<RequestDelegate>& ptr) {
-                          return ptr.get() == request;
-                        });
+  auto i = base::ranges::find(requests_, request,
+                              &std::unique_ptr<RequestDelegate>::get);
   DCHECK(i != requests_.end());
   requests_.erase(i);
 }

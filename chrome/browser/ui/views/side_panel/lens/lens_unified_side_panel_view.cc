@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,15 +8,20 @@
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/search/search.h"
+#include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/color/chrome_color_id.h"
 #include "chrome/browser/ui/lens/lens_side_panel_helper.h"
+#include "chrome/browser/ui/lens/lens_side_panel_navigation_helper.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/side_panel/side_panel_coordinator.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/lens/lens_features.h"
+#include "components/search_engines/template_url.h"
+#include "components/search_engines/template_url_service.h"
 #include "components/strings/grit/components_strings.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/web_contents.h"
@@ -78,24 +83,63 @@ LensUnifiedSidePanelView::LensUnifiedSidePanelView(BrowserView* browser_view) {
   if (lens::features::GetEnableLensSidePanelFooter())
     CreateAndInstallFooter();
 
-  SetContentVisible(false);
+  SetContentAndNewTabButtonVisible(/* visible= */ false,
+                                   /* enable_new_tab_button= */ false);
   auto* web_contents = web_view_->GetWebContents();
   web_contents->SetDelegate(this);
   Observe(web_contents);
+
+  // Setup NavigationThrottler to stop navigation outside of current domain
+  TemplateURLService* service =
+      TemplateURLServiceFactory::GetForProfile(browser_view->GetProfile());
+  const TemplateURL* const provider = service->GetDefaultSearchProvider();
+  bool is_lens_enabled =
+      base::FeatureList::IsEnabled(lens::features::kLensStandalone) &&
+      search::DefaultSearchProviderIsGoogle(browser_view->GetProfile());
+  lens::LensSidePanelNavigationHelper::CreateForWebContents(
+      web_contents, browser_view->browser(),
+      is_lens_enabled ? lens::features::GetHomepageURLForLens()
+                      : provider->image_url());
 }
 
 content::WebContents* LensUnifiedSidePanelView::GetWebContents() {
   return web_view_->GetWebContents();
 }
 
+TemplateURLService* LensUnifiedSidePanelView::GetTemplateURLService() {
+  auto* web_contents = web_view_->GetWebContents();
+  DCHECK(web_contents);
+  Profile* profile =
+      Profile::FromBrowserContext(web_contents->GetBrowserContext());
+  DCHECK(profile);
+  TemplateURLService* template_url_service =
+      TemplateURLServiceFactory::GetForProfile(profile);
+  DCHECK(template_url_service);
+  return template_url_service;
+}
+
+bool LensUnifiedSidePanelView::IsDefaultSearchProviderGoogle() {
+  auto* web_contents = web_view_->GetWebContents();
+  DCHECK(web_contents);
+  Profile* profile =
+      Profile::FromBrowserContext(web_contents->GetBrowserContext());
+  DCHECK(profile);
+  return search::DefaultSearchProviderIsGoogle(profile);
+}
+
 void LensUnifiedSidePanelView::LoadResultsInNewTab() {
-  const GURL url = lens::CreateURLForNewTab(
-      web_view_->GetWebContents()->GetLastCommittedURL());
+  const GURL last_committed_url =
+      web_view_->GetWebContents()->GetLastCommittedURL();
+  const GURL url = IsDefaultSearchProviderGoogle()
+                       ? lens::CreateURLForNewTab(last_committed_url)
+                       : last_committed_url;
   // If there is no payload parameter, we will have an empty URL. This means
   // we should return on empty and not close the side panel.
   if (url.is_empty())
     return;
-  content::OpenURLParams params(url, content::Referrer(),
+  const GURL modified_url =
+      GetTemplateURLService()->RemoveSideImageSearchParamFromURL(url);
+  content::OpenURLParams params(modified_url, content::Referrer(),
                                 WindowOpenDisposition::NEW_FOREGROUND_TAB,
                                 ui::PAGE_TRANSITION_TYPED,
                                 /*is_renderer_initiated=*/false);
@@ -105,13 +149,39 @@ void LensUnifiedSidePanelView::LoadResultsInNewTab() {
   browser_view_->side_panel_coordinator()->Close();
 }
 
-void LensUnifiedSidePanelView::LoadProgressChanged(double progress) {
-  bool is_content_visible = progress == 1.0;
-  SetContentVisible(is_content_visible);
-  if (launch_button_ != nullptr && is_content_visible) {
-    auto last_committed_url =
-        web_view_->GetWebContents()->GetLastCommittedURL();
-    launch_button_->SetEnabled(lens::IsValidLensResultUrl(last_committed_url));
+void LensUnifiedSidePanelView::DocumentOnLoadCompletedInPrimaryMainFrame() {
+  auto last_committed_url = web_view_->GetWebContents()->GetLastCommittedURL();
+
+  if (!IsDefaultSearchProviderGoogle()) {
+    SetContentAndNewTabButtonVisible(/* visible= */ true,
+                                     /* enable_new_tab_button= */ true);
+    return;
+  }
+
+  // Since Lens Web redirects to the actual UI using HTML redirection, this
+  // method gets fired twice. This check ensures we only show the user the
+  // rendered page and not the redirect. It also ensures we immediately render
+  // any page that is not lens.google.com
+  // TODO(243935799): Cleanup this check once Lens Web no longer redirects
+  if (lens::ShouldPageBeVisible(last_committed_url))
+    SetContentAndNewTabButtonVisible(
+        /* visible= */ true,
+        /* enable_new_tab_button= */ lens::IsValidLensResultUrl(
+            last_committed_url));
+}
+
+// Catches case where Chrome errors. I.e. no internet connection
+// TODO(243935799): Cleanup this listener once Lens Web no longer redirects
+void LensUnifiedSidePanelView::PrimaryPageChanged(content::Page& page) {
+  auto last_committed_url = web_view_->GetWebContents()->GetLastCommittedURL();
+
+  if (page.GetMainDocument().IsErrorDocument()) {
+    bool enable_new_tab_button =
+        IsDefaultSearchProviderGoogle()
+            ? lens::IsValidLensResultUrl(last_committed_url)
+            : true;
+    SetContentAndNewTabButtonVisible(/* visible= */ true,
+                                     enable_new_tab_button);
   }
 }
 
@@ -128,6 +198,8 @@ bool LensUnifiedSidePanelView::HandleContextMenu(
 
 void LensUnifiedSidePanelView::OpenUrl(const content::OpenURLParams& params) {
   side_panel_url_params_ = std::make_unique<content::OpenURLParams>(params);
+  SetContentAndNewTabButtonVisible(/* visible= */ false,
+                                   /* enable_new_tab_button= */ false);
   MaybeLoadURLWithParams();
 }
 
@@ -232,9 +304,14 @@ void LensUnifiedSidePanelView::OnBoundsChanged(
   MaybeLoadURLWithParams();
 }
 
-void LensUnifiedSidePanelView::SetContentVisible(bool visible) {
+void LensUnifiedSidePanelView::SetContentAndNewTabButtonVisible(
+    bool visible,
+    bool enable_new_tab_button) {
   web_view_->SetVisible(visible);
   loading_indicator_web_view_->SetVisible(!visible);
+
+  if (launch_button_ != nullptr)
+    launch_button_->SetEnabled(enable_new_tab_button);
 }
 
 LensUnifiedSidePanelView::~LensUnifiedSidePanelView() = default;

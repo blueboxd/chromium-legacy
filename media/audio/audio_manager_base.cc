@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -632,6 +632,11 @@ AudioManagerBase::CreateAudioDebugRecordingManager(
 AudioDebugRecordingManager* AudioManagerBase::GetAudioDebugRecordingManager() {
   DCHECK(GetTaskRunner()->BelongsToCurrentThread());
   return debug_recording_manager_.get();
+}
+
+void AudioManagerBase::SetAecDumpRecordingManager(
+    base::WeakPtr<AecdumpRecordingManager>) {
+  // This is no-op by default.
 }
 
 }  // namespace media

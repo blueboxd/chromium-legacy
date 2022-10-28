@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -75,8 +75,9 @@ class MockAutofillPopupController : public autofill::AutofillPopupController {
     return std::u16string();
   }
 
-  const std::u16string& GetSuggestionLabelAt(int row) const override {
-    return suggestions_.at(row).label;
+  std::vector<std::vector<autofill::Suggestion::Text>> GetSuggestionLabelsAt(
+      int row) const override {
+    return suggestions_[row].labels;
   }
 
   MOCK_METHOD3(GetRemovalConfirmationText,

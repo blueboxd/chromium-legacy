@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -24,7 +24,7 @@
 #include "components/gcm_driver/instance_id/instance_id_driver.h"
 #include "components/prefs/pref_registry.h"
 #include "components/prefs/pref_service_factory.h"
-#include "components/sync/driver/test_sync_service.h"
+#include "components/sync/test/test_sync_service.h"
 #include "components/sync_device_info/device_info.h"
 #include "components/sync_device_info/fake_device_info_sync_service.h"
 #include "components/sync_preferences/pref_service_mock_factory.h"
@@ -150,7 +150,7 @@ class SharingDeviceRegistrationTest : public testing::Test {
     return factory.Create(registry);
   }
 
-  void SetUp() {
+  void SetUp() override {
     ON_CALL(mock_instance_id_driver_, GetInstanceID(testing::_))
         .WillByDefault(testing::Return(&fake_instance_id_));
   }

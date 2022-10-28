@@ -1,4 +1,4 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -37,9 +37,11 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) CertificateImporter {
   // equal to true if all certificates were imported successfully.
   // Never calls |done_callback| after this importer is destructed.
   virtual void ImportAllCertificatesUserInitiated(
-      const std::vector<OncParsedCertificates::ServerOrAuthorityCertificate>&
+      const std::vector<
+          chromeos::onc::OncParsedCertificates::ServerOrAuthorityCertificate>&
           server_or_authority_certificates,
-      const std::vector<OncParsedCertificates::ClientCertificate>&
+      const std::vector<
+          chromeos::onc::OncParsedCertificates::ClientCertificate>&
           client_certificates,
       DoneCallback done_callback) = 0;
 
@@ -48,7 +50,8 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) CertificateImporter {
   // equal to true if all certificates were imported successfully.
   // Never calls |done_callback| after this importer is destructed.
   virtual void ImportClientCertificates(
-      const std::vector<OncParsedCertificates::ClientCertificate>&
+      const std::vector<
+          chromeos::onc::OncParsedCertificates::ClientCertificate>&
           client_certificates,
       DoneCallback done_callback) = 0;
 };

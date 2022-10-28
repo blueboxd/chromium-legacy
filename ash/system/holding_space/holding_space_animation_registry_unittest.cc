@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -92,6 +92,13 @@ class HoldingSpaceAnimationRegistryTest : public AshTestBase {
     GetSessionControllerClient()->SwitchActiveUser(user_account);
   }
 
+  void EnableTrayIconPreviews() {
+    AccountId account_id = AccountId::FromUserEmail(kTestUser);
+    auto* prefs = GetSessionControllerClient()->GetUserPrefService(account_id);
+    ASSERT_TRUE(prefs);
+    holding_space_prefs::SetPreviewsEnabled(prefs, true);
+  }
+
   HoldingSpaceController* controller() { return HoldingSpaceController::Get(); }
 
   testing::NiceMock<MockHoldingSpaceClient>* client() {
@@ -117,6 +124,7 @@ TEST_F(HoldingSpaceAnimationRegistryTest, ProgressIndicatorAnimations) {
   using Type = ProgressRingAnimation::Type;
 
   StartSession();
+  EnableTrayIconPreviews();
 
   // Verify initial animation `registry()` state.
   ExpectProgressIconAnimationExistsForKey(controller(), false);

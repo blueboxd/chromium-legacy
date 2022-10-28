@@ -18,6 +18,7 @@
 #include "ui/lottie/animation.h"
 #include "ui/views/paint_info.h"
 #include "ui/views/test/views_test_base.h"
+#include "ui/views/test/views_test_utils.h"
 #include "ui/views/widget/widget.h"
 
 namespace views {
@@ -29,13 +30,13 @@ using ::testing::NotNull;
 template <typename T>
 const T* FindPaintOp(const cc::PaintOpBuffer& paint_op_buffer,
                      cc::PaintOpType paint_op_type) {
-  for (const cc::PaintOp* op : cc::PaintOpBuffer::Iterator(&paint_op_buffer)) {
-    if (op->GetType() == paint_op_type)
-      return static_cast<const T*>(op);
+  for (const cc::PaintOp& op : cc::PaintOpBuffer::Iterator(&paint_op_buffer)) {
+    if (op.GetType() == paint_op_type)
+      return static_cast<const T*>(&op);
 
-    if (op->GetType() == cc::PaintOpType::DrawRecord) {
+    if (op.GetType() == cc::PaintOpType::DrawRecord) {
       const T* record_op_result = FindPaintOp<T>(
-          *static_cast<const cc::DrawRecordOp*>(op)->record, paint_op_type);
+          *static_cast<const cc::DrawRecordOp&>(op).record, paint_op_type);
       if (record_op_result)
         return static_cast<const T*>(record_op_result);
     }
@@ -95,7 +96,7 @@ TEST_F(AnimatedImageViewTest, PaintsWithAdditionalTranslation) {
   view_->SetAnimatedImage(CreateAnimationWithSize(gfx::Size(80, 80)));
   view_->SetVerticalAlignment(ImageViewBase::Alignment::kCenter);
   view_->SetHorizontalAlignment(ImageViewBase::Alignment::kCenter);
-  RunScheduledLayout(view_);
+  views::test::RunScheduledLayout(view_);
   view_->Play();
 
   static constexpr float kExpectedDefaultOrigin =

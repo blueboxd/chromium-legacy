@@ -1,4 +1,4 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -43,6 +43,19 @@ struct WaitInterval {
 
   BlockingMode mode;
   base::TimeDelta length;
+};
+
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
+enum class PendingInvalidationStatus {
+  kAcknowledged = 0,
+  kLost = 1,
+  kInvalidationsOverflow = 2,
+  // kSameVersion = 3,
+  // Invalidation list already has another invalidation with the same version.
+  kSameKnownVersion = 4,
+  kSameUnknownVersion = 5,
+  kMaxValue = kSameUnknownVersion,
 };
 
 // A class to track the per-type scheduling data.
@@ -124,7 +137,7 @@ class DataTypeTracker {
   // Fills some type-specific contents of a GetUpdates request protobuf.  These
   // messages provide the server with the information it needs to decide how to
   // handle a request.
-  void FillGetUpdatesTriggersMessage(sync_pb::GetUpdateTriggers* msg) const;
+  void FillGetUpdatesTriggersMessage(sync_pb::GetUpdateTriggers* msg);
 
   // Returns true if the type is currently throttled or backed off.
   bool IsBlocked() const;
@@ -174,6 +187,22 @@ class DataTypeTracker {
       absl::optional<base::TimeDelta> depleted_quota_nudge_delay);
 
  private:
+  struct PendingInvalidation {
+    PendingInvalidation();
+    PendingInvalidation(const PendingInvalidation&) = delete;
+    PendingInvalidation& operator=(const PendingInvalidation&) = delete;
+    PendingInvalidation(PendingInvalidation&&);
+    PendingInvalidation& operator=(PendingInvalidation&&);
+    PendingInvalidation(std::unique_ptr<SyncInvalidation> invalidation,
+                        bool is_processed);
+    ~PendingInvalidation();
+
+    std::unique_ptr<SyncInvalidation> pending_invalidation;
+    // is_processed is true, if the invalidation included to GetUpdates message
+    // trigger.
+    bool is_processed = false;
+  };
+
   friend class SyncSchedulerImplTest;
 
   const ModelType type_;
@@ -191,7 +220,7 @@ class DataTypeTracker {
   // drop_tracker_.IsRecoveringFromDropEvent() and server_payload_overflow_.
   //
   // This list takes ownership of its contents.
-  std::vector<std::unique_ptr<SyncInvalidation>> pending_invalidations_;
+  std::vector<PendingInvalidation> pending_invalidations_;
 
   size_t payload_buffer_size_;
 

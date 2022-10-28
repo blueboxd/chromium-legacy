@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -25,7 +25,7 @@ const base::TimeDelta kThreeFourthIdleDuration =
 class MockDetectorObserver : public ChromeVoxHintDetector::Observer {
  public:
   MockDetectorObserver() = default;
-  virtual ~MockDetectorObserver() = default;
+  ~MockDetectorObserver() override = default;
 
   MOCK_METHOD(void, OnShouldGiveChromeVoxHint, (), (override));
 };

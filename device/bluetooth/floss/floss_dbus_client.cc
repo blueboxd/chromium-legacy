@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 #include "device/bluetooth/floss/floss_dbus_client.h"
@@ -9,6 +9,7 @@
 #include "base/strings/stringprintf.h"
 #include "dbus/message.h"
 #include "device/bluetooth/floss/floss_adapter_client.h"
+#include "device/bluetooth/floss/floss_lescan_client.h"
 
 namespace floss {
 
@@ -19,9 +20,11 @@ int kDBusTimeoutMs = 2000;
 const char kAdapterService[] = "org.chromium.bluetooth";
 const char kManagerService[] = "org.chromium.bluetooth.Manager";
 const char kAdapterInterface[] = "org.chromium.bluetooth.Bluetooth";
+const char kGattInterface[] = "org.chromium.bluetooth.BluetoothGatt";
 const char kManagerInterface[] = "org.chromium.bluetooth.Manager";
 const char kManagerObject[] = "/org/chromium/bluetooth/Manager";
 const char kAdapterObjectFormat[] = "/org/chromium/bluetooth/hci%d/adapter";
+const char kGattObjectFormat[] = "/org/chromium/bluetooth/hci%d/gatt";
 
 const char kSocketManagerInterface[] = "org.chromium.bluetooth.SocketManager";
 
@@ -45,10 +48,17 @@ const char kConnectAllEnabledProfiles[] = "ConnectAllEnabledProfiles";
 const char kDisconnectAllEnabledProfiles[] = "DisconnectAllEnabledProfiles";
 const char kRegisterCallback[] = "RegisterCallback";
 const char kRegisterConnectionCallback[] = "RegisterConnectionCallback";
+const char kRegisterScanner[] = "RegisterScanner";
+const char kUnregisterScanner[] = "UnregisterScanner";
+const char kRegisterScannerCallback[] = "RegisterScannerCallback";
+const char kUnregisterScannerCallback[] = "UnregisterScannerCallback";
+const char kStartScan[] = "StartScan";
+const char kStopScan[] = "StopScan";
 const char kSetPairingConfirmation[] = "SetPairingConfirmation";
 const char kSetPin[] = "SetPin";
 const char kSetPasskey[] = "SetPasskey";
 const char kGetBondedDevices[] = "GetBondedDevices";
+const char kGetConnectedDevices[] = "GetConnectedDevices";
 
 // TODO(abps) - Rename this to AdapterCallback in platform and here
 const char kCallbackInterface[] = "org.chromium.bluetooth.BluetoothCallback";
@@ -67,6 +77,9 @@ const char kOnSspRequest[] = "OnSspRequest";
 const char kOnBondStateChanged[] = "OnBondStateChanged";
 const char kOnDeviceConnected[] = "OnDeviceConnected";
 const char kOnDeviceDisconnected[] = "OnDeviceDisconnected";
+
+const char kOnScannerRegistered[] = "OnScannerRegistered";
+const char kOnScanResult[] = "OnScanResult";
 }  // namespace adapter
 
 namespace manager {
@@ -107,6 +120,44 @@ const char kOnIncomingSocketClosed[] = "OnIncomingSocketClosed";
 const char kOnHandleIncomingConnection[] = "OnHandleIncomingConnection";
 const char kOnOutgoingConnectionResult[] = "OnOutgoingConnectionResult";
 }  // namespace socket_manager
+
+namespace gatt {
+const char kRegisterClient[] = "RegisterClient";
+const char kUnregisterClient[] = "UnregisterClient";
+const char kClientConnect[] = "ClientConnect";
+const char kClientDisconnect[] = "ClientDisconnect";
+const char kRefreshDevice[] = "RefreshDevice";
+const char kDiscoverServices[] = "DiscoverServices";
+const char kDiscoverServiceByUuid[] = "DiscoverServiceByUuid";
+const char kReadCharacteristic[] = "ReadCharacteristic";
+const char kReadUsingCharacteristicUuid[] = "ReadUsingCharacteristicUuid";
+const char kWriteCharacteristic[] = "WriteCharacteristic";
+const char kReadDescriptor[] = "ReadDescriptor";
+const char kWriteDescriptor[] = "WriteDescriptor";
+const char kRegisterForNotification[] = "RegisterForNotification";
+const char kBeginReliableWrite[] = "BeginReliableWrite";
+const char kEndReliableWrite[] = "EndReliableWrite";
+const char kReadRemoteRssi[] = "ReadRemoteRssi";
+const char kConfigureMtu[] = "ConfigureMtu";
+const char kConnectionParameterUpdate[] = "ConnectionParameterUpdate";
+const char kCallbackInterface[] =
+    "org.chromium.bluetooth.BluetoothGattClientCallback";
+
+const char kOnClientRegistered[] = "OnClientRegistered";
+const char kOnClientConnectionState[] = "OnClientConnectionState";
+const char kOnPhyUpdate[] = "OnPhyUpdate";
+const char kOnPhyRead[] = "OnPhyRead";
+const char kOnSearchComplete[] = "OnSearchComplete";
+const char kOnCharacteristicRead[] = "OnCharacteristicRead";
+const char kOnCharacteristicWrite[] = "OnCharacteristicWrite";
+const char kOnExecuteWrite[] = "OnExecuteWrite";
+const char kOnDescriptorRead[] = "OnDescriptorRead";
+const char kOnNotify[] = "OnNotify";
+const char kOnReadRemoteRssi[] = "OnReadRemoteRssi";
+const char kOnConfigureMtu[] = "OnConfigureMtu";
+const char kOnConnectionUpdated[] = "OnConnectionUpdated";
+const char kOnServiceChanged[] = "OnServiceChanged";
+}  // namespace gatt
 
 namespace {
 constexpr char kDeviceIdNameKey[] = "name";
@@ -226,6 +277,12 @@ const DBusTypeInfo& GetDBusTypeInfo<device::BluetoothUUID>() {
   return info;
 }
 
+template <>
+const DBusTypeInfo& GetDBusTypeInfo<std::vector<uint8_t>>() {
+  static DBusTypeInfo info{"ay", "std::vector<uint8_t>"};
+  return info;
+}
+
 FlossDBusClient::FlossDBusClient() = default;
 FlossDBusClient::~FlossDBusClient() = default;
 
@@ -239,6 +296,17 @@ const char FlossDBusClient::kErrorInvalidReturn[] =
 const char FlossDBusClient::kErrorDoesNotExist[] =
     "org.chromium.Error.DoesNotExist";
 const char FlossDBusClient::kOptionalValueKey[] = "optional_value";
+
+// static
+dbus::ObjectPath FlossDBusClient::GenerateAdapterPath(int adapter_index) {
+  return dbus::ObjectPath(
+      base::StringPrintf(kAdapterObjectFormat, adapter_index));
+}
+
+// static
+dbus::ObjectPath FlossDBusClient::GenerateGattPath(int adapter_index) {
+  return dbus::ObjectPath(base::StringPrintf(kGattObjectFormat, adapter_index));
+}
 
 // Default error handler for dbus clients is to just print the error right now.
 // TODO(abps) - Deprecate this once error handling is implemented in the upper
@@ -400,62 +468,15 @@ template bool FlossDBusClient::ReadDBusParam<base::ScopedFD>(
     absl::optional<base::ScopedFD>* fd);
 
 // static
-// Specialization for vector of anything.
-template <typename T>
-bool FlossDBusClient::ReadDBusParam(dbus::MessageReader* reader,
-                                    std::vector<T>* value) {
-  dbus::MessageReader subreader(nullptr);
-  if (!reader->PopArray(&subreader))
-    return false;
-
-  while (subreader.HasMoreData()) {
-    T element;
-    if (!FlossDBusClient::ReadDBusParam<T>(&subreader, &element))
-      return false;
-
-    value->push_back(element);
-  }
-
-  return true;
-}
-
-// static
 template <>
 bool FlossDBusClient::ReadDBusParam(dbus::MessageReader* reader,
                                     FlossDeviceId* device) {
-  // Parse a FlossDeviceId from a message.
-  //
-  // The format:
-  // array (
-  //  dict_entry (
-  //    key "name"
-  //    variant string("")
-  //  )
-  //  dict entry (
-  //    key "address"
-  //    variant string("")
-  //  )
-  // )
+  static StructReader<FlossDeviceId> struct_reader({
+      {"address", CreateFieldReader(&FlossDeviceId::address)},
+      {"name", CreateFieldReader(&FlossDeviceId::name)},
+  });
 
-  dbus::MessageReader array(nullptr);
-  dbus::MessageReader dict(nullptr);
-  bool found_name = false;
-  bool found_address = false;
-
-  if (reader->PopArray(&array)) {
-    while (array.PopDictEntry(&dict)) {
-      std::string key;
-      dict.PopString(&key);
-
-      if (key == kDeviceIdNameKey) {
-        found_name = dict.PopVariantOfString(&device->name);
-      } else if (key == kDeviceIdAddressKey) {
-        found_address = dict.PopVariantOfString(&device->address);
-      }
-    }
-  }
-
-  return found_name && found_address;
+  return struct_reader.ReadDBusParam(reader, device);
 }
 
 template <>
@@ -482,6 +503,12 @@ template <>
 void FlossDBusClient::WriteDBusParam(dbus::MessageWriter* writer,
                                      const uint32_t& data) {
   writer->AppendUint32(data);
+}
+
+template <>
+void FlossDBusClient::WriteDBusParam(dbus::MessageWriter* writer,
+                                     const uint8_t& data) {
+  writer->AppendByte(data);
 }
 
 template void FlossDBusClient::WriteDBusParam<uint32_t>(
@@ -522,6 +549,12 @@ template <>
 void FlossDBusClient::WriteDBusParam(dbus::MessageWriter* writer,
                                      const base::ScopedFD& fd) {
   writer->AppendFileDescriptor(fd.get());
+}
+
+template <>
+void FlossDBusClient::WriteDBusParam(dbus::MessageWriter* writer,
+                                     const dbus::ObjectPath& path) {
+  writer->AppendObjectPath(path);
 }
 
 template <>

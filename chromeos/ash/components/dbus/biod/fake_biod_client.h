@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -64,19 +64,19 @@ class COMPONENT_EXPORT(BIOD_CLIENT) FakeBiodClient : public BiodClient {
   bool HasObserver(const Observer* observer) const override;
   void StartEnrollSession(const std::string& user_id,
                           const std::string& label,
-                          ObjectPathCallback callback) override;
+                          chromeos::ObjectPathCallback callback) override;
   void GetRecordsForUser(const std::string& user_id,
                          UserRecordsCallback callback) override;
-  void DestroyAllRecords(VoidDBusMethodCallback callback) override;
-  void StartAuthSession(ObjectPathCallback callback) override;
+  void DestroyAllRecords(chromeos::VoidDBusMethodCallback callback) override;
+  void StartAuthSession(chromeos::ObjectPathCallback callback) override;
   void RequestType(BiometricTypeCallback callback) override;
-  void CancelEnrollSession(VoidDBusMethodCallback callback) override;
-  void EndAuthSession(VoidDBusMethodCallback callback) override;
+  void CancelEnrollSession(chromeos::VoidDBusMethodCallback callback) override;
+  void EndAuthSession(chromeos::VoidDBusMethodCallback callback) override;
   void SetRecordLabel(const dbus::ObjectPath& record_path,
                       const std::string& label,
-                      VoidDBusMethodCallback callback) override;
+                      chromeos::VoidDBusMethodCallback callback) override;
   void RemoveRecord(const dbus::ObjectPath& record_path,
-                    VoidDBusMethodCallback callback) override;
+                    chromeos::VoidDBusMethodCallback callback) override;
   void RequestRecordLabel(const dbus::ObjectPath& record_path,
                           LabelCallback callback) override;
 

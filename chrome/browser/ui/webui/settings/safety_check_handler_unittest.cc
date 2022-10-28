@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -212,8 +212,8 @@ class TestPasswordsDelegate : public extensions::TestPasswordsPrivateDelegate {
     extensions::api::passwords_private::PasswordCheckStatus status;
     status.state = state_;
     if (total_ != 0) {
-      status.already_processed = std::make_unique<int>(done_);
-      status.remaining_in_queue = std::make_unique<int>(total_ - done_);
+      status.already_processed = done_;
+      status.remaining_in_queue = total_ - done_;
     }
     return status;
   }

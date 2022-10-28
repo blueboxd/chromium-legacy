@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,37 +10,35 @@
 #include "base/callback.h"
 #include "base/callback_helpers.h"
 #include "base/check.h"
-#include "base/command_line.h"
+#include "base/feature_list.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
 #include "base/no_destructor.h"
-#include "base/strings/utf_string_conversions.h"
 #include "base/supports_user_data.h"
 #include "base/threading/sequenced_task_runner_handle.h"
-#include "chrome/browser/browser_process.h"
 #include "chrome/browser/enterprise/browser_management/management_service_factory.h"
 #include "chrome/browser/enterprise/util/managed_browser_utils.h"
 #include "chrome/browser/policy/cloud/user_policy_signin_service.h"
 #include "chrome/browser/policy/cloud/user_policy_signin_service_factory.h"
-#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/profile_metrics.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
+#include "chrome/browser/signin/signin_features.h"
+#include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/signin/signin_util.h"
 #include "chrome/browser/sync/sync_service_factory.h"
 #include "chrome/browser/sync/sync_startup_tracker.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/sync/profile_signin_confirmation_helper.h"
-#include "chrome/browser/ui/tab_dialogs.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service_factory.h"
 #include "chrome/browser/ui/webui/signin/signin_ui_error.h"
 #include "chrome/browser/ui/webui/signin/signin_utils_desktop.h"
 #include "chrome/browser/ui/webui/signin/turn_sync_on_helper_delegate_impl.h"
 #include "chrome/browser/ui/webui/signin/turn_sync_on_helper_policy_fetch_tracker.h"
 #include "chrome/browser/unified_consent/unified_consent_service_factory.h"
-#include "chrome/common/pref_names.h"
 #include "components/keyed_service/content/browser_context_keyed_service_shutdown_notifier_factory.h"
+#include "components/keyed_service/core/keyed_service_shutdown_notifier.h"
 #include "components/policy/core/browser/browser_policy_connector.h"
 #include "components/policy/core/common/management/management_service.h"
 #include "components/prefs/pref_service.h"
@@ -58,7 +56,9 @@
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/lacros/account_manager/account_profile_mapper.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/webui/signin/profile_picker_lacros_sign_in_provider.h"
 #endif
 
@@ -479,11 +479,21 @@ void TurnSyncOnHelper::SigninAndShowSyncConfirmationUI() {
   LOG(WARNING) << "crbug.com/1340791 | Passed initial set up, getting ready to "
                   "show the Sync opt-in screen";
 #endif
+  auto* primary_account_mutator = identity_manager_->GetPrimaryAccountMutator();
 
   // Signin.
-  auto* primary_account_mutator = identity_manager_->GetPrimaryAccountMutator();
-  primary_account_mutator->SetPrimaryAccount(account_info_.account_id,
-                                             signin::ConsentLevel::kSync);
+  if (base::FeatureList::IsEnabled(kDelayConsentLevelUpgrade)) {
+    if (auto* signin_manager = SigninManagerFactory::GetForProfile(profile_)) {
+      // `signin_manager` is null in tests.
+      account_change_blocker_ =
+          signin_manager->CreateAccountSelectionInProgressHandle();
+    }
+    primary_account_mutator->SetPrimaryAccount(account_info_.account_id,
+                                               signin::ConsentLevel::kSignin);
+  } else {
+    primary_account_mutator->SetPrimaryAccount(account_info_.account_id,
+                                               signin::ConsentLevel::kSync);
+  }
   signin_metrics::LogSigninAccessPointCompleted(signin_access_point_,
                                                 signin_promo_action_);
   signin_metrics::LogSigninReason(signin_reason_);
@@ -632,6 +642,8 @@ void TurnSyncOnHelper::FinishSyncSetupAndDelete(
     LoginUIService::SyncConfirmationUIClosedResult result) {
   unified_consent::UnifiedConsentService* consent_service =
       UnifiedConsentServiceFactory::GetForProfile(profile_);
+  auto* primary_account_mutator = identity_manager_->GetPrimaryAccountMutator();
+  DCHECK(primary_account_mutator);
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
   LOG(WARNING) << "crbug.com/1340791 | FinishSyncSetupAndDelete with result="
@@ -640,38 +652,44 @@ void TurnSyncOnHelper::FinishSyncSetupAndDelete(
 
   switch (result) {
     case LoginUIService::CONFIGURE_SYNC_FIRST:
+      if (base::FeatureList::IsEnabled(kDelayConsentLevelUpgrade)) {
+        primary_account_mutator->SetPrimaryAccount(account_info_.account_id,
+                                                   signin::ConsentLevel::kSync);
+      }
       if (consent_service)
         consent_service->SetUrlKeyedAnonymizedDataCollectionEnabled(true);
       delegate_->ShowSyncSettings();
       break;
     case LoginUIService::SYNC_WITH_DEFAULT_SETTINGS: {
-      syncer::SyncService* sync_service = GetSyncService();
-      if (sync_service)
+      if (base::FeatureList::IsEnabled(kDelayConsentLevelUpgrade)) {
+        primary_account_mutator->SetPrimaryAccount(account_info_.account_id,
+                                                   signin::ConsentLevel::kSync);
+      }
+      if (auto* sync_service = GetSyncService()) {
         sync_service->GetUserSettings()->SetFirstSetupComplete(
             syncer::SyncFirstSetupCompleteSource::BASIC_FLOW);
+      }
       if (consent_service)
         consent_service->SetUrlKeyedAnonymizedDataCollectionEnabled(true);
       break;
     }
     case LoginUIService::ABORT_SYNC: {
-      auto* primary_account_mutator =
-          identity_manager_->GetPrimaryAccountMutator();
-      DCHECK(primary_account_mutator);
-      primary_account_mutator->RevokeSyncConsent(
-          signin_metrics::ABORT_SIGNIN,
-          signin_metrics::SignoutDelete::kIgnoreMetric);
+      if (!base::FeatureList::IsEnabled(kDelayConsentLevelUpgrade)) {
+        primary_account_mutator->RevokeSyncConsent(
+            signin_metrics::ABORT_SIGNIN,
+            signin_metrics::SignoutDelete::kIgnoreMetric);
+      }
       AbortAndDelete();
       return;
     }
     // No explicit action when the ui gets closed. No final callback is sent.
     case LoginUIService::UI_CLOSED: {
       // We need to reset sync, to not leave it in a partially setup state.
-      auto* primary_account_mutator =
-          identity_manager_->GetPrimaryAccountMutator();
-      DCHECK(primary_account_mutator);
-      primary_account_mutator->RevokeSyncConsent(
-          signin_metrics::ABORT_SIGNIN,
-          signin_metrics::SignoutDelete::kIgnoreMetric);
+      if (!base::FeatureList::IsEnabled(kDelayConsentLevelUpgrade)) {
+        primary_account_mutator->RevokeSyncConsent(
+            signin_metrics::ABORT_SIGNIN,
+            signin_metrics::SignoutDelete::kIgnoreMetric);
+      }
       scoped_callback_runner_.ReplaceClosure(base::OnceClosure());
       break;
     }
@@ -680,6 +698,9 @@ void TurnSyncOnHelper::FinishSyncSetupAndDelete(
 }
 
 void TurnSyncOnHelper::SwitchToProfile(Profile* new_profile) {
+  // The sync setup process shouldn't have been started if the user still had
+  // the option to switch profiles, or it should have been properly cleaned up.
+  DCHECK(!account_change_blocker_);
   DCHECK(!sync_blocker_);
   DCHECK(!sync_startup_tracker_);
 

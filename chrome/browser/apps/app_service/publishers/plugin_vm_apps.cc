@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,17 +8,21 @@
 #include <vector>
 
 #include "ash/public/cpp/app_menu_constants.h"
+#include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/metrics/user_metrics.h"
 #include "base/time/time.h"
 #include "chrome/browser/apps/app_service/app_icon/app_icon_factory.h"
 #include "chrome/browser/apps/app_service/app_launch_params.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
+#include "chrome/browser/apps/app_service/intent_util.h"
 #include "chrome/browser/apps/app_service/menu_util.h"
 #include "chrome/browser/apps/app_service/metrics/app_service_metrics.h"
+#include "chrome/browser/ash/file_manager/fileapi_util.h"
 #include "chrome/browser/ash/guest_os/guest_os_registry_service.h"
 #include "chrome/browser/ash/guest_os/guest_os_registry_service_factory.h"
 #include "chrome/browser/ash/plugin_vm/plugin_vm_features.h"
+#include "chrome/browser/ash/plugin_vm/plugin_vm_files.h"
 #include "chrome/browser/ash/plugin_vm/plugin_vm_manager_factory.h"
 #include "chrome/browser/ash/plugin_vm/plugin_vm_pref_names.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
@@ -26,8 +30,11 @@
 #include "chrome/grit/chrome_unscaled_resources.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/prefs/pref_service.h"
+#include "components/services/app_service/public/cpp/intent_util.h"
 #include "components/services/app_service/public/cpp/permission_utils.h"
 #include "components/services/app_service/public/mojom/types.mojom.h"
+#include "storage/browser/file_system/file_system_context.h"
+#include "storage/browser/file_system/file_system_url.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace {
@@ -157,6 +164,25 @@ apps::mojom::AppPtr GetPluginVmApp(Profile* profile, bool allowed) {
   return app;
 }
 
+// Create a file intent filter with extension type conditions for App Service.
+apps::IntentFilters CreateIntentFilterForPluginVm(
+    const guest_os::GuestOsRegistryService::Registration& registration) {
+  const std::set<std::string>& extension_types_set = registration.Extensions();
+  if (extension_types_set.empty()) {
+    return {};
+  }
+  std::vector<std::string> extension_types(extension_types_set.begin(),
+                                           extension_types_set.end());
+  apps::IntentFilters intent_filters;
+  intent_filters.push_back(apps_util::CreateFileFilter(
+      {apps_util::kIntentActionView}, /*mime_types=*/{}, extension_types,
+      // TODO(crbug/1349974): Remove activity_name when default file handling
+      // preferences for Files App are migrated.
+      /*activity_name=*/apps_util::kGuestOsActivityName));
+
+  return intent_filters;
+}
+
 }  // namespace
 
 namespace apps {
@@ -170,12 +196,6 @@ PluginVmApps::PluginVmApps(AppServiceProxy* proxy)
   if (!ash::ProfileHelper::IsPrimaryProfile(profile_)) {
     return;
   }
-
-  registry_ = guest_os::GuestOsRegistryServiceFactory::GetForProfile(profile_);
-  if (!registry_) {
-    return;
-  }
-  registry_->AddObserver(this);
 
   // Register for Plugin VM changes to policy and installed state, so that we
   // can update the availability and status of the Plugin VM app. Unretained is
@@ -225,9 +245,11 @@ void PluginVmApps::Connect(
 }
 
 void PluginVmApps::Initialize() {
+  registry_ = guest_os::GuestOsRegistryServiceFactory::GetForProfile(profile_);
   if (!registry_) {
     return;
   }
+  registry_->AddObserver(this);
 
   PublisherBase::Initialize(proxy()->AppService(),
                             apps::mojom::AppType::kPluginVm);
@@ -270,6 +292,35 @@ void PluginVmApps::Launch(const std::string& app_id,
   }
 }
 
+void PluginVmApps::LaunchAppWithIntent(const std::string& app_id,
+                                       int32_t event_flags,
+                                       IntentPtr intent,
+                                       LaunchSource launch_source,
+                                       WindowInfoPtr window_info,
+                                       LaunchAppWithIntentCallback callback) {
+  // Retrieve URLs from the files in the intent.
+  std::vector<plugin_vm::LaunchArg> args;
+  if (intent && intent->files.size() > 0) {
+    args.reserve(intent->files.size());
+    storage::FileSystemContext* file_system_context =
+        file_manager::util::GetFileManagerFileSystemContext(profile_);
+    for (auto& file : intent->files) {
+      args.emplace_back(
+          file_system_context->CrackURLInFirstPartyContext(file->url));
+    }
+  }
+  plugin_vm::LaunchPluginVmApp(
+      profile_, app_id, args,
+      base::BindOnce(
+          [](LaunchAppWithIntentCallback callback,
+             plugin_vm::LaunchPluginVmAppResult result,
+             const std::string& failure_reason) {
+            std::move(callback).Run(
+                result == plugin_vm::LaunchPluginVmAppResult::SUCCESS);
+          },
+          std::move(callback)));
+}
+
 void PluginVmApps::LaunchAppWithParams(AppLaunchParams&& params,
                                        LaunchCallback callback) {
   Launch(params.app_id, ui::EF_NONE, apps::mojom::LaunchSource::kUnknown,
@@ -301,6 +352,30 @@ void PluginVmApps::Uninstall(const std::string& app_id,
       ->UninstallPluginVm();
 }
 
+void PluginVmApps::GetMenuModel(const std::string& app_id,
+                                MenuType menu_type,
+                                int64_t display_id,
+                                base::OnceCallback<void(MenuItems)> callback) {
+  MenuItems menu_items;
+
+  if (ShouldAddOpenItem(app_id, menu_type, profile_)) {
+    AddCommandItem(ash::LAUNCH_NEW, IDS_APP_CONTEXT_MENU_ACTIVATE_ARC,
+                   menu_items);
+  }
+
+  if (ShouldAddCloseItem(app_id, menu_type, profile_)) {
+    AddCommandItem(ash::MENU_CLOSE, IDS_SHELF_CONTEXT_MENU_CLOSE, menu_items);
+  }
+
+  if (app_id == plugin_vm::kPluginVmShelfAppId &&
+      plugin_vm::IsPluginVmRunning(profile_)) {
+    AddCommandItem(ash::SHUTDOWN_GUEST_OS, IDS_PLUGIN_VM_SHUT_DOWN_MENU_ITEM,
+                   menu_items);
+  }
+
+  std::move(callback).Run(std::move(menu_items));
+}
+
 void PluginVmApps::Launch(const std::string& app_id,
                           int32_t event_flags,
                           apps::mojom::LaunchSource launch_source,
@@ -312,6 +387,17 @@ void PluginVmApps::Launch(const std::string& app_id,
   } else {
     plugin_vm::ShowPluginVmInstallerView(profile_);
   }
+}
+
+void PluginVmApps::LaunchAppWithIntent(
+    const std::string& app_id,
+    int32_t event_flags,
+    apps::mojom::IntentPtr intent,
+    apps::mojom::LaunchSource launch_source,
+    apps::mojom::WindowInfoPtr window_info,
+    PluginVmApps::LaunchAppWithIntentCallback callback) {
+  NOTIMPLEMENTED();
+  std::move(callback).Run(/*success=*/false);
 }
 
 void PluginVmApps::SetPermission(const std::string& app_id,
@@ -334,24 +420,8 @@ void PluginVmApps::GetMenuModel(const std::string& app_id,
                                 apps::mojom::MenuType menu_type,
                                 int64_t display_id,
                                 GetMenuModelCallback callback) {
-  apps::mojom::MenuItemsPtr menu_items = apps::mojom::MenuItems::New();
-
-  if (ShouldAddOpenItem(app_id, menu_type, profile_)) {
-    AddCommandItem(ash::LAUNCH_NEW, IDS_APP_CONTEXT_MENU_ACTIVATE_ARC,
-                   &menu_items);
-  }
-
-  if (ShouldAddCloseItem(app_id, menu_type, profile_)) {
-    AddCommandItem(ash::MENU_CLOSE, IDS_SHELF_CONTEXT_MENU_CLOSE, &menu_items);
-  }
-
-  if (app_id == plugin_vm::kPluginVmShelfAppId &&
-      plugin_vm::IsPluginVmRunning(profile_)) {
-    AddCommandItem(ash::SHUTDOWN_GUEST_OS, IDS_PLUGIN_VM_SHUT_DOWN_MENU_ITEM,
-                   &menu_items);
-  }
-
-  std::move(callback).Run(std::move(menu_items));
+  GetMenuModel(app_id, ConvertMojomMenuTypeToMenuType(menu_type), display_id,
+               MenuItemsToMojomMenuItemsCallback(std::move(callback)));
 }
 
 void PluginVmApps::OnRegistryUpdated(
@@ -415,6 +485,8 @@ AppPtr PluginVmApps::CreateApp(
   app->show_in_shelf = false;
   app->show_in_management = false;
   app->allow_uninstall = false;
+  app->handles_intents = true;
+  app->intent_filters = CreateIntentFilterForPluginVm(registration);
 
   // TODO(crbug.com/1253250): Add other fields for the App struct.
   return app;
@@ -443,6 +515,9 @@ apps::mojom::AppPtr PluginVmApps::Convert(
   app->show_in_shelf = apps::mojom::OptionalBool::kFalse;
   app->show_in_management = apps::mojom::OptionalBool::kFalse;
   app->allow_uninstall = apps::mojom::OptionalBool::kFalse;
+  app->handles_intents = apps::mojom::OptionalBool::kTrue;
+  app->intent_filters = ConvertIntentFiltersToMojomIntentFilters(
+      CreateIntentFilterForPluginVm(registration));
 
   return app;
 }

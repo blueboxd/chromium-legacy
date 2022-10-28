@@ -1,4 +1,4 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -422,6 +422,44 @@ TEST_F(ArcSessionManagerTest, BaseWorkflow) {
   EXPECT_TRUE(arc_session_manager()->start_time().is_null());
 }
 
+TEST_F(ArcSessionManagerTest, SignedInWorkflow) {
+  PrefService* const prefs = profile()->GetPrefs();
+  prefs->SetBoolean(prefs::kArcTermsAccepted, true);
+  prefs->SetBoolean(prefs::kArcSignedIn, true);
+
+  arc_session_manager()->SetProfile(profile());
+  arc_session_manager()->Initialize();
+
+  // By default ARC is not enabled.
+  EXPECT_EQ(ArcSessionManager::State::STOPPED, arc_session_manager()->state());
+
+  // When signed-in, enabling ARC results in the READY state.
+  arc_session_manager()->RequestEnable();
+  ASSERT_EQ(ArcSessionManager::State::READY, arc_session_manager()->state());
+
+  // ARC starts after calling AllowActivation().
+  arc_session_manager()->AllowActivation();
+  ASSERT_EQ(ArcSessionManager::State::ACTIVE, arc_session_manager()->state());
+}
+
+TEST_F(ArcSessionManagerTest, SignedInWorkflow_ActivationIsAlreadyAllowed) {
+  PrefService* const prefs = profile()->GetPrefs();
+  prefs->SetBoolean(prefs::kArcTermsAccepted, true);
+  prefs->SetBoolean(prefs::kArcSignedIn, true);
+
+  arc_session_manager()->SetProfile(profile());
+  arc_session_manager()->Initialize();
+
+  // By default ARC is not enabled.
+  EXPECT_EQ(ArcSessionManager::State::STOPPED, arc_session_manager()->state());
+
+  // When signed-in, enabling ARC results in the ACTIVE state if
+  // AllowActivation() is called beforehand.
+  arc_session_manager()->AllowActivation();
+  arc_session_manager()->RequestEnable();
+  ASSERT_EQ(ArcSessionManager::State::ACTIVE, arc_session_manager()->state());
+}
+
 // Tests that tying to enable ARC++ with an incompatible file system fails and
 // shows the user a notification to that effect.
 TEST_F(ArcSessionManagerTest, MigrationGuideNotification) {
@@ -682,6 +720,7 @@ TEST_F(ArcSessionManagerTest, Provisioning_Restart) {
 
   arc_session_manager()->SetProfile(profile());
   arc_session_manager()->Initialize();
+  arc_session_manager()->AllowActivation();
   arc_session_manager()->RequestEnable();
 
   // Second start, no fetching code is expected.
@@ -876,16 +915,16 @@ TEST_F(ArcSessionManagerTest, IgnoreSecondErrorReporting) {
   arc_session_manager()->Shutdown();
 }
 
-// Test case when directly started flag is not set during the ARC boot.
-TEST_F(ArcSessionManagerTest, IsDirectlyStartedFalse) {
+// Test case when skipped ToS flag is not set during the ARC boot.
+TEST_F(ArcSessionManagerTest, SkippedTermsOfServiceNegotiationFalse) {
   arc_session_manager()->SetProfile(profile());
   arc_session_manager()->Initialize();
 
-  // On initial start directy started flag is not set.
-  EXPECT_FALSE(arc_session_manager()->is_directly_started());
+  // On initial start skipped ToS flag is not set.
+  EXPECT_FALSE(arc_session_manager()->skipped_terms_of_service_negotiation());
   arc_session_manager()->RequestEnable();
   base::RunLoop().RunUntilIdle();
-  EXPECT_FALSE(arc_session_manager()->is_directly_started());
+  EXPECT_FALSE(arc_session_manager()->skipped_terms_of_service_negotiation());
   ASSERT_EQ(ArcSessionManager::State::CHECKING_REQUIREMENTS,
             arc_session_manager()->state());
   arc_session_manager()->EmulateRequirementCheckCompletionForTesting();
@@ -896,37 +935,39 @@ TEST_F(ArcSessionManagerTest, IsDirectlyStartedFalse) {
       ArcProvisioningResult(std::move(result)));
 
   EXPECT_EQ(ArcSessionManager::State::ACTIVE, arc_session_manager()->state());
-  EXPECT_FALSE(arc_session_manager()->is_directly_started());
+  EXPECT_FALSE(arc_session_manager()->skipped_terms_of_service_negotiation());
   arc_session_manager()->Shutdown();
-  EXPECT_FALSE(arc_session_manager()->is_directly_started());
+  EXPECT_FALSE(arc_session_manager()->skipped_terms_of_service_negotiation());
 }
 
-// Test case when directly started flag is set during the ARC boot.
+// Test case when skipped ToS flag is set during the ARC boot.
 // Preconditions are: ToS accepted and ARC was signed in.
-TEST_F(ArcSessionManagerTest, IsDirectlyStartedTrue) {
+TEST_F(ArcSessionManagerTest, SkippedTermsOfServiceNegotiationTrue) {
   PrefService* const prefs = profile()->GetPrefs();
   prefs->SetBoolean(prefs::kArcTermsAccepted, true);
   prefs->SetBoolean(prefs::kArcSignedIn, true);
 
   arc_session_manager()->SetProfile(profile());
   arc_session_manager()->Initialize();
-  EXPECT_FALSE(arc_session_manager()->is_directly_started());
+  EXPECT_FALSE(arc_session_manager()->skipped_terms_of_service_negotiation());
+  arc_session_manager()->AllowActivation();
   arc_session_manager()->RequestEnable();
   base::RunLoop().RunUntilIdle();
-  EXPECT_TRUE(arc_session_manager()->is_directly_started());
+  EXPECT_TRUE(arc_session_manager()->skipped_terms_of_service_negotiation());
   EXPECT_EQ(ArcSessionManager::State::ACTIVE, arc_session_manager()->state());
 
-  // Disabling ARC turns directy started flag off.
+  // Disabling ARC turns skipped ToS flag off.
   arc_session_manager()->RequestDisable();
-  EXPECT_FALSE(arc_session_manager()->is_directly_started());
+  EXPECT_FALSE(arc_session_manager()->skipped_terms_of_service_negotiation());
   arc_session_manager()->Shutdown();
 }
 
-// Test case when directly started flag is preserved during the internal ARC
-// restart.
-TEST_F(ArcSessionManagerTest, IsDirectlyStartedOnInternalRestart) {
+// Test case when skipped ToS flag is preserved during the internal ARC restart.
+TEST_F(ArcSessionManagerTest,
+       SkippedTermsOfServiceNegotiationOnInternalRestart) {
   arc_session_manager()->SetProfile(profile());
   arc_session_manager()->Initialize();
+  arc_session_manager()->AllowActivation();
   arc_session_manager()->RequestEnable();
   base::RunLoop().RunUntilIdle();
   ASSERT_EQ(ArcSessionManager::State::CHECKING_REQUIREMENTS,
@@ -938,17 +979,17 @@ TEST_F(ArcSessionManagerTest, IsDirectlyStartedOnInternalRestart) {
   arc_session_manager()->OnProvisioningFinished(
       ArcProvisioningResult(std::move(result)));
 
-  EXPECT_FALSE(arc_session_manager()->is_directly_started());
+  EXPECT_FALSE(arc_session_manager()->skipped_terms_of_service_negotiation());
   EXPECT_EQ(ArcSessionManager::State::ACTIVE, arc_session_manager()->state());
-  EXPECT_FALSE(arc_session_manager()->is_directly_started());
+  EXPECT_FALSE(arc_session_manager()->skipped_terms_of_service_negotiation());
 
   // Simualate internal restart.
   arc_session_manager()->StopAndEnableArc();
   // Fake ARC session implementation synchronously calls stop callback and
   // session manager should be reactivated at this moment.
   EXPECT_EQ(ArcSessionManager::State::ACTIVE, arc_session_manager()->state());
-  // directy started flag should be preserved.
-  EXPECT_FALSE(arc_session_manager()->is_directly_started());
+  // Skipped ToS flag should be preserved.
+  EXPECT_FALSE(arc_session_manager()->skipped_terms_of_service_negotiation());
   arc_session_manager()->Shutdown();
 }
 
@@ -1967,16 +2008,18 @@ TEST_P(ArcTransitionToManagedTest, TransitionFlow) {
   base::test::ScopedFeatureList feature_list;
   feature_list.InitWithFeatureState(kEnableUnmanagedToManagedTransitionFeature,
                                     transition_feature_enabled());
+  // Set up the situation that provisioning is successfully done in the
+  // previous session.
   profile()->GetPrefs()->SetBoolean(prefs::kArcEnabled, true);
+  profile()->GetPrefs()->SetBoolean(prefs::kArcTermsAccepted, true);
+  profile()->GetPrefs()->SetBoolean(prefs::kArcSignedIn, true);
 
   // Initialize ARC.
   arc_session_manager()->SetProfile(profile());
   arc_session_manager()->Initialize();
+  arc_session_manager()->AllowActivation();
   arc_session_manager()->RequestEnable();
-  base::RunLoop().RunUntilIdle();
-  ASSERT_EQ(ArcSessionManager::State::CHECKING_REQUIREMENTS,
-            arc_session_manager()->state());
-  arc_session_manager()->EmulateRequirementCheckCompletionForTesting();
+  ASSERT_EQ(ArcSessionManager::State::ACTIVE, arc_session_manager()->state());
 
   // Emulate user management state change.
   profile()->GetProfilePolicyConnector()->OverrideIsManagedForTesting(
@@ -1985,7 +2028,6 @@ TEST_P(ArcTransitionToManagedTest, TransitionFlow) {
   // Android management check response.
   arc_session_manager()->OnBackgroundAndroidManagementCheckedForTesting(
       ArcAndroidManagementChecker::CheckResult::DISALLOWED);
-  base::RunLoop().RunUntilIdle();
 
   // Verify ARC state and ARC transition value.
   EXPECT_EQ(profile()->GetPrefs()->GetBoolean(prefs::kArcEnabled),

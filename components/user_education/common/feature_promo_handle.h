@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -22,7 +22,7 @@ class FeaturePromoController;
 // FeaturePromoHandle is a value-typed, movable smart reference; default
 // constructed instances are falsy (i.e. operator bool and is_valid() return
 // false), as are any instances that have been moved or released.
-class FeaturePromoHandle {
+class [[nodiscard]] FeaturePromoHandle {
  public:
   FeaturePromoHandle();
   FeaturePromoHandle(base::WeakPtr<FeaturePromoController> controller,

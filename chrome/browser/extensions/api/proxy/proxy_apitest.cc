@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -43,11 +43,11 @@ class ProxySettingsApiTest : public ExtensionApiTest {
                         PrefService* pref_service) {
     const PrefService::Preference* pref =
         pref_service->FindPreference(proxy_config::prefs::kProxy);
-    ASSERT_TRUE(pref != NULL);
+    ASSERT_TRUE(pref != nullptr);
     EXPECT_TRUE(pref->IsExtensionControlled());
 
     // TODO(https://crbug.com/1348219) This should call
-    // `PrefService::GetValueDict`.
+    // `PrefService::GetDict`.
     ProxyConfigDictionary dict(
         pref_service->GetValue(proxy_config::prefs::kProxy).Clone());
 
@@ -81,7 +81,7 @@ class ProxySettingsApiTest : public ExtensionApiTest {
   void ExpectNoSettings(PrefService* pref_service) {
     const PrefService::Preference* pref =
         pref_service->FindPreference(proxy_config::prefs::kProxy);
-    ASSERT_TRUE(pref != NULL);
+    ASSERT_TRUE(pref != nullptr);
     EXPECT_FALSE(pref->IsExtensionControlled());
   }
 

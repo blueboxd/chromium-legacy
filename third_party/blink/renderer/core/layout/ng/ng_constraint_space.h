@@ -23,6 +23,7 @@
 #include "third_party/blink/renderer/platform/text/text_direction.h"
 #include "third_party/blink/renderer/platform/text/writing_mode.h"
 #include "third_party/blink/renderer/platform/wtf/ref_counted.h"
+#include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
@@ -50,17 +51,15 @@ enum NGAdjoiningObjectTypeValue {
 };
 typedef int NGAdjoiningObjectTypes;
 
-// Some layout algorithms (flow, tables) calculate their alignment baseline
-// differently if they are within an atomic-inline context.
-//
-// Other more modern layout algorithms (flex, grid) however ignore this flag
-// and always calculate the alignment baseline in the same way (returning the
-// "first-line").
+// The last baseline algorithm for an inline-blocks are complex. Depending on
+// the layout algorithm type it'll select the first (table, flex, grid) or last
+// (block-like) as the last baseline.
 enum class NGBaselineAlgorithmType {
-  // Compute the baseline of the first line box.
-  kFirstLine,
-  // Compute the baseline(s) for when we are within an inline-block context. If
-  // the child is block-flow it will produce both the first, and last baselines.
+  // Compute the baselines normally.
+  kDefault,
+  // Compute the baseline(s) for when we are within an inline-block context.
+  // This will select the first/last baseline as the "last" baseline depending
+  // on the layout algorithm.
   kInlineBlock
 };
 
@@ -331,6 +330,11 @@ class CORE_EXPORT NGConstraintSpace final {
                          : false;
   }
 
+  bool IsTableCellWithEffectiveRowspan() const {
+    return HasRareData() ? rare_data_->IsTableCellWithEffectiveRowspan()
+                         : false;
+  }
+
   const NGTableConstraintSpaceData* TableData() const {
     return HasRareData() ? rare_data_->TableData() : nullptr;
   }
@@ -341,6 +345,11 @@ class CORE_EXPORT NGConstraintSpace final {
 
   wtf_size_t TableSectionIndex() const {
     return HasRareData() ? rare_data_->TableSectionIndex() : kNotFound;
+  }
+
+  // Return any current page name, specified on an ancestor, or here.
+  const AtomicString PageName() const {
+    return HasRareData() ? rare_data_->page_name : AtomicString();
   }
 
   // If we're block-fragmented AND the fragmentainer block-size is known, return
@@ -531,6 +540,13 @@ class CORE_EXPORT NGConstraintSpace final {
   // context.
   bool HasBlockFragmentation() const {
     return BlockFragmentationType() != kFragmentNone;
+  }
+
+  // Return true if the document is paginated (for printing).
+  bool IsPaginated() const {
+    // TODO(layout-dev): This will not work correctly if establishing a nested
+    // fragmentation context (e.g. multicol) when paginated.
+    return BlockFragmentationType() == kFragmentPage;
   }
 
   // Return true if we're not allowed to break until we have placed some
@@ -874,6 +890,7 @@ class CORE_EXPORT NGConstraintSpace final {
           block_start_annotation_space(other.block_start_annotation_space),
           bfc_offset(other.bfc_offset),
           override_min_max_block_sizes(other.override_min_max_block_sizes),
+          page_name(other.page_name),
           fragmentainer_block_size(other.fragmentainer_block_size),
           fragmentainer_offset_at_bfc(other.fragmentainer_offset_at_bfc),
           data_union_type(other.data_union_type),
@@ -999,7 +1016,7 @@ class CORE_EXPORT NGConstraintSpace final {
 
     // Must be kept in sync with members checked within |MaySkipLayout|.
     bool IsInitialForMaySkipLayout() const {
-      if (fragmentainer_block_size != kIndefiniteSize ||
+      if (page_name || fragmentainer_block_size != kIndefiniteSize ||
           fragmentainer_offset_at_bfc || is_line_clamp_context ||
           is_restricted_block_size_table_cell || hide_table_cell_if_empty ||
           block_direction_fragmentation_type != kFragmentNone ||
@@ -1157,6 +1174,15 @@ class CORE_EXPORT NGConstraintSpace final {
       EnsureTableCellData()->has_collapsed_borders = has_collapsed_borders;
     }
 
+    bool IsTableCellWithEffectiveRowspan() const {
+      return GetDataUnionType() == DataUnionType::kTableCellData &&
+             table_cell_data_.has_effective_rowspan;
+    }
+
+    void SetIsTableCellWithEffectiveRowspan(bool has_effective_rowspan) {
+      EnsureTableCellData()->has_effective_rowspan = has_effective_rowspan;
+    }
+
     void SetTableRowData(
         scoped_refptr<const NGTableConstraintSpaceData> table_data,
         wtf_size_t row_index) {
@@ -1268,6 +1294,7 @@ class CORE_EXPORT NGConstraintSpace final {
     NGBfcOffset bfc_offset;
     MinMaxSizes override_min_max_block_sizes;
 
+    AtomicString page_name;
     LayoutUnit fragmentainer_block_size = kIndefiniteSize;
     LayoutUnit fragmentainer_offset_at_bfc;
 
@@ -1315,13 +1342,14 @@ class CORE_EXPORT NGConstraintSpace final {
         return table_cell_borders == other.table_cell_borders &&
                table_cell_column_index == other.table_cell_column_index &&
                is_hidden_for_paint == other.is_hidden_for_paint &&
-               has_collapsed_borders == other.has_collapsed_borders;
+               has_collapsed_borders == other.has_collapsed_borders &&
+               has_effective_rowspan == other.has_effective_rowspan;
       }
 
       bool IsInitialForMaySkipLayout() const {
         return table_cell_borders == NGBoxStrut() &&
                table_cell_column_index == kNotFound && !is_hidden_for_paint &&
-               !has_collapsed_borders;
+               !has_collapsed_borders && !has_effective_rowspan;
       }
 
       NGBoxStrut table_cell_borders;
@@ -1329,6 +1357,7 @@ class CORE_EXPORT NGConstraintSpace final {
       absl::optional<LayoutUnit> table_cell_alignment_baseline;
       bool is_hidden_for_paint = false;
       bool has_collapsed_borders = false;
+      bool has_effective_rowspan = false;
     };
 
     struct TableRowData {
@@ -1518,7 +1547,7 @@ class CORE_EXPORT NGConstraintSpace final {
           use_first_line_style(false),
           ancestor_has_clearance_past_adjoining_floats(false),
           baseline_algorithm_type(
-              static_cast<unsigned>(NGBaselineAlgorithmType::kFirstLine)),
+              static_cast<unsigned>(NGBaselineAlgorithmType::kDefault)),
           cache_slot(static_cast<unsigned>(NGCacheSlot::kLayout)),
           inline_auto_behavior(
               static_cast<unsigned>(NGAutoBehavior::kFitContent)),

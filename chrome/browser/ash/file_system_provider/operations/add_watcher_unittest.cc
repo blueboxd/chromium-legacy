@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -56,7 +56,8 @@ TEST_F(FileSystemProviderOperationsAddWatcherTest, Execute) {
   util::StatusCallbackLog callback_log;
 
   AddWatcher add_watcher(
-      NULL, file_system_info_, base::FilePath(kEntryPath), true /* recursive */,
+      nullptr, file_system_info_, base::FilePath(kEntryPath),
+      true /* recursive */,
       base::BindOnce(&util::LogStatusCallback, &callback_log));
   add_watcher.SetDispatchEventImplForTesting(
       base::BindRepeating(&util::LoggingDispatchEventImpl::OnDispatchEventImpl,
@@ -89,7 +90,8 @@ TEST_F(FileSystemProviderOperationsAddWatcherTest, Execute_NoListener) {
   util::StatusCallbackLog callback_log;
 
   AddWatcher add_watcher(
-      NULL, file_system_info_, base::FilePath(kEntryPath), true /* recursive */,
+      nullptr, file_system_info_, base::FilePath(kEntryPath),
+      true /* recursive */,
       base::BindOnce(&util::LogStatusCallback, &callback_log));
   add_watcher.SetDispatchEventImplForTesting(
       base::BindRepeating(&util::LoggingDispatchEventImpl::OnDispatchEventImpl,
@@ -103,7 +105,8 @@ TEST_F(FileSystemProviderOperationsAddWatcherTest, OnSuccess) {
   util::StatusCallbackLog callback_log;
 
   AddWatcher add_watcher(
-      NULL, file_system_info_, base::FilePath(kEntryPath), true /* recursive */,
+      nullptr, file_system_info_, base::FilePath(kEntryPath),
+      true /* recursive */,
       base::BindOnce(&util::LogStatusCallback, &callback_log));
   add_watcher.SetDispatchEventImplForTesting(
       base::BindRepeating(&util::LoggingDispatchEventImpl::OnDispatchEventImpl,
@@ -122,7 +125,8 @@ TEST_F(FileSystemProviderOperationsAddWatcherTest, OnError) {
   util::StatusCallbackLog callback_log;
 
   AddWatcher add_watcher(
-      NULL, file_system_info_, base::FilePath(kEntryPath), true /* recursive */,
+      nullptr, file_system_info_, base::FilePath(kEntryPath),
+      true /* recursive */,
       base::BindOnce(&util::LogStatusCallback, &callback_log));
   add_watcher.SetDispatchEventImplForTesting(
       base::BindRepeating(&util::LoggingDispatchEventImpl::OnDispatchEventImpl,

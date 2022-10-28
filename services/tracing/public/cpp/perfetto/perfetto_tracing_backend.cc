@@ -11,6 +11,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/tracing/tracing_tls.h"
 #include "build/build_config.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/system/data_pipe_drainer.h"
 #include "services/tracing/public/cpp/perfetto/perfetto_producer.h"
 #include "services/tracing/public/cpp/perfetto/shared_memory.h"
@@ -354,7 +355,7 @@ class ConsumerEndpoint : public perfetto::ConsumerEndpoint,
 
   ~ConsumerEndpoint() override {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-    consumer_->OnDisconnect();
+    consumer_.ExtractAsDangling()->OnDisconnect();  // May delete |consumer_|.
   }
 
   // perfetto::ConsumerEndpoint implementation.
@@ -632,7 +633,7 @@ class ConsumerEndpoint : public perfetto::ConsumerEndpoint,
   }
 
   SEQUENCE_CHECKER(sequence_checker_);
-  const raw_ptr<perfetto::Consumer, DanglingUntriaged> consumer_;
+  raw_ptr<perfetto::Consumer> consumer_;
   mojo::Remote<tracing::mojom::ConsumerHost> consumer_host_;
   mojo::Remote<tracing::mojom::TracingSessionHost> tracing_session_host_;
   mojo::Receiver<tracing::mojom::TracingSessionClient> tracing_session_client_{

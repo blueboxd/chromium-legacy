@@ -100,10 +100,6 @@ class PLATFORM_EXPORT MediaStreamComponentImpl final
     return platform_track_.get();
   }
 
-  [[deprecated]] void SetPlatformTrack(
-      std::unique_ptr<MediaStreamTrackPlatform> platform_track) override {
-    platform_track_ = std::move(platform_track);
-  }
   void GetSettings(MediaStreamTrackPlatform::Settings&) override;
   MediaStreamTrackPlatform::CaptureHandle GetCaptureHandle() override;
 
@@ -111,6 +107,13 @@ class PLATFORM_EXPORT MediaStreamComponentImpl final
   void SetCreationFrame(WebLocalFrame* creation_frame) override {
     creation_frame_ = creation_frame;
   }
+
+  void AddSourceObserver(MediaStreamSource::Observer* observer) override;
+  void AddSink(WebMediaStreamAudioSink* sink) override;
+  void AddSink(WebMediaStreamSink* sink,
+               const VideoCaptureDeliverFrameCB& callback,
+               MediaStreamVideoSink::IsSecure is_secure,
+               MediaStreamVideoSink::UsesAlpha uses_alpha) override;
 
   String ToString() const override;
 

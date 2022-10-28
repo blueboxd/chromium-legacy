@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -163,12 +163,10 @@ ProgrammaticScriptInjector::GetCssSources(
 }
 
 void ProgrammaticScriptInjector::OnInjectionComplete(
-    std::unique_ptr<base::Value> execution_result,
+    absl::optional<base::Value> execution_result,
     mojom::RunLocation run_location) {
   DCHECK(!result_.has_value());
-  if (execution_result) {
-    result_ = base::Value::FromUniquePtrValue(std::move(execution_result));
-  }
+  result_ = std::move(execution_result);
   Finish(std::string());
 }
 

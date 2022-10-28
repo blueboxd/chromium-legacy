@@ -2,15 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// Note: This file is deprecated, and should only be used by legacy code that
+// has not yet finished migrating to TypeScript/Polymer class based syntax. New
+// code should use focus_row_mixin.ts.
+
 // clang-format off
-// #import {afterNextRender} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
-// #import {assert} from 'chrome://resources/js/assert.m.js';
-// #import {focusWithoutInk} from './focus_without_ink.m.js';
-// #import {FocusRow, FocusRowDelegate} from './focus_row.m.js';
+import {afterNextRender} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {assert} from 'chrome://resources/js/assert.m.js';
+import {focusWithoutInk} from './focus_without_ink_js.js';
+import {FocusRow, FocusRowDelegate} from './focus_row_js.js';
 // clang-format on
 
-cr.define('cr.ui', function() {
-  /** @implements {cr.ui.FocusRowDelegate} */
+  /** @implements {FocusRowDelegate} */
   class FocusRowBehaviorDelegate {
     /**
      * @param {{lastFocused: Object,
@@ -26,12 +29,12 @@ cr.define('cr.ui', function() {
      * This function gets called when the [focus-row-control] element receives
      * the focus event.
      * @override
-     * @param {!cr.ui.FocusRow} row
+     * @param {!FocusRow} row
      * @param {!Event} e
      */
     onFocus(row, e) {
       const element = /** @type {!HTMLElement} */ (e.composedPath()[0]);
-      const focusableElement = cr.ui.FocusRow.getFocusableElement(element);
+      const focusableElement = FocusRow.getFocusableElement(element);
       if (element !== focusableElement) {
         focusableElement.focus();
       }
@@ -40,7 +43,7 @@ cr.define('cr.ui', function() {
 
     /**
      * @override
-     * @param {!cr.ui.FocusRow} row The row that detected a keydown.
+     * @param {!FocusRow} row The row that detected a keydown.
      * @param {!Event} e
      * @return {boolean} Whether the event was handled.
      */
@@ -61,11 +64,11 @@ cr.define('cr.ui', function() {
     }
   }
 
-  /** @extends {cr.ui.FocusRow} */
-  class VirtualFocusRow extends cr.ui.FocusRow {
+  /** @extends {FocusRow} */
+  class VirtualFocusRow extends FocusRow {
     /**
      * @param {!Element} root
-     * @param {cr.ui.FocusRowDelegate} delegate
+     * @param {FocusRowDelegate} delegate
      */
     constructor(root, delegate) {
       super(root, /* boundary */ null, delegate);
@@ -93,9 +96,9 @@ cr.define('cr.ui', function() {
    *
    * @polymerBehavior
    */
-  /* #export */ const FocusRowBehavior = {
+  export const FocusRowBehavior = {
     properties: {
-      /** @private {cr.ui.VirtualFocusRow} */
+      /** @private {VirtualFocusRow} */
       row_: Object,
 
       /** @private {boolean} */
@@ -178,7 +181,7 @@ cr.define('cr.ui', function() {
     attached() {
       this.classList.add('no-outline');
 
-      Polymer.RenderStatus.afterNextRender(this, function() {
+      afterNextRender(this, function() {
         const rowContainer = this.root.querySelector('[focus-row-container]');
         assert(rowContainer);
         this.row_ = new VirtualFocusRow(
@@ -209,7 +212,7 @@ cr.define('cr.ui', function() {
       }
     },
 
-    /** @return {!cr.ui.FocusRow} */
+    /** @return {!FocusRow} */
     getFocusRow() {
       return assert(this.row_);
     },
@@ -255,7 +258,7 @@ cr.define('cr.ui', function() {
           this.row_.addItem(
               control.getAttribute('focus-type'),
               /** @type {!HTMLElement} */
-              (cr.ui.FocusRow.getFocusableElement(control)));
+              (FocusRow.getFocusableElement(control)));
           this.addMutationObservers_(assert(control));
         });
         this.updateFirstControl_();
@@ -331,10 +334,10 @@ cr.define('cr.ui', function() {
           this.listBlurred && e.composedPath()[0] === this;
 
       if (this.lastFocused && !restoreFocusToFirst) {
-        cr.ui.focusWithoutInk(this.row_.getEquivalentElement(this.lastFocused));
+        focusWithoutInk(this.row_.getEquivalentElement(this.lastFocused));
       } else {
         const firstFocusable = assert(this.firstControl_);
-        cr.ui.focusWithoutInk(firstFocusable);
+        focusWithoutInk(firstFocusable);
       }
       this.listBlurred = false;
       this.isFocused = true;
@@ -383,7 +386,7 @@ cr.define('cr.ui', function() {
   };
 
   /** @interface */
-  /* #export */ class FocusRowBehaviorInterface {
+  export class FocusRowBehaviorInterface {
     constructor() {
       /** @type {string} */
       this.id;
@@ -410,15 +413,7 @@ cr.define('cr.ui', function() {
      */
     focusRowIndexChanged(newIndex, oldIndex) {}
 
-    /** @return {!cr.ui.FocusRow} */
+    /** @return {!FocusRow} */
     getFocusRow() {}
   }
 
-  // #cr_define_end
-  console.warn('crbug/1173575, non-JS module files deprecated.');
-  return {
-    FocusRowBehaviorDelegate,
-    VirtualFocusRow,
-    FocusRowBehavior,
-  };
-});

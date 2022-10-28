@@ -1,4 +1,4 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -202,7 +202,7 @@ void SystemInfoEventRouter::OnRemovableStorageAttached(
   StorageUnitInfo unit;
   systeminfo::BuildStorageUnitInfo(info, &unit);
   base::Value::List args;
-  args.Append(base::Value::FromUniquePtrValue(unit.ToValue()));
+  args.Append(unit.ToValue());
 
   DispatchEvent(events::SYSTEM_STORAGE_ON_ATTACHED,
                 system_storage::OnAttached::kEventName, std::move(args));

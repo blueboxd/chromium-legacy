@@ -1,14 +1,14 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "components/omnibox/browser/actions/omnibox_pedal.h"
 
-#include <algorithm>
 #include <cctype>
 #include <numeric>
 
 #include "base/metrics/histogram_functions.h"
+#include "base/ranges/algorithm.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/trace_event/memory_usage_estimator.h"
 #include "build/build_config.h"
@@ -220,8 +220,8 @@ void OmniboxPedal::SynonymGroup::EraseIgnoreGroup(
 }
 
 bool OmniboxPedal::SynonymGroup::IsValid() const {
-  return std::all_of(synonyms_.begin(), synonyms_.end(),
-                     [](const auto& synonym) { return synonym.Size() > 0; });
+  return base::ranges::all_of(
+      synonyms_, [](const auto& synonym) { return synonym.Size() > 0; });
 }
 
 // =============================================================================
@@ -236,6 +236,10 @@ OmniboxPedal::OmniboxPedal(OmniboxPedalId id, LabelStrings strings, GURL url)
 }
 
 OmniboxPedal::~OmniboxPedal() = default;
+
+void OmniboxPedal::OnLoaded() {
+  // Default implementation makes no change so the pedal works as declared.
+}
 
 void OmniboxPedal::SetLabelStrings(const base::Value& ui_strings) {
   DCHECK(ui_strings.is_dict());

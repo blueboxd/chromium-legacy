@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -167,7 +167,7 @@ class TranslateMetricsLogger {
   virtual void LogInitialState() = 0;
   virtual void LogTranslationStarted(TranslationType translation_type) = 0;
   virtual void LogTranslationFinished(bool was_successful,
-                                      TranslateErrors::Type error_type) = 0;
+                                      TranslateErrors error_type) = 0;
   virtual void LogReversion() = 0;
   virtual void LogUIChange(bool is_ui_shown) = 0;
   virtual void LogOmniboxIconChange(bool is_omnibox_icon_show) = 0;

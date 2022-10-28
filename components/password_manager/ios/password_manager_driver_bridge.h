@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,11 +12,11 @@ struct PasswordFormFillData;
 struct PasswordFormGenerationData;
 }  // namespace autofill
 
-class GURL;
+namespace web {
+class WebFrame;
+}  // namespace web
 
-namespace password_manager {
-class PasswordGenerationFrameHelper;
-}  // namespace password_manager
+class GURL;
 
 // C++ to ObjC bridge for methods of PasswordManagerDriver.
 @protocol PasswordManagerDriverBridge
@@ -28,13 +28,11 @@ class PasswordGenerationFrameHelper;
 // |completionHandler| with YES if a form field has been filled, NO otherwise.
 // |completionHandler| can be nil.
 - (void)fillPasswordForm:(const autofill::PasswordFormFillData&)formData
+                 inFrame:(web::WebFrame*)frame
        completionHandler:(void (^)(BOOL))completionHandler;
 
 // Informs delegate that there are no saved credentials for the current page.
 - (void)onNoSavedCredentials;
-
-// Gets the PasswordGenerationFrameHelper owned by this delegate.
-- (password_manager::PasswordGenerationFrameHelper*)passwordGenerationHelper;
 
 // Informs delegate of form for password generation found.
 - (void)formEligibleForGenerationFound:

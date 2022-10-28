@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -156,7 +156,7 @@ void TabCaptureRegistry::GetCapturedTabs(
       continue;
     tab_capture::CaptureInfo info;
     request->GetCaptureInfo(&info);
-    capture_info_list->Append(base::Value::FromUniquePtrValue(info.ToValue()));
+    capture_info_list->Append(info.ToValue());
   }
 }
 
@@ -186,7 +186,7 @@ std::string TabCaptureRegistry::AddRequest(
   LiveRequest* const request = FindRequest(target_contents);
 
   // Currently, we do not allow multiple active captures for same tab.
-  if (request != NULL) {
+  if (request != nullptr) {
     if (request->capture_state() == tab_capture::TAB_CAPTURE_STATE_PENDING ||
         request->capture_state() == tab_capture::TAB_CAPTURE_STATE_ACTIVE) {
       return device_id;
@@ -295,7 +295,7 @@ void TabCaptureRegistry::DispatchStatusChangeEvent(
   base::Value::List args;
   tab_capture::CaptureInfo info;
   request->GetCaptureInfo(&info);
-  args.Append(base::Value::FromUniquePtrValue(info.ToValue()));
+  args.Append(info.ToValue());
   auto event = std::make_unique<Event>(events::TAB_CAPTURE_ON_STATUS_CHANGED,
                                        tab_capture::OnStatusChanged::kEventName,
                                        std::move(args), browser_context_);

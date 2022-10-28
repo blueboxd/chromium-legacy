@@ -1,5 +1,5 @@
-# Copyright 2020 The Chromium Authors.All rights reserved.
-# Use of this source code is governed by a BSD - style license that can be
+# Copyright 2020 The Chromium Authors
+# Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
 import("//third_party/protobuf/proto_library.gni")
@@ -15,6 +15,8 @@ static_library("public") {
     "autofill_assistant_factory.h",
     "external_action_delegate.h",
     "headless_script_controller.h",
+    "prefs.cc",
+    "prefs.h",
     "public_script_parameters.h",
     "rectf.cc",
     "rectf.h",
@@ -31,6 +33,7 @@ static_library("public") {
     "//components/autofill/core/common:common",
     "//components/autofill_assistant/browser/public/fast_checkout/proto:proto",
     "//components/autofill_assistant/browser/public/password_change/proto:proto",
+    "//components/prefs:prefs",
     "//url",
   ]
 
@@ -70,6 +73,7 @@ proto_library("proto") {
   proto_in_dir = "//"
   sources = [ "external_action.proto" ]
   link_deps = [
+    "//components/autofill_assistant/browser/public/assistant_ui/proto:proto",
     "//components/autofill_assistant/browser/public/fast_checkout/proto:proto",
     "//components/autofill_assistant/browser/public/password_change/proto:proto",
   ]
@@ -81,6 +85,7 @@ if (is_android) {
     proto_path = "//"
     sources = [ "external_action.proto" ]
     deps = [
+      "//components/autofill_assistant/browser/public/assistant_ui/proto:proto_java",
       "//components/autofill_assistant/browser/public/fast_checkout/proto:proto_java",
       "//components/autofill_assistant/browser/public/password_change/proto:proto_java",
     ]
@@ -92,6 +97,8 @@ static_library("unit_test_support") {
   sources = [
     "mock_autofill_assistant.cc",
     "mock_autofill_assistant.h",
+    "mock_external_action_delegate.cc",
+    "mock_external_action_delegate.h",
     "mock_headless_script_controller.cc",
     "mock_headless_script_controller.h",
     "mock_runtime_manager.cc",

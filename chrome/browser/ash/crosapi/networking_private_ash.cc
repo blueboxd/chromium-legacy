@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -130,7 +130,7 @@ SplitListValueAdapterCallback(ListValueSuccessOrFailureCallback callback) {
                  std::unique_ptr<base::ListValue> result) {
                 std::move(callback).Run(
                     mojom::ListValueSuccessOrErrorReturn::NewSuccessResult(
-                        std::move(result->GetList())));
+                        std::move(*result).TakeList()));
               },
               std::move(success)),
           base::BindOnce(
@@ -170,7 +170,7 @@ ValueDelegateCallback ValueListAdapterCallback(
   return base::BindOnce(
       [](ValueListMojoCallback callback, std::unique_ptr<base::Value> result) {
         if (result) {
-          std::move(callback).Run(std::move(result->GetList()));
+          std::move(callback).Run(std::move(*result).TakeList());
         } else {
           std::move(callback).Run(absl::nullopt);
         }
@@ -221,7 +221,7 @@ void DeviceStateListCallbackAdapter(
 
   for (size_t i = 0; i < result->size(); ++i) {
     if (result->at(i)) {
-      list->push_back(std::move(*result->at(i)->ToValue()));
+      list->push_back(base::Value(result->at(i)->ToValue()));
     } else {
       list->push_back(base::Value(base::Value::Type::DICTIONARY));
     }

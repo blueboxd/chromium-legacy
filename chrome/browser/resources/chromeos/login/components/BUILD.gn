@@ -1,4 +1,4 @@
-# Copyright 2020 The Chromium Authors. All rights reserved.
+# Copyright 2020 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -92,8 +92,9 @@ js_library("gaia_button.m") {
   sources = [ "$root_gen_dir/chrome/browser/resources/chromeos/login/components/gaia_button.m.js" ]
   deps = [
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
-    "//ui/webui/resources/cr_elements/cr_button:cr_button",
   ]
+  externs_list =
+      [ "//ui/webui/resources/cr_elements/cr_button/cr_button_externs.js" ]
   extra_deps = [ ":gaia_button_module" ]
 }
 
@@ -153,8 +154,8 @@ js_library("network_select_login.m") {
   sources = [ "$root_gen_dir/chrome/browser/resources/chromeos/login/components/network_select_login.m.js" ]
   deps = [
     "../:cr_ui.m",
-    "//ui/webui/resources/cr_components/chromeos/network:network_select.m",
-    "//ui/webui/resources/cr_components/chromeos/network:onc_mojo.m",
+    "//ui/webui/resources/cr_components/chromeos/network:network_select",
+    "//ui/webui/resources/cr_components/chromeos/network:onc_mojo",
     "//ui/webui/resources/js:assert.m",
   ]
   extra_deps = [ ":network_select_login_module" ]
@@ -207,8 +208,9 @@ js_library("oobe_cr_lottie.m") {
   deps = [
     "behaviors:oobe_i18n_behavior.m",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
-    "//ui/webui/resources/cr_elements/cr_lottie:cr_lottie.m",
   ]
+  externs_list =
+      [ "//ui/webui/resources/cr_elements/cr_lottie/cr_lottie_externs.js" ]
   extra_deps = [ ":oobe_cr_lottie_module" ]
 }
 
@@ -321,6 +323,7 @@ polymer_modulizer("network_select_login") {
   html_file = "network_select_login.html"
   html_type = "dom-module"
   auto_imports = oobe_auto_imports
+  migrated_imports = oobe_migrated_imports
   namespace_rewrites = oobe_namespace_rewrites
 }
 
@@ -361,6 +364,7 @@ polymer_modulizer("oobe_i18n_dropdown") {
   html_file = "oobe_i18n_dropdown.html"
   html_type = "dom-module"
   auto_imports = oobe_auto_imports
+  migrated_imports = oobe_migrated_imports
   namespace_rewrites = oobe_namespace_rewrites
 }
 
@@ -401,6 +405,7 @@ polymer_modulizer("security_token_pin") {
   html_file = "security_token_pin.html"
   html_type = "dom-module"
   auto_imports = oobe_auto_imports
+  migrated_imports = oobe_migrated_imports
   namespace_rewrites = oobe_namespace_rewrites
 }
 

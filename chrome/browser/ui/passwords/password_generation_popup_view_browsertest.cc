@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -43,6 +43,7 @@ class TestPasswordGenerationPopupController
                                       10),
                 /*max_length=*/10,
                 /*generation_element=*/std::u16string(),
+                /*user_typed_password=*/std::u16string(),
                 autofill::FieldRendererId(100),
                 /*is_generation_element_password_type=*/true,
                 /*text_direction=*/base::i18n::TextDirection(),

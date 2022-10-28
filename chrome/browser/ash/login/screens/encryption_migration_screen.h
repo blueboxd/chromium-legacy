@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,7 +8,6 @@
 #include <memory>
 #include <string>
 
-#include "ash/components/login/auth/public/user_context.h"
 #include "base/callback_forward.h"
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observation.h"
@@ -18,6 +17,7 @@
 #include "chromeos/ash/components/cryptohome/cryptohome_parameters.h"
 #include "chromeos/ash/components/dbus/cryptohome/rpc.pb.h"
 #include "chromeos/ash/components/dbus/userdataauth/userdataauth_client.h"
+#include "chromeos/ash/components/login/auth/public/user_context.h"
 #include "chromeos/dbus/power/power_manager_client.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/device/public/mojom/wake_lock.mojom.h"
@@ -30,7 +30,7 @@ class LoginFeedback;
 class UserContext;
 
 class EncryptionMigrationScreen : public BaseScreen,
-                                  public PowerManagerClient::Observer,
+                                  public chromeos::PowerManagerClient::Observer,
                                   public UserDataAuthClient::Observer {
  public:
   using TView = EncryptionMigrationScreenView;
@@ -164,7 +164,8 @@ class EncryptionMigrationScreen : public BaseScreen,
       base::ScopedObservation<UserDataAuthClient, UserDataAuthClient::Observer>>
       userdataauth_observer_;
 
-  base::ScopedObservation<PowerManagerClient, PowerManagerClient::Observer>
+  base::ScopedObservation<chromeos::PowerManagerClient,
+                          chromeos::PowerManagerClient::Observer>
       power_manager_observation_{this};
 
   base::WeakPtrFactory<EncryptionMigrationScreen> weak_ptr_factory_{this};

@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -97,7 +97,7 @@ const base::Value::List* GetPrefList(PrefService* pref_service,
   DCHECK(!pref_path->empty());
 
   return pref_service->HasPrefPath(*pref_path)
-             ? &pref_service->GetValueList(*pref_path)
+             ? &pref_service->GetList(*pref_path)
              : nullptr;
 }
 

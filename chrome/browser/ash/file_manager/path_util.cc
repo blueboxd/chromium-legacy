@@ -1,4 +1,4 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,9 +7,8 @@
 #include <memory>
 #include <utility>
 
+#include "ash/components/arc/arc_features.h"
 #include "ash/components/arc/arc_util.h"
-#include "ash/components/disks/disk.h"
-#include "ash/components/disks/disk_mount_manager.h"
 #include "base/barrier_closure.h"
 #include "base/base64.h"
 #include "base/bind.h"
@@ -44,6 +43,8 @@
 #include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chromeos/ash/components/disks/disk.h"
+#include "chromeos/ash/components/disks/disk_mount_manager.h"
 #include "components/drive/file_system_core_util.h"
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
@@ -244,11 +245,17 @@ absl::optional<int> MyFilesFolderToMessageId(std::string folder) {
 const base::FilePath::CharType kFuseBoxMediaPath[] =
     FILE_PATH_LITERAL("/media/fuse/fusebox");
 
+const base::FilePath::CharType kFuseBoxMediaSlashPath[] =
+    FILE_PATH_LITERAL("/media/fuse/fusebox/");
+
 const base::FilePath::CharType kRemovableMediaPath[] =
     FILE_PATH_LITERAL("/media/removable");
 
 const base::FilePath::CharType kAndroidFilesPath[] =
     FILE_PATH_LITERAL("/run/arc/sdcard/write/emulated/0");
+
+const base::FilePath::CharType kGuestOsAndroidFilesPath[] =
+    FILE_PATH_LITERAL("/media/fuse/android_files");
 
 const base::FilePath::CharType kSystemFontsPath[] =
     FILE_PATH_LITERAL("/usr/share/fonts");
@@ -257,6 +264,30 @@ const base::FilePath::CharType kArchiveMountPath[] =
     FILE_PATH_LITERAL("/media/archive");
 
 const char kFuseBox[] = "fusebox";
+
+// The actual value of this string is arbitrary (other than, per the comments
+// in external_mount_points.h, mount names should not contain '/'), but this
+// nonsense-looking word (based on the first two letters of each of "fuse box
+// mount name") is unique enough so that, when seeing "fubomona" in a log
+// message (e.g. in a storage::FileSystemURL's debug string form), code-
+// searching for that string should quickly find this definition here (and the
+// kFuseBoxMountNamePrefix name that code-search can find references for).
+//
+// This is just a prefix. The complete mount name (for FuseBox mounts, not for
+// storage::ExternalMountPoints generally) looks like "fubomona:volumetype.etc"
+// where the volumetype (e.g. "adp", "fsp") acts like a namespace so that ADP's
+// "etc" format won't accidentally conflict with FSP's "etc" format.
+//
+// This means that the "volumetype.etc" string value *can* be the same as a
+// FuseBox subdir string value, as they're both prefixed with "volumetype.",
+// but they don't *have* to be. Specifically, the "etc" may contain identifiers
+// that other in-process Chromium code wants to parse but those identifiers
+// might be longer than Linux's NAME_MAX.
+const char kFuseBoxMountNamePrefix[] = "fubomona:";
+
+const char kFuseBoxSubdirPrefixADP[] = "adp.";
+const char kFuseBoxSubdirPrefixFSP[] = "fsp.";
+const char kFuseBoxSubdirPrefixMTP[] = "mtp.";
 
 const char kShareCacheMountPointName[] = "ShareCache";
 
@@ -316,6 +347,8 @@ base::FilePath GetAndroidFilesPath() {
   base::FilePath path;
   if (mount_points->GetRegisteredPath(mount_point_name, &path))
     return path;
+  if (base::FeatureList::IsEnabled(arc::kEnableVirtioBlkForData))
+    return base::FilePath(file_manager::util::kGuestOsAndroidFilesPath);
   return base::FilePath(file_manager::util::kAndroidFilesPath);
 }
 
@@ -661,10 +694,10 @@ bool ConvertPathToArcUrl(const base::FilePath& path,
     return true;
   }
 
-  // Convert paths under Android files root (/run/arc/sdcard/write/emulated/0).
+  // Convert paths under Android files root (e.g.,
+  // /run/arc/sdcard/write/emulated/0).
   result_path = base::FilePath(kArcExternalFilesRoot);
-  if (base::FilePath(kAndroidFilesPath)
-          .AppendRelativePath(path, &result_path)) {
+  if (GetAndroidFilesPath().AppendRelativePath(path, &result_path)) {
     *arc_url_out = GURL(kArcStorageContentUrlPrefix)
                        .Resolve(base::EscapePath(result_path.AsUTF8Unsafe()));
     return true;
@@ -937,7 +970,7 @@ std::string GetPathDisplayTextForSettings(Profile* profile,
               .Append(l10n_util::GetStringUTF8(
                   IDS_FILE_BROWSER_DRIVE_SHARED_WITH_ME_COLLECTION_LABEL))
               .value())) {
-  } else if (ReplacePrefix(&result, kAndroidFilesPath,
+  } else if (ReplacePrefix(&result, GetAndroidFilesPath().value(),
                            l10n_util::GetStringUTF8(
                                IDS_FILE_BROWSER_ANDROID_FILES_ROOT_LABEL))) {
   } else if (ReplacePrefix(&result, GetCrostiniMountDirectory(profile).value(),

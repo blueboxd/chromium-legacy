@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -120,7 +120,7 @@ bool ForceInstalledTracker::ProceedIfForcedExtensionsPrefReady() {
          status_ == kWaitingForInstallForcelistPref);
 
   const base::Value::Dict& value =
-      pref_service_->GetValueDict(pref_names::kInstallForceList);
+      pref_service_->GetDict(pref_names::kInstallForceList);
   if (!forced_extensions_pref_ready_ && !value.empty()) {
     forced_extensions_pref_ready_ = true;
     OnForcedExtensionsPrefReady();
@@ -144,7 +144,7 @@ void ForceInstalledTracker::OnForcedExtensionsPrefReady() {
   collector_observation_.Observe(InstallStageTracker::Get(profile_));
 
   const base::Value::Dict& value =
-      pref_service_->GetValueDict(pref_names::kInstallForceList);
+      pref_service_->GetDict(pref_names::kInstallForceList);
 
   // Add each extension to |extensions_|.
   for (auto entry : value) {

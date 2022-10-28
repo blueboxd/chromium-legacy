@@ -1,14 +1,14 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #import "ios/web/js_messaging/page_script_util.h"
 
-#include "base/files/file_path.h"
-#include "base/files/file_util.h"
-#include "base/mac/bundle_locations.h"
-#include "base/strings/sys_string_conversions.h"
-#include "ios/web/public/browser_state.h"
+#import "base/files/file_path.h"
+#import "base/files/file_util.h"
+#import "base/mac/bundle_locations.h"
+#import "base/strings/sys_string_conversions.h"
+#import "ios/web/public/browser_state.h"
 #import "ios/web/public/web_client.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)

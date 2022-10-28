@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -89,8 +89,7 @@ class BackgroundContentsServiceTest : public testing::Test {
   }
 
   const base::Value::Dict& GetPrefs(Profile* profile) {
-    return profile->GetPrefs()->GetValueDict(
-        prefs::kRegisteredBackgroundContents);
+    return profile->GetPrefs()->GetDict(prefs::kRegisteredBackgroundContents);
   }
 
   // Returns the stored pref URL for the passed app id.
@@ -235,7 +234,7 @@ TEST_F(BackgroundContentsServiceTest, TestApplicationIDLinkage) {
   TestingProfile profile;
   BackgroundContentsService service(&profile, command_line_.get());
 
-  EXPECT_EQ(NULL, service.GetAppBackgroundContents("appid"));
+  EXPECT_EQ(nullptr, service.GetAppBackgroundContents("appid"));
   MockBackgroundContents* contents =
       AddToService(std::make_unique<MockBackgroundContents>(&service, "appid"));
   MockBackgroundContents* contents2 = AddToService(

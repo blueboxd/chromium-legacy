@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,7 +9,7 @@ import 'chrome://resources/polymer/v3_0/iron-icon/iron-icon.js';
 import {MechanicalLayout as DiagramMechanicalLayout, PhysicalLayout as DiagramPhysicalLayout, TopRightKey as DiagramTopRightKey, TopRowKey as DiagramTopRowKey} from 'chrome://resources/ash/common/keyboard_diagram.js';
 import {KeyboardKeyState} from 'chrome://resources/ash/common/keyboard_key.js';
 import {assert} from 'chrome://resources/js/assert.m.js';
-import {I18nBehavior} from 'chrome://resources/js/i18n_behavior.m.js';
+import {I18nBehavior} from 'chrome://resources/cr_elements/i18n_behavior.js';
 import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {InputDataProviderInterface, KeyboardInfo, KeyboardObserverInterface, KeyboardObserverReceiver, KeyEvent, KeyEventType, MechanicalLayout, NumberPadPresence, PhysicalLayout, TopRightKey, TopRowKey} from './diagnostics_types.js';
@@ -91,6 +91,11 @@ const standardNumberPadCodes = new Set([
 
 Polymer({
   is: 'keyboard-tester',
+
+  created: function() {
+    this.addEventListener('keydown', this.onKeyDown.bind(this));
+    this.addEventListener('keyup', this.onKeyUp.bind(this));
+  },
 
   _template: html`{__html_template__}`,
 
@@ -266,6 +271,21 @@ Polymer({
     this.$.dialog.showModal();
   },
 
+  onKeyUp(e) {
+    e.preventDefault();
+    e.stopPropagation();
+  },
+
+  onKeyDown(e) {
+    e.preventDefault();
+    e.stopPropagation();
+
+    // If we receive alt + esc we should close the app
+    if (e.altKey && e.key === 'Escape') {
+      this.close();
+    }
+  },
+
   /**
    * Returns whether the tester is currently open.
    * @return {boolean}
@@ -275,11 +295,14 @@ Polymer({
   },
 
   close() {
+    this.$$('#diagram').clearPressedKeys();
     this.$.dialog.close();
   },
 
   handleClose() {
-    this.receiver_.$.close();
+    if (this.receiver_) {
+      this.receiver_.$.close();
+    }
   },
 
   /**

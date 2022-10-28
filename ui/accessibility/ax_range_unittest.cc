@@ -69,7 +69,7 @@ class TestAXRangeScreenRectDelegate : public AXRangeRectDelegate {
     if (tree_manager_->GetTreeID() != tree_id)
       return gfx::Rect();
 
-    AXNode* node = tree_manager_->GetNodeFromTree(node_id);
+    AXNode* node = tree_manager_->GetNode(node_id);
     if (!node)
       return gfx::Rect();
 
@@ -86,7 +86,7 @@ class TestAXRangeScreenRectDelegate : public AXRangeRectDelegate {
     if (tree_manager_->GetTreeID() != tree_id)
       return gfx::Rect();
 
-    AXNode* node = tree_manager_->GetNodeFromTree(node_id);
+    AXNode* node = tree_manager_->GetNode(node_id);
     if (!node)
       return gfx::Rect();
 
@@ -419,16 +419,16 @@ void AXRangeTest::SetUp() {
 }  // namespace
 
 TEST_F(AXRangeTest, RangeOfContents) {
-  const AXNode* root = GetNodeFromTree(ROOT_ID);
+  const AXNode* root = GetNode(ROOT_ID);
   const TestPositionRange root_range =
       TestPositionRange::RangeOfContents(*root);
-  const AXNode* text_field = GetNodeFromTree(TEXT_FIELD_ID);
+  const AXNode* text_field = GetNode(TEXT_FIELD_ID);
   const TestPositionRange text_field_range =
       TestPositionRange::RangeOfContents(*text_field);
-  const AXNode* static_text = GetNodeFromTree(STATIC_TEXT1_ID);
+  const AXNode* static_text = GetNode(STATIC_TEXT1_ID);
   const TestPositionRange static_text_range =
       TestPositionRange::RangeOfContents(*static_text);
-  const AXNode* inline_box = GetNodeFromTree(INLINE_BOX1_ID);
+  const AXNode* inline_box = GetNode(INLINE_BOX1_ID);
   const TestPositionRange inline_box_range =
       TestPositionRange::RangeOfContents(*inline_box);
 
@@ -1606,10 +1606,10 @@ TEST_F(AXRangeTest, GetRects) {
 TEST_F(AXRangeTest, GetRectsOffscreen) {
   // Set up root node bounds/viewport size  to {0, 50, 800x60}, so that only
   // some text will be onscreen the rest will be offscreen.
-  AXNodeData old_root_node_data = GetRootAsAXNode()->data();
+  AXNodeData old_root_node_data = GetRoot()->data();
   AXNodeData new_root_node_data = old_root_node_data;
   new_root_node_data.relative_bounds.bounds = gfx::RectF(0, 50, 800, 60);
-  GetRootAsAXNode()->SetData(new_root_node_data);
+  GetRoot()->SetData(new_root_node_data);
 
   TestAXRangeScreenRectDelegate delegate(this);
 
@@ -1647,7 +1647,7 @@ TEST_F(AXRangeTest, GetRectsOffscreen) {
 
   // Reset the root node bounds/viewport size back to {0, 0, 800x600}, and
   // verify all elements should be onscreen.
-  GetRootAsAXNode()->SetData(old_root_node_data);
+  GetRoot()->SetData(old_root_node_data);
   expected_screen_rects = {
       gfx::Rect(20, 20, 100, 30), gfx::Rect(120, 20, 30, 30),
       gfx::Rect(150, 20, 30, 30), gfx::Rect(20, 50, 30, 30),

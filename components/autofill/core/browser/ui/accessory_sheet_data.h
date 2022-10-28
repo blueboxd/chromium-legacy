@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -21,10 +21,6 @@ namespace autofill {
 // code.
 class AccessorySheetField {
  public:
-  AccessorySheetField(std::u16string display_text,
-                      std::u16string a11y_description,
-                      bool is_obfuscated,
-                      bool selectable);
   AccessorySheetField(std::u16string display_text,
                       std::u16string text_to_fill,
                       std::u16string a11y_description,

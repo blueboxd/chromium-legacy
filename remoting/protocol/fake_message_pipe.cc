@@ -4,6 +4,7 @@
 
 #include "remoting/protocol/fake_message_pipe.h"
 
+#include <algorithm>
 #include <utility>
 
 #include "base/bind.h"
@@ -14,8 +15,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/protobuf/src/google/protobuf/message_lite.h"
 
-namespace remoting {
-namespace protocol {
+namespace remoting::protocol {
 
 FakeMessagePipe::FakeMessagePipe(bool asynchronous)
     : asynchronous_(asynchronous) {}
@@ -23,7 +23,9 @@ FakeMessagePipe::FakeMessagePipe(bool asynchronous)
 FakeMessagePipe::~FakeMessagePipe() = default;
 
 std::unique_ptr<FakeMessagePipeWrapper> FakeMessagePipe::Wrap() {
-  return std::make_unique<FakeMessagePipeWrapper>(this);
+  auto wrapper = std::make_unique<FakeMessagePipeWrapper>(this);
+  wrappers_.push_back(wrapper->GetWeakPtr());
+  return wrapper;
 }
 
 void FakeMessagePipe::Start(EventHandler* event_handler) {
@@ -96,6 +98,18 @@ void FakeMessagePipe::ClosePipe() {
   ClosePipeImpl();
 }
 
+bool FakeMessagePipe::HasWrappers() const {
+  auto* wrappers =
+      const_cast<std::vector<base::WeakPtr<FakeMessagePipeWrapper>>*>(
+          &wrappers_);
+  wrappers->erase(std::remove_if(wrappers->begin(), wrappers->end(),
+                                 [](const auto& weak_ptr) {
+                                   return weak_ptr.get() == nullptr;
+                                 }),
+                  wrappers->end());
+  return !wrappers->empty();
+}
+
 void FakeMessagePipe::SendImpl(google::protobuf::MessageLite* message,
                                base::OnceClosure done) {
   ASSERT_TRUE(pipe_opened_);
@@ -132,5 +146,4 @@ void FakeMessagePipe::ClosePipeImpl() {
   event_handler_->OnMessagePipeClosed();
 }
 
-}  // namespace protocol
-}  // namespace remoting
+}  // namespace remoting::protocol

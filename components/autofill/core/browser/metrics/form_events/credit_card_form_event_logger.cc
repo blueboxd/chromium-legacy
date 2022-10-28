@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -362,7 +362,8 @@ void CreditCardFormEventLogger::RecordCardUnmaskFlowEvent(
 bool CreditCardFormEventLogger::DoesCardHaveOffer(
     const CreditCard& credit_card) {
   for (auto& suggestion : suggestions_) {
-    if (suggestion.GetPayload<std::string>() == credit_card.guid()) {
+    if (suggestion.GetPayload<Suggestion::BackendId>().value() ==
+        credit_card.guid()) {
       return !suggestion.offer_label.empty();
     }
   }

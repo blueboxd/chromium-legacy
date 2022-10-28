@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -16,12 +16,13 @@ import UIKit
 ///     center.
 /// -   Referenced views don't have to be laid out by AutoLayout.
 /// -   Referenced views and layout guides don't have to be in the same window.
-class LayoutGuideCenter: NSObject {
+@objc
+public class LayoutGuideCenter: NSObject {
   /// MARK: Public
 
   /// References a view under a specific `name`.
   @objc(referenceView:underName:)
-  func reference(view referenceView: UIView?, under name: String) {
+  public func reference(view referenceView: UIView?, under name: String) {
     let oldReferenceView = referenceViews.object(forKey: name as NSString)
     // Early return if `referenceView` is already set.
     if referenceView == oldReferenceView {
@@ -43,7 +44,7 @@ class LayoutGuideCenter: NSObject {
   /// valid to call this method. The layout guide will be updated as soon as the referenced view
   /// is available.
   @objc(makeLayoutGuideNamed:)
-  func makeLayoutGuide(named name: String) -> UILayoutGuide {
+  public func makeLayoutGuide(named name: String) -> UILayoutGuide {
     let layoutGuide = FrameLayoutGuide()
     layoutGuide.onDidMoveToWindow = { [weak self] _ in
       self?.updateGuides(named: name)

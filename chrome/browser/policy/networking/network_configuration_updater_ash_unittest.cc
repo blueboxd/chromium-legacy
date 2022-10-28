@@ -1,4 +1,4 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -314,7 +314,7 @@ ACTION_P(SetCertificateList, list) {
 
 class NetworkConfigurationUpdaterAshTest : public testing::Test {
  protected:
-  NetworkConfigurationUpdaterAshTest() : certificate_importer_(NULL) {}
+  NetworkConfigurationUpdaterAshTest() : certificate_importer_(nullptr) {}
 
   void SetUp() override {
     ash::UserSessionManager::GetInstance()->set_start_session_type_for_testing(

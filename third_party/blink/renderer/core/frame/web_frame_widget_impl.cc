@@ -100,6 +100,7 @@
 #include "third_party/blink/renderer/core/input/context_menu_allowed_scope.h"
 #include "third_party/blink/renderer/core/input/event_handler.h"
 #include "third_party/blink/renderer/core/input/touch_action_util.h"
+#include "third_party/blink/renderer/core/layout/deferred_shaping_controller.h"
 #include "third_party/blink/renderer/core/layout/hit_test_location.h"
 #include "third_party/blink/renderer/core/layout/hit_test_request.h"
 #include "third_party/blink/renderer/core/layout/layout_box.h"
@@ -544,7 +545,7 @@ void WebFrameWidgetImpl::OnStartStylusWriting(
   // the focused element is editable to continue writing.
   if (IsElementNotNullAndEditable(focused_element)) {
     std::move(callback).Run(
-        focused_element->BoundsInViewport(),
+        focused_element->BoundsInWidget(),
         frame->View()->FrameToViewport(GetAbsoluteCaretBounds()));
     return;
   }
@@ -1137,19 +1138,23 @@ void WebFrameWidgetImpl::CancelDrag() {
 void WebFrameWidgetImpl::StartDragging(const WebDragData& drag_data,
                                        DragOperationsMask operations_allowed,
                                        const SkBitmap& drag_image,
-                                       const gfx::Point& drag_image_offset) {
+                                       const gfx::Vector2d& cursor_offset,
+                                       const gfx::Rect& drag_obj_rect) {
   doing_drag_and_drop_ = true;
   if (drag_and_drop_disabled_) {
     DragSourceSystemDragEnded();
     return;
   }
 
-  gfx::Point offset_in_dips =
-      widget_base_->BlinkSpaceToFlooredDIPs(drag_image_offset);
+  gfx::Vector2d offset_in_dips =
+      widget_base_->BlinkSpaceToFlooredDIPs(gfx::Point() + cursor_offset)
+          .OffsetFromOrigin();
+  gfx::Rect drag_obj_rect_in_dips =
+      gfx::Rect(widget_base_->BlinkSpaceToFlooredDIPs(drag_obj_rect.origin()),
+                widget_base_->BlinkSpaceToFlooredDIPs(drag_obj_rect.size()));
   GetAssociatedFrameWidgetHost()->StartDragging(
-      drag_data, operations_allowed, drag_image,
-      gfx::Vector2d(offset_in_dips.x(), offset_in_dips.y()),
-      possible_drag_event_info_.Clone());
+      drag_data, operations_allowed, drag_image, offset_in_dips,
+      drag_obj_rect_in_dips, possible_drag_event_info_.Clone());
 }
 
 DragOperation WebFrameWidgetImpl::DragTargetDragEnterOrOver(
@@ -1415,14 +1420,6 @@ void WebFrameWidgetImpl::UpdateLifecycle(WebLifecycleUpdate requested_update,
       }
     }
   }
-}
-
-void WebFrameWidgetImpl::OnDeferCommitsChanged(
-    bool defer_status,
-    cc::PaintHoldingReason reason,
-    absl::optional<cc::PaintHoldingCommitTrigger> trigger) {
-  GetPage()->GetChromeClient().OnDeferCommitsChanged(defer_status, reason,
-                                                     trigger);
 }
 
 void WebFrameWidgetImpl::DidCompletePageScaleAnimation() {
@@ -1727,6 +1724,12 @@ void WebFrameWidgetImpl::StopDeferringCommits(
   if (!View()->does_composite())
     return;
   widget_base_->LayerTreeHost()->StopDeferringCommits(triggger);
+}
+
+std::unique_ptr<cc::ScopedPauseRendering> WebFrameWidgetImpl::PauseRendering() {
+  if (!View()->does_composite())
+    return nullptr;
+  return widget_base_->LayerTreeHost()->PauseRendering();
 }
 
 std::unique_ptr<cc::ScopedDeferMainFrameUpdate>
@@ -2155,7 +2158,12 @@ void WebFrameWidgetImpl::BeginMainFrame(base::TimeTicks last_frame_time) {
 }
 
 void WebFrameWidgetImpl::BeginCommitCompositorFrame() {
-  commit_compositor_frame_start_time_.emplace(base::TimeTicks::Now());
+  if (commit_compositor_frame_start_time_.has_value()) {
+    next_commit_compositor_frame_start_time_.emplace(base::TimeTicks::Now());
+  } else {
+    commit_compositor_frame_start_time_.emplace(base::TimeTicks::Now());
+  }
+  GetPage()->GetChromeClient().WillCommitCompositorFrame();
   probe::LayerTreePainted(LocalRootImpl()->GetFrame());
   if (ForTopMostMainFrame()) {
     Document* doc = local_root_->GetFrame()->GetDocument();
@@ -2189,7 +2197,8 @@ void WebFrameWidgetImpl::EndCommitCompositorFrame(
       ->EnsureUkmAggregator()
       .RecordImplCompositorSample(commit_compositor_frame_start_time_.value(),
                                   commit_start_time, commit_finish_time);
-  commit_compositor_frame_start_time_.reset();
+  commit_compositor_frame_start_time_ =
+      std::move(next_commit_compositor_frame_start_time_);
 }
 
 void WebFrameWidgetImpl::ApplyViewportChanges(
@@ -4326,6 +4335,21 @@ void WebFrameWidgetImpl::SetDeviceScaleFactorForTesting(float factor) {
 FrameWidgetTestHelper*
 WebFrameWidgetImpl::GetFrameWidgetTestHelperForTesting() {
   return nullptr;
+}
+
+void WebFrameWidgetImpl::PrepareForFinalLifecyclUpdateForTesting() {
+  ForEachLocalFrameControlledByWidget(
+      LocalRootImpl()->GetFrame(),
+      WTF::BindRepeating([](WebLocalFrameImpl* local_frame) {
+        LocalFrame* core_frame = local_frame->GetFrame();
+        if (!core_frame)
+          return;
+        Document* document = core_frame->GetDocument();
+        if (!document)
+          return;
+        if (auto* ds_controller = DeferredShapingController::From(*document))
+          ds_controller->ReshapeAllDeferred(ReshapeReason::kTesting);
+      }));
 }
 
 void WebFrameWidgetImpl::SetMayThrottleIfUndrawnFrames(

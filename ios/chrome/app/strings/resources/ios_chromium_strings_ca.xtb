@@ -67,6 +67,7 @@
 <translation id="5308226104666789935">Chromium no pot cercar actualitzacions</translation>
 <translation id="5396916991083608703">Vols establir Chromium com a predeterminat?</translation>
 <translation id="5521125884468363740">Per veure les pestanyes des de tots els llocs on facis servir Chromium, inicia la sessió i activa la sincronització</translation>
+<translation id="5522297504975449419">Algunes funcions de Chromium ja no estaran disponibles.</translation>
 <translation id="5573014823074921752">Consell de Chromium. Per accedir a més opcions de pestanyes, mantén premut el botó Mostra pestanyes a la barra d'eines, que és a la part inferior o superior de la pantalla.</translation>
 <translation id="5700709190537129682">Chromium no pot comprovar les teves contrasenyes</translation>
 <translation id="5777187867430702742">Pàgina de Chromium</translation>
@@ -95,6 +96,7 @@
 <translation id="7175400662502680481">La teva contrasenya ha quedat exposada en una violació de les dades. El gestor de contrasenyes de Google recomana que la canviïs ara.</translation>
 <translation id="7208566199746267865">Per ajudar-te a estalviar temps, Chromium connecta els teus comptes al web. Pots afegir o suprimir comptes a Configuració.</translation>
 <translation id="725427773388857052">Chromium pot ajudar a protegir-te de violacions de les dades, de llocs web no segurs i més.</translation>
+<translation id="7255976941681861701">Descobreix el nou menú de Chromium</translation>
 <translation id="7269362888766543920">Alguns complements fan que Chromium es bloquegi. Prova de desinstal·lar-los.</translation>
 <translation id="7313655110045230863">Per establir Chromium com a navegador predeterminat, obre Configuració. Toca Aplicació de navegador predeterminada i, tot seguit, selecciona Chromium.</translation>
 <translation id="7337881442233988129">Chromium</translation>
@@ -113,7 +115,6 @@
 <translation id="7980860476903281594">Chromium comparteix la teva ubicació amb els llocs web que autoritzis.</translation>
 <translation id="8013573822802650211">Per veure les pestanyes des de tots els llocs on facis servir Chromium, inicia la sessió en tots els dispositius</translation>
 <translation id="8073677936375100957">Vols esborrar les dades de Chromium del dispositiu?</translation>
-<translation id="8175055321229419309">Consell: <ph name="BEGIN_LINK" />mou Chromium al Dock<ph name="END_LINK" /></translation>
 <translation id="8240981428553046115">Chromium no ha pogut cercar actualitzacions. Torna-ho a provar més tard.</translation>
 <translation id="8308172444429103994">Consell de Chromium. Inicia la sessió més ràpidament seleccionant la contrasenya desada a la part superior del teclat.</translation>
 <translation id="858114650497379505">Pots utilitzar les contrasenyes que has desat al gestor de contrasenyes en altres aplicacions de l'iPhone.</translation>

@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -23,6 +23,7 @@
 #include "components/optimization_guide/core/model_enums.h"
 #include "components/optimization_guide/core/optimization_guide_enums.h"
 #include "components/optimization_guide/core/prediction_model_download_observer.h"
+#include "components/optimization_guide/optimization_guide_internals/webui/optimization_guide_internals.mojom.h"
 #include "components/optimization_guide/proto/models.pb.h"
 #include "url/origin.h"
 
@@ -135,6 +136,9 @@ class PredictionManager : public PredictionModelDownloadObserver {
       proto::OptimizationTarget optimization_target) override;
   void OnModelDownloadFailed(
       proto::OptimizationTarget optimization_target) override;
+
+  std::vector<optimization_guide_internals::mojom::DownloadedModelInfoPtr>
+  GetDownloadedModelsInfoForWebUI() const;
 
  protected:
   // Process |prediction_models| to be stored in the in memory optimization

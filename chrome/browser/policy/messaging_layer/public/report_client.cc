@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -64,12 +64,21 @@ void ReportingClient::CreateLocalStorageModule(
     base::OnceCallback<void(StatusOr<scoped_refptr<StorageModuleInterface>>)>
         cb) {
   LOG(WARNING) << "Store reporting data locally";
+  DCHECK(!StorageSelector::is_use_missive())
+      << "Can only be used in local mode";
   StorageModule::Create(
       StorageOptions()
           .set_directory(local_reporting_path)
           .set_signature_verification_public_key(verification_key),
       std::move(async_start_upload_cb), EncryptionModule::Create(),
       CompressionModule::Create(512, compression_algorithm), std::move(cb));
+}
+
+// static
+StorageModule* ReportingClient::GetLocalStorageModule() {
+  DCHECK(!StorageSelector::is_use_missive())
+      << "Can only be used in local mode";
+  return static_cast<StorageModule*>(GetInstance()->storage().get());
 }
 
 // Uploader is passed to Storage in order to upload messages using the
@@ -327,24 +336,17 @@ void ReportingClient::DeliverAsyncStartUploader(
              ReportingClient* instance) {
             if (!instance->upload_provider_) {
               // If non-missived uploading is enabled, it will need upload
-              // provider, In case of missived Uploader will be provided by
+              // provider. In case of missived Uploader will be provided by
               // EncryptedReportingServiceProvider so it does not need to be
               // enabled here.
-              if (StorageSelector::is_uploader_required() &&
-                  !StorageSelector::is_use_missive()) {
-                DCHECK(!instance->upload_provider_)
-                    << "Upload provider already recorded";
-                instance->upload_provider_ = instance->GetDefaultUploadProvider(
-                    base::BindRepeating(&StorageModuleInterface::ReportSuccess,
-                                        instance->storage()),
-                    base::BindRepeating(
-                        &StorageModuleInterface::UpdateEncryptionKey,
-                        instance->storage()));
-              } else {
+              if (!StorageSelector::is_uploader_required() ||
+                  StorageSelector::is_use_missive()) {
                 std::move(start_uploader_cb)
                     .Run(Status(error::UNAVAILABLE, "Uploader not available"));
                 return;
               }
+              instance->upload_provider_ =
+                  instance->CreateLocalUploadProvider();
             }
             auto uploader = Uploader::Create(
                 /*need_encryption_key=*/(
@@ -366,12 +368,25 @@ void ReportingClient::DeliverAsyncStartUploader(
           reason, std::move(start_uploader_cb), base::Unretained(this)));
 }
 
+// static
 std::unique_ptr<EncryptedReportingUploadProvider>
-ReportingClient::GetDefaultUploadProvider(
-    UploadClient::ReportSuccessfulUploadCallback report_successful_upload_cb,
-    UploadClient::EncryptionKeyAttachedCallback encryption_key_attached_cb) {
+ReportingClient::CreateLocalUploadProvider() {
+  // Note: access local storage inside the callbacks, because it may be not yet
+  // stored in the client at the moment EncryptedReportingUploadProvider
+  // is instantiated.
   return std::make_unique<EncryptedReportingUploadProvider>(
-      report_successful_upload_cb, encryption_key_attached_cb);
+      base::BindPostTask(
+          sequenced_task_runner(),
+          base::BindRepeating(
+              [](SequenceInformation sequence_information, bool force) {
+                GetLocalStorageModule()->ReportSuccess(
+                    std::move(sequence_information), force);
+              })),
+      base::BindPostTask(
+          sequenced_task_runner(),
+          base::BindRepeating([](SignedEncryptionInfo signed_encryption_key) {
+            GetLocalStorageModule()->UpdateEncryptionKey(
+                std::move(signed_encryption_key));
+          })));
 }
-
 }  // namespace reporting

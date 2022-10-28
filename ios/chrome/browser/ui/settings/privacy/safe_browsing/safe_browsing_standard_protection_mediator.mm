@@ -1,15 +1,15 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #import "ios/chrome/browser/ui/settings/privacy/safe_browsing/safe_browsing_standard_protection_mediator.h"
 
-#include "base/mac/foundation_util.h"
-#include "base/notreached.h"
-#include "components/password_manager/core/common/password_manager_features.h"
-#include "components/password_manager/core/common/password_manager_pref_names.h"
-#include "components/prefs/pref_service.h"
-#include "components/safe_browsing/core/common/safe_browsing_prefs.h"
+#import "base/mac/foundation_util.h"
+#import "base/notreached.h"
+#import "components/password_manager/core/common/password_manager_features.h"
+#import "components/password_manager/core/common/password_manager_pref_names.h"
+#import "components/prefs/pref_service.h"
+#import "components/safe_browsing/core/common/safe_browsing_prefs.h"
 #import "components/signin/public/identity_manager/objc/identity_manager_observer_bridge.h"
 #import "ios/chrome/browser/signin/authentication_service.h"
 #import "ios/chrome/browser/ui/list_model/list_model.h"
@@ -22,9 +22,9 @@
 #import "ios/chrome/browser/ui/table_view/cells/table_view_info_button_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_switch_item.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
-#include "ios/chrome/grit/ios_google_chrome_strings.h"
-#include "ios/chrome/grit/ios_strings.h"
-#include "ui/base/l10n/l10n_util.h"
+#import "ios/chrome/grit/ios_google_chrome_strings.h"
+#import "ios/chrome/grit/ios_strings.h"
+#import "ui/base/l10n/l10n_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -268,7 +268,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   managedItem.statusText = status ? l10n_util::GetNSString(IDS_IOS_SETTING_ON)
                                   : l10n_util::GetNSString(IDS_IOS_SETTING_OFF);
   if (!status) {
-    managedItem.tintColor = [UIColor colorNamed:kGrey300Color];
+    managedItem.iconTintColor = [UIColor colorNamed:kGrey300Color];
 
     // This item is not controllable, then set the color opacity to 40%.
     managedItem.textColor =

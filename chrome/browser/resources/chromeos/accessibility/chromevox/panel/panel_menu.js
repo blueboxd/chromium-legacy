@@ -1,4 +1,4 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -75,7 +75,8 @@ export class PanelMenu {
    * @param {string} menuItemShortcut The keystrokes to select this item.
    * @param {string} menuItemBraille
    * @param {string} gesture
-   * @param {Function} callback The function to call if this item is selected.
+   * @param {function() : !Promise} callback The function to call if this item
+   *     is selected.
    * @param {string=} opt_id An optional id for the menu item element.
    * @return {!PanelMenuItem} The menu item just created.
    */
@@ -239,7 +240,7 @@ export class PanelMenu {
 
   /**
    * Get the callback for the active menu item.
-   * @return {Function} The callback.
+   * @return {?function() : !Promise} The callback.
    */
   getCallbackForCurrentItem() {
     if (this.activeIndex_ >= 0 && this.activeIndex_ < this.items_.length) {
@@ -251,7 +252,7 @@ export class PanelMenu {
   /**
    * Get the callback for a menu item given its DOM element.
    * @param {Element} element The DOM element.
-   * @return {Function} The callback.
+   * @return {?function() : !Promise} The callback.
    */
   getCallbackForElement(element) {
     for (let i = 0; i < this.items_.length; i++) {
@@ -328,7 +329,7 @@ export class PanelNodeMenu extends PanelMenu {
 
   /** @param {!PanelNodeMenuItemData} data */
   addItemFromData(data) {
-    this.addMenuItem(data.title, '', '', '', () => {
+    this.addMenuItem(data.title, '', '', '', async () => {
       if (data.callbackId) {
         BridgeCallbackManager.performCallback(data.callbackId);
       }

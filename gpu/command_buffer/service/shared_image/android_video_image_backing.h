@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -59,7 +59,6 @@ class GPU_GLES2_EXPORT AndroidVideoImageBacking : public AndroidImageBacking {
   gfx::Rect ClearedRect() const override;
   void SetClearedRect(const gfx::Rect& cleared_rect) override;
   void Update(std::unique_ptr<gfx::GpuFence> in_fence) override;
-  bool ProduceLegacyMailbox(MailboxManager* mailbox_manager) override;
 
  protected:
   AndroidVideoImageBacking(const Mailbox& mailbox,

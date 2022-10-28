@@ -1,4 +1,4 @@
-// Copyright (c) 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -18,6 +18,8 @@
 #include "components/password_manager/core/browser/password_manager_driver.h"
 
 namespace password_manager {
+
+class PasswordManagerClient;
 
 // Abstract interface for PasswordManagers.
 class PasswordManagerInterface : public FormSubmissionObserver {
@@ -52,6 +54,9 @@ class PasswordManagerInterface : public FormSubmissionObserver {
       autofill::FormRendererId form_id,
       autofill::FieldRendererId generation_element,
       autofill::password_generation::PasswordGenerationType type) = 0;
+
+  // Getter for the PasswordManagerClient.
+  virtual PasswordManagerClient* GetClient() = 0;
 
 #if BUILDFLAG(IS_IOS)
   // Handles a subframe form submission. In contrast to OnPasswordFormSubmitted

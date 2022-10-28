@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -87,7 +87,7 @@ void SetClientCertProperties(client_cert::ConfigType config_type,
 // TranslateONCHierarchy.
 class LocalTranslator {
  public:
-  LocalTranslator(const OncValueSignature& onc_signature,
+  LocalTranslator(const chromeos::onc::OncValueSignature& onc_signature,
                   const base::Value& onc_object,
                   base::Value* shill_dictionary)
       : onc_signature_(&onc_signature),
@@ -135,30 +135,30 @@ class LocalTranslator {
                                 const StringTranslationEntry table[],
                                 const std::string& shill_property_name);
 
-  const OncValueSignature* onc_signature_;
+  const chromeos::onc::OncValueSignature* onc_signature_;
   const FieldTranslationEntry* field_translation_table_;
   const base::Value* onc_object_;
   base::Value* shill_dictionary_;
 };
 
 void LocalTranslator::TranslateFields() {
-  if (onc_signature_ == &kNetworkConfigurationSignature)
+  if (onc_signature_ == &chromeos::onc::kNetworkConfigurationSignature)
     TranslateNetworkConfiguration();
-  else if (onc_signature_ == &kEthernetSignature)
+  else if (onc_signature_ == &chromeos::onc::kEthernetSignature)
     TranslateEthernet();
-  else if (onc_signature_ == &kVPNSignature)
+  else if (onc_signature_ == &chromeos::onc::kVPNSignature)
     TranslateVPN();
-  else if (onc_signature_ == &kOpenVPNSignature)
+  else if (onc_signature_ == &chromeos::onc::kOpenVPNSignature)
     TranslateOpenVPN();
-  else if (onc_signature_ == &kIPsecSignature)
+  else if (onc_signature_ == &chromeos::onc::kIPsecSignature)
     TranslateIPsec();
-  else if (onc_signature_ == &kL2TPSignature)
+  else if (onc_signature_ == &chromeos::onc::kL2TPSignature)
     TranslateL2TP();
-  else if (onc_signature_ == &kWiFiSignature)
+  else if (onc_signature_ == &chromeos::onc::kWiFiSignature)
     TranslateWiFi();
-  else if (onc_signature_ == &kEAPSignature)
+  else if (onc_signature_ == &chromeos::onc::kEAPSignature)
     TranslateEAP();
-  else if (onc_signature_ == &kStaticIPConfigSignature)
+  else if (onc_signature_ == &chromeos::onc::kStaticIPConfigSignature)
     TranslateStaticIPConfig();
   else
     CopyFieldsAccordingToSignature();
@@ -455,11 +455,13 @@ void LocalTranslator::TranslateNetworkConfiguration() {
       onc_object_, ::onc::network_config::kIPAddressConfigType);
   const std::string name_servers_config_type = FindStringKeyOrEmpty(
       onc_object_, ::onc::network_config::kNameServersConfigType);
-  if ((ip_address_config_type == ::onc::network_config::kIPConfigTypeDHCP) ||
-      (name_servers_config_type == ::onc::network_config::kIPConfigTypeDHCP)) {
-    // If either type is set to DHCP, provide an empty dictionary to ensure
-    // that any unset properties are cleared. Note: if either type is specified,
-    // the other type defaults to DHCP if not specified.
+  if ((ip_address_config_type != ::onc::network_config::kIPConfigTypeStatic) &&
+      (name_servers_config_type !=
+       ::onc::network_config::kIPConfigTypeStatic)) {
+    // If neither type is set to Static, provide an empty dictionary to ensure
+    // that any unset properties are cleared.
+    // Note: A type defaults to DHCP if not specified.
+    // TODO(b/245885527): Come up with a better way to handle ONC defaults.
     shill_dictionary_->SetKey(shill::kStaticIPConfigProperty,
                               base::Value(base::Value::Type::DICTIONARY));
   }
@@ -491,8 +493,8 @@ void LocalTranslator::CopyFieldFromONCToShill(
   if (!value)
     return;
 
-  const OncFieldSignature* field_signature =
-      GetFieldSignature(*onc_signature_, onc_field_name);
+  const chromeos::onc::OncFieldSignature* field_signature =
+      chromeos::onc::GetFieldSignature(*onc_signature_, onc_field_name);
   if (field_signature) {
     base::Value::Type expected_type =
         field_signature->value_signature->onc_type;
@@ -541,7 +543,7 @@ void LocalTranslator::TranslateWithTableAndSet(
 // Iterates recursively over |onc_object| and its |signature|. At each object
 // applies the local translation using LocalTranslator::TranslateFields. The
 // results are written to |shill_dictionary|.
-void TranslateONCHierarchy(const OncValueSignature& signature,
+void TranslateONCHierarchy(const chromeos::onc::OncValueSignature& signature,
                            const base::Value& onc_object,
                            base::Value* shill_dictionary) {
   const std::vector<std::string> path =
@@ -564,8 +566,8 @@ void TranslateONCHierarchy(const OncValueSignature& signature,
     if (!it.second.is_dict())
       continue;
 
-    const OncFieldSignature* field_signature =
-        GetFieldSignature(signature, it.first);
+    const chromeos::onc::OncFieldSignature* field_signature =
+        chromeos::onc::GetFieldSignature(signature, it.first);
     if (!field_signature) {
       NET_LOG(ERROR) << "Unexpected or deprecated ONC key: " << it.first;
       continue;
@@ -577,8 +579,9 @@ void TranslateONCHierarchy(const OncValueSignature& signature,
 
 }  // namespace
 
-base::Value TranslateONCObjectToShill(const OncValueSignature* onc_signature,
-                                      const base::Value& onc_object) {
+base::Value TranslateONCObjectToShill(
+    const chromeos::onc::OncValueSignature* onc_signature,
+    const base::Value& onc_object) {
   CHECK(onc_signature != NULL);
   base::Value shill_dictionary(base::Value::Type::DICTIONARY);
   TranslateONCHierarchy(*onc_signature, onc_object, &shill_dictionary);

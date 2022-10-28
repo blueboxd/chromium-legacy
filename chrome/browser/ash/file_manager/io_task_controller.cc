@@ -1,4 +1,4 @@
-// Copyright (c) 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -53,7 +53,7 @@ IOTaskId IOTaskController::Add(std::unique_ptr<IOTask> task) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   IOTaskId task_id = ++last_id_;
-  task->progress_.task_id = task_id;
+  task->SetTaskID(task_id);
 
   // Notify observers that the task has been queued.
   NotifyIOTaskObservers(task->progress());

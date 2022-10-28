@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -18,14 +18,17 @@
 #include "chrome/browser/autofill_assistant/password_change/mock_apc_onboarding_coordinator.h"
 #include "chrome/browser/ui/autofill_assistant/password_change/mock_apc_scrim_manager.h"
 #include "chrome/browser/ui/autofill_assistant/password_change/mock_assistant_side_panel_coordinator.h"
+#include "chrome/browser/ui/autofill_assistant/password_change/mock_assistant_stopped_bubble_coordinator.h"
 #include "chrome/browser/ui/ui_features.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "components/autofill_assistant/browser/public/mock_headless_script_controller.h"
 #include "components/autofill_assistant/browser/public/mock_runtime_manager.h"
 #include "components/autofill_assistant/browser/public/password_change/mock_website_login_manager.h"
+#include "components/autofill_assistant/browser/public/prefs.h"
 #include "components/password_manager/core/browser/password_manager_client.h"
 #include "components/password_manager/core/browser/password_manager_client_helper.h"
 #include "components/password_manager/core/browser/stub_password_manager_client.h"
+#include "components/prefs/pref_service.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/test_renderer_host.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -75,6 +78,7 @@ class MockApcExternalActionDelegate : public ApcExternalActionDelegate {
 
 using ::testing::_;
 using ::testing::DoAll;
+using ::testing::NiceMock;
 using ::testing::Return;
 using ::testing::SaveArg;
 using ::testing::StrEq;
@@ -89,7 +93,16 @@ class TestApcClientImpl : public ApcClientImpl {
 
   std::unique_ptr<ApcOnboardingCoordinator> CreateOnboardingCoordinator()
       override {
-    return std::move(coordinator_);
+    return std::move(onboarding_coordinator_);
+  }
+
+  std::unique_ptr<AssistantStoppedBubbleCoordinator>
+  CreateAssistantStoppedBubbleCoordinator() override {
+    if (!assistant_stopped_bubble_coordinator_) {
+      ADD_FAILURE() << "assistant_stopped_bubble_coordinator_ is undefined, "
+                       "please inject an instance of it.";
+    }
+    return std::move(assistant_stopped_bubble_coordinator_);
   }
 
   std::unique_ptr<AssistantSidePanelCoordinator> CreateSidePanel() override {
@@ -128,7 +141,7 @@ class TestApcClientImpl : public ApcClientImpl {
   // `CreateOnboardingCoordinator()`.
   void InjectOnboardingCoordinatorForTesting(
       std::unique_ptr<ApcOnboardingCoordinator> coordinator) {
-    coordinator_ = std::move(coordinator);
+    onboarding_coordinator_ = std::move(coordinator);
   }
 
   void InjectSidePanelForTesting(
@@ -156,6 +169,15 @@ class TestApcClientImpl : public ApcClientImpl {
     scrim_manager_ = std::move(scrim_manager);
   }
 
+  // Must be called before every expected call to
+  // CreateAssistantStoppedBubbleCoordinator().
+  void InjectAssistantStoppedBubbleCoordinatorForTesting(
+      std::unique_ptr<AssistantStoppedBubbleCoordinator>
+          assistant_stopped_bubble_coordinator) {
+    assistant_stopped_bubble_coordinator_ =
+        std::move(assistant_stopped_bubble_coordinator);
+  }
+
   // Allows setting a ApcExternalActionDelegate.
   void InjectApcExternalActionDelegateForTesting(
       std::unique_ptr<ApcExternalActionDelegate> apc_external_action_delegate) {
@@ -177,12 +199,14 @@ class TestApcClientImpl : public ApcClientImpl {
   }
 
  private:
-  std::unique_ptr<ApcOnboardingCoordinator> coordinator_;
+  std::unique_ptr<ApcOnboardingCoordinator> onboarding_coordinator_;
   std::unique_ptr<AssistantSidePanelCoordinator> side_panel_;
   std::unique_ptr<autofill_assistant::HeadlessScriptController>
       external_script_controller_;
   raw_ptr<autofill_assistant::RuntimeManager> runtime_manager_;
   std::unique_ptr<ApcScrimManager> scrim_manager_;
+  std::unique_ptr<AssistantStoppedBubbleCoordinator>
+      assistant_stopped_bubble_coordinator_;
   std::unique_ptr<ApcExternalActionDelegate> apc_external_action_delegate_;
   std::unique_ptr<autofill_assistant::WebsiteLoginManager>
       website_login_manager_;
@@ -206,13 +230,13 @@ class ApcClientImplTest : public ChromeRenderViewHostTestHarness {
   }
 
   void SetUp() override {
-    content::RenderViewHostTestHarness::SetUp();
+    ChromeRenderViewHostTestHarness::SetUp();
 
     test_apc_client_ = TestApcClientImpl::CreateForWebContents(web_contents());
 
     // Prepare the coordinator.
     auto coordinator = std::make_unique<MockApcOnboardingCoordinator>();
-    coordinator_ref_ = coordinator.get();
+    onboarding_coordinator_ref_ = coordinator.get();
     test_apc_client_->InjectOnboardingCoordinatorForTesting(
         std::move(coordinator));
 
@@ -242,6 +266,14 @@ class ApcClientImplTest : public ChromeRenderViewHostTestHarness {
     scrim_manager_ref_ = scrim_manager.get();
     test_apc_client_->InjectApcScrimManagerForTesting(std::move(scrim_manager));
 
+    // Prepare the AssistantStoppedBubbleCoordinator.
+    auto assistant_stopped_bubble_coordinator =
+        std::make_unique<NiceMock<MockAssistantStoppedBubbleCoordinator>>();
+    assistant_stopped_bubble_coordinator_ref_ =
+        assistant_stopped_bubble_coordinator.get();
+    test_apc_client_->InjectAssistantStoppedBubbleCoordinatorForTesting(
+        std::move(assistant_stopped_bubble_coordinator));
+
     // Prepare the PasswordManagerClient.
     auto password_manager_client =
         std::make_unique<password_manager::StubPasswordManagerClient>();
@@ -270,9 +302,15 @@ class ApcClientImplTest : public ChromeRenderViewHostTestHarness {
   }
 
   TestApcClientImpl* apc_client() { return test_apc_client_; }
-  MockApcOnboardingCoordinator* coordinator() { return coordinator_ref_; }
+  MockApcOnboardingCoordinator* coordinator() {
+    return onboarding_coordinator_ref_;
+  }
   MockAssistantSidePanelCoordinator* side_panel() { return side_panel_ref_; }
   MockApcScrimManager* scrim_manager() { return scrim_manager_ref_; }
+  MockAssistantStoppedBubbleCoordinator*
+  assistant_stopped_bubble_coordinator() {
+    return assistant_stopped_bubble_coordinator_ref_;
+  }
   MockApcExternalActionDelegate* apc_external_action_delegate() {
     return apc_external_action_delegate_ref_;
   }
@@ -287,16 +325,20 @@ class ApcClientImplTest : public ChromeRenderViewHostTestHarness {
     return mock_runtime_manager_.get();
   }
 
+  PrefService* GetPrefs() { return profile()->GetPrefs(); }
+
  private:
   // Necessary to turn on the unified sidepanel.
   base::test::ScopedFeatureList feature_list_;
 
   // Pointers to mocked components that are injected into the `ApcClientImpl`.
-  raw_ptr<MockApcOnboardingCoordinator> coordinator_ref_ = nullptr;
+  raw_ptr<MockApcOnboardingCoordinator> onboarding_coordinator_ref_ = nullptr;
   raw_ptr<MockAssistantSidePanelCoordinator> side_panel_ref_ = nullptr;
   raw_ptr<autofill_assistant::MockHeadlessScriptController>
       external_script_controller_ref_ = nullptr;
   raw_ptr<MockApcScrimManager> scrim_manager_ref_ = nullptr;
+  raw_ptr<MockAssistantStoppedBubbleCoordinator>
+      assistant_stopped_bubble_coordinator_ref_ = nullptr;
   raw_ptr<MockApcExternalActionDelegate> apc_external_action_delegate_ref_ =
       nullptr;
   raw_ptr<password_manager::StubPasswordManagerClient>
@@ -327,15 +369,16 @@ TEST_F(ApcClientImplTest,
   EXPECT_FALSE(client->IsRunning());
 
   // Prepare to extract the callback to the coordinator.
-  ApcOnboardingCoordinator::Callback coordinator_callback;
+  ApcOnboardingCoordinator::Callback onboarding_coordinator_callback;
   base::MockCallback<ApcClient::ResultCallback> result_callback1,
       result_callback2;
   EXPECT_CALL(*coordinator(), PerformOnboarding)
-      .WillOnce(MoveArg<0>(&coordinator_callback));
+      .WillOnce(MoveArg<0>(&onboarding_coordinator_callback));
   EXPECT_CALL(*runtime_manager(),
               SetUIState(autofill_assistant::UIState::kShown));
   EXPECT_CALL(*apc_external_action_delegate(), ShowStartingScreen(GURL(kUrl1)));
   EXPECT_CALL(*scrim_manager(), Show());
+  EXPECT_CALL(*assistant_stopped_bubble_coordinator(), Show()).Times(0);
 
   client->Start(GURL(kUrl1), kUsername1, /*skip_login=*/false,
                 result_callback1.Get());
@@ -357,7 +400,7 @@ TEST_F(ApcClientImplTest,
       .WillOnce(MoveArg<1>(&external_script_controller_callback));
 
   // Successful onboarding.
-  std::move(coordinator_callback).Run(true);
+  std::move(onboarding_coordinator_callback).Run(true);
   EXPECT_TRUE(client->IsRunning());
 
   autofill_assistant::HeadlessScriptController::ScriptResult script_result = {
@@ -388,11 +431,11 @@ TEST_F(ApcClientImplTest, CreateAndStartApcFlow_Success_PasswordWasNotChanged) {
       .WillByDefault(Return(false));
 
   // Prepare to extract the callback to the coordinator.
-  ApcOnboardingCoordinator::Callback coordinator_callback;
+  ApcOnboardingCoordinator::Callback onboarding_coordinator_callback;
   base::MockCallback<ApcClient::ResultCallback> result_callback1,
       result_callback2;
   EXPECT_CALL(*coordinator(), PerformOnboarding)
-      .WillOnce(MoveArg<0>(&coordinator_callback));
+      .WillOnce(MoveArg<0>(&onboarding_coordinator_callback));
 
   client->Start(GURL(kUrl1), kUsername1, /*skip_login=*/false,
                 result_callback1.Get());
@@ -406,7 +449,7 @@ TEST_F(ApcClientImplTest, CreateAndStartApcFlow_Success_PasswordWasNotChanged) {
       .WillOnce(MoveArg<1>(&external_script_controller_callback));
 
   // Successful onboarding.
-  std::move(coordinator_callback).Run(true);
+  std::move(onboarding_coordinator_callback).Run(true);
 
   autofill_assistant::HeadlessScriptController::ScriptResult script_result = {
       .success = true};
@@ -424,11 +467,11 @@ TEST_F(ApcClientImplTest, CreateAndStartApcFlow_ScriptFails) {
       ApcClient::GetOrCreateForWebContents(web_contents());
 
   // Prepare to extract the callback to the coordinator.
-  ApcOnboardingCoordinator::Callback coordinator_callback;
+  ApcOnboardingCoordinator::Callback onboarding_coordinator_callback;
   base::MockCallback<ApcClient::ResultCallback> result_callback1,
       result_callback2;
   EXPECT_CALL(*coordinator(), PerformOnboarding)
-      .WillOnce(MoveArg<0>(&coordinator_callback));
+      .WillOnce(MoveArg<0>(&onboarding_coordinator_callback));
 
   client->Start(GURL(kUrl1), kUsername1, /*skip_login=*/false,
                 result_callback1.Get());
@@ -442,7 +485,7 @@ TEST_F(ApcClientImplTest, CreateAndStartApcFlow_ScriptFails) {
       .WillOnce(MoveArg<1>(&external_script_controller_callback));
 
   // Successful onboarding.
-  std::move(coordinator_callback).Run(true);
+  std::move(onboarding_coordinator_callback).Run(true);
 
   autofill_assistant::HeadlessScriptController::ScriptResult script_result = {
       .success = false};
@@ -568,6 +611,32 @@ TEST_F(ApcClientImplTest, CreateAndStartApcFlow_WithUnifiedSidePanelDisabled) {
   EXPECT_FALSE(client->IsRunning());
 }
 
+TEST_F(ApcClientImplTest, CreateAndStartApcFlow_WithAutofillAssistantDisabled) {
+  GetPrefs()->SetBoolean(autofill_assistant::prefs::kAutofillAssistantEnabled,
+                         false);
+  raw_ptr<ApcClient> client =
+      ApcClient::GetOrCreateForWebContents(web_contents());
+
+  // There is one client per WebContents.
+  EXPECT_EQ(client, apc_client());
+
+  // The `ApcClient` is paused.
+  EXPECT_FALSE(client->IsRunning());
+
+  EXPECT_CALL(*runtime_manager(),
+              SetUIState(autofill_assistant::UIState::kShown))
+      .Times(0);
+
+  base::MockCallback<ApcClient::ResultCallback> result_callback;
+  EXPECT_CALL(result_callback, Run(false));
+
+  // Starting it does not work.
+  client->Start(GURL(kUrl1), kUsername1, /*skip_login=*/true,
+                /*callback=*/result_callback.Get(),
+                /*debug_run_information=*/absl::nullopt);
+  EXPECT_FALSE(client->IsRunning());
+}
+
 TEST_F(ApcClientImplTest,
        CreateAndStartApcFlow_WithoutPasswordClientManagerFlowStops) {
   apc_client()->InjectPasswordManagerClientForTesting(nullptr);
@@ -616,6 +685,7 @@ TEST_F(ApcClientImplTest, OnHidden_WithOngoingApcFlow) {
 
   EXPECT_CALL(*runtime_manager(),
               SetUIState(autofill_assistant::UIState::kNotShown));
+  EXPECT_CALL(*assistant_stopped_bubble_coordinator(), Show());
   // Simulate hiding the side panel.
   side_panel_observer()->OnHidden();
 

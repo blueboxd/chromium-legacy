@@ -1,46 +1,48 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <WebKit/WebKit.h>
-#include <vector>
+#import <WebKit/WebKit.h>
+#import <vector>
 
-#include "base/files/file_enumerator.h"
-#include "base/files/file_path.h"
-#include "base/files/file_util.h"
-#include "base/mac/foundation_util.h"
-#include "base/memory/ptr_util.h"
-#include "base/path_service.h"
-#include "base/strings/string_util.h"
-#include "base/strings/stringprintf.h"
-#include "base/strings/sys_string_conversions.h"
-#include "base/strings/utf_string_conversions.h"
-#include "base/task/thread_pool/thread_pool_instance.h"
+#import "base/files/file_enumerator.h"
+#import "base/files/file_path.h"
+#import "base/files/file_util.h"
+#import "base/mac/foundation_util.h"
+#import "base/memory/ptr_util.h"
+#import "base/path_service.h"
+#import "base/strings/string_util.h"
+#import "base/strings/stringprintf.h"
+#import "base/strings/sys_string_conversions.h"
+#import "base/strings/utf_string_conversions.h"
+#import "base/task/thread_pool/thread_pool_instance.h"
 #import "base/test/ios/wait_util.h"
-#include "base/test/scoped_feature_list.h"
-#include "components/autofill/core/browser/browser_autofill_manager.h"
-#include "components/autofill/core/browser/form_structure.h"
-#include "components/autofill/core/common/autofill_features.h"
-#include "components/autofill/core/common/autofill_payments_features.h"
-#include "components/autofill/core/common/unique_ids.h"
+#import "base/test/scoped_feature_list.h"
+#import "components/autofill/core/browser/browser_autofill_manager.h"
+#import "components/autofill/core/browser/form_structure.h"
+#import "components/autofill/core/browser/test_autofill_manager_waiter.h"
+#import "components/autofill/core/common/autofill_features.h"
+#import "components/autofill/core/common/autofill_payments_features.h"
+#import "components/autofill/core/common/unique_ids.h"
 #import "components/autofill/ios/browser/autofill_agent.h"
-#include "components/autofill/ios/browser/autofill_driver_ios.h"
+#import "components/autofill/ios/browser/autofill_driver_ios.h"
+#import "components/autofill/ios/browser/test_autofill_manager_injector.h"
 #import "components/autofill/ios/form_util/form_util_java_script_feature.h"
-#include "components/autofill/ios/form_util/unique_id_data_tab_helper.h"
-#include "components/password_manager/core/browser/mock_password_store_interface.h"
-#include "components/password_manager/core/browser/password_manager_test_utils.h"
-#include "components/sync_user_events/fake_user_event_service.h"
-#include "ios/chrome/browser/autofill/address_normalizer_factory.h"
+#import "components/autofill/ios/form_util/unique_id_data_tab_helper.h"
+#import "components/password_manager/core/browser/mock_password_store_interface.h"
+#import "components/password_manager/core/browser/password_manager_test_utils.h"
+#import "components/sync_user_events/fake_user_event_service.h"
+#import "ios/chrome/browser/autofill/address_normalizer_factory.h"
 #import "ios/chrome/browser/autofill/form_suggestion_controller.h"
-#include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
-#include "ios/chrome/browser/chrome_paths.h"
-#include "ios/chrome/browser/infobars/infobar_manager_impl.h"
-#include "ios/chrome/browser/passwords/ios_chrome_password_store_factory.h"
+#import "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
+#import "ios/chrome/browser/infobars/infobar_manager_impl.h"
+#import "ios/chrome/browser/passwords/ios_chrome_password_store_factory.h"
 #import "ios/chrome/browser/passwords/password_controller.h"
-#include "ios/chrome/browser/sync/ios_user_event_service_factory.h"
+#import "ios/chrome/browser/paths/paths.h"
+#import "ios/chrome/browser/sync/ios_user_event_service_factory.h"
 #import "ios/chrome/browser/ui/autofill/chrome_autofill_client_ios.h"
-#include "ios/chrome/browser/web/chrome_web_client.h"
-#include "ios/web/public/js_messaging/web_frame.h"
+#import "ios/chrome/browser/web/chrome_web_client.h"
+#import "ios/web/public/js_messaging/web_frame.h"
 #import "ios/web/public/js_messaging/web_frames_manager.h"
 #import "ios/web/public/test/scoped_testing_web_client.h"
 #import "ios/web/public/test/task_observer_util.h"
@@ -48,8 +50,8 @@
 #import "ios/web/public/test/web_task_environment.h"
 #import "ios/web/public/test/web_view_interaction_test_util.h"
 #import "ios/web/public/web_state.h"
-#include "testing/data_driven_testing/data_driven_test.h"
-#include "testing/platform_test.h"
+#import "testing/data_driven_testing/data_driven_test.h"
+#import "testing/platform_test.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -127,6 +129,22 @@ class FormStructureBrowserTest
   FormStructureBrowserTest& operator=(const FormStructureBrowserTest&) = delete;
 
  protected:
+  class TestAutofillManager : public BrowserAutofillManager {
+   public:
+    TestAutofillManager(AutofillDriverIOS* driver, AutofillClient* client)
+        : BrowserAutofillManager(driver,
+                                 client,
+                                 "en-US",
+                                 EnableDownloadManager(false)) {}
+
+    TestAutofillManagerWaiter& waiter() { return waiter_; }
+
+   private:
+    TestAutofillManagerWaiter waiter_{
+        *this,
+        {&AutofillManager::Observer::OnAfterFormsSeen}};
+  };
+
   FormStructureBrowserTest();
   ~FormStructureBrowserTest() override {}
 
@@ -150,6 +168,8 @@ class FormStructureBrowserTest
   std::unique_ptr<web::WebState> web_state_;
   std::unique_ptr<autofill::ChromeAutofillClientIOS> autofill_client_;
   AutofillAgent* autofill_agent_;
+  std::unique_ptr<TestAutofillManagerInjector<TestAutofillManager>>
+      autofill_manager_injector_;
   FormSuggestionController* suggestion_controller_;
 
  private:
@@ -197,8 +217,6 @@ FormStructureBrowserTest::FormStructureBrowserTest()
        autofill::features::kAutofillEnableNameSurenameParsing,
        // TODO(crbug.com/1190334): Remove once launched.
        autofill::features::kAutofillParseMerchantPromoCodeFields,
-       // TODO(crbug.com/1113970): Remove once launched.
-       features::kAutofillSectionUponRedundantNameInfo,
        // TODO(crbug.com/1335549): Remove once launched.
        autofill::features::kAutofillParseIBANFields},
       // Disabled
@@ -236,6 +254,10 @@ void FormStructureBrowserTest::SetUp() {
   autofill::AutofillDriverIOS::PrepareForWebStateWebFrameAndDelegate(
       web_state(), autofill_client_.get(), /*autofill_agent=*/nil, locale,
       autofill::AutofillManager::EnableDownloadManager(false));
+
+  autofill_manager_injector_ =
+      std::make_unique<TestAutofillManagerInjector<TestAutofillManager>>(
+          web_state());
 }
 
 void FormStructureBrowserTest::TearDown() {
@@ -277,15 +299,10 @@ void FormStructureBrowserTest::GenerateResults(const std::string& input,
                                                std::string* output) {
   ASSERT_TRUE(LoadHtmlWithoutSubresourcesAndInitRendererIds(input));
   base::ThreadPoolInstance::Get()->FlushForTesting();
-  web::WebFrame* frame = web_state()->GetWebFramesManager()->GetMainWebFrame();
-  BrowserAutofillManager* autofill_manager =
-      AutofillDriverIOS::FromWebStateAndWebFrame(web_state(), frame)
-          ->autofill_manager();
+  TestAutofillManager* autofill_manager =
+      autofill_manager_injector_->GetForMainFrame();
   ASSERT_NE(nullptr, autofill_manager);
-  EXPECT_TRUE(base::test::ios::WaitUntilConditionOrTimeout(
-      base::test::ios::kWaitForActionTimeout, ^bool() {
-        return autofill_manager->NumFormsDetected() != 0;
-      }));
+  ASSERT_TRUE(autofill_manager->waiter().Wait(1));
   *output = FormStructuresToString(autofill_manager->form_structures());
 }
 
@@ -315,23 +332,23 @@ std::string FormStructureBrowserTest::FormStructuresToString(
         section = section.substr(first_underscore);
       }
 
-      // Normalize the section by replacing the unique but platform-dependent
-      // integers in `field->section` with consecutive unique integers.
-      // The section string is of the form "fieldname_id1_id2-suffix", where
-      // id1, id2 are platform-dependent and thus need to be substituted.
-      size_t last_underscore = section.find_last_of('_');
-      size_t second_last_underscore =
-          section.find_last_of('_', last_underscore - 1);
-      size_t next_dash = section.find_first_of('-', last_underscore);
-      int new_section_index = static_cast<int>(section_to_index.size() + 1);
-      int section_index =
-          section_to_index.insert(std::make_pair(section, new_section_index))
-              .first->second;
-      if (second_last_underscore != std::string::npos &&
-          next_dash != std::string::npos) {
-        section = base::StringPrintf(
-            "%s%d%s", section.substr(0, second_last_underscore + 1).c_str(),
-            section_index, section.substr(next_dash).c_str());
+      if (field->section.is_from_fieldidentifier()) {
+        // Normalize the section by replacing the unique but platform-dependent
+        // integers in `field->section` with consecutive unique integers.
+        // The section string is of the form "fieldname_id1_id2-suffix", where
+        // id1, id2 are platform-dependent and thus need to be substituted.
+        size_t last_underscore = section.find_last_of('_');
+        size_t second_last_underscore =
+            section.find_last_of('_', last_underscore - 1);
+        int new_section_index = static_cast<int>(section_to_index.size() + 1);
+        int section_index =
+            section_to_index.insert(std::make_pair(section, new_section_index))
+                .first->second;
+        if (second_last_underscore != std::string::npos) {
+          section = base::StringPrintf(
+              "%s%d", section.substr(0, second_last_underscore + 1).c_str(),
+              section_index);
+        }
       }
 
       forms_string += field->Type().ToString();

@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -260,7 +260,7 @@ class RasterImplementation::PaintOpSerializer {
     DCHECK(!written_bytes_);
   }
 
-  size_t Serialize(const cc::PaintOp* op,
+  size_t Serialize(const cc::PaintOp& op,
                    const cc::PaintOp::SerializeOptions& options,
                    const cc::PaintFlags* flags_to_serialize,
                    const SkM44& current_ctm,
@@ -268,8 +268,8 @@ class RasterImplementation::PaintOpSerializer {
     if (!valid())
       return 0;
 
-    size_t size = op->Serialize(buffer_ + written_bytes_, free_bytes_, options,
-                                flags_to_serialize, current_ctm, original_ctm);
+    size_t size = op.Serialize(buffer_ + written_bytes_, free_bytes_, options,
+                               flags_to_serialize, current_ctm, original_ctm);
     size_t block_size = *max_op_size_hint_;
 
     if (!size) {
@@ -287,8 +287,8 @@ class RasterImplementation::PaintOpSerializer {
           return 0;
         }
 
-        size = op->Serialize(buffer_ + written_bytes_, free_bytes_, options,
-                             flags_to_serialize, current_ctm, original_ctm);
+        size = op.Serialize(buffer_ + written_bytes_, free_bytes_, options,
+                            flags_to_serialize, current_ctm, original_ctm);
         if (size) {
           *max_op_size_hint_ = std::max(size, *max_op_size_hint_);
           break;
@@ -373,13 +373,12 @@ RasterImplementation::SingleThreadChecker::~SingleThreadChecker() {
 }
 
 struct RasterImplementation::AsyncARGBReadbackRequest {
-  AsyncARGBReadbackRequest(
-      void* dst_pixels,
-      GLuint dst_size,
-      GLuint pixels_offset,
-      GLuint finished_query,
-      std::unique_ptr<ScopedMappedMemoryPtr> shared_memory,
-      base::OnceCallback<void(GrSurfaceOrigin, bool)> callback)
+  AsyncARGBReadbackRequest(void* dst_pixels,
+                           GLuint dst_size,
+                           GLuint pixels_offset,
+                           GLuint finished_query,
+                           std::unique_ptr<ScopedMappedMemoryPtr> shared_memory,
+                           base::OnceCallback<void(bool)> callback)
       : dst_pixels(dst_pixels),
         dst_size(dst_size),
         pixels_offset(pixels_offset),
@@ -388,17 +387,13 @@ struct RasterImplementation::AsyncARGBReadbackRequest {
         query(finished_query),
         done(false),
         readback_successful(false) {}
-  ~AsyncARGBReadbackRequest() {
-    // RasterDecoder::ReadbackImagePixels always stores the result pixels with
-    // top left origin.
-    std::move(callback).Run(kTopLeft_GrSurfaceOrigin, readback_successful);
-  }
+  ~AsyncARGBReadbackRequest() { std::move(callback).Run(readback_successful); }
 
   raw_ptr<void> dst_pixels;
   GLuint dst_size;
   GLuint pixels_offset;
   std::unique_ptr<ScopedMappedMemoryPtr> shared_memory;
-  base::OnceCallback<void(GrSurfaceOrigin, bool)> callback;
+  base::OnceCallback<void(bool)> callback;
   GLuint query;
   bool done;
   bool readback_successful;
@@ -928,7 +923,6 @@ void RasterImplementation::IssueShallowFlush() {
   FlushHelper();
 }
 
-
 void RasterImplementation::FlushHelper() {
   // Flush our command buffer
   // (tell the service to execute up to the flush cmd.)
@@ -1446,7 +1440,7 @@ void RasterImplementation::ReadbackImagePixelsINTERNAL(
     GLuint dst_row_bytes,
     int src_x,
     int src_y,
-    base::OnceCallback<void(GrSurfaceOrigin, bool)> readback_done,
+    base::OnceCallback<void(bool)> readback_done,
     void* dst_pixels) {
   DCHECK_GE(dst_row_bytes, dst_info.minRowBytes());
 
@@ -1478,7 +1472,7 @@ void RasterImplementation::ReadbackImagePixelsINTERNAL(
   if (!scoped_shared_memory->valid()) {
     // Note, that this runs callback out of order.
     if (readback_done)
-      std::move(readback_done).Run(kTopLeft_GrSurfaceOrigin, /*success=*/false);
+      std::move(readback_done).Run(/*success=*/false);
     return;
   }
 
@@ -1593,7 +1587,7 @@ void RasterImplementation::ReadbackARGBPixelsAsync(
     const SkImageInfo& dst_info,
     GLuint dst_row_bytes,
     unsigned char* out,
-    base::OnceCallback<void(GrSurfaceOrigin, bool)> readback_done) {
+    base::OnceCallback<void(bool)> readback_done) {
   TRACE_EVENT0("gpu", "RasterImplementation::ReadbackARGBPixelsAsync");
   DCHECK(!!readback_done);
   // Note: It's possible the GL implementation supports other readback
@@ -1602,8 +1596,7 @@ void RasterImplementation::ReadbackARGBPixelsAsync(
   // format).
   if (dst_info.colorType() != kRGBA_8888_SkColorType &&
       dst_info.colorType() != kBGRA_8888_SkColorType) {
-    std::move(readback_done)
-        .Run(kTopLeft_GrSurfaceOrigin, /*readback_sucess=*/false);
+    std::move(readback_done).Run(/*readback_sucess=*/false);
     return;
   }
 
@@ -1619,9 +1612,9 @@ void RasterImplementation::ReadbackImagePixels(
     int src_y,
     void* dst_pixels) {
   TRACE_EVENT0("gpu", "RasterImplementation::ReadbackImagePixels");
-  ReadbackImagePixelsINTERNAL(
-      source_mailbox, dst_info, dst_row_bytes, src_x, src_y,
-      base::OnceCallback<void(GrSurfaceOrigin, bool)>(), dst_pixels);
+  ReadbackImagePixelsINTERNAL(source_mailbox, dst_info, dst_row_bytes, src_x,
+                              src_y, base::OnceCallback<void(bool)>(),
+                              dst_pixels);
 }
 
 void RasterImplementation::ReadbackYUVPixelsAsync(

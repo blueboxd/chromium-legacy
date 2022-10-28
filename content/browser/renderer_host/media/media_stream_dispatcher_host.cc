@@ -602,9 +602,15 @@ void MediaStreamDispatcherHost::KeepDeviceAliveForTransfer(
     KeepDeviceAliveForTransferCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  media_stream_manager_->KeepDeviceAliveForTransfer(
+  if (!base::FeatureList::IsEnabled(features::kMediaStreamTrackTransfer)) {
+    ReceivedBadMessage(render_process_id_,
+                       bad_message::MSDH_KEEP_DEVICE_ALIVE_USE_WITHOUT_FEATURE);
+    std::move(callback).Run(/*device_found=*/false);
+    return;
+  }
+  std::move(callback).Run(media_stream_manager_->KeepDeviceAliveForTransfer(
       render_process_id_, render_frame_id_, requester_id_, session_id,
-      transfer_id, std::move(callback));
+      transfer_id));
 }
 
 #if !BUILDFLAG(IS_ANDROID)

@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -31,8 +31,8 @@
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chromeos/ash/components/dbus/concierge/concierge_service.pb.h"
+#include "chromeos/ash/components/dbus/dlcservice/dlcservice.pb.h"
 #include "chromeos/ash/components/dbus/vm_launch/launch.pb.h"
-#include "chromeos/dbus/dlcservice/dlcservice.pb.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace borealis {
@@ -105,7 +105,7 @@ void MountDlc::RunInternal(BorealisContext* context) {
   // otherwise we will silently download borealis here.
   dlcservice::InstallRequest install_request;
   install_request.set_id(kBorealisDlcName);
-  chromeos::DlcserviceClient::Get()->Install(
+  ash::DlcserviceClient::Get()->Install(
       install_request,
       base::BindOnce(&MountDlc::OnMountDlc, weak_factory_.GetWeakPtr(),
                      context),
@@ -114,7 +114,7 @@ void MountDlc::RunInternal(BorealisContext* context) {
 
 void MountDlc::OnMountDlc(
     BorealisContext* context,
-    const chromeos::DlcserviceClient::InstallResult& install_result) {
+    const ash::DlcserviceClient::InstallResult& install_result) {
   if (install_result.error != dlcservice::kErrorNone) {
     Complete(BorealisStartupResult::kMountFailed,
              "Mounting the DLC for Borealis failed: " + install_result.error);
@@ -238,6 +238,10 @@ void StartBorealisVm::StartBorealisWithExternalDisk(
     request.set_enable_big_gl(true);
   }
   request.set_name(context->vm_name());
+  if (base::FeatureList::IsEnabled(
+          chromeos::features::kBorealisStorageBallooning)) {
+    request.set_storage_ballooning(true);
+  }
 
   vm_tools::concierge::DiskImage* disk_image = request.add_disks();
   disk_image->set_path(context->disk_path().AsUTF8Unsafe());
@@ -329,6 +333,7 @@ std::string SendFlagsToVm(const std::string& owner_id,
                                    "update_chrome_flags"};
   PushFlag(chromeos::features::kBorealisLinuxMode, command);
   PushFlag(chromeos::features::kBorealisForceBetaClient, command);
+  PushFlag(chromeos::features::kBorealisForceDoubleScale, command);
 
   std::string output;
   if (!base::GetAppOutput(command, &output)) {

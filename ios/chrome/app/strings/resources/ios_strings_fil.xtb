@@ -393,6 +393,7 @@ Tingnan ang mga tagubilin ng iyong search engine para sa pag-delete sa history n
 <translation id="430793432425771671">I-sync Lahat</translation>
 <translation id="4309403553630140242">Mag-double tap para sa higit pang impormasyon</translation>
 <translation id="430967081421617822">Lahat ng Oras</translation>
+<translation id="4324952538601951430">Narito na ngayon ang mga naka-save mong bookmark, password, setting, at higit pa</translation>
 <translation id="4334428914252001502">1 hindi pa nababasang artikulo.</translation>
 <translation id="4338650699862464074">Magpadala ng mga URL ng mga page na binibisita mo sa Google.</translation>
 <translation id="4343046787186034850">Pinapayagan ang Access sa Camera at Mikropono</translation>
@@ -471,6 +472,7 @@ Para baguhin ang setting na ito, <ph name="BEGIN_LINK" />i-reset ang pag-sync<ph
 <translation id="4901778704868714008">I-save...</translation>
 <translation id="4904877109095351937">Markahan Bilang Nabasa Na</translation>
 <translation id="4908869848243824489">Discover ng Google</translation>
+<translation id="4916679969857390442">Lens</translation>
 <translation id="4930714375720679147">I-on</translation>
 <translation id="4941089862236492464">Paumanhin, nagkaroon ng problema sa pagbabahagi ng item mo.</translation>
 <translation id="4944543191714094452">Hanapin sa Page…</translation>
@@ -766,7 +768,6 @@ Habang nasa Incognito, hindi magagamit ng mga site ang cookies para makita ang i
 <translation id="7192050974311852563">Simulan ang Pag-log</translation>
 <translation id="7203585745079012652">Bigkasin ang Mga Sagot</translation>
 <translation id="7207023858769244910">Mag-sync para makakuha ng content batay sa iyong mga interes.</translation>
-<translation id="7207383424303353046">Bago: Awtomatikong buksan ang mga site sa Chrome sa pamamagitan ng paggawa ritong Default na Browser App mo. <ph name="BEGIN_LINK" />Buksan ang Mga Setting<ph name="END_LINK" /></translation>
 <translation id="721597782417389033">Invalid ang Nickname ng Card</translation>
 <translation id="722454870747268814">Bagong Tab na Incognito</translation>
 <translation id="7265758999917665941">Hindi Kailanman Para sa Site na Ito</translation>
@@ -916,7 +917,6 @@ Puwedeng gumamit ng cookies ang mga site para makita ang iyong aktibidad sa pag-
 <translation id="8533670235862049797">Naka-on ang Ligtas na Pag-browse</translation>
 <translation id="8534481786647257214">Kumpleto na ang pag-post sa Google+.</translation>
 <translation id="8548878600947630424">Hanapin sa page...</translation>
-<translation id="8574235780160508979">Magbabago ang Mga Tuntunin ng Serbisyo ng Chrome sa Marso 31. <ph name="BEGIN_LINK" />Pakisuri<ph name="END_LINK" /></translation>
 <translation id="8588404856427128947">Naka-off</translation>
 <translation id="8590913940444621808">Huwag Magtanong</translation>
 <translation id="8591976964826315682">I-block ang Third-Party na Cookies sa Incognito</translation>

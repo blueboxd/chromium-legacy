@@ -1,4 +1,4 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -22,7 +22,7 @@
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/wm/collision_detection/collision_detection_utils.h"
 #include "ash/wm/default_state.h"
-#include "ash/wm/desks/persistent_desks_bar_controller.h"
+#include "ash/wm/desks/persistent_desks_bar/persistent_desks_bar_controller.h"
 #include "ash/wm/float/float_controller.h"
 #include "ash/wm/pip/pip_positioner.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"

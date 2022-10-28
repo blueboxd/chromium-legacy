@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -200,6 +200,9 @@ void SystemNudge::Show() {
   const std::u16string accessibility_text = GetAccessibilityText();
   if (!accessibility_text.empty())
     nudge_view_->GetViewAccessibility().AnnounceText(accessibility_text);
+
+  base::UmaHistogramEnumeration("Ash.NotifierFramework.Nudge.ShownCount",
+                                params_.catalog_name);
 }
 
 void SystemNudge::Close() {

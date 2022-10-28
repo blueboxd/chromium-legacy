@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -29,7 +29,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_key.h"
 #include "chromeos/ash/components/dbus/debug_daemon/debug_daemon_client.h"
-#include "chromeos/dbus/dlcservice/dlcservice.pb.h"
+#include "chromeos/ash/components/dbus/dlcservice/dlcservice.pb.h"
 #include "components/download/public/background_service/background_download_service.h"
 #include "components/download/public/background_service/download_metadata.h"
 #include "components/prefs/pref_service.h"
@@ -304,7 +304,7 @@ bool PluginVmInstaller::VerifyDownload(
   }
   const base::Value* plugin_vm_image_hash_ptr =
       profile_->GetPrefs()
-          ->GetValueDict(prefs::kPluginVmImage)
+          ->GetDict(prefs::kPluginVmImage)
           .Find(prefs::kPluginVmImageHashKeyName);
   if (!plugin_vm_image_hash_ptr) {
     LOG(ERROR) << "Hash of PluginVm image is not specified";
@@ -470,7 +470,7 @@ void PluginVmInstaller::StartDlcDownload() {
 
   dlcservice::InstallRequest install_request;
   install_request.set_id(kPitaDlc);
-  chromeos::DlcserviceClient::Get()->Install(
+  ash::DlcserviceClient::Get()->Install(
       install_request,
       base::BindOnce(&PluginVmInstaller::OnDlcDownloadCompleted,
                      weak_ptr_factory_.GetWeakPtr()),
@@ -487,7 +487,7 @@ void PluginVmInstaller::OnDlcDownloadProgressUpdated(double progress) {
 }
 
 void PluginVmInstaller::OnDlcDownloadCompleted(
-    const chromeos::DlcserviceClient::InstallResult& install_result) {
+    const ash::DlcserviceClient::InstallResult& install_result) {
   DCHECK_EQ(installing_state_, InstallingState::kDownloadingDlc);
   if (state_ == State::kCancelling) {
     CancelFinished();
@@ -959,7 +959,7 @@ std::string PluginVmInstaller::GetInstallingStateName(InstallingState state) {
 
 GURL PluginVmInstaller::GetPluginVmImageDownloadUrl() {
   const base::Value* url_ptr = profile_->GetPrefs()
-                                   ->GetValueDict(prefs::kPluginVmImage)
+                                   ->GetDict(prefs::kPluginVmImage)
                                    .Find(prefs::kPluginVmImageUrlKeyName);
   if (!url_ptr) {
     LOG(ERROR) << "Url to PluginVm image is not specified";

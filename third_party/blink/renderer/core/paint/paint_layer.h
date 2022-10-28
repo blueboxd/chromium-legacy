@@ -557,8 +557,12 @@ class CORE_EXPORT PaintLayer : public GarbageCollected<PaintLayer>,
   bool DescendantNeedsCullRectUpdate() const {
     return descendant_needs_cull_rect_update_;
   }
+  bool SelfOrDescendantNeedsCullRectUpdate() const {
+    return needs_cull_rect_update_ || descendant_needs_cull_rect_update_;
+  }
   void SetNeedsCullRectUpdate();
   void SetForcesChildrenCullRectUpdate();
+  void MarkCompositingContainerChainForNeedsCullRectUpdate();
   void SetDescendantNeedsCullRectUpdate();
   void ClearNeedsCullRectUpdate() {
     needs_cull_rect_update_ = false;
@@ -619,7 +623,7 @@ class CORE_EXPORT PaintLayer : public GarbageCollected<PaintLayer>,
                       : PhysicalOffset();
   }
 
-  bool KnownToClipSubtree() const;
+  bool KnownToClipSubtreeToPaddingBox() const;
 
   void Trace(Visitor*) const override;
 
@@ -650,6 +654,9 @@ class CORE_EXPORT PaintLayer : public GarbageCollected<PaintLayer>,
                         const FragmentData* root_fragment = nullptr) const;
 
   struct HitTestRecursionData {
+    STACK_ALLOCATED();
+
+   public:
     const PhysicalRect& rect;
     // Whether location.Intersects(rect) returns true.
     const HitTestLocation& location;
@@ -743,6 +750,11 @@ class CORE_EXPORT PaintLayer : public GarbageCollected<PaintLayer>,
   // the flag is set, the descendant-dependent tree walk as well.
   void MarkAncestorChainForFlagsUpdate(
       DescendantDependentFlagsUpdateFlag = kNeedsDescendantDependentUpdate);
+
+  // For transform updates we use a fast path that will not change
+  // NeedsPaintPropertyUpdate, but still need to set
+  // NeedsDescendantDependentFlagsUpdate to true, and will use this function.
+  void SetNeedsDescendantDependentFlagsUpdate();
 
   void UpdateTransform(const ComputedStyle* old_style,
                        const ComputedStyle& new_style);

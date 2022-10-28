@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -53,6 +53,7 @@
 #include "chrome/browser/ui/web_applications/web_app_menu_model.h"
 #include "chrome/browser/ui/web_applications/web_app_ui_utils.h"
 #include "chrome/browser/web_applications/external_install_options.h"
+#include "chrome/browser/web_applications/os_integration/web_app_shortcut.h"
 #include "chrome/browser/web_applications/test/web_app_test_observers.h"
 #include "chrome/browser/web_applications/test/web_app_test_utils.h"
 #include "chrome/browser/web_applications/user_display_mode.h"
@@ -176,6 +177,8 @@ std::vector<std::wstring> GetFileExtensionsForProgId(
 }  // namespace
 
 namespace web_app {
+
+using ::base::BucketsAre;
 
 class WebAppBrowserTest : public WebAppControllerBrowserTest {
  public:
@@ -1233,8 +1236,8 @@ IN_PROC_BROWSER_TEST_F(WebAppBrowserTest,
   os_hooks_suppress_.reset();
   base::ScopedAllowBlockingForTesting allow_blocking;
 
-  std::unique_ptr<ScopedShortcutOverrideForTesting> shortcut_override =
-      OverrideShortcutsForTesting();
+  std::unique_ptr<ShortcutOverrideForTesting::BlockingRegistration>
+      registration = ShortcutOverrideForTesting::OverrideForTesting();
 
   NavigateToURLAndWait(
       browser(),
@@ -1257,11 +1260,13 @@ IN_PROC_BROWSER_TEST_F(WebAppBrowserTest,
   auto* provider = WebAppProvider::GetForTest(profile());
   std::vector<SkColor> expected_pixel_colors = {SkColorSetRGB(92, 92, 92)};
 #if BUILDFLAG(IS_MAC)
-  shortcut_path = shortcut_override->chrome_apps_folder.GetPath().Append(
-      provider->registrar().GetAppShortName(app_id) + ".app");
+  shortcut_path =
+      registration->shortcut_override->chrome_apps_folder.GetPath().Append(
+          provider->registrar().GetAppShortName(app_id) + ".app");
 #elif BUILDFLAG(IS_WIN)
-  shortcut_path = shortcut_override->application_menu.GetPath().AppendASCII(
-      provider->registrar().GetAppShortName(app_id) + ".lnk");
+  shortcut_path =
+      registration->shortcut_override->application_menu.GetPath().AppendASCII(
+          provider->registrar().GetAppShortName(app_id) + ".lnk");
   expected_pixel_colors.push_back(SkColorSetRGB(91, 91, 91));
   expected_pixel_colors.push_back(SkColorSetRGB(90, 90, 90));
 #endif
@@ -1284,26 +1289,27 @@ IN_PROC_BROWSER_TEST_F(WebAppBrowserTest,
 #endif
 
 #if BUILDFLAG(IS_WIN)
-IN_PROC_BROWSER_TEST_F(WebAppBrowserTest_ShortcutMenu, ShortcutsMenu) {
-  struct ShortcutsMenuItem {
-   public:
-    ShortcutsMenuItem() : command_line(base::CommandLine::NO_PROGRAM) {}
 
-    // The string to be displayed in a shortcut menu item.
-    std::u16string title;
+struct ShortcutsMenuItem {
+ public:
+  ShortcutsMenuItem() : command_line(base::CommandLine::NO_PROGRAM) {}
 
-    // Used for storing and appending command-line arguments.
-    base::CommandLine command_line;
+  // The string to be displayed in a shortcut menu item.
+  std::u16string title;
 
-    // The absolute path to an icon to be displayed in a shortcut menu item.
-    base::FilePath icon_path;
-  };
+  // Used for storing and appending command-line arguments.
+  base::CommandLine command_line;
 
+  // The absolute path to an icon to be displayed in a shortcut menu item.
+  base::FilePath icon_path;
+};
+
+IN_PROC_BROWSER_TEST_F(WebAppBrowserTest_ShortcutMenu, ShortcutsMenuSuccess) {
   os_hooks_suppress_.reset();
   base::ScopedAllowBlockingForTesting allow_blocking;
 
-  std::unique_ptr<ScopedShortcutOverrideForTesting> shortcut_override =
-      OverrideShortcutsForTesting();
+  std::unique_ptr<ShortcutOverrideForTesting::BlockingRegistration>
+      registration = ShortcutOverrideForTesting::OverrideForTesting();
   NavigateToURLAndWait(
       browser(),
       https_server()->GetURL(
@@ -1328,10 +1334,16 @@ IN_PROC_BROWSER_TEST_F(WebAppBrowserTest_ShortcutMenu, ShortcutsMenu) {
   SetUpdateJumpListForTesting(SaveJumpList);
 
   // Wait for OS hooks and installation to complete and the app to launch.
+  base::HistogramTester tester;
   base::RunLoop run_loop_install;
   WebAppInstallManagerObserverAdapter observer(profile());
-  observer.SetWebAppInstalledWithOsHooksDelegate(base::BindLambdaForTesting(
-      [&](const AppId& installed_app_id) { run_loop_install.Quit(); }));
+  observer.SetWebAppInstalledWithOsHooksDelegate(
+      base::BindLambdaForTesting([&](const AppId& installed_app_id) {
+        EXPECT_THAT(
+            tester.GetAllSamples("WebApp.ShortcutsMenuRegistration.Result"),
+            BucketsAre(base::Bucket(true, 1)));
+        run_loop_install.Quit();
+      }));
   content::WindowedNotificationObserver app_loaded_observer(
       content::NOTIFICATION_LOAD_COMPLETED_MAIN_FRAME,
       content::NotificationService::AllSources());
@@ -1366,10 +1378,78 @@ IN_PROC_BROWSER_TEST_F(WebAppBrowserTest_ShortcutMenu, ShortcutsMenu) {
       app_id, webapps::WebappUninstallSource::kAppMenu,
       base::BindLambdaForTesting([&](webapps::UninstallResultCode code) {
         EXPECT_EQ(code, webapps::UninstallResultCode::kSuccess);
+        EXPECT_THAT(
+            tester.GetAllSamples("WebApp.ShortcutsMenuUnregistered.Result"),
+            BucketsAre(base::Bucket(true, 1)));
         run_loop_uninstall.Quit();
       }));
   run_loop_uninstall.Run();
 }
+
+IN_PROC_BROWSER_TEST_F(WebAppBrowserTest_ShortcutMenu,
+                       ShortcutsMenuRegistrationWithNoShortcuts) {
+  os_hooks_suppress_.reset();
+  base::ScopedAllowBlockingForTesting allow_blocking;
+
+  std::unique_ptr<ShortcutOverrideForTesting::BlockingRegistration>
+      registration = ShortcutOverrideForTesting::OverrideForTesting();
+  NavigateToURLAndWait(
+      browser(),
+      https_server()->GetURL("/banners/"
+                             "manifest_test_page.html?manifest=manifest.json"));
+
+  std::vector<ShortcutsMenuItem> shortcuts_menu_items;
+
+  auto SaveJumpList = base::BindLambdaForTesting(
+      [&](std::wstring,
+          const std::vector<scoped_refptr<ShellLinkItem>>& link_items) -> bool {
+        for (auto& shell_item : link_items) {
+          ShortcutsMenuItem item;
+          item.title = shell_item->title();
+          item.icon_path = shell_item->icon_path();
+          item.command_line = *shell_item->GetCommandLine();
+          shortcuts_menu_items.push_back(item);
+        }
+        return true;
+      });
+
+  SetUpdateJumpListForTesting(SaveJumpList);
+
+  // Wait for OS hooks and installation to complete and the app to launch.
+  base::HistogramTester tester;
+  base::RunLoop run_loop_install;
+  WebAppInstallManagerObserverAdapter observer(profile());
+  observer.SetWebAppInstalledWithOsHooksDelegate(
+      base::BindLambdaForTesting([&](const AppId& installed_app_id) {
+        // The result is false because there are no shortcuts for registration.
+        EXPECT_THAT(
+            tester.GetAllSamples("WebApp.ShortcutsMenuRegistration.Result"),
+            BucketsAre(base::Bucket(false, 1)));
+        run_loop_install.Quit();
+      }));
+  content::WindowedNotificationObserver app_loaded_observer(
+      content::NOTIFICATION_LOAD_COMPLETED_MAIN_FRAME,
+      content::NotificationService::AllSources());
+  const AppId app_id = test::InstallPwaForCurrentUrl(browser());
+  run_loop_install.Run();
+  app_loaded_observer.Wait();
+
+  // No shortcuts should be read.
+  EXPECT_TRUE(shortcuts_menu_items.empty());
+
+  base::RunLoop run_loop_uninstall;
+  WebAppProvider::GetForTest(profile())->install_finalizer().UninstallWebApp(
+      app_id, webapps::WebappUninstallSource::kAppMenu,
+      base::BindLambdaForTesting([&](webapps::UninstallResultCode code) {
+        EXPECT_EQ(code, webapps::UninstallResultCode::kSuccess);
+        EXPECT_THAT(
+            tester.GetAllSamples("WebApp.ShortcutsMenuUnregistered.Result"),
+            BucketsAre(base::Bucket(true, 1)));
+        run_loop_uninstall.Quit();
+      }));
+  run_loop_uninstall.Run();
+}
+
 #endif
 
 #if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN) || BUILDFLAG(IS_LINUX)
@@ -1378,8 +1458,8 @@ IN_PROC_BROWSER_TEST_F(WebAppBrowserTest, WebAppCreateAndDeleteShortcut) {
 
   base::ScopedAllowBlockingForTesting allow_blocking;
 
-  std::unique_ptr<ScopedShortcutOverrideForTesting> shortcut_override =
-      OverrideShortcutsForTesting();
+  std::unique_ptr<ShortcutOverrideForTesting::BlockingRegistration>
+      registration = ShortcutOverrideForTesting::OverrideForTesting();
 
   auto* provider = WebAppProvider::GetForTest(profile());
 
@@ -1406,21 +1486,25 @@ IN_PROC_BROWSER_TEST_F(WebAppBrowserTest, WebAppCreateAndDeleteShortcut) {
   std::wstring shortcut_filename = converter.from_bytes(
       provider->registrar().GetAppShortName(app_id) + ".lnk");
   base::FilePath desktop_shortcut_path =
-      shortcut_override->desktop.GetPath().Append(shortcut_filename);
+      registration->shortcut_override->desktop.GetPath().Append(
+          shortcut_filename);
   base::FilePath app_menu_shortcut_path =
-      shortcut_override->application_menu.GetPath().Append(shortcut_filename);
+      registration->shortcut_override->application_menu.GetPath().Append(
+          shortcut_filename);
   EXPECT_TRUE(base::PathExists(desktop_shortcut_path));
   EXPECT_TRUE(base::PathExists(app_menu_shortcut_path));
 #elif BUILDFLAG(IS_MAC)
   std::string shortcut_filename =
       provider->registrar().GetAppShortName(app_id) + ".app";
   base::FilePath app_shortcut_path =
-      shortcut_override->chrome_apps_folder.GetPath().Append(shortcut_filename);
+      registration->shortcut_override->chrome_apps_folder.GetPath().Append(
+          shortcut_filename);
   EXPECT_TRUE(base::PathExists(app_shortcut_path));
 #elif BUILDFLAG(IS_LINUX)
   std::string shortcut_filename = "chrome-" + app_id + "-Default.desktop";
   base::FilePath desktop_shortcut_path =
-      shortcut_override->desktop.GetPath().Append(shortcut_filename);
+      registration->shortcut_override->desktop.GetPath().Append(
+          shortcut_filename);
   EXPECT_TRUE(base::PathExists(desktop_shortcut_path));
 #endif
 
@@ -1527,29 +1611,11 @@ IN_PROC_BROWSER_TEST_F(WebAppBrowserTest, PermissionBubble) {
       "navigator.geolocation.getCurrentPosition(function(){});"));
 }
 
-class WebAppBrowserTest_PrefixInTitle
-    : public WebAppBrowserTest,
-      public testing::WithParamInterface<bool> {
- public:
-  WebAppBrowserTest_PrefixInTitle() {
-    if (GetParam()) {
-      scoped_feature_list_.InitAndEnableFeature(
-          features::kPrefixWebAppWindowsWithAppName);
-    } else {
-      scoped_feature_list_.InitAndDisableFeature(
-          features::kPrefixWebAppWindowsWithAppName);
-    }
-  }
-
-  bool ExpectPrefixInTitle() { return GetParam(); }
-
- private:
-  base::test::ScopedFeatureList scoped_feature_list_;
-};
+using WebAppBrowserTest_PrefixInTitle = WebAppBrowserTest;
 
 // Ensure that web app windows don't duplicate the app name in the title, when
 // the page's title already starts with the app name.
-IN_PROC_BROWSER_TEST_P(WebAppBrowserTest_PrefixInTitle, PrefixExistsInTitle) {
+IN_PROC_BROWSER_TEST_F(WebAppBrowserTest_PrefixInTitle, PrefixExistsInTitle) {
   const GURL app_url =
       https_server()->GetURL("app.com", "/web_apps/title_appname_prefix.html");
   const std::u16string app_title = u"A Web App";
@@ -1572,7 +1638,7 @@ IN_PROC_BROWSER_TEST_P(WebAppBrowserTest_PrefixInTitle, PrefixExistsInTitle) {
 
 // Ensure that web app windows with blank titles don't display the URL as a
 // default window title.
-IN_PROC_BROWSER_TEST_P(WebAppBrowserTest_PrefixInTitle,
+IN_PROC_BROWSER_TEST_F(WebAppBrowserTest_PrefixInTitle,
                        WebAppWindowTitleForEmptyAndSimpleWebContentTitles) {
   // Ensure web app windows show the expected title when the contents have an
   // empty or simple title.
@@ -1587,25 +1653,15 @@ IN_PROC_BROWSER_TEST_P(WebAppBrowserTest_PrefixInTitle,
   content::WebContents* const web_contents =
       app_browser->tab_strip_model()->GetActiveWebContents();
   EXPECT_TRUE(content::WaitForLoadStop(web_contents));
-  if (ExpectPrefixInTitle()) {
-    EXPECT_EQ(app_title, app_browser->GetWindowTitleForCurrentTab(false));
-  } else {
-    EXPECT_EQ(std::u16string(),
-              app_browser->GetWindowTitleForCurrentTab(false));
-  }
+  EXPECT_EQ(app_title, app_browser->GetWindowTitleForCurrentTab(false));
   NavigateToURLAndWait(app_browser,
                        https_server()->GetURL("app.site.test", "/simple.html"));
-  if (ExpectPrefixInTitle()) {
-    EXPECT_EQ(u"A Web App - OK",
-              app_browser->GetWindowTitleForCurrentTab(false));
-  } else {
-    EXPECT_EQ(u"OK", app_browser->GetWindowTitleForCurrentTab(false));
-  }
+  EXPECT_EQ(u"A Web App - OK", app_browser->GetWindowTitleForCurrentTab(false));
 }
 
 // Ensure that web app windows display the app title instead of the page
 // title when off scope.
-IN_PROC_BROWSER_TEST_P(WebAppBrowserTest_PrefixInTitle,
+IN_PROC_BROWSER_TEST_F(WebAppBrowserTest_PrefixInTitle,
                        OffScopeUrlsDisplayAppTitle) {
   const GURL app_url = GetSecureAppURL();
   const std::u16string app_title = u"A Web App";
@@ -1622,22 +1678,14 @@ IN_PROC_BROWSER_TEST_P(WebAppBrowserTest_PrefixInTitle,
   EXPECT_TRUE(content::WaitForLoadStop(web_contents));
 
   // When we are within scope, show the page title.
-  if (ExpectPrefixInTitle()) {
-    EXPECT_EQ(u"A Web App - Google",
-              app_browser->GetWindowTitleForCurrentTab(false));
-  } else {
-    EXPECT_EQ(u"Google", app_browser->GetWindowTitleForCurrentTab(false));
-  }
+  EXPECT_EQ(u"A Web App - Google",
+            app_browser->GetWindowTitleForCurrentTab(false));
   NavigateToURLAndWait(app_browser,
                        https_server()->GetURL("app.site.test", "/simple.html"));
 
   // When we are off scope, show the app title.
   EXPECT_EQ(app_title, app_browser->GetWindowTitleForCurrentTab(false));
 }
-
-INSTANTIATE_TEST_SUITE_P(WebAppBrowserTestTitlePrefix,
-                         WebAppBrowserTest_PrefixInTitle,
-                         ::testing::Values(true, false));
 
 // Ensure that web app windows display the app title instead of the page
 // title when using http.
@@ -1997,8 +2045,9 @@ IN_PROC_BROWSER_TEST_F(WebAppBrowserTest_FileHandler,
   os_hooks_suppress_.reset();
   base::ScopedAllowBlockingForTesting allow_blocking;
 
-  std::unique_ptr<ScopedShortcutOverrideForTesting> shortcut_override =
-      OverrideShortcutsForTesting(base::GetHomeDir());
+  std::unique_ptr<ShortcutOverrideForTesting::BlockingRegistration>
+      registration =
+          ShortcutOverrideForTesting::OverrideForTesting(base::GetHomeDir());
   std::vector<std::string> expected_extensions{"bar", "baz", "foo", "foobar"};
 
   ASSERT_TRUE(embedded_test_server()->Start());
@@ -2050,8 +2099,8 @@ IN_PROC_BROWSER_TEST_F(WebAppBrowserTest_FileHandler,
 #elif BUILDFLAG(IS_MAC)
   for (auto extension : expected_extensions) {
     const base::FilePath test_file_path =
-        shortcut_override->chrome_apps_folder.GetPath().AppendASCII("test." +
-                                                                    extension);
+        registration->shortcut_override->chrome_apps_folder.GetPath()
+            .AppendASCII("test." + extension);
     const base::File test_file(test_file_path, base::File::FLAG_CREATE_ALWAYS |
                                                    base::File::FLAG_WRITE);
     const GURL test_file_url = net::FilePathToFileURL(test_file_path);
@@ -2060,7 +2109,7 @@ IN_PROC_BROWSER_TEST_F(WebAppBrowserTest_FileHandler,
         << "The default app to open the file is wrong. "
         << "File extension: " + extension;
   }
-  ASSERT_TRUE(shortcut_override->chrome_apps_folder.Delete());
+  ASSERT_TRUE(registration->shortcut_override->chrome_apps_folder.Delete());
 #endif
 
   // Unistall the web app
@@ -2092,8 +2141,9 @@ IN_PROC_BROWSER_TEST_F(WebAppBrowserTest_FileHandler,
   os_hooks_suppress_.reset();
   base::ScopedAllowBlockingForTesting allow_blocking;
 
-  std::unique_ptr<ScopedShortcutOverrideForTesting> shortcut_override =
-      OverrideShortcutsForTesting(base::GetHomeDir());
+  std::unique_ptr<ShortcutOverrideForTesting::BlockingRegistration>
+      registration =
+          ShortcutOverrideForTesting::OverrideForTesting(base::GetHomeDir());
   std::vector<std::string> expected_extensions{"bar", "baz", "foo", "foobar"};
 
   ASSERT_TRUE(embedded_test_server()->Start());
@@ -2123,8 +2173,8 @@ IN_PROC_BROWSER_TEST_F(WebAppBrowserTest_FileHandler,
 
   for (auto extension : expected_extensions) {
     const base::FilePath test_file_path =
-        shortcut_override->chrome_apps_folder.GetPath().AppendASCII("test." +
-                                                                    extension);
+        registration->shortcut_override->chrome_apps_folder.GetPath()
+            .AppendASCII("test." + extension);
     const base::File test_file(test_file_path, base::File::FLAG_CREATE_ALWAYS |
                                                    base::File::FLAG_WRITE);
     const GURL test_file_url = net::FilePathToFileURL(test_file_path);
@@ -2136,7 +2186,7 @@ IN_PROC_BROWSER_TEST_F(WebAppBrowserTest_FileHandler,
       delay_loop.Run();
     }
   }
-  ASSERT_TRUE(shortcut_override->chrome_apps_folder.Delete());
+  ASSERT_TRUE(registration->shortcut_override->chrome_apps_folder.Delete());
 
   // Unistall the web app
   NavigateToURLAndWait(browser(), GURL(chrome::kChromeUIAppsURL));

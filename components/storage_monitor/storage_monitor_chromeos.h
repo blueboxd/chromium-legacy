@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -19,11 +19,10 @@
 #include <memory>
 #include <string>
 
-#include "ash/components/disks/disk_mount_manager.h"
 #include "base/compiler_specific.h"
 #include "base/memory/weak_ptr.h"
 #include "build/build_config.h"
-#include "build/chromeos_buildflags.h"
+#include "chromeos/ash/components/disks/disk_mount_manager.h"
 #include "components/storage_monitor/storage_monitor.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"

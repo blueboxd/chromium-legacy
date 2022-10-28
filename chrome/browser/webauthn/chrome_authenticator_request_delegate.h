@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -117,6 +117,8 @@ class ChromeAuthenticatorRequestDelegate
         AuthenticatorRequestDialogModel::ExperimentServerLinkSheet,
         AuthenticatorRequestDialogModel::ExperimentServerLinkTitle) = 0;
 
+    virtual void ConfiguringCable(device::CableRequestType request_type) {}
+
     virtual void AccountSelectorShown(
         const std::vector<device::AuthenticatorGetAssertionResponse>&
             responses) {}
@@ -162,7 +164,7 @@ class ChromeAuthenticatorRequestDelegate
       base::OnceCallback<void(bool)> callback) override;
   void ConfigureCable(
       const url::Origin& origin,
-      device::FidoRequestType request_type,
+      device::CableRequestType request_type,
       base::span<const device::CableDiscoveryData> pairings_from_extension,
       device::FidoDiscoveryFactory* discovery_factory) override;
   void SelectAccount(
@@ -172,6 +174,8 @@ class ChromeAuthenticatorRequestDelegate
   void DisableUI() override;
   bool IsWebAuthnUIEnabled() override;
   void SetConditionalRequest(bool is_conditional) override;
+  void SetUserEntityForMakeCredentialRequest(
+      const device::PublicKeyCredentialUserEntity& user_entity) override;
 
   // device::FidoRequestHandlerBase::Observer:
   void OnTransportAvailabilityEnumerated(

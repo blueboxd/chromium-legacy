@@ -45,7 +45,6 @@
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/numerics/safe_conversions.h"
-#include "base/stl_util.h"
 #include "base/strings/escape.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
@@ -54,6 +53,7 @@
 #include "base/trace_event/optional_trace_event.h"
 #include "base/trace_event/trace_conversion_helper.h"
 #include "base/trace_event/trace_event.h"
+#include "base/types/optional_util.h"
 #include "build/build_config.h"
 #include "cc/base/switches.h"
 #include "content/browser/bad_message.h"
@@ -865,9 +865,6 @@ void NavigationControllerImpl::RegisterExistingOriginAsHavingDefaultIsolation(
     entry_replaced_by_post_commit_error_
         ->RegisterExistingOriginAsHavingDefaultIsolation(origin);
   }
-  // TODO(wjmaclean): Register pending commit NavigationRequests rather than
-  // visiting pending_entry_, which lacks a committed origin. This will be done
-  // in https://chromium-review.googlesource.com/c/chromium/src/+/2136703.
 }
 
 void NavigationControllerImpl::SetPendingEntry(

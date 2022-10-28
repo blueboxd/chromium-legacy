@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,7 +6,7 @@
 #define ASH_ASSISTANT_UI_MAIN_STAGE_SUGGESTION_CHIP_VIEW_H_
 
 #include "base/component_export.h"
-#include "chromeos/services/libassistant/public/cpp/assistant_suggestion.h"
+#include "chromeos/ash/services/libassistant/public/cpp/assistant_suggestion.h"
 #include "ui/base/metadata/metadata_header_macros.h"
 #include "ui/views/controls/button/button.h"
 
@@ -53,8 +53,6 @@ class COMPONENT_EXPORT(ASSISTANT_UI) SuggestionChipView : public views::Button {
 
  private:
   void InitLayout(const AssistantSuggestion& suggestion);
-
-  SkColor GetStrokeColor() const;
 
   AssistantViewDelegate* const delegate_;
 

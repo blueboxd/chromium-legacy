@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -14,8 +14,6 @@ GEN('#include "chrome/browser/signin/signin_features.h"');
 GEN('#include "chrome/browser/ui/ui_features.h"');
 GEN('#include "components/signin/public/base/signin_buildflags.h"');
 GEN('#include "content/public/test/browser_test.h"');
-
-/* eslint-disable no-var */
 
 // Keep enum values in sync with the SyncConfirmationStyle enum class defined in
 // signin_url_utils.h.

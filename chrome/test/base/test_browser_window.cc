@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -57,16 +57,16 @@ base::TimeTicks TestBrowserWindow::TestLocationBar::GetMatchSelectionTimestamp()
 }
 
 const OmniboxView* TestBrowserWindow::TestLocationBar::GetOmniboxView() const {
-  return NULL;
+  return nullptr;
 }
 
 OmniboxView* TestBrowserWindow::TestLocationBar::GetOmniboxView() {
-  return NULL;
+  return nullptr;
 }
 
 LocationBarTesting*
     TestBrowserWindow::TestLocationBar::GetLocationBarForTesting() {
-  return NULL;
+  return nullptr;
 }
 
 bool TestBrowserWindow::TestLocationBar::IsInputTypedUrlWithoutScheme() const {
@@ -121,12 +121,12 @@ const ui::ColorProvider* TestBrowserWindow::GetColorProvider() const {
   return ui::ColorProviderManager::Get().GetColorProviderFor(
       {ui::ColorProviderManager::ColorMode::kLight,
        ui::ColorProviderManager::ContrastMode::kNormal,
-       ui::ColorProviderManager::SystemTheme::kDefault,
+       ui::SystemTheme::kDefault,
        ui::ColorProviderManager::FrameType::kChromium});
 }
 
 ui::ElementContext TestBrowserWindow::GetElementContext() {
-  return ui::ElementContext();
+  return element_context_;
 }
 
 int TestBrowserWindow::GetTopControlsHeight() const {
@@ -237,22 +237,24 @@ bool TestBrowserWindow::IsLocationBarVisible() const {
   return false;
 }
 
+bool TestBrowserWindow::IsBorderlessModeEnabled() const {
+  return false;
+}
+
 ShowTranslateBubbleResult TestBrowserWindow::ShowTranslateBubble(
     content::WebContents* contents,
     translate::TranslateStep step,
     const std::string& source_language,
     const std::string& target_language,
-    translate::TranslateErrors::Type error_type,
+    translate::TranslateErrors error_type,
     bool is_user_gesture) {
   return ShowTranslateBubbleResult::SUCCESS;
 }
 
-void TestBrowserWindow::ShowPartialTranslateBubble(
-    PartialTranslateBubbleModel::ViewState view_state,
+void TestBrowserWindow::StartPartialTranslate(
     const std::string& source_language,
     const std::string& target_language,
-    const std::u16string& text_selection,
-    translate::TranslateErrors::Type error_type) {}
+    const std::u16string& text_selection) {}
 
 qrcode_generator::QRCodeGeneratorBubbleView*
 TestBrowserWindow::ShowQRCodeGeneratorBubble(content::WebContents* contents,
@@ -311,12 +313,12 @@ DownloadBubbleUIController* TestBrowserWindow::GetDownloadBubbleUIController() {
 }
 
 std::unique_ptr<FindBar> TestBrowserWindow::CreateFindBar() {
-  return NULL;
+  return nullptr;
 }
 
 web_modal::WebContentsModalDialogHost*
     TestBrowserWindow::GetWebContentsModalDialogHost() {
-  return NULL;
+  return nullptr;
 }
 
 ExclusiveAccessContext* TestBrowserWindow::GetExclusiveAccessContext() {
@@ -351,11 +353,10 @@ TestBrowserWindow::GetFeaturePromoController() {
 }
 
 bool TestBrowserWindow::IsFeaturePromoActive(
-    const base::Feature& iph_feature,
-    bool include_continued_promos) const {
+    const base::Feature& iph_feature) const {
   return feature_promo_controller_ &&
-         feature_promo_controller_->IsPromoActive(iph_feature,
-                                                  include_continued_promos);
+         feature_promo_controller_->IsPromoActive(
+             iph_feature, user_education::FeaturePromoStatus::kContinued);
 }
 
 bool TestBrowserWindow::MaybeShowFeaturePromo(
@@ -369,9 +370,23 @@ bool TestBrowserWindow::MaybeShowFeaturePromo(
              iph_feature, body_text_replacements, std::move(close_callback));
 }
 
+bool TestBrowserWindow::MaybeShowStartupFeaturePromo(
+    const base::Feature& iph_feature,
+    user_education::FeaturePromoSpecification::StringReplacements
+        body_text_replacements,
+    user_education::FeaturePromoController::StartupPromoCallback promo_callback,
+    user_education::FeaturePromoController::BubbleCloseCallback
+        close_callback) {
+  if (!feature_promo_controller_)
+    return false;
+  return feature_promo_controller_->MaybeShowStartupPromo(
+      iph_feature, body_text_replacements, std::move(promo_callback),
+      std::move(close_callback));
+}
+
 bool TestBrowserWindow::CloseFeaturePromo(const base::Feature& iph_feature) {
   return feature_promo_controller_ &&
-         feature_promo_controller_->CloseBubble(iph_feature);
+         feature_promo_controller_->EndPromo(iph_feature);
 }
 
 user_education::FeaturePromoHandle

@@ -1,4 +1,4 @@
-# Copyright 2016 The Chromium Authors. All rights reserved.
+# Copyright 2016 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -34,6 +34,7 @@ source_set("commands") {
     "password_suggestion_commands.h",
     "policy_change_commands.h",
     "popup_menu_commands.h",
+    "promos_manager_commands.h",
     "qr_generation_commands.h",
     "qr_scanner_commands.h",
     "reading_list_add_command.h",
@@ -56,7 +57,7 @@ source_set("commands") {
   deps = [
     "//ios/chrome/browser/tabs",
     "//ios/chrome/browser/ui/util:url_with_title",
-    "//ios/public/provider/chrome/browser/user_feedback",
+    "//ios/public/provider/chrome/browser/user_feedback:user_feedback_api",
     "//ios/web",
     "//net",
     "//url",
@@ -68,6 +69,7 @@ source_set("commands") {
     "//components/password_manager/core/browser",
     "//ios/chrome/browser/browsing_data:browsing_data_remove_mask",
     "//ios/chrome/browser/discover_feed:constants",
+    "//ios/chrome/browser/promos_manager:constants",
   ]
 }
 

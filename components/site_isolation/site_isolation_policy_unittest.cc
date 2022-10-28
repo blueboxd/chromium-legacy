@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -156,7 +156,7 @@ class WebTriggeredIsolatedOriginsPolicyTest : public SiteIsolationPolicyTest {
   std::vector<std::string> GetStoredOrigins() {
     std::vector<std::string> origins;
     const auto& dict = user_prefs::UserPrefs::Get(browser_context())
-                           ->GetValueDict(prefs::kWebTriggeredIsolatedOrigins);
+                           ->GetDict(prefs::kWebTriggeredIsolatedOrigins);
     for (auto pair : dict)
       origins.push_back(pair.first);
     return origins;

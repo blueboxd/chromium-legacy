@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,6 +10,8 @@
 #include "base/metrics/user_metrics_action.h"
 #include "base/scoped_observation.h"
 #include "chrome/app/vector_icons/vector_icons.h"
+#include "chrome/browser/search/search.h"
+#include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/side_panel/lens/lens_unified_side_panel_view.h"
@@ -19,6 +21,10 @@
 #include "chrome/browser/ui/views/side_panel/side_panel_registry.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/omnibox/browser/vector_icons.h"
+#include "components/search_engines/template_url.h"
+#include "components/search_engines/template_url_service.h"
+#include "components/search_engines/util.h"
+#include "components/vector_icons/vector_icons.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/views/vector_icons.h"
 
@@ -27,6 +33,12 @@ LensSidePanelCoordinator::LensSidePanelCoordinator(Browser* browser)
   GetBrowserView()->side_panel_coordinator()->AddSidePanelViewStateObserver(
       this);
   lens_side_panel_view_ = nullptr;
+
+  auto* profile = GetBrowserView()->GetProfile();
+  template_url_service_ = TemplateURLServiceFactory::GetForProfile(profile);
+
+  if (template_url_service_ != nullptr)
+    template_url_service_->AddObserver(this);
 }
 
 BrowserView* LensSidePanelCoordinator::GetBrowserView() {
@@ -39,16 +51,32 @@ LensSidePanelCoordinator::~LensSidePanelCoordinator() {
         ->side_panel_coordinator()
         ->RemoveSidePanelViewStateObserver(this);
   }
+
+  if (template_url_service_ != nullptr)
+    template_url_service_->RemoveObserver(this);
 }
 
-void LensSidePanelCoordinator::OnSidePanelDidClose() {
+void LensSidePanelCoordinator::DeregisterLensFromSidePanel() {
   lens_side_panel_view_ = nullptr;
   GetBrowserView()
       ->side_panel_coordinator()
       ->GetGlobalSidePanelRegistry()
-      ->Deregister(SidePanelEntry::Id::kLens);
+      ->Deregister(SidePanelEntry::Key(SidePanelEntry::Id::kLens));
+}
+
+void LensSidePanelCoordinator::OnSidePanelDidClose() {
+  DeregisterLensFromSidePanel();
   base::RecordAction(
       base::UserMetricsAction("LensUnifiedSidePanel.HideSidePanel"));
+}
+
+void LensSidePanelCoordinator::OnTemplateURLServiceChanged() {
+  // When search engine changes, remove lens from the side panel to avoid
+  // a potentially mismatched state between the combo box label and lens side
+  // panel content.
+  DeregisterLensFromSidePanel();
+  base::RecordAction(base::UserMetricsAction(
+      "LensUnifiedSidePanel.RemoveLensEntry_SearchEngineChanged"));
 }
 
 void LensSidePanelCoordinator::OnEntryShown(SidePanelEntry* entry) {
@@ -66,6 +94,26 @@ bool LensSidePanelCoordinator::IsLaunchButtonEnabledForTesting() {
   return lens_side_panel_view_->IsLaunchButtonEnabledForTesting();
 }
 
+bool LensSidePanelCoordinator::IsDefaultSearchProviderGoogle() {
+  auto* profile = GetBrowserView()->GetProfile();
+  return search::DefaultSearchProviderIsGoogle(profile);
+}
+
+std::u16string LensSidePanelCoordinator::GetComboboxLabel() {
+  if (IsDefaultSearchProviderGoogle())
+    return l10n_util::GetStringUTF16(
+        IDS_SIDE_PANEL_COMBO_BOX_GOOGLE_LENS_LABEL);
+
+  return GetDefaultSearchEngineName(template_url_service_);
+}
+
+const gfx::VectorIcon& LensSidePanelCoordinator::GetComboboxIcon() {
+  if (IsDefaultSearchProviderGoogle())
+    return vector_icons::kGoogleLensLogoIcon;
+
+  return vector_icons::kImageSearchIcon;
+}
+
 void LensSidePanelCoordinator::RegisterEntryAndShow(
     const content::OpenURLParams& params) {
   base::RecordAction(base::UserMetricsAction("LensUnifiedSidePanel.LensQuery"));
@@ -73,7 +121,8 @@ void LensSidePanelCoordinator::RegisterEntryAndShow(
   auto* global_registry = side_panel_coordinator->GetGlobalSidePanelRegistry();
 
   // check if the view is already registered
-  if (global_registry->GetEntryForId(SidePanelEntry::Id::kLens) != nullptr &&
+  if (global_registry->GetEntryForKey(
+          SidePanelEntry::Key(SidePanelEntry::Id::kLens)) != nullptr &&
       lens_side_panel_view_ != nullptr) {
     // The user issued a follow-up Lens query.
     base::RecordAction(
@@ -83,9 +132,8 @@ void LensSidePanelCoordinator::RegisterEntryAndShow(
     base::RecordAction(
         base::UserMetricsAction("LensUnifiedSidePanel.LensQuery_New"));
     auto entry = std::make_unique<SidePanelEntry>(
-        SidePanelEntry::Id::kLens,
-        l10n_util::GetStringUTF16(IDS_SIDE_PANEL_COMBO_BOX_GOOGLE_LENS_LABEL),
-        ui::ImageModel::FromVectorIcon(kGoogleLensLogoIcon, ui::kColorIcon),
+        SidePanelEntry::Id::kLens, GetComboboxLabel(),
+        ui::ImageModel::FromVectorIcon(GetComboboxIcon(), ui::kColorIcon),
         base::BindRepeating(&LensSidePanelCoordinator::CreateLensWebView,
                             base::Unretained(this), params));
     entry->AddObserver(this);

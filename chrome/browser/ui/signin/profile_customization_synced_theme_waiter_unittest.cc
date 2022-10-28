@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,7 +12,7 @@
 #include "chrome/browser/themes/theme_helper.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/themes/theme_syncable_service.h"
-#include "components/sync/driver/test_sync_service.h"
+#include "components/sync/test/test_sync_service.h"
 #include "content/public/test/browser_task_environment.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -42,9 +42,11 @@ class FakeThemeService : public ThemeService {
     NotifyThemeChanged();
   }
 
-  void UseDefaultTheme() override {
-    using_default_theme_ = true;
-    color_ = 0;
+  void UseTheme(ui::SystemTheme system_theme) override {
+    if (system_theme == ui::SystemTheme::kDefault) {
+      using_default_theme_ = true;
+      color_ = 0;
+    }
     NotifyThemeChanged();
   }
 

@@ -1,15 +1,15 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 import 'chrome://resources/cr_elements/cr_link_row/cr_link_row.js';
-import 'chrome://resources/cr_elements/icons.m.js';
+import 'chrome://resources/cr_elements/icons.html.js';
 import '../icons.html.js';
 import '../settings_shared.css.js';
 import '../i18n_setup.js';
 
 import {assert} from 'chrome://resources/js/assert_ts.js';
-import {focusWithoutInk} from 'chrome://resources/js/cr/ui/focus_without_ink.m.js';
+import {focusWithoutInk} from 'chrome://resources/js/cr/ui/focus_without_ink.js';
 import {I18nMixin} from 'chrome://resources/js/i18n_mixin.js';
 import {WebUIListenerMixin} from 'chrome://resources/js/web_ui_listener_mixin.js';
 import {DomRepeatEvent, microTask, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
@@ -96,7 +96,8 @@ class SettingsSiteSettingsListElement extends
     // elements residing in this element's Shadow DOM.
     for (const item of this.categoryList) {
       this.focusConfig.set(item.route.path, () => microTask.run(() => {
-        const toFocus = this.shadowRoot!.querySelector(`#${item.id}`);
+        const toFocus =
+            this.shadowRoot!.querySelector<HTMLElement>(`#${item.id}`);
         assert(!!toFocus);
         focusWithoutInk(toFocus);
       }));

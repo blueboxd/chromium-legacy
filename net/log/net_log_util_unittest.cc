@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -76,8 +76,8 @@ TEST(NetLogUtil, GetNetInfoIncludesFieldTrials) {
 
   // Add and activate a new Field Trial.
   base::FieldTrial* field_trial = base::FieldTrialList::FactoryGetFieldTrial(
-      "NewFieldTrial", 100, "Default", base::FieldTrial::ONE_TIME_RANDOMIZED,
-      nullptr);
+      "NewFieldTrial", 100, "Default",
+      base::FieldTrialList::GetEntropyProviderForOneTimeRandomization());
   field_trial->AppendGroup("Active", 100);
   EXPECT_EQ(field_trial->group_name(), "Active");
 

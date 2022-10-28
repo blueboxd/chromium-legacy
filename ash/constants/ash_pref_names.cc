@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -18,6 +18,11 @@ const char kAssistPersonalInfoEnabled[] =
 // A boolean pref of whether assist predictive writing is enabled.
 const char kAssistPredictiveWritingEnabled[] =
     "assistive_input.predictive_writing_enabled";
+
+// A boolean pref of whether Google Calendar Integration is enabled.
+// Disabling this pref would stop the user from getting their
+// Google Calendar events from the system tray - Calendar widget.
+const char kCalendarIntegrationEnabled[] = "ash.calendar_integration_enabled";
 
 // A boolean pref of whether emoji suggestion is enabled.
 const char kEmojiSuggestionEnabled[] =
@@ -273,6 +278,15 @@ const char kAccessibilityAutoclickMovementThreshold[] =
 // The Autoclick menu position on the screen, an AutoclickMenuPosition.
 const char kAccessibilityAutoclickMenuPosition[] =
     "settings.a11y.autoclick_menu_position";
+// How much to greyscale the display.
+const char kAccessibilityGreyscaleAmount[] = "settings.a11y.greyscale_amount";
+// How much to saturate the display.
+const char kAccessibilitySaturationAmount[] = "settings.a11y.saturation_amount";
+// How much sepia the display.
+const char kAccessibilitySepiaAmount[] = "settings.a11y.sepia_amount";
+// How much to rotate the hue on the display.
+const char kAccessibilityHueRotationAmount[] =
+    "settings.a11y.hue_rotation_amount";
 // A boolean pref which determines whether caret highlighting is enabled.
 const char kAccessibilityCaretHighlightEnabled[] =
     "settings.a11y.caret_highlight";
@@ -757,6 +771,9 @@ const char kUserCameraAllowed[] = "ash.user.camera_allowed";
 // A boolean pref indicating whether the microphone is allowed to be used.
 const char kUserMicrophoneAllowed[] = "ash.user.microphone_allowed";
 
+// A boolean pref indicating whether the geolocation is allowed to be used.
+const char kUserGeolocationAllowed[] = "ash.user.geolocation_allowed";
+
 // A boolean pref which determines whether tap-dragging is enabled.
 const char kTapDraggingEnabled[] = "settings.touchpad.enable_tap_dragging";
 
@@ -1032,6 +1049,10 @@ const char kFilesAppFolderShortcuts[] = "ash.filesapp.folder_shortcuts";
 // A boolean pref that indicates if the Files app UI prefs have migrated from
 // the Chrome app to System Web App.
 const char kFilesAppUIPrefsMigrated[] = "ash.filesapp.ui_prefs_migrated";
+
+// A boolean pref that indicates if files can be trashed (on a supported
+// filesystem) or must be always permanently deleted.
+const char kFilesAppTrashEnabled[] = "ash.filesapp.trash_enabled";
 
 // Boolean value for the DeviceLoginScreenWebUILazyLoading device policy.
 const char kLoginScreenWebUILazyLoading[] =

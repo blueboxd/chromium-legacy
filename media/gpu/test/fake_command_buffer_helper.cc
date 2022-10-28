@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -72,8 +72,8 @@ gpu::SharedImageStub* FakeCommandBufferHelper::GetSharedImageStub() {
 }
 
 #if BUILDFLAG(IS_WIN)
-gpu::DXGISharedHandleManager*
-FakeCommandBufferHelper::GetDXGISharedHandleManager() {
+gpu::DXGIKeyedMutexManager*
+FakeCommandBufferHelper::GetDXGIKeyedMutexManager() {
   return nullptr;
 }
 #endif
@@ -148,13 +148,6 @@ gpu::Mailbox FakeCommandBufferHelper::CreateMailbox(GLuint service_id) {
   if (!has_stub_)
     return gpu::Mailbox();
   return gpu::Mailbox::Generate();
-}
-
-void FakeCommandBufferHelper::ProduceTexture(const gpu::Mailbox& mailbox,
-                                             GLuint service_id) {
-  DVLOG(2) << __func__ << "(" << service_id << ")";
-  DCHECK(task_runner_->BelongsToCurrentThread());
-  DCHECK(service_ids_.count(service_id));
 }
 
 void FakeCommandBufferHelper::WaitForSyncToken(gpu::SyncToken sync_token,

@@ -1,8 +1,9 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "base/memory/raw_ptr.h"
+#include "base/values.h"
 #include "chrome/browser/media/router/discovery/access_code/access_code_cast_feature.h"
 #include "components/media_router/common/discovery/media_sink_internal.h"
 #include "components/media_router/common/media_sink.h"
@@ -41,7 +42,7 @@ class AccessCodeCastPrefUpdater {
 
   // Returns a nullptr if the device Added dictionary does not exist in the
   // pref service for some reason.
-  const base::Value* GetDeviceAddedTimeDict();
+  const base::Value::Dict& GetDeviceAddedTimeDict();
 
   // Gets a list of all sink ids currently stored in the pref service.
   const base::Value::List GetSinkIdsFromDevicesDict();

@@ -68,6 +68,7 @@
 #include "content/browser/download/save_file_manager.h"
 #include "content/browser/field_trial_synchronizer.h"
 #include "content/browser/first_party_sets/first_party_sets_handler_impl.h"
+#include "content/browser/first_party_sets/local_set_declaration.h"
 #include "content/browser/gpu/browser_gpu_channel_host_factory.h"
 #include "content/browser/gpu/browser_gpu_client_delegate.h"
 #include "content/browser/gpu/compositor_util.h"
@@ -951,10 +952,13 @@ int BrowserMainLoop::PreMainMessageLoopRun() {
   // ShellBrowserMainParts initializes a ShellBrowserContext with user data
   // directory only in PreMainMessageLoopRun(). First-Party Sets handler needs
   // to access this directory, hence triggering after this stage has run.
-  FirstPartySetsHandlerImpl::GetInstance()->Init(
-      GetContentClient()->browser()->GetFirstPartySetsDirectory(),
-      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-          network::switches::kUseFirstPartySet));
+  if (result_code_ == RESULT_CODE_NORMAL_EXIT) {
+    FirstPartySetsHandlerImpl::GetInstance()->Init(
+        GetContentClient()->browser()->GetFirstPartySetsDirectory(),
+        LocalSetDeclaration(
+            base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+                network::switches::kUseFirstPartySet)));
+  }
 
   variations::MaybeScheduleFakeCrash();
 

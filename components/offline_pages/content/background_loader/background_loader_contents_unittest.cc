@@ -1,4 +1,4 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,6 +13,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/mojom/mediastream/media_stream.mojom-shared.h"
 #include "third_party/blink/public/mojom/mediastream/media_stream.mojom.h"
+#include "third_party/blink/public/mojom/window_features/window_features.mojom.h"
 #include "url/gurl.h"
 
 namespace background_loader {
@@ -154,8 +155,8 @@ TEST_F(BackgroundLoaderContentsTest, ShouldNotAddNewContents) {
       std::unique_ptr<content::WebContents>() /* new_contents */,
       GURL() /* target_url */,
       WindowOpenDisposition::CURRENT_TAB /* disposition */,
-      gfx::Rect() /* initial_rect */, false /* user_gesture */,
-      &blocked /* was_blocked */);
+      blink::mojom::WindowFeatures() /* window_features */,
+      false /* user_gesture */, &blocked /* was_blocked */);
   ASSERT_TRUE(blocked);
 }
 

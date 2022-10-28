@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -80,8 +80,8 @@ media::AudioParameters GetAudioParameters() {
   static_assert(kAudioSampleRate % 100 == 0,
                 "Audio sample rate is not divisible by 100");
   return media::AudioParameters(media::AudioParameters::AUDIO_PCM_LOW_LATENCY,
-                                media::CHANNEL_LAYOUT_STEREO, kAudioSampleRate,
-                                kAudioSampleRate / 100);
+                                media::ChannelLayoutConfig::Stereo(),
+                                kAudioSampleRate, kAudioSampleRate / 100);
 }
 
 // Extracts a potentially scaled-down RGB image from the given video |frame|,

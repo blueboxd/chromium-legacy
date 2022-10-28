@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -358,12 +358,12 @@ class AccountConsistencyServiceTest : public PlatformTest {
     base::RunLoop run_loop;
     network::mojom::CookieManager* cookie_manager =
         browser_state_.GetCookieManager();
-    cookie_manager->GetAllCookies(base::BindOnce(base::BindLambdaForTesting(
+    cookie_manager->GetAllCookies(base::BindLambdaForTesting(
         [&run_loop,
          &cookies_out](const std::vector<net::CanonicalCookie>& cookies) {
           cookies_out = cookies;
           run_loop.Quit();
-        })));
+        }));
     run_loop.Run();
 
     return cookies_out;

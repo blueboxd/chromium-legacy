@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -144,6 +144,7 @@ bool IsUnaffiliatedArcAllowed() {
         break;
       case ArcSessionManager::State::CHECKING_REQUIREMENTS:
       case ArcSessionManager::State::REMOVING_DATA_DIR:
+      case ArcSessionManager::State::READY:
       case ArcSessionManager::State::ACTIVE:
       case ArcSessionManager::State::STOPPING:
         // Never forbid unaffiliated ARC while ARC is running
@@ -384,10 +385,12 @@ bool SetArcPlayStoreEnabledForProfile(Profile* profile, bool enabled) {
     // |arc_session_manager| can be nullptr in unit_tests.
     if (!arc_session_manager)
       return false;
-    if (enabled)
+    if (enabled) {
+      arc_session_manager->AllowActivation();
       arc_session_manager->RequestEnable();
-    else
+    } else {
       arc_session_manager->RequestDisableWithArcDataRemoval();
+    }
 
     return true;
   }
@@ -446,12 +449,12 @@ bool IsArcOobeOptInConfigurationBased() {
   if (!oobe_configuration->CheckCompleted())
     return false;
   // Check configuration value that triggers automatic ARC TOS acceptance.
-  auto& configuration = oobe_configuration->GetConfiguration();
-  auto* auto_accept = configuration.FindKeyOfType(
-      ash::configuration::kArcTosAutoAccept, base::Value::Type::BOOLEAN);
+  auto& configuration = oobe_configuration->configuration();
+  auto auto_accept =
+      configuration.FindBool(ash::configuration::kArcTosAutoAccept);
   if (!auto_accept)
     return false;
-  return auto_accept->GetBool();
+  return *auto_accept;
 }
 
 bool IsArcTermsOfServiceNegotiationNeeded(const Profile* profile) {

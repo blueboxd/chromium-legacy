@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -17,6 +17,10 @@
 #include "extensions/browser/extension_function.h"
 #include "extensions/common/api/file_system.h"
 #include "ui/shell_dialogs/select_file_dialog.h"
+
+#if BUILDFLAG(IS_CHROMEOS)
+#include "extensions/browser/api/file_system/consent_provider.h"
+#endif  // BUILDFLAG(IS_CHROMEOS)
 
 namespace extensions {
 class ExtensionPrefs;
@@ -171,9 +175,9 @@ class FileSystemChooseEntryFunction : public FileSystemEntryFunction {
   static void BuildFileTypeInfo(
       ui::SelectFileDialog::FileTypeInfo* file_type_info,
       const base::FilePath::StringType& suggested_extension,
-      const AcceptOptions* accepts,
-      const bool* accepts_all_types);
-  static void BuildSuggestion(const std::string* opt_name,
+      const absl::optional<AcceptOptions>& accepts,
+      const absl::optional<bool>& accepts_all_types);
+  static void BuildSuggestion(const absl::optional<std::string>& opt_name,
                               base::FilePath* suggested_name,
                               base::FilePath::StringType* suggested_extension);
 
@@ -267,6 +271,8 @@ class FileSystemRequestFileSystemFunction : public ExtensionFunction {
   // access.
   void OnGotFileSystem(const std::string& id, const std::string& path);
   void OnError(const std::string& error);
+
+  std::unique_ptr<ConsentProvider> consent_provider_;
 };
 
 // Requests a list of available volumes.
@@ -285,6 +291,8 @@ class FileSystemGetVolumeListFunction : public ExtensionFunction {
  private:
   void OnGotVolumeList(const std::vector<api::file_system::Volume>& volumes);
   void OnError(const std::string& error);
+
+  std::unique_ptr<ConsentProvider> consent_provider_;
 };
 #else   // BUILDFLAG(IS_CHROMEOS)
 // Stub for non Chrome OS operating systems.

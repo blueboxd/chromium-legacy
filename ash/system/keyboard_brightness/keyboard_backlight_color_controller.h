@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -56,7 +56,7 @@ class ASH_EXPORT KeyboardBacklightColorController
   KeyboardBacklightColorNudgeController*
   keyboard_backlight_color_nudge_controller() {
     return keyboard_backlight_color_nudge_controller_.get();
-  };
+  }
 
  private:
   friend class KeyboardBacklightColorControllerTest;

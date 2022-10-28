@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -61,6 +61,7 @@ class StubPasswordManagerClient : public PasswordManagerClient {
   void AutomaticPasswordSave(
       std::unique_ptr<PasswordFormManagerForUI> saved_manager) override;
   PrefService* GetPrefs() const override;
+  PrefService* GetLocalStatePrefs() const override;
   const syncer::SyncService* GetSyncService() const override;
   PasswordStoreInterface* GetProfilePasswordStore() const override;
   PasswordStoreInterface* GetAccountPasswordStore() const override;
@@ -88,7 +89,9 @@ class StubPasswordManagerClient : public PasswordManagerClient {
       metrics_util::PasswordType reused_password_type,
       const std::string& username,
       const std::vector<MatchingReusedCredential>& matching_reused_credentials,
-      bool password_field_exists) override;
+      bool password_field_exists,
+      uint64_t reused_password_hash,
+      const std::string& domain) override;
 
   void LogPasswordReuseDetectedEvent() override;
 

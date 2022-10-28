@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -195,10 +195,6 @@ TabletModeAnimationTransition CalculateAnimationTransitionForMetrics(
       return TabletModeAnimationTransition::kHideHomeLauncherForWindow;
     case HomeLauncherAnimationTrigger::kLauncherButton:
       return TabletModeAnimationTransition::kHomeButtonShow;
-    case HomeLauncherAnimationTrigger::kDragRelease:
-      return launcher_should_show
-                 ? TabletModeAnimationTransition::kDragReleaseShow
-                 : TabletModeAnimationTransition::kDragReleaseHide;
     case HomeLauncherAnimationTrigger::kOverviewModeFade:
       return launcher_should_show
                  ? TabletModeAnimationTransition::kFadeOutOverview
@@ -435,7 +431,7 @@ void AppListControllerImpl::ShowAppList() {
   }
   DCHECK(!features::IsProductivityLauncherEnabled() ||
          !bubble_presenter_->IsShowing());
-  fullscreen_presenter_->Show(AppListViewState::kPeeking,
+  fullscreen_presenter_->Show(AppListViewState::kFullscreenAllApps,
                               GetDisplayIdToShowAppListOn(), base::TimeTicks(),
                               /*show_source=*/absl::nullopt);
 }
@@ -547,25 +543,8 @@ void AppListControllerImpl::Show(int64_t display_id,
     bubble_presenter_->Show(display_id);
     return;
   }
-  fullscreen_presenter_->Show(AppListViewState::kPeeking, display_id,
+  fullscreen_presenter_->Show(AppListViewState::kFullscreenAllApps, display_id,
                               event_time_stamp, show_source);
-}
-
-void AppListControllerImpl::UpdateYPositionAndOpacity(
-    int y_position_in_screen,
-    float background_opacity) {
-  // Avoid changing app list opacity and position when homecher is enabled.
-  if (IsTabletMode())
-    return;
-  fullscreen_presenter_->UpdateYPositionAndOpacity(y_position_in_screen,
-                                                   background_opacity);
-}
-
-void AppListControllerImpl::EndDragFromShelf(AppListViewState app_list_state) {
-  // Avoid dragging app list when homecher is enabled.
-  if (IsTabletMode())
-    return;
-  fullscreen_presenter_->EndDragFromShelf(app_list_state);
 }
 
 void AppListControllerImpl::ProcessMouseWheelEvent(
@@ -1224,16 +1203,6 @@ bool AppListControllerImpl::IsShowingEmbeddedAssistantUI() const {
     return true;
   }
   return fullscreen_presenter_->IsShowingEmbeddedAssistantUI();
-}
-
-AppListViewState AppListControllerImpl::CalculateStateAfterShelfDrag(
-    const ui::LocatedEvent& event_in_screen,
-    float launcher_above_shelf_bottom_amount) const {
-  if (fullscreen_presenter_->GetView()) {
-    return fullscreen_presenter_->GetView()->CalculateStateAfterShelfDrag(
-        event_in_screen, launcher_above_shelf_bottom_amount);
-  }
-  return AppListViewState::kClosed;
 }
 
 void AppListControllerImpl::SetStateTransitionAnimationCallbackForTesting(

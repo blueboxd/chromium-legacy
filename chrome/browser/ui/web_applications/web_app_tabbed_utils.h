@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -14,6 +14,9 @@ namespace web_app {
 
 // Returns whether the web apps tab strip contains a pinned home tab.
 bool HasPinnedHomeTab(TabStripModel* tab_strip_model);
+
+// Returns whether the tab at the given index is the pinned home tab.
+bool IsPinnedHomeTab(TabStripModel* tab_strip_model, int index);
 
 // Returns whether the given launch_url should be treated as the home tab URL.
 bool IsPinnedHomeTabUrl(const WebAppRegistrar& registrar,

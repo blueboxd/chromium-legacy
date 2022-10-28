@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -20,6 +20,14 @@ bool IsOsSupportedForRecipe() {
 
 bool IsOsSupportedForCart() {
 #if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC)
+  return true;
+#else
+  return false;
+#endif
+}
+
+bool IsOsSupportedForDrive() {
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX)
   return true;
 #else
   return false;
@@ -48,18 +56,24 @@ bool IsRecipeTasksModuleEnabled() {
   if (base::FeatureList::GetInstance()->IsFeatureOverridden(
           ntp_features::kNtpRecipeTasksModule.name)) {
     return base::FeatureList::IsEnabled(ntp_features::kNtpRecipeTasksModule);
-  } else {
-    return IsOsSupportedForRecipe() && IsInUS();
   }
+  return IsOsSupportedForRecipe() && IsInUS();
 }
 
 bool IsCartModuleEnabled() {
   if (base::FeatureList::GetInstance()->IsFeatureOverridden(
           ntp_features::kNtpChromeCartModule.name)) {
     return base::FeatureList::IsEnabled(ntp_features::kNtpChromeCartModule);
-  } else {
-    return IsOsSupportedForCart() && IsInUS();
   }
+  return IsOsSupportedForCart() && IsInUS();
+}
+
+bool IsDriveModuleEnabled() {
+  if (base::FeatureList::GetInstance()->IsFeatureOverridden(
+          ntp_features::kNtpDriveModule.name)) {
+    return base::FeatureList::IsEnabled(ntp_features::kNtpDriveModule);
+  }
+  return IsOsSupportedForDrive() && IsInUS();
 }
 
 bool IsModuleFreEnabled() {
@@ -67,7 +81,6 @@ bool IsModuleFreEnabled() {
           ntp_features::kNtpModulesFirstRunExperience.name)) {
     return base::FeatureList::IsEnabled(
         ntp_features::kNtpModulesFirstRunExperience);
-  } else {
-    return IsInUS();
   }
+  return IsInUS();
 }

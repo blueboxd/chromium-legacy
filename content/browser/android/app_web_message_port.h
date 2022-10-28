@@ -17,7 +17,7 @@
 namespace mojo {
 class Connector;
 class Message;
-};  // namespace mojo
+}  // namespace mojo
 
 namespace content::android {
 
@@ -100,10 +100,6 @@ class CONTENT_EXPORT AppWebMessagePort : public mojo::MessageReceiver {
 
   blink::MessagePortDescriptor descriptor_;
   JavaObjectWeakGlobalRef j_obj_;
-
-  // Set when this port is receiving messages. Port should be kept alive
-  // as long as it can still receive messages.
-  base::android::ScopedJavaGlobalRef<jobject> j_strong_obj_;
 
   bool connector_errored_ = false;
   bool is_watching_ = false;

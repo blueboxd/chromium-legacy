@@ -15,7 +15,6 @@
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/modules/mediastream/media_stream.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
-#include "third_party/blink/renderer/platform/mojo/heap_mojo_receiver.h"
 #include "third_party/blink/renderer/platform/peerconnection/rtc_peer_connection_handler_client.h"
 #include "third_party/blink/renderer/platform/peerconnection/rtc_rtp_transceiver_platform.h"
 #include "third_party/blink/renderer/platform/peerconnection/rtc_session_description_platform.h"
@@ -88,8 +87,6 @@ class MODULES_EXPORT PeerConnectionTracker
     kActionCreateAnswer
   };
 
-  // In Plan B: "Transceiver" refers to RTCRtpSender or RTCRtpReceiver.
-  // In Unified Plan: "Transceiver" refers to RTCRtpTransceiver.
   enum class TransceiverUpdatedReason {
     kAddTransceiver,
     kAddTrack,
@@ -154,9 +151,6 @@ class MODULES_EXPORT PeerConnectionTracker
 
   // Sends an update when a transceiver is added, modified or removed. This can
   // happen as a result of any of the methods indicated by |reason|.
-  // In Plan B: |transceiver| refers to its Sender() or Receiver() depending on
-  // ImplementationType(). Example events: "senderAdded", "receiverRemoved".
-  // In Plan B: |transceiver| has a fully implemented ImplementationType().
   // Example events: "transceiverAdded", "transceiverModified".
   // See peer_connection_tracker_unittest.cc for expected resulting event
   // strings.
@@ -165,13 +159,6 @@ class MODULES_EXPORT PeerConnectionTracker
                                    const RTCRtpTransceiverPlatform& transceiver,
                                    size_t transceiver_index);
   virtual void TrackModifyTransceiver(
-      RTCPeerConnectionHandler* pc_handler,
-      TransceiverUpdatedReason reason,
-      const RTCRtpTransceiverPlatform& transceiver,
-      size_t transceiver_index);
-  // TODO(hbos): When Plan B is removed this is no longer applicable.
-  // https://crbug.com/857004
-  virtual void TrackRemoveTransceiver(
       RTCPeerConnectionHandler* pc_handler,
       TransceiverUpdatedReason reason,
       const RTCRtpTransceiverPlatform& transceiver,
@@ -237,11 +224,6 @@ class MODULES_EXPORT PeerConnectionTracker
   // Sends a new fragment on an RtcEventLog.
   virtual void TrackRtcEventLogWrite(RTCPeerConnectionHandler* pc_handler,
                                      const WTF::Vector<uint8_t>& output);
-
-  void Trace(Visitor* visitor) const override {
-    visitor->Trace(receiver_);
-    Supplement<LocalDOMWindow>::Trace(visitor);
-  }
 
  private:
   FRIEND_TEST_ALL_PREFIXES(PeerConnectionTrackerTest, OnSuspend);
@@ -311,9 +293,7 @@ class MODULES_EXPORT PeerConnectionTracker
   THREAD_CHECKER(main_thread_);
   mojo::Remote<blink::mojom::blink::PeerConnectionTrackerHost>
       peer_connection_tracker_host_;
-  HeapMojoReceiver<blink::mojom::blink::PeerConnectionManager,
-                   PeerConnectionTracker>
-      receiver_;
+  mojo::Receiver<blink::mojom::blink::PeerConnectionManager> receiver_{this};
 
   scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_;
 };

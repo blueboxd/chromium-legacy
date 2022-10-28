@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,11 +6,8 @@
 
 TouchToFillWebAuthnCredential::TouchToFillWebAuthnCredential(
     const Username& username,
-    const DisplayName& display_name,
     const BackendId& backend_id)
-    : username_(username),
-      display_name_(display_name),
-      backend_id_(backend_id) {}
+    : username_(username), backend_id_(backend_id) {}
 
 TouchToFillWebAuthnCredential::~TouchToFillWebAuthnCredential() = default;
 
@@ -27,9 +24,7 @@ TouchToFillWebAuthnCredential& TouchToFillWebAuthnCredential::operator=(
 bool operator==(const TouchToFillWebAuthnCredential& lhs,
                 const TouchToFillWebAuthnCredential& rhs) {
   auto tie = [](const TouchToFillWebAuthnCredential& cred) {
-    return std::make_tuple(std::cref(cred.username()),
-                           std::cref(cred.display_name()),
-                           std::cref(cred.id()));
+    return std::make_tuple(std::cref(cred.username()), std::cref(cred.id()));
   };
 
   return tie(lhs) == tie(rhs);

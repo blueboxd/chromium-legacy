@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -14,7 +14,7 @@
 // custom scheme handling of the WKWebView.
 @interface CRWWebUISchemeHandler : NSObject <WKURLSchemeHandler>
 
-// Initializes the handler with the |URLLoaderFactory| used to load the URLs.
+// Initializes the handler with the `URLLoaderFactory` used to load the URLs.
 - (instancetype)initWithURLLoaderFactory:
     (scoped_refptr<network::SharedURLLoaderFactory>)URLLoaderFactory
     NS_DESIGNATED_INITIALIZER;

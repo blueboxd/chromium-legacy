@@ -1,4 +1,4 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -298,11 +298,5 @@ class COMPONENT_EXPORT(DBUS_POWER) PowerPolicyController
 };
 
 }  // namespace chromeos
-
-// TODO(https://crbug.com/1164001): remove after the //chrome/browser/chromeos
-// source migration is finished.
-namespace ash {
-using ::chromeos::PowerPolicyController;
-}
 
 #endif  // CHROMEOS_DBUS_POWER_POWER_POLICY_CONTROLLER_H_

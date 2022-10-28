@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -30,6 +30,9 @@ extern const base::Feature kLensTransparentImagesFix;
 // a "Search Image" button.
 extern const base::Feature kLensSearchImageInScreenshotSharing;
 
+// Enables Latency logging for the LensStandalone feature.
+extern const base::Feature kEnableLatencyLogging;
+
 // Enable the Lens Region Search feature on the PDF viewer.
 extern const base::Feature kEnableRegionSearchOnPdfViewer;
 
@@ -59,6 +62,12 @@ extern const base::FeatureParam<bool> kEnableUKMLoggingForImageSearch;
 // Enables the side panel for Lens features on Chrome where supported.
 extern const base::FeatureParam<bool> kEnableSidePanelForLens;
 
+// The base URL for Lens.
+extern const base::FeatureParam<std::string> kHomepageURLForLens;
+
+// Enable Lens HTML redirect fix.
+extern const base::FeatureParam<bool> kEnableLensHtmlRedirectFix;
+
 // Enables footer for the unified side panel
 extern const base::Feature kLensUnifiedSidePanelFooter;
 
@@ -79,6 +88,9 @@ extern const base::FeatureParam<bool> kUseSelectionIconWithImage;
 
 // Enables the use of an alternative string for the instruction chip.
 extern const base::FeatureParam<bool> kUseAltChipString;
+
+// Enables Latency logging for the LensStandalone feature.
+extern bool GetEnableLatencyLogging();
 
 // Returns whether to enable UKM logging for Lens Region Search feature.
 extern bool GetEnableUKMLoggingForRegionSearch();
@@ -102,6 +114,9 @@ extern int GetMaxPixelsForImageSearch();
 // The URL for the Lens home page.
 extern std::string GetHomepageURLForLens();
 
+// Returns whether to apply fix for HTML redirects.
+extern bool GetEnableLensHtmlRedirectFix();
+
 // Returns whether Lens fullscreen search is enabled.
 extern bool IsLensFullscreenSearchEnabled();
 
@@ -121,8 +136,11 @@ extern bool UseRegionSearchMenuItemAltText3();
 // relevant Lens context menu strings.
 extern bool UseGoogleAsVisualSearchProvider();
 
-// Returns whether the Lens side panel is enabled.
+// Returns whether the Lens side panel is enabled for image search.
 extern bool IsLensSidePanelEnabled();
+
+// Returns whether the Lens side panel is enabled for region search.
+extern bool IsLensSidePanelEnabledForRegionSearch();
 
 // Returns whether to send images to Lens Standalone as PNG
 extern bool GetSendImagesAsPng();

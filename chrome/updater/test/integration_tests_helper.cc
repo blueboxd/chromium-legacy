@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -246,6 +246,8 @@ void AppTestHelper::FirstTaskRun() {
 #if BUILDFLAG(IS_WIN)
     {"expect_interfaces_registered",
      WithSystemScope(Wrap(&ExpectInterfacesRegistered))},
+    {"expect_marshal_interface_succeeds",
+     WithSystemScope(Wrap(&ExpectMarshalInterfaceSucceeds))},
     {"expect_legacy_update3web_succeeds",
      WithSwitch("expected_error_code",
                 WithSwitch("expected_final_state",
@@ -314,7 +316,8 @@ void AppTestHelper::FirstTaskRun() {
                                                     &RunRecoveryComponent))))},
     {"expect_last_checked", WithSystemScope(Wrap(&ExpectLastChecked))},
     {"expect_last_started", WithSystemScope(Wrap(&ExpectLastStarted))},
-    {"run_offline_install", WithSystemScope(Wrap(&RunOfflineInstall))},
+    {"run_offline_install",
+     WithSwitch("silent", WithSystemScope(Wrap(&RunOfflineInstall)))},
   };
 
   const base::CommandLine* command_line =

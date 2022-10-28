@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -131,42 +131,34 @@ SharedImageBackingType RawDrawImageBacking::GetType() const {
   return SharedImageBackingType::kRawDraw;
 }
 
-bool RawDrawImageBacking::ProduceLegacyMailbox(
-    MailboxManager* mailbox_manager) {
-  NOTIMPLEMENTED();
-  return false;
-}
-
 void RawDrawImageBacking::Update(std::unique_ptr<gfx::GpuFence> in_fence) {
   NOTIMPLEMENTED();
 }
 
 void RawDrawImageBacking::OnMemoryDump(
     const std::string& dump_name,
-    base::trace_event::MemoryAllocatorDump* dump,
+    base::trace_event::MemoryAllocatorDumpGuid client_guid,
     base::trace_event::ProcessMemoryDump* pmd,
     uint64_t client_tracing_id) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   AutoLock auto_lock(this);
+
+  SharedImageBacking::OnMemoryDump(dump_name, client_guid, pmd,
+                                   client_tracing_id);
+
   if (auto tracing_id = GrBackendTextureTracingID(backend_texture_)) {
     // Add a |service_guid| which expresses shared ownership between the
     // various GPU dumps.
-    auto client_guid = GetSharedImageGUIDForTracing(mailbox());
     auto service_guid = gl::GetGLTextureServiceGUIDForTracing(tracing_id);
     pmd->CreateSharedGlobalAllocatorDump(service_guid);
-
-    std::string format_dump_name =
-        base::StringPrintf("%s/format=%d", dump_name.c_str(), format());
-    base::trace_event::MemoryAllocatorDump* format_dump =
-        pmd->CreateAllocatorDump(format_dump_name);
-    format_dump->AddScalar(
-        base::trace_event::MemoryAllocatorDump::kNameSize,
-        base::trace_event::MemoryAllocatorDump::kUnitsBytes,
-        static_cast<uint64_t>(EstimatedSize(format(), size())));
-
-    int importance = 2;  // This client always owns the ref.
-    pmd->AddOwnershipEdge(client_guid, service_guid, importance);
+    pmd->AddOwnershipEdge(client_guid, service_guid, kOwningEdgeImportance);
   }
+}
+
+size_t RawDrawImageBacking::EstimatedSizeForMemTracking() const {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  AutoLock auto_lock(this);
+  return backend_texture_.isValid() ? EstimatedSize(format(), size()) : 0u;
 }
 
 std::unique_ptr<RasterImageRepresentation> RawDrawImageBacking::ProduceRaster(
@@ -217,15 +209,20 @@ bool RawDrawImageBacking::CreateBackendTextureAndFlushPaintOps(bool flush) {
                                                     : GrMipMapped::kNo;
   auto sk_color = viz::ResourceFormatToClosestSkColorType(
       /*gpu_compositing=*/true, format());
+  const std::string label =
+      "RawDrawImageBacking" + CreateLabelForSharedImageUsage(usage());
   backend_texture_ = context_state_->gr_context()->createBackendTexture(
       size().width(), size().height(), sk_color, mipmap, GrRenderable::kYes,
-      GrProtected::kNo);
+      GrProtected::kNo, label);
   if (!backend_texture_.isValid()) {
     DLOG(ERROR) << "createBackendTexture() failed with SkColorType:"
                 << sk_color;
     return false;
   }
   promise_texture_ = SkPromiseImageTexture::Make(backend_texture_);
+
+  // TODO(crbug.com/1353911): The estimated size recorded with GPU memory
+  // tracker should be updated after `backend_texture_` is allocated.
 
   auto surface = SkSurface::MakeFromBackendTexture(
       context_state_->gr_context(), backend_texture_, surface_origin(),

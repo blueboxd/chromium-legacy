@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -160,13 +160,17 @@ class IntegrationTestCommandsUser : public IntegrationTestCommands {
     updater::test::InstallApp(updater_scope_, app_id);
   }
 
-  void WaitForUpdaterExit() const override {
-    updater::test::WaitForUpdaterExit(updater_scope_);
+  bool WaitForUpdaterExit() const override {
+    return updater::test::WaitForUpdaterExit(updater_scope_);
   }
 
 #if BUILDFLAG(IS_WIN)
   void ExpectInterfacesRegistered() const override {
     updater::test::ExpectInterfacesRegistered(updater_scope_);
+  }
+
+  void ExpectMarshalInterfaceSucceeds() const override {
+    updater::test::ExpectMarshalInterfaceSucceeds(updater_scope_);
   }
 
   void ExpectLegacyUpdate3WebSucceeds(const std::string& app_id,
@@ -251,8 +255,8 @@ class IntegrationTestCommandsUser : public IntegrationTestCommands {
     updater::test::UninstallApp(updater_scope_, app_id);
   }
 
-  void RunOfflineInstall() override {
-    updater::test::RunOfflineInstall(updater_scope_);
+  void RunOfflineInstall(bool is_silent_install) override {
+    updater::test::RunOfflineInstall(updater_scope_, is_silent_install);
   }
 
  private:

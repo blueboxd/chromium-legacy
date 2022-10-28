@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -37,6 +37,8 @@ class TestControllerAsh : public mojom::TestController,
   void ClickElement(const std::string& element_name,
                     ClickElementCallback callback) override;
   void ClickWindow(const std::string& window_id) override;
+  void ConnectToNetwork(const std::string& service_path) override;
+  void DisconnectFromNetwork(const std::string& service_path) override;
   void DoesItemExistInShelf(const std::string& item_id,
                             DoesItemExistInShelfCallback callback) override;
   void DoesElementExist(const std::string& element_name,

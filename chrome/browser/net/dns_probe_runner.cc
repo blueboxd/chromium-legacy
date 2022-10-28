@@ -1,4 +1,4 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -98,9 +98,12 @@ void DnsProbeRunner::RunProbe(base::OnceClosure callback) {
   parameters->cache_usage =
       network::mojom::ResolveHostParameters::CacheUsage::DISALLOWED;
 
+  // Intentionally using a HostPortPair not to trigger HTTPS DNS resource
+  // record query.
   // Use transient NIKs - don't want cached responses anyways, so no benefit
   // from sharing a cache, beyond multiple probes not evicting anything.
-  host_resolver_->ResolveHost(net::HostPortPair(kKnownGoodHostname, 80),
+  host_resolver_->ResolveHost(network::mojom::HostResolverHost::NewHostPortPair(
+                                  net::HostPortPair(kKnownGoodHostname, 443)),
                               net::NetworkIsolationKey::CreateTransient(),
                               std::move(parameters),
                               receiver_.BindNewPipeAndPassRemote());
@@ -118,7 +121,9 @@ bool DnsProbeRunner::IsRunning() const {
 void DnsProbeRunner::OnComplete(
     int32_t result,
     const net::ResolveErrorInfo& resolve_error_info,
-    const absl::optional<net::AddressList>& resolved_addresses) {
+    const absl::optional<net::AddressList>& resolved_addresses,
+    const absl::optional<net::HostResolverEndpointResults>&
+        endpoint_results_with_metadata) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!callback_.is_null());
 
@@ -141,7 +146,8 @@ void DnsProbeRunner::OnMojoConnectionError() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   CreateHostResolver();
   OnComplete(net::ERR_NAME_NOT_RESOLVED, net::ResolveErrorInfo(net::ERR_FAILED),
-             absl::nullopt);
+             /*resolved_addresses=*/absl::nullopt,
+             /*endpoint_results_with_metadata=*/absl::nullopt);
 }
 
 }  // namespace chrome_browser_net

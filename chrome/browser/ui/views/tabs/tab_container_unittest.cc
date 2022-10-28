@@ -1,14 +1,18 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome/browser/ui/views/tabs/tab_container_impl.h"
 
 #include <memory>
+
 #include "base/memory/raw_ref.h"
+#include "base/ranges/algorithm.h"
 #include "chrome/browser/ui/layout_constants.h"
+#include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/ui/views/tabs/fake_base_tab_strip_controller.h"
 #include "chrome/browser/ui/views/tabs/fake_tab_slot_controller.h"
+#include "chrome/browser/ui/views/tabs/tab_close_button.h"
 #include "chrome/browser/ui/views/tabs/tab_drag_context.h"
 #include "chrome/browser/ui/views/tabs/tab_group_header.h"
 #include "chrome/browser/ui/views/tabs/tab_group_views.h"
@@ -59,6 +63,17 @@ class FakeTabContainerController final : public TabContainerController {
 
   int GetActiveIndex() const override {
     return tab_strip_controller_->GetActiveIndex();
+  }
+
+  int NumPinnedTabsInModel() const override {
+    for (size_t i = 0;
+         i < static_cast<size_t>(tab_strip_controller_->GetCount()); ++i) {
+      if (!tab_strip_controller_->IsTabPinned(static_cast<int>(i)))
+        return static_cast<int>(i);
+    }
+
+    // All tabs are pinned.
+    return tab_strip_controller_->GetCount();
   }
 
   void OnDropIndexUpdate(int index, bool drop_before) override {
@@ -289,6 +304,14 @@ class TabContainerTest : public ChromeViewsTestBase {
     tab_container_->SetSize(size);
   }
 
+  // An abridged version of the above that avoids calls to TabContainer::Layout
+  // from Widget::SetSize.
+  void SetTabContainerWidthSingleLayout(int width) {
+    tab_container_width_ = width;
+    gfx::Size size(tab_container_width_, GetLayoutConstant(TAB_HEIGHT));
+    tab_container_->SetSize(size);
+  }
+
   std::unique_ptr<FakeBaseTabStripController> tab_strip_controller_;
   std::unique_ptr<FakeTabContainerController> tab_container_controller_;
   std::unique_ptr<FakeTabSlotController> tab_slot_controller_;
@@ -328,6 +351,55 @@ TEST_F(TabContainerTest, ExitsClosingModeAtStandardWidth) {
   tab_container_->RemoveTab(tab_container_->GetTabCount() - 1, false);
   tab_container_->CompleteAnimationAndLayout();
   EXPECT_EQ(tab_container_->GetActiveTabWidth(), standard_width);
+}
+
+// After removing a tab followed by removing a tab in a tabgroup
+// Should bring the subsequent tab to its place as expected in
+// tab closing mode.
+TEST_F(TabContainerTest, RemoveTabInGroupWithTabClosingMode) {
+  AddTab(0, absl::nullopt, TabActive::kActive);
+
+  // Create enough tabs so tabs are not full size.
+  const int standard_width = TabStyleViews::GetStandardWidth();
+
+  // Set a tab_counter to avoid infinite loop
+  int tab_counter = 0;
+  while ((tab_counter < 100) &&
+         (tab_container_->GetActiveTabWidth() == standard_width ||
+          tab_container_->GetTabCount() < 10)) {
+    AddTab(0);
+    tab_container_->CompleteAnimationAndLayout();
+    tab_counter += 1;
+  }
+
+  // add the first two tabs to a group
+  tab_groups::TabGroupId group1 = tab_groups::TabGroupId::GenerateNew();
+  AddTabToGroup(1, group1);
+  AddTabToGroup(2, group1);
+  AddTabToGroup(3, group1);
+
+  // Remove the second from last tab
+  tab_container_->EnterTabClosingMode(absl::nullopt,
+                                      CloseTabSource::CLOSE_TAB_FROM_MOUSE);
+  tab_container_->RemoveTab(tab_container_->GetTabCount() - 2, false);
+  tab_container_->CompleteAnimationAndLayout();
+
+  // Get the group tab's close button center point
+  Tab* tab = tab_container_->GetTabAtModelIndex(1);
+  raw_ptr<TabCloseButton> tab_close_button = tab->close_button();
+  gfx::Point tab_center = tab_close_button->GetBoundsInScreen().CenterPoint();
+
+  // Remove the tab
+  tab_container_->EnterTabClosingMode(absl::nullopt,
+                                      CloseTabSource::CLOSE_TAB_FROM_MOUSE);
+  tab_container_->OnGroupContentsChanged(group1);
+  tab_container_->RemoveTab(1, true);
+  tab_container_->CompleteAnimationAndLayout();
+
+  // Check if the next tab moves to its place
+  Tab* tab_next = tab_container_->GetTabAtModelIndex(1);
+  raw_ptr<TabCloseButton> tab_next_close_button = tab_next->close_button();
+  EXPECT_TRUE(tab_next_close_button->GetBoundsInScreen().Contains(tab_center));
 }
 
 // Verifies child view order matches model order.
@@ -674,10 +746,9 @@ TEST_F(TabContainerTest, GroupHeaderMovesOnRegrouping) {
   tab_container_->CompleteAnimationAndLayout();
 
   std::vector<TabGroupViews*> views = ListGroupViews();
-  auto views_it =
-      std::find_if(views.begin(), views.end(), [&group1](TabGroupViews* view) {
-        return view->header()->group() == group1;
-      });
+  auto views_it = base::ranges::find(views, group1, [](TabGroupViews* view) {
+    return view->header()->group();
+  });
   ASSERT_TRUE(views_it != views.end());
   TabGroupViews* group1_views = *views_it;
 
@@ -751,6 +822,42 @@ TEST_F(TabContainerTest, GroupUnderlineBasics) {
   EXPECT_EQ(underline->bounds().right(),
             tab_container_->GetTabAtModelIndex(1)->bounds().right() +
                 TabGroupUnderline::kStrokeThickness);
+}
+
+TEST_F(TabContainerTest, UnderlineBoundsTabVisibilityChange) {
+  // Validates that group underlines are updated correctly in a single Layout
+  // call when the visibility of tabs in the group change. See crbug.com/1356177
+
+  // This test is only valid with scrolling off, since it pertains to tab
+  // visibility stuff that scrolling doesn't do.
+  ASSERT_FALSE(base::FeatureList::IsEnabled(features::kScrollableTabStrip));
+
+  SetTabContainerWidth(200);
+  // Add tabs to a single group until the last one is not visible.
+  tab_groups::TabGroupId group = tab_groups::TabGroupId::GenerateNew();
+  do {
+    AddTab(0);
+    AddTabToGroup(0, group);
+    tab_container_->CompleteAnimationAndLayout();
+  } while (tab_container_->GetTabAtModelIndex(tab_container_->GetTabCount() - 1)
+               ->GetVisible());
+
+  const TabGroupUnderline* underline = ListGroupViews()[0]->underline();
+  const gfx::Rect initial_bounds = underline->bounds();
+
+  // Shrink the TabContainer and verify that the underline bounds changed. Use
+  // the abridged version of the method to ensure TabContainer::Layout is called
+  // exactly once.
+  SetTabContainerWidthSingleLayout(100);
+  const gfx::Rect shrunk_bounds = underline->bounds();
+  EXPECT_NE(shrunk_bounds, initial_bounds);
+
+  // Re-expand the TabContainer and verify that the underline bounds changed.
+  // Use the abridged version of the method to ensure TabContainer::Layout is
+  // called exactly once.
+  SetTabContainerWidthSingleLayout(300);
+  EXPECT_NE(tab_container_->bounds(), initial_bounds);
+  EXPECT_NE(tab_container_->bounds(), shrunk_bounds);
 }
 
 TEST_F(TabContainerTest, GroupHighlightBasics) {

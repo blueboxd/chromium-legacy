@@ -10,7 +10,9 @@
 #include "content/browser/accessibility/browser_accessibility_android.h"
 #include "content/browser/accessibility/web_contents_accessibility_android.h"
 #include "third_party/blink/public/mojom/render_accessibility.mojom.h"
+#include "ui/accessibility/ax_event_generator.h"
 #include "ui/accessibility/ax_role_properties.h"
+#include "ui/accessibility/ax_selection.h"
 
 namespace content {
 
@@ -66,7 +68,7 @@ BrowserAccessibilityManagerAndroid::~BrowserAccessibilityManagerAndroid() =
 // static
 ui::AXTreeUpdate BrowserAccessibilityManagerAndroid::GetEmptyDocument() {
   ui::AXNodeData empty_document;
-  empty_document.id = 0;
+  empty_document.id = 1;
   empty_document.role = ax::mojom::Role::kRootWebArea;
   empty_document.SetRestriction(ax::mojom::Restriction::kReadOnly);
   ui::AXTreeUpdate update;
@@ -96,10 +98,16 @@ BrowserAccessibility* BrowserAccessibilityManagerAndroid::RetargetForEvents(
     BrowserAccessibility* node,
     RetargetEventType type) const {
   // TODO(crbug.com/1350627): Node should not be null. But this seems to be
-  // happening in the wild for reasons not yet determined. Make this a
-  // DCHECK.
-  if (!node)
+  // happening in the wild for reasons not yet determined. Because the only
+  // consequence of node being null is that we'll fail to fire an event on a
+  // non-existent object, the style guide's suggestion of using a CHECK
+  // temporarily seems a bit strong. Nonetheless we should get to the bottom of
+  // this. So we are temporarily using NOTREACHED in the hopes that ClusterFuzz
+  // will lead to a reliably-reproducible test case.
+  if (!node) {
+    NOTREACHED();
     return nullptr;
+  }
 
   // Sometimes we get events on nodes in our internal accessibility tree
   // that aren't exposed on Android. Get |updated| to point to the lowest
@@ -148,9 +156,8 @@ BrowserAccessibility* BrowserAccessibilityManagerAndroid::RetargetForEvents(
   return updated;
 }
 
-void BrowserAccessibilityManagerAndroid::FireFocusEvent(
-    BrowserAccessibility* node) {
-  BrowserAccessibilityManager::FireFocusEvent(node);
+void BrowserAccessibilityManagerAndroid::FireFocusEvent(ui::AXNode* node) {
+  ui::AXTreeManager::FireFocusEvent(node);
   WebContentsAccessibilityAndroid* wcax = GetWebContentsAXFromRootManager();
   if (!wcax)
     return;
@@ -158,14 +165,14 @@ void BrowserAccessibilityManagerAndroid::FireFocusEvent(
   // When focusing a node on Android, we want to ensure that we clear the
   // Java-side cache for the previously focused node as well.
   if (BrowserAccessibility* last_focused_node =
-          BrowserAccessibilityManager::GetLastFocusedNode()) {
+          GetFromAXNode(GetLastFocusedNode())) {
     BrowserAccessibilityAndroid* android_last_focused_node =
         static_cast<BrowserAccessibilityAndroid*>(last_focused_node);
     wcax->ClearNodeInfoCacheForGivenId(android_last_focused_node->unique_id());
   }
 
   BrowserAccessibilityAndroid* android_node =
-      static_cast<BrowserAccessibilityAndroid*>(node);
+      static_cast<BrowserAccessibilityAndroid*>(GetFromAXNode(node));
   wcax->HandleFocusChanged(android_node->unique_id());
 }
 
@@ -221,6 +228,10 @@ void BrowserAccessibilityManagerAndroid::FireGeneratedEvent(
 
   BrowserAccessibilityAndroid* android_node =
       static_cast<BrowserAccessibilityAndroid*>(node);
+
+  if (event_type == ui::AXEventGenerator::Event::CHILDREN_CHANGED) {
+    BrowserAccessibilityAndroid::ResetLeafCache();
+  }
 
   // Always send AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED to notify
   // the Android system that the accessibility hierarchy rooted at this
@@ -313,6 +324,7 @@ void BrowserAccessibilityManagerAndroid::FireGeneratedEvent(
       break;
 
     // Currently unused events on this platform.
+    case ui::AXEventGenerator::Event::NONE:
     case ui::AXEventGenerator::Event::ACCESS_KEY_CHANGED:
     case ui::AXEventGenerator::Event::ACTIVE_DESCENDANT_CHANGED:
     case ui::AXEventGenerator::Event::ARIA_CURRENT_CHANGED:

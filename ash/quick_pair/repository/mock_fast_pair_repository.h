@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -56,7 +56,7 @@ class MockFastPairRepository : public FastPairRepository {
               EvictDeviceImages,
               (const device::BluetoothDevice* device),
               (override));
-  MOCK_METHOD(absl::optional<chromeos::bluetooth_config::DeviceImageInfo>,
+  MOCK_METHOD(absl::optional<bluetooth_config::DeviceImageInfo>,
               GetImagesForDevice,
               (const std::string& device_id),
               (override));
@@ -81,6 +81,11 @@ class MockFastPairRepository : public FastPairRepository {
   MOCK_METHOD(bool,
               IsAccountKeyPairedLocally,
               (const std::vector<uint8_t>& account_key),
+              (override));
+  MOCK_METHOD(void,
+              IsDeviceSavedToAccount,
+              (const std::string& mac_address,
+               IsDeviceSavedToAccountCallback callback),
               (override));
 };
 

@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,10 +6,10 @@
 
 #import "base/ios/crb_protocol_observers.h"
 #import "base/ios/ios_util.h"
-#include "base/logging.h"
+#import "base/logging.h"
 #import "base/mac/foundation_util.h"
-#include "base/notreached.h"
-#include "base/strings/sys_string_conversions.h"
+#import "base/notreached.h"
+#import "base/strings/sys_string_conversions.h"
 #import "ios/chrome/app/application_delegate/app_state.h"
 #import "ios/chrome/app/chrome_overlay_window.h"
 #import "ios/chrome/browser/sessions/scene_util.h"

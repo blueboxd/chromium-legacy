@@ -1,23 +1,23 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/grid/grid_cell.h"
 
 #import <MaterialComponents/MaterialActivityIndicator.h>
-#include <ostream>
+#import <ostream>
 
-#include "base/check.h"
-#include "base/notreached.h"
-#import "ios/chrome/browser/commerce/price_alert_util.h"
+#import "base/check.h"
+#import "base/feature_list.h"
+#import "base/notreached.h"
 #import "ios/chrome/browser/ui/elements/top_aligned_image_view.h"
 #import "ios/chrome/browser/ui/icons/chrome_symbol.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/grid/grid_constants.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
 #import "ios/chrome/common/ui/util/constraints_ui_util.h"
-#include "ios/chrome/grit/ios_strings.h"
-#include "ui/base/l10n/l10n_util.h"
+#import "ios/chrome/grit/ios_strings.h"
+#import "ui/base/l10n/l10n_util.h"
 #import "ui/gfx/ios/uikit_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -56,6 +56,10 @@ void PositionView(UIView* view, CGPoint point) {
   frame.origin = point;
   view.frame = frame;
 }
+
+// Kill switch guarding a workaround for crash, see crbug.com/1350976
+const base::Feature kPreviousTabViewWidthCrash{
+    "PreviousTabViewWidthCrash", base::FEATURE_ENABLED_BY_DEFAULT};
 
 }  // namespace
 
@@ -123,11 +127,8 @@ void PositionView(UIView* view, CGPoint point) {
         kGridCellCloseButtonIdentifier;
     [contentView addSubview:topBar];
     [contentView addSubview:snapshotView];
-    PriceCardView* priceCardView;
-    if (IsPriceAlertsEnabled()) {
-      priceCardView = [[PriceCardView alloc] init];
-      [snapshotView addSubview:priceCardView];
-    }
+    PriceCardView* priceCardView = [[PriceCardView alloc] init];
+    [snapshotView addSubview:priceCardView];
     [contentView addSubview:closeTapTargetButton];
     _topBar = topBar;
     _snapshotView = snapshotView;
@@ -147,8 +148,7 @@ void PositionView(UIView* view, CGPoint point) {
     self.layer.shadowRadius = 4.0f;
     self.layer.shadowOpacity = 0.5f;
     self.layer.masksToBounds = NO;
-    NSMutableArray* constraints = [[NSMutableArray alloc] init];
-    [constraints addObjectsFromArray:@[
+    NSArray* constraints = @[
       [topBar.topAnchor constraintEqualToAnchor:contentView.topAnchor],
       [topBar.leadingAnchor constraintEqualToAnchor:contentView.leadingAnchor],
       [topBar.trailingAnchor
@@ -168,21 +168,16 @@ void PositionView(UIView* view, CGPoint point) {
           constraintEqualToConstant:kGridCellCloseTapTargetWidthHeight],
       [closeTapTargetButton.heightAnchor
           constraintEqualToConstant:kGridCellCloseTapTargetWidthHeight],
-    ]];
-    if (IsPriceAlertsEnabled()) {
-      [constraints addObjectsFromArray:@[
-        [priceCardView.topAnchor
-            constraintEqualToAnchor:snapshotView.topAnchor
-                           constant:kGridCellPriceDropTopSpacing],
-        [priceCardView.leadingAnchor
-            constraintEqualToAnchor:snapshotView.leadingAnchor
-                           constant:kGridCellPriceDropLeadingSpacing],
-        [priceCardView.trailingAnchor
-            constraintLessThanOrEqualToAnchor:snapshotView.trailingAnchor
-                                     constant:-
-                                              kGridCellPriceDropTrailingSpacing]
-      ]];
-    }
+      [priceCardView.topAnchor
+          constraintEqualToAnchor:snapshotView.topAnchor
+                         constant:kGridCellPriceDropTopSpacing],
+      [priceCardView.leadingAnchor
+          constraintEqualToAnchor:snapshotView.leadingAnchor
+                         constant:kGridCellPriceDropLeadingSpacing],
+      [priceCardView.trailingAnchor
+          constraintLessThanOrEqualToAnchor:snapshotView.trailingAnchor
+                                   constant:-kGridCellPriceDropTrailingSpacing],
+    ];
     [NSLayoutConstraint activateConstraints:constraints];
   }
   return self;
@@ -283,8 +278,8 @@ void PositionView(UIView* view, CGPoint point) {
 }
 
 - (void)showActivityIndicator {
-  [self.activityIndicator setHidden:NO];
   [self.activityIndicator startAnimating];
+  [self.activityIndicator setHidden:NO];
   [self.iconView setHidden:YES];
 }
 
@@ -694,6 +689,12 @@ void PositionView(UIView* view, CGPoint point) {
   if (!mainTabView.superview)
     [self.contentView addSubview:mainTabView];
   _previousTabViewWidth = mainTabView.frame.size.width;
+  static bool previous_tab_view_width_crash_workaround =
+      base::FeatureList::IsEnabled(kPreviousTabViewWidthCrash);
+  if (previous_tab_view_width_crash_workaround && !_previousTabViewWidth) {
+    UIWindow* window = UIApplication.sharedApplication.windows.firstObject;
+    _previousTabViewWidth = window.bounds.size.width;
+  }
   _mainTabView = mainTabView;
 }
 
@@ -764,6 +765,12 @@ void PositionView(UIView* view, CGPoint point) {
   ScaleView(self.mainTabView, scale);
   ScaleView(self.bottomTabView, scale);
   _previousTabViewWidth = self.mainTabView.frame.size.width;
+  static bool previous_tab_view_width_crash_workaround =
+      base::FeatureList::IsEnabled(kPreviousTabViewWidthCrash);
+  if (previous_tab_view_width_crash_workaround && !_previousTabViewWidth) {
+    UIWindow* window = UIApplication.sharedApplication.windows.firstObject;
+    _previousTabViewWidth = window.bounds.size.width;
+  }
 }
 
 @end

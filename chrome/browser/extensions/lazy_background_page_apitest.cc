@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -622,7 +622,7 @@ class LazyBackgroundPageApiWithBFCacheParamTest
   LazyBackgroundPageApiWithBFCacheParamTest() {
     if (IsBackForwardCacheEnabled()) {
       feature_list_.InitWithFeaturesAndParameters(
-          {{features::kBackForwardCache, {{"enable_same_site", "true"}}},
+          {{features::kBackForwardCache, {}},
            // Allow BackForwardCache for all devices regardless of their memory.
            {features::kBackForwardCacheMemoryControls, {}}},
           {});

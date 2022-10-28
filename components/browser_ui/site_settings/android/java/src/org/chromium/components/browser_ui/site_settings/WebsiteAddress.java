@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -94,6 +94,10 @@ public class WebsiteAddress implements Comparable<WebsiteAddress>, Serializable 
 
     public String getHost() {
         return mHost;
+    }
+
+    public boolean getIsAnySubdomainPattern() {
+        return mOriginOrHostPattern.startsWith(ANY_SUBDOMAIN_PATTERN);
     }
 
     public String getTitle() {

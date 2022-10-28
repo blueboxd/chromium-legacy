@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -36,7 +36,6 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "build/build_config.h"
-#include "components/fuchsia_component_support/config_reader.h"
 #include "components/fuchsia_component_support/feedback_registration.h"
 #include "fuchsia_web/common/string_util.h"
 #include "fuchsia_web/webengine/features.h"
@@ -105,28 +104,6 @@ void RegisterWebInstanceProductData() {
       kFeedbackAnnotationsNamespace);
 }
 
-// Returns the underlying channel if |directory| is a client endpoint for a
-// |fuchsia::io::Directory| protocol. Otherwise, returns an empty channel.
-zx::channel ValidateDirectoryAndTakeChannel(
-    fidl::InterfaceHandle<fuchsia::io::Directory> directory_handle) {
-  fidl::SynchronousInterfacePtr<fuchsia::io::Directory> directory =
-      directory_handle.BindSync();
-
-  fuchsia::io::NodeInfo info;
-  zx_status_t status = directory->Describe(&info);
-  if (status != ZX_OK) {
-    ZX_DLOG(ERROR, status) << "Describe()";
-    return {};
-  }
-
-  if (!info.is_directory()) {
-    DLOG(ERROR) << "Not a directory.";
-    return {};
-  }
-
-  return directory.Unbind().TakeChannel();
-}
-
 // Appends |value| to the value of |switch_name| in the |command_line|.
 // The switch is assumed to consist of comma-separated values. If |switch_name|
 // is already set in |command_line| then a comma will be appended, followed by
@@ -169,17 +146,10 @@ bool HandleDataDirectoryParam(fuchsia::web::CreateContextParams* params,
     return true;
   }
 
-  zx::channel data_directory_channel = ValidateDirectoryAndTakeChannel(
-      std::move(*params->mutable_data_directory()));
-  if (!data_directory_channel) {
-    LOG(ERROR) << "Invalid argument |data_directory| in CreateContextParams.";
-    return false;
-  }
-
   launch_info->flat_namespace->paths.push_back(
       base::kPersistedDataDirectoryPath);
   launch_info->flat_namespace->directories.push_back(
-      std::move(data_directory_channel));
+      params->mutable_data_directory()->TakeChannel());
   if (params->has_data_quota_bytes()) {
     launch_args->AppendSwitchNative(
         switches::kDataQuotaBytes,
@@ -197,18 +167,10 @@ bool HandleCdmDataDirectoryParam(fuchsia::web::CreateContextParams* params,
 
   const char kCdmDataPath[] = "/cdm_data";
 
-  zx::channel cdm_data_directory_channel = ValidateDirectoryAndTakeChannel(
-      std::move(*params->mutable_cdm_data_directory()));
-  if (!cdm_data_directory_channel) {
-    LOG(ERROR)
-        << "Invalid argument |cdm_data_directory| in CreateContextParams.";
-    return false;
-  }
-
   launch_args->AppendSwitchNative(switches::kCdmDataDirectory, kCdmDataPath);
   launch_info->flat_namespace->paths.push_back(kCdmDataPath);
   launch_info->flat_namespace->directories.push_back(
-      std::move(cdm_data_directory_channel));
+      params->mutable_cdm_data_directory()->TakeChannel());
   if (params->has_cdm_data_quota_bytes()) {
     launch_args->AppendSwitchNative(
         switches::kCdmDataQuotaBytes,
@@ -301,19 +263,11 @@ bool HandleContentDirectoriesParam(fuchsia::web::CreateContextParams* params,
       return false;
     }
 
-    zx::channel validated_channel = ValidateDirectoryAndTakeChannel(
-        std::move(*directory.mutable_directory()));
-    if (!validated_channel) {
-      DLOG(ERROR) << "Service directory handle not valid for directory: "
-                  << directory.name();
-      return false;
-    }
-
     const base::FilePath kContentDirectories("/content-directories");
     launch_info->flat_namespace->paths.push_back(
         kContentDirectories.Append(directory.name()).value());
     launch_info->flat_namespace->directories.push_back(
-        std::move(validated_channel));
+        directory.mutable_directory()->TakeChannel());
   }
 
   launch_args->AppendSwitch(switches::kEnableContentDirectories);
@@ -370,12 +324,13 @@ std::vector<std::string> GetRequiredServicesForConfig(
   // at:
   //   https://fuchsia.dev/reference/fidl/fuchsia.web#CreateContextParams.service_directory
   std::vector<std::string> services{
-      "fuchsia.buildinfo.Provider",      "fuchsia.device.NameProvider",
-      "fuchsia.fonts.Provider",          "fuchsia.hwinfo.Product",
-      "fuchsia.intl.PropertyProvider",   "fuchsia.logger.LogSink",
-      "fuchsia.memorypressure.Provider", "fuchsia.process.Launcher",
+      "fuchsia.buildinfo.Provider",    "fuchsia.device.NameProvider",
+      "fuchsia.fonts.Provider",        "fuchsia.hwinfo.Product",
+      "fuchsia.intl.PropertyProvider", "fuchsia.kernel.VmexResource",
+      "fuchsia.logger.LogSink",        "fuchsia.memorypressure.Provider",
+      "fuchsia.process.Launcher",
       "fuchsia.settings.Display",  // Used if preferred theme is DEFAULT.
-      "fuchsia.sysmem.Allocator",        "fuchsia.ui.scenic.Scenic"};
+      "fuchsia.sysmem.Allocator",      "fuchsia.ui.scenic.Scenic"};
 
   // TODO(crbug.com/1209031): Provide these conditionally, once corresponding
   // ContextFeatureFlags have been defined.
@@ -396,13 +351,14 @@ std::vector<std::string> GetRequiredServicesForConfig(
   if (params.has_features())
     features = params.features();
 
-  // TODO(crbug.com/1020273): Allow access to network services only if the
-  // NETWORK feature flag is set.
-  services.insert(services.end(), {
-                                      "fuchsia.net.interfaces.State",
-                                      "fuchsia.net.name.Lookup",
-                                      "fuchsia.posix.socket.Provider",
-                                  });
+  if ((features & fuchsia::web::ContextFeatureFlags::NETWORK) ==
+      fuchsia::web::ContextFeatureFlags::NETWORK) {
+    services.insert(services.end(), {
+                                        "fuchsia.net.interfaces.State",
+                                        "fuchsia.net.name.Lookup",
+                                        "fuchsia.posix.socket.Provider",
+                                    });
+  }
 
   if ((features & fuchsia::web::ContextFeatureFlags::AUDIO) ==
       fuchsia::web::ContextFeatureFlags::AUDIO) {
@@ -496,6 +452,7 @@ zx_status_t WebInstanceHost::CreateInstanceForContextWithCopiedArgs(
 
   // Remove this argument, if it's provided.
   launch_args.RemoveSwitch(switches::kContextProvider);
+  launch_args.RemoveSwitch(switches::kEnableCfv2);
 
   fuchsia::sys::LaunchInfo launch_info;
   // TODO(1010222): Make kWebInstanceComponentUrl a relative component URL, and
@@ -513,7 +470,8 @@ zx_status_t WebInstanceHost::CreateInstanceForContextWithCopiedArgs(
   if (params.has_remote_debugging_port()) {
     if ((features & fuchsia::web::ContextFeatureFlags::NETWORK) !=
         fuchsia::web::ContextFeatureFlags::NETWORK) {
-      LOG(WARNING) << "Enabling remote debugging requires NETWORK feature.";
+      LOG(ERROR) << "Enabling remote debugging port requires NETWORK feature.";
+      return ZX_ERR_INVALID_ARGS;
     }
     launch_args.AppendSwitchNative(
         kRemoteDebuggingPortSwitch,

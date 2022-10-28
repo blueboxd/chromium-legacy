@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,6 +12,7 @@
 #include "base/time/time.h"
 #include "base/values.h"
 #include "chrome/browser/ash/system_web_apps/types/system_web_app_data.h"
+#include "chrome/browser/web_applications/isolation_data.h"
 #include "chrome/browser/web_applications/proto/web_app_os_integration_state.pb.h"
 #include "chrome/browser/web_applications/user_display_mode.h"
 #include "chrome/browser/web_applications/web_app_chromeos_data.h"
@@ -26,7 +27,6 @@
 #include "components/sync/model/string_ordinal.h"
 #include "components/webapps/browser/installable/installable_metrics.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
-#include "third_party/abseil-cpp/absl/types/variant.h"
 #include "third_party/blink/public/common/permissions_policy/permissions_policy.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "url/gurl.h"
@@ -308,41 +308,6 @@ class WebApp {
     return current_os_integration_states_;
   }
 
-  struct IsolationData {
-    struct InstalledBundle {
-      bool operator==(const InstalledBundle& other) const;
-      bool operator!=(const InstalledBundle& other) const;
-
-      std::string path;
-    };
-    struct DevModeBundle {
-      bool operator==(const DevModeBundle& other) const;
-      bool operator!=(const DevModeBundle& other) const;
-
-      std::string path;
-    };
-    struct DevModeProxy {
-      bool operator==(const DevModeProxy& other) const;
-      bool operator!=(const DevModeProxy& other) const;
-
-      std::string proxy_url;
-    };
-
-    explicit IsolationData(
-        absl::variant<InstalledBundle, DevModeBundle, DevModeProxy> content);
-    ~IsolationData();
-    IsolationData(const IsolationData&);
-    IsolationData& operator=(const IsolationData&);
-    IsolationData(IsolationData&&);
-    IsolationData& operator=(IsolationData&&);
-
-    bool operator==(const IsolationData&) const;
-    bool operator!=(const IsolationData&) const;
-    base::Value AsDebugValue() const;
-
-    absl::variant<InstalledBundle, DevModeBundle, DevModeProxy> content;
-  };
-
   // If present, signals that this app is an Isolated Web App, and contains
   // IWA-specific information like bundle location.
   const absl::optional<IsolationData>& isolation_data() const {
@@ -363,6 +328,7 @@ class WebApp {
   bool IsSystemApp() const;
   bool IsWebAppStoreInstalledApp() const;
   bool IsSubAppInstalledApp() const;
+  bool IsKioskInstalledApp() const;
   bool CanUserUninstallWebApp() const;
   bool WasInstalledByUser() const;
   // Returns the highest priority source. AppService assumes that every app has

@@ -1,15 +1,15 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #import "ios/web/common/crw_web_view_content_view.h"
 
 #import <WebKit/WebKit.h>
-#include <cmath>
-#include <limits>
+#import <cmath>
+#import <limits>
 
-#include "base/check.h"
-#include "base/notreached.h"
+#import "base/check.h"
+#import "base/notreached.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -18,7 +18,7 @@
 namespace {
 
 // Background color RGB values for the content view which is displayed when the
-// |_webView| is offset from the screen due to user interaction. Displaying this
+// `_webView` is offset from the screen due to user interaction. Displaying this
 // background color is handled by UIWebView but not WKWebView, so it needs to be
 // set in CRWWebViewContentView to support both. The color value matches that
 // used by UIWebView.

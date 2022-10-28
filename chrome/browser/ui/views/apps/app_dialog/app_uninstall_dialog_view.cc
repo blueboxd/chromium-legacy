@@ -1,4 +1,4 @@
-// Copyright (c) 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -211,8 +211,9 @@ void AppUninstallDialogView::InitializeCheckbox(const GURL& app_start_url) {
   replacements.push_back(url_formatter::FormatUrlForSecurityDisplay(
       app_start_url, url_formatter::SchemeDisplay::OMIT_CRYPTOGRAPHIC));
 
-  const bool is_google = google_util::IsGoogleHostname(
-      app_start_url.host_piece(), google_util::ALLOW_SUBDOMAIN);
+  const bool is_google = google_util::IsGoogleDomainUrl(
+      app_start_url, google_util::ALLOW_SUBDOMAIN,
+      google_util::ALLOW_NON_STANDARD_PORTS);
   if (!is_google) {
     auto domain = net::registry_controlled_domains::GetDomainAndRegistry(
         app_start_url,

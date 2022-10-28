@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -81,7 +81,7 @@ ProfileInvalidationProvider* ProfileInvalidationProviderFactory::GetForProfile(
        user_manager::UserManager::Get()->IsLoggedInAsGuest())) {
     // The Chrome OS login and Chrome OS guest profiles do not have GAIA
     // credentials and do not support invalidation.
-    return NULL;
+    return nullptr;
   }
 #endif
   return static_cast<ProfileInvalidationProvider*>(

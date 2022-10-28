@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -32,12 +32,18 @@ class FederatedIdentitySharingPermissionContext
       const FederatedIdentitySharingPermissionContext&) = delete;
 
   // content::FederatedIdentitySharingPermissionContextDelegate:
-  bool HasSharingPermission(const url::Origin& relying_party,
+  bool HasSharingPermission(const url::Origin& relying_party_requester,
+                            const url::Origin& relying_party_embedder,
                             const url::Origin& identity_provider,
                             const std::string& account_id) override;
-  void GrantSharingPermission(const url::Origin& relying_party,
+  void GrantSharingPermission(const url::Origin& relying_party_requester,
+                              const url::Origin& relying_party_embedder,
                               const url::Origin& identity_provider,
                               const std::string& account_id) override;
+  absl::optional<bool> GetIdpSigninStatus(
+      const url::Origin& idp_origin) override;
+  void SetIdpSigninStatus(const url::Origin& idp_origin,
+                          bool idp_signin_status) override;
 };
 
 #endif  // CHROME_BROWSER_WEBID_FEDERATED_IDENTITY_SHARING_PERMISSION_CONTEXT_H_

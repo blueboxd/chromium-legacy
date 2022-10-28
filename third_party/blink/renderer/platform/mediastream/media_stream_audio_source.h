@@ -12,8 +12,6 @@
 #include "base/memory/weak_ptr.h"
 #include "media/base/audio_capturer_source.h"
 #include "media/base/limits.h"
-#include "mojo/public/cpp/bindings/remote.h"
-#include "third_party/blink/public/mojom/mediastream/media_stream.mojom-blink.h"
 #include "third_party/blink/public/platform/modules/mediastream/web_platform_media_stream_source.h"
 #include "third_party/blink/renderer/platform/mediastream/media_stream_audio_deliverer.h"
 #include "third_party/blink/renderer/platform/mediastream/media_stream_audio_processor_options.h"
@@ -49,18 +47,16 @@ class MediaStreamComponent;
 //
 //   class MyAudioSource : public MediaStreamAudioSource { ... };
 //
-//   MediaStreamSource* media_stream_source = ...;
+//   MediaStreamSource* media_stream_source =
+//       MakeGarbageCollected<MediaStreamSource>(
+//           ..., std::make_unique<MyAudioSource>());
 //   MediaStreamComponent* media_stream_track = ...;
-//   source->setExtraData(new MyAudioSource());  // Takes ownership.
 //   if (MediaStreamAudioSource::From(media_stream_source)
-//           ->ConnectToTrack(media_stream_track)) {
+//           ->ConnectToInitializedTrack(media_stream_track)) {
 //     LOG(INFO) << "Success!";
 //   } else {
 //     LOG(ERROR) << "Failed!";
 //   }
-//   // Regardless of whether ConnectToTrack() succeeds, there will always be a
-//   // MediaStreamAudioTrack instance created.
-//   CHECK(MediaStreamAudioTrack::From(media_stream_track));
 class PLATFORM_EXPORT MediaStreamAudioSource
     : public WebPlatformMediaStreamSource {
  public:
@@ -89,17 +85,6 @@ class PLATFORM_EXPORT MediaStreamAudioSource
   // microphone input or loopback audio capture) as opposed to audio being
   // streamed-in from outside the application.
   bool is_local_source() const { return is_local_source_; }
-
-  // Connects this source to the given |component|, creating the appropriate
-  // implementation of the content::MediaStreamAudioTrack interface, which
-  // becomes associated with and owned by |component|. Returns true if the
-  // source was successfully started.
-  // TODO(https://crbug.com/1302689): Remove this once all callers have been
-  // moved to ConnectToInitializedTrack().
-  [
-      [deprecated("Use ConnectToInitializedTrack() with a component which "
-                  "already has an associated MediaStreamAudioTrack.")]] bool
-  ConnectToTrack(MediaStreamComponent* component);
 
   // Connects this source to the given |component|, which already has an
   // associated MediaStreamAudioTrack. Returns true if the source was
@@ -130,11 +115,6 @@ class PLATFORM_EXPORT MediaStreamAudioSource
   // audio sources match; false otherwise.
   bool HasSameNonReconfigurableSettings(
       MediaStreamAudioSource* other_source) const;
-
-  void KeepDeviceAliveForTransfer(
-      base::UnguessableToken session_id,
-      base::UnguessableToken transfer_id,
-      KeepDeviceAliveForTransferCallback keep_alive_cb) override;
 
   // Returns the audio processing properties associated to this source if any,
   // or nullopt otherwise.
@@ -224,8 +204,6 @@ class PLATFORM_EXPORT MediaStreamAudioSource
   void StopSourceOnErrorOnTaskRunner(
       media::AudioCapturerSource::ErrorCode code);
 
-  mojom::blink::MediaStreamDispatcherHost* GetMediaStreamDispatcherHost();
-
   // True if the source of audio is a local device. False if the source is
   // remote (e.g., streamed-in from a server).
   const bool is_local_source_;
@@ -238,8 +216,6 @@ class PLATFORM_EXPORT MediaStreamAudioSource
 
   // Manages tracks connected to this source and the audio format and data flow.
   MediaStreamAudioDeliverer<MediaStreamAudioTrack> deliverer_;
-
-  mojo::Remote<mojom::blink::MediaStreamDispatcherHost> host_;
 
   // Code set if this source was closed due to an error.
   absl::optional<media::AudioCapturerSource::ErrorCode> error_code_;

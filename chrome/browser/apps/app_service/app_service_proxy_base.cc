@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -157,19 +157,21 @@ void AppServiceProxyBase::Initialize() {
 
   browser_app_launcher_ = std::make_unique<apps::BrowserAppLauncher>(profile_);
 
-  app_service_mojom_impl_ =
-      std::make_unique<apps::AppServiceMojomImpl>(profile_->GetPath());
-  app_service_mojom_impl_->BindReceiver(
-      app_service_.BindNewPipeAndPassReceiver());
+  if (!base::FeatureList::IsEnabled(kStopMojomAppService)) {
+    app_service_mojom_impl_ =
+        std::make_unique<apps::AppServiceMojomImpl>(profile_->GetPath());
 
-  if (app_service_.is_connected()) {
-    // The AppServiceProxy is a subscriber: something that wants to be able to
-    // list all known apps.
-    mojo::PendingRemote<apps::mojom::Subscriber> subscriber;
-    receivers_.Add(this, subscriber.InitWithNewPipeAndPassReceiver());
-    app_service_->RegisterSubscriber(std::move(subscriber), nullptr);
+    app_service_mojom_impl_->BindReceiver(
+        app_service_.BindNewPipeAndPassReceiver());
+
+    if (app_service_.is_connected()) {
+      // The AppServiceProxy is a subscriber: something that wants to be able to
+      // list all known apps.
+      mojo::PendingRemote<apps::mojom::Subscriber> subscriber;
+      receivers_.Add(this, subscriber.InitWithNewPipeAndPassReceiver());
+      app_service_->RegisterSubscriber(std::move(subscriber), nullptr);
+    }
   }
-
   // Make the chrome://app-icon/ resource available.
   content::URLDataSource::Add(profile_,
                               std::make_unique<apps::AppIconSource>(profile_));
@@ -498,7 +500,7 @@ void AppServiceProxyBase::LaunchAppWithUrl(
     apps::mojom::LaunchSource launch_source,
     apps::mojom::WindowInfoPtr window_info) {
   LaunchAppWithIntent(app_id, event_flags, apps_util::CreateIntentFromUrl(url),
-                      launch_source, std::move(window_info));
+                      launch_source, std::move(window_info), {});
 }
 
 void AppServiceProxyBase::LaunchAppWithParams(AppLaunchParams&& params,
@@ -603,6 +605,19 @@ void AppServiceProxyBase::StopApp(const std::string& app_id) {
   }
   auto app_type = app_registry_cache_.GetAppType(app_id);
   app_service_->StopApp(ConvertAppTypeToMojomAppType(app_type), app_id);
+}
+
+void AppServiceProxyBase::GetMenuModel(
+    const std::string& app_id,
+    MenuType menu_type,
+    int64_t display_id,
+    base::OnceCallback<void(MenuItems)> callback) {
+  auto* publisher = GetPublisher(app_registry_cache_.GetAppType(app_id));
+  if (publisher) {
+    publisher->GetMenuModel(app_id, menu_type, display_id, std::move(callback));
+  } else {
+    std::move(callback).Run(MenuItems());
+  }
 }
 
 void AppServiceProxyBase::GetMenuModel(
@@ -904,6 +919,14 @@ void AppServiceProxyBase::RemoveSupportedLinksPreference(
 }
 
 void AppServiceProxyBase::SetWindowMode(const std::string& app_id,
+                                        WindowMode window_mode) {
+  auto* publisher = GetPublisher(app_registry_cache_.GetAppType(app_id));
+  if (publisher) {
+    publisher->SetWindowMode(app_id, window_mode);
+  }
+}
+
+void AppServiceProxyBase::SetWindowMode(const std::string& app_id,
                                         apps::mojom::WindowMode window_mode) {
   if (app_service_.is_connected()) {
     app_service_->SetWindowMode(
@@ -951,6 +974,11 @@ void AppServiceProxyBase::OnApps(std::vector<apps::mojom::AppPtr> deltas,
 
   app_registry_cache_.OnApps(std::move(deltas), app_type,
                              should_notify_initialized);
+}
+
+void AppServiceProxyBase::OnCapabilityAccesses(
+    std::vector<CapabilityAccessPtr> deltas) {
+  app_capability_access_cache_.OnCapabilityAccesses(std::move(deltas));
 }
 
 void AppServiceProxyBase::OnCapabilityAccesses(

@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -18,8 +18,8 @@ struct ParseDataUrlResult;
 // download.
 class DataUrlDownloadTask final : public DownloadTaskImpl {
  public:
-  // Constructs a new DataUrlDownloadTask objects. |web_state|, |identifier|
-  // and |delegate| must be valid.
+  // Constructs a new DataUrlDownloadTask objects. `web_state` and `identifier`
+  // must be valid.
   DataUrlDownloadTask(
       WebState* web_state,
       const GURL& original_url,

@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -18,6 +18,7 @@
 #include "net/dns/public/resolve_error_info.h"
 #include "services/network/public/mojom/network_context.mojom.h"
 #include "url/gurl.h"
+#include "url/scheme_host_port.h"
 
 namespace predictors {
 
@@ -36,9 +37,14 @@ ResolveHostClientImpl::ResolveHostClientImpl(
   parameters->purpose =
       network::mojom::ResolveHostParameters::Purpose::kPreconnect;
   resolve_host_start_time_ = base::TimeTicks::Now();
-  network_context->ResolveHost(net::HostPortPair::FromURL(url),
-                               network_isolation_key, std::move(parameters),
-                               receiver_.BindNewPipeAndPassRemote());
+  // Intentionally using a SchemeHostPort. Resolving http:// scheme host will
+  // fail when a HTTPS resource record exists due to DNS-based scheme upgrade
+  // functionality.
+  network_context->ResolveHost(
+      network::mojom::HostResolverHost::NewSchemeHostPort(
+          url::SchemeHostPort(url)),
+      network_isolation_key, std::move(parameters),
+      receiver_.BindNewPipeAndPassRemote());
   receiver_.set_disconnect_handler(base::BindOnce(
       &ResolveHostClientImpl::OnConnectionError, base::Unretained(this)));
 }
@@ -48,7 +54,9 @@ ResolveHostClientImpl::~ResolveHostClientImpl() = default;
 void ResolveHostClientImpl::OnComplete(
     int result,
     const net::ResolveErrorInfo& resolve_error_info,
-    const absl::optional<net::AddressList>& resolved_addresses) {
+    const absl::optional<net::AddressList>& resolved_addresses,
+    const absl::optional<net::HostResolverEndpointResults>&
+        endpoint_results_with_metadata) {
   UMA_HISTOGRAM_TIMES("Navigation.Preconnect.ResolveHostLatency",
                       base::TimeTicks::Now() - resolve_host_start_time_);
 

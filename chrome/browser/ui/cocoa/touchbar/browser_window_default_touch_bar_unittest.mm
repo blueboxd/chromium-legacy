@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -63,8 +63,6 @@ class BrowserWindowDefaultTouchBarUnitTest : public BrowserWithTestWindowTest {
 
   void SetShowHomeButton(bool flag) {
     browser()->profile()->GetPrefs()->SetBoolean(prefs::kShowHomeButton, flag);
-    browser()->profile()->GetPrefs()->ChangePrefValueStore(nullptr, nullptr,
-                                                           nullptr, nullptr);
   }
 
   void TearDown() override {

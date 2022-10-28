@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -934,27 +934,9 @@ void TraceLog::SetEnabled(const TraceConfig& trace_config,
     source_config->mutable_interceptor_config()->set_name("console");
   }
 
-  // Translate the category filter into included and excluded categories.
-  perfetto::protos::gen::TrackEventConfig te_cfg;
-  // If no categories are explicitly enabled, enable the default ones. Otherwise
-  // only matching categories are enabled.
-  if (!trace_config.category_filter().included_categories().empty())
-    te_cfg.add_disabled_categories("*");
-  // Metadata is always enabled.
-  te_cfg.add_enabled_categories("__metadata");
-  for (const auto& excluded :
-       trace_config.category_filter().excluded_categories()) {
-    te_cfg.add_disabled_categories(excluded);
-  }
-  for (const auto& included :
-       trace_config.category_filter().included_categories()) {
-    te_cfg.add_enabled_categories(included);
-  }
-  for (const auto& disabled :
-       trace_config.category_filter().disabled_categories()) {
-    te_cfg.add_enabled_categories(disabled);
-  }
-  source_config->set_track_event_config_raw(te_cfg.SerializeAsString());
+  source_config->set_track_event_config_raw(
+      trace_config.ToPerfettoTrackEventConfigRaw(
+          /*privacy_filtering_enabled = */ false));
 
   // Clear incremental state every 5 seconds, so that we lose at most the first
   // 5 seconds of the trace (if we wrap around Perfetto's central buffer).
@@ -1043,6 +1025,12 @@ void TraceLog::SetEnabled(const TraceConfig& trace_config,
 }
 
 #if BUILDFLAG(USE_PERFETTO_CLIENT_LIBRARY)
+perfetto::DataSourceConfig TraceLog::GetCurrentTrackEventDataSourceConfig()
+    const {
+  AutoLock lock(track_event_lock_);
+  return track_event_config_;
+}
+
 void TraceLog::InitializePerfettoIfNeeded() {
   // When we're using the Perfetto client library, only tests should be
   // recording traces directly through TraceLog. Production code should instead
@@ -2327,7 +2315,11 @@ tracing::PerfettoPlatform* TraceLog::GetOrCreatePerfettoPlatform() {
   return perfetto_platform_.get();
 }
 
-void TraceLog::OnSetup(const perfetto::DataSourceBase::SetupArgs&) {}
+void TraceLog::OnSetup(const perfetto::DataSourceBase::SetupArgs& args) {
+  AutoLock lock(track_event_lock_);
+  track_event_config_ = *args.config;
+  track_event_enabled_ = true;
+}
 
 void TraceLog::OnStart(const perfetto::DataSourceBase::StartArgs&) {
   AutoLock lock(observers_lock_);
@@ -2342,6 +2334,14 @@ void TraceLog::OnStart(const perfetto::DataSourceBase::StartArgs&) {
 
 void TraceLog::OnStop(const perfetto::DataSourceBase::StopArgs&) {
   AutoLock lock(observers_lock_);
+  {
+    // We can't use |lock_| because OnStop() can be called from within
+    // SetDisabled(). We also can't use |observers_lock_|, because observers
+    // below can call into IsEnabled(), which needs to access
+    // |track_event_enabled_|. So we use a separate lock.
+    AutoLock track_event_lock(track_event_lock_);
+    track_event_enabled_ = false;
+  }
   for (auto* it : enabled_state_observers_)
     it->OnTraceLogDisabled();
   for (const auto& it : async_observers_) {

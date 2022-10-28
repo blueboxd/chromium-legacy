@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,14 +6,14 @@
 
 #import <Foundation/Foundation.h>
 
-#include "components/strings/grit/components_strings.h"
-#include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
+#import "components/strings/grit/components_strings.h"
+#import "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #import "ios/chrome/browser/webui/net_export_tab_helper_delegate.h"
 #import "ios/chrome/browser/webui/show_mail_composer_context.h"
 #import "ios/web/public/test/web_task_environment.h"
-#include "testing/gtest/include/gtest/gtest.h"
+#import "testing/gtest/include/gtest/gtest.h"
 #import "testing/gtest_mac.h"
-#include "testing/platform_test.h"
+#import "testing/platform_test.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -22,8 +22,8 @@
 // A test object that conforms to the NetExportTabHelperDelegate protocol.
 @interface TestNetExportTabHelperDelegate : NSObject<NetExportTabHelperDelegate>
 
-// The last context passed to |netExportTabHelper:showMailComposerWithContext:|.
-// |lastContext| is nil if |netExportTabHelper:showMailComposerWithContext:| has
+// The last context passed to `netExportTabHelper:showMailComposerWithContext:`.
+// `lastContext` is nil if `netExportTabHelper:showMailComposerWithContext:` has
 // never been called.
 @property(nonatomic, readonly, strong) ShowMailComposerContext* lastContext;
 
@@ -74,8 +74,8 @@ TEST_F(NetExportTabHelperTest, TestInitialState) {
   NetExportTabHelper* helper = NetExportTabHelper::FromWebState(web_state());
 
   EXPECT_TRUE(helper);
-  // |lastContext| should not exist yet, as
-  // |netExportTabHelper:showMailComposerWithContext:| has not been called.
+  // `lastContext` should not exist yet, as
+  // `netExportTabHelper:showMailComposerWithContext:` has not been called.
   EXPECT_FALSE(delegate_.lastContext);
 }
 

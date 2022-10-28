@@ -1,4 +1,4 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -67,7 +67,7 @@ class COMPONENT_EXPORT(DBUS_AUDIO) FakeCrasAudioClient
   void SetActiveInputNode(uint64_t node_id) override;
   void SetHotwordModel(uint64_t node_id,
                        const std::string& hotword_model,
-                       VoidDBusMethodCallback callback) override;
+                       chromeos::VoidDBusMethodCallback callback) override;
   void SetFixA2dpPacketSize(bool enabled) override;
   void SetFlossEnabled(bool enabled) override;
   void AddActiveInputNode(uint64_t node_id) override;
@@ -87,7 +87,7 @@ class COMPONENT_EXPORT(DBUS_AUDIO) FakeCrasAudioClient
       const std::map<std::string, std::string>& metadata) override;
   void ResendBluetoothBattery() override;
   void WaitForServiceToBeAvailable(
-      WaitForServiceToBeAvailableCallback callback) override;
+      chromeos::WaitForServiceToBeAvailableCallback callback) override;
 
   // Modifies an AudioNode from |node_list_| based on |audio_node.id|.
   // if the |audio_node.id| cannot be found in list, Add an

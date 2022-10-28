@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,6 +9,7 @@
 #include "components/history/core/browser/history_types.h"
 #include "components/omnibox/browser/actions/omnibox_action.h"
 
+struct AutocompleteMatch;
 class AutocompleteResult;
 class PrefService;
 
@@ -19,6 +20,23 @@ struct VectorIcon;
 namespace history_clusters {
 
 class HistoryClustersService;
+
+// Helper for `TopRelevance()` to look at a subset of matches.
+enum class TopRelevanceFilter : int {
+  FILTER_FOR_SEARCH_MATCHES,
+  FILTER_FOR_NON_SEARCH_MATCHES
+};
+
+// Find the top relevance of either search or navigation matches. Returns 0 if
+// there are no search or navigation matches.
+int TopRelevance(std::vector<AutocompleteMatch>::const_iterator matches_begin,
+                 std::vector<AutocompleteMatch>::const_iterator matches_end,
+                 TopRelevanceFilter filter);
+
+// Return if the history cluster action or suggestion should be excluded due to
+// matches indicating a nav-intent input. Should only be called if
+// `omnibox_action_on_navigation_intents` is false to avoid extra computations.
+bool IsNavigationIntent(int top_search_relevance, int top_navigation_relevance);
 
 // Made public for testing.
 class HistoryClustersAction : public OmniboxAction {
@@ -45,6 +63,9 @@ class HistoryClustersAction : public OmniboxAction {
   // Additional data of the matching keyword from the history clustering
   // service.
   history::ClusterKeywordData matched_keyword_data_;
+
+  // Used to open journeys in side panel with relevant clusters
+  std::string query_;
 
 #if BUILDFLAG(IS_ANDROID)
   base::android::ScopedJavaGlobalRef<jobject> j_omnibox_action_;

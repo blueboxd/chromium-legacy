@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -155,7 +155,7 @@ absl::optional<Value::Dict> ReadSummary(const FilePath& path) {
   CHECK(ReadFileToStringWithMaxSize(path, &json, size));
   absl::optional<Value> value = JSONReader::Read(json);
   if (value && value->is_dict())
-    result = std::move(value->GetDict());
+    result = std::move(*value).TakeDict();
 
   return result;
 }

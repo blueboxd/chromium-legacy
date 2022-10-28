@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -451,6 +451,7 @@ class ManualFillingMediator
     }
 
     private void enforceStateProperties(@KeyboardExtensionState int extensionState) {
+        TraceEvent.begin("ManualFillingMediator#enforceStateProperties");
         if (requiresVisibleBar(extensionState)) {
             mKeyboardAccessory.show();
         } else {
@@ -474,6 +475,7 @@ class ManualFillingMediator
                 compositorViewHolderSupplier.get().requestLayout();
             }
         }
+        TraceEvent.end("ManualFillingMediator#enforceStateProperties");
     }
 
     private void updateKeyboard(@KeyboardExtensionState int extensionState) {
@@ -650,12 +652,14 @@ class ManualFillingMediator
 
     private void refreshTabs() {
         if (!isInitialized()) return;
+        TraceEvent.begin("ManualFillingMediator#refreshTabs");
         ManualFillingState state = mStateCache.getStateFor(mActivity.getCurrentWebContents());
         state.notifyObservers();
         KeyboardAccessoryData.Tab[] tabs = state.getTabs();
         mAccessorySheet.setTabs(tabs); // Set the sheet tabs first to invalidate the tabs properly.
         mKeyboardAccessory.setTabs(tabs);
         state.requestRecentSheets();
+        TraceEvent.end("ManualFillingMediator#refreshTabs");
     }
 
     @VisibleForTesting

@@ -1,4 +1,4 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -43,8 +43,7 @@ constexpr int kProxyChangeDelaySec = 1;
 // Timeout for attempts.
 constexpr base::TimeDelta kAttemptTimeout = base::Seconds(15);
 
-// Maximum number of reports from captive portal detector about
-// offline state in a row before notification is sent to observers.
+// Number of unknown or offline results before stopping chrome detection.
 constexpr int kMaxOfflineResultsBeforeReport = 3;
 
 const NetworkState* DefaultNetwork() {
@@ -85,7 +84,6 @@ NetworkPortalDetectorImpl::NetworkPortalDetectorImpl(
 
   network_state_handler_observer_.Observe(
       NetworkHandler::Get()->network_state_handler());
-  StartPortalDetection();
 }
 
 NetworkPortalDetectorImpl::~NetworkPortalDetectorImpl() {
@@ -97,30 +95,6 @@ NetworkPortalDetectorImpl::~NetworkPortalDetectorImpl() {
 
   captive_portal_detector_->Cancel();
   captive_portal_detector_.reset();
-  observers_.Clear();
-  for (auto& observer : observers_)
-    observer.OnShutdown();
-}
-
-void NetworkPortalDetectorImpl::AddObserver(Observer* observer) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (observer && !observers_.HasObserver(observer))
-    observers_.AddObserver(observer);
-}
-
-void NetworkPortalDetectorImpl::AddAndFireObserver(Observer* observer) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (!observer)
-    return;
-  AddObserver(observer);
-  observer->OnPortalDetectionCompleted(DefaultNetwork(),
-                                       GetCaptivePortalStatus());
-}
-
-void NetworkPortalDetectorImpl::RemoveObserver(Observer* observer) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (observer)
-    observers_.RemoveObserver(observer);
 }
 
 bool NetworkPortalDetectorImpl::IsEnabled() {
@@ -140,24 +114,12 @@ void NetworkPortalDetectorImpl::Enable() {
   if (!network)
     return;
   SetNetworkPortalState(network, NetworkState::PortalState::kUnknown);
-  StartDetection();
 }
 
 NetworkPortalDetector::CaptivePortalStatus
 NetworkPortalDetectorImpl::GetCaptivePortalStatus() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return default_portal_status_;
-}
-
-void NetworkPortalDetectorImpl::StartPortalDetection() {
-  if (!is_idle())
-    return;
-  const NetworkState* network = DefaultNetwork();
-  if (!network) {
-    NET_LOG(ERROR) << "StartPortalDetection called with no default network.";
-    return;
-  }
-  StartDetection();
 }
 
 void NetworkPortalDetectorImpl::PortalStateChanged(
@@ -226,14 +188,6 @@ void NetworkPortalDetectorImpl::OnShuttingDown() {
 
 ////////////////////////////////////////////////////////////////////////////////
 // NetworkPortalDetectorImpl, private:
-
-void NetworkPortalDetectorImpl::StartDetection() {
-  NET_LOG(EVENT) << "StartDetection";
-
-  ResetCountersAndSendMetrics();
-  default_portal_status_ = CAPTIVE_PORTAL_STATUS_UNKNOWN;
-  ScheduleAttempt();
-}
 
 void NetworkPortalDetectorImpl::StopDetection() {
   if (is_idle())
@@ -450,8 +404,6 @@ void NetworkPortalDetectorImpl::DetectionCompleted(
     // fall back to the Shill result.
     SetNetworkPortalState(network, portal_state);
   }
-  for (auto& observer : observers_)
-    observer.OnPortalDetectionCompleted(network, status);
 
   ResetCountersAndSendMetrics();
 }
@@ -470,6 +422,11 @@ void NetworkPortalDetectorImpl::ResetCountersAndSendMetrics() {
 
 bool NetworkPortalDetectorImpl::AttemptTimeoutIsCancelledForTesting() const {
   return attempt_timeout_task_.IsCancelled();
+}
+
+void NetworkPortalDetectorImpl::StartDetectionForTesting() {
+  default_portal_status_ = CAPTIVE_PORTAL_STATUS_UNKNOWN;
+  ScheduleAttempt();
 }
 
 }  // namespace ash

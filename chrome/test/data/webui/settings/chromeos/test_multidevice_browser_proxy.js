@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -60,7 +60,11 @@ export class TestMultideviceBrowserProxy extends TestBrowserProxy {
       'cancelAppsSetup',
       'attemptCombinedFeatureSetup',
       'cancelCombinedFeatureSetup',
+      'attemptFeatureSetupConnection',
+      'cancelFeatureSetupConnection',
       'logPhoneHubPermissionSetUpScreenAction',
+      'logPhoneHubPermissionOnboardingSetupMode',
+      'logPhoneHubPermissionOnboardingSetupResult',
     ]);
     this.data = createFakePageContentData(MultiDeviceSettingsMode.NO_HOST_SET);
     this.androidSmsInfo = {origin: TEST_ANDROID_SMS_ORIGIN, enabled: true};
@@ -149,6 +153,16 @@ export class TestMultideviceBrowserProxy extends TestBrowserProxy {
     this.methodCalled('cancelCombinedFeatureSetup');
   }
 
+  /** @override */
+  attemptFeatureSetupConnection() {
+    this.methodCalled('attemptFeatureSetupConnection');
+  }
+
+  /** @override */
+  cancelFeatureSetupConnection() {
+    this.methodCalled('cancelFeatureSetupConnection');
+  }
+
   /**
    * @param {MultiDeviceFeature} state
    */
@@ -163,5 +177,16 @@ export class TestMultideviceBrowserProxy extends TestBrowserProxy {
   logPhoneHubPermissionSetUpScreenAction(screen, action) {
     this.methodCalled(
         'logPhoneHubPermissionSetUpScreenAction', [screen, action]);
+  }
+
+  /** @override */
+  logPhoneHubPermissionOnboardingSetupMode(setup_mode) {
+    this.methodCalled('logPhoneHubPermissionOnboardingSetupMode', [setup_mode]);
+  }
+
+  /** @override */
+  logPhoneHubPermissionOnboardingSetupResult(completed_mode) {
+    this.methodCalled(
+        'logPhoneHubPermissionOnboardingSetupResult', [completed_mode]);
   }
 }

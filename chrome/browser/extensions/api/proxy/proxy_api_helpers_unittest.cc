@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -306,8 +306,7 @@ TEST(ExtensionProxyApiHelpers, JoinUrlList) {
 
   std::string out;
   std::string error;
-  ASSERT_TRUE(
-      JoinUrlList(list.GetListDeprecated(), ";", &out, &error, &bad_message));
+  ASSERT_TRUE(JoinUrlList(list.GetList(), ";", &out, &error, &bad_message));
   EXPECT_EQ("s1;s2;s3", out);
   EXPECT_FALSE(bad_message);
 }

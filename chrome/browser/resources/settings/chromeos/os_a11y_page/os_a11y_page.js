@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -23,7 +23,7 @@ import './switch_access_subpage.js';
 import './tts_subpage.js';
 
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
-import {WebUIListenerBehavior, WebUIListenerBehaviorInterface} from 'chrome://resources/js/web_ui_listener_behavior.m.js';
+import {WebUIListenerBehavior, WebUIListenerBehaviorInterface} from 'chrome://resources/cr_elements/web_ui_listener_behavior.js';
 import {afterNextRender, html, mixinBehaviors, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {Setting} from '../../mojom-webui/setting.mojom-webui.js';
@@ -285,6 +285,12 @@ class OsSettingsA11YPageElement extends OsSettingsA11YPageElementBase {
   /** @private */
   onAudioAndCaptionsTap_() {
     Router.getInstance().navigateTo(routes.A11Y_AUDIO_AND_CAPTIONS);
+  }
+
+  /** @private */
+  onAdditionalFeaturesClick_() {
+    window.open(
+        'https://chrome.google.com/webstore/category/collection/3p_accessibility_extensions');
   }
 }
 

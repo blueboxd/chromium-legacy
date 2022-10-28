@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -31,6 +31,8 @@ const char kFocusModeConditionsMet[] = "focus_mode_conditions_met";
 
 const char kSideSearchAutoTriggered[] = "side_search_auto_triggered";
 const char kSideSearchOpened[] = "side_search_opened";
+const char kSideSearchPageActionLabelShown[] =
+    "side_search_page_action_label_shown";
 
 const char kTabSearchOpened[] = "tab_search_opened";
 
@@ -45,6 +47,8 @@ const char kFocusHelpBubbleAcceleratorPressed[] =
 const char kFocusHelpBubbleAcceleratorPromoRead[] =
     "focus_help_bubble_accelerator_promo_read";
 
+const char kBatterySaverDialogShown[] = "battery_saver_info_shown";
+
 #endif  // BUILDFLAG(IS_WIN) || BUILDFLAG(IS_APPLE) || BUILDFLAG(IS_LINUX) ||
         // BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_FUCHSIA)
 
@@ -57,7 +61,7 @@ const char kTriggeredTranslateInfobar[] = "triggered_translate_infobar";
 const char kBottomToolbarOpened[] = "bottom_toolbar_opened";
 const char kDiscoverFeedLoaded[] = "discover_feed_loaded";
 const char kDesktopVersionRequested[] = "desktop_version_requested";
-const char kDefaultSiteViewShown[] = "default_site_view_shown";
+const char kDefaultSiteViewUsed[] = "default_site_view_used";
 const char kPasswordSuggestionsShown[] = "password_suggestions_shown";
 const char kPasswordSuggestionSelected[] = "password_suggestion_selected";
 const char kOverflowMenuNoHorizontalScrollOrAction[] =

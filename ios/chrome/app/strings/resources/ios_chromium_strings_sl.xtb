@@ -67,6 +67,7 @@
 <translation id="5308226104666789935">Chromium ne more preveriti, ali so na voljo posodobitve</translation>
 <translation id="5396916991083608703">Želite nastaviti Chromium kot privzeto možnost?</translation>
 <translation id="5521125884468363740">Če si želite ogledati zavihke iz naprav, v katerih uporabljate Chromium, se prijavite in vklopite sinhronizacijo</translation>
+<translation id="5522297504975449419">Nekatere funkcije Chromiuma ne bodo več na voljo.</translation>
 <translation id="5573014823074921752">Nasvet za Chromium. Če želite več možnosti za zavihke, pridržite gumb za prikaz zavihkov v orodni vrstici na dnu ali vrhu zaslona.</translation>
 <translation id="5700709190537129682">Chromium ne more preveriti vaših gesel</translation>
 <translation id="5777187867430702742">Stran Chromiuma</translation>
@@ -95,6 +96,7 @@
 <translation id="7175400662502680481">Geslo je bilo razkrito zaradi podatkovne kršitve. Upravitelj gesel priporoča, da ga takoj spremenite.</translation>
 <translation id="7208566199746267865">Chromium poskrbi, da so vaši računi v spletu, in vam tako prihrani čas. Račune lahko dodajate ali odstranjujete v nastavitvah.</translation>
 <translation id="725427773388857052">Chromium vas lahko varuje pred podatkovnimi kršitvami, spletnimi mesti, ki niso varna, in drugim.</translation>
+<translation id="7255976941681861701">Spoznajte novi meni v Chromiumu</translation>
 <translation id="7269362888766543920">Nekateri dodatki povzročajo zrušitve Chromiuma. Poskusite jih odstraniti.</translation>
 <translation id="7313655110045230863">Če želite Chromium nastaviti kot privzeti brskalnik, odprite nastavitve. Dotaknite se »Privzeti brskalnik« in izberite Chromium.</translation>
 <translation id="7337881442233988129">Chromium</translation>
@@ -113,7 +115,6 @@
 <translation id="7980860476903281594">Chromium vašo lokacijo deli s spletnimi mesti, ki jih dovolite.</translation>
 <translation id="8013573822802650211">Če si želite ogledati zavihke iz naprav, v katerih uporabljate Chromium, se prijavite v vseh napravah</translation>
 <translation id="8073677936375100957">Ali želite izbrisati podatke v Chromiumu iz te naprave?</translation>
-<translation id="8175055321229419309">Nasvet: <ph name="BEGIN_LINK" />premaknite Chromium v vrstico z aplikacijami<ph name="END_LINK" /></translation>
 <translation id="8240981428553046115">Chromium ni mogel preveriti, ali so na voljo posodobitve. Poskusite pozneje.</translation>
 <translation id="8308172444429103994">Nasvet za Chromium. Hitreje se prijavite tako, da na vrhu tipkovnice izberete shranjeno geslo.</translation>
 <translation id="858114650497379505">Gesla, ki ste jih shranili v upravitelju gesel, lahko uporabite v drugih aplikacijah v iPhonu.</translation>

@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -22,10 +22,11 @@
 #include "chromeos/ash/services/cros_healthd/public/cpp/service_connection.h"
 #include "components/reporting/proto/synced/metric_data.pb.h"
 
-using ::chromeos::cros_healthd::mojom::NetworkInterfaceInfoPtr;
-
 namespace reporting {
+
 namespace {
+
+using ::ash::cros_healthd::mojom::NetworkInterfaceInfoPtr;
 
 ::ash::NetworkStateHandler::NetworkStateList GetNetworkStateList() {
   ::ash::NetworkStateHandler::NetworkStateList network_state_list;
@@ -40,8 +41,7 @@ namespace {
 
 NetworkInterfaceInfoPtr GetWifiNetworkInterfaceInfo(
     const std::string& device_path,
-    const ::chromeos::cros_healthd::mojom::TelemetryInfoPtr&
-        cros_healthd_telemetry) {
+    const ash::cros_healthd::mojom::TelemetryInfoPtr& cros_healthd_telemetry) {
   if (device_path.empty() || cros_healthd_telemetry.is_null() ||
       cros_healthd_telemetry->network_interface_result.is_null() ||
       !cros_healthd_telemetry->network_interface_result
@@ -118,18 +118,9 @@ NetworkType GetNetworkType(const ash::NetworkTypePattern& type) {
   return NetworkType::NETWORK_TYPE_UNSPECIFIED;  // Unsupported
 }
 
-void OnHttpsLatencySamplerCompleted(OptionalMetricCallback callback,
-                                    MetricData network_data,
-                                    absl::optional<MetricData> latency_data) {
-  if (latency_data.has_value()) {
-    network_data.CheckTypeAndMergeFrom(latency_data.value());
-  }
-  std::move(callback).Run(std::move(network_data));
-}
 }  // namespace
 
-NetworkTelemetrySampler::NetworkTelemetrySampler(Sampler* https_latency_sampler)
-    : https_latency_sampler_(https_latency_sampler) {}
+NetworkTelemetrySampler::NetworkTelemetrySampler() = default;
 
 NetworkTelemetrySampler::~NetworkTelemetrySampler() = default;
 
@@ -137,16 +128,16 @@ void NetworkTelemetrySampler::MaybeCollect(OptionalMetricCallback callback) {
   auto handle_probe_result_cb =
       base::BindOnce(&NetworkTelemetrySampler::CollectWifiSignalStrengthRssi,
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback));
-  ::ash::cros_healthd::ServiceConnection::GetInstance()->ProbeTelemetryInfo(
-      std::vector<chromeos::cros_healthd::mojom::ProbeCategoryEnum>{
-          chromeos::cros_healthd::mojom::ProbeCategoryEnum::kNetworkInterface},
+  ash::cros_healthd::ServiceConnection::GetInstance()->ProbeTelemetryInfo(
+      std::vector<ash::cros_healthd::mojom::ProbeCategoryEnum>{
+          ash::cros_healthd::mojom::ProbeCategoryEnum::kNetworkInterface},
       base::BindPostTask(base::SequencedTaskRunnerHandle::Get(),
                          std::move(handle_probe_result_cb)));
 }
 
 void NetworkTelemetrySampler::CollectWifiSignalStrengthRssi(
     OptionalMetricCallback callback,
-    ::chromeos::cros_healthd::mojom::TelemetryInfoPtr cros_healthd_telemetry) {
+    ash::cros_healthd::mojom::TelemetryInfoPtr cros_healthd_telemetry) {
   base::queue<std::string> service_paths;
   ::ash::NetworkStateHandler::NetworkStateList network_state_list =
       GetNetworkStateList();
@@ -179,7 +170,7 @@ void NetworkTelemetrySampler::CollectWifiSignalStrengthRssi(
 
 void NetworkTelemetrySampler::CollectNetworksStates(
     OptionalMetricCallback callback,
-    ::chromeos::cros_healthd::mojom::TelemetryInfoPtr cros_healthd_telemetry,
+    ash::cros_healthd::mojom::TelemetryInfoPtr cros_healthd_telemetry,
     base::flat_map<std::string, int> service_path_rssi_map) {
   if (cros_healthd_telemetry.is_null() ||
       cros_healthd_telemetry->network_interface_result.is_null()) {
@@ -199,7 +190,6 @@ void NetworkTelemetrySampler::CollectNetworksStates(
   }
 
   bool should_report = false;
-  bool should_collect_latency = false;
   for (const auto* network : network_state_list) {
     ::ash::NetworkTypePattern type =
         ::ash::NetworkTypePattern::Primitive(network->type());
@@ -212,9 +202,6 @@ void NetworkTelemetrySampler::CollectNetworksStates(
     }
 
     should_report = true;
-    if (network->IsOnline()) {
-      should_collect_latency = true;
-    }
 
     NetworkTelemetry* const network_telemetry =
         metric_data.mutable_telemetry_data()
@@ -280,12 +267,6 @@ void NetworkTelemetrySampler::CollectNetworksStates(
     }
   }
 
-  if (should_collect_latency) {
-    https_latency_sampler_->MaybeCollect(
-        base::BindOnce(OnHttpsLatencySamplerCompleted, std::move(callback),
-                       std::move(metric_data)));
-    return;
-  }
   if (should_report) {
     std::move(callback).Run(std::move(metric_data));
     return;

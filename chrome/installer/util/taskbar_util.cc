@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -140,19 +140,19 @@ bool SetInstallerPinnedChromeToTaskbar(bool installed) {
   base::win::RegKey key;
   if (key.Create(HKEY_CURRENT_USER, install_static::GetRegistryPath().c_str(),
                  KEY_SET_VALUE) == ERROR_SUCCESS) {
-    return installed ? key.WriteValue(kInstallerPinned, 1) == ERROR_SUCCESS
-                     : key.DeleteValue(kInstallerPinned) == ERROR_SUCCESS;
+    return key.WriteValue(kInstallerPinned, installed ? 1 : 0) == ERROR_SUCCESS;
   }
   return false;
 }
 
-bool GetInstallerPinnedChromeToTaskbar() {
+absl::optional<bool> GetInstallerPinnedChromeToTaskbar() {
   base::win::RegKey key;
   if (key.Open(HKEY_CURRENT_USER, install_static::GetRegistryPath().c_str(),
                KEY_QUERY_VALUE | KEY_WOW64_32KEY) == ERROR_SUCCESS) {
     DWORD installer_pinned = 0;
     LONG result = key.ReadValueDW(kInstallerPinned, &installer_pinned);
-    return (result == ERROR_SUCCESS) && (installer_pinned != 0);
+    if (result == ERROR_SUCCESS)
+      return installer_pinned != 0;
   }
-  return false;
+  return absl::nullopt;
 }

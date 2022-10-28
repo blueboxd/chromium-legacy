@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -16,7 +16,6 @@
 #include "ash/wm/desks/desks_controller.h"
 #include "ash/wm/desks/desks_util.h"
 #include "ash/wm/desks/expanded_desks_bar_button.h"
-#include "ash/wm/desks/templates/save_desk_template_button.h"
 #include "ash/wm/desks/templates/saved_desk_grid_view.h"
 #include "ash/wm/desks/templates/saved_desk_item_view.h"
 #include "ash/wm/desks/templates/saved_desk_library_view.h"
@@ -246,7 +245,6 @@ OverviewHighlightController::GetTraversableViews() const {
             traversable_views.push_back(name_view);
         }
       }
-      traversable_views.push_back(desk_library_view->feedback_button());
     } else {
       for (auto& item : grid->window_list())
         traversable_views.push_back(item->overview_item_view());

@@ -33,8 +33,8 @@
 
 #include <utility>
 
-#include "base/stl_util.h"
 #include "base/time/time.h"
+#include "base/types/optional_util.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/type_converter.h"
@@ -606,7 +606,7 @@ void LocalFrameClientImpl::BeginNavigation(
   if (!source_location) {
     DCHECK(!origin_window);
     source_location =
-        SourceLocation::Capture(web_frame_->GetFrame()->DomWindow());
+        CaptureSourceLocation(web_frame_->GetFrame()->DomWindow());
   }
   if (!source_location->IsUnknown()) {
     navigation_info->source_location.url = source_location->Url();
@@ -662,8 +662,7 @@ void LocalFrameClientImpl::BeginNavigation(
 }
 
 void LocalFrameClientImpl::DispatchWillSendSubmitEvent(HTMLFormElement* form) {
-  if (web_frame_->Client())
-    web_frame_->Client()->WillSendSubmitEvent(WebFormElement(form));
+  web_frame_->WillSendSubmitEvent(WebFormElement(form));
 }
 
 void LocalFrameClientImpl::DidStartLoading() {

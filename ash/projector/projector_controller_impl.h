@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -187,10 +187,6 @@ class ASH_EXPORT ProjectorControllerImpl
   // session. This is no-op if speech recognition is not finished or DLP
   // restriction check is not completed.
   void MaybeWrapUpRecording();
-
-  // Get the screencast file path without file extension. This will be used
-  // to construct media and metadata file path.
-  base::FilePath GetScreencastFilePathNoExtension() const;
 
   ProjectorClient* client_ = nullptr;
   std::unique_ptr<ProjectorSessionImpl> projector_session_;

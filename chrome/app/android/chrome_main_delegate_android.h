@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -32,7 +32,7 @@ class ChromeMainDelegateAndroid : public ChromeMainDelegate {
   absl::variant<int, content::MainFunctionParams> RunProcess(
       const std::string& process_type,
       content::MainFunctionParams main_function_params) override;
-  void ProcessExiting(const std::string& process_type) override{};
+  void ProcessExiting(const std::string& process_type) override {}
 
  private:
   std::unique_ptr<MainThreadStackSamplingProfiler> sampling_profiler_;

@@ -49,6 +49,29 @@ blink_python_runner("make_generated_document_policy_features") {
   ]
 }
 
+blink_python_runner("make_generated_features") {
+  script = "../renderer/build/scripts/make_common_features.py"
+
+  inputs = scripts_for_json5_files + [
+             "../renderer/build/scripts/make_common_features.py",
+             "../renderer/platform/runtime_enabled_features.json5",
+             "../renderer/build/scripts/templates/features_generated.cc.tmpl",
+           ]
+  outputs = [ "$root_gen_dir/third_party/blink/common/features_generated.cc" ]
+
+  args = [
+    rebase_path("../renderer/platform/runtime_enabled_features.json5",
+                root_build_dir),
+    "--output_dir",
+    rebase_path("$root_gen_dir/third_party/blink/common", root_build_dir),
+  ]
+
+  visibility = [
+    ":*",
+    "//third_party/blink/public/common:java_features_srcjar",
+  ]
+}
+
 blink_python_runner("make_generated_origin_trials") {
   script = "../renderer/build/scripts/make_origin_trials.py"
 
@@ -234,11 +257,13 @@ source_set("common") {
   ]
 
   sources += get_target_outputs(":make_generated_document_policy_features")
+  sources += get_target_outputs(":make_generated_features")
   sources += get_target_outputs(":make_generated_origin_trials")
   sources += get_target_outputs(":make_generated_permissions_policy_features")
 
   public_deps = [
     ":make_generated_document_policy_features",
+    ":make_generated_features",
     ":make_generated_origin_trials",
     ":make_generated_permissions_policy_features",
     "//third_party/blink/common/privacy_budget:privacy_budget",
@@ -308,14 +333,11 @@ test("blink_common_unittests") {
   }
 
   if (is_fuchsia) {
+    use_cfv1 = false
+
     # TODO(https://crbug.com/1185811): Investigate removing the requirement for
     # job_policy_ambient_mark_vmo_exec for the sake of V8's allocator in tests.
     test_runner_shard = "//build/config/fuchsia/test/elf_test_ambient_exec_runner.shard.test-cml"
-
-    # TODO(crbug.com/1313103): Remove and apply use_cfv1=false once the roller
-    # is updated to launch the test via the .cm manifest.
-    additional_manifest_fragments =
-        [ "//build/config/fuchsia/test/jit_capabilities.test-cmx" ]
   }
 
   data_deps = [ ":common_unittests_data" ]
@@ -355,6 +377,7 @@ source_set("common_unittests_sources") {
     "page/content_to_visible_time_reporter_unittest.cc",
     "page_state/page_state_serialization_unittest.cc",
     "permissions_policy/document_policy_unittest.cc",
+    "permissions_policy/permissions_policy_declaration_unittest.cc",
     "permissions_policy/permissions_policy_unittest.cc",
     "permissions_policy/policy_value_unittest.cc",
     "scheduler/web_scheduler_tracked_feature_unittest.cc",

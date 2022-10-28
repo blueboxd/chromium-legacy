@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -9,6 +9,7 @@
 #include "chrome/browser/autofill_assistant/annotate_dom_model_service_factory.h"
 #include "chrome/browser/autofill_assistant/assistant_field_trial_util_chrome.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/consent_auditor/consent_auditor_factory.h"
 #include "chrome/browser/password_manager/chrome_password_manager_client.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -124,6 +125,12 @@ bool CommonDependenciesChrome::IsWebLayer() const {
 signin::IdentityManager* CommonDependenciesChrome::GetIdentityManager(
     content::BrowserContext* browser_context) const {
   return IdentityManagerFactory::GetForProfile(
+      Profile::FromBrowserContext(browser_context));
+}
+
+consent_auditor::ConsentAuditor* CommonDependenciesChrome::GetConsentAuditor(
+    content::BrowserContext* browser_context) const {
+  return ConsentAuditorFactory::GetForProfile(
       Profile::FromBrowserContext(browser_context));
 }
 

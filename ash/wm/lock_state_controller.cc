@@ -1,4 +1,4 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -296,7 +296,7 @@ void LockStateController::OnLockScreenHide(
   start_unlock_callback_ = std::move(callback);
   StartUnlockAnimationBeforeLockUIDestroyed(base::BindOnce(
       &LockStateController::OnUnlockAnimationBeforeLockUIDestroyedFinished,
-      base::Unretained(this)));
+      weak_ptr_factory_.GetWeakPtr()));
 }
 
 void LockStateController::SetLockScreenDisplayedCallback(

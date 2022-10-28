@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -74,6 +74,10 @@ base::Time WebStateImpl::SerializedData::GetLastActiveTime() const {
     return create_params_.last_active_time;
 
   return session_storage_.lastActiveTime;
+}
+
+base::Time WebStateImpl::SerializedData::GetCreationTime() const {
+  return session_storage_.creationTime;
 }
 
 BrowserState* WebStateImpl::SerializedData::GetBrowserState() const {

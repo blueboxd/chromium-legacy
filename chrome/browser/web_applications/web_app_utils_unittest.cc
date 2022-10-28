@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -229,8 +229,8 @@ TEST_F(WebAppUtilsTest, AreWebAppsEnabled) {
 
   Profile* lock_screen_profile = profile_manager.CreateTestingProfile(
       ash::ProfileHelper::GetLockScreenAppProfileName());
-  EXPECT_FALSE(AreWebAppsEnabled(lock_screen_profile));
-  EXPECT_FALSE(AreWebAppsEnabled(
+  EXPECT_TRUE(AreWebAppsEnabled(lock_screen_profile));
+  EXPECT_TRUE(AreWebAppsEnabled(
       lock_screen_profile->GetPrimaryOTRProfile(/*create_if_needed=*/true)));
 
   using MockUserManager = testing::NiceMock<ash::MockUserManager>;

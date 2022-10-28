@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -33,7 +33,7 @@ constexpr int kCloseButtonExtraMargin = 4;
 constexpr int kCloseButtonSize = 17;
 constexpr int kCornerRadius = 18;
 constexpr int kLabelExtraLeftMargin = 2;
-constexpr int kSelectionIconSize = 16;
+constexpr int kSelectionIconTopMargin = 2;
 
 int GetLensInstructionChipString() {
   if (features::UseAltChipString()) {
@@ -124,7 +124,17 @@ void LensRegionSearchInstructionsView::Init() {
     auto selection_icon_view =
         std::make_unique<views::ImageView>(ui::ImageModel::FromVectorIcon(
             selection_icon, kColorFeatureLensPromoBubbleForeground,
-            kSelectionIconSize));
+            layout_provider->GetDistanceMetric(
+                DISTANCE_BUBBLE_HEADER_VECTOR_ICON_SIZE)));
+    // TODO(b/244610006): We need to set a top margin to make sure our icons
+    // feel properly centered even though they are vertically centered. Only
+    // needed for the selection icons which contain a cross cursor. Asset should
+    // be updated in the future to make this unnecessary.
+    selection_icon_view->SetProperty(
+        views::kMarginsKey,
+        gfx::Insets::TLBR(
+            features::UseSelectionIconWithImage() ? 0 : kSelectionIconTopMargin,
+            0, 0, 0));
     AddChildView(std::move(selection_icon_view));
   }
 

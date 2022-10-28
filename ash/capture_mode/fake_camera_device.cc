@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -545,8 +545,8 @@ FakeCameraDevice::Buffer* FakeCameraDevice::AllocateOrReuseBuffer() {
 void FakeCameraDevice::RetireAllBuffers() {
   for (auto& pair : buffer_pool_) {
     const int buffer_id = pair.first;
-    for (auto& pair : subscriptions_map_) {
-      auto* subscription = pair.first;
+    for (auto& subscription_pair : subscriptions_map_) {
+      auto* subscription = subscription_pair.first;
       if (subscription->is_active())
         subscription->OnBufferRetired(buffer_id);
     }

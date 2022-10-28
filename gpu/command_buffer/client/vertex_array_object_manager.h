@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -105,7 +105,8 @@ class GLES2_IMPL_EXPORT VertexArrayObjectManager {
   GLuint bound_element_array_buffer() const;
 
  private:
-  typedef std::unordered_map<GLuint, VertexArrayObject*> VertexArrayObjectMap;
+  typedef std::unordered_map<GLuint, std::unique_ptr<VertexArrayObject>>
+      VertexArrayObjectMap;
 
   bool IsDefaultVAOBound() const;
 
@@ -123,9 +124,9 @@ class GLES2_IMPL_EXPORT VertexArrayObjectManager {
   GLsizei collection_buffer_size_;
   std::unique_ptr<int8_t[]> collection_buffer_;
 
-  raw_ptr<VertexArrayObject, DanglingUntriaged> default_vertex_array_object_;
-  raw_ptr<VertexArrayObject, DanglingUntriaged> bound_vertex_array_object_;
   VertexArrayObjectMap vertex_array_objects_;
+  std::unique_ptr<VertexArrayObject> default_vertex_array_object_;
+  raw_ptr<VertexArrayObject> bound_vertex_array_object_;
 
   const bool support_client_side_arrays_;
 };

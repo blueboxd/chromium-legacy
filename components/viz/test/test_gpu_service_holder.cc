@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -309,7 +309,7 @@ void TestGpuServiceHolder::InitializeOnGpuThread(
       std::move(gpu_host_proxy), gpu::GpuProcessActivityFlags(),
       gl::init::CreateOffscreenGLSurface(gl::GetDefaultDisplay(), gfx::Size()),
       /*sync_point_manager=*/nullptr, /*shared_image_manager=*/nullptr,
-      /*shutdown_event=*/nullptr);
+      /*scheduler=*/nullptr, /*shutdown_event=*/nullptr);
 
   task_executor_ = std::make_unique<gpu::GpuInProcessThreadService>(
       this, gpu_thread_.task_runner(), gpu_service_->GetGpuScheduler(),

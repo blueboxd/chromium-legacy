@@ -1,10 +1,12 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "components/autofill_assistant/browser/script_precondition.h"
 
+#include <memory>
 #include <utility>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/containers/flat_map.h"
@@ -12,6 +14,7 @@
 #include "base/strings/strcat.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/autofill_assistant/browser/batch_element_checker.h"
+#include "components/autofill_assistant/browser/script_parameters.h"
 #include "components/autofill_assistant/browser/service.pb.h"
 #include "components/autofill_assistant/browser/trigger_context.h"
 #include "components/autofill_assistant/browser/web/element.h"

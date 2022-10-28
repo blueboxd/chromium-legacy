@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -75,6 +75,11 @@ void TestGuestViewManager::WaitForAllGuestsDeleted() {
   for (auto& watcher : guest_view_watchers_) {
     watcher->Wait();
   }
+}
+
+void TestGuestViewManager::WaitForFirstGuestDeleted() {
+  // Wait for the first guest that was created to be deleted.
+  guest_view_watchers_.front()->Wait();
 }
 
 void TestGuestViewManager::WaitForLastGuestDeleted() {
@@ -181,7 +186,7 @@ void TestGuestViewManager::AttachGuest(int embedder_process_id,
 
   if (waiting_for_attach_ &&
       (waiting_for_attach_ ==
-       GuestViewBase::From(embedder_process_id, guest_instance_id))) {
+       GuestViewBase::FromInstanceID(embedder_process_id, guest_instance_id))) {
     attached_run_loop_->Quit();
     waiting_for_attach_ = nullptr;
   }

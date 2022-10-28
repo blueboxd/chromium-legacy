@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -22,6 +22,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/signin_resources.h"
 #include "components/signin/public/identity_manager/account_info.h"
+#include "components/strings/grit/components_strings.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
@@ -61,10 +62,23 @@ ProfileCustomizationUI::ProfileCustomizationUI(content::WebUI* web_ui)
       {"profileCustomizationSkipLabel",
        IDS_PROFILE_CUSTOMIZATION_SKIP_BUTTON_LABEL},
       {"profileCustomizationInputLabel", IDS_PROFILE_CUSTOMIZATION_INPUT_LABEL},
+      {"profileCustomizationInputPlaceholder",
+       IDS_PROFILE_CUSTOMIZATION_INPUT_PLACEHOLDER},
+      {"profileCustomizationInputErrorMessage",
+       IDS_PROFILE_CUSTOMIZATION_INPUT_ERROR_MESSAGE},
       {"profileCustomizationText", IDS_PROFILE_CUSTOMIZATION_TEXT},
       {"profileCustomizationTitle", IDS_PROFILE_CUSTOMIZATION_TITLE_V2},
       {"localProfileCreationTitle",
        IDS_PROFILE_CUSTOMIZATION_LOCAL_PROFILE_CREATION_TITLE},
+      {"profileCustomizationDeleteProfileLabel",
+       IDS_PROFILE_CUSTOMIZATION_DELETE_PROFILE_BUTTON_LABEL},
+      {"profileCustomizationCustomizeAvatarLabel",
+       IDS_PROFILE_PICKER_PROFILE_CREATION_FLOW_LOCAL_PROFILE_CREATION_CUSTOMIZE_AVATAR_BUTTON_LABEL},
+      {"profileCustomizationAvatarSelectionTitle",
+       IDS_PROFILE_PICKER_PROFILE_CREATION_FLOW_LOCAL_PROFILE_CREATION_AVATAR_TEXT},
+      {"profileCustomizationAvatarSelectionConfirmButtonLabel", IDS_OK},
+      {"profileCustomizationAvatarSelectionBackButtonLabel",
+       IDS_PROFILE_CUSTOMIZATION_AVATAR_SELECTION_BACK_BUTTON_LABEL},
 
       // Color picker strings:
       {"colorPickerLabel", IDS_NTP_CUSTOMIZE_COLOR_PICKER_LABEL},
@@ -106,8 +120,11 @@ ProfileCustomizationUI::~ProfileCustomizationUI() = default;
 void ProfileCustomizationUI::Initialize(
     base::OnceCallback<void(ProfileCustomizationHandler::CustomizationResult)>
         completion_callback) {
-  web_ui()->AddMessageHandler(std::make_unique<ProfileCustomizationHandler>(
-      std::move(completion_callback)));
+  std::unique_ptr<ProfileCustomizationHandler> handler =
+      std::make_unique<ProfileCustomizationHandler>(
+          Profile::FromWebUI(web_ui()), std::move(completion_callback));
+  profile_customization_handler_ = handler.get();
+  web_ui()->AddMessageHandler(std::move(handler));
 }
 
 void ProfileCustomizationUI::BindInterface(
@@ -117,6 +134,11 @@ void ProfileCustomizationUI::BindInterface(
   if (customize_themes_factory_receiver_.is_bound())
     customize_themes_factory_receiver_.reset();
   customize_themes_factory_receiver_.Bind(std::move(pending_receiver));
+}
+
+ProfileCustomizationHandler*
+ProfileCustomizationUI::GetProfileCustomizationHandlerForTesting() {
+  return profile_customization_handler_;
 }
 
 void ProfileCustomizationUI::CreateCustomizeThemesHandler(

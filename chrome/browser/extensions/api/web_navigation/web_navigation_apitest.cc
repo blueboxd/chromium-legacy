@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -288,13 +288,8 @@ IN_PROC_BROWSER_TEST_P(WebNavigationApiTestWithContextType, Api) {
   ASSERT_TRUE(RunExtensionTest("webnavigation/api")) << message_;
 }
 
-// TODO(crbug.com/1352957): Flakily timing out on win/mac/cros.
-#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_CHROMEOS)
-#define MAYBE_GetFrame DISABLED_GetFrame
-#else
-#define MAYBE_GetFrame GetFrame
-#endif
-IN_PROC_BROWSER_TEST_P(WebNavigationApiTestWithContextType, MAYBE_GetFrame) {
+// TODO(crbug.com/1352957): Flakily timing out.
+IN_PROC_BROWSER_TEST_P(WebNavigationApiTestWithContextType, DISABLED_GetFrame) {
   ASSERT_TRUE(StartEmbeddedTestServer());
   ASSERT_TRUE(RunExtensionTest("webnavigation/getFrame")) << message_;
 }

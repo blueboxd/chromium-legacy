@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -42,6 +42,10 @@
 #include "services/resource_coordinator/public/cpp/memory_instrumentation/browser_metrics.h"
 #include "services/resource_coordinator/public/cpp/memory_instrumentation/memory_instrumentation.h"
 #include "url/gurl.h"
+
+#if BUILDFLAG(IS_ANDROID)
+#include "base/android/child_process_binding_types.h"
+#endif
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 #include "extensions/browser/extension_registry.h"
@@ -178,6 +182,8 @@ const Metric kAllocatorDumpNamesForMetrics[] = {
     {"canvas/ResourceProvider/SkSurface", "CanvasResourceProvider.SkSurface",
      MetricSize::kSmall, kSize, EmitTo::kCountsInUkmOnly,
      &Memory_Experimental::SetCanvasResourceProvider_SkSurface},
+    {"cc/tile_memory", "TileMemory", MetricSize::kSmall, kSize,
+     EmitTo::kSizeInUmaOnly, nullptr},
     {"components/download", "DownloadService", MetricSize::kSmall,
      kEffectiveSize, EmitTo::kSizeInUkmAndUma,
      &Memory_Experimental::SetDownloadService},
@@ -958,6 +964,33 @@ void EmitUtilityMemoryMetrics(HistogramProcessType ptype,
   builder.Record(ukm_recorder);
 }
 
+#if BUILDFLAG(IS_ANDROID)
+// Return the base::android::ChildBindingState if the process with `pid` is a
+// renderer. If the `pid` is not in the list of live renderers it is assumed to
+// be unbound. If the `process_type` is not for a renderer return nullopt.
+absl::optional<base::android::ChildBindingState>
+GetAndroidRendererProcessBindingState(
+    memory_instrumentation::mojom::ProcessType process_type,
+    base::ProcessId pid) {
+  if (process_type != memory_instrumentation::mojom::ProcessType::RENDERER) {
+    return absl::nullopt;
+  }
+  for (auto iter = content::RenderProcessHost::AllHostsIterator();
+       !iter.IsAtEnd(); iter.Advance()) {
+    if (!iter.GetCurrentValue()->GetProcess().IsValid())
+      continue;
+
+    if (iter.GetCurrentValue()->GetProcess().Pid() == pid) {
+      return iter.GetCurrentValue()->GetEffectiveChildBindingState();
+    }
+  }
+  // This can occur if the process no longer exists. Specifically, it is
+  // possible a memory dump was requested, but the process was killed before
+  // reaching this point so we cannot check its status. Treat as UNBOUND.
+  return base::android::ChildBindingState::UNBOUND;
+}
+#endif  // BUILDFLAG(IS_ANDROID)
+
 }  // namespace
 
 ProcessMemoryMetricsEmitter::ProcessMemoryMetricsEmitter()
@@ -1124,10 +1157,17 @@ void ProcessMemoryMetricsEmitter::CollateResults() {
     return;
 
   uint32_t private_footprint_total_kb = 0;
+#if BUILDFLAG(IS_ANDROID)
+  uint32_t private_footprint_excluding_waived_total_kb = 0;
+  uint32_t renderer_private_footprint_excluding_waived_total_kb = 0;
+  uint32_t private_footprint_visible_or_higher_total_kb = 0;
+  uint32_t renderer_private_footprint_visible_or_higher_total_kb = 0;
+#endif  // BUILDFLAG(IS_ANDROID)
   uint32_t renderer_private_footprint_total_kb = 0;
   uint32_t renderer_malloc_total_kb = 0;
   uint32_t shared_footprint_total_kb = 0;
   uint32_t resident_set_total_kb = 0;
+  uint64_t tiles_total_memory = 0;
   bool emit_metrics_for_all_processes = pid_scope_ == base::kNullProcessId;
 
   TabFootprintAggregator per_tab_metrics;
@@ -1136,6 +1176,24 @@ void ProcessMemoryMetricsEmitter::CollateResults() {
   for (const auto& pmd : global_dump_->process_dumps()) {
     uint32_t process_pmf_kb = pmd.os_dump().private_footprint_kb;
     private_footprint_total_kb += process_pmf_kb;
+#if BUILDFLAG(IS_ANDROID)
+    bool is_waived_renderer = false;
+    bool is_less_than_visible_renderer = false;
+    auto renderer_binding_state_android =
+        GetAndroidRendererProcessBindingState(pmd.process_type(), pmd.pid());
+    if (renderer_binding_state_android) {
+      // Also exclude base::android::ChildBindingState::UNBOUND which can occur
+      // as the state change can be racy.
+      is_waived_renderer = *renderer_binding_state_android <=
+                           base::android::ChildBindingState::WAIVED;
+      is_less_than_visible_renderer = *renderer_binding_state_android <
+                                      base::android::ChildBindingState::VISIBLE;
+    }
+    private_footprint_excluding_waived_total_kb +=
+        is_waived_renderer ? 0 : process_pmf_kb;
+    private_footprint_visible_or_higher_total_kb +=
+        is_less_than_visible_renderer ? 0 : process_pmf_kb;
+#endif  // BUILDFLAG(IS_ANDROID)
     shared_footprint_total_kb += pmd.os_dump().shared_footprint_kb;
     resident_set_total_kb += pmd.os_dump().resident_set_kb;
 
@@ -1151,6 +1209,12 @@ void ProcessMemoryMetricsEmitter::CollateResults() {
       }
       case memory_instrumentation::mojom::ProcessType::RENDERER: {
         renderer_private_footprint_total_kb += process_pmf_kb;
+#if BUILDFLAG(IS_ANDROID)
+        renderer_private_footprint_excluding_waived_total_kb +=
+            is_waived_renderer ? 0 : process_pmf_kb;
+        renderer_private_footprint_visible_or_higher_total_kb +=
+            is_less_than_visible_renderer ? 0 : process_pmf_kb;
+#endif  // BUILDFLAG(IS_ANDROID)
         const PageInfo* single_page_info = nullptr;
         auto iter = process_infos_.find(pmd.pid());
         if (iter != process_infos_.end()) {
@@ -1220,6 +1284,18 @@ void ProcessMemoryMetricsEmitter::CollateResults() {
       case memory_instrumentation::mojom::ProcessType::OTHER:
         break;
     }
+
+    if (emit_metrics_for_all_processes) {
+      // cc/ has clients in all process types. Careful though about
+      // double-counting: in the GPU process a lot of the memory is allocated on
+      // behalf of other process types, so the size vs effective_size
+      // distinction matters there.
+      //
+      // Not using effective size as tiles are not shared across processes, but
+      // they are shared with the GPU process (under a different name), and we
+      // don't want to count these partially if priority is not set right.
+      tiles_total_memory += pmd.GetMetric("cc/tile_memory", kSize).value_or(0);
+    }
   }
 
   if (emit_metrics_for_all_processes) {
@@ -1272,6 +1348,22 @@ void ProcessMemoryMetricsEmitter::CollateResults() {
                                   renderer_malloc_total_kb / kKiB);
     UMA_HISTOGRAM_MEMORY_LARGE_MB("Memory.Total.SharedMemoryFootprint",
                                   shared_footprint_total_kb / kKiB);
+    UMA_HISTOGRAM_MEMORY_MEDIUM_MB("Memory.Total.TileMemory",
+                                   tiles_total_memory / kMiB);
+#if BUILDFLAG(IS_ANDROID)
+    UMA_HISTOGRAM_MEMORY_LARGE_MB(
+        "Memory.Total.PrivateMemoryFootprintExcludingWaivedRenderers",
+        private_footprint_excluding_waived_total_kb / kKiB);
+    UMA_HISTOGRAM_MEMORY_LARGE_MB(
+        "Memory.Total.RendererPrivateMemoryFootprintExcludingWaived",
+        renderer_private_footprint_excluding_waived_total_kb / kKiB);
+    UMA_HISTOGRAM_MEMORY_LARGE_MB(
+        "Memory.Total.PrivateMemoryFootprintVisibleOrHigherPriorityRenderers",
+        private_footprint_visible_or_higher_total_kb / kKiB);
+    UMA_HISTOGRAM_MEMORY_LARGE_MB(
+        "Memory.Total.RendererPrivateMemoryFootprintVisibleOrHigherPriority",
+        renderer_private_footprint_visible_or_higher_total_kb / kKiB);
+#endif
 
     Memory_Experimental(ukm::UkmRecorder::GetNewSourceID())
         .SetTotal2_PrivateMemoryFootprint(private_footprint_total_kb / kKiB)

@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -313,16 +313,6 @@ class AutotestPrivateIsArcProvisionedFunction : public ExtensionFunction {
 
  private:
   ~AutotestPrivateIsArcProvisionedFunction() override;
-  ResponseAction Run() override;
-};
-
-class AutotestPrivateIsLacrosPrimaryBrowserFunction : public ExtensionFunction {
- public:
-  DECLARE_EXTENSION_FUNCTION("autotestPrivate.isLacrosPrimaryBrowser",
-                             AUTOTESTPRIVATE_ISLACROSPRIMARYBROWSER)
-
- private:
-  ~AutotestPrivateIsLacrosPrimaryBrowserFunction() override;
   ResponseAction Run() override;
 };
 
@@ -667,7 +657,7 @@ class AutotestPrivateGetPrinterListFunction
   // ash::CupsPrintersManager::Observer
   void OnEnterprisePrintersInitialized() override;
 
-  std::unique_ptr<base::Value> results_;
+  base::Value::List results_;
   std::unique_ptr<ash::CupsPrintersManager> printers_manager_;
   base::OneShotTimer timeout_timer_;
 };
@@ -1330,6 +1320,17 @@ class AutotestPrivateGetDeskCountFunction : public ExtensionFunction {
 
  private:
   ~AutotestPrivateGetDeskCountFunction() override;
+  ResponseAction Run() override;
+};
+
+class AutotestPrivateGetDesksInfoFunction : public ExtensionFunction {
+ public:
+  AutotestPrivateGetDesksInfoFunction();
+  DECLARE_EXTENSION_FUNCTION("autotestPrivate.getDesksInfo",
+                             AUTOTESTPRIVATE_GETDESKSINFO)
+
+ private:
+  ~AutotestPrivateGetDesksInfoFunction() override;
   ResponseAction Run() override;
 };
 

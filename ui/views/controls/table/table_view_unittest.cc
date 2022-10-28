@@ -30,6 +30,7 @@
 #include "ui/views/style/platform_style.h"
 #include "ui/views/test/focus_manager_test.h"
 #include "ui/views/test/views_test_base.h"
+#include "ui/views/test/views_test_utils.h"
 #include "ui/views/widget/unique_widget_ptr.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
@@ -462,7 +463,7 @@ class TableViewTest : public ViewsTestBase,
     params.bounds = gfx::Rect(0, 0, 650, 650);
     params.delegate = GetWidgetDelegate(widget_.get());
     widget_->Init(std::move(params));
-    RunScheduledLayout(
+    test::RunScheduledLayout(
         widget_->GetRootView()->AddChildView(std::move(scroll_view)));
     widget_->Show();
   }
@@ -1519,10 +1520,6 @@ TEST_P(TableViewTest, KeyUpDown) {
 
   PressKey(ui::VKEY_DOWN);
   EXPECT_EQ(1, observer.GetChangedCountAndClear());
-  EXPECT_EQ("active=1 anchor=1 selection=0 1", SelectionStateAsString());
-
-  PressKey(ui::VKEY_DOWN);
-  EXPECT_EQ(1, observer.GetChangedCountAndClear());
   EXPECT_EQ("active=2 anchor=2 selection=2", SelectionStateAsString());
 
   PressKey(ui::VKEY_DOWN);
@@ -1536,10 +1533,6 @@ TEST_P(TableViewTest, KeyUpDown) {
   PressKey(ui::VKEY_DOWN);
   EXPECT_EQ(0, observer.GetChangedCountAndClear());
   EXPECT_EQ("active=4 anchor=4 selection=3 4", SelectionStateAsString());
-
-  PressKey(ui::VKEY_UP);
-  EXPECT_EQ(1, observer.GetChangedCountAndClear());
-  EXPECT_EQ("active=3 anchor=3 selection=3 4", SelectionStateAsString());
 
   PressKey(ui::VKEY_UP);
   EXPECT_EQ(1, observer.GetChangedCountAndClear());
@@ -1597,10 +1590,6 @@ TEST_P(TableViewTest, KeyUpDown) {
 
   PressKey(ui::VKEY_DOWN);
   EXPECT_EQ(1, observer.GetChangedCountAndClear());
-  EXPECT_EQ("active=4 anchor=4 selection=3 4", SelectionStateAsString());
-
-  PressKey(ui::VKEY_DOWN);
-  EXPECT_EQ(1, observer.GetChangedCountAndClear());
   EXPECT_EQ("active=0 anchor=0 selection=0 1", SelectionStateAsString());
 
   PressKey(ui::VKEY_DOWN);
@@ -1613,15 +1602,7 @@ TEST_P(TableViewTest, KeyUpDown) {
 
   PressKey(ui::VKEY_UP);
   EXPECT_EQ(1, observer.GetChangedCountAndClear());
-  EXPECT_EQ("active=0 anchor=0 selection=0 1", SelectionStateAsString());
-
-  PressKey(ui::VKEY_UP);
-  EXPECT_EQ(1, observer.GetChangedCountAndClear());
   EXPECT_EQ("active=4 anchor=4 selection=3 4", SelectionStateAsString());
-
-  PressKey(ui::VKEY_UP);
-  EXPECT_EQ(1, observer.GetChangedCountAndClear());
-  EXPECT_EQ("active=3 anchor=3 selection=3 4", SelectionStateAsString());
 
   PressKey(ui::VKEY_UP);
   EXPECT_EQ(1, observer.GetChangedCountAndClear());

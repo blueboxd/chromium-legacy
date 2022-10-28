@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -545,6 +545,8 @@ IN_PROC_BROWSER_TEST_P(UpdateScreenTest, TestErrorUpdating) {
 }
 
 IN_PROC_BROWSER_TEST_P(UpdateScreenTest, TestTemporaryPortalNetwork) {
+  update_screen_->set_show_delay_for_testing(kTimeAdvanceSeconds10);
+
   // Change ethernet state to offline.
   network_portal_detector_.SimulateDefaultNetworkState(
       NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_PORTAL);
@@ -565,7 +567,7 @@ IN_PROC_BROWSER_TEST_P(UpdateScreenTest, TestTemporaryPortalNetwork) {
   status.set_current_operation(update_engine::Operation::CHECKING_FOR_UPDATE);
   update_engine_client()->set_default_status(status);
   update_engine_client()->NotifyObserversThatStatusChanged(status);
-  tick_clock_.Advance(kTimeAdvanceMicroseconds200);
+  tick_clock_.Advance(kTimeAdvanceSeconds10);
 
   if (!GetParam().is_eu || !features::IsConsumerAutoUpdateToggleAllowed())
     EXPECT_TRUE(update_screen_->GetShowTimerForTesting()->IsRunning());
@@ -636,7 +638,7 @@ IN_PROC_BROWSER_TEST_P(UpdateScreenTest, TestTwoOfflineNetworks) {
 
   // Change active network to the wifi behind proxy.
   network_portal_detector_.SetDefaultNetwork(
-      kStubWifiGuid,
+      kStubWifiGuid, shill::kTypeWifi,
       NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_PROXY_AUTH_REQUIRED);
 
   test::OobeJS().ExpectVisiblePath(
@@ -653,22 +655,12 @@ IN_PROC_BROWSER_TEST_P(UpdateScreenTest, TestTwoOfflineNetworks) {
 
 IN_PROC_BROWSER_TEST_P(UpdateScreenTest, TestVoidNetwork) {
   network_portal_detector_.SimulateNoNetwork();
-
-  // First portal detection attempt returns NULL network and undefined
-  // results, so detection is restarted.
   ShowUpdateScreen();
-
-  EXPECT_FALSE(update_screen_->GetErrorMessageTimerForTesting()->IsRunning());
-
-  network_portal_detector_.WaitForPortalDetectionRequest();
-  network_portal_detector_.SimulateNoNetwork();
 
   EXPECT_FALSE(update_screen_->GetErrorMessageTimerForTesting()->IsRunning());
   ASSERT_EQ(UpdateView::kScreenId.AsId(), error_screen_->GetParentScreen());
   EXPECT_FALSE(update_screen_->GetShowTimerForTesting()->IsRunning());
 
-  // Second portal detection also returns NULL network and undefined
-  // results.  In this case, offline message should be displayed.
   OobeScreenWaiter error_screen_waiter(ErrorScreenView::kScreenId);
   error_screen_waiter.set_assert_next_screen();
   error_screen_waiter.Wait();

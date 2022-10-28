@@ -1,4 +1,4 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -102,8 +102,6 @@ COMPONENT_EXPORT(ASH_SETTINGS) extern const char kReportDeviceLocation[];
 COMPONENT_EXPORT(ASH_SETTINGS)
 extern const char kReportDeviceNetworkConfiguration[];
 COMPONENT_EXPORT(ASH_SETTINGS)
-extern const char kReportDeviceNetworkInterfaces[];
-COMPONENT_EXPORT(ASH_SETTINGS)
 extern const char kReportDeviceNetworkStatus[];
 COMPONENT_EXPORT(ASH_SETTINGS)
 extern const char kReportDevicePeripherals[];
@@ -112,8 +110,6 @@ extern const char kReportDevicePowerStatus[];
 COMPONENT_EXPORT(ASH_SETTINGS)
 extern const char kReportDeviceStorageStatus[];
 COMPONENT_EXPORT(ASH_SETTINGS) extern const char kReportDeviceUsers[];
-COMPONENT_EXPORT(ASH_SETTINGS)
-extern const char kReportDeviceHardwareStatus[];
 COMPONENT_EXPORT(ASH_SETTINGS)
 extern const char kReportDeviceSecurityStatus[];
 COMPONENT_EXPORT(ASH_SETTINGS)
@@ -142,6 +138,8 @@ COMPONENT_EXPORT(ASH_SETTINGS)
 extern const char kReportDeviceNetworkTelemetryEventCheckingRateMs[];
 COMPONENT_EXPORT(ASH_SETTINGS)
 extern const char kReportDeviceAudioStatusCheckingRateMs[];
+COMPONENT_EXPORT(ASH_SETTINGS)
+extern const char kReportDeviceSignalStrengthEventDrivenTelemetry[];
 
 COMPONENT_EXPORT(ASH_SETTINGS) extern const char kHeartbeatEnabled[];
 COMPONENT_EXPORT(ASH_SETTINGS) extern const char kHeartbeatFrequency[];

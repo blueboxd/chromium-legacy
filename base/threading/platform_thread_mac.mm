@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -279,16 +279,6 @@ void SetPriorityRealtimeAudio(TimeDelta realtime_period) {
                         reinterpret_cast<thread_policy_t>(&time_constraints),
                         THREAD_TIME_CONSTRAINT_POLICY_COUNT);
   MACH_DVLOG_IF(1, result != KERN_SUCCESS, result) << "thread_policy_set";
-
-  UmaHistogramCustomMicrosecondsTimes(
-      "PlatformThread.Mac.AttemptedRealtimePeriod", realtime_period,
-      base::TimeDelta(), base::Milliseconds(100), 100);
-
-  if (result == KERN_SUCCESS) {
-    UmaHistogramCustomMicrosecondsTimes(
-        "PlatformThread.Mac.SucceededRealtimePeriod", realtime_period,
-        base::TimeDelta(), base::Milliseconds(100), 100);
-  }
   return;
 }
 

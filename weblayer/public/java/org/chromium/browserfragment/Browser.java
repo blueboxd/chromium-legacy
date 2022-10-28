@@ -8,6 +8,8 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.content.pm.PackageManager;
+import android.os.Bundle;
 import android.os.IBinder;
 import android.os.RemoteException;
 
@@ -21,22 +23,37 @@ import com.google.common.util.concurrent.ListenableFuture;
 import org.chromium.browserfragment.interfaces.IBrowserSandboxCallback;
 import org.chromium.browserfragment.interfaces.IBrowserSandboxService;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Handle to the Browsing Sandbox. Must be created asynchronously.
  */
 public class Browser {
+    // TODO(swestphal): Remove this and its function args and detect which service should be used
+    // based on android version.
+    private static final String BROWSER_PROCESS_MODE =
+            "org.chromium.browserfragment.shell.BrowserProcessMode";
+
     // Use another APK as a placeholder for an actual sandbox, since they are conceptually the
     // same thing.
-    private static final String BROWSER_SANDBOX_PACKAGE = "org.chromium.browserfragment.sandbox";
+    private static final String SANDBOX_BROWSER_SANDBOX_PACKAGE =
+            "org.chromium.browserfragment.sandbox";
 
     private static final String BROWSER_SANDBOX_ACTION =
             "org.chromium.weblayer.intent.action.BROWSERSANDBOX";
+    private static final String BROWSER_INPROCESS_ACTION =
+            "org.chromium.weblayer.intent.action.BROWSERINPROCESS";
 
     private static final String DEFAULT_PROFILE_NAME = "DefaultProfile";
 
     private static Browser sInstance;
+    private static boolean sPendingConnection;
 
+    private ConnectionSetup mConnection;
     private IBrowserSandboxService mBrowserSandboxService;
+
+    private List<BrowserFragment> mActiveFragments = new ArrayList<>();
 
     private static class ConnectionSetup implements ServiceConnection {
         private CallbackToFutureAdapter.Completer<Browser> mCompleter;
@@ -47,7 +64,8 @@ public class Browser {
                 new IBrowserSandboxCallback.Stub() {
                     @Override
                     public void onBrowserProcessInitialized() {
-                        sInstance = new Browser(mBrowserSandboxService);
+                        sInstance = new Browser(ConnectionSetup.this, mBrowserSandboxService);
+                        sPendingConnection = false;
                         mCompleter.set(sInstance);
                         mCompleter = null;
                     }
@@ -69,12 +87,18 @@ public class Browser {
             }
         }
 
+        void unbind() {
+            mContext.unbindService(this);
+            sInstance = null;
+        }
+
         // TODO(rayankans): Actually handle failure / disconnection events.
         @Override
         public void onServiceDisconnected(ComponentName name) {}
     }
 
-    private Browser(IBrowserSandboxService service) {
+    private Browser(ConnectionSetup connection, IBrowserSandboxService service) {
+        mConnection = connection;
         mBrowserSandboxService = service;
     }
 
@@ -88,13 +112,24 @@ public class Browser {
         if (sInstance != null) {
             return Futures.immediateFuture(sInstance);
         }
+        if (sPendingConnection) {
+            return Futures.immediateFailedFuture(
+                    new IllegalStateException("Browser is already being created"));
+        }
+        sPendingConnection = true;
         return CallbackToFutureAdapter.getFuture(completer -> {
-            ConnectionSetup connectionSetup = new ConnectionSetup(context, completer);
+            // Use the application context since the Browser Sandbox might out live the Activity.
+            Context applicationContext = context.getApplicationContext();
 
-            Intent intent = new Intent(BROWSER_SANDBOX_ACTION);
-            intent.setPackage(BROWSER_SANDBOX_PACKAGE);
+            ConnectionSetup connectionSetup = new ConnectionSetup(applicationContext, completer);
+            Intent intent =
+                    new Intent(isInProcessMode(applicationContext) ? BROWSER_INPROCESS_ACTION
+                                                                   : BROWSER_SANDBOX_ACTION);
+            intent.setPackage(isInProcessMode(applicationContext)
+                            ? applicationContext.getPackageName()
+                            : SANDBOX_BROWSER_SANDBOX_PACKAGE);
 
-            context.bindService(intent, connectionSetup, Context.BIND_AUTO_CREATE);
+            applicationContext.bindService(intent, connectionSetup, Context.BIND_AUTO_CREATE);
 
             // Debug string.
             return "Browser Sandbox Future";
@@ -116,6 +151,9 @@ public class Browser {
      */
     @Nullable
     public BrowserFragment createFragment(FragmentParams params) {
+        if (mBrowserSandboxService == null) {
+            throw new IllegalStateException("Browser has been destroyed");
+        }
         try {
             BrowserFragment fragment = new BrowserFragment();
             fragment.initialize(
@@ -130,9 +168,53 @@ public class Browser {
      * Enables or disables DevTools remote debugging.
      */
     public void setRemoteDebuggingEnabled(boolean enabled) {
+        if (mBrowserSandboxService == null) {
+            throw new IllegalStateException("Browser has been destroyed");
+        }
         try {
             mBrowserSandboxService.setRemoteDebuggingEnabled(enabled);
         } catch (RemoteException e) {
         }
+    }
+
+    // TODO(swestphal): Remove this again.
+    static boolean isInProcessMode(Context appContext) {
+        try {
+            Bundle metaData = appContext.getPackageManager()
+                                      .getApplicationInfo(appContext.getPackageName(),
+                                              PackageManager.GET_META_DATA)
+                                      .metaData;
+            if (metaData != null) return metaData.getString(BROWSER_PROCESS_MODE).equals("local");
+        } catch (PackageManager.NameNotFoundException e) {
+        }
+        return false;
+    }
+
+    void addFragment(BrowserFragment fragment) {
+        mActiveFragments.add(fragment);
+    }
+
+    void removeFragment(BrowserFragment fragment) {
+        mActiveFragments.remove(fragment);
+    }
+
+    boolean isShutdown() {
+        return mBrowserSandboxService == null;
+    }
+
+    public void shutdown() {
+        if (isShutdown()) {
+            // Browser was already shut down.
+            return;
+        }
+
+        for (BrowserFragment fragment : mActiveFragments) {
+            // This will detach the fragment, save the state, and remove |fragment| from
+            // |mActiveFragments|.
+            fragment.invalidate();
+        }
+
+        mBrowserSandboxService = null;
+        mConnection.unbind();
     }
 }

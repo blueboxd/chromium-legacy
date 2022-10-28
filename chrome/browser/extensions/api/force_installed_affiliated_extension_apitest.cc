@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -89,7 +89,7 @@ void ForceInstalledAffiliatedExtensionApiTest::SetUpOnMainThread() {
   // Log in user that was created with
   // policy::AffiliationTestHelper::PreLoginUser() in the PRE_ test.
   const base::Value::List& users =
-      g_browser_process->local_state()->GetValueList("LoggedInUsers");
+      g_browser_process->local_state()->GetList("LoggedInUsers");
   if (!users.empty()) {
     policy::AffiliationTestHelper::LoginUser(affiliation_mixin_.account_id());
   }

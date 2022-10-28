@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -190,10 +190,10 @@ UseCounterPageLoadMetricsObserver::GetAllowedUkmFeatures() {
           WebFeature::kTextDetectorDetect,
           WebFeature::kV8SharedArrayBufferConstructedWithoutIsolation,
           WebFeature::kV8HTMLVideoElement_GetVideoPlaybackQuality_Method,
-          WebFeature::kRTCPeerConnectionConstructedWithPlanB,
-          WebFeature::kRTCPeerConnectionConstructedWithUnifiedPlan,
-          WebFeature::kRTCPeerConnectionUsingComplexPlanB,
-          WebFeature::kRTCPeerConnectionUsingComplexUnifiedPlan,
+          WebFeature::kOBSOLETE_RTCPeerConnectionConstructedWithPlanB,
+          WebFeature::kOBSOLETE_RTCPeerConnectionConstructedWithUnifiedPlan,
+          WebFeature::kOBSOLETE_RTCPeerConnectionUsingComplexPlanB,
+          WebFeature::kOBSOLETE_RTCPeerConnectionUsingComplexUnifiedPlan,
           WebFeature::kWebPImage,
           WebFeature::kAVIFImage,
           WebFeature::kGetDisplayMedia,

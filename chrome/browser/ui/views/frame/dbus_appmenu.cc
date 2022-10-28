@@ -1,4 +1,4 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -307,11 +307,11 @@ ui::SimpleMenuModel* DbusAppmenu::BuildStaticMenu(
       continue;
     }
 
-    int string_id = commands->str_id;
+    int command_str_id = commands->str_id;
     if (command_id == IDC_SHOW_BOOKMARK_BAR)
-      menu->AddCheckItemWithStringId(command_id, string_id);
+      menu->AddCheckItemWithStringId(command_id, command_str_id);
     else
-      menu->AddItemWithStringId(command_id, string_id);
+      menu->AddItemWithStringId(command_id, command_str_id);
     if (command_id < kLastChromeCommand)
       RegisterCommandObserver(command_id);
   }

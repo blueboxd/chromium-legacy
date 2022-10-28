@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,7 +7,7 @@
 #include <stdlib.h>
 #include <cinttypes>
 
-#include "base/allocator/allocator_shim.h"
+#include "base/allocator/partition_allocator/shim/allocator_shim.h"
 #include "base/debug/alias.h"
 #include "base/memory/raw_ptr.h"
 #include "base/rand_util.h"
@@ -26,7 +26,7 @@ class SamplingHeapProfilerTest : public ::testing::Test {
  public:
   void SetUp() override {
 #if BUILDFLAG(IS_APPLE)
-    allocator::InitializeAllocatorShim();
+    allocator_shim::InitializeAllocatorShim();
 #endif
     SamplingHeapProfiler::Init();
 

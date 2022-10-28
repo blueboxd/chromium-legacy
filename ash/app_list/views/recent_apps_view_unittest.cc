@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -83,7 +83,11 @@ class RecentAppsViewTest : public AshTestBase,
   }
 
   void AddAppListItem(AppListModel* model, const std::string& id) {
-    model->AddItem(std::make_unique<AppListItem>(id));
+    AppListItem* item = model->AddItem(std::make_unique<AppListItem>(id));
+
+    // Give each item a name so that the accessibility paint checks pass.
+    // (Focusable items should have accessible names.)
+    model->SetItemName(item, item->id());
   }
 
   void AddAppListItem(const std::string& id) {

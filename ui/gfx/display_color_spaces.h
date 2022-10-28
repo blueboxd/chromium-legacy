@@ -8,7 +8,9 @@
 #include <string>
 #include <vector>
 
+#include "skia/ext/skcolorspace_primaries.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
+#include "third_party/skia/include/core/SkColorSpace.h"
 #include "ui/gfx/buffer_types.h"
 #include "ui/gfx/color_space.h"
 #include "ui/gfx/color_space_export.h"
@@ -114,6 +116,7 @@ class COLOR_SPACE_EXPORT DisplayColorSpaces {
 
   // Return the primaries that define the color gamut of the display.
   SkColorSpacePrimaries GetPrimaries() const;
+  void SetPrimaries(const SkColorSpacePrimaries& primaries);
 
   // Output as a vector of strings. This is a helper function for printing in
   // about:gpu. All output vectors will be the same length. Each entry will be
@@ -133,6 +136,7 @@ class COLOR_SPACE_EXPORT DisplayColorSpaces {
 
   gfx::ColorSpace color_spaces_[kConfigCount];
   gfx::BufferFormat buffer_formats_[kConfigCount];
+  SkColorSpacePrimaries primaries_ = skia::kSkColorSpacePrimariesSRGB;
   float sdr_max_luminance_nits_ = ColorSpace::kDefaultSDRWhiteLevel;
   float hdr_max_luminance_relative_ = 1.f;
 };

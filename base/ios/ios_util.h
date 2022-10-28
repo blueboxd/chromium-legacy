@@ -1,4 +1,4 @@
-// Copyright 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -57,10 +57,6 @@ BASE_EXPORT bool IsMultipleScenesSupported();
 // iOS 15 introduced pre-warming, which launches and then pauses the app, to
 // speed up actual launch time.
 BASE_EXPORT bool IsApplicationPreWarmed();
-
-// The iPhone 14 Pro and Pro Max introduced a dynamic island. This should only
-// be called when working around UIKit bugs.
-BASE_EXPORT bool HasDynamicIsland();
 
 }  // namespace ios
 }  // namespace base

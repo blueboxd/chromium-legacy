@@ -1,14 +1,14 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #import "ios/chrome/browser/web_state_list/web_state_list_serialization.h"
 
-#include <memory>
+#import <memory>
 
-#include "base/bind.h"
-#include "base/test/scoped_feature_list.h"
-#include "ios/chrome/browser/sessions/session_features.h"
+#import "base/bind.h"
+#import "base/test/scoped_feature_list.h"
+#import "ios/chrome/browser/sessions/session_features.h"
 #import "ios/chrome/browser/sessions/session_window_ios.h"
 #import "ios/chrome/browser/web_state_list/fake_web_state_list_delegate.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
@@ -16,8 +16,8 @@
 #import "ios/web/public/session/crw_session_storage.h"
 #import "ios/web/public/session/serializable_user_data_manager.h"
 #import "ios/web/public/test/fakes/fake_web_state.h"
-#include "testing/gtest/include/gtest/gtest.h"
-#include "testing/platform_test.h"
+#import "testing/gtest/include/gtest/gtest.h"
+#import "testing/platform_test.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -49,9 +49,9 @@ std::unique_ptr<web::WebState> CreateWebStateWithSessionStorage(
   return web_state;
 }
 
-// Compares whether both WebStateList |original| and |restored| have the same
-// opener-opened relationship. The |restored| WebStateList may have additional
-// WebState, so only indices from |restored_index| to |count()| are compared.
+// Compares whether both WebStateList `original` and `restored` have the same
+// opener-opened relationship. The `restored` WebStateList may have additional
+// WebState, so only indices from `restored_index` to `count()` are compared.
 void ExpectRelationshipIdenticalFrom(int restored_index,
                                      WebStateList* original,
                                      WebStateList* restored) {

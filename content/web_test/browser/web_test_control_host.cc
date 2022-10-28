@@ -8,7 +8,6 @@
 #include <stddef.h>
 #include <string.h>
 
-#include <algorithm>
 #include <iostream>
 #include <memory>
 #include <queue>
@@ -27,6 +26,7 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/path_service.h"
+#include "base/ranges/algorithm.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -127,7 +127,7 @@ std::string DumpFrameState(const blink::ExplodedFrameState& frame_state,
     result.append(indent, ' ');
   }
 
-  std::string url = web_test_string_util::NormalizeWebTestURL(
+  std::string url = web_test_string_util::NormalizeWebTestURLForTextOutput(
       base::UTF16ToUTF8(frame_state.url_string.value_or(std::u16string())));
   result.append(url);
   if (frame_state.target && !frame_state.target->empty()) {
@@ -250,7 +250,6 @@ void ApplyWebTestDefaultPreferences(blink::web_pref::WebPreferences* prefs) {
   prefs->allow_universal_access_from_file_urls = false;
   prefs->dom_paste_enabled = true;
   prefs->javascript_can_access_clipboard = true;
-  prefs->xslt_enabled = true;
   prefs->tabs_to_links = false;
   prefs->hyperlink_auditing_enabled = false;
   prefs->allow_running_insecure_content = false;
@@ -460,10 +459,10 @@ class WebTestControlHost::WebTestWindowObserver : WebContentsObserver {
     // have a set of RenderFrames already, and we need to notify about them
     // here.
     web_contents->ForEachRenderFrameHost(
-        base::BindLambdaForTesting([&](RenderFrameHost* render_frame_host) {
+        [&](RenderFrameHost* render_frame_host) {
           if (render_frame_host->IsRenderFrameLive())
             RenderFrameCreated(render_frame_host);
-        }));
+        });
   }
 
  private:
@@ -533,6 +532,7 @@ bool WebTestControlHost::PrepareForWebTest(const TestInfo& test_info) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   current_working_directory_ = test_info.current_working_directory;
   expected_pixel_hash_ = test_info.expected_pixel_hash;
+  wpt_print_mode_ = test_info.wpt_print_mode;
   bool is_devtools_js_test = false;
   test_url_ = WebTestDevToolsBindings::MapTestURLIfNeeded(test_info.url,
                                                           &is_devtools_js_test);
@@ -803,7 +803,7 @@ void WebTestControlHost::InitiateCaptureDump(
     DCHECK_EQ(0, waiting_for_layout_dumps_);
 
     main_window_->web_contents()->GetPrimaryMainFrame()->ForEachRenderFrameHost(
-        base::BindLambdaForTesting([&](RenderFrameHost* render_frame_host) {
+        [&](RenderFrameHost* render_frame_host) {
           if (!render_frame_host->IsRenderFrameLive())
             return;
 
@@ -813,7 +813,7 @@ void WebTestControlHost::InitiateCaptureDump(
                   base::BindOnce(&WebTestControlHost::OnDumpFrameLayoutResponse,
                                  weak_factory_.GetWeakPtr(),
                                  render_frame_host->GetFrameTreeNodeId()));
-        }));
+        });
   }
 
   if (capture_pixels) {
@@ -933,20 +933,18 @@ WebTestControlHost::Node* WebTestControlHost::BuildFrameTree(
     WebContents* web_contents) {
   // Returns a Node for a given RenderFrameHost, or nullptr if doesn't exist.
   auto node_for_frame = [this](RenderFrameHost* rfh) {
-    auto it = std::find_if(
-        composite_all_frames_node_storage_.begin(),
-        composite_all_frames_node_storage_.end(),
-        [rfh](auto& node) { return node->render_frame_host == rfh; });
+    auto it = base::ranges::find(composite_all_frames_node_storage_, rfh,
+                                 &Node::render_frame_host);
     return it == composite_all_frames_node_storage_.end() ? nullptr : it->get();
   };
 
   //  Collect all live frames in web_contents.
   std::vector<RenderFrameHost*> frames;
   web_contents->GetPrimaryMainFrame()->ForEachRenderFrameHost(
-      base::BindLambdaForTesting([&](RenderFrameHost* render_frame_host) {
+      [&](RenderFrameHost* render_frame_host) {
         if (render_frame_host->IsRenderFrameLive())
           frames.push_back(render_frame_host);
-      }));
+      });
 
   // Add all of the frames to storage.
   for (auto* frame : frames) {
@@ -1204,6 +1202,7 @@ void WebTestControlHost::HandleNewRenderFrameHost(RenderFrameHost* frame) {
         base::CommandLine::ForCurrentProcess()->HasSwitch(
             switches::kAllowExternalPages);
     params->expected_pixel_hash = expected_pixel_hash_;
+    params->wpt_print_mode = wpt_print_mode_;
     params->protocol_mode = protocol_mode_;
 
     GetWebTestRenderFrameRemote(frame)->SetTestConfiguration(std::move(params),
@@ -1277,13 +1276,13 @@ void WebTestControlHost::OnDumpFrameLayoutResponse(int frame_tree_node_id,
   // Stitch the frame-specific results in the right order.
   std::string stitched_layout_dump;
   web_contents()->GetPrimaryMainFrame()->ForEachRenderFrameHost(
-      base::BindLambdaForTesting([&](RenderFrameHost* render_frame_host) {
+      [&](RenderFrameHost* render_frame_host) {
         auto it = frame_to_layout_dump_map_.find(
             render_frame_host->GetFrameTreeNodeId());
         if (it != frame_to_layout_dump_map_.end()) {
           stitched_layout_dump.append(it->second);
         }
-      }));
+      });
 
   layout_dump_.emplace(std::move(stitched_layout_dump));
   ReportResults();

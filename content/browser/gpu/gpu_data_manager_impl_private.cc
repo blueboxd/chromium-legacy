@@ -34,7 +34,6 @@
 #include "base/task/bind_post_task.h"
 #include "base/trace_event/trace_event.h"
 #include "base/version.h"
-#include "build/build_config.h"
 #include "build/chromecast_buildflags.h"
 #include "build/chromeos_buildflags.h"
 #include "cc/base/switches.h"
@@ -1354,7 +1353,7 @@ void GpuDataManagerImplPrivate::UpdateGpuPreferences(
             gfx::BufferUsage::GPU_READ_CPU_READ_WRITE);
   }
 
-  gpu_preferences->gpu_program_cache_size = gpu::GpuDiskCache::CacheSizeBytes();
+  gpu_preferences->gpu_program_cache_size = gpu::GetDefaultGpuDiskCacheSize();
 
   gpu_preferences->texture_target_exception_list =
       gpu::CreateBufferUsageAndFormatExceptionList();

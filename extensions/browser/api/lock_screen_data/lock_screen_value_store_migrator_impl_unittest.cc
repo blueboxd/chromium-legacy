@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -265,9 +265,8 @@ class LockScreenValueStoreMigratorImplTest : public testing::Test {
     }
 
     std::set<std::string> items;
-    for (base::DictionaryValue::Iterator iter(*items_value); !iter.IsAtEnd();
-         iter.Advance()) {
-      items.insert(iter.key());
+    for (const auto item : items_value->GetDict()) {
+      items.insert(item.first);
     }
     return items;
   }

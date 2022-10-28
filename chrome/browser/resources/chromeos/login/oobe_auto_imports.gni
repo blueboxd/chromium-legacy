@@ -1,4 +1,4 @@
-# Copyright 2021 The Chromium Authors. All rights reserved.
+# Copyright 2021 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -64,7 +64,7 @@ oobe_auto_imports = [
   "chrome/browser/resources/chromeos/login/keyboard_utils.html|keyboard",
   "chrome/browser/resources/chromeos/login/login_ui_tools.html|addSubmitListener",
   "chrome/browser/resources/gaia_auth_host/authenticator.html|Authenticator,AuthFlow,AuthMode,AuthParams,SUPPORTED_PARAMS",
-  "ui/webui/resources/cr_components/chromeos/multidevice_setup/multidevice_setup_delegate.html|MultiDeviceSetupDelegate",
+  "ash/webui/common/resources/multidevice_setup/multidevice_setup_delegate.html|MultiDeviceSetupDelegate",
   "ui/webui/resources/cr_components/chromeos/network/mojo_interface_provider.html|MojoInterfaceProviderImpl",
   "ui/webui/resources/cr_components/chromeos/network/network_list_types.html|NetworkList",
   "ui/webui/resources/cr_components/chromeos/network/onc_mojo.html|OncMojo",
@@ -92,16 +92,46 @@ oobe_namespace_rewrites = [
 ]
 
 oobe_migrated_imports = [
+  "ui/webui/resources/cr_components/chromeos/bluetooth/bluetooth_pairing_enter_code_page.html",
+  "ash/webui/common/resources/multidevice_setup/button_bar.html",
+  "ash/webui/common/resources/multidevice_setup/fake_mojo_service.html",
+  "ash/webui/common/resources/multidevice_setup/mojo_api.html",
+  "ash/webui/common/resources/multidevice_setup/multidevice_setup.html",
+  "ash/webui/common/resources/multidevice_setup/multidevice_setup_browser_proxy.html",
+  "ash/webui/common/resources/multidevice_setup/multidevice_setup_delegate.html",
+  "ash/webui/common/resources/multidevice_setup/multidevice_setup_shared.css.html",
+  "ash/webui/common/resources/multidevice_setup/password_page.html",
+  "ash/webui/common/resources/multidevice_setup/setup_succeeded_page.html",
+  "ash/webui/common/resources/multidevice_setup/start_setup_page.html",
+  "ash/webui/common/resources/multidevice_setup/ui_page.html",
+  "ash/webui/common/resources/multidevice_setup/ui_page_container_behavior.html",
+  "ui/webui/resources/cr_components/chromeos/network/mojo_interface_provider.html",
+  "ui/webui/resources/cr_components/chromeos/network/network_list.html",
+  "ui/webui/resources/cr_components/chromeos/network/network_list_types.html",
+  "ui/webui/resources/cr_components/chromeos/network/network_select.html",
+  "ui/webui/resources/cr_components/chromeos/network/onc_mojo.html",
+  "ui/webui/resources/cr_components/chromeos/quick_unlock/lock_screen_constants.html",
+  "ui/webui/resources/cr_components/chromeos/quick_unlock/pin_keyboard.html",
+  "ui/webui/resources/cr_components/chromeos/quick_unlock/setup_pin_keyboard.html",
+  "ui/webui/resources/cr_elements/action_link.css.html",
   "ui/webui/resources/cr_elements/cr_button/cr_button.html",
   "ui/webui/resources/cr_elements/cr_checkbox/cr_checkbox.html",
   "ui/webui/resources/cr_elements/cr_dialog/cr_dialog.html",
   "ui/webui/resources/cr_elements/cr_expand_button/cr_expand_button.html",
-  "ui/webui/resources/cr_elements/cr_fingerprint/cr_fingerprint_icon.html",
   "ui/webui/resources/cr_elements/cr_fingerprint/cr_fingerprint_progress_arc.html",
   "ui/webui/resources/cr_elements/cr_icon_button/cr_icon_button.html",
+  "ui/webui/resources/cr_elements/cr_icons.css.html",
   "ui/webui/resources/cr_elements/cr_input/cr_input.html",
   "ui/webui/resources/cr_elements/cr_lazy_render/cr_lazy_render.html",
+  "ui/webui/resources/cr_elements/cr_lottie/cr_lottie.html",
   "ui/webui/resources/cr_elements/cr_radio_button/cr_card_radio_button.html",
   "ui/webui/resources/cr_elements/cr_radio_group/cr_radio_group.html",
+  "ui/webui/resources/cr_elements/cr_scrollable_behavior.html",
+  "ui/webui/resources/cr_elements/cr_shared_style.css.html",
+  "ui/webui/resources/cr_elements/cr_shared_vars.css.html",
   "ui/webui/resources/cr_elements/cr_toggle/cr_toggle.html",
+  "ui/webui/resources/cr_elements/md_select.css.html",
+  "ui/webui/resources/cr_elements/i18n_behavior.html",
+  "ui/webui/resources/cr_elements/web_ui_listener_behavior.html",
+  "ui/webui/resources/html/parse_html_subset.html",
 ]

@@ -1,4 +1,4 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -156,8 +156,7 @@ void ChannelPosix::ShutDownImpl() {
 void ChannelPosix::Write(MessagePtr message) {
   bool log_histograms = true;
 #if !defined(MOJO_CORE_SHARED_LIBRARY)
-  static base::CpuReductionExperimentFilter filter;
-  log_histograms = filter.ShouldLogHistograms();
+  log_histograms = base::ShouldLogHistogramForCpuReductionExperiment();
 #endif
   if (log_histograms) {
     UMA_HISTOGRAM_COUNTS_100000("Mojo.Channel.WriteMessageSize",

@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -122,6 +122,11 @@ void ApplyStyle(views::Label* label, LabelStyle style) {
     case LabelStyle::kHeader:
       text_color = AshColorProvider::ContentLayerType::kTextColorPrimary;
       label->SetFontList(gfx::FontList({"Roboto"}, gfx::Font::NORMAL, 16,
+                                       gfx::Font::Weight::MEDIUM));
+      break;
+    case LabelStyle::kSubheader:
+      text_color = AshColorProvider::ContentLayerType::kTextColorSecondary;
+      label->SetFontList(gfx::FontList({"Roboto"}, gfx::Font::NORMAL, 13,
                                        gfx::Font::Weight::MEDIUM));
       break;
     case LabelStyle::kSubtitle:

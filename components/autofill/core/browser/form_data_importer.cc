@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -16,7 +16,6 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/containers/contains.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
@@ -166,7 +165,7 @@ FormDataImporter::FormDataImporter(AutofillClient* client,
 FormDataImporter::~FormDataImporter() {
   if (personal_data_manager_)
     personal_data_manager_->RemoveObserver(this);
-};
+}
 
 void FormDataImporter::ImportFormData(const FormStructure& submitted_form,
                                       bool profile_autofill_enabled,
@@ -213,72 +212,12 @@ CreditCard FormDataImporter::ExtractCreditCardFromForm(
   return ExtractCreditCardFromForm(form, &has_duplicate_field_type);
 }
 
-// static
-bool FormDataImporter::IsValidLearnableProfile(
-    const AutofillProfile& profile,
-    const std::string& predicted_country_code,
-    const std::string& app_locale,
-    LogBuffer* import_log_buffer) {
-  // Check that the email address is valid if it is supplied.
-  bool is_email_invalid = false;
-  std::u16string email = profile.GetRawInfo(EMAIL_ADDRESS);
-  if (!email.empty() && !IsValidEmailAddress(email)) {
-    LOG_AF(import_log_buffer) << LogMessage::kImportAddressProfileFromFormFailed
-                              << "Invalid email address." << CTag{};
-    is_email_invalid = true;
-  }
-
-  // Reject profiles with an invalid |HOME_ADDRESS_STATE| entry.
-  bool is_state_invalid = false;
-  if (profile.IsPresentButInvalid(ADDRESS_HOME_STATE)) {
-    LOG_AF(import_log_buffer)
-        << LogMessage::kImportAddressProfileFromFormFailed
-        << "Invalid state as of AutofillProfile::IsPresentButInvalid()."
-        << CTag{};
-    is_state_invalid = true;
-  }
-
-  // Reject profiles with an invalid |HOME_ADDRESS_ZIP| entry.
-  bool is_zip_invalid = false;
-  if (profile.IsPresentButInvalid(ADDRESS_HOME_ZIP)) {
-    LOG_AF(import_log_buffer)
-        << LogMessage::kImportAddressProfileFromFormFailed
-        << "Invalid ZIP as of AutofillProfile::IsPresentButInvalid()."
-        << CTag{};
-    is_zip_invalid = true;
-  }
-
-  // Collect metrics.
-  AutofillMetrics::LogAddressFormImportRequirementMetric(
-      is_email_invalid
-          ? AddressImportRequirement::EMAIL_VALID_REQUIREMENT_VIOLATED
-          : AddressImportRequirement::EMAIL_VALID_REQUIREMENT_FULFILLED);
-
-  AutofillMetrics::LogAddressFormImportRequirementMetric(
-      is_state_invalid
-          ? AddressImportRequirement::STATE_VALID_REQUIREMENT_VIOLATED
-          : AddressImportRequirement::STATE_VALID_REQUIREMENT_FULFILLED);
-
-  AutofillMetrics::LogAddressFormImportRequirementMetric(
-      is_zip_invalid
-          ? AddressImportRequirement::ZIP_VALID_REQUIREMENT_VIOLATED
-          : AddressImportRequirement::ZIP_VALID_REQUIREMENT_FULFILLED);
-
-  // Return true if none of the requirements is violated.
-  return !(is_email_invalid || is_state_invalid || is_zip_invalid);
-}
-
 bool FormDataImporter::ComplementCountry(
     AutofillProfile& profile,
     const std::string& predicted_country_code) {
-  // TODO(crbug.com/1297032): Cleanup `kAutofillComplementCountryCodeOnImport`
-  // check when launched.
   bool should_complement_country =
       !profile.HasRawInfo(ADDRESS_HOME_COUNTRY) &&
-      base::FeatureList::IsEnabled(
-          features::kAutofillAddressProfileSavePrompt) &&
-      base::FeatureList::IsEnabled(
-          features::kAutofillComplementCountryCodeOnImport);
+      base::FeatureList::IsEnabled(features::kAutofillAddressProfileSavePrompt);
   return should_complement_country &&
          profile.SetInfoWithVerificationStatus(
              AutofillType(ADDRESS_HOME_COUNTRY),
@@ -331,18 +270,14 @@ bool FormDataImporter::SetPhoneNumber(
 }
 
 void FormDataImporter::RemoveInaccessibleProfileValues(
-    AutofillProfile& profile,
-    const std::string& predicted_country_code) {
-  if (base::FeatureList::IsEnabled(
-          features::kAutofillRemoveInaccessibleProfileValues)) {
-    const ServerFieldTypeSet inaccessible_fields =
-        profile.FindInaccessibleProfileValues(predicted_country_code);
-    profile.ClearFields(inaccessible_fields);
-    AutofillMetrics::LogRemovedSettingInaccessibleFields(
-        !inaccessible_fields.empty());
-    for (const ServerFieldType inaccessible_field : inaccessible_fields) {
-      AutofillMetrics::LogRemovedSettingInaccessibleField(inaccessible_field);
-    }
+    AutofillProfile& profile) {
+  const ServerFieldTypeSet inaccessible_fields =
+      profile.FindInaccessibleProfileValues();
+  profile.ClearFields(inaccessible_fields);
+  AutofillMetrics::LogRemovedSettingInaccessibleFields(
+      !inaccessible_fields.empty());
+  for (const ServerFieldType inaccessible_field : inaccessible_fields) {
+    AutofillMetrics::LogRemovedSettingInaccessibleField(inaccessible_field);
   }
 }
 
@@ -364,12 +299,12 @@ bool FormDataImporter::ImportFormData(
     std::vector<AddressProfileImportCandidate>&
         address_profile_import_candidates,
     absl::optional<std::string>* imported_upi_id) {
-  // We try the same |form| for both credit card and address import/update.
-  // - ImportCreditCard may update an existing card, or fill
-  //   |imported_credit_card| with an extracted card. See .h for details of
-  //   |should_return_local_card|.
-  // Reset |imported_credit_card_record_type_| every time we import data from
-  // form no matter whether ImportCreditCard() is called or not.
+  // We try the same `form` for both credit card and address import/update.
+  // - `ImportCreditCard()` may update an existing card, or fill
+  //   `imported_credit_card` with an extracted card. See .h for details of
+  //   `should_return_local_card`.
+  // Reset `imported_credit_card_record_type_` every time we import data from
+  // form no matter whether `ImportCreditCard()` is called or not.
   imported_credit_card_record_type_ = ImportedCreditCardRecordType::NO_CARD;
   bool cc_import = false;
   if (credit_card_autofill_enabled) {
@@ -377,25 +312,46 @@ bool FormDataImporter::ImportFormData(
                                  imported_credit_card);
     *imported_upi_id = ImportUpiId(submitted_form);
   }
-  // - ImportAddressProfiles may eventually save or update one or more address
-  //   profiles.
-  bool address_import = false;
+  // - `ImportAddressProfiles()` collects all importable profiles, but currently
+  //   at most one import prompt is shown.
+  size_t num_complete_address_profiles = 0;
 
   // Only import addresses if enabled.
   if (profile_autofill_enabled &&
       !base::FeatureList::IsEnabled(features::kAutofillDisableAddressImport)) {
-    address_import = ImportAddressProfiles(submitted_form,
-                                           address_profile_import_candidates);
+    num_complete_address_profiles = ImportAddressProfiles(
+        submitted_form, address_profile_import_candidates);
   }
 
-  if (cc_import || address_import || imported_upi_id->has_value())
+  if (base::FeatureList::IsEnabled(features::kAutofillAssociateForms)) {
+    auto origin = url::Origin::Create(submitted_form.source_url());
+    FormSignature form_signature = submitted_form.form_signature();
+    // If multiple complete address profiles were extracted, this most likely
+    // corresponds to billing and shipping sections within the same form.
+    for (size_t i = 0; i < num_complete_address_profiles; i++) {
+      form_associator_.TrackFormAssociations(
+          origin, form_signature, FormAssociator::FormType::kAddressForm);
+    }
+    // Checking for `cc_import` doesn't suffice. The variable won't be true when
+    // the form contains a known server card, but this server card does not have
+    // a corresponding local card.
+    if (credit_card_autofill_enabled && imported_credit_card &&
+        *imported_credit_card) {
+      form_associator_.TrackFormAssociations(
+          origin, form_signature, FormAssociator::FormType::kCreditCardForm);
+    }
+  }
+
+  if (cc_import || num_complete_address_profiles > 0 ||
+      imported_upi_id->has_value()) {
     return true;
+  }
 
   personal_data_manager_->MarkObserversInsufficientFormDataForImport();
   return false;
 }
 
-bool FormDataImporter::ImportAddressProfiles(
+size_t FormDataImporter::ImportAddressProfiles(
     const FormStructure& form,
     std::vector<AddressProfileImportCandidate>& import_candidates) {
   // Create a buffer to collect logging output for the autofill-internals.
@@ -466,7 +422,7 @@ bool FormDataImporter::ImportAddressProfiles(
   // Write log buffer to autofill-internals.
   LOG_AF(log_manager) << std::move(import_log_buffer);
 
-  return num_complete_profiles > 0;
+  return num_complete_profiles;
 }
 
 bool FormDataImporter::ImportAddressProfileForSection(
@@ -519,14 +475,8 @@ bool FormDataImporter::ImportAddressProfileForSection(
     base::TrimWhitespace(field->value, base::TRIM_ALL, &value);
 
     // If we don't know the type of the field, or the user hasn't entered any
-    // information into the field, or the field is non-focusable (hidden), then
-    // skip it.
-    // TODO(crbug.com/1101280): Remove |skip_unfocussable_field|
-    bool skip_unfocussable_field =
-        !field->is_focusable &&
-        !base::FeatureList::IsEnabled(
-            features::kAutofillProfileImportFromUnfocusableFields);
-    if (!field->IsFieldFillable() || skip_unfocussable_field || value.empty())
+    // information into the field, then skip it.
+    if (!field->IsFieldFillable() || value.empty())
       continue;
 
     AutofillType field_type = field->Type();
@@ -607,10 +557,18 @@ bool FormDataImporter::ImportAddressProfileForSection(
       }
       // Check if the country code was still not determined correctly.
       if (!candidate_profile.HasRawInfo(ADDRESS_HOME_COUNTRY)) {
-        LOG_AF(import_log_buffer)
-            << LogMessage::kImportAddressProfileFromFormFailed
-            << "Missing country." << CTag{};
         has_invalid_country = true;
+        // If AutofillIgnoreInvalidCountryOnImport is enable, we cannot just
+        // set `has_invalid_country` to false, because the flag is used to
+        // collect metrics further down.
+        import_metadata.did_ignore_invalid_country =
+            base::FeatureList::IsEnabled(
+                features::kAutofillIgnoreInvalidCountryOnImport);
+        if (!import_metadata.did_ignore_invalid_country) {
+          LOG_AF(import_log_buffer)
+              << LogMessage::kImportAddressProfileFromFormFailed
+              << "Missing country." << CTag{};
+        }
       }
     }
   }
@@ -627,6 +585,9 @@ bool FormDataImporter::ImportAddressProfileForSection(
             features::kAutofillRemoveInvalidPhoneNumberOnImport)) {
       candidate_profile.ClearFields({PHONE_HOME_WHOLE_NUMBER});
       import_metadata.did_remove_invalid_phone_number = true;
+      LOG_AF(import_log_buffer)
+          << LogMessage::kImportAddressProfileFromFormRemoveInvalidValue
+          << "Phone number." << CTag{};
     } else {
       has_invalid_phone_number = true;
       LOG_AF(import_log_buffer)
@@ -641,12 +602,12 @@ bool FormDataImporter::ImportAddressProfileForSection(
   bool finalized_import = candidate_profile.FinalizeAfterImport();
 
   // Reject the profile if the validation requirements are not met.
-  // |IsValidLearnableProfile()| goes first to collect metrics.
+  // `IsValidLearnableProfile()` goes first to collect metrics.
   bool has_invalid_information =
-      !IsValidLearnableProfile(candidate_profile, predicted_country_code,
-                               app_locale_, import_log_buffer) ||
+      !IsValidLearnableProfile(candidate_profile, import_log_buffer) ||
       has_multiple_distinct_email_addresses || has_invalid_field_types ||
-      has_invalid_country || has_invalid_phone_number;
+      (has_invalid_country && !import_metadata.did_ignore_invalid_country) ||
+      has_invalid_phone_number;
 
   // Profiles with valid information qualify for multi-step imports.
   // This requires the profile to be finalized to apply the merging logic.
@@ -666,10 +627,12 @@ bool FormDataImporter::ImportAddressProfileForSection(
   // For multi-step imports, |did_complement_country| might be set twice, but as
   // the metric is only logged if it wasn't present before, this is fine.
   import_metadata.did_complement_country =
-      !has_invalid_country &&
+      (!has_invalid_country || import_metadata.did_ignore_invalid_country) &&
       ComplementCountry(candidate_profile, predicted_country_code);
 
-  RemoveInaccessibleProfileValues(candidate_profile, predicted_country_code);
+  // This relies on the profile's country code and must be done strictly after
+  // `ComplementCountry()`.
+  RemoveInaccessibleProfileValues(candidate_profile);
 
   // Do not import a profile if any of the requirements is violated.
   // |IsMinimumAddress()| goes first to collect metrics.
@@ -1084,19 +1047,8 @@ bool FormDataImporter::ShouldOfferUploadCardOrLocalCardSave(
 
 void FormDataImporter::OnBrowsingHistoryCleared(
     const history::DeletionInfo& deletion_info) {
-  // Delete all multi-step import candidates when:
-  // - The entire browsing history is cleared, or
-  // - At least one URL from the same origin as `multistep_importer_`
-  //   is deleted.
-  if (deletion_info.IsAllHistory() ||
-      (multistep_importer_.Origin() &&
-       base::Contains(deletion_info.deleted_rows(),
-                      *multistep_importer_.Origin(),
-                      [](const history::URLRow& url_row) {
-                        return url::Origin::Create(url_row.url());
-                      }))) {
-    ClearMultiStepImportCandidates();
-  }
+  multistep_importer_.OnBrowsingHistoryCleared(deletion_info);
+  form_associator_.OnBrowsingHistoryCleared(deletion_info);
 }
 
 }  // namespace autofill

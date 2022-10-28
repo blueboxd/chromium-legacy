@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,6 +12,7 @@
 #include "base/notreached.h"
 #include "base/scoped_observation.h"
 #include "base/strings/strcat.h"
+#include "base/types/optional_util.h"
 #include "components/back_forward_cache/back_forward_cache_disable.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/navigation_handle.h"
@@ -154,20 +155,16 @@ ExtensionMessagePort::ExtensionMessagePort(
     // prerender so make sure `include_child_frames` is only provided for
     // primary main frames.
     CHECK(rfh->IsInPrimaryMainFrame());
-    rfh->ForEachRenderFrameHost(base::BindRepeating(
-        [](content::WebContents* tab_web_contents,
-           ExtensionMessagePort* message_port, content::RenderFrameHost* rfh) {
-          // RegisterFrame should only be called for frames associated with
-          // `tab` and not any inner WebContents.
-          if (content::WebContents::FromRenderFrameHost(rfh) !=
-              tab_web_contents) {
-            return content::RenderFrameHost::FrameIterationAction::
-                kSkipChildren;
-          }
-          message_port->RegisterFrame(rfh);
-          return content::RenderFrameHost::FrameIterationAction::kContinue;
-        },
-        base::Unretained(tab), base::Unretained(this)));
+    rfh->ForEachRenderFrameHostWithAction([tab, this](
+                                              content::RenderFrameHost* rfh) {
+      // RegisterFrame should only be called for frames associated with
+      // `tab` and not any inner WebContents.
+      if (content::WebContents::FromRenderFrameHost(rfh) != tab) {
+        return content::RenderFrameHost::FrameIterationAction::kSkipChildren;
+      }
+      RegisterFrame(rfh);
+      return content::RenderFrameHost::FrameIterationAction::kContinue;
+    });
   } else {
     RegisterFrame(rfh);
   }
@@ -288,7 +285,7 @@ void ExtensionMessagePort::RevalidatePort() {
 
 void ExtensionMessagePort::DispatchOnConnect(
     const std::string& channel_name,
-    std::unique_ptr<base::DictionaryValue> source_tab,
+    absl::optional<base::Value::Dict> source_tab,
     const ExtensionApiFrameIdMap::FrameData& source_frame,
     int guest_process_id,
     int guest_render_frame_routing_id,
@@ -299,9 +296,9 @@ void ExtensionMessagePort::DispatchOnConnect(
   SendToPort(base::BindRepeating(
       &ExtensionMessagePort::BuildDispatchOnConnectIPC,
       // Called synchronously.
-      base::Unretained(this), channel_name, source_tab.get(), source_frame,
-      guest_process_id, guest_render_frame_routing_id, source_endpoint,
-      target_extension_id, source_url, source_origin));
+      base::Unretained(this), channel_name, base::OptionalToPtr(source_tab),
+      source_frame, guest_process_id, guest_render_frame_routing_id,
+      source_endpoint, target_extension_id, source_url, source_origin));
 }
 
 void ExtensionMessagePort::DispatchOnDisconnect(
@@ -522,7 +519,7 @@ void ExtensionMessagePort::SendToIPCTarget(const IPCTarget& target,
 
 std::unique_ptr<IPC::Message> ExtensionMessagePort::BuildDispatchOnConnectIPC(
     const std::string& channel_name,
-    const base::DictionaryValue* source_tab,
+    const base::Value::Dict* source_tab,
     const ExtensionApiFrameIdMap::FrameData& source_frame,
     int guest_process_id,
     int guest_render_frame_routing_id,
@@ -536,12 +533,7 @@ std::unique_ptr<IPC::Message> ExtensionMessagePort::BuildDispatchOnConnectIPC(
   // Source document ID should exist if and only if there is a source tab.
   DCHECK_EQ(!!source_tab, !!source_frame.document_id);
   if (source_tab) {
-    std::unique_ptr<base::Value> source_tab_value =
-        base::Value::ToUniquePtrValue(source_tab->Clone());
-    // TODO(lazyboy): Make ExtensionMsg_TabConnectionInfo.tab a base::Value and
-    // remove this cast.
-    source.tab.Swap(
-        static_cast<base::DictionaryValue*>(source_tab_value.get()));
+    source.tab = source_tab->Clone();
     source.document_id = source_frame.document_id.ToString();
     source.document_lifecycle = ToString(source_frame.document_lifecycle);
   }

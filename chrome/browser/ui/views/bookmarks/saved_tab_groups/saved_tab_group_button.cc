@@ -1,4 +1,4 @@
-// Copyright (c) 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -76,7 +76,8 @@ SavedTabGroupButton::SavedTabGroupButton(
   ConfigureInkDropForToolbar(this);
   SetImageLabelSpacing(ChromeLayoutProvider::Get()->GetDistanceMetric(
       ChromeDistanceMetric::DISTANCE_RELATED_LABEL_HORIZONTAL_LIST));
-  views::InstallPillHighlightPathGenerator(this);
+  views::InstallRoundRectHighlightPathGenerator(this, GetInsets(),
+                                                kBorderRadius);
 
   show_animation_ = std::make_unique<gfx::SlideAnimation>(this);
   if (!animations_enabled) {

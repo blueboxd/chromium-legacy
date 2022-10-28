@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -54,14 +54,13 @@ class GuestViewManager : public content::BrowserPluginGuestManager,
   // (non-test) environment.
   static void set_factory_for_testing(GuestViewManagerFactory* factory);
 
-  // Returns the guest WebContents associated with the given |guest_instance_id|
+  // Returns the guest associated with the given |guest_instance_id|
   // if the provided |embedder_render_process_id| is allowed to access it.
   // If the embedder is not allowed access, the embedder will be killed, and
-  // this method will return NULL. If no WebContents exists with the given
+  // this method will return NULL. If no guest exists with the given
   // instance ID, then NULL will also be returned.
-  content::WebContents* GetGuestByInstanceIDSafely(
-      int guest_instance_id,
-      int embedder_render_process_id);
+  GuestViewBase* GetGuestByInstanceIDSafely(int guest_instance_id,
+                                            int embedder_render_process_id);
 
   // Associates the Browser Plugin with |element_instance_id| to a
   // guest that has ID of |guest_instance_id| and sets initialization
@@ -100,7 +99,7 @@ class GuestViewManager : public content::BrowserPluginGuestManager,
                    const base::Value::Dict& create_params,
                    WebContentsCreatedCallback callback);
 
-  content::WebContents* CreateGuestWithWebContentsParams(
+  std::unique_ptr<content::WebContents> CreateGuestWithWebContentsParams(
       const std::string& view_type,
       content::WebContents* owner_web_contents,
       const content::WebContents::CreateParams& create_params);
@@ -128,7 +127,9 @@ class GuestViewManager : public content::BrowserPluginGuestManager,
 
   virtual void AddGuest(int guest_instance_id,
                         content::WebContents* guest_web_contents);
-  virtual void RemoveGuest(int guest_instance_id);
+  // If a GuestView is created but never initialized with a guest WebContents,
+  // this should still be called to invalidate `guest_instance_id`.
+  void RemoveGuest(int guest_instance_id);
 
   // This method is called when the embedder process with ID
   // |embedder_process_id| has been destroyed.
@@ -170,7 +171,7 @@ class GuestViewManager : public content::BrowserPluginGuestManager,
                      GuestViewBase* guest,
                      int instance_id);
 
-  content::WebContents* GetGuestByInstanceID(int guest_instance_id);
+  GuestViewBase* GetGuestByInstanceID(int guest_instance_id);
 
   bool CanEmbedderAccessInstanceIDMaybeKill(
       int embedder_render_process_id,

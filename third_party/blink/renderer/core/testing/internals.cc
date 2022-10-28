@@ -679,11 +679,6 @@ void Internals::ResetToConsistentState(Page* page) {
       ScrollOffset(), mojom::blink::ScrollType::kProgrammatic);
   OverrideUserPreferredLanguagesForTesting(Vector<AtomicString>());
 
-  if (ScrollingCoordinator* scrolling_coordinator =
-          page->GetScrollingCoordinator()) {
-    scrolling_coordinator->Reset(frame);
-  }
-
   KeyboardEventManager::SetCurrentCapsLockState(
       OverrideCapsLockState::kDefault);
 
@@ -726,12 +721,12 @@ unsigned Internals::workerThreadCount() const {
   return WorkerThread::WorkerThreadCount();
 }
 
-GCObservation* Internals::observeGC(ScriptValue script_value) {
+GCObservation* Internals::observeGC(ScriptValue script_value,
+                                    ExceptionState& exception_state) {
   v8::Local<v8::Value> observed_value = script_value.V8Value();
   DCHECK(!observed_value.IsEmpty());
   if (observed_value->IsNull() || observed_value->IsUndefined()) {
-    V8ThrowException::ThrowTypeError(v8::Isolate::GetCurrent(),
-                                     "value to observe is null or undefined");
+    exception_state.ThrowTypeError("value to observe is null or undefined");
     return nullptr;
   }
 
@@ -749,6 +744,17 @@ unsigned Internals::updateStyleAndReturnAffectedElementCount(
   unsigned before_count = document_->GetStyleEngine().StyleForElementCount();
   document_->UpdateStyleAndLayoutTree();
   return document_->GetStyleEngine().StyleForElementCount() - before_count;
+}
+
+unsigned Internals::styleForElementCount(
+    ExceptionState& exception_state) const {
+  if (!document_) {
+    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidAccessError,
+                                      "No context document is available.");
+    return 0;
+  }
+
+  return document_->GetStyleEngine().StyleForElementCount();
 }
 
 unsigned Internals::needsLayoutCount(ExceptionState& exception_state) const {
@@ -3759,7 +3765,7 @@ String Internals::getParsedImportMap(Document* document,
       Modulator::From(ToScriptStateForMainWorld(document->GetFrame()));
 
   if (!modulator) {
-    V8ThrowException::ThrowTypeError(v8::Isolate::GetCurrent(), "No modulator");
+    exception_state.ThrowTypeError("No modulator");
     return String();
   }
 
@@ -3833,20 +3839,23 @@ void Internals::generateTestReport(const String& message) {
   ReportingContext::From(document_->domWindow())->QueueReport(report);
 }
 
-void Internals::setIsAdFrame(HTMLIFrameElement* iframe,
+void Internals::setIsAdFrame(Document* target_doc,
                              ExceptionState& exception_state) {
-  if (!iframe->ContentFrame() || !iframe->ContentFrame()->IsLocalFrame()) {
-    exception_state.ThrowDOMException(DOMExceptionCode::kNotSupportedError,
-                                      "Frame cannot be accessed.");
+  LocalFrame* frame = target_doc->GetFrame();
+
+  if (frame->IsMainFrame() && !frame->IsInFencedFrameTree()) {
+    exception_state.ThrowDOMException(
+        DOMExceptionCode::kNotSupportedError,
+        "Frame must be an iframe or a fenced frame.");
     return;
   }
-  LocalFrame* parent_frame = iframe->GetDocument().GetFrame();
-  LocalFrame* child_frame = To<LocalFrame>(iframe->ContentFrame());
-  blink::FrameAdEvidence ad_evidence(parent_frame && parent_frame->IsAdFrame());
+
+  blink::FrameAdEvidence ad_evidence(/*parent_is_ad=*/frame->Parent() &&
+                                     frame->Parent()->IsAdFrame());
   ad_evidence.set_created_by_ad_script(
       mojom::FrameCreationStackEvidence::kCreatedByAdScript);
   ad_evidence.set_is_complete();
-  child_frame->SetAdEvidence(ad_evidence);
+  frame->SetAdEvidence(ad_evidence);
 }
 
 ReadableStream* Internals::createReadableStream(

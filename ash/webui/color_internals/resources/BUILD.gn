@@ -1,4 +1,4 @@
-# Copyright 2022 The Chromium Authors. All rights reserved.
+# Copyright 2022 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -13,6 +13,7 @@ ts_library("color_internals_ts") {
   out_dir = "$target_gen_dir/tsc"
 
   in_files = [ "index.ts" ]
+  deps = [ "//ui/webui/resources/cr_components/color_change_listener:build_ts" ]
 
   composite = true
   tsconfig_base = "tsconfig_base.json"

@@ -1,4 +1,4 @@
-// Copyright 2017 The Crashpad Authors. All rights reserved.
+// Copyright 2017 The Crashpad Authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -29,7 +29,12 @@ namespace crashpad {
 namespace test {
 namespace {
 
-TEST(SystemSnapshotLinux, Basic) {
+#if BUILDFLAG(IS_ANDROID)
+#define MAYBE_Basic DISABLED_Basic
+#else
+#define MAYBE_Basic Basic
+#endif
+TEST(SystemSnapshotLinux, MAYBE_Basic) {
   FakePtraceConnection connection;
   ASSERT_TRUE(connection.Initialize(getpid()));
 

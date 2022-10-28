@@ -54,8 +54,8 @@ TEST(BlinkStorageKeyMojomTraitsTest, SerializeAndDeserialize_BlinkStorageKey) {
 
   for (BlinkStorageKey& key : keys) {
     BlinkStorageKey copied;
-    EXPECT_TRUE(mojo::test::SerializeAndDeserialize<mojom::blink::StorageKey>(
-        key, copied));
+    EXPECT_TRUE(
+        mojo::test::SerializeAndDeserialize<mojom::StorageKey>(key, copied));
     EXPECT_EQ(key, copied);
     EXPECT_TRUE(key.GetSecurityOrigin()->IsSameOriginWith(
         copied.GetSecurityOrigin().get()));
@@ -65,8 +65,7 @@ TEST(BlinkStorageKeyMojomTraitsTest, SerializeAndDeserialize_BlinkStorageKey) {
   }
 }
 
-// Tests serializing from blink::StorageKey and deserializing to
-// blink::BlinkStorageKey.
+// Tests serializing from StorageKey and deserializing to BlinkStorageKey.
 TEST(BlinkStorageKeyMojomTraitsTest,
      SerializeFromStorageKey_DeserializeToBlinkStorageKey) {
   scoped_refptr<const SecurityOrigin> origin1 =
@@ -95,10 +94,10 @@ TEST(BlinkStorageKeyMojomTraitsTest,
       StorageKey(url_origin2),
       StorageKey(url_origin3),
       StorageKey(url_origin4),
-      StorageKey(url_origin1, net_site1),
-      StorageKey(url_origin2, net_site1),
-      StorageKey(url_origin3, net_site2),
-      StorageKey(url_origin4, net_site2),
+      StorageKey::CreateForTesting(url_origin1, net_site1),
+      StorageKey::CreateForTesting(url_origin2, net_site1),
+      StorageKey::CreateForTesting(url_origin3, net_site2),
+      StorageKey::CreateForTesting(url_origin4, net_site2),
       StorageKey::CreateWithNonce(url_origin1, nonce),
       StorageKey::CreateWithNonce(url_origin2, nonce),
       StorageKey::CreateWithOptionalNonce(
@@ -134,8 +133,7 @@ TEST(BlinkStorageKeyMojomTraitsTest,
   }
 }
 
-// Tests serializing from blink::BlinkStorageKey and deserializing to
-// blink::StorageKey.
+// Tests serializing from BlinkStorageKey and deserializing to StorageKey.
 TEST(BlinkStorageKeyMojomTraitsTest,
      SerializeFromBlinkStorageKey_DeserializeToStorageKey) {
   url::Origin url_origin1;
@@ -168,10 +166,10 @@ TEST(BlinkStorageKeyMojomTraitsTest,
         StorageKey(url_origin2),
         StorageKey(url_origin3),
         StorageKey(url_origin4),
-        StorageKey(url_origin1, net_site1),
-        StorageKey(url_origin2, net_site1),
-        StorageKey(url_origin3, net_site2),
-        StorageKey(url_origin4, net_site2),
+        StorageKey::CreateForTesting(url_origin1, net_site1),
+        StorageKey::CreateForTesting(url_origin2, net_site1),
+        StorageKey::CreateForTesting(url_origin3, net_site2),
+        StorageKey::CreateForTesting(url_origin4, net_site2),
         StorageKey::CreateWithNonce(url_origin1, nonce),
         StorageKey::CreateWithNonce(url_origin2, nonce),
         StorageKey::CreateWithOptionalNonce(

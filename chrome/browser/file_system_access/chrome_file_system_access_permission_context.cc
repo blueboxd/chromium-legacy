@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -32,6 +32,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
+#include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/file_system_access/file_system_access_permission_context_factory.h"
 #include "chrome/browser/file_system_access/file_system_access_permission_request_manager.h"
 #include "chrome/browser/installable/installable_utils.h"
@@ -40,6 +41,7 @@
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/browser/ui/file_system_access_dialogs.h"
 #include "chrome/common/chrome_paths.h"
+#include "chrome/common/pdf_util.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/content_settings.h"
@@ -1361,8 +1363,20 @@ ChromeFileSystemAccessPermissionContext::GetLastPickedDirectory(
 
 base::FilePath
 ChromeFileSystemAccessPermissionContext::GetWellKnownDirectoryPath(
-    blink::mojom::WellKnownDirectory directory) {
+    blink::mojom::WellKnownDirectory directory,
+    const url::Origin& origin) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  // PDF viewer uses the default Download directory set in browser, if possible.
+  if (directory == blink::mojom::WellKnownDirectory::kDirDownloads &&
+      IsPdfExtensionOrigin(origin)) {
+    base::FilePath profile_download_path =
+        DownloadPrefs::FromBrowserContext(profile())->DownloadPath();
+    if (!profile_download_path.empty()) {
+      return profile_download_path;
+    }
+  }
+
   int key = base::PATH_START;
   switch (directory) {
     case blink::mojom::WellKnownDirectory::kDefault:
@@ -1424,6 +1438,53 @@ ChromeFileSystemAccessPermissionContext::GetPermissionGrants(
   PermissionGrantImpl::CollectGrants(it->second.write_grants,
                                      &grants.directory_write_grants,
                                      &grants.file_write_grants);
+
+  // Add valid (not expired) persisted permissions which do not have an
+  // associated active grant to the associated members of `grants`.
+  if (base::FeatureList::IsEnabled(
+          features::kFileSystemAccessPersistentPermissions)) {
+    std::vector<std::unique_ptr<Object>> persisted_grant_objects =
+        GetGrantedObjects(origin);
+
+    for (auto& persisted_grant_object : persisted_grant_objects) {
+      const base::FilePath persisted_path =
+          base::ValueToFilePath(
+              persisted_grant_object->value.FindKey(kPermissionPathKey))
+              .value();
+      HandleType handle_type =
+          persisted_grant_object->value.FindBoolKey(kPermissionIsDirectoryKey)
+                  .value()
+              ? HandleType::kDirectory
+              : HandleType::kFile;
+      bool is_write_grant =
+          persisted_grant_object->value.FindBoolKey(kPermissionWritableKey)
+              .value_or(false);
+      bool is_read_grant =
+          persisted_grant_object->value.FindBoolKey(kPermissionReadableKey)
+              .value_or(false);
+
+      if (handle_type == HandleType::kDirectory) {
+        if (is_write_grant &&
+            !base::Contains(grants.directory_write_grants, persisted_path)) {
+          grants.directory_write_grants.push_back(persisted_path);
+        }
+        if (is_read_grant &&
+            !base::Contains(grants.directory_read_grants, persisted_path)) {
+          grants.directory_read_grants.push_back(persisted_path);
+        }
+      }
+      if (handle_type == HandleType::kFile) {
+        if (is_write_grant &&
+            !base::Contains(grants.file_write_grants, persisted_path)) {
+          grants.file_write_grants.push_back(persisted_path);
+        }
+        if (is_read_grant &&
+            !base::Contains(grants.file_read_grants, persisted_path)) {
+          grants.file_read_grants.push_back(persisted_path);
+        }
+      }
+    }
+  }
   return grants;
 }
 
@@ -1446,6 +1507,17 @@ void ChromeFileSystemAccessPermissionContext::RevokeGrants(
 bool ChromeFileSystemAccessPermissionContext::OriginHasReadAccess(
     const url::Origin& origin) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  // Check if an origin has read access granted via persisted permissions.
+  if (base::FeatureList::IsEnabled(
+          features::kFileSystemAccessPersistentPermissions)) {
+    std::vector<std::unique_ptr<Object>> persisted_grant_objects =
+        GetGrantedObjects(origin);
+    return base::ranges::any_of(
+        persisted_grant_objects, [&](const auto& grant) {
+          return grant->value.FindBoolKey(kPermissionReadableKey)
+              .value_or(false);
+        });
+  }
   auto it = origins_.find(origin);
   if (it == origins_.end())
     return false;
@@ -1461,6 +1533,17 @@ bool ChromeFileSystemAccessPermissionContext::OriginHasReadAccess(
 bool ChromeFileSystemAccessPermissionContext::OriginHasWriteAccess(
     const url::Origin& origin) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  // Check if an origin has write access granted via persisted permissions.
+  if (base::FeatureList::IsEnabled(
+          features::kFileSystemAccessPersistentPermissions)) {
+    std::vector<std::unique_ptr<Object>> persisted_grant_objects =
+        GetGrantedObjects(origin);
+    return base::ranges::any_of(
+        persisted_grant_objects, [&](const auto& grant) {
+          return grant->value.FindBoolKey(kPermissionWritableKey)
+              .value_or(false);
+        });
+  }
   auto it = origins_.find(origin);
   if (it == origins_.end())
     return false;

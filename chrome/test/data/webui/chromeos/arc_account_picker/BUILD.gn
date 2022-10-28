@@ -1,4 +1,4 @@
-# Copyright 2022 The Chromium Authors. All rights reserved.
+# Copyright 2022 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -7,8 +7,11 @@ import("//third_party/closure_compiler/compile_js.gni")
 js_type_check("closure_compile") {
   is_polymer3 = true
   closure_flags = default_closure_args + [
-                    "browser_resolver_prefix_replacements=\"chrome://chrome-signin/arc_account_picker/=../../chrome/browser/resources/chromeos/arc_account_picker/\"",
-                    "js_module_root=../../chrome/test/data/webui/",
+                    "browser_resolver_prefix_replacements=\"chrome://chrome-signin/arc_account_picker/=" + rebase_path(
+                            "//chrome/browser/resources/chromeos/arc_account_picker/",
+                            root_build_dir) + "\"",
+                    "js_module_root=" + rebase_path("//chrome/test/data/webui/",
+                                                    root_build_dir),
                     "js_module_root=./gen/chrome/test/data/webui/",
                   ]
   deps = [
@@ -23,7 +26,7 @@ js_library("arc_account_picker_test") {
     "//chrome/browser/resources/chromeos/arc_account_picker:arc_account_picker_app",
     "//chrome/browser/resources/chromeos/arc_account_picker:arc_account_picker_browser_proxy",
     "//ui/webui/resources/js:assert.m",
-    "//ui/webui/resources/js/cr:event_target.m",
+    "//ui/webui/resources/js/cr:event_target",
   ]
   externs_list = [ "$externs_path/mocha-2.5.js" ]
 }

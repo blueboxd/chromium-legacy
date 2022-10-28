@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -201,6 +201,9 @@ public class StatusProperties {
         }
     }
 
+    /** Alpha of the entire StatusView container. */
+    static final WritableFloatPropertyKey ALPHA = new WritableFloatPropertyKey();
+
     /** Whether animations are turned on. */
     static final WritableBooleanPropertyKey ANIMATIONS_ENABLED = new WritableBooleanPropertyKey();
 
@@ -252,6 +255,7 @@ public class StatusProperties {
 
     @VisibleForTesting(otherwise = VisibleForTesting.PACKAGE_PRIVATE)
     public static final PropertyKey[] ALL_KEYS = new PropertyKey[] {
+            ALPHA,
             ANIMATIONS_ENABLED,
             INCOGNITO_BADGE_VISIBLE,
             SEPARATOR_COLOR,

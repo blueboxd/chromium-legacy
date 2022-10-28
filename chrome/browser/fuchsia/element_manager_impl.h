@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -74,7 +74,7 @@ class ElementManagerImpl final : public fuchsia::element::Manager,
   void OnBrowserRemoved(Browser* browser) override;
 
   base::ScopedServiceBinding<fuchsia::element::Manager> binding_;
-  const NewProposalCallback callback_;
+  const NewProposalCallback new_proposal_callback_;
   HaveBrowserCallback have_browser_for_test_;
   fidl::BindingSet<fuchsia::element::Controller> controller_bindings_;
   base::flat_map<fuchsia::element::AnnotationKey,

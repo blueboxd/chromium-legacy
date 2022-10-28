@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -136,6 +136,9 @@ class FakeAudioDecoder : public CmaBackend::AudioDecoder {
   AudioTrackTimestamp GetAudioTrackTimestamp() override {
     return AudioTrackTimestamp();
   }
+  int GetStartThresholdInFrames() override {
+    return 0;
+  }
   bool RequiresDecryption() override { return false; }
   void SetObserver(CmaBackend::AudioDecoder::Observer* observer) override {}
 
@@ -229,7 +232,7 @@ class CastAudioOutputStreamTest : public ::testing::Test {
       : audio_thread_("CastAudioThread"),
         task_environment_(base::test::TaskEnvironment::TimeSource::MOCK_TIME),
         format_(::media::AudioParameters::AUDIO_PCM_LINEAR),
-        channel_layout_(::media::CHANNEL_LAYOUT_MONO),
+        channel_layout_config_(::media::ChannelLayoutConfig::Mono()),
         sample_rate_(::media::AudioParameters::kAudioCDSampleRate),
         frames_per_buffer_(256) {
     chromecast_service_.AddInterface(&multiroom_manager_);
@@ -325,8 +328,8 @@ class CastAudioOutputStreamTest : public ::testing::Test {
   }
 
   ::media::AudioParameters GetAudioParams() {
-    return ::media::AudioParameters(format_, channel_layout_, sample_rate_,
-                                    frames_per_buffer_);
+    return ::media::AudioParameters(format_, channel_layout_config_,
+                                    sample_rate_, frames_per_buffer_);
   }
 
   FakeAudioDecoder* GetAudioDecoder() {
@@ -355,7 +358,7 @@ class CastAudioOutputStreamTest : public ::testing::Test {
   // AudioParameters used to create AudioOutputStream.
   // Tests can modify these parameters before calling CreateStream.
   ::media::AudioParameters::Format format_;
-  ::media::ChannelLayout channel_layout_;
+  ::media::ChannelLayoutConfig channel_layout_config_;
   int sample_rate_;
   int frames_per_buffer_;
 };
@@ -602,10 +605,11 @@ TEST_F(CastAudioOutputStreamTest, Format) {
 }
 
 TEST_F(CastAudioOutputStreamTest, ChannelLayout) {
-  ::media::ChannelLayout layout[] = {::media::CHANNEL_LAYOUT_MONO,
-                                     ::media::CHANNEL_LAYOUT_STEREO};
+  ::media::ChannelLayoutConfig layout[] = {
+      ::media::ChannelLayoutConfig::Mono(),
+      ::media::ChannelLayoutConfig::Stereo()};
   for (size_t i = 0; i < std::size(layout); ++i) {
-    channel_layout_ = layout[i];
+    channel_layout_config_ = layout[i];
     ::media::AudioOutputStream* stream = CreateStream();
     ASSERT_TRUE(stream);
     EXPECT_TRUE(stream->Open());
@@ -614,7 +618,8 @@ TEST_F(CastAudioOutputStreamTest, ChannelLayout) {
     FakeAudioDecoder* audio_decoder = GetAudioDecoder();
     ASSERT_TRUE(audio_decoder);
     const AudioConfig& audio_config = audio_decoder->config();
-    EXPECT_EQ(::media::ChannelLayoutToChannelCount(channel_layout_),
+    EXPECT_EQ(::media::ChannelLayoutToChannelCount(
+                  channel_layout_config_.channel_layout()),
               audio_config.channel_number);
 
     stream->Close();

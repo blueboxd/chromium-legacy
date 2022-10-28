@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -21,6 +21,7 @@
 #include "build/chromeos_buildflags.h"
 #include "cc/paint/paint_flags.h"
 #include "chrome/browser/ui/color/chrome_color_id.h"
+#include "chrome/browser/ui/views/chrome_widget_sublevel.h"
 #include "components/url_formatter/elide_url.h"
 #include "components/url_formatter/url_formatter.h"
 #include "third_party/skia/include/core/SkPath.h"
@@ -45,6 +46,7 @@
 #include "ui/views/controls/scrollbar/scroll_bar_views.h"
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/style/typography.h"
+#include "ui/views/views_features.h"
 #include "ui/views/widget/root_view.h"
 #include "ui/views/widget/widget.h"
 #include "url/gurl.h"
@@ -586,7 +588,7 @@ StatusBubbleViews::StatusViewAnimation::StatusViewAnimation(
 StatusBubbleViews::StatusViewAnimation::~StatusViewAnimation() {
   // Remove ourself as a delegate so that we don't get notified when
   // animations end as a result of destruction.
-  set_delegate(NULL);
+  set_delegate(nullptr);
 }
 
 float StatusBubbleViews::StatusViewAnimation::GetCurrentOpacity() {
@@ -738,7 +740,11 @@ void StatusBubbleViews::InitPopup() {
 #if !BUILDFLAG(IS_MAC)
     // Stack the popup above the base widget and below higher z-order windows.
     // This is unnecessary and even detrimental on Mac, see CreateBubbleWidget.
-    popup_->StackAboveWidget(frame);
+    if (base::FeatureList::IsEnabled(views::features::kWidgetLayering)) {
+      popup_->SetZOrderSublevel(ChromeWidgetSublevel::kSublevelHoverable);
+    } else {
+      popup_->StackAboveWidget(frame);
+    }
 #endif
     RepositionPopup();
   }

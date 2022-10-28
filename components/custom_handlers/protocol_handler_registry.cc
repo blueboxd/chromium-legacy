@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -628,7 +628,7 @@ ProtocolHandlerRegistry::GetHandlersFromPref(const char* pref_name) const {
     return result;
   }
 
-  const base::Value::List& handlers = prefs_->GetValueList(pref_name);
+  const base::Value::List& handlers = prefs_->GetList(pref_name);
 
   for (const auto& list_item : handlers) {
     if (const base::Value::Dict* encoded_handler = list_item.GetIfDict()) {

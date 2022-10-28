@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -180,6 +180,10 @@ void TestCaptureModeDelegate::GetDriveFsFreeSpaceBytes(
 
 bool TestCaptureModeDelegate::IsCameraDisabledByPolicy() const {
   return is_camera_disabled_by_policy_;
+}
+
+bool TestCaptureModeDelegate::IsAudioCaptureDisabledByPolicy() const {
+  return is_audio_capture_disabled_by_policy_;
 }
 
 }  // namespace ash

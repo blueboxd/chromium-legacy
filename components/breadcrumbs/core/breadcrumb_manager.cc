@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -37,17 +37,13 @@ BreadcrumbManager::BreadcrumbManager(base::TimeTicks start_time)
 
 BreadcrumbManager::~BreadcrumbManager() = default;
 
-const std::list<std::string> BreadcrumbManager::GetEvents(
-    size_t event_count_limit) {
+const std::list<std::string> BreadcrumbManager::GetEvents() {
   DropOldEvents();
 
   std::list<std::string> events;
   for (const EventBucket& event_bucket : base::Reversed(event_buckets_)) {
     for (const std::string& event : base::Reversed(event_bucket.events)) {
       events.push_front(event);
-      if (event_count_limit > 0 && events.size() >= event_count_limit) {
-        return events;
-      }
     }
   }
   return events;

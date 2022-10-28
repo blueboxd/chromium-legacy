@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,9 +12,9 @@
 #include "chrome/browser/ash/app_mode/kiosk_app_types.h"
 #include "chrome/browser/ash/login/ui/login_display_host.h"
 // TODO(https://crbug.com/1164001): move to forward declaration
+#include "chrome/browser/ash/login/oobe_quick_start/target_device_bootstrap_controller.h"
 #include "chrome/browser/ash/login/ui/webui_login_view.h"
 #include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
-#include "chromeos/ash/components/oobe_quick_start/target_device_bootstrap_controller.h"
 #include "components/user_manager/user_type.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -28,7 +28,7 @@ class MockLoginDisplayHost : public LoginDisplayHost {
   MockLoginDisplayHost(const MockLoginDisplayHost&) = delete;
   MockLoginDisplayHost& operator=(const MockLoginDisplayHost&) = delete;
 
-  virtual ~MockLoginDisplayHost();
+  ~MockLoginDisplayHost() override;
 
   MOCK_METHOD(LoginDisplay*, GetLoginDisplay, (), (override));
   MOCK_METHOD(ExistingUserController*,
@@ -57,7 +57,7 @@ class MockLoginDisplayHost : public LoginDisplayHost {
 
   // Workaround for move-only args in GMock.
   MOCK_METHOD(void, MockStartUserAdding, (base::OnceClosure*));
-  void StartUserAdding(base::OnceClosure completion_callback) {
+  void StartUserAdding(base::OnceClosure completion_callback) override {
     MockStartUserAdding(&completion_callback);
   }
 

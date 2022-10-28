@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,21 +12,23 @@
 import 'chrome://resources/cr_components/localized_link/localized_link.js';
 import 'chrome://resources/cr_elements/cr_button/cr_button.js';
 import 'chrome://resources/cr_elements/cr_dialog/cr_dialog.js';
-import 'chrome://resources/cr_elements/shared_style_css.m.js';
-import 'chrome://resources/cr_elements/shared_vars_css.m.js';
+import 'chrome://resources/cr_elements/cr_shared_style.css.js';
+import 'chrome://resources/cr_elements/cr_shared_vars.css.js';
 import 'chrome://resources/polymer/v3_0/iron-icon/iron-icon.js';
 import './multidevice_screen_lock_subpage.js';
 import '../os_icons.js';
 import '../../settings_shared.css.js';
 
 import {assert} from 'chrome://resources/js/assert.m.js';
-import {I18nBehavior, I18nBehaviorInterface} from 'chrome://resources/js/i18n_behavior.m.js';
+import {I18nBehavior, I18nBehaviorInterface} from 'chrome://resources/cr_elements/i18n_behavior.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
-import {WebUIListenerBehavior, WebUIListenerBehaviorInterface} from 'chrome://resources/js/web_ui_listener_behavior.m.js';
+import {WebUIListenerBehavior, WebUIListenerBehaviorInterface} from 'chrome://resources/cr_elements/web_ui_listener_behavior.js';
 import {html, mixinBehaviors, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
+import {LockStateBehavior, LockStateBehaviorInterface} from '../os_people_page/lock_state_behavior.js';
+
 import {MultiDeviceBrowserProxy, MultiDeviceBrowserProxyImpl} from './multidevice_browser_proxy.js';
-import {MultiDeviceFeature, PhoneHubPermissionsSetupAction, PhoneHubPermissionsSetupFlowScreens} from './multidevice_constants.js';
+import {MultiDeviceFeature, PhoneHubPermissionsSetupAction, PhoneHubPermissionsSetupFeatureCombination, PhoneHubPermissionsSetupFlowScreens} from './multidevice_constants.js';
 
 /**
  * Numerical values should not be changed because they must stay in sync with
@@ -49,6 +51,7 @@ export const PermissionsSetupStatus = {
   FAILED_OR_CANCELLED: 8,
   CAMERA_ROLL_GRANTED_NOTIFICATION_REJECTED: 9,
   CAMERA_ROLL_REJECTED_NOTIFICATION_GRANTED: 10,
+  CONNECTION_ESTABLISHED: 11,
 };
 
 /**
@@ -61,6 +64,8 @@ export const SetupFlowStatus = {
   WAIT_FOR_PHONE_NOTIFICATION: 2,
   WAIT_FOR_PHONE_APPS: 3,
   WAIT_FOR_PHONE_COMBINED: 4,
+  WAIT_FOR_CONNECTION: 5,
+  FINISHED: 6,
 };
 
 /**
@@ -83,11 +88,13 @@ export const APPS_FEATURE = 1 << 2;
  * @extends {PolymerElement}
  * @implements {I18nBehaviorInterface}
  * @implements {WebUIListenerBehaviorInterface}
+ * @implements {LockStateBehaviorInterface}
  */
 const SettingsMultidevicePermissionsSetupDialogElementBase = mixinBehaviors(
     [
       I18nBehavior,
       WebUIListenerBehavior,
+      LockStateBehavior,
     ],
     PolymerElement);
 
@@ -268,7 +275,7 @@ class SettingsMultidevicePermissionsSetupDialogElement extends
       },
 
       /** @private */
-      isSetPinDone_: {
+      isPinSet_: {
         type: Boolean,
         value: false,
       },
@@ -323,7 +330,13 @@ class SettingsMultidevicePermissionsSetupDialogElement extends
     this.addWebUIListener(
         'settings.onCombinedAccessSetupStatusChanged',
         this.onCombinedSetupStateChanged_.bind(this));
+    this.addWebUIListener(
+        'settings.onFeatureSetupConnectionStatusChanged',
+        this.onFeatureSetupConnectionStatusChanged_.bind(this));
     this.$.dialog.showModal();
+    this.browserProxy_.logPhoneHubPermissionSetUpScreenAction(
+        PhoneHubPermissionsSetupFlowScreens.INTRO,
+        PhoneHubPermissionsSetupAction.SHOWN);
   }
 
   /**
@@ -339,12 +352,20 @@ class SettingsMultidevicePermissionsSetupDialogElement extends
     // COMPLETED_USER_REJECTED we should continue on with the setup flow if
     // there are additional features, all other results will change the screen
     // that is shown and pause or terminate the setup flow.
-    if (notificationSetupState !==
-            PermissionsSetupStatus.COMPLETED_SUCCESSFULLY &&
-        notificationSetupState !==
-            PermissionsSetupStatus.COMPLETED_USER_REJECTED) {
-      this.setupState_ = notificationSetupState;
-      return;
+    switch (notificationSetupState) {
+      case PermissionsSetupStatus.FAILED_OR_CANCELLED:
+      case PermissionsSetupStatus.TIMED_OUT_CONNECTING:
+      case PermissionsSetupStatus.CONNECTION_DISCONNECTED:
+      case PermissionsSetupStatus.NOTIFICATION_ACCESS_PROHIBITED:
+        this.flowState_ = SetupFlowStatus.FINISHED;
+      case PermissionsSetupStatus.CONNECTION_REQUESTED:
+      case PermissionsSetupStatus.CONNECTING:
+      case PermissionsSetupStatus
+          .SENT_MESSAGE_TO_PHONE_AND_WAITING_FOR_RESPONSE:
+        this.setupState_ = notificationSetupState;
+        return;
+      default:
+        break;
     }
 
     // Note: we can only update this.setupState_ after assigning
@@ -368,10 +389,10 @@ class SettingsMultidevicePermissionsSetupDialogElement extends
       this.setupState_ = PermissionsSetupStatus.CONNECTION_REQUESTED;
     } else {
       this.setupState_ = notificationSetupState;
+      this.flowState_ = SetupFlowStatus.FINISHED;
       // We don't need to deal with the apps streaming onboarding flow, so we
       // can log completed case here.
-      this.browserProxy_.logPhoneHubPermissionSetUpScreenAction(
-          this.setupScreen_, PhoneHubPermissionsSetupAction.SHOWN);
+      this.logCompletedSetupModeMetrics_();
     }
   }
 
@@ -391,11 +412,21 @@ class SettingsMultidevicePermissionsSetupDialogElement extends
         !this.showAppStreaming) {
       this.completedMode_ |= APPS_FEATURE;
       this.browserProxy_.setFeatureEnabledState(MultiDeviceFeature.ECHE, true);
-      this.setupState_ = appsSetupResult;
-      this.browserProxy_.logPhoneHubPermissionSetUpScreenAction(
-          this.setupScreen_, PhoneHubPermissionsSetupAction.SHOWN);
     }
+
     this.setupState_ = appsSetupResult;
+
+    if (appsSetupResult !==
+            PermissionsSetupStatus
+                .SENT_MESSAGE_TO_PHONE_AND_WAITING_FOR_RESPONSE &&
+        appsSetupResult !== PermissionsSetupStatus.CONNECTING &&
+        appsSetupResult !== PermissionsSetupStatus.CONNECTION_REQUESTED) {
+      this.flowState_ = SetupFlowStatus.FINISHED;
+    }
+
+    if (this.computeHasCompletedSetup_()) {
+      this.logCompletedSetupModeMetrics_();
+    }
   }
 
   /**
@@ -411,12 +442,24 @@ class SettingsMultidevicePermissionsSetupDialogElement extends
     // COMPLETED_USER_REJECTED we should continue on with the setup flow if
     // there are additional features, all other results will change the screen
     // that is shown and pause or terminate the setup flow.
-    if (this.terminateCombinedSetup_(combinedSetupResult)) {
-      if (combinedSetupResult === PermissionsSetupStatus.FAILED_OR_CANCELLED) {
+    switch (combinedSetupResult) {
+      case PermissionsSetupStatus.COMPLETED_SUCCESSFULLY:
+      case PermissionsSetupStatus.COMPLETED_USER_REJECTED:
+      case PermissionsSetupStatus.CAMERA_ROLL_GRANTED_NOTIFICATION_REJECTED:
+      case PermissionsSetupStatus.CAMERA_ROLL_REJECTED_NOTIFICATION_GRANTED:
+        break;
+      case PermissionsSetupStatus.FAILED_OR_CANCELLED:
         this.updateCamearRollSetupResultIfNeeded_();
-      }
-      this.setupState_ = combinedSetupResult;
-      return;
+      case PermissionsSetupStatus.TIMED_OUT_CONNECTING:
+      case PermissionsSetupStatus.CONNECTION_DISCONNECTED:
+      case PermissionsSetupStatus.NOTIFICATION_ACCESS_PROHIBITED:
+        this.flowState_ = SetupFlowStatus.FINISHED;
+      case PermissionsSetupStatus.CONNECTION_REQUESTED:
+      case PermissionsSetupStatus.CONNECTING:
+      case PermissionsSetupStatus
+          .SENT_MESSAGE_TO_PHONE_AND_WAITING_FOR_RESPONSE:
+        this.setupState_ = combinedSetupResult;
+        return;
     }
 
     // Note: we can only update this.setupState_ after assigning
@@ -446,36 +489,65 @@ class SettingsMultidevicePermissionsSetupDialogElement extends
       this.setupState_ = PermissionsSetupStatus.CONNECTION_REQUESTED;
     } else {
       this.setupState_ = combinedSetupResult;
+      this.flowState_ = SetupFlowStatus.FINISHED;
       // We don't need to deal with the apps streaming onboarding flow, so we
       // can log completed case here.
-      this.browserProxy_.logPhoneHubPermissionSetUpScreenAction(
-          this.setupScreen_, PhoneHubPermissionsSetupAction.SHOWN);
+      this.logCompletedSetupModeMetrics_();
     }
   }
 
   /**
-   * @param {!PermissionsSetupStatus} combinedSetupResult
-   * @return {boolean}
    * @private
    */
-  terminateCombinedSetup_(combinedSetupResult) {
-    switch (combinedSetupResult) {
-      case PermissionsSetupStatus.COMPLETED_SUCCESSFULLY:
-      case PermissionsSetupStatus.COMPLETED_USER_REJECTED:
-      case PermissionsSetupStatus.CAMERA_ROLL_GRANTED_NOTIFICATION_REJECTED:
-      case PermissionsSetupStatus.CAMERA_ROLL_REJECTED_NOTIFICATION_GRANTED:
-        return false;
-      case PermissionsSetupStatus.CONNECTION_REQUESTED:
-      case PermissionsSetupStatus.CONNECTING:
+  logSetupModeMetrics_() {
+    if (this.showCameraRoll) {
+      this.setupMode_ |= CAMERA_ROLL_FEATURE;
+    }
+    if (this.showNotifications) {
+      this.setupMode_ |= NOTIFICATION_FEATURE;
+    }
+    if (this.showAppStreaming) {
+      this.setupMode_ |= APPS_FEATURE;
+    }
+    this.browserProxy_.logPhoneHubPermissionOnboardingSetupMode(
+        this.computePhoneHubPermissionsSetupMode_(this.setupMode_));
+  }
+
+  /**
+   * @private
+   */
+  logCompletedSetupModeMetrics_() {
+    this.browserProxy_.logPhoneHubPermissionSetUpScreenAction(
+        this.setupScreen_, PhoneHubPermissionsSetupAction.SHOWN);
+    this.browserProxy_.logPhoneHubPermissionOnboardingSetupResult(
+        this.computePhoneHubPermissionsSetupMode_(this.completedMode_));
+  }
+
+  /**
+   * @param {!PermissionsSetupStatus} connectionResult
+   * @private
+   */
+  onFeatureSetupConnectionStatusChanged_(connectionResult) {
+    if (this.flowState_ !== SetupFlowStatus.WAIT_FOR_CONNECTION) {
+      return;
+    }
+
+    switch (connectionResult) {
       case PermissionsSetupStatus.TIMED_OUT_CONNECTING:
       case PermissionsSetupStatus.CONNECTION_DISCONNECTED:
-      case PermissionsSetupStatus
-          .SENT_MESSAGE_TO_PHONE_AND_WAITING_FOR_RESPONSE:
-      case PermissionsSetupStatus.NOTIFICATION_ACCESS_PROHIBITED:
-      case PermissionsSetupStatus.FAILED_OR_CANCELLED:
-        return true;
+        this.setupState_ = connectionResult;
+      case PermissionsSetupStatus.COMPLETED_SUCCESSFULLY:
+        return;
+      case PermissionsSetupStatus.CONNECTION_ESTABLISHED:
+        // Make sure FeatureSetupConnectionOperation ends properly.
+        this.browserProxy_.cancelFeatureSetupConnection();
+        if (this.isScreenLockRequired_()) {
+          this.flowState_ = SetupFlowStatus.SET_LOCKSCREEN;
+          return;
+        }
+        this.startSetupProcess_();
       default:
-        return true;
+        return;
     }
   }
 
@@ -534,8 +606,7 @@ class SettingsMultidevicePermissionsSetupDialogElement extends
    */
   computeHasCompletedSetup_() {
     return this.setupState_ === PermissionsSetupStatus.COMPLETED_SUCCESSFULLY ||
-        this.setupState_ === PermissionsSetupStatus.COMPLETED_USER_REJECTED ||
-        this.setupState_ === PermissionsSetupStatus.FAILED_OR_CANCELLED ||
+        this.someFeaturesHaveBeenSetupWhenCompleted_() ||
         this.setupState_ ===
         PermissionsSetupStatus.CAMERA_ROLL_GRANTED_NOTIFICATION_REJECTED ||
         this.setupState_ ===
@@ -559,36 +630,53 @@ class SettingsMultidevicePermissionsSetupDialogElement extends
     return this.setupState_ === PermissionsSetupStatus.TIMED_OUT_CONNECTING ||
         this.setupState_ === PermissionsSetupStatus.CONNECTION_DISCONNECTED ||
         this.setupState_ ===
-        PermissionsSetupStatus.NOTIFICATION_ACCESS_PROHIBITED;
+        PermissionsSetupStatus.NOTIFICATION_ACCESS_PROHIBITED ||
+        this.noFeatureHasBeenSetupWhenCompleted_();
   }
+
+  /**
+   * @return {boolean}
+   * @private
+   */
+
+  someFeaturesHaveBeenSetupWhenCompleted_() {
+    return (this.setupState_ ===
+                PermissionsSetupStatus.COMPLETED_USER_REJECTED ||
+            this.setupState_ === PermissionsSetupStatus.FAILED_OR_CANCELLED) &&
+        this.completedMode_ !== 0;
+  }
+
+  /**
+   * @return {boolean}
+   * @private
+   */
+  noFeatureHasBeenSetupWhenCompleted_() {
+    return (this.setupState_ ===
+                PermissionsSetupStatus.COMPLETED_USER_REJECTED ||
+            this.setupState_ === PermissionsSetupStatus.FAILED_OR_CANCELLED) &&
+        this.completedMode_ === 0;
+  }
+
 
   /** @private */
   nextPage_() {
     this.browserProxy_.logPhoneHubPermissionSetUpScreenAction(
-        this.setupScreen_, PhoneHubPermissionsSetupAction.NEXT_OR_TRY_AGAIN);
-    const isScreenLockRequired =
-        this.isScreenLockRequired_();
+        this.getCurrentScreen_(),
+        PhoneHubPermissionsSetupAction.NEXT_OR_TRY_AGAIN);
     switch (this.flowState_) {
       case SetupFlowStatus.INTRO:
-        if (this.showCameraRoll) {
-          this.setupMode_ |= CAMERA_ROLL_FEATURE;
-        }
-        if (this.showNotifications) {
-          this.setupMode_ |= NOTIFICATION_FEATURE;
-        }
-        if (this.showAppStreaming) {
-          this.setupMode_ |= APPS_FEATURE;
-        }
-        if (isScreenLockRequired) {
-          this.flowState_ = SetupFlowStatus.SET_LOCKSCREEN;
-          return;
-        }
-        break;
+        this.logSetupModeMetrics_();
+      case SetupFlowStatus.FINISHED:
+        this.flowState_ = SetupFlowStatus.WAIT_FOR_CONNECTION;
+      case SetupFlowStatus.WAIT_FOR_CONNECTION:
+        this.browserProxy_.attemptFeatureSetupConnection();
+        this.setupState_ = PermissionsSetupStatus.CONNECTION_REQUESTED;
+        return;
       case SetupFlowStatus.SET_LOCKSCREEN:
         if (!this.isScreenLockEnabled_) {
           return;
         }
-        if (this.isPinNumberSelected_ && !this.isSetPinDone_) {
+        if (this.isPinNumberSelected_ && !this.isPinSet_ && !this.hasPin) {
           // When users select pin number and click next button, popup set pin
           // dialog.
           this.showSetupPinDialog_ = true;
@@ -600,6 +688,11 @@ class SettingsMultidevicePermissionsSetupDialogElement extends
         break;
     }
 
+    this.startSetupProcess_();
+  }
+
+  /** @private */
+  startSetupProcess_() {
     if ((this.showCameraRoll || this.showNotifications) &&
         this.combinedSetupSupported) {
       this.browserProxy_.attemptCombinedFeatureSetup(
@@ -625,6 +718,11 @@ class SettingsMultidevicePermissionsSetupDialogElement extends
       this.browserProxy_.cancelAppsSetup();
     } else if (this.flowState_ === SetupFlowStatus.WAIT_FOR_PHONE_COMBINED) {
       this.browserProxy_.cancelCombinedFeatureSetup();
+    } else if (this.flowState_ === SetupFlowStatus.WAIT_FOR_CONNECTION) {
+      this.browserProxy_.cancelFeatureSetupConnection();
+    }
+    if (this.noFeatureHasBeenSetupWhenCompleted_()) {
+      this.logCompletedSetupModeMetrics_();
     }
     this.browserProxy_.logPhoneHubPermissionSetUpScreenAction(
         this.setupScreen_, PhoneHubPermissionsSetupAction.CANCEL);
@@ -656,7 +754,7 @@ class SettingsMultidevicePermissionsSetupDialogElement extends
   onSetPinDone_() {
     // Once users confirm pin number, take them to the 'finish setup on the
     // phone' step directly.
-    this.isSetPinDone_ = true;
+    this.isPinSet_ = true;
     this.nextPage_();
   }
 
@@ -756,9 +854,13 @@ class SettingsMultidevicePermissionsSetupDialogElement extends
 
     const Status = PermissionsSetupStatus;
     switch (this.setupState_) {
-      case Status.COMPLETED_SUCCESSFULLY:
       case Status.COMPLETED_USER_REJECTED:
       case Status.FAILED_OR_CANCELLED:
+        return (this.completedMode_ === 0) ?
+            '' :
+            this.i18n(
+                'multidevicePermissionsSetupCompletedMoreFeaturesSummary');
+      case Status.COMPLETED_SUCCESSFULLY:
       case Status.CAMERA_ROLL_GRANTED_NOTIFICATION_REJECTED:
       case Status.CAMERA_ROLL_REJECTED_NOTIFICATION_GRANTED:
         return (this.setupMode_ === this.completedMode_) ?
@@ -799,14 +901,15 @@ class SettingsMultidevicePermissionsSetupDialogElement extends
    */
   shouldShowCancelButton_() {
     return this.setupState_ !== PermissionsSetupStatus.COMPLETED_SUCCESSFULLY &&
+        this.setupState_ !==
+            PermissionsSetupStatus.NOTIFICATION_ACCESS_PROHIBITED &&
+        this.setupState_ !==
+            PermissionsSetupStatus.CAMERA_ROLL_GRANTED_NOTIFICATION_REJECTED &&
+        this.setupState_ !==
+            PermissionsSetupStatus.CAMERA_ROLL_REJECTED_NOTIFICATION_GRANTED &&
         this.setupState_ !== PermissionsSetupStatus.COMPLETED_USER_REJECTED &&
-        this.setupState_ !== PermissionsSetupStatus.FAILED_OR_CANCELLED &&
-        this.setupState_ !==
-        PermissionsSetupStatus.NOTIFICATION_ACCESS_PROHIBITED &&
-        this.setupState_ !==
-        PermissionsSetupStatus.CAMERA_ROLL_GRANTED_NOTIFICATION_REJECTED &&
-        this.setupState_ !==
-        PermissionsSetupStatus.CAMERA_ROLL_REJECTED_NOTIFICATION_GRANTED;
+        this.setupState_ !== PermissionsSetupStatus.FAILED_OR_CANCELLED ||
+        this.noFeatureHasBeenSetupWhenCompleted_();
   }
 
   /**
@@ -824,7 +927,8 @@ class SettingsMultidevicePermissionsSetupDialogElement extends
    */
   shouldShowTryAgainButton_() {
     return this.setupState_ === PermissionsSetupStatus.TIMED_OUT_CONNECTING ||
-        this.setupState_ === PermissionsSetupStatus.CONNECTION_DISCONNECTED;
+        this.setupState_ === PermissionsSetupStatus.CONNECTION_DISCONNECTED ||
+        this.noFeatureHasBeenSetupWhenCompleted_();
   }
 
   /**
@@ -880,6 +984,34 @@ class SettingsMultidevicePermissionsSetupDialogElement extends
       default:
         return this.i18n(
             'multidevicePermissionsSetupAppssCompletedFailedTitle');
+    }
+  }
+
+  /**
+   * @return {!PhoneHubPermissionsSetupFeatureCombination}
+   * @private
+   */
+  computePhoneHubPermissionsSetupMode_(mode) {
+    switch (mode) {
+      case NOTIFICATION_FEATURE:
+        return PhoneHubPermissionsSetupFeatureCombination.NOTIFICATION;
+      case CAMERA_ROLL_FEATURE:
+        return PhoneHubPermissionsSetupFeatureCombination.CAMERA_ROLL;
+      case NOTIFICATION_FEATURE|CAMERA_ROLL_FEATURE:
+        return PhoneHubPermissionsSetupFeatureCombination
+            .NOTIFICATION_AND_CAMERA_ROLL;
+      case APPS_FEATURE:
+        return PhoneHubPermissionsSetupFeatureCombination.MESSAGING_APP;
+      case NOTIFICATION_FEATURE|APPS_FEATURE:
+        return PhoneHubPermissionsSetupFeatureCombination
+            .NOTIFICATION_AND_MESSAGING_APP;
+      case CAMERA_ROLL_FEATURE|APPS_FEATURE:
+        return PhoneHubPermissionsSetupFeatureCombination
+            .MESSAGING_APP_AND_CAMERA_ROLL;
+      case NOTIFICATION_FEATURE|CAMERA_ROLL_FEATURE|APPS_FEATURE:
+        return PhoneHubPermissionsSetupFeatureCombination.ALL_PERMISSONS;
+      default:
+        return PhoneHubPermissionsSetupFeatureCombination.NONE;
     }
   }
 

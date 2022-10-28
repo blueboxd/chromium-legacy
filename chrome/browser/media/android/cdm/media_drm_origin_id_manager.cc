@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -513,7 +513,7 @@ void MediaDrmOriginIdManager::OriginIdProvisioned(
 }
 
 void MediaDrmOriginIdManager::RecordCountOfPreprovisionedOriginIds() {
-  const auto& pref = pref_service_->GetValueDict(kMediaDrmOriginIds);
+  const auto& pref = pref_service_->GetDict(kMediaDrmOriginIds);
   int available_origin_ids = CountAvailableOriginIds(pref);
 
   if (media::MediaDrmBridge::IsPerApplicationProvisioningSupported()) {

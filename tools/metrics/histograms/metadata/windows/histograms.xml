@@ -22,16 +22,6 @@ chromium-metrics-reviews@google.com.
 
 <histograms>
 
-<histogram name="Windows.ApplockerRunning" enum="Boolean" expires_after="M83">
-  <owner>forshaw@chromium.org</owner>
-  <owner>wfh@chromium.org</owner>
-  <summary>
-    Records if the APPID driver is running which indicates Applocker is enabled
-    and running. This does not guarantee that Applocker is configured to enforce
-    any rules. Reported once per browser session, on startup.
-  </summary>
-</histogram>
-
 <histogram name="Windows.CetAvailable" enum="BooleanAvailable"
     expires_after="2022-12-01">
   <owner>ajgo@chromium.org</owner>
@@ -87,17 +77,6 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Windows.FileDeleteRetryCount" units="attempts"
-    expires_after="2022-12-18">
-  <owner>grt@chromium.org</owner>
-  <owner>davidbienvenu@chromium.org</owner>
-  <summary>
-    The number of retries needed to successfully delete a file from
-    GetDeleteFileCallback. 0 means it succeeded the first time, 9 means it never
-    succeeded.
-  </summary>
-</histogram>
-
 <histogram name="Windows.HasHighResolutionTimeTicks" enum="Boolean"
     expires_after="2023-12-19">
   <owner>brucedawson@chromium.org</owner>
@@ -109,7 +88,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Windows.HighResolutionTimerUsage" units="%"
-    expires_after="2023-01-01">
+    expires_after="2023-03-05">
   <owner>olivierli@chromium.org</owner>
   <owner>catan-team@chromium.org</owner>
   <summary>
@@ -120,8 +99,9 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Windows.HypervPresent" enum="BooleanEnabled"
-    expires_after="2022-10-01">
+    expires_after="2023-06-01">
   <owner>rkc@chromium.org</owner>
+  <owner>vnagarnaik@google.com</owner>
   <owner>rockot@chromium.org</owner>
   <summary>
     Whether Hyper-V is enabled on this machine. Logged shortly after startup.
@@ -129,15 +109,18 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Windows.InspectModule.ConnectionError"
-    enum="BooleanConnectionError" expires_after="M81">
-  <owner>pmonette@chromium.org</owner>
+<histogram name="Windows.InstallerPinUnpinned" enum="IsPinnedToTaskbarResult"
+    expires_after="2023-08-31">
+  <owner>davidbienvenu@chromium.org</owner>
+  <owner>jessemckenna@chromium.org</owner>
   <summary>
-    Whether connection error has happened for the UtilWin service. Every time a
-    connection is made to the service, a &quot;false&quot; value is reported to
-    provide a baseline. Every time a mojo connection error happens, a
-    &quot;true&quot; value is reported, which typically means the utility
-    process crashed.
+    Records whether or not the user unpinned Chrome after the installer pinned
+    Chrome, on Win10+. Recorded when Chrome checks if Chrome is pinned to the
+    taskbar, on startup. This check is currently done on 1% of startups. Records
+    true if the installer pinned Chrome, and it's no longer pinned, false if the
+    installer pinned Chrome and it's still pinned. The unpin is only recorded at
+    most once per user, whereas the still pinned state is recorded on every
+    launch that checks if Chrome is pinned to the taskbar.
   </summary>
 </histogram>
 
@@ -163,16 +146,26 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Windows.IsPinnedToTaskbar2" enum="BooleanError"
-    expires_after="M87">
-  <owner>pmonette@chromium.org</owner>
-  <owner>chrdavis@microsoft.com</owner>
+<histogram name="Windows.Launch.TaskbarInstallerPinned" enum="Boolean"
+    expires_after="2023-08-23">
+  <owner>davidbienvenu@chromium.org</owner>
+  <owner>jessemckenna@google.com</owner>
   <summary>
-    Indicates whether Chrome is pinned to the Windows taskbar for the current
-    user. Recorded shortly after startup. This is different from
-    Windows.IsPinnedToTaskbar in that we do not check if the pin to taskbar verb
-    is available on the shortcut and only relies on the shortcut existing in the
-    User Pinned folder.
+    Whether or not the taskbar shortcut Chrome was launched from was pinned by
+    the installer. Recorded when Chrome is launched from the taskbar, and the
+    install was done after the installer started pinning Chrome to the taskbar
+    for Windows 10+.
+  </summary>
+</histogram>
+
+<histogram name="Windows.MakeChromeDefaultDirectly.Result"
+    enum="DefaultDirectAttemptResult" expires_after="M109">
+  <owner>robliao@chromium.org</owner>
+  <owner>davidbienvenu@chromium.org</owner>
+  <summary>
+    Records the outcome of attempting to set the default directly. Recorded when
+    a request to make Chrome default is received and is eligible for the direct
+    path.
   </summary>
 </histogram>
 
@@ -184,47 +177,6 @@ chromium-metrics-reviews@google.com.
     Indicates whether Windows 11 style menus are used. Recorded on menu
     configuration initialization.
   </summary>
-</histogram>
-
-<histogram name="Windows.ModuleInspector.ReadCacheResult"
-    enum="InspectionResultsCacheReadResult" expires_after="M78">
-  <owner>chrisha@chromium.org</owner>
-  <owner>pmonette@chromium.org</owner>
-  <summary>
-    The result of reading the InspectionResultsCache from disk. The cache is
-    read once at startup when the ModuleInspector needs it.
-  </summary>
-</histogram>
-
-<histogram name="Windows.ModuleInspector.WriteCacheResult"
-    enum="BooleanSuccess" expires_after="M78">
-  <owner>chrisha@chromium.org</owner>
-  <owner>pmonette@chromium.org</owner>
-  <summary>
-    The result of writing the InspectionResultsCache to disk. This is done every
-    time the ModuleDatabase becomes idle.
-  </summary>
-</histogram>
-
-<histogram name="Windows.NativeWindowVisibility{NativeWindowVisibility}"
-    units="windows" expires_after="2021-02-01">
-  <owner>davidbienvenu@chromium.org</owner>
-  <owner>fdoray@chromium.org</owner>
-  <summary>
-    The number of Chrome browser windows in a given visibility state. This is
-    computed using ComputeNativeWindowOcclusionStatus() and is recorded every 10
-    minutes. {NativeWindowVisibility}
-  </summary>
-  <token key="NativeWindowVisibility">
-    <variant name=""/>
-    <variant name=".Hidden"
-        summary="The native window is not visible because it is in a
-                 minimized window"/>
-    <variant name=".Occluded"
-        summary="The native window is fully covered by other windows"/>
-    <variant name=".Visible"
-        summary="The native window is visible or partially visible."/>
-  </token>
 </histogram>
 
 <histogram name="Windows.OnCurrentWorkspaceCached" enum="BooleanCacheHit"
@@ -309,21 +261,10 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Windows.PathRecursivelyDeleteRetryCount" units="attempts"
-    expires_after="2022-10-16">
-  <owner>grt@chromium.org</owner>
-  <owner>davidbienvenu@chromium.org</owner>
-  <summary>
-    The number of retries needed to fully delete a path recursively from
-    GetDeletePathRecursivelyCallback. 0 means it succeeded the first time, 9
-    means it never succeeded to fully delete the path and all of its contents
-    (if the path named a directory).
-  </summary>
-</histogram>
-
 <histogram name="Windows.ProcessorFamily" enum="ProcessorFamily"
-    expires_after="2022-09-11">
+    expires_after="2023-06-01">
   <owner>rkc@chromium.org</owner>
+  <owner>vnagarnaik@google.com</owner>
   <owner>rockot@chromium.org</owner>
   <summary>
     The processor family type. Logged shortly after startup. The value is
@@ -334,8 +275,9 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Windows.ProcessorVirtualizationFirmwareEnabled"
-    enum="BooleanEnabled" expires_after="2022-12-25">
+    enum="BooleanEnabled" expires_after="2023-06-01">
   <owner>rkc@chromium.org</owner>
+  <owner>vnagarnaik@google.com</owner>
   <owner>rockot@chromium.org</owner>
   <summary>
     Whether virtualization has been enabled in the system firmware. Logged

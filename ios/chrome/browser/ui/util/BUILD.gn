@@ -1,4 +1,4 @@
-# Copyright 2016 The Chromium Authors. All rights reserved.
+# Copyright 2016 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -56,6 +56,7 @@ source_set("util") {
     "//ios/chrome/app:tests_hook",
     "//ios/chrome/app/strings:ios_strings_grit",
     "//ios/chrome/browser:utils",
+    "//ios/chrome/browser/flags:system_flags",
     "//ios/chrome/browser/ui:feature_flags",
     "//ios/chrome/common:timing",
     "//ios/chrome/common/ui/util",
@@ -77,25 +78,11 @@ source_set("util") {
 }
 
 swift_source_set("util_swift") {
-  bridge_header = "util_swift_bridge.h"
   sources = [
     "UIView+WindowCoordinates.swift",
     "UIView+WindowObserving.swift",
     "frame_layout_guide.swift",
     "layout_guide_center.swift",
-  ]
-  deps = [ ":crbug_1316061" ]
-  frameworks = [ "UIKit.framework" ]
-}
-
-# TODO(crbug.com/1316061): This target is just a pretext to force swiftc to
-# import the `util_swift_bridge.h` bridging header, and transitively,
-# UIKit/UIKit.h.
-source_set("crbug_1316061") {
-  configs += [ "//build/config/compiler:enable_arc" ]
-  sources = [
-    "crbug_1316061_view.h",
-    "crbug_1316061_view.mm",
   ]
   frameworks = [ "UIKit.framework" ]
 }

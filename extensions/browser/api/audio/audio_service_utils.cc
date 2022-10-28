@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -129,20 +129,18 @@ std::unique_ptr<api::audio::DeviceFilter> ConvertDeviceFilterFromMojom(
   auto result = std::make_unique<api::audio::DeviceFilter>();
   switch (filter->includedActiveState) {
     case crosapi::mojom::DeviceFilter::ActiveState::kUnset:
-      result->is_active = nullptr;
+      result->is_active = absl::nullopt;
       break;
     case crosapi::mojom::DeviceFilter::ActiveState::kInactive:
-      result->is_active = std::make_unique<bool>(false);
+      result->is_active = false;
       break;
     case crosapi::mojom::DeviceFilter::ActiveState::kActive:
-      result->is_active = std::make_unique<bool>(true);
+      result->is_active = true;
       break;
   }
 
   if (filter->includedStreamTypes) {
-    result->stream_types =
-        std::make_unique<std::vector<api::audio::StreamType>>(
-            filter->includedStreamTypes->size());
+    result->stream_types.emplace(filter->includedStreamTypes->size());
     std::transform(filter->includedStreamTypes->begin(),
                    filter->includedStreamTypes->end(),
                    result->stream_types->begin(), ConvertStreamTypeFromMojom);
@@ -190,10 +188,7 @@ api::audio::AudioDeviceInfo ConvertAudioDeviceInfoFromMojom(
   result.device_name = info->deviceName;
   result.is_active = info->isActive;
   result.level = info->level;
-  if (info->stableDeviceId) {
-    result.stable_device_id =
-        std::make_unique<std::string>(*(info->stableDeviceId));
-  }
+  result.stable_device_id = info->stableDeviceId;
   return result;
 }
 

@@ -52,6 +52,7 @@
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "net/base/features.h"
+#include "net/first_party_sets/public_sets.h"
 #include "net/log/net_log_util.h"
 #include "sandbox/policy/features.h"
 #include "services/cert_verifier/cert_verifier_service_factory.h"
@@ -68,6 +69,10 @@
 
 #if !BUILDFLAG(IS_ANDROID)
 #include "content/browser/network_sandbox.h"
+#endif
+
+#if BUILDFLAG(IS_WIN)
+#include "content/browser/net/network_service_process_tracker_win.h"
 #endif
 
 namespace content {
@@ -292,8 +297,17 @@ void CreateNetworkContextInternal(
     }
   }
 
-  GetNetworkService()->CreateNetworkContext(std::move(context),
-                                            std::move(params));
+  // This might recreate g_client if the network service needed to be restarted.
+  auto* network_service = GetNetworkService();
+
+#if BUILDFLAG(USE_SOCKET_BROKER)
+  if (GetContentClient()->browser()->ShouldSandboxNetworkService() &&
+      !params->socket_broker) {
+    params->socket_broker = g_client->BindSocketBroker();
+  }
+#endif  // BUILDFLAG(USE_SOCKET_BROKER)
+
+  network_service->CreateNetworkContext(std::move(context), std::move(params));
 }
 
 scoped_refptr<base::SequencedTaskRunner>& GetNetworkTaskRunnerStorage() {
@@ -608,13 +622,11 @@ network::mojom::NetworkService* GetNetworkService() {
       }
 
       if (FirstPartySetsHandlerImpl::GetInstance()->IsEnabled()) {
-        if (absl::optional<network::mojom::PublicFirstPartySetsPtr> sets =
+        if (absl::optional<net::PublicSets> sets =
                 FirstPartySetsHandlerImpl::GetInstance()->GetSets(
-                    base::BindOnce(
-                        [](network::mojom::PublicFirstPartySetsPtr sets) {
-                          GetNetworkService()->SetFirstPartySets(
-                              std::move(sets));
-                        }));
+                    base::BindOnce([](net::PublicSets sets) {
+                      GetNetworkService()->SetFirstPartySets(std::move(sets));
+                    }));
             sets.has_value()) {
           g_network_service_remote->get()->SetFirstPartySets(
               std::move(sets.value()));
@@ -756,6 +768,7 @@ GetNewCertVerifierServiceRemote(
 }
 
 void RunInProcessCertVerifierServiceFactory(
+    cert_verifier::mojom::CertVerifierServiceParamsPtr params,
     mojo::PendingReceiver<cert_verifier::mojom::CertVerifierServiceFactory>
         receiver) {
 #if BUILDFLAG(IS_CHROMEOS)
@@ -772,7 +785,7 @@ void RunInProcessCertVerifierServiceFactory(
       service_factory_slot;
   service_factory_slot.GetOrCreateValue() =
       std::make_unique<cert_verifier::CertVerifierServiceFactoryImpl>(
-          std::move(receiver));
+          std::move(params), std::move(receiver));
 }
 
 // Owns the CertVerifierServiceFactory used by the browser.
@@ -799,6 +812,8 @@ GetCertVerifierServiceFactory() {
       factory_remote_storage = GetCertVerifierServiceFactoryRemoteStorage();
   if (!factory_remote_storage.is_bound() ||
       !factory_remote_storage.is_connected()) {
+    cert_verifier::mojom::CertVerifierServiceParamsPtr service_params =
+        GetContentClient()->browser()->GetCertVerifierServiceParams();
     factory_remote_storage.reset();
 #if BUILDFLAG(IS_CHROMEOS)
     // In-process CertVerifierService in Ash and Lacros should run on the IO
@@ -808,9 +823,11 @@ GetCertVerifierServiceFactory() {
     GetIOThreadTaskRunner({})->PostTask(
         FROM_HERE,
         base::BindOnce(&RunInProcessCertVerifierServiceFactory,
+                       std::move(service_params),
                        factory_remote_storage.BindNewPipeAndPassReceiver()));
 #else
     RunInProcessCertVerifierServiceFactory(
+        std::move(service_params),
         factory_remote_storage.BindNewPipeAndPassReceiver());
 #endif
   }
@@ -868,13 +885,6 @@ void CreateNetworkContextInNetworkService(
         params->http_cache_file_operations_factory
             .InitWithNewPipeAndPassReceiver());
   }
-
-#if BUILDFLAG(USE_SOCKET_BROKER)
-  if (GetContentClient()->browser()->ShouldSandboxNetworkService() &&
-      !params->socket_broker) {
-    params->socket_broker = g_client->BindSocketBroker();
-  }
-#endif  // BUILDFLAG(USE_SOCKET_BROKER)
 
 #if BUILDFLAG(IS_ANDROID)
   // On Android, if a cookie_manager pending receiver was passed then migration

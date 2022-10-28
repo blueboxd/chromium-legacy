@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -990,5 +990,58 @@ TEST_F(FileAnalyzerTest, DmgAnalysisResultMetric) {
       ArchiveAnalysisResult::kValid, 1);
 }
 #endif
+
+TEST_F(FileAnalyzerTest, EncryptedEntriesDoNotHaveHashOrLength) {
+  scoped_refptr<MockBinaryFeatureExtractor> extractor =
+      new testing::StrictMock<MockBinaryFeatureExtractor>();
+  FileAnalyzer analyzer(extractor);
+  base::RunLoop run_loop;
+
+  base::FilePath target_path(FILE_PATH_LITERAL("encrypted.zip"));
+  base::FilePath zip_path;
+  EXPECT_TRUE(base::PathService::Get(chrome::DIR_TEST_DATA, &zip_path));
+  zip_path = zip_path.AppendASCII("safe_browsing")
+                 .AppendASCII("download_protection")
+                 .AppendASCII("encrypted.zip");
+
+  analyzer.Start(
+      target_path, zip_path,
+      base::BindOnce(&FileAnalyzerTest::DoneCallback, base::Unretained(this),
+                     run_loop.QuitClosure()));
+  run_loop.Run();
+
+  ASSERT_TRUE(has_result_);
+  EXPECT_EQ(result_.type, ClientDownloadRequest::ZIPPED_EXECUTABLE);
+  ASSERT_EQ(1, result_.archived_binaries.size());
+  EXPECT_TRUE(result_.archived_binaries.Get(0).digests().sha256().empty());
+  EXPECT_FALSE(result_.archived_binaries.Get(0).has_length());
+}
+
+TEST_F(FileAnalyzerTest, RarDirectoriesHaveZeroLength) {
+  scoped_refptr<MockBinaryFeatureExtractor> extractor =
+      new testing::StrictMock<MockBinaryFeatureExtractor>();
+  FileAnalyzer analyzer(extractor);
+  base::RunLoop run_loop;
+
+  base::FilePath target_path(FILE_PATH_LITERAL("file_and_folder.rar"));
+  base::FilePath rar_path;
+  EXPECT_TRUE(base::PathService::Get(chrome::DIR_TEST_DATA, &rar_path));
+  rar_path = rar_path.AppendASCII("safe_browsing")
+                 .AppendASCII("rar")
+                 .AppendASCII("file_and_folder.rar");
+
+  analyzer.Start(
+      target_path, rar_path,
+      base::BindOnce(&FileAnalyzerTest::DoneCallback, base::Unretained(this),
+                     run_loop.QuitClosure()));
+  run_loop.Run();
+
+  ASSERT_TRUE(has_result_);
+  ASSERT_EQ(result_.archived_binaries.size(), 2);
+  EXPECT_EQ(result_.archived_binaries[0].file_basename(), "file.exe");
+  EXPECT_EQ(result_.archived_binaries[0].length(), 24);
+  EXPECT_EQ(result_.archived_binaries[1].file_basename(), "folder");
+  EXPECT_EQ(result_.archived_binaries[1].length(), 0);
+}
 
 }  // namespace safe_browsing

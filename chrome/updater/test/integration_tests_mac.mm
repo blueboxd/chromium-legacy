@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -120,7 +120,7 @@ void EnterTestMode(const GURL& url) {
                   .SetInitialDelay(0.1)
                   .SetServerKeepAliveSeconds(1)
                   .SetCrxVerifierFormat(crx_file::VerifierFormat::CRX3)
-                  .SetOverinstallTimeout(base::Seconds(11))
+                  .SetOverinstallTimeout(TestTimeouts::action_timeout())
                   .Modify());
 }
 
@@ -323,16 +323,20 @@ void ExpectNotActive(UpdaterScope scope, const std::string& app_id) {
   EXPECT_FALSE(base::PathIsWritable(*path));
 }
 
-void WaitForUpdaterExit(UpdaterScope /*scope*/) {
-  ASSERT_TRUE(WaitFor(base::BindRepeating([]() {
-    std::string ps_stdout;
-    EXPECT_TRUE(base::GetAppOutput({"ps", "ax", "-o", "command"}, &ps_stdout));
-    if (ps_stdout.find(GetExecutablePath().BaseName().AsUTF8Unsafe()) ==
-        std::string::npos) {
-      return true;
-    }
-    return false;
-  })));
+bool WaitForUpdaterExit(UpdaterScope /*scope*/) {
+  return WaitFor(
+      base::BindRepeating([]() {
+        std::string ps_stdout;
+        EXPECT_TRUE(
+            base::GetAppOutput({"ps", "ax", "-o", "command"}, &ps_stdout));
+        if (ps_stdout.find(GetExecutablePath().BaseName().AsUTF8Unsafe()) ==
+            std::string::npos) {
+          return true;
+        }
+        return false;
+      }),
+      base::BindLambdaForTesting(
+          []() { VLOG(0) << "Still waiting for updater to exit..."; }));
 }
 
 void SetupRealUpdaterLowerVersion(UpdaterScope scope) {
@@ -420,7 +424,7 @@ void UninstallApp(UpdaterScope scope, const std::string& app_id) {
                           base::FilePath(FILE_PATH_LITERAL("NONE")));
 }
 
-void RunOfflineInstall(UpdaterScope scope) {
+void RunOfflineInstall(UpdaterScope scope, bool is_silent_install) {
   // TODO(crbug.com/1286574).
 }
 

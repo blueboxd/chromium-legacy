@@ -1,4 +1,4 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -113,10 +113,10 @@ class NoteTakingHelper : public arc::ArcIntentHelperObserver,
   };
 
   // Callback used to launch a Chrome app.
-  using LaunchChromeAppCallback = base::RepeatingCallback<void(
-      content::BrowserContext* context,
-      const extensions::Extension*,
-      std::unique_ptr<extensions::api::app_runtime::ActionData>)>;
+  using LaunchChromeAppCallback =
+      base::RepeatingCallback<void(content::BrowserContext* context,
+                                   const extensions::Extension*,
+                                   extensions::api::app_runtime::ActionData)>;
 
   // Intent action used to launch Android apps.
   static const char kIntentAction[];

@@ -1,4 +1,4 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -107,7 +107,7 @@
 #include "chrome/browser/ui/web_applications/test/web_app_browsertest_util.h"
 #include "chrome/browser/web_applications/externally_installed_web_app_prefs.h"
 #include "chrome/browser/web_applications/preinstalled_web_app_manager.h"
-#include "chrome/browser/web_applications/test/app_registration_waiter.h"
+#include "chrome/browser/web_applications/test/app_registry_cache_waiter.h"
 #include "chrome/browser/web_applications/test/fake_web_app_provider.h"
 #include "chrome/browser/web_applications/test/web_app_install_test_utils.h"
 #include "chrome/browser/web_applications/web_app_constants.h"
@@ -137,11 +137,11 @@
 #include "components/sync/base/model_type.h"
 #include "components/sync/driver/sync_service.h"
 #include "components/sync/driver/sync_user_settings.h"
-#include "components/sync/driver/test_sync_service.h"
 #include "components/sync/protocol/app_list_specifics.pb.h"
 #include "components/sync/protocol/entity_specifics.pb.h"
 #include "components/sync/test/fake_sync_change_processor.h"
 #include "components/sync/test/sync_error_factory_mock.h"
+#include "components/sync/test/test_sync_service.h"
 #include "components/sync_preferences/pref_model_associator.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "components/user_manager/fake_user_manager.h"
@@ -625,10 +625,7 @@ class ChromeShelfControllerTestBase : public BrowserWithTestWindowTest {
   }
 
   // Create and initialize the controller, owned by the test shell delegate.
-  void InitShelfController() {
-    CreateShelfController()->Init();
-    app_service_test_.FlushMojoCalls();
-  }
+  void InitShelfController() { CreateShelfController()->Init(); }
 
   // Create and initialize the controller; create a tab and show the browser.
   void InitShelfControllerWithBrowser() {
@@ -1041,11 +1038,11 @@ class ChromeShelfControllerTestBase : public BrowserWithTestWindowTest {
         app_info.version_name, false /* sticky */,
         true /* notifications_enabled */, true /* app_ready */,
         false /* suspended */, false /* shortcut */, true /* launchable */,
-        ArcAppListPrefs::WindowLayout(), app_size_in_bytes, data_size_in_bytes);
+        false /* need_fixup */, ArcAppListPrefs::WindowLayout(),
+        app_size_in_bytes, data_size_in_bytes);
     const std::string app_id =
         ArcAppListPrefs::GetAppId(app_info.package_name, app_info.activity);
     EXPECT_TRUE(prefs->GetApp(app_id));
-    app_service_test().FlushMojoCalls();
     return app_id;
   }
 
@@ -1122,8 +1119,7 @@ class ChromeShelfControllerTestBase : public BrowserWithTestWindowTest {
     web_app::AppId installed_app_id =
         web_app::test::InstallWebApp(profile(), std::move(web_app_info));
     ASSERT_EQ(installed_app_id, web_app_id);
-    web_app::AppRegistrationWaiter(profile(), web_app_id).Await();
-    app_service_test_.FlushMojoCalls();
+    web_app::AppReadinessWaiter(profile(), web_app_id).Await();
   }
 
   void RemoveWebApp(const char* web_app_id) {
@@ -3860,7 +3856,6 @@ TEST_F(MultiProfileMultiBrowserShelfLayoutChromeShelfControllerTest,
   V2App v2_app_1(profile1, extension1_.get());
   EXPECT_TRUE(v2_app_1.window()->GetNativeWindow()->IsVisible());
   SwitchActiveUser(account_id2);
-  app_service_test().FlushMojoCalls();
   EXPECT_FALSE(v2_app_1.window()->GetNativeWindow()->IsVisible());
 
   // Add a v2 app for user #1 while on desktop #2 should not be shown.
@@ -3884,7 +3879,6 @@ TEST_F(MultiProfileMultiBrowserShelfLayoutChromeShelfControllerTest,
   // Switching back to desktop#1 and creating an app for user #1 should move
   // the app on desktop #1.
   SwitchActiveUser(account_id1);
-  app_service_test().FlushMojoCalls();
   V2App v2_app_4(profile1, extension1_.get());
   EXPECT_FALSE(v2_app_1.window()->GetNativeWindow()->IsVisible());
   EXPECT_TRUE(v2_app_2.window()->GetNativeWindow()->IsVisible());
@@ -3894,7 +3888,6 @@ TEST_F(MultiProfileMultiBrowserShelfLayoutChromeShelfControllerTest,
   // Switching to desktop #3 and creating an app for user #1 should place it
   // on that user's desktop (#1).
   SwitchActiveUser(account_id3);
-  app_service_test().FlushMojoCalls();
   V2App v2_app_5(profile1, extension1_.get());
   EXPECT_FALSE(v2_app_5.window()->GetNativeWindow()->IsVisible());
   SwitchActiveUser(account_id1);
@@ -3903,7 +3896,6 @@ TEST_F(MultiProfileMultiBrowserShelfLayoutChromeShelfControllerTest,
   // Switching to desktop #2, hiding the app window and creating an app should
   // teleport there automatically.
   SwitchActiveUser(account_id2);
-  app_service_test().FlushMojoCalls();
   v2_app_1.window()->Hide();
   V2App v2_app_6(profile1, extension1_.get());
   EXPECT_FALSE(v2_app_1.window()->GetNativeWindow()->IsVisible());
@@ -4064,14 +4056,12 @@ TEST_F(MultiProfileMultiBrowserShelfLayoutChromeShelfControllerTest,
 
   // Switch to a new profile
   SwitchActiveUser(account_id2);
-  app_service_test().FlushMojoCalls();
   EXPECT_FALSE(shelf_controller_->IsAppPinned(app_id));
   EXPECT_EQ(1, model_->item_count());
   EXPECT_FALSE(shelf_controller_->GetShelfSpinnerController()->HasApp(app_id));
 
   // Switch back
   SwitchActiveUser(account_id);
-  app_service_test().FlushMojoCalls();
   EXPECT_TRUE(shelf_controller_->IsAppPinned(app_id));
   EXPECT_EQ(2, model_->item_count());
   EXPECT_TRUE(shelf_controller_->GetShelfSpinnerController()->HasApp(app_id));
@@ -4616,7 +4606,6 @@ TEST_F(ChromeShelfControllerArcDefaultAppsTest, PlayStoreDeferredLaunch) {
       model_->GetShelfItemDelegate(ash::ShelfID(arc::kPlayStoreAppId));
   EXPECT_TRUE(item_delegate);
   SelectItem(item_delegate);
-  app_service_test().FlushMojoCalls();
   EXPECT_TRUE(shelf_controller_->IsAppPinned(arc::kPlayStoreAppId));
   EXPECT_TRUE(shelf_controller_->GetShelfSpinnerController()->HasApp(
       arc::kPlayStoreAppId));
@@ -4960,7 +4949,13 @@ class ChromeShelfControllerDemoModeTest : public ChromeShelfControllerTestBase {
   std::unique_ptr<ash::DemoModeTestHelper> demo_mode_test_helper_;
 };
 
-TEST_F(ChromeShelfControllerDemoModeTest, PinnedAppsOnline) {
+// TODO(crbug.com/1363613): PinnedAppsOnline is flaky on linux-chromeos-rel.
+#if BUILDFLAG(IS_CHROMEOS)
+#define MAYBE_PinnedAppsOnline DISABLED_PinnedAppsOnline
+#else
+#define MAYBE_PinnedAppsOnline PinnedAppsOnline
+#endif
+TEST_F(ChromeShelfControllerDemoModeTest, MAYBE_PinnedAppsOnline) {
   network::TestNetworkConnectionTracker::GetInstance()->SetConnectionType(
       network::mojom::ConnectionType::CONNECTION_ETHERNET);
 
@@ -4997,8 +4992,6 @@ TEST_F(ChromeShelfControllerDemoModeTest, PinnedAppsOnline) {
 
   profile()->GetTestingPrefService()->SetManagedPref(
       prefs::kPolicyPinnedLauncherApps, base::Value(policy_value.Clone()));
-
-  app_service_test().FlushMojoCalls();
 
   // Since the device is online, all policy pinned apps are pinned.
   EXPECT_TRUE(shelf_controller_->IsAppPinned(extension1_->id()));
@@ -5058,7 +5051,6 @@ TEST_F(ChromeShelfControllerDemoModeTest, PinnedAppsOffline) {
 
   profile()->GetTestingPrefService()->SetManagedPref(
       prefs::kPolicyPinnedLauncherApps, base::Value(policy_value.Clone()));
-  app_service_test().FlushMojoCalls();
 
   // Since the device is offline, the policy pinned apps that shouldn't be
   // pinned in Demo Mode are unpinned.

@@ -1,10 +1,9 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome/updater/util.h"
 
-#include <algorithm>
 #include <cctype>
 #include <string>
 #include <vector>
@@ -21,6 +20,7 @@
 #include "base/logging.h"
 #include "base/notreached.h"
 #include "base/path_service.h"
+#include "base/ranges/algorithm.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -177,23 +177,27 @@ TagParsingResult GetTagArgsForCommandLine(
   std::string tag = command_line.HasSwitch(kTagSwitch)
                         ? command_line.GetSwitchValueASCII(kTagSwitch)
                         : command_line.GetSwitchValueASCII(kHandoffSwitch);
-#if BUILDFLAG(IS_WIN)
-    if (tag.empty())
-      tag = GetSwitchValueInLegacyFormat(command_line.GetCommandLineString(),
-                                         base::ASCIIToWide(kHandoffSwitch));
-#endif
-    if (tag.empty())
-      return {};
-    tagging::TagArgs tag_args;
-    const tagging::ErrorCode error =
-        tagging::Parse(tag, absl::nullopt, &tag_args);
-    VLOG_IF(1, error != tagging::ErrorCode::kSuccess)
-        << "Tag parsing returned " << error << ".";
-    return {tag_args, error};
+  if (tag.empty())
+    return {};
+
+  tagging::TagArgs tag_args;
+  const tagging::ErrorCode error = tagging::Parse(
+      tag, command_line.GetSwitchValueASCII(kAppArgsSwitch), &tag_args);
+  VLOG_IF(1, error != tagging::ErrorCode::kSuccess)
+      << "Tag parsing returned " << error << ".";
+  return {tag_args, error};
 }
 
 TagParsingResult GetTagArgs() {
+#if BUILDFLAG(IS_WIN)
+  TagParsingResult result =
+      GetTagArgsForCommandLine(*base::CommandLine::ForCurrentProcess());
+
+  return result.tag_args ? result
+                         : GetTagArgsFromLegacyCommandLine(::GetCommandLine());
+#else
   return GetTagArgsForCommandLine(*base::CommandLine::ForCurrentProcess());
+#endif
 }
 
 absl::optional<tagging::AppArgs> GetAppArgs(const std::string& app_id) {
@@ -202,9 +206,8 @@ absl::optional<tagging::AppArgs> GetAppArgs(const std::string& app_id) {
     return absl::nullopt;
 
   const std::vector<tagging::AppArgs>& apps_args = tag_args->apps;
-  std::vector<tagging::AppArgs>::const_iterator it = std::find_if(
-      std::begin(apps_args), std::end(apps_args),
-      [&app_id](const tagging::AppArgs& app_args) {
+  std::vector<tagging::AppArgs>::const_iterator it = base::ranges::find_if(
+      apps_args, [&app_id](const tagging::AppArgs& app_args) {
         return base::EqualsCaseInsensitiveASCII(app_args.app_id, app_id);
       });
   return it != std::end(apps_args) ? absl::optional<tagging::AppArgs>(*it)
@@ -242,8 +245,6 @@ void InitLogging(UpdaterScope updater_scope) {
                        /*enable_timestamp=*/true,
                        /*enable_tickcount=*/false);
   VLOG(1) << "Log file: " << settings.log_file_path;
-  VLOG(1) << "Process command line: "
-          << base::CommandLine::ForCurrentProcess()->GetCommandLineString();
 }
 
 // This function and the helper functions are copied from net/base/url_util.cc
@@ -287,8 +288,7 @@ bool PathOwnedByUser(const base::FilePath& path) {
 
 std::wstring GetTaskNamePrefix(UpdaterScope scope) {
   std::wstring task_name = GetTaskDisplayName(scope);
-  task_name.erase(std::remove_if(task_name.begin(), task_name.end(), isspace),
-                  task_name.end());
+  task_name.erase(base::ranges::remove_if(task_name, isspace), task_name.end());
   return task_name;
 }
 

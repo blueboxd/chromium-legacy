@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -36,12 +36,6 @@
 #include "extensions/browser/extension_prefs_scope.h"
 #include "extensions/browser/extension_util.h"
 #include "extensions/common/error_utils.h"
-
-#if BUILDFLAG(ENABLE_PLUGINS)
-#include "chrome/browser/plugins/plugin_finder.h"
-#include "chrome/browser/plugins/plugin_installer.h"
-#include "content/public/browser/plugin_service.h"
-#endif
 
 using content::BrowserThread;
 
@@ -130,7 +124,7 @@ ContentSettingsContentSettingGetFunction::Run() {
   }
 
   GURL secondary_url(primary_url);
-  if (params->details.secondary_url.get()) {
+  if (params->details.secondary_url) {
     secondary_url = GURL(*params->details.secondary_url);
     if (!secondary_url.is_valid()) {
       return RespondNow(
@@ -139,7 +133,7 @@ ContentSettingsContentSettingGetFunction::Run() {
   }
 
   bool incognito = false;
-  if (params->details.incognito.get())
+  if (params->details.incognito)
     incognito = *params->details.incognito;
   if (incognito && !include_incognito_information())
     return RespondNow(Error(pref_keys::kIncognitoErrorMessage));
@@ -196,7 +190,7 @@ ContentSettingsContentSettingSetFunction::Run() {
     return RespondNow(Error(primary_error));
 
   ContentSettingsPattern secondary_pattern = ContentSettingsPattern::Wildcard();
-  if (params->details.secondary_pattern.get()) {
+  if (params->details.secondary_pattern) {
     std::string secondary_error;
     secondary_pattern = content_settings_helpers::ParseExtensionPattern(
         *params->details.secondary_pattern, &secondary_error);
@@ -204,8 +198,8 @@ ContentSettingsContentSettingSetFunction::Run() {
       return RespondNow(Error(secondary_error));
   }
 
-  EXTENSION_FUNCTION_VALIDATE(params->details.setting->is_string());
-  std::string setting_str = params->details.setting->GetString();
+  EXTENSION_FUNCTION_VALIDATE(params->details.setting.is_string());
+  std::string setting_str = params->details.setting.GetString();
   ContentSetting setting;
   EXTENSION_FUNCTION_VALIDATE(
       content_settings::ContentSettingFromString(setting_str, &setting));

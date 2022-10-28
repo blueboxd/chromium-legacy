@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -16,6 +16,13 @@ void RecordFirstRunSeedImportResult(FirstRunSeedImportResult result) {
                             FirstRunSeedImportResult::ENUM_SIZE);
 }
 #endif  // BUILDFLAG(IS_ANDROID)
+
+#if BUILDFLAG(IS_IOS)
+void RecordFirstRunSeedImportResult(FirstRunSeedImportResult result) {
+  // TODO(crbug.com/1353937): Merge with Android implementation after first run
+  // seed import on iOS is fully implemented.
+}
+#endif  // BUILDFLAG(IS_IOS)
 
 void RecordLoadSeedResult(LoadSeedResult state) {
   base::UmaHistogramEnumeration("Variations.SeedLoadResult", state);

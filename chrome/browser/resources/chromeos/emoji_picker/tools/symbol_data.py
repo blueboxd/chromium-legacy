@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# Copyright 2022 The Chromium Authors. All rights reserved.
+# Copyright 2022 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -10,7 +10,7 @@ import logging
 import os
 import sys
 import unicodedata
-from typing import Generator, List, Tuple
+from typing import Any, Dict, Generator, List, Optional, Sequence, Set, Tuple
 
 # Add extra dependencies to the python path.
 _SCRIPT_DIR = os.path.realpath(os.path.dirname(__file__))
@@ -23,6 +23,7 @@ from util import build_utils
 # Initialize logger.
 logging.basicConfig(stream=sys.stdout, level=logging.ERROR)
 LOGGER = logging.getLogger(__name__)
+
 
 # List of unicode ranges for each symbol group (ranges are inclusive).
 SYMBOLS_GROUPS = {
@@ -57,11 +58,39 @@ SYMBOLS_GROUPS = {
         (0x0391, 0x0391 + 25),
         # Normal Small Letters.
         (0x03b1, 0x03b1 + 25),
+        # Mathematical Operators
+        (0x2200, 0x2235),
+        (0x2260, 0x228b),
     ],
     'Miscellaneous': [
         # Miscellaneous Symbols Unicode Block.
         (0x2600, 0x26ff)
-    ]
+    ],
+}
+
+# List of unicode ranges (inclusive) for each search only symbol group.
+SEARCH_ONLY_SYMBOLS_GROUPS = {
+    'Letterlike': [
+        # Letterlike Symbols Unicode Block.
+        (0x2110, 0x214f),
+    ],
+    'Math': [
+        # Greek Letters and Symbols from Mathematical and Alphanumeric
+        # Symbols Unicode Block.
+        # Bold Capital Letters.
+        (0x1D6A8, 0x1D6A8 + 25),
+        # Italic Capital Letters.
+        (0x1D6E2, 0x1D6E2 + 25),
+        # Bold-Italic Capital Letters.
+        (0x1D71C, 0x1D71C + 25),
+        # Mathematical Operators
+        (0x2236, 0x225f),
+        (0x228c, 0x22df),
+    ],
+    'Miscellaneous': [
+        # Miscellaneous Symbols Unicode Block.
+        (0x2300, 0x23cf)
+    ],
 }
 
 
@@ -94,6 +123,65 @@ class EmojiPickerGroup:
     group: str
     # List of the emojis in the group.
     emoji: List[EmojiPickerEmoji]
+    # Determines If the group is search-only.
+    search_only: bool = False
+
+
+def _convert_snake_case_to_camel_case(snake_case_input: str) -> str:
+    """Converts an snake-case string to camel-case.
+
+    Args:
+        snake_case_input: String that is snake case.
+
+    Returns:
+        An string that is camel-case version of input.
+
+    """
+    words = snake_case_input.split('_')
+    return words[0] + ''.join(word.title() for word in words[1:])
+
+
+def _emoji_data_dict_factory(
+        data: Sequence[Tuple[str, Any]]) -> Dict[str, Any]:
+    """Implements a dictionary factory for emoji data preparation.
+
+    This factory skips empty keys with empty value. It also converts snake-case
+    keys to camel-case.
+
+    Args:
+        data: A sequence of (key, value) pairs
+
+    Returns:
+        A dictionary created from the input sequence where keys with an empty
+            list value are ignored and keys are converted to camel-case.
+    """
+    return {
+        _convert_snake_case_to_camel_case(key): value
+        for (key, value) in data
+        if not isinstance(value, list) or value
+    }
+
+
+def _load_emoji_characters_from_files(data_paths: List[str]) -> Set[str]:
+    """Loads a set of emoji characters from a list of data file paths.
+
+    Args:
+        data_paths: A list of emoji data files.
+
+    Returns:
+        The set of emoji unicode characters read from the data.
+    """
+    emoji_character_set = set()
+    for data_path in data_paths:
+        with open(data_path, 'r') as data_file:
+            emoji_groups = json.load(data_file)
+            file_character_set = {
+                emoji['base']['string']
+                for emoji_group in emoji_groups
+                for emoji in emoji_group['emoji']
+            }
+            emoji_character_set.update(file_character_set)
+    return emoji_character_set
 
 
 def _convert_unicode_ranges_to_emoji_chars(
@@ -161,29 +249,38 @@ def _convert_unicode_ranges_to_emoji_chars(
         num_ignored)
 
 
-def get_symbols_groups(ignore_errors: bool = True) -> List[EmojiPickerGroup]:
+def get_symbols_groups(
+        group_unicode_ranges: Dict[str, List[Tuple[int, int]]],
+        search_only: bool = False, ignore_errors: bool = True,
+        filter_set: Optional[Set[str]] = None) -> List[EmojiPickerGroup]:
     """Creates symbols data from predefined groups and their unicode ranges.
 
     Args:
+        group_unicode_ranges: A base mapping of group names to unicode ranges.
+        search_only: If True, the group is considered search-only.
         ignore_errors: If True, any exceptions raised during processing
             unicode characters is silently ignored.
+        filter_set: If not None, the characters that exist in this set are
+            excluded from output symbol groups.
 
     Raises:
         ValueError: If a unicode character does not exist in the data source
             and `ignore_errors` is true, the exception is raised.
     """
-    # TODO(b/232160008): Exclude symbols that are in emoji/emoticon lists.
 
     emoji_groups = list()
-    for (group_name, unicode_ranges) in SYMBOLS_GROUPS.items():
+    for (group_name, unicode_ranges) in group_unicode_ranges.items():
         LOGGER.info('generating symbols for group %s.', group_name)
         emoji_chars = _convert_unicode_ranges_to_emoji_chars(
             unicode_ranges, ignore_errors=ignore_errors)
         emoji = [
             EmojiPickerEmoji(base=emoji_char)
-            for emoji_char in emoji_chars]
+            for emoji_char in emoji_chars
+            if filter_set is None or emoji_char.string not in filter_set]
 
-        emoji_groups.append(EmojiPickerGroup(group=group_name, emoji=emoji))
+        emoji_group = EmojiPickerGroup(
+            group=group_name, emoji=emoji, search_only=search_only)
+        emoji_groups.append(emoji_group)
     return emoji_groups
 
 
@@ -196,17 +293,46 @@ def main(argv: List[str]) -> None:
         '--verbose', required=False, default=False,
         action='store_true',
         help="Set the logging level to Debug.")
+    parser.add_argument(
+        '--filter-data-paths', action='append', nargs='+')
+
     args = parser.parse_args(argv)
 
     if args.verbose:
         LOGGER.setLevel(level=logging.DEBUG)
 
-    symbols_groups = get_symbols_groups()
+    # Flatten list of data paths if any.
+    filter_data_paths = list()
+    if args.filter_data_paths is not None:
+        for data_path_element in args.filter_data_paths:
+            filter_data_paths.extend(data_path_element)
+
+    # Loads a list of other emoji characters that must be
+    # excluded from symbols.
+    filter_set = _load_emoji_characters_from_files(
+        data_paths=filter_data_paths)
+
+    # Add symbol groups.
+    symbols_groups = get_symbols_groups(
+        group_unicode_ranges=SYMBOLS_GROUPS,
+        filter_set=filter_set,
+        search_only=False)
+
+    # Add search-only symbol groups.
+    symbols_groups.extend(
+        get_symbols_groups(
+            group_unicode_ranges=SEARCH_ONLY_SYMBOLS_GROUPS,
+            filter_set=filter_set,
+            search_only=True)
+    )
 
     # Create the data and convert them to dict.
-    symbols_groups_dicts = [
-        dataclasses.asdict(symbol_group)
-        for symbol_group in symbols_groups]
+    symbols_groups_dicts = []
+    for symbol_group in symbols_groups:
+        symbol_group_dict = dataclasses.asdict(
+            symbol_group,
+            dict_factory=_emoji_data_dict_factory)
+        symbols_groups_dicts.append(symbol_group_dict)
 
     # Write the result to output path as json file.
     with build_utils.AtomicOutput(args.output) as tmp_file:

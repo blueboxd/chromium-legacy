@@ -17,6 +17,8 @@
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/progress_bar.h"
 #include "ui/views/input_event_activation_protector.h"
+#include "ui/views/layout/box_layout_view.h"
+#include "ui/views/style/typography.h"
 #include "ui/views/window/non_client_view.h"
 
 namespace gfx {
@@ -68,6 +70,9 @@ class VIEWS_EXPORT BubbleFrameView : public NonClientFrameView {
   // Sets a custom view to be the dialog title instead of the |default_title_|
   // label. If there is an existing title view it will be deleted.
   void SetTitleView(std::unique_ptr<View> title_view);
+
+  // Updates the subtitle label from the BubbleDialogDelegate.
+  void UpdateSubtitle();
 
   // Signals that the main image may have changed and needs to be fetched again.
   void UpdateMainImage();
@@ -255,6 +260,12 @@ class VIEWS_EXPORT BubbleFrameView : public NonClientFrameView {
 
   int GetMainImageLeftInsets() const;
 
+  // Helper method to create a label with text style
+  static std::unique_ptr<Label> CreateLabelWithContextAndStyle(
+      const std::u16string& label_text,
+      style::TextContext text_context,
+      style::TextStyle text_style);
+
   // The bubble border.
   raw_ptr<BubbleBorder> bubble_border_ = nullptr;
 
@@ -273,11 +284,15 @@ class VIEWS_EXPORT BubbleFrameView : public NonClientFrameView {
   // The optional main image.
   raw_ptr<ImageView> main_image_ = nullptr;
 
+  raw_ptr<BoxLayoutView> title_container_ = nullptr;
+
   // One of these fields is used as the dialog title. If SetTitleView is called
   // the custom title view is stored in |custom_title_| and this class assumes
   // ownership. Otherwise |default_title_| is used.
   raw_ptr<Label> default_title_ = nullptr;
   raw_ptr<View> custom_title_ = nullptr;
+
+  raw_ptr<Label> subtitle_ = nullptr;
 
   // The optional close button (the X).
   raw_ptr<Button> close_ = nullptr;

@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -35,6 +35,7 @@
 #include "components/sync/trusted_vault/securebox.h"
 #include "components/sync/trusted_vault/trusted_vault_server_constants.h"
 #include "google_apis/gaia/gaia_auth_util.h"
+#include "google_apis/gaia/google_service_auth_error.h"
 
 namespace syncer {
 
@@ -229,10 +230,8 @@ void StandaloneTrustedVaultBackend::WriteDegradedRecoverabilityState(
   WriteToDisk(data_, file_path_);
 }
 
-void StandaloneTrustedVaultBackend::OnDegradedRecoverabilityChanged(
-    bool value) {
-  // TODO(crbug.com/1247990): To be implemented.
-  NOTIMPLEMENTED();
+void StandaloneTrustedVaultBackend::OnDegradedRecoverabilityChanged() {
+  delegate_->NotifyRecoverabilityDegradedChanged();
 }
 
 void StandaloneTrustedVaultBackend::ReadDataFromDisk() {
@@ -387,6 +386,7 @@ void StandaloneTrustedVaultBackend::SetPrimaryAccount(
   }
   primary_account_ = primary_account;
   AbandonConnectionRequest();
+  degraded_recoverability_handler_ = nullptr;
   ongoing_get_recoverability_request_.reset();
   ongoing_add_recovery_method_request_.reset();
   RemoveNonPrimaryAccountKeysIfMarkedForDeletion();
@@ -394,12 +394,18 @@ void StandaloneTrustedVaultBackend::SetPrimaryAccount(
     DCHECK(!pending_trusted_recovery_method_.has_value());
     return;
   }
-
   sync_pb::LocalTrustedVaultPerUser* per_user_vault =
       FindUserVault(primary_account->gaia);
   if (!per_user_vault) {
     per_user_vault = data_.add_user();
     per_user_vault->set_gaia_id(primary_account->gaia);
+  }
+  if (base::FeatureList::IsEnabled(
+          kSyncTrustedVaultPeriodicDegradedRecoverabilityPolling)) {
+    degraded_recoverability_handler_ =
+        std::make_unique<TrustedVaultDegradedRecoverabilityHandler>(
+            connection_.get(), /*delegate=*/this, primary_account_.value(),
+            per_user_vault->degraded_recoverability_state());
   }
 
   const absl::optional<TrustedVaultDeviceRegistrationStateForUMA>
@@ -496,8 +502,22 @@ bool StandaloneTrustedVaultBackend::MarkLocalKeysAsStale(
 void StandaloneTrustedVaultBackend::GetIsRecoverabilityDegraded(
     const CoreAccountInfo& account_info,
     base::OnceCallback<void(bool)> cb) {
-  // TODO(crbug.com/1201659): Improve this logic properly and add test coverage,
-  // including throttling and periodic polling.
+  if (base::FeatureList::IsEnabled(
+          kSyncTrustedVaultPeriodicDegradedRecoverabilityPolling)) {
+    sync_pb::LocalTrustedVaultPerUser* per_user_vault =
+        FindUserVault(account_info.gaia);
+    if (!per_user_vault) {
+      // If the account does not exist, then the recoverability state is
+      // unknown.
+      // TODO(crbug.com/1247990): Pass optional value with nullopt indicating
+      // that value is not yet known.
+      std::move(cb).Run(false);
+      return;
+    }
+    std::move(cb).Run(per_user_vault->degraded_recoverability_state()
+                          .is_recoverability_degraded());
+    return;
+  }
   ongoing_get_recoverability_request_ =
       connection_->DownloadIsRecoverabilityDegraded(
           account_info,
@@ -622,6 +642,16 @@ void StandaloneTrustedVaultBackend::SetDeviceRegisteredVersionForTesting(
 
 void StandaloneTrustedVaultBackend::SetClockForTesting(base::Clock* clock) {
   clock_ = clock;
+}
+
+void StandaloneTrustedVaultBackend::OnAuthErrorResolvedForAccount(
+    const CoreAccountInfo& account_info) {
+  if (!base::FeatureList::IsEnabled(
+          kSyncTrustedVaultPeriodicDegradedRecoverabilityPolling) ||
+      account_info != primary_account_) {
+    return;
+  }
+  degraded_recoverability_handler_->HintDegradedRecoverabilityChanged();
 }
 
 absl::optional<TrustedVaultDeviceRegistrationStateForUMA>
@@ -761,6 +791,7 @@ void StandaloneTrustedVaultBackend::OnDeviceRegistered(
       return;
     case TrustedVaultRegistrationStatus::kLocalDataObsolete:
       per_user_vault->set_keys_are_stale(true);
+      WriteToDisk(data_, file_path_);
       return;
     case TrustedVaultRegistrationStatus::kAccessTokenFetchingFailure:
       // Request wasn't sent to the server, so there is no need for throttling.
@@ -883,7 +914,12 @@ void StandaloneTrustedVaultBackend::OnTrustedRecoveryMethodAdded(
   ongoing_add_recovery_method_request_ = nullptr;
 
   std::move(cb).Run();
-  delegate_->NotifyRecoverabilityDegradedChanged();
+  if (base::FeatureList::IsEnabled(
+          kSyncTrustedVaultPeriodicDegradedRecoverabilityPolling)) {
+    degraded_recoverability_handler_->HintDegradedRecoverabilityChanged();
+  } else {
+    delegate_->NotifyRecoverabilityDegradedChanged();
+  }
 }
 
 void StandaloneTrustedVaultBackend::AbandonConnectionRequest() {

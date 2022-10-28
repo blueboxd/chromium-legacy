@@ -107,6 +107,10 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="SBClientDownload.DmgIterationSuccess" enum="BooleanSuccess"
     expires_after="2022-09-30">
+  <obsolete>
+    Removed 08-2022. SBClientDownload.DmgArchiveAnalysisResult provides strictly
+    more detail about our ability to unpack DMGs.
+  </obsolete>
   <owner>drubery@chromium.org</owner>
   <owner>chrome-counter-abuse-alerts@google.com</owner>
   <summary>
@@ -126,7 +130,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="SBClientDownload.DocumentAnalysisSuccess" enum="Boolean"
-    expires_after="2022-12-18">
+    expires_after="2023-02-19">
   <owner>drubery@chromium.org</owner>
   <owner>chrome-counter-abuse-alerts@google.com</owner>
   <summary>
@@ -157,7 +161,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="SBClientDownload.DownloadExtensions"
-    enum="SBClientDownloadExtensions" expires_after="2022-12-18">
+    enum="SBClientDownloadExtensions" expires_after="2023-02-19">
   <owner>vakh@chromium.org</owner>
   <owner>chrome-counter-abuse-alerts@google.com</owner>
   <owner>mattm@chromium.org</owner>
@@ -179,7 +183,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="SBClientDownload.DownloadRequestDuration" units="ms"
-    expires_after="2022-12-25">
+    expires_after="2023-02-26">
   <owner>vakh@chromium.org</owner>
   <owner>chrome-counter-abuse-alerts@google.com</owner>
   <owner>mattm@chromium.org</owner>
@@ -214,8 +218,8 @@ chromium-metrics-reviews@google.com.
   </token>
 </histogram>
 
-<histogram name="SBClientDownload.DownloadRequestDurationMedium" units="ms"
-    expires_after="2022-12-25">
+<histogram name="SBClientDownload.DownloadRequestDurationMedium.{Analysis}"
+    units="ms" expires_after="2022-12-25">
   <owner>drubery@chromium.org</owner>
   <owner>chrome-counter-abuse-alerts@google.com</owner>
   <summary>
@@ -230,6 +234,13 @@ chromium-metrics-reviews@google.com.
     SBClientDownload.DownloadRequestDuration. It has a maximum of 3 minutes to
     help investigate long-tail downloads.
   </summary>
+  <token key="Analysis">
+    <variant name="Dmg"/>
+    <variant name="Document" summary="Office document"/>
+    <variant name="None" summary="executable"/>
+    <variant name="Rar"/>
+    <variant name="Zip"/>
+  </token>
 </histogram>
 
 <histogram name="SBClientDownload.DownloadRequestNetError" enum="NetErrorCodes"
@@ -271,7 +282,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="SBClientDownload.DownloadRequestResponseCode"
-    enum="HttpResponseCode" expires_after="2023-01-01">
+    enum="HttpResponseCode" expires_after="2023-03-05">
   <owner>drubery@chromium.org</owner>
   <owner>chrome-counter-abuse-alerts@google.com</owner>
   <owner>mattm@chromium.org</owner>
@@ -325,7 +336,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="SBClientDownload.FileFeatureExtractionDuration" units="ms"
-    expires_after="2022-12-15">
+    expires_after="2023-02-26">
   <owner>drubery@chromium.org</owner>
   <owner>chrome-counter-abuse-alerts@google.com</owner>
   <summary>
@@ -335,7 +346,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="SBClientDownload.GetTabRedirectsDuration" units="ms"
-    expires_after="2022-12-15">
+    expires_after="2023-02-26">
   <owner>drubery@chromium.org</owner>
   <owner>chrome-counter-abuse-alerts@google.com</owner>
   <summary>
@@ -367,7 +378,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="SBClientDownload.MemoryMapFileDuration" units="ms"
-    expires_after="2022-12-15">
+    expires_after="2023-02-26">
   <owner>drubery@chromium.org</owner>
   <owner>chrome-counter-abuse-alerts@google.com</owner>
   <summary>
@@ -397,7 +408,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="SBClientDownload.SafeDownloadOpenedLatencyByContentType.{DownloadContent}"
-    units="ms" expires_after="2022-09-30">
+    units="ms" expires_after="2023-09-29">
   <owner>xinghuilu@chromium.org</owner>
   <owner>chrome-counter-abuse-alerts@google.com</owner>
   <summary>
@@ -465,7 +476,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="SBClientDownload.UserGestureFileType.LastBypassDownloadInterval"
-    units="ms" expires_after="2022-08-25">
+    units="ms" expires_after="2023-09-29">
   <owner>xinghuilu@chromium.org</owner>
   <owner>chrome-counter-abuse-alerts@google.com</owner>
   <summary>
@@ -618,7 +629,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="SBClientPhishing.Classifier.Event"
-    enum="SBPhishingClassifierEvent" expires_after="2023-01-01">
+    enum="SBPhishingClassifierEvent" expires_after="2023-03-05">
   <owner>drubery@chromium.org</owner>
   <owner>chrome-counter-abuse-alerts@google.com</owner>
   <summary>
@@ -775,7 +786,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="SBClientPhishing.PhishingDetectionDuration" units="ms"
-    expires_after="2023-01-01">
+    expires_after="2023-03-05">
   <owner>drubery@chromium.org</owner>
   <owner>chrome-counter-abuse-alerts@google.com</owner>
   <summary>
@@ -798,7 +809,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="SBClientPhishing.PreClassificationCheckResult"
     enum="SBClientDetectionPreClassificationCheckResult"
-    expires_after="2022-12-18">
+    expires_after="2023-02-19">
   <owner>drubery@chromium.org</owner>
   <owner>chrome-counter-abuse-alerts@google.com</owner>
   <summary>
@@ -857,7 +868,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="SBClientPhishing.TermFeatureChunkTime" units="ms"
-    expires_after="2022-10-17">
+    expires_after="2023-08-03">
   <owner>drubery@chromium.org</owner>
   <owner>chrome-counter-abuse-alerts@google.com</owner>
   <summary>
@@ -866,7 +877,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="SBClientPhishing.TermFeatureIterations" units="units"
-    expires_after="2022-10-17">
+    expires_after="2023-08-03">
   <owner>drubery@chromium.org</owner>
   <owner>chrome-counter-abuse-alerts@google.com</owner>
   <summary>
@@ -875,7 +886,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="SBClientPhishing.TermFeatureTimeout" units="units"
-    expires_after="2022-10-17">
+    expires_after="2023-08-03">
   <owner>drubery@chromium.org</owner>
   <owner>chrome-counter-abuse-alerts@google.com</owner>
   <summary>
@@ -922,18 +933,8 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="SBClientPhishing.VisualComparisonTime" units="ms"
-    expires_after="2022-10-09">
-  <owner>drubery@chromium.org</owner>
-  <owner>chrome-counter-abuse-alerts@google.com</owner>
-  <summary>
-    Records how long it took to compare visual features against the visual
-    phishing model. This is recorded on every phishing classification.
-  </summary>
-</histogram>
-
 <histogram name="SBClientPhishing.VisualFeatureTime" units="ms"
-    expires_after="2022-12-18">
+    expires_after="2023-02-19">
   <owner>drubery@chromium.org</owner>
   <owner>chrome-counter-abuse-alerts@google.com</owner>
   <summary>

@@ -78,6 +78,7 @@
 <translation id="5998675059699164418">По правилам организации, чтобы использовать Chrome, нужно выполнить вход.</translation>
 <translation id="6054613632208573261">Используйте Chrome по умолчанию</translation>
 <translation id="6063091872902370735">Разрешить вход в Chrome</translation>
+<translation id="6110625574506755980">Некоторые функции Chrome станут недоступны</translation>
 <translation id="6181930887571472871">Переходите на Chrome</translation>
 <translation id="6238746320622508509">Разрешите Chrome блокировать для посторонних доступ к вашим вкладкам инкогнито.</translation>
 <translation id="6387994324662817823">Пароли сохранены в Google Диспетчере паролей только на этом устройстве.</translation>
@@ -90,11 +91,11 @@
 <translation id="6709398533399187136">Ваш пароль раскрыт из-за утечки данных. Измените его прямо сейчас в Диспетчере паролей Google.</translation>
 <translation id="6822673484890854830">Браузеру Chrome не удается проверить все пароли. Повторите попытку позже.</translation>
 <translation id="6964931465519938134">При переходе по ссылкам в сообщениях, документах и других приложениях будет открываться браузер Chrome.</translation>
+<translation id="701356708427365932">Узнайте больше о новом меню Google Chrome</translation>
 <translation id="7059914902409643750">Войдите в Chrome</translation>
 <translation id="7124339256045485976">Обновляет Chrome до последней версии</translation>
 <translation id="7161390184744336561">Версия Google Chrome устарела.</translation>
 <translation id="7165736900384873061">Используйте QR-сканер в Google Chrome</translation>
-<translation id="7172660552945675509">Совет. <ph name="BEGIN_LINK" />Добавьте Chrome в Dock.<ph name="END_LINK" /></translation>
 <translation id="7173660919484573146">Чтобы исключить несанкционированный доступ к паролям, Chrome использует функцию Face ID.</translation>
 <translation id="7187993566681480880">Позволяет избегать угроз при работе в браузере Chrome и может использоваться для повышения уровня безопасности в других приложениях Google, когда выполнен вход в аккаунт.</translation>
 <translation id="72119412072970160">Вы можете использовать пароли, сохраненные в Диспетчере паролей Google, для других приложений на своем устройстве iPad.</translation>

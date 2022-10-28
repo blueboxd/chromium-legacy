@@ -1,4 +1,4 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -19,7 +19,8 @@ namespace ash {
 // which mounts OBB (opaque binary blob - https://goo.gl/ja8aN1) files.
 // All method should be called from the origin thread (UI thread) which
 // initializes the DBusThreadManager instance.
-class COMPONENT_EXPORT(ASH_DBUS_ARC) ArcObbMounterClient : public DBusClient {
+class COMPONENT_EXPORT(ASH_DBUS_ARC) ArcObbMounterClient
+    : public chromeos::DBusClient {
  public:
   // Returns the global instance if initialized. May return null.
   static ArcObbMounterClient* Get();
@@ -38,11 +39,11 @@ class COMPONENT_EXPORT(ASH_DBUS_ARC) ArcObbMounterClient : public DBusClient {
   virtual void MountObb(const std::string& obb_file,
                         const std::string& mount_path,
                         int32_t owner_gid,
-                        VoidDBusMethodCallback callback) = 0;
+                        chromeos::VoidDBusMethodCallback callback) = 0;
 
   // Unmounts the OBB mounted at the specified path.
   virtual void UnmountObb(const std::string& mount_path,
-                          VoidDBusMethodCallback callback) = 0;
+                          chromeos::VoidDBusMethodCallback callback) = 0;
 
  protected:
   // Initialize() should be used instead.

@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -17,10 +17,10 @@
 #include "components/reporting/proto/synced/metric_data.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using ::chromeos::cros_healthd::mojom::CrosHealthdAudioObserver;
-
 namespace reporting {
 namespace {
+
+using ::ash::cros_healthd::mojom::CrosHealthdAudioObserver;
 
 class FakeCrosHealthdAudioObserver
     : public CrosHealthdAudioObserver,
@@ -47,8 +47,8 @@ class FakeCrosHealthdAudioObserver
 
  protected:
   void AddObserver() override {
-    ::chromeos::cros_healthd::ServiceConnection::GetInstance()
-        ->AddAudioObserver(BindNewPipeAndPassRemote());
+    ash::cros_healthd::ServiceConnection::GetInstance()->AddAudioObserver(
+        BindNewPipeAndPassRemote());
   }
 };
 
@@ -128,5 +128,6 @@ TEST_F(CrosHealthdEventsObserverBaseTest, Default) {
   // Reporting is disabled.
   EXPECT_FALSE(result_metric_data.has_telemetry_data());
 }
+
 }  // namespace
 }  // namespace reporting

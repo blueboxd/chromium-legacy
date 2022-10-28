@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -35,6 +35,9 @@ extern const base::Feature kContextualPageActions;
 
 // Feature flag for enabling price tracking action feature.
 extern const base::Feature kContextualPageActionPriceTracking;
+
+// Feature flag for enabling shopping user segment feature.
+extern const base::Feature kShoppingUserSegmentFeature;
 
 }  // namespace segmentation_platform::features
 

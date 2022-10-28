@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -14,7 +14,7 @@
 // cases will properly synchronize the UI for Earl Grey tests.
 @interface ShellEarlGreyAppInterface : NSObject
 
-// Loads |URL| in the current WebState with transition of type
+// Loads `spec` as an URL in the current WebState with transition of type
 // ui::PAGE_TRANSITION_TYPED and returns without waiting for the page to load.
 + (void)startLoadingURL:(NSString*)spec;
 
@@ -27,7 +27,7 @@
 // windowID injection.
 + (NSError*)waitForWindowIDInjectedInCurrentWebState [[nodiscard]];
 
-// Returns YES if the current WebState contains the given |text|.
+// Returns YES if the current WebState contains the given `text`.
 + (BOOL)currentWebStateContainsText:(NSString*)text [[nodiscard]];
 
 @end

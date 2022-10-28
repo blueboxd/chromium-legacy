@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -87,7 +87,7 @@ import java.util.List;
 @RunWith(BaseRobolectricTestRunner.class)
 @Features.EnableFeatures({ChromeFeatureList.WEB_FEED, ChromeFeatureList.READ_LATER,
         ChromeFeatureList.BOOKMARKS_REFRESH})
-@Features.DisableFeatures({ChromeFeatureList.READ_LATER, ChromeFeatureList.SHOPPING_LIST})
+@Features.DisableFeatures({ChromeFeatureList.SHOPPING_LIST})
 public class TabbedAppMenuPropertiesDelegateUnitTest {
     // Costants defining flags that determines multi-window menu items visibility.
     private static final boolean TAB_M = true; // multiple tabs

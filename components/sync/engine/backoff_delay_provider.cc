@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -94,12 +94,6 @@ base::TimeDelta BackoffDelayProvider::GetInitialDelay(
           SyncerError::SERVER_RETURN_MIGRATION_DONE) {
     return short_initial_backoff_;
   }
-
-  // If a datatype decides the GetUpdates must be retried (e.g. because the
-  // context has been updated since the request), use the short delay.
-  if (state.last_download_updates_result.value() ==
-      SyncerError::DATATYPE_TRIGGERED_RETRY)
-    return short_initial_backoff_;
 
   // When the server tells us we have a conflict, then we should download the
   // latest updates so we can see the conflict ourselves, resolve it locally,

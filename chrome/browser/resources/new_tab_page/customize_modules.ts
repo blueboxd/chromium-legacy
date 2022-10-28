@@ -1,13 +1,13 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import 'chrome://resources/cr_elements/cr_icons_css.m.js';
+import 'chrome://resources/cr_elements/cr_icons.css.js';
 import 'chrome://resources/cr_elements/cr_toggle/cr_toggle.js';
 import 'chrome://resources/cr_elements/cr_button/cr_button.js';
 import 'chrome://resources/cr_elements/cr_radio_group/cr_radio_group.js';
 import 'chrome://resources/cr_elements/cr_radio_button/cr_radio_button.js';
-import 'chrome://resources/cr_elements/policy/cr_policy_indicator.m.js';
+import 'chrome://resources/cr_elements/policy/cr_policy_indicator.js';
 
 import {CrRadioButtonElement} from 'chrome://resources/cr_elements/cr_radio_button/cr_radio_button.js';
 import {DomRepeat, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
@@ -17,12 +17,6 @@ import {I18nMixin, loadTimeData} from './i18n_setup.js';
 import {ChromeCartProxy} from './modules/cart/chrome_cart_proxy.js';
 import {ModuleRegistry} from './modules/module_registry.js';
 import {NewTabPageProxy} from './new_tab_page_proxy.js';
-
-declare global {
-  interface Window {
-    CrPolicyStrings: {[key: string]: string};
-  }
-}
 
 interface ModuleSetting {
   name: string;

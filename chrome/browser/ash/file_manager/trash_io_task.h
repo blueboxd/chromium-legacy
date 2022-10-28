@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -75,7 +75,8 @@ class TrashIOTask : public IOTask {
   TrashIOTask(std::vector<storage::FileSystemURL> file_urls,
               Profile* profile,
               scoped_refptr<storage::FileSystemContext> file_system_context,
-              const base::FilePath base_path);
+              const base::FilePath base_path,
+              bool show_notification = true);
   ~TrashIOTask() override;
 
   // Starts trash trask.
@@ -113,10 +114,25 @@ class TrashIOTask : public IOTask {
   // in the instance .Trash folder does not exist.
   void SetupSubDirectory(trash::TrashPathsMap::const_iterator& it,
                          const storage::FileSystemURL trash_subdirectory);
+
+  // During low-disk space situations, cryptohome needs a way to identify
+  // folders to purge. Trash should be considered prior to the rest of the
+  // users' profile.
+  void SetDirectoryTracking(
+      base::OnceCallback<void(base::File::Error)> on_setup_complete_callback,
+      const base::FilePath& trash_subdirectory,
+      base::File::Error error);
   void OnSetupSubDirectory(trash::TrashPathsMap::const_iterator& it,
                            const storage::FileSystemURL trash_subdirectory,
                            base::File::Error error);
+
+  // After setting up directory permissions, `set_permissions_success` will have
+  // true on success and false otherwise.
+  void OnSetDirectoryPermissions(trash::TrashPathsMap::const_iterator& it,
+                                 bool set_permissions_success);
   base::FilePath MakeRelativeFromBasePath(const base::FilePath& absolute_path);
+  base::FilePath MakeRelativePathAbsoluteFromBasePath(
+      const base::FilePath& relative_path);
 
   // Attempts to generate a unique destination filename when saving to
   // .Trash/files. Appends an increasing (N) suffix until a unique name is

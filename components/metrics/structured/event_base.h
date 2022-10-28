@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -17,8 +17,11 @@
 namespace metrics {
 namespace structured {
 
-// A base class for generated structured metrics event objects. This class
-// should not be used directly.
+// All events must be converted to EventBase to be recorded and persisted to
+// disk.
+//
+// TODO(jongahn): Write directly from Event to disk without making this
+// conversion.
 class EventBase {
  public:
   EventBase(const EventBase& other);

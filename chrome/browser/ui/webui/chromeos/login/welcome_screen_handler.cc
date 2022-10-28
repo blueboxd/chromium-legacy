@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -230,9 +230,7 @@ void WelcomeScreenHandler::DeclareLocalizedValues(
   builder->Add("deviceRequisitionSharkPromptText",
                IDS_ENTERPRISE_DEVICE_REQUISITION_SHARK_PROMPT_TEXT);
 
-  if (ash::features::IsOobeQuickStartEnabled()) {
-    builder->Add("welcomeScreenQuickStart", IDS_LOGIN_GET_STARTED);
-  }
+  builder->Add("welcomeScreenQuickStart", IDS_LOGIN_GET_STARTED);
 }
 
 void WelcomeScreenHandler::DeclareJSCallbacks() {
@@ -340,6 +338,11 @@ void WelcomeScreenHandler::GiveChromeVoxHint() {
 
 void WelcomeScreenHandler::CancelChromeVoxHintIdleDetection() {
   screen_->CancelChromeVoxHintIdleDetection();
+}
+
+void WelcomeScreenHandler::SetQuickStartEnabled() {
+  DCHECK(features::IsOobeQuickStartEnabled());
+  CallJS("login.WelcomeScreen.setQuickStartEnabled");
 }
 
 void WelcomeScreenHandler::HandleRecordChromeVoxHintSpokenSuccess() {

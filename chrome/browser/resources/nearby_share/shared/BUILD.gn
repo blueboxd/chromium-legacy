@@ -1,4 +1,4 @@
-# Copyright 2020 The Chromium Authors. All rights reserved.
+# Copyright 2020 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -89,7 +89,9 @@ js_type_check("closure_compile_module") {
   is_polymer3 = true
   closure_flags =
       default_closure_args + [
-        "js_module_root=../../chrome/browser/resources/nearby_share/shared/",
+        "js_module_root=" +
+            rebase_path("//chrome/browser/resources/nearby_share/shared/",
+                        root_build_dir),
         "js_module_root=./gen/chrome/browser/resources/nearby_share/shared/",
       ]
 
@@ -123,12 +125,12 @@ js_library("nearby_contact_visibility") {
     ":nearby_contact_manager",
     ":nearby_share_settings_behavior",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
-    "//ui/webui/resources/cr_elements/cr_radio_button:cr_card_radio_button",
+    "//ui/webui/resources/cr_elements:i18n_behavior",
     "//ui/webui/resources/js:assert.m",
     "//ui/webui/resources/js:cr.m",
-    "//ui/webui/resources/js:i18n_behavior.m",
     "//ui/webui/resources/js:load_time_data.m",
   ]
+  externs_list = [ "//ui/webui/resources/cr_elements/cr_radio_button/cr_radio_button_externs.js" ]
 }
 
 js_library("nearby_device_icon") {
@@ -153,7 +155,7 @@ js_library("nearby_onboarding_one_page") {
     ":nearby_page_template",
     ":nearby_share_settings_behavior",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
-    "//ui/webui/resources/js:i18n_behavior.m",
+    "//ui/webui/resources/cr_elements:i18n_behavior",
   ]
 }
 
@@ -163,7 +165,7 @@ js_library("nearby_onboarding_page") {
     ":nearby_page_template",
     ":nearby_share_settings_behavior",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
-    "//ui/webui/resources/js:i18n_behavior.m",
+    "//ui/webui/resources/cr_elements:i18n_behavior",
   ]
 }
 
@@ -177,8 +179,8 @@ js_library("nearby_preview") {
     "//chrome/browser/ui/webui/nearby_share:mojom_js_library_for_compile",
     "//chrome/browser/ui/webui/nearby_share:share_type_js_library_for_compile",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
+    "//ui/webui/resources/cr_elements:i18n_behavior",
     "//ui/webui/resources/js:assert.m",
-    "//ui/webui/resources/js:i18n_behavior.m",
   ]
 }
 
@@ -210,7 +212,7 @@ js_library("nearby_visibility_page") {
     ":nearby_page_template",
     ":nearby_share_settings_behavior",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
-    "//ui/webui/resources/js:i18n_behavior.m",
+    "//ui/webui/resources/cr_elements:i18n_behavior",
     "//ui/webui/resources/js:load_time_data",
   ]
 }

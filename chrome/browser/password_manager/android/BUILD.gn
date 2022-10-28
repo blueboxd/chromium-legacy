@@ -1,4 +1,4 @@
-# Copyright 2020 The Chromium Authors. All rights reserved.
+# Copyright 2020 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -134,6 +134,7 @@ android_library("java") {
     "java/src/org/chromium/chrome/browser/password_manager/PasswordManagerAndroidBackendUtil.java",
     "java/src/org/chromium/chrome/browser/password_manager/PasswordManagerHelper.java",
     "java/src/org/chromium/chrome/browser/password_manager/PasswordManagerLifecycleHelper.java",
+    "java/src/org/chromium/chrome/browser/password_manager/PasswordManagerSignInHelperBridge.java",
     "java/src/org/chromium/chrome/browser/password_manager/PasswordScriptsFetcherBridge.java",
     "java/src/org/chromium/chrome/browser/password_manager/PasswordSettingsUpdaterBridge.java",
     "java/src/org/chromium/chrome/browser/password_manager/PasswordSettingsUpdaterMetricsRecorder.java",
@@ -160,6 +161,7 @@ generate_jni("jni_headers") {
   sources = [
     "java/src/org/chromium/chrome/browser/password_manager/PasswordChangeSuccessTrackerBridge.java",
     "java/src/org/chromium/chrome/browser/password_manager/PasswordManagerLifecycleHelper.java",
+    "java/src/org/chromium/chrome/browser/password_manager/PasswordManagerSignInHelperBridge.java",
     "java/src/org/chromium/chrome/browser/password_manager/PasswordScriptsFetcherBridge.java",
     "java/src/org/chromium/chrome/browser/password_manager/PasswordSettingsUpdaterBridge.java",
     "java/src/org/chromium/chrome/browser/password_manager/PasswordStoreAndroidBackendBridgeImpl.java",
@@ -232,6 +234,7 @@ robolectric_binary("password_manager_junit_tests") {
 
 android_resources("java_resources") {
   sources = [
+    "java/res/drawable/ic_key_error.xml",
     "java/res/drawable/ic_vpn_key_blue.xml",
     "java/res/layout/confirmation_dialog_view.xml",
   ]
@@ -244,6 +247,7 @@ android_resources("java_resources") {
 
 android_library("settings_interface_java") {
   deps = [
+    ":backend_interface_java",
     "//base:base_java",
     "//components/password_manager/core/browser:password_manager_java_enums",
     "//third_party/android_deps:guava_android_java",
@@ -404,10 +408,13 @@ source_set("unit_tests") {
     "fake_password_manager_lifecycle_helper.cc",
     "fake_password_manager_lifecycle_helper.h",
     "generated_password_saved_message_delegate_unittest.cc",
+    "mock_password_manager_sign_in_helper_bridge.cc",
+    "mock_password_manager_sign_in_helper_bridge.h",
     "mock_password_sync_controller_delegate_bridge.cc",
     "mock_password_sync_controller_delegate_bridge.h",
     "password_accessory_controller_impl_unittest.cc",
     "password_generation_controller_impl_unittest.cc",
+    "password_manager_error_message_delegate_unittest.cc",
     "password_manager_settings_service_android_impl_unittest.cc",
     "password_store_android_backend_unittest.cc",
     "password_sync_controller_delegate_android_unittest.cc",
@@ -437,6 +444,7 @@ source_set("unit_tests") {
     "//components/strings:components_strings_grit",
     "//components/ukm:test_support",
     "//content/test:test_support",
+    "//testing/gmock",
     "//testing/gtest",
     "//ui/base:base",
   ]

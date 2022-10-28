@@ -1,4 +1,4 @@
-// Copyright 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -152,6 +152,11 @@ class VIZ_SERVICE_EXPORT DirectRenderer {
     return last_root_render_pass_scissor_rect_;
   }
 
+  base::flat_set<AggregatedRenderPassId>*
+  GetLastSkippedRenderPassIdsForTesting() {
+    return &skipped_render_pass_ids_;
+  }
+
   virtual DelegatedInkPointRendererBase* GetDelegatedInkPointRenderer(
       bool create_if_necessary);
   virtual void SetDelegatedInkMetadata(
@@ -163,6 +168,17 @@ class VIZ_SERVICE_EXPORT DirectRenderer {
 
   // Puts the draw time wall in trace file relative to the |ready_timestamp|.
   virtual void AddCompositeTimeTraces(base::TimeTicks ready_timestamp);
+
+  // Returns the current frame buffer damage.
+  virtual gfx::Rect GetCurrentFramebufferDamage() const;
+
+  // Reshapes the output surface.
+  virtual void Reshape(const OutputSurface::ReshapeParams& reshape_params);
+
+  // Set the number of frame buffers to use when
+  // `supports_dynamic_frame_buffer_allocation` is true. `n` must satisfy
+  // 0 < n <= capabilities_.number_of_buffers.
+  virtual void EnsureMinNumberOfBuffers(int n) {}
 
   // Return the bounding rect of previously drawn delegated ink trail.
   gfx::Rect GetDelegatedInkTrailDamageRect();
@@ -182,6 +198,8 @@ class VIZ_SERVICE_EXPORT DirectRenderer {
   struct RenderPassRequirements {
     gfx::Size size;
     bool generate_mipmap = false;
+    ResourceFormat format;
+    gfx::ColorSpace color_space;
   };
 
   static gfx::RectF QuadVertexRect();
@@ -290,6 +308,9 @@ class VIZ_SERVICE_EXPORT DirectRenderer {
   float CurrentFrameSDRWhiteLevel() const;
   gfx::ColorSpace RootRenderPassColorSpace() const;
   gfx::ColorSpace CurrentRenderPassColorSpace() const;
+  gfx::ColorSpace RenderPassColorSpace(
+      const AggregatedRenderPass* render_pass) const;
+  ResourceFormat GetColorSpaceResourceFormat(gfx::ColorSpace color_space) const;
   // Return the SkColorSpace for rendering to the current render pass. Unlike
   // CurrentRenderPassColorSpace, this color space has the value of
   // CurrentFrameSDRWhiteLevel incorporated into it.
@@ -307,6 +328,10 @@ class VIZ_SERVICE_EXPORT DirectRenderer {
   // TODO(weiliangc): For SoftwareRenderer and tests where overlay is not used,
   // use OverlayProcessorStub so this pointer is never null.
   raw_ptr<OverlayProcessorInterface> overlay_processor_;
+
+  // If the non-root render pass and its embedded child render passes are not
+  // damaged, skip the rendering.
+  const bool allow_undamaged_nonroot_render_pass_to_skip_;
 
   // Whether it's valid to SwapBuffers with an empty rect. Trivially true when
   // using partial swap.
@@ -330,6 +355,13 @@ class VIZ_SERVICE_EXPORT DirectRenderer {
       render_pass_backdrop_filter_bounds_;
   base::flat_map<AggregatedRenderPassId, gfx::Rect>
       backdrop_filter_output_rects_;
+
+  // Whether a render pass with foreground filters that move pixels is found in
+  // this frame.
+  bool has_pixel_moving_foreground_filters_ = false;
+
+  // Track skipped non-root render passes in DrawRenderPass.
+  base::flat_set<AggregatedRenderPassId> skipped_render_pass_ids_;
 
   bool visible_ = false;
   bool disable_color_checks_for_testing_ = false;

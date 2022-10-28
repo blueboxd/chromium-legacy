@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,6 +6,9 @@ package org.chromium.chrome.browser.history_clusters;
 
 import android.view.View;
 import android.view.View.OnClickListener;
+
+import androidx.recyclerview.widget.RecyclerView;
+import androidx.recyclerview.widget.RecyclerView.LayoutParams;
 
 import org.chromium.components.browser_ui.widget.MoreProgressButton;
 import org.chromium.components.browser_ui.widget.selectable_list.SelectableListLayout;
@@ -139,6 +142,15 @@ class HistoryClustersViewBinder {
                                        .onClick(null));
         } else if (key == HistoryClustersItemProperties.PROGRESS_BUTTON_STATE) {
             button.setState(propertyModel.get(HistoryClustersItemProperties.PROGRESS_BUTTON_STATE));
+        } else if (key == HistoryClustersItemProperties.SHOW_VERTICALLY_CENTERED) {
+            boolean showVerticallyCentered =
+                    propertyModel.get(HistoryClustersItemProperties.SHOW_VERTICALLY_CENTERED);
+            RecyclerView.LayoutParams layoutParams = (LayoutParams) button.getLayoutParams();
+            if (showVerticallyCentered) {
+                layoutParams.height = LayoutParams.MATCH_PARENT;
+            } else {
+                layoutParams.height = LayoutParams.WRAP_CONTENT;
+            }
         }
     }
 }

@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -72,6 +72,8 @@ interface HelpContentProvider {
 struct FeedbackContext {
   // The e-mail of the user that initiated this feedback.
   string? email;
+  // Whether or not the signed in email is an internal google account.
+  bool is_internal_account;
   // The URL of the page that this issue was being experienced on.
   url.mojom.Url?  page_url;
   // Extra diagnostics information provided by source CrOS application by
@@ -173,7 +175,7 @@ enum FeedbackAppExitPath {
   kQuitSearchPageNoHelpContentClicked,
   // User close on search page because no help content is shown (Offline or
   // Search is down).
-  kQuitNoResultFound,
+  kQuitNoHelpContentDisplayed,
   // User close on share data page after clicking some help contents.
   kQuitShareDataPageHelpContentClicked,
   // User close on share data page without clicking some help contents.
@@ -182,6 +184,22 @@ enum FeedbackAppExitPath {
   kSuccessHelpContentClicked,
   // User submit feedback without clicking the help content.
   kSuccessNoHelpContentClicked
+};
+
+// The outcome of checking help contents.
+enum FeedbackAppHelpContentOutcome {
+  // User click continue after clicking the help content.
+  kContinueHelpContentClicked,
+  // User click continue without clicking any help content.
+  kContinueNoHelpContentClicked,
+  // User click continue despite no help content is displayed.
+  kContinueNoHelpContentDisplayed,
+  // User quit feedback app after clicking the help content.
+  kQuitHelpContentClicked,
+  // User quit feedback app without clicking any help content.
+  kQuitNoHelpContentClicked,
+  // User quit feedback app because no help content is displayed.
+  kQuitNoHelpContentDisplayed,
 };
 
 // Provides services needed by the feedback UI to display data and send reports.
@@ -214,4 +232,9 @@ interface FeedbackServiceProvider {
   RecordPreSubmitAction(FeedbackAppPreSubmitAction action);
   // Record metrics of users' exit paths of feedback app.
   RecordExitPath(FeedbackAppExitPath exit_path);
+  // Record the outcome of clicking and viewing the help content.
+  RecordHelpContentOutcome(FeedbackAppHelpContentOutcome outcome);
+  // Record metrics of number of results returned in each search, fires when
+  // user clicks help content.
+  RecordHelpContentSearchResultCount(int32 count);
 };

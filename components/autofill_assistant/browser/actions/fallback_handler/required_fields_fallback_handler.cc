@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -194,7 +194,8 @@ void RequiredFieldsFallbackHandler::OnGetRequiredFieldValue(
     const ClientStatus& element_status,
     const std::string& value) {
   required_fields_[required_fields_index].status =
-      value.empty() ? RequiredField::EMPTY : RequiredField::NOT_EMPTY;
+      value.empty() ? RequiredField::FieldValueStatus::kEmpty
+                    : RequiredField::FieldValueStatus::kNotEmpty;
 }
 
 void RequiredFieldsFallbackHandler::OnCheckRequiredFieldsDone(

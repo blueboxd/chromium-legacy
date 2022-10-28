@@ -1,4 +1,4 @@
-// Copyright (c) 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -48,7 +48,8 @@ class ExtractIOTask : public IOTask {
                 std::string password,
                 storage::FileSystemURL parent_folder,
                 Profile* profile,
-                scoped_refptr<storage::FileSystemContext> file_system_context);
+                scoped_refptr<storage::FileSystemContext> file_system_context,
+                bool show_notification = true);
   ~ExtractIOTask() override;
 
   void Execute(ProgressCallback progress_callback,

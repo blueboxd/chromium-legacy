@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -19,6 +19,7 @@
 #include "base/test/scoped_feature_list.h"
 #include "components/autofill/content/browser/content_autofill_driver_test_api.h"
 #include "components/autofill/content/browser/content_autofill_router.h"
+#include "components/autofill/content/browser/content_autofill_router_test_api.h"
 #include "components/autofill/core/browser/autofill_external_delegate.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/autofill/core/browser/browser_autofill_manager.h"
@@ -383,12 +384,14 @@ class ContentAutofillDriverTest : public content::RenderViewHostTestHarness,
     std::vector<FormData> augmented_forms;
     EXPECT_CALL(*driver_->mock_browser_autofill_manager(), ShouldParseForms(_))
         .WillOnce(DoAll(SaveArg<0>(&augmented_forms), Return(false)));
-    driver_->FormsSeen(/*updated_forms=*/{form}, /*removed_forms=*/{});
+    driver_->renderer_events().FormsSeen(/*updated_forms=*/{form},
+                                         /*removed_forms=*/{});
     return augmented_forms.front();
   }
 
   bool autofill_across_iframes_ = false;
   base::test::ScopedFeatureList scoped_feature_list_;
+  test::AutofillEnvironment autofill_environment_;
 
   std::unique_ptr<TestAutofillClient> test_autofill_client_;
   std::unique_ptr<ContentAutofillRouter> router_;
@@ -537,9 +540,9 @@ TEST_P(ContentAutofillDriverTest, FormDataSentToRenderer_FillForm) {
   }
   base::RunLoop run_loop;
   fake_agent_.SetQuitLoopClosure(run_loop.QuitClosure());
-  driver_->FillOrPreviewForm(input_page_id,
-                             mojom::RendererFormDataAction::kFill,
-                             input_form_data, triggered_origin, {});
+  driver_->browser_events().FillOrPreviewForm(
+      input_page_id, mojom::RendererFormDataAction::kFill, input_form_data,
+      triggered_origin, {});
 
   run_loop.RunUntilIdle();
 
@@ -567,9 +570,9 @@ TEST_P(ContentAutofillDriverTest, FormDataSentToRenderer_PreviewForm) {
                                    &FormFieldData::value));
   base::RunLoop run_loop;
   fake_agent_.SetQuitLoopClosure(run_loop.QuitClosure());
-  driver_->FillOrPreviewForm(input_page_id,
-                             mojom::RendererFormDataAction::kPreview,
-                             input_form_data, triggered_origin, {});
+  driver_->browser_events().FillOrPreviewForm(
+      input_page_id, mojom::RendererFormDataAction::kPreview, input_form_data,
+      triggered_origin, {});
 
   run_loop.RunUntilIdle();
 
@@ -594,7 +597,8 @@ TEST_P(ContentAutofillDriverTest, TypePredictionsSentToRendererWhenEnabled) {
   std::vector<FormData> augmented_forms;
   EXPECT_CALL(*driver_->mock_browser_autofill_manager(), ShouldParseForms(_))
       .WillOnce(DoAll(SaveArg<0>(&augmented_forms), Return(false)));
-  driver_->FormsSeen(/*updated_forms=*/{form}, /*removed_forms=*/{});
+  driver_->renderer_events().FormsSeen(/*updated_forms=*/{form},
+                                       /*removed_forms=*/{});
 
   ContentAutofillDriverTestApi(driver_.get())
       .SetFrameAndFormMetaData(form, nullptr);
@@ -608,7 +612,8 @@ TEST_P(ContentAutofillDriverTest, TypePredictionsSentToRendererWhenEnabled) {
 
   base::RunLoop run_loop;
   fake_agent_.SetQuitLoopClosure(run_loop.QuitClosure());
-  driver_->SendAutofillTypePredictionsToRenderer(form_structures);
+  driver_->browser_events().SendAutofillTypePredictionsToRenderer(
+      form_structures);
   run_loop.RunUntilIdle();
 
   std::vector<FormDataPredictions> output_type_predictions;
@@ -624,7 +629,8 @@ TEST_P(ContentAutofillDriverTest, AcceptDataListSuggestion) {
 
   base::RunLoop run_loop;
   fake_agent_.SetQuitLoopClosure(run_loop.QuitClosure());
-  driver_->RendererShouldAcceptDataListSuggestion(field, input_value);
+  driver_->browser_events().RendererShouldAcceptDataListSuggestion(field,
+                                                                   input_value);
   run_loop.RunUntilIdle();
 
   EXPECT_TRUE(
@@ -636,7 +642,7 @@ TEST_P(ContentAutofillDriverTest, ClearFilledSectionSentToRenderer) {
   SeeAddressFormData();
   base::RunLoop run_loop;
   fake_agent_.SetQuitLoopClosure(run_loop.QuitClosure());
-  driver_->RendererShouldClearFilledSection();
+  driver_->browser_events().RendererShouldClearFilledSection();
   run_loop.RunUntilIdle();
 
   EXPECT_TRUE(fake_agent_.GetCalledClearSection());
@@ -646,7 +652,7 @@ TEST_P(ContentAutofillDriverTest, ClearPreviewedFormSentToRenderer) {
   SeeAddressFormData();
   base::RunLoop run_loop;
   fake_agent_.SetQuitLoopClosure(run_loop.QuitClosure());
-  driver_->RendererShouldClearPreviewedForm();
+  driver_->browser_events().RendererShouldClearPreviewedForm();
   run_loop.RunUntilIdle();
 
   EXPECT_TRUE(fake_agent_.GetCalledClearPreviewedForm());
@@ -659,7 +665,8 @@ TEST_P(ContentAutofillDriverTest, FillFieldWithValue) {
 
   base::RunLoop run_loop;
   fake_agent_.SetQuitLoopClosure(run_loop.QuitClosure());
-  driver_->RendererShouldFillFieldWithValue(field, input_value);
+  driver_->browser_events().RendererShouldFillFieldWithValue(field,
+                                                             input_value);
   run_loop.RunUntilIdle();
 
   EXPECT_TRUE(fake_agent_.GetString16FillFieldWithValue(field, &output_value));
@@ -673,12 +680,23 @@ TEST_P(ContentAutofillDriverTest, PreviewFieldWithValue) {
 
   base::RunLoop run_loop;
   fake_agent_.SetQuitLoopClosure(run_loop.QuitClosure());
-  driver_->RendererShouldPreviewFieldWithValue(field, input_value);
+  driver_->browser_events().RendererShouldPreviewFieldWithValue(field,
+                                                                input_value);
   run_loop.RunUntilIdle();
 
   EXPECT_TRUE(
       fake_agent_.GetString16PreviewFieldWithValue(field, &output_value));
   EXPECT_EQ(input_value, output_value);
+}
+
+TEST_P(ContentAutofillDriverTest, SetShouldSuppressKeyboard) {
+  auto driver_test_api = ContentAutofillDriverTestApi(driver_.get());
+  ASSERT_FALSE(driver_test_api.should_suppress_keyboard());
+  ContentAutofillRouterTestApi(&driver_test_api.autofill_router())
+      .set_last_queried_source(driver_.get());
+
+  driver_->SetShouldSuppressKeyboard(true);
+  EXPECT_TRUE(driver_test_api.should_suppress_keyboard());
 }
 
 INSTANTIATE_TEST_SUITE_P(ContentAutofillDriverTest,

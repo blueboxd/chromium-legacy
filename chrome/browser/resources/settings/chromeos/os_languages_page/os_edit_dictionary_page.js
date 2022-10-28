@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,13 +10,13 @@
 import 'chrome://resources/cr_elements/cr_button/cr_button.js';
 import 'chrome://resources/cr_elements/cr_icon_button/cr_icon_button.js';
 import 'chrome://resources/cr_elements/cr_input/cr_input.js';
-import 'chrome://resources/cr_elements/icons.m.js';
+import 'chrome://resources/cr_elements/icons.html.js';
 import 'chrome://resources/polymer/v3_0/iron-a11y-keys/iron-a11y-keys.js';
 import 'chrome://resources/polymer/v3_0/iron-list/iron-list.js';
 import '../../settings_shared.css.js';
 
-import {I18nBehavior, I18nBehaviorInterface} from 'chrome://resources/js/i18n_behavior.m.js';
-import {html, mixinBehaviors, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {I18nBehavior, I18nBehaviorInterface} from 'chrome://resources/cr_elements/i18n_behavior.js';
+import {mixinBehaviors, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {Route} from '../../router.js';
 import {GlobalScrollTargetBehavior, GlobalScrollTargetBehaviorInterface} from '../global_scroll_target_behavior.js';
@@ -24,6 +24,7 @@ import {recordSettingChange} from '../metrics_recorder.js';
 import {routes} from '../os_route.js';
 
 import {LanguagesBrowserProxy, LanguagesBrowserProxyImpl} from './languages_browser_proxy.js';
+import {getTemplate} from './os_edit_dictionary_page.html.js';
 
 // Max valid word size, keep in sync with kMaxCustomDictionaryWordBytes in
 // //components/spellcheck/common/spellcheck_common.h
@@ -54,7 +55,7 @@ class OsSettingsEditDictionaryPageElement extends
   }
 
   static get template() {
-    return html`{__html_template__}`;
+    return getTemplate();
   }
 
   static get properties() {
@@ -241,7 +242,7 @@ class OsSettingsEditDictionaryPageElement extends
 
   /**
    * Handles Enter and Escape key presses for the new-word input.
-   * @param {!CustomEvent<!{key: string}>} e
+   * @param {!CustomEvent<{key: string}>} e
    * @private
    */
   onKeysPress_(e) {
@@ -254,7 +255,7 @@ class OsSettingsEditDictionaryPageElement extends
 
   /**
    * Handles tapping on a "Remove word" icon button.
-   * @param {!{model: !{item: string}}} e
+   * @param {{model: {item: string}}} e
    * @private
    */
   onRemoveWordTap_(e) {

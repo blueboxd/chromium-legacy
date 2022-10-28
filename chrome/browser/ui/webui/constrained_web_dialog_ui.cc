@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -128,5 +128,5 @@ ConstrainedWebDialogDelegate* ConstrainedWebDialogUI::GetConstrainedDelegate() {
           web_ui()->GetWebContents()->
               GetUserData(&kConstrainedWebDialogDelegateUserDataKey));
 
-  return user_data ? user_data->delegate() : NULL;
+  return user_data ? user_data->delegate() : nullptr;
 }

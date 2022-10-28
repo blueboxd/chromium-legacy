@@ -1,18 +1,18 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #import "ios/chrome/browser/ui/badges/badge_popup_menu_coordinator.h"
 
-#include "base/metrics/histogram_functions.h"
-#include "base/notreached.h"
-#include "ios/chrome/browser/infobars/infobar_ios.h"
-#include "ios/chrome/browser/infobars/infobar_manager_impl.h"
-#include "ios/chrome/browser/infobars/infobar_metrics_recorder.h"
+#import "base/metrics/histogram_functions.h"
+#import "base/notreached.h"
+#import "ios/chrome/browser/infobars/infobar_ios.h"
+#import "ios/chrome/browser/infobars/infobar_manager_impl.h"
+#import "ios/chrome/browser/infobars/infobar_metrics_recorder.h"
 #import "ios/chrome/browser/infobars/infobar_type.h"
 #import "ios/chrome/browser/infobars/overlays/infobar_overlay_request_inserter.h"
 #import "ios/chrome/browser/main/browser.h"
-#include "ios/chrome/browser/overlays/public/overlay_request_queue.h"
+#import "ios/chrome/browser/overlays/public/overlay_request_queue.h"
 #import "ios/chrome/browser/ui/badges/badge_constants.h"
 #import "ios/chrome/browser/ui/badges/badge_item.h"
 #import "ios/chrome/browser/ui/badges/badge_popup_menu_item.h"

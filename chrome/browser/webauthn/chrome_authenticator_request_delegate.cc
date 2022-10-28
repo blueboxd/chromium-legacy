@@ -1,10 +1,9 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome/browser/webauthn/chrome_authenticator_request_delegate.h"
 
-#include <algorithm>
 #include <memory>
 #include <utility>
 
@@ -16,7 +15,6 @@
 #include "base/feature_list.h"
 #include "base/location.h"
 #include "base/memory/raw_ptr.h"
-#include "base/ranges/algorithm.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
 #include "base/sys_byteorder.h"
@@ -36,7 +34,6 @@
 #include "chrome/browser/ui/page_action/page_action_icon_type.h"
 #include "chrome/browser/webauthn/authenticator_request_dialog_model.h"
 #include "chrome/browser/webauthn/cablev2_devices.h"
-#include "chrome/browser/webauthn/local_credential_management.h"
 #include "chrome/browser/webauthn/webauthn_pref_names.h"
 #include "chrome/browser/webauthn/webauthn_switches.h"
 #include "chrome/common/chrome_switches.h"
@@ -68,6 +65,7 @@
 #endif
 
 #if BUILDFLAG(IS_WIN)
+#include "chrome/browser/webauthn/local_credential_management_win.h"
 #include "device/fido/win/authenticator.h"
 #endif
 
@@ -88,11 +86,10 @@ bool IsWebAuthnRPIDListedInSecurityKeyPermitAttestationPolicy(
   const Profile* profile = Profile::FromBrowserContext(browser_context);
   const PrefService* prefs = profile->GetPrefs();
   const base::Value::List& permit_attestation =
-      prefs->GetValueList(prefs::kSecurityKeyPermitAttestation);
-  return std::any_of(permit_attestation.begin(), permit_attestation.end(),
-                     [&relying_party_id](const base::Value& v) {
-                       return v.GetString() == relying_party_id;
-                     });
+      prefs->GetList(prefs::kSecurityKeyPermitAttestation);
+  const std::string& (base::Value::*get_string)() const =
+      &base::Value::GetString;
+  return base::Contains(permit_attestation, relying_party_id, get_string);
 }
 
 bool IsOriginListedInEnterpriseAttestationSwitch(
@@ -489,7 +486,7 @@ void ChromeAuthenticatorRequestDelegate::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
 #if BUILDFLAG(IS_WIN)
   registry->RegisterBooleanPref(kWebAuthnLastOperationWasNativeAPI, false);
-  LocalCredentialManagement::RegisterProfilePrefs(registry);
+  LocalCredentialManagementWin::RegisterProfilePrefs(registry);
 #endif
 #if BUILDFLAG(IS_MAC)
   registry->RegisterStringPref(kWebAuthnTouchIdMetadataSecretPrefName,
@@ -502,7 +499,7 @@ ChromeAuthenticatorRequestDelegate::ChromeAuthenticatorRequestDelegate(
     content::RenderFrameHost* render_frame_host)
     : render_frame_host_id_(render_frame_host->GetGlobalId()),
       dialog_model_(std::make_unique<AuthenticatorRequestDialogModel>(
-          content::WebContents::FromRenderFrameHost(GetRenderFrameHost()))) {
+          GetRenderFrameHost())) {
   dialog_model_->AddObserver(this);
   if (g_observer) {
     g_observer->Created(this);
@@ -641,7 +638,7 @@ void ChromeAuthenticatorRequestDelegate::ShouldReturnAttestation(
 
 void ChromeAuthenticatorRequestDelegate::ConfigureCable(
     const url::Origin& origin,
-    device::FidoRequestType request_type,
+    device::CableRequestType request_type,
     base::span<const device::CableDiscoveryData> pairings_from_extension,
     device::FidoDiscoveryFactory* discovery_factory) {
   phone_names_.clear();
@@ -666,15 +663,15 @@ void ChromeAuthenticatorRequestDelegate::ConfigureCable(
             dialog_model_->experiment_server_link_title_);
       }
     }
+
+    g_observer->ConfiguringCable(request_type);
   }
 
 #if BUILDFLAG(IS_LINUX)
   // No caBLEv1 on Linux. It tends to crash bluez.
-  if (std::any_of(pairings_from_extension.begin(),
-                  pairings_from_extension.end(),
-                  [](const device::CableDiscoveryData& v) -> bool {
-                    return v.version == device::CableDiscoveryData::Version::V1;
-                  })) {
+  if (base::Contains(pairings_from_extension,
+                     device::CableDiscoveryData::Version::V1,
+                     &device::CableDiscoveryData::version)) {
     pairings_from_extension = base::span<const device::CableDiscoveryData>();
   }
 #endif
@@ -686,10 +683,8 @@ void ChromeAuthenticatorRequestDelegate::ConfigureCable(
   }
   const bool cable_extension_accepted = !pairings.empty();
   const bool cablev2_extension_provided =
-      std::any_of(pairings.begin(), pairings.end(),
-                  [](const device::CableDiscoveryData& v) -> bool {
-                    return v.version == device::CableDiscoveryData::Version::V2;
-                  });
+      base::Contains(pairings, device::CableDiscoveryData::Version::V2,
+                     &device::CableDiscoveryData::version);
 
   std::vector<std::unique_ptr<device::cablev2::Pairing>> paired_phones;
   std::vector<AuthenticatorRequestDialogModel::PairedPhone>
@@ -734,7 +729,7 @@ void ChromeAuthenticatorRequestDelegate::ConfigureCable(
   const bool non_extension_cablev2_enabled =
       (!cable_extension_permitted ||
        (!cable_extension_provided &&
-        request_type == device::FidoRequestType::kGetAssertion) ||
+        request_type == device::CableRequestType::kGetAssertion) ||
        base::FeatureList::IsEnabled(device::kWebAuthCableExtensionAnywhere));
 
   absl::optional<std::array<uint8_t, device::cablev2::kQRKeySize>>
@@ -830,6 +825,11 @@ void ChromeAuthenticatorRequestDelegate::SetConditionalRequest(
   is_conditional_ = is_conditional;
 }
 
+void ChromeAuthenticatorRequestDelegate::SetUserEntityForMakeCredentialRequest(
+    const device::PublicKeyCredentialUserEntity& user_entity) {
+  dialog_model()->set_user_entity(user_entity);
+}
+
 void ChromeAuthenticatorRequestDelegate::OnTransportAvailabilityEnumerated(
     device::FidoRequestHandlerBase::TransportAvailabilityInfo data) {
   if (g_observer) {
@@ -841,15 +841,19 @@ void ChromeAuthenticatorRequestDelegate::OnTransportAvailabilityEnumerated(
     return;
   }
 
-  bool last_used_native_api = false;
+  bool jump_to_native_ui = false;
 #if BUILDFLAG(IS_WIN)
-  PrefService* const prefs =
-      user_prefs::UserPrefs::Get(GetRenderFrameHost()->GetBrowserContext());
-  last_used_native_api = prefs->GetBoolean(kWebAuthnLastOperationWasNativeAPI);
+  // Conditional requests always show the Chrome UI first because the UI is
+  // triggered from "Use passkey from another device" in autofill, and it would
+  // be confusing if the caBLE option wasn't presented after that.
+  if (!is_conditional_) {
+    PrefService* const prefs =
+        user_prefs::UserPrefs::Get(GetRenderFrameHost()->GetBrowserContext());
+    jump_to_native_ui = prefs->GetBoolean(kWebAuthnLastOperationWasNativeAPI);
+  }
 #endif
 
-  dialog_model_->StartFlow(std::move(data), is_conditional_,
-                           last_used_native_api);
+  dialog_model_->StartFlow(std::move(data), is_conditional_, jump_to_native_ui);
 
   if (g_observer) {
     g_observer->UIShown(this);

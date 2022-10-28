@@ -1,4 +1,4 @@
-# Copyright 2019 The Chromium Authors. All rights reserved.
+# Copyright 2019 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -26,24 +26,26 @@ js_library("os_search_page") {
     "//chrome/browser/resources/settings/chromeos/google_assistant_page:google_assistant_page",
     "//chrome/browser/resources/settings/chromeos/os_search_page:search_engines_browser_proxy",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
-    "//ui/webui/resources/cr_elements/policy:cr_policy_pref_indicator.m",
+    "//ui/webui/resources/cr_elements:i18n_behavior",
     "//ui/webui/resources/js:assert.m",
     "//ui/webui/resources/js:cr.m",
-    "//ui/webui/resources/js:i18n_behavior.m",
     "//ui/webui/resources/js:load_time_data.m",
-    "//ui/webui/resources/js/cr/ui:focus_without_ink.m",
+    "//ui/webui/resources/js/cr/ui:focus_without_ink_js",
   ]
+  externs_list = [ "//ui/webui/resources/cr_elements/policy/cr_policy_pref_indicator_externs.js" ]
 }
 
 js_library("os_search_selection_dialog") {
   deps = [
     "//chrome/browser/resources/settings/chromeos/os_search_page:search_engines_browser_proxy",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
-    "//ui/webui/resources/cr_elements/cr_button:cr_button",
-    "//ui/webui/resources/cr_elements/cr_dialog:cr_dialog",
+    "//ui/webui/resources/cr_elements:i18n_behavior",
     "//ui/webui/resources/js:cr.m",
-    "//ui/webui/resources/js:i18n_behavior.m",
     "//ui/webui/resources/js:load_time_data.m",
+  ]
+  externs_list = [
+    "//ui/webui/resources/cr_elements/cr_button/cr_button_externs.js",
+    "//ui/webui/resources/cr_elements/cr_dialog/cr_dialog_externs.js",
   ]
 }
 
@@ -54,10 +56,10 @@ js_library("search_subpage") {
     "//chrome/browser/resources/settings/chromeos:os_route",
     "//chrome/browser/resources/settings/chromeos:route_observer_behavior",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
+    "//ui/webui/resources/cr_elements:i18n_behavior",
     "//ui/webui/resources/js:cr.m",
-    "//ui/webui/resources/js:i18n_behavior.m",
     "//ui/webui/resources/js:load_time_data.m",
-    "//ui/webui/resources/js/cr/ui:focus_without_ink.m",
+    "//ui/webui/resources/js/cr/ui:focus_without_ink_js",
   ]
 }
 
@@ -68,10 +70,10 @@ js_library("search_engine") {
     "//chrome/browser/resources/settings/chromeos:os_route",
     "//chrome/browser/resources/settings/chromeos:route_observer_behavior",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
+    "//ui/webui/resources/cr_elements:i18n_behavior",
     "//ui/webui/resources/js:cr.m",
-    "//ui/webui/resources/js:i18n_behavior.m",
     "//ui/webui/resources/js:load_time_data.m",
-    "//ui/webui/resources/js/cr/ui:focus_without_ink.m",
+    "//ui/webui/resources/js/cr/ui:focus_without_ink_js",
   ]
 }
 

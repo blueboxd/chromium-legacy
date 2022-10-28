@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,12 +7,12 @@ import './base_page.js';
 import '//resources/cr_elements/cr_radio_button/cr_radio_button.js';
 import '//resources/cr_elements/cr_radio_group/cr_radio_group.js';
 
-import {I18nBehavior, I18nBehaviorInterface} from 'chrome://resources/js/i18n_behavior.m.js';
+import {I18nBehavior, I18nBehaviorInterface} from 'chrome://resources/cr_elements/i18n_behavior.js';
 import {html, mixinBehaviors, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {getShimlessRmaService} from './mojo_interface_provider.js';
 import {ShimlessRmaServiceInterface, StateResult} from './shimless_rma_types.js';
-import {disableNextButton, enableNextButton} from './shimless_rma_util.js';
+import {disableNextButton, enableNextButton, focusPageTitle} from './shimless_rma_util.js';
 
 /**
  * @fileoverview
@@ -59,6 +59,13 @@ export class OnboardingChooseDestinationPageElement extends
     super();
     /** @private {ShimlessRmaServiceInterface} */
     this.shimlessRmaService_ = getShimlessRmaService();
+  }
+
+  /** @override */
+  ready() {
+    super.ready();
+
+    focusPageTitle(this);
   }
 
   /**

@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -49,6 +49,13 @@ std::u16string TestToolbarActionViewController::GetAccessibleName(
 std::u16string TestToolbarActionViewController::GetTooltip(
     content::WebContents* web_contents) const {
   return tooltip_;
+}
+
+ToolbarActionViewController::HoverCardState
+TestToolbarActionViewController::GetHoverCardState(
+    content::WebContents* web_contents) const {
+  return ToolbarActionViewController::HoverCardState::
+      kExtensionDoesNotWantAccess;
 }
 
 bool TestToolbarActionViewController::IsEnabled(

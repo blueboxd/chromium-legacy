@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -20,6 +20,7 @@
 #include "build/build_config.h"
 #include "components/autofill/core/browser/autofill_experiments.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
+#include "components/autofill/core/browser/payments/autofill_error_dialog_context.h"
 #include "components/autofill/core/browser/payments/credit_card_save_manager.h"
 #include "components/autofill/core/browser/payments/local_card_migration_manager.h"
 #include "components/autofill/core/browser/payments/payments_client.h"
@@ -176,7 +177,7 @@ class PaymentsClientTest : public testing::Test {
     variations::AssociateGoogleVariationID(
         variations::GOOGLE_WEB_PROPERTIES_ANY_CONTEXT, trial_name, group_name,
         static_cast<variations::VariationID>(variation_id));
-    base::FieldTrialList::CreateFieldTrial(trial_name, group_name)->group();
+    base::FieldTrialList::CreateFieldTrial(trial_name, group_name)->Activate();
   }
 
   void OnDidGetUnmaskDetails(
@@ -949,6 +950,92 @@ TEST_F(PaymentsClientTest, UnmaskIncludesMerchantDomain) {
 
   // last_committed_url_origin was set.
   EXPECT_TRUE(GetUploadData().find("merchant_domain") != std::string::npos);
+}
+
+TEST_F(PaymentsClientTest, UnmaskResponseIncludesDeclineDetails_FlagOn) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(
+      features::kAutofillEnableMerchantOptOutErrorDialog);
+
+  StartUnmasking(CardUnmaskOptions().with_virtual_card());
+  IssueOAuthToken();
+  ReturnResponse(net::HTTP_OK,
+                 "{\"error\": {\"code\": \"ANYTHING_ELSE\", "
+                 "\"api_error_reason\": \"virtual_card_temporary_error\"}, "
+                 "\"decline_details\": {\"user_message_title\": "
+                 "\"test_user_message_title\", \"user_message_description\": "
+                 "\"test_user_message_description\"}}");
+
+  EXPECT_EQ(AutofillClient::PaymentsRpcResult::kVcnRetrievalTryAgainFailure,
+            result_);
+  EXPECT_TRUE(
+      unmask_response_details_->autofill_error_dialog_context.has_value());
+  AutofillErrorDialogContext autofill_error_dialog_context =
+      *unmask_response_details_->autofill_error_dialog_context;
+  EXPECT_EQ(*autofill_error_dialog_context.server_returned_title,
+            "test_user_message_title");
+  EXPECT_EQ(*autofill_error_dialog_context.server_returned_description,
+            "test_user_message_description");
+}
+
+TEST_F(PaymentsClientTest, UnmaskResponseIncludesDeclineDetails_FlagOff) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndDisableFeature(
+      features::kAutofillEnableMerchantOptOutErrorDialog);
+
+  StartUnmasking(CardUnmaskOptions().with_virtual_card());
+  IssueOAuthToken();
+  ReturnResponse(net::HTTP_OK,
+                 "{\"error\": {\"code\": \"ANYTHING_ELSE\", "
+                 "\"api_error_reason\": \"virtual_card_temporary_error\"}, "
+                 "\"decline_details\": {\"user_message_title\": "
+                 "\"test_user_message_title\", \"user_message_description\": "
+                 "\"test_user_message_description\"}}");
+
+  EXPECT_EQ(AutofillClient::PaymentsRpcResult::kVcnRetrievalTryAgainFailure,
+            result_);
+  EXPECT_FALSE(
+      unmask_response_details_->autofill_error_dialog_context.has_value());
+}
+
+TEST_F(PaymentsClientTest, UnmaskResponseIncludesEmptyDeclineDetails_FlagOn) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(
+      features::kAutofillEnableMerchantOptOutErrorDialog);
+
+  StartUnmasking(CardUnmaskOptions().with_virtual_card());
+  IssueOAuthToken();
+  ReturnResponse(net::HTTP_OK,
+                 "{\"error\": {\"code\": \"ANYTHING_ELSE\", "
+                 "\"api_error_reason\": \"virtual_card_temporary_error\"}, "
+                 "\"decline_details\": {\"user_message_title\": "
+                 "\"\", \"user_message_description\": "
+                 "\"\"}}");
+
+  EXPECT_EQ(AutofillClient::PaymentsRpcResult::kVcnRetrievalTryAgainFailure,
+            result_);
+  EXPECT_FALSE(
+      unmask_response_details_->autofill_error_dialog_context.has_value());
+}
+
+TEST_F(PaymentsClientTest, UnmaskResponseIncludesEmptyDeclineDetails_FlagOff) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndDisableFeature(
+      features::kAutofillEnableMerchantOptOutErrorDialog);
+
+  StartUnmasking(CardUnmaskOptions().with_virtual_card());
+  IssueOAuthToken();
+  ReturnResponse(net::HTTP_OK,
+                 "{\"error\": {\"code\": \"ANYTHING_ELSE\", "
+                 "\"api_error_reason\": \"virtual_card_temporary_error\"}, "
+                 "\"decline_details\": {\"user_message_title\": "
+                 "\"\", \"user_message_description\": "
+                 "\"\"}}");
+
+  EXPECT_EQ(AutofillClient::PaymentsRpcResult::kVcnRetrievalTryAgainFailure,
+            result_);
+  EXPECT_FALSE(
+      unmask_response_details_->autofill_error_dialog_context.has_value());
 }
 
 TEST_F(PaymentsClientTest, OptInSuccess) {

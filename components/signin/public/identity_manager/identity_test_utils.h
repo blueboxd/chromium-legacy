@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -44,6 +44,11 @@ class IdentityManager;
 // Blocks until `LoadCredentials` is complete and `OnRefreshTokensLoaded` is
 // invoked.
 void WaitForRefreshTokensLoaded(IdentityManager* identity_manager);
+
+// Returns the current exact consent level for the primary account, or
+// `absl::nullopt` if there is no primary account set.
+absl::optional<signin::ConsentLevel> GetPrimaryAccountConsentLevel(
+    IdentityManager* identity_manager);
 
 // Sets the primary account (which must not already be set) to the given email
 // address with corresponding consent level, generating a GAIA ID that

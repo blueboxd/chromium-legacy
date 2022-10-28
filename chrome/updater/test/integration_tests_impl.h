@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/callback_forward.h"
+#include "base/callback_helpers.h"
 #include "base/containers/flat_map.h"
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
@@ -69,9 +70,12 @@ void SetGroupPolicies(const base::Value::Dict& values);
 // Copies the logs to a location where they can be retrieved by ResultDB.
 void CopyLog(const base::FilePath& src_dir);
 
-// Waits for a given predicate to become true, testing it by polling. Returns
-// true if the predicate becomes true before a timeout, otherwise returns false.
-bool WaitFor(base::RepeatingCallback<bool()> predicate);
+// Waits for a given `predicate` to become true. Invokes `still_waiting`
+// periodically to provide a indication of progress. Returns true if the
+// predicate becomes true before a timeout, otherwise returns false.
+[[nodiscard]] bool WaitFor(
+    base::RepeatingCallback<bool()> predicate,
+    base::RepeatingClosure still_waiting = base::DoNothing());
 
 // Returns the path to the updater data dir.
 absl::optional<base::FilePath> GetDataDirPath(UpdaterScope scope);
@@ -172,10 +176,11 @@ void ExpectAppVersion(UpdaterScope scope,
 
 void RegisterApp(UpdaterScope scope, const std::string& app_id);
 
-void WaitForUpdaterExit(UpdaterScope scope);
+[[nodiscard]] bool WaitForUpdaterExit(UpdaterScope scope);
 
 #if BUILDFLAG(IS_WIN)
 void ExpectInterfacesRegistered(UpdaterScope scope);
+void ExpectMarshalInterfaceSucceeds(UpdaterScope scope);
 void ExpectLegacyUpdate3WebSucceeds(UpdaterScope scope,
                                     const std::string& app_id,
                                     int expected_final_state,
@@ -237,7 +242,7 @@ void InstallApp(UpdaterScope scope, const std::string& app_id);
 
 void UninstallApp(UpdaterScope scope, const std::string& app_id);
 
-void RunOfflineInstall(UpdaterScope scope);
+void RunOfflineInstall(UpdaterScope scope, bool is_silent_install);
 
 }  // namespace updater::test
 

@@ -547,9 +547,10 @@ static inline bool ParseAlphaValue(const CharacterType*& string,
     return false;
 
   if (string[0] != '0' && string[0] != '1' && string[0] != '.') {
-    int length = FindLengthOfValidDouble(string, end);
-    if (length > 0 && ContainsCharAtPos(string, end, length, terminator,
-                                        /*also_accept_whitespace=*/false)) {
+    int double_length = FindLengthOfValidDouble(string, end);
+    if (double_length > 0 &&
+        ContainsCharAtPos(string, end, double_length, terminator,
+                          /*also_accept_whitespace=*/false)) {
       value = negative ? 0 : 255;
       string = end;
       return true;
@@ -1031,11 +1032,6 @@ bool CSSParserFastPaths::IsValidKeywordPropertyAndValue(
              value_id == CSSValueID::kDashed || value_id == CSSValueID::kWavy;
     case CSSPropertyID::kTextDecorationSkipInk:
       return value_id == CSSValueID::kAuto || value_id == CSSValueID::kNone;
-    case CSSPropertyID::kTextJustify:
-      DCHECK(RuntimeEnabledFeatures::CSS3TextEnabled());
-      return value_id == CSSValueID::kInterWord ||
-             value_id == CSSValueID::kDistribute ||
-             value_id == CSSValueID::kAuto || value_id == CSSValueID::kNone;
     case CSSPropertyID::kTextOrientation:
       return value_id == CSSValueID::kMixed ||
              value_id == CSSValueID::kUpright ||
@@ -1339,7 +1335,6 @@ bool CSSParserFastPaths::IsKeywordPropertyID(CSSPropertyID property_id) {
     case CSSPropertyID::kTextCombineUpright:
     case CSSPropertyID::kTextDecorationStyle:
     case CSSPropertyID::kTextDecorationSkipInk:
-    case CSSPropertyID::kTextJustify:
     case CSSPropertyID::kTextOrientation:
     case CSSPropertyID::kWebkitTextOrientation:
     case CSSPropertyID::kTextOverflow:

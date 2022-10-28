@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -24,10 +24,6 @@
 #include "components/keyed_service/core/keyed_service.h"
 
 class AccountId;
-
-namespace base {
-class ListValue;
-}  // namespace base
 
 namespace user_manager {
 class User;
@@ -87,7 +83,7 @@ class EasyUnlockService : public KeyedService,
   // Retrieve the stored remote devices list:
   //   * If in regular context, device list is retrieved from prefs.
   //   * If in sign-in context, device list is retrieved from TPM.
-  virtual const base::ListValue* GetRemoteDevices() const = 0;
+  virtual const base::Value::List* GetRemoteDevices() const = 0;
 
   // Gets the challenge bytes for the user currently associated with the
   // service.

@@ -7,7 +7,6 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include <algorithm>
 #include <cctype>
 #include <list>
 #include <memory>
@@ -16,12 +15,12 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
+#include "base/containers/contains.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
-#include "base/power_monitor/power_monitor.h"
-#include "base/power_monitor/power_monitor_source.h"
 #include "base/rand_util.h"
+#include "base/ranges/algorithm.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -443,14 +442,19 @@ MediaStreamDevices DisplayMediaDevicesFromFakeDeviceConfig(
   MediaStreamDevice device(media_type, media_id.ToString(),
                            media_id.ToString());
   device.display_media_info = media::mojom::DisplayMediaInformation::New(
-      display_surface, true, media::mojom::CursorCaptureType::NEVER, nullptr);
+      display_surface, /*logical_surface=*/true,
+      media::mojom::CursorCaptureType::NEVER, /*capture_handle=*/nullptr);
   devices.push_back(device);
   if (!request_audio)
     return devices;
 
-  devices.emplace_back(MediaStreamType::DISPLAY_AUDIO_CAPTURE,
-                       media::AudioDeviceDescription::kDefaultDeviceId,
-                       "Fake audio");
+  MediaStreamDevice audio_device(
+      MediaStreamType::DISPLAY_AUDIO_CAPTURE,
+      media::AudioDeviceDescription::kDefaultDeviceId, "Fake audio");
+  audio_device.display_media_info = media::mojom::DisplayMediaInformation::New(
+      display_surface, /*logical_surface=*/true,
+      media::mojom::CursorCaptureType::NEVER, /*capture_handle=*/nullptr);
+  devices.emplace_back(audio_device);
   return devices;
 }
 
@@ -474,32 +478,40 @@ void FinalizeGetMediaDeviceIDForHMAC(
                         base::BindOnce(std::move(callback), absl::nullopt));
 }
 
-bool ChangeSourceEnabledForDevice(const MediaStreamDevice& device) {
-  DesktopMediaID media_id = DesktopMediaID::Parse(device.id);
-  // Show "Change source" button on notification bar only for tab sharing by
-  // desktopCapture API or getDisplayMedia.
-  return media_id.type == DesktopMediaID::TYPE_WEB_CONTENTS &&
-         (device.type == MediaStreamType::GUM_DESKTOP_VIDEO_CAPTURE ||
-          (device.type == MediaStreamType::DISPLAY_VIDEO_CAPTURE &&
-           base::FeatureList::IsEnabled(
-               media::kShareThisTabInsteadButtonGetDisplayMedia)));
-}
+bool ChangeSourceSupported(const MediaStreamDevices& devices) {
+  for (const MediaStreamDevice& device : devices) {
+    DesktopMediaID media_id = DesktopMediaID::Parse(device.id);
+    if (media_id.type != DesktopMediaID::TYPE_WEB_CONTENTS) {
+      return false;  // Change of source only supported between tabs.
+    }
+  }
 
-bool ChangeSourceBlocklistedForDevice(const MediaStreamDevice& device) {
-  // Block display of "Change source" button for getDisplayMedia with audio
-  // if ShareThisTabInsteadButtonGetDisplayMediaAudio is disabled.
-  return device.type == MediaStreamType::DISPLAY_AUDIO_CAPTURE &&
-         !base::FeatureList::IsEnabled(
-             media::kShareThisTabInsteadButtonGetDisplayMediaAudio);
-}
+  for (const MediaStreamDevice& device : devices) {
+    if (device.type == MediaStreamType::GUM_DESKTOP_VIDEO_CAPTURE) {
+      return true;  // Established API supporting share-this-tab-instead.
+    }
+  }
 
-bool EnableChangeSource(const MediaStreamDevices& devices) {
-  bool has_change_source_enabled_device = std::any_of(
-      devices.cbegin(), devices.cend(), &ChangeSourceEnabledForDevice);
-  bool has_change_source_blocklisted_device = std::any_of(
-      devices.cbegin(), devices.cend(), &ChangeSourceBlocklistedForDevice);
-  return has_change_source_enabled_device &&
-         !has_change_source_blocklisted_device;
+  if (!base::FeatureList::IsEnabled(
+          media::kShareThisTabInsteadButtonGetDisplayMedia)) {
+    return false;  // Killswitch engaged.
+  }
+
+  if (!base::Contains(devices, MediaStreamType::DISPLAY_VIDEO_CAPTURE,
+                      &MediaStreamDevice::type)) {
+    return false;  // Not an API call that supports share-this-tab-instead.
+  }
+
+  if (!base::FeatureList::IsEnabled(
+          media::kShareThisTabInsteadButtonGetDisplayMediaAudio) &&
+      base::Contains(devices, MediaStreamType::DISPLAY_AUDIO_CAPTURE,
+                     &MediaStreamDevice::type)) {
+    // The user chose to capture audio, but the killswitch against
+    // share-this-tab-instead with audio is engaged.
+    return false;
+  }
+
+  return true;  // getDisplayMedia() and killswitches did not trigger.
 }
 
 #if !BUILDFLAG(IS_ANDROID)
@@ -771,6 +783,9 @@ class MediaStreamManager::DeviceRequest {
         video_type_, controls.disable_local_echo,
         controls.request_pan_tilt_zoom_permission);
     ui_request_->exclude_system_audio = controls.exclude_system_audio;
+    ui_request_->exclude_self_browser_surface =
+        controls.exclude_self_browser_surface;
+    ui_request_->preferred_display_surface = controls.preferred_display_surface;
   }
 
   // Creates a tab capture specific MediaStreamRequest object that is used by
@@ -1156,17 +1171,11 @@ MediaStreamManager::MediaStreamManager(
   InitializeMaybeAsync(std::move(video_capture_provider));
 
   audio_service_listener_ = std::make_unique<AudioServiceListener>();
-
-  base::PowerMonitor::AddPowerSuspendObserver(this);
-  base::PowerMonitor::AddPowerThermalObserver(this);
 }
 
 MediaStreamManager::~MediaStreamManager() {
   DCHECK(!BrowserThread::IsThreadInitialized(BrowserThread::IO));
   DCHECK(requests_.empty());
-
-  base::PowerMonitor::RemovePowerSuspendObserver(this);
-  base::PowerMonitor::RemovePowerThermalObserver(this);
 }
 
 VideoCaptureManager* MediaStreamManager::video_capture_manager() const {
@@ -1314,12 +1323,7 @@ void MediaStreamManager::GetOpenDevice(
     DeviceRequestStateChangeCallback device_request_state_change_cb,
     DeviceCaptureHandleChangeCallback device_capture_handle_change_cb) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-
-  if (!base::FeatureList::IsEnabled(features::kMediaStreamTrackTransfer)) {
-    ReceivedBadMessage(render_process_id,
-                       bad_message::MSDH_GET_OPEN_DEVICE_USE_WITHOUT_FEATURE);
-    return;
-  }
+  DCHECK(base::FeatureList::IsEnabled(features::kMediaStreamTrackTransfer));
 
   std::unique_ptr<DeviceRequest> request = CreateDeviceRequest(
       render_process_id, render_frame_id, requester_id, page_request_id,
@@ -1486,21 +1490,14 @@ void MediaStreamManager::StopStreamDevice(
   }
 }
 
-void MediaStreamManager::KeepDeviceAliveForTransfer(
+bool MediaStreamManager::KeepDeviceAliveForTransfer(
     int render_process_id,
     int render_frame_id,
     int requester_id,
     const base::UnguessableToken& session_id,
-    const base::UnguessableToken& transfer_id,
-    KeepDeviceAliveForTransferCallback keep_device_alive_cb) {
+    const base::UnguessableToken& transfer_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  DCHECK(keep_device_alive_cb);
-
-  if (!base::FeatureList::IsEnabled(features::kMediaStreamTrackTransfer)) {
-    ReceivedBadMessage(render_process_id,
-                       bad_message::MSDH_GET_OPEN_DEVICE_USE_WITHOUT_FEATURE);
-    return;
-  }
+  DCHECK(base::FeatureList::IsEnabled(features::kMediaStreamTrackTransfer));
 
   for (const LabeledDeviceRequest& device_request : requests_) {
     DeviceRequest* const request = device_request.second.get();
@@ -1520,14 +1517,13 @@ void MediaStreamManager::KeepDeviceAliveForTransfer(
 
           UpdateDeviceTransferStatus(request, device, transfer_id,
                                      TransferState::KEPT_ALIVE);
-          std::move(keep_device_alive_cb).Run(/*device_found=*/true);
-          return;
+          return true;
         }
         break;
     }
   }
 
-  std::move(keep_device_alive_cb).Run(/*device_found=*/false);
+  return false;
 }
 
 base::UnguessableToken MediaStreamManager::VideoDeviceIdToSessionId(
@@ -1955,22 +1951,15 @@ absl::optional<MediaStreamDevice> MediaStreamManager::CloneExistingOpenDevice(
       }
 
       MediaStreamDevice new_device = *existing_device;
-      // Device id and group_id are only hashed for MediaStreamType
-      // DEVICE_AUDIO_CAPTURE and DEVICE_VIDEO_CAPTURE.
-      if (existing_device->type == MediaStreamType::DEVICE_AUDIO_CAPTURE ||
-          existing_device->type == MediaStreamType::DEVICE_VIDEO_CAPTURE) {
-        // Gets the raw device id and device group_id.
-        if (!TranslateSourceIdToDeviceIdAndGroupId(
-                existing_device->type,
-                existing_request->salt_and_origin.device_id_salt,
-                existing_request->salt_and_origin.origin, existing_device->id,
-                &new_device.id, &new_device.group_id)) {
-          // Can return false if |existing_device->id| is invalid.
-          continue;
-        }
-
-        // Creates hashed device id and device group_id.
-        TranslateDeviceIdToSourceId(new_request, &new_device);
+      if (!blink::IsMediaStreamDeviceTransferrable(*existing_device)) {
+        // TODO(https://crbug.com/1288839): Remove bad message after transfer
+        // is supported for these stream types.
+        // TODO(https://crbug.com/1288839): Hash device id and group_id for
+        // MediaStreamType DEVICE_AUDIO_CAPTURE and DEVICE_VIDEO_CAPTURE.
+        ReceivedBadMessage(
+            new_request->requesting_process_id,
+            bad_message::MSM_GET_OPEN_DEVICE_FOR_UNSUPPORTED_STREAM_TYPE);
+        return absl::nullopt;
       }
 
       new_device.set_session_id(
@@ -2788,8 +2777,8 @@ void MediaStreamManager::FinalizeChangeDevice(const std::string& label,
     request->device_changed_cb.Run(label, old_device, new_device);
   }
 
-  for (const auto& old_devices : old_devices_by_type)
-    for (const auto& old_device : old_devices)
+  for (const auto& old_media_stream_devices : old_devices_by_type)
+    for (const auto& old_device : old_media_stream_devices)
       request->device_changed_cb.Run(label, old_device, MediaStreamDevice());
 
   MaybeUpdateTrackedCaptureHandleConfigs(
@@ -3036,27 +3025,6 @@ void MediaStreamManager::Aborted(
   StopDevice(stream_type, capture_session_id);
 }
 
-void MediaStreamManager::OnSuspend() {
-  SendLogMessage(base::StringPrintf("OnSuspend([this=%p])", this));
-}
-
-void MediaStreamManager::OnResume() {
-  SendLogMessage(base::StringPrintf("OnResume([this=%p])", this));
-}
-
-void MediaStreamManager::OnThermalStateChange(
-    base::PowerThermalObserver::DeviceThermalState new_state) {
-  const char* state_name =
-      base::PowerMonitorSource::DeviceThermalStateToString(new_state);
-  SendLogMessage(base::StringPrintf(
-      "OnThermalStateChange({this=%p}, {new_state=%s})", this, state_name));
-}
-
-void MediaStreamManager::OnSpeedLimitChange(int new_limit) {
-  SendLogMessage(base::StringPrintf(
-      "OnSpeedLimitChange({this=%p}, {new_limit=%d})", this, new_limit));
-}
-
 void MediaStreamManager::UseFakeUIFactoryForTests(
     base::RepeatingCallback<std::unique_ptr<FakeMediaStreamUIProxy>(void)>
         fake_ui_factory) {
@@ -3131,12 +3099,12 @@ void MediaStreamManager::HandleAccessRequestResponse(
     return;
   }
 
-  DCHECK(std::all_of(stream_devices_set.stream_devices.cbegin(),
-                     stream_devices_set.stream_devices.cend(),
-                     [](const blink::mojom::StreamDevicesPtr& stream_devices) {
-                       return stream_devices->audio_device.has_value() ||
-                              stream_devices->video_device.has_value();
-                     }));
+  DCHECK(base::ranges::all_of(
+      stream_devices_set.stream_devices,
+      [](const blink::mojom::StreamDevicesPtr& stream_devices) {
+        return stream_devices->audio_device.has_value() ||
+               stream_devices->video_device.has_value();
+      }));
 
   if (request->request_type() == blink::MEDIA_DEVICE_UPDATE) {
     HandleChangeSourceRequestResponse(label, request, stream_devices_set);
@@ -3181,9 +3149,9 @@ void MediaStreamManager::HandleAccessRequestResponse(
         if (sample_rate <= 0 || sample_rate > 96000)
           sample_rate = 44100;
 
-        media::AudioParameters params(device.input.format(),
-                                      media::CHANNEL_LAYOUT_STEREO, sample_rate,
-                                      device.input.frames_per_buffer());
+        media::AudioParameters params(
+            device.input.format(), media::ChannelLayoutConfig::Stereo(),
+            sample_rate, device.input.frames_per_buffer());
         params.set_effects(device.input.effects());
         params.set_mic_positions(device.input.mic_positions());
         DCHECK(params.IsValid());
@@ -3691,7 +3659,8 @@ void MediaStreamManager::OnStreamStarted(const std::string& label) {
       RequestTypeToString(request->request_type())));
 
   MediaStreamUI::SourceCallback device_changed_cb;
-  if (EnableChangeSource(
+  if (request->controls.dynamic_surface_switching_requested &&
+      ChangeSourceSupported(
           blink::ToMediaStreamDevicesList(request->stream_devices_set)) &&
       base::FeatureList::IsEnabled(features::kDesktopCaptureChangeSource)) {
     device_changed_cb = base::BindRepeating(

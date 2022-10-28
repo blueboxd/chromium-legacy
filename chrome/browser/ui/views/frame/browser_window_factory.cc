@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -62,7 +62,7 @@ BrowserWindow* BrowserWindow::CreateBrowserWindow(
   browser_frame->InitBrowserFrame();
 
 #if BUILDFLAG(IS_MAC)
-  if (base::FeatureList::IsEnabled(features::kImmersiveFullscreen)) {
+  if (view->UsesImmersiveFullscreenMode()) {
     // This needs to happen after BrowserFrame has been initialized. It creates
     // a new Widget that copies the theme from BrowserFrame.
     view->CreateMacOverlayView();

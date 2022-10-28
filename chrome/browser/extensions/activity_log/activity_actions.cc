@@ -1,4 +1,4 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -167,37 +167,36 @@ ExtensionActivity Action::ConvertToExtensionActivity() {
       break;
   }
 
-  result.extension_id = std::make_unique<std::string>(extension_id());
-  result.time = std::make_unique<double>(time().ToJsTime());
-  result.count = std::make_unique<double>(count());
-  result.api_call = std::make_unique<std::string>(api_name());
-  result.args = std::make_unique<std::string>(Serialize(args()));
+  result.extension_id = extension_id();
+  result.time = time().ToJsTime();
+  result.count = count();
+  result.api_call = api_name();
+  result.args = Serialize(args());
   if (action_id() != -1)
-    result.activity_id = std::make_unique<std::string>(
-        base::StringPrintf("%" PRId64, action_id()));
+    result.activity_id = base::StringPrintf("%" PRId64, action_id());
   if (page_url().is_valid()) {
     if (!page_title().empty())
-      result.page_title = std::make_unique<std::string>(page_title());
-    result.page_url = std::make_unique<std::string>(SerializePageUrl());
+      result.page_title = page_title();
+    result.page_url = SerializePageUrl();
   }
   if (arg_url().is_valid())
-    result.arg_url = std::make_unique<std::string>(SerializeArgUrl());
+    result.arg_url = SerializeArgUrl();
 
   if (other()) {
     std::unique_ptr<ExtensionActivity::Other> other_field(
         new ExtensionActivity::Other);
     if (absl::optional<bool> prerender =
             other()->FindBool(constants::kActionPrerender)) {
-      other_field->prerender = std::make_unique<bool>(*prerender);
+      other_field->prerender = *prerender;
     }
     if (const base::Value::Dict* web_request =
             other()->FindDict(constants::kActionWebRequest)) {
-      other_field->web_request = std::make_unique<std::string>(
-          ActivityLogPolicy::Util::Serialize(*web_request));
+      other_field->web_request =
+          ActivityLogPolicy::Util::Serialize(*web_request);
     }
     const std::string* extra = other()->FindString(constants::kActionExtra);
     if (extra)
-      other_field->extra = std::make_unique<std::string>(*extra);
+      other_field->extra = *extra;
     if (absl::optional<int> dom_verb =
             other()->FindInt(constants::kActionDomVerb)) {
       switch (static_cast<DomActionType::Type>(dom_verb.value())) {

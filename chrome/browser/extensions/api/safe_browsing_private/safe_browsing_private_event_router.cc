@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -238,6 +238,8 @@ const char SafeBrowsingPrivateEventRouter::kTriggerFileUpload[] = "FILE_UPLOAD";
 const char SafeBrowsingPrivateEventRouter::kTriggerWebContentUpload[] =
     "WEB_CONTENT_UPLOAD";
 const char SafeBrowsingPrivateEventRouter::kTriggerPagePrint[] = "PAGE_PRINT";
+const char SafeBrowsingPrivateEventRouter::kTriggerFileTransfer[] =
+    "FILE_TRANSFER";
 
 SafeBrowsingPrivateEventRouter::SafeBrowsingPrivateEventRouter(
     content::BrowserContext* context)
@@ -277,7 +279,7 @@ void SafeBrowsingPrivateEventRouter::OnPolicySpecifiedPasswordReuseDetected(
   // |event_router_| can be null in tests.
   if (event_router_) {
     base::Value::List event_value;
-    event_value.Append(base::Value::FromUniquePtrValue(params.ToValue()));
+    event_value.Append(params.ToValue());
 
     auto extension_event = std::make_unique<Event>(
         events::
@@ -355,7 +357,7 @@ void SafeBrowsingPrivateEventRouter::OnDangerousDownloadOpened(
   // |event_router_| can be null in tests.
   if (event_router_) {
     base::Value::List event_value;
-    event_value.Append(base::Value::FromUniquePtrValue(params.ToValue()));
+    event_value.Append(params.ToValue());
 
     auto extension_event = std::make_unique<Event>(
         events::SAFE_BROWSING_PRIVATE_ON_DANGEROUS_DOWNLOAD_OPENED,
@@ -405,15 +407,14 @@ void SafeBrowsingPrivateEventRouter::OnSecurityInterstitialShown(
   params.url = url.spec();
   params.reason = reason;
   if (net_error_code < 0) {
-    params.net_error_code =
-        std::make_unique<std::string>(base::NumberToString(net_error_code));
+    params.net_error_code = base::NumberToString(net_error_code);
   }
   params.user_name = GetProfileUserName();
 
   // |event_router_| can be null in tests.
   if (event_router_) {
     base::Value::List event_value;
-    event_value.Append(base::Value::FromUniquePtrValue(params.ToValue()));
+    event_value.Append(params.ToValue());
 
     auto extension_event = std::make_unique<Event>(
         events::SAFE_BROWSING_PRIVATE_ON_SECURITY_INTERSTITIAL_SHOWN,
@@ -454,15 +455,14 @@ void SafeBrowsingPrivateEventRouter::OnSecurityInterstitialProceeded(
   params.url = url.spec();
   params.reason = reason;
   if (net_error_code < 0) {
-    params.net_error_code =
-        std::make_unique<std::string>(base::NumberToString(net_error_code));
+    params.net_error_code = base::NumberToString(net_error_code);
   }
   params.user_name = GetProfileUserName();
 
   // |event_router_| can be null in tests.
   if (event_router_) {
     base::Value::List event_value;
-    event_value.Append(base::Value::FromUniquePtrValue(params.ToValue()));
+    event_value.Append(params.ToValue());
 
     auto extension_event = std::make_unique<Event>(
         events::SAFE_BROWSING_PRIVATE_ON_SECURITY_INTERSTITIAL_PROCEEDED,

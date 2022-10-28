@@ -45,6 +45,7 @@ blink_python_runner("runtime_enabled_features") {
              "../build/scripts/templates/runtime_enabled_features.cc.tmpl",
              "../build/scripts/templates/runtime_enabled_features.h.tmpl",
              "../build/scripts/templates/runtime_enabled_features_test_helpers.h.tmpl",
+             "../build/scripts/templates/web_runtime_features_base.cc.tmpl",
            ]
 
   build_scripts_output_dir = "$blink_platform_output_dir/../build/scripts"
@@ -52,6 +53,7 @@ blink_python_runner("runtime_enabled_features") {
     "$blink_platform_output_dir/runtime_enabled_features.cc",
     "$blink_platform_output_dir/runtime_enabled_features.h",
     "$blink_platform_output_dir/testing/runtime_enabled_features_test_helpers.h",
+    "$blink_platform_output_dir/exported/web_runtime_features_base.cc",
     "$build_scripts_output_dir/runtime_enabled_features.pickle",
   ]
 
@@ -421,8 +423,12 @@ component("platform") {
     "bindings/script_state.h",
     "bindings/script_wrappable.cc",
     "bindings/script_wrappable.h",
+    "bindings/source_location.cc",
+    "bindings/source_location.h",
     "bindings/string_resource.cc",
     "bindings/string_resource.h",
+    "bindings/thread_debugger.cc",
+    "bindings/thread_debugger.h",
     "bindings/to_v8.h",
     "bindings/trace_wrapper_v8_reference.h",
     "bindings/trace_wrapper_v8_string.cc",
@@ -1389,7 +1395,6 @@ component("platform") {
     "text/text_direction.h",
     "text/text_encoding_detector.cc",
     "text/text_encoding_detector.h",
-    "text/text_justify.h",
     "text/text_run.cc",
     "text/text_run.h",
     "text/text_run_iterator.h",
@@ -1950,8 +1955,10 @@ test("blink_platform_unittests") {
 
   if (is_fuchsia) {
     use_cfv1 = false
-    additional_manifest_fragments =
-        [ "//build/config/fuchsia/test/test_fonts.shard.test-cml" ]
+    additional_manifest_fragments = [
+      "//build/config/fuchsia/test/test_fonts.shard.test-cml",
+      "//build/config/fuchsia/test/mark_vmo_executable.shard.test-cml",
+    ]
 
     # Oilpan reuses V8's v8::PageAllocator which generally requires JIT
     # permissions.
@@ -2419,8 +2426,10 @@ test("blink_fuzzer_unittests") {
     use_cfv1 = false
     deps += [ "//skia:test_fonts_cfv2" ]
     test_runner_shard = "//build/config/fuchsia/test/elf_test_ambient_exec_runner.shard.test-cml"
-    additional_manifest_fragments =
-        [ "//build/config/fuchsia/test/test_fonts.shard.test-cml" ]
+    additional_manifest_fragments = [
+      "//build/config/fuchsia/test/test_fonts.shard.test-cml",
+      "//build/config/fuchsia/test/mark_vmo_executable.shard.test-cml",
+    ]
   } else {
     deps += [ "//skia:test_fonts" ]
   }

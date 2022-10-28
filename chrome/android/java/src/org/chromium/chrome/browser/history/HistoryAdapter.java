@@ -1,4 +1,4 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -263,7 +263,7 @@ public class HistoryAdapter extends DateDividedAdapter implements BrowsingHistor
         // Return early if this call comes in after the activity/native page is destroyed.
         if (mIsDestroyed) return;
 
-        mManager.clearSelection();
+        mManager.onHistoryDeletedExternally();
         // TODO(twellington): Account for items that have been paged in due to infinite scroll.
         //                    This currently removes all items and re-issues a query.
         startLoadingItems();

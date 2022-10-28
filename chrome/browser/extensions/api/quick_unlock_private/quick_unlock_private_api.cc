@@ -1,18 +1,16 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome/browser/extensions/api/quick_unlock_private/quick_unlock_private_api.h"
 
-#include <algorithm>
 #include <string>
 #include <utility>
 
-#include "ash/components/login/auth/extended_authenticator.h"
-#include "ash/components/login/auth/public/user_context.h"
 #include "ash/constants/ash_pref_names.h"
 #include "base/bind.h"
 #include "base/containers/contains.h"
+#include "base/ranges/algorithm.h"
 #include "chrome/browser/ash/login/quick_unlock/auth_token.h"
 #include "chrome/browser/ash/login/quick_unlock/pin_backend.h"
 #include "chrome/browser/ash/login/quick_unlock/quick_unlock_factory.h"
@@ -23,6 +21,8 @@
 #include "chrome/browser/extensions/api/quick_unlock_private/quick_unlock_private_ash_utils.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chromeos/ash/components/login/auth/extended_authenticator.h"
+#include "chromeos/ash/components/login/auth/public/user_context.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -108,7 +108,7 @@ bool AreModesEqual(const QuickUnlockModeList& a, const QuickUnlockModeList& b) {
 }
 
 bool IsPinNumeric(const std::string& pin) {
-  return std::all_of(pin.begin(), pin.end(), ::isdigit);
+  return base::ranges::all_of(pin, ::isdigit);
 }
 
 // Reads and sanitizes the pin length policy.

@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -28,6 +28,14 @@ class TestPlatformDelegate : public BasePlatformDelegate {
   MOCK_METHOD(bool,
               ResolveFilePath,
               (const base::FilePath&, base::FilePath*),
+              (override));
+  MOCK_METHOD(absl::optional<ProductMetadata>,
+              GetProductMetadata,
+              (const base::FilePath&),
+              (override));
+  MOCK_METHOD(absl::optional<std::string>,
+              GetSigningCertificatePublicKeyHash,
+              (const base::FilePath&),
               (override));
 };
 

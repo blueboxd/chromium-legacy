@@ -1,9 +1,12 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "net/spdy/alps_decoder.h"
 
+#include "base/test/metrics/histogram_tester.h"
+#include "base/test/scoped_feature_list.h"
+#include "net/base/features.h"
 #include "net/base/hex_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -121,6 +124,58 @@ TEST(AlpsDecoderTest, ParseLargeAcceptChFrame) {
   EXPECT_THAT(decoder.GetAcceptCh(),
               ElementsAre(AcceptChOriginValuePair{"https://www.example.com",
                                                   accept_ch_tokens}));
+}
+
+TEST(AlpsDecoderTest, DisableAlpsParsing) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndDisableFeature(features::kAlpsParsing);
+  AlpsDecoder decoder;
+  AlpsDecoder::Error error = decoder.Decode(HexDecode(
+      // ACCEPT_CH frame
+      "00003d"                    // length
+      "89"                        // type ACCEPT_CH
+      "00"                        // flags
+      "00000000"                  // stream ID
+      "0017"                      // origin length
+      "68747470733a2f2f7777772e"  //
+      "6578616d706c652e636f6d"    // origin "https://www.example.com"
+      "0003"                      // value length
+      "666f6f"                    // value "foo"
+      "0018"                      // origin length
+      "68747470733a2f2f6d61696c"  //
+      "2e6578616d706c652e636f6d"  // origin "https://mail.example.com"
+      "0003"                      // value length
+      "626172"                    // value "bar"
+      ));
+
+  EXPECT_EQ(AlpsDecoder::Error::kNoError, error);
+  EXPECT_THAT(decoder.GetAcceptCh(), IsEmpty());
+}
+
+TEST(AlpsDecoderTest, DisableAlpsClientHintParsing) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndDisableFeature(features::kAlpsClientHintParsing);
+  AlpsDecoder decoder;
+  AlpsDecoder::Error error = decoder.Decode(HexDecode(
+      // ACCEPT_CH frame
+      "00003d"                    // length
+      "89"                        // type ACCEPT_CH
+      "00"                        // flags
+      "00000000"                  // stream ID
+      "0017"                      // origin length
+      "68747470733a2f2f7777772e"  //
+      "6578616d706c652e636f6d"    // origin "https://www.example.com"
+      "0003"                      // value length
+      "666f6f"                    // value "foo"
+      "0018"                      // origin length
+      "68747470733a2f2f6d61696c"  //
+      "2e6578616d706c652e636f6d"  // origin "https://mail.example.com"
+      "0003"                      // value length
+      "626172"                    // value "bar"
+      ));
+
+  EXPECT_EQ(AlpsDecoder::Error::kNoError, error);
+  EXPECT_THAT(decoder.GetAcceptCh(), IsEmpty());
 }
 
 TEST(AlpsDecoderTest, IncompleteFrame) {
@@ -262,7 +317,23 @@ TEST(AlpsDecoderTest, UnknownFrame) {
   EXPECT_EQ(0, decoder.settings_frame_count());
 }
 
-TEST(AlpsDecoderTest, MalformedAcceptChFrame) {
+class AlpsDecoderTestWithFeature : public ::testing::TestWithParam<bool> {
+ public:
+  bool ShouldKillSessionOnAcceptChMalformed() { return GetParam(); }
+
+ private:
+  void SetUp() override {
+    feature_list_.InitWithFeatureState(
+        features::kShouldKillSessionOnAcceptChMalformed,
+        ShouldKillSessionOnAcceptChMalformed());
+  }
+
+  base::test::ScopedFeatureList feature_list_;
+};
+
+INSTANTIATE_TEST_SUITE_P(All, AlpsDecoderTestWithFeature, testing::Bool());
+
+TEST_P(AlpsDecoderTestWithFeature, MalformedAcceptChFrame) {
   // Correct, complete payload.
   std::string payload = HexDecode(
       "0017"  // origin length
@@ -273,6 +344,7 @@ TEST(AlpsDecoderTest, MalformedAcceptChFrame) {
 
   for (uint8_t payload_length = 1; payload_length < payload.length();
        payload_length++) {
+    base::HistogramTester histogram_tester;
     // First two bytes of length.
     std::string frame = HexDecode("0000");
     // Last byte of length.
@@ -287,8 +359,16 @@ TEST(AlpsDecoderTest, MalformedAcceptChFrame) {
 
     AlpsDecoder decoder;
     AlpsDecoder::Error error = decoder.Decode(frame);
-
-    EXPECT_EQ(AlpsDecoder::Error::kAcceptChMalformed, error);
+    if (ShouldKillSessionOnAcceptChMalformed()) {
+      EXPECT_EQ(AlpsDecoder::Error::kAcceptChMalformed, error);
+      histogram_tester.ExpectTotalCount(
+          "Net.SpdySession.AlpsDecoderStatus.Bypassed", 0);
+    } else {
+      EXPECT_EQ(AlpsDecoder::Error::kNoError, error);
+      histogram_tester.ExpectUniqueSample(
+          "Net.SpdySession.AlpsDecoderStatus.Bypassed",
+          static_cast<int>(AlpsDecoder::Error::kAcceptChMalformed), 1);
+    }
   }
 }
 

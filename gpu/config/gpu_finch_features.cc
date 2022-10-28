@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -56,7 +56,7 @@ bool IsDeviceBlocked(const char* field, const std::string& block_list) {
 // Used to limit GL version to 2.0 for skia raster and compositing.
 const base::Feature kUseGles2ForOopR {
   "UseGles2ForOopR",
-#if BUILDFLAG(IS_ANDROID)
+#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_WIN)
       base::FEATURE_DISABLED_BY_DEFAULT
 #else
       base::FEATURE_ENABLED_BY_DEFAULT
@@ -145,7 +145,7 @@ const base::Feature kDefaultEnableGpuRasterization{
 // Enables the use of out of process rasterization for canvas.
 const base::Feature kCanvasOopRasterization {
   "CanvasOopRasterization",
-#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_CHROMEOS_ASH) || \
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_ANDROID) || \
     (BUILDFLAG(IS_MAC) && defined(ARCH_CPU_ARM64)) || BUILDFLAG(IS_FUCHSIA)
       base::FEATURE_ENABLED_BY_DEFAULT
 #else
@@ -183,7 +183,7 @@ const base::Feature kMetal{"Metal", base::FEATURE_DISABLED_BY_DEFAULT};
 
 #if defined(ARCH_CPU_ARM64)
 const base::Feature kDisableFlushWorkaroundForMacCrash{
-    "DisableFlushWorkaroundForMacCrash", base::FEATURE_DISABLED_BY_DEFAULT};
+    "DisableFlushWorkaroundForMacCrash", base::FEATURE_ENABLED_BY_DEFAULT};
 #endif
 #endif
 
@@ -279,7 +279,9 @@ const base::FeatureParam<std::string> kVulkanBlockListByAndroidBuildFP{
 // Blocklists meant for DrDc.
 // crbug.com/1294648
 const base::FeatureParam<std::string> kDrDcBlockListByDevice{
-    &kEnableDrDc, "BlockListByDevice", "LF9810_2GB"};
+    &kEnableDrDc, "BlockListByDevice",
+    "LF9810_2GB|amber|chopin|secret|a03|SO-51B|on7xelte|j7xelte|F41B|doha|"
+    "rk322x_box|a20s"};
 
 // crbug.com/1340059, crbug.com/1340064
 const base::FeatureParam<std::string> kDrDcBlockListByModel{
@@ -312,6 +314,11 @@ const base::Feature kSkiaDawn{"SkiaDawn", base::FEATURE_DISABLED_BY_DEFAULT};
 // Enable GrShaderCache to use with Vulkan backend.
 const base::Feature kEnableGrShaderCacheForVulkan{
     "EnableGrShaderCacheForVulkan", base::FEATURE_ENABLED_BY_DEFAULT};
+
+// Enable report only mode on the GPU watchdog instead of pausing the watchdog
+// thread during GPU startup.
+const base::Feature kEnableWatchdogReportOnlyModeOnGpuInit{
+    "EnableWatchdogReportOnlyModeOnGpuInit", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enable persistent storage of VkPipelineCache data.
 const base::Feature kEnableVkPipelineCache{"EnableVkPipelineCache",
@@ -503,8 +510,11 @@ bool IsAndroidSurfaceControlEnabled() {
   const auto* build_info = base::android::BuildInfo::GetInstance();
   if (IsDeviceBlocked(build_info->device(),
                       kAndroidSurfaceControlDeviceBlocklist.Get()) ||
-      IsDeviceBlocked(build_info->model(),
-                      kAndroidSurfaceControlModelBlocklist.Get())) {
+      (IsDeviceBlocked(build_info->model(),
+                       kAndroidSurfaceControlModelBlocklist.Get()) &&
+       // Power issue due to pre-rotate in the models has been fixed in S_V2.
+       // crbug.com/1328738
+       build_info->sdk_int() <= base::android::SDK_VERSION_S)) {
     return false;
   }
 

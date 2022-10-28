@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -20,6 +20,7 @@ extern const base::Feature
     kAutofillEnableGetDetailsForEnrollParsingInUploadCardResponse;
 extern const base::Feature kAutofillEnableFIDOProgressDialog;
 extern const base::Feature kAutofillEnableManualFallbackForVirtualCards;
+extern const base::Feature kAutofillEnableMerchantOptOutErrorDialog;
 extern const base::Feature kAutofillEnableCardProductName;
 extern const base::Feature kAutofillEnableOfferNotificationForPromoCodes;
 extern const base::Feature kAutofillEnableOffersInClankKeyboardAccessory;
@@ -39,7 +40,6 @@ extern const base::Feature kAutofillFillMerchantPromoCodeFields;
 extern const base::Feature kAutofillParseIBANFields;
 extern const base::Feature kAutofillParseMerchantPromoCodeFields;
 extern const base::Feature kAutofillParseVcnCardOnFileStandaloneCvcFields;
-extern const base::Feature kAutofillRemoveCardExpiryFromDownstreamSuggestion;
 extern const base::Feature kAutofillSaveCardDismissOnNavigation;
 extern const base::Feature kAutofillSaveCardInfobarEditSupport;
 extern const base::Feature kAutofillSaveCardUiExperiment;

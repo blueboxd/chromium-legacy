@@ -1,4 +1,4 @@
-# Copyright 2022 The Chromium Authors. All rights reserved.
+# Copyright 2022 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -243,6 +243,7 @@ polymer_modulizer("assistant_related_info") {
   html_file = "assistant_related_info.html"
   html_type = "dom-module"
   auto_imports = assistant_auto_imports
+  migrated_imports = assistant_migrated_imports
   namespace_rewrites = assistant_namespace_rewrites
 }
 
@@ -260,6 +261,7 @@ polymer_modulizer("assistant_voice_match") {
   html_file = "assistant_voice_match.html"
   html_type = "dom-module"
   auto_imports = assistant_auto_imports
+  migrated_imports = assistant_migrated_imports
   namespace_rewrites = assistant_namespace_rewrites
 }
 

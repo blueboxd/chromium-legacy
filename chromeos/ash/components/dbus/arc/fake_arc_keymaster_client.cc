@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -16,7 +16,7 @@ void FakeArcKeymasterClient::Init(dbus::Bus* bus) {}
 
 void FakeArcKeymasterClient::BootstrapMojoConnection(
     base::ScopedFD fd,
-    VoidDBusMethodCallback callback) {
+    chromeos::VoidDBusMethodCallback callback) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::BindOnce(std::move(callback), false));
 }

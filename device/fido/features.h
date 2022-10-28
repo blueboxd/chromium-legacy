@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -50,6 +50,14 @@ extern const base::Feature kWebAuthPasskeysUI;
 // credentials on platform authenticators first, where applicable.
 COMPONENT_EXPORT(DEVICE_FIDO)
 extern const base::Feature kWebAuthnNewDiscoverableCredentialsUi;
+
+// Don't send empty displayName values to security keys when creating
+// credentials.
+extern const base::Feature kWebAuthnNoEmptyDisplayNameCBOR;
+
+// Include an indication for non-discoverable makeCredential calls in caBLE QR
+// codes.
+extern const base::Feature kWebAuthnNonDiscoverableMakeCredentialQRFlag;
 
 }  // namespace device
 

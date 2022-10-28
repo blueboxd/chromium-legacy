@@ -1,15 +1,16 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #import "ios/chrome/browser/ui/page_info/page_info_view_controller.h"
 
-#include "base/mac/foundation_util.h"
-#include "base/notreached.h"
-#include "base/strings/sys_string_conversions.h"
-#include "ios/chrome/browser/chrome_url_constants.h"
-#include "ios/chrome/browser/net/crurl.h"
+#import "base/mac/foundation_util.h"
+#import "base/notreached.h"
+#import "base/strings/sys_string_conversions.h"
+#import "ios/chrome/browser/chrome_url_constants.h"
+#import "ios/chrome/browser/net/crurl.h"
 #import "ios/chrome/browser/ui/commands/page_info_commands.h"
+#import "ios/chrome/browser/ui/icons/chrome_symbol.h"
 #import "ios/chrome/browser/ui/page_info/page_info_constants.h"
 #import "ios/chrome/browser/ui/permissions/permission_info.h"
 #import "ios/chrome/browser/ui/permissions/permissions_constants.h"
@@ -24,13 +25,13 @@
 #import "ios/chrome/browser/ui/table_view/cells/table_view_text_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_text_link_item.h"
 #import "ios/chrome/browser/ui/table_view/table_view_utils.h"
-#include "ios/chrome/common/string_util.h"
+#import "ios/chrome/common/string_util.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
 #import "ios/chrome/common/ui/table_view/table_view_cells_constants.h"
-#include "ios/chrome/grit/ios_strings.h"
+#import "ios/chrome/grit/ios_strings.h"
 #import "ios/web/public/permissions/permissions.h"
-#include "ui/base/l10n/l10n_util.h"
-#include "url/gurl.h"
+#import "ui/base/l10n/l10n_util.h"
+#import "url/gurl.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -125,7 +126,11 @@ float kTitleLabelMinimumScaleFactor = 0.7f;
       [[TableViewDetailIconItem alloc] initWithType:ItemTypeSecurityHeader];
   securityHeader.text = l10n_util::GetNSString(IDS_IOS_PAGE_INFO_SITE_SECURITY);
   securityHeader.detailText = self.pageInfoSecurityDescription.status;
-  securityHeader.iconImageName = self.pageInfoSecurityDescription.iconImageName;
+  securityHeader.iconImage = self.pageInfoSecurityDescription.iconImage;
+  securityHeader.iconTintColor = UIColor.whiteColor;
+  securityHeader.iconBackgroundColor =
+      self.pageInfoSecurityDescription.iconBackgroundColor;
+  securityHeader.iconCornerRadius = kColorfulBackgroundSymbolCornerRadius;
   [self.tableViewModel addItem:securityHeader
        toSectionWithIdentifier:SectionIdentifierSecurityContent];
 

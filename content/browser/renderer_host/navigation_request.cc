@@ -25,7 +25,6 @@
 #include "base/no_destructor.h"
 #include "base/rand_util.h"
 #include "base/state_transitions.h"
-#include "base/stl_util.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -33,6 +32,7 @@
 #include "base/time/time.h"
 #include "base/timer/elapsed_timer.h"
 #include "base/trace_event/trace_conversion_helper.h"
+#include "base/types/optional_util.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "content/browser/blob_storage/chrome_blob_storage_context.h"
@@ -60,7 +60,6 @@
 #include "content/browser/renderer_host/frame_tree.h"
 #include "content/browser/renderer_host/frame_tree_node.h"
 #include "content/browser/renderer_host/navigation_controller_impl.h"
-#include "content/browser/renderer_host/navigation_request.h"
 #include "content/browser/renderer_host/navigation_request_info.h"
 #include "content/browser/renderer_host/navigator.h"
 #include "content/browser/renderer_host/navigator_delegate.h"
@@ -240,6 +239,23 @@ enum class UserAgentStringType {
   kReducedVersion,
   kOverriden,
   kMaxValue = kOverriden
+};
+
+// Corresponds to the "FencedFrameCreationOutcome" histogram enumeration type in
+// tools/metrics/histograms/enums.xml.
+//
+// PLEASE DO NOT REORDER, REMOVE, OR CHANGE THE MEANING OF THESE VALUES.
+enum class FencedFrameCreationOutcome {
+  kSuccessDefault = 0,  // creates/navigates in default mode
+  kSuccessOpaque = 1,   // creates/navigates in opaque ads mode
+  kSandboxFlagsNotSet = 2,
+  kIncompatibleMode = 3,
+  kInsecureContext = 4,
+  kIncompatibleURLDefault = 5,
+  kIncompatibleURLOpaque = 6,
+  kResponseHeaderNotOptIn = 7,  // HTTP response header Supports-Loading-Mode is
+                                // not opted-in with 'fenced-frame'
+  kMaxValue = kResponseHeaderNotOptIn
 };
 
 // Returns the net load flags to use based on the navigation type.
@@ -690,6 +706,17 @@ void RecordReadyToCommitMetrics(
     UMA_HISTOGRAM_ENUMERATION("Navigation.OriginAgentCluster.Result",
                               origin_agent_cluster_end_result);
   }
+
+  // Guest (<webview> tag) metrics.
+  {
+    base::UmaHistogramBoolean("Navigation.IsGuest",
+                              new_rfh->GetSiteInstance()->IsGuest());
+    if (new_rfh->GetSiteInstance()->IsGuest()) {
+      base::UmaHistogramBoolean("Navigation.Guest.IsHTTPOrHTTPS",
+                                common_params.url.SchemeIsHTTPOrHTTPS());
+      base::UmaHistogramBoolean("Navigation.Guest.IsMainFrame", is_main_frame);
+    }
+  }
 }
 
 // Convert the navigation type to the appropriate cross-document one.
@@ -985,8 +1012,8 @@ void RemoveOriginTrialHintsFromAcceptCH(
     }
   }
   if (need_update_storage) {
-    PersistAcceptCH(url::Origin::Create(url),
-                    frame_tree_node->GetParentOrOuterDocument(), delegate,
+    DCHECK(frame_tree_node);
+    PersistAcceptCH(url::Origin::Create(url), *frame_tree_node, delegate,
                     client_hints);
   }
 }
@@ -1391,7 +1418,7 @@ NavigationRequest::CreateForSynchronousRendererCommit(
   navigation_request->commit_params_->storage_key =
       blink::StorageKey::CreateWithOptionalNonce(
           origin, net::SchemefulSite(top_level_origin),
-          base::OptionalOrNullptr(nonce),
+          base::OptionalToPtr(nonce),
           render_frame_host->ComputeSiteForCookies().IsNull()
               ? blink::mojom::AncestorChainBit::kCrossSite
               : blink::mojom::AncestorChainBit::kSameSite);
@@ -1912,7 +1939,8 @@ void NavigationRequest::BeginNavigation() {
   MaybeAssignInvalidPrerenderFrameTreeNodeId();
 
   // Fenced frames are not allowed to load if nested in iframes with CSPEE.
-  if (frame_tree_node_->IsFencedFrameRoot()) {
+  bool is_fenced_frame = frame_tree_node_->IsFencedFrameRoot();
+  if (is_fenced_frame) {
     DCHECK(!frame_tree_node_->csp_attribute());
     if (GetParentFrameOrOuterDocument()->required_csp()) {
       GURL sanitized_blocked_url =
@@ -1935,9 +1963,30 @@ void NavigationRequest::BeginNavigation() {
     }
   }
 
-  // If this is a fenced frame with a urn:uuid, then convert it to a url before
-  // starting the navigation; otherwise, proceed directly with the navigation.
+  // If this is a fenced frame with a urn:uuid, or an iframe with a urn::uuid
+  // given blink::features::kAllowURNsInIframes is enabled, then convert it to a
+  // url before starting the navigation; otherwise, proceed directly with the
+  // navigation.
+  // In long term, navigation support for urn::uuid in iframes will be
+  // deprecated. Currently we issue a console warning when navigation starts.
+  // TODO(crbug.com/1355857)
   if (NeedFencedFrameURLMapping()) {
+    if (!is_fenced_frame) {
+      // Iframes with urn::uuid.
+      DCHECK(!frame_tree_node_->IsMainFrame());
+      DCHECK(blink::features::IsAllowURNsInIframeEnabled());
+      AddDeferredConsoleMessage(
+          blink::mojom::ConsoleMessageLevel::kWarning,
+          "FLEDGE will deprecate supporting iframes to render the winning ad. "
+          "Please use fenced frames instead. See "
+          "https://developer.chrome.com/en/docs/privacy-sandbox/fenced-frame/"
+          "#examples");
+    }
+
+    UMA_HISTOGRAM_BOOLEAN(
+        "Navigation.BrowserMappedUrnUuidInIframeOrFencedFrame",
+        !is_fenced_frame);
+
     FencedFrameURLMapping& fenced_frame_urls_map = GetFencedFrameURLMap();
 
     // If the mapping finishes synchronously, OnFencedFrameURLMappingComplete
@@ -2053,14 +2102,29 @@ bool NavigationRequest::NeedFencedFrameURLMapping() {
   if (frame_tree_node_->IsFencedFrameRoot()) {
     if (blink::features::IsFencedFramesMPArchBased()) {
       // Once ShadowDOM and loading urns in iframes are disabled, this should
-      // be the only case that remains.
+      // be the only case that remains. The other cases are a bit hacky, but we
+      // expect them to go away soon.
       return is_embedder_initiated_fenced_frame_opaque_url_navigation_;
     } else {
-      return blink::IsValidUrnUuidURL(common_params_->url);
+      // In ShadowDOM, embedder-initiated navigations can take different paths
+      // for local or remote Frames, so we detect it here.
+      // Any urn:uuid navigation is assumed to be initiated by the embedder,
+      // even though we know this is not necessarily the case in ShadowDOM.
+      // But it is true in all intended use cases.
+      is_embedder_initiated_fenced_frame_navigation_ =
+          blink::IsValidUrnUuidURL(common_params_->url);
+      return is_embedder_initiated_fenced_frame_navigation_;
     }
   } else if (!frame_tree_node_->IsMainFrame() &&
              blink::features::IsAllowURNsInIframeEnabled()) {
-    return blink::IsValidUrnUuidURL(common_params_->url);
+    // In iframes, we want to ensure that fenced frame properties are respected
+    // after urn navigations.
+    // Any urn:uuid navigation is assumed to be initiated by the embedder,
+    // even though we know this is not necessarily the case in iframes.
+    // But it is true in all intended use cases.
+    is_embedder_initiated_fenced_frame_navigation_ =
+        blink::IsValidUrnUuidURL(common_params_->url);
+    return is_embedder_initiated_fenced_frame_navigation_;
   }
   return false;
 }
@@ -2071,26 +2135,15 @@ void NavigationRequest::OnFencedFrameURLMappingComplete(
   is_deferred_on_fenced_frame_url_mapping_ = false;
 
   if (properties) {
-    // The URN mapping can happen on regular iframes if the feature
-    // `AllowURNsInIframes` is enabled. We will ignore the leakage via iframe,
-    // and will only track the shared storage budget for fenced frame.
-    if (frame_tree_node_->IsFencedFrameRoot()) {
-      shared_storage_budget_metadata_ =
-          GetFencedFrameURLMap().GetSharedStorageBudgetMetadata(
-              common_params_->url);
-    }
-
-    fenced_frame_properties_ = properties;
     common_params_->url = properties->mapped_url;
     commit_params_->original_url = properties->mapped_url;
-    ad_auction_data_ = properties->ad_auction_data;
     // TODO(crbug/1281643): move into commit_params_->ad_auction_components
     // directly.
-    pending_ad_components_map_ = properties->pending_ad_components_map;
     if (!properties->reporting_metadata.metadata.empty()) {
       commit_params_->fenced_frame_reporting_metadata =
           properties->reporting_metadata.Clone();
     }
+    fenced_frame_properties_ = properties;
   } else {
     if (frame_tree_node_->IsFencedFrameRoot() &&
         frame_tree_node_->frame_tree()->IsFencedFramesMPArchBased()) {
@@ -3626,7 +3679,7 @@ void NavigationRequest::OnResponseStarted(
 
   // The fenced frame root and the nested iframes are required to have the
   // Supports-Loading-Mode HTTP response header "fenced-frame" to be able to
-  // load.
+  // load. Otherwise a console error is emitted.
   const bool should_enforce_fenced_frame_opt_in =
       response_should_be_rendered_ && response_head_->headers &&
       frame_tree_node_->IsInFencedFrameTree() &&
@@ -3634,6 +3687,13 @@ void NavigationRequest::OnResponseStarted(
         url.SchemeIs(url::kDataScheme));
   if (should_enforce_fenced_frame_opt_in &&
       !IsOptedInFencedFrame(*response_head_->headers)) {
+    base::UmaHistogramEnumeration(
+        "Blink.FencedFrame.CreationOrNavigationOutcome",
+        FencedFrameCreationOutcome::kResponseHeaderNotOptIn);
+    AddDeferredConsoleMessage(
+        blink::mojom::ConsoleMessageLevel::kError,
+        "Supports-Loading-Mode HTTP response header 'fenced-frame' is required "
+        "to load the fenced frame root and its nested iframes.");
     OnRequestFailedInternal(
         network::URLLoaderCompletionStatus(net::ERR_BLOCKED_BY_RESPONSE),
         false /* skip_throttles */, absl::nullopt /* error_page_content */,
@@ -4843,7 +4903,7 @@ void NavigationRequest::CommitNavigation() {
   absl::optional<base::UnguessableToken> nonce =
       render_frame_host_->ComputeNonce(is_anonymous());
   commit_params_->storage_key = render_frame_host_->CalculateStorageKey(
-      GetOriginToCommit(), base::OptionalOrNullptr(nonce));
+      GetOriginToCommit(), base::OptionalToPtr(nonce));
 
   if (IsServedFromBackForwardCache() || IsPrerenderedPageActivation()) {
     CommitPageActivation();
@@ -4925,9 +4985,8 @@ void NavigationRequest::CommitNavigation() {
     // about to go.
     service_worker_handle_->OnBeginNavigationCommit(
         render_frame_host_->GetGlobalId(),
-        policy_container_builder_->FinalPolicies().cross_origin_embedder_policy,
-        std::move(reporter_remote), &service_worker_container_info,
-        commit_params_->document_ukm_source_id);
+        policy_container_builder_->FinalPolicies(), std::move(reporter_remote),
+        &service_worker_container_info, commit_params_->document_ukm_source_id);
   }
 
   if (web_bundle_handle_) {
@@ -4948,9 +5007,10 @@ void NavigationRequest::CommitNavigation() {
 
   // If this is a result of an ad auction, need to pass its ad component URLs to
   // the renderer.
-  if (pending_ad_components_map_) {
+  if (fenced_frame_properties_ &&
+      fenced_frame_properties_->pending_ad_components_map) {
     commit_params_->ad_auction_components =
-        pending_ad_components_map_->GetURNs();
+        fenced_frame_properties_->pending_ad_components_map->GetURNs();
   }
 
   if (!IsSameDocument()) {
@@ -5029,27 +5089,23 @@ void NavigationRequest::CommitPageActivation() {
     // since the page entered bfcache. We must update all frames, not just the
     // top frame, because it is possible (though unlikely) that an iframe's
     // entries have changed, too.
-    activated_entry->render_frame_host()->ForEachRenderFrameHost(
-        base::BindRepeating(
-            [](content::RenderFrameHost* navigating_rfh,
-               NavigationRequest* request, content::RenderFrameHost* rfh) {
-              RenderFrameHostImpl* rfhi =
-                  static_cast<RenderFrameHostImpl*>(rfh);
-              // |request| is given as a parameter to
-              // GetNavigationApiHistoryEntryVectors() only for the frame being
-              // committed (i.e., the top frame).
-              auto entry_arrays =
-                  rfhi->frame_tree()
-                      ->controller()
-                      .GetNavigationApiHistoryEntryVectors(
-                          rfhi->frame_tree_node(),
-                          navigating_rfh == rfh ? request : nullptr);
-              rfhi->GetAssociatedLocalFrame()
-                  ->SetNavigationApiHistoryEntriesForRestore(
-                      std::move(entry_arrays));
-              return content::RenderFrameHost::FrameIterationAction::kContinue;
-            },
-            activated_entry->render_frame_host(), this));
+    activated_entry->render_frame_host()->ForEachRenderFrameHostWithAction(
+        [this, &activated_entry](RenderFrameHostImpl* rfh) {
+          // |this| is given as a parameter to
+          // GetNavigationApiHistoryEntryVectors() only for the frame being
+          // committed (i.e., the top frame).
+          auto entry_arrays =
+              rfh->frame_tree()
+                  ->controller()
+                  .GetNavigationApiHistoryEntryVectors(
+                      rfh->frame_tree_node(),
+                      activated_entry->render_frame_host() == rfh ? this
+                                                                  : nullptr);
+          rfh->GetAssociatedLocalFrame()
+              ->SetNavigationApiHistoryEntriesForRestore(
+                  std::move(entry_arrays));
+          return RenderFrameHost::FrameIterationAction::kContinue;
+        });
 
     base::WeakPtr<NavigationRequest> weak_self(weak_factory_.GetWeakPtr());
     ReadyToCommitNavigation(false /* is_error */);
@@ -6114,48 +6170,6 @@ void NavigationRequest::DidCommitNavigation(
     frame_tree_node()->set_fenced_frame_properties(fenced_frame_properties_);
   }
 
-  // Same-document navigations won't affect budget metadata.
-  if (!DidEncounterError() && !IsSameDocument()) {
-    FencedFrameURLMapping::SharedStorageBudgetMetadata*
-        original_budget_metadata =
-            frame_tree_node()->shared_storage_budget_metadata();
-    if (original_budget_metadata) {
-      // Clear the previous shared_storage_budget_metadata on the
-      // `FrameTreeNode` if this navigation is not initiated from itself. In
-      // this case (including the case when `initiator_render_frame_host` is
-      // gone), this navigation had to be initiated from outside the fenced
-      // frame because a frame inside a fenced frame is not allowed to navigate
-      // ancestors, so the previous knowledge from inside the fenced frame can
-      // never be transferred.
-      RenderFrameHostImpl* initiator_render_frame_host = nullptr;
-      if (GetInitiatorFrameToken()) {
-        initiator_render_frame_host = RenderFrameHostImpl::FromFrameToken(
-            GetInitiatorProcessID(), GetInitiatorFrameToken().value());
-      }
-
-      if (!initiator_render_frame_host ||
-          initiator_render_frame_host->frame_tree_node() !=
-              render_frame_host_->frame_tree_node()) {
-        // The policy of disallowing a frame inside a fenced frame to navigate
-        // ancestors should've already been enforced in BeginNavigation().
-        CHECK(!initiator_render_frame_host ||
-              !initiator_render_frame_host->IsNestedWithinFencedFrame());
-
-        render_frame_host_->frame_tree_node()
-            ->set_shared_storage_budget_metadata(nullptr);
-      }
-    }
-
-    // If this is a load to a new URN, update the shared_storage_budget_metadata
-    // on the `FrameTreeNode`. Note that explicit clearing of budget metadata
-    // above is still needed for cases where a fenced frame is navigated from a
-    // URN to a non-URN URL.
-    if (shared_storage_budget_metadata_) {
-      frame_tree_node()->set_shared_storage_budget_metadata(
-          shared_storage_budget_metadata_);
-    }
-  }
-
   // It should be kept in sync with the check in
   // RenderFrameHostImpl::TakeNewDocumentPropertiesFromNavigation.
   if (DidEncounterError()) {
@@ -6424,6 +6438,12 @@ void NavigationRequest::ReadyToCommitNavigation(bool is_error) {
 
   commit_params_->is_load_data_with_base_url = IsLoadDataWithBaseURL();
 
+  // Calculate origin in which this navigation would commit so it can be
+  // compared with what is generated by the renderer process and the browser
+  // process at commit time.
+  browser_side_origin_to_commit_with_debug_info_ =
+      GetOriginToCommitWithDebugInfo();
+
   if (!IsSameDocument()) {
 #if DCHECK_IS_ON()
     DCHECK(is_safe_to_delete_);
@@ -6553,10 +6573,6 @@ std::pair<url::Origin, std::string> NavigationRequest::
   // to make network request on behalf of the real origin.
   DCHECK(!IsMhtmlOrSubframe() || origin_with_debug_info.first.opaque());
 
-  // MHTML documents should commit as an opaque origin. They should not be able
-  // to make network request on behalf of the real origin.
-  DCHECK(!IsMhtmlOrSubframe() || origin_with_debug_info.first.opaque());
-
   // Note that GetRenderFrameHost() only allows to retrieve the RenderFrameHost
   // once it has been set for this navigation.  This will happens either at
   // WillProcessResponse time for regular navigations or at WillFailRequest time
@@ -6603,6 +6619,12 @@ void NavigationRequest::WriteIntoTrace(
     dict.Add("served_from_bfcache", true);
     dict.Add("rfh_restored_from_bfcache",
              rfh_restored_from_back_forward_cache_);
+  }
+
+  if (blink::features::IsPrerender2Enabled() &&
+      prerender_frame_tree_node_id_.has_value()) {
+    dict.Add("prerender_frame_tree_node_id",
+             prerender_frame_tree_node_id_.value());
   }
 }
 
@@ -6857,7 +6879,7 @@ bool NavigationRequest::IsInPrerenderedMainFrame() {
   return GetNavigatingFrameType() == FrameType::kPrerenderMainFrame;
 }
 
-bool NavigationRequest::IsPrerenderedPageActivation() {
+bool NavigationRequest::IsPrerenderedPageActivation() const {
   if (!blink::features::IsPrerender2Enabled())
     return false;
 
@@ -6865,7 +6887,7 @@ bool NavigationRequest::IsPrerenderedPageActivation() {
   return prerender_frame_tree_node_id_ != RenderFrameHost::kNoFrameTreeNodeId;
 }
 
-bool NavigationRequest::IsInFencedFrameTree() {
+bool NavigationRequest::IsInFencedFrameTree() const {
   return frame_tree_node()->IsInFencedFrameTree();
 }
 
@@ -8112,7 +8134,7 @@ NavigationRequest::ScopedCrashKeys::ScopedCrashKeys(
     NavigationRequest& navigation_request)
     : initiator_origin_(
           GetNavigationRequestInitiatorCrashKey(),
-          base::OptionalOrNullptr(navigation_request.GetInitiatorOrigin())),
+          base::OptionalToPtr(navigation_request.GetInitiatorOrigin())),
       url_(GetNavigationRequestUrlCrashKey(), navigation_request.GetURL()),
       is_same_document_(
           GetNavigationRequestIsSameDocumentCrashKey(),

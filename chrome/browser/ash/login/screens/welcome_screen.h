@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -16,6 +16,7 @@
 // TODO(https://crbug.com/1164001): forward declare LanguageSwitchResult
 // after this file is moved to ash.
 #include "chrome/browser/ash/base/locale_util.h"
+#include "chrome/browser/ash/login/oobe_quick_start/target_device_bootstrap_controller.h"
 #include "chrome/browser/ash/login/screens/base_screen.h"
 #include "chrome/browser/ash/login/screens/chromevox_hint/chromevox_hint_detector.h"
 // TODO(https://crbug.com/1164001): move to forward declaration.
@@ -111,8 +112,8 @@ class WelcomeScreen : public BaseScreen,
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
 
-  base::Value* GetConfigurationForTesting() {
-    return &(context()->configuration);
+  const base::Value::Dict& GetConfigurationForTesting() const {
+    return context()->configuration;
   }
 
   // ChromeVox hint.
@@ -137,6 +138,9 @@ class WelcomeScreen : public BaseScreen,
   void InputMethodChanged(input_method::InputMethodManager* manager,
                           Profile* profile,
                           bool show_message) override;
+
+  void OnFeatureSupportStatusDetermined(
+      quick_start::TargetDeviceConnectionBroker::FeatureSupportStatus status);
 
   // Handlers for various user actions:
   // Proceed with common user flow.
@@ -200,6 +204,9 @@ class WelcomeScreen : public BaseScreen,
   // This local flag should be true if the OOBE flow is operating as part of the
   // Chromad to cloud device migration. If so, this screen should be skipped.
   bool is_chromad_migration_oobe_flow_ = false;
+
+  base::WeakPtr<ash::quick_start::TargetDeviceBootstrapController>
+      bootstrap_controller_;
 
   // WeakPtrFactory used to schedule and cancel tasks related to language update
   // in this object.

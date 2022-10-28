@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -592,7 +592,7 @@ class NetworkErrorLoggingServiceImpl : public NetworkErrorLoggingService {
       return false;
 
     base::Value::Dict* dict = value->GetIfDict();
-    if (!value)
+    if (!dict)
       return false;
 
     // Max-Age property is missing or malformed.

@@ -1,4 +1,4 @@
-# Copyright 2021 The Chromium Authors. All rights reserved.
+# Copyright 2021 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -423,6 +423,7 @@ android_resources("java_resources") {
     "internal/java/res/layout/autofill_assistant_button_assistive.xml",
     "internal/java/res/layout/autofill_assistant_button_filled.xml",
     "internal/java/res/layout/autofill_assistant_button_hairline.xml",
+    "internal/java/res/layout/autofill_assistant_button_text_view.xml",
     "internal/java/res/layout/autofill_assistant_contact_full.xml",
     "internal/java/res/layout/autofill_assistant_contact_summary.xml",
     "internal/java/res/layout/autofill_assistant_data_origin_notice.xml",

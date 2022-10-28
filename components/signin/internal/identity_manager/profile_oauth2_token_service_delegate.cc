@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,6 +6,7 @@
 
 #include "base/observer_list.h"
 #include "components/signin/internal/identity_manager/profile_oauth2_token_service_observer.h"
+#include "google_apis/gaia/google_service_auth_error.h"
 #include "google_apis/gaia/oauth2_access_token_consumer.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
@@ -77,6 +78,10 @@ void ProfileOAuth2TokenServiceDelegate::RemoveObserver(
   observer_list_.RemoveObserver(observer);
 }
 
+bool ProfileOAuth2TokenServiceDelegate::HasObserver() const {
+  return !observer_list_.empty();
+}
+
 void ProfileOAuth2TokenServiceDelegate::StartBatchChanges() {
   ++batch_change_depth_;
 }
@@ -97,6 +102,7 @@ void ProfileOAuth2TokenServiceDelegate::FireEndBatchChanges() {
 void ProfileOAuth2TokenServiceDelegate::FireRefreshTokenAvailable(
     const CoreAccountId& account_id) {
   DCHECK(!account_id.empty());
+  ScopedBatchChange batch(this);
   for (auto& observer : observer_list_)
     observer.OnRefreshTokenAvailable(account_id);
 }
@@ -104,6 +110,7 @@ void ProfileOAuth2TokenServiceDelegate::FireRefreshTokenAvailable(
 void ProfileOAuth2TokenServiceDelegate::FireRefreshTokenRevoked(
     const CoreAccountId& account_id) {
   DCHECK(!account_id.empty());
+  ScopedBatchChange batch(this);
   for (auto& observer : observer_list_)
     observer.OnRefreshTokenRevoked(account_id);
 }
@@ -184,7 +191,8 @@ void ProfileOAuth2TokenServiceDelegate::UpdateAuthError(
 
   if (backoff_entry_) {
     backoff_entry_->InformOfRequest(!error.IsTransientError());
-    backoff_error_ = error;
+    if (error.IsTransientError())
+      backoff_error_ = error;
   }
   ValidateAccountId(account_id);
 

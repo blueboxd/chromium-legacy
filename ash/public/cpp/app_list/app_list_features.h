@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -35,14 +35,8 @@ ASH_PUBLIC_EXPORT extern const base::Feature kEnableAppReinstallZeroState;
 // Enables hashed recording of a app list launches.
 ASH_PUBLIC_EXPORT extern const base::Feature kEnableAppListLaunchRecording;
 
-// Enables using the fuzzy search algorithm for app search provider.
-ASH_PUBLIC_EXPORT extern const base::Feature kEnableFuzzyAppSearch;
-
 // Enables using exact string search for non latin locales.
 ASH_PUBLIC_EXPORT extern const base::Feature kEnableExactMatchForNonLatinLocale;
-
-// Enables launcher search results for OS settings.
-ASH_PUBLIC_EXPORT extern const base::Feature kLauncherSettingsSearch;
 
 // Enables categorical search in the launcher.
 ASH_PUBLIC_EXPORT extern const base::Feature kCategoricalSearch;
@@ -53,6 +47,10 @@ ASH_PUBLIC_EXPORT extern const base::Feature kForceShowContinueSection;
 
 // Enables iconified text and inline icons in launcher search.
 ASH_PUBLIC_EXPORT extern const base::Feature kSearchResultInlineIcon;
+
+// Enables a fling gesture or mouse scroll from the shelf to show the bubble
+// launcher.
+ASH_PUBLIC_EXPORT extern const base::Feature kQuickActionShowBubbleLauncher;
 
 // Enable shortened search result update animations when in progress animations
 // are interrupted by search model updates.
@@ -70,14 +68,13 @@ ASH_PUBLIC_EXPORT bool IsZeroStateAppsRankerEnabled();
 ASH_PUBLIC_EXPORT bool IsZeroStateMixedTypesRankerEnabled();
 ASH_PUBLIC_EXPORT bool IsAppReinstallZeroStateEnabled();
 ASH_PUBLIC_EXPORT bool IsAppListLaunchRecordingEnabled();
-ASH_PUBLIC_EXPORT bool IsFuzzyAppSearchEnabled();
 ASH_PUBLIC_EXPORT bool IsExactMatchForNonLatinLocaleEnabled();
 ASH_PUBLIC_EXPORT bool IsForceShowContinueSectionEnabled();
-ASH_PUBLIC_EXPORT bool IsLauncherSettingsSearchEnabled();
 ASH_PUBLIC_EXPORT bool IsAggregatedMlSearchRankingEnabled();
 ASH_PUBLIC_EXPORT bool IsLauncherSearchNormalizationEnabled();
 ASH_PUBLIC_EXPORT bool IsCategoricalSearchEnabled();
 ASH_PUBLIC_EXPORT bool IsSearchResultInlineIconEnabled();
+ASH_PUBLIC_EXPORT bool IsQuickActionShowBubbleLauncherEnabled();
 ASH_PUBLIC_EXPORT bool IsDynamicSearchUpdateAnimationEnabled();
 ASH_PUBLIC_EXPORT base::TimeDelta DynamicSearchUpdateAnimationDuration();
 ASH_PUBLIC_EXPORT bool IsCompactBubbleLauncherEnabled();

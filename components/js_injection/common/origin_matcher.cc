@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -35,6 +35,13 @@ inline int GetDefaultPortForSchemeIfNoPortInfo(const std::string& scheme,
 }
 
 }  // namespace
+
+OriginMatcher::OriginMatcher() = default;
+// Allow copy and assign.
+OriginMatcher::OriginMatcher(OriginMatcher&&) = default;
+OriginMatcher& OriginMatcher::operator=(OriginMatcher&&) = default;
+
+OriginMatcher::~OriginMatcher() = default;
 
 OriginMatcher::OriginMatcher(const OriginMatcher& rhs) {
   *this = rhs;

@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -40,7 +40,7 @@ const base::Value* GetPrefsEntry(const std::string& public_key_spki_der_b64,
     return nullptr;
 
   const base::Value::Dict& platform_keys =
-      profile_prefs->GetValueDict(prefs::kPlatformKeys);
+      profile_prefs->GetDict(prefs::kPlatformKeys);
 
   return platform_keys.Find(public_key_spki_der_b64);
 }

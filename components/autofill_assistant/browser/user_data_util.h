@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -191,6 +191,13 @@ void UpsertPhoneNumber(const autofill::AutofillProfile& profile,
 bool ContactHasAtLeastOneRequiredField(
     const autofill::AutofillProfile& profile,
     const CollectUserDataOptions& collect_user_data_options);
+
+// Deduplicats given profiles with respect to field_types passed.
+// If two profiles are equivalent in their field_types, the first one is picked.
+std::vector<autofill::AutofillProfile*> GetUniqueProfiles(
+    const std::vector<autofill::AutofillProfile*> sorted_profiles,
+    const std::string app_locale,
+    const base::flat_set<autofill::ServerFieldType>& field_types);
 
 }  // namespace user_data
 }  // namespace autofill_assistant

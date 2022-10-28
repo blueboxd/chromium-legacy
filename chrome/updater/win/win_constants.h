@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -67,6 +67,10 @@ extern const wchar_t kRegValueAutoRunOnOSUpgrade[];
 // Registry for enrollment token.
 extern const wchar_t kRegKeyCompanyCloudManagement[];
 extern const wchar_t kRegValueEnrollmentToken[];
+
+// The name of the policy indicating that enrollment in cloud-based device
+// management is mandatory.
+constexpr wchar_t kRegValueEnrollmentMandatory[] = L"EnrollmentMandatory";
 
 // Registry for DM token.
 extern const wchar_t kRegKeyCompanyEnrollment[];

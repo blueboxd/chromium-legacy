@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/logging.h"
 #include "base/strings/string_piece.h"
 #include "base/types/strong_alias.h"
 #include "build/build_config.h"
@@ -20,7 +21,8 @@ namespace autofill {
 
 struct Suggestion {
   using IsLoading = base::StrongAlias<class IsLoadingTag, bool>;
-  using Payload = absl::variant<std::string, GURL>;
+  using BackendId = base::StrongAlias<struct BackendIdTag, std::string>;
+  using Payload = absl::variant<BackendId, GURL>;
 
   enum MatchMode {
     PREFIX_MATCH,    // for prefix matched suggestions;
@@ -87,7 +89,7 @@ struct Suggestion {
       case PopupItemId::POPUP_ITEM_ID_SEE_PROMO_CODE_DETAILS:
         return absl::holds_alternative<GURL>(payload);
       default:
-        return absl::holds_alternative<std::string>(payload);
+        return absl::holds_alternative<BackendId>(payload);
     }
   }
 #endif
@@ -112,8 +114,11 @@ struct Suggestion {
   Text main_text;
   Text minor_text;
 
-  // The text displayed on the second line in a suggestion.
-  std::u16string label;
+  // The secondary texts displayed in a suggestion. The labels are presented as
+  // a N*M matrix, and the position of the text in the matrix decides where the
+  // text will be shown on the UI. (e.g. The text labels[1][2] will be shown on
+  // the second line, third column in the grid view of label).
+  std::vector<std::vector<Text>> labels;
 
   // A label to be shown beneath |label| that will display information about any
   // credit card offers or rewards.
@@ -160,6 +165,20 @@ struct Suggestion {
   // If specified, this text will be played back as voice over for a11y.
   absl::optional<std::u16string> voice_over;
 };
+
+#if defined(UNIT_TEST)
+inline void PrintTo(const Suggestion& suggestion, std::ostream* os) {
+  *os << std::endl
+      << "Suggestion (frontend_id:" << suggestion.frontend_id
+      << ", main_text:\"" << suggestion.main_text.value << "\""
+      << (suggestion.main_text.is_primary ? "(Primary)" : "(Not Primary)")
+      << ", minor_text:\"" << suggestion.minor_text.value << "\""
+      << (suggestion.minor_text.is_primary ? "(Primary)" : "(Not Primary)")
+      << ", additional_label: \"" << suggestion.additional_label << "\""
+      << ", icon:" << suggestion.icon
+      << ", trailing_icon:" << suggestion.trailing_icon << ")";
+}
+#endif
 
 }  // namespace autofill
 

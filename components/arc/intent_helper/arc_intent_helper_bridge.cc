@@ -1,4 +1,4 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -322,8 +322,8 @@ void ArcIntentHelperBridge::IsChromeAppEnabled(
 }
 
 void ArcIntentHelperBridge::OnSupportedLinksChanged(
-    std::vector<arc::mojom::SupportedLinksPtr> added_packages,
-    std::vector<arc::mojom::SupportedLinksPtr> removed_packages,
+    std::vector<arc::mojom::SupportedLinksPackagePtr> added_packages,
+    std::vector<arc::mojom::SupportedLinksPackagePtr> removed_packages,
     arc::mojom::SupportedLinkChangeSource source) {
   for (auto& observer : observer_list_)
     observer.OnArcSupportedLinksChanged(added_packages, removed_packages,

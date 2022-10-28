@@ -1,4 +1,4 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -218,12 +218,12 @@ NoteTakingHelper::LaunchResult LaunchWebAppInternal(const std::string& app_id,
     if (base::FeatureList::IsEnabled(apps::kAppServiceLaunchWithoutMojom)) {
       apps::AppServiceProxyFactory::GetForProfile(profile)->LaunchAppWithIntent(
           app_id, ui::EF_NONE, apps_util::CreateCreateNoteIntent(),
-          apps::LaunchSource::kFromShelf);
+          apps::LaunchSource::kFromShelf, nullptr, base::DoNothing());
     } else {
       apps::AppServiceProxyFactory::GetForProfile(profile)->LaunchAppWithIntent(
           app_id, ui::EF_NONE,
           apps::ConvertIntentToMojomIntent(apps_util::CreateCreateNoteIntent()),
-          apps::mojom::LaunchSource::kFromShelf);
+          apps::mojom::LaunchSource::kFromShelf, nullptr, {});
     }
   } else {
     if (base::FeatureList::IsEnabled(apps::kAppServiceLaunchWithoutMojom)) {
@@ -670,8 +670,8 @@ NoteTakingHelper::LaunchResult NoteTakingHelper::LaunchAppInternal(
     LOG(WARNING) << "Failed to find note-taking app " << app_id;
     return LaunchResult::CHROME_APP_MISSING;
   }
-  auto action_data = std::make_unique<app_runtime::ActionData>();
-  action_data->action_type = app_runtime::ActionType::ACTION_TYPE_NEW_NOTE;
+  app_runtime::ActionData action_data;
+  action_data.action_type = app_runtime::ActionType::ACTION_TYPE_NEW_NOTE;
   launch_chrome_app_callback_.Run(profile, app, std::move(action_data));
   return LaunchResult::CHROME_SUCCESS;
 }

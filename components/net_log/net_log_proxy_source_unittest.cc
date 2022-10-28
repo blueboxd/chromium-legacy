@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -187,9 +187,9 @@ TEST(NetLogProxySource, OnlyProxiesEventsWhenCaptureModeSetIsNonZero) {
   // templatized which seems to confuse BindOnce. Capturing is safe here as
   // the test will WaitForExpectedEntries() before completing.
   base::ThreadPool::PostTask(
-      FROM_HERE, base::BindOnce(base::BindLambdaForTesting([&]() {
+      FROM_HERE, base::BindLambdaForTesting([&]() {
         source1.EndEvent(net::NetLogEventType::SOCKET_ALIVE);
-      })));
+      }));
 
   // Wait for all the expected events to be proxied over the mojo pipe and
   // recorded.

@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -607,6 +607,7 @@ void AppListBubbleView::Layout() {
     // NOTE: Folder view bounds are also modified during reparent drag when the
     // view is "visible" but hidden offscreen. See app_list_folder_view.cc.
     folder_view_->SetBoundsRect(folder_view_->preferred_bounds());
+    folder_view_->UpdateShadowBounds();
   }
 }
 

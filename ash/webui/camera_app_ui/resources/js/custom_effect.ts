@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -99,8 +99,9 @@ type PositionInfos = Array<{
 }>;
 
 export enum IndicatorType {
-  DOWNLOAD_DOCUMENT_SCANNER = 'download_document_scanner',
   DOC_SCAN_AVAILABLE = 'doc_scan_available',
+  DOC_MODE_MULTI_PAGE_AVAILABLE = 'doc_mode_multi_scan_available',
+  DOWNLOAD_DOCUMENT_SCANNER = 'download_document_scanner',
 }
 
 /**
@@ -126,6 +127,8 @@ function getIndicatorI18nStringId(indicatorType: IndicatorType): I18nString {
       return I18nString.DOWNLOADING_DOCUMENT_SCANNING_FEATURE;
     case IndicatorType.DOC_SCAN_AVAILABLE:
       return I18nString.NEW_DOCUMENT_SCAN_TOAST;
+    case IndicatorType.DOC_MODE_MULTI_PAGE_AVAILABLE:
+      return I18nString.DOCUMENT_MODE_MULTI_PAGE_TOAST;
     default:
       assertNotReached();
   }
@@ -136,6 +139,7 @@ function getIndicatorIcon(indicatorType: IndicatorType): string|null {
     case IndicatorType.DOWNLOAD_DOCUMENT_SCANNER:
       return '/images/download_dlc_toast_icon.svg';
     case IndicatorType.DOC_SCAN_AVAILABLE:
+    case IndicatorType.DOC_MODE_MULTI_PAGE_AVAILABLE:
       return '/images/new_feature_toast_icon.svg';
     default:
       return null;
@@ -418,6 +422,6 @@ export async function showDownloadingDocScanIndicator(): Promise<void> {
   const docModeButton = dom.get('#scan-document-option', HTMLDivElement);
   const {hide} =
       showIndicator(docModeButton, IndicatorType.DOWNLOAD_DOCUMENT_SCANNER);
-  await ChromeHelper.getInstance().waitUntilDocumentModeReady();
+  await ChromeHelper.getInstance().checkDocumentModeReadiness();
   hide();
 }

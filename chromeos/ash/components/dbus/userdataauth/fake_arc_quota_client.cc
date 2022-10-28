@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -68,7 +68,7 @@ void FakeArcQuotaClient::SetServiceIsAvailable(bool is_available) {
   if (!is_available)
     return;
 
-  std::vector<WaitForServiceToBeAvailableCallback> callbacks;
+  std::vector<chromeos::WaitForServiceToBeAvailableCallback> callbacks;
   callbacks.swap(pending_wait_for_service_to_be_available_callbacks_);
   for (auto& callback : callbacks)
     std::move(callback).Run(true);
@@ -78,7 +78,7 @@ void FakeArcQuotaClient::ReportServiceIsNotAvailable() {
   DCHECK(!service_is_available_);
   service_reported_not_available_ = true;
 
-  std::vector<WaitForServiceToBeAvailableCallback> callbacks;
+  std::vector<chromeos::WaitForServiceToBeAvailableCallback> callbacks;
   callbacks.swap(pending_wait_for_service_to_be_available_callbacks_);
   for (auto& callback : callbacks)
     std::move(callback).Run(false);

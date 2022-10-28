@@ -1,4 +1,4 @@
-// Copyright (c) 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,10 +11,13 @@
 #include "base/no_destructor.h"
 
 #if BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
-#include "base/allocator/allocator_shim_default_dispatch_to_partition_alloc.h"
 #include "base/allocator/partition_alloc_features.h"
+#include "base/allocator/partition_allocator/partition_alloc_buildflags.h"
+#include "base/allocator/partition_allocator/shim/allocator_shim_default_dispatch_to_partition_alloc.h"
+#if BUILDFLAG(STARSCAN)
 #include "base/allocator/partition_allocator/starscan/pcscan.h"
-#endif
+#endif  // BUILDFLAG(STARSCAN)
+#endif  // BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
 
 namespace base {
 namespace internal {
@@ -35,15 +38,17 @@ NonScannableAllocatorImpl<Quarantinable>::Instance() {
 
 template <bool Quarantinable>
 void* NonScannableAllocatorImpl<Quarantinable>::Alloc(size_t size) {
+#if BUILDFLAG(STARSCAN)
   // TODO(bikineev): Change to LIKELY once PCScan is enabled by default.
   if (UNLIKELY(pcscan_enabled_.load(std::memory_order_acquire))) {
     PA_DCHECK(allocator_.get());
     return allocator_->root()->AllocWithFlagsNoHooks(
         0, size, partition_alloc::PartitionPageSize());
   }
+#endif  // BUILDFLAG(STARSCAN)
   // Otherwise, dispatch to default partition.
-  return PartitionAllocMalloc::Allocator()->AllocWithFlagsNoHooks(
-      0, size, partition_alloc::PartitionPageSize());
+  return allocator_shim::internal::PartitionAllocMalloc::Allocator()
+      ->AllocWithFlagsNoHooks(0, size, partition_alloc::PartitionPageSize());
 }
 
 template <bool Quarantinable>
@@ -53,6 +58,7 @@ void NonScannableAllocatorImpl<Quarantinable>::Free(void* ptr) {
 
 template <bool Quarantinable>
 void NonScannableAllocatorImpl<Quarantinable>::NotifyPCScanEnabled() {
+#if BUILDFLAG(STARSCAN)
   allocator_.reset(partition_alloc::internal::MakePCScanMetadata<
                    partition_alloc::PartitionAllocator>());
   allocator_->init({
@@ -70,6 +76,7 @@ void NonScannableAllocatorImpl<Quarantinable>::NotifyPCScanEnabled() {
     partition_alloc::internal::PCScan::RegisterNonScannableRoot(
         allocator_->root());
   pcscan_enabled_.store(true, std::memory_order_release);
+#endif  // BUILDFLAG(STARSCAN)
 }
 
 template class NonScannableAllocatorImpl<true>;

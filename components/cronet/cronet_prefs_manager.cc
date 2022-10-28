@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -183,7 +183,7 @@ class NetworkQualitiesPrefDelegateImpl
   base::Value::Dict GetDictionaryValue() override {
     DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
     UMA_HISTOGRAM_EXACT_LINEAR("NQE.Prefs.ReadCount", 1, 2);
-    return pref_service_->GetValueDict(kNetworkQualitiesPref).Clone();
+    return pref_service_->GetDict(kNetworkQualitiesPref).Clone();
   }
 
  private:

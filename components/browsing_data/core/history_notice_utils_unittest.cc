@@ -1,4 +1,4 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,7 +12,7 @@
 #include "base/test/task_environment.h"
 #include "components/history/core/test/fake_web_history_service.h"
 #include "components/sync/base/model_type.h"
-#include "components/sync/driver/test_sync_service.h"
+#include "components/sync/test/test_sync_service.h"
 #include "components/version_info/version_info.h"
 #include "net/http/http_status_code.h"
 #include "net/url_request/url_request_test_util.h"

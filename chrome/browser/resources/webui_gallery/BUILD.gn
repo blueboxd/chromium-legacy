@@ -1,4 +1,4 @@
-# Copyright 2022 The Chromium Authors. All rights reserved.
+# Copyright 2022 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -60,17 +60,22 @@ generate_grd("build_grd") {
   out_grd = "$target_gen_dir/resources.grd"
 
   input_files = [
+    "demos/buttons_demo.html",
     "demos/demo.css",
     "demos/cr_a11y_announcer_demo.html",
     "demos/cr_action_menu_demo.html",
-    "demos/cr_button_demo.html",
     "demos/cr_checkbox_demo.html",
     "demos/cr_dialog_demo.html",
     "demos/cr_input/cr_input_demo.html",
     "demos/cr_radio_demo.html",
     "demos/cr_slider/cr_slider_demo.html",
     "demos/cr_tab_box/cr_tab_box_demo.html",
+    "demos/cr_tabs/cr_tabs_demo.html",
+    "demos/cr_toast/cr_toast_demo.html",
+    "demos/cr_toolbar/cr_toolbar_demo.html",
+    "demos/cr_tree/cr_tree_demo.html",
     "demos/cr_toggle_demo.html",
+    "demos/md_select/md_select_demo.html",
     "webui_gallery.html",
   ]
 

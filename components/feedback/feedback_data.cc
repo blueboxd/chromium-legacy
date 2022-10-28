@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -33,7 +33,14 @@ const char kHistogramsAttachmentName[] = "histograms.zip";
 
 FeedbackData::FeedbackData(base::WeakPtr<feedback::FeedbackUploader> uploader,
                            TracingManager* tracing_manager)
-    : uploader_(std::move(uploader)), tracing_manager_(tracing_manager) {}
+    : uploader_(std::move(uploader)) {
+  // If tracing is enabled, the tracing manager should have been created before
+  // sending the report. If it is created after this point, then the tracing is
+  // not relevant to this report.
+  if (tracing_manager) {
+    tracing_manager_ = base::AsWeakPtr(tracing_manager);
+  }
+}
 
 FeedbackData::~FeedbackData() = default;
 

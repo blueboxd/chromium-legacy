@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -158,7 +158,7 @@ IN_PROC_BROWSER_TEST_F(VolumeControllerTest, Mutes) {
 
 class VolumeControllerSoundsTest : public VolumeControllerTest {
  public:
-  VolumeControllerSoundsTest() : sounds_manager_(NULL) {}
+  VolumeControllerSoundsTest() : sounds_manager_(nullptr) {}
 
   VolumeControllerSoundsTest(const VolumeControllerSoundsTest&) = delete;
   VolumeControllerSoundsTest& operator=(const VolumeControllerSoundsTest&) =

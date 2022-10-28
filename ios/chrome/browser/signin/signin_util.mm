@@ -1,19 +1,23 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ios/chrome/browser/signin/signin_util.h"
+#import "ios/chrome/browser/signin/signin_util.h"
 
-#include "base/strings/sys_string_conversions.h"
+#import "base/strings/sys_string_conversions.h"
 #import "components/signin/public/identity_manager/tribool.h"
-#include "google_apis/gaia/gaia_auth_util.h"
-#include "ios/chrome/browser/signin/signin_util_internal.h"
+#import "google_apis/gaia/gaia_auth_util.h"
+#import "ios/chrome/browser/signin/signin_util_internal.h"
 #import "ios/public/provider/chrome/browser/signin/chrome_identity.h"
 #import "ios/public/provider/chrome/browser/signin/signin_error_api.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
+
+namespace {
+absl::optional<AccountInfo> g_pre_restore_identity;
+}
 
 NSArray* GetScopeArray(const std::set<std::string>& scopes) {
   NSMutableArray* scopes_array = [[NSMutableArray alloc] init];
@@ -54,4 +58,16 @@ signin::Tribool IsFirstSessionAfterDeviceRestore() {
         IsFirstSessionAfterDeviceRestoreInternal();
   });
   return is_first_session_after_device_restore;
+}
+
+void StorePreRestoreIdentity(AccountInfo account) {
+  g_pre_restore_identity = account;
+}
+
+void ClearPreRestoreIdentity() {
+  g_pre_restore_identity.reset();
+}
+
+absl::optional<AccountInfo> GetPreRestoreIdentity() {
+  return g_pre_restore_identity;
 }

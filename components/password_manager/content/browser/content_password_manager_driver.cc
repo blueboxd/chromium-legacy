@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -124,11 +124,19 @@ int ContentPasswordManagerDriver::GetId() const {
   return id_;
 }
 
-void ContentPasswordManagerDriver::FillPasswordForm(
+void ContentPasswordManagerDriver::SetPasswordFillData(
     const autofill::PasswordFormFillData& form_data) {
-  password_autofill_manager_.OnAddPasswordFillData(form_data);
+  // If there are no username or password suggestions, WebAuthn credentials
+  // can still cause a SetPasswordFillData. The PasswordFormFillData is only
+  // relevant to the PasswordAutofillManager if there are saved passwords,
+  // so we don't propagate an empty one in order to make it explicit that none
+  // exist.
+  if (!form_data.username_field.value.empty() &&
+      !form_data.password_field.value.empty()) {
+    password_autofill_manager_.OnAddPasswordFillData(form_data);
+  }
   if (const auto& agent = GetPasswordAutofillAgent()) {
-    agent->FillPasswordForm(autofill::MaybeClearPasswordValues(form_data));
+    agent->SetPasswordFillData(autofill::MaybeClearPasswordValues(form_data));
   }
 }
 

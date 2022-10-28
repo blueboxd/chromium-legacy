@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "ash/ash_export.h"
 #include "base/observer_list.h"
 #include "base/observer_list_types.h"
 #include "mojo/public/cpp/bindings/receiver.h"
@@ -19,7 +20,7 @@ namespace ash {
 // Client of the MultiCaptureService mojo interface. Receives events about
 // multi captures being started / stopped and forwards it to ash clients to
 // show usage indicators.
-class MultiCaptureServiceClient
+class ASH_EXPORT MultiCaptureServiceClient
     : public video_capture::mojom::MultiCaptureServiceClient {
  public:
   class Observer : public base::CheckedObserver {
@@ -33,6 +34,7 @@ class MultiCaptureServiceClient
     virtual void MultiCaptureStarted(const std::string& label,
                                      const url::Origin& origin) = 0;
     virtual void MultiCaptureStopped(const std::string& label) = 0;
+    virtual void MultiCaptureServiceClientDestroyed() = 0;
 
    protected:
     ~Observer() override = default;

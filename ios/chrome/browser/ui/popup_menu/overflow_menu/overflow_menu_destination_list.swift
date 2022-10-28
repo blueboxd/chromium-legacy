@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -61,6 +61,8 @@ struct OverflowMenuDestinationList: View {
 
   weak var metricsHandler: PopupMenuMetricsHandler?
 
+  @ObservedObject var uiConfiguration: OverflowMenuUIConfiguration
+
   /// Tracks the list's current offset, to see when it scrolls.
   @State var listOffset: CGFloat = 0
 
@@ -99,12 +101,16 @@ struct OverflowMenuDestinationList: View {
             }
           }
         }
+        .animation(nil)
+        .background(uiConfiguration.highlightDestinationsRow ? Color.blueHalo : Color.clear)
+        .animation(.linear(duration: kMaterialDuration3))
         .coordinateSpace(name: Constants.coordinateSpaceName)
         .accessibilityIdentifier(kPopupMenuToolsMenuTableViewId)
         .onAppear {
           if layoutDirection == .rightToLeft {
             proxy.scrollTo(destinations.last?.destinationName)
           }
+          uiConfiguration.destinationListScreenFrame = geometry.frame(in: .global)
         }
       }
       .onPreferenceChange(ScrollViewLeadingOffset.self) { value in

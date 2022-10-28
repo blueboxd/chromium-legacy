@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,6 +7,7 @@
 
 #include "base/callback.h"
 #include "base/memory/weak_ptr.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/chromeos/cloud_upload/cloud_upload.mojom-shared.h"
 #include "chrome/browser/ui/webui/chromeos/cloud_upload/cloud_upload.mojom.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
@@ -34,7 +35,6 @@ class CloudUploadPageHandler
   ~CloudUploadPageHandler() override;
 
   // chromeos::cloud_upload::mojom::PageHandler:
-  void GetUploadPath(GetUploadPathCallback callback) override;
   void RespondAndClose(mojom::UserAction action) override;
 
  private:

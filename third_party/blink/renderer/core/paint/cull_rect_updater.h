@@ -29,8 +29,7 @@ class CORE_EXPORT CullRectUpdater {
   STACK_ALLOCATED();
 
  public:
-  explicit CullRectUpdater(PaintLayer& starting_layer)
-      : starting_layer_(starting_layer) {}
+  explicit CullRectUpdater(PaintLayer& starting_layer);
 
   void Update();
 

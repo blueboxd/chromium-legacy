@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -137,14 +137,12 @@ IN_PROC_BROWSER_TEST_F(SubframeTaskBrowserTest, TaskManagerShowsSubframeTasks) {
   NavigateTo(kSimplePageUrl);
 
   ASSERT_EQ(
-      content::BackForwardCache::IsSameSiteBackForwardCacheFeatureEnabled()
-          ? 4U
-          : 1U,
+      content::BackForwardCache::IsBackForwardCacheFeatureEnabled() ? 4U : 1U,
       task_manager.tasks().size());
 
   const auto& tasks = task_manager.tasks();
   // Main page and two cross-origin iframes.
-  if (content::BackForwardCache::IsSameSiteBackForwardCacheFeatureEnabled()) {
+  if (content::BackForwardCache::IsBackForwardCacheFeatureEnabled()) {
     EXPECT_EQ(
         PrefixExpectedBFCacheTitle("http://a.com/", /*is_subframe=*/false),
         tasks[0]->title());

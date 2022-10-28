@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -527,12 +527,12 @@ TEST_F(PhotosServiceTest, OptInShown) {
   EXPECT_TRUE(service_->ShouldShowOptInScreen());
 
   // If user does not accept opt-in, we should keep showing screen.
-  service_->OnUserOptIn(false, NULL, NULL);
+  service_->OnUserOptIn(false, nullptr, nullptr);
   EXPECT_TRUE(service_->ShouldShowOptInScreen());
   EXPECT_FALSE(prefs_.GetBoolean(PhotosService::kOptInAcknowledgedPrefName));
 
   // If user accept opt-in, we should stop showing screen.
-  service_->OnUserOptIn(true, NULL, NULL);
+  service_->OnUserOptIn(true, nullptr, nullptr);
   EXPECT_FALSE(service_->ShouldShowOptInScreen());
   EXPECT_TRUE(prefs_.GetBoolean(PhotosService::kOptInAcknowledgedPrefName));
 }

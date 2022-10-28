@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,6 +9,10 @@
 
 class ChromeBrowserState;
 
+namespace signin {
+class IdentityManager;
+}
+
 namespace safe_browsing {
 
 // TailoredSecurityService for iOS. This class is used to bridge
@@ -17,23 +21,16 @@ namespace safe_browsing {
 // features.
 class ChromeTailoredSecurityService : public TailoredSecurityService {
  public:
-  explicit ChromeTailoredSecurityService(ChromeBrowserState* state);
+  explicit ChromeTailoredSecurityService(
+      ChromeBrowserState* state,
+      signin::IdentityManager* identity_manager);
   ~ChromeTailoredSecurityService() override;
 
  protected:
-  // Decides if a synced user should be notified of their Safe Browsing
-  // protection level and promote enabling Enhanced Safe Browsing.
-  void MaybeNotifySyncUser(bool is_enabled,
-                           base::Time previous_update) override;
-
+  void ShowSyncNotification(bool is_enabled) override;
   scoped_refptr<network::SharedURLLoaderFactory> GetURLLoaderFactory() override;
 
  private:
-  // Sends a trigger to tell system to show sync notification which is a visual
-  // message prompt which informs user of their sync status between
-  // Account-level Enhanced Safe Browsing and Chrome-level Enhanced Safe
-  // Browsing.
-  void ShowSyncNotification(bool is_enabled);
   // Handles any additional actions when notification sent from
   // ShowSyncNotification() is dismissed. This happens when the user uses a
   // slide gesture or presses a button to visually remove the message from the

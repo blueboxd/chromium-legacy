@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -21,8 +21,10 @@ import android.widget.TextView;
 import androidx.annotation.IntDef;
 import androidx.annotation.Nullable;
 import androidx.annotation.StringRes;
+import androidx.annotation.VisibleForTesting;
 import androidx.fragment.app.Fragment;
 
+import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.browser.SyncFirstSetupCompleteSource;
 import org.chromium.chrome.browser.consent_auditor.ConsentAuditorFeature;
@@ -106,6 +108,18 @@ public abstract class SyncConsentFragmentBase
         int GROUP_A = 1;
         int GROUP_B = 2;
         int GROUP_C = 3;
+    }
+
+    /** Used for Signin.SyncConsentScreen.DataRowClicked histogram. Don't change existing values. */
+    @VisibleForTesting
+    @IntDef({SyncDataRowClicked.BOOKMARKS, SyncDataRowClicked.AUTOFILL, SyncDataRowClicked.HISTORY,
+            SyncDataRowClicked.COUNT})
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface SyncDataRowClicked {
+        int BOOKMARKS = 0;
+        int AUTOFILL = 1;
+        int HISTORY = 2;
+        int COUNT = 3;
     }
 
     private final AccountManagerFacade mAccountManagerFacade;
@@ -364,13 +378,17 @@ public abstract class SyncConsentFragmentBase
         mSyncConsentView =
                 (SyncConsentView) inflater.inflate(R.layout.sync_consent_view, container, false);
 
+        mSyncConsentView.getBookmarksRow().setOnClickListener(this::recordClickAndResetListener);
+        mSyncConsentView.getAutofillRow().setOnClickListener(this::recordClickAndResetListener);
+        mSyncConsentView.getHistoryRow().setOnClickListener(this::recordClickAndResetListener);
+
         mSyncConsentView.getRefuseButton().setOnClickListener(this::onRefuseButtonClicked);
         mSyncConsentView.getAcceptButton().setOnClickListener(this::onAcceptButtonClicked);
         mSyncConsentView.getAcceptButton().setVisibility(View.GONE);
         mSyncConsentView.getMoreButton().setVisibility(View.VISIBLE);
         mSyncConsentView.getMoreButton().setOnClickListener(view -> {
             mSyncConsentView.getScrollView().smoothScrollBy(
-                    0, mSigninView.getScrollView().getHeight());
+                    0, mSyncConsentView.getScrollView().getHeight());
             // TODO(https://crbug.com/821127): Revise this user action.
             RecordUserAction.record("Signin_MoreButton_Shown");
         });
@@ -532,6 +550,27 @@ public abstract class SyncConsentFragmentBase
             default:
                 throw new IllegalStateException("Invalid group id");
         }
+    }
+
+    /**
+     * Records histogram for the sync data row clicks only once. Resets listener after recording.
+     */
+    private void recordClickAndResetListener(View view) {
+        if (view == mSyncConsentView.getBookmarksRow()) {
+            recordSyncDataRowClicked(SyncDataRowClicked.BOOKMARKS);
+        } else if (view == mSyncConsentView.getAutofillRow()) {
+            recordSyncDataRowClicked(SyncDataRowClicked.AUTOFILL);
+        } else if (view == mSyncConsentView.getHistoryRow()) {
+            recordSyncDataRowClicked(SyncDataRowClicked.HISTORY);
+        } else {
+            throw new IllegalStateException("Sync data row view does not exist");
+        }
+        view.setOnClickListener(null);
+    }
+
+    private static void recordSyncDataRowClicked(@SyncDataRowClicked int syncRowClicked) {
+        RecordHistogram.recordEnumeratedHistogram("Signin.SyncConsentScreen.DataRowClicked",
+                syncRowClicked, SyncDataRowClicked.COUNT);
     }
 
     private void updateSyncConsentViewText(@StringRes int refuseButtonTextId) {
@@ -821,8 +860,9 @@ public abstract class SyncConsentFragmentBase
         }
 
         // Account for forced sign-in flow disappeared before the sign-in was completed.
-        if (!ChromeFeatureList.isEnabled(ChromeFeatureList.ALLOW_SYNC_OFF_FOR_CHILD_ACCOUNTS)
-                && mIsChild) {
+        if (mIsChild
+                && !ChromeFeatureList.isEnabled(
+                        ChromeFeatureList.ALLOW_SYNC_OFF_FOR_CHILD_ACCOUNTS)) {
             onSyncRefused();
             return;
         }

@@ -1,4 +1,4 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -145,7 +145,8 @@ bool BrailleDisplayPrivateGetDisplayStateFunction::Prepare() {
 }
 
 void BrailleDisplayPrivateGetDisplayStateFunction::Work() {
-  SetResult(BrailleController::GetInstance()->GetDisplayState()->ToValue());
+  SetResult(base::Value(
+      BrailleController::GetInstance()->GetDisplayState()->ToValue()));
 }
 
 bool BrailleDisplayPrivateGetDisplayStateFunction::Respond() {

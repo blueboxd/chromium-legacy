@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -1200,15 +1200,20 @@ void SyncServiceImpl::ConfigureDataTypeManager(ConfigureReason reason) {
             UserSelectableTypeToCanonicalModelType(type));
         base::UmaHistogramEnumeration("Sync.CustomSync3", canonical_model_type);
       }
+    }
+
 #if BUILDFLAG(IS_CHROMEOS_ASH)
+    bool sync_everything_os = sync_prefs_.IsSyncAllOsTypesEnabled();
+    base::UmaHistogramBoolean("Sync.SyncEverythingOS", sync_everything_os);
+    if (!sync_everything_os) {
       for (UserSelectableOsType type : user_settings_->GetSelectedOsTypes()) {
         ModelTypeForHistograms canonical_model_type = ModelTypeHistogramValue(
             UserSelectableOsTypeToCanonicalModelType(type));
         base::UmaHistogramEnumeration("Sync.CustomOSSync",
                                       canonical_model_type);
       }
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
     }
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
   }
 }
 
@@ -1304,10 +1309,9 @@ BackendMigrator* SyncServiceImpl::GetBackendMigratorForTest() {
   return migrator_.get();
 }
 
-std::unique_ptr<base::Value> SyncServiceImpl::GetTypeStatusMapForDebugging()
-    const {
+base::Value::List SyncServiceImpl::GetTypeStatusMapForDebugging() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  auto result = std::make_unique<base::ListValue>();
+  base::Value::List result;
 
   if (!engine_ || !engine_->IsInitialized()) {
     return result;
@@ -1324,7 +1328,7 @@ std::unique_ptr<base::Value> SyncServiceImpl::GetTypeStatusMapForDebugging()
   type_status_header.Set("num_live", "Live Entries");
   type_status_header.Set("message", "Message");
   type_status_header.Set("state", "State");
-  result->Append(base::Value(std::move(type_status_header)));
+  result.Append(base::Value(std::move(type_status_header)));
 
   for (const auto& [type, controller] : data_type_controllers_) {
     base::Value::Dict type_status;
@@ -1383,7 +1387,7 @@ std::unique_ptr<base::Value> SyncServiceImpl::GetTypeStatusMapForDebugging()
     type_status.Set("state",
                     DataTypeController::StateToString(controller->state()));
 
-    result->Append(base::Value(std::move(type_status)));
+    result.Append(base::Value(std::move(type_status)));
   }
   return result;
 }

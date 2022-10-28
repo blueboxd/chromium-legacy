@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -34,7 +34,8 @@ class ChromeOmniboxEditController : public OmniboxEditController {
       bool destination_url_entered_without_scheme,
       const std::u16string& text,
       const AutocompleteMatch& match,
-      const AutocompleteMatch& alternative_nav_match) override;
+      const AutocompleteMatch& alternative_nav_match,
+      IDNA2008DeviationCharacter deviation_char_in_hostname) override;
   void OnInputInProgress(bool in_progress) override;
 
   // Returns the WebContents of the currently active tab.

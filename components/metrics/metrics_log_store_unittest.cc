@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -58,7 +58,7 @@ class MetricsLogStoreTest : public testing::Test {
     const char* pref = log_type == MetricsLog::INITIAL_STABILITY_LOG
                            ? prefs::kMetricsInitialLogs
                            : prefs::kMetricsOngoingLogs;
-    return pref_service_.GetValueList(pref).size();
+    return pref_service_.GetList(pref).size();
   }
 
   TestMetricsServiceClient client_;

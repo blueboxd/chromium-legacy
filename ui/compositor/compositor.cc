@@ -58,6 +58,7 @@
 #include "ui/compositor/overscroll/scroll_input_handler.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/display/display_switches.h"
+#include "ui/gfx/geometry/skia_conversions.h"
 #include "ui/gfx/icc_profile.h"
 #include "ui/gfx/presentation_feedback.h"
 #include "ui/gfx/switches.h"
@@ -281,6 +282,9 @@ Compositor::Compositor(const viz::FrameSinkId& frame_sink_id,
     slow_animations_ = std::make_unique<ScopedAnimationDurationScaleMode>(
         ScopedAnimationDurationScaleMode::SLOW_DURATION);
   }
+
+  settings.disable_frame_rate_limit =
+      command_line->HasSwitch(switches::kDisableFrameRateLimit);
 }
 
 Compositor::~Compositor() {
@@ -334,9 +338,9 @@ void Compositor::RemoveChildFrameSink(const viz::FrameSinkId& frame_sink_id) {
 
 void Compositor::SetLayerTreeFrameSink(
     std::unique_ptr<cc::LayerTreeFrameSink> layer_tree_frame_sink,
-    viz::mojom::DisplayPrivate* display_private) {
+    mojo::AssociatedRemote<viz::mojom::DisplayPrivate> display_private) {
   layer_tree_frame_sink_requested_ = false;
-  display_private_ = display_private;
+  display_private_ = std::move(display_private);
   host_->SetLayerTreeFrameSink(std::move(layer_tree_frame_sink));
   // Display properties are reset when the output surface is lost, so update it
   // to match the Compositor's.
@@ -346,7 +350,7 @@ void Compositor::SetLayerTreeFrameSink(
     display_private_->SetDisplayVisible(host_->IsVisible());
     display_private_->SetDisplayColorSpaces(display_color_spaces_);
     display_private_->SetDisplayColorMatrix(
-        gfx::Transform(display_color_matrix_));
+        gfx::SkM44ToTransform(display_color_matrix_));
     display_private_->SetOutputIsSecure(output_is_secure_);
     if (has_vsync_params_)
       display_private_->SetDisplayVSyncParameters(vsync_timebase_,
@@ -355,9 +359,10 @@ void Compositor::SetLayerTreeFrameSink(
 }
 
 void Compositor::SetExternalBeginFrameController(
-    viz::mojom::ExternalBeginFrameController* external_begin_frame_controller) {
+    mojo::AssociatedRemote<viz::mojom::ExternalBeginFrameController>
+        external_begin_frame_controller) {
   DCHECK(use_external_begin_frame_control());
-  external_begin_frame_controller_ = external_begin_frame_controller;
+  external_begin_frame_controller_ = std::move(external_begin_frame_controller);
   if (pending_begin_frame_args_) {
     external_begin_frame_controller_->IssueExternalBeginFrame(
         pending_begin_frame_args_->args, pending_begin_frame_args_->force,
@@ -405,7 +410,7 @@ cc::AnimationTimeline* Compositor::GetAnimationTimeline() const {
 void Compositor::SetDisplayColorMatrix(const SkM44& matrix) {
   display_color_matrix_ = matrix;
   if (display_private_)
-    display_private_->SetDisplayColorMatrix(gfx::Transform(matrix));
+    display_private_->SetDisplayColorMatrix(gfx::SkM44ToTransform(matrix));
 }
 
 void Compositor::ScheduleFullRedraw() {
@@ -580,8 +585,8 @@ void Compositor::SetAcceleratedWidget(gfx::AcceleratedWidget widget) {
 gfx::AcceleratedWidget Compositor::ReleaseAcceleratedWidget() {
   DCHECK(!IsVisible());
   host_->ReleaseLayerTreeFrameSink();
-  display_private_ = nullptr;
-  external_begin_frame_controller_ = nullptr;
+  display_private_.reset();
+  external_begin_frame_controller_.reset();
   context_factory_->RemoveCompositor(this);
   context_creation_weak_ptr_factory_.InvalidateWeakPtrs();
   widget_valid_ = false;
@@ -686,8 +691,7 @@ void Compositor::BeginMainFrame(const viz::BeginFrameArgs& args) {
     host_->SetNeedsAnimate();
 }
 
-void Compositor::BeginMainFrameNotExpectedSoon() {
-}
+void Compositor::BeginMainFrameNotExpectedSoon() {}
 
 void Compositor::BeginMainFrameNotExpectedUntil(base::TimeTicks time) {}
 

@@ -1,9 +1,9 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 import 'chrome://resources/cr_elements/cr_button/cr_button.js';
-import 'chrome://resources/cr_elements/icons.m.js';
+import 'chrome://resources/cr_elements/icons.html.js';
 import 'chrome://resources/polymer/v3_0/iron-icon/iron-icon.js';
 import './base_page.js';
 import './calibration_component_chip.js';
@@ -11,13 +11,13 @@ import './icons.js';
 import './shimless_rma_shared_css.js';
 
 import {assert} from 'chrome://resources/js/assert.m.js';
-import {I18nBehavior, I18nBehaviorInterface} from 'chrome://resources/js/i18n_behavior.m.js';
+import {I18nBehavior, I18nBehaviorInterface} from 'chrome://resources/cr_elements/i18n_behavior.js';
 import {afterNextRender, html, mixinBehaviors, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {ComponentTypeToId} from './data.js';
 import {getShimlessRmaService} from './mojo_interface_provider.js';
 import {CalibrationComponentStatus, CalibrationStatus, ComponentType, ShimlessRmaServiceInterface, StateResult} from './shimless_rma_types.js';
-import {disableNextButton, enableNextButton, executeThenTransitionState} from './shimless_rma_util.js';
+import {disableNextButton, enableNextButton, executeThenTransitionState, focusPageTitle} from './shimless_rma_util.js';
 
 /**
  * @fileoverview
@@ -218,6 +218,8 @@ export class ReimagingCalibrationFailedPage extends
             gradient.style.setProperty('visibility', 'visible');
           }
         });
+
+    focusPageTitle(this);
   }
 
   /** @private */
@@ -246,9 +248,6 @@ export class ReimagingCalibrationFailedPage extends
       // Focus on the first clickable component at the beginning.
       this.focusedComponentIndex_ =
           this.componentCheckboxes_.findIndex(component => !component.disabled);
-      afterNextRender(this, () => {
-        this.focusOnCurrentComponent_();
-      });
     });
   }
 

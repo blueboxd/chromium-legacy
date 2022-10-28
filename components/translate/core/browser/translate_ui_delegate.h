@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -50,7 +50,7 @@ class TranslateUIDelegate {
   virtual ~TranslateUIDelegate();
 
   // Handles when an error message is shown.
-  void OnErrorShown(TranslateErrors::Type error_type);
+  void OnErrorShown(TranslateErrors error_type);
 
   // Returns the LanguageState associated with this object.
   const LanguageState* GetLanguageState();

@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -569,7 +569,7 @@ void QuickAnswersView::AddFrameButtons() {
             &QuickAnswersUiController::OnReportQueryButtonPressed,
             controller_)));
     dogfood_feedback_button_->SetTooltipText(l10n_util::GetStringUTF16(
-        IDS_ASH_QUICK_ANSWERS_SETTINGS_BUTTON_TOOLTIP_TEXT));
+        IDS_ASH_QUICK_ANSWERS_DOGFOOD_FEEDBACK_BUTTON_TOOLTIP_TEXT));
   }
 
   settings_button_ = buttons_view->AddChildView(

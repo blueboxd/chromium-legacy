@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -205,6 +205,10 @@ public class PageInfoHistoryController
     // HistoryContentManager.Observer
     @Override
     public void onUserAccountStateChanged() {}
+
+    // HistoryContentManager.Observer
+    @Override
+    public void onHistoryDeletedExternally() {}
 
     /** @param provider The {@link HistoryProvider} that is used in place of a real one. */
     @VisibleForTesting

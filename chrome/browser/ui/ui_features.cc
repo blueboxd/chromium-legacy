@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -114,29 +114,10 @@ const base::Feature kSideSearchFeedback{"SideSearchFeedback",
 const base::Feature kSideSearchDSESupport{"SideSearchDSESupport",
                                           base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Controls whether the side search icon animates-in its label when the side
-// panel is made available for the active tab.
-const base::Feature kSideSearchPageActionLabelAnimation{
-    "SideSearchPageActionLabelAnimation", base::FEATURE_ENABLED_BY_DEFAULT};
-
-// Controls the frequency that the Side Search page action's label is shown. If
-// enabled the label text is shown one per window.
-const base::FeatureParam<kSideSearchLabelAnimationTypeOption>::Option
-    kSideSearchPageActionLabelAnimationTypeParamOptions[] = {
-        {kSideSearchLabelAnimationTypeOption::kProfile, "Profile"},
-        {kSideSearchLabelAnimationTypeOption::kWindow, "Window"},
-        {kSideSearchLabelAnimationTypeOption::kTab, "Tab"}};
-
-const base::FeatureParam<kSideSearchLabelAnimationTypeOption>
-    kSideSearchPageActionLabelAnimationType{
-        &kSideSearchPageActionLabelAnimation,
-        "SideSearchPageActionLabelAnimationType",
-        kSideSearchLabelAnimationTypeOption::kWindow,
-        &kSideSearchPageActionLabelAnimationTypeParamOptions};
-
-const base::FeatureParam<int> kSideSearchPageActionLabelAnimationMaxCount{
-    &kSideSearchPageActionLabelAnimation,
-    "SideSearchPageActionLabelAnimationMaxCount", 1};
+// Displays right-click search results of a highlighted text in side panel,
+// So users are not forced to switch to a new tab to view the search results
+const base::Feature kSearchWebInSidePanel{"SearchWebInSidePanel",
+                                          base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Whether to clobber all side search side panels in the current browser window
 // or only the side search in the current tab before read later or lens side
@@ -161,6 +142,9 @@ const base::FeatureParam<int> kSideSearchAutoTriggeringReturnCount{
 const base::Feature kSidePanelImprovedClobbering{
     "SidePanelImprovedClobbering", base::FEATURE_DISABLED_BY_DEFAULT};
 
+const base::Feature kSidePanelWebView{"SidePanelWebView",
+                                      base::FEATURE_DISABLED_BY_DEFAULT};
+
 const base::Feature kSidePanelJourneys{"SidePanelJourneys",
                                        base::FEATURE_DISABLED_BY_DEFAULT};
 // If enabled, and the main flag is also enabled, the Journeys omnibox
@@ -172,6 +156,11 @@ const base::FeatureParam<bool> kSidePanelJourneysOpensFromOmnibox{
 const base::Feature kScrollableTabStrip{"ScrollableTabStrip",
                                         base::FEATURE_DISABLED_BY_DEFAULT};
 const char kMinimumTabWidthFeatureParameterName[] = "minTabWidth";
+
+// Splits pinned and unpinned tabs into separate TabStrips.
+// https://crbug.com/1346019
+const base::Feature kSplitTabStrip("SplitTabStrip",
+                                   base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Directly controls the "new" badge (as opposed to old "master switch"; see
 // https://crbug.com/1169907 for master switch deprecation and
@@ -227,9 +216,6 @@ const char kTabSearchSearchThresholdName[] = "TabSearchSearchThreshold";
 const base::FeatureParam<bool> kTabSearchSearchIgnoreLocation{
     &kTabSearchFuzzySearch, "TabSearchSearchIgnoreLocation", false};
 
-const base::Feature kTabSearchMediaTabs{"TabSearchMediaTabs",
-                                        base::FEATURE_ENABLED_BY_DEFAULT};
-
 // If this feature parameter is enabled, show media tabs in both "Audio & Video"
 // section and "Open Tabs" section.
 const char kTabSearchAlsoShowMediaTabsinOpenTabsSectionParameterName[] =
@@ -269,6 +255,11 @@ const base::Feature kTabSearchUseMetricsReporter{
 
 const base::Feature kToolbarUseHardwareBitmapDraw{
     "ToolbarUseHardwareBitmapDraw", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Controls whether top chrome pages will use the spare renderer if no top
+// chrome renderers are present.
+const base::Feature kTopChromeWebUIUsesSpareRenderer{
+    "TopChromeWebUIUsesSpareRenderer", base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kUnifiedSidePanel{"UnifiedSidePanel",
                                       base::FEATURE_DISABLED_BY_DEFAULT};

@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -61,9 +61,14 @@ std::string GetMessageResultHistogramName(proto::MessageType message_type) {
     case proto::MessageType::INITIATE_CAMERA_ROLL_ITEM_TRANSFER_REQUEST:
       return "PhoneHub.TaskCompletion.InitiateCameraRollItemTransfer.Result";
 
+    case proto::MessageType::FEATURE_SETUP_REQUEST:
+      [[fallthrough]];
+    case proto::MessageType::FEATURE_SETUP_RESPONSE:
+      return "PhoneHub.TaskCompletion.FeatureSetup.Result";
+
     default:
       // Note that PROVIDE_CROS_STATE, PHONE_STATUS_SNAPSHOT and
-      // PHONE_STATUS_UPDATE message types are not logged as part of this
+      // PHONE_STATUS_UPDATE message types are not logged as part of these
       // metrics.
       return std::string();
   }
@@ -171,6 +176,17 @@ void LogPermissionOnboardingDialogAction(
                     << " permissions onboarding dialog screen.";
       break;
   }
+}
+
+void LogPermissionOnboardingSetupMode(PermissionsOnboardingSetUpMode mode) {
+  base::UmaHistogramEnumeration(
+      "PhoneHub.PermissionsOnboarding.SetUpMode.IntroScreenShown", mode);
+}
+
+void LogPermissionOnboardingSetupResult(PermissionsOnboardingSetUpMode mode) {
+  base::UmaHistogramEnumeration(
+      "PhoneHub.PermissionsOnboarding.SetUpMode.SetUpFinishedScreenShown",
+      mode);
 }
 
 }  // namespace util

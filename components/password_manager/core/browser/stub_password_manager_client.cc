@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,7 +6,7 @@
 
 #include <memory>
 
-#include "base/stl_util.h"
+#include "base/types/optional_util.h"
 #include "components/password_manager/core/browser/credentials_filter.h"
 #include "components/password_manager/core/browser/password_form_manager_for_ui.h"
 #include "components/version_info/channel.h"
@@ -63,6 +63,10 @@ void StubPasswordManagerClient::AutomaticPasswordSave(
     std::unique_ptr<PasswordFormManagerForUI> saved_manager) {}
 
 PrefService* StubPasswordManagerClient::GetPrefs() const {
+  return nullptr;
+}
+
+PrefService* StubPasswordManagerClient::GetLocalStatePrefs() const {
   return nullptr;
 }
 
@@ -136,7 +140,9 @@ void StubPasswordManagerClient::CheckProtectedPasswordEntry(
     metrics_util::PasswordType reused_password_type,
     const std::string& username,
     const std::vector<MatchingReusedCredential>& matching_reused_credentials,
-    bool password_field_exists) {}
+    bool password_field_exists,
+    uint64_t reused_password_hash,
+    const std::string& domain) {}
 
 void StubPasswordManagerClient::LogPasswordReuseDetectedEvent() {}
 
@@ -149,7 +155,7 @@ StubPasswordManagerClient::GetMetricsRecorder() {
   if (!metrics_recorder_) {
     metrics_recorder_.emplace(GetUkmSourceId());
   }
-  return base::OptionalOrNullptr(metrics_recorder_);
+  return base::OptionalToPtr(metrics_recorder_);
 }
 
 signin::IdentityManager* StubPasswordManagerClient::GetIdentityManager() {

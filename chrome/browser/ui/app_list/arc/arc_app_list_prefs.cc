@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -71,6 +71,7 @@ constexpr char kLastBackupAndroidId[] = "last_backup_android_id";
 constexpr char kLastBackupTime[] = "last_backup_time";
 constexpr char kLastLaunchTime[] = "lastlaunchtime";
 constexpr char kLaunchable[] = "launchable";
+constexpr char kNeedFixup[] = "need_fixup";
 constexpr char kName[] = "name";
 constexpr char kNotificationsEnabled[] = "notifications_enabled";
 constexpr char kPackageName[] = "package_name";
@@ -136,7 +137,7 @@ class NotificationsEnabledDeferred {
 
   bool Get(const std::string& app_id) {
     const base::Value::Dict& dict =
-        prefs_->GetValueDict(arc::prefs::kArcSetNotificationsEnabledDeferred);
+        prefs_->GetDict(arc::prefs::kArcSetNotificationsEnabledDeferred);
     return dict.FindBool(app_id).value_or(false);
   }
 
@@ -327,6 +328,7 @@ bool AreAppStatesChanged(const ArcAppListPrefs::AppInfo& info1,
          info1.ready != info2.ready || info1.suspended != info2.suspended ||
          info1.show_in_launcher != info2.show_in_launcher ||
          info1.launchable != info2.launchable ||
+         info1.need_fixup != info2.need_fixup ||
          info1.version_name != info2.version_name ||
          info1.app_size_in_bytes != info2.app_size_in_bytes ||
          info1.data_size_in_bytes != info2.data_size_in_bytes;
@@ -422,7 +424,7 @@ void ArcAppListPrefs::UprevCurrentIconsVersionForTesting() {
 
 std::string ArcAppListPrefs::GetAppIdByPackageName(
     const std::string& package_name) const {
-  const base::Value::Dict& apps = prefs_->GetValueDict(arc::prefs::kArcApps);
+  const base::Value::Dict& apps = prefs_->GetDict(arc::prefs::kArcApps);
 
   for (const auto it : apps) {
     const base::Value& value = it.second;
@@ -732,8 +734,7 @@ std::unique_ptr<ArcAppListPrefs::PackageInfo> ArcAppListPrefs::GetPackage(
   if (!IsArcAlive() || !IsArcAndroidEnabledForProfile(profile_))
     return nullptr;
 
-  const base::Value::Dict& packages =
-      prefs_->GetValueDict(arc::prefs::kArcPackages);
+  const base::Value::Dict& packages = prefs_->GetDict(arc::prefs::kArcPackages);
 
   const base::Value::Dict* package = packages.FindDict(package_name);
   if (!package)
@@ -755,13 +756,12 @@ std::unique_ptr<ArcAppListPrefs::PackageInfo> ArcAppListPrefs::GetPackage(
     permission_val->GetAsDictionary(&permission_dict);
     DCHECK(permission_dict);
 
-    for (base::DictionaryValue::Iterator iter(*permission_dict);
-         !iter.IsAtEnd(); iter.Advance()) {
+    for (const auto item : permission_dict->GetDict()) {
       int64_t permission_type = -1;
-      base::StringToInt64(iter.key(), &permission_type);
+      base::StringToInt64(item.first, &permission_type);
       DCHECK_NE(-1, permission_type);
 
-      const base::Value& permission_state = iter.value();
+      const base::Value& permission_state = item.second;
 
       const base::DictionaryValue* permission_state_dict;
       if (permission_state.GetAsDictionary(&permission_state_dict)) {
@@ -835,7 +835,7 @@ std::vector<std::string> ArcAppListPrefs::GetAppIds() const {
 
 std::vector<std::string> ArcAppListPrefs::GetAppIdsNoArcEnabledCheck() const {
   std::vector<std::string> ids;
-  const base::Value::Dict& apps = prefs_->GetValueDict(arc::prefs::kArcApps);
+  const base::Value::Dict& apps = prefs_->GetDict(arc::prefs::kArcApps);
 
   // crx_file::id_util is de-facto utility for id generation.
   for (const auto app : apps) {
@@ -861,7 +861,7 @@ std::unique_ptr<ArcAppListPrefs::AppInfo> ArcAppListPrefs::GetApp(
 
 std::unique_ptr<ArcAppListPrefs::AppInfo> ArcAppListPrefs::GetAppFromPrefs(
     const std::string& app_id) const {
-  const base::Value::Dict& apps = prefs_->GetValueDict(arc::prefs::kArcApps);
+  const base::Value::Dict& apps = prefs_->GetDict(arc::prefs::kArcApps);
   const base::Value::Dict* app_dict = apps.FindDict(app_id);
   if (!app_dict)
     return nullptr;
@@ -874,6 +874,7 @@ std::unique_ptr<ArcAppListPrefs::AppInfo> ArcAppListPrefs::GetAppFromPrefs(
               static_cast<int32_t>(arc::mojom::ArcResizeLockState::UNDEFINED)));
   const bool shortcut = app_dict->FindBool(kShortcut).value_or(false);
   const bool launchable = app_dict->FindBool(kLaunchable).value_or(true);
+  const bool need_fixup = app_dict->FindBool(kNeedFixup).value_or(false);
 
   const std::string* maybe_name = app_dict->FindString(kName);
   const std::string* maybe_package_name = app_dict->FindString(kPackageName);
@@ -938,7 +939,7 @@ std::unique_ptr<ArcAppListPrefs::AppInfo> ArcAppListPrefs::GetAppFromPrefs(
       window_layout, ready_apps_.count(app_id) > 0 /* ready */,
       app_dict->FindBool(kSuspended).value_or(false),
       launchable && arc::ShouldShowInLauncher(app_id), shortcut, launchable,
-      app_size_in_bytes, data_size_in_bytes);
+      need_fixup, app_size_in_bytes, data_size_in_bytes);
 }
 
 bool ArcAppListPrefs::IsRegistered(const std::string& app_id) const {
@@ -946,7 +947,7 @@ bool ArcAppListPrefs::IsRegistered(const std::string& app_id) const {
       !default_apps_->HasApp(app_id))
     return false;
 
-  const base::Value::Dict& apps = prefs_->GetValueDict(arc::prefs::kArcApps);
+  const base::Value::Dict& apps = prefs_->GetDict(arc::prefs::kArcApps);
   return apps.FindDict(app_id);
 }
 
@@ -1012,7 +1013,7 @@ void ArcAppListPrefs::SetLastLaunchTimeInternal(const std::string& app_id) {
     // UI Shown time may not be set in unit tests.
     const user_manager::UserManager* user_manager =
         user_manager::UserManager::Get();
-    if (arc::ArcSessionManager::Get()->is_directly_started() &&
+    if (arc::ArcSessionManager::Get()->skipped_terms_of_service_negotiation() &&
         !user_manager->IsLoggedInAsKioskApp() &&
         !user_manager->IsLoggedInAsArcKioskApp() &&
         !ash::UserSessionManager::GetInstance()->ui_shown_time().is_null()) {
@@ -1314,8 +1315,8 @@ void ArcAppListPrefs::RegisterDefaultApps() {
         absl::nullopt /* version name */, false /* sticky */,
         false /* notifications_enabled */, false /* app_ready */,
         false /* suspended */, false /* shortcut */, true /* launchable */,
-        ArcAppListPrefs::WindowLayout(), absl::nullopt /* app_size */,
-        absl::nullopt /* data_size */);
+        false /* need_fixup */, ArcAppListPrefs::WindowLayout(),
+        absl::nullopt /* app_size */, absl::nullopt /* data_size */);
   }
 }
 
@@ -1413,8 +1414,8 @@ void ArcAppListPrefs::HandleTaskCreated(const absl::optional<std::string>& name,
         absl::nullopt /* version_name */, false /* sticky */,
         false /* notifications_enabled */, true /* app_ready */,
         false /* suspended */, false /* shortcut */, false /* launchable */,
-        ArcAppListPrefs::WindowLayout(), absl::nullopt /* app_size */,
-        absl::nullopt /* data_size */);
+        false /* need_fixup */, ArcAppListPrefs::WindowLayout(),
+        absl::nullopt /* app_size */, absl::nullopt /* data_size */);
   }
 }
 
@@ -1431,6 +1432,7 @@ void ArcAppListPrefs::AddAppAndShortcut(
     const bool suspended,
     const bool shortcut,
     const bool launchable,
+    const bool need_fixup,
     const WindowLayout& initial_window_layout,
     const absl::optional<uint64_t> app_size_in_bytes,
     const absl::optional<uint64_t> data_size_in_bytes) {
@@ -1490,6 +1492,7 @@ void ArcAppListPrefs::AddAppAndShortcut(
   app_dict.Set(kResizeLockNeedsConfirmation, resize_lock_needs_confirmation);
   app_dict.Set(kShortcut, shortcut);
   app_dict.Set(kLaunchable, launchable);
+  app_dict.Set(kNeedFixup, need_fixup);
 
   app_dict.Set(kWindowLayout, WindowLayoutToDict(initial_window_layout));
 
@@ -1513,13 +1516,13 @@ void ArcAppListPrefs::AddAppAndShortcut(
   if (was_disabled && app_ready)
     ready_apps_.insert(app_id);
 
-  AppInfo app_info(updated_name, package_name, activity, intent_uri,
-                   icon_resource_id, version_name, last_launch_time,
-                   GetInstallTime(app_id), sticky, notifications_enabled,
-                   resize_lock_state, resize_lock_needs_confirmation,
-                   initial_window_layout, app_ready, suspended,
-                   launchable && arc::ShouldShowInLauncher(app_id), shortcut,
-                   launchable, app_size_in_bytes, data_size_in_bytes);
+  AppInfo app_info(
+      updated_name, package_name, activity, intent_uri, icon_resource_id,
+      version_name, last_launch_time, GetInstallTime(app_id), sticky,
+      notifications_enabled, resize_lock_state, resize_lock_needs_confirmation,
+      initial_window_layout, app_ready, suspended,
+      launchable && arc::ShouldShowInLauncher(app_id), shortcut, launchable,
+      need_fixup, app_size_in_bytes, data_size_in_bytes);
 
   if (was_tracked) {
     if (AreAppStatesChanged(*app_old_info, app_info)) {
@@ -1737,8 +1740,8 @@ void ArcAppListPrefs::OnAppListRefreshed(
         std::string() /* intent_uri */, std::string() /* icon_resource_id */,
         app->version_name, app->sticky, app->notifications_enabled,
         true /* app_ready */, app->suspended, false /* shortcut */,
-        true /* launchable */, WindowLayoutFromApp(*app), app_size_in_bytes,
-        data_size_in_bytes);
+        true /* launchable */, app->need_fixup, WindowLayoutFromApp(*app),
+        app_size_in_bytes, data_size_in_bytes);
   }
 
   // Detect removed ARC apps after current refresh.
@@ -1815,8 +1818,8 @@ void ArcAppListPrefs::AddApp(const arc::mojom::AppInfo& app_info) {
       std::string() /* intent_uri */, std::string() /* icon_resource_id */,
       app_info.version_name, app_info.sticky, app_info.notifications_enabled,
       true /* app_ready */, app_info.suspended, false /* shortcut */,
-      true /* launchable */, WindowLayoutFromApp(app_info), app_size_in_bytes,
-      data_size_in_bytes);
+      true /* launchable */, app_info.need_fixup, WindowLayoutFromApp(app_info),
+      app_size_in_bytes, data_size_in_bytes);
 }
 
 void ArcAppListPrefs::OnAppAddedDeprecated(arc::mojom::AppInfoPtr app) {
@@ -1907,14 +1910,14 @@ void ArcAppListPrefs::OnInstallShortcut(arc::mojom::ShortcutInfoPtr shortcut) {
       absl::nullopt /* version_name */, false /* sticky */,
       false /* notifications_enabled */, true /* app_ready */,
       false /* suspended */, true /* shortcut */, true /* launchable */,
-      ArcAppListPrefs::WindowLayout(), absl::nullopt /* app_size */,
-      absl::nullopt /* data_size */);
+      false /* need_fixup */, ArcAppListPrefs::WindowLayout(),
+      absl::nullopt /* app_size */, absl::nullopt /* data_size */);
 }
 
 void ArcAppListPrefs::OnUninstallShortcut(const std::string& package_name,
                                           const std::string& intent_uri) {
   std::vector<std::string> shortcuts_to_remove;
-  const base::Value::Dict& apps = prefs_->GetValueDict(arc::prefs::kArcApps);
+  const base::Value::Dict& apps = prefs_->GetDict(arc::prefs::kArcApps);
   for (const auto app : apps) {
     if (!app.second.is_dict()) {
       VLOG(2) << "Failed to extract information for " << app.first << ".";
@@ -1955,7 +1958,7 @@ std::unordered_set<std::string> ArcAppListPrefs::GetAppsAndShortcutsForPackage(
     bool include_only_launchable_apps,
     bool include_shortcuts) const {
   std::unordered_set<std::string> app_set;
-  const base::Value::Dict& apps = prefs_->GetValueDict(arc::prefs::kArcApps);
+  const base::Value::Dict& apps = prefs_->GetDict(arc::prefs::kArcApps);
   for (const auto app : apps) {
     if (!crx_file::id_util::IdIsValid(app.first))
       continue;
@@ -2100,7 +2103,7 @@ void ArcAppListPrefs::OnTaskSetActive(int32_t task_id) {
 void ArcAppListPrefs::OnNotificationsEnabledChanged(
     const std::string& package_name,
     bool enabled) {
-  const base::Value::Dict& apps = prefs_->GetValueDict(arc::prefs::kArcApps);
+  const base::Value::Dict& apps = prefs_->GetDict(arc::prefs::kArcApps);
   for (const auto app : apps) {
     if (!app.second.is_dict()) {
       NOTREACHED();
@@ -2201,7 +2204,7 @@ std::vector<std::string> ArcAppListPrefs::GetPackagesFromPrefs(
   }
 
   const base::Value::Dict& package_prefs =
-      prefs_->GetValueDict(arc::prefs::kArcPackages);
+      prefs_->GetDict(arc::prefs::kArcPackages);
   for (const auto package : package_prefs) {
     if (!package.second.is_dict()) {
       NOTREACHED();
@@ -2220,7 +2223,7 @@ std::vector<std::string> ArcAppListPrefs::GetPackagesFromPrefs(
 }
 
 base::Time ArcAppListPrefs::GetInstallTime(const std::string& app_id) const {
-  const base::Value::Dict& apps = prefs_->GetValueDict(arc::prefs::kArcApps);
+  const base::Value::Dict& apps = prefs_->GetDict(arc::prefs::kArcApps);
 
   const base::Value::Dict* app = apps.FindDict(app_id);
   if (!app)
@@ -2341,6 +2344,7 @@ ArcAppListPrefs::AppInfo::AppInfo(
     bool show_in_launcher,
     bool shortcut,
     bool launchable,
+    bool need_fixup,
     const absl::optional<uint64_t> app_size_in_bytes,
     const absl::optional<uint64_t> data_size_in_bytes)
     : name(name),
@@ -2361,6 +2365,7 @@ ArcAppListPrefs::AppInfo::AppInfo(
       show_in_launcher(show_in_launcher),
       shortcut(shortcut),
       launchable(launchable),
+      need_fixup(need_fixup),
       app_size_in_bytes(app_size_in_bytes),
       data_size_in_bytes(data_size_in_bytes) {
   // If app is not launchable it also does not show in launcher.
@@ -2390,6 +2395,7 @@ bool ArcAppListPrefs::AppInfo::operator==(const AppInfo& other) const {
          ready == other.ready && suspended == other.suspended &&
          show_in_launcher == other.show_in_launcher &&
          shortcut == other.shortcut && launchable == other.launchable &&
+         need_fixup == other.need_fixup &&
          app_size_in_bytes == other.app_size_in_bytes &&
          data_size_in_bytes == other.data_size_in_bytes;
 }

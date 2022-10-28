@@ -1,4 +1,4 @@
-# Copyright 2014 The Chromium Authors. All rights reserved.
+# Copyright 2014 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -277,6 +277,15 @@ test("variations_unittests") {
 if (use_libfuzzer) {
   fuzzer_test("create_trial_from_study_fuzzer") {
     sources = [ "fuzzers/create_trial_from_study_fuzzer.cc" ]
+    deps = [
+      ":variations",
+      "proto",
+      "//base/test:test_support",
+      "//third_party/libprotobuf-mutator",
+    ]
+  }
+  fuzzer_test("create_trials_from_seed_fuzzer") {
+    sources = [ "fuzzers/create_trials_from_seed_fuzzer.cc" ]
     deps = [
       ":variations",
       "proto",

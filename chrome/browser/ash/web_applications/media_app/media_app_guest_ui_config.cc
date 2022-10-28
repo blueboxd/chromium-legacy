@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -45,16 +45,8 @@ void ChromeMediaAppGuestUIDelegate::PopulateLoadTimeData(
       });
 
   source->AddString("appLocale", g_browser_process->GetApplicationLocale());
-  source->AddBoolean("pdfInInk", base::FeatureList::IsEnabled(
-                                     chromeos::features::kMediaAppHandlesPdf));
   source->AddBoolean("pdfReadonly",
                      !pref_service->GetBoolean(prefs::kPdfAnnotationsEnabled));
-  source->AddBoolean(
-      "pdfTextAnnotation",
-      base::FeatureList::IsEnabled(chromeos::features::kMediaAppHandlesPdf));
-  source->AddBoolean(
-      "newZeroState",
-      base::FeatureList::IsEnabled(chromeos::features::kMediaAppHandlesPdf));
   version_info::Channel channel = chrome::GetChannel();
   source->AddBoolean("colorThemes",
                      chromeos::features::IsDarkLightModeEnabled());
@@ -81,6 +73,10 @@ void ChromeMediaAppGuestUIDelegate::PopulateLoadTimeData(
   source->AddBoolean("photosIntegrationVideo",
                      base::FeatureList::IsEnabled(
                          chromeos::features::kMediaAppPhotosIntegrationVideo));
+  bool enable_color_picker_improvements =
+      base::FeatureList::IsEnabled(chromeos::features::kMediaAppCustomColors);
+  source->AddBoolean("recentColorPalette", enable_color_picker_improvements);
+  source->AddBoolean("customColorSelector", enable_color_picker_improvements);
   source->AddBoolean("flagsMenu", channel != version_info::Channel::BETA &&
                                       channel != version_info::Channel::STABLE);
   source->AddBoolean("isDevChannel", channel == version_info::Channel::DEV);

@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -24,8 +24,8 @@ OtherMechanismsMenuModel::OtherMechanismsMenuModel(
 
     const auto& m = mechanisms[i];
     AddItemWithIcon(static_cast<int>(i), m.short_name,
-                    ui::ImageModel::FromVectorIcon(
-                        *m.icon, ui::kColorMenuIcon, kTransportIconSize));
+                    ui::ImageModel::FromVectorIcon(m.icon, ui::kColorMenuIcon,
+                                                   kTransportIconSize));
   }
 }
 

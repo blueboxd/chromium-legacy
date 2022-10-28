@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,7 +10,7 @@ namespace ash {
 
 UserAddingScreenInputMethodsController::UserAddingScreenInputMethodsController(
     UserAddingScreen* screen)
-    : screen_(screen), active_user_on_show_(NULL) {
+    : screen_(screen), active_user_on_show_(nullptr) {
   screen_->AddObserver(this);
 }
 

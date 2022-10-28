@@ -1,13 +1,13 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome/browser/ash/login/quick_unlock/auth_token.h"
 
-#include "ash/components/login/auth/public/user_context.h"
 #include "base/bind.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "chromeos/ash/components/login/auth/public/user_context.h"
 
 namespace ash {
 namespace quick_unlock {

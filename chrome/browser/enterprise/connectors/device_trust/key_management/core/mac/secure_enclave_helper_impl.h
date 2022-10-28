@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -26,7 +26,6 @@ class SecureEnclaveHelperImpl : public SecureEnclaveHelper {
   bool Update(CFDictionaryRef query,
               CFDictionaryRef attributes_to_update) override;
   bool Delete(CFDictionaryRef query) override;
-  bool CheckKeychainUnlocked() override;
   bool IsSecureEnclaveSupported() override;
 };
 

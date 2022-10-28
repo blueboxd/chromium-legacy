@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -63,7 +63,7 @@ void CreateWallpaperDirectory(const base::FilePath& wallpaper_dir,
                               bool* success) {
   DCHECK(success);
 
-  *success = CreateDirectoryAndGetError(wallpaper_dir, NULL);
+  *success = CreateDirectoryAndGetError(wallpaper_dir, nullptr);
   if (!*success) {
     NOTREACHED() << "Failed to create directory '" << wallpaper_dir.value()
                  << "'";

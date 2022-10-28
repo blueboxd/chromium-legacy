@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -145,6 +145,7 @@ void Preferences::RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterIntegerPref(
       ::prefs::kLacrosLaunchSwitch,
       static_cast<int>(crosapi::browser_util::LacrosAvailability::kUserChoice));
+  registry->RegisterStringPref(::prefs::kLacrosDataBackwardMigrationMode, "");
   registry->RegisterBooleanPref(prefs::kDeviceSystemWideTracingEnabled, true);
   registry->RegisterBooleanPref(
       prefs::kLocalStateDevicePeripheralDataAccessEnabled, false);
@@ -461,6 +462,13 @@ void Preferences::RegisterProfilePrefs(
   registry->RegisterBooleanPref(
       ::prefs::kHatsPersonalizationWallpaperSurveyIsSelected, false);
 
+  // MediaApp HaTS prefs for Pdf and Photos experiences.
+  registry->RegisterInt64Pref(::prefs::kHatsMediaAppPdfCycleEndTs, 0);
+  registry->RegisterBooleanPref(::prefs::kHatsMediaAppPdfIsSelected, false);
+  registry->RegisterInt64Pref(::prefs::kHatsPhotosExperienceCycleEndTs, 0);
+  registry->RegisterBooleanPref(::prefs::kHatsPhotosExperienceIsSelected,
+                                false);
+
   registry->RegisterBooleanPref(::prefs::kPinUnlockFeatureNotificationShown,
                                 false);
   registry->RegisterBooleanPref(
@@ -522,6 +530,10 @@ void Preferences::RegisterProfilePrefs(
 
   registry->RegisterBooleanPref(
       prefs::kFilesAppUIPrefsMigrated, false,
+      user_prefs::PrefRegistrySyncable::SYNCABLE_OS_PREF);
+
+  registry->RegisterBooleanPref(
+      prefs::kFilesAppTrashEnabled, true,
       user_prefs::PrefRegistrySyncable::SYNCABLE_OS_PREF);
 }
 
@@ -1095,7 +1107,7 @@ void Preferences::ApplyPreferences(ApplyReason reason,
     if (prefs_->IsManagedPreference(::prefs::kParentAccessCodeConfig) &&
         user_->IsChild()) {
       const base::Value::Dict& value =
-          prefs_->GetValueDict(::prefs::kParentAccessCodeConfig);
+          prefs_->GetDict(::prefs::kParentAccessCodeConfig);
       known_user.SetPath(user_->GetAccountId(),
                          ::prefs::kKnownUserParentAccessCodeConfig,
                          base::Value(value.Clone()));

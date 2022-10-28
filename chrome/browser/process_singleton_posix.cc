@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -202,7 +202,7 @@ int WaitSocketForRead(int fd, const base::TimeDelta& timeout) {
   FD_ZERO(&read_fds);
   FD_SET(fd, &read_fds);
 
-  return HANDLE_EINTR(select(fd + 1, &read_fds, NULL, NULL, &tv));
+  return HANDLE_EINTR(select(fd + 1, &read_fds, nullptr, nullptr, &tv));
 }
 
 // Read a message from a socket fd, with an optional timeout.

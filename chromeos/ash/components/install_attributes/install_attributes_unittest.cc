@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -49,15 +49,16 @@ class InstallAttributesTest : public testing::Test {
   void SetUp() override {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     ASSERT_TRUE(base::PathService::OverrideAndCreateIfNeeded(
-        dbus_paths::FILE_INSTALL_ATTRIBUTES, GetTempPath(), true, false));
+        chromeos::dbus_paths::FILE_INSTALL_ATTRIBUTES, GetTempPath(), true,
+        false));
     InstallAttributesClient::InitializeFake();
-    TpmManagerClient::InitializeFake();
+    chromeos::TpmManagerClient::InitializeFake();
     install_attributes_ =
         std::make_unique<InstallAttributes>(InstallAttributesClient::Get());
   }
 
   void TearDown() override {
-    TpmManagerClient::Shutdown();
+    chromeos::TpmManagerClient::Shutdown();
     InstallAttributesClient::Shutdown();
   }
 
@@ -101,7 +102,7 @@ TEST_F(InstallAttributesTest, Lock) {
       LockDeviceAndWaitForResult(policy::DEVICE_MODE_ENTERPRISE, kTestDomain,
                                  std::string(),  // realm
                                  kTestDeviceId));
-  EXPECT_EQ(TpmManagerClient::Get()
+  EXPECT_EQ(chromeos::TpmManagerClient::Get()
                 ->GetTestInterface()
                 ->clear_stored_owner_password_count(),
             1);
@@ -343,7 +344,7 @@ TEST_F(InstallAttributesTest, CheckSetBlockDevmodeInTpm) {
 }
 
 TEST_F(InstallAttributesTest, ConsistencyCheckTriggeredWithTpmPassword) {
-  TpmManagerClient::Get()
+  chromeos::TpmManagerClient::Get()
       ->GetTestInterface()
       ->mutable_nonsensitive_status_reply()
       ->set_is_owner_password_present(true);
@@ -358,7 +359,7 @@ TEST_F(InstallAttributesTest, ConsistencyCheckTriggeredWithTpmPassword) {
 }
 
 TEST_F(InstallAttributesTest, ConsistencyCheckTriggeredTpmPasswordWiped) {
-  TpmManagerClient::Get()
+  chromeos::TpmManagerClient::Get()
       ->GetTestInterface()
       ->mutable_nonsensitive_status_reply()
       ->set_is_owner_password_present(false);
@@ -373,7 +374,7 @@ TEST_F(InstallAttributesTest, ConsistencyCheckTriggeredTpmPasswordWiped) {
 }
 
 TEST_F(InstallAttributesTest, ConsistencyCheckNotTriggeredDBusError) {
-  TpmManagerClient::Get()
+  chromeos::TpmManagerClient::Get()
       ->GetTestInterface()
       ->mutable_nonsensitive_status_reply()
       ->set_status(::tpm_manager::STATUS_DBUS_ERROR);

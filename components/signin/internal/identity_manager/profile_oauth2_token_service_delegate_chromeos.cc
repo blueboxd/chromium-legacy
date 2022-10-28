@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,8 +13,10 @@
 #include "base/logging.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
+#include "components/account_manager_core/account.h"
 #include "components/signin/internal/identity_manager/account_tracker_service.h"
 #include "components/signin/public/base/signin_client.h"
+#include "google_apis/gaia/google_service_auth_error.h"
 #include "google_apis/gaia/oauth2_access_token_fetcher_immediate_error.h"
 #include "net/base/backoff_entry.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
@@ -388,12 +390,15 @@ void ProfileOAuth2TokenServiceDelegateChromeOS::FinishAddingPendingAccount(
       account.key.id() /* gaia_id */, account.raw_email);
   DCHECK(!account_id.empty());
 
-  // Don't call |FireAuthErrorChanged|, since we call it at the end of this
+  // Call the parent method - which will not report the error back to
+  // `AccountManagerFacade` and result in this instance getting notified again -
+  // unlike `ProfileOAuth2TokenServiceDelegateChromeOS::UpdateAuthError`.
+  // Additionally, don't call `FireAuthErrorChanged`
+  // (/*fire_auth_error_changed=*/false), since we call it at the end of this
   // function.
-  UpdateAuthError(account_id, error,
-                  /*fire_auth_error_changed=*/false);
+  ProfileOAuth2TokenServiceDelegate::UpdateAuthError(
+      account_id, error, /*fire_auth_error_changed=*/false);
 
-  ScopedBatchChange batch(this);
   FireRefreshTokenAvailable(account_id);
   // See |ProfileOAuth2TokenServiceObserver::OnAuthErrorChanged|.
   // |OnAuthErrorChanged| must be always called after
@@ -458,11 +463,31 @@ void ProfileOAuth2TokenServiceDelegateChromeOS::OnAccountRemoved(
   DCHECK(!account_id.empty());
   ClearAuthError(account_id);
 
-  ScopedBatchChange batch(this);
-
   // ProfileOAuth2TokenService will clear its cache for |account_id| when this
   // is called. See |ProfileOAuth2TokenService::OnRefreshTokenRevoked|.
   FireRefreshTokenRevoked(account_id);
+}
+
+void ProfileOAuth2TokenServiceDelegateChromeOS::OnAuthErrorChanged(
+    const account_manager::AccountKey& account,
+    const GoogleServiceAuthError& error) {
+  if (account_keys_.find(account) == account_keys_.end()) {
+    LOG(ERROR) << "Received error update for unknown account";
+    return;
+  }
+  CoreAccountId account_id =
+      account_tracker_service_->FindAccountInfoByGaiaId(account.id())
+          .account_id;
+
+  if (error == GetAuthError(account_id)) {
+    // Nothing to do if the error is already known.
+    return;
+  }
+
+  // Call the parent method - which will not report the error back to
+  // `AccountManagerFacade` and result in this instance getting notified again -
+  // unlike `ProfileOAuth2TokenServiceDelegateChromeOS::UpdateAuthError`.
+  ProfileOAuth2TokenServiceDelegate::UpdateAuthError(account_id, error);
 }
 
 void ProfileOAuth2TokenServiceDelegateChromeOS::RevokeCredentials(
@@ -489,6 +514,21 @@ void ProfileOAuth2TokenServiceDelegateChromeOS::RevokeAllCredentials() {
   // Signing out of Chrome is not possible on Chrome OS Ash.
   NOTREACHED();
 #endif
+}
+
+void ProfileOAuth2TokenServiceDelegateChromeOS::UpdateAuthError(
+    const CoreAccountId& account_id,
+    const GoogleServiceAuthError& error,
+    bool fire_auth_error_changed) {
+  ProfileOAuth2TokenServiceDelegate::UpdateAuthError(account_id, error,
+                                                     fire_auth_error_changed);
+  AccountInfo account_info =
+      account_tracker_service_->GetAccountInfo(account_id);
+  DCHECK(!account_info.IsEmpty());
+  account_manager_facade_->ReportAuthError(
+      account_manager::AccountKey{account_info.gaia,
+                                  account_manager::AccountType::kGaia},
+      error);
 }
 
 void ProfileOAuth2TokenServiceDelegateChromeOS::OnConnectionChanged(

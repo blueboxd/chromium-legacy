@@ -1,39 +1,38 @@
-// Copyright 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #import "ios/chrome/browser/omaha/omaha_service.h"
 
-#include <regex.h>
-#include <sys/types.h>
+#import <regex.h>
+#import <sys/types.h>
 
-#include "base/bind.h"
-#include "base/check_op.h"
-#include "base/run_loop.h"
-#include "base/strings/stringprintf.h"
+#import "base/bind.h"
+#import "base/check_op.h"
+#import "base/run_loop.h"
+#import "base/strings/stringprintf.h"
 #import "base/test/ios/wait_util.h"
-#include "base/time/time.h"
-#include "components/metrics/metrics_pref_names.h"
-#include "components/prefs/pref_registry_simple.h"
-#include "components/version_info/version_info.h"
-#include "ios/chrome/browser/application_context.h"
-#include "ios/chrome/browser/browser_state/test_chrome_browser_state_manager.h"
-#include "ios/chrome/browser/install_time_util.h"
+#import "base/time/time.h"
+#import "components/metrics/metrics_pref_names.h"
+#import "components/prefs/pref_registry_simple.h"
+#import "components/version_info/version_info.h"
+#import "ios/chrome/browser/application_context/application_context.h"
+#import "ios/chrome/browser/browser_state/test_chrome_browser_state_manager.h"
 #import "ios/chrome/browser/upgrade/upgrade_constants.h"
-#include "ios/chrome/browser/upgrade/upgrade_recommended_details.h"
-#include "ios/chrome/common/channel_info.h"
-#include "ios/chrome/test/ios_chrome_scoped_testing_chrome_browser_state_manager.h"
-#include "ios/public/provider/chrome/browser/omaha/omaha_api.h"
-#include "ios/web/public/test/web_task_environment.h"
-#include "ios/web/public/thread/web_thread.h"
-#include "net/http/http_status_code.h"
-#include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
-#include "services/network/public/mojom/url_response_head.mojom.h"
-#include "services/network/test/test_url_loader_factory.h"
-#include "services/network/test/test_utils.h"
-#include "testing/gtest/include/gtest/gtest.h"
-#include "testing/gtest_mac.h"
-#include "testing/platform_test.h"
+#import "ios/chrome/browser/upgrade/upgrade_recommended_details.h"
+#import "ios/chrome/common/channel_info.h"
+#import "ios/chrome/test/ios_chrome_scoped_testing_chrome_browser_state_manager.h"
+#import "ios/public/provider/chrome/browser/omaha/omaha_api.h"
+#import "ios/web/public/test/web_task_environment.h"
+#import "ios/web/public/thread/web_thread.h"
+#import "net/http/http_status_code.h"
+#import "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
+#import "services/network/public/mojom/url_response_head.mojom.h"
+#import "services/network/test/test_url_loader_factory.h"
+#import "services/network/test/test_utils.h"
+#import "testing/gtest/include/gtest/gtest.h"
+#import "testing/gtest_mac.h"
+#import "testing/platform_test.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -42,6 +41,7 @@
 namespace {
 
 const char kUserDataDir[] = FILE_PATH_LITERAL(".");
+const int64_t kUnknownInstallDate = 2;
 
 }  // namespace
 
@@ -56,7 +56,7 @@ class OmahaServiceTest : public PlatformTest {
             std::make_unique<TestChromeBrowserStateManager>(
                 base::FilePath(kUserDataDir))) {
     GetApplicationContext()->GetLocalState()->SetInt64(
-        metrics::prefs::kInstallDate, install_time_util::kUnknownInstallDate);
+        metrics::prefs::kInstallDate, kUnknownInstallDate);
     OmahaService::ClearPersistentStateForTests();
   }
 
@@ -178,8 +178,7 @@ TEST_F(OmahaServiceTest, PingMessageTestWithUnknownInstallDate) {
       &OmahaServiceTest::OnNeedUpdate, base::Unretained(this)));
   std::string content = service.GetPingContent(
       "requestId", "sessionId", version_info::GetVersionNumber(),
-      GetChannelString(),
-      base::Time::FromTimeT(install_time_util::kUnknownInstallDate),
+      GetChannelString(), base::Time::FromTimeT(kUnknownInstallDate),
       OmahaService::USAGE_PING);
   regex_t regex;
   regcomp(&regex, expectedResult, REG_NOSUB);
@@ -552,8 +551,7 @@ TEST_F(OmahaServiceTest, ParseAndEchoLastServerDate) {
 
   std::string content = service.GetPingContent(
       "requestId", "sessionId", version_info::GetVersionNumber(),
-      GetChannelString(),
-      base::Time::FromTimeT(install_time_util::kUnknownInstallDate),
+      GetChannelString(), base::Time::FromTimeT(kUnknownInstallDate),
       OmahaService::USAGE_PING);
   regex_t regex;
   regcomp(&regex, expectedResult, REG_NOSUB);

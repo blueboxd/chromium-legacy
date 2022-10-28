@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -33,12 +33,6 @@ const CGFloat kPositionCoefficient = 0.25;
 
 - (void)animateFrom:(CGPoint)originPoint withCompletion:(void (^)())completion {
   CGPoint origin = [self convertPoint:originPoint fromView:nil];
-
-  // Position the content view so it sits at the bottom of `self`.
-  CGRect frame = self.contentView.frame;
-  CGFloat offset = self.frame.size.height - frame.size.height;
-  frame.origin.y = offset;
-  self.contentView.frame = frame;
 
   self.backgroundColor = UIColor.clearColor;
 

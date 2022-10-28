@@ -1,4 +1,4 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -28,6 +28,8 @@ const size_t kDefaultMaxProgramCacheMemoryBytes = 6 * 1024 * 1024;
 const size_t kDefaultMaxProgramCacheMemoryBytes = 2 * 1024 * 1024;
 const size_t kLowEndMaxProgramCacheMemoryBytes = 128 * 1024;
 #endif
+
+GPU_EXPORT size_t GetDefaultGpuDiskCacheSize();
 
 enum class VulkanImplementationName : uint32_t {
   kNone = 0,

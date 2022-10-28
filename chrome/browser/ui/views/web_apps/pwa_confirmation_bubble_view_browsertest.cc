@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -134,7 +134,7 @@ IN_PROC_BROWSER_TEST_F(PWAConfirmationBubbleViewBrowserTest,
                   .has_value());
   {
     const auto& dict =
-        pref_service->GetValueDict(prefs::kWebAppsAppAgnosticIphState);
+        pref_service->GetDict(prefs::kWebAppsAppAgnosticIphState);
     EXPECT_EQ(dict.FindInt(web_app::kIphIgnoreCount).value_or(0), 1);
     EXPECT_TRUE(dict.contains(web_app::kIphLastIgnoreTime));
   }
@@ -182,7 +182,7 @@ IN_PROC_BROWSER_TEST_F(PWAConfirmationBubbleViewBrowserTest,
       0);
   {
     const auto& dict =
-        pref_service->GetValueDict(prefs::kWebAppsAppAgnosticIphState);
+        pref_service->GetDict(prefs::kWebAppsAppAgnosticIphState);
     EXPECT_EQ(dict.FindInt(web_app::kIphIgnoreCount).value_or(0), 0);
   }
 }

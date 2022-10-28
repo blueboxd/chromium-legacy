@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,10 +7,10 @@
 #include <memory>
 
 #include "base/memory/raw_ptr.h"
-#include "base/stl_util.h"
 #include "base/task/thread_pool.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/mock_callback.h"
+#include "base/types/optional_util.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/chromeos/policy/dlp/dlp_histogram_helper.h"
 #include "chrome/browser/chromeos/policy/dlp/dlp_policy_event.pb.h"
@@ -310,9 +310,8 @@ class DlpControllerTest : public DataTransferDlpControllerTest {
     data_src_ = ui::DataTransferEndpoint((GURL(kExample1Url)));
     absl::optional<ui::EndpointType> endpoint_type;
     std::tie(endpoint_type, do_notify_) = GetParam();
-    data_dst_ =
-        CreateEndpoint(base::OptionalOrNullptr(endpoint_type), do_notify_);
-    dst_ptr_ = base::OptionalOrNullptr(data_dst_);
+    data_dst_ = CreateEndpoint(base::OptionalToPtr(endpoint_type), do_notify_);
+    dst_ptr_ = base::OptionalToPtr(data_dst_);
   }
 
   ui::DataTransferEndpoint data_src_{ui::EndpointType::kDefault};

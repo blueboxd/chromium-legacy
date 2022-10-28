@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -22,6 +22,7 @@
 #include "device/fido/authenticator_supported_options.h"
 #include "device/fido/features.h"
 #include "device/fido/fido_constants.h"
+#include "device/fido/fido_parsing_utils.h"
 #include "device/fido/fido_transport_protocol.h"
 #include "device/fido/opaque_attestation_statement.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -111,8 +112,27 @@ ReadCTAPMakeCredentialResponse(FidoTransportProtocol transport_used,
         it->second.GetBytestring().size() != kLargeBlobKeyLength) {
       return absl::nullopt;
     }
-    response.set_large_blob_key(
+    response.large_blob_key = fido_parsing_utils::Materialize(
         base::make_span<kLargeBlobKeyLength>(it->second.GetBytestring()));
+  }
+
+  it = decoded_map.find(CBOR(0x06));
+  if (it != decoded_map.end()) {
+    if (!it->second.is_map()) {
+      return absl::nullopt;
+    }
+    const auto& unsigned_extension_outputs_map = it->second.GetMap();
+    for (const auto& map_it : unsigned_extension_outputs_map) {
+      if (!map_it.first.is_string()) {
+        return absl::nullopt;
+      }
+      if (map_it.first.GetString() == kExtensionDevicePublicKey) {
+        if (!map_it.second.is_bytestring()) {
+          return absl::nullopt;
+        }
+        response.device_public_key_signature = map_it.second.GetBytestring();
+      }
+    }
   }
 
   return response;
@@ -191,6 +211,25 @@ absl::optional<AuthenticatorGetAssertionResponse> ReadCTAPGetAssertionResponse(
     }
     memcpy(response.large_blob_key->data(), key.data(),
            response.large_blob_key->size());
+  }
+
+  it = response_map.find(CBOR(0x08));
+  if (it != response_map.end()) {
+    if (!it->second.is_map()) {
+      return absl::nullopt;
+    }
+    const auto& unsigned_extension_outputs_map = it->second.GetMap();
+    for (const auto& map_it : unsigned_extension_outputs_map) {
+      if (!map_it.first.is_string()) {
+        return absl::nullopt;
+      }
+      if (map_it.first.GetString() == kExtensionDevicePublicKey) {
+        if (!map_it.second.is_bytestring()) {
+          return absl::nullopt;
+        }
+        response.device_public_key_signature = map_it.second.GetBytestring();
+      }
+    }
   }
 
   return response;

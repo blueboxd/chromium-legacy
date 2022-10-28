@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -44,7 +44,6 @@
 #include "base/observer_list.h"
 #include "base/ranges/algorithm.h"
 #include "base/sequence_checker.h"
-#include "base/stl_util.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
@@ -59,6 +58,7 @@
 #include "base/time/default_tick_clock.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
+#include "base/types/optional_util.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "net/base/address_family.h"
@@ -87,11 +87,11 @@
 #include "net/dns/host_resolver_mdns_listener_impl.h"
 #include "net/dns/host_resolver_mdns_task.h"
 #include "net/dns/host_resolver_proc.h"
-#include "net/dns/host_resolver_results.h"
 #include "net/dns/httpssvc_metrics.h"
 #include "net/dns/mdns_client.h"
 #include "net/dns/public/dns_protocol.h"
 #include "net/dns/public/dns_query_type.h"
+#include "net/dns/public/host_resolver_results.h"
 #include "net/dns/public/resolve_error_info.h"
 #include "net/dns/public/secure_dns_mode.h"
 #include "net/dns/public/secure_dns_policy.h"
@@ -668,13 +668,13 @@ class HostResolverManager::RequestImpl
 
   const AddressList* GetAddressResults() const override {
     DCHECK(complete_);
-    return base::OptionalOrNullptr(legacy_address_results_);
+    return base::OptionalToPtr(legacy_address_results_);
   }
 
   const std::vector<HostResolverEndpointResult>* GetEndpointResults()
       const override {
     DCHECK(complete_);
-    return base::OptionalOrNullptr(endpoint_results_);
+    return base::OptionalToPtr(endpoint_results_);
   }
 
   const absl::optional<std::vector<std::string>>& GetTextResults()
@@ -710,7 +710,7 @@ class HostResolverManager::RequestImpl
     }
 #endif  // DCHECK_IS_ON()
 
-    return base::OptionalOrNullptr(fixed_up_dns_alias_results_);
+    return base::OptionalToPtr(fixed_up_dns_alias_results_);
   }
 
   const std::vector<bool>* GetExperimentalResultsForTesting() const override {
@@ -1865,7 +1865,7 @@ class HostResolverManager::DnsTask : public base::SupportsWeakPtr<DnsTask> {
 
     net_log_.EndEvent(NetLogEventType::HOST_RESOLVER_MANAGER_DNS_TASK, [&] {
       return NetLogDnsTaskFailedParams(net_error, failed_transaction_type, ttl,
-                                       base::OptionalOrNullptr(saved_results_));
+                                       base::OptionalToPtr(saved_results_));
     });
 
     // Expect this to result in destroying `this` and thus cancelling any
@@ -2591,6 +2591,12 @@ class HostResolverManager::Job : public PrioritizedDispatcher::Job,
                           int net_error,
                           const AddressList& addr_list) {
     DCHECK(proc_task_);
+
+    base::TimeDelta duration = tick_clock_->NowTicks() - start_time;
+    if (net_error == OK)
+      UMA_HISTOGRAM_LONG_TIMES_100("Net.DNS.ProcTask.SuccessTime", duration);
+    else
+      UMA_HISTOGRAM_LONG_TIMES_100("Net.DNS.ProcTask.FailureTime", duration);
 
     if (dns_task_error_ != OK && net_error == OK) {
       // This ProcTask was a fallback resolution after a failed insecure

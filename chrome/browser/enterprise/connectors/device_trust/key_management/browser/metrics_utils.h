@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -38,7 +38,9 @@ enum class DTKeyRotationResult {
   kSucceeded = 0,
   kFailed = 1,
   kTimedOut = 2,
-  kMaxValue = kTimedOut,
+  kFailedKeyConflict = 3,
+  kFailedOSRestriction = 4,
+  kMaxValue = kFailedOSRestriction,
 };
 
 // Logs the `key_metadata` trust level and type. If it is not defined

@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,12 +11,10 @@ namespace web {
 class WebState;
 }
 
-@class ContentSuggestionsHeaderViewController;
 @class ContentSuggestionsViewController;
 @protocol FeedDelegate;
 @protocol NewTabPageControllerDelegate;
 @protocol NewTabPageDelegate;
-class NotificationPromoWhatsNew;
 @class NTPHomeMediator;
 @protocol ThumbStripSupporting;
 @class ViewRevealingVerticalPanHandler;
@@ -65,8 +63,6 @@ class NotificationPromoWhatsNew;
 // Configure Content Suggestions if showing the Start Surface.
 - (void)configureStartSurfaceIfNeeded;
 
-// The notification promo.
-- (NotificationPromoWhatsNew*)notificationPromo;
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_CONTENT_SUGGESTIONS_CONTENT_SUGGESTIONS_COORDINATOR_H_

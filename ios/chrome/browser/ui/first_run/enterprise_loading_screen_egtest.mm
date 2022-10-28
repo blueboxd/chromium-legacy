@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -132,8 +132,7 @@ constexpr char kEnrollmentToken[] = "enrollment_token";
 
 // Ensures that the loading screen is dismissed when registration succeeds and
 // policy fetch fails.
-// TODO(crbug.com/1352111): Re-enable
-- (void)DISABLED_testLoadingScreenDismissedByPolicyFetchError {
+- (void)testLoadingScreenDismissedByPolicyFetchError {
   _policyTestServer->ConfigureRequestError(
       policy::dm_protocol::kValueRequestPolicy, net::HTTP_METHOD_NOT_ALLOWED);
 

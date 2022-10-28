@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -68,7 +68,7 @@ class COMPONENT_EXPORT(SHILL_CLIENT) ModemMessagingClient {
   virtual void Delete(const std::string& service_name,
                       const dbus::ObjectPath& object_path,
                       const dbus::ObjectPath& sms_path,
-                      VoidDBusMethodCallback callback) = 0;
+                      chromeos::VoidDBusMethodCallback callback) = 0;
 
   // Calls List method.  |callback| is called on method completion.
   using ListCallback =

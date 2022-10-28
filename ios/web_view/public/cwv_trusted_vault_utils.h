@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -14,12 +14,15 @@ NS_ASSUME_NONNULL_BEGIN
 // Possible states of the trusted vault. Keep in sync with
 // syncer::TrustedVaultDeviceRegistrationStateForUMA.
 typedef NS_ENUM(NSInteger, CWVTrustedVaultState) {
+  // DEPRECATED, use `CWVTrustedVaultStateAlreadyRegisteredV0`.
   CWVTrustedVaultStateAlreadyRegistered = 0,
-  CWVTrustedVaultStateLocalKeysAreStale,
-  CWVTrustedVaultStateThrottledClientSide,
-  CWVTrustedVaultStateAttemptingRegistrationWithNewKeyPair,
-  CWVTrustedVaultStateAttemptingRegistrationWithExistingKeyPair,
-  CWVTrustedVaultStateAttemptingRegistrationWithPersistentAuthError,
+  CWVTrustedVaultStateAlreadyRegisteredV0 = 0,
+  CWVTrustedVaultStateLocalKeysAreStale = 1,
+  CWVTrustedVaultStateThrottledClientSide = 2,
+  CWVTrustedVaultStateAttemptingRegistrationWithNewKeyPair = 3,
+  CWVTrustedVaultStateAttemptingRegistrationWithExistingKeyPair = 4,
+  CWVTrustedVaultStateAttemptingRegistrationWithPersistentAuthError = 5,
+  CWVTrustedVaultStateAlreadyRegisteredV1 = 6,
 };
 
 // Utility methods for trusted vault.

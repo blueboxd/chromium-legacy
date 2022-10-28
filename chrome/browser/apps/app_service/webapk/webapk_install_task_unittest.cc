@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -124,8 +124,6 @@ class WebApkInstallTaskTest : public testing::Test {
     fake_webapk_instance_ = std::make_unique<arc::FakeWebApkInstance>();
     arc_bridge_service->webapk()->SetInstance(fake_webapk_instance_.get());
 
-    app_service_test_.FlushMojoCalls();
-
     net::test_server::RegisterDefaultHandlers(&test_server_);
     webapk_test_server_ = std::make_unique<apps::WebApkTestServer>();
     ASSERT_TRUE(webapk_test_server_->SetUpAndStartServer(&test_server_));
@@ -220,8 +218,6 @@ TEST_F(WebApkInstallTaskTest, SuccessfulInstall) {
             "org.chromium.webapk.some_package");
   histograms.ExpectBucketCount(apps::kWebApkInstallResultHistogram,
                                apps::WebApkInstallStatus::kSuccess, 1);
-  histograms.ExpectBucketCount(apps::kWebApkArcInstallResultHistogram,
-                               arc::mojom::WebApkInstallResult::kSuccess, 1);
 }
 
 TEST_F(WebApkInstallTaskTest, ShareTarget) {
@@ -306,9 +302,6 @@ TEST_F(WebApkInstallTaskTest, FailedArcInstall) {
   ASSERT_EQ(apps::webapk_prefs::GetWebApkAppIds(profile()).size(), 0u);
   histograms.ExpectBucketCount(apps::kWebApkInstallResultHistogram,
                                apps::WebApkInstallStatus::kGooglePlayError, 1);
-  histograms.ExpectBucketCount(
-      apps::kWebApkArcInstallResultHistogram,
-      arc::mojom::WebApkInstallResult::kErrorResolveNetworkError, 1);
 }
 
 TEST_F(WebApkInstallTaskTest, MinterTimeout) {
@@ -510,8 +503,6 @@ TEST_F(WebApkInstallTaskTest, SuccessfulUpdateMultipleChanges) {
               testing::IsEmpty());
   histograms.ExpectBucketCount(apps::kWebApkUpdateResultHistogram,
                                apps::WebApkInstallStatus::kSuccess, 1);
-  histograms.ExpectBucketCount(apps::kWebApkArcUpdateResultHistogram,
-                               arc::mojom::WebApkInstallResult::kSuccess, 1);
 }
 
 TEST_F(WebApkInstallTaskTest, AbandonedUpdateNoChanges) {

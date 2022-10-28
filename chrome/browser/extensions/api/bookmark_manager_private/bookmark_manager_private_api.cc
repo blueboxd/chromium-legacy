@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -117,12 +117,11 @@ CreateNodeDataElementFromBookmarkNode(const BookmarkNode& node) {
   bookmark_manager_private::BookmarkNodeDataElement element;
   // Add id and parentId so we can associate the data with existing nodes on the
   // client side.
-  element.id = std::make_unique<std::string>(base::NumberToString(node.id()));
-  element.parent_id =
-      std::make_unique<std::string>(base::NumberToString(node.parent()->id()));
+  element.id = base::NumberToString(node.id());
+  element.parent_id = base::NumberToString(node.parent()->id());
 
   if (node.is_url())
-    element.url = std::make_unique<std::string>(node.url().spec());
+    element.url = node.url().spec();
 
   element.title = base::UTF16ToUTF8(node.GetTitle());
   for (const auto& child : node.children()) {
@@ -141,7 +140,7 @@ bookmark_manager_private::BookmarkNodeDataElement CreateApiNodeDataElement(
   bookmark_manager_private::BookmarkNodeDataElement node_element;
 
   if (element.is_url)
-    node_element.url = std::make_unique<std::string>(element.url.spec());
+    node_element.url = element.url.spec();
   node_element.title = base::UTF16ToUTF8(element.title);
   for (size_t i = 0; i < element.children.size(); ++i) {
     node_element.children.push_back(
@@ -594,15 +593,14 @@ BookmarkManagerPrivateOpenInNewTabFunction::RunOnReady() {
     return Error("Cannot open a folder in a new tab.");
 
   ExtensionTabUtil::OpenTabParams options;
-  options.url = std::make_unique<std::string>(node->url().spec());
-  options.active = std::make_unique<bool>(params->active);
-  options.bookmark_id = std::make_unique<int>(node->id());
+  options.url = node->url().spec();
+  options.active = params->active;
+  options.bookmark_id = node->id();
 
-  std::unique_ptr<base::DictionaryValue> result(
-      extensions::ExtensionTabUtil::OpenTab(this, options, user_gesture(),
-                                            &error));
-  if (!result)
-    return Error(error);
+  auto result =
+      extensions::ExtensionTabUtil::OpenTab(this, options, user_gesture());
+  if (!result.has_value())
+    return Error(result.error());
 
   return WithArguments();
 }

@@ -1,4 +1,4 @@
-// Copyright 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,11 +11,7 @@
 #include <string>
 
 #include "base/containers/enum_set.h"
-
-namespace base {
-class ListValue;
-class Value;
-}  // namespace base
+#include "base/values.h"
 
 namespace sync_pb {
 class EntitySpecifics;
@@ -72,6 +68,8 @@ enum ModelType {
   // Offers and rewards from the user's account. These are read-only on the
   // client side.
   AUTOFILL_WALLET_OFFER,
+  // Autofill usage data of a payment method related to a specific merchant.
+  AUTOFILL_WALLET_USAGE,
   // A theme object.
   THEMES,
   // A typed_url object, i.e. a URL the user has typed into the Omnibox.
@@ -108,7 +106,7 @@ enum ModelType {
   ARC_PACKAGE,
   // Printer device information. ChromeOS only.
   PRINTERS,
-  // Reading list items. iOS only.
+  // Reading list items.
   READING_LIST,
   // Commit only user events.
   USER_EVENTS,
@@ -138,6 +136,8 @@ enum ModelType {
   HISTORY,
   // Trusted Authorization Servers for printers. ChromeOS only.
   PRINTERS_AUTHORIZATION_SERVERS,
+  // Contact information from the Google Address Storage.
+  CONTACT_INFO,
 
   // Proxy types are excluded from the sync protocol, but are still considered
   // real user types. By convention, we prefix them with 'PROXY_' to distinguish
@@ -236,7 +236,9 @@ enum class ModelTypeForHistograms {
   kWorkspaceDesk = 50,
   kHistory = 51,
   kPrintersAuthorizationServers = 52,
-  kMaxValue = kPrintersAuthorizationServers
+  kContactInfo = 53,
+  kAutofillWalletUsage = 54,
+  kMaxValue = kAutofillWalletUsage
 };
 
 // Used to mark the type of EntitySpecifics that has no actual data.
@@ -253,13 +255,14 @@ constexpr ModelTypeSet ProtocolTypes() {
   return ModelTypeSet(
       BOOKMARKS, PREFERENCES, PASSWORDS, AUTOFILL_PROFILE, AUTOFILL,
       AUTOFILL_WALLET_DATA, AUTOFILL_WALLET_METADATA, AUTOFILL_WALLET_OFFER,
-      THEMES, TYPED_URLS, EXTENSIONS, SEARCH_ENGINES, SESSIONS, APPS,
-      APP_SETTINGS, EXTENSION_SETTINGS, HISTORY_DELETE_DIRECTIVES, DICTIONARY,
-      DEVICE_INFO, PRIORITY_PREFERENCES, SUPERVISED_USER_SETTINGS, APP_LIST,
-      ARC_PACKAGE, PRINTERS, READING_LIST, USER_EVENTS, NIGORI, USER_CONSENTS,
-      SEND_TAB_TO_SELF, SECURITY_EVENTS, WEB_APPS, WIFI_CONFIGURATIONS,
-      OS_PREFERENCES, OS_PRIORITY_PREFERENCES, SHARING_MESSAGE, WORKSPACE_DESK,
-      HISTORY, PRINTERS_AUTHORIZATION_SERVERS);
+      AUTOFILL_WALLET_USAGE, THEMES, TYPED_URLS, EXTENSIONS,
+      SEARCH_ENGINES, SESSIONS, APPS, APP_SETTINGS, EXTENSION_SETTINGS,
+      HISTORY_DELETE_DIRECTIVES, DICTIONARY, DEVICE_INFO, PRIORITY_PREFERENCES,
+      SUPERVISED_USER_SETTINGS, APP_LIST, ARC_PACKAGE, PRINTERS, READING_LIST,
+      USER_EVENTS, NIGORI, USER_CONSENTS, SEND_TAB_TO_SELF, SECURITY_EVENTS,
+      WEB_APPS, WIFI_CONFIGURATIONS, OS_PREFERENCES, OS_PRIORITY_PREFERENCES,
+      SHARING_MESSAGE, WORKSPACE_DESK, HISTORY, PRINTERS_AUTHORIZATION_SERVERS,
+      CONTACT_INFO);
 }
 
 // These are the normal user-controlled types. This is to distinguish from
@@ -269,7 +272,7 @@ constexpr ModelTypeSet UserTypes() {
   return ModelTypeSet::FromRange(FIRST_USER_MODEL_TYPE, LAST_USER_MODEL_TYPE);
 }
 
-// User types, which are not user-controlled.
+// User types which are not user-controlled.
 constexpr ModelTypeSet AlwaysPreferredUserTypes() {
   return ModelTypeSet(DEVICE_INFO, USER_CONSENTS, SECURITY_EVENTS,
                       SEND_TAB_TO_SELF, SUPERVISED_USER_SETTINGS,
@@ -289,7 +292,7 @@ constexpr ModelTypeSet AlwaysEncryptedUserTypes() {
 // This mostly matters during initial sync, since priority types can become
 // active before all the data for non-prio types has been downloaded (which may
 // be a lot of data).
-constexpr ModelTypeSet PriorityUserTypes() {
+constexpr ModelTypeSet HighPriorityUserTypes() {
   return ModelTypeSet(
       // The "Send to Your Devices" feature needs fast updating of the list of
       // your devices and also fast sending of the actual messages.
@@ -309,6 +312,20 @@ constexpr ModelTypeSet PriorityUserTypes() {
       THEMES);
 }
 
+// This is the subset of UserTypes() that have a *lower* priority than other
+// types. These types are synced only after all other user types (both for
+// get_updates and commits). This mostly matters during initial sync, since
+// high-priority and regular types can become active before all the data for
+// low-priority types has been downloaded (which may be a lot of data).
+constexpr ModelTypeSet LowPriorityUserTypes() {
+  return ModelTypeSet(
+      // Downloading History may take a while, but should not block the download
+      // of other data types.
+      HISTORY,
+      // User Events should not block or delay commits for other data types.
+      USER_EVENTS);
+}
+
 // Returns a list of all control types.
 //
 // The control types are intended to contain metadata nodes that are essential
@@ -321,13 +338,6 @@ constexpr ModelTypeSet PriorityUserTypes() {
 // - All change processing occurs on the sync thread.
 constexpr ModelTypeSet ControlTypes() {
   return ModelTypeSet(NIGORI);
-}
-
-// Returns true if this is a control type.
-//
-// See comment above for more information on what makes these types special.
-constexpr bool IsControlType(ModelType model_type) {
-  return ControlTypes().Has(model_type);
 }
 
 // Types that may commit data, but should never be included in a GetUpdates.
@@ -396,8 +406,8 @@ std::string ModelTypeSetToDebugString(ModelTypeSet model_types);
 // Necessary for compatibility with EXPECT_EQ and the like.
 std::ostream& operator<<(std::ostream& out, ModelTypeSet model_type_set);
 
-// Generates a base::ListValue from |model_types|.
-std::unique_ptr<base::ListValue> ModelTypeSetToValue(ModelTypeSet model_types);
+// Generates a base::Value::List from |model_types|.
+base::Value::List ModelTypeSetToValue(ModelTypeSet model_types);
 
 // Returns a string corresponding to the syncable tag for this datatype.
 std::string ModelTypeToRootTag(ModelType type);

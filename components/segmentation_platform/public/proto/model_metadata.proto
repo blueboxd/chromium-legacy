@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -77,6 +77,11 @@ message UMAFeature {
   // Matches are only valid when the enum ID matches any of these.
   // Works like an OR condition, e.g.: [url, search, …] or just [url].
   repeated int32 enum_ids = 7;
+
+  // Only set if aggregation == LATEST_OR_DEFAULT.
+  // Value used for model if latest value requested is not available in the
+  // database. The number of entries should be equal to the tensor_length.
+  repeated float default_values = 8;
 }
 
 message CustomInput {
@@ -227,7 +232,7 @@ message UMAOutput {
 
 // Metadata about a segmentation model for a given segment. Contains information
 // on how to use the model such as collecting signals, interpreting results etc.
-// Next tag: 12
+// Next tag: 14
 message SegmentationModelMetadata {
   // The version information needed to validate segmentation models.
   optional VersionInfo version_info = 9;
@@ -285,4 +290,13 @@ message SegmentationModelMetadata {
   // The default key to use during the mapping process if no key has been
   // provided.
   optional string default_discrete_mapping = 8;
+
+  // The delay, in seconds, to collect output tensors after input tensors are
+  // collected. For example, output labels can be collected one week after input
+  // tensors are collected. If not specified, output tensors are collected in
+  // the same time period as input tensors.
+  optional int64 output_collection_delay_sec = 12;
+
+  // Whether the client should upload the input and output tensors through UKM.
+  optional bool upload_tensors = 13;
 }

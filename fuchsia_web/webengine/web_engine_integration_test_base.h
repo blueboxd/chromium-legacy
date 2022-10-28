@@ -1,11 +1,10 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #ifndef FUCHSIA_WEB_WEBENGINE_WEB_ENGINE_INTEGRATION_TEST_BASE_H_
 #define FUCHSIA_WEB_WEBENGINE_WEB_ENGINE_INTEGRATION_TEST_BASE_H_
 
-#include <fuchsia/sys/cpp/fidl.h>
 #include <fuchsia/web/cpp/fidl.h>
 #include <lib/fidl/cpp/binding.h>
 #include <lib/sys/cpp/component_context.h>
@@ -30,7 +29,8 @@ class WebEngineIntegrationTestBase : public testing::Test {
 
   void SetUp() override;
 
-  void StartWebEngine(base::CommandLine command_line);
+  virtual void StartWebEngine(base::CommandLine command_line) = 0;
+  virtual fuchsia::web::ContextProvider* GetContextProvider() = 0;
 
   // Returns the FilteredServiceDirectory used by DefaultContextParams(), which
   // is initially configured to provide all of the calling process' services.
@@ -106,10 +106,6 @@ class WebEngineIntegrationTestBase : public testing::Test {
 
  protected:
   const base::test::TaskEnvironment task_environment_;
-
-  fidl::InterfaceHandle<fuchsia::sys::ComponentController>
-      web_engine_controller_;
-  fuchsia::web::ContextProviderPtr web_context_provider_;
 
   net::EmbeddedTestServer embedded_test_server_;
 

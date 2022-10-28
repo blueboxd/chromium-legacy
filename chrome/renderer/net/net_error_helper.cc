@@ -1,4 +1,4 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -255,13 +255,7 @@ LocalizedError::PageState NetErrorHelper::GenerateLocalizedErrorPage(
   // If the user is viewing an offline web app then a default page is shown
   // rather than the dino.
   if (alternative_error_page_info) {
-#if BUILDFLAG(IS_ANDROID)
-    DCHECK(
-        base::FeatureList::IsEnabled(features::kAndroidPWAsDefaultOfflinePage));
-#else
-    DCHECK(
-        base::FeatureList::IsEnabled(features::kDesktopPWAsDefaultOfflinePage));
-#endif  // BUILDFLAG(IS_ANDROID)
+    DCHECK(base::FeatureList::IsEnabled(features::kPWAsDefaultOfflinePage));
     base::UmaHistogramSparse("Net.ErrorPageCounts.WebAppAlternativeErrorPage",
                              -error.reason());
     resource_id = alternative_error_page_info->resource_id;

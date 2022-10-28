@@ -8,30 +8,26 @@ group("wpt_tests_isolate") {
   data = [
     # Include the test runner.
     "//testing/scripts/wpt_common.py",
-    "//testing/scripts/run_wpt_tests.py",
+    "//third_party/blink/tools/run_wpt_tests.py",
 
     # WPT tooling
     "//third_party/wpt_tools/",
 
-    # Include blinkpy tools for setting up expectations.
+    # Include blinkpy tools for setting up expectations and uploading results to
+    # ResultDB.
     "//third_party/blink/tools/build_wpt_metadata.py",
+    "//third_party/blink/tools/wpt_process_results.py",
     "//third_party/blink/tools/blinkpy/",
-    "//third_party/catapult/third_party/typ/",
 
     # Imported by some code in blinkpy.
     "//build/skia_gold_common/",
 
-    # The web_tests/external directory contains all WPT components including
-    # the test runner codebase, manifest file, and the tests themselves.
+    # The web_tests/external directory contains manifest file and public WPTs.
     "//third_party/blink/web_tests/external/",
 
-    # Include a single file from wpt_internal only to initialize that directory.
-    # We don't need to run these tests but still need to create a MANIFEST here.
-    # See crbug.com/1018829 for more details.
-    "//third_party/blink/web_tests/wpt_internal/README.md",
-
-    # Include the results processor.
-    "//third_party/blink/tools/wpt_process_results.py",
+    # The web_tests/wpt_internal directory contains internal WPTs
+    "//third_party/blink/web_tests/wpt_internal/",
+    "//third_party/blink/web_tests/wptrunner.blink.ini",
 
     # Include the various Test Expectations files.
     "//third_party/blink/web_tests/ASANExpectations",
@@ -43,10 +39,14 @@ group("wpt_tests_isolate") {
     "//third_party/blink/web_tests/TestExpectations",
     "//third_party/blink/web_tests/VirtualTestSuites",
     "//third_party/blink/web_tests/WPTOverrideExpectations",
+
+    # Include the root vpython spec.
+    "//.vpython3",
   ]
   data_deps = [
     ":wpt_tests_mojo_bindings",
     "//testing:test_scripts_shared",
+    "//third_party/catapult/third_party/typ:typ",
     "//tools/imagediff",
   ]
   if (is_win) {
@@ -58,6 +58,10 @@ if (is_android) {
   group("wpt_tests_android_isolate") {
     testonly = true
     data = [
+      # Emulator
+      "//build/android/pylib/",
+
+      # Android-specific expectations
       "//third_party/blink/web_tests/android/WebLayerWPTOverrideExpectations",
       "//third_party/blink/web_tests/android/ChromeWPTOverrideExpectations",
       "//third_party/blink/web_tests/android/WebviewWPTExpectations",
@@ -66,8 +70,9 @@ if (is_android) {
     ]
     data_deps = [
       ":wpt_tests_isolate",
+      "//build/android:devil_chromium_py",
       "//build/android:test_runner_py",
-      "//testing:run_wpt_tests",
+      "//third_party/catapult/devil:devil",
     ]
   }
 }

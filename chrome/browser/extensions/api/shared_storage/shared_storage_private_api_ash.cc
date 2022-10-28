@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -45,7 +45,7 @@ ExtensionFunction::ResponseAction SharedStoragePrivateSetFunction::Run() {
   PrefService* prefs =
       Profile::FromBrowserContext(browser_context())->GetPrefs();
   DictionaryPrefUpdate update(prefs, prefs::kSharedStorage);
-  update.Get()->MergeDictionary(&params->items.additional_properties);
+  update.Get()->GetDict().Merge(std::move(params->items.additional_properties));
   return RespondNow(NoArguments());
 }
 

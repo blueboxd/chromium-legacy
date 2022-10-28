@@ -104,8 +104,9 @@ HWND BrowserAccessibilityManagerWin::GetParentHWND() {
 }
 
 void BrowserAccessibilityManagerWin::UserIsReloading() {
-  if (GetRoot())
-    FireWinAccessibilityEvent(IA2_EVENT_DOCUMENT_RELOAD, GetRoot());
+  if (GetBrowserAccessibilityRoot())
+    FireWinAccessibilityEvent(IA2_EVENT_DOCUMENT_RELOAD,
+                              GetBrowserAccessibilityRoot());
 }
 
 BrowserAccessibility* BrowserAccessibilityManagerWin::GetFocus() const {
@@ -113,12 +114,12 @@ BrowserAccessibility* BrowserAccessibilityManagerWin::GetFocus() const {
   return GetActiveDescendant(focus);
 }
 
-void BrowserAccessibilityManagerWin::FireFocusEvent(
-    BrowserAccessibility* node) {
-  BrowserAccessibilityManager::FireFocusEvent(node);
+void BrowserAccessibilityManagerWin::FireFocusEvent(ui::AXNode* node) {
+  ui::AXTreeManager::FireFocusEvent(node);
   DCHECK(node);
-  FireWinAccessibilityEvent(EVENT_OBJECT_FOCUS, node);
-  FireUiaAccessibilityEvent(UIA_AutomationFocusChangedEventId, node);
+  BrowserAccessibility* wrapper = GetFromAXNode(node);
+  FireWinAccessibilityEvent(EVENT_OBJECT_FOCUS, wrapper);
+  FireUiaAccessibilityEvent(UIA_AutomationFocusChangedEventId, wrapper);
 }
 
 void BrowserAccessibilityManagerWin::FireBlinkEvent(ax::mojom::Event event_type,
@@ -479,6 +480,7 @@ void BrowserAccessibilityManagerWin::FireGeneratedEvent(
       break;
 
     // Currently unused events on this platform.
+    case ui::AXEventGenerator::Event::NONE:
     case ui::AXEventGenerator::Event::ATK_TEXT_OBJECT_ATTRIBUTE_CHANGED:
     case ui::AXEventGenerator::Event::AUTO_COMPLETE_CHANGED:
     case ui::AXEventGenerator::Event::CARET_BOUNDS_CHANGED:

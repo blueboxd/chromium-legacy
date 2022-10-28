@@ -1,10 +1,10 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #import "ios/chrome/browser/ui/toolbar/accessory/toolbar_accessory_presenter.h"
 
-#include "base/i18n/rtl.h"
+#import "base/i18n/rtl.h"
 #import "base/logging.h"
 #import "ios/chrome/browser/ui/image_util/image_util.h"
 #import "ios/chrome/browser/ui/presenters/contained_presenter_delegate.h"

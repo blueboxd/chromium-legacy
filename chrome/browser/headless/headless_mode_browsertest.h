@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -45,7 +45,7 @@ class HeadlessModeBrowserTestWithStartWindowMode
 
   void SetUpCommandLine(base::CommandLine* command_line) override;
 
-  StartWindowMode start_window_mode() const { return GetParam(); };
+  StartWindowMode start_window_mode() const { return GetParam(); }
 };
 
 // Toggles browser fullscreen mode synchronously.

@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -113,6 +113,67 @@ class WmDesksPrivateSetWindowPropertiesFunction : public ExtensionFunction {
   ResponseAction Run() override;
 
   void OnSetWindowProperties(std::string error_string);
+};
+
+class WmDesksPrivateSaveActiveDeskFunction : public ExtensionFunction {
+ public:
+  WmDesksPrivateSaveActiveDeskFunction();
+  WmDesksPrivateSaveActiveDeskFunction(
+      const WmDesksPrivateSaveActiveDeskFunction&) = delete;
+  WmDesksPrivateSaveActiveDeskFunction& operator=(
+      const WmDesksPrivateSaveActiveDeskFunction&) = delete;
+
+  DECLARE_EXTENSION_FUNCTION("wmDesksPrivate.saveActiveDesk",
+                             WMDESKSPRIVATE_SAVEACTIVEDESK)
+
+ protected:
+  ~WmDesksPrivateSaveActiveDeskFunction() override;
+
+  // ExtensionFunction:
+  ResponseAction Run() override;
+
+  void OnSavedActiveDesk(std::unique_ptr<ash::DeskTemplate> desk_template,
+                         std::string error_string);
+};
+
+class WmDesksPrivateDeleteSavedDeskFunction : public ExtensionFunction {
+ public:
+  WmDesksPrivateDeleteSavedDeskFunction();
+  WmDesksPrivateDeleteSavedDeskFunction(
+      const WmDesksPrivateDeleteSavedDeskFunction&) = delete;
+  WmDesksPrivateDeleteSavedDeskFunction& operator=(
+      const WmDesksPrivateDeleteSavedDeskFunction&) = delete;
+
+  DECLARE_EXTENSION_FUNCTION("wmDesksPrivate.deleteSavedDesk",
+                             WMDESKSPRIVATE_DELETESAVEDDESK)
+
+ protected:
+  ~WmDesksPrivateDeleteSavedDeskFunction() override;
+
+  // ExtensionFunction:
+  ResponseAction Run() override;
+
+  void OnDeletedSavedDesk(std::string error_string);
+};
+
+class WmDesksPrivateRecallSavedDeskFunction : public ExtensionFunction {
+ public:
+  WmDesksPrivateRecallSavedDeskFunction();
+  WmDesksPrivateRecallSavedDeskFunction(
+      const WmDesksPrivateRecallSavedDeskFunction&) = delete;
+  WmDesksPrivateRecallSavedDeskFunction& operator=(
+      const WmDesksPrivateRecallSavedDeskFunction&) = delete;
+
+  DECLARE_EXTENSION_FUNCTION("wmDesksPrivate.recallSavedDesk",
+                             WMDESKSPRIVATE_RECALLSAVEDDESK)
+
+ protected:
+  ~WmDesksPrivateRecallSavedDeskFunction() override;
+
+  // ExtensionFunction:
+  ResponseAction Run() override;
+
+  void OnRecalledSavedDesk(std::string error_string, const base::GUID& desk_Id);
 };
 
 }  // namespace extensions

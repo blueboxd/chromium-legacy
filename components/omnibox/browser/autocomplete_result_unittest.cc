@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -41,6 +41,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/metrics_proto/omnibox_event.pb.h"
+#include "third_party/omnibox_proto/types.pb.h"
 
 using metrics::OmniboxEventProto;
 
@@ -106,7 +107,7 @@ class AutocompleteResultTest : public testing::Test {
     AutocompleteMatchType::Type type{AutocompleteMatchType::SEARCH_SUGGEST};
 
     // Suggestion Group ID for this suggestion
-    absl::optional<SuggestionGroupId> suggestion_group_id;
+    absl::optional<omnibox::GroupId> suggestion_group_id;
 
     // Inline autocompletion.
     std::string inline_autocompletion;
@@ -1200,7 +1201,7 @@ TEST_F(AutocompleteResultTest, SortAndCullAllowsNonMatchingZeroSuggestions) {
   AutocompleteInput input(u"https://secure-prefix",
                           metrics::OmniboxEventProto::OTHER,
                           TestSchemeClassifier());
-  input.set_focus_type(OmniboxFocusType::ON_FOCUS);
+  input.set_focus_type(metrics::OmniboxFocusType::INTERACTION_FOCUS);
 
   AutocompleteResult result;
   result.AppendMatches(matches);
@@ -1231,8 +1232,10 @@ TEST_F(AutocompleteResultTest, DemoteOnDeviceSearchSuggestions) {
   matches[4].type = AutocompleteMatchType::SEARCH_SUGGEST;
 
   // match1, match2 are set as on device head suggestion.
-  matches[1].subtypes = {64, 271, 123};
-  matches[2].subtypes = {64, 124, 271};
+  matches[1].subtypes = {omnibox::SUBTYPE_OMNIBOX_OTHER,
+                         omnibox::SUBTYPE_SUGGEST_2G_LITE};
+  matches[2].subtypes = {omnibox::SUBTYPE_OMNIBOX_OTHER,
+                         omnibox::SUBTYPE_SUGGEST_2G_LITE};
   matches[0].provider->type_ = AutocompleteProvider::TYPE_SEARCH;
   matches[1].provider->type_ = AutocompleteProvider::TYPE_ON_DEVICE_HEAD;
 
@@ -1859,8 +1862,8 @@ TEST_F(AutocompleteResultTest, SortAndCull_DemoteSuggestionGroups_ExceedLimit) {
       {{omnibox::kDynamicMaxAutocomplete,
         omnibox::kRetainSuggestionsWithHeaders}});
 
-  const auto group_1 = SuggestionGroupId::kNonPersonalizedZeroSuggest1;
-  const auto group_2 = SuggestionGroupId::kNonPersonalizedZeroSuggest2;
+  const auto group_1 = omnibox::GroupId::POLARIS_RESERVED_1;
+  const auto group_2 = omnibox::GroupId::POLARIS_RESERVED_2;
   TestData data[] = {
       {0, 4, 500, false, {}, AutocompleteMatchType::SEARCH_SUGGEST, group_1},
       {1, 2, 600, false, {}, AutocompleteMatchType::HISTORY_URL},
@@ -1876,8 +1879,8 @@ TEST_F(AutocompleteResultTest, SortAndCull_DemoteSuggestionGroups_ExceedLimit) {
   // Suggestion groups have SuggestionGroupPriority::kDefault priority by
   // default.
   SuggestionGroupsMap suggestion_groups_map;
-  suggestion_groups_map[group_1].header = u"1";
-  suggestion_groups_map[group_2].header = u"2";
+  suggestion_groups_map[group_1].group_config_info.set_header_text("1");
+  suggestion_groups_map[group_2].group_config_info.set_header_text("2");
 
   {
     AutocompleteInput typed_input(u"a", metrics::OmniboxEventProto::OTHER,
@@ -1905,7 +1908,8 @@ TEST_F(AutocompleteResultTest, SortAndCull_DemoteSuggestionGroups_ExceedLimit) {
   {
     AutocompleteInput zero_prefix_input(u"", metrics::OmniboxEventProto::NTP,
                                         TestSchemeClassifier());
-    zero_prefix_input.set_focus_type(OmniboxFocusType::ON_FOCUS);
+    zero_prefix_input.set_focus_type(
+        metrics::OmniboxFocusType::INTERACTION_FOCUS);
     AutocompleteResult result;
     result.MergeSuggestionGroupsMap(suggestion_groups_map);
     result.AppendMatches(matches);
@@ -1959,7 +1963,8 @@ TEST_F(AutocompleteResultTest, SortAndCull_DemoteSuggestionGroups_ExceedLimit) {
   {
     AutocompleteInput zero_prefix_input(u"", metrics::OmniboxEventProto::NTP,
                                         TestSchemeClassifier());
-    zero_prefix_input.set_focus_type(OmniboxFocusType::ON_FOCUS);
+    zero_prefix_input.set_focus_type(
+        metrics::OmniboxFocusType::INTERACTION_FOCUS);
     AutocompleteResult result;
     result.MergeSuggestionGroupsMap(suggestion_groups_map);
     result.AppendMatches(matches);
@@ -1993,8 +1998,8 @@ TEST_F(AutocompleteResultTest,
        {omnibox::kRetainSuggestionsWithHeaders, {}}},
       {{omnibox::kDynamicMaxAutocomplete}});
 
-  const auto group_1 = SuggestionGroupId::kNonPersonalizedZeroSuggest1;
-  const auto group_2 = SuggestionGroupId::kNonPersonalizedZeroSuggest2;
+  const auto group_1 = omnibox::GroupId::POLARIS_RESERVED_1;
+  const auto group_2 = omnibox::GroupId::POLARIS_RESERVED_2;
   TestData data[] = {
       {1, 1, 1100, true, {}, AutocompleteMatchType::SEARCH_SUGGEST},
       {2, 1, 1099, true, {}, AutocompleteMatchType::SEARCH_SUGGEST},
@@ -2013,8 +2018,8 @@ TEST_F(AutocompleteResultTest,
   // Suggestion groups have SuggestionGroupPriority::kDefault priority by
   // default.
   SuggestionGroupsMap suggestion_groups_map;
-  suggestion_groups_map[group_1].header = u"1";
-  suggestion_groups_map[group_2].header = u"2";
+  suggestion_groups_map[group_1].group_config_info.set_header_text("1");
+  suggestion_groups_map[group_2].group_config_info.set_header_text("2");
 
   {
     AutocompleteInput typed_input(u"a", metrics::OmniboxEventProto::OTHER,
@@ -2035,7 +2040,8 @@ TEST_F(AutocompleteResultTest,
   {
     AutocompleteInput zero_prefix_input(u"", metrics::OmniboxEventProto::NTP,
                                         TestSchemeClassifier());
-    zero_prefix_input.set_focus_type(OmniboxFocusType::ON_FOCUS);
+    zero_prefix_input.set_focus_type(
+        metrics::OmniboxFocusType::INTERACTION_FOCUS);
     AutocompleteResult result;
 
     result.MergeSuggestionGroupsMap(suggestion_groups_map);
@@ -2070,8 +2076,8 @@ TEST_F(AutocompleteResultTest,
        {omnibox::kRetainSuggestionsWithHeaders, {}}},
       {});
 
-  const auto group_1 = SuggestionGroupId::kNonPersonalizedZeroSuggest1;
-  const auto group_2 = SuggestionGroupId::kNonPersonalizedZeroSuggest2;
+  const auto group_1 = omnibox::GroupId::POLARIS_RESERVED_1;
+  const auto group_2 = omnibox::GroupId::POLARIS_RESERVED_2;
   TestData data[] = {
       {1, 1, 1100, true, {}, AutocompleteMatchType::SEARCH_SUGGEST},
       {2, 1, 1099, true, {}, AutocompleteMatchType::SEARCH_SUGGEST},
@@ -2089,10 +2095,10 @@ TEST_F(AutocompleteResultTest,
 
   // Set priorities that contradict the scores of the matches in groups.
   SuggestionGroupsMap suggestion_groups_map;
-  suggestion_groups_map[group_1].header = u"1";
+  suggestion_groups_map[group_1].group_config_info.set_header_text("1");
   suggestion_groups_map[group_1].priority =
       SuggestionGroupPriority::kRemoteZeroSuggest2;
-  suggestion_groups_map[group_2].header = u"2";
+  suggestion_groups_map[group_2].group_config_info.set_header_text("2");
   suggestion_groups_map[group_2].priority =
       SuggestionGroupPriority::kRemoteZeroSuggest1;
 
@@ -2116,7 +2122,8 @@ TEST_F(AutocompleteResultTest,
   {
     AutocompleteInput zero_prefix_input(u"", metrics::OmniboxEventProto::NTP,
                                         TestSchemeClassifier());
-    zero_prefix_input.set_focus_type(OmniboxFocusType::ON_FOCUS);
+    zero_prefix_input.set_focus_type(
+        metrics::OmniboxFocusType::INTERACTION_FOCUS);
     AutocompleteResult result;
 
     result.MergeSuggestionGroupsMap(suggestion_groups_map);
@@ -2178,6 +2185,28 @@ TEST_F(AutocompleteResultTest,
 
   AssertResultMatches(result, expected_data,
                       AutocompleteResult::GetMaxMatches());
+}
+
+TEST_F(AutocompleteResultTest, SortAndCullMaxHistoryClusterSuggestions) {
+  // Should limit history cluster suggestions to 1, even if there are no
+  // alternative suggestions to display.
+
+  ACMatches matches;
+  const AutocompleteMatchTestData data[] = {
+      {"url_1", AutocompleteMatchType::HISTORY_CLUSTER},
+      {"url_2", AutocompleteMatchType::HISTORY_CLUSTER},
+      {"url_3", AutocompleteMatchType::HISTORY_CLUSTER},
+  };
+  PopulateAutocompleteMatchesFromTestData(data, std::size(data), &matches);
+
+  AutocompleteInput input(u"a", metrics::OmniboxEventProto::OTHER,
+                          TestSchemeClassifier());
+  AutocompleteResult result;
+  result.AppendMatches(matches);
+  result.SortAndCull(input, template_url_service_.get());
+
+  ASSERT_EQ(result.size(), 1u);
+  EXPECT_EQ(result.match_at(0)->type, AutocompleteMatchType::HISTORY_CLUSTER);
 }
 
 TEST_F(AutocompleteResultTest, SortAndCullMaxURLMatches) {

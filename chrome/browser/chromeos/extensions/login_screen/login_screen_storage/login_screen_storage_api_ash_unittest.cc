@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -63,7 +63,7 @@ void LoginScreenStorageRetrieveError(
 class MockSessionManagerClient : public chromeos::FakeSessionManagerClient {
  public:
   MockSessionManagerClient() = default;
-  ~MockSessionManagerClient() = default;
+  ~MockSessionManagerClient() override = default;
 
   MOCK_METHOD4(LoginScreenStorageStore,
                void(const std::string& key,

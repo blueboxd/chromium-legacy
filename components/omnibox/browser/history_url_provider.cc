@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -15,6 +15,7 @@
 #include "base/location.h"
 #include "base/memory/raw_ptr.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/ranges/algorithm.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/single_thread_task_runner.h"
@@ -39,12 +40,12 @@
 #include "components/omnibox/browser/url_prefix.h"
 #include "components/omnibox/browser/verbatim_match.h"
 #include "components/prefs/pref_service.h"
-#include "components/search_engines/omnibox_focus_type.h"
 #include "components/search_engines/search_terms_data.h"
 #include "components/search_engines/template_url_service.h"
 #include "components/url_formatter/url_fixer.h"
 #include "components/url_formatter/url_formatter.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
+#include "third_party/metrics_proto/omnibox_focus_type.pb.h"
 #include "third_party/metrics_proto/omnibox_input_type.pb.h"
 #include "ui/base/page_transition_types.h"
 #include "url/gurl.h"
@@ -420,7 +421,7 @@ void HistoryURLProvider::Start(const AutocompleteInput& input,
   // Cancel any in-progress query.
   Stop(true, false);
 
-  if (input.focus_type() != OmniboxFocusType::DEFAULT ||
+  if (input.focus_type() != metrics::OmniboxFocusType::INTERACTION_DEFAULT ||
       (input.type() == metrics::OmniboxInputType::EMPTY))
     return;
 
@@ -1072,9 +1073,8 @@ size_t HistoryURLProvider::RemoveSubsequentMatchesOf(
 
   // Find the first occurrence of any URL in the redirect chain. We want to
   // keep this one since it is rated the highest.
-  history::HistoryMatches::iterator first(
-      std::find_first_of(matches->begin(), matches->end(), remove.begin(),
-                         remove.end(), history::HistoryMatch::EqualsGURL));
+  history::HistoryMatches::iterator first(base::ranges::find_first_of(
+      *matches, remove, history::HistoryMatch::EqualsGURL));
   DCHECK(first != matches->end()) << "We should have always found at least the "
                                      "original URL.";
 

@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -40,11 +40,6 @@ namespace chromeos {
 namespace default_app_order {
 class ExternalLoader;
 }
-namespace cros_healthd {
-namespace internal {
-class DataCollector;
-}
-}  // namespace cros_healthd
 }  // namespace chromeos
 
 namespace crosapi {
@@ -82,6 +77,7 @@ class GnubbyNotification;
 class IdleActionWarningObserver;
 class LoginScreenExtensionsStorageCleaner;
 class LowDiskNotification;
+class MultiCaptureNotification;
 class NetworkPrefStateObserver;
 class NetworkThrottlingObserver;
 class PSIMemoryMetrics;
@@ -92,6 +88,10 @@ class ShortcutMappingPrefService;
 class ShutdownPolicyForwarder;
 class SigninProfileHandler;
 class WebKioskAppManager;
+
+namespace cros_healthd::internal {
+class DataCollector;
+}
 
 namespace device_activity {
 class DeviceActivityController;
@@ -211,6 +211,7 @@ class ChromeBrowserMainPartsAsh : public ChromeBrowserMainPartsLinux {
   std::unique_ptr<LowDiskNotification> low_disk_notification_;
   std::unique_ptr<ArcKioskAppManager> arc_kiosk_app_manager_;
   std::unique_ptr<WebKioskAppManager> web_kiosk_app_manager_;
+  std::unique_ptr<MultiCaptureNotification> multi_capture_notification_;
 
   std::unique_ptr<ash::ShortcutMappingPrefService>
       shortcut_mapping_pref_service_;
@@ -252,7 +253,7 @@ class ChromeBrowserMainPartsAsh : public ChromeBrowserMainPartsLinux {
 
   std::unique_ptr<SessionTerminationManager> session_termination_manager_;
 
-  std::unique_ptr<chromeos::cros_healthd::internal::DataCollector>
+  std::unique_ptr<cros_healthd::internal::DataCollector>
       cros_healthd_data_collector_;
 
   // Set when PreProfileInit() is called. If PreMainMessageLoopRun() exits

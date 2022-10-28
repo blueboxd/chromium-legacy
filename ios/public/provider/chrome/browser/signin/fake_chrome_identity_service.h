@@ -1,4 +1,4 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -19,10 +19,10 @@ namespace ios {
 class FakeChromeIdentityService : public ChromeIdentityService {
  public:
   FakeChromeIdentityService();
-  virtual ~FakeChromeIdentityService();
+  ~FakeChromeIdentityService() override;
 
   // Convenience method that returns the instance of
-  // |FakeChromeIdentityService| from the ChromeBrowserProvider.
+  // `FakeChromeIdentityService` from the ChromeBrowserProvider.
   static FakeChromeIdentityService* GetInstanceFromChromeProvider();
 
   // ChromeIdentityService implementation.
@@ -56,7 +56,7 @@ class FakeChromeIdentityService : public ChromeIdentityService {
                     NSDictionary* user_info,
                     ios::MDMStatusCallback callback));
 
-  // Simulates |identity| removed from another Google app.
+  // Simulates `identity` removed from another Google app.
   void SimulateForgetIdentityFromOtherApp(ChromeIdentity* identity);
 
   // Simulates reloading the identities from the keychain by SSOAuth.
@@ -68,30 +68,30 @@ class FakeChromeIdentityService : public ChromeIdentityService {
   // Adds the identities given their name.
   void AddIdentities(NSArray* identitiesNames);
 
-  // Adds |identity| to the available identities. No-op if the identity
+  // Adds `identity` to the available identities. No-op if the identity
   // is already added.
   void AddIdentity(ChromeIdentity* identity);
 
   // When set to true, call to GetAccessToken() fakes a MDM error.
   void SetFakeMDMError(bool fakeMDMError);
 
-  // Adds a mapping from the |identity| to the capability name -> capability
+  // Adds a mapping from the `identity` to the capability name -> capability
   // result value used when calling FetchCapabilities.
-  // Assumes the |identity| has been added to the available identities.
+  // Assumes the `identity` has been added to the available identities.
   void SetCapabilities(ChromeIdentity* identity, NSDictionary* capabilities);
 
   // Waits until all asynchronous callbacks have been completed by the service.
   // Returns true on successful completion.
   bool WaitForServiceCallbacksToComplete();
 
-  // Triggers an update notification for |identity|.
+  // Triggers an update notification for `identity`.
   void TriggerIdentityUpdateNotification(ChromeIdentity* identity);
 
  protected:
   void FetchCapabilities(
       NSArray* capabilities,
       ChromeIdentity* identity,
-      ChromeIdentityCapabilitiesFetchCompletionBlock completion);
+      ChromeIdentityCapabilitiesFetchCompletionBlock completion) override;
 
  private:
   NSMutableArray<ChromeIdentity*>* identities_;

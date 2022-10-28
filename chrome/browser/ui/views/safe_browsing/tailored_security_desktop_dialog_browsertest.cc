@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -35,8 +35,7 @@ views::Widget* ShowTailoredSecurityEnabledDialog(Browser* browser) {
   views::NamedWidgetShownWaiter waiter(
       views::test::AnyWidgetTestPasskey{},
       safe_browsing::kTailoredSecurityNoticeDialog);
-  safe_browsing::ShowEnabledDialogForWebContents(
-      browser, browser->tab_strip_model()->GetActiveWebContents());
+  safe_browsing::ShowEnabledDialogForBrowser(browser);
 
   return waiter.WaitIfNeededAndGet();
 }
@@ -45,8 +44,7 @@ views::Widget* ShowTailoredSecurityDisabledDialog(Browser* browser) {
   views::NamedWidgetShownWaiter waiter(
       views::test::AnyWidgetTestPasskey{},
       safe_browsing::kTailoredSecurityNoticeDialog);
-  safe_browsing::ShowDisabledDialogForWebContents(
-      browser, browser->tab_strip_model()->GetActiveWebContents());
+  safe_browsing::ShowDisabledDialogForBrowser(browser);
 
   return waiter.WaitIfNeededAndGet();
 }
@@ -108,11 +106,9 @@ class TailoredSecurityDesktopDialogTest
         ui::ScopedAnimationDurationScaleMode::ZERO_DURATION);
     const std::string& actual_name = name.substr(0, name.find("/"));
     if (actual_name == "enabledDialog") {
-      safe_browsing::ShowEnabledDialogForWebContents(
-          browser(), browser()->tab_strip_model()->GetActiveWebContents());
+      safe_browsing::ShowEnabledDialogForBrowser(browser());
     } else if (actual_name == "disabledDialog") {
-      safe_browsing::ShowDisabledDialogForWebContents(
-          browser(), browser()->tab_strip_model()->GetActiveWebContents());
+      safe_browsing::ShowDisabledDialogForBrowser(browser());
     } else {
       FAIL() << "No dialog case defined for this string: " << name;
     }

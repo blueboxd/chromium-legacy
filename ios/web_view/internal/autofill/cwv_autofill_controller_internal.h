@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,7 +10,6 @@
 
 #include "components/autofill/ios/browser/autofill_driver_ios_bridge.h"
 #import "components/autofill/ios/form_util/form_activity_observer_bridge.h"
-#import "components/password_manager/ios/ios_password_manager_driver.h"
 #import "components/password_manager/ios/shared_password_controller.h"
 #import "ios/web/public/web_state_observer_bridge.h"
 #import "ios/web_view/internal/autofill/cwv_autofill_client_ios_bridge.h"
@@ -55,8 +54,6 @@ class WebState;
     passwordManagerClient:
         (std::unique_ptr<ios_web_view::WebViewPasswordManagerClient>)
             passwordManagerClient
-    passwordManagerDriver:
-        (std::unique_ptr<IOSPasswordManagerDriver>)passwordManagerDriver
        passwordController:(SharedPasswordController*)passwordController
         applicationLocale:(const std::string&)applicationLocale
     NS_DESIGNATED_INITIALIZER;

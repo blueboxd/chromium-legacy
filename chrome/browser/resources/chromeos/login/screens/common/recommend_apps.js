@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -200,12 +200,24 @@ class RecommendAppsElement extends RecommendAppsElementBase {
               const generateItemScript = 'generateContents("' + app.icon +
                   '", "' + app.name + '", "' + app.package_name + '");';
               const generateContents = {code: generateItemScript};
-              appListView.executeScript(generateContents);
+              appListView.executeScript(generateContents, () => {
+                if (chrome.runtime.lastError) {
+                  console.error(
+                      'Generate contents script failed: ' +
+                      chrome.runtime.lastError.message);
+                }
+              });
             });
 
             const getNumOfSelectedAppsScript = 'sendNumberOfSelectedApps();';
-            appListView.executeScript({code: getNumOfSelectedAppsScript});
-
+            appListView.executeScript(
+                {code: getNumOfSelectedAppsScript}, () => {
+                  if (chrome.runtime.lastError) {
+                    console.error(
+                        'Could not get a number of selected apps: ' +
+                        chrome.runtime.lastError.message);
+                  }
+                });
             this.onFullyLoaded_();
           });
     });
@@ -270,7 +282,12 @@ class RecommendAppsElement extends RecommendAppsElementBase {
     // Can't use this.$.appView here as the element is in a <dom-if>.
     const appListView = this.shadowRoot.querySelector('#appView');
     if (!this.isOobeNewRecommendAppsEnabled_) {
-      appListView.executeScript({code: 'selectAll();'});
+      appListView.executeScript({code: 'selectAll();'}, () => {
+        if (chrome.runtime.lastError) {
+          console.error(
+              'Select all script failed: ' + chrome.runtime.lastError.message);
+        }
+      });
       return;
     }
   }

@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -39,7 +39,6 @@ import './kerberos_page/kerberos_page.js';
 import './multidevice_page/multidevice_page.js';
 import './nearby_share_page/nearby_share_receive_dialog.js';
 import './nearby_share_page/nearby_share_subpage.js';
-import './personalization_page/change_picture.js';
 import './personalization_page/personalization_page.js';
 import './os_a11y_page/change_dictation_locale_dialog.js';
 import './os_about_page/channel_switcher_dialog.js';
@@ -159,6 +158,7 @@ export {AppManagementStore} from './os_apps_page/app_management_page/store.js';
 export {AppManagementStoreClientImpl} from './os_apps_page/app_management_page/store_client.js';
 export {setAppNotificationProviderForTesting} from './os_apps_page/app_notifications_page/mojo_interface_provider.js';
 export {OsBluetoothDevicesSubpageBrowserProxyImpl} from './os_bluetooth_page/os_bluetooth_devices_subpage_browser_proxy.js';
+export {FastPairSavedDevicesOptInStatus} from './os_bluetooth_page/settings_fast_pair_constants.js';
 export {osPageVisibility} from './os_page_visibility.js';
 export {AccountManagerBrowserProxy, AccountManagerBrowserProxyImpl} from './os_people_page/account_manager_browser_proxy.js';
 export {FingerprintBrowserProxyImpl, FingerprintResultType} from './os_people_page/fingerprint_browser_proxy.js';
@@ -170,9 +170,7 @@ export {OsResetBrowserProxyImpl} from './os_reset_page/os_reset_browser_proxy.js
 export {routes} from './os_route.js';
 export {SearchEngine, SearchEnginesBrowserProxy, SearchEnginesBrowserProxyImpl, SearchEnginesInfo} from './os_search_page/search_engines_browser_proxy.js';
 export {ParentalControlsBrowserProxy, ParentalControlsBrowserProxyImpl} from './parental_controls_page/parental_controls_browser_proxy.js';
-export {ChangePictureBrowserProxy, ChangePictureBrowserProxyImpl} from './personalization_page/change_picture_browser_proxy.js';
 export {PersonalizationHubBrowserProxy, PersonalizationHubBrowserProxyImpl} from './personalization_page/personalization_hub_browser_proxy.js';
-export {WallpaperBrowserProxyImpl} from './personalization_page/wallpaper_browser_proxy.js';
 export {getPersonalizationSearchHandler, setPersonalizationSearchHandlerForTesting} from './personalization_search_handler.js';
 export {getSettingsSearchHandler, setSettingsSearchHandlerForTesting} from './settings_search_handler.js';
 export {

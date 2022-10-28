@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -14,7 +14,7 @@ namespace test {
 // background tasks have completed
 void WaitForBackgroundTasks();
 
-// Blocks until |web_state| navigation and background tasks are
+// Blocks until `web_state` navigation and background tasks are
 // completed. Returns false when timed out.
 bool WaitUntilLoaded(WebState* web_state);
 

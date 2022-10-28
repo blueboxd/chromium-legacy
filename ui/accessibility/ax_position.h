@@ -252,6 +252,24 @@ class AXPosition {
     return new_position;
   }
 
+  static AXPositionInstance CreateTreePositionAtStartOfAnchor(
+      const AXNode& anchor) {
+    // Initialize the child index:
+    // For a leaf, the child index will be BEFORE_TEXT.
+    // Otherwise the child index will be 0.
+    int child_index = IsLeafNodeForTreePosition(anchor) ? BEFORE_TEXT : 0;
+    AXTreeID tree_id = anchor.tree()->GetAXTreeID();
+    return CreateTreePosition(tree_id, anchor.id(), child_index);
+  }
+
+  static AXPositionInstance CreateTreePositionAtEndOfAnchor(
+      const AXNode& anchor) {
+    // Initialize the child index to the anchor's child count.
+    AXTreeID tree_id = anchor.tree()->GetAXTreeID();
+    return CreateTreePosition(tree_id, anchor.id(),
+                              anchor.GetChildCountCrossingTreeBoundary());
+  }
+
   static AXPositionInstance CreateTextPosition(
       AXTreeID tree_id,
       AXNodeID anchor_id,
@@ -394,15 +412,20 @@ class AXPosition {
 
   // Helper for logging the position, the AXTreeManager and the anchor node.
   std::string ToDebugString() const {
-    if (IsNullPosition()) {
-      return "* Position: null";
-    }
-    DCHECK(GetAnchor());
-    DCHECK(GetManager());
     std::ostringstream str;
-    str << "* Position: " << ToString()
-        << "\n* Manager: " << GetManager()->ax_tree()->data().ToString()
-        << "\n* Anchor node: " << *GetAnchor();
+    str << "* Position: " << ToString();
+    if (GetAnchor()) {
+      str << "\n* Anchor node: " << *GetAnchor();
+      if (IsTreePosition()) {
+        str << "\n* AnchorChildCount(): " << AnchorChildCount()
+            << "\n* IsLeaf(): " << IsLeaf();
+      } else {
+        str << "\n* TextOffset: " << text_offset()
+            << "\n* MaxTextOffset: " << MaxTextOffset();
+      }
+    }
+    if (GetManager())
+      str << "\n* Tree: " << GetManager()->ax_tree()->data().ToString();
     return str.str();
   }
 
@@ -412,13 +435,86 @@ class AXPosition {
 
   AXTreeManager* GetManager() const { return AXTreeManager::FromID(tree_id()); }
 
+  // Returns true if this position is within an "empty object", i.e. within a
+  // node that should contribute no text to the accessibility tree's text
+  // representation. For example, returns true if this position is within an
+  // empty control, such as an empty text field or (on Windows) a collapsed
+  // popup menu. On some platforms, such nodes need to be represented by an
+  // "object replacement character". This character is inserted purely for
+  // navigational purposes. This is because empty controls still need to act as
+  // a word and character boundary on those platforms.
+  static bool IsEmptyObject(const AXNode& node) {
+    // A collapsed popup button that contains a menu list popup (i.e, the exact
+    // subtree representation we get from a collapsed <select> element on
+    // Windows) should not expose its descendants even though they are not
+    // ignored.
+    if (node.IsCollapsedMenuListPopUpButton())
+      return true;
+
+    // All anchor nodes that are empty leaf nodes should be treated as empty
+    // objects. Empty leaf nodes are defined as nodes whose descendants are (A)
+    // not exposed to any platform accessibility APIs and (B) do not contribute
+    // any text to the tree's text representation. They may have unignored
+    // descendants however. They do not have any text content, hence they are
+    // empty from our perspective. For example, an empty text field may still
+    // have an unignored generic container inside it.
+    if (!node.IsEmptyLeaf())
+      return false;
+
+    // One exception to the above rule that all empty leaf nodes are empty
+    // objects in AXPosition are <embed> and <object> elements that have
+    // children. They should not be treated as empty objects even when their
+    // descendants are all ignored so that text navigation won't stop on such
+    // nodes.
+    ax::mojom::Role role = node.GetRole();
+    if ((role == ax::mojom::Role::kEmbeddedObject ||
+         role == ax::mojom::Role::kPluginObject) &&
+        node.GetChildCountCrossingTreeBoundary()) {
+      return false;
+    }
+
+    // Nodes that are skipped during text navigation should also be "empty
+    // objects".
+    //
+    // Note that nodes that are skipped during text navigation could still have
+    // positions anchored to them, e.g. for determining if a paragraph boundary
+    // should be reported before or after such a node. Descending into the
+    // children of such objects could add unnecessary extra text boundaries.
+    if (node.IsIgnoredForTextNavigation())
+      return true;
+
+    // Another exception to the rule that all leaf nodes in the accessibility
+    // tree should be "empty objects" are kRootWebArea, kPdfRoot, kIframe,
+    // kIframePresentational, and text nodes. We don't want text navigation to
+    // stop on any of the above roles. On the other hand, nodes that only have
+    // ignored children (e.g., a button that contains only an empty ignored div)
+    // need to be treated as leaf nodes.
+    //
+    // Note that we have already determined that the anchor at this position
+    // doesn't have an unignored child, making this a leaf tree or text
+    // position, or a leaf's descendant.
+    return (!IsPlatformDocument(role) && !IsIframe(role) && !node.IsText());
+  }
+
+  // Return true if the node is a leaf, or has no selectable text content.
+  static bool IsLeafNodeForTreePosition(const AXNode& node) {
+    // Unignored text list markers expose text on their own, and all their
+    // descendants are ignored. Make sure they are treated as leaves, not empty
+    // containers.
+    if (node.GetRole() == ax::mojom::Role::kListMarker && !node.IsIgnored() &&
+        !node.GetUnignoredChildCountCrossingTreeBoundary()) {
+      return true;
+    }
+    return !node.GetChildCountCrossingTreeBoundary() || IsEmptyObject(node);
+  }
+
   AXNode* GetAnchor() const {
     if (tree_id_ == AXTreeIDUnknown() || anchor_id_ == kInvalidAXNodeID)
       return nullptr;
 
     const AXTreeManager* manager = GetManager();
     if (manager)
-      return manager->GetNodeFromTree(anchor_id());
+      return manager->GetNode(anchor_id());
 
     return nullptr;
   }
@@ -519,12 +615,11 @@ class AXPosition {
   bool IsLeaf() const {
     if (IsNullPosition())
       return false;
-    // Unignored text list markers expose text on their own, and all their
-    // descendants are ignored. Make sure they are treated as leaves, not empty
-    // containers.
-    if (IsInUnignoredTextListMarker())
-      return true;
-    return !AnchorChildCount() || IsInEmptyObject();
+
+    AXNode* anchor = GetAnchor();
+    DCHECK(anchor);
+
+    return IsLeafNodeForTreePosition(*anchor);
   }
 
   // Returns true if this is a valid position, e.g. the child_index_ or
@@ -2151,9 +2246,7 @@ class AXPosition {
       case AXPositionKind::NULL_POSITION:
         return CreateNullPosition();
       case AXPositionKind::TREE_POSITION:
-        if (IsLeaf())
-          return CreateTreePosition(tree_id_, anchor_id_, BEFORE_TEXT);
-        return CreateTreePosition(tree_id_, anchor_id_, 0 /* child_index */);
+        return CreateTreePositionAtStartOfAnchor(*GetAnchor());
       case AXPositionKind::TEXT_POSITION:
         return CreateTextPosition(tree_id_, anchor_id_, 0 /* text_offset */,
                                   ax::mojom::TextAffinity::kDownstream);
@@ -2272,15 +2365,8 @@ class AXPosition {
       case AXPositionKind::NULL_POSITION:
         NOTREACHED();
         return CreateNullPosition();
-      case AXPositionKind::TREE_POSITION: {
-        AXPositionInstance child_position =
-            CreateTreePosition(tree_id, child_id, 0 /* child_index */);
-        // If the child's anchor is a leaf node, make this a "before text"
-        // position.
-        if (child_position->IsLeaf())
-          child_position->child_index_ = BEFORE_TEXT;
-        return child_position;
-      }
+      case AXPositionKind::TREE_POSITION:
+        return CreateTreePositionAtStartOfAnchor(*child_anchor);
       case AXPositionKind::TEXT_POSITION:
         return CreateTextPosition(tree_id, child_id, 0 /* text_offset */,
                                   ax::mojom::TextAffinity::kDownstream);
@@ -3501,13 +3587,11 @@ class AXPosition {
       return SlowCompareTo(other);
 
     AXPositionInstance this_uncommon_tree_position =
-        CreateTreePosition(our_ancestors.top()->tree()->GetAXTreeID(),
-                           our_ancestors.top()->id(), 0 /*child_index*/);
+        CreateTreePositionAtStartOfAnchor(*our_ancestors.top());
     int this_uncommon_ancestor_index =
         this_uncommon_tree_position->AnchorIndexInParent();
     AXPositionInstance other_uncommon_tree_position =
-        CreateTreePosition(other_ancestors.top()->tree()->GetAXTreeID(),
-                           other_ancestors.top()->id(), 0 /*child_index*/);
+        CreateTreePositionAtStartOfAnchor(*other_ancestors.top());
     int other_uncommon_ancestor_index =
         other_uncommon_tree_position->AnchorIndexInParent();
     DCHECK_NE(this_uncommon_ancestor_index, other_uncommon_ancestor_index)
@@ -3877,68 +3961,11 @@ class AXPosition {
       text_offset_ = max_text_offset;
   }
 
-  // Returns true if this position is within an "empty object", i.e. within a
-  // node that should contribute no text to the accessibility tree's text
-  // representation. For example, returns true if this position is within an
-  // empty control, such as an empty text field or (on Windows) a collapsed
-  // popup menu. On some platforms, such nodes need to be represented by an
-  // "object replacement character". This character is inserted purely for
-  // navigational purposes. This is because empty controls still need to act as
-  // a word and character boundary on those platforms.
   bool IsInEmptyObject() const {
     if (IsNullPosition())
       return false;
 
-    // A collapsed popup button that contains a menu list popup (i.e, the exact
-    // subtree representation we get from a collapsed <select> element on
-    // Windows) should not expose its descendants even though they are not
-    // ignored.
-    if (GetAnchor()->IsCollapsedMenuListPopUpButton())
-      return true;
-
-    // All anchor nodes that are empty leaf nodes should be treated as empty
-    // objects. Empty leaf nodes are defined as nodes whose descendants are (A)
-    // not exposed to any platform accessibility APIs and (B) do not contribute
-    // any text to the tree's text representation. They may have unignored
-    // descendants however. They do not have any text content, hence they are
-    // empty from our perspective. For example, an empty text field may still
-    // have an unignored generic container inside it.
-    if (!GetAnchor()->IsEmptyLeaf())
-      return false;
-
-    // One exception to the above rule that all empty leaf nodes are empty
-    // objects in AXPosition are <embed> and <object> elements that have
-    // children. They should not be treated as empty objects even when their
-    // descendants are all ignored so that text navigation won't stop on such
-    // nodes.
-    if ((GetAnchorRole() == ax::mojom::Role::kEmbeddedObject ||
-         GetAnchorRole() == ax::mojom::Role::kPluginObject) &&
-        AnchorChildCount() > 0) {
-      return false;
-    }
-
-    // Nodes that are skipped during text navigation should also be "empty
-    // objects".
-    //
-    // Note that nodes that are skipped during text navigation could still have
-    // positions anchored to them, e.g. for determining if a paragraph boundary
-    // should be reported before or after such a node. Descending into the
-    // children of such objects could add unnecessary extra text boundaries.
-    if (GetAnchor()->IsIgnoredForTextNavigation())
-      return true;
-
-    // Another exception to the rule that all leaf nodes in the accessibility
-    // tree should be "empty objects" are kRootWebArea, kPdfRoot, kIframe,
-    // kIframePresentational, and text nodes. We don't want text navigation to
-    // stop on any of the above roles. On the other hand, nodes that only have
-    // ignored children (e.g., a button that contains only an empty ignored div)
-    // need to be treated as leaf nodes.
-    //
-    // Note that we have already determined that the anchor at this position
-    // doesn't have an unignored child, making this a leaf tree or text
-    // position, or a leaf's descendant.
-    return (!IsPlatformDocument(GetAnchorRole()) &&
-            !IsIframe(GetAnchorRole()) && !IsInTextObject());
+    return IsEmptyObject(*GetAnchor());
   }
 
   bool IsInUnignoredEmptyObject() const {
@@ -4469,11 +4496,6 @@ class AXPosition {
                                    const AXPosition& move_to,
                                    const AXMoveType type,
                                    const AXMoveDirection direction)>;
-
-  bool IsInUnignoredTextListMarker() const {
-    return GetAnchorRole() == ax::mojom::Role::kListMarker &&
-           !GetAnchor()->IsIgnored() && !AnchorUnignoredChildCount();
-  }
 
   // A text span is defined by a series of inline text boxes that make up a
   // single static text object.

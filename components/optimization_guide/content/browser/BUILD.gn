@@ -1,4 +1,4 @@
-# Copyright 2021 The Chromium Authors. All rights reserved.
+# Copyright 2021 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -21,6 +21,8 @@ static_library("browser") {
     "page_text_dump_result.h",
     "page_text_observer.cc",
     "page_text_observer.h",
+    "salient_image_retriever.cc",
+    "salient_image_retriever.h",
   ]
   if (build_with_tflite_lib) {
     sources += [

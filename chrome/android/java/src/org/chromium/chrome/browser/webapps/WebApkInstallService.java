@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -15,7 +15,6 @@ import androidx.core.app.NotificationCompat;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.notifications.NotificationUmaTracker;
 import org.chromium.chrome.browser.notifications.NotificationWrapperBuilderFactory;
 import org.chromium.chrome.browser.notifications.channels.ChromeChannelDefinitions;
@@ -81,9 +80,7 @@ public class WebApkInstallService {
         Context context = ContextUtils.getApplicationContext();
         String channelId;
         int preOPriority;
-        if (isCompleted
-                && ChromeFeatureList.isEnabled(
-                        ChromeFeatureList.WEB_APK_INSTALL_COMPLETE_NOTIFICATION)) {
+        if (isCompleted) {
             channelId = ChromeChannelDefinitions.ChannelId.WEBAPPS;
             preOPriority = NotificationCompat.PRIORITY_HIGH;
         } else {

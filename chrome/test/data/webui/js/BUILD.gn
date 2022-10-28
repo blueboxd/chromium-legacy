@@ -1,4 +1,4 @@
-# Copyright 2022 The Chromium Authors. All rights reserved.
+# Copyright 2022 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -16,7 +16,6 @@ ts_library("build_ts") {
     "color_utils_test.ts",
     "cr_test.ts",
     "custom_element_test.ts",
-    "i18n_behavior_test.js",
     "i18n_mixin_test.ts",
     "icon_test.ts",
     "load_time_data_test.ts",

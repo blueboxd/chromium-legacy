@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -60,14 +60,14 @@ DevToolsWindowTesting* DevToolsWindowTesting::Get(DevToolsWindow* window) {
 // static
 DevToolsWindowTesting* DevToolsWindowTesting::Find(DevToolsWindow* window) {
   if (!g_devtools_window_testing_instances.IsCreated())
-    return NULL;
+    return nullptr;
   DevToolsWindowTestings* instances =
       g_devtools_window_testing_instances.Pointer();
   for (auto it(instances->begin()); it != instances->end(); ++it) {
     if ((*it)->devtools_window_ == window)
       return *it;
   }
-  return NULL;
+  return nullptr;
 }
 
 Browser* DevToolsWindowTesting::browser() {

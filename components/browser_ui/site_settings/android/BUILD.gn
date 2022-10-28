@@ -1,4 +1,4 @@
-# Copyright 2020 The Chromium Authors. All rights reserved.
+# Copyright 2020 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -38,6 +38,11 @@ source_set("android") {
   ]
 }
 
+# Constants only target without dependencies to allow embedders to only include relevant code.
+android_library("constants_java") {
+  sources = [ "java/src/org/chromium/components/browser_ui/site_settings/SingleCategorySettingsConstants.java" ]
+}
+
 android_library("java") {
   sources = [
     "java/src/org/chromium/components/browser_ui/site_settings/AddExceptionPreference.java",
@@ -49,6 +54,7 @@ android_library("java") {
     "java/src/org/chromium/components/browser_ui/site_settings/ClearWebsiteStorageDialog.java",
     "java/src/org/chromium/components/browser_ui/site_settings/ContentSettingException.java",
     "java/src/org/chromium/components/browser_ui/site_settings/ContentSettingsResources.java",
+    "java/src/org/chromium/components/browser_ui/site_settings/FPSCookieSettings.java",
     "java/src/org/chromium/components/browser_ui/site_settings/ForwardingManagedPreferenceDelegate.java",
     "java/src/org/chromium/components/browser_ui/site_settings/FourStateCookieSettingsPreference.java",
     "java/src/org/chromium/components/browser_ui/site_settings/GroupedWebsitesSettings.java",
@@ -85,6 +91,7 @@ android_library("java") {
     "//base:jni_java",
     "//build/android:build_java",
     "//components/browser_ui/settings/android:java",
+    "//components/browser_ui/site_settings/android:constants_java",
     "//components/browser_ui/styles/android:java",
     "//components/browser_ui/widget/android:java",
     "//components/content_settings/android:content_settings_enums_java",
@@ -130,6 +137,18 @@ android_library("javatests") {
   ]
 }
 
+robolectric_library("junit") {
+  sources = [ "junit/src/org/chromium/components/browser_ui/site_settings/AddExceptionPreferenceUnitTest.java" ]
+
+  deps = [
+    ":java",
+    "//base:base_java_test_support",
+    "//base:base_junit_test_support",
+    "//third_party/junit",
+    "//third_party/mockito:mockito_java",
+  ]
+}
+
 android_resources("java_resources") {
   sources = [
     "java/res/drawable-hdpi/ic_volume_up_grey600_24dp.png",
@@ -167,6 +186,7 @@ android_resources("java_resources") {
     "java/res/drawable-xxxhdpi/permission_protected_media.png",
     "java/res/drawable-xxxhdpi/settings_sensors.png",
     "java/res/drawable-xxxhdpi/web_asset.png",
+    "java/res/drawable/ic_block.xml",
     "java/res/drawable/ic_person_24dp.xml",
     "java/res/drawable/settings_bluetooth.xml",
     "java/res/layout/add_site_dialog.xml",
@@ -180,6 +200,7 @@ android_resources("java_resources") {
     "java/res/values/ids.xml",
     "java/res/xml/all_site_preferences.xml",
     "java/res/xml/all_site_preferences_v2.xml",
+    "java/res/xml/fps_cookie_settings.xml",
     "java/res/xml/grouped_websites_preferences.xml",
     "java/res/xml/single_website_preferences.xml",
     "java/res/xml/site_settings_preferences.xml",

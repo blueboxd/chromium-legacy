@@ -25,6 +25,7 @@
 #include "base/metrics/histogram_functions.h"
 #include "services/network/public/mojom/content_security_policy.mojom-blink-forward.h"
 #include "third_party/blink/public/common/features.h"
+#include "third_party/blink/public/common/frame/fenced_frame_sandbox_flags.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-blink.h"
 #include "third_party/blink/public/mojom/frame/color_scheme.mojom-blink.h"
 #include "third_party/blink/public/mojom/frame/frame.mojom-blink.h"
@@ -170,26 +171,9 @@ bool CheckAndRecordIfShouldLazilyLoadFrame(const Document& document,
   if (is_loading_attr_lazy)
     return true;
 
-  // When LazyAds and LazyEmbeds cause problems, the user might reload the page
-  // to fix the problem. Also, the user is likely to avoid reloading the page
-  // when they submit forms. So skips LazyEmbeds and LazyAds in the following
-  // conditions.
-  // - Reload a page.
-  // - Submit a form.
-  // - Resubmit a form.
-  // The reason why we use DocumentLoader::GetNavigationType() instead of
-  // DocumentLoader::LoadType() is that DocumentLoader::LoadType() is reset to
-  // WebFrameLoadType::kStandard on DidFinishNavigation(). When JavaScript adds
-  // iframes after navigation, DocumentLoader::LoadType() always returns
-  // WebFrameLoadType::kStandard. DocumentLoader::GetNavigationType() doesn't
-  // have this problem.
   Document& top_document = document.TopDocument();
-  WebNavigationType navigation_type =
-      top_document.Loader() ? top_document.Loader()->GetNavigationType()
-                            : WebNavigationType::kWebNavigationTypeOther;
-  if (navigation_type == WebNavigationType::kWebNavigationTypeReload ||
-      navigation_type == WebNavigationType::kWebNavigationTypeFormSubmitted ||
-      navigation_type == WebNavigationType::kWebNavigationTypeFormResubmitted) {
+  if (top_document.Loader() &&
+      top_document.Loader()->IsReloadedOrFormSubmitted()) {
     return false;
   }
 
@@ -674,18 +658,21 @@ bool HTMLFrameOwnerElement::LoadOrRedirectSubframe(
   // https://docs.google.com/document/d/1ijTZJT3DHQ1ljp4QQe4E4XCCRaYAxmInNzN1SzeJM8s/edit.
   if (ContainingShadowRoot() && ContainingShadowRoot()->IsUserAgent() &&
       IsA<HTMLFencedFrameElement>(ContainingShadowRoot()->host())) {
-    // Note that if a fenced frame's `is_fenced` status or `mode` attribute ever
-    // changes, the browser process will bad-message the renderer since this
-    // should never happen. Therefore it is safe to just naively always set it
-    // here because:
+    // Note that if a fenced frame's `is_fenced`, `mode`, or `sandbox_flags`
+    // attribute ever changes, the browser process will terminate the renderer
+    // since this should never happen. Therefore it is safe to just naively
+    // always set it here because:
     //   - A fenced frame always has `is_fenced = true`
     //   - A fenced frame's mode is only settable once, enforced by
     //     `HTMLFencedFrameElement::ParseAttribute()` as well as the browser
     //     process
+    //   - A fenced frame's sandbox flags must be set to
+    //     kFencedFrameForcedSandboxFlags
     frame_policy_.is_fenced = true;
     frame_policy_.fenced_frame_mode =
         DynamicTo<HTMLFencedFrameElement>(ContainingShadowRoot()->host())
             ->GetMode();
+    frame_policy_.sandbox_flags = blink::kFencedFrameForcedSandboxFlags;
   }
 
   // Update the |should_lazy_load_children_| value according to the "loading"

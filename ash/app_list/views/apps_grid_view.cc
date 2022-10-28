@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -41,6 +41,7 @@
 #include "base/cxx17_backports.h"
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
+#include "base/ranges/algorithm.h"
 #include "ui/aura/window.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -884,8 +885,8 @@ void AppsGridView::FolderHidden(const std::string& item_id) {
 
   gfx::Transform scale;
   scale.Scale(0.5, 0.5);
-  scale = gfx::TransformAboutPivot(item_view->GetLocalBounds().CenterPoint(),
-                                   scale);
+  scale = gfx::TransformAboutPivot(
+      gfx::RectF(item_view->GetLocalBounds()).CenterPoint(), scale);
   animation.Once()
       .SetDuration(kFolderItemFadeOutDuration)
       .SetTransform(item_view->layer(), scale, gfx::Tween::FAST_OUT_LINEAR_IN)
@@ -2786,10 +2787,9 @@ AppListItemView* AppsGridView::GetViewDisplayedAtSlotOnCurrentPage(
   tile_rect.Offset(CalculateTransitionOffset(GetSelectedPage()));
 
   const auto& entries = view_model_.entries();
-  const auto iter =
-      std::find_if(entries.begin(), entries.end(), [&](const auto& entry) {
-        return entry.view->bounds() == tile_rect && entry.view != drag_view_;
-      });
+  const auto iter = base::ranges::find_if(entries, [&](const auto& entry) {
+    return entry.view->bounds() == tile_rect && entry.view != drag_view_;
+  });
   return iter == entries.end() ? nullptr
                                : static_cast<AppListItemView*>(iter->view);
 }
@@ -3010,10 +3010,9 @@ bool AppsGridView::IsValidReorderTargetIndex(const GridIndex& index) const {
 
 size_t AppsGridView::GetModelIndexOfItem(const AppListItem* item) const {
   const auto& entries = view_model_.entries();
-  const auto iter =
-      std::find_if(entries.begin(), entries.end(), [item](const auto& entry) {
-        return static_cast<AppListItemView*>(entry.view)->item() == item;
-      });
+  const auto iter = base::ranges::find(entries, item, [](const auto& entry) {
+    return static_cast<AppListItemView*>(entry.view)->item();
+  });
   return static_cast<size_t>(std::distance(entries.begin(), iter));
 }
 

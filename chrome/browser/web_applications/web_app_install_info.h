@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -242,9 +242,6 @@ struct WebAppInstallInfo {
   // Whether the page is marked as mobile-capable, including apple specific meta
   // tag.
   MobileCapable mobile_capable = MOBILE_CAPABLE_UNSPECIFIED;
-
-  // The color to use if an icon needs to be generated for the web app.
-  SkColor generated_icon_color = SK_ColorTRANSPARENT;
 
   // The color to use for the web app frame.
   absl::optional<SkColor> theme_color;

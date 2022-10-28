@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,17 +13,17 @@
 #import "components/search_engines/template_url_prepopulate_data.h"
 #import "components/search_engines/template_url_service.h"
 #import "components/sync/driver/sync_service.h"
-#import "components/sync/driver/test_sync_service.h"
+#import "components/sync/test/test_sync_service.h"
 #import "components/sync_preferences/pref_service_mock_factory.h"
 #import "components/sync_preferences/pref_service_syncable.h"
-#import "ios/chrome/browser/application_context.h"
+#import "ios/chrome/browser/application_context/application_context.h"
 #import "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #import "ios/chrome/browser/browsing_data/browsing_data_features.h"
 #import "ios/chrome/browser/browsing_data/cache_counter.h"
 #import "ios/chrome/browser/browsing_data/fake_browsing_data_remover.h"
 #import "ios/chrome/browser/net/crurl.h"
-#import "ios/chrome/browser/pref_names.h"
 #import "ios/chrome/browser/prefs/browser_prefs.h"
+#import "ios/chrome/browser/prefs/pref_names.h"
 #import "ios/chrome/browser/search_engines/template_url_service_factory.h"
 #import "ios/chrome/browser/signin/authentication_service.h"
 #import "ios/chrome/browser/signin/authentication_service_delegate_fake.h"
@@ -182,9 +182,19 @@ TEST_F(ClearBrowsingDataManagerTest, TestModel) {
   [manager_ loadModel:model_];
 
   EXPECT_EQ(3, [model_ numberOfSections]);
-  EXPECT_EQ(1, [model_ numberOfItemsInSection:0]);
-  EXPECT_EQ(5, [model_ numberOfItemsInSection:1]);
-  EXPECT_EQ(0, [model_ numberOfItemsInSection:2]);
+  EXPECT_EQ(
+      1,
+      [model_ numberOfItemsInSection:[model_ sectionForSectionIdentifier:
+                                                 SectionIdentifierTimeRange]]);
+  EXPECT_EQ(
+      5,
+      [model_ numberOfItemsInSection:[model_ sectionForSectionIdentifier:
+                                                 SectionIdentifierDataTypes]]);
+  EXPECT_EQ(
+      0,
+      [model_
+          numberOfItemsInSection:[model_ sectionForSectionIdentifier:
+                                             SectionIdentifierSavedSiteData]]);
 }
 
 // Tests model is set up with correct number of items and sections if signed in
@@ -195,14 +205,29 @@ TEST_F(ClearBrowsingDataManagerTest, TestModelSignedInSyncOff) {
       syncer::SyncService::DISABLE_REASON_USER_CHOICE);
 
   AuthenticationServiceFactory::GetForBrowserState(browser_state_.get())
-      ->SignIn(fake_identity(), nil);
+      ->SignIn(fake_identity());
 
   [manager_ loadModel:model_];
 
   EXPECT_EQ(4, [model_ numberOfSections]);
-  EXPECT_EQ(1, [model_ numberOfItemsInSection:0]);
-  EXPECT_EQ(5, [model_ numberOfItemsInSection:1]);
-  EXPECT_EQ(0, [model_ numberOfItemsInSection:2]);
+  EXPECT_EQ(
+      1,
+      [model_ numberOfItemsInSection:[model_ sectionForSectionIdentifier:
+                                                 SectionIdentifierTimeRange]]);
+  EXPECT_EQ(
+      5,
+      [model_ numberOfItemsInSection:[model_ sectionForSectionIdentifier:
+                                                 SectionIdentifierDataTypes]]);
+  EXPECT_EQ(
+      0,
+      [model_
+          numberOfItemsInSection:[model_ sectionForSectionIdentifier:
+                                             SectionIdentifierSavedSiteData]]);
+  EXPECT_EQ(
+      0,
+      [model_
+          numberOfItemsInSection:[model_ sectionForSectionIdentifier:
+                                             SectionIdentifierGoogleAccount]]);
 }
 
 TEST_F(ClearBrowsingDataManagerTest, TestCacheCounterFormattingForAllTime) {
@@ -290,7 +315,7 @@ TEST_F(ClearBrowsingDataManagerTest, TestOnPreferenceChanged) {
 
 TEST_F(ClearBrowsingDataManagerTest, TestGoogleDSETextSignedIn) {
   AuthenticationServiceFactory::GetForBrowserState(browser_state_.get())
-      ->SignIn(fake_identity(), nil);
+      ->SignIn(fake_identity());
 
   [manager_ loadModel:model_];
 
@@ -320,7 +345,7 @@ TEST_F(ClearBrowsingDataManagerTest, TestGoogleDSETextSignedOut) {
 
 TEST_F(ClearBrowsingDataManagerTest, TestPrepopulatedTextSignedIn) {
   AuthenticationServiceFactory::GetForBrowserState(browser_state_.get())
-      ->SignIn(fake_identity(), nil);
+      ->SignIn(fake_identity());
 
   // Set DSE to one from "prepoulated list".
   const std::string kEngineP1Name = "prepopulated-1";
@@ -386,7 +411,7 @@ TEST_F(ClearBrowsingDataManagerTest, TestPrepopulatedTextSignedOut) {
 
 TEST_F(ClearBrowsingDataManagerTest, TestCustomTextSignedIn) {
   AuthenticationServiceFactory::GetForBrowserState(browser_state_.get())
-      ->SignIn(fake_identity(), nil);
+      ->SignIn(fake_identity());
 
   // Set DSE to a be fully custom.
   const std::string kEngineC1Name = "custom-1";

@@ -1,20 +1,22 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #ifndef CHROMECAST_CAST_CORE_RUNTIME_BROWSER_STREAMING_RUNTIME_APPLICATION_H_
 #define CHROMECAST_CAST_CORE_RUNTIME_BROWSER_STREAMING_RUNTIME_APPLICATION_H_
 
+#include "base/memory/raw_ref.h"
 #include "chromecast/browser/cast_web_contents.h"
 #include "chromecast/cast_core/runtime/browser/runtime_application_base.h"
+#include "chromecast/cast_core/runtime/browser/runtime_application_platform.h"
 #include "chromecast/cast_core/runtime/browser/streaming_receiver_session_client.h"
 #include "components/cast_streaming/browser/public/network_context_getter.h"
 
-namespace chromecast {
-
-namespace media {
-class VideoPlaneController;
+namespace cast_receiver {
+class ApplicationClient;
 }
+
+namespace chromecast {
 
 class MessagePortService;
 
@@ -22,21 +24,21 @@ class StreamingRuntimeApplication final
     : public RuntimeApplicationBase,
       public StreamingReceiverSessionClient::Handler {
  public:
-  // |web_service| is expected to exist for the lifetime of this instance.
+  // |web_service| and |application_client| are expected to exist for the
+  // lifetime of this instance.
   StreamingRuntimeApplication(
       std::string cast_session_id,
       cast::common::ApplicationConfig app_config,
       CastWebService* web_service,
       scoped_refptr<base::SequencedTaskRunner> task_runner,
-      cast_streaming::NetworkContextGetter network_context_getter,
-      media::VideoPlaneController* video_plane_controller);
+      cast_receiver::ApplicationClient& application_client,
+      RuntimeApplicationPlatform::Factory runtime_application_factory);
   ~StreamingRuntimeApplication() override;
 
  private:
   // RuntimeApplicationBase implementation:
-  cast::utils::GrpcStatusOr<cast::web::MessagePortStatus> HandlePortMessage(
-      cast::web::Message message) override;
-  void LaunchApplication() override;
+  bool OnMessagePortMessage(cast::web::Message message) override;
+  void OnApplicationLaunched() override;
   void StopApplication(cast::common::StopReason::Type stop_reason,
                        int32_t net_error_code) override;
   bool IsStreamingApplication() const override;
@@ -50,9 +52,7 @@ class StreamingRuntimeApplication final
       const gfx::Rect& size,
       const ::media::VideoTransformation& transformation) override;
 
-  void OnApplicationStateChanged(grpc::Status status);
-
-  media::VideoPlaneController* video_plane_controller_;
+  base::raw_ref<cast_receiver::ApplicationClient> const application_client_;
 
   // Returns the network context used by |receiver_session_client_|.
   const cast_streaming::NetworkContextGetter network_context_getter_;

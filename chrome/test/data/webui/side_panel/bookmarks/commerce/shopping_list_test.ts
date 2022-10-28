@@ -1,22 +1,28 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 import 'chrome://webui-test/mojo_webui_test_support.js';
 import 'chrome://read-later.top-chrome/bookmarks/commerce/shopping_list.js';
+import 'chrome://read-later.top-chrome/bookmarks/bookmarks_list.js';
 
 import {ActionSource} from 'chrome://read-later.top-chrome/bookmarks/bookmarks.mojom-webui.js';
 import {BookmarksApiProxyImpl} from 'chrome://read-later.top-chrome/bookmarks/bookmarks_api_proxy.js';
-import {ShoppingListElement} from 'chrome://read-later.top-chrome/bookmarks/commerce/shopping_list.js';
+import {ACTION_BUTTON_TRACK_IMAGE, ACTION_BUTTON_UNTRACK_IMAGE, LOCAL_STORAGE_EXPAND_STATUS_KEY, ShoppingListElement} from 'chrome://read-later.top-chrome/bookmarks/commerce/shopping_list.js';
 import {BookmarkProductInfo} from 'chrome://read-later.top-chrome/bookmarks/commerce/shopping_list.mojom-webui.js';
+import {ShoppingListApiProxyImpl} from 'chrome://read-later.top-chrome/bookmarks/commerce/shopping_list_api_proxy.js';
+import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {assertEquals, assertFalse, assertTrue} from 'chrome://webui-test/chai_assert.js';
 import {flushTasks, isVisible} from 'chrome://webui-test/test_util.js';
 
 import {TestBookmarksApiProxy} from '../test_bookmarks_api_proxy.js';
 
+import {TestShoppingListApiProxy} from './test_shopping_list_api_proxy.js';
+
 suite('SidePanelShoppingListTest', () => {
   let shoppingList: ShoppingListElement;
   let bookmarksApi: TestBookmarksApiProxy;
+  let shoppingListApi: TestShoppingListApiProxy;
 
   const products: BookmarkProductInfo[] = [
     {
@@ -43,7 +49,7 @@ suite('SidePanelShoppingListTest', () => {
     },
   ];
 
-  function getProductElements(): HTMLElement[] {
+  function getProductElements(shoppingList: HTMLElement): HTMLElement[] {
     return Array.from(
         shoppingList.shadowRoot!.querySelectorAll('.product-item'));
   }
@@ -77,6 +83,29 @@ suite('SidePanelShoppingListTest', () => {
       assertEquals(priceElements[0]!.textContent, product.info.currentPrice);
       assertEquals(priceElements[1]!.textContent, product.info.previousPrice);
     }
+    const actionButton = element.querySelector('.action-button') as HTMLElement;
+    assertEquals(
+        actionButton.getAttribute('iron-icon'), ACTION_BUTTON_UNTRACK_IMAGE);
+    assertEquals(
+        actionButton.getAttribute('title'),
+        loadTimeData.getString('shoppingListUntrackPriceButtonDescription'));
+  }
+
+  function checkActionButtonStatus(
+      actionButton: HTMLElement, isTracking: boolean): void {
+    if (isTracking) {
+      assertEquals(
+          actionButton.getAttribute('iron-icon'), ACTION_BUTTON_UNTRACK_IMAGE);
+      assertEquals(
+          actionButton.getAttribute('title'),
+          loadTimeData.getString('shoppingListUntrackPriceButtonDescription'));
+    } else {
+      assertEquals(
+          actionButton.getAttribute('iron-icon'), ACTION_BUTTON_TRACK_IMAGE);
+      assertEquals(
+          actionButton.getAttribute('title'),
+          loadTimeData.getString('shoppingListTrackPriceButtonDescription'));
+    }
   }
 
   setup(async () => {
@@ -85,6 +114,9 @@ suite('SidePanelShoppingListTest', () => {
     bookmarksApi = new TestBookmarksApiProxy();
     BookmarksApiProxyImpl.setInstance(bookmarksApi);
 
+    shoppingListApi = new TestShoppingListApiProxy();
+    ShoppingListApiProxyImpl.setInstance(shoppingListApi);
+
     shoppingList = document.createElement('shopping-list');
     shoppingList.productInfos = products;
     document.body.appendChild(shoppingList);
@@ -92,8 +124,12 @@ suite('SidePanelShoppingListTest', () => {
     await flushTasks();
   });
 
+  teardown(() => {
+    window.localStorage[LOCAL_STORAGE_EXPAND_STATUS_KEY] = undefined;
+  });
+
   test('RenderShoppingList', async () => {
-    const productElements = getProductElements();
+    const productElements = getProductElements(shoppingList);
     assertEquals(2, products.length);
 
     for (let i = 0; i < products.length; i++) {
@@ -102,7 +138,7 @@ suite('SidePanelShoppingListTest', () => {
   });
 
   test('OpensAndClosesShoppingList', async () => {
-    const productElements = getProductElements();
+    const productElements = getProductElements(shoppingList);
     const arrowIcon =
         shoppingList.shadowRoot!.querySelector<HTMLElement>('#arrowIcon')!;
     assertTrue(arrowIcon.hasAttribute('open'));
@@ -116,10 +152,13 @@ suite('SidePanelShoppingListTest', () => {
     for (let i = 0; i < productElements.length; i++) {
       assertFalse(isVisible(productElements[i]!));
     }
+    assertEquals(
+        false,
+        JSON.parse(window.localStorage[LOCAL_STORAGE_EXPAND_STATUS_KEY]));
   });
 
   test('OpensProductItem', async () => {
-    getProductElements()[0]!.click();
+    getProductElements(shoppingList)[0]!.click();
     const [id, parentFolderDepth, , source] =
         await bookmarksApi.whenCalled('openBookmark');
     assertEquals(products[0]!.bookmarkId.toString(), id);
@@ -128,7 +167,8 @@ suite('SidePanelShoppingListTest', () => {
   });
 
   test('OpensProductItemContextMenu', async () => {
-    getProductElements()[0]!.dispatchEvent(new MouseEvent('contextmenu'));
+    getProductElements(shoppingList)[0]!.dispatchEvent(
+        new MouseEvent('contextmenu'));
     const [id, , , source] = await bookmarksApi.whenCalled('showContextMenu');
     assertEquals(products[0]!.bookmarkId.toString(), id);
     assertEquals(ActionSource.kPriceTracking, source);
@@ -136,7 +176,7 @@ suite('SidePanelShoppingListTest', () => {
 
   test('OpensProductItemWithAuxClick', async () => {
     // Middle mouse button click.
-    getProductElements()[0]!.dispatchEvent(
+    getProductElements(shoppingList)[0]!.dispatchEvent(
         new MouseEvent('auxclick', {button: 1}));
     const [id, parentFolderDepth, , source] =
         await bookmarksApi.whenCalled('openBookmark');
@@ -147,8 +187,100 @@ suite('SidePanelShoppingListTest', () => {
     bookmarksApi.resetResolver('openBookmark');
 
     // Non-middle mouse aux clicks.
-    getProductElements()[0]!.dispatchEvent(
+    getProductElements(shoppingList)[0]!.dispatchEvent(
         new MouseEvent('auxclick', {button: 2}));
     assertEquals(0, bookmarksApi.getCallCount('openBookmark'));
+  });
+
+  test('InitializesShoppingListExpandStatus', async () => {
+    window.localStorage[LOCAL_STORAGE_EXPAND_STATUS_KEY] = false;
+
+    const shoppingListClosed = document.createElement('shopping-list');
+    shoppingListClosed.productInfos = products;
+    document.body.appendChild(shoppingListClosed);
+    await flushTasks();
+
+    const productElements = getProductElements(shoppingListClosed);
+    assertEquals(2, products.length);
+    for (let i = 0; i < products.length; i++) {
+      assertFalse(isVisible(productElements[i]!));
+    }
+    assertFalse(
+        shoppingListClosed.shadowRoot!.getElementById(
+                                          'arrowIcon')!.hasAttribute('open'));
+  });
+
+  test('TracksAndUntracksPrice', async () => {
+    const actionButton = getProductElements(shoppingList)[0]!.querySelector(
+                             '.action-button')! as HTMLElement;
+    actionButton.click();
+    let id = await shoppingListApi.whenCalled('untrackPriceForBookmark');
+    assertEquals(id, products[0]!.bookmarkId);
+    checkActionButtonStatus(actionButton, false);
+
+    actionButton.click();
+    id = await shoppingListApi.whenCalled('trackPriceForBookmark');
+    assertEquals(id, products[0]!.bookmarkId);
+    checkActionButtonStatus(actionButton, true);
+  });
+
+  test('ObservesTrackAndUntrackPriceForNewProduct', async () => {
+    const newProduct = {
+      bookmarkId: BigInt(5),
+      info: {
+        title: 'Product Baz',
+        domain: 'baz.com',
+        imageUrl: {url: 'https://baz.com/image'},
+        productUrl: {url: 'https://baz.com/product'},
+        currentPrice: '$56',
+        previousPrice: '$78',
+      },
+    };
+
+    shoppingListApi.getCallbackRouterRemote().priceTrackedForBookmark(
+        newProduct);
+    await flushTasks();
+    const productElements = getProductElements(shoppingList);
+    assertEquals(3, productElements.length);
+    checkProductElementRender(productElements[2]!, newProduct);
+
+    const actionButtons = Array.from(shoppingList.shadowRoot!.querySelectorAll(
+                              '.action-button')) as HTMLElement[];
+    assertEquals(3, actionButtons.length);
+    for (let i = 0; i < 3; i++) {
+      checkActionButtonStatus(actionButtons[i]!, true);
+    }
+
+    shoppingListApi.getCallbackRouterRemote().priceUntrackedForBookmark(
+        newProduct.bookmarkId);
+    await flushTasks();
+    checkActionButtonStatus(actionButtons[0]!, true);
+    checkActionButtonStatus(actionButtons[1]!, true);
+    checkActionButtonStatus(actionButtons[2]!, false);
+    assertEquals(3, getProductElements(shoppingList).length);
+  });
+
+  test('ObservesTrackAndUntrackPriceForExitingProduct', async () => {
+    // Manually untrack price for bookmark with ID 3.
+    const product = products[0]!;
+    const actionButtonA = getProductElements(shoppingList)[0]!.querySelector(
+                              '.action-button')! as HTMLElement;
+    actionButtonA.click();
+    const id = await shoppingListApi.whenCalled('untrackPriceForBookmark');
+    assertEquals(id, products[0]!.bookmarkId);
+    checkActionButtonStatus(actionButtonA, false);
+
+    shoppingListApi.getCallbackRouterRemote().priceTrackedForBookmark(product);
+    await flushTasks();
+    checkActionButtonStatus(actionButtonA, true);
+
+    shoppingListApi.getCallbackRouterRemote().priceUntrackedForBookmark(
+        product.bookmarkId);
+    await flushTasks();
+    checkActionButtonStatus(actionButtonA, false);
+
+    shoppingListApi.getCallbackRouterRemote().priceTrackedForBookmark(product);
+    await flushTasks();
+    checkActionButtonStatus(actionButtonA, true);
   });
 });

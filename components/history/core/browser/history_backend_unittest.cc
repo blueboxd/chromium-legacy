@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,7 +6,6 @@
 
 #include <stddef.h>
 
-#include <algorithm>
 #include <iterator>
 #include <memory>
 #include <set>
@@ -1205,18 +1204,18 @@ TEST_F(HistoryBackendTest, AddPagesWithDetails) {
   const URLRows& changed_urls = urls_modified_notifications()[0];
   EXPECT_EQ(3u, changed_urls.size());
 
-  auto it_row1 = std::find_if(changed_urls.begin(), changed_urls.end(),
-                              URLRow::URLRowHasURL(row1.url()));
+  auto it_row1 =
+      base::ranges::find_if(changed_urls, URLRow::URLRowHasURL(row1.url()));
   ASSERT_NE(changed_urls.end(), it_row1);
   EXPECT_EQ(stored_row1.id(), it_row1->id());
 
-  auto it_row2 = std::find_if(changed_urls.begin(), changed_urls.end(),
-                              URLRow::URLRowHasURL(row2.url()));
+  auto it_row2 =
+      base::ranges::find_if(changed_urls, URLRow::URLRowHasURL(row2.url()));
   ASSERT_NE(changed_urls.end(), it_row2);
   EXPECT_EQ(stored_row2.id(), it_row2->id());
 
-  auto it_row3 = std::find_if(changed_urls.begin(), changed_urls.end(),
-                              URLRow::URLRowHasURL(row3.url()));
+  auto it_row3 =
+      base::ranges::find_if(changed_urls, URLRow::URLRowHasURL(row3.url()));
   ASSERT_NE(changed_urls.end(), it_row3);
   EXPECT_EQ(stored_row3.id(), it_row3->id());
 }
@@ -1273,14 +1272,14 @@ TEST_F(HistoryBackendTest, UpdateURLs) {
   const URLRows& changed_urls = urls_modified_notifications()[0];
   EXPECT_EQ(2u, changed_urls.size());
 
-  auto it_row1 = std::find_if(changed_urls.begin(), changed_urls.end(),
-                              URLRow::URLRowHasURL(row1.url()));
+  auto it_row1 =
+      base::ranges::find_if(changed_urls, URLRow::URLRowHasURL(row1.url()));
   ASSERT_NE(changed_urls.end(), it_row1);
   EXPECT_EQ(altered_row1.id(), it_row1->id());
   EXPECT_EQ(altered_row1.visit_count(), it_row1->visit_count());
 
-  auto it_row3 = std::find_if(changed_urls.begin(), changed_urls.end(),
-                              URLRow::URLRowHasURL(row3.url()));
+  auto it_row3 =
+      base::ranges::find_if(changed_urls, URLRow::URLRowHasURL(row3.url()));
   ASSERT_NE(changed_urls.end(), it_row3);
   EXPECT_EQ(altered_row3.id(), it_row3->id());
   EXPECT_EQ(altered_row3.visit_count(), it_row3->visit_count());
@@ -3944,20 +3943,43 @@ TEST_F(HistoryBackendTest, GetMostRecentClusters) {
                    {{1, {4, 3}}});
   }
   {
-    // Verify `max_clusters`.`
+    // Verify `max_clusters`.
     SCOPED_TRACE("time: [0, 20), max_clusters: 1");
     VerifyClusters(backend_->GetMostRecentClusters(GetRelativeTime(0),
                                                    GetRelativeTime(20), 1),
                    {{3, {10}}});
   }
+  {
+    // Verify doesn't return clusters with invalid visits.
+    SCOPED_TRACE("time: [0, 20), max_clusters: 1, after url 10 deleted.");
+    backend_->db()->DeleteURLRow(10);
+    VerifyClusters(backend_->GetMostRecentClusters(GetRelativeTime(0),
+                                                   GetRelativeTime(20), 1),
+                   {});
+  }
+  {
+    // Verify doesn't deleted visits don't interfere.
+    SCOPED_TRACE("time: [0, 20), max_clusters: 1, after visit 10 deleted.");
+    backend_->db()->DeleteAnnotationsForVisit(10);
+    VerifyClusters(backend_->GetMostRecentClusters(GetRelativeTime(0),
+                                                   GetRelativeTime(20), 1),
+                   {{2, {9, 6, 5}}});
+  }
 }
 
-TEST_F(HistoryBackendTest, GetCluster) {
+TEST_F(HistoryBackendTest, AddClusters_GetCluster) {
   AddAnnotatedVisit(0);
   AddAnnotatedVisit(1);
 
   ClusterVisit visit_1;
   visit_1.annotated_visit.visit_row.visit_id = 1;
+  // URLs and times should be ignored, they'll be retrieved from the 'urls' and
+  // 'visits' DBs respectively.
+  visit_1.duplicate_visits.push_back(
+      {2, GURL{"https://duplicate_visit.com"}, GetRelativeTime(5)});
+  // A non-existent duplicate visit shouldn't be returned;
+  visit_1.duplicate_visits.push_back(
+      {20, GURL{"https://duplicate_visit.com"}, GetRelativeTime(5)});
   // Verify the cluster visits are being flushed out.
   visit_1.url_for_display = u"url_for_display";
   ClusterVisit visit_2;
@@ -3986,6 +4008,7 @@ TEST_F(HistoryBackendTest, GetCluster) {
   EXPECT_EQ(cluster.cluster_id, 1);
   EXPECT_EQ(cluster.label, u"label");
   EXPECT_EQ(cluster.visits[1].url_for_display, u"url_for_display");
+  // Verify keywords
   EXPECT_EQ(cluster.keyword_to_data_map.size(), 2u);
   EXPECT_EQ(cluster.keyword_to_data_map[u"keyword1"].type,
             ClusterKeywordData::ClusterKeywordType::kEntityAlias);
@@ -3998,17 +4021,33 @@ TEST_F(HistoryBackendTest, GetCluster) {
   EXPECT_EQ(cluster.keyword_to_data_map[u"keyword2"].score, .6f);
   EXPECT_TRUE(
       cluster.keyword_to_data_map[u"keyword2"].entity_collections.empty());
+  // Verify duplicate visits.
+  EXPECT_TRUE(cluster.visits[0].duplicate_visits.empty());
+  ASSERT_EQ(cluster.visits[1].duplicate_visits.size(), 1u);
+  EXPECT_EQ(cluster.visits[1].duplicate_visits[0].visit_id, 2);
+  EXPECT_EQ(
+      cluster.visits[1].duplicate_visits[0].url.spec(),
+      "https://google.com/1");  // The URL generated by `AddAnnotatedVisit()`.
+  EXPECT_EQ(cluster.visits[1].duplicate_visits[0].visit_time,
+            GetRelativeTime(1));
 
-  // Verify keywords are not returned, but other info is, when the
-  // `include_keywords` param is false.
+  // Verify keywords and duplicates are not returned, but other info is, when
+  // the `include_keywords_and_duplicates` param is false.
   cluster = backend_->GetCluster(1, false);
   VerifyCluster(cluster, {1, {2, 1}});
   EXPECT_EQ(cluster.cluster_id, 1);
   EXPECT_EQ(cluster.label, u"label");
   EXPECT_EQ(cluster.visits[1].url_for_display, u"url_for_display");
   EXPECT_TRUE(cluster.keyword_to_data_map.empty());
+  EXPECT_TRUE(cluster.visits[0].duplicate_visits.empty());
+  EXPECT_TRUE(cluster.visits[1].duplicate_visits.empty());
 
   // Verify non-existent clusters aren't returned.
+  VerifyCluster(backend_->GetCluster(2, true), {0});
+
+  // Verify clusters without valid visits aren't returned. `visit_3` does not
+  // exist.
+  backend_->db_->AddClusters({{0, {visit_3}, {}, false, u"label"}});
   VerifyCluster(backend_->GetCluster(2, true), {0});
 }
 

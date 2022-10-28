@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -44,7 +44,7 @@ class WebStateDependencyInstallerBridge : public DependencyInstaller {
   id<DependencyInstalling> installing_;
 
   // The observer which informs this bridge that a dependency needs to be
-  // installed/uninstalled; those calls are then forwarded to |installing_|.
+  // installed/uninstalled; those calls are then forwarded to `installing_`.
   WebStateDependencyInstallationObserver observer_;
 };
 

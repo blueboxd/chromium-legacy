@@ -1,4 +1,4 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -42,6 +42,7 @@
 #include "components/bookmarks/browser/scoped_group_bookmark_actions.h"
 #include "components/bookmarks/browser/titled_url_match.h"
 #include "components/bookmarks/common/android/bookmark_type.h"
+#include "components/bookmarks/common/bookmark_metrics.h"
 #include "components/bookmarks/common/bookmark_pref_names.h"
 #include "components/bookmarks/managed/managed_bookmark_service.h"
 #include "components/commerce/core/commerce_feature_list.h"
@@ -588,7 +589,8 @@ void BookmarkBridge::SetBookmarkTitle(JNIEnv* env,
   if (partner_bookmarks_shim_->IsPartnerBookmark(bookmark)) {
     partner_bookmarks_shim_->RenameBookmark(bookmark, title);
   } else {
-    bookmark_model_->SetTitle(bookmark, title);
+    bookmark_model_->SetTitle(bookmark, title,
+                              bookmarks::metrics::BookmarkEditSource::kUser);
   }
 }
 
@@ -600,7 +602,8 @@ void BookmarkBridge::SetBookmarkUrl(JNIEnv* env,
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(IsLoaded());
   bookmark_model_->SetURL(GetNodeByID(id, type),
-                          *url::GURLAndroid::ToNativeGURL(env, url));
+                          *url::GURLAndroid::ToNativeGURL(env, url),
+                          bookmarks::metrics::BookmarkEditSource::kUser);
 }
 
 void BookmarkBridge::SetPowerBookmarkMeta(
@@ -936,37 +939,6 @@ ScopedJavaLocalRef<jobject> BookmarkBridge::AddBookmark(
   const BookmarkNode* new_node = bookmark_model_->AddNewURL(
       parent, static_cast<size_t>(index),
       base::android::ConvertJavaStringToUTF16(env, j_title), *url);
-
-  commerce::ShoppingService* service =
-      commerce::ShoppingServiceFactory::GetForBrowserContext(profile_);
-
-  // TODO(crbug.com/1247352): Move to platform-independent location.
-  // TODO(1345462): This should be implemented as a data provider for bookmarks
-  //                once it is available.
-  if (service && base::FeatureList::IsEnabled(commerce::kShoppingList)) {
-    absl::optional<commerce::ProductInfo> info =
-        service->GetAvailableProductInfoForUrl(*url.get());
-    if (info.has_value()) {
-      std::unique_ptr<power_bookmarks::PowerBookmarkMeta> meta =
-          std::make_unique<power_bookmarks::PowerBookmarkMeta>();
-      meta->set_type(power_bookmarks::SHOPPING);
-      meta->mutable_lead_image()->set_url(info->image_url.spec());
-
-      power_bookmarks::ShoppingSpecifics* specifics =
-          meta->mutable_shopping_specifics();
-      specifics->set_title(info->title);
-      specifics->mutable_current_price()->set_amount_micros(
-          info->amount_micros);
-      specifics->mutable_current_price()->set_currency_code(
-          info->currency_code);
-      specifics->set_product_cluster_id(info->product_cluster_id);
-      specifics->set_offer_id(info->offer_id);
-      specifics->set_country_code(info->country_code);
-
-      power_bookmarks::SetNodePowerBookmarkMeta(bookmark_model_, new_node,
-                                                std::move(meta));
-    }
-  }
   DCHECK(new_node);
   ScopedJavaLocalRef<jobject> new_java_obj = JavaBookmarkIdCreateBookmarkId(
       env, new_node->id(), GetBookmarkType(new_node));
@@ -1257,7 +1229,8 @@ void BookmarkBridge::BookmarkNodeMoved(BookmarkModel* model,
 
 void BookmarkBridge::BookmarkNodeAdded(BookmarkModel* model,
                                        const BookmarkNode* parent,
-                                       size_t index) {
+                                       size_t index,
+                                       bool added_by_user) {
   if (!IsLoaded())
     return;
 

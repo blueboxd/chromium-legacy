@@ -1,11 +1,10 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome/browser/ui/fast_checkout/fast_checkout_controller_impl.h"
 
-#include "chrome/browser/autofill/personal_data_manager_factory.h"
-#include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/android/preferences/autofill/autofill_profile_bridge.h"
 #include "components/autofill/core/browser/autofill_data_util.h"
 #include "components/autofill/core/browser/data_model/autofill_profile.h"
 #include "components/autofill/core/browser/data_model/credit_card.h"
@@ -18,10 +17,10 @@ FastCheckoutControllerImpl::FastCheckoutControllerImpl(
 
 FastCheckoutControllerImpl::~FastCheckoutControllerImpl() = default;
 
-void FastCheckoutControllerImpl::Show() {
-  GetOrCreateView()->Show(GetPersonalDataManager()->GetProfilesToSuggest(),
-                          GetPersonalDataManager()->GetCreditCardsToSuggest(
-                              /* include_server_cards= */ true));
+void FastCheckoutControllerImpl::Show(
+    const std::vector<autofill::AutofillProfile*>& autofill_profiles,
+    const std::vector<autofill::CreditCard*>& credit_cards) {
+  GetOrCreateView()->Show(autofill_profiles, credit_cards);
 }
 
 void FastCheckoutControllerImpl::OnOptionsSelected(
@@ -43,12 +42,16 @@ FastCheckoutView* FastCheckoutControllerImpl::GetOrCreateView() {
   return view_.get();
 }
 
-autofill::PersonalDataManager*
-FastCheckoutControllerImpl::GetPersonalDataManager() {
-  Profile* profile =
-      Profile::FromBrowserContext(web_contents_->GetBrowserContext());
-  return autofill::PersonalDataManagerFactory::GetForProfile(
-      profile->GetOriginalProfile());
+void FastCheckoutControllerImpl::OpenAutofillProfileSettings() {
+#if BUILDFLAG(IS_ANDROID)
+  autofill::ShowAutofillProfileSettings(web_contents_);
+#endif
+}
+
+void FastCheckoutControllerImpl::OpenCreditCardSettings() {
+#if BUILDFLAG(IS_ANDROID)
+  autofill::ShowAutofillCreditCardSettings(web_contents_);
+#endif
 }
 
 gfx::NativeView FastCheckoutControllerImpl::GetNativeView() {

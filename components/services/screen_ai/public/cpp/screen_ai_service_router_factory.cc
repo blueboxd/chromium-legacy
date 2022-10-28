@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,7 +13,7 @@ screen_ai::ScreenAIServiceRouter*
 ScreenAIServiceRouterFactory::GetForBrowserContext(
     content::BrowserContext* context) {
   return static_cast<screen_ai::ScreenAIServiceRouter*>(
-      GetInstance()->GetServiceForBrowserContext(context, true));
+      GetInstance()->GetServiceForBrowserContext(context, /*create=*/true));
 }
 
 // static

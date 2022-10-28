@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -14,7 +14,6 @@
 #include "gpu/command_buffer/common/gpu_memory_buffer_support.h"
 #include "gpu/command_buffer/common/mailbox.h"
 #include "gpu/command_buffer/common/shared_image_usage.h"
-#include "gpu/command_buffer/service/mailbox_manager_impl.h"
 #include "gpu/command_buffer/service/service_utils.h"
 #include "gpu/command_buffer/service/shared_context_state.h"
 #include "gpu/command_buffer/service/shared_image/shared_image_backing.h"
@@ -143,7 +142,6 @@ class GLImageBackingFactoryTestBase
   scoped_refptr<SharedContextState> context_state_;
   std::unique_ptr<GLImageBackingFactory> backing_factory_;
   std::unique_ptr<GLImageBackingFactory> backing_factory_shmem_;
-  gles2::MailboxManagerImpl mailbox_manager_;
   std::unique_ptr<SharedImageManager> shared_image_manager_;
   std::unique_ptr<MemoryTypeTracker> memory_type_tracker_;
   std::unique_ptr<SharedImageRepresentationFactory>
@@ -203,23 +201,7 @@ TEST_P(GLImageBackingFactoryTest, Basic) {
     EXPECT_TRUE(backing->IsCleared());
   }
 
-  // First, validate via a legacy mailbox.
-  EXPECT_TRUE(backing->ProduceLegacyMailbox(&mailbox_manager_));
-  TextureBase* texture_base = mailbox_manager_.ConsumeTexture(mailbox);
-  ASSERT_TRUE(texture_base);
-  GLenum target = texture_base->target();
-  scoped_refptr<gl::GLImage> image;
-  if (use_passthrough()) {
-    auto* texture = static_cast<gles2::TexturePassthrough*>(texture_base);
-    image = texture->GetLevelImage(target, 0);
-  } else {
-    auto* texture = static_cast<gles2::Texture*>(texture_base);
-    image = texture->GetLevelImage(target, 0);
-  }
-  ASSERT_TRUE(image);
-  EXPECT_EQ(size, image->GetSize());
-
-  // Next, validate via a GLTextureImageRepresentation.
+  // First, validate via a GLTextureImageRepresentation.
   std::unique_ptr<SharedImageRepresentationFactoryRef> shared_image =
       shared_image_manager_->Register(std::move(backing),
                                       memory_type_tracker_.get());
@@ -234,17 +216,6 @@ TEST_P(GLImageBackingFactoryTest, Basic) {
     EXPECT_EQ(color_space, gl_representation->color_space());
     EXPECT_EQ(usage, gl_representation->usage());
     gl_representation.reset();
-
-    auto gl_representation_rgb =
-        shared_image_representation_factory_->ProduceRGBEmulationGLTexture(
-            mailbox);
-    EXPECT_TRUE(gl_representation_rgb);
-    EXPECT_TRUE(gl_representation_rgb->GetTexture()->service_id());
-    EXPECT_EQ(size, gl_representation_rgb->size());
-    EXPECT_EQ(format, gl_representation_rgb->format());
-    EXPECT_EQ(color_space, gl_representation_rgb->color_space());
-    EXPECT_EQ(usage, gl_representation_rgb->usage());
-    gl_representation_rgb.reset();
   }
 
   // Next, validate a GLTexturePassthroughImageRepresentation.
@@ -295,7 +266,6 @@ TEST_P(GLImageBackingFactoryTest, Basic) {
   skia_representation.reset();
 
   shared_image.reset();
-  EXPECT_FALSE(mailbox_manager_.ConsumeTexture(mailbox));
 
   if (!use_passthrough() &&
       context_state_->feature_info()->feature_flags().ext_texture_rg) {
@@ -317,6 +287,7 @@ TEST_P(GLImageBackingFactoryTest, Basic) {
     ASSERT_TRUE(texture);
     GLenum type = 0;
     GLenum internal_format = 0;
+    GLenum target = GL_TEXTURE_2D;
     EXPECT_TRUE(texture->GetLevelType(target, 0, &type, &internal_format));
     EXPECT_EQ(internal_format, static_cast<GLenum>(GL_RGBA));
     gl_representation.reset();
@@ -354,16 +325,12 @@ TEST_P(GLImageBackingFactoryTest, InitialData) {
     ASSERT_TRUE(backing);
     EXPECT_TRUE(backing->IsCleared());
 
-    EXPECT_TRUE(backing->ProduceLegacyMailbox(&mailbox_manager_));
-    TextureBase* texture_base = mailbox_manager_.ConsumeTexture(mailbox);
-    ASSERT_TRUE(texture_base);
-    GLenum expected_target = texture_base->target();
-
     // Validate via a GLTextureImageRepresentation(Passthrough).
     std::unique_ptr<SharedImageRepresentationFactoryRef> shared_image =
         shared_image_manager_->Register(std::move(backing),
                                         memory_type_tracker_.get());
     EXPECT_TRUE(shared_image);
+    GLenum expected_target = GL_TEXTURE_2D;
 
     if (!use_passthrough()) {
       auto gl_representation =
@@ -392,7 +359,6 @@ TEST_P(GLImageBackingFactoryTest, InitialData) {
     }
 
     shared_image.reset();
-    EXPECT_FALSE(mailbox_manager_.ConsumeTexture(mailbox));
   }
 }
 
@@ -608,21 +574,10 @@ class StubImage : public gl::GLImageStub {
     return true;
   }
 
-  bool BindTexImageWithInternalformat(unsigned target,
-                                      unsigned internal_format) override {
-    internal_format_ = internal_format;
-    if (!bound_) {
-      bound_ = true;
-      ++update_counter_;
-    }
-    return true;
-  }
-
   void ReleaseTexImage(unsigned target) override { bound_ = false; }
 
   bool bound() const { return bound_; }
   int update_counter() const { return update_counter_; }
-  unsigned internal_format() const { return internal_format_; }
 
  private:
   ~StubImage() override = default;
@@ -631,7 +586,6 @@ class StubImage : public gl::GLImageStub {
   gfx::BufferFormat format_;
   bool bound_ = false;
   int update_counter_ = 0;
-  unsigned internal_format_ = GL_RGBA;
 };
 
 class GLImageBackingFactoryWithGMBTest : public GLImageBackingFactoryTestBase,
@@ -787,52 +741,6 @@ TEST_P(GLImageBackingFactoryWithGMBTest, GpuMemoryBufferImportSharedMemory) {
   auto* shm_image = static_cast<gl::GLImageSharedMemory*>(image.get());
   EXPECT_EQ(size, shm_image->GetSize());
   EXPECT_EQ(format, shm_image->format());
-}
-
-TEST_P(GLImageBackingFactoryWithGMBTest,
-       GpuMemoryBufferImportNative_WithRGBEmulation) {
-  if (use_passthrough())
-    return;
-  auto mailbox = Mailbox::GenerateForSharedImage();
-  gfx::Size size(256, 256);
-  gfx::BufferFormat format = viz::BufferFormat(get_format());
-  auto color_space = gfx::ColorSpace::CreateSRGB();
-  GrSurfaceOrigin surface_origin = kTopLeft_GrSurfaceOrigin;
-  SkAlphaType alpha_type = kPremul_SkAlphaType;
-  uint32_t usage = SHARED_IMAGE_USAGE_GLES2;
-
-  gfx::GpuMemoryBufferHandle handle;
-  handle.type = gfx::NATIVE_PIXMAP;
-  auto backing = backing_factory_->CreateSharedImage(
-      mailbox, kClientId, std::move(handle), format, gfx::BufferPlane::DEFAULT,
-      kNullSurfaceHandle, size, color_space, surface_origin, alpha_type, usage);
-  if (!can_create_scanout_or_gmb_shared_image(get_format())) {
-    EXPECT_FALSE(backing);
-    return;
-  }
-  ASSERT_TRUE(backing);
-
-  std::unique_ptr<SharedImageRepresentationFactoryRef> ref =
-      shared_image_manager_->Register(std::move(backing),
-                                      memory_type_tracker_.get());
-
-  auto representation =
-      shared_image_representation_factory_->ProduceRGBEmulationGLTexture(
-          mailbox);
-  EXPECT_TRUE(representation);
-  EXPECT_TRUE(representation->GetTexture()->service_id());
-  EXPECT_EQ(size, representation->size());
-  EXPECT_EQ(get_format(), representation->format());
-  EXPECT_EQ(color_space, representation->color_space());
-  EXPECT_EQ(usage, representation->usage());
-
-  scoped_refptr<gl::GLImage> image =
-      representation->GetTexture()->GetLevelImage(GL_TEXTURE_2D, 0);
-  ASSERT_EQ(image->GetType(), gl::GLImage::Type::NONE);
-  auto* stub_image = static_cast<StubImage*>(image.get());
-  EXPECT_EQ(stub_image->internal_format(), (unsigned)GL_RGB);
-  EXPECT_TRUE(stub_image->bound());
-  EXPECT_EQ(stub_image->update_counter(), 1);
 }
 
 #if !BUILDFLAG(IS_ANDROID)

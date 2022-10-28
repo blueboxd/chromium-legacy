@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -21,12 +21,16 @@ DECLARE_ELEMENT_IDENTIFIER_VALUE(kAppMenuButtonElementId);
 DECLARE_ELEMENT_IDENTIFIER_VALUE(kAppUninstallDialogOkButtonId);
 DECLARE_ELEMENT_IDENTIFIER_VALUE(kAutofillCreditCardSuggestionEntryElementId);
 DECLARE_ELEMENT_IDENTIFIER_VALUE(kAvatarButtonElementId);
+DECLARE_ELEMENT_IDENTIFIER_VALUE(kBatterySaverButtonElementId);
 DECLARE_ELEMENT_IDENTIFIER_VALUE(kBookmarkStarViewElementId);
+DECLARE_ELEMENT_IDENTIFIER_VALUE(kHighEfficiencyChipElementId);
 DECLARE_ELEMENT_IDENTIFIER_VALUE(kInstallPwaElementId);
 DECLARE_ELEMENT_IDENTIFIER_VALUE(kIntentChipElementId);
 DECLARE_ELEMENT_IDENTIFIER_VALUE(kLocationIconElementId);
 DECLARE_ELEMENT_IDENTIFIER_VALUE(kMediaButtonElementId);
 DECLARE_ELEMENT_IDENTIFIER_VALUE(kOmniboxElementId);
+DECLARE_ELEMENT_IDENTIFIER_VALUE(kPriceTrackingChipElementId);
+DECLARE_ELEMENT_IDENTIFIER_VALUE(kPriceTrackingBookmarkViewElementId);
 DECLARE_ELEMENT_IDENTIFIER_VALUE(kReadLaterButtonElementId);
 DECLARE_ELEMENT_IDENTIFIER_VALUE(kReadLaterSidePanelWebViewElementId);
 DECLARE_ELEMENT_IDENTIFIER_VALUE(kSidePanelCloseButtonElementId);

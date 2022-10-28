@@ -1,13 +1,13 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ios/chrome/browser/optimization_guide/optimization_guide_service.h"
+#import "ios/chrome/browser/optimization_guide/optimization_guide_service.h"
 
 #import "base/callback.h"
 #import "base/files/file_util.h"
 #import "base/metrics/histogram_functions.h"
-#include "base/path_service.h"
+#import "base/path_service.h"
 #import "base/task/thread_pool.h"
 #import "base/time/default_clock.h"
 #import "components/component_updater/pref_names.h"
@@ -15,23 +15,21 @@
 #import "components/optimization_guide/core/hints_processing_util.h"
 #import "components/optimization_guide/core/optimization_guide_constants.h"
 #import "components/optimization_guide/core/optimization_guide_features.h"
-#include "components/optimization_guide/core/optimization_guide_features.h"
 #import "components/optimization_guide/core/optimization_guide_logger.h"
 #import "components/optimization_guide/core/optimization_guide_navigation_data.h"
-#import "components/optimization_guide/core/optimization_guide_permissions_util.h"
 #import "components/optimization_guide/core/optimization_guide_store.h"
 #import "components/optimization_guide/core/optimization_guide_util.h"
-#include "components/optimization_guide/core/prediction_manager.h"
+#import "components/optimization_guide/core/prediction_manager.h"
 #import "components/optimization_guide/core/top_host_provider.h"
 #import "components/prefs/pref_service.h"
 #import "components/variations/synthetic_trials.h"
-#import "ios/chrome/browser/application_context.h"
+#import "ios/chrome/browser/application_context/application_context.h"
 #import "ios/chrome/browser/browser_state/chrome_browser_state.h"
-#include "ios/chrome/browser/chrome_paths.h"
 #import "ios/chrome/browser/metrics/ios_chrome_metrics_service_accessor.h"
 #import "ios/chrome/browser/optimization_guide/ios_chrome_hints_manager.h"
-#include "ios/chrome/browser/optimization_guide/optimization_guide_service_factory.h"
+#import "ios/chrome/browser/optimization_guide/optimization_guide_service_factory.h"
 #import "ios/chrome/browser/optimization_guide/tab_url_provider_impl.h"
+#import "ios/chrome/browser/paths/paths.h"
 #import "ios/web/public/navigation/navigation_context.h"
 #import "services/network/public/cpp/shared_url_loader_factory.h"
 
@@ -151,6 +149,14 @@ OptimizationGuideService::OptimizationGuideService(
   // assumed that all clients that had the previous path have had their previous
   // stores deleted.
   DeleteOldStorePaths(profile_path);
+
+  OPTIMIZATION_GUIDE_LOG(
+      optimization_guide_common::mojom::LogSource::SERVICE_AND_SETTINGS,
+      optimization_guide_logger_,
+      "OptimizationGuide: KeyedService is initalized");
+
+  optimization_guide::LogFeatureFlagsInfo(optimization_guide_logger_.get(),
+                                          off_the_record_, pref_service);
 }
 
 OptimizationGuideService::~OptimizationGuideService() {

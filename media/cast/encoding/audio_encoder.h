@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -44,7 +44,7 @@ class AudioEncoder {
 
   int GetSamplesPerFrame() const;
   base::TimeDelta GetFrameDuration() const;
-
+  int GetBitrate() const;
   void InsertAudio(std::unique_ptr<AudioBus> audio_bus,
                    base::TimeTicks recorded_time);
 

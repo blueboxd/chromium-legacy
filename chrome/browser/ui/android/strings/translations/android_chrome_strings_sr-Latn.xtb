@@ -454,6 +454,7 @@ Kada izbrišete istoriju pregledanja – svu ili za određeni sajt – brišete 
 <translation id="3435465986463792564">Imate mnogo prozora? Njima možete da upravljate odavde.</translation>
 <translation id="3443221991560634068">Ponovno učitavanje aktuelne stranice</translation>
 <translation id="3444179773590444986">Želite da delite povratne informacije o tamnoj temi za sajtove?</translation>
+<translation id="3452832259067974318">Radi zaštite privatnosti Chrome neće automatski unositi vašu lozinku u ovo polje.</translation>
 <translation id="3469665409713263828">{FILE_COUNT,plural, =1{Zakazano je 1 preuzimanje}one{Zakazano je # preuzimanje}few{Zakazana su # preuzimanja}other{Zakazano je # preuzimanja}}</translation>
 <translation id="3474624961160222204">Nastavi kao <ph name="NAME" /></translation>
 <translation id="3478363558367712427">Možete da odaberete pretraživač</translation>
@@ -679,6 +680,7 @@ Google nalog možda ima druge oblike istorije pregledanja, poput pretraga i akti
 <translation id="4763480195061959176">video</translation>
 <translation id="4766313118839197559">Lozinke se čuvaju u Menadžeru lozinki na ovom uređaju</translation>
 <translation id="4766678251456904326">Dodaj nalog na uređaj</translation>
+<translation id="4787736314074622408">Želite da izbrišete <ph name="ITEM_TITLE" />?</translation>
 <translation id="4791358705705538979">Pomaže vam da dovršavate zadatke, poput plaćanja, širom veba</translation>
 <translation id="4794291718671962615">(<ph name="MEGABYTES" />) <ph name="URL" /></translation>
 <translation id="4802417911091824046">Šifrovanje pomoću pristupne fraze ne obuhvata načine plaćanja i adrese iz Google Pay-a.
@@ -748,6 +750,7 @@ Da biste promenili ovo podešavanje, <ph name="BEGIN_LINK" />resetujte sinhroniz
 <translation id="5091199029769593641">Uskoro ćete videti priče sa <ph name="SITE_NAME" /> kada otvorite novu karticu. Sajtovi koje pratite se čuvaju na Google nalogu. Njima možete da upravljate u podešavanjima Discover-a.</translation>
 <translation id="5091249083535528968">Detaljni podaci o korišćenju</translation>
 <translation id="509429900233858213">Došlo je do greške.</translation>
+<translation id="5099845111805573968">Kada jednom izaberete verziju sajta za računar, podešavanje se primenjuje na sajt svaki put kada ga posetite</translation>
 <translation id="5102401324271069229">Ako neki sajt pokuša da ukrade vašu lozinku ili probate da preuzmete štetni fajl, Chrome može da pošalje URL-ove, uključujući delove sadržaja stranice, u Bezbedno pregledanje</translation>
 <translation id="510275257476243843">Još 1 sat</translation>
 <translation id="5115811374190515607">u <ph name="PRODUCT_NAME" /></translation>
@@ -907,6 +910,7 @@ Da biste promenili ovo podešavanje, <ph name="BEGIN_LINK" />resetujte sinhroniz
 <translation id="5958275228015807058">Pronađite datoteke i stranice u Preuzimanjima</translation>
 <translation id="5962718611393537961">Dodirnite da biste skupili</translation>
 <translation id="5964869237734432770">Zaustavi opise slika</translation>
+<translation id="5966233851250124270">Chrome će zapamtiti izbor</translation>
 <translation id="5979084224081478209">Proveri lozinke</translation>
 <translation id="5995726099713306770">Želite da preuzmete stranicu ponovo?</translation>
 <translation id="6000066717592683814">Zadrži Google</translation>
@@ -1083,6 +1087,7 @@ Pouzdani tokeni poboljšavaju privatnost na vebu i ne mogu da se koriste za otkr
 <translation id="6820686453637990663">CVC</translation>
 <translation id="6824899148643461612"><ph name="TAB_TITLE" />, kartica, izabrana</translation>
 <translation id="6828070228333235514">Zaustavi praćenje cena</translation>
+<translation id="6830728435402077660">Nije bezbedno</translation>
 <translation id="6833996806551876956">Proba Zaštićenog okruženja privatnosti</translation>
 <translation id="6836206421467243968">Vratite grupu kartica <ph name="TITLE_OF_GROUP" /> kao novu grupu kartica u pozadini.</translation>
 <translation id="6846298663435243399">Učitava se...</translation>

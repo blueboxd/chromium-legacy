@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,7 +7,7 @@
 #include "ash/constants/notifier_catalogs.h"
 #include "ash/constants/url_constants.h"
 #include "ash/public/cpp/notification_utils.h"
-#include "chrome/app/vector_icons/vector_icons.h"
+#include "ash/resources/vector_icons/vector_icons.h"
 #include "chrome/browser/ash/crostini/crostini_export_import.h"
 #include "chrome/browser/notifications/notification_display_service.h"
 #include "chrome/browser/platform_util.h"
@@ -59,7 +59,7 @@ CrostiniExportImportNotificationController::
       weak_ptr_factory_.GetWeakPtr()));
 
   message_center::RichNotificationData rich_notification_data;
-  rich_notification_data.vector_small_image = &kNotificationLinuxIcon;
+  rich_notification_data.vector_small_image = &ash::kNotificationLinuxIcon;
   rich_notification_data.accent_color = ash::kSystemNotificationColorNormal;
 
   notification_ = std::make_unique<message_center::Notification>(

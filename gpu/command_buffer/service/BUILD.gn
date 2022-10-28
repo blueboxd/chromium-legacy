@@ -1,4 +1,4 @@
-# Copyright 2014 The Chromium Authors. All rights reserved.
+# Copyright 2014 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -329,6 +329,7 @@ target(link_target_type, "gles2_sources") {
     "//gpu/command_buffer/common:raster_sources",
     "//gpu/command_buffer/common:webgpu_sources",
     "//skia",
+    "//third_party/blink/public/common/tokens:tokens_headers",
     "//third_party/dawn/include/dawn:headers",
   ]
   deps += [
@@ -530,8 +531,8 @@ target(link_target_type, "gles2_sources") {
 
   if (is_win) {
     sources += [
-      "dxgi_shared_handle_manager.cc",
-      "dxgi_shared_handle_manager.h",
+      "dxgi_keyed_mutex_manager.cc",
+      "dxgi_keyed_mutex_manager.h",
       "shared_image/d3d_image_backing.cc",
       "shared_image/d3d_image_backing.h",
       "shared_image/d3d_image_backing_factory.cc",

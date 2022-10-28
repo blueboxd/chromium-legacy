@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -37,6 +37,8 @@ class BackGestureContextualNudgeController;
 class BackGestureContextualNudgeDelegate;
 class CaptureModeDelegate;
 class DesksTemplatesDelegate;
+class GlanceablesController;
+class GlanceablesDelegate;
 class NearbyShareController;
 class NearbyShareDelegate;
 
@@ -53,6 +55,10 @@ class ASH_EXPORT ShellDelegate {
   // Creates and returns the delegate of the Capture Mode feature.
   virtual std::unique_ptr<CaptureModeDelegate> CreateCaptureModeDelegate()
       const = 0;
+
+  // Creates the delegate for the Glanceables feature.
+  virtual std::unique_ptr<GlanceablesDelegate> CreateGlanceablesDelegate(
+      GlanceablesController* controller) const = 0;
 
   // Creates a accessibility delegate. Shell takes ownership of the delegate.
   virtual AccessibilityDelegate* CreateAccessibilityDelegate() = 0;

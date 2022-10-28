@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -162,6 +162,11 @@ TrayContainer::LayoutInputs TrayContainer::GetLayoutInputs() const {
           main_axis_margin_,
           cross_axis_margin_,
           spacing_between_children_};
+}
+
+void TrayContainer::OnThemeChanged() {
+  views::View::OnThemeChanged();
+  SchedulePaint();
 }
 
 }  // namespace ash

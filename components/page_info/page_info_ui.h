@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -87,13 +87,10 @@ class PageInfoUI {
     bool is_first_party;
   };
 
-  // |CookiesFPSInfo| contains information about a specific First-Party Set.
-  struct CookiesFPSInfo {
-    CookiesFPSInfo();
-    ~CookiesFPSInfo();
-
-    // The number of sites in the same FPS.
-    int sites_accessing_data_count = -1;
+  // |CookiesFpsInfo| contains information about a specific First-Party Set.
+  struct CookiesFpsInfo {
+    explicit CookiesFpsInfo(const std::u16string& owner_name);
+    ~CookiesFpsInfo();
 
     // The name of the owner of the FPS.
     std::u16string owner_name;
@@ -105,6 +102,7 @@ class PageInfoUI {
   // cookies subpage implementation
   struct CookiesNewInfo {
     CookiesNewInfo();
+    ~CookiesNewInfo();
 
     // The number of third-party sites blocked.
     int blocked_sites_count = -1;
@@ -112,7 +110,13 @@ class PageInfoUI {
     // The number of sites allowed to access cookies.
     int allowed_sites_count = -1;
 
-    CookiesFPSInfo fps_info;
+    // The status of blocking third-party cookies.
+    CookieControlsStatus status;
+
+    // The status of enforcement of blocking third-party cookies.
+    CookieControlsEnforcement enforcement;
+
+    absl::optional<CookiesFpsInfo> fps_info;
   };
 
   // |ChosenObjectInfo| contains information about a single |chooser_object| of

@@ -28,7 +28,6 @@
 <translation id="1111021433905331574">설정 &gt; <ph name="APP_TITLE" />에서 키보드 백라이트 색상을 변경할 수 있습니다.</translation>
 <translation id="112308213915226829">실행기 자동 숨김</translation>
 <translation id="1142002900084379065">최근 사진</translation>
-<translation id="114451698114044150">자동 확대가 사용 설정되어 있습니다.</translation>
 <translation id="1148499908455722006"><ph name="USER_NAME" /> 정보 대화상자 열기</translation>
 <translation id="1150989369772528668">캘린더</translation>
 <translation id="1153356358378277386">페어링된 기기</translation>
@@ -330,7 +329,6 @@
 <translation id="2894949423239620203">케이블이 성능에 영향을 줄 수 있습니다</translation>
 <translation id="2903844815300039659"><ph name="NAME" />에 연결됨, <ph name="STRENGTH" /></translation>
 <translation id="2914580577416829331">화면 캡처</translation>
-<translation id="2925246975070834767">화면 중앙에 콘텐츠가 표시되도록 자동 확대를 사용해 보세요. 빠른 설정에서 사용 설정하면 됩니다.</translation>
 <translation id="2941112035454246133">낮음</translation>
 <translation id="2942350706960889382">고정 돋보기</translation>
 <translation id="2942516765047364088">실행기 위치</translation>
@@ -474,7 +472,6 @@
 <translation id="3708186454126126312">이전에 연결된 기기</translation>
 <translation id="371370241367527062">전면 마이크</translation>
 <translation id="3713734891607377840">완료되면 열기</translation>
-<translation id="3724279623330129812">카메라 중앙에서 자동 확대</translation>
 <translation id="3726171378575546917">이 기기에 <ph name="UNAVAILABLE_APPS_ONE" />, <ph name="UNAVAILABLE_APPS_TWO" /> 외 앱 <ph name="UNAVAILABLE_APPS_COUNT" />개가 없습니다.</translation>
 <translation id="3735740477244556633">정렬 기준</translation>
 <translation id="3742055079367172538">찍은 스크린샷</translation>
@@ -508,6 +505,7 @@
 <translation id="3922427723338465344">{0,plural, =1{1분 이내에 기기를 이전 버전으로 되돌리세요}other{#분 이내에 기기를 이전 버전으로 되돌리세요}}</translation>
 <translation id="3923494859158167397">설정된 모바일 네트워크 없음</translation>
 <translation id="3925540965556789199"><ph name="DATE" />, 일정을 로드하는 중입니다.</translation>
+<translation id="392627956579011934">음성 파일을 설치하려면 다시 시작해야 합니다.</translation>
 <translation id="3932043219784172185">연결된 기기 없음</translation>
 <translation id="3934456833412894880">자동 조절 충전이 사용 설정되었습니다. 배터리 수명 연장을 위해 80%까지 정상 속도로 충전 후 필요한 시점에 완충됩니다.</translation>
 <translation id="3943857333388298514">붙여넣기</translation>
@@ -562,6 +560,7 @@
 <translation id="4242533952199664413">설정 열기</translation>
 <translation id="4247123849143712100">업데이트 및 종료</translation>
 <translation id="4250229828105606438">스크린샷</translation>
+<translation id="4250899820387052060">빠른 파일</translation>
 <translation id="425364040945105958">SIM 없음</translation>
 <translation id="4261870227682513959">알림 설정을 표시합니다. 알림이 사용 중지되어 있습니다.</translation>
 <translation id="4269883910223712419">이 기기의 관리자는 다음과 같은 작업을 할 수 있습니다.</translation>
@@ -746,6 +745,7 @@
 <translation id="5283198616748585639">1분 추가</translation>
 <translation id="528468243742722775">종료</translation>
 <translation id="5286194356314741248">검색 중</translation>
+<translation id="5293671101077843611">오늘 일정 없음</translation>
 <translation id="5297423144044956168">휴대기기를 찾을 수 없습니다.</translation>
 <translation id="5297704307811127955">사용 안함</translation>
 <translation id="5300589172476337783">표시</translation>
@@ -908,7 +908,6 @@
 <translation id="6137566720514957455"><ph name="USER_EMAIL_ADDRESS" /> 삭제 대화상자 열기</translation>
 <translation id="6141988275892716286">다운로드 확인</translation>
 <translation id="6154006699632741460">지원되지 않는 주변기기</translation>
-<translation id="6156262341071374681">펼쳐서 모든 앱 보기</translation>
 <translation id="615957422585914272">터치 키보드 표시</translation>
 <translation id="6165508094623778733">자세히 알아보기</translation>
 <translation id="6166852626429024716">기기, 앱, 설정, 웹에서 검색...</translation>
@@ -1032,7 +1031,6 @@
 <translation id="685782768769951078">{NUM_DIGITS,plural, =1{1자리 남음}other{#자리 남음}}</translation>
 <translation id="6867938213751067702"><ph name="FILENAME" /> 다운로드가 일시중지되었습니다</translation>
 <translation id="6878400149835617132">바로가기 사용 중지됨</translation>
-<translation id="6878709625737492815">자동 확대가 사용 중지되어 있습니다.</translation>
 <translation id="6884665277231944629">오늘로 돌아가기</translation>
 <translation id="6886172995547742638"><ph name="DEVICE_TYPE" /> 기기의 성능이 저하될 수 있습니다. 인증된 <ph name="PREFERRED_MINIMUM_POWER" />W 이상의 USB-C 전원 어댑터를 사용하세요.</translation>
 <translation id="688631446150864480">창을 전환하려면 아래쪽 화살표 키를 누르세요.</translation>
@@ -1198,7 +1196,6 @@
 <translation id="7868900307798234037">지문으로 잠금 해제</translation>
 <translation id="7872195908557044066">관리자가 eSIM을 재설정하는 중입니다. 잠시만 기다려 주세요.</translation>
 <translation id="7872786842639831132">꺼짐</translation>
-<translation id="7875280185395705476">자동 확대</translation>
 <translation id="7875575368831396199"><ph name="DEVICE_TYPE" />의 블루투스가 꺼져 있는 것 같습니다. 휴대전화 허브를 사용하려면 블루투스를 사용 설정하세요.</translation>
 <translation id="7877557217297072640">{0,plural, =0{지금 기기를 이전 버전으로 되돌리세요}=1{1초 이내에 기기를 이전 버전으로 되돌리세요}other{#초 이내에 기기를 이전 버전으로 되돌리세요}}</translation>
 <translation id="7886169021410746335">개인정보 보호 설정 조정</translation>
@@ -1254,6 +1251,7 @@
 <translation id="8152264887680882389"><ph name="TEXT" />, 자동 완성</translation>
 <translation id="8155007568264258537"><ph name="FEATURE_NAME" /> 관리자가 관리하는 설정입니다.</translation>
 <translation id="8155628902202578800"><ph name="USER_EMAIL_ADDRESS" /> 정보 대화상자 열기</translation>
+<translation id="8157728322324420120">추천</translation>
 <translation id="8167567890448493835"><ph name="LOCALE_NAME" /> 사용 중</translation>
 <translation id="8183592608247778598">휴대전화의 최근 사진, 미디어, 알림, 앱을 <ph name="DEVICE_TYPE" />에서 봅니다.</translation>
 <translation id="8192202700944119416">알림이 숨겨져 있음</translation>
@@ -1321,7 +1319,6 @@
 <translation id="856298576161209842"><ph name="MANAGER" />에서 <ph name="DEVICE_TYPE" /> 기기의 업데이트를 권장합니다.</translation>
 <translation id="8563862697512465947">알림 설정</translation>
 <translation id="857201607579416096">메뉴가 화면 오른쪽 하단으로 이동했습니다.</translation>
-<translation id="8576288697319745668">자동 확대 기능을 전환합니다. <ph name="STATE_TEXT" /></translation>
 <translation id="8594115950068821369">-<ph name="FORMATTED_TIME" /></translation>
 <translation id="8598235756057743477">이름 또는 색상별로 앱 정렬</translation>
 <translation id="8614517853887502247">사생활 보호가 켜져 있으므로 <ph name="APP_1_TITLE" /> 및 <ph name="APP_2_TITLE" /> 알림이 숨겨집니다.</translation>
@@ -1433,6 +1430,7 @@
 <translation id="9211490828691860325">모든 데스크</translation>
 <translation id="9211681782751733685">배터리 충전이 완료될 때까지 남은 시간은 <ph name="TIME_REMAINING" />입니다.</translation>
 <translation id="9215934040295798075">배경화면 설정</translation>
+<translation id="9219103736887031265">이미지</translation>
 <translation id="921989828232331238">부모님이 오늘 하루 동안 기기를 잠갔습니다.</translation>
 <translation id="9220525904950070496">계정 삭제</translation>
 <translation id="923686485342484400">로그아웃하려면 Ctrl+Shift+Q를 두 번 누릅니다.</translation>

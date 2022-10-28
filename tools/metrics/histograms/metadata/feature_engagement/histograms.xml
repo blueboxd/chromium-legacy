@@ -112,6 +112,7 @@ chromium-metrics-reviews@google.com.
   <variant name="IPH_EphemeralTab"
       summary="new label on the context menu for Ephemeral Tab"/>
   <variant name="IPH_ExploreSitesTile" summary="Explore Sites feature"/>
+  <variant name="IPH_ExtensionsMenu" summary="extensions menu opened"/>
   <variant name="IPH_FeatureNotificationGuideDefaultBrowserNotificationShown"
       summary="feature notification guide default browser notification"/>
   <variant name="IPH_FeatureNotificationGuideDefaultBrowserPromo"
@@ -213,6 +214,8 @@ chromium-metrics-reviews@google.com.
   <variant name="IPH_SideSearch" summary="side search discovery"/>
   <variant name="IPH_SideSearchAutoTriggering"
       summary="side search automatic triggering"/>
+  <variant name="IPH_SideSearchPageActionLabel"
+      summary="side search page action label triggering"/>
   <variant name="IPH_TabGroupsDragAndDrop"
       summary="educating user to drop one tab on another tab to create group"/>
   <variant name="IPH_TabGroupsQuicklyComparePages"
@@ -281,7 +284,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="InProductHelp.Db.TotalEvents" units="events"
-    expires_after="2022-12-26">
+    expires_after="2023-02-26">
   <owner>nyquist@chromium.org</owner>
   <summary>
     Records the total number of event records in the database for in-product
@@ -323,6 +326,9 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="InProductHelp.Promos.Snooze.{IPHFeature}" units="SnoozeType"
     expires_after="2021-11-21">
+  <obsolete>
+    Expired since 2021-11.
+  </obsolete>
   <owner>kerenzhu@chromium.org</owner>
   <owner>collinbaker@chromium.org</owner>
   <summary>
@@ -336,6 +342,9 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="InProductHelp.Promos.SnoozeCountAtAcknowledge.{IPHFeature}"
     units="times" expires_after="2021-11-21">
+  <obsolete>
+    Expired since 2021-11.
+  </obsolete>
   <owner>kerenzhu@chromium.org</owner>
   <owner>collinbaker@chromium.org</owner>
   <summary>
@@ -347,6 +356,9 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="InProductHelp.Promos.SnoozeCountAtFollow.{IPHFeature}"
     units="times" expires_after="2021-11-21">
+  <obsolete>
+    Expired since 2021-11.
+  </obsolete>
   <owner>kerenzhu@chromium.org</owner>
   <owner>collinbaker@chromium.org</owner>
   <summary>
@@ -359,6 +371,9 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="InProductHelp.Promos.SnoozeCountAtTrigger.{IPHFeature}"
     units="times" expires_after="2021-11-21">
+  <obsolete>
+    Expired since 2021-11.
+  </obsolete>
   <owner>kerenzhu@chromium.org</owner>
   <owner>collinbaker@chromium.org</owner>
   <summary>
@@ -432,7 +447,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Tutorial.TabGroup.EditedTitle" enum="BooleanSuccess"
-    expires_after="2022-12-31">
+    expires_after="2023-03-05">
   <owner>dpenning@chromium.org</owner>
   <owner>dfried@chromium.org</owner>
   <summary>

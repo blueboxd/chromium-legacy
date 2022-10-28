@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,8 +10,7 @@ import 'chrome://resources/cr_elements/cr_action_menu/cr_action_menu.js';
 import 'chrome://resources/cr_elements/cr_dialog/cr_dialog.js';
 import 'chrome://resources/cr_elements/cr_button/cr_button.js';
 import 'chrome://resources/cr_elements/cr_lazy_render/cr_lazy_render.js';
-import 'chrome://resources/cr_elements/shared_vars_css.m.js';
-import 'chrome://resources/polymer/v3_0/iron-a11y-keys-behavior/iron-a11y-keys-behavior.js';
+import 'chrome://resources/cr_elements/cr_shared_vars.css.js';
 import './edit_dialog.js';
 import './shared_style.css.js';
 import './strings.m.js';
@@ -24,7 +23,7 @@ import {getToastManager} from 'chrome://resources/cr_elements/cr_toast/cr_toast_
 import {assert, assertNotReached} from 'chrome://resources/js/assert_ts.js';
 import {isMac} from 'chrome://resources/js/cr.m.js';
 import {KeyboardShortcutList} from 'chrome://resources/js/cr/ui/keyboard_shortcut_list.js';
-import {EventTracker} from 'chrome://resources/js/event_tracker.m.js';
+import {EventTracker} from 'chrome://resources/js/event_tracker.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {PluralStringProxyImpl} from 'chrome://resources/js/plural_string_proxy.js';
 import {IronA11yAnnouncer} from 'chrome://resources/polymer/v3_0/iron-a11y-announcer/iron-a11y-announcer.js';
@@ -437,7 +436,7 @@ export class BookmarksCommandManagerElement extends
         itemIds, 'BookmarkManager.CommandExecuted', command);
   }
 
-  handleKeyEvent(e: Event, itemIds: Set<string>): boolean {
+  handleKeyEvent(e: KeyboardEvent, itemIds: Set<string>): boolean {
     for (const commandTuple of this.shortcuts_) {
       const command = commandTuple[0] as Command;
       const shortcut = commandTuple[1] as KeyboardShortcutList;
@@ -801,7 +800,7 @@ export class BookmarksCommandManagerElement extends
     this.closeCommandMenu();
   }
 
-  private onKeydown_(e: Event) {
+  private onKeydown_(e: KeyboardEvent) {
     const path = e.composedPath();
     if ((path[0] as HTMLElement).tagName === 'INPUT') {
       return;

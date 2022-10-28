@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -530,9 +530,7 @@ void RecordSigninImpressionUserActionForAccessPoint(AccessPoint access_point) {
 
 #if BUILDFLAG(IS_IOS)
 void RecordConsistencyPromoUserAction(AccountConsistencyPromoAction action) {
-  UMA_HISTOGRAM_ENUMERATION(
-      "Signin.AccountConsistencyPromoAction", static_cast<int>(action),
-      static_cast<int>(AccountConsistencyPromoAction::MAX));
+  base::UmaHistogramEnumeration("Signin.AccountConsistencyPromoAction", action);
 }
 #endif  // BUILDFLAG(IS_IOS)
 

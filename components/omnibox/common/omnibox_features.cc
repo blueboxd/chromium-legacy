@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -62,11 +62,32 @@ const base::Feature kAndroidAuxiliarySearch{"AndroidAuxiliarySearch",
 const base::Feature kAutocompleteStability{"OmniboxAutocompleteStability",
                                            base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Feature to enable memoizing and filtering non-doc hosts for
+// `DocumentProvider::GetURLForDeduping()`.
+const base::Feature kDocumentProviderDedupingOptimization{
+    "OmniboxDocumentProviderDedupingOptimization",
+    base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Feature to tweak how the default suggestion is preserved. Feature params
+// control which tweaks specifically are enabled. Enabling this feature without
+// params is a no-op.
+const base::Feature kPreserveDefault{"OmniboxPreserveDefault",
+                                     base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Demotes the relevance scores when comparing suggestions based on the
 // suggestion's |AutocompleteMatchType| and the user's |PageClassification|.
 // This feature's main job is to contain the DemoteByType parameter.
 const base::Feature kOmniboxDemoteByType{"OmniboxDemoteByType",
                                          base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Feature to enable memoizing URLs when replacing search terms in
+// `AutocompleteMatch::GURLToStrippedGURL()`.
+const base::Feature kStrippedGurlOptimization{
+    "OmniboxStrippedGurlOptimization", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Feature to debounce `AutocompleteController::UpdateResult()`.
+const base::Feature kUpdateResultDebounce{"OmniboxUpdateResultDebounce",
+                                          base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Feature used to cap max zero suggestions shown according to the param
 // OmniboxMaxZeroSuggestMatches. If omitted,
@@ -152,7 +173,7 @@ const base::Feature kZeroSuggestOnNTPForSignedOutUsers{
 
 // Enables prefetching of the zero prefix suggestions for eligible users on NTP.
 const base::Feature kZeroSuggestPrefetching{"ZeroSuggestPrefetching",
-                                            enabled_by_default_desktop_only};
+                                            enabled_by_default_desktop_android};
 
 // Enables prefetching of the zero prefix suggestions for eligible users on SRP.
 const base::Feature kZeroSuggestPrefetchingOnSRP{
@@ -162,6 +183,11 @@ const base::Feature kZeroSuggestPrefetchingOnSRP{
 // Web (i.e. non-NTP and non-SRP URLs).
 const base::Feature kZeroSuggestPrefetchingOnWeb{
     "ZeroSuggestPrefetchingOnWeb", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// If enabled, zero prefix suggestions will be stored using an in-memory caching
+// service, instead of using the existing prefs-based cache.
+extern const base::Feature kZeroSuggestInMemoryCaching{
+    "ZeroSuggestInMemoryCaching", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Features to provide non personalized head search suggestion from a compact
 // on device model. More specifically, feature name with suffix Incognito /
@@ -179,14 +205,6 @@ const base::Feature kOnDeviceHeadProviderNonIncognito{
 // not referred to in any of the Chromium code.
 const base::Feature kOmniboxExperimentalSuggestScoring{
     "OmniboxExperimentalSuggestScoring", base::FEATURE_DISABLED_BY_DEFAULT};
-
-// If enabled, the HistoryQuickProvider's InMemoryURLIndex service never
-// persists its index to a cache file on shutdown, and instead always rebuilds
-// it from the HistoryService on startup. Persisting the index to disk causes
-// over 10% of all shutdown hangs.
-const base::Feature kHistoryQuickProviderAblateInMemoryURLIndexCacheFile{
-    "OmniboxHistoryQuickProviderAblateInMemoryURLIndexCacheFile",
-    base::FEATURE_ENABLED_BY_DEFAULT};
 
 // If enabled, suggestions from a cgi param name match are scored to 0.
 const base::Feature kDisableCGIParamMatching{"OmniboxDisableCGIParamMatching",
@@ -233,6 +251,13 @@ const base::Feature kStoreTitleInContentsAndUrlInDescription{
     "OmniboxStoreTitleInContentsAndUrlInDescription",
     base::FEATURE_DISABLED_BY_DEFAULT};
 
+// HQP scores suggestions higher when it finds fewer matches. When enabled,
+// HQP will consider the count of unique hosts, rather than the total count of
+// matches.
+const base::Feature kHistoryQuickProviderSpecificityScoreCountUniqueHosts{
+    "OmniboxHistoryQuickProviderSpecificityScoreCountUniqueHosts",
+    base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Feature used to fetch document suggestions.
 const base::Feature kDocumentProvider{"OmniboxDocumentProvider",
                                       enabled_by_default_desktop_only};
@@ -252,12 +277,6 @@ const base::Feature kAdaptiveSuggestionsCount{"OmniboxAdaptiveSuggestionsCount",
 // the user clicks the reveal button.
 const base::Feature kClipboardSuggestionContentHidden = {
     "ClipboardSuggestionContentHidden", enabled_by_default_android_only};
-
-// Feature to enable memoizing and filtering non-doc hosts for
-// `DocumentProvider::GetURLForDeduping()`.
-const base::Feature kDocumentProviderDedupingOptimization{
-    "OmniboxDocumentProviderDedupingOptimization",
-    base::FEATURE_DISABLED_BY_DEFAULT};
 
 // If enabled, finance ticker answer from omnibox will reverse the color for
 // stock ticker. only colors being swapped are those that represent "growth" and
@@ -328,11 +347,6 @@ const base::Feature kOmniboxMostVisitedTilesFadingOnTablet{
 // a search result page that does not do search term replacement.
 const base::Feature kOmniboxMostVisitedTilesOnSrp{
     "OmniboxMostVisitedTilesOnSrp", base::FEATURE_DISABLED_BY_DEFAULT};
-
-// Feature to enable memoizing URLs when replacing search terms in
-// `AutocompleteMatch::GURLToStrippedGURL()`.
-const base::Feature kStrippedGurlOptimization{
-    "OmniboxStrippedGurlOptimization", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // When enabled, use Assistant for omnibox voice query recognition instead of
 // Android's built-in voice recognition service. Only works on Android.

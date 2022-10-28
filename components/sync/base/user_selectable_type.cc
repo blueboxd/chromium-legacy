@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -39,7 +39,7 @@ constexpr char kTabsTypeName[] = "tabs";
 constexpr char kWifiConfigurationsTypeName[] = "wifiConfigurations";
 
 UserSelectableTypeInfo GetUserSelectableTypeInfo(UserSelectableType type) {
-  static_assert(40 == syncer::GetNumModelTypes(),
+  static_assert(42 == syncer::GetNumModelTypes(),
                 "Almost always when adding a new ModelType, you must tie it to "
                 "a UserSelectableType below (new or existing) so the user can "
                 "disable syncing of that data. Today you must also update the "
@@ -74,7 +74,8 @@ UserSelectableTypeInfo GetUserSelectableTypeInfo(UserSelectableType type) {
       return {kAutofillTypeName,
               AUTOFILL,
               {AUTOFILL, AUTOFILL_PROFILE, AUTOFILL_WALLET_DATA,
-               AUTOFILL_WALLET_METADATA, AUTOFILL_WALLET_OFFER}};
+               AUTOFILL_WALLET_METADATA, AUTOFILL_WALLET_OFFER,
+               AUTOFILL_WALLET_USAGE, CONTACT_INFO}};
     case UserSelectableType::kThemes:
       return {kThemesTypeName, THEMES, {THEMES}};
     case UserSelectableType::kHistory:

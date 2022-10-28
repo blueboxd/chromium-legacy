@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -80,7 +80,7 @@ bool IsUserConfirmationRequired(content::BrowserContext* browser_context,
   const base::Value::List& list =
       Profile::FromBrowserContext(browser_context)
           ->GetPrefs()
-          ->GetValueList(prefs::kPrintingAPIExtensionsAllowlist);
+          ->GetList(prefs::kPrintingAPIExtensionsAllowlist);
   return !base::Contains(list, base::Value(extension_id));
 }
 
@@ -149,8 +149,7 @@ bool PrintJobSubmitter::CheckContentType() const {
 }
 
 bool PrintJobSubmitter::CheckPrintTicket() {
-  settings_ = ParsePrintTicket(
-      base::Value::FromUniquePtrValue(request_.job.ticket.ToValue()));
+  settings_ = ParsePrintTicket(base::Value(request_.job.ticket.ToValue()));
   if (!settings_)
     return false;
   settings_->set_title(base::UTF8ToUTF16(request_.job.title));

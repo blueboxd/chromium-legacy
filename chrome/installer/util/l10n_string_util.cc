@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -83,12 +83,6 @@ std::wstring GetLocalizedString(int base_message_id) {
   }
 
   return localized_string;
-}
-
-std::wstring GetLocalizedStringF(UINT base_message_id, const std::wstring& a) {
-  return base::ReplaceStringPlaceholders(GetLocalizedString(base_message_id),
-                                         std::vector<std::wstring>(1, a),
-                                         nullptr);
 }
 
 // Here we generate the url spec with the Microsoft res:// scheme which is

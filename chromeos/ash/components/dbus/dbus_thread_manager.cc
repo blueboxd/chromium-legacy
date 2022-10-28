@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,7 +9,7 @@
 
 #include "base/logging.h"
 
-namespace chromeos {
+namespace ash {
 
 static DBusThreadManager* g_dbus_thread_manager = nullptr;
 
@@ -23,9 +23,9 @@ void DBusThreadManager::Initialize() {
   g_dbus_thread_manager = new DBusThreadManager();
 
   if (!g_dbus_thread_manager->IsUsingFakes())
-    VLOG(1) << "DBusThreadManager initialized for ChromeOS";
+    VLOG(1) << "ash::DBusThreadManager initialized for ChromeOS";
   else
-    VLOG(1) << "DBusThreadManager created for testing";
+    VLOG(1) << "ash::DBusThreadManager created for testing";
 }
 
 // static
@@ -52,4 +52,4 @@ DBusThreadManager* DBusThreadManager::Get() {
   return g_dbus_thread_manager;
 }
 
-}  // namespace chromeos
+}  // namespace ash

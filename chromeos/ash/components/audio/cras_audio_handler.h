@@ -1,4 +1,4 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -16,6 +16,7 @@
 #include "base/component_export.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "base/metrics/user_metrics.h"
 #include "base/observer_list.h"
 #include "base/timer/timer.h"
 #include "chromeos/ash/components/audio/audio_device.h"
@@ -26,6 +27,7 @@
 #include "chromeos/ash/components/dbus/audio/volume_state.h"
 #include "media/base/video_facing.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/media_session/public/mojom/media_controller.mojom.h"
 #include "services/media_session/public/mojom/media_session.mojom.h"
@@ -305,6 +307,12 @@ class COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_AUDIO) CrasAudioHandler
   // (negative percentage).
   void AdjustOutputVolumeByPercent(int adjust_by_percent);
 
+  // Adjusts all active output devices' volume higher by one volume step.
+  void IncreaseOutputVolumeByOneStep();
+
+  // Adjusts all active output devices' volume lower by one volume step
+  void DecreaseOutputVolumeByOneStep();
+
   // Adjusts all active output devices' volume to a minimum audible level if it
   // is too low.
   void AdjustOutputVolumeToAudibleLevel();
@@ -386,6 +394,16 @@ class COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_AUDIO) CrasAudioHandler
 
   // Returns true the device has dual internal microphones(front and rear).
   bool HasDualInternalMic() const;
+
+  // There are some audio devices which are not meant for simple usage. Keyboard
+  // mic is an example of a non simple device. There are cases when we need to
+  // know programmatically if there is an audio input device for simple usage
+  // available. Checking `active_input_node_id_` being non zero is not
+  // sufficient in this case. A non simple device can be the active input node
+  // during cras initialization depeneding the audio device enumeration process.
+  // This function returns true if an input device for simple usage is
+  // available.
+  bool HasActiveInputDeviceForSimpleUsage() const;
 
   // Returns true if |device| is front or rear microphone.
   bool IsFrontOrRearMic(const AudioDevice& device) const;

@@ -1,4 +1,4 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -191,10 +191,6 @@ IN_PROC_BROWSER_TEST_F(AppListClientImplBrowserTest, ShowAppInfo) {
 
   // Open the app info dialog.
   client->DoShowAppInfoFlow(profile(), app->id());
-
-  // The above DoShowAppInfoFlow() should trigger an asynchronous call to launch
-  // OS Settings SWA. Flush Mojo calls so the browser window is created.
-  ash::FlushSystemWebAppLaunchesForTesting(profile());
 
   Browser* settings_app =
       chrome::SettingsWindowManager::GetInstance()->FindBrowserForProfile(

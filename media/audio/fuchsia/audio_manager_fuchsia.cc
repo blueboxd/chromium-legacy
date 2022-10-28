@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -30,6 +30,16 @@ AudioManagerFuchsia::AudioManagerFuchsia(
 }
 
 AudioManagerFuchsia::~AudioManagerFuchsia() = default;
+
+void AudioManagerFuchsia::ShutdownOnAudioThread() {
+  DCHECK(GetTaskRunner()->BelongsToCurrentThread());
+
+  AudioManagerBase::ShutdownOnAudioThread();
+
+  // Teardown the AudioDeviceEnumerator channel before the audio
+  // thread, which it is bound to, stops.
+  enumerator_ = nullptr;
+}
 
 bool AudioManagerFuchsia::HasAudioOutputDevices() {
   return HasAudioDevice(false);
@@ -71,7 +81,8 @@ AudioParameters AudioManagerFuchsia::GetInputStreamParameters(
   const size_t kPeriodSamples = AudioTimestampHelper::TimeToFrames(
       base::kAudioSchedulingPeriod, kSampleRate);
   AudioParameters params(AudioParameters::AUDIO_PCM_LOW_LATENCY,
-                         CHANNEL_LAYOUT_MONO, kSampleRate, kPeriodSamples);
+                         ChannelLayoutConfig::Mono(), kSampleRate,
+                         kPeriodSamples);
 
   // Some AudioCapturer implementations support echo cancellation, noise
   // suppression and automatic gain control, but currently there is no way to
@@ -90,6 +101,13 @@ AudioParameters AudioManagerFuchsia::GetInputStreamParameters(
 AudioParameters AudioManagerFuchsia::GetPreferredOutputStreamParameters(
     const std::string& output_device_id,
     const AudioParameters& input_params) {
+  if (input_params.IsValid()) {
+    AudioParameters params = input_params;
+    params.set_frames_per_buffer(AudioTimestampHelper::TimeToFrames(
+        base::kAudioSchedulingPeriod, params.sample_rate()));
+    return params;
+  }
+
   // TODO(crbug.com/852834): Fuchsia currently doesn't provide an API to get
   // device configuration. Update this method when that functionality is
   // implemented.
@@ -97,7 +115,8 @@ AudioParameters AudioManagerFuchsia::GetPreferredOutputStreamParameters(
   const size_t kPeriodFrames = AudioTimestampHelper::TimeToFrames(
       base::kAudioSchedulingPeriod, kSampleRate);
   return AudioParameters(AudioParameters::AUDIO_PCM_LOW_LATENCY,
-                         CHANNEL_LAYOUT_STEREO, kSampleRate, kPeriodFrames);
+                         ChannelLayoutConfig::Stereo(), kSampleRate,
+                         kPeriodFrames);
 }
 
 const char* AudioManagerFuchsia::GetName() {

@@ -1,4 +1,4 @@
-// Copyright (c) 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -16,7 +16,7 @@
 #endif
 
 #if BUILDFLAG(USE_ALLOCATOR_SHIM)
-#include "base/allocator/allocator_shim.h"
+#include "base/allocator/partition_allocator/shim/allocator_shim.h"
 #endif
 
 #include <tuple>
@@ -121,8 +121,8 @@ TEST_F(BaseAllocatorDispatcherTest, VerifyNotificationUsingPartitionAllocator) {
 
 #if BUILDFLAG(USE_ALLOCATOR_SHIM)
 struct AllocatorShimAllocator {
-  void* Alloc(size_t size) { return base::allocator::UncheckedAlloc(size); }
-  void Free(void* data) { base::allocator::UncheckedFree(data); }
+  void* Alloc(size_t size) { return allocator_shim::UncheckedAlloc(size); }
+  void Free(void* data) { allocator_shim::UncheckedFree(data); }
 };
 
 #if BUILDFLAG(IS_APPLE) && !BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)

@@ -1,4 +1,4 @@
-# Copyright 2019 The Chromium Authors. All rights reserved.
+# Copyright 2019 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -6,6 +6,7 @@ import("//chrome/common/features.gni")
 import("//third_party/closure_compiler/compile_js.gni")
 import("//tools/grit/grit_rule.gni")
 import("//tools/grit/preprocess_if_expr.gni")
+import("//tools/polymer/css_to_wrapper.gni")
 import("//tools/polymer/html_to_js.gni")
 import("//tools/polymer/html_to_wrapper.gni")
 import("//tools/typescript/ts_library.gni")
@@ -60,13 +61,13 @@ if (optimize_webui) {
       "chrome://resources/cr_components/app_management/app_management.mojom-webui.js",
       "chrome://resources/cr_components/app_management/types.mojom-webui.js",
       "chrome://resources/cr_components/chromeos/bluetooth/cros_bluetooth_config.js",
-      "chrome://resources/cr_components/chromeos/cellular_setup/mojo_interface_provider.m.js",
-      "chrome://resources/cr_components/chromeos/network/mojo_interface_provider.m.js",
+      "chrome://resources/cr_components/chromeos/cellular_setup/mojo_interface_provider.js",
+      "chrome://resources/cr_components/chromeos/network/mojo_interface_provider.js",
       "chrome://resources/js/cr.m.js",
-      "chrome://resources/mojo/ash/services/cellular_setup/public/mojom/cellular_setup.mojom-lite.js",
-      "chrome://resources/mojo/ash/services/cellular_setup/public/mojom/esim_manager.mojom-lite.js",
+      "chrome://resources/mojo/chromeos/ash/services/cellular_setup/public/mojom/cellular_setup.mojom-lite.js",
+      "chrome://resources/mojo/chromeos/ash/services/cellular_setup/public/mojom/esim_manager.mojom-lite.js",
       "chrome://resources/mojo/chromeos/ash/services/auth_factor_config/public/mojom/auth_factor_config.mojom-webui.js",
-      "chrome://resources/mojo/chromeos/services/bluetooth_config/public/mojom/cros_bluetooth_config.mojom-webui.js",
+      "chrome://resources/mojo/chromeos/ash/services/bluetooth_config/public/mojom/cros_bluetooth_config.mojom-webui.js",
       "chrome://resources/mojo/chromeos/services/network_config/public/mojom/cros_network_config.mojom-lite.js",
       "chrome://resources/mojo/chromeos/services/network_config/public/mojom/cros_network_config.mojom-webui.js",
       "chrome://resources/mojo/chromeos/services/network_config/public/mojom/network_types.mojom-lite.js",
@@ -99,6 +100,7 @@ ts_library("build_ts") {
   deps = [
     "//third_party/polymer/v3_0:library",
     "//ui/webui/resources:library",
+    "//ui/webui/resources/cr_components/app_management:build_ts",
     "//ui/webui/resources/mojo:library",
   ]
   extra_deps = [
@@ -111,6 +113,9 @@ ts_library("build_ts") {
     "//tools/typescript/definitions/chrome_send.d.ts",
     "//tools/typescript/definitions/bluetooth.d.ts",
     "//tools/typescript/definitions/bluetooth_private.d.ts",
+    "//tools/typescript/definitions/metrics_private.d.ts",
+    "//tools/typescript/definitions/pending.d.ts",
+    "//tools/typescript/definitions/settings_private.d.ts",
   ]
   root_dir = "$target_gen_dir/$preprocessed_ts_folder"
   in_files = src_ts_files + gen_ts_files + mojom_webui_files
@@ -127,6 +132,7 @@ preprocess_if_expr("preprocess_src_ts_files") {
 preprocess_if_expr("preprocess_gen_ts_files") {
   defines = chrome_grit_defines
   deps = [
+    ":generate_web_component_css_wrapper_files",
     ":generate_web_component_html_wrapper_files",
     ":generate_web_components",
   ]
@@ -138,6 +144,12 @@ preprocess_if_expr("preprocess_gen_ts_files") {
 html_to_wrapper("generate_web_component_html_wrapper_files") {
   in_folder = "../"
   in_files = web_component_html_files
+  out_folder = get_path_info("../", "gen_dir")
+}
+
+css_to_wrapper("generate_web_component_css_wrapper_files") {
+  in_folder = "../"
+  in_files = css_files
   out_folder = get_path_info("../", "gen_dir")
 }
 
@@ -371,12 +383,9 @@ preprocess_if_expr("preprocess_browser_settings_tsc") {
     "controls/settings_boolean_control_mixin.js",
     "extension_control_browser_proxy.js",
     "icons.html.js",
-    "open_window_proxy.js",
     "people_page/profile_info_browser_proxy.js",
     "people_page/sync_browser_proxy.js",
-    "prefs/prefs.js",
     "prefs/prefs_mixin.js",
-    "prefs/prefs_types.js",
     "prefs/pref_util.js",
     "privacy_page/autofill_assistant_browser_proxy.js",
     "privacy_page/privacy_page_browser_proxy.js",
@@ -415,7 +424,6 @@ group("generate_web_components") {
     "guest_os:web_components",
     "internet_page:web_components",
     "kerberos_page:web_components",
-    "keyboard_shortcut_banner:web_components",
     "multidevice_page:web_components",
     "nearby_share_page:web_components",
     "os_a11y_page:web_components",
@@ -426,16 +434,11 @@ group("generate_web_components") {
     "os_apps_page/app_notifications_page:web_components",
     "os_bluetooth_page:web_components",
     "os_files_page:web_components",
-    "os_languages_page:web_components",
     "os_people_page:web_components",
     "os_printing_page:web_components",
     "os_privacy_page:web_components",
     "os_reset_page:web_components",
     "os_search_page:web_components",
-    "os_settings_search_box:web_components",
-    "parental_controls_page:web_components",
-    "personalization_page:web_components",
-    "settings_scheduler_slider:web_components",
   ]
 }
 
@@ -452,7 +455,6 @@ group("closure_compile_module") {
     "guest_os:closure_compile_module",
     "internet_page:closure_compile_module",
     "kerberos_page:closure_compile_module",
-    "keyboard_shortcut_banner:closure_compile_module",
     "multidevice_page:closure_compile_module",
     "os_a11y_page:closure_compile_module",
     "os_apps_page:closure_compile_module",
@@ -468,15 +470,6 @@ group("closure_compile_module") {
     "os_privacy_page:closure_compile_module",
     "os_reset_page:closure_compile_module",
     "os_search_page:closure_compile_module",
-    "os_settings_main:closure_compile_module",
-    "os_settings_menu:closure_compile_module",
-    "os_settings_page:closure_compile_module",
-    "os_settings_search_box:closure_compile_module",
-    "os_settings_ui:closure_compile_module",
-    "os_toolbar:closure_compile_module",
-    "parental_controls_page:closure_compile_module",
-    "personalization_page:closure_compile_module",
-    "settings_scheduler_slider:closure_compile_module",
   ]
 }
 
@@ -489,6 +482,7 @@ js_type_check("closure_compile_local_module") {
     ":deep_linking_behavior",
     ":global_scroll_target_behavior",
     ":lazy_load",
+    ":main_page_behavior",
     ":metrics_recorder",
     ":os_icons",
     ":os_page_visibility",
@@ -525,6 +519,15 @@ js_library("global_scroll_target_behavior") {
     ":route_observer_behavior",
     "..:router",
     "//ui/webui/resources/js:promise_resolver.m",
+  ]
+}
+
+js_library("main_page_behavior") {
+  deps = [
+    "..:router",
+    "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
+    "//ui/webui/resources/js:assert.m",
+    "//ui/webui/resources/js:util.m",
   ]
 }
 

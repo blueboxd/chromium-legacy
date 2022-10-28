@@ -903,7 +903,7 @@
     Invalid ID. The format you entered is incorrect. Please check the instructions you received to ensure you are entering the ID in the correct format. If you’re unable to resolve this issue, please leave the field blank and continue with installation.
   </message>
   <message name="IDS_OOBE_DEMO_SETUP_PREFERENCES_RETAILER_ID_INPUT_HELP_TEXT" desc="Help text for retailer id input field on the demo mode setup screen.">
-    Retailer-store ID is ABC-1234 format
+    The retailer-store ID format is ABC-1234
   </message>
   <message name="IDS_OOBE_DEMO_SETUP_PREFERENCES_SCREEN_COUNTRY_NOT_SELECTED_TITLE" desc="The title of country not selected option for demo mode preference screen.">
     Please select a country
@@ -1451,9 +1451,6 @@
   </message>
   <message name="IDS_LOGIN_PASSWORD_CHANGED_CONTINUE_WITHOUT_LOCAL_DATA_BUTTON" desc="Button to confirm continue without local data on the recover local data dialog.">
     Continue without local data
-  </message>
-  <message name="IDS_LOGIN_SAML_NOTICE" desc="Text message displayed above SAML portal to early indicate that the user is being redirected to another sign-in provider. This is the version of the string used in the GAIA flow.">
-    This sign-in service is hosted by <ph name="SAML_DOMAIN">$1<ex>saml.com</ex></ph>
   </message>
   <message name="IDS_LOGIN_SAML_NOTICE_SHORT" desc="Text message displayed above SAML portal to early indicate that the user is being redirected to another sign-in provider. This is the version of the string used in the GAIA flow.">
     Sign-in hosted by <ph name="SAML_DOMAIN">$1<ex>saml.com</ex></ph>
@@ -2668,6 +2665,27 @@
   </if>
 
   <!-- Network portal notification -->
+  <message name="IDS_NEW_PORTAL_DETECTION_NOTIFICATION_TITLE_WIRED" desc="Title for the new system notification that current wired network is behind captive portal">
+    Network Found
+  </message>
+  <message name="IDS_NEW_PORTAL_DETECTION_NOTIFICATION_TITLE_WIFI" desc="Title for the new system notification that current Wi-Fi network is behind captive portal">
+    WiFi Network Found
+  </message>
+  <message name="IDS_NEW_PORTAL_DETECTION_NOTIFICATION_MESSAGE" desc="Body of the new system notification that current wired network is behind captive portal">
+    Sign in to "<ph name="NETWORK_ID">$1<ex>Public Network</ex></ph>"
+  </message>
+  <message name="IDS_NEW_PORTAL_PROXY_AUTH_REQUIRED_DETECTION_NOTIFICATION_MESSAGE" desc="Body of the new system notification that current wired network is behind captive portal">
+    Proxy authentication is required for "<ph name="NETWORK_ID">$1<ex>Public Network</ex></ph>"
+  </message>
+  <message name="IDS_NEW_PORTAL_SUSPECTED_DETECTION_NOTIFICATION_MESSAGE" desc="Body of the new system notification that current wired network is behind captive portal">
+    Connectivity on "<ph name="NETWORK_ID">$1<ex>Public Network</ex></ph>" may be limited
+  </message>
+  <message name="IDS_NEW_PORTAL_DETECTION_NOTIFICATION_BUTTON" desc="The text to display on the button when the user needs to sign in to the captive portal">
+    Sign in
+  </message>
+  <message name="IDS_NEW_PORTAL_SUSPECTED_DETECTION_NOTIFICATION_BUTTON" desc="The text to display on the button when the user needs to open a new tab for a suspected portal">
+    Open a new tab
+  </message>
   <message name="IDS_PORTAL_DETECTION_NOTIFICATION_TITLE_WIRED" desc="Title for the system notification that current wired network is behind captive portal">
     Connect to network
   </message>
@@ -2911,6 +2929,9 @@
   </message>
   <message name="IDS_ENTERPRISE_ENROLLMENT_ILLEGAL_ACCOUNT_FOR_PACKAGED_EDU_LICENSE" desc="Error message to show when the user tries to enroll a CBEdu device into non-EDU account.">
     You must enroll this Chrome Education device into an education account. To sign up for a new account, please visit g.co/workspace/edusignup.
+  </message>
+  <message name="IDS_ENTERPRISE_ENROLLMENT_INVALID_PACKAGED_DEVICE_FOR_KIOSK" desc="Error message to show when the user tries to enroll an enterprise license packaged device into KIOSK.">
+    This is a bundled device and can not be enrolled with Kiosk &amp; Signage Upgrade.
   </message>
   <message name="IDS_ENTERPRISE_ENROLLMENT_ATTRIBUTE_ERROR" desc="Error message shown when successfully enrolled, but the device attribute update has failed.">
     Your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph> has successfully been enrolled for enterprise management, but failed to send its asset and location information. Please manually enter this information from your Admin console for this device.
@@ -6075,6 +6096,9 @@ You can manage this account’s settings by installing the Family Link app on yo
   <message name="IDS_SUGGESTION_AUTOCORRECT_UNDONE" desc="String announced by screenreader when an autocorrected word is reverted. Example, user types 'hllo', system autocorrects to 'hello' but then that autocorrection is manually undone by the user.">
     correction undone
   </message>
+  <message name="IDS_SUGGESTION_AUTOCORRECT_UNDO_TEXT" desc="Label for autocorrect undo button in undo window.">
+    Undo
+  </message>
   <message name="IDS_SUGGESTION_AUTOCORRECT_UNDO_BUTTON" desc="String announced by screenreader when a button to undo an autocorrect is highlighted. Example, user types 'hllo', system autocorrects to 'hello', user then prepares to revert the autocorrect.">
     Undo autocorrect button. Revert to <ph name="TYPED_WORD">$1<ex>hllo</ex></ph>.  Press enter to activate, escape to dismiss.
   </message>
@@ -6194,6 +6218,11 @@ Your <ph name="DEVICE_TYPE">{0}<ex>Chromebook</ex></ph> will be locked now.
   </message>
   <message name="IDS_RESTORE_CRASH_NOTIFICATION_MESSAGE" desc="This is the text message of the notification for the user to select restore or not on startup after crash.">
     You can restore your previous apps
+  </message>
+
+  <!-- Strings for multi-capture -->
+  <message name="IDS_MULTI_CAPTURE_NOTIFICATION_MESSAGE" desc="This is the message of the notification when an application starts capturing multiple surfaces.">
+    Your system administrator has allowed <ph name="APP_ORIGIN">$1</ph> to record your screen
   </message>
 
   <!-- Strings for Projector-->

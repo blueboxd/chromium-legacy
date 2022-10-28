@@ -1,4 +1,4 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -34,7 +34,7 @@ class TranslateBubbleModelImpl : public TranslateBubbleModel {
   // TranslateBubbleModel methods.
   TranslateBubbleModel::ViewState GetViewState() const override;
   void SetViewState(TranslateBubbleModel::ViewState view_state) override;
-  void ShowError(translate::TranslateErrors::Type error_type) override;
+  void ShowError(translate::TranslateErrors error_type) override;
   int GetNumberOfSourceLanguages() const override;
   int GetNumberOfTargetLanguages() const override;
   std::u16string GetSourceLanguageNameAt(int index) const override;

@@ -1,14 +1,14 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome/browser/ui/views/passwords/password_items_view.h"
 
-#include <algorithm>
 #include <memory>
 #include <numeric>
 #include <utility>
 
+#include "base/containers/contains.h"
 #include "base/memory/raw_ptr.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/types/strong_alias.h"
@@ -24,7 +24,6 @@
 #include "chrome/grit/generated_resources.h"
 #include "components/password_manager/core/browser/password_form.h"
 #include "components/password_manager/core/browser/password_manager_client.h"
-#include "components/password_manager/core/common/password_manager_features.h"
 #include "components/password_manager/core/common/password_manager_ui.h"
 #include "components/vector_icons/vector_icons.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -68,11 +67,9 @@ enum PasswordItemsViewColumnSetType {
 
 PasswordItemsViewColumnSetType InferColumnSetTypeFromCredentials(
     const std::vector<password_manager::PasswordForm>& credentials) {
-  if (std::any_of(credentials.begin(), credentials.end(),
-                  [](const password_manager::PasswordForm& form) {
-                    return form.in_store ==
-                           password_manager::PasswordForm::Store::kAccountStore;
-                  })) {
+  if (base::Contains(credentials,
+                     password_manager::PasswordForm::Store::kAccountStore,
+                     &password_manager::PasswordForm::in_store)) {
     return MULTI_STORE_PASSWORD_COLUMN_SET;
   }
   return PASSWORD_COLUMN_SET;
@@ -214,7 +211,7 @@ void PasswordItemsView::PasswordRow::AddPasswordRow(
           parent_->AddChildView(std::make_unique<views::ImageView>());
       image_view->SetImage(gfx::CreateVectorIcon(
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
-          kGoogleGLogoIcon,
+          vector_icons::kGoogleGLogoIcon,
 #else
           vector_icons::kSyncIcon,
 #endif  // !BUILDFLAG(GOOGLE_CHROME_BRANDING)
@@ -275,10 +272,7 @@ PasswordItemsView::PasswordItemsView(content::WebContents* web_contents,
           base::Unretained(this)),
       l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_MANAGE_PASSWORDS_BUTTON)));
 
-  if (base::FeatureList::IsEnabled(
-          password_manager::features::kUnifiedPasswordManagerDesktop)) {
-    SetFootnoteView(CreateFooterView());
-  }
+  SetFootnoteView(CreateFooterView());
 
   auto& local_credentials = controller_.local_credentials();
 
@@ -299,8 +293,7 @@ PasswordItemsView::PasswordItemsView(content::WebContents* web_contents,
     RecreateLayout();
   }
 
-  SetShowIcon(base::FeatureList::IsEnabled(
-      password_manager::features::kUnifiedPasswordManagerDesktop));
+  SetShowIcon(true);
 }
 
 PasswordItemsView::~PasswordItemsView() = default;
@@ -349,9 +342,6 @@ void PasswordItemsView::RecreateLayout() {
 }
 
 std::unique_ptr<views::View> PasswordItemsView::CreateFooterView() {
-  DCHECK(base::FeatureList::IsEnabled(
-      password_manager::features::kUnifiedPasswordManagerDesktop));
-
   base::RepeatingClosure open_password_manager_closure = base::BindRepeating(
       [](PasswordItemsView* dialog) {
         dialog->controller_.OnGooglePasswordManagerLinkClicked();

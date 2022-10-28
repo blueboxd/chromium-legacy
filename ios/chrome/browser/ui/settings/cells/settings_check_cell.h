@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -38,11 +38,14 @@
 - (void)setTrailingImage:(UIImage*)trailingImage
            withTintColor:(UIColor*)tintColor;
 
-// Sets the [leadingImage] and tint [leadingColor] for it that should be
-// displayed at the leading edge of the cell.  If set to nil, the image is
-// hidden.
-- (void)setLeadingImage:(UIImage*)leadingImage
-          withTintColor:(UIColor*)tintColor;
+// Sets the `image` that should be displayed at the leading edge of the cell
+// with a `tintColor`. If set to nil, the icon will be hidden and the rest of
+// the content will expand to fill the full width of the cell. The image view
+// will be configured with a `backgroundColor` and a `cornerRadius`.
+- (void)setLeadingIconImage:(UIImage*)image
+                  tintColor:(UIColor*)tintColor
+            backgroundColor:(UIColor*)backgroundColor
+               cornerRadius:(CGFloat)cornerRadius;
 
 // Shows/Hides `infoButton`.
 - (void)setInfoButtonHidden:(BOOL)hidden;

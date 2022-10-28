@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -109,10 +109,15 @@ class VideoSurfaceTextureImageBacking::GLTextureVideoImageRepresentation
     auto* video_backing =
         static_cast<VideoSurfaceTextureImageBacking*>(backing());
     video_backing->BeginGLReadAccess(texture_->service_id());
+    GetTexture()->SetLevelImageState(GetTexture()->target(), 0,
+                                     gles2::Texture::BOUND);
     return true;
   }
 
-  void EndAccess() override {}
+  void EndAccess() override {
+    GetTexture()->SetLevelImageState(GetTexture()->target(), 0,
+                                     gles2::Texture::UNBOUND);
+  }
 
  private:
   std::unique_ptr<gles2::AbstractTexture> texture_;

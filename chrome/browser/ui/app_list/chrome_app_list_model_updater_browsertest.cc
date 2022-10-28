@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -43,6 +43,7 @@
 #include "components/sync/model/string_ordinal.h"
 #include "components/sync/test/fake_sync_change_processor.h"
 #include "components/sync/test/sync_error_factory_mock.h"
+#include "components/user_manager/fake_user_manager.h"
 #include "content/public/test/browser_test.h"
 #include "extensions/browser/extension_system.h"
 
@@ -77,10 +78,9 @@ class OemAppPositionTest : public ash::LoginManagerTest {
     // from the test data directory to it.
     base::FilePath user_data_dir;
     base::PathService::Get(chrome::DIR_USER_DATA, &user_data_dir);
-    const std::string& email =
-        login_mixin_.users()[0].account_id.GetUserEmail();
     const std::string user_id_hash =
-        ash::ProfileHelper::GetUserIdHashByUserIdForTesting(email);
+        user_manager::FakeUserManager::GetFakeUsernameHash(
+            login_mixin_.users()[0].account_id);
     const base::FilePath user_profile_path = user_data_dir.Append(
         ash::ProfileHelper::GetUserProfileDir(user_id_hash));
     base::CreateDirectory(user_profile_path);
@@ -126,7 +126,7 @@ class ChromeAppListModelUpdaterTestBase
 
   void ShowAppList() {
     ash::AcceleratorController::Get()->PerformActionIfEnabled(
-        ash::TOGGLE_APP_LIST_FULLSCREEN, {});
+        ash::TOGGLE_APP_LIST, {});
     if (ash::features::IsProductivityLauncherEnabled()) {
       app_list_test_api_.WaitForBubbleWindow(
           /*wait_for_opening_animation=*/false);
@@ -770,7 +770,7 @@ IN_PROC_BROWSER_TEST_F(ChromeAppListModelUpdaterLegacyLauncherTest,
 
   // Create the app list view and show the apps grid.
   ash::AcceleratorController::Get()->PerformActionIfEnabled(
-      ash::TOGGLE_APP_LIST_FULLSCREEN, {});
+      ash::TOGGLE_APP_LIST, {});
   ASSERT_EQ(1, app_list_test_api_.GetPaginationModel()->total_pages());
 
   app_list_test_api_.GetLastItemInAppsGridView()->RequestFocus();
@@ -792,6 +792,6 @@ IN_PROC_BROWSER_TEST_F(ChromeAppListModelUpdaterLegacyLauncherTest,
 
   // Verify that the app list still has 2 pages after session restart.
   ash::AcceleratorController::Get()->PerformActionIfEnabled(
-      ash::TOGGLE_APP_LIST_FULLSCREEN, {});
+      ash::TOGGLE_APP_LIST, {});
   EXPECT_EQ(2, app_list_test_api_.GetPaginationModel()->total_pages());
 }

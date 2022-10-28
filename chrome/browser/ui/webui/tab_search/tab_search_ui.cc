@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -72,12 +72,6 @@ TabSearchUI::TabSearchUI(content::WebUI* web_ui)
       "useMetricsReporter",
       base::FeatureList::IsEnabled(features::kTabSearchUseMetricsReporter));
 
-  source->AddBoolean(
-      "alsoShowMediaTabsinOpenTabsSection",
-      GetFieldTrialParamByFeatureAsBool(
-          features::kTabSearchMediaTabs,
-          features::kTabSearchAlsoShowMediaTabsinOpenTabsSectionParameterName,
-          false));
   source->AddBoolean("searchIgnoreLocation",
                      features::kTabSearchSearchIgnoreLocation.Get());
   source->AddInteger("searchDistance",

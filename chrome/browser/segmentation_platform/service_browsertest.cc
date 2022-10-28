@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -61,7 +61,7 @@ class SegmentationPlatformTest : public InProcessBrowserTest {
 
   bool HasResultPref(base::StringPiece segmentation_key) {
     const base::Value::Dict& dictionary =
-        browser()->profile()->GetPrefs()->GetValueDict(kSegmentationResultPref);
+        browser()->profile()->GetPrefs()->GetDict(kSegmentationResultPref);
     return !!dictionary.FindByDottedPath(segmentation_key);
   }
 

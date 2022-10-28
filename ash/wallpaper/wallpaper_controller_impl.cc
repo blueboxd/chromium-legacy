@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -30,6 +30,7 @@
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
 #include "ash/style/dark_light_mode_controller_impl.h"
+#include "ash/wallpaper/wallpaper_metrics_manager.h"
 #include "ash/wallpaper/wallpaper_pref_manager.h"
 #include "ash/wallpaper/wallpaper_utils/wallpaper_calculated_colors.h"
 #include "ash/wallpaper/wallpaper_utils/wallpaper_color_calculator.h"
@@ -76,6 +77,7 @@
 #include "net/http/http_request_headers.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "services/data_decoder/public/cpp/decode_image.h"
+#include "services/data_decoder/public/mojom/image_decoder.mojom-shared.h"
 #include "third_party/icu/source/i18n/unicode/gregocal.h"
 #include "ui/compositor/compositor.h"
 #include "ui/compositor/layer.h"
@@ -712,6 +714,7 @@ WallpaperControllerImpl::WallpaperControllerImpl(
   Shell::Get()->window_tree_host_manager()->AddObserver(this);
   Shell::Get()->AddShellObserver(this);
   theme_observation_.Observe(ui::NativeTheme::GetInstanceForNativeUi());
+  wallpaper_metrics_manager_ = std::make_unique<WallpaperMetricsManager>();
 }
 
 WallpaperControllerImpl::~WallpaperControllerImpl() {
@@ -831,7 +834,6 @@ void WallpaperControllerImpl::ShowWallpaperImage(const gfx::ImageSkia& image,
 
   if (preview_mode) {
     DVLOG(1) << __func__ << " preview_mode=true";
-    base::UmaHistogramBoolean("Ash.Wallpaper.Preview.Show", true);
     for (auto& observer : observers_)
       observer.OnWallpaperPreviewStarted();
   }
@@ -851,9 +853,6 @@ void WallpaperControllerImpl::ShowWallpaperImage(const gfx::ImageSkia& image,
     VLOG(1) << "Wallpaper is already loaded";
     return;
   }
-
-  UMA_HISTOGRAM_ENUMERATION("Ash.Wallpaper.Type", info.type,
-                            WallpaperType::kCount);
 
   // Cancel any in-flight color calculation because we have a new wallpaper.
   if (color_calculator_) {
@@ -1120,21 +1119,8 @@ void WallpaperControllerImpl::SetOnlineWallpaperIfExists(
     return;
   }
 
-  if (params.from_user) {
-    // |unit_id| is empty when set by old wallpaper picker.
-    const absl::optional<uint64_t>& unit_id = params.unit_id;
-    if (unit_id.has_value()) {
-      const int unit_id_val = unit_id.value();
-      base::UmaHistogramSparse("Ash.Wallpaper.Image", unit_id_val);
-    }
-    const std::string& collection_id = params.collection_id;
-    // |collection_id| is empty when the wallpaper is automatically refreshed
-    // by old wallpaper app.
-    if (!collection_id.empty()) {
-      const int collection_id_hash = base::PersistentHash(collection_id);
-      base::UmaHistogramSparse("Ash.Wallpaper.Collection", collection_id_hash);
-    }
-  }
+  for (auto& observer : observers_)
+    observer.OnOnlineWallpaperSet(params);
 
   if (params.variants.empty()) {
     // |params.variants| can be empty for users who use the old wallpaper
@@ -1175,7 +1161,9 @@ void WallpaperControllerImpl::SetOnlineWallpaperFromData(
         .Run(CreateSolidColorWallpaper(kDefaultWallpaperColor));
     return;
   }
-  image_util::DecodeImageData(std::move(decoded_callback), image_data);
+  image_util::DecodeImageData(std::move(decoded_callback),
+                              data_decoder::mojom::ImageCodec::kDefault,
+                              image_data);
 }
 
 void WallpaperControllerImpl::SetGooglePhotosWallpaper(
@@ -1321,9 +1309,17 @@ void WallpaperControllerImpl::SetCustomizedDefaultWallpaperPaths(
   // default wallpapers, e.g. they should not be set during guest sessions.
   // This should ONLY be called from OOBE where there should not be an active
   // session.
-  DCHECK(!GetActiveUserSession());
-  SetDefaultWallpaperImpl(user_manager::USER_TYPE_REGULAR, show_wallpaper,
-                          base::DoNothing());
+  auto* active_user_session = GetActiveUserSession();
+  // Login does not have an active session and the expected behavior is that of
+  // a regular user.
+  user_manager::UserType user_type = user_manager::USER_TYPE_REGULAR;
+  if (active_user_session) {
+    // We expect that this finishes before the user has logged in.
+    LOG(WARNING) << "Set customized default wallpaper after login";
+    user_type = active_user_session->user_info.type;
+  }
+
+  SetDefaultWallpaperImpl(user_type, show_wallpaper, base::DoNothing());
 }
 
 void WallpaperControllerImpl::SetPolicyWallpaper(
@@ -1349,7 +1345,8 @@ void WallpaperControllerImpl::SetPolicyWallpaper(
     std::move(callback).Run(CreateSolidColorWallpaper(kDefaultWallpaperColor));
     return;
   }
-  image_util::DecodeImageData(std::move(callback), data);
+  image_util::DecodeImageData(std::move(callback),
+                              data_decoder::mojom::ImageCodec::kDefault, data);
 }
 
 void WallpaperControllerImpl::SetDevicePolicyWallpaperPath(

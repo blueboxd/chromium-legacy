@@ -20,6 +20,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/task/single_thread_task_runner.h"
 #include "ui/base/dragdrop/mojom/drag_drop_types.mojom-forward.h"
+#include "ui/base/ui_base_types.h"
 #include "ui/events/event_target.h"
 #include "ui/events/platform/platform_event_dispatcher.h"
 #include "ui/gfx/geometry/insets.h"
@@ -148,11 +149,6 @@ class WaylandWindow : public PlatformWindow,
   // The pixel size of the buffer for the surface.
   gfx::Size visual_size_px() const { return visual_size_px_; }
 
-  absl::optional<gfx::Insets> frame_insets_px() const {
-    return frame_insets_px_;
-  }
-  void set_frame_insets_px(gfx::Insets insets) { frame_insets_px_ = insets; }
-
   bool received_configure_event() const { return received_configure_event_; }
 
   // Remove WaylandOutput associated with WaylandSurface of this window.
@@ -219,18 +215,25 @@ class WaylandWindow : public PlatformWindow,
   // The width and height come in DIP of the output that the surface is
   // currently bound to.
   virtual void HandleSurfaceConfigure(uint32_t serial);
+
+  struct WindowStates {
+    bool is_maximized = false;
+    bool is_fullscreen = false;
+    bool is_activated = false;
+    bool is_snapped_primary = false;
+    bool is_snapped_secondary = false;
+    bool is_floated = false;
+    WindowTiledEdges tiled_edges;
+  };
+
   virtual void HandleToplevelConfigure(int32_t width,
                                        int32_t height,
-                                       bool is_maximized,
-                                       bool is_fullscreen,
-                                       bool is_activated);
+                                       const WindowStates& window_states);
   virtual void HandleAuraToplevelConfigure(int32_t x,
                                            int32_t y,
                                            int32_t width,
                                            int32_t height,
-                                           bool is_maximized,
-                                           bool is_fullscreen,
-                                           bool is_activated);
+                                           const WindowStates& window_states);
   virtual void HandlePopupConfigure(const gfx::Rect& bounds);
   // The final size of the Wayland surface is determined by the buffer size in
   // px that the Chromium compositor renders at. If the window changes a
@@ -282,6 +285,9 @@ class WaylandWindow : public PlatformWindow,
 
   // Updates the window decorations, if possible at the moment.
   virtual void UpdateDecorations();
+
+  // Returns the effective decoration insets.
+  gfx::Insets GetDecorationInsetsInDIP() const;
 
   // Returns a root parent window within the same hierarchy.
   WaylandWindow* GetRootParentWindow();
@@ -395,6 +401,8 @@ class WaylandWindow : public PlatformWindow,
   FRIEND_TEST_ALL_PREFIXES(WaylandScreenTest, SetWindowScale);
   FRIEND_TEST_ALL_PREFIXES(WaylandBufferManagerTest, CanSubmitOverlayPriority);
   FRIEND_TEST_ALL_PREFIXES(WaylandBufferManagerTest, CanSetRoundedCorners);
+  FRIEND_TEST_ALL_PREFIXES(WaylandBufferManagerTest,
+                           CommitOverlaysNonsensicalBoundsRect);
 
   // Initializes the WaylandWindow with supplied properties.
   bool Initialize(PlatformWindowInitProperties properties);
@@ -450,24 +458,24 @@ class WaylandWindow : public PlatformWindow,
   // requested size by the Wayland compositor. When this is set in SetBounds(),
   // delegate_->OnBoundsChanged() is called and updates current_surface_size in
   // Viz. However, it is not guaranteed that the next arriving frame will match
-  // |bounds_px_|.
-  // gfx::Rect bounds_px_;
-
+  // |bounds_dip_|.
   gfx::Rect bounds_dip_;
   gfx::Size size_px_;
 
   // The size presented by the gpu process. This is the visible size of the
-  // window, which can be different from |bounds_px_| due to renderers taking
-  // time to produce a compositor frame.
+  // window, which can be different from |bounds_dip_| * scale due to renderers
+  // taking time to produce a compositor frame.
   // The rough flow of size changes:
   //   Wayland compositor -> xdg_surface.configure()
   //   -> WaylandWindow::SetBounds() -> IPC -> DisplayPrivate::Resize()
   //   -> OutputSurface::SwapBuffers() -> WaylandWindow::UpdateVisualSize()
   //   -> xdg_surface.ack_configure() -> Wayland compositor.
   gfx::Size visual_size_px_;
+
   // Margins between edges of the surface and the window geometry (i.e., the
   // area of the window that is visible to the user as the actual window).  The
   // areas outside the geometry are used to draw client-side window decorations.
+  // TODO(crbug.com/1306688): Use DIP for frame insets.
   absl::optional<gfx::Insets> frame_insets_px_;
 
   bool has_touch_focus_ = false;

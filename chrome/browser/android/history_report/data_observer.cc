@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -52,7 +52,8 @@ void DataObserver::BookmarkNodeMoved(BookmarkModel* model,
 
 void DataObserver::BookmarkNodeAdded(BookmarkModel* model,
                                      const BookmarkNode* parent,
-                                     size_t index) {
+                                     size_t index,
+                                     bool added_by_user) {
   delta_file_service_->PageAdded(parent->children()[index]->url());
   data_changed_callback_.Run();
 }

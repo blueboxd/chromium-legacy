@@ -1,4 +1,4 @@
-# Copyright 2018 The Chromium Authors. All rights reserved.
+# Copyright 2018 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -17,6 +17,7 @@ component("embedder_internal") {
   output_name = "mojo_core_embedder_internal"
   public_deps = [ ":impl_for_embedder" ]
   visibility = [
+    ":driver_for_ipcz_tests",
     ":test_sources",
     "//mojo:*",
     "//mojo/core/embedder",
@@ -61,7 +62,10 @@ template("core_impl_source_set") {
       "handle_table.h",
       "invitation_dispatcher.h",
       "ipcz_api.h",
+      "ipcz_driver/base_shared_memory_service.h",
       "ipcz_driver/driver.h",
+      "ipcz_driver/invitation.h",
+      "ipcz_driver/shared_buffer.h",
       "ipcz_driver/transmissible_platform_handle.h",
       "ipcz_driver/transport.h",
       "ipcz_driver/wrapped_platform_handle.h",
@@ -94,11 +98,18 @@ template("core_impl_source_set") {
       "handle_table.cc",
       "invitation_dispatcher.cc",
       "ipcz_api.cc",
+      "ipcz_driver/base_shared_memory_service.cc",
+      "ipcz_driver/data_pipe.cc",
+      "ipcz_driver/data_pipe.h",
       "ipcz_driver/driver.cc",
+      "ipcz_driver/invitation.cc",
       "ipcz_driver/mojo_trap.cc",
       "ipcz_driver/mojo_trap.h",
       "ipcz_driver/object.cc",
       "ipcz_driver/object.h",
+      "ipcz_driver/shared_buffer.cc",
+      "ipcz_driver/shared_buffer_mapping.cc",
+      "ipcz_driver/shared_buffer_mapping.h",
       "ipcz_driver/transmissible_platform_handle.cc",
       "ipcz_driver/transport.cc",
       "ipcz_driver/wrapped_platform_handle.cc",
@@ -111,6 +122,8 @@ template("core_impl_source_set") {
       "platform_handle_utils.cc",
       "platform_shared_memory_mapping.cc",
       "request_context.cc",
+      "scoped_ipcz_handle.cc",
+      "scoped_ipcz_handle.h",
       "shared_buffer_dispatcher.cc",
       "user_message_impl.cc",
       "watch.cc",
@@ -205,6 +218,17 @@ template("core_impl_source_set") {
 
 core_impl_source_set("impl_for_embedder") {
   for_shared_library = false
+}
+
+source_set("driver_for_ipcz_tests") {
+  testonly = true
+  sources = [ "ipcz_driver/driver_for_ipcz_tests.cc" ]
+  deps = [
+    ":embedder_internal",
+    "//base",
+    "//base/test:test_support",
+    "//third_party/ipcz/src:ipcz_test_support_chromium",
+  ]
 }
 
 if (is_win) {

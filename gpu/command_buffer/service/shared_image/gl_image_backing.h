@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -99,7 +99,8 @@ class SkiaGLCommonRepresentation : public SkiaImageRepresentation {
       int final_msaa_count,
       const SkSurfaceProps& surface_props,
       std::vector<GrBackendSemaphore>* begin_semaphores,
-      std::vector<GrBackendSemaphore>* end_semaphores) override;
+      std::vector<GrBackendSemaphore>* end_semaphores,
+      std::unique_ptr<GrBackendSurfaceMutableState>* end_state) override;
   sk_sp<SkPromiseImageTexture> BeginWriteAccess(
       std::vector<GrBackendSemaphore>* begin_semaphores,
       std::vector<GrBackendSemaphore>* end_semaphore,
@@ -107,7 +108,8 @@ class SkiaGLCommonRepresentation : public SkiaImageRepresentation {
   void EndWriteAccess(sk_sp<SkSurface> surface) override;
   sk_sp<SkPromiseImageTexture> BeginReadAccess(
       std::vector<GrBackendSemaphore>* begin_semaphores,
-      std::vector<GrBackendSemaphore>* end_semaphores) override;
+      std::vector<GrBackendSemaphore>* end_semaphores,
+      std::unique_ptr<GrBackendSurfaceMutableState>* end_state) override;
   void EndReadAccess() override;
   bool SupportsMultipleConcurrentReadAccess() override;
 
@@ -203,13 +205,12 @@ class GPU_GLES2_EXPORT GLImageBacking
   // SharedImageBacking:
   scoped_refptr<gfx::NativePixmap> GetNativePixmap() override;
   void OnMemoryDump(const std::string& dump_name,
-                    base::trace_event::MemoryAllocatorDump* dump,
+                    base::trace_event::MemoryAllocatorDumpGuid client_guid,
                     base::trace_event::ProcessMemoryDump* pmd,
                     uint64_t client_tracing_id) override;
   SharedImageBackingType GetType() const override;
   gfx::Rect ClearedRect() const final;
   void SetClearedRect(const gfx::Rect& cleared_rect) final;
-  bool ProduceLegacyMailbox(MailboxManager* mailbox_manager) final;
   std::unique_ptr<GLTextureImageRepresentation> ProduceGLTexture(
       SharedImageManager* manager,
       MemoryTypeTracker* tracker) final;
@@ -229,9 +230,6 @@ class GPU_GLES2_EXPORT GLImageBacking
       MemoryTypeTracker* tracker,
       scoped_refptr<SharedContextState> context_state) override;
   std::unique_ptr<MemoryImageRepresentation> ProduceMemory(
-      SharedImageManager* manager,
-      MemoryTypeTracker* tracker) override;
-  std::unique_ptr<GLTextureImageRepresentation> ProduceRGBEmulationGLTexture(
       SharedImageManager* manager,
       MemoryTypeTracker* tracker) override;
   void Update(std::unique_ptr<gfx::GpuFence> in_fence) override;
@@ -262,7 +260,6 @@ class GPU_GLES2_EXPORT GLImageBacking
   // |texture_| is nullptr.
   gfx::Rect cleared_rect_;
 
-  gles2::Texture* rgb_emulation_texture_ = nullptr;
   gles2::Texture* texture_ = nullptr;
   scoped_refptr<gles2::TexturePassthrough> passthrough_texture_;
 

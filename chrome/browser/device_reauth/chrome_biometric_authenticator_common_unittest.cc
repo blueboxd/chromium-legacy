@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -34,7 +34,7 @@ class FakeChromeBiometricAuthenticatorCommon
                     bool use_last_valid) override;
 
   void AuthenticateWithMessage(BiometricAuthRequester requester,
-                               const std::u16string message,
+                               const std::u16string& message,
                                AuthenticateCallback callback) override;
 
   void Cancel(BiometricAuthRequester requester) override;
@@ -68,7 +68,7 @@ void FakeChromeBiometricAuthenticatorCommon::Cancel(
 
 void FakeChromeBiometricAuthenticatorCommon::AuthenticateWithMessage(
     device_reauth::BiometricAuthRequester requester,
-    const std::u16string message,
+    const std::u16string& message,
     AuthenticateCallback callback) {
   NOTIMPLEMENTED();
 }

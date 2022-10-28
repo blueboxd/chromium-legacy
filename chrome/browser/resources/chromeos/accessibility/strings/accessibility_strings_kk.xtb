@@ -138,7 +138,6 @@
 <translation id="1812527064848182527">альбомдық</translation>
 <translation id="1829244130665387512">Беттен табу</translation>
 <translation id="1834891354138622109">Баған</translation>
-<translation id="1845944666972354496">Іске қосу үшін екі рет түртіңіз</translation>
 <translation id="1846771122725914429">Bluetooth Брайль дисплейі</translation>
 <translation id="1852018405765032699">Экранды төрт саусақпен түрту арқылы ChromeVox мәзірлерін ашуға және жабуға болады. Бұл мәзірлерде пәрмендер мен таңбашалар туралы пайдалы ақпарат қамтылған. Мәзірлер ашылған кезде, элементтер арасында жылжу үшін бір саусақпен сырғытуыңызға, элементтерді белсендіру үшін екі рет түртуіңізге болады. Жалғастыру үшін экранды төрт саусағыңызбен түртіңіз.</translation>
 <translation id="1865601187525349519">Мәтіннің соңы</translation>
@@ -529,6 +528,7 @@
 <translation id="4479068155583208887">Күрең</translation>
 <translation id="4482330759234983253">Алдыңғы кесте</translation>
 <translation id="4491109536499578614">Кескін</translation>
+<translation id="4507332368061453500">Қолданыстағы элементті басып тұру</translation>
 <translation id="4511186779140817916">Бозғылт сары</translation>
 <translation id="451510441928265982">Алдыңғы 2-деңгей тақырыбы жоқ.</translation>
 <translation id="4515799157838123044">Фондағы мазмұнға қошқыл реңк беру</translation>
@@ -597,7 +597,6 @@
 <translation id="4993152509206108683"><ph name="PERCENT" /> пайыз бағамы</translation>
 <translation id="4994420463726586413">Ағымдағы батарея күйін жариялау</translation>
 <translation id="4997282455736854877"><ph name="NAME" />, радио түйме таңдалды</translation>
-<translation id="5011664330025416377">Іске қосу үшін "Іздеу" + "Бос орын" пернелерін басыңыз.</translation>
 <translation id="5012724933919010465"><ph name="NAME" /> мәзір элементінің ауыстырып қосқышы таңдалған</translation>
 <translation id="5020651427400641814">Дауыспен енгізу арқылы кіру функциясын қосу</translation>
 <translation id="5041394372352067729">Брайль дисплейін беттің жоғарғы жағына жылжыту</translation>
@@ -762,6 +761,7 @@
 <translation id="6100239002225743044">Бір жол жоғары көтерілу</translation>
 <translation id="6118126368611144850">Chrome браузеріне арналған Android қолданбалары. Құрылғыңызда Play Store дүкені болса, Google Chrome Canary браузерін жүктеп алып, Android қолданбаларымен ChromeVox мүмкіндігін пайдаланып көріңіз.</translation>
 <translation id="611827076493383239">vtd</translation>
+<translation id="6119846243427417423">белсендіру</translation>
 <translation id="6122013438240733403">btn</translation>
 <translation id="6132506484792346370">Тізім терезесі немесе тізімді өріс</translation>
 <translation id="613344593214611552">алдыңғы сөйлемді өшіру</translation>

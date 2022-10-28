@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -87,14 +87,19 @@ static jboolean JNI_TraceEvent_ViewHierarchyDumpEnabled(JNIEnv* env) {
   return *enabled;
 }
 
-static void JNI_TraceEvent_InitViewHierarchyDump(JNIEnv* env) {
+static void JNI_TraceEvent_InitViewHierarchyDump(
+    JNIEnv* env,
+    jlong id,
+    const JavaParamRef<jobject>& obj) {
   SCOPED_UMA_HISTOGRAM_TIMER("Tracing.ViewHierarchyDump.DumpDuration");
-  TRACE_EVENT_INSTANT(
+  TRACE_EVENT(
       kAndroidViewHierarchyTraceCategory, kAndroidViewHierarchyEventName,
-      perfetto::Track::Global(0), [&](perfetto::EventContext ctx) {
+      perfetto::TerminatingFlow::ProcessScoped(static_cast<uint64_t>(id)),
+      [&](perfetto::EventContext ctx) {
         auto* event = ctx.event<perfetto::protos::pbzero::ChromeTrackEvent>();
         auto* dump = event->set_android_view_dump();
-        Java_TraceEvent_dumpViewHierarchy(env, reinterpret_cast<jlong>(dump));
+        Java_TraceEvent_dumpViewHierarchy(env, reinterpret_cast<jlong>(dump),
+                                          obj);
       });
 }
 
@@ -146,11 +151,14 @@ static void JNI_TraceEvent_SetupATraceStartupTrace(
 static jboolean JNI_TraceEvent_ViewHierarchyDumpEnabled(JNIEnv* env) {
   return false;
 }
-static void JNI_TraceEvent_InitViewHierarchyDump(JNIEnv* env) {
+static void JNI_TraceEvent_InitViewHierarchyDump(
+    JNIEnv* env,
+    jlong id,
+    const JavaParamRef<jobject>& obj) {
   DCHECK(false);
   // This code should not be reached when base tracing is disabled. Calling
   // dumpViewHierarchy to avoid "unused function" warning.
-  Java_TraceEvent_dumpViewHierarchy(env, 0);
+  Java_TraceEvent_dumpViewHierarchy(env, 0, obj);
 }
 static jlong JNI_TraceEvent_StartActivityDump(JNIEnv* env,
                                               const JavaParamRef<jstring>& name,
@@ -229,6 +237,31 @@ static void JNI_TraceEvent_InstantAndroidIPC(JNIEnv* env,
       });
 }
 
+static void JNI_TraceEvent_InstantAndroidToolbar(JNIEnv* env,
+                                                 jint block_reason,
+                                                 jint allow_reason,
+                                                 jint snapshot_diff) {
+  using AndroidToolbar = perfetto::protos::pbzero::AndroidToolbar;
+  TRACE_EVENT_INSTANT(
+      internal::kJavaTraceCategory, "AndroidToolbar",
+      [&](perfetto::EventContext ctx) {
+        auto* event = ctx.event<perfetto::protos::pbzero::ChromeTrackEvent>();
+        auto* android_toolbar = event->set_android_toolbar();
+        if (block_reason >= 0) {
+          android_toolbar->set_block_capture_reason(
+              static_cast<AndroidToolbar::BlockCaptureReason>(block_reason));
+        }
+        if (allow_reason >= 0) {
+          android_toolbar->set_allow_capture_reason(
+              static_cast<AndroidToolbar::AllowCaptureReason>(allow_reason));
+        }
+        if (snapshot_diff >= 0) {
+          android_toolbar->set_snapshot_difference(
+              static_cast<AndroidToolbar::SnapshotDifference>(snapshot_diff));
+        }
+      });
+}
+
 static void JNI_TraceEvent_Begin(JNIEnv* env,
                                  const JavaParamRef<jstring>& jname,
                                  const JavaParamRef<jstring>& jarg) {
@@ -249,11 +282,22 @@ static void JNI_TraceEvent_Begin(JNIEnv* env,
 
 static void JNI_TraceEvent_End(JNIEnv* env,
                                const JavaParamRef<jstring>& jname,
-                               const JavaParamRef<jstring>& jarg) {
+                               const JavaParamRef<jstring>& jarg,
+                               jlong jflow) {
   TraceEventDataConverter converter(env, jname, jarg);
-  if (converter.arg_name()) {
+  bool has_arg = converter.arg_name();
+  bool has_flow = jflow != 0;
+  if (has_arg && has_flow) {
+    TRACE_EVENT_END(internal::kJavaTraceCategory,
+                    perfetto::Flow::ProcessScoped(static_cast<uint64_t>(jflow)),
+                    converter.arg_name(), converter.arg());
+  } else if (has_arg) {
     TRACE_EVENT_END(internal::kJavaTraceCategory, converter.arg_name(),
                     converter.arg());
+  } else if (has_flow) {
+    TRACE_EVENT_END(
+        internal::kJavaTraceCategory,
+        perfetto::Flow::ProcessScoped(static_cast<uint64_t>(jflow)));
   } else {
     TRACE_EVENT_END(internal::kJavaTraceCategory);
   }

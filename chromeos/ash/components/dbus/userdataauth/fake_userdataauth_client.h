@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -248,6 +248,11 @@ class COMPONENT_EXPORT(USERDATAAUTH_CLIENT) FakeUserDataAuthClient
   void RemoveAuthFactor(
       const ::user_data_auth::RemoveAuthFactorRequest& request,
       RemoveAuthFactorCallback callback) override;
+  void ListAuthFactors(const ::user_data_auth::ListAuthFactorsRequest& request,
+                       ListAuthFactorsCallback callback);
+  void GetRecoveryRequest(
+      const ::user_data_auth::GetRecoveryRequestRequest& request,
+      GetRecoveryRequestCallback callback) override;
   void GetAuthSessionStatus(
       const ::user_data_auth::GetAuthSessionStatusRequest& request,
       GetAuthSessionStatusCallback callback) override;
@@ -416,7 +421,7 @@ class COMPONENT_EXPORT(USERDATAAUTH_CLIENT) FakeUserDataAuthClient
 
   // The list of callbacks passed to WaitForServiceToBeAvailable when the
   // service wasn't available.
-  std::vector<WaitForServiceToBeAvailableCallback>
+  std::vector<chromeos::WaitForServiceToBeAvailableCallback>
       pending_wait_for_service_to_be_available_callbacks_;
 
   // Other stuff/miscellaneous:

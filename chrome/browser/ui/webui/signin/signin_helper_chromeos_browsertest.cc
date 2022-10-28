@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -49,7 +49,6 @@ const char kSecureConnectApiGetSecondaryGoogleAccountUsageURL[] =
     "https://secureconnect-pa.clients6.google.com/"
     "v1:getManagedAccountsSigninRestriction?policy_name="
     "SecondaryGoogleAccountUsage";
-;
 
 // Fake responses for the URL requests that are part of the sign-in flow.
 const char kOnClientOAuthSuccessBody[] =

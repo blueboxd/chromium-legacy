@@ -22,7 +22,7 @@
 import {FilesAppEntry} from '../../externs/files_app_entry_interfaces.js';
 import {VolumeManager} from '../../externs/volume_manager.js';
 
-import {parseTrashInfoFiles} from './api.js';
+import {parseTrashInfoFiles, startIOTask} from './api.js';
 import {FakeEntryImpl} from './files_app_entry_types.js';
 import {metrics} from './metrics.js';
 import {VolumeManagerCommon} from './volume_manager_types.js';
@@ -74,36 +74,62 @@ TrashConfig.CONFIG = [
   new TrashConfig(
       VolumeManagerCommon.VolumeType.DOWNLOADS, '/', '/.Trash/',
       'MY_FILES_ROOT_LABEL'),
-  new TrashConfig(
-      VolumeManagerCommon.VolumeType.CROSTINI, '/', '/.local/share/Trash/',
-      'LINUX_FILES_ROOT_LABEL', {},
-      /*prefixPathWithRemoteMount=*/ true),
-  new TrashConfig(
-      VolumeManagerCommon.VolumeType.DRIVE, '/', '/.Trash-1000/',
-      'DRIVE_DIRECTORY_LABEL', {
-        'root': 'DRIVE_MY_DRIVE_LABEL',
-        'team_drives': 'DRIVE_SHARED_DRIVES_LABEL',
-        'Computers': 'DRIVE_COMPUTERS_LABEL',
-      }),
 ];
+
+/**
+ * Interval (ms) until items in trash are permanently deleted. 30 days.
+ */
+export const AUTO_DELETE_INTERVAL_MS = 30 * 24 * 60 * 60 * 1000;
 
 /**
  * Returns a list of strings that represent volumes that are enabled for Trash.
  * Used to validate drag drop data without resolving the URLs to Entry's.
  * @param {!VolumeManager} volumeManager
+ * @param {boolean} includeTrashPath True if URLs should have the .Trash folder
+ *     suffix.
  * @returns {!Array<!string>}
  */
-export function getEnabledTrashVolumeURLs(volumeManager) {
+export function getEnabledTrashVolumeURLs(
+    volumeManager, includeTrashPath = false) {
   const urls = [];
   for (let i = 0; i < volumeManager.volumeInfoList.length; i++) {
     const volumeInfo = volumeManager.volumeInfoList.item(i);
     for (const config of TrashConfig.CONFIG) {
       if (volumeInfo.volumeType === config.volumeType) {
-        urls.push(volumeInfo.fileSystem.root.toURL());
+        if (!includeTrashPath) {
+          urls.push(volumeInfo.fileSystem.root.toURL());
+          continue;
+        }
+        let fileSystemRootURL = volumeInfo.fileSystem.root.toURL();
+        if (fileSystemRootURL.endsWith('/')) {
+          fileSystemRootURL =
+              fileSystemRootURL.substring(0, fileSystemRootURL.length - 1);
+        }
+        urls.push(fileSystemRootURL + config.trashDir);
       }
     }
   }
   return urls;
+}
+
+/**
+ * Returns true if all supplied entries reside at a known trash location.
+ * @param {!Array<!Entry>} entries List of entries to verify.
+ * @param {!VolumeManager} volumeManager Volume manager used to get trash
+ *     location URLs.
+ * @returns {boolean} True if all entries are trash
+ */
+export function isAllTrashEntries(entries, volumeManager) {
+  const enabledTrashVolumeURLs =
+      getEnabledTrashVolumeURLs(volumeManager, /*includeTrashPath=*/ true);
+  return entries.every(e => {
+    for (const volumeURL of enabledTrashVolumeURLs) {
+      if (e.toURL().startsWith(volumeURL)) {
+        return true;
+      }
+    }
+    return false;
+  });
 }
 
 /**
@@ -369,8 +395,7 @@ class TrashDirectoryReader {
    * @return {?TrashEntry}
    */
   createTrashEntry_(parsedEntry, infoEntry) {
-    const filesEntry = this.filesEntries_[parsedEntry.trashInfoFileName];
-    delete this.filesEntries_[parsedEntry.trashInfoFileName];
+    const filesEntry = this.getFilesEntry(parsedEntry.trashInfoFileName);
 
     // Ignore any .trashinfo file with no matching file entry.
     if (!filesEntry) {
@@ -383,6 +408,18 @@ class TrashDirectoryReader {
     return new TrashEntry(
         parsedEntry.restoreEntry.name, deletionDate, filesEntry, infoEntry,
         parsedEntry.restoreEntry);
+  }
+
+  /**
+   * Returns the Entry from the cached files entries.
+   * @param {string} trashInfoFileName The .trashinfo filename that keys the
+   *     files entry.
+   * @returns {?Entry} The files entry if one exists, null otherwise.
+   */
+  getFilesEntry(trashInfoFileName) {
+    const filesEntry = this.filesEntries_[trashInfoFileName];
+    delete this.filesEntries_[trashInfoFileName];
+    return filesEntry;
   }
 
   /**
@@ -435,6 +472,8 @@ class TrashDirectoryReader {
     // Consume infoReader which is initialized in the first call. Read from
     // .Trash/info until we have at least 1 result, or end of stream.
     const result = [];
+    const entriesToDelete = [];
+    const dateNow = Date.now();
     while (true) {
       let entries = [];
       try {
@@ -443,6 +482,9 @@ class TrashDirectoryReader {
         console.warn('Error reading trash info entries', e);
         error(e);
         return;
+      }
+      if (!entries.length) {
+        break;
       }
       const infoEntryMap = {};
       for (const e of entries) {
@@ -460,17 +502,30 @@ class TrashDirectoryReader {
         return;
       }
       for (const parsedEntry of parsedEntries) {
+        // In the event the parsed entry was deleted more than 30 days ago,
+        // schedule them for deletion and don't render them in the view.
+        if (parsedEntry.deletionDate < (dateNow - AUTO_DELETE_INTERVAL_MS)) {
+          entriesToDelete.push(infoEntryMap[parsedEntry.trashInfoFileName]);
+          const trashEntry = this.getFilesEntry(parsedEntry.trashInfoFileName);
+          if (trashEntry) {
+            entriesToDelete.push(trashEntry);
+          }
+          continue;
+        }
         const trashEntry = this.createTrashEntry_(
             parsedEntry, infoEntryMap[parsedEntry.trashInfoFileName]);
         if (trashEntry) {
           result.push(trashEntry);
         }
       }
-      if (!parsedEntries.length || result.length) {
-        break;
-      }
     }
     success(result);
+
+    if (entriesToDelete.length > 0) {
+      startIOTask(
+          chrome.fileManagerPrivate.IOTaskType.DELETE, entriesToDelete,
+          {showNotification: false});
+    }
 
     // Record the amount of files seen for this particularly directory reader.
     metrics.recordMediumCount(

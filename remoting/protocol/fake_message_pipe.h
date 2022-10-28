@@ -7,9 +7,11 @@
 
 #include <memory>
 #include <string>
+#include <vector>
 
 #include "base/containers/queue.h"
 #include "base/memory/raw_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "remoting/protocol/message_pipe.h"
 
 namespace google {
@@ -18,8 +20,7 @@ class MessageLite;
 }  // namespace protobuf
 }  // namespace google
 
-namespace remoting {
-namespace protocol {
+namespace remoting::protocol {
 
 class FakeMessagePipeWrapper;
 
@@ -55,6 +56,10 @@ class FakeMessagePipe final : public MessagePipe {
   // Simulates the operation to close the pipe.
   void ClosePipe();
 
+  // Returns true if there is at least one valid wrapper that hasn't been
+  // destroyed.
+  bool HasWrappers() const;
+
   // Returns all messages sent using Send().
   const base::queue<std::string>& sent_messages() { return sent_messages_; }
 
@@ -70,9 +75,9 @@ class FakeMessagePipe final : public MessagePipe {
   bool pipe_opened_ = false;
   raw_ptr<EventHandler> event_handler_ = nullptr;
   base::queue<std::string> sent_messages_;
+  std::vector<base::WeakPtr<FakeMessagePipeWrapper>> wrappers_;
 };
 
-}  // namespace protocol
-}  // namespace remoting
+}  // namespace remoting::protocol
 
 #endif  // REMOTING_PROTOCOL_FAKE_MESSAGE_PIPE_H_

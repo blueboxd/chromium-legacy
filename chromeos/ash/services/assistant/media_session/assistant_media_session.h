@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,7 +9,7 @@
 #include "base/task/sequenced_task_runner.h"
 #include "base/timer/timer.h"
 #include "base/unguessable_token.h"
-#include "chromeos/services/libassistant/public/mojom/media_controller.mojom-forward.h"
+#include "chromeos/ash/services/libassistant/public/mojom/media_controller.mojom-forward.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote_set.h"
 #include "services/media_session/public/mojom/audio_focus.mojom.h"

@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -64,9 +64,9 @@ class ActionLabel : public views::LabelButton {
   // In edit mode when there is edit error.
   void SetToEditError();
   // In edit mode when the input is unbound.
-  void SetToEditUnBind();
+  void SetToEditUnbindInput();
 
-  bool IsUnbound();
+  bool IsInputUnbound();
 
   MouseAction mouse_action_ = MouseAction::NONE;
 };

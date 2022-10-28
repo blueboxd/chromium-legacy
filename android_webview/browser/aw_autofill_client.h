@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -112,6 +112,12 @@ class AwAutofillClient : public autofill::AutofillClient,
       AddressProfileSavePromptCallback callback) override;
   bool HasCreditCardScanFeature() override;
   void ScanCreditCard(CreditCardScanCallback callback) override;
+  bool IsFastCheckoutSupported() override;
+  bool IsFastCheckoutTriggerForm(const autofill::FormData& form,
+                                 const autofill::FormFieldData& field) override;
+  bool ShowFastCheckout(
+      base::WeakPtr<autofill::FastCheckoutDelegate> delegate) override;
+  void HideFastCheckout() override;
   bool IsTouchToFillCreditCardSupported() override;
   bool ShowTouchToFillCreditCard(
       base::WeakPtr<autofill::TouchToFillDelegate> delegate) override;

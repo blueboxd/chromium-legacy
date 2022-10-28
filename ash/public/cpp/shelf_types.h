@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -82,16 +82,8 @@ enum class ShelfBackgroundType {
   // for a split view.
   kMaximized,
 
-  // The background when the app list is visible in clamshell mode.
-  kAppList,
-
   // The background when the app list is visible in tablet mode.
   kHomeLauncher,
-
-  // The background when a maximized window exists or two windows are maximized
-  // for a split view, and the app list is visible. If the app list were not
-  // visible, the shelf would be in ShelfBackgroundType::kMaximized state.
-  kMaximizedWithAppList,
 
   // The background when OOBE is active.
   kOobe,

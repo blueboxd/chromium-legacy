@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -31,15 +31,15 @@ const int kRetryLimit = 100;
 
 void DBusPrivacyCACallback(
     const base::RepeatingCallback<void(const std::string&)> on_success,
-    const base::RepeatingCallback<
-        void(chromeos::attestation::AttestationStatus)> on_failure,
+    const base::RepeatingCallback<void(ash::attestation::AttestationStatus)>
+        on_failure,
     const base::Location& from_here,
-    chromeos::attestation::AttestationStatus status,
+    ash::attestation::AttestationStatus status,
     const std::string& data) {
   DCHECK(on_success);
   DCHECK(on_failure);
 
-  if (status == chromeos::attestation::ATTESTATION_SUCCESS) {
+  if (status == ash::attestation::ATTESTATION_SUCCESS) {
     on_success.Run(data);
     return;
   }

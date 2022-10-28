@@ -1,4 +1,4 @@
-// Copyright 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -21,7 +21,7 @@
 // C++ class to monitor profile sync status in Objective-C type.
 class SyncObserverBridge : public syncer::SyncServiceObserver {
  public:
-  // |service| must outlive the SyncObserverBridge.
+  // `service` must outlive the SyncObserverBridge.
   SyncObserverBridge(id<SyncObserverModelBridge> delegate,
                      syncer::SyncService* service);
 

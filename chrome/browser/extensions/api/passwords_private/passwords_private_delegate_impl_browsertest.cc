@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -53,7 +53,7 @@ IN_PROC_BROWSER_TEST_F(PasswordsPrivateDelegateImplBrowserTest,
   const GURL url(kUrl);
   api::passwords_private::PasswordUiEntry credential;
   credential.username = kUsername;
-  credential.change_password_url = std::make_unique<std::string>(kUrl);
+  credential.change_password_url = kUrl;
   base::MockCallback<
       PasswordsPrivateDelegate::StartAutomatedPasswordChangeCallback>
       apc_callback;

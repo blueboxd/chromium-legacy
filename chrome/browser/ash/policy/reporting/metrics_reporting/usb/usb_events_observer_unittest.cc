@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -14,16 +14,14 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using ::testing::Eq;
-using testing::IsEmpty;
-using testing::Not;
-using ::testing::Pointwise;
-using ::testing::StrEq;
-using UsbEventInfoPtr = chromeos::cros_healthd::mojom::UsbEventInfoPtr;
-using UsbEventInfo = chromeos::cros_healthd::mojom::UsbEventInfo;
-
 namespace reporting {
 namespace {
+
+using ::ash::cros_healthd::mojom::UsbEventInfo;
+using ::ash::cros_healthd::mojom::UsbEventInfoPtr;
+using ::testing::Eq;
+using ::testing::IsEmpty;
+using ::testing::StrEq;
 
 static constexpr int32_t kTestVid = 0xffee;
 static constexpr int32_t kTestPid = 0x0;
@@ -141,7 +139,7 @@ TEST_F(UsbEventsObserverTest, UsbOnAddUsingFakeCrosHealthd) {
   constexpr int kExpectedUsbTelemetrySize = 1;
   constexpr int kIndexOfUsbTelemetry = 0;
 
-  usb_observer.SetOnEventObservedCallback(result_metric_data.cb());
+  usb_observer.SetOnEventObservedCallback(result_metric_data.repeating_cb());
   usb_observer.SetReportingEnabled(true);
 
   ::ash::cros_healthd::FakeCrosHealthd::Get()->EmitUsbAddEventForTesting();
@@ -163,5 +161,6 @@ TEST_F(UsbEventsObserverTest, UsbOnAddUsingFakeCrosHealthd) {
   EXPECT_THAT(usb_telemetry.categories(), IsEmpty());
   EXPECT_EQ(metric_data.event_data().type(), MetricEventType::USB_ADDED);
 }
+
 }  // namespace
 }  // namespace reporting

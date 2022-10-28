@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -18,7 +18,7 @@ namespace ash {
 // ArcDataSnapshotdClient is used to delegate ARC data/ snapshot related tasks
 // to arc-data-snapshotd daemon in Chrome OS.
 class COMPONENT_EXPORT(ASH_DBUS_ARC) ArcDataSnapshotdClient
-    : public DBusClient {
+    : public chromeos::DBusClient {
  public:
   // Returns the global instance if initialized. May return null.
   static ArcDataSnapshotdClient* Get();
@@ -43,16 +43,17 @@ class COMPONENT_EXPORT(ASH_DBUS_ARC) ArcDataSnapshotdClient
 
   // Generate key pair for an upcoming session.
   // Should be called before the user session started.
-  virtual void GenerateKeyPair(VoidDBusMethodCallback callback) = 0;
+  virtual void GenerateKeyPair(chromeos::VoidDBusMethodCallback callback) = 0;
 
   // Remove a snapshot. If |last|, remove the last generated snapshot,
   // otherwise the previous one.
-  virtual void ClearSnapshot(bool last, VoidDBusMethodCallback callback) = 0;
+  virtual void ClearSnapshot(bool last,
+                             chromeos::VoidDBusMethodCallback callback) = 0;
 
   // Take the ARC data/ snapshot of the current session.
   // MGS is a current active session with |account_id|.
   virtual void TakeSnapshot(const std::string& account_id,
-                            VoidDBusMethodCallback callback) = 0;
+                            chromeos::VoidDBusMethodCallback callback) = 0;
 
   // Load the ARC data/ snapshot to the current active MGS with |account_id|.
   virtual void LoadSnapshot(const std::string& account_id,
@@ -60,7 +61,8 @@ class COMPONENT_EXPORT(ASH_DBUS_ARC) ArcDataSnapshotdClient
 
   // Update a progress bar on a UI screen.
   // |percent| is a percentage of installed required ARC apps [0..100].
-  virtual void Update(int percent, VoidDBusMethodCallback callback) = 0;
+  virtual void Update(int percent,
+                      chromeos::VoidDBusMethodCallback callback) = 0;
 
   // Connects callbacks to D-Bus signal |UiCancelled| sent by
   // arc-data-snapshotd.

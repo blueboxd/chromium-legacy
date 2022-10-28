@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -519,7 +519,7 @@ MakeCredentialResponseFromValue(const base::Value& value) {
   if (!transports) {
     return {nullptr, "invalid transports"};
   }
-  for (const base::Value& transport_name : transports->GetListDeprecated()) {
+  for (const base::Value& transport_name : transports->GetList()) {
     absl::optional<device::FidoTransportProtocol> transport =
         FidoTransportProtocolFromValue(transport_name);
     if (!transport) {

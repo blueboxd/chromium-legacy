@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,7 +7,6 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include <algorithm>
 #include <memory>
 #include <utility>
 
@@ -16,6 +15,7 @@
 #include "base/check.h"
 #include "base/compiler_specific.h"
 #include "base/i18n/case_conversion.h"
+#include "base/ranges/algorithm.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -64,6 +64,12 @@ const char DefaultSearchManager::kSuggestionsURLPostParams[] =
 const char DefaultSearchManager::kImageURLPostParams[] =
     "image_url_post_params";
 const char DefaultSearchManager::kSideSearchParam[] = "side_search_param";
+const char DefaultSearchManager::kSideImageSearchParam[] =
+    "side_image_search_param";
+const char DefaultSearchManager::kImageSearchFaviconUrl[] =
+    "image_search_favicon_url";
+const char DefaultSearchManager::kImageSearchBrandingLabel[] =
+    "image_search_branding_label";
 
 const char DefaultSearchManager::kSafeForAutoReplace[] = "safe_for_autoreplace";
 const char DefaultSearchManager::kInputEncodings[] = "input_encodings";
@@ -255,11 +261,9 @@ void DefaultSearchManager::MergePrefsDataWithPrepopulated() {
       TemplateURLPrepopulateData::GetPrepopulatedEngines(pref_service_,
                                                          nullptr);
 
-  auto default_engine = std::find_if(
-      prepopulated_urls.begin(), prepopulated_urls.end(),
-      [&](const std::unique_ptr<TemplateURLData>& url) {
-        return url->prepopulate_id == prefs_default_search_->prepopulate_id;
-      });
+  auto default_engine = base::ranges::find(
+      prepopulated_urls, prefs_default_search_->prepopulate_id,
+      &TemplateURLData::prepopulate_id);
 
   if (default_engine == prepopulated_urls.end())
     return;
@@ -295,7 +299,7 @@ void DefaultSearchManager::LoadDefaultSearchEngineFromPrefs() {
   default_search_recommended_by_policy_ = pref->IsRecommended();
 
   const base::Value::Dict& url_dict =
-      pref_service_->GetValueDict(kDefaultSearchProviderDataPrefName);
+      pref_service_->GetDict(kDefaultSearchProviderDataPrefName);
   if (url_dict.empty())
     return;
 

@@ -1,4 +1,4 @@
-// Copyright (c) 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -69,6 +69,9 @@ struct AudioNodeInfo {
 const uint32_t kInputMaxSupportedChannels = 1;
 const uint32_t kOutputMaxSupportedChannels = 2;
 
+const int32_t kInputNumberOfVolumeSteps = 0;
+const int32_t kOutputNumberOfVolumeSteps = 25;
+
 const AudioNodeInfo kMicJack[] = {
     {true, kMicJackId, "Fake Mic Jack", "MIC", "Mic Jack", 0}};
 
@@ -91,7 +94,9 @@ AudioNode GenerateAudioNode(const AudioNodeInfo* node_info) {
                    false /* is_active*/, 0 /* pluged_time */,
                    node_info->is_input ? kInputMaxSupportedChannels
                                        : kOutputMaxSupportedChannels,
-                   node_info->audio_effect);
+                   node_info->audio_effect,
+                   node_info->is_input ? kInputNumberOfVolumeSteps
+                                       : kOutputNumberOfVolumeSteps);
 }
 
 AudioNodeList GenerateAudioNodeList(

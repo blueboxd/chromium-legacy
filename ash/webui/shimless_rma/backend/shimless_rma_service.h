@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -159,6 +159,9 @@ class ShimlessRmaService : public mojom::ShimlessRmaService,
           observer) override;
   void ObservePowerCableState(
       ::mojo::PendingRemote<mojom::PowerCableStateObserver> observer) override;
+  void ObserveExternalDiskState(
+      ::mojo::PendingRemote<mojom::ExternalDiskStateObserver> observer)
+      override;
   void ObserveHardwareVerificationStatus(
       ::mojo::PendingRemote<mojom::HardwareVerificationStatusObserver> observer)
       override;
@@ -179,6 +182,7 @@ class ShimlessRmaService : public mojom::ShimlessRmaService,
   void ProvisioningProgress(const rmad::ProvisionStatus& status) override;
   void HardwareWriteProtectionState(bool enabled) override;
   void PowerCableState(bool plugged_in) override;
+  void ExternalDiskState(bool detected) override;
   void HardwareVerificationResult(
       const rmad::HardwareVerificationResult& result) override;
   void FinalizationProgress(const rmad::FinalizeStatus& status) override;
@@ -296,12 +300,17 @@ class ShimlessRmaService : public mojom::ShimlessRmaService,
   // Used to validate mojo only states such as kConfigureNetwork
   mojom::State mojo_state_;
 
+  // These variables are used to save the most recent values of the
+  // corresponding variables, in case if the rmad client has already sent them,
+  // but the front end observer isn't connected yet. The value will be passed to
+  // the front end observer when it connects.
   absl::optional<rmad::CalibrationComponentStatus> last_calibration_progress_;
   absl::optional<rmad::CalibrationOverallStatus>
       last_calibration_overall_progress_;
   absl::optional<rmad::ProvisionStatus> last_provisioning_progress_;
   absl::optional<bool> last_hardware_protection_state_;
   absl::optional<bool> last_power_cable_state_;
+  absl::optional<bool> last_external_disk_state_;
   absl::optional<rmad::HardwareVerificationResult>
       last_hardware_verification_result_;
   absl::optional<rmad::FinalizeStatus> last_finalization_progress_;
@@ -315,6 +324,7 @@ class ShimlessRmaService : public mojom::ShimlessRmaService,
   mojo::Remote<mojom::HardwareWriteProtectionStateObserver>
       hwwp_state_observer_;
   mojo::Remote<mojom::PowerCableStateObserver> power_cable_observer_;
+  mojo::Remote<mojom::ExternalDiskStateObserver> external_disk_state_observer_;
   // HardwareVerificationStatusObserver is used by landing and OS update pages.
   mojo::RemoteSet<mojom::HardwareVerificationStatusObserver>
       hardware_verification_observers_;

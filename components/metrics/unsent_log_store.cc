@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -57,7 +57,7 @@ class LogsPrefWriter {
       : list_value_(list_value) {
     DCHECK(list_value);
     list_value->clear();
-  };
+  }
 
   LogsPrefWriter(const LogsPrefWriter&) = delete;
   LogsPrefWriter& operator=(const LogsPrefWriter&) = delete;
@@ -336,7 +336,7 @@ void UnsentLogStore::TrimAndPersistUnsentLogs(bool overwrite_in_memory_store) {
 }
 
 void UnsentLogStore::LoadPersistedUnsentLogs() {
-  ReadLogsFromPrefList(local_state_->GetValueList(log_data_pref_name_));
+  ReadLogsFromPrefList(local_state_->GetList(log_data_pref_name_));
   RecordMetaDataMetrics();
 }
 
@@ -455,8 +455,7 @@ void UnsentLogStore::RecordMetaDataMetrics() {
   if (metadata_pref_name_ == nullptr)
     return;
 
-  const base::Value::Dict& value =
-      local_state_->GetValueDict(metadata_pref_name_);
+  const base::Value::Dict& value = local_state_->GetDict(metadata_pref_name_);
 
   auto unsent_samples_count = value.FindInt(kLogUnsentCountKey);
   auto sent_samples_count = value.FindInt(kLogSentCountKey);

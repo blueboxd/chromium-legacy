@@ -152,36 +152,6 @@ export class RemoteCall {
   }
 
   /**
-   * Closes a window and waits until the window is closed.
-   *
-   * @param {string} appId App window Id.
-   * @return {Promise} promise Promise to be fulfilled with the result (true:
-   *     success, false: failed).
-   */
-  async closeWindowAndWait(appId) {
-    const caller = getCaller();
-
-    // Closes the window.
-    if (!await this.callRemoteTestUtil('closeWindow', null, [appId])) {
-      // Returns false when the closing is failed.
-      return false;
-    }
-
-    return repeatUntil(async () => {
-      const windows = await this.callRemoteTestUtil('getWindows', null, []);
-      for (const id in windows) {
-        if (id === appId) {
-          // Window is still available. Continues waiting.
-          return pending(
-              caller, 'Window with the prefix %s is not found.', appId);
-        }
-      }
-      // Window is not available. Closing is done successfully.
-      return true;
-    });
-  }
-
-  /**
    * Waits until the window turns to the given size.
    * @param {string} appId App window Id.
    * @param {number} width Requested width in pixels.
@@ -457,23 +427,12 @@ export class RemoteCall {
  */
 export class RemoteCallFilesApp extends RemoteCall {
   /**
-   * @return {boolean} Returns whether the code is running in SWA mode.
-   */
-  isSwaMode() {
-    return this.origin_.startsWith('chrome://');
-  }
-
-  /**
    * Sends a test |message| to the test code running in the File Manager.
    * @param {!Object} message
    * @return {!Promise<*>}
    * @override
    */
   sendMessage(message) {
-    if (!this.isSwaMode()) {
-      return super.sendMessage(message);
-    }
-
     const command = {
       name: 'callSwaTestMessageListener',
       appId: message.appId,
@@ -498,20 +457,11 @@ export class RemoteCallFilesApp extends RemoteCall {
 
   /** @override */
   async waitForWindow(windowIdPrefix) {
-    if (!this.isSwaMode()) {
-      return super.waitForWindow(windowIdPrefix);
-    }
-
     return this.waitForSwaWindow();
   }
 
   async getWindows() {
-    if (!this.isSwaMode()) {
-      return this.callRemoteTestUtil('getWindows', null, []);
-    }
-
-    return JSON.parse(
-        await sendTestMessage({name: 'getWindowsSWA', isSWA: true}));
+    return JSON.parse(await sendTestMessage({name: 'getWindows'}));
   }
 
   /**
@@ -546,12 +496,7 @@ export class RemoteCallFilesApp extends RemoteCall {
    * @return {!Promise<*>} resolved with the return value of the `statement`.
    */
   async executeJsInPreviewTag(appId, query, statement) {
-    if (this.isSwaMode()) {
-      return this.executeJsInPreviewTagSwa_(statement);
-    }
-
-    return this.callRemoteTestUtil(
-        'deepExecuteScriptInWebView', appId, [query, statement]);
+    return this.executeJsInPreviewTagSwa_(statement);
   }
 
   /**
@@ -865,38 +810,6 @@ export class RemoteCallFilesApp extends RemoteCall {
   expandVolumeInDirectoryTree(appId, volumeType) {
     return this.expandTreeItemInDirectoryTree(
         appId, `[volume-type-for-testing="${volumeType}"]`);
-  }
-
-  /**
-   * Navigates to specified directory on the specified volume by using directory
-   * tree.
-   * DEPRECATED: Use background.js:navigateWithDirectoryTree instead
-   * crbug.com/996626.
-   */
-  async navigateWithDirectoryTree(
-      appId, path, rootLabel, volumeType = 'downloads') {
-    await this.expandDirectoryTreeFor(appId, path, volumeType);
-
-    // Select target path.
-    await this.callRemoteTestUtil(
-        'fakeMouseClick', appId, [`[full-path-for-testing="${path}"]`]);
-
-    // Entries within Drive starts with /root/ but it isn't displayed in the
-    // breadcrubms used by waitUntilCurrentDirectoryIsChanged.
-    path = path.replace(/^\/root/, '')
-               .replace(/^\/team_drives/, '')
-               .replace(/^\/Computers/, '');
-
-    // TODO(lucmult): Remove this once MyFilesVolume is rolled out.
-    // Remove /Downloads duplication when MyFilesVolume is enabled.
-    if (volumeType == 'downloads' && path.startsWith('/Downloads') &&
-        rootLabel.endsWith('/Downloads')) {
-      rootLabel = rootLabel.replace('/Downloads', '');
-    }
-
-    // Wait until the Files app is navigated to the path.
-    return this.waitUntilCurrentDirectoryIsChanged(
-        appId, `/${rootLabel}${path}`);
   }
 
   /**

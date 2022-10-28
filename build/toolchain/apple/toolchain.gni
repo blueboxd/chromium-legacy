@@ -1,4 +1,4 @@
-# Copyright (c) 2013 The Chromium Authors. All rights reserved.
+# Copyright 2013 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -15,6 +15,7 @@ import("//build/toolchain/cc_wrapper.gni")
 import("//build/toolchain/goma.gni")
 import("//build/toolchain/rbe.gni")
 import("//build/toolchain/toolchain.gni")
+import("//build_overrides/build.gni")
 
 assert((target_os == "ios" && host_os == "mac") || host_os != "win")
 
@@ -25,6 +26,25 @@ declare_args() {
   # one object file per .swift file. If unspecified, will default to "true"
   # for official builds, and "false" for all other builds.
   swift_whole_module_optimization = -1
+
+  # If unspecified, will use the toolchain downloaded via deps.
+  swift_toolchain_path = -1
+}
+
+if (swift_toolchain_path == -1) {
+  if (build_with_chromium) {
+    # Version of the hermetic compiler. Needs to be updated when a new version of
+    # the compiler is rolled to ensure that all outputs are regenerated. It must
+    # be kept in sync with the `version` of `third_party/swift-toolchain` in
+    # //DEPS.
+    swiftc_version = "swift-5.7-release"
+
+    # Use the hermetic swift toolchain.
+    swift_toolchain_path =
+        rebase_path("//third_party/swift-toolchain/", root_build_dir)
+  } else {
+    swift_toolchain_path = ""
+  }
 }
 
 if (swift_whole_module_optimization == -1) {
@@ -573,13 +593,16 @@ template("apple_toolchain") {
           "{{target_gen_dir}}/{{module_name}}.swiftsourceinfo",
         ]
 
+        # Additional flags passed to the wrapper script but that are only
+        # set conditionally.
+        _extra_flags = ""
+
         if (swift_whole_module_optimization) {
-          _extra_flags = "-whole-module-optimization"
+          _extra_flags += " -whole-module-optimization"
           _objects_dir = "{{target_out_dir}}"
 
           outputs += [ "$_objects_dir/{{module_name}}.o" ]
         } else {
-          _extra_flags = ""
           _objects_dir = "{{target_out_dir}}/{{label_name}}"
 
           partial_outputs = [ "$_objects_dir/{{source_name_part}}.o" ]
@@ -621,6 +644,56 @@ template("apple_toolchain") {
         _pch_output_dir = "{{target_out_dir}}/{{module_name}}:pch/"
         outputs += [ _pch_output_dir ]
 
+        # Include the version of the compiler on the command-line. This causes
+        # `ninja` to consider all the compilation output to be dirty when the
+        # version changes.
+        if (defined(swiftc_version)) {
+          _extra_flags += " -swiftc-version $swiftc_version"
+        }
+
+        # Include the version of Xcode on the command-line (if specified via
+        # toolchain_args). This causes `ninja` to consider all the compilation
+        # outputs to be dirty when the version change.
+        #
+        # This is required because sometimes module dependency changes between
+        # different version of Xcode (e.g. when moving from Xcode 14 beta 6 to
+        # Xcode 14 RC). If the swiftmodule are not rebuilt when the version
+        # changes, they may encode dependency on now non-existing frameworks
+        # causing linker failures ultimately.
+        if (defined(toolchain_args.xcode_build)) {
+          _extra_flags += " -xcode-version ${toolchain_args.xcode_build}"
+        }
+
+        if (swift_toolchain_path != "") {
+          _extra_flags += " -swift-toolchain-path $swift_toolchain_path"
+        }
+
+        # The Swift compiler assumes that the generated header will be used by
+        # Objective-C code compiled with module support enabled (-fmodules).
+        #
+        # The import looks like this in the generated header:
+        #
+        #     #if __has_feature(modules)
+        #     @import UIKit;
+        #     #endif
+        #
+        # As Chromium code is compiled without support for modules (i.e. the
+        # code is compiled without `-fmodules`), the dependent modules are not
+        # imported from the generated header, which causes compilation failure
+        # if the client code does not first import the required modules (see
+        # https://crbug.com/1316061 for details).
+        #
+        # Secondly, clang ToT always returns `1` when `__has_features(modules)`
+        # is evaluated, even if building with `-fno-modules` when building with
+        # `-std=c++20` (see https://crbug.com/1284275 for details). This causes
+        # the `@import` lines to be reached and the build to fail (since the
+        # support for modules is not enabled).
+        #
+        # Instruct swiftc.py to rewrite the generated header to use the old
+        # import pre-processor instructions (#import <UIKit/UIKit.h>) to work
+        # around those two issues.
+        _extra_flags += " -fix-module-imports"
+
         command =
             "$_env_vars $python_path $_tool -module-name {{module_name}} " +
             "-root-dir " + rebase_path("//", root_build_dir) + " " +
@@ -648,10 +721,12 @@ template("apple_toolchain") {
         }
 
         command =
-            "$_env_vars $python_path $_tool -p \"${invoker.sdk_name}\" " +
-            "-t \"${invoker.deployment_target}\" " +
-            "-T \"{{bundle_product_type}}\" " +
-            "-P \"{{bundle_partial_info_plist}}\" " + "-o {{output}} {{inputs}}"
+            "$_env_vars $python_path $_tool " +
+            "-p '${toolchain_args.current_os}' " +
+            "-e '${invoker.target_environment}' " +
+            "-t '${invoker.deployment_target}' " +
+            "-T '{{bundle_product_type}}' " +
+            "-P '{{bundle_partial_info_plist}}' " + "-o {{output}} {{inputs}}"
 
         description = "COMPILE_XCASSETS {{output}}"
         pool = "//build/toolchain/apple:bundle_pool($default_toolchain)"

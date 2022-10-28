@@ -1,4 +1,4 @@
-# Copyright 2021 The Chromium Authors. All rights reserved.
+# Copyright 2021 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -21,6 +21,7 @@ test("ash_webui_unittests") {
 
   deps = [
     "//ash/webui/common/backend:unit_tests",
+    "//ash/webui/demo_mode_app_ui:unit_tests",
     "//ash/webui/diagnostics_ui:unit_tests",
     "//ash/webui/diagnostics_ui/backend:unit_tests",
     "//ash/webui/diagnostics_ui/mojom:unit_tests",
@@ -32,6 +33,7 @@ test("ash_webui_unittests") {
     "//ash/webui/personalization_app:unit_tests",
     "//ash/webui/projector_app:unit_tests",
     "//ash/webui/scanning:unit_tests",
+    "//ash/webui/scanning/mojom:unit_tests",
     "//ash/webui/shimless_rma/backend:unit_tests",
     "//ash/webui/shimless_rma/mojom:unit_tests",
     "//ash/webui/shortcut_customization_ui/backend:unit_tests",
@@ -45,10 +47,6 @@ test("ash_webui_unittests") {
     "//ui/gl",
     "//ui/gl:test_support",
   ]
-
-  if (!is_official_build) {
-    deps += [ "//ash/webui/demo_mode_app_ui:unit_tests" ]
-  }
 
   # Tests for Camera App only work on Chrome OS device but not linux-chromeos.
   if (is_chromeos_device) {
@@ -68,6 +66,7 @@ group("closure_compile") {
   deps = [
     "//ash/webui/common:closure_compile",
     "//ash/webui/connectivity_diagnostics:closure_compile",
+    "//ash/webui/demo_mode_app_ui:closure_compile",
     "//ash/webui/diagnostics_ui:closure_compile",
     "//ash/webui/eche_app_ui:closure_compile",
     "//ash/webui/file_manager/resources:closure_compile",
@@ -77,14 +76,9 @@ group("closure_compile") {
     "//ash/webui/media_app_ui:closure_compile",
     "//ash/webui/multidevice_debug/resources:closure_compile",
     "//ash/webui/os_feedback_ui:closure_compile",
-    "//ash/webui/print_management:closure_compile",
     "//ash/webui/projector_app/resources:closure_compile",
     "//ash/webui/scanning:closure_compile",
     "//ash/webui/shimless_rma:closure_compile",
     "//ash/webui/system_apps:closure_compile",
   ]
-
-  if (!is_official_build) {
-    deps += [ "//ash/webui/demo_mode_app_ui:closure_compile" ]
-  }
 }

@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -101,7 +101,7 @@ class FakeModeller : public Modeller {
   base::ObserverList<Observer> observers_;
 };
 
-class TestObserver : public PowerManagerClient::Observer {
+class TestObserver : public chromeos::PowerManagerClient::Observer {
  public:
   TestObserver() = default;
   ~TestObserver() override = default;

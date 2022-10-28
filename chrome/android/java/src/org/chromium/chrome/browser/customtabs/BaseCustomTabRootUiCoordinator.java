@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -252,8 +252,9 @@ public class BaseCustomTabRootUiCoordinator extends RootUiCoordinator {
                 intentDataProvider.getInitialActivityHeight(),
                 intentDataProvider.getColorProvider().getNavigationBarColor(),
                 intentDataProvider.getColorProvider().getNavigationBarDividerColor(),
+                intentDataProvider.isPartialCustomTabFixedHeight(),
                 CustomTabsConnection.getInstance(), intentDataProvider.getSession(),
-                mActivityLifecycleDispatcher);
+                mActivityLifecycleDispatcher, mFullscreenManager);
     }
 
     @Override
@@ -272,8 +273,7 @@ public class BaseCustomTabRootUiCoordinator extends RootUiCoordinator {
     @Override
     protected Rect getAppRectInWindow() {
         // This is necessary if app handler cannot rely on the popup window that ensures the menu
-        // will not be clipped off the screen, which can happen if Window#FLAGS_LAYOUT_NO_LIMITS
-        // is set to allow the app to be drawn outside the screen in partial CCT.
+        // will not be clipped off the screen, which can happen in partial CCT.
         if (mIntentDataProvider.get().isPartialHeightCustomTab()) {
             View coord = mActivity.findViewById(R.id.coordinator);
             int[] location = new int[2];
@@ -282,6 +282,16 @@ public class BaseCustomTabRootUiCoordinator extends RootUiCoordinator {
                     location[1] + coord.getHeight());
         }
         return super.getAppRectInWindow();
+    }
+
+    @Override
+    protected Supplier<Integer> getBaseHeightProvider() {
+        if (mIntentDataProvider.get().isPartialHeightCustomTab()
+                && !ChromeFeatureList.sCctResizableWindowAboveNavbar.isEnabled()) {
+            return () -> mActivity.findViewById(R.id.coordinator).getHeight();
+        } else {
+            return null;
+        }
     }
 
     @Override
@@ -297,6 +307,8 @@ public class BaseCustomTabRootUiCoordinator extends RootUiCoordinator {
             mBrandingController.destroy();
             mBrandingController = null;
         }
+
+        mCustomTabHeightStrategy.destroy();
     }
 
     /**

@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -21,6 +21,14 @@ namespace ash {
   E_CPONLY(kColorAshShieldAndBase90) \
   E_CPONLY(kColorAshShieldAndBase95) \
   E_CPONLY(kColorAshShieldAndBaseOpaque) \
+  E_CPONLY(kColorAshShieldAndBase20Light) \
+  E_CPONLY(kColorAshShieldAndBase40Light) \
+  E_CPONLY(kColorAshShieldAndBase60Light) \
+  E_CPONLY(kColorAshShieldAndBase80Light) \
+  E_CPONLY(kColorAshInvertedShieldAndBase80Light) \
+  E_CPONLY(kColorAshShieldAndBase90Light) \
+  E_CPONLY(kColorAshShieldAndBase95Light) \
+  E_CPONLY(kColorAshShieldAndBaseOpaqueLight) \
   /* Controls Layer colors. */ \
   E_CPONLY(kColorAshHairlineBorderColor) \
   E_CPONLY(kColorAshControlBackgroundColorActive) \
@@ -94,7 +102,13 @@ namespace ash {
   E_CPONLY(kColorAshInkDrop) \
   E_CPONLY(kColorAshInkDropOpaqueColor) \
   /* Colors for Google Assistant */ \
-  E_CPONLY(kColorAshAssistantGreetingEnabled)
+  E_CPONLY(kColorAshAssistantGreetingEnabled) \
+  E_CPONLY(kColorAshSuggestionChipViewTextView) \
+  E_CPONLY(kColorAshAssistantQueryHighConfidenceLabel) \
+  E_CPONLY(kColorAshAssistantQueryLowConfidenceLabel) \
+  E_CPONLY(kColorAshAssistantTextColorPrimary) \
+  /* Color for dialog background in arc */ \
+  E_CPONLY(kColorAshDialogBackgroundColor)
 
 #include "ui/color/color_id_macros.inc"
 

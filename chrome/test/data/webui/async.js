@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright 2011 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -29,10 +29,10 @@ function testPasses() {
  */
 function runAsync(name) {
   // Strip |name| from arguments.
-  var testArguments = Array.prototype.slice.call(arguments, 1);
+  const testArguments = Array.prototype.slice.call(arguments, 1);
 
   // call async function.
-  var result = runTestFunction(name, this[name], testArguments);
+  const result = runTestFunction(name, this[name], testArguments);
 
   // Pass on success; bail on errors.
   if (result[0]) {

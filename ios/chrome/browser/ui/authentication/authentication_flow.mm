@@ -1,27 +1,27 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #import "ios/chrome/browser/ui/authentication/authentication_flow.h"
-#include "base/strings/sys_string_conversions.h"
+#import "base/strings/sys_string_conversions.h"
 
-#include "base/check_op.h"
+#import "base/check_op.h"
 #import "base/ios/block_types.h"
-#include "base/notreached.h"
+#import "base/notreached.h"
 #import "components/signin/ios/browser/features.h"
-#include "ios/chrome/browser/browser_state/chrome_browser_state.h"
-#include "ios/chrome/browser/main/browser.h"
-#include "ios/chrome/browser/policy/cloud/user_policy_switch.h"
-#include "ios/chrome/browser/signin/authentication_service.h"
-#include "ios/chrome/browser/signin/authentication_service_factory.h"
+#import "ios/chrome/browser/browser_state/chrome_browser_state.h"
+#import "ios/chrome/browser/main/browser.h"
+#import "ios/chrome/browser/policy/cloud/user_policy_switch.h"
+#import "ios/chrome/browser/signin/authentication_service.h"
+#import "ios/chrome/browser/signin/authentication_service_factory.h"
 #import "ios/chrome/browser/signin/chrome_account_manager_service.h"
 #import "ios/chrome/browser/signin/chrome_account_manager_service_factory.h"
-#include "ios/chrome/browser/signin/constants.h"
+#import "ios/chrome/browser/signin/constants.h"
 #import "ios/chrome/browser/ui/authentication/authentication_flow_performer.h"
-#include "ios/chrome/grit/ios_strings.h"
+#import "ios/chrome/grit/ios_strings.h"
 #import "ios/public/provider/chrome/browser/signin/chrome_identity.h"
 #import "ios/public/provider/chrome/browser/signin/signin_error_api.h"
-#include "ui/base/l10n/l10n_util.h"
+#import "ui/base/l10n/l10n_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -57,6 +57,9 @@ enum AuthenticationState {
 // Whether this flow is curently handling an error.
 @property(nonatomic, assign) BOOL handlingError;
 
+// The action to perform following account sign-in.
+@property(nonatomic, assign) PostSignInAction postSignInAction;
+
 // Indicates how to handle existing data when the signed in account is being
 // switched. Possible values:
 //   * User choice: present an alert view asking the user whether the data
@@ -73,10 +76,6 @@ enum AuthenticationState {
 // `_signInCompletion` when finished.
 - (void)continueSignin;
 
-// Handles authentication related errors or continues sign-in if the
-// authentication was successful.
-- (void)handlePostAuthenticationFlow:(BOOL)success;
-
 // Runs `_signInCompletion` asynchronously with `success` argument.
 - (void)completeSignInWithSuccess:(BOOL)success;
 
@@ -89,7 +88,6 @@ enum AuthenticationState {
 @end
 
 @implementation AuthenticationFlow {
-  PostSignInAction _postSignInAction;
   UIViewController* _presentingViewController;
   CompletionCallback _signInCompletion;
   AuthenticationFlowPerformer* _performer;
@@ -176,7 +174,11 @@ enum AuthenticationState {
   _presentingViewController = presentingViewController;
 }
 
-#pragma mark State machine management
+- (ChromeIdentity*)identity {
+  return _identityToSignIn;
+}
+
+#pragma mark - State machine management
 
 - (AuthenticationState)nextStateFailedOrCancelled {
   DCHECK(_failedOrCancelled);
@@ -217,8 +219,8 @@ enum AuthenticationState {
       return CHECK_MERGE_CASE;
     case CHECK_MERGE_CASE:
       // If the user enabled Sync, expect the data clearing strategy to be set.
-      DCHECK(_postSignInAction == POST_SIGNIN_ACTION_NONE ||
-             (_postSignInAction == POST_SIGNIN_ACTION_COMMIT_SYNC &&
+      DCHECK(self.postSignInAction == POST_SIGNIN_ACTION_NONE ||
+             (self.postSignInAction == POST_SIGNIN_ACTION_COMMIT_SYNC &&
               self.localDataClearingStrategy != SHOULD_CLEAR_DATA_USER_CHOICE));
       if (_shouldShowManagedConfirmation)
         return SHOW_MANAGED_CONFIRMATION;
@@ -242,7 +244,7 @@ enum AuthenticationState {
     case CLEAR_DATA:
       return SIGN_IN;
     case SIGN_IN:
-      switch (_postSignInAction) {
+      switch (self.postSignInAction) {
         case POST_SIGNIN_ACTION_COMMIT_SYNC:
           return COMMIT_SYNC;
         case POST_SIGNIN_ACTION_NONE:
@@ -293,32 +295,34 @@ enum AuthenticationState {
                          forIdentity:_identityToSignIn];
       return;
 
-    case CHECK_MERGE_CASE:
+    case CHECK_MERGE_CASE: {
       DCHECK_EQ(SHOULD_CLEAR_DATA_USER_CHOICE, self.localDataClearingStrategy);
-      if (_postSignInAction == POST_SIGNIN_ACTION_COMMIT_SYNC) {
-        if (base::FeatureList::IsEnabled(
-                signin::kEnableUnicornAccountSupport)) {
-          ios::ChromeIdentityService* identity_service =
-              ios::GetChromeBrowserProvider().GetChromeIdentityService();
-          __weak AuthenticationFlow* weakSelf = self;
-          identity_service->IsSubjectToParentalControls(
-              _identityToSignIn, ^(ios::ChromeIdentityCapabilityResult result) {
-                if (result == ios::ChromeIdentityCapabilityResult::kTrue) {
-                  weakSelf.localDataClearingStrategy =
-                      SHOULD_CLEAR_DATA_CLEAR_DATA;
-                  [weakSelf continueSignin];
-                  return;
-                }
+      __weak AuthenticationFlow* weakSelf = self;
+      ios::CapabilitiesCallback callback =
+          ^(ios::ChromeIdentityCapabilityResult result) {
+            if (result == ios::ChromeIdentityCapabilityResult::kTrue) {
+              [weakSelf didChooseClearDataPolicy:SHOULD_CLEAR_DATA_CLEAR_DATA];
+              return;
+            }
+            switch (weakSelf.postSignInAction) {
+              case POST_SIGNIN_ACTION_COMMIT_SYNC:
                 [weakSelf checkMergeCaseForUnsupervisedAccounts];
-              });
-        } else {
-          [self checkMergeCaseForUnsupervisedAccounts];
-        }
-        return;
+                break;
+              case POST_SIGNIN_ACTION_NONE:
+                [weakSelf continueSignin];
+                break;
+            }
+          };
+      if (base::FeatureList::IsEnabled(signin::kEnableUnicornAccountSupport)) {
+        ios::ChromeIdentityService* identity_service =
+            ios::GetChromeBrowserProvider().GetChromeIdentityService();
+        identity_service->IsSubjectToParentalControls(_identityToSignIn,
+                                                      callback);
+      } else {
+        callback(ios::ChromeIdentityCapabilityResult::kFalse);
       }
-      [self continueSignin];
       return;
-
+    }
     case SHOW_MANAGED_CONFIRMATION:
       [_performer
           showManagedConfirmationForHostedDomain:_identityToSignInHostedDomain
@@ -417,20 +421,9 @@ enum AuthenticationState {
       ChromeAccountManagerServiceFactory::GetForBrowserState(browserState);
 
   if (accountManagerService->IsValidIdentity(identity)) {
-    __weak AuthenticationFlow* weakSelf = self;
     [_performer signInIdentity:identity
               withHostedDomain:_identityToSignInHostedDomain
-                toBrowserState:browserState
-                    completion:^(BOOL success) {
-                      [weakSelf handlePostAuthenticationFlow:success];
-                    }];
-  } else {
-    [self handlePostAuthenticationFlow:NO];
-  }
-}
-
-- (void)handlePostAuthenticationFlow:(BOOL)success {
-  if (success) {
+                toBrowserState:browserState];
     _didSignIn = YES;
     [self continueSignin];
   } else {
@@ -442,12 +435,12 @@ enum AuthenticationState {
 
 - (void)completeSignInWithSuccess:(BOOL)success {
   DCHECK(_signInCompletion)
-      << "|completeSignInWithSuccess| should not be called twice.";
+      << "`completeSignInWithSuccess` should not be called twice.";
   if (success) {
     bool isManagedAccount = _identityToSignInHostedDomain.length > 0;
     signin_metrics::RecordSigninAccountType(signin::ConsentLevel::kSignin,
                                             isManagedAccount);
-    if (_postSignInAction == POST_SIGNIN_ACTION_COMMIT_SYNC)
+    if (self.postSignInAction == POST_SIGNIN_ACTION_COMMIT_SYNC)
       signin_metrics::RecordSigninAccountType(signin::ConsentLevel::kSync,
                                               isManagedAccount);
   }
@@ -522,7 +515,7 @@ enum AuthenticationState {
   DCHECK_EQ(FETCH_MANAGED_STATUS, _state);
   _shouldShowManagedConfirmation =
       [hostedDomain length] > 0 &&
-      (_postSignInAction == POST_SIGNIN_ACTION_COMMIT_SYNC);
+      (self.postSignInAction == POST_SIGNIN_ACTION_COMMIT_SYNC);
   _identityToSignInHostedDomain = hostedDomain;
   _shouldFetchUserPolicy = YES;
   [self continueSignin];

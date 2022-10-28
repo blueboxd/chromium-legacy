@@ -309,6 +309,7 @@ chrome.fileManagerPrivate.SharesheetLaunchSource = {
 /** @enum {string} */
 chrome.fileManagerPrivate.IOTaskState = {
   QUEUED: 'queued',
+  SCANNING: 'scanning',
   IN_PROGRESS: 'in_progress',
   SUCCESS: 'success',
   ERROR: 'error',
@@ -324,6 +325,7 @@ chrome.fileManagerPrivate.IOTaskType = {
   EXTRACT: 'extract',
   MOVE: 'move',
   RESTORE: 'restore',
+  RESTORE_TO_DESTINATION: 'restore_to_destination',
   TRASH: 'trash',
   ZIP: 'zip',
 };
@@ -492,6 +494,7 @@ chrome.fileManagerPrivate.MountCompletedEvent;
  *   processed: number,
  *   total: number,
  *   numTotalJobs: number,
+ *   showNotification: boolean,
  *   hideWhenZeroJobs: boolean
  * }}
  */
@@ -500,7 +503,8 @@ chrome.fileManagerPrivate.FileTransferStatus;
 /**
  * @typedef {{
  *   type: !chrome.fileManagerPrivate.DriveSyncErrorType,
- *   fileUrl: string
+ *   fileUrl: string,
+ *   showNotification: boolean
  * }}
  */
 chrome.fileManagerPrivate.DriveSyncErrorEvent;
@@ -726,6 +730,7 @@ chrome.fileManagerPrivate.GetVolumeRootOptions;
  * @typedef {{
  *   destinationFolder: (DirectoryEntry|undefined),
  *   password: (string|undefined),
+ *   showNotification: (boolean|undefined),
  * }}
  */
 chrome.fileManagerPrivate.IOTaskParams;
@@ -742,6 +747,7 @@ chrome.fileManagerPrivate.IOTaskParams;
  *   totalBytes: number,
  *   taskId: number,
  *   remainingSeconds: number,
+ *   showNotification: boolean,
  *   errorName: string,
  *   outputs: (Array<Entry>|undefined),
  * }}
@@ -758,6 +764,8 @@ chrome.fileManagerPrivate.DlpMetadata;
 
 /** @enum {string} */
 chrome.fileManagerPrivate.DlpLevel = {
+  REPORT: 'report',
+  WARN: 'warn',
   BLOCK: 'block',
   ALLOW: 'allow',
 };
@@ -1014,6 +1022,17 @@ chrome.fileManagerPrivate.getDlpMetadata = function(entries, callback) {};
  * restriction information about the entry.
  */
 chrome.fileManagerPrivate.getDlpRestrictionDetails = function(
+    sourceUrl, callback) {};
+
+/**
+ * Retrieves the list of components to which the transfer of an Entry is blocked
+ * by Data Leak Prevention (DLP) policy.
+ * @param {string} sourceUrl Source URL of the Entry that should be checked.
+ * @param {function(!Array<chrome.fileManagerPrivate.VolumeType>)}
+ * callback Callback with the list of components (subset of VolumeType) to which
+ * transferring an Entry is blocked by DLP.
+ */
+chrome.fileManagerPrivate.getDlpBlockedComponents = function(
     sourceUrl, callback) {};
 
 /**
@@ -1532,13 +1551,6 @@ chrome.fileManagerPrivate.pollDriveHostedFilePinStates = function() {};
  * Opens the page to manage currently syncing folders.
  */
 chrome.fileManagerPrivate.openManageSyncSettings = function() {};
-
-/**
- * Returns color via `callback` for Files app foreground window frame.
- * @param {function(string): void} callback |color| String containing the color
- *     of the title bar.
- */
-chrome.fileManagerPrivate.getFrameColor = function(callback) {};
 
 /**
  * Parses the supplied .trashinfo files and returns the successfully parsed

@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -18,7 +18,6 @@
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "components/services/app_service/public/cpp/app_launch_util.h"
-#include "components/services/app_service/public/mojom/types.mojom.h"
 #include "content/public/test/browser_test.h"
 #include "third_party/blink/public/mojom/manifest/display_mode.mojom.h"
 #include "url/gurl.h"
@@ -62,10 +61,6 @@ class AppPlatformMetricsBrowserTest : public InProcessBrowserTest {
 
 IN_PROC_BROWSER_TEST_F(AppPlatformMetricsBrowserTest, SystemWebApp) {
   const AppId system_app_id = InstallSystemWebApp();
-
-  // Wait for app service to see the newly installed app.
-  apps::AppServiceProxyFactory::GetForProfile(profile())
-      ->FlushMojoCallsForTesting();
 
   EXPECT_EQ(GetWebAppTypeName(system_app_id,
                               apps::LaunchContainer::kLaunchContainerWindow),
@@ -117,10 +112,6 @@ IN_PROC_BROWSER_TEST_F(AppPlatformMetricsBrowserTest, WindowedWebApps) {
       GURL("https://browser.example.com/"), blink::mojom::DisplayMode::kBrowser,
       /*user_display_mode=*/web_app::UserDisplayMode::kStandalone);
 
-  // Wait for app service to see the newly installed app.
-  apps::AppServiceProxyFactory::GetForProfile(profile())
-      ->FlushMojoCallsForTesting();
-
   // When container is specified, |user_display_mode| and |display_mode| are
   // ignored.
 
@@ -160,10 +151,6 @@ IN_PROC_BROWSER_TEST_F(AppPlatformMetricsBrowserTest, TabbedWebApps) {
   const AppId browser_app_id = InstallWebApp(
       GURL("https://browser.example.com/"), blink::mojom::DisplayMode::kBrowser,
       /*user_display_mode=*/web_app::UserDisplayMode::kBrowser);
-
-  // Wait for app service to see the newly installed app.
-  apps::AppServiceProxyFactory::GetForProfile(profile())
-      ->FlushMojoCallsForTesting();
 
   // When container is specified, |user_display_mode| and |display_mode| are
   // ignored.

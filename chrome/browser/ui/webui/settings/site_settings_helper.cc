@@ -1,4 +1,4 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -142,7 +142,6 @@ const ContentSettingsTypeNameEntry kContentSettingsTypeGroupNames[] = {
     {ContentSettingsType::WAKE_LOCK_SCREEN, nullptr},
     {ContentSettingsType::WAKE_LOCK_SYSTEM, nullptr},
     {ContentSettingsType::LEGACY_COOKIE_ACCESS, nullptr},
-    {ContentSettingsType::INSTALLED_WEB_APP_METADATA, nullptr},
     {ContentSettingsType::NFC, nullptr},
     {ContentSettingsType::SAFE_BROWSING_URL_CHECK_DATA, nullptr},
     {ContentSettingsType::FILE_SYSTEM_READ_GUARD, nullptr},
@@ -759,7 +758,7 @@ ContentSetting GetContentSettingForOrigin(
       CalculateSiteSettingSource(profile, content_type, origin, info, result));
   *display_name = GetDisplayNameForGURL(origin, extension_registry);
 
-  if (info.session_model == content_settings::SessionModel::OneTime) {
+  if (info.metadata.session_model == content_settings::SessionModel::OneTime) {
     DCHECK_EQ(content_type, ContentSettingsType::GEOLOCATION);
     DCHECK_EQ(result.content_setting, CONTENT_SETTING_ALLOW);
     return CONTENT_SETTING_DEFAULT;
@@ -793,9 +792,9 @@ void GetPolicyAllowedUrls(
   Profile* profile = Profile::FromWebUI(web_ui);
   PrefService* prefs = profile->GetPrefs();
   const base::Value::List& policy_urls =
-      prefs->GetValueList(type == ContentSettingsType::MEDIASTREAM_MIC
-                              ? prefs::kAudioCaptureAllowedUrls
-                              : prefs::kVideoCaptureAllowedUrls);
+      prefs->GetList(type == ContentSettingsType::MEDIASTREAM_MIC
+                         ? prefs::kAudioCaptureAllowedUrls
+                         : prefs::kVideoCaptureAllowedUrls);
 
   // Convert the URLs to |ContentSettingsPattern|s. Ignore any invalid ones.
   std::vector<ContentSettingsPattern> patterns;

@@ -19,6 +19,7 @@
 #include "third_party/blink/renderer/core/loader/document_loader.h"
 #include "third_party/blink/renderer/core/loader/resource/script_resource.h"
 #include "third_party/blink/renderer/core/loader/subresource_integrity_helper.h"
+#include "third_party/blink/renderer/core/loader/url_matcher.h"
 #include "third_party/blink/renderer/core/script/document_write_intervention.h"
 #include "third_party/blink/renderer/core/script/script_loader.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
@@ -51,26 +52,6 @@ InlineScriptStreamer* GetInlineScriptStreamer(const String& source,
   return scriptable_parser->TakeInlineScriptStreamer(source);
 }
 
-bool CheckIfEligibleForDelay(const KURL& url,
-                             const Document& element_document,
-                             const ScriptElementBase& element) {
-  if (!base::FeatureList::IsEnabled(features::kDelayAsyncScriptExecution))
-    return false;
-
-  if (element.IsPotentiallyRenderBlocking())
-    return false;
-
-  if (features::kDelayAsyncScriptExecutionCrossSiteOnlyParam.Get()) {
-    ExecutionContext* context = element_document.GetExecutionContext();
-    scoped_refptr<const SecurityOrigin> src_security_origin =
-        SecurityOrigin::Create(url);
-    if (src_security_origin->IsSameSiteWith(context->GetSecurityOrigin()))
-      return false;
-  }
-
-  return true;
-}
-
 }  // namespace
 
 // <specdef href="https://html.spec.whatwg.org/C/#fetch-a-classic-script">
@@ -91,8 +72,7 @@ ClassicPendingScript* ClassicPendingScript::Fetch(
       MakeGarbageCollected<ClassicPendingScript>(
           element, TextPosition::MinimumPosition(), KURL(), KURL(), String(),
           ScriptSourceLocationType::kExternalFile, options,
-          true /* is_external */,
-          CheckIfEligibleForDelay(url, element_document, *element));
+          true /* is_external */);
 
   // [Intervention]
   // For users on slow connections, we want to avoid blocking the parser in
@@ -126,8 +106,7 @@ ClassicPendingScript* ClassicPendingScript::CreateInline(
   ClassicPendingScript* pending_script =
       MakeGarbageCollected<ClassicPendingScript>(
           element, starting_position, source_url, base_url, source_text,
-          source_location_type, options, false /* is_external */,
-          false /* is_eligible_for_delay */);
+          source_location_type, options, false /* is_external */);
   pending_script->CheckState();
   return pending_script;
 }
@@ -140,8 +119,7 @@ ClassicPendingScript::ClassicPendingScript(
     const String& source_text_for_inline_script,
     ScriptSourceLocationType source_location_type,
     const ScriptFetchOptions& options,
-    bool is_external,
-    bool is_eligible_for_delay)
+    bool is_external)
     : PendingScript(element, starting_position),
       options_(options),
       source_url_for_inline_script_(source_url_for_inline_script),
@@ -149,9 +127,7 @@ ClassicPendingScript::ClassicPendingScript(
       source_text_for_inline_script_(source_text_for_inline_script),
       source_location_type_(source_location_type),
       is_external_(is_external),
-      ready_state_(is_external ? kWaitingForResource : kReady),
-      integrity_failure_(false),
-      is_eligible_for_delay_(is_eligible_for_delay) {
+      ready_state_(is_external ? kWaitingForResource : kReady) {
   CHECK(GetElement());
 
   if (is_external_) {
@@ -161,8 +137,6 @@ ClassicPendingScript::ClassicPendingScript(
     DCHECK(!base_url_for_inline_script_.IsNull());
     DCHECK(!source_text_for_inline_script_.IsNull());
   }
-
-  MemoryPressureListenerRegistry::Instance().RegisterClient(this);
 }
 
 ClassicPendingScript::~ClassicPendingScript() = default;
@@ -239,22 +213,30 @@ void ClassicPendingScript::RecordThirdPartyRequestWithCookieIfNeeded(
           kUndeferrableThirdPartySubresourceRequestWithCookie);
 }
 
-
 void ClassicPendingScript::DisposeInternal() {
-  MemoryPressureListenerRegistry::Instance().UnregisterClient(this);
   ClearResource();
-  integrity_failure_ = false;
 }
 
-bool ClassicPendingScript::IsEligibleForDelay() const {
+bool ClassicPendingScript::IsEligibleForLowPriorityAsyncScriptExecution()
+    const {
   DCHECK_EQ(GetSchedulingType(), ScriptSchedulingType::kAsync);
+
+  static const bool feature_enabled =
+      base::FeatureList::IsEnabled(features::kLowPriorityAsyncScriptExecution);
+  if (!feature_enabled)
+    return false;
+
+  if (GetElement() && GetElement()->IsPotentiallyRenderBlocking())
+    return false;
+
   // We don't delay async scripts that have matched a resource in the preload
   // cache, because we're using <link rel=preload> as a signal that the script
   // is higher-than-usual priority, and therefore should be executed earlier
-  // rather than later. IsLinkPreload() can't be checked in
-  // CheckIfEligibleForDelay() since ClassicPendingScript::Fetch() initialize
-  // the state.
-  return is_eligible_for_delay_ && !GetResource()->IsLinkPreload();
+  // rather than later.
+  if (GetResource() && GetResource()->IsLinkPreload())
+    return false;
+
+  return true;
 }
 
 void ClassicPendingScript::NotifyFinished(Resource* resource) {
@@ -295,7 +277,7 @@ void ClassicPendingScript::NotifyFinished(Resource* resource) {
   }
 
   SubresourceIntegrityHelper::DoReport(*execution_context,
-                                       GetResource()->IntegrityReportInfo());
+                                       resource->IntegrityReportInfo());
 
   // It is possible to get back a script resource with integrity metadata
   // for a request with an empty integrity attribute. In that case, the
@@ -304,10 +286,10 @@ void ClassicPendingScript::NotifyFinished(Resource* resource) {
   // the preload cache however, we know any associated integrity metadata and
   // checks were destined for this request, so we cannot skip the integrity
   // check.
-  if (!options_.GetIntegrityMetadata().IsEmpty() ||
-      GetResource()->IsLinkPreload()) {
-    integrity_failure_ = GetResource()->IntegrityDisposition() !=
-                         ResourceIntegrityDisposition::kPassed;
+  bool integrity_failure = false;
+  if (!options_.GetIntegrityMetadata().IsEmpty() || resource->IsLinkPreload()) {
+    integrity_failure = resource->IntegrityDisposition() !=
+                        ResourceIntegrityDisposition::kPassed;
   }
 
   if (intervened_) {
@@ -336,14 +318,14 @@ void ClassicPendingScript::NotifyFinished(Resource* resource) {
                          TRACE_EVENT_FLAG_FLOW_OUT, "data",
                          [&](perfetto::TracedValue context) {
                            inspector_parse_script_event::Data(
-                               std::move(context), GetResource()->InspectorId(),
-                               GetResource()->Url().GetString());
+                               std::move(context), resource->InspectorId(),
+                               resource->Url().GetString());
                          });
 
   // Ordinal ErrorOccurred(), SRI, and MIME check are all considered as network
   // errors in the Fetch spec.
   bool error_occurred =
-      GetResource()->ErrorOccurred() || integrity_failure_ || mime_type_failure;
+      resource->ErrorOccurred() || integrity_failure || mime_type_failure;
   if (error_occurred) {
     AdvanceReadyState(kErrorOccurred);
     return;
@@ -376,7 +358,6 @@ void ClassicPendingScript::NotifyCacheConsumeFinished() {
 void ClassicPendingScript::Trace(Visitor* visitor) const {
   visitor->Trace(classic_script_);
   ResourceClient::Trace(visitor);
-  MemoryPressureListener::Trace(visitor);
   PendingScript::Trace(visitor);
 }
 
@@ -501,13 +482,6 @@ void ClassicPendingScript::AdvanceReadyState(ReadyState new_ready_state) {
   // Did we transition into a 'ready' state?
   if (IsReady() && IsWatchingForLoad())
     PendingScriptFinished();
-}
-
-void ClassicPendingScript::OnPurgeMemory() {
-  CheckState();
-  // TODO(crbug.com/846951): the implementation of CancelStreaming() is
-  // currently incorrect and consequently a call to this method was removed from
-  // here.
 }
 
 bool ClassicPendingScript::WasCanceled() const {

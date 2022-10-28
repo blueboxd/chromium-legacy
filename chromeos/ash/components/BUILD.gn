@@ -1,4 +1,4 @@
-# Copyright 2022 The Chromium Authors. All rights reserved.
+# Copyright 2022 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -16,14 +16,22 @@ source_set("unit_tests") {
     "//chromeos/ash/components/browser_context_helper:unit_tests",
     "//chromeos/ash/components/cryptohome:unit_tests",
     "//chromeos/ash/components/dbus:unit_tests",
+    "//chromeos/ash/components/device_activity:unit_tests",
+    "//chromeos/ash/components/disks:unit_tests",
+    "//chromeos/ash/components/drivefs:unit_tests",
     "//chromeos/ash/components/feature_usage:unit_tests",
+    "//chromeos/ash/components/geolocation:unit_tests",
+    "//chromeos/ash/components/hid_detection:unit_tests",
     "//chromeos/ash/components/human_presence:unit_tests",
     "//chromeos/ash/components/install_attributes:unit_tests",
+    "//chromeos/ash/components/language/language_packs:unit_tests",
     "//chromeos/ash/components/local_search_service:unit_tests",
     "//chromeos/ash/components/local_search_service/public/mojom:unit_tests",
+    "//chromeos/ash/components/login/auth:unit_tests",
+    "//chromeos/ash/components/login/hibernate:unit_tests",
+    "//chromeos/ash/components/login/session:unit_tests",
     "//chromeos/ash/components/memory:unit_tests",
     "//chromeos/ash/components/network:unit_tests",
-    "//chromeos/ash/components/oobe_quick_start:unit_tests",
     "//chromeos/ash/components/string_matching:unit_tests",
     "//chromeos/ash/components/sync_wifi:unit_tests",
     "//chromeos/ash/components/trash_service:unit_tests",

@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -363,7 +363,7 @@ void ContentTranslateDriver::OnPageTranslated(
     bool cancelled,
     const std::string& source_lang,
     const std::string& translated_lang,
-    TranslateErrors::Type error_type) {
+    TranslateErrors error_type) {
   if (cancelled) {
     // Informs the |TranslateMetricsLogger| that the translation was cancelled.
     translate_manager_->GetActiveTranslateMetricsLogger()

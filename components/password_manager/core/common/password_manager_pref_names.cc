@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -44,6 +44,7 @@ const char kUnenrolledFromGoogleMobileServicesAfterApiErrorCode[] =
 const char kOsPasswordBlank[] = "password_manager.os_password_blank";
 const char kOsPasswordLastChanged[] =
     "password_manager.os_password_last_changed";
+const char kIsBiometricAvailable[] = "password_manager.is_biometric_avaliable";
 #endif
 
 #if BUILDFLAG(IS_APPLE)
@@ -93,6 +94,13 @@ const char kPasswordChangeSuccessTrackerFlows[] =
     "password_manager.password_change_success_tracker.flows";
 const char kPasswordChangeSuccessTrackerVersion[] =
     "password_manager.password_change_success_tracker.version";
+
+#if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN)
+const char kBiometricAuthenticationBeforeFilling[] =
+    "password_manager.biometric_authentication_filling";
+const char kHadBiometricsAvailable[] =
+    "password_manager.had_biometrics_available";
+#endif
 
 }  // namespace prefs
 }  // namespace password_manager

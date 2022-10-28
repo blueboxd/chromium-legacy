@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -18,7 +18,7 @@
 #include "components/autofill/ios/form_util/unique_id_data_tab_helper.h"
 #include "components/language/ios/browser/ios_language_detection_tab_helper.h"
 #include "components/password_manager/core/browser/password_manager.h"
-#import "components/password_manager/ios/ios_password_manager_driver.h"
+#import "components/password_manager/ios/password_controller_driver_helper.h"
 #import "components/password_manager/ios/shared_password_controller.h"
 #import "components/safe_browsing/ios/browser/safe_browsing_url_allow_list.h"
 #include "components/url_formatter/elide_url.h"
@@ -402,11 +402,13 @@ BOOL gChromeContextMenuEnabled = NO;
 }
 
 - (void)evaluateJavaScript:(NSString*)javaScriptString
-                completion:(void (^)(id, BOOL))completion {
+                completion:(void (^)(id, NSError*))completion {
   web::WebFrame* mainFrame = web::GetMainFrame(_webState.get());
   if (!mainFrame) {
     if (completion) {
-      completion(nil, NO);
+      completion(nil, [NSError errorWithDomain:@"org.chromium.chromewebview"
+                                          code:0
+                                      userInfo:nil]);
     }
     return;
   }
@@ -418,12 +420,12 @@ BOOL gChromeContextMenuEnabled = NO;
 
   mainFrame->ExecuteJavaScript(
       base::SysNSStringToUTF16(javaScriptString),
-      base::BindOnce(^(const base::Value* result, bool error) {
-        id jsResult;
+      base::BindOnce(^(const base::Value* result, NSError* error) {
+        id jsResult = nil;
         if (!error && result) {
           jsResult = NSObjectFromValue(result);
         }
-        completion(jsResult, !error);
+        completion(jsResult, error);
       }));
 }
 
@@ -756,15 +758,15 @@ BOOL gChromeContextMenuEnabled = NO;
   PasswordFormHelper* formHelper =
       [[PasswordFormHelper alloc] initWithWebState:_webState.get()];
   PasswordSuggestionHelper* suggestionHelper =
-      [[PasswordSuggestionHelper alloc] init];
+      [[PasswordSuggestionHelper alloc] initWithWebState:_webState.get()];
+  PasswordControllerDriverHelper* driverHelper =
+      [[PasswordControllerDriverHelper alloc] initWithWebState:_webState.get()];
   SharedPasswordController* passwordController =
       [[SharedPasswordController alloc] initWithWebState:_webState.get()
                                                  manager:passwordManager.get()
                                               formHelper:formHelper
-                                        suggestionHelper:suggestionHelper];
-
-  auto passwordManagerDriver = std::make_unique<IOSPasswordManagerDriver>(
-      passwordController, passwordManager.get());
+                                        suggestionHelper:suggestionHelper
+                                            driverHelper:driverHelper];
 
   return [[CWVAutofillController alloc]
            initWithWebState:_webState.get()
@@ -772,7 +774,6 @@ BOOL gChromeContextMenuEnabled = NO;
               autofillAgent:autofillAgent
             passwordManager:std::move(passwordManager)
       passwordManagerClient:std::move(passwordManagerClient)
-      passwordManagerDriver:std::move(passwordManagerDriver)
          passwordController:passwordController
           applicationLocale:ios_web_view::ApplicationContext::GetInstance()
                                 ->GetApplicationLocale()];

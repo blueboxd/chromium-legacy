@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -48,7 +48,7 @@ public class SigninMetricsUtils {
     public static void logAccountConsistencyPromoAction(
             @AccountConsistencyPromoAction int promoAction) {
         RecordHistogram.recordEnumeratedHistogram("Signin.AccountConsistencyPromoAction",
-                promoAction, AccountConsistencyPromoAction.MAX);
+                promoAction, AccountConsistencyPromoAction.MAX_VALUE + 1);
     }
 
     /**

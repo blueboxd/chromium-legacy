@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,6 +9,7 @@
 #include "components/autofill/core/common/password_form_fill_data.h"
 #include "components/password_manager/core/browser/password_generation_frame_helper.h"
 #include "components/password_manager/core/browser/password_manager.h"
+#import "components/password_manager/ios/ios_password_manager_driver_factory.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -19,23 +20,30 @@ using password_manager::PasswordManager;
 
 IOSPasswordManagerDriver::IOSPasswordManagerDriver(
     id<PasswordManagerDriverBridge> bridge,
-    password_manager::PasswordManager* password_manager)
-    : bridge_(bridge), password_manager_(password_manager) {
+    password_manager::PasswordManager* password_manager,
+    web::WebFrame* web_frame,
+    int driver_id)
+    : bridge_(bridge),
+      password_manager_(password_manager),
+      web_frame_(web_frame),
+      id_(driver_id) {
   password_generation_helper_ =
       std::make_unique<password_manager::PasswordGenerationFrameHelper>(
-          password_manager_->client(), this);
+          password_manager_->GetClient(), this);
+
+  // Cache this value early, so that it can be accessed after frame deletion.
+  is_in_main_frame_ = web_frame->IsMainFrame();
 }
 
 IOSPasswordManagerDriver::~IOSPasswordManagerDriver() = default;
 
 int IOSPasswordManagerDriver::GetId() const {
-  // There is only one driver per tab on iOS so returning 0 is fine.
-  return 0;
+  return id_;
 }
 
-void IOSPasswordManagerDriver::FillPasswordForm(
+void IOSPasswordManagerDriver::SetPasswordFillData(
     const autofill::PasswordFormFillData& form_data) {
-  [bridge_ fillPasswordForm:form_data completionHandler:nil];
+  [bridge_ fillPasswordForm:form_data inFrame:web_frame_ completionHandler:nil];
 }
 
 void IOSPasswordManagerDriver::InformNoSavedCredentials(
@@ -89,8 +97,7 @@ IOSPasswordManagerDriver::GetPasswordAutofillManager() {
 }
 
 bool IOSPasswordManagerDriver::IsInPrimaryMainFrame() const {
-  // On IOS only processing of password forms in main frame is implemented.
-  return true;
+  return is_in_main_frame_;
 }
 
 bool IOSPasswordManagerDriver::CanShowAutofillUi() const {

@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,9 +8,9 @@
  */
 import 'chrome://resources/cr_elements/cr_icon_button/cr_icon_button.js';
 import 'chrome://resources/cr_elements/cr_link_row/cr_link_row.js';
-import 'chrome://resources/cr_elements/icons.m.js';
-import 'chrome://resources/cr_elements/policy/cr_policy_indicator.m.js';
-import 'chrome://resources/cr_elements/shared_vars_css.m.js';
+import 'chrome://resources/cr_elements/icons.html.js';
+import 'chrome://resources/cr_elements/policy/cr_policy_indicator.js';
+import 'chrome://resources/cr_elements/cr_shared_vars.css.js';
 import 'chrome://resources/polymer/v3_0/iron-flex-layout/iron-flex-layout-classes.js';
 import '../../controls/settings_toggle_button.js';
 import '../../people_page/signout_dialog.js';
@@ -30,10 +30,10 @@ import './os_sync_controls.js';
 import {convertImageSequenceToPng} from 'chrome://resources/ash/common/cr_picture/png.js';
 import {assert} from 'chrome://resources/js/assert.m.js';
 import {sendWithPromise} from 'chrome://resources/js/cr.m.js';
-import {focusWithoutInk} from 'chrome://resources/js/cr/ui/focus_without_ink.m.js';
-import {I18nBehavior, I18nBehaviorInterface} from 'chrome://resources/js/i18n_behavior.m.js';
+import {focusWithoutInk} from 'chrome://resources/js/cr/ui/focus_without_ink_js.js';
+import {I18nBehavior, I18nBehaviorInterface} from 'chrome://resources/cr_elements/i18n_behavior.js';
 import {getImage} from 'chrome://resources/js/icon.js';
-import {WebUIListenerBehavior, WebUIListenerBehaviorInterface} from 'chrome://resources/js/web_ui_listener_behavior.m.js';
+import {WebUIListenerBehavior, WebUIListenerBehaviorInterface} from 'chrome://resources/cr_elements/web_ui_listener_behavior.js';
 import {afterNextRender, flush, html, mixinBehaviors, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {loadTimeData} from '../../i18n_setup.js';
@@ -322,13 +322,19 @@ class OsSettingsPeoplePageElement extends OsSettingsPeoplePageElementBase {
     switch (settingId) {
       // Manually show the deep links for settings nested within elements.
       case Setting.kSetUpParentalControls:
-        this.afterRenderShowDeepLink_(settingId, () => {
-          const parentalPage =
-              /** @type {?SettingsParentalControlsPageElement} */ (
-                  this.shadowRoot.querySelector(
-                      'settings-parental-controls-page'));
-          return parentalPage && parentalPage.getSetupButton();
-        });
+        this.afterRenderShowDeepLink_(
+            settingId,
+            /**
+             * TODO(crbug/1315757) settings-parental-controls-page is in TS so
+             * suppress the closure compilation error for getSetupButton()
+             * until this page is converted to TS.
+             * @suppress {missingProperties}
+             */
+            () => {
+              const parentalPage = this.shadowRoot.querySelector(
+                  'settings-parental-controls-page');
+              return parentalPage && parentalPage.getSetupButton();
+            });
         // Stop deep link attempt since we completed it manually.
         return false;
 

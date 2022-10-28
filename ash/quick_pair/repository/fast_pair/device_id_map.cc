@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -24,10 +24,8 @@ void DeviceIdMap::RegisterLocalStatePrefs(PrefRegistrySimple* registry) {
   registry->RegisterDictionaryPref(kDeviceIdMapPref);
 }
 
-DeviceIdMap::DeviceIdMap() {
-  device::BluetoothAdapterFactory::Get()->GetAdapter(base::BindOnce(
-      &DeviceIdMap::OnGetAdapter, weak_ptr_factory_.GetWeakPtr()));
-}
+DeviceIdMap::DeviceIdMap(scoped_refptr<device::BluetoothAdapter> adapter)
+    : bluetooth_adapter_(adapter) {}
 
 DeviceIdMap::~DeviceIdMap() = default;
 
@@ -151,7 +149,7 @@ bool DeviceIdMap::HasPersistedRecordsForModelId(const std::string& model_id) {
   }
 
   const base::Value::Dict& device_id_map_dict =
-      local_state->GetValueDict(kDeviceIdMapPref);
+      local_state->GetDict(kDeviceIdMapPref);
   for (std::pair<const std::string&, const base::Value&> record :
        device_id_map_dict) {
     if (record.second.GetString() == model_id)
@@ -175,16 +173,11 @@ void DeviceIdMap::LoadPersistedRecordsFromPrefs() {
   }
 
   const base::Value::Dict& device_id_map_dict =
-      local_state->GetValueDict(kDeviceIdMapPref);
+      local_state->GetDict(kDeviceIdMapPref);
   for (std::pair<const std::string&, const base::Value&> record :
        device_id_map_dict) {
     device_id_to_model_id_[record.first] = record.second.GetString();
   }
-}
-
-void DeviceIdMap::OnGetAdapter(
-    scoped_refptr<device::BluetoothAdapter> adapter) {
-  bluetooth_adapter_ = adapter;
 }
 
 absl::optional<const std::string> DeviceIdMap::GetDeviceIdForAddress(

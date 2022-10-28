@@ -1,4 +1,4 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -173,7 +173,7 @@ class COMPONENT_EXPORT(DBUS_AUDIO) CrasAudioClient {
   // successfully set.
   virtual void SetHotwordModel(uint64_t node_id,
                                const std::string& hotword_model,
-                               VoidDBusMethodCallback callback) = 0;
+                               chromeos::VoidDBusMethodCallback callback) = 0;
 
   // Enables or disables the usage of fixed A2DP packet size in CRAS.
   virtual void SetFixA2dpPacketSize(bool enabled) = 0;
@@ -242,7 +242,7 @@ class COMPONENT_EXPORT(DBUS_AUDIO) CrasAudioClient {
 
   // Runs the callback as soon as the service becomes available.
   virtual void WaitForServiceToBeAvailable(
-      WaitForServiceToBeAvailableCallback callback) = 0;
+      chromeos::WaitForServiceToBeAvailableCallback callback) = 0;
 
  protected:
   friend class CrasAudioClientTest;

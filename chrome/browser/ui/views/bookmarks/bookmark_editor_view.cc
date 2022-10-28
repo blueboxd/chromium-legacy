@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,6 +10,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/logging.h"
+#include "base/ranges/algorithm.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
@@ -22,6 +23,7 @@
 #include "chrome/grit/locale_settings.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/browser/bookmark_utils.h"
+#include "components/bookmarks/common/bookmark_metrics.h"
 #include "components/constrained_window/constrained_window_views.h"
 #include "components/history/core/browser/history_service.h"
 #include "components/strings/grit/components_strings.h"
@@ -133,6 +135,14 @@ bool BookmarkEditorView::HandleKeyEvent(views::Textfield* sender,
 
 void BookmarkEditorView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   views::DialogDelegateView::GetAccessibleNodeData(node_data);
+
+  // TODO(crbug.com/1361263): Currently DialogDelegateView does not override
+  // GetAccessibleNodeData, thus the call above accomplishes nothing. We need
+  // this View to have a role before setting its name, but if we set it to
+  // dialog, we'll wind up with a dialog (this view) inside of a dialog
+  // (RootView). Note that both views also share the same accessible name.
+  // In the meantime, give it a generic role.
+  node_data->role = ax::mojom::Role::kPane;
   node_data->SetName(l10n_util::GetStringUTF8(IDS_BOOKMARK_EDITOR_TITLE));
 }
 
@@ -215,7 +225,8 @@ void BookmarkEditorView::BookmarkNodeMoved(BookmarkModel* model,
 
 void BookmarkEditorView::BookmarkNodeAdded(BookmarkModel* model,
                                            const BookmarkNode* parent,
-                                           size_t index) {
+                                           size_t index,
+                                           bool added_by_user) {
   Reset();
 }
 
@@ -511,14 +522,14 @@ void BookmarkEditorView::ApplyNameChangesAndCreateNewFolders(
     } else {
       // Existing node, reset the title (BookmarkModel ignores changes if the
       // title is the same).
-      const auto i = std::find_if(
-          bb_node->children().cbegin(), bb_node->children().cend(),
-          [&child_b_node](const auto& node) {
+      const auto i = base::ranges::find_if(
+          bb_node->children(), [&child_b_node](const auto& node) {
             return node->is_folder() && node->id() == child_b_node->value;
           });
       DCHECK(i != bb_node->children().cend());
       child_bb_node = i->get();
-      bb_model_->SetTitle(child_bb_node, child_b_node->GetTitle());
+      bb_model_->SetTitle(child_bb_node, child_b_node->GetTitle(),
+                          bookmarks::metrics::BookmarkEditSource::kUser);
     }
     ApplyNameChangesAndCreateNewFolders(child_bb_node, child_b_node.get(),
                                         parent_b_node, parent_bb_node);

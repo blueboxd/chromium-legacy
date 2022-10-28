@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -25,6 +25,7 @@ import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.layouts.LayoutType;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.chrome.test.batch.BlankCTATabInitialStateRule;
@@ -108,9 +109,11 @@ public class MediaCaptureOverlayControllerTest {
                 () -> mActivity.getLayoutManager().showLayout(LayoutType.TAB_SWITCHER, false));
         waitForOverlayVisibility(false);
 
-        // Now hide the overview and assert that it becomes visible again.
-        TestThreadUtils.runOnUiThreadBlocking(
-                () -> mActivity.getLayoutManager().showLayout(LayoutType.BROWSING, false));
+        // Now hide the overview and assert that it becomes visible again. For hiding the overview,
+        // mActivity.getLayoutManager().showLayout(LayoutType.BROWSING) couldn't be used since it
+        // doesn't call tab#show, which calls #onInteractabilityChanged to update overlay
+        // visibility.
+        TabUiTestHelper.clickFirstCardFromTabSwitcher(mActivity);
         waitForOverlayVisibility(true);
     }
 

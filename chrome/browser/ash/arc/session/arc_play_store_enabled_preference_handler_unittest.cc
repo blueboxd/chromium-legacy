@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -308,6 +308,7 @@ TEST_F(ArcPlayStoreEnabledPreferenceHandlerTest,
   // ARC is enable and already provisoned by manual mode blocks the start.
   ASSERT_EQ(ArcSessionManager::State::STOPPED, arc_session_manager()->state());
 
+  arc_session_manager()->AllowActivation();
   arc_session_manager()->RequestEnable();
 
   // Now ARC started by manual request.

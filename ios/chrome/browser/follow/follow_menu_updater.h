@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,8 +10,8 @@
 // Protocol defining a updater for follow menu item.
 @protocol FollowMenuUpdater
 
-// Updates the follow menu item with follow |webPage|, |followed|,
-// |domainName| and |enabled|.
+// Updates the follow menu item with follow `webPage`, `followed`,
+// `domainName` and `enabled`.
 - (void)updateFollowMenuItemWithWebPage:(WebPageURLs*)webPageURLs
                                followed:(BOOL)followed
                              domainName:(NSString*)domainName

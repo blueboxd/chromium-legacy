@@ -1,4 +1,4 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -14,10 +14,12 @@
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_background_animator_observer.h"
 #include "ash/shell.h"
+#include "ash/style/ash_color_id.h"
 #include "ash/style/default_color_constants.h"
 #include "ash/wallpaper/wallpaper_controller_impl.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "base/time/time.h"
+#include "shelf_widget.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/gfx/animation/slide_animation.h"
 #include "ui/gfx/color_analysis.h"
@@ -177,9 +179,7 @@ void ShelfBackgroundAnimator::CreateAnimator(
 
   switch (background_type) {
     case ShelfBackgroundType::kDefaultBg:
-    case ShelfBackgroundType::kAppList:
     case ShelfBackgroundType::kHomeLauncher:
-    case ShelfBackgroundType::kMaximizedWithAppList:
       duration = base::Milliseconds(500);
       break;
     case ShelfBackgroundType::kMaximized:
@@ -217,10 +217,6 @@ SkColor ShelfBackgroundAnimator::GetBackgroundColor(
     ShelfBackgroundType background_type) const {
   SkColor shelf_target_color = ShelfConfig::Get()->GetDefaultShelfColor();
   switch (background_type) {
-    case ShelfBackgroundType::kAppList:
-    case ShelfBackgroundType::kMaximizedWithAppList:
-      shelf_target_color = ShelfConfig::Get()->GetShelfWithAppListColor();
-      break;
     case ShelfBackgroundType::kDefaultBg:
     case ShelfBackgroundType::kHomeLauncher:
       shelf_target_color = ShelfConfig::Get()->GetDefaultShelfColor();
@@ -242,8 +238,8 @@ SkColor ShelfBackgroundAnimator::GetBackgroundColor(
       shelf_target_color = SK_ColorTRANSPARENT;
       break;
     case ShelfBackgroundType::kLoginNonBlurredWallpaper:
-      shelf_target_color = AshColorProvider::Get()->GetShieldLayerColor(
-          AshColorProvider::ShieldLayerType::kShield80);
+      shelf_target_color = shelf_->shelf_widget()->GetColorProvider()->GetColor(
+          kColorAshShieldAndBase80);
       break;
   }
   return shelf_target_color;

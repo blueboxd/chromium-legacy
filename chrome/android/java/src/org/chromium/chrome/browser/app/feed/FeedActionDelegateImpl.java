@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -104,8 +104,17 @@ public class FeedActionDelegateImpl implements FeedActionDelegate {
 
     @Override
     public void openCrow(String url) {
-        mCrowButtonDelegate.launchCustomTab(
-                mActivityContext, new GURL(url), GURL.emptyGURL(), /*isFollowing=*/true);
+        if (ChromeFeatureList.isInitialized()
+                && ChromeFeatureList.isEnabled(ChromeFeatureList.SHARE_CROW_BUTTON_LAUNCH_TAB)) {
+            String tabUrl = mCrowButtonDelegate.getUrlForWebFlow(
+                    new GURL(url), GURL.emptyGURL(), /*isFollowing=*/true);
+            mNavigationDelegate.openUrl(
+                    WindowOpenDisposition.NEW_FOREGROUND_TAB, new LoadUrlParams(tabUrl));
+        } else {
+            mCrowButtonDelegate.launchCustomTab(
+                    /*tab=*/null, mActivityContext, new GURL(url), GURL.emptyGURL(),
+                    /*isFollowing=*/true);
+        }
     }
 
     @Override

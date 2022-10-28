@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -47,8 +47,8 @@ import org.chromium.base.PowerMonitor;
 import org.chromium.base.StrictModeContext;
 import org.chromium.base.SysUtils;
 import org.chromium.base.TraceEvent;
-import org.chromium.base.annotations.UsedByReflection;
 import org.chromium.base.jank_tracker.DummyJankTracker;
+import org.chromium.base.memory.MemoryPurgeManager;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.base.supplier.ObservableSupplier;
@@ -57,6 +57,7 @@ import org.chromium.base.supplier.OneshotSupplier;
 import org.chromium.base.supplier.OneshotSupplierImpl;
 import org.chromium.base.supplier.Supplier;
 import org.chromium.base.supplier.UnownedUserDataSupplier;
+import org.chromium.build.annotations.UsedByReflection;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ActivityTabProvider;
 import org.chromium.chrome.browser.ActivityUtils;
@@ -126,6 +127,7 @@ import org.chromium.chrome.browser.keyboard_accessory.ManualFillingComponent;
 import org.chromium.chrome.browser.keyboard_accessory.ManualFillingComponentFactory;
 import org.chromium.chrome.browser.keyboard_accessory.ManualFillingComponentSupplier;
 import org.chromium.chrome.browser.layouts.LayoutManagerAppUtils;
+import org.chromium.chrome.browser.layouts.LayoutType;
 import org.chromium.chrome.browser.locale.LocaleManager;
 import org.chromium.chrome.browser.media.FullscreenVideoPictureInPictureController;
 import org.chromium.chrome.browser.metrics.ActivityTabStartupMetricsTracker;
@@ -160,6 +162,7 @@ import org.chromium.chrome.browser.tab.RequestDesktopUtils;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabHidingType;
 import org.chromium.chrome.browser.tab.TabLaunchType;
+import org.chromium.chrome.browser.tab.TabObscuringHandler;
 import org.chromium.chrome.browser.tab.TabSelectionType;
 import org.chromium.chrome.browser.tab.TabState;
 import org.chromium.chrome.browser.tab.TabUtils;
@@ -172,6 +175,7 @@ import org.chromium.chrome.browser.tabmodel.TabCreatorManagerSupplier;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelInitializer;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
+import org.chromium.chrome.browser.tabmodel.TabModelSelectorObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorProfileSupplier;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorSupplier;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorTabObserver;
@@ -183,7 +187,6 @@ import org.chromium.chrome.browser.translate.TranslateAssistContent;
 import org.chromium.chrome.browser.translate.TranslateBridge;
 import org.chromium.chrome.browser.ui.BottomContainer;
 import org.chromium.chrome.browser.ui.RootUiCoordinator;
-import org.chromium.chrome.browser.ui.TabObscuringHandler;
 import org.chromium.chrome.browser.ui.appmenu.AppMenuBlocker;
 import org.chromium.chrome.browser.ui.appmenu.AppMenuDelegate;
 import org.chromium.chrome.browser.ui.appmenu.AppMenuPropertiesDelegate;
@@ -850,6 +853,14 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
                 postDeferredStartupIfNeeded();
             }
         };
+
+        tabModelSelector.addObserver(new TabModelSelectorObserver() {
+            @Override
+            public void onTabStateInitialized() {
+                RequestDesktopUtils.maybeDowngradeSiteSettings(tabModelSelector);
+                tabModelSelector.removeObserver(this);
+            }
+        });
     }
 
     /**
@@ -991,16 +1002,27 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
         maybeRemoveWindowBackground();
 
         Tab tab = getActivityTab();
-        if (tab != null) {
-            if (tab.isHidden()) {
-                tab.show(
-                        TabSelectionType.FROM_USER, LoadIfNeededCaller.ON_ACTIVITY_SHOWN_THEN_SHOW);
-            } else {
-                // The visible Tab's renderer process may have died after the activity was
-                // paused. Ensure that it's restored appropriately.
-                tab.loadIfNeeded(LoadIfNeededCaller.ON_ACTIVITY_SHOWN);
+
+        if (mLayoutManagerSupplier.get() != null) {
+            @LayoutType
+            int activeLayoutType = mLayoutManagerSupplier.get().getActiveLayoutType();
+
+            // Only show the tab when overview (start surface and tab switcher layout) is not shown.
+            if (activeLayoutType != LayoutType.START_SURFACE
+                    && activeLayoutType != LayoutType.TAB_SWITCHER) {
+                if (tab != null) {
+                    if (tab.isHidden()) {
+                        tab.show(TabSelectionType.FROM_USER,
+                                LoadIfNeededCaller.ON_ACTIVITY_SHOWN_THEN_SHOW);
+                    } else {
+                        // The visible Tab's renderer process may have died after the activity was
+                        // paused. Ensure that it's restored appropriately.
+                        tab.loadIfNeeded(LoadIfNeededCaller.ON_ACTIVITY_SHOWN);
+                    }
+                }
             }
         }
+
         VrModuleProvider.getDelegate().onActivityShown(this);
 
         MultiWindowUtils.getInstance().recordMultiWindowStateUkm(this, tab);
@@ -1366,6 +1388,9 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
                 createContextReporterIfNeeded();
             });
         }
+
+        DeferredStartupHandler.getInstance().addDeferredTask(
+                () -> { MemoryPurgeManager.getInstance().start(); });
     }
 
     /**
@@ -2270,7 +2295,8 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
         handleBackPressed();
     }
 
-    private void initializeBackPressHandling() {
+    @CallSuper
+    protected void initializeBackPressHandling() {
         if (BackPressManager.isEnabled()) {
             getOnBackPressedDispatcher().addCallback(this, mBackPressManager.getCallback());
             // TODO(crbug.com/1279941): consider move to RootUiCoordinator.
@@ -2577,7 +2603,7 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
                         profile, currentTab.getUrl(), usingDesktopUserAgent);
                 currentTab.reload();
                 RequestDesktopUtils.maybeShowUserEducationPromptForAppMenuSelection(
-                        Profile.getLastUsedRegularProfile());
+                        profile, this, getModalDialogManager());
             } else {
                 TabUtils.switchUserAgent(currentTab, usingDesktopUserAgent, /* forcedByUser */ true,
                         UseDesktopUserAgentCaller.ON_MENU_OR_KEYBOARD_ACTION);

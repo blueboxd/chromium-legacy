@@ -51,8 +51,10 @@ enum class FedCmRequestIdTokenStatus {
   kDisabledEmbargo,
   kUserInterfaceTimedOut,  // obsolete
   kRpPageNotVisible,
+  kShouldEmbargo,
+  kNotSignedInWithIdp,
 
-  kMaxValue = kRpPageNotVisible
+  kMaxValue = kNotSignedInWithIdp
 };
 
 // This enum describes whether user sign-in states between IDP and browser
@@ -71,7 +73,8 @@ class FedCmMetrics {
  public:
   FedCmMetrics(const GURL& provider,
                const ukm::SourceId page_source_id,
-               int session_id);
+               int session_id,
+               bool is_disabled);
 
   ~FedCmMetrics() = default;
 
@@ -106,6 +109,13 @@ class FedCmMetrics {
   // Records whether user sign-in states between IDP and browser match.
   void RecordSignInStateMatchStatus(FedCmSignInStateMatchStatus status);
 
+  // Records whether the user selected account is for sign-in or not.
+  void RecordIsSignInUser(bool is_sign_in);
+
+  // Records whether a user has left the page where the API is called when the
+  // browser is ready to show the accounts dialog.
+  void RecordWebContentsVisibilityUponReadyToShowDialog(bool is_visible);
+
  private:
   // The page's SourceId. Used to log the UKM event Blink.FedCm.
   ukm::SourceId page_source_id_;
@@ -121,17 +131,13 @@ class FedCmMetrics {
   // recording metrics. Each FedCM call gets a random integer session id, which
   // helps group UKM events by the session id.
   int session_id_;
+
+  // Whether metrics recording is disabled for the request.
+  bool is_disabled_{false};
 };
 
 // The following are UMA-only recordings, hence do not need to be in the
 // FedCmMetrics class.
-
-// Records whether the user selected account is for sign-in or not.
-void RecordIsSignInUser(bool is_sign_in);
-
-// Records whether a user has left the page where the API is called when the
-// browser is ready to show the accounts dialog.
-void RecordWebContentsVisibilityUponReadyToShowDialog(bool is_visible);
 
 // Records whether an IDP returns an approved clients list in the response.
 void RecordApprovedClientsExistence(bool has_approved_clients);

@@ -76,7 +76,7 @@ public class CachedActivityAndroidPermissionDelegate extends ActivityAndroidPerm
         boolean canRequestPermission = super.canRequestPermission(permission);
 
         if (cacheEnabled()) {
-            mCanRequestPermissionCache.put(permission, canRequestPermission);
+            mHasPermissionCache.put(permission, canRequestPermission);
         }
 
         return canRequestPermission;

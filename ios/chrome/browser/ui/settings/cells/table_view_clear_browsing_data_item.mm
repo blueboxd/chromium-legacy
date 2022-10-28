@@ -1,12 +1,12 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #import "ios/chrome/browser/ui/settings/cells/table_view_clear_browsing_data_item.h"
 
-#include "base/mac/foundation_util.h"
+#import "base/mac/foundation_util.h"
 #import "ios/chrome/browser/ui/table_view/chrome_table_view_styler.h"
-#include "ios/chrome/browser/ui/util/uikit_ui_util.h"
+#import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
 #import "ios/chrome/common/ui/table_view/table_view_cells_constants.h"
 
@@ -95,6 +95,7 @@ const CGFloat kImageHeight = 30;
     self.isAccessibilityElement = YES;
 
     _imageView = [[UIImageView alloc] init];
+    _imageView.contentMode = UIViewContentModeCenter;
     _imageView.translatesAutoresizingMaskIntoConstraints = NO;
     [self.contentView addSubview:_imageView];
 

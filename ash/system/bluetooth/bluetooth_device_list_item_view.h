@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,7 +7,7 @@
 
 #include "ash/ash_export.h"
 #include "ash/system/tray/hover_highlight_view.h"
-#include "chromeos/services/bluetooth_config/public/mojom/cros_bluetooth_config.mojom.h"
+#include "chromeos/ash/services/bluetooth_config/public/mojom/cros_bluetooth_config.mojom.h"
 
 namespace ash {
 
@@ -29,10 +29,10 @@ class ASH_EXPORT BluetoothDeviceListItemView : public HoverHighlightView {
   void UpdateDeviceProperties(
       size_t device_index,
       size_t total_device_count,
-      const chromeos::bluetooth_config::mojom::
-          PairedBluetoothDevicePropertiesPtr& device_properties);
+      const bluetooth_config::mojom::PairedBluetoothDevicePropertiesPtr&
+          device_properties);
 
-  const chromeos::bluetooth_config::mojom::PairedBluetoothDevicePropertiesPtr&
+  const bluetooth_config::mojom::PairedBluetoothDevicePropertiesPtr&
   device_properties() const {
     return device_properties_;
   }
@@ -50,18 +50,15 @@ class ASH_EXPORT BluetoothDeviceListItemView : public HoverHighlightView {
   // Update the view responsible for showing the battery percentage to reflect
   // the given battery information |battery_info|.
   void UpdateBatteryInfo(
-      const chromeos::bluetooth_config::mojom::DeviceBatteryInfoPtr&
-          battery_info);
+      const bluetooth_config::mojom::DeviceBatteryInfoPtr& battery_info);
 
   void UpdateSingleBatteryView(
-      const chromeos::bluetooth_config::mojom::DeviceBatteryInfoPtr&
-          battery_info);
+      const bluetooth_config::mojom::DeviceBatteryInfoPtr& battery_info);
 
   void UpdateMultipleBatteryView(
-      const chromeos::bluetooth_config::mojom::DeviceBatteryInfoPtr&
-          battery_info);
+      const bluetooth_config::mojom::DeviceBatteryInfoPtr& battery_info);
 
-  chromeos::bluetooth_config::mojom::PairedBluetoothDevicePropertiesPtr
+  bluetooth_config::mojom::PairedBluetoothDevicePropertiesPtr
       device_properties_;
 };
 

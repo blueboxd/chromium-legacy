@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -142,6 +142,9 @@ export function toVideoResoloutionOptionLabel(level: VideoResolutionLevel):
       break;
     case VideoResolutionLevel.HD:
       label = I18nString.LABEL_VIDEO_RESOLUTION_HD;
+      break;
+    case VideoResolutionLevel.THREE_SIXTY_P:
+      label = I18nString.LABEL_VIDEO_RESOLUTION_360P;
       break;
     case VideoResolutionLevel.FULL:
       label = I18nString.LABEL_FULL_RESOLUTION;

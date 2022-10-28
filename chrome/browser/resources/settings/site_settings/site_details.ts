@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,14 +8,14 @@
  * under Site Settings.
  */
 import 'chrome://resources/js/action_link.js';
-import 'chrome://resources/cr_elements/action_link_css.m.js';
+import 'chrome://resources/cr_elements/action_link.css.js';
 import 'chrome://resources/cr_elements/cr_dialog/cr_dialog.js';
 import 'chrome://resources/cr_elements/cr_button/cr_button.js';
 import 'chrome://resources/cr_elements/cr_icon_button/cr_icon_button.js';
 import 'chrome://resources/cr_elements/cr_link_row/cr_link_row.js';
-import 'chrome://resources/cr_elements/icons.m.js';
-import 'chrome://resources/cr_elements/shared_style_css.m.js';
-import 'chrome://resources/cr_elements/shared_vars_css.m.js';
+import 'chrome://resources/cr_elements/icons.html.js';
+import 'chrome://resources/cr_elements/cr_shared_style.css.js';
+import 'chrome://resources/cr_elements/cr_shared_vars.css.js';
 import 'chrome://resources/polymer/v3_0/iron-flex-layout/iron-flex-layout-classes.js';
 import '../icons.html.js';
 import '../settings_shared.css.js';
@@ -25,7 +25,7 @@ import './site_details_permission.js';
 
 import {CrDialogElement} from 'chrome://resources/cr_elements/cr_dialog/cr_dialog.js';
 import {assert} from 'chrome://resources/js/assert_ts.js';
-import {focusWithoutInk} from 'chrome://resources/js/cr/ui/focus_without_ink.m.js';
+import {focusWithoutInk} from 'chrome://resources/js/cr/ui/focus_without_ink.js';
 import {I18nMixin, I18nMixinInterface} from 'chrome://resources/js/i18n_mixin.js';
 import {WebUIListenerMixin, WebUIListenerMixinInterface} from 'chrome://resources/js/web_ui_listener_mixin.js';
 import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
@@ -45,6 +45,7 @@ export interface SiteDetailsElement {
   $: {
     confirmClearStorage: CrDialogElement,
     confirmResetSettings: CrDialogElement,
+    fpsMembership: HTMLElement,
     noStorage: HTMLElement,
     storage: HTMLElement,
     usage: HTMLElement,
@@ -105,6 +106,14 @@ export class SiteDetailsElement extends SiteDetailsElementBase {
         value: '',
       },
 
+      /**
+       * The first party set info for a site including owner and members count.
+       */
+      fpsMembership_: {
+        type: String,
+        value: '',
+      },
+
       enableExperimentalWebPlatformFeatures_: {
         type: Boolean,
         value() {
@@ -131,6 +140,7 @@ export class SiteDetailsElement extends SiteDetailsElementBase {
   private origin_: string;
   private storedData_: string;
   private numCookies_: string;
+  private fpsMembership_: string;
   private enableExperimentalWebPlatformFeatures_: boolean;
   private enableWebBluetoothNewPermissionsBackend_: boolean;
 
@@ -143,8 +153,8 @@ export class SiteDetailsElement extends SiteDetailsElementBase {
 
     this.addWebUIListener(
         'usage-total-changed',
-        (host: string, data: string, cookies: string) => {
-          this.onUsageTotalChanged_(host, data, cookies);
+        (host: string, data: string, cookies: string, fps: string) => {
+          this.onUsageTotalChanged_(host, data, cookies, fps);
         });
 
     this.addWebUIListener(
@@ -205,11 +215,14 @@ export class SiteDetailsElement extends SiteDetailsElementBase {
    * @param host The host that the usage was fetched for.
    * @param usage The string showing how much data the given host is using.
    * @param cookies The string showing how many cookies the given host is using.
+   * @param fpsMembership The string showing first party set membership details.
    */
-  private onUsageTotalChanged_(host: string, usage: string, cookies: string) {
+  private onUsageTotalChanged_(
+      host: string, usage: string, cookies: string, fpsMembership: string) {
     if (this.fetchingForHost_ === host) {
       this.storedData_ = usage;
       this.numCookies_ = cookies;
+      this.fpsMembership_ = fpsMembership;
     }
   }
 
@@ -319,13 +332,15 @@ export class SiteDetailsElement extends SiteDetailsElementBase {
   }
 
   private onResetSettingsDialogClosed_() {
-    const toFocus = this.shadowRoot!.querySelector('#resetSettingsButton');
+    const toFocus =
+        this.shadowRoot!.querySelector<HTMLElement>('#resetSettingsButton');
     assert(toFocus);
     focusWithoutInk(toFocus);
   }
 
   private onClearStorageDialogClosed_() {
-    const toFocus = this.shadowRoot!.querySelector('#clearStorage');
+    const toFocus =
+        this.shadowRoot!.querySelector<HTMLElement>('#clearStorage');
     assert(toFocus);
     focusWithoutInk(toFocus);
   }

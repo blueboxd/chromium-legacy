@@ -1,10 +1,11 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #ifndef CHROME_BROWSER_UI_APP_LIST_SEARCH_OMNIBOX_PROVIDER_H_
 #define CHROME_BROWSER_UI_APP_LIST_SEARCH_OMNIBOX_PROVIDER_H_
 
+#include <algorithm>
 #include <memory>
 
 #include "base/time/time.h"
@@ -35,22 +36,23 @@ class OmniboxProvider : public SearchProvider,
 
   // SearchProvider overrides:
   void Start(const std::u16string& query) override;
-  void StartZeroState() override;
   ash::AppListSearchResultType ResultType() const override;
 
- private:
   // Populates result list from AutocompleteResult.
   void PopulateFromACResult(const AutocompleteResult& result);
 
+  // Change the controller_ for testing purpose.
+  void set_controller_for_test(
+      std::unique_ptr<AutocompleteController> controller) {
+    controller_ = std::move(controller);
+  }
+
+ private:
   // AutocompleteController::Observer overrides:
   void OnResultChanged(AutocompleteController* controller,
                        bool default_match_changed) override;
 
-  void RecordQueryLatencyHistogram();
-
   Profile* profile_;
-  // True if the input is empty for zero state suggestion.
-  bool is_zero_state_input_ = false;
   AppListControllerDelegate* list_controller_;
 
   std::u16string last_query_;

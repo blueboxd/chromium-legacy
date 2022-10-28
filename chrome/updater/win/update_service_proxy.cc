@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -48,33 +48,27 @@ static constexpr base::TaskTraits kComClientTraits = {
     base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN};
 
 // Creates an instance of COM server in the COM STA apartment.
-HRESULT CreateServer(UpdaterScope scope,
-                     Microsoft::WRL::ComPtr<IUnknown>& server) {
+HRESULT CreateUpdater(UpdaterScope scope,
+                      Microsoft::WRL::ComPtr<IUpdater>& updater) {
   ::Sleep(kCreateUpdaterInstanceDelayMs);
+
+  Microsoft::WRL::ComPtr<IUnknown> unknown;
   HRESULT hr = ::CoCreateInstance(
       scope == UpdaterScope::kSystem ? __uuidof(UpdaterSystemClass)
                                      : __uuidof(UpdaterUserClass),
-      nullptr, CLSCTX_LOCAL_SERVER, IID_PPV_ARGS(&server));
-  VLOG_IF(2, FAILED(hr)) << "Failed to instantiate the update server: "
-                         << std::hex << hr;
-  return hr;
-}
+      nullptr, CLSCTX_LOCAL_SERVER, IID_PPV_ARGS(&unknown));
 
-// Creates an instance of IUpdater in the COM STA apartment.
-HRESULT CreateUpdater(UpdaterScope scope,
-                      Microsoft::WRL::ComPtr<IUpdater>& updater) {
-  Microsoft::WRL::ComPtr<IUnknown> server;
-  HRESULT hr = CreateServer(scope, server);
-  if (FAILED(hr))
+  if (FAILED(hr)) {
+    VLOG(2) << "Failed to instantiate the update server: " << std::hex << hr;
     return hr;
-  hr = server.As(&updater);
+  }
+
+  hr = unknown.As(&updater);
 
   // TODO(crbug.com/1341471) - revert the CL that introduced the check after
   // the bug is resolved.
-  VLOG_IF(2, FAILED(hr)) << "Failed to query the updater interface. "
-                         << std::hex << hr;
-  CHECK(SUCCEEDED(hr));
-
+  CHECK(SUCCEEDED(hr)) << "Failed to query the updater interface: " << std::hex
+                       << hr;
   return hr;
 }
 
@@ -389,6 +383,17 @@ void UpdateServiceProxy::GetVersion(
               base::BindPostTask(main_task_runner_, std::move(callback)))));
 }
 
+void UpdateServiceProxy::FetchPolicies(base::OnceCallback<void(int)> callback) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_main_);
+  VLOG(1) << __func__;
+  com_task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(&UpdateServiceProxy::InitializeSTA, this)
+          .Then(base::BindOnce(
+              &UpdateServiceProxy::FetchPoliciesOnSTA, this,
+              base::BindPostTask(main_task_runner_, std::move(callback)))));
+}
+
 void UpdateServiceProxy::RegisterApp(const RegistrationRequest& request,
                                      RegisterAppCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_main_);
@@ -510,14 +515,14 @@ void UpdateServiceProxy::Uninitialize() {
 
 HRESULT UpdateServiceProxy::InitializeSTA() {
   DCHECK(com_task_runner_->BelongsToCurrentThread());
-  if (server_)
+  if (updater_)
     return S_OK;
-  return CreateServer(scope_, server_);
+  return CreateUpdater(scope_, updater_);
 }
 
 void UpdateServiceProxy::UninitializeOnSTA() {
   DCHECK(com_task_runner_->BelongsToCurrentThread());
-  server_ = nullptr;
+  updater_ = nullptr;
 }
 
 void UpdateServiceProxy::GetVersionOnSTA(
@@ -529,19 +534,44 @@ void UpdateServiceProxy::GetVersionOnSTA(
     std::move(callback).Run(base::Version());
     return;
   }
-  Microsoft::WRL::ComPtr<IUpdater> updater;
-  if (HRESULT hr = CreateUpdater(scope_, updater); FAILED(hr)) {
-    std::move(callback).Run(base::Version());
-    return;
-  }
+
+  CHECK(updater_);
+
   base::win::ScopedBstr version;
-  if (HRESULT hr = updater->GetVersion(version.Receive()); FAILED(hr)) {
+  if (HRESULT hr = updater_->GetVersion(version.Receive()); FAILED(hr)) {
     VLOG(2) << "IUpdater::GetVersion failed: " << std::hex << hr;
     std::move(callback).Run(base::Version());
     return;
   }
 
   std::move(callback).Run(base::Version(base::WideToUTF8(version.Get())));
+}
+
+void UpdateServiceProxy::FetchPoliciesOnSTA(
+    base::OnceCallback<void(int)> callback,
+    HRESULT prev_hr) {
+  DCHECK(com_task_runner_->BelongsToCurrentThread());
+
+  if (FAILED(prev_hr)) {
+    std::move(callback).Run(prev_hr);
+    return;
+  }
+
+  CHECK(updater_);
+
+  auto callback_wrapper = Microsoft::WRL::Make<UpdaterCallback>(
+      updater_,
+      base::BindOnce(
+          [](base::OnceCallback<void(int)> callback, LONG status_code) {
+            std::move(callback).Run(status_code);
+          },
+          std::move(callback)));
+  if (HRESULT hr = updater_->FetchPolicies(callback_wrapper.Get());
+      FAILED(hr)) {
+    VLOG(2) << "Failed to call IUpdater::FetchPolicies" << std::hex << hr;
+    callback_wrapper->Disconnect().Run(hr);
+    return;
+  }
 }
 
 void UpdateServiceProxy::RegisterAppOnSTA(
@@ -554,11 +584,8 @@ void UpdateServiceProxy::RegisterAppOnSTA(
     std::move(callback).Run(RegistrationResponse(prev_hr));
     return;
   }
-  Microsoft::WRL::ComPtr<IUpdater> updater;
-  if (HRESULT hr = CreateUpdater(scope_, updater); FAILED(hr)) {
-    std::move(callback).Run(RegistrationResponse(hr));
-    return;
-  }
+
+  CHECK(updater_);
 
   std::wstring app_id;
   std::wstring brand_code;
@@ -592,8 +619,8 @@ void UpdateServiceProxy::RegisterAppOnSTA(
   }
 
   auto callback_wrapper = Microsoft::WRL::Make<UpdaterRegisterAppCallback>(
-      updater, std::move(callback));
-  if (HRESULT hr = updater->RegisterApp(
+      updater_, std::move(callback));
+  if (HRESULT hr = updater_->RegisterApp(
           app_id.c_str(), brand_code.c_str(), brand_path.c_str(), ap.c_str(),
           version.c_str(), existence_checker_path.c_str(),
           callback_wrapper.Get());
@@ -622,17 +649,15 @@ void UpdateServiceProxy::RunPeriodicTasksOnSTA(base::OnceClosure callback,
     std::move(callback).Run();
     return;
   }
-  Microsoft::WRL::ComPtr<IUpdater> updater;
-  if (HRESULT hr = CreateUpdater(scope_, updater); FAILED(hr)) {
-    std::move(callback).Run();
-    return;
-  }
+
+  CHECK(updater_);
+
   auto callback_wrapper = Microsoft::WRL::Make<UpdaterCallback>(
-      updater,
+      updater_,
       base::BindOnce([](base::OnceClosure callback,
                         LONG /*status_code*/) { std::move(callback).Run(); },
                      std::move(callback)));
-  if (HRESULT hr = updater->RunPeriodicTasks(callback_wrapper.Get());
+  if (HRESULT hr = updater_->RunPeriodicTasks(callback_wrapper.Get());
       FAILED(hr)) {
     VLOG(2) << "Failed to call IUpdater::RunPeriodicTasks" << std::hex << hr;
     callback_wrapper->Disconnect().Run(hr);
@@ -649,11 +674,8 @@ void UpdateServiceProxy::UpdateAllOnSTA(StateChangeCallback state_update,
     std::move(callback).Run(Result::kServiceFailed);
     return;
   }
-  Microsoft::WRL::ComPtr<IUpdater> updater;
-  if (HRESULT hr = CreateUpdater(scope_, updater); FAILED(hr)) {
-    std::move(callback).Run(Result::kServiceFailed);
-    return;
-  }
+
+  CHECK(updater_);
 
   // The COM RPC takes ownership of the `observer` and owns a reference to
   // the `updater` object as well. As long as the `observer` retains this
@@ -662,9 +684,9 @@ void UpdateServiceProxy::UpdateAllOnSTA(StateChangeCallback state_update,
   // `observer` object, the `observer` is destroyed, and as a result, the
   // last reference to `updater` is released as well, which causes the
   // destruction of the `updater` object.
-  auto observer = Microsoft::WRL::Make<UpdaterObserver>(updater, state_update,
+  auto observer = Microsoft::WRL::Make<UpdaterObserver>(updater_, state_update,
                                                         std::move(callback));
-  if (HRESULT hr = updater->UpdateAll(observer.Get()); FAILED(hr)) {
+  if (HRESULT hr = updater_->UpdateAll(observer.Get()); FAILED(hr)) {
     VLOG(2) << "Failed to call IUpdater::UpdateAll" << std::hex << hr;
 
     // Since the RPC call returned an error, it can't be determined what the
@@ -691,14 +713,12 @@ void UpdateServiceProxy::UpdateOnSTA(
     std::move(callback).Run(Result::kServiceFailed);
     return;
   }
-  Microsoft::WRL::ComPtr<IUpdater> updater;
-  if (HRESULT hr = CreateUpdater(scope_, updater); FAILED(hr)) {
-    std::move(callback).Run(Result::kServiceFailed);
-    return;
-  }
-  auto observer = Microsoft::WRL::Make<UpdaterObserver>(updater, state_update,
+
+  CHECK(updater_);
+
+  auto observer = Microsoft::WRL::Make<UpdaterObserver>(updater_, state_update,
                                                         std::move(callback));
-  HRESULT hr = updater->Update(
+  HRESULT hr = updater_->Update(
       base::UTF8ToWide(app_id).c_str(),
       base::UTF8ToWide(install_data_index).c_str(), static_cast<int>(priority),
       policy_same_version_update ==
@@ -755,19 +775,16 @@ void UpdateServiceProxy::InstallOnSTA(const RegistrationRequest& request,
     return;
   }
 
-  Microsoft::WRL::ComPtr<IUpdater> updater;
-  if (HRESULT hr = CreateUpdater(scope_, updater); FAILED(hr)) {
-    std::move(callback).Run(Result::kServiceFailed);
-    return;
-  }
-  auto observer = Microsoft::WRL::Make<UpdaterObserver>(updater, state_update,
+  CHECK(updater_);
+
+  auto observer = Microsoft::WRL::Make<UpdaterObserver>(updater_, state_update,
                                                         std::move(callback));
 
-  HRESULT hr = updater->Install(app_id.c_str(), brand_code.c_str(),
-                                brand_path.c_str(), ap.c_str(), version.c_str(),
-                                existence_checker_path.c_str(),
-                                base::UTF8ToWide(install_data_index).c_str(),
-                                static_cast<int>(priority), observer.Get());
+  HRESULT hr = updater_->Install(
+      app_id.c_str(), brand_code.c_str(), brand_path.c_str(), ap.c_str(),
+      version.c_str(), existence_checker_path.c_str(),
+      base::UTF8ToWide(install_data_index).c_str(), static_cast<int>(priority),
+      observer.Get());
   if (FAILED(hr)) {
     VLOG(2) << "Failed to call IUpdater::Install: " << std::hex << hr;
     observer->Disconnect().Run(Result::kServiceFailed);
@@ -782,11 +799,10 @@ void UpdateServiceProxy::CancelInstallsOnSTA(const std::string& app_id,
   if (FAILED(prev_hr)) {
     return;
   }
-  Microsoft::WRL::ComPtr<IUpdater> updater;
-  if (HRESULT hr = CreateUpdater(scope_, updater); FAILED(hr)) {
-    return;
-  }
-  if (HRESULT hr = updater->CancelInstalls(base::UTF8ToWide(app_id).c_str());
+
+  CHECK(updater_);
+
+  if (HRESULT hr = updater_->CancelInstalls(base::UTF8ToWide(app_id).c_str());
       FAILED(hr)) {
     VLOG(2) << "Failed to call IUpdater::CancelInstalls: " << std::hex << hr;
   }
@@ -807,11 +823,9 @@ void UpdateServiceProxy::RunInstallerOnSTA(const std::string& app_id,
     std::move(callback).Run(Result::kServiceFailed);
     return;
   }
-  Microsoft::WRL::ComPtr<IUpdater> updater;
-  if (HRESULT hr = CreateUpdater(scope_, updater); FAILED(hr)) {
-    std::move(callback).Run(Result::kServiceFailed);
-    return;
-  }
+
+  CHECK(updater_);
+
   // The COM RPC takes ownership of the `observer` and owns a reference to
   // the `updater` object as well. As long as the `observer` retains this
   // reference to the `updater` object, then the object is going to stay alive.
@@ -819,9 +833,9 @@ void UpdateServiceProxy::RunInstallerOnSTA(const std::string& app_id,
   // `observer` object, the `observer` is destroyed, and as a result, the
   // last reference to `updater` is released as well, which causes the
   // destruction of the `updater` object.
-  auto observer = Microsoft::WRL::Make<UpdaterObserver>(updater, state_update,
+  auto observer = Microsoft::WRL::Make<UpdaterObserver>(updater_, state_update,
                                                         std::move(callback));
-  HRESULT hr = updater->RunInstaller(
+  HRESULT hr = updater_->RunInstaller(
       base::UTF8ToWide(app_id).c_str(), installer_path.value().c_str(),
       base::UTF8ToWide(install_args).c_str(),
       base::UTF8ToWide(install_data).c_str(),

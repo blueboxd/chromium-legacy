@@ -6,7 +6,7 @@
           {
             "builder_id": {
               "bucket": "ci",
-              "builder": "Android x64 Builder (dbg)",
+              "builder": "Android x64 Builder All Targets (dbg)",
               "project": "chromium"
             },
             "builder_spec": {
@@ -36,7 +36,7 @@
       "builder_ids": [
         {
           "bucket": "ci",
-          "builder": "Android x64 Builder (dbg)",
+          "builder": "Android x64 Builder All Targets (dbg)",
           "project": "chromium"
         }
       ],

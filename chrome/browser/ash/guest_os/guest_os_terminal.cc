@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -40,6 +40,7 @@
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "components/services/app_service/public/cpp/intent_util.h"
+#include "components/services/app_service/public/cpp/menu.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/base/url_util.h"
@@ -403,8 +404,8 @@ void RecordTerminalSettingsChangesUMAs(Profile* profile) {
       {"theme-variations", TerminalSetting::kThemeVariations},
   });
 
-  const base::Value::Dict& settings = profile->GetPrefs()->GetValueDict(
-      guest_os::prefs::kGuestOsTerminalSettings);
+  const base::Value::Dict& settings =
+      profile->GetPrefs()->GetDict(guest_os::prefs::kGuestOsTerminalSettings);
   for (const auto item : settings) {
     // Only record settings for /hterm/profiles/default/.
     if (!base::StartsWith(item.first, kSettingPrefix,
@@ -427,8 +428,8 @@ std::string GetTerminalSettingBackgroundColor(
     return GetSettingsKey(kSettingsPrefixHterm, profile,
                           kSettingsKeyBackgroundColor);
   };
-  const base::Value::Dict& settings = profile->GetPrefs()->GetValueDict(
-      guest_os::prefs::kGuestOsTerminalSettings);
+  const base::Value::Dict& settings =
+      profile->GetPrefs()->GetDict(guest_os::prefs::kGuestOsTerminalSettings);
   // 1. Use 'settings_profile' url param.
   std::string settings_profile;
   if (net::GetValueForKeyInQuery(url, kSettingsProfileUrlParam,
@@ -450,8 +451,8 @@ std::string GetTerminalSettingBackgroundColor(
 }
 
 bool GetTerminalSettingPassCtrlW(Profile* profile) {
-  const base::Value::Dict& value = profile->GetPrefs()->GetValueDict(
-      guest_os::prefs::kGuestOsTerminalSettings);
+  const base::Value::Dict& value =
+      profile->GetPrefs()->GetDict(guest_os::prefs::kGuestOsTerminalSettings);
   return value.FindBool(kSettingPassCtrlW).value_or(kDefaultPassCtrlW);
 }
 
@@ -470,8 +471,8 @@ std::string ShortcutIdFromContainerId(Profile* profile,
   dict.Set(kShortcutKey, base::Value(kShortcutValueTerminal));
 
   // Find terminal profile from prefs.
-  const base::Value::Dict& settings = profile->GetPrefs()->GetValueDict(
-      guest_os::prefs::kGuestOsTerminalSettings);
+  const base::Value::Dict& settings =
+      profile->GetPrefs()->GetDict(guest_os::prefs::kGuestOsTerminalSettings);
   const base::Value::List* vsh_ids = settings.FindList("/vsh/profile-ids");
   if (vsh_ids) {
     for (const auto& vsh_id : *vsh_ids) {
@@ -510,8 +511,8 @@ base::flat_map<std::string, std::string> ExtrasFromShortcutId(
 std::vector<std::pair<std::string, std::string>> GetSSHConnections(
     Profile* profile) {
   std::vector<std::pair<std::string, std::string>> result;
-  const base::Value::Dict& settings = profile->GetPrefs()->GetValueDict(
-      guest_os::prefs::kGuestOsTerminalSettings);
+  const base::Value::Dict& settings =
+      profile->GetPrefs()->GetDict(guest_os::prefs::kGuestOsTerminalSettings);
   const base::Value::List* ids = settings.FindList("/nassh/profile-ids");
   if (!ids) {
     return result;
@@ -529,8 +530,7 @@ std::vector<std::pair<std::string, std::string>> GetSSHConnections(
   return result;
 }
 
-void AddTerminalMenuItems(Profile* profile,
-                          apps::mojom::MenuItemsPtr* menu_items) {
+void AddTerminalMenuItems(Profile* profile, apps::MenuItems& menu_items) {
   apps::AddCommandItem(ash::SETTINGS, IDS_INTERNAL_APP_SETTINGS, menu_items);
   if (crostini::IsCrostiniRunning(profile)) {
     apps::AddCommandItem(ash::SHUTDOWN_GUEST_OS,
@@ -541,8 +541,8 @@ void AddTerminalMenuItems(Profile* profile,
 void AddTerminalMenuShortcuts(
     Profile* profile,
     int next_command_id,
-    apps::mojom::MenuItemsPtr menu_items,
-    apps::mojom::Publisher::GetMenuModelCallback callback,
+    apps::MenuItems menu_items,
+    base::OnceCallback<void(apps::MenuItems)> callback,
     std::vector<gfx::ImageSkia> images) {
   ui::ColorProvider* color_provider =
       ui::ColorProviderManager::Get().GetColorProviderFor(
@@ -559,7 +559,7 @@ void AddTerminalMenuShortcuts(
   auto* registry = guest_os::GuestOsService::GetForProfile(profile)
                        ->TerminalProviderRegistry();
   if (connections.size() > 0 || registry->List().size() > 0) {
-    apps::AddSeparator(ui::DOUBLE_SEPARATOR, &menu_items);
+    apps::AddSeparator(ui::DOUBLE_SEPARATOR, menu_items);
   }
 
   for (auto id : registry->List()) {
@@ -567,13 +567,13 @@ void AddTerminalMenuShortcuts(
     apps::AddShortcutCommandItem(
         next_command_id++,
         ShortcutIdFromContainerId(profile, provider->GuestId()),
-        provider->Label(), crostini_mascot_icon, &menu_items);
+        provider->Label(), crostini_mascot_icon, menu_items);
   }
 
   for (const auto& connection : connections) {
     apps::AddShortcutCommandItem(
         next_command_id++, ShortcutIdForSSH(connection.first),
-        connection.second, terminal_ssh_icon, &menu_items);
+        connection.second, terminal_ssh_icon, menu_items);
   }
 
   std::move(callback).Run(std::move(menu_items));
@@ -592,8 +592,8 @@ bool ExecuteTerminalMenuShortcutCommand(Profile* profile,
     if (!profileId) {
       return false;
     }
-    const base::Value::Dict& settings = profile->GetPrefs()->GetValueDict(
-        guest_os::prefs::kGuestOsTerminalSettings);
+    const base::Value::Dict& settings =
+        profile->GetPrefs()->GetDict(guest_os::prefs::kGuestOsTerminalSettings);
     const std::string* settings_profile = settings.FindString(GetSettingsKey(
         kSettingsPrefixNassh, *profileId, kSettingsKeyTerminalProfile));
     auto escape = [](const std::string& v) {

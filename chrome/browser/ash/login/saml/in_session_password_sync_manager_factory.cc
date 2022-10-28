@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -24,9 +24,6 @@ InSessionPasswordSyncManagerFactory::GetInstance() {
 // static
 InSessionPasswordSyncManager*
 InSessionPasswordSyncManagerFactory::GetForProfile(Profile* profile) {
-  if (!features::IsSamlReauthenticationOnLockscreenEnabled())
-    return nullptr;
-
   return static_cast<InSessionPasswordSyncManager*>(
       GetInstance()->GetServiceForBrowserContext(profile, true));
 }

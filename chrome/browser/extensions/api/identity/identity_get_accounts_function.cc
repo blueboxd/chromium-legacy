@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -37,7 +37,7 @@ ExtensionFunction::ResponseAction IdentityGetAccountsFunction::Run() {
   base::ListValue infos;
 
   if (accounts.empty()) {
-    return RespondNow(OneArgument(std::move(infos)));
+    return RespondNow(WithArguments(std::move(infos)));
   }
 
   Profile* profile = Profile::FromBrowserContext(browser_context());
@@ -56,7 +56,7 @@ ExtensionFunction::ResponseAction IdentityGetAccountsFunction::Run() {
     account_info.id =
         identity_manager->GetPrimaryAccountInfo(signin::ConsentLevel::kSync)
             .gaia;
-    infos.Append(base::Value::FromUniquePtrValue(account_info.ToValue()));
+    infos.Append(base::Value(account_info.ToValue()));
   }
 
   // If secondary accounts are supported, add all the secondary accounts as
@@ -67,11 +67,11 @@ ExtensionFunction::ResponseAction IdentityGetAccountsFunction::Run() {
           identity_manager->GetPrimaryAccountId(signin::ConsentLevel::kSync))
         continue;
       account_info.id = account.gaia;
-      infos.Append(base::Value::FromUniquePtrValue(account_info.ToValue()));
+      infos.Append(base::Value(account_info.ToValue()));
     }
   }
 
-  return RespondNow(OneArgument(std::move(infos)));
+  return RespondNow(WithArguments(std::move(infos)));
 }
 
 }  // namespace extensions

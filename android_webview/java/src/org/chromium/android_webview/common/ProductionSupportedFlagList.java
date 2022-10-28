@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,6 +11,7 @@ import org.chromium.blink_scheduler.BlinkSchedulerFeatures;
 import org.chromium.cc.base.CcSwitches;
 import org.chromium.components.autofill.AutofillFeatures;
 import org.chromium.components.feature_engagement.FeatureConstants;
+import org.chromium.components.metrics.MetricsFeatures;
 import org.chromium.components.metrics.MetricsSwitches;
 import org.chromium.components.network_session_configurator.NetworkSessionSwitches;
 import org.chromium.components.variations.VariationsSwitches;
@@ -21,6 +22,7 @@ import org.chromium.gpu.config.GpuFeatures;
 import org.chromium.gpu.config.GpuSwitches;
 import org.chromium.net.NetFeatures;
 import org.chromium.services.network.NetworkServiceFeatures;
+import org.chromium.ui.accessibility.AccessibilityFeatures;
 
 /**
  * List of experimental features/flags supported for user devices. Add features/flags to this list
@@ -156,6 +158,9 @@ public final class ProductionSupportedFlagList {
             Flag.baseFeature(AutofillFeatures.AUTOFILL_ACROSS_IFRAMES,
                     "Enable Autofill for frame-transcending forms (forms whose fields live in "
                             + "different frames)."),
+            Flag.baseFeature(AutofillFeatures.AUTOFILL_COUNTRY_FROM_LOCAL_NAME,
+                    "Chrome needs to map country names to country codes. If enabled, the lookup "
+                            + "considers all locales that are registered for a country."),
             Flag.baseFeature(AutofillFeatures.AUTOFILL_ENABLE_DEPENDENT_LOCALITY_PARSING,
                     "Enables parsing dependent locality fields (e.g. Bairros in Brazil)."),
             Flag.baseFeature(AutofillFeatures.AUTOFILL_ENABLE_RANKING_FORMULA,
@@ -362,6 +367,13 @@ public final class ProductionSupportedFlagList {
             Flag.baseFeature(GpuFeatures.INCREASED_CMD_BUFFER_PARSE_SLICE,
                     "Enable the use of an increased parse slice size per command buffer before"
                             + " each forced context switch."),
+            Flag.baseFeature(MetricsFeatures.CONSOLIDATE_METRICS_SERVICE_INITIAL_LOG_LOGIC,
+                    "Controls whether the logic to build the initial UMA log is the same as"
+                            + " other logs."),
+            Flag.baseFeature(AccessibilityFeatures.ABLATE_SEND_PENDING_ACCESSIBILITY_EVENTS,
+                    "Enable to increase the cost of SendPendingAccessibilityEvents"),
+            Flag.baseFeature(ContentFeatures.WEBVIEW_THROTTLE_BACKGROUND_BEGIN_FRAME,
+                    "Enable to throttle begin frames when webview is not being drawn"),
             // Add new commandline switches and features above. The final entry should have a
             // trailing comma for cleaner diffs.
     };

@@ -203,6 +203,7 @@ class BrowserURLHandler;
 class ClientCertificateDelegate;
 class ControllerPresentationServiceDelegate;
 class DevToolsManagerDelegate;
+class DirectSocketsDelegate;
 class DocumentOverlayWindow;
 class DocumentPictureInPictureWindowController;
 class FeatureObserverClient;
@@ -342,11 +343,12 @@ class CONTENT_EXPORT ContentBrowserClient {
 
   // Returns true if effective URLs should be compared when choosing a
   // SiteInstance for a navigation to |destination_url|.
-  // |is_main_frame| is true if the navigation will take place in a main frame.
+  // |is_outermost_main_frame| is true if the navigation will take place in an
+  // outermost main frame.
   virtual bool ShouldCompareEffectiveURLsForSiteInstanceSelection(
       BrowserContext* browser_context,
       content::SiteInstance* candidate_site_instance,
-      bool is_main_frame,
+      bool is_outermost_main_frame,
       const GURL& candidate_url,
       const GURL& destination_url);
 
@@ -537,10 +539,12 @@ class CONTENT_EXPORT ContentBrowserClient {
   virtual size_t GetProcessCountToIgnoreForLimit();
 
   // Returns the base permissions policy that is declared in an isolated app's
-  // Web App Manifest.
-  virtual blink::ParsedPermissionsPolicy GetPermissionsPolicyForIsolatedApp(
-      content::BrowserContext* browser_context,
-      const url::Origin& app_origin);
+  // Web App Manifest. The embedder might choose to return an absl::nullopt in
+  // specific cases -- then the default non-isolated permissions policy will be
+  // applied.
+  virtual absl::optional<blink::ParsedPermissionsPolicy>
+  GetPermissionsPolicyForIsolatedApp(content::BrowserContext* browser_context,
+                                     const url::Origin& app_origin);
 
   // Returns whether a new process should be created or an existing one should
   // be reused based on the URL we want to load. This should return false,
@@ -841,29 +845,29 @@ class CONTENT_EXPORT ContentBrowserClient {
       const url::Origin& top_frame_origin,
       const url::Origin& api_origin);
 
-  enum class ConversionMeasurementOperation {
-    kImpression,
-    kConversion,
+  enum class AttributionReportingOperation {
+    kSource,
+    kTrigger,
     kReport,
     kAny,
   };
 
-  // Allows the embedder to control if conversion measurement API operations can
+  // Allows the embedder to control if Attribution Reporting API operations can
   // happen in a given context. Origins must be provided for a given operation
   // as follows:
-  //   - `kImpression` must provide a non-null `impression_origin` and
+  //   - `kSource` must provide a non-null `source_origin` and
   //   `reporting_origin`
-  //   - `kConversion` must provide a non-null `conversion_origin` and
+  //   - `kTrigger` must provide a non-null `destination_origin` and
   //   `reporting_origin`
   //   - `kReport` must provide all non-null origins
   //   - `kAny` may provide all null origins. It checks whether conversion
   //   measurement is allowed anywhere in `browser_context`, returning false if
-  //   conversion measurement is not allowed by default on any origin.
-  virtual bool IsConversionMeasurementOperationAllowed(
+  //   Attribution Reporting is not allowed by default on any origin.
+  virtual bool IsAttributionReportingOperationAllowed(
       content::BrowserContext* browser_context,
-      ConversionMeasurementOperation operation,
-      const url::Origin* impression_origin,
-      const url::Origin* conversion_origin,
+      AttributionReportingOperation operation,
+      const url::Origin* source_origin,
+      const url::Origin* destination_origin,
       const url::Origin* reporting_origin);
 
   // Allows the embedder to control if Shared Storage API operations can happen
@@ -942,7 +946,14 @@ class CONTENT_EXPORT ContentBrowserClient {
   virtual GeneratedCodeCacheSettings GetGeneratedCodeCacheSettings(
       BrowserContext* context);
 
-  // Informs the embedder that a certificate error has occured.  If
+  // Allows the embedder to control initialization of the
+  // CertVerifierServiceFactory. May return nullptr to use defaults. This must
+  // return the same parameters for the lifetime of the process. Will be called
+  // when the CertVerifierService is created or re-created.
+  virtual cert_verifier::mojom::CertVerifierServiceParamsPtr
+  GetCertVerifierServiceParams();
+
+  // Informs the embedder that a certificate error has occurred. If
   // |overridable| is true and if |strict_enforcement| is false, the user
   // can ignore the error and continue. The embedder can call the callback
   // asynchronously.
@@ -1020,6 +1031,12 @@ class CONTENT_EXPORT ContentBrowserClient {
 
   // Allows the embedder to return a TTS platform implementation.
   virtual TtsPlatform* GetTtsPlatform();
+
+#if !BUILDFLAG(IS_ANDROID)
+  // Allows the embedder to return a DirectSocketsDelegate
+  // implementation.
+  virtual DirectSocketsDelegate* GetDirectSocketsDelegate();
+#endif
 
   // Called by WebContents to override the WebKit preferences that are used by
   // the renderer. The content layer will add its own settings, and then it's up
@@ -2177,6 +2194,12 @@ class CONTENT_EXPORT ContentBrowserClient {
   virtual bool ShouldInheritCrossOriginEmbedderPolicyImplicitly(
       const GURL& url);
 
+  // Returns true when a ServiceWorker whose URL is |url| should inherit its
+  // PolicyContainer from its creator instead of from its main script
+  // response.
+  virtual bool ShouldServiceWorkerInheritPolicyContainerFromCreator(
+      const GURL& url);
+
   // Returns whether a context with the given |origin| should be allowed to make
   // insecure private network requests.
   //
@@ -2244,17 +2267,6 @@ class CONTENT_EXPORT ContentBrowserClient {
   virtual std::unique_ptr<PrefetchServiceDelegate>
   CreatePrefetchServiceDelegate(BrowserContext* browser_context);
 
-  // Allows the embedder to show a dialog that will be used to control whether a
-  // connection through the Direct Sockets API is permitted. If the connection
-  // is permitted, the remote address and port that the user input will be sent
-  // back to the caller through callback.
-  virtual void ShowDirectSocketsConnectionDialog(
-      RenderFrameHost* owner,
-      const std::string& address,
-      base::OnceCallback<void(bool accepted,
-                              const std::string& address,
-                              const std::string& port)> callback);
-
   // Returns true if find-in-page should be disabled for a given `origin`.
   virtual bool IsFindInPageDisabledForOrigin(const url::Origin& origin);
 
@@ -2306,6 +2318,9 @@ class CONTENT_EXPORT ContentBrowserClient {
   virtual bool OpenExternally(RenderFrameHost* opener,
                               const GURL& url,
                               WindowOpenDisposition disposition);
+
+  // Called when a `SharedStorageWorkletHost` is created for `rfh`.
+  virtual void OnSharedStorageWorkletHostCreated(RenderFrameHost* rfh) {}
 };
 
 }  // namespace content

@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -17,6 +17,7 @@ PrivacyHubController::~PrivacyHubController() = default;
 void PrivacyHubController::RegisterProfilePrefs(PrefRegistrySimple* registry) {
   registry->RegisterBooleanPref(prefs::kUserCameraAllowed, true);
   registry->RegisterBooleanPref(prefs::kUserMicrophoneAllowed, true);
+  registry->RegisterBooleanPref(prefs::kUserGeolocationAllowed, true);
 }
 
 }  // namespace ash

@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,8 +13,6 @@
 #include <vector>
 
 #include "ash/components/arc/arc_prefs.h"
-#include "ash/components/disks/disk.h"
-#include "ash/components/drivefs/drivefs_host.h"
 #include "ash/constants/ash_features.h"
 #include "ash/constants/ash_pref_names.h"
 #include "ash/public/cpp/tablet_mode.h"
@@ -57,6 +55,8 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
+#include "chromeos/ash/components/disks/disk.h"
+#include "chromeos/ash/components/drivefs/drivefs_host.h"
 #include "chromeos/components/disks/disks_prefs.h"
 #include "chromeos/dbus/power/power_manager_client.h"
 #include "chromeos/login/login_state/login_state.h"
@@ -171,6 +171,8 @@ file_manager_private::IOTaskState GetIOTaskState(
   switch (state) {
     case file_manager::io_task::State::kQueued:
       return file_manager_private::IO_TASK_STATE_QUEUED;
+    case file_manager::io_task::State::kScanning:
+      return file_manager_private::IO_TASK_STATE_SCANNING;
     case file_manager::io_task::State::kInProgress:
       return file_manager_private::IO_TASK_STATE_IN_PROGRESS;
     case file_manager::io_task::State::kSuccess:
@@ -203,6 +205,8 @@ file_manager_private::IOTaskType GetIOTaskType(
       return file_manager_private::IO_TASK_TYPE_MOVE;
     case file_manager::io_task::OperationType::kRestore:
       return file_manager_private::IO_TASK_TYPE_RESTORE;
+    case file_manager::io_task::OperationType::kRestoreToDestination:
+      return file_manager_private::IO_TASK_TYPE_RESTORE_TO_DESTINATION;
     case file_manager::io_task::OperationType::kTrash:
       return file_manager_private::IO_TASK_TYPE_TRASH;
     case file_manager::io_task::OperationType::kZip:
@@ -383,12 +387,10 @@ class DriveFsEventRouterImpl : public DriveFsEventRouter {
         urls.insert(listener->listener_url());
       }
     }
-    // In SWA, there may not be a window open to listen to the event, so always
-    // add the File Manager URL so events can be sent to the
+    // In the Files app, there may not be a window open to listen to the event,
+    // so always add the File Manager URL so events can be sent to the
     // SystemNotificationManager.
-    if (ash::features::IsFileManagerSwaEnabled()) {
-      urls.insert(file_manager::util::GetFileManagerURL());
-    }
+    urls.insert(file_manager::util::GetFileManagerURL());
     return urls;
   }
 
@@ -797,11 +799,10 @@ void EventRouter::OnCopyStarted(int copy_id,
   file_manager_private::CopyOrMoveProgressStatus status;
   // Send started event.
   status.type = file_manager_private::COPY_OR_MOVE_PROGRESS_STATUS_TYPE_BEGIN;
-  status.source_url = std::make_unique<std::string>(source_url.spec());
-  status.destination_url =
-      std::make_unique<std::string>(destination_url.spec());
+  status.source_url = source_url.spec();
+  status.destination_url = destination_url.spec();
   // Use the bytes copied member to store space needed for this event.
-  status.size = std::make_unique<double>(space_needed);
+  status.size = space_needed;
 
   notification_manager_->HandleCopyStart(copy_id, status);
 }
@@ -817,13 +818,12 @@ void EventRouter::OnCopyCompleted(int copy_id,
     // Send success event.
     status.type =
         file_manager_private::COPY_OR_MOVE_PROGRESS_STATUS_TYPE_SUCCESS;
-    status.source_url = std::make_unique<std::string>(source_url.spec());
-    status.destination_url =
-        std::make_unique<std::string>(destination_url.spec());
+    status.source_url = source_url.spec();
+    status.destination_url = destination_url.spec();
   } else {
     // Send error event.
     status.type = file_manager_private::COPY_OR_MOVE_PROGRESS_STATUS_TYPE_ERROR;
-    status.error = std::make_unique<std::string>(FileErrorToErrorName(error));
+    status.error = FileErrorToErrorName(error);
   }
 
   notification_manager_->HandleCopyEvent(copy_id, status);
@@ -843,25 +843,22 @@ void EventRouter::OnCopyProgress(
 
   file_manager_private::CopyOrMoveProgressStatus status;
   status.type = CopyOrMoveProgressTypeToCopyOrMoveProgressStatusType(type);
-  status.source_url = std::make_unique<std::string>(source_url.spec());
+  status.source_url = source_url.spec();
   if (type == FileManagerCopyOrMoveHookDelegate::ProgressType::kError) {
     // For cross-filesystems moves, no destination_url is provided when an error
     // occurs. This translates into to a non-valid destination GURL.
     // status.destination_url should never be used in this case.
-    status.destination_url =
-        std::make_unique<std::string>(destination_url.possibly_invalid_spec());
+    status.destination_url = destination_url.possibly_invalid_spec();
   } else if (type != FileManagerCopyOrMoveHookDelegate::ProgressType::
                          kEndRemoveSource) {
-    status.destination_url =
-        std::make_unique<std::string>(destination_url.spec());
+    status.destination_url = destination_url.spec();
   }
 
   if (type == FileManagerCopyOrMoveHookDelegate::ProgressType::kError) {
-    status.error = std::make_unique<std::string>(
-        FileErrorToErrorName(base::File::FILE_ERROR_FAILED));
+    status.error = FileErrorToErrorName(base::File::FILE_ERROR_FAILED);
   }
   if (type == FileManagerCopyOrMoveHookDelegate::ProgressType::kProgress)
-    status.size = std::make_unique<double>(size);
+    status.size = size;
 
   // Discard error progress since current JS code cannot handle this properly.
   // TODO(yawano): Remove this after JS side is implemented correctly.
@@ -980,14 +977,14 @@ void EventRouter::DispatchDirectoryChangeEventWithEntryDefinition(
                          ? file_manager_private::FILE_WATCH_EVENT_TYPE_ERROR
                          : file_manager_private::FILE_WATCH_EVENT_TYPE_CHANGED;
 
-  event.entry.additional_properties.SetStringKey(
-      "fileSystemName", entry_definition.file_system_name);
-  event.entry.additional_properties.SetStringKey(
-      "fileSystemRoot", entry_definition.file_system_root_url);
-  event.entry.additional_properties.SetStringKey(
+  event.entry.additional_properties.Set("fileSystemName",
+                                        entry_definition.file_system_name);
+  event.entry.additional_properties.Set("fileSystemRoot",
+                                        entry_definition.file_system_root_url);
+  event.entry.additional_properties.Set(
       "fileFullPath", "/" + entry_definition.full_path.value());
-  event.entry.additional_properties.SetBoolKey("fileIsDirectory",
-                                               entry_definition.is_directory);
+  event.entry.additional_properties.Set("fileIsDirectory",
+                                        entry_definition.is_directory);
 
   BroadcastEvent(profile_,
                  extensions::events::FILE_MANAGER_PRIVATE_ON_DIRECTORY_CHANGED,
@@ -1029,10 +1026,8 @@ void EventRouter::OnVolumeMounted(ash::MountError error_code,
       file_manager_private::MOUNT_COMPLETED_EVENT_TYPE_MOUNT, error_code,
       volume);
 
-  // If the Files SWA is enabled, record the UMA metrics for mounted FSPs.
-  if (ash::features::IsFileManagerSwaEnabled()) {
-    RecordFileSystemProviderMountMetrics(volume);
-  }
+  // Record the UMA metrics for mounted FSPs.
+  RecordFileSystemProviderMountMetrics(volume);
 
   // TODO(mtomasz): Move VolumeManager and part of the event router outside of
   // file_manager, so there is no dependency between File System API and the
@@ -1187,12 +1182,12 @@ void EventRouter::PopulateCrostiniEvent(
   event.event_type = event_type;
   event.vm_name = vm_name;
   file_manager_private::CrostiniEvent::EntriesType entry;
-  entry.additional_properties.SetStringKey(
+  entry.additional_properties.Set(
       "fileSystemRoot",
       storage::GetExternalFileSystemRootURIString(origin.GetURL(), mount_name));
-  entry.additional_properties.SetStringKey("fileSystemName", file_system_name);
-  entry.additional_properties.SetStringKey("fileFullPath", full_path);
-  entry.additional_properties.SetBoolKey("fileIsDirectory", true);
+  entry.additional_properties.Set("fileSystemName", file_system_name);
+  entry.additional_properties.Set("fileFullPath", full_path);
+  entry.additional_properties.Set("fileIsDirectory", true);
   event.entries.emplace_back(std::move(entry));
 }
 
@@ -1285,6 +1280,16 @@ void EventRouter::OnDriveDialogResult(drivefs::mojom::DialogResult result) {
   drivefs_event_router_->OnDialogResult(result);
 }
 
+void EventRouter::SuppressDriveNotificationsForFilePath(
+    const base::FilePath& relative_drive_path) {
+  drivefs_event_router_->SuppressNotificationsForFilePath(relative_drive_path);
+}
+
+void EventRouter::RestoreDriveNotificationsForFilePath(
+    const base::FilePath& relative_drive_path) {
+  drivefs_event_router_->RestoreNotificationsForFilePath(relative_drive_path);
+}
+
 base::WeakPtr<EventRouter> EventRouter::GetWeakPtr() {
   return weak_factory_.GetWeakPtr();
 }
@@ -1328,6 +1333,7 @@ void EventRouter::OnIOTaskStatus(const io_task::ProgressStatus& status) {
   event_status.task_id = status.task_id;
   event_status.type = GetIOTaskType(status.type);
   event_status.state = GetIOTaskState(status.state);
+  event_status.show_notification = status.show_notification;
 
   // Speedometer can produce infinite result which can't be serialized to JSON
   // when sending the status via private API.
@@ -1436,20 +1442,18 @@ void EventRouter::OnConvertFileDefinitionListToEntryDefinitionList(
       continue;
     }
     OutputsType output_entry;
-    output_entry.additional_properties.SetStringKey("fileSystemName",
-                                                    def.file_system_name);
-    output_entry.additional_properties.SetStringKey("fileSystemRoot",
-                                                    def.file_system_root_url);
+    output_entry.additional_properties.Set("fileSystemName",
+                                           def.file_system_name);
+    output_entry.additional_properties.Set("fileSystemRoot",
+                                           def.file_system_root_url);
     // The `full_path` comes back as relative to the file system root, but the
     // UI requires it as an absolute path.
-    output_entry.additional_properties.SetStringKey(
+    output_entry.additional_properties.Set(
         "fileFullPath", base::FilePath("/").Append(def.full_path).value());
-    output_entry.additional_properties.SetBoolKey("fileIsDirectory",
-                                                  def.is_directory);
+    output_entry.additional_properties.Set("fileIsDirectory", def.is_directory);
     outputs.push_back(std::move(output_entry));
   }
-  event_status.outputs =
-      std::make_unique<std::vector<OutputsType>>(std::move(outputs));
+  event_status.outputs = std::move(outputs);
   BroadcastIOTask(std::move(event_status));
 }
 

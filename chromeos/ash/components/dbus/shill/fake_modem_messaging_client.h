@@ -1,4 +1,4 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -34,7 +34,7 @@ class COMPONENT_EXPORT(SHILL_CLIENT) FakeModemMessagingClient
   void Delete(const std::string& service_name,
               const dbus::ObjectPath& object_path,
               const dbus::ObjectPath& sms_path,
-              VoidDBusMethodCallback callback) override;
+              chromeos::VoidDBusMethodCallback callback) override;
   void List(const std::string& service_name,
             const dbus::ObjectPath& object_path,
             ListCallback callback) override;

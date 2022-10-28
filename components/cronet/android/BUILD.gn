@@ -1,4 +1,4 @@
-# Copyright 2015 The Chromium Authors. All rights reserved.
+# Copyright 2015 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -489,7 +489,6 @@ android_apk("cronet_sample_apk") {
     proguard_configs = [
       "$target_gen_dir/cronet_impl_native_proguard.cfg",
       "cronet_impl_common_proguard.cfg",
-      "//base/android/proguard/chromium_apk.flags",
     ]
   }
 }
@@ -503,6 +502,7 @@ action("cronet_combine_proguard_flags") {
   script = "//components/cronet/tools/generate_proguard_file.py"
   sources = [
     "//base/android/proguard/chromium_code.flags",
+    "//build/android/chromium_annotations.flags",
 
     # Massage the proguard to avoid incompatibilities when building internally.
     "//components/cronet/android/cronet_impl_native_proguard.cfg",
@@ -691,8 +691,10 @@ _jar_excluded_patterns = [
   "*/multidex/*.class",
   "*/process_launcher/*.class",
   "*/SysUtils*.class",
+  "org/chromium/base/BaseFeature*.class",
   "org/chromium/base/Feature*.class",
   "org/chromium/base/jank_tracker/*.class",
+  "org/chromium/base/memory/MemoryPurgeManager*.class",
   "org/chromium/base/memory/MemoryPressureMonitor*.class",
 ]
 
@@ -998,6 +1000,7 @@ if (!is_component_build) {
       "test/javatests/src/org/chromium/net/BrotliTest.java",
       "test/javatests/src/org/chromium/net/Criteria.java",
       "test/javatests/src/org/chromium/net/CronetEngineBuilderTest.java",
+      "test/javatests/src/org/chromium/net/CronetOnboardingTest.java",
       "test/javatests/src/org/chromium/net/CronetStressTest.java",
       "test/javatests/src/org/chromium/net/CronetTestRuleTest.java",
       "test/javatests/src/org/chromium/net/CronetUploadTest.java",
@@ -1228,7 +1231,6 @@ if (!is_component_build) {
         "$target_gen_dir/cronet_impl_native_proguard.cfg",
         "cronet_impl_common_proguard.cfg",
         "test/proguard.cfg",
-        "//base/android/proguard/chromium_apk.flags",
         "//testing/android/proguard_for_test.flags",
       ]
       enable_proguard_checks = false

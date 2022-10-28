@@ -10,23 +10,17 @@
 
 namespace content {
 
-class GuestHost;
-
 // Objects implement this interface to get notified about changes in the guest
 // WebContents and to provide necessary functionality.
 class CONTENT_EXPORT BrowserPluginGuestDelegate {
  public:
   virtual ~BrowserPluginGuestDelegate() {}
 
-  virtual WebContents* CreateNewGuestWindow(
+  virtual std::unique_ptr<WebContents> CreateNewGuestWindow(
       const WebContents::CreateParams& create_params);
 
   // Returns the WebContents that currently owns this guest.
   virtual WebContents* GetOwnerWebContents();
-
-  // Provides the delegate with an interface with which to communicate with the
-  // content module.
-  virtual void SetGuestHost(GuestHost* guest_host) {}
 };
 
 }  // namespace content

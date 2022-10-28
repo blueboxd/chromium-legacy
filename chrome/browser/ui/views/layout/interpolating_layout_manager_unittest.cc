@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,6 +10,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/animation/tween.h"
 #include "ui/views/test/test_views.h"
+#include "ui/views/test/views_test_utils.h"
 #include "ui/views/view.h"
 
 namespace {
@@ -173,14 +174,14 @@ TEST_F(InterpolatingLayoutManagerTest, InvalidateLayout) {
   host_view()->SetSize(kLayoutSize);
   EXPECT_EQ(1, first_layout->num_layouts_generated());
   EXPECT_EQ(1, second_layout->num_layouts_generated());
-  host_view()->Layout();
+  views::test::RunScheduledLayout(host_view());
   EXPECT_EQ(1, first_layout->num_layouts_generated());
   EXPECT_EQ(1, second_layout->num_layouts_generated());
   host_view()->InvalidateLayout();
-  host_view()->Layout();
+  views::test::RunScheduledLayout(host_view());
   EXPECT_EQ(2, first_layout->num_layouts_generated());
   EXPECT_EQ(2, second_layout->num_layouts_generated());
-  host_view()->Layout();
+  views::test::RunScheduledLayout(host_view());
   EXPECT_EQ(2, first_layout->num_layouts_generated());
   EXPECT_EQ(2, second_layout->num_layouts_generated());
 }

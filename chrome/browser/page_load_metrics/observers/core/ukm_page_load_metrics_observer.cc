@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -250,11 +250,12 @@ UkmPageLoadMetricsObserver::ObservePolicy UkmPageLoadMetricsObserver::OnStart(
   return CONTINUE_OBSERVING;
 }
 
-// TODO(https://crbug.com/1317494): Audit and use appropriate policy.
 page_load_metrics::PageLoadMetricsObserver::ObservePolicy
 UkmPageLoadMetricsObserver::OnFencedFramesStart(
     content::NavigationHandle* navigation_handle,
     const GURL& currently_committed_url) {
+  // Only OnLoadedResource needs observer level forwarding, but the method
+  // handles only the outermost main frame case.
   return STOP_OBSERVING;
 }
 
@@ -393,13 +394,15 @@ UkmPageLoadMetricsObserver::ObservePolicy UkmPageLoadMetricsObserver::OnHidden(
     was_hidden_ = true;
   }
 
-  // Record the CLS metrics when the tab is first hidden after it is first
-  // shown in foreground, in case that OnComplete is not called.
+  // Record the CLS, LCP and INP metrics when the tab is first hidden after it
+  // is first shown in foreground, in case that OnComplete is not called.
   // last_time_shown_ is set when the page starts in the foreground or the page
   // becomes foregrounded.
   if (!was_hidden_after_first_show_in_foreground &&
       !last_time_shown_.is_null()) {
     ReportLayoutInstabilityAfterFirstForeground();
+    ReportLargestContentfulPaintAfterFirstForeground();
+    ReportResponsivenessAfterFirstForeground();
     was_hidden_after_first_show_in_foreground = true;
   }
   return CONTINUE_OBSERVING;
@@ -505,6 +508,8 @@ void UkmPageLoadMetricsObserver::OnLoadedResource(
         extra_request_complete_info) {
   if (was_hidden_)
     return;
+  // This condition check accepts only the outermost main frame as FencedFrame
+  // has RequestDestination::kFencedFrame.
   if (extra_request_complete_info.request_destination ==
       network::mojom::RequestDestination::kDocument) {
     DCHECK(!main_frame_timing_.has_value());
@@ -902,10 +907,11 @@ void UkmPageLoadMetricsObserver::ReportMainResourceTimingMetrics(
   builder.SetMainFrameResource_SocketReused(main_frame_timing_->socket_reused);
 
   int64_t dns_start_ms =
-      main_frame_timing_->connect_timing.dns_start.since_origin()
+      main_frame_timing_->connect_timing.domain_lookup_start.since_origin()
           .InMilliseconds();
-  int64_t dns_end_ms = main_frame_timing_->connect_timing.dns_end.since_origin()
-                           .InMilliseconds();
+  int64_t dns_end_ms =
+      main_frame_timing_->connect_timing.domain_lookup_end.since_origin()
+          .InMilliseconds();
   int64_t connect_start_ms =
       main_frame_timing_->connect_timing.connect_start.since_origin()
           .InMilliseconds();
@@ -1097,6 +1103,62 @@ void UkmPageLoadMetricsObserver::ReportLayoutInstabilityAfterFirstForeground() {
       "CumulativeShiftScoreAtFirstOnHidden",
       page_load_metrics::LayoutShiftUmaValue(
           GetDelegate().GetPageRenderData().layout_shift_score));
+}
+
+void UkmPageLoadMetricsObserver::
+    ReportLargestContentfulPaintAfterFirstForeground() {
+  DCHECK(!last_time_shown_.is_null());
+
+  const page_load_metrics::ContentfulPaintTimingInfo&
+      all_frames_largest_contentful_paint =
+          GetDelegate()
+              .GetLargestContentfulPaintHandler()
+              .MergeMainFrameAndSubframes();
+
+  if (all_frames_largest_contentful_paint.ContainsValidTime() &&
+      WasStartedInForegroundOptionalEventInForeground(
+          all_frames_largest_contentful_paint.Time(), GetDelegate())) {
+    ukm::builders::PageLoad builder(GetDelegate().GetPageUkmSourceId());
+    builder.SetPaintTiming_NavigationToLargestContentfulPaint2AtFirstOnHidden(
+        all_frames_largest_contentful_paint.Time().value().InMilliseconds());
+
+    PAGE_LOAD_HISTOGRAM(
+        "PageLoad.PaintTiming."
+        "NavigationToLargestContentfulPaint2AtFirstOnHidden",
+        all_frames_largest_contentful_paint.Time().value());
+    builder.Record(ukm::UkmRecorder::Get());
+  }
+}
+
+void UkmPageLoadMetricsObserver::ReportResponsivenessAfterFirstForeground() {
+  DCHECK(!last_time_shown_.is_null());
+
+  ukm::builders::PageLoad builder(GetDelegate().GetPageUkmSourceId());
+  const page_load_metrics::NormalizedResponsivenessMetrics&
+      normalized_responsiveness_metrics =
+          GetDelegate().GetNormalizedResponsivenessMetrics();
+  auto& max_event_durations =
+      normalized_responsiveness_metrics.normalized_max_event_durations;
+  if (normalized_responsiveness_metrics.num_user_interactions) {
+    builder
+        .SetInteractiveTiming_UserInteractionLatencyAtFirstOnHidden_HighPercentile2_MaxEventDuration(
+            page_load_metrics::ResponsivenessMetricsNormalization::
+                ApproximateHighPercentile(
+                    normalized_responsiveness_metrics.num_user_interactions,
+                    max_event_durations.worst_ten_latencies)
+                    .InMilliseconds());
+
+    UmaHistogramCustomTimes(
+        "PageLoad.InteractiveTiming.UserInteractionLatencyAtFirstOnHidden."
+        "HighPercentile2."
+        "MaxEventDuration",
+        page_load_metrics::ResponsivenessMetricsNormalization::
+            ApproximateHighPercentile(
+                normalized_responsiveness_metrics.num_user_interactions,
+                max_event_durations.worst_ten_latencies),
+        base::Milliseconds(1), base::Seconds(60), 50);
+  }
+  builder.Record(ukm::UkmRecorder::Get());
 }
 
 void UkmPageLoadMetricsObserver::RecordAbortMetrics(

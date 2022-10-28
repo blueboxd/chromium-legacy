@@ -1,11 +1,11 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 import 'chrome://resources/mojo/mojo/public/mojom/base/big_buffer.mojom-lite.js';
 import 'chrome://resources/mojo/mojo/public/mojom/base/string16.mojom-lite.js';
 
-import {fakeEmptyFeedbackContext, fakeFeedbackContext} from 'chrome://os-feedback/fake_data.js';
+import {fakeEmptyFeedbackContext, fakeFeedbackContext, fakeInternalUserFeedbackContext} from 'chrome://os-feedback/fake_data.js';
 import {FakeFeedbackServiceProvider} from 'chrome://os-feedback/fake_feedback_service_provider.js';
 import {FeedbackFlowState} from 'chrome://os-feedback/feedback_flow.js';
 import {FeedbackAppPreSubmitAction, FeedbackContext} from 'chrome://os-feedback/feedback_types.js';
@@ -594,6 +594,49 @@ export function shareDataPageTestSuite() {
   });
 
   /**
+   * Test that when feedback context contains category_tag matching value
+   * is set on report.
+   */
+  test('AdditionalContext_CategoryTag', async () => {
+    await initializePage();
+    page.feedbackContext = fakeFeedbackContext;
+
+    // Uncheck the bluetooth logs checkbox.
+    const bluetoothLogsCheckbox = getElement('#bluetoothLogsCheckbox');
+    assertTrue(!!bluetoothLogsCheckbox);
+    bluetoothLogsCheckbox.checked = false;
+    assertFalse(bluetoothLogsCheckbox.checked);
+
+    const reportWithoutCategoryTag = (await clickSendAndWait(page)).report;
+    assertFalse(!!reportWithoutCategoryTag.feedbackContext.categoryTag);
+
+    page.reEnableSendReportButton();
+    const fakeFeedbackContextWithCategoryTag =
+        /** @type {!FeedbackContext} */ ({categoryTag: 'some category tag'});
+    page.feedbackContext = fakeFeedbackContextWithCategoryTag;
+    await flushTasks();
+
+    const reportWithCategoryTag = (await clickSendAndWait(page)).report;
+    assertEquals(
+        fakeFeedbackContextWithCategoryTag.categoryTag,
+        reportWithCategoryTag.feedbackContext.categoryTag);
+
+    // Check the bluetooth logs checkbox. The category tag
+    // should be BluetoothReportWithLogs, not the tag from url.
+    page.reEnableSendReportButton();
+    bluetoothLogsCheckbox.checked = true;
+    assertTrue(bluetoothLogsCheckbox.checked);
+    assertTrue(isVisible(bluetoothLogsCheckbox));
+    await flushTasks();
+
+    const reportWithCategoryTagAndBluetoothFlag =
+        (await clickSendAndWait(page)).report;
+    assertEquals(
+        'BluetoothReportWithLogs',
+        reportWithCategoryTagAndBluetoothFlag.feedbackContext.categoryTag);
+  });
+
+  /**
    * Test that openMetricsDialog and recordPreSubmitAction are called when
    * #histogramsLink ("metrics") link is clicked.
    */
@@ -651,7 +694,14 @@ export function shareDataPageTestSuite() {
    */
   test('sendReportWithBluetoothLogsFlagChecked', async () => {
     await initializePage();
-    page.feedbackContext = fakeFeedbackContext;
+    page.feedbackContext = fakeInternalUserFeedbackContext;
+    await flushTasks();
+
+    // Fake internal google account is used for login. The bluetooth logs
+    // checkbox container should be visible.
+    assertEquals(
+        getElement('#userEmailDropDown').value, 'test.user@google.com');
+    getElement('#bluetoothCheckboxContainer').hidden = false;
 
     const bluetoothLogsCheckbox = getElement('#bluetoothLogsCheckbox');
 
@@ -659,7 +709,7 @@ export function shareDataPageTestSuite() {
     assertTrue(!!bluetoothLogsCheckbox);
     assertTrue(bluetoothLogsCheckbox.checked);
 
-    // Report should have sendBluetoothLogs flag true,and category marked as
+    // Report should have sendBluetoothLogs flag true, and category marked as
     // "BluetoothReportWithLogs".
     const requestWithBluetoothFlag = (await clickSendAndWait(page)).report;
 
@@ -676,11 +726,17 @@ export function shareDataPageTestSuite() {
    */
   test('sendReportWithoutBluetoothLogsFlagChecked', async () => {
     await initializePage();
-    page.feedbackContext = fakeFeedbackContext;
+    page.feedbackContext = fakeInternalUserFeedbackContext;
+    await flushTasks();
 
-    const bluetoothLogsCheckbox = getElement('#bluetoothLogsCheckbox');
+    // Fake internal google account is used for login. The bluetooth logs
+    // checkbox container should be visible.
+    assertEquals(
+        getElement('#userEmailDropDown').value, 'test.user@google.com');
+    getElement('#bluetoothCheckboxContainer').hidden = false;
 
     // BluetoothLogs checkbox is default to be checked.
+    const bluetoothLogsCheckbox = getElement('#bluetoothLogsCheckbox');
     assertTrue(!!bluetoothLogsCheckbox);
     assertTrue(bluetoothLogsCheckbox.checked);
 
@@ -690,7 +746,7 @@ export function shareDataPageTestSuite() {
     await flushTasks();
 
     // Report should not have sendBluetoothLogs flag,
-    // and category marked as "BluetoothReportWithLogs".
+    // and category should not be marked as "BluetoothReportWithLogs".
     const requestWithoutBluetoothFlag = (await clickSendAndWait(page)).report;
 
     assertFalse(requestWithoutBluetoothFlag.sendBluetoothLogs);

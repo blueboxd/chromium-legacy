@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -33,6 +33,7 @@
 #include "cc/paint/skottie_text_property_value.h"
 #include "cc/paint/skottie_wrapper.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
+#include "third_party/abseil-cpp/absl/types/variant.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkPath.h"
 #include "third_party/skia/include/core/SkRRect.h"
@@ -267,22 +268,22 @@ class CC_PAINT_EXPORT PaintOp {
 
   // For draw ops, returns true if a conservative bounding rect can be provided
   // for the op.
-  static bool GetBounds(const PaintOp* op, SkRect* rect);
+  static bool GetBounds(const PaintOp& op, SkRect* rect);
 
   // Returns the minimum conservative bounding rect that |op| draws to on a
   // canvas. |clip_rect| and |ctm| are the current clip rect and transform on
   // this canvas.
-  static gfx::Rect ComputePaintRect(const PaintOp* op,
+  static gfx::Rect ComputePaintRect(const PaintOp& op,
                                     const SkRect& clip_rect,
                                     const SkMatrix& ctm);
 
   // Returns true if the op lies outside the current clip and should be skipped.
   // Should only be used with draw ops.
-  static bool QuickRejectDraw(const PaintOp* op, const SkCanvas* canvas);
+  static bool QuickRejectDraw(const PaintOp& op, const SkCanvas* canvas);
 
   // Returns true if executing this op will require decoding of any lazy
   // generated images.
-  static bool OpHasDiscardableImages(const PaintOp* op);
+  static bool OpHasDiscardableImages(const PaintOp& op);
 
   // Returns true if the given op type has PaintFlags.
   static bool TypeHasFlags(PaintOpType type);
@@ -1164,12 +1165,12 @@ class CC_PAINT_EXPORT PaintOpBuffer : public SkRefCnt {
   // Resize the PaintOpBuffer to exactly fit the current amount of used space.
   void ShrinkToFit();
 
-  const PaintOp* GetFirstOp() const {
-    return reinterpret_cast<const PaintOp*>(data_.get());
+  const PaintOp& GetFirstOp() const {
+    return reinterpret_cast<const PaintOp&>(*data_);
   }
 
   template <typename T, typename... Args>
-  const T* push(Args&&... args) {
+  const T& push(Args&&... args) {
     static_assert(std::is_convertible<T, PaintOp>::value, "T not a PaintOp.");
     static_assert(alignof(T) <= PaintOpAlign, "");
     static_assert(sizeof(T) < std::numeric_limits<uint16_t>::max(),
@@ -1181,7 +1182,7 @@ class CC_PAINT_EXPORT PaintOpBuffer : public SkRefCnt {
     DCHECK_EQ(op->type, static_cast<uint32_t>(T::kType));
     op->skip = skip;
     AnalyzeAddedOp(op);
-    return op;
+    return *op;
   }
 
   void UpdateSaveLayerBounds(size_t offset, const SkRect& bounds) {
@@ -1233,47 +1234,50 @@ class CC_PAINT_EXPORT PaintOpBuffer : public SkRefCnt {
   const T* GetOpAtForTesting(size_t index) const {
     size_t i = 0;
     for (PaintOpBuffer::Iterator it(this); it && i <= index; ++it, ++i) {
-      if (i == index && (*it)->GetType() == T::kType)
-        return static_cast<const T*>(*it);
+      if (i == index && it->GetType() == T::kType)
+        return static_cast<const T*>(it.get());
     }
     return nullptr;
   }
 
-  size_t GetOpOffsetForTracing(const PaintOp* op) const {
-    DCHECK_GE(reinterpret_cast<const char*>(op), data_.get());
+  size_t GetOpOffsetForTracing(const PaintOp& op) const {
+    DCHECK_GE(reinterpret_cast<const char*>(&op), data_.get());
     size_t result =
-        static_cast<size_t>(reinterpret_cast<const char*>(op) - data_.get());
+        static_cast<size_t>(reinterpret_cast<const char*>(&op) - data_.get());
     DCHECK_LT(result, used_);
     return result;
   }
 
   class CC_PAINT_EXPORT Iterator {
    public:
+    using value_type = PaintOp;
     explicit Iterator(const PaintOpBuffer* buffer)
         : Iterator(buffer, buffer->data_.get(), 0u) {}
 
-    PaintOp* operator->() const { return reinterpret_cast<PaintOp*>(ptr_); }
-    PaintOp* operator*() const { return operator->(); }
-    Iterator begin() { return Iterator(buffer_); }
-    Iterator end() {
+    PaintOp* get() const { return reinterpret_cast<PaintOp*>(ptr_); }
+    PaintOp* operator->() const { return get(); }
+    PaintOp& operator*() const { return *get(); }
+    Iterator begin() const { return Iterator(buffer_); }
+    Iterator end() const {
       return Iterator(buffer_, buffer_->data_.get() + buffer_->used_,
                       buffer_->used_);
     }
-    bool operator!=(const Iterator& other) {
+    bool operator==(const Iterator& other) const {
       // Not valid to compare iterators on different buffers.
       DCHECK_EQ(other.buffer_, buffer_);
-      return other.op_offset_ != op_offset_;
+      return other.op_offset_ == op_offset_;
     }
+    bool operator!=(const Iterator& other) const { return !(*this == other); }
     Iterator& operator++() {
       DCHECK(*this);
-      const PaintOp* op = **this;
-      ptr_ += op->skip;
-      op_offset_ += op->skip;
+      const PaintOp& op = **this;
+      ptr_ += op.skip;
+      op_offset_ += op.skip;
 
       CHECK_LE(op_offset_, buffer_->used_);
       return *this;
     }
-    operator bool() const { return op_offset_ < buffer_->used_; }
+    explicit operator bool() const { return op_offset_ < buffer_->used_; }
 
    private:
     Iterator(const PaintOpBuffer* buffer, char* ptr, size_t op_offset)
@@ -1291,6 +1295,7 @@ class CC_PAINT_EXPORT PaintOpBuffer : public SkRefCnt {
 
   class CC_PAINT_EXPORT OffsetIterator {
    public:
+    using value_type = PaintOp;
     // Offsets and paint op buffer must come from the same DisplayItemList.
     OffsetIterator(const PaintOpBuffer* buffer,
                    const std::vector<size_t>* offsets)
@@ -1304,17 +1309,21 @@ class CC_PAINT_EXPORT PaintOpBuffer : public SkRefCnt {
       ptr_ += op_offset_;
     }
 
-    PaintOp* operator->() const { return reinterpret_cast<PaintOp*>(ptr_); }
-    PaintOp* operator*() const { return operator->(); }
-    OffsetIterator begin() { return OffsetIterator(buffer_, offsets_); }
-    OffsetIterator end() {
+    PaintOp* get() const { return reinterpret_cast<PaintOp*>(ptr_); }
+    PaintOp* operator->() const { return get(); }
+    PaintOp& operator*() const { return *get(); }
+    OffsetIterator begin() const { return OffsetIterator(buffer_, offsets_); }
+    OffsetIterator end() const {
       return OffsetIterator(buffer_, buffer_->data_.get() + buffer_->used_,
                             buffer_->used_, offsets_);
     }
-    bool operator!=(const OffsetIterator& other) {
+    bool operator==(const OffsetIterator& other) const {
       // Not valid to compare iterators on different buffers.
       DCHECK_EQ(other.buffer_, buffer_);
-      return other.op_offset_ != op_offset_;
+      return other.op_offset_ == op_offset_;
+    }
+    bool operator!=(const OffsetIterator& other) const {
+      return !(*this == other);
     }
     OffsetIterator& operator++() {
       if (++offsets_index_ >= offsets_->size()) {
@@ -1338,7 +1347,7 @@ class CC_PAINT_EXPORT PaintOpBuffer : public SkRefCnt {
       return *this;
     }
 
-    operator bool() const { return op_offset_ < buffer_->used_; }
+    explicit operator bool() const { return op_offset_ < buffer_->used_; }
 
    private:
     OffsetIterator(const PaintOpBuffer* buffer,
@@ -1362,42 +1371,47 @@ class CC_PAINT_EXPORT PaintOpBuffer : public SkRefCnt {
 
   class CC_PAINT_EXPORT CompositeIterator {
    public:
+    using value_type = PaintOp;
     // Offsets and paint op buffer must come from the same DisplayItemList.
     CompositeIterator(const PaintOpBuffer* buffer,
                       const std::vector<size_t>* offsets);
     CompositeIterator(const CompositeIterator& other);
     CompositeIterator(CompositeIterator&& other);
 
-    PaintOp* operator->() const {
-      return using_offsets_ ? **offset_iter_ : **iter_;
+    PaintOp* get() const {
+      return absl::visit([](const auto& iter) { return iter.get(); }, iter_);
     }
-    PaintOp* operator*() const {
-      return using_offsets_ ? **offset_iter_ : **iter_;
+    PaintOp* operator->() const { return get(); }
+    PaintOp& operator*() const { return *get(); }
+    CompositeIterator begin() const {
+      return absl::holds_alternative<Iterator>(iter_)
+                 ? CompositeIterator(absl::get<Iterator>(iter_).begin())
+                 : CompositeIterator(absl::get<OffsetIterator>(iter_).begin());
     }
-    bool operator==(const CompositeIterator& other) {
-      if (using_offsets_ != other.using_offsets_)
-        return false;
-      return using_offsets_ ? (*offset_iter_ == *other.offset_iter_)
-                            : (*iter_ == *other.iter_);
+    CompositeIterator end() const {
+      return absl::holds_alternative<Iterator>(iter_)
+                 ? CompositeIterator(absl::get<Iterator>(iter_).end())
+                 : CompositeIterator(absl::get<OffsetIterator>(iter_).end());
     }
-    bool operator!=(const CompositeIterator& other) {
+    bool operator==(const CompositeIterator& other) const {
+      return iter_ == other.iter_;
+    }
+    bool operator!=(const CompositeIterator& other) const {
       return !(*this == other);
     }
     CompositeIterator& operator++() {
-      if (using_offsets_)
-        ++*offset_iter_;
-      else
-        ++*iter_;
+      absl::visit([](auto& iter) { ++iter; }, iter_);
       return *this;
     }
-    operator bool() const {
-      return using_offsets_ ? !!*offset_iter_ : !!*iter_;
+    explicit operator bool() const {
+      return absl::visit([](const auto& iter) { return !!iter; }, iter_);
     }
 
    private:
-    bool using_offsets_ = false;
-    absl::optional<OffsetIterator> offset_iter_;
-    absl::optional<Iterator> iter_;
+    explicit CompositeIterator(OffsetIterator iter) : iter_(std::move(iter)) {}
+    explicit CompositeIterator(Iterator iter) : iter_(std::move(iter)) {}
+
+    absl::variant<Iterator, OffsetIterator> iter_;
   };
 
   class CC_PAINT_EXPORT PlaybackFoldingIterator {
@@ -1406,15 +1420,16 @@ class CC_PAINT_EXPORT PaintOpBuffer : public SkRefCnt {
                             const std::vector<size_t>* offsets);
     ~PlaybackFoldingIterator();
 
+    const PaintOp* get() const { return current_op_; }
     const PaintOp* operator->() const { return current_op_; }
-    const PaintOp* operator*() const { return current_op_; }
+    const PaintOp& operator*() const { return *current_op_; }
 
     PlaybackFoldingIterator& operator++() {
       FindNextOp();
       return *this;
     }
 
-    operator bool() const { return !!current_op_; }
+    explicit operator bool() const { return !!current_op_; }
 
     // Guaranteed to be 255 for all ops without flags.
     uint8_t alpha() const {

@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,6 +7,7 @@
 #import "components/signin/public/identity_manager/identity_manager.h"
 #import "components/signin/public/identity_manager/objc/identity_manager_observer_bridge.h"
 #import "ios/chrome/browser/browser_state/chrome_browser_state.h"
+#import "ios/chrome/browser/signin/authentication_service_factory.h"
 #import "ios/chrome/browser/signin/identity_manager_factory.h"
 #import "ios/chrome/browser/ui/authentication/signin_promo_view_mediator.h"
 #import "ios/chrome/browser/ui/ntp/feed_top_section/feed_top_section_consumer.h"
@@ -136,9 +137,12 @@
       [self.ntpDelegate isStartSurface]) {
     return;
   }
+  AuthenticationService* authenticationService =
+      AuthenticationServiceFactory::GetForBrowserState(_browserState);
   if ([SigninPromoViewMediator
           shouldDisplaySigninPromoViewWithAccessPoint:
               signin_metrics::AccessPoint::ACCESS_POINT_NTP_FEED_TOP_PROMO
+                                authenticationService:authenticationService
                                           prefService:_browserState
                                                           ->GetPrefs()]) {
     signin::IdentityManager* identityManager =

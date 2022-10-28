@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -94,7 +94,7 @@ void BrowserDeactivationWaiter::OnBrowserNoLongerActive(Browser* browser) {
 }
 
 bool BringBrowserWindowToFront(const Browser* browser) {
-  gfx::NativeWindow window = NULL;
+  gfx::NativeWindow window = nullptr;
   if (!GetNativeWindow(browser, &window))
     return false;
 
@@ -112,7 +112,7 @@ bool SendKeyPressSync(const Browser* browser,
                       bool shift,
                       bool alt,
                       bool command) {
-  gfx::NativeWindow window = NULL;
+  gfx::NativeWindow window = nullptr;
   if (!GetNativeWindow(browser, &window))
     return false;
   return SendKeyPressToWindowSync(window, key, control, shift, alt, command);

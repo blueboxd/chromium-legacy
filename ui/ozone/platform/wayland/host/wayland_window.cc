@@ -298,14 +298,14 @@ void WaylandWindow::PrepareForShutdown() {
 }
 
 void WaylandWindow::SetBoundsInPixels(const gfx::Rect& bounds_px) {
-  // TODO(crbug.com/): This is currently used only by unit tests.
+  // TODO(crbug.com/1306688): This is currently used only by unit tests.
   // Figure out how to migrate to test only methods.
   auto bounds_dip = delegate_->ConvertRectToDIP(bounds_px);
   SetBoundsInDIP(bounds_dip);
 }
 
 gfx::Rect WaylandWindow::GetBoundsInPixels() const {
-  // TODO(crbug.com/): This is currently used only by unit tests.
+  // TODO(crbug.com/1306688): This is currently used only by unit tests.
   // Figure out how to migrate to test only methods.
   return delegate_->ConvertRectToPixels(bounds_dip_);
 }
@@ -429,7 +429,7 @@ void WaylandWindow::SetDecorationInsets(const gfx::Insets* insets_px) {
   else
     frame_insets_px_ = absl::nullopt;
   UpdateDecorations();
-  connection_->ScheduleFlush();
+  connection_->Flush();
 }
 
 void WaylandWindow::SetWindowIcons(const gfx::ImageSkia& window_icon,
@@ -523,20 +523,17 @@ void WaylandWindow::HandleSurfaceConfigure(uint32_t serial) {
 
 void WaylandWindow::HandleToplevelConfigure(int32_t widht,
                                             int32_t height,
-                                            bool is_maximized,
-                                            bool is_fullscreen,
-                                            bool is_activated) {
+                                            const WindowStates& window_states) {
   NOTREACHED()
       << "Only shell toplevels must receive HandleToplevelConfigure calls.";
 }
 
-void WaylandWindow::HandleAuraToplevelConfigure(int32_t x,
-                                                int32_t y,
-                                                int32_t width,
-                                                int32_t height,
-                                                bool is_maximized,
-                                                bool is_fullscreen,
-                                                bool is_activated) {
+void WaylandWindow::HandleAuraToplevelConfigure(
+    int32_t x,
+    int32_t y,
+    int32_t width,
+    int32_t height,
+    const WindowStates& window_states) {
   NOTREACHED()
       << "Only shell toplevels must receive HandleAuraToplevelConfigure calls.";
 }
@@ -553,7 +550,7 @@ void WaylandWindow::UpdateVisualSize(const gfx::Size& size_px) {
 
   if (apply_pending_state_on_update_visual_size_for_testing_) {
     root_surface_->ApplyPendingState();
-    connection_->ScheduleFlush();
+    connection_->Flush();
   }
 }
 
@@ -663,7 +660,7 @@ bool WaylandWindow::Initialize(PlatformWindowInitProperties properties) {
   std::vector<gfx::Rect> region{gfx::Rect{size_px_}};
   root_surface_->SetOpaqueRegion(&region);
   root_surface_->ApplyPendingState();
-  connection_->ScheduleFlush();
+  connection_->Flush();
 
   return true;
 }
@@ -679,6 +676,12 @@ gfx::Vector2d WaylandWindow::GetWindowGeometryOffsetInDIP() const {
 }
 
 void WaylandWindow::UpdateDecorations() {}
+
+gfx::Insets WaylandWindow::GetDecorationInsetsInDIP() const {
+  return frame_insets_px_.has_value()
+             ? gfx::ScaleToRoundedInsets(*frame_insets_px_, 1.f / window_scale_)
+             : gfx::Insets{};
+}
 
 WaylandWindow* WaylandWindow::GetRootParentWindow() {
   return parent_window_ ? parent_window_->GetRootParentWindow() : this;
@@ -953,7 +956,7 @@ void WaylandWindow::ProcessPendingBoundsDip(uint32_t serial) {
     // window has been applied.
     SetWindowGeometry(pending_bounds_dip_);
     AckConfigure(serial);
-    connection()->ScheduleFlush();
+    connection()->Flush();
   } else if (!pending_configures_.empty() &&
              pending_bounds_dip_.size() ==
                  pending_configures_.back().bounds_dip.size()) {
@@ -1048,7 +1051,7 @@ bool WaylandWindow::ProcessVisualSizeUpdate(const gfx::Size& size_px) {
     auto serial = result->serial;
     SetWindowGeometry(result->bounds_dip);
     AckConfigure(serial);
-    connection()->ScheduleFlush();
+    connection()->Flush();
     pending_configures_.erase(pending_configures_.begin(), ++result);
     return true;
   }

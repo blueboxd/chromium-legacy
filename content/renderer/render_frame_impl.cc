@@ -35,7 +35,6 @@
 #include "base/observer_list.h"
 #include "base/process/process.h"
 #include "base/run_loop.h"
-#include "base/stl_util.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
@@ -47,6 +46,7 @@
 #include "base/time/time.h"
 #include "base/trace_event/base_tracing.h"
 #include "base/trace_event/trace_event.h"
+#include "base/types/optional_util.h"
 #include "base/unguessable_token.h"
 #include "base/values.h"
 #include "build/build_config.h"
@@ -209,7 +209,6 @@
 #include "third_party/blink/public/web/web_frame_owner_properties.h"
 #include "third_party/blink/public/web/web_frame_serializer.h"
 #include "third_party/blink/public/web/web_frame_widget.h"
-#include "third_party/blink/public/web/web_history_entry.h"
 #include "third_party/blink/public/web/web_input_method_controller.h"
 #include "third_party/blink/public/web/web_local_frame.h"
 #include "third_party/blink/public/web/web_navigation_control.h"
@@ -944,18 +943,10 @@ blink::WebNavigationTimings BuildNavigationTimings(
 
 WebHistoryItem NavigationApiHistoryEntryPtrToWebHistoryItem(
     const blink::mojom::NavigationApiHistoryEntry& entry) {
-  WebHistoryItem item;
-  item.Initialize();
-  item.SetNavigationApiKey(WebString::FromUTF16(entry.key));
-  item.SetNavigationApiId(WebString::FromUTF16(entry.id));
-  item.SetURLString(WebString::FromUTF16(entry.url));
-  item.SetItemSequenceNumber(entry.item_sequence_number);
-  item.SetDocumentSequenceNumber(entry.document_sequence_number);
-  if (entry.state) {
-    item.SetNavigationApiState(WebSerializedScriptValue::FromString(
-        WebString::FromUTF16(entry.state)));
-  }
-  return item;
+  return WebHistoryItem(
+      WebString::FromUTF16(entry.url), WebString::FromUTF16(entry.key),
+      WebString::FromUTF16(entry.id), entry.item_sequence_number,
+      entry.document_sequence_number, WebString::FromUTF16(entry.state));
 }
 
 // Fills navigation data sent by the browser to a blink understandable
@@ -1164,8 +1155,9 @@ WindowOpenDisposition NavigationPolicyToDisposition(
     case blink::kWebNavigationPolicyNewWindow:
       return WindowOpenDisposition::NEW_WINDOW;
     case blink::kWebNavigationPolicyNewPopup:
-    case blink::kWebNavigationPolicyPictureInPicture:
       return WindowOpenDisposition::NEW_POPUP;
+    case blink::kWebNavigationPolicyPictureInPicture:
+      return WindowOpenDisposition::NEW_PICTURE_IN_PICTURE;
   }
   NOTREACHED() << "Unexpected WebNavigationPolicy";
   return WindowOpenDisposition::IGNORE_ACTION;
@@ -2567,11 +2559,12 @@ void RenderFrameImpl::CommitNavigation(
     mojo::PendingRemote<network::mojom::URLLoaderFactory>
         prefetch_loader_factory,
     const base::UnguessableToken& devtools_navigation_token,
-    const blink::ParsedPermissionsPolicy& permissions_policy,
+    const absl::optional<blink::ParsedPermissionsPolicy>& permissions_policy,
     blink::mojom::PolicyContainerPtr policy_container,
     mojo::PendingRemote<blink::mojom::CodeCacheHost> code_cache_host,
     mojom::CookieManagerInfoPtr cookie_manager_info,
     mojom::StorageInfoPtr storage_info,
+    blink::mojom::BackForwardCacheNotRestoredReasonsPtr not_restored_reasons,
     mojom::NavigationClient::CommitNavigationCallback commit_callback) {
   DCHECK(navigation_client_impl_);
   DCHECK(!blink::IsRendererDebugURL(common_params->url));
@@ -2609,7 +2602,9 @@ void RenderFrameImpl::CommitNavigation(
                            navigation_params.get());
   navigation_params->policy_container =
       ToWebPolicyContainer(std::move(policy_container));
-  if (blink::IsIsolatedApplication() && frame_->IsOutermostMainFrame()) {
+
+  if (blink::IsIsolatedApplication() && frame_->IsOutermostMainFrame() &&
+      permissions_policy) {
     navigation_params->permissions_policy_override = permissions_policy;
   }
 
@@ -2620,7 +2615,7 @@ void RenderFrameImpl::CommitNavigation(
       std::move(controller_service_worker_info), std::move(container_info),
       std::move(prefetch_loader_factory), std::move(code_cache_host),
       std::move(cookie_manager_info), std::move(storage_info),
-      std::move(document_state));
+      std::move(document_state), std::move(not_restored_reasons));
 
   // Handle a navigation that has a non-empty `data_url_as_string`, or perform
   // a "loadDataWithBaseURL" navigation, which is different from a normal data:
@@ -2741,6 +2736,7 @@ void RenderFrameImpl::CommitNavigationWithParams(
     mojom::CookieManagerInfoPtr cookie_manager_info,
     mojom::StorageInfoPtr storage_info,
     std::unique_ptr<DocumentState> document_state,
+    blink::mojom::BackForwardCacheNotRestoredReasonsPtr not_restored_reasons,
     std::unique_ptr<WebNavigationParams> navigation_params) {
   if (common_params->url.IsAboutSrcdoc()) {
     WebNavigationParams::FillStaticResponse(navigation_params.get(),
@@ -2760,6 +2756,21 @@ void RenderFrameImpl::CommitNavigationWithParams(
   // in a special mode.
   if (commit_params->is_view_source)
     frame_->EnableViewSourceMode(true);
+
+  if (IsBackForwardCacheEnabled() &&
+      base::FeatureList::IsEnabled(
+          blink::features::kBackForwardCacheSendNotRestoredReasons) &&
+      IsMainFrame() &&
+      common_params->navigation_type ==
+          blink::mojom::NavigationType::HISTORY_DIFFERENT_DOCUMENT) {
+    DCHECK(not_restored_reasons);
+    // Save the Back/Forward Cache NotRestoredReasons struct to WebLocalFrame to
+    // report for PerformanceNavigationTiming API.
+    frame_->SetNotRestoredReasons(std::move(not_restored_reasons));
+    // For cross-document main frame history navigations, |not_restored_reasons|
+    // should be populated and has blocking reasons.
+    DCHECK(frame_->HasBlockingReasons());
+  }
 
   // Note: this intentionally does not call |Detach()| before |reset()|. If
   // there is an active |MHTMLBodyLoaderClient|, the browser-side navigation
@@ -2936,17 +2947,16 @@ void RenderFrameImpl::CommitFailedNavigation(
   // Make sure we never show errors in view source mode.
   frame_->EnableViewSourceMode(false);
 
-  std::unique_ptr<blink::WebHistoryEntry> history_entry;
   auto page_state =
       blink::PageState::CreateFromEncodedData(commit_params->page_state);
   if (page_state.IsValid())
-    history_entry = PageStateToHistoryEntry(page_state);
-  if (history_entry) {
+    navigation_params->history_item = WebHistoryItem(page_state);
+  if (!navigation_params->history_item.IsNull()) {
     navigation_params->frame_load_type = WebFrameLoadType::kBackForward;
-    navigation_params->history_item = history_entry->root();
   } else if (common_params->should_replace_current_entry) {
     navigation_params->frame_load_type = WebFrameLoadType::kReplaceCurrentItem;
   }
+
   navigation_params->service_worker_network_provider =
       ServiceWorkerNetworkProviderForFrame::CreateInvalidInstance();
   FillMiscNavigationParams(*common_params, *commit_params,
@@ -3591,11 +3601,6 @@ void RenderFrameImpl::DidAddMessageToConsole(
   }
 }
 
-void RenderFrameImpl::WillSendSubmitEvent(const blink::WebFormElement& form) {
-  for (auto& observer : observers_)
-    observer.WillSendSubmitEvent(form);
-}
-
 void RenderFrameImpl::DidCreateDocumentLoader(
     blink::WebDocumentLoader* document_loader) {
   DocumentState* document_state =
@@ -4157,7 +4162,7 @@ void RenderFrameImpl::WillSendRequestInternal(
           : absl::optional<url::Origin>(request.RequestorOrigin());
   GetContentClient()->renderer()->WillSendRequest(
       frame_, transition_type, request.Url(), request.SiteForCookies(),
-      base::OptionalOrNullptr(initiator_origin), &new_url);
+      base::OptionalToPtr(initiator_origin), &new_url);
   if (!new_url.is_empty())
     request.SetUrl(WebURL(new_url));
 
@@ -4860,16 +4865,15 @@ blink::mojom::CommitResult RenderFrameImpl::PrepareForHistoryNavigationCommit(
              blink::mojom::NavigationType::HISTORY_DIFFERENT_DOCUMENT ||
          navigation_type == blink::mojom::NavigationType::RESTORE ||
          navigation_type == blink::mojom::NavigationType::RESTORE_WITH_POST);
-  std::unique_ptr<blink::WebHistoryEntry> entry = PageStateToHistoryEntry(
+  *item_for_history_navigation = WebHistoryItem(
       blink::PageState::CreateFromEncodedData(commit_params.page_state));
-  if (!entry)
+  if (item_for_history_navigation->IsNull())
     return blink::mojom::CommitResult::Aborted;
 
   // The browser process sends a single WebHistoryItem for this frame.
   // TODO(creis): Change PageState to FrameState.  In the meantime, we
   // store the relevant frame's WebHistoryItem in the root of the
   // PageState.
-  *item_for_history_navigation = entry->root();
   *load_type = blink::WebFrameLoadType::kBackForward;
 
   // Keep track of which subframes the browser process has history items
@@ -6108,7 +6112,7 @@ base::WeakPtr<media::DecoderFactory> RenderFrameImpl::GetMediaDecoderFactory() {
 gfx::RectF RenderFrameImpl::ElementBoundsInWindow(
     const blink::WebElement& element) {
   return gfx::RectF(GetLocalRootWebFrameWidget()->BlinkSpaceToEnclosedDIPs(
-      element.BoundsInViewport()));
+      element.BoundsInWidget()));
 }
 
 void RenderFrameImpl::ConvertViewportToWindow(gfx::Rect* rect) {

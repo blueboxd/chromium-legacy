@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -47,11 +47,11 @@ MainThreadStackSamplingProfiler::MainThreadStackSamplingProfiler() {
 // those users.
 #if defined(OFFICIAL_BUILD) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
   if (process == metrics::CallStackProfileParams::Process::kBrowser &&
-      !UnwindPrerequisites::Available()) {
+      !AreUnwindPrerequisitesAvailable()) {
     const version_info::Channel channel = chrome::GetChannel();
     if (channel == version_info::Channel::CANARY ||
         channel == version_info::Channel::DEV) {
-      UnwindPrerequisites::RequestInstallation();
+      RequestUnwindPrerequisitesInstallation();
     }
   }
 #endif

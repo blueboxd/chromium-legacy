@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -52,7 +52,7 @@ class NativeWidgetBridgeOwner : public NativeWidgetNSWindowHostHelper {
   // NativeWidgetNSWindowHostHelper:
   id GetNativeViewAccessible() override {
     if (!remote_accessibility_element_) {
-      int64_t browser_pid = 0;
+      base::ProcessId browser_pid = base::kNullProcessId;
       std::vector<uint8_t> element_token;
       host_remote_->GetRootViewAccessibilityToken(&browser_pid, &element_token);
       [NSAccessibilityRemoteUIElement

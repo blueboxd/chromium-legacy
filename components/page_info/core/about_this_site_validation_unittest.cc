@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -41,14 +41,6 @@ proto::MoreAbout GetSampleMoreAbout() {
   return more_about;
 }
 
-proto::BannerInfo GetBannerInfo() {
-  proto::BannerInfo banner_info;
-  banner_info.set_title("Title");
-  banner_info.set_label("Example description");
-  *banner_info.mutable_url() = GetSampleSource();
-  return banner_info;
-}
-
 proto::AboutThisSiteMetadata GetSampleMetaData() {
   proto::AboutThisSiteMetadata metadata;
   auto* site_info = metadata.mutable_site_info();
@@ -68,36 +60,16 @@ TEST(AboutThisSiteValidation, ValidateProtos) {
   EXPECT_EQ(ValidateMetadata(metadata), AboutThisSiteStatus::kValid);
 }
 
-// Tests that correct proto messages are accepted.
-TEST(AboutThisSiteValidation, ValidateBanner) {
-  auto banner = GetBannerInfo();
-  EXPECT_EQ(ValidateBannerInfo(banner), AboutThisSiteStatus::kValid);
-
-  // The proto should still be valid without a title.
-  banner.clear_title();
-  EXPECT_EQ(ValidateBannerInfo(banner), AboutThisSiteStatus::kValid);
-}
-
 TEST(AboutThisSiteValidation, InvalidSiteInfoProto) {
   proto::AboutThisSiteMetadata metadata;
   EXPECT_EQ(ValidateMetadata(metadata), AboutThisSiteStatus::kMissingSiteInfo);
   metadata.mutable_site_info();
   EXPECT_EQ(ValidateMetadata(metadata), AboutThisSiteStatus::kEmptySiteInfo);
+
   metadata = GetSampleMetaData();
   metadata.mutable_site_info()->clear_description();
-  {
-    base::test::ScopedFeatureList features;
-    features.InitAndDisableFeature(
-        kPageInfoAboutThisSiteDescriptionPlaceholder);
-    EXPECT_EQ(ValidateMetadata(metadata),
-              AboutThisSiteStatus::kMissingDescription);
-  }
-
-  {
-    base::test::ScopedFeatureList features;
-    features.InitAndEnableFeature(kPageInfoAboutThisSiteDescriptionPlaceholder);
-    EXPECT_EQ(ValidateMetadata(metadata), AboutThisSiteStatus::kValid);
-  }
+  EXPECT_EQ(ValidateMetadata(metadata),
+            AboutThisSiteStatus::kMissingDescription);
 }
 
 TEST(AboutThisSiteValidation, InvalidDescription) {
@@ -127,17 +99,40 @@ TEST(AboutThisSiteValidation, OnlyMoreAbout) {
   proto::SiteInfo site_info;
   *site_info.mutable_more_about() = GetSampleMoreAbout();
 
+  // Test that a proto with only a more_about section is invalid unless both
+  // kPageInfoAboutThisSiteMoreInfo and
+  // kPageInfoAboutThisSiteDescriptionPlaceholder are enabled.
+
   {
     base::test::ScopedFeatureList features;
-    features.InitAndDisableFeature(
-        kPageInfoAboutThisSiteDescriptionPlaceholder);
+    features.InitWithFeatures({},
+                              {kPageInfoAboutThisSiteMoreInfo,
+                               kPageInfoAboutThisSiteDescriptionPlaceholder});
     EXPECT_EQ(ValidateSiteInfo(site_info),
               AboutThisSiteStatus::kMissingDescription);
   }
 
   {
     base::test::ScopedFeatureList features;
-    features.InitAndEnableFeature(kPageInfoAboutThisSiteDescriptionPlaceholder);
+    features.InitWithFeatures({kPageInfoAboutThisSiteMoreInfo},
+                              {kPageInfoAboutThisSiteDescriptionPlaceholder});
+    EXPECT_EQ(ValidateSiteInfo(site_info),
+              AboutThisSiteStatus::kMissingDescription);
+  }
+
+  {
+    base::test::ScopedFeatureList features;
+    features.InitWithFeatures({kPageInfoAboutThisSiteDescriptionPlaceholder},
+                              {kPageInfoAboutThisSiteMoreInfo});
+    EXPECT_EQ(ValidateSiteInfo(site_info),
+              AboutThisSiteStatus::kMissingDescription);
+  }
+
+  {
+    base::test::ScopedFeatureList features;
+    features.InitWithFeatures({kPageInfoAboutThisSiteMoreInfo,
+                               kPageInfoAboutThisSiteDescriptionPlaceholder},
+                              {});
     EXPECT_EQ(ValidateSiteInfo(site_info), AboutThisSiteStatus::kValid);
   }
 }

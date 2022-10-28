@@ -1,4 +1,4 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -148,10 +148,6 @@ class BASE_EXPORT ThreadPoolImpl : public ThreadPoolInstance,
 
   std::unique_ptr<ThreadGroup> foreground_thread_group_;
   std::unique_ptr<ThreadGroup> background_thread_group_;
-
-  bool disable_job_yield_ = false;
-  bool disable_fair_scheduling_ = false;
-  std::atomic<bool> disable_job_update_priority_{false};
 
   // Whether this TaskScheduler was started.
   bool started_ GUARDED_BY_CONTEXT(sequence_checker_) = false;

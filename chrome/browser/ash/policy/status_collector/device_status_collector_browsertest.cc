@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,8 +13,6 @@
 #include <utility>
 #include <vector>
 
-#include "ash/components/disks/disk_mount_manager.h"
-#include "ash/components/disks/mock_disk_mount_manager.h"
 #include "ash/components/settings/cros_settings_names.h"
 #include "ash/components/settings/timezone_settings.h"
 #include "ash/constants/ash_features.h"
@@ -73,10 +71,13 @@
 #include "chromeos/ash/components/dbus/shill/shill_ipconfig_client.h"
 #include "chromeos/ash/components/dbus/shill/shill_profile_client.h"
 #include "chromeos/ash/components/dbus/shill/shill_service_client.h"
+#include "chromeos/ash/components/dbus/spaced/fake_spaced_client.h"
 #include "chromeos/ash/components/dbus/update_engine/fake_update_engine_client.h"
 #include "chromeos/ash/components/dbus/update_engine/update_engine_client.h"
 #include "chromeos/ash/components/dbus/userdataauth/userdataauth_client.h"
 #include "chromeos/ash/components/dbus/vm_applications/apps.pb.h"
+#include "chromeos/ash/components/disks/disk_mount_manager.h"
+#include "chromeos/ash/components/disks/mock_disk_mount_manager.h"
 #include "chromeos/ash/components/install_attributes/stub_install_attributes.h"
 #include "chromeos/ash/components/network/network_handler.h"
 #include "chromeos/ash/components/network/network_handler_test_helper.h"
@@ -128,7 +129,7 @@ using ::testing::Not;
 using ::testing::Return;
 using ::testing::ReturnRef;
 namespace em = ::enterprise_management;
-namespace cros_healthd = ::chromeos::cros_healthd::mojom;
+namespace cros_healthd = ::ash::cros_healthd::mojom;
 
 // Test values for cros_healthd:
 // Battery test values:
@@ -892,6 +893,7 @@ class DeviceStatusCollectorTest : public testing::Test {
     chromeos::TpmManagerClient::InitializeFake();
     chromeos::LoginState::Initialize();
     ash::cros_healthd::FakeCrosHealthd::Initialize();
+    ash::FakeSpacedClient::InitializeFake();
 
     ash::CiceroneClient::InitializeFake();
     ash::ConciergeClient::InitializeFake();
@@ -917,6 +919,7 @@ class DeviceStatusCollectorTest : public testing::Test {
     ash::UpdateEngineClient::Shutdown();
     ash::KioskAppManager::Shutdown();
     ash::cros_healthd::FakeCrosHealthd::Shutdown();
+    ash::FakeSpacedClient::Shutdown();
     TestingBrowserProcess::GetGlobal()->SetLocalState(nullptr);
 
     // Finish pending tasks.
@@ -962,11 +965,7 @@ class DeviceStatusCollectorTest : public testing::Test {
     scoped_testing_cros_settings_.device_settings()->SetBoolean(
         ash::kReportDeviceBootMode, false);
     scoped_testing_cros_settings_.device_settings()->SetBoolean(
-        ash::kReportDeviceNetworkInterfaces, false);
-    scoped_testing_cros_settings_.device_settings()->SetBoolean(
         ash::kReportDeviceUsers, false);
-    scoped_testing_cros_settings_.device_settings()->SetBoolean(
-        ash::kReportDeviceHardwareStatus, false);
     scoped_testing_cros_settings_.device_settings()->SetBoolean(
         ash::kReportDeviceSessionStatus, false);
     scoped_testing_cros_settings_.device_settings()->SetBoolean(
@@ -1345,7 +1344,7 @@ TEST_F(DeviceStatusCollectorTest, ActivityNotWrittenToProfilePref) {
   DisableDefaultSettings();
   scoped_testing_cros_settings_.device_settings()->SetBoolean(
       ash::kReportDeviceActivityTimes, true);
-  EXPECT_THAT(profile_pref_service_.GetValueDict(prefs::kUserActivityTimes),
+  EXPECT_THAT(profile_pref_service_.GetDict(prefs::kUserActivityTimes),
               IsEmpty());
 
   ui::IdleState test_states[] = {ui::IDLE_STATE_ACTIVE, ui::IDLE_STATE_ACTIVE,
@@ -1359,7 +1358,7 @@ TEST_F(DeviceStatusCollectorTest, ActivityNotWrittenToProfilePref) {
 
   // Nothing should be written to profile pref service, because it is only used
   // for consumer reporting.
-  EXPECT_THAT(profile_pref_service_.GetValueDict(prefs::kUserActivityTimes),
+  EXPECT_THAT(profile_pref_service_.GetDict(prefs::kUserActivityTimes),
               IsEmpty());
 }
 
@@ -2941,6 +2940,24 @@ TEST_F(DeviceStatusCollectorTest, TestStatefulPartitionInfo) {
             device_status_.stateful_partition_info().mount_source());
   EXPECT_EQ(fakeStatefulPartitionInfo.filesystem(),
             device_status_.stateful_partition_info().filesystem());
+}
+
+TEST_F(DeviceStatusCollectorTest, TestRootDeviceStorage) {
+  DisableDefaultSettings();
+  static constexpr int64_t kRootDeviceRoundedSize = 128LL * 1024 * 1024 * 1024;
+  static constexpr int64_t kRootDeviceSize = kRootDeviceRoundedSize - 85;
+  ash::FakeSpacedClient::Get()->set_root_device_size(kRootDeviceSize);
+
+  auto options = CreateEmptyDeviceStatusCollectorOptions();
+  RestartStatusCollector(std::move(options));
+  scoped_testing_cros_settings_.device_settings()->SetBoolean(
+      ash::kReportDeviceStorageStatus, true);
+
+  GetStatus();
+
+  ASSERT_TRUE(device_status_.has_root_device_total_storage_bytes());
+  EXPECT_EQ(device_status_.root_device_total_storage_bytes(),
+            kRootDeviceRoundedSize);
 }
 
 TEST_F(DeviceStatusCollectorTest, TestGraphicsStatus) {

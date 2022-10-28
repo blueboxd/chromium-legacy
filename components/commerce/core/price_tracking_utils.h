@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -43,6 +43,21 @@ void SetPriceTrackingStateForBookmark(ShoppingService* service,
 std::vector<const bookmarks::BookmarkNode*> GetBookmarksWithClusterId(
     bookmarks::BookmarkModel* model,
     uint64_t cluster_id);
+
+// Get all bookmarks that are price tracked. This only checks the bit in the
+// bookmark metadata and does not make a call to the backend. The returned
+// vector of BookmarkNodes is owned by the caller, but the nodes pointed to
+// are not -- those live for as long as the BookmarkModel (|model|) is alive
+// which has the same lifetime as the current BrowserContext.
+std::vector<const bookmarks::BookmarkNode*> GetAllPriceTrackedBookmarks(
+    bookmarks::BookmarkModel* model);
+
+// Get all shopping bookmarks. The returned vector of BookmarkNodes is owned by
+// the caller, but the nodes pointed to are not -- those live for as long as
+// the BookmarkModel (|model|) is alive which has the same lifetime as the
+// current BrowserContext.
+std::vector<const bookmarks::BookmarkNode*> GetAllShoppingBookmarks(
+    bookmarks::BookmarkModel* model);
 
 }  // namespace commerce
 

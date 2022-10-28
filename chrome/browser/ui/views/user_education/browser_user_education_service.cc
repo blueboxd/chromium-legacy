@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,13 +12,17 @@
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/ui/browser_element_identifiers.h"
+#include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/color/chrome_color_id.h"
 #include "chrome/browser/ui/views/chrome_typography.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
+#include "chrome/common/webui_url_constants.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/feature_engagement/public/feature_constants.h"
 #include "components/strings/grit/components_strings.h"
+#include "components/user_education/common/feature_promo_handle.h"
 #include "components/user_education/common/feature_promo_registry.h"
 #include "components/user_education/common/feature_promo_specification.h"
 #include "components/user_education/common/help_bubble_factory_registry.h"
@@ -270,7 +274,25 @@ void MaybeRegisterChromeFeaturePromos(
           IDS_PASSWORD_MANAGER_IPH_BODY_SAVE_TO_ACCOUNT)
           .SetBubbleTitleText(IDS_PASSWORD_MANAGER_IPH_TITLE_SAVE_TO_ACCOUNT)
           .SetInAnyContext(true)
-          .SetBubbleArrow(HelpBubbleArrow::kBottomLeft)));
+          .SetBubbleArrow(HelpBubbleArrow::kBottomLeft)
+          .SetBubbleIcon(&vector_icons::kCelebrationIcon)));
+
+  // kIPHBatterySaverModeFeature:
+  registry.RegisterFeature(std::move(
+      FeaturePromoSpecification::CreateForCustomAction(
+          feature_engagement::kIPHBatterySaverModeFeature,
+          kBatterySaverButtonElementId, IDS_BATTERY_SAVER_MODE_PROMO_TEXT,
+          IDS_BATTERY_SAVER_MODE_PROMO_ACTION_TEXT,
+          base::BindRepeating(
+              [](ui::ElementContext ctx,
+                 user_education::FeaturePromoHandle promo_handle) {
+                auto* browser = chrome::FindBrowserWithUiElementContext(ctx);
+                if (browser)
+                  chrome::ShowSettingsSubPage(browser,
+                                              chrome::kPerformanceSubPage);
+              }))
+          .SetBubbleTitleText(IDS_BATTERY_SAVER_MODE_PROMO_TITLE)
+          .SetBubbleArrow(HelpBubbleArrow::kTopRight)));
 }
 
 void MaybeRegisterChromeTutorials(

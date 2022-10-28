@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -27,10 +27,27 @@ class FakeSampler : public Sampler {
 
   int GetNumCollectCalls() const;
 
- private:
+ protected:
   absl::optional<MetricData> metric_data_;
 
   int num_calls_ = 0;
+};
+
+class FakeDelayedSampler : public FakeSampler {
+ public:
+  FakeDelayedSampler();
+
+  FakeDelayedSampler(const FakeDelayedSampler& other) = delete;
+  FakeDelayedSampler& operator=(const FakeDelayedSampler& other) = delete;
+
+  ~FakeDelayedSampler() override;
+
+  void MaybeCollect(OptionalMetricCallback cb) override;
+
+  void RunCallback();
+
+ private:
+  OptionalMetricCallback cb_;
 };
 
 class FakeMetricEventObserver : public MetricEventObserver {

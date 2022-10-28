@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -29,23 +29,6 @@
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace updater {
-namespace {
-
-// Converts an unsigned long integral to an HRESULT to avoid the
-// warning about a narrowing conversion.
-HRESULT MakeHRESULT(unsigned long x) {
-  return static_cast<HRESULT>(x);
-}
-
-}  // namespace
-
-TEST(WinUtil, HRESULTFromUpdaterError) {
-  EXPECT_EQ(HRESULTFromUpdaterError(0), MakeHRESULT(0xa0430000L));
-  EXPECT_EQ(HRESULTFromUpdaterError(ERROR_ACCESS_DENIED),
-            MakeHRESULT(0xa0430005));
-  EXPECT_EQ(HRESULTFromUpdaterError(-1), -1);
-  EXPECT_EQ(HRESULTFromUpdaterError(-10), -10);
-}
 
 TEST(WinUtil, GetDownloadProgress) {
   EXPECT_EQ(GetDownloadProgress(0, 50), 0);
@@ -274,6 +257,18 @@ TEST(WinUtil, EnableSecureDllLoading) {
 
 TEST(WinUtil, EnableProcessHeapMetadataProtection) {
   EXPECT_TRUE(EnableProcessHeapMetadataProtection());
+}
+
+TEST(WinUtil, CreateSecureTempDir) {
+  absl::optional<base::ScopedTempDir> temp_dir = CreateSecureTempDir();
+  EXPECT_TRUE(temp_dir);
+  EXPECT_TRUE(temp_dir->IsValid());
+
+  base::FilePath program_files_dir;
+  EXPECT_TRUE(
+      base::PathService::Get(base::DIR_PROGRAM_FILES, &program_files_dir));
+  EXPECT_EQ(program_files_dir.IsParent(temp_dir->GetPath()),
+            !!::IsUserAnAdmin());
 }
 
 }  // namespace updater

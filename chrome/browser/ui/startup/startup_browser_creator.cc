@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -618,9 +618,6 @@ bool StartupBrowserCreator::was_restarted_read_ = false;
 // static
 bool StartupBrowserCreator::in_synchronous_profile_launch_ = false;
 
-// static
-bool StartupBrowserCreator::is_launching_browser_for_last_profiles_ = false;
-
 void StartupBrowserCreator::AddFirstRunTabs(const std::vector<GURL>& urls) {
   for (const auto& url : urls) {
     if (url.is_valid())
@@ -698,9 +695,6 @@ void StartupBrowserCreator::LaunchBrowserForLastProfiles(
     StartupProfileInfo profile_info,
     const Profiles& last_opened_profiles) {
   DCHECK_NE(profile_info.mode, StartupProfileMode::kError);
-  DCHECK(!is_launching_browser_for_last_profiles_);
-  base::AutoReset<bool> resetter(&is_launching_browser_for_last_profiles_,
-                                 true);
 
   Profile* profile = profile_info.profile;
   // On Windows, when chrome is launched by notification activation where the
@@ -756,11 +750,6 @@ void StartupBrowserCreator::LaunchBrowserForLastProfiles(
   }
   ProcessLastOpenedProfiles(command_line, cur_dir, process_startup,
                             is_first_run, profile, last_opened_profiles);
-}
-
-// static
-bool StartupBrowserCreator::IsLaunchingBrowserForLastProfiles() {
-  return is_launching_browser_for_last_profiles_;
 }
 
 // static
@@ -1369,13 +1358,12 @@ bool StartupBrowserCreator::ProcessLoadApps(
 }
 
 // static
-void StartupBrowserCreator::ProcessCommandLineOnProfileCreated(
+void StartupBrowserCreator::ProcessCommandLineOnProfileInitialized(
     const base::CommandLine& command_line,
     const base::FilePath& cur_dir,
     StartupProfileMode mode,
-    Profile* profile,
-    Profile::CreateStatus status) {
-  if (status != Profile::CREATE_STATUS_INITIALIZED)
+    Profile* profile) {
+  if (!profile)
     return;
   StartupBrowserCreator startup_browser_creator;
   startup_browser_creator.ProcessCmdLineImpl(
@@ -1395,8 +1383,8 @@ void StartupBrowserCreator::ProcessCommandLineAlreadyRunning(
   if (!profile) {
     profile_manager->CreateProfileAsync(
         profile_path_info.path,
-        base::BindRepeating(&ProcessCommandLineOnProfileCreated, command_line,
-                            cur_dir, profile_path_info.mode));
+        base::BindOnce(&ProcessCommandLineOnProfileInitialized, command_line,
+                       cur_dir, profile_path_info.mode));
     return;
   }
   StartupBrowserCreator startup_browser_creator;
@@ -1488,6 +1476,26 @@ StartupProfilePathInfo GetStartupProfilePath(
     return {user_data_dir.Append(
                 command_line.GetSwitchValuePath(switches::kProfileDirectory)),
             StartupProfileMode::kBrowserWindow};
+  }
+
+  if (command_line.HasSwitch(switches::kProfileEmail)) {
+    // Use GetSwitchValueNative() rather than GetSwitchValueASCII() to support
+    // non-ASCII email addresses.
+    base::CommandLine::StringType email_native =
+        command_line.GetSwitchValueNative(switches::kProfileEmail);
+    if (!email_native.empty()) {
+      std::string email;
+#if BUILDFLAG(IS_WIN)
+      email = base::WideToUTF8(email_native);
+#else
+      email = std::move(email_native);
+#endif
+      base::FilePath profile_dir =
+          g_browser_process->profile_manager()->GetProfileDirForEmail(email);
+      if (!profile_dir.empty()) {
+        return {profile_dir, StartupProfileMode::kBrowserWindow};
+      }
+    }
   }
 
 #if !BUILDFLAG(IS_CHROMEOS_ASH)

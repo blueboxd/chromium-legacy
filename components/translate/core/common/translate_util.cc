@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -31,7 +31,7 @@ const base::Feature kTranslateSubFrames{"TranslateSubFrames",
 // Weblayer.
 // TODO(crbug.com/1292622): Enable the feature on Webview.
 // TODO(crbug.com/1247836): Enable the feature on WebLayer.
-const base::Feature kTFLiteLanguageDetectionEnabled{
+const base::Feature kTFLiteLanguageDetectionEnabled {
   "TFLiteLanguageDetectionEnabled",
 #if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_WIN) || \
     BUILDFLAG(IS_MAC) || BUILDFLAG(IS_ANDROID)
@@ -41,8 +41,15 @@ const base::Feature kTFLiteLanguageDetectionEnabled{
 #endif
 };
 
+const base::Feature kTFLiteLanguageDetectionIgnoreEnabled{
+    "TFLiteLanguageDetectionIgnoreEnabled", base::FEATURE_DISABLED_BY_DEFAULT};
+
 const base::Feature kDesktopPartialTranslate{"DesktopPartialTranslate",
                                              base::FEATURE_DISABLED_BY_DEFAULT};
+const base::FeatureParam<int>
+    kDesktopPartialTranslateTextSelectionMaxCharacters{
+        &kDesktopPartialTranslate,
+        "kDesktopPartialTranslateTextSelectionMaxCharacters", 150};
 
 GURL GetTranslateSecurityOrigin() {
   std::string security_origin(kSecurityOrigin);
@@ -66,6 +73,10 @@ bool IsSubFrameLanguageDetectionEnabled() {
 
 bool IsTFLiteLanguageDetectionEnabled() {
   return base::FeatureList::IsEnabled(kTFLiteLanguageDetectionEnabled);
+}
+
+bool IsTFLiteLanguageDetectionIgnoreEnabled() {
+  return base::FeatureList::IsEnabled(kTFLiteLanguageDetectionIgnoreEnabled);
 }
 
 float GetTFLiteLanguageDetectionThreshold() {

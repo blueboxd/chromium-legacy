@@ -1,4 +1,4 @@
-// Copyright (c) 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -456,7 +456,7 @@ void ResetScreen::UpdateStatusChanged(
     error_screen_->Show(nullptr);
   } else if (status.current_operation() ==
              update_engine::Operation::UPDATED_NEED_REBOOT) {
-    PowerManagerClient::Get()->RequestRestart(
+    chromeos::PowerManagerClient::Get()->RequestRestart(
         power_manager::REQUEST_RESTART_FOR_UPDATE, "login reset screen update");
   }
 }

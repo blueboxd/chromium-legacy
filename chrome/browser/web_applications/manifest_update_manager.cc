@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -79,7 +79,8 @@ void ManifestUpdateManager::MaybeUpdate(const GURL& url,
     return;
   }
 
-  if (registrar_->IsPlaceholderApp(*app_id, WebAppManagement::kPolicy)) {
+  if (registrar_->IsPlaceholderApp(*app_id, WebAppManagement::kPolicy) ||
+      registrar_->IsPlaceholderApp(*app_id, WebAppManagement::kKiosk)) {
     NotifyResult(url, *app_id, ManifestUpdateResult::kAppIsPlaceholder);
     return;
   }
@@ -112,6 +113,10 @@ bool ManifestUpdateManager::IsUpdateConsumed(const AppId& app_id) {
     return true;
   }
   return false;
+}
+
+bool ManifestUpdateManager::IsUpdateTaskPending(const AppId& app_id) {
+  return base::Contains(tasks_, app_id);
 }
 
 // WebAppInstallManager:
@@ -190,6 +195,9 @@ void ManifestUpdateManager::ResetManifestThrottleForTesting(
   if (it != last_update_check_.end()) {
     last_update_check_.erase(app_id);
   }
+  // Manifest update scheduling can still fail if there is an existing tasks.
+  // Destroy this to ensure the next load will trigger update.
+  tasks_.erase(app_id);
 }
 
 }  // namespace web_app

@@ -21,7 +21,7 @@ import {CrDialogElement} from '../../cr_elements/cr_dialog/cr_dialog.js';
 import {CrLazyRenderElement} from '../../cr_elements/cr_lazy_render/cr_lazy_render.js';
 import {CrToastElement} from '../../cr_elements/cr_toast/cr_toast.js';
 import {assert} from '../../js/assert_ts.js';
-import {FocusOutlineManager} from '../../js/cr/ui/focus_outline_manager.m.js';
+import {FocusOutlineManager} from '../../js/cr/ui/focus_outline_manager.js';
 import {loadTimeData} from '../../js/load_time_data.m.js';
 
 import {BrowserProxyImpl} from './browser_proxy.js';
@@ -70,7 +70,7 @@ export class HistoryClustersElement extends HistoryClustersElementBase {
       /**
        * Whether the clusters are in the side panel.
        */
-      inSidePanel: {
+      inSidePanel_: {
         type: Boolean,
         value: () => loadTimeData.getBoolean('inSidePanel'),
         reflectToAttribute: true,
@@ -122,10 +122,10 @@ export class HistoryClustersElement extends HistoryClustersElementBase {
   // Properties
   //============================================================================
 
-  inSidePanel: boolean;
   query: string;
   private callbackRouter_: PageCallbackRouter;
   private headerText_: string;
+  private inSidePanel_: boolean;
   private onClustersQueryResultListenerId_: number|null = null;
   private onVisitsRemovedListenerId_: number|null = null;
   private onHistoryDeletedListenerId_: number|null = null;
@@ -327,7 +327,7 @@ export class HistoryClustersElement extends HistoryClustersElementBase {
     });
     this.showSpinner_ = false;
 
-    if (loadTimeData.getBoolean('inSidePanel')) {
+    if (this.inSidePanel_) {
       this.pageHandler_.showSidePanelUI();
     }
   }

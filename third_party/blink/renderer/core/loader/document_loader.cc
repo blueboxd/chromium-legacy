@@ -40,8 +40,8 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/numerics/safe_conversions.h"
-#include "base/stl_util.h"
 #include "base/time/default_tick_clock.h"
+#include "base/types/optional_util.h"
 #include "build/chromeos_buildflags.h"
 #include "services/network/public/cpp/client_hints.h"
 #include "services/network/public/cpp/web_sandbox_flags.h"
@@ -62,6 +62,7 @@
 #include "third_party/blink/public/platform/web_content_security_policy_struct.h"
 #include "third_party/blink/public/platform/web_url_request.h"
 #include "third_party/blink/public/web/blink.h"
+#include "third_party/blink/public/web/web_navigation_type.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_controller.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/document_init.h"
@@ -1327,17 +1328,17 @@ mojom::CommitResult DocumentLoader::CommitSameDocumentNavigation(
   mojom::blink::SameDocumentNavigationType same_document_navigation_type =
       mojom::blink::SameDocumentNavigationType::kFragment;
   if (auto* navigation_api = NavigationApi::navigation(*frame_->DomWindow())) {
-    NavigationApi::DispatchParams params(url, NavigateEventType::kFragment,
-                                         frame_load_type);
+    auto* params = MakeGarbageCollected<NavigateEventDispatchParams>(
+        url, NavigateEventType::kFragment, frame_load_type);
     if (is_browser_initiated) {
-      params.involvement = UserNavigationInvolvement::kBrowserUI;
+      params->involvement = UserNavigationInvolvement::kBrowserUI;
     } else if (triggering_event_info ==
                mojom::blink::TriggeringEventInfo::kFromTrustedEvent) {
-      params.involvement = UserNavigationInvolvement::kActivation;
+      params->involvement = UserNavigationInvolvement::kActivation;
     }
-    params.destination_item = history_item;
-    params.is_browser_initiated = is_browser_initiated;
-    params.is_synchronously_committed_same_document =
+    params->destination_item = history_item;
+    params->is_browser_initiated = is_browser_initiated;
+    params->is_synchronously_committed_same_document =
         is_synchronously_committed;
     auto dispatch_result = navigation_api->DispatchNavigateEvent(params);
     if (dispatch_result == NavigationApi::DispatchResult::kAbort)
@@ -1600,7 +1601,8 @@ void DocumentLoader::StartLoadingInternal() {
   navigation_timing_info_ = ResourceTimingInfo::Create(
       fetch_initiator_type_names::kDocument, GetTiming().NavigationStart(),
       mojom::blink::RequestContextType::IFRAME,
-      network::mojom::RequestDestination::kIframe);
+      network::mojom::RequestDestination::kIframe,
+      network::mojom::RequestMode::kNavigate);
   navigation_timing_info_->SetInitialURL(url_);
   report_timing_info_to_parent_ = ShouldReportTimingInfoToParent();
 
@@ -2250,7 +2252,8 @@ void DocumentLoader::InitializeWindow(Document* owner_document) {
   // browser once the browser will be able to compute the origin in all cases.
   frame_->DomWindow()->SetStorageKey(
       BlinkStorageKey(security_origin, storage_key_.GetTopLevelSite(),
-                      base::OptionalOrNullptr(storage_key_.GetNonce())));
+                      base::OptionalToPtr(storage_key_.GetNonce()),
+                      storage_key_.GetAncestorChainBit()));
 
   // Conceptually, SecurityOrigin doesn't have to be initialized after sandbox
   // flags are applied, but there's a UseCounter in SetSecurityOrigin() that
@@ -2914,6 +2917,17 @@ void DocumentLoader::NotifyPrerenderingDocumentActivated(
 HashMap<KURL, EarlyHintsPreloadEntry>
 DocumentLoader::GetEarlyHintsPreloadedResources() {
   return early_hints_preloaded_resources_;
+}
+
+bool DocumentLoader::IsReloadedOrFormSubmitted() const {
+  switch (navigation_type_) {
+    case WebNavigationType::kWebNavigationTypeReload:
+    case WebNavigationType::kWebNavigationTypeFormSubmitted:
+    case WebNavigationType::kWebNavigationTypeFormResubmitted:
+      return true;
+    default:
+      return false;
+  }
 }
 
 ContentSecurityPolicy* DocumentLoader::CreateCSP() {

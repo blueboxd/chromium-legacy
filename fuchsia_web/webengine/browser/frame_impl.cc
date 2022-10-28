@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,22 +8,24 @@
 #include <lib/fpromise/result.h>
 #include <lib/sys/cpp/component_context.h>
 #include <lib/ui/scenic/cpp/view_ref_pair.h>
-#include <algorithm>
+
 #include <limits>
 
 #include "base/bind.h"
-#include "base/callback_helpers.h"
 #include "base/command_line.h"
+#include "base/containers/contains.h"
 #include "base/fuchsia/fuchsia_logging.h"
 #include "base/fuchsia/mem_buffer_util.h"
 #include "base/fuchsia/process_context.h"
 #include "base/json/json_writer.h"
 #include "base/metrics/user_metrics.h"
-#include "base/strings/strcat.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/synchronization/lock.h"
+#include "base/thread_annotations.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "content/public/browser/audio_stream_broker.h"
 #include "content/public/browser/browser_accessibility_state.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -53,6 +55,7 @@
 #include "fuchsia_web/webengine/browser/url_request_rewrite_type_converters.h"
 #include "fuchsia_web/webengine/browser/web_engine_devtools_controller.h"
 #include "fuchsia_web/webengine/common/cast_streaming.h"
+#include "media/mojo/mojom/audio_processing.mojom.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
 #include "mojo/public/cpp/system/platform_handle.h"
 #include "net/base/net_errors.h"
@@ -65,7 +68,6 @@
 #include "third_party/blink/public/mojom/loader/resource_load_info.mojom.h"
 #include "third_party/blink/public/mojom/mediastream/media_stream.mojom.h"
 #include "third_party/blink/public/mojom/navigation/was_activated_option.mojom.h"
-#include "ui/accessibility/platform/fuchsia/semantic_provider_impl.h"
 #include "ui/aura/window.h"
 #include "ui/compositor/compositor.h"
 #include "ui/gfx/switches.h"
@@ -261,6 +263,117 @@ absl::optional<url::Origin> ParseAndValidateWebOrigin(
   return origin;
 }
 
+int GetEffectFlagsForRenderUsage(fuchsia::media::AudioRenderUsage usage) {
+  switch (usage) {
+    case fuchsia::media::AudioRenderUsage::BACKGROUND:
+      return media::AudioParameters::FUCHSIA_RENDER_USAGE_BACKGROUND;
+    case fuchsia::media::AudioRenderUsage::MEDIA:
+      return media::AudioParameters::FUCHSIA_RENDER_USAGE_MEDIA;
+    case fuchsia::media::AudioRenderUsage::INTERRUPTION:
+      return media::AudioParameters::FUCHSIA_RENDER_USAGE_INTERRUPTION;
+    case fuchsia::media::AudioRenderUsage::SYSTEM_AGENT:
+      return media::AudioParameters::FUCHSIA_RENDER_USAGE_SYSTEM_AGENT;
+    case fuchsia::media::AudioRenderUsage::COMMUNICATION:
+      return media::AudioParameters::FUCHSIA_RENDER_USAGE_COMMUNICATION;
+  }
+}
+
+class AudioStreamBrokerFactory final
+    : public content::AudioStreamBrokerFactory {
+ public:
+  AudioStreamBrokerFactory() : base_factory_(CreateImpl()) {
+    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  }
+  ~AudioStreamBrokerFactory() final {
+    DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+  }
+
+  base::RepeatingCallback<void(fuchsia::media::AudioRenderUsage output_usage)>
+  GetSetOutputUsagerCallback() {
+    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+    return base::BindRepeating(
+        AudioStreamBrokerFactory::SetOutputUsageOnUIThread,
+        weak_factory_.GetWeakPtr());
+  }
+
+  // contents::AudioStreamBrokerFactory implementation.
+  std::unique_ptr<content::AudioStreamBroker> CreateAudioInputStreamBroker(
+      int render_process_id,
+      int render_frame_id,
+      const std::string& device_id,
+      const media::AudioParameters& params,
+      uint32_t shared_memory_count,
+      media::UserInputMonitorBase* user_input_monitor,
+      bool enable_agc,
+      media::mojom::AudioProcessingConfigPtr processing_config,
+      content::AudioStreamBroker::DeleterCallback deleter,
+      mojo::PendingRemote<blink::mojom::RendererAudioInputStreamFactoryClient>
+          renderer_factory_client) final {
+    return base_factory_->CreateAudioInputStreamBroker(
+        render_process_id, render_frame_id, device_id, params,
+        shared_memory_count, user_input_monitor, enable_agc,
+        std::move(processing_config), std::move(deleter),
+        std::move(renderer_factory_client));
+  }
+
+  std::unique_ptr<content::AudioStreamBroker> CreateAudioLoopbackStreamBroker(
+      int render_process_id,
+      int render_frame_id,
+      content::AudioStreamBroker::LoopbackSource* source,
+      const media::AudioParameters& params,
+      uint32_t shared_memory_count,
+      bool mute_source,
+      content::AudioStreamBroker::DeleterCallback deleter,
+      mojo::PendingRemote<blink::mojom::RendererAudioInputStreamFactoryClient>
+          renderer_factory_client) final {
+    return base_factory_->CreateAudioLoopbackStreamBroker(
+        render_process_id, render_frame_id, source, params, shared_memory_count,
+        mute_source, std::move(deleter), std::move(renderer_factory_client));
+  }
+
+  std::unique_ptr<content::AudioStreamBroker> CreateAudioOutputStreamBroker(
+      int render_process_id,
+      int render_frame_id,
+      int stream_id,
+      const std::string& output_device_id,
+      const media::AudioParameters& params,
+      const base::UnguessableToken& group_id,
+      content::AudioStreamBroker::DeleterCallback deleter,
+      mojo::PendingRemote<media::mojom::AudioOutputStreamProviderClient> client)
+      final {
+    DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+    media::AudioParameters params_with_effects = params;
+    if (output_usage_) {
+      params_with_effects.set_effects(
+          params.effects() |
+          GetEffectFlagsForRenderUsage(output_usage_.value()));
+    }
+    return base_factory_->CreateAudioOutputStreamBroker(
+        render_process_id, render_frame_id, stream_id, output_device_id,
+        params_with_effects, group_id, std::move(deleter), std::move(client));
+  }
+
+ private:
+  static void SetOutputUsageOnUIThread(
+      base::WeakPtr<AudioStreamBrokerFactory> factory,
+      fuchsia::media::AudioRenderUsage output_usage) {
+    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+    content::GetIOThreadTaskRunner({})->PostTask(
+        FROM_HERE,
+        base::BindOnce(&AudioStreamBrokerFactory::SetOutputUsageOnIOThread,
+                       factory, output_usage));
+  }
+
+  void SetOutputUsageOnIOThread(fuchsia::media::AudioRenderUsage output_usage) {
+    DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+    output_usage_ = output_usage;
+  }
+
+  std::unique_ptr<content::AudioStreamBrokerFactory> base_factory_;
+  absl::optional<fuchsia::media::AudioRenderUsage> output_usage_;
+  base::WeakPtrFactory<AudioStreamBrokerFactory> weak_factory_{this};
+};
+
 }  // namespace
 
 FrameImpl::PendingPopup::PendingPopup(
@@ -438,7 +551,7 @@ void FrameImpl::AddNewContents(
     std::unique_ptr<content::WebContents> new_contents,
     const GURL& target_url,
     WindowOpenDisposition disposition,
-    const gfx::Rect& initial_rect,
+    const blink::mojom::WindowFeatures& window_features,
     bool user_gesture,
     bool* was_blocked) {
   DCHECK_EQ(source, web_contents_.get());
@@ -765,8 +878,6 @@ void FrameImpl::AddBeforeLoadJavaScript(
     std::vector<std::string> origins,
     fuchsia::mem::Buffer script,
     AddBeforeLoadJavaScriptCallback callback) {
-  constexpr char kWildcardOrigin[] = "*";
-
   if (!context_->IsJavaScriptInjectionAllowed()) {
     callback(fpromise::error(fuchsia::web::FrameError::INTERNAL_ERROR));
     return;
@@ -781,10 +892,7 @@ void FrameImpl::AddBeforeLoadJavaScript(
   }
 
   // TODO(crbug.com/1108607): Only allow wildcards to be specified standalone.
-  if (std::any_of(origins.begin(), origins.end(),
-                  [kWildcardOrigin](base::StringPiece origin) {
-                    return origin == kWildcardOrigin;
-                  })) {
+  if (base::Contains(origins, kWildcardOrigin)) {
     script_injector_.AddScriptForAllOrigins(id, *script_as_string);
   } else {
     std::vector<url::Origin> origins_converted;
@@ -1006,6 +1114,8 @@ void FrameImpl::InitWindowTreeHost() {
 void FrameImpl::SetMediaSettings(
     fuchsia::web::FrameMediaSettings media_settings) {
   media_settings_ = std::move(media_settings);
+  if (media_settings.has_renderer_usage() && set_audio_output_usage_callback_)
+    set_audio_output_usage_callback_.Run(media_settings.renderer_usage());
 }
 
 void FrameImpl::MediaStartedPlaying(const MediaPlayerInfo& video_type,
@@ -1325,6 +1435,20 @@ bool FrameImpl::CheckMediaAccessPermission(
   return permission_controller->GetPermissionStatusForCurrentDocument(
              permission, render_frame_host) ==
          blink::mojom::PermissionStatus::GRANTED;
+}
+
+std::unique_ptr<content::AudioStreamBrokerFactory>
+FrameImpl::CreateAudioStreamBrokerFactory(content::WebContents* web_contents) {
+  DCHECK_EQ(web_contents, web_contents_.get());
+
+  auto result = std::make_unique<AudioStreamBrokerFactory>();
+
+  // Save callback to use to pass renderer usage to the factory in the future.
+  set_audio_output_usage_callback_ = result->GetSetOutputUsagerCallback();
+  if (media_settings_.has_renderer_usage())
+    set_audio_output_usage_callback_.Run(media_settings_.renderer_usage());
+
+  return result;
 }
 
 bool FrameImpl::CanOverscrollContent() {

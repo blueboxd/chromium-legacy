@@ -1,9 +1,10 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 package org.chromium.chrome.browser.omnibox.status;
 
+import android.animation.Animator;
 import android.content.res.Resources;
 import android.view.View;
 
@@ -28,7 +29,10 @@ import org.chromium.components.permissions.PermissionDialogController;
 import org.chromium.components.search_engines.TemplateUrlService;
 import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.modelutil.PropertyModel;
+import org.chromium.ui.modelutil.PropertyModelAnimatorFactory;
 import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
+
+import java.util.List;
 
 /**
  * A component for displaying a status icon (e.g. security icon or navigation icon) and optional
@@ -261,11 +265,6 @@ public class StatusCoordinator implements View.OnClickListener, LocationBarDataP
         mMediator.setAnimationsEnabled(shouldAnimate);
     }
 
-    /** Specify whether URL should present icons when focused. */
-    public void setShowIconsWhenUrlFocused(boolean showIconsWithUrlFocused) {
-        mMediator.setShowIconsWhenUrlFocused(showIconsWithUrlFocused);
-    }
-
     /** Returns width of the status icon including start/end margins. */
     public int getStatusIconWidth() {
         // TODO(crbug.com/1109369): try to hide this method
@@ -309,5 +308,20 @@ public class StatusCoordinator implements View.OnClickListener, LocationBarDataP
     /** Returns whether the status view is currently in the process of animating a change. */
     public boolean isStatusIconAnimating() {
         return mStatusView.isStatusIconAnimating();
+    }
+
+    /**
+     * Populates an animation that fades =/unfades the entire StatusView container with the given
+     * start delay and duration, adding it to the given list of animators.
+     */
+    public void populateFadeAnimation(
+            List<Animator> animators, long startDelayMs, long durationMs, float targetAlpha) {
+        if (mLocationBarDataProvider.isIncognito()) {
+            Animator animator = PropertyModelAnimatorFactory
+                                        .ofFloat(mModel, StatusProperties.ALPHA, targetAlpha)
+                                        .setDuration(durationMs);
+            animator.setStartDelay(startDelayMs);
+            animators.add(animator);
+        }
     }
 }

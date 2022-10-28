@@ -1,13 +1,13 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #import "ios/chrome/browser/ui/bookmarks/bookmark_home_view_controller.h"
 
-#include "components/bookmarks/browser/bookmark_model.h"
+#import "components/bookmarks/browser/bookmark_model.h"
 #import "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #import "ios/chrome/browser/main/browser.h"
-#include "ios/chrome/browser/ui/bookmarks/bookmark_ios_unittest.h"
+#import "ios/chrome/browser/ui/bookmarks/bookmark_ios_unittest.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/commands/command_dispatcher.h"
 #import "ios/chrome/browser/ui/commands/snackbar_commands.h"

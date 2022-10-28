@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -24,6 +24,9 @@
 // See: crbug.com/925304 for more context.  Remove this when ios/web supports
 // queueing multiple loads during this state.
 - (BOOL)ignoreLoadRequests;
+
+// Indicates to the delegate that the fakebox was tapped.
+- (void)fakeboxTapped;
 
 @end
 

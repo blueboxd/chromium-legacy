@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -260,7 +260,8 @@ class OsIntegrationManager : public AppRegistrarObserver {
                                               const std::string& name);
 
   // Uninstallation:
-  virtual bool UnregisterShortcutsMenu(const AppId& app_id);
+  virtual bool UnregisterShortcutsMenu(const AppId& app_id,
+                                       ResultCallback callback);
   virtual void UnregisterRunOnOsLogin(const AppId& app_id,
                                       const base::FilePath& profile_path,
                                       const std::u16string& shortcut_title,
@@ -278,7 +279,8 @@ class OsIntegrationManager : public AppRegistrarObserver {
 
   // Update:
   virtual void UpdateShortcutsMenu(const AppId& app_id,
-                                   const WebAppInstallInfo& web_app_info);
+                                   const WebAppInstallInfo& web_app_info,
+                                   ResultCallback callback);
 
   // Utility methods:
   virtual std::unique_ptr<ShortcutInfo> BuildShortcutInfo(const AppId& app_id);

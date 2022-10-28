@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -123,7 +123,8 @@ class PageLoadTrackerTest : public PageLoadMetricsObserverContentTestHarness {
       return;
 
     EXPECT_FALSE(is_observer_passed_);
-    tracker->AddObserver(std::unique_ptr<PageLoadMetricsObserver>(observer_));
+    tracker->AddObserver(
+        std::unique_ptr<PageLoadMetricsObserverInterface>(observer_));
     is_observer_passed_ = true;
   }
 

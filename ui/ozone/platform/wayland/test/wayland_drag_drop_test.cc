@@ -25,6 +25,21 @@ using testing::_;
 
 namespace ui {
 
+TestWaylandOSExchangeDataProvideFactory::
+    TestWaylandOSExchangeDataProvideFactory() {
+  SetInstance(this);
+}
+
+TestWaylandOSExchangeDataProvideFactory::
+    ~TestWaylandOSExchangeDataProvideFactory() {
+  SetInstance(nullptr);
+}
+
+std::unique_ptr<OSExchangeDataProvider>
+TestWaylandOSExchangeDataProvideFactory::CreateProvider() {
+  return std::make_unique<WaylandExchangeDataProvider>();
+}
+
 WaylandDragDropTest::WaylandDragDropTest() = default;
 
 WaylandDragDropTest::~WaylandDragDropTest() = default;
@@ -55,6 +70,11 @@ void WaylandDragDropTest::SendDndDrop() {
 void WaylandDragDropTest::SendDndCancelled() {
   EXPECT_TRUE(data_source_);
   data_source_->OnCancelled();
+}
+
+void WaylandDragDropTest::SendDndAction(uint32_t action) {
+  EXPECT_TRUE(data_source_);
+  data_source_->OnDndAction(action);
 }
 
 void WaylandDragDropTest::ReadData(
@@ -94,6 +114,7 @@ void WaylandDragDropTest::SendPointerButton(
                            : WL_POINTER_BUTTON_STATE_RELEASED;
   wl_pointer_send_button(pointer_->resource(), serial, NextTime(), button,
                          state);
+  wl_pointer_send_frame(pointer_->resource());
 }
 
 void WaylandDragDropTest::SendTouchDown(WaylandWindow* window,

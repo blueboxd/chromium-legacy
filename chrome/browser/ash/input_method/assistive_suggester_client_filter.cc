@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -135,8 +135,18 @@ const char* kAllowedAppsForMultiWordSuggester[] = {
     "mmfbcljfglbokpmkimbfghdkjmjhdgbg",  // System text
 };
 
+const char* kDeniedDomainAndPathsForDiacritics[][2] = {
+    // Google Slides: delete on insert does not work
+    {"docs.google.com", "/presentation"},
+    // Google Docs: delete on insert does not work
+    {"docs.google.com", "/document"},
+};
+
 const char* kDeniedAppsForDiacritics[] = {
-    "iodihamcpbpeioajjeobimgagajmlibd"  // SSH app
+    "iodihamcpbpeioajjeobimgagajmlibd",  // SSH app
+    "cgfnfgkafmcdkdgilmojlnaadileaach",  // Crosh app
+    "fhicihalidkgcimdmhpohldehjmcabcf",  // Terminal app
+    "mmfbcljfglbokpmkimbfghdkjmjhdgbg",  // System text
 };
 
 bool IsTestUrl(GURL url) {
@@ -169,8 +179,6 @@ bool AtDomainWithPathPrefix(GURL url,
 template <size_t N>
 bool IsMatchedUrlWithPathPrefix(const char* (&allowedDomainAndPaths)[N][2],
                                 GURL url) {
-  if (IsTestUrl(url) || IsInternalWebsite(url))
-    return true;
   for (size_t i = 0; i < N; i++) {
     auto domain = allowedDomainAndPaths[i][0];
     auto path_prefix = allowedDomainAndPaths[i][1];
@@ -199,32 +207,40 @@ void ReturnEnabledSuggestions(
     AssistiveSuggesterSwitch::FetchEnabledSuggestionsCallback callback,
     WindowProperties window_properties,
     const absl::optional<GURL>& current_url) {
+  // Deny-list (will block if matched, otherwise allow)
+  bool diacritic_suggestions_allowed =
+      !IsMatchedApp(kDeniedAppsForDiacritics, window_properties) &&
+      !(current_url && IsMatchedUrlWithPathPrefix(
+                           kDeniedDomainAndPathsForDiacritics, *current_url));
+
+  // TODO(b/245469813): Investigate if denied is intentional for suggesters
+  // below is intentional.
   if (!current_url.has_value()) {
-    std::move(callback).Run(AssistiveSuggesterSwitch::EnabledSuggestions{});
+    std::move(callback).Run(AssistiveSuggesterSwitch::EnabledSuggestions{
+        .diacritic_suggestions = diacritic_suggestions_allowed});
     return;
   }
 
   // Allow-list (will only allow if matched)
   bool emoji_suggestions_allowed =
+      IsTestUrl(*current_url) || IsInternalWebsite(*current_url) ||
       IsMatchedUrlWithPathPrefix(kAllowedDomainAndPathsForEmojiSuggester,
                                  *current_url) ||
       IsMatchedApp(kAllowedAppsForEmojiSuggester, window_properties);
 
   // Allow-list (will only allow if matched)
   bool multi_word_suggestions_allowed =
+      IsTestUrl(*current_url) || IsInternalWebsite(*current_url) ||
       IsMatchedUrlWithPathPrefix(kAllowedDomainAndPathsForMultiWordSuggester,
                                  *current_url) ||
       IsMatchedApp(kAllowedAppsForMultiWordSuggester, window_properties);
 
   // Allow-list (will only allow if matched)
   bool personal_info_suggestions_allowed =
+      IsTestUrl(*current_url) || IsInternalWebsite(*current_url) ||
       IsMatchedUrlWithPathPrefix(kAllowedDomainAndPathsForPersonalInfoSuggester,
                                  *current_url) ||
       IsMatchedApp(kAllowedAppsForPersonalInfoSuggester, window_properties);
-
-  // Deny-list (will block if matched, otherwise allow)
-  bool diacritic_suggestions_allowed =
-      !IsMatchedApp(kDeniedAppsForDiacritics, window_properties);
 
   std::move(callback).Run(AssistiveSuggesterSwitch::EnabledSuggestions{
       .emoji_suggestions = emoji_suggestions_allowed,

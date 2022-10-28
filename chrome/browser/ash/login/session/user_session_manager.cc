@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -15,10 +15,6 @@
 #include <vector>
 
 #include "ash/components/arc/arc_prefs.h"
-#include "ash/components/login/auth/auth_session_authenticator.h"
-#include "ash/components/login/auth/challenge_response/known_user_pref_utils.h"
-#include "ash/components/login/auth/stub_authenticator_builder.h"
-#include "ash/components/login/session/session_termination_manager.h"
 #include "ash/components/settings/cros_settings_names.h"
 #include "ash/components/tpm/prepare_tpm.h"
 #include "ash/constants/ash_features.h"
@@ -130,6 +126,10 @@
 #include "chromeos/ash/components/cryptohome/cryptohome_parameters.h"
 #include "chromeos/ash/components/dbus/dbus_thread_manager.h"
 #include "chromeos/ash/components/dbus/session_manager/session_manager_client.h"
+#include "chromeos/ash/components/login/auth/auth_session_authenticator.h"
+#include "chromeos/ash/components/login/auth/challenge_response/known_user_pref_utils.h"
+#include "chromeos/ash/components/login/auth/stub_authenticator_builder.h"
+#include "chromeos/ash/components/login/session/session_termination_manager.h"
 #include "chromeos/ash/components/network/portal_detector/network_portal_detector.h"
 #include "chromeos/dbus/tpm_manager/tpm_manager.pb.h"
 #include "chromeos/dbus/tpm_manager/tpm_manager_client.h"
@@ -569,7 +569,7 @@ UserSessionManager::UserSessionManager()
   user_manager::UserManager::Get()->AddObserver(this);
   content::GetNetworkConnectionTrackerFromUIThread(
       base::BindOnce(&UserSessionManager::SetNetworkConnectionTracker,
-                     weak_factory_.GetWeakPtr()));
+                     GetUserSessionManagerAsWeakPtr()));
   // TODO(crbug/1341307): Remove the log after the feature settles in Stable.
   LOG(WARNING) << "UseAuthsessionAuthentication experiment is "
                << (base::FeatureList::IsEnabled(
@@ -689,11 +689,11 @@ scoped_refptr<Authenticator> UserSessionManager::CreateAuthenticator(
   // Screen locker needs new Authenticator instance each time.
   if (ScreenLocker::default_screen_locker()) {
     if (authenticator_.get())
-      authenticator_->SetConsumer(NULL);
+      authenticator_->SetConsumer(nullptr);
     authenticator_.reset();
   }
 
-  if (authenticator_.get() == NULL) {
+  if (authenticator_.get() == nullptr) {
     if (injected_authenticator_builder_) {
       authenticator_ = injected_authenticator_builder_->Create(consumer);
     } else if (base::FeatureList::IsEnabled(
@@ -716,17 +716,18 @@ scoped_refptr<Authenticator> UserSessionManager::CreateAuthenticator(
   return authenticator_;
 }
 
-void UserSessionManager::StartSession(const UserContext& user_context,
-                                      StartSessionType start_session_type,
-                                      bool has_auth_cookies,
-                                      bool has_active_session,
-                                      UserSessionManagerDelegate* delegate) {
+void UserSessionManager::StartSession(
+    const UserContext& user_context,
+    StartSessionType start_session_type,
+    bool has_auth_cookies,
+    bool has_active_session,
+    base::WeakPtr<UserSessionManagerDelegate> delegate) {
   TRACE_EVENT_NESTABLE_ASYNC_BEGIN0(kEventCategoryChromeOS, kEventStartSession,
                                     TRACE_ID_LOCAL(this));
 
   easy_unlock_key_ops_finished_ = false;
 
-  delegate_ = delegate;
+  delegate_ = std::move(delegate);
   start_session_type_ = start_session_type;
 
   VLOG(1) << "Starting user session.";
@@ -746,12 +747,7 @@ void UserSessionManager::StartSession(const UserContext& user_context,
       kEventCategoryChromeOS, kEventPrePrepareProfile, TRACE_ID_LOCAL(this));
   InitDemoSessionIfNeeded(base::BindOnce(
       &UserSessionManager::UpdateArcFileSystemCompatibilityAndPrepareProfile,
-      AsWeakPtr()));
-}
-
-void UserSessionManager::DelegateDeleted(UserSessionManagerDelegate* delegate) {
-  if (delegate_ == delegate)
-    delegate_ = nullptr;
+      GetUserSessionManagerAsWeakPtr()));
 }
 
 void UserSessionManager::PerformPostUserLoggedInActions() {
@@ -801,8 +797,9 @@ void UserSessionManager::RestoreAuthenticationSession(Profile* user_profile) {
 
 void UserSessionManager::RestoreActiveSessions() {
   user_sessions_restore_in_progress_ = true;
-  SessionManagerClient::Get()->RetrieveActiveSessions(base::BindOnce(
-      &UserSessionManager::OnRestoreActiveSessions, AsWeakPtr()));
+  SessionManagerClient::Get()->RetrieveActiveSessions(
+      base::BindOnce(&UserSessionManager::OnRestoreActiveSessions,
+                     GetUserSessionManagerAsWeakPtr()));
 }
 
 bool UserSessionManager::UserSessionsRestored() const {
@@ -876,7 +873,7 @@ bool UserSessionManager::RespectLocalePreference(
     locale_util::SwitchLanguageCallback callback) const {
   // TODO(alemate): http://crbug.com/288941 : Respect preferred language list in
   // the Google user profile.
-  if (g_browser_process == NULL)
+  if (g_browser_process == nullptr)
     return false;
 
   user_manager::UserManager* user_manager = user_manager::UserManager::Get();
@@ -891,7 +888,7 @@ bool UserSessionManager::RespectLocalePreference(
     return false;
 
   PrefService* prefs = profile->GetPrefs();
-  if (prefs == NULL)
+  if (prefs == nullptr)
     return false;
 
   std::string pref_locale;
@@ -914,10 +911,10 @@ bool UserSessionManager::RespectLocalePreference(
   if (pref_locale.empty())
     pref_locale = pref_bkup_locale;
 
-  const std::string* account_locale = NULL;
+  const std::string* account_locale = nullptr;
   if (pref_locale.empty() && user->has_gaia_account() &&
-      prefs->GetList(::prefs::kAllowedLanguages)->GetListDeprecated().empty()) {
-    if (user->GetAccountLocale() == NULL)
+      prefs->GetList(::prefs::kAllowedLanguages).empty()) {
+    if (user->GetAccountLocale() == nullptr)
       return false;  // wait until Account profile is loaded.
     account_locale = user->GetAccountLocale();
     pref_locale = *account_locale;
@@ -930,7 +927,7 @@ bool UserSessionManager::RespectLocalePreference(
   VLOG(1) << "RespectLocalePreference: "
           << "app_locale='" << pref_app_locale << "', "
           << "bkup_locale='" << pref_bkup_locale << "', "
-          << (account_locale != NULL
+          << (account_locale != nullptr
                   ? (std::string("account_locale='") + (*account_locale) +
                      "'. ")
                   : (std::string("account_locale - unused. ")))
@@ -1255,7 +1252,8 @@ void UserSessionManager::VoteForSavingLoginPassword(
     // session.
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::BindOnce(&UserSessionManager::LoadShillProfile,
-                                  AsWeakPtr(), user_context_.GetAccountId()));
+                                  GetUserSessionManagerAsWeakPtr(),
+                                  user_context_.GetAccountId()));
   }
 
   // Prevent this code from being called twice from two services or else the
@@ -1296,7 +1294,7 @@ void UserSessionManager::UpdateArcFileSystemCompatibilityAndPrepareProfile() {
       user_context_.GetAccountId(),
       ProfileHelper::GetProfilePathByUserIdHash(user_context_.GetUserIDHash()),
       base::BindOnce(&UserSessionManager::InitializeAccountManager,
-                     AsWeakPtr()));
+                     GetUserSessionManagerAsWeakPtr()));
 }
 
 void UserSessionManager::InitializeAccountManager() {
@@ -1306,7 +1304,8 @@ void UserSessionManager::InitializeAccountManager() {
   if (ProfileHelper::IsRegularProfilePath(profile_path)) {
     ash::InitializeAccountManager(
         profile_path,
-        base::BindOnce(&UserSessionManager::PrepareProfile, AsWeakPtr(),
+        base::BindOnce(&UserSessionManager::PrepareProfile,
+                       GetUserSessionManagerAsWeakPtr(),
                        profile_path) /* initialization_callback */);
   } else {
     PrepareProfile(profile_path);
@@ -1321,30 +1320,29 @@ void UserSessionManager::PrepareProfile(const base::FilePath& profile_path) {
                                     kEventPrepareProfile, TRACE_ID_LOCAL(this));
 
   g_browser_process->profile_manager()->CreateProfileAsync(
-      profile_path, base::BindRepeating(&UserSessionManager::OnProfileCreated,
-                                        AsWeakPtr(), user_context_));
-}
-
-void UserSessionManager::OnProfileCreated(const UserContext& user_context,
-                                          Profile* profile,
-                                          Profile::CreateStatus status) {
-  switch (status) {
-    case Profile::CREATE_STATUS_CREATED:
-      CHECK(profile);
-      // Profile created but before initializing extensions and promo resources.
-      InitProfilePreferences(profile, user_context);
-      break;
-    case Profile::CREATE_STATUS_INITIALIZED:
-      CHECK(profile);
-      // Profile is created, extensions and promo resources are initialized.
-      // At this point all other Chrome OS services will be notified that it is
-      // safe to use this profile.
-      UserProfileInitialized(profile, user_context.GetAccountId());
-      break;
-    case Profile::CREATE_STATUS_LOCAL_FAIL:
-      NOTREACHED();
-      break;
-  }
+      profile_path,
+      /*initialized_callback=*/
+      base::BindOnce(
+          [](base::WeakPtr<UserSessionManager> self,
+             const UserContext& user_context, Profile* profile) {
+            CHECK(profile);
+            // Profile is created, extensions and promo resources
+            // are initialized. At this point all other Chrome OS
+            // services will be notified that it is safe to use
+            // this profile.
+            self->UserProfileInitialized(profile, user_context.GetAccountId());
+          },
+          GetUserSessionManagerAsWeakPtr(), user_context_),
+      /*created_callback=*/
+      base::BindOnce(
+          [](base::WeakPtr<UserSessionManager> self,
+             const UserContext& user_context, Profile* profile) {
+            CHECK(profile);
+            // Profile created but before initializing extensions and
+            // promo resources.
+            self->InitProfilePreferences(profile, user_context);
+          },
+          GetUserSessionManagerAsWeakPtr(), user_context_));
 }
 
 void UserSessionManager::InitProfilePreferences(
@@ -1483,7 +1481,7 @@ void UserSessionManager::InitProfilePreferences(
           std::make_unique<DeviceAccountGaiaTokenObserver>(
               account_manager, user->GetAccountId(),
               base::BindRepeating(&UserSessionManager::UpdateTokenHandle,
-                                  weak_factory_.GetWeakPtr(), profile));
+                                  GetUserSessionManagerAsWeakPtr(), profile));
       auto it = token_observers_.find(profile);
       if (it == token_observers_.end()) {
         token_observers_.emplace(profile,
@@ -1596,13 +1594,13 @@ void UserSessionManager::UserProfileInitialized(Profile* profile,
           transfer_saml_auth_cookies_on_subsequent_login,
           base::BindOnce(
               &UserSessionManager::CompleteProfileCreateAfterAuthTransfer,
-              AsWeakPtr(), profile));
+              GetUserSessionManagerAsWeakPtr(), profile));
     } else {
       base::ThreadTaskRunnerHandle::Get()->PostTask(
           FROM_HERE,
           base::BindOnce(
               &UserSessionManager::CompleteProfileCreateAfterAuthTransfer,
-              AsWeakPtr(), profile));
+              GetUserSessionManagerAsWeakPtr(), profile));
     }
     return;
   }
@@ -1716,7 +1714,7 @@ void UserSessionManager::FinalizePrepareProfile(Profile* profile) {
         DCHECK(child_policy_observer_);
         child_policy_observer_->NotifyWhenPolicyReady(
             base::BindOnce(&UserSessionManager::OnChildPolicyReady,
-                           weak_factory_.GetWeakPtr()),
+                           GetUserSessionManagerAsWeakPtr()),
             kWaitForChildPolicyTimeout);
         return;
       }
@@ -1739,7 +1737,7 @@ void UserSessionManager::InitializeBrowser(Profile* profile) {
     ProfileHelper::Get()->FlushProfile(profile);
 
   // TODO(nkostylev): This pointer should probably never be NULL, but it looks
-  // like OnProfileCreated() may be getting called before
+  // like CreateProfileAsync callback may be getting called before
   // UserSessionManager::PrepareProfile() has set `delegate_` when Chrome is
   // killed during shutdown in tests -- see http://crosbug.com/18269.  Replace
   // this 'if' statement with a CHECK(delegate_) once the underlying issue is
@@ -1754,7 +1752,7 @@ void UserSessionManager::InitializeBrowser(Profile* profile) {
             profile->GetPrefs(), GetActivityTimeBeforeOnboardingSurvey(),
             base::BindOnce(
                 &UserSessionManager::OnUserEligibleForOnboardingSurvey,
-                weak_factory_.GetWeakPtr(), profile));
+                GetUserSessionManagerAsWeakPtr(), profile));
   }
 }
 
@@ -1778,7 +1776,7 @@ bool UserSessionManager::MaybeStartNewUserOnboarding(Profile* profile) {
       ChildAccountServiceFactory::GetForProfile(profile);
   child_service->AddChildStatusReceivedCallback(
       base::BindOnce(&UserSessionManager::ChildAccountStatusReceivedCallback,
-                     weak_factory_.GetWeakPtr(), profile));
+                     GetUserSessionManagerAsWeakPtr(), profile));
 
   PrefService* prefs = profile->GetPrefs();
   prefs->SetTime(prefs::kOobeOnboardingTime, base::Time::Now());
@@ -1849,7 +1847,7 @@ bool UserSessionManager::InitializeUserSession(Profile* profile) {
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE,
       base::BindOnce(&UserSessionManager::StopChildStatusObserving,
-                     weak_factory_.GetWeakPtr(), profile),
+                     GetUserSessionManagerAsWeakPtr(), profile),
       kFlagsFetchingLoginTimeout);
 
   user_manager::UserManager* user_manager = user_manager::UserManager::Get();
@@ -1966,7 +1964,7 @@ void UserSessionManager::NotifyUserProfileLoaded(
         token_handle_fetcher_->FillForNewUser(
             user_context_.GetAccessToken(),
             base::BindOnce(&UserSessionManager::OnTokenHandleObtained,
-                           weak_factory_.GetWeakPtr()));
+                           GetUserSessionManagerAsWeakPtr()));
       } else {
         // Existing user.
         UpdateTokenHandle(profile, user->GetAccountId());
@@ -2108,7 +2106,7 @@ void UserSessionManager::RestorePendingUserSessions() {
     StartSession(user_context, StartSessionType::kSecondaryAfterCrash,
                  false,  // has_auth_cookies
                  true,   // has_active_session, this is restart after crash
-                 this);
+                 AsWeakPtr());
   } else {
     RestorePendingUserSessions();
   }
@@ -2157,7 +2155,7 @@ void UserSessionManager::UpdateEasyUnlockKeys(const UserContext& user_context) {
     return;
   }
 
-  const base::ListValue* device_list = nullptr;
+  const base::Value::List* device_list = nullptr;
   EasyUnlockService* easy_unlock_service = EasyUnlockService::GetForUser(*user);
   if (easy_unlock_service) {
     device_list = easy_unlock_service->IsChromeOSLoginEnabled()
@@ -2166,7 +2164,7 @@ void UserSessionManager::UpdateEasyUnlockKeys(const UserContext& user_context) {
     easy_unlock_service->SetHardlockState(SmartLockStateHandler::NO_HARDLOCK);
   }
 
-  base::ListValue empty_list;
+  base::Value::List empty_list;
   if (!device_list)
     device_list = &empty_list;
 
@@ -2175,7 +2173,8 @@ void UserSessionManager::UpdateEasyUnlockKeys(const UserContext& user_context) {
   key_manager->RefreshKeys(
       user_context, *device_list,
       base::BindOnce(&UserSessionManager::OnEasyUnlockKeyOpsFinished,
-                     AsWeakPtr(), user_context.GetAccountId()));
+                     GetUserSessionManagerAsWeakPtr(),
+                     user_context.GetAccountId()));
 }
 
 void UserSessionManager::OnEasyUnlockKeyOpsFinished(const AccountId& account_id,
@@ -2263,9 +2262,10 @@ void UserSessionManager::DoBrowserLaunchInternal(Profile* profile,
 
   if (!locale_pref_checked) {
     RespectLocalePreferenceWrapper(
-        profile, base::BindRepeating(
-                     &UserSessionManager::DoBrowserLaunchInternal, AsWeakPtr(),
-                     profile, /*locale_pref_checked=*/true));
+        profile,
+        base::BindRepeating(&UserSessionManager::DoBrowserLaunchInternal,
+                            GetUserSessionManagerAsWeakPtr(), profile,
+                            /*locale_pref_checked=*/true));
     return;
   }
 
@@ -2331,13 +2331,13 @@ void UserSessionManager::DoBrowserLaunchInternal(Profile* profile,
   }
 
   base::OnceClosure login_host_finalized_callback = base::BindOnce(
-      [](void* trace_id) {
+      [](uint64_t trace_id) {
         session_manager::SessionManager::Get()->SessionStarted();
         TRACE_EVENT_NESTABLE_ASYNC_END0(kEventCategoryChromeOS,
                                         kEventStartSession,
                                         TRACE_ID_LOCAL(trace_id));
       },
-      this);
+      static_cast<uint64_t>(reinterpret_cast<uintptr_t>(this)));
 
   // Mark login host for deletion after browser starts.  This
   // guarantees that the message loop will be referenced by the
@@ -2500,6 +2500,11 @@ void UserSessionManager::MaybeShowHelpAppReleaseNotesNotification(
       ->MaybeShowReleaseNotesNotification();
 }
 
+base::WeakPtr<UserSessionManager>
+UserSessionManager::GetUserSessionManagerAsWeakPtr() {
+  return weak_factory_.GetWeakPtr();
+}
+
 void UserSessionManager::MaybeShowHelpAppDiscoverNotification(
     Profile* profile) {
   if (!ProfileHelper::IsPrimaryProfile(profile))
@@ -2529,7 +2534,7 @@ void UserSessionManager::UpdateTokenHandle(Profile* const profile,
       token_handle_util_.get(), account_id);
   token_handle_fetcher_->BackfillToken(
       profile, base::BindOnce(&UserSessionManager::OnTokenHandleObtained,
-                              weak_factory_.GetWeakPtr()));
+                              GetUserSessionManagerAsWeakPtr()));
   token_handle_backfill_tried_for_testing_ = true;
 }
 

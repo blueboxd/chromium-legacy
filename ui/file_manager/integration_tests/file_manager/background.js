@@ -15,6 +15,7 @@ import './drive_specific.js';
 import './file_dialog.js';
 import './file_display.js';
 import './file_list.js';
+import './file_transfer_connector.js';
 import './files_tooltip.js';
 import './folder_shortcuts.js';
 import './format_dialog.js';
@@ -36,7 +37,6 @@ import './open_video_media_app.js';
 import './providers.js';
 import './quick_view.js';
 import './recents.js';
-import './restore_geometry.js';
 import './restore_prefs.js';
 import './search.js';
 import './share_and_manage_dialog.js';
@@ -88,29 +88,18 @@ export async function openNewWindow(initialRoot, appState = {}) {
   // file_manager_browser_test.cc.
   if (initialRoot) {
     const tail = `external${initialRoot}`;
-    if (remoteCall.isSwaMode()) {
-      appState.currentDirectoryURL =
-          `filesystem:${FILE_MANAGER_SWA_ID}/${tail}`;
-    } else {
-      appState.currentDirectoryURL =
-          `filesystem:chrome-extension://${FILE_MANAGER_EXTENSIONS_ID}/${tail}`;
-    }
+    appState.currentDirectoryURL = `filesystem:${FILE_MANAGER_SWA_ID}/${tail}`;
   }
 
-  let appId;
-
-  if (remoteCall.isSwaMode()) {
-    const launchDir = appState ? appState.currentDirectoryURL : undefined;
-    const type = appState ? appState.type : undefined;
-    appId = await sendTestMessage({
-      name: 'launchFileManagerSwa',
-      launchDir: launchDir,
-      type: type,
-    });
-  } else {
-    appId =
-        await remoteCall.callRemoteTestUtil('openMainWindow', null, [appState]);
-  }
+  const launchDir = appState ? appState.currentDirectoryURL : undefined;
+  const type = appState ? appState.type : undefined;
+  const volumeFilter = appState ? appState.volumeFilter : undefined;
+  const appId = await sendTestMessage({
+    name: 'launchFileManager',
+    launchDir: launchDir,
+    type: type,
+    volumeFilter,
+  });
 
   return appId;
 }
@@ -142,8 +131,8 @@ export async function openEntryChoosingWindow(params) {
 /**
  * Companion function to openEntryChoosingWindow function. This function waits
  * until entry selected in a dialog shown by chooseEntry() is set.
- * @return {!Promise<?Entry>} the entry set by the dialog shown via
- *     chooseEntry().
+ * @return {!Promise<?(Entry|Array<Entry>)>} the entry set by the dialog shown
+ *     via chooseEntry().
  */
 export async function pollForChosenEntry(caller) {
   await repeatUntil(() => {
@@ -151,7 +140,8 @@ export async function pollForChosenEntry(caller) {
       return pending(caller, 'Waiting for chooseEntry() result');
     }
   });
-  return /** @type{FileEntry} */ (window[CHOOSE_ENTRY_PROPERTY]);
+  return /** @type{FileEntry|Array<FileEntry>} */ (
+      window[CHOOSE_ENTRY_PROPERTY]);
 }
 
 /**
@@ -281,11 +271,7 @@ export async function awaitAsyncTestResult(resultPromise) {
   const passCallback = chrome.test.callbackPass();
 
   try {
-    const result = await resultPromise;
-    // SWA doesn't have background page so we can't always check for errors.
-    if (result !== IGNORE_APP_ERRORS && !remoteCall.isSwaMode()) {
-      await checkIfNoErrorsOccuredOnApp(remoteCall);
-    }
+    await resultPromise;
   } catch (error) {
     // If the test has failed, ignore the exception and return.
     if (error == 'chrome.test.failure') {
@@ -308,22 +294,14 @@ export async function awaitAsyncTestResult(resultPromise) {
 /**
  * When the FileManagerBrowserTest harness loads this test extension, request
  * configuration and other details from that harness, including the test case
- * name to run. Use the configuration/details to setup the test ennvironment,
+ * name to run. Use the configuration/details to setup the test environment,
  * then run the test case using chrome.test.RunTests.
  */
 window.addEventListener('load', () => {
   const steps = [
-    // Check if we are running in Files SWA mode.
-    () => {
-      sendBrowserTestCommand({name: 'isFilesAppSwa'}, steps.shift());
-    },
     // Request the guest mode state.
-    (swaMode) => {
-      if (swaMode === 'true') {
-        remoteCall = new RemoteCallFilesApp(FILE_MANAGER_SWA_ID);
-      } else {
-        remoteCall = new RemoteCallFilesApp(FILE_MANAGER_EXTENSIONS_ID);
-      }
+    () => {
+      remoteCall = new RemoteCallFilesApp(FILE_MANAGER_SWA_ID);
       sendBrowserTestCommand({name: 'isInGuestMode'}, steps.shift());
     },
     // Request the root entry paths.
@@ -498,6 +476,37 @@ export async function mountCrostini(
   remoteCall.callRemoteTestUtil('fakeMouseClick', appId, [fakeLinuxFiles]);
   await remoteCall.waitForElement(appId, realLinxuFiles);
   const files = TestEntryInfo.getExpectedRows(BASIC_CROSTINI_ENTRY_SET);
+  await remoteCall.waitForFiles(appId, files);
+}
+
+/**
+ * Registers a GuestOS, mounts the volume, and populates it with tbe specified
+ * entries.
+ * @param {string} appId Files app windowId.
+ * @param {!Array<!TestEntryInfo>} initialEntries List of initial entries to
+ *     load in the volume.
+ */
+export async function mountGuestOs(appId, initialEntries) {
+  const id = await sendTestMessage({
+    name: 'registerMountableGuest',
+    displayName: 'Bluejohn',
+    canMount: true,
+    vmType: 'bruschetta',
+  });
+  const placeholder = '#directory-tree [root-type-icon="bruschetta"]';
+  const real = '#directory-tree [volume-type-icon="bruschetta"]';
+
+  // Wait for the GuestOS fake root then click it.
+  remoteCall.waitAndClickElement(appId, placeholder);
+
+  // Wait for the volume to get mounted.
+  await remoteCall.waitForElement(appId, real);
+
+  // Add entries to GuestOS volume
+  await addEntries(['guest_os_0'], initialEntries);
+
+  // Ensure real root and files are shown.
+  const files = TestEntryInfo.getExpectedRows(initialEntries);
   await remoteCall.waitForFiles(appId, files);
 }
 

@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -67,10 +67,6 @@
 namespace user_education {
 
 namespace {
-
-// The amount of time the promo should stay onscreen.
-constexpr base::TimeDelta kDefaultTimeoutWithoutButtons = base::Seconds(10);
-constexpr base::TimeDelta kDefaultTimeoutWithButtons = base::Seconds(0);
 
 // Maximum width of the bubble. Longer strings will cause wrapping.
 constexpr int kBubbleMaxWidthDip = 340;

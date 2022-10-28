@@ -1,10 +1,9 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 // clang-format off
-import {NativeEventTarget as EventTarget} from 'chrome://resources/js/cr/event_target.m.js';
-
+import {NativeEventTarget as EventTarget} from 'chrome://resources/js/cr/event_target.js';
 import {assertEquals, assertFalse, assertTrue} from 'chrome://webui-test/chai_assert.js';
 
 // clang-format on

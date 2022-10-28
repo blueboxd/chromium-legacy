@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -14,7 +14,6 @@
 #include "base/win/windows_version.h"
 #include "content/public/child/child_thread.h"
 #include "content/public/common/content_switches.h"
-#include "ppapi/buildflags/buildflags.h"
 #include "sandbox/policy/mojom/sandbox.mojom.h"
 #include "sandbox/policy/sandbox_type.h"
 #include "sandbox/policy/switches.h"
@@ -58,9 +57,6 @@ void MaybePatchGdiGetFontData() {
   auto service_sandbox_type =
       sandbox::policy::SandboxTypeFromCommandLine(command_line);
   bool need_gdi =
-#if BUILDFLAG(ENABLE_PLUGINS)
-      service_sandbox_type == sandbox::mojom::Sandbox::kPpapi ||
-#endif
       service_sandbox_type == sandbox::mojom::Sandbox::kPrintCompositor ||
       service_sandbox_type == sandbox::mojom::Sandbox::kPdfConversion ||
       (service_sandbox_type == sandbox::mojom::Sandbox::kRenderer &&

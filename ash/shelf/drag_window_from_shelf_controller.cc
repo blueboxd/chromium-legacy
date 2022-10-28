@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -35,6 +35,7 @@
 #include "base/callback_helpers.h"
 #include "base/cxx17_backports.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/ranges/algorithm.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/hit_test.h"
 #include "ui/compositor/layer.h"
@@ -125,10 +126,9 @@ class DragWindowFromShelfController::WindowsHider
   // minimize asynchronously so they may not be truly minimized after |this| is
   // constructed.
   bool WindowsMinimized() {
-    return std::all_of(hidden_windows_.begin(), hidden_windows_.end(),
-                       [](const aura::Window* w) {
-                         return WindowState::Get(w)->IsMinimized();
-                       });
+    return base::ranges::all_of(hidden_windows_, [](const aura::Window* w) {
+      return WindowState::Get(w)->IsMinimized();
+    });
   }
 
   // aura::WindowObserver:
@@ -503,8 +503,8 @@ void DragWindowFromShelfController::UpdateDraggedWindow(
   // calculate the expected transformed bounds and then adjust the transform if
   // needed.
   gfx::RectF transformed_bounds(window_->bounds());
-  gfx::Transform new_tranform = TransformAboutPivot(
-      gfx::ToRoundedPoint(transformed_bounds.origin()), transform);
+  const gfx::Transform new_tranform =
+      TransformAboutPivot(transformed_bounds.origin(), transform);
   new_tranform.TransformRect(&transformed_bounds);
   ::wm::TranslateRectToScreen(window_->parent(), &transformed_bounds);
   if (transformed_bounds.y() < display_bounds.y()) {
@@ -693,11 +693,11 @@ void DragWindowFromShelfController::ScaleDownWindowAfterDrag() {
       display::Screen::GetScreen()->GetPrimaryDisplay().id());
 
   (new WindowScaleAnimation(
-       WindowScaleAnimation::WindowScaleType::kScaleDownToShelf,
+       window_, WindowScaleAnimation::WindowScaleType::kScaleDownToShelf,
        base::BindOnce(
            &DragWindowFromShelfController::OnWindowScaledDownAfterDrag,
            weak_ptr_factory_.GetWeakPtr())))
-      ->Start(window_);
+      ->Start();
 }
 
 void DragWindowFromShelfController::OnWindowScaledDownAfterDrag() {
@@ -712,12 +712,12 @@ void DragWindowFromShelfController::OnWindowScaledDownAfterDrag() {
 
 void DragWindowFromShelfController::ScaleUpToRestoreWindowAfterDrag() {
   (new WindowScaleAnimation(
-       WindowScaleAnimation::WindowScaleType::kScaleUpToRestore,
+       window_, WindowScaleAnimation::WindowScaleType::kScaleUpToRestore,
        base::BindOnce(
            &DragWindowFromShelfController::OnWindowRestoredToOrignalBounds,
            weak_ptr_factory_.GetWeakPtr(),
            /*should_end_overview=*/!started_in_overview_)))
-      ->Start(window_);
+      ->Start();
 }
 
 void DragWindowFromShelfController::OnWindowRestoredToOrignalBounds(

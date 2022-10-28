@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -392,7 +392,7 @@ void TaskManagerView::RetrieveSavedAlwaysOnTopState() {
     return;
 
   const base::Value::Dict& dictionary =
-      g_browser_process->local_state()->GetValueDict(GetWindowName());
+      g_browser_process->local_state()->GetDict(GetWindowName());
   is_always_on_top_ = dictionary.FindBool("always_on_top").value_or(false);
 }
 

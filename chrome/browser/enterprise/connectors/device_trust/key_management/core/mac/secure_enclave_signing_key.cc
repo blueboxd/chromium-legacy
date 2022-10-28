@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -123,8 +123,9 @@ std::unique_ptr<crypto::UnexportableSigningKey>
 SecureEnclaveSigningKeyProvider::FromWrappedSigningKeySlowly(
     base::span<const uint8_t> wrapped_key_label) {
   // Verifying wrapped key label matches the provider key type.
-  if (provider_key_type_ !=
-      SecureEnclaveClient::GetTypeFromWrappedKey(wrapped_key_label))
+  if (wrapped_key_label.empty() ||
+      provider_key_type_ !=
+          SecureEnclaveClient::GetTypeFromWrappedKey(wrapped_key_label))
     return nullptr;
 
   auto client = SecureEnclaveClient::Create();

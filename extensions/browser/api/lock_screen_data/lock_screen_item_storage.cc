@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -547,12 +547,11 @@ void LockScreenItemStorage::OnGotExtensionItems(
   }
 
   if (result == OperationResult::kSuccess) {
-    for (base::DictionaryValue::Iterator item_iter(*items);
-         !item_iter.IsAtEnd(); item_iter.Advance()) {
-      std::unique_ptr<DataItem> item = CreateDataItem(
-          item_iter.key(), extension_id, context_, value_store_cache_.get(),
+    for (const auto item : items->GetDict()) {
+      std::unique_ptr<DataItem> data_item = CreateDataItem(
+          item.first, extension_id, context_, value_store_cache_.get(),
           task_runner_.get(), crypto_key_);
-      data->second.data_items.emplace(item_iter.key(), std::move(item));
+      data->second.data_items.emplace(item.first, std::move(data_item));
     }
 
     // Record number of registered items.
@@ -598,7 +597,7 @@ std::set<std::string> LockScreenItemStorage::GetExtensionsWithDataItems(
   std::set<std::string> result;
 
   const base::Value::Dict& items =
-      local_state_->GetValueDict(kLockScreenDataPrefKey);
+      local_state_->GetDict(kLockScreenDataPrefKey);
   const base::Value::Dict* user_data = items.FindDictByDottedPath(user_id_);
   if (!user_data)
     return result;
@@ -621,7 +620,7 @@ std::set<ExtensionId> LockScreenItemStorage::GetExtensionsToMigrate() {
   std::set<ExtensionId> result;
 
   const base::Value::Dict& items =
-      local_state_->GetValueDict(kLockScreenDataPrefKey);
+      local_state_->GetDict(kLockScreenDataPrefKey);
 
   const base::Value::Dict* user_data = items.FindDictByDottedPath(user_id_);
   if (!user_data)

@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -120,15 +120,6 @@ class SideSearchTabContentsHelper
   bool toggled_open() const { return toggled_open_; }
   void set_toggled_open(bool toggled_open) { toggled_open_ = toggled_open; }
 
-  // Called when the page action label is shown.
-  void DidShowPageActionLabel();
-  int page_action_label_shown_count() const {
-    return page_action_label_shown_count_;
-  }
-
-  // Gets `can_show_page_action_label_` and resets the value to false.
-  bool GetAndResetCanShowPageActionLabel();
-
   void SetSidePanelContentsForTesting(
       std::unique_ptr<content::WebContents> side_panel_contents);
 
@@ -137,6 +128,14 @@ class SideSearchTabContentsHelper
   }
 
   const absl::optional<GURL>& last_search_url() { return last_search_url_; }
+
+  // Takes the search URL passed from context menu and opens search results in
+  // side panel.
+  void OpenSidePanelFromContextMenuSearch(const GURL& url);
+
+  // Returns true when the side panel can be actually opened from context menu
+  // option.
+  bool CanShowSidePanelFromContextMenuSearch();
 
  private:
   friend class content::WebContentsUserData<SideSearchTabContentsHelper>;

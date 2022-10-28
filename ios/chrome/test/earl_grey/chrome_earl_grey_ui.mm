@@ -1,19 +1,19 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
 
 #import "base/test/ios/wait_util.h"
-#include "components/strings/grit/components_strings.h"
+#import "components/strings/grit/components_strings.h"
 #import "ios/chrome/browser/ui/popup_menu/popup_menu_constants.h"
 #import "ios/chrome/browser/ui/table_view/table_view_constants.h"
-#include "ios/chrome/grit/ios_strings.h"
+#import "ios/chrome/grit/ios_strings.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/chrome/test/scoped_eg_synchronization_disabler.h"
 #import "ios/testing/earl_grey/earl_grey_test.h"
-#include "ui/base/l10n/l10n_util.h"
+#import "ui/base/l10n/l10n_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -61,8 +61,13 @@ id<GREYAction> PageSheetScrollDown() {
   // could be skipped while searching. A smaller value increses the area that is
   // searched, but slows down the scroll. It also causes the page sheet to not
   // expand.
-  CGFloat const kMenuScrollDisplacement = 500;
-  return grey_scrollInDirection(kGREYDirectionDown, kMenuScrollDisplacement);
+  CGFloat menu_scroll_displacement = 500;
+
+  // But for very small devices (like the SE), this is too big.
+  UIWindow* currentWindow = chrome_test_util::GetAnyKeyWindow();
+  if (currentWindow.rootViewController.view.frame.size.height < 600)
+    menu_scroll_displacement = 300;
+  return grey_scrollInDirection(kGREYDirectionDown, menu_scroll_displacement);
 }
 
 // Returns a GREYAction to scroll right (swipe left) for a reasonably small
@@ -365,6 +370,20 @@ class ScopedDisableTimerTracking {
 }
 
 - (void)openTabGrid {
+  // Wait until the button is visible because other UI may still be animating
+  // and EarlGrey synchronization is disabled below which would prevent waiting.
+  ConditionBlock condition = ^{
+    NSError* error = nil;
+    [[EarlGrey selectElementWithMatcher:chrome_test_util::ShowTabsButton()]
+        assertWithMatcher:grey_sufficientlyVisible()
+                    error:&error];
+    return error == nil;
+  };
+  bool tabGridButtonVisible = base::test::ios::WaitUntilConditionOrTimeout(
+      kWaitForUIElementTimeout, condition);
+  EG_TEST_HELPER_ASSERT_TRUE(tabGridButtonVisible,
+                             @"Show tab grid button was not visible.");
+
   // TODO(crbug.com/933953) For an unknown reason synchronization doesn't work
   // well with tapping on the tabgrid button, and instead triggers the long
   // press gesture recognizer.  Disable this here so the test can be re-enabled.

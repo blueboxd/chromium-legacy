@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -15,17 +15,19 @@ FakeNetworkListWifiHeaderView::FakeNetworkListWifiHeaderView(
 
 FakeNetworkListWifiHeaderView::~FakeNetworkListWifiHeaderView() = default;
 
-void FakeNetworkListWifiHeaderView::SetToggleState(bool enabled, bool is_on) {
+void FakeNetworkListWifiHeaderView::SetToggleState(bool enabled,
+                                                   bool is_on,
+                                                   bool animate_toggle) {
   is_toggle_enabled_ = enabled;
   is_toggle_on_ = is_on;
   set_toggle_state_count_++;
-};
+}
 
 void FakeNetworkListWifiHeaderView::SetJoinWifiButtonState(bool enabled,
                                                            bool visible) {
   is_join_wifi_enabled_ = enabled;
   is_join_wifi_visible_ = visible;
   set_join_wifi_button_state_count_++;
-};
+}
 
 }  // namespace ash

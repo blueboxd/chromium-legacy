@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -87,7 +87,8 @@ class MockSchedulerDelegate : public SchedulerDelegate {
   MOCK_METHOD1(SetShowingVrDialog, void(bool));
   void SetBrowserRenderer(SchedulerBrowserRendererInterface*) override {}
   MOCK_METHOD2(SubmitDrawnFrame, void(FrameType, const gfx::Transform&));
-  void AddInputSourceState(device::mojom::XRInputSourceStatePtr state) {}
+  void AddInputSourceState(
+      device::mojom::XRInputSourceStatePtr state) override {}
   void ConnectPresentingService(
       device::mojom::XRRuntimeSessionOptionsPtr options) override {}
 };

@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -765,7 +765,7 @@ class MockNetworkContext : public network::TestNetworkContext {
         tcp_failure_type_, std::move(receiver), std::move(callback)));
   }
 
-  void ResolveHost(const net::HostPortPair& host,
+  void ResolveHost(network::mojom::HostResolverHostPtr host,
                    const net::NetworkIsolationKey& network_isolation_key,
                    network::mojom::ResolveHostParametersPtr optional_parameters,
                    mojo::PendingRemote<network::mojom::ResolveHostClient>
@@ -777,8 +777,10 @@ class MockNetworkContext : public network::TestNetworkContext {
               network_isolation_key);
     mojo::Remote<network::mojom::ResolveHostClient> response_client(
         std::move(pending_response_client));
-    response_client->OnComplete(net::OK, net::ResolveErrorInfo(net::OK),
-                                net::AddressList(LocalAddress()));
+    response_client->OnComplete(
+        net::OK, net::ResolveErrorInfo(net::OK),
+        net::AddressList(LocalAddress()),
+        /*endpoint_results_with_metadata=*/absl::nullopt);
   }
 
  private:

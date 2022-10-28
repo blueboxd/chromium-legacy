@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -389,8 +389,6 @@ void ExtensionAppsBase::Initialize() {
   extensions::ExtensionSystem::Get(profile_)->ready().Post(
       FROM_HERE, base::BindOnce(&ExtensionAppsBase::OnExtensionsReady,
                                 weak_factory_.GetWeakPtr()));
-
-  app_service_ = proxy()->AppService().get();
 }
 
 void ExtensionAppsBase::OnExtensionsReady() {

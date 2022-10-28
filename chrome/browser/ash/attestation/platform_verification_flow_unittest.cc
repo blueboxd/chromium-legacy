@@ -1,4 +1,4 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -73,7 +73,7 @@ class PlatformVerificationFlowTest : public ::testing::Test {
   }
   ~PlatformVerificationFlowTest() override { AttestationClient::Shutdown(); }
 
-  void SetUp() {
+  void SetUp() override {
     // Create a verifier for tests to call.
     verifier_ = new PlatformVerificationFlow(
         &mock_attestation_flow_, AttestationClient::Get(), &fake_delegate_);

@@ -1,4 +1,4 @@
-# Copyright 2021 The Chromium Authors. All rights reserved.
+# Copyright 2021 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -15,6 +15,7 @@ source_set("commands") {
   public_deps = [ "//base" ]
 
   deps = [
+    "//components/prefs",
     "//services/network/public/cpp",
     "//third_party/abseil-cpp:absl",
   ]
@@ -48,6 +49,7 @@ source_set("commands") {
       "mac_key_rotation_command.h",
     ]
     deps += [
+      "//chrome/browser/enterprise/connectors/device_trust:prefs",
       "//chrome/browser/enterprise/connectors/device_trust/key_management/core/mac",
       "//chrome/browser/enterprise/connectors/device_trust/key_management/core/network",
       "//chrome/browser/enterprise/connectors/device_trust/key_management/installer:elevated_rotation",
@@ -72,6 +74,7 @@ source_set("test_support") {
 
   public_deps = [
     ":commands",
+    "//components/prefs",
     "//services/network/public/cpp",
     "//testing/gmock",
     "//third_party/abseil-cpp:absl",
@@ -109,11 +112,15 @@ source_set("unit_tests") {
     sources = [ "mac_key_rotation_command_unittest.cc" ]
 
     deps += [
+      "//chrome/browser",
+      "//chrome/browser/enterprise/connectors/device_trust:prefs",
       "//chrome/browser/enterprise/connectors/device_trust/key_management/core/mac",
       "//chrome/browser/enterprise/connectors/device_trust/key_management/core/mac:test_support",
       "//chrome/browser/enterprise/connectors/device_trust/key_management/core/network:test_support",
       "//chrome/browser/enterprise/connectors/device_trust/key_management/core/persistence:test_support",
       "//chrome/browser/enterprise/connectors/device_trust/key_management/installer:elevated_rotation",
+      "//components/prefs:test_support",
+      "//services/network:test_support",
     ]
   }
 }

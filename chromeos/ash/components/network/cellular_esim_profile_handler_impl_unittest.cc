@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -200,7 +200,7 @@ class CellularESimProfileHandlerImplTest : public testing::Test {
   }
 
   base::Value::List GetEuiccListFromPrefs() {
-    return device_prefs_.GetValueList(prefs::kESimRefreshedEuiccs).Clone();
+    return device_prefs_.GetList(prefs::kESimRefreshedEuiccs).Clone();
   }
 
   void SetPSimSlotInfo(const std::string& iccid) {

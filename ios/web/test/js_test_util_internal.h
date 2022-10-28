@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,7 +11,7 @@
 namespace web {
 namespace test {
 
-// Synchronously executes |script| in |content_world| and returns result.
+// Synchronously executes `script` in `content_world` and returns result.
 // NOTE: Generally, tests should not deal with raw WKContentWorlds. Instead,
 // prefer specifying the associated JavaScriptFeature instance using
 // WebTestWithWebState::ExecuteJavaScriptForFeature.

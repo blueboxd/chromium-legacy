@@ -1,10 +1,10 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 import {CupsPrintersBrowserProxyImpl, PrinterType} from 'chrome://os-settings/chromeos/lazy_load.js';
 import {Router, routes} from 'chrome://os-settings/chromeos/os_settings.js';
-import {OncMojo} from 'chrome://resources/cr_components/chromeos/network/onc_mojo.m.js';
+import {OncMojo} from 'chrome://resources/cr_components/chromeos/network/onc_mojo.js';
 import {webUIListenerCallback} from 'chrome://resources/js/cr.m.js';
 import {getDeepActiveElement} from 'chrome://resources/js/util.m.js';
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
@@ -394,7 +394,8 @@ suite('CupsSavedPrintersTests', function() {
               editDialog.shadowRoot.querySelector('.printer-name-input');
           assertTrue(!!nameField);
           nameField.value = expectedName;
-          nameField.fire('input');
+          nameField.dispatchEvent(
+              new CustomEvent('input', {bubbles: true, composed: true}));
 
           flush();
 
@@ -449,13 +450,15 @@ suite('CupsSavedPrintersTests', function() {
               editDialog.shadowRoot.querySelector('.printer-name-input');
           assertTrue(!!nameField);
           nameField.value = expectedName;
-          nameField.fire('input');
+          nameField.dispatchEvent(
+              new CustomEvent('input', {bubbles: true, composed: true}));
 
           const addressField =
               editDialog.shadowRoot.querySelector('#printerAddress');
           assertTrue(!!addressField);
           addressField.value = expectedAddress;
-          addressField.fire('input');
+          addressField.dispatchEvent(
+              new CustomEvent('input', {bubbles: true, composed: true}));
 
           assertFalse(
               editDialog.shadowRoot.querySelector('.cancel-button').hidden);

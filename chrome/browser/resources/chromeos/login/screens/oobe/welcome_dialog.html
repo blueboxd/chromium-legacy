@@ -1,15 +1,17 @@
-<!-- Copyright 2016 The Chromium Authors. All rights reserved.
-     Use of this source code is governed by a BSD-style license that can be
-     found in the LICENSE file. -->
+<!--
+Copyright 2016 The Chromium Authors
+Use of this source code is governed by a BSD-style license that can be
+found in the LICENSE file.
+-->
 
 <link rel="import" href="chrome://resources/html/polymer.html">
 
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-styles/color.html">
 <link rel="import" href="chrome://resources/html/action_link.html">
 <link rel="import" href="chrome://resources/html/assert.html">
-<link rel="import" href="chrome://resources/html/i18n_behavior.html">
+<link rel="import" href="chrome://resources/cr_elements/i18n_behavior.html">
 <link rel="import" href="chrome://resources/html/load_time_data.html">
-<link rel="import" href="chrome://resources/cr_elements/shared_style_css.html">
+<link rel="import" href="chrome://resources/cr_elements/cr_shared_style.css.html">
 
 <link rel="import" href="../../components/oobe_icons.html">
 <link rel="import" href="../../components/oobe_cr_lottie.html">
@@ -189,12 +191,11 @@
           </oobe-icon-button>
         </div>
         <div id="bottomButtons">
-          <template is="dom-if" if="[[isQuickStartEnabled_]]">
             <oobe-text-button id="quickStart"
                on-click="onQuickStartClicked_"
+               hidden="[[!isQuickStartEnabled]]"
                text-key="welcomeScreenQuickStart">
             </oobe-text-button>
-          </template>
           <oobe-text-button id="getStarted"
               inverse on-click="onNextClicked_"
               text-key="welcomeScreenGetStarted">

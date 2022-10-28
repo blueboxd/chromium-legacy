@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -351,7 +351,7 @@ void AndroidStreamReaderURLLoader::SendResponseToClient() {
   cache_response_ =
       response_delegate_->ShouldCacheResponse(response_head_.get());
   client_->OnReceiveResponse(std::move(response_head_),
-                             std::move(consumer_handle_));
+                             std::move(consumer_handle_), absl::nullopt);
 }
 
 void AndroidStreamReaderURLLoader::ReadMore() {

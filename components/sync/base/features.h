@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -41,7 +41,7 @@ inline constexpr base::FeatureParam<int> kMinGuResponsesToIgnoreKey{
 // with the logic on the server. this protects against notes being overwritten
 // by legacy clients not supporting password notes.
 inline constexpr base::Feature kReadWritePasswordNotesBackupField{
-    "ReadWritePasswordNotesBackupField", base::FEATURE_DISABLED_BY_DEFAULT};
+    "ReadWritePasswordNotesBackupField", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Allows custom passphrase users to receive Wallet data for secondary accounts
 // while in transport-only mode.
@@ -51,6 +51,11 @@ inline constexpr base::Feature
         base::FEATURE_DISABLED_BY_DEFAULT};
 
 #if BUILDFLAG(IS_ANDROID)
+inline constexpr base::Feature kSyncAndroidLimitNTPPromoImpressions{
+    "SyncAndroidLimitNTPPromoImpressions", base::FEATURE_DISABLED_BY_DEFAULT};
+inline constexpr base::FeatureParam<int> kSyncAndroidNTPPromoMaxImpressions{
+    &kSyncAndroidLimitNTPPromoImpressions, "SyncAndroidNTPPromoMaxImpressions",
+    5};
 inline constexpr base::Feature kSyncAndroidPromosWithAlternativeTitle{
     "SyncAndroidPromosWithAlternativeTitle", base::FEATURE_DISABLED_BY_DEFAULT};
 inline constexpr base::Feature kSyncAndroidPromosWithIllustration{
@@ -103,6 +108,12 @@ inline constexpr base::Feature kSyncChromeOSAppsToggleSharing{
     "SyncChromeOSAppsToggleSharing", base::FEATURE_DISABLED_BY_DEFAULT};
 #endif  // BUILDFLAG(IS_CHROMEOS)
 
+// Whether the periodic degraded recoverability polling is enabled.
+inline constexpr base::Feature
+    kSyncTrustedVaultPeriodicDegradedRecoverabilityPolling{
+        "SyncTrustedVaultDegradedRecoverabilityHandler",
+        base::FEATURE_DISABLED_BY_DEFAULT};
+
 #if BUILDFLAG(IS_IOS)
 // Whether RPC is enabled.
 inline constexpr base::Feature kSyncTrustedVaultPassphraseiOSRPC{
@@ -135,8 +146,7 @@ inline constexpr base::Feature kSyncTrustedVaultVerifyDeviceRegistration{
 // Triggers another device registration attempt if the device was registered
 // before this feature was introduced.
 inline constexpr base::Feature kSyncTrustedVaultRedoDeviceRegistration{
-    "SyncTrustedVaultRedoDeviceRegistration",
-    base::FEATURE_DISABLED_BY_DEFAULT};
+    "SyncTrustedVaultRedoDeviceRegistration", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Triggers one-off reset of `keys_are_stale`, allowing another device
 // registration attempt if previous was failed.

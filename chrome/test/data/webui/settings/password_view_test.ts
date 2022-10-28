@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -400,4 +400,21 @@ suite('PasswordViewTest', function() {
         await flushTasks();
         assertEquals(1, eventCount);
       });
+
+  test('Timeout listener closes the view page', async function() {
+    const passwordEntry =
+        createPasswordEntry({url: SITE, username: USERNAME, id: ID});
+
+    const page = await loadViewPage(passwordEntry);
+
+    assertTrue(
+        !!passwordManager.lastCallback.addPasswordManagerAuthTimeoutListener);
+    assertTrue(!!page.credential);
+
+    passwordManager.lastCallback.addPasswordManagerAuthTimeoutListener();
+    await flushTasks();
+
+    assertFalse(!!page.credential);
+    assertEquals(routes.PASSWORDS, Router.getInstance().getCurrentRoute());
+  });
 });

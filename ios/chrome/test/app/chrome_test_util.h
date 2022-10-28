@@ -1,5 +1,4 @@
-
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -54,7 +53,7 @@ HandlerForActiveBrowser();
 // Removes all presented infobars.
 void RemoveAllInfoBars();
 
-// Dismisses all presented views and modal dialogs. |completion| is invoked when
+// Dismisses all presented views and modal dialogs. `completion` is invoked when
 // all the views are dismissed.
 void ClearPresentedState(ProceduralBlock completion);
 

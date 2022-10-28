@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -276,7 +276,7 @@ void OnGetDlcState(base::OnceCallback<void(const std::string& path)> callback,
 }
 
 void GetDlcPath(base::OnceCallback<void(const std::string& path)> callback) {
-  chromeos::DlcserviceClient::Get()->GetDlcState(
+  ash::DlcserviceClient::Get()->GetDlcState(
       kBorealisDlcName, base::BindOnce(&OnGetDlcState, std::move(callback)));
 }
 

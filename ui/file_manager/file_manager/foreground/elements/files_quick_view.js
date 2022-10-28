@@ -4,7 +4,6 @@
 
 import 'chrome://resources/cr_elements/cr_button/cr_button.js';
 import 'chrome://resources/polymer/v3_0/iron-icon/iron-icon.js';
-import './files_icon_button.js';
 import './files_metadata_box.js';
 import './files_safe_media.js';
 import './files_tooltip.js';
@@ -21,12 +20,6 @@ export const FilesQuickView = Polymer({
   is: 'files-quick-view',
 
   properties: {
-    /**
-     * True if the Quick View is used in legacy mode.
-     * @type {boolean}
-     */
-    isLegacy: Boolean,
-
     // File media type, e.g. image, video.
     type: String,
     subtype: String,
@@ -129,7 +122,7 @@ export const FilesQuickView = Polymer({
    * browser directly as PDF/text/html) to the chrome-untrusted:// <iframe>.
    */
   refreshUntrustedIframe_: function() {
-    if (this.isLegacy || !this.browsable) {
+    if (!this.browsable) {
       return;
     }
 

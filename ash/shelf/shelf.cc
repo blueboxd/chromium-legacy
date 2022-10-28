@@ -1,4 +1,4 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -45,9 +45,7 @@ namespace {
 
 bool IsAppListBackground(ShelfBackgroundType background_type) {
   switch (background_type) {
-    case ShelfBackgroundType::kAppList:
     case ShelfBackgroundType::kHomeLauncher:
-    case ShelfBackgroundType::kMaximizedWithAppList:
       return true;
     case ShelfBackgroundType::kDefaultBg:
     case ShelfBackgroundType::kMaximized:
@@ -604,10 +602,12 @@ void Shelf::ProcessScrollEvent(ui::ScrollEvent* event) {
   if (!shelf_layout_manager_->is_active_session_state())
     return;
 
-  // Productivity launcher does not show or hide on scroll events. The legacy
-  // peeking launcher had this behavior, but it doesn't make sense for a bubble.
-  if (features::IsProductivityLauncherEnabled())
+  // Productivity launcher does not show or hide on scroll events by default.
+  // Introduce the swipe up gesture behind a flag over certain conditions.
+  if (features::IsProductivityLauncherEnabled() &&
+      !shelf_layout_manager_->IsBubbleLauncherShowOnGestureScrollAvailable()) {
     return;
+  }
 
   auto* app_list_controller = Shell::Get()->app_list_controller();
   DCHECK(app_list_controller);
@@ -627,10 +627,12 @@ void Shelf::ProcessMouseWheelEvent(ui::MouseWheelEvent* event) {
       !IsHorizontalAlignment())
     return;
 
-  // Productivity launcher does not show or hide on wheel events. The legacy
-  // peeking launcher had this behavior, but it doesn't make sense for a bubble.
-  if (features::IsProductivityLauncherEnabled())
+  // Productivity launcher does not show or hide on scroll events by default.
+  // Introduce the swipe up gesture behind a flag over certain conditions.
+  if (features::IsProductivityLauncherEnabled() &&
+      !shelf_layout_manager_->IsBubbleLauncherShowOnGestureScrollAvailable()) {
     return;
+  }
 
   auto* app_list_controller = Shell::Get()->app_list_controller();
   DCHECK(app_list_controller);

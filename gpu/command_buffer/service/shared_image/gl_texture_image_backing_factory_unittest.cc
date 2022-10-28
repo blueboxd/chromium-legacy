@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,7 +13,6 @@
 #include "components/viz/common/resources/resource_sizes.h"
 #include "gpu/command_buffer/common/mailbox.h"
 #include "gpu/command_buffer/common/shared_image_usage.h"
-#include "gpu/command_buffer/service/mailbox_manager_impl.h"
 #include "gpu/command_buffer/service/service_utils.h"
 #include "gpu/command_buffer/service/shared_context_state.h"
 #include "gpu/command_buffer/service/shared_image/shared_image_backing.h"
@@ -36,6 +35,7 @@
 #include "third_party/skia/include/gpu/GrDirectContext.h"
 #include "ui/gfx/buffer_format_util.h"
 #include "ui/gfx/color_space.h"
+#include "ui/gfx/gpu_memory_buffer.h"
 #include "ui/gl/gl_surface.h"
 #include "ui/gl/gl_utils.h"
 #include "ui/gl/init/gl_factory.h"
@@ -136,7 +136,6 @@ class GLTextureImageBackingFactoryTestBase
   scoped_refptr<gl::GLContext> context_;
   scoped_refptr<SharedContextState> context_state_;
   std::unique_ptr<GLTextureImageBackingFactory> backing_factory_;
-  gles2::MailboxManagerImpl mailbox_manager_;
   std::unique_ptr<SharedImageManager> shared_image_manager_;
   std::unique_ptr<MemoryTypeTracker> memory_type_tracker_;
   std::unique_ptr<SharedImageRepresentationFactory>
@@ -180,14 +179,18 @@ TEST_P(GLTextureImageBackingFactoryTest, Basic) {
   SkAlphaType alpha_type = kPremul_SkAlphaType;
   uint32_t usage = SHARED_IMAGE_USAGE_GLES2;
   gpu::SurfaceHandle surface_handle = gpu::kNullSurfaceHandle;
+
+  bool supported =
+      backing_factory_->IsSupported(usage, format, size, /*thread_safe=*/false,
+                                    gfx::EMPTY_BUFFER, GrContextType::kGL, {});
+
+  EXPECT_EQ(should_succeed, supported);
+  if (!should_succeed)
+    return;
+
   auto backing = backing_factory_->CreateSharedImage(
       mailbox, format, surface_handle, size, color_space, surface_origin,
       alpha_type, usage, false /* is_thread_safe */);
-
-  if (!should_succeed) {
-    EXPECT_FALSE(backing);
-    return;
-  }
   ASSERT_TRUE(backing);
 
   // Check clearing.
@@ -196,28 +199,12 @@ TEST_P(GLTextureImageBackingFactoryTest, Basic) {
     EXPECT_TRUE(backing->IsCleared());
   }
 
-  // First, validate via a legacy mailbox.
-  EXPECT_TRUE(backing->ProduceLegacyMailbox(&mailbox_manager_));
-  TextureBase* texture_base = mailbox_manager_.ConsumeTexture(mailbox);
-  ASSERT_TRUE(texture_base);
-  GLenum expected_target = GL_TEXTURE_2D;
-  EXPECT_EQ(texture_base->target(), expected_target);
-  if (!use_passthrough()) {
-    auto* texture = static_cast<gles2::Texture*>(texture_base);
-    EXPECT_TRUE(texture->IsImmutable());
-    int width, height, depth;
-    bool has_level =
-        texture->GetLevelSize(GL_TEXTURE_2D, 0, &width, &height, &depth);
-    EXPECT_TRUE(has_level);
-    EXPECT_EQ(width, size.width());
-    EXPECT_EQ(height, size.height());
-  }
-
-  // Next, validate via a GLTextureImageRepresentation.
+  // First, validate via a GLTextureImageRepresentation.
   std::unique_ptr<SharedImageRepresentationFactoryRef> shared_image =
       shared_image_manager_->Register(std::move(backing),
                                       memory_type_tracker_.get());
   EXPECT_TRUE(shared_image);
+  GLenum expected_target = GL_TEXTURE_2D;
   if (!use_passthrough()) {
     auto gl_representation =
         shared_image_representation_factory_->ProduceGLTexture(mailbox);
@@ -289,7 +276,6 @@ TEST_P(GLTextureImageBackingFactoryTest, Basic) {
   skia_representation.reset();
 
   shared_image.reset();
-  EXPECT_FALSE(mailbox_manager_.ConsumeTexture(mailbox));
 }
 
 TEST_P(GLTextureImageBackingFactoryTest, InitialData) {
@@ -309,14 +295,19 @@ TEST_P(GLTextureImageBackingFactoryTest, InitialData) {
     uint32_t usage = SHARED_IMAGE_USAGE_GLES2;
     std::vector<uint8_t> initial_data(
         viz::ResourceSizes::CheckedSizeInBytes<unsigned int>(size, format));
+
+    bool supported = backing_factory_->IsSupported(
+        usage, format, size, /*thread_safe=*/false, gfx::EMPTY_BUFFER,
+        GrContextType::kGL, initial_data);
+
+    EXPECT_EQ(should_succeed, supported);
+    if (!should_succeed)
+      return;
+
     auto backing = backing_factory_->CreateSharedImage(
         mailbox, format, size, color_space, surface_origin, alpha_type, usage,
         initial_data);
     ::testing::Mock::VerifyAndClearExpectations(&progress_reporter_);
-    if (!should_succeed) {
-      EXPECT_FALSE(backing);
-      continue;
-    }
     ASSERT_TRUE(backing);
     EXPECT_TRUE(backing->IsCleared());
 
@@ -353,7 +344,6 @@ TEST_P(GLTextureImageBackingFactoryTest, InitialData) {
     }
 
     shared_image.reset();
-    EXPECT_FALSE(mailbox_manager_.ConsumeTexture(mailbox));
   }
 }
 
@@ -369,13 +359,18 @@ TEST_P(GLTextureImageBackingFactoryTest, InitialDataImage) {
   SkAlphaType alpha_type = kPremul_SkAlphaType;
   uint32_t usage = SHARED_IMAGE_USAGE_GLES2;
   std::vector<uint8_t> initial_data(256 * 256 * 4);
+
+  bool supported = backing_factory_->IsSupported(
+      usage, format, size, /*thread_safe=*/false, gfx::EMPTY_BUFFER,
+      GrContextType::kGL, initial_data);
+  EXPECT_EQ(should_succeed, supported);
+
+  if (!should_succeed)
+    return;
+
   auto backing = backing_factory_->CreateSharedImage(
       mailbox, format, size, color_space, surface_origin, alpha_type, usage,
       initial_data);
-  if (!should_succeed) {
-    EXPECT_FALSE(backing);
-    return;
-  }
   ASSERT_TRUE(backing);
 
   // Validate via a GLTextureImageRepresentation(Passthrough).
@@ -408,59 +403,45 @@ TEST_P(GLTextureImageBackingFactoryTest, InitialDataImage) {
 }
 
 TEST_P(GLTextureImageBackingFactoryTest, InitialDataWrongSize) {
-  auto mailbox = Mailbox::GenerateForSharedImage();
   auto format = get_format();
   gfx::Size size(256, 256);
-  auto color_space = gfx::ColorSpace::CreateSRGB();
-  GrSurfaceOrigin surface_origin = kTopLeft_GrSurfaceOrigin;
-  SkAlphaType alpha_type = kPremul_SkAlphaType;
   uint32_t usage = SHARED_IMAGE_USAGE_GLES2;
   std::vector<uint8_t> initial_data_small(256 * 128 * 4);
   std::vector<uint8_t> initial_data_large(256 * 512 * 4);
-  auto backing = backing_factory_->CreateSharedImage(
-      mailbox, format, size, color_space, surface_origin, alpha_type, usage,
-      initial_data_small);
-  EXPECT_FALSE(backing);
-  backing = backing_factory_->CreateSharedImage(
-      mailbox, format, size, color_space, surface_origin, alpha_type, usage,
-      initial_data_large);
-  EXPECT_FALSE(backing);
+  bool supported = backing_factory_->IsSupported(
+      usage, format, size, /*thread_safe=*/false, gfx::EMPTY_BUFFER,
+      GrContextType::kGL, initial_data_small);
+  EXPECT_FALSE(supported);
+  supported = backing_factory_->IsSupported(
+      usage, format, size, /*thread_safe=*/false, gfx::EMPTY_BUFFER,
+      GrContextType::kGL, initial_data_large);
+  EXPECT_FALSE(supported);
 }
 
 TEST_P(GLTextureImageBackingFactoryTest, InvalidFormat) {
-  auto mailbox = Mailbox::GenerateForSharedImage();
   auto format = viz::ResourceFormat::YUV_420_BIPLANAR;
   gfx::Size size(256, 256);
-  auto color_space = gfx::ColorSpace::CreateSRGB();
-  GrSurfaceOrigin surface_origin = kTopLeft_GrSurfaceOrigin;
-  SkAlphaType alpha_type = kPremul_SkAlphaType;
-  gpu::SurfaceHandle surface_handle = gpu::kNullSurfaceHandle;
   uint32_t usage = SHARED_IMAGE_USAGE_GLES2;
-  auto backing = backing_factory_->CreateSharedImage(
-      mailbox, format, surface_handle, size, color_space, surface_origin,
-      alpha_type, usage, false /* is_thread_safe */);
-  EXPECT_FALSE(backing);
+  bool supported =
+      backing_factory_->IsSupported(usage, format, size, /*thread_safe=*/false,
+                                    gfx::EMPTY_BUFFER, GrContextType::kGL, {});
+  EXPECT_FALSE(supported);
 }
 
 TEST_P(GLTextureImageBackingFactoryTest, InvalidSize) {
-  auto mailbox = Mailbox::GenerateForSharedImage();
   auto format = get_format();
   gfx::Size size(0, 0);
-  auto color_space = gfx::ColorSpace::CreateSRGB();
-  GrSurfaceOrigin surface_origin = kTopLeft_GrSurfaceOrigin;
-  SkAlphaType alpha_type = kPremul_SkAlphaType;
-  gpu::SurfaceHandle surface_handle = gpu::kNullSurfaceHandle;
   uint32_t usage = SHARED_IMAGE_USAGE_GLES2;
-  auto backing = backing_factory_->CreateSharedImage(
-      mailbox, format, surface_handle, size, color_space, surface_origin,
-      alpha_type, usage, false /* is_thread_safe */);
-  EXPECT_FALSE(backing);
+  bool supported =
+      backing_factory_->IsSupported(usage, format, size, /*thread_safe=*/false,
+                                    gfx::EMPTY_BUFFER, GrContextType::kGL, {});
+  EXPECT_FALSE(supported);
 
   size = gfx::Size(INT_MAX, INT_MAX);
-  backing = backing_factory_->CreateSharedImage(
-      mailbox, format, surface_handle, size, color_space, surface_origin,
-      alpha_type, usage, false /* is_thread_safe */);
-  EXPECT_FALSE(backing);
+  supported =
+      backing_factory_->IsSupported(usage, format, size, /*thread_safe=*/false,
+                                    gfx::EMPTY_BUFFER, GrContextType::kGL, {});
+  EXPECT_FALSE(supported);
 }
 
 TEST_P(GLTextureImageBackingFactoryTest, EstimatedSize) {
@@ -475,14 +456,18 @@ TEST_P(GLTextureImageBackingFactoryTest, EstimatedSize) {
   SkAlphaType alpha_type = kPremul_SkAlphaType;
   gpu::SurfaceHandle surface_handle = gpu::kNullSurfaceHandle;
   uint32_t usage = SHARED_IMAGE_USAGE_GLES2;
+
+  bool supported =
+      backing_factory_->IsSupported(usage, format, size, /*thread_safe=*/false,
+                                    gfx::EMPTY_BUFFER, GrContextType::kGL, {});
+
+  EXPECT_EQ(should_succeed, supported);
+  if (!should_succeed)
+    return;
+
   auto backing = backing_factory_->CreateSharedImage(
       mailbox, format, surface_handle, size, color_space, surface_origin,
       alpha_type, usage, false /* is_thread_safe */);
-
-  if (!should_succeed) {
-    EXPECT_FALSE(backing);
-    return;
-  }
   ASSERT_TRUE(backing);
 
   size_t backing_estimated_size = backing->estimated_size();

@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -115,7 +115,7 @@ class NackStringBuilder {
 }  // namespace
 
 RtcpBuilder::RtcpBuilder(uint32_t sending_ssrc)
-    : writer_(nullptr, 0), local_ssrc_(sending_ssrc), ptr_of_length_(nullptr) {}
+    : local_ssrc_(sending_ssrc), ptr_of_length_(nullptr), writer_(nullptr, 0) {}
 
 RtcpBuilder::~RtcpBuilder() = default;
 

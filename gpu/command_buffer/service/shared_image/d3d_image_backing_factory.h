@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -23,7 +23,7 @@ class ColorSpace;
 }  // namespace gfx
 
 namespace gpu {
-class DXGISharedHandleManager;
+class DXGIKeyedMutexManager;
 class SharedImageBacking;
 struct Mailbox;
 
@@ -32,7 +32,7 @@ class GPU_GLES2_EXPORT D3DImageBackingFactory
  public:
   D3DImageBackingFactory(
       Microsoft::WRL::ComPtr<ID3D11Device> d3d11_device,
-      scoped_refptr<DXGISharedHandleManager> dxgi_shared_handle_manager);
+      scoped_refptr<DXGIKeyedMutexManager> dxgi_keyed_mutex_manager);
 
   D3DImageBackingFactory(const D3DImageBackingFactory&) = delete;
   D3DImageBackingFactory& operator=(const D3DImageBackingFactory&) = delete;
@@ -112,16 +112,11 @@ class GPU_GLES2_EXPORT D3DImageBackingFactory
 
   bool IsSupported(uint32_t usage,
                    viz::ResourceFormat format,
+                   const gfx::Size& size,
                    bool thread_safe,
                    gfx::GpuMemoryBufferType gmb_type,
                    GrContextType gr_context_type,
-                   bool* allow_legacy_mailbox,
-                   bool is_pixel_used) override;
-
-  // Returns true if the specified GpuMemoryBufferType can be imported using
-  // this factory.
-  bool CanImportGpuMemoryBuffer(gfx::GpuMemoryBufferType memory_buffer_type,
-                                viz::ResourceFormat format);
+                   base::span<const uint8_t> pixel_data) override;
 
   Microsoft::WRL::ComPtr<ID3D11Device> GetDeviceForTesting() const {
     return d3d11_device_;
@@ -133,7 +128,7 @@ class GPU_GLES2_EXPORT D3DImageBackingFactory
   Microsoft::WRL::ComPtr<ID3D11Device> d3d11_device_;
   absl::optional<bool> map_on_default_textures_;
 
-  scoped_refptr<DXGISharedHandleManager> dxgi_shared_handle_manager_;
+  scoped_refptr<DXGIKeyedMutexManager> dxgi_keyed_mutex_manager_;
 };
 
 }  // namespace gpu

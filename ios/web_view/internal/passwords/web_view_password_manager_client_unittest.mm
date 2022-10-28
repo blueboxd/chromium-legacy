@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -21,7 +21,7 @@
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/testing_pref_service.h"
 #include "components/signin/public/identity_manager/account_info.h"
-#include "components/sync/driver/test_sync_service.h"
+#import "components/sync/test/test_sync_service.h"
 #import "ios/web/public/test/fakes/fake_web_state.h"
 #include "ios/web/public/test/scoped_testing_web_client.h"
 #include "ios/web_view/internal/web_view_browser_state.h"

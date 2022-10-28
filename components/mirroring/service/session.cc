@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -45,6 +45,7 @@
 #include "media/cast/sender/video_sender.h"
 #include "media/gpu/gpu_video_accelerator_util.h"
 #include "media/mojo/clients/mojo_video_encode_accelerator.h"
+#include "media/remoting/device_capability_checker.h"
 #include "media/video/video_encode_accelerator.h"
 #include "mojo/public/cpp/system/platform_handle.h"
 #include "net/base/ip_endpoint.h"
@@ -290,13 +291,10 @@ bool ShouldQueryForRemotingCapabilities(
     return false;
   }
 
-  // This is a workaround for Nest Hub devices, which do not support remoting.
-  // TODO(crbug.com/1198616): filtering hack should be removed. See
-  // issuetracker.google.com/135725157 for more information.
-  return base::StartsWith(receiver_model_name, "Chromecast",
-                          base::CompareCase::SENSITIVE) ||
-         base::StartsWith(receiver_model_name, "Eureka Dongle",
-                          base::CompareCase::SENSITIVE);
+  // This is a workaround to only query capabilities to Chromecast devices.
+  // TODO(crbug.com/1198616): filtering hack should be removed. See b/135725157
+  // for more information.
+  return media::remoting::IsChromecast(receiver_model_name);
 }
 
 }  // namespace
@@ -481,6 +479,7 @@ void Session::StopSession() {
   // provider.
   media_remoter_.reset();
   message_dispatcher_.reset();
+  rpc_dispatcher_.reset();
   setup_querier_.reset();
   weak_factory_.InvalidateWeakPtrs();
   audio_encode_thread_ = nullptr;
@@ -849,9 +848,12 @@ void Session::CreateAndSendOffer() {
     const int32_t video_ssrc = base::RandInt(kVideoSsrcMin, kVideoSsrcMax);
     if (state_ == MIRRORING) {
       // First, check if hardware VP8 and H264 are available.
-      if (media::cast::ExternalVideoEncoder::IsRecommended(
+      const bool hardware_vp8_recommended =
+          media::cast::ExternalVideoEncoder::IsRecommended(
               Codec::CODEC_VIDEO_VP8, session_params_.receiver_model_name,
-              supported_profiles_)) {
+              supported_profiles_);
+
+      if (hardware_vp8_recommended) {
         FrameSenderConfig config = MirrorSettings::GetDefaultVideoConfig(
             RtpPayloadType::VIDEO_VP8, Codec::CODEC_VIDEO_VP8);
         config.use_external_encoder = true;
@@ -891,8 +893,8 @@ void Session::CreateAndSendOffer() {
                         mirror_settings_, stream_list);
       }
 
-      // Worst case, default to offering software VP8.
-      if (video_configs.empty()) {
+      // Finally, offer software VP8 if hardware VP8 was not offered.
+      if (!hardware_vp8_recommended) {
         FrameSenderConfig config = MirrorSettings::GetDefaultVideoConfig(
             RtpPayloadType::VIDEO_VP8, Codec::CODEC_VIDEO_VP8);
         AddSenderConfig(video_ssrc, config, aes_key, aes_iv, session_params_,
@@ -1022,11 +1024,13 @@ void Session::OnCapabilitiesResponse(const ReceiverResponse& response) {
     build_version = setup_querier_->build_version();
     friendly_name = setup_querier_->friendly_name();
   }
+
+  rpc_dispatcher_ = std::make_unique<RpcDispatcherImpl>(*message_dispatcher_);
   media_remoter_ = std::make_unique<MediaRemoter>(
-      this,
+      *this,
       ToRemotingSinkMetadata(caps, friendly_name, session_params_,
                              build_version),
-      message_dispatcher_.get());
+      *rpc_dispatcher_);
 }
 
 }  // namespace mirroring

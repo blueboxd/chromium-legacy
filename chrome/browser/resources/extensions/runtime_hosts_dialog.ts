@@ -1,12 +1,12 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 import 'chrome://resources/cr_elements/cr_button/cr_button.js';
 import 'chrome://resources/cr_elements/cr_dialog/cr_dialog.js';
 import 'chrome://resources/cr_elements/cr_input/cr_input.js';
-import 'chrome://resources/cr_elements/icons.m.js';
-import 'chrome://resources/cr_elements/shared_style_css.m.js';
+import 'chrome://resources/cr_elements/icons.html.js';
+import 'chrome://resources/cr_elements/cr_shared_style.css.js';
 import 'chrome://resources/polymer/v3_0/iron-icon/iron-icon.js';
 import './strings.m.js';
 import './shared_vars.css.js';
@@ -283,7 +283,7 @@ export class ExtensionsRuntimeHostsDialogElement extends
             () => {
               if (restrictedSites.length) {
                 this.delegate.removeUserSpecifiedSites(
-                    chrome.developerPrivate.UserSiteSet.RESTRICTED,
+                    chrome.developerPrivate.SiteSet.USER_RESTRICTED,
                     restrictedSites);
               }
               this.$.dialog.close();

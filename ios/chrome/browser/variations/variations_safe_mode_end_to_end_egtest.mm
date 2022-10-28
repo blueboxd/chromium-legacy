@@ -1,22 +1,22 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #import <XCTest/XCTest.h>
-#include <objc/runtime.h>
+#import <objc/runtime.h>
 
-#include <memory>
+#import <memory>
 
-#include "base/base_switches.h"
-#include "base/files/scoped_temp_dir.h"
-#include "base/strings/strcat.h"
-#include "components/metrics/metrics_service.h"
-#include "components/prefs/json_pref_store.h"
-#include "components/prefs/pref_service.h"
-#include "components/prefs/pref_service_factory.h"
-#include "components/variations/pref_names.h"
-#include "components/variations/service/safe_seed_manager.h"
-#include "components/variations/variations_test_utils.h"
+#import "base/base_switches.h"
+#import "base/files/scoped_temp_dir.h"
+#import "base/strings/strcat.h"
+#import "components/metrics/metrics_service.h"
+#import "components/prefs/json_pref_store.h"
+#import "components/prefs/pref_service.h"
+#import "components/prefs/pref_service_factory.h"
+#import "components/variations/pref_names.h"
+#import "components/variations/service/safe_seed_manager.h"
+#import "components/variations/variations_test_utils.h"
 
 #import "ios/chrome/browser/variations/variations_app_interface.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
@@ -45,7 +45,7 @@ std::unique_ptr<ScopedAllowCrashOnStartup> gAllowCrashOnStartup;
 // the only field trials after the relaunch, if any, are client-side field
 // trials.
 //
-// Change the |allow_crash_on_startup| field of the returned config to afford
+// Change the `allow_crash_on_startup` field of the returned config to afford
 // the app an opportunity to crash on restart.
 - (AppLaunchConfiguration)appConfigurationForTestCase {
   AppLaunchConfiguration config;
@@ -65,7 +65,7 @@ std::unique_ptr<ScopedAllowCrashOnStartup> gAllowCrashOnStartup;
   return config;
 }
 
-// Checks that the variations crash streak is |value|.
+// Checks that the variations crash streak is `value`.
 - (void)checkCrashStreakValue:(int)value {
   int actualStreak = [VariationsAppInterface crashStreak];
   GREYAssertEqual(actualStreak, value,
@@ -110,7 +110,7 @@ std::unique_ptr<ScopedAllowCrashOnStartup> gAllowCrashOnStartup;
 }
 
 - (void)setUp {
-  // |ChromeTestCase:isStartupTest| must be true before calling [super setUp] in
+  // `ChromeTestCase:isStartupTest` must be true before calling [super setUp] in
   // order to avoid opening a new tab on startup. While not strictly necessary,
   // this let's the test run a little faster.
   [[self class] testForStartup];
@@ -171,7 +171,7 @@ std::unique_ptr<ScopedAllowCrashOnStartup> gAllowCrashOnStartup;
   GREYAssertTrue([VariationsAppInterface hasSafeSeed],
                  @"The variations safe seed pref should be set.");
   GREYAssertTrue([VariationsAppInterface fieldTrialExistsForTestSeed],
-                 @"There should be field trials from |kTestSeedData|.");
+                 @"There should be field trials from kTestSeedData.");
   [self checkCrashStreakValue:variations::kCrashStreakThreshold];
 }
 

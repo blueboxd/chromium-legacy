@@ -362,6 +362,11 @@ void BackForwardCacheMetrics::SetNotRestoredReasons(
   AddNotRestoredFlattenedReasonsToExistingResult(can_store.flattened_reasons);
 }
 
+blink::mojom::BackForwardCacheNotRestoredReasonsPtr
+BackForwardCacheMetrics::GetWebExposedNotRestoredReasons() {
+  return page_store_tree_result_->GetWebExposedNotRestoredReasons();
+}
+
 void BackForwardCacheMetrics::UpdateNotRestoredReasonsForNavigation(
     NavigationRequest* navigation) {
   DCHECK(IsHistoryNavigation(navigation));
@@ -571,8 +576,6 @@ bool BackForwardCacheMetrics::DidSwapBrowsingInstance() const {
     case ShouldSwapBrowsingInstance::kNo_Reload:
     case ShouldSwapBrowsingInstance::kNo_Guest:
     case ShouldSwapBrowsingInstance::kNo_HasNotComittedAnyNavigation:
-    case ShouldSwapBrowsingInstance::
-        kNo_UnloadHandlerExistsOnSameSiteNavigation:
     case ShouldSwapBrowsingInstance::kNo_NotPrimaryMainFrame:
       return false;
     case ShouldSwapBrowsingInstance::kYes_ForceSwap:

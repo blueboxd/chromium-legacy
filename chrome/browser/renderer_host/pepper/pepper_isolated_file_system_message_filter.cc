@@ -1,4 +1,4 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -49,7 +49,7 @@ PepperIsolatedFileSystemMessageFilter::Create(PP_Instance instance,
   int unused_render_frame_id;
   if (!host->GetRenderFrameIDsForInstance(
           instance, &render_process_id, &unused_render_frame_id)) {
-    return NULL;
+    return nullptr;
   }
   return new PepperIsolatedFileSystemMessageFilter(
       render_process_id,
@@ -136,7 +136,7 @@ int32_t PepperIsolatedFileSystemMessageFilter::OpenCrxFileSystem(
     ppapi::host::HostMessageContext* context) {
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   Profile* profile = GetProfile();
-  const extensions::ExtensionSet* extension_set = NULL;
+  const extensions::ExtensionSet* extension_set = nullptr;
   if (profile) {
     extension_set =
         &extensions::ExtensionRegistry::Get(profile)->enabled_extensions();

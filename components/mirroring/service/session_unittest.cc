@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -142,8 +142,8 @@ class SessionTest : public mojom::ResourceProvider,
       ASSERT_TRUE(offer);
       base::Value* raw_streams = offer->Find("supportedStreams");
       if (raw_streams) {
-        for (auto& value : raw_streams->GetList()) {
-          EXPECT_EQ(*value.GetDict().FindInt("targetDelay"),
+        for (auto& list_value : raw_streams->GetList()) {
+          EXPECT_EQ(*list_value.GetDict().FindInt("targetDelay"),
                     target_playout_delay_ms_);
         }
       }

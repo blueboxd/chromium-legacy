@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -79,6 +79,15 @@ class LanguageDetectionController : public web::WebStateObserver {
   void DidFinishNavigation(web::WebState* web_state,
                            web::NavigationContext* navigation_context) override;
   void WebStateDestroyed(web::WebState* web_state) override;
+
+  // Selects and calls the correct DeterminePageLanguage based on the flags.
+  std::string DeterminePageLanguage(const std::string& code,
+                                    const std::string& html_lang,
+                                    const std::u16string& contents,
+                                    std::string* model_detected_language,
+                                    bool* is_model_reliable,
+                                    float& model_reliability_score,
+                                    std::string* detection_model_version);
 
   // The WebState this instance is observing. Will be null after
   // WebStateDestroyed has been called.

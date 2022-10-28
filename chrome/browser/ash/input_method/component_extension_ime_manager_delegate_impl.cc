@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -424,6 +424,11 @@ void ComponentExtensionIMEManagerDelegateImpl::ReadComponentExtensionsInfo(
       if (base::StartsWith(engine.engine_id, "experimental_",
                            base::CompareCase::SENSITIVE) &&
           !base::FeatureList::IsEnabled(features::kMultilingualTyping)) {
+        continue;
+      }
+
+      if (engine.engine_id == "vkd_hi_inscript" &&
+          !base::FeatureList::IsEnabled(features::kHindiInscriptLayout)) {
         continue;
       }
 

@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -37,7 +37,7 @@ const ChromeOSSystemExtensionInfos& getMap() {
   static const ChromeOSSystemExtensionInfos kExtensionIdToExtensionInfoMap{
       {/*extension_id=*/"gogonhoemckpdpadfnjnpgbjpbjnodgc",
        {/*manufacturers=*/{"HP", "ASUS"},
-        /*pwa_origin=*/"*://www.google.com/*"}},
+        /*pwa_origin=*/"*://googlechromelabs.github.io/*"}},
       {/*extension_id=*/"alnedpmllcfpgldkagbfbjkloonjlfjb",
        {/*manufacturers=*/{"HP"},
         /*pwa_origin=*/"https://hpcs-appschr.hpcloud.hp.com/*"}},

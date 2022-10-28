@@ -1,13 +1,13 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #import <Foundation/Foundation.h>
-#include <stddef.h>
+#import <stddef.h>
 
-#include "base/strings/sys_string_conversions.h"
+#import "base/strings/sys_string_conversions.h"
 #import "ios/web/public/test/web_test_with_web_state.h"
-#include "testing/gtest/include/gtest/gtest.h"
+#import "testing/gtest/include/gtest/gtest.h"
 #import "testing/gtest_mac.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -132,7 +132,7 @@ TEST_F(CommonJsTest, Stringify) {
   for (size_t i = 0; i < std::size(test_data); i++) {
     TestScriptAndExpectedValue& data = test_data[i];
     // Load a sample HTML page. As a side-effect, loading HTML via
-    // |webController_| will also inject web_bundle.js.
+    // `webController_` will also inject web_bundle.js.
     LoadHtml(@"<p>");
     id result = ExecuteJavaScript(data.test_script);
     EXPECT_NSEQ(data.expected_value, result)

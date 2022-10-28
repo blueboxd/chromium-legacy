@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -62,16 +62,6 @@ void DialMediaSinkService::RunSinksDiscoveredCallback(
     const OnSinksDiscoveredCallback& sinks_discovered_cb,
     std::vector<MediaSinkInternal> sinks) {
   sinks_discovered_cb.Run(std::move(sinks));
-}
-
-void DialMediaSinkService::BindLogger(
-    mojo::PendingRemote<mojom::Logger> pending_remote) {
-  // TODO(crbug.com/1293535): Simplify how logger instances are made available
-  // to their clients.
-  impl_->task_runner()->PostTask(
-      FROM_HERE,
-      base::BindOnce(&DialMediaSinkServiceImpl::BindLogger,
-                     base::Unretained(impl_.get()), std::move(pending_remote)));
 }
 
 }  // namespace media_router

@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -21,7 +21,7 @@ suite('SitePermissionsEditUrlDialog', function() {
     document.body.innerHTML = '';
     element = document.createElement('site-permissions-edit-url-dialog');
     element.delegate = delegate;
-    element.siteSet = chrome.developerPrivate.UserSiteSet.PERMITTED;
+    element.siteSet = chrome.developerPrivate.SiteSet.USER_PERMITTED;
     document.body.appendChild(element);
   });
 
@@ -30,7 +30,8 @@ suite('SitePermissionsEditUrlDialog', function() {
     assertTrue(!!input);
     const site = 'http://www.example.com';
     input.value = site;
-    input.fire('input');
+    input.dispatchEvent(
+        new CustomEvent('input', {bubbles: true, composed: true}));
     assertFalse(input.invalid);
 
     const submit = element.$.submit;
@@ -38,7 +39,7 @@ suite('SitePermissionsEditUrlDialog', function() {
     submit.click();
 
     const [siteSet, hosts] = await delegate.whenCalled('addUserSpecifiedSites');
-    assertEquals(chrome.developerPrivate.UserSiteSet.PERMITTED, siteSet);
+    assertEquals(chrome.developerPrivate.SiteSet.USER_PERMITTED, siteSet);
     assertDeepEquals(['http://www.example.com'], hosts);
   });
 
@@ -54,19 +55,22 @@ suite('SitePermissionsEditUrlDialog', function() {
     // Simulate user input of invalid text.
     const invalidSite = 'foobar';
     input.value = invalidSite;
-    input.fire('input');
+    input.dispatchEvent(
+        new CustomEvent('input', {bubbles: true, composed: true}));
     assertTrue(input.invalid);
     assertTrue(submit.disabled);
 
     // Entering valid text should clear the error and enable the submit button.
     input.value = 'http://www.example.com';
-    input.fire('input');
+    input.dispatchEvent(
+        new CustomEvent('input', {bubbles: true, composed: true}));
     assertFalse(input.invalid);
     assertFalse(submit.disabled);
 
     // Wildcard scheme is considered invalid input.
     input.value = '*://www.example.com';
-    input.fire('input');
+    input.dispatchEvent(
+        new CustomEvent('input', {bubbles: true, composed: true}));
     assertTrue(input.invalid);
     assertTrue(submit.disabled);
   });
@@ -79,7 +83,8 @@ suite('SitePermissionsEditUrlDialog', function() {
     const input = element.shadowRoot!.querySelector('cr-input');
     assertTrue(!!input);
     input.value = newSite;
-    input.fire('input');
+    input.dispatchEvent(
+        new CustomEvent('input', {bubbles: true, composed: true}));
     assertFalse(input.invalid);
 
     const whenClosed = eventToPromise('close', element);
@@ -89,12 +94,13 @@ suite('SitePermissionsEditUrlDialog', function() {
 
     const [removedSiteSet, removedSites] =
         await delegate.whenCalled('removeUserSpecifiedSites');
-    assertEquals(chrome.developerPrivate.UserSiteSet.PERMITTED, removedSiteSet);
+    assertEquals(
+        chrome.developerPrivate.SiteSet.USER_PERMITTED, removedSiteSet);
     assertDeepEquals([oldSite], removedSites);
 
     const [addedSiteSet, addedSites] =
         await delegate.whenCalled('addUserSpecifiedSites');
-    assertEquals(chrome.developerPrivate.UserSiteSet.PERMITTED, addedSiteSet);
+    assertEquals(chrome.developerPrivate.SiteSet.USER_PERMITTED, addedSiteSet);
     assertDeepEquals([newSite], addedSites);
 
     await whenClosed;

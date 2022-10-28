@@ -140,20 +140,89 @@ class GPUExpectedDeviceId(unittest.TestCase):
 
 class GPUParallelJobs(unittest.TestCase):
   def testNoOsType(self):
+    test_config = CreateConfigWithGpus(['vendor:device1-driver'])
     with self.assertRaises(AssertionError):
-      magic_substitutions.GPUParallelJobs(None, None, {})
+      magic_substitutions.GPUParallelJobs(test_config, None, {})
 
   def testParallelJobs(self):
+    test_config = CreateConfigWithGpus(['vendor:device1-driver'])
     for os_type in ['lacros', 'linux', 'mac', 'win']:
-      retval = magic_substitutions.GPUParallelJobs(None, None,
+      retval = magic_substitutions.GPUParallelJobs(test_config, None,
                                                    {'os_type': os_type})
       self.assertEqual(retval, ['--jobs=4'])
 
   def testSerialJobs(self):
+    test_config = CreateConfigWithGpus(['vendor:device1-driver'])
     for os_type in ['android', 'chromeos', 'fuchsia']:
-      retval = magic_substitutions.GPUParallelJobs(None, None,
+      retval = magic_substitutions.GPUParallelJobs(test_config, None,
                                                    {'os_type': os_type})
       self.assertEqual(retval, ['--jobs=1'])
+
+  def testWebGPUCTSWindowsIntelSerialJobs(self):
+    intel_config = CreateConfigWithGpus(['8086:device1-driver'])
+    nvidia_config = CreateConfigWithGpus(['10de:device1-driver'])
+
+    for gpu_config in [intel_config, nvidia_config]:
+      for name, telemetry_test_name in [('webgpu_cts', None),
+                                        (None, 'webgpu_cts')]:
+        is_intel = intel_config == gpu_config
+        c = gpu_config.copy()
+        if name:
+          c['name'] = name
+        if telemetry_test_name:
+          c['telemetry_test_name'] = telemetry_test_name
+        for os_type in ['lacros', 'linux', 'mac', 'win']:
+          retval = magic_substitutions.GPUParallelJobs(c, None,
+                                                       {'os_type': os_type})
+          if is_intel and os_type == 'win':
+            self.assertEqual(retval, ['--jobs=1'])
+          else:
+            self.assertEqual(retval, ['--jobs=4'])
+
+
+def CreateConfigWithDeviceTypes(device_types):
+  dimension_sets = []
+  for d in device_types:
+    dimension_sets.append({'device_type': d})
+  return {
+      'swarming': {
+          'dimension_sets': dimension_sets,
+      },
+  }
+
+
+class GPUTelemetryNoRootForUnrootedDevices(unittest.TestCase):
+  def testNoOsType(self):
+    test_config = CreateConfigWithDeviceTypes(['a13'])
+    with self.assertRaises(AssertionError):
+      magic_substitutions.GPUTelemetryNoRootForUnrootedDevices(
+          test_config, None, {})
+
+  def testNonAndroidOs(self):
+    retval = magic_substitutions.GPUTelemetryNoRootForUnrootedDevices(
+        {}, None, {'os_type': 'linux'})
+    self.assertEqual(retval, [])
+
+  def testUnrootedDevices(self):
+    devices = ('a13', 'a23')
+    for d in devices:
+      test_config = CreateConfigWithDeviceTypes([d])
+      retval = magic_substitutions.GPUTelemetryNoRootForUnrootedDevices(
+          test_config, None, {'os_type': 'android'})
+      self.assertEqual(retval,
+                       ['--compatibility-mode=dont-require-rooted-device'])
+
+  def testMixedDevices(self):
+    test_config = CreateConfigWithDeviceTypes(['hammerhead', 'a13'])
+    with self.assertRaises(RuntimeError):
+      magic_substitutions.GPUTelemetryNoRootForUnrootedDevices(
+          test_config, None, {'os_type': 'android'})
+
+  def testRootedDevices(self):
+    test_config = CreateConfigWithDeviceTypes(['hammerhead'])
+    retval = magic_substitutions.GPUTelemetryNoRootForUnrootedDevices(
+        test_config, None, {'os_type': 'android'})
+    self.assertEqual(retval, [])
 
 
 if __name__ == '__main__':

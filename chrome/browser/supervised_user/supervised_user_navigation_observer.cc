@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -173,8 +173,9 @@ void SupervisedUserNavigationObserver::OnURLFilterChanged() {
 
   // Iframe filtering has been enabled.
   main_frame->ForEachRenderFrameHost(
-      base::BindRepeating(&SupervisedUserNavigationObserver::FilterRenderFrame,
-                          base::Unretained(this)));
+      [this](content::RenderFrameHost* render_frame_host) {
+        FilterRenderFrame(render_frame_host);
+      });
 }
 
 void SupervisedUserNavigationObserver::OnInterstitialDone(int frame_id) {

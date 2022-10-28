@@ -30,6 +30,7 @@
 <translation id="1717218214683051432">Sensores de movimento</translation>
 <translation id="1743802530341753419">Perguntar antes de permitir que sites se conectem ao dispositivo (recomendado)</translation>
 <translation id="1779089405699405702">Decodificador de imagem</translation>
+<translation id="1785415724048343560">Recomendado para melhorar a experiência</translation>
 <translation id="1818308510395330587">Para permitir que o app <ph name="APP_NAME" /> use RA, também é necessário ativar a câmera nas <ph name="BEGIN_LINK" />configurações do Android<ph name="END_LINK" />.</translation>
 <translation id="1864927262126810325">De <ph name="SOURCE_NAME" /></translation>
 <translation id="1887786770086287077">O acesso ao local está desativado neste dispositivo. Ative nas <ph name="BEGIN_LINK" />Configurações do Android<ph name="END_LINK" />.</translation>
@@ -79,6 +80,7 @@
 <translation id="2653659639078652383">Enviar</translation>
 <translation id="2677748264148917807">Sair</translation>
 <translation id="2687403674020088961">Bloquear todos os cookies (não recomendado)</translation>
+<translation id="2692299144678073135">Permitir que sites relacionados se lembrem de você em outras páginas</translation>
 <translation id="2704606927547763573">Copiado</translation>
 <translation id="2713106313042589954">Desativar câmera</translation>
 <translation id="2717722538473713889">Endereços de e-mail</translation>
@@ -101,6 +103,7 @@
 <translation id="3115898365077584848">Mostrar informações</translation>
 <translation id="3123473560110926937">Bloqueados em alguns sites</translation>
 <translation id="3143754809889689516">Reproduzir do início</translation>
+<translation id="3162899666601560689">Os sites podem usar cookies para melhorar sua experiência de navegação, como manter sua conta conectada ou se lembrar dos itens em um carrinho de compras</translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT" /> de dados armazenados</translation>
 <translation id="3203366800380907218">Da Web</translation>
 <translation id="321187648315454507">Para permitir que o app <ph name="APP_NAME" /> envie notificações, também é necessário ativá-las nas <ph name="BEGIN_LINK" />configurações do Android<ph name="END_LINK" />.</translation>
@@ -138,6 +141,7 @@
 <translation id="4002066346123236978">Título</translation>
 <translation id="4008040567710660924">Permita cookies de um site específico.</translation>
 <translation id="4046123991198612571">Próxima faixa</translation>
+<translation id="4048876521107516222">Os sites relacionados usam cookies para ajudar a manter sua conta conectada</translation>
 <translation id="4149994727733219643">Versão simplificada das páginas da Web</translation>
 <translation id="4165986682804962316">Configurações do site</translation>
 <translation id="4169549551965910670">Conectado a um dispositivo USB</translation>
@@ -149,6 +153,7 @@
 <translation id="429312253194641664">Um site está com mídia aberta</translation>
 <translation id="42981349822642051">Expandir</translation>
 <translation id="4336434711095810371">Limpar todos os dados</translation>
+<translation id="4338831206024587507">Todos os sites em <ph name="DOMAIN" /></translation>
 <translation id="4402755511846832236">Impedir que sites saibam quando você está usando este dispositivo</translation>
 <translation id="4428065317363009941">Personalização de anúncios</translation>
 <translation id="4434045419905280838">Pop-ups e redirecionamentos</translation>
@@ -164,6 +169,7 @@
 <translation id="4751476147751820511">Sensores de luz ou movimento</translation>
 <translation id="4811450222531576619">Saiba mais sobre a fonte e o tema</translation>
 <translation id="4836046166855586901">Perguntar quando um site quiser saber os momentos em que você está usando este dispositivo</translation>
+<translation id="483914009762354899">Incluir todos os sites neste domínio</translation>
 <translation id="4883854917563148705">Não é possível redefinir as configurações gerenciadas</translation>
 <translation id="4887024562049524730">Perguntar antes de permitir que sites usem seus dispositivos e dados de realidade virtual (recomendado)</translation>
 <translation id="4962975101802056554">Revogar todas as permissões para o dispositivo</translation>
@@ -219,6 +225,7 @@
 <translation id="5887687176710214216">Última visita: ontem</translation>
 <translation id="5916664084637901428">Ativado</translation>
 <translation id="5922853908706496913">Compartilhando a tela</translation>
+<translation id="5922967540311291836">Bloquear cookies de terceiros:</translation>
 <translation id="5939518447894949180">Redefinir</translation>
 <translation id="5975083100439434680">Diminuir zoom</translation>
 <translation id="5976059395673079613"><ph name="PERMISSION" /> – <ph name="WARNING_MESSAGE" /></translation>
@@ -302,6 +309,7 @@
 <translation id="7791543448312431591">Adicionar</translation>
 <translation id="780301667611848630">Não</translation>
 <translation id="7804248752222191302">Um site está usando sua câmera</translation>
+<translation id="7816129586531226979">Sites relacionados podem se lembrar de você em outras páginas</translation>
 <translation id="7817023149356982970">Sua conta será desconectada desse site.</translation>
 <translation id="7828557259026017104">Os cookies são arquivos criados pelos sites que você visita, usados para lembrar suas preferências. Os cookies de terceiros são criados por outros sites que possuem uma parte do conteúdo da página acessada, como imagens ou anúncios.</translation>
 <translation id="7835852323729233924">Tocando mídia</translation>
@@ -309,6 +317,7 @@
 <translation id="7846076177841592234">Cancelar seleção</translation>
 <translation id="7846621471902887024">Sua conta será desconectada de todos os sites.</translation>
 <translation id="7882806643839505685">Permitir o som de um site específico.</translation>
+<translation id="789180354981963912">Bloquear cookies de terceiros na navegação anônima:</translation>
 <translation id="7940722705963108451">Lembrar</translation>
 <translation id="7986741934819883144">Selecione um contato</translation>
 <translation id="7999064672810608036">Você quer mesmo apagar todos os dados locais, inclusive os cookies, e redefinir todas as permissões para este website?</translation>
@@ -331,6 +340,7 @@
 <translation id="8284326494547611709">Legendas</translation>
 <translation id="8300705686683892304">Gerenciados por app</translation>
 <translation id="8324158725704657629">Não perguntar novamente</translation>
+<translation id="834785183489258869">Na navegação anônima, os sites não podem usar seus cookies para ver suas atividades de navegação em outras páginas, por exemplo, para personalizar anúncios. Os recursos de alguns sites podem não funcionar.</translation>
 <translation id="8372893542064058268">Permitir a sincronização em segundo plano para um site específico.</translation>
 <translation id="8376384591331888629">Incluir também os cookies de terceiros desse site</translation>
 <translation id="83792324527827022">Um site está usando sua câmera e seu microfone</translation>

@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -326,6 +326,14 @@ class UserDataAuthClientImpl : public UserDataAuthClient {
       const ::user_data_auth::RemoveAuthFactorRequest& request,
       RemoveAuthFactorCallback callback) override {
     CallProtoMethod(::user_data_auth::kRemoveAuthFactor,
+                    ::user_data_auth::kUserDataAuthInterface, request,
+                    std::move(callback));
+  }
+
+  void GetRecoveryRequest(
+      const ::user_data_auth::GetRecoveryRequestRequest& request,
+      GetRecoveryRequestCallback callback) override {
+    CallProtoMethod(::user_data_auth::kGetRecoveryRequest,
                     ::user_data_auth::kUserDataAuthInterface, request,
                     std::move(callback));
   }

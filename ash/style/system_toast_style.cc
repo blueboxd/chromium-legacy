@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,10 +8,11 @@
 
 #include "ash/accessibility/accessibility_controller_impl.h"
 #include "ash/accessibility/scoped_a11y_override_window_setter.h"
+#include "ash/public/cpp/style/color_provider.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
-#include "ash/style/ash_color_provider.h"
+#include "ash/style/ash_color_id.h"
 #include "ash/style/pill_button.h"
 #include "ash/style/system_shadow.h"
 #include "ash/system/toast/toast_overlay.h"
@@ -20,6 +21,7 @@
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
+#include "ui/chromeos/styles/cros_tokens_color_mappings.h"
 #include "ui/compositor/layer.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/paint_vector_icon.h"
@@ -41,10 +43,11 @@ constexpr int kToastTextMaximumWidth = 512;
 constexpr int kOneLineHorizontalSpacing = 16;
 constexpr int kTwoLineHorizontalSpacing = 24;
 constexpr int kSpacingBetweenLabelAndButton = 16;
-constexpr int kOnelineButtonRightSpacing = 2;
+constexpr int kOnelineButtonPadding = 2;
 constexpr int kTwolineButtonRightSpacing = 12;
 constexpr int kToastLabelVerticalSpacing = 8;
 constexpr int kManagedIconSize = 32;
+constexpr int kTwolineVerticalPadding = 12;
 
 // The label inside SystemToastStyle, which allows two lines at maximum.
 class SystemToastInnerLabel : public views::Label {
@@ -58,6 +61,7 @@ class SystemToastInnerLabel : public views::Label {
     SetMaximumWidth(kToastTextMaximumWidth);
     SetMaxLines(2);
     SetSubpixelRenderingEnabled(false);
+    SetEnabledColorId(cros_tokens::kTextColorPrimary);
 
     SetFontList(views::Label::GetDefaultFontList().Derive(
         2, gfx::Font::FontStyle::NORMAL, gfx::Font::Weight::NORMAL));
@@ -66,46 +70,23 @@ class SystemToastInnerLabel : public views::Label {
   SystemToastInnerLabel(const SystemToastInnerLabel&) = delete;
   SystemToastInnerLabel& operator=(const SystemToastInnerLabel&) = delete;
   ~SystemToastInnerLabel() override = default;
-
- private:
-  // views::Label:
-  void OnThemeChanged() override {
-    views::Label::OnThemeChanged();
-    SetEnabledColor(AshColorProvider::Get()->GetContentLayerColor(
-        AshColorProvider::ContentLayerType::kTextColorPrimary));
-  }
 };
 
 BEGIN_METADATA(SystemToastInnerLabel, views::Label)
 END_METADATA
 
-SkColor GetBackgroundColor() {
-  return AshColorProvider::Get()->GetBaseLayerColor(
-      AshColorProvider::BaseLayerType::kTransparent80);
-}
+// Returns the vertical padding for the layout given button presence and
+// `two_line`.
+int ComputeVerticalSpacing(bool has_button, bool two_line) {
+  if (two_line)
+    return kTwolineVerticalPadding;
 
-// TODO(crbug/1294449): Handle the case when a word can't be fitted into
-// one-line where additional spaces need to be padded.
-bool FormatDisplayLabelText(views::Label* label,
-                            std::u16string& out_display_text) {
-  const gfx::FontList& font_list = label->font_list();
-  const std::u16string& text = label->GetText();
-  const int label_text_width = gfx::GetStringWidth(text, font_list);
-  out_display_text = text;
-  const bool two_line = label_text_width > kToastTextMaximumWidth;
-  if (two_line) {
-    // Find the index to split string into multiple lines so that the width of
-    // each row is within `kToastTextMaximumWidth` limit.
-    const int split_index =
-        text.length() * kToastTextMaximumWidth / label_text_width;
-    out_display_text = base::StrCat(
-        {text.substr(0, split_index), u"\n" + text.substr(split_index)});
-  }
+  // For one line, the button is taller so it determines the height of the toast
+  // so we use the button's padding.
+  if (has_button)
+    return kOnelineButtonPadding;
 
-  out_display_text = gfx::ElideText(
-      out_display_text, font_list, kToastTextMaximumWidth * 2, gfx::ELIDE_TAIL);
-
-  return two_line;
+  return kToastLabelVerticalSpacing;
 }
 
 }  // namespace
@@ -119,6 +100,7 @@ SystemToastStyle::SystemToastStyle(base::RepeatingClosure dismiss_callback,
   SetPaintToLayer();
   layer()->SetFillsBoundsOpaquely(false);
   layer()->SetBackgroundBlur(ColorProvider::kBackgroundBlurSigma);
+  SetBackground(views::CreateThemedSolidBackground(kColorAshShieldAndBase80));
 
   if (is_managed) {
     managed_icon_ = AddChildView(std::make_unique<views::ImageView>());
@@ -128,34 +110,26 @@ SystemToastStyle::SystemToastStyle(base::RepeatingClosure dismiss_callback,
 
   label_ = AddChildView(std::make_unique<SystemToastInnerLabel>(text));
 
-  std::u16string display_text;
-  const bool two_line = FormatDisplayLabelText(label_, display_text);
-  label_->SetText(display_text);
-
   if (!dismiss_text.empty()) {
-    button_ = AddChildView(
-        std::make_unique<PillButton>(std::move(dismiss_callback), dismiss_text,
-                                     PillButton::Type::kIconlessAccentFloating,
-                                     /*icon=*/nullptr));
+    button_ = AddChildView(std::make_unique<PillButton>(
+        std::move(dismiss_callback), dismiss_text,
+        PillButton::Type::kAccentFloatingWithoutIcon,
+        /*icon=*/nullptr));
     button_->SetFocusBehavior(views::View::FocusBehavior::ACCESSIBLE_ONLY);
   }
 
-  int toast_height = kToastLabelVerticalSpacing * 2 + label_->GetLineHeight();
-  if (two_line)
-    toast_height += label_->GetLineHeight();
-
-  const int vertical_spacing =
-      button_
-          ? std::min(kToastLabelVerticalSpacing,
-                     (toast_height - button_->GetPreferredSize().height()) / 2)
-          : kToastLabelVerticalSpacing;
+  // Requesting size forces layout. Otherwise, we don't know how many lines
+  // are needed.
+  label_->GetPreferredSize();
+  const bool two_line = label_->GetRequiredLines() > 1;
+  const int vertical_spacing = ComputeVerticalSpacing(!!button_, two_line);
 
   auto insets =
       gfx::Insets::VH(vertical_spacing, two_line ? kTwoLineHorizontalSpacing
                                                  : kOneLineHorizontalSpacing);
   if (button_) {
     insets.set_right(two_line ? kTwolineButtonRightSpacing
-                              : kOnelineButtonRightSpacing);
+                              : kOnelineButtonPadding);
   }
 
   auto* layout = SetLayoutManager(std::make_unique<views::BoxLayout>(
@@ -165,10 +139,9 @@ SystemToastStyle::SystemToastStyle(base::RepeatingClosure dismiss_callback,
       views::BoxLayout::CrossAxisAlignment::kCenter);
   layout->SetFlexForView(label_, 1);
 
-  const int toast_corner_radius = toast_height / 2.f;
+  int toast_height = GetPreferredSize().height();
+  const float toast_corner_radius = toast_height / 2.0f;
   layer()->SetRoundedCornerRadius(gfx::RoundedCornersF(toast_corner_radius));
-  SetBackground(views::CreateRoundedRectBackground(GetBackgroundColor(),
-                                                   toast_corner_radius));
   if (features::IsDarkLightModeEnabled()) {
     SetBorder(std::make_unique<views::HighlightBorder>(
         toast_corner_radius, views::HighlightBorder::Type::kHighlightBorder1,
@@ -228,13 +201,10 @@ void SystemToastStyle::AddedToWidget() {
 void SystemToastStyle::OnThemeChanged() {
   views::View::OnThemeChanged();
 
-  background()->SetNativeControlColor(GetBackgroundColor());
-
   if (managed_icon_) {
     managed_icon_->SetImage(gfx::CreateVectorIcon(
         kSystemMenuBusinessIcon,
-        AshColorProvider::Get()->GetContentLayerColor(
-            AshColorProvider::ContentLayerType::kIconColorPrimary)));
+        GetColorProvider()->GetColor(cros_tokens::kIconColorPrimary)));
   }
 
   SchedulePaint();

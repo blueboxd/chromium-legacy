@@ -1,17 +1,17 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #import "ios/chrome/browser/snapshots/snapshot_tab_helper.h"
 
-#include "base/bind.h"
-#include "base/memory/ptr_util.h"
-#include "base/metrics/histogram_macros.h"
+#import "base/bind.h"
+#import "base/memory/ptr_util.h"
+#import "base/metrics/histogram_macros.h"
 #import "ios/chrome/browser/snapshots/snapshot_cache.h"
 #import "ios/chrome/browser/snapshots/snapshot_generator.h"
-#include "ios/chrome/browser/ui/util/ui_util.h"
-#include "ios/web/public/thread/web_task_traits.h"
-#include "ios/web/public/thread/web_thread.h"
+#import "ios/chrome/browser/ui/util/ui_util.h"
+#import "ios/web/public/thread/web_task_traits.h"
+#import "ios/web/public/thread/web_thread.h"
 #import "ios/web/public/web_client.h"
 #import "ios/web/public/web_state.h"
 
@@ -125,7 +125,7 @@ void SnapshotTabHelper::PageLoaded(
   // Snapshots taken while page is loading will eventually be stale. It
   // is important that another snapshot is taken after the new
   // page has loaded to replace the stale snapshot. The
-  // |IOS.PageLoadedSnapshotResult| histogram shows the outcome of
+  // `IOS.PageLoadedSnapshotResult` histogram shows the outcome of
   // snapshot attempts when the page is loaded after having taken
   // a stale snapshot.
   switch (load_completion_status) {

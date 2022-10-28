@@ -1,16 +1,16 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "components/url_matcher/url_matcher_factory.h"
 
-#include <algorithm>
 #include <cctype>
 #include <memory>
 #include <utility>
 
 #include "base/check.h"
 #include "base/lazy_instance.h"
+#include "base/ranges/algorithm.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
 #include "components/url_matcher/url_matcher_constants.h"
@@ -177,7 +177,7 @@ namespace {
 
 // Returns true if some alphabetic characters in this string are upper case.
 bool ContainsUpperCase(const std::string& str) {
-  return std::find_if(str.begin(), str.end(), ::isupper) != str.end();
+  return base::ranges::find_if(str, ::isupper) != str.end();
 }
 
 }  // namespace

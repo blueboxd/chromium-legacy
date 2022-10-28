@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -52,10 +52,10 @@ class RtcpBuilder {
       RtcpReceiverLogMessage* receiver_log_message,
       size_t* total_number_of_messages_to_send);
 
-  base::BigEndianWriter writer_;
   const uint32_t local_ssrc_;
   raw_ptr<char> ptr_of_length_;
   PacketRef packet_;
+  base::BigEndianWriter writer_;
 };
 
 }  // namespace cast

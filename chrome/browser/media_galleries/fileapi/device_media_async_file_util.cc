@@ -1,4 +1,4 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -744,5 +744,5 @@ void DeviceMediaAsyncFileUtil::OnDidDeleteDirectory(StatusCallback callback) {
 }
 
 bool DeviceMediaAsyncFileUtil::validate_media_files() const {
-  return media_path_filter_wrapper_.get() != NULL;
+  return media_path_filter_wrapper_.get() != nullptr;
 }

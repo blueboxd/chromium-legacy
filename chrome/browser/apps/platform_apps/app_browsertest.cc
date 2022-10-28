@@ -1,4 +1,4 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -1304,15 +1304,15 @@ IN_PROC_BROWSER_TEST_F(PlatformAppIncognitoBrowserTest,
   // Get the file manager app.
   const Extension* file_manager = extension_registry()->GetExtensionById(
       extension_misc::kFilesManagerAppId, ExtensionRegistry::ENABLED);
-  ASSERT_TRUE(file_manager != NULL);
+  ASSERT_TRUE(file_manager != nullptr);
   Profile* incognito_profile =
       profile()->GetPrimaryOTRProfile(/*create_if_needed=*/true);
-  ASSERT_TRUE(incognito_profile != NULL);
+  ASSERT_TRUE(incognito_profile != nullptr);
 
   // Wait until the file manager has had a chance to register its listener
   // for the launch event.
   EventRouter* router = EventRouter::Get(incognito_profile);
-  ASSERT_TRUE(router != NULL);
+  ASSERT_TRUE(router != nullptr);
   while (!router->ExtensionHasEventListener(
       file_manager->id(), app_runtime::OnLaunched::kEventName)) {
     content::RunAllPendingInMessageLoop();
@@ -1320,7 +1320,7 @@ IN_PROC_BROWSER_TEST_F(PlatformAppIncognitoBrowserTest,
 
   // Listen for new app windows so we see the file manager app launch itself.
   AppWindowRegistry* registry = AppWindowRegistry::Get(incognito_profile);
-  ASSERT_TRUE(registry != NULL);
+  ASSERT_TRUE(registry != nullptr);
   registry->AddObserver(this);
   apps::AppServiceProxyFactory::GetForProfile(incognito_profile)
       ->Launch(file_manager->id(),

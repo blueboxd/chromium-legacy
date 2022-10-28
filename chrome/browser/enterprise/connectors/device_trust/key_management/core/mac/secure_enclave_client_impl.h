@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -37,7 +37,6 @@ class SecureEnclaveClientImpl : public SecureEnclaveClient {
   bool SignDataWithKey(SecKeyRef key,
                        base::span<const uint8_t> data,
                        std::vector<uint8_t>& output) override;
-  bool VerifyKeychainUnlocked() override;
   bool VerifySecureEnclaveSupported() override;
 
  private:

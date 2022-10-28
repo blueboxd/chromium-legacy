@@ -1,4 +1,4 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -25,7 +25,6 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/webapps/browser/installable/installable_logging.h"
-#include "components/webapps/browser/installable/installable_manager.h"
 #include "components/webapps/browser/installable/installable_metrics.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
@@ -1955,8 +1954,8 @@ IN_PROC_BROWSER_TEST_F(InstallableManagerBrowserTest, CheckScreenshots) {
 
   EXPECT_FALSE(tester->valid_manifest());
   EXPECT_EQ(1u, tester->screenshots().size());
-  // Corresponding platform should filter out the screenshot with mismatched
-  // platform.
+  // Corresponding form_factor should filter out the screenshot with mismatched
+  // form_factor.
 #if BUILDFLAG(IS_ANDROID)
   EXPECT_LT(tester->screenshots()[0].width(),
             tester->screenshots()[0].height());
@@ -1976,8 +1975,8 @@ IN_PROC_BROWSER_TEST_F(InstallableManagerBrowserTest,
   InstallableParams params = GetManifestParams();
   params.fetch_screenshots = true;
 
-  // Check if only screenshots with mismatched platform are available, they are
-  // still used.
+  // Check if only screenshots with mismatched form_factor are available, they
+  // are still used.
 #if BUILDFLAG(IS_ANDROID)
   NavigateAndRunInstallableManager(
       browser(), tester.get(), params,

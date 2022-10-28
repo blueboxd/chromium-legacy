@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -654,7 +654,7 @@ void SupervisedUserService::UpdateDenylist() {
 
 void SupervisedUserService::UpdateManualHosts() {
   const base::Value::Dict& dict =
-      profile_->GetPrefs()->GetValueDict(prefs::kSupervisedUserManualHosts);
+      profile_->GetPrefs()->GetDict(prefs::kSupervisedUserManualHosts);
   std::map<std::string, bool> host_map;
   for (auto it : dict) {
     DCHECK(it.second.is_bool());
@@ -671,7 +671,7 @@ void SupervisedUserService::UpdateManualHosts() {
 
 void SupervisedUserService::UpdateManualURLs() {
   const base::Value::Dict& dict =
-      profile_->GetPrefs()->GetValueDict(prefs::kSupervisedUserManualURLs);
+      profile_->GetPrefs()->GetDict(prefs::kSupervisedUserManualURLs);
   std::map<GURL, bool> url_map;
   for (auto it : dict) {
     DCHECK(it.second.is_bool());
@@ -908,8 +908,8 @@ void SupervisedUserService::RefreshApprovedExtensionsFromPrefs() {
   // version information stored in the values is unnecessary. It is only there
   // for backwards compatibility. Remove the version information once sufficient
   // users have migrated away from M83.
-  const base::Value::Dict& dict = profile_->GetPrefs()->GetValueDict(
-      prefs::kSupervisedUserApprovedExtensions);
+  const base::Value::Dict& dict =
+      profile_->GetPrefs()->GetDict(prefs::kSupervisedUserApprovedExtensions);
   for (auto it : dict) {
     approved_extensions_set_.insert(it.first);
     extensions_to_be_checked.insert(it.first);

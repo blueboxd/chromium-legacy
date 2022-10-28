@@ -1,4 +1,4 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -16,8 +16,6 @@
 #include "ash/components/arc/session/arc_service_manager.h"
 #include "ash/components/arc/test/connection_holder_util.h"
 #include "ash/components/arc/test/fake_file_system_instance.h"
-#include "ash/components/disks/disk.h"
-#include "ash/components/disks/disk_mount_manager.h"
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/containers/contains.h"
@@ -37,6 +35,8 @@
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chromeos/ash/components/dbus/cros_disks/cros_disks_client.h"
+#include "chromeos/ash/components/disks/disk.h"
+#include "chromeos/ash/components/disks/disk_mount_manager.h"
 #include "chromeos/components/disks/disks_prefs.h"
 #include "chromeos/dbus/power/fake_power_manager_client.h"
 #include "chromeos/dbus/power_manager/suspend.pb.h"
@@ -1224,6 +1224,7 @@ TEST_F(VolumeManagerTest, MTPPlugAndUnplug) {
   EXPECT_EQ(LoggingObserver::Event::VOLUME_MOUNTED, observer.events()[0].type);
 
   base::WeakPtr<Volume> volume = volume_manager()->FindVolumeById("mtp:model");
+  ASSERT_TRUE(volume);
   EXPECT_EQ(VOLUME_TYPE_MTP, volume->type());
 
   // Non MTP events from storage monitor are ignored.
@@ -1236,7 +1237,7 @@ TEST_F(VolumeManagerTest, MTPPlugAndUnplug) {
   EXPECT_EQ(LoggingObserver::Event::VOLUME_UNMOUNTED,
             observer.events()[1].type);
 
-  EXPECT_FALSE(volume.get());
+  EXPECT_FALSE(volume);
 
   volume_manager()->RemoveObserver(&observer);
 }

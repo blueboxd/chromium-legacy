@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/callback_forward.h"
+#include "chrome/browser/ash/policy/dlp/dlp_files_controller.h"
 #include "chrome/browser/chromeos/policy/dlp/dlp_confidential_contents.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/base/metadata/metadata_header_macros.h"
@@ -21,9 +22,9 @@ namespace policy {
 using OnDlpRestrictionCheckedCallback =
     base::OnceCallback<void(bool should_proceed)>;
 
-// DlpWarnDialog is a system modal dialog shown when Data Leak Protection on
-// screen restriction (Screen Capture, Printing, Screen Share) level is set to
-// WARN.
+// DlpWarnDialog is a system modal dialog shown when Data Leak Protection
+// files and on screen restriction (Screen Capture, Printing, Screen Share)
+// level is set to WARN.
 class DlpWarnDialog : public views::DialogDelegateView {
  public:
   METADATA_HEADER(DlpWarnDialog);
@@ -34,7 +35,8 @@ class DlpWarnDialog : public views::DialogDelegateView {
     kScreenCapture,
     kVideoCapture,
     kPrinting,
-    kScreenShare
+    kScreenShare,
+    kFiles
   };
 
   // A structure to keep track of optional and configurable parameters of a
@@ -47,6 +49,12 @@ class DlpWarnDialog : public views::DialogDelegateView {
     DlpWarnDialogOptions(Restriction restriction,
                          DlpConfidentialContents confidential_contents,
                          const std::u16string& application_title);
+    DlpWarnDialogOptions(
+        Restriction restriction,
+        DlpConfidentialContents confidential_contents,
+        absl::optional<DlpRulesManager::Component> dst_component,
+        const std::string& destination_pattern,
+        DlpFilesController::FileAction files_action);
     DlpWarnDialogOptions(const DlpWarnDialogOptions& other);
     DlpWarnDialogOptions& operator=(const DlpWarnDialogOptions& other);
     ~DlpWarnDialogOptions();
@@ -58,6 +66,9 @@ class DlpWarnDialog : public views::DialogDelegateView {
                            const DlpWarnDialogOptions& b) {
       return a.restriction == b.restriction &&
              a.application_title == b.application_title &&
+             a.destination_component == b.destination_component &&
+             a.destination_pattern == b.destination_pattern &&
+             a.files_action == b.files_action &&
              EqualWithTitles(a.confidential_contents, b.confidential_contents);
     }
     friend bool operator!=(const DlpWarnDialogOptions& a,
@@ -68,6 +79,13 @@ class DlpWarnDialog : public views::DialogDelegateView {
     Restriction restriction;
     DlpConfidentialContents confidential_contents;
     absl::optional<std::u16string> application_title;
+
+    // May have value only if the |restriction| is kFiles.
+    absl::optional<DlpRulesManager::Component> destination_component;
+    // Has value only if the |restriction| is kFiles.
+    absl::optional<std::string> destination_pattern;
+    // Has value only if the |restriction| is kFiles.
+    absl::optional<DlpFilesController::FileAction> files_action;
   };
 
   DlpWarnDialog() = delete;

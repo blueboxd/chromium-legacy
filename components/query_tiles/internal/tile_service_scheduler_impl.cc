@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -145,7 +145,7 @@ TileGroup* TileServiceSchedulerImpl::GetTileGroup() {
 }
 
 std::unique_ptr<net::BackoffEntry> TileServiceSchedulerImpl::GetBackoff() {
-  const base::Value::List& value = prefs_->GetValueList(kBackoffEntryKey);
+  const base::Value::List& value = prefs_->GetList(kBackoffEntryKey);
   std::unique_ptr<net::BackoffEntry> result =
       net::BackoffEntrySerializer::DeserializeFromList(
           value, backoff_policy_.get(), tick_clock_, clock_->Now());

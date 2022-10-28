@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,10 +6,10 @@
 
 #import <Foundation/Foundation.h>
 
-#include "base/check.h"
-#include "base/command_line.h"
-#include "ios/chrome/common/app_group/app_group_constants.h"
-#include "ios/chrome/common/app_group/app_group_metrics.h"
+#import "base/check.h"
+#import "base/command_line.h"
+#import "ios/chrome/common/app_group/app_group_constants.h"
+#import "ios/chrome/common/app_group/app_group_metrics.h"
 #import "ios/chrome/common/crash_report/crash_helper.h"
 #import "ios/chrome/common/credential_provider/archivable_credential_store.h"
 #import "ios/chrome/common/credential_provider/constants.h"
@@ -57,7 +57,7 @@ UIColor* BackgroundColor() {
 // Reauthentication Module used for reauthentication.
 @property(nonatomic, strong) ReauthenticationModule* reauthenticationModule;
 
-// Interface for |reauthenticationModule|, handling mostly the case when no
+// Interface for `reauthenticationModule`, handling mostly the case when no
 // hardware for authentication is available.
 @property(nonatomic, strong) ReauthenticationHandler* reauthenticationHandler;
 
@@ -67,7 +67,7 @@ UIColor* BackgroundColor() {
 // Loading indicator used for user validation, which APIs can take a long time.
 @property(nonatomic, strong) UIActivityIndicatorView* activityIndicatorView;
 
-// Identfiers cached in |-prepareCredentialListForServiceIdentifiers:| to show
+// Identfiers cached in `-prepareCredentialListForServiceIdentifiers:` to show
 // the next time this view appears.
 @property(nonatomic, strong)
     NSArray<ASCredentialServiceIdentifier*>* serviceIdentifiers;
@@ -92,7 +92,7 @@ UIColor* BackgroundColor() {
 - (void)viewWillAppear:(BOOL)animated {
   [super viewWillAppear:animated];
   // If identifiers were stored in
-  // |-prepareCredentialListForServiceIdentifiers:|, handle that now.
+  // `-prepareCredentialListForServiceIdentifiers:`, handle that now.
   if (self.serviceIdentifiers) {
     NSArray<ASCredentialServiceIdentifier*>* serviceIdentifiers =
         self.serviceIdentifiers;
@@ -220,8 +220,8 @@ UIColor* BackgroundColor() {
       presentReminderOnViewController:self];
 }
 
-// Completes the extension request providing |ASPasswordCredential| that matches
-// the |credentialIdentity| or an error if not found.
+// Completes the extension request providing `ASPasswordCredential` that matches
+// the `credentialIdentity` or an error if not found.
 - (void)provideCredentialForIdentity:
     (ASPasswordCredentialIdentity*)credentialIdentity {
   NSString* identifier = credentialIdentity.recordIdentifier;

@@ -1,4 +1,4 @@
-# Copyright 2020 The Chromium Authors. All rights reserved.
+# Copyright 2020 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -183,10 +183,18 @@ action("symbol_data") {
 
   outputs = [ "$target_gen_dir/symbol_ordering.json" ]
 
+  deps = [
+    ":emoji_data",
+    ":emoji_data_remaining"
+  ]
+
   args = [
     "--output",
     rebase_path(outputs[0], root_build_dir),
   ]
+  args += ["--filter-data-paths"] +
+    rebase_path(get_target_outputs(":emoji_data"), root_build_dir) +
+    rebase_path(get_target_outputs(":emoji_data_remaining"), root_build_dir)
 }
 
 copy("symbol_test_data") {
@@ -224,7 +232,6 @@ js_library("emoji_category_button") {
   deps = [
     ":icons",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
-    "//ui/webui/resources/cr_elements/cr_icon_button:cr_icon_button",
   ]
 }
 
@@ -233,7 +240,6 @@ js_library("emoji_group_button") {
     ":events",
     ":icons",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
-    "//ui/webui/resources/cr_elements/cr_icon_button:cr_icon_button",
   ]
 }
 
@@ -309,8 +315,9 @@ js_library("text_group_button") {
     ":events",
     ":types",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
-    "//ui/webui/resources/cr_elements/cr_button:cr_button",
   ]
+  externs_list =
+      [ "//ui/webui/resources/cr_elements/cr_button/cr_button_externs.js" ]
 }
 
 js_type_check("closure_compile") {

@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -147,6 +147,18 @@ class AudioEncoderTest : public ::testing::TestWithParam<TestScenario> {
                                     testing_clock_.NowTicks());
         task_runner_->RunTasks();
         testing_clock_.Advance(duration);
+      }
+
+      if (codec == CODEC_AUDIO_OPUS) {
+        const int bitrate = audio_encoder_->GetBitrate();
+        EXPECT_GT(bitrate, 0);
+        // Typically Opus has a max of 120000, but this may change if the
+        // library gets rolled. It would be very surprising for it to
+        // surpass this value and getting a test failure is reasonable.
+        EXPECT_LT(bitrate, 256000);
+      } else {
+        // Bit rate is only implemented for opus.
+        EXPECT_EQ(0, audio_encoder_->GetBitrate());
       }
     }
 

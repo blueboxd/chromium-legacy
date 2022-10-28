@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -195,11 +195,6 @@ int RunExecutable(const base::FilePath& existence_checker_path,
              : static_cast<int>(InstallErrors::kExecutableFilePathDoesNotExist);
 }
 
-base::FilePath AlterFileExtension(const base::FilePath& path,
-                                  const std::string& extension) {
-  return path.RemoveExtension().AddExtension(extension);
-}
-
 void CopyDMGContents(const base::FilePath& dmg_path,
                      const base::FilePath& destination_path) {
   base::FileEnumerator file_enumerator(
@@ -332,17 +327,14 @@ int InstallFromArchive(
           {".zip", &InstallFromZip},
           {".app", &InstallFromApp},
       };
-  for (const auto& entry : handlers) {
-    base::FilePath new_path = AlterFileExtension(file_path, entry.first);
-    if (base::PathExists(new_path)) {
-      return entry.second(
-          new_path,
-          base::BindOnce(&RunExecutable, existence_checker_path, ap, arguments,
-                         installer_data_file, scope, pv, timeout));
-    }
+  auto handler = handlers.find(file_path.Extension());
+  if (handler == handlers.end()) {
+    VLOG(0) << "Install failed: no handler for " << file_path.Extension();
+    return static_cast<int>(InstallErrors::kNotSupportedInstallerType);
   }
-
-  VLOG(0) << "Could not find a supported installer to install.";
-  return static_cast<int>(InstallErrors::kNotSupportedInstallerType);
+  return handler->second(
+      file_path,
+      base::BindOnce(&RunExecutable, existence_checker_path, ap, arguments,
+                     installer_data_file, scope, pv, timeout));
 }
 }  // namespace updater

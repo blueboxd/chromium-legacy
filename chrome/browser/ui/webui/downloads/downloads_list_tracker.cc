@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -224,7 +224,7 @@ downloads::mojom::DataPtr DownloadsListTracker::CreateDownloadData(
   file_value->started =
       static_cast<int>(download_item->GetStartTime().ToTimeT());
   file_value->since_string = base::UTF16ToUTF8(
-      ui::TimeFormat::RelativeDate(download_item->GetStartTime(), NULL));
+      ui::TimeFormat::RelativeDate(download_item->GetStartTime(), nullptr));
   file_value->date_string = TimeFormatLongDate(download_item->GetStartTime());
 
   file_value->id = base::NumberToString(download_item->GetId());

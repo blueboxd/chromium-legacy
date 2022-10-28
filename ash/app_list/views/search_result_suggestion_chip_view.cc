@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -26,7 +26,6 @@
 #include "ui/color/color_id.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_palette.h"
-#include "ui/views/accessibility/accessibility_paint_checks.h"
 #include "ui/views/animation/flood_fill_ink_drop_ripple.h"
 #include "ui/views/animation/ink_drop.h"
 #include "ui/views/animation/ink_drop_impl.h"
@@ -35,6 +34,7 @@
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/box_layout.h"
+#include "ui/views/widget/widget.h"
 
 namespace ash {
 
@@ -70,10 +70,6 @@ SearchResultSuggestionChipView::SearchResultSuggestionChipView(
                             : ui::kColorAshAppListFocusRingCompat),
       view_delegate_(view_delegate) {
   SetFocusBehavior(FocusBehavior::ALWAYS);
-  // TODO(crbug.com/1218186): Remove this, this is in place temporarily to be
-  // able to submit accessibility checks, but this focusable View needs to
-  // add a name so that the screen reader knows what to announce.
-  SetProperty(views::kSkipAccessibilityPaintChecks, true);
   SetCallback(
       base::BindRepeating(&SearchResultSuggestionChipView::OnButtonPressed,
                           base::Unretained(this)));
@@ -94,12 +90,14 @@ SearchResultSuggestionChipView::SearchResultSuggestionChipView(
                                2 * ripple_radius);
         const AppListColorProvider* const color_provider =
             AppListColorProvider::Get();
-        const SkColor bg_color = color_provider->GetSearchBoxBackgroundColor();
+        const views::Widget* app_list_widget = host->GetWidget();
+        const SkColor bg_color =
+            color_provider->GetSearchBoxBackgroundColor(app_list_widget);
         return std::make_unique<views::FloodFillInkDropRipple>(
             host->size(), host->GetLocalBounds().InsetsFrom(bounds),
             views::InkDrop::Get(host)->GetInkDropCenterBasedOnLastEvent(),
-            color_provider->GetInkDropBaseColor(bg_color),
-            color_provider->GetInkDropOpacity(bg_color));
+            color_provider->GetInkDropBaseColor(app_list_widget, bg_color),
+            color_provider->GetInkDropOpacity(app_list_widget, bg_color));
       },
       this));
 
@@ -157,8 +155,8 @@ void SearchResultSuggestionChipView::OnPaintBackground(gfx::Canvas* canvas) {
   gfx::Rect bounds = GetContentsBounds();
 
   // Background.
-  flags.setColor(
-      AppListColorProvider::Get()->GetSuggestionChipBackgroundColor());
+  flags.setColor(AppListColorProvider::Get()->GetSuggestionChipBackgroundColor(
+      GetWidget()));
   canvas->DrawRoundRect(bounds, height() / 2, flags);
 
   // Focus Ring should only be visible when keyboard traversal is occurring.
@@ -186,7 +184,7 @@ bool SearchResultSuggestionChipView::OnKeyPressed(const ui::KeyEvent& event) {
 void SearchResultSuggestionChipView::OnThemeChanged() {
   views::View::OnThemeChanged();
   text_view_->SetEnabledColor(
-      AppListColorProvider::Get()->GetSuggestionChipTextColor());
+      AppListColorProvider::Get()->GetSuggestionChipTextColor(GetWidget()));
   SchedulePaint();
 }
 
@@ -225,7 +223,9 @@ void SearchResultSuggestionChipView::UpdateSuggestionChipView() {
   SetIcon(result()->chip_icon());
   SetText(result()->title());
 
-  std::u16string accessible_name = result()->title();
+  std::u16string accessible_name = result()->accessible_name().empty()
+                                       ? result()->title()
+                                       : result()->accessible_name();
   if (result()->id() == kInternalAppIdContinueReading) {
     accessible_name = l10n_util::GetStringFUTF16(
         IDS_APP_LIST_CONTINUE_READING_ACCESSIBILE_NAME, accessible_name);
@@ -257,8 +257,6 @@ void SearchResultSuggestionChipView::InitLayout() {
   text_view_->SetFontList(SharedAppListConfig::instance()
                               .search_result_recommendation_title_font());
   SetText(std::u16string());
-  text_view_->SetEnabledColor(
-      AppListColorProvider::Get()->GetSuggestionChipTextColor());
 }
 
 void SearchResultSuggestionChipView::OnButtonPressed(const ui::Event& event) {

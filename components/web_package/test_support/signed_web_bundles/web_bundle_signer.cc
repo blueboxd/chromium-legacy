@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -98,7 +98,9 @@ cbor::Value WebBundleSigner::CreateIntegrityBlockForBundle(
 
     // Build the payload to sign and then sign it.
     std::vector<uint8_t> payload_to_sign = CreateSignaturePayload(
-        unsigned_bundle_hash, *integrity_block, *attributes);
+        {.unsigned_web_bundle_hash = unsigned_bundle_hash,
+         .integrity_block_cbor = *integrity_block,
+         .attributes_cbor = *attributes});
 
     std::vector<uint8_t> signature(ED25519_SIGNATURE_LEN);
     CHECK_EQ(key_pair.private_key.size(),
@@ -131,10 +133,18 @@ std::vector<uint8_t> WebBundleSigner::SignBundle(
   return signed_web_bundle;
 }
 
+// static
+WebBundleSigner::KeyPair WebBundleSigner::KeyPair::CreateRandom() {
+  std::vector<uint8_t> public_key(ED25519_PUBLIC_KEY_LEN);
+  std::vector<uint8_t> private_key(ED25519_PRIVATE_KEY_LEN);
+  ED25519_keypair(public_key.data(), private_key.data());
+  return KeyPair(public_key, private_key);
+}
+
 WebBundleSigner::KeyPair::KeyPair(base::span<const uint8_t> public_key,
                                   base::span<const uint8_t> private_key)
     : public_key(public_key.begin(), public_key.end()),
-      private_key(private_key.begin(), private_key.end()){};
+      private_key(private_key.begin(), private_key.end()) {}
 
 WebBundleSigner::KeyPair::KeyPair(const WebBundleSigner::KeyPair& other) =
     default;

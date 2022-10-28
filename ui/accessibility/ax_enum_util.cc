@@ -4,6 +4,7 @@
 
 #include "ui/accessibility/ax_enum_util.h"
 
+#include "ui/accessibility/ax_enums.mojom-shared.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 
 namespace ui {
@@ -681,6 +682,8 @@ const char* ToString(ax::mojom::Action action) {
       return "stopDuckingMedia";
     case ax::mojom::Action::kSuspendMedia:
       return "suspendMedia";
+    case ax::mojom::Action::kLongClick:
+      return "longClick";
   }
 
   return "";
@@ -759,6 +762,10 @@ const char* ToString(ax::mojom::Mutation mutation) {
       return "nodeChanged";
     case ax::mojom::Mutation::kNodeRemoved:
       return "nodeRemoved";
+    case ax::mojom::Mutation::kTextChanged:
+      return "textChanged";
+    case ax::mojom::Mutation::kSubtreeUpdateEnd:
+      return "subtreeUpdateEnd";
   }
 
   return "";
@@ -774,6 +781,10 @@ const char* ToString(ax::mojom::StringAttribute string_attribute) {
       return "ariaInvalidValue";
     case ax::mojom::StringAttribute::kAutoComplete:
       return "autoComplete";
+    case ax::mojom::StringAttribute::kAriaBrailleLabel:
+      return "ariaBrailleLabel";
+    case ax::mojom::StringAttribute::kAriaBrailleRoleDescription:
+      return "ariaBrailleRoleDescription";
     case ax::mojom::StringAttribute::kCheckedStateDescription:
       return "checkedStateDescription";
     case ax::mojom::StringAttribute::kChildTreeId:
@@ -790,6 +801,8 @@ const char* ToString(ax::mojom::StringAttribute string_attribute) {
       return "description";
     case ax::mojom::StringAttribute::kDisplay:
       return "display";
+    case ax::mojom::StringAttribute::kDoDefaultLabel:
+      return "doDefaultLabel";
     case ax::mojom::StringAttribute::kFontFamily:
       return "fontFamily";
     case ax::mojom::StringAttribute::kHtmlTag:
@@ -820,6 +833,8 @@ const char* ToString(ax::mojom::StringAttribute string_attribute) {
       return "role";
     case ax::mojom::StringAttribute::kRoleDescription:
       return "roleDescription";
+    case ax::mojom::StringAttribute::kLongClickLabel:
+      return "longClickLabel";
     case ax::mojom::StringAttribute::kTooltip:
       return "tooltip";
     case ax::mojom::StringAttribute::kUrl:
@@ -1031,6 +1046,8 @@ const char* ToString(ax::mojom::BoolAttribute bool_attribute) {
       return "hasAriaAttribute";
     case ax::mojom::BoolAttribute::kTouchPassthrough:
       return "touchPassthrough";
+    case ax::mojom::BoolAttribute::kLongClickable:
+      return "longClickable";
   }
 
   return "";

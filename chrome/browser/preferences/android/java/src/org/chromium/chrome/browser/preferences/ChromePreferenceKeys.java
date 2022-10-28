@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,8 +6,9 @@ package org.chromium.chrome.browser.preferences;
 
 import static org.chromium.components.browser_ui.share.ClipboardConstants.CLIPBOARD_SHARED_URI;
 import static org.chromium.components.browser_ui.share.ClipboardConstants.CLIPBOARD_SHARED_URI_TIMESTAMP;
+import static org.chromium.components.browser_ui.site_settings.SingleCategorySettingsConstants.USER_ENABLED_DESKTOP_SITE_GLOBAL_SETTING_PREFERENCE_KEY;
 
-import org.chromium.base.annotations.CheckDiscard;
+import org.chromium.build.annotations.CheckDiscard;
 import org.chromium.components.browser_ui.accessibility.AccessibilityConstants;
 
 import java.util.Arrays;
@@ -249,11 +250,28 @@ public final class ChromePreferenceKeys {
     public static final String DEFAULT_ENABLED_DESKTOP_SITE_GLOBAL_SETTING_SHOW_MESSAGE =
             "Chrome.RequestDesktopSiteGlobalSetting.DefaultEnabledShowMessage";
     /**
+     * Indicates whether the device qualifies for default-enabling the desktop site global setting.
+     */
+    public static final String DEFAULT_ENABLE_DESKTOP_SITE_GLOBAL_SETTING_COHORT =
+            "Chrome.RequestDesktopSiteGlobalSetting.DefaultEnabledCohort";
+    /**
      * Indicates whether an opt-in message was shown for the desktop site global setting based on
      * device conditions.
      */
     public static final String DESKTOP_SITE_GLOBAL_SETTING_OPT_IN_MESSAGE_SHOWN =
             "Chrome.RequestDesktopSiteGlobalSetting.OptInMessageShown";
+    /**
+     * Indicates whether the desktop site global setting was enabled prior to downgrade of desktop
+     * site domain level exceptions.
+     */
+    public static final String DESKTOP_SITE_EXCEPTIONS_DOWNGRADE_GLOBAL_SETTING_ENABLED =
+            "Chrome.RequestDesktopSiteExceptionsDowngrade.GlobalSettingEnabled";
+    /**
+     * Holds a set of tab IDs for tabs whose desktop site tab level settings have to be updated on
+     * downgrade of desktop site domain level exceptions.
+     */
+    public static final String DESKTOP_SITE_EXCEPTIONS_DOWNGRADE_TAB_SETTING_SET =
+            "Chrome.RequestDesktopSiteExceptionsDowngrade.TabSettingSet";
 
     public static final String DOWNLOAD_AUTO_RESUMPTION_ATTEMPT_LEFT = "ResumptionAttemptLeft";
     public static final String DOWNLOAD_FOREGROUND_SERVICE_OBSERVERS = "ForegroundServiceObservers";
@@ -1032,6 +1050,9 @@ public final class ChromePreferenceKeys {
                 DEFAULT_BROWSER_PROMO_SESSION_COUNT,
                 DEFAULT_ENABLED_DESKTOP_SITE_GLOBAL_SETTING,
                 DEFAULT_ENABLED_DESKTOP_SITE_GLOBAL_SETTING_SHOW_MESSAGE,
+                DEFAULT_ENABLE_DESKTOP_SITE_GLOBAL_SETTING_COHORT,
+                DESKTOP_SITE_EXCEPTIONS_DOWNGRADE_GLOBAL_SETTING_ENABLED,
+                DESKTOP_SITE_EXCEPTIONS_DOWNGRADE_TAB_SETTING_SET,
                 DESKTOP_SITE_GLOBAL_SETTING_OPT_IN_MESSAGE_SHOWN,
                 DOWNLOAD_INTERSTITIAL_DOWNLOAD_PENDING_REMOVAL,
                 EXPLORE_OFFLINE_CONTENT_AVAILABILITY_STATUS,
@@ -1124,6 +1145,7 @@ public final class ChromePreferenceKeys {
                 TAP_MV_TILES_COUNT,
                 TWA_DISCLOSURE_SEEN_PACKAGES,
                 USB_NOTIFICATION_IDS,
+                USER_ENABLED_DESKTOP_SITE_GLOBAL_SETTING_PREFERENCE_KEY,
                 VIDEO_TUTORIALS_SHARE_URL_SET,
                 WEB_FEED_INTRO_LAST_SHOWN_TIME_MS,
                 WEB_FEED_INTRO_WEB_FEED_ID_SHOWN_TIME_MS_PREFIX.pattern(),

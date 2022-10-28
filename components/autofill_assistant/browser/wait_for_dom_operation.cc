@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -28,8 +28,7 @@ WaitForDomOperation::WaitForDomOperation(
       allow_interrupt_(allow_interrupt),
       use_observers_(allow_observers && delegate->GetTriggerContext()
                                             ->GetScriptParameters()
-                                            .GetEnableObserverWaitForDom()
-                                            .value_or(false)),
+                                            .GetEnableObserverWaitForDom()),
       check_elements_(std::move(check_elements)),
       callback_(std::move(callback)),
       timeout_warning_delay_(delegate_->GetSettings().warning_delay),
@@ -235,7 +234,8 @@ void WaitForDomOperation::RunInterrupt(const std::string& path) {
       std::make_unique<TriggerContext>(std::vector<const TriggerContext*>{
           main_script_->additional_context_.get()}),
       main_script_->last_global_payload_, main_script_->initial_script_payload_,
-      /* listener= */ this, &no_interrupts_, delegate_, ui_delegate_);
+      /* listener= */ this, &no_interrupts_, delegate_, ui_delegate_,
+      /* is_interrupt_executor= */ true);
   delegate_->EnterState(AutofillAssistantState::RUNNING);
   ui_delegate_->SetUserActions(nullptr);
   // Note that we don't clear the touchable area in the delegate here.

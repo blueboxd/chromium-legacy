@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -48,15 +48,21 @@ NSString* const kSolidPrimaryColor = @"solid_primary_color";
 NSString* const kBlueColor = @"blue_color";
 NSString* const kBlueHaloColor = @"blue_halo_color";
 NSString* const kBlue500Color = @"blue_500_color";
+NSString* const kBlue600Color = @"blue_600_color";
 NSString* const kBlue700Color = @"blue_700_color";
 NSString* const kGreenColor = @"green_color";
 NSString* const kGreen50Color = @"green_50_color";
 NSString* const kGreen500Color = @"green_500_color";
 NSString* const kGreen700Color = @"green_700_color";
-NSString* const kRedColor = @"red_color";
+NSString* const kRedColor = kRed600Color;
 NSString* const kRed500Color = @"red_500_color";
+NSString* const kRed600Color = @"red_600_color";
+NSString* const kPink400Color = @"pink_400_color";
+NSString* const kPink500Color = @"pink_500_color";
+NSString* const kPurple500Color = @"purple_500_color";
 NSString* const kPurple600Color = @"purple_600_color";
 NSString* const kYellow500Color = @"yellow_500_color";
+NSString* const kOrange500Color = @"orange_500_color";
 
 #pragma mark - Grey Palette
 NSString* const kGrey50Color = @"grey_50_color";

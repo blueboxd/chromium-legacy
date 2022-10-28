@@ -1,12 +1,12 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #import "ios/components/security_interstitials/safe_browsing/pending_unsafe_resource_storage.h"
 
-#include "base/bind.h"
+#import "base/bind.h"
 #import "ios/web/public/test/fakes/fake_web_state.h"
-#include "testing/platform_test.h"
+#import "testing/platform_test.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -32,7 +32,7 @@ class PendingUnsafeResourceStorageTest : public PlatformTest {
     SafeBrowsingUrlAllowList::CreateForWebState(&web_state_);
     allow_list()->AddPendingUnsafeNavigationDecision(url_, threat_type_);
 
-    // Create a storage for |resource|.
+    // Create a storage for `resource`.
     storage_ = PendingUnsafeResourceStorage(resource);
   }
 

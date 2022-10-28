@@ -1,13 +1,13 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #import "ios/web/find_in_page/find_in_page_manager_impl.h"
 
-#include "base/run_loop.h"
+#import "base/run_loop.h"
 #import "base/test/ios/wait_util.h"
-#include "base/test/metrics/user_action_tester.h"
-#include "base/values.h"
+#import "base/test/metrics/user_action_tester.h"
+#import "base/values.h"
 #import "ios/web/find_in_page/find_in_page_constants.h"
 #import "ios/web/find_in_page/find_in_page_java_script_feature.h"
 #import "ios/web/js_messaging/java_script_feature_manager.h"
@@ -17,8 +17,8 @@
 #import "ios/web/public/test/fakes/fake_web_frame.h"
 #import "ios/web/public/test/fakes/fake_web_frames_manager.h"
 #import "ios/web/public/test/fakes/fake_web_state.h"
-#include "ios/web/public/test/web_test.h"
-#include "testing/gtest/include/gtest/gtest.h"
+#import "ios/web/public/test/web_test.h"
+#import "testing/gtest/include/gtest/gtest.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -50,13 +50,13 @@ class FindInPageManagerImplTest : public WebTest {
     GetFindInPageManager()->SetDelegate(&fake_delegate_);
   }
 
-  // Returns the FindInPageManager associated with |fake_web_state_|.
+  // Returns the FindInPageManager associated with `fake_web_state_`.
   FindInPageManager* GetFindInPageManager() {
     return FindInPageManager::FromWebState(fake_web_state_.get());
   }
 
   // Returns a fake WebFrame that represents the main frame which will return
-  // |js_result| for the JavaScript function call "findInString.findString".
+  // `js_result` for the JavaScript function call "findInString.findString".
   std::unique_ptr<FakeWebFrame> CreateMainWebFrameWithJsResultForFind(
       base::Value* js_result) {
     auto frame = FakeWebFrame::CreateMainWebFrame(GURL());
@@ -66,7 +66,7 @@ class FindInPageManagerImplTest : public WebTest {
   }
 
   // Returns a fake WebFrame that represents a child frame which will return
-  // |js_result| for the JavaScript function call "findInString.findString".
+  // `js_result` for the JavaScript function call "findInString.findString".
   std::unique_ptr<FakeWebFrame> CreateChildWebFrameWithJsResultForFind(
       base::Value* js_result) {
     auto frame = FakeWebFrame::CreateChildWebFrame(GURL());

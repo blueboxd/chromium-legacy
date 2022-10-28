@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -104,6 +104,16 @@ export class MultiDeviceBrowserProxy {
   cancelCombinedFeatureSetup() {}
 
   /**
+   * Attempts to connect to the phone before setup.
+   */
+  attemptFeatureSetupConnection() {}
+
+  /**
+   * Cancel the connection flow.
+   */
+  cancelFeatureSetupConnection() {}
+
+  /**
    * Log [Cancel] button click event in phone hub combined feature access setup
    * flow.
    *  @param {!PhoneHubPermissionsSetupFlowScreens} screen
@@ -116,6 +126,20 @@ export class MultiDeviceBrowserProxy {
    *  @param {!PhoneHubPermissionsSetupFeatureCombination} setup_mode
    */
   logPhoneHubPermissionSetUpButtonClicked(setup_mode) {}
+
+  /**
+   * Log setup mode when multidevice permissions set up intro screen is
+   * displayed.
+   * @param {!PhoneHubPermissionsSetupFeatureCombination} setup_mode
+   */
+  logPhoneHubPermissionOnboardingSetupMode(setup_mode) {}
+
+  /**
+   * Log setup mode when multidevice permissions set up finished screen is
+   * displayed.
+   * @param {!PhoneHubPermissionsSetupFeatureCombination} completed_mode
+   */
+  logPhoneHubPermissionOnboardingSetupResult(completed_mode) {}
 }
 
 /** @type {?MultiDeviceBrowserProxy} */
@@ -217,6 +241,16 @@ export class MultiDeviceBrowserProxyImpl {
   }
 
   /** @override */
+  attemptFeatureSetupConnection() {
+    chrome.send('attemptFeatureSetupConnection');
+  }
+
+  /** @override */
+  cancelFeatureSetupConnection() {
+    chrome.send('cancelFeatureSetupConnection');
+  }
+
+  /** @override */
   logPhoneHubPermissionSetUpScreenAction(screen, action) {
     chrome.send('logPhoneHubPermissionSetUpScreenAction', [screen, action]);
   }
@@ -224,5 +258,15 @@ export class MultiDeviceBrowserProxyImpl {
   /** @override */
   logPhoneHubPermissionSetUpButtonClicked(setup_mode) {
     chrome.send('logPhoneHubPermissionSetUpButtonClicked', [setup_mode]);
+  }
+
+  /** @override */
+  logPhoneHubPermissionOnboardingSetupMode(setup_mode) {
+    chrome.send('logPhoneHubPermissionOnboardingSetupMode', [setup_mode]);
+  }
+
+  /** @override */
+  logPhoneHubPermissionOnboardingSetupResult(completed_mode) {
+    chrome.send('logPhoneHubPermissionOnboardingSetupResult', [completed_mode]);
   }
 }

@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -484,7 +484,7 @@ void BackgroundContentsService::LoadBackgroundContentsFromPrefs() {
   if (!prefs_)
     return;
   const base::Value::Dict& contents =
-      prefs_->GetValueDict(prefs::kRegisteredBackgroundContents);
+      prefs_->GetDict(prefs::kRegisteredBackgroundContents);
   extensions::ExtensionRegistry* extension_registry =
       extensions::ExtensionRegistry::Get(profile_);
   DCHECK(extension_registry);
@@ -546,7 +546,7 @@ void BackgroundContentsService::LoadBackgroundContentsForExtension(
   if (!prefs_)
     return;
   const base::Value::Dict& contents =
-      prefs_->GetValueDict(prefs::kRegisteredBackgroundContents);
+      prefs_->GetDict(prefs::kRegisteredBackgroundContents);
   LoadBackgroundContentsFromDictionary(extension_id, contents);
 }
 
@@ -659,9 +659,9 @@ bool BackgroundContentsService::HasRegisteredBackgroundContents(
     const std::string& app_id) {
   if (!prefs_)
     return false;
-  const base::Value* contents =
-      prefs_->GetDictionary(prefs::kRegisteredBackgroundContents);
-  return contents->FindKey(app_id);
+  const base::Value::Dict& contents =
+      prefs_->GetDict(prefs::kRegisteredBackgroundContents);
+  return contents.Find(app_id);
 }
 
 void BackgroundContentsService::UnregisterBackgroundContents(
@@ -733,13 +733,13 @@ void BackgroundContentsService::AddWebContents(
     std::unique_ptr<WebContents> new_contents,
     const GURL& target_url,
     WindowOpenDisposition disposition,
-    const gfx::Rect& initial_rect,
+    const blink::mojom::WindowFeatures& window_features,
     bool* was_blocked) {
   Browser* browser = chrome::FindLastActiveWithProfile(
       Profile::FromBrowserContext(new_contents->GetBrowserContext()));
   if (browser) {
     chrome::AddWebContents(browser, nullptr, std::move(new_contents),
-                           target_url, disposition, initial_rect);
+                           target_url, disposition, window_features);
   }
 }
 

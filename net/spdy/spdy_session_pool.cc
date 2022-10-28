@@ -1,10 +1,9 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "net/spdy/spdy_session_pool.h"
 
-#include <algorithm>
 #include <set>
 #include <utility>
 
@@ -12,14 +11,14 @@
 #include "base/check_op.h"
 #include "base/containers/contains.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/ranges/algorithm.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
 #include "base/values.h"
 #include "build/build_config.h"
-#include "net/base/address_list.h"
+#include "net/base/ip_endpoint.h"
 #include "net/base/trace_constants.h"
-#include "net/dns/dns_alias_utility.h"
 #include "net/dns/host_resolver.h"
 #include "net/dns/public/host_resolver_source.h"
 #include "net/http/http_network_session.h"
@@ -278,7 +277,8 @@ base::WeakPtr<SpdySession> SpdySessionPool::RequestSession(
 OnHostResolutionCallbackResult SpdySessionPool::OnHostResolutionComplete(
     const SpdySessionKey& key,
     bool is_websocket,
-    const AddressList& addresses) {
+    const std::vector<HostResolverEndpointResult>& endpoint_results,
+    const std::set<std::string>& aliases) {
   // If there are no pending requests for that alias, nothing to do.
   if (spdy_session_request_map_.find(key) == spdy_session_request_map_.end())
     return OnHostResolutionCallbackResult::kContinue;
@@ -296,7 +296,12 @@ OnHostResolutionCallbackResult SpdySessionPool::OnHostResolutionComplete(
 
     return OnHostResolutionCallbackResult::kMayBeDeletedAsync;
   }
-  for (const auto& address : addresses) {
+
+  // TODO(crbug.com/1264933): Consider dealing with the other endpoints
+  // with protocol metadata.
+  const auto ip_endpoints =
+      HostResolver::GetNonProtocolEndpoints(endpoint_results);
+  for (const auto& address : ip_endpoints) {
     auto range = aliases_.equal_range(address);
     for (auto alias_it = range.first; alias_it != range.second; ++alias_it) {
       // We found a potential alias.
@@ -368,8 +373,8 @@ OnHostResolutionCallbackResult SpdySessionPool::OnHostResolutionComplete(
         aliases_.erase(alias_it);
 
         // Remap pooled session keys.
-        const auto& aliases = available_session->pooled_aliases();
-        for (auto it = aliases.begin(); it != aliases.end();) {
+        const auto& pooled_aliases = available_session->pooled_aliases();
+        for (auto it = pooled_aliases.begin(); it != pooled_aliases.end();) {
           // Ignore aliases this loop is inserting.
           if (it->socket_tag() == key.socket_tag()) {
             ++it;
@@ -398,15 +403,8 @@ OnHostResolutionCallbackResult SpdySessionPool::OnHostResolutionComplete(
       }
 
       if (adding_pooled_alias) {
-        // Sanitize DNS aliases so that they can be added to the DNS alias map.
-        std::set<std::string> fixed_dns_aliases =
-            dns_alias_utility::FixUpDnsAliases(
-                std::set<std::string>(addresses.dns_aliases().begin(),
-                                      addresses.dns_aliases().end()));
-
         // Add this session to the map so that we can find it next time.
-        MapKeyToAvailableSession(key, available_session,
-                                 std::move(fixed_dns_aliases));
+        MapKeyToAvailableSession(key, available_session, aliases);
         available_session->AddPooledAlias(key);
       }
 
@@ -469,7 +467,7 @@ void SpdySessionPool::CloseCurrentIdleSessions(const std::string& description) {
 void SpdySessionPool::CloseAllSessions() {
   auto is_draining = [](const SpdySession* s) { return s->IsDraining(); };
   // Repeat until every SpdySession owned by |this| is draining.
-  while (!std::all_of(sessions_.begin(), sessions_.end(), is_draining)) {
+  while (!base::ranges::all_of(sessions_, is_draining)) {
     CloseCurrentSessionsHelper(ERR_ABORTED, "Closing all sessions.",
                                false /* idle_only */);
   }

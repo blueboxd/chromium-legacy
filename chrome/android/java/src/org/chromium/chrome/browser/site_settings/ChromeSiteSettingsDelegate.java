@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -137,6 +137,11 @@ public class ChromeSiteSettingsDelegate implements SiteSettingsDelegate {
     }
 
     @Override
+    public boolean isPrivacySandboxFirstPartySetsUIFeatureEnabled() {
+        return ChromeFeatureList.isEnabled(ChromeFeatureList.PRIVACY_SANDBOX_FPS_UI);
+    }
+
+    @Override
     public String getChannelIdForOrigin(String origin) {
         return SiteChannelsManager.getInstance().getChannelIdForOrigin(origin);
     }
@@ -210,6 +215,21 @@ public class ChromeSiteSettingsDelegate implements SiteSettingsDelegate {
         if (mPrivacySandboxController != null) {
             mPrivacySandboxController.dismissSnackbar();
         }
+    }
+
+    @Override
+    public boolean isFirstPartySetsDataAccessEnabled() {
+        return PrivacySandboxBridge.isFirstPartySetsDataAccessEnabled();
+    }
+
+    @Override
+    public boolean isFirstPartySetsDataAccessManaged() {
+        return PrivacySandboxBridge.isFirstPartySetsDataAccessManaged();
+    }
+
+    @Override
+    public void setFirstPartySetsDataAccessEnabled(boolean enabled) {
+        PrivacySandboxBridge.setFirstPartySetsDataAccessEnabled(enabled);
     }
 
     @Override

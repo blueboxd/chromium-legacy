@@ -1,12 +1,14 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #ifndef CHROME_BROWSER_FAST_CHECKOUT_FAST_CHECKOUT_CLIENT_IMPL_H_
 #define CHROME_BROWSER_FAST_CHECKOUT_FAST_CHECKOUT_CLIENT_IMPL_H_
 
+#include "base/scoped_observation.h"
 #include "chrome/browser/fast_checkout/fast_checkout_client.h"
 #include "chrome/browser/ui/fast_checkout/fast_checkout_controller_impl.h"
+#include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill_assistant/browser/public/headless_script_controller.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_user_data.h"
@@ -17,7 +19,8 @@ class FastCheckoutExternalActionDelegate;
 class FastCheckoutClientImpl
     : public content::WebContentsUserData<FastCheckoutClientImpl>,
       public FastCheckoutClient,
-      public FastCheckoutControllerImpl::Delegate {
+      public FastCheckoutControllerImpl::Delegate,
+      public autofill::PersonalDataManagerObserver {
  public:
   ~FastCheckoutClientImpl() override;
 
@@ -25,7 +28,8 @@ class FastCheckoutClientImpl
   FastCheckoutClientImpl& operator=(const FastCheckoutClientImpl&) = delete;
 
   // FastCheckoutClient:
-  bool Start(const GURL& url) override;
+  bool Start(base::WeakPtr<autofill::FastCheckoutDelegate> delegate,
+             const GURL& url) override;
   void Stop() override;
   bool IsRunning() const override;
 
@@ -53,13 +57,30 @@ class FastCheckoutClientImpl
  private:
   friend class content::WebContentsUserData<FastCheckoutClientImpl>;
 
+  // From autofill::PersonalDataManagerObserver.
+  void OnPersonalDataChanged() override;
+
+  // Returns the current active personal data manager.
+  autofill::PersonalDataManager* GetPersonalDataManager();
+
+  // Called whenever the surface gets hidden (regardless of the cause). Informs
+  // the Delegate that the surface is now hidden.
+  void OnHidden();
+
   // Registers when a run is complete. Used in callbacks.
   void OnRunComplete(
       autofill_assistant::HeadlessScriptController::ScriptResult result);
 
-  // Registers when onboarding was completed successfully and the scripts are
-  // ready to run.
+  // Displays the bottom sheet UI. If the underlying autofill data is updated,
+  // the method is called again to refresh the information displayed in the UI.
+  void ShowFastCheckoutUI();
+
+  // Registers when onboarding was completed successfully and the scripts
+  // are ready to run.
   void OnOnboardingCompletedSuccessfully();
+
+  // Delegate for the surface being shown.
+  base::WeakPtr<autofill::FastCheckoutDelegate> delegate_;
 
   // The delegate is responsible for handling protos received from backend DSL
   // actions.
@@ -81,6 +102,10 @@ class FastCheckoutClientImpl
 
   // The url for which `Start()` was triggered.
   GURL url_;
+
+  base::ScopedObservation<autofill::PersonalDataManager,
+                          autofill::PersonalDataManagerObserver>
+      personal_data_manager_observation_{this};
 
   // content::WebContentsUserData:
   WEB_CONTENTS_USER_DATA_KEY_DECL();

@@ -71,7 +71,7 @@ CanvasRenderingContext2DState::CanvasRenderingContext2DState()
     : stroke_style_(MakeGarbageCollected<CanvasStyle>(SK_ColorBLACK)),
       fill_style_(MakeGarbageCollected<CanvasStyle>(SK_ColorBLACK)),
       shadow_blur_(0.0),
-      shadow_color_(Color::kTransparent),
+      shadow_color_(SK_ColorTRANSPARENT),
       global_alpha_(1.0),
       line_dash_offset_(0.0),
       unparsed_font_(defaultFont),
@@ -124,6 +124,7 @@ CanvasRenderingContext2DState::CanvasRenderingContext2DState(
       shadow_and_foreground_image_filter_(
           other.shadow_and_foreground_image_filter_),
       global_alpha_(other.global_alpha_),
+      global_alpha_filter_(other.global_alpha_filter_),
       transform_(other.transform_),
       line_dash_(other.line_dash_),
       line_dash_offset_(other.line_dash_offset_),
@@ -249,8 +250,7 @@ void CanvasRenderingContext2DState::UpdateStrokeStyle() const {
 
   DCHECK(stroke_style_);
   stroke_style_->ApplyToFlags(stroke_flags_);
-  stroke_flags_.setColor(
-      ScaleAlpha(stroke_style_->PaintColor(), global_alpha_));
+  stroke_flags_.setColor(stroke_style_->PaintColor());
   stroke_style_dirty_ = false;
 }
 
@@ -260,7 +260,7 @@ void CanvasRenderingContext2DState::UpdateFillStyle() const {
 
   DCHECK(fill_style_);
   fill_style_->ApplyToFlags(fill_flags_);
-  fill_flags_.setColor(ScaleAlpha(fill_style_->PaintColor(), global_alpha_));
+  fill_flags_.setColor(fill_style_->PaintColor());
   fill_style_dirty_ = false;
 }
 
@@ -290,17 +290,17 @@ bool CanvasRenderingContext2DState::ShouldAntialias() const {
 }
 
 void CanvasRenderingContext2DState::SetGlobalAlpha(double alpha) {
+  if (alpha == global_alpha_)
+    return;
+  global_alpha_filter_ = nullptr;
   global_alpha_ = alpha;
-  stroke_style_dirty_ = true;
-  fill_style_dirty_ = true;
-  image_flags_.setColor(ScaleAlpha(SK_ColorBLACK, alpha));
 }
 
 void CanvasRenderingContext2DState::ClipPath(
     const SkPath& path,
     AntiAliasingMode anti_aliasing_mode) {
   clip_list_.ClipPath(path, anti_aliasing_mode,
-                      TransformationMatrixToSkMatrix(transform_));
+                      AffineTransformToSkMatrix(transform_));
   has_clip_ = true;
   if (!path.isRect(nullptr))
     has_complex_clip_ = true;
@@ -391,15 +391,8 @@ void CanvasRenderingContext2DState::SetFontVariantCaps(
   SetFont(font_description, selector);
 }
 
-AffineTransform CanvasRenderingContext2DState::GetAffineTransform() const {
-  AffineTransform affine_transform =
-      AffineTransform(transform_.M11(), transform_.M12(), transform_.M21(),
-                      transform_.M22(), transform_.M41(), transform_.M42());
-  return affine_transform;
-}
-
 void CanvasRenderingContext2DState::SetTransform(
-    const TransformationMatrix& transform) {
+    const AffineTransform& transform) {
   is_transform_invertible_ = transform.IsInvertible();
   transform_ = transform;
 }
@@ -549,6 +542,44 @@ sk_sp<PaintFilter> CanvasRenderingContext2DState::GetFilter(
       resolved_filter_ ? FilterState::kResolved : FilterState::kInvalid;
   ValidateFilterState();
   return resolved_filter_;
+}
+
+// Returns the PaintFilter for the globalAlpha effect.
+sk_sp<PaintFilter> CanvasRenderingContext2DState::GetGlobalAlphaAsFilter(
+    gfx::Size canvas_size,
+    BaseRenderingContext2D* context) {
+  DCHECK(global_alpha_ != 1.0);
+  if (global_alpha_filter_) {
+    return global_alpha_filter_;
+  }
+
+  // We can't reuse m_fillFlags and m_strokeFlags for the filter, since these
+  // incorporate the global alpha, which isn't applicable here.
+  cc::PaintFlags fill_flags_for_filter;
+  fill_style_->ApplyToFlags(fill_flags_for_filter);
+  fill_flags_for_filter.setColor(fill_style_->PaintColor());
+  cc::PaintFlags stroke_flags_for_filter;
+  stroke_style_->ApplyToFlags(stroke_flags_for_filter);
+  stroke_flags_for_filter.setColor(stroke_style_->PaintColor());
+
+  FilterEffectBuilder filter_effect_builder(
+      gfx::RectF(gfx::SizeF(canvas_size)),
+      1.0f,  // Deliberately ignore zoom on the canvas element.
+      &fill_flags_for_filter, &stroke_flags_for_filter);
+
+  FilterOperations operations;
+  operations.Operations().push_back(
+      MakeGarbageCollected<BasicComponentTransferFilterOperation>(
+          global_alpha_, FilterOperation::OperationType::kOpacity));
+
+  FilterEffect* last_effect = filter_effect_builder.BuildFilterEffect(
+      operations, !context->OriginClean());
+  if (last_effect) {
+    global_alpha_filter_ =
+        paint_filter_builder::Build(last_effect, kInterpolationSpaceSRGB);
+  }
+
+  return global_alpha_filter_;
 }
 
 void CanvasRenderingContext2DState::ClearResolvedFilter() {
@@ -762,7 +793,9 @@ const cc::PaintFlags* CanvasRenderingContext2DState::GetFlags(
   }
 
   if (shadow_mode == kDrawShadowOnly) {
-    if (image_type == kNonOpaqueImage || css_filter_value_) {
+    if (image_type == kNonOpaqueImage || css_filter_value_ ||
+        global_alpha_ != 1.0) {
+      // If the global_alpha_ is different than 1.0 a filter will be applied
       flags->setLooper(nullptr);
       flags->setImageFilter(ShadowOnlyImageFilter());
       return flags;

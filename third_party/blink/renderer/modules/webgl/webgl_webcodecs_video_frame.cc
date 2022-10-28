@@ -18,6 +18,7 @@
 #include "third_party/blink/renderer/modules/webgl/webgl_unowned_texture.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/graphics/gpu/drawing_buffer.h"
+#include "third_party/blink/renderer/platform/scheduler/public/main_thread.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
 #include "third_party/blink/renderer/platform/scheduler/public/worker_pool.h"
 #include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
@@ -155,13 +156,13 @@ WebGLWebCodecsVideoFrameHandle* WebGLWebCodecsVideoFrame::importVideoFrame(
     base::WaitableEvent waitable_event;
     media_task_runner_->PostTask(
         FROM_HERE,
-        base::BindOnce(
+        WTF::Bind(
             &media::GpuMemoryBufferVideoFramePool::MaybeCreateHardwareFrame,
             base::Unretained(gpu_memory_buffer_pool_.get()),
             base::RetainedRef(frame),
-            base::BindOnce(
-                &WebGLWebCodecsVideoFrame::OnHardwareVideoFrameCreated,
-                base::Unretained(this), base::Unretained(&waitable_event))));
+            WTF::Bind(&WebGLWebCodecsVideoFrame::OnHardwareVideoFrameCreated,
+                      base::Unretained(this),
+                      base::Unretained(&waitable_event))));
     waitable_event.Wait();
 
     if (frame == hardware_video_frame_) {

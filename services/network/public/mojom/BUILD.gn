@@ -16,6 +16,8 @@ mojom("mojom_ip_address") {
   sources = [
     "address_family.mojom",
     "address_list.mojom",
+    "connection_endpoint_metadata.mojom",
+    "host_resolver_endpoint_result.mojom",
     "ip_address.mojom",
     "ip_endpoint.mojom",
   ]
@@ -109,6 +111,26 @@ mojom("mojom_ip_address") {
         "//net",
         "//services/network/public/cpp:ip_address_mojom_support",
       ]
+    },
+    {
+      types = [
+        {
+          mojom = "network.mojom.ConnectionEndpointMetadata"
+          cpp = "::net::ConnectionEndpointMetadata"
+        },
+      ]
+      traits_headers = [ "//services/network/public/cpp/connection_endpoint_metadata_mojom_traits.h" ]
+      traits_public_deps = [ "//net" ]
+    },
+    {
+      types = [
+        {
+          mojom = "network.mojom.HostResolverEndpointResult"
+          cpp = "::net::HostResolverEndpointResult"
+        },
+      ]
+      traits_headers = [ "//services/network/public/cpp/host_resolver_endpoint_result_mojom_traits.h" ]
+      traits_public_deps = [ "//net" ]
     },
   ]
   cpp_typemaps += shared_cpp_typemaps
@@ -756,8 +778,30 @@ mojom("mojom_first_party_sets") {
               cpp = "::net::FirstPartySetEntry::SiteIndex"
             },
             {
+              mojom = "network.mojom.SiteType"
+              cpp = "::net::SiteType"
+            },
+            {
               mojom = "network.mojom.FirstPartySetEntry"
               cpp = "::net::FirstPartySetEntry"
+            },
+            {
+              mojom = "network.mojom.SamePartyCookieContextType"
+              cpp = "::net::SamePartyContext::Type"
+            },
+            {
+              mojom = "network.mojom.SamePartyContext"
+              cpp = "::net::SamePartyContext"
+            },
+            {
+              mojom = "network.mojom.FirstPartySetMetadata"
+              cpp = "::net::FirstPartySetMetadata"
+              move_only = true
+            },
+            {
+              mojom = "network.mojom.PublicFirstPartySets"
+              cpp = "::net::PublicSets"
+              move_only = true
             },
           ]
           traits_headers = [
@@ -900,11 +944,6 @@ mojom("cookies_mojom") {
           mojom = "network.mojom.CookieSourceScheme"
           cpp = "::net::CookieSourceScheme"
         },
-        {
-          mojom = "network.mojom.FirstPartySetMetadata"
-          cpp = "::net::FirstPartySetMetadata"
-          move_only = true
-        },
       ]
       traits_headers =
           [ "//services/network/public/cpp/cookie_manager_mojom_traits.h" ]
@@ -957,6 +996,7 @@ mojom("mojom") {
     "tcp_socket.mojom",
     "tls_socket.mojom",
     "transferable_directory.mojom",
+    "transferable_socket.mojom",
     "udp_socket.mojom",
     "url_loader_factory.mojom",
   ]
@@ -976,6 +1016,7 @@ mojom("mojom") {
     "//services/proxy_resolver/public/mojom",
     "//url/mojom:url_mojom_gurl",
     "//url/mojom:url_mojom_origin",
+    "//url/mojom:url_mojom_scheme_host_port",
   ]
 
   if (is_win) {
@@ -1161,6 +1202,20 @@ mojom("mojom") {
       traits_public_deps = [
         "//net",
         "//services/network/public/cpp:cpp_base",
+      ]
+    },
+    {
+      types = [
+        {
+          mojom = "network.mojom.TransferableSocket"
+          cpp = "::network::TransferableSocket"
+          move_only = true
+        },
+      ]
+      traits_headers =
+          [ "//services/network/public/cpp/transferable_socket_mojom_traits.h" ]
+      traits_sources = [
+        "//services/network/public/cpp/transferable_socket_mojom_traits.cc",
       ]
     },
   ]

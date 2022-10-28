@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -22,6 +22,18 @@ AssertPageLoadMetricsObserver::~AssertPageLoadMetricsObserver() {
   }
 
   DCHECK(destructing_);
+}
+
+const page_load_metrics::PageLoadMetricsObserverDelegate&
+AssertPageLoadMetricsObserver::GetDelegate() const {
+  // The delegate must exist and outlive the page load metrics observer.
+  DCHECK(delegate_);
+  return *delegate_;
+}
+
+void AssertPageLoadMetricsObserver::SetDelegate(
+    page_load_metrics::PageLoadMetricsObserverDelegate* delegate) {
+  delegate_ = delegate;
 }
 
 const char* AssertPageLoadMetricsObserver::GetObserverName() const {
@@ -75,6 +87,10 @@ PageLoadMetricsObserver::ObservePolicy AssertPageLoadMetricsObserver::OnCommit(
   DCHECK(!activated_);
   committed_ = true;
 
+  DCHECK(navigation_handle->IsInPrimaryMainFrame() ||
+         navigation_handle->IsInPrerenderedMainFrame());
+  DCHECK(!navigation_handle->IsPrerenderedPageActivation());
+
   return CONTINUE_OBSERVING;
 }
 
@@ -125,14 +141,21 @@ AssertPageLoadMetricsObserver::ShouldObserveMimeType(
     const std::string& mime_type) const {
   // Sets a flag for destructor's assertion.
 
-  ObservePolicy policy =
-      PageLoadMetricsObserver::ShouldObserveMimeType(mime_type);
+  ObservePolicy policy = ShouldObserveMimeTypeByDefault(mime_type);
 
   if (policy == STOP_OBSERVING) {
     destructing_ = true;
   }
 
   return policy;
+}
+
+PageLoadMetricsObserver::ObservePolicy
+AssertPageLoadMetricsObserver::ShouldObserveMimeTypeByDefault(
+    const std::string& mime_type) const {
+  return PageLoadMetricsObserver::IsStandardWebPageMimeType(mime_type)
+             ? CONTINUE_OBSERVING
+             : STOP_OBSERVING;
 }
 
 PageLoadMetricsObserver::ObservePolicy
@@ -144,13 +167,21 @@ AssertPageLoadMetricsObserver::OnEnterBackForwardCache(
   // stopped with OnComplete called.
   backforwardcache_entering_ = true;
   PageLoadMetricsObserver::ObservePolicy policy =
-      PageLoadMetricsObserver::OnEnterBackForwardCache(timing);
+      OnEnterBackForwardCacheByDefault(timing);
   backforwardcache_entering_ = false;
   DCHECK_EQ(policy, STOP_OBSERVING);
 
   backforwardcache_entered_ = true;
 
   return CONTINUE_OBSERVING;
+}
+
+PageLoadMetricsObserver::ObservePolicy
+AssertPageLoadMetricsObserver::OnEnterBackForwardCacheByDefault(
+    const page_load_metrics::mojom::PageLoadTiming& timing) {
+  // Invoke OnComplete to ensure that recorded data is dumped.
+  OnComplete(timing);
+  return STOP_OBSERVING;
 }
 
 void AssertPageLoadMetricsObserver::ReadyToCommitNextNavigation(

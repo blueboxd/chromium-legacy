@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -15,10 +15,10 @@
 // Decisions are scoped to the host.
 class HttpsUpgradeService : public KeyedService {
  public:
-  // Returns whether |host| can be loaded over http://.
+  // Returns whether `host` can be loaded over http://.
   virtual bool IsHttpAllowedForHost(const std::string& host) const = 0;
 
-  // Allows future navigations to |host| over http://.
+  // Allows future navigations to `host` over http://.
   virtual void AllowHttpForHost(const std::string& host) = 0;
 
   // Clears the persistent and in-memory allowlist entries. All of in-memory

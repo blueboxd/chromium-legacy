@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -535,7 +535,7 @@ TEST_F(ProfileAttributesStorageTest, AddStubProfile) {
   std::vector<std::string> names;
   PrefService* local_state = g_browser_process->local_state();
   const base::Value::Dict& attributes =
-      local_state->GetValueDict(prefs::kProfileAttributes);
+      local_state->GetDict(prefs::kProfileAttributes);
   for (const auto kv : attributes) {
     const base::Value& info = kv.second;
     const std::string* name = info.FindStringKey("name");

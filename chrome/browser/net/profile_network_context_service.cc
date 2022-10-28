@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -110,6 +110,7 @@
 #endif  // BUILDFLAG(IS_MAC)
 
 #if BUILDFLAG(TRIAL_COMPARISON_CERT_VERIFIER_SUPPORTED)
+#include "chrome/browser/net/cert_verifier_configuration.h"
 #include "chrome/browser/net/trial_comparison_cert_verifier_controller.h"
 #endif
 
@@ -466,13 +467,13 @@ void ProfileNetworkContextService::UpdatePreconnect() {
 network::mojom::CTPolicyPtr ProfileNetworkContextService::GetCTPolicy() {
   auto* prefs = profile_->GetPrefs();
   const base::Value::List& ct_required =
-      prefs->GetValueList(certificate_transparency::prefs::kCTRequiredHosts);
+      prefs->GetList(certificate_transparency::prefs::kCTRequiredHosts);
   const base::Value::List& ct_excluded =
-      prefs->GetValueList(certificate_transparency::prefs::kCTExcludedHosts);
+      prefs->GetList(certificate_transparency::prefs::kCTExcludedHosts);
   const base::Value::List& ct_excluded_spkis =
-      prefs->GetValueList(certificate_transparency::prefs::kCTExcludedSPKIs);
-  const base::Value::List& ct_excluded_legacy_spkis = prefs->GetValueList(
-      certificate_transparency::prefs::kCTExcludedLegacySPKIs);
+      prefs->GetList(certificate_transparency::prefs::kCTExcludedSPKIs);
+  const base::Value::List& ct_excluded_legacy_spkis =
+      prefs->GetList(certificate_transparency::prefs::kCTExcludedLegacySPKIs);
 
   std::vector<std::string> required(TranslateStringArray(ct_required));
   std::vector<std::string> excluded(TranslateStringArray(ct_excluded));
@@ -755,8 +756,7 @@ void ProfileNetworkContextService::ConfigureNetworkContextParamsInternal(
   base::FilePath path(GetPartitionPath(relative_partition_path));
 
   g_browser_process->system_network_context_manager()
-      ->ConfigureDefaultNetworkContextParams(network_context_params,
-                                             cert_verifier_creation_params);
+      ->ConfigureDefaultNetworkContextParams(network_context_params);
 
   network_context_params->accept_language = ComputeAcceptLanguage();
   network_context_params->enable_referrers = enable_referrers_.GetValue();
@@ -851,9 +851,9 @@ void ProfileNetworkContextService::ConfigureNetworkContextParamsInternal(
     network_context_params->file_paths->sct_auditing_pending_reports_file_name =
         base::FilePath(chrome::kSCTAuditingPendingReportsFileName);
   }
-  const base::Value* hsts_policy_bypass_list =
+  const base::Value::List& hsts_policy_bypass_list =
       profile_->GetPrefs()->GetList(prefs::kHSTSPolicyBypassList);
-  for (const auto& value : hsts_policy_bypass_list->GetListDeprecated()) {
+  for (const auto& value : hsts_policy_bypass_list) {
     const std::string* string_value = value.GetIfString();
     if (!string_value)
       continue;
@@ -887,32 +887,19 @@ void ProfileNetworkContextService::ConfigureNetworkContextParamsInternal(
   // the user may be requesting a non-standard configuration from the current
   // default. In these cases, the trial verifier is also disabled,
   // because all users in the trial should be running in the same configuration.
-  //
-  // To avoid any potential ambiguities between different layers of the network
-  // stack, running the trial requires the `cert_verifier_creation_params` be
-  // explicitly initialized, rather than using `kDefault` / `kRootDefault`, to
-  // guarantee that the primary verifier is initialized as requested and
-  // expected.  These checks here simply ensure that the caller explicitly
-  // provided the expected default value.
   DCHECK(cert_verifier_creation_params);
   bool is_trial_comparison_supported = !in_memory;
+
+  cert_verifier::mojom::CertVerifierServiceParamsPtr
+      cert_verifier_configuration = GetChromeCertVerifierServiceParams();
+  DCHECK(cert_verifier_configuration);
 #if BUILDFLAG(BUILTIN_CERT_VERIFIER_FEATURE_SUPPORTED)
-  DCHECK_NE(cert_verifier_creation_params->use_builtin_cert_verifier,
-            cert_verifier::mojom::CertVerifierCreationParams::CertVerifierImpl::
-                kDefault);
   is_trial_comparison_supported &=
-      cert_verifier_creation_params->use_builtin_cert_verifier ==
-      cert_verifier::mojom::CertVerifierCreationParams::CertVerifierImpl::
-          kSystem;
+      !cert_verifier_configuration->use_builtin_cert_verifier;
 #endif
 #if BUILDFLAG(CHROME_ROOT_STORE_SUPPORTED)
-  DCHECK_NE(cert_verifier_creation_params->use_chrome_root_store,
-            cert_verifier::mojom::CertVerifierCreationParams::ChromeRootImpl::
-                kRootDefault);
   is_trial_comparison_supported &=
-      cert_verifier_creation_params->use_chrome_root_store ==
-      cert_verifier::mojom::CertVerifierCreationParams::ChromeRootImpl::
-          kRootSystem;
+      !cert_verifier_configuration->use_chrome_root_store;
 #endif
   if (is_trial_comparison_supported &&
       TrialComparisonCertVerifierController::MaybeAllowedForProfile(profile_)) {

@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -114,9 +114,11 @@ export interface ManageProfilesBrowserProxy {
   removeProfile(profilePath: string): void;
 
   /**
-   * Select an account to be added in Chrome.
+   * Starts a signin flow to get a new account that will be added to a profile.
+   * On Dice platforms, this is only for new profiles, but on Lacros it may also
+   * be used with an existing profile.
    */
-  selectAccountLacros(profileColor: number|null, gaiaId: string): void;
+  selectNewAccount(profileColor: number|null): void;
 
   /**
    * Retrieves custom avatar list for the select avatar dialog.
@@ -124,11 +126,18 @@ export interface ManageProfilesBrowserProxy {
   getAvailableIcons(): Promise<AvatarIcon[]>;
 
   /**
-   * Creates local profile
+   * Creates local profile.
    */
   createProfile(
       profileName: string, profileColor: number, avatarIndex: number,
       createShortcut: boolean): void;
+
+  /**
+   * Creates local profile and opens a profile customization modal dialog on a
+   * browser window.
+   * TODO(https://crbug.com/1282157): Add createShortcut parameter.
+   */
+  createProfileAndOpenCustomizationDialog(profileColor: number): void;
 
   /**
    * Sets the local profile name.
@@ -162,6 +171,11 @@ export interface ManageProfilesBrowserProxy {
    * Opens Ash Account settings page in a new window.
    */
   openAshAccountSettingsPage(): void;
+
+  /**
+   * Select an existing account to be added in Chrome on Lacros.
+   */
+  selectExistingAccountLacros(profileColor: number|null, gaiaId: string): void;
   // </if>
 }
 
@@ -203,8 +217,8 @@ export class ManageProfilesBrowserProxyImpl {
     chrome.send('getProfileStatistics', [profilePath]);
   }
 
-  selectAccountLacros(profileColor: number|null, gaiaId: string) {
-    chrome.send('selectAccountLacros', [profileColor, gaiaId]);
+  selectNewAccount(profileColor: number|null) {
+    chrome.send('selectNewAccount', [profileColor]);
   }
 
   getAvailableIcons() {
@@ -217,6 +231,10 @@ export class ManageProfilesBrowserProxyImpl {
     chrome.send(
         'createProfile',
         [profileName, profileColor, avatarIndex, createShortcut]);
+  }
+
+  createProfileAndOpenCustomizationDialog(profileColor: number) {
+    chrome.send('createProfileAndOpenCustomizationDialog', [profileColor]);
   }
 
   setProfileName(profilePath: string, profileName: string) {
@@ -246,6 +264,10 @@ export class ManageProfilesBrowserProxyImpl {
 
   openAshAccountSettingsPage() {
     chrome.send('openAshAccountSettingsPage');
+  }
+
+  selectExistingAccountLacros(profileColor: number|null, gaiaId: string) {
+    chrome.send('selectExistingAccountLacros', [profileColor, gaiaId]);
   }
   // </if>
 

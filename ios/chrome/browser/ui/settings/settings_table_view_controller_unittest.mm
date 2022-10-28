@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,17 +6,17 @@
 
 #import "base/strings/sys_string_conversions.h"
 #import "base/test/task_environment.h"
-#include "components/password_manager/core/browser/password_manager_test_utils.h"
-#include "components/password_manager/core/browser/test_password_store.h"
+#import "components/password_manager/core/browser/password_manager_test_utils.h"
+#import "components/password_manager/core/browser/test_password_store.h"
 #import "components/policy/core/common/policy_loader_ios_constants.h"
 #import "components/policy/policy_constants.h"
 #import "components/signin/public/base/signin_pref_names.h"
-#import "components/sync/driver/mock_sync_service.h"
+#import "components/sync/test/mock_sync_service.h"
 #import "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #import "ios/chrome/browser/main/test_browser.h"
-#include "ios/chrome/browser/passwords/ios_chrome_password_store_factory.h"
+#import "ios/chrome/browser/passwords/ios_chrome_password_store_factory.h"
 #import "ios/chrome/browser/policy/policy_util.h"
-#include "ios/chrome/browser/pref_names.h"
+#import "ios/chrome/browser/prefs/pref_names.h"
 #import "ios/chrome/browser/search_engines/template_url_service_factory.h"
 #import "ios/chrome/browser/signin/authentication_service_factory.h"
 #import "ios/chrome/browser/signin/authentication_service_fake.h"
@@ -36,7 +36,6 @@
 #import "ios/chrome/grit/ios_chromium_strings.h"
 #import "ios/chrome/grit/ios_strings.h"
 #import "ios/chrome/test/ios_chrome_scoped_testing_local_state.h"
-#include "ios/chrome/test/ios_chrome_scoped_testing_local_state.h"
 #import "ios/public/provider/chrome/browser/signin/fake_chrome_identity.h"
 #import "ios/web/public/test/web_task_environment.h"
 #import "testing/gtest/include/gtest/gtest.h"
@@ -207,7 +206,7 @@ TEST_F(SettingsTableViewControllerTest, SyncOn) {
   SetupSyncServiceEnabledExpectations();
   ON_CALL(*sync_setup_service_mock_, GetSyncServiceState())
       .WillByDefault(Return(SyncSetupService::kNoSyncServiceError));
-  auth_service_->SignIn(fake_identity_, nil);
+  auth_service_->SignIn(fake_identity_);
 
   CreateController();
   CheckController();
@@ -234,7 +233,7 @@ TEST_F(SettingsTableViewControllerTest, SyncPasswordError) {
   // Set missing password error in Sync service.
   ON_CALL(*sync_setup_service_mock_, GetSyncServiceState())
       .WillByDefault(Return(SyncSetupService::kSyncServiceNeedsPassphrase));
-  auth_service_->SignIn(fake_identity_, nil);
+  auth_service_->SignIn(fake_identity_);
 
   CreateController();
   CheckController();
@@ -266,7 +265,7 @@ TEST_F(SettingsTableViewControllerTest, TurnsSyncOffAfterFirstSetup) {
       .WillByDefault(Return(true));
   ON_CALL(*sync_setup_service_mock_, CanSyncFeatureStart())
       .WillByDefault(Return(false));
-  auth_service_->SignIn(fake_identity_, nil);
+  auth_service_->SignIn(fake_identity_);
 
   CreateController();
   CheckController();
@@ -299,7 +298,7 @@ TEST_F(SettingsTableViewControllerTest,
       .WillByDefault(Return(true));
   ON_CALL(*sync_setup_service_mock_, CanSyncFeatureStart())
       .WillByDefault(Return(true));
-  auth_service_->SignIn(fake_identity_, nil);
+  auth_service_->SignIn(fake_identity_);
 
   CreateController();
   CheckController();
@@ -334,7 +333,7 @@ TEST_F(SettingsTableViewControllerTest, SigninDisabled) {
 TEST_F(SettingsTableViewControllerTest, SyncSetupNotComplete) {
   ON_CALL(*sync_service_mock_->GetMockUserSettings(), IsFirstSetupComplete())
       .WillByDefault(Return(false));
-  auth_service_->SignIn(fake_identity_, nil);
+  auth_service_->SignIn(fake_identity_);
 
   CreateController();
   CheckController();

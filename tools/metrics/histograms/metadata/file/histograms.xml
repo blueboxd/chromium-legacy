@@ -306,7 +306,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="FileBrowser.FolderShortcut.Add" units="Shortcuts"
-    expires_after="M108">
+    expires_after="2023-09-01">
   <owner>simmonsjosh@google.com</owner>
   <owner>src/ui/file_manager/OWNERS</owner>
   <summary>
@@ -326,7 +326,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="FileBrowser.FolderShortcut.Navigate" units="Navigations"
-    expires_after="M108">
+    expires_after="2023-09-01">
   <owner>simmonsjosh@google.com</owner>
   <owner>src/ui/file_manager/OWNERS</owner>
   <summary>
@@ -336,7 +336,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="FileBrowser.FolderShortcut.Remove" units="Shortcuts"
-    expires_after="M108">
+    expires_after="2023-09-01">
   <owner>simmonsjosh@google.com</owner>
   <owner>src/ui/file_manager/OWNERS</owner>
   <summary>
@@ -356,7 +356,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="FileBrowser.Glitch" enum="FileManagerGlitch"
-    expires_after="2022-12-25">
+    expires_after="2023-02-26">
   <owner>majewski@chromium.org</owner>
   <owner>src/ui/file_manager/OWNERS</owner>
   <summary>
@@ -496,6 +496,9 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="FileBrowser.MediaImport.Duplicates" units="count"
     expires_after="M108">
+  <obsolete>
+    Became obsolete on 2022-08-18 as this feature is no longer in existence.
+  </obsolete>
   <owner>simmonsjosh@google.com</owner>
   <owner>src/ui/file_manager/OWNERS</owner>
   <summary>
@@ -570,6 +573,16 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="FileBrowser.OfficeFiles.Errors.Drive" enum="OfficeDriveErrors"
+    expires_after="M114">
+  <owner>simmonsjosh@google.com</owner>
+  <owner>src/ui/file_manager/OWNERS</owner>
+  <summary>
+    Chrome OS File Browser: Errors that can occur when opening an Office file
+    with Google Drive Web.
+  </summary>
+</histogram>
+
 <histogram
     name="FileBrowser.OfficeFiles.FileHandler.{RootType}.{ConnectionStatus}"
     enum="OfficeFileHandler" expires_after="M110">
@@ -589,6 +602,21 @@ chromium-metrics-reviews@google.com.
   </token>
 </histogram>
 
+<histogram name="FileBrowser.OfficeFiles.TaskResult.{ProviderName}"
+    enum="OfficeTaskResult" expires_after="M112">
+  <owner>simmonsjosh@google.com</owner>
+  <owner>src/ui/file_manager/OWNERS</owner>
+  <summary>
+    Chrome OS File Browser: The result of the task that opens an Office file
+    using Drive or OneDrive.
+  </summary>
+  <token key="ProviderName">
+    <variant name="Drive" summary="The task is for Google Drive/Docs"/>
+    <variant name="OneDrive"
+        summary="The task is for Microsoft OneDrive/Office"/>
+  </token>
+</histogram>
+
 <histogram name="FileBrowser.OfficeFiles.UseOutsideDrive"
     enum="OfficeFilesUseOutsideDriveHook" expires_after="2023-02-15">
   <owner>cassycc@google.com</owner>
@@ -597,16 +625,6 @@ chromium-metrics-reviews@google.com.
     Chrome OS File Browser: When a user uses a MS Office file outside of Drive,
     records which file system operation is used (File picker selection,
     Copy/Move/Zip or Open from files app).
-  </summary>
-</histogram>
-
-<histogram name="FileBrowser.OfficeFiles.WebDriveOffice"
-    enum="WebDriveOfficeTaskResult" expires_after="M110">
-  <owner>simmonsjosh@google.com</owner>
-  <owner>src/ui/file_manager/OWNERS</owner>
-  <summary>
-    Chrome OS File Browser: When a user selects MS Office files, records the
-    results of trying to enable the Web Drive Office task.
   </summary>
 </histogram>
 

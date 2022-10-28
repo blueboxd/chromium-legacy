@@ -1,4 +1,4 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -20,7 +20,7 @@ class SyncSetupServiceMock : public SyncSetupService {
       web::BrowserState* browser_state);
 
   SyncSetupServiceMock(syncer::SyncService* sync_service);
-  ~SyncSetupServiceMock();
+  ~SyncSetupServiceMock() override;
   MOCK_METHOD(bool, IsEncryptEverythingEnabled, (), (const override));
   MOCK_METHOD(bool, CanSyncFeatureStart, (), (const override));
   MOCK_METHOD(bool, IsSyncRequested, (), (const override));

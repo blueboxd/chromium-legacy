@@ -1,8 +1,11 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 package org.chromium.chrome.browser.site_settings;
+
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.refEq;
 
 import static org.chromium.components.browser_ui.site_settings.AutoDarkMetrics.AutoDarkSettingsChangeSource.SITE_SETTINGS_GLOBAL;
 import static org.chromium.components.browser_ui.site_settings.WebsitePreferenceBridge.SITE_WILDCARD;
@@ -13,6 +16,7 @@ import static org.chromium.components.content_settings.PrefNames.DESKTOP_SITE_PE
 import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
+import android.os.Bundle;
 import android.support.test.InstrumentationRegistry;
 
 import androidx.preference.Preference;
@@ -29,8 +33,12 @@ import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.mockito.Mockito;
+import org.mockito.MockitoAnnotations;
 
 import org.chromium.base.ContextUtils;
+import org.chromium.base.FeatureList;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.test.util.Batch;
 import org.chromium.base.test.util.CallbackHelper;
@@ -42,6 +50,7 @@ import org.chromium.chrome.browser.FederatedIdentityTestUtils;
 import org.chromium.chrome.browser.browsing_data.BrowsingDataBridge;
 import org.chromium.chrome.browser.browsing_data.BrowsingDataType;
 import org.chromium.chrome.browser.browsing_data.TimePeriod;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.incognito.IncognitoUtils;
 import org.chromium.chrome.browser.notifications.channels.ChromeChannelDefinitions;
@@ -63,10 +72,12 @@ import org.chromium.components.browser_ui.settings.ChromeSwitchPreference;
 import org.chromium.components.browser_ui.settings.ExpandablePreferenceGroup;
 import org.chromium.components.browser_ui.settings.SettingsLauncher;
 import org.chromium.components.browser_ui.site_settings.ContentSettingsResources;
+import org.chromium.components.browser_ui.site_settings.FPSCookieSettings;
 import org.chromium.components.browser_ui.site_settings.FourStateCookieSettingsPreference;
 import org.chromium.components.browser_ui.site_settings.FourStateCookieSettingsPreference.CookieSettingsState;
 import org.chromium.components.browser_ui.site_settings.R;
 import org.chromium.components.browser_ui.site_settings.SingleCategorySettings;
+import org.chromium.components.browser_ui.site_settings.SingleCategorySettingsConstants;
 import org.chromium.components.browser_ui.site_settings.SingleWebsiteSettings;
 import org.chromium.components.browser_ui.site_settings.SiteSettingsCategory;
 import org.chromium.components.browser_ui.site_settings.SiteSettingsFeatureList;
@@ -84,6 +95,7 @@ import org.chromium.components.policy.test.annotations.Policies;
 import org.chromium.components.prefs.PrefService;
 import org.chromium.components.user_prefs.UserPrefs;
 import org.chromium.content_public.browser.BrowserContextHandle;
+import org.chromium.content_public.browser.ContentFeatureList;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.content_public.common.ContentSwitches;
 import org.chromium.device.geolocation.LocationProviderOverrider;
@@ -93,7 +105,9 @@ import org.chromium.url.GURL;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeoutException;
 
 /**
@@ -103,6 +117,7 @@ import java.util.concurrent.TimeoutException;
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
         ContentSwitches.HOST_RESOLVER_RULES + "=MAP * 127.0.0.1", "ignore-certificate-errors"})
 @Batch(SiteSettingsTest.SITE_SETTINGS_BATCH_NAME)
+@DisableFeatures(ChromeFeatureList.PRIVACY_SANDBOX_FPS_UI)
 public class SiteSettingsTest {
     public static final String SITE_SETTINGS_BATCH_NAME = "site_settings";
 
@@ -112,6 +127,9 @@ public class SiteSettingsTest {
     @Rule
     public BlankCTATabInitialStateRule mBlankCTATabInitialStateRule =
             new BlankCTATabInitialStateRule(mPermissionRule, false);
+
+    @Mock
+    private SettingsLauncher mSettingsLauncher;
 
     private PermissionUpdateWaiter mPermissionUpdateWaiter;
 
@@ -128,6 +146,7 @@ public class SiteSettingsTest {
     public void setUp() throws TimeoutException {
         // Clean up cookies and permissions to ensure tests run in a clean environment.
         cleanUpCookiesAndPermissions();
+        MockitoAnnotations.initMocks(this);
     }
 
     @After
@@ -155,7 +174,7 @@ public class SiteSettingsTest {
         IncognitoUtils.setEnabledForTesting(null);
         ContextUtils.getAppSharedPreferences()
                 .edit()
-                .remove(SingleCategorySettings
+                .remove(SingleCategorySettingsConstants
                                 .USER_ENABLED_DESKTOP_SITE_GLOBAL_SETTING_PREFERENCE_KEY)
                 .apply();
     }
@@ -465,6 +484,52 @@ public class SiteSettingsTest {
         mPermissionRule.loadUrl(url);
         Assert.assertEquals(
                 "\"Foo=Bar\"", mPermissionRule.runJavaScriptCodeInCurrentTab("getCookie()"));
+    }
+
+    /**
+     * Clicks on cookies radio buttons and verify the right FPS subpage is launched.
+     */
+    @Test
+    @SmallTest
+    @Feature({"Preferences"})
+    @EnableFeatures({ChromeFeatureList.PRIVACY_SANDBOX_FPS_UI})
+    public void testCookiesFPSSubpageIsLaunched() throws Exception {
+        SettingsActivity settingsActivity =
+                SiteSettingsTestUtils.startSiteSettingsCategory(SiteSettingsCategory.Type.COOKIES);
+
+        verifyFPSCookieSubpageIsLaunchedWithParams(
+                settingsActivity, CookieSettingsState.BLOCK_THIRD_PARTY);
+        verifyFPSCookieSubpageIsLaunchedWithParams(
+                settingsActivity, CookieSettingsState.BLOCK_THIRD_PARTY_INCOGNITO);
+    }
+
+    private void verifyFPSCookieSubpageIsLaunchedWithParams(
+            final SettingsActivity settingsActivity, CookieSettingsState cookieSettingsState) {
+        TestThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                final SingleCategorySettings websitePreferences =
+                        (SingleCategorySettings) settingsActivity.getMainFragment();
+                final FourStateCookieSettingsPreference cookies =
+                        (FourStateCookieSettingsPreference) websitePreferences.findPreference(
+                                SingleCategorySettings.FOUR_STATE_COOKIE_TOGGLE_KEY);
+
+                Mockito.clearInvocations(mSettingsLauncher);
+                websitePreferences.setSettingsLauncher(mSettingsLauncher);
+
+                SiteSettingsTestUtils.getCookieRadioButtonFrom(cookies, cookieSettingsState)
+                        .getAuxButtonForTests()
+                        .performClick();
+
+                Bundle fragmentArgs = new Bundle();
+                fragmentArgs.putSerializable(
+                        FPSCookieSettings.EXTRA_COOKIE_PAGE_STATE, cookieSettingsState);
+
+                Mockito.verify(mSettingsLauncher)
+                        .launchSettingsActivity(eq(websitePreferences.getContext()),
+                                eq(FPSCookieSettings.class), refEq(fragmentArgs));
+            }
+        });
     }
 
     /**
@@ -978,6 +1043,39 @@ public class SiteSettingsTest {
     @Test
     @SmallTest
     @Feature({"Preferences"})
+    @EnableFeatures(ChromeFeatureList.PRIVACY_SANDBOX_FPS_UI)
+    public void testExpectedCookieButtonsCheckedWhenFPSUiEnabled() {
+        SettingsActivity settingsActivity =
+                SiteSettingsTestUtils.startSiteSettingsCategory(SiteSettingsCategory.Type.COOKIES);
+
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            SingleCategorySettings preferences =
+                    (SingleCategorySettings) settingsActivity.getMainFragment();
+            FourStateCookieSettingsPreference fourStateCookieToggle =
+                    (FourStateCookieSettingsPreference) preferences.findPreference(
+                            SingleCategorySettings.FOUR_STATE_COOKIE_TOGGLE_KEY);
+
+            clickButtonAndVerifyItsChecked(fourStateCookieToggle, CookieSettingsState.ALLOW);
+            clickButtonAndVerifyItsChecked(
+                    fourStateCookieToggle, CookieSettingsState.BLOCK_THIRD_PARTY_INCOGNITO);
+            clickButtonAndVerifyItsChecked(
+                    fourStateCookieToggle, CookieSettingsState.BLOCK_THIRD_PARTY);
+            clickButtonAndVerifyItsChecked(fourStateCookieToggle, CookieSettingsState.BLOCK);
+        });
+
+        settingsActivity.finish();
+    }
+
+    private void clickButtonAndVerifyItsChecked(
+            FourStateCookieSettingsPreference fourStateCookieToggle, CookieSettingsState state) {
+        fourStateCookieToggle.getButton(state).performClick();
+        Assert.assertTrue(
+                "Button should be checked.", fourStateCookieToggle.getButton(state).isChecked());
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"Preferences"})
     public void testOnlyExpectedPreferencesDeviceLocation() {
         LocationSettingsTestUtil.setSystemLocationSettingEnabled(true);
 
@@ -1091,7 +1189,21 @@ public class SiteSettingsTest {
         Assert.assertTrue(
                 "SharedPreference USER_ENABLED_DESKTOP_SITE_GLOBAL_SETTING_PREFERENCE_KEY should be updated.",
                 ContextUtils.getAppSharedPreferences().contains(
-                        SingleCategorySettings
+                        SingleCategorySettingsConstants
+                                .USER_ENABLED_DESKTOP_SITE_GLOBAL_SETTING_PREFERENCE_KEY));
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"Preferences"})
+    @EnableFeatures("RequestDesktopSiteExceptions")
+    public void testOnlyExpectedPreferencesRequestDesktopSiteDomainSettings() {
+        testExpectedPreferences(SiteSettingsCategory.Type.REQUEST_DESKTOP_SITE,
+                BINARY_TOGGLE_WITH_EXCEPTION, BINARY_TOGGLE_WITH_EXCEPTION);
+        Assert.assertTrue(
+                "SharedPreference USER_ENABLED_DESKTOP_SITE_GLOBAL_SETTING_PREFERENCE_KEY should be updated.",
+                ContextUtils.getAppSharedPreferences().contains(
+                        SingleCategorySettingsConstants
                                 .USER_ENABLED_DESKTOP_SITE_GLOBAL_SETTING_PREFERENCE_KEY));
     }
 
@@ -1472,6 +1584,63 @@ public class SiteSettingsTest {
         new TwoStatePermissionTestCase("RequestDesktopSite",
                 SiteSettingsCategory.Type.REQUEST_DESKTOP_SITE,
                 ContentSettingsType.REQUEST_DESKTOP_SITE, false)
+                .run();
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"Preferences"})
+    @EnableFeatures("RequestDesktopSiteExceptions")
+    public void testAllowRequestDesktopSiteDomainSetting() {
+        new TwoStatePermissionTestCase("RequestDesktopSite",
+                SiteSettingsCategory.Type.REQUEST_DESKTOP_SITE,
+                ContentSettingsType.REQUEST_DESKTOP_SITE, true)
+                .withExpectedPrefKeys(SingleCategorySettings.ADD_EXCEPTION_KEY)
+                .run();
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"Preferences"})
+    public void testAllowRequestDesktopSiteDomainSetting_DowngradePath() {
+        // Enable RDS exceptions.
+        Map<String, Boolean> featureMap = new HashMap<>();
+        featureMap.put(ContentFeatureList.REQUEST_DESKTOP_SITE_EXCEPTIONS, true);
+        FeatureList.setTestFeatures(featureMap);
+
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            WebsitePreferenceBridgeJni.get().setPermissionSettingForOrigin(
+                    getBrowserContextHandle(), ContentSettingsType.REQUEST_DESKTOP_SITE,
+                    "https://example.com", "https://example.com", ContentSettingValues.ALLOW);
+        });
+
+        new TwoStatePermissionTestCase("RequestDesktopSite",
+                SiteSettingsCategory.Type.REQUEST_DESKTOP_SITE,
+                ContentSettingsType.REQUEST_DESKTOP_SITE, true)
+                .withExpectedPrefKeys("allowed_group")
+                .withExpectedPrefKeys(SingleCategorySettings.ADD_EXCEPTION_KEY)
+                .run();
+
+        // Disable RDS exceptions for a downgrade.
+        featureMap.put(ContentFeatureList.REQUEST_DESKTOP_SITE_EXCEPTIONS, false);
+        featureMap.put(SiteSettingsFeatureList.REQUEST_DESKTOP_SITE_EXCEPTIONS_DOWNGRADE, true);
+        FeatureList.setTestFeatures(featureMap);
+
+        new TwoStatePermissionTestCase("RequestDesktopSite",
+                SiteSettingsCategory.Type.REQUEST_DESKTOP_SITE,
+                ContentSettingsType.REQUEST_DESKTOP_SITE, true)
+                .run();
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"Preferences"})
+    @EnableFeatures("RequestDesktopSiteExceptions")
+    public void testBlockRequestDesktopSiteDomainSetting() {
+        new TwoStatePermissionTestCase("RequestDesktopSite",
+                SiteSettingsCategory.Type.REQUEST_DESKTOP_SITE,
+                ContentSettingsType.REQUEST_DESKTOP_SITE, false)
+                .withExpectedPrefKeys(SingleCategorySettings.ADD_EXCEPTION_KEY)
                 .run();
     }
 

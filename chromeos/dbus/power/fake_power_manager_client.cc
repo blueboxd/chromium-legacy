@@ -1,4 +1,4 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -423,6 +423,12 @@ void FakePowerManagerClient::GetExternalDisplayALSBrightness(
 // Dbus call without any callback, so there is not much to test for now.
 void FakePowerManagerClient::ChargeNowForAdaptiveCharging() {}
 
+void FakePowerManagerClient::GetChargeHistoryForAdaptiveCharging(
+    DBusMethodCallback<power_manager::ChargeHistoryState> callback) {
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(std::move(callback), charge_history_));
+}
+
 bool FakePowerManagerClient::PopVideoActivityReport() {
   CHECK(!video_activity_reports_.empty());
   bool fullscreen = video_activity_reports_.front();
@@ -498,9 +504,12 @@ void FakePowerManagerClient::SetInactivityDelays(
 }
 
 void FakePowerManagerClient::UpdatePowerProperties(
-    const power_manager::PowerSupplyProperties& power_props) {
+    absl::optional<power_manager::PowerSupplyProperties> power_props) {
   props_ = power_props;
-  NotifyObservers();
+  // Only notify observer when power supply properties are available.
+  if (props_.has_value()) {
+    NotifyObservers();
+  }
 }
 
 void FakePowerManagerClient::NotifyObservers() {
@@ -537,6 +546,11 @@ bool FakePowerManagerClient::ApplyPendingScreenBrightnessChange() {
   screen_brightness_percent_ = change.percent();
   SendScreenBrightnessChanged(change);
   return true;
+}
+
+void FakePowerManagerClient::SetChargeHistoryForAdaptiveCharging(
+    const power_manager::ChargeHistoryState& charge_history) {
+  charge_history_ = charge_history;
 }
 
 // Returns time ticks from boot including time ticks spent during sleeping.

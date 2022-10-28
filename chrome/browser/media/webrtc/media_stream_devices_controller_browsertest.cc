@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -103,7 +103,7 @@ class MediaStreamDevicesControllerTest : public WebRtcTestBase {
   void SetDevicePolicy(DeviceType device_type, Access access) {
     PrefService* prefs = Profile::FromBrowserContext(
         GetWebContents()->GetBrowserContext())->GetPrefs();
-    const char* policy_name = NULL;
+    const char* policy_name = nullptr;
     switch (device_type) {
       case DEVICE_TYPE_AUDIO:
         policy_name = prefs::kAudioCaptureAllowed;

@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -173,13 +173,15 @@ OverlayCandidateFactory::OverlayCandidateFactory(
     const SurfaceDamageRectList* surface_damage_rect_list,
     const SkM44* output_color_matrix,
     const gfx::RectF primary_rect,
-    bool is_delegated_context)
+    bool is_delegated_context,
+    bool supports_clip_rect)
     : render_pass_(render_pass),
       resource_provider_(resource_provider),
       surface_damage_rect_list_(surface_damage_rect_list),
       output_color_matrix_(output_color_matrix),
       primary_rect_(primary_rect),
-      is_delegated_context_(is_delegated_context) {
+      is_delegated_context_(is_delegated_context),
+      supports_clip_rect_(supports_clip_rect) {
   // TODO(crbug.com/1323002): Replace this set with a simple ordered linear
   // search when this bug is resolved.
   base::flat_set<size_t> indices_with_quad_damage;
@@ -339,25 +341,31 @@ OverlayCandidate::CandidateStatus OverlayCandidateFactory::FromDrawQuadResource(
         resource_provider_->GetSurfaceId(resource_id).frame_sink_id();
   }
 
-  // Delegated compositing does not yet support |clip_rect| so it is applied
-  // here to the |display_rect| and |uv_rect| directly.
-
   if (is_delegated_context_) {
-    if (candidate.clip_rect.has_value())
-      OverlayCandidate::ApplyClip(candidate, gfx::RectF(*candidate.clip_rect));
+    // The delegate might not support specifying |clip_rect| so if not, apply it
+    // to the |display_rect| and |uv_rect| directly.
+    if (!supports_clip_rect_) {
+      if (candidate.clip_rect.has_value())
+        OverlayCandidate::ApplyClip(candidate,
+                                    gfx::RectF(*candidate.clip_rect));
 
-    if (quad->visible_rect != quad->rect) {
-      auto visible_rect = gfx::RectF(quad->visible_rect);
-      transform.TransformRect(&visible_rect);
-      OverlayCandidate::ApplyClip(candidate, gfx::RectF(visible_rect));
+      // TODO(rivr): Apply the same |visible_rect| and |display_rect| clip logic
+      // when delegating |clip_rect|.
+      if (quad->visible_rect != quad->rect) {
+        auto visible_rect = gfx::RectF(quad->visible_rect);
+        transform.TransformRect(&visible_rect);
+        OverlayCandidate::ApplyClip(candidate, gfx::RectF(visible_rect));
+      }
+      // TODO(https://crbug.com/1300552) : Tile quads can overlay other quads
+      // and the window by one pixel. Exo does not yet clip these quads so we
+      // need to clip here with the |primary_rect|.
+      OverlayCandidate::ApplyClip(candidate, primary_rect_);
+
+      if (candidate.display_rect.IsEmpty())
+        return CandidateStatus::kFailVisible;
+
+      candidate.clip_rect = absl::nullopt;
     }
-    // TODO(https://crbug.com/1300552) : Tile quads can overlay other quads and
-    // the window by one pixel. Exo does not yet clip these quads so we need to
-    // clip here with the |primary_rect|.
-    OverlayCandidate::ApplyClip(candidate, primary_rect_);
-
-    if (candidate.display_rect.IsEmpty())
-      return CandidateStatus::kFailVisible;
   }
 
   candidate.tracking_id = base::Hash(&track_data, sizeof(track_data));
@@ -443,8 +451,8 @@ OverlayCandidate::CandidateStatus OverlayCandidateFactory::FromTextureQuad(
     return CandidateStatus::kFailNearFilter;
 
   if (quad->background_color != SkColors::kTransparent &&
-      (quad->background_color != SkColors::kBlack ||
-       quad->ShouldDrawWithBlending())) {
+      (quad->ShouldDrawWithBlendingForReasonOtherThanMaskFilter() ||
+       quad->shared_quad_state->mask_filter_info.HasGradientMask())) {
     // This path can also be used by other platforms like Ash/Chrome, which does
     // not support overlays with background color. Only LaCros/Wayland supports
     // that.
@@ -465,11 +473,15 @@ OverlayCandidate::CandidateStatus OverlayCandidateFactory::FromTextureQuad(
     // Texture quads for UI elements like scroll bars have empty
     // |size_in_pixels| as 'set_resource_size_in_pixels' is not called as these
     // quads are not intended to become overlays.
-    if (!quad->resource_size_in_pixels().IsEmpty())
-      candidate.priority_hint =
-          candidate.requires_overlay
-              ? gfx::OverlayPriorityHint::kHardwareProtection
-              : gfx::OverlayPriorityHint::kRegular;
+    if (!quad->resource_size_in_pixels().IsEmpty()) {
+      if (candidate.requires_overlay) {
+        candidate.priority_hint = gfx::OverlayPriorityHint::kHardwareProtection;
+      } else if (quad->is_video_frame) {
+        candidate.priority_hint = gfx::OverlayPriorityHint::kVideo;
+      } else {
+        candidate.priority_hint = gfx::OverlayPriorityHint::kRegular;
+      }
+    }
 
 #if BUILDFLAG(IS_ANDROID)
     if (quad->is_stream_video) {

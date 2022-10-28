@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,6 +10,7 @@
 #include "chrome/browser/apps/app_service/app_icon/app_icon_factory.h"
 #include "chrome/browser/apps/app_service/app_launch_params.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
+#include "components/services/app_service/public/cpp/features.h"
 #include "ui/gfx/image/image_skia.h"
 
 namespace apps {
@@ -19,7 +20,8 @@ RemoteApps::RemoteApps(AppServiceProxy* proxy, Delegate* delegate)
   DCHECK(delegate);
 
   mojo::Remote<mojom::AppService>& app_service = proxy->AppService();
-  if (!app_service.is_bound()) {
+  if (!base::FeatureList::IsEnabled(kStopMojomAppService) &&
+      !app_service.is_bound()) {
     return;
   }
 
@@ -144,6 +146,13 @@ void RemoteApps::LaunchAppWithParams(AppLaunchParams&& params,
   std::move(callback).Run(LaunchResult());
 }
 
+void RemoteApps::GetMenuModel(const std::string& app_id,
+                              MenuType menu_type,
+                              int64_t display_id,
+                              base::OnceCallback<void(MenuItems)> callback) {
+  std::move(callback).Run(delegate_->GetMenuModel(app_id));
+}
+
 void RemoteApps::Connect(
     mojo::PendingRemote<mojom::Subscriber> subscriber_remote,
     mojom::ConnectOptionsPtr opts) {
@@ -170,7 +179,8 @@ void RemoteApps::GetMenuModel(const std::string& app_id,
                               mojom::MenuType menu_type,
                               int64_t display_id,
                               GetMenuModelCallback callback) {
-  std::move(callback).Run(delegate_->GetMenuModel(app_id));
+  std::move(callback).Run(
+      ConvertMenuItemsToMojomMenuItems(delegate_->GetMenuModel(app_id)));
 }
 
 }  // namespace apps

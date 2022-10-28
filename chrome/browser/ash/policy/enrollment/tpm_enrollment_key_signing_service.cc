@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,7 +12,7 @@
 #include "chromeos/ash/components/dbus/attestation/attestation.pb.h"
 #include "chromeos/ash/components/dbus/attestation/attestation_client.h"
 #include "chromeos/ash/components/dbus/attestation/interface.pb.h"
-#include "chromeos/dbus/constants/attestation_constants.h"
+#include "chromeos/ash/components/dbus/constants/attestation_constants.h"
 #include "components/policy/proto/device_management_backend.pb.h"
 
 namespace policy {
@@ -23,8 +23,8 @@ TpmEnrollmentKeySigningService::~TpmEnrollmentKeySigningService() = default;
 
 void TpmEnrollmentKeySigningService::SignData(const std::string& data,
                                               SigningCallback callback) {
-  const chromeos::attestation::AttestationCertificateProfile cert_profile =
-      chromeos::attestation::PROFILE_ENTERPRISE_ENROLLMENT_CERTIFICATE;
+  const ash::attestation::AttestationCertificateProfile cert_profile =
+      ash::attestation::PROFILE_ENTERPRISE_ENROLLMENT_CERTIFICATE;
   ::attestation::SignSimpleChallengeRequest request;
   request.set_username("");
   request.set_key_label(

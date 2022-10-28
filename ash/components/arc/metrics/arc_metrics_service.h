@@ -1,4 +1,4 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -62,7 +62,7 @@ class ArcMetricsService : public KeyedService,
                           public mojom::MetricsHost,
                           public ui::GamepadObserver {
  public:
-  using HistogramNamer =
+  using HistogramNamerCallback =
       base::RepeatingCallback<std::string(const std::string& base_name)>;
 
   class AppKillObserver : public base::CheckedObserver {
@@ -76,6 +76,11 @@ class ArcMetricsService : public KeyedService,
   class UserInteractionObserver : public base::CheckedObserver {
    public:
     virtual void OnUserInteraction(UserInteractionType type) = 0;
+  };
+
+  class BootTypeObserver : public base::CheckedObserver {
+   public:
+    virtual void OnBootTypeRetrieved(mojom::BootType type) = 0;
   };
 
   // Returns singleton instance for the given BrowserContext,
@@ -105,7 +110,7 @@ class ArcMetricsService : public KeyedService,
 
   // Sets the histogram namer. Required to not have a dependency on browser
   // codebase.
-  void SetHistogramNamer(HistogramNamer histogram_namer);
+  void SetHistogramNamerCallback(HistogramNamerCallback histogram_namer_cb);
 
   // Implementations for ConnectionObserver<mojom::ProcessInstance>.
   void OnProcessConnectionReady();
@@ -148,7 +153,8 @@ class ArcMetricsService : public KeyedService,
                          int64_t duration_ms) override;
   void ReportMemoryPressure(const std::vector<uint8_t>& psiFile) override;
   void ReportProvisioningPreSignIn() override;
-  void ReportWaylandLateTimingDuration(base::TimeDelta duration) override;
+  void ReportWaylandLateTimingEvent(mojom::WaylandTimingEvent event,
+                                    base::TimeDelta duration) override;
   void ReportNonAndroidPlayFilesCount(
       uint32_t number_of_directories,
       uint32_t number_of_non_directories) override;
@@ -193,6 +199,9 @@ class ArcMetricsService : public KeyedService,
 
   void AddUserInteractionObserver(UserInteractionObserver* obs);
   void RemoveUserInteractionObserver(UserInteractionObserver* obs);
+
+  void AddBootTypeObserver(BootTypeObserver* obs);
+  void RemoveBootTypeObserver(BootTypeObserver* obs);
 
   // Finds the boot_progress_arc_upgraded event, removes it from |events|, and
   // returns the event time. If the boot_progress_arc_upgraded event is not
@@ -339,7 +348,7 @@ class ArcMetricsService : public KeyedService,
 
   // A function that appends a suffix to the base of a histogram name based on
   // the current user profile.
-  HistogramNamer histogram_namer_;
+  HistogramNamerCallback histogram_namer_cb_;
 
   std::string user_id_hash_;
 
@@ -361,6 +370,7 @@ class ArcMetricsService : public KeyedService,
 
   base::ObserverList<AppKillObserver> app_kill_observers_;
   base::ObserverList<UserInteractionObserver> user_interaction_observers_;
+  base::ObserverList<BootTypeObserver> boot_type_observers_;
 
   PrefService* prefs_ = nullptr;
   std::unique_ptr<ArcMetricsAnr> metrics_anr_;

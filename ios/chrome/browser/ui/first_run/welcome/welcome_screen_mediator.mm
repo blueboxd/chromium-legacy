@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,7 +7,8 @@
 #import "components/metrics/metrics_pref_names.h"
 #import "components/prefs/pref_service.h"
 #import "components/web_resource/web_resource_pref_names.h"
-#import "ios/chrome/browser/application_context.h"
+#import "ios/chrome/browser/application_context/application_context.h"
+#import "ios/chrome/browser/policy/policy_util.h"
 #import "ios/chrome/browser/ui/first_run/first_run_util.h"
 #import "ios/chrome/browser/ui/first_run/welcome/welcome_screen_consumer.h"
 
@@ -54,7 +55,7 @@
 
 - (void)setConsumer:(id<WelcomeScreenConsumer>)consumer {
   _consumer = consumer;
-  self.consumer.isManaged = IsApplicationManaged();
+  self.consumer.isManaged = IsApplicationManagedByPlatform();
 }
 
 @end

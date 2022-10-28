@@ -39,6 +39,7 @@ The current status of existing standards and Abseil features is:
     *   absl::StatusOr: Initially supported September 3, 2020
     *   absl::Cleanup: Initially supported February 4, 2021
     *   absl::AnyInvocable: Initially supported June 20, 2022
+    *   Log library: Initially supported Aug 31, 2022
 
 [TOC]
 
@@ -683,6 +684,22 @@ require default-constructibility of the mapped type.
 [Discussion thread](https://groups.google.com/a/chromium.org/g/cxx/c/Uv2tUfIwUfQ/m/ffMxCk9uAAAJ)
 ***
 
+### std::apply <sup>[allowed]</sup>
+
+```c++
+static_assert(std::apply(std::plus<>(), std::make_tuple(1, 2)) == 3);
+```
+
+**Description:** Invokes a `Callable` object with a tuple of arguments.
+
+**Documentation:**
+[std::apply](https://en.cppreference.com/w/cpp/utility/apply)
+
+**Notes:**
+*** promo
+[Discussion thread](https://groups.google.com/a/chromium.org/g/cxx/c/cNZm_g39fyM)
+***
+
 ### Non-member std::size/std::empty/std::data <sup>[allowed]</sup>
 
 ```c++
@@ -1118,22 +1135,6 @@ a regular function.
 **Notes:**
 *** promo
 See also `base::invoke`.
-***
-
-### std::apply <sup>[tbd]</sup>
-
-```c++
-static_assert(std::apply(std::plus<>(), std::make_tuple(1, 2)) == 3);
-```
-
-**Description:** Invokes a `Callable` object with a tuple of arguments.
-
-**Documentation:**
-[std::apply](https://en.cppreference.com/w/cpp/utility/apply)
-
-**Notes:**
-*** promo
-See also `absl::apply` and `base::apply`.
 ***
 
 ### std::byte <sup>[tbd]</sup>
@@ -1948,6 +1949,25 @@ standard library.
 **Notes:**
 *** promo
 Overlaps with `base/ranges/algorithm.h`.
+***
+
+### Log macros are related classes <sup>[tbd]</sup>
+
+```c++
+LOG(INFO) << message;
+CHECK(condition);
+absl::AddLogSink(&custom_sink_to_capture_absl_logs);
+```
+
+**Description:** Macros and related classes to perform debug loggings
+
+**Documentation:**
+[log.h](https://source.chromium.org/chromium/chromium/src/+/main:third_party/abseil-cpp/absl/log.h)
+[check.h](https://source.chromium.org/chromium/chromium/src/+/main:third_party/abseil-cpp/absl/check.h)
+
+**Notes:**
+*** promo
+Overlaps and uses same macros names as `base/logging.h`.
 ***
 
 ### Random <sup>[tbd]</sup>

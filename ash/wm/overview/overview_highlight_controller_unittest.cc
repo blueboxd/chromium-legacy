@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -16,7 +16,6 @@
 #include "ash/wm/desks/desks_bar_view.h"
 #include "ash/wm/desks/desks_test_util.h"
 #include "ash/wm/desks/expanded_desks_bar_button.h"
-#include "ash/wm/desks/templates/save_desk_template_button.h"
 #include "ash/wm/desks/templates/saved_desk_util.h"
 #include "ash/wm/desks/zero_state_button.h"
 #include "ash/wm/overview/overview_constants.h"
@@ -893,9 +892,10 @@ TEST_P(DesksOverviewHighlightControllerTest, ZeroStateOfDesksBar) {
   auto* event_generator = GetEventGenerator();
   auto* mini_view = desks_bar_view->mini_views()[1];
   event_generator->MoveMouseTo(mini_view->GetBoundsInScreen().CenterPoint());
-  EXPECT_TRUE(mini_view->close_desk_button()->GetVisible());
-  event_generator->MoveMouseTo(
-      mini_view->close_desk_button()->GetBoundsInScreen().CenterPoint());
+  EXPECT_TRUE(GetDeskActionVisibilityForMiniView(mini_view));
+  event_generator->MoveMouseTo(GetCloseDeskButtonForMiniView(mini_view)
+                                   ->GetBoundsInScreen()
+                                   .CenterPoint());
   event_generator->ClickLeftButton();
   EXPECT_TRUE(desks_bar_view->IsZeroState());
 
@@ -977,9 +977,10 @@ TEST_P(DesksOverviewHighlightControllerTest, SwitchingToZeroStateWhileTabbing) {
   auto* event_generator = GetEventGenerator();
   auto* mini_view = desks_bar_view->mini_views()[1];
   event_generator->MoveMouseTo(mini_view->GetBoundsInScreen().CenterPoint());
-  ASSERT_TRUE(mini_view->close_desk_button()->GetVisible());
-  event_generator->MoveMouseTo(
-      mini_view->close_desk_button()->GetBoundsInScreen().CenterPoint());
+  ASSERT_TRUE(GetDeskActionVisibilityForMiniView(mini_view));
+  event_generator->MoveMouseTo(GetCloseDeskButtonForMiniView(mini_view)
+                                   ->GetBoundsInScreen()
+                                   .CenterPoint());
   event_generator->ClickLeftButton();
   ASSERT_TRUE(desks_bar_view->IsZeroState());
 

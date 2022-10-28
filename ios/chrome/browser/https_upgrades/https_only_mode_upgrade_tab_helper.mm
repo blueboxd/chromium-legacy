@@ -1,33 +1,31 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #import "ios/chrome/browser/https_upgrades/https_only_mode_upgrade_tab_helper.h"
 
-#include "base/logging.h"
-#include "base/metrics/histogram_functions.h"
-#include "base/strings/string_number_conversions.h"
-#include "base/threading/sequenced_task_runner_handle.h"
-#include "components/prefs/pref_service.h"
-#include "components/security_interstitials/core/https_only_mode_metrics.h"
-#include "ios/chrome/browser/browser_state/chrome_browser_state.h"
-#include "ios/chrome/browser/https_upgrades/https_upgrade_service_factory.h"
-#include "ios/chrome/browser/pref_names.h"
+#import "base/logging.h"
+#import "base/metrics/histogram_functions.h"
+#import "base/strings/string_number_conversions.h"
+#import "base/threading/sequenced_task_runner_handle.h"
+#import "components/prefs/pref_service.h"
+#import "components/security_interstitials/core/https_only_mode_metrics.h"
+#import "ios/chrome/browser/browser_state/chrome_browser_state.h"
+#import "ios/chrome/browser/https_upgrades/https_upgrade_service_factory.h"
+#import "ios/chrome/browser/prefs/pref_names.h"
 #import "ios/chrome/browser/prerender/prerender_service.h"
 #import "ios/chrome/browser/prerender/prerender_service_factory.h"
 #import "ios/components/security_interstitials/https_only_mode/https_only_mode_blocking_page.h"
-#include "ios/components/security_interstitials/https_only_mode/https_only_mode_container.h"
 #import "ios/components/security_interstitials/https_only_mode/https_only_mode_container.h"
 #import "ios/components/security_interstitials/https_only_mode/https_only_mode_controller_client.h"
-#include "ios/components/security_interstitials/https_only_mode/https_only_mode_error.h"
 #import "ios/components/security_interstitials/https_only_mode/https_only_mode_error.h"
 #import "ios/components/security_interstitials/https_only_mode/https_upgrade_service.h"
 #import "ios/web/public/navigation/navigation_context.h"
-#include "ios/web/public/navigation/navigation_item.h"
-#include "ios/web/public/navigation/navigation_manager.h"
+#import "ios/web/public/navigation/navigation_item.h"
+#import "ios/web/public/navigation/navigation_manager.h"
 #import "net/base/mac/url_conversions.h"
-#include "net/base/url_util.h"
-#include "url/url_constants.h"
+#import "net/base/url_util.h"
+#import "url/url_constants.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -107,7 +105,7 @@ void HttpsOnlyModeUpgradeTabHelper::DidStartNavigation(
   }
   if (state_ == State::kUpgraded) {
     DCHECK(!timer_.IsRunning());
-    // |timer_| is deleted when the tab helper is deleted, so it's safe to use
+    // `timer_` is deleted when the tab helper is deleted, so it's safe to use
     // Unretained here.
     timer_.Start(
         FROM_HERE, service_->GetFallbackDelay(),

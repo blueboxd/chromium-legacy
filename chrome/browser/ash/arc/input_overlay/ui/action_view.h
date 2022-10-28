@@ -1,11 +1,11 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #ifndef CHROME_BROWSER_ASH_ARC_INPUT_OVERLAY_UI_ACTION_VIEW_H_
 #define CHROME_BROWSER_ASH_ARC_INPUT_OVERLAY_UI_ACTION_VIEW_H_
 
-#include "ash/wm/desks/persistent_desks_bar_button.h"
+#include "ash/wm/desks/persistent_desks_bar/persistent_desks_bar_button.h"
 #include "base/memory/raw_ptr.h"
 #include "chrome/browser/ash/arc/input_overlay/actions/action.h"
 #include "chrome/browser/ash/arc/input_overlay/constants.h"
@@ -37,8 +37,7 @@ class ActionView : public views::View {
   ~ActionView() override;
 
   // Each type of the actions sets view content differently.
-  virtual void SetViewContent(BindingOption binding_option,
-                              const gfx::RectF& content_bounds) = 0;
+  virtual void SetViewContent(BindingOption binding_option) = 0;
   // Each type of the actions acts differently on key binding change.
   virtual void OnKeyBindingChange(ActionLabel* action_label,
                                   ui::DomCode code) = 0;
@@ -55,7 +54,7 @@ class ActionView : public views::View {
                               ActionLabel* editing_label = nullptr);
 
   // Set position from its center position.
-  void SetPositionFromCenterPosition(gfx::PointF& center_position);
+  void SetPositionFromCenterPosition(const gfx::PointF& center_position);
   // Get edit menu position in parent's bounds.
   gfx::Point GetEditMenuPosition(gfx::Size menu_size);
   void RemoveEditMenu();
@@ -74,15 +73,22 @@ class ActionView : public views::View {
   // Change binding for |action| binding to |input_element| and set
   // |kEditedSuccess| on |action_label| if |action_label| is not nullptr.
   // Otherwise, set |kEditedSuccess| to all |ActionLabel|.
-  void ChangeBinding(Action* action,
-                     ActionLabel* action_label,
-                     std::unique_ptr<InputElement> input_element);
+  void ChangeInputBinding(Action* action,
+                          ActionLabel* action_label,
+                          std::unique_ptr<InputElement> input_element);
   // Reset binding to its previous binding before entering to the edit mode.
   void OnResetBinding();
   // Return true if it needs to show error message and also shows error message.
   // Otherwise, don't show any error message and return false.
   bool ShouldShowErrorMsg(ui::DomCode code,
                           ActionLabel* editing_label = nullptr);
+
+  // views::View:
+  bool OnMousePressed(const ui::MouseEvent& event) override;
+  bool OnMouseDragged(const ui::MouseEvent& event) override;
+  void OnMouseReleased(const ui::MouseEvent& event) override;
+  void OnGestureEvent(ui::GestureEvent* event) override;
+
   Action* action() { return action_; }
   const std::vector<ActionLabel*>& labels() const { return labels_; }
   void set_editable(bool editable) { editable_ = editable; }
@@ -119,13 +125,25 @@ class ActionView : public views::View {
   void AddEditButton();
   void RemoveEditButton();
 
-  // By default, all the labels are unbound.
+  // Drag operations.
+  void OnDragStart(const ui::LocatedEvent& event);
+  bool OnDragUpdate(const ui::LocatedEvent& event);
+  void OnDragEnd();
+
+  void ChangePositionBinding(const gfx::Point& point);
+
+  // By default, no label is unbound.
   int unbind_label_index_ = kDefaultLabelIndex;
+  // The position when starting to drag.
+  gfx::Point start_drag_pos_;
 
   // TODO(cuicuiruan) As requested, we remove the action circle for edit mode
   // for now. We will remove the circle permanently once the future design for
   // MVP confirm that circle is not needed anymore.
   bool show_circle_ = false;
+
+  // TODO(cuicuiruan): This can be removed when removing the flag.
+  bool beta_;
 };
 
 }  // namespace input_overlay

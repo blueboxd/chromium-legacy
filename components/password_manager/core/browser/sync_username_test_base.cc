@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -91,9 +91,11 @@ PasswordForm SyncUsernameTestBase::SimpleNonGaiaForm(const char* username,
 }
 
 void SyncUsernameTestBase::SetSyncingPasswords(bool syncing_passwords) {
-  sync_service_.SetPreferredDataTypes(
-      syncing_passwords ? syncer::ModelTypeSet(syncer::PASSWORDS)
-                        : syncer::ModelTypeSet());
+  sync_service_.GetUserSettings()->SetSelectedTypes(
+      /*sync_everything=*/false,
+      /*types=*/syncing_passwords ? syncer::UserSelectableTypeSet(
+                                        syncer::UserSelectableType::kPasswords)
+                                  : syncer::UserSelectableTypeSet());
 }
 
 }  // namespace password_manager

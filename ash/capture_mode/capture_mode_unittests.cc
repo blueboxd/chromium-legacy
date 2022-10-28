@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -66,6 +66,7 @@
 #include "base/bind.h"
 #include "base/callback_forward.h"
 #include "base/callback_helpers.h"
+#include "base/containers/contains.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/memory/weak_ptr.h"
@@ -5163,13 +5164,13 @@ TEST_F(ProjectorCaptureModeIntegrationTests, EntryPoint) {
   controller->SetType(CaptureModeType::kImage);
   // Also, audio recording is initially disabled. However, the projector flow
   // forces it enabled.
-  EXPECT_FALSE(controller->enable_audio_recording());
+  EXPECT_FALSE(controller->GetAudioRecordingEnabled());
 
   StartProjectorModeSession();
   EXPECT_TRUE(controller->IsActive());
   auto* session = controller->capture_mode_session();
   EXPECT_TRUE(session->is_in_projector_mode());
-  EXPECT_TRUE(controller->enable_audio_recording());
+  EXPECT_TRUE(controller->GetAudioRecordingEnabled());
 
   constexpr char kEntryPointHistogram[] =
       "Ash.CaptureModeController.EntryPoint.ClamshellMode";
@@ -5197,7 +5198,42 @@ TEST_F(ProjectorCaptureModeIntegrationTests, CaptureModeSettings) {
   CaptureModeMenuGroup* audio_input_menu_group =
       test_api.GetAudioInputMenuGroup();
   EXPECT_TRUE(audio_input_menu_group->IsOptionChecked(kAudioMicrophone));
-  EXPECT_TRUE(controller->enable_audio_recording());
+  EXPECT_TRUE(controller->GetAudioRecordingEnabled());
+}
+
+TEST_F(ProjectorCaptureModeIntegrationTests, AudioCaptureDisabledByPolicy) {
+  auto* controller = CaptureModeController::Get();
+  auto* delegate =
+      static_cast<TestCaptureModeDelegate*>(controller->delegate_for_testing());
+  delegate->set_is_audio_capture_disabled_by_policy(true);
+  EXPECT_FALSE(controller->GetAudioRecordingEnabled());
+
+  // A projector session is not allowed to start when audio recording is
+  // disabled by policy.
+  EXPECT_FALSE(projector_helper_.CanStartProjectorSession());
+}
+
+TEST_F(ProjectorCaptureModeIntegrationTests,
+       AudioCaptureDisabledByPolicyAfterSessionStarts) {
+  auto* controller = CaptureModeController::Get();
+  auto* delegate =
+      static_cast<TestCaptureModeDelegate*>(controller->delegate_for_testing());
+  EXPECT_FALSE(controller->GetAudioRecordingEnabled());
+
+  // At this point, a Projector session is allowed to begin.
+  EXPECT_TRUE(projector_helper_.CanStartProjectorSession());
+  StartProjectorModeSession();
+
+  // Flip the audio policy now before recording begins. Attempt to start
+  // recording, but expect that the capture mode session will end *without*
+  // starting a new recording.
+  delegate->set_is_audio_capture_disabled_by_policy(true);
+  PressAndReleaseKey(ui::VKEY_RETURN);
+  WaitForSessionToEnd();
+  EXPECT_FALSE(controller->is_recording_in_progress());
+
+  // The Projector session preconditions should now be up-to-date.
+  EXPECT_FALSE(projector_helper_.CanStartProjectorSession());
 }
 
 // Tests the keyboard navigation for projector mode. The `image_toggle_button_`
@@ -5651,13 +5687,13 @@ TEST_F(ProjectorCaptureModeIntegrationTests,
   struct {
     const std::string scope_trace;
     const ShelfAlignment shelf_alignment;
-  } kTestCases[] = {
+  } kAlignmentTestCases[] = {
       {"Shelf has botton alignment", ShelfAlignment::kBottom},
       {"Shelf has left alignment", ShelfAlignment::kLeft},
       {"Shelf has right alignment", ShelfAlignment::kRight},
   };
 
-  for (const auto& test_case : kTestCases) {
+  for (const auto& test_case : kAlignmentTestCases) {
     SCOPED_TRACE(test_case.scope_trace);
     // Enable annotation.
     projector_controller->EnableAnnotatorTool();
@@ -5763,7 +5799,7 @@ TEST_P(ProjectorCaptureModeIntegrationTests,
     }
 
     StartRecordingForProjectorFromSource(capture_source);
-    WaitForSeconds(5);
+    WaitForSeconds(1);
     test_api.StopVideoRecording();
     EXPECT_FALSE(CaptureModeController::Get()->is_recording_in_progress());
 
@@ -5771,7 +5807,7 @@ TEST_P(ProjectorCaptureModeIntegrationTests,
 
     histogram_tester_.ExpectUniqueSample(
         GetCaptureModeHistogramName(kProjectorRecordTimeHistogramBase),
-        /*seconds=*/5, /*count=*/1);
+        /*seconds=*/1, /*count=*/1);
   }
 }
 
@@ -6036,7 +6072,7 @@ TEST_F(CaptureModeSettingsTest, NudgeDoesNotShowForAllUserTypes) {
     std::string trace;
     user_manager::UserType user_type;
     bool can_see_nudge;
-  } kTestCases[] = {
+  } kUserTypeTestCases[] = {
       {"regular user", user_manager::USER_TYPE_REGULAR, true},
       {"child", user_manager::USER_TYPE_CHILD, true},
       {"guest", user_manager::USER_TYPE_GUEST, false},
@@ -6047,7 +6083,7 @@ TEST_F(CaptureModeSettingsTest, NudgeDoesNotShowForAllUserTypes) {
       {"active dir", user_manager::USER_TYPE_ACTIVE_DIRECTORY, false},
   };
 
-  for (const auto& test_case : kTestCases) {
+  for (const auto& test_case : kUserTypeTestCases) {
     SCOPED_TRACE(test_case.trace);
     ClearLogin();
     SimulateUserLogin("example@gmail.com", test_case.user_type);
@@ -6078,7 +6114,7 @@ TEST_F(CaptureModeSettingsTest, AudioInputSettingsMenu) {
 
   // Test that the audio recording preference is defaulted to off.
   ClickOnView(GetSettingsButton(), event_generator);
-  EXPECT_FALSE(controller->enable_audio_recording());
+  EXPECT_FALSE(controller->GetAudioRecordingEnabled());
 
   CaptureModeSettingsTestApi test_api;
   CaptureModeMenuGroup* audio_input_menu_group =
@@ -6092,13 +6128,39 @@ TEST_F(CaptureModeSettingsTest, AudioInputSettingsMenu) {
   ClickOnView(microphone_option, event_generator);
   EXPECT_TRUE(audio_input_menu_group->IsOptionChecked(kAudioMicrophone));
   EXPECT_FALSE(audio_input_menu_group->IsOptionChecked(kAudioOff));
-  EXPECT_TRUE(controller->enable_audio_recording());
+  EXPECT_TRUE(controller->GetAudioRecordingEnabled());
 
   // Test that the user selected audio preference for audio recording is
   // remembered between sessions.
   SendKey(ui::VKEY_ESCAPE, event_generator);
   StartImageRegionCapture();
-  EXPECT_TRUE(controller->enable_audio_recording());
+  EXPECT_TRUE(controller->GetAudioRecordingEnabled());
+}
+
+TEST_F(CaptureModeSettingsTest, AudioCaptureDisabledByPolicy) {
+  auto* controller = CaptureModeController::Get();
+
+  // Even if audio recording is set to enabled, the policy setting will
+  // overwrite it.
+  controller->EnableAudioRecording(true);
+  auto* delegate =
+      static_cast<TestCaptureModeDelegate*>(controller->delegate_for_testing());
+  delegate->set_is_audio_capture_disabled_by_policy(true);
+  EXPECT_FALSE(controller->GetAudioRecordingEnabled());
+
+  StartImageRegionCapture();
+
+  // Open the settings menu, and check that "Audio Off" setting is dimmed out,
+  // and the "Microphone" setting was not added. This menu group should be
+  // marked as "managed by policy".
+  ClickOnView(GetSettingsButton(), GetEventGenerator());
+  CaptureModeSettingsTestApi test_api;
+  CaptureModeMenuGroup* audio_input_menu_group =
+      test_api.GetAudioInputMenuGroup();
+  EXPECT_TRUE(audio_input_menu_group->IsManagedByPolicy());
+  EXPECT_TRUE(audio_input_menu_group->IsOptionChecked(kAudioOff));
+  EXPECT_FALSE(audio_input_menu_group->IsOptionEnabled(kAudioOff));
+  EXPECT_FALSE(test_api.GetMicrophoneOption());
 }
 
 TEST_F(CaptureModeSettingsTest, SelectFolderFromDialog) {
@@ -6562,12 +6624,9 @@ TEST_F(CaptureModeSettingsTest,
 
   std::vector<CaptureModeSessionFocusCycler::HighlightableView*>
       highlightable_items = settings_menu->GetHighlightableItems();
-  EXPECT_TRUE(
-      std::find_if(highlightable_items.begin(), highlightable_items.end(),
-                   [custom_folder_view](
-                       CaptureModeSessionFocusCycler::HighlightableView* item) {
-                     return item->GetView() == custom_folder_view;
-                   }) == highlightable_items.end());
+  EXPECT_FALSE(base::Contains(
+      highlightable_items, custom_folder_view,
+      &CaptureModeSessionFocusCycler::HighlightableView::GetView));
 
   // Tab five times to focus the default `Downloads` option.
   SendKey(ui::VKEY_TAB, event_generator, /*shift_down=*/false, /*count=*/5);

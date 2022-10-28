@@ -1,11 +1,11 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 /** @fileoverview Test implementation of PasswordManagerProxy. */
 
 // clang-format off
-import {AccountStorageOptInStateChangedListener, CredentialsChangedListener, PasswordCheckInteraction, PasswordCheckReferrer, PasswordCheckStatusChangedListener, PasswordExceptionListChangedListener, PasswordManagerProxy, PasswordsFileExportProgressListener, SavedPasswordListChangedListener} from 'chrome://settings/settings.js';
+import {AccountStorageOptInStateChangedListener, CredentialsChangedListener, PasswordCheckInteraction, PasswordCheckReferrer, PasswordCheckStatusChangedListener, PasswordExceptionListChangedListener, PasswordManagerProxy, PasswordsFileExportProgressListener, PasswordManagerAuthTimeoutListener, SavedPasswordListChangedListener} from 'chrome://settings/settings.js';
 import {assertEquals} from 'chrome://webui-test/chai_assert.js';
 import {TestBrowserProxy} from 'chrome://webui-test/test_browser_proxy.js';
 
@@ -78,6 +78,8 @@ export class TestPasswordManagerProxy extends TestBrowserProxy implements
         AccountStorageOptInStateChangedListener|null,
     addPasswordsFileExportProgressListener: PasswordsFileExportProgressListener|
     null,
+    addPasswordManagerAuthTimeoutListener: PasswordManagerAuthTimeoutListener|
+    null,
   };
 
   private plaintextPassword_: string = '';
@@ -101,6 +103,7 @@ export class TestPasswordManagerProxy extends TestBrowserProxy implements
       'cancelExportPasswords',
       'changeSavedPassword',
       'exportPasswords',
+      'extendAuthValidity',
       'getCompromisedCredentials',
       'getPasswordCheckStatus',
       'getUrlCollection',
@@ -146,6 +149,7 @@ export class TestPasswordManagerProxy extends TestBrowserProxy implements
       addWeakCredentialsListener: null,
       addAccountStorageOptInStateListener: null,
       addPasswordsFileExportProgressListener: null,
+      addPasswordManagerAuthTimeoutListener: null,
     };
   }
 
@@ -335,6 +339,14 @@ export class TestPasswordManagerProxy extends TestBrowserProxy implements
   removePasswordCheckStatusListener(_listener:
                                         PasswordCheckStatusChangedListener) {}
 
+  addPasswordManagerAuthTimeoutListener(
+      listener: PasswordManagerAuthTimeoutListener) {
+    this.lastCallback.addPasswordManagerAuthTimeoutListener = listener;
+  }
+
+  removePasswordManagerAuthTimeoutListener(
+      _listener: PasswordManagerAuthTimeoutListener) {}
+
   recordPasswordCheckInteraction(interaction: PasswordCheckInteraction) {
     this.methodCalled('recordPasswordCheckInteraction', interaction);
   }
@@ -407,6 +419,10 @@ export class TestPasswordManagerProxy extends TestBrowserProxy implements
       isManualFlow: boolean) {
     this.methodCalled(
         'recordChangePasswordFlowStarted', insecureCredential, isManualFlow);
+  }
+
+  extendAuthValidity() {
+    this.methodCalled('extendAuthValidity');
   }
 
   importPasswords(toStore: chrome.passwordsPrivate.PasswordStoreSet) {

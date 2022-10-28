@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,12 +11,12 @@
 #include <utility>
 #include <vector>
 
-#include "ash/components/disks/disk_mount_manager.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/ash/guest_os/guest_id.h"
 #include "chromeos/ash/components/dbus/cicerone/cicerone_client.h"
 #include "chromeos/ash/components/dbus/concierge/concierge_client.h"
 #include "chromeos/ash/components/dbus/vm_plugin_dispatcher/vm_plugin_dispatcher_client.h"
+#include "chromeos/ash/components/disks/disk_mount_manager.h"
 #include "mojo/public/cpp/bindings/associated_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
@@ -50,6 +50,8 @@ struct CrosUsbDeviceInfo {
   CrosUsbDeviceInfo(std::string guid,
                     std::u16string label,
                     absl::optional<guest_os::GuestId> shared_guest_id,
+                    uint16_t vendor_id,
+                    uint16_t product_id,
                     bool prompt_before_sharing);
   CrosUsbDeviceInfo(const CrosUsbDeviceInfo&);
   ~CrosUsbDeviceInfo();
@@ -59,6 +61,8 @@ struct CrosUsbDeviceInfo {
   // Name of VM shared with. Unset if not shared. The device may be shared but
   // not yet attached.
   absl::optional<guest_os::GuestId> shared_guest_id;
+  uint16_t vendor_id;
+  uint16_t product_id;
   // Devices shared with other devices or otherwise in use by the system
   // should have a confirmation prompt shown prior to sharing.
   bool prompt_before_sharing;

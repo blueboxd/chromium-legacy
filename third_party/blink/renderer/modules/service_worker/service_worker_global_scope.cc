@@ -30,7 +30,6 @@
 
 #include "third_party/blink/renderer/modules/service_worker/service_worker_global_scope.h"
 
-#include <algorithm>
 #include <memory>
 #include <utility>
 
@@ -40,6 +39,7 @@
 #include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/numerics/safe_conversions.h"
+#include "base/ranges/algorithm.h"
 #include "base/time/time.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "services/network/public/cpp/cross_origin_embedder_policy.h"
@@ -61,7 +61,6 @@
 #include "third_party/blink/renderer/bindings/core/v8/js_based_event_listener.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
-#include "third_party/blink/renderer/bindings/core/v8/source_location.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_throw_dom_exception.h"
 #include "third_party/blink/renderer/bindings/core/v8/worker_or_worklet_script_controller.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_background_fetch_event_init.h"
@@ -130,6 +129,7 @@
 #include "third_party/blink/renderer/modules/service_worker/wait_until_observer.h"
 #include "third_party/blink/renderer/modules/service_worker/web_service_worker_fetch_context_impl.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
+#include "third_party/blink/renderer/platform/bindings/source_location.h"
 #include "third_party/blink/renderer/platform/bindings/v8_binding.h"
 #include "third_party/blink/renderer/platform/bindings/v8_throw_exception.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
@@ -282,8 +282,10 @@ void ServiceWorkerGlobalScope::FetchAndRunClassicScript(
     WorkerResourceTimingNotifier& outside_resource_timing_notifier,
     const v8_inspector::V8StackTraceId& stack_id) {
   DCHECK(!IsContextPaused());
-  // TODO(crbug.com/1177199): SetPolicyContainer once we passed down policy
-  // container from ServiceWorkerVersion
+
+  // policy_container_host could be null for registration restored from old DB
+  if (policy_container)
+    SetPolicyContainer(std::move(policy_container));
 
   if (installed_scripts_manager_) {
     // This service worker is installed. Load and run the installed script.
@@ -345,8 +347,10 @@ void ServiceWorkerGlobalScope::FetchAndRunModuleScript(
     RejectCoepUnsafeNone reject_coep_unsafe_none) {
   DCHECK(IsContextThread());
   DCHECK(!reject_coep_unsafe_none);
-  // TODO(crbug.com/1177199): SetPolicyContainer once we passed down policy
-  // container from ServiceWorkerVersion
+
+  // policy_container_host could be null for registration restored from old DB
+  if (policy_container)
+    SetPolicyContainer(std::move(policy_container));
 
   if (worker_main_script_load_params) {
     SetWorkerMainScriptLoadingParametersForModules(
@@ -2360,8 +2364,8 @@ void ServiceWorkerGlobalScope::StartPaymentRequestEvent(
   // Count standardized payment method identifiers, such as "basic-card" or
   // "tokenized-card". Omit counting the URL-based payment method identifiers,
   // such as "https://bobpay.xyz".
-  if (std::any_of(
-          event_data->method_data.begin(), event_data->method_data.end(),
+  if (base::ranges::any_of(
+          event_data->method_data,
           [](const payments::mojom::blink::PaymentMethodDataPtr& datum) {
             return datum && !datum->supported_method.StartsWith("http");
           })) {
@@ -2472,8 +2476,8 @@ void ServiceWorkerGlobalScope::AddMessageToConsole(
     const String& message) {
   AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
       mojom::ConsoleMessageSource::kOther, level, message,
-      SourceLocation::Capture(/* url= */ "", /* line_number= */ 0,
-                              /* column_number= */ 0)));
+      CaptureSourceLocation(/* url= */ "", /* line_number= */ 0,
+                            /* column_number= */ 0)));
 }
 
 void ServiceWorkerGlobalScope::ExecuteScriptForTest(

@@ -454,6 +454,7 @@ Kapag na-delete mo ang iyong history ng pag-browse — lahat o para sa isang par
 <translation id="3435465986463792564">Maraming window? Puwede mong pamahalaan ang mga ito mula rito</translation>
 <translation id="3443221991560634068">I-reload ang kasalukuyang page</translation>
 <translation id="3444179773590444986">Magbahagi ng feedback sa madilim na tema para sa mga site?</translation>
+<translation id="3452832259067974318">Para protektahan ang iyong privacy, hindi io-autofill ng Chrome ang password mo sa field na ito.</translation>
 <translation id="3469665409713263828">{FILE_COUNT,plural, =1{1 download ang nakaiskedyul}one{# download ang nakaiskedyul}other{# na download ang nakaiskedyul}}</translation>
 <translation id="3474624961160222204">Magpatuloy bilang si <ph name="NAME" /></translation>
 <translation id="3478363558367712427">Puwede mong piliin ang iyong search engine</translation>
@@ -679,6 +680,7 @@ Maaaring may ibang uri ng history ng pag-browse ang iyong Google account tulad n
 <translation id="4763480195061959176">video</translation>
 <translation id="4766313118839197559">Sine-save ang mga password sa Password Manager sa device na ito.</translation>
 <translation id="4766678251456904326">Magdagdag ng account sa device</translation>
+<translation id="4787736314074622408">Gusto mo bang i-delete ang <ph name="ITEM_TITLE" />?</translation>
 <translation id="4791358705705538979">Tinutulungan kang kumumpleto ng mga gawain, gaya ng pag-checkout, sa buong web</translation>
 <translation id="4794291718671962615">(<ph name="MEGABYTES" />) <ph name="URL" /></translation>
 <translation id="4802417911091824046">Hindi kasama sa pag-encrypt ng passphrase ang mga paraan ng pagbabayad at address mula sa Google Pay.
@@ -748,6 +750,7 @@ Para baguhin ang setting na ito, <ph name="BEGIN_LINK" />i-reset ang pag-sync<ph
 <translation id="5091199029769593641">Hindi magtatagal at makakakita ka ng mga kuwento mula sa <ph name="SITE_NAME" /> kapag nagbukas ka ng bagong tab. Mase-save sa iyong Google account ang mga site na sinusubaybayan mo. Puwede mong pamahalaan ang mga ito sa mga setting ng Discover.</translation>
 <translation id="5091249083535528968">Pinalawak na data ng paggamit</translation>
 <translation id="509429900233858213">May naganap na error.</translation>
+<translation id="5099845111805573968">Kapag pinili mo ang pang-desktop na site nang isang beses, ilalapat ang setting sa site sa tuwing bibisita ka</translation>
 <translation id="5102401324271069229">Kung susubukan ng site na nakawin ang iyong password, o kapag nag-download ka ng mapaminsalang file, posibleng magpadala ang Chrome sa Ligtas na Pag-browse ng mga URL, pati ng ilang content ng page</translation>
 <translation id="510275257476243843">1 oras na lang ang natitira</translation>
 <translation id="5115811374190515607">sa <ph name="PRODUCT_NAME" /></translation>
@@ -907,6 +910,7 @@ Para baguhin ang setting na ito, <ph name="BEGIN_LINK" />i-reset ang pag-sync<ph
 <translation id="5958275228015807058">Hanapin ang iyong mga file at page sa Mga Download</translation>
 <translation id="5962718611393537961">I-tap upang i-collapse</translation>
 <translation id="5964869237734432770">Ihinto ang desc ng larawan</translation>
+<translation id="5966233851250124270">Matatandaan ng Chrome ang iyong napili</translation>
 <translation id="5979084224081478209">Suriin ang mga password</translation>
 <translation id="5995726099713306770">I-download ulit ang page?</translation>
 <translation id="6000066717592683814">Panatilihin ang Google</translation>
@@ -1083,6 +1087,7 @@ Pinapahusay ng mga trust token ang privacy sa web at hindi magagamit ang mga ito
 <translation id="6820686453637990663">CVC</translation>
 <translation id="6824899148643461612"><ph name="TAB_TITLE" />, tab, napili</translation>
 <translation id="6828070228333235514">Ihinto ang pagsubaybay ng presyo</translation>
+<translation id="6830728435402077660">Hindi secure</translation>
 <translation id="6833996806551876956">Trial ng Privacy Sandbox</translation>
 <translation id="6836206421467243968">I-restore ang grupo ng tab na <ph name="TITLE_OF_GROUP" /> bilang bagong background na grupo ng tab.</translation>
 <translation id="6846298663435243399">Naglo-load…</translation>

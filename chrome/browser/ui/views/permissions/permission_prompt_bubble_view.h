@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,21 +11,14 @@
 #include "base/time/time.h"
 #include "chrome/browser/ui/views/permissions/permission_prompt_style.h"
 #include "components/permissions/permission_prompt.h"
+#include "components/permissions/permission_util.h"
 #include "ui/base/metadata/metadata_header_macros.h"
 #include "ui/views/bubble/bubble_dialog_delegate_view.h"
 
 namespace permissions {
-enum class RequestType;
 enum class PermissionAction;
+enum class RequestType;
 }  // namespace permissions
-
-namespace view {
-class Widget;
-}
-
-namespace view {
-class Widget;
-}
 
 class Browser;
 

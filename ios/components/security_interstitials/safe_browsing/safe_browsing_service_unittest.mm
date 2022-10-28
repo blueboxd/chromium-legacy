@@ -1,51 +1,52 @@
-// Copyright (c) 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ios/components/security_interstitials/safe_browsing/safe_browsing_service_impl.h"
+#import "ios/components/security_interstitials/safe_browsing/safe_browsing_service_impl.h"
 
-#include "base/files/scoped_temp_dir.h"
-#include "base/path_service.h"
-#include "base/run_loop.h"
-#include "base/test/bind.h"
-#include "base/test/scoped_feature_list.h"
-#include "components/content_settings/core/browser/host_content_settings_map.h"
-#include "components/prefs/pref_service.h"
-#include "components/prefs/testing_pref_service.h"
-#include "components/safe_browsing/core/browser/db/database_manager.h"
-#include "components/safe_browsing/core/browser/db/metadata.pb.h"
-#include "components/safe_browsing/core/browser/db/util.h"
-#include "components/safe_browsing/core/browser/db/v4_database.h"
-#include "components/safe_browsing/core/browser/db/v4_get_hash_protocol_manager.h"
-#include "components/safe_browsing/core/browser/db/v4_protocol_manager_util.h"
-#include "components/safe_browsing/core/browser/db/v4_test_util.h"
-#include "components/safe_browsing/core/browser/realtime/url_lookup_service.h"
-#include "components/safe_browsing/core/browser/safe_browsing_token_fetcher.h"
-#include "components/safe_browsing/core/browser/safe_browsing_url_checker_impl.h"
-#include "components/safe_browsing/core/browser/verdict_cache_manager.h"
-#include "components/safe_browsing/core/common/features.h"
-#include "components/safe_browsing/core/common/proto/realtimeapi.pb.h"
-#include "components/safe_browsing/core/common/safe_browsing_prefs.h"
-#include "components/safe_browsing/core/common/safebrowsing_constants.h"
+#import "base/files/scoped_temp_dir.h"
+#import "base/path_service.h"
+#import "base/run_loop.h"
+#import "base/test/bind.h"
+#import "base/test/metrics/histogram_tester.h"
+#import "base/test/scoped_feature_list.h"
+#import "components/content_settings/core/browser/host_content_settings_map.h"
+#import "components/prefs/pref_service.h"
+#import "components/prefs/testing_pref_service.h"
+#import "components/safe_browsing/core/browser/db/database_manager.h"
+#import "components/safe_browsing/core/browser/db/metadata.pb.h"
+#import "components/safe_browsing/core/browser/db/util.h"
+#import "components/safe_browsing/core/browser/db/v4_database.h"
+#import "components/safe_browsing/core/browser/db/v4_get_hash_protocol_manager.h"
+#import "components/safe_browsing/core/browser/db/v4_protocol_manager_util.h"
+#import "components/safe_browsing/core/browser/db/v4_test_util.h"
+#import "components/safe_browsing/core/browser/realtime/url_lookup_service.h"
+#import "components/safe_browsing/core/browser/safe_browsing_token_fetcher.h"
+#import "components/safe_browsing/core/browser/safe_browsing_url_checker_impl.h"
+#import "components/safe_browsing/core/browser/verdict_cache_manager.h"
+#import "components/safe_browsing/core/common/features.h"
+#import "components/safe_browsing/core/common/proto/realtimeapi.pb.h"
+#import "components/safe_browsing/core/common/safe_browsing_prefs.h"
+#import "components/safe_browsing/core/common/safebrowsing_constants.h"
 #import "components/safe_browsing/ios/browser/safe_browsing_url_allow_list.h"
-#include "components/sync_preferences/pref_service_syncable.h"
-#include "components/sync_preferences/testing_pref_service_syncable.h"
-#include "components/unified_consent/pref_names.h"
-#include "components/unified_consent/unified_consent_service.h"
+#import "components/sync_preferences/pref_service_syncable.h"
+#import "components/sync_preferences/testing_pref_service_syncable.h"
+#import "components/unified_consent/pref_names.h"
+#import "components/unified_consent/unified_consent_service.h"
 #import "ios/components/security_interstitials/safe_browsing/fake_safe_browsing_client.h"
 #import "ios/components/security_interstitials/safe_browsing/safe_browsing_query_manager.h"
 #import "ios/components/security_interstitials/safe_browsing/safe_browsing_unsafe_resource_container.h"
 #import "ios/web/public/test/fakes/fake_browser_state.h"
 #import "ios/web/public/test/fakes/fake_web_state.h"
-#include "ios/web/public/test/web_task_environment.h"
-#include "ios/web/public/thread/web_task_traits.h"
-#include "ios/web/public/thread/web_thread.h"
-#include "net/test/embedded_test_server/default_handlers.h"
-#include "net/test/embedded_test_server/embedded_test_server.h"
-#include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
-#include "services/network/public/cpp/shared_url_loader_factory.h"
-#include "services/network/public/cpp/simple_url_loader.h"
-#include "testing/platform_test.h"
+#import "ios/web/public/test/web_task_environment.h"
+#import "ios/web/public/thread/web_task_traits.h"
+#import "ios/web/public/thread/web_thread.h"
+#import "net/test/embedded_test_server/default_handlers.h"
+#import "net/test/embedded_test_server/embedded_test_server.h"
+#import "net/traffic_annotation/network_traffic_annotation_test_helper.h"
+#import "services/network/public/cpp/shared_url_loader_factory.h"
+#import "services/network/public/cpp/simple_url_loader.h"
+#import "testing/platform_test.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -198,7 +199,7 @@ class SafeBrowsingServiceTest : public PlatformTest {
                        base::Unretained(this), bad_url));
   }
 
-  // Adds the given |safe_url| to the allowlist used by real-time checks.
+  // Adds the given `safe_url` to the allowlist used by real-time checks.
   void MarkUrlAsRealTimeSafe(const GURL& safe_url) {
     web::GetIOThreadTaskRunner({})->PostTask(
         FROM_HERE,
@@ -206,7 +207,7 @@ class SafeBrowsingServiceTest : public PlatformTest {
                        base::Unretained(this), safe_url));
   }
 
-  // Caches the given |bad_url| as unsafe in the VerdictCacheManager used by
+  // Caches the given `bad_url` as unsafe in the VerdictCacheManager used by
   // real-time checks.
   void MarkUrlAsRealTimeUnsafe(const GURL& bad_url) {
     safe_browsing::RTLookupResponse response;
@@ -584,6 +585,104 @@ TEST_F(SafeBrowsingServiceInitializationTest, GetURLLoaderFactory) {
       /*safe_browsing_metrics_collector=*/nullptr);
 
   EXPECT_TRUE(safe_browsing_service->GetURLLoaderFactory());
+
+  safe_browsing_service->ShutDown();
+  task_environment.RunUntilIdle();
+}
+
+// Verifies that Safe Browsing preference metrics are correctly recorded when
+// Safe Browsing is enabled but Enhanced Safe Browsing is not.
+TEST_F(SafeBrowsingServiceInitializationTest,
+       PreferenceMetricsStandardSafeBrowsing) {
+  web::WebTaskEnvironment task_environment;
+
+  std::unique_ptr<web::FakeBrowserState> browser_state =
+      std::make_unique<web::FakeBrowserState>();
+  std::unique_ptr<sync_preferences::TestingPrefServiceSyncable> prefs =
+      std::make_unique<sync_preferences::TestingPrefServiceSyncable>();
+  safe_browsing::RegisterProfilePrefs(prefs->registry());
+
+  base::ScopedTempDir temp_dir;
+  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+
+  scoped_refptr<SafeBrowsingService> safe_browsing_service =
+      base::MakeRefCounted<SafeBrowsingServiceImpl>();
+  prefs->SetBoolean(prefs::kSafeBrowsingEnabled, true);
+  prefs->SetBoolean(prefs::kSafeBrowsingEnhanced, false);
+  base::HistogramTester histogram_tester;
+  safe_browsing_service->Initialize(
+      prefs.get(), temp_dir.GetPath(),
+      /*safe_browsing_metrics_collector=*/nullptr);
+  histogram_tester.ExpectUniqueSample(
+      safe_browsing::kSafeBrowsingEnabledHistogramName, /*sample=*/1,
+      /*count=*/1);
+  histogram_tester.ExpectUniqueSample("SafeBrowsing.Pref.Enhanced",
+                                      /*sample=*/0, /*count=*/1);
+
+  safe_browsing_service->ShutDown();
+  task_environment.RunUntilIdle();
+}
+
+// Verifies that Safe Browsing preference metrics are correctly recorded when
+// Enhanced Safe Browsing is enabled.
+TEST_F(SafeBrowsingServiceInitializationTest,
+       PreferenceMetricsEnhancedSafeBrowsing) {
+  web::WebTaskEnvironment task_environment;
+
+  std::unique_ptr<web::FakeBrowserState> browser_state =
+      std::make_unique<web::FakeBrowserState>();
+  std::unique_ptr<sync_preferences::TestingPrefServiceSyncable> prefs =
+      std::make_unique<sync_preferences::TestingPrefServiceSyncable>();
+  safe_browsing::RegisterProfilePrefs(prefs->registry());
+
+  base::ScopedTempDir temp_dir;
+  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+
+  scoped_refptr<SafeBrowsingService> safe_browsing_service =
+      base::MakeRefCounted<SafeBrowsingServiceImpl>();
+  prefs->SetBoolean(prefs::kSafeBrowsingEnabled, true);
+  prefs->SetBoolean(prefs::kSafeBrowsingEnhanced, true);
+  base::HistogramTester histogram_tester;
+  safe_browsing_service->Initialize(
+      prefs.get(), temp_dir.GetPath(),
+      /*safe_browsing_metrics_collector=*/nullptr);
+  histogram_tester.ExpectUniqueSample(
+      safe_browsing::kSafeBrowsingEnabledHistogramName, /*sample=*/1,
+      /*count=*/1);
+  histogram_tester.ExpectUniqueSample("SafeBrowsing.Pref.Enhanced",
+                                      /*sample=*/1, /*count=*/1);
+
+  safe_browsing_service->ShutDown();
+  task_environment.RunUntilIdle();
+}
+
+// Verifies that Safe Browsing preference metrics are correctly recorded when
+// Safe Browsing is disabled.
+TEST_F(SafeBrowsingServiceInitializationTest, PreferenceMetricsNoSafeBrowsing) {
+  web::WebTaskEnvironment task_environment;
+
+  std::unique_ptr<web::FakeBrowserState> browser_state =
+      std::make_unique<web::FakeBrowserState>();
+  std::unique_ptr<sync_preferences::TestingPrefServiceSyncable> prefs =
+      std::make_unique<sync_preferences::TestingPrefServiceSyncable>();
+  safe_browsing::RegisterProfilePrefs(prefs->registry());
+
+  base::ScopedTempDir temp_dir;
+  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+
+  scoped_refptr<SafeBrowsingService> safe_browsing_service =
+      base::MakeRefCounted<SafeBrowsingServiceImpl>();
+  prefs->SetBoolean(prefs::kSafeBrowsingEnabled, false);
+  prefs->SetBoolean(prefs::kSafeBrowsingEnhanced, false);
+  base::HistogramTester histogram_tester;
+  safe_browsing_service->Initialize(
+      prefs.get(), temp_dir.GetPath(),
+      /*safe_browsing_metrics_collector=*/nullptr);
+  histogram_tester.ExpectUniqueSample(
+      safe_browsing::kSafeBrowsingEnabledHistogramName, /*sample=*/0,
+      /*count=*/1);
+  histogram_tester.ExpectUniqueSample("SafeBrowsing.Pref.Enhanced",
+                                      /*sample=*/0, /*count=*/1);
 
   safe_browsing_service->ShutDown();
   task_environment.RunUntilIdle();

@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,7 +8,7 @@
 #include <memory>
 #include <vector>
 
-#include "components/keyed_service/content/browser_context_keyed_service_factory.h"
+#include "chrome/browser/profiles/profile_keyed_service_factory.h"
 
 class Profile;
 
@@ -22,7 +22,7 @@ class SyncServiceImpl;
 class SyncService;
 }  // namespace syncer
 
-class SyncServiceFactory : public BrowserContextKeyedServiceFactory {
+class SyncServiceFactory : public ProfileKeyedServiceFactory {
  public:
   // Returns the SyncService for the given profile.
   static syncer::SyncService* GetForProfile(Profile* profile);

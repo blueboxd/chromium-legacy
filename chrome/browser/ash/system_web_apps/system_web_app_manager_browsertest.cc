@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -230,7 +230,7 @@ IN_PROC_BROWSER_TEST_P(SystemWebAppManagerBrowserTest,
   proxy->LaunchAppWithIntent(
       GetManager().GetAppIdForSystemApp(GetMockAppType()).value(), ui::EF_NONE,
       std::move(intent), apps::mojom::LaunchSource::kFromAppListGrid,
-      apps::MakeWindowInfo(display::kDefaultDisplayId));
+      apps::MakeWindowInfo(display::kDefaultDisplayId), {});
   navigation_observer.Wait();
 
   histograms.ExpectTotalCount("Apps.DefaultAppLaunch.FromAppListGrid", 1);
@@ -1174,13 +1174,6 @@ IN_PROC_BROWSER_TEST_P(SystemWebAppManagerInstallAllAppsBrowserTest,
   }
 }
 
-IN_PROC_BROWSER_TEST_P(SystemWebAppManagerInstallAllAppsBrowserTest,
-                       PRE_Upgrade) {
-  GetManager().InstallSystemAppsForTesting();
-  EXPECT_GE(GetManager().system_app_delegates().size(),
-            GetManager().GetAppIds().size());
-}
-
 IN_PROC_BROWSER_TEST_P(SystemWebAppManagerInstallAllAppsBrowserTest, Upgrade) {
   GetManager().InstallSystemAppsForTesting();
   const auto& app_ids = GetManager().GetAppIds();
@@ -1815,7 +1808,6 @@ IN_PROC_BROWSER_TEST_P(SystemWebAppAbortsLaunchTest, LaunchAborted) {
 
   ash::LaunchSystemWebAppAsync(browser()->profile(),
                                maybe_installation_->GetType());
-  ash::FlushSystemWebAppLaunchesForTesting(browser()->profile());
 
   EXPECT_EQ(0U, GetSystemWebAppBrowserCount(maybe_installation_->GetType()));
 }

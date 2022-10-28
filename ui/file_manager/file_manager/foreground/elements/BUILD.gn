@@ -26,14 +26,14 @@ group("closure_compile") {
 
 js_type_check("closure_compile_jsmodules") {
   is_polymer3 = true
-  closure_flags = default_closure_args + [
-                    "language_in=ECMASCRIPT_2020",
-                    "js_module_root=gen/ui/file_manager/",
-                    "js_module_root=../../ui/file_manager/",
-                  ]
+  closure_flags =
+      default_closure_args + [
+        "language_in=ECMASCRIPT_2020",
+        "js_module_root=gen/ui/file_manager/",
+        "js_module_root=" + rebase_path("//ui/file_manager/", root_build_dir),
+      ]
   deps = [
     ":files_format_dialog",
-    ":files_icon_button",
     ":files_metadata_box",
     ":files_metadata_entry",
     ":files_password_dialog",
@@ -55,7 +55,6 @@ html_to_js("web_components") {
   visibility += [ "//ui/file_manager/*" ]
   js_files = [
     "files_format_dialog.js",
-    "files_icon_button.js",
     "files_metadata_box.js",
     "files_metadata_entry.js",
     "files_password_dialog.js",
@@ -83,19 +82,12 @@ js_library("files_format_dialog") {
     "//ui/file_manager/file_manager/common/js:volume_manager_types",
     "//ui/file_manager/file_manager/externs:volume_info",
     "//ui/file_manager/file_manager/foreground/js:file_rename",
-    "//ui/webui/resources/cr_elements/cr_button:cr_button",
-    "//ui/webui/resources/cr_elements/cr_dialog:cr_dialog",
-    "//ui/webui/resources/cr_elements/cr_input:cr_input",
-    "//ui/webui/resources/js:i18n_behavior.m",
+    "//ui/webui/resources/cr_elements:i18n_behavior",
   ]
-}
-
-js_library("files_icon_button") {
-  deps = [
-    ":files_toggle_ripple",
-    "//third_party/polymer/v3_0/components-chromium/iron-behaviors:iron-button-state",
-    "//third_party/polymer/v3_0/components-chromium/iron-behaviors:iron-control-state",
-    "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
+  externs_list = [
+    "//ui/webui/resources/cr_elements/cr_button/cr_button_externs.js",
+    "//ui/webui/resources/cr_elements/cr_dialog/cr_dialog_externs.js",
+    "//ui/webui/resources/cr_elements/cr_input/cr_input_externs.js",
   ]
 }
 
@@ -118,21 +110,24 @@ js_unittest("files_password_dialog_unittest") {
     "//ui/file_manager/file_manager/common/js:test_error_reporting",
     "//ui/webui/resources/js:assert.m",
   ]
+  externs_list =
+      [ "//ui/webui/resources/cr_elements/cr_dialog/cr_dialog_externs.js" ]
 }
 
 js_library("files_password_dialog") {
   deps = [
     "//ui/file_manager/file_manager/common/js:async_util",
-    "//ui/webui/resources/cr_elements/cr_button:cr_button",
-    "//ui/webui/resources/cr_elements/cr_dialog:cr_dialog",
-    "//ui/webui/resources/cr_elements/cr_input:cr_input",
     "//ui/webui/resources/js:load_time_data.m",
+  ]
+  externs_list = [
+    "//ui/webui/resources/cr_elements/cr_button/cr_button_externs.js",
+    "//ui/webui/resources/cr_elements/cr_dialog/cr_dialog_externs.js",
+    "//ui/webui/resources/cr_elements/cr_input/cr_input_externs.js",
   ]
 }
 
 js_library("files_quick_view") {
   deps = [
-    ":files_icon_button",
     ":files_metadata_box",
     ":files_safe_media",
     ":files_tooltip",
@@ -167,10 +162,11 @@ js_library("files_spinner") {
 js_library("files_toast") {
   deps = [
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
-    "//ui/webui/resources/cr_elements/cr_button:cr_button",
   ]
-  externs_list =
-      [ "//ui/webui/resources/cr_elements/cr_toast/cr_toast_externs.js" ]
+  externs_list = [
+    "//ui/webui/resources/cr_elements/cr_button/cr_button_externs.js",
+    "//ui/webui/resources/cr_elements/cr_toast/cr_toast_externs.js",
+  ]
 }
 
 # TODO(tapted): Move this to //ui/file_manager/base.
@@ -206,6 +202,7 @@ js_unittest("files_xf_elements_unittest") {
   deps = [
     ":xf_display_panel",
     "//chrome/test/data/webui:chai_assert",
+    "//ui/file_manager/file_manager/common/js:test_error_reporting",
     "//ui/file_manager/file_manager/common/js:util",
     "//ui/webui/resources/js:assert.m",
     "//ui/webui/resources/js:load_time_data.m",
@@ -215,7 +212,8 @@ js_unittest("files_xf_elements_unittest") {
 }
 
 js_library("xf_button") {
-  deps = [ "//ui/webui/resources/cr_elements/cr_button:cr_button" ]
+  externs_list =
+      [ "//ui/webui/resources/cr_elements/cr_button/cr_button_externs.js" ]
 }
 
 js_library("xf_circular_progress") {
@@ -243,7 +241,7 @@ js_test_type_check("js_test_type_check") {
         "language_in=ECMASCRIPT_2020",
         "generate_exports=false",
         "js_module_root=./gen/ui",
-        "js_module_root=../../ui",
+        "js_module_root=" + rebase_path("//ui", root_build_dir),
         "browser_resolver_prefix_replacements=\"chrome://webui-test/=./\"",
         "hide_warnings_for=third_party/",
       ]

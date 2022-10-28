@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -30,15 +30,14 @@ gfx::Size GetPortalDialogSize() {
 
 }  // namespace
 
-NetworkPortalWebDialog::NetworkPortalWebDialog(
-    base::WeakPtr<NetworkPortalNotificationController> controller)
-    : controller_(controller), widget_(nullptr) {
+NetworkPortalWebDialog::NetworkPortalWebDialog(base::WeakPtr<Delegate> delegate)
+    : delegate_(delegate), widget_(nullptr) {
   set_can_resize(false);
 }
 
 NetworkPortalWebDialog::~NetworkPortalWebDialog() {
-  if (controller_)
-    controller_->OnDialogDestroyed(this);
+  if (delegate_)
+    delegate_->OnDialogDestroyed(this);
 }
 
 void NetworkPortalWebDialog::Close() {

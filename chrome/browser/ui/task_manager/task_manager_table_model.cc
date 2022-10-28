@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -821,7 +821,7 @@ void TaskManagerTableModel::RetrieveSavedColumnsSettingsAndUpdateTable() {
     return;
 
   const base::Value::Dict& dictionary =
-      g_browser_process->local_state()->GetValueDict(
+      g_browser_process->local_state()->GetDict(
           prefs::kTaskManagerColumnVisibility);
 
   // Do a best effort of retrieving the correct settings from the local state.
@@ -863,10 +863,8 @@ void TaskManagerTableModel::StoreColumnsSettings() {
   DictionaryPrefUpdate dict_update(local_state,
                                    prefs::kTaskManagerColumnVisibility);
 
-  base::DictionaryValue::Iterator it(*columns_settings_);
-  while (!it.IsAtEnd()) {
-    dict_update->SetPath(it.key(), it.value().Clone());
-    it.Advance();
+  for (const auto item : columns_settings_->GetDict()) {
+    dict_update->SetPath(item.first, item.second.Clone());
   }
 
   // Store the current sort status to be restored again at startup.

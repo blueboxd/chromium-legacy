@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -21,8 +21,7 @@ bool ShouldAddVisitToCluster(const history::ClusterVisit& visit,
       GetConfig().cluster_navigation_time_cutoff) {
     return false;
   }
-  if (GetConfig().split_clusters_at_search_visits &&
-      !visit.annotated_visit.content_annotations.search_terms.empty()) {
+  if (!visit.annotated_visit.content_annotations.search_terms.empty()) {
     // If we want to split the clusters at search visits and we are at a search
     // visit, only add the visit to the cluster if the last search visit was
     // also a search visit with the same terms. Also break the cluster if there
@@ -62,15 +61,24 @@ std::vector<history::Cluster> Clusterer::CreateInitialClustersFromVisits(
   for (const auto& visit : *visits) {
     const auto& visit_url = visit.normalized_url;
     absl::optional<size_t> cluster_idx;
-    history::VisitID previous_visit_id =
-        (visit.annotated_visit.referring_visit_of_redirect_chain_start != 0)
-            ? visit.annotated_visit.referring_visit_of_redirect_chain_start
-            : visit.annotated_visit.opener_visit_of_redirect_chain_start;
-    if (previous_visit_id != 0) {
-      // See if we have clustered the referring visit.
-      auto it = visit_id_to_cluster_map.find(previous_visit_id);
-      if (it != visit_id_to_cluster_map.end()) {
-        cluster_idx = it->second;
+    std::vector<history::VisitID> previous_visit_ids_to_check;
+    if (visit.annotated_visit.opener_visit_of_redirect_chain_start != 0) {
+      previous_visit_ids_to_check.push_back(
+          visit.annotated_visit.opener_visit_of_redirect_chain_start);
+    }
+    if (visit.annotated_visit.referring_visit_of_redirect_chain_start != 0) {
+      previous_visit_ids_to_check.push_back(
+          visit.annotated_visit.referring_visit_of_redirect_chain_start);
+    }
+    if (!previous_visit_ids_to_check.empty()) {
+      // See if we have clustered any of the previous visits with opener taking
+      // precedence.
+      for (history::VisitID previous_visit_id : previous_visit_ids_to_check) {
+        auto it = visit_id_to_cluster_map.find(previous_visit_id);
+        if (it != visit_id_to_cluster_map.end()) {
+          cluster_idx = it->second;
+          break;
+        }
       }
     } else {
       // See if we have clustered the URL. (forward-back, reload, etc.)
@@ -90,9 +98,9 @@ std::vector<history::Cluster> Clusterer::CreateInitialClustersFromVisits(
         // Erase all visits in the cluster from the maps since we no longer
         // want to consider anything in the cluster as a referrer.
         auto finalized_cluster = clusters[*cluster_idx];
-        for (const auto& visit : finalized_cluster.visits) {
+        for (const auto& finalized_visit : finalized_cluster.visits) {
           visit_id_to_cluster_map.erase(
-              visit.annotated_visit.visit_row.visit_id);
+              finalized_visit.annotated_visit.visit_row.visit_id);
           url_to_cluster_map.erase(visit_url.possibly_invalid_spec());
         }
 

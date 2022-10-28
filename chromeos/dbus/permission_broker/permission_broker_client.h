@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -209,10 +209,5 @@ class COMPONENT_EXPORT(PERMISSION_BROKER) PermissionBrokerClient {
 };
 
 }  // namespace chromeos
-
-// TODO(https://crbug.com/1164001): remove when moved to ash.
-namespace ash {
-using ::chromeos::PermissionBrokerClient;
-}  // namespace ash
 
 #endif  // CHROMEOS_DBUS_PERMISSION_BROKER_PERMISSION_BROKER_CLIENT_H_

@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -249,8 +249,9 @@ void ShortcutsDatabase::LoadShortcuts(GuidToShortcutMap* shortcuts) {
       continue;
 
     const int page_transition_integer = s.ColumnInt(9);
-    if (!ui::PageTransitionIsValidType(page_transition_integer))
+    if (!ui::IsValidPageTransitionType(page_transition_integer)) {
       continue;
+    }
     ui::PageTransition transition =
         ui::PageTransitionFromInt(page_transition_integer);
 

@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -157,7 +157,7 @@ class ProtocolHandlerRegistryTest : public testing::Test {
   }
 
   int InPrefHandlerCount() {
-    const base::Value::List& in_pref_handlers = GetPrefs()->GetValueList(
+    const base::Value::List& in_pref_handlers = GetPrefs()->GetList(
         custom_handlers::prefs::kRegisteredProtocolHandlers);
     return static_cast<int>(in_pref_handlers.size());
   }
@@ -172,8 +172,7 @@ class ProtocolHandlerRegistryTest : public testing::Test {
 
   int InPrefIgnoredHandlerCount() {
     const base::Value::List& in_pref_ignored_handlers =
-        GetPrefs()->GetValueList(
-            custom_handlers::prefs::kIgnoredProtocolHandlers);
+        GetPrefs()->GetList(custom_handlers::prefs::kIgnoredProtocolHandlers);
     return static_cast<int>(in_pref_ignored_handlers.size());
   }
 

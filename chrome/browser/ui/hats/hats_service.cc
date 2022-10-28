@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,11 +7,13 @@
 #include <memory>
 #include <utility>
 
+#include "base/containers/contains.h"
 #include "base/feature_list.h"
 #include "base/json/values_util.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/rand_util.h"
+#include "base/ranges/algorithm.h"
 #include "base/values.h"
 #include "base/version.h"
 #include "chrome/browser/browser_process.h"
@@ -479,11 +481,11 @@ void HatsService::RecordSurveyAsShown(std::string trigger_id) {
   // of the trigger ID itself, as the ID is specific to individual survey
   // versions. There should be a cooldown before a user is prompted to take a
   // survey from the same trigger, regardless of whether the survey was updated.
-  auto trigger_survey_config = std::find_if(
-      survey_configs_by_triggers_.begin(), survey_configs_by_triggers_.end(),
-      [&](const std::pair<std::string, SurveyConfig>& pair) {
-        return pair.second.trigger_id == trigger_id;
-      });
+  auto trigger_survey_config =
+      base::ranges::find(survey_configs_by_triggers_, trigger_id,
+                         [](const SurveyConfigs::value_type& pair) {
+                           return pair.second.trigger_id;
+                         });
 
   DCHECK(trigger_survey_config != survey_configs_by_triggers_.end());
   std::string trigger = trigger_survey_config->first;
@@ -679,7 +681,7 @@ bool HatsService::CanShowSurvey(const std::string& trigger) const {
   }
 
   const base::Value::Dict& pref_data =
-      profile_->GetPrefs()->GetValueDict(prefs::kHatsSurveyMetadata);
+      profile_->GetPrefs()->GetDict(prefs::kHatsSurveyMetadata);
   absl::optional<int> last_major_version =
       pref_data.FindIntByDottedPath(GetMajorVersionPath(trigger));
   if (last_major_version.has_value() &&
@@ -748,7 +750,7 @@ bool HatsService::CanShowAnySurvey(bool user_prompted) const {
   // a user is eligible is thus lower for these types of surveys.
   if (!user_prompted) {
     const base::Value::Dict& pref_data =
-        profile_->GetPrefs()->GetValueDict(prefs::kHatsSurveyMetadata);
+        profile_->GetPrefs()->GetDict(prefs::kHatsSurveyMetadata);
 
     // If the profile is too new, measured as the age of the profile directory,
     // the user is ineligible.
@@ -803,7 +805,7 @@ void HatsService::CheckSurveyStatusAndMaybeShow(
   // We record the survey's over capacity information in user profile to avoid
   // duplicated checks since the survey won't change once it is full.
   const base::Value::Dict& pref_data =
-      profile_->GetPrefs()->GetValueDict(prefs::kHatsSurveyMetadata);
+      profile_->GetPrefs()->GetDict(prefs::kHatsSurveyMetadata);
   absl::optional<int> is_full =
       pref_data.FindBoolByDottedPath(GetIsSurveyFull(trigger));
   if (is_full.has_value() && is_full) {
@@ -820,10 +822,8 @@ void HatsService::CheckSurveyStatusAndMaybeShow(
   CHECK_EQ(product_specific_bits_data.size(),
            survey_config.product_specific_bits_data_fields.size());
   for (auto field_value : product_specific_bits_data) {
-    CHECK(std::find(survey_config.product_specific_bits_data_fields.begin(),
-                    survey_config.product_specific_bits_data_fields.end(),
-                    field_value.first) !=
-          survey_config.product_specific_bits_data_fields.end());
+    CHECK(base::Contains(survey_config.product_specific_bits_data_fields,
+                         field_value.first));
   }
 
   // Check that the |product_specific_string_data| matches the fields for this
@@ -831,10 +831,8 @@ void HatsService::CheckSurveyStatusAndMaybeShow(
   CHECK_EQ(product_specific_string_data.size(),
            survey_config.product_specific_string_data_fields.size());
   for (auto field_value : product_specific_string_data) {
-    CHECK(std::find(survey_config.product_specific_string_data_fields.begin(),
-                    survey_config.product_specific_string_data_fields.end(),
-                    field_value.first) !=
-          survey_config.product_specific_string_data_fields.end());
+    CHECK(base::Contains(survey_config.product_specific_string_data_fields,
+                         field_value.first));
   }
 
   // As soon as the HaTS Next dialog is created it will attempt to contact

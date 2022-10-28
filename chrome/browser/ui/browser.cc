@@ -1,4 +1,4 @@
-// Copyright 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -269,12 +269,6 @@
 #include "chrome/browser/extensions/extension_browser_window_helper.h"
 #endif
 
-#if BUILDFLAG(ENABLE_PLUGINS)
-#include "chrome/browser/plugins/plugin_finder.h"
-#include "chrome/browser/plugins/plugin_metadata.h"
-#include "content/public/browser/plugin_service.h"
-#endif
-
 #if BUILDFLAG(ENABLE_PRINTING)
 #include "components/printing/browser/print_composite_client.h"
 #endif
@@ -289,6 +283,7 @@
 
 #if BUILDFLAG(ENABLE_SCREEN_AI_SERVICE)
 #include "chrome/browser/accessibility/ax_screen_ai_annotator.h"
+#include "chrome/browser/accessibility/ax_screen_ai_annotator_factory.h"
 #endif
 
 using base::UserMetricsAction;
@@ -673,7 +668,7 @@ FindBarController* Browser::GetFindBarController() {
 }
 
 bool Browser::HasFindBarController() const {
-  return find_bar_controller_.get() != NULL;
+  return find_bar_controller_.get() != nullptr;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1068,7 +1063,7 @@ void Browser::OpenFile() {
       ui::SelectFileDialog::FileTypeInfo::ANY_PATH_OR_URL;
   select_file_dialog_->SelectFile(
       ui::SelectFileDialog::SELECT_OPEN_FILE, std::u16string(), directory,
-      &file_types, 0, base::FilePath::StringType(), parent_window, NULL);
+      &file_types, 0, base::FilePath::StringType(), parent_window, nullptr);
 }
 
 void Browser::UpdateDownloadShelfVisibility(bool visible) {
@@ -1150,7 +1145,7 @@ WebContents* Browser::OpenURL(const OpenURLParams& params) {
   DCHECK(params.Valid());
 #endif
 
-  return OpenURLFromTab(NULL, params);
+  return OpenURLFromTab(nullptr, params);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1636,20 +1631,23 @@ void Browser::VisibleSecurityStateChanged(WebContents* source) {
   }
 }
 
-void Browser::AddNewContents(WebContents* source,
-                             std::unique_ptr<WebContents> new_contents,
-                             const GURL& target_url,
-                             WindowOpenDisposition disposition,
-                             const gfx::Rect& initial_rect,
-                             bool user_gesture,
-                             bool* was_blocked) {
+void Browser::AddNewContents(
+    WebContents* source,
+    std::unique_ptr<WebContents> new_contents,
+    const GURL& target_url,
+    WindowOpenDisposition disposition,
+    const blink::mojom::WindowFeatures& window_features,
+    bool user_gesture,
+    bool* was_blocked) {
   FullscreenController* fullscreen_controller =
       exclusive_access_manager_->fullscreen_controller();
 #if BUILDFLAG(IS_MAC)
   // On the Mac, the convention is to turn popups into new tabs when in browser
   // fullscreen mode. Only worry about user-initiated fullscreen as showing a
   // popup in HTML5 fullscreen would have kicked the page out of fullscreen.
-  if (disposition == WindowOpenDisposition::NEW_POPUP &&
+  // However if this Browser is for an app, we don't want to turn popups into
+  // new tabs. Popups should open as new app windows instead.
+  if (!app_controller_ && disposition == WindowOpenDisposition::NEW_POPUP &&
       fullscreen_controller->IsFullscreenForBrowser()) {
     disposition = WindowOpenDisposition::NEW_FOREGROUND_TAB;
   }
@@ -1679,12 +1677,12 @@ void Browser::AddNewContents(WebContents* source,
     // cannot switch their independent spaces simultaneously (crbug.com/1315749)
     fullscreen_controller->RunOrDeferUntilTransitionIsComplete(base::BindOnce(
         &chrome::AddWebContents, this, source, std::move(new_contents),
-        target_url, disposition, initial_rect, window_action));
+        target_url, disposition, window_features, window_action));
     return;
   }
 
   chrome::AddWebContents(this, source, std::move(new_contents), target_url,
-                         disposition, initial_rect, window_action);
+                         disposition, window_features, window_action);
 }
 
 void Browser::ActivateContents(WebContents* contents) {
@@ -1981,15 +1979,15 @@ blink::mojom::DisplayMode Browser::GetDisplayMode(
     if (app_controller_ && app_controller_->HasMinimalUiButtons())
       return blink::mojom::DisplayMode::kMinimalUi;
 
-    // TODO(crbug.com/1333978): Sync with the value of
-    // browser_view()->IsWindowControlsOverlayEnabled().
-    if (app_controller_ && app_controller_->AppUsesWindowControlsOverlay())
+    if (app_controller_ && app_controller_->AppUsesWindowControlsOverlay() &&
+        !web_contents->GetWindowsControlsOverlayRect().IsEmpty()) {
       return blink::mojom::DisplayMode::kWindowControlsOverlay;
+    }
 
-    // TODO(crbug.com/1325830): Add check for the Window Management API
-    // permission status.
-    if (app_controller_ && app_controller_->AppUsesBorderlessMode())
+    if (app_controller_ && app_controller_->AppUsesBorderlessMode() &&
+        window_->IsBorderlessModeEnabled()) {
       return blink::mojom::DisplayMode::kBorderless;
+    }
 
     return blink::mojom::DisplayMode::kStandalone;
   }
@@ -2551,8 +2549,9 @@ void Browser::OnDevToolsAvailabilityChanged() {
 
 void Browser::UpdateToolbar(bool should_restore_state) {
   TRACE_EVENT0("ui", "Browser::UpdateToolbar");
-  window_->UpdateToolbar(
-      should_restore_state ? tab_strip_model_->GetActiveWebContents() : NULL);
+  window_->UpdateToolbar(should_restore_state
+                             ? tab_strip_model_->GetActiveWebContents()
+                             : nullptr);
 }
 
 void Browser::ScheduleUIUpdate(WebContents* source, unsigned changed_flags) {
@@ -2848,7 +2847,7 @@ void Browser::TabDetachedAtImpl(content::WebContents* contents,
   RemoveScheduledUpdatesFor(contents);
 
   if (HasFindBarController() && was_active)
-    find_bar_controller_->ChangeWebContents(NULL);
+    find_bar_controller_->ChangeWebContents(nullptr);
 }
 
 void Browser::UpdateWindowForLoadingStateChanged(content::WebContents* source,
@@ -2933,7 +2932,11 @@ bool Browser::AppBrowserSupportsWindowFeature(WindowFeature feature,
     case FEATURE_LOCATIONBAR:
       return check_can_support || !fullscreen;
     case FEATURE_TABSTRIP:
-      return app_controller_->has_tab_strip();
+      // Even when the app has a tab strip, it should be hidden in
+      // fullscreen. This is consistent with the behavior of
+      // NormalBrowserSupportsWindowFeature().
+      return app_controller_->has_tab_strip() &&
+             (check_can_support || !fullscreen);
     case FEATURE_BOOKMARKBAR:
     case FEATURE_NONE:
       return false;
@@ -3155,18 +3158,10 @@ BackgroundContents* Browser::CreateBackgroundContents(
 }
 
 #if BUILDFLAG(ENABLE_SCREEN_AI_SERVICE)
+// TODO(https://1278249): Update function name (and trigger chain) when usage
+// is finalized.
 void Browser::RunScreenAIAnnotator() {
-  if (!screen_ai_annotator_) {
-    screen_ai_annotator_ =
-        std::make_unique<screen_ai::AXScreenAIAnnotator>(this);
-  }
-  screen_ai_annotator_->Run();
+  screen_ai::AXScreenAIAnnotatorFactory::GetForBrowserContext(profile())
+      ->AnnotateScreenshot(this);
 }
-
-void Browser::SetScreenAIAnnotatorForTesting(
-    std::unique_ptr<screen_ai::AXScreenAIAnnotator> annotator) {
-  DCHECK(!screen_ai_annotator_);
-  screen_ai_annotator_.swap(annotator);
-}
-
 #endif

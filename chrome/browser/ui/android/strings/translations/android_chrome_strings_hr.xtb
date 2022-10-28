@@ -454,6 +454,7 @@ Kad izbrišete svoju povijest pregledavanja, bilo svu ili za određenu web-lokac
 <translation id="3435465986463792564">Imate mnogo prozora? Možete upravljati njima odavde</translation>
 <translation id="3443221991560634068">Ponovno učitavanje trenutačne stranice</translation>
 <translation id="3444179773590444986">Želite li podijeliti povratne informacije o tamnoj temi za web-lokacije?</translation>
+<translation id="3452832259067974318">Da bi zaštitio vašu privatnost, Chrome neće automatski popuniti zaporku u ovom polju.</translation>
 <translation id="3469665409713263828">{FILE_COUNT,plural, =1{Zakazano je jedno preuzimanje}one{Zakazano je # preuzimanje}few{Zakazana su # preuzimanja}other{Zakazano je # preuzimanja}}</translation>
 <translation id="3474624961160222204">Nastavi kao <ph name="NAME" /></translation>
 <translation id="3478363558367712427">Možete odabrati tražilicu</translation>
@@ -679,6 +680,7 @@ Vaš Google račun može sadržavati druge oblike povijesti pregledavanja, na pr
 <translation id="4763480195061959176">videozapis</translation>
 <translation id="4766313118839197559">Zaporke se spremaju u Upravitelj zaporki na ovom uređaju</translation>
 <translation id="4766678251456904326">Dodajte račun uređaju</translation>
+<translation id="4787736314074622408">Želite li izbrisati <ph name="ITEM_TITLE" />?</translation>
 <translation id="4791358705705538979">Pomaže vam s izvršavanjem zadataka na webu, na primjer s plaćanjem</translation>
 <translation id="4794291718671962615">(<ph name="MEGABYTES" />) <ph name="URL" /></translation>
 <translation id="4802417911091824046">Enkripcija šifrom ne uključuje načine plaćanja i adrese s Google Paya.
@@ -748,6 +750,7 @@ Da biste promijenili tu postavku, <ph name="BEGIN_LINK" />poništite sinkronizac
 <translation id="5091199029769593641">Prilikom otvaranja nove kartice uskoro će se prikazivati članci s web-lokacije <ph name="SITE_NAME" />. Web-lokacije koje pratite spremaju se na vašem Google računu. Njima možete upravljati u postavkama Discovera.</translation>
 <translation id="5091249083535528968">Prošireni podaci o upotrebi</translation>
 <translation id="509429900233858213">Došlo je do pogreške.</translation>
+<translation id="5099845111805573968">Kada odaberete web-lokaciju za računalo, ta se postavka primjenjuje na tu web-lokaciju svaki put kad je posjetite</translation>
 <translation id="5102401324271069229">Ako neka web-lokacija pokuša ukrasti vašu zaporku ili ako preuzmete štetnu datoteku, Chrome može sigurnom pregledavanju poslati URL-ove, uključujući dijelove sadržaja web-stranice</translation>
 <translation id="510275257476243843">Još 1 sat</translation>
 <translation id="5115811374190515607">u <ph name="PRODUCT_NAME" /></translation>
@@ -907,6 +910,7 @@ Da biste promijenili tu postavku, <ph name="BEGIN_LINK" />poništite sinkronizac
 <translation id="5958275228015807058">Pronađite svoje datoteke i stranice u Preuzimanjima</translation>
 <translation id="5962718611393537961">Dodirnite da biste saželi</translation>
 <translation id="5964869237734432770">Zaustavite opise slike</translation>
+<translation id="5966233851250124270">Chrome će zapamtiti vaš odabir</translation>
 <translation id="5979084224081478209">Provjeri zaporke</translation>
 <translation id="5995726099713306770">Ponovo preuzeti stranicu?</translation>
 <translation id="6000066717592683814">Zadrži Google</translation>
@@ -1083,6 +1087,7 @@ Oznake povjerenja poboljšavaju privatnost na webu i ne mogu se upotrebljavati d
 <translation id="6820686453637990663">CVC</translation>
 <translation id="6824899148643461612"><ph name="TAB_TITLE" />, kartica, odabrana</translation>
 <translation id="6828070228333235514">Zaustavi praćenje cijene</translation>
+<translation id="6830728435402077660">Nije sigurno</translation>
 <translation id="6833996806551876956">Proba za Privacy Sandbox</translation>
 <translation id="6836206421467243968">Vratite grupu kartica <ph name="TITLE_OF_GROUP" /> kao novu pozadinsku grupu kartica.</translation>
 <translation id="6846298663435243399">Učitavanje…</translation>

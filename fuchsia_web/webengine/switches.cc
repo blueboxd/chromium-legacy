@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -21,5 +21,6 @@ const char kCdmDataQuotaBytes[] = "cdm-data-quota-bytes";
 const char kDataQuotaBytes[] = "data-quota-bytes";
 const char kGoogleApiKey[] = "google-api-key";
 const char kContextProvider[] = "context-provider";
+const char kEnableCfv2[] = "enable-cfv2";
 
 }  // namespace switches

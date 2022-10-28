@@ -67,6 +67,7 @@
 <translation id="5308226104666789935">Chromium ei voi tarkistaa, onko päivityksiä saatavilla</translation>
 <translation id="5396916991083608703">Valitaanko Chromium oletukseksi?</translation>
 <translation id="5521125884468363740">Kirjaudu sisään ja laita synkronointi päälle, jotta voit nähdä Chromium-välilehtesi missä tahansa</translation>
+<translation id="5522297504975449419">Jotkin Chromiumin ominaisuudet eivät ole enää käytettävissä.</translation>
 <translation id="5573014823074921752">Chromium-vinkki: Voit avata välilehtien lisäasetukset painamalla pitkään ylä- tai alapalkissa olevaa Näytä välilehdet ‑painiketta.</translation>
 <translation id="5700709190537129682">Chromium ei voi tarkistaa salasanojasi</translation>
 <translation id="5777187867430702742">Chromium-sivu</translation>
@@ -95,6 +96,7 @@
 <translation id="7175400662502680481">Salasanasi vaarantui tietosuojaloukkauksessa. Salasanojen ylläpito suosittelee, että vaihdat sen heti.</translation>
 <translation id="7208566199746267865">Chromium säästää aikaasi tuomalla tilisi verkkoon. Voit lisätä tai poistaa tilejä asetuksissa.</translation>
 <translation id="725427773388857052">Chromium voi auttaa suojaamaan sinua esim. tietosuojaloukkauksilta ja riskialttiilta verkkosivustoilta.</translation>
+<translation id="7255976941681861701">Tutustu uuteen Chromium-valikkoon</translation>
 <translation id="7269362888766543920">Jokin laajennus kaataa Chromiumin. Kokeile poistaa laajennuksia.</translation>
 <translation id="7313655110045230863">Voit tehdä Chromiumista oletusselaimesi avaamalla Asetukset ja valitsemalla Oletusselainsovellus ja sitten Chromium.</translation>
 <translation id="7337881442233988129">Chromium</translation>
@@ -113,7 +115,6 @@
 <translation id="7980860476903281594">Chromium jakaa sijaintisi sallimillesi sivustoille.</translation>
 <translation id="8013573822802650211">Kirjaudu sisään kaikilla laitteillasi, jotta voit nähdä Chromium-välilehtesi missä tahansa</translation>
 <translation id="8073677936375100957">Poistetaanko Chromium-data tältä laitteelta?</translation>
-<translation id="8175055321229419309">Vinkki: <ph name="BEGIN_LINK" />Siirrä Chromium Dockiin<ph name="END_LINK" /></translation>
 <translation id="8240981428553046115">Chromium ei voinut tarkistaa, onko päivityksiä saatavilla. Yritä myöhemmin uudelleen.</translation>
 <translation id="8308172444429103994">Chromium-vinkki. Kirjaudu sisään nopeammin valitsemalla tallennettu salasana näppäimistön yläreunasta.</translation>
 <translation id="858114650497379505">Voit käyttää Salasanojen ylläpitoon tallennettuja salasanoja muissa iPhonesi sovelluksissa.</translation>

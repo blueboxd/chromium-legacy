@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -59,25 +59,29 @@ TemplateURLData::TemplateURLData(const TemplateURLData& other) = default;
 TemplateURLData& TemplateURLData::operator=(const TemplateURLData& other) =
     default;
 
-TemplateURLData::TemplateURLData(const std::u16string& name,
-                                 const std::u16string& keyword,
-                                 base::StringPiece search_url,
-                                 base::StringPiece suggest_url,
-                                 base::StringPiece image_url,
-                                 base::StringPiece new_tab_url,
-                                 base::StringPiece contextual_search_url,
-                                 base::StringPiece logo_url,
-                                 base::StringPiece doodle_url,
-                                 base::StringPiece search_url_post_params,
-                                 base::StringPiece suggest_url_post_params,
-                                 base::StringPiece image_url_post_params,
-                                 base::StringPiece side_search_param,
-                                 base::StringPiece favicon_url,
-                                 base::StringPiece encoding,
-                                 const base::Value& alternate_urls_list,
-                                 bool preconnect_to_search_url,
-                                 bool prefetch_likely_navigations,
-                                 int prepopulate_id)
+TemplateURLData::TemplateURLData(
+    const std::u16string& name,
+    const std::u16string& keyword,
+    base::StringPiece search_url,
+    base::StringPiece suggest_url,
+    base::StringPiece image_url,
+    base::StringPiece new_tab_url,
+    base::StringPiece contextual_search_url,
+    base::StringPiece logo_url,
+    base::StringPiece doodle_url,
+    base::StringPiece search_url_post_params,
+    base::StringPiece suggest_url_post_params,
+    base::StringPiece image_url_post_params,
+    base::StringPiece side_search_param,
+    base::StringPiece side_image_search_param,
+    base::StringPiece favicon_url,
+    base::StringPiece encoding,
+    base::StringPiece image_search_favicon_url,
+    base::StringPiece16 image_search_branding_label,
+    const base::Value& alternate_urls_list,
+    bool preconnect_to_search_url,
+    bool prefetch_likely_navigations,
+    int prepopulate_id)
     : suggestions_url(suggest_url),
       image_url(image_url),
       new_tab_url(new_tab_url),
@@ -88,6 +92,9 @@ TemplateURLData::TemplateURLData(const std::u16string& name,
       suggestions_url_post_params(suggest_url_post_params),
       image_url_post_params(image_url_post_params),
       side_search_param(side_search_param),
+      side_image_search_param(side_image_search_param),
+      image_search_favicon_url(image_search_favicon_url),
+      image_search_branding_label(image_search_branding_label),
       favicon_url(favicon_url),
       safe_for_autoreplace(true),
       id(0),
@@ -156,6 +163,8 @@ size_t TemplateURLData::EstimateMemoryUsage() const {
   res += base::trace_event::EstimateMemoryUsage(search_url_post_params);
   res += base::trace_event::EstimateMemoryUsage(suggestions_url_post_params);
   res += base::trace_event::EstimateMemoryUsage(image_url_post_params);
+  res += base::trace_event::EstimateMemoryUsage(side_search_param);
+  res += base::trace_event::EstimateMemoryUsage(side_image_search_param);
   res += base::trace_event::EstimateMemoryUsage(favicon_url);
   res += base::trace_event::EstimateMemoryUsage(originating_url);
   res += base::trace_event::EstimateMemoryUsage(input_encodings);

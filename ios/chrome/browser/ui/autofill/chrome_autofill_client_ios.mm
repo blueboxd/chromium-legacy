@@ -1,4 +1,4 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -25,17 +25,20 @@
 #import "components/autofill/core/browser/ui/payments/card_unmask_prompt_view.h"
 #import "components/autofill/core/common/autofill_features.h"
 #import "components/autofill/core/common/autofill_prefs.h"
+#import "components/autofill/ios/browser/autofill_driver_ios.h"
 #import "components/autofill/ios/browser/autofill_util.h"
 #import "components/infobars/core/infobar.h"
 #import "components/keyed_service/core/service_access_type.h"
 #import "components/password_manager/core/browser/password_generation_frame_helper.h"
 #import "components/password_manager/core/common/password_manager_pref_names.h"
+#import "components/password_manager/ios/ios_password_manager_driver.h"
+#import "components/password_manager/ios/ios_password_manager_driver_factory.h"
 #import "components/security_state/ios/security_state_utils.h"
 #import "components/sync/driver/sync_service.h"
 #import "components/translate/core/browser/translate_manager.h"
 #import "components/ukm/ios/ukm_url_recorder.h"
 #import "components/variations/service/variations_service.h"
-#import "ios/chrome/browser/application_context.h"
+#import "ios/chrome/browser/application_context/application_context.h"
 #import "ios/chrome/browser/autofill/address_normalizer_factory.h"
 #import "ios/chrome/browser/autofill/autocomplete_history_manager_factory.h"
 #import "ios/chrome/browser/autofill/autofill_log_router_factory.h"
@@ -346,6 +349,26 @@ void ChromeAutofillClientIOS::ScanCreditCard(CreditCardScanCallback callback) {
   NOTREACHED();
 }
 
+bool ChromeAutofillClientIOS::IsFastCheckoutSupported() {
+  return false;
+}
+
+bool ChromeAutofillClientIOS::IsFastCheckoutTriggerForm(
+    const FormData& form,
+    const FormFieldData& field) {
+  return false;
+}
+
+bool ChromeAutofillClientIOS::ShowFastCheckout(
+    base::WeakPtr<FastCheckoutDelegate> delegate) {
+  NOTREACHED();
+  return false;
+}
+
+void ChromeAutofillClientIOS::HideFastCheckout() {
+  NOTREACHED();
+}
+
 bool ChromeAutofillClientIOS::IsTouchToFillCreditCardSupported() {
   return false;
 }
@@ -410,12 +433,16 @@ bool ChromeAutofillClientIOS::IsPasswordManagerEnabled() {
 void ChromeAutofillClientIOS::PropagateAutofillPredictions(
     AutofillDriver* driver,
     const std::vector<FormStructure*>& forms) {
-  if (!PasswordTabHelper::FromWebState(web_state_)) {
+  web::WebFrame* frame = (static_cast<AutofillDriverIOS*>(driver))->web_frame();
+  if (!frame) {
     return;
   }
-  password_manager_->ProcessAutofillPredictions(
-      PasswordTabHelper::FromWebState(web_state_)->GetPasswordManagerDriver(),
-      forms);
+  // If the frame exists, then the driver will exist/be created.
+  IOSPasswordManagerDriver* password_manager_driver =
+      IOSPasswordManagerDriverFactory::FromWebStateAndWebFrame(web_state_,
+                                                               frame);
+
+  password_manager_->ProcessAutofillPredictions(password_manager_driver, forms);
 }
 
 void ChromeAutofillClientIOS::DidFillOrPreviewField(

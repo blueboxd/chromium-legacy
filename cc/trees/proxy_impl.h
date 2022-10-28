@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -57,6 +57,7 @@ class CC_EXPORT ProxyImpl : public LayerTreeHostImplClient,
   void InitializePaintWorkletLayerPainterOnImpl(
       std::unique_ptr<PaintWorkletLayerPainter> painter);
   void SetDeferBeginMainFrameFromMain(bool defer_begin_main_frame);
+  void SetPauseRendering(bool pause_rendering);
   void SetNeedsRedrawOnImpl(const gfx::Rect& damage_rect);
   void SetNeedsCommitOnImpl();
   void SetTargetLocalSurfaceIdOnImpl(
@@ -74,6 +75,7 @@ class CC_EXPORT ProxyImpl : public LayerTreeHostImplClient,
                                  const ThreadUnsafeCommitState* unsafe_state,
                                  base::TimeTicks main_thread_start_time,
                                  const viz::BeginFrameArgs& commit_args,
+                                 bool scroll_and_viewport_changes_synced,
                                  CommitTimestamps* commit_timestamps,
                                  bool commit_timeout = false);
   void SetSourceURL(ukm::SourceId source_id, const GURL& url);
@@ -118,6 +120,7 @@ class CC_EXPORT ProxyImpl : public LayerTreeHostImplClient,
                                    bool skip_draw) override;
   void NeedsImplSideInvalidation(bool needs_first_draw_on_activation) override;
   void NotifyImageDecodeRequestFinished() override;
+  void NotifyTransitionRequestFinished(uint32_t sequence_id) override;
   void DidPresentCompositorFrameOnImplThread(
       uint32_t frame_token,
       PresentationTimeCallbackBuffer::PendingCallbacks activated,

@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,20 +6,20 @@
 
 #import <UIKit/UIKit.h>
 
-#include "base/bind.h"
-#include "base/path_service.h"
-#include "base/run_loop.h"
-#include "base/strings/stringprintf.h"
-#include "base/strings/utf_string_conversions.h"
+#import "base/bind.h"
+#import "base/path_service.h"
+#import "base/run_loop.h"
+#import "base/strings/stringprintf.h"
+#import "base/strings/utf_string_conversions.h"
 #import "base/test/ios/wait_util.h"
-#include "base/test/metrics/histogram_tester.h"
-#include "base/values.h"
+#import "base/test/metrics/histogram_tester.h"
+#import "base/values.h"
 #import "ios/net/protocol_handler_util.h"
-#include "ios/web/common/features.h"
+#import "ios/web/common/features.h"
 #import "ios/web/common/uikit_ui_util.h"
 #import "ios/web/navigation/navigation_manager_impl.h"
 #import "ios/web/navigation/wk_navigation_util.h"
-#include "ios/web/public/js_messaging/web_frame.h"
+#import "ios/web/public/js_messaging/web_frame.h"
 #import "ios/web/public/navigation/navigation_item.h"
 #import "ios/web/public/navigation/navigation_manager.h"
 #import "ios/web/public/session/crw_navigation_item_storage.h"
@@ -30,13 +30,13 @@
 #import "ios/web/public/test/web_test_with_web_state.h"
 #import "ios/web/public/test/web_view_content_test_util.h"
 #import "ios/web/public/web_client.h"
-#include "ios/web/public/web_state_observer.h"
-#include "ios/web/test/test_url_constants.h"
-#include "net/test/embedded_test_server/default_handlers.h"
-#include "net/test/embedded_test_server/embedded_test_server.h"
-#include "ui/gfx/geometry/rect_f.h"
-#include "ui/gfx/image/image.h"
-#include "ui/gfx/image/image_unittest_util.h"
+#import "ios/web/public/web_state_observer.h"
+#import "ios/web/test/test_url_constants.h"
+#import "net/test/embedded_test_server/default_handlers.h"
+#import "net/test/embedded_test_server/embedded_test_server.h"
+#import "ui/gfx/geometry/rect_f.h"
+#import "ui/gfx/image/image.h"
+#import "ui/gfx/image/image_unittest_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -49,10 +49,10 @@ using base::test::ios::kWaitForPageLoadTimeout;
 namespace web {
 namespace {
 
-// A text string that is included in |kTestPageHTML|.
+// A text string that is included in `kTestPageHTML`.
 const char kTextInTestPageHTML[] = "this_is_a_test_string";
 
-// A test page HTML containing |kTextInTestPageHTML|.
+// A test page HTML containing `kTextInTestPageHTML`.
 const char kTestPageHTML[] = "<html><body>this_is_a_test_string</body><html>";
 
 // Returns the NSURLErrorUnsupportedURL error expected for tests.
@@ -67,6 +67,11 @@ using wk_navigation_util::IsWKInternalUrl;
 
 // Test fixture for web::WebTest class.
 class WebStateTest : public FakeWebClient, public WebTestWithWebState {
+  void SetUp() override {
+    WebTestWithWebState::SetUp();
+    web::IgnoreOverRealizationCheck();
+  }
+
  protected:
   base::HistogramTester histogram_tester_;
 };
@@ -384,7 +389,7 @@ TEST_F(WebStateTest, CreateFullPagePdfWebStatePdfContent) {
 }
 
 // Tests that message sent from main frame triggers the ScriptCommandCallback
-// with |is_main_frame| = true.
+// with `is_main_frame` = true.
 TEST_F(WebStateTest, MessageFromMainFrame) {
   // Add a script command handler.
   __block bool message_received = false;
@@ -417,7 +422,7 @@ TEST_F(WebStateTest, MessageFromMainFrame) {
 }
 
 // Tests that message sent from main frame triggers the ScriptCommandCallback
-// with |is_main_frame| = false.
+// with `is_main_frame` = false.
 TEST_F(WebStateTest, MessageFromIFrame) {
   // Add a script command handler.
   __block bool message_received = false;
@@ -459,7 +464,7 @@ TEST_F(WebStateTest, SetHasOpener) {
 }
 
 // Verifies that large session can be restored with max session size limit
-// equals to |wk_navigation_util::kMaxSessionSize|.
+// equals to `wk_navigation_util::kMaxSessionSize`.
 TEST_F(WebStateTest, RestoreLargeSession) {
   // Create session storage with large number of items.
   const int kItemCount = 150;
@@ -496,7 +501,7 @@ TEST_F(WebStateTest, RestoreLargeSession) {
   }
 
   // Verify that session was fully restored.
-  EXPECT_TRUE(WaitUntilConditionOrTimeout(kWaitForPageLoadTimeout, ^{
+  auto block = ^{
     bool restored = navigation_manager->GetItemCount() == maxSessionSize &&
                     navigation_manager->CanGoForward();
     EXPECT_EQ(restored, !navigation_manager->IsRestoreSessionInProgress());
@@ -547,7 +552,8 @@ TEST_F(WebStateTest, RestoreLargeSession) {
     EXPECT_FALSE(IsWKInternalUrl(web_state_ptr->GetVisibleURL()));
 
     return restored;
-  }));
+  };
+  EXPECT_TRUE(WaitUntilConditionOrTimeout(kWaitForPageLoadTimeout, block));
   EXPECT_EQ(maxSessionSize, navigation_manager->GetItemCount());
   EXPECT_TRUE(navigation_manager->CanGoForward());
 
@@ -560,13 +566,14 @@ TEST_F(WebStateTest, RestoreLargeSession) {
   }
 
   // Now wait until the last committed item is fully loaded.
-  EXPECT_TRUE(WaitUntilConditionOrTimeout(kWaitForPageLoadTimeout, ^{
+  auto block2 = ^{
     EXPECT_FALSE(IsWKInternalUrl(web_state_ptr->GetVisibleURL()));
 
     return !navigation_manager->GetPendingItem() &&
            !web_state_ptr->IsLoading() &&
            web_state_ptr->GetLoadingProgress() == 1.0;
-  }));
+  };
+  EXPECT_TRUE(WaitUntilConditionOrTimeout(kWaitForPageLoadTimeout, block2));
 
   EXPECT_TRUE(ui::PageTransitionCoreTypeIs(
       navigation_manager->GetLastCommittedItem()->GetTransitionType(),
@@ -685,7 +692,7 @@ TEST_F(WebStateTest, CallLoadURLWithParamsDuringSessionRestore) {
   // Now wait until the last committed item is fully loaded.
   // TODO(crbug.com/996544) On Xcode 11 beta 6 this became very slow.  This
   // appears to only affect simulator, and will hopefully be fixed in a future
-  // Xcode release.  Revert this to |kWaitForPageLoadTimeout| alone when fixed.
+  // Xcode release.  Revert this to `kWaitForPageLoadTimeout` alone when fixed.
   EXPECT_TRUE(WaitUntilConditionOrTimeout(kWaitForPageLoadTimeout * 7, ^{
     return web_state_ptr->GetLastCommittedURL() == url;
   }));

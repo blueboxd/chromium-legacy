@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -36,8 +36,7 @@ TotalDurationMetricReporter::~TotalDurationMetricReporter() = default;
 
 void TotalDurationMetricReporter::RecordAdditionalDuration(
     base::TimeDelta duration) {
-  static base::CpuReductionExperimentFilter filter;
-  if (!filter.ShouldLogHistograms())
+  if (!base::ShouldLogHistogramForCpuReductionExperiment())
     return;
   if (reported_value_)
     negative_histogram_->Add(reported_value_->InSeconds());

@@ -1,12 +1,12 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome/browser/ash/sync/os_sync_util.h"
 
 #include "base/test/metrics/histogram_tester.h"
-#include "chrome/browser/ui/webui/settings/chromeos/os_settings_ui.h"
-#include "chrome/browser/ui/webui/settings/chromeos/pref_names.h"
+#include "chrome/browser/ui/webui/settings/ash/os_settings_ui.h"
+#include "chrome/browser/ui/webui/settings/ash/pref_names.h"
 #include "components/sync/base/pref_names.h"
 #include "components/sync/base/sync_prefs.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"

@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,13 +6,13 @@
 
 #include <stddef.h>
 
-#include <algorithm>
 #include <set>
 #include <string>
 #include <utility>
 
 #include "base/feature_list.h"
 #include "base/memory/raw_ptr.h"
+#include "base/ranges/algorithm.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
@@ -252,10 +252,8 @@ void CheckField(const std::vector<FormFieldData>& fields,
     return;
   }
 
-  auto field_it = std::find_if(fields.begin(), fields.end(),
-                               [renderer_id](const FormFieldData& field) {
-                                 return field.unique_renderer_id == renderer_id;
-                               });
+  auto field_it = base::ranges::find(fields, renderer_id,
+                                     &FormFieldData::unique_renderer_id);
   ASSERT_TRUE(field_it != fields.end())
       << "Could not find a field with renderer ID " << renderer_id;
 
@@ -2911,6 +2909,30 @@ TEST(FormParserTest, AcceptsWebAuthnCredentials) {
               {
                   {.role = ElementRole::USERNAME,
                    .autocomplete_attribute = "webauthn",
+                   .value = u"rosalina",
+                   .name = u"username",
+                   .form_control_type = "text"},
+                  {.role = ElementRole::CURRENT_PASSWORD,
+                   .value = u"luma",
+                   .name = u"password",
+                   .form_control_type = "password"},
+              },
+          .accepts_webauthn_credentials = true,
+      },
+  });
+}
+
+// Tests that if a field is marked as autofill="username webauthn" then the
+// `accepts_webauthn_credentials` flag is set.
+TEST(FormParserTest, AcceptsUsernameWebAuthnCredentials) {
+  CheckTestData({
+      {
+          .description_for_logging =
+              "Field tagged with autofill=\"username webauthn\"",
+          .fields =
+              {
+                  {.role = ElementRole::USERNAME,
+                   .autocomplete_attribute = "username webauthn",
                    .value = u"rosalina",
                    .name = u"username",
                    .form_control_type = "text"},

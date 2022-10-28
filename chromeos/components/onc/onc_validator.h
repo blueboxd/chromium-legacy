@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -205,6 +205,13 @@ class COMPONENT_EXPORT(CHROMEOS_ONC) Validator : public Mapper {
   bool ValidateCertificate(base::Value* result);
   bool ValidateScope(base::Value* result);
   bool ValidateTether(base::Value* result);
+  void ValidateEthernetConfigs(base::Value* result);
+  void OnlyKeepLast(base::Value* network_configurations_list,
+                    const std::vector<std::string>& guids,
+                    const char* type);
+  void RemoveNetworkConfigurationWithGuid(
+      base::Value* network_configurations_list,
+      const std::string& guid_to_remove);
 
   bool IsValidValue(const std::string& field_value,
                     const std::vector<const char*>& valid_values);
@@ -289,10 +296,5 @@ class COMPONENT_EXPORT(CHROMEOS_ONC) Validator : public Mapper {
 
 }  // namespace onc
 }  // namespace chromeos
-
-// TODO(https://crbug.com/1164001): remove when it moved to ash.
-namespace ash::onc {
-using ::chromeos::onc::Validator;
-}
 
 #endif  // CHROMEOS_COMPONENTS_ONC_ONC_VALIDATOR_H_

@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -98,8 +98,6 @@ class CastMediaSinkServiceImpl : public MediaSinkServiceBase,
 
   // Called by CastMediaSinkService to set |allow_all_ips_|.
   void SetCastAllowAllIPs(bool allow_all_ips);
-
-  void BindLogger(mojo::PendingRemote<mojom::Logger> pending_remote);
 
   // Opens cast channel. This method will not open a channel if there is already
   // a pending request for |ip_endpoint|, or if a channel for |ip_endpoint|
@@ -378,11 +376,6 @@ class CastMediaSinkServiceImpl : public MediaSinkServiceBase,
   // Non-owned pointer to DIAL MediaSinkService. Observed by |this| for dual
   // discovery.  May be nullptr if the DIAL Media Route Provider is disabled.
   const raw_ptr<MediaSinkServiceBase> dial_media_sink_service_;
-
-  // Mojo Remote to the logger owned by the Media Router. The Remote is not
-  // bound until |BindLogger()| is called. Always check if |logger_.is_bound()|
-  // is true before using.
-  mojo::Remote<mojom::Logger> logger_;
 
   // The SequencedTaskRunner on which methods are run. This shares the
   // same SequencedTaskRunner as the one used by |cast_socket_service_|.

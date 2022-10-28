@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -40,12 +40,6 @@
 // Resets the default search engine to `defaultSearchEngine`.
 // `defaultSearchEngine` should be its short name.
 + (void)resetSearchEngineTo:(NSString*)defaultSearchEngine;
-
-// Sets the what's new promo to "Move to Dock".
-+ (void)setWhatsNewPromoToMoveToDock;
-
-// Resets the what's new promo.
-+ (void)resetWhatsNewPromo;
 
 // Returns the width the search field is supposed to have when the collection
 // has `collectionWidth`. `traitCollection` is the trait collection of the view

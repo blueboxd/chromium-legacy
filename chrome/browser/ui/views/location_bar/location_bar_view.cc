@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,6 +10,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/callback_helpers.h"
 #include "base/containers/adapters.h"
 #include "base/feature_list.h"
 #include "base/i18n/rtl.h"
@@ -67,9 +68,6 @@
 #include "chrome/browser/ui/views/page_action/page_action_icon_params.h"
 #include "chrome/browser/ui/views/page_info/page_info_bubble_view.h"
 #include "chrome/browser/ui/views/passwords/manage_passwords_icon_views.h"
-#include "chrome/browser/ui/views/permissions/permission_chip.h"
-#include "chrome/browser/ui/views/permissions/permission_quiet_chip.h"
-#include "chrome/browser/ui/views/permissions/permission_request_chip.h"
 #include "chrome/browser/ui/views/send_tab_to_self/send_tab_to_self_icon_view.h"
 #include "chrome/browser/ui/views/sharing_hub/sharing_hub_icon_view.h"
 #include "chrome/browser/ui/web_applications/app_browser_controller.h"
@@ -78,6 +76,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/autofill/core/common/autofill_payments_features.h"
+#include "components/commerce/core/commerce_feature_list.h"
 #include "components/content_settings/core/common/features.h"
 #include "components/dom_distiller/core/dom_distiller_features.h"
 #include "components/favicon/content/content_favicon_driver.h"
@@ -87,6 +86,7 @@
 #include "components/omnibox/browser/omnibox_popup_view.h"
 #include "components/omnibox/browser/vector_icons.h"
 #include "components/omnibox/common/omnibox_features.h"
+#include "components/performance_manager/public/features.h"
 #include "components/prefs/pref_service.h"
 #include "components/safe_browsing/core/common/features.h"
 #include "components/search_engines/template_url.h"
@@ -274,7 +274,7 @@ void LocationBarView::Init() {
   selected_keyword_view_ = AddChildView(std::make_unique<SelectedKeywordView>(
       this, TemplateURLServiceFactory::GetForProfile(profile_), font_list));
 
-  if (apps::features::LinkCapturingUiUpdateEnabled()) {
+  if (browser_ && apps::features::LinkCapturingUiUpdateEnabled()) {
     intent_chip_ =
         AddChildView(std::make_unique<IntentChipButton>(browser_, this));
   }
@@ -299,6 +299,11 @@ void LocationBarView::Init() {
     // first so that they appear on the left side of the icon container.
     // TODO(crbug.com/1318890): Improve the ordering heuristics for page action
     // icons and determine a way to handle simultaneous icon animations.
+    // TODO(crbug.com/1346612): Confirm the ordering for |kPriceTracking| and
+    // |kSideSearch| with UX.
+    if (base::FeatureList::IsEnabled(commerce::kShoppingList)) {
+      params.types_enabled.push_back(PageActionIconType::kPriceTracking);
+    }
     if (side_search::IsDSESupportEnabled(profile_) &&
         side_search::IsEnabledForBrowser(browser_)) {
       params.types_enabled.push_back(PageActionIconType::kSideSearch);
@@ -323,6 +328,10 @@ void LocationBarView::Init() {
     params.types_enabled.push_back(PageActionIconType::kCookieControls);
     params.types_enabled.push_back(
         PageActionIconType::kPaymentsOfferNotification);
+    if (base::FeatureList::IsEnabled(
+            performance_manager::features::kHighEfficiencyModeAvailable)) {
+      params.types_enabled.push_back(PageActionIconType::kHighEfficiency);
+    }
   }
   // Add icons only when feature is not enabled. Otherwise icons will
   // be added to the ToolbarPageActionIconContainerView.
@@ -600,9 +609,11 @@ void LocationBarView::Layout() {
   // label/chip.
   const double kLeadingDecorationMaxFraction = 0.5;
 
-  if (chip_ && chip_->GetVisible() && !ShouldShowKeywordBubble()) {
+  if (chip_controller_ && chip_controller_->IsPermissionPromptChipVisible() &&
+      !ShouldShowKeywordBubble()) {
     leading_decorations.AddDecoration(vertical_padding, location_height, false,
-                                      0, edge_padding, chip_);
+                                      0, edge_padding,
+                                      chip_controller_->chip());
   }
 
   if (ShouldShowKeywordBubble()) {
@@ -810,12 +821,8 @@ bool LocationBarView::ActivateFirstInactiveBubbleForAccessibility() {
       ->ActivateFirstInactiveBubbleForAccessibility();
 }
 
-bool LocationBarView::IsChipActive() {
-  return chip_ && chip_->IsActive();
-}
-
 void LocationBarView::CreateChip() {
-  DCHECK(!chip_);
+  DCHECK(!chip_controller_);
 
   if (!browser_)
     return;
@@ -823,37 +830,10 @@ void LocationBarView::CreateChip() {
   if (web_app::AppBrowserController::IsWebApp(browser_))
     return;
 
-  chip_ = AddChildViewAt(std::make_unique<PermissionChip>(), 0);
-}
-
-PermissionChip* LocationBarView::DisplayChip(
-    permissions::PermissionPrompt::Delegate* delegate,
-    bool should_bubble_start_open) {
-  DCHECK(delegate);
-  DCHECK(chip_);
-
-  chip_->SetupChip(std::make_unique<PermissionRequestChip>(
-      browser(), delegate, should_bubble_start_open));
-
-  return chip_;
-}
-
-PermissionChip* LocationBarView::DisplayQuietChip(
-    permissions::PermissionPrompt::Delegate* delegate,
-    bool should_expand) {
-  DCHECK(delegate);
-  DCHECK(chip_);
-
-  chip_->SetupChip(std::make_unique<PermissionQuietChip>(browser(), delegate,
-                                                         should_expand));
-
-  return chip_;
-}
-
-void LocationBarView::FinalizeChip() {
-  DCHECK(chip_);
-  chip_->Finalize();
-  InvalidateLayout();
+  chip_controller_ = std::make_unique<ChipController>(
+      browser_, AddChildViewAt(std::make_unique<OmniboxChipButton>(
+                                   OmniboxChipButton::PressedCallback()),
+                               0));
 }
 
 void LocationBarView::UpdateWithoutTabRestore() {
@@ -1441,14 +1421,14 @@ ui::ImageModel LocationBarView::GetLocationIcon(
 }
 
 void LocationBarView::UpdateChipVisibility() {
-  if (!IsChipActive()) {
+  if (!chip_controller_ || !chip_controller_->IsPermissionPromptChipVisible()) {
     return;
   }
 
   if (IsEditingOrEmpty()) {
     // If a user starts typing, a permission request should be ignored and the
     // chip finalized.
-    chip_->Finalize();
+    chip_controller_->FinalizeChip();
   }
 }
 

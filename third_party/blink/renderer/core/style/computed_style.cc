@@ -31,6 +31,7 @@
 #include "base/memory/values_equivalent.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/numerics/clamped_math.h"
+#include "base/ranges/algorithm.h"
 #include "build/build_config.h"
 #include "cc/input/overscroll_behavior.h"
 #include "third_party/blink/public/mojom/css/preferred_color_scheme.mojom-blink.h"
@@ -264,6 +265,26 @@ static bool DiffAffectsContainerQueries(const ComputedStyle& old_style,
   return false;
 }
 
+static bool DiffAffectsScrollAnimations(const ComputedStyle& old_style,
+                                        const ComputedStyle& new_style) {
+  if ((old_style.ScrollTimelineName() != new_style.ScrollTimelineName()) ||
+      (old_style.ScrollTimelineAxis() != new_style.ScrollTimelineAxis())) {
+    return true;
+  }
+  return false;
+}
+
+// The transition to/from nullptr style can affect subsequent siblings
+// if they reference a named timeline which appeared/disappeared.
+static bool AffectsScrollAnimations(const ComputedStyle* old_style,
+                                    const ComputedStyle* new_style) {
+  if (old_style && !old_style->ScrollTimelineName().IsEmpty())
+    return true;
+  if (new_style && !new_style->ScrollTimelineName().IsEmpty())
+    return true;
+  return false;
+}
+
 bool ComputedStyle::NeedsReattachLayoutTree(const Element& element,
                                             const ComputedStyle* old_style,
                                             const ComputedStyle* new_style) {
@@ -334,8 +355,11 @@ ComputedStyle::Difference ComputedStyle::ComputeDifference(
     const ComputedStyle* new_style) {
   if (old_style == new_style)
     return Difference::kEqual;
-  if (!old_style || !new_style)
+  if (!old_style || !new_style) {
+    if (AffectsScrollAnimations(old_style, new_style))
+      return Difference::kSiblingDescendantAffecting;
     return Difference::kInherited;
+  }
 
   // For inline elements, the new computed first line style will be |new_style|
   // inheriting from the parent's first line style. If |new_style| is different
@@ -363,6 +387,8 @@ ComputedStyle::ComputeDifferenceIgnoringInheritedFirstLineStyle(
     const ComputedStyle& old_style,
     const ComputedStyle& new_style) {
   DCHECK_NE(&old_style, &new_style);
+  if (DiffAffectsScrollAnimations(old_style, new_style))
+    return Difference::kSiblingDescendantAffecting;
   if (old_style.Display() != new_style.Display() &&
       old_style.BlockifiesChildren() != new_style.BlockifiesChildren())
     return Difference::kDescendantAffecting;
@@ -1295,21 +1321,18 @@ static bool IsWillChangeCompositingHintProperty(CSSPropertyID property) {
 }
 
 bool ComputedStyle::HasWillChangeCompositingHint() const {
-  const auto& properties = WillChangeProperties();
-  return std::any_of(properties.begin(), properties.end(),
-                     IsWillChangeCompositingHintProperty);
+  return base::ranges::any_of(WillChangeProperties(),
+                              IsWillChangeCompositingHintProperty);
 }
 
 bool ComputedStyle::HasWillChangeTransformHint() const {
-  const auto& properties = WillChangeProperties();
-  return std::any_of(properties.begin(), properties.end(),
-                     IsWillChangeTransformHintProperty);
+  return base::ranges::any_of(WillChangeProperties(),
+                              IsWillChangeTransformHintProperty);
 }
 
 bool ComputedStyle::HasWillChangeHintForAnyTransformProperty() const {
-  const auto& properties = WillChangeProperties();
-  return std::any_of(properties.begin(), properties.end(),
-                     IsWillChangeHintForAnyTransformProperty);
+  return base::ranges::any_of(WillChangeProperties(),
+                              IsWillChangeHintForAnyTransformProperty);
 }
 
 bool ComputedStyle::RequireTransformOrigin(
@@ -1674,13 +1697,8 @@ ETextAlign ComputedStyle::GetTextAlign(bool is_last_line) const {
   return GetTextAlign();
 }
 
-bool ComputedStyle::ShouldUseTextIndent(bool is_first_line,
-                                        bool is_after_forced_break) const {
-  bool should_use =
-      is_first_line || (is_after_forced_break &&
-                        GetTextIndentLine() != TextIndentLine::kFirstLine);
-  return GetTextIndentType() == TextIndentType::kNormal ? should_use
-                                                        : !should_use;
+bool ComputedStyle::ShouldUseTextIndent(bool is_first_line) const {
+  return is_first_line;
 }
 
 // Unicode 11 introduced Georgian capital letters (U+1C90 - U+1CBA,
@@ -2650,13 +2668,11 @@ Color ComputedStyle::GetInternalForcedVisitedCurrentColor(
 }
 
 bool ComputedStyle::ShadowListHasCurrentColor(const ShadowList* shadow_list) {
-  if (!shadow_list)
-    return false;
-  return std::any_of(shadow_list->Shadows().begin(),
-                     shadow_list->Shadows().end(),
-                     [](const ShadowData& shadow) {
-                       return shadow.GetColor().IsCurrentColor();
-                     });
+  return shadow_list &&
+         base::ranges::any_of(shadow_list->Shadows(),
+                              [](const ShadowData& shadow) {
+                                return shadow.GetColor().IsCurrentColor();
+                              });
 }
 
 void ComputedStyle::ClearBackgroundImage() {

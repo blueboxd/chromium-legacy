@@ -1,3 +1,5 @@
+src/common/framework/test_config.ts
+src/external/petamoriken/float16/float16.d.ts
 src/common/internal/version.ts
 src/common/internal/stack.ts
 src/common/internal/logging/log_message.ts
@@ -125,7 +127,6 @@ src/webgpu/api/operation/reflection.spec.ts
 src/webgpu/api/operation/uncapturederror.spec.ts
 src/webgpu/api/operation/adapter/requestAdapterInfo.spec.ts
 src/webgpu/api/operation/adapter/requestDevice.spec.ts
-src/webgpu/api/operation/adapter/requestDevice_limits.spec.ts
 src/webgpu/api/operation/buffers/mapping_test.ts
 src/webgpu/api/operation/buffers/map.spec.ts
 src/webgpu/api/operation/buffers/map_ArrayBuffer.spec.ts
@@ -135,6 +136,7 @@ src/webgpu/api/operation/buffers/threading.spec.ts
 src/webgpu/api/operation/command_buffer/basic.spec.ts
 src/webgpu/api/operation/command_buffer/clearBuffer.spec.ts
 src/webgpu/api/operation/command_buffer/copyBufferToBuffer.spec.ts
+src/webgpu/util/texture/data_generation.ts
 src/webgpu/api/operation/command_buffer/copyTextureToTexture.spec.ts
 src/webgpu/api/operation/command_buffer/image_copy.spec.ts
 src/webgpu/api/operation/command_buffer/programmable/programmable_state_test.ts
@@ -235,7 +237,6 @@ src/webgpu/api/validation/image_copy/buffer_related.spec.ts
 src/webgpu/api/validation/image_copy/buffer_texture_copies.spec.ts
 src/webgpu/api/validation/image_copy/layout_related.spec.ts
 src/webgpu/api/validation/image_copy/texture_related.spec.ts
-src/webgpu/api/validation/initialization/requestDevice.spec.ts
 src/webgpu/api/validation/query_set/create.spec.ts
 src/webgpu/api/validation/query_set/destroy.spec.ts
 src/webgpu/api/validation/queue/buffer_mapped.spec.ts
@@ -439,3 +440,4 @@ src/webgpu/web_platform/reftests/canvas_size_different_with_back_buffer_size.htm
 src/webgpu/web_platform/worker/worker.spec.ts
 src/webgpu/web_platform/worker/worker.ts
 src/webgpu/web_platform/worker/worker_launcher.ts
+src/external/petamoriken/float16/float16.js

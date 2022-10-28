@@ -1,5 +1,5 @@
 #!/bin/bash
-# Copyright 2022 The Chromium Authors. All rights reserved.
+# Copyright 2022 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -320,6 +320,7 @@ DEBIAN_PACKAGES="\
   libvulkan-dev
   libvulkan1
   libwacom2
+  libwayland-bin
   libwayland-client0
   libwayland-cursor0
   libwayland-dev

@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -19,8 +19,6 @@ Playlist::Playlist(GURL uri,
       version_(version),
       independent_segments_(independent_segments) {}
 
-Playlist::Playlist(Playlist&&) = default;
-Playlist& Playlist::operator=(Playlist&&) = default;
 Playlist::~Playlist() = default;
 
 // static

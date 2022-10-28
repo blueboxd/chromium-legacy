@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -84,7 +84,8 @@ void DnsResolutionRoutine::CreateHostResolver() {
 void DnsResolutionRoutine::OnMojoConnectionError() {
   CreateHostResolver();
   OnComplete(net::ERR_NAME_NOT_RESOLVED, net::ResolveErrorInfo(net::ERR_FAILED),
-             absl::nullopt);
+             /*resolved_addresses=*/absl::nullopt,
+             /*endpoint_results_with_metadata=*/absl::nullopt);
 }
 
 void DnsResolutionRoutine::AttemptResolution() {
@@ -98,7 +99,11 @@ void DnsResolutionRoutine::AttemptResolution() {
   parameters->cache_usage =
       network::mojom::ResolveHostParameters::CacheUsage::DISALLOWED;
 
-  host_resolver_->ResolveHost(net::HostPortPair(kHostname, kHttpPort),
+  // Intentionally using a HostPortPair not to trigger ERR_DNS_NAME_HTTPS_ONLY
+  // error while resolving http:// scheme host when a HTTPS resource record
+  // exists.
+  host_resolver_->ResolveHost(network::mojom::HostResolverHost::NewHostPortPair(
+                                  net::HostPortPair(kHostname, kHttpPort)),
                               net::NetworkIsolationKey::CreateTransient(),
                               std::move(parameters),
                               receiver_.BindNewPipeAndPassRemote());
@@ -113,7 +118,9 @@ void DnsResolutionRoutine::AttemptResolution() {
 void DnsResolutionRoutine::OnComplete(
     int result,
     const net::ResolveErrorInfo& resolve_error_info,
-    const absl::optional<net::AddressList>& resolved_addresses) {
+    const absl::optional<net::AddressList>& resolved_addresses,
+    const absl::optional<net::HostResolverEndpointResults>&
+        endpoint_results_with_metadata) {
   receiver_.reset();
 
   bool success = result == net::OK && !resolved_addresses->empty() &&

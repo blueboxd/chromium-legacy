@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -30,6 +30,7 @@
 #include "base/bind.h"
 #include "base/check.h"
 #include "base/metrics/histogram_functions.h"
+#include "base/ranges/algorithm.h"
 #include "base/time/time.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
@@ -676,7 +677,12 @@ void AshNotificationView::AnimateSingleToGroup(
         auto* parent_notification =
             message_center::MessageCenter::Get()->FindNotificationById(
                 parent_id);
-        if (!parent_notification)
+        auto* child_notification =
+            message_center::MessageCenter::Get()->FindNotificationById(
+                notification_id);
+        // The child and parent notifications are not guaranteed to exist. If
+        // they were deleted avoid the animation cleanup.
+        if (!parent_notification || !child_notification)
           return;
 
         grouping_controller->ConvertFromSingleToGroupNotificationAfterAnimation(
@@ -731,11 +737,7 @@ void AshNotificationView::AnimateSingleToGroup(
 void AshNotificationView::ToggleExpand() {
   SetManuallyExpandedOrCollapsed(true);
 
-  // Here we need to check if `inline_reply()` is still valid since user
-  // can click the expand button when the view is being destructed, which
-  // invalidate `inline_reply()`.
   if (inline_reply() && inline_reply()->GetVisible()) {
-    // If inline reply is visible, fade it out then set expanded.
     message_center_utils::FadeOutView(
         inline_reply(),
         base::BindOnce(
@@ -1248,9 +1250,10 @@ AshNotificationView::GenerateNotificationLabelButton(
     views::Button::PressedCallback callback,
     const std::u16string& label) {
   std::unique_ptr<views::LabelButton> actions_button =
-      std::make_unique<PillButton>(
-          std::move(callback), label, PillButton::Type::kIconlessAccentFloating,
-          /*icon=*/nullptr, kNotificationPillButtonHorizontalSpacing);
+      std::make_unique<PillButton>(std::move(callback), label,
+                                   PillButton::Type::kAccentFloatingWithoutIcon,
+                                   /*icon=*/nullptr,
+                                   kNotificationPillButtonHorizontalSpacing);
   return actions_button;
 }
 
@@ -1292,50 +1295,41 @@ void AshNotificationView::ToggleInlineSettings(const ui::Event& event) {
   PreferredSizeChanged();
 }
 
-void AshNotificationView::ActionButtonPressed(size_t index,
-                                              const ui::Event& event) {
-  NotificationViewBase::ActionButtonPressed(index, event);
+void AshNotificationView::OnInlineReplyUpdated() {
+  DCHECK(inline_reply() && inline_reply()->GetVisible());
+  // Fade out actions button and then fade in inline reply.
+  message_center_utils::InitLayerForAnimations(action_buttons_row());
+  message_center_utils::FadeOutView(
+      action_buttons_row(),
+      base::BindOnce(
+          [](base::WeakPtr<ash::AshNotificationView> parent,
+             views::View* action_buttons_row) {
+            if (parent) {
+              action_buttons_row->layer()->SetOpacity(1.0f);
+              action_buttons_row->SetVisible(false);
+            }
+          },
+          weak_factory_.GetWeakPtr(), action_buttons_row()),
+      /*delay_in_ms=*/0, kActionButtonsFadeOutAnimationDurationMs,
+      gfx::Tween::LINEAR,
+      "Ash.NotificationView.ActionButtonsRow.FadeOut.AnimationSmoothness");
 
-  // If inline reply is visible, fade out actions button and then fade in inline
-  // reply. Here we need to check if `inline_reply()` is still valid since user
-  // can click an action button when the view is being destructed, which
-  // invalidate `inline_reply()`.
-  if (inline_reply() && inline_reply()->GetVisible()) {
-    message_center_utils::InitLayerForAnimations(action_buttons_row());
-    message_center_utils::FadeOutView(
-        action_buttons_row(),
-        base::BindOnce(
-            [](base::WeakPtr<ash::AshNotificationView> parent,
-               views::View* action_buttons_row) {
-              if (parent) {
-                action_buttons_row->layer()->SetOpacity(1.0f);
-                action_buttons_row->SetVisible(false);
-              }
-            },
-            weak_factory_.GetWeakPtr(), action_buttons_row()),
-        /*delay_in_ms=*/0, kActionButtonsFadeOutAnimationDurationMs,
-        gfx::Tween::LINEAR,
-        "Ash.NotificationView.ActionButtonsRow.FadeOut.AnimationSmoothness");
-
-    // Delay for the action buttons to fade out, then fade in inline reply.
-    message_center_utils::InitLayerForAnimations(inline_reply());
-    message_center_utils::FadeInView(
-        inline_reply(), kActionButtonsFadeOutAnimationDurationMs,
-        kInlineReplyFadeInAnimationDurationMs, gfx::Tween::LINEAR,
-        "Ash.NotificationView.InlineReply.FadeIn.AnimationSmoothness");
-  }
+  // Delay for the action buttons to fade out, then fade in inline reply.
+  message_center_utils::InitLayerForAnimations(inline_reply());
+  message_center_utils::FadeInView(
+      inline_reply(), kActionButtonsFadeOutAnimationDurationMs,
+      kInlineReplyFadeInAnimationDurationMs, gfx::Tween::LINEAR,
+      "Ash.NotificationView.InlineReply.FadeIn.AnimationSmoothness");
 }
 
 views::View* AshNotificationView::FindGroupNotificationView(
     const std::string& notification_id) {
-  auto id_match = [&notification_id](views::View* notification_view) {
-    return notification_id ==
-           static_cast<AshNotificationView*>(notification_view)
-               ->notification_id();
-  };
-  auto notification = std::find_if(
-      grouped_notifications_container_->children().begin(),
-      grouped_notifications_container_->children().end(), id_match);
+  auto notification = base::ranges::find(
+      grouped_notifications_container_->children(), notification_id,
+      [](views::View* notification_view) {
+        return static_cast<AshNotificationView*>(notification_view)
+            ->notification_id();
+      });
   return notification == grouped_notifications_container_->children().end()
              ? nullptr
              : *notification;

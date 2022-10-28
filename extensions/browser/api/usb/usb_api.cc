@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -186,7 +186,7 @@ bool ConvertRecipientFromApi(const Recipient& input,
 
 template <class T>
 bool GetTransferInSize(const T& input, uint32_t* output) {
-  const int* length = input.length.get();
+  const auto& length = input.length;
   if (length && *length >= 0 &&
       static_cast<uint32_t>(*length) < kMaxTransferLength) {
     *output = *length;
@@ -219,14 +219,14 @@ const char* ConvertTransferStatusToApi(const UsbTransferStatus status) {
   }
 }
 
-base::Value PopulateConnectionHandle(int handle,
-                                     int vendor_id,
-                                     int product_id) {
+base::Value::Dict PopulateConnectionHandle(int handle,
+                                           int vendor_id,
+                                           int product_id) {
   ConnectionHandle result;
   result.handle = handle;
   result.vendor_id = vendor_id;
   result.product_id = product_id;
-  return base::Value::FromUniquePtrValue(result.ToValue());
+  return result.ToValue();
 }
 
 TransferType ConvertTransferTypeToApi(const UsbTransferType& input) {
@@ -304,7 +304,7 @@ EndpointDescriptor ConvertEndpointDescriptor(
   output.synchronization =
       ConvertSynchronizationTypeToApi(input.synchronization_type);
   output.usage = ConvertUsageTypeToApi(input.usage_type);
-  output.polling_interval = std::make_unique<int>(input.polling_interval);
+  output.polling_interval = input.polling_interval;
   output.extra_data.assign(input.extra_data.begin(), input.extra_data.end());
   return output;
 }
@@ -590,9 +590,8 @@ ExtensionFunction::ResponseAction UsbFindDevicesFunction::Run() {
 
   vendor_id_ = parameters->options.vendor_id;
   product_id_ = parameters->options.product_id;
-  int interface_id = parameters->options.interface_id.get()
-                         ? *parameters->options.interface_id
-                         : UsbDevicePermissionData::SPECIAL_VALUE_ANY;
+  int interface_id = parameters->options.interface_id.value_or(
+      UsbDevicePermissionData::SPECIAL_VALUE_ANY);
   // Bail out early if there is no chance that the app has manifest permission
   // for the USB device described by vendor ID, product ID, and interface ID.
   // Note that this will match any permission filter that has only interface
@@ -724,7 +723,7 @@ void UsbGetDevicesFunction::OnGetDevicesComplete(
         HasDevicePermission(*device)) {
       Device api_device;
       usb_device_manager()->GetApiDevice(*device, &api_device);
-      result.Append(base::Value::FromUniquePtrValue(api_device.ToValue()));
+      result.Append(api_device.ToValue());
     }
   }
 
@@ -785,7 +784,7 @@ void UsbGetUserSelectedDevicesFunction::OnDevicesChosen(
   for (const auto& device : devices) {
     Device api_device;
     device_manager->GetApiDevice(*device, &api_device);
-    result.Append(base::Value::FromUniquePtrValue(api_device.ToValue()));
+    result.Append(api_device.ToValue());
   }
 
   Respond(OneArgument(base::Value(std::move(result))));
@@ -829,7 +828,7 @@ ExtensionFunction::ResponseAction UsbGetConfigurationsFunction::Run() {
         config->configuration_value == active_config_value) {
       api_config.active = true;
     }
-    configs.Append(base::Value::FromUniquePtrValue(api_config.ToValue()));
+    configs.Append(api_config.ToValue());
   }
   return RespondNow(OneArgument(base::Value(std::move(configs))));
 }
@@ -903,9 +902,9 @@ void UsbOpenDeviceFunction::OnDeviceOpened(
   DCHECK(device_info);
   UsbDeviceResource* resource = new UsbDeviceResource(
       extension_id(), device_info->guid, std::move(device));
-  Respond(OneArgument(PopulateConnectionHandle(manager->Add(resource),
-                                               device_info->vendor_id,
-                                               device_info->product_id)));
+  Respond(OneArgument(base::Value(
+      PopulateConnectionHandle(manager->Add(resource), device_info->vendor_id,
+                               device_info->product_id))));
 }
 
 void UsbOpenDeviceFunction::OnDisconnect() {
@@ -971,8 +970,7 @@ ExtensionFunction::ResponseAction UsbGetConfigurationFunction::Run() {
       DCHECK(config);
       if (config->configuration_value == active_config_value) {
         ConfigDescriptor api_config = ConvertConfigDescriptor(*config);
-        return RespondNow(
-            OneArgument(base::Value::FromUniquePtrValue(api_config.ToValue())));
+        return RespondNow(OneArgument(base::Value(api_config.ToValue())));
       }
     }
   }
@@ -1006,7 +1004,7 @@ ExtensionFunction::ResponseAction UsbListInterfacesFunction::Run() {
       ConfigDescriptor api_config = ConvertConfigDescriptor(*config);
       base::Value::List result;
       for (const auto& interface : api_config.interfaces) {
-        result.Append(base::Value::FromUniquePtrValue(interface.ToValue()));
+        result.Append(interface.ToValue());
       }
       return RespondNow(OneArgument(base::Value(std::move(result))));
     }

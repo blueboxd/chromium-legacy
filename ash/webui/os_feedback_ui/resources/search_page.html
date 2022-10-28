@@ -47,12 +47,16 @@
   }
 
   #descriptionEmptyError {
-    color: var(--google-red-600);
+    color: var(--cros-text-color-alert);
     font-weight: bold;
   }
 
   #descriptionTitle {
     margin: 0 0 6px 0;
+  }
+
+  a {
+    line-height: 20px;
   }
 </style>
 <div id="container">
@@ -68,7 +72,11 @@
             [[i18n('feedbackHelpLinkLabel')]]
         </a>
       </div>
-      <textarea id="descriptionText" aria-labelledby="descriptionTitle"
+      <span id="suggestionExplainAriaLabel" aria-hidden="true" hidden>
+        [[i18n('helpContentLabelTooltip')]]
+      </span>
+      <textarea id="descriptionText"
+          aria-labelledby="descriptionTitle suggestionExplainAriaLabel"
           aria-required="true" on-input="handleInputChanged_"
           placeholder="[[i18n('descriptionHint')]]" tabindex="1">
       </textarea>

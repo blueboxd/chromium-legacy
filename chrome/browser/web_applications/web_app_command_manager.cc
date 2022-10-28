@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -196,8 +196,8 @@ void WebAppCommandManager::NotifySyncSourceRemoved(
 
 base::Value WebAppCommandManager::ToDebugValue() {
   base::Value::List command_log;
-  for (auto& command_value : command_debug_log_) {
-    command_log.Append(std ::move(command_value));
+  for (const auto& command_value : command_debug_log_) {
+    command_log.Append(command_value.Clone());
   }
 
   base::Value::List queued;

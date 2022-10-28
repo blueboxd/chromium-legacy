@@ -86,6 +86,7 @@
 #include "third_party/blink/renderer/core/paint/paint_layer_paint_order_iterator.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_painter.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
+#include "third_party/blink/renderer/core/paint/paint_property_tree_builder.h"
 #include "third_party/blink/renderer/core/paint/rounded_border_geometry.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
 #include "third_party/blink/renderer/core/style/reference_clip_path_operation.h"
@@ -482,6 +483,14 @@ void PaintLayer::MarkAncestorChainForFlagsUpdate(
     if (flag == kNeedsDescendantDependentUpdate)
       layer->needs_descendant_dependent_flags_update_ = true;
     layer->GetLayoutObject().SetNeedsPaintPropertyUpdate();
+  }
+}
+
+void PaintLayer::SetNeedsDescendantDependentFlagsUpdate() {
+  for (PaintLayer* layer = this; layer; layer = layer->Parent()) {
+    if (layer->needs_descendant_dependent_flags_update_)
+      break;
+    layer->needs_descendant_dependent_flags_update_ = true;
   }
 }
 
@@ -882,10 +891,14 @@ void PaintLayer::AddChild(PaintLayer* child, PaintLayer* before_child) {
   else
     child->SetNeedsRepaint();
 
-  if (child->NeedsCullRectUpdate())
-    SetDescendantNeedsCullRectUpdate();
-  else
+  if (child->NeedsCullRectUpdate()) {
+    if (RuntimeEnabledFeatures::ScrollUpdateOptimizationsEnabled())
+      SetDescendantNeedsCullRectUpdate();
+    else
+      MarkCompositingContainerChainForNeedsCullRectUpdate();
+  } else {
     child->SetNeedsCullRectUpdate();
+  }
 }
 
 void PaintLayer::RemoveChild(PaintLayer* old_child) {
@@ -1657,8 +1670,9 @@ PaintLayer* PaintLayer::HitTestLayer(
     STACK_UNINITIALIZED TransformationMatrix inverted_matrix =
         local_transform_state->AccumulatedTransform().Inverse();
     // If the z-vector of the matrix is negative, the back is facing towards the
-    // viewer.
-    if (inverted_matrix.M33() < 0)
+    // viewer. TODO(crbug.com/1359528): Use something like
+    // gfx::Transform::IsBackfaceVisible().
+    if (inverted_matrix.rc(2, 2) < 0)
       return nullptr;
   }
 
@@ -2217,7 +2231,7 @@ void PaintLayer::ExpandRectForSelfPaintingDescendants(
 
   // If the layer is known to clip the whole subtree, then we don't need to
   // expand for children. The clip of the current layer is always applied.
-  if (KnownToClipSubtree())
+  if (KnownToClipSubtreeToPaddingBox())
     return;
 
   PaintLayerPaintOrderIterator iterator(this, kAllChildren);
@@ -2253,13 +2267,15 @@ void PaintLayer::ExpandRectForSelfPaintingDescendants(
   }
 }
 
-bool PaintLayer::KnownToClipSubtree() const {
+bool PaintLayer::KnownToClipSubtreeToPaddingBox() const {
   if (const auto* box = GetLayoutBox()) {
     if (!box->ShouldClipOverflowAlongBothAxis())
       return false;
     if (HasNonContainedAbsolutePositionDescendant())
       return false;
     if (HasFixedPositionDescendant() && !box->CanContainFixedPositionObjects())
+      return false;
+    if (box->StyleRef().OverflowClipMargin())
       return false;
     // The root frame's clip is special at least in Android WebView.
     if (is_root_layer_ && box->GetFrame()->IsLocalRoot())
@@ -2310,6 +2326,10 @@ void PaintLayer::UpdateSelfPaintingLayer() {
   // Self-painting change can change the compositing container chain;
   // invalidate the new chain in addition to the old one.
   MarkCompositingContainerChainForNeedsRepaint();
+  if (!RuntimeEnabledFeatures::ScrollUpdateOptimizationsEnabled()) {
+    if (SelfOrDescendantNeedsCullRectUpdate())
+      MarkCompositingContainerChainForNeedsCullRectUpdate();
+  }
 
   if (is_self_painting_layer)
     SetNeedsVisualOverflowRecalc();
@@ -2399,6 +2419,10 @@ void PaintLayer::StyleDidChange(StyleDifference diff,
     // propagated up the new compositing chain.
     if (SelfOrDescendantNeedsRepaint())
       MarkCompositingContainerChainForNeedsRepaint();
+    if (!RuntimeEnabledFeatures::ScrollUpdateOptimizationsEnabled()) {
+      if (SelfOrDescendantNeedsCullRectUpdate())
+        MarkCompositingContainerChainForNeedsCullRectUpdate();
+    }
 
     MarkAncestorChainForFlagsUpdate();
   }
@@ -2420,9 +2444,19 @@ void PaintLayer::StyleDidChange(StyleDifference diff,
     MarkAncestorChainForFlagsUpdate();
   }
 
+  bool needs_full_transform_update = diff.TransformChanged();
+  if (needs_full_transform_update) {
+    // Schedule a direct transform update instead of full update.
+    if (PaintPropertyTreeBuilder::ScheduleDeferredTransformNodeUpdate(
+            GetLayoutObject())) {
+      needs_full_transform_update = false;
+      SetNeedsDescendantDependentFlagsUpdate();
+    }
+  }
+
   // See also |LayoutObject::SetStyle| which handles these invalidations if a
   // PaintLayer is not present.
-  if (diff.TransformChanged() || diff.OpacityChanged() ||
+  if (needs_full_transform_update || diff.OpacityChanged() ||
       diff.ZIndexChanged() || diff.FilterChanged() || diff.CssClipChanged() ||
       diff.BlendModeChanged() || diff.MaskChanged() ||
       diff.CompositingReasonsChanged()) {
@@ -2650,8 +2684,12 @@ void PaintLayer::SetNeedsCullRectUpdate() {
   if (needs_cull_rect_update_)
     return;
   needs_cull_rect_update_ = true;
-  if (Parent())
-    Parent()->SetDescendantNeedsCullRectUpdate();
+  if (RuntimeEnabledFeatures::ScrollUpdateOptimizationsEnabled()) {
+    if (Parent())
+      Parent()->SetDescendantNeedsCullRectUpdate();
+  } else {
+    MarkCompositingContainerChainForNeedsCullRectUpdate();
+  }
 }
 
 void PaintLayer::SetForcesChildrenCullRectUpdate() {
@@ -2659,11 +2697,55 @@ void PaintLayer::SetForcesChildrenCullRectUpdate() {
     return;
   forces_children_cull_rect_update_ = true;
   descendant_needs_cull_rect_update_ = true;
-  if (Parent())
-    Parent()->SetDescendantNeedsCullRectUpdate();
+  if (RuntimeEnabledFeatures::ScrollUpdateOptimizationsEnabled()) {
+    if (Parent())
+      Parent()->SetDescendantNeedsCullRectUpdate();
+  } else {
+    MarkCompositingContainerChainForNeedsCullRectUpdate();
+  }
+}
+
+void PaintLayer::MarkCompositingContainerChainForNeedsCullRectUpdate() {
+  // This is only used by the old cull rect updater.
+  DCHECK(!RuntimeEnabledFeatures::ScrollUpdateOptimizationsEnabled());
+
+  // Mark compositing container chain for needing cull rect update. This is
+  // similar to MarkCompositingContainerChainForNeedsRepaint().
+  PaintLayer* layer = this;
+  while (true) {
+    // For a non-self-painting layer having self-painting descendant, the
+    // descendant will be painted through this layer's Parent() instead of
+    // this layer's Container(), so in addition to the CompositingContainer()
+    // chain, we also need to mark NeedsRepaint for Parent().
+    // TODO(crbug.com/828103): clean up this.
+    if (layer->Parent() && !layer->IsSelfPaintingLayer())
+      layer->Parent()->SetNeedsCullRectUpdate();
+
+    PaintLayer* container = layer->CompositingContainer();
+    if (!container) {
+      auto* owner = layer->GetLayoutObject().GetFrame()->OwnerLayoutObject();
+      if (!owner)
+        break;
+      container = owner->EnclosingLayer();
+    }
+
+    if (container->descendant_needs_cull_rect_update_)
+      break;
+
+    container->descendant_needs_cull_rect_update_ = true;
+
+    // Only propagate the dirty bit up to the display locked ancestor.
+    if (container->GetLayoutObject().ChildPrePaintBlockedByDisplayLock())
+      break;
+
+    layer = container;
+  }
 }
 
 void PaintLayer::SetDescendantNeedsCullRectUpdate() {
+  // This is only used by the new cull rect updater.
+  DCHECK(RuntimeEnabledFeatures::ScrollUpdateOptimizationsEnabled());
+
   for (auto* layer = this; layer; layer = layer->Parent()) {
     if (layer->descendant_needs_cull_rect_update_)
       break;

@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -15,7 +15,7 @@ namespace ash {
 // AnomalyDetectorClient is used to communicate with anomaly_detector.
 // Currently this just amounts to listening to signals it sends.
 class COMPONENT_EXPORT(ASH_DBUS_ANOMALY_DETECTOR) AnomalyDetectorClient
-    : public DBusClient {
+    : public chromeos::DBusClient {
  public:
   class Observer : public base::CheckedObserver {
    public:

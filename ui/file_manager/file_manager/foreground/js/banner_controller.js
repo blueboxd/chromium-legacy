@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {NativeEventTarget as EventTarget} from 'chrome://resources/js/cr/event_target.m.js';
+import {NativeEventTarget as EventTarget} from 'chrome://resources/js/cr/event_target.js';
 
 import {getDriveQuotaMetadata, getSizeStats} from '../../common/js/api.js';
 import {AsyncUtil} from '../../common/js/async_util.js';
@@ -395,8 +395,8 @@ export class BannerController extends EventTarget {
 
     // When navigating to a different volume, refresh the volume size stats
     // when first navigating. A listener will keep this in sync.
-    if (this.currentVolume_ && previousVolume &&
-        previousVolume.volumeId !== this.currentVolume_.volumeId &&
+    if (this.currentVolume_ &&
+        previousVolume?.volumeId !== this.currentVolume_.volumeId &&
         this.volumeSizeObservers_[this.currentVolume_.volumeType]) {
       this.pendingVolumeSizeUpdates_.add(this.currentVolume_);
       this.updateVolumeSizeStatsDebounced_.runImmediately();

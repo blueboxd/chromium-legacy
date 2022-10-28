@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -180,7 +180,7 @@ void CastContentRendererClient::RunScriptsAtDocumentEnd(
 
 void CastContentRendererClient::GetSupportedKeySystems(
     ::media::GetSupportedKeySystemsCB cb) {
-  ::media::KeySystemPropertiesVector key_systems;
+  ::media::KeySystemInfoVector key_systems;
   media::AddChromecastKeySystems(&key_systems,
                                  false /* enable_persistent_license_support */,
                                  false /* enable_playready */);
@@ -241,18 +241,18 @@ bool CastContentRendererClient::IsSupportedAudioType(
 
 bool CastContentRendererClient::IsSupportedVideoType(
     const ::media::VideoType& type) {
-// TODO(servolk): make use of eotf.
+  // TODO(servolk): make use of eotf.
 
   // TODO(1066567): Check attached screen for support of type.hdr_metadata_type.
-if (type.hdr_metadata_type != ::gfx::HdrMetadataType::kNone) {
-  NOTIMPLEMENTED() << "HdrMetadataType support signaling not implemented.";
-  return false;
-}
+  if (type.hdr_metadata_type != ::gfx::HdrMetadataType::kNone) {
+    NOTIMPLEMENTED() << "HdrMetadataType support signaling not implemented.";
+    return false;
+  }
 
 #if BUILDFLAG(IS_ANDROID)
-return supported_profiles_->IsSupportedVideoConfig(
-    media::ToCastVideoCodec(type.codec, type.profile),
-    media::ToCastVideoProfile(type.profile), type.level);
+  return supported_profiles_->IsSupportedVideoConfig(
+      media::ToCastVideoCodec(type.codec, type.profile),
+      media::ToCastVideoProfile(type.profile), type.level);
 #else
   return media::MediaCapabilitiesShlib::IsSupportedVideoConfig(
       media::ToCastVideoCodec(type.codec, type.profile),

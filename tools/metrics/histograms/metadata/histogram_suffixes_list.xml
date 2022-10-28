@@ -3475,31 +3475,6 @@ chromium-metrics-reviews@google.com.
       name="PasswordManager.LeakDetection.DialogDismissalReason"/>
 </histogram_suffixes>
 
-<histogram_suffixes name="LECredentialOps" separator=".">
-  <suffix name="Check" label=""/>
-  <suffix name="Insert" label=""/>
-  <suffix name="Remove" label=""/>
-  <suffix name="Reset" label=""/>
-  <suffix name="ResetTree" label=""/>
-  <suffix name="Sync" label=""/>
-  <suffix name="SyncOutcome" label=""/>
-  <affected-histogram name="Cryptohome.LECredential"/>
-</histogram_suffixes>
-
-<histogram_suffixes name="LECredentialOpsActions" separator=".">
-  <suffix name="Backend" label=""/>
-  <suffix name="BackendGetLog" label=""/>
-  <suffix name="BackendReplayLog" label=""/>
-  <suffix name="LoadFromDisk" label=""/>
-  <suffix name="SaveToDisk" label=""/>
-  <affected-histogram name="Cryptohome.LECredential.Check"/>
-  <affected-histogram name="Cryptohome.LECredential.Insert"/>
-  <affected-histogram name="Cryptohome.LECredential.Remove"/>
-  <affected-histogram name="Cryptohome.LECredential.Reset"/>
-  <affected-histogram name="Cryptohome.LECredential.ResetTree"/>
-  <affected-histogram name="Cryptohome.LECredential.Sync"/>
-</histogram_suffixes>
-
 <histogram_suffixes name="LevelDBBFEMethods" separator=".">
   <owner>cmumford@chromium.org</owner>
   <suffix name="CreateDir" label="ChromiumEnv::CreateDir"/>
@@ -6547,9 +6522,25 @@ chromium-metrics-reviews@google.com.
 
 <histogram_suffixes name="PageLoadMetricsClientsMedia" separator="."
     ordering="prefix">
+  <obsolete>
+    Removed in favor of Clients.MediaPageLoad2, which includes samples from
+    prerendered pages.
+  </obsolete>
   <suffix name="Clients.MediaPageLoad"
       label="PageLoadMetrics for page loads that involved playing a media
              element."/>
+  <affected-histogram name="PageLoad.Experimental.Bytes.Cache"/>
+  <affected-histogram name="PageLoad.Experimental.Bytes.Cache2"/>
+  <affected-histogram name="PageLoad.Experimental.Bytes.Network"/>
+  <affected-histogram name="PageLoad.Experimental.Bytes.Total"/>
+  <affected-histogram name="PageLoad.Experimental.Bytes.Total2"/>
+</histogram_suffixes>
+
+<histogram_suffixes name="PageLoadMetricsClientsMedia2" separator="."
+    ordering="prefix">
+  <suffix name="Clients.MediaPageLoad2"
+      label="PageLoadMetrics for page loads that involved playing a media
+             element. Includes samples from prerendered pages"/>
   <affected-histogram name="PageLoad.Experimental.Bytes.Cache"/>
   <affected-histogram name="PageLoad.Experimental.Bytes.Cache2"/>
   <affected-histogram name="PageLoad.Experimental.Bytes.Network"/>
@@ -6700,16 +6691,6 @@ chromium-metrics-reviews@google.com.
       name="PageLoad.Clients.ServiceWorker2.PaintTiming.ParseStartToFirstContentfulPaint"/>
   <affected-histogram
       name="PageLoad.Clients.ServiceWorker2.ParseTiming.NavigationToParseStart"/>
-</histogram_suffixes>
-
-<!-- TODO(crbug.com/1353689): rewrite with the new way. -->
-<histogram_suffixes name="PageLoadMetricsSkippableFetchHandler" separator=".">
-  <suffix name="SkippableFetchHandler"
-    label="The fetch handler is recognized as skippable."/>
-  <suffix name="NonSkippableFetchHandler"
-    label="The fetch handler is recognized as not skippable."/>
-  <affected-histogram name="PageLoad.Clients.ServiceWorker2.PaintTiming.NavigationToFirstContentfulPaint"/>
-  <affected-histogram name="PageLoad.Clients.ServiceWorker2.PaintTiming.NavigationToLargestContentfulPaint2"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="PageLoadMetricsClientsTabRestore" separator="."
@@ -8105,6 +8086,7 @@ chromium-metrics-reviews@google.com.
   <suffix name="Sqlite" label="Only counting memory used by Sqlite databases."/>
   <suffix name="TabRestore"
       label="Only counting memory used by tab restore page states."/>
+  <suffix name="TileMemory" label="GPU memory used for tiles."/>
   <suffix name="UI" label="Only counting memory used by Android UI bitmaps."/>
   <suffix name="WebCache"
       label="Only counting memory used by all resources in Blink Web Cache."/>
@@ -10073,9 +10055,6 @@ chromium-metrics-reviews@google.com.
   <affected-histogram
       name="Apps.PaginationTransition.DragScroll.PresentationTime.MaxLatency"/>
   <affected-histogram name="Apps.StateTransition.AnimationSmoothness"/>
-  <affected-histogram name="Apps.StateTransition.Drag.PresentationTime"/>
-  <affected-histogram
-      name="Apps.StateTransition.Drag.PresentationTime.MaxLatency"/>
   <affected-histogram name="Ash.LoginAnimation.Duration"/>
   <affected-histogram name="Ash.LoginAnimation.Jank"/>
   <affected-histogram name="Ash.LoginAnimation.Smoothness"/>
@@ -10360,7 +10339,7 @@ chromium-metrics-reviews@google.com.
   <suffix name="DemoMode" label="DemoMode"/>
   <suffix name="Diagnostics" label="Diagnostics"/>
   <suffix name="Eche" label="Eche"/>
-  <suffix name="FacialML" label="Facial ML"/>
+  <suffix name="FaceML" label="Face ML"/>
   <suffix name="FirmwareUpdate" label="FirmwareUpdate"/>
   <suffix name="Help" label="Help"/>
   <suffix name="Media" label="Media"/>

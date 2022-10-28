@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,7 +7,7 @@ package org.chromium.base;
 import android.text.TextUtils;
 import android.util.Patterns;
 
-import org.chromium.base.annotations.UsedByReflection;
+import org.chromium.build.annotations.UsedByReflection;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;

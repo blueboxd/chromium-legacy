@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -37,7 +37,8 @@ void BrightnessMonitorImpl::Init() {
           ? kBrightnessSampleDelay
           : base::Seconds(brightness_sample_delay_seconds);
 
-  power_manager_client_observation_.Observe(PowerManagerClient::Get());
+  power_manager_client_observation_.Observe(
+      chromeos::PowerManagerClient::Get());
 }
 
 void BrightnessMonitorImpl::AddObserver(
@@ -63,7 +64,7 @@ void BrightnessMonitorImpl::PowerManagerBecameAvailable(
     OnInitializationComplete();
     return;
   }
-  PowerManagerClient::Get()->GetScreenBrightnessPercent(
+  chromeos::PowerManagerClient::Get()->GetScreenBrightnessPercent(
       base::BindOnce(&BrightnessMonitorImpl::OnReceiveInitialBrightnessPercent,
                      weak_ptr_factory_.GetWeakPtr()));
 }

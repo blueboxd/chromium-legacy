@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -28,7 +28,7 @@ class TestSearchController : public SearchController {
   void StartSearch(const std::u16string& query) override;
   void StartZeroState(base::OnceClosure on_done,
                       base::TimeDelta timeout) override;
-  void ViewClosing() override;
+  void AppListClosing() override;
   void OpenResult(ChromeSearchResult* result, int event_flags) override;
   void InvokeResultAction(ChromeSearchResult* result,
                           ash::SearchResultActionType action) override;

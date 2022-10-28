@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -112,6 +112,10 @@ class RetroactivePairingDetectorImpl final
   // needed for retroactive pairing, and notifies observers.
   void CheckPairingInformation(const std::string& device_address);
 
+  // FastPairRepository::IsDeviceSavedToAccount callback
+  void AttemptRetroactivePairing(const std::string& classic_address,
+                                 bool is_device_saved_to_account);
+
   // FastPairRepository::CheckOptInStatus callback
   void OnCheckOptInStatus(const std::string& model_id,
                           const std::string& ble_address,
@@ -128,9 +132,6 @@ class RetroactivePairingDetectorImpl final
                          const std::string& classic_address);
 
   void RemoveDeviceInformation(const std::string& device_address);
-
-  void OnHandshakeComplete(scoped_refptr<Device> device,
-                           absl::optional<PairFailure> failure);
 
   // The classic pairing addresses of Fast Pair devices that we have already
   // paired to.

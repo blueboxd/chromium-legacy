@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,6 +10,8 @@
 #include "build/build_config.h"
 
 namespace extensions {
+
+class ConsentProvider;
 
 class ShellFileSystemDelegate : public FileSystemDelegate {
  public:
@@ -39,10 +41,9 @@ class ShellFileSystemDelegate : public FileSystemDelegate {
                                        base::OnceClosure on_cancel) override;
   int GetDescriptionIdForAcceptType(const std::string& accept_type) override;
 #if BUILDFLAG(IS_CHROMEOS)
-  bool IsGrantable(content::BrowserContext* browser_context,
-                   const Extension& extension) override;
   void RequestFileSystem(content::BrowserContext* browser_context,
                          scoped_refptr<ExtensionFunction> requester,
+                         ConsentProvider* consent_provider,
                          const Extension& extension,
                          std::string volume_id,
                          bool writable,

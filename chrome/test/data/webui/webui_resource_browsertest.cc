@@ -1,4 +1,4 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -47,63 +47,10 @@ class WebUIResourceBrowserTest : public InProcessBrowserTest {
   }
 };
 
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-IN_PROC_BROWSER_TEST_F(WebUIResourceBrowserTest, ArrayDataModelModuleTest) {
-  LoadTestUrl("?module=js/cr/ui/array_data_model_test.js");
-}
-
-IN_PROC_BROWSER_TEST_F(WebUIResourceBrowserTest, CrTest) {
-  LoadTestUrl("cr_test.html");
-}
-
-IN_PROC_BROWSER_TEST_F(WebUIResourceBrowserTest, CrReloadTest) {
-  LoadTestUrl("cr_reload_test.html");
-}
-#endif
-
 IN_PROC_BROWSER_TEST_F(WebUIResourceBrowserTest, I18nProcessCssTest) {
   LoadTestUrl("i18n_process_css_test.html");
 }
 
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-IN_PROC_BROWSER_TEST_F(WebUIResourceBrowserTest, GridModuleTest) {
-  LoadTestUrl("?module=js/cr/ui/grid_test.js");
-}
-
-IN_PROC_BROWSER_TEST_F(WebUIResourceBrowserTest, ListModuleTest) {
-  LoadTestUrl("?module=js/cr/ui/list_test.js");
-}
-
-IN_PROC_BROWSER_TEST_F(WebUIResourceBrowserTest, ListSelectionModelModuleTest) {
-  LoadTestUrl("?module=js/cr/ui/list_selection_model_test.js");
-}
-
-IN_PROC_BROWSER_TEST_F(WebUIResourceBrowserTest,
-                       ListSingleSelectionModelModuleTest) {
-  LoadTestUrl("?module=js/cr/ui/list_single_selection_model_test.js");
-}
-#endif
-
-IN_PROC_BROWSER_TEST_F(WebUIResourceBrowserTest, MenuModuleTest) {
-  LoadTestUrl("?module=js/cr/ui/menu_test.js");
-}
-
 IN_PROC_BROWSER_TEST_F(WebUIResourceBrowserTest, MockTimerTest) {
   LoadTestUrl("?module=mock_timer_test.js");
-}
-
-IN_PROC_BROWSER_TEST_F(WebUIResourceBrowserTest, PositionUtilModuleTest) {
-  LoadTestUrl("?module=js/cr/ui/position_util_test.js");
-}
-
-IN_PROC_BROWSER_TEST_F(WebUIResourceBrowserTest, CommandModuleTest) {
-  LoadTestUrl("?module=js/cr/ui/command_test.js");
-}
-
-IN_PROC_BROWSER_TEST_F(WebUIResourceBrowserTest, ContextMenuHandlerModuleTest) {
-  LoadTestUrl("?module=js/cr/ui/context_menu_handler_test.js");
-}
-
-IN_PROC_BROWSER_TEST_F(WebUIResourceBrowserTest, MenuButtonModuleTest) {
-  LoadTestUrl("?module=js/cr/ui/menu_button_test.js");
 }

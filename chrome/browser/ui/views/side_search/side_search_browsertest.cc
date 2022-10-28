@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -63,6 +63,7 @@ void SideSearchBrowserTest::SetUpOnMainThread() {
   config->SetGenerateSideSearchURLCallback(
       base::BindRepeating([](const GURL& url) { return url; }));
   SetIsSidePanelSRPAvailableAt(browser(), 0, true);
+  config->set_skip_on_template_url_changed_for_testing(true);
 }
 
 void SideSearchBrowserTest::TearDownOnMainThread() {

@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -15,13 +15,13 @@
 #include "base/callback.h"
 #include "base/containers/flat_map.h"
 #include "base/memory/weak_ptr.h"
+#include "base/timer/elapsed_timer.h"
 #include "chrome/browser/ash/login/screens/base_screen.h"
 // TODO(https://crbug.com/1164001): move to forward declaration.
 #include "chrome/browser/ash/login/wizard_context.h"
 // TODO(https://crbug.com/1164001): move to forward declaration.
-#include "ash/components/hid_detection/hid_detection_manager.h"
-#include "base/timer/elapsed_timer.h"
 #include "chrome/browser/ui/webui/chromeos/login/hid_detection_screen_handler.h"
+#include "chromeos/ash/components/hid_detection/hid_detection_manager.h"
 #include "device/bluetooth/bluetooth_adapter.h"
 #include "device/bluetooth/bluetooth_device.h"
 #include "device/bluetooth/bluetooth_discovery_session.h"
@@ -48,7 +48,7 @@ class HIDDetectionScreen : public BaseScreen,
 
   using ScreenExitCallback = base::RepeatingCallback<void(Result result)>;
 
-  HIDDetectionScreen(HIDDetectionView* view,
+  HIDDetectionScreen(base::WeakPtr<HIDDetectionView> view,
                      const ScreenExitCallback& exit_callback);
 
   HIDDetectionScreen(const HIDDetectionScreen&) = delete;
@@ -62,9 +62,6 @@ class HIDDetectionScreen : public BaseScreen,
   // inputs: Chromebases, Chromebits, and Chromeboxes (crbug.com/965765).
   // Also different testing flags might forcefully skip the screen
   static bool CanShowScreen();
-
-  // This method is called when the view is being destroyed.
-  void OnViewDestroyed(HIDDetectionView* view);
 
   // Checks if this screen should be displayed. `on_check_done` should be
   // invoked with the result; true if the screen should be displayed, false
@@ -95,7 +92,7 @@ class HIDDetectionScreen : public BaseScreen,
   bool MaybeSkip(WizardContext& context) override;
   void ShowImpl() override;
   void HideImpl() override;
-  void OnUserActionDeprecated(const std::string& action_id) override;
+  void OnUserAction(const base::Value::List& args) override;
 
   // device::BluetoothDevice::PairingDelegate:
   void RequestPinCode(device::BluetoothDevice* device) override;
@@ -228,7 +225,7 @@ class HIDDetectionScreen : public BaseScreen,
   scoped_refptr<device::BluetoothAdapter> GetAdapterForTesting();
   void SetAdapterInitialPoweredForTesting(bool powered);
 
-  HIDDetectionView* view_;
+  base::WeakPtr<HIDDetectionView> view_;
 
   const ScreenExitCallback exit_callback_;
   absl::optional<Result> exit_result_for_testing_;

@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -155,6 +155,9 @@ std::string CreateWrappedJsFlow(const std::string& js_flow) {
        // The Chrome version number, e.g. "104.0.490.1".
        "const CHROME_VERSION_NUMBER = '", version_info::GetVersionNumber(),
        "';",
+       // The DebugMode command line switch, if true more info will be logged.
+       "const DEBUG_MODE = ", js_flow_util::IsDebugMode() ? "true" : "false",
+       ";",
        // New line so the js flow starts from the first column.
        // Added to kJsLineOffset.
        "\n",

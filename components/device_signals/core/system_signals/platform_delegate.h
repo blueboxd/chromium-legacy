@@ -1,20 +1,26 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #ifndef COMPONENTS_DEVICE_SIGNALS_CORE_SYSTEM_SIGNALS_PLATFORM_DELEGATE_H_
 #define COMPONENTS_DEVICE_SIGNALS_CORE_SYSTEM_SIGNALS_PLATFORM_DELEGATE_H_
 
+#include <string>
+
 #include "base/containers/flat_map.h"
 #include "base/containers/flat_set.h"
+#include "build/build_config.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
+
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC)
+#include "components/device_signals/core/system_signals/platform_utils.h"
+#endif  // BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC)
 
 namespace base {
 class FilePath;
 }  // namespace base
 
 namespace device_signals {
-
-struct ExecutableMetadata;
 
 struct CustomFilePathComparator {
   bool operator()(const base::FilePath& a, const base::FilePath& b) const;
@@ -42,9 +48,35 @@ class PlatformDelegate {
   virtual bool ResolveFilePath(const base::FilePath& file_path,
                                base::FilePath* resolved_file_path) = 0;
 
-  // Collects and return executable metadata for all the files in `file_paths`.
-  virtual FilePathMap<ExecutableMetadata> GetAllExecutableMetadata(
+  // Returns a map of file paths to whether a currently running process was
+  // spawned from that file. The set of file paths in the map are specified by
+  // `file_paths`.
+  virtual FilePathMap<bool> AreExecutablesRunning(
       const FilePathSet& file_paths) = 0;
+
+  struct ProductMetadata {
+    ProductMetadata();
+
+    ProductMetadata(const ProductMetadata&);
+    ProductMetadata& operator=(const ProductMetadata&);
+
+    ~ProductMetadata();
+
+    absl::optional<std::string> name = absl::nullopt;
+    absl::optional<std::string> version = absl::nullopt;
+  };
+
+  // Returns product metadata for a given `file_path`.
+  // On Windows, this looks at file metadata.
+  // On Mac, it looks for app bundle metadata.
+  virtual absl::optional<ProductMetadata> GetProductMetadata(
+      const base::FilePath& file_path);
+
+  // Returns the public key SHA256 hash of the certificate used to sign an
+  // executable file located at `file_path`. Returns absl::nullopt if no
+  // public key can be retrieved.
+  virtual absl::optional<std::string> GetSigningCertificatePublicKeyHash(
+      const base::FilePath& file_path);
 };
 
 }  // namespace device_signals

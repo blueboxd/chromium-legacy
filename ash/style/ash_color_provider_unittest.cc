@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -108,7 +108,7 @@ INSTANTIATE_TEST_SUITE_P(
           ColorProvider::BaseLayerType::kInvertedTransparent80,
           SkColorSetARGB(0xCC, 0x00, 0x00, 0x00)},
          {ColorMode::kLight, ColorProvider::BaseLayerType::kTransparent90,
-          SkColorSetARGB(0xE6, 0xFF, 0xFF, 0xFF)},
+          SkColorSetARGB(0xE5, 0xFF, 0xFF, 0xFF)},
          {ColorMode::kLight, ColorProvider::BaseLayerType::kTransparent95,
           SkColorSetARGB(0xF2, 0xFF, 0xFF, 0xFF)},
          {ColorMode::kLight, ColorProvider::BaseLayerType::kOpaque,
@@ -127,7 +127,7 @@ INSTANTIATE_TEST_SUITE_P(
           ColorProvider::BaseLayerType::kInvertedTransparent80,
           SkColorSetARGB(0xCC, 0xDF, 0xDE, 0xDB)},
          {ColorMode::kDark, ColorProvider::BaseLayerType::kTransparent90,
-          SkColorSetARGB(0xE6, 0x20, 0x21, 0x24)},
+          SkColorSetARGB(0xE5, 0x20, 0x21, 0x24)},
          {ColorMode::kDark, ColorProvider::BaseLayerType::kTransparent95,
           SkColorSetARGB(0xF2, 0x20, 0x21, 0x24)},
          {ColorMode::kDark, ColorProvider::BaseLayerType::kOpaque,
@@ -204,7 +204,7 @@ INSTANTIATE_TEST_SUITE_P(
           SkColorSetRGB(0xE3, 0x74, 0x0)},
          {ColorMode::kLight,
           ColorProvider::ControlsLayerType::kControlBackgroundColorPositive,
-          SkColorSetRGB(0x1E, 0x8E, 0x3E)},
+          SkColorSetRGB(0x18, 0x80, 0x38)},
          {ColorMode::kLight, ColorProvider::ControlsLayerType::kFocusAuraColor,
           SkColorSetARGB(0x3D, 0x1A, 0x73, 0xE8)},
          {ColorMode::kLight, ColorProvider::ControlsLayerType::kFocusRingColor,
@@ -259,7 +259,7 @@ INSTANTIATE_TEST_SUITE_P(
           SkColorSetRGB(0xE3, 0x74, 0x0)},
          {ColorMode::kLight,
           ColorProvider::ContentLayerType::kTextColorPositive,
-          SkColorSetRGB(0x1E, 0x8E, 0x3E)},
+          SkColorSetRGB(0x18, 0x80, 0x38)},
          {ColorMode::kLight, ColorProvider::ContentLayerType::kTextColorURL,
           SkColorSetRGB(0x1A, 0x73, 0xE8)},
 
@@ -274,7 +274,7 @@ INSTANTIATE_TEST_SUITE_P(
           SkColorSetRGB(0xE3, 0x74, 0x0)},
          {ColorMode::kLight,
           ColorProvider::ContentLayerType::kIconColorPositive,
-          SkColorSetRGB(0x1E, 0x8E, 0x3E)},
+          SkColorSetRGB(0x18, 0x80, 0x38)},
          {ColorMode::kLight,
           ColorProvider::ContentLayerType::kIconColorProminent,
           SkColorSetRGB(0x1A, 0x73, 0xE8)},
@@ -365,7 +365,7 @@ INSTANTIATE_TEST_SUITE_P(
 
          {ColorMode::kLight,
           ColorProvider::ContentLayerType::kBatterySystemInfoBackgroundColor,
-          SkColorSetRGB(0x1E, 0x8E, 0x3E)},
+          SkColorSetRGB(0x18, 0x80, 0x38)},
 
          {ColorMode::kLight,
           ColorProvider::ContentLayerType::kBatterySystemInfoIconColor,

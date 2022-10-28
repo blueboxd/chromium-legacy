@@ -13,7 +13,7 @@
 #include "third_party/blink/renderer/platform/fonts/font_selector_client.h"
 #include "third_party/blink/renderer/platform/graphics/color.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_filter.h"
-#include "third_party/blink/renderer/platform/transforms/transformation_matrix.h"
+#include "third_party/blink/renderer/platform/transforms/affine_transform.h"
 #include "third_party/blink/renderer/platform/wtf/math_extras.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
@@ -83,10 +83,9 @@ class CanvasRenderingContext2DState final
   void SetLineDashOffset(double);
   double LineDashOffset() const { return line_dash_offset_; }
 
-  void SetTransform(const TransformationMatrix&);
+  void SetTransform(const AffineTransform&);
   void ResetTransform();
-  TransformationMatrix GetTransform() const { return transform_; }
-  AffineTransform GetAffineTransform() const;
+  AffineTransform GetTransform() const { return transform_; }
   bool IsTransformInvertible() const { return is_transform_invertible_; }
 
   void ClipPath(const SkPath&, AntiAliasingMode);
@@ -109,6 +108,9 @@ class CanvasRenderingContext2DState final
 
   void SetFontForFilter(const Font& font) { font_for_filter_ = font; }
 
+  // Used to specify whether to include the filter for the globalAlpha effect.
+  enum class GlobalAlphaFilterMode { kInclude, kExclude };
+
   void SetCSSFilter(const CSSValue*);
   void SetUnparsedCSSFilter(const String& filter_string) {
     unparsed_css_filter_ = filter_string;
@@ -121,11 +123,20 @@ class CanvasRenderingContext2DState final
                                CanvasRenderingContext2D*);
   sk_sp<PaintFilter> GetFilterForOffscreenCanvas(gfx::Size canvas_size,
                                                  BaseRenderingContext2D*);
+  // Returns the PaintFilter for the globalAlpha effect.
+  sk_sp<PaintFilter> GetGlobalAlphaAsFilter(gfx::Size canvas_size,
+                                            BaseRenderingContext2D*);
   ALWAYS_INLINE bool IsFilterUnresolved() const {
     return filter_state_ == FilterState::kUnresolved;
   }
   ALWAYS_INLINE bool IsFilterResolved() const {
     return filter_state_ == FilterState::kResolved;
+  }
+  ALWAYS_INLINE bool IsGlobalAlphaFilterUnresolved() const {
+    if (global_alpha_ == 1.0 || global_alpha_filter_) {
+      return false;
+    }
+    return true;
   }
 
   void ClearResolvedFilter();
@@ -281,7 +292,7 @@ class CanvasRenderingContext2DState final
 
   double global_alpha_;
   sk_sp<PaintFilter> global_alpha_filter_;
-  TransformationMatrix transform_;
+  AffineTransform transform_;
   Vector<double> line_dash_;
   double line_dash_offset_;
 

@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -49,6 +49,7 @@ class ContentProtectionAsh;
 class CrosapiDependencyRegistry;
 class DeskTemplateAsh;
 class DeviceAttributesAsh;
+class DeviceLocalAccountExtensionServiceAsh;
 class DeviceOAuth2TokenServiceAsh;
 class DeviceSettingsAsh;
 class DlpAsh;
@@ -82,7 +83,6 @@ class NetworkChangeAsh;
 class NetworkingAttributesAsh;
 class NetworkingPrivateAsh;
 class PolicyServiceAsh;
-class PowerAsh;
 class PrefsAsh;
 class PrintingMetricsAsh;
 class RemotingAsh;
@@ -93,7 +93,6 @@ class SelectFileAsh;
 class SharesheetAsh;
 class SpeechRecognitionAsh;
 class StructuredMetricsServiceAsh;
-class SystemDisplayAsh;
 class TaskManagerAsh;
 class TimeZoneServiceAsh;
 class TtsAsh;
@@ -170,6 +169,9 @@ class CrosapiAsh : public mojom::Crosapi {
       mojo::PendingReceiver<mojom::DeskTemplate> receiver) override;
   void BindDeviceAttributes(
       mojo::PendingReceiver<mojom::DeviceAttributes> receiver) override;
+  void BindDeviceLocalAccountExtensionService(
+      mojo::PendingReceiver<mojom::DeviceLocalAccountExtensionService> receiver)
+      override;
   void BindDeviceOAuth2TokenService(
       mojo::PendingReceiver<mojom::DeviceOAuth2TokenService> receiver) override;
   void BindDeviceSettingsService(
@@ -284,8 +286,8 @@ class CrosapiAsh : public mojom::Crosapi {
           receiver) override;
   void BindSyncService(
       mojo::PendingReceiver<mojom::SyncService> receiver) override;
-  void BindSystemDisplay(
-      mojo::PendingReceiver<mojom::SystemDisplay> receiver) override;
+  void REMOVED_29(
+      mojo::PendingReceiver<mojom::SystemDisplayDeprecated> receiver) override;
   void BindVirtualKeyboard(
       mojo::PendingReceiver<mojom::VirtualKeyboard> receiver) override;
   void BindVpnService(
@@ -336,6 +338,10 @@ class CrosapiAsh : public mojom::Crosapi {
 
   DeskTemplateAsh* desk_template_ash() { return desk_template_ash_.get(); }
 
+  DeviceAttributesAsh* device_attributes_ash() {
+    return device_attributes_ash_.get();
+  }
+
   DocumentScanAsh* document_scan_ash() { return document_scan_ash_.get(); }
 
   DownloadControllerAsh* download_controller_ash() {
@@ -365,6 +371,11 @@ class CrosapiAsh : public mojom::Crosapi {
     return chrome_app_kiosk_service_ash_.get();
   }
 
+  DeviceLocalAccountExtensionServiceAsh*
+  device_local_account_extension_service() {
+    return device_local_account_extension_service_ash_.get();
+  }
+
   PrintingMetricsAsh* printing_metrics_ash() {
     return printing_metrics_ash_.get();
   }
@@ -384,6 +395,8 @@ class CrosapiAsh : public mojom::Crosapi {
   ImageWriterAsh* image_writer_ash() { return image_writer_ash_.get(); }
 
   LocalPrinterAsh* local_printer_ash() { return local_printer_ash_.get(); }
+
+  NetworkChangeAsh* network_change_ash() { return network_change_ash_.get(); }
 
   NetworkingAttributesAsh* networking_attributes_ash() {
     return networking_attributes_ash_.get();
@@ -459,6 +472,8 @@ class CrosapiAsh : public mojom::Crosapi {
   std::unique_ptr<ContentProtectionAsh> content_protection_ash_;
   std::unique_ptr<DeskTemplateAsh> desk_template_ash_;
   std::unique_ptr<DeviceAttributesAsh> device_attributes_ash_;
+  std::unique_ptr<DeviceLocalAccountExtensionServiceAsh>
+      device_local_account_extension_service_ash_;
   std::unique_ptr<DeviceOAuth2TokenServiceAsh> device_oauth2_token_service_ash_;
   std::unique_ptr<DeviceSettingsAsh> device_settings_ash_;
   std::unique_ptr<ash::DiagnosticsServiceAsh> diagnostics_service_ash_;
@@ -497,7 +512,6 @@ class CrosapiAsh : public mojom::Crosapi {
   std::unique_ptr<NetworkingPrivateAsh> networking_private_ash_;
   std::unique_ptr<NetworkSettingsServiceAsh> network_settings_service_ash_;
   std::unique_ptr<PolicyServiceAsh> policy_service_ash_;
-  std::unique_ptr<PowerAsh> power_ash_;
   std::unique_ptr<PrefsAsh> prefs_ash_;
   std::unique_ptr<PrintingMetricsAsh> printing_metrics_ash_;
   std::unique_ptr<ash::ProbeServiceAsh> probe_service_ash_;
@@ -509,7 +523,6 @@ class CrosapiAsh : public mojom::Crosapi {
   std::unique_ptr<SharesheetAsh> sharesheet_ash_;
   std::unique_ptr<SpeechRecognitionAsh> speech_recognition_ash_;
   std::unique_ptr<StructuredMetricsServiceAsh> structured_metrics_service_ash_;
-  std::unique_ptr<SystemDisplayAsh> system_display_ash_;
   std::unique_ptr<TaskManagerAsh> task_manager_ash_;
   std::unique_ptr<TimeZoneServiceAsh> time_zone_service_ash_;
   std::unique_ptr<TtsAsh> tts_ash_;

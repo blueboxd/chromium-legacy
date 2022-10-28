@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,12 +11,12 @@
 #include <utility>
 #include <vector>
 
-#include "ash/constants/ash_features.h"
 #include "base/feature_list.h"
 #include "base/memory/ptr_util.h"
 #include "build/branding_buildflags.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
+#include "chrome/browser/performance_manager/public/user_tuning/user_performance_tuning_manager.h"
 #include "chrome/browser/privacy_sandbox/privacy_sandbox_service.h"
 #include "chrome/browser/privacy_sandbox/privacy_sandbox_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -43,6 +43,7 @@
 #include "chrome/browser/ui/webui/settings/metrics_reporting_handler.h"
 #include "chrome/browser/ui/webui/settings/on_startup_handler.h"
 #include "chrome/browser/ui/webui/settings/people_handler.h"
+#include "chrome/browser/ui/webui/settings/performance_handler.h"
 #include "chrome/browser/ui/webui/settings/privacy_sandbox_handler.h"
 #include "chrome/browser/ui/webui/settings/profile_info_handler.h"
 #include "chrome/browser/ui/webui/settings/protocol_handlers_handler.h"
@@ -68,8 +69,10 @@
 #include "chrome/grit/settings_resources.h"
 #include "chrome/grit/settings_resources_map.h"
 #include "components/account_manager_core/account_manager_facade.h"
+#include "components/commerce/core/commerce_feature_list.h"
 #include "components/favicon_base/favicon_url_parser.h"
 #include "components/password_manager/core/common/password_manager_features.h"
+#include "components/performance_manager/public/features.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
 #include "components/safe_browsing/core/common/features.h"
@@ -80,6 +83,10 @@
 #include "content/public/browser/web_ui_data_source.h"
 #include "crypto/crypto_buildflags.h"
 #include "printing/buildflags/buildflags.h"
+
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
+#include "chrome/grit/chrome_unscaled_resources.h"
+#endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
 
 #if BUILDFLAG(IS_WIN)
 #include "chrome/browser/safe_browsing/chrome_cleaner/chrome_cleaner_controller_win.h"
@@ -102,7 +109,6 @@
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "ash/components/arc/arc_util.h"
-#include "ash/components/login/auth/password_visibility_utils.h"
 #include "ash/components/phonehub/phone_hub_manager.h"
 #include "ash/constants/ash_features.h"
 #include "ash/webui/eche_app_ui/eche_app_manager.h"
@@ -117,12 +123,13 @@
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
-#include "chrome/browser/ui/webui/settings/chromeos/account_manager_handler.h"
-#include "chrome/browser/ui/webui/settings/chromeos/android_apps_handler.h"
-#include "chrome/browser/ui/webui/settings/chromeos/multidevice_handler.h"
+#include "chrome/browser/ui/webui/settings/ash/account_manager_ui_handler.h"
+#include "chrome/browser/ui/webui/settings/ash/android_apps_handler.h"
+#include "chrome/browser/ui/webui/settings/ash/multidevice_handler.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/grit/browser_resources.h"
 #include "chromeos/ash/components/account_manager/account_manager_factory.h"
+#include "chromeos/ash/components/login/auth/password_visibility_utils.h"
 #include "components/account_manager_core/chromeos/account_manager.h"
 #include "components/account_manager_core/chromeos/account_manager_facade_factory.h"
 #include "components/user_manager/user.h"
@@ -229,7 +236,7 @@ SettingsUI::SettingsUI(content::WebUI* web_ui)
       std::make_unique<SecurityKeysBioEnrollmentHandler>());
   AddSettingsPageUIHandler(std::make_unique<SecurityKeysPhonesHandler>());
 
-#if BUILDFLAG(IS_WIN)
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC)
   AddSettingsPageUIHandler(std::make_unique<PasskeysHandler>());
 #endif
 
@@ -272,11 +279,6 @@ SettingsUI::SettingsUI(content::WebUI* web_ui)
                               password_manager::features::kPasswordImport));
 
   html_source->AddBoolean(
-      "showDismissCompromisedPasswordOption",
-      base::FeatureList::IsEnabled(
-          password_manager::features::kMuteCompromisedPasswords));
-
-  html_source->AddBoolean(
       "enablePasswordViewPage",
       base::FeatureList::IsEnabled(
           password_manager::features::kPasswordViewPageInSettings) ||
@@ -302,6 +304,15 @@ SettingsUI::SettingsUI(content::WebUI* web_ui)
       "enableAutomaticPasswordChangeInSettings",
       base::FeatureList::IsEnabled(
           password_manager::features::kPasswordChangeInSettings));
+
+  html_source->AddBoolean(
+      "changePriceEmailNotificationsEnabled",
+      base::FeatureList::IsEnabled(commerce::kShoppingList));
+
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
+  html_source->AddResourcePath("images/google_assistant.svg",
+                               IDR_ASSISTANT_LOGO_MONOCHROME);
+#endif
 
 #if !BUILDFLAG(IS_CHROMEOS_ASH)
   html_source->AddBoolean(
@@ -337,6 +348,15 @@ SettingsUI::SettingsUI(content::WebUI* web_ui)
       "privacyGuide2Enabled",
       base::FeatureList::IsEnabled(features::kPrivacyGuide2));
 
+#if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN)
+  html_source->AddBoolean(
+      "biometricAuthenticationForFilling",
+      // TODO(crbug.com/1358100): Check if promo for biometric authentication
+      // was shown.
+      base::FeatureList::IsEnabled(
+          password_manager::features::kBiometricAuthenticationForFilling));
+#endif
+
   AddSettingsPageUIHandler(std::make_unique<AboutHandler>(profile));
   AddSettingsPageUIHandler(std::make_unique<ResetSettingsHandler>(profile));
 
@@ -364,6 +384,9 @@ SettingsUI::SettingsUI(content::WebUI* web_ui)
   plural_string_handler->AddLocalizedString(
       "importPasswordsSuccessSummaryAccount",
       IDS_SETTINGS_PASSWORDS_IMPORT_SUCCESS_SUMMARY_ACCOUNT);
+  plural_string_handler->AddLocalizedString(
+      "importPasswordsBadRowsFormat",
+      IDS_SETTINGS_PASSWORDS_IMPORT_BAD_ROWS_FORMAT);
   web_ui->AddMessageHandler(std::move(plural_string_handler));
 
   // Add the metrics handler to write uma stats.
@@ -403,6 +426,20 @@ SettingsUI::SettingsUI(content::WebUI* web_ui)
   html_source->AddBoolean(
       "safetyCheckPermissionsEnabled",
       base::FeatureList::IsEnabled(features::kSafetyCheckPermissions));
+
+  // Performance
+  AddSettingsPageUIHandler(std::make_unique<PerformanceHandler>());
+  html_source->AddBoolean(
+      "highEfficiencyModeAvailable",
+      base::FeatureList::IsEnabled(
+          performance_manager::features::kHighEfficiencyModeAvailable));
+  html_source->AddBoolean(
+      "batterySaverModeAvailable",
+      base::FeatureList::IsEnabled(
+          performance_manager::features::kBatterySaverModeAvailable) &&
+          performance_manager::user_tuning::UserPerformanceTuningManager::
+              GetInstance()
+                  ->DeviceHasBattery());
 
   TryShowHatsSurveyWithTimeout();
 }

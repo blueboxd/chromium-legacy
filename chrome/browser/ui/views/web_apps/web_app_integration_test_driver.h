@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -49,6 +49,9 @@ enum class Site {
   kNotPromotable,
   kWco,
   kIsolated,
+  kFileHandler,
+  kNoServiceWorker,
+  kNotInstalled,
 };
 
 enum class InstallableSite {
@@ -57,7 +60,10 @@ enum class InstallableSite {
   kStandaloneNestedB,
   kMinimalUi,
   kWco,
-  kIsolated
+  kIsolated,
+  kFileHandler,
+  kNoServiceWorker,
+  kNotInstalled,
 };
 
 enum class Title { kStandaloneOriginal, kStandaloneUpdated };
@@ -78,20 +84,30 @@ enum class WindowOptions { kWindowed, kBrowser };
 
 enum class ShortcutOptions { kWithShortcut, kNoShortcut };
 
+enum class AllowDenyOptions { kAllow, kDeny };
+
+enum class AskAgainOptions { kAskAgain, kRemember };
+
+enum class FileExtension { kTxt, kPng };
+
+enum class FilesOptions {
+  kOneTextFile,
+  kMultipleTextFiles,
+  kOnePngFile,
+  kMultiplePngFiles,
+  kAllTextAndPngFiles
+};
+
 // These structs are used to store the current state of the world before & after
 // each state-change action.
 
 struct TabState {
-  TabState(GURL tab_url, bool is_tab_installable)
-      : url(std::move(tab_url)), is_installable(is_tab_installable) {}
+  explicit TabState(GURL tab_url) : url(std::move(tab_url)) {}
   TabState(const TabState&) = default;
   TabState& operator=(const TabState&) = default;
-  bool operator==(const TabState& other) const {
-    return url == other.url && is_installable == other.is_installable;
-  }
+  bool operator==(const TabState& other) const { return url == other.url; }
 
   GURL url;
-  bool is_installable;
 };
 
 struct BrowserState {
@@ -99,7 +115,6 @@ struct BrowserState {
                base::flat_map<content::WebContents*, TabState> tab_state,
                content::WebContents* active_web_contents,
                const AppId& app_id,
-               bool install_icon_visible,
                bool launch_icon_visible);
   ~BrowserState();
   BrowserState(const BrowserState&);
@@ -110,7 +125,6 @@ struct BrowserState {
   content::WebContents* active_tab;
   // If this isn't an app browser, `app_id` is empty.
   AppId app_id;
-  bool install_icon_shown;
   bool launch_icon_shown;
 };
 
@@ -168,6 +182,7 @@ class WebAppIntegrationTestDriver : WebAppInstallManagerObserver {
    public:
     // Exposing normal functionality of testing::InProcBrowserTest:
     virtual Browser* CreateBrowser(Profile* profile) = 0;
+    virtual void CloseBrowserSynchronously(Browser* browser) = 0;
     virtual void AddBlankTabAndShow(Browser* browser) = 0;
     virtual const net::EmbeddedTestServer* EmbeddedTestServer() const = 0;
     virtual std::vector<Profile*> GetAllProfiles() = 0;
@@ -191,11 +206,11 @@ class WebAppIntegrationTestDriver : WebAppInstallManagerObserver {
 
   // Automated Testing Actions
   //
-  // Actions are defined in the following spreadsheet:
-  // https://docs.google.com/spreadsheets/d/1d3iAOAnojp4_WrPky9exz1-mjkeulOJVUav5QYG99MQ/edit#gid=2008870403
+  // Actions are defined in chrome/test/webapps/data/actions.md
 
   // State change actions:
   void AcceptAppIdUpdateDialog();
+  void AwaitManifestUpdate(Site site_mode);
   void CloseCustomToolbar();
   void ClosePwa();
   void DisableRunOnOsLogin(Site site);
@@ -215,6 +230,11 @@ class WebAppIntegrationTestDriver : WebAppInstallManagerObserver {
   void ApplyRunOnOsLoginPolicyRunWindowed(Site site);
   void DeletePlatformShortcut(Site site);
   void RemoveRunOnOsLoginPolicy(Site site);
+  void LaunchFileExpectDialog(Site site,
+                              FilesOptions files_options,
+                              AllowDenyOptions allow_deny,
+                              AskAgainOptions ask_again);
+  void LaunchFileExpectNoDialog(Site site, FilesOptions files_options);
   void LaunchFromChromeApps(Site site);
   void LaunchFromLaunchIcon(Site site);
   void LaunchFromMenuOption(Site site);
@@ -232,6 +252,7 @@ class WebAppIntegrationTestDriver : WebAppInstallManagerObserver {
   void OpenInChrome();
   void SetOpenInTab(Site site);
   void SetOpenInWindow(Site site);
+  void SwitchIncognitoProfile();
   void SwitchProfileClients(ProfileClient client);
   void SyncTurnOff();
   void SyncTurnOn();
@@ -243,6 +264,7 @@ class WebAppIntegrationTestDriver : WebAppInstallManagerObserver {
 
   // State Check Actions:
   void CheckAppListEmpty();
+  void CheckAppInListIconCorrect(Site site);
   void CheckAppInListNotLocallyInstalled(Site site);
   void CheckAppInListWindowed(Site site);
   void CheckAppInListTabbed(Site site);
@@ -251,8 +273,9 @@ class WebAppIntegrationTestDriver : WebAppInstallManagerObserver {
   void CheckAppNotInList(Site site);
   void CheckAppIcon(Site site, Color color);
   void CheckAppTitle(Site site, Title title);
+  void CheckCreateShortcutNotShown();
+  void CheckCreateShortcutShown();
   void CheckWindowModeIsNotVisibleInAppSettings(Site site);
-  void CheckInstallable();
   void CheckInstallIconShown();
   void CheckInstallIconNotShown();
   void CheckLaunchIconShown();
@@ -284,11 +307,13 @@ class WebAppIntegrationTestDriver : WebAppInstallManagerObserver {
 
  private:
   // Must be called at the beginning of every state change action function.
-  void BeforeStateChangeAction(const char* function);
+  // Returns if the test should continue.
+  bool BeforeStateChangeAction(const char* function);
   // Must be called at the end of every state change action function.
   void AfterStateChangeAction();
   // Must be called at the beginning of every state check action function.
-  void BeforeStateCheckAction(const char* function);
+  // Returns if the test should continue.
+  bool BeforeStateCheckAction(const char* function);
   // Must be called at the end of every state check action function.
   void AfterStateCheckAction();
 
@@ -317,9 +342,6 @@ class WebAppIntegrationTestDriver : WebAppInstallManagerObserver {
   void ApplyRunOnOsLoginPolicy(Site site, const char* policy);
 
   void UninstallPolicyAppById(const AppId& id);
-  // This action only works if no navigations to the given app_url occur
-  // between app installation and calls to this action.
-  bool AreNoAppWindowsOpen(Profile* profile, const AppId& app_id);
   void ForceUpdateManifestContents(Site site,
                                    const GURL& app_url_with_manifest_param);
   void MaybeWaitForManifestUpdates();
@@ -345,6 +367,10 @@ class WebAppIntegrationTestDriver : WebAppInstallManagerObserver {
 
   void CheckAppSettingsAppState(Profile* profile, const AppState& app_state);
 
+  base::FilePath GetResourceFile(base::FilePath::StringPieceType relative_path);
+
+  std::vector<base::FilePath> GetTestFilePaths(FilesOptions file_options);
+
   Browser* browser();
   Profile* profile() {
     if (!active_profile_) {
@@ -361,10 +387,6 @@ class WebAppIntegrationTestDriver : WebAppInstallManagerObserver {
 
   base::flat_set<AppId> previous_manifest_updates_;
 
-  // Variables used to facilitate waiting for manifest updates, as there isn't
-  // a formal 'action' that a user can take to wait for this, as it happens
-  // behind the scenes.
-  base::flat_set<AppId> app_ids_with_pending_manifest_updates_;
   // |waiting_for_update_*| variables are either all populated or all not
   // populated. These signify that the test is currently waiting for the
   // given |waiting_for_update_id_| to receive an update before continuing.
@@ -391,15 +413,20 @@ class WebAppIntegrationTestDriver : WebAppInstallManagerObserver {
   // enabled. Triage.
   raw_ptr<Browser, DegradeToNoOpWhenMTE> app_browser_ = nullptr;
 
+  bool in_tear_down_ = false;
+
   std::unique_ptr<views::NamedWidgetShownWaiter> app_id_update_dialog_waiter_;
   base::ScopedObservation<web_app::WebAppInstallManager,
                           web_app::WebAppInstallManagerObserver>
       observation_{this};
-  std::unique_ptr<ScopedShortcutOverrideForTesting> shortcut_override_;
+  std::unique_ptr<ShortcutOverrideForTesting::BlockingRegistration>
+      override_registration_;
 
   std::unique_ptr<net::EmbeddedTestServer> isolated_app_test_server_ = nullptr;
   std::unique_ptr<base::RunLoop> window_controls_overlay_callback_for_testing_ =
       nullptr;
+
+  base::flat_set<Site> site_remember_deny_open_file;
 };
 
 // Simple base browsertest class usable by all non-sync web app integration
@@ -421,6 +448,7 @@ class WebAppIntegrationTest : public InProcessBrowserTest,
 
   // WebAppIntegrationTestDriver::TestDelegate:
   Browser* CreateBrowser(Profile* profile) override;
+  void CloseBrowserSynchronously(Browser* browser) override;
   void AddBlankTabAndShow(Browser* browser) override;
   const net::EmbeddedTestServer* EmbeddedTestServer() const override;
 

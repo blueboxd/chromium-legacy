@@ -1,4 +1,4 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -517,7 +517,7 @@ Status LaunchDesktopChrome(network::mojom::URLLoaderFactory* factory,
   int read_fd;
 
   if (capabilities.switches.HasSwitch("remote-debugging-pipe")) {
-    Status status = PipeSetUp(&options, &write_fd, &read_fd);
+    PipeSetUp(&options, &write_fd, &read_fd);
   }
 
   base::ScopedFD devnull;
@@ -1099,9 +1099,8 @@ Status WritePrefsFile(
     return Status(kUnknownError, "malformed prefs dictionary");
 
   if (custom_prefs) {
-    for (base::DictionaryValue::Iterator it(*custom_prefs); !it.IsAtEnd();
-         it.Advance()) {
-      prefs->Set(it.key(), std::make_unique<base::Value>(it.value().Clone()));
+    for (const auto item : custom_prefs->GetDict()) {
+      prefs->GetDict().SetByDottedPath(item.first, item.second.Clone());
     }
   }
 

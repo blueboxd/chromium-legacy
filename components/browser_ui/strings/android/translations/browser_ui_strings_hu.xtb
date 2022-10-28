@@ -30,6 +30,7 @@
 <translation id="1717218214683051432">Mozgásérzékelők</translation>
 <translation id="1743802530341753419">Kérdezzen rá, mielőtt engedélyezné a webhelyek számára egy adott eszközhöz való csatlakozást (ajánlott)</translation>
 <translation id="1779089405699405702">Képdekóder</translation>
+<translation id="1785415724048343560">Ajánlott a legjobb élmény érdekében</translation>
 <translation id="1818308510395330587">Ahhoz, hogy a(z) <ph name="APP_NAME" /> használhassa az AR-t, a kamerát az <ph name="BEGIN_LINK" />Android-beállítások<ph name="END_LINK" /> között is be kell kapcsolni.</translation>
 <translation id="1864927262126810325">Forrás: <ph name="SOURCE_NAME" /></translation>
 <translation id="1887786770086287077">A helyhozzáférés ki van kapcsolva ennél az eszköznél. A funkciót az <ph name="BEGIN_LINK" />Android-beállításokban<ph name="END_LINK" /> tudja bekapcsolni.</translation>
@@ -79,6 +80,7 @@
 <translation id="2653659639078652383">Küldés</translation>
 <translation id="2677748264148917807">Lap elhagyása</translation>
 <translation id="2687403674020088961">Az összes cookie letiltása (nem ajánlott)</translation>
+<translation id="2692299144678073135">Engedélyezheti, hogy a kapcsolódó webhelyek emlékezzenek Önre a webhelyeken</translation>
 <translation id="2704606927547763573">Másolt</translation>
 <translation id="2713106313042589954">Kamera kikapcsolása</translation>
 <translation id="2717722538473713889">E-mail-címek</translation>
@@ -101,6 +103,7 @@
 <translation id="3115898365077584848">Információk megjelenítése</translation>
 <translation id="3123473560110926937">Letiltva egyes webhelyeken</translation>
 <translation id="3143754809889689516">Lejátszás az elejétől</translation>
+<translation id="3162899666601560689">A webhelyek használhatnak cookie-kat a böngészési élmény javítására például úgy, hogy bejelentkezve tartják Önt, illetve megjegyzik a kosarában lévő termékeket.</translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT" /> tárolt adat</translation>
 <translation id="3203366800380907218">Az internetről</translation>
 <translation id="321187648315454507">Ahhoz, hogy a(z) <ph name="APP_NAME" /> értesítéseket küldhessen, az értesítéseket az <ph name="BEGIN_LINK" />Android-beállítások<ph name="END_LINK" /> között is be kell kapcsolni.</translation>
@@ -138,6 +141,7 @@
 <translation id="4002066346123236978">Cím</translation>
 <translation id="4008040567710660924">Adott webhely cookie-jainak engedélyezése.</translation>
 <translation id="4046123991198612571">Következő szám</translation>
+<translation id="4048876521107516222">A kapcsolódó webhelyek cookie-k használatával segítenek például a bejelentkezésben.</translation>
 <translation id="4149994727733219643">Weboldalak egyszerűsített nézete</translation>
 <translation id="4165986682804962316">Webhelybeállítások</translation>
 <translation id="4169549551965910670">Csatlakoztatva USB-eszközhöz</translation>
@@ -149,6 +153,7 @@
 <translation id="429312253194641664">Az egyik webhely médiatartalmat játszik le</translation>
 <translation id="42981349822642051">Kibontás</translation>
 <translation id="4336434711095810371">Az összes adat törlése</translation>
+<translation id="4338831206024587507">Minden <ph name="DOMAIN" /> alatti webhely</translation>
 <translation id="4402755511846832236">A webhelyek nem kaphatnak információt arról, hogy Ön mikor használja aktívan ezt az eszközt.</translation>
 <translation id="4428065317363009941">Hirdetések személyre szabása</translation>
 <translation id="4434045419905280838">Előugró ablakok és átirányítások</translation>
@@ -164,6 +169,7 @@
 <translation id="4751476147751820511">Mozgás- és fényérzékelők</translation>
 <translation id="4811450222531576619">További információ a forrásról és a témáról</translation>
 <translation id="4836046166855586901">Kérdezzen rá, ha valamelyik webhely tudni szeretné, hogy Ön mikor használja aktívan ezt az eszközt.</translation>
+<translation id="483914009762354899">A domainhez tartozó összes webhely felvétele</translation>
 <translation id="4883854917563148705">A kezelt beállításokat nem lehet visszaállítani</translation>
 <translation id="4887024562049524730">Kérdezzen rá, mielőtt engedélyezi a webhelyek számára a virtuálisvalóság-eszközök és -adatok használatát (ajánlott)</translation>
 <translation id="4962975101802056554">Az eszköz összes engedélyének visszavonása</translation>
@@ -219,6 +225,7 @@
 <translation id="5887687176710214216">Utolsó látogatás: tegnap</translation>
 <translation id="5916664084637901428">Be</translation>
 <translation id="5922853908706496913">Képernyő megosztása</translation>
+<translation id="5922967540311291836">Harmadik féltől származó cookie-k letiltása</translation>
 <translation id="5939518447894949180">Visszaállítás</translation>
 <translation id="5975083100439434680">Kicsinyítés</translation>
 <translation id="5976059395673079613"><ph name="PERMISSION" /> – <ph name="WARNING_MESSAGE" /></translation>
@@ -302,6 +309,7 @@
 <translation id="7791543448312431591">Hozzáadás</translation>
 <translation id="780301667611848630">Köszönöm, nem</translation>
 <translation id="7804248752222191302">Egy webhely használja az Ön kameráját</translation>
+<translation id="7816129586531226979">A kapcsolódó webhelyek webhelyeken átnyúlóan emlékezhetnek Önre</translation>
 <translation id="7817023149356982970">A rendszer kijelentkezteti majd erről a webhelyről</translation>
 <translation id="7828557259026017104">A cookie-k a felkeresett webhelyek által létrehozott fájlok. A webhelyek arra használják őket, hogy megjegyezzék az Ön preferenciáit. A harmadik féltől származó cookie-kat más webhelyek hozzák létre. Ezek a webhelyek birtokolják a meglátogatott weboldalon látható tartalom bizonyos részét (például hirdetéseket vagy képeket).</translation>
 <translation id="7835852323729233924">Médiatartalom lejátszása…</translation>
@@ -309,6 +317,7 @@
 <translation id="7846076177841592234">Kijelölés törlése</translation>
 <translation id="7846621471902887024">Ki fog jelentkezni az összes webhelyről.</translation>
 <translation id="7882806643839505685">Egy adott webhely hangjának engedélyezése.</translation>
+<translation id="789180354981963912">Harmadik felektől származó cookie-k letiltása Inkognitó módban:</translation>
 <translation id="7940722705963108451">Emlékeztessen</translation>
 <translation id="7986741934819883144">Válasszon ki egy névjegyet</translation>
 <translation id="7999064672810608036">Biztosan törli a webhellyel kapcsolatos összes helyi adatot (a cookie-kkal együtt), és visszaállítja az összes engedélyt?</translation>
@@ -331,6 +340,7 @@
 <translation id="8284326494547611709">Feliratok</translation>
 <translation id="8300705686683892304">Alkalmazás által kezelt</translation>
 <translation id="8324158725704657629">Ne jelenjen meg többé</translation>
+<translation id="834785183489258869">Inkognitó módban a webhelyek nem használhatják fel az Ön cookie-jait arra, hogy lássák a különböző webhelyeken végzett böngészési tevékenységeit például annak érdekében, hogy a hirdetéseket személyre szabják. Előfordulhat, hogy bizonyos webhelyek funkciói nem működnek majd megfelelően.</translation>
 <translation id="8372893542064058268">Háttérben történő szinkronizálás engedélyezése adott webhely esetében.</translation>
 <translation id="8376384591331888629">Az ezen a webhelyen található, harmadik felektől származó cookie-k is</translation>
 <translation id="83792324527827022">Egy webhely használja az Ön kameráját és mikrofonját</translation>

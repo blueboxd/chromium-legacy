@@ -1,4 +1,4 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -415,11 +415,11 @@ class CommandBufferSetup {
     shared_image_manager_ = std::make_unique<SharedImageManager>();
     shared_image_factory_ = std::make_unique<SharedImageFactory>(
         gpu_preferences_, config_.workarounds, gpu_feature_info,
-        context_state_.get(), &mailbox_manager_, shared_image_manager_.get(),
+        context_state_.get(), shared_image_manager_.get(),
         /*image_factory=*/nullptr, /*memory_tracker=*/nullptr,
         /*is_for_display_compositor=*/false);
     for (uint32_t usage = SHARED_IMAGE_USAGE_GLES2;
-         usage <= SHARED_IMAGE_USAGE_RGB_EMULATION; usage <<= 1) {
+         usage <= SHARED_IMAGE_USAGE_OOP_RASTERIZATION; usage <<= 1) {
       Mailbox::Name name;
       memset(name, 0, sizeof(name));
       name[0] = usage;

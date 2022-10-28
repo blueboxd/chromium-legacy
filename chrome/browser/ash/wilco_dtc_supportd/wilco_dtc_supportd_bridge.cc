@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -384,21 +384,23 @@ void WilcoDtcSupportdBridge::HandleEvent(WilcoDtcSupportdEvent event) {
     case WilcoDtcSupportdEvent::kLowPowerCharger:
       notification_controller_->ShowLowPowerChargerNotification();
       return;
+    case WilcoDtcSupportdEvent::kUnmappedEnumField:
+      LOG(ERROR) << "Get unrecognized event: " << event;
+      return;
   }
-  LOG(ERROR) << "Unrecognized event " << event << " event";
 }
 
 void WilcoDtcSupportdBridge::GetCrosHealthdDiagnosticsService(
-    mojo::PendingReceiver<
-        chromeos::cros_healthd::mojom::CrosHealthdDiagnosticsService> service) {
-  chromeos::cros_healthd::ServiceConnection::GetInstance()
-      ->GetDiagnosticsService(std::move(service));
+    mojo::PendingReceiver<cros_healthd::mojom::CrosHealthdDiagnosticsService>
+        service) {
+  cros_healthd::ServiceConnection::GetInstance()->GetDiagnosticsService(
+      std::move(service));
 }
 
 void WilcoDtcSupportdBridge::GetCrosHealthdProbeService(
-    mojo::PendingReceiver<
-        chromeos::cros_healthd::mojom::CrosHealthdProbeService> service) {
-  chromeos::cros_healthd::ServiceConnection::GetInstance()->GetProbeService(
+    mojo::PendingReceiver<cros_healthd::mojom::CrosHealthdProbeService>
+        service) {
+  cros_healthd::ServiceConnection::GetInstance()->GetProbeService(
       std::move(service));
 }
 

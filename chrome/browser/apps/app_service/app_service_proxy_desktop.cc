@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,6 +9,7 @@
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "components/services/app_service/app_service_mojom_impl.h"
 #include "components/services/app_service/public/cpp/app_types.h"
+#include "components/services/app_service/public/cpp/features.h"
 
 namespace apps {
 
@@ -24,7 +25,8 @@ void AppServiceProxy::Initialize() {
 
   AppServiceProxyBase::Initialize();
 
-  if (!app_service_.is_connected()) {
+  if (!base::FeatureList::IsEnabled(kStopMojomAppService) &&
+      !app_service_.is_connected()) {
     return;
   }
 

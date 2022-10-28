@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -18,6 +18,7 @@
 #include "base/task/single_thread_task_runner.h"
 #include "base/threading/thread.h"
 #include "build/build_config.h"
+#include "media/audio/aecdump_recording_manager.h"
 #include "media/audio/audio_debug_recording_manager.h"
 #include "media/audio/audio_device_name.h"
 #include "media/audio/audio_manager.h"
@@ -163,6 +164,9 @@ class MEDIA_EXPORT AudioManagerBase : public AudioManager {
   CreateAudioDebugRecordingManager(
       scoped_refptr<base::SingleThreadTaskRunner> task_runner);
   AudioDebugRecordingManager* GetAudioDebugRecordingManager() final;
+
+  void SetAecDumpRecordingManager(base::WeakPtr<AecdumpRecordingManager>
+                                      aecdump_recording_manager) override;
 
   // These functions assign group ids to devices based on their device ids. The
   // default implementation is an attempt to do this based on

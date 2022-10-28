@@ -40,7 +40,9 @@ namespace blink {
 
 class CueTimeline;
 class ExceptionState;
+class ExecutionContext;
 class HTMLMediaElement;
+class HTMLElement;
 class TextTrack;
 class TextTrackCue;
 class TextTrackCueList;
@@ -58,6 +60,7 @@ class CORE_EXPORT TextTrack : public EventTargetWithInlineData,
   TextTrack(const AtomicString& kind,
             const AtomicString& label,
             const AtomicString& language,
+            HTMLElement& source_element,
             const AtomicString& id = g_empty_atom,
             TextTrackType = kAddTrack);
   ~TextTrack() override;
@@ -108,6 +111,7 @@ class CORE_EXPORT TextTrack : public EventTargetWithInlineData,
   DEFINE_ATTRIBUTE_EVENT_LISTENER(cuechange, kCuechange)
 
   TextTrackType TrackType() const { return track_type_; }
+  const AtomicString& Language() const { return language_; }
 
   int TrackIndex();
   void InvalidateTrackIndex();
@@ -147,6 +151,7 @@ class CORE_EXPORT TextTrack : public EventTargetWithInlineData,
   HeapVector<Member<CSSStyleSheet>> style_sheets_;
 
   Member<TextTrackList> track_list_;
+  Member<HTMLElement> source_element_;
   TextTrackMode mode_ = TextTrackMode::kDisabled;
   TextTrackType track_type_;
   ReadinessState readiness_state_;

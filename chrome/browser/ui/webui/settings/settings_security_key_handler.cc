@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -17,7 +17,6 @@
 #include "build/build_config.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/settings/settings_page_ui_handler.h"
-#include "chrome/browser/ui/webui/settings/settings_security_key_handler.h"
 #include "chrome/browser/webauthn/cablev2_devices.h"
 #include "chrome/browser/webauthn/local_credential_management.h"
 #include "chrome/grit/generated_resources.h"
@@ -467,7 +466,7 @@ void SecurityKeysCredentialHandler::HandleUpdateUserInformation(
 
   device::PublicKeyCredentialUserEntity updated_user(
       std::move(user_handle), std::move(new_username),
-      std::move(new_displayname), absl::nullopt);
+      std::move(new_displayname));
 
   credential_management_->UpdateUserInformation(
       std::move(credential_id), std::move(updated_user),
@@ -1109,7 +1108,7 @@ void SecurityKeysPhonesHandler::DoEnumerate(const base::Value& callback_id) {
   ResolveJavascriptCallback(callback_id, result);
 }
 
-#if BUILDFLAG(IS_WIN)
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC)
 
 PasskeysHandler::PasskeysHandler() = default;
 PasskeysHandler::~PasskeysHandler() = default;
@@ -1136,14 +1135,12 @@ void PasskeysHandler::HandleHasPasskeys(const base::Value::List& args) {
   DCHECK_EQ(1u, args.size());
 
   AllowJavascript();
-  auto local_cred_man = std::make_unique<LocalCredentialManagement>(
-      device::WinWebAuthnApi::GetDefault());
-  local_cred_man->HasCredentials(
-      Profile::FromBrowserContext(
-          web_ui()->GetWebContents()->GetBrowserContext()),
-      base::BindOnce(&PasskeysHandler::OnHasPasskeysComplete,
-                     weak_factory_.GetWeakPtr(), args[0].GetString(),
-                     std::move(local_cred_man)));
+  std::unique_ptr<LocalCredentialManagement> local_cred_man =
+      LocalCredentialManagement::Create(Profile::FromBrowserContext(
+          web_ui()->GetWebContents()->GetBrowserContext()));
+  local_cred_man->HasCredentials(base::BindOnce(
+      &PasskeysHandler::OnHasPasskeysComplete, weak_factory_.GetWeakPtr(),
+      args[0].GetString(), std::move(local_cred_man)));
 }
 
 void PasskeysHandler::OnHasPasskeysComplete(
@@ -1163,14 +1160,12 @@ void PasskeysHandler::HandleEnumerate(const base::Value::List& args) {
 }
 
 void PasskeysHandler::DoEnumerate(std::string callback_id) {
-  auto local_cred_man = std::make_unique<LocalCredentialManagement>(
-      device::WinWebAuthnApi::GetDefault());
-  local_cred_man->Enumerate(
-      Profile::FromBrowserContext(
-          web_ui()->GetWebContents()->GetBrowserContext()),
-      base::BindOnce(&PasskeysHandler::OnEnumerateComplete,
-                     weak_factory_.GetWeakPtr(), std::move(callback_id),
-                     std::move(local_cred_man)));
+  std::unique_ptr<LocalCredentialManagement> local_cred_man =
+      LocalCredentialManagement::Create(Profile::FromBrowserContext(
+          web_ui()->GetWebContents()->GetBrowserContext()));
+  local_cred_man->Enumerate(base::BindOnce(
+      &PasskeysHandler::OnEnumerateComplete, weak_factory_.GetWeakPtr(),
+      std::move(callback_id), std::move(local_cred_man)));
 }
 
 void PasskeysHandler::OnEnumerateComplete(
@@ -1212,11 +1207,10 @@ void PasskeysHandler::HandleDelete(const base::Value::List& args) {
   const bool ok = base::HexStringToBytes(args[1].GetString(), &credential_id);
   DCHECK(ok);
 
-  auto local_cred_man = std::make_unique<LocalCredentialManagement>(
-      device::WinWebAuthnApi::GetDefault());
+  std::unique_ptr<LocalCredentialManagement> local_cred_man =
+      LocalCredentialManagement::Create(Profile::FromBrowserContext(
+          web_ui()->GetWebContents()->GetBrowserContext()));
   local_cred_man->Delete(
-      Profile::FromBrowserContext(
-          web_ui()->GetWebContents()->GetBrowserContext()),
       credential_id,
       base::BindOnce(&PasskeysHandler::OnDeleteComplete,
                      weak_factory_.GetWeakPtr(), args[0].GetString(),

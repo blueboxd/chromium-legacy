@@ -113,8 +113,6 @@ class PropertyTreeManager {
 
   int EnsureCompositorPageScaleTransformNode(const TransformPaintPropertyNode&);
 
-  void SetFixedElementsDontOverscroll(const bool value);
-
   // This function is expected to be invoked right before emitting each layer.
   // It keeps track of the nesting of clip and effects, output a composited
   // effect node whenever an effect is entered, or a non-trivial clip is
@@ -301,7 +299,8 @@ class PropertyTreeManager {
   // creating the associated scroll offset transform node.
   void CreateCompositorScrollNode(
       const ScrollPaintPropertyNode&,
-      const cc::TransformNode& scroll_offset_translation);
+      const cc::TransformNode& scroll_offset_translation,
+      bool is_composited);
 
   void UpdatePixelMovingFilterClipExpanders();
 

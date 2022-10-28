@@ -748,6 +748,7 @@
 <translation id="5091199029769593641">Незабаром, відкривши нову вкладку, ви будете бачити історії із сайту <ph name="SITE_NAME" />. Сайти, на які ви підписалися, зберігаються в обліковому записі Google. Керувати ними можна в налаштуваннях рекомендацій.</translation>
 <translation id="5091249083535528968">Розширені дані про використання</translation>
 <translation id="509429900233858213">Сталася помилка.</translation>
+<translation id="5099845111805573968">Якщо вибрати опцію "Версія для комп’ютера", вона застосовуватиметься до цього сайту щоразу, коли ви його відвідуєте</translation>
 <translation id="5102401324271069229">Якщо сайт намагається викрасти ваш пароль або ви завантажуєте шкідливий файл, Chrome може надсилати в Безпечний перегляд URL-адреси, зокрема уривки контенту сторінки</translation>
 <translation id="510275257476243843">Залишилась 1 година</translation>
 <translation id="5115811374190515607">в <ph name="PRODUCT_NAME" /></translation>
@@ -907,6 +908,7 @@
 <translation id="5958275228015807058">Знаходьте свої файли та сторінки в розділі "Завантаження"</translation>
 <translation id="5962718611393537961">Торкніться, щоб згорнути</translation>
 <translation id="5964869237734432770">Не показувати описи</translation>
+<translation id="5966233851250124270">Chrome запам’ятає ваш вибір</translation>
 <translation id="5979084224081478209">Перевірити паролі</translation>
 <translation id="5995726099713306770">Завантажити сторінку знову?</translation>
 <translation id="6000066717592683814">Залишити Google</translation>
@@ -1083,6 +1085,7 @@
 <translation id="6820686453637990663">CVC</translation>
 <translation id="6824899148643461612">Вибрано вкладку "<ph name="TAB_TITLE" />"</translation>
 <translation id="6828070228333235514">Зупинити відстеження ціни</translation>
+<translation id="6830728435402077660">Небезпечно</translation>
 <translation id="6833996806551876956">Пробна версія Privacy Sandbox</translation>
 <translation id="6836206421467243968">Відновити групу вкладок "<ph name="TITLE_OF_GROUP" />" як нову фонову групу вкладок.</translation>
 <translation id="6846298663435243399">Завантаження…</translation>

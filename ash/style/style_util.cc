@@ -1,10 +1,9 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "ash/style/style_util.h"
 
-#include "ash/root_window_controller.h"
 #include "ash/style/ash_color_provider.h"
 #include "ash/style/dark_light_mode_controller_impl.h"
 #include "ui/color/color_id.h"
@@ -113,16 +112,6 @@ views::FocusRing* StyleUtil::SetUpFocusRingForView(
   if (halo_inset)
     focus_ring->SetHaloInset(*halo_inset);
   return focus_ring;
-}
-
-// static
-AshColorProviderSource* StyleUtil::GetColorProviderSourceForWindow(
-    const aura::Window* window) {
-  DCHECK(window);
-  auto* root_window = window->GetRootWindow();
-  if (!root_window)
-    return nullptr;
-  return RootWindowController::ForWindow(root_window)->color_provider_source();
 }
 
 }  // namespace ash

@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -55,8 +55,7 @@ std::vector<base::Time> GetDisabledTimesPref() {
 
   std::vector<base::Time> times;
   for (const base::Value& time_value :
-       service->GetList(prefs::kHardwareSecureDecryptionDisabledTimes)
-           ->GetListDeprecated()) {
+       service->GetList(prefs::kHardwareSecureDecryptionDisabledTimes)) {
     auto time = base::ValueToTime(time_value);
     if (time.has_value())
       times.push_back(time.value());

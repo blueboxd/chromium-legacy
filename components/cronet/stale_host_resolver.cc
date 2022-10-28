@@ -1,4 +1,4 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -22,7 +22,7 @@
 #include "net/dns/context_host_resolver.h"
 #include "net/dns/dns_util.h"
 #include "net/dns/host_resolver.h"
-#include "net/dns/host_resolver_results.h"
+#include "net/dns/public/host_resolver_results.h"
 #include "net/dns/public/host_resolver_source.h"
 #include "net/dns/public/resolve_error_info.h"
 #include "net/log/net_log_with_source.h"
@@ -48,8 +48,7 @@ class StaleHostResolver::RequestImpl
   // net::HostResolver::ResolveHostRequest implementation:
   int Start(net::CompletionOnceCallback result_callback) override;
   const net::AddressList* GetAddressResults() const override;
-  const std::vector<net::HostResolverEndpointResult>* GetEndpointResults()
-      const override;
+  const net::HostResolverEndpointResults* GetEndpointResults() const override;
   const absl::optional<std::vector<std::string>>& GetTextResults()
       const override;
   const absl::optional<std::vector<net::HostPortPair>>& GetHostnameResults()
@@ -193,7 +192,7 @@ const net::AddressList* StaleHostResolver::RequestImpl::GetAddressResults()
   return cache_request_->GetAddressResults();
 }
 
-const std::vector<net::HostResolverEndpointResult>*
+const net::HostResolverEndpointResults*
 StaleHostResolver::RequestImpl::GetEndpointResults() const {
   if (network_request_)
     return network_request_->GetEndpointResults();

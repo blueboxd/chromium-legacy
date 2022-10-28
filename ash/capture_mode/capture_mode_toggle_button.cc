@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,8 +7,10 @@
 #include "ash/capture_mode/capture_mode_button.h"
 #include "ash/capture_mode/capture_mode_constants.h"
 #include "ash/style/ash_color_provider.h"
+#include "ash/style/color_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
+#include "ui/base/models/image_model.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/accessibility/view_accessibility.h"
@@ -61,15 +63,15 @@ void CaptureModeToggleButton::SetIcon(const gfx::VectorIcon& icon) {
   const SkColor toggled_color = color_provider->GetContentLayerColor(
       AshColorProvider::ContentLayerType::kButtonIconColorPrimary);
 
-  SetImage(views::Button::STATE_NORMAL,
-           gfx::CreateVectorIcon(icon, normal_color));
-  SetImage(views::Button::STATE_DISABLED,
-           gfx::CreateVectorIcon(
-               icon, color_provider->GetDisabledColor(normal_color)));
+  SetImageModel(views::Button::STATE_NORMAL,
+                ui::ImageModel::FromVectorIcon(icon, normal_color));
+  SetImageModel(views::Button::STATE_DISABLED,
+                ui::ImageModel::FromVectorIcon(
+                    icon, ColorUtil::GetDisabledColor(normal_color)));
   // Note that a disabled button cannot be toggled, so we don't need to set a
   // toggled icon for the disabled state.
-  const auto toggled_icon = gfx::CreateVectorIcon(icon, toggled_color);
-  SetToggledImage(views::Button::STATE_NORMAL, &toggled_icon);
+  const auto toggled_icon = ui::ImageModel::FromVectorIcon(icon, toggled_color);
+  SetToggledImageModel(views::Button::STATE_NORMAL, toggled_icon);
 }
 
 BEGIN_METADATA(CaptureModeToggleButton, views::ToggleImageButton)

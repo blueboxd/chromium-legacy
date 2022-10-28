@@ -7,6 +7,7 @@
 
 #include "base/containers/span.h"
 #include "base/ranges/algorithm.h"
+#include "base/scoped_observation.h"
 #include "content/browser/devtools/devtools_instrumentation.h"
 #include "content/browser/devtools/network_service_devtools_observer.h"
 #include "content/browser/preloading//preloading.h"
@@ -15,6 +16,7 @@
 #include "content/browser/preloading/preloading_data_impl.h"
 #include "content/browser/preloading/prerender/prerender_attributes.h"
 #include "content/browser/preloading/prerender/prerender_host_registry.h"
+#include "content/browser/preloading/prerender/prerender_navigation_utils.h"
 #include "content/browser/renderer_host/render_frame_host_delegate.h"
 #include "content/browser/renderer_host/render_frame_host_impl.h"
 #include "content/public/browser/browser_thread.h"
@@ -40,11 +42,55 @@ bool CandidatesAreValid(
       mojo::ReportBadMessage("SH_NON_HTTP");
       return false;
     }
+
+    // `target_browsing_context_name_hint` on non-prerender actions should be
+    // filtered out in Blink.
+    if (candidate->action != blink::mojom::SpeculationAction::kPrerender &&
+        candidate->target_browsing_context_name_hint !=
+            blink::mojom::SpeculationTargetHint::kNoHint) {
+      mojo::ReportBadMessage("SH_TARGET_HINT_ON_PREFETCH");
+      return false;
+    }
   }
   return true;
 }
 
 }  // namespace
+
+class SpeculationHostImpl::PrerenderHostObserver
+    : public PrerenderHost::Observer {
+ public:
+  explicit PrerenderHostObserver(PrerenderHost* prerender_host);
+  ~PrerenderHostObserver() override;
+
+  // PrerenderHost::Observer implementation:
+  void OnActivated() override;
+  void OnHostDestroyed(PrerenderHost::FinalStatus final_status) override;
+
+  bool destroyed_by_memory_limit_exceeded() const {
+    return destroyed_by_memory_limit_exceeded_;
+  }
+
+ private:
+  bool destroyed_by_memory_limit_exceeded_ = false;
+  base::ScopedObservation<PrerenderHost, PrerenderHost::Observer> observation_{
+      this};
+};
+
+SpeculationHostImpl::PrerenderHostObserver::PrerenderHostObserver(
+    PrerenderHost* prerender_host) {
+  if (prerender_host)
+    observation_.Observe(prerender_host);
+}
+SpeculationHostImpl::PrerenderHostObserver::~PrerenderHostObserver() = default;
+
+void SpeculationHostImpl::PrerenderHostObserver::OnActivated() {}
+void SpeculationHostImpl::PrerenderHostObserver::OnHostDestroyed(
+    PrerenderHost::FinalStatus final_status) {
+  observation_.Reset();
+  if (final_status == PrerenderHost::FinalStatus::kMemoryLimitExceeded)
+    destroyed_by_memory_limit_exceeded_ = true;
+}
 
 struct SpeculationHostImpl::PrerenderInfo {
   GURL url;
@@ -263,19 +309,38 @@ void SpeculationHostImpl::ProcessCandidatesForPrerender(
     GetContentClient()->browser()->LogWebFeatureForCurrentPage(
         &rfhi, blink::mojom::WebFeature::kSpeculationRulesPrerender);
 
-    // TODO(crbug.com/1176054): Remove it after supporting cross-origin
+    // TODO(crbug.com/1176054): Remove it after supporting cross-site
     // prerender.
-    if (!rfhi.GetLastCommittedOrigin().IsSameOriginWith(it->url)) {
-      rfhi.AddMessageToConsole(
-          blink::mojom::ConsoleMessageLevel::kWarning,
-          base::StringPrintf(
-              "The SpeculationRules API does not support cross-origin "
-              "prerender yet. (initiator origin: %s, prerender origin: %s). "
-              "https://crbug.com/1176054 tracks cross-origin support.",
-              rfhi.GetLastCommittedOrigin().Serialize().c_str(),
-              url::Origin::Create(it->url).Serialize().c_str()));
+    if (blink::features::
+            IsSameSiteCrossOriginForSpeculationRulesPrerender2Enabled()) {
+      if (!prerender_navigation_utils::IsSameSite(
+              it->url, rfhi.GetLastCommittedOrigin())) {
+        rfhi.AddMessageToConsole(
+            blink::mojom::ConsoleMessageLevel::kWarning,
+            base::StringPrintf(
+                "The SpeculationRules API does not support cross-site "
+                "prerender yet "
+                "(kSameSiteCrossOriginForSpeculationRulesPrerender2 is "
+                "enabled). (initiator origin: %s, prerender origin: %s). "
+                "https://crbug.com/1176054 tracks cross-site support.",
+                rfhi.GetLastCommittedOrigin().Serialize().c_str(),
+                url::Origin::Create(it->url).Serialize().c_str()));
+      }
+    } else {
+      if (!rfhi.GetLastCommittedOrigin().IsSameOriginWith(it->url)) {
+        rfhi.AddMessageToConsole(
+            blink::mojom::ConsoleMessageLevel::kWarning,
+            base::StringPrintf(
+                "The SpeculationRules API does not support cross-origin "
+                "prerender yet. (initiator origin: %s, prerender origin: %s). "
+                "https://crbug.com/1176054 tracks cross-origin support.",
+                rfhi.GetLastCommittedOrigin().Serialize().c_str(),
+                url::Origin::Create(it->url).Serialize().c_str()));
+      }
     }
 
+    // TODO(crbug.com/1354049): Pass `target_browsing_context_name_hint` to
+    // start prerendering in a new tab.
     Referrer referrer(*(it->referrer));
     int prerender_host_id = registry_->CreateAndStartHost(
         PrerenderAttributes(it->url, PrerenderTriggerType::kSpeculationRule,
@@ -287,13 +352,42 @@ void SpeculationHostImpl::ProcessCandidatesForPrerender(
                             rfhi.GetPageUkmSourceId(), ui::PAGE_TRANSITION_LINK,
                             /*url_match_predicate=*/absl::nullopt),
         *web_contents, /*preloading_attempt=*/preloading_attempt);
+    // TODO(crbug.com/1354049): Handle the case where multiple speculation rules
+    // have the same URL but its `target_browsing_context_name_hint` is
+    // different. In the current implementation, only the first rule is
+    // triggered.
     started_prerenders_.insert(end, {.url = it->url,
                                      .referrer = referrer,
                                      .prerender_host_id = prerender_host_id});
+
+    // Start to observe PrerenderHost to get the information about FinalStatus.
+    observers_.push_back(std::make_unique<PrerenderHostObserver>(
+        registry_->FindNonReservedHostById(prerender_host_id)));
   }
 }
 
 void SpeculationHostImpl::CancelStartedPrerenders() {
+  // This function can be called twice and the histogram should be recorded in
+  // the first call. Also, skip recording the histogram when no prerendering
+  // starts.
+  if (started_prerenders_.empty()) {
+    DCHECK(observers_.empty());
+    return;
+  }
+
+  // Record the percentage of destroyed prerenders due to the excessive memory
+  // usage. `started_prerenders_` can include destroyed prerenders by other
+  // reasons.
+  // The closer the value is to 0, the less prerenders are cancelled by
+  // FinalStatus::kMemoryLimitExceeded. The result depends on Finch params
+  // `max_num_of_running_speculation_rules` and
+  // `acceptable_percent_of_system_memory`.
+  base::UmaHistogramPercentage(
+      "Prerender.Experimental.CancellationPercentageByExcessiveMemoryUsage."
+      "SpeculationRule",
+      GetNumberOfDestroyedByMemoryExceeded() * 100 /
+          started_prerenders_.size());
+
   if (registry_) {
     for (const auto& prerender : started_prerenders_) {
       int host_id = prerender.prerender_host_id;
@@ -301,6 +395,7 @@ void SpeculationHostImpl::CancelStartedPrerenders() {
         registry_->OnTriggerDestroyed(host_id);
     }
     started_prerenders_.clear();
+    observers_.clear();
   }
 }
 
@@ -346,6 +441,15 @@ SpeculationHostImpl::MakeSelfOwnedNetworkServiceDevToolsObserver() {
   auto* ftn = static_cast<RenderFrameHostImpl*>(&render_frame_host())
                   ->frame_tree_node();
   return NetworkServiceDevToolsObserver::MakeSelfOwned(ftn);
+}
+
+int SpeculationHostImpl::GetNumberOfDestroyedByMemoryExceeded() {
+  int destroyed_prerenders_by_memory_limit_exceeded = 0;
+  for (auto& observer : observers_) {
+    if (observer->destroyed_by_memory_limit_exceeded())
+      destroyed_prerenders_by_memory_limit_exceeded++;
+  }
+  return destroyed_prerenders_by_memory_limit_exceeded;
 }
 
 }  // namespace content

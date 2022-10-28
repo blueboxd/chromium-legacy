@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -150,6 +150,13 @@ class FilteringPageLoadMetricsObserver final : public PageLoadMetricsObserver {
       content::NavigationHandle* navigation_handle,
       const GURL& currently_committed_url) override {
     return FORWARD_OBSERVING;
+  }
+
+  ObservePolicy OnPrerenderStart(content::NavigationHandle* navigation_handle,
+                                 const GURL& currently_committed_url) override {
+    const bool should_ignore = navigation_handle->GetURL().spec().find(
+                                   "ignore-on-start") != std::string::npos;
+    return should_ignore ? STOP_OBSERVING : CONTINUE_OBSERVING;
   }
 
   ObservePolicy OnCommit(content::NavigationHandle* handle) override {

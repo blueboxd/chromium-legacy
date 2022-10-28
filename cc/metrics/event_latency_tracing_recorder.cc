@@ -1,10 +1,11 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "cc/metrics/event_latency_tracing_recorder.h"
 
 #include "base/notreached.h"
+#include "base/ranges/algorithm.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_id_helper.h"
 #include "base/trace_event/typed_macros.h"
@@ -61,9 +62,19 @@ const char* EventLatencyTracingRecorder::GetDispatchBreakdownName(
     EventMetrics::DispatchStage end_stage) {
   switch (start_stage) {
     case EventMetrics::DispatchStage::kGenerated:
+      switch (end_stage) {
+        case EventMetrics::DispatchStage::kArrivedInBrowserMain:
+          return "GenerationToBrowserMain";
+        case EventMetrics::DispatchStage::kArrivedInRendererCompositor:
+          return "GenerationToRendererCompositor";
+        default:
+          NOTREACHED();
+          return "";
+      }
+    case EventMetrics::DispatchStage::kArrivedInBrowserMain:
       DCHECK_EQ(end_stage,
                 EventMetrics::DispatchStage::kArrivedInRendererCompositor);
-      return "GenerationToRendererCompositor";
+      return "BrowserMainToRendererCompositor";
     case EventMetrics::DispatchStage::kArrivedInRendererCompositor:
       switch (end_stage) {
         case EventMetrics::DispatchStage::kRendererCompositorStarted:
@@ -235,11 +246,9 @@ void EventLatencyTracingRecorder::RecordEventLatencyTraceEvent(
     DCHECK(viz_breakdown);
     // Find the first compositor stage that starts at the same time or after the
     // end of the final event dispatch stage.
-    auto stage_it = std::find_if(
-        stage_history->begin(), stage_history->end(),
-        [dispatch_timestamp](const CompositorFrameReporter::StageData& stage) {
-          return stage.start_time >= dispatch_timestamp;
-        });
+    auto stage_it = base::ranges::lower_bound(
+        *stage_history, dispatch_timestamp, {},
+        &CompositorFrameReporter::StageData::start_time);
     // TODO(crbug.com/1330903): Ideally, at least the start time of
     // SubmitCompositorFrameToPresentationCompositorFrame stage should be
     // greater than or equal to the final event dispatch timestamp, but

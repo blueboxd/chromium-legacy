@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -26,7 +26,7 @@ void Log::AddEntry(Level level,
 }
 
 bool Log::truncate_logged_params = true;
-IsVLogOnFunc Log::is_vlog_on_func = NULL;
+IsVLogOnFunc Log::is_vlog_on_func = nullptr;
 
 namespace {
 
@@ -42,12 +42,12 @@ base::Value SmartDeepCopy(const base::Value* value) {
   const size_t kMaxChildren = 20;
   if (value->is_dict()) {
     base::Value::Dict dict_copy;
-    for (auto [key, value] : value->GetDict()) {
+    for (auto [dict_key, dict_value] : value->GetDict()) {
       if (dict_copy.size() >= kMaxChildren - 1) {
         dict_copy.Set("~~~", "...");
         break;
       }
-      dict_copy.Set(key, SmartDeepCopy(&value));
+      dict_copy.Set(dict_key, SmartDeepCopy(&dict_value));
     }
     return base::Value(std::move(dict_copy));
   } else if (value->is_list()) {

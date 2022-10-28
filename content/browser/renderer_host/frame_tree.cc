@@ -16,6 +16,7 @@
 #include "base/debug/dump_without_crashing.h"
 #include "base/lazy_instance.h"
 #include "base/memory/ptr_util.h"
+#include "base/ranges/algorithm.h"
 #include "base/trace_event/optional_trace_event.h"
 #include "base/trace_event/typed_macros.h"
 #include "base/unguessable_token.h"
@@ -61,18 +62,12 @@ std::set<SiteInstanceGroup*> CollectSiteInstanceGroups(FrameTree* tree) {
 FrameTreeNode* GetInnerTreeMainFrameNode(FrameTreeNode* node) {
   FrameTreeNode* inner_main_frame_tree_node = FrameTreeNode::GloballyFindByID(
       node->current_frame_host()->inner_tree_main_frame_tree_node_id());
-  RenderFrameHostImpl* inner_tree_main_frame =
-      inner_main_frame_tree_node
-          ? inner_main_frame_tree_node->current_frame_host()
-          : nullptr;
 
-  if (inner_tree_main_frame) {
-    DCHECK_NE(node->frame_tree(), inner_tree_main_frame->frame_tree());
-    DCHECK(inner_tree_main_frame->frame_tree_node());
+  if (inner_main_frame_tree_node) {
+    DCHECK_NE(node->frame_tree(), inner_main_frame_tree_node->frame_tree());
   }
 
-  return inner_tree_main_frame ? inner_tree_main_frame->frame_tree_node()
-                               : nullptr;
+  return inner_main_frame_tree_node;
 }
 
 }  // namespace
@@ -147,9 +142,9 @@ FrameTree::NodeIterator::NodeIterator(
 FrameTree::NodeIterator FrameTree::NodeRange::begin() {
   // We shouldn't be attempting a frame tree traversal while the tree is
   // being constructed or destructed.
-  DCHECK(std::all_of(
-      starting_nodes_.begin(), starting_nodes_.end(),
-      [](FrameTreeNode* ftn) { return ftn->current_frame_host(); }));
+  DCHECK(base::ranges::all_of(starting_nodes_, [](FrameTreeNode* ftn) {
+    return ftn->current_frame_host();
+  }));
 
   return NodeIterator(starting_nodes_, root_of_subtree_to_skip_,
                       should_descend_into_inner_trees_);

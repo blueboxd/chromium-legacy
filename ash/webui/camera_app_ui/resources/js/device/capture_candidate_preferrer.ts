@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -633,6 +633,10 @@ export class CaptureCandidatePreferrer {
         level: VideoResolutionLevel.HD,
         resolution: new Resolution(1280, 720),
       },
+      {
+        level: VideoResolutionLevel.THREE_SIXTY_P,
+        resolution: new Resolution(640, 360),
+      },
     ];
     let matches: VideoLevelResolution[] = [];
     if (!expert.isEnabled(expert.ExpertOption.SHOW_ALL_RESOLUTIONS)) {
@@ -911,6 +915,7 @@ function getFallbackVideoResolutionLevel(options: VideoResolutionOption[]):
     VideoResolutionLevel.QUAD_HD,
     VideoResolutionLevel.FULL_HD,
     VideoResolutionLevel.HD,
+    VideoResolutionLevel.THREE_SIXTY_P,
     VideoResolutionLevel.FULL,
     VideoResolutionLevel.MEDIUM,
   ];

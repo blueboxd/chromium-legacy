@@ -1,8 +1,9 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "components/autofill_assistant/browser/starter_heuristic.h"
+#include <memory>
 
 #include "base/containers/flat_set.h"
 #include "base/memory/ref_counted.h"
@@ -49,8 +50,8 @@ class StarterHeuristicTest : public testing::Test {
          {features::kAutofillAssistantInCCTTriggering, {}}},
         /* disabled_features = */ {});
 
-    std::vector<std::unique_ptr<StarterHeuristicConfig>> configs;
-    configs.emplace_back(std::make_unique<LegacyStarterHeuristicConfig>());
+    LegacyStarterHeuristicConfig legacy_config;
+    std::vector<const StarterHeuristicConfig*> configs{&legacy_config};
     starter_heuristic.InitFromHeuristicConfigs(
         configs, &fake_platform_delegate_, &context_);
   }
@@ -58,7 +59,9 @@ class StarterHeuristicTest : public testing::Test {
  protected:
   content::BrowserTaskEnvironment task_environment_;
   content::TestBrowserContext context_;
-  FakeStarterPlatformDelegate fake_platform_delegate_;
+  FakeStarterPlatformDelegate fake_platform_delegate_ =
+      FakeStarterPlatformDelegate(
+          std::make_unique<FakeCommonDependencies>(nullptr));
 
  private:
   std::unique_ptr<base::test::ScopedFeatureList> scoped_feature_list_;
@@ -228,6 +231,69 @@ TEST_F(StarterHeuristicTest, PartiallyInvalidFieldTrialsAreCompletelyIgnored) {
               IsEmpty());
 }
 
+TEST_F(StarterHeuristicTest,
+       ConfigsContainingInvalidConditionSetsAreSilentlySkipped) {
+  auto scoped_feature_list = std::make_unique<base::test::ScopedFeatureList>();
+  scoped_feature_list->InitWithFeaturesAndParameters(
+      {{features::kAutofillAssistantUrlHeuristic1, {{"json_parameters", R"json(
+        {
+          "intent":"NEW_INTENT_A",
+          "heuristics":[
+              {
+                "conditionSet":{
+                  "### INVALID ###":"whatever"
+                }
+              },
+              {
+                "conditionSet":{
+                  "urlContains":"trigger-for-a"
+                }
+              }
+          ],
+          "enabledInCustomTabs":true
+        }
+        )json"}}},
+       {features::kAutofillAssistantUrlHeuristic2, {{"json_parameters", R"json(
+        {
+          "intent":"NEW_INTENT_B",
+          "heuristics":[
+              {
+                "conditionSet":{
+                  "urlContains":"trigger-for-b"
+                }
+              }
+          ],
+          "enabledInCustomTabs":true
+        }
+        )json"}}}},
+      /* disabled_features = */ {});
+
+  FinchStarterHeuristicConfig finch_config_1{base::FeatureParam<std::string>{
+      &features::kAutofillAssistantUrlHeuristic1, "json_parameters", ""}};
+  FinchStarterHeuristicConfig finch_config_2{base::FeatureParam<std::string>{
+      &features::kAutofillAssistantUrlHeuristic2, "json_parameters", ""}};
+  std::vector<const StarterHeuristicConfig*> configs{&finch_config_1,
+                                                     &finch_config_2};
+  auto starter_heuristic = base::MakeRefCounted<StarterHeuristic>();
+  fake_platform_delegate_.is_custom_tab_ = true;
+  fake_platform_delegate_.is_web_layer_ = false;
+  starter_heuristic->InitFromHeuristicConfigs(configs, &fake_platform_delegate_,
+                                              &context_);
+
+  // config for NEW_INTENT_A contains both valid and invalid conditions and
+  // should be skipped entirely.
+  EXPECT_THAT(
+      IsHeuristicMatchForTest(*starter_heuristic,
+                              GURL("https://www.example.com/trigger-for-a")),
+      IsEmpty());
+
+  // config for NEW_INTENT_B is valid and should thus work.
+  EXPECT_THAT(
+      IsHeuristicMatchForTest(*starter_heuristic,
+                              GURL("https://www.example.com/trigger-for-b")),
+      ElementsAre("NEW_INTENT_B"));
+}
+
 TEST_F(StarterHeuristicTest, MultipleUrlHeuristicTrials) {
   auto scoped_feature_list = std::make_unique<base::test::ScopedFeatureList>();
   scoped_feature_list->InitWithFeaturesAndParameters(
@@ -292,14 +358,13 @@ TEST_F(StarterHeuristicTest, MultipleUrlHeuristicTrials) {
        {features::kAutofillAssistantInCCTTriggering, {}}},
       /* disabled_features = */ {});
 
-  std::vector<std::unique_ptr<StarterHeuristicConfig>> configs;
-  configs.emplace_back(std::make_unique<LegacyStarterHeuristicConfig>());
-  configs.emplace_back(std::make_unique<FinchStarterHeuristicConfig>(
-      base::FeatureParam<std::string>{
-          &features::kAutofillAssistantUrlHeuristic1, "json_parameters", ""}));
-  configs.emplace_back(std::make_unique<FinchStarterHeuristicConfig>(
-      base::FeatureParam<std::string>{
-          &features::kAutofillAssistantUrlHeuristic2, "json_parameters", ""}));
+  LegacyStarterHeuristicConfig legacy_config;
+  FinchStarterHeuristicConfig finch_config_1{base::FeatureParam<std::string>{
+      &features::kAutofillAssistantUrlHeuristic1, "json_parameters", ""}};
+  FinchStarterHeuristicConfig finch_config_2{base::FeatureParam<std::string>{
+      &features::kAutofillAssistantUrlHeuristic2, "json_parameters", ""}};
+  std::vector<const StarterHeuristicConfig*> configs{
+      &legacy_config, &finch_config_1, &finch_config_2};
   auto starter_heuristic = base::MakeRefCounted<StarterHeuristic>();
   fake_platform_delegate_.is_custom_tab_ = true;
   fake_platform_delegate_.is_web_layer_ = false;

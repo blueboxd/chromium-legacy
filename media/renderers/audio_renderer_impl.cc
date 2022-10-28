@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,7 +6,7 @@
 
 #include <math.h>
 #include <stddef.h>
-#include <algorithm>
+
 #include <memory>
 #include <utility>
 
@@ -17,6 +17,7 @@
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/power_monitor/power_monitor.h"
+#include "base/ranges/algorithm.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/time/default_tick_clock.h"
 #include "base/time/time.h"
@@ -46,11 +47,13 @@ AudioRendererImpl::AudioRendererImpl(
     AudioRendererSink* sink,
     const CreateAudioDecodersCB& create_audio_decoders_cb,
     MediaLog* media_log,
+    MediaPlayerLoggingID media_player_id,
     SpeechRecognitionClient* speech_recognition_client)
     : task_runner_(task_runner),
       expecting_config_changes_(false),
       sink_(sink),
       media_log_(media_log),
+      player_id_(media_player_id),
       client_(nullptr),
       tick_clock_(base::DefaultTickClock::GetInstance()),
       last_audio_memory_usage_(0),
@@ -500,17 +503,18 @@ void AudioRendererImpl::OnDeviceInfoReceived(
         AudioParameters::kMaxFramesPerCompressedAudioBuffer *
         stream->audio_decoder_config().bytes_per_frame();
 
-    audio_parameters_.Reset(
-        format, stream->audio_decoder_config().channel_layout(),
-        stream->audio_decoder_config().samples_per_second(), buffer_size);
+    audio_parameters_.Reset(format,
+                            {stream->audio_decoder_config().channel_layout(),
+                             stream->audio_decoder_config().channels()},
+                            stream->audio_decoder_config().samples_per_second(),
+                            buffer_size);
     buffer_converter_.reset();
   } else if (use_stream_params) {
     audio_parameters_.Reset(AudioParameters::AUDIO_PCM_LOW_LATENCY,
-                            stream->audio_decoder_config().channel_layout(),
+                            {stream->audio_decoder_config().channel_layout(),
+                             stream->audio_decoder_config().channels()},
                             stream->audio_decoder_config().samples_per_second(),
                             preferred_buffer_size);
-    audio_parameters_.set_channels_for_discrete(
-        stream->audio_decoder_config().channels());
     buffer_converter_.reset();
   } else {
     // To allow for seamless sample rate adaptations (i.e. changes from say
@@ -564,12 +568,17 @@ void AudioRendererImpl::OnDeviceInfoReceived(
     //   renderer. Browser-side will down-mix to the hardware config. If the
     //   hardware later changes to equal stream channels, browser-side will stop
     //   down-mixing and use the data from all stream channels.
-    ChannelLayout renderer_channel_layout =
-        hw_channel_count > stream_channel_count
-            ? hw_channel_layout
-            : stream->audio_decoder_config().channel_layout();
 
-    audio_parameters_.Reset(hw_params.format(), renderer_channel_layout,
+    ChannelLayout stream_channel_layout =
+        stream->audio_decoder_config().channel_layout();
+    bool use_stream_channel_layout = hw_channel_count <= stream_channel_count;
+
+    ChannelLayoutConfig renderer_channel_layout_config =
+        use_stream_channel_layout
+            ? ChannelLayoutConfig(stream_channel_layout, stream_channel_count)
+            : ChannelLayoutConfig(hw_channel_layout, hw_channel_count);
+
+    audio_parameters_.Reset(hw_params.format(), renderer_channel_layout_config,
                             sample_rate,
                             AudioLatency::GetHighLatencyBufferSize(
                                 sample_rate, preferred_buffer_size));
@@ -1158,7 +1167,7 @@ int AudioRendererImpl::Render(base::TimeDelta delay,
                               base::TimeTicks delay_timestamp,
                               int prior_frames_skipped,
                               AudioBus* audio_bus) {
-  TRACE_EVENT1("media", "AudioRendererImpl::Render", "id", media_log_->id());
+  TRACE_EVENT1("media", "AudioRendererImpl::Render", "id", player_id_);
   int frames_requested = audio_bus->frames();
   DVLOG(4) << __func__ << " delay:" << delay
            << " prior_frames_skipped:" << prior_frames_skipped
@@ -1433,8 +1442,8 @@ void AudioRendererImpl::ConfigureChannelMask() {
   // All channels with a zero mix are muted and can be ignored.
   std::vector<bool> channel_mask(audio_parameters_.channels(), false);
   for (size_t ch = 0; ch < matrix.size(); ++ch) {
-    channel_mask[ch] = std::any_of(matrix[ch].begin(), matrix[ch].end(),
-                                   [](float mix) { return !!mix; });
+    channel_mask[ch] =
+        base::ranges::any_of(matrix[ch], [](float mix) { return !!mix; });
   }
   algorithm_->SetChannelMask(std::move(channel_mask));
 }

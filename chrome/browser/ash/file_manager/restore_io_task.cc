@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -38,8 +38,10 @@ RestoreIOTask::RestoreIOTask(
     std::vector<storage::FileSystemURL> file_urls,
     Profile* profile,
     scoped_refptr<storage::FileSystemContext> file_system_context,
-    const base::FilePath base_path)
-    : file_system_context_(file_system_context),
+    const base::FilePath base_path,
+    bool show_notification)
+    : IOTask(show_notification),
+      file_system_context_(file_system_context),
       profile_(profile),
       base_path_(base_path) {
   progress_.state = State::kQueued;

@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -52,8 +52,7 @@ class ContentTranslateDriver : public TranslateDriver,
     // Called when the page has been translated.
     virtual void OnPageTranslated(const std::string& source_lang,
                                   const std::string& translated_lang,
-                                  translate::TranslateErrors::Type error_type) {
-    }
+                                  translate::TranslateErrors error_type) {}
   };
 
   ContentTranslateDriver(content::WebContents& web_contents,
@@ -106,7 +105,7 @@ class ContentTranslateDriver : public TranslateDriver,
   void OnPageTranslated(bool cancelled,
                         const std::string& source_lang,
                         const std::string& translated_lang,
-                        TranslateErrors::Type error_type);
+                        TranslateErrors error_type);
 
   // Adds a receiver in |receivers_| for the passed |receiver|.
   void AddReceiver(

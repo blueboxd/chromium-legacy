@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -29,13 +29,13 @@
 // Returns the value of the variations crash streak pref.
 + (int)crashStreak;
 
-// Sets the variations crash streak pref to |value|.
+// Sets the variations crash streak pref to `value`.
 + (void)setCrashValue:(int)value;
 
 // Returns the value of the variations failed fetch streak pref.
 + (int)failedFetchStreak;
 
-// Sets the variations fetch failure pref to |value|.
+// Sets the variations fetch failure pref to `value`.
 + (void)setFetchFailureValue:(int)value;
 
 @end

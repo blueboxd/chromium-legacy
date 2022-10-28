@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,6 +12,7 @@ GEN('#include "build/build_config.h"');
 GEN('#include "build/chromeos_buildflags.h"');
 GEN('#include "chrome/browser/ui/ui_features.h"');
 GEN('#include "chrome/common/chrome_features.h"');
+GEN('#include "components/performance_manager/public/features.h"');
 GEN('#include "components/privacy_sandbox/privacy_sandbox_features.h"');
 GEN('#include "components/autofill/core/common/autofill_features.h"');
 GEN('#include "content/public/common/content_features.h"');
@@ -20,8 +21,6 @@ GEN('#include "content/public/test/browser_test.h"');
 GEN('#if !BUILDFLAG(IS_CHROMEOS)');
 GEN('#include "components/language/core/common/language_experiments.h"');
 GEN('#endif');
-
-/* eslint-disable no-var */
 
 /** Test fixture for shared Polymer 3 elements. */
 var CrSettingsBrowserTest = class extends PolymerTest {
@@ -80,18 +79,17 @@ var CrSettingsBasicPageTest = class extends CrSettingsBrowserTest {
   }
 };
 
-// TODO(crbug.com/1298753): Flaky on Mac.
-GEN('#if BUILDFLAG(IS_MAC)');
-GEN('#define MAYBE_BasicPage DISABLED_BasicPage');
-GEN('#else');
-GEN('#define MAYBE_BasicPage BasicPage');
-GEN('#endif');
-TEST_F('CrSettingsBasicPageTest', 'MAYBE_BasicPage', function() {
+// TODO(crbug.com/1298753): Flaky on all platforms.
+TEST_F('CrSettingsBasicPageTest', 'DISABLED_BasicPage', function() {
   runMochaSuite('SettingsBasicPage');
 });
 
 TEST_F('CrSettingsBasicPageTest', 'PrivacyGuidePromo', function() {
   runMochaSuite('PrivacyGuidePromo');
+});
+
+TEST_F('CrSettingsBasicPageTest', 'Performance', function() {
+  runMochaSuite('SettingsBasicPagePerformance');
 });
 
 GEN('#if !BUILDFLAG(IS_CHROMEOS_ASH)');
@@ -426,6 +424,26 @@ TEST_F('CrSettingsSiteDetailsTest', 'MAYBE_SiteDetails', function() {
   mocha.run();
 });
 
+var CrSettingsPerformancePageTest = class extends CrSettingsBrowserTest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://settings/test_loader.html?module=settings/performance_page_test.js';
+  }
+
+  /** @override */
+  get featureListInternal() {
+    return {
+      enabled: [
+        'performance_manager::features::kHighEfficiencyModeAvailable',
+      ],
+    };
+  }
+};
+
+TEST_F('CrSettingsPerformancePageTest', 'All', function() {
+  mocha.run();
+});
+
 var CrSettingsPersonalizationOptionsTest = class extends CrSettingsBrowserTest {
   /** @override */
   get browsePreload() {
@@ -637,6 +655,10 @@ TEST_F('CrSettingsCookiesPageTest', 'MAYBE_CookiesPageTest', function() {
   runMochaSuite('CrSettingsCookiesPageTest');
 });
 
+TEST_F('CrSettingsCookiesPageTest', 'FirstPartySetsUIEnabled', function() {
+  runMochaSuite('CrSettingsCookiesPageTest_FirstPartySetsUIEnabled');
+});
+
 // Flaky on MacOS bots and times out on Linux Dbg: https://crbug.com/1240747
 GEN('#if (BUILDFLAG(IS_MAC)) || (BUILDFLAG(IS_LINUX) && !defined(NDEBUG))');
 GEN('#define MAYBE_ConsolidatedControlsEnabled DISABLED_ConsolidatedControlsEnabled');
@@ -781,6 +803,27 @@ TEST_F('CrSettingsSiteDataDetailsSubpageTest', 'All', function() {
   mocha.run();
 });
 
+var CrSettingsReviewNotificationPermissionsTest =
+    class extends CrSettingsBrowserTest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://settings/test_loader.html?module=settings/review_notification_permissions_test.js';
+  }
+
+  /** @override */
+  get featureList() {
+    return {
+      enabled: [
+        'features::kSafetyCheckPermissions',
+      ],
+    };
+  }
+};
+
+TEST_F('CrSettingsReviewNotificationPermissionsTest', 'All', function() {
+  mocha.run();
+});
+
 [['AppearanceFontsPage', 'appearance_fonts_page_test.js'],
  [
    'SettingsCategoryDefaultRadioGroup',
@@ -879,7 +922,7 @@ GEN('#if !BUILDFLAG(IS_CHROMEOS_ASH)');
 ].forEach(test => registerTest(...test));
 GEN('#endif');
 
-GEN('#if BUILDFLAG(IS_WIN)');
+GEN('#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC)');
 [['PasskeysSubpage', 'passkeys_subpage_test.js'],
 ].forEach(test => registerTest(...test));
 GEN('#endif');

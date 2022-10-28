@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,9 +13,9 @@
 #import "ios/chrome/browser/ui/authentication/signin_earl_grey.h"
 #import "ios/chrome/browser/ui/authentication/signin_earl_grey_ui_test_util.h"
 #import "ios/chrome/browser/ui/authentication/signin_matchers.h"
+#import "ios/chrome/browser/ui/first_run/field_trial_constants.h"
 #import "ios/chrome/browser/ui/first_run/first_run_app_interface.h"
 #import "ios/chrome/browser/ui/first_run/first_run_constants.h"
-#import "ios/chrome/browser/ui/first_run/fre_field_trial.h"
 #import "ios/chrome/browser/ui/settings/google_services/google_services_settings_constants.h"
 #import "ios/chrome/browser/ui/settings/google_services/manage_sync_settings_constants.h"
 #import "ios/chrome/browser/ui/ui_feature_flags.h"
@@ -876,7 +876,7 @@ id<GREYMatcher> GetSyncSettings() {
   [self verifyDisclaimerFooterWithStrings:disclaimerStrings];
 }
 
-// Checks the disclaimer footer with the list of strings. |strings| can contain
+// Checks the disclaimer footer with the list of strings. `strings` can contain
 // "BEGIN_LINK" and "END_LINK" for URL tags.
 - (void)verifyDisclaimerFooterWithStrings:(NSArray*)strings {
   NSString* disclaimerText = [strings componentsJoinedByString:@" "];

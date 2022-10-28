@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,9 +7,9 @@ import './file_attachment.js';
 import 'chrome://resources/cr_elements/cr_button/cr_button.js';
 import 'chrome://resources/cr_elements/cr_dialog/cr_dialog.js';
 import 'chrome://resources/cr_elements/cr_checkbox/cr_checkbox.js';
-import 'chrome://resources/cr_elements/policy/cr_tooltip_icon.m.js';
+import 'chrome://resources/cr_elements/policy/cr_tooltip_icon.js';
 
-import {I18nBehavior, I18nBehaviorInterface} from 'chrome://resources/js/i18n_behavior.m.js';
+import {I18nBehavior, I18nBehaviorInterface} from 'chrome://resources/cr_elements/i18n_behavior.js';
 import {html, mixinBehaviors, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {FEEDBACK_LEGAL_HELP_URL, FEEDBACK_PRIVACY_POLICY_URL, FEEDBACK_TERMS_OF_SERVICE_URL} from './feedback_constants.js';
@@ -44,6 +44,8 @@ export class ShareDataPageElement extends ShareDataPageElementBase {
     return {
       feedbackContext: {type: FeedbackContext, readOnly: false, notify: true},
       screenshotUrl: {type: String, readOnly: false, notify: true},
+      shouldShowBluetoothCheckbox:
+          {type: Boolean, readOnly: false, notify: true},
     };
   }
 
@@ -59,6 +61,11 @@ export class ShareDataPageElement extends ShareDataPageElementBase {
      * @type {string}
      */
     this.screenshotUrl;
+
+    /**
+     * @type {boolean}
+     */
+    this.shouldShowBluetoothCheckbox;
 
     /**
      * @type {string}
@@ -123,7 +130,6 @@ export class ShareDataPageElement extends ShareDataPageElementBase {
   /** @protected */
   handleScreenshotClick_() {
     this.$.screenshotDialog.showModal();
-    this.$.closeDialogButton.focus();
     this.feedbackServiceProvider_.recordPreSubmitAction(
         FeedbackAppPreSubmitAction.kViewedScreenshot);
   }
@@ -248,7 +254,6 @@ export class ShareDataPageElement extends ShareDataPageElementBase {
           !!this.getElement_('#screenshotImage').src,
       contactUserConsentGranted:
           this.getElement_('#userConsentCheckbox').checked,
-      sendBluetoothLogs: this.getElement_('#bluetoothLogsCheckbox').checked,
     });
 
     report.attachedFile =
@@ -276,8 +281,16 @@ export class ShareDataPageElement extends ShareDataPageElementBase {
           this.feedbackContext.extraDiagnostics;
     }
 
-    if (this.getElement_('#bluetoothLogsCheckbox').checked) {
+    if (this.feedbackContext.categoryTag) {
+      report.feedbackContext.categoryTag = this.feedbackContext.categoryTag;
+    }
+
+    if (!this.getElement_('#bluetoothCheckboxContainer').hidden &&
+        this.getElement_('#bluetoothLogsCheckbox').checked) {
       report.feedbackContext.categoryTag = 'BluetoothReportWithLogs';
+      report.sendBluetoothLogs = true;
+    } else {
+      report.sendBluetoothLogs = false;
     }
 
     return report;

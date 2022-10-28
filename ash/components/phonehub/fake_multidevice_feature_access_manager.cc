@@ -1,8 +1,9 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "ash/components/phonehub/fake_multidevice_feature_access_manager.h"
+#include "ash/components/phonehub/multidevice_feature_access_manager.h"
 
 namespace ash {
 namespace phonehub {
@@ -136,6 +137,13 @@ void FakeMultideviceFeatureAccessManager::
 bool FakeMultideviceFeatureAccessManager::GetFeatureSetupRequestSupported()
     const {
   return is_feature_setup_request_supported_;
+}
+
+void FakeMultideviceFeatureAccessManager::
+    SetFeatureSetupConnectionOperationStatus(
+        FeatureSetupConnectionOperation::Status new_status) {
+  MultideviceFeatureAccessManager::SetFeatureSetupConnectionOperationStatus(
+      new_status);
 }
 
 }  // namespace phonehub

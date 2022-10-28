@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -37,9 +37,7 @@
 #include "base/test/task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
-#include "crypto/nss_util.h"
 #include "crypto/rsa_private_key.h"
-#include "crypto/signature_creator.h"
 #include "net/base/address_list.h"
 #include "net/base/completion_once_callback.h"
 #include "net/base/host_port_pair.h"

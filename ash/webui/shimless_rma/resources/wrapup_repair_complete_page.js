@@ -1,20 +1,20 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 import 'chrome://resources/cr_elements/cr_button/cr_button.js';
+import 'chrome://resources/cr_elements/cr_dialog/cr_dialog.js';
 import 'chrome://resources/polymer/v3_0/paper-tooltip/paper-tooltip.js';
 import './base_page.js';
 import './shimless_rma_fonts_css.js';
 import './shimless_rma_shared_css.js';
 
-import {CrDialogElement} from 'chrome://resources/cr_elements/cr_dialog/cr_dialog.js';
-import {I18nBehavior, I18nBehaviorInterface} from 'chrome://resources/js/i18n_behavior.m.js';
+import {I18nBehavior, I18nBehaviorInterface} from 'chrome://resources/cr_elements/i18n_behavior.js';
 import {html, mixinBehaviors, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {getShimlessRmaService} from './mojo_interface_provider.js';
-import {PowerCableStateObserverInterface, PowerCableStateObserverReceiver, RmadErrorCode, SaveLogResponse, ShimlessRmaServiceInterface, ShutdownMethod} from './shimless_rma_types.js';
-import {executeThenTransitionState} from './shimless_rma_util.js';
+import {ExternalDiskStateObserverInterface, ExternalDiskStateObserverReceiver, PowerCableStateObserverInterface, PowerCableStateObserverReceiver, RmadErrorCode, SaveLogResponse, ShimlessRmaServiceInterface, ShutdownMethod} from './shimless_rma_types.js';
+import {executeThenTransitionState, focusPageTitle} from './shimless_rma_util.js';
 
 /**
  * @fileoverview
@@ -45,7 +45,6 @@ const FinishRmaOption = {
  * @enum {number}
  */
 const USBLogState = {
-  // TODO (gavinwill): Implement `USB_UNPLUGGED` once USB detection is ready.
   USB_UNPLUGGED: 0,
   USB_READY: 1,
   SAVING_LOGS: 2,
@@ -158,6 +157,20 @@ export class WrapupRepairCompletePage extends WrapupRepairCompletePageBase {
 
     this.shimlessRmaService_.observePowerCableState(
         this.powerCableStateReceiver_.$.bindNewPipeAndPassRemote());
+
+    /** @private {!ExternalDiskStateObserverReceiver} */
+    this.externalDiskStateReceiver_ = new ExternalDiskStateObserverReceiver(
+        /** @type {!ExternalDiskStateObserverInterface} */ (this));
+
+    this.shimlessRmaService_.observeExternalDiskState(
+        this.externalDiskStateReceiver_.$.bindNewPipeAndPassRemote());
+  }
+
+  /** @override */
+  ready() {
+    super.ready();
+
+    focusPageTitle(this);
   }
 
   /** @protected */
@@ -361,6 +374,21 @@ export class WrapupRepairCompletePage extends WrapupRepairCompletePageBase {
   }
 
   /**
+   * Implements ExternalDiskStateObserver.onExternalDiskStateChanged()
+   * @param {boolean} detected
+   */
+  onExternalDiskStateChanged(detected) {
+    if (!detected) {
+      this.usbLogState_ = USBLogState.USB_UNPLUGGED;
+      return;
+    }
+
+    if (this.usbLogState_ === USBLogState.USB_UNPLUGGED) {
+      this.usbLogState_ = USBLogState.USB_READY;
+    }
+  }
+
+  /**
    * @return {boolean}
    * @protected
    */
@@ -428,6 +456,14 @@ export class WrapupRepairCompletePage extends WrapupRepairCompletePageBase {
   shouldShowLogSaveAttemptContainer_() {
     return this.usbLogState_ === USBLogState.LOG_SAVE_SUCCESS ||
         this.usbLogState_ === USBLogState.LOG_SAVE_FAIL;
+  }
+
+  /**
+   * @return {boolean}
+   * @protected
+   */
+  shouldShowLogUsbMessageContainer_() {
+    return this.usbLogState_ === USBLogState.USB_UNPLUGGED;
   }
 
   /**

@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -17,7 +17,9 @@
 #include "dbus/object_proxy.h"
 #include "device/bluetooth/floss/fake_floss_manager_client.h"
 #include "device/bluetooth/floss/floss_adapter_client.h"
+#include "device/bluetooth/floss/floss_lescan_client.h"
 #include "device/bluetooth/floss/floss_manager_client.h"
+#include "device/bluetooth/floss/floss_socket_manager.h"
 
 namespace floss {
 
@@ -135,7 +137,7 @@ void FlossDBusManager::OnObjectManagerSupported(dbus::Response* response) {
   // Initialize the manager client (which doesn't depend on any specific
   // adapter being present)
   client_bundle_->manager_client()->Init(GetSystemBus(), kManagerInterface,
-                                         std::string());
+                                         kInvalidAdapter);
 
   object_manager_support_known_ = true;
   if (object_manager_support_known_callback_) {
@@ -177,6 +179,14 @@ FlossAdapterClient* FlossDBusManager::GetAdapterClient() {
   return client_bundle_->adapter_client();
 }
 
+FlossSocketManager* FlossDBusManager::GetSocketManager() {
+  return client_bundle_->socket_manager();
+}
+
+FlossLEScanClient* FlossDBusManager::GetLEScanClient() {
+  return client_bundle_->lescan_client();
+}
+
 void FlossDBusManager::InitializeAdapterClients(int adapter) {
   // Clean up active adapter clients
   if (active_adapter_ != kInvalidAdapter) {
@@ -190,12 +200,13 @@ void FlossDBusManager::InitializeAdapterClients(int adapter) {
     return;
   }
 
-  dbus::ObjectPath adapter_path =
-      FlossManagerClient::GenerateAdapterPath(adapter);
-
   // Initialize any adapter clients.
   client_bundle_->adapter_client()->Init(GetSystemBus(), kAdapterService,
-                                         adapter_path.value());
+                                         active_adapter_);
+  client_bundle_->socket_manager()->Init(GetSystemBus(), kAdapterService,
+                                         active_adapter_);
+  client_bundle_->lescan_client()->Init(GetSystemBus(), kAdapterService,
+                                        active_adapter_);
 }
 
 void FlossDBusManagerSetter::SetFlossManagerClient(
@@ -206,6 +217,16 @@ void FlossDBusManagerSetter::SetFlossManagerClient(
 void FlossDBusManagerSetter::SetFlossAdapterClient(
     std::unique_ptr<FlossAdapterClient> client) {
   FlossDBusManager::Get()->client_bundle_->adapter_client_ = std::move(client);
+}
+
+void FlossDBusManagerSetter::SetFlossSocketManager(
+    std::unique_ptr<FlossSocketManager> mgr) {
+  FlossDBusManager::Get()->client_bundle_->socket_manager_ = std::move(mgr);
+}
+
+void FlossDBusManagerSetter::SetFlossLEScanClient(
+    std::unique_ptr<FlossLEScanClient> client) {
+  FlossDBusManager::Get()->client_bundle_->lescan_client_ = std::move(client);
 }
 
 FlossClientBundle::FlossClientBundle(bool use_stubs) : use_stubs_(use_stubs) {
@@ -226,6 +247,8 @@ void FlossClientBundle::ResetAdapterClients() {
   }
 
   adapter_client_ = FlossAdapterClient::Create();
+  socket_manager_ = FlossSocketManager::Create();
+  lescan_client_ = FlossLEScanClient::Create();
 }
 
 }  // namespace floss

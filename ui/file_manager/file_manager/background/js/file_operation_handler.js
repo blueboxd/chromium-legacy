@@ -69,21 +69,7 @@ export class FileOperationHandler {
    * @param {!chrome.fileManagerPrivate.ProgressStatus} event
    * @private
    */
-  async onIOTaskProgressStatus_(event) {
-    if (event.type === chrome.fileManagerPrivate.IOTaskType.TRASH) {
-      if (event.state === chrome.fileManagerPrivate.IOTaskState.SUCCESS) {
-        this.showRestoreTrashToast_(event);
-        return;
-      }
-      // Trash operations occur intra filesystem and so to avoid a flash on the
-      // UI with progress then the undo toast, do not show any visual signals
-      // for anything other than an error, cancelled and success.
-      if (event.state === chrome.fileManagerPrivate.IOTaskState.QUEUED ||
-          event.state === chrome.fileManagerPrivate.IOTaskState.IN_PROGRESS) {
-        return;
-      }
-    }
-
+  onIOTaskProgressStatus_(event) {
     const taskId = String(event.taskId);
     let newItem = false;
     /** @type {ProgressCenterItem} */
@@ -108,11 +94,19 @@ export class FileOperationHandler {
         item.progressValue = event.bytesTransferred;
         item.remainingTime = event.remainingSeconds;
         break;
-
+      case chrome.fileManagerPrivate.IOTaskState.SCANNING:
+        item.sourceMessage = event.sourceName;
+        item.destinationMessage = event.destinationName;
+        item.state = ProgressItemState.SCANNING;
+        item.progressMax = event.totalBytes;
+        item.progressValue = event.bytesTransferred;
+        item.remainingTime = event.remainingSeconds;
+        break;
       case chrome.fileManagerPrivate.IOTaskState.IN_PROGRESS:
         item.progressMax = event.totalBytes;
         item.progressValue = event.bytesTransferred;
         item.remainingTime = event.remainingSeconds;
+        item.state = ProgressItemState.PROGRESSING;
         break;
 
       case chrome.fileManagerPrivate.IOTaskState.SUCCESS:
@@ -126,6 +120,17 @@ export class FileOperationHandler {
           item.state = ProgressItemState.COMPLETED;
           item.progressValue = item.progressMax;
           item.remainingTime = event.remainingSeconds;
+          if (item.type === ProgressItemType.TRASH) {
+            const infoEntries =
+                event.outputs.filter(o => o.name.endsWith('.trashinfo'));
+            item.setExtraButton(
+                ProgressItemState.COMPLETED, str('UNDO_DELETE_ACTION_LABEL'),
+                () => {
+                  startIOTask(
+                      chrome.fileManagerPrivate.IOTaskType.RESTORE, infoEntries,
+                      /*params=*/ {});
+                });
+          }
         } else if (
             event.state === chrome.fileManagerPrivate.IOTaskState.CANCELLED) {
           item.state = ProgressItemState.CANCELED;
@@ -145,6 +150,10 @@ export class FileOperationHandler {
         break;
       default:
         console.error(`Invalid IOTaskState: ${event.state}`);
+    }
+    if (!event.showNotification) {
+      // Set state to canceled so notification doesn't display.
+      item.state = ProgressItemState.CANCELED;
     }
     this.progressCenter_.updateItem(item);
   }
@@ -392,6 +401,7 @@ export class FileOperationHandler {
             case util.FileOperationType.DELETE:
               return str('DELETE_ERROR');
             case util.FileOperationType.RESTORE:
+            case util.FileOperationType.RESTORE_TO_DESTINATION:
               return str('RESTORE_FROM_TRASH_ERROR');
             default:
               console.warn(
@@ -410,6 +420,7 @@ export class FileOperationHandler {
             case util.FileOperationType.DELETE:
               return str('DELETE_ERROR');
             case util.FileOperationType.RESTORE:
+            case util.FileOperationType.RESTORE_TO_DESTINATION:
               return str('RESTORE_FROM_TRASH_ERROR');
             default:
               console.warn(
@@ -429,6 +440,7 @@ export class FileOperationHandler {
         case util.FileOperationType.DELETE:
           return strf('DELETE_FILE_NAME', name);
         case util.FileOperationType.RESTORE:
+        case util.FileOperationType.RESTORE_TO_DESTINATION:
           return strf('RESTORE_FROM_TRASH_FILE_NAME', name);
         default:
           console.warn(
@@ -447,6 +459,7 @@ export class FileOperationHandler {
         case util.FileOperationType.DELETE:
           return strf('DELETE_ITEMS_REMAINING', remainNumber);
         case util.FileOperationType.RESTORE:
+        case util.FileOperationType.RESTORE_TO_DESTINATION:
           return strf('RESTORE_FROM_TRASH_ITEMS_REMAINING', remainNumber);
         default:
           console.warn(
@@ -508,6 +521,8 @@ function getTypeFromIOTaskType_(type) {
       return ProgressItemType.MOVE;
     case chrome.fileManagerPrivate.IOTaskType.RESTORE:
       return ProgressItemType.RESTORE;
+    case chrome.fileManagerPrivate.IOTaskType.RESTORE_TO_DESTINATION:
+      return ProgressItemType.RESTORE_TO_DESTINATION;
     case chrome.fileManagerPrivate.IOTaskType.TRASH:
       return ProgressItemType.TRASH;
     case chrome.fileManagerPrivate.IOTaskType.ZIP:
@@ -543,10 +558,12 @@ function getMessageFromProgressEvent_(event) {
       case chrome.fileManagerPrivate.IOTaskType.DELETE:
         return str('DELETE_ERROR');
       case chrome.fileManagerPrivate.IOTaskType.RESTORE:
+      case chrome.fileManagerPrivate.IOTaskType.RESTORE_TO_DESTINATION:
         return str('RESTORE_FROM_TRASH_ERROR');
+      case chrome.fileManagerPrivate.IOTaskType.TRASH:
+        return str('TRASH_UNEXPECTED_ERROR');
       default:
-        console.warn(
-            `Unexpected operation type: ${event.status.operationType}`);
+        console.warn(`Unexpected operation type: ${event.type}`);
         return strf('FILE_ERROR_GENERIC');
     }
   }

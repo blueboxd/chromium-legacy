@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -25,7 +25,7 @@ SidePanelResizeHandle::SidePanelResizeHandle(SidePanel* side_panel)
   const gfx::Size preferred_resize_handle_size = gfx::Size(16, 24);
   SetPreferredSize(preferred_resize_handle_size);
   SetCanProcessEventsWithinSubtree(false);
-  SetFocusBehavior(FocusBehavior::ACCESSIBLE_ONLY);
+  SetFocusBehavior(FocusBehavior::ALWAYS);
   FocusRing::Install(this);
 }
 

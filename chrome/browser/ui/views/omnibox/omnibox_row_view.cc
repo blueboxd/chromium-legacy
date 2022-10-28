@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -26,6 +26,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/metadata/metadata_header_macros.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
+#include "ui/base/models/image_model.h"
 #include "ui/color/color_provider.h"
 #include "ui/gfx/image/image_skia_operations.h"
 #include "ui/gfx/paint_vector_icon.h"
@@ -87,7 +88,7 @@ class OmniboxRowView::HeaderView : public views::View {
     }
   }
 
-  void SetHeader(SuggestionGroupId suggestion_group_id,
+  void SetHeader(omnibox::GroupId suggestion_group_id,
                  const std::u16string& header_text) {
     suggestion_group_id_ = suggestion_group_id;
     header_text_ = header_text;
@@ -188,8 +189,8 @@ class OmniboxRowView::HeaderView : public views::View {
 
     // The "toggled" button state corresponds with the group being hidden.
     // The button's action is therefore to Show the group, when clicked.
-    header_toggle_button_->SetToggledImage(views::Button::STATE_NORMAL,
-                                           &arrow_down);
+    header_toggle_button_->SetToggledImageModel(
+        views::Button::STATE_NORMAL, ui::ImageModel::FromImageSkia(arrow_down));
     header_toggle_button_->SetToggledTooltipText(
         l10n_util::GetStringUTF16(IDS_TOOLTIP_HEADER_SHOW_SUGGESTIONS_BUTTON));
     header_toggle_button_->SetToggledAccessibleName(l10n_util::GetStringFUTF16(
@@ -245,7 +246,7 @@ class OmniboxRowView::HeaderView : public views::View {
   raw_ptr<views::ToggleImageButton> header_toggle_button_;
 
   // The group ID associated with this header.
-  SuggestionGroupId suggestion_group_id_ = SuggestionGroupId::kInvalid;
+  omnibox::GroupId suggestion_group_id_ = omnibox::GroupId::INVALID;
 
   // The unmodified header text for this header.
   std::u16string header_text_;
@@ -329,7 +330,7 @@ OmniboxRowView::OmniboxRowView(size_t line,
   result_view_ = AddChildView(std::move(result_view));
 }
 
-void OmniboxRowView::ShowHeader(SuggestionGroupId suggestion_group_id,
+void OmniboxRowView::ShowHeader(omnibox::GroupId suggestion_group_id,
                                 const std::u16string& header_text) {
   // Create the header (at index 0) if it doesn't exist.
   if (header_view_ == nullptr)

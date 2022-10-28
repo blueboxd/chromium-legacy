@@ -1,4 +1,4 @@
-# Copyright 2021 The Chromium Authors. All rights reserved.
+# Copyright 2021 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 """Definitions of builders in the chromium.mac builder group."""
@@ -23,6 +23,9 @@ ci.defaults.set(
     sheriff_rotations = sheriff_rotations.CHROMIUM,
     thin_tester_cores = 8,
     tree_closing = True,
+    experiments = {
+        "luci.buildbucket.omit_python2": 100,
+    },
 )
 
 consoles.console_view(
@@ -79,9 +82,9 @@ ci.builder(
         short_name = "bld",
     ),
     cq_mirrors_console_view = "mirrors",
-    experiments = {
-        "luci.buildbucket.omit_python2": 100,
-    },
+    goma_backend = None,
+    reclient_instance = reclient.instance.DEFAULT_TRUSTED,
+    reclient_jobs = reclient.jobs.DEFAULT,
 )
 
 ci.builder(
@@ -108,9 +111,6 @@ ci.builder(
     ),
     cq_mirrors_console_view = "mirrors",
     os = os.MAC_ANY,
-    experiments = {
-        "luci.buildbucket.omit_python2": 100,
-    },
 )
 
 ci.builder(
@@ -139,9 +139,6 @@ ci.builder(
     ),
     cpu = cpu.ARM64,
     os = os.MAC_DEFAULT,
-    experiments = {
-        "luci.buildbucket.omit_python2": 100,
-    },
 )
 
 ci.builder(
@@ -167,9 +164,6 @@ ci.builder(
         short_name = "bld",
     ),
     os = os.MAC_DEFAULT,
-    experiments = {
-        "luci.buildbucket.omit_python2": 100,
-    },
 )
 
 ci.builder(
@@ -187,7 +181,7 @@ ci.builder(
     cores = None,
     goma_backend = None,
     reclient_instance = reclient.instance.DEFAULT_TRUSTED,
-    reclient_jobs = 40,
+    reclient_jobs = 200,
 )
 
 ci.thin_tester(
@@ -415,9 +409,6 @@ ios_builder(
     # We don't have necessary capacity to run this configuration in CQ, but it
     # is part of the main waterfall
     name = "ios-catalyst",
-
-    # TODO(crbug.com/1350126): Move ios-catalyst to xcode.x14main when fixed.
-    xcode = xcode.x13main,
     builder_spec = builder_config.builder_spec(
         gclient_config = builder_config.gclient_config(
             config = "ios",
@@ -446,6 +437,9 @@ ios_builder(
             short_name = "ctl",
         ),
     ],
+    goma_backend = None,
+    reclient_instance = reclient.instance.DEFAULT_TRUSTED,
+    reclient_jobs = reclient.jobs.DEFAULT,
 )
 
 ios_builder(
@@ -478,6 +472,9 @@ ios_builder(
             short_name = "dev",
         ),
     ],
+    goma_backend = None,
+    reclient_instance = reclient.instance.DEFAULT_TRUSTED,
+    reclient_jobs = reclient.jobs.DEFAULT,
     # We don't have necessary capacity to run this configuration in CQ, but it
     # is part of the main waterfall
 )
@@ -540,6 +537,9 @@ ios_builder(
         ),
     ],
     cq_mirrors_console_view = "mirrors",
+    goma_backend = None,
+    reclient_instance = reclient.instance.DEFAULT_TRUSTED,
+    reclient_jobs = reclient.jobs.DEFAULT,
 )
 
 ios_builder(
@@ -577,6 +577,9 @@ ios_builder(
         ),
     ],
     cq_mirrors_console_view = "mirrors",
+    goma_backend = None,
+    reclient_instance = reclient.instance.DEFAULT_TRUSTED,
+    reclient_jobs = reclient.jobs.DEFAULT,
 )
 
 ios_builder(
@@ -612,4 +615,7 @@ ios_builder(
     # We don't have necessary capacity to run this configuration in CQ, but it
     # is part of the main waterfall
     xcode = xcode.x14main,
+    goma_backend = None,
+    reclient_instance = reclient.instance.DEFAULT_TRUSTED,
+    reclient_jobs = reclient.jobs.DEFAULT,
 )

@@ -1,4 +1,4 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -31,10 +31,5 @@ class DBusClient {
 };
 
 }  // namespace chromeos
-
-// TODO(https://crbug.com/1164001): remove when //chromeos/dbus moved to ash.
-namespace ash {
-using ::chromeos::DBusClient;
-}  // namespace ash
 
 #endif  // CHROMEOS_DBUS_COMMON_DBUS_CLIENT_H_

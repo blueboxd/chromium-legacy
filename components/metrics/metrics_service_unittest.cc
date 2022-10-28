@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -32,6 +32,7 @@
 #include "components/metrics/client_info.h"
 #include "components/metrics/environment_recorder.h"
 #include "components/metrics/log_decoder.h"
+#include "components/metrics/metrics_features.h"
 #include "components/metrics/metrics_log.h"
 #include "components/metrics/metrics_pref_names.h"
 #include "components/metrics/metrics_state_manager.h"
@@ -290,10 +291,10 @@ class MetricsServiceTestWithConsolidateInitialLogLogicFeature
     MetricsServiceTest::SetUp();
     if (ShouldConsolidateInitialLogLogic()) {
       feature_list_.InitWithFeatures(
-          {kConsolidateMetricsServiceInitialLogLogic}, {});
+          {features::kConsolidateMetricsServiceInitialLogLogic}, {});
     } else {
       feature_list_.InitWithFeatures(
-          {}, {kConsolidateMetricsServiceInitialLogLogic});
+          {}, {features::kConsolidateMetricsServiceInitialLogLogic});
     }
   }
 
@@ -323,10 +324,10 @@ class MetricsServiceTestWithStartupVisibility
     MetricsServiceTest::SetUp();
     if (ShouldConsolidateInitialLogLogic()) {
       feature_list_.InitWithFeatures(
-          {kConsolidateMetricsServiceInitialLogLogic}, {});
+          {features::kConsolidateMetricsServiceInitialLogLogic}, {});
     } else {
       feature_list_.InitWithFeatures(
-          {}, {kConsolidateMetricsServiceInitialLogLogic});
+          {}, {features::kConsolidateMetricsServiceInitialLogLogic});
     }
   }
 
@@ -347,13 +348,13 @@ class ExperimentTestMetricsProvider : public TestMetricsProvider {
   void ProvideSystemProfileMetrics(
       SystemProfileProto* system_profile_proto) override {
     TestMetricsProvider::ProvideSystemProfileMetrics(system_profile_proto);
-    profile_metrics_trial_->group();
+    profile_metrics_trial_->Activate();
   }
 
   void ProvideCurrentSessionData(
       ChromeUserMetricsExtension* uma_proto) override {
     TestMetricsProvider::ProvideCurrentSessionData(uma_proto);
-    session_data_trial_->group();
+    session_data_trial_->Activate();
   }
 
  private:
@@ -485,7 +486,6 @@ TEST_P(MetricsServiceTestWithConsolidateInitialLogLogicFeature,
   EXPECT_TRUE(uma_log.has_system_profile());
   EXPECT_EQ(0, uma_log.user_action_event_size());
   EXPECT_EQ(0, uma_log.omnibox_event_size());
-  EXPECT_EQ(0, uma_log.perf_data_size());
   CheckForNonStabilityHistograms(uma_log);
 
   // As there wasn't an unclean shutdown, no browser crash samples should have
@@ -622,7 +622,6 @@ TEST_P(MetricsServiceTestWithStartupVisibility, InitialStabilityLogAfterCrash) {
   EXPECT_TRUE(uma_log.has_system_profile());
   EXPECT_EQ(0, uma_log.user_action_event_size());
   EXPECT_EQ(0, uma_log.omnibox_event_size());
-  EXPECT_EQ(0, uma_log.perf_data_size());
   CheckForNonStabilityHistograms(uma_log);
 
   EXPECT_EQ(kCrashedVersion, uma_log.system_profile().app_version());

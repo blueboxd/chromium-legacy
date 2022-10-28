@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,6 +10,7 @@
 #include "base/bind.h"
 #include "base/containers/contains.h"
 #include "base/logging.h"
+#include "base/ranges/algorithm.h"
 #include "base/run_loop.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -162,11 +163,10 @@ void WindowsSpellCheckerTest::RunRequestTextCheckTest(
   } else {
     const std::u16string suggested_word(
         base::ASCIIToUTF16(test_case.expected_suggestion));
-    auto position =
-        std::find_if(suggestions.begin(), suggestions.end(),
-                     [&](const std::u16string& suggestion) {
-                       return suggestion.compare(suggested_word) == 0;
-                     });
+    auto position = base::ranges::find_if(
+        suggestions, [&](const std::u16string& suggestion) {
+          return suggestion.compare(suggested_word) == 0;
+        });
 
     ASSERT_FALSE(position == suggestions.end())
         << "RequestTextCheck: Expected suggestion not found";

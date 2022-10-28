@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,7 +10,12 @@
 
 #include "base/memory/weak_ptr.h"
 #include "extensions/renderer/bindings/api_binding_types.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "v8/include/v8-forward.h"
+
+namespace base {
+class Value;
+}
 
 namespace gin {
 class Arguments;
@@ -136,7 +141,7 @@ class OneTimeMessageHandler {
   // listeners.
   void OnEventFired(const PortId& port_id,
                     v8::Local<v8::Context> context,
-                    v8::MaybeLocal<v8::Value> result);
+                    absl::optional<base::Value> result);
 
   // The associated bindings system. Outlives this object.
   NativeExtensionBindingsSystem* const bindings_system_;

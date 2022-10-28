@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -30,7 +30,6 @@
 #include "ui/views/window/non_client_view.h"
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-#include "ash/constants/ash_features.h"
 #include "ash/public/cpp/ash_constants.h"
 #include "ash/public/cpp/rounded_corner_utils.h"
 #include "ash/public/cpp/window_properties.h"  // nogncheck
@@ -293,11 +292,8 @@ void OverlayWindowViews::DoShowInactive() {
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-  // For rounded corners.
-  if (ash::features::IsPipRoundedCornersEnabled()) {
-    ash::SetCornerRadius(GetNativeWindow(), GetRootView()->layer(),
-                         chromeos::kPipRoundedCornerRadius);
-  }
+  ash::SetCornerRadius(GetNativeWindow(), GetRootView()->layer(),
+                       chromeos::kPipRoundedCornerRadius);
 #endif
 
   // If this is not the first time the window is shown, this will be a no-op.

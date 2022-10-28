@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -146,7 +146,7 @@ static const char* kBadFlags[] = {
 
     // This flag tells Chrome to automatically install given isolated PWA during
     // start up. The functionality is under active development.
-    switches::kInstallIsolatedAppsAtStartup,
+    switches::kInstallIsolatedAppAtStartup,
 
     // Allows the specified origin to make Web Authentication API requests on
     // behalf of other origins, if a corresponding Google-internal
@@ -239,7 +239,7 @@ void MaybeShowInvalidUserDataDirWarningDialog() {
     if (locale.empty())
       locale = kUserDataDirDialogFallbackLocale;
     ui::ResourceBundle::InitSharedInstanceWithLocale(
-        locale, NULL, ui::ResourceBundle::DO_NOT_LOAD_COMMON_RESOURCES);
+        locale, nullptr, ui::ResourceBundle::DO_NOT_LOAD_COMMON_RESOURCES);
   }
 
   const std::u16string& title =
@@ -251,7 +251,7 @@ void MaybeShowInvalidUserDataDirWarningDialog() {
     ui::ResourceBundle::CleanupSharedInstance();
 
   // More complex dialogs cannot be shown before the earliest calls here.
-  ShowWarningMessageBox(NULL, title, message);
+  ShowWarningMessageBox(nullptr, title, message);
 }
 
 }  // namespace chrome

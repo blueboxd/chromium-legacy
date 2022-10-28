@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -86,7 +86,6 @@
 
 #if BUILDFLAG(IS_CHROMEOS)
 #include "chrome/common/webui_url_constants.h"
-#include "ui/base/l10n/l10n_util.h"
 #endif  // BUILDFLAG(IS_CHROMEOS)
 
 using content::BrowserThread;

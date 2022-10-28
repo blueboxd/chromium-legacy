@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,6 +11,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/containers/contains.h"
+#include "base/functional/overloaded.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ash/system_web_apps/types/system_web_app_type.h"
 #include "chrome/browser/web_applications/os_integration/web_app_file_handler_manager.h"
@@ -236,6 +237,8 @@ WebAppManagement::Type ProtoToWebAppManagement(WebAppManagementProto type) {
       [[fallthrough]];
     case WebAppManagementProto::SYSTEM:
       return WebAppManagement::Type::kSystem;
+    case WebAppManagementProto::KIOSK:
+      return WebAppManagement::Type::kKiosk;
     case WebAppManagementProto::POLICY:
       return WebAppManagement::Type::kPolicy;
     case WebAppManagementProto::SUBAPP:
@@ -246,6 +249,8 @@ WebAppManagement::Type ProtoToWebAppManagement(WebAppManagementProto type) {
       return WebAppManagement::Type::kSync;
     case WebAppManagementProto::DEFAULT:
       return WebAppManagement::Type::kDefault;
+    case WebAppManagementProto::COMMAND_LINE:
+      return WebAppManagement::Type::kCommandLine;
   }
 }
 
@@ -253,6 +258,8 @@ WebAppManagementProto WebAppManagementToProto(WebAppManagement::Type type) {
   switch (type) {
     case WebAppManagement::Type::kSystem:
       return WebAppManagementProto::SYSTEM;
+    case WebAppManagement::Type::kKiosk:
+      return WebAppManagementProto::KIOSK;
     case WebAppManagement::Type::kPolicy:
       return WebAppManagementProto::POLICY;
     case WebAppManagement::Type::kSubApp:
@@ -263,6 +270,8 @@ WebAppManagementProto WebAppManagementToProto(WebAppManagement::Type type) {
       return WebAppManagementProto::SYNC;
     case WebAppManagement::Type::kDefault:
       return WebAppManagementProto::DEFAULT;
+    case WebAppManagement::Type::kCommandLine:
+      return WebAppManagementProto::COMMAND_LINE;
   }
 }
 
@@ -374,6 +383,10 @@ std::unique_ptr<WebAppProto> WebAppDatabase::CreateWebAppProto(
       web_app.sources_[WebAppManagement::kDefault]);
   local_data->mutable_sources()->set_sub_app(
       web_app.sources_[WebAppManagement::kSubApp]);
+  local_data->mutable_sources()->set_kiosk(
+      web_app.sources_[WebAppManagement::kKiosk]);
+  local_data->mutable_sources()->set_command_line(
+      web_app.sources_[WebAppManagement::kCommandLine]);
 
   local_data->set_is_locally_installed(web_app.is_locally_installed());
 
@@ -722,26 +735,21 @@ std::unique_ptr<WebAppProto> WebAppDatabase::CreateWebAppProto(
       web_app.always_show_toolbar_in_fullscreen());
 
   if (web_app.isolation_data().has_value()) {
-    struct ContentVisitor {
-      void operator()(const WebApp::IsolationData::InstalledBundle& bundle) {
-        mutable_isolation_data->mutable_installed_bundle()->set_path(
-            bundle.path);
-      }
-
-      void operator()(const WebApp::IsolationData::DevModeBundle& bundle) {
-        mutable_isolation_data->mutable_dev_mode_bundle()->set_path(
-            bundle.path);
-      }
-
-      void operator()(const WebApp::IsolationData::DevModeProxy& proxy) {
-        mutable_isolation_data->mutable_dev_mode_proxy()->set_proxy_url(
-            proxy.proxy_url);
-      }
-
-      IsolationData* mutable_isolation_data;
-    };
-    absl::visit(ContentVisitor{local_data->mutable_isolation_data()},
-                web_app.isolation_data().value().content);
+    auto* mutable_data = local_data->mutable_isolation_data();
+    absl::visit(
+        base::Overloaded{
+            [&mutable_data](const IsolationData::InstalledBundle& bundle) {
+              mutable_data->mutable_installed_bundle()->set_path(bundle.path);
+            },
+            [&mutable_data](const IsolationData::DevModeBundle& bundle) {
+              mutable_data->mutable_dev_mode_bundle()->set_path(bundle.path);
+            },
+            [&mutable_data](const IsolationData::DevModeProxy& proxy) {
+              mutable_data->mutable_dev_mode_proxy()->set_proxy_url(
+                  proxy.proxy_url);
+            },
+        },
+        web_app.isolation_data().value().content);
   }
 
   return local_data;
@@ -791,6 +799,13 @@ std::unique_ptr<WebApp> WebAppDatabase::CreateWebApp(
   sources[WebAppManagement::kDefault] = local_data.sources().default_();
   if (local_data.sources().has_sub_app()) {
     sources[WebAppManagement::kSubApp] = local_data.sources().sub_app();
+  }
+  if (local_data.sources().has_kiosk()) {
+    sources[WebAppManagement::kKiosk] = local_data.sources().kiosk();
+  }
+  if (local_data.sources().has_command_line()) {
+    sources[WebAppManagement::kCommandLine] =
+        local_data.sources().command_line();
   }
   if (!sources.any() && !local_data.is_uninstalling()) {
     DLOG(ERROR) << "WebApp proto parse error: no any source in sources field, "
@@ -1353,27 +1368,23 @@ std::unique_ptr<WebApp> WebAppDatabase::CreateWebApp(
 
   if (local_data.has_isolation_data()) {
     switch (local_data.isolation_data().content_case()) {
-      case IsolationData::ContentCase::kInstalledBundle:
-        web_app->SetIsolationData(
-            WebApp::IsolationData(WebApp::IsolationData::InstalledBundle{
-                .path =
-                    local_data.isolation_data().installed_bundle().path()}));
+      case IsolationDataProto::ContentCase::kInstalledBundle:
+        web_app->SetIsolationData(IsolationData(IsolationData::InstalledBundle{
+            .path = local_data.isolation_data().installed_bundle().path()}));
         break;
 
-      case IsolationData::ContentCase::kDevModeBundle:
-        web_app->SetIsolationData(
-            WebApp::IsolationData(WebApp::IsolationData::DevModeBundle{
-                .path = local_data.isolation_data().dev_mode_bundle().path()}));
+      case IsolationDataProto::ContentCase::kDevModeBundle:
+        web_app->SetIsolationData(IsolationData(IsolationData::DevModeBundle{
+            .path = local_data.isolation_data().dev_mode_bundle().path()}));
         break;
 
-      case IsolationData::ContentCase::kDevModeProxy:
-        web_app->SetIsolationData(
-            WebApp::IsolationData(WebApp::IsolationData::DevModeProxy{
-                .proxy_url =
-                    local_data.isolation_data().dev_mode_proxy().proxy_url()}));
+      case IsolationDataProto::ContentCase::kDevModeProxy:
+        web_app->SetIsolationData(IsolationData(IsolationData::DevModeProxy{
+            .proxy_url =
+                local_data.isolation_data().dev_mode_proxy().proxy_url()}));
         break;
 
-      case IsolationData::ContentCase::CONTENT_NOT_SET:
+      case IsolationDataProto::ContentCase::CONTENT_NOT_SET:
         DLOG(ERROR) << "WebApp proto isolation_data parse error: "
                     << "content not set";
         return nullptr;

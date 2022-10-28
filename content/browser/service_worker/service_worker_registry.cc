@@ -415,6 +415,13 @@ void ServiceWorkerRegistry::StoreRegistration(
     data->cross_origin_embedder_policy =
         *version->cross_origin_embedder_policy();
   }
+  data->policy_container_policies =
+      blink::mojom::PolicyContainerPolicies::New();
+  if (version->policy_container_host()) {
+    data->policy_container_policies = version->policy_container_host()
+                                          ->policies()
+                                          .ToMojoPolicyContainerPolicies();
+  }
 
   ResourceList resources;
   version->script_cache_map()->GetResources(&resources);
@@ -554,6 +561,21 @@ void ServiceWorkerRegistry::UpdateNavigationPreloadHeader(
       base::BindOnce(&ServiceWorkerRegistry::DidUpdateRegistration,
                      weak_factory_.GetWeakPtr(), std::move(callback)),
       static_cast<const int64_t>(registration_id), key, value);
+}
+
+void ServiceWorkerRegistry::UpdateFetchHandlerType(
+    int64_t registration_id,
+    const blink::StorageKey& key,
+    blink::mojom::ServiceWorkerFetchHandlerType fetch_handler_type,
+    StatusCallback callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  CreateInvokerAndStartRemoteCall(
+      &storage::mojom::ServiceWorkerStorageControl::UpdateFetchHandlerType,
+      base::BindOnce(&ServiceWorkerRegistry::DidUpdateRegistration,
+                     weak_factory_.GetWeakPtr(), std::move(callback)),
+      static_cast<const int64_t>(registration_id), key,
+      static_cast<const blink::mojom::ServiceWorkerFetchHandlerType>(
+          fetch_handler_type));
 }
 
 void ServiceWorkerRegistry::StoreUncommittedResourceId(
@@ -895,6 +917,12 @@ ServiceWorkerRegistry::GetOrCreateRegistration(
     version->set_used_features(std::move(used_features));
     version->set_cross_origin_embedder_policy(
         data.cross_origin_embedder_policy);
+    // policy_container_host could be null for registration restored from old DB
+    if (data.policy_container_policies) {
+      version->set_policy_container_host(
+          base::MakeRefCounted<PolicyContainerHost>(
+              PolicyContainerPolicies(*data.policy_container_policies)));
+    }
   }
   version->set_script_response_time_for_devtools(data.script_response_time);
 
@@ -1190,11 +1218,8 @@ void ServiceWorkerRegistry::DidGetAllRegistrations(
       info.active_version.registration_id = registration_data->registration_id;
       info.active_version.script_response_time =
           registration_data->script_response_time;
-      info.active_version.fetch_handler_existence =
-          (registration_data->fetch_handler_type ==
-           blink::mojom::ServiceWorkerFetchHandlerType::kNoHandler)
-              ? ServiceWorkerVersion::FetchHandlerExistence::DOES_NOT_EXIST
-              : ServiceWorkerVersion::FetchHandlerExistence::EXISTS;
+      info.active_version.fetch_handler_type =
+          registration_data->fetch_handler_type;
       info.active_version.navigation_preload_state.enabled =
           registration_data->navigation_preload_state->enabled;
       info.active_version.navigation_preload_state.header =
@@ -1206,11 +1231,8 @@ void ServiceWorkerRegistry::DidGetAllRegistrations(
       info.waiting_version.registration_id = registration_data->registration_id;
       info.waiting_version.script_response_time =
           registration_data->script_response_time;
-      info.waiting_version.fetch_handler_existence =
-          (registration_data->fetch_handler_type ==
-           blink::mojom::ServiceWorkerFetchHandlerType::kNoHandler)
-              ? ServiceWorkerVersion::FetchHandlerExistence::DOES_NOT_EXIST
-              : ServiceWorkerVersion::FetchHandlerExistence::EXISTS;
+      info.waiting_version.fetch_handler_type =
+          registration_data->fetch_handler_type;
       info.waiting_version.navigation_preload_state.enabled =
           registration_data->navigation_preload_state->enabled;
       info.waiting_version.navigation_preload_state.header =

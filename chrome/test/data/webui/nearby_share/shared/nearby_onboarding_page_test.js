@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -77,7 +77,8 @@ suite('nearby-onboarding-page', function() {
 
     fakeSettings.setNextDeviceNameResult(
         nearbyShare.mojom.DeviceNameValidationResult.kErrorEmpty);
-    input.fire('input');
+    input.dispatchEvent(
+        new CustomEvent('input', {bubbles: true, composed: true}));
     // Allow the validation promise to resolve.
     await waitAfterNextRender(/** @type {!HTMLElement} */ (input));
     assertTrue(input.invalid);
@@ -85,7 +86,8 @@ suite('nearby-onboarding-page', function() {
 
     fakeSettings.setNextDeviceNameResult(
         nearbyShare.mojom.DeviceNameValidationResult.kValid);
-    input.fire('input');
+    input.dispatchEvent(
+        new CustomEvent('input', {bubbles: true, composed: true}));
     await waitAfterNextRender(/** @type {!HTMLElement} */ (input));
     assertFalse(input.invalid);
     assertFalse(pageTemplate.actionDisabled);

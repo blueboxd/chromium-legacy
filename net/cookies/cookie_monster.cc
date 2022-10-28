@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -1125,10 +1125,8 @@ void CookieMonster::TrimDuplicateCookiesForKey(
 }
 
 std::vector<CanonicalCookie*>
-CookieMonster::FindCookiesForRegistryControlledHost(
-    const GURL& url,
-    CookieMap* cookie_map,
-    CookieMonster::PartitionedCookieMap::iterator* partition_it) {
+CookieMonster::FindCookiesForRegistryControlledHost(const GURL& url,
+                                                    CookieMap* cookie_map) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   if (!cookie_map)
@@ -1148,14 +1146,7 @@ CookieMonster::FindCookiesForRegistryControlledHost(
 
     // If the cookie is expired, delete it.
     if (cc->IsExpired(current_time)) {
-      if (cc->IsPartitioned()) {
-        DCHECK(partition_it);
-        DCHECK_EQ((*partition_it)->second.get(), cookie_map);
-        InternalDeletePartitionedCookie(*partition_it, curit, true,
-                                        DELETE_COOKIE_EXPIRED);
-      } else {
-        InternalDeleteCookie(curit, true, DELETE_COOKIE_EXPIRED);
-      }
+      InternalDeleteCookie(curit, true, DELETE_COOKIE_EXPIRED);
       continue;
     }
     cookies.push_back(cc);
@@ -1174,7 +1165,7 @@ CookieMonster::FindPartitionedCookiesForRegistryControlledHost(
   if (it == partitioned_cookies_.end())
     return std::vector<CanonicalCookie*>();
 
-  return FindCookiesForRegistryControlledHost(url, it->second.get(), &it);
+  return FindCookiesForRegistryControlledHost(url, it->second.get());
 }
 
 void CookieMonster::FilterCookiesWithOptions(
@@ -2272,7 +2263,7 @@ bool CookieMonster::DoRecordPeriodicStats() {
       }
     }
     absl::optional<base::flat_map<SchemefulSite, FirstPartySetEntry>>
-        maybe_sets = cookie_access_delegate()->FindFirstPartySetOwners(
+        maybe_sets = cookie_access_delegate()->FindFirstPartySetEntries(
             sites,
             base::BindOnce(&CookieMonster::RecordPeriodicFirstPartySetsStats,
                            weak_ptr_factory_.GetWeakPtr()));

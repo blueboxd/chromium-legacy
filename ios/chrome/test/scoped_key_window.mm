@@ -1,10 +1,10 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #import "ios/chrome/test/scoped_key_window.h"
 
-#include "base/check_op.h"
+#import "base/check_op.h"
 #import "base/ios/ios_util.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 

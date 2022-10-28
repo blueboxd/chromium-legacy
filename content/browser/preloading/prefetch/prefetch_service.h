@@ -24,6 +24,7 @@ class OneShotTimer;
 }  // namespace base
 
 namespace network::mojom {
+class NetworkContext;
 class URLLoaderFactory;
 }  // namespace network::mojom
 
@@ -80,16 +81,11 @@ class CONTENT_EXPORT PrefetchService {
   // Returns the prefetch with |url| that is ready to serve. In order for a
   // prefetch to be ready to serve, |PrepareToServe| must have been previously
   // called with the prefetch.
-  base::WeakPtr<PrefetchContainer> GetPrefetchToServe(const GURL& url) const;
+  base::WeakPtr<PrefetchContainer> GetPrefetchToServe(const GURL& url);
 
-  // Returns the current prefetches associated with |this|. Used to check the
-  // state of the prefetches.
-  // TODO(https://crbug.com/1299059): Remove this once we can get metrics
-  // instead.
-  const std::map<PrefetchContainer::Key, base::WeakPtr<PrefetchContainer>>&
-  GetAllPrefetchesForTesting() {
-    return all_prefetches_;
-  }
+  // Removes the prefetch with the given |prefetch_container_key| from
+  // |all_prefetches_|.
+  void RemovePrefetch(const PrefetchContainer::Key& prefetch_container_key);
 
   // Helper functions to control the behavior of the eligibility check when
   // testing.
@@ -103,6 +99,12 @@ class CONTENT_EXPORT PrefetchService {
   // keep ownership over the course of the test.
   static void SetURLLoaderFactoryForTesting(
       network::mojom::URLLoaderFactory* url_loader_factory);
+
+  // Sets the NetworkContext to use just for the proxy lookup. Note that this
+  // does not take ownership of |network_context|, and the caller must keep
+  // ownership over the course of the test.
+  static void SetNetworkContextForProxyLookupForTesting(
+      network::mojom::NetworkContext* network_context);
 
  private:
   // Checks whether the given |prefetch_container| is eligible for prefetch.
@@ -125,6 +127,21 @@ class CONTENT_EXPORT PrefetchService {
       OnEligibilityResultCallback result_callback,
       const net::CookieAccessResultList& cookie_list,
       const net::CookieAccessResultList& excluded_cookies) const;
+
+  // Starts the check for whether or not there is a proxy configured for the URL
+  // of |prefetch_container|. If there is an existing proxy, then the prefetch
+  // is not eligible.
+  void StartProxyLookupCheck(
+      base::WeakPtr<PrefetchContainer> prefetch_container,
+      OnEligibilityResultCallback result_callback) const;
+
+  // Called after looking up the proxy configuration for the URL of
+  // |prefetch_container|. If there is an existing proxy, then the prefetch is
+  // not eligible.
+  void OnGotProxyLookupResult(
+      base::WeakPtr<PrefetchContainer> prefetch_container,
+      OnEligibilityResultCallback result_callback,
+      bool has_proxy) const;
 
   // Called once the eligibility of |prefetch_container| is determined. If the
   // prefetch is eligible it is added to the queue to be prefetched. If it is
@@ -216,8 +233,8 @@ class CONTENT_EXPORT PrefetchService {
   // not started yet.
   std::vector<base::WeakPtr<PrefetchContainer>> prefetch_queue_;
 
-  // The number of prefetches with in progress requests.
-  int num_active_prefetches_{0};
+  // The set of prefetches with in progress requests.
+  std::set<PrefetchContainer::Key> active_prefetches_;
 
   // Prefetches owned by |this|. Once the network request for a prefetch is
   // started, |this| takes ownership of the prefetch so the response can be used

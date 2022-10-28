@@ -120,7 +120,7 @@ GURL ContentBrowserClient::GetEffectiveURL(BrowserContext* browser_context,
 bool ContentBrowserClient::ShouldCompareEffectiveURLsForSiteInstanceSelection(
     BrowserContext* browser_context,
     content::SiteInstance* candidate_site_instance,
-    bool is_main_frame,
+    bool is_outermost_main_frame,
     const GURL& candidate_url,
     const GURL& destination_url) {
   DCHECK(browser_context);
@@ -248,7 +248,7 @@ size_t ContentBrowserClient::GetProcessCountToIgnoreForLimit() {
   return 0;
 }
 
-blink::ParsedPermissionsPolicy
+absl::optional<blink::ParsedPermissionsPolicy>
 ContentBrowserClient::GetPermissionsPolicyForIsolatedApp(
     content::BrowserContext* browser_context,
     const url::Origin& app_origin) {
@@ -494,11 +494,11 @@ bool ContentBrowserClient::IsInterestGroupAPIAllowed(
   return false;
 }
 
-bool ContentBrowserClient::IsConversionMeasurementOperationAllowed(
+bool ContentBrowserClient::IsAttributionReportingOperationAllowed(
     content::BrowserContext* browser_context,
-    ConversionMeasurementOperation operation,
-    const url::Origin* impression_origin,
-    const url::Origin* conversion_origin,
+    AttributionReportingOperation operation,
+    const url::Origin* source_origin,
+    const url::Origin* destination_origin,
     const url::Origin* reporting_origin) {
   return true;
 }
@@ -533,6 +533,11 @@ GeneratedCodeCacheSettings ContentBrowserClient::GetGeneratedCodeCacheSettings(
     BrowserContext* context) {
   // By default, code cache is disabled, embedders should override.
   return GeneratedCodeCacheSettings(false, 0, base::FilePath());
+}
+
+cert_verifier::mojom::CertVerifierServiceParamsPtr
+ContentBrowserClient::GetCertVerifierServiceParams() {
+  return nullptr;
 }
 
 void ContentBrowserClient::AllowCertificateError(
@@ -638,6 +643,12 @@ TtsControllerDelegate* ContentBrowserClient::GetTtsControllerDelegate() {
 TtsPlatform* ContentBrowserClient::GetTtsPlatform() {
   return nullptr;
 }
+
+#if !BUILDFLAG(IS_ANDROID)
+DirectSocketsDelegate* ContentBrowserClient::GetDirectSocketsDelegate() {
+  return nullptr;
+}
+#endif
 
 base::FilePath ContentBrowserClient::GetDefaultDownloadDirectory() {
   return base::FilePath();
@@ -1282,6 +1293,11 @@ bool ContentBrowserClient::ShouldInheritCrossOriginEmbedderPolicyImplicitly(
   return false;
 }
 
+bool ContentBrowserClient::ShouldServiceWorkerInheritPolicyContainerFromCreator(
+    const GURL& url) {
+  return url.SchemeIsLocal();
+}
+
 bool ContentBrowserClient::ShouldAllowInsecurePrivateNetworkRequests(
     BrowserContext* browser_context,
     const url::Origin& origin) {
@@ -1337,14 +1353,6 @@ std::unique_ptr<PrefetchServiceDelegate>
 ContentBrowserClient::CreatePrefetchServiceDelegate(
     BrowserContext* browser_context) {
   return nullptr;
-}
-
-void ContentBrowserClient::ShowDirectSocketsConnectionDialog(
-    content::RenderFrameHost* owner,
-    const std::string& address,
-    base::OnceCallback<void(bool, const std::string&, const std::string&)>
-        callback) {
-  std::move(callback).Run(false, std::string(), std::string());
 }
 
 bool ContentBrowserClient::IsFindInPageDisabledForOrigin(

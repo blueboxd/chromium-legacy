@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -148,8 +148,7 @@ void ToolbarActionsModel::RemovePref(const ActionId& action_id) {
   // the active pinned set.
   DCHECK(!IsActionPinned(action_id));
   auto stored_pinned_actions = extension_prefs_->GetPinnedExtensions();
-  auto iter = std::find(stored_pinned_actions.begin(),
-                        stored_pinned_actions.end(), action_id);
+  auto iter = base::ranges::find(stored_pinned_actions, action_id);
   if (iter != stored_pinned_actions.end()) {
     stored_pinned_actions.erase(iter);
     extension_prefs_->SetPinnedExtensions(stored_pinned_actions);
@@ -238,11 +237,10 @@ bool ToolbarActionsModel::IsRestrictedUrl(const GURL& url) const {
   // If nay extension has access, we want to properly message that (since
   // saying "No extensions can run..." is inaccurate). Other extensions
   // will still be properly attributed in UI.
-  return std::all_of(
-      action_ids().begin(), action_ids().end(), [this, url](ActionId id) {
-        return GetExtensionById(id)->permissions_data()->IsRestrictedUrl(
-            url, /*error=*/nullptr);
-      });
+  return base::ranges::all_of(action_ids(), [this, url](ActionId id) {
+    return GetExtensionById(id)->permissions_data()->IsRestrictedUrl(
+        url, /*error=*/nullptr);
+  });
 }
 
 bool ToolbarActionsModel::IsActionPinned(const ActionId& action_id) const {
@@ -270,8 +268,8 @@ void ToolbarActionsModel::MovePinnedAction(const ActionId& action_id,
   DCHECK(!profile_->IsOffTheRecord())
       << "Changing action position is disallowed in incognito.";
 
-  auto current_position_on_toolbar = std::find(
-      pinned_action_ids_.begin(), pinned_action_ids_.end(), action_id);
+  auto current_position_on_toolbar =
+      base::ranges::find(pinned_action_ids_, action_id);
   DCHECK(current_position_on_toolbar != pinned_action_ids_.end());
   size_t current_index_on_toolbar =
       current_position_on_toolbar - pinned_action_ids_.begin();
@@ -337,13 +335,13 @@ void ToolbarActionsModel::MovePinnedAction(const ActionId& action_id,
   auto stored_pinned_actions = extension_prefs_->GetPinnedExtensions();
   const bool move_to_end =
       non_force_pinned_neighbor == pinned_action_ids_.end();
-  auto target_position = move_to_end ? stored_pinned_actions.end()
-                                     : std::find(stored_pinned_actions.begin(),
-                                                 stored_pinned_actions.end(),
-                                                 *non_force_pinned_neighbor);
+  auto target_position = move_to_end
+                             ? stored_pinned_actions.end()
+                             : base::ranges::find(stored_pinned_actions,
+                                                  *non_force_pinned_neighbor);
 
-  auto current_position_in_prefs = std::find(
-      stored_pinned_actions.begin(), stored_pinned_actions.end(), action_id);
+  auto current_position_in_prefs =
+      base::ranges::find(stored_pinned_actions, action_id);
   DCHECK(current_position_in_prefs != stored_pinned_actions.end());
 
   // Rotate |action_id| to be in the target position.

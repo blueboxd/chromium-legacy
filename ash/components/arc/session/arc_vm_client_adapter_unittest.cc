@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,7 +9,6 @@
 #include <sys/un.h>
 #include <unistd.h>
 
-#include <algorithm>
 #include <limits>
 #include <memory>
 #include <string>
@@ -38,6 +37,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/posix/safe_strerror.h"
 #include "base/process/process_metrics.h"
+#include "base/ranges/algorithm.h"
 #include "base/run_loop.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
@@ -817,7 +817,7 @@ TEST_F(ArcVmClientAdapterTest, StartMiniArc_JobRestart) {
   const auto& ops = upstart_operations();
   // Find the STOP operation for the job.
   auto it =
-      std::find_if(ops.begin(), ops.end(), [](const UpstartOperation& op) {
+      base::ranges::find_if(ops, [](const UpstartOperation& op) {
         return op.type == UpstartOperationType::STOP &&
                kArcVmPreLoginServicesJobName == op.name;
       });
@@ -1051,7 +1051,7 @@ TEST_F(ArcVmClientAdapterTest, StartMiniArc_UreadaheadByDefault) {
 
   const auto& ops = upstart_operations();
   const auto it =
-      std::find_if(ops.begin(), ops.end(), [](const UpstartOperation& op) {
+      base::ranges::find_if(ops, [](const UpstartOperation& op) {
         return op.type == UpstartOperationType::START &&
                kArcVmPreLoginServicesJobName == op.name;
       });
@@ -1069,13 +1069,13 @@ TEST_F(ArcVmClientAdapterTest, StartMiniArc_DisableUreadahead) {
 
   const auto& ops = upstart_operations();
   const auto it =
-      std::find_if(ops.begin(), ops.end(), [](const UpstartOperation& op) {
+      base::ranges::find_if(ops, [](const UpstartOperation& op) {
         return op.type == UpstartOperationType::START &&
                kArcVmPreLoginServicesJobName == op.name;
       });
   ASSERT_NE(ops.end(), it);
   const auto it_ureadahead =
-      std::find(it->env.begin(), it->env.end(), "DISABLE_UREADAHEAD=1");
+      base::ranges::find(it->env, "DISABLE_UREADAHEAD=1");
   EXPECT_NE(it->env.end(), it_ureadahead);
 }
 
@@ -1569,8 +1569,7 @@ TEST_F(ArcVmClientAdapterTest, VirtioBlkForData_FlagDisabled) {
 
 TEST_F(ArcVmClientAdapterTest, VirtioBlkForData_CreateDiskimageResponseEmpty) {
   base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeatureWithParameters(arc::kEnableVirtioBlkForData,
-                                                  {{"use_lvm", "false"}});
+  feature_list.InitAndEnableFeature(arc::kEnableVirtioBlkForData);
 
   // CreateDiskImage() returns an empty response.
   GetTestConciergeClient()->set_create_disk_image_response(absl::nullopt);
@@ -1584,8 +1583,7 @@ TEST_F(ArcVmClientAdapterTest, VirtioBlkForData_CreateDiskimageResponseEmpty) {
 
 TEST_F(ArcVmClientAdapterTest, VirtioBlkForData_CreateDiskImageStatusFailed) {
   base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeatureWithParameters(arc::kEnableVirtioBlkForData,
-                                                  {{"use_lvm", "false"}});
+  feature_list.InitAndEnableFeature(arc::kEnableVirtioBlkForData);
 
   GetTestConciergeClient()->set_create_disk_image_response(
       CreateDiskImageResponse(vm_tools::concierge::DISK_STATUS_FAILED));
@@ -1599,8 +1597,7 @@ TEST_F(ArcVmClientAdapterTest, VirtioBlkForData_CreateDiskImageStatusFailed) {
 
 TEST_F(ArcVmClientAdapterTest, VirtioBlkForData_CreateDiskImageStatusCreated) {
   base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeatureWithParameters(arc::kEnableVirtioBlkForData,
-                                                  {{"use_lvm", "false"}});
+  feature_list.InitAndEnableFeature(arc::kEnableVirtioBlkForData);
 
   GetTestConciergeClient()->set_create_disk_image_response(
       CreateDiskImageResponse(vm_tools::concierge::DISK_STATUS_CREATED));
@@ -1619,8 +1616,7 @@ TEST_F(ArcVmClientAdapterTest, VirtioBlkForData_CreateDiskImageStatusCreated) {
 
 TEST_F(ArcVmClientAdapterTest, VirtioBlkForData_CreateDiskImageStatusExists) {
   base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeatureWithParameters(arc::kEnableVirtioBlkForData,
-                                                  {{"use_lvm", "false"}});
+  feature_list.InitAndEnableFeature(arc::kEnableVirtioBlkForData);
 
   GetTestConciergeClient()->set_create_disk_image_response(
       CreateDiskImageResponse(vm_tools::concierge::DISK_STATUS_EXISTS));
@@ -1637,10 +1633,38 @@ TEST_F(ArcVmClientAdapterTest, VirtioBlkForData_CreateDiskImageStatusExists) {
       base::Contains(req.params(), "androidboot.arcvm_virtio_blk_data=1"));
 }
 
-TEST_F(ArcVmClientAdapterTest, VirtioBlkForData_UseLvm) {
+TEST_F(ArcVmClientAdapterTest, VirtioBlkForData_LvmSupported) {
   base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeatureWithParameters(arc::kEnableVirtioBlkForData,
-                                                  {{"use_lvm", "true"}});
+  feature_list.InitWithFeatures(
+      /*enabled_features=*/{arc::kEnableVirtioBlkForData,
+                            arc::kLvmApplicationContainers},
+      /*disabled_features=*/{});
+
+  StartMiniArcWithParams(true, GetPopulatedStartParams());
+  EXPECT_GE(GetTestConciergeClient()->start_arc_vm_call_count(), 1);
+
+  // CreateDiskImage() should NOT be called.
+  EXPECT_EQ(GetTestConciergeClient()->create_disk_image_call_count(), 0);
+
+  // StartArcVmRequest should contain the LVM-provided disk path.
+  const std::string expected_lvm_disk_path =
+      base::StringPrintf("/dev/mapper/vm/dmcrypt-%s-arcvm",
+                         std::string(kUserIdHash).substr(0, 8).c_str());
+  auto req = GetTestConciergeClient()->start_arc_vm_request();
+  EXPECT_TRUE(HasDiskImage(req, expected_lvm_disk_path));
+  EXPECT_TRUE(
+      base::Contains(req.params(), "androidboot.arcvm_virtio_blk_data=1"));
+}
+
+TEST_F(ArcVmClientAdapterTest, VirtioBlkForData_OverrideUseLvm) {
+  // ArcVirtioBlkDataConfigOverride:use_lvm/true should override
+  // ArcLvmApplicationContainers flag.
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitWithFeaturesAndParameters(
+      /*enabled_features=*/{{arc::kEnableVirtioBlkForData, {{}}},
+                            {arc::kVirtioBlkDataConfigOverride,
+                             {{"use_lvm", "true"}}}},
+      /*disabled_features=*/{arc::kLvmApplicationContainers});
 
   StartMiniArcWithParams(true, GetPopulatedStartParams());
   EXPECT_GE(GetTestConciergeClient()->start_arc_vm_call_count(), 1);

@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,8 +7,7 @@
 
 #include <string>
 
-namespace chromeos {
-namespace local_search_service {
+namespace ash::local_search_service {
 
 struct Result;
 
@@ -32,7 +31,6 @@ float RelevanceCoefficient(const std::u16string& query,
 // Returns whether |r1| score is higher than |r2|'s.
 bool CompareResults(const Result& r1, const Result& r2);
 
-}  // namespace local_search_service
-}  // namespace chromeos
+}  // namespace ash::local_search_service
 
 #endif  // CHROMEOS_ASH_COMPONENTS_LOCAL_SEARCH_SERVICE_SEARCH_UTILS_H_

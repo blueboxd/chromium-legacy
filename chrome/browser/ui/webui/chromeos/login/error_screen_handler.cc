@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -88,11 +88,6 @@ void ErrorScreenHandler::DeclareLocalizedValues(
   builder->Add("updateOfflineMessageBody",
                ui::SubstituteChromeOSDeviceType(IDS_UPDATE_OFFLINE_MESSAGE));
   builder->Add("updateProxyMessageText", IDS_UPDATE_PROXY_ERROR_MESSAGE);
-  builder->AddF("localStateErrorText0", IDS_LOCAL_STATE_ERROR_TEXT_0,
-                IDS_SHORT_PRODUCT_NAME);
-  builder->Add("localStateErrorText1", IDS_LOCAL_STATE_ERROR_TEXT_1);
-  builder->Add("localStateErrorPowerwashButton",
-               IDS_LOCAL_STATE_ERROR_POWERWASH_BUTTON);
   builder->Add("connectingIndicatorText", IDS_LOGIN_CONNECTING_INDICATOR_TEXT);
   builder->Add("guestSigninFixNetwork", IDS_LOGIN_GUEST_SIGNIN_FIX_NETWORK);
   builder->Add("rebootButton", IDS_RELAUNCH_BUTTON);

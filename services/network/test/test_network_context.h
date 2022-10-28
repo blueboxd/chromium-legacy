@@ -214,7 +214,7 @@ class TestNetworkContext : public mojom::NetworkContext {
   void CreateNetLogExporter(
       mojo::PendingReceiver<mojom::NetLogExporter> receiver) override {}
   void ResolveHost(
-      const net::HostPortPair& host,
+      mojom::HostResolverHostPtr host,
       const net::NetworkIsolationKey& network_isolation_key,
       mojom::ResolveHostParametersPtr optional_parameters,
       mojo::PendingRemote<mojom::ResolveHostClient> response_client) override {}
@@ -307,6 +307,11 @@ class TestNetworkContext : public mojom::NetworkContext {
       const std::string& realm,
       LookupProxyAuthCredentialsCallback callback) override {}
 #endif
+  void ComputeFirstPartySetMetadata(
+      const net::SchemefulSite& site,
+      const absl::optional<net::SchemefulSite>& top_frame_site,
+      const std::vector<net::SchemefulSite>& party_context,
+      ComputeFirstPartySetMetadataCallback callback) override {}
 };
 
 }  // namespace network

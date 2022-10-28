@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -61,6 +61,7 @@ public class CachedFeatureFlags {
                     .put(ChromeFeatureList.COMMERCE_COUPONS, false)
                     .put(ChromeFeatureList.CCT_RESIZABLE_FOR_THIRD_PARTIES, false)
                     .put(ChromeFeatureList.CCT_TOOLBAR_CUSTOMIZATIONS, true)
+                    .put(ChromeFeatureList.CCT_RESIZABLE_WINDOW_ABOVE_NAVBAR, true)
                     .put(ChromeFeatureList.CLOSE_TAB_SUGGESTIONS, false)
                     .put(ChromeFeatureList.COMMAND_LINE_ON_NON_ROOTED, false)
                     .put(ChromeFeatureList.CONDITIONAL_TAB_STRIP_ANDROID, false)
@@ -91,7 +92,8 @@ public class CachedFeatureFlags {
                     .put(ChromeFeatureList.QUERY_TILES_ON_START, false)
                     .put(ChromeFeatureList.PREFETCH_NOTIFICATION_SCHEDULING_INTEGRATION, false)
                     .put(ChromeFeatureList.READ_LATER, false)
-                    .put(ChromeFeatureList.START_SURFACE_ANDROID, false)
+                    .put(ChromeFeatureList.START_SURFACE_ANDROID, true)
+                    .put(ChromeFeatureList.START_SURFACE_RETURN_TIME, false)
                     .put(ChromeFeatureList.START_SURFACE_REFACTOR, false)
                     .put(ChromeFeatureList.STORE_HOURS, false)
                     .put(ChromeFeatureList.SWAP_PIXEL_FORMAT_TO_FIX_CONVERT_FROM_TRANSLUCENT, true)

@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -58,9 +58,6 @@ namespace metrics {
 class MetricsRotationScheduler;
 class MetricsServiceClient;
 class MetricsStateManager;
-
-// Exposed in the header file for tests.
-extern const base::Feature kConsolidateMetricsServiceInitialLogLogic;
 
 // See metrics_service.cc for a detailed description.
 class MetricsService : public base::HistogramFlattener {

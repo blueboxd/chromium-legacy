@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -233,12 +233,7 @@ function setupEvents() {
   }
 
   if (lookalike) {
-    console.warn(
-        'Chrome has determined that ' +
-        loadTimeData.getString('lookalikeRequestHostname') +
-        ' could be fake or fraudulent.\n\n' +
-        'If you believe this is shown in error please visit ' +
-        'https://g.co/chrome/lookalike-warnings');
+    console.warn(loadTimeData.getString('lookalikeConsoleMessage'));
   }
 
   preventDefaultOnPoundLinkClicks();

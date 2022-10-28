@@ -1,15 +1,15 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "net/dns/resolve_context.h"
 
-#include <algorithm>
 #include <cstdlib>
 #include <limits>
 #include <utility>
 
 #include "base/check_op.h"
+#include "base/containers/contains.h"
 #include "base/metrics/bucket_ranges.h"
 #include "base/metrics/histogram.h"
 #include "base/metrics/histogram_base.h"
@@ -566,10 +566,9 @@ bool ResolveContext::GetProviderUseExtraLogging(size_t server_index,
 
   // Use extra logging if any matching provider entries have
   // `LoggingLevel::kExtra` set.
-  return std::any_of(
-      matching_entries.begin(), matching_entries.end(), [&](const auto* entry) {
-        return entry->logging_level == DohProviderEntry::LoggingLevel::kExtra;
-      });
+  return base::Contains(matching_entries,
+                        DohProviderEntry::LoggingLevel::kExtra,
+                        &DohProviderEntry::logging_level);
 }
 
 void ResolveContext::NotifyDohStatusObserversOfSessionChanged() {

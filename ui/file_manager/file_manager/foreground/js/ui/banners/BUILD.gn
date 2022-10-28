@@ -21,6 +21,7 @@ group("closure_compile") {
 html_to_js("web_components") {
   visibility += [ "//ui/file_manager/*" ]
   js_files = [
+    "dlp_restricted_banner.js",
     "drive_low_individual_space_banner.js",
     "drive_out_of_individual_space_banner.js",
     "drive_out_of_organization_space_banner.js",
@@ -42,13 +43,15 @@ js_type_check("closure_compile_jsmodules") {
   is_polymer3 = true
   closure_flags = default_closure_args + [
                     "language_in=ECMASCRIPT_2020",
-                    "js_module_root=../../ui/file_manager/",
+                    "js_module_root=" +
+                        rebase_path("//ui/file_manager/", root_build_dir),
                     "js_module_root=gen/ui/file_manager/",
                     "browser_resolver_prefix_replacements=\"chrome-extension://hhaomjibdihmijegdhdafkllkbggdgoj/=./file_manager/\"",
                     "browser_resolver_prefix_replacements=\"chrome-extension://pmfjbimdmchhbnneeidfognadeopoehp/=./image_loader/\"",
                   ]
 
   deps = [
+    ":dlp_restricted_banner",
     ":drive_low_individual_space_banner",
     ":drive_offline_pinning_banner",
     ":drive_out_of_individual_space_banner",
@@ -63,6 +66,15 @@ js_type_check("closure_compile_jsmodules") {
     ":state_banner",
     ":trash_banner",
     ":warning_banner",
+  ]
+}
+
+js_library("dlp_restricted_banner") {
+  deps = [
+    ":state_banner",
+    "//ui/file_manager/file_manager/common/js:dialog_type",
+    "//ui/file_manager/file_manager/common/js:volume_manager_types",
+    "//ui/file_manager/file_manager/externs:banner",
   ]
 }
 
@@ -224,7 +236,8 @@ js_test_type_check("js_test_type_check") {
                     "language_in=ECMASCRIPT_2020",
                     "generate_exports=false",
                     "js_module_root=./gen/ui",
-                    "js_module_root=../../ui/file_manager/",
+                    "js_module_root=" +
+                        rebase_path("//ui/file_manager/", root_build_dir),
                     "js_module_root=./gen/ui/file_manager/",
                     "jscomp_off=duplicate",
                     "browser_resolver_prefix_replacements=\"chrome://webui-test/=./\"",

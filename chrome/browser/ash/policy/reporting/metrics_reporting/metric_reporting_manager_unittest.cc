@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -14,9 +14,9 @@
 #include "base/memory/raw_ptr.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
+#include "components/reporting/metrics/event_driven_telemetry_sampler_pool.h"
 #include "components/reporting/metrics/fake_metric_report_queue.h"
 #include "components/reporting/metrics/fake_reporting_settings.h"
-#include "components/reporting/metrics/fake_sampler.h"
 #include "components/reporting/metrics/metric_data_collector.h"
 #include "components/reporting/metrics/metric_event_observer_manager.h"
 #include "components/reporting/metrics/metric_report_queue.h"
@@ -25,9 +25,11 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
-using ::testing::_;
-using ::testing::ByMove;
-using ::testing::Return;
+using testing::_;
+using testing::ByMove;
+using testing::Eq;
+using testing::Ne;
+using testing::Return;
 
 namespace reporting {
 namespace {
@@ -51,11 +53,11 @@ class FakeMetricEventObserverManager : public MetricEventObserverManager {
   FakeMetricEventObserverManager(ReportingSettings* reporting_settings,
                                  int* observer_manager_count)
       : MetricEventObserverManager(std::make_unique<FakeMetricEventObserver>(),
-                                   nullptr,
+                                   /*metric_report_queue=*/nullptr,
                                    reporting_settings,
-                                   "",
-                                   false,
-                                   {}),
+                                   /*enable_setting_path=*/"",
+                                   /*setting_enabled_default_value=*/false,
+                                   /*sampler_pool=*/nullptr),
         observer_manager_count_(observer_manager_count) {
     ++(*observer_manager_count_);
   }
@@ -99,9 +101,9 @@ class MockDelegate : public MetricReportingManager::Delegate {
 
   ~MockDelegate() override = default;
 
-  MOCK_METHOD(bool, IsAffiliated, (Profile * profile), (override));
+  MOCK_METHOD(bool, IsAffiliated, (Profile * profile), (const, override));
 
-  MOCK_METHOD(bool, IsDeprovisioned, (), (override));
+  MOCK_METHOD(bool, IsDeprovisioned, (), (const, override));
 
   MOCK_METHOD(std::unique_ptr<MetricReportQueue>,
               CreateMetricReportQueue,
@@ -146,7 +148,7 @@ class MockDelegate : public MetricReportingManager::Delegate {
               CreatePeriodicEventCollector,
               (Sampler * sampler,
                std::unique_ptr<EventDetector> event_detector,
-               std::vector<Sampler*> additional_samplers,
+               EventDrivenTelemetrySamplerPool* sampler_pool,
                MetricReportQueue* metric_report_queue,
                ReportingSettings* reporting_settings,
                const std::string& enable_setting_path,
@@ -163,7 +165,7 @@ class MockDelegate : public MetricReportingManager::Delegate {
                ReportingSettings* reporting_settings,
                const std::string& enable_setting_path,
                bool setting_enabled_default_value,
-               std::vector<Sampler*> additional_samplers),
+               EventDrivenTelemetrySamplerPool* sampler_pool),
               (override));
 };
 
@@ -182,7 +184,9 @@ const MetricReportingSettingData memory_info_settings = {
     ::ash::kReportDeviceMemoryInfo, false, "", 0};
 const MetricReportingSettingData bus_info_settings = {
     ::ash::kReportDeviceSecurityStatus, false, "", 0};
-const MetricReportingSettingData input_info_settings = {
+// This is used for testing both the InputInfo and DisplayInfo, grouping them
+// together since the collection is done using the same policy.
+const MetricReportingSettingData graphics_info_settings = {
     ::ash::kReportDeviceGraphicsStatus, false, "", 0};
 const MetricReportingSettingData network_telemetry_settings = {
     ::ash::kReportDeviceNetworkStatus, true,
@@ -195,6 +199,9 @@ const MetricReportingSettingData audio_metric_settings = {
     ::ash::kReportDeviceAudioStatusCheckingRateMs, 1};
 const MetricReportingSettingData peripheral_metric_settings = {
     ::ash::kReportDevicePeripherals, false, "", 0};
+const MetricReportingSettingData displays_telemetry_settings = {
+    ::ash::kReportDeviceGraphicsStatus, false, ::ash::kReportUploadFrequency,
+    1};
 
 struct MetricReportingManagerTestCase {
   std::string test_name;
@@ -367,12 +374,12 @@ INSTANTIATE_TEST_SUITE_P(
           /*is_affiliated=*/true, bus_info_settings,
           /*expected_count_before_login=*/1,
           /*expected_count_after_login=*/1},
-         {"InputInfo",
+         {"GraphicsInfo",
           /*enabled_features=*/{},
           /*disabled_features=*/{},
-          /*is_affiliated=*/true, input_info_settings,
-          /*expected_count_before_login=*/1,
-          /*expected_count_after_login=*/1}}),
+          /*is_affiliated=*/true, graphics_info_settings,
+          /*expected_count_before_login=*/2,
+          /*expected_count_after_login=*/2}}),
     [](const testing::TestParamInfo<MetricReportingManagerInfoTest::ParamType>&
            info) { return info.param.test_name; });
 
@@ -646,7 +653,9 @@ INSTANTIATE_TEST_SUITE_P(
           /*disabled_features=*/{},
           /*is_affiliated=*/true, network_telemetry_settings,
           /*expected_count_before_login=*/0,
-          /*expected_count_after_login=*/2},
+          // 3 collectors should be created after login, network telemetry,
+          // https latency, and network bandwidth.
+          /*expected_count_after_login=*/3},
          {"AudioTelemetry_Unaffiliated", /*enabled_features=*/{},
           /*disabled_features=*/{},
           /*is_affiliated=*/false, audio_metric_settings,
@@ -655,6 +664,16 @@ INSTANTIATE_TEST_SUITE_P(
          {"AudioTelemetry_Default", /*enabled_features=*/{},
           /*disabled_features=*/{},
           /*is_affiliated=*/true, audio_metric_settings,
+          /*expected_count_before_login=*/0,
+          /*expected_count_after_login=*/1},
+         {"DisplaysTelemetry_Unaffiliated", /*enabled_features=*/{},
+          /*disabled_features=*/{},
+          /*is_affiliated=*/false, displays_telemetry_settings,
+          /*expected_count_before_login=*/0,
+          /*expected_count_after_login=*/0},
+         {"DisplaysTelemetry_Default", /*enabled_features=*/{},
+          /*disabled_features=*/{},
+          /*is_affiliated=*/true, displays_telemetry_settings,
           /*expected_count_before_login=*/0,
           /*expected_count_after_login=*/1}}),
     [](const testing::TestParamInfo<

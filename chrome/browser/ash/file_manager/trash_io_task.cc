@@ -1,8 +1,10 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome/browser/ash/file_manager/trash_io_task.h"
+
+#include <sys/xattr.h>
 
 #include "base/callback.h"
 #include "base/files/file_util.h"
@@ -72,6 +74,25 @@ bool WriteMetadataFileOnBlockingThread(const base::FilePath& destination_path,
   return base::WriteFile(destination_path, contents);
 }
 
+bool SetTrashDirectoryPermissions(const base::FilePath& trash_directory) {
+  return base::SetPosixFilePermissions(
+      trash_directory, base::FILE_PERMISSION_READ_BY_USER |
+                           base::FILE_PERMISSION_WRITE_BY_USER |
+                           base::FILE_PERMISSION_EXECUTE_BY_USER |
+                           base::FILE_PERMISSION_EXECUTE_BY_GROUP |
+                           base::FILE_PERMISSION_EXECUTE_BY_OTHERS);
+}
+
+base::File::Error SetTrackedExtendedAttribute(const base::FilePath& path) {
+  auto tracked_name = base::StrCat({"trash_", path.BaseName().value()});
+  if (lsetxattr(path.value().c_str(), trash::kTrackedDirectoryName,
+                tracked_name.c_str(), tracked_name.size(), 0) < 0) {
+    PLOG(ERROR) << "Failed to set the xattr";
+    return base::File::FILE_ERROR_FAILED;
+  }
+  return base::File::FILE_OK;
+}
+
 TrashEntry::TrashEntry() : deletion_time(base::Time::Now()) {}
 TrashEntry::~TrashEntry() = default;
 
@@ -84,8 +105,10 @@ TrashIOTask::TrashIOTask(
     std::vector<storage::FileSystemURL> file_urls,
     Profile* profile,
     scoped_refptr<storage::FileSystemContext> file_system_context,
-    const base::FilePath base_path)
-    : profile_(profile),
+    const base::FilePath base_path,
+    bool show_notification)
+    : IOTask(show_notification),
+      profile_(profile),
       file_system_context_(file_system_context),
       base_path_(base_path) {
   progress_.state = State::kQueued;
@@ -278,6 +301,15 @@ base::FilePath TrashIOTask::MakeRelativeFromBasePath(
   return base::FilePath(relative_path);
 }
 
+base::FilePath TrashIOTask::MakeRelativePathAbsoluteFromBasePath(
+    const base::FilePath& relative_path) {
+  if (base_path_.empty() || base_path_.IsParent(relative_path) ||
+      relative_path.IsAbsolute()) {
+    return relative_path;
+  }
+  return base_path_.Append(relative_path);
+}
+
 void TrashIOTask::GotFreeDiskSpace(
     size_t source_idx,
     const trash::TrashPathsMap::reverse_iterator& it,
@@ -313,18 +345,40 @@ void TrashIOTask::SetupSubDirectory(
     return;
   }
 
+  auto on_setup_complete_callback = base::BindOnce(
+      &TrashIOTask::OnSetupSubDirectory, weak_ptr_factory_.GetWeakPtr(),
+      base::OwnedRef(it), trash_subdirectory);
+
   content::GetIOThreadTaskRunner({})->PostTaskAndReplyWithResult(
       FROM_HERE,
       base::BindOnce(&StartCreateDirectoryOnIOThread, file_system_context_,
                      trash_subdirectory,
                      base::BindPostTask(
                          base::SequencedTaskRunnerHandle::Get(),
-                         base::BindOnce(&TrashIOTask::OnSetupSubDirectory,
+                         base::BindOnce(&TrashIOTask::SetDirectoryTracking,
                                         weak_ptr_factory_.GetWeakPtr(),
-                                        base::OwnedRef(it), trash_subdirectory),
+                                        std::move(on_setup_complete_callback),
+                                        MakeRelativePathAbsoluteFromBasePath(
+                                            trash_subdirectory.path())),
                          FROM_HERE)),
       base::BindOnce(&TrashIOTask::SetCurrentOperationID,
                      weak_ptr_factory_.GetWeakPtr()));
+}
+
+void TrashIOTask::SetDirectoryTracking(
+    base::OnceCallback<void(base::File::Error)> on_setup_complete_callback,
+    const base::FilePath& trash_subdirectory,
+    base::File::Error error) {
+  if (error != base::File::FILE_OK) {
+    std::move(on_setup_complete_callback).Run(error);
+    return;
+  }
+
+  base::ThreadPool::PostTaskAndReplyWithResult(
+      FROM_HERE, {base::MayBlock()},
+      base::BindOnce(&SetTrackedExtendedAttribute,
+                     std::move(trash_subdirectory)),
+      std::move(on_setup_complete_callback));
 }
 
 void TrashIOTask::OnSetupSubDirectory(
@@ -343,6 +397,28 @@ void TrashIOTask::OnSetupSubDirectory(
   // directory.
   if (trash_subdirectory == it->second.trash_files) {
     SetupSubDirectory(it, it->second.trash_info);
+    return;
+  }
+
+  // We have to ensure the permission bits are appropriately setup to allow
+  // system daemons access to traverse the folder. By default the permissions
+  // are setup as 0700 when they should be 0711.
+  auto absolute_trash_path =
+      MakeRelativePathAbsoluteFromBasePath(trash_subdirectory.path().DirName());
+  base::ThreadPool::PostTaskAndReplyWithResult(
+      FROM_HERE, {base::MayBlock()},
+      base::BindOnce(&SetTrashDirectoryPermissions,
+                     std::move(absolute_trash_path)),
+      base::BindOnce(&TrashIOTask::OnSetDirectoryPermissions,
+                     weak_ptr_factory_.GetWeakPtr(), base::OwnedRef(it)));
+}
+
+void TrashIOTask::OnSetDirectoryPermissions(
+    trash::TrashPathsMap::const_iterator& it,
+    bool set_permissions_success) {
+  if (!set_permissions_success) {
+    LOG(ERROR) << "Failed setting directory permissions";
+    Complete(State::kError);
     return;
   }
 

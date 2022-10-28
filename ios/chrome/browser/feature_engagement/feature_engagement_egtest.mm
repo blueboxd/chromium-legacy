@@ -1,16 +1,16 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #import <XCTest/XCTest.h>
 
-#include "base/strings/sys_string_conversions.h"
+#import "base/strings/sys_string_conversions.h"
 #import "base/test/ios/wait_util.h"
 #import "ios/chrome/browser/feature_engagement/feature_engagement_app_interface.h"
 #import "ios/chrome/browser/ui/popup_menu/popup_menu_constants.h"
 #import "ios/chrome/browser/ui/table_view/table_view_navigation_controller_constants.h"
-#include "ios/chrome/grit/ios_chromium_strings.h"
-#include "ios/chrome/grit/ios_strings.h"
+#import "ios/chrome/grit/ios_chromium_strings.h"
+#import "ios/chrome/grit/ios_strings.h"
 #import "ios/chrome/test/earl_grey/chrome_actions.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
@@ -18,12 +18,12 @@
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
 #import "ios/testing/earl_grey/earl_grey_test.h"
 #import "net/base/mac/url_conversions.h"
-#include "net/test/embedded_test_server/embedded_test_server.h"
-#include "net/test/embedded_test_server/http_response.h"
-#include "net/test/embedded_test_server/request_handler_util.h"
-#include "ui/base/l10n/l10n_util.h"
-#include "ui/base/l10n/l10n_util_mac.h"
-#include "url/gurl.h"
+#import "net/test/embedded_test_server/embedded_test_server.h"
+#import "net/test/embedded_test_server/http_response.h"
+#import "net/test/embedded_test_server/request_handler_util.h"
+#import "ui/base/l10n/l10n_util.h"
+#import "ui/base/l10n/l10n_util_mac.h"
+#import "url/gurl.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -98,8 +98,7 @@ id<GREYMatcher> DefaultSiteViewTip() {
 
 // Opens the TabGrid and then opens a new tab.
 void OpenTabGridAndOpenTab() {
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::ShowTabsButton()]
-      performAction:grey_tap()];
+  [ChromeEarlGreyUI openTabGrid];
 
   [[EarlGrey selectElementWithMatcher:chrome_test_util::TabGridNewTabButton()]
       performAction:grey_tap()];
@@ -107,8 +106,7 @@ void OpenTabGridAndOpenTab() {
 
 // Opens and closes the tab switcher.
 void OpenAndCloseTabSwitcher() {
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::ShowTabsButton()]
-      performAction:grey_tap()];
+  [ChromeEarlGreyUI openTabGrid];
 
   [[EarlGrey selectElementWithMatcher:chrome_test_util::TabGridDoneButton()]
       performAction:grey_tap()];
@@ -472,6 +470,8 @@ std::unique_ptr<net::test_server::HttpResponse> LoadFrenchPage(
              @"Waiting for the Long Press tip.");
 }
 
+// Verifies that the IPH for Request desktop is shown after 3 requests of the
+// desktop version of a website.
 - (void)testRequestDesktopTip {
   GREYAssert([FeatureEngagementAppInterface enableDefaultSiteViewTipTriggering],
              @"Feature Engagement tracker did not load");
@@ -510,6 +510,68 @@ std::unique_ptr<net::test_server::HttpResponse> LoadFrenchPage(
 
   [[EarlGrey selectElementWithMatcher:DefaultSiteViewTip()]
       assertWithMatcher:grey_nil()];
+}
+
+// Verifies that the IPH for Request desktop is not shown if the user interacted
+// with the default page mode.
+- (void)testRequestDesktopTipAfterChangingDefaultPageMode {
+  GREYAssert([FeatureEngagementAppInterface enableDefaultSiteViewTipTriggering],
+             @"Feature Engagement tracker did not load");
+
+  [self togglePageMode];
+
+  self.testServer->AddDefaultHandlers();
+
+  GREYAssertTrue(self.testServer->Start(), @"Test server failed to start");
+
+  // Request the desktop version of a website, this should not trigger the tip.
+  [ChromeEarlGrey loadURL:self.testServer->GetURL("/echo")];
+  RequestDesktopVersion();
+
+  [[EarlGrey selectElementWithMatcher:DefaultSiteViewTip()]
+      assertWithMatcher:grey_nil()];
+
+  // Second time, still no tip.
+  [ChromeEarlGreyUI openNewTab];
+  [ChromeEarlGrey loadURL:self.testServer->GetURL("/echo")];
+  RequestDesktopVersion();
+
+  [[EarlGrey selectElementWithMatcher:DefaultSiteViewTip()]
+      assertWithMatcher:grey_nil()];
+
+  // Third time, the tip should still not be shown.
+  [ChromeEarlGreyUI openNewTab];
+  [ChromeEarlGrey loadURL:self.testServer->GetURL("/echo")];
+  RequestDesktopVersion();
+
+  [[EarlGrey selectElementWithMatcher:DefaultSiteViewTip()]
+      assertWithMatcher:grey_nil()];
+}
+
+#pragma mark - Helpers
+
+// Toggles the page mode from Mobile to Desktop and then back to Mobile.
+- (void)togglePageMode {
+  [ChromeEarlGreyUI openSettingsMenu];
+  [ChromeEarlGreyUI
+      tapSettingsMenuButton:chrome_test_util::ContentSettingsButton()];
+  [[EarlGrey
+      selectElementWithMatcher:chrome_test_util::ButtonWithAccessibilityLabelId(
+                                   IDS_IOS_DEFAULT_PAGE_MODE_LABEL)]
+      performAction:grey_tap()];
+  [[EarlGrey selectElementWithMatcher:
+                 chrome_test_util::StaticTextWithAccessibilityLabelId(
+                     IDS_IOS_DEFAULT_PAGE_MODE_DESKTOP)]
+      performAction:grey_tap()];
+  [[EarlGrey
+      selectElementWithMatcher:
+          grey_allOf(chrome_test_util::StaticTextWithAccessibilityLabelId(
+                         IDS_IOS_DEFAULT_PAGE_MODE_MOBILE),
+                     grey_sufficientlyVisible(), nil)]
+      performAction:grey_tap()];
+  [[EarlGrey
+      selectElementWithMatcher:chrome_test_util::NavigationBarDoneButton()]
+      performAction:grey_tap()];
 }
 
 @end

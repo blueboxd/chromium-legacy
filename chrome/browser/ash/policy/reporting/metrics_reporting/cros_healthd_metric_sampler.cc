@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,10 +8,11 @@
 #include "chromeos/ash/services/cros_healthd/public/cpp/service_connection.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
-namespace cros_healthd = chromeos::cros_healthd::mojom;
-
 namespace reporting {
+
 namespace {
+
+namespace cros_healthd = ::ash::cros_healthd::mojom;
 
 ThunderboltSecurityLevel TranslateThunderboltSecurityLevel(
     cros_healthd::ThunderboltSecurityLevel security_level) {
@@ -178,21 +179,20 @@ void HandleCpuResult(OptionalMetricCallback callback,
 void HandleBootPerformanceResult(
     OptionalMetricCallback callback,
     CrosHealthdMetricSampler::MetricType metric_type,
-    chromeos::cros_healthd::mojom::TelemetryInfoPtr result) {
+    cros_healthd::TelemetryInfoPtr result) {
   const std::string kShutdownReasonNotApplicable = "N/A";
   absl::optional<MetricData> metric_data;
 
   const auto& boot_performance_result = result->boot_performance_result;
   if (!boot_performance_result.is_null()) {
     switch (boot_performance_result->which()) {
-      case chromeos::cros_healthd::mojom::BootPerformanceResult::Tag::kError: {
+      case cros_healthd::BootPerformanceResult::Tag::kError: {
         DVLOG(1) << "cros_healthd: Error getting Boot Performance info: "
                  << boot_performance_result->get_error()->msg;
         break;
       }
 
-      case chromeos::cros_healthd::mojom::BootPerformanceResult::Tag::
-          kBootPerformanceInfo: {
+      case cros_healthd::BootPerformanceResult::Tag::kBootPerformanceInfo: {
         const auto& boot_performance_info =
             boot_performance_result->get_boot_performance_info();
         if (boot_performance_info.is_null()) {
@@ -227,19 +227,19 @@ void HandleBootPerformanceResult(
 
 void HandleAudioResult(OptionalMetricCallback callback,
                        CrosHealthdMetricSampler::MetricType metric_type,
-                       chromeos::cros_healthd::mojom::TelemetryInfoPtr result) {
+                       cros_healthd::TelemetryInfoPtr result) {
   absl::optional<MetricData> metric_data;
   const auto& audio_result = result->audio_result;
 
   if (!audio_result.is_null()) {
     switch (audio_result->which()) {
-      case chromeos::cros_healthd::mojom::AudioResult::Tag::kError: {
+      case cros_healthd::AudioResult::Tag::kError: {
         DVLOG(1) << "CrosHealthD: Error getting audio telemetry: "
                  << audio_result->get_error()->msg;
         break;
       }
 
-      case chromeos::cros_healthd::mojom::AudioResult::Tag::kAudioInfo: {
+      case cros_healthd::AudioResult::Tag::kAudioInfo: {
         const auto& audio_info = audio_result->get_audio_info();
         if (audio_info.is_null()) {
           DVLOG(1) << "CrosHealthD: No audio info received";
@@ -377,6 +377,152 @@ void HandleInputResult(OptionalMetricCallback callback,
   std::move(callback).Run(std::move(metric_data));
 }
 
+void HandleDisplayResult(OptionalMetricCallback callback,
+                         CrosHealthdMetricSampler::MetricType metric_type,
+                         cros_healthd::TelemetryInfoPtr result) {
+  absl::optional<MetricData> metric_data;
+  const auto& display_result = result->display_result;
+  if (!display_result.is_null()) {
+    switch (display_result->which()) {
+      case cros_healthd::DisplayResult::Tag::kError: {
+        DVLOG(1) << "cros_healthd: Error getting bus info: "
+                 << display_result->get_error()->msg;
+        break;
+      }
+
+      case cros_healthd::DisplayResult::Tag::kDisplayInfo: {
+        const auto& display_info = display_result->get_display_info();
+        if (display_info.is_null()) {
+          DVLOG(1) << "Null DisplayInfo from cros_healthd";
+          break;
+        }
+
+        metric_data = absl::make_optional<MetricData>();
+        const auto* const embedded_display_info = display_info->edp_info.get();
+        if (metric_type == CrosHealthdMetricSampler::MetricType::kInfo) {
+          // Gather e-privacy screen info.
+          auto* const privacy_screen_info_out =
+              metric_data->mutable_info_data()->mutable_privacy_screen_info();
+          privacy_screen_info_out->set_supported(
+              embedded_display_info->privacy_screen_supported);
+
+          // Gather displays info.
+          auto* const internal_dp_out = metric_data->mutable_info_data()
+                                            ->mutable_display_info()
+                                            ->add_display_device();
+          internal_dp_out->set_is_internal(true);
+          if (embedded_display_info->display_name.has_value()) {
+            internal_dp_out->set_display_name(
+                embedded_display_info->display_name.value());
+          }
+          if (embedded_display_info->display_width) {
+            internal_dp_out->set_display_width(
+                embedded_display_info->display_width->value);
+          }
+          if (embedded_display_info->display_height) {
+            internal_dp_out->set_display_height(
+                embedded_display_info->display_height->value);
+          }
+          if (embedded_display_info->manufacturer.has_value()) {
+            internal_dp_out->set_manufacturer(
+                embedded_display_info->manufacturer.value());
+          }
+          if (embedded_display_info->model_id) {
+            internal_dp_out->set_model_id(
+                embedded_display_info->model_id->value);
+          }
+          if (embedded_display_info->manufacture_year) {
+            internal_dp_out->set_manufacture_year(
+                embedded_display_info->manufacture_year->value);
+          }
+          if (display_info->dp_infos) {
+            for (const auto& current_external_display :
+                 *display_info->dp_infos) {
+              auto* const external_dp_out = metric_data->mutable_info_data()
+                                                ->mutable_display_info()
+                                                ->add_display_device();
+              external_dp_out->set_is_internal(false);
+              if (current_external_display->display_name.has_value()) {
+                external_dp_out->set_display_name(
+                    current_external_display->display_name.value());
+              }
+              if (current_external_display->display_width) {
+                external_dp_out->set_display_width(
+                    current_external_display->display_width->value);
+              }
+              if (current_external_display->display_height) {
+                external_dp_out->set_display_height(
+                    current_external_display->display_height->value);
+              }
+              if (current_external_display->manufacturer.has_value()) {
+                external_dp_out->set_manufacturer(
+                    current_external_display->manufacturer.value());
+              }
+              if (current_external_display->model_id) {
+                external_dp_out->set_model_id(
+                    current_external_display->model_id->value);
+              }
+              if (current_external_display->manufacture_year) {
+                external_dp_out->set_manufacture_year(
+                    current_external_display->manufacture_year->value);
+              }
+            }
+          }
+        } else if (metric_type ==
+                   CrosHealthdMetricSampler::MetricType::kTelemetry) {
+          // Gather displays telemetry.
+          auto* const internal_dp_out = metric_data->mutable_telemetry_data()
+                                            ->mutable_displays_telemetry()
+                                            ->add_display_status();
+          if (embedded_display_info->display_name.has_value()) {
+            internal_dp_out->set_display_name(
+                embedded_display_info->display_name.value());
+          }
+          if (embedded_display_info->resolution_horizontal) {
+            internal_dp_out->set_resolution_horizontal(
+                embedded_display_info->resolution_horizontal->value);
+          }
+          if (embedded_display_info->resolution_vertical) {
+            internal_dp_out->set_resolution_vertical(
+                embedded_display_info->resolution_vertical->value);
+          }
+          if (embedded_display_info->refresh_rate) {
+            internal_dp_out->set_refresh_rate(
+                embedded_display_info->refresh_rate->value);
+          }
+          if (display_info->dp_infos) {
+            for (const auto& current_external_display :
+                 *display_info->dp_infos) {
+              auto* const external_dp_out =
+                  metric_data->mutable_telemetry_data()
+                      ->mutable_displays_telemetry()
+                      ->add_display_status();
+              if (current_external_display->display_name.has_value()) {
+                external_dp_out->set_display_name(
+                    current_external_display->display_name.value());
+              }
+              if (current_external_display->resolution_horizontal) {
+                external_dp_out->set_resolution_horizontal(
+                    current_external_display->resolution_horizontal->value);
+              }
+              if (current_external_display->resolution_vertical) {
+                external_dp_out->set_resolution_vertical(
+                    current_external_display->resolution_vertical->value);
+              }
+              if (current_external_display->refresh_rate) {
+                external_dp_out->set_refresh_rate(
+                    current_external_display->refresh_rate->value);
+              }
+            }
+          }
+        }
+        break;
+      }
+    }
+  }
+  std::move(callback).Run(std::move(metric_data));
+}
+
 void OnHealthdInfoReceived(OptionalMetricCallback callback,
                            cros_healthd::ProbeCategoryEnum probe_category,
                            CrosHealthdMetricSampler::MetricType metric_type,
@@ -408,12 +554,17 @@ void OnHealthdInfoReceived(OptionalMetricCallback callback,
       HandleInputResult(std::move(callback), metric_type, std::move(result));
       break;
     }
+    case cros_healthd::ProbeCategoryEnum::kDisplay: {
+      HandleDisplayResult(std::move(callback), metric_type, std::move(result));
+      break;
+    }
     default: {
       NOTREACHED();
       return;
     }
   }
 }
+
 }  // namespace
 
 CrosHealthdMetricSampler::CrosHealthdMetricSampler(
@@ -427,7 +578,7 @@ void CrosHealthdMetricSampler::MaybeCollect(OptionalMetricCallback callback) {
   auto healthd_callback =
       base::BindOnce(OnHealthdInfoReceived, std::move(callback),
                      probe_category_, metric_type_);
-  chromeos::cros_healthd::ServiceConnection::GetInstance()->ProbeTelemetryInfo(
+  ash::cros_healthd::ServiceConnection::GetInstance()->ProbeTelemetryInfo(
       std::vector<cros_healthd::ProbeCategoryEnum>{probe_category_},
       std::move(healthd_callback));
 }

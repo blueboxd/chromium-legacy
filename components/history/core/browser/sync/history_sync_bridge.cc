@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,12 +7,15 @@
 #include "base/auto_reset.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_functions.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "components/history/core/browser/sync/history_sync_metadata_database.h"
 #include "components/history/core/browser/sync/visit_id_remapper.h"
+#include "components/history/core/browser/url_row.h"
 #include "components/sync/base/page_transition_conversion.h"
+#include "components/sync/model/conflict_resolution.h"
 #include "components/sync/model/metadata_batch.h"
 #include "components/sync/model/metadata_change_list.h"
 #include "components/sync/model/model_type_change_processor.h"
@@ -27,6 +30,13 @@ namespace history {
 namespace {
 
 constexpr base::TimeDelta kMaxWriteToTheFuture = base::Days(2);
+
+// Some pages embed the favicon image itself in the URL, using the data: scheme.
+// These cases, or more generally any favicon URL that is unreasonably large,
+// should simply be ignored, because it otherwise runs into the risk that the
+// whole entity may fail to sync due to max size limits imposed by the sync
+// server. And after all, the favicon is somewhat optional.
+constexpr int kMaxFaviconUrlSizeToSync = 2048;
 
 std::string GetStorageKeyFromVisitRow(const VisitRow& row) {
   DCHECK(!row.visit_time.is_null());
@@ -57,6 +67,60 @@ void RecordDatabaseError(SyncHistoryDatabaseError error) {
 base::Time GetVisitTime(const sync_pb::HistorySpecifics& specifics) {
   return base::Time::FromDeltaSinceWindowsEpoch(
       base::Microseconds(specifics.visit_time_windows_epoch_micros()));
+}
+
+absl::optional<sync_pb::SyncEnums::BrowserType> BrowserTypeToProto(
+    VisitContextAnnotations::BrowserType type) {
+  switch (type) {
+    case VisitContextAnnotations::BrowserType::kUnknown:
+      return absl::nullopt;
+    case VisitContextAnnotations::BrowserType::kTabbed:
+      return sync_pb::SyncEnums_BrowserType_TYPE_TABBED;
+    case VisitContextAnnotations::BrowserType::kPopup:
+      return sync_pb::SyncEnums_BrowserType_TYPE_POPUP;
+    case VisitContextAnnotations::BrowserType::kCustomTab:
+      return sync_pb::SyncEnums_BrowserType_TYPE_CUSTOM_TAB;
+  }
+  return absl::nullopt;
+}
+
+VisitContextAnnotations::BrowserType BrowserTypeFromProto(
+    sync_pb::SyncEnums::BrowserType type) {
+  switch (type) {
+    case sync_pb::SyncEnums_BrowserType_TYPE_TABBED:
+      return VisitContextAnnotations::BrowserType::kTabbed;
+    case sync_pb::SyncEnums_BrowserType_TYPE_POPUP:
+      return VisitContextAnnotations::BrowserType::kPopup;
+    case sync_pb::SyncEnums_BrowserType_TYPE_CUSTOM_TAB:
+      return VisitContextAnnotations::BrowserType::kCustomTab;
+  }
+  return VisitContextAnnotations::BrowserType::kUnknown;
+}
+
+VisitContentAnnotations::PasswordState PasswordStateFromProto(
+    sync_pb::SyncEnums::PasswordState password_state) {
+  switch (password_state) {
+    case sync_pb::SyncEnums_PasswordState_PASSWORD_STATE_UNKNOWN:
+      return VisitContentAnnotations::PasswordState::kUnknown;
+    case sync_pb::SyncEnums_PasswordState_NO_PASSWORD_FIELD:
+      return VisitContentAnnotations::PasswordState::kNoPasswordField;
+    case sync_pb::SyncEnums_PasswordState_HAS_PASSWORD_FIELD:
+      return VisitContentAnnotations::PasswordState::kHasPasswordField;
+  }
+  return VisitContentAnnotations::PasswordState::kUnknown;
+}
+
+sync_pb::SyncEnums::PasswordState PasswordStateToProto(
+    VisitContentAnnotations::PasswordState password_state) {
+  switch (password_state) {
+    case VisitContentAnnotations::PasswordState::kUnknown:
+      return sync_pb::SyncEnums_PasswordState_PASSWORD_STATE_UNKNOWN;
+    case VisitContentAnnotations::PasswordState::kNoPasswordField:
+      return sync_pb::SyncEnums_PasswordState_NO_PASSWORD_FIELD;
+    case VisitContentAnnotations::PasswordState::kHasPasswordField:
+      return sync_pb::SyncEnums_PasswordState_HAS_PASSWORD_FIELD;
+  }
+  return sync_pb::SyncEnums_PasswordState_PASSWORD_STATE_UNKNOWN;
 }
 
 // Creates a VisitRow out of a single redirect entry within the `specifics`.
@@ -141,13 +205,49 @@ VisitRow MakeVisitRow(const sync_pb::HistorySpecifics& specifics,
   return row;
 }
 
+absl::optional<VisitContextAnnotations> MakeContextAnnotations(
+    const sync_pb::HistorySpecifics& specifics,
+    int redirect_index) {
+  // Context annotations are only attached to the last visit in a chain.
+  if (redirect_index != specifics.redirect_entries_size() - 1) {
+    return absl::nullopt;
+  }
+  VisitContextAnnotations annotations;
+  if (specifics.has_browser_type()) {
+    annotations.on_visit.browser_type =
+        BrowserTypeFromProto(specifics.browser_type());
+  }
+  annotations.on_visit.window_id =
+      SessionID::FromSerializedValue(specifics.window_id());
+  annotations.on_visit.tab_id =
+      SessionID::FromSerializedValue(specifics.tab_id());
+  annotations.on_visit.task_id = specifics.task_id();
+  annotations.on_visit.root_task_id = specifics.root_task_id();
+  annotations.on_visit.parent_task_id = specifics.parent_task_id();
+  annotations.on_visit.response_code = specifics.http_response_code();
+  return annotations;
+}
+
+absl::optional<VisitContentAnnotations> MakeContentAnnotations(
+    const sync_pb::HistorySpecifics& specifics,
+    int redirect_index) {
+  // Content annotations are only attached to the last visit in a chain.
+  if (redirect_index != specifics.redirect_entries_size() - 1) {
+    return absl::nullopt;
+  }
+  VisitContentAnnotations annotations;
+  annotations.page_language = specifics.page_language();
+  annotations.password_state =
+      PasswordStateFromProto(specifics.password_state());
+  return annotations;
+}
+
 std::unique_ptr<syncer::EntityData> MakeEntityData(
     const std::string& local_cache_guid,
-    const std::vector<URLRow>& redirect_urls,
-    const std::vector<VisitRow>& redirect_visits) {
+    const std::vector<AnnotatedVisit>& redirect_visits,
+    const std::vector<GURL>& favicon_urls) {
   DCHECK(!local_cache_guid.empty());
-  DCHECK(!redirect_urls.empty());
-  DCHECK_EQ(redirect_urls.size(), redirect_visits.size());
+  DCHECK(!redirect_visits.empty());
 
   auto entity_data = std::make_unique<syncer::EntityData>();
   sync_pb::HistorySpecifics* history = entity_data->specifics.mutable_history();
@@ -155,8 +255,8 @@ std::unique_ptr<syncer::EntityData> MakeEntityData(
   // The first and last visit in the redirect chain are special: The first is
   // where the user intended to go (via typing the URL, clicking on a link, etc)
   // and the last one is where they actually ended up.
-  const VisitRow& first_visit = redirect_visits.front();
-  const VisitRow& last_visit = redirect_visits.back();
+  const VisitRow& first_visit = redirect_visits.front().visit_row;
+  const VisitRow& last_visit = redirect_visits.back().visit_row;
 
   // Take the visit time and the originator client ID from the last visit,
   // though they should be the same across all visits in the chain anyway.
@@ -167,9 +267,9 @@ std::unique_ptr<syncer::EntityData> MakeEntityData(
   history->set_originator_cache_guid(
       is_local_entity ? local_cache_guid : last_visit.originator_cache_guid);
 
-  for (size_t i = 0; i < redirect_urls.size(); i++) {
-    const URLRow& url = redirect_urls[i];
-    const VisitRow& visit = redirect_visits[i];
+  for (const AnnotatedVisit& annotated_visit : redirect_visits) {
+    const URLRow& url = annotated_visit.url_row;
+    const VisitRow& visit = annotated_visit.visit_row;
     auto* redirect_entry = history->add_redirect_entries();
     redirect_entry->set_originator_visit_id(
         is_local_entity ? visit.visit_id : visit.originator_visit_id);
@@ -214,11 +314,43 @@ std::unique_ptr<syncer::EntityData> MakeEntityData(
   history->set_visit_duration_micros(
       last_visit.visit_duration.InMicroseconds());
 
+  // Add annotation fields. The last visit in the chain is the one that has
+  // annotations attached (if any).
+  const VisitContextAnnotations& context_annotations =
+      redirect_visits.back().context_annotations;
+  absl::optional<sync_pb::SyncEnums::BrowserType> browser_type =
+      BrowserTypeToProto(context_annotations.on_visit.browser_type);
+  if (browser_type) {
+    history->set_browser_type(*browser_type);
+  }
+  history->set_window_id(context_annotations.on_visit.window_id.id());
+  history->set_tab_id(context_annotations.on_visit.tab_id.id());
+  history->set_task_id(context_annotations.on_visit.task_id);
+  history->set_root_task_id(context_annotations.on_visit.root_task_id);
+  history->set_parent_task_id(context_annotations.on_visit.parent_task_id);
+  history->set_http_response_code(context_annotations.on_visit.response_code);
+
+  const VisitContentAnnotations& content_annotations =
+      redirect_visits.back().content_annotations;
+  history->set_page_language(content_annotations.page_language);
+  history->set_password_state(
+      PasswordStateToProto(content_annotations.password_state));
+
+  if (!favicon_urls.empty()) {
+    // If there are multiple favicon URLs (which should be rare), they're
+    // returned in roughly best-to-worst order (see
+    // FaviconDatabase::GetIconMappingsForPageURL), so just take the first.
+    const GURL& url = favicon_urls.front();
+    if (url.is_valid() && url.spec().size() <= kMaxFaviconUrlSizeToSync) {
+      history->set_favicon_url(url.spec());
+    }
+  }
+
   // The entity name is used for debugging purposes; choose something that's a
   // decent tradeoff between "unique" and "readable".
   entity_data->name =
       base::StringPrintf("%s-%s", history->originator_cache_guid().c_str(),
-                         redirect_urls.back().url().spec().c_str());
+                         redirect_visits.back().url_row.url().spec().c_str());
 
   return entity_data;
 }
@@ -287,7 +419,7 @@ HistorySyncBridge::~HistorySyncBridge() = default;
 
 std::unique_ptr<syncer::MetadataChangeList>
 HistorySyncBridge::CreateMetadataChangeList() {
-  DCHECK(sequence_checker_.CalledOnValidSequence());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return std::make_unique<syncer::SyncMetadataStoreChangeList>(
       sync_metadata_database_, syncer::HISTORY);
 }
@@ -295,7 +427,7 @@ HistorySyncBridge::CreateMetadataChangeList() {
 absl::optional<syncer::ModelError> HistorySyncBridge::MergeSyncData(
     std::unique_ptr<syncer::MetadataChangeList> metadata_change_list,
     syncer::EntityChangeList entity_data) {
-  DCHECK(sequence_checker_.CalledOnValidSequence());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   // Note: History is not synced retroactively - only visits created *after*
   // turning Sync on get synced. So there's nothing to upload here. Just apply
@@ -307,7 +439,7 @@ absl::optional<syncer::ModelError> HistorySyncBridge::MergeSyncData(
 absl::optional<syncer::ModelError> HistorySyncBridge::ApplySyncChanges(
     std::unique_ptr<syncer::MetadataChangeList> metadata_change_list,
     syncer::EntityChangeList entity_changes) {
-  DCHECK(sequence_checker_.CalledOnValidSequence());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!processing_syncer_changes_);
   // Set flag to stop accepting history change notifications from backend.
   base::AutoReset<bool> processing_changes(&processing_syncer_changes_, true);
@@ -400,7 +532,7 @@ absl::optional<syncer::ModelError> HistorySyncBridge::ApplySyncChanges(
 
 void HistorySyncBridge::GetData(StorageKeyList storage_keys,
                                 DataCallback callback) {
-  DCHECK(sequence_checker_.CalledOnValidSequence());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   auto batch = std::make_unique<syncer::MutableDataBatch>();
   for (const std::string& key : storage_keys) {
@@ -421,11 +553,14 @@ void HistorySyncBridge::GetData(StorageKeyList storage_keys,
     }
     DCHECK_EQ(redirect_visits.back().visit_id, final_visit.visit_id);
 
-    // Query the corresponding URLs.
-    std::vector<URLRow> redirect_urls = QueryURLsForVisits(redirect_visits);
+    std::vector<AnnotatedVisit> annotated_visits =
+        history_backend_->ToAnnotatedVisits(redirect_visits);
+
+    std::vector<GURL> favicon_urls = history_backend_->GetFaviconURLsForURL(
+        annotated_visits.back().url_row.url());
 
     std::unique_ptr<syncer::EntityData> entity_data =
-        MakeEntityData(GetLocalCacheGuid(), redirect_urls, redirect_visits);
+        MakeEntityData(GetLocalCacheGuid(), annotated_visits, favicon_urls);
 
     batch->Put(key, std::move(entity_data));
   }
@@ -434,7 +569,7 @@ void HistorySyncBridge::GetData(StorageKeyList storage_keys,
 }
 
 void HistorySyncBridge::GetAllDataForDebugging(DataCallback callback) {
-  DCHECK(sequence_checker_.CalledOnValidSequence());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   auto metadata_batch = std::make_unique<syncer::MetadataBatch>();
   if (!sync_metadata_database_->GetAllSyncMetadata(metadata_batch.get())) {
@@ -452,14 +587,17 @@ void HistorySyncBridge::GetAllDataForDebugging(DataCallback callback) {
 
 std::string HistorySyncBridge::GetClientTag(
     const syncer::EntityData& entity_data) {
-  DCHECK(sequence_checker_.CalledOnValidSequence());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(entity_data.specifics.has_history())
+      << "EntityData does not have history specifics.";
 
-  return GetStorageKey(entity_data);
+  const sync_pb::HistorySpecifics& history = entity_data.specifics.history();
+  return base::NumberToString(history.visit_time_windows_epoch_micros());
 }
 
 std::string HistorySyncBridge::GetStorageKey(
     const syncer::EntityData& entity_data) {
-  DCHECK(sequence_checker_.CalledOnValidSequence());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(entity_data.specifics.has_history())
       << "EntityData does not have history specifics.";
 
@@ -468,10 +606,36 @@ std::string HistorySyncBridge::GetStorageKey(
       history.visit_time_windows_epoch_micros());
 }
 
+syncer::ConflictResolution HistorySyncBridge::ResolveConflict(
+    const std::string& storage_key,
+    const syncer::EntityData& remote_data) const {
+  // Real conflicts can't happen for this data type, since every client only
+  // ever updates its own entities. There's one specific edge case that gets
+  // detected as a conflict:
+  // - An entity gets committed. After successful commit, the entity metadata
+  //   gets untracked.
+  // - The entity gets changed, and thus is pending commit again, but...
+  // - ...before the commit actually happens, a GetUpdates happens which returns
+  //   the reflection from the first commit. Because the entity metadata was
+  //   cleared, the processor can't detect that this is a reflection (see
+  //   ProcessorEntity::IsVersionAlreadyKnown()), so this gets flagged as a
+  //   conflict.
+  // In this case, the default resolution of using the remote data would cancel
+  // the pending commit (and thus cause a change to be lost), so use the local
+  // data here.
+  // For extra safety, make sure that the entity's originator is actually this
+  // device. This should always be true in practice.
+  if (remote_data.specifics.history().originator_cache_guid() ==
+      GetLocalCacheGuid()) {
+    return syncer::ConflictResolution::kUseLocal;
+  }
+  return ModelTypeSyncBridge::ResolveConflict(storage_key, remote_data);
+}
+
 void HistorySyncBridge::OnURLVisited(HistoryBackend* history_backend,
                                      const URLRow& url_row,
                                      const VisitRow& visit_row) {
-  DCHECK(sequence_checker_.CalledOnValidSequence());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   if (processing_syncer_changes_) {
     return;  // These are changes originating from us, ignore.
@@ -498,11 +662,14 @@ void HistorySyncBridge::OnURLVisited(HistoryBackend* history_backend,
   }
   DCHECK_EQ(redirect_visits.back().visit_id, visit_row.visit_id);
 
-  // Query the corresponding URLs.
-  std::vector<URLRow> redirect_urls = QueryURLsForVisits(redirect_visits);
+  std::vector<AnnotatedVisit> annotated_visits =
+      history_backend_->ToAnnotatedVisits(redirect_visits);
+
+  std::vector<GURL> favicon_urls = history_backend_->GetFaviconURLsForURL(
+      annotated_visits.back().url_row.url());
 
   std::unique_ptr<syncer::EntityData> entity_data =
-      MakeEntityData(GetLocalCacheGuid(), redirect_urls, redirect_visits);
+      MakeEntityData(GetLocalCacheGuid(), annotated_visits, favicon_urls);
 
   std::unique_ptr<syncer::MetadataChangeList> metadata_change_list =
       CreateMetadataChangeList();
@@ -528,7 +695,7 @@ void HistorySyncBridge::OnURLsDeleted(HistoryBackend* history_backend,
                                       bool expired,
                                       const URLRows& deleted_rows,
                                       const std::set<GURL>& favicon_urls) {
-  DCHECK(sequence_checker_.CalledOnValidSequence());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(sync_metadata_database_);
 
   if (processing_syncer_changes_) {
@@ -566,7 +733,7 @@ void HistorySyncBridge::OnURLsDeleted(HistoryBackend* history_backend,
 }
 
 void HistorySyncBridge::OnVisitUpdated(const VisitRow& visit_row) {
-  DCHECK(sequence_checker_.CalledOnValidSequence());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(sync_metadata_database_);
 
   if (processing_syncer_changes_) {
@@ -594,11 +761,14 @@ void HistorySyncBridge::OnVisitUpdated(const VisitRow& visit_row) {
   }
   DCHECK_EQ(redirect_visits.back().visit_id, visit_row.visit_id);
 
-  // Query the corresponding URLs.
-  std::vector<URLRow> redirect_urls = QueryURLsForVisits(redirect_visits);
+  std::vector<AnnotatedVisit> annotated_visits =
+      history_backend_->ToAnnotatedVisits(redirect_visits);
+
+  std::vector<GURL> favicon_urls = history_backend_->GetFaviconURLsForURL(
+      annotated_visits.back().url_row.url());
 
   std::unique_ptr<syncer::EntityData> entity_data =
-      MakeEntityData(GetLocalCacheGuid(), redirect_urls, redirect_visits);
+      MakeEntityData(GetLocalCacheGuid(), annotated_visits, favicon_urls);
 
   std::unique_ptr<syncer::MetadataChangeList> metadata_change_list =
       CreateMetadataChangeList();
@@ -607,7 +777,7 @@ void HistorySyncBridge::OnVisitUpdated(const VisitRow& visit_row) {
 }
 
 void HistorySyncBridge::OnVisitDeleted(const VisitRow& visit_row) {
-  DCHECK(sequence_checker_.CalledOnValidSequence());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(sync_metadata_database_);
 
   if (processing_syncer_changes_) {
@@ -666,10 +836,15 @@ bool HistorySyncBridge::AddEntityInBackend(
     if (i > 0) {
       visit_row.referring_visit = referring_visit_id;
     }
+    absl::optional<VisitContextAnnotations> context_annotations =
+        MakeContextAnnotations(specifics, i);
+    absl::optional<VisitContentAnnotations> content_annotations =
+        MakeContentAnnotations(specifics, i);
     VisitID added_visit_id = history_backend_->AddSyncedVisit(
         GURL(specifics.redirect_entries(i).url()),
         base::UTF8ToUTF16(specifics.redirect_entries(i).title()),
-        specifics.redirect_entries(i).hidden(), visit_row);
+        specifics.redirect_entries(i).hidden(), visit_row, context_annotations,
+        content_annotations);
     if (added_visit_id == 0) {
       // Visit failed to be added to the DB - unclear if/how this can happen.
       return false;
@@ -698,15 +873,19 @@ bool HistorySyncBridge::UpdateEntityInBackend(
   // redirects) can't get updated anyway.
   // TODO(crbug.com/1318028): Verify whether only updating the chain end
   // is indeed sufficient.
-  VisitRow final_visit_row =
-      MakeVisitRow(specifics, specifics.redirect_entries_size() - 1);
+  int index = specifics.redirect_entries_size() - 1;
+  VisitRow final_visit_row = MakeVisitRow(specifics, index);
+  absl::optional<VisitContextAnnotations> context_annotations =
+      MakeContextAnnotations(specifics, index);
+  absl::optional<VisitContentAnnotations> content_annotations =
+      MakeContentAnnotations(specifics, index);
   // Note: UpdateSyncedVisit() keeps any existing local referrer/opener IDs in
   // place, and the originator IDs are never updated in practice, so there's no
   // need to invoke the ID remapper here (in contrast to AddEntityInBackend()).
   // TODO(crbug.com/1341636): Add an integration test to ensure that updates
   // don't break referrer/opener links.
-  VisitID updated_visit_id =
-      history_backend_->UpdateSyncedVisit(final_visit_row);
+  VisitID updated_visit_id = history_backend_->UpdateSyncedVisit(
+      final_visit_row, context_annotations, content_annotations);
   if (updated_visit_id == 0) {
     return false;
   }
@@ -733,18 +912,6 @@ std::string HistorySyncBridge::GetLocalCacheGuid() const {
   // Before the processor is tracking metadata, the cache GUID isn't known.
   DCHECK(change_processor()->IsTrackingMetadata());
   return change_processor()->TrackedCacheGuid();
-}
-
-std::vector<URLRow> HistorySyncBridge::QueryURLsForVisits(
-    const std::vector<VisitRow>& visits) {
-  std::vector<URLRow> urls;
-  urls.reserve(visits.size());
-  for (const VisitRow& visit : visits) {
-    URLRow url;
-    history_backend_->GetURLByID(visit.url_id, &url);
-    urls.push_back(std::move(url));
-  }
-  return urls;
 }
 
 }  // namespace history

@@ -1,4 +1,4 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -17,6 +17,7 @@
 #include "mojo/core/ports/port_ref.h"
 #include "mojo/core/system_impl_export.h"
 #include "mojo/core/watcher_set.h"
+#include "mojo/public/c/system/data_pipe.h"
 
 namespace mojo {
 namespace core {
@@ -46,7 +47,9 @@ class MOJO_SYSTEM_IMPL_EXPORT DataPipeProducerDispatcher final
   MojoResult WriteData(const void* elements,
                        uint32_t* num_bytes,
                        const MojoWriteDataOptions& options) override;
-  MojoResult BeginWriteData(void** buffer, uint32_t* buffer_num_bytes) override;
+  MojoResult BeginWriteData(void** buffer,
+                            uint32_t* buffer_num_bytes,
+                            MojoBeginWriteDataFlags flags) override;
   MojoResult EndWriteData(uint32_t num_bytes_written) override;
   HandleSignalsState GetHandleSignalsState() const override;
   MojoResult AddWatcherRef(const scoped_refptr<WatcherDispatcher>& watcher,

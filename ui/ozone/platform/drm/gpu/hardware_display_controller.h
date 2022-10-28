@@ -22,6 +22,7 @@
 #include "ui/gfx/swap_result.h"
 #include "ui/ozone/platform/drm/gpu/drm_overlay_plane.h"
 #include "ui/ozone/platform/drm/gpu/hardware_display_plane_manager.h"
+#include "ui/ozone/platform/drm/gpu/page_flip_watchdog.h"
 #include "ui/ozone/public/swap_completion_callback.h"
 
 namespace gfx {
@@ -30,10 +31,6 @@ struct GpuFenceHandle;
 }  // namespace gfx
 
 namespace ui {
-
-// The maximum amount of time we will wait for a new modeset attempt before we
-// crash the GPU process.
-constexpr base::TimeDelta kWaitForModesetTimeout = base::Seconds(15);
 
 class CrtcController;
 class DrmFramebuffer;
@@ -185,6 +182,18 @@ class HardwareDisplayController {
   void AsValueInto(base::trace_event::TracedValue* value) const;
 
  private:
+  // These values are persisted to logs. Entries should not be
+  // renumbered and numeric values should never be reused.
+  enum PageFlipResult {
+    // Indicates that the page flip was committed successfully.
+    kSuccess = 0,
+    // Indicates that the page flip failed because we could not assign
+    // planes.
+    kFailedPlaneAssignment = 1,
+    // Indicates that we assigned planes but the DRM commit failed.
+    kFailedCommit = 2,
+    kMaxValue = kFailedCommit,
+  };
   // Loops over |crtc_controllers_| and save their props into |commit_request|
   // to be enabled/modeset.
   void GetModesetPropsForCrtcs(CommitRequest* commit_request,
@@ -192,9 +201,10 @@ class HardwareDisplayController {
                                bool use_current_crtc_mode,
                                const drmModeModeInfo& mode);
   void OnModesetComplete(const DrmOverlayPlaneList& modeset_planes);
-  bool ScheduleOrTestPageFlip(const DrmOverlayPlaneList& plane_list,
-                              scoped_refptr<PageFlipRequest> page_flip_request,
-                              gfx::GpuFenceHandle* release_fence);
+  PageFlipResult ScheduleOrTestPageFlip(
+      const DrmOverlayPlaneList& plane_list,
+      scoped_refptr<PageFlipRequest> page_flip_request,
+      gfx::GpuFenceHandle* release_fence);
   void AllocateCursorBuffers();
   DrmDumbBuffer* NextCursorBuffer();
   void UpdateCursorImage();
@@ -227,10 +237,8 @@ class HardwareDisplayController {
   base::flat_map<uint32_t /*fourcc_format*/, uint64_t /*preferred_modifier*/>
       preferred_format_modifier_;
 
-  // Used to crash the GPU process if a page flip commit fails and no new
-  // modeset attempts come in.
-  base::OneShotTimer crash_gpu_timer_;
-  int16_t failed_page_flip_counter_ = 0;
+  // Used to crash the GPU process when unrecoverable failures occur.
+  PageFlipWatchdog watchdog_;
 
   base::WeakPtrFactory<HardwareDisplayController> weak_ptr_factory_{this};
 };

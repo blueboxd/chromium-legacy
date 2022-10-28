@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -105,7 +105,7 @@ bool LiveCaptionUnavailabilityNotifier::
 }
 
 bool LiveCaptionUnavailabilityNotifier::ErrorSilencedForOrigin() {
-  const base::Value::List& silenced_sites_list = profile_prefs_->GetValueList(
+  const base::Value::List& silenced_sites_list = profile_prefs_->GetList(
       prefs::kLiveCaptionMediaFoundationRendererErrorSilenced);
 
   const auto it = std::find_if(
@@ -149,10 +149,12 @@ void LiveCaptionUnavailabilityNotifier::
           ->GetPrefs();
   ListPrefUpdate update(
       prefs, prefs::kLiveCaptionMediaFoundationRendererErrorSilenced);
+  base::Value::List& update_list = update->GetList();
   if (checked) {
-    update->Append(render_frame_host().GetLastCommittedOrigin().Serialize());
+    update_list.Append(
+        render_frame_host().GetLastCommittedOrigin().Serialize());
   } else {
-    update->EraseListValueIf([&](const base::Value& value) {
+    update_list.EraseIf([&](const base::Value& value) {
       return value.GetString() ==
              render_frame_host().GetLastCommittedOrigin().Serialize();
     });

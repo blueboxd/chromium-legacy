@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -42,7 +42,7 @@ class NetworkScreenUnitTest : public testing::Test {
 
     // Create the NetworkScreen we will use for testing.
     network_screen_ = std::make_unique<NetworkScreen>(
-        &mock_view_,
+        std::move(mock_view_),
         base::BindRepeating(&NetworkScreenUnitTest::HandleScreenExit,
                             base::Unretained(this)));
     mock_network_state_helper_ = new login::MockNetworkStateHelper();
@@ -74,7 +74,7 @@ class NetworkScreenUnitTest : public testing::Test {
   content::BrowserTaskEnvironment task_environment_;
 
   // More accessory objects needed by NetworkScreen.
-  MockNetworkScreenView mock_view_;
+  base::WeakPtr<NetworkScreenView> mock_view_;
 };
 
 TEST_F(NetworkScreenUnitTest, ContinuesAutomatically) {

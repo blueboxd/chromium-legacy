@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -67,7 +67,7 @@ import org.chromium.ui.test.util.UiRestriction;
 /** Integration tests for showing IPH bubbles for read later. */
 @RunWith(ChromeJUnit4ClassRunner.class)
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
-@Features.EnableFeatures({ChromeFeatureList.READ_LATER, ChromeFeatureList.ENABLE_IPH})
+@Features.EnableFeatures({ChromeFeatureList.ENABLE_IPH})
 @Batch(Batch.PER_CLASS)
 public class ReadLaterContextMenuTest {
     @Rule

@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,7 +13,7 @@ import {GuestId} from '../guest_os/guest_os_browser_proxy.js';
 /** @type {string} */ export const DEFAULT_CROSTINI_VM = 'termina';
 /** @type {string} */ export const DEFAULT_CROSTINI_CONTAINER = 'penguin';
 
-/** @type {!GuestId} */ export const DEFAULT_CONTAINER_ID = {
+/** @type {!GuestId} */ export const DEFAULT_CROSTINI_GUEST_ID = {
   vm_name: DEFAULT_CROSTINI_VM,
   container_name: DEFAULT_CROSTINI_CONTAINER,
 };
@@ -74,7 +74,7 @@ export const MAX_VALID_PORT_NUMBER = 65535;  // Maximum 16-bit integer value.
  * to install and uninstall Crostini.
  */
 
-  /** @interface */
+/** @interface */
 export class CrostiniBrowserProxy {
   /* Show crostini installer. */
   requestCrostiniInstallerView() {}
@@ -235,10 +235,11 @@ export class CrostiniBrowserProxy {
    * @param {?string} imageServer url of lxd container server from which to
    *     fetch
    * @param {?string} imageAlias name of image to fetch e.g. 'debian/bullseye'
-   * @param {?string} ansiblePlaybook file location of an Ansible playbook to
-   *     preconfigure the container with
+   * @param {?string} containerFile file location of an Ansible playbook (.yaml)
+   *     or a Crostini backup file (.tini, .tar.gz, .tar) to create the
+   *     container from
    */
-  createContainer(containerId, imageServer, imageAlias, ansiblePlaybook) {}
+  createContainer(containerId, imageServer, imageAlias, containerFile) {}
 
   /**
    * @param {!GuestId} containerId id of container to delete.
@@ -267,10 +268,9 @@ export class CrostiniBrowserProxy {
    * Opens file selector dialog to allow user to select an Ansible playbook
    * to preconfigure their container.
    *
-   * @return {!Promise<string>} Returns a filepath to the selected Ansible
-   *      Playbook
+   * @return {!Promise<string>} Returns a filepath to the selected file.
    */
-  applyAnsiblePlaybook() {}
+  openContainerFileSelector() {}
 }
 
 /** @type {?CrostiniBrowserProxy} */
@@ -425,10 +425,10 @@ export class CrostiniBrowserProxyImpl {
   }
 
   /** @override */
-  createContainer(containerId, imageServer, imageAlias, ansiblePlaybook) {
+  createContainer(containerId, imageServer, imageAlias, containerFile) {
     chrome.send(
         'createContainer',
-        [containerId, imageServer, imageAlias, ansiblePlaybook]);
+        [containerId, imageServer, imageAlias, containerFile]);
   }
 
   /** @override */
@@ -452,7 +452,7 @@ export class CrostiniBrowserProxyImpl {
   }
 
   /** @override */
-  applyAnsiblePlaybook() {
-    return sendWithPromise('applyAnsiblePlaybook');
+  openContainerFileSelector() {
+    return sendWithPromise('openContainerFileSelector');
   }
 }

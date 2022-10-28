@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,7 +11,7 @@
 #include "base/no_destructor.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
-#include "components/keyed_service/content/browser_context_keyed_service_factory.h"
+#include "chrome/browser/profiles/profile_keyed_service_factory.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -93,7 +93,7 @@ class LacrosFirstRunService : public KeyedService {
   base::WeakPtrFactory<LacrosFirstRunService> weak_ptr_factory_{this};
 };
 
-class LacrosFirstRunServiceFactory : public BrowserContextKeyedServiceFactory {
+class LacrosFirstRunServiceFactory : public ProfileKeyedServiceFactory {
  public:
   LacrosFirstRunServiceFactory(const LacrosFirstRunServiceFactory&) = delete;
   LacrosFirstRunServiceFactory& operator=(const LacrosFirstRunServiceFactory&) =

@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,10 +7,10 @@
 #include "base/test/task_environment.h"
 #include "chromeos/crosapi/mojom/sync.mojom-test-utils.h"
 #include "components/sync/chromeos/explicit_passphrase_mojo_utils.h"
-#include "components/sync/driver/mock_sync_service.h"
-#include "components/sync/driver/sync_user_settings_mock.h"
 #include "components/sync/engine/nigori/key_derivation_params.h"
 #include "components/sync/engine/nigori/nigori.h"
+#include "components/sync/test/mock_sync_service.h"
+#include "components/sync/test/sync_user_settings_mock.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

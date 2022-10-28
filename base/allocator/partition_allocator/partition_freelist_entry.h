@@ -1,4 +1,4 @@
-// Copyright (c) 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,18 +8,22 @@
 #include <cstddef>
 #include <cstdint>
 
+#include "base/allocator/partition_allocator/freeslot_bitmap.h"
 #include "base/allocator/partition_allocator/partition_alloc-inl.h"
 #include "base/allocator/partition_allocator/partition_alloc_base/bits.h"
 #include "base/allocator/partition_allocator/partition_alloc_base/compiler_specific.h"
 #include "base/allocator/partition_allocator/partition_alloc_base/debug/debugging_buildflags.h"
 #include "base/allocator/partition_allocator/partition_alloc_base/immediate_crash.h"
-#include "base/allocator/partition_allocator/partition_alloc_base/sys_byteorder.h"
 #include "base/allocator/partition_allocator/partition_alloc_buildflags.h"
 #include "base/allocator/partition_allocator/partition_alloc_check.h"
 #include "base/allocator/partition_allocator/partition_alloc_config.h"
 #include "base/allocator/partition_allocator/partition_alloc_constants.h"
 #include "base/allocator/partition_allocator/partition_ref_count.h"
 #include "build/build_config.h"
+
+#if !defined(ARCH_CPU_BIG_ENDIAN)
+#include "base/allocator/partition_allocator/reverse_bytes.h"
+#endif  // !defined(ARCH_CPU_BIG_ENDIAN)
 
 namespace partition_alloc::internal {
 
@@ -71,7 +75,7 @@ class EncodedPartitionFreelistEntryPtr {
 #if defined(ARCH_CPU_BIG_ENDIAN)
     uintptr_t transformed = ~address;
 #else
-    uintptr_t transformed = base::ByteSwapUintPtrT(address);
+    uintptr_t transformed = ReverseBytes(address);
 #endif
     return transformed;
   }
@@ -243,6 +247,15 @@ class PartitionFreelistEntry {
 
     bool same_superpage = (here_address & kSuperPageBaseMask) ==
                           (next_address & kSuperPageBaseMask);
+#if BUILDFLAG(USE_FREESLOT_BITMAP)
+    bool marked_as_free_in_bitmap =
+        for_thread_cache
+            ? true
+            : !FreeSlotBitmapSlotIsUsed(reinterpret_cast<uintptr_t>(next));
+#else
+    bool marked_as_free_in_bitmap = true;
+#endif
+
     // This is necessary but not sufficient when quarantine is enabled, see
     // SuperPagePayloadBegin() in partition_page.h. However we don't want to
     // fetch anything from the root in this function.
@@ -252,7 +265,8 @@ class PartitionFreelistEntry {
     if (for_thread_cache)
       return shadow_ptr_ok & not_in_metadata;
     else
-      return shadow_ptr_ok & same_superpage & not_in_metadata;
+      return shadow_ptr_ok & same_superpage & marked_as_free_in_bitmap &
+             not_in_metadata;
   }
 
   EncodedPartitionFreelistEntryPtr encoded_next_;

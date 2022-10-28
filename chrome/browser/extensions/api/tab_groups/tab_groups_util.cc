@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -38,25 +38,24 @@ int GetWindowIdOfGroup(const tab_groups::TabGroupId& id) {
   return -1;
 }
 
-std::unique_ptr<api::tab_groups::TabGroup> CreateTabGroupObject(
+api::tab_groups::TabGroup CreateTabGroupObject(
     const tab_groups::TabGroupId& id,
     const tab_groups::TabGroupVisualData& visual_data) {
-  auto tab_group_object = std::make_unique<api::tab_groups::TabGroup>();
-  tab_group_object->id = GetGroupId(id);
-  tab_group_object->collapsed = visual_data.is_collapsed();
-  tab_group_object->color = ColorIdToColor(visual_data.color());
-  tab_group_object->title =
-      std::make_unique<std::string>(base::UTF16ToUTF8(visual_data.title()));
-  tab_group_object->window_id = GetWindowIdOfGroup(id);
+  api::tab_groups::TabGroup tab_group_object;
+  tab_group_object.id = GetGroupId(id);
+  tab_group_object.collapsed = visual_data.is_collapsed();
+  tab_group_object.color = ColorIdToColor(visual_data.color());
+  tab_group_object.title = base::UTF16ToUTF8(visual_data.title());
+  tab_group_object.window_id = GetWindowIdOfGroup(id);
 
   return tab_group_object;
 }
 
-std::unique_ptr<api::tab_groups::TabGroup> CreateTabGroupObject(
+absl::optional<api::tab_groups::TabGroup> CreateTabGroupObject(
     const tab_groups::TabGroupId& id) {
   Browser* browser = chrome::FindBrowserWithGroup(id, nullptr);
   if (!browser)
-    return nullptr;
+    return absl::nullopt;
 
   CHECK(browser->tab_strip_model()->SupportsTabGroups());
   TabGroupModel* group_model = browser->tab_strip_model()->group_model();

@@ -330,8 +330,7 @@ void AttributionDataHostManagerImpl::NotifyNavigationForDataHost(
     // source.
     // TODO(apaseltiner): Report a DevTools/internals issue if the destinations
     // aren't matched.
-    if (source.common_info().ConversionDestination() !=
-        registrations.destination) {
+    if (source.common_info().DestinationSite() != registrations.destination) {
       continue;
     }
 
@@ -505,20 +504,20 @@ void AttributionDataHostManagerImpl::TriggerDataAvailable(
   event_triggers.reserve(data->event_triggers.size());
 
   for (auto& event_trigger : data->event_triggers) {
-    absl::optional<AttributionFilterData> filters =
+    absl::optional<AttributionFilterData> event_filters =
         AttributionFilterData::FromTriggerFilterValues(
             std::move(event_trigger->filters->filter_values));
-    if (!filters.has_value()) {
+    if (!event_filters.has_value()) {
       RecordTriggerDataHandleStatus(DataHandleStatus::kInvalidData);
       mojo::ReportBadMessage(
           "AttributionDataHost: Invalid event-trigger filters.");
       return;
     }
 
-    absl::optional<AttributionFilterData> not_filters =
+    absl::optional<AttributionFilterData> not_event_filters =
         AttributionFilterData::FromTriggerFilterValues(
             std::move(event_trigger->not_filters->filter_values));
-    if (!not_filters.has_value()) {
+    if (!not_event_filters.has_value()) {
       RecordTriggerDataHandleStatus(DataHandleStatus::kInvalidData);
       mojo::ReportBadMessage(
           "AttributionDataHost: Invalid event-trigger not_filters.");
@@ -530,7 +529,7 @@ void AttributionDataHostManagerImpl::TriggerDataAvailable(
         event_trigger->dedup_key
             ? absl::make_optional(event_trigger->dedup_key->value)
             : absl::nullopt,
-        std::move(*filters), std::move(*not_filters));
+        std::move(*event_filters), std::move(*not_event_filters));
   }
 
   absl::optional<std::vector<AttributionAggregatableTriggerData>>
@@ -724,8 +723,8 @@ void AttributionDataHostManagerImpl::OnRedirectSourceParsed(
   // Process the registration if it was valid.
   // TODO(apaseltiner): Report a DevTools/internals issue if the destinations
   // aren't matched.
-  if (source && source->common_info().ConversionDestination() ==
-                    registrations.destination) {
+  if (source &&
+      source->common_info().DestinationSite() == registrations.destination) {
     attribution_manager_->HandleSource(std::move(*source));
   }
 

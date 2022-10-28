@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -52,7 +52,7 @@
 #include "components/prefs/testing_pref_service.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/signin/public/identity_manager/identity_test_environment.h"
-#include "components/sync/driver/test_sync_service.h"
+#include "components/sync/test/test_sync_service.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/test/browser_task_environment.h"
@@ -108,6 +108,7 @@ using signin::IdentityTestEnvironment;
 using ::testing::AllOf;
 using ::testing::AtLeast;
 using ::testing::ElementsAre;
+using ::testing::Eq;
 using ::testing::Field;
 using ::testing::IsEmpty;
 using ::testing::IsNull;
@@ -255,11 +256,6 @@ auto ExpectWeakCredential(
     const std::string& detailed_origin,
     const absl::optional<std::string>& change_password_url,
     const std::u16string& username) {
-  auto change_password_url_field_matcher =
-      change_password_url.has_value()
-          ? Field(&PasswordUiEntry::change_password_url,
-                  Pointee(change_password_url.value()))
-          : Field(&PasswordUiEntry::change_password_url, IsNull());
   return AllOf(Field(&PasswordUiEntry::username, base::UTF16ToASCII(username)),
                Field(&PasswordUiEntry::urls,
                      ExpectUrls(formatted_origin, detailed_origin)));
@@ -277,8 +273,9 @@ auto ExpectCompromisedCredential(
   auto change_password_url_field_matcher =
       change_password_url.has_value()
           ? Field(&PasswordUiEntry::change_password_url,
-                  Pointee(change_password_url.value()))
-          : Field(&PasswordUiEntry::change_password_url, IsNull());
+                  change_password_url.value())
+          : Field(&PasswordUiEntry::change_password_url,
+                  testing::Eq(absl::nullopt));
   return AllOf(Field(&PasswordUiEntry::username, base::UTF16ToASCII(username)),
                change_password_url_field_matcher,
                Field(&PasswordUiEntry::urls,
@@ -1080,7 +1077,7 @@ TEST_F(PasswordCheckDelegateTest,
 // treated as no completed run yet.
 TEST_F(PasswordCheckDelegateTest, LastTimePasswordCheckCompletedNotSet) {
   PasswordCheckStatus status = delegate().GetPasswordCheckStatus();
-  EXPECT_THAT(status.elapsed_time_since_last_check, IsNull());
+  EXPECT_FALSE(status.elapsed_time_since_last_check);
 }
 
 // Checks that a non-default kLastTimePasswordCheckCompleted pref value is
@@ -1092,7 +1089,7 @@ TEST_F(PasswordCheckDelegateTest, LastTimePasswordCheckCompletedIsSet) {
 
   PasswordCheckStatus status = delegate().GetPasswordCheckStatus();
   EXPECT_THAT(status.elapsed_time_since_last_check,
-              Pointee(std::string("5 minutes ago")));
+              Eq(std::string("5 minutes ago")));
 }
 
 // Checks that a transition into the idle state after starting a check results
@@ -1104,7 +1101,7 @@ TEST_F(PasswordCheckDelegateTest, LastTimePasswordCheckCompletedReset) {
   service()->set_state_and_notify(BulkLeakCheckService::State::kIdle);
   PasswordCheckStatus status = delegate().GetPasswordCheckStatus();
   EXPECT_THAT(status.elapsed_time_since_last_check,
-              Pointee(std::string("Just now")));
+              Eq(std::string("Just now")));
 }
 
 // Checks that processing a credential by the leak check updates the progress
@@ -1217,8 +1214,8 @@ TEST_F(PasswordCheckDelegateTest, WellKnownChangePasswordUrl_androidrealm) {
 
   RunUntilIdle();
 
-  EXPECT_EQ(delegate().GetCompromisedCredentials().at(0).change_password_url,
-            nullptr);
+  EXPECT_FALSE(
+      delegate().GetCompromisedCredentials().at(0).change_password_url);
   EXPECT_EQ(
       GURL(*delegate().GetCompromisedCredentials().at(1).change_password_url)
           .path(),
@@ -1238,7 +1235,7 @@ TEST_F(PasswordCheckDelegateTest, HasStartableScript) {
   PasswordForm form1 = MakeSavedPassword(kExampleCom, kUsername1, kPassword1);
   AddIssueToForm(&form1, InsecureType::kLeaked);
   store().AddLogin(form1);
-  const url::Origin origin1 = url::Origin::Create(GURL(kExampleCom));
+  const url::Origin kOrigin1 = url::Origin::Create(GURL(kExampleCom));
 
   PasswordForm form2 = MakeSavedPassword(kExampleOrg, kUsername2, kPassword2);
   store().AddLogin(form2);
@@ -1246,7 +1243,7 @@ TEST_F(PasswordCheckDelegateTest, HasStartableScript) {
 
   RunUntilIdle();
 
-  EXPECT_CALL(password_scripts_fetcher(), IsScriptAvailable(origin1))
+  EXPECT_CALL(password_scripts_fetcher(), IsScriptAvailable(kOrigin1))
       .WillOnce(Return(false));
 
   // Only the form with the known issue shows up and does not have a startable
@@ -1297,6 +1294,58 @@ TEST_F(PasswordCheckDelegateTest, HasStartableScript) {
       PasswordCheckScriptsCacheState::kCacheStaleAndUiUpdate, 1);
 }
 
+TEST_F(PasswordCheckDelegateTest, HasStartableScript_WeakCredentials) {
+  base::test::ScopedFeatureList feature_list(
+      password_manager::features::kPasswordChange);
+  base::HistogramTester histogram_tester;
+
+  identity_test_env().MakeAccountAvailable(kTestEmail);
+  // Enable password sync.
+  sync_service().SetActiveDataTypes(syncer::ModelTypeSet(syncer::PASSWORDS));
+
+  // Add two forms: One that is leaked and weak and one that is only weak.
+  PasswordForm form1 = MakeSavedPassword(kExampleCom, kUsername1, kPassword1);
+  AddIssueToForm(&form1, InsecureType::kLeaked);
+  AddIssueToForm(&form1, InsecureType::kWeak);
+  store().AddLogin(form1);
+  const url::Origin kOrigin1 = url::Origin::Create(GURL(kExampleCom));
+
+  PasswordForm form2 = MakeSavedPassword(kExampleOrg, kUsername2, kPassword2);
+  AddIssueToForm(&form2, InsecureType::kWeak);
+  store().AddLogin(form2);
+  const url::Origin origin2 = url::Origin::Create(GURL(kExampleOrg));
+
+  EXPECT_CALL(password_scripts_fetcher(), IsScriptAvailable)
+      .WillRepeatedly(Return(true));
+
+  RunUntilIdle();
+  delegate().StartPasswordCheck();
+  RunUntilIdle();
+
+  // By default only the first form has a startable script because it is also
+  // leaked.
+  EXPECT_THAT(
+      delegate().GetWeakCredentials(),
+      UnorderedElementsAre(ExpectCredentialWithScriptInfo(
+                               kUsername1, /*has_startable_script=*/true),
+                           ExpectCredentialWithScriptInfo(
+                               kUsername2, /*has_startable_script=*/false)));
+
+  // After setin the feature parameter for weak credentials to `true` ...
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeatureWithParameters(
+      password_manager::features::kPasswordChangeInSettings,
+      {{"weak_credentials", "true"}});
+
+  // ... both credentials are marked as having a password change script.
+  EXPECT_THAT(
+      delegate().GetWeakCredentials(),
+      UnorderedElementsAre(ExpectCredentialWithScriptInfo(
+                               kUsername1, /*has_startable_script=*/true),
+                           ExpectCredentialWithScriptInfo(
+                               kUsername2, /*has_startable_script=*/true)));
+}
+
 TEST_F(PasswordCheckDelegateTest, HasStartableScript_SyncDisabled) {
   base::test::ScopedFeatureList feature_list(
       password_manager::features::kPasswordChange);
@@ -1309,7 +1358,7 @@ TEST_F(PasswordCheckDelegateTest, HasStartableScript_SyncDisabled) {
   PasswordForm form1 = MakeSavedPassword(kExampleCom, kUsername1, kPassword1);
   AddIssueToForm(&form1, InsecureType::kLeaked);
   store().AddLogin(form1);
-  const url::Origin origin1 = url::Origin::Create(GURL(kExampleCom));
+  const url::Origin kOrigin1 = url::Origin::Create(GURL(kExampleCom));
 
   RunUntilIdle();
 
@@ -1336,7 +1385,7 @@ TEST_F(PasswordCheckDelegateTest, HasStartableScript_FeatureDisabled) {
   PasswordForm form1 = MakeSavedPassword(kExampleCom, kUsername1, kPassword1);
   AddIssueToForm(&form1, InsecureType::kLeaked);
   store().AddLogin(form1);
-  const url::Origin origin1 = url::Origin::Create(GURL(kExampleCom));
+  const url::Origin kOrigin1 = url::Origin::Create(GURL(kExampleCom));
 
   RunUntilIdle();
 
@@ -1362,7 +1411,7 @@ TEST_F(PasswordCheckDelegateTest, HasStartableScript_CacheFresh) {
   PasswordForm form1 = MakeSavedPassword(kExampleCom, kUsername1, kPassword1);
   AddIssueToForm(&form1, InsecureType::kLeaked);
   store().AddLogin(form1);
-  const url::Origin origin1 = url::Origin::Create(GURL(kExampleCom));
+  const url::Origin kOrigin1 = url::Origin::Create(GURL(kExampleCom));
 
   RunUntilIdle();
 
@@ -1399,7 +1448,7 @@ TEST_F(PasswordCheckDelegateTest,
   PasswordForm form1 = MakeSavedPassword(kExampleCom, kUsername1, kPassword1);
   AddIssueToForm(&form1, InsecureType::kLeaked);
   store().AddLogin(form1);
-  const url::Origin origin1 = url::Origin::Create(GURL(kExampleCom));
+  const url::Origin kOrigin1 = url::Origin::Create(GURL(kExampleCom));
 
   RunUntilIdle();
 

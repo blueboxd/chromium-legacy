@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -23,6 +23,7 @@
 #include "chrome/browser/apps/app_service/launch_utils.h"
 #include "chrome/browser/ash/file_manager/path_util.h"
 #include "chrome/browser/ash/system_web_apps/system_web_app_manager.h"
+#include "chrome/browser/ash/web_applications/camera_app/camera_app_survey_handler.h"
 #include "chrome/browser/ash/web_applications/camera_app/chrome_camera_app_ui_constants.h"
 #include "chrome/browser/devtools/devtools_window.h"
 #include "chrome/browser/media/webrtc/media_capture_devices_dispatcher.h"
@@ -176,6 +177,7 @@ void ChromeCameraAppUIDelegate::FileMonitor::OnFileDeletion(
 
 ChromeCameraAppUIDelegate::ChromeCameraAppUIDelegate(content::WebUI* web_ui)
     : web_ui_(web_ui),
+      session_start_time_(base::Time::Now()),
       file_task_runner_(base::ThreadPool::CreateSequencedTaskRunner(
           {base::MayBlock(), base::TaskPriority::USER_VISIBLE})) {
   file_task_runner_->PostTask(
@@ -188,6 +190,9 @@ ChromeCameraAppUIDelegate::~ChromeCameraAppUIDelegate() {
   // Destroy |file_monitor_| on |file_task_runner_|.
   // TODO(wtlee): Ensure there is no lifetime issue before actually deleting it.
   file_task_runner_->DeleteSoon(FROM_HERE, std::move(file_monitor_));
+
+  // Try triggering the HaTS survey when leaving the app.
+  MaybeTriggerSurvey();
 }
 
 void ChromeCameraAppUIDelegate::SetLaunchDirectory() {
@@ -222,6 +227,9 @@ void ChromeCameraAppUIDelegate::PopulateLoadTimeData(
   source->AddString("board_name", base::SysInfo::GetLsbReleaseBoard());
   source->AddString("device_type",
                     DeviceTypeToString(chromeos::GetDeviceType()));
+  source->AddBoolean("multiPageDocScan",
+                     base::FeatureList::IsEnabled(
+                         chromeos::features::kCameraAppMultiPageDocScan));
 }
 
 bool ChromeCameraAppUIDelegate::IsMetricsAndCrashReportingEnabled() {
@@ -306,6 +314,15 @@ void ChromeCameraAppUIDelegate::MonitorFileDeletion(
           &ChromeCameraAppUIDelegate::MonitorFileDeletionOnFileThread,
           base::Unretained(this), file_monitor_.get(), std::move(file_path),
           std::move(callback_on_current_thread)));
+}
+
+void ChromeCameraAppUIDelegate::MaybeTriggerSurvey() {
+  static constexpr base::TimeDelta kMinSurveyDuration = base::Seconds(15);
+
+  if (base::Time::Now() - session_start_time_ < kMinSurveyDuration) {
+    return;
+  }
+  CameraAppSurveyHandler::GetInstance()->MaybeTriggerSurvey();
 }
 
 base::FilePath ChromeCameraAppUIDelegate::GetFilePathByName(

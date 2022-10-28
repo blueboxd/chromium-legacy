@@ -23,6 +23,7 @@
 #include "components/startup_metric_utils/browser/startup_metric_utils.h"
 #include "components/translate/core/common/translate_util.h"
 #include "components/variations/variations_ids_provider.h"
+#include "content/public/app/initialize_mojo_core.h"
 #include "content/public/browser/browser_main_runner.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
@@ -187,6 +188,9 @@ absl::optional<int> ContentMainDelegateImpl::BasicStartupComplete() {
     ::features::kBackForwardCache,
     // TODO(crbug.com/1247836): Enable TFLite/Optimization Guide on WebLayer.
     translate::kTFLiteLanguageDetectionEnabled,
+    // TODO(crbug.com/1338402): Add support for WebLayer. Disabling autofill is
+    // not yet supported.
+    blink::features::kAnonymousIframeOriginTrial,
 
 #if BUILDFLAG(IS_ANDROID)
     // TODO(crbug.com/1131016): Support Picture in Picture API on WebLayer.
@@ -221,6 +225,10 @@ absl::optional<int> ContentMainDelegateImpl::BasicStartupComplete() {
   // TODO(crbug.com/1097105): Support Web GPU on WebLayer.
   blink::WebRuntimeFeatures::EnableWebGPU(false);
 
+  // TODO(crbug.com/1338402): Add support for WebLayer. Disabling autofill is
+  // not yet supported.
+  blink::WebRuntimeFeatures::EnableAnonymousIframe(false);
+
 #if BUILDFLAG(IS_ANDROID)
   content::Compositor::Initialize();
 #endif
@@ -241,6 +249,10 @@ bool ContentMainDelegateImpl::ShouldCreateFeatureList(InvokedIn invoked_in) {
   // TODO(weblayer-dev): Support feature lists on desktop.
   return true;
 #endif
+}
+
+bool ContentMainDelegateImpl::ShouldInitializeMojo(InvokedIn invoked_in) {
+  return ShouldCreateFeatureList(invoked_in);
 }
 
 variations::VariationsIdsProvider*
@@ -297,8 +309,14 @@ void ContentMainDelegateImpl::PreSandboxStartup() {
 
 absl::optional<int> ContentMainDelegateImpl::PostEarlyInitialization(
     InvokedIn invoked_in) {
-  if (absl::holds_alternative<InvokedInBrowserProcess>(invoked_in))
+  if (absl::holds_alternative<InvokedInBrowserProcess>(invoked_in)) {
     browser_client_->CreateFeatureListAndFieldTrials();
+  }
+  if (!ShouldInitializeMojo(invoked_in)) {
+    // Since we've told Content not to initialize Mojo on its own, we must do it
+    // here manually.
+    content::InitializeMojoCore();
+  }
   return absl::nullopt;
 }
 

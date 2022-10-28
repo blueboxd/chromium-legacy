@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,7 +7,7 @@
 
 #include "ash/ash_export.h"
 #include "ash/system/bluetooth/bluetooth_device_list_item_battery_view.h"
-#include "chromeos/services/bluetooth_config/public/mojom/cros_bluetooth_config.mojom.h"
+#include "chromeos/ash/services/bluetooth_config/public/mojom/cros_bluetooth_config.mojom.h"
 
 namespace ash {
 
@@ -27,8 +27,7 @@ class ASH_EXPORT BluetoothDeviceListItemMultipleBatteryView
 
   // Update the battery icon and text to reflect |battery_properties|.
   void UpdateBatteryInfo(
-      const chromeos::bluetooth_config::mojom::DeviceBatteryInfoPtr&
-          battery_info);
+      const bluetooth_config::mojom::DeviceBatteryInfoPtr& battery_info);
 
  private:
   BluetoothDeviceListItemBatteryView* left_bud_battery_view_ = nullptr;

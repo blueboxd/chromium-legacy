@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,16 +7,14 @@
 
 #include "base/observer_list.h"
 #include "base/observer_list_types.h"
-#include "chromeos/services/bluetooth_config/fast_pair_delegate.h"
+#include "chromeos/ash/services/bluetooth_config/fast_pair_delegate.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
-namespace chromeos {
-namespace bluetooth_config {
+namespace ash::bluetooth_config {
 class AdapterStateController;
 class DeviceImageInfo;
 class DeviceNameManager;
-}  // namespace bluetooth_config
-}  // namespace chromeos
+}  // namespace ash::bluetooth_config
 
 namespace ash {
 namespace quick_pair {
@@ -24,13 +22,12 @@ namespace quick_pair {
 // Delegate class which provides Fast Pair information to the
 // CrosBluetoothConfig system.
 class FastPairBluetoothConfigDelegate
-    : public chromeos::bluetooth_config::FastPairDelegate {
+    : public bluetooth_config::FastPairDelegate {
  public:
   class Observer : public base::CheckedObserver {
    public:
     virtual void OnAdapterStateControllerChanged(
-        chromeos::bluetooth_config::AdapterStateController*
-            adapter_state_controller) = 0;
+        bluetooth_config::AdapterStateController* adapter_state_controller) = 0;
   };
 
   FastPairBluetoothConfigDelegate();
@@ -43,26 +40,23 @@ class FastPairBluetoothConfigDelegate
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
 
-  // chromeos::bluetooth_config::FastPairDelegate
-  absl::optional<chromeos::bluetooth_config::DeviceImageInfo>
-  GetDeviceImageInfo(const std::string& device_id) override;
+  // bluetooth_config::FastPairDelegate
+  absl::optional<bluetooth_config::DeviceImageInfo> GetDeviceImageInfo(
+      const std::string& device_id) override;
   void ForgetDevice(const std::string& mac_address) override;
-  void SetAdapterStateController(
-      chromeos::bluetooth_config::AdapterStateController*
-          adapter_state_controller) override;
-  void SetDeviceNameManager(chromeos::bluetooth_config::DeviceNameManager*
-                                device_name_manager) override;
+  void SetAdapterStateController(bluetooth_config::AdapterStateController*
+                                     adapter_state_controller) override;
+  void SetDeviceNameManager(
+      bluetooth_config::DeviceNameManager* device_name_manager) override;
 
-  chromeos::bluetooth_config::AdapterStateController*
-  adapter_state_controller() {
+  bluetooth_config::AdapterStateController* adapter_state_controller() {
     return adapter_state_controller_;
   }
 
  private:
   base::ObserverList<Observer> observers_;
-  chromeos::bluetooth_config::AdapterStateController*
-      adapter_state_controller_ = nullptr;
-  chromeos::bluetooth_config::DeviceNameManager* device_name_manager_ = nullptr;
+  bluetooth_config::AdapterStateController* adapter_state_controller_ = nullptr;
+  bluetooth_config::DeviceNameManager* device_name_manager_ = nullptr;
 };
 
 }  // namespace quick_pair

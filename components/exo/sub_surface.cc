@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -47,6 +47,16 @@ void SubSurface::SetPosition(const gfx::PointF& position) {
     return;
 
   parent_->SetSubSurfacePosition(surface_, position);
+}
+
+void SubSurface::SetClipRect(const absl::optional<gfx::RectF>& clip_rect) {
+  TRACE_EVENT1("exo", "SubSurface::SetClipRect", "clip_rect",
+               (clip_rect ? clip_rect->ToString() : "nullopt"));
+
+  if (!parent_ || !surface_)
+    return;
+
+  surface_->SetClipRect(clip_rect);
 }
 
 void SubSurface::PlaceAbove(Surface* reference) {

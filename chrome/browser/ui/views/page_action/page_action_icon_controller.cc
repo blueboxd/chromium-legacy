@@ -1,23 +1,24 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome/browser/ui/views/page_action/page_action_icon_controller.h"
 
-#include <algorithm>
-
 #include "base/bind.h"
 #include "base/feature_list.h"
+#include "base/ranges/algorithm.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sharing/click_to_call/click_to_call_ui_controller.h"
 #include "chrome/browser/sharing/sms/sms_remote_fetcher_ui_controller.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/page_action/page_action_icon_type.h"
 #include "chrome/browser/ui/views/autofill/payments/local_card_migration_icon_view.h"
 #include "chrome/browser/ui/views/autofill/payments/offer_notification_icon_view.h"
 #include "chrome/browser/ui/views/autofill/payments/save_payment_icon_view.h"
 #include "chrome/browser/ui/views/autofill/payments/virtual_card_enroll_icon_view.h"
 #include "chrome/browser/ui/views/autofill/payments/virtual_card_manual_fallback_icon_view.h"
 #include "chrome/browser/ui/views/autofill/save_update_address_profile_icon_view.h"
+#include "chrome/browser/ui/views/commerce/price_tracking_icon_view.h"
 #include "chrome/browser/ui/views/file_system_access/file_system_access_icon_view.h"
 #include "chrome/browser/ui/views/location_bar/cookie_controls_icon_view.h"
 #include "chrome/browser/ui/views/location_bar/find_bar_icon.h"
@@ -29,6 +30,7 @@
 #include "chrome/browser/ui/views/page_action/pwa_install_view.h"
 #include "chrome/browser/ui/views/page_action/zoom_view.h"
 #include "chrome/browser/ui/views/passwords/manage_passwords_icon_views.h"
+#include "chrome/browser/ui/views/performance_controls/high_efficiency_chip_view.h"
 #include "chrome/browser/ui/views/qrcode_generator/qrcode_generator_icon_view.h"
 #include "chrome/browser/ui/views/reader_mode/reader_mode_icon_view.h"
 #include "chrome/browser/ui/views/send_tab_to_self/send_tab_to_self_icon_view.h"
@@ -111,6 +113,12 @@ void PageActionIconController::Init(const PageActionIconParams& params,
                       params.browser, params.icon_label_bubble_delegate,
                       params.page_action_icon_delegate));
         break;
+      case PageActionIconType::kHighEfficiency:
+        add_page_action_icon(type, std::make_unique<HighEfficiencyChipView>(
+                                       params.command_updater, params.browser,
+                                       params.icon_label_bubble_delegate,
+                                       params.page_action_icon_delegate));
+        break;
       case PageActionIconType::kIntentPicker:
         add_page_action_icon(
             type, std::make_unique<IntentPickerView>(
@@ -132,6 +140,11 @@ void PageActionIconController::Init(const PageActionIconParams& params,
         break;
       case PageActionIconType::kFileSystemAccess:
         add_page_action_icon(type, std::make_unique<FileSystemAccessIconView>(
+                                       params.icon_label_bubble_delegate,
+                                       params.page_action_icon_delegate));
+        break;
+      case PageActionIconType::kPriceTracking:
+        add_page_action_icon(type, std::make_unique<PriceTrackingIconView>(
                                        params.icon_label_bubble_delegate,
                                        params.page_action_icon_delegate));
         break;
@@ -245,9 +258,9 @@ void PageActionIconController::UpdateAll() {
 }
 
 bool PageActionIconController::IsAnyIconVisible() const {
-  return std::any_of(
-      page_action_icon_views_.begin(), page_action_icon_views_.end(),
-      [](auto icon_item) { return icon_item.second->GetVisible(); });
+  return base::ranges::any_of(page_action_icon_views_, [](auto icon_item) {
+    return icon_item.second->GetVisible();
+  });
 }
 
 bool PageActionIconController::ActivateFirstInactiveBubbleForAccessibility() {

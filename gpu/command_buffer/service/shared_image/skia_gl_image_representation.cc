@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -83,7 +83,8 @@ sk_sp<SkSurface> SkiaGLImageRepresentation::BeginWriteAccess(
     int final_msaa_count,
     const SkSurfaceProps& surface_props,
     std::vector<GrBackendSemaphore>* begin_semaphores,
-    std::vector<GrBackendSemaphore>* end_semaphores) {
+    std::vector<GrBackendSemaphore>* end_semaphores,
+    std::unique_ptr<GrBackendSurfaceMutableState>* end_state) {
   DCHECK_EQ(mode_, RepresentationAccessMode::kNone);
   CheckContext();
 
@@ -137,7 +138,8 @@ void SkiaGLImageRepresentation::EndWriteAccess(sk_sp<SkSurface> surface) {
 
 sk_sp<SkPromiseImageTexture> SkiaGLImageRepresentation::BeginReadAccess(
     std::vector<GrBackendSemaphore>* begin_semaphores,
-    std::vector<GrBackendSemaphore>* end_semaphores) {
+    std::vector<GrBackendSemaphore>* end_semaphores,
+    std::unique_ptr<GrBackendSurfaceMutableState>* end_state) {
   DCHECK_EQ(mode_, RepresentationAccessMode::kNone);
   CheckContext();
 
@@ -159,7 +161,7 @@ void SkiaGLImageRepresentation::EndReadAccess() {
 
 void SkiaGLImageRepresentation::CheckContext() {
 #if DCHECK_IS_ON()
-  DCHECK(gl::GLContext::GetCurrent() == context_);
+  DCHECK_EQ(gl::GLContext::GetCurrent(), context_);
 #endif
 }
 

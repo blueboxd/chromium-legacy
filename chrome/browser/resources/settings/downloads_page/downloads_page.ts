@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,13 +8,13 @@
  * settings.
  */
 import 'chrome://resources/cr_elements/cr_button/cr_button.js';
-import 'chrome://resources/cr_elements/shared_style_css.m.js';
+import 'chrome://resources/cr_elements/cr_shared_style.css.js';
 import 'chrome://resources/polymer/v3_0/iron-flex-layout/iron-flex-layout-classes.js';
 import '../controls/controlled_button.js';
 import '../controls/settings_toggle_button.js';
 import '../settings_shared.css.js';
 
-import {focusWithoutInk} from 'chrome://resources/js/cr/ui/focus_without_ink.m.js';
+import {focusWithoutInk} from 'chrome://resources/js/cr/ui/focus_without_ink.js';
 import {listenOnce} from 'chrome://resources/js/util.m.js';
 import {WebUIListenerMixin} from 'chrome://resources/js/web_ui_listener_mixin.js';
 import {afterNextRender, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
@@ -137,8 +137,10 @@ export class SettingsDownloadsPageElement extends
           // status gets announced by screen reader.
           afterNextRender(this, () => {
             const button = this.connectionAccountInfo_.linked ?
-                this.shadowRoot!.querySelector('#unlinkAccountButton') :
-                this.shadowRoot!.querySelector('#linkAccountButton');
+                this.shadowRoot!.querySelector<HTMLElement>(
+                    '#unlinkAccountButton') :
+                this.shadowRoot!.querySelector<HTMLElement>(
+                    '#linkAccountButton');
             focusWithoutInk(button!);
           });
         });

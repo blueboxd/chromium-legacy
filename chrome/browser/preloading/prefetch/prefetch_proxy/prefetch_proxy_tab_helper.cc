@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -197,6 +197,7 @@ bool ShouldConsiderDecoyRequestForStatus(PrefetchProxyPrefetchStatus status) {
     case PrefetchProxyPrefetchStatus::kPrefetchProxyNotAvailable:
     case PrefetchProxyPrefetchStatus::kPrefetchNotEligibleHostIsNonUnique:
     case PrefetchProxyPrefetchStatus::kPrefetchNotEligibleDataSaverEnabled:
+    case PrefetchProxyPrefetchStatus::kPrefetchNotEligibleExistingProxy:
       // These statuses don't relate to any user state, so don't send a decoy
       // request.
       return false;
@@ -504,6 +505,7 @@ PrefetchProxyTabHelper::MaybeUpdatePrefetchStatusWithNSPContext(
     case PrefetchProxyPrefetchStatus::kPrefetchFailedRedirectsDisabled:
     case PrefetchProxyPrefetchStatus::kPrefetchNotEligibleHostIsNonUnique:
     case PrefetchProxyPrefetchStatus::kPrefetchNotEligibleDataSaverEnabled:
+    case PrefetchProxyPrefetchStatus::kPrefetchNotEligibleExistingProxy:
       return prefetch_container->GetPrefetchStatus();
     // These statuses we are going to update to, and this is the only place that
     // they are set so they are not expected to be passed in.

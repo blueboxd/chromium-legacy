@@ -437,6 +437,13 @@ CanvasRenderingContext* HTMLCanvasElement::GetCanvasRenderingContextInternal(
   return context_.Get();
 }
 
+void HTMLCanvasElement::configureHighDynamicRange(
+    const CanvasHighDynamicRangeOptions* options,
+    ExceptionState& exception_state) {
+  // TODO(https://crbug.com/1274220): Implement this.
+  NOTIMPLEMENTED();
+}
+
 ScriptPromise HTMLCanvasElement::convertToBlob(
     ScriptState* script_state,
     const ImageEncodeOptions* options,
@@ -1298,6 +1305,10 @@ void HTMLCanvasElement::SetCanvas2DLayerBridgeInternal(
 void HTMLCanvasElement::NotifyGpuContextLost() {
   if (IsRenderingContext2D())
     context_->LoseContext(CanvasRenderingContext::kRealLostContext);
+
+  // TODO(juonv): Do we need to do anything about frame_dispatcher_ here?
+  // Desynchronized canvases seem to continue to work after recovering from a
+  // GPU context loss, so maybe the status quo is fine.
 }
 
 void HTMLCanvasElement::Trace(Visitor* visitor) const {

@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -20,9 +20,11 @@ namespace cast_streaming {
 class ReceiverSession;
 }  // namespace cast_streaming
 
-namespace chromecast {
+namespace content {
+class WebContents;
+}  // namespace content
 
-class CastWebContents;
+namespace chromecast {
 
 // This class provides an implementation of StreamingControllerBase using the
 // remoting functionality provided in the cast_streaming component.
@@ -30,7 +32,7 @@ class StreamingControllerRemoting : public StreamingControllerBase {
  public:
   StreamingControllerRemoting(
       std::unique_ptr<cast_api_bindings::MessagePort> message_port,
-      CastWebContents* cast_web_contents);
+      content::WebContents* web_contents);
   ~StreamingControllerRemoting() override;
 
  private:

@@ -329,10 +329,10 @@ def parse_args(args):
                 dest='build',
                 action='store_false',
                 help="Don't check to see if the build is up to date."),
-            optparse.make_option('--no-virtual-tests',
+            optparse.make_option('--wpt-only',
                                  action='store_true',
                                  default=False,
-                                 help=('Do not run virtual tests.')),
+                                 help=('Run web platform tests only.')),
             optparse.make_option('--child-processes',
                                  '--jobs',
                                  '-j',
@@ -723,7 +723,10 @@ def _set_up_derived_options(port, options, args):
                                   str(port.default_max_locked_shards())))
 
     if not options.configuration:
-        options.configuration = port.default_configuration()
+        options.configuration = port.get_option('configuration')
+
+    if not options.target:
+        options.target = port.get_option('target')
 
     if not options.timeout_ms:
         options.timeout_ms = str(port.timeout_ms())

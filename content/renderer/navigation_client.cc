@@ -38,11 +38,12 @@ void NavigationClient::CommitNavigation(
     mojo::PendingRemote<network::mojom::URLLoaderFactory>
         prefetch_loader_factory,
     const base::UnguessableToken& devtools_navigation_token,
-    const blink::ParsedPermissionsPolicy& permissions_policy,
+    const absl::optional<blink::ParsedPermissionsPolicy>& permissions_policy,
     blink::mojom::PolicyContainerPtr policy_container,
     mojo::PendingRemote<blink::mojom::CodeCacheHost> code_cache_host,
     mojom::CookieManagerInfoPtr cookie_manager_info,
     mojom::StorageInfoPtr storage_info,
+    blink::mojom::BackForwardCacheNotRestoredReasonsPtr not_restored_reasons,
     CommitNavigationCallback callback) {
   DCHECK(blink::IsRequestDestinationFrame(common_params->request_destination));
 
@@ -60,7 +61,8 @@ void NavigationClient::CommitNavigation(
       std::move(prefetch_loader_factory), devtools_navigation_token,
       permissions_policy, std::move(policy_container),
       std::move(code_cache_host), std::move(cookie_manager_info),
-      std::move(storage_info), std::move(callback));
+      std::move(storage_info), std::move(not_restored_reasons),
+      std::move(callback));
 }
 
 void NavigationClient::CommitFailedNavigation(

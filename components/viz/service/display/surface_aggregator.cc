@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -126,20 +126,6 @@ bool CalculateQuadSpaceDamageRect(
   *quad_space_damage_rect = cc::MathUtil::ProjectEnclosingClippedRect(
       inverse_transform, root_damage_rect);
   return true;
-}
-
-gfx::Rect GetExpandedRectWithPixelMovingForegroundFilter(
-    const CompositorRenderPassDrawQuad* rpdq,
-    const CompositorRenderPass& child_render_pass) {
-  const SharedQuadState* shared_quad_state = rpdq->shared_quad_state;
-  float max_pixel_movement = child_render_pass.filters.MaximumPixelMovement();
-  gfx::RectF rect(rpdq->rect);
-  rect.Inset(-max_pixel_movement);
-  gfx::Rect expanded_rect = gfx::ToEnclosingRect(rect);
-
-  // expanded_rect in the target space
-  return cc::MathUtil::MapEnclosingClippedRect(
-      shared_quad_state->quad_to_target_transform, expanded_rect);
 }
 
 // Create a clip rect for an aggregated quad from the original clip rect and
@@ -288,7 +274,6 @@ struct SurfaceAggregator::PrewalkResult {
   // not included in a SurfaceDrawQuad.
   base::flat_set<SurfaceId> undrawn_surfaces;
   bool video_capture_enabled = false;
-  bool may_contain_video = false;
   bool frame_sinks_changed = false;
   bool page_fullscreen_mode = false;
   gfx::ContentColorUsage content_color_usage = gfx::ContentColorUsage::kSRGB;
@@ -347,8 +332,8 @@ void SurfaceAggregator::AddRenderPassFilterDamageToDamageList(
     // The size of pixel-moving foreground filter is allowed to expand.
     // No intersecting shared_quad_state->clip_rect for the expanded rect.
     damage_rect_in_target_space =
-        GetExpandedRectWithPixelMovingForegroundFilter(render_pass_quad,
-                                                       child_render_pass);
+        GetExpandedRectWithPixelMovingForegroundFilter(
+            *render_pass_quad, child_render_pass.filters);
   } else if (child_render_pass.backdrop_filters.HasFilterThatMovesPixels()) {
     const auto* shared_quad_state = render_pass_quad->shared_quad_state;
     damage_rect_in_target_space = cc::MathUtil::MapEnclosingClippedRect(
@@ -798,7 +783,7 @@ void SurfaceAggregator::EmitSurfaceContent(
     // generated.
     TransformAndStoreDelegatedInkMetadata(
         gfx::Transform(dest_pass->transform_to_root_target, combined_transform),
-        surface->TakeDelegatedInkMetadata());
+        frame.metadata.delegated_ink_metadata.get());
   }
 
   // TODO(fsamuel): Move this to a separate helper function.
@@ -1399,7 +1384,7 @@ void SurfaceAggregator::CopyPasses(const ResolvedFrameData& resolved_frame) {
     TransformAndStoreDelegatedInkMetadata(
         gfx::Transform(source_pass_list.back()->transform_to_root_target,
                        surface_transform),
-        surface->TakeDelegatedInkMetadata());
+        frame.metadata.delegated_ink_metadata.get());
   }
 
   bool apply_surface_transform_to_root_pass = true;
@@ -1515,7 +1500,8 @@ gfx::Rect SurfaceAggregator::PrewalkRenderPass(
     resolved_pass.aggregation().in_pixel_moving_filter_pass = true;
   }
 
-  if (render_pass.has_damage_from_contributing_content) {
+  if (render_pass.has_damage_from_contributing_content &&
+      !resolved_frame.IsSameFrameAsLastAggregation()) {
     resolved_pass.aggregation().has_damage_from_contributing_content = true;
   }
 
@@ -1692,8 +1678,8 @@ gfx::Rect SurfaceAggregator::PrewalkRenderPass(
       // has pixel-moving foreground filter.
       if (child_render_pass.filters.HasFilterThatMovesPixels()) {
         gfx::Rect expanded_rect_in_target_space =
-            GetExpandedRectWithPixelMovingForegroundFilter(render_pass_quad,
-                                                           child_render_pass);
+            GetExpandedRectWithPixelMovingForegroundFilter(
+                *render_pass_quad, child_render_pass.filters);
 
         if (expanded_rect_in_target_space.Intersects(damage_rect) ||
             expanded_rect_in_target_space.Intersects(damage_from_parent) ||
@@ -1721,11 +1707,11 @@ gfx::Rect SurfaceAggregator::PrewalkRenderPass(
       // same frame as last aggregation and there is no damage OR there is
       // already full damage for the surface.
       if (resolved_frame.IsNextFrameSinceLastAggregation()) {
-        auto& damage_rect = GetOptionalDamageRectFromQuad(quad);
-        DCHECK(damage_rect.has_value());
-        // The DrawQuad `damage_rect` is already in the render pass coordinate
-        // space instead of quad rect coordinate space.
-        quad_target_space_damage_rect = damage_rect.value();
+        auto& per_quad_damage_rect = GetOptionalDamageRectFromQuad(quad);
+        DCHECK(per_quad_damage_rect.has_value());
+        // The DrawQuad `per_quad_damage_rect` is already in the render pass
+        // coordinate space instead of quad rect coordinate space.
+        quad_target_space_damage_rect = per_quad_damage_rect.value();
       }
     }
 
@@ -1910,8 +1896,6 @@ gfx::Rect SurfaceAggregator::PrewalkSurface(ResolvedFrameData& resolved_frame,
   }
 
   referenced_surfaces_.erase(surface->surface_id());
-  if (!damage_rect.IsEmpty() && frame.metadata.may_contain_video)
-    result.may_contain_video = true;
   result.content_color_usage =
       std::max(result.content_color_usage, frame.metadata.content_color_usage);
 
@@ -2060,7 +2044,6 @@ AggregatedFrame SurfaceAggregator::Aggregate(
 
   frame.has_copy_requests = has_copy_requests_ && take_copy_requests_;
   frame.video_capture_enabled = prewalk_result.video_capture_enabled;
-  frame.may_contain_video = prewalk_result.may_contain_video;
   frame.content_color_usage = prewalk_result.content_color_usage;
   frame.page_fullscreen_mode = prewalk_result.page_fullscreen_mode;
 
@@ -2109,8 +2092,8 @@ AggregatedFrame SurfaceAggregator::Aggregate(
 
   ResetAfterAggregate();
 
-  for (auto& surface_id : previous_contained_surfaces_) {
-    surface = manager_->GetSurfaceForId(surface_id);
+  for (auto& contained_surface_id : previous_contained_surfaces_) {
+    surface = manager_->GetSurfaceForId(contained_surface_id);
     if (surface) {
       surface->allocation_group()->TakeAggregatedLatencyInfoUpTo(
           surface, &frame.latency_info);
@@ -2251,7 +2234,7 @@ bool SurfaceAggregator::IsRootSurface(const Surface* surface) const {
 // aggregated frame, after which the member is then cleared.
 void SurfaceAggregator::TransformAndStoreDelegatedInkMetadata(
     const gfx::Transform& parent_quad_to_root_target_transform,
-    std::unique_ptr<gfx::DelegatedInkMetadata> metadata) {
+    const gfx::DelegatedInkMetadata* metadata) {
   if (delegated_ink_metadata_) {
     // This member could already be populated in two scenarios:
     //   1. The delegated ink metadata was committed to a frame's metadata that

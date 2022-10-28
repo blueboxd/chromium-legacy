@@ -50,7 +50,6 @@
 #include "third_party/blink/renderer/bindings/core/v8/script_controller.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_value.h"
-#include "third_party/blink/renderer/bindings/core/v8/source_location.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_scroll_to_options.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_void_function.h"
 #include "third_party/blink/renderer/bindings/core/v8/window_proxy.h"
@@ -113,6 +112,7 @@
 #include "third_party/blink/renderer/core/inspector/inspector_trace_events.h"
 #include "third_party/blink/renderer/core/inspector/main_thread_debugger.h"
 #include "third_party/blink/renderer/core/layout/adjust_for_absolute_zoom.h"
+#include "third_party/blink/renderer/core/layout/deferred_shaping_controller.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/loader/document_loader.h"
 #include "third_party/blink/renderer/core/origin_trials/origin_trial_context.h"
@@ -133,6 +133,7 @@
 #include "third_party/blink/renderer/platform/bindings/exception_messages.h"
 #include "third_party/blink/renderer/platform/bindings/microtask.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
+#include "third_party/blink/renderer/platform/bindings/source_location.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
 #include "third_party/blink/renderer/platform/network/network_state_notifier.h"
@@ -1073,7 +1074,7 @@ void LocalDOMWindow::SchedulePostMessage(PostedMessage* posted_message) {
   // Allowing unbounded amounts of messages to build up for a suspended context
   // is problematic; consider imposing a limit or other restriction if this
   // surfaces often as a problem (see crbug.com/587012).
-  std::unique_ptr<SourceLocation> location = SourceLocation::Capture(source);
+  std::unique_ptr<SourceLocation> location = CaptureSourceLocation(source);
   GetTaskRunner(TaskType::kPostedMessage)
       ->PostTask(
           FROM_HERE,
@@ -1621,8 +1622,6 @@ void LocalDOMWindow::scrollBy(const ScrollToOptions* scroll_to_options) const {
   if (!IsCurrentlyDisplayedInFrame())
     return;
 
-  document()->UpdateStyleAndLayout(DocumentUpdateReason::kJavaScript);
-
   LocalFrameView* view = GetFrame()->View();
   if (!view)
     return;
@@ -1630,6 +1629,10 @@ void LocalDOMWindow::scrollBy(const ScrollToOptions* scroll_to_options) const {
   Page* page = GetFrame()->GetPage();
   if (!page)
     return;
+
+  DeferredShapingController::From(*document())
+      ->ReshapeAllDeferred(ReshapeReason::kScrollingApi);
+  document()->UpdateStyleAndLayout(DocumentUpdateReason::kJavaScript);
 
   float x = 0.0f;
   float y = 0.0f;
@@ -1688,6 +1691,8 @@ void LocalDOMWindow::scrollTo(const ScrollToOptions* scroll_to_options) const {
   // clamped, which is never the case for (0, 0).
   if (!scroll_to_options->hasLeft() || !scroll_to_options->hasTop() ||
       scroll_to_options->left() || scroll_to_options->top()) {
+    DeferredShapingController::From(*document())
+        ->ReshapeAllDeferred(ReshapeReason::kScrollingApi);
     document()->UpdateStyleAndLayout(DocumentUpdateReason::kJavaScript);
   }
 
@@ -1736,6 +1741,9 @@ void LocalDOMWindow::moveBy(int x, int y) const {
     return;
   }
 
+  if (IsPictureInPictureWindow())
+    return;
+
   LocalFrame* frame = GetFrame();
   Page* page = frame->GetPage();
   if (!page)
@@ -1753,6 +1761,9 @@ void LocalDOMWindow::moveTo(int x, int y) const {
       document()->IsPrerendering()) {
     return;
   }
+
+  if (IsPictureInPictureWindow())
+    return;
 
   LocalFrame* frame = GetFrame();
   Page* page = frame->GetPage();
@@ -1772,6 +1783,9 @@ void LocalDOMWindow::resizeBy(int x, int y) const {
     return;
   }
 
+  if (IsPictureInPictureWindow())
+    return;
+
   LocalFrame* frame = GetFrame();
   Page* page = frame->GetPage();
   if (!page)
@@ -1788,6 +1802,9 @@ void LocalDOMWindow::resizeTo(int width, int height) const {
       document()->IsPrerendering()) {
     return;
   }
+
+  if (IsPictureInPictureWindow())
+    return;
 
   LocalFrame* frame = GetFrame();
   Page* page = frame->GetPage();
@@ -2208,8 +2225,11 @@ DOMWindow* LocalDOMWindow::openPictureInPictureWindow(
   DCHECK(result.new_window);
 
   result.frame->Navigate(frame_request, WebFrameLoadType::kStandard);
+  LocalDOMWindow* pip_dom_window =
+      To<LocalDOMWindow>(result.frame->DomWindow());
+  pip_dom_window->SetIsPictureInPictureWindow();
 
-  return result.frame->DomWindow();
+  return pip_dom_window;
 }
 
 void LocalDOMWindow::Trace(Visitor* visitor) const {
@@ -2330,6 +2350,14 @@ Fence* LocalDOMWindow::fence() {
   }
 
   return fence_.Get();
+}
+
+bool LocalDOMWindow::IsPictureInPictureWindow() const {
+  return is_picture_in_picture_window_;
+}
+
+void LocalDOMWindow::SetIsPictureInPictureWindow() {
+  is_picture_in_picture_window_ = true;
 }
 
 }  // namespace blink

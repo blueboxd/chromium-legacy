@@ -1,11 +1,11 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 import 'chrome://resources/cr_elements/cr_button/cr_button.js';
 import 'chrome://resources/cr_elements/cr_icon_button/cr_icon_button.js';
-import 'chrome://resources/cr_elements/hidden_style_css.m.js';
-import 'chrome://resources/cr_elements/shared_vars_css.m.js';
+import 'chrome://resources/cr_elements/cr_hidden_style.css.js';
+import 'chrome://resources/cr_elements/cr_shared_vars.css.js';
 import 'chrome://resources/cr_elements/mwb_element_shared_style.css.js';
 import 'chrome://resources/cr_elements/mwb_shared_style.css.js';
 import 'chrome://resources/cr_elements/mwb_shared_vars.css.js';
@@ -182,6 +182,28 @@ export class ReadingListAppElement extends PolymerElement {
   }
 
   /**
+   * @return The appropriate text for the current page action button
+   */
+  private getCurrentPageActionButtonText_(): string {
+    if (this.getCurrentPageActionButtonMarkAsRead_()) {
+      return loadTimeData.getString('markCurrentTabAsRead');
+    } else {
+      return loadTimeData.getString('addCurrentTab');
+    }
+  }
+
+  /**
+   * @return The appropriate cr icon for the current page action button
+   */
+  private getCurrentPageActionButtonIcon_(): string {
+    if (this.getCurrentPageActionButtonMarkAsRead_()) {
+      return 'cr:check';
+    } else {
+      return 'cr:add';
+    }
+  }
+
+  /**
    * @return Whether the current page action button should be disabled
    */
   private getCurrentPageActionButtonDisabled_(): boolean {
@@ -189,12 +211,25 @@ export class ReadingListAppElement extends PolymerElement {
         CurrentPageActionButtonState.kDisabled;
   }
 
+  /**
+   * @return Whether the current page action button should be in its mark as
+   * read state
+   */
+  private getCurrentPageActionButtonMarkAsRead_(): boolean {
+    return this.currentPageActionButtonState_ ===
+        CurrentPageActionButtonState.kMarkAsRead;
+  }
+
   private isReadingListEmpty_(): boolean {
     return this.unreadItems_.length === 0 && this.readItems_.length === 0;
   }
 
   private onCurrentPageActionButtonClick_() {
-    this.apiProxy_.addCurrentTab();
+    if (this.getCurrentPageActionButtonMarkAsRead_()) {
+      this.apiProxy_.markCurrentTabAsRead();
+    } else {
+      this.apiProxy_.addCurrentTab();
+    }
   }
 
   private onItemKeyDown_(e: KeyboardEvent) {

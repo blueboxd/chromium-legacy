@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,7 +12,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/observer_list.h"
 #include "base/observer_list_types.h"
-#include "chrome/browser/ui/webui/settings/chromeos/os_settings_section.h"
+#include "chrome/browser/ui/webui/settings/ash/os_settings_section.h"
 #include "chromeos/ash/components/local_search_service/public/cpp/local_search_service_proxy.h"
 #include "chromeos/ash/components/local_search_service/public/mojom/index.mojom.h"
 #include "mojo/public/cpp/bindings/remote.h"
@@ -60,8 +60,8 @@ class SearchTagRegistry {
     std::unordered_map<std::string, ConceptWithShouldAddBool> pending_updates_;
   };
 
-  SearchTagRegistry(local_search_service::LocalSearchServiceProxy*
-                        local_search_service_proxy);
+  explicit SearchTagRegistry(local_search_service::LocalSearchServiceProxy*
+                                 local_search_service_proxy);
   SearchTagRegistry(const SearchTagRegistry& other) = delete;
   SearchTagRegistry& operator=(const SearchTagRegistry& other) = delete;
   virtual ~SearchTagRegistry();
@@ -87,14 +87,14 @@ class SearchTagRegistry {
   void AddSearchTags(const std::vector<const SearchConcept*>& search_tags);
   void RemoveSearchTags(const std::vector<const SearchConcept*>& search_tags);
 
-  std::vector<local_search_service::Data> ConceptVectorToDataVector(
+  std::vector<ash::local_search_service::Data> ConceptVectorToDataVector(
       const std::vector<const SearchConcept*>& search_tags);
   void NotifyRegistryUpdated();
   void NotifyRegistryAdded();
   void NotifyRegistryDeleted(uint32_t /*num_deleted*/);
 
   // Index used by the LocalSearchService for string matching.
-  mojo::Remote<local_search_service::mojom::Index> index_remote_;
+  mojo::Remote<ash::local_search_service::mojom::Index> index_remote_;
 
   // In-memory cache of all results which have been added to the
   // LocalSearchService. Contents are kept in sync with |index_remote_|.

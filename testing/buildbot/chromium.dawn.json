@@ -298,8 +298,8 @@
           "--passthrough",
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --force_high_performance_gpu --enable-features=Vulkan",
-          "--retry-limit=3",
-          "--jobs=4"
+          "--jobs=4",
+          "--stable-jobs"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -336,8 +336,8 @@
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --force_high_performance_gpu --enable-features=Vulkan",
           "--enable-dawn-backend-validation",
-          "--retry-limit=3",
-          "--jobs=4"
+          "--jobs=4",
+          "--stable-jobs"
         ],
         "ci_only": true,
         "isolate_name": "telemetry_gpu_integration_test",
@@ -451,8 +451,8 @@
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --force_high_performance_gpu --enable-features=Vulkan",
           "--use-webgpu-adapter=swiftshader",
           "--test-filter=*web_platform*",
-          "--retry-limit=3",
-          "--jobs=4"
+          "--jobs=4",
+          "--stable-jobs"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -491,8 +491,8 @@
           "--use-webgpu-adapter=swiftshader",
           "--test-filter=*web_platform*",
           "--enable-dawn-backend-validation",
-          "--retry-limit=3",
-          "--jobs=4"
+          "--jobs=4",
+          "--stable-jobs"
         ],
         "ci_only": true,
         "isolate_name": "telemetry_gpu_integration_test",
@@ -818,8 +818,8 @@
           "--passthrough",
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --force_high_performance_gpu --enable-features=Vulkan",
-          "--retry-limit=3",
-          "--jobs=4"
+          "--jobs=4",
+          "--stable-jobs"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -856,8 +856,8 @@
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --force_high_performance_gpu --enable-features=Vulkan",
           "--enable-dawn-backend-validation",
-          "--retry-limit=3",
-          "--jobs=4"
+          "--jobs=4",
+          "--stable-jobs"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -970,8 +970,8 @@
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --force_high_performance_gpu --enable-features=Vulkan",
           "--use-webgpu-adapter=swiftshader",
           "--test-filter=*web_platform*",
-          "--retry-limit=3",
-          "--jobs=4"
+          "--jobs=4",
+          "--stable-jobs"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -1010,8 +1010,8 @@
           "--use-webgpu-adapter=swiftshader",
           "--test-filter=*web_platform*",
           "--enable-dawn-backend-validation",
-          "--retry-limit=3",
-          "--jobs=4"
+          "--jobs=4",
+          "--stable-jobs"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -1336,8 +1336,8 @@
           "--passthrough",
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --force_high_performance_gpu --enable-features=Vulkan",
-          "--retry-limit=3",
-          "--jobs=4"
+          "--jobs=4",
+          "--stable-jobs"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -1374,8 +1374,8 @@
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --force_high_performance_gpu --enable-features=Vulkan",
           "--enable-dawn-backend-validation",
-          "--retry-limit=3",
-          "--jobs=4"
+          "--jobs=4",
+          "--stable-jobs"
         ],
         "ci_only": true,
         "isolate_name": "telemetry_gpu_integration_test",
@@ -1489,8 +1489,8 @@
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --force_high_performance_gpu --enable-features=Vulkan",
           "--use-webgpu-adapter=swiftshader",
           "--test-filter=*web_platform*",
-          "--retry-limit=3",
-          "--jobs=4"
+          "--jobs=4",
+          "--stable-jobs"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -1529,8 +1529,8 @@
           "--use-webgpu-adapter=swiftshader",
           "--test-filter=*web_platform*",
           "--enable-dawn-backend-validation",
-          "--retry-limit=3",
-          "--jobs=4"
+          "--jobs=4",
+          "--stable-jobs"
         ],
         "ci_only": true,
         "isolate_name": "telemetry_gpu_integration_test",
@@ -1856,8 +1856,8 @@
           "--passthrough",
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --force_high_performance_gpu --enable-features=Vulkan",
-          "--retry-limit=3",
-          "--jobs=4"
+          "--jobs=4",
+          "--stable-jobs"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -1894,8 +1894,8 @@
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --force_high_performance_gpu --enable-features=Vulkan",
           "--enable-dawn-backend-validation",
-          "--retry-limit=3",
-          "--jobs=4"
+          "--jobs=4",
+          "--stable-jobs"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -2008,8 +2008,8 @@
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --force_high_performance_gpu --enable-features=Vulkan",
           "--use-webgpu-adapter=swiftshader",
           "--test-filter=*web_platform*",
-          "--retry-limit=3",
-          "--jobs=4"
+          "--jobs=4",
+          "--stable-jobs"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -2048,8 +2048,8 @@
           "--use-webgpu-adapter=swiftshader",
           "--test-filter=*web_platform*",
           "--enable-dawn-backend-validation",
-          "--retry-limit=3",
-          "--jobs=4"
+          "--jobs=4",
+          "--stable-jobs"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -2439,8 +2439,8 @@
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --force_high_performance_gpu",
           "--use-webgpu-adapter=swiftshader",
           "--test-filter=*web_platform*",
-          "--retry-limit=3",
-          "--jobs=4"
+          "--jobs=4",
+          "--stable-jobs"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -2492,7 +2492,7 @@
               "cpu": "x86-64",
               "display_attached": "1",
               "gpu": "8086:3e9b",
-              "os": "Mac-12.4|Mac-12.5"
+              "os": "Mac-12.4"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -2519,7 +2519,7 @@
               "cpu": "x86-64",
               "display_attached": "1",
               "gpu": "8086:3e9b",
-              "os": "Mac-12.4|Mac-12.5"
+              "os": "Mac-12.4"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -2546,7 +2546,7 @@
               "cpu": "x86-64",
               "display_attached": "1",
               "gpu": "8086:3e9b",
-              "os": "Mac-12.4|Mac-12.5"
+              "os": "Mac-12.4"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -2573,7 +2573,7 @@
               "cpu": "x86-64",
               "display_attached": "1",
               "gpu": "8086:3e9b",
-              "os": "Mac-12.4|Mac-12.5"
+              "os": "Mac-12.4"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -2599,7 +2599,7 @@
               "cpu": "x86-64",
               "display_attached": "1",
               "gpu": "8086:3e9b",
-              "os": "Mac-12.4|Mac-12.5"
+              "os": "Mac-12.4"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
@@ -2623,7 +2623,7 @@
               "cpu": "x86-64",
               "display_attached": "1",
               "gpu": "8086:3e9b",
-              "os": "Mac-12.4|Mac-12.5"
+              "os": "Mac-12.4"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -2654,7 +2654,7 @@
               "cpu": "x86-64",
               "display_attached": "1",
               "gpu": "8086:3e9b",
-              "os": "Mac-12.4|Mac-12.5"
+              "os": "Mac-12.4"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -2678,7 +2678,7 @@
               "cpu": "x86-64",
               "display_attached": "1",
               "gpu": "8086:3e9b",
-              "os": "Mac-12.4|Mac-12.5"
+              "os": "Mac-12.4"
             }
           ],
           "idempotent": false,
@@ -2717,7 +2717,7 @@
               "cpu": "x86-64",
               "display_attached": "1",
               "gpu": "8086:3e9b",
-              "os": "Mac-12.4|Mac-12.5"
+              "os": "Mac-12.4"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -2755,7 +2755,7 @@
               "cpu": "x86-64",
               "display_attached": "1",
               "gpu": "8086:3e9b",
-              "os": "Mac-12.4|Mac-12.5"
+              "os": "Mac-12.4"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -2770,8 +2770,8 @@
           "--passthrough",
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --force_high_performance_gpu",
-          "--retry-limit=3",
-          "--jobs=4"
+          "--jobs=4",
+          "--stable-jobs"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -2791,7 +2791,7 @@
               "cpu": "x86-64",
               "display_attached": "1",
               "gpu": "8086:3e9b",
-              "os": "Mac-12.4|Mac-12.5"
+              "os": "Mac-12.4"
             }
           ],
           "idempotent": false,
@@ -2809,8 +2809,8 @@
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --force_high_performance_gpu",
           "--enable-dawn-backend-validation",
-          "--retry-limit=3",
-          "--jobs=4"
+          "--jobs=4",
+          "--stable-jobs"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -2830,7 +2830,7 @@
               "cpu": "x86-64",
               "display_attached": "1",
               "gpu": "8086:3e9b",
-              "os": "Mac-12.4|Mac-12.5"
+              "os": "Mac-12.4"
             }
           ],
           "idempotent": false,
@@ -2869,7 +2869,7 @@
               "cpu": "x86-64",
               "display_attached": "1",
               "gpu": "8086:3e9b",
-              "os": "Mac-12.4|Mac-12.5"
+              "os": "Mac-12.4"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -2907,7 +2907,7 @@
               "cpu": "x86-64",
               "display_attached": "1",
               "gpu": "8086:3e9b",
-              "os": "Mac-12.4|Mac-12.5"
+              "os": "Mac-12.4"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -2924,8 +2924,8 @@
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --force_high_performance_gpu",
           "--use-webgpu-adapter=swiftshader",
           "--test-filter=*web_platform*",
-          "--retry-limit=3",
-          "--jobs=4"
+          "--jobs=4",
+          "--stable-jobs"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -2945,7 +2945,7 @@
               "cpu": "x86-64",
               "display_attached": "1",
               "gpu": "8086:3e9b",
-              "os": "Mac-12.4|Mac-12.5"
+              "os": "Mac-12.4"
             }
           ],
           "idempotent": false,
@@ -2965,8 +2965,8 @@
           "--use-webgpu-adapter=swiftshader",
           "--test-filter=*web_platform*",
           "--enable-dawn-backend-validation",
-          "--retry-limit=3",
-          "--jobs=4"
+          "--jobs=4",
+          "--stable-jobs"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -2986,7 +2986,7 @@
               "cpu": "x86-64",
               "display_attached": "1",
               "gpu": "8086:3e9b",
-              "os": "Mac-12.4|Mac-12.5"
+              "os": "Mac-12.4"
             }
           ],
           "idempotent": false,
@@ -3324,8 +3324,8 @@
           "--passthrough",
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --force_high_performance_gpu",
-          "--retry-limit=3",
-          "--jobs=4"
+          "--jobs=4",
+          "--stable-jobs"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -3366,8 +3366,8 @@
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --force_high_performance_gpu",
           "--enable-dawn-backend-validation",
-          "--retry-limit=3",
-          "--jobs=4"
+          "--jobs=4",
+          "--stable-jobs"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -3490,8 +3490,8 @@
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --force_high_performance_gpu",
           "--use-webgpu-adapter=swiftshader",
           "--test-filter=*web_platform*",
-          "--retry-limit=3",
-          "--jobs=4"
+          "--jobs=4",
+          "--stable-jobs"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -3534,8 +3534,8 @@
           "--use-webgpu-adapter=swiftshader",
           "--test-filter=*web_platform*",
           "--enable-dawn-backend-validation",
-          "--retry-limit=3",
-          "--jobs=4"
+          "--jobs=4",
+          "--stable-jobs"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -3588,7 +3588,7 @@
               "cpu": "x86-64",
               "display_attached": "1",
               "gpu": "8086:3e9b",
-              "os": "Mac-12.4"
+              "os": "Mac-12.5.1"
             }
           ],
           "expiration": 21600,
@@ -3616,7 +3616,7 @@
               "cpu": "x86-64",
               "display_attached": "1",
               "gpu": "8086:3e9b",
-              "os": "Mac-12.4"
+              "os": "Mac-12.5.1"
             }
           ],
           "expiration": 21600,
@@ -3644,7 +3644,7 @@
               "cpu": "x86-64",
               "display_attached": "1",
               "gpu": "8086:3e9b",
-              "os": "Mac-12.4"
+              "os": "Mac-12.5.1"
             }
           ],
           "expiration": 21600,
@@ -3672,7 +3672,7 @@
               "cpu": "x86-64",
               "display_attached": "1",
               "gpu": "8086:3e9b",
-              "os": "Mac-12.4"
+              "os": "Mac-12.5.1"
             }
           ],
           "expiration": 21600,
@@ -3699,7 +3699,7 @@
               "cpu": "x86-64",
               "display_attached": "1",
               "gpu": "8086:3e9b",
-              "os": "Mac-12.4"
+              "os": "Mac-12.5.1"
             }
           ],
           "expiration": 21600,
@@ -3724,7 +3724,7 @@
               "cpu": "x86-64",
               "display_attached": "1",
               "gpu": "8086:3e9b",
-              "os": "Mac-12.4"
+              "os": "Mac-12.5.1"
             }
           ],
           "expiration": 21600,
@@ -3756,7 +3756,7 @@
               "cpu": "x86-64",
               "display_attached": "1",
               "gpu": "8086:3e9b",
-              "os": "Mac-12.4"
+              "os": "Mac-12.5.1"
             }
           ],
           "expiration": 21600,
@@ -3781,7 +3781,7 @@
               "cpu": "x86-64",
               "display_attached": "1",
               "gpu": "8086:3e9b",
-              "os": "Mac-12.4"
+              "os": "Mac-12.5.1"
             }
           ],
           "expiration": 21600,
@@ -3821,7 +3821,7 @@
               "cpu": "x86-64",
               "display_attached": "1",
               "gpu": "8086:3e9b",
-              "os": "Mac-12.4"
+              "os": "Mac-12.5.1"
             }
           ],
           "expiration": 21600,
@@ -3860,7 +3860,7 @@
               "cpu": "x86-64",
               "display_attached": "1",
               "gpu": "8086:3e9b",
-              "os": "Mac-12.4"
+              "os": "Mac-12.5.1"
             }
           ],
           "expiration": 21600,
@@ -3876,8 +3876,8 @@
           "--passthrough",
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --force_high_performance_gpu",
-          "--retry-limit=3",
-          "--jobs=4"
+          "--jobs=4",
+          "--stable-jobs"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -3897,7 +3897,7 @@
               "cpu": "x86-64",
               "display_attached": "1",
               "gpu": "8086:3e9b",
-              "os": "Mac-12.4"
+              "os": "Mac-12.5.1"
             }
           ],
           "expiration": 21600,
@@ -3916,8 +3916,8 @@
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --force_high_performance_gpu",
           "--enable-dawn-backend-validation",
-          "--retry-limit=3",
-          "--jobs=4"
+          "--jobs=4",
+          "--stable-jobs"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -3937,7 +3937,7 @@
               "cpu": "x86-64",
               "display_attached": "1",
               "gpu": "8086:3e9b",
-              "os": "Mac-12.4"
+              "os": "Mac-12.5.1"
             }
           ],
           "expiration": 21600,
@@ -3977,7 +3977,7 @@
               "cpu": "x86-64",
               "display_attached": "1",
               "gpu": "8086:3e9b",
-              "os": "Mac-12.4"
+              "os": "Mac-12.5.1"
             }
           ],
           "expiration": 21600,
@@ -4016,7 +4016,7 @@
               "cpu": "x86-64",
               "display_attached": "1",
               "gpu": "8086:3e9b",
-              "os": "Mac-12.4"
+              "os": "Mac-12.5.1"
             }
           ],
           "expiration": 21600,
@@ -4034,8 +4034,8 @@
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --force_high_performance_gpu",
           "--use-webgpu-adapter=swiftshader",
           "--test-filter=*web_platform*",
-          "--retry-limit=3",
-          "--jobs=4"
+          "--jobs=4",
+          "--stable-jobs"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -4055,7 +4055,7 @@
               "cpu": "x86-64",
               "display_attached": "1",
               "gpu": "8086:3e9b",
-              "os": "Mac-12.4"
+              "os": "Mac-12.5.1"
             }
           ],
           "expiration": 21600,
@@ -4076,8 +4076,8 @@
           "--use-webgpu-adapter=swiftshader",
           "--test-filter=*web_platform*",
           "--enable-dawn-backend-validation",
-          "--retry-limit=3",
-          "--jobs=4"
+          "--jobs=4",
+          "--stable-jobs"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -4097,7 +4097,7 @@
               "cpu": "x86-64",
               "display_attached": "1",
               "gpu": "8086:3e9b",
-              "os": "Mac-12.4"
+              "os": "Mac-12.5.1"
             }
           ],
           "expiration": 21600,
@@ -4467,8 +4467,8 @@
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --force_high_performance_gpu",
           "--use-webgpu-adapter=swiftshader",
           "--test-filter=*web_platform*",
-          "--retry-limit=3",
-          "--jobs=4"
+          "--jobs=4",
+          "--stable-jobs"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -4520,7 +4520,7 @@
               "cpu": "x86-64",
               "display_attached": "1",
               "gpu": "8086:3e9b",
-              "os": "Mac-12.4|Mac-12.5"
+              "os": "Mac-12.4"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -4547,7 +4547,7 @@
               "cpu": "x86-64",
               "display_attached": "1",
               "gpu": "8086:3e9b",
-              "os": "Mac-12.4|Mac-12.5"
+              "os": "Mac-12.4"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -4574,7 +4574,7 @@
               "cpu": "x86-64",
               "display_attached": "1",
               "gpu": "8086:3e9b",
-              "os": "Mac-12.4|Mac-12.5"
+              "os": "Mac-12.4"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -4601,7 +4601,7 @@
               "cpu": "x86-64",
               "display_attached": "1",
               "gpu": "8086:3e9b",
-              "os": "Mac-12.4|Mac-12.5"
+              "os": "Mac-12.4"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -4627,7 +4627,7 @@
               "cpu": "x86-64",
               "display_attached": "1",
               "gpu": "8086:3e9b",
-              "os": "Mac-12.4|Mac-12.5"
+              "os": "Mac-12.4"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
@@ -4651,7 +4651,7 @@
               "cpu": "x86-64",
               "display_attached": "1",
               "gpu": "8086:3e9b",
-              "os": "Mac-12.4|Mac-12.5"
+              "os": "Mac-12.4"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -4682,7 +4682,7 @@
               "cpu": "x86-64",
               "display_attached": "1",
               "gpu": "8086:3e9b",
-              "os": "Mac-12.4|Mac-12.5"
+              "os": "Mac-12.4"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -4706,7 +4706,7 @@
               "cpu": "x86-64",
               "display_attached": "1",
               "gpu": "8086:3e9b",
-              "os": "Mac-12.4|Mac-12.5"
+              "os": "Mac-12.4"
             }
           ],
           "idempotent": false,
@@ -4745,7 +4745,7 @@
               "cpu": "x86-64",
               "display_attached": "1",
               "gpu": "8086:3e9b",
-              "os": "Mac-12.4|Mac-12.5"
+              "os": "Mac-12.4"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -4783,7 +4783,7 @@
               "cpu": "x86-64",
               "display_attached": "1",
               "gpu": "8086:3e9b",
-              "os": "Mac-12.4|Mac-12.5"
+              "os": "Mac-12.4"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -4798,8 +4798,8 @@
           "--passthrough",
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --force_high_performance_gpu",
-          "--retry-limit=3",
-          "--jobs=4"
+          "--jobs=4",
+          "--stable-jobs"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -4819,7 +4819,7 @@
               "cpu": "x86-64",
               "display_attached": "1",
               "gpu": "8086:3e9b",
-              "os": "Mac-12.4|Mac-12.5"
+              "os": "Mac-12.4"
             }
           ],
           "idempotent": false,
@@ -4837,8 +4837,8 @@
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --force_high_performance_gpu",
           "--enable-dawn-backend-validation",
-          "--retry-limit=3",
-          "--jobs=4"
+          "--jobs=4",
+          "--stable-jobs"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -4858,7 +4858,7 @@
               "cpu": "x86-64",
               "display_attached": "1",
               "gpu": "8086:3e9b",
-              "os": "Mac-12.4|Mac-12.5"
+              "os": "Mac-12.4"
             }
           ],
           "idempotent": false,
@@ -4897,7 +4897,7 @@
               "cpu": "x86-64",
               "display_attached": "1",
               "gpu": "8086:3e9b",
-              "os": "Mac-12.4|Mac-12.5"
+              "os": "Mac-12.4"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -4935,7 +4935,7 @@
               "cpu": "x86-64",
               "display_attached": "1",
               "gpu": "8086:3e9b",
-              "os": "Mac-12.4|Mac-12.5"
+              "os": "Mac-12.4"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -4952,8 +4952,8 @@
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --force_high_performance_gpu",
           "--use-webgpu-adapter=swiftshader",
           "--test-filter=*web_platform*",
-          "--retry-limit=3",
-          "--jobs=4"
+          "--jobs=4",
+          "--stable-jobs"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -4973,7 +4973,7 @@
               "cpu": "x86-64",
               "display_attached": "1",
               "gpu": "8086:3e9b",
-              "os": "Mac-12.4|Mac-12.5"
+              "os": "Mac-12.4"
             }
           ],
           "idempotent": false,
@@ -4993,8 +4993,8 @@
           "--use-webgpu-adapter=swiftshader",
           "--test-filter=*web_platform*",
           "--enable-dawn-backend-validation",
-          "--retry-limit=3",
-          "--jobs=4"
+          "--jobs=4",
+          "--stable-jobs"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -5014,7 +5014,7 @@
               "cpu": "x86-64",
               "display_attached": "1",
               "gpu": "8086:3e9b",
-              "os": "Mac-12.4|Mac-12.5"
+              "os": "Mac-12.4"
             }
           ],
           "idempotent": false,
@@ -5332,8 +5332,8 @@
           "--passthrough",
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --force_high_performance_gpu",
-          "--retry-limit=3",
-          "--jobs=4"
+          "--jobs=1",
+          "--stable-jobs"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -5703,8 +5703,8 @@
           "--passthrough",
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --force_high_performance_gpu",
-          "--retry-limit=3",
-          "--jobs=4"
+          "--jobs=1",
+          "--stable-jobs"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -5815,8 +5815,8 @@
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --force_high_performance_gpu",
           "--use-webgpu-adapter=swiftshader",
           "--test-filter=*web_platform*",
-          "--retry-limit=3",
-          "--jobs=4"
+          "--jobs=1",
+          "--stable-jobs"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -6133,8 +6133,8 @@
           "--passthrough",
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --force_high_performance_gpu",
-          "--retry-limit=3",
-          "--jobs=4"
+          "--jobs=4",
+          "--stable-jobs"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -6171,8 +6171,8 @@
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --force_high_performance_gpu",
           "--enable-dawn-backend-validation",
-          "--retry-limit=3",
-          "--jobs=4"
+          "--jobs=4",
+          "--stable-jobs"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -6283,8 +6283,8 @@
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --force_high_performance_gpu",
           "--use-webgpu-adapter=swiftshader",
           "--test-filter=*web_platform*",
-          "--retry-limit=3",
-          "--jobs=4"
+          "--jobs=4",
+          "--stable-jobs"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -6323,8 +6323,8 @@
           "--use-webgpu-adapter=swiftshader",
           "--test-filter=*web_platform*",
           "--enable-dawn-backend-validation",
-          "--retry-limit=3",
-          "--jobs=4"
+          "--jobs=4",
+          "--stable-jobs"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -6604,8 +6604,8 @@
           "--passthrough",
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --force_high_performance_gpu",
-          "--retry-limit=3",
-          "--jobs=4"
+          "--jobs=1",
+          "--stable-jobs"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -6716,8 +6716,8 @@
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --force_high_performance_gpu",
           "--use-webgpu-adapter=swiftshader",
           "--test-filter=*web_platform*",
-          "--retry-limit=3",
-          "--jobs=4"
+          "--jobs=1",
+          "--stable-jobs"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -7034,8 +7034,8 @@
           "--passthrough",
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --force_high_performance_gpu",
-          "--retry-limit=3",
-          "--jobs=4"
+          "--jobs=4",
+          "--stable-jobs"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -7072,8 +7072,8 @@
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --force_high_performance_gpu",
           "--enable-dawn-backend-validation",
-          "--retry-limit=3",
-          "--jobs=4"
+          "--jobs=4",
+          "--stable-jobs"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -7184,8 +7184,8 @@
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --force_high_performance_gpu",
           "--use-webgpu-adapter=swiftshader",
           "--test-filter=*web_platform*",
-          "--retry-limit=3",
-          "--jobs=4"
+          "--jobs=4",
+          "--stable-jobs"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -7224,8 +7224,8 @@
           "--use-webgpu-adapter=swiftshader",
           "--test-filter=*web_platform*",
           "--enable-dawn-backend-validation",
-          "--retry-limit=3",
-          "--jobs=4"
+          "--jobs=4",
+          "--stable-jobs"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -7515,8 +7515,8 @@
           "--passthrough",
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --force_high_performance_gpu",
-          "--retry-limit=3",
-          "--jobs=4"
+          "--jobs=1",
+          "--stable-jobs"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -7625,8 +7625,8 @@
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --force_high_performance_gpu",
           "--use-webgpu-adapter=swiftshader",
           "--test-filter=*web_platform*",
-          "--retry-limit=3",
-          "--jobs=4"
+          "--jobs=1",
+          "--stable-jobs"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -7941,8 +7941,8 @@
           "--passthrough",
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --force_high_performance_gpu",
-          "--retry-limit=3",
-          "--jobs=4"
+          "--jobs=4",
+          "--stable-jobs"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -7979,8 +7979,8 @@
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --force_high_performance_gpu",
           "--enable-dawn-backend-validation",
-          "--retry-limit=3",
-          "--jobs=4"
+          "--jobs=4",
+          "--stable-jobs"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -8089,8 +8089,8 @@
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --force_high_performance_gpu",
           "--use-webgpu-adapter=swiftshader",
           "--test-filter=*web_platform*",
-          "--retry-limit=3",
-          "--jobs=4"
+          "--jobs=4",
+          "--stable-jobs"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -8129,8 +8129,8 @@
           "--use-webgpu-adapter=swiftshader",
           "--test-filter=*web_platform*",
           "--enable-dawn-backend-validation",
-          "--retry-limit=3",
-          "--jobs=4"
+          "--jobs=4",
+          "--stable-jobs"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -8418,8 +8418,8 @@
           "--passthrough",
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --force_high_performance_gpu",
-          "--retry-limit=3",
-          "--jobs=4"
+          "--jobs=1",
+          "--stable-jobs"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -8528,8 +8528,8 @@
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --force_high_performance_gpu",
           "--use-webgpu-adapter=swiftshader",
           "--test-filter=*web_platform*",
-          "--retry-limit=3",
-          "--jobs=4"
+          "--jobs=1",
+          "--stable-jobs"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -8844,8 +8844,8 @@
           "--passthrough",
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --force_high_performance_gpu",
-          "--retry-limit=3",
-          "--jobs=4"
+          "--jobs=4",
+          "--stable-jobs"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -8882,8 +8882,8 @@
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --force_high_performance_gpu",
           "--enable-dawn-backend-validation",
-          "--retry-limit=3",
-          "--jobs=4"
+          "--jobs=4",
+          "--stable-jobs"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -8992,8 +8992,8 @@
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --force_high_performance_gpu",
           "--use-webgpu-adapter=swiftshader",
           "--test-filter=*web_platform*",
-          "--retry-limit=3",
-          "--jobs=4"
+          "--jobs=4",
+          "--stable-jobs"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -9032,8 +9032,8 @@
           "--use-webgpu-adapter=swiftshader",
           "--test-filter=*web_platform*",
           "--enable-dawn-backend-validation",
-          "--retry-limit=3",
-          "--jobs=4"
+          "--jobs=4",
+          "--stable-jobs"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {

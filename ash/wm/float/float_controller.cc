@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,32 +8,37 @@
 #include <vector>
 
 #include "ash/constants/ash_features.h"
+#include "ash/display/screen_orientation_controller.h"
 #include "ash/public/cpp/shell_window_ids.h"
-#include "ash/shell.h"
+#include "ash/public/cpp/window_properties.h"
+#include "ash/style/ash_color_id.h"
 #include "ash/wm/desks/desks_util.h"
-#include "ash/wm/splitview/split_view_constants.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/tablet_mode/tablet_mode_window_state.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/wm_event.h"
 #include "ash/wm/work_area_insets.h"
+#include "ash/wm/workspace/workspace_event_handler.h"
 #include "base/check_op.h"
 #include "chromeos/ui/base/display_util.h"
 #include "chromeos/ui/base/window_properties.h"
+#include "chromeos/ui/wm/constants.h"
+#include "chromeos/ui/wm/window_util.h"
 #include "ui/aura/window_delegate.h"
 #include "ui/display/screen.h"
+#include "ui/gfx/geometry/rect.h"
+#include "ui/views/background.h"
+#include "ui/views/widget/unique_widget_ptr.h"
 
 namespace ash {
 namespace {
 
-// The ideal dimensions of a floated window before factoring in its minimum size
-// (if any) is the available work area multiplied by these ratios.
-constexpr float kFloatWindowTabletWidthRatio = 0.3333333f;
-constexpr float kFloatWindowTabletHeightRatio = 0.8f;
-
 // TODO(sophiewen): Remove this once the untuck window widget is implemented. It
 // is temporarily here to give users a way to untuck the window.
 constexpr int kTuckedFloatWindowVisibleWidth = 100;
+constexpr int kTuckHandleCornerRadius = 8;
+constexpr int kTuckHandleWidth = 20;
+constexpr int kTuckHandleHeight = 116;
 
 // Disables the window's position auto management and returns its original
 // value.
@@ -45,29 +50,6 @@ bool DisableAndGetOriginalPositionAutoManaged(aura::Window* window) {
   if (original_position_auto_managed)
     window_state->SetWindowPositionManaged(false);
   return original_position_auto_managed;
-}
-
-gfx::Size GetPreferredFloatWindowTabletSize(const gfx::Rect& work_area,
-                                            bool landscape) {
-  // We use the landscape bounds to determine the preferred width and height,
-  // even in portrait mode.
-  const int landscape_width =
-      landscape ? work_area.width() : work_area.height();
-  const int landscape_height =
-      landscape ? work_area.height() : work_area.width();
-  const int preferred_width =
-      static_cast<int>(landscape_width * kFloatWindowTabletWidthRatio);
-  const int preferred_height = landscape_height * kFloatWindowTabletHeightRatio;
-  return gfx::Size(preferred_width, preferred_height);
-}
-
-// Returns whether the display nearest `window` is in landscape orientation.
-bool IsLandscapeOrientationForWindow(aura::Window* window) {
-  display::Display display =
-      display::Screen::GetScreen()->GetDisplayNearestWindow(window);
-  const chromeos::OrientationType orientation = chromeos::RotationToOrientation(
-      chromeos::GetDisplayNaturalOrientation(display), display.rotation());
-  return chromeos::IsLandscapeOrientation(orientation);
 }
 
 // Updates `window`'s bounds while in tablet mode. Note that this uses a bounds
@@ -83,8 +65,7 @@ void UpdateWindowBoundsForTablet(aura::Window* window) {
 }  // namespace
 
 // Scoped class which makes modifications while a window is tucked. It owns a
-// widget which is used to untuck the window.
-// TODO(sophiewen): Fill in this class.
+// handle widget which is used to untuck the window.
 class FloatController::ScopedWindowTucker {
  public:
   explicit ScopedWindowTucker(aura::Window* window) : window_(window) {
@@ -94,8 +75,50 @@ class FloatController::ScopedWindowTucker {
   ScopedWindowTucker& operator=(const ScopedWindowTucker&) = delete;
   ~ScopedWindowTucker() = default;
 
+  void ShowTuckHandle(const MagnetismCorner magnetism_corner) {
+    views::Widget::InitParams params(views::Widget::InitParams::TYPE_POPUP);
+    params.opacity = views::Widget::InitParams::WindowOpacity::kTranslucent;
+    params.parent = window_->parent();
+    params.init_properties_container.SetProperty(kHideInOverviewKey, true);
+    params.init_properties_container.SetProperty(kForceVisibleInMiniViewKey,
+                                                 false);
+    params.name = "TuckHandleWidget";
+    tuck_handle_widget_->Init(std::move(params));
+    tuck_handle_widget_->SetContentsView(
+        views::Builder<views::View>()
+            .SetBackground(views::CreateThemedRoundedRectBackground(
+                kColorAshShieldAndBase80, kTuckHandleCornerRadius))
+            .Build());
+    tuck_handle_widget_->Show();
+
+    // The window should already be tucked offscreen.
+    gfx::Point tuck_handle_origin = window_->GetTargetBounds().left_center();
+    switch (magnetism_corner) {
+      case MagnetismCorner::kTopLeft:
+      case MagnetismCorner::kBottomLeft:
+        tuck_handle_origin = window_->GetTargetBounds().right_center() -
+                             gfx::Vector2d(0, kTuckHandleHeight / 2);
+
+        break;
+      case MagnetismCorner::kTopRight:
+      case MagnetismCorner::kBottomRight:
+        tuck_handle_origin =
+            window_->GetTargetBounds().left_center() -
+            gfx::Vector2d(kTuckHandleWidth, kTuckHandleHeight / 2);
+        break;
+    }
+    tuck_handle_widget_->SetBounds(gfx::Rect(
+        tuck_handle_origin, gfx::Size(kTuckHandleWidth, kTuckHandleHeight)));
+  }
+
+  views::Widget* tuck_handle_widget_for_testing() {
+    return tuck_handle_widget_.get();
+  }
+
  private:
   aura::Window* window_;
+  views::UniqueWidgetPtr tuck_handle_widget_ =
+      std::make_unique<views::Widget>();
 };
 
 // -----------------------------------------------------------------------------
@@ -129,14 +152,21 @@ class FloatController::FloatedWindowInfo : public aura::WindowObserver {
   }
 
   void MaybeTuckWindow() {
-    if (!scoped_window_tucker_) {
-      scoped_window_tucker_ =
-          std::make_unique<ScopedWindowTucker>(floated_window_);
-    }
+    scoped_window_tucker_ =
+        std::make_unique<ScopedWindowTucker>(floated_window_);
+
     UpdateWindowBoundsForTablet(floated_window_);
+
+    // Must be called after the tucked window bounds are updated, to align the
+    // handle with the window.
+    scoped_window_tucker_->ShowTuckHandle(magnetism_corner_);
   }
 
-  void MaybeUntuckWindow() { scoped_window_tucker_.reset(); };
+  void MaybeUntuckWindow() { scoped_window_tucker_.reset(); }
+
+  views::Widget* GetTuckHandleWidgetForTesting() {
+    return scoped_window_tucker_->tuck_handle_widget_for_testing();  // IN-TEST
+  }
 
   // aura::WindowObserver:
   void OnWindowDestroying(aura::Window* window) override {
@@ -170,14 +200,18 @@ class FloatController::FloatedWindowInfo : public aura::WindowObserver {
 // -----------------------------------------------------------------------------
 // FloatController:
 
-FloatController::FloatController() = default;
+FloatController::FloatController() {
+  shell_observation_.Observe(Shell::Get());
+  for (aura::Window* root : Shell::GetAllRootWindows())
+    OnRootWindowAdded(root);
+}
 
 FloatController::~FloatController() = default;
 
 // static
 gfx::Rect FloatController::GetPreferredFloatWindowClamshellBounds(
     aura::Window* window) {
-  DCHECK(CanFloatWindowInClamshell(window));
+  DCHECK(chromeos::wm::CanFloatWindow(window));
   auto* work_area_insets = WorkAreaInsets::ForWindow(window->GetRootWindow());
   const gfx::Rect work_area = work_area_insets->user_work_area_bounds();
 
@@ -191,66 +225,26 @@ gfx::Rect FloatController::GetPreferredFloatWindowClamshellBounds(
   DCHECK_GE(preferred_bounds.height(), minimum_size.height());
   DCHECK_GE(preferred_bounds.width(), minimum_size.width());
 
-  int preferred_width = std::min(preferred_bounds.width(),
-                                 work_area.width() - 2 * kFloatWindowPaddingDp);
-  int preferred_height =
-      std::min(preferred_bounds.height(),
-               work_area.height() - 2 * kFloatWindowPaddingDp);
-
-  return gfx::Rect(
-      work_area.width() - preferred_width - kFloatWindowPaddingDp,
-      work_area.height() - preferred_height - kFloatWindowPaddingDp,
-      preferred_width, preferred_height);
-}
-
-// static
-bool FloatController::CanFloatWindowInClamshell(aura::Window* window) {
-  const gfx::Rect work_area = WorkAreaInsets::ForWindow(window->GetRootWindow())
-                                  ->user_work_area_bounds();
-  const gfx::Size minimum_size = window->delegate()->GetMinimumSize();
-  if (minimum_size.width() > work_area.width() - 2 * kFloatWindowPaddingDp ||
-      minimum_size.height() > work_area.height() - 2 * kFloatWindowPaddingDp) {
-    return false;
-  }
-  return true;
-}
-
-// static
-bool FloatController::CanFloatWindowInTablet(aura::Window* window) {
-  auto* window_state = WindowState::Get(window);
-  if (!window_state || !window_state->CanResize())
-    return false;
-
-  const gfx::Rect work_area = WorkAreaInsets::ForWindow(window->GetRootWindow())
-                                  ->user_work_area_bounds();
-  const bool landscape = IsLandscapeOrientationForWindow(window);
+  const int padding_dp = chromeos::wm::kFloatedWindowPaddingDp;
+  const int preferred_width =
+      std::min(preferred_bounds.width(), work_area.width() - 2 * padding_dp);
   const int preferred_height =
-      GetPreferredFloatWindowTabletSize(work_area, landscape).height();
-  const gfx::Size minimum_size = window->delegate()->GetMinimumSize();
-  if (minimum_size.height() > preferred_height)
-    return false;
+      std::min(preferred_bounds.height(), work_area.height() - 2 * padding_dp);
 
-  const int landscape_width =
-      landscape ? work_area.width() : work_area.height();
-  // The maximize size for a floated window is half the landscape width minus
-  // some space for the split view divider and padding.
-  if (minimum_size.width() >
-      ((landscape_width - kSplitviewDividerShortSideLength) / 2 -
-       kFloatWindowPaddingDp * 2)) {
-    return false;
-  }
-  return true;
+  return gfx::Rect(work_area.width() - preferred_width - padding_dp,
+                   work_area.height() - preferred_height - padding_dp,
+                   preferred_width, preferred_height);
 }
 
 gfx::Rect FloatController::GetPreferredFloatWindowTabletBounds(
     aura::Window* floated_window) const {
-  DCHECK(CanFloatWindowInTablet(floated_window));
   const gfx::Rect work_area =
       WorkAreaInsets::ForWindow(floated_window->GetRootWindow())
           ->user_work_area_bounds();
-  const bool landscape = IsLandscapeOrientationForWindow(floated_window);
+  const bool landscape =
+      chromeos::wm::IsLandscapeOrientationForWindow(floated_window);
   const gfx::Size preferred_size =
-      GetPreferredFloatWindowTabletSize(work_area, landscape);
+      chromeos::wm::GetPreferredFloatedWindowTabletSize(work_area, landscape);
   const gfx::Size minimum_size = floated_window->delegate()->GetMinimumSize();
 
   const int width = std::max(preferred_size.width(), minimum_size.width());
@@ -271,22 +265,20 @@ gfx::Rect FloatController::GetPreferredFloatWindowTabletBounds(
 
   const MagnetismCorner magnetism_corner =
       floated_window_info->magnetism_corner();
-
+  const int padding_dp = chromeos::wm::kFloatedWindowPaddingDp;
   switch (magnetism_corner) {
     case MagnetismCorner::kTopLeft:
-      origin = gfx::Point(kFloatWindowPaddingDp, kFloatWindowPaddingDp);
+      origin = gfx::Point(padding_dp, padding_dp);
       break;
     case MagnetismCorner::kTopRight:
-      origin = gfx::Point(work_area.right() - width - kFloatWindowPaddingDp,
-                          kFloatWindowPaddingDp);
+      origin = gfx::Point(work_area.right() - width - padding_dp, padding_dp);
       break;
     case MagnetismCorner::kBottomLeft:
-      origin = gfx::Point(kFloatWindowPaddingDp,
-                          work_area.bottom() - height - kFloatWindowPaddingDp);
+      origin = gfx::Point(padding_dp, work_area.bottom() - height - padding_dp);
       break;
     case MagnetismCorner::kBottomRight:
-      origin = gfx::Point(work_area.right() - width - kFloatWindowPaddingDp,
-                          work_area.bottom() - height - kFloatWindowPaddingDp);
+      origin = gfx::Point(work_area.right() - width - padding_dp,
+                          work_area.bottom() - height - padding_dp);
       break;
   }
 
@@ -297,13 +289,11 @@ gfx::Rect FloatController::GetPreferredFloatWindowTabletBounds(
     switch (magnetism_corner) {
       case MagnetismCorner::kTopLeft:
       case MagnetismCorner::kBottomLeft:
-        x_offset =
-            -width - kFloatWindowPaddingDp + kTuckedFloatWindowVisibleWidth;
+        x_offset = -width - padding_dp + kTuckedFloatWindowVisibleWidth;
         break;
       case MagnetismCorner::kTopRight:
       case MagnetismCorner::kBottomRight:
-        x_offset =
-            width + kFloatWindowPaddingDp - kTuckedFloatWindowVisibleWidth;
+        x_offset = width + padding_dp - kTuckedFloatWindowVisibleWidth;
         break;
     }
     origin.Offset(x_offset, 0);
@@ -324,6 +314,13 @@ bool FloatController::IsFloatedWindowTuckedForTablet(
   auto* floated_window_info = MaybeGetFloatedWindowInfo(floated_window);
   DCHECK(floated_window_info);
   return floated_window_info->is_tucked_for_tablet();
+}
+
+views::Widget* FloatController::GetTuckHandleWidgetForTesting(
+    const aura::Window* floated_window) const {
+  auto* floated_window_info = MaybeGetFloatedWindowInfo(floated_window);
+  DCHECK(floated_window_info);
+  return floated_window_info->GetTuckHandleWidgetForTesting();  // IN-TEST
 }
 
 void FloatController::OnDragCompletedForTablet(
@@ -385,7 +382,7 @@ void FloatController::OnTabletModeStarting() {
   // Temporary vector here to avoid mutating the map while iterating it.
   std::vector<aura::Window*> windows_need_reset;
   for (auto& [window, info] : floated_window_info_map_) {
-    if (!CanFloatWindowInTablet(window))
+    if (!chromeos::wm::CanFloatWindow(window))
       windows_need_reset.push_back(window);
     else
       UpdateWindowBoundsForTablet(window);
@@ -409,18 +406,33 @@ void FloatController::OnDisplayMetricsChanged(const display::Display& display,
   if (!Shell::Get()->tablet_mode_controller()->InTabletMode())
     return;
 
-  DCHECK(!floated_window_info_map_.empty());
   if ((display::DisplayObserver::DISPLAY_METRIC_WORK_AREA & metrics) == 0)
     return;
+
+  DCHECK(!floated_window_info_map_.empty());
   std::vector<aura::Window*> windows_need_reset;
   for (auto& [window, info] : floated_window_info_map_) {
-    if (!CanFloatWindowInTablet(window))
+    if (!chromeos::wm::CanFloatWindow(window))
       windows_need_reset.push_back(window);
     else
       UpdateWindowBoundsForTablet(window);
   }
   for (auto* window : windows_need_reset)
     ResetFloatedWindow(window);
+}
+
+void FloatController::OnRootWindowAdded(aura::Window* root_window) {
+  workspace_event_handlers_[root_window] =
+      std::make_unique<WorkspaceEventHandler>(
+          root_window->GetChildById(kShellWindowId_FloatContainer));
+}
+
+void FloatController::OnRootWindowWillShutdown(aura::Window* root_window) {
+  workspace_event_handlers_.erase(root_window);
+}
+
+void FloatController::OnShellDestroying() {
+  workspace_event_handlers_.clear();
 }
 
 void FloatController::ToggleFloat(aura::Window* window) {
@@ -430,7 +442,39 @@ void FloatController::ToggleFloat(aura::Window* window) {
   window_state->OnWMEvent(&toggle_event);
 }
 
-void FloatController::Float(aura::Window* window) {
+void FloatController::FloatForTablet(aura::Window* window,
+                                     chromeos::WindowStateType old_state_type) {
+  DCHECK(Shell::Get()->tablet_mode_controller()->InTabletMode());
+
+  FloatImpl(window);
+
+  if (!chromeos::IsSnappedWindowStateType(old_state_type))
+    return;
+
+  // Update magnetism so that the float window is roughly in the same location
+  // as it was when it was snapped.
+  const bool left_or_top =
+      old_state_type == chromeos::WindowStateType::kPrimarySnapped;
+  const bool landscape = IsCurrentScreenOrientationLandscape();
+  MagnetismCorner magnetism_corner;
+  if (!left_or_top) {
+    // Bottom or right snapped.
+    magnetism_corner = MagnetismCorner::kBottomRight;
+  } else if (landscape) {
+    // Left snapped.
+    magnetism_corner = MagnetismCorner::kBottomLeft;
+  } else {
+    DCHECK(left_or_top && !landscape);
+    // Top snapped.
+    magnetism_corner = MagnetismCorner::kTopRight;
+  }
+
+  auto* floated_window_info = MaybeGetFloatedWindowInfo(window);
+  DCHECK(floated_window_info);
+  floated_window_info->set_magnetism_corner(magnetism_corner);
+}
+
+void FloatController::FloatImpl(aura::Window* window) {
   if (floated_window_info_map_.contains(window))
     return;
 
@@ -444,13 +488,14 @@ void FloatController::Float(aura::Window* window) {
       window->GetRootWindow()->GetChildById(kShellWindowId_FloatContainer);
   DCHECK_NE(window->parent(), floated_container);
   floated_container->AddChild(window);
+
   if (!tablet_mode_observation_.IsObserving())
     tablet_mode_observation_.Observe(Shell::Get()->tablet_mode_controller());
   if (!display_observer_)
     display_observer_.emplace(this);
 }
 
-void FloatController::Unfloat(aura::Window* window) {
+void FloatController::UnfloatImpl(aura::Window* window) {
   auto* floated_window_info = MaybeGetFloatedWindowInfo(window);
   if (!floated_window_info)
     return;

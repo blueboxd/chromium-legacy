@@ -1,4 +1,4 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -56,7 +56,12 @@ bool WillGetGmbConfigFromGpu() {
 HostGpuMemoryBufferManager::PendingBufferInfo::PendingBufferInfo() = default;
 HostGpuMemoryBufferManager::PendingBufferInfo::PendingBufferInfo(
     PendingBufferInfo&&) = default;
-HostGpuMemoryBufferManager::PendingBufferInfo::~PendingBufferInfo() = default;
+HostGpuMemoryBufferManager::PendingBufferInfo::~PendingBufferInfo() {
+  // Another thread may be blocked on WaitableEvent that is signalled by
+  // `callback` so ensure it gets run.
+  if (callback)
+    std::move(callback).Run(gfx::GpuMemoryBufferHandle());
+}
 
 HostGpuMemoryBufferManager::HostGpuMemoryBufferManager(
     GpuServiceProvider gpu_service_provider,

@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -23,8 +23,8 @@
 
 namespace {
 
-// Updates |policy_cache| by adding entries from the session policy cache in
-// |web_state|.
+// Updates `policy_cache` by adding entries from the session policy cache in
+// `web_state`.
 void UpdateCertificatePolicyCacheFromWebState(
     const scoped_refptr<web::CertificatePolicyCache>& policy_cache,
     const web::WebState* web_state) {
@@ -41,7 +41,7 @@ void UpdateCertificatePolicyCacheFromWebState(
 }
 
 // Populates the certificate policy cache based on all of the WebStates in
-// the |incognito| browsers in |browser_list|. Because this is called
+// the `incognito` browsers in `browser_list`. Because this is called
 // asynchronously, it needs to be resilient to shutdown having happened before
 // it is invoked.
 void RestoreCertificatePolicyCacheFromBrowsers(
@@ -66,7 +66,7 @@ void RestoreCertificatePolicyCacheFromBrowsers(
 }
 
 // Scrubs the certificate policy cache of all certificates policies except
-// those for the current |incognito| browsers in |browser_list|.
+// those for the current `incognito` browsers in `browser_list`.
 // Clearing the cache is done on the IO thread, and then cache repopulation is
 // done on the UI thread.
 void CleanCertificatePolicyCache(

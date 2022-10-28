@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,11 +12,11 @@
 #include "components/signin/public/identity_manager/identity_test_environment.h"
 #include "components/sync/base/pref_names.h"
 #include "components/sync/driver/data_type_manager_impl.h"
-#include "components/sync/driver/fake_data_type_controller.h"
-#include "components/sync/driver/fake_sync_api_component_factory.h"
-#include "components/sync/driver/sync_client_mock.h"
-#include "components/sync/driver/sync_service_impl_bundle.h"
+#include "components/sync/test/fake_data_type_controller.h"
+#include "components/sync/test/fake_sync_api_component_factory.h"
 #include "components/sync/test/fake_sync_engine.h"
+#include "components/sync/test/sync_client_mock.h"
+#include "components/sync/test/sync_service_impl_bundle.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

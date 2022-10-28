@@ -2087,6 +2087,9 @@ Try tapping the mic to ask me anything.
       <message name="IDS_PERSONALIZATION_APP_BACK_BUTTON" desc="Aria label for the back button to return to a prior page">
         Back to <ph name="PAGE_NAME">$1<ex>Wallpaper</ex></ph>
       </message>
+      <message name="IDS_PERSONALIZATION_APP_GUEST_NAME" desc="Name of the guest user in personalization hub">
+        Guest
+      </message>
       <message name="IDS_PERSONALIZATION_APP_WALLPAPER_COLLECTIONS" desc="Aria label for the wallpaper collections grid">
         Wallpaper Collections
       </message>
@@ -2844,7 +2847,7 @@ Try tapping the mic to ask me anything.
         This component couldn't be detected.
       </message>
       <message name="IDS_SHIMLESS_RMA_REWORK_FLOW_LINK" translateable="false" desc="The text with a link that will redirect the user to the reworking flow. The reworking flow is only used when the user wants to repurpose the mainboard for another device.">
-        If you replaced or reworked the mainboard, go to this <ph name="LINK_BEGIN">&lt;a id="reworkFlowLink"&gt;</ph>rework flow<ph name="LINK_END">&lt;/a&gt;</ph>.
+        If you replaced or reworked the mainboard, go to this <ph name="LINK_BEGIN">&lt;a id="reworkFlowLink"&gt;</ph>rework flow.<ph name="LINK_END">&lt;/a&gt;</ph>
       </message>
       <!-- Choose destination page -->
       <message name="IDS_SHIMLESS_RMA_CHOOSE_DESTINATION" translateable="false" desc="Title for the page shown when choosing the return destination of the device after repair.">
@@ -2883,7 +2886,10 @@ Try tapping the mic to ask me anything.
         Perform RMA Server Unlock
       </message>
       <message name="IDS_SHIMLESS_RMA_RSU_CODE_INSTRUCTIONS" translateable="false" desc="Instructions for the RSU challenge page.">
-        Use this QR code to get the 8 character unlock code. You can also manually type <ph name="LINK_BEGIN">&lt;a id="rsuCodeDialogLink"&gt;</ph>this URL<ph name="LINK_END">&lt;/a&gt;</ph>.
+        Use this QR code to get the 8 character unlock code. You can also manually type <ph name="LINK_BEGIN">&lt;a id="rsuCodeDialogLink"&gt;</ph>this URL to get the RSU code.<ph name="LINK_END">&lt;/a&gt;</ph>
+      </message>
+      <message name="IDS_SHIMLESS_RMA_RSU_CODE_INSTRUCTIONS_ARIA" translateable="false" desc="Instructions for the RSU challenge page used as an ARIA description.">
+        Use this QR code to get the 8 character unlock code. You can also manually type this URL.
       </message>
       <message name="IDS_SHIMLESS_RMA_RSU_CODE_LABEL" translateable="false" desc="Label for the RSU code input box.">
         Enter the 8-characters
@@ -2995,6 +3001,9 @@ Try tapping the mic to ask me anything.
       </message>
       <message name="IDS_SHIMLESS_RMA_LOGS_SAVE_BUTTON" translateable="false" desc="Label for the logs dialog save to USB button. This triggers saving to the root of a USB drive with no option to select location or title of the logs. It is automatic as the file browser is not available to the shimless RMA app.">
         Save to USB
+      </message>
+      <message name="IDS_SHIMLESS_RMA_LOGS_MISSING_USB_MESSAGE_TEXT" translateable="false" desc="Instructions that tell the user that a USB drive should be connected to save the logs.">
+        To log this session, insert external storage, such as a USB drive or a SD card. Make sure the external storage is different from the one used to install the firmware image in the previous step.
       </message>
       <message name="IDS_SHIMLESS_RMA_REPAIR_COMPLETED_POWERWASH_TITLE" translateable="false" desc="Title for the powerwash dialog displayed on repair complete page">
         Powerwash (factory reset) required
@@ -3343,6 +3352,9 @@ Try tapping the mic to ask me anything.
       </message>
       <message name="IDS_ASH_QUICK_ANSWERS_PHONETICS_BUTTON_TOOLTIP_TEXT" desc="Tootip text for the phonetics-button in Quick-Answers related views.">
         Listen
+      </message>
+      <message name="IDS_ASH_QUICK_ANSWERS_DOGFOOD_FEEDBACK_BUTTON_TOOLTIP_TEXT" desc="Tootip text for the dogfood feedback button in Quick-Answers related views.">
+        Send feedback
       </message>
       <message name="IDS_ASH_QUICK_ANSWERS_DEFINITION_INTENT" desc="Display text of definition intent. This is used in the title of Quick Answers user consent dialog.">
         definition

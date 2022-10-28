@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -86,8 +86,8 @@ void TokenRevoker::OnOAuth2RevokeTokenCompleted(
 EnterpriseEnrollmentHelperImpl::EnterpriseEnrollmentHelperImpl() {
   // Init the TPM if it has not been done until now (in debug build we might
   // have not done that yet).
-  TpmManagerClient::Get()->TakeOwnership(::tpm_manager::TakeOwnershipRequest(),
-                                         base::DoNothing());
+  chromeos::TpmManagerClient::Get()->TakeOwnership(
+      ::tpm_manager::TakeOwnershipRequest(), base::DoNothing());
 }
 
 EnterpriseEnrollmentHelperImpl::~EnterpriseEnrollmentHelperImpl() {
@@ -440,6 +440,9 @@ void EnterpriseEnrollmentHelperImpl::ReportEnrollmentStatus(
           break;
         case policy::DM_STATUS_SERVICE_ILLEGAL_ACCOUNT_FOR_PACKAGED_EDU_LICENSE:
           UMA(policy::kMetricEnrollmentIllegalAccountForPackagedEDULicense);
+          break;
+        case policy::DM_STATUS_SERVICE_INVALID_PACKAGED_DEVICE_FOR_KIOSK:
+          UMA(policy::kMetricEnrollmentInvalidPackagedDeviceForKIOSK);
           break;
       }
       break;

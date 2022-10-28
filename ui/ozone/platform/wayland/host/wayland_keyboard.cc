@@ -54,6 +54,7 @@ class WaylandKeyboard::ZCRExtendedKeyboard {
 
   void AckKey(uint32_t serial, bool handled) {
     zcr_extended_keyboard_v1_ack_key(obj_.get(), serial, handled);
+    keyboard_->connection_->Flush();
   }
 
   // Returns true if connected object will send zcr_extended_keyboard::peek_key.
@@ -246,7 +247,7 @@ void WaylandKeyboard::FlushInput(base::OnceClosure closure) {
   // get spurious repeats.
   sync_callback_.reset(wl_display_sync(connection_->display_wrapper()));
   wl_callback_add_listener(sync_callback_.get(), &callback_listener_, this);
-  connection_->ScheduleFlush();
+  connection_->Flush();
 }
 
 void WaylandKeyboard::DispatchKey(unsigned int key,

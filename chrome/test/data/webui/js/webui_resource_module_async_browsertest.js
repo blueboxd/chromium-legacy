@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,8 +7,6 @@
  */
 
 GEN('#include "content/public/test/browser_test.h"');
-
-/* eslint-disable no-var */
 
 /** Test fixture for testing shared JS module resources. */
 var WebUIResourceModuleAsyncTest = class extends testing.Test {
@@ -111,17 +109,6 @@ var LoadTimeDataModuleTest = class extends WebUIResourceModuleAsyncTest {
 };
 
 TEST_F('LoadTimeDataModuleTest', 'All', function() {
-  mocha.run();
-});
-
-var I18nBehaviorModuleTest = class extends WebUIResourceModuleAsyncTest {
-  /** @override */
-  get browsePreload() {
-    return 'chrome://test/test_loader.html?module=js/i18n_behavior_test.js';
-  }
-};
-
-TEST_F('I18nBehaviorModuleTest', 'All', function() {
   mocha.run();
 });
 

@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -94,8 +94,7 @@ class MEDIA_EXPORT MediaFoundationRenderer
   void SetOutputRect(const gfx::Rect& output_rect,
                      SetOutputRectCB callback) override;
   void NotifyFrameReleased(const base::UnguessableToken& frame_token) override;
-  void RequestNextFrameBetweenTimestamps(base::TimeTicks deadline_min,
-                                         base::TimeTicks deadline_max) override;
+  void RequestNextFrame() override;
   void SetMediaFoundationRenderingMode(
       MediaFoundationRenderingMode render_mode) override;
 

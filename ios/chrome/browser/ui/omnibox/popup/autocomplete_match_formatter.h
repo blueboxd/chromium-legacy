@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -21,7 +21,7 @@ struct AutocompleteMatch;
 @property(nonatomic, assign) BOOL defaultSearchEngineIsGoogle;
 
 // The pedal data for the underlying match.
-@property(nonatomic) OmniboxPedalData* pedalData;
+@property(nonatomic, assign) OmniboxPedalData* pedalData;
 
 - (instancetype)initWithMatch:(const AutocompleteMatch&)match
     NS_DESIGNATED_INITIALIZER;
@@ -29,6 +29,9 @@ struct AutocompleteMatch;
 
 // Convenience constuctor.
 + (instancetype)formatterWithMatch:(const AutocompleteMatch&)match;
+
+// Underlying match.
+- (const AutocompleteMatch&)autocompleteMatch;
 
 @end
 

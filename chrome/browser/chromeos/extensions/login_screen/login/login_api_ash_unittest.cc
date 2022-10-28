@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,9 +9,6 @@
 #include <string>
 #include <utility>
 
-#include "ash/components/login/auth/public/cryptohome_key_constants.h"
-#include "ash/components/login/auth/public/key.h"
-#include "ash/components/login/auth/public/user_context.h"
 #include "ash/components/settings/cros_settings_names.h"
 #include "base/callback.h"
 #include "base/callback_helpers.h"
@@ -36,6 +33,9 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
+#include "chromeos/ash/components/login/auth/public/cryptohome_key_constants.h"
+#include "chromeos/ash/components/login/auth/public/key.h"
+#include "chromeos/ash/components/login/auth/public/user_context.h"
 #include "components/account_id/account_id.h"
 #include "components/prefs/pref_service.h"
 #include "components/session_manager/session_manager_types.h"
@@ -57,13 +57,13 @@ using testing::StrictMock;
 
 namespace {
 
-const char kEmail[] = "email@test";
-const char kGaiaId[] = "gaia@test";
+constexpr char kEmail[] = "email@test";
+constexpr char kGaiaId[] = "gaia";
 
 const char kLaunchSamlUserSessionArguments[] =
     R"([{
           "email": "email@test",
-          "gaiaId": "gaia@test",
+          "gaiaId": "gaia",
           "password": "password",
           "oauthCode": "oauth_code"
        }])";
@@ -385,7 +385,7 @@ TEST_F(LoginApiUnittest, LockManagedGuestSessionNoActiveUser) {
 }
 
 TEST_F(LoginApiUnittest, LockManagedGuestSessionNotManagedGuestSession) {
-  AccountId account_id = AccountId::FromGaiaId(kGaiaId);
+  AccountId account_id = AccountId::FromUserEmailGaiaId(kEmail, kGaiaId);
   fake_chrome_user_manager_->AddUser(account_id);
   fake_chrome_user_manager_->SwitchActiveUser(account_id);
 
@@ -480,7 +480,7 @@ TEST_F(LoginApiUnittest, UnlockManagedGuestSessionNoActiveUser) {
 }
 
 TEST_F(LoginApiUnittest, UnlockManagedGuestSessionNotManagedGuestSession) {
-  AccountId account_id = AccountId::FromGaiaId(kGaiaId);
+  AccountId account_id = AccountId::FromUserEmailGaiaId(kEmail, kGaiaId);
   fake_chrome_user_manager_->AddUser(account_id);
   fake_chrome_user_manager_->SwitchActiveUser(account_id);
 
@@ -1275,7 +1275,7 @@ class LoginApiExternalLogoutRequestUnittest : public ExtensionApiUnittest {
     explicit MockExternalLogoutRequestEventHandler(
         content::BrowserContext* context)
         : ExternalLogoutRequestEventHandler(context) {}
-    ~MockExternalLogoutRequestEventHandler() = default;
+    ~MockExternalLogoutRequestEventHandler() override = default;
     MOCK_METHOD0(OnRequestExternalLogout, void());
   };
 
@@ -1318,7 +1318,7 @@ class LoginApiExternalLogoutDoneUnittest : public ExtensionApiUnittest {
     explicit MockExternalLogoutDoneEventHandler(
         content::BrowserContext* context)
         : ExternalLogoutDoneEventHandler(context) {}
-    ~MockExternalLogoutDoneEventHandler() = default;
+    ~MockExternalLogoutDoneEventHandler() override = default;
     MOCK_METHOD0(OnExternalLogoutDone, void());
   };
 

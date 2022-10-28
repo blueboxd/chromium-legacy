@@ -70,6 +70,13 @@ InputMethodAsh::PendingSetCompositionRange::PendingSetCompositionRange(
 InputMethodAsh::PendingSetCompositionRange::~PendingSetCompositionRange() =
     default;
 
+InputMethodAsh::PendingAutocorrectRange::PendingAutocorrectRange(
+    const gfx::Range& range,
+    IMEInputContextHandlerInterface::SetAutocorrectRangeDoneCallback callback)
+    : range(range), callback(std::move(callback)) {}
+
+InputMethodAsh::PendingAutocorrectRange::~PendingAutocorrectRange() = default;
+
 ui::EventDispatchDetails InputMethodAsh::DispatchKeyEvent(ui::KeyEvent* event) {
   DCHECK(!(event->flags() & ui::EF_IS_SYNTHESIZED));
 
@@ -132,9 +139,9 @@ ui::EventDispatchDetails InputMethodAsh::DispatchKeyEvent(ui::KeyEvent* event) {
       if (ExecuteCharacterComposer(*event)) {
         // Treating as PostIME event if character composer handles key event and
         // generates some IME event,
-        return ProcessKeyEventPostIME(event,
-                                      /* handled */ true,
-                                      /* stopped_propagation */ true);
+        return ProcessKeyEventPostIME(
+            event, ui::ime::KeyEventHandledState::kHandledByIME,
+            /* stopped_propagation */ true);
       }
       return ProcessUnfilteredKeyPressEvent(event);
     }
@@ -150,19 +157,22 @@ ui::EventDispatchDetails InputMethodAsh::DispatchKeyEvent(ui::KeyEvent* event) {
   return ui::EventDispatchDetails();
 }
 
-void InputMethodAsh::ProcessKeyEventDone(ui::KeyEvent* event, bool is_handled) {
+void InputMethodAsh::ProcessKeyEventDone(
+    ui::KeyEvent* event,
+    ui::ime::KeyEventHandledState handled_state) {
   DCHECK(event);
+  bool is_handled_by_char_composer = false;
   if (event->type() == ET_KEY_PRESSED) {
-    if (is_handled) {
+    if (handled_state != ui::ime::KeyEventHandledState::kNotHandled) {
       // IME event has a priority to be handled, so that character composer
       // should be reset.
       character_composer_.Reset();
     } else {
       // If IME does not handle key event, passes keyevent to character composer
       // to be able to compose complex characters.
-      is_handled = ExecuteCharacterComposer(*event);
+      is_handled_by_char_composer = ExecuteCharacterComposer(*event);
 
-      if (!is_handled &&
+      if (!is_handled_by_char_composer &&
           !KeycodeConverter::IsDomKeyForModifier(event->GetDomKey())) {
         // If the character composer didn't handle it either, then confirm any
         // composition text before forwarding the key event. We ignore modifier
@@ -175,7 +185,11 @@ void InputMethodAsh::ProcessKeyEventDone(ui::KeyEvent* event, bool is_handled) {
     }
   }
   if (event->type() == ET_KEY_PRESSED || event->type() == ET_KEY_RELEASED) {
-    std::ignore = ProcessKeyEventPostIME(event, is_handled,
+    ui::ime::KeyEventHandledState handled_state_to_process =
+        is_handled_by_char_composer
+            ? ui::ime::KeyEventHandledState::kHandledByIME
+            : handled_state;
+    std::ignore = ProcessKeyEventPostIME(event, handled_state_to_process,
                                          /* stopped_propagation */ false);
   }
   handling_key_event_ = false;
@@ -443,17 +457,26 @@ gfx::Rect InputMethodAsh::GetTextFieldBounds() {
   return control_bounds ? *control_bounds : gfx::Rect();
 }
 
-bool InputMethodAsh::SetAutocorrectRange(const gfx::Range& range) {
-  if (IsTextInputTypeNone())
-    return false;
+void InputMethodAsh::SetAutocorrectRange(
+    const gfx::Range& range,
+    SetAutocorrectRangeDoneCallback callback) {
+  if (IsTextInputTypeNone()) {
+    std::move(callback).Run(false);
+    return;
+  }
 
   // If we have pending key events, then delay the operation until
   // |ProcessKeyEventPostIME|. Otherwise, process it immediately.
   if (handling_key_event_) {
-    pending_autocorrect_range_ = range;
-    return true;
+    if (pending_autocorrect_range_) {
+      std::move(pending_autocorrect_range_->callback).Run(false);
+    }
+
+    pending_autocorrect_range_ =
+        std::make_unique<InputMethodAsh::PendingAutocorrectRange>(
+            range, std::move(callback));
   } else {
-    return GetTextInputClient()->SetAutocorrectRange(range);
+    std::move(callback).Run(GetTextInputClient()->SetAutocorrectRange(range));
   }
 }
 
@@ -555,8 +578,9 @@ void InputMethodAsh::UpdateContextFocusState() {
 
 ui::EventDispatchDetails InputMethodAsh::ProcessKeyEventPostIME(
     ui::KeyEvent* event,
-    bool handled,
+    ui::ime::KeyEventHandledState handled_state,
     bool stopped_propagation) {
+  bool handled = (handled_state != ui::ime::KeyEventHandledState::kNotHandled);
   TextInputClient* client = GetTextInputClient();
   if (!client) {
     // As ibus works asynchronously, there is a chance that the focused client
@@ -565,8 +589,11 @@ ui::EventDispatchDetails InputMethodAsh::ProcessKeyEventPostIME(
   }
 
   if (event->type() == ET_KEY_PRESSED && handled) {
+    bool only_dispatch_vkey_processkey =
+        (handled_state ==
+         ui::ime::KeyEventHandledState::kHandledByAssistiveSuggester);
     ui::EventDispatchDetails dispatch_details =
-        ProcessFilteredKeyPressEvent(event);
+        ProcessFilteredKeyPressEvent(event, only_dispatch_vkey_processkey);
     if (event->stopped_propagation()) {
       ResetContext();
       return dispatch_details;
@@ -598,8 +625,9 @@ ui::EventDispatchDetails InputMethodAsh::ProcessKeyEventPostIME(
 }
 
 ui::EventDispatchDetails InputMethodAsh::ProcessFilteredKeyPressEvent(
-    ui::KeyEvent* event) {
-  if (NeedInsertChar())
+    ui::KeyEvent* event,
+    bool only_dispatch_vkey_processkey) {
+  if (!only_dispatch_vkey_processkey && NeedInsertChar())
     return DispatchKeyEventPostIME(event);
 
   ui::KeyEvent fabricated_event(ET_KEY_PRESSED, VKEY_PROCESSKEY, event->code(),
@@ -700,7 +728,8 @@ void InputMethodAsh::MaybeProcessPendingInputMethodResult(ui::KeyEvent* event,
   }
 
   if (pending_autocorrect_range_) {
-    client->SetAutocorrectRange(*pending_autocorrect_range_);
+    std::move(pending_autocorrect_range_->callback)
+        .Run(client->SetAutocorrectRange(pending_autocorrect_range_->range));
     pending_autocorrect_range_.reset();
   }
 
@@ -850,8 +879,7 @@ SurroundingTextInfo InputMethodAsh::GetSurroundingTextInfo() {
   gfx::Range text_range;
   SurroundingTextInfo info;
   TextInputClient* client = GetTextInputClient();
-  if (!client ||
-      !client->GetTextRange(&text_range) ||
+  if (!client || !client->GetTextRange(&text_range) ||
       !client->GetTextFromRange(text_range, &info.surrounding_text) ||
       !client->GetEditableSelectionRange(&info.selection_range)) {
     return SurroundingTextInfo();

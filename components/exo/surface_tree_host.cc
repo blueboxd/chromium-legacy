@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -309,6 +309,8 @@ void SurfaceTreeHost::SubmitCompositorFrame() {
         std::max(frame.metadata.content_color_usage,
                  resource.color_space.GetContentColorUsage());
   }
+
+  frame.metadata.may_contain_video = root_surface_->ContainsVideo();
 
   layer_tree_frame_sink_holder_->SubmitCompositorFrame(std::move(frame));
 }

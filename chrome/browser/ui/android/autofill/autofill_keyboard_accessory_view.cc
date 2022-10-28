@@ -1,4 +1,4 @@
-// Copyright (c) 2015 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,6 +10,7 @@
 #include "base/android/jni_string.h"
 #include "base/callback.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/trace_event/trace_event.h"
 
 #include "chrome/android/features/keyboard_accessory/jni_headers/AutofillKeyboardAccessoryViewBridge_jni.h"
 #include "chrome/browser/android/resource_mapper.h"
@@ -56,11 +57,13 @@ bool AutofillKeyboardAccessoryView::Initialize() {
 }
 
 void AutofillKeyboardAccessoryView::Hide() {
+  TRACE_EVENT0("passwords", "AutofillKeyboardAccessoryView::Hide");
   Java_AutofillKeyboardAccessoryViewBridge_dismiss(
       base::android::AttachCurrentThread(), java_object_);
 }
 
 void AutofillKeyboardAccessoryView::Show() {
+  TRACE_EVENT0("passwords", "AutofillKeyboardAccessoryView::Show");
   JNIEnv* env = base::android::AttachCurrentThread();
   ScopedJavaLocalRef<jobjectArray> data_array =
       Java_AutofillKeyboardAccessoryViewBridge_createAutofillSuggestionArray(
@@ -79,7 +82,12 @@ void AutofillKeyboardAccessoryView::Show() {
     std::u16string label;
     if (controller_->GetSuggestionMinorTextAt(i).empty()) {
       value = controller_->GetSuggestionMainTextAt(i);
-      label = controller_->GetSuggestionLabelAt(i);
+      std::vector<std::vector<autofill::Suggestion::Text>> suggestion_labels =
+          controller_->GetSuggestionLabelsAt(i);
+      if (!suggestion_labels.empty()) {
+        DCHECK_EQ(suggestion_labels[0].size(), 1U);
+        label = std::move(suggestion_labels[0][0].value);
+      }
     } else {
       value = controller_->GetSuggestionMainTextAt(i);
       label = controller_->GetSuggestionMinorTextAt(i);

@@ -1,4 +1,4 @@
-// Copyright 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,15 +6,17 @@
 
 #import <UIKit/UIKit.h>
 
-#include "base/check_op.h"
-#include "base/mac/foundation_util.h"
-#include "base/strings/string_util.h"
-#include "base/strings/sys_string_conversions.h"
-#include "ios/chrome/browser/chrome_url_constants.h"
-#include "ios/components/webui/web_ui_url_constants.h"
+#import "base/check_op.h"
+#import "base/mac/foundation_util.h"
+#import "base/strings/string_util.h"
+#import "base/strings/sys_string_conversions.h"
+#import "components/content_settings/core/browser/host_content_settings_map.h"
+#import "ios/chrome/browser/chrome_url_constants.h"
+#import "ios/chrome/browser/content_settings/host_content_settings_map_factory.h"
+#import "ios/components/webui/web_ui_url_constants.h"
 #import "ios/net/url_scheme_util.h"
-#include "url/gurl.h"
-#include "url/url_constants.h"
+#import "url/gurl.h"
+#import "url/url_constants.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -43,6 +45,16 @@ bool IsHandledProtocol(const std::string& scheme) {
   return (scheme == url::kHttpScheme || scheme == url::kHttpsScheme ||
           scheme == url::kAboutScheme || scheme == url::kDataScheme ||
           scheme == kChromeUIScheme);
+}
+
+bool ShouldLoadUrlInDesktopMode(const GURL& url,
+                                ChromeBrowserState* browser_state) {
+  HostContentSettingsMap* settings_map =
+      ios::HostContentSettingsMapFactory::GetForBrowserState(browser_state);
+  ContentSetting setting = settings_map->GetContentSetting(
+      url, url, ContentSettingsType::REQUEST_DESKTOP_SITE);
+
+  return setting == CONTENT_SETTING_ALLOW;
 }
 
 @implementation ChromeAppConstants {

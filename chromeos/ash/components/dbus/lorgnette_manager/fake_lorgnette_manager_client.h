@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -41,7 +41,8 @@ class COMPONENT_EXPORT(LORGNETTE_MANAGER) FakeLorgnetteManagerClient
       base::RepeatingCallback<void(std::string, uint32_t)> page_callback,
       base::RepeatingCallback<void(uint32_t, uint32_t)> progress_callback)
       override;
-  void CancelScan(VoidDBusMethodCallback completion_callback) override;
+  void CancelScan(
+      chromeos::VoidDBusMethodCallback completion_callback) override;
 
   // Sets the response returned by ListScanners().
   void SetListScannersResponse(

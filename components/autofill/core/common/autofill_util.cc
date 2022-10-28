@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -133,7 +133,7 @@ void SetCheckStatus(FormFieldData* form_field_data,
 }
 
 std::vector<std::string> LowercaseAndTokenizeAttributeString(
-    const std::string& attribute) {
+    base::StringPiece attribute) {
   return base::SplitString(base::ToLowerASCII(attribute),
                            base::kWhitespaceASCII, base::TRIM_WHITESPACE,
                            base::SPLIT_WANT_NONEMPTY);

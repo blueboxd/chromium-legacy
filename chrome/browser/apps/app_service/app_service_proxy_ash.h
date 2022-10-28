@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -107,6 +107,10 @@ class AppServiceProxyAsh : public AppServiceProxyBase,
   void UnpauseApps(const std::set<std::string>& app_ids);
 
   // Set whether resize lock is enabled for the app identified by |app_id|.
+  void SetResizeLocked(const std::string& app_id, bool locked);
+
+  // TODO(crbug.com/1253250): Will be removed soon. Please use the non mojom
+  // interface.
   void SetResizeLocked(const std::string& app_id,
                        apps::mojom::OptionalBool locked);
 
@@ -115,6 +119,19 @@ class AppServiceProxyAsh : public AppServiceProxyBase,
   void SetArcIsRegistered();
 
   // apps::AppServiceProxyBase overrides:
+  void LaunchAppWithIntent(const std::string& app_id,
+                           int32_t event_flags,
+                           IntentPtr intent,
+                           LaunchSource launch_source,
+                           WindowInfoPtr window_info,
+                           base::OnceCallback<void(bool)> callback) override;
+  void LaunchAppWithIntent(
+      const std::string& app_id,
+      int32_t event_flags,
+      apps::mojom::IntentPtr intent,
+      apps::mojom::LaunchSource launch_source,
+      apps::mojom::WindowInfoPtr window_info,
+      apps::mojom::Publisher::LaunchAppWithIntentCallback callback) override;
   void FlushMojoCallsForTesting() override;
 
   void ReInitializeCrostiniForTesting();

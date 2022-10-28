@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,6 +9,7 @@
 #include "base/base64.h"
 #include "base/check_op.h"
 #include "base/files/file_path.h"
+#include "base/logging.h"
 #include "base/sequence_checker.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/utf_string_conversions.h"
@@ -127,6 +128,8 @@ void PersistedData::SetAP(const std::string& id, const std::string& ap) {
 }
 
 void PersistedData::RegisterApp(const RegistrationRequest& rq) {
+  VLOG(2) << __func__ << ": Registering " << rq.app_id << " at version "
+          << rq.version;
   SetProductVersion(rq.app_id, rq.version);
   SetExistenceCheckerPath(rq.app_id, rq.existence_checker_path);
   SetBrandCode(rq.app_id, rq.brand_code);
@@ -152,7 +155,7 @@ std::vector<std::string> PersistedData::GetAppIds() const {
   // corresponds to an app:
   // {"updateclientdata":{"apps":{"{44FC7FE2-65CE-487C-93F4-EDEE46EEAAAB}":{...
   const base::Value::Dict& dict =
-      pref_service_->GetValueDict(kPersistedDataPreference);
+      pref_service_->GetDict(kPersistedDataPreference);
   const base::Value::Dict* apps = dict.FindDict("apps");
   if (!apps)
     return {};
@@ -171,7 +174,7 @@ const base::Value::Dict* PersistedData::GetAppKey(const std::string& id) const {
   if (!pref_service_)
     return nullptr;
   const base::Value::Dict& dict =
-      pref_service_->GetValueDict(kPersistedDataPreference);
+      pref_service_->GetDict(kPersistedDataPreference);
   const base::Value::Dict* apps = dict.FindDict("apps");
   if (!apps)
     return nullptr;

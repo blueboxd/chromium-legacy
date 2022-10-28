@@ -1,10 +1,9 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "ash/wm/desks/templates/saved_desk_grid_view.h"
 
-#include <algorithm>
 #include <memory>
 
 #include "ash/public/cpp/desk_template.h"
@@ -18,6 +17,7 @@
 #include "ash/wm/overview/overview_highlight_controller.h"
 #include "ash/wm/overview/overview_session.h"
 #include "base/i18n/string_compare.h"
+#include "base/ranges/algorithm.h"
 #include "third_party/icu/source/common/unicode/uloc.h"
 #include "third_party/icu/source/i18n/unicode/coll.h"
 #include "ui/accessibility/ax_enums.mojom.h"
@@ -71,8 +71,8 @@ constexpr base::TimeDelta kTemplateViewsScaleAndFadeDuration =
 gfx::Transform GetScaleTransformForView(views::View* view) {
   gfx::Transform scale_transform;
   scale_transform.Scale(kAddOrDeleteItemScale, kAddOrDeleteItemScale);
-  return gfx::TransformAboutPivot(view->GetLocalBounds().CenterPoint(),
-                                  scale_transform);
+  return gfx::TransformAboutPivot(
+      gfx::RectF(view->GetLocalBounds()).CenterPoint(), scale_transform);
 }
 
 }  // namespace
@@ -156,10 +156,8 @@ void SavedDeskGridView::AddOrUpdateTemplates(
   std::vector<SavedDeskItemView*> new_grid_items;
 
   for (const DeskTemplate* entry : entries) {
-    auto iter = std::find_if(grid_items_.begin(), grid_items_.end(),
-                             [entry](SavedDeskItemView* grid_item) {
-                               return entry->uuid() == grid_item->uuid();
-                             });
+    auto iter = base::ranges::find(grid_items_, entry->uuid(),
+                                   &SavedDeskItemView::uuid);
 
     if (iter != grid_items_.end()) {
       (*iter)->UpdateTemplate(*entry);
@@ -181,7 +179,7 @@ void SavedDeskGridView::AddOrUpdateTemplates(
     AnimateGridItems(new_grid_items);
 }
 
-void SavedDeskGridView::DeleteTemplates(const std::vector<std::string>& uuids,
+void SavedDeskGridView::DeleteTemplates(const std::vector<base::GUID>& uuids,
                                         bool delete_animation) {
   OverviewHighlightController* highlight_controller =
       Shell::Get()
@@ -190,12 +188,8 @@ void SavedDeskGridView::DeleteTemplates(const std::vector<std::string>& uuids,
           ->highlight_controller();
   DCHECK(highlight_controller);
 
-  for (const std::string& uuid : uuids) {
-    auto iter =
-        std::find_if(grid_items_.begin(), grid_items_.end(),
-                     [uuid](SavedDeskItemView* grid_item) {
-                       return uuid == grid_item->uuid().AsLowercaseString();
-                     });
+  for (const base::GUID& uuid : uuids) {
+    auto iter = base::ranges::find(grid_items_, uuid, &SavedDeskItemView::uuid);
 
     if (iter == grid_items_.end())
       continue;
@@ -287,10 +281,7 @@ SavedDeskItemView* SavedDeskGridView::GetItemForUUID(const base::GUID& uuid) {
   if (!uuid.is_valid())
     return nullptr;
 
-  auto it = std::find_if(grid_items_.begin(), grid_items_.end(),
-                         [&uuid](SavedDeskItemView* item_view) {
-                           return uuid == item_view->uuid();
-                         });
+  auto it = base::ranges::find(grid_items_, uuid, &SavedDeskItemView::uuid);
   return it == grid_items_.end() ? nullptr : *it;
 }
 

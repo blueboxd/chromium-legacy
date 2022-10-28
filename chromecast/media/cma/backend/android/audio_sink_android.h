@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -84,6 +84,9 @@ class AudioSinkAndroid {
   // Returns the current audio track timestamp.
   virtual MediaPipelineBackendAndroid::AudioTrackTimestamp
   GetAudioTrackTimestamp() = 0;
+
+  // Returns the streaming start threshold of the current audio track.
+  virtual int GetStartThresholdInFrames() = 0;
 
   // Getters
   virtual int input_samples_per_second() const = 0;

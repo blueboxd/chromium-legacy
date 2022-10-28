@@ -1,4 +1,4 @@
-# Copyright 2021 The Chromium Authors. All rights reserved.
+# Copyright 2021 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -7,8 +7,11 @@ import("//third_party/closure_compiler/compile_js.gni")
 js_type_check("closure_compile") {
   is_polymer3 = true
   closure_flags = default_closure_args + mojom_js_args + [
-                    "browser_resolver_prefix_replacements=\"chrome://emoji-picker/=../../chrome/browser/resources/chromeos/emoji_picker/\"",
-                    "js_module_root=../../chrome/test/data/webui/",
+                    "browser_resolver_prefix_replacements=\"chrome://emoji-picker/=" + rebase_path(
+                            "//chrome/browser/resources/chromeos/emoji_picker/",
+                            root_build_dir) + "\"",
+                    "js_module_root=" + rebase_path("//chrome/test/data/webui/",
+                                                    root_build_dir),
                     "js_module_root=./gen/chrome/test/data/webui/",
                     "js_module_root=" + rebase_path(
                             "//chrome/browser/resources/chromeos/emoji_picker/",
@@ -18,6 +21,9 @@ js_type_check("closure_compile") {
                             root_build_dir),
                   ]
   deps = [
+    ":emoji_picker_extension_emoji_test",
+    ":emoji_picker_extension_emoticon_test",
+    ":emoji_picker_extension_symbol_test",
     ":emoji_picker_extension_test",
     ":emoji_picker_prefix_search_test",
     ":emoji_picker_search_test",
@@ -47,6 +53,30 @@ js_library("emoji_picker_store_test") {
 }
 
 js_library("emoji_picker_extension_test") {
+  deps = [
+    "//chrome/browser/resources/chromeos/emoji_picker:emoji_picker",
+    "//ui/webui/resources/js:assert.m",
+  ]
+  externs_list = [ "$externs_path/mocha-2.5.js" ]
+}
+
+js_library("emoji_picker_extension_emoji_test") {
+  deps = [
+    "//chrome/browser/resources/chromeos/emoji_picker:emoji_picker",
+    "//ui/webui/resources/js:assert.m",
+  ]
+  externs_list = [ "$externs_path/mocha-2.5.js" ]
+}
+
+js_library("emoji_picker_extension_symbol_test") {
+  deps = [
+    "//chrome/browser/resources/chromeos/emoji_picker:emoji_picker",
+    "//ui/webui/resources/js:assert.m",
+  ]
+  externs_list = [ "$externs_path/mocha-2.5.js" ]
+}
+
+js_library("emoji_picker_extension_emoticon_test") {
   deps = [
     "//chrome/browser/resources/chromeos/emoji_picker:emoji_picker",
     "//ui/webui/resources/js:assert.m",

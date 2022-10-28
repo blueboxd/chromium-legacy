@@ -1,4 +1,4 @@
-// Copyright (c) 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,7 +12,6 @@
 #include "base/containers/circular_deque.h"
 #include "base/containers/flat_map.h"
 #include "base/containers/flat_set.h"
-#include "base/cpu_reduction_experiment.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
@@ -54,6 +53,19 @@ class GPU_EXPORT Scheduler {
     base::OnceClosure closure;
     std::vector<SyncToken> sync_token_fences;
     ReportingCallback report_callback;
+  };
+
+  struct ScopedAddWaitingPriority {
+   public:
+    ScopedAddWaitingPriority(Scheduler* scheduler,
+                             SequenceId sequence_id,
+                             SchedulingPriority priority);
+    ~ScopedAddWaitingPriority();
+
+   private:
+    const raw_ptr<Scheduler> scheduler_;
+    const SequenceId sequence_id_;
+    const SchedulingPriority priority_;
   };
 
   Scheduler(SyncPointManager* sync_point_manager,
@@ -349,6 +361,10 @@ class GPU_EXPORT Scheduler {
     base::flat_set<CommandBufferId> client_waits_;
   };
 
+  void AddWaitingPriority(SequenceId sequence_id, SchedulingPriority priority);
+  void RemoveWaitingPriority(SequenceId sequence_id,
+                             SchedulingPriority priority);
+
   void SyncTokenFenceReleased(const SyncToken& sync_token,
                               uint32_t order_num,
                               SequenceId release_sequence_id,
@@ -393,8 +409,6 @@ class GPU_EXPORT Scheduler {
 
     // Indicates when the next task run was scheduled
     base::TimeTicks run_next_task_scheduled;
-
-    base::CpuReductionExperimentFilter cpu_reduction_experiment_filter;
   };
   base::flat_map<base::SingleThreadTaskRunner*, PerThreadState>
       per_thread_state_map_ GUARDED_BY(lock_);

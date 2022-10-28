@@ -1,14 +1,17 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 package org.chromium.chrome.browser.history_clusters;
 
 import android.app.Activity;
+import android.os.Handler;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.FrameLayout.LayoutParams;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -97,7 +100,7 @@ public class HistoryClustersCoordinator extends RecyclerView.OnScrollListener
                 mSelectionDelegate, mMetricsLogger, accessibilityUtil, (message) -> {
                     if (mRecyclerView == null) return;
                     mRecyclerView.announceForAccessibility(message);
-                });
+                }, new Handler());
     }
 
     /**
@@ -165,6 +168,11 @@ public class HistoryClustersCoordinator extends RecyclerView.OnScrollListener
         return mSelectableListLayout.onBackPressed();
     }
 
+    /** Called to notify the Journeys UI that history has been deleted by some other party. */
+    public void onHistoryDeletedExternally() {
+        mMediator.onHistoryDeletedExternally();
+    }
+
     void inflateActivityView() {
         mAdapter = new SimpleRecyclerViewAdapter(mModelList);
         mAdapter.registerType(
@@ -224,8 +232,13 @@ public class HistoryClustersCoordinator extends RecyclerView.OnScrollListener
     }
 
     private View buildMoreProgressView(ViewGroup parent) {
-        return LayoutInflater.from(parent.getContext())
-                .inflate(R.layout.more_progress_button, parent, false);
+        View view = LayoutInflater.from(parent.getContext())
+                            .inflate(R.layout.more_progress_button, parent, false);
+        View progressSpinner = view.findViewById(R.id.progress_spinner);
+        if (progressSpinner != null) {
+            ((LayoutParams) progressSpinner.getLayoutParams()).gravity = Gravity.CENTER;
+        }
+        return view;
     }
 
     private View buildClusterView(ViewGroup parent) {

@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -31,7 +31,6 @@
 #include "components/password_manager/core/browser/password_manager.h"
 #include "components/password_manager/core/browser/password_manager_client.h"
 #include "components/password_manager/core/browser/password_manager_driver.h"
-#include "components/password_manager/core/common/password_manager_features.h"
 #include "components/strings/grit/components_strings.h"
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "content/public/browser/navigation_handle.h"
@@ -215,7 +214,7 @@ void PasswordGenerationPopupControllerImpl::PasswordAccepted() {
     // See https://crbug.com/1133635 for when `driver_` might be null due to a
     // compromised renderer.
     driver_->GeneratedPasswordAccepted(form_data_, generation_element_id_,
-                                       current_password_);
+                                       current_generated_password_);
   }
   // |this| can be destroyed here because GeneratedPasswordAccepted pops up
   // another UI and generates some event to close the dropdown.
@@ -226,8 +225,8 @@ void PasswordGenerationPopupControllerImpl::PasswordAccepted() {
 bool PasswordGenerationPopupControllerImpl::Show(GenerationUIState state) {
   // When switching from editing to generation state, regenerate the password.
   if (state == kOfferGeneration &&
-      (state_ != state || current_password_.empty())) {
-    current_password_ =
+      (state_ != state || current_generated_password_.empty())) {
+    current_generated_password_ =
         driver_->GetPasswordGenerationHelper()->GeneratePassword(
             web_contents()->GetLastCommittedURL().DeprecatedGetOriginAsURL(),
             form_signature_, field_signature_, max_length_);
@@ -266,11 +265,16 @@ bool PasswordGenerationPopupControllerImpl::Show(GenerationUIState state) {
   return true;
 }
 
-void PasswordGenerationPopupControllerImpl::UpdatePassword(
+void PasswordGenerationPopupControllerImpl::UpdateTypedPassword(
+    const std::u16string& new_user_typed_password) {
+  user_typed_password_ = new_user_typed_password;
+}
+
+void PasswordGenerationPopupControllerImpl::UpdateGeneratedPassword(
     std::u16string new_password) {
-  current_password_ = std::move(new_password);
+  current_generated_password_ = std::move(new_password);
   if (view_)
-    view_->UpdatePasswordValue();
+    view_->UpdateGeneratedPasswordValue();
 }
 
 void PasswordGenerationPopupControllerImpl::FrameWasScrolled() {
@@ -385,17 +389,12 @@ bool PasswordGenerationPopupControllerImpl::password_selected() const {
 }
 
 const std::u16string& PasswordGenerationPopupControllerImpl::password() const {
-  return current_password_;
+  return current_generated_password_;
 }
 
 std::u16string PasswordGenerationPopupControllerImpl::SuggestedText() {
-  if (state_ == kOfferGeneration) {
-    return l10n_util::GetStringUTF16(
-        base::FeatureList::IsEnabled(
-            password_manager::features::kUnifiedPasswordManagerDesktop)
-            ? IDS_PASSWORD_GENERATION_SUGGESTION_GPM
-            : IDS_PASSWORD_GENERATION_SUGGESTION);
-  }
+  if (state_ == kOfferGeneration)
+    return l10n_util::GetStringUTF16(IDS_PASSWORD_GENERATION_SUGGESTION_GPM);
 
   return l10n_util::GetStringUTF16(IDS_PASSWORD_GENERATION_EDITING_SUGGESTION);
 }

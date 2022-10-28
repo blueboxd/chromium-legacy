@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,7 +10,7 @@
 
 import '../../settings_shared.css.js';
 import 'chrome://resources/cr_elements/cr_icon_button/cr_icon_button.js';
-import 'chrome://resources/cr_elements/policy/cr_tooltip_icon.m.js';
+import 'chrome://resources/cr_elements/policy/cr_tooltip_icon.js';
 import './os_bluetooth_change_device_name_dialog.js';
 import './os_bluetooth_true_wireless_images.js';
 import 'chrome://resources/cr_components/chromeos/bluetooth/bluetooth_device_battery_info.js';
@@ -19,11 +19,10 @@ import {BluetoothUiSurface, recordBluetoothUiSurfaceMetrics} from 'chrome://reso
 import {BatteryType} from 'chrome://resources/cr_components/chromeos/bluetooth/bluetooth_types.js';
 import {getBatteryPercentage, getDeviceName, hasAnyDetailedBatteryInfo, hasDefaultImage, hasTrueWirelessImages} from 'chrome://resources/cr_components/chromeos/bluetooth/bluetooth_utils.js';
 import {getBluetoothConfig} from 'chrome://resources/cr_components/chromeos/bluetooth/cros_bluetooth_config.js';
-import {I18nBehavior, I18nBehaviorInterface} from 'chrome://resources/js/i18n_behavior.m.js';
-import {WebUIListenerBehavior, WebUIListenerBehaviorInterface} from 'chrome://resources/js/web_ui_listener_behavior.m.js';
 import {assertNotReached} from 'chrome://resources/js/assert.m.js';
-import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
-import {AudioOutputCapability, BluetoothSystemProperties, DeviceConnectionState, DeviceType, PairedBluetoothDeviceProperties} from 'chrome://resources/mojo/chromeos/services/bluetooth_config/public/mojom/cros_bluetooth_config.mojom-webui.js';
+import {I18nBehavior, I18nBehaviorInterface} from 'chrome://resources/cr_elements/i18n_behavior.js';
+import {WebUIListenerBehavior, WebUIListenerBehaviorInterface} from 'chrome://resources/cr_elements/web_ui_listener_behavior.js';
+import {AudioOutputCapability, BluetoothSystemProperties, DeviceConnectionState, DeviceType, PairedBluetoothDeviceProperties} from 'chrome://resources/mojo/chromeos/ash/services/bluetooth_config/public/mojom/cros_bluetooth_config.mojom-webui.js';
 import {html, mixinBehaviors, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {Route, Router} from '../../router.js';
@@ -643,11 +642,7 @@ class SettingsBluetoothDeviceDetailSubpageElement extends
 
   /** @private */
   onForgetButtonClicked_() {
-    if (loadTimeData.getBoolean('enableFastPairFlag')) {
-      this.shouldShowForgetDeviceDialog_ = true;
-    } else {
-      getBluetoothConfig().forget(this.deviceId_);
-    }
+    this.shouldShowForgetDeviceDialog_ = true;
   }
 
   /** @private */

@@ -1,4 +1,4 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -23,6 +23,7 @@
 #include "components/autofill/core/browser/metrics/autofill_metrics.h"
 #include "components/autofill/core/browser/metrics/form_interactions_counter.h"
 #include "components/autofill/core/browser/proto/api_v1.pb.h"
+#include "components/autofill/core/common/autofill_constants.h"
 #include "components/autofill/core/common/dense_set.h"
 #include "components/autofill/core/common/form_field_data.h"
 #include "components/autofill/core/common/language_code.h"
@@ -165,7 +166,9 @@ class FormStructure {
   void UpdateAutofillCount();
 
   // Returns true if this form matches the structural requirements for Autofill.
-  bool ShouldBeParsed(LogManager* log_manager = nullptr) const;
+  [[nodiscard]] bool ShouldBeParsed(LogManager* log_manager = nullptr) const {
+    return ShouldBeParsed({}, log_manager);
+  }
 
   // Returns true if heuristic autofill type detection should be attempted for
   // this form.
@@ -211,7 +214,8 @@ class FormStructure {
       AutofillMetrics::FormInteractionsUkmLogger* form_interactions_ukm_logger,
       bool did_show_suggestions,
       bool observed_submission,
-      const FormInteractionCounts& form_interaction_counts) const;
+      const FormInteractionCounts& form_interaction_counts,
+      const autofill_assistant::AutofillAssistantIntent intent) const;
 
   // Log the quality of the heuristics and server predictions for this form
   // structure, if autocomplete attributes are present on the fields (they are
@@ -222,15 +226,17 @@ class FormStructure {
 
   void LogDetermineHeuristicTypesMetrics();
 
-  // Classifies each field in |fields_| based upon its |autocomplete| attribute,
-  // if the attribute is available.  The association is stored into the field's
-  // |heuristic_type|.
-  // Fills |has_author_specified_types_| with |true| if the attribute is
-  // available and neither empty nor set to the special values "on" or "off" for
-  // at least one field.
-  // Fills |has_author_specified_sections_| with |true| if the attribute
-  // specifies a section for at least one field.
-  void ParseFieldTypesFromAutocompleteAttributes();
+  // Sets each field's `html_type` and `html_mode` based on the field's
+  // `parsed_autocomplete` member.
+  // Sets `has_author_specified_types_` to `true` iff the `parsed_autocomplete`
+  // is available for at least one field.
+  void SetFieldTypesFromAutocompleteAttribute();
+
+  // Resets each field's section and sets it based on the `parsed_autocomplete`
+  // member when available.
+  // Returns whether at least one field's `parsed_autocomplete` section is
+  // correctly defined by the web developer.
+  bool SetSectionsFromAutocompleteOrReset();
 
   // Classifies each field in |fields_| using the regular expressions.
   void ParseFieldTypesWithPatterns(PatternSource pattern_source,
@@ -362,38 +368,6 @@ class FormStructure {
     return password_length_vote_;
   }
 
-#if defined(UNIT_TEST)
-  mojom::SubmissionIndicatorEvent get_submission_event_for_testing() const {
-    return submission_event_;
-  }
-
-  // Identify sections for the |fields_| for testing purposes.
-  void identify_sections_for_testing() {
-    ParseFieldTypesFromAutocompleteAttributes();
-    IdentifySections(has_author_specified_sections_);
-  }
-
-  // Set the Overall field type for |fields_[field_index]| to |type| for testing
-  // purposes.
-  void set_overall_field_type_for_testing(size_t field_index,
-                                          ServerFieldType type) {
-    if (field_index < fields_.size() && type > 0 && type < MAX_VALID_FIELD_TYPE)
-      fields_[field_index]->set_heuristic_type(GetActivePatternSource(), type);
-  }
-  // Set the server field type for |fields_[field_index]| to |type| for testing
-  // purposes.
-  void set_server_field_type_for_testing(size_t field_index,
-                                         ServerFieldType type) {
-    if (field_index < fields_.size() && type > 0 &&
-        type < MAX_VALID_FIELD_TYPE) {
-      AutofillQueryResponse::FormSuggestion::FieldSuggestion::FieldPrediction
-          prediction;
-      prediction.set_type(type);
-      fields_[field_index]->set_server_predictions({prediction});
-    }
-  }
-#endif
-
   void set_password_symbol_vote(int noisified_symbol) {
     DCHECK(password_attributes_vote_.has_value())
         << "password_symbol_vote_| doesn't make sense if "
@@ -450,12 +424,30 @@ class FormStructure {
     return single_username_data_;
   }
 
+  // The signatures of forms recently submitted on the same origin within a
+  // small period of time.
+  struct FormAssociations {
+    absl::optional<FormSignature> last_address_form_submitted;
+    absl::optional<FormSignature> second_last_address_form_submitted;
+    absl::optional<FormSignature> last_credit_card_form_submitted;
+  };
+
+  void set_form_associations(FormAssociations associations) {
+    form_associations_ = associations;
+  }
+
  private:
   friend class FormStructureTestApi;
 
-  // This class wraps a vector of vectors of field indices. The indices of a
-  // vector belong to the same group.
-  class SectionedFieldsIndexes;
+  // Production code only uses the default parameters.
+  // Unit tests also test other parameters.
+  struct ShouldBeParsedParams {
+    size_t min_required_fields =
+        std::min({kMinRequiredFieldsForHeuristics, kMinRequiredFieldsForQuery,
+                  kMinRequiredFieldsForUpload});
+    size_t required_fields_for_forms_with_only_password_fields =
+        kRequiredFieldsForFormsWithOnlyPasswordFields;
+  };
 
   // Parses the field types from the server query response. |forms| must be the
   // same as the one passed to EncodeQueryRequest when constructing the query.
@@ -471,74 +463,8 @@ class FormStructure {
   FormStructure(FormSignature form_signature,
                 const std::vector<FieldSignature>& field_signatures);
 
-  // A function to fine tune the credit cards related predictions. For example:
-  // lone credit card fields in an otherwise non-credit-card related form is
-  // unlikely to be correct, the function will override that prediction.
-  void RationalizeCreditCardFieldPredictions(LogManager* log_manager);
-
-  // A function to rewrite sequences of (street address, address_line2) into
-  // (address_line1, address_line2) as server predictions sometimes introduce
-  // wrong street address predictions.
-  void RationalizeStreetAddressAndAddressLine(LogManager* log_manager);
-
-  // The rationalization is based on the visible fields, but should be applied
-  // to the hidden select fields. This is because hidden 'select' fields are
-  // also autofilled to take care of the synthetic fields.
-  void ApplyRationalizationsToHiddenSelects(
-      size_t field_index,
-      ServerFieldType new_type,
-      AutofillMetrics::FormInteractionsUkmLogger*);
-
-  // Returns true if we can replace server predictions with the heuristics one.
-  bool HeuristicsPredictionsAreApplicable(size_t upper_index,
-                                          size_t lower_index,
-                                          ServerFieldType first_type,
-                                          ServerFieldType second_type);
-
-  // Applies upper type to upper field, and lower type to lower field, and
-  // applies the rationalization also to hidden select fields if necessary.
-  void ApplyRationalizationsToFields(
-      size_t upper_index,
-      size_t lower_index,
-      ServerFieldType upper_type,
-      ServerFieldType lower_type,
-      AutofillMetrics::FormInteractionsUkmLogger*);
-
-  // Returns true if the fields_[index] server type should be rationalized to
-  // ADDRESS_HOME_COUNTRY.
-  bool FieldShouldBeRationalizedToCountry(size_t index);
-
-  // Set fields_[|field_index|] to |new_type| and log this change.
-  void ApplyRationalizationsToFieldAndLog(
-      size_t field_index,
-      ServerFieldType new_type,
-      AutofillMetrics::FormInteractionsUkmLogger* form_interactions_ukm_logger);
-
-  // Two or three fields predicted as the whole address should be address lines
-  // 1, 2 and 3 instead.
-  void RationalizeAddressLineFields(
-      SectionedFieldsIndexes* sections_of_address_indexes,
-      AutofillMetrics::FormInteractionsUkmLogger*,
-      LogManager* log_manager);
-
-  // Rationalize state and country interdependently.
-  void RationalizeAddressStateCountry(
-      SectionedFieldsIndexes* sections_of_state_indexes,
-      SectionedFieldsIndexes* sections_of_country_indexes,
-      AutofillMetrics::FormInteractionsUkmLogger*,
-      LogManager* log_manager);
-
-  // Tunes the fields with identical predictions.
-  void RationalizeRepeatedFields(AutofillMetrics::FormInteractionsUkmLogger*,
-                                 LogManager* log_manager);
-
-  // Filters out fields that don't meet the relationship ruleset for their type
-  // defined in |type_relationships_rules_|.
-  void RationalizeTypeRelationships(LogManager* log_manager);
-
-  // A helper function to review the predictions and do appropriate adjustments
-  // when it considers necessary.
-  void RationalizeFieldTypePredictions(LogManager* log_manager);
+  [[nodiscard]] bool ShouldBeParsed(ShouldBeParsedParams params,
+                                    LogManager* log_manager = nullptr) const;
 
   void EncodeFormForQuery(AutofillPageQueryRequest* query,
                           std::vector<FormSignature>* queried_form_signatures,
@@ -558,16 +484,18 @@ class FormStructure {
   // Returns true if the form has no fields, or too many.
   bool IsMalformed() const;
 
-  // Classifies each field in |fields_| into a logical section.
-  // Sections are identified by the heuristic (or by the heuristic and the
-  // autocomplete section attribute, if defined when feature flag
-  // kAutofillUseNewSectioningMethod is enabled) that a logical section should
-  // not include multiple fields of the same autofill type (with some
-  // exceptions, as described in the implementation). Credit card fields also,
-  // have a single separate section from address fields.
-  // If |has_author_specified_sections| is true, only the second pass --
-  // distinguishing credit card sections from non-credit card ones -- is made.
-  void IdentifySections(bool has_author_specified_sections);
+  // Classifies each field in `fields_` into a logical section.
+  // The function consists of 2 passes:
+  //   - 1st pass: Performed only when `ignore_autocomplete` is true or none of
+  //               the fields in `fields_` has a valid autocomplete section.
+  //               Sections are identified by the heuristic that a logical
+  //               section should not include multiple fields of the same
+  //               autofill type with some exceptions, as described in the
+  //               implementation.
+  //   - 2nd pass: Separate credit card fields from all other fields.
+  // Note: `ignore_autocomplete` is set to true only when identifying sections
+  // after server response.
+  void IdentifySections(bool ignore_autocomplete);
   void IdentifySectionsWithNewMethod();
 
   // Returns true if field should be skipped when talking to Autofill server.
@@ -638,18 +566,9 @@ class FormStructure {
   // author, via the |autocompletetype| attribute.
   bool has_author_specified_types_ = false;
 
-  // Whether the form includes any sections explicitly specified by the site
-  // author, via the autocomplete attribute.
-  bool has_author_specified_sections_ = false;
-
   // Whether the form includes a field that explicitly sets it autocomplete
   // type to "upi-vpa".
   bool has_author_specified_upi_vpa_hint_ = false;
-
-  // Whether the form was parsed for autocomplete attribute, thus assigning
-  // the real values of |has_author_specified_types_| and
-  // |has_author_specified_sections_|.
-  bool was_parsed_for_autocomplete_attributes_ = false;
 
   // True if the form contains at least one password field.
   bool has_password_field_ = false;
@@ -720,6 +639,11 @@ class FormStructure {
   // Single username details, if applicable.
   absl::optional<AutofillUploadContents::SingleUsernameData>
       single_username_data_;
+
+  // The signatures of forms recently submitted on the same origin within a
+  // small period of time.
+  // Only used for voting-purposes.
+  FormAssociations form_associations_;
 };
 
 LogBuffer& operator<<(LogBuffer& buffer, const FormStructure& form);

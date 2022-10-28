@@ -1,4 +1,4 @@
-# Copyright 2019 The Chromium Authors. All rights reserved.
+# Copyright 2019 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -9,6 +9,10 @@ assert(is_chromeos_ash)
 
 source_set("string_matching") {
   sources = [
+    "acronym_matcher.cc",
+    "acronym_matcher.h",
+    "diacritic_utils.cc",
+    "diacritic_utils.h",
     "fuzzy_tokenized_string_match.cc",
     "fuzzy_tokenized_string_match.h",
     "prefix_matcher.cc",
@@ -40,6 +44,8 @@ source_set("unit_tests") {
   testonly = true
 
   sources = [
+    "acronym_matcher_unittest.cc",
+    "diacritic_utils_unittest.cc",
     "fuzzy_tokenized_string_match_unittest.cc",
     "prefix_matcher_unittest.cc",
     "sequence_matcher_unittest.cc",

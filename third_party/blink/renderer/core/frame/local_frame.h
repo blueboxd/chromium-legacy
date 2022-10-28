@@ -58,8 +58,10 @@
 #include "third_party/blink/public/mojom/loader/pause_subresource_loading_handle.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/navigation/renderer_eviction_reason.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/reporting/reporting.mojom-blink-forward.h"
+#include "third_party/blink/public/mojom/script/script_evaluation_params.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/use_counter/metrics/web_feature.mojom-blink-forward.h"
 #include "third_party/blink/public/platform/task_type.h"
+#include "third_party/blink/public/platform/web_vector.h"
 #include "third_party/blink/public/web/web_script_execution_callback.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/dom/weak_identifier_map.h"
@@ -145,6 +147,9 @@ class WebPluginContainerImpl;
 class WebPrescientNetworking;
 class WebURLLoaderFactory;
 struct BlinkTransferableMessage;
+struct WebScriptSource;
+
+enum class BackForwardCacheAware;
 
 #if !BUILDFLAG(IS_ANDROID)
 class WindowControlsOverlayChangedDelegate;
@@ -202,7 +207,7 @@ class CORE_EXPORT LocalFrame final
   // synchronously created LocalFrame child.
   void Init(Frame* opener,
             std::unique_ptr<PolicyContainer> policy_container,
-            const blink::StorageKey& storage_key);
+            const StorageKey& storage_key);
   void SetView(LocalFrameView*);
   void CreateView(const gfx::Size&, const Color&);
 
@@ -492,8 +497,8 @@ class CORE_EXPORT LocalFrame final
   void SetViewportIntersectionFromParent(
       const mojom::blink::ViewportIntersectionState& intersection_state);
 
-  gfx::Size GetMainFrameViewportSize() const override;
-  gfx::Point GetMainFrameScrollPosition() const override;
+  gfx::Size GetOutermostMainFrameSize() const override;
+  gfx::Point GetOutermostMainFrameScrollPosition() const override;
 
   void SetOpener(Frame* opener) override;
 
@@ -739,6 +744,15 @@ class CORE_EXPORT LocalFrame final
   bool SwapIn();
 
   void LoadJavaScriptURL(const KURL& url);
+  void RequestExecuteScript(int32_t world_id,
+                            base::span<const WebScriptSource> sources,
+                            mojom::blink::UserActivationOption,
+                            mojom::blink::EvaluationTiming,
+                            mojom::blink::LoadEventBlockingOption,
+                            WebScriptExecutionCallback,
+                            BackForwardCacheAware back_forward_cache_aware,
+                            mojom::blink::WantResultOption,
+                            mojom::blink::PromiseResultOption);
 
   void SetEvictCachedSessionStorageOnFreezeOrUnload();
 
@@ -778,6 +792,8 @@ class CORE_EXPORT LocalFrame final
 
   void SetBackgroundColorPaintImageGeneratorForTesting(
       BackgroundColorPaintImageGenerator* generator);
+
+  absl::optional<SkColor> GetFrameOverlayColorForTesting() const;
 
  private:
   friend class FrameNavigationDisabler;

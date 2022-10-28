@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -30,6 +30,11 @@ class UpdateServiceImplInactive : public UpdateService {
     VLOG(1) << __func__ << " (Inactive)";
     base::SequencedTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::BindOnce(std::move(callback), base::Version()));
+  }
+
+  void FetchPolicies(base::OnceCallback<void(int)> callback) override {
+    VLOG(1) << __func__ << " (Inactive)";
+    std::move(callback).Run(-1);
   }
 
   void RegisterApp(

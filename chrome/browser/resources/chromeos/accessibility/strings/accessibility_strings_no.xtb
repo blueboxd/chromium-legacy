@@ -138,9 +138,9 @@ For å åpne Chrome-menyen, trykk på Alt+F.</translation>
 <translation id="1812527064848182527">liggende</translation>
 <translation id="1829244130665387512">Finn på side</translation>
 <translation id="1834891354138622109">Kolonne</translation>
-<translation id="1845944666972354496">Dobbelttrykk for å aktivere</translation>
 <translation id="1846771122725914429">Bluetooth-leselist</translation>
 <translation id="1852018405765032699">Trykk på skjermen med fire fingre for å åpne og lukke ChromeVox-menyene. Disse menyene inneholder nyttig informasjon om kommandoer og snarveier. Når menyene er åpne, kan du sveipe med én finger for å navigere gjennom elementer og dobbelttrykke for å aktivere elementer. For å fortsette, trykk på skjermen med fire fingre.</translation>
+<translation id="1864430479908918647">Trykk på Søk + mellomrom</translation>
 <translation id="1865601187525349519">Slutt på teksten</translation>
 <translation id="1876229593313240038">doc</translation>
 <translation id="1902396333223336119">Rutenettcelle</translation>
@@ -238,6 +238,7 @@ For å åpne Chrome-menyen, trykk på Alt+F.</translation>
 <translation id="2619344480613750862">Du kan også bevege deg mellom deler av skjermen. Du kan for eksempel bevege deg mellom appoversikten, hyllen og Chrome-fanene dine. For å gå til neste del, sveip fra venstre til høyre med fire fingre. Prøv det nå for å fortsette.</translation>
 <translation id="2624431853467395961">Åpne læremodus</translation>
 <translation id="2626530649491650971">klikkbart</translation>
+<translation id="263637551280112393">Trykk på Søk + Shift + mellomrom</translation>
 <translation id="2637227747952042642">Matematikk</translation>
 <translation id="2638785836053527382">Nedlastingen av <ph name="FILE_NAME" /> ble gjenopptatt</translation>
 <translation id="2639750663247012216">ChromeVox-modifikator</translation>
@@ -529,6 +530,7 @@ For å åpne Chrome-menyen, trykk på Alt+F.</translation>
 <translation id="4479068155583208887">Mursteinsrød</translation>
 <translation id="4482330759234983253">Forrige tabell</translation>
 <translation id="4491109536499578614">Bilde</translation>
+<translation id="4507332368061453500">Langt klikk på gjeldende element</translation>
 <translation id="4511186779140817916">Skåldet mandel</translation>
 <translation id="451510441928265982">Det finnes ingen tidligere overskrifter på nivå 2</translation>
 <translation id="4515799157838123044">Skyggelegg bakgrunnsinnhold</translation>
@@ -597,7 +599,6 @@ For å åpne Chrome-menyen, trykk på Alt+F.</translation>
 <translation id="4993152509206108683">Hastighet – <ph name="PERCENT" /> prosent</translation>
 <translation id="4994420463726586413">Les opp gjeldende batteristatus</translation>
 <translation id="4997282455736854877"><ph name="NAME" />, alternativknappen valgt</translation>
-<translation id="5011664330025416377">Trykk på Søk + mellomrom for å aktivere</translation>
 <translation id="5012724933919010465"><ph name="NAME" />, menyelement med alternativknapp som er valgt</translation>
 <translation id="5020651427400641814">Slå på loggføring av tale</translation>
 <translation id="5041394372352067729">Flytt leselisten til toppen av siden</translation>
@@ -650,6 +651,7 @@ For å åpne Chrome-menyen, trykk på Alt+F.</translation>
 <translation id="5355014376930441909">Det finnes ingen flere deler</translation>
 <translation id="5368000168321181111">Lydsignaler er av</translation>
 <translation id="5368505757342402527">Nedlastingen av <ph name="FILE_NAME" /> er <ph name="PROGRESS" /> % fullført. Omtrent <ph name="TIME" /> <ph name="UNITS" /> gjenstår.</translation>
+<translation id="5381388086899614489">langt klikk</translation>
 <translation id="5400836586163650660">Grå</translation>
 <translation id="5402367795255837559">Punktskrift</translation>
 <translation id="5402791055281059602">Et modalt varsel</translation>
@@ -762,6 +764,7 @@ For å åpne Chrome-menyen, trykk på Alt+F.</translation>
 <translation id="6100239002225743044">Flytt opp én linje</translation>
 <translation id="6118126368611144850">Android-apper for Chrome. Hvis du har Play Butikk på enheten din, kan du ta en sniktitt på ChromeVox med Android-apper. Prøv den eksperimentelle støtten ved å laste ned Google Chrome Canary fra Play-butikken.</translation>
 <translation id="611827076493383239">vtd</translation>
+<translation id="6119846243427417423">aktiver</translation>
 <translation id="6122013438240733403">btn</translation>
 <translation id="6132506484792346370">En listeboks eller et kombinasjonsfelt</translation>
 <translation id="613344593214611552">slett forrige setning</translation>
@@ -778,6 +781,7 @@ For å åpne Chrome-menyen, trykk på Alt+F.</translation>
 <translation id="6236061028292614533">Neste overskrift</translation>
 <translation id="6254901459154107917">Neste redigerbare tekstområde</translation>
 <translation id="6259464875943891919">Avsluttet <ph name="TYPE" />.</translation>
+<translation id="6280088282605782512">Dobbelttrykk</translation>
 <translation id="6282062888058716985">nav</translation>
 <translation id="6295699829709583154">Essensielle taster: søketasten</translation>
 <translation id="6305702903308659374">Spill av med normalt volum selv når ChromeVox snakker</translation>
@@ -981,6 +985,7 @@ For å åpne Chrome-menyen, trykk på Alt+F.</translation>
 <translation id="7731785449856576010">Det finnes ingen flere mediemoduler</translation>
 <translation id="7735498529470878067">Med berøringsutforskning kan du raskt få inntrykk av hva som er på skjermen.</translation>
 <translation id="773906353055481349">Trykk på Søk + Ctrl + Alt og piltastene for å navigere mellom cellene</translation>
+<translation id="7746976083433980639"><ph name="ACTION" /> for å <ph name="LABEL" /></translation>
 <translation id="7763537600611320912">Startet nedlasting av <ph name="FILE_NAME" /></translation>
 <translation id="7768784765476638775">Tekstopplesing</translation>
 <translation id="7776293189010177726">Åpne ChromeVox-menyene</translation>

@@ -138,9 +138,9 @@
 <translation id="1812527064848182527">landskap</translation>
 <translation id="1829244130665387512">Vind op bladsy</translation>
 <translation id="1834891354138622109">Kolom</translation>
-<translation id="1845944666972354496">Dubbeltik om te aktiveer</translation>
 <translation id="1846771122725914429">Bluetooth Braille-skerm</translation>
 <translation id="1852018405765032699">As jy met vier vingers op die skerm tik, sal dit die ChromeVox-kieslyste oop- en toemaak. Hierdie kieslyste bevat nuttige inligting oor bevele en kortpaaie. Sodra die kieslyste oop is, kan jy met een vinger deur die items swiep en dubbeltik om items te aktiveer. Tik met vier vingers op die skerm om voort te gaan.</translation>
+<translation id="1864430479908918647">Druk Search+spasiebalk</translation>
 <translation id="1865601187525349519">Einde van teks</translation>
 <translation id="1876229593313240038">dok</translation>
 <translation id="1902396333223336119">Sel</translation>
@@ -238,6 +238,7 @@
 <translation id="2619344480613750862">Jy kan ook tussen die afdelings van die skerm beweeg. Jy kan byvoorbeeld tussen die lanseerder, die rak en jou Chrome-oortjies beweeg. Swiep van links na regs met vier vingers om na die volgende afdeling te beweeg. Probeer dit nou om voort te gaan.</translation>
 <translation id="2624431853467395961">Maak leermodus oop</translation>
 <translation id="2626530649491650971">klikbare</translation>
+<translation id="263637551280112393">Druk Search+Shift+spasie</translation>
 <translation id="2637227747952042642">Wiskunde</translation>
 <translation id="2638785836053527382">Aflaai is hervat <ph name="FILE_NAME" /></translation>
 <translation id="2639750663247012216">ChromeVox-wysiger</translation>
@@ -529,6 +530,7 @@
 <translation id="4479068155583208887">Vlambaksteen</translation>
 <translation id="4482330759234983253">Vorige tabel</translation>
 <translation id="4491109536499578614">Prent</translation>
+<translation id="4507332368061453500">Langklik huidige item</translation>
 <translation id="4511186779140817916">Amandelwit</translation>
 <translation id="451510441928265982">Geen vorige vlak 2-opskrif nie</translation>
 <translation id="4515799157838123044">Vervaag agtergrondinhoud</translation>
@@ -597,7 +599,6 @@
 <translation id="4993152509206108683">Koers <ph name="PERCENT" /> persent</translation>
 <translation id="4994420463726586413">Sê huidige batterystatus hardop</translation>
 <translation id="4997282455736854877"><ph name="NAME" />, radioknoppie gekies</translation>
-<translation id="5011664330025416377">Druk Search+spasiebalk om te aktiveer</translation>
 <translation id="5012724933919010465"><ph name="NAME" />, kieslysitemradioknoppie is gekies</translation>
 <translation id="5020651427400641814">Aktiveer spraakloginskrywings</translation>
 <translation id="5041394372352067729">Skuif braille-skerm na bokant van bladsy</translation>
@@ -650,6 +651,7 @@
 <translation id="5355014376930441909">Geen volgende afdeling nie</translation>
 <translation id="5368000168321181111">Oorfone af</translation>
 <translation id="5368505757342402527">Aflaai is <ph name="PROGRESS" />% voltooi <ph name="FILE_NAME" />. Omtrent <ph name="TIME" /> <ph name="UNITS" /> oor.</translation>
+<translation id="5381388086899614489">langklik</translation>
 <translation id="5400836586163650660">Grys</translation>
 <translation id="5402367795255837559">Braille</translation>
 <translation id="5402791055281059602">'n Modale opletberig</translation>
@@ -762,6 +764,7 @@
 <translation id="6100239002225743044">Skuif een reël op</translation>
 <translation id="6118126368611144850">Android-programme vir Chrome. Kry 'n steelkykie na ChromeVox met Android-programme as jy Play Winkel op jou toestel het. Probeer eksperimentele steun deur Google Chrome Canary van die Play Winkel af te laai.</translation>
 <translation id="611827076493383239">besoek</translation>
+<translation id="6119846243427417423">aktiveer</translation>
 <translation id="6122013438240733403">btn</translation>
 <translation id="6132506484792346370">'n Lys- of kombinasiekassie</translation>
 <translation id="613344593214611552">vee die vorige sin uit</translation>
@@ -778,6 +781,7 @@
 <translation id="6236061028292614533">Volgende opskrif</translation>
 <translation id="6254901459154107917">Volgende redigeerbare teks-area</translation>
 <translation id="6259464875943891919">Het by <ph name="TYPE" /> uitgegaan.</translation>
+<translation id="6280088282605782512">Dubbeltik</translation>
 <translation id="6282062888058716985">navigeer</translation>
 <translation id="6295699829709583154">Noodsaaklike sleutels: Search</translation>
 <translation id="6305702903308659374">Speel teen normale volume selfs as ChromeVox besig is om te praat</translation>
@@ -981,6 +985,7 @@
 <translation id="7731785449856576010">Geen volgende medialegstuk nie</translation>
 <translation id="7735498529470878067">Verken-met-aanraking kan jou help om vinnig 'n gevoel te kry van wat op die skerm is.</translation>
 <translation id="773906353055481349">Druk Search+Ctrl+Alt met pyle om volgens sel te navigeer</translation>
+<translation id="7746976083433980639"><ph name="ACTION" /> tot <ph name="LABEL" /></translation>
 <translation id="7763537600611320912">Aflaai het begin <ph name="FILE_NAME" /></translation>
 <translation id="7768784765476638775">Hardoplees</translation>
 <translation id="7776293189010177726">Maak ChromeVox-kieslyste oop</translation>

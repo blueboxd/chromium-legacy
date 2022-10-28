@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -315,12 +315,12 @@ class EasyUnlockTpmKeyManagerTest : public testing::Test {
 
     return SECSuccess == PK11_ImportDERPrivateKeyInfo(test_system_slot_->slot(),
                                                       &pki_der_user,
-                                                      NULL,    // nickname
-                                                      NULL,    // publicValue
-                                                      true,    // isPerm
-                                                      true,    // isPrivate
-                                                      KU_ALL,  // usage
-                                                      NULL);
+                                                      nullptr,  // nickname
+                                                      nullptr,  // publicValue
+                                                      true,     // isPerm
+                                                      true,     // isPrivate
+                                                      KU_ALL,   // usage
+                                                      nullptr);
   }
 
   // Returns EasyUnlockTPMKeyManager for user profile.

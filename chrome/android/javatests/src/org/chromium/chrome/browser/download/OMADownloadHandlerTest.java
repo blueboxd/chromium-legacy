@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -92,6 +92,11 @@ public class OMADownloadHandlerTest {
 
         @Override
         public void addDownloadInterstitialSource(GURL originalUrl) {}
+
+        @Override
+        public boolean isDownloadInterstitialItem(GURL originalUrl, String guid) {
+            return false;
+        }
 
         @Override
         public void onItemsAdded(List<OfflineItem> items) {}

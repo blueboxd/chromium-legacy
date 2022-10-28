@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -105,6 +105,9 @@ template COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_CRYPTOHOME)
 template COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_CRYPTOHOME)
     CryptohomeErrorCode
     ReplyToCryptohomeError(const absl::optional<RemoveAuthFactorReply>&);
+template COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_CRYPTOHOME)
+    CryptohomeErrorCode
+    ReplyToCryptohomeError(const absl::optional<UpdateAuthFactorReply>&);
 template COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_CRYPTOHOME)
     CryptohomeErrorCode
     ReplyToCryptohomeError(const absl::optional<GetAuthSessionStatusReply>&);

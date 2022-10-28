@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -40,6 +40,8 @@ uint64_t GetExpectedTensorLength(const proto::UMAFeature& feature) {
     case proto::Aggregation::BUCKETED_SUM_BOOLEAN:
     case proto::Aggregation::BUCKETED_CUMULATIVE_SUM:
       return feature.bucket_count();
+    case proto::Aggregation::LATEST_OR_DEFAULT:
+      return 1;
     case proto::Aggregation::UNKNOWN:
       NOTREACHED();
       return 0;
@@ -308,15 +310,15 @@ SignalKey::Kind SignalTypeToSignalKind(proto::SignalType signal_type) {
   }
 }
 
-int ConvertToDiscreteScore(const std::string& mapping_key,
-                           float input_score,
-                           const proto::SegmentationModelMetadata& metadata) {
+float ConvertToDiscreteScore(const std::string& mapping_key,
+                             float input_score,
+                             const proto::SegmentationModelMetadata& metadata) {
   auto iter = metadata.discrete_mappings().find(mapping_key);
   if (iter == metadata.discrete_mappings().end()) {
     iter =
         metadata.discrete_mappings().find(metadata.default_discrete_mapping());
     if (iter == metadata.discrete_mappings().end())
-      return 0;
+      return input_score;
   }
   DCHECK(iter != metadata.discrete_mappings().end());
 
@@ -362,8 +364,18 @@ std::string SegmetationModelMetadataToString(
                            model_metadata.min_signal_collection_length()));
   }
   if (model_metadata.has_result_time_to_live()) {
-    result.append(base::StringPrintf("result_time_to_live:%" PRId64,
+    result.append(base::StringPrintf("result_time_to_live:%" PRId64 ", ",
                                      model_metadata.result_time_to_live()));
+  }
+  if (model_metadata.has_output_collection_delay_sec()) {
+    result.append(
+        base::StringPrintf("output_collection_delay_sec:%" PRId64 ", ",
+                           model_metadata.output_collection_delay_sec()));
+  }
+  if (model_metadata.has_upload_tensors()) {
+    result.append(
+        base::StringPrintf("upload_tensors: %s",
+                           model_metadata.upload_tensors() ? "true" : "false"));
   }
 
   if (base::EndsWith(result, ", "))

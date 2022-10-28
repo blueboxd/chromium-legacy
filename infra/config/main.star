@@ -1,5 +1,5 @@
 #!/usr/bin/env lucicfg
-# Copyright 2020 The Chromium Authors. All rights reserved.
+# Copyright 2020 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -28,6 +28,7 @@ lucicfg.config(
         "luci/commit-queue.cfg",
         "luci/chops-weetbix.cfg",
         "luci/cr-buildbucket.cfg",
+        "luci/luci-analysis.cfg",
         "luci/luci-logdog.cfg",
         "luci/luci-milo.cfg",
         "luci/luci-notify.cfg",
@@ -58,8 +59,14 @@ lucicfg.emit(
     data = io.read_file("tricium-prod.cfg"),
 )
 
-# Weetbix configuration is also copied verbatim to generated
-# outputs.
+# Just copy LUCI Analysis config to generated outputs.
+lucicfg.emit(
+    dest = "luci/luci-analysis.cfg",
+    data = io.read_file("luci-analysis.cfg"),
+)
+
+# TODO(b/243488110): Delete when Weetbix renaming to
+# LUCI Analysis complete.
 lucicfg.emit(
     dest = "luci/chops-weetbix.cfg",
     data = io.read_file("chops-weetbix.cfg"),
@@ -97,6 +104,22 @@ luci.project(
             roles = "role/configs.validator",
             groups = "project-chromium-try-task-accounts",
         ),
+        # Roles for LUCI Analysis.
+        luci.binding(
+            roles = "role/analysis.reader",
+            groups = "all",
+        ),
+        luci.binding(
+            roles = "role/analysis.queryUser",
+            groups = "authenticated-users",
+        ),
+        luci.binding(
+            roles = "role/analysis.editor",
+            groups = ["project-chromium-committers", "googlers"],
+        ),
+        # Roles for Weetbix.
+        # TODO(b/243488110): Delete when renaming to
+        # LUCI Analysis complete.
         luci.binding(
             roles = "role/weetbix.reader",
             groups = "all",
@@ -107,7 +130,7 @@ luci.project(
         ),
         luci.binding(
             roles = "role/weetbix.editor",
-            groups = "project-chromium-committers",
+            groups = ["project-chromium-committers", "googlers"],
         ),
     ],
 )

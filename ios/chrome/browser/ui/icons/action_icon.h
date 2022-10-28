@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -30,5 +30,7 @@ extern NSString* const kFindInPageActionSymbol;
 extern NSString* const kZoomTextActionSymbol;
 extern NSString* const kSaveImageActionSymbol;
 extern NSString* const kOpenImageActionSymbol;
+extern NSString* const kQRCodeSymbol;
+extern NSString* const kPrinterSymbol;
 
 #endif  // IOS_CHROME_BROWSER_UI_ICONS_ACTION_ICON_H_

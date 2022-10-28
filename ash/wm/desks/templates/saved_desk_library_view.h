@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,7 +9,6 @@
 #include <string>
 #include <vector>
 
-#include "ash/wm/desks/templates/saved_desk_feedback_button.h"
 #include "base/guid.h"
 #include "ui/aura/window_observer.h"
 #include "ui/base/metadata/metadata_header_macros.h"
@@ -48,8 +47,6 @@ class SavedDeskLibraryView : public views::View, public aura::WindowObserver {
 
   const std::vector<SavedDeskGridView*>& grid_views() { return grid_views_; }
 
-  FeedbackButton* feedback_button() { return feedback_button_; }
-
   // Retrieve the item view for a given saved desk, or nullptr.
   SavedDeskItemView* GetItemForUUID(const base::GUID& uuid);
 
@@ -64,7 +61,7 @@ class SavedDeskLibraryView : public views::View, public aura::WindowObserver {
 
   // Delete all templates identified by `uuids`. If `delete_animation` is false,
   // then the respective item views will just disappear instead of fading out.
-  void DeleteTemplates(const std::vector<std::string>& uuids,
+  void DeleteTemplates(const std::vector<base::GUID>& uuids,
                        bool delete_animation);
 
   // This performs the launch animation for Save & Recall. The `DeskItemView`
@@ -78,15 +75,10 @@ class SavedDeskLibraryView : public views::View, public aura::WindowObserver {
   friend class SavedDeskLibraryViewTestApi;
   friend class SavedDeskLibraryWindowTargeter;
 
-  // Called when the feedback button is pressed. Shows the feedback dialog with
-  // desks templates information.
-  void OnFeedbackButtonPressed();
-
   bool IsAnimating();
 
   // Called from `SavedDeskLibraryWindowTargeter`. Returns true if
   // `screen_location` intersects with an interactive part of the library UI.
-  // This includes saved desk items and the feedback button.
   bool IntersectsWithUi(const gfx::Point& screen_location);
 
   // If this view is attached to a widget, returns its window (or nullptr).
@@ -129,10 +121,6 @@ class SavedDeskLibraryView : public views::View, public aura::WindowObserver {
   // Owned by views hierarchy. Section headers above grids. Will match size and
   // order of items in `grid_views_`.
   std::vector<views::Label*> grid_labels_;
-
-  // Owned by views hierarchy. Temporary button to help users give feedback.
-  // TODO(crbug.com/1289880): Remove this button when it is no longer needed.
-  FeedbackButton* feedback_button_ = nullptr;
 
   // Label that shows up when the library has no items.
   views::Label* no_items_label_ = nullptr;

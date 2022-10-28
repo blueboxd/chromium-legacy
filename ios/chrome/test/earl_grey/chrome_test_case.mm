@@ -1,4 +1,4 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,13 +6,12 @@
 
 #import <objc/runtime.h>
 
-#include <memory>
+#import <memory>
 
-#include "base/command_line.h"
-#include "base/ios/ios_util.h"
-#include "base/strings/sys_string_conversions.h"
+#import "base/command_line.h"
+#import "base/ios/ios_util.h"
+#import "base/strings/sys_string_conversions.h"
 #import "base/test/ios/wait_util.h"
-#import "ios/chrome/browser/ui/ntp/new_tab_page_feature.h"
 #import "ios/chrome/browser/web/features.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_app_interface.h"
@@ -23,8 +22,8 @@
 #import "ios/testing/earl_grey/earl_grey_test.h"
 #import "ios/third_party/edo/src/Service/Sources/EDOClientService.h"
 #import "ios/web/common/features.h"
-#include "net/test/embedded_test_server/default_handlers.h"
-#include "net/test/embedded_test_server/embedded_test_server.h"
+#import "net/test/embedded_test_server/default_handlers.h"
+#import "net/test/embedded_test_server/embedded_test_server.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -105,8 +104,8 @@ bool IsAppInAllowedCrashState() {
 }
 
 bool IsMockAuthenticationSetUp() {
-  // |SetUpMockAuthentication| enables the fake sync server so checking
-  // |isFakeSyncServerSetUp| here is sufficient to determine mock authentication
+  // `SetUpMockAuthentication` enables the fake sync server so checking
+  // `isFakeSyncServerSetUp` here is sufficient to determine mock authentication
   // state.
   return [ChromeEarlGreyAppInterface isFakeSyncServerSetUp];
 }
@@ -184,13 +183,6 @@ void ResetAuthentication() {
   [super tearDown];
   gExecutedSetUpForTestCase = false;
   gStartupTest = false;
-}
-
-// TODO(crbug.com/1369142): Remove this entire method when the issue is fixed.
-- (AppLaunchConfiguration)appConfigurationForTestCase {
-  AppLaunchConfiguration config = [super appConfigurationForTestCase];
-  config.features_disabled.push_back(kDisableFeediOS14);
-  return config;
 }
 
 - (net::EmbeddedTestServer*)testServer {
@@ -275,7 +267,7 @@ void ResetAuthentication() {
 #pragma mark - Public methods
 
 - (void)setTearDownHandler:(ProceduralBlock)tearDownHandler {
-  // Enforce that only one |_tearDownHandler| is set per test.
+  // Enforce that only one `_tearDownHandler` is set per test.
   DCHECK(!_tearDownHandler);
   _tearDownHandler = [tearDownHandler copy];
 }
@@ -419,8 +411,8 @@ void ResetAuthentication() {
   // Enforce the assumption that the tests are runing in portrait.
   [EarlGrey rotateDeviceToOrientation:UIDeviceOrientationPortrait error:nil];
 
-  // Clear multiwindow root and any extra windows. Once in |setUpForTestCase|
-  // (in case of crashes) and on every |tearDown|.
+  // Clear multiwindow root and any extra windows. Once in `setUpForTestCase`
+  // (in case of crashes) and on every `tearDown`.
   [ChromeEarlGrey closeAllExtraWindows];
   [EarlGrey setRootMatcherForSubsequentInteractions:nil];
 }

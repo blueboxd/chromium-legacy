@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -264,6 +264,20 @@ FacetURI::FacetURI(const std::string& canonical_spec, bool is_valid)
   url::ParseStandardURL(canonical_spec_.c_str(), canonical_spec_.size(),
                         &parsed_);
 }
+
+// GroupedFacets
+
+GroupedFacets::GroupedFacets() = default;
+
+GroupedFacets::~GroupedFacets() = default;
+
+GroupedFacets::GroupedFacets(const GroupedFacets& other) = default;
+
+GroupedFacets::GroupedFacets(GroupedFacets&& other) = default;
+
+GroupedFacets& GroupedFacets::operator=(const GroupedFacets& other) = default;
+
+GroupedFacets& GroupedFacets::operator=(GroupedFacets&& other) = default;
 
 // AffiliatedFacetsWithUpdateTime ---------------------------------------------
 

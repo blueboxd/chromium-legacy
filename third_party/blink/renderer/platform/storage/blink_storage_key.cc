@@ -6,7 +6,7 @@
 
 #include <ostream>
 
-#include "base/stl_util.h"
+#include "base/types/optional_util.h"
 #include "third_party/blink/public/common/storage_key/storage_key.h"
 #include "third_party/blink/public/mojom/storage_key/ancestor_chain_bit.mojom-blink.h"
 #include "third_party/blink/renderer/platform/network/blink_schemeful_site.h"
@@ -40,32 +40,20 @@ BlinkStorageKey::BlinkStorageKey(scoped_refptr<const SecurityOrigin> origin,
                       nonce,
                       mojom::blink::AncestorChainBit::kSameSite) {}
 
-// TODO(https://crbug.com/1287130): Correctly infer the actual ancestor chain
-// bit value, add a parameter, or use this only in testing environments.
-BlinkStorageKey::BlinkStorageKey(scoped_refptr<const SecurityOrigin> origin,
-                                 const BlinkSchemefulSite& top_level_site,
-                                 const base::UnguessableToken* nonce)
-    : BlinkStorageKey(std::move(origin),
-                      top_level_site,
-                      nonce,
-                      mojom::blink::AncestorChainBit::kSameSite) {}
-
 BlinkStorageKey::BlinkStorageKey(
     scoped_refptr<const SecurityOrigin> origin,
     const BlinkSchemefulSite& top_level_site,
     const base::UnguessableToken* nonce,
     mojom::blink::AncestorChainBit ancestor_chain_bit)
     : origin_(origin),
-      top_level_site_(
-          blink::StorageKey::IsThirdPartyStoragePartitioningEnabled()
-              ? top_level_site
-              : BlinkSchemefulSite(origin)),
+      top_level_site_(StorageKey::IsThirdPartyStoragePartitioningEnabled()
+                          ? top_level_site
+                          : BlinkSchemefulSite(origin)),
       top_level_site_if_third_party_enabled_(top_level_site),
       nonce_(nonce ? absl::make_optional(*nonce) : absl::nullopt),
-      ancestor_chain_bit_(
-          blink::StorageKey::IsThirdPartyStoragePartitioningEnabled()
-              ? ancestor_chain_bit
-              : mojom::blink::AncestorChainBit::kSameSite),
+      ancestor_chain_bit_(StorageKey::IsThirdPartyStoragePartitioningEnabled()
+                              ? ancestor_chain_bit
+                              : mojom::blink::AncestorChainBit::kSameSite),
       ancestor_chain_bit_if_third_party_enabled_(ancestor_chain_bit) {
   DCHECK(origin_);
 }
@@ -110,8 +98,7 @@ BlinkStorageKey::operator StorageKey() const {
   return StorageKey::CreateWithOptionalNonce(
       origin_->ToUrlOrigin(),
       static_cast<net::SchemefulSite>(top_level_site_if_third_party_enabled_),
-      base::OptionalOrNullptr(nonce_),
-      ancestor_chain_bit_if_third_party_enabled_);
+      base::OptionalToPtr(nonce_), ancestor_chain_bit_if_third_party_enabled_);
 }
 
 String BlinkStorageKey::ToDebugString() const {

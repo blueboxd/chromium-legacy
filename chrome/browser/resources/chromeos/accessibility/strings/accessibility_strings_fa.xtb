@@ -138,9 +138,9 @@
 <translation id="1812527064848182527">منظره</translation>
 <translation id="1829244130665387512">یافتن در صفحه</translation>
 <translation id="1834891354138622109">ستون</translation>
-<translation id="1845944666972354496">برای فعال کردن دو ضربه سریع بزنید</translation>
 <translation id="1846771122725914429">نمایشگر بریل بلوتوث</translation>
 <translation id="1852018405765032699">‏.اگر با چهار انگشت روی صفحه ضربه بزنید، می‌توانید منوهای ChromeVox را باز و بسته کنید. این منوها حاوی اطلاعات مفیدی درباره فرمان‌ها و میان‌برها هستند. وقتی منوها را باز می‌کنید، می‌توانید یک انگشتتان را تند روی صفحه بکشید تا بین موارد پیمایش کنید و برای فعال‌سازی موارد، دو ضربه بزنید. برای ادامه، با چهار انگشت روی صفحه ضربه بزنید.</translation>
+<translation id="1864430479908918647">‏کلید Search+Space را فشار دهد</translation>
 <translation id="1865601187525349519">پایان نوشتار</translation>
 <translation id="1876229593313240038">doc</translation>
 <translation id="1902396333223336119">سلول</translation>
@@ -246,7 +246,7 @@
 <translation id="2654172656519784359">یک واژه به جلو بروید</translation>
 <translation id="2661530546602071611">اطلاعیه</translation>
 <translation id="2673280813984708147">درحال ویرایش</translation>
-<translation id="267442004702508783">بازآوری</translation>
+<translation id="267442004702508783">بازخوانی</translation>
 <translation id="2675533876313964202">سبز فسفری</translation>
 <translation id="2684412629217766642">‏بستن برنامه آموزشی ChromeVox</translation>
 <translation id="2692503699962701720">تغییر زیروبمی صدا هنگام خوانده شدن انواع عناصر و نوشتار قالب‌بندی‌شده</translation>
@@ -529,6 +529,7 @@
 <translation id="4479068155583208887">آجری</translation>
 <translation id="4482330759234983253">جدول قبلی</translation>
 <translation id="4491109536499578614">تصویر</translation>
+<translation id="4507332368061453500">کلیک طولانی روی مورد فعلی</translation>
 <translation id="4511186779140817916">کاهگلی</translation>
 <translation id="451510441928265982">عنوان سطح ۲ قبلی وجود ندارد</translation>
 <translation id="4515799157838123044">تار کردن محتوای پس‌زمینه</translation>
@@ -597,7 +598,6 @@
 <translation id="4993152509206108683">نرخ <ph name="PERCENT" /> درصد</translation>
 <translation id="4994420463726586413">اعلام وضعیت فعلی باتری</translation>
 <translation id="4997282455736854877"><ph name="NAME" />، دکمه رادیویی انتخاب شد</translation>
-<translation id="5011664330025416377">‏«Search+Space» (جستجو+فاصله) را برای فعال کردن فشار دهید</translation>
 <translation id="5012724933919010465"><ph name="NAME" />، دکمه رادیویی گزینه منو انتخاب شد</translation>
 <translation id="5020651427400641814">فعال کردن گزارش‌گیری از گفتار</translation>
 <translation id="5041394372352067729">انتقال نمایشگر بریل به بالای صفحه</translation>
@@ -762,6 +762,7 @@
 <translation id="6100239002225743044">یک خط به بالا بروید</translation>
 <translation id="6118126368611144850">‏برنامه‌های Android برای Chrome. اگر در دستگاهتان «فروشگاه Play» دارید، پیش‌نمایش استفاده از ChromeVox با برنامه‌های Android را ببینید. با بارگیری Google Chrome Canary از «فروشگاه Play»، پشتیبانی آزمایشی را امتحان کنید.</translation>
 <translation id="611827076493383239">vtd</translation>
+<translation id="6119846243427417423">فعالسازی</translation>
 <translation id="6122013438240733403">btn</translation>
 <translation id="6132506484792346370">کادر فهرست یا کادر ترکیبی</translation>
 <translation id="613344593214611552">جمله قبلی را حذف کن</translation>
@@ -778,6 +779,7 @@
 <translation id="6236061028292614533">عنوان بعدی</translation>
 <translation id="6254901459154107917">کادر نوشتار قابل‌ویرایش بعدی</translation>
 <translation id="6259464875943891919">از <ph name="TYPE" /> خارج شدید.</translation>
+<translation id="6280088282605782512">دوضربه بزنید</translation>
 <translation id="6282062888058716985">nav</translation>
 <translation id="6295699829709583154">کلیدهای ضروری: «جستجو»</translation>
 <translation id="6305702903308659374">‏پخش با صدایی معمولی حتی اگر ChromeVox درحال صحبت کردن باشد</translation>
@@ -981,6 +983,7 @@
 <translation id="7731785449856576010">ابزارک رسانه بعدی وجود ندارد</translation>
 <translation id="7735498529470878067">کاوش با لمس به شما کمک می‌کند به‌سرعت از آنچه روی صفحه است اطلاعاتی به‌دست آورید.</translation>
 <translation id="773906353055481349">‏برای پیمایش سلول‌به‌سلول، «Search+Ctrl+Alt» را به‌همراه پیکان‌ها فشار دهید</translation>
+<translation id="7746976083433980639"><ph name="ACTION" /> برای <ph name="LABEL" /></translation>
 <translation id="7763537600611320912">بارگیری <ph name="FILE_NAME" /> شروع شد</translation>
 <translation id="7768784765476638775">انتخاب برای شنیدن</translation>
 <translation id="7776293189010177726">‏باز کردن منوهای ChromeVox</translation>

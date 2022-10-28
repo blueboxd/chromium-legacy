@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -37,6 +37,15 @@ class MockWebRtcDependencies : public network::mojom::P2PSocketManager,
       (const std::string& host_name,
        bool enable_mdns,
        network::mojom::P2PSocketManager::GetHostAddressCallback callback),
+      (override));
+  MOCK_METHOD(
+      void,
+      GetHostAddressWithFamily,
+      (const std::string& host_name,
+       int address_family,
+       bool enable_mdns,
+       network::mojom::P2PSocketManager::GetHostAddressWithFamilyCallback
+           callback),
       (override));
   MOCK_METHOD(void,
               CreateSocket,

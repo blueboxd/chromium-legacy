@@ -1,4 +1,4 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -281,7 +281,7 @@ IN_PROC_BROWSER_TEST_F(BrowserActionInteractiveTest, DISABLED_TestOpenPopup) {
   }
 
   EXPECT_TRUE(listener.WaitUntilSatisfied());
-  Browser* new_browser = NULL;
+  Browser* new_browser = nullptr;
   {
     content::WindowedNotificationObserver frame_observer(
         content::NOTIFICATION_LOAD_COMPLETED_MAIN_FRAME,
@@ -298,7 +298,7 @@ IN_PROC_BROWSER_TEST_F(BrowserActionInteractiveTest, DISABLED_TestOpenPopup) {
     frame_observer.Wait();
   }
 
-  EXPECT_TRUE(new_browser != NULL);
+  EXPECT_TRUE(new_browser != nullptr);
 
   ResultCatcher catcher;
   {

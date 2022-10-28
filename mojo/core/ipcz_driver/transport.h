@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,13 +9,16 @@
 #include <cstdint>
 #include <utility>
 
+#include "base/check.h"
 #include "base/containers/span.h"
 #include "base/memory/scoped_refptr.h"
+#include "base/process/process.h"
 #include "base/synchronization/lock.h"
 #include "base/task/single_thread_task_runner.h"
 #include "mojo/core/channel.h"
 #include "mojo/core/ipcz_driver/object.h"
 #include "mojo/core/system_impl_export.h"
+#include "mojo/public/c/system/invitation.h"
 #include "mojo/public/cpp/platform/platform_channel_endpoint.h"
 #include "mojo/public/cpp/platform/platform_handle.h"
 #include "third_party/ipcz/include/ipcz/ipcz.h"
@@ -34,16 +37,48 @@ class MOJO_SYSTEM_IMPL_EXPORT Transport : public Object<Transport>,
   };
 
   Transport(Destination destination,
-            PlatformChannelEndpoint endpoint,
+            Channel::Endpoint endpoint,
             base::Process remote_process = base::Process());
 
   static std::pair<scoped_refptr<Transport>, scoped_refptr<Transport>>
   CreatePair(Destination first_destination, Destination second_destination);
 
+  // Accessors for a global TaskRunner to use for Transport I/O.
+  static void SetIOTaskRunner(
+      scoped_refptr<base::SingleThreadTaskRunner> runner);
+  static const scoped_refptr<base::SingleThreadTaskRunner>& GetIOTaskRunner();
+
   static constexpr Type object_type() { return kTransport; }
 
   Destination destination() const { return destination_; }
   const base::Process& remote_process() const { return remote_process_; }
+
+  // Provides a handle to the remote process on the other end of this transport.
+  // If this is called, it must be before the Transport is activated.
+  void set_remote_process(base::Process process) {
+    DCHECK(!remote_process_.IsValid());
+    remote_process_ = std::move(process);
+  }
+
+  void set_leak_channel_on_shutdown(bool leak) {
+    leak_channel_on_shutdown_ = leak;
+  }
+
+  void SetErrorHandler(MojoProcessErrorHandler handler, uintptr_t context) {
+    error_handler_ = handler;
+    error_handler_context_ = context;
+  }
+
+  // Takes ownership of the Transport's underlying channel endpoint, effectively
+  // invalidating the transport. May only be called on a Transport which has not
+  // yet been activated, and only when the channel endpoint is not a server.
+  PlatformChannelEndpoint TakeEndpoint() {
+    return std::move(absl::get<PlatformChannelEndpoint>(inactive_endpoint_));
+  }
+
+  // Handles reports of bad activity from ipcz, resulting from parcel rejection
+  // by the application.
+  void ReportBadActivity(const std::string& error_message);
 
   // Activates this transport by creating and starting the underlying Channel
   // instance.
@@ -88,6 +123,7 @@ class MOJO_SYSTEM_IMPL_EXPORT Transport : public Object<Transport>,
                  base::span<PlatformHandle> handles) override;
 
   static scoped_refptr<Transport> Deserialize(
+      Transport& from_transport,
       base::span<const uint8_t> data,
       base::span<PlatformHandle> handles);
 
@@ -112,16 +148,27 @@ class MOJO_SYSTEM_IMPL_EXPORT Transport : public Object<Transport>,
 
   ~Transport() override;
 
+  bool IsEndpointValid() const;
   bool CanTransmitHandles() const;
 
+  // Indicates whether this transport should serialize its remote process handle
+  // along with its endpoint handle being serialized for transmission over
+  // `transmitter`. This must only be true if we have a valid remote process
+  // handle and `transmitter` goes to a broker. Always false on non-Windows
+  // platforms.
+  bool ShouldSerializeProcessHandle(Transport& transmitter) const;
+
   const Destination destination_;
-  const base::Process remote_process_;
+  base::Process remote_process_;
+  MojoProcessErrorHandler error_handler_ = nullptr;
+  uintptr_t error_handler_context_ = 0;
+  bool leak_channel_on_shutdown_ = false;
 
   // The channel endpoint which will be used by this Transport to construct and
   // start its underlying Channel instance once activated. Not guarded by a lock
   // since it must not accessed beyond activation, where thread safety becomes a
   // factor.
-  PlatformChannelEndpoint inactive_endpoint_;
+  Channel::Endpoint inactive_endpoint_;
 
   base::Lock lock_;
   scoped_refptr<Channel> channel_ GUARDED_BY(lock_);

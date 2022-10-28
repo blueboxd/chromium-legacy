@@ -1,14 +1,16 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "components/desks_storage/core/desk_template_conversion.h"
 
+#include "base/containers/fixed_flat_set.h"
 #include "base/guid.h"
 #include "base/json/json_reader.h"
 #include "base/json/values_util.h"
 #include "base/notreached.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_piece.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "components/app_constants/constants.h"
@@ -112,37 +114,33 @@ constexpr char kWindowStateSecondarySnapped[] = "SECONDARY_SNAPPED";
 constexpr char kZIndex[] = "z_index";
 
 // Valid value sets.
-const std::set<std::string> kValidDeskTypes = {kDeskTypeTemplate,
-                                               kDeskTypeSaveAndRecall};
-const std::set<std::string> kValidLaunchContainers = {
-    kLaunchContainerWindow, kLaunchContainerPanelDeprecated,
-    kLaunchContainerTab, kLaunchContainerNone, kLaunchContainerUnspecified};
-const std::set<std::string> kValidWindowOpenDispositions = {
-    kWindowOpenDispositionUnknown,
-    kWindowOpenDispositionCurrentTab,
-    kWindowOpenDispositionSingletonTab,
-    kWindowOpenDispositionNewForegroundTab,
-    kWindowOpenDispositionNewBackgroundTab,
-    kWindowOpenDispositionNewPopup,
-    kWindowOpenDispositionNewWindow,
-    kWindowOpenDispositionSaveToDisk,
-    kWindowOpenDispositionOffTheRecord,
-    kWindowOpenDispositionIgnoreAction,
-    kWindowOpenDispositionSwitchToTab,
-    kWindowOpenDispositionNewPictureInPicture};
-const std::set<std::string> kValidWindowStates = {kWindowStateNormal,
-                                                  kWindowStateMinimized,
-                                                  kWindowStateMaximized,
-                                                  kWindowStateFullscreen,
-                                                  kWindowStatePrimarySnapped,
-                                                  kWindowStateSecondarySnapped,
-                                                  kZIndex};
-const std::set<std::string> kValidTabGroupColors = {
-    app_restore::kTabGroupColorUnknown, app_restore::kTabGroupColorGrey,
-    app_restore::kTabGroupColorBlue,    app_restore::kTabGroupColorRed,
-    app_restore::kTabGroupColorYellow,  app_restore::kTabGroupColorGreen,
-    app_restore::kTabGroupColorPink,    app_restore::kTabGroupColorPurple,
-    app_restore::kTabGroupColorCyan,    app_restore::kTabGroupColorOrange};
+constexpr auto kValidDeskTypes = base::MakeFixedFlatSet<base::StringPiece>(
+    {kDeskTypeTemplate, kDeskTypeSaveAndRecall});
+constexpr auto kValidLaunchContainers =
+    base::MakeFixedFlatSet<base::StringPiece>(
+        {kLaunchContainerWindow, kLaunchContainerPanelDeprecated,
+         kLaunchContainerTab, kLaunchContainerNone,
+         kLaunchContainerUnspecified});
+constexpr auto kValidWindowOpenDispositions =
+    base::MakeFixedFlatSet<base::StringPiece>(
+        {kWindowOpenDispositionUnknown, kWindowOpenDispositionCurrentTab,
+         kWindowOpenDispositionSingletonTab,
+         kWindowOpenDispositionNewForegroundTab,
+         kWindowOpenDispositionNewBackgroundTab, kWindowOpenDispositionNewPopup,
+         kWindowOpenDispositionNewWindow, kWindowOpenDispositionSaveToDisk,
+         kWindowOpenDispositionOffTheRecord, kWindowOpenDispositionIgnoreAction,
+         kWindowOpenDispositionSwitchToTab,
+         kWindowOpenDispositionNewPictureInPicture});
+constexpr auto kValidWindowStates = base::MakeFixedFlatSet<base::StringPiece>(
+    {kWindowStateNormal, kWindowStateMinimized, kWindowStateMaximized,
+     kWindowStateFullscreen, kWindowStatePrimarySnapped,
+     kWindowStateSecondarySnapped, kZIndex});
+constexpr auto kValidTabGroupColors = base::MakeFixedFlatSet<base::StringPiece>(
+    {app_restore::kTabGroupColorUnknown, app_restore::kTabGroupColorGrey,
+     app_restore::kTabGroupColorBlue, app_restore::kTabGroupColorRed,
+     app_restore::kTabGroupColorYellow, app_restore::kTabGroupColorGreen,
+     app_restore::kTabGroupColorPink, app_restore::kTabGroupColorPurple,
+     app_restore::kTabGroupColorCyan, app_restore::kTabGroupColorOrange});
 
 // Version number.
 constexpr int kVersionNum = 1;
@@ -782,10 +780,8 @@ base::Value ConvertURLsToBrowserAppTabValues(const std::vector<GURL>& urls) {
 
 std::string GetAppTypeForJson(apps::AppRegistryCache* apps_cache,
                               const std::string& app_id) {
-  const auto app_type = apps_cache->GetAppType(app_id);
-
   // This switch should follow the same structure as DeskSyncBridge#FillApp.
-  switch (app_type) {
+  switch (apps_cache->GetAppType(app_id)) {
     case apps::AppType::kWeb:
     case apps::AppType::kSystemWeb:
       return kAppTypeChrome;

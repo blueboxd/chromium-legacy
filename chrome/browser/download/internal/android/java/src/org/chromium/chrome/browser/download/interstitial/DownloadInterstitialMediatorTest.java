@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -28,7 +28,6 @@ import org.mockito.MockitoAnnotations;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.download.home.StubbedOfflineContentProvider;
 import org.chromium.chrome.browser.download.home.list.ListProperties;
-import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 import org.chromium.chrome.browser.ui.messages.snackbar.Snackbar;
 import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager;
 import org.chromium.components.offline_items_collection.ContentId;
@@ -36,7 +35,9 @@ import org.chromium.components.offline_items_collection.OfflineItem;
 import org.chromium.components.offline_items_collection.OfflineItemProgressUnit;
 import org.chromium.components.offline_items_collection.OfflineItemState;
 import org.chromium.components.offline_items_collection.OpenParams;
+import org.chromium.ui.modaldialog.ModalDialogManager.ModalDialogType;
 import org.chromium.ui.modelutil.PropertyModel;
+import org.chromium.ui.test.util.modaldialog.FakeModalDialogManager;
 import org.chromium.url.JUnitTestGURLs;
 
 /**
@@ -55,6 +56,7 @@ public class DownloadInterstitialMediatorTest {
     private SnackbarManager mSnackbarManager;
 
     private final TestOfflineContentProvider mProvider = new TestOfflineContentProvider();
+    private FakeModalDialogManager mModalDialogManager;
     private DownloadInterstitialMediator mMediator;
     private PropertyModel mModel;
     private OfflineItem mItem0;
@@ -68,17 +70,16 @@ public class DownloadInterstitialMediatorTest {
         doAnswer((invocation) -> mSnackbarShown = true)
                 .when(mSnackbarManager)
                 .showSnackbar(isA(Snackbar.class));
-        SharedPreferencesManager sharedPrefsManager = SharedPreferencesManager.getInstance();
-        sharedPrefsManager.disableKeyCheckerForTesting();
+        mModalDialogManager = new FakeModalDialogManager(ModalDialogType.APP);
         mItem0 = createOfflineItem("item0");
         mModel = new PropertyModel.Builder(DownloadInterstitialProperties.ALL_KEYS).build();
         // Set the initial button texts. This is usually done in DownloadInterstitialView.
         mModel.set(DownloadInterstitialProperties.PRIMARY_BUTTON_TEXT, "");
         mModel.set(DownloadInterstitialProperties.SECONDARY_BUTTON_TEXT, CANCEL_BUTTON_TEXT);
+        mModel.set(DownloadInterstitialProperties.RELOAD_TAB, this::reloadTab);
         mProvider.addItem(mItem0);
         mMediator = new DownloadInterstitialMediator(InstrumentationRegistry::getContext, mModel,
-                mItem0.originalUrl.getSpec(), mProvider, mSnackbarManager, sharedPrefsManager,
-                () -> { mMediator = null; });
+                mItem0.originalUrl.getSpec(), mProvider, mSnackbarManager, mModalDialogManager);
         // Increment progress to trigger onItemUpdated method for OfflineContentProvider observers.
         // This attaches the OfflineItem to the mediator.
         mProvider.incrementProgress(mItem0.id);
@@ -112,8 +113,7 @@ public class DownloadInterstitialMediatorTest {
         mProvider.setObserver(null);
         mModel.set(DOWNLOAD_ITEM, null);
         mMediator = new DownloadInterstitialMediator(InstrumentationRegistry::getContext, mModel,
-                item1.originalUrl.getSpec(), mProvider, mSnackbarManager,
-                SharedPreferencesManager.getInstance(), () -> { mMediator = null; });
+                item1.originalUrl.getSpec(), mProvider, mSnackbarManager, mModalDialogManager);
         mProvider.incrementProgress(mItem0.id);
         mProvider.addItem(item1);
         mProvider.incrementProgress(item1.id);
@@ -127,7 +127,7 @@ public class DownloadInterstitialMediatorTest {
         assertEquals(OfflineItemState.IN_PROGRESS, mModel.get(DOWNLOAD_ITEM).state);
         clickButtonWithText(CANCEL_BUTTON_TEXT);
 
-        assertEquals(DownloadInterstitialProperties.State.PENDING_REMOVAL, mModel.get(STATE));
+        assertEquals(DownloadInterstitialProperties.State.CANCELLED, mModel.get(STATE));
         assertNotEquals(OfflineItemState.IN_PROGRESS, mModel.get(DOWNLOAD_ITEM).state);
     }
 
@@ -138,6 +138,10 @@ public class DownloadInterstitialMediatorTest {
         assertEquals(OfflineItemState.IN_PROGRESS, mModel.get(DOWNLOAD_ITEM).state);
         clickButtonWithText(CANCEL_BUTTON_TEXT);
         clickButtonWithText(DOWNLOAD_BUTTON_TEXT);
+
+        assertEquals(DownloadInterstitialProperties.State.PENDING, mModel.get(STATE));
+        // Increment the reloaded item to move to in progress state.
+        mProvider.incrementProgress(new ContentId("test", "reloaded-item"));
 
         assertEquals(DownloadInterstitialProperties.State.IN_PROGRESS, mModel.get(STATE));
         assertEquals(OfflineItemState.IN_PROGRESS, mModel.get(DOWNLOAD_ITEM).state);
@@ -169,10 +173,9 @@ public class DownloadInterstitialMediatorTest {
     @Test
     @SmallTest
     @Feature({"NewDownloadTab"})
-    public void testCancelledDownloadIsDeletedAfterClose() {
+    public void testCancelledDownloadIsDeletedImmediately() {
         assertEquals(OfflineItemState.IN_PROGRESS, mModel.get(DOWNLOAD_ITEM).state);
         clickButtonWithText(CANCEL_BUTTON_TEXT);
-        mMediator.destroy();
 
         assertFalse(mProvider.getItems().contains(mModel.get(DOWNLOAD_ITEM)));
     }
@@ -195,9 +198,22 @@ public class DownloadInterstitialMediatorTest {
         mProvider.completeDownload(mModel.get(DOWNLOAD_ITEM).id);
         assertEquals(OfflineItemState.COMPLETE, mModel.get(DOWNLOAD_ITEM).state);
         clickButtonWithText(DELETE_BUTTON_TEXT);
+        mModalDialogManager.clickPositiveButton();
 
         assertTrue(mSnackbarShown);
-        assertEquals(DownloadInterstitialProperties.State.PENDING_REMOVAL, mModel.get(STATE));
+        assertEquals(DownloadInterstitialProperties.State.CANCELLED, mModel.get(STATE));
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"NewDownloadTab"})
+    public void testCancelDeleteDialogKeepsDownload() {
+        mProvider.completeDownload(mModel.get(DOWNLOAD_ITEM).id);
+        assertEquals(OfflineItemState.COMPLETE, mModel.get(DOWNLOAD_ITEM).state);
+        clickButtonWithText(DELETE_BUTTON_TEXT);
+        mModalDialogManager.clickNegativeButton();
+
+        assertEquals(DownloadInterstitialProperties.State.SUCCESSFUL, mModel.get(STATE));
     }
 
     @Test
@@ -207,20 +223,26 @@ public class DownloadInterstitialMediatorTest {
         mProvider.completeDownload(mModel.get(DOWNLOAD_ITEM).id);
         assertEquals(OfflineItemState.COMPLETE, mModel.get(DOWNLOAD_ITEM).state);
         clickButtonWithText(DELETE_BUTTON_TEXT);
+        mModalDialogManager.clickPositiveButton();
         clickButtonWithText(DOWNLOAD_BUTTON_TEXT);
 
-        assertEquals(DownloadInterstitialProperties.State.SUCCESSFUL, mModel.get(STATE));
+        assertEquals(DownloadInterstitialProperties.State.PENDING, mModel.get(STATE));
+        // Increment the reloaded item to move to in progress state.
+        mProvider.incrementProgress(new ContentId("test", "reloaded-item"));
+        assertEquals(DownloadInterstitialProperties.State.IN_PROGRESS, mModel.get(STATE));
+
+        assertEquals(1, mProvider.getItems().size());
         assertTrue(mProvider.getItems().contains(mModel.get(DOWNLOAD_ITEM)));
     }
 
     @Test
     @SmallTest
     @Feature({"NewDownloadTab"})
-    public void testDeletedDownloadIsRemovedAfterClose() {
+    public void testDeletedDownloadIsRemovedImmediately() {
         mProvider.completeDownload(mModel.get(DOWNLOAD_ITEM).id);
         assertEquals(OfflineItemState.COMPLETE, mModel.get(DOWNLOAD_ITEM).state);
         clickButtonWithText(DELETE_BUTTON_TEXT);
-        mMediator.destroy();
+        mModalDialogManager.clickPositiveButton();
 
         assertFalse(mProvider.getItems().contains(mModel.get(DOWNLOAD_ITEM)));
     }
@@ -233,6 +255,12 @@ public class DownloadInterstitialMediatorTest {
             mModel.get(DownloadInterstitialProperties.SECONDARY_BUTTON_CALLBACK)
                     .onResult(mModel.get(DOWNLOAD_ITEM));
         }
+    }
+
+    private void reloadTab() {
+        OfflineItem item = createOfflineItem("reloaded-item");
+        mProvider.addItem(item);
+        mProvider.incrementProgress(item.id);
     }
 
     private static OfflineItem createOfflineItem(String id) {
@@ -299,7 +327,7 @@ public class DownloadInterstitialMediatorTest {
         public void cancelDownload(ContentId id) {
             findItem(id).state = OfflineItemState.CANCELLED;
             removeItem(id);
-            notifyObservers(id);
+            notifyObserversOfRemoval(id);
         }
     }
 }

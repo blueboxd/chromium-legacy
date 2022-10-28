@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -47,13 +47,13 @@ namespace {
 
 const ::media::AudioParameters kDefaultAudioParams(
     ::media::AudioParameters::AUDIO_PCM_LOW_LATENCY,
-    ::media::CHANNEL_LAYOUT_STEREO,
+    ::media::ChannelLayoutConfig::Stereo(),
     ::media::AudioParameters::kAudioCDSampleRate,
     256);
 
 const ::media::AudioParameters kAudioParamsInvalidLayout(
     ::media::AudioParameters::AUDIO_PCM_LOW_LATENCY,
-    ::media::CHANNEL_LAYOUT_NONE,
+    ::media::ChannelLayoutConfig::FromLayout<::media::CHANNEL_LAYOUT_NONE>(),
     ::media::AudioParameters::kAudioCDSampleRate,
     256);
 

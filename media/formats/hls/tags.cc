@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,8 +7,10 @@
 #include <cstddef>
 #include <type_traits>
 #include <utility>
+
 #include "base/notreached.h"
 #include "base/time/time.h"
+#include "media/base/mime_util.h"
 #include "media/formats/hls/items.h"
 #include "media/formats/hls/parse_status.h"
 #include "media/formats/hls/variable_dictionary.h"
@@ -126,6 +128,7 @@ constexpr base::StringPiece GetAttributeName(XMediaTagAttribute attribute) {
 // Attributes expected in `EXT-X-STREAM-INF` tag contents.
 // These must remain sorted alphabetically.
 enum class XStreamInfTagAttribute {
+  kAudio,
   kAverageBandwidth,
   kBandwidth,
   kCodecs,
@@ -138,6 +141,8 @@ enum class XStreamInfTagAttribute {
 
 constexpr base::StringPiece GetAttributeName(XStreamInfTagAttribute attribute) {
   switch (attribute) {
+    case XStreamInfTagAttribute::kAudio:
+      return "AUDIO";
     case XStreamInfTagAttribute::kAverageBandwidth:
       return "AVERAGE-BANDWIDTH";
     case XStreamInfTagAttribute::kBandwidth:
@@ -606,7 +611,7 @@ ParseStatus::Or<XMediaTag> XMediaTag::Parse(
   }
 
   // Parse the 'AUTOSELECT' attribute
-  bool autoselect = false;
+  bool autoselect = is_default;
   if (map.HasValue(XMediaTagAttribute::kAutoselect)) {
     if (map.GetValue(XMediaTagAttribute::kAutoselect).Str() == "YES") {
       autoselect = true;
@@ -788,14 +793,18 @@ ParseStatus::Or<XStreamInfTag> XStreamInfTag::Parse(
 
   // Extract the 'CODECS' attribute
   if (map.HasValue(XStreamInfTagAttribute::kCodecs)) {
-    auto codecs =
+    auto codecs_string =
         types::ParseQuotedString(map.GetValue(XStreamInfTagAttribute::kCodecs),
                                  variable_dict, sub_buffer);
-    if (codecs.has_error()) {
+    if (codecs_string.has_error()) {
       return ParseStatus(ParseStatusCode::kMalformedTag)
-          .AddCause(std::move(codecs).error());
+          .AddCause(std::move(codecs_string).error());
     }
-    out.codecs = std::string{std::move(codecs).value().Str()};
+
+    // Split the list of codecs
+    std::vector<std::string> codecs;
+    SplitCodecs(std::move(codecs_string).value().Str(), &codecs);
+    out.codecs = std::move(codecs);
   }
 
   // Extract the 'RESOLUTION' attribute
@@ -820,6 +829,18 @@ ParseStatus::Or<XStreamInfTag> XStreamInfTag::Parse(
           .AddCause(std::move(frame_rate).error());
     }
     out.frame_rate = std::move(frame_rate).value();
+  }
+
+  // Extract the 'AUDIO' attribute
+  if (map.HasValue(XStreamInfTagAttribute::kAudio)) {
+    auto audio =
+        types::ParseQuotedString(map.GetValue(XStreamInfTagAttribute::kAudio),
+                                 variable_dict, sub_buffer);
+    if (audio.has_error()) {
+      return ParseStatus(ParseStatusCode::kMalformedTag)
+          .AddCause(std::move(audio).error());
+    }
+    out.audio = std::move(audio).value();
   }
 
   return out;

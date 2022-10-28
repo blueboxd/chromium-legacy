@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -188,6 +188,11 @@ void ProcessNodeImpl::SetProcess(base::Process process,
 const base::flat_set<FrameNodeImpl*>& ProcessNodeImpl::frame_nodes() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return frame_nodes_;
+}
+
+const base::flat_set<WorkerNodeImpl*>& ProcessNodeImpl::worker_nodes() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return worker_nodes_;
 }
 
 PageNodeImpl* ProcessNodeImpl::GetPageNodeIfExclusive() const {

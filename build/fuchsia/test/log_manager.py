@@ -1,5 +1,5 @@
 #!/usr/bin/env vpython3
-# Copyright 2022 The Chromium Authors. All rights reserved.
+# Copyright 2022 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 """Reads log data from a device."""
@@ -74,7 +74,9 @@ class LogManager(AbstractContextManager):
         self.stop()
         if self._scoped_ffx_log:
             self._scoped_ffx_log.__exit__(exc_type, exc_value, traceback)
-            run_ffx_command(('daemon', 'stop'))
+
+            # Allow command to fail while ffx team investigates the issue.
+            run_ffx_command(('daemon', 'stop'), check=False)
 
 
 def start_system_log(log_manager: LogManager,

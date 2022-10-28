@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -15,7 +15,7 @@ class SurfaceObserverForTest : public SurfaceObserver {
   SurfaceObserverForTest();
   SurfaceObserverForTest(const SurfaceObserverForTest&) = delete;
   SurfaceObserverForTest& operator=(const SurfaceObserverForTest&) = delete;
-  virtual ~SurfaceObserverForTest();
+  ~SurfaceObserverForTest() override;
 
   // SurfaceObserver overrides
   void OnSurfaceDestroying(Surface* surface) override {}

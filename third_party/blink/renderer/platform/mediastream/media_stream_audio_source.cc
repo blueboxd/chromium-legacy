@@ -76,26 +76,6 @@ MediaStreamAudioSource* MediaStreamAudioSource::From(
   return static_cast<MediaStreamAudioSource*>(source->GetPlatformSource());
 }
 
-bool MediaStreamAudioSource::ConnectToTrack(MediaStreamComponent* component) {
-  DCHECK(GetTaskRunner()->BelongsToCurrentThread());
-  DCHECK(component);
-
-  // Sanity-check that there is not already a MediaStreamAudioTrack instance
-  // associated with |component|.
-  if (MediaStreamAudioTrack::From(component)) {
-    LOG(DFATAL) << "Attempting to connect another source to a "
-                   "WebMediaStreamTrack/MediaStreamComponent.";
-    return false;
-  }
-
-  // Create and initialize a new MediaStreamAudioTrack and pass ownership of it
-  // to the MediaStreamComponent.
-  component->SetPlatformTrack(
-      CreateMediaStreamAudioTrack(component->Id().Utf8()));
-
-  return ConnectToInitializedTrack(component);
-}
-
 bool MediaStreamAudioSource::ConnectToInitializedTrack(
     MediaStreamComponent* component) {
   DCHECK(GetTaskRunner()->BelongsToCurrentThread());
@@ -172,14 +152,6 @@ bool MediaStreamAudioSource::HasSameNonReconfigurableSettings(
   return this_properties->HasSameNonReconfigurableSettings(*others_properties);
 }
 
-void MediaStreamAudioSource::KeepDeviceAliveForTransfer(
-    base::UnguessableToken session_id,
-    base::UnguessableToken transfer_id,
-    KeepDeviceAliveForTransferCallback keep_alive_cb) {
-  GetMediaStreamDispatcherHost()->KeepDeviceAliveForTransfer(
-      session_id, transfer_id, std::move(keep_alive_cb));
-}
-
 void MediaStreamAudioSource::DoChangeSource(
     const MediaStreamDevice& new_device) {
   DCHECK(GetTaskRunner()->BelongsToCurrentThread());
@@ -236,15 +208,6 @@ void MediaStreamAudioSource::DoStopSource() {
   LogMessage(base::StringPrintf("%s()", __func__));
   EnsureSourceIsStopped();
   is_stopped_ = true;
-}
-
-mojom::blink::MediaStreamDispatcherHost*
-MediaStreamAudioSource::GetMediaStreamDispatcherHost() {
-  if (!host_) {
-    Platform::Current()->GetBrowserInterfaceBroker()->GetInterface(
-        host_.BindNewPipeAndPassReceiver());
-  }
-  return host_.get();
 }
 
 void MediaStreamAudioSource::StopAudioDeliveryTo(MediaStreamAudioTrack* track) {

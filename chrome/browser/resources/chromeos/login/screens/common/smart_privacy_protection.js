@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -31,18 +31,6 @@ class SmartPrivacyProtectionScreen extends
 
   static get properties() {
     return {
-      /**
-       * True if snooping protection is enabled.
-       * @private
-       */
-      isSnoopingProtectionEnabled_: {
-        type: Boolean,
-        value() {
-          return loadTimeData.getBoolean('isSnoopingProtectionEnabled');
-        },
-        readOnly: true,
-      },
-
       /**
        * True screen lock is enabled.
        * @private

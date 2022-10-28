@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -423,7 +423,7 @@ IN_PROC_BROWSER_TEST_F(UrlBlockingPolicyTest, FileURLBlocklist) {
 
   PrefService* prefs = browser()->profile()->GetPrefs();
 
-  EXPECT_FALSE(base::Contains(prefs->GetValueList(policy_prefs::kUrlBlocklist),
+  EXPECT_FALSE(base::Contains(prefs->GetList(policy_prefs::kUrlBlocklist),
                               (base::Value("file://*"))));
 
   base::Value::List disabledscheme;
@@ -434,7 +434,7 @@ IN_PROC_BROWSER_TEST_F(UrlBlockingPolicyTest, FileURLBlocklist) {
   UpdateProviderPolicy(policies);
   FlushBlocklistPolicy();
 
-  EXPECT_TRUE(base::Contains(prefs->GetValueList(policy_prefs::kUrlBlocklist),
+  EXPECT_TRUE(base::Contains(prefs->GetList(policy_prefs::kUrlBlocklist),
                              base::Value("file://*")));
 
   // Allowlist one folder and blocklist an another just inside.

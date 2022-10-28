@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -112,7 +112,7 @@ class MEDIA_EXPORT AudioManagerAndroid : public AudioManagerBase {
   int GetOptimalOutputFrameSize(int sample_rate, int channels);
   AudioParameters GetAudioFormatsSupportedBySinkDevice(
       const std::string& output_device_id,
-      ChannelLayout channel_layout,
+      const ChannelLayoutConfig& channel_layout_config,
       int sample_rate,
       int buffer_size);
 

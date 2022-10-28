@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -143,6 +143,7 @@ class OptimizationGuideKeyedService
   friend class optimization_guide::PredictionModelDownloadClient;
   friend class optimization_guide::PredictionManagerBrowserTestBase;
   friend class optimization_guide::android::OptimizationGuideBridge;
+  friend class OptimizationGuideInternalsUI;
 
   // Initializes |this|.
   void Initialize();

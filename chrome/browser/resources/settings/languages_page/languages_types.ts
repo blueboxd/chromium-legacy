@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -56,6 +56,7 @@ export interface LanguagesModel {
   translateTarget: string;
   alwaysTranslate: chrome.languageSettingsPrivate.Language[];
   neverTranslate: chrome.languageSettingsPrivate.Language[];
+  neverTranslateSites: string[];
   spellCheckOnLanguages: SpellCheckLanguageState[];
   spellCheckOffLanguages: SpellCheckLanguageState[];
   // TODO(dpapad): Wrap prospectiveUILanguage with if expr "is_win" block.
@@ -89,9 +90,17 @@ export interface LanguageHelper {
    */
   getArcImeLanguageCode(): string;
 
+  /**
+   * @param language
+   * @return the [displayName] - [nativeDisplayName] if displayName and
+   * nativeDisplayName are different.
+   * If they're the same than only returns the displayName.
+   */
+  getFullName(language: chrome.languageSettingsPrivate.Language): string;
+
   isLanguageCodeForArcIme(languageCode: string): boolean;
 
-  isLanguageTranslatable(language: chrome.languageSettingsPrivate.Language):
+  isTranslateBaseLanguage(language: chrome.languageSettingsPrivate.Language):
       boolean;
   isLanguageEnabled(languageCode: string): boolean;
 
@@ -162,10 +171,15 @@ export interface LanguageHelper {
   convertLanguageCodeForTranslate(languageCode: string): string;
 
   /**
+   * Converts the language code to Chrome format.
+   */
+  convertLanguageCodeForChrome(languageCode: string): string;
+
+  /**
    * Given a language code, returns just the base language. E.g., converts
    * 'en-GB' to 'en'.
    */
-  getLanguageCodeWithoutRegion(languageCode: string): string;
+  getBaseLanguage(languageCode: string): string;
 
   getLanguage(languageCode: string): chrome.languageSettingsPrivate.Language
       |undefined;

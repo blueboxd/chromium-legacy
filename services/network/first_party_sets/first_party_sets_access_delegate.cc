@@ -7,10 +7,10 @@
 #include <utility>
 
 #include "base/metrics/histogram_functions.h"
-#include "base/stl_util.h"
 #include "base/time/time.h"
+#include "base/types/optional_util.h"
 #include "net/base/schemeful_site.h"
-#include "net/cookies/first_party_set_metadata.h"
+#include "net/first_party_sets/first_party_set_metadata.h"
 
 namespace network {
 
@@ -27,7 +27,7 @@ FirstPartySetsAccessDelegate::FirstPartySetsAccessDelegate(
     mojom::FirstPartySetsAccessDelegateParamsPtr params,
     FirstPartySetsManager* const manager)
     : manager_(manager),
-      context_config_(net::FirstPartySetsContextConfig(IsEnabled(params))),
+      enabled_(IsEnabled(params)),
       pending_queries_(
           IsEnabled(params) && receiver.is_valid() && manager_->is_enabled()
               ? std::make_unique<base::circular_deque<base::OnceClosure>>()
@@ -53,7 +53,7 @@ FirstPartySetsAccessDelegate::ComputeMetadata(
     base::OnceCallback<void(net::FirstPartySetMetadata)> callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  if (!context_config_.is_enabled()) {
+  if (!enabled_) {
     return {net::FirstPartySetMetadata()};
   }
   if (pending_queries_) {
@@ -71,14 +71,14 @@ FirstPartySetsAccessDelegate::ComputeMetadata(
                                    context_config_, std::move(callback));
 }
 
-absl::optional<FirstPartySetsAccessDelegate::OwnersResult>
-FirstPartySetsAccessDelegate::FindOwners(
+absl::optional<FirstPartySetsAccessDelegate::EntriesResult>
+FirstPartySetsAccessDelegate::FindEntries(
     const base::flat_set<net::SchemefulSite>& sites,
-    base::OnceCallback<void(FirstPartySetsAccessDelegate::OwnersResult)>
+    base::OnceCallback<void(FirstPartySetsAccessDelegate::EntriesResult)>
         callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  if (!context_config_.is_enabled())
+  if (!enabled_)
     return {{}};
 
   if (pending_queries_) {
@@ -86,12 +86,12 @@ FirstPartySetsAccessDelegate::FindOwners(
     // `pending_queries_` will not run the enqueued callbacks after `this` is
     // destroyed.
     EnqueuePendingQuery(
-        base::BindOnce(&FirstPartySetsAccessDelegate::FindOwnersAndInvoke,
+        base::BindOnce(&FirstPartySetsAccessDelegate::FindEntriesAndInvoke,
                        base::Unretained(this), sites, std::move(callback)));
     return absl::nullopt;
   }
 
-  return manager_->FindOwners(sites, context_config_, std::move(callback));
+  return manager_->FindEntries(sites, context_config_, std::move(callback));
 }
 
 void FirstPartySetsAccessDelegate::ComputeMetadataAndInvoke(
@@ -100,14 +100,14 @@ void FirstPartySetsAccessDelegate::ComputeMetadataAndInvoke(
     const std::set<net::SchemefulSite>& party_context,
     base::OnceCallback<void(net::FirstPartySetMetadata)> callback) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(context_config_.is_enabled());
+  DCHECK(enabled_);
 
   std::pair<base::OnceCallback<void(net::FirstPartySetMetadata)>,
             base::OnceCallback<void(net::FirstPartySetMetadata)>>
       callbacks = base::SplitOnceCallback(std::move(callback));
 
   absl::optional<net::FirstPartySetMetadata> sync_result =
-      manager_->ComputeMetadata(site, base::OptionalOrNullptr(top_frame_site),
+      manager_->ComputeMetadata(site, base::OptionalToPtr(top_frame_site),
                                 party_context, context_config_,
                                 std::move(callbacks.first));
 
@@ -115,20 +115,20 @@ void FirstPartySetsAccessDelegate::ComputeMetadataAndInvoke(
     std::move(callbacks.second).Run(std::move(sync_result.value()));
 }
 
-void FirstPartySetsAccessDelegate::FindOwnersAndInvoke(
+void FirstPartySetsAccessDelegate::FindEntriesAndInvoke(
     const base::flat_set<net::SchemefulSite>& sites,
-    base::OnceCallback<void(FirstPartySetsAccessDelegate::OwnersResult)>
+    base::OnceCallback<void(FirstPartySetsAccessDelegate::EntriesResult)>
         callback) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(context_config_.is_enabled());
+  DCHECK(enabled_);
 
   std::pair<
-      base::OnceCallback<void(FirstPartySetsAccessDelegate::OwnersResult)>,
-      base::OnceCallback<void(FirstPartySetsAccessDelegate::OwnersResult)>>
+      base::OnceCallback<void(FirstPartySetsAccessDelegate::EntriesResult)>,
+      base::OnceCallback<void(FirstPartySetsAccessDelegate::EntriesResult)>>
       callbacks = base::SplitOnceCallback(std::move(callback));
 
-  absl::optional<FirstPartySetsAccessDelegate::OwnersResult> sync_result =
-      manager_->FindOwners(sites, context_config_, std::move(callbacks.first));
+  absl::optional<FirstPartySetsAccessDelegate::EntriesResult> sync_result =
+      manager_->FindEntries(sites, context_config_, std::move(callbacks.first));
 
   if (sync_result.has_value())
     std::move(callbacks.second).Run(sync_result.value());

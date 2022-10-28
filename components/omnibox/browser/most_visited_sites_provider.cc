@@ -1,4 +1,4 @@
-// Copyright (c) 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -197,7 +197,7 @@ bool MostVisitedSitesProvider::AllowMostVisitedSitesSuggestions(
   const auto page_class = input.current_page_classification();
   const auto input_type = input.type();
 
-  if (input.focus_type() == OmniboxFocusType::DEFAULT)
+  if (input.focus_type() == metrics::OmniboxFocusType::INTERACTION_DEFAULT)
     return false;
 
   if (client_->IsOffTheRecord())

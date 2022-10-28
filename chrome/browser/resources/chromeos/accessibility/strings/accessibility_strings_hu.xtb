@@ -138,9 +138,9 @@
 <translation id="1812527064848182527">fekvő</translation>
 <translation id="1829244130665387512">Keresés ezen az oldalon</translation>
 <translation id="1834891354138622109">Oszlop</translation>
-<translation id="1845944666972354496">Érintse meg kétszer az aktiváláshoz</translation>
 <translation id="1846771122725914429">Bluetooth-os Braille-kijelző</translation>
 <translation id="1852018405765032699">Koppintson négy ujjal a képernyőre a ChromeVox-menük megnyitásához vagy bezárásához. Ezek a menük hasznos információkat tartalmaznak a parancsokról és billentyűkombinációkról. A menük megnyitása után egy ujjal csúsztatva navigálhat az elemek között, és dupla koppintással aktiválhatja őket. A folytatáshoz koppintson négy ujjal a képernyőre.</translation>
+<translation id="1864430479908918647">Nyomja meg a Keresés + Szóköz billentyűkombinációt</translation>
 <translation id="1865601187525349519">Szöveg vége</translation>
 <translation id="1876229593313240038">dok</translation>
 <translation id="1902396333223336119">Mobil</translation>
@@ -529,6 +529,7 @@
 <translation id="4479068155583208887">Téglavörös</translation>
 <translation id="4482330759234983253">Előző táblázat</translation>
 <translation id="4491109536499578614">Kép</translation>
+<translation id="4507332368061453500">Hosszú kattintás az aktuális elemre</translation>
 <translation id="4511186779140817916">Hámozott mandula</translation>
 <translation id="451510441928265982">Nincs előző 2. szintű címsor</translation>
 <translation id="4515799157838123044">Háttérben lévő tartalmak árnyékolása</translation>
@@ -597,7 +598,6 @@
 <translation id="4993152509206108683">Sebesség: <ph name="PERCENT" /> százalék</translation>
 <translation id="4994420463726586413">Aktuális akkumulátortöltöttség bejelentése</translation>
 <translation id="4997282455736854877"><ph name="NAME" />, kiválasztott választógomb</translation>
-<translation id="5011664330025416377">Az aktiváláshoz nyomja le a Keresés+szóköz billentyűparancsot</translation>
 <translation id="5012724933919010465">A menüelem (<ph name="NAME" />) választógombja kiválasztva</translation>
 <translation id="5020651427400641814">Beszéd naplózásának engedélyezése</translation>
 <translation id="5041394372352067729">A Braille-kijelző áthelyezése az oldal tetejére</translation>
@@ -762,6 +762,7 @@
 <translation id="6100239002225743044">Ugrás feljebb egy sorral</translation>
 <translation id="6118126368611144850">Android-alkalmazások Chrome-ra. Ha eszközén telepítve van a Play Áruház, előzetes betekintést kaphat a ChromeVox Android-alkalmazásokkal való használatába. Töltse le a Google Chrome Canary verzióját a Play Áruházból, és próbálja ki a kísérleti támogatást.</translation>
 <translation id="611827076493383239">felkeresett</translation>
+<translation id="6119846243427417423">Aktiválás</translation>
 <translation id="6122013438240733403">gmb</translation>
 <translation id="6132506484792346370">Listamező vagy kombinált mező</translation>
 <translation id="613344593214611552">az előző mondat törlése</translation>
@@ -778,6 +779,7 @@
 <translation id="6236061028292614533">Következő fejléc</translation>
 <translation id="6254901459154107917">Következő szerkeszthető szövegterület</translation>
 <translation id="6259464875943891919"><ph name="TYPE" /> bezárva.</translation>
+<translation id="6280088282605782512">Dupla koppintás</translation>
 <translation id="6282062888058716985">nav</translation>
 <translation id="6295699829709583154">Alapvető billentyűk: Keresés</translation>
 <translation id="6305702903308659374">Lejátszás normál hangerőn akkor is, ha a ChromeVox beszél</translation>
@@ -980,6 +982,7 @@
 <translation id="7731785449856576010">Nincs következő médiamodul</translation>
 <translation id="7735498529470878067">A Felfedezés érintéssel funkcióval gyorsan megtudhatja, mi található a képernyőn.</translation>
 <translation id="773906353055481349">A cellánkénti mozgáshoz használja a Keresés+Ctrl+Alt és a nyílbillentyűket</translation>
+<translation id="7746976083433980639"><ph name="ACTION" /> a következőhöz: <ph name="LABEL" /></translation>
 <translation id="7763537600611320912">A következő fájl letöltése megkezdődött: <ph name="FILE_NAME" /></translation>
 <translation id="7768784765476638775">Felolvasás</translation>
 <translation id="7776293189010177726">ChromeVox-menük megnyitása</translation>

@@ -1,10 +1,9 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "components/update_client/component.h"
 
-#include <algorithm>
 #include <tuple>
 #include <utility>
 #include <vector>
@@ -18,6 +17,7 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/notreached.h"
+#include "base/ranges/algorithm.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/sequenced_task_runner_handle.h"
@@ -349,11 +349,9 @@ void Component::SetParseResult(const ProtocolParser::Result& result) {
             return "";
           }
 
-          auto it =
-              std::find_if(std::begin(result.data), std::end(result.data),
-                           [&expected](const ProtocolParser::Result::Data& d) {
-                             return d.install_data_index == expected;
-                           });
+          const auto it = base::ranges::find(
+              result.data, expected,
+              &ProtocolParser::Result::Data::install_data_index);
 
           const bool matched = it != std::end(result.data);
           DVLOG(2) << "Expected install_data_index: " << expected

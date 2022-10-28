@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,6 +10,7 @@
 
 #include "ash/system/diagnostics/telemetry_log.h"
 #include "ash/webui/diagnostics_ui/backend/cros_healthd_helpers.h"
+#include "ash/webui/diagnostics_ui/backend/histogram_util.h"
 #include "ash/webui/diagnostics_ui/backend/power_manager_client_conversions.h"
 #include "base/bind.h"
 #include "base/callback.h"
@@ -21,11 +22,11 @@
 #include "chromeos/dbus/power_manager/power_supply_properties.pb.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
-namespace ash {
-namespace diagnostics {
+namespace ash::diagnostics {
+
 namespace {
 
-namespace healthd = ::chromeos::cros_healthd::mojom;
+namespace healthd = cros_healthd::mojom;
 using PhysicalCpuInfos = std::vector<healthd::PhysicalCpuInfoPtr>;
 using PowerSupplyProperties = power_manager::PowerSupplyProperties;
 using ProbeCategories = healthd::ProbeCategoryEnum;
@@ -60,6 +61,7 @@ void PopulateCpuInfo(const healthd::CpuInfo& cpu_info,
   out_system_info.cpu_threads_count = cpu_info.num_total_threads;
 
   if (physical_cpus.empty()) {
+    EmitSystemDataError(metrics::DataError::kExpectationNotMet);
     LOG(ERROR) << "No physical cpus in SystemInfo response.";
     return;
   }
@@ -69,6 +71,7 @@ void PopulateCpuInfo(const healthd::CpuInfo& cpu_info,
   out_system_info.cpu_model_name = physical_cpus[0]->model_name.value_or("");
 
   if (physical_cpus[0]->logical_cpus.empty()) {
+    EmitSystemDataError(metrics::DataError::kExpectationNotMet);
     LOG(ERROR) << "Device reported having 0 logical CPUs.";
     return;
   }
@@ -118,6 +121,10 @@ void PopulateDeviceCapabilities(const healthd::TelemetryInfo& telemetry_info,
 
 void PopulateBatteryInfo(const healthd::BatteryInfo& battery_info,
                          mojom::BatteryInfo& out_battery_info) {
+  if (battery_info.charge_full_design == 0) {
+    LOG(ERROR) << "charge_full_design from battery_info should not be zero.";
+    EmitBatteryDataError(metrics::DataError::kExpectationNotMet);
+  }
   out_battery_info.manufacturer = battery_info.vendor;
   out_battery_info.charge_full_design_milliamp_hours =
       battery_info.charge_full_design * kMilliampsInAnAmp;
@@ -150,6 +157,11 @@ void PopulateBatteryChargeStatus(
 void PopulateBatteryHealth(const healthd::BatteryInfo& battery_info,
                            mojom::BatteryHealth& out_battery_health) {
   out_battery_health.cycle_count = battery_info.cycle_count;
+
+  if (battery_info.charge_full == 0) {
+    LOG(ERROR) << "charge_full from battery_info should not be zero.";
+    EmitBatteryDataError(metrics::DataError::kExpectationNotMet);
+  }
 
   // Handle values in battery_info which could cause a SIGFPE. See b/227485637.
   if (isnan(battery_info.charge_full) ||
@@ -201,6 +213,7 @@ void PopulateCpuUsagePercentages(const CpuUsageData& new_usage,
 
   const uint64_t total_delta = delta.GetTotalTime();
   if (total_delta == 0) {
+    EmitSystemDataError(metrics::DataError::kExpectationNotMet);
     return;
   }
 
@@ -257,11 +270,11 @@ SystemDataProvider::SystemDataProvider(TelemetryLog* telemetry_log_ptr)
   battery_health_timer_ = std::make_unique<base::RepeatingTimer>();
   cpu_usage_timer_ = std::make_unique<base::RepeatingTimer>();
   memory_usage_timer_ = std::make_unique<base::RepeatingTimer>();
-  PowerManagerClient::Get()->AddObserver(this);
+  chromeos::PowerManagerClient::Get()->AddObserver(this);
 }
 
 SystemDataProvider::~SystemDataProvider() {
-  PowerManagerClient::Get()->RemoveObserver(this);
+  chromeos::PowerManagerClient::Get()->RemoveObserver(this);
 }
 
 void SystemDataProvider::GetSystemInfo(GetSystemInfoCallback callback) {
@@ -442,6 +455,7 @@ void SystemDataProvider::OnBatteryInfoProbeResponse(
       diagnostics::GetBatteryInfo(*info_ptr);
   if (!battery_info_ptr) {
     LOG(ERROR) << "BatteryInfo requested by device does not have a battery.";
+    EmitBatteryDataError(metrics::DataError::kNoData);
     std::move(callback).Run(std::move(battery_info));
     return;
   }
@@ -453,7 +467,7 @@ void SystemDataProvider::OnBatteryInfoProbeResponse(
 void SystemDataProvider::UpdateBatteryChargeStatus() {
   // Fetch updated data from PowerManagerClient
   absl::optional<PowerSupplyProperties> properties =
-      PowerManagerClient::Get()->GetLastStatus();
+      chromeos::PowerManagerClient::Get()->GetLastStatus();
 
   // Fetch updated data from CrosHealthd
   BindCrosHealthdProbeServiceIfNeccessary();
@@ -505,15 +519,19 @@ void SystemDataProvider::OnBatteryChargeStatusUpdated(
 
   if (!power_supply_properties.has_value()) {
     LOG(ERROR) << "Null response from power_manager_client::GetLastStatus.";
+    EmitBatteryDataError(metrics::DataError::kNoData);
     NotifyBatteryChargeStatusObservers(battery_charge_status);
     return;
   }
 
   if (!DoesDeviceHaveBattery(*info_ptr) ||
       !DoesDeviceHaveBattery(*power_supply_properties)) {
-    DCHECK_EQ(DoesDeviceHaveBattery(*info_ptr),
-              DoesDeviceHaveBattery(*power_supply_properties))
-        << "Sources should not disagree about whether there is a battery.";
+    if (DoesDeviceHaveBattery(*info_ptr) !=
+        DoesDeviceHaveBattery(*power_supply_properties)) {
+      LOG(ERROR)
+          << "Sources should not disagree about whether there is a battery.";
+      EmitBatteryDataError(metrics::DataError::kExpectationNotMet);
+    }
     NotifyBatteryChargeStatusObservers(battery_charge_status);
     return;
   }
@@ -686,5 +704,4 @@ bool SystemDataProvider::IsLoggingEnabled() const {
   return telemetry_log_ptr_ != nullptr;
 }
 
-}  // namespace diagnostics
-}  // namespace ash
+}  // namespace ash::diagnostics

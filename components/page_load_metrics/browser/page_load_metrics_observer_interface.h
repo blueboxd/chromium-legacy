@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,6 +11,7 @@
 #include "base/memory/read_only_shared_memory_region.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
+#include "components/page_load_metrics/browser/page_load_metrics_observer_delegate.h"
 #include "components/page_load_metrics/common/page_load_metrics.mojom.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "net/base/net_errors.h"
@@ -165,6 +166,12 @@ class PageLoadMetricsObserverInterface {
   // TODO(https://crbug.com/1301880): Make all inheritances override this method
   // and make it pure virtual method.
   virtual const char* GetObserverName() const = 0;
+
+  // Gets/Sets the delegate. The delegate must outlive the observer and is
+  // normally set when the observer is first registered for the page load. The
+  // delegate can only be set once.
+  virtual const PageLoadMetricsObserverDelegate& GetDelegate() const = 0;
+  virtual void SetDelegate(PageLoadMetricsObserverDelegate*) = 0;
 
   // The page load started, with the given navigation handle.
   // currently_committed_url contains the URL of the committed page load at the
@@ -548,6 +555,9 @@ class PageLoadMetricsObserverInterface {
   // change in bytes used.
   virtual void OnV8MemoryChanged(
       const std::vector<MemoryUpdate>& memory_updates) = 0;
+
+  // Called when a `SharedStorageWorkletHost` is created.
+  virtual void OnSharedStorageWorkletHostCreated() = 0;
 
  private:
   base::WeakPtrFactory<PageLoadMetricsObserverInterface> weak_factory_{this};

@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -18,7 +18,7 @@ import {TestService} from './test_service.js';
 suite('SitePermissionsEditPermissionsDialog', function() {
   let element: SitePermissionsEditPermissionsDialogElement;
   let delegate: TestService;
-  const UserSiteSet = chrome.developerPrivate.UserSiteSet;
+  const SiteSet = chrome.developerPrivate.SiteSet;
 
   setup(function() {
     delegate = new TestService();
@@ -28,7 +28,7 @@ suite('SitePermissionsEditPermissionsDialog', function() {
         document.createElement('site-permissions-edit-permissions-dialog');
     element.delegate = delegate;
     element.site = 'http://example.com';
-    element.originalSiteSet = UserSiteSet.PERMITTED;
+    element.originalSiteSet = SiteSet.USER_PERMITTED;
     document.body.appendChild(element);
   });
 
@@ -36,23 +36,23 @@ suite('SitePermissionsEditPermissionsDialog', function() {
     const siteSetRadioGroup =
         element.shadowRoot!.querySelector('cr-radio-group');
     assertTrue(!!siteSetRadioGroup);
-    assertEquals(UserSiteSet.PERMITTED, siteSetRadioGroup.selected);
+    assertEquals(SiteSet.USER_PERMITTED, siteSetRadioGroup.selected);
 
     const restrictSiteRadioButton =
         element.shadowRoot!.querySelector<HTMLElement>(
-            `cr-radio-button[name=${UserSiteSet.RESTRICTED}]`);
+            `cr-radio-button[name=${SiteSet.USER_RESTRICTED}]`);
     assertTrue(!!restrictSiteRadioButton);
     restrictSiteRadioButton.click();
 
     flush();
-    assertEquals(UserSiteSet.RESTRICTED, siteSetRadioGroup.selected);
+    assertEquals(SiteSet.USER_RESTRICTED, siteSetRadioGroup.selected);
 
     const whenClosed = eventToPromise('close', element);
     const submit = element.$.submit;
     submit.click();
 
     const [siteSet, sites] = await delegate.whenCalled('addUserSpecifiedSites');
-    assertEquals(UserSiteSet.RESTRICTED, siteSet);
+    assertEquals(SiteSet.USER_RESTRICTED, siteSet);
     assertDeepEquals([element.site], sites);
 
     await whenClosed;

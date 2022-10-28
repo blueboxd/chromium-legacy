@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -64,7 +64,7 @@ class TestObserver : public StubInputMethodEngineObserver {
       const std::string& engine_id,
       const ui::KeyEvent& event,
       ui::IMEEngineHandlerInterface::KeyEventDoneCallback callback) override {
-    std::move(callback).Run(/*handled=*/false);
+    std::move(callback).Run(ui::ime::KeyEventHandledState::kNotHandled);
   }
   void OnInputMethodOptionsChanged(const std::string& engine_id) override {
     changed_engine_id_ = engine_id;
@@ -105,7 +105,9 @@ class KeyProcessingWaiter {
                           base::Unretained(this));
   }
 
-  void OnKeyEventDone(bool consumed) { run_loop_.Quit(); }
+  void OnKeyEventDone(ui::ime::KeyEventHandledState handled_state) {
+    run_loop_.Quit();
+  }
 
   void Wait() { run_loop_.Run(); }
 
@@ -623,35 +625,33 @@ IN_PROC_BROWSER_TEST_F(NativeInputMethodEngineWithoutImeServiceTest,
 IN_PROC_BROWSER_TEST_F(NativeInputMethodEngineWithoutImeServiceTest,
                        HighlightsOnAutocorrectThenDismissesHighlight) {
   engine_->Enable(kEngineIdUs);
+  TextInputTestHelper helper(GetBrowserInputMethod());
   ui::DummyTextInputClient text_input_client(ui::TEXT_INPUT_TYPE_TEXT);
   SetFocus(&text_input_client);
-  // Input the corrected word.
-  DispatchKeyPresses(
-      {
-          ui::VKEY_C,
-          ui::VKEY_O,
-          ui::VKEY_R,
-          ui::VKEY_R,
-          ui::VKEY_E,
-          ui::VKEY_C,
-          ui::VKEY_T,
-          ui::VKEY_E,
-          ui::VKEY_D,
-      },
-      false);
 
   engine_->OnAutocorrect(u"typed", u"corrected", 0);
 
+  // Input the corrected word.
+  helper.GetTextInputClient()->InsertText(
+      u"corrected ",
+      ui::TextInputClient::InsertTextCursorBehavior::kMoveCursorAfterText);
+
+  helper.WaitForSurroundingTextChanged(u"corrected ");
+
   EXPECT_FALSE(engine_->GetAutocorrectRange().is_empty());
 
-  DispatchKeyPress(ui::KeyboardCode::VKEY_A, false);
-  DispatchKeyPress(ui::KeyboardCode::VKEY_A, false);
-  DispatchKeyPress(ui::KeyboardCode::VKEY_A, false);
+  helper.GetTextInputClient()->InsertText(
+      u"aa",
+      ui::TextInputClient::InsertTextCursorBehavior::kMoveCursorAfterText);
+  helper.WaitForSurroundingTextChanged(u"corrected aa");
 
-  // Highlighting should only go away after 4 keypresses.
+  // Highlighting should only go away after inserting 3 characters.
   EXPECT_FALSE(engine_->GetAutocorrectRange().is_empty());
 
-  DispatchKeyPress(ui::KeyboardCode::VKEY_A, false);
+  helper.GetTextInputClient()->InsertText(
+      u"a",
+      ui::TextInputClient::InsertTextCursorBehavior::kMoveCursorAfterText);
+  helper.WaitForSurroundingTextChanged(u"corrected aaa");
 
   EXPECT_TRUE(engine_->GetAutocorrectRange().is_empty());
 

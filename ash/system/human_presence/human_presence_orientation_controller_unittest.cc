@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -56,7 +56,7 @@ class HumanPresenceOrientationControllerTest : public AshTestBase {
                                           {ash::features::kQuickDim});
     base::CommandLine::ForCurrentProcess()->AppendSwitch(switches::kHasHps);
 
-    PowerManagerClient::InitializeFake();
+    chromeos::PowerManagerClient::InitializeFake();
     AshTestBase::SetUp();
 
     orientation_controller_ =

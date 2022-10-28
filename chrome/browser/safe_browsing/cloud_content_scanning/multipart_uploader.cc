@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -137,8 +137,10 @@ MultipartUploadRequest::~MultipartUploadRequest() {
   if (file) {
     base::ThreadPool::PostTask(
         FROM_HERE, {base::MayBlock()},
-        base::BindOnce([](std::unique_ptr<base::MemoryMappedFile> file) {},
-                       std::move(file)));
+        base::BindOnce(
+            [](std::unique_ptr<
+                MultipartDataPipeGetter::InternalMemoryMappedFile> file) {},
+            std::move(file)));
   }
 }
 

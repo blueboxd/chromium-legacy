@@ -1,4 +1,4 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -156,26 +156,6 @@ VTVideoEncodeAccelerator::GetSupportedProfiles() {
   profile.max_resolution = gfx::Size(kMaxResolutionWidth, kMaxResolutionHeight);
   if (__builtin_available(macOS LOW_LATENCY_FLAG_AVAILABLE_VER, *))
     profile.scalability_modes.push_back(SVCScalabilityMode::kL1T2);
-  for (const auto& supported_profile : kSupportedProfiles) {
-    profile.profile = supported_profile;
-    profiles.push_back(profile);
-  }
-  return profiles;
-}
-
-VideoEncodeAccelerator::SupportedProfiles
-VTVideoEncodeAccelerator::GetSupportedProfilesLight() {
-  DVLOG(3) << __func__;
-  DCHECK_CALLED_ON_VALID_SEQUENCE(client_sequence_checker_);
-
-  SupportedProfiles profiles;
-
-  SupportedProfile profile;
-  profile.max_framerate_numerator = kMaxFrameRateNumerator;
-  profile.max_framerate_denominator = kMaxFrameRateDenominator;
-  profile.rate_control_modes = VideoEncodeAccelerator::kConstantMode |
-                               VideoEncodeAccelerator::kVariableMode;
-  profile.max_resolution = gfx::Size(kMaxResolutionWidth, kMaxResolutionHeight);
   for (const auto& supported_profile : kSupportedProfiles) {
     profile.profile = supported_profile;
     profiles.push_back(profile);

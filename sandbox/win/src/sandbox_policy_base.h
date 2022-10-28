@@ -53,10 +53,35 @@ class ConfigBase final : public TargetConfig {
 
   bool IsConfigured() const override;
 
+  ResultCode SetTokenLevel(TokenLevel initial, TokenLevel lockdown) override;
+  TokenLevel GetInitialTokenLevel() const override;
+  TokenLevel GetLockdownTokenLevel() const override;
+  ResultCode SetJobLevel(JobLevel job_level, uint32_t ui_exceptions) override;
+  JobLevel GetJobLevel() const override;
+  ResultCode SetJobMemoryLimit(size_t memory_limit) override;
+  void SetAllowNoSandboxJob() override;
+  bool GetAllowNoSandboxJob() override;
   ResultCode AddRule(SubSystem subsystem,
                      Semantics semantics,
                      const wchar_t* pattern) override;
   ResultCode AddDllToUnload(const wchar_t* dll_name) override;
+  ResultCode SetIntegrityLevel(IntegrityLevel integrity_level) override;
+  IntegrityLevel GetIntegrityLevel() const override;
+  ResultCode SetDelayedIntegrityLevel(IntegrityLevel integrity_level) override;
+  ResultCode SetLowBox(const wchar_t* sid) override;
+  ResultCode SetProcessMitigations(MitigationFlags flags) override;
+  MitigationFlags GetProcessMitigations() override;
+  ResultCode SetDelayedProcessMitigations(MitigationFlags flags) override;
+  MitigationFlags GetDelayedProcessMitigations() const override;
+  void AddRestrictingRandomSid() override;
+  void SetLockdownDefaultDacl() override;
+  ResultCode AddAppContainerProfile(const wchar_t* package_name,
+                                    bool create_profile) override;
+  scoped_refptr<AppContainer> GetAppContainer() override;
+  ResultCode AddKernelObjectToClose(const wchar_t* handle_type,
+                                    const wchar_t* handle_name) override;
+  ResultCode SetDisconnectCsrss() override;
+  void SetDesktop(Desktop desktop) override;
 
  private:
   // Can call Freeze()
@@ -88,14 +113,47 @@ class ConfigBase final : public TargetConfig {
   // Should only be called once the object is configured.
   PolicyGlobal* policy();
   std::vector<std::wstring>& blocklisted_dlls();
+  AppContainerBase* app_container();
+  IntegrityLevel integrity_level() { return integrity_level_; }
+  IntegrityLevel delayed_integrity_level() { return delayed_integrity_level_; }
+  bool add_restricting_random_sid() { return add_restricting_random_sid_; }
+  bool lockdown_default_dacl() { return lockdown_default_dacl_; }
+  bool is_csrss_connected() { return is_csrss_connected_; }
+  size_t memory_limit() { return memory_limit_; }
+  uint32_t ui_exceptions() { return ui_exceptions_; }
+  Desktop desktop() { return desktop_; }
+  // nullptr if no objects have been added via AddKernelObjectToClose().
+  HandleCloser* handle_closer() { return handle_closer_.get(); }
+
+  TokenLevel lockdown_level_;
+  TokenLevel initial_level_;
+  JobLevel job_level_;
+  IntegrityLevel integrity_level_;
+  IntegrityLevel delayed_integrity_level_;
+  MitigationFlags mitigations_;
+  MitigationFlags delayed_mitigations_;
+  bool add_restricting_random_sid_;
+  bool lockdown_default_dacl_;
+  bool allow_no_sandbox_job_;
+  bool is_csrss_connected_;
+  size_t memory_limit_;
+  uint32_t ui_exceptions_;
+  Desktop desktop_;
 
   // Object in charge of generating the low level policy. Will be reset() when
   // Freeze() is called.
   std::unique_ptr<LowLevelPolicy> policy_maker_;
   // Memory structure that stores the low level policy rules for proxied calls.
-  raw_ptr<PolicyGlobal> policy_;
+  raw_ptr<PolicyGlobal, DanglingUntriaged> policy_;
+  // This is a map of handle-types to names that we need to close in the
+  // target process. A null set for a given type means we need to close all
+  // handles of the given type. If no entries are added this will be nullptr and
+  // no handles are closed.
+  std::unique_ptr<HandleCloser> handle_closer_;
   // The list of dlls to unload in the target process.
   std::vector<std::wstring> blocklisted_dlls_;
+  // AppContainer to be applied to the target process.
+  scoped_refptr<AppContainerBase> app_container_;
 };
 
 class PolicyBase final : public TargetPolicy {
@@ -108,39 +166,13 @@ class PolicyBase final : public TargetPolicy {
 
   // TargetPolicy:
   TargetConfig* GetConfig() override;
-  ResultCode SetTokenLevel(TokenLevel initial, TokenLevel lockdown) override;
-  TokenLevel GetInitialTokenLevel() const override;
-  TokenLevel GetLockdownTokenLevel() const override;
-  ResultCode SetJobLevel(JobLevel job_level, uint32_t ui_exceptions) override;
-  JobLevel GetJobLevel() const override;
-  ResultCode SetJobMemoryLimit(size_t memory_limit) override;
-  ResultCode SetAlternateDesktop(bool alternate_winstation) override;
-  std::wstring GetAlternateDesktop() const override;
-  ResultCode CreateAlternateDesktop(bool alternate_winstation) override;
-  void DestroyAlternateDesktop() override;
-  ResultCode SetIntegrityLevel(IntegrityLevel integrity_level) override;
-  IntegrityLevel GetIntegrityLevel() const override;
-  ResultCode SetDelayedIntegrityLevel(IntegrityLevel integrity_level) override;
-  ResultCode SetLowBox(const wchar_t* sid) override;
-  ResultCode SetProcessMitigations(MitigationFlags flags) override;
-  MitigationFlags GetProcessMitigations() override;
-  ResultCode SetDelayedProcessMitigations(MitigationFlags flags) override;
-  MitigationFlags GetDelayedProcessMitigations() const override;
-  ResultCode SetDisconnectCsrss() override;
-  void SetStrictInterceptions() override;
+  std::wstring GetDesktopName() override;
+  ResultCode CreateAlternateDesktop(Desktop desktop) override;
+  void DestroyDesktops() override;
   ResultCode SetStdoutHandle(HANDLE handle) override;
   ResultCode SetStderrHandle(HANDLE handle) override;
-  ResultCode AddKernelObjectToClose(const wchar_t* handle_type,
-                                    const wchar_t* handle_name) override;
   void AddHandleToShare(HANDLE handle) override;
-  void SetLockdownDefaultDacl() override;
-  void AddRestrictingRandomSid() override;
-  ResultCode AddAppContainerProfile(const wchar_t* package_name,
-                                    bool create_profile) override;
-  scoped_refptr<AppContainer> GetAppContainer() override;
   void SetEffectiveToken(HANDLE token) override;
-  void SetAllowNoSandboxJob() override;
-  bool GetAllowNoSandboxJob() override;
 
   // Creates a Job object with the level specified in a previous call to
   // SetJobLevel().
@@ -214,45 +246,16 @@ class PolicyBase final : public TargetPolicy {
   // The policy takes ownership of a target as it is applied to it.
   std::unique_ptr<TargetProcess> target_;
   // The user-defined global policy settings.
-  TokenLevel lockdown_level_;
-  TokenLevel initial_level_;
-  JobLevel job_level_;
-  uint32_t ui_exceptions_;
-  size_t memory_limit_;
-  bool use_alternate_desktop_;
-  bool use_alternate_winstation_;
-  bool relaxed_interceptions_;
   HANDLE stdout_handle_;
   HANDLE stderr_handle_;
-  IntegrityLevel integrity_level_;
-  IntegrityLevel delayed_integrity_level_;
-  MitigationFlags mitigations_;
-  MitigationFlags delayed_mitigations_;
-  bool is_csrss_connected_;
-  // This is a map of handle-types to names that we need to close in the
-  // target process. A null set means we need to close all handles of the
-  // given type.
-  HandleCloser handle_closer_;
   std::unique_ptr<Dispatcher> dispatcher_;
-  bool lockdown_default_dacl_;
-  bool add_restricting_random_sid_;
-
-  static HDESK alternate_desktop_handle_;
-  static HWINSTA alternate_winstation_handle_;
-  static HDESK alternate_desktop_local_winstation_handle_;
-  static IntegrityLevel alternate_desktop_integrity_level_label_;
-  static IntegrityLevel
-      alternate_desktop_local_winstation_integrity_level_label_;
 
   // Contains the list of handles being shared with the target process.
   // This list contains handles other than the stderr/stdout handles which are
   // shared with the target at times.
   base::HandlesToInheritVector handles_to_share_;
 
-  scoped_refptr<AppContainerBase> app_container_;
-
   HANDLE effective_token_;
-  bool allow_no_sandbox_job_;
   Job job_;
 };
 

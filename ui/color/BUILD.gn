@@ -17,6 +17,7 @@ source_set("color_headers") {
     "color_provider.h",
     "color_provider_manager.h",
     "color_provider_utils.h",
+    "system_theme.h",
   ]
 
   public_deps = [
@@ -52,7 +53,11 @@ component("color") {
     "color_recipe.h",
     "color_transform.cc",
     "color_transform.h",
+    "temp_palette.cc",
+    "temp_palette.h",
   ]
+
+  configs += [ "//build/config/compiler:prevent_unsafe_narrowing" ]
 
   defines = [ "IS_COLOR_IMPL" ]
 
@@ -135,6 +140,8 @@ component("mixers") {
     "core_default_color_mixer.h",
     "native_color_mixers.cc",
     "native_color_mixers.h",
+    "ref_color_mixer.cc",
+    "ref_color_mixer.h",
     "ui_color_mixer.cc",
     "ui_color_mixer.h",
   ]

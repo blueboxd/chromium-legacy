@@ -238,6 +238,10 @@ std::unique_ptr<blink::WebURLLoaderFactory>
 RendererBlinkPlatformImpl::WrapURLLoaderFactory(
     blink::CrossVariantMojoRemote<network::mojom::URLLoaderFactoryInterfaceBase>
         url_loader_factory) {
+  // Check that there is always a main thread. It used to be possible to run
+  // this code with a fuzzer without having a main thread, which is no longer
+  // possible now.
+  CHECK(RenderThreadImpl::current());
   std::vector<std::string> cors_exempt_header_list =
       RenderThreadImpl::current()->cors_exempt_header_list();
   blink::WebVector<blink::WebString> web_cors_exempt_header_list(
@@ -935,7 +939,8 @@ std::unique_ptr<media::MediaLog> RendererBlinkPlatformImpl::GetMediaLog(
   // This should only be created in the main Window context, and not from
   // a worker context.
   if (!is_on_worker)
-    handlers.push_back(std::make_unique<RenderMediaEventHandler>());
+    handlers.push_back(std::make_unique<RenderMediaEventHandler>(
+        media::GetNextMediaPlayerLoggingID()));
 
   // For devtools' media tab.
   handlers.push_back(

@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -29,6 +29,10 @@
 class AppListModelUpdater;
 class ChromeAppListItem;
 class Profile;
+
+namespace apps {
+struct MenuItems;
+}  // namespace apps
 
 namespace gfx {
 class ImageSkia;
@@ -158,7 +162,7 @@ class RemoteAppsManager
   gfx::ImageSkia GetIcon(const std::string& id) override;
   gfx::ImageSkia GetPlaceholderIcon(const std::string& id,
                                     int32_t size_hint_in_dip) override;
-  apps::mojom::MenuItemsPtr GetMenuModel(const std::string& id) override;
+  apps::MenuItems GetMenuModel(const std::string& id) override;
 
   // app_list::AppListSyncableService::Observer:
   void OnSyncModelUpdated() override;

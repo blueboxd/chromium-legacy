@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -121,6 +121,8 @@ class PageLoadMetricsObserverDelegate {
   virtual PrerenderingState GetPrerenderingState() const = 0;
   // True iff the page is prerendered and activation_start is not yet arrived.
   bool IsInPrerenderingBeforeActivationStart() const;
+  // Returns activation start if activation start was arrived, or nullopt.
+  virtual absl::optional<base::TimeDelta> GetActivationStart() const = 0;
 
   // Whether the page load was initiated by a user.
   virtual const UserInitiatedInfo& GetUserInitiatedInfo() const = 0;

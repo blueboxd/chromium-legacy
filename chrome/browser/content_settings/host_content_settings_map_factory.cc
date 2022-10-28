@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -17,7 +17,6 @@
 #include "chrome/common/buildflags.h"
 #include "components/content_settings/core/browser/content_settings_pref_provider.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
-#include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/permissions/features.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/buildflags/buildflags.h"
@@ -47,9 +46,9 @@
 #endif
 
 HostContentSettingsMapFactory::HostContentSettingsMapFactory()
-    : RefcountedBrowserContextKeyedServiceFactory(
-        "HostContentSettingsMap",
-        BrowserContextDependencyManager::GetInstance()) {
+    : RefcountedProfileKeyedServiceFactory(
+          "HostContentSettingsMap",
+          ProfileSelections::BuildForRegularAndIncognito()) {
   DependsOn(LastTabStandingTrackerFactory::GetInstance());
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS)
   DependsOn(SupervisedUserSettingsServiceFactory::GetInstance());
@@ -168,9 +167,4 @@ scoped_refptr<RefcountedKeyedService>
   }
 #endif  // defined (OS_ANDROID)
   return settings_map;
-}
-
-content::BrowserContext* HostContentSettingsMapFactory::GetBrowserContextToUse(
-    content::BrowserContext* context) const {
-  return context;
 }

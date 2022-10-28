@@ -1,15 +1,15 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/tab_grid_view_controller.h"
 
-#include "base/bind.h"
-#include "base/metrics/histogram_macros.h"
-#include "base/metrics/user_metrics.h"
-#include "base/metrics/user_metrics_action.h"
-#include "base/strings/sys_string_conversions.h"
-#include "ios/chrome/browser/crash_report/crash_keys_helper.h"
+#import "base/bind.h"
+#import "base/metrics/histogram_macros.h"
+#import "base/metrics/user_metrics.h"
+#import "base/metrics/user_metrics_action.h"
+#import "base/strings/sys_string_conversions.h"
+#import "ios/chrome/browser/crash_report/crash_keys_helper.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/commands/popup_menu_commands.h"
 #import "ios/chrome/browser/ui/default_promo/default_browser_utils.h"
@@ -35,18 +35,17 @@
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/thumb_strip_plus_sign_button.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/transitions/grid_transition_layout.h"
 #import "ios/chrome/browser/ui/table_view/chrome_table_view_styler.h"
-#include "ios/chrome/browser/ui/ui_feature_flags.h"
+#import "ios/chrome/browser/ui/ui_feature_flags.h"
 #import "ios/chrome/browser/ui/util/layout_guide_names.h"
 #import "ios/chrome/browser/ui/util/named_guide.h"
 #import "ios/chrome/browser/ui/util/rtl_geometry.h"
-#include "ios/chrome/browser/ui/util/rtl_geometry.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
 #import "ios/chrome/common/ui/util/constraints_ui_util.h"
-#include "ios/chrome/grit/ios_strings.h"
-#include "ios/web/public/thread/web_task_traits.h"
-#include "ios/web/public/thread/web_thread.h"
-#include "ui/base/l10n/l10n_util.h"
+#import "ios/chrome/grit/ios_strings.h"
+#import "ios/web/public/thread/web_task_traits.h"
+#import "ios/web/public/thread/web_thread.h"
+#import "ui/base/l10n/l10n_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -1255,7 +1254,6 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
   // The styler must be set before the view controller is loaded.
   ChromeTableViewStyler* styler = [[ChromeTableViewStyler alloc] init];
   styler.tableViewBackgroundColor = [UIColor colorNamed:kGridBackgroundColor];
-  styler.cellHighlightColor = [UIColor colorNamed:kTableViewRowHighlightColor];
   self.remoteTabsViewController.overrideUserInterfaceStyle =
       UIUserInterfaceStyleDark;
   self.remoteTabsViewController.styler = styler;
@@ -1352,16 +1350,6 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
 
 // Adds the top toolbar and sets constraints.
 - (void)setupTopToolbar {
-  bool dynamic_island_toolbar_blur_fix = ShouldUseToolbarBlurFix();
-  UIVisualEffectView* topToolbarBlurView;
-  if (dynamic_island_toolbar_blur_fix) {
-    UIBlurEffect* blurEffect =
-        [UIBlurEffect effectWithStyle:UIBlurEffectStyleDark];
-    topToolbarBlurView = [[UIVisualEffectView alloc] initWithEffect:blurEffect];
-    topToolbarBlurView.translatesAutoresizingMaskIntoConstraints = NO;
-    [self.view addSubview:topToolbarBlurView];
-  }
-
   // In iOS 13+, constraints break if the UIToolbar is initialized with a null
   // or zero rect frame. An arbitrary non-zero frame fixes this issue.
   TabGridTopToolbar* topToolbar =
@@ -1397,19 +1385,6 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
     [topToolbar.leadingAnchor constraintEqualToAnchor:self.view.leadingAnchor],
     [topToolbar.trailingAnchor constraintEqualToAnchor:self.view.trailingAnchor]
   ]];
-
-  if (dynamic_island_toolbar_blur_fix) {
-    [NSLayoutConstraint activateConstraints:@[
-      [topToolbarBlurView.topAnchor
-          constraintEqualToAnchor:self.view.topAnchor],
-      [topToolbarBlurView.bottomAnchor
-          constraintEqualToAnchor:topToolbar.bottomAnchor],
-      [topToolbarBlurView.leadingAnchor
-          constraintEqualToAnchor:topToolbar.leadingAnchor],
-      [topToolbarBlurView.trailingAnchor
-          constraintEqualToAnchor:topToolbar.trailingAnchor],
-    ]];
-  }
 }
 
 // Adds the bottom toolbar and sets constraints.

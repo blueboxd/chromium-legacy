@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,6 +10,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/callback_list.h"
 #include "base/containers/flat_map.h"
 #include "base/files/file_path.h"
 #include "base/memory/weak_ptr.h"
@@ -23,6 +24,7 @@
 #include "chrome/browser/ash/crostini/crostini_util.h"
 #include "chrome/browser/ash/crostini/termina_installer.h"
 #include "chrome/browser/ash/guest_os/guest_id.h"
+#include "chrome/browser/ash/guest_os/guest_os_session_tracker.h"
 #include "chrome/browser/ash/guest_os/public/guest_os_mount_provider_registry.h"
 #include "chrome/browser/ash/guest_os/public/guest_os_terminal_provider_registry.h"
 #include "chrome/browser/ash/vm_shutdown_observer.h"
@@ -127,12 +129,6 @@ class CrostiniContainerPropertiesObserver : public base::CheckedObserver {
   virtual void OnContainerOsReleaseChanged(
       const guest_os::GuestId& container_id,
       bool can_upgrade) = 0;
-};
-
-class ContainerStartedObserver : public base::CheckedObserver {
- public:
-  // Called when the container has started.
-  virtual void OnContainerStarted(const guest_os::GuestId& container_id) = 0;
 };
 
 class ContainerShutdownObserver : public base::CheckedObserver {
@@ -588,8 +584,6 @@ class CrostiniManager : public KeyedService,
   void RemoveCrostiniContainerPropertiesObserver(
       CrostiniContainerPropertiesObserver* observer);
 
-  void AddContainerStartedObserver(ContainerStartedObserver* observer);
-  void RemoveContainerStartedObserver(ContainerStartedObserver* observer);
   void AddContainerShutdownObserver(ContainerShutdownObserver* observer);
   void RemoveContainerShutdownObserver(ContainerShutdownObserver* observer);
 
@@ -820,6 +814,9 @@ class CrostiniManager : public KeyedService,
   // Unregisters all container from GuestOsService's registries.
   void UnregisterAllContainers();
 
+  // Best-effort attempt to premount the user's files.
+  void MountCrostiniFilesBackground(guest_os::GuestInfo info);
+
   Profile* profile_;
   std::string owner_id_;
 
@@ -895,7 +892,6 @@ class CrostiniManager : public KeyedService,
   base::ObserverList<CrostiniContainerPropertiesObserver>
       crostini_container_properties_observers_;
 
-  base::ObserverList<ContainerStartedObserver> container_started_observers_;
   base::ObserverList<ContainerShutdownObserver> container_shutdown_observers_;
 
   // Contains the types of crostini dialogs currently open. It is generally
@@ -931,6 +927,8 @@ class CrostiniManager : public KeyedService,
 
   base::flat_map<guest_os::GuestId, guest_os::GuestOsMountProviderRegistry::Id>
       mount_provider_ids_;
+
+  base::CallbackListSubscription primary_counter_mount_subscription_;
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.

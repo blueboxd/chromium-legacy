@@ -1,15 +1,15 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #ifndef CHROME_BROWSER_UI_ASH_CAPTURE_MODE_CHROME_CAPTURE_MODE_DELEGATE_H_
 #define CHROME_BROWSER_UI_ASH_CAPTURE_MODE_CHROME_CAPTURE_MODE_DELEGATE_H_
 
-#include "ash/components/drivefs/mojom/drivefs.mojom-forward.h"
 #include "ash/public/cpp/capture_mode/capture_mode_delegate.h"
 #include "base/callback.h"
 #include "base/files/file_path.h"
 #include "base/memory/weak_ptr.h"
+#include "chromeos/ash/components/drivefs/mojom/drivefs.mojom-forward.h"
 #include "components/drive/file_errors.h"
 
 // Implements the interface needed for the delegate of the Capture Mode feature
@@ -72,6 +72,7 @@ class ChromeCaptureModeDelegate : public ash::CaptureModeDelegate {
       override;
   void GetDriveFsFreeSpaceBytes(ash::OnGotDriveFsFreeSpace callback) override;
   bool IsCameraDisabledByPolicy() const override;
+  bool IsAudioCaptureDisabledByPolicy() const override;
 
  private:
   // Called back by the Drive integration service when the quota usage is

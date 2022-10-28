@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,6 +9,7 @@
 #include <sstream>
 
 #include "base/json/json_writer.h"
+#include "base/ranges/algorithm.h"
 #include "base/strings/escape.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_split.h"
@@ -105,8 +106,8 @@ GURL RemoveFragmentSelectorDirectives(const GURL& url) {
   for (const std::string& directive :
        base::SplitString(fragment_directive, kSelectorJoinDelimeter,
                          base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL)) {
-    if (std::none_of(
-            directive_parameter_names.begin(), directive_parameter_names.end(),
+    if (base::ranges::none_of(
+            directive_parameter_names,
             [&directive](const base::StringPiece& directive_parameter_name) {
               return base::StartsWith(directive, directive_parameter_name);
             })) {

@@ -6,18 +6,21 @@
 #define CONTENT_BROWSER_RENDERER_HOST_BACK_FORWARD_CACHE_METRICS_H_
 
 #include <bitset>
-#include <set>
+#include <memory>
 
 #include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
-#include "base/strings/string_piece.h"
-#include "base/time/tick_clock.h"
 #include "base/time/time.h"
 #include "content/browser/renderer_host/should_swap_browsing_instance.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/back_forward_cache.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/scheduler/web_scheduler_tracked_feature.h"
+#include "third_party/blink/public/mojom/back_forward_cache_not_restored_reasons.mojom-forward.h"
+
+namespace base {
+class TickClock;
+}
 
 namespace url {
 class Origin;
@@ -69,7 +72,7 @@ class BackForwardCacheMetrics
     kRendererProcessCrashed = 16,
     // 17: Dialogs are no longer a reason to exclude from BackForwardCache
     // 18: GrantedMediaStreamAccess is no longer blocking.
-    kSchedulerTrackedFeatureUsed = 19,
+    // 19: kSchedulerTrackedFeatureUsed is no longer used.
     kConflictingBrowsingInstance = 20,
     kCacheFlushed = 21,
     kServiceWorkerVersionActivation = 22,
@@ -227,6 +230,10 @@ class BackForwardCacheMetrics
   // the existing |page_store_tree_result_|.
   void SetNotRestoredReasons(
       BackForwardCacheCanStoreDocumentResultWithTree& can_store);
+
+  // Populate and return the mojom struct from |page_store_tree_result_|.
+  blink::mojom::BackForwardCacheNotRestoredReasonsPtr
+  GetWebExposedNotRestoredReasons();
 
   // Exported for testing.
   // The DisabledReason's source and id combined to give a unique uint64.

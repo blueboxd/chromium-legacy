@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -117,7 +117,7 @@ class HIDDetectionScreenTester extends ScreenElementApi {
 
   // Must be called to enable the next button
   emulateDevicesConnected() {
-    chrome.send('HIDDetectionScreen.emulateDevicesConnectedForTesting');
+    chrome.send('OobeTestApi.emulateDevicesForTesting');
   }
 
   touchscreenDetected() {
@@ -325,6 +325,58 @@ class MarketingOptInScreenTester extends ScreenElementApi {
 class ThemeSelectionScreenTester extends ScreenElementApi {
   constructor() {
     super('theme-selection');
+    this.themeRadioButton = new PolymerElementApi(this, '#theme');
+    this.lightThemeButton = new PolymerElementApi(this, '#lightThemeButton');
+    this.darkThemeButton = new PolymerElementApi(this, '#darkThemeButton');
+    this.autoThemeButton = new PolymerElementApi(this, '#autoThemeButton');
+    this.textHeader = new PolymerElementApi(this, '#theme-selection-title');
+  }
+
+  /**
+   * Returns if the Theme Selection Screen is ready for test interaction.
+   * @return {boolean}
+   */
+  isReadyForTesting() {
+    return this.isVisible() && this.lightThemeButton.isVisible() &&
+        this.darkThemeButton.isVisible() && this.autoThemeButton.isVisible();
+  }
+
+  /**
+   * Presses light theme button to select it.
+   */
+  selectLightTheme() {
+    this.lightThemeButton.click();
+  }
+
+  /**
+   * Presses dark theme button to select it.
+   */
+  selectDarkTheme() {
+    this.darkThemeButton.click();
+  }
+
+  /**
+   * Presses auto theme button to select it.
+   */
+  selectAutoTheme() {
+    this.autoThemeButton.click();
+  }
+
+  /**
+   * Finds which theme is selected.
+   * @returns {string}
+   */
+  getNameOfSelectedTheme() {
+    return this.themeRadioButton.element().selected;
+  }
+
+  /**
+   * Retrieves computed color of the screen header. This value will be used to
+   * determine screen's color mode.
+   * @returns {string}
+   */
+  getHeaderTextColor() {
+    return window.getComputedStyle(this.textHeader.element()).color;
   }
 }
 

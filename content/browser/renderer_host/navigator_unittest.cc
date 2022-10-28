@@ -14,7 +14,6 @@
 #include "content/browser/renderer_host/navigation_entry_impl.h"
 #include "content/browser/renderer_host/navigation_request.h"
 #include "content/browser/renderer_host/navigation_request_info.h"
-#include "content/browser/renderer_host/navigator.h"
 #include "content/browser/renderer_host/render_frame_host_manager.h"
 #include "content/browser/site_info.h"
 #include "content/browser/site_instance_impl.h"
@@ -574,7 +573,8 @@ TEST_F(NavigatorTest, NoContent) {
       std::string(kNoContentHeaders, std::size(kNoContentHeaders)));
   GetLoaderForNavigationRequest(main_request)
       ->CallOnResponseStarted(std::move(response),
-                              mojo::ScopedDataPipeConsumerHandle());
+                              mojo::ScopedDataPipeConsumerHandle(),
+                              absl::nullopt);
 
   // There should be no pending nor speculative RenderFrameHost; the navigation
   // was aborted.
@@ -599,7 +599,8 @@ TEST_F(NavigatorTest, NoContent) {
       std::string(kResetContentHeaders, std::size(kResetContentHeaders)));
   GetLoaderForNavigationRequest(main_request)
       ->CallOnResponseStarted(std::move(response),
-                              mojo::ScopedDataPipeConsumerHandle());
+                              mojo::ScopedDataPipeConsumerHandle(),
+                              absl::nullopt);
 
   // There should be no pending nor speculative RenderFrameHost; the navigation
   // was aborted.

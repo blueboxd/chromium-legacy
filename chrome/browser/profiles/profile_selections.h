@@ -1,11 +1,27 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #ifndef CHROME_BROWSER_PROFILES_PROFILE_SELECTIONS_H_
 #define CHROME_BROWSER_PROFILES_PROFILE_SELECTIONS_H_
 
+#include "base/feature_list.h"
+
 #include "third_party/abseil-cpp/absl/types/optional.h"
+
+// This feature flag will change the default beahvoir of
+// `ProfileSelections::system_profile_selection_` when the value is not set. The
+// old behavior simply follows `regular_profile_selection_` value, with the
+// experiment active the default value will be `ProfileSelection::kNone`,
+// meaning the default ProfileSelection for System Profile will be no profile.
+// This feature flag will only affect builders that has are marked as
+// `Experimental Builders` below, and any customized builder that will not
+// explicitly use `ProfileSelections::Builder::WithSystem()`.
+extern const base::Feature kSystemProfileSelectionDefaultNone;
+
+// Similar experiment to `kSystemProfileSelectionDefaultNone` described above
+// affecting Guest Profile.
+extern const base::Feature kGuestProfileSelectionDefaultNone;
 
 class Profile;
 
@@ -36,6 +52,33 @@ class ProfileSelections {
  public:
   ProfileSelections(const ProfileSelections& other);
   ~ProfileSelections();
+
+  // Builder to construct the `ProfileSelections` parameters.
+  class Builder {
+   public:
+    Builder();
+    ~Builder();
+
+    // Builder setters
+    Builder& WithRegular(ProfileSelection selection);
+    // Note: When Guest and Regular are not mutually exclusive on Ash and
+    // Lacros, a Profile can potentially return true for both
+    // `IsRegularProfile()` and `IsGuestSession()`. This is currently not
+    // supported by the API, meaning that extra code might need to be added to
+    // make sure all the cases are properly covered. Using the API, if both
+    // `IsRegularProfile()` and `IsGuestSession()` are true, Regular
+    // ProfileSelection logic will be used.
+    // TODO(crbug.com/1348572): remove this comment once `IsGuestSession()` is
+    // fixed.
+    Builder& WithGuest(ProfileSelection selection);
+    Builder& WithSystem(ProfileSelection selection);
+
+    // Builds the `ProfileSelections`.
+    ProfileSelections Build();
+
+   private:
+    std::unique_ptr<ProfileSelections> selections_;
+  };
 
   // - Predefined `ProfileSelections`
 
@@ -70,6 +113,19 @@ class ProfileSelections {
   // | System  | no profile | no profile |
   // +---------+------------+------------+
   static ProfileSelections BuildForRegularProfile();
+
+  // Only select the regular profile and incognito for regular profiles. No
+  // profiles for Guest and System profiles. "NonExperimental" is added to
+  // differentiate with the experimental behavior during the experiment, once
+  // done it will be the equivalent builder.
+  // +---------+------------+------------+
+  // |         |  Original  |    OTR     |
+  // +---------+------------+------------+
+  // | Regular | self       | self       |
+  // | Guest   | no profile | no profile |
+  // | System  | no profile | no profile |
+  // +---------+------------+------------+
+  static ProfileSelections BuildForRegularAndIncognitoNonExperimental();
 
   // Redirects incognito profiles to their original regular profile. No
   // profiles for Guest and System profiles. "NonExperimental" is added to
@@ -193,33 +249,6 @@ class ProfileSelections {
   static ProfileSelections BuildForRegularAndIncognito(
       bool force_guest = false,
       bool force_system = false);
-
-  // Builder to construct the `ProfileSelections` parameters.
-  class Builder {
-   public:
-    Builder();
-    ~Builder();
-
-    // Builder setters
-    Builder& WithRegular(ProfileSelection selection);
-    // Note: When Guest and Regular are not mutually exclusive on Ash and
-    // Lacros, a Profile can potentially return true for both
-    // `IsRegularProfile()` and `IsGuestSession()`. This is currently not
-    // supported by the API, meaning that extra code might need to be added to
-    // make sure all the cases are properly covered. Using the API, if both
-    // `IsRegularProfile()` and `IsGuestSession()` are true, Regular
-    // ProfileSelection logic will be used.
-    // TODO(crbug.com/1348572): remove this comment once `IsGuestSession()` is
-    // fixed.
-    Builder& WithGuest(ProfileSelection selection);
-    Builder& WithSystem(ProfileSelection selection);
-
-    // Builds the `ProfileSelections`.
-    ProfileSelections Build();
-
-   private:
-    std::unique_ptr<ProfileSelections> selections_;
-  };
 
   // Given a Profile and a ProfileSelection enum, returns the right profile
   // (can potentially return nullptr).

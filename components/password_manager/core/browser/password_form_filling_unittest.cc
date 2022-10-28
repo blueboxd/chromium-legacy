@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/memory/scoped_refptr.h"
+#include "base/ranges/algorithm.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
@@ -26,6 +27,14 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
+
+#if BUILDFLAG(IS_MAC)
+#include "components/password_manager/core/common/password_manager_pref_names.h"
+#include "components/prefs/pref_registry_simple.h"
+#include "components/prefs/testing_pref_service.h"
+#endif
+
+class PrefService;
 
 using autofill::FieldRendererId;
 using autofill::FormData;
@@ -46,7 +55,7 @@ class MockPasswordManagerDriver : public StubPasswordManagerDriver {
  public:
   MOCK_METHOD(int, GetId, (), (const, override));
   MOCK_METHOD(void,
-              FillPasswordForm,
+              SetPasswordFillData,
               (const PasswordFormFillData&),
               (override));
   MOCK_METHOD(void, InformNoSavedCredentials, (bool), (override));
@@ -66,9 +75,11 @@ class MockPasswordManagerClient : public StubPasswordManagerClient {
               (const, override));
   MOCK_METHOD(bool, IsCommittedMainFrameSecure, (), (const, override));
   MOCK_METHOD(MockWebAuthnCredentialsDelegate*,
-              GetWebAuthnCredentialsDelegate,
-              (),
+              GetWebAuthnCredentialsDelegateForDriver,
+              (PasswordManagerDriver*),
               (override));
+  MOCK_METHOD(PrefService*, GetPrefs, (), (const, override));
+  MOCK_METHOD(PrefService*, GetLocalStatePrefs, (), (const, override));
 };
 
 // Matcher for PasswordAndMetadata.
@@ -80,10 +91,8 @@ MATCHER_P3(IsLogin, username, password, uses_account_store, std::string()) {
 PasswordFormFillData::LoginCollection::const_iterator FindPasswordByUsername(
     const std::vector<autofill::PasswordAndMetadata>& logins,
     const std::u16string& username) {
-  return std::find_if(logins.begin(), logins.end(),
-                      [&username](const autofill::PasswordAndMetadata& login) {
-                        return login.username == username;
-                      });
+  return base::ranges::find(logins, username,
+                            &autofill::PasswordAndMetadata::username);
 }
 
 }  // namespace
@@ -121,10 +130,22 @@ class PasswordFormFillingTest : public testing::Test {
     metrics_recorder_ = base::MakeRefCounted<PasswordFormMetricsRecorder>(
         true, client_.GetUkmSourceId(), /*pref_service=*/nullptr);
 
-    ON_CALL(client_, GetWebAuthnCredentialsDelegate)
+    ON_CALL(client_, GetWebAuthnCredentialsDelegateForDriver)
         .WillByDefault(Return(&webauthn_credentials_delegate_));
     ON_CALL(webauthn_credentials_delegate_, IsWebAuthnAutofillEnabled)
         .WillByDefault(Return(false));
+
+#if BUILDFLAG(IS_MAC)
+    test_pref_service_ = std::make_unique<TestingPrefServiceSimple>();
+    test_pref_service_->registry()->RegisterBooleanPref(
+        password_manager::prefs::kBiometricAuthenticationBeforeFilling, true);
+    test_pref_service_->registry()->RegisterBooleanPref(
+        password_manager::prefs::kHadBiometricsAvailable, true);
+    ON_CALL(client_, GetPrefs())
+        .WillByDefault(Return(test_pref_service_.get()));
+    ON_CALL(client_, GetLocalStatePrefs())
+        .WillByDefault(Return(test_pref_service_.get()));
+#endif
   }
 
  protected:
@@ -136,13 +157,16 @@ class PasswordFormFillingTest : public testing::Test {
   scoped_refptr<PasswordFormMetricsRecorder> metrics_recorder_;
   std::vector<const PasswordForm*> federated_matches_;
   MockWebAuthnCredentialsDelegate webauthn_credentials_delegate_;
+#if BUILDFLAG(IS_MAC)
+  std::unique_ptr<TestingPrefServiceSimple> test_pref_service_;
+#endif
 };
 
 TEST_F(PasswordFormFillingTest, NoSavedCredentials) {
   std::vector<const PasswordForm*> best_matches;
 
   EXPECT_CALL(driver_, InformNoSavedCredentials(_));
-  EXPECT_CALL(driver_, FillPasswordForm(_)).Times(0);
+  EXPECT_CALL(driver_, SetPasswordFillData(_)).Times(0);
 
   LikelyFormFilling likely_form_filling = SendFillInformationToRenderer(
       &client_, &driver_, observed_form_, best_matches, federated_matches_,
@@ -152,6 +176,11 @@ TEST_F(PasswordFormFillingTest, NoSavedCredentials) {
 }
 
 TEST_F(PasswordFormFillingTest, Autofill) {
+#if BUILDFLAG(IS_MAC)
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(
+      password_manager::features::kBiometricAuthenticationForFilling);
+#endif
   std::vector<const PasswordForm*> best_matches;
   best_matches.push_back(&saved_match_);
   PasswordForm another_saved_match = saved_match_;
@@ -161,7 +190,7 @@ TEST_F(PasswordFormFillingTest, Autofill) {
 
   EXPECT_CALL(driver_, InformNoSavedCredentials(_)).Times(0);
   PasswordFormFillData fill_data;
-  EXPECT_CALL(driver_, FillPasswordForm(_)).WillOnce(SaveArg<0>(&fill_data));
+  EXPECT_CALL(driver_, SetPasswordFillData(_)).WillOnce(SaveArg<0>(&fill_data));
   EXPECT_CALL(client_, PasswordWasAutofilled);
 
   LikelyFormFilling likely_form_filling = SendFillInformationToRenderer(
@@ -171,7 +200,7 @@ TEST_F(PasswordFormFillingTest, Autofill) {
 
   // On Android Touch To Fill will prevent autofilling credentials on page load.
   // On iOS Reauth is always required.
-#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_IOS)
+#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_IOS) || BUILDFLAG(IS_MAC)
   EXPECT_EQ(LikelyFormFilling::kFillOnAccountSelect, likely_form_filling);
   EXPECT_TRUE(fill_data.wait_for_username);
 #else
@@ -198,6 +227,11 @@ TEST_F(PasswordFormFillingTest, Autofill) {
 }
 
 TEST_F(PasswordFormFillingTest, TestFillOnLoadSuggestion) {
+#if BUILDFLAG(IS_MAC)
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(
+      password_manager::features::kBiometricAuthenticationForFilling);
+#endif
   const struct {
     const char* description;
     bool new_password_present;
@@ -235,7 +269,8 @@ TEST_F(PasswordFormFillingTest, TestFillOnLoadSuggestion) {
     }
 
     PasswordFormFillData fill_data;
-    EXPECT_CALL(driver_, FillPasswordForm(_)).WillOnce(SaveArg<0>(&fill_data));
+    EXPECT_CALL(driver_, SetPasswordFillData(_))
+        .WillOnce(SaveArg<0>(&fill_data));
     EXPECT_CALL(client_, PasswordWasAutofilled);
 
     LikelyFormFilling likely_form_filling = SendFillInformationToRenderer(
@@ -249,7 +284,7 @@ TEST_F(PasswordFormFillingTest, TestFillOnLoadSuggestion) {
     if (test_case.current_password_present) {
       // On Android Touch To Fill will prevent autofilling credentials on page
       // load. On iOS Reauth is always required.
-#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_IOS)
+#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_IOS) || BUILDFLAG(IS_MAC)
       EXPECT_EQ(LikelyFormFilling::kFillOnAccountSelect, likely_form_filling);
 #else
       EXPECT_EQ(LikelyFormFilling::kFillOnPageLoad, likely_form_filling);
@@ -266,11 +301,12 @@ TEST_F(PasswordFormFillingTest, DontFillOnLoadWebAuthnCredentials) {
   observed_form_.accepts_webauthn_credentials = true;
   for (bool webauthn_autofill_enabled : {false, true}) {
     PasswordFormFillData fill_data;
-    EXPECT_CALL(client_, GetWebAuthnCredentialsDelegate())
+    EXPECT_CALL(client_, GetWebAuthnCredentialsDelegateForDriver)
         .WillOnce(Return(&webauthn_credentials_delegate));
     EXPECT_CALL(webauthn_credentials_delegate, IsWebAuthnAutofillEnabled())
         .WillOnce(Return(webauthn_autofill_enabled));
-    EXPECT_CALL(driver_, FillPasswordForm(_)).WillOnce(SaveArg<0>(&fill_data));
+    EXPECT_CALL(driver_, SetPasswordFillData(_))
+        .WillOnce(SaveArg<0>(&fill_data));
     EXPECT_CALL(client_, PasswordWasAutofilled);
     LikelyFormFilling likely_form_filling = SendFillInformationToRenderer(
         &client_, &driver_, observed_form_, {&saved_match_}, federated_matches_,
@@ -288,7 +324,7 @@ TEST_F(PasswordFormFillingTest, FillWithOnlyWebAuthnCredentials) {
   MockWebAuthnCredentialsDelegate webauthn_credentials_delegate;
   observed_form_.accepts_webauthn_credentials = true;
 
-  EXPECT_CALL(client_, GetWebAuthnCredentialsDelegate())
+  EXPECT_CALL(client_, GetWebAuthnCredentialsDelegateForDriver)
       .WillOnce(Return(&webauthn_credentials_delegate));
   EXPECT_CALL(webauthn_credentials_delegate, IsWebAuthnAutofillEnabled())
       .WillOnce(Return(true));
@@ -350,7 +386,7 @@ TEST_F(PasswordFormFillingTest, TestFillOnLoadSuggestionWithPrefill) {
     observed_form.username_may_use_prefilled_placeholder =
         test_case.username_may_use_prefilled_placeholder;
 
-    EXPECT_CALL(driver_, FillPasswordForm);
+    EXPECT_CALL(driver_, SetPasswordFillData);
     EXPECT_CALL(client_, PasswordWasAutofilled);
 
     LikelyFormFilling likely_form_filling = SendFillInformationToRenderer(
@@ -368,7 +404,7 @@ TEST_F(PasswordFormFillingTest, AutofillPSLMatch) {
 
   EXPECT_CALL(driver_, InformNoSavedCredentials(_)).Times(0);
   PasswordFormFillData fill_data;
-  EXPECT_CALL(driver_, FillPasswordForm(_)).WillOnce(SaveArg<0>(&fill_data));
+  EXPECT_CALL(driver_, SetPasswordFillData(_)).WillOnce(SaveArg<0>(&fill_data));
   EXPECT_CALL(client_, PasswordWasAutofilled);
 
   LikelyFormFilling likely_form_filling = SendFillInformationToRenderer(
@@ -438,7 +474,7 @@ TEST_F(PasswordFormFillingTest, AutofillAffiliatedWebMatch) {
 
   EXPECT_CALL(driver_, InformNoSavedCredentials).Times(0);
   PasswordFormFillData fill_data;
-  EXPECT_CALL(driver_, FillPasswordForm).WillOnce(SaveArg<0>(&fill_data));
+  EXPECT_CALL(driver_, SetPasswordFillData).WillOnce(SaveArg<0>(&fill_data));
   EXPECT_CALL(client_, PasswordWasAutofilled);
 
   LikelyFormFilling likely_form_filling = SendFillInformationToRenderer(

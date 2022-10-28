@@ -1,9 +1,10 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "device/fido/fido_discovery_factory.h"
 
+#include "base/containers/contains.h"
 #include "base/notreached.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
@@ -77,10 +78,8 @@ std::vector<std::unique_ptr<FidoDiscoveryBase>> FidoDiscoveryFactory::Create(
         std::vector<std::unique_ptr<FidoDiscoveryBase>> ret;
         const bool have_v2_discovery_data =
             cable_data_.has_value() &&
-            std::any_of(cable_data_->begin(), cable_data_->end(),
-                        [](const CableDiscoveryData& v) -> bool {
-                          return v.version == CableDiscoveryData::Version::V2;
-                        });
+            base::Contains(*cable_data_, CableDiscoveryData::Version::V2,
+                           &CableDiscoveryData::version);
         if (qr_generator_key_.has_value() || have_v2_discovery_data) {
           ret.emplace_back(std::make_unique<cablev2::Discovery>(
               request_type_.value(), network_context_, qr_generator_key_,
@@ -129,7 +128,7 @@ bool FidoDiscoveryFactory::IsTestOverride() {
 }
 
 void FidoDiscoveryFactory::set_cable_data(
-    FidoRequestType request_type,
+    CableRequestType request_type,
     std::vector<CableDiscoveryData> cable_data,
     const absl::optional<std::array<uint8_t, cablev2::kQRKeySize>>&
         qr_generator_key,

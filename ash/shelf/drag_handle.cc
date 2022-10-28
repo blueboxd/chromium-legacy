@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -350,8 +350,6 @@ void DragHandle::ShowDragHandleTooltip() {
   drag_handle_nudge_ = new ContextualNudge(
       this, nullptr /*parent_window*/, ContextualNudge::Position::kTop,
       gfx::Insets(), l10n_util::GetStringUTF16(IDS_ASH_DRAG_HANDLE_NUDGE),
-      AshColorProvider::Get()->GetContentLayerColor(
-          AshColorProvider::ContentLayerType::kTextColorPrimary),
       base::BindRepeating(&DragHandle::HandleTapOnNudge,
                           weak_factory_.GetWeakPtr()));
   drag_handle_nudge_->GetWidget()->Show();

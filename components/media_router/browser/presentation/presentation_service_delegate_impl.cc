@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -17,7 +17,9 @@
 #include "base/memory/ptr_util.h"
 #include "base/memory/raw_ptr.h"
 #include "base/observer_list.h"
+#include "base/ranges/algorithm.h"
 #include "base/strings/string_util.h"
+#include "base/values.h"
 #include "build/build_config.h"
 #include "components/media_router/browser/media_router.h"
 #include "components/media_router/browser/media_router_dialog_controller.h"
@@ -466,8 +468,8 @@ void PresentationServiceDelegateImpl::StartPresentation(
         PresentationErrorType::UNKNOWN, "Invalid presentation arguments."));
     return;
   }
-  if (std::find_if_not(presentation_urls.begin(), presentation_urls.end(),
-                       IsValidPresentationUrl) != presentation_urls.end()) {
+  if (base::ranges::find_if_not(presentation_urls, IsValidPresentationUrl) !=
+      presentation_urls.end()) {
     std::move(error_cb).Run(
         PresentationError(PresentationErrorType::NO_PRESENTATION_FOUND,
                           "Invalid presentation URL."));
@@ -714,11 +716,10 @@ MediaRoute::Id PresentationServiceDelegateImpl::GetRouteId(
 #if !BUILDFLAG(IS_ANDROID)
 bool PresentationServiceDelegateImpl::ShouldCancelAutoJoinForOrigin(
     const url::Origin& origin) {
-  const base::Value* origins =
+  const base::Value::List& origins =
       user_prefs::UserPrefs::Get(GetWebContents().GetBrowserContext())
           ->GetList(prefs::kMediaRouterTabMirroringSources);
-  return origins && base::Contains(origins->GetListDeprecated(),
-                                   base::Value(origin.Serialize()));
+  return base::Contains(origins, base::Value(origin.Serialize()));
 }
 #endif  // !BUILDFLAG(IS_ANDROID)
 

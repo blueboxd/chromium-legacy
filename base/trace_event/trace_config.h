@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -260,6 +260,13 @@ class BASE_EXPORT TraceConfig {
   // systrace, argument filtering). Does not include category filters, event
   // filters, or memory dump configs.
   std::string ToTraceOptionsString() const;
+
+#if BUILDFLAG(USE_PERFETTO_CLIENT_LIBRARY)
+  // Write the serialized perfetto::TrackEventConfig corresponding to this
+  // TraceConfig.
+  std::string ToPerfettoTrackEventConfigRaw(
+      bool privacy_filtering_enabled) const;
+#endif  // BUILDFLAG(USE_PERFETTO_CLIENT_LIBRARY)
 
   // Returns true if at least one category in the list is enabled by this
   // trace config. This is used to determine if the category filters are

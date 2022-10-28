@@ -1,21 +1,20 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/grid/grid_view_controller.h"
 
-#include "base/check_op.h"
-#include "base/cxx17_backports.h"
-#include "base/ios/block_types.h"
+#import "base/check_op.h"
+#import "base/cxx17_backports.h"
+#import "base/ios/block_types.h"
 #import "base/ios/ios_util.h"
 #import "base/mac/foundation_util.h"
-#include "base/metrics/user_metrics.h"
-#include "base/metrics/user_metrics_action.h"
-#include "base/notreached.h"
+#import "base/metrics/user_metrics.h"
+#import "base/metrics/user_metrics_action.h"
+#import "base/notreached.h"
 #import "base/numerics/safe_conversions.h"
-#include "base/strings/sys_string_conversions.h"
-#import "ios/chrome/browser/commerce/price_alert_util.h"
-#include "ios/chrome/browser/procedural_block_types.h"
+#import "base/strings/sys_string_conversions.h"
+#import "ios/chrome/browser/procedural_block_types.h"
 #import "ios/chrome/browser/ui/commands/thumb_strip_commands.h"
 #import "ios/chrome/browser/ui/commerce/price_card/price_card_data_source.h"
 #import "ios/chrome/browser/ui/commerce/price_card/price_card_item.h"
@@ -42,9 +41,9 @@
 #import "ios/chrome/browser/ui/util/rtl_geometry.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #import "ios/chrome/common/ui/util/constraints_ui_util.h"
-#include "ios/chrome/grit/ios_strings.h"
-#include "ios/public/provider/chrome/browser/modals/modals_api.h"
-#include "ui/base/l10n/l10n_util.h"
+#import "ios/chrome/grit/ios_strings.h"
+#import "ios/public/provider/chrome/browser/modals/modals_api.h"
+#import "ui/base/l10n/l10n_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -1410,15 +1409,13 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
                                        }
                                      }
                                    }];
-  if (IsPriceAlertsEnabled()) {
-    [self.priceCardDataSource
-        priceCardForIdentifier:itemIdentifier
-                    completion:^(PriceCardItem* priceCardItem) {
-                      if (priceCardItem && [cell hasIdentifier:itemIdentifier])
-                        [cell setPriceDrop:priceCardItem.price
-                             previousPrice:priceCardItem.previousPrice];
-                    }];
-  }
+  [self.priceCardDataSource
+      priceCardForIdentifier:itemIdentifier
+                  completion:^(PriceCardItem* priceCardItem) {
+                    if (priceCardItem && [cell hasIdentifier:itemIdentifier])
+                      [cell setPriceDrop:priceCardItem.price
+                           previousPrice:priceCardItem.previousPrice];
+                  }];
   if (self.thumbStripEnabled &&
       ![itemIdentifier isEqualToString:self.selectedItemID]) {
     cell.opacity = self.notSelectedTabCellOpacity;

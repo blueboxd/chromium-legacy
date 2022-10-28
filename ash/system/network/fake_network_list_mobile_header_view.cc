@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -15,17 +15,19 @@ FakeNetworkListMobileHeaderView::FakeNetworkListMobileHeaderView(
 
 FakeNetworkListMobileHeaderView::~FakeNetworkListMobileHeaderView() = default;
 
-void FakeNetworkListMobileHeaderView::SetToggleState(bool enabled, bool is_on) {
+void FakeNetworkListMobileHeaderView::SetToggleState(bool enabled,
+                                                     bool is_on,
+                                                     bool animate_toggle) {
   is_toggle_enabled_ = enabled;
   is_toggle_on_ = is_on;
   set_toggle_state_count_++;
-};
+}
 
 void FakeNetworkListMobileHeaderView::SetAddESimButtonState(bool enabled,
                                                             bool visible) {
   is_add_esim_enabled_ = enabled;
   is_add_esim_visible_ = visible;
   set_add_esim_button_state_count_++;
-};
+}
 
 }  // namespace ash

@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -53,6 +53,18 @@ void DissociateMailboxForPresent(GLuint device_id,
       GetCmdSpace<webgpu::cmds::DissociateMailboxForPresent>();
   if (c) {
     c->Init(device_id, device_generation, texture_id, texture_generation);
+  }
+}
+
+void SetExecutionContextToken(uint32_t type,
+                              uint32_t high_high,
+                              uint32_t high_low,
+                              uint32_t low_high,
+                              uint32_t low_low) {
+  webgpu::cmds::SetExecutionContextToken* c =
+      GetCmdSpace<webgpu::cmds::SetExecutionContextToken>();
+  if (c) {
+    c->Init(type, high_high, high_low, low_high, low_low);
   }
 }
 

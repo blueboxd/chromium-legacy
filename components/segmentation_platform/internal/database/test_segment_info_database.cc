@@ -1,13 +1,12 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "components/segmentation_platform/internal/database/test_segment_info_database.h"
 
-#include <algorithm>
-
 #include "base/containers/contains.h"
 #include "base/metrics/metrics_hashes.h"
+#include "base/ranges/algorithm.h"
 #include "components/segmentation_platform/internal/constants.h"
 #include "components/segmentation_platform/internal/metadata/metadata_writer.h"
 #include "components/segmentation_platform/internal/proto/model_prediction.pb.h"
@@ -18,18 +17,12 @@
 namespace segmentation_platform::test {
 
 TestSegmentInfoDatabase::TestSegmentInfoDatabase()
-    : SegmentInfoDatabase(nullptr) {}
+    : SegmentInfoDatabase(nullptr, nullptr) {}
 
 TestSegmentInfoDatabase::~TestSegmentInfoDatabase() = default;
 
 void TestSegmentInfoDatabase::Initialize(SuccessCallback callback) {
   std::move(callback).Run(true);
-}
-
-void TestSegmentInfoDatabase::GetAllSegmentInfo(
-    MultipleSegmentInfoCallback callback) {
-  std::move(callback).Run(
-      std::make_unique<SegmentInfoDatabase::SegmentInfoList>(segment_infos_));
 }
 
 void TestSegmentInfoDatabase::GetSegmentInfoForSegments(
@@ -46,10 +39,8 @@ void TestSegmentInfoDatabase::GetSegmentInfoForSegments(
 void TestSegmentInfoDatabase::GetSegmentInfo(SegmentId segment_id,
                                              SegmentInfoCallback callback) {
   auto result =
-      std::find_if(segment_infos_.begin(), segment_infos_.end(),
-                   [segment_id](std::pair<SegmentId, proto::SegmentInfo> pair) {
-                     return pair.first == segment_id;
-                   });
+      base::ranges::find(segment_infos_, segment_id,
+                         &std::pair<SegmentId, proto::SegmentInfo>::first);
 
   std::move(callback).Run(result == segment_infos_.end()
                               ? absl::nullopt

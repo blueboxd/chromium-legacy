@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -205,8 +205,8 @@ bool NetworkIsolationKey::FromValue(
 }
 
 const absl::optional<SchemefulSite>& NetworkIsolationKey::GetFrameSite() const {
-  // TODO: @brgoldstein, add CHECK that
-  // `kForceIsolationInfoFrameOriginToTopLevelFrame` is not enabled.
+  // Frame site will be empty if double-keying is enabled.
+  CHECK(NetworkIsolationKey::IsFrameSiteEnabled());
   return frame_site_;
 }
 

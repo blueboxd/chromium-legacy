@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,7 +10,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/test/bind.h"
 #include "base/test/task_environment.h"
-#include "components/cast_streaming/renderer/public/web_codecs/decoder_buffer_provider.h"
+#include "components/cast_streaming/renderer/public/decoder_buffer_provider.h"
 #include "media/base/audio_decoder_config.h"
 #include "media/base/decoder_buffer.h"
 #include "testing/gmock/include/gmock/gmock.h"

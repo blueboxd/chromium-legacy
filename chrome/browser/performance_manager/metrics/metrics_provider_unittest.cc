@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,8 +7,8 @@
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
-#include "chrome/browser/performance_manager/user_tuning/fake_frame_throttling_delegate.h"
-#include "chrome/browser/performance_manager/user_tuning/user_performance_tuning_manager.h"
+#include "chrome/browser/performance_manager/public/user_tuning/user_performance_tuning_manager.h"
+#include "chrome/browser/performance_manager/test_support/fake_frame_throttling_delegate.h"
 #include "components/performance_manager/public/features.h"
 #include "components/performance_manager/public/user_tuning/prefs.h"
 #include "components/prefs/testing_pref_service.h"
@@ -54,6 +54,8 @@ class PerformanceManagerMetricsProviderTest : public testing::Test {
 
   performance_manager::MetricsProvider* provider() { return provider_.get(); }
 
+  void ShutdownUserPerformanceTuningManager() { manager_.reset(); }
+
  private:
   void SetUp() override {
     feature_list_.InitWithFeatures(
@@ -66,7 +68,7 @@ class PerformanceManagerMetricsProviderTest : public testing::Test {
 
     manager_.reset(
         new performance_manager::user_tuning::UserPerformanceTuningManager(
-            &local_state_,
+            &local_state_, nullptr,
             std::make_unique<performance_manager::FakeFrameThrottlingDelegate>(
                 &throttling_enabled_),
             std::make_unique<FakeHighEfficiencyModeToggleDelegate>()));
@@ -178,5 +180,36 @@ TEST_F(PerformanceManagerMetricsProviderTest, TestBothModes) {
     provider()->ProvideCurrentSessionData(nullptr);
     ExpectSingleUniqueSample(
         tester, performance_manager::MetricsProvider::EfficiencyMode::kBoth);
+  }
+}
+
+TEST_F(PerformanceManagerMetricsProviderTest,
+       TestCorrectlyLoggedDuringShutdown) {
+  SetBatterySaverEnabled(true);
+
+  InitProvider();
+
+  {
+    base::HistogramTester tester;
+    // No changes until the following report, "Battery saver" is reported
+    provider()->ProvideCurrentSessionData(nullptr);
+    ExpectSingleUniqueSample(
+        tester,
+        performance_manager::MetricsProvider::EfficiencyMode::kBatterySaver);
+  }
+
+  ShutdownUserPerformanceTuningManager();
+
+  // During shutdown, the MetricsProvider will attempt to record session data
+  // one last time. This happens after the UserPerformanceTuningManager is
+  // destroyed, which can cause a crash if the manager is accessed to compute
+  // the current mode.
+  {
+    base::HistogramTester tester;
+    // No changes until the following report, "Battery saver" is reported
+    provider()->ProvideCurrentSessionData(nullptr);
+    ExpectSingleUniqueSample(
+        tester,
+        performance_manager::MetricsProvider::EfficiencyMode::kBatterySaver);
   }
 }

@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -405,8 +405,8 @@ void ClientSideDetectionService::LoadPhishingReportTimesFromPrefs() {
     return;
 
   phishing_report_times_.clear();
-  for (const base::Value& timestamp : delegate_->GetPrefs()->GetValueList(
-           prefs::kSafeBrowsingCsdPingTimestamps)) {
+  for (const base::Value& timestamp :
+       delegate_->GetPrefs()->GetList(prefs::kSafeBrowsingCsdPingTimestamps)) {
     phishing_report_times_.push_back(
         base::Time::FromDoubleT(timestamp.GetDouble()));
   }

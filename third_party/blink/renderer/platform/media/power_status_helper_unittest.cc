@@ -14,6 +14,7 @@
 #include "base/test/mock_callback.h"
 #include "base/test/task_environment.h"
 #include "media/base/pipeline_metadata.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "services/device/public/mojom/battery_status.mojom-blink.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -32,7 +33,7 @@ class PowerStatusHelperTest : public testing::Test {
     MOCK_METHOD0(DidQueryNextStatus, void());
     MOCK_METHOD0(DidDisconnect, void());
 
-    ~MockBatteryMonitor() {
+    ~MockBatteryMonitor() override {
       // Mojo gets mad if we don't finish up outstanding callbacks.
       if (callback_)
         ProvidePowerUpdate(false, 0);

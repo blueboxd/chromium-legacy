@@ -111,7 +111,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Stability.Android.RendererCrash" enum="Boolean"
-    expires_after="2023-01-01">
+    expires_after="2023-03-05">
   <owner>wnwen@chromium.org</owner>
   <summary>
     Counts renderer crashes including OOMs. Android only. Mirrors old stability
@@ -300,7 +300,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Stability.DebugScenario.Navigation" enum="DebugScenario"
-    expires_after="2022-12-19">
+    expires_after="2023-02-19">
   <owner>nasko@chromium.org</owner>
   <owner>altimin@chromium.org</owner>
   <summary>
@@ -328,7 +328,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Stability.Experimental.PageLoads" enum="StabilityPageLoadType"
-    expires_after="2022-12-18">
+    expires_after="2023-02-19">
   <owner>fdoray@chromium.org</owner>
   <owner>catan-team@chromium.org</owner>
   <summary>
@@ -364,7 +364,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Stability.Internals.SystemCrashCount" units="crashes"
-    expires_after="2022-12-25">
+    expires_after="2023-02-26">
   <owner>davidbienvenu@chromium.org</owner>
   <owner>jessemckenna@google.com</owner>
   <summary>
@@ -471,7 +471,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Stability.iOS.UTE.HasPossibleExplanation"
-    enum="BooleanHasPossibleExplanation" expires_after="2022-10-16">
+    enum="BooleanHasPossibleExplanation" expires_after="2023-02-26">
   <owner>michaeldo@chromium.org</owner>
   <owner>olivierrobin@chromium.org</owner>
   <summary>
@@ -552,7 +552,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Stability.MobileSessionShutdownType"
-    enum="MobileSessionShutdownType" expires_after="2022-12-18">
+    enum="MobileSessionShutdownType" expires_after="2023-02-26">
   <owner>michaeldo@chromium.org</owner>
   <owner>olivierrobin@chromium.org</owner>
   <summary>
@@ -565,23 +565,6 @@ chromium-metrics-reviews@google.com.
     before being killed. For first launch after upgrade, the crash reports may
     be discarded before this histogram is written to so it's not possible to
     determine if there's a valid crash log present or not.
-  </summary>
-</histogram>
-
-<histogram name="Stability.MobileSessionShutdownType2"
-    enum="MobileSessionShutdownType" expires_after="2023-02-26">
-  <owner>justincohen@chromium.org</owner>
-  <owner>ajuma@chromium.org</owner>
-  <summary>
-    Type of the shutdown. This histogram is recorded after processing Crashpad
-    intermediate dumps, and is otherwise identical to
-    Stability.MobileSessionShutdownType, which is recorded at startup and before
-    Crashpad dumps are processed. Because this histogram is not recorded in time
-    for the initial stability log, the histogram will appear in a log that lists
-    the current Chrome version (and other browser metadata), not the Chrome
-    version at the time the crash occurred. The earlier histogram
-    Stability.MobileSessionShutdownType should be in the stability log, which
-    will list the Chrome version at the time of the crash.
   </summary>
 </histogram>
 

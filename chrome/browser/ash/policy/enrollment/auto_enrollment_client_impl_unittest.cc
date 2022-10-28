@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -1946,8 +1946,7 @@ INSTANTIATE_TEST_SUITE_P(
                        PsmResult::kCreateQueryRequestLibraryError,
                        PsmResult::kProcessingQueryResponseLibraryError,
                        PsmResult::kEmptyOprfResponseError,
-                       PsmResult::kEmptyQueryResponseError,
-                       PsmResult::kTimeout}));
+                       PsmResult::kEmptyQueryResponseError}));
 
 }  // namespace
 }  // namespace policy

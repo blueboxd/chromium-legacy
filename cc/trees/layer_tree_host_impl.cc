@@ -1,4 +1,4 @@
-// Copyright 2011 The Chromium Authors. All rights reserved.
+// Copyright 2011 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -31,6 +31,7 @@
 #include "base/metrics/histogram.h"
 #include "base/notreached.h"
 #include "base/numerics/safe_conversions.h"
+#include "base/ranges/algorithm.h"
 #include "base/strings/stringprintf.h"
 #include "base/system/sys_info.h"
 #include "base/trace_event/traced_value.h"
@@ -563,6 +564,7 @@ void LayerTreeHostImpl::BeginMainFrameAborted(
     CommitEarlyOutReason reason,
     std::vector<std::unique_ptr<SwapPromise>> swap_promises,
     const viz::BeginFrameArgs& args,
+    bool next_bmf,
     bool scroll_and_viewport_changes_synced) {
   if (reason == CommitEarlyOutReason::ABORTED_NOT_VISIBLE ||
       reason == CommitEarlyOutReason::FINISHED_NO_UPDATES) {
@@ -576,7 +578,7 @@ void LayerTreeHostImpl::BeginMainFrameAborted(
   // values were applied and committed.
   bool main_frame_applied_deltas = MainFrameAppliedDeltas(reason);
   active_tree_->ApplySentScrollAndScaleDeltasFromAbortedCommit(
-      main_frame_applied_deltas);
+      next_bmf, main_frame_applied_deltas);
   if (main_frame_applied_deltas) {
     if (pending_tree_) {
       pending_tree_->AppendSwapPromises(std::move(swap_promises));
@@ -598,6 +600,7 @@ void LayerTreeHostImpl::BeginMainFrameAborted(
 
 void LayerTreeHostImpl::ReadyToCommit(
     const viz::BeginFrameArgs& commit_args,
+    bool scroll_and_viewport_changes_synced,
     const BeginMainFrameMetrics* begin_main_frame_metrics,
     bool commit_timeout) {
   frame_trackers_.NotifyMainFrameProcessed(commit_args);
@@ -609,10 +612,18 @@ void LayerTreeHostImpl::ReadyToCommit(
     total_frame_counter_.Reset();
     dropped_frame_counter_.OnFcpReceived();
   }
+
   // Notify the browser controls manager that we have processed any
   // controls constraint update.
-  if (browser_controls_manager()) {
+  if (scroll_and_viewport_changes_synced && browser_controls_manager()) {
     browser_controls_manager()->NotifyConstraintSyncedToMainThread();
+  }
+
+  // If the scoll offsets were not synchronized, undo the sending of offsets
+  // similar to what's done when the commit is aborted.
+  if (!scroll_and_viewport_changes_synced) {
+    active_tree_->ApplySentScrollAndScaleDeltasFromAbortedCommit(
+        /*next_bmf=*/false, /*main_frame_applied_deltas=*/false);
   }
 }
 
@@ -1174,11 +1185,7 @@ static void AppendQuadsToFillScreen(
 static viz::CompositorRenderPass* FindRenderPassById(
     const viz::CompositorRenderPassList& list,
     viz::CompositorRenderPassId id) {
-  auto it =
-      std::find_if(list.begin(), list.end(),
-                   [id](const std::unique_ptr<viz::CompositorRenderPass>& p) {
-                     return p->id == id;
-                   });
+  auto it = base::ranges::find(list, id, &viz::CompositorRenderPass::id);
   return it == list.end() ? nullptr : it->get();
 }
 
@@ -2232,8 +2239,7 @@ void LayerTreeHostImpl::OnDraw(const gfx::Transform& transform,
 
 void LayerTreeHostImpl::OnCompositorFrameTransitionDirectiveProcessed(
     uint32_t sequence_id) {
-  finished_transition_request_sequence_ids_.push_back(sequence_id);
-  SetNeedsCommit();
+  client_->NotifyTransitionRequestFinished(sequence_id);
 }
 
 void LayerTreeHostImpl::ReportEventLatency(
@@ -2628,9 +2634,7 @@ viz::CompositorFrame LayerTreeHostImpl::GenerateCompositorFrame(
 
   viz::CompositorFrameMetadata metadata = MakeCompositorFrameMetadata();
 
-  std::map<DocumentTransitionSharedElementId,
-           DocumentTransitionRequest::SharedElementInfo>
-      shared_element_render_pass_id_map;
+  DocumentTransitionRequest::SharedElementMap shared_element_render_pass_id_map;
   for (RenderSurfaceImpl* render_surface : *frame->render_surface_list) {
     const auto& shared_element_id =
         render_surface->GetDocumentTransitionSharedElementId();
@@ -3703,13 +3707,6 @@ std::unique_ptr<MutatorEvents> LayerTreeHostImpl::TakeMutatorEvents() {
   return events;
 }
 
-std::vector<uint32_t>
-LayerTreeHostImpl::TakeFinishedTransitionRequestSequenceIds() {
-  std::vector<uint32_t> result;
-  result.swap(finished_transition_request_sequence_ids_);
-  return result;
-}
-
 void LayerTreeHostImpl::ClearHistory() {
   client_->ClearHistory();
 }
@@ -4130,15 +4127,19 @@ void LayerTreeHostImpl::CollectScrollbarUpdatesForCommit(
 }
 
 std::unique_ptr<CompositorCommitData>
-LayerTreeHostImpl::ProcessCompositorDeltas() {
+LayerTreeHostImpl::ProcessCompositorDeltas(
+    const MutatorHost* main_thread_mutator_host) {
   auto commit_data = std::make_unique<CompositorCommitData>();
 
-  if (input_delegate_)
-    input_delegate_->ProcessCommitDeltas(commit_data.get());
+  if (input_delegate_) {
+    input_delegate_->ProcessCommitDeltas(commit_data.get(),
+                                         main_thread_mutator_host);
+  }
   CollectScrollbarUpdatesForCommit(commit_data.get());
 
   commit_data->page_scale_delta =
-      active_tree_->page_scale_factor()->PullDeltaForMainThread();
+      active_tree_->page_scale_factor()->PullDeltaForMainThread(
+          main_thread_mutator_host);
   commit_data->is_pinch_gesture_active = active_tree_->PinchGestureActive();
   commit_data->is_scroll_active =
       input_delegate_ && GetInputHandler().IsCurrentlyScrolling();
@@ -4148,11 +4149,14 @@ LayerTreeHostImpl::ProcessCompositorDeltas() {
   DCHECK(settings().is_for_scalable_page ||
          commit_data->page_scale_delta == 1.f);
   commit_data->top_controls_delta =
-      active_tree()->top_controls_shown_ratio()->PullDeltaForMainThread();
+      active_tree()->top_controls_shown_ratio()->PullDeltaForMainThread(
+          main_thread_mutator_host);
   commit_data->bottom_controls_delta =
-      active_tree()->bottom_controls_shown_ratio()->PullDeltaForMainThread();
+      active_tree()->bottom_controls_shown_ratio()->PullDeltaForMainThread(
+          main_thread_mutator_host);
   commit_data->elastic_overscroll_delta =
-      active_tree_->elastic_overscroll()->PullDeltaForMainThread();
+      active_tree_->elastic_overscroll()->PullDeltaForMainThread(
+          main_thread_mutator_host);
   commit_data->swap_promises.swap(swap_promises_for_main_thread_scroll_update_);
 
   commit_data->ongoing_scroll_animation =

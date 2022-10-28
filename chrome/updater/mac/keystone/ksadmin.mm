@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,7 +6,6 @@
 
 #include <stdio.h>
 
-#include <algorithm>
 #include <map>
 #include <string>
 #include <utility>
@@ -27,6 +26,7 @@
 #include "base/no_destructor.h"
 #include "base/path_service.h"
 #include "base/process/launch.h"
+#include "base/ranges/algorithm.h"
 #include "base/strings/string_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/task/single_thread_task_executor.h"
@@ -482,8 +482,8 @@ void KSAdminApp::DoPrintTag(UpdaterScope scope) {
         int exit_code = 0;
 
         std::vector<updater::UpdateService::AppState>::const_iterator it =
-            std::find_if(
-                std::begin(states), std::end(states),
+            base::ranges::find_if(
+                states,
                 [&app_id](const updater::UpdateService::AppState& state) {
                   return base::EqualsCaseInsensitiveASCII(state.app_id, app_id);
                 });

@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -20,7 +20,6 @@
 #include "components/autofill/core/browser/metrics/autofill_metrics.h"
 #include "components/autofill/core/browser/payments/autofill_offer_manager.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
-#include "components/autofill/core/browser/ui/suggestion.h"
 #include "components/autofill/core/browser/ui/suggestion_selection.h"
 #include "components/autofill/core/common/autofill_clock.h"
 #include "components/autofill/core/common/autofill_constants.h"
@@ -77,7 +76,7 @@ std::vector<Suggestion> AutofillSuggestionGenerator::GetSuggestionsForProfiles(
   if (autofill_field.Type().group() == FieldTypeGroup::kPhoneHome) {
     for (auto& suggestion : suggestions) {
       const AutofillProfile* profile = personal_data_->GetProfileByGUID(
-          suggestion.GetPayload<std::string>());
+          suggestion.GetPayload<Suggestion::BackendId>().value());
       if (profile) {
         const std::u16string phone_home_city_and_number =
             profile->GetInfo(PHONE_HOME_CITY_AND_NUMBER, app_locale);
@@ -92,7 +91,8 @@ std::vector<Suggestion> AutofillSuggestionGenerator::GetSuggestionsForProfiles(
 
   for (auto& suggestion : suggestions) {
     suggestion.frontend_id =
-        MakeFrontendId(std::string(), suggestion.GetPayload<std::string>());
+        MakeFrontendId(Suggestion::BackendId(),
+                       suggestion.GetPayload<Suggestion::BackendId>());
   }
 
   return suggestions;
@@ -173,7 +173,8 @@ AutofillSuggestionGenerator::GetSuggestionsForCreditCards(
   for (Suggestion& suggestion : suggestions) {
     if (suggestion.frontend_id == 0) {
       suggestion.frontend_id =
-          MakeFrontendId(suggestion.GetPayload<std::string>(), std::string());
+          MakeFrontendId(suggestion.GetPayload<Suggestion::BackendId>(),
+                         Suggestion::BackendId());
     }
   }
 
@@ -187,10 +188,10 @@ std::vector<Suggestion> AutofillSuggestionGenerator::GetSuggestionsForIBANs(
   for (const IBAN* iban : ibans) {
     Suggestion& suggestion = suggestions.emplace_back(iban->value());
     suggestion.frontend_id = POPUP_ITEM_ID_IBAN_ENTRY;
-    suggestion.payload = iban->guid();
+    suggestion.payload = Suggestion::BackendId(iban->guid());
     suggestion.main_text.value = iban->GetIdentifierStringForAutofillDisplay();
     if (!iban->nickname().empty())
-      suggestion.label = iban->nickname();
+      suggestion.labels = {{Suggestion::Text(iban->nickname())}};
   }
   return suggestions;
 }
@@ -206,9 +207,12 @@ AutofillSuggestionGenerator::GetPromoCodeSuggestionsFromPromoCodeOffers(
     suggestions.emplace_back(
         base::ASCIIToUTF16(promo_code_offer->GetPromoCode()));
     Suggestion& suggestion = suggestions.back();
-    suggestion.label = base::ASCIIToUTF16(
-        promo_code_offer->GetDisplayStrings().value_prop_text);
-    suggestion.payload = base::NumberToString(promo_code_offer->GetOfferId());
+    if (!promo_code_offer->GetDisplayStrings().value_prop_text.empty()) {
+      suggestion.labels = {{Suggestion::Text(base::ASCIIToUTF16(
+          promo_code_offer->GetDisplayStrings().value_prop_text))}};
+    }
+    suggestion.payload = Suggestion::BackendId(
+        base::NumberToString(promo_code_offer->GetOfferId()));
     suggestion.frontend_id = POPUP_ITEM_ID_MERCHANT_PROMO_CODE_ENTRY;
 
     // Every offer for a given merchant leads to the same GURL, so we grab the
@@ -294,8 +298,8 @@ std::u16string AutofillSuggestionGenerator::GetDisplayNicknameForCreditCard(
 // profile IDs into a single integer.  Credit card IDs are sent in the high
 // word and profile IDs are sent in the low word.
 int AutofillSuggestionGenerator::MakeFrontendId(
-    const std::string& cc_backend_id,
-    const std::string& profile_backend_id) const {
+    const Suggestion::BackendId& cc_backend_id,
+    const Suggestion::BackendId& profile_backend_id) {
   InternalId cc_int_id = BackendIdToInternalId(cc_backend_id);
   InternalId profile_int_id = BackendIdToInternalId(profile_backend_id);
 
@@ -315,8 +319,8 @@ int AutofillSuggestionGenerator::MakeFrontendId(
 // the high word and profile IDs are stored in the low word.
 void AutofillSuggestionGenerator::SplitFrontendId(
     int frontend_id,
-    std::string* cc_backend_id,
-    std::string* profile_backend_id) const {
+    Suggestion::BackendId* cc_backend_id,
+    Suggestion::BackendId* profile_backend_id) {
   InternalId cc_int_id =
       InternalId((frontend_id >> std::numeric_limits<uint16_t>::digits) &
                  std::numeric_limits<uint16_t>::max());
@@ -338,7 +342,7 @@ Suggestion AutofillSuggestionGenerator::CreateCreditCardSuggestion(
   suggestion.main_text = Suggestion::Text(credit_card.GetInfo(type, app_locale),
                                           Suggestion::Text::IsPrimary(true));
   suggestion.icon = credit_card.CardIconStringForAutofillSuggestion();
-  suggestion.payload = credit_card.guid();
+  suggestion.payload = Suggestion::BackendId(credit_card.guid());
   suggestion.match = prefix_matched_suggestion ? Suggestion::PREFIX_MATCH
                                                : Suggestion::SUBSTRING_MATCH;
 
@@ -352,6 +356,8 @@ Suggestion AutofillSuggestionGenerator::CreateCreditCardSuggestion(
   int obfuscation_length =
       base::FeatureList::IsEnabled(features::kAutofillKeyboardAccessory) ? 2
                                                                          : 4;
+
+  std::u16string suggestion_label;
   // If the value is the card number, the label is the expiration date.
   // Otherwise the label is the card number, or if that is empty the cardholder
   // name. The label should never repeat the value.
@@ -361,22 +367,18 @@ Suggestion AutofillSuggestionGenerator::CreateCreditCardSuggestion(
                              suggestion_nickname, obfuscation_length),
                          Suggestion::Text::IsPrimary(true));
 
-    if (!base::FeatureList::IsEnabled(
-            features::kAutofillRemoveCardExpiryFromDownstreamSuggestion)) {
 #if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_IOS)
-      suggestion.label = credit_card.GetInfo(
-          AutofillType(CREDIT_CARD_EXP_DATE_2_DIGIT_YEAR), app_locale);
+    suggestion_label = credit_card.GetInfo(
+        AutofillType(CREDIT_CARD_EXP_DATE_2_DIGIT_YEAR), app_locale);
 #else
-      suggestion.label = credit_card.DescriptiveExpiration(app_locale);
+    suggestion_label = credit_card.DescriptiveExpiration(app_locale);
 #endif  // BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_IOS)
-    }
-
   } else if (credit_card.number().empty()) {
     DCHECK_EQ(credit_card.record_type(), CreditCard::LOCAL_CARD);
     if (credit_card.HasNonEmptyValidNickname()) {
-      suggestion.label = credit_card.nickname();
+      suggestion_label = credit_card.nickname();
     } else if (type.GetStorableType() != CREDIT_CARD_NAME_FULL) {
-      suggestion.label =
+      suggestion_label =
           credit_card.GetInfo(AutofillType(CREDIT_CARD_NAME_FULL), app_locale);
     }
   } else {
@@ -384,20 +386,23 @@ Suggestion AutofillSuggestionGenerator::CreateCreditCardSuggestion(
     // On Android devices, the label is formatted as
     // "Nickname/Network  ••••1234" when the keyboard accessory experiment
     // is disabled and as "••1234" when it's enabled.
-    suggestion.label =
+    suggestion_label =
         base::FeatureList::IsEnabled(features::kAutofillKeyboardAccessory)
             ? credit_card.ObfuscatedLastFourDigits(obfuscation_length)
             : credit_card.CardIdentifierStringForAutofillDisplay(
                   suggestion_nickname);
 #elif BUILDFLAG(IS_IOS)
     // E.g. "••••1234"".
-    suggestion.label = credit_card.ObfuscatedLastFourDigits();
+    suggestion_label = credit_card.ObfuscatedLastFourDigits();
 #else
     // E.g. "Nickname/Network  ••••1234, expires on 01/25".
-    suggestion.label =
+    suggestion_label =
         credit_card.CardIdentifierStringAndDescriptiveExpiration(app_locale);
 #endif
   }
+
+  if (!suggestion_label.empty())
+    suggestion.labels = {{Suggestion::Text(std::move(suggestion_label))}};
 
   // For virtual cards, use issuer's card art icon instead of network icon.
   if (virtual_card_option) {
@@ -410,7 +415,7 @@ Suggestion AutofillSuggestionGenerator::CreateCreditCardSuggestion(
       DCHECK(server_duplicate_card);
       card_art_url_for_virtual_card_option =
           server_duplicate_card->card_art_url();
-      suggestion.payload = server_duplicate_card->guid();
+      suggestion.payload = Suggestion::BackendId(server_duplicate_card->guid());
     }
 
     suggestion.frontend_id = POPUP_ITEM_ID_VIRTUAL_CREDIT_CARD_ENTRY;
@@ -421,15 +426,15 @@ Suggestion AutofillSuggestionGenerator::CreateCreditCardSuggestion(
     // For virtual cards, prefix "Virtual card" label to field suggestions. For
     // card number field in a dropdown, show the "Virtual card" label below the
     // card number for Metadata experiment.
-    if (!base::FeatureList::IsEnabled(
-            features::kAutofillEnableVirtualCardMetadata) ||
-        type.GetStorableType() != CREDIT_CARD_NUMBER ||
-        base::FeatureList::IsEnabled(features::kAutofillKeyboardAccessory)) {
+    if (base::FeatureList::IsEnabled(
+            features::kAutofillEnableVirtualCardMetadata) &&
+        type.GetStorableType() == CREDIT_CARD_NUMBER &&
+        !base::FeatureList::IsEnabled(features::kAutofillKeyboardAccessory)) {
+      suggestion.labels = {{Suggestion::Text(l10n_util::GetStringUTF16(
+          IDS_AUTOFILL_VIRTUAL_CARD_SUGGESTION_OPTION_VALUE))}};
+    } else {
       suggestion.minor_text.value = suggestion.main_text.value;
       suggestion.main_text.value = l10n_util::GetStringUTF16(
-          IDS_AUTOFILL_VIRTUAL_CARD_SUGGESTION_OPTION_VALUE);
-    } else {
-      suggestion.label = l10n_util::GetStringUTF16(
           IDS_AUTOFILL_VIRTUAL_CARD_SUGGESTION_OPTION_VALUE);
     }
 
@@ -493,30 +498,28 @@ const CreditCard* AutofillSuggestionGenerator::GetServerCardForLocalCard(
 }
 
 InternalId AutofillSuggestionGenerator::BackendIdToInternalId(
-    const std::string& backend_id) const {
-  if (!base::IsValidGUID(backend_id))
-    return InternalId(0);
+    const Suggestion::BackendId& backend_id) {
+  if (!base::IsValidGUID(*backend_id))
+    return InternalId();
 
-  const auto found = backend_to_int_map_.find(backend_id);
-  if (found == backend_to_int_map_.end()) {
-    // Unknown one, make a new entry.
-    InternalId int_id = InternalId(backend_to_int_map_.size() + 1);
-    backend_to_int_map_[backend_id] = int_id;
-    int_to_backend_map_[int_id] = backend_id;
-    return int_id;
+  InternalId& internal_id = backend_to_internal_map_[backend_id];
+  if (!internal_id) {
+    internal_id = InternalId(backend_to_internal_map_.size());
+    internal_to_backend_map_[internal_id] = backend_id;
   }
-  return InternalId(found->second);
+  DCHECK_EQ(internal_to_backend_map_.size(), backend_to_internal_map_.size());
+  return internal_id;
 }
 
-std::string AutofillSuggestionGenerator::InternalIdToBackendId(
-    InternalId int_id) const {
-  if (int_id.value() == 0)
-    return std::string();
+Suggestion::BackendId AutofillSuggestionGenerator::InternalIdToBackendId(
+    InternalId internal_id) {
+  if (!internal_id)
+    return Suggestion::BackendId();
 
-  const auto found = int_to_backend_map_.find(int_id);
-  if (found == int_to_backend_map_.end()) {
+  const auto found = internal_to_backend_map_.find(internal_id);
+  if (found == internal_to_backend_map_.end()) {
     NOTREACHED();
-    return std::string();
+    return Suggestion::BackendId();
   }
   return found->second;
 }

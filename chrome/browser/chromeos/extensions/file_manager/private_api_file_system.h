@@ -1,4 +1,4 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -15,12 +15,12 @@
 #include <string>
 #include <vector>
 
-#include "ash/components/drivefs/mojom/drivefs.mojom-forward.h"
 #include "base/callback_forward.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/ash/file_manager/trash_info_validator.h"
 #include "chrome/browser/ash/policy/dlp/dlp_files_controller.h"
 #include "chrome/browser/chromeos/extensions/file_manager/logged_extension_function.h"
+#include "chromeos/ash/components/drivefs/mojom/drivefs.mojom-forward.h"
 #include "components/drive/file_errors.h"
 #include "extensions/browser/extension_function.h"
 #include "extensions/browser/extension_function_histogram_value.h"
@@ -313,7 +313,6 @@ class FileManagerPrivateInternalGetDisallowedTransfersFunction
 
   Profile* profile_ = nullptr;
 
-  std::unique_ptr<policy::DlpFilesController> files_controller_;
   std::vector<storage::FileSystemURL> source_urls_;
   storage::FileSystemURL destination_url_;
 };
@@ -337,7 +336,6 @@ class FileManagerPrivateInternalGetDlpMetadataFunction
   void OnGetDlpMetadata(
       std::vector<policy::DlpFilesController::DlpFileMetadata> dlp_metadata);
 
-  std::unique_ptr<policy::DlpFilesController> files_controller_;
   std::vector<storage::FileSystemURL> source_urls_;
 };
 
@@ -352,6 +350,22 @@ class FileManagerPrivateGetDlpRestrictionDetailsFunction
 
  protected:
   ~FileManagerPrivateGetDlpRestrictionDetailsFunction() override;
+
+  // ExtensionFunction overrides.
+  ResponseAction Run() override;
+};
+
+// Implements the chrome.fileManagerPrivate.getDlpBlockedComponents method.
+class FileManagerPrivateGetDlpBlockedComponentsFunction
+    : public LoggedExtensionFunction {
+ public:
+  FileManagerPrivateGetDlpBlockedComponentsFunction();
+
+  DECLARE_EXTENSION_FUNCTION("fileManagerPrivate.getDlpBlockedComponents",
+                             FILEMANAGERPRIVATE_GETDLPBLOCKEDCOMPONENTS)
+
+ protected:
+  ~FileManagerPrivateGetDlpBlockedComponentsFunction() override;
 
   // ExtensionFunction overrides.
   ResponseAction Run() override;

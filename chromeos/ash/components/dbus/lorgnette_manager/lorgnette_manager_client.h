@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -21,7 +21,7 @@ namespace ash {
 // LorgnetteManagerClient is used to communicate with the lorgnette
 // document scanning daemon.
 class COMPONENT_EXPORT(LORGNETTE_MANAGER) LorgnetteManagerClient
-    : public DBusClient {
+    : public chromeos::DBusClient {
  public:
   // Attributes provided to a scan request.
   struct ScanProperties {
@@ -81,7 +81,7 @@ class COMPONENT_EXPORT(LORGNETTE_MANAGER) LorgnetteManagerClient
   //
   // This function makes the assumption that LorgnetteManagerClient only has one
   // scan running at a time.
-  virtual void CancelScan(VoidDBusMethodCallback cancel_callback) = 0;
+  virtual void CancelScan(chromeos::VoidDBusMethodCallback cancel_callback) = 0;
 
  protected:
   friend class LorgnetteManagerClientTest;

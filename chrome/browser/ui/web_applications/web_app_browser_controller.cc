@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -32,13 +32,11 @@
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/browser/web_applications/web_app_sync_bridge.h"
 #include "chrome/browser/web_applications/web_app_tab_helper.h"
-#include "chrome/common/chrome_features.h"
 #include "components/services/app_service/public/cpp/app_registry_cache.h"
 #include "components/services/app_service/public/cpp/app_types.h"
 #include "components/services/app_service/public/mojom/types.mojom-forward.h"
 #include "components/webapps/browser/installable/installable_metrics.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/content_features.h"
 #include "ui/gfx/favicon_size.h"
 #include "ui/gfx/image/image.h"
 #include "ui/native_theme/native_theme.h"
@@ -213,9 +211,11 @@ void WebAppBrowserController::CheckDigitalAssetLinkRelationshipForAndroidApp(
     const std::string& fingerprint) {
   // base::Unretained is safe as |asset_link_handler_| is owned by this object
   // and will be destroyed if this object is destroyed.
+  // TODO(swestphal): Support passing several fingerprints for verification.
+  std::vector<std::string> fingerprints{fingerprint};
   const std::string origin = GetAppStartUrl().DeprecatedGetOriginAsURL().spec();
   asset_link_handler_->CheckDigitalAssetLinkRelationshipForAndroidApp(
-      origin, kRelationship, fingerprint, package_name,
+      origin, kRelationship, std::move(fingerprints), package_name,
       base::BindOnce(&WebAppBrowserController::OnRelationshipCheckComplete,
                      base::Unretained(this)));
 }
@@ -387,9 +387,6 @@ std::u16string WebAppBrowserController::GetTitle() const {
   }
 
   std::u16string raw_title = AppBrowserController::GetTitle();
-
-  if (!base::FeatureList::IsEnabled(features::kPrefixWebAppWindowsWithAppName))
-    return raw_title;
 
   std::u16string app_name =
       base::UTF8ToUTF16(provider_.registrar().GetAppShortName(app_id()));

@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -307,19 +307,6 @@ export class GooglePhotosPhotosByAlbumId extends WithPersonalizationStore {
   /** Returns the aria posinset index for the photo at index |i|. */
   private getPhotoAriaIndex_(i: number): number {
     return i + 1;
-  }
-
-  /**
-   * Returns 'true' or 'false' depending on whether the specified |photo| is
-   * currently selected.
-   */
-  private getPhotoAriaSelected_(
-      photo: GooglePhotosPhoto|null,
-      currentSelected: GooglePhotosPhotosByAlbumId['currentSelected_'],
-      pendingSelected: GooglePhotosPhotosByAlbumId['pendingSelected_']):
-      string {
-    return this.isPhotoSelected_(photo, currentSelected, pendingSelected)
-        .toString();
   }
 
   /** Returns whether the specified |photo| is a placeholder. */

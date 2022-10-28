@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -17,7 +17,9 @@ class StatusViewBinder implements ViewBinder<PropertyModel, StatusView, Property
 
     @Override
     public void bind(PropertyModel model, StatusView view, PropertyKey propertyKey) {
-        if (StatusProperties.ANIMATIONS_ENABLED.equals(propertyKey)) {
+        if (StatusProperties.ALPHA.equals(propertyKey)) {
+            view.setAlpha(model.get(StatusProperties.ALPHA));
+        } else if (StatusProperties.ANIMATIONS_ENABLED.equals(propertyKey)) {
             view.setAnimationsEnabled(model.get(StatusProperties.ANIMATIONS_ENABLED));
         } else if (StatusProperties.INCOGNITO_BADGE_VISIBLE.equals(propertyKey)) {
             view.setIncognitoBadgeVisibility(model.get(StatusProperties.INCOGNITO_BADGE_VISIBLE));

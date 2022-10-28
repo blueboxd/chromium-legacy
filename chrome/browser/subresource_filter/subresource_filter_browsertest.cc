@@ -1,4 +1,4 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -1031,8 +1031,16 @@ void ExpectHistogramsAreRecordedForTestFrameSet(
 
 }  // namespace
 
+#if BUILDFLAG(IS_MAC)
+// TODO(crbug.com/1357773): Flaky on Mac.
+#define MAYBE_ExpectPerformanceHistogramsAreRecorded \
+  DISABLED_ExpectPerformanceHistogramsAreRecorded
+#else
+#define MAYBE_ExpectPerformanceHistogramsAreRecorded \
+  ExpectPerformanceHistogramsAreRecorded
+#endif
 IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest,
-                       ExpectPerformanceHistogramsAreRecorded) {
+                       MAYBE_ExpectPerformanceHistogramsAreRecorded) {
   ASSERT_NO_FATAL_FAILURE(
       SetRulesetToDisallowURLsWithPathSuffix("included_script.js"));
   ResetConfigurationToEnableOnPhishingSites(true /* measure_performance */);

@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,6 +6,7 @@
 #define COMPONENTS_TRANSLATE_CORE_COMMON_TRANSLATE_UTIL_H_
 
 #include "base/feature_list.h"
+#include "base/metrics/field_trial_params.h"
 #include "url/gurl.h"
 
 namespace translate {
@@ -17,8 +18,17 @@ extern const base::Feature kTranslateSubFrames;
 // Controls whether the TFLite-based language detection is enabled.
 extern const base::Feature kTFLiteLanguageDetectionEnabled;
 
+// Controls whether the TFLite-based language detection is computed, but ignored
+// and the CLD3 version is used instead.
+extern const base::Feature kTFLiteLanguageDetectionIgnoreEnabled;
+
 // Controls whether the Partial Translate function is available.
 extern const base::Feature kDesktopPartialTranslate;
+// The maximum number of characters allowed for a text selection in Partial
+// Translate. Longer selections will be truncated down to the first valid word
+// break respecting the threshold.
+extern const base::FeatureParam<int>
+    kDesktopPartialTranslateTextSelectionMaxCharacters;
 
 // Isolated world sets following security-origin by default.
 extern const char kSecurityOrigin[];
@@ -35,6 +45,10 @@ bool IsSubFrameLanguageDetectionEnabled();
 
 // Return whether TFLite-based language detection is enabled.
 bool IsTFLiteLanguageDetectionEnabled();
+
+// Return whether TFLite-based language detection is enabled, but the result is
+// ignored.
+bool IsTFLiteLanguageDetectionIgnoreEnabled();
 
 // Return the threshold used to determine if TFLite language detection model's
 // prediction is reliable.

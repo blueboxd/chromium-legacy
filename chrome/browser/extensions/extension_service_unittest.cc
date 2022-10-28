@@ -1,4 +1,4 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -691,7 +691,7 @@ class ExtensionServiceTest : public ExtensionServiceTestWithInstall {
 
   const base::Value::Dict* GetExtensionPref(const std::string& extension_id) {
     const base::Value::Dict& dict =
-        profile()->GetPrefs()->GetValueDict(pref_names::kExtensions);
+        profile()->GetPrefs()->GetDict(pref_names::kExtensions);
     const base::Value::Dict* pref = dict.FindDict(extension_id);
     if (!pref) {
       return nullptr;
@@ -5215,11 +5215,11 @@ TEST_F(ExtensionServiceTest, ClearExtensionData) {
   task_environment()->RunUntilIdle();
 
   // Check that the localStorage data been removed.
-  std::vector<storage::mojom::StorageUsageInfoPtr> usage_infos;
+  std::vector<storage::mojom::StorageUsageInfoV2Ptr> usage_infos;
   {
     base::RunLoop run_loop;
     local_storage_control->GetUsage(base::BindLambdaForTesting(
-        [&](std::vector<storage::mojom::StorageUsageInfoPtr> usage_infos_in) {
+        [&](std::vector<storage::mojom::StorageUsageInfoV2Ptr> usage_infos_in) {
           usage_infos.swap(usage_infos_in);
           run_loop.Quit();
         }));
@@ -5423,11 +5423,11 @@ TEST_F(ExtensionServiceTest, ClearAppData) {
   task_environment()->RunUntilIdle();
 
   // Check that the localStorage data been removed.
-  std::vector<storage::mojom::StorageUsageInfoPtr> usage_infos;
+  std::vector<storage::mojom::StorageUsageInfoV2Ptr> usage_infos;
   {
     base::RunLoop run_loop;
     local_storage_control->GetUsage(base::BindLambdaForTesting(
-        [&](std::vector<storage::mojom::StorageUsageInfoPtr> usage_infos_in) {
+        [&](std::vector<storage::mojom::StorageUsageInfoV2Ptr> usage_infos_in) {
           usage_infos.swap(usage_infos_in);
           run_loop.Quit();
         }));

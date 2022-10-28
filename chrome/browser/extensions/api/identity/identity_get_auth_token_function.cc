@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -97,8 +97,8 @@ ExtensionFunction::ResponseAction IdentityGetAuthTokenFunction::Run() {
   std::unique_ptr<api::identity::GetAuthToken::Params> params(
       api::identity::GetAuthToken::Params::Create(args()));
   EXTENSION_FUNCTION_VALIDATE(params.get());
-  interactive_ = params->details.get() && params->details->interactive.get() &&
-                 *params->details->interactive;
+  interactive_ =
+      params->details.get() && params->details->interactive.value_or(false);
 
   should_prompt_for_scopes_ = interactive_;
   should_prompt_for_signin_ =
@@ -106,8 +106,7 @@ ExtensionFunction::ResponseAction IdentityGetAuthTokenFunction::Run() {
 
   enable_granular_permissions_ =
       params->details.get() &&
-      params->details->enable_granular_permissions.get() &&
-      *params->details->enable_granular_permissions;
+      params->details->enable_granular_permissions.value_or(false);
 
   DCHECK(extension());
   const auto& oauth2_info = OAuth2ManifestHandler::GetOAuth2Info(*extension());
@@ -129,7 +128,7 @@ ExtensionFunction::ResponseAction IdentityGetAuthTokenFunction::Run() {
     if (params->details->account.get())
       gaia_id = params->details->account->id;
 
-    if (params->details->scopes.get()) {
+    if (params->details->scopes) {
       scopes = std::set<std::string>(params->details->scopes->begin(),
                                      params->details->scopes->end());
     }
@@ -303,12 +302,10 @@ void IdentityGetAuthTokenFunction::CompleteFunctionWithResult(
   RecordFunctionResult(IdentityGetAuthTokenError(), remote_consent_approved_);
 
   api::identity::GetAuthTokenResult result;
-  result.token = std::make_unique<std::string>(access_token);
-  result.granted_scopes = std::make_unique<std::vector<std::string>>(
-      granted_scopes.begin(), granted_scopes.end());
+  result.token = access_token;
+  result.granted_scopes.emplace(granted_scopes.begin(), granted_scopes.end());
 
-  CompleteAsyncRun(
-      OneArgument(base::Value::FromUniquePtrValue(result.ToValue())));
+  CompleteAsyncRun(WithArguments(result.ToValue()));
 }
 
 void IdentityGetAuthTokenFunction::CompleteFunctionWithError(

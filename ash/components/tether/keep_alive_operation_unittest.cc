@@ -1,4 +1,4 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -45,8 +45,9 @@ class MockOperationObserver : public KeepAliveOperation::Observer {
   MOCK_METHOD2(OnOperationFinishedRaw,
                void(multidevice::RemoteDeviceRef, DeviceStatus*));
 
-  void OnOperationFinished(multidevice::RemoteDeviceRef remote_device,
-                           std::unique_ptr<DeviceStatus> device_status) {
+  void OnOperationFinished(
+      multidevice::RemoteDeviceRef remote_device,
+      std::unique_ptr<DeviceStatus> device_status) override {
     OnOperationFinishedRaw(remote_device, device_status.get());
   }
 };

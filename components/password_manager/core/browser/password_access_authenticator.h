@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -57,10 +57,21 @@ class PasswordAccessAuthenticator {
   void ForceUserReauthentication(ReauthPurpose purpose,
                                  AuthResultCallback callback);
 
+  // Restarts the |auth_timer_| if it is already running. Has no effect if
+  // |auth_timer_| is not running.
+  void ExtendAuthValidity();
+
 #if defined(UNIT_TEST)
   // Use this in tests to mock the OS-level reauthentication.
   void set_os_reauth_call(ReauthCallback os_reauth_call) {
     os_reauth_call_ = std::move(os_reauth_call);
+  }
+
+  // Use it in tests to mock starting |auth_timer_|.
+  void start_auth_timer(TimeoutCallback timeout_call) {
+    timeout_call_ = timeout_call;
+    auth_timer_.Start(FROM_HERE, GetAuthValidityPeriod(),
+                      base::BindRepeating(timeout_call_));
   }
 #endif  // defined(UNIT_TEST)
 
@@ -68,6 +79,9 @@ class PasswordAccessAuthenticator {
   // Callback for ForceUserReauthentication().
   void OnUserReauthenticationResult(AuthResultCallback callback,
                                     bool authenticated);
+
+  // Determines the |auth_timer_| period.
+  base::TimeDelta GetAuthValidityPeriod();
 
   // Used to directly present the authentication challenge (such as the login
   // prompt) to the user.

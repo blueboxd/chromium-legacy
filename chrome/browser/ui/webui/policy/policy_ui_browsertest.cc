@@ -1,4 +1,4 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "base/cfi_buildflags.h"
 #include "base/containers/flat_map.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
@@ -66,6 +67,8 @@
 #include "ui/shell_dialogs/select_file_dialog.h"          // nogncheck
 #include "ui/shell_dialogs/select_file_dialog_factory.h"  // nogncheck
 #include "ui/shell_dialogs/select_file_policy.h"          // nogncheck
+#else
+#include "chrome/browser/toolbar_manager_test_helper_android.h"
 #endif  // !BUILDFLAG(IS_ANDROID)
 
 using testing::_;
@@ -283,7 +286,14 @@ class TestSelectFileDialogFactory : public ui::SelectFileDialogFactory {
 };
 #endif  // !BUILDFLAG(IS_ANDROID)
 
-PolicyUITest::PolicyUITest() = default;
+PolicyUITest::PolicyUITest() {
+#if BUILDFLAG(IS_ANDROID)
+  // Skips recreating the Android activity when homepage settings are changed.
+  // This happens when the feature chrome::android::kStartSurfaceAndroid is
+  // enabled.
+  toolbar_manager::setSkipRecreateForTesting(true);
+#endif  // BUILDFLAG(IS_ANDROID)
+}
 
 PolicyUITest::~PolicyUITest() = default;
 
@@ -415,8 +425,12 @@ void PolicyUITest::VerifyExportingPolicies(
   EXPECT_EQ(expected, *value_ptr);
 }
 
-#if !defined(NDEBUG)
-// Slow and hangs often in debug builds. https://crbug.com/1338642
+#if !defined(NDEBUG) ||                                          \
+    (BUILDFLAG(IS_LINUX) &&                                      \
+     (BUILDFLAG(CFI_CAST_CHECK) || BUILDFLAG(CFI_ICALL_CHECK) || \
+      BUILDFLAG(CFI_ENFORCEMENT_TRAP) ||                         \
+      BUILDFLAG(CFI_ENFORCEMENT_DIAGNOSTIC)))
+// Slow in debug and CFI builds crbug.com/1338642
 #define MAYBE_WritePoliciesToJSONFile DISABLED_WritePoliciesToJSONFile
 #else
 #define MAYBE_WritePoliciesToJSONFile WritePoliciesToJSONFile

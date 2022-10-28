@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 #include "chrome/browser/device_api/device_service_impl.h"
@@ -39,7 +39,7 @@ namespace {
 bool CanAccessDeviceAttributes(const PrefService* prefs,
                                const url::Origin& origin) {
   const base::Value::List& prefs_list =
-      prefs->GetValueList(prefs::kDeviceAttributesAllowedForOrigins);
+      prefs->GetList(prefs::kDeviceAttributesAllowedForOrigins);
 
   return base::Contains(prefs_list, origin, [](const auto& entry) {
     return url::Origin::Create(GURL(entry.GetString()));
@@ -69,7 +69,7 @@ bool IsEqualToKioskOrigin(const url::Origin& origin) {
 bool IsForceInstalledOrigin(const PrefService* prefs,
                             const url::Origin& origin) {
   const base::Value::List& prefs_list =
-      prefs->GetValueList(prefs::kWebAppInstallForceList);
+      prefs->GetList(prefs::kWebAppInstallForceList);
 
   return base::Contains(prefs_list, origin, [](const auto& entry) {
     std::string entry_url = entry.FindKey(web_app::kUrlKey)->GetString();

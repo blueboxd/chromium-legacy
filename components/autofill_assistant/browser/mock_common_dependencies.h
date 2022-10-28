@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,6 +8,10 @@
 #include "components/autofill_assistant/browser/assistant_field_trial_util.h"
 #include "components/autofill_assistant/browser/common_dependencies.h"
 #include "testing/gmock/include/gmock/gmock.h"
+
+namespace consent_auditor {
+class ConsentAuditor;
+}  // namespace consent_auditor
 
 namespace autofill_assistant {
 
@@ -49,6 +53,10 @@ class MockCommonDependencies : public CommonDependencies {
   MOCK_METHOD(bool, IsWebLayer, (), (const override));
   MOCK_METHOD(signin::IdentityManager*,
               GetIdentityManager,
+              (content::BrowserContext*),
+              (const override));
+  MOCK_METHOD(consent_auditor::ConsentAuditor*,
+              GetConsentAuditor,
               (content::BrowserContext*),
               (const override));
   MOCK_METHOD(version_info::Channel, GetChannel, (), (const override));

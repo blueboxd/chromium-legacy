@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -36,7 +36,7 @@ content::WebUIDataSource* CreateHelpAppUntrustedDataSource(
   source->AddResourcePaths(base::make_span(
       kChromeosHelpAppBundleResources, kChromeosHelpAppBundleResourcesSize));
 
-  MaybeConfigureTestableDataSource(source);
+  MaybeConfigureTestableDataSource(source, "help_app/untrusted");
 
   // Add device and feature flags.
   populate_load_time_data_callback.Run(source);

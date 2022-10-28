@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -65,6 +65,9 @@ class Browser;
 
 // The delegate.
 @property(nonatomic, weak) id<AuthenticationFlowDelegate> delegate;
+
+// Identity to sign-in.
+@property(nonatomic, strong, readonly) ChromeIdentity* identity;
 
 @end
 

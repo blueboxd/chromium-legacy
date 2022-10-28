@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -39,7 +39,7 @@ class ViewSourceBrowserAgent : public BrowserUserData<ViewSourceBrowserAgent> {
 
   explicit ViewSourceBrowserAgent(Browser* browser);
 
-  // Inserts a tab into |browser_| showing the |source| for |web_state|.
+  // Inserts a tab into `browser_` showing the `source` for `web_state`.
   void InsertSourceViewTab(NSString* source, web::WebState* web_state);
 
   // OnHandleViewSourceForActiveWebStateResult is called asynchronously with

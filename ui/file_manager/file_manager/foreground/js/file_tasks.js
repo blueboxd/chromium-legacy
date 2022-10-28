@@ -451,6 +451,9 @@ export class FileTasks {
           task.iconType = 'gslides';
           task.title = loadTimeData.getString('TASK_OPEN_GSLIDES');
           task.verb = chrome.fileManagerPrivate.Verb.OPEN_WITH;
+        } else if (parsedActionId === 'open-in-office') {
+          task.title = loadTimeData.getString('TASK_OPEN_OFFICE');
+          task.verb = chrome.fileManagerPrivate.Verb.OPEN_WITH;
         } else if (parsedActionId === 'install-linux-package') {
           task.iconType = 'crostini';
           task.title = loadTimeData.getString('TASK_INSTALL_LINUX_PACKAGE');
@@ -1385,10 +1388,6 @@ function hasOfficeExtension(entry) {
  * @return {string}
  */
 export function parseActionId(actionId) {
-  if (window.isSWA) {
-    const swaUrl = SWA_FILES_APP_URL.toString() + '?';
-    return actionId.replace(swaUrl, '');
-  }
-
-  return actionId;
+  const swaUrl = SWA_FILES_APP_URL.toString() + '?';
+  return actionId.replace(swaUrl, '');
 }

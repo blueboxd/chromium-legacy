@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -40,8 +40,11 @@ struct TemplateURLData {
                   base::StringPiece suggest_url_post_params,
                   base::StringPiece image_url_post_params,
                   base::StringPiece side_search_param,
+                  base::StringPiece side_image_search_param,
                   base::StringPiece favicon_url,
                   base::StringPiece encoding,
+                  base::StringPiece image_search_favicon_url,
+                  base::StringPiece16 image_search_branding_label,
                   const base::Value& alternate_urls_list,
                   bool preconnect_to_search_url,
                   bool prefetch_likely_navigations,
@@ -95,6 +98,17 @@ struct TemplateURLData {
   // The parameter appended to the engine's search URL when constructing the URL
   // for the side search side panel.
   std::string side_search_param;
+
+  // The parameter appended to the engine's image URL when constructing the
+  // URL for the image search entry in the side panel.
+  std::string side_image_search_param;
+
+  // Favicon URL for use with image search queries.
+  std::string image_search_favicon_url;
+
+  // Brand name used for image search queries. If not set, the short_name
+  // will be used.
+  std::u16string image_search_branding_label;
 
   // Favicon for the TemplateURL.
   GURL favicon_url;

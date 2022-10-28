@@ -1,52 +1,52 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #import "ios/chrome/browser/passwords/ios_chrome_password_manager_client.h"
 
-#include <memory>
-#include <utility>
+#import <memory>
+#import <utility>
 
-#include "base/bind.h"
-#include "base/callback.h"
-#include "base/stl_util.h"
-#include "base/strings/sys_string_conversions.h"
-#include "base/strings/utf_string_conversions.h"
-#include "components/autofill/core/browser/logging/log_manager.h"
-#include "components/autofill/core/browser/logging/log_router.h"
-#include "components/keyed_service/core/service_access_type.h"
-#include "components/password_manager/core/browser/password_change_success_tracker.h"
-#include "components/password_manager/core/browser/password_form.h"
-#include "components/password_manager/core/browser/password_form_manager_for_ui.h"
-#include "components/password_manager/core/browser/password_manager.h"
-#include "components/password_manager/core/browser/password_manager_constants.h"
-#include "components/password_manager/core/browser/password_manager_driver.h"
-#include "components/password_manager/core/browser/password_manager_util.h"
-#include "components/password_manager/core/browser/password_requirements_service.h"
-#include "components/password_manager/core/common/password_manager_pref_names.h"
-#include "components/password_manager/ios/password_manager_ios_util.h"
-#include "components/sync/driver/sync_service.h"
-#include "components/translate/core/browser/translate_manager.h"
+#import "base/bind.h"
+#import "base/callback.h"
+#import "base/strings/sys_string_conversions.h"
+#import "base/strings/utf_string_conversions.h"
+#import "base/types/optional_util.h"
+#import "components/autofill/core/browser/logging/log_manager.h"
+#import "components/autofill/core/browser/logging/log_router.h"
+#import "components/keyed_service/core/service_access_type.h"
+#import "components/password_manager/core/browser/password_change_success_tracker.h"
+#import "components/password_manager/core/browser/password_form.h"
+#import "components/password_manager/core/browser/password_form_manager_for_ui.h"
+#import "components/password_manager/core/browser/password_manager.h"
+#import "components/password_manager/core/browser/password_manager_constants.h"
+#import "components/password_manager/core/browser/password_manager_driver.h"
+#import "components/password_manager/core/browser/password_manager_util.h"
+#import "components/password_manager/core/browser/password_requirements_service.h"
+#import "components/password_manager/core/common/password_manager_pref_names.h"
+#import "components/password_manager/ios/password_manager_ios_util.h"
+#import "components/sync/driver/sync_service.h"
+#import "components/translate/core/browser/translate_manager.h"
 #import "components/ukm/ios/ukm_url_recorder.h"
-#include "ios/chrome/browser/application_context.h"
-#include "ios/chrome/browser/browser_state/chrome_browser_state.h"
-#include "ios/chrome/browser/passwords/ios_chrome_password_change_success_tracker_factory.h"
-#include "ios/chrome/browser/passwords/ios_chrome_password_reuse_manager_factory.h"
-#include "ios/chrome/browser/passwords/ios_chrome_password_store_factory.h"
-#include "ios/chrome/browser/passwords/ios_password_requirements_service_factory.h"
-#include "ios/chrome/browser/passwords/password_manager_log_router_factory.h"
+#import "ios/chrome/browser/application_context/application_context.h"
+#import "ios/chrome/browser/browser_state/chrome_browser_state.h"
+#import "ios/chrome/browser/flags/system_flags.h"
+#import "ios/chrome/browser/passwords/ios_chrome_password_change_success_tracker_factory.h"
+#import "ios/chrome/browser/passwords/ios_chrome_password_reuse_manager_factory.h"
+#import "ios/chrome/browser/passwords/ios_chrome_password_store_factory.h"
+#import "ios/chrome/browser/passwords/ios_password_requirements_service_factory.h"
+#import "ios/chrome/browser/passwords/password_manager_log_router_factory.h"
 #import "ios/chrome/browser/safe_browsing/chrome_password_protection_service.h"
 #import "ios/chrome/browser/safe_browsing/chrome_password_protection_service_factory.h"
-#include "ios/chrome/browser/safe_browsing/features.h"
-#include "ios/chrome/browser/signin/identity_manager_factory.h"
-#include "ios/chrome/browser/sync/sync_service_factory.h"
-#include "ios/chrome/browser/system_flags.h"
-#include "ios/chrome/browser/translate/chrome_ios_translate_client.h"
+#import "ios/chrome/browser/safe_browsing/features.h"
+#import "ios/chrome/browser/signin/identity_manager_factory.h"
+#import "ios/chrome/browser/sync/sync_service_factory.h"
+#import "ios/chrome/browser/translate/chrome_ios_translate_client.h"
 #import "ios/chrome/browser/ui/ui_feature_flags.h"
-#include "net/cert/cert_status_flags.h"
-#include "services/metrics/public/cpp/ukm_recorder.h"
-#include "services/network/public/cpp/shared_url_loader_factory.h"
-#include "url/gurl.h"
+#import "net/cert/cert_status_flags.h"
+#import "services/metrics/public/cpp/ukm_recorder.h"
+#import "services/network/public/cpp/shared_url_loader_factory.h"
+#import "url/gurl.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -181,6 +181,10 @@ PrefService* IOSChromePasswordManagerClient::GetPrefs() const {
   return (bridge_.browserState)->GetPrefs();
 }
 
+PrefService* IOSChromePasswordManagerClient::GetLocalStatePrefs() const {
+  return GetApplicationContext()->GetLocalState();
+}
+
 const syncer::SyncService* IOSChromePasswordManagerClient::GetSyncService()
     const {
   return GetSyncServiceForBrowserState(bridge_.browserState);
@@ -300,7 +304,7 @@ IOSChromePasswordManagerClient::GetMetricsRecorder() {
   if (!metrics_recorder_) {
     metrics_recorder_.emplace(GetUkmSourceId());
   }
-  return base::OptionalOrNullptr(metrics_recorder_);
+  return base::OptionalToPtr(metrics_recorder_);
 }
 
 signin::IdentityManager* IOSChromePasswordManagerClient::GetIdentityManager() {
@@ -347,7 +351,9 @@ void IOSChromePasswordManagerClient::CheckProtectedPasswordEntry(
     const std::string& username,
     const std::vector<password_manager::MatchingReusedCredential>&
         matching_reused_credentials,
-    bool password_field_exists) {
+    bool password_field_exists,
+    uint64_t reused_password_hash,
+    const std::string& domain) {
   safe_browsing::PasswordProtectionService* service =
       GetPasswordProtectionService();
   if (service) {

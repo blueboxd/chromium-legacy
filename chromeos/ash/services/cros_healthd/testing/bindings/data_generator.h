@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -15,9 +15,7 @@
 #include "mojo/public/cpp/system/handle.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
-namespace chromeos {
-namespace cros_healthd {
-namespace connectivity {
+namespace ash::cros_healthd::connectivity {
 
 template <typename T>
 class DataGeneratorInterface {
@@ -237,8 +235,6 @@ class HandleDataGenerator
   bool has_next_ = true;
 };
 
-}  // namespace connectivity
-}  // namespace cros_healthd
-}  // namespace chromeos
+}  // namespace ash::cros_healthd::connectivity
 
 #endif  // CHROMEOS_ASH_SERVICES_CROS_HEALTHD_TESTING_BINDINGS_DATA_GENERATOR_H_

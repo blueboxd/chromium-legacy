@@ -1,4 +1,4 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -20,8 +20,11 @@ class Profile;
 namespace file_manager {
 namespace util {
 
-// Absolute path for FuseBox media mount point.
+// Absolute path for FuseBox media mount point (sans a trailing slash).
 extern const base::FilePath::CharType kFuseBoxMediaPath[];
+
+// Absolute path for FuseBox media mount point (with a trailing slash).
+extern const base::FilePath::CharType kFuseBoxMediaSlashPath[];
 
 // Absolute base path for removable media on Chrome OS. Exposed here so it can
 // be used by tests.
@@ -38,6 +41,23 @@ extern const base::FilePath::CharType kArchiveMountPath[];
 
 // FuseBox as a named constant string: "fusebox".
 extern const char kFuseBox[];
+
+// The storage::FileSystemURL mount name prefix for FuseBox mounts.
+extern const char kFuseBoxMountNamePrefix[];
+
+// The "foo." in "/media/fuse/fusebox/foo.bar/x/y.z" FuseBox filenames, per
+// volume type (Android Documents Provider, File System Provider, Media
+// Transfer Protocol, etc). The "foo.bar" component as a whole is also known as
+// the FuseBox subdir.
+//
+// They end in a "." to clearly separate the "foo" and the "bar". This is not a
+// "-" or a "_", to avoid any ambiguity when "bar" is the base64url encoding of
+// something. This is not a ":", since /bin/bash tab completion would otherwise
+// backslash-escape the colon (which works but it's avoidable complexity) and
+// e.g. $PATH-like environment variables are colon separated.
+extern const char kFuseBoxSubdirPrefixADP[];
+extern const char kFuseBoxSubdirPrefixFSP[];
+extern const char kFuseBoxSubdirPrefixMTP[];
 
 // Name of the mount point used to store temporary files for sharing.
 extern const char kShareCacheMountPointName[];

@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -14,10 +14,12 @@
 
 #include "ash/calendar/calendar_client.h"
 #include "ash/calendar/calendar_controller.h"
-#include "ash/components/settings/timezone_settings.h"
+#include "ash/components/settings/scoped_timezone_settings.h"
+#include "ash/constants/ash_pref_names.h"
 #include "ash/public/cpp/session/session_controller.h"
 #include "ash/public/cpp/session/session_types.h"
 #include "ash/public/cpp/session/user_info.h"
+#include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
 #include "ash/system/time/calendar_unittest_utils.h"
 #include "ash/system/time/calendar_utils.h"
@@ -148,40 +150,6 @@ TEST_F(CalendarModelUtilsTest, SurroundingMonths) {
   EXPECT_TRUE(months.find(start_of_next_month_3) != months.end());
 }
 
-// A mock `CalendarClient` which uses the set Error and Event list as the
-// response. This mock client's `GetEventList` waits for a short duration to
-// mock the fetching process.
-class CalendarClientTestImpl : public CalendarClient {
- public:
-  CalendarClientTestImpl() = default;
-  CalendarClientTestImpl(const CalendarClientTestImpl& other) = delete;
-  CalendarClientTestImpl& operator=(const CalendarClientTestImpl& other) =
-      delete;
-  ~CalendarClientTestImpl() override = default;
-
-  // CalendarClient:
-  base::OnceClosure GetEventList(
-      google_apis::calendar::CalendarEventListCallback callback,
-      const base::Time& start_time,
-      const base::Time& end_time) override {
-    // Give it a little bit of time to mock the api calling.
-    base::PlatformThread::Sleep(base::Seconds(1));
-    std::move(callback).Run(error_, std::move(events_));
-    return base::DoNothing();
-  }
-
-  void SetEventList(std::unique_ptr<google_apis::calendar::EventList> events) {
-    events_.reset();
-    events_ = std::move(events);
-  }
-
-  void SetError(google_apis::ApiErrorCode error) { error_ = error; }
-
- private:
-  google_apis::ApiErrorCode error_ = google_apis::HTTP_SUCCESS;
-  std::unique_ptr<google_apis::calendar::EventList> events_ = nullptr;
-};
-
 class CalendarModelTest : public AshTestBase {
  public:
   CalendarModelTest()
@@ -199,9 +167,12 @@ class CalendarModelTest : public AshTestBase {
     Shell::Get()->calendar_controller()->SetActiveUserAccountIdForTesting(
         account_id);
     calendar_model_ = std::make_unique<CalendarModel>();
-    calendar_client_ = std::make_unique<CalendarClientTestImpl>();
+    calendar_client_ =
+        std::make_unique<calendar_test_utils::CalendarClientTestImpl>();
     Shell::Get()->calendar_controller()->RegisterClientForUser(
         account_id, calendar_client_.get());
+    Shell::Get()->session_controller()->GetActivePrefService()->SetBoolean(
+        ash::prefs::kCalendarIntegrationEnabled, true);
   }
 
   void TearDown() override {
@@ -310,12 +281,11 @@ class CalendarModelTest : public AshTestBase {
     }
   }
 
-  // Wait until the response is back. The sleep duration may be in
-  // `base::Time` or `base::TimeTicks`, depending on platform in the platform
-  // threads. So using a relatively longer waiting duration to make sure the
-  // platform thread sleeping ends.
+  // Wait until the response is back. Since we used `PostDelayedTask` with 1
+  // second to mimic the behavior of fetching, duration of 1 minute should be
+  // enough.
   void WaitUntilFetched() {
-    task_environment()->FastForwardBy(base::Minutes(10));
+    task_environment()->FastForwardBy(base::Minutes(1));
     base::RunLoop().RunUntilIdle();
   }
 
@@ -365,7 +335,7 @@ class CalendarModelTest : public AshTestBase {
   std::unique_ptr<base::subtle::ScopedTimeClockOverrides> time_overrides_;
 
   std::unique_ptr<CalendarModel> calendar_model_;
-  std::unique_ptr<CalendarClientTestImpl> calendar_client_;
+  std::unique_ptr<calendar_test_utils::CalendarClientTestImpl> calendar_client_;
   base::Time now_;
 };
 
@@ -374,7 +344,7 @@ TEST_F(CalendarModelTest, FetchingSuccessfullyWithOneEvent) {
   // set, the test will run with the local default timezone which might cause a
   // test failure. So here sets the timezone to "GMT", and the same for all the
   // tests in this file.
-  ash::system::TimezoneSettings::GetInstance()->SetTimezoneFromID(u"GMT");
+  ash::system::ScopedTimezoneSettings timezone_settings(u"GMT");
 
   // Set current date to `kStartTime0`.
   SetTodayFromStr(kStartTime0);
@@ -412,11 +382,23 @@ TEST_F(CalendarModelTest, FetchingSuccessfullyWithOneEvent) {
   EXPECT_EQ(1, EventsNumberOfDay(kStartTime0, &events));
   EXPECT_FALSE(events.empty());
   EXPECT_TRUE(events.size() == 1);
+
+  // Now we do a refetch.
+  calendar_model()->FetchEvents(calendar_utils::GetStartOfMonthUTC(now()));
+
+  EXPECT_EQ(CalendarModel::kRefetching,
+            calendar_model()->FindFetchingStatus(start_of_month));
+  EXPECT_EQ(1, EventsNumberOfDay(kStartTime0, &events));
+
+  WaitUntilFetched();
+
+  EXPECT_EQ(CalendarModel::kSuccess,
+            calendar_model()->FindFetchingStatus(start_of_month));
 }
 
 TEST_F(CalendarModelTest, FetchingSuccessfullyWithMultiEvents) {
   // Sets the timezone to "GMT".
-  ash::system::TimezoneSettings::GetInstance()->SetTimezoneFromID(u"GMT");
+  ash::system::ScopedTimezoneSettings timezone_settings(u"GMT");
 
   // Set current date to `kStartTime0`.
   SetTodayFromStr(kStartTime0);
@@ -493,12 +475,23 @@ TEST_F(CalendarModelTest, FetchingSuccessfullyWithMultiEvents) {
   EXPECT_EQ(1, EventsNumberOfDay(kStartTime2, &events));
   EXPECT_EQ(1, EventsNumberOfDay(kStartTime3, &events));
   EXPECT_EQ(1, EventsNumberOfDay(kStartTime13, &events));
+
+  // Now we do a refetch.
+  calendar_model()->FetchEvents(calendar_utils::GetStartOfMonthUTC(now()));
+
+  EXPECT_EQ(CalendarModel::kRefetching,
+            calendar_model()->FindFetchingStatus(start_of_month0));
+  EXPECT_EQ(1, EventsNumberOfDay(kStartTime0, &events));
+
+  WaitUntilFetched();
+
+  EXPECT_EQ(CalendarModel::kSuccess,
+            calendar_model()->FindFetchingStatus(start_of_month0));
 }
 
 TEST_F(CalendarModelTest, ChangeTimeDifference) {
   // Sets the timezone to "America/Los_Angeles".
-  ash::system::TimezoneSettings::GetInstance()->SetTimezoneFromID(
-      u"America/Los_Angeles");
+  ash::system::ScopedTimezoneSettings timezone_settings(u"America/Los_Angeles");
 
   // Set today to`kStartTime0`.
   SetTodayFromStr(kStartTime0);
@@ -557,8 +550,7 @@ TEST_F(CalendarModelTest, ChangeTimeDifference) {
 
   // Sets the timezone to "Pacific/Honolulu" which has -10 hours time
   // difference.
-  ash::system::TimezoneSettings::GetInstance()->SetTimezoneFromID(
-      u"Pacific/Honolulu");
+  timezone_settings.SetTimezoneFromID(u"Pacific/Honolulu");
 
   // (1) kStartTime0 = "23 Oct 2009 11:30 GMT";
   //     kEndTime0 = "23 Oct 2009 12:30 GMT";
@@ -580,8 +572,7 @@ TEST_F(CalendarModelTest, ChangeTimeDifference) {
 
   // Sets the timezone to "Pacific/Kiritimatis" which has +14 hours time
   // difference;
-  ash::system::TimezoneSettings::GetInstance()->SetTimezoneFromID(
-      u"Pacific/Kiritimati");
+  timezone_settings.SetTimezoneFromID(u"Pacific/Kiritimati");
 
   // (1) kStartTime0 = "23 Oct 2009 11:30 GMT";
   //     kEndTime0 = "23 Oct 2009 12:30 GMT";
@@ -600,15 +591,12 @@ TEST_F(CalendarModelTest, ChangeTimeDifference) {
   EXPECT_EQ(3, EventsNumberOfDay("24 Oct 2009 00:00", &events));
   EXPECT_EQ(1, EventsNumberOfDay("25 Oct 2009 00:00", &events));
   EXPECT_EQ(0, EventsNumberOfDay("26 Oct 2009 00:00", &events));
-
-  // Set back to the default timezone.
-  ash::system::TimezoneSettings::GetInstance()->SetTimezoneFromID(u"");
 }
 
 // Test for pruning of events.
 TEST_F(CalendarModelTest, PruneEvents) {
   // Sets the timezone to "GMT".
-  ash::system::TimezoneSettings::GetInstance()->SetTimezoneFromID(u"GMT");
+  ash::system::ScopedTimezoneSettings timezone_settings(u"GMT");
 
   // The number of event is exactly the max cached capacity. No events should be
   // removed when init the mock response.
@@ -618,12 +606,16 @@ TEST_F(CalendarModelTest, PruneEvents) {
   // Loop from base start time to mock the initial cached months.
   base::Time current_month =
       calendar_test_utils::GetTimeFromString(kBaseStartTime);
-  for (int i = 0; i < kNumEvents; ++i) {
-    // Set index 2 as today. The default surrounding months number is 2. This
-    // sets the first 5 months as the non_prunable months.
-    if (i == 2)
-      SetTodayFromTime(current_month);
 
+  // Set the next next month as today. The default surrounding months number is
+  // 2. This sets the first 5 months as the non_prunable months.
+  // NOTE: We must set today before injecting any events because if we set it
+  // at the i == 2 loop, the first two months will be added to mru_months_ and
+  // will be prunable.
+  base::Time next_month = calendar_utils::GetStartOfNextMonthUTC(current_month);
+  SetTodayFromTime(calendar_utils::GetStartOfNextMonthUTC(next_month));
+
+  for (int i = 0; i < kNumEvents; ++i) {
     // Inject events.
     MockOnEventsFetched(current_month, google_apis::ApiErrorCode::HTTP_SUCCESS,
                         nullptr);
@@ -675,7 +667,7 @@ TEST_F(CalendarModelTest, PruneEvents) {
 
 TEST_F(CalendarModelTest, RecordFetchResultHistogram_Success) {
   // Sets the timezone to "GMT".
-  ash::system::TimezoneSettings::GetInstance()->SetTimezoneFromID(u"GMT");
+  ash::system::ScopedTimezoneSettings timezone_settings(u"GMT");
 
   base::HistogramTester histogram_tester;
 
@@ -701,7 +693,7 @@ TEST_F(CalendarModelTest, RecordFetchResultHistogram_Success) {
 
 TEST_F(CalendarModelTest, RecordFetchResultHistogram_Failure) {
   // Sets the timezone to "GMT".
-  ash::system::TimezoneSettings::GetInstance()->SetTimezoneFromID(u"GMT");
+  ash::system::ScopedTimezoneSettings timezone_settings(u"GMT");
 
   base::HistogramTester histogram_tester;
 
@@ -750,7 +742,7 @@ TEST_F(CalendarModelTest, RecordFetchResultHistogram_Failure) {
 
 TEST_F(CalendarModelTest, SessionStateChange) {
   // Sets the timezone to "GMT".
-  ash::system::TimezoneSettings::GetInstance()->SetTimezoneFromID(u"GMT");
+  ash::system::ScopedTimezoneSettings timezone_settings(u"GMT");
 
   // Current date is just `kStartTime0`.
   SetTodayFromStr(kStartTime0);
@@ -787,7 +779,7 @@ TEST_F(CalendarModelTest, SessionStateChange) {
 
 TEST_F(CalendarModelTest, ActiveUserChange) {
   // Sets the timezone to "GMT".
-  ash::system::TimezoneSettings::GetInstance()->SetTimezoneFromID(u"GMT");
+  ash::system::ScopedTimezoneSettings timezone_settings(u"GMT");
 
   // Set up two users, user1 is the active user.
   UpdateSession(1u, "user1@test.com");
@@ -834,7 +826,7 @@ TEST_F(CalendarModelTest, ActiveUserChange) {
 
 TEST_F(CalendarModelTest, ClearEvents) {
   // Sets the timezone to "GMT".
-  ash::system::TimezoneSettings::GetInstance()->SetTimezoneFromID(u"GMT");
+  ash::system::ScopedTimezoneSettings timezone_settings(u"GMT");
 
   std::unique_ptr<google_apis::calendar::CalendarEvent> event0 =
       calendar_test_utils::CreateEvent(kId0, kSummary0, kStartTime0, kEndTime0);
@@ -909,7 +901,7 @@ TEST_F(CalendarModelTest, ClearEvents) {
 // events shouldn't be inserted in a month.
 TEST_F(CalendarModelTest, ShouldFilterEvents) {
   // Sets the timezone to "GMT".
-  ash::system::TimezoneSettings::GetInstance()->SetTimezoneFromID(u"GMT");
+  ash::system::ScopedTimezoneSettings timezone_settings(u"GMT");
 
   SetTodayFromStr(kStartTime0);
 
@@ -974,8 +966,7 @@ TEST_F(CalendarModelTest, ShouldFilterEvents) {
 TEST_F(CalendarModelTest, EdgeOfMonthEvent) {
   // Will add event that's in the same month as kNow using PDT (UTC-7),
   // so the times will translate to next day (and month) on UTC.
-  ash::system::TimezoneSettings::GetInstance()->SetTimezoneFromID(
-      u"America/Los_Angeles");
+  ash::system::ScopedTimezoneSettings timezone_settings(u"America/Los_Angeles");
 
   const char* kId = "id";
   const char* kSummary = "summary";
@@ -1022,7 +1013,7 @@ TEST_F(CalendarModelTest, EdgeOfMonthEvent) {
 TEST_F(CalendarModelTest, MultiDayEvents) {
   // Set timezone and fake now.
   const char* kNow = "10 Nov 2022 13:00 GMT";
-  ash::system::TimezoneSettings::GetInstance()->SetTimezoneFromID(u"GMT");
+  ash::system::ScopedTimezoneSettings timezone_settings(u"GMT");
   SetTodayFromStr(kNow);
 
   // Generic event id and summary.
@@ -1095,7 +1086,7 @@ TEST_F(CalendarModelTest, MultiDayEvents) {
 
 TEST_F(CalendarModelTest, FindFetchingStatus) {
   // Sets the timezone to "GMT".
-  ash::system::TimezoneSettings::GetInstance()->SetTimezoneFromID(u"GMT");
+  ash::system::ScopedTimezoneSettings timezone_settings(u"GMT");
 
   std::unique_ptr<google_apis::calendar::CalendarEvent> event0 =
       calendar_test_utils::CreateEvent(kId0, kSummary0, kStartTime0, kEndTime0);

@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,6 +6,7 @@
 
 #include "base/notreached.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
+#include "components/services/app_service/public/cpp/capability_access.h"
 
 namespace apps {
 
@@ -86,6 +87,13 @@ void AppPublisher::StopApp(const std::string& app_id) {
   NOTIMPLEMENTED();
 }
 
+void AppPublisher::GetMenuModel(const std::string& app_id,
+                                MenuType menu_type,
+                                int64_t display_id,
+                                base::OnceCallback<void(MenuItems)> callback) {
+  NOTIMPLEMENTED();
+}
+
 void AppPublisher::ExecuteContextMenuCommand(const std::string& app_id,
                                              int command_id,
                                              const std::string& shortcut_id,
@@ -94,6 +102,15 @@ void AppPublisher::ExecuteContextMenuCommand(const std::string& app_id,
 }
 
 void AppPublisher::OpenNativeSettings(const std::string& app_id) {
+  NOTIMPLEMENTED();
+}
+
+void AppPublisher::SetResizeLocked(const std::string& app_id, bool locked) {
+  NOTIMPLEMENTED();
+}
+
+void AppPublisher::SetWindowMode(const std::string& app_id,
+                                 WindowMode window_mode) {
   NOTIMPLEMENTED();
 }
 
@@ -118,6 +135,22 @@ void AppPublisher::Publish(std::vector<AppPtr> apps,
     return;
   }
   proxy_->OnApps(std::move(apps), app_type, should_notify_initialized);
+}
+
+void AppPublisher::ModifyCapabilityAccess(
+    const std::string& app_id,
+    absl::optional<bool> accessing_camera,
+    absl::optional<bool> accessing_microphone) {
+  if (!accessing_camera.has_value() && !accessing_microphone.has_value()) {
+    return;
+  }
+
+  std::vector<CapabilityAccessPtr> capability_accesses;
+  auto capability_access = std::make_unique<CapabilityAccess>(app_id);
+  capability_access->camera = accessing_camera;
+  capability_access->microphone = accessing_microphone;
+  capability_accesses.push_back(std::move(capability_access));
+  proxy_->OnCapabilityAccesses(std::move(capability_accesses));
 }
 #endif
 

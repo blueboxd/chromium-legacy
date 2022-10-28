@@ -1,4 +1,4 @@
-// Copyright (c) 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -461,8 +461,9 @@ int HttpCache::Writers::DoNetworkReadComplete(int result) {
 void HttpCache::Writers::OnNetworkReadFailure(int result) {
   ProcessFailure(result);
 
-  if (active_transaction_)
+  if (active_transaction_) {
     EraseTransaction(active_transaction_, result);
+  }
   active_transaction_ = nullptr;
 
   if (ShouldTruncate())
@@ -522,7 +523,7 @@ int HttpCache::Writers::DoCacheWriteDataComplete(int result) {
     if (write_len_ > 0) {
       checksum_->Update(read_buf_->data(), write_len_);
     } else {
-      CHECK(active_transaction_);
+      DCHECK(active_transaction_);
       if (!active_transaction_->ResponseChecksumMatches(std::move(checksum_))) {
         next_state_ = State::MARK_SINGLE_KEYED_CACHE_ENTRY_UNUSABLE;
         return result;
@@ -598,16 +599,18 @@ void HttpCache::Writers::OnDataReceived(int result) {
       return;
     }
 
-    if (active_transaction_)
+    if (active_transaction_) {
       EraseTransaction(active_transaction_, result);
+    }
     active_transaction_ = nullptr;
     CompleteWaitingForReadTransactions(write_len_);
 
     // Invoke entry processing.
     DCHECK(ContainsOnlyIdleWriters());
     TransactionSet make_readers;
-    for (auto& writer : all_writers_)
+    for (auto& writer : all_writers_) {
       make_readers.insert(writer.first);
+    }
     all_writers_.clear();
     SetCacheCallback(true, make_readers);
     // We assume the set callback will be called immediately.
@@ -662,8 +665,9 @@ void HttpCache::Writers::CompleteWaitingForReadTransactions(int result) {
 
     // If its response completion or failure, this transaction needs to be
     // removed from writers.
-    if (result <= 0)
+    if (result <= 0) {
       EraseTransaction(transaction, result);
+    }
   }
 }
 

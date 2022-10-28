@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -25,8 +25,7 @@ suite('cr-toggle', function() {
     assertTrue(toggle.hasAttribute('checked'));
     assertEquals('true', toggle.getAttribute('aria-pressed'));
     // Asserting that the toggle button has actually moved.
-    assertTrue(
-        getComputedStyle(toggle.$$('#knob')!).transform.includes('matrix'));
+    assertTrue(getComputedStyle(toggle.$.knob).transform.includes('matrix'));
   }
 
   function assertNotChecked() {
@@ -34,7 +33,7 @@ suite('cr-toggle', function() {
     assertEquals(null, toggle.getAttribute('checked'));
     assertEquals('false', toggle.getAttribute('aria-pressed'));
     // Asserting that the toggle button has not moved.
-    assertEquals('none', getComputedStyle(toggle.$$('#knob')!).transform);
+    assertEquals('none', getComputedStyle(toggle.$.knob).transform);
   }
 
   function assertDisabled() {
@@ -81,6 +80,14 @@ suite('cr-toggle', function() {
         new PointerEvent('pointerup', {pointerId: 1, clientX: xEnd}));
     toggle.click();
   }
+
+  // Check if setting checked in HTML works, has to use a separate element to
+  // ensure that we are testing brand new state.
+  test('initiallyCheckedWorks', function() {
+    document.body.innerHTML = ` <cr-toggle checked></cr-toggle> `;
+    toggle = (document.querySelector('cr-toggle'))!;
+    assertChecked();
+  });
 
   // Test that the control is toggled when the |checked| attribute is
   // programmatically changed.

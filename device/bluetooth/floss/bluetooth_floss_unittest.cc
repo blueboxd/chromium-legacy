@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,8 +11,11 @@
 #include "device/bluetooth/bluetooth_device.h"
 #include "device/bluetooth/bluetooth_discovery_session.h"
 #include "device/bluetooth/floss/bluetooth_adapter_floss.h"
+#include "device/bluetooth/floss/bluetooth_device_floss.h"
 #include "device/bluetooth/floss/fake_floss_adapter_client.h"
+#include "device/bluetooth/floss/fake_floss_lescan_client.h"
 #include "device/bluetooth/floss/fake_floss_manager_client.h"
+#include "device/bluetooth/floss/fake_floss_socket_manager.h"
 #include "device/bluetooth/floss/floss_dbus_manager.h"
 #include "device/bluetooth/test/mock_pairing_delegate.h"
 #include "device/bluetooth/test/test_bluetooth_adapter_observer.h"
@@ -28,9 +31,50 @@ using ::device::TestBluetoothAdapterObserver;
 using ::testing::_;
 using ::testing::StrictMock;
 
+const uint8_t kTestScannerId = 10;
+constexpr char kTestDeviceAddr[] = "11:22:33:44:55:66";
+
 }  // namespace
 
 namespace floss {
+
+class FakeBluetoothLowEnergyScanSessionDelegate
+    : public device::BluetoothLowEnergyScanSession::Delegate {
+ public:
+  FakeBluetoothLowEnergyScanSessionDelegate() = default;
+
+  void OnSessionStarted(
+      device::BluetoothLowEnergyScanSession* scan_session,
+      absl::optional<device::BluetoothLowEnergyScanSession::ErrorCode>
+          error_code) override {
+    sessions_started_++;
+  }
+  void OnDeviceFound(device::BluetoothLowEnergyScanSession* scan_session,
+                     device::BluetoothDevice* device) override {
+    devices_found_.push_back(device->GetAddress());
+  }
+  void OnDeviceLost(device::BluetoothLowEnergyScanSession* scan_session,
+                    device::BluetoothDevice* device) override {
+    devices_lost_.push_back(device->GetAddress());
+  }
+  void OnSessionInvalidated(
+      device::BluetoothLowEnergyScanSession* scan_session) override {
+    sessions_invalidated_++;
+  }
+
+  base::WeakPtr<FakeBluetoothLowEnergyScanSessionDelegate> GetWeakPtr() {
+    return weak_ptr_factory_.GetWeakPtr();
+  }
+
+  int sessions_started_ = 0;
+  std::vector<std::string> devices_found_;
+  std::vector<std::string> devices_lost_;
+  int sessions_invalidated_ = 0;
+
+ private:
+  base::WeakPtrFactory<FakeBluetoothLowEnergyScanSessionDelegate>
+      weak_ptr_factory_{this};
+};
 
 // Unit tests exercising device/bluetooth/floss, with abstract Floss API
 // implemented as a fake Floss*Client.
@@ -42,12 +86,17 @@ class BluetoothFlossTest : public testing::Test {
 
     auto fake_floss_manager_client = std::make_unique<FakeFlossManagerClient>();
     auto fake_floss_adapter_client = std::make_unique<FakeFlossAdapterClient>();
+    auto fake_floss_socket_manager = std::make_unique<FakeFlossSocketManager>();
+    auto fake_floss_lescan_client = std::make_unique<FakeFlossLEScanClient>();
 
     fake_floss_manager_client_ = fake_floss_manager_client.get();
     fake_floss_adapter_client_ = fake_floss_adapter_client.get();
+    fake_floss_lescan_client_ = fake_floss_lescan_client.get();
 
     dbus_setter->SetFlossManagerClient(std::move(fake_floss_manager_client));
     dbus_setter->SetFlossAdapterClient(std::move(fake_floss_adapter_client));
+    dbus_setter->SetFlossSocketManager(std::move(fake_floss_socket_manager));
+    dbus_setter->SetFlossLEScanClient(std::move(fake_floss_lescan_client));
   }
 
   void InitializeAdapter() {
@@ -89,6 +138,19 @@ class BluetoothFlossTest : public testing::Test {
     base::RunLoop().RunUntilIdle();
   }
 
+  // Simulates getting an OnScannerRegistered callback and then an OnScanResult
+  void RegisterScannerAndGetScanResult() {
+    ASSERT_TRUE(adapter_.get() != nullptr);
+    BluetoothAdapterFloss* floss_adapter =
+        static_cast<BluetoothAdapterFloss*>(adapter_.get());
+
+    floss_adapter->ScannerRegistered(device::BluetoothUUID(kTestUuidStr),
+                                     kTestScannerId, 0);
+    floss_adapter->ScanResultReceived(ScanResult{kTestDeviceAddr});
+
+    base::RunLoop().RunUntilIdle();
+  }
+
  protected:
   void ErrorCallback() { QuitMessageLoop(); }
 
@@ -110,6 +172,7 @@ class BluetoothFlossTest : public testing::Test {
   // within tests.
   raw_ptr<FakeFlossManagerClient> fake_floss_manager_client_;
   raw_ptr<FakeFlossAdapterClient> fake_floss_adapter_client_;
+  raw_ptr<FakeFlossLEScanClient> fake_floss_lescan_client_;
 
   std::vector<std::unique_ptr<BluetoothDiscoverySession>> discovery_sessions_;
 
@@ -130,6 +193,7 @@ TEST_F(BluetoothFlossTest, PairJustWorks) {
       adapter_->GetDevice(FakeFlossAdapterClient::kJustWorksAddress);
   ASSERT_TRUE(device != nullptr);
   ASSERT_FALSE(device->IsPaired());
+  ASSERT_FALSE(device->IsConnecting());
 
   StrictMock<MockPairingDelegate> pairing_delegate;
   base::RunLoop run_loop;
@@ -140,8 +204,10 @@ TEST_F(BluetoothFlossTest, PairJustWorks) {
             EXPECT_FALSE(error.has_value());
             run_loop.Quit();
           }));
+  ASSERT_TRUE(device->IsConnecting());
   run_loop.Run();
 
+  ASSERT_FALSE(device->IsConnecting());
   EXPECT_TRUE(device->IsPaired());
 }
 
@@ -236,6 +302,9 @@ TEST_F(BluetoothFlossTest, RemoveBonding) {
   InitializeAdapter();
   DiscoverDevices();
 
+  // Simulate adapter enabled event.
+  EnableAdapter();
+
   BluetoothDevice* device =
       adapter_->GetDevice(FakeFlossAdapterClient::kJustWorksAddress);
   ASSERT_TRUE(device);
@@ -262,7 +331,29 @@ TEST_F(BluetoothFlossTest, RemoveBonding) {
                  base::BindLambdaForTesting([]() { FAIL(); }));
   run_loop2.Run();
 
-  EXPECT_FALSE(device->IsPaired());
+  device = adapter_->GetDevice(FakeFlossAdapterClient::kJustWorksAddress);
+  EXPECT_FALSE(device);
+
+  // Now check with bonded and connected device.
+  BluetoothDevice* paired_device =
+      adapter_->GetDevice(FakeFlossAdapterClient::kBondedAddress1);
+
+  ASSERT_TRUE(paired_device);
+  ASSERT_TRUE(paired_device->IsPaired());
+  ASSERT_TRUE(paired_device->IsConnected());
+
+  {
+    base::RunLoop loop;
+    paired_device->Forget(base::BindLambdaForTesting([&loop]() {
+                            SUCCEED();
+                            loop.Quit();
+                          }),
+                          base::BindLambdaForTesting([]() { FAIL(); }));
+    loop.Run();
+  }
+
+  paired_device = adapter_->GetDevice(FakeFlossAdapterClient::kBondedAddress1);
+  ASSERT_TRUE(paired_device);
 }
 
 TEST_F(BluetoothFlossTest, Disconnect) {
@@ -331,14 +422,16 @@ TEST_F(BluetoothFlossTest, AdapterInitialDevices) {
   EnableAdapter();
 
   // After adapter is enabled, there are known devices.
-  BluetoothDevice* device1 =
-      adapter_->GetDevice(FakeFlossAdapterClient::kBondedAddress1);
-  BluetoothDevice* device2 =
-      adapter_->GetDevice(FakeFlossAdapterClient::kBondedAddress2);
+  BluetoothDeviceFloss* device1 = static_cast<BluetoothDeviceFloss*>(
+      adapter_->GetDevice(FakeFlossAdapterClient::kBondedAddress1));
+  BluetoothDeviceFloss* device2 = static_cast<BluetoothDeviceFloss*>(
+      adapter_->GetDevice(FakeFlossAdapterClient::kBondedAddress2));
   ASSERT_TRUE(device1);
   ASSERT_TRUE(device2);
   EXPECT_TRUE(device1->IsPaired());
+  EXPECT_TRUE(device1->IsBondedImpl());
   EXPECT_TRUE(device2->IsPaired());
+  EXPECT_TRUE(device2->IsBondedImpl());
   EXPECT_TRUE(device1->IsConnected());
   EXPECT_FALSE(device2->IsConnected());
   EXPECT_EQ(device1->GetBluetoothClass(),
@@ -349,6 +442,23 @@ TEST_F(BluetoothFlossTest, AdapterInitialDevices) {
             device::BluetoothTransport::BLUETOOTH_TRANSPORT_LE);
   EXPECT_EQ(device2->GetType(),
             device::BluetoothTransport::BLUETOOTH_TRANSPORT_LE);
+
+  // We should also have paired + connected devices that aren't bonded.
+  BluetoothDeviceFloss* paired1 = static_cast<BluetoothDeviceFloss*>(
+      adapter_->GetDevice(FakeFlossAdapterClient::kPairedAddressBrEdr));
+  BluetoothDeviceFloss* paired2 = static_cast<BluetoothDeviceFloss*>(
+      adapter_->GetDevice(FakeFlossAdapterClient::kPairedAddressLE));
+  ASSERT_TRUE(paired1);
+  ASSERT_TRUE(paired2);
+
+  // Should be paired and connected but not bonded.
+  EXPECT_TRUE(paired1->IsPaired());
+  EXPECT_TRUE(paired1->IsConnected());
+  EXPECT_TRUE(paired2->IsPaired());
+  EXPECT_TRUE(paired2->IsConnected());
+
+  EXPECT_FALSE(paired1->IsBondedImpl());
+  EXPECT_FALSE(paired2->IsBondedImpl());
 }
 
 TEST_F(BluetoothFlossTest, DisabledAdapterClearsDevices) {
@@ -432,5 +542,62 @@ TEST_F(BluetoothFlossTest, HandlesClearedDevices) {
       adapter_->GetDevice(FakeFlossAdapterClient::kBondedAddress1);
   EXPECT_TRUE(same_bonded_device != nullptr);
 }
+
+#if BUILDFLAG(IS_CHROMEOS)
+TEST_F(BluetoothFlossTest, StartLowEnergyScanSessions) {
+  InitializeAdapter();
+  EnableAdapter();
+
+  // Initial conditions
+  EXPECT_EQ(0, fake_floss_lescan_client_->scanners_registered_);
+
+  // TODO (b/217274013): Filter is currently being ignored
+  auto background_scan_session = adapter_->StartLowEnergyScanSession(
+      /*filter=*/nullptr, /*delegate=*/nullptr);
+  base::RunLoop().RunUntilIdle();
+
+  // We should have registered a scanner
+  EXPECT_EQ(1, fake_floss_lescan_client_->scanners_registered_);
+
+  // Register another scanner
+  auto another_background_scan_session = adapter_->StartLowEnergyScanSession(
+      /*filter=*/nullptr, /*delegate=*/nullptr);
+  base::RunLoop().RunUntilIdle();
+
+  // Should register another scanner
+  EXPECT_EQ(2, fake_floss_lescan_client_->scanners_registered_);
+
+  // Destroy one of the sessions
+  background_scan_session.reset();
+  EXPECT_EQ(1, fake_floss_lescan_client_->scanners_registered_);
+}
+
+TEST_F(BluetoothFlossTest, StartLowEnergyScanSessionWithScanResult) {
+  InitializeAdapter();
+  EnableAdapter();
+
+  FakeBluetoothLowEnergyScanSessionDelegate delegate;
+  // TODO (b/217274013): Filter is currently being ignored
+  auto background_scan_session = adapter_->StartLowEnergyScanSession(
+      /*filter=*/nullptr, delegate.GetWeakPtr());
+  base::RunLoop().RunUntilIdle();
+
+  // Initial conditions
+  EXPECT_TRUE(fake_floss_lescan_client_->scanner_ids_.empty());
+  EXPECT_EQ(0, delegate.sessions_started_);
+  EXPECT_TRUE(delegate.devices_found_.empty());
+  EXPECT_EQ(0, delegate.sessions_invalidated_);
+
+  // Simulate a scan result event
+  RegisterScannerAndGetScanResult();
+  EXPECT_TRUE(
+      base::Contains(fake_floss_lescan_client_->scanner_ids_, kTestScannerId));
+  EXPECT_EQ(1, delegate.sessions_started_);
+  EXPECT_TRUE(base::Contains(delegate.devices_found_, kTestDeviceAddr));
+
+  adapter_->Shutdown();
+  EXPECT_EQ(1, delegate.sessions_invalidated_);
+}
+#endif  // BUILDFLAG(IS_CHROMEOS)
 
 }  // namespace floss

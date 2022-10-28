@@ -115,7 +115,6 @@
 #include "content/browser/renderer_host/render_frame_host_delegate.h"
 #include "content/browser/renderer_host/render_frame_host_impl.h"
 #include "content/browser/renderer_host/render_message_filter.h"
-#include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/renderer_host/render_widget_helper.h"
 #include "content/browser/renderer_host/renderer_sandboxed_process_launcher_delegate.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
@@ -146,6 +145,7 @@
 #include "content/public/browser/render_process_host_creation_observer.h"
 #include "content/public/browser/render_process_host_factory.h"
 #include "content/public/browser/render_process_host_observer.h"
+#include "content/public/browser/render_process_host_priority_client.h"
 #include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/render_widget_host_iterator.h"
 #include "content/public/browser/resource_coordinator_service.h"
@@ -204,6 +204,7 @@
 #include "url/origin.h"
 
 #if BUILDFLAG(IS_ANDROID)
+#include "base/android/child_process_binding_types.h"
 #include "content/browser/android/java_interfaces_impl.h"
 #include "content/browser/font_unique_name_lookup/font_unique_name_lookup_service.h"
 #include "content/public/browser/android/java_interfaces.h"
@@ -1921,22 +1922,13 @@ void RenderProcessHostImpl::BindIndexedDB(
       storage_key, std::move(receiver));
 }
 
-void RenderProcessHostImpl::BindBucketManagerHostForRenderFrame(
-    const GlobalRenderFrameHostId& render_frame_host_id,
+void RenderProcessHostImpl::BindBucketManagerHost(
+    base::WeakPtr<BucketContext> bucket_context,
     mojo::PendingReceiver<blink::mojom::BucketManagerHost> receiver) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  RenderFrameHostImpl* rfh = RenderFrameHostImpl::FromID(render_frame_host_id);
-  storage_partition_impl_->GetBucketManager()->BindReceiverForRenderFrame(
-      render_frame_host_id, rfh->storage_key(), std::move(receiver),
+  storage_partition_impl_->GetBucketManager()->BindReceiver(
+      std::move(bucket_context), std::move(receiver),
       mojo::GetBadMessageCallback());
-}
-
-void RenderProcessHostImpl::BindBucketManagerHostForWorker(
-    const blink::StorageKey& storage_key,
-    mojo::PendingReceiver<blink::mojom::BucketManagerHost> receiver) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  storage_partition_impl_->GetBucketManager()->BindReceiverForWorker(
-      GetID(), storage_key, std::move(receiver), mojo::GetBadMessageCallback());
 }
 
 void RenderProcessHostImpl::ForceCrash() {
@@ -2113,6 +2105,18 @@ void RenderProcessHostImpl::CreateWebSocketConnector(
                                               : nullptr)),
       std::move(receiver));
 }
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+void RenderProcessHostImpl::ReinitializeLogging(
+    uint32_t logging_dest,
+    base::ScopedFD log_file_descriptor) {
+  auto logging_settings = mojom::LoggingSettings::New();
+  logging_settings->logging_dest = logging_dest;
+  logging_settings->log_file_descriptor =
+      mojo::PlatformHandle(std::move(log_file_descriptor));
+  child_process_->ReinitializeLogging(std::move(logging_settings));
+}
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 #if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
 void RenderProcessHostImpl::CreateStableVideoDecoder(
@@ -2863,7 +2867,8 @@ void RenderProcessHostImpl::ShutdownForBadMessage(
       PROCESS_TYPE_RENDERER);
 }
 
-void RenderProcessHostImpl::UpdateClientPriority(PriorityClient* client) {
+void RenderProcessHostImpl::UpdateClientPriority(
+    RenderProcessHostPriorityClient* client) {
   DCHECK(client);
   DCHECK_EQ(1u, priority_clients_.count(client));
   UpdateProcessPriorityInputs();
@@ -2884,6 +2889,16 @@ bool RenderProcessHostImpl::GetIntersectsViewport() {
 #if BUILDFLAG(IS_ANDROID)
 ChildProcessImportance RenderProcessHostImpl::GetEffectiveImportance() {
   return effective_importance_;
+}
+
+base::android::ChildBindingState
+RenderProcessHostImpl::GetEffectiveChildBindingState() {
+  if (child_process_launcher_) {
+    return child_process_launcher_->GetEffectiveChildBindingState();
+  }
+
+  // If there is no ChildProcessLauncher this is the best default.
+  return base::android::ChildBindingState::UNBOUND;
 }
 
 void RenderProcessHostImpl::DumpProcessStack() {
@@ -3957,14 +3972,15 @@ void RenderProcessHostImpl::RemovePendingView() {
     UpdateProcessPriority();
 }
 
-void RenderProcessHostImpl::AddPriorityClient(PriorityClient* priority_client) {
+void RenderProcessHostImpl::AddPriorityClient(
+    RenderProcessHostPriorityClient* priority_client) {
   DCHECK(!base::Contains(priority_clients_, priority_client));
   priority_clients_.insert(priority_client);
   UpdateProcessPriorityInputs();
 }
 
 void RenderProcessHostImpl::RemovePriorityClient(
-    PriorityClient* priority_client) {
+    RenderProcessHostPriorityClient* priority_client) {
   DCHECK(base::Contains(priority_clients_, priority_client));
   priority_clients_.erase(priority_client);
   UpdateProcessPriorityInputs();
@@ -4787,7 +4803,7 @@ void RenderProcessHostImpl::UpdateProcessPriorityInputs() {
       ChildProcessImportance::NORMAL;
 #endif
   for (auto* client : priority_clients_) {
-    Priority priority = client->GetPriority();
+    RenderProcessHostPriorityClient::Priority priority = client->GetPriority();
 
     // Compute the lowest depth of widgets with highest visibility priority.
     // See comment on |frame_depth_| for more details.

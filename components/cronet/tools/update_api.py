@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# Copyright 2016 The Chromium Authors. All rights reserved.
+# Copyright 2016 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -38,6 +38,10 @@ CLASS_RE = re.compile(r'.*class ([^ ]*) .*\{')
 # Regular expression that matches a string containing an unnamed class name,
 # for example 'Foo$1'.
 UNNAMED_CLASS_RE = re.compile(r'.*\$[0-9]')
+
+# javap still prints internal (package private, nested...) classes even though
+# -protected is passed so they need to be filtered out.
+INTERNAL_CLASS_RE = re.compile(r'^(?!public ((final|abstract) )?class).*')
 
 JAR_PATH = os.path.join(build_utils.JAVA_HOME, 'bin', 'jar')
 JAVAP_PATH = os.path.join(build_utils.JAVA_HOME, 'bin', 'javap')
@@ -89,8 +93,7 @@ def generate_api(api_jar, output_filename):
     if CLASS_RE.match(line):
       skip_to_next_class = (
           # Skip internal classes, they aren't exposed.
-          UNNAMED_CLASS_RE.match(line)
-      )
+          UNNAMED_CLASS_RE.match(line)) or (INTERNAL_CLASS_RE.match(line))
     if skip_to_next_class:
       skip_to_next_class = line != '}'
       continue

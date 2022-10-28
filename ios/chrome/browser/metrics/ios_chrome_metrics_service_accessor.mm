@@ -1,14 +1,14 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ios/chrome/browser/metrics/ios_chrome_metrics_service_accessor.h"
+#import "ios/chrome/browser/metrics/ios_chrome_metrics_service_accessor.h"
 
-#include <stdint.h>
+#import <stdint.h>
 
-#include "components/prefs/pref_service.h"
-#include "components/variations/synthetic_trials.h"
-#include "ios/chrome/browser/application_context.h"
+#import "components/prefs/pref_service.h"
+#import "components/variations/synthetic_trials.h"
+#import "ios/chrome/browser/application_context/application_context.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."

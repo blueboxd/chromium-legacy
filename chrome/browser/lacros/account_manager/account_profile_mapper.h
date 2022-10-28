@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -19,6 +19,7 @@
 #include "chrome/browser/lacros/account_manager/account_cache.h"
 #include "chrome/browser/profiles/profile_attributes_storage.h"
 #include "components/account_manager_core/account_manager_facade.h"
+#include "google_apis/gaia/google_service_auth_error.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/abseil-cpp/absl/types/variant.h"
 
@@ -84,6 +85,9 @@ class AccountProfileMapper
                                    const account_manager::Account& account) {}
     virtual void OnAccountRemoved(const base::FilePath& profile_path,
                                   const account_manager::Account& account) {}
+    virtual void OnAuthErrorChanged(const base::FilePath& profile_path,
+                                    const account_manager::AccountKey& account,
+                                    const GoogleServiceAuthError& error) {}
   };
 
   AccountProfileMapper(account_manager::AccountManagerFacade* facade,
@@ -110,6 +114,9 @@ class AccountProfileMapper
       const base::FilePath& profile_path,
       const account_manager::AccountKey& account,
       OAuth2AccessTokenConsumer* consumer);
+  void ReportAuthError(const base::FilePath& profile_path,
+                       const account_manager::AccountKey& account,
+                       const GoogleServiceAuthError& error);
 
   // Returns the whole map of accounts per profile. An empty path is used as the
   // key for unassigned accounts (this key is not set if there are no unassigned
@@ -152,6 +159,8 @@ class AccountProfileMapper
   // account_manager::AccountManagerFacade::Observer:
   void OnAccountUpserted(const account_manager::Account& account) override;
   void OnAccountRemoved(const account_manager::Account& account) override;
+  void OnAuthErrorChanged(const account_manager::AccountKey& account,
+                          const GoogleServiceAuthError& error) override;
 
   // ProfileAttributesStorage::Observer:
   void OnProfileWillBeRemoved(const base::FilePath& profile_path) override;

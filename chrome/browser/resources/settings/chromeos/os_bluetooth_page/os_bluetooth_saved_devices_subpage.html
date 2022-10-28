@@ -10,23 +10,19 @@
   }
 </style>
 <div id="container">
+  <div id="label" class="settings-box-text">
+    [[computeSavedDevicesSublabel_(savedDevices_.*, 
+    showSavedDevicesErrorLabel_, 
+    showSavedDevicesLoadingLabel_, 
+    shouldShowNoDevicesLabel_,
+    shouldShowDeviceList_)]]
+  </div>
   <template is="dom-if"
-      if="[[!shouldShowDeviceList_(savedDevices_, savedDevices_.length)]]"
-      restamp>
-    <div id="noDevices" class="settings-box-text">
-      [[noSavedDeviceslabel_]]
-    </div>
-  </template>
-  <template is="dom-if"
-      if="[[shouldShowDeviceList_(savedDevices_,
-          savedDevices_.length)]]" restamp>
-    <div class="settings-box-text">
-      [[savedDevicesSublabel_]]
-    </div>
+      if="[[shouldShowDeviceList_]]" restamp>
     <div class="device-list">
       <os-settings-saved-devices-list
           id="savedDevicesList"
-          devices_="[[savedDevices_]]">
+          devices="{{savedDevices_}}">
       </os-settings-saved-devices-list>
     </div>
   </template>

@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -33,6 +33,7 @@
 #include "chromeos/crosapi/mojom/cros_display_config.mojom.h"
 #include "chromeos/crosapi/mojom/crosapi.mojom.h"
 #include "chromeos/crosapi/mojom/desk_template.mojom.h"
+#include "chromeos/crosapi/mojom/device_local_account_extension_service.mojom.h"
 #include "chromeos/crosapi/mojom/device_oauth2_token_service.mojom.h"
 #include "chromeos/crosapi/mojom/device_settings_service.mojom.h"
 #include "chromeos/crosapi/mojom/diagnostics_service.mojom.h"
@@ -80,7 +81,6 @@
 #include "chromeos/crosapi/mojom/sharesheet.mojom.h"
 #include "chromeos/crosapi/mojom/speech_recognition.mojom.h"
 #include "chromeos/crosapi/mojom/sync.mojom.h"
-#include "chromeos/crosapi/mojom/system_display.mojom.h"
 #include "chromeos/crosapi/mojom/task_manager.mojom.h"
 #include "chromeos/crosapi/mojom/test_controller.mojom.h"
 #include "chromeos/crosapi/mojom/timezone.mojom.h"
@@ -371,6 +371,10 @@ LacrosService::LacrosService()
   ConstructRemote<
       crosapi::mojom::KioskSessionService, &Crosapi::BindKioskSessionService,
       Crosapi::MethodMinVersions::kBindKioskSessionServiceMinVersion>();
+  ConstructRemote<crosapi::mojom::DeviceLocalAccountExtensionService,
+                  &Crosapi::BindDeviceLocalAccountExtensionService,
+                  Crosapi::MethodMinVersions::
+                      kBindDeviceLocalAccountExtensionServiceMinVersion>();
   ConstructRemote<crosapi::mojom::LocalPrinter,
                   &crosapi::mojom::Crosapi::BindLocalPrinter,
                   Crosapi::MethodMinVersions::kBindLocalPrinterMinVersion>();
@@ -455,8 +459,6 @@ LacrosService::LacrosService()
   ConstructRemote<crosapi::mojom::SyncService,
                   &crosapi::mojom::Crosapi::BindSyncService,
                   Crosapi::MethodMinVersions::kBindSyncServiceMinVersion>();
-  ConstructRemote<crosapi::mojom::SystemDisplay, &Crosapi::BindSystemDisplay,
-                  Crosapi::MethodMinVersions::kBindSystemDisplayMinVersion>();
   ConstructRemote<crosapi::mojom::TaskManager,
                   &crosapi::mojom::Crosapi::BindTaskManager,
                   Crosapi::MethodMinVersions::kBindTaskManagerMinVersion>();

@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,6 +12,7 @@
 #include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
 #include "ash/style/dark_light_mode_controller_impl.h"
+#include "base/ranges/algorithm.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/power_monitor_test.h"
 #include "base/test/scoped_feature_list.h"
@@ -208,10 +209,8 @@ class LockScreenMediaControlsViewTest : public LoginTestBase {
 
   views::Button* GetButtonForAction(MediaSessionAction action) const {
     const auto& buttons = media_action_buttons();
-    const auto it = std::find_if(buttons.begin(), buttons.end(),
-                                 [action](const views::Button* b) {
-                                   return b->tag() == static_cast<int>(action);
-                                 });
+    const auto it = base::ranges::find(buttons, static_cast<int>(action),
+                                       &views::Button::tag);
 
     if (it == buttons.end())
       return nullptr;

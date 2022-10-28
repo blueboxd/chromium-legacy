@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -169,6 +169,14 @@ TEST_F(UpdateNotificationControllerTest, VisibilityAfterUpdate) {
                 base::UTF16ToUTF8(system_app_name_) + " update",
             GetNotificationMessage());
   EXPECT_EQ("Restart to update", GetNotificationButton(0));
+
+  // Click the restart button.
+  message_center::MessageCenter::Get()->ClickOnNotificationButton(
+      kNotificationId, 0);
+
+  // Restart was requested.
+  EXPECT_EQ(1,
+            GetSessionControllerClient()->request_restart_for_update_count());
 }
 
 // Tests that the update icon becomes visible when an update becomes

@@ -1,4 +1,4 @@
-# Copyright 2017 The Chromium Authors. All rights reserved.
+# Copyright 2017 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -80,6 +80,7 @@ template("generate_expired_histograms_array") {
       "//tools/metrics/histograms/metadata/feature_engagement/histograms.xml",
       "//tools/metrics/histograms/metadata/file/histograms.xml",
       "//tools/metrics/histograms/metadata/fingerprint/histograms.xml",
+      "//tools/metrics/histograms/metadata/game_mode/histograms.xml",
       "//tools/metrics/histograms/metadata/gcm/histograms.xml",
       "//tools/metrics/histograms/metadata/geolocation/histograms.xml",
       "//tools/metrics/histograms/metadata/google/histograms.xml",
@@ -95,6 +96,7 @@ template("generate_expired_histograms_array") {
       "//tools/metrics/histograms/metadata/interstitial/histograms.xml",
       "//tools/metrics/histograms/metadata/ios/histograms.xml",
       "//tools/metrics/histograms/metadata/kerberos/histograms.xml",
+      "//tools/metrics/histograms/metadata/kiosk/histograms.xml",
       "//tools/metrics/histograms/metadata/language/histograms.xml",
       "//tools/metrics/histograms/metadata/leveldb_proto/histograms.xml",
       "//tools/metrics/histograms/metadata/local/histograms.xml",
@@ -166,6 +168,7 @@ template("generate_expired_histograms_array") {
       "//tools/metrics/histograms/metadata/v8/histograms.xml",
       "//tools/metrics/histograms/metadata/variations/histograms.xml",
       "//tools/metrics/histograms/metadata/video_tutorials/histograms.xml",
+      "//tools/metrics/histograms/metadata/views/histograms.xml",
       "//tools/metrics/histograms/metadata/web_apk/histograms.xml",
       "//tools/metrics/histograms/metadata/web_audio/histograms.xml",
       "//tools/metrics/histograms/metadata/web_core/histograms.xml",

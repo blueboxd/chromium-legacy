@@ -1,28 +1,28 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #import "ios/chrome/browser/translate/translate_app_interface.h"
 
-#include "base/command_line.h"
-#include "base/memory/singleton.h"
-#include "base/strings/sys_string_conversions.h"
-#include "base/strings/utf_string_conversions.h"
-#include "components/translate/core/browser/translate_infobar_delegate.h"
-#include "components/translate/core/browser/translate_manager.h"
-#include "components/translate/core/browser/translate_prefs.h"
-#include "components/translate/core/common/language_detection_details.h"
-#include "components/translate/core/common/translate_switches.h"
+#import "base/command_line.h"
+#import "base/memory/singleton.h"
+#import "base/strings/sys_string_conversions.h"
+#import "base/strings/utf_string_conversions.h"
+#import "components/translate/core/browser/translate_infobar_delegate.h"
+#import "components/translate/core/browser/translate_manager.h"
+#import "components/translate/core/browser/translate_prefs.h"
+#import "components/translate/core/common/language_detection_details.h"
+#import "components/translate/core/common/translate_switches.h"
 #import "components/translate/core/common/translate_util.h"
 #import "components/translate/ios/browser/js_translate_manager.h"
-#include "ios/chrome/browser/browser_state/chrome_browser_state.h"
-#include "ios/chrome/browser/translate/chrome_ios_translate_client.h"
+#import "ios/chrome/browser/browser_state/chrome_browser_state.h"
+#import "ios/chrome/browser/translate/chrome_ios_translate_client.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
 #import "ios/chrome/test/app/tab_test_util.h"
 #import "ios/chrome/test/fakes/fake_language_detection_tab_helper_observer.h"
 #import "ios/web/public/js_messaging/web_frame.h"
 #import "ios/web/public/js_messaging/web_frame_util.h"
-#include "net/base/network_change_notifier.h"
+#import "net/base/network_change_notifier.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -140,7 +140,7 @@ class TranslateAppInterfaceHelper {
 }
 
 - (void)injectWithTranslateScript:(const std::string&)translate_script {
-  // No need to set the |translate_script| JavaScript since it will never be
+  // No need to set the `translate_script` JavaScript since it will never be
   // used by this fake object. Instead just invoke host with 'translate.ready'
   // followed by 'translate.status'.
   base::Value translate_ready_dict(base::Value::Type::DICTIONARY);

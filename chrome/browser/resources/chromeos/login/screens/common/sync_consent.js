@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -140,7 +140,8 @@ class SyncConsentScreen extends SyncConsentScreenElementBase {
    */
   onSettingsSaveAndContinue_(e, opted_in) {
     assert(e.composedPath());
-    chrome.send('login.SyncConsentScreen.continue', [
+    this.userActed([
+      'continue',
       opted_in,
       this.$.reviewSettingsBox.checked,
       this.getConsentDescription_(),

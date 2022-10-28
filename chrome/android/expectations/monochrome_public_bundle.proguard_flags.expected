@@ -1,5 +1,5 @@
 # File: ../../third_party/androidx/androidx_fragment.flags
-# Copyright 2020 The Chromium Authors. All rights reserved.
+# Copyright 2020 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -15,7 +15,7 @@
 }
 
 # File: ../../third_party/androidx/androidx_mediarouter.flags
-# Copyright 2019 The Chromium Authors. All rights reserved.
+# Copyright 2019 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -25,8 +25,108 @@
   boolean mUseDynamicGroup return false;
 }
 
+# File: ../../build/android/chromium_annotations.flags
+# Copyright 2022 The Chromium Authors
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+# Contains flags related to annotations in //build/android that can be safely
+# shared with Cronet, and thus would be appropriate for third-party apps to
+# include.
+
+# Keep all annotation related attributes that can affect runtime
+-keepattributes RuntimeVisible*Annotations
+-keepattributes AnnotationDefault
+
+# Keep the annotations, because if we don't, the ProGuard rules that use them
+# will not be respected. These classes then show up in our final dex, which we
+# do not want - see crbug.com/628226.
+-keep @interface org.chromium.base.annotations.AccessedByNative
+-keep @interface org.chromium.base.annotations.CalledByNative
+-keep @interface org.chromium.base.annotations.CalledByNativeUnchecked
+# TODO(https://crbug.com/1038372): Remove base after downstream migrates.
+-keep @interface org.chromium.base.annotations.DoNotInline
+-keep @interface org.chromium.base.annotations.UsedByReflection
+-keep @interface org.chromium.base.annotations.IdentifierNameString
+-keep @interface org.chromium.build.annotations.DoNotInline
+-keep @interface org.chromium.build.annotations.UsedByReflection
+-keep @interface org.chromium.build.annotations.IdentifierNameString
+
+# Keeps for class level annotations.
+-keep,allowaccessmodification @org.chromium.base.annotations.UsedByReflection class ** {}
+-keep,allowaccessmodification @org.chromium.build.annotations.UsedByReflection class ** {}
+
+# Keeps for method level annotations.
+-keepclasseswithmembers,allowaccessmodification class ** {
+  @org.chromium.base.annotations.AccessedByNative <fields>;
+}
+-keepclasseswithmembers,includedescriptorclasses,allowaccessmodification class ** {
+  @org.chromium.base.annotations.CalledByNative <methods>;
+}
+-keepclasseswithmembers,includedescriptorclasses,allowaccessmodification class ** {
+  @org.chromium.base.annotations.CalledByNativeUnchecked <methods>;
+}
+-keepclasseswithmembers,allowaccessmodification class ** {
+  @org.chromium.base.annotations.UsedByReflection <methods>;
+}
+-keepclasseswithmembers,allowaccessmodification class ** {
+  @org.chromium.build.annotations.UsedByReflection <methods>;
+}
+-keepclasseswithmembers,allowaccessmodification class ** {
+  @org.chromium.base.annotations.UsedByReflection <fields>;
+}
+-keepclasseswithmembers,allowaccessmodification class ** {
+  @org.chromium.build.annotations.UsedByReflection <fields>;
+}
+
+# Never inline classes, methods, or fields with this annotation, but allow
+# shrinking and obfuscation.
+# Relevant to fields when they are needed to store strong references to objects
+# that are held as weak references by native code.
+-if @org.chromium.base.annotations.DoNotInline class * {
+    *** *(...);
+}
+-keep,allowobfuscation,allowaccessmodification class <1> {
+    *** <2>(...);
+}
+-if @org.chromium.build.annotations.DoNotInline class * {
+    *** *(...);
+}
+-keep,allowobfuscation,allowaccessmodification class <1> {
+    *** <2>(...);
+}
+-keepclassmembers,allowobfuscation,allowaccessmodification class * {
+   @org.chromium.base.annotations.DoNotInline <methods>;
+}
+-keepclassmembers,allowobfuscation,allowaccessmodification class * {
+   @org.chromium.build.annotations.DoNotInline <methods>;
+}
+-keepclassmembers,allowobfuscation,allowaccessmodification class * {
+   @org.chromium.base.annotations.DoNotInline <fields>;
+}
+-keepclassmembers,allowobfuscation,allowaccessmodification class * {
+   @org.chromium.build.annotations.DoNotInline <fields>;
+}
+
+-alwaysinline class * {
+    @org.chromium.build.annotations.AlwaysInline *;
+}
+
+# Never merge classes horizontally or vertically with this annotation.
+# Relevant to classes being used as a key in maps or sets.
+-keep,allowaccessmodification,allowobfuscation,allowshrinking @org.chromium.base.annotations.DoNotClassMerge class *
+-keep,allowaccessmodification,allowobfuscation,allowshrinking @org.chromium.build.annotations.DoNotClassMerge class *
+
+# Mark members annotated with IdentifierNameString as identifier name strings
+-identifiernamestring class * {
+    @org.chromium.base.annotations.IdentifierNameString *;
+}
+-identifiernamestring class * {
+    @org.chromium.build.annotations.IdentifierNameString *;
+}
+
 # File: ../../base/android/proguard/chromium_apk.flags
-# Copyright 2016 The Chromium Authors. All rights reserved.
+# Copyright 2016 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -91,36 +191,6 @@
     public static **[] values();
 }
 
-# Allows Proguard freedom in removing these log related calls.
--assumenosideeffects class android.util.Log {
-  static int d(...);
-  static int v(...);
-  static boolean isLoggable(...);
-}
-
--assumenosideeffects class java.util.logging.Logger {
-    void finest(...);
-    void finer(...);
-    void fine(...);
-    void info(...);
-    void warning(...);
-    void severe(...);
-    void throwing(...);
-    void log(...);
-    void logp(...);
-    static java.util.logging.Logger getLogger(...) return null;
-    boolean isLoggable(...) return false;
-}
-
--assumenosideeffects class java.util.logging.Level {
-  int intValue() return 0;
-}
-
-# Makes try-with-resources less inefficient. Saved 3.8kb when added.
--assumenosideeffects class java.lang.Throwable {
-  void addSuppressed(...);
-}
-
 # This is to workaround crbug.com/1204690 - an old GMS app version crashes when
 # ObjectWrapper contains > 1 fields, and this prevents R8 from inserting a
 # synthetic field.
@@ -139,27 +209,28 @@
   public boolean requiresSignIn();
 }
 
+# Remove calls to String.format() where the result goes unused. This can mask
+# exceptions if the parameters to String.format() are invalid, but such cases
+# are generally programming bugs anyways.
+# Not using the return value generally occurs due to logging being stripped.
+-assumenosideeffects class java.lang.String {
+  static java.lang.String format(...);
+}
+
+# Allows R8 to remove static field accesses to library APIs when the results
+# are unused (E.g. tell it that it's okay to not trigger <clinit>).
+# Not using the return value generally occurs due to logging being stripped.
+-assumenosideeffects class android.**, java.** {
+  static <fields>;
+}
+
 # File: ../../base/android/proguard/chromium_code.flags
-# Copyright 2016 The Chromium Authors. All rights reserved.
+# Copyright 2016 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
 # Contains flags that can be safely shared with Cronet, and thus would be
 # appropriate for third-party apps to include.
-
-# Keep all annotation related attributes that can affect runtime
--keepattributes RuntimeVisible*Annotations
--keepattributes AnnotationDefault
-
-# Keep the annotations, because if we don't, the ProGuard rules that use them
-# will not be respected. These classes then show up in our final dex, which we
-# do not want - see crbug.com/628226.
--keep @interface org.chromium.base.annotations.AccessedByNative
--keep @interface org.chromium.base.annotations.CalledByNative
--keep @interface org.chromium.base.annotations.CalledByNativeUnchecked
--keep @interface org.chromium.base.annotations.DoNotInline
--keep @interface org.chromium.base.annotations.UsedByReflection
--keep @interface org.chromium.base.annotations.IdentifierNameString
 
 # Android support library annotations will get converted to androidx ones
 # which we want to keep.
@@ -172,25 +243,6 @@
   @androidx.annotation.Keep <methods>;
 }
 
-# Keeps for class level annotations.
--keep,allowaccessmodification @org.chromium.base.annotations.UsedByReflection class ** {}
-
-# Keeps for method level annotations.
--keepclasseswithmembers,allowaccessmodification class ** {
-  @org.chromium.base.annotations.AccessedByNative <fields>;
-}
--keepclasseswithmembers,includedescriptorclasses,allowaccessmodification class ** {
-  @org.chromium.base.annotations.CalledByNative <methods>;
-}
--keepclasseswithmembers,includedescriptorclasses,allowaccessmodification class ** {
-  @org.chromium.base.annotations.CalledByNativeUnchecked <methods>;
-}
--keepclasseswithmembers,allowaccessmodification class ** {
-  @org.chromium.base.annotations.UsedByReflection <methods>;
-}
--keepclasseswithmembers,allowaccessmodification class ** {
-  @org.chromium.base.annotations.UsedByReflection <fields>;
-}
 # Even unused methods kept due to explicit jni registration:
 # https://crbug.com/688465.
 -keepclasseswithmembers,includedescriptorclasses,allowaccessmodification class !org.chromium.base.library_loader.**,** {
@@ -202,30 +254,11 @@
 
 # Use assumevalues block instead of assumenosideeffects block because Google3 proguard cannot parse
 # assumenosideeffects blocks which overwrite return value.
+# chromium_code.flags rather than remove_logging.flags so that it's included
+# in cronet.
 -assumevalues class org.chromium.base.Log {
   static boolean isDebug() return false;
 }
-
-# Never inline classes, methods, or fields with this annotation, but allow
-# shrinking and obfuscation.
-# Relevant to fields when they are needed to store strong references to objects
-# that are held as weak references by native code.
--if @org.chromium.base.annotations.DoNotInline class * {
-    *** *(...);
-}
--keep,allowobfuscation,allowaccessmodification class <1> {
-    *** <2>(...);
-}
--keepclassmembers,allowobfuscation,allowaccessmodification class * {
-   @org.chromium.base.annotations.DoNotInline <methods>;
-}
--keepclassmembers,allowobfuscation,allowaccessmodification class * {
-   @org.chromium.base.annotations.DoNotInline <fields>;
-}
-
-# Never merge classes horizontally or vertically with this annotation.
-# Relevant to classes being used as a key in maps or sets.
--keep,allowaccessmodification,allowobfuscation,allowshrinking @org.chromium.base.annotations.DoNotClassMerge class *
 
 # Keep all CREATOR fields within Parcelable that are kept.
 -keepclassmembers class org.chromium.** implements android.os.Parcelable {
@@ -245,11 +278,6 @@
     public static **[] values();
 }
 
-# Mark members annotated with IdentifierNameString as identifier name strings
--identifiernamestring class * {
-    @org.chromium.base.annotations.IdentifierNameString *;
-}
-
 # -identifiernamestring doesn't keep the module impl around, we have to
 # explicitly keep it.
 -if @org.chromium.components.module_installer.builder.ModuleInterface interface *
@@ -258,21 +286,28 @@
 }
 
 # File: ../../build/android/dcheck_is_off.flags
-# Copyright 2019 The Chromium Authors. All rights reserved.
+# Copyright 2019 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
 # Contains flags that are applied only when ENABLE_DCHECK=false.
 
+# TODO(https://crbug.com/1038372): Remove base after downstream migrates.
 -checkdiscard @org.chromium.base.annotations.CheckDiscard class ** {
+  *;
+}
+-checkdiscard @org.chromium.build.annotations.CheckDiscard class ** {
   *;
 }
 -checkdiscard class ** {
   @org.chromium.base.annotations.CheckDiscard *;
 }
+-checkdiscard class ** {
+  @org.chromium.build.annotations.CheckDiscard *;
+}
 
 # File: ../../chrome/android/proguard/main.flags
-# Copyright 2016 The Chromium Authors. All rights reserved.
+# Copyright 2016 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -317,7 +352,7 @@
 }
 
 # File: ../../third_party/android_deps/material_design.flags
-# Copyright 2021 The Chromium Authors. All rights reserved.
+# Copyright 2021 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -369,7 +404,7 @@
 -dontwarn com.google.protobuf.nano.NanoEnumValue
 
 # File: ../../android_webview/support_library/boundary_interfaces/proguard.flags
-# Copyright 2018 The Chromium Authors. All rights reserved.
+# Copyright 2018 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -380,7 +415,7 @@
 -keep public class org.chromium.support_lib_boundary.* { public *; }
 
 # File: ../../android_webview/nonembedded/java/proguard.flags
-# Copyright 2016 The Chromium Authors. All rights reserved.
+# Copyright 2016 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -449,7 +484,7 @@
 }
 
 # File: ../../chrome/android/features/start_surface/proguard.flags
-# Copyright 2019 The Chromium Authors. All rights reserved.
+# Copyright 2019 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -508,6 +543,16 @@
 # The default FragmentFactory creates Fragment instances using reflection
 -if public class ** extends androidx.fragment.app.Fragment
 -keepclasseswithmembers,allowobfuscation public class <1> {
+    public <init>();
+}
+
+# FragmentTransition will reflectively lookup:
+# androidx.transition.FragmentTransitionSupport
+# We should ensure that we keep the constructor if the code using this is alive
+-if class androidx.fragment.app.FragmentTransition {
+   private static androidx.fragment.app.FragmentTransitionImpl resolveSupportImpl();
+}
+-keep class androidx.transition.FragmentTransitionSupport {
     public <init>();
 }
 
@@ -854,6 +899,53 @@
 # rule, fields may be removed that would cause runtime failures.
 -keepclassmembers class * extends com.google.android.gms.internal.vision.zzjb {
   <fields>;
+}
+
+# File: ../../base/android/proguard/remove_logging.flags
+# Copyright 2022 The Chromium Authors
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+
+# Remove Log.d(), Log.v(), and all isLoggable() (which is generally used
+# only with Level.DEBUG and Level.VERBOSE).
+-assumenosideeffects class android.util.Log {
+  static int d(...);
+  static int v(...);
+  static boolean isLoggable(...) return false;
+}
+
+# Makes try-with-resources less inefficient. Saved 3.8kb when added.
+-assumenosideeffects class java.lang.Throwable {
+  void addSuppressed(...);
+}
+
+# Remove all logging calls via JDK Loggers. They are generally from
+# unused parts of third-party libraries.
+-assumenosideeffects class java.util.logging.Logger {
+    void finest(...);
+    void finer(...);
+    void fine(...);
+    void info(...);
+    void warning(...);
+    void severe(...);
+    void throwing(...);
+    void log(...);
+    void logp(...);
+    static java.util.logging.Logger getLogger(...) return _NONNULL_;
+    boolean isLoggable(...) return false;
+}
+
+# Remove accesses to Level.<thing> that go unused.
+-assumenosideeffects class java.util.logging.Level {
+  <fields>;
+  # Flogger uses Level objects, so do not set a return value for intValue().
+  int intValue();
+}
+
+# Remove fields of type Logger.
+-assumenosideeffects class * {
+  java.util.logging.Logger * return _NONNULL_;
 }
 
 # File: ../../third_party/android_deps/libs/org_jetbrains_kotlinx_kotlinx_coroutines_android/kotlinx-coroutines-android-1.6.1.jar:META-INF/com.android.tools/r8-from-1.6.0/coroutines.pro

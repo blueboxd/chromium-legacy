@@ -1,4 +1,4 @@
-// Copyright (c) 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -200,6 +200,12 @@ NotificationTesterHandler::DictToOptionalFields(
   absl::optional<int> priority = notifObj->FindInt("richDataPriority");
   DCHECK(priority);
   optional_fields.priority = priority.value();
+
+  absl::optional<int> num_mins_since_received =
+      notifObj->FindInt("richDataTimestamp");
+  DCHECK(num_mins_since_received);
+  optional_fields.timestamp =
+      base::Time::Now() - base::Minutes(num_mins_since_received.value());
 
   absl::optional<bool> pinned = notifObj->FindBool("richDataPinned");
   DCHECK(pinned);

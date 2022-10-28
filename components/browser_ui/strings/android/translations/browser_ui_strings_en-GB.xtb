@@ -30,6 +30,7 @@
 <translation id="1717218214683051432">Motion sensors</translation>
 <translation id="1743802530341753419">Ask before allowing sites to connect to a device (recommended)</translation>
 <translation id="1779089405699405702">Image decoder</translation>
+<translation id="1785415724048343560">Recommended for best experience</translation>
 <translation id="1818308510395330587">To let <ph name="APP_NAME" /> use AR, also turn on camera in <ph name="BEGIN_LINK" />Android settings<ph name="END_LINK" />.</translation>
 <translation id="1864927262126810325">From <ph name="SOURCE_NAME" /></translation>
 <translation id="1887786770086287077">Location access is off for this device. Turn it on in <ph name="BEGIN_LINK" />Android Settings<ph name="END_LINK" />.</translation>
@@ -79,6 +80,7 @@
 <translation id="2653659639078652383">Submit</translation>
 <translation id="2677748264148917807">Leave</translation>
 <translation id="2687403674020088961">Block all cookies (not recommended)</translation>
+<translation id="2692299144678073135">Allow related sites to remember you across sites</translation>
 <translation id="2704606927547763573">Copied</translation>
 <translation id="2713106313042589954">Turn off camera</translation>
 <translation id="2717722538473713889">Email addresses</translation>
@@ -101,6 +103,7 @@
 <translation id="3115898365077584848">Show info</translation>
 <translation id="3123473560110926937">Blocked on some sites</translation>
 <translation id="3143754809889689516">Play from the beginning</translation>
+<translation id="3162899666601560689">Sites can use cookies to improve your browsing experience, for example to keep you signed in or to remember items in your shopping basket</translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT" /> stored data</translation>
 <translation id="3203366800380907218">From the web</translation>
 <translation id="321187648315454507">To let <ph name="APP_NAME" /> send you notifications, also turn on notifications in <ph name="BEGIN_LINK" />Android settings<ph name="END_LINK" />.</translation>
@@ -138,6 +141,7 @@
 <translation id="4002066346123236978">Title</translation>
 <translation id="4008040567710660924">Allow cookies for a specific site.</translation>
 <translation id="4046123991198612571">Next track</translation>
+<translation id="4048876521107516222">Related sites use cookies to help with things like keeping you signed in</translation>
 <translation id="4149994727733219643">Simplified view for web pages</translation>
 <translation id="4165986682804962316">Site settings</translation>
 <translation id="4169549551965910670">Connected to a USB device</translation>
@@ -149,6 +153,7 @@
 <translation id="429312253194641664">A site is playing media</translation>
 <translation id="42981349822642051">Expand</translation>
 <translation id="4336434711095810371">Clear all data</translation>
+<translation id="4338831206024587507">All sites under <ph name="DOMAIN" /></translation>
 <translation id="4402755511846832236">Block sites from knowing when you're actively using this device</translation>
 <translation id="4428065317363009941">Ad personalisation</translation>
 <translation id="4434045419905280838">Pop-ups and redirects</translation>
@@ -164,6 +169,7 @@
 <translation id="4751476147751820511">Motion or light sensors</translation>
 <translation id="4811450222531576619">Learn about its source and topic</translation>
 <translation id="4836046166855586901">Ask when a site wants to know when you're actively using this device</translation>
+<translation id="483914009762354899">Include all sites under this domain</translation>
 <translation id="4883854917563148705">Managed settings cannot be reset</translation>
 <translation id="4887024562049524730">Ask before allowing sites to use your virtual reality device and data (recommended)</translation>
 <translation id="4962975101802056554">Revoke all permissions for device</translation>
@@ -219,6 +225,7 @@
 <translation id="5887687176710214216">Last visited yesterday</translation>
 <translation id="5916664084637901428">On</translation>
 <translation id="5922853908706496913">Sharing your screen</translation>
+<translation id="5922967540311291836">Block third-party cookies:</translation>
 <translation id="5939518447894949180">Reset</translation>
 <translation id="5975083100439434680">Zoom out</translation>
 <translation id="5976059395673079613"><ph name="PERMISSION" /> – <ph name="WARNING_MESSAGE" /></translation>
@@ -302,6 +309,7 @@
 <translation id="7791543448312431591">Add</translation>
 <translation id="780301667611848630">No, thanks</translation>
 <translation id="7804248752222191302">A site is using your camera</translation>
+<translation id="7816129586531226979">Related sites may remember you across sites</translation>
 <translation id="7817023149356982970">You'll be signed out of this site.</translation>
 <translation id="7828557259026017104">Cookies are files created by websites that you visit. Sites use them to remember your preferences. Third-party cookies are created by other sites. These sites own some of the content, like ads or images, that you see on the web page that you visit.</translation>
 <translation id="7835852323729233924">Playing media</translation>
@@ -309,6 +317,7 @@
 <translation id="7846076177841592234">Cancel selection</translation>
 <translation id="7846621471902887024">You'll be signed out of all sites.</translation>
 <translation id="7882806643839505685">Allow sound for a specific site.</translation>
+<translation id="789180354981963912">Block third-party cookies in Incognito:</translation>
 <translation id="7940722705963108451">Remind me</translation>
 <translation id="7986741934819883144">Select a contact</translation>
 <translation id="7999064672810608036">Are you sure that you want to clear all local data, including cookies, and reset all permissions for this website?</translation>
@@ -331,6 +340,7 @@
 <translation id="8284326494547611709">Captions</translation>
 <translation id="8300705686683892304">Managed by app</translation>
 <translation id="8324158725704657629">Don't ask again</translation>
+<translation id="834785183489258869">While in Incognito, sites can't use your cookies to see your browsing activity across different sites; for example, to personalise ads. Features on some sites may not work.</translation>
 <translation id="8372893542064058268">Allow Background Sync for a specific site.</translation>
 <translation id="8376384591331888629">Including third-party cookies on this site</translation>
 <translation id="83792324527827022">A site is using your camera and microphone</translation>

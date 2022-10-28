@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -22,13 +22,9 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkPortalDetectorStub
 
  private:
   // NetworkPortalDetector:
-  void AddObserver(Observer* observer) override;
-  void AddAndFireObserver(Observer* observer) override;
-  void RemoveObserver(Observer* observer) override;
   CaptivePortalStatus GetCaptivePortalStatus() override;
   bool IsEnabled() override;
   void Enable() override;
-  void StartPortalDetection() override;
 };
 
 }  // namespace ash

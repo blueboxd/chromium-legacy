@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -15,7 +15,8 @@
 namespace ash {
 
 // ChunneldClient is used to communicate with chunneld and monitor chunneld.
-class COMPONENT_EXPORT(ASH_DBUS_CHUNNELD) ChunneldClient : public DBusClient {
+class COMPONENT_EXPORT(ASH_DBUS_CHUNNELD) ChunneldClient
+    : public chromeos::DBusClient {
  public:
   class Observer : public base::CheckedObserver {
    public:

@@ -1,4 +1,4 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -213,19 +213,20 @@ void AutofillExternalDelegate::OnPopupSuppressed() {
 void AutofillExternalDelegate::DidSelectSuggestion(
     const std::u16string& value,
     int frontend_id,
-    const std::string& backend_id) {
+    const Suggestion::BackendId& backend_id) {
   ClearPreviewedForm();
 
   // Only preview the data if it is a profile or a virtual card.
   if (frontend_id > 0) {
     FillAutofillFormData(frontend_id, true);
   } else if (frontend_id == POPUP_ITEM_ID_AUTOCOMPLETE_ENTRY ||
+             frontend_id == POPUP_ITEM_ID_IBAN_ENTRY ||
              frontend_id == POPUP_ITEM_ID_MERCHANT_PROMO_CODE_ENTRY) {
     driver_->RendererShouldPreviewFieldWithValue(query_field_.global_id(),
                                                  value);
   } else if (frontend_id == POPUP_ITEM_ID_VIRTUAL_CREDIT_CARD_ENTRY) {
     manager_->FillOrPreviewVirtualCardInformation(
-        mojom::RendererFormDataAction::kPreview, backend_id, query_id_,
+        mojom::RendererFormDataAction::kPreview, backend_id.value(), query_id_,
         query_form_, query_field_);
   }
 }
@@ -251,9 +252,10 @@ void AutofillExternalDelegate::DidAcceptSuggestion(
     driver_->RendererShouldAcceptDataListSuggestion(query_field_.global_id(),
                                                     value);
   } else if (frontend_id == POPUP_ITEM_ID_AUTOCOMPLETE_ENTRY ||
+             frontend_id == POPUP_ITEM_ID_IBAN_ENTRY ||
              frontend_id == POPUP_ITEM_ID_MERCHANT_PROMO_CODE_ENTRY) {
-    // User selected an Autocomplete or Merchant Promo Code field, so we fill
-    // directly.
+    // User selected an Autocomplete, Merchant Promo Code field or IBAN, so we
+    // fill directly.
     driver_->RendererShouldFillFieldWithValue(query_field_.global_id(), value);
 
     if (frontend_id == POPUP_ITEM_ID_AUTOCOMPLETE_ENTRY)
@@ -278,10 +280,11 @@ void AutofillExternalDelegate::DidAcceptSuggestion(
     // POPUP_ITEM_ID_VIRTUAL_CREDIT_CARD_ENTRY as a frontend_id. In this case,
     // the payload contains the backend id, which is a GUID that identifies the
     // actually chosen credit card.
-    DCHECK(absl::holds_alternative<std::string>(payload));
+    DCHECK(absl::holds_alternative<Suggestion::BackendId>(payload));
     manager_->FillOrPreviewVirtualCardInformation(
-        mojom::RendererFormDataAction::kFill, absl::get<std::string>(payload),
-        query_id_, query_form_, query_field_);
+        mojom::RendererFormDataAction::kFill,
+        absl::get<Suggestion::BackendId>(payload).value(), query_id_,
+        query_form_, query_field_);
   } else if (frontend_id == POPUP_ITEM_ID_SEE_PROMO_CODE_DETAILS) {
     DCHECK(absl::holds_alternative<GURL>(payload));
     manager_->OnSeePromoCodeOfferDetailsSelected(absl::get<GURL>(payload),
@@ -402,6 +405,7 @@ void AutofillExternalDelegate::PossiblyRemoveAutofillWarnings(
 void AutofillExternalDelegate::ApplyAutofillOptions(
     std::vector<Suggestion>* suggestions,
     bool is_all_server_suggestions) {
+#if !BUILDFLAG(IS_ANDROID)
   // Add a separator before the Autofill options unless there are no suggestions
   // yet.
   // TODO(crbug.com/1274134): Clean up once improvements are launched.
@@ -411,6 +415,7 @@ void AutofillExternalDelegate::ApplyAutofillOptions(
     suggestions->push_back(Suggestion());
     suggestions->back().frontend_id = POPUP_ITEM_ID_SEPARATOR;
   }
+#endif
 
   // The form has been auto-filled, so give the user the chance to clear the
   // form.  Append the 'Clear form' menu item.
@@ -483,7 +488,7 @@ void AutofillExternalDelegate::InsertDataListValues(
   for (size_t i = 0; i < data_list_values_.size(); i++) {
     (*suggestions)[i].main_text = Suggestion::Text(
         data_list_values_[i], Suggestion::Text::IsPrimary(true));
-    (*suggestions)[i].label = data_list_labels_[i];
+    (*suggestions)[i].labels = {{Suggestion::Text(data_list_labels_[i])}};
     (*suggestions)[i].frontend_id = POPUP_ITEM_ID_DATALIST_ENTRY;
   }
 }

@@ -18,6 +18,7 @@
 #include "base/callback_helpers.h"
 #include "base/callback_list.h"
 #include "base/containers/flat_map.h"
+#include "base/functional/function_ref.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/safe_ref.h"
@@ -345,10 +346,11 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   bool IsPrerenderedFrame(int frame_tree_node_id) override;
   RenderFrameHostImpl* UnsafeFindFrameByFrameTreeNodeId(
       int frame_tree_node_id) override;
+  void ForEachRenderFrameHostWithAction(
+      base::FunctionRef<FrameIterationAction(RenderFrameHost*)> on_frame)
+      override;
   void ForEachRenderFrameHost(
-      RenderFrameHost::FrameIterationCallback on_frame) override;
-  void ForEachRenderFrameHost(
-      RenderFrameHost::FrameIterationAlwaysContinueCallback on_frame) override;
+      base::FunctionRef<void(RenderFrameHost*)> on_frame) override;
   RenderViewHostImpl* GetRenderViewHost() override;
   RenderWidgetHostView* GetRenderWidgetHostView() override;
   RenderWidgetHostView* GetTopLevelRenderWidgetHostView() override;
@@ -692,7 +694,7 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   void ShowCreatedWindow(RenderFrameHostImpl* opener,
                          int main_frame_widget_route_id,
                          WindowOpenDisposition disposition,
-                         const gfx::Rect& initial_rect,
+                         const blink::mojom::WindowFeatures& window_features,
                          bool user_gesture) override;
   void PrimaryMainDocumentElementAvailable() override;
   void PassiveInsecureContentFound(const GURL& resource_url) override;
@@ -818,6 +820,7 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
                           const base::FilePath& path,
                           bool is_hung) override;
 #endif  // BUILDFLAG(ENABLE_PPAPI)
+  void DidChangeLoadProgressForPrimaryMainFrame() override;
 
   // RenderViewHostDelegate ----------------------------------------------------
   RenderViewHostDelegateView* GetDelegateView() override;
@@ -1031,7 +1034,6 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   void DidStartLoading(FrameTreeNode* frame_tree_node,
                        bool should_show_loading_ui) override;
   void DidStopLoading() override;
-  void DidChangeLoadProgress() override;
   bool IsHidden() override;
   void NotifyPageChanged(PageImpl& page) override;
   int GetOuterDelegateFrameTreeNodeId() override;
@@ -1171,10 +1173,6 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   // contained within it (but not owned by another WebContents).
   void SetFocusedFrameTree(FrameTree* frame_tree_to_focus);
 
-  // Called by this WebContents's BrowserPluginGuest (if one exists) to indicate
-  // that the guest will be detached.
-  void BrowserPluginGuestWillDetach();
-
   // Notifies the Picture-in-Picture controller that there is a new video player
   // entering video Picture-in-Picture. (This is not used for document
   // Picture-in-Picture,
@@ -1288,14 +1286,14 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   // for details. Content internals can also access speculative
   // RenderFrameHostImpls if necessary by using the
   // |ForEachRenderFrameHostIncludingSpeculative| variations.
+  void ForEachRenderFrameHostWithAction(
+      base::FunctionRef<FrameIterationAction(RenderFrameHostImpl*)> on_frame);
   void ForEachRenderFrameHost(
-      RenderFrameHostImpl::FrameIterationCallbackImpl on_frame);
-  void ForEachRenderFrameHost(
-      RenderFrameHostImpl::FrameIterationAlwaysContinueCallbackImpl on_frame);
+      base::FunctionRef<void(RenderFrameHostImpl*)> on_frame);
+  void ForEachRenderFrameHostIncludingSpeculativeWithAction(
+      base::FunctionRef<FrameIterationAction(RenderFrameHostImpl*)> on_frame);
   void ForEachRenderFrameHostIncludingSpeculative(
-      RenderFrameHostImpl::FrameIterationCallbackImpl on_frame);
-  void ForEachRenderFrameHostIncludingSpeculative(
-      RenderFrameHostImpl::FrameIterationAlwaysContinueCallbackImpl on_frame);
+      base::FunctionRef<void(RenderFrameHostImpl*)> on_frame);
 
   // Computes and returns the content specific preferences for this WebContents.
   // Recomputes only the "fast" preferences (those not requiring slow
@@ -1340,6 +1338,16 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
 
   RenderWidgetHost* mouse_lock_widget_for_testing() {
     return mouse_lock_widget_;
+  }
+
+  // Record a prerender activation for DevTools.
+  void set_last_navigation_was_prerender_activation_for_devtools() {
+    last_navigation_was_prerender_activation_for_devtools_ = true;
+  }
+
+  // Check if prerender was just activated.
+  bool last_navigation_was_prerender_activation_for_devtools() {
+    return last_navigation_was_prerender_activation_for_devtools_;
   }
 
  private:
@@ -1831,7 +1839,7 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   // This is the actual implementation of the various overloads of
   // |ForEachRenderFrameHost|.
   void ForEachRenderFrameHostImpl(
-      RenderFrameHostImpl::FrameIterationCallbackImpl on_frame,
+      base::FunctionRef<FrameIterationAction(RenderFrameHostImpl*)> on_frame,
       bool include_speculative);
 
   // Calls |on_frame_tree| for every FrameTree in this WebContents.
@@ -2346,6 +2354,12 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   bool pip_lock_aspect_ratio_ = false;
 
   VisibleTimeRequestTrigger visible_time_request_trigger_;
+
+  // Stores the information whether last navigation was prerender activation for
+  // DevTools. Set when a prerender activation completes, and cleared when
+  // either DevTools is opened and consults this value or when a non-prerendered
+  // navigation commits in the primary main frame.
+  bool last_navigation_was_prerender_activation_for_devtools_ = false;
 
   bool prerender2_disabled_ = false;
 

@@ -18,6 +18,16 @@ namespace sandbox {
 
 class AppContainer;
 
+// Desktop used to launch child, controls GetDesktop().
+enum class Desktop {
+  // Child is launched without changing the desktop.
+  kDefault,
+  // Child is launched using the alternate desktop.
+  kAlternateDesktop,
+  // Child is launched using the anternate desktop and window station.
+  kAlternateWinstation,
+};
+
 // Windows subsystems that can have specific rules.
 // Note: The process subsystem  (kProcess) does not evaluate the request
 // exactly like the CreateProcess API does. See the comment at the top of
@@ -28,7 +38,6 @@ enum class SubSystem {
   kProcess,         // Creation of child processes.
   kWin32kLockdown,  // Win32K Lockdown related policy.
   kSignedBinary,    // Signed binary policy.
-  kSocket           // Socket brokering policy.
 };
 
 // Allowable semantics when a rule is matched.
@@ -42,7 +51,6 @@ enum class Semantics {
                         // be used to allow the DLLs to load and initialize
                         // even if the process cannot access that subsystem.
   kSignedAllowLoad,     // Allows loading the module when CIG is enabled.
-  kSocketAllowBroker    // Allows brokering of sockets.
 };
 
 // Policy configuration that can be shared over multiple targets of the same tag
@@ -63,37 +71,6 @@ class [[clang::lto_visibility_public]] TargetConfig {
   // Returns `false` if TargetConfig methods do need to be called to configure
   // this policy object.
   virtual bool IsConfigured() const = 0;
-
-  // Adds a policy rule effective for processes spawned using this policy.
-  // subsystem: One of the above enumerated windows subsystems.
-  // semantics: One of the above enumerated FileSemantics.
-  // pattern: A specific full path or a full path with wildcard patterns.
-  //   The valid wildcards are:
-  //   '*' : Matches zero or more character. Only one in series allowed.
-  //   '?' : Matches a single character. One or more in series are allowed.
-  // Examples:
-  //   "c:\\documents and settings\\vince\\*.dmp"
-  //   "c:\\documents and settings\\*\\crashdumps\\*.dmp"
-  //   "c:\\temp\\app_log_?????_chrome.txt"
-  virtual ResultCode AddRule(SubSystem subsystem,
-                             Semantics semantics,
-                             const wchar_t* pattern) = 0;
-
-  // Adds a dll that will be unloaded in the target process before it gets
-  // a chance to initialize itself. Typically, dlls that cause the target
-  // to crash go here.
-  virtual ResultCode AddDllToUnload(const wchar_t* dll_name) = 0;
-};
-
-// We need [[clang::lto_visibility_public]] because instances of this class are
-// passed across module boundaries. This means different modules must have
-// compatible definitions of the class even when LTO is enabled.
-class [[clang::lto_visibility_public]] TargetPolicy {
- public:
-  virtual ~TargetPolicy() {}
-
-  // Fetches the backing TargetConfig for this policy.
-  virtual TargetConfig* GetConfig() = 0;
 
   // Sets the security level for the target process' two tokens.
   // This setting is permanent and cannot be changed once the target process is
@@ -167,21 +144,25 @@ class [[clang::lto_visibility_public]] TargetPolicy {
   // SBOX_FATAL_MEMORY_EXCEEDED (7012).
   virtual ResultCode SetJobMemoryLimit(size_t memory_limit) = 0;
 
-  // Specifies the desktop on which the application is going to run. If the
-  // desktop does not exist, it will be created. If alternate_winstation is
-  // set to true, the desktop will be created on an alternate window station.
-  virtual ResultCode SetAlternateDesktop(bool alternate_winstation) = 0;
+  // Adds a policy rule effective for processes spawned using this policy.
+  // subsystem: One of the above enumerated windows subsystems.
+  // semantics: One of the above enumerated FileSemantics.
+  // pattern: A specific full path or a full path with wildcard patterns.
+  //   The valid wildcards are:
+  //   '*' : Matches zero or more character. Only one in series allowed.
+  //   '?' : Matches a single character. One or more in series are allowed.
+  // Examples:
+  //   "c:\\documents and settings\\vince\\*.dmp"
+  //   "c:\\documents and settings\\*\\crashdumps\\*.dmp"
+  //   "c:\\temp\\app_log_?????_chrome.txt"
+  virtual ResultCode AddRule(SubSystem subsystem,
+                             Semantics semantics,
+                             const wchar_t* pattern) = 0;
 
-  // Returns the name of the alternate desktop used. If an alternate window
-  // station is specified, the name is prepended by the window station name,
-  // followed by a backslash.
-  virtual std::wstring GetAlternateDesktop() const = 0;
-
-  // Precreates the desktop and window station, if any.
-  virtual ResultCode CreateAlternateDesktop(bool alternate_winstation) = 0;
-
-  // Destroys the desktop and windows station.
-  virtual void DestroyAlternateDesktop() = 0;
+  // Adds a dll that will be unloaded in the target process before it gets
+  // a chance to initialize itself. Typically, dlls that cause the target
+  // to crash go here.
+  virtual ResultCode AddDllToUnload(const wchar_t* dll_name) = 0;
 
   // Sets the integrity level of the process in the sandbox. Both the initial
   // token and the main token will be affected by this. If the integrity level
@@ -219,43 +200,14 @@ class [[clang::lto_visibility_public]] TargetPolicy {
   // Returns the currently set delayed mitigation flags.
   virtual MitigationFlags GetDelayedProcessMitigations() const = 0;
 
-  // Disconnect the target from CSRSS when TargetServices::LowerToken() is
-  // called inside the target.
-  virtual ResultCode SetDisconnectCsrss() = 0;
-
-  // Sets the interceptions to operate in strict mode. By default, interceptions
-  // are performed in "relaxed" mode, where if something inside NTDLL.DLL is
-  // already patched we attempt to intercept it anyway. Setting interceptions
-  // to strict mode means that when we detect that the function is patched we'll
-  // refuse to perform the interception.
-  virtual void SetStrictInterceptions() = 0;
-
-  // Set the handles the target process should inherit for stdout and
-  // stderr.  The handles the caller passes must remain valid for the
-  // lifetime of the policy object.  This only has an effect on
-  // Windows Vista and later versions.  These methods accept pipe and
-  // file handles, but not console handles.
-  virtual ResultCode SetStdoutHandle(HANDLE handle) = 0;
-  virtual ResultCode SetStderrHandle(HANDLE handle) = 0;
-
-  // Adds a handle that will be closed in the target process after lockdown.
-  // A nullptr value for handle_name indicates all handles of the specified
-  // type. An empty string for handle_name indicates the handle is unnamed.
-  virtual ResultCode AddKernelObjectToClose(const wchar_t* handle_type,
-                                            const wchar_t* handle_name) = 0;
-
-  // Adds a handle that will be shared with the target process. Does not take
-  // ownership of the handle.
-  virtual void AddHandleToShare(HANDLE handle) = 0;
+  // Adds a restricting random SID to the restricted SIDs list as well as
+  // the default DACL.
+  virtual void AddRestrictingRandomSid() = 0;
 
   // Locks down the default DACL of the created lockdown and initial tokens
   // to restrict what other processes are allowed to access a process' kernel
   // resources.
   virtual void SetLockdownDefaultDacl() = 0;
-
-  // Adds a restricting random SID to the restricted SIDs list as well as
-  // the default DACL.
-  virtual void AddRestrictingRandomSid() = 0;
 
   // Configure policy to use an AppContainer profile. |package_name| is the
   // name of the profile to use. Specifying True for |create_profile| ensures
@@ -267,17 +219,68 @@ class [[clang::lto_visibility_public]] TargetPolicy {
   // Get the configured AppContainer.
   virtual scoped_refptr<AppContainer> GetAppContainer() = 0;
 
-  // Set effective token that will be used for creating the initial and
-  // lockdown tokens. The token the caller passes must remain valid for the
-  // lifetime of the policy object.
-  virtual void SetEffectiveToken(HANDLE token) = 0;
-
   // Allows the launch of the the target process to proceed even if no job can
   // be created.
   virtual void SetAllowNoSandboxJob() = 0;
 
   // Returns true if target process launch should proceed if job creation fails.
   virtual bool GetAllowNoSandboxJob() = 0;
+
+  // Adds a handle that will be closed in the target process after lockdown.
+  // A nullptr value for handle_name indicates all handles of the specified
+  // type. An empty string for handle_name indicates the handle is unnamed.
+  virtual ResultCode AddKernelObjectToClose(const wchar_t* handle_type,
+                                            const wchar_t* handle_name) = 0;
+
+  // Disconnect the target from CSRSS when TargetServices::LowerToken() is
+  // called inside the target.
+  virtual ResultCode SetDisconnectCsrss() = 0;
+
+  // Specifies the desktop on which the application is going to run. The
+  // requested alternate desktop must have been created via the TargetPolicy
+  // interface before any processes are spawned.
+  virtual void SetDesktop(Desktop desktop) = 0;
+};
+
+// We need [[clang::lto_visibility_public]] because instances of this class are
+// passed across module boundaries. This means different modules must have
+// compatible definitions of the class even when LTO is enabled.
+class [[clang::lto_visibility_public]] TargetPolicy {
+ public:
+  virtual ~TargetPolicy() {}
+
+  // Fetches the backing TargetConfig for this policy.
+  virtual TargetConfig* GetConfig() = 0;
+
+  // Set the handles the target process should inherit for stdout and
+  // stderr.  The handles the caller passes must remain valid for the
+  // lifetime of the policy object.  This only has an effect on
+  // Windows Vista and later versions.  These methods accept pipe and
+  // file handles, but not console handles.
+  virtual ResultCode SetStdoutHandle(HANDLE handle) = 0;
+  virtual ResultCode SetStderrHandle(HANDLE handle) = 0;
+
+  // Adds a handle that will be shared with the target process. Does not take
+  // ownership of the handle.
+  virtual void AddHandleToShare(HANDLE handle) = 0;
+
+  // Set effective token that will be used for creating the initial and
+  // lockdown tokens. The token the caller passes must remain valid for the
+  // lifetime of the policy object.
+  virtual void SetEffectiveToken(HANDLE token) = 0;
+
+  // Returns the name of the alternate desktop used. If an alternate window
+  // station is specified, the name is prepended by the window station name,
+  // followed by a backslash.
+  virtual std::wstring GetDesktopName() = 0;
+
+  // Precreates the desktop (for kAlternateDesktop & kAlternateWinstation) and
+  // window station (for kAlternateWindowstation). Should be called before any
+  // target is launched with an alternate desktop.
+  virtual ResultCode CreateAlternateDesktop(Desktop desktop) = 0;
+
+  // Destroys all desktops and window stations.
+  virtual void DestroyDesktops() = 0;
 };
 
 }  // namespace sandbox

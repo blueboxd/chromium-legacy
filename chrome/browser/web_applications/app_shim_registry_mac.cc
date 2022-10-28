@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -60,14 +60,14 @@ void AppShimRegistry::GetProfilesSetForApp(
     const std::string& app_id,
     const std::string& profiles_key,
     std::set<base::FilePath>* profiles) const {
-  const base::Value* cache = GetPrefService()->GetDictionary(kAppShims);
-  const base::Value* app_info = cache->FindDictKey(app_id);
+  const base::Value::Dict& cache = GetPrefService()->GetDict(kAppShims);
+  const base::Value::Dict* app_info = cache.FindDict(app_id);
   if (!app_info)
     return;
-  const base::Value* profile_values = app_info->FindListKey(profiles_key);
+  const base::Value::List* profile_values = app_info->FindList(profiles_key);
   if (!profile_values)
     return;
-  for (const auto& profile_path_value : profile_values->GetListDeprecated()) {
+  for (const auto& profile_path_value : *profile_values) {
     if (profile_path_value.is_string())
       profiles->insert(GetFullProfilePath(profile_path_value.GetString()));
   }
@@ -80,7 +80,13 @@ void AppShimRegistry::OnAppInstalledForProfile(const std::string& app_id,
   if (installed_profiles.count(profile))
     return;
   installed_profiles.insert(profile);
-  SetAppInfo(app_id, &installed_profiles, nullptr);
+  // Also add the profile to the last active profiles. This way the next time
+  // the app is launched, it will at least launch in the most recently
+  // installed profile.
+  std::set<base::FilePath> last_active_profiles =
+      GetLastActiveProfilesForApp(app_id);
+  last_active_profiles.insert(profile);
+  SetAppInfo(app_id, &installed_profiles, &last_active_profiles);
 }
 
 bool AppShimRegistry::OnAppUninstalledForProfile(
@@ -103,10 +109,8 @@ void AppShimRegistry::OnAppQuit(const std::string& app_id,
 std::set<std::string> AppShimRegistry::GetInstalledAppsForProfile(
     const base::FilePath& profile) const {
   std::set<std::string> result;
-  const base::Value* app_shims = GetPrefService()->GetDictionary(kAppShims);
-  if (!app_shims)
-    return result;
-  for (const auto iter_app : app_shims->DictItems()) {
+  const base::Value::Dict& app_shims = GetPrefService()->GetDict(kAppShims);
+  for (const auto iter_app : app_shims) {
     const base::Value* installed_profiles_list =
         iter_app.second.FindListKey(kInstalledProfiles);
     if (!installed_profiles_list)
@@ -131,12 +135,10 @@ void AppShimRegistry::SetPrefServiceAndUserDataDirForTesting(
   override_user_data_dir_ = user_data_dir;
 }
 
-base::Value AppShimRegistry::AsDebugValue() const {
-  const base::Value* app_shims = GetPrefService()->GetDictionary(kAppShims);
-  if (!app_shims)
-    return base::Value(base::Value::Type::DICTIONARY);
+base::Value::Dict AppShimRegistry::AsDebugDict() const {
+  const base::Value::Dict& app_shims = GetPrefService()->GetDict(kAppShims);
 
-  return app_shims->Clone();
+  return app_shims.Clone();
 }
 
 PrefService* AppShimRegistry::GetPrefService() const {

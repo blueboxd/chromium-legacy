@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -45,15 +45,23 @@ extern const base::Feature kAutofillAllowDuplicateFormSubmissions;
 COMPONENT_EXPORT(AUTOFILL)
 extern const base::Feature kAutofillAllowNonHttpActivation;
 COMPONENT_EXPORT(AUTOFILL)
-extern const base::Feature kAutofillInferCountryCallingCode;
+extern const base::Feature kAutofillAssociateForms;
 COMPONENT_EXPORT(AUTOFILL)
-extern const base::Feature kAutofillComplementCountryCodeOnImport;
+extern const base::FeatureParam<base::TimeDelta> kAutofillAssociateFormsTTL;
+COMPONENT_EXPORT(AUTOFILL)
+extern const base::Feature kAutofillIgnoreInvalidCountryOnImport;
+COMPONENT_EXPORT(AUTOFILL)
+extern const base::Feature kAutofillInferCountryCallingCode;
 COMPONENT_EXPORT(AUTOFILL)
 extern const base::Feature kAutofillConsiderPhoneNumberSeparatorsValidLabels;
 COMPONENT_EXPORT(AUTOFILL)
 extern const base::Feature kAutofillConsiderPlaceholderForParsing;
 COMPONENT_EXPORT(AUTOFILL)
 extern const base::Feature kAutofillConsiderVariationCountryCodeForPhoneNumbers;
+COMPONENT_EXPORT(AUTOFILL)
+extern const base::Feature kAutofillCountryFromLocalName;
+COMPONENT_EXPORT(AUTOFILL)
+extern const base::Feature kAutofillDeferSubmissionClassificationAfterAjax;
 COMPONENT_EXPORT(AUTOFILL)
 extern const base::Feature kAutofillEnableWithinFencedFrame;
 COMPONENT_EXPORT(AUTOFILL)
@@ -124,10 +132,6 @@ extern const base::Feature kAutofillRefillModifiedCreditCardExpirationDates;
 COMPONENT_EXPORT(AUTOFILL)
 extern const base::Feature kAutofillTypeSpecificPopupWidth;
 COMPONENT_EXPORT(AUTOFILL)
-extern const base::Feature kAutofillIgnoreEarlyClicksOnPopup;
-COMPONENT_EXPORT(AUTOFILL)
-extern const base::FeatureParam<base::TimeDelta>
-    kAutofillIgnoreEarlyClicksOnPopupDuration;
 COMPONENT_EXPORT(AUTOFILL)
 extern const base::Feature kAutofillIgnoreUnmappableAutocompleteValues;
 COMPONENT_EXPORT(AUTOFILL)
@@ -164,21 +168,14 @@ extern const base::Feature kAutofillPreventOverridingPrefilledValues;
 COMPONENT_EXPORT(AUTOFILL)
 extern const base::Feature kAutofillProbableFormSubmissionInBrowser;
 COMPONENT_EXPORT(AUTOFILL)
-extern const base::Feature kAutofillProfileImportFromUnfocusableFields;
-COMPONENT_EXPORT(AUTOFILL)
 extern const base::Feature kAutofillRationalizeStreetAddressAndAddressLine;
 COMPONENT_EXPORT(AUTOFILL)
 extern const base::Feature kAutofillRemoveInvalidPhoneNumberOnImport;
 COMPONENT_EXPORT(AUTOFILL)
-extern const base::Feature kAutofillRemoveInaccessibleProfileValues;
-COMPONENT_EXPORT(AUTOFILL)
-extern const base::FeatureParam<bool>
-    kAutofillRemoveInaccessibleProfileValuesOnStartup;
+extern const base::Feature kAutofillRemoveInaccessibleProfileValuesOnStartup;
 COMPONENT_EXPORT(AUTOFILL)
 extern const base::Feature kAutofillRetrieveOverallPredictionsFromCache;
 COMPONENT_EXPORT(AUTOFILL) extern const base::Feature kAutofillSaveAndFillVPA;
-COMPONENT_EXPORT(AUTOFILL)
-extern const base::Feature kAutofillSectionUponRedundantNameInfo;
 COMPONENT_EXPORT(AUTOFILL)
 extern const base::Feature kAutofillServerBehaviors;
 COMPONENT_EXPORT(AUTOFILL)
@@ -206,6 +203,10 @@ COMPONENT_EXPORT(AUTOFILL)
 extern const base::Feature kAutofillUseImprovedLabelDisambiguation;
 COMPONENT_EXPORT(AUTOFILL)
 extern const base::Feature kAutofillUseNewSectioningMethod;
+COMPONENT_EXPORT(AUTOFILL)
+extern const base::Feature kAutofillUseParameterizedSectioning;
+COMPONENT_EXPORT(AUTOFILL)
+extern const base::Feature kAutofillRefillByFormRendererId;
 COMPONENT_EXPORT(AUTOFILL)
 extern const base::Feature kAutofillUseConsistentPopupSettingsIcons;
 COMPONENT_EXPORT(AUTOFILL)

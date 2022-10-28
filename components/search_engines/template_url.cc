@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -22,6 +22,7 @@
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/notreached.h"
+#include "base/ranges/algorithm.h"
 #include "base/strings/escape.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
@@ -534,11 +535,11 @@ std::u16string TemplateURLRef::SearchTermToString16(
 bool TemplateURLRef::HasGoogleBaseURLs(
     const SearchTermsData& search_terms_data) const {
   ParseIfNecessary(search_terms_data);
-  return std::any_of(replacements_.begin(), replacements_.end(),
-                     [](const Replacement& replacement) {
-                       return replacement.type == GOOGLE_BASE_URL ||
-                              replacement.type == GOOGLE_BASE_SUGGEST_URL;
-                     });
+  return base::ranges::any_of(
+      replacements_, [](const Replacement& replacement) {
+        return replacement.type == GOOGLE_BASE_URL ||
+               replacement.type == GOOGLE_BASE_SUGGEST_URL;
+      });
 }
 
 bool TemplateURLRef::ExtractSearchTermsFromURL(
@@ -977,10 +978,8 @@ std::string TemplateURLRef::HandleReplacements(
   // space as '+' in the former case and as '%20' in the latter case.
   bool is_in_query = true;
 
-  auto search_terms = std::find_if(replacements_.begin(), replacements_.end(),
-                                   [](const Replacement& replacement) {
-                                     return replacement.type == SEARCH_TERMS;
-                                   });
+  auto search_terms =
+      base::ranges::find(replacements_, SEARCH_TERMS, &Replacement::type);
 
   if (search_terms != replacements_.end()) {
     std::u16string::size_type query_start = parsed_url_.find('?');
@@ -1162,7 +1161,8 @@ std::string TemplateURLRef::HandleReplacements(
 
       case GOOGLE_OMNIBOX_FOCUS_TYPE:
         DCHECK(!replacement.is_post_param);
-        if (search_terms_args.focus_type != OmniboxFocusType::DEFAULT) {
+        if (search_terms_args.focus_type !=
+            metrics::OmniboxFocusType::INTERACTION_DEFAULT) {
           HandleReplacement("oft",
                             base::NumberToString(
                                 static_cast<int>(search_terms_args.focus_type)),
@@ -1534,10 +1534,9 @@ bool TemplateURL::SupportsReplacement(
 
 bool TemplateURL::HasGoogleBaseURLs(
     const SearchTermsData& search_terms_data) const {
-  if (std::any_of(url_refs_.begin(), url_refs_.end(),
-                  [&](const TemplateURLRef& ref) {
-                    return ref.HasGoogleBaseURLs(search_terms_data);
-                  }))
+  if (base::ranges::any_of(url_refs_, [&](const TemplateURLRef& ref) {
+        return ref.HasGoogleBaseURLs(search_terms_data);
+      }))
     return true;
 
   return suggestions_url_ref_.HasGoogleBaseURLs(search_terms_data) ||
@@ -1708,6 +1707,10 @@ bool TemplateURL::IsSideSearchSupported() const {
   return !side_search_param().empty();
 }
 
+bool TemplateURL::IsSideImageSearchSupported() const {
+  return !side_image_search_param().empty();
+}
+
 GURL TemplateURL::GenerateSideSearchURL(
     const GURL& search_url,
     const std::string& version,
@@ -1715,6 +1718,31 @@ GURL TemplateURL::GenerateSideSearchURL(
   DCHECK(IsSideSearchSupported());
   DCHECK(IsSearchURL(search_url, search_terms_data));
   return net::AppendQueryParameter(search_url, side_search_param(), version);
+}
+
+GURL TemplateURL::GenerateSideImageSearchURL(const GURL& image_search_url,
+                                             const std::string& version) const {
+  DCHECK(IsSideImageSearchSupported());
+  std::string value;
+  if (net::GetValueForKeyInQuery(image_search_url, side_image_search_param(),
+                                 &value) &&
+      value == version)
+    return image_search_url;
+
+  return net::AppendOrReplaceQueryParameter(image_search_url,
+                                            side_image_search_param(), version);
+}
+
+GURL TemplateURL::RemoveSideImageSearchParamFromURL(
+    const GURL& image_search_url) const {
+  if (!IsSideImageSearchSupported())
+    return image_search_url;
+  std::string value;
+  if (!net::GetValueForKeyInQuery(image_search_url, side_image_search_param(),
+                                  &value))
+    return image_search_url;
+  return net::AppendOrReplaceQueryParameter(image_search_url,
+                                            side_image_search_param(), "");
 }
 
 void TemplateURL::CopyFrom(const TemplateURL& other) {

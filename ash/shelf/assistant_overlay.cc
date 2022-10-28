@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -105,7 +105,7 @@ void AssistantOverlay::StartAnimation(bool show_icon) {
       kRippleCircleStartRadiusDip / kRippleCircleInitRadiusDip;
   gfx::Transform transform;
 
-  const gfx::Point center = host_view_->GetCenterPoint();
+  const gfx::PointF center = host_view_->GetCenterPoint();
   transform.Translate(center.x() - kRippleCircleStartRadiusDip,
                       center.y() - kRippleCircleStartRadiusDip);
   transform.Scale(scale_factor, scale_factor);
@@ -134,7 +134,7 @@ void AssistantOverlay::StartAnimation(bool show_icon) {
 void AssistantOverlay::BurstAnimation() {
   animation_state_ = AnimationState::BURSTING;
 
-  gfx::Point center = host_view_->GetCenterPoint();
+  const gfx::PointF center = host_view_->GetCenterPoint();
   gfx::Transform transform;
 
   // Setup ripple animations.
@@ -170,7 +170,7 @@ void AssistantOverlay::EndAnimation() {
       kRippleCircleStartRadiusDip / kRippleCircleInitRadiusDip;
   gfx::Transform transform;
 
-  const gfx::Point center = host_view_->GetCenterPoint();
+  const gfx::PointF center = host_view_->GetCenterPoint();
   transform.Translate(center.x() - kRippleCircleStartRadiusDip,
                       center.y() - kRippleCircleStartRadiusDip);
   transform.Scale(scale_factor, scale_factor);

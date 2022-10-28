@@ -1,4 +1,4 @@
-// Copyright (c) 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -283,7 +283,8 @@ void AssistiveWindowController::SetAssistiveWindowProperties(
         InitSuggestionWindow(WindowOrientationFor(window.type));
       if (window_.visible) {
         suggestion_window_view_->SetAnchorRect(bounds_.caret);
-        suggestion_window_view_->ShowMultipleCandidates(window);
+        suggestion_window_view_->ShowMultipleCandidates(
+            window, WindowOrientationFor(window.type));
       } else {
         HideSuggestion();
       }

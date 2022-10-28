@@ -1,6 +1,11 @@
-# Copyright 2016 The Chromium Authors. All rights reserved.
+# Copyright 2016 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
+
+# TODO(crbug.com/1344830): Migrate away from deprecated MDC APIs.
+config("disable_deprecated_declarations") {
+  cflags = [ "-Wno-deprecated-declarations" ]
+}
 
 source_set("ntp") {
   sources = [
@@ -60,10 +65,10 @@ source_set("coordinator") {
     "//components/prefs",
     "//components/prefs/ios",
     "//components/search_engines",
+    "//components/signin/public/identity_manager/objc",
     "//ios/chrome/app:tests_hook",
     "//ios/chrome/app/application_delegate:app_state_header",
     "//ios/chrome/app/strings",
-    "//ios/chrome/browser:pref_names",
     "//ios/chrome/browser/browser_state",
     "//ios/chrome/browser/discover_feed",
     "//ios/chrome/browser/discover_feed:discover_feed_factory",
@@ -72,6 +77,7 @@ source_set("coordinator") {
     "//ios/chrome/browser/main:public",
     "//ios/chrome/browser/ntp",
     "//ios/chrome/browser/ntp:features",
+    "//ios/chrome/browser/prefs:pref_names",
     "//ios/chrome/browser/reading_list",
     "//ios/chrome/browser/search_engines",
     "//ios/chrome/browser/signin",
@@ -87,9 +93,9 @@ source_set("coordinator") {
     "//ios/chrome/browser/ui/follow",
     "//ios/chrome/browser/ui/main:scene_state_header",
     "//ios/chrome/browser/ui/main:scene_state_observer",
-    "//ios/chrome/browser/ui/ntp:metrics",
     "//ios/chrome/browser/ui/ntp/feed_management",
     "//ios/chrome/browser/ui/ntp/feed_top_section",
+    "//ios/chrome/browser/ui/ntp/metrics",
     "//ios/chrome/browser/ui/overscroll_actions",
     "//ios/chrome/browser/ui/settings/utils",
     "//ios/chrome/browser/ui/util",
@@ -117,7 +123,10 @@ source_set("util") {
 }
 
 source_set("ntp_internal") {
-  configs += [ "//build/config/compiler:enable_arc" ]
+  configs += [
+    ":disable_deprecated_declarations",
+    "//build/config/compiler:enable_arc",
+  ]
   sources = [
     "feed_header_view_controller.h",
     "feed_header_view_controller.mm",
@@ -128,13 +137,9 @@ source_set("ntp_internal") {
     "incognito_view.mm",
     "incognito_view_controller.h",
     "incognito_view_controller.mm",
-    "metrics.h",
-    "metrics.mm",
     "new_tab_page_url_loader_delegate.h",
     "new_tab_page_view_controller.h",
     "new_tab_page_view_controller.mm",
-    "notification_promo_whats_new.h",
-    "notification_promo_whats_new.mm",
     "ntp_tile_saver.h",
     "ntp_tile_saver.mm",
     "revamped_incognito_view.h",
@@ -142,7 +147,6 @@ source_set("ntp_internal") {
   ]
   deps = [
     ":logo",
-    ":metrics",
     ":ntp",
     "resources:fake_omnibox_bottom_gradient_color",
     "resources:fake_omnibox_top_gradient_color",
@@ -178,6 +182,7 @@ source_set("ntp_internal") {
     "//ios/chrome/browser/discover_feed:constants",
     "//ios/chrome/browser/drag_and_drop",
     "//ios/chrome/browser/favicon",
+    "//ios/chrome/browser/flags:system_flags",
     "//ios/chrome/browser/history",
     "//ios/chrome/browser/main:public",
     "//ios/chrome/browser/metrics:metrics_internal",
@@ -199,6 +204,7 @@ source_set("ntp_internal") {
     "//ios/chrome/browser/ui/gestures",
     "//ios/chrome/browser/ui/icons:symbols",
     "//ios/chrome/browser/ui/ntp/feed_top_section",
+    "//ios/chrome/browser/ui/ntp/metrics",
     "//ios/chrome/browser/ui/overscroll_actions",
     "//ios/chrome/browser/ui/settings/cells",
     "//ios/chrome/browser/ui/thumb_strip:public",
@@ -230,36 +236,16 @@ source_set("ntp_internal") {
   ]
 }
 
-source_set("metrics") {
-  configs += [ "//build/config/compiler:enable_arc" ]
-  sources = [
-    "feed_metrics_recorder.h",
-    "feed_metrics_recorder.mm",
-    "feed_session_recorder.h",
-    "feed_session_recorder.mm",
-  ]
-  deps = [
-    ":ntp",
-    "//base",
-    "//components/feed/core/v2/public:common",
-    "//ios/chrome/browser/discover_feed:constants",
-    "//ios/chrome/browser/ui/content_suggestions:metrics",
-  ]
-}
-
 source_set("unit_tests") {
   configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
   sources = [
-    "feed_session_recorder_unittest.mm",
     "new_tab_page_coordinator_unittest.mm",
-    "notification_promo_whats_new_unittest.mm",
     "ntp_tile_saver_unittest.mm",
   ]
   deps = [
     ":coordinator",
     ":feature_flags",
-    ":metrics",
     ":ntp",
     ":ntp_internal",
     "//base",
@@ -338,6 +324,10 @@ source_set("feature_flags") {
     "new_tab_page_feature.h",
     "new_tab_page_feature.mm",
   ]
-  deps = [ "//ios/chrome/browser/ui/content_suggestions:feature_flags" ]
+  deps = [
+    "//components/prefs",
+    "//ios/chrome/browser/prefs:pref_names",
+    "//ios/chrome/browser/ui/content_suggestions:feature_flags",
+  ]
   public_deps = [ "//base" ]
 }

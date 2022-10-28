@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -192,7 +192,7 @@ class LeakDialogTraitsImp<metrics_util::LeakDialogType::kCheckup>
 
   bool ShouldCheckPasswords() const override { return true; }
 
-  bool ShouldShowCancelButton() const override { return true; };
+  bool ShouldShowCancelButton() const override { return true; }
 };
 
 // Implementation of a leak change dialog.
@@ -231,7 +231,7 @@ class LeakDialogTraitsImp<metrics_util::LeakDialogType::kChange>
 
   bool ShouldCheckPasswords() const override { return false; }
 
-  bool ShouldShowCancelButton() const override { return false; };
+  bool ShouldShowCancelButton() const override { return false; }
 };
 
 // Implementation of a leak checkup and change dialog.
@@ -271,7 +271,7 @@ class LeakDialogTraitsImp<metrics_util::LeakDialogType::kCheckupAndChange>
 
   bool ShouldCheckPasswords() const override { return true; }
 
-  bool ShouldShowCancelButton() const override { return true; };
+  bool ShouldShowCancelButton() const override { return true; }
 };
 
 // Implementation of a leak automatic change dialog.
@@ -306,7 +306,7 @@ class LeakDialogTraitsImp<metrics_util::LeakDialogType::kChangeAutomatically>
 
   bool ShouldCheckPasswords() const override { return false; }
 
-  bool ShouldShowCancelButton() const override { return true; };
+  bool ShouldShowCancelButton() const override { return true; }
 };
 
 }  // namespace password_manager

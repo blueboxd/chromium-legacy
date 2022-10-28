@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -513,7 +513,7 @@ void PrintPreviewHandler::ReadPrinterTypeDenyListFromPrefs() {
     return;
 
   const base::Value::List& deny_list_from_prefs =
-      prefs->GetValueList(prefs::kPrinterTypeDenyList);
+      prefs->GetList(prefs::kPrinterTypeDenyList);
 
   std::vector<mojom::PrinterType> deny_list;
   deny_list.reserve(deny_list_from_prefs.size());

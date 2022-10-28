@@ -1,4 +1,4 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -74,6 +74,7 @@ export class FakeLanguageSettingsPrivate extends TestBrowserProxy {
         nativeDisplayName: 'English (United States)',
         supportsSpellcheck: true,
         supportsUI: true,
+        supportsTranslate: true,
       },
       {
         // A standalone language.
@@ -106,6 +107,7 @@ export class FakeLanguageSettingsPrivate extends TestBrowserProxy {
         displayName: 'Norwegian Bokmål',
         nativeDisplayName: 'norsk bokmål',
         supportsSpellcheck: true,
+        supportsTranslate: true,
         supportsUI: true,
       },
       {
@@ -130,6 +132,13 @@ export class FakeLanguageSettingsPrivate extends TestBrowserProxy {
         code: 'he',
         displayName: 'Hebrew',
         nativeDisplayName: 'Hebrew',
+        supportsUI: true,
+      },
+      {
+        // Filipino. This is used to test that 'tl' is converted to 'fil'
+        code: 'fil',
+        displayName: 'Filipino',
+        nativeDisplayName: 'Filipino',
         supportsUI: true,
       },
     ];
@@ -456,6 +465,14 @@ export function getFakeLanguagePrefs() {
       key: 'translate_blocked_languages',
       type: chrome.settingsPrivate.PrefType.LIST,
       value: ['en-US'],
+    },
+    {
+      key: 'translate_site_blocklist_with_time',
+      type: chrome.settingsPrivate.PrefType.LIST,
+      value: {
+        'ru.wikipedia.org': '13305315102292953',
+        'de.wikipedia.org': '13305315083099649',
+      },
     },
     // Note: The real implementation of this pref is actually a dictionary
     // of {always translate: target}, however only the keys are needed for

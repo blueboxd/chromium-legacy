@@ -1,4 +1,4 @@
-// Copyright 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,62 +6,62 @@
 
 #import <WebKit/WebKit.h>
 
-#include <memory>
-#include <utility>
+#import <memory>
+#import <utility>
 
-#include "base/mac/foundation_util.h"
-#include "base/scoped_observation.h"
-#include "base/strings/sys_string_conversions.h"
-#include "base/strings/utf_string_conversions.h"
+#import "base/mac/foundation_util.h"
+#import "base/scoped_observation.h"
+#import "base/strings/sys_string_conversions.h"
+#import "base/strings/utf_string_conversions.h"
 #import "base/test/ios/wait_util.h"
-#include "base/test/scoped_feature_list.h"
+#import "base/test/scoped_feature_list.h"
 #import "ios/testing/ocmock_complex_type_helper.h"
 #import "ios/web/common/crw_content_view.h"
 #import "ios/web/common/crw_web_view_content_view.h"
-#include "ios/web/common/features.h"
+#import "ios/web/common/features.h"
 #import "ios/web/common/uikit_ui_util.h"
 #import "ios/web/js_messaging/web_view_js_utils.h"
-#include "ios/web/navigation/block_universal_links_buildflags.h"
+#import "ios/web/navigation/block_universal_links_buildflags.h"
 #import "ios/web/navigation/crw_wk_navigation_states.h"
 #import "ios/web/navigation/navigation_item_impl.h"
 #import "ios/web/navigation/navigation_manager_impl.h"
 #import "ios/web/navigation/wk_navigation_action_policy_util.h"
-#include "ios/web/public/deprecated/url_verification_constants.h"
+#import "ios/web/public/deprecated/url_verification_constants.h"
 #import "ios/web/public/download/download_controller.h"
 #import "ios/web/public/download/download_task.h"
-#include "ios/web/public/navigation/referrer.h"
+#import "ios/web/public/navigation/referrer.h"
 #import "ios/web/public/session/crw_navigation_item_storage.h"
 #import "ios/web/public/session/crw_session_storage.h"
 #import "ios/web/public/test/fakes/crw_fake_web_view_content_view.h"
-#include "ios/web/public/test/fakes/fake_browser_state.h"
-#include "ios/web/public/test/fakes/fake_download_controller_delegate.h"
+#import "ios/web/public/test/fakes/fake_browser_state.h"
+#import "ios/web/public/test/fakes/fake_download_controller_delegate.h"
 #import "ios/web/public/test/fakes/fake_web_client.h"
 #import "ios/web/public/test/fakes/fake_web_state_delegate.h"
-#include "ios/web/public/test/fakes/fake_web_state_observer.h"
+#import "ios/web/public/test/fakes/fake_web_state_observer.h"
 #import "ios/web/public/test/fakes/fake_web_state_policy_decider.h"
 #import "ios/web/public/test/web_view_content_test_util.h"
-#include "ios/web/public/web_state_observer.h"
+#import "ios/web/public/web_state_observer.h"
 #import "ios/web/security/wk_web_view_security_util.h"
 #import "ios/web/test/fakes/crw_fake_back_forward_list.h"
 #import "ios/web/test/fakes/crw_fake_wk_frame_info.h"
 #import "ios/web/test/fakes/crw_fake_wk_navigation_action.h"
-#include "ios/web/test/test_url_constants.h"
+#import "ios/web/test/test_url_constants.h"
 #import "ios/web/test/web_test_with_web_controller.h"
 #import "ios/web/test/wk_web_view_crash_utils.h"
 #import "ios/web/web_state/ui/crw_web_controller.h"
 #import "ios/web/web_state/ui/crw_web_controller_container_view.h"
 #import "ios/web/web_state/web_state_impl.h"
 #import "net/base/mac/url_conversions.h"
-#include "net/cert/x509_util_apple.h"
-#include "net/ssl/ssl_info.h"
-#include "net/test/cert_test_util.h"
-#include "net/test/test_data_directory.h"
-#include "testing/gtest/include/gtest/gtest.h"
+#import "net/cert/x509_util_apple.h"
+#import "net/ssl/ssl_info.h"
+#import "net/test/cert_test_util.h"
+#import "net/test/test_data_directory.h"
+#import "testing/gtest/include/gtest/gtest.h"
 #import "testing/gtest_mac.h"
-#include "third_party/ocmock/OCMock/OCMock.h"
-#include "third_party/ocmock/gtest_support.h"
-#include "third_party/ocmock/ocmock_extensions.h"
-#include "url/scheme_host_port.h"
+#import "third_party/ocmock/OCMock/OCMock.h"
+#import "third_party/ocmock/gtest_support.h"
+#import "third_party/ocmock/ocmock_extensions.h"
+#import "url/scheme_host_port.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -124,7 +124,7 @@ const char kTestAppSpecificURL[] = "testwebui://test/";
 
 const char kTestMimeType[] = "application/vnd.test";
 
-// Returns HTML for an optionally zoomable test page with |zoom_state|.
+// Returns HTML for an optionally zoomable test page with `zoom_state`.
 enum PageScalabilityType {
   PAGE_SCALABILITY_DISABLED = 0,
   PAGE_SCALABILITY_ENABLED,
@@ -164,7 +164,7 @@ class CRWWebControllerTest : public WebTestWithWebController {
         WebTestWithWebController::GetWebClient());
   }
 
-  // The value for web view OCMock objects to expect for |-setFrame:|.
+  // The value for web view OCMock objects to expect for `-setFrame:`.
   CGRect GetExpectedWebViewFrame() const {
     CGSize container_view_size = GetAnyKeyWindow().bounds.size;
 
@@ -182,8 +182,8 @@ class CRWWebControllerTest : public WebTestWithWebController {
     WKWebView* result = [OCMockObject mockForClass:[WKWebView class]];
 
     OCMStub([result backForwardList]).andReturn(wk_list);
-    // This uses |andDo| rather than |andReturn| since the URL it returns needs
-    // to change when |test_url_| changes.
+    // This uses `andDo` rather than `andReturn` since the URL it returns needs
+    // to change when `test_url_` changes.
     OCMStub([result URL]).andDo(^(NSInvocation* invocation) {
       [invocation setReturnValue:&test_url_];
     });
@@ -851,7 +851,7 @@ TEST_F(CRWWebControllerResponseTest, IFrameDownloadWithNSHTTPURLResponse) {
   EXPECT_EQ("", task->GetMimeType());
 }
 
-// Tests |currentURLWithTrustLevel:| method.
+// Tests `currentURLWithTrustLevel:` method.
 TEST_F(CRWWebControllerTest, CurrentUrlWithTrustLevel) {
   GURL url("http://chromium.test");
   AddPendingItem(url, ui::PAGE_TRANSITION_TYPED);
@@ -884,7 +884,7 @@ class CRWWebControllerPolicyDeciderTest : public CRWWebControllerTest {
   }
   // Calls webView:decidePolicyForNavigationAction:preferences:decisionHandler:
   // callback and waits for decision handler call. Returns false if decision
-  // handler policy parameter didn't match |expected_policy| or if the call
+  // handler policy parameter didn't match `expected_policy` or if the call
   // timed out.
   [[nodiscard]] bool VerifyDecidePolicyForNavigationAction(
       NSURLRequest* request,
@@ -907,7 +907,7 @@ class CRWWebControllerPolicyDeciderTest : public CRWWebControllerTest {
         decidePolicyForNavigationAction:navigation_action
                             preferences:preferences
                         decisionHandler:^(WKNavigationActionPolicy policy,
-                                          WKWebpagePreferences* preferences) {
+                                          WKWebpagePreferences* ignored) {
                           policy_match = expected_policy == policy;
                           callback_called = true;
                         }];
@@ -942,7 +942,7 @@ TEST_F(CRWWebControllerPolicyDeciderTest,
 }
 
 // Tests that URL is allowed in OffTheRecord mode when the
-// |kBlockUniversalLinksInOffTheRecordMode| feature is disabled.
+// `kBlockUniversalLinksInOffTheRecordMode` feature is disabled.
 TEST_F(CRWWebControllerPolicyDeciderTest, AllowOffTheRecordNavigation) {
   GetFakeBrowserState()->SetOffTheRecord(true);
   base::test::ScopedFeatureList feature_list;
@@ -957,7 +957,7 @@ TEST_F(CRWWebControllerPolicyDeciderTest, AllowOffTheRecordNavigation) {
 }
 
 // Tests that URL is allowed in OffTheRecord mode and that universal links are
-// blocked when the |kBlockUniversalLinksInOffTheRecordMode| feature is enabled
+// blocked when the `kBlockUniversalLinksInOffTheRecordMode` feature is enabled
 // and the BLOCK_UNIVERSAL_LINKS_IN_OFF_THE_RECORD_MODE buildflag is set.
 TEST_F(CRWWebControllerPolicyDeciderTest,
        AllowOffTheRecordNavigationBlockUniversalLinks) {
@@ -1029,7 +1029,7 @@ TEST_F(CRWWebControllerPolicyDeciderTest, ClosedWebState) {
 }
 
 // Tests that navigations are cancelled if the web state is closed in
-// |ShouldAllowRequest|.
+// `ShouldAllowRequest`.
 TEST_F(CRWWebControllerPolicyDeciderTest, ClosedWebStateInShouldAllowRequest) {
   static CRWWebControllerPolicyDeciderTest* test_fixture = nullptr;
   test_fixture = this;
@@ -1062,8 +1062,8 @@ TEST_F(CRWWebControllerPolicyDeciderTest, ClosedWebStateInShouldAllowRequest) {
       url_request, WKNavigationActionPolicyCancel));
 }
 
-// Tests that navigations are allowed if |ShouldAllowRequest| returns a
-// PolicyDecision which returns true from |ShouldAllowNavigation()|.
+// Tests that navigations are allowed if `ShouldAllowRequest` returns a
+// PolicyDecision which returns true from `ShouldAllowNavigation()`.
 TEST_F(CRWWebControllerPolicyDeciderTest, AllowRequest) {
   FakeWebStatePolicyDecider policy_decider(web_state());
   policy_decider.SetShouldAllowRequest(
@@ -1075,8 +1075,8 @@ TEST_F(CRWWebControllerPolicyDeciderTest, AllowRequest) {
       url_request, WKNavigationActionPolicyAllow));
 }
 
-// Tests that navigations are cancelled if |ShouldAllowRequest| returns a
-// PolicyDecision which returns false from |ShouldAllowNavigation()|.
+// Tests that navigations are cancelled if `ShouldAllowRequest` returns a
+// PolicyDecision which returns false from `ShouldAllowNavigation()`.
 TEST_F(CRWWebControllerPolicyDeciderTest, CancelRequest) {
   FakeWebStatePolicyDecider policy_decider(web_state());
   policy_decider.SetShouldAllowRequest(
@@ -1088,8 +1088,8 @@ TEST_F(CRWWebControllerPolicyDeciderTest, CancelRequest) {
       url_request, WKNavigationActionPolicyCancel));
 }
 
-// Tests that navigations are cancelled if |ShouldAllowRequest| returns a
-// PolicyDecision which returns true from |ShouldBlockNavigation()|.
+// Tests that navigations are cancelled if `ShouldAllowRequest` returns a
+// PolicyDecision which returns true from `ShouldBlockNavigation()`.
 TEST_F(CRWWebControllerPolicyDeciderTest, CancelRequestAndDisplayError) {
   FakeWebStatePolicyDecider policy_decider(web_state());
   NSError* error = [NSError errorWithDomain:@"Error domain"
@@ -1203,7 +1203,7 @@ TEST_F(CRWWebControllerTitleTest, TitleChange) {
     TitleObserver(const TitleObserver&) = delete;
     TitleObserver& operator=(const TitleObserver&) = delete;
 
-    // Returns number of times |TitleWasSet| was called.
+    // Returns number of times `TitleWasSet` was called.
     int title_change_count() { return title_change_count_; }
     // WebStateObserver overrides:
     void TitleWasSet(WebState* web_state) override { title_change_count_++; }
@@ -1253,7 +1253,7 @@ TEST_F(CRWWebControllerTitleTest, FragmentChangeNavigationsUsePreviousTitle) {
 // Test fixture for JavaScript execution.
 class ScriptExecutionTest : public WebTestWithWebController {
  protected:
-  // Calls |executeUserJavaScript:completionHandler:|, waits for script
+  // Calls `executeUserJavaScript:completionHandler:`, waits for script
   // execution completion, and synchronously returns the result.
   id ExecuteUserJavaScript(NSString* java_script, NSError** error) {
     __block id script_result = nil;

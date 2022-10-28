@@ -1,4 +1,4 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -34,14 +34,14 @@ const Command* CommandsInfo::GetBrowserActionCommand(
     const Extension* extension) {
   auto* info =
       static_cast<CommandsInfo*>(extension->GetManifestData(keys::kCommands));
-  return info ? info->browser_action_command.get() : NULL;
+  return info ? info->browser_action_command.get() : nullptr;
 }
 
 // static
 const Command* CommandsInfo::GetPageActionCommand(const Extension* extension) {
   auto* info =
       static_cast<CommandsInfo*>(extension->GetManifestData(keys::kCommands));
-  return info ? info->page_action_command.get() : NULL;
+  return info ? info->page_action_command.get() : nullptr;
 }
 
 // static
@@ -55,7 +55,7 @@ const Command* CommandsInfo::GetActionCommand(const Extension* extension) {
 const CommandMap* CommandsInfo::GetNamedCommands(const Extension* extension) {
   auto* info =
       static_cast<CommandsInfo*>(extension->GetManifestData(keys::kCommands));
-  return info ? &info->named_commands : NULL;
+  return info ? &info->named_commands : nullptr;
 }
 
 CommandsHandler::CommandsHandler() = default;
@@ -69,7 +69,7 @@ bool CommandsHandler::Parse(Extension* extension, std::u16string* error) {
     return true;
   }
 
-  const base::DictionaryValue* dict = NULL;
+  const base::DictionaryValue* dict = nullptr;
   if (!extension->manifest()->GetDictionary(keys::kCommands, &dict)) {
     *error = manifest_errors::kInvalidCommandsKey;
     return false;
@@ -79,12 +79,11 @@ bool CommandsHandler::Parse(Extension* extension, std::u16string* error) {
 
   int command_index = 0;
   int keybindings_found = 0;
-  for (base::DictionaryValue::Iterator iter(*dict); !iter.IsAtEnd();
-       iter.Advance()) {
+  for (const auto item : dict->GetDict()) {
     ++command_index;
 
-    const base::DictionaryValue* command = NULL;
-    if (!iter.value().GetAsDictionary(&command)) {
+    const base::DictionaryValue* command = nullptr;
+    if (!item.second.GetAsDictionary(&command)) {
       *error = ErrorUtils::FormatErrorMessageUTF16(
           manifest_errors::kInvalidKeyBindingDictionary,
           base::NumberToString(command_index));
@@ -92,7 +91,7 @@ bool CommandsHandler::Parse(Extension* extension, std::u16string* error) {
     }
 
     std::unique_ptr<extensions::Command> binding(new Command());
-    if (!binding->Parse(command, iter.key(), command_index, error))
+    if (!binding->Parse(command, item.first, command_index, error))
       return false;  // |error| already set.
 
     if (binding->accelerator().key_code() != ui::VKEY_UNKNOWN) {

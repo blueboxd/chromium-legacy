@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -17,7 +17,7 @@ export class PanelInterface {
    * A callback function to be executed to perform the action from selecting
    * a menu item after the menu has been closed and focus has been restored
    * to the page or wherever it was previously.
-   * @param {?Function} callback
+   * @param {?function() : !Promise} callback
    */
   setPendingCallback(callback) {}
 }

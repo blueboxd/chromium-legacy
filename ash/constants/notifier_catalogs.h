@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -165,11 +165,13 @@ enum class NotificationCatalogName {
   kTailoredSecurityPromotion = 150,
   kArcLowDiskSpacePreStop = 151,
   kArcLowDiskSpacePostStop = 152,
-  kMaxValue = kArcLowDiskSpacePostStop
+  kMultiCapture = 153,
+  kMaxValue = kMultiCapture
 };
 
 // A living catalog that registers system nudges.
-// Current values should not be renumbered or removed.
+// Current values should not be renumbered or removed. Please keep in sync with
+// "NudgeCatalogName" in tools/metrics/histograms/enums.xml.
 // To deprecate comment out the entry.
 enum class NudgeCatalogName {
   kTestCatalogName = 0,

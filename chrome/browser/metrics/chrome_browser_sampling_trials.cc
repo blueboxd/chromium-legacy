@@ -1,9 +1,10 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome/browser/metrics/chrome_browser_sampling_trials.h"
 
+#include "base/feature_list.h"
 #include "base/metrics/field_trial.h"
 #include "base/strings/string_number_conversions.h"
 #include "chrome/browser/metrics/chrome_metrics_services_manager_client.h"
@@ -54,8 +55,7 @@ void CreateFallbackSamplingTrial(const std::string& trial_name,
   scoped_refptr<base::FieldTrial> trial(
       base::FieldTrialList::FactoryGetFieldTrial(
           trial_name, /*total_probability=*/1000, "Default",
-          base::FieldTrial::ONE_TIME_RANDOMIZED,
-          /*default_group_number=*/nullptr));
+          base::FieldTrialList::GetEntropyProviderForOneTimeRandomization()));
 
   // Like the trial name, the order that these two groups are added to the trial
   // must be kept in sync with the order that they appear in the server config.
@@ -107,8 +107,7 @@ void CreateFallbackUkmSamplingTrial(bool is_stable_channel,
   scoped_refptr<base::FieldTrial> trial(
       base::FieldTrialList::FactoryGetFieldTrial(
           kUkmSamplingTrialName, /*total_probability=*/100, sampled_group,
-          base::FieldTrial::ONE_TIME_RANDOMIZED,
-          /*default_group_number=*/nullptr));
+          base::FieldTrialList::GetEntropyProviderForOneTimeRandomization()));
 
   // Everybody (100%) should have a sampling configuration.
   std::map<std::string, std::string> params = {

@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -30,6 +30,7 @@
 extern const char kManagementLogUploadEnabled[];
 extern const char kManagementReportActivityTimes[];
 extern const char kManagementReportDeviceAudioStatus[];
+extern const char kManagementReportDeviceGraphicsStatus[];
 extern const char kManagementReportDevicePeripherals[];
 extern const char kManagementReportNetworkData[];
 extern const char kManagementReportHardwareData[];

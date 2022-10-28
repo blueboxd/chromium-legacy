@@ -1,4 +1,4 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -27,7 +27,7 @@ CpuInfoProvider::~CpuInfoProvider() {
 
 void CpuInfoProvider::InitializeForTesting(
     scoped_refptr<CpuInfoProvider> provider) {
-  DCHECK(provider.get() != NULL);
+  DCHECK(provider.get() != nullptr);
   provider_.Get() = provider;
 }
 
@@ -84,7 +84,7 @@ std::vector<std::string> CpuInfoProvider::GetFeatures() const {
 
 // static
 CpuInfoProvider* CpuInfoProvider::Get() {
-  if (provider_.Get().get() == NULL)
+  if (provider_.Get().get() == nullptr)
     provider_.Get() = new CpuInfoProvider();
   return provider_.Get().get();
 }

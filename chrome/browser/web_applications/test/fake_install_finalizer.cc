@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -104,7 +104,7 @@ void FakeInstallFinalizer::ReparentTab(const AppId& app_id,
                                        content::WebContents* web_contents) {
   ++num_reparent_tab_calls_;
 }
-void FakeInstallFinalizer::SetRemoveSourceCallbackForTesting(
+void FakeInstallFinalizer::SetRemoveManagementTypeCallbackForTesting(
     base::RepeatingCallback<void(const AppId&)>) {
   NOTIMPLEMENTED();
 }

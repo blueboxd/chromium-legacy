@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -841,8 +841,8 @@ void DiceWebSigninInterceptor::RecordProfileCreationDeclined(
 
 bool DiceWebSigninInterceptor::HasUserDeclinedProfileCreation(
     const std::string& email) const {
-  const base::Value::Dict& pref_data = profile_->GetPrefs()->GetValueDict(
-      kProfileCreationInterceptionDeclinedPref);
+  const base::Value::Dict& pref_data =
+      profile_->GetPrefs()->GetDict(kProfileCreationInterceptionDeclinedPref);
   absl::optional<int> declined_count =
       pref_data.FindInt(GetPersistentEmailHash(email));
   // Check if the user declined 2 times.

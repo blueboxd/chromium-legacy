@@ -1,4 +1,4 @@
-// Copyright (c) 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -229,6 +229,7 @@ class AutofillAutocompleteTest : public InProcessBrowserTest {
 
   Profile* current_profile() { return active_browser_->profile(); }
 
+  test::AutofillEnvironment autofill_environment_;
   raw_ptr<Browser> active_browser_;
 };
 

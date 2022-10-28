@@ -1,4 +1,4 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,7 +13,6 @@
 #include <utility>
 #include <vector>
 
-#include "ash/components/login/auth/public/user_context.h"
 #include "ash/components/settings/timezone_settings.h"
 #include "ash/constants/ash_paths.h"
 #include "ash/constants/ash_switches.h"
@@ -101,6 +100,7 @@
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/ash/components/dbus/session_manager/fake_session_manager_client.h"
+#include "chromeos/ash/components/login/auth/public/user_context.h"
 #include "chromeos/ash/components/network/policy_certificate_provider.h"
 #include "components/crx_file/crx_verifier.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
@@ -822,12 +822,12 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, PRE_DataIsRemoved) {
 IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, MAYBE_DataIsRemoved) {
   // The device local account should have been removed.
   EXPECT_FALSE(g_browser_process->local_state()
-                   ->GetValueDict("UserGivenName")
+                   ->GetDict("UserGivenName")
                    .Find(account_id_1_.GetUserEmail()));
 
   // The arbitrary data remains.
   const std::string* value = g_browser_process->local_state()
-                                 ->GetValueDict("UserGivenName")
+                                 ->GetDict("UserGivenName")
                                  .FindString("sanity.check@example.com");
   ASSERT_TRUE(value);
   EXPECT_EQ("Anne", *value);
@@ -893,7 +893,7 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, CachedDisplayName) {
 
   WaitForDisplayName(account_id_1_.GetUserEmail(), kDisplayName1);
   const auto& dict =
-      g_browser_process->local_state()->GetValueDict(key::kUserDisplayName);
+      g_browser_process->local_state()->GetDict(key::kUserDisplayName);
   ASSERT_TRUE(dict.Find(account_id_1_.GetUserEmail()) != nullptr);
   EXPECT_EQ(kDisplayName1, *dict.FindString(account_id_1_.GetUserEmail()));
 }
@@ -1248,7 +1248,8 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, ExtensionCacheImplTest) {
   extension_install_observer.Wait();
 
   // Verify that the extension was kept in the local cache.
-  EXPECT_TRUE(cache_impl.GetExtension(kGoodExtensionID, hash, NULL, NULL));
+  EXPECT_TRUE(
+      cache_impl.GetExtension(kGoodExtensionID, hash, nullptr, nullptr));
 
   {
     base::ScopedAllowBlockingForTesting allow_blocking;
@@ -1414,7 +1415,7 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, UserAvatarImage) {
   EXPECT_EQ(user_manager::User::USER_IMAGE_EXTERNAL, user->image_index());
   EXPECT_TRUE(ash::test::AreImagesEqual(policy_image, user->GetImage()));
   const base::Value::Dict& images_pref =
-      g_browser_process->local_state()->GetValueDict("user_image_info");
+      g_browser_process->local_state()->GetDict("user_image_info");
   const base::Value::Dict* image_properties =
       images_pref.FindDict(account_id_1_.GetUserEmail());
   ASSERT_TRUE(image_properties);
@@ -1498,9 +1499,9 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, LastWindowClosedLogoutReminder) {
   ASSERT_TRUE(browser_window);
   run_loop_ = std::make_unique<base::RunLoop>();
   browser_window->Close();
-  browser_window = NULL;
+  browser_window = nullptr;
   run_loop_->Run();
-  browser = NULL;
+  browser = nullptr;
   EXPECT_TRUE(browser_list->empty());
 
   // Verify that the logout confirmation dialog is not showing because an app
@@ -1531,9 +1532,9 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, LastWindowClosedLogoutReminder) {
   ASSERT_TRUE(browser_window);
   run_loop_ = std::make_unique<base::RunLoop>();
   browser_window->Close();
-  browser_window = NULL;
+  browser_window = nullptr;
   run_loop_->Run();
-  first_browser = NULL;
+  first_browser = nullptr;
   EXPECT_EQ(1U, browser_list->size());
 
   // Verify that the logout confirmation dialog is not showing because a browser
@@ -1545,9 +1546,9 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, LastWindowClosedLogoutReminder) {
   ASSERT_TRUE(browser_window);
   run_loop_ = std::make_unique<base::RunLoop>();
   browser_window->Close();
-  browser_window = NULL;
+  browser_window = nullptr;
   run_loop_->Run();
-  second_browser = NULL;
+  second_browser = nullptr;
   EXPECT_TRUE(browser_list->empty());
 
   // Verify that the logout confirmation dialog is showing.
@@ -1568,9 +1569,9 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, LastWindowClosedLogoutReminder) {
   ASSERT_TRUE(browser_window);
   run_loop_ = std::make_unique<base::RunLoop>();
   browser_window->Close();
-  browser_window = NULL;
+  browser_window = nullptr;
   run_loop_->Run();
-  browser = NULL;
+  browser = nullptr;
   EXPECT_TRUE(browser_list->empty());
 
   // Verify that the logout confirmation dialog is showing again.

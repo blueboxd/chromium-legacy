@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -58,7 +58,8 @@ class ContentAnalysisSdkManager {
   // to GetClient() will cause a new SDK client to be created and returned.
   // Existing wrapped clients will continue to use the old client until
   // they release their references.
-  void ResetClient(const content_analysis::sdk::Client::Config& config);
+  // Virtual to be overridden in tests.
+  virtual void ResetClient(const content_analysis::sdk::Client::Config& config);
 
   bool HasClientForTesting(
       const content_analysis::sdk::Client::Config& config) {
@@ -66,6 +67,8 @@ class ContentAnalysisSdkManager {
   }
 
  protected:
+  static void SetManagerForTesting(ContentAnalysisSdkManager* manager);
+
   // Protected for testing.
   ContentAnalysisSdkManager();
   ~ContentAnalysisSdkManager();

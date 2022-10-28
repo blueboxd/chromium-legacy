@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -16,6 +16,7 @@
 #include "chrome/browser/preloading/prefetch/prefetch_proxy/prefetch_proxy_prefetch_status.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
@@ -144,14 +145,15 @@ class PrefetchProxyProxyingURLLoaderFactory
     // network::mojom::URLLoaderClient:
     void OnReceiveEarlyHints(
         network::mojom::EarlyHintsPtr early_hints) override;
-    void OnReceiveResponse(network::mojom::URLResponseHeadPtr head,
-                           mojo::ScopedDataPipeConsumerHandle body) override;
+    void OnReceiveResponse(
+        network::mojom::URLResponseHeadPtr head,
+        mojo::ScopedDataPipeConsumerHandle body,
+        absl::optional<mojo_base::BigBuffer> cached_metadata) override;
     void OnReceiveRedirect(const net::RedirectInfo& redirect_info,
                            network::mojom::URLResponseHeadPtr head) override;
     void OnUploadProgress(int64_t current_position,
                           int64_t total_size,
                           OnUploadProgressCallback callback) override;
-    void OnReceiveCachedMetadata(mojo_base::BigBuffer data) override;
     void OnTransferSizeUpdated(int32_t transfer_size_diff) override;
     void OnComplete(const network::URLLoaderCompletionStatus& status) override;
 

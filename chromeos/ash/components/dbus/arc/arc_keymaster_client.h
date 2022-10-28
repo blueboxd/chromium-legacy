@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,7 +13,8 @@ namespace ash {
 
 // ArcKeymasterClient is used to bootstrap a Mojo connection with the
 // arc-keymasterd daemon in Chrome OS.
-class COMPONENT_EXPORT(ASH_DBUS_ARC) ArcKeymasterClient : public DBusClient {
+class COMPONENT_EXPORT(ASH_DBUS_ARC) ArcKeymasterClient
+    : public chromeos::DBusClient {
  public:
   // Returns the global instance if initialized. May return null.
   static ArcKeymasterClient* Get();
@@ -32,8 +33,9 @@ class COMPONENT_EXPORT(ASH_DBUS_ARC) ArcKeymasterClient : public DBusClient {
 
   // Bootstrap the Mojo connection between Chrome and the keymaster service.
   // Should pass in the child end of the Mojo pipe.
-  virtual void BootstrapMojoConnection(base::ScopedFD fd,
-                                       VoidDBusMethodCallback callback) = 0;
+  virtual void BootstrapMojoConnection(
+      base::ScopedFD fd,
+      chromeos::VoidDBusMethodCallback callback) = 0;
 
  protected:
   // Initialize() should be used instead.

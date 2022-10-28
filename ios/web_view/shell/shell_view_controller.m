@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -935,11 +935,15 @@ NSString* const kWebViewShellJavaScriptDialogTextFieldAccessibilityIdentifier =
 - (void)evaluateJavaScript:(NSString*)javascript {
   [self.webView
       evaluateJavaScript:javascript
-              completion:^(id result, BOOL success) {
-                NSString* formatString =
-                    success ? @"JavaScript evaluation finished with result: %@"
-                            : @"JavaScript evaluation FAILED with result: %@";
-                NSLog(formatString, result);
+              completion:^(id result, NSError* error) {
+                if (error) {
+                  NSLog(
+                      @"JavaScript evaluation FAILED with error: %@ result: %@",
+                      error, result);
+                } else {
+                  NSLog(@"JavaScript evaluation finished with result: %@",
+                        result);
+                }
               }];
 }
 

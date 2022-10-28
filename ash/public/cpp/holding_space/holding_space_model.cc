@@ -1,19 +1,40 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "ash/public/cpp/holding_space/holding_space_model.h"
 
-#include <algorithm>
+#include <numeric>
 
+#include "ash/constants/ash_features.h"
+#include "ash/public/cpp/holding_space/holding_space_constants.h"
+#include "ash/public/cpp/holding_space/holding_space_item.h"
 #include "ash/public/cpp/holding_space/holding_space_model_observer.h"
 #include "ash/public/cpp/holding_space/holding_space_util.h"
 #include "base/bind.h"
 #include "base/check.h"
 #include "base/containers/contains.h"
 #include "base/memory/ptr_util.h"
+#include "base/ranges/algorithm.h"
 
 namespace ash {
+
+namespace {
+
+// Helpers ---------------------------------------------------------------------
+
+// Maps a `HoldingSpaceItem::Type` to a `HoldingSpaceModel::Section`.
+HoldingSpaceModel::Section ToSection(HoldingSpaceItem::Type type) {
+  if (holding_space_util::IsDownloadType(type))
+    return HoldingSpaceModel::Section::kDownload;
+
+  if (holding_space_util::IsScreenCaptureType(type))
+    return HoldingSpaceModel::Section::kScreenCapture;
+
+  return HoldingSpaceModel::Section::kNone;
+}
+
+}  // namespace
 
 // HoldingSpaceModel::ScopedItemUpdate -----------------------------------------
 
@@ -108,8 +129,8 @@ HoldingSpaceModel::ScopedItemUpdate::SetBackingFile(
 HoldingSpaceModel::ScopedItemUpdate&
 HoldingSpaceModel::ScopedItemUpdate::SetInProgressCommands(
     std::vector<HoldingSpaceItem::InProgressCommand> in_progress_commands) {
-  DCHECK(std::all_of(
-      in_progress_commands.begin(), in_progress_commands.end(),
+  DCHECK(base::ranges::all_of(
+      in_progress_commands,
       [](const HoldingSpaceItem::InProgressCommand& in_progress_command) {
         return holding_space_util::IsInProgressCommand(
             in_progress_command.command_id);
@@ -184,8 +205,12 @@ void HoldingSpaceModel::AddItems(
     item_ptrs.push_back(item.get());
     items_.push_back(std::move(item));
   }
+
   for (auto& observer : observers_)
     observer.OnHoldingSpaceItemsAdded(item_ptrs);
+
+  if (features::IsHoldingSpacePredictabilityEnabled())
+    TrimToMaxItemsPerSection();
 }
 
 void HoldingSpaceModel::RemoveItem(const std::string& id) {
@@ -207,11 +232,7 @@ void HoldingSpaceModel::InitializeOrRemoveItem(const std::string& id,
     return;
   }
 
-  auto item_it = std::find_if(
-      items_.begin(), items_.end(),
-      [&id](const std::unique_ptr<HoldingSpaceItem>& item) -> bool {
-        return id == item->id();
-      });
+  auto item_it = base::ranges::find(items_, id, &HoldingSpaceItem::id);
   DCHECK(item_it != items_.end());
 
   HoldingSpaceItem* item = item_it->get();
@@ -226,11 +247,7 @@ void HoldingSpaceModel::InitializeOrRemoveItem(const std::string& id,
 
 std::unique_ptr<HoldingSpaceModel::ScopedItemUpdate>
 HoldingSpaceModel::UpdateItem(const std::string& id) {
-  auto item_it =
-      std::find_if(items_.begin(), items_.end(),
-                   [&id](const std::unique_ptr<HoldingSpaceItem>& item) {
-                     return item->id() == id;
-                   });
+  auto item_it = base::ranges::find(items_, id, &HoldingSpaceItem::id);
   DCHECK(item_it != items_.end());
   return base::WrapUnique(new ScopedItemUpdate(this, item_it->get()));
 }
@@ -285,11 +302,7 @@ void HoldingSpaceModel::RemoveAll() {
 
 const HoldingSpaceItem* HoldingSpaceModel::GetItem(
     const std::string& id) const {
-  auto item_it = std::find_if(
-      items_.begin(), items_.end(),
-      [&id](const std::unique_ptr<HoldingSpaceItem>& item) -> bool {
-        return item->id() == id;
-      });
+  auto item_it = base::ranges::find(items_, id, &HoldingSpaceItem::id);
 
   if (item_it == items_.end())
     return nullptr;
@@ -299,8 +312,8 @@ const HoldingSpaceItem* HoldingSpaceModel::GetItem(
 const HoldingSpaceItem* HoldingSpaceModel::GetItem(
     HoldingSpaceItem::Type type,
     const base::FilePath& file_path) const {
-  auto item_it = std::find_if(
-      items_.begin(), items_.end(),
+  auto item_it = base::ranges::find_if(
+      items_,
       [&type, &file_path](const std::unique_ptr<HoldingSpaceItem>& item) {
         return item->type() == type && item->file_path() == file_path;
       });
@@ -327,6 +340,24 @@ void HoldingSpaceModel::AddObserver(HoldingSpaceModelObserver* observer) {
 
 void HoldingSpaceModel::RemoveObserver(HoldingSpaceModelObserver* observer) {
   observers_.RemoveObserver(observer);
+}
+
+// Removes any items that exceed the `kMaxItemsPerSection` of that
+// `HoldingSpaceItem::Type`. Types are bucketed into screen_captures and
+// downloads. For example if `kMaxItemsPerSection` is 10 and after adding 2
+// new download items the user has a total of 12 items in the downloads
+// bucket, then we remove the 2 oldest (i.e. first we find in the vector)
+// downloads from holding space `items_`, leaving the 10 newest remaining.
+// If it's not a download or screen capture then no limit is applied.
+void HoldingSpaceModel::TrimToMaxItemsPerSection() {
+  RemoveIf(base::BindRepeating(
+      [](std::map<Section, size_t>& items_per_section,
+         const HoldingSpaceItem* item) {
+        auto section = ToSection(item->type());
+        return ++items_per_section[section] > kMaxItemsPerSection &&
+               section != HoldingSpaceModel::Section::kNone;
+      },
+      base::OwnedRef(std::map<Section, size_t>())));
 }
 
 }  // namespace ash

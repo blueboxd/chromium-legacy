@@ -1,4 +1,4 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -132,7 +132,7 @@ class SharedSampler : public base::RefCountedThreadSafe<SharedSampler> {
   scoped_refptr<base::SequencedTaskRunner> blocking_pool_runner_;
 
   // To assert we're running on the correct thread.
-  base::SequenceChecker worker_pool_sequenced_checker_;
+  SEQUENCE_CHECKER(worker_pool_sequenced_checker_);
 #endif  // BUILDFLAG(IS_WIN)
 };
 

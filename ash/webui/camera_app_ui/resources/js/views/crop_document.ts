@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,7 +10,12 @@ import {speak} from '../spoken_msg.js';
 import {Rotation, ViewName} from '../type.js';
 import * as util from '../util.js';
 
-import {ButtonGroupTemplate, Option, OptionGroup, Review} from './review.js';
+import {
+  ButtonGroupTemplate,
+  Option,
+  OptionGroup,
+  Review,
+} from './review.js';
 
 /**
  * Delay for movement announcer gathering user pressed key to announce first
@@ -107,7 +112,7 @@ const ROTATIONS = [
   Rotation.ANGLE_90,
   Rotation.ANGLE_180,
   Rotation.ANGLE_270,
-];
+] as const;
 
 interface Corner {
   el: HTMLDivElement;
@@ -177,8 +182,8 @@ export class CropDocument extends Review<boolean> {
       return ret;
     })();
 
-    const updateRotation = (newRotation: Rotation) => {
-      this.rotation = newRotation;
+    const updateRotation = (rotation: number) => {
+      this.rotation = rotation;
       this.updateImage();
       this.updateCornerElAriaLabel();
     };
@@ -570,13 +575,11 @@ export class CropDocument extends Review<boolean> {
     const image = new Image();
     await this.loadImage(image, blob);
     this.imageOriginalSize = new Size(image.width, image.height);
-    const style = this.image.attributeStyleMap;
-    if (style.has('background-image')) {
-      const s = assertExists(style.get('background-image')).toString();
-      const oldUrl = assertExists(s.match(/url\(['"]([^'"]+)['"]\)/))[1];
+    const oldUrl = util.extractBackgroundImageValueUrl(this.image);
+    if (oldUrl !== null) {
       URL.revokeObjectURL(oldUrl);
     }
-    style.set('background-image', `url('${image.src}')`);
+    this.image.attributeStyleMap.set('background-image', `url('${image.src}')`);
 
     this.rotation = 0;
     this.updateCornerElAriaLabel();

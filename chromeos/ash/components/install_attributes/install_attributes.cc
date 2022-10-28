@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -73,8 +73,8 @@ void InstallAttributes::Initialize() {
 
   DCHECK(!g_install_attributes);
   g_install_attributes = new InstallAttributes(InstallAttributesClient::Get());
-  g_install_attributes->Init(
-      base::PathService::CheckedGet(dbus_paths::FILE_INSTALL_ATTRIBUTES));
+  g_install_attributes->Init(base::PathService::CheckedGet(
+      chromeos::dbus_paths::FILE_INSTALL_ATTRIBUTES));
 }
 
 // static
@@ -316,7 +316,7 @@ void InstallAttributes::LockDeviceIfAttributesIsReady(
 
   // Clearing the TPM password seems to be always a good deal. At this point
   // install attributes is ready, which implies TPM readiness as well.
-  TpmManagerClient::Get()->ClearStoredOwnerPassword(
+  chromeos::TpmManagerClient::Get()->ClearStoredOwnerPassword(
       ::tpm_manager::ClearStoredOwnerPasswordRequest(),
       base::BindOnce(&InstallAttributes::OnClearStoredOwnerPassword,
                      weak_ptr_factory_.GetWeakPtr()));
@@ -423,7 +423,7 @@ bool InstallAttributes::IsConsumerKioskDeviceWithAutoLaunch() {
 }
 
 void InstallAttributes::TriggerConsistencyCheck(int dbus_retries) {
-  TpmManagerClient::Get()->GetTpmNonsensitiveStatus(
+  chromeos::TpmManagerClient::Get()->GetTpmNonsensitiveStatus(
       ::tpm_manager::GetTpmNonsensitiveStatusRequest(),
       base::BindOnce(&InstallAttributes::OnTpmStatusComplete,
                      weak_ptr_factory_.GetWeakPtr(), dbus_retries));

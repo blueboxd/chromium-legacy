@@ -1,12 +1,10 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include <memory>
 #include <vector>
 
-#include "ash/components/login/auth/public/key.h"
-#include "ash/components/login/auth/public/user_context.h"
 #include "ash/public/cpp/ash_view_ids.h"
 #include "ash/public/cpp/cast_config_controller.h"
 #include "ash/public/cpp/system_tray_client.h"
@@ -36,6 +34,8 @@
 #include "chrome/test/base/chrome_test_utils.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/media_router/access_code_cast/access_code_cast_integration_browsertest.h"
+#include "chromeos/ash/components/login/auth/public/key.h"
+#include "chromeos/ash/components/login/auth/public/user_context.h"
 #include "components/access_code_cast/common/access_code_cast_metrics.h"
 #include "components/account_id/account_id.h"
 #include "components/media_router/browser/media_routes_observer.h"
@@ -265,8 +265,6 @@ class SystemTrayTrayCastAccessCodeChromeOSTest
   }
 
   void SetUpOnMainThread() override {
-    ash::LoginDisplayHostWebUI::DisableRestrictiveProxyCheckForTest();
-
     ash::test::UserSessionManagerTestApi session_manager_test_api(
         ash::UserSessionManager::GetInstance());
     session_manager_test_api.SetShouldLaunchBrowserInTests(false);

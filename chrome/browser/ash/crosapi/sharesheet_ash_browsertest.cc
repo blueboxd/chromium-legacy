@@ -1,13 +1,13 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome/browser/ash/crosapi/sharesheet_ash.h"
 
-#include <algorithm>
 #include <vector>
 
 #include "ash/constants/ash_features.h"
+#include "base/containers/contains.h"
 #include "base/files/file_util.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
@@ -27,7 +27,7 @@
 #include "chrome/browser/sharesheet/sharesheet_service.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
-#include "chrome/browser/web_applications/test/app_registration_waiter.h"
+#include "chrome/browser/web_applications/test/app_registry_cache_waiter.h"
 #include "chrome/browser/web_applications/test/profile_test_helper.h"
 #include "chrome/browser/web_applications/web_app_id_constants.h"
 #include "chrome/common/chrome_features.h"
@@ -55,10 +55,8 @@ bool IsIntentAcceptedByApp(const crosapi::mojom::IntentPtr& intent,
   std::vector<apps::IntentLaunchInfo> intent_launch_info =
       apps::AppServiceProxyFactory::GetForProfile(profile)->GetAppsForIntent(
           apps_util::CreateAppServiceIntentFromCrosapi(intent, profile));
-  return std::any_of(intent_launch_info.begin(), intent_launch_info.end(),
-                     [&app_id](const apps::IntentLaunchInfo& launch_entry) {
-                       return launch_entry.app_id == app_id;
-                     });
+  return base::Contains(intent_launch_info, app_id,
+                        &apps::IntentLaunchInfo::app_id);
 }
 
 // Returns an Intent accepted by Sample System Web App.

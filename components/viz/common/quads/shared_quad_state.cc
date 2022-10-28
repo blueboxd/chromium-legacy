@@ -1,4 +1,4 @@
-// Copyright 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -19,6 +19,32 @@ SharedQuadState::SharedQuadState(const SharedQuadState& other) = default;
 SharedQuadState::~SharedQuadState() {
   TRACE_EVENT_OBJECT_DELETED_WITH_ID(TRACE_DISABLED_BY_DEFAULT("viz.quads"),
                                      "viz::SharedQuadState", this);
+}
+
+bool SharedQuadState::Equals(const SharedQuadState& other) const {
+  // Skip |overlay_damage_index| and |is_fast_rounded_corner|, which are added
+  // in SurfaceAggregator. They don't really control the rendering effect.
+  return quad_to_target_transform == other.quad_to_target_transform &&
+         quad_layer_rect == other.quad_layer_rect &&
+         visible_quad_layer_rect == other.visible_quad_layer_rect &&
+         mask_filter_info == other.mask_filter_info &&
+         clip_rect == other.clip_rect &&
+         are_contents_opaque == other.are_contents_opaque &&
+         opacity == other.opacity && blend_mode == other.blend_mode &&
+         sorting_context_id == other.sorting_context_id &&
+         de_jelly_delta_y == other.de_jelly_delta_y;
+}
+
+void SharedQuadState::SetAll(const SharedQuadState& other) {
+  quad_to_target_transform = other.quad_to_target_transform;
+  quad_layer_rect = other.quad_layer_rect;
+  visible_quad_layer_rect = other.visible_quad_layer_rect;
+  mask_filter_info = other.mask_filter_info;
+  clip_rect = other.clip_rect;
+  are_contents_opaque = other.are_contents_opaque;
+  opacity = other.opacity;
+  blend_mode = other.blend_mode;
+  sorting_context_id = other.sorting_context_id;
 }
 
 void SharedQuadState::SetAll(const gfx::Transform& transform,

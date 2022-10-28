@@ -1,11 +1,10 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include <memory>
 #include <string>
 
-#include "ash/components/login/auth/public/user_context.h"
 #include "ash/components/settings/cros_settings_names.h"
 #include "ash/constants/ash_switches.h"
 #include "ash/public/cpp/login_screen_test_api.h"
@@ -34,6 +33,7 @@
 #include "chrome/test/base/mixin_based_in_process_browser_test.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chromeos/ash/components/dbus/session_manager/fake_session_manager_client.h"
+#include "chromeos/ash/components/login/auth/public/user_context.h"
 #include "chromeos/dbus/missive/missive_client.h"
 #include "chromeos/dbus/missive/missive_client_test_observer.h"
 #include "components/account_id/account_id.h"
@@ -79,7 +79,7 @@ Record GetNextUserAddedRemovedRecord(MissiveClientTestObserver* observer) {
 
 absl::optional<Record> MaybeGetEnqueuedUserAddedRemovedRecord() {
   const std::vector<Record>& records =
-      MissiveClient::Get()->GetTestInterface()->GetEnqueuedRecords(
+      chromeos::MissiveClient::Get()->GetTestInterface()->GetEnqueuedRecords(
           Priority::IMMEDIATE);
   for (const Record& record : records) {
     if (record.destination() == Destination::ADDED_REMOVED_EVENTS) {

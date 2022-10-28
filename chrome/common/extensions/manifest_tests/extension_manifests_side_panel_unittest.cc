@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -84,8 +84,13 @@ class SidePanelExtensionsTest : public testing::Test {
   base::ScopedTempDir temp_dir_;
 };
 
+#if defined(OFFICIAL_BUILD)
+#define MAYBE_FileDoesntExist DISABLED_FileDoesntExist
+#else
+#define MAYBE_FileDoesntExist FileDoesntExist
+#endif  // defined(OFFICIAL_BUILD)
 // Error loading extension when filepath doesn't exist or is empty.
-TEST_F(SidePanelExtensionsTest, FileDoesntExist) {
+TEST_F(SidePanelExtensionsTest, MAYBE_FileDoesntExist) {
   for (const auto* default_path : {"", "error"}) {
     std::string error;
     std::vector<InstallWarning> warnings;

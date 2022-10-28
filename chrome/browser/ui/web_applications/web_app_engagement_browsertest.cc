@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -130,26 +130,9 @@ void ExpectLaunchCounts(const base::HistogramTester& tester,
   tester.ExpectTotalCount("Extensions.BookmarkAppLaunchContainer",
                           windowLaunches + tabLaunches);
 
-  if (tabLaunches > 0) {
-    tester.ExpectUniqueSample("Extensions.AppTabLaunchType",
-                              extensions::LAUNCH_TYPE_REGULAR, tabLaunches);
-  } else {
-    EXPECT_EQ(nullptr, base::StatisticsRecorder::FindHistogram(
-                           "Extensions.AppTabLaunchType"));
-  }
-
   tester.ExpectUniqueSample("Extensions.BookmarkAppLaunchSource",
                             extensions::AppLaunchSource::kSourceTest,
                             windowLaunches + tabLaunches);
-
-  tester.ExpectBucketCount("Extensions.BookmarkAppLaunchContainer",
-                           apps::LaunchContainer::kLaunchContainerWindow,
-                           windowLaunches);
-  tester.ExpectBucketCount("Extensions.BookmarkAppLaunchContainer",
-                           apps::LaunchContainer::kLaunchContainerTab,
-                           tabLaunches);
-  tester.ExpectTotalCount("Extensions.BookmarkAppLaunchContainer",
-                          windowLaunches + tabLaunches);
 }
 
 }  // namespace

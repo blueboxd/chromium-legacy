@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -60,7 +60,7 @@ class OptimizationGuideService
       public optimization_guide::OptimizationGuideModelProvider {
  public:
   // BackgroundDownloadService is only available once the profile is fully
-  // initialized and that cannot be done as part of |Initialize|. Get a provider
+  // initialized and that cannot be done as part of `Initialize`. Get a provider
   // to retrieve the service when it is needed.
   using BackgroundDownloadServiceProvider =
       base::OnceCallback<download::BackgroundDownloadService*(void)>;
@@ -101,15 +101,15 @@ class OptimizationGuideService
       optimization_guide::proto::OptimizationType optimization_type,
       optimization_guide::OptimizationGuideDecisionCallback callback) override;
 
-  // Returns whether |optimization_type| can be applied for |url|. This should
+  // Returns whether `optimization_type` can be applied for `url`. This should
   // only be called for main frame navigations or future main frame navigations.
   optimization_guide::OptimizationGuideDecision CanApplyOptimization(
       const GURL& url,
       optimization_guide::proto::OptimizationType optimization_type,
       optimization_guide::OptimizationMetadata* optimization_metadata) override;
 
-  // Invokes |callback| with the decision for the URL contained in
-  // |navigation_context| and |optimization_type|, when sufficient information
+  // Invokes `callback` with the decision for the URL contained in
+  // `navigation_context` and `optimization_type`, when sufficient information
   // has been collected to make the decision. This should only be called for
   // main frame navigations.
   void CanApplyOptimizationAsync(
@@ -138,18 +138,23 @@ class OptimizationGuideService
   // Getter for the prediction manager.
   optimization_guide::PredictionManager* GetPredictionManager();
 
+  // Getter for the optimization guide logger.
+  OptimizationGuideLogger* GetOptimizationGuideLogger() {
+    return optimization_guide_logger_.get();
+  }
+
  private:
   friend class OptimizationGuideServiceTest;
   friend class OptimizationGuideTabHelper;
   friend class OptimizationGuideTestAppInterfaceWrapper;
 
-  // Notifies |hints_manager_| that the navigation associated with
-  // |navigation_data| has started or redirected.
+  // Notifies `hints_manager_` that the navigation associated with
+  // `navigation_data` has started or redirected.
   void OnNavigationStartOrRedirect(
       OptimizationGuideNavigationData* navigation_data);
 
-  // Notifies |hints_manager_| that the navigation associated with
-  // |navigation_redirect_chain| has finished.
+  // Notifies `hints_manager_` that the navigation associated with
+  // `navigation_redirect_chain` has finished.
   void OnNavigationFinish(const std::vector<GURL>& navigation_redirect_chain);
 
   // KeyedService implementation:

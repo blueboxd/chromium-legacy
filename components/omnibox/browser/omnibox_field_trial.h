@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -473,7 +473,7 @@ extern const char kOmniboxUIUnelideURLOnHoverThresholdMsParam[];
 
 // `FeatureParam`s
 
-// Autocomplete stability.
+// Autocomplete stability and related features.
 // When providers update their matches, the aggregated matches for the current
 // input are sorted, then merged with the matches from the previous input
 // (`TransferOldMatches()`), then resorted. If enabled, both sorts preserve the
@@ -511,6 +511,9 @@ extern const base::FeatureParam<int>
     kAutocompleteStabilityUpdateResultDebounceDelay;
 
 // Local history zero-prefix (aka zero-suggest) and prefix suggestions.
+
+// Determines the maximum number of entries stored by the in-memory ZPS cache.
+extern const base::FeatureParam<int> kZeroSuggestCacheMaxSize;
 
 // Determines the relevance score for the local history zero-prefix suggestions.
 extern const base::FeatureParam<int> kLocalHistoryZeroSuggestRelevanceScore;

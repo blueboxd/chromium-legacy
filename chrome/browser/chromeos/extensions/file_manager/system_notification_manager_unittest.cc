@@ -1,19 +1,16 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome/browser/chromeos/extensions/file_manager/system_notification_manager.h"
 
 #include "ash/components/arc/arc_prefs.h"
-#include "ash/components/disks/disk.h"
-#include "ash/constants/ash_features.h"
 #include "ash/webui/file_manager/url_constants.h"
 #include "base/files/file.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/bind.h"
 #include "base/test/metrics/histogram_tester.h"
-#include "base/test/scoped_feature_list.h"
 #include "chrome/browser/ash/file_manager/copy_or_move_io_task.h"
 #include "chrome/browser/ash/file_manager/fake_disk_mount_manager.h"
 #include "chrome/browser/ash/file_manager/io_task.h"
@@ -28,6 +25,7 @@
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
 #include "chromeos/ash/components/dbus/cros_disks/cros_disks_client.h"
+#include "chromeos/ash/components/disks/disk.h"
 #include "content/public/test/browser_task_environment.h"
 #include "storage/browser/file_system/file_system_url.h"
 #include "storage/browser/quota/quota_manager_proxy.h"
@@ -157,8 +155,6 @@ class SystemNotificationManagerTest
     notification_platform_bridge = bridge.get();
     notification_display_service_
         ->SetNotificationPlatformBridgeDelegatorForTesting(std::move(bridge));
-    base::test::ScopedFeatureList feature_list;
-    feature_list.InitAndEnableFeature(chromeos::features::kFilesSWA);
     notification_manager_ =
         std::make_unique<SystemNotificationManager>(profile_);
     device_event_router_ = std::make_unique<DeviceEventRouterImpl>(
@@ -1075,8 +1071,6 @@ TEST_F(SystemNotificationManagerTest, DeviceFailUnknownReadOnlyNamed) {
 }
 
 TEST_F(SystemNotificationManagerTest, TestCopyEvents) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(ash::features::kFilesSWA);
   SystemNotificationManager notification_manager(nullptr);
   file_manager_private::CopyOrMoveProgressStatus status;
 
@@ -1092,11 +1086,11 @@ TEST_F(SystemNotificationManagerTest, CopyProgress) {
   std::string copy_file_dest_url =
       "filesystem:chrome://file-manager/external/Downloads-test-user/NewFolder/"
       "file.txt";
-  status.destination_url = std::make_unique<std::string>(copy_file_dest_url);
-  status.size = std::make_unique<double>(copy_size);
+  status.destination_url = copy_file_dest_url;
+  status.size = copy_size;
   std::string copy_file_src_url =
       "filesystem:chrome://file-manager/external/Downloads-test-user/file.txt";
-  status.source_url = std::make_unique<std::string>(copy_file_src_url);
+  status.source_url = copy_file_src_url;
   status.type = file_manager_private::COPY_OR_MOVE_PROGRESS_STATUS_TYPE_BEGIN;
 
   // Send the copy begin event.
@@ -1484,6 +1478,7 @@ TEST_F(SystemNotificationManagerTest, SyncProgressSingle) {
       "filesystem:chrome://file-manager/drive/MyDrive-test-user/file.txt";
   transfer_status.processed = 0;
   transfer_status.total = 100;
+  transfer_status.show_notification = true;
   std::unique_ptr<extensions::Event> event =
       std::make_unique<extensions::Event>(
           extensions::events::FILE_MANAGER_PRIVATE_ON_FILE_TRANSFERS_UPDATED,
@@ -1561,6 +1556,57 @@ TEST_F(SystemNotificationManagerTest, SyncProgressSingle) {
   ASSERT_EQ(0u, notification_count);
 }
 
+TEST_F(SystemNotificationManagerTest, SyncProgressIgnoreNotification) {
+  // Setup a sync progress status.
+  file_manager_private::FileTransferStatus transfer_status;
+  transfer_status.transfer_state =
+      file_manager_private::TRANSFER_STATE_IN_PROGRESS;
+  transfer_status.num_total_jobs = 1;
+  transfer_status.file_url =
+      "filesystem:chrome://file-manager/drive/MyDrive-test-user/file.txt";
+  transfer_status.processed = 25;
+  transfer_status.total = 100;
+  transfer_status.show_notification = true;
+  std::unique_ptr<extensions::Event> event =
+      std::make_unique<extensions::Event>(
+          extensions::events::FILE_MANAGER_PRIVATE_ON_FILE_TRANSFERS_UPDATED,
+          file_manager_private::OnFileTransfersUpdated::kEventName,
+          file_manager_private::OnFileTransfersUpdated::Create(
+              transfer_status));
+
+  // Send the transfers updated event.
+  GetSystemNotificationManager()->HandleEvent(*event.get());
+  // Get the number of notifications from the NotificationDisplayService.
+  NotificationDisplayServiceFactory::GetForProfile(GetProfile())
+      ->GetDisplayed(base::BindOnce(
+          &SystemNotificationManagerTest::GetNotificationsCallback,
+          weak_ptr_factory_.GetWeakPtr()));
+  // Check: We have one notification.
+  ASSERT_EQ(1u, notification_count);
+
+  // Update the transfer event to hide the notification.
+  transfer_status.transfer_state =
+      file_manager_private::TRANSFER_STATE_COMPLETED;
+  transfer_status.num_total_jobs = 0;
+  transfer_status.processed = 0;
+  transfer_status.total = 0;
+  transfer_status.show_notification = false;
+  event = std::make_unique<extensions::Event>(
+      extensions::events::FILE_MANAGER_PRIVATE_ON_FILE_TRANSFERS_UPDATED,
+      file_manager_private::OnFileTransfersUpdated::kEventName,
+      file_manager_private::OnFileTransfersUpdated::Create(transfer_status));
+
+  // Send the transfers updated event.
+  GetSystemNotificationManager()->HandleEvent(*event.get());
+  // Get the number of notifications from the NotificationDisplayService.
+  NotificationDisplayServiceFactory::GetForProfile(GetProfile())
+      ->GetDisplayed(base::BindOnce(
+          &SystemNotificationManagerTest::GetNotificationsCallback,
+          weak_ptr_factory_.GetWeakPtr()));
+  // Check: We have no notification.
+  ASSERT_EQ(0u, notification_count);
+}
+
 TEST_F(SystemNotificationManagerTest, SyncProgressMultiple) {
   // Setup a sync progress status object.
   file_manager_private::FileTransferStatus transfer_status;
@@ -1571,6 +1617,7 @@ TEST_F(SystemNotificationManagerTest, SyncProgressMultiple) {
       "filesystem:chrome://file-manager/drive/MyDrive-test-user/file.txt";
   transfer_status.processed = 0;
   transfer_status.total = 100;
+  transfer_status.show_notification = true;
   std::unique_ptr<extensions::Event> event =
       std::make_unique<extensions::Event>(
           extensions::events::FILE_MANAGER_PRIVATE_ON_FILE_TRANSFERS_UPDATED,
@@ -1605,6 +1652,7 @@ TEST_F(SystemNotificationManagerTest, PinProgressSingle) {
       "filesystem:chrome://file-manager/drive/MyDrive-test-user/file.txt";
   pin_status.processed = 0;
   pin_status.total = 100;
+  pin_status.show_notification = true;
   std::unique_ptr<extensions::Event> event =
       std::make_unique<extensions::Event>(
           extensions::events::FILE_MANAGER_PRIVATE_ON_PIN_TRANSFERS_UPDATED,
@@ -1688,6 +1736,7 @@ TEST_F(SystemNotificationManagerTest, PinProgressMultiple) {
       "filesystem:chrome://file-manager/drive/MyDrive-test-user/file.txt";
   pin_status.processed = 0;
   pin_status.total = 100;
+  pin_status.show_notification = true;
   std::unique_ptr<extensions::Event> event =
       std::make_unique<extensions::Event>(
           extensions::events::FILE_MANAGER_PRIVATE_ON_PIN_TRANSFERS_UPDATED,

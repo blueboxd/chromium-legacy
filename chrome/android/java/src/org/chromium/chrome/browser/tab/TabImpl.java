@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -50,7 +50,6 @@ import org.chromium.chrome.browser.tab.TabUtils.LoadIfNeededCaller;
 import org.chromium.chrome.browser.tab.TabUtils.UseDesktopUserAgentCaller;
 import org.chromium.chrome.browser.tab.state.CriticalPersistedTabData;
 import org.chromium.chrome.browser.tab.state.SerializedCriticalPersistedTabData;
-import org.chromium.chrome.browser.ui.TabObscuringHandler;
 import org.chromium.chrome.browser.ui.native_page.FrozenNativePage;
 import org.chromium.chrome.browser.ui.native_page.NativePage;
 import org.chromium.chrome.browser.vr.VrModuleProvider;
@@ -572,6 +571,7 @@ public class TabImpl implements Tab, TabObscuringHandler.Observer {
             return true;
         }
 
+        RequestDesktopUtils.maybeRestoreUserAgentOnSiteSettingsDowngrade(this);
         switchUserAgentIfNeeded(UseDesktopUserAgentCaller.LOAD_IF_NEEDED + caller);
         restoreIfNeeded();
         return true;
@@ -819,13 +819,13 @@ public class TabImpl implements Tab, TabObscuringHandler.Observer {
     // TabObscuringHandler.Observer
 
     @Override
-    public void updateObscured(boolean isObscured) {
+    public void updateObscured(boolean obscureTabContent, boolean obscureToolbar) {
         // Update whether or not the current native tab and/or web contents are
         // currently visible (from an accessibility perspective), or whether
         // they're obscured by another view.
         View view = getView();
         if (view != null) {
-            int importantForAccessibility = isObscured
+            int importantForAccessibility = obscureTabContent
                     ? View.IMPORTANT_FOR_ACCESSIBILITY_NO_HIDE_DESCENDANTS
                     : View.IMPORTANT_FOR_ACCESSIBILITY_YES;
             if (view.getImportantForAccessibility() != importantForAccessibility) {
@@ -836,7 +836,7 @@ public class TabImpl implements Tab, TabObscuringHandler.Observer {
 
         WebContentsAccessibility wcax = getWebContentsAccessibility(getWebContents());
         if (wcax != null) {
-            boolean isWebContentObscured = isObscured || isShowingCustomView();
+            boolean isWebContentObscured = obscureTabContent || isShowingCustomView();
             wcax.setObscuredByAnotherView(isWebContentObscured);
         }
     }
@@ -1655,16 +1655,20 @@ public class TabImpl implements Tab, TabObscuringHandler.Observer {
         // INHERIT means use the same UA that was used last time.
         @UserAgentOverrideOption
         int userAgentOverrideOption = UserAgentOverrideOption.INHERIT;
-        // Do not override UA if there is a tab level setting.
-        if (tabUserAgent != TabUserAgent.DEFAULT) {
-            recordHistogramUseDesktopUserAgent(currentRequestDesktopSite);
-            return userAgentOverrideOption;
-        }
 
         Profile profile = IncognitoUtils.getProfileFromWindowAndroid(mWindowAndroid, isIncognito());
         if (url == null && webContents != null) {
             url = webContents.getVisibleUrl();
         }
+
+        // Do not override UA if there is a tab level setting.
+        if (tabUserAgent != TabUserAgent.DEFAULT) {
+            recordHistogramUseDesktopUserAgent(currentRequestDesktopSite);
+            RequestDesktopUtils.maybeUpgradeTabLevelDesktopSiteSetting(
+                    this, profile, tabUserAgent, url);
+            return userAgentOverrideOption;
+        }
+
         boolean shouldRequestDesktopSite =
                 TabUtils.readRequestDesktopSiteContentSettings(profile, url);
         if (!shouldRequestDesktopSite

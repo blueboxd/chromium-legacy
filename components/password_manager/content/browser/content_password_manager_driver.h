@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -58,7 +58,7 @@ class ContentPasswordManagerDriver
 
   // PasswordManagerDriver implementation.
   int GetId() const override;
-  void FillPasswordForm(
+  void SetPasswordFillData(
       const autofill::PasswordFormFillData& form_data) override;
   void InformNoSavedCredentials(
       bool should_show_popup_without_passwords) override;

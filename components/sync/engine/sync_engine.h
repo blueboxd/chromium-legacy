@@ -1,4 +1,4 @@
-// Copyright 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -182,7 +182,7 @@ class SyncEngine : public ModelTypeConfigurer {
   // Enables/Disables invalidations for session sync related datatypes.
   virtual void SetInvalidationsForSessionsEnabled(bool enabled) = 0;
 
-  // Returns a ListValue representing Nigori node.
+  // Returns a Value::List representing Nigori node.
   virtual void GetNigoriNodeForDebugging(AllNodesCallback callback) = 0;
 };
 

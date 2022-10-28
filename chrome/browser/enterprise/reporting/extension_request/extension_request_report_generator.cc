@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -98,9 +98,9 @@ ExtensionRequestReportGenerator::GenerateForProfile(Profile* profile) {
       extension_urls::GetDefaultWebstoreUpdateUrl().spec();
 
   const base::Value::Dict& pending_requests =
-      profile->GetPrefs()->GetValueDict(prefs::kCloudExtensionRequestIds);
+      profile->GetPrefs()->GetDict(prefs::kCloudExtensionRequestIds);
   const base::Value::Dict& uploaded_requests =
-      profile->GetPrefs()->GetValueDict(kCloudExtensionRequestUploadedIds);
+      profile->GetPrefs()->GetDict(kCloudExtensionRequestUploadedIds);
 
   for (auto it : pending_requests) {
     const std::string& extension_id = it.first;

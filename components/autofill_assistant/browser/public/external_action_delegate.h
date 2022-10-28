@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -20,23 +20,30 @@ class ExternalActionDelegate {
       base::RepeatingCallback<void(const external::ElementConditionsUpdate&)>;
 
   virtual ~ExternalActionDelegate() = default;
+
   // Called when the script reaches an external action.
   // The |start_dom_checks_callback| can optionally be called to start the DOM
   // checks. This will allow interrupts to trigger (if the action itself allows
   // them). Calling |end_action_callback| will end the external action and
   // resume the execution of the rest of the script.
+  // If |is_interrupt| is true, this action is part of an interrupt script.
+  //
+  // Note that if an ExternalAction allows interrupts, it's possible to receive
+  // an |OnActionRequested| call before the |end_action_callback| for the
+  // previous action has been called.
   virtual void OnActionRequested(
       const external::Action& action_info,
+      bool is_interrupt,
       base::OnceCallback<void(DomUpdateCallback)> start_dom_checks_callback,
       base::OnceCallback<void(const external::Result&)>
           end_action_callback) = 0;
 
   // Called before starting the execution of an interrupt.
-  virtual void OnInterruptStarted(){};
+  virtual void OnInterruptStarted() {}
 
   // Called after finishing to execute an interrupt, before resuming the
   // execution of the main script.
-  virtual void OnInterruptFinished(){};
+  virtual void OnInterruptFinished() {}
 
   // Called to notify a change in the configuration of the touchable area.
   //
@@ -55,7 +62,7 @@ class ExternalActionDelegate {
   virtual void OnTouchableAreaChanged(
       const RectF& visual_viewport,
       const std::vector<RectF>& touchable_areas,
-      const std::vector<RectF>& restricted_areas){};
+      const std::vector<RectF>& restricted_areas) {}
 };
 
 }  // namespace autofill_assistant

@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -30,6 +30,7 @@
 #include "components/services/app_service/public/cpp/icon_types.h"
 #include "components/services/app_service/public/cpp/intent.h"
 #include "components/services/app_service/public/cpp/intent_filter.h"
+#include "components/services/app_service/public/cpp/menu.h"
 #include "components/services/app_service/public/cpp/permission.h"
 #include "components/services/app_service/public/cpp/preferred_app.h"
 #include "components/services/app_service/public/cpp/preferred_apps_impl.h"
@@ -169,22 +170,21 @@ class AppServiceProxyBase : public KeyedService,
   // app (e.g. a middle click indicating opening a background tab).
   // |launch_source| is the possible app launch sources. |window_info| is the
   // window information to launch an app, e.g. display_id, window bounds.
-  void LaunchAppWithIntent(
-      const std::string& app_id,
-      int32_t event_flags,
-      IntentPtr intent,
-      LaunchSource launch_source,
-      WindowInfoPtr window_info = nullptr,
-      base::OnceCallback<void(bool)> callback = base::DoNothing());
+  virtual void LaunchAppWithIntent(const std::string& app_id,
+                                   int32_t event_flags,
+                                   IntentPtr intent,
+                                   LaunchSource launch_source,
+                                   WindowInfoPtr window_info,
+                                   base::OnceCallback<void(bool)> callback);
   // TODO(crbug.com/1253250): Will be removed soon. Please use the non mojom
   // interface.
-  void LaunchAppWithIntent(
+  virtual void LaunchAppWithIntent(
       const std::string& app_id,
       int32_t event_flags,
       apps::mojom::IntentPtr intent,
       apps::mojom::LaunchSource launch_source,
-      apps::mojom::WindowInfoPtr window_info = nullptr,
-      apps::mojom::Publisher::LaunchAppWithIntentCallback callback = {});
+      apps::mojom::WindowInfoPtr window_info,
+      apps::mojom::Publisher::LaunchAppWithIntentCallback callback);
 
   // Launches an app for the given |app_id|, passing |url| to the app.
   // |event_flags| provides additional context about the action which launch the
@@ -244,6 +244,12 @@ class AppServiceProxyBase : public KeyedService,
 
   // Returns the menu items for the given |app_id|. |display_id| is the id of
   // the display from which the app is launched.
+  void GetMenuModel(const std::string& app_id,
+                    MenuType menu_type,
+                    int64_t display_id,
+                    base::OnceCallback<void(MenuItems)> callback);
+  // TODO(crbug.com/1253250): Will be removed soon. Please use the non mojom
+  // interface.
   void GetMenuModel(const std::string& app_id,
                     apps::mojom::MenuType menu_type,
                     int64_t display_id,
@@ -322,6 +328,9 @@ class AppServiceProxyBase : public KeyedService,
   // Sets the window display mode for the app identified by `app_id`.
   // `window_mode` represents how the app will be open in (e.g. in a
   // standalone window or in a browser tab).
+  void SetWindowMode(const std::string& app_id, WindowMode window_mode);
+  // TODO(crbug.com/1253250): Will be removed soon. Please use the non mojom
+  // interface.
   void SetWindowMode(const std::string& app_id,
                      apps::mojom::WindowMode window_mode);
 
@@ -329,6 +338,10 @@ class AppServiceProxyBase : public KeyedService,
   virtual void OnApps(std::vector<AppPtr> deltas,
                       AppType app_type,
                       bool should_notify_initialized);
+
+  // Called by an app publisher to inform the proxy of a change in
+  // CapabilityAccess.
+  void OnCapabilityAccesses(std::vector<CapabilityAccessPtr> deltas);
 
  protected:
   // An adapter, presenting an IconLoader interface based on the underlying

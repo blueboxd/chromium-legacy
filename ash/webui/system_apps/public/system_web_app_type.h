@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -55,12 +55,11 @@ enum class SystemWebAppType {
   // A System Web App that launches on Demo Mode startup, to display animated
   // content that highlights various features of ChromeOS
   //
-  // Currently this SWA is only enabled in unofficial builds while still under
-  // development. Prefer to file bugs to the internal Demo Mode component:
+  // Prefer to file bugs to the internal Demo Mode component:
   // b/components/812312
   //
   // Source: //ash/webui/demo_mode_app_ui/
-  // Contact: jacksontadie@google.com, drcrash@chromium.org
+  // Contact: cros-demo-mode-eng@google.com
   DEMO_MODE = 18,
 
   // OS FEEDBACK is a SWA that provides step by step guides to submit a
@@ -102,13 +101,13 @@ enum class SystemWebAppType {
   // contact: skuhne@google.com
   OS_FLAGS = 23,
 
-  // Facial ML app aims to provide UI interactions to help Facial ML team
-  // train their models on CrOS. This is an internal app that is only enabled
-  // on pre-released Chromebooks with appropriate hardware.
+  // Face ML app aims to provide UI interactions to help Face ML team train
+  // their models on CrOS. This is an internal app that is only enabled on
+  // pre-released Chromebooks with appropriate hardware and OS support.
   //
-  // Source: //ash/webui/facial_ml_app_ui/
+  // Source: //ash/webui/face_ml_app_ui/
   // contact: googleo@google.com
-  FACIAL_ML = 24,
+  FACE_ML = 24,
 
   // When adding a new System App, remember to:
   //
@@ -145,7 +144,7 @@ enum class SystemWebAppType {
   //
   // 7. Have one of System Web App Platform owners review the CL.
   //    See: //ash/webui/PLATFORM_OWNERS
-  kMaxValue = FACIAL_ML,
+  kMaxValue = FACE_ML,
 };
 
 }  // namespace ash

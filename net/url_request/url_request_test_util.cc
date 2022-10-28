@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -19,8 +19,8 @@
 #include "net/cert/cert_verifier.h"
 #include "net/cert/ct_policy_enforcer.h"
 #include "net/cert/do_nothing_ct_verifier.h"
-#include "net/cookies/same_party_context.h"
 #include "net/dns/mock_host_resolver.h"
+#include "net/first_party_sets/same_party_context.h"
 #include "net/http/http_network_session.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_server_properties.h"

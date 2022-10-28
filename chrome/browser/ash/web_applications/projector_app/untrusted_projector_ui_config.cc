@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -42,6 +42,8 @@ void ChromeUntrustedProjectorUIDelegate::PopulateLoadTimeData(
       ash::features::IsProjectorLocalPlaybackEnabled() &&
           // The local playback feature depends on the file handling API.
           base::FeatureList::IsEnabled(blink::features::kFileHandlingAPI));
+  source->AddBoolean("isReportToCrash2Enabled",
+                     ash::features::IsProjectorWebReportCrashEnabled());
   source->AddString("appLocale", g_browser_process->GetApplicationLocale());
 }
 

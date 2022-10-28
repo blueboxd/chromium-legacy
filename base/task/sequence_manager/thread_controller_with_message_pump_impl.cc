@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -155,10 +155,8 @@ void ThreadControllerWithMessagePumpImpl::SetTimerSlack(
 }
 
 void ThreadControllerWithMessagePumpImpl::WillQueueTask(
-    PendingTask* pending_task,
-    const char* task_queue_name) {
-  task_annotator_.WillQueueTask("SequenceManager PostTask", pending_task,
-                                task_queue_name);
+    PendingTask* pending_task) {
+  task_annotator_.WillQueueTask("SequenceManager PostTask", pending_task);
 }
 
 void ThreadControllerWithMessagePumpImpl::ScheduleWork() {
@@ -427,6 +425,8 @@ absl::optional<WakeUp> ThreadControllerWithMessagePumpImpl::DoWorkImpl(
                               if (selected_task->task_execution_trace_logger)
                                 selected_task->task_execution_trace_logger.Run(
                                     ctx, selected_task->task);
+                              SequenceManagerImpl::EmitTaskPriority(
+                                  ctx, selected_task->priority);
                             });
 
     LazyNow lazy_now_after_run_task(time_source_);

@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -62,6 +62,10 @@ class ChromeExtensionsAPIClient : public ExtensionsAPIClient {
       WebViewGuest* web_view_guest) const override;
   WebViewPermissionHelperDelegate* CreateWebViewPermissionHelperDelegate(
       WebViewPermissionHelper* web_view_permission_helper) const override;
+#if BUILDFLAG(IS_CHROMEOS)
+  std::unique_ptr<ConsentProvider> CreateConsentProvider(
+      content::BrowserContext* browser_context) const override;
+#endif  // BUILDFLAG(IS_CHROMEOS)
   scoped_refptr<ContentRulesRegistry> CreateContentRulesRegistry(
       content::BrowserContext* browser_context,
       RulesCacheDelegate* cache_delegate) const override;

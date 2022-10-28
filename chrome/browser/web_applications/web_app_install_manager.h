@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -66,12 +66,6 @@ class WebAppInstallManager final : public SyncInstallDelegate {
                      WebAppSyncBridge* sync_bridge,
                      WebAppTranslationManager* translation_manager);
 
-  // Loads |web_app_url| in a new WebContents and determines whether it has a
-  // valid manifest. Calls |callback| with results.
-  void LoadWebAppAndCheckManifest(const GURL& web_app_url,
-                                  webapps::WebappInstallSource install_source,
-                                  WebAppManifestCheckCallback callback);
-
   void InstallSubApp(const AppId& parent_app_id,
                      const GURL& install_url,
                      const AppId& expected_app_id,
@@ -124,6 +118,30 @@ class WebAppInstallManager final : public SyncInstallDelegate {
   void TakeCommandErrorLog(base::PassKey<WebAppCommandManager>,
                            base::Value log);
 
+  void SetUninstallCallbackForTesting(
+      RepeatingUninstallCallback uninstall_callback_for_testing);
+
+  // Used for testing from the WebAppSyncBridge as a SyncInstallDelegate.
+  // TODO(crbug.com/1298130): Remove these testing callbacks once
+  // SyncInstallDelegate has been deprecated and all sync functions directly
+  // invoke commands.
+  using InstallWebAppsAfterSyncDelegate =
+      base::RepeatingCallback<void(std::vector<WebApp*> web_apps,
+                                   RepeatingInstallCallback callback)>;
+  void SetInstallWebAppsAfterSyncDelegateForTesting(
+      InstallWebAppsAfterSyncDelegate delegate);
+
+  using UninstallFromSyncDelegate =
+      base::RepeatingCallback<void(const std::vector<AppId>& web_apps,
+                                   RepeatingUninstallCallback callback)>;
+  void SetUninstallFromSyncDelegateForTesting(
+      UninstallFromSyncDelegate delegate);
+
+  using RetryIncompleteUninstallsDelegate = base::RepeatingCallback<void(
+      const base::flat_set<AppId>& apps_to_uninstall)>;
+  void SetRetryIncompleteUninstallsDelegateForTesting(
+      RetryIncompleteUninstallsDelegate delegate);
+
  private:
   FRIEND_TEST_ALL_PREFIXES(WebAppInstallManagerTest,
                            TaskQueueWebContentsReadyRace);
@@ -150,13 +168,6 @@ class WebAppInstallManager final : public SyncInstallDelegate {
                              OnceInstallCallback callback,
                              const AppId& app_id,
                              webapps::InstallResultCode code);
-
-  void OnLoadWebAppAndCheckManifestCompleted(
-      WebAppInstallTask* task,
-      WebAppManifestCheckCallback callback,
-      std::unique_ptr<content::WebContents> web_contents,
-      const AppId& app_id,
-      webapps::InstallResultCode code);
 
   content::WebContents* EnsureWebContentsCreated();
 
@@ -208,6 +219,13 @@ class WebAppInstallManager final : public SyncInstallDelegate {
 
   // A single WebContents, shared between tasks in |task_queue_|.
   std::unique_ptr<content::WebContents> web_contents_;
+
+  RepeatingUninstallCallback uninstall_callback_for_testing_;
+
+  InstallWebAppsAfterSyncDelegate install_web_apps_after_sync_delegate_;
+  UninstallFromSyncDelegate
+      uninstall_from_sync_before_registry_update_delegate_;
+  RetryIncompleteUninstallsDelegate retry_incomplete_uninstalls_delegate_;
 
   bool started_ = false;
 

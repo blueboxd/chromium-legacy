@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -63,6 +63,11 @@ class FinchStarterHeuristicConfig : public StarterHeuristicConfig {
       StarterPlatformDelegate* platform_delegate,
       content::BrowserContext* browser_context) const override;
   const base::flat_set<std::string>& GetDenylistedDomains() const override;
+
+ protected:
+  // Default constructor only accessible by subclasses.
+  FinchStarterHeuristicConfig();
+  void InitFromString(const std::string& parameters);
 
  private:
   void InitFromTrialParams(

@@ -13,6 +13,7 @@
 #include "base/callback_helpers.h"
 #include "base/check_op.h"
 #include "base/command_line.h"
+#include "base/functional/overloaded.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
@@ -104,8 +105,8 @@ class AttributionReportScheduler : public ReportSchedulerTimer::Delegate {
     attribution_storage_.AsyncCall(&AttributionStorage::GetNextReportTime)
         .WithArgs(now)
         .Then(std::move(callback));
-  };
-  void OnReportingTimeReached(base::Time now) override { send_reports_.Run(); };
+  }
+  void OnReportingTimeReached(base::Time now) override { send_reports_.Run(); }
   void AdjustOfflineReportTimes(
       base::OnceCallback<void(absl::optional<base::Time>)> maybe_set_timer_cb)
       override {
@@ -116,7 +117,7 @@ class AttributionReportScheduler : public ReportSchedulerTimer::Delegate {
     attribution_storage_
         .AsyncCall(&AttributionStorage::AdjustOfflineReportTimes)
         .Then(std::move(maybe_set_timer_cb));
-  };
+  }
 
   base::RepeatingClosure send_reports_;
   base::SequenceBound<AttributionStorage>& attribution_storage_;
@@ -248,12 +249,12 @@ std::unique_ptr<AttributionStorageDelegate> MakeStorageDelegate() {
 
 bool IsOperationAllowed(
     StoragePartitionImpl* storage_partition,
-    ContentBrowserClient::ConversionMeasurementOperation operation,
+    ContentBrowserClient::AttributionReportingOperation operation,
     const url::Origin* source_origin,
     const url::Origin* destination_origin,
     const url::Origin* reporting_origin) {
   DCHECK(storage_partition);
-  return GetContentClient()->browser()->IsConversionMeasurementOperationAllowed(
+  return GetContentClient()->browser()->IsAttributionReportingOperationAllowed(
       storage_partition->browser_context(), operation, source_origin,
       destination_origin, reporting_origin);
 }
@@ -301,8 +302,8 @@ bool AttributionManagerImpl::IsReportAllowed(
       report.attribution_info().source.common_info();
   return IsOperationAllowed(
       storage_partition_.get(),
-      ContentBrowserClient::ConversionMeasurementOperation::kReport,
-      &common_info.impression_origin(), &common_info.conversion_origin(),
+      ContentBrowserClient::AttributionReportingOperation::kReport,
+      &common_info.source_origin(), &common_info.destination_origin(),
       &common_info.reporting_origin());
 }
 
@@ -402,12 +403,8 @@ void AttributionManagerImpl::HandleSource(StorableSource source) {
 }
 
 void AttributionManagerImpl::StoreSource(StorableSource source) {
-  // Only retrieve deactivated sources if an observer is there to hear it.
-  // Technically, an observer could be registered between the time the async
-  // call is made and the time the response is received, but this is unlikely.
-  int deactivated_source_return_limit = observers_.empty() ? 0 : 50;
   attribution_storage_.AsyncCall(&AttributionStorage::StoreSource)
-      .WithArgs(source, deactivated_source_return_limit)
+      .WithArgs(source)
       .Then(base::BindOnce(&AttributionManagerImpl::OnSourceStored,
                            weak_factory_.GetWeakPtr(), std::move(source)));
 }
@@ -424,10 +421,6 @@ void AttributionManagerImpl::OnSourceStored(
   scheduler_timer_.MaybeSet(result.min_fake_report_time);
 
   NotifySourcesChanged();
-
-  for (const auto& deactivated_source : result.deactivated_sources) {
-    NotifySourceDeactivated(deactivated_source);
-  }
 }
 
 void AttributionManagerImpl::HandleTrigger(AttributionTrigger trigger) {
@@ -459,25 +452,24 @@ void AttributionManagerImpl::MaybeEnqueueEvent(SourceOrTrigger event) {
 }
 
 void AttributionManagerImpl::ProcessEvents() {
-  struct DebugCookieOriginGetter {
-    const url::Origin* operator()(const StorableSource& source) const {
-      return source.common_info().debug_key().has_value()
-                 ? &source.common_info().reporting_origin()
-                 : nullptr;
-    }
-
-    const url::Origin* operator()(const AttributionTrigger& trigger) const {
-      return trigger.debug_key().has_value() ? &trigger.reporting_origin()
-                                             : nullptr;
-    }
-  };
-
   // Process as many events not requiring a cookie check (synchronously) as
   // possible. Once reaching the first to require a cookie check, start the
   // async check and stop processing further events.
   while (!pending_events_.empty()) {
     const url::Origin* cookie_origin =
-        absl::visit(DebugCookieOriginGetter(), pending_events_.front());
+        absl::visit(base::Overloaded{
+                        [](const StorableSource& source) {
+                          return source.common_info().debug_key().has_value()
+                                     ? &source.common_info().reporting_origin()
+                                     : nullptr;
+                        },
+                        [](const AttributionTrigger& trigger) {
+                          return trigger.debug_key().has_value()
+                                     ? &trigger.reporting_origin()
+                                     : nullptr;
+                        },
+                    },
+                    pending_events_.front());
     if (cookie_origin) {
       cookie_checker_->IsDebugCookieSet(
           *cookie_origin,
@@ -500,63 +492,59 @@ void AttributionManagerImpl::ProcessEvents() {
 void AttributionManagerImpl::ProcessNextEvent(bool is_debug_cookie_set) {
   DCHECK(!pending_events_.empty());
 
-  struct EventStorer {
-    raw_ptr<AttributionManagerImpl> manager;
-    bool is_debug_cookie_set;
-
-    void operator()(StorableSource source) {
-      CommonSourceInfo& common_info = source.common_info();
-
-      bool allowed = IsOperationAllowed(
-          manager->storage_partition_.get(),
-          ContentBrowserClient::ConversionMeasurementOperation::kImpression,
-          &common_info.impression_origin(),
-          /*destination_origin=*/nullptr, &common_info.reporting_origin());
-      RecordRegisterImpressionAllowed(allowed);
-      if (!allowed) {
-        manager->OnSourceStored(
-            std::move(source),
-            AttributionStorage::StoreSourceResult(
-                StorableSource::Result::kProhibitedByBrowserPolicy));
-        return;
-      }
-
-      if (!is_debug_cookie_set)
-        common_info.ClearDebugKey();
-
-      manager->StoreSource(std::move(source));
-    }
-
-    void operator()(AttributionTrigger trigger) {
-      bool allowed = IsOperationAllowed(
-          manager->storage_partition_.get(),
-          ContentBrowserClient::ConversionMeasurementOperation::kConversion,
-          /*source_origin=*/nullptr, &trigger.destination_origin(),
-          &trigger.reporting_origin());
-      RecordRegisterConversionAllowed(allowed);
-      if (!allowed) {
-        manager->OnReportStored(
-            std::move(trigger),
-            CreateReportResult(/*trigger_time=*/base::Time::Now(),
-                               AttributionTrigger::EventLevelResult::
-                                   kProhibitedByBrowserPolicy,
-                               AttributionTrigger::AggregatableResult::
-                                   kProhibitedByBrowserPolicy));
-        return;
-      }
-
-      if (!is_debug_cookie_set)
-        trigger.ClearDebugKey();
-
-      manager->StoreTrigger(std::move(trigger));
-    }
-  };
-
   SourceOrTrigger event = std::move(pending_events_.front());
   pending_events_.pop_front();
 
   absl::visit(
-      EventStorer{.manager = this, .is_debug_cookie_set = is_debug_cookie_set},
+      base::Overloaded{
+          [&](StorableSource source) {
+            CommonSourceInfo& common_info = source.common_info();
+
+            bool allowed = IsOperationAllowed(
+                this->storage_partition_.get(),
+                ContentBrowserClient::AttributionReportingOperation::kSource,
+                &common_info.source_origin(),
+                /*destination_origin=*/nullptr,
+                &common_info.reporting_origin());
+            RecordRegisterImpressionAllowed(allowed);
+            if (!allowed) {
+              this->OnSourceStored(
+                  std::move(source),
+                  AttributionStorage::StoreSourceResult(
+                      StorableSource::Result::kProhibitedByBrowserPolicy));
+              return;
+            }
+
+            if (!is_debug_cookie_set)
+              common_info.ClearDebugKey();
+
+            this->StoreSource(std::move(source));
+          },
+
+          [&](AttributionTrigger trigger) {
+            bool allowed = IsOperationAllowed(
+                this->storage_partition_.get(),
+                ContentBrowserClient::AttributionReportingOperation::kTrigger,
+                /*source_origin=*/nullptr, &trigger.destination_origin(),
+                &trigger.reporting_origin());
+            RecordRegisterConversionAllowed(allowed);
+            if (!allowed) {
+              this->OnReportStored(
+                  std::move(trigger),
+                  CreateReportResult(/*trigger_time=*/base::Time::Now(),
+                                     AttributionTrigger::EventLevelResult::
+                                         kProhibitedByBrowserPolicy,
+                                     AttributionTrigger::AggregatableResult::
+                                         kProhibitedByBrowserPolicy));
+              return;
+            }
+
+            if (!is_debug_cookie_set)
+              trigger.ClearDebugKey();
+
+            this->StoreTrigger(std::move(trigger));
+          },
+      },
       std::move(event));
 }
 
@@ -904,12 +892,6 @@ void AttributionManagerImpl::NotifyReportsChanged(
     AttributionReport::ReportType report_type) {
   for (auto& observer : observers_)
     observer.OnReportsChanged(report_type);
-}
-
-void AttributionManagerImpl::NotifySourceDeactivated(
-    const StoredSource& source) {
-  for (auto& observer : observers_)
-    observer.OnSourceDeactivated(source);
 }
 
 }  // namespace content

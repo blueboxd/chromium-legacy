@@ -7,7 +7,12 @@
 #include "build/build_config.h"
 #include "net/socket/datagram_client_socket.h"
 #include "net/socket/tcp_client_socket.h"
+#include "net/socket/udp_client_socket.h"
 #include "services/network/tcp_client_socket_brokered.h"
+
+#if BUILDFLAG(IS_WIN)
+#include "services/network/broker_helper_win.h"
+#endif
 
 namespace net {
 
@@ -34,8 +39,8 @@ BrokeredClientSocketFactory::CreateDatagramClientSocket(
     net::DatagramSocket::BindType bind_type,
     net::NetLog* net_log,
     const net::NetLogSource& source) {
-  NOTIMPLEMENTED();
-  return nullptr;
+  // TODO(liza): Call into the broker rather than directly to net.
+  return std::make_unique<net::UDPClientSocket>(bind_type, net_log, source);
 }
 
 std::unique_ptr<net::TransportClientSocket>
@@ -45,9 +50,15 @@ BrokeredClientSocketFactory::CreateTransportClientSocket(
     net::NetworkQualityEstimator* network_quality_estimator,
     net::NetLog* net_log,
     const net::NetLogSource& source) {
-  return std::make_unique<TCPClientSocketBrokered>(
+  if (ShouldBroker(addresses)) {
+    return std::make_unique<TCPClientSocketBrokered>(
+        addresses, std::move(socket_performance_watcher),
+        network_quality_estimator, net_log, source, this);
+  }
+
+  return std::make_unique<net::TCPClientSocket>(
       addresses, std::move(socket_performance_watcher),
-      network_quality_estimator, net_log, source, this);
+      network_quality_estimator, net_log, source);
 }
 
 std::unique_ptr<net::SSLClientSocket>
@@ -56,14 +67,28 @@ BrokeredClientSocketFactory::CreateSSLClientSocket(
     std::unique_ptr<net::StreamSocket> stream_socket,
     const net::HostPortPair& host_and_port,
     const net::SSLConfig& ssl_config) {
-  NOTIMPLEMENTED();
-  return nullptr;
+  // TODO(liza): Call into the broker rather than directly to net.
+  return context->CreateSSLClientSocket(std::move(stream_socket), host_and_port,
+                                        ssl_config);
 }
 
 void BrokeredClientSocketFactory::BrokerCreateTcpSocket(
     net::AddressFamily address_family,
     mojom::SocketBroker::CreateTcpSocketCallback callback) {
   socket_broker_->CreateTcpSocket(address_family, std::move(callback));
+}
+
+bool BrokeredClientSocketFactory::ShouldBroker(
+    const net::AddressList& addresses) const {
+#if BUILDFLAG(IS_WIN)
+  for (const auto& address : addresses) {
+    if (broker_helper_.ShouldBroker(address.address()))
+      return true;
+  }
+  return false;
+#else
+  return true;
+#endif
 }
 
 }  // namespace network

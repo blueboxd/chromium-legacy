@@ -1,8 +1,8 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {CrPolicyIndicatorType} from '//resources/cr_elements/policy/cr_policy_indicator_behavior.m.js';
+import {CrPolicyIndicatorType} from '//resources/cr_elements/policy/cr_policy_indicator_behavior.js';
 import {AboutPageBrowserProxyImpl, BrowserChannel, DeviceNameBrowserProxyImpl, DeviceNameState, LifetimeBrowserProxyImpl, Router, routes, SetDeviceNameResult, UpdateStatus} from 'chrome://os-settings/chromeos/os_settings.js';
 import {webUIListenerCallback} from 'chrome://resources/js/cr.m.js';
 import {PromiseResolver} from 'chrome://resources/js/promise_resolver.m.js';

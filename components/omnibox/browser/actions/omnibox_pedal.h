@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -176,6 +176,10 @@ class OmniboxPedal : public OmniboxAction {
   };
 
   OmniboxPedal(OmniboxPedalId id, LabelStrings strings, GURL url);
+
+  // Called after the OmniboxPedalProvider finishes loading all pedals data.
+  // This can be used to override implementation bits based on flags, etc.
+  virtual void OnLoaded();
 
   // Writes labels associated with this Pedal by taking named
   //  values from provided dictionary value |ui_strings|.

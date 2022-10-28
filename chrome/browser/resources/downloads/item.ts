@@ -1,16 +1,16 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 import './icons.html.js';
 import 'chrome://resources/cr_elements/cr_button/cr_button.js';
 import 'chrome://resources/cr_elements/cr_icon_button/cr_icon_button.js';
-import 'chrome://resources/cr_elements/cr_icons_css.m.js';
-import 'chrome://resources/cr_elements/hidden_style_css.m.js';
-import 'chrome://resources/cr_elements/icons.m.js';
-import 'chrome://resources/cr_elements/shared_vars_css.m.js';
+import 'chrome://resources/cr_elements/cr_icons.css.js';
+import 'chrome://resources/cr_elements/cr_hidden_style.css.js';
+import 'chrome://resources/cr_elements/icons.html.js';
+import 'chrome://resources/cr_elements/cr_shared_vars.css.js';
 import 'chrome://resources/js/action_link.js';
-import 'chrome://resources/cr_elements/action_link_css.m.js';
+import 'chrome://resources/cr_elements/action_link.css.js';
 import './strings.m.js';
 import 'chrome://resources/polymer/v3_0/iron-icon/iron-icon.js';
 import 'chrome://resources/polymer/v3_0/paper-progress/paper-progress.js';
@@ -18,11 +18,11 @@ import 'chrome://resources/polymer/v3_0/paper-styles/color.js';
 
 import {getToastManager} from 'chrome://resources/cr_elements/cr_toast/cr_toast_manager.js';
 import {assert} from 'chrome://resources/js/assert_ts.js';
-import {FocusRowBehavior} from 'chrome://resources/js/cr/ui/focus_row_behavior.m.js';
-import {focusWithoutInk} from 'chrome://resources/js/cr/ui/focus_without_ink.m.js';
+import {FocusRowMixin} from 'chrome://resources/js/cr/ui/focus_row_mixin.js';
+import {focusWithoutInk} from 'chrome://resources/js/cr/ui/focus_without_ink.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {HTMLEscape} from 'chrome://resources/js/util.m.js';
-import {beforeNextRender, mixinBehaviors, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {beforeNextRender, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {BrowserProxy} from './browser_proxy.js';
 import {DangerType, States} from './constants.js';
@@ -41,9 +41,7 @@ export interface DownloadsItemElement {
   };
 }
 
-const DownloadsItemElementBase =
-    mixinBehaviors([FocusRowBehavior], PolymerElement) as
-    {new (): PolymerElement & FocusRowBehavior};
+const DownloadsItemElementBase = FocusRowMixin(PolymerElement);
 
 export class DownloadsItemElement extends DownloadsItemElementBase {
   static get is() {
@@ -163,12 +161,12 @@ export class DownloadsItemElement extends DownloadsItemElementBase {
   private showProgress_: boolean;
   private useFileIcon_: boolean;
   private restoreFocusAfterCancel_: boolean = false;
-  overrideCustomEquivalent: boolean;
+  override overrideCustomEquivalent: boolean;
 
   constructor() {
     super();
 
-    /** Used by FocusRowBehavior. */
+    /** Used by FocusRowMixin. */
     this.overrideCustomEquivalent = true;
   }
 
@@ -184,8 +182,8 @@ export class DownloadsItemElement extends DownloadsItemElementBase {
     focusWithoutInk(this.$.remove);
   }
 
-  /** Overrides FocusRowBehavior. */
-  getCustomEquivalent(sampleElement: HTMLElement): HTMLElement|null {
+  /** Overrides FocusRowMixin. */
+  override getCustomEquivalent(sampleElement: HTMLElement): HTMLElement|null {
     if (sampleElement.getAttribute('focus-type') === 'cancel') {
       return this.shadowRoot!.querySelector('[focus-type="retry"]');
     }

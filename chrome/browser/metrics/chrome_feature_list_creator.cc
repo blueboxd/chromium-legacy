@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -133,7 +133,7 @@ void ChromeFeatureListCreator::CreatePrefService() {
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   // DBus must be initialized before constructing the policy connector.
-  CHECK(chromeos::DBusThreadManager::IsInitialized());
+  CHECK(ash::DBusThreadManager::IsInitialized());
   browser_policy_connector_ =
       std::make_unique<policy::BrowserPolicyConnectorAsh>();
 #else

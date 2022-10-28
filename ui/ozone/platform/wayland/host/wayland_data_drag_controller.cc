@@ -210,7 +210,7 @@ void WaylandDataDragController::OnDragSurfaceFrame(void* data,
   DCHECK(self);
   self->DrawIconInternal();
   self->icon_frame_callback_.reset();
-  self->connection_->ScheduleFlush();
+  self->connection_->Flush();
 }
 
 void WaylandDataDragController::DrawIconInternal() {
@@ -339,7 +339,8 @@ void WaylandDataDragController::OnDataSourceFinish(bool completed) {
 
   if (origin_window_) {
     origin_window_->OnDragSessionClose(
-        DndActionToDragOperation(data_source_->dnd_action()));
+        completed ? DndActionToDragOperation(data_source_->dnd_action())
+                  : DragOperation::kNone);
     // DnD handlers expect DragLeave to be sent for drag sessions that end up
     // with no data transfer (wl_data_source::cancelled event).
     if (!completed)
@@ -534,9 +535,9 @@ void WaylandDataDragController::SetUpWindowDraggingSessionIfNeeded(
 
 void WaylandDataDragController::DispatchPointerRelease() {
   DCHECK(pointer_grabber_for_window_drag_);
-  pointer_delegate_->OnPointerButtonEvent(ET_MOUSE_RELEASED,
-                                          EF_LEFT_MOUSE_BUTTON,
-                                          pointer_grabber_for_window_drag_);
+  pointer_delegate_->OnPointerButtonEvent(
+      ET_MOUSE_RELEASED, EF_LEFT_MOUSE_BUTTON, pointer_grabber_for_window_drag_,
+      wl::EventDispatchPolicy::kImmediate);
   pointer_grabber_for_window_drag_ = nullptr;
 }
 

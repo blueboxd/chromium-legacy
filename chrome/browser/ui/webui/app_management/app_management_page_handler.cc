@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -283,9 +283,14 @@ void AppManagementPageHandler::SetPermission(const std::string& app_id,
 void AppManagementPageHandler::SetResizeLocked(const std::string& app_id,
                                                bool locked) {
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-  apps::AppServiceProxyFactory::GetForProfile(profile_)->SetResizeLocked(
-      app_id, locked ? apps::mojom::OptionalBool::kTrue
-                     : apps::mojom::OptionalBool::kFalse);
+  if (base::FeatureList::IsEnabled(apps::kAppServiceWithoutMojom)) {
+    apps::AppServiceProxyFactory::GetForProfile(profile_)->SetResizeLocked(
+        app_id, locked);
+  } else {
+    apps::AppServiceProxyFactory::GetForProfile(profile_)->SetResizeLocked(
+        app_id, locked ? apps::mojom::OptionalBool::kTrue
+                       : apps::mojom::OptionalBool::kFalse);
+  }
 #else
   NOTREACHED();
 #endif
@@ -348,8 +353,14 @@ void AppManagementPageHandler::SetWindowMode(const std::string& app_id,
   if (provider->registrar().IsIsolated(app_id)) {
     NOTREACHED();
   } else {
-    apps::AppServiceProxyFactory::GetForProfile(profile_)->SetWindowMode(
-        app_id, apps::ConvertWindowModeToMojomWindowMode(window_mode));
+    if (base::FeatureList::IsEnabled(apps::kAppServiceWithoutMojom)) {
+      apps::AppServiceProxyFactory::GetForProfile(profile_)->SetWindowMode(
+          app_id, window_mode);
+
+    } else {
+      apps::AppServiceProxyFactory::GetForProfile(profile_)->SetWindowMode(
+          app_id, apps::ConvertWindowModeToMojomWindowMode(window_mode));
+    }
   }
 #endif
 }

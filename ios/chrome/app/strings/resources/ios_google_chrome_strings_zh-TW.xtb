@@ -78,6 +78,7 @@
 <translation id="5998675059699164418">貴機構要求你先登入才能使用 Chrome。</translation>
 <translation id="6054613632208573261">預設為使用 Chrome</translation>
 <translation id="6063091872902370735">允許登入 Chrome</translation>
+<translation id="6110625574506755980">部分 Chrome 功能將無法再使用。</translation>
 <translation id="6181930887571472871">改為使用 Chrome</translation>
 <translation id="6238746320622508509">讓 Chrome 鎖定你的無痕分頁。</translation>
 <translation id="6387994324662817823">密碼只會儲存至這部裝置上的 Google 密碼管理員。</translation>
@@ -90,11 +91,11 @@
 <translation id="6709398533399187136">你的密碼因為資料侵害事件遭到外洩，Google 密碼管理員建議你立即變更這組密碼。</translation>
 <translation id="6822673484890854830">Chrome 無法檢查所有密碼，請稍後再試。</translation>
 <translation id="6964931465519938134">現在只要在訊息、文件和其他應用程式中輕觸連結，即可透過 Chrome 開啟。</translation>
+<translation id="701356708427365932">瞭解新版 Chrome 選單</translation>
 <translation id="7059914902409643750">使用你專屬的 Chrome</translation>
 <translation id="7124339256045485976">取得 Chrome 最新版本</translation>
 <translation id="7161390184744336561">Google Chrome 版本過舊</translation>
 <translation id="7165736900384873061">開始使用 Google Chrome QR 掃描器</translation>
-<translation id="7172660552945675509">提示：<ph name="BEGIN_LINK" />將 Chrome 移至 Dock<ph name="END_LINK" /></translation>
 <translation id="7173660919484573146">Chrome 會使用 Face ID 來確保只有經過授權的使用者才能存取你的密碼。</translation>
 <translation id="7187993566681480880">在已登入帳戶的狀態下，能確保你持續享有安全無虞的 Chrome 使用體驗，也有助於提升其他 Google 應用程式的安全機制。</translation>
 <translation id="72119412072970160">你可以在 iPad 上的其他應用程式，使用儲存至 Google 密碼管理員的密碼。</translation>

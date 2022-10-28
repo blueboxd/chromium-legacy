@@ -1,19 +1,19 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #import "ios/chrome/browser/ui/settings/privacy/privacy_safe_browsing_mediator.h"
 
-#include "base/auto_reset.h"
-#include "base/mac/foundation_util.h"
+#import "base/auto_reset.h"
+#import "base/mac/foundation_util.h"
 #import "base/metrics/user_metrics.h"
 #import "base/metrics/user_metrics_action.h"
-#include "base/notreached.h"
-#include "components/prefs/pref_service.h"
-#include "components/safe_browsing/core/common/safe_browsing_prefs.h"
-#include "ios/chrome/browser/application_context.h"
+#import "base/notreached.h"
+#import "components/prefs/pref_service.h"
+#import "components/safe_browsing/core/common/safe_browsing_prefs.h"
+#import "ios/chrome/browser/application_context/application_context.h"
 #import "ios/chrome/browser/policy/policy_util.h"
-#include "ios/chrome/browser/pref_names.h"
+#import "ios/chrome/browser/prefs/pref_names.h"
 #import "ios/chrome/browser/ui/icons/chrome_symbol.h"
 #import "ios/chrome/browser/ui/list_model/list_model.h"
 #import "ios/chrome/browser/ui/settings/cells/settings_image_detail_text_item.h"
@@ -28,9 +28,9 @@
 #import "ios/chrome/browser/ui/ui_feature_flags.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
-#include "ios/chrome/grit/ios_chromium_strings.h"
-#include "ios/chrome/grit/ios_strings.h"
-#include "ui/base/l10n/l10n_util.h"
+#import "ios/chrome/grit/ios_chromium_strings.h"
+#import "ios/chrome/grit/ios_strings.h"
+#import "ui/base/l10n/l10n_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -218,11 +218,11 @@ typedef NS_ENUM(NSInteger, ItemType) {
       configurationWithPointSize:kSymbolImagePointSize
                           weight:UIImageSymbolWeightSemibold
                            scale:UIImageSymbolScaleMedium];
-  infoButtonItem.image =
+  infoButtonItem.iconImage =
       DefaultSymbolWithConfiguration(kCheckmarkSymbol, configuration);
-  infoButtonItem.tintColor = [self shouldItemTypeHaveCheckmark:type]
-                                 ? [UIColor colorNamed:kBlueColor]
-                                 : [UIColor clearColor];
+  infoButtonItem.iconTintColor = [self shouldItemTypeHaveCheckmark:type]
+                                     ? [UIColor colorNamed:kBlueColor]
+                                     : [UIColor clearColor];
   infoButtonItem.accessibilityIdentifier = accessibilityIdentifier;
   infoButtonItem.accessibilityDelegate = self;
 
@@ -258,9 +258,9 @@ typedef NS_ENUM(NSInteger, ItemType) {
     TableViewInfoButtonItem* infoButtonItem =
         base::mac::ObjCCast<TableViewInfoButtonItem>(item);
     ItemType type = static_cast<ItemType>(item.type);
-    infoButtonItem.tintColor = [self shouldItemTypeHaveCheckmark:type]
-                                   ? [UIColor colorNamed:kBlueColor]
-                                   : [UIColor clearColor];
+    infoButtonItem.iconTintColor = [self shouldItemTypeHaveCheckmark:type]
+                                       ? [UIColor colorNamed:kBlueColor]
+                                       : [UIColor clearColor];
   }
 
   if (notifyConsumer) {

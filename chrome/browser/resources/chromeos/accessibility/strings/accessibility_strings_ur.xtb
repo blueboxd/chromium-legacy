@@ -139,9 +139,9 @@ Chrome براؤزر مینو کھولنے کیلئے، Alt+F دبائیں۔</tra
 <translation id="1812527064848182527">لینڈ اسکیپ</translation>
 <translation id="1829244130665387512">صفحہ پر تلاش کریں</translation>
 <translation id="1834891354138622109">کالم</translation>
-<translation id="1845944666972354496">فعال کرنے کے لیے دو بار تھپتھپائیں</translation>
 <translation id="1846771122725914429">بلوٹوتھ بریل ڈسپلے</translation>
 <translation id="1852018405765032699">‏چار انگلیوں سے اسکرین پر تھپتھپانے سے ChromeVox مینوز کھل اور بند ہو جائیں گے۔ ان مینوز میں کمانڈز اور شارٹ کٹس کے بارے میں مفید معلومات شامل ہیں۔ مینوز کے کھل جانے کے بعد، آپ آئٹمز پر نیویگیٹ کرنے کے لیے ایک انگلی سے سوائپ کر سکتے ہیں اور آئٹمز کو فعال کرنے کے لیے دو بار تھپتھپا سکتے ہیں۔ جاری رکھنے کے لیے، چار انگلیوں سے اسکرین پر تھپتھپائیں۔</translation>
+<translation id="1864430479908918647">‏Search+Space دبائیں</translation>
 <translation id="1865601187525349519">متن کا اختتام</translation>
 <translation id="1876229593313240038">doc</translation>
 <translation id="1902396333223336119">سیل</translation>
@@ -530,6 +530,7 @@ Chrome براؤزر مینو کھولنے کیلئے، Alt+F دبائیں۔</tra
 <translation id="4479068155583208887">آگ کی اینٹ نما</translation>
 <translation id="4482330759234983253">پچھلا ٹیبل</translation>
 <translation id="4491109536499578614">تصویر</translation>
+<translation id="4507332368061453500">موجودہ آئٹم پر دیر تک کلک کریں</translation>
 <translation id="4511186779140817916">بلیچ کردہ بادامی</translation>
 <translation id="451510441928265982">سطح 2 کی کوئی پچھلی ہیڈنگ نہیں ہے</translation>
 <translation id="4515799157838123044">پس منظر کے مواد کا شیڈ</translation>
@@ -598,7 +599,6 @@ Chrome براؤزر مینو کھولنے کیلئے، Alt+F دبائیں۔</tra
 <translation id="4993152509206108683">شرح <ph name="PERCENT" /> فیصد</translation>
 <translation id="4994420463726586413">بیٹری کا موجودہ اسٹیٹس پڑھیں</translation>
 <translation id="4997282455736854877"><ph name="NAME" />، ریڈیو بٹن منتخب کر لیا گیا</translation>
-<translation id="5011664330025416377">‏فعال کرنے کیلئے Search+Space دبائیں</translation>
 <translation id="5012724933919010465"><ph name="NAME" />،مینو آئٹم ریڈیو بٹن منتخب کیا گیا ہے</translation>
 <translation id="5020651427400641814">اسپیچ لاگنگ کو فعال کریں</translation>
 <translation id="5041394372352067729">بریل ڈسپلے کو صفحہ کے اوپر لے جائیں</translation>
@@ -763,6 +763,7 @@ Chrome براؤزر مینو کھولنے کیلئے، Alt+F دبائیں۔</tra
 <translation id="6100239002225743044">ایک لائن اوپر منتقل کریں</translation>
 <translation id="6118126368611144850">‏Chrome کیلئے Android ایپس۔ اگر آپ کے آلہ پر Play اسٹور ہے تو Android ایپس کے ساتھ ChromeVox پر ایک نظر ڈالیں۔ Play اسٹور سے Google Chrome Canary ڈاؤن لوڈ کر کے تجرباتی سپورٹ آزمائیں۔</translation>
 <translation id="611827076493383239">vtd</translation>
+<translation id="6119846243427417423">فعال کریں</translation>
 <translation id="6122013438240733403">btn</translation>
 <translation id="6132506484792346370">ایک فہرست باکس یا کومبو باکس</translation>
 <translation id="613344593214611552">پچھلے جملے کو حذف کریں</translation>
@@ -779,6 +780,7 @@ Chrome براؤزر مینو کھولنے کیلئے، Alt+F دبائیں۔</tra
 <translation id="6236061028292614533">اگلی سرخی</translation>
 <translation id="6254901459154107917">اگلا قابل ترمیم متن ایریا</translation>
 <translation id="6259464875943891919"><ph name="TYPE" /> سے خارج ہو گئے۔</translation>
+<translation id="6280088282605782512">دو بار تھپتھپائیں</translation>
 <translation id="6282062888058716985">nav</translation>
 <translation id="6295699829709583154">‏ضروری کلیدیں: Search</translation>
 <translation id="6305702903308659374">‏ChromeVox بول رہا ہو تب بھی حسب معمول آواز میں چلائیں</translation>
@@ -982,6 +984,7 @@ Chrome براؤزر مینو کھولنے کیلئے، Alt+F دبائیں۔</tra
 <translation id="7731785449856576010">کوئی اگلا میڈیا ویجیٹ نہیں ہے</translation>
 <translation id="7735498529470878067">ٹچ کے ذریعے دریافت کرنے سے آپ کو اسکرین پر موجود چیزوں کے بارے میں فوری طور پر معلومات حاصل کرنے میں مدد مل سکتی ہے۔</translation>
 <translation id="773906353055481349">‏سیل کے لحاظ سے نیویگیٹ کرنے کیلئے تیروں کے ساتھ Search+Ctrl+Alt دبائیں</translation>
+<translation id="7746976083433980639"><ph name="ACTION" /> تا <ph name="LABEL" /></translation>
 <translation id="7763537600611320912">ڈاؤن لوڈ شروع ہو گیا <ph name="FILE_NAME" /></translation>
 <translation id="7768784765476638775">سننے کیلئے منتخب کریں</translation>
 <translation id="7776293189010177726">‏ChromeVox مینوز کھولیں</translation>

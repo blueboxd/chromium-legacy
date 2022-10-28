@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -14,6 +14,7 @@
 #include "components/password_manager/core/browser/password_manager_util.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "components/password_manager/ios/password_manager_ios_util.h"
+#import "ios/web_view/internal/app/application_context.h"
 #import "ios/web_view/internal/passwords/web_view_account_password_store_factory.h"
 #import "ios/web_view/internal/passwords/web_view_password_change_success_tracker_factory.h"
 #import "ios/web_view/internal/passwords/web_view_password_manager_log_router_factory.h"
@@ -188,6 +189,10 @@ PrefService* WebViewPasswordManagerClient::GetPrefs() const {
   return pref_service_;
 }
 
+PrefService* WebViewPasswordManagerClient::GetLocalStatePrefs() const {
+  return ApplicationContext::GetInstance()->GetLocalState();
+}
+
 const syncer::SyncService* WebViewPasswordManagerClient::GetSyncService()
     const {
   return sync_service_;
@@ -337,7 +342,9 @@ void WebViewPasswordManagerClient::CheckProtectedPasswordEntry(
     const std::string& username,
     const std::vector<password_manager::MatchingReusedCredential>&
         matching_reused_credentials,
-    bool password_field_exists) {
+    bool password_field_exists,
+    uint64_t reused_password_hash,
+    const std::string& domain) {
   // TODO(crbug.com/1147967): Enable PhishGuard in web_view.
 }
 

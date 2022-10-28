@@ -479,6 +479,7 @@ void WindowPerformance::ReportEventTimings(
     base::TimeDelta time_to_next_paint =
         base::Milliseconds(end_time - entry->processingEnd());
     entry->SetDuration(duration_in_ms);
+    entry->SetUnsafePresentationTimestamp(presentation_timestamp);
     if (entry->name() == "pointerdown") {
       pending_pointer_down_input_delay_ = input_delay;
       pending_pointer_down_processing_time_ = processing_time;
@@ -558,12 +559,7 @@ void WindowPerformance::NotifyAndAddEventTimingBuffer(
   if (tracing_enabled) {
     base::TimeTicks unsafe_start_time =
         GetTimeOriginInternal() + base::Milliseconds(entry->startTime());
-    // At this point in the code, the duration has been rounded. Estimate the
-    // end time as the maximum of the processing end + 4ms or the render time.
-    base::TimeTicks unsafe_end_time = std::max(
-        unsafe_start_time + base::Milliseconds(entry->duration()),
-        GetTimeOriginInternal() + base::Milliseconds(entry->processingEnd()) +
-            base::Milliseconds(4));
+    base::TimeTicks unsafe_end_time = entry->unsafePresentationTimestamp();
     unsigned hash = WTF::StringHash::GetHash(entry->name());
     WTF::AddFloatToHash(hash, entry->startTime());
     TRACE_EVENT_NESTABLE_ASYNC_BEGIN_WITH_TIMESTAMP1(
@@ -573,11 +569,6 @@ void WindowPerformance::NotifyAndAddEventTimingBuffer(
     TRACE_EVENT_NESTABLE_ASYNC_END_WITH_TIMESTAMP0(
         "devtools.timeline", "EventTiming", hash, unsafe_end_time);
   }
-}
-
-void WindowPerformance::MaybeNotifyInteractionAndAddEventTimingBuffer(
-    PerformanceEventTiming* entry) {
-  NotifyAndAddEventTimingBuffer(entry);
 }
 
 bool WindowPerformance::SetInteractionIdAndRecordLatency(
@@ -703,6 +694,9 @@ void WindowPerformance::OnLargestContentfulPaintUpdated(
   if (HTMLImageElement* image_element = DynamicTo<HTMLImageElement>(element)) {
     image_element->SetIsLCPElement();
   }
+
+  if (element)
+    element->GetDocument().OnLargestContentfulPaintUpdated();
 }
 
 void WindowPerformance::OnPaintFinished() {

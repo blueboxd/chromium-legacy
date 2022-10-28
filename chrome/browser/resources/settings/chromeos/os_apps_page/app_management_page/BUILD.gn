@@ -1,4 +1,4 @@
-# Copyright 2019 The Chromium Authors. All rights reserved.
+# Copyright 2019 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -75,7 +75,7 @@ js_library("app_details_item") {
     ":actions",
     ":store_client",
     ":util",
-    "//ui/webui/resources/js:i18n_behavior.m",
+    "//ui/webui/resources/cr_elements:i18n_behavior",
     "//ui/webui/resources/js:load_time_data.m",
   ]
   externs_list = [ "./types.js" ]
@@ -99,7 +99,7 @@ js_library("app_management_page") {
     ":store",
     ":store_client",
     "../../..:router",
-    "//ui/webui/resources/js/cr/ui:focus_without_ink.m",
+    "//ui/webui/resources/js/cr/ui:focus_without_ink_js",
   ]
 }
 
@@ -227,11 +227,13 @@ js_library("store_client") {
 js_library("supported_links_overlapping_apps_dialog") {
   deps = [
     ":store_client",
-    "//ui/webui/resources/cr_elements/cr_dialog:cr_dialog",
+    "//ui/webui/resources/cr_elements:i18n_behavior",
     "//ui/webui/resources/js:assert.m",
-    "//ui/webui/resources/js:i18n_behavior.m",
   ]
-  externs_list = [ "./types.js" ]
+  externs_list = [
+    "./types.js",
+    "//ui/webui/resources/cr_elements/cr_dialog/cr_dialog_externs.js",
+  ]
 }
 
 js_library("supported_links_dialog") {
@@ -239,8 +241,9 @@ js_library("supported_links_dialog") {
     ":browser_proxy",
     ":store_client",
     "//third_party/polymer/v3_0/components-chromium/iron-list:iron-list",
-    "//ui/webui/resources/cr_elements/cr_dialog:cr_dialog",
   ]
+  externs_list =
+      [ "//ui/webui/resources/cr_elements/cr_dialog/cr_dialog_externs.js" ]
 }
 
 js_library("supported_links_item") {
@@ -251,9 +254,9 @@ js_library("supported_links_item") {
     ":supported_links_overlapping_apps_dialog",
     ":util",
     "../..:metrics_recorder",
-    "//ui/webui/resources/cr_elements/cr_radio_button:cr_radio_button",
-    "//ui/webui/resources/js/cr/ui:focus_without_ink.m",
+    "//ui/webui/resources/js/cr/ui:focus_without_ink_js",
   ]
+  externs_list = [ "//ui/webui/resources/cr_elements/cr_radio_button/cr_radio_button_externs.js" ]
 }
 
 js_library("util") {

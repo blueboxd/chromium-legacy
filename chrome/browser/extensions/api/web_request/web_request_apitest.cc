@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -102,6 +102,7 @@
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/process_manager.h"
 #include "extensions/browser/service_worker/service_worker_test_utils.h"
+#include "extensions/browser/service_worker_task_queue.h"
 #include "extensions/common/extension_builder.h"
 #include "extensions/common/extension_features.h"
 #include "extensions/common/features/feature.h"
@@ -282,10 +283,11 @@ absl::optional<std::string> ExecuteScriptAndReturnString(
 }
 
 // Returns the current count of a variable stored in the |extension| background
-// page. Returns -1 if something goes awry.
-int GetCountFromBackgroundPage(const Extension* extension,
-                               content::BrowserContext* context,
-                               const std::string& variable_name) {
+// script context (either background page or service worker). Returns -1 if
+// something goes awry.
+int GetCountFromBackgroundScript(const Extension* extension,
+                                 content::BrowserContext* context,
+                                 const std::string& variable_name) {
   const std::string script = base::StringPrintf(
       "chrome.test.sendScriptResult(%s)", variable_name.c_str());
   base::Value value =
@@ -296,21 +298,23 @@ int GetCountFromBackgroundPage(const Extension* extension,
 }
 
 // Returns the current count of webRequests received by the |extension| in
-// the background page (assumes the extension stores a value on the window
-// object). Returns -1 if something goes awry.
-int GetWebRequestCountFromBackgroundPage(const Extension* extension,
-                                         content::BrowserContext* context) {
-  return GetCountFromBackgroundPage(extension, context, "self.webRequestCount");
+// the background script, either background page or service worker. Assumes the
+// extension stores a value on the `self` object. Returns -1 if something goes
+// awry.
+int GetWebRequestCountFromBackgroundScript(const Extension* extension,
+                                           content::BrowserContext* context) {
+  return GetCountFromBackgroundScript(extension, context,
+                                      "self.webRequestCount");
 }
 
-// Returns true if the |extension|'s background page saw an event for a request
-// with the given |hostname| (|hostname| should exclude port).
-bool HasSeenWebRequestInBackgroundPage(const Extension* extension,
-                                       content::BrowserContext* context,
-                                       const std::string& hostname) {
+// Returns true if the |extension|'s background script saw an event for a
+// request with the given |hostname| (|hostname| should exclude port).
+bool HasSeenWebRequestInBackgroundScript(const Extension* extension,
+                                         content::BrowserContext* context,
+                                         const std::string& hostname) {
   const std::string script = base::StringPrintf(
       R"(chrome.test.sendScriptResult(
-                 self.requestedHostnames.includes('%s'));)",
+             self.requestedHostnames.includes('%s'));)",
       hostname.c_str());
   base::Value value =
       ExecuteScriptAndReturnValue(extension->id(), context, script);
@@ -332,8 +336,6 @@ void WaitForExtraHeadersListener(base::WaitableEvent* event,
 }
 
 }  // namespace
-
-using ContextType = ExtensionBrowserTest::ContextType;
 
 class ExtensionWebRequestApiTest : public ExtensionApiTest {
  public:
@@ -400,6 +402,29 @@ class ExtensionWebRequestApiTest : public ExtensionApiTest {
   std::vector<std::unique_ptr<TestExtensionDir>> test_dirs_;
   std::unique_ptr<NavigateTabMessageHandler> navigationHandler_;
 };
+
+using ContextType = ExtensionBrowserTest::ContextType;
+
+class ExtensionWebRequestApiTestWithContextType
+    : public ExtensionWebRequestApiTest,
+      public testing::WithParamInterface<ContextType> {
+ public:
+  ExtensionWebRequestApiTestWithContextType()
+      : ExtensionWebRequestApiTest(GetParam()) {}
+  ExtensionWebRequestApiTestWithContextType(
+      const ExtensionWebRequestApiTestWithContextType&) = delete;
+  ExtensionWebRequestApiTestWithContextType& operator=(
+      const ExtensionWebRequestApiTestWithContextType&) = delete;
+  ~ExtensionWebRequestApiTestWithContextType() override = default;
+};
+
+INSTANTIATE_TEST_SUITE_P(PersistentBackground,
+                         ExtensionWebRequestApiTestWithContextType,
+                         ::testing::Values(ContextType::kPersistentBackground));
+
+INSTANTIATE_TEST_SUITE_P(ServiceWorker,
+                         ExtensionWebRequestApiTestWithContextType,
+                         ::testing::Values(ContextType::kServiceWorker));
 
 class DevToolsFrontendInWebRequestApiTest : public ExtensionApiTest {
  public:
@@ -482,17 +507,22 @@ class DevToolsFrontendInWebRequestApiTest : public ExtensionApiTest {
   std::unique_ptr<NavigateTabMessageHandler> navigationHandler_;
 };
 
+// TODO(crbug.com/1093066): The JS file for this test uses XmlHttpRequest,
+// which needs to be migrated to use fetch() to be compatible with
+// service workers.
 IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest, WebRequestApi) {
   ASSERT_TRUE(StartEmbeddedTestServer());
   ASSERT_TRUE(RunExtensionTest("webrequest/test_api")) << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest, WebRequestSimple) {
+IN_PROC_BROWSER_TEST_P(ExtensionWebRequestApiTestWithContextType,
+                       WebRequestSimple) {
   ASSERT_TRUE(StartEmbeddedTestServer());
   ASSERT_TRUE(RunExtensionTest("webrequest/test_simple")) << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest, WebRequestComplex) {
+IN_PROC_BROWSER_TEST_P(ExtensionWebRequestApiTestWithContextType,
+                       WebRequestComplex) {
   ASSERT_TRUE(StartEmbeddedTestServer());
   ASSERT_TRUE(RunExtensionTest("webrequest/test_complex")) << message_;
 }
@@ -856,7 +886,8 @@ INSTANTIATE_TEST_SUITE_P(Incognito,
                          ExtensionWebRequestApiAuthRequiredTest,
                          ::testing::Values(ProfileMode::kIncognito));
 
-IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest, WebRequestBlocking) {
+IN_PROC_BROWSER_TEST_P(ExtensionWebRequestApiTestWithContextType,
+                       WebRequestBlocking) {
   ASSERT_TRUE(StartEmbeddedTestServer());
   ASSERT_TRUE(RunExtensionTest("webrequest/test_blocking",
                                {.custom_arg = R"({"testSuite": "normal"})"}))
@@ -875,7 +906,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest, WebRequestBlocking) {
 #else
 #define MAYBE_WebRequestBlockingSlow WebRequestBlockingSlow
 #endif
-IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest,
+IN_PROC_BROWSER_TEST_P(ExtensionWebRequestApiTestWithContextType,
                        MAYBE_WebRequestBlockingSlow) {
   ASSERT_TRUE(StartEmbeddedTestServer());
   ASSERT_TRUE(RunExtensionTest("webrequest/test_blocking",
@@ -883,7 +914,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest,
       << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest,
+IN_PROC_BROWSER_TEST_P(ExtensionWebRequestApiTestWithContextType,
                        WebRequestBlockingSetCookieHeader) {
   ASSERT_TRUE(StartEmbeddedTestServer());
   ASSERT_TRUE(RunExtensionTest("webrequest/test_blocking_cookie")) << message_;
@@ -895,7 +926,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest, WebRequestExtraHeaders) {
 }
 
 // Flaky on all platforms: https://crbug.com/1003661
-IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest,
+IN_PROC_BROWSER_TEST_P(ExtensionWebRequestApiTestWithContextType,
                        DISABLED_WebRequestExtraHeaders_Auth) {
   CancelLoginDialog login_dialog_helper;
 
@@ -904,24 +935,31 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest,
       << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest, WebRequestChangeCSPHeaders) {
+IN_PROC_BROWSER_TEST_P(ExtensionWebRequestApiTestWithContextType,
+                       WebRequestChangeCSPHeaders) {
   ASSERT_TRUE(StartEmbeddedTestServer());
   ASSERT_TRUE(RunExtensionTest("webrequest/test_change_csp_headers"))
       << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest,
+IN_PROC_BROWSER_TEST_P(ExtensionWebRequestApiTestWithContextType,
                        WebRequestCORSWithExtraHeaders) {
   ASSERT_TRUE(StartEmbeddedTestServer());
   ASSERT_TRUE(RunExtensionTest("webrequest/test_cors")) << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest, WebRequestRedirects) {
+#if defined(ADDRESS_SANITIZER)
+#define MAYBE_WebRequestRedirects DISABLED_WebRequestRedirects
+#else
+#define MAYBE_WebRequestRedirects WebRequestRedirects
+#endif
+IN_PROC_BROWSER_TEST_P(ExtensionWebRequestApiTestWithContextType,
+                       MAYBE_WebRequestRedirects) {
   ASSERT_TRUE(StartEmbeddedTestServer());
   ASSERT_TRUE(RunExtensionTest("webrequest/test_redirects")) << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest,
+IN_PROC_BROWSER_TEST_P(ExtensionWebRequestApiTestWithContextType,
                        WebRequestRedirectsWithExtraHeaders) {
   ASSERT_TRUE(StartEmbeddedTestServer());
   ASSERT_TRUE(RunExtensionTest("webrequest/test_redirects",
@@ -930,7 +968,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest,
 }
 
 // Tests that redirects from secure to insecure don't send the referrer header.
-IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest,
+IN_PROC_BROWSER_TEST_P(ExtensionWebRequestApiTestWithContextType,
                        WebRequestRedirectsToInsecure) {
   ASSERT_TRUE(StartEmbeddedTestServer());
   GURL insecure_destination =
@@ -953,6 +991,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest,
       << message_;
 }
 
+// TODO(crbug.com/1093066): The JS file for this test uses XmlHttpRequest,
+// which needs to be migrated to use fetch() to be compatible with
+// service workers.
 IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest,
                        WebRequestSubresourceRedirects) {
   ASSERT_TRUE(StartEmbeddedTestServer());
@@ -960,6 +1001,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest,
       << message_;
 }
 
+// TODO(crbug.com/1093066): The JS file for this test uses XmlHttpRequest,
+// which needs to be migrated to use fetch() to be compatible with
+// service workers.
 IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest,
                        WebRequestSubresourceRedirectsWithExtraHeaders) {
   ASSERT_TRUE(StartEmbeddedTestServer());
@@ -968,7 +1012,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest,
       << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest, WebRequestNewTab) {
+IN_PROC_BROWSER_TEST_P(ExtensionWebRequestApiTestWithContextType,
+                       WebRequestNewTab) {
   ASSERT_TRUE(StartEmbeddedTestServer());
   // Wait for the extension to set itself up and return control to us.
   ASSERT_TRUE(RunExtensionTest("webrequest/test_new_tab")) << message_;
@@ -1093,27 +1138,6 @@ void ExtensionWebRequestApiTest::RunPermissionTest(
       &body));
   EXPECT_EQ(exptected_content_incognito_window, body);
 }
-
-class ExtensionWebRequestApiTestWithContextType
-    : public ExtensionWebRequestApiTest,
-      public testing::WithParamInterface<ContextType> {
- public:
-  ExtensionWebRequestApiTestWithContextType()
-      : ExtensionWebRequestApiTest(GetParam()) {}
-  ExtensionWebRequestApiTestWithContextType(
-      const ExtensionWebRequestApiTestWithContextType&) = delete;
-  ExtensionWebRequestApiTestWithContextType& operator=(
-      const ExtensionWebRequestApiTestWithContextType&) = delete;
-  ~ExtensionWebRequestApiTestWithContextType() override = default;
-};
-
-INSTANTIATE_TEST_SUITE_P(PersistentBackground,
-                         ExtensionWebRequestApiTestWithContextType,
-                         ::testing::Values(ContextType::kPersistentBackground));
-
-INSTANTIATE_TEST_SUITE_P(ServiceWorker,
-                         ExtensionWebRequestApiTestWithContextType,
-                         ::testing::Values(ContextType::kServiceWorker));
 
 IN_PROC_BROWSER_TEST_P(ExtensionWebRequestApiTestWithContextType,
                        WebRequestDeclarativePermissionSpanning1) {
@@ -1342,7 +1366,7 @@ IN_PROC_BROWSER_TEST_P(ExtensionWebRequestApiTestWithContextType,
   // The extension shouldn't have currently received any webRequest events,
   // since it doesn't have any permissions.
   {
-    EXPECT_EQ(0, GetWebRequestCountFromBackgroundPage(extension, profile()));
+    EXPECT_EQ(0, GetWebRequestCountFromBackgroundScript(extension, profile()));
 
     content::RenderFrameHostWrapper main_frame(
         web_contents->GetPrimaryMainFrame());
@@ -1355,7 +1379,7 @@ IN_PROC_BROWSER_TEST_P(ExtensionWebRequestApiTestWithContextType,
     // doesn't have any permissions.
     PerformXhrInFrame(main_frame.get(), kHost, port, kXhrPath);
     PerformXhrInFrame(child_frame.get(), kChildHost, port, kXhrPath);
-    EXPECT_EQ(0, GetWebRequestCountFromBackgroundPage(extension, profile()));
+    EXPECT_EQ(0, GetWebRequestCountFromBackgroundScript(extension, profile()));
     EXPECT_EQ(BLOCKED_ACTION_WEB_REQUEST,
               runner->GetBlockedActions(extension->id()));
 
@@ -1376,29 +1400,30 @@ IN_PROC_BROWSER_TEST_P(ExtensionWebRequestApiTestWithContextType,
   const std::string kChildHost = child_frame->GetLastCommittedURL().host();
 
   ASSERT_TRUE(child_frame);
-  EXPECT_TRUE(HasSeenWebRequestInBackgroundPage(extension, profile(), "a.com"));
+  EXPECT_TRUE(
+      HasSeenWebRequestInBackgroundScript(extension, profile(), "a.com"));
   EXPECT_FALSE(
-      HasSeenWebRequestInBackgroundPage(extension, profile(), "b.com"));
+      HasSeenWebRequestInBackgroundScript(extension, profile(), "b.com"));
   EXPECT_FALSE(
-      HasSeenWebRequestInBackgroundPage(extension, profile(), "c.com"));
+      HasSeenWebRequestInBackgroundScript(extension, profile(), "c.com"));
 
   // The withheld sub-frame requests should not show up as a blocked action.
   EXPECT_EQ(BLOCKED_ACTION_NONE, runner->GetBlockedActions(extension->id()));
 
   int request_count =
-      GetWebRequestCountFromBackgroundPage(extension, profile());
+      GetWebRequestCountFromBackgroundScript(extension, profile());
 
   // ... and the extension should receive future events.
   PerformXhrInFrame(main_frame.get(), kHost, port, kXhrPath);
   ++request_count;
   EXPECT_EQ(request_count,
-            GetWebRequestCountFromBackgroundPage(extension, profile()));
+            GetWebRequestCountFromBackgroundScript(extension, profile()));
 
   // However, activeTab only grants access to the main frame, not to child
   // frames. As such, trying to XHR in the child frame should still fail.
   PerformXhrInFrame(child_frame.get(), kChildHost, port, kXhrPath);
   EXPECT_EQ(request_count,
-            GetWebRequestCountFromBackgroundPage(extension, profile()));
+            GetWebRequestCountFromBackgroundScript(extension, profile()));
   // But since there's no way for the user to currently grant access to child
   // frames, this shouldn't show up as a blocked action.
   EXPECT_EQ(BLOCKED_ACTION_NONE, runner->GetBlockedActions(extension->id()));
@@ -1420,7 +1445,7 @@ IN_PROC_BROWSER_TEST_P(ExtensionWebRequestApiTestWithContextType,
   EXPECT_EQ(web_contents, action_updated_waiter.last_web_contents());
 
   EXPECT_EQ(request_count,
-            GetWebRequestCountFromBackgroundPage(extension, profile()));
+            GetWebRequestCountFromBackgroundScript(extension, profile()));
   EXPECT_EQ(BLOCKED_ACTION_WEB_REQUEST,
             runner->GetBlockedActions(extension->id()));
 }
@@ -1447,8 +1472,8 @@ IN_PROC_BROWSER_TEST_P(ExtensionWebRequestApiTestWithContextType,
                      "a.com", "/extensions/cross_site_script.html")));
 
   const std::string kCrossSiteHost("b.com");
-  EXPECT_FALSE(
-      HasSeenWebRequestInBackgroundPage(extension, profile(), kCrossSiteHost));
+  EXPECT_FALSE(HasSeenWebRequestInBackgroundScript(extension, profile(),
+                                                   kCrossSiteHost));
 
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
@@ -1470,8 +1495,8 @@ IN_PROC_BROWSER_TEST_P(ExtensionWebRequestApiTestWithContextType,
   EXPECT_TRUE(content::WaitForLoadStop(web_contents));
   EXPECT_EQ(BLOCKED_ACTION_NONE, runner->GetBlockedActions(extension->id()));
 
-  EXPECT_TRUE(
-      HasSeenWebRequestInBackgroundPage(extension, profile(), kCrossSiteHost));
+  EXPECT_TRUE(HasSeenWebRequestInBackgroundScript(extension, profile(),
+                                                  kCrossSiteHost));
 }
 
 // Tests behavior when an extension has withheld access to a request's URL, but
@@ -1529,7 +1554,7 @@ IN_PROC_BROWSER_TEST_P(ExtensionWebRequestApiTestWithContextType,
   // wants to run, because example.com is not a requested host.
   EXPECT_EQ(BLOCKED_ACTION_NONE, runner->GetBlockedActions(extension->id()));
   EXPECT_FALSE(
-      HasSeenWebRequestInBackgroundPage(extension, profile(), "b.com"));
+      HasSeenWebRequestInBackgroundScript(extension, profile(), "b.com"));
 
   // Navigating to b.com (so that the script is hosted on the same origin as
   // the WebContents) should show the extension wants to run.
@@ -1556,12 +1581,12 @@ IN_PROC_BROWSER_TEST_P(ExtensionWebRequestApiTestWithContextType,
   EXPECT_TRUE(listener.WaitUntilSatisfied());
 
   auto get_clients_google_request_count = [this, extension]() {
-    return GetCountFromBackgroundPage(extension, profile(),
-                                      "self.clientsGoogleWebRequestCount");
+    return GetCountFromBackgroundScript(extension, profile(),
+                                        "self.clientsGoogleWebRequestCount");
   };
   auto get_yahoo_request_count = [this, extension]() {
-    return GetCountFromBackgroundPage(extension, profile(),
-                                      "self.yahooWebRequestCount");
+    return GetCountFromBackgroundScript(extension, profile(),
+                                        "self.yahooWebRequestCount");
   };
 
   EXPECT_EQ(0, get_clients_google_request_count());
@@ -1664,12 +1689,12 @@ IN_PROC_BROWSER_TEST_P(ExtensionWebRequestApiTestWithContextType,
       browser(), GURL("http://does.not.resolve.test/title2.html")));
 
   // The extension should not have seen the PAC request.
-  EXPECT_EQ(0, GetCountFromBackgroundPage(extension, profile(),
-                                          "self.pacRequestCount"));
+  EXPECT_EQ(0, GetCountFromBackgroundScript(extension, profile(),
+                                            "self.pacRequestCount"));
 
   // The extension should have seen the request for the main frame.
-  EXPECT_EQ(1, GetCountFromBackgroundPage(extension, profile(),
-                                          "self.title2RequestCount"));
+  EXPECT_EQ(1, GetCountFromBackgroundScript(extension, profile(),
+                                            "self.title2RequestCount"));
 
   // The PAC request should have succeeded, as should the subsequent URL
   // request.
@@ -1761,10 +1786,10 @@ IN_PROC_BROWSER_TEST_P(ExtensionWebRequestApiTestWithContextType,
             test_webcontents_observer.control_header_value());
 
   // Check that the Dice header cannot be read by the extension.
-  EXPECT_EQ(0, GetCountFromBackgroundPage(extension, profile(),
-                                          "self.diceResponseHeaderCount"));
-  EXPECT_EQ(1, GetCountFromBackgroundPage(extension, profile(),
-                                          "self.controlResponseHeaderCount"));
+  EXPECT_EQ(0, GetCountFromBackgroundScript(extension, profile(),
+                                            "self.diceResponseHeaderCount"));
+  EXPECT_EQ(1, GetCountFromBackgroundScript(extension, profile(),
+                                            "self.controlResponseHeaderCount"));
 
   // Navigate to a non-Gaia URL intercepted by the extension.
   test_webcontents_observer.Clear();
@@ -1781,10 +1806,10 @@ IN_PROC_BROWSER_TEST_P(ExtensionWebRequestApiTestWithContextType,
             test_webcontents_observer.control_header_value());
 
   // Check that the Dice header can be read by the extension.
-  EXPECT_EQ(1, GetCountFromBackgroundPage(extension, profile(),
-                                          "self.diceResponseHeaderCount"));
-  EXPECT_EQ(2, GetCountFromBackgroundPage(extension, profile(),
-                                          "self.controlResponseHeaderCount"));
+  EXPECT_EQ(1, GetCountFromBackgroundScript(extension, profile(),
+                                            "self.diceResponseHeaderCount"));
+  EXPECT_EQ(2, GetCountFromBackgroundScript(extension, profile(),
+                                            "self.controlResponseHeaderCount"));
 }
 
 // Test that the webRequest events are dispatched for the WebSocket handshake
@@ -2097,8 +2122,8 @@ IN_PROC_BROWSER_TEST_P(ExtensionWebRequestApiTestWithContextType,
     // Run a script in the extensions background page to ensure that we have
     // received the initiator message from the extension.
     ASSERT_EQ(expected_requests_intercepted_count,
-              GetCountFromBackgroundPage(extension, profile(),
-                                         "self.requestsIntercepted"));
+              GetCountFromBackgroundScript(extension, profile(),
+                                           "self.requestsIntercepted"));
 
     if (testcase.expected_initiator.empty()) {
       EXPECT_FALSE(initiator_listener.was_satisfied());
@@ -2513,8 +2538,8 @@ IN_PROC_BROWSER_TEST_P(WebRequestApiTestWithManagementPolicy,
   // the extension's background page under this variable name.
   const std::string request_counter_name = "self.protectedOriginCount";
 
-  EXPECT_EQ(0, GetCountFromBackgroundPage(extension, profile(),
-                                          request_counter_name));
+  EXPECT_EQ(0, GetCountFromBackgroundScript(extension, profile(),
+                                            request_counter_name));
 
   // Wait until all remote Javascript files have been blocked / pulled down.
   ui_test_utils::NavigateToURLWithDisposition(
@@ -2528,8 +2553,8 @@ IN_PROC_BROWSER_TEST_P(WebRequestApiTestWithManagementPolicy,
   EXPECT_TRUE(BrowsedTo(example2_com));
 
   // The request was seen by the extension.
-  EXPECT_EQ(1, GetCountFromBackgroundPage(extension, profile(),
-                                          request_counter_name));
+  EXPECT_EQ(1, GetCountFromBackgroundScript(extension, profile(),
+                                            request_counter_name));
 
   // Clear the list of domains the server has seen.
   ClearRequestLog();
@@ -2554,8 +2579,8 @@ IN_PROC_BROWSER_TEST_P(WebRequestApiTestWithManagementPolicy,
   EXPECT_TRUE(BrowsedTo(example2_com));
 
   // The request was hidden from the extension.
-  EXPECT_EQ(1, GetCountFromBackgroundPage(extension, profile(),
-                                          request_counter_name));
+  EXPECT_EQ(1, GetCountFromBackgroundScript(extension, profile(),
+                                            request_counter_name));
 }
 
 // Tests that the webRequest events aren't dispatched when the URL of the
@@ -2651,10 +2676,10 @@ IN_PROC_BROWSER_TEST_P(WebRequestApiTestWithManagementPolicy,
 
   // The extension shouldn't have currently received any webRequest events,
   // since it doesn't have permission (and shouldn't receive any from an XHR).
-  EXPECT_EQ(0, GetWebRequestCountFromBackgroundPage(extension, profile()));
+  EXPECT_EQ(0, GetWebRequestCountFromBackgroundScript(extension, profile()));
   PerformXhrInFrame(web_contents->GetPrimaryMainFrame(), protected_domain, port,
                     kXhrPath);
-  EXPECT_EQ(0, GetWebRequestCountFromBackgroundPage(extension, profile()));
+  EXPECT_EQ(0, GetWebRequestCountFromBackgroundScript(extension, profile()));
 
   // Grant activeTab permission, and perform another XHR. The extension should
   // still be blocked due to ExtensionSettings policy on example.com.
@@ -2666,14 +2691,14 @@ IN_PROC_BROWSER_TEST_P(WebRequestApiTestWithManagementPolicy,
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(content::WaitForLoadStop(web_contents));
   EXPECT_EQ(BLOCKED_ACTION_NONE, runner->GetBlockedActions(extension->id()));
-  int xhr_count = GetWebRequestCountFromBackgroundPage(extension, profile());
+  int xhr_count = GetWebRequestCountFromBackgroundScript(extension, profile());
   // ... which means that we should have a non-zero xhr count if the policy
   // didn't block the events.
   EXPECT_EQ(0, xhr_count);
   // And the extension should also block future events.
   PerformXhrInFrame(web_contents->GetPrimaryMainFrame(), protected_domain, port,
                     kXhrPath);
-  EXPECT_EQ(0, GetWebRequestCountFromBackgroundPage(extension, profile()));
+  EXPECT_EQ(0, GetWebRequestCountFromBackgroundScript(extension, profile()));
 }
 
 // A test fixture which mocks the Time::Now() function to ensure that the
@@ -2866,9 +2891,10 @@ IN_PROC_BROWSER_TEST_P(ExtensionWebRequestApiTestWithContextType,
                     embedded_test_server()->host_port_pair().host(),
                     embedded_test_server()->port(), "redirect-and-wait");
   EXPECT_EQ(
-      GetCountFromBackgroundPage(extension, profile(), "self.requestCount"), 1);
+      GetCountFromBackgroundScript(extension, profile(), "self.requestCount"),
+      1);
   EXPECT_EQ(
-      GetCountFromBackgroundPage(extension, profile(), "self.locationCount"),
+      GetCountFromBackgroundScript(extension, profile(), "self.locationCount"),
       0);
 }
 
@@ -3658,7 +3684,8 @@ IN_PROC_BROWSER_TEST_P(ExtensionWebRequestApiTestWithContextType,
                     https_test_server.host_port_pair().host(),
                     https_test_server.port(), "echo");
   EXPECT_GT(
-      GetCountFromBackgroundPage(extension, profile(), "self.headerCount"), 0);
+      GetCountFromBackgroundScript(extension, profile(), "self.headerCount"),
+      0);
 }
 
 // Ensure that when an extension blocks a main-frame request, the resultant
@@ -4088,15 +4115,15 @@ IN_PROC_BROWSER_TEST_P(SubresourceWebBundlesWebRequestApiTest,
   // extension intercepted the request.
   EXPECT_EQ(expected_title, title_watcher.WaitAndGetTitle());
 
-  EXPECT_EQ(1, GetCountFromBackgroundPage(extension, profile(),
-                                          "self.numMainResourceRequests"));
-  EXPECT_EQ(1, GetCountFromBackgroundPage(extension, profile(),
-                                          "self.numWebBundleRequests"));
-  EXPECT_EQ(1, GetCountFromBackgroundPage(extension, profile(),
-                                          "self.numScriptRequests"));
-  EXPECT_EQ(1,
-            GetCountFromBackgroundPage(extension, profile(),
-                                       "self.numUUIDInPackageScriptRequests"));
+  EXPECT_EQ(1, GetCountFromBackgroundScript(extension, profile(),
+                                            "self.numMainResourceRequests"));
+  EXPECT_EQ(1, GetCountFromBackgroundScript(extension, profile(),
+                                            "self.numWebBundleRequests"));
+  EXPECT_EQ(1, GetCountFromBackgroundScript(extension, profile(),
+                                            "self.numScriptRequests"));
+  EXPECT_EQ(
+      1, GetCountFromBackgroundScript(extension, profile(),
+                                      "self.numUUIDInPackageScriptRequests"));
 }
 
 // Ensure web request API can block the requests for the subresources inside the
@@ -4233,14 +4260,14 @@ IN_PROC_BROWSER_TEST_P(SubresourceWebBundlesWebRequestApiTest,
 
   EXPECT_FALSE(TryLoadScript(cancel_uuid_in_package_js_url));
 
-  EXPECT_EQ(1, GetCountFromBackgroundPage(extension, profile(),
-                                          "self.numPassScriptRequests"));
-  EXPECT_EQ(1, GetCountFromBackgroundPage(extension, profile(),
-                                          "self.numCancelScriptRequests"));
+  EXPECT_EQ(1, GetCountFromBackgroundScript(extension, profile(),
+                                            "self.numPassScriptRequests"));
+  EXPECT_EQ(1, GetCountFromBackgroundScript(extension, profile(),
+                                            "self.numCancelScriptRequests"));
   EXPECT_EQ(
-      1, GetCountFromBackgroundPage(extension, profile(),
-                                    "self.numUUIDInPackagePassScriptRequests"));
-  EXPECT_EQ(1, GetCountFromBackgroundPage(
+      1, GetCountFromBackgroundScript(
+             extension, profile(), "self.numUUIDInPackagePassScriptRequests"));
+  EXPECT_EQ(1, GetCountFromBackgroundScript(
                    extension, profile(),
                    "self.numUUIDInPackageCancelScriptRequests"));
 }
@@ -5131,14 +5158,14 @@ IN_PROC_BROWSER_TEST_P(ProxyCORSWebRequestApiTest,
       &success));
   EXPECT_TRUE(success);
   EXPECT_TRUE(preflight_listener.WaitUntilSatisfied());
-  EXPECT_EQ(1, GetCountFromBackgroundPage(
+  EXPECT_EQ(1, GetCountFromBackgroundScript(
                    extension, profile(), "self.preflightHeadersReceivedCount"));
-  EXPECT_EQ(1,
-            GetCountFromBackgroundPage(extension, profile(),
-                                       "self.preflightProxyAuthRequiredCount"));
-  EXPECT_EQ(1, GetCountFromBackgroundPage(
+  EXPECT_EQ(
+      1, GetCountFromBackgroundScript(extension, profile(),
+                                      "self.preflightProxyAuthRequiredCount"));
+  EXPECT_EQ(1, GetCountFromBackgroundScript(
                    extension, profile(), "self.preflightResponseStartedCount"));
-  EXPECT_EQ(1, GetCountFromBackgroundPage(
+  EXPECT_EQ(1, GetCountFromBackgroundScript(
                    extension, profile(),
                    "self.preflightResponseStartedSuccessfullyCount"));
 }
@@ -5200,14 +5227,35 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiPrerenderingTest, Load) {
       << message_;
 }
 
-using ContextType = ExtensionBrowserTest::ContextType;
-
-class WebRequestApiTestWithContextType
-    : public ExtensionWebRequestApiTest,
-      public testing::WithParamInterface<ContextType> {
+// A clunky test suite class to allow for waiting for a message to be sent from
+// the extension's background context when it starts up. We need this because
+// we don't currently have a good way of waiting for a service worker context to
+// be fully initialized.
+class WebRequestPersistentListenersTest
+    : public ExtensionWebRequestApiTestWithContextType {
  public:
-  WebRequestApiTestWithContextType() = default;
-  ~WebRequestApiTestWithContextType() override = default;
+  WebRequestPersistentListenersTest() = default;
+  ~WebRequestPersistentListenersTest() override = default;
+
+  void SetUpOnMainThread() override {
+    // Note: Set the listener before triggering the parent SetUpOnMainThread
+    // to ensure it happens before extensions start loading.
+    test_listener_ = std::make_unique<ExtensionTestMessageListener>("ready");
+
+    ExtensionWebRequestApiTestWithContextType::SetUpOnMainThread();
+  }
+
+  void TearDownOnMainThread() override {
+    test_listener_.reset();
+    ExtensionWebRequestApiTestWithContextType::TearDownOnMainThread();
+  }
+
+  void WaitForReadyMessage() {
+    EXPECT_TRUE(test_listener_->WaitUntilSatisfied());
+  }
+
+ private:
+  std::unique_ptr<ExtensionTestMessageListener> test_listener_;
 };
 
 namespace {
@@ -5226,7 +5274,7 @@ constexpr char kGetNumRequests[] =
 }  // namespace
 
 // Tests that webRequest listeners are persistent across browser restarts.
-IN_PROC_BROWSER_TEST_P(WebRequestApiTestWithContextType,
+IN_PROC_BROWSER_TEST_P(WebRequestPersistentListenersTest,
                        PRE_TestListenersArePersistent) {
   // Load an extension that listens for webRequest events.
   ASSERT_TRUE(StartEmbeddedTestServer());
@@ -5247,8 +5295,14 @@ IN_PROC_BROWSER_TEST_P(WebRequestApiTestWithContextType,
   EXPECT_EQ(1, request_count.GetInt());
 }
 
-IN_PROC_BROWSER_TEST_P(WebRequestApiTestWithContextType,
-                       TestListenersArePersistent) {
+// TODO(https://crbug.com/1361941): Fix flakes under ASAN/LSAN.
+#if defined(ADDRESS_SANITIZER)
+#define MAYBE_TestListenersArePersistent DISABLED_TestListenersArePersistent
+#else
+#define MAYBE_TestListenersArePersistent TestListenersArePersistent
+#endif
+IN_PROC_BROWSER_TEST_P(WebRequestPersistentListenersTest,
+                       MAYBE_TestListenersArePersistent) {
   // Find the installed extension and wait for it to fully load.
   ASSERT_TRUE(StartEmbeddedTestServer());
   const Extension* extension = nullptr;
@@ -5260,6 +5314,7 @@ IN_PROC_BROWSER_TEST_P(WebRequestApiTestWithContextType,
   }
   ASSERT_TRUE(extension);
   WaitForExtensionViewsToLoad();
+  WaitForReadyMessage();
 
   // Navigate once more to example.com.
   ASSERT_TRUE(ui_test_utils::NavigateToURL(
@@ -5276,10 +5331,10 @@ IN_PROC_BROWSER_TEST_P(WebRequestApiTestWithContextType,
 }
 
 INSTANTIATE_TEST_SUITE_P(PersistentBackground,
-                         WebRequestApiTestWithContextType,
+                         WebRequestPersistentListenersTest,
                          ::testing::Values(ContextType::kPersistentBackground));
 INSTANTIATE_TEST_SUITE_P(ServiceWorker,
-                         WebRequestApiTestWithContextType,
+                         WebRequestPersistentListenersTest,
                          ::testing::Values(ContextType::kServiceWorker));
 
 class ManifestV3WebRequestApiTest : public ExtensionWebRequestApiTest {
@@ -5441,10 +5496,10 @@ IN_PROC_BROWSER_TEST_F(ManifestV3WebRequestApiTest,
 
   // Convenience lambdas for checking the count received in each listener.
   auto get_first_count = [this, extension]() {
-    return GetCountFromBackgroundPage(extension, profile(), "firstCount");
+    return GetCountFromBackgroundScript(extension, profile(), "firstCount");
   };
   auto get_second_count = [this, extension]() {
-    return GetCountFromBackgroundPage(extension, profile(), "secondCount");
+    return GetCountFromBackgroundScript(extension, profile(), "secondCount");
   };
   auto get_third_count = [page_host]() {
     int count = -1;
@@ -5527,6 +5582,8 @@ IN_PROC_BROWSER_TEST_F(ManifestV3WebRequestApiTest,
   // A single webRequest listener should be registered.
   EXPECT_EQ(1u, web_request_router()->GetListenerCountForTesting(
                     profile(), "webRequest.onBeforeRequest"));
+  EXPECT_EQ(0u, web_request_router()->GetInactiveListenerCountForTesting(
+                    profile(), "webRequest.onBeforeRequest"));
 
   // Stop the service worker.
   browsertest_util::StopServiceWorkerForExtensionGlobalScope(profile(),
@@ -5535,11 +5592,11 @@ IN_PROC_BROWSER_TEST_F(ManifestV3WebRequestApiTest,
   // is async; run to flush the posted task.
   base::RunLoop().RunUntilIdle();
 
-  // The listener should still be registered.
-  // TODO(https://crbug.com/1024211): This currently fails.
-  // EXPECT_EQ(1u, web_request_router()->GetListenerCountForTesting(
-  //     profile(), "webRequest.onBeforeRequest"));
+  // The listener should still be registered, but should be counted as an
+  // inactive listener.
   EXPECT_EQ(0u, web_request_router()->GetListenerCountForTesting(
+                    profile(), "webRequest.onBeforeRequest"));
+  EXPECT_EQ(1u, web_request_router()->GetInactiveListenerCountForTesting(
                     profile(), "webRequest.onBeforeRequest"));
 
   // Navigate to block.example. The request should be blocked by the extension.
@@ -5550,10 +5607,7 @@ IN_PROC_BROWSER_TEST_F(ManifestV3WebRequestApiTest,
     EXPECT_TRUE(ui_test_utils::NavigateToURL(
         browser(),
         embedded_test_server()->GetURL("block.example", "/simple.html")));
-    // TODO(https://crbug.com/1024211): This currently fails.
-    // EXPECT_EQ(net::ERR_BLOCKED_BY_CLIENT,
-    //           nav_observer.last_net_error_code());
-    EXPECT_EQ(net::OK, nav_observer.last_net_error_code());
+    EXPECT_EQ(net::ERR_BLOCKED_BY_CLIENT, nav_observer.last_net_error_code());
   }
 }
 
@@ -5606,6 +5660,7 @@ IN_PROC_BROWSER_TEST_F(ManifestV3WebRequestApiTest,
                isUsingStorage = false;
                if (storageComplete)
                  storageComplete();
+               chrome.test.sendMessage('event received');
              },
              {urls: ['<all_urls>'], types: ['main_frame']});)";
 
@@ -5618,6 +5673,8 @@ IN_PROC_BROWSER_TEST_F(ManifestV3WebRequestApiTest,
 
   // A single listener should be registered.
   EXPECT_EQ(1u, web_request_router()->GetListenerCountForTesting(
+                    profile(), "webRequest.onBeforeRequest"));
+  EXPECT_EQ(0u, web_request_router()->GetInactiveListenerCountForTesting(
                     profile(), "webRequest.onBeforeRequest"));
 
   // Navigate to a URL. The request should be seen by the extension.
@@ -5641,22 +5698,259 @@ IN_PROC_BROWSER_TEST_F(ManifestV3WebRequestApiTest,
   // is async; run to flush the posted task.
   base::RunLoop().RunUntilIdle();
 
-  // The listener should still be registered.
-  // TODO(https://crbug.com/1024211): This currently fails.
-  // EXPECT_EQ(1u, web_request_router()->GetListenerCountForTesting(
-  //     profile(), "webRequest.onBeforeRequest"));
+  // The listener should still be registered, but should be counted as an
+  // inactive listener.
   EXPECT_EQ(0u, web_request_router()->GetListenerCountForTesting(
                     profile(), "webRequest.onBeforeRequest"));
+  EXPECT_EQ(1u, web_request_router()->GetInactiveListenerCountForTesting(
+                    profile(), "webRequest.onBeforeRequest"));
 
-  // Navigate again. The request should again be seen by the extension.
+  {
+    // Navigate again. The request should again be seen by the extension.
+    //
+    // We need to use a message listener here to ensure we gave the extension
+    // enough time to start up and have the event fire. Unlike the blocking
+    // scenario, there's no guarantee this happens by the time navigation
+    // completes.
+    ExtensionTestMessageListener listener("event received");
+    EXPECT_TRUE(ui_test_utils::NavigateToURL(
+        browser(),
+        embedded_test_server()->GetURL("example.com", "/simple.html")));
+    EXPECT_TRUE(listener.WaitUntilSatisfied());
+  }
+
+  // The inactive listener should have been reactivated...
+  EXPECT_EQ(1u, web_request_router()->GetListenerCountForTesting(
+                    profile(), "webRequest.onBeforeRequest"));
+  EXPECT_EQ(0u, web_request_router()->GetInactiveListenerCountForTesting(
+                    profile(), "webRequest.onBeforeRequest"));
+
+  // ... and the extension should have seen the request.
+  EXPECT_EQ(2, get_request_count());
+}
+
+// Tests unloading an extension with lazy listeners while the worker is
+// inactive. The listeners should be properly cleaned up.
+IN_PROC_BROWSER_TEST_F(
+    ManifestV3WebRequestApiTest,
+    ServiceWorkerWithWebRequest_UnloadExtensionWhileWorkerInactive) {
+  ASSERT_TRUE(StartEmbeddedTestServer());
+  static constexpr char kManifest[] =
+      R"({
+           "name": "MV3 WebRequest",
+           "version": "0.1",
+           "manifest_version": 3,
+           "permissions": ["webRequest"],
+           "host_permissions": [
+             "http://example.com/*"
+           ],
+           "background": {"service_worker": "background.js"}
+         })";
+  static constexpr char kBackgroundJs[] =
+      R"(chrome.webRequest.onBeforeRequest.addListener(
+             async (details) => { },
+             {urls: ['<all_urls>'], types: ['main_frame']});)";
+
+  TestExtensionDir test_dir;
+  test_dir.WriteManifest(kManifest);
+  test_dir.WriteFile(FILE_PATH_LITERAL("background.js"), kBackgroundJs);
+  const Extension* extension = LoadExtension(
+      test_dir.UnpackedPath(), {.wait_for_registration_stored = true});
+  ASSERT_TRUE(extension);
+
+  EXPECT_EQ(1u, web_request_router()->GetListenerCountForTesting(
+                    profile(), "webRequest.onBeforeRequest"));
+  EXPECT_EQ(0u, web_request_router()->GetInactiveListenerCountForTesting(
+                    profile(), "webRequest.onBeforeRequest"));
+
+  browsertest_util::StopServiceWorkerForExtensionGlobalScope(profile(),
+                                                             extension->id());
+  // Note: the task to remove listeners from ExtensionWebRequestEventRouter
+  // is async; run to flush the posted task.
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_EQ(0u, web_request_router()->GetListenerCountForTesting(
+                    profile(), "webRequest.onBeforeRequest"));
+  EXPECT_EQ(1u, web_request_router()->GetInactiveListenerCountForTesting(
+                    profile(), "webRequest.onBeforeRequest"));
+
+  DisableExtension(extension->id());
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_EQ(0u, web_request_router()->GetListenerCountForTesting(
+                    profile(), "webRequest.onBeforeRequest"));
+  EXPECT_EQ(0u, web_request_router()->GetInactiveListenerCountForTesting(
+                    profile(), "webRequest.onBeforeRequest"));
+}
+
+// Tests a service worker adding and then removing a listener.
+IN_PROC_BROWSER_TEST_F(ManifestV3WebRequestApiTest,
+                       ServiceWorkerWithWebRequest_ManuallyRemoveListener) {
+  ASSERT_TRUE(StartEmbeddedTestServer());
+  static constexpr char kManifest[] =
+      R"({
+           "name": "MV3 WebRequest",
+           "version": "0.1",
+           "manifest_version": 3,
+           "permissions": ["webRequest"],
+           "host_permissions": [
+             "http://example.com/*"
+           ],
+           "background": {"service_worker": "background.js"}
+         })";
+  static constexpr char kBackgroundJs[] =
+      R"(self.firstListenerCount = 0;
+         self.secondListenerCount = 0;
+         self.firstListener = function() { ++firstListenerCount; };
+         self.secondListener = function() { ++secondListenerCount; };
+         chrome.webRequest.onBeforeRequest.addListener(
+             firstListener,
+             {urls: ['<all_urls>'], types: ['main_frame']});
+         chrome.webRequest.onBeforeRequest.addListener(
+             secondListener,
+             {urls: ['<all_urls>'], types: ['main_frame']});)";
+
+  TestExtensionDir test_dir;
+  test_dir.WriteManifest(kManifest);
+  test_dir.WriteFile(FILE_PATH_LITERAL("background.js"), kBackgroundJs);
+
+  const Extension* extension = LoadExtension(
+      test_dir.UnpackedPath(), {.wait_for_registration_stored = true});
+  ASSERT_TRUE(extension);
+
+  // There should initially be two listeners registered, both active (since
+  // the service worker is active).
+  EXPECT_EQ(2u, web_request_router()->GetListenerCountForTesting(
+                    profile(), "webRequest.onBeforeRequest"));
+  EXPECT_EQ(0u, web_request_router()->GetInactiveListenerCountForTesting(
+                    profile(), "webRequest.onBeforeRequest"));
+
+  // Manually remove one of the listeners. This should result in the listener
+  // being fully removed (not deactivated), so there should only be a single
+  // listener remaining.
+  static constexpr char kRemoveListener[] =
+      R"(chrome.webRequest.onBeforeRequest.removeListener(self.firstListener);
+         chrome.test.sendScriptResult('');)";
+  BackgroundScriptExecutor::ExecuteScript(
+      profile(), extension->id(), kRemoveListener,
+      BackgroundScriptExecutor::ResultCapture::kSendScriptResult);
+
+  // Note: the task to remove listeners from ExtensionWebRequestEventRouter
+  // is async; run to flush the posted task.
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_EQ(1u, web_request_router()->GetListenerCountForTesting(
+                    profile(), "webRequest.onBeforeRequest"));
+  EXPECT_EQ(0u, web_request_router()->GetInactiveListenerCountForTesting(
+                    profile(), "webRequest.onBeforeRequest"));
+
+  // Navigate to a page and verify that only the second listener fires.
   EXPECT_TRUE(ui_test_utils::NavigateToURL(
       browser(),
       embedded_test_server()->GetURL("example.com", "/simple.html")));
 
-  // TODO(https://crbug.com/1024211): This currently fails. Additionally,
-  // BackgroundScriptExecutor won't wake up a passive service worker, so
-  // we can't even call `get_request_count()`.
-  // EXPECT_EQ(2, get_request_count());
+  EXPECT_EQ(0, GetCountFromBackgroundScript(extension, profile(),
+                                            "firstListenerCount"));
+  EXPECT_EQ(1, GetCountFromBackgroundScript(extension, profile(),
+                                            "secondListenerCount"));
+}
+
+// Tests listeners in multiple contexts with lazy event disptaching.
+IN_PROC_BROWSER_TEST_F(ManifestV3WebRequestApiTest,
+                       ListenersInMultipleContextsWithLazyDispatch) {
+  ASSERT_TRUE(StartEmbeddedTestServer());
+  static constexpr char kManifest[] =
+      R"({
+           "name": "MV3 WebRequest",
+           "version": "0.1",
+           "manifest_version": 3,
+           "permissions": ["webRequest"],
+           "host_permissions": [ "http://example.com/*" ],
+           "background": {"service_worker": "background.js"}
+         })";
+  // The extension has two contexts: the background service worker and a
+  // separate page, each of which register an identical listener. Each should
+  // only be invoked once.
+  static constexpr char kBackgroundJs[] =
+      R"(self.eventCount = 0;
+         chrome.webRequest.onBeforeRequest.addListener(
+             async function() {
+               ++eventCount;
+               // Perform a rount trip to ensure any events that are coming our
+               // way get dispatched, and then notify the test.
+               await chrome.test.waitForRoundTrip('test');
+               chrome.test.sendMessage('worker received');
+             },
+             {urls: ['http://example.com/*'], types: ['main_frame']}, []);)";
+  static constexpr char kPageHtml[] =
+      R"(<!doctype html>
+          <html>
+            Page
+            <script src="page.js"></script>
+          </html>)";
+  static constexpr char kPageJs[] =
+      R"(self.eventCount = 0;
+         chrome.webRequest.onBeforeRequest.addListener(
+             function() { ++eventCount; },
+             {urls: ['http://example.com/*'], types: ['main_frame']}, []);)";
+
+  TestExtensionDir test_dir;
+  test_dir.WriteManifest(kManifest);
+  test_dir.WriteFile(FILE_PATH_LITERAL("background.js"), kBackgroundJs);
+  test_dir.WriteFile(FILE_PATH_LITERAL("page.html"), kPageHtml);
+  test_dir.WriteFile(FILE_PATH_LITERAL("page.js"), kPageJs);
+  const Extension* extension = LoadExtension(
+      test_dir.UnpackedPath(), {.wait_for_registration_stored = true});
+
+  ASSERT_TRUE(extension);
+
+  // Load the page with the extension listeners.
+  content::RenderFrameHost* page_host = ui_test_utils::NavigateToURL(
+      browser(), extension->GetResourceURL("page.html"));
+  ASSERT_TRUE(page_host);
+
+  // At this point, 2 listeners should be registered.
+  EXPECT_EQ(2u, web_request_router()->GetListenerCountForTesting(
+                    profile(), "webRequest.onBeforeRequest"));
+
+  // Convenience lambdas for checking the count received in each listener.
+  auto get_worker_event_count = [this, extension]() {
+    return GetCountFromBackgroundScript(extension, profile(), "eventCount");
+  };
+  auto get_page_event_count = [page_host]() {
+    int count = -1;
+    EXPECT_TRUE(content::ExecuteScriptAndExtractInt(
+        page_host, "domAutomationController.send(self.eventCount);", &count));
+    return count;
+  };
+
+  // Stop the extension's service worker. The worker listener should now be
+  // registered as an inactive listener.
+  browsertest_util::StopServiceWorkerForExtensionGlobalScope(profile(),
+                                                             extension->id());
+  // Note: the task to remove listeners from ExtensionWebRequestEventRouter
+  // is async; run to flush the posted task.
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(1u, web_request_router()->GetListenerCountForTesting(
+                    profile(), "webRequest.onBeforeRequest"));
+  EXPECT_EQ(1u, web_request_router()->GetInactiveListenerCountForTesting(
+                    profile(), "webRequest.onBeforeRequest"));
+
+  {
+    ExtensionTestMessageListener listener("worker received");
+    // Navigate to example.com (this navigation needs to happen in a new tab so
+    // that we don't navigate the extension page).
+    ASSERT_TRUE(ui_test_utils::NavigateToURLWithDisposition(
+        browser(),
+        embedded_test_server()->GetURL("example.com", "/title1.html"),
+        WindowOpenDisposition::NEW_FOREGROUND_TAB,
+        ui_test_utils::BROWSER_TEST_WAIT_FOR_LOAD_STOP));
+    EXPECT_TRUE(listener.WaitUntilSatisfied());
+  }
+
+  // Each listener should have fired exactly once.
+  EXPECT_EQ(1, get_worker_event_count());
+  EXPECT_EQ(1, get_page_event_count());
 }
 
 }  // namespace extensions

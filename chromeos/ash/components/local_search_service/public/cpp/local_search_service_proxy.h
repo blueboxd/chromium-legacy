@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -15,8 +15,7 @@
 
 class PrefService;
 
-namespace chromeos {
-namespace local_search_service {
+namespace ash::local_search_service {
 
 class LocalSearchServiceProxy : public KeyedService {
  public:
@@ -50,14 +49,11 @@ class LocalSearchServiceProxy : public KeyedService {
   std::unique_ptr<SearchMetricsReporter> reporter_;
 };
 
-}  // namespace local_search_service
-}  // namespace chromeos
+}  // namespace ash::local_search_service
 
-// TODO(https://crbug.com/1164001): remove when moved to ash.
-namespace ash {
-namespace local_search_service {
-using ::chromeos::local_search_service::LocalSearchServiceProxy;
-}  // namespace local_search_service
-}  // namespace ash
+// TODO(https://crbug.com/1164001): remove after the migration is finished.
+namespace chromeos::local_search_service {
+using ::ash::local_search_service::LocalSearchServiceProxy;
+}
 
 #endif  // CHROMEOS_ASH_COMPONENTS_LOCAL_SEARCH_SERVICE_PUBLIC_CPP_LOCAL_SEARCH_SERVICE_PROXY_H_

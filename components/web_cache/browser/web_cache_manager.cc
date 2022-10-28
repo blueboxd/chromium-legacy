@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -27,7 +27,7 @@ namespace web_cache {
 
 constexpr uint64_t kNoCapacitySet = std::numeric_limits<uint64_t>::max();
 
-WebCacheManager::WebCacheInfo::WebCacheInfo() : last_capacity(kNoCapacitySet){};
+WebCacheManager::WebCacheInfo::WebCacheInfo() : last_capacity(kNoCapacitySet) {}
 WebCacheManager::WebCacheInfo::~WebCacheInfo() = default;
 
 static const int kReviseAllocationDelayMS = 200;

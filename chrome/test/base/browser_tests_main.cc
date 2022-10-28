@@ -1,4 +1,4 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -17,7 +17,6 @@
 #endif  // BUILDFLAG(IS_WIN)
 
 #if BUILDFLAG(IS_FUCHSIA)
-#include "base/test/test_switches.h"
 #include "ui/gfx/switches.h"
 #include "ui/ozone/public/ozone_switches.h"  // nogncheck
 #endif

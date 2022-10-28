@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -68,6 +68,7 @@
 #include "components/app_restore/app_launch_info.h"
 #include "components/app_restore/full_restore_utils.h"
 #include "components/policy/core/common/policy_pref_names.h"
+#include "components/services/app_service/public/cpp/features.h"
 #include "components/services/app_service/public/cpp/instance.h"
 #include "components/services/app_service/public/cpp/intent.h"
 #include "components/services/app_service/public/cpp/intent_filter.h"
@@ -245,6 +246,61 @@ void ExtensionAppsChromeOs::LaunchAppWithIntent(
   }
 }
 
+void ExtensionAppsChromeOs::GetMenuModel(
+    const std::string& app_id,
+    MenuType menu_type,
+    int64_t display_id,
+    base::OnceCallback<void(MenuItems)> callback) {
+  MenuItems menu_items;
+  const auto* extension = MaybeGetExtension(app_id);
+  if (!extension) {
+    std::move(callback).Run(std::move(menu_items));
+    return;
+  }
+
+  if (app_id == app_constants::kChromeAppId) {
+    std::move(callback).Run(CreateBrowserMenuItems(profile()));
+    return;
+  }
+
+  bool is_platform_app = extension->is_platform_app();
+  if (!is_platform_app) {
+    CreateOpenNewSubmenu(
+        extensions::GetLaunchType(extensions::ExtensionPrefs::Get(profile()),
+                                  extension) ==
+                extensions::LaunchType::LAUNCH_TYPE_WINDOW
+            ? IDS_APP_LIST_CONTEXT_MENU_NEW_WINDOW
+            : IDS_APP_LIST_CONTEXT_MENU_NEW_TAB,
+        menu_items);
+  }
+
+  if (!is_platform_app && menu_type == MenuType::kAppList &&
+      extensions::util::IsAppLaunchableWithoutEnabling(app_id, profile()) &&
+      extensions::OptionsPageInfo::HasOptionsPage(extension)) {
+    AddCommandItem(ash::OPTIONS, IDS_NEW_TAB_APP_OPTIONS, menu_items);
+  }
+
+  if (menu_type == MenuType::kShelf &&
+      instance_registry_->ContainsAppId(app_id)) {
+    AddCommandItem(ash::MENU_CLOSE, IDS_SHELF_CONTEXT_MENU_CLOSE, menu_items);
+  }
+
+  const extensions::ManagementPolicy* policy =
+      extensions::ExtensionSystem::Get(profile())->management_policy();
+  DCHECK(policy);
+  if (policy->UserMayModifySettings(extension, nullptr) &&
+      !policy->MustRemainInstalled(extension, nullptr)) {
+    AddCommandItem(ash::UNINSTALL, IDS_APP_LIST_UNINSTALL_ITEM, menu_items);
+  }
+
+  if (extension->ShouldDisplayInAppLauncher()) {
+    AddCommandItem(ash::SHOW_APP_INFO, IDS_APP_CONTEXT_MENU_SHOW_INFO,
+                   menu_items);
+  }
+
+  std::move(callback).Run(std::move(menu_items));
+}
+
 void ExtensionAppsChromeOs::LaunchAppWithIntent(
     const std::string& app_id,
     int32_t event_flags,
@@ -362,54 +418,8 @@ void ExtensionAppsChromeOs::GetMenuModel(const std::string& app_id,
                                          apps::mojom::MenuType menu_type,
                                          int64_t display_id,
                                          GetMenuModelCallback callback) {
-  apps::mojom::MenuItemsPtr menu_items = apps::mojom::MenuItems::New();
-  const auto* extension = MaybeGetExtension(app_id);
-  if (!extension) {
-    std::move(callback).Run(std::move(menu_items));
-    return;
-  }
-
-  if (app_id == app_constants::kChromeAppId) {
-    std::move(callback).Run(CreateBrowserMenuItems(profile()));
-    return;
-  }
-
-  bool is_platform_app = extension->is_platform_app();
-  if (!is_platform_app) {
-    CreateOpenNewSubmenu(
-        extensions::GetLaunchType(extensions::ExtensionPrefs::Get(profile()),
-                                  extension) ==
-                extensions::LaunchType::LAUNCH_TYPE_WINDOW
-            ? IDS_APP_LIST_CONTEXT_MENU_NEW_WINDOW
-            : IDS_APP_LIST_CONTEXT_MENU_NEW_TAB,
-        &menu_items);
-  }
-
-  if (!is_platform_app && menu_type == apps::mojom::MenuType::kAppList &&
-      extensions::util::IsAppLaunchableWithoutEnabling(app_id, profile()) &&
-      extensions::OptionsPageInfo::HasOptionsPage(extension)) {
-    AddCommandItem(ash::OPTIONS, IDS_NEW_TAB_APP_OPTIONS, &menu_items);
-  }
-
-  if (menu_type == apps::mojom::MenuType::kShelf &&
-      instance_registry_->ContainsAppId(app_id)) {
-    AddCommandItem(ash::MENU_CLOSE, IDS_SHELF_CONTEXT_MENU_CLOSE, &menu_items);
-  }
-
-  const extensions::ManagementPolicy* policy =
-      extensions::ExtensionSystem::Get(profile())->management_policy();
-  DCHECK(policy);
-  if (policy->UserMayModifySettings(extension, nullptr) &&
-      !policy->MustRemainInstalled(extension, nullptr)) {
-    AddCommandItem(ash::UNINSTALL, IDS_APP_LIST_UNINSTALL_ITEM, &menu_items);
-  }
-
-  if (extension->ShouldDisplayInAppLauncher()) {
-    AddCommandItem(ash::SHOW_APP_INFO, IDS_APP_CONTEXT_MENU_SHOW_INFO,
-                   &menu_items);
-  }
-
-  std::move(callback).Run(std::move(menu_items));
+  GetMenuModel(app_id, ConvertMojomMenuTypeToMenuType(menu_type), display_id,
+               MenuItemsToMojomMenuItemsCallback(std::move(callback)));
 }
 
 void ExtensionAppsChromeOs::OnAppWindowAdded(
@@ -485,8 +495,15 @@ void ExtensionAppsChromeOs::OnExtensionUninstalled(
   paused_apps_.MaybeRemoveApp(extension->id());
 
   auto result = media_requests_.RemoveRequests(extension->id());
-  ModifyCapabilityAccess(subscribers(), extension->id(), result.camera,
-                         result.microphone);
+
+  if (base::FeatureList::IsEnabled(
+          apps::kAppServiceCapabilityAccessWithoutMojom)) {
+    apps::AppPublisher::ModifyCapabilityAccess(extension->id(), result.camera,
+                                               result.microphone);
+  } else {
+    PublisherBase::ModifyCapabilityAccess(subscribers(), extension->id(),
+                                          result.camera, result.microphone);
+  }
 
   ExtensionAppsBase::OnExtensionUninstalled(browser_context, extension, reason);
 }
@@ -560,8 +577,15 @@ void ExtensionAppsChromeOs::OnRequestUpdate(
 
   auto result =
       media_requests_.UpdateRequests(app_id, web_contents, stream_type, state);
-  ModifyCapabilityAccess(subscribers(), app_id, result.camera,
-                         result.microphone);
+
+  if (base::FeatureList::IsEnabled(
+          apps::kAppServiceCapabilityAccessWithoutMojom)) {
+    apps::AppPublisher::ModifyCapabilityAccess(app_id, result.camera,
+                                               result.microphone);
+  } else {
+    PublisherBase::ModifyCapabilityAccess(subscribers(), app_id, result.camera,
+                                          result.microphone);
+  }
 }
 
 void ExtensionAppsChromeOs::OnWebContentsDestroyed(
@@ -580,8 +604,14 @@ void ExtensionAppsChromeOs::OnWebContentsDestroyed(
   }
 
   auto result = media_requests_.OnWebContentsDestroyed(app_id, web_contents);
-  ModifyCapabilityAccess(subscribers(), app_id, result.camera,
-                         result.microphone);
+  if (base::FeatureList::IsEnabled(
+          apps::kAppServiceCapabilityAccessWithoutMojom)) {
+    apps::AppPublisher::ModifyCapabilityAccess(app_id, result.camera,
+                                               result.microphone);
+  } else {
+    PublisherBase::ModifyCapabilityAccess(subscribers(), app_id, result.camera,
+                                          result.microphone);
+  }
 }
 
 void ExtensionAppsChromeOs::OnNotificationDisplayed(
@@ -727,8 +757,7 @@ void ExtensionAppsChromeOs::OnSystemFeaturesPrefChanged() {
   }
 
   const base::Value::List& disabled_system_features_pref =
-      local_state->GetValueList(
-          policy::policy_prefs::kSystemFeaturesDisableList);
+      local_state->GetList(policy::policy_prefs::kSystemFeaturesDisableList);
 
   const bool is_pref_disabled_mode_hidden =
       local_state->GetString(

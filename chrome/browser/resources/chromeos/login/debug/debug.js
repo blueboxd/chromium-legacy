@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,7 +13,7 @@
 // #import './debug_util.js';
 // #import {AssistantNativeIconType} from '../../assistant_optin/utils.m.js';
 
-// #import {MessageType, ProblemType} from 'chrome://resources/cr_components/chromeos/quick_unlock/setup_pin_keyboard.m.js';
+// #import {MessageType, ProblemType} from 'chrome://resources/cr_components/chromeos/quick_unlock/setup_pin_keyboard.js';
 
 const createAssistantData = (isMinor) => {
   const data = {};
@@ -835,33 +835,33 @@ cr.define('cr.ui.login.debug', function() {
           // Password was scraped
           id: 'scraped',
           trigger: (screen) => {
-            screen.show(
-                'someone@example.com',
-                false,  // manualPasswordInput
-                0,      // attempt count
-                () => {});
+            screen.onBeforeShow({
+              email: 'someone@example.com',
+              manualPasswordInput: false,
+            });
+            screen.showPasswordStep(false);
           },
         },
         {
           // Password was scraped
           id: 'scraped-retry',
           trigger: (screen) => {
-            screen.show(
-                'someone@example.com',
-                false,  // manualPasswordInput
-                1,      // attempt count
-                () => {});
+            screen.onBeforeShow({
+              email: 'someone@example.com',
+              manualPasswordInput: false,
+            });
+            screen.showPasswordStep(true);
           },
         },
         {
           // No password was scraped
           id: 'manual',
           trigger: (screen) => {
-            screen.show(
-                'someone@example.com',
-                true,  // manualPasswordInput
-                0,     // attempt count
-                () => {});
+            screen.onBeforeShow({
+              email: 'someone@example.com',
+              manualPasswordInput: true,
+            });
+            screen.showPasswordStep(false);
           },
         },
       ],
@@ -928,6 +928,10 @@ cr.define('cr.ui.login.debug', function() {
           screen.showSkipButton();
         },
       }],
+    },
+    {
+      id: 'lacros-data-backward-migration',
+      kind: ScreenKind.OTHER,
     },
     {
       id: 'terms-of-service',
@@ -1177,6 +1181,10 @@ cr.define('cr.ui.login.debug', function() {
     {
       id: 'hw-data-collection',
       kind: ScreenKind.OTHER,
+    },
+    {
+      id: 'local-state-error',
+      kind: ScreenKind.ERROR,
     },
     {
       id: 'fingerprint-setup',
@@ -1470,6 +1478,10 @@ cr.define('cr.ui.login.debug', function() {
     },
     {
       id: 'gesture-navigation',
+      kind: ScreenKind.NORMAL,
+    },
+    {
+      id: 'kiosk-enable',
       kind: ScreenKind.NORMAL,
     },
     {

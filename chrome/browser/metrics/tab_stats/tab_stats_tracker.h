@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -18,7 +18,6 @@
 #include "base/timer/timer.h"
 #include "build/build_config.h"
 #include "chrome/browser/metrics/tab_stats/tab_stats_data_store.h"
-#include "chrome/browser/metrics/tab_stats/tab_stats_tracker_delegate.h"
 #include "chrome/browser/resource_coordinator/tab_lifecycle_observer.h"
 #include "chrome/browser/ui/browser_list_observer.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
@@ -67,9 +66,6 @@ class TabStatsTracker : public TabStripModelObserver,
 
   // Registers prefs used to track tab stats.
   static void RegisterPrefs(PrefRegistrySimple* registry);
-
-  void SetDelegateForTesting(
-      std::unique_ptr<TabStatsTrackerDelegate> new_delegate);
 
   // Accessors.
   const TabStatsDataStore::TabsStats& tab_stats() const;
@@ -177,12 +173,6 @@ class TabStatsTracker : public TabStripModelObserver,
   // Functions to call when a WebContents get destroyed.
   void OnWebContentsDestroyed(content::WebContents* web_contents);
 
-#if BUILDFLAG(IS_WIN)
-  // Function to call aura_extra::ComputeNativeWindowOcclusionStatus() and
-  // record the Visibility of all Chrome browser windows on Windows.
-  void CalculateAndRecordNativeWindowVisibilities();
-#endif
-
   // Function to call to report the tab heartbeat metrics.
   void OnHeartbeatEvent();
 
@@ -200,9 +190,6 @@ class TabStatsTracker : public TabStripModelObserver,
   // The delegate that reports the events.
   std::unique_ptr<UmaStatsReportingDelegate> reporting_delegate_;
 
-  // Delegate to collect data;
-  std::unique_ptr<TabStatsTrackerDelegate> delegate_;
-
   // The tab stats.
   std::unique_ptr<TabStatsDataStore> tab_stats_data_store_;
 
@@ -215,12 +202,6 @@ class TabStatsTracker : public TabStripModelObserver,
   // The timer used to periodically check if the daily event should be
   // triggered.
   base::RepeatingTimer daily_event_timer_;
-
-#if BUILDFLAG(IS_WIN)
-  // The timer used to periodically calculate the occlusion status of native
-  // windows on Windows.
-  base::RepeatingTimer native_window_occlusion_timer_;
-#endif
 
   // The timers used to analyze how tabs are used during a given interval of
   // time.
@@ -270,9 +251,6 @@ class TabStatsTracker::UmaStatsReportingDelegate {
   // The name of the histogram that records each window's width, in DIPs.
   static const char kWindowWidthHistogramName[];
 
-  // The name of the histogram that records the number of collapsed tabs.
-  static const char kCollapsedTabHistogramName[];
-
   // The names of the histograms that record daily discard/reload counts caused
   // by external/urgent event.
   static const char kDailyDiscardsExternalHistogramName[];
@@ -302,12 +280,6 @@ class TabStatsTracker::UmaStatsReportingDelegate {
   void ReportUsageDuringInterval(
       const TabStatsDataStore::TabsStateDuringIntervalMap& interval_map,
       base::TimeDelta interval);
-
-#if BUILDFLAG(IS_WIN)
-  void RecordNativeWindowVisibilities(size_t num_occluded,
-                                      size_t num_visible,
-                                      size_t num_hidden);
-#endif
 
  protected:
   // Generates the name of the histograms that will track tab usage during a

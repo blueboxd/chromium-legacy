@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -45,7 +45,7 @@ class WebUIBrowserExpectFailTest : public WebUIBrowserTest {
  protected:
   ~WebUIBrowserExpectFailTest() override {
     EXPECT_TRUE(s_test_);
-    s_test_ = NULL;
+    s_test_ = nullptr;
   }
 
   static void RunJavascriptTestNoReturn(const std::string& testname) {
@@ -62,7 +62,7 @@ class WebUIBrowserExpectFailTest : public WebUIBrowserTest {
   static WebUIBrowserTest* s_test_;
 };
 
-WebUIBrowserTest* WebUIBrowserExpectFailTest::s_test_ = NULL;
+WebUIBrowserTest* WebUIBrowserExpectFailTest::s_test_ = nullptr;
 
 // Test that bogus javascript fails fast - no timeout waiting for result.
 // TODO(crbug/974796): Flaky on Win7 debug builds.

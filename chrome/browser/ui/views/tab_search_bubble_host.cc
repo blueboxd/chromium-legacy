@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -107,7 +107,7 @@ bool TabSearchBubbleHost::ShowTabSearchBubble(
   BrowserFeaturePromoController* controller =
       BrowserFeaturePromoController::GetForView(button_);
   if (controller)
-    controller->CloseBubble(feature_engagement::kIPHTabSearchFeature);
+    controller->EndPromo(feature_engagement::kIPHTabSearchFeature);
 
   absl::optional<gfx::Rect> anchor;
   if (button_->GetWidget()->IsFullscreen() && !button_->IsDrawn()) {

@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -22,12 +22,17 @@
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
+#include "chrome/browser/download/chrome_download_manager_delegate.h"
+#include "chrome/browser/download/download_core_service.h"
+#include "chrome/browser/download/download_core_service_factory.h"
+#include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/file_system_access/file_system_access_permission_request_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/pref_names.h"
+#include "components/permissions/permission_util.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
@@ -87,6 +92,11 @@ class ChromeFileSystemAccessPermissionContextTest : public testing::Test {
   }
   void SetUp() override {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
+
+    DownloadCoreServiceFactory::GetForBrowserContext(profile())
+        ->SetDownloadManagerDelegateForTesting(
+            std::make_unique<ChromeDownloadManagerDelegate>(profile()));
+
     web_contents_ =
         content::WebContentsTester::CreateTestWebContents(&profile_, nullptr);
     FileSystemAccessPermissionRequestManager::CreateForWebContents(
@@ -167,6 +177,8 @@ class ChromeFileSystemAccessPermissionContextTest : public testing::Test {
       url::Origin::Create(GURL("https://example.com"));
   const url::Origin kTestOrigin2 =
       url::Origin::Create(GURL("https://test.com"));
+  const url::Origin kPdfOrigin = url::Origin::Create(
+      GURL("chrome-extension://mhjfbmdgcfjbbpaeojofohoefgiehjai/index.html"));
   const std::string kTestStartingDirectoryId = "test_id";
   const base::FilePath kTestPath =
       base::FilePath(FILE_PATH_LITERAL("/foo/bar"));
@@ -420,6 +432,12 @@ TEST_F(ChromeFileSystemAccessPermissionContextTest,
                 permission_context(), PathType::kLocal,
                 temp_dir_.GetPath().AppendASCII("test.swf"), HandleType::kFile,
                 ui::SelectFileDialog::SELECT_OPEN_FILE));
+  // Opening files with a dangerous compound extension should show a prompt.
+  EXPECT_EQ(SensitiveDirectoryResult::kAbort,
+            ConfirmSensitiveEntryAccessSync(
+                permission_context(), PathType::kLocal,
+                temp_dir_.GetPath().AppendASCII("test.txt.swf"),
+                HandleType::kFile, ui::SelectFileDialog::SELECT_SAVEAS_FILE));
 }
 
 TEST_F(ChromeFileSystemAccessPermissionContextTest,
@@ -689,7 +707,7 @@ TEST_F(ChromeFileSystemAccessPermissionContextTest,
   base::ScopedPathOverride user_desktop_override(
       base::DIR_USER_DESKTOP, temp_dir_.GetPath(), true, true);
   EXPECT_EQ(permission_context()->GetWellKnownDirectoryPath(
-                blink::mojom::WellKnownDirectory::kDirDesktop),
+                blink::mojom::WellKnownDirectory::kDirDesktop, kTestOrigin),
             temp_dir_.GetPath());
 }
 
@@ -698,7 +716,7 @@ TEST_F(ChromeFileSystemAccessPermissionContextTest,
   base::ScopedPathOverride user_documents_override(
       chrome::DIR_USER_DOCUMENTS, temp_dir_.GetPath(), true, true);
   EXPECT_EQ(permission_context()->GetWellKnownDirectoryPath(
-                blink::mojom::WellKnownDirectory::kDirDocuments),
+                blink::mojom::WellKnownDirectory::kDirDocuments, kTestOrigin),
             temp_dir_.GetPath());
 }
 
@@ -707,7 +725,18 @@ TEST_F(ChromeFileSystemAccessPermissionContextTest,
   base::ScopedPathOverride user_documents_override(
       chrome::DIR_USER_DOCUMENTS, temp_dir_.GetPath(), true, true);
   EXPECT_EQ(permission_context()->GetWellKnownDirectoryPath(
-                blink::mojom::WellKnownDirectory::kDefault),
+                blink::mojom::WellKnownDirectory::kDefault, kTestOrigin),
+            temp_dir_.GetPath());
+}
+
+TEST_F(ChromeFileSystemAccessPermissionContextTest,
+       GetWellKnownDirectoryPath_Pdf_Downloads) {
+  DownloadPrefs::FromBrowserContext(browser_context())
+      ->SkipSanitizeDownloadTargetPathForTesting();
+  DownloadPrefs::FromBrowserContext(browser_context())
+      ->SetDownloadPath(temp_dir_.GetPath());
+  EXPECT_EQ(permission_context()->GetWellKnownDirectoryPath(
+                blink::mojom::WellKnownDirectory::kDirDownloads, kPdfOrigin),
             temp_dir_.GetPath());
 }
 
@@ -854,6 +883,34 @@ TEST_F(ChromeFileSystemAccessPermissionContextTest,
 }
 
 TEST_F(ChromeFileSystemAccessPermissionContextTest,
+       GetPermissionGrants_GrantsAreRetainedViaPersistedPermissions) {
+  auto kTestPath2 = kTestPath.AppendASCII("baz");
+  auto file_write_grant = permission_context()->GetWritePermissionGrant(
+      kTestOrigin, kTestPath, HandleType::kFile, UserAction::kSave);
+  auto file_read_grant = permission_context()->GetReadPermissionGrant(
+      kTestOrigin, kTestPath, HandleType::kFile, UserAction::kSave);
+  auto file_read_only_grant = permission_context()->GetReadPermissionGrant(
+      kTestOrigin, kTestPath2, HandleType::kFile, UserAction::kSave);
+
+  // `GetPermissionGrants` returns `grants` as expected.
+  auto grants = permission_context()->GetPermissionGrants(kTestOrigin);
+  std::vector<base::FilePath> expected_file_write_grants = {kTestPath};
+  std::vector<base::FilePath> expected_file_read_grants = {kTestPath,
+                                                           kTestPath2};
+
+  EXPECT_EQ(grants.file_write_grants, expected_file_write_grants);
+  EXPECT_EQ(grants.file_read_grants, expected_file_read_grants);
+
+  // Persisted permissions are retained after resetting the active grants.
+  file_write_grant.reset();
+  file_read_grant.reset();
+  file_read_only_grant.reset();
+  grants = permission_context()->GetPermissionGrants(kTestOrigin);
+  EXPECT_EQ(grants.file_write_grants, expected_file_write_grants);
+  EXPECT_EQ(grants.file_read_grants, expected_file_read_grants);
+}
+
+TEST_F(ChromeFileSystemAccessPermissionContextTest,
        GetWritePermissionGrant_InitialState_OpenAction_GlobalGuardBlocked) {
   SetDefaultContentSettingValue(ContentSettingsType::FILE_SYSTEM_WRITE_GUARD,
                                 CONTENT_SETTING_BLOCK);
@@ -957,6 +1014,9 @@ TEST_F(
   grant = permission_context()->GetWritePermissionGrant(
       kTestOrigin, kTestPath, HandleType::kFile, UserAction::kOpen);
   EXPECT_EQ(PermissionStatus::ASK, grant->GetStatus());
+
+  auto grants = permission_context()->GetPermissionGrants(kTestOrigin);
+  EXPECT_TRUE(grants.file_write_grants.empty());
 
   SetDefaultContentSettingValue(ContentSettingsType::FILE_SYSTEM_WRITE_GUARD,
                                 CONTENT_SETTING_BLOCK);
@@ -1264,6 +1324,11 @@ TEST_F(ChromeFileSystemAccessPermissionContextTest,
   EXPECT_EQ(PermissionStatus::ASK, grant->GetStatus());
   EXPECT_TRUE(permission_context()->HasPersistedPermissionForTesting(
       kTestOrigin, kTestPath, HandleType::kFile, GrantType::kWrite));
+
+  ChromeFileSystemAccessPermissionContext::Grants grants =
+      permission_context()->GetPermissionGrants(kTestOrigin);
+  std::vector<base::FilePath> expected_res = {kTestPath};
+  EXPECT_EQ(grants.file_write_grants, expected_res);
 }
 
 TEST_F(ChromeFileSystemAccessPermissionContextTest,

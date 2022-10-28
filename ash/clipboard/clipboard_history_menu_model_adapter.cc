@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,8 +11,8 @@
 #include "ash/wm/window_util.h"
 #include "base/bind.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/ranges/algorithm.h"
 #include "ui/accessibility/ax_enums.mojom.h"
-#include "ui/base/clipboard/clipboard.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/gfx/geometry/rect.h"
@@ -80,7 +80,7 @@ void ClipboardHistoryMenuModelAdapter::Run(
 
   menu_open_time_ = base::TimeTicks::Now();
 
-  int command_id = ClipboardHistoryUtil::kFirstItemCommandId;
+  int command_id = clipboard_history_util::kFirstItemCommandId;
   const auto& items = clipboard_history_->GetItems();
   // Do not include the final kDeleteCommandId item in histograms, because it
   // is not shown.
@@ -154,12 +154,9 @@ void ClipboardHistoryMenuModelAdapter::SelectMenuItemWithCommandId(
 
 void ClipboardHistoryMenuModelAdapter::SelectMenuItemHoveredByMouse() {
   // Find the menu item hovered by mouse.
-  auto iter =
-      std::find_if(item_views_by_command_id_.cbegin(),
-                   item_views_by_command_id_.cend(), [](const auto& iterator) {
-                     const views::View* item_view = iterator.second;
-                     return item_view->IsMouseHovered();
-                   });
+  auto iter = base::ranges::find_if(item_views_by_command_id_,
+                                    &views::View::IsMouseHovered,
+                                    &ItemViewsByCommandId::value_type::second);
 
   if (iter == item_views_by_command_id_.cend()) {
     // If no item is hovered by mouse, cancel the selection on the child menu
@@ -250,14 +247,14 @@ void ClipboardHistoryMenuModelAdapter::AdvancePseudoFocus(bool reverse) {
   if (!selected_command.has_value()) {
     SelectMenuItemWithCommandId(
         reverse ? item_views_by_command_id_.rbegin()->first
-                : ClipboardHistoryUtil::kFirstItemCommandId);
+                : clipboard_history_util::kFirstItemCommandId);
     return;
   }
 
   AdvancePseudoFocusFromSelectedItem(reverse);
 }
 
-ClipboardHistoryUtil::Action
+clipboard_history_util::Action
 ClipboardHistoryMenuModelAdapter::GetActionForCommandId(int command_id) const {
   auto selected_item_iter = item_views_by_command_id_.find(command_id);
   DCHECK(selected_item_iter != item_views_by_command_id_.cend());

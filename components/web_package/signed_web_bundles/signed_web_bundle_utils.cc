@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -25,13 +25,11 @@ void AddItemToPayload(std::vector<uint8_t>& payload,
 }  // namespace
 
 std::vector<uint8_t> CreateSignaturePayload(
-    base::span<const uint8_t> unsigned_bundle_hash,
-    base::span<const uint8_t> integrity_block,
-    base::span<const uint8_t> signature_stack_entry_attributes) {
+    const SignedWebBundleSignatureData& data) {
   std::vector<uint8_t> payload;
-  AddItemToPayload(payload, unsigned_bundle_hash);
-  AddItemToPayload(payload, integrity_block);
-  AddItemToPayload(payload, signature_stack_entry_attributes);
+  AddItemToPayload(payload, data.unsigned_web_bundle_hash);
+  AddItemToPayload(payload, data.integrity_block_cbor);
+  AddItemToPayload(payload, data.attributes_cbor);
 
   return payload;
 }

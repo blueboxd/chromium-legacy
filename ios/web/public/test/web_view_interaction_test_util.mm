@@ -1,15 +1,15 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #import "ios/web/public/test/web_view_interaction_test_util.h"
 
-#include "base/bind.h"
-#include "base/json/string_escape.h"
-#include "base/logging.h"
-#include "base/strings/stringprintf.h"
-#include "base/strings/sys_string_conversions.h"
-#include "base/strings/utf_string_conversions.h"
+#import "base/bind.h"
+#import "base/json/string_escape.h"
+#import "base/logging.h"
+#import "base/strings/stringprintf.h"
+#import "base/strings/sys_string_conversions.h"
+#import "base/strings/utf_string_conversions.h"
 #import "base/test/ios/wait_util.h"
 #import "ios/web/js_messaging/java_script_feature_manager.h"
 #import "ios/web/js_messaging/web_frame_impl.h"
@@ -239,9 +239,9 @@ CGRect GetBoundingRectOfElement(web::WebState* web_state,
   return elementFrame;
 }
 
-// Returns whether the Javascript action specified by |action| ran on the
-// element retrieved by the Javascript snippet |element_script| in the passed
-// |web_state|. |error| can be nil, and will return any error from executing
+// Returns whether the Javascript action specified by `action` ran on the
+// element retrieved by the Javascript snippet `element_script` in the passed
+// `web_state`. `error` can be nil, and will return any error from executing
 // JavaScript.
 bool RunActionOnWebViewElementWithScript(web::WebState* web_state,
                                          const std::string& element_script,
@@ -278,14 +278,14 @@ bool RunActionOnWebViewElementWithScript(web::WebState* web_state,
   __block bool element_found = false;
   __block NSError* block_error = nil;
 
-  // |executeUserJavaScript:completionHandler:| is no-op for app-specific URLs,
+  // `executeUserJavaScript:completionHandler:` is no-op for app-specific URLs,
   // so simulate a user gesture by calling TouchTracking method.
   [web_controller touched:YES];
   [web_controller executeJavaScript:script
-                  completionHandler:^(id result, NSError* error) {
+                  completionHandler:^(id result, NSError* innerError) {
                     did_complete = true;
                     element_found = [result boolValue];
-                    block_error = [error copy];
+                    block_error = [innerError copy];
                   }];
 
   bool js_finished = WaitUntilConditionOrTimeout(kWaitForJSCompletionTimeout, ^{
@@ -299,8 +299,8 @@ bool RunActionOnWebViewElementWithScript(web::WebState* web_state,
   return js_finished && element_found;
 }
 
-// Returns whether the Javascript action specified by |action| ran on
-// |element_id| in the passed |web_state|. |error| can be nil, and will return
+// Returns whether the Javascript action specified by `action` ran on
+// `element_id` in the passed `web_state`. `error` can be nil, and will return
 // any error from executing JavaScript.
 bool RunActionOnWebViewElementWithId(web::WebState* web_state,
                                      const std::string& element_id,

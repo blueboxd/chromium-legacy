@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -40,8 +40,8 @@ public class SigninChecker implements AccountTrackerService.Observer {
     private int mNumOfChildAccountChecksDone;
 
     /**
-     * Please use SigninHelperProvider to get {@link SigninChecker} instance instead of creating it
-     * manually.
+     * Please use {@link SigninCheckerProvider} to get {@link SigninChecker} instance instead of
+     * creating it manually.
      */
     public SigninChecker(SigninManager signinManager, AccountTrackerService accountTrackerService) {
         mSigninManager = signinManager;
@@ -111,7 +111,9 @@ public class SigninChecker implements AccountTrackerService.Observer {
                         resigninAfterAccountRename(newAccountName, oldSyncConsent);
                     } else {
                         // Sign out if the current primary account is not renamed
-                        mSigninManager.signOut(SignoutReason.ACCOUNT_REMOVED_FROM_DEVICE);
+                        mSigninManager.runAfterOperationInProgress(() -> {
+                            mSigninManager.signOut(SignoutReason.ACCOUNT_REMOVED_FROM_DEVICE);
+                        });
                     }
                 });
     }
@@ -199,7 +201,7 @@ public class SigninChecker implements AccountTrackerService.Observer {
      * and updates state accordingly.
      */
     public void onMainActivityStart() {
-        try (TraceEvent ignored = TraceEvent.scoped("SigninHelper.onMainActivityStart")) {
+        try (TraceEvent ignored = TraceEvent.scoped("SigninChecker.onMainActivityStart")) {
             validateAccountSettings();
         }
     }

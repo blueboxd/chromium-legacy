@@ -1,10 +1,9 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "ash/wm/overview/overview_session.h"
 
-#include <algorithm>
 #include <functional>
 #include <utility>
 
@@ -53,6 +52,7 @@
 #include "base/containers/contains.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
+#include "base/ranges/algorithm.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/base/hit_test.h"
@@ -370,7 +370,8 @@ void OverviewSession::OnGridEmpty() {
   if (SplitViewController::Get(Shell::GetPrimaryRootWindow())
           ->InTabletSplitViewMode()) {
     UpdateNoWindowsWidgetOnEachGrid();
-  } else if (!allow_empty_desk_without_exiting_) {
+  } else if (!allow_empty_desk_without_exiting_ &&
+             !IsShowingDesksTemplatesGrid()) {
     EndOverview(OverviewEndAction::kLastWindowRemoved);
   }
 }
@@ -398,7 +399,7 @@ void OverviewSession::SelectWindow(OverviewItem* item) {
       Shell::Get()->metrics()->task_switch_metrics_recorder().OnTaskSwitch(
           TaskSwitchSource::OVERVIEW_MODE);
     }
-    const auto it = std::find(window_list.begin(), window_list.end(), window);
+    const auto it = base::ranges::find(window_list, window);
     if (it != window_list.end()) {
       // Record 1-based index so that selecting a top MRU window will record 1.
       UMA_HISTOGRAM_COUNTS_100("Ash.Overview.SelectionDepth",
@@ -789,11 +790,12 @@ void OverviewSession::OnWindowActivating(
   if (ignore_activations_ || gained_active == GetOverviewFocusWindow())
     return;
 
-  // Activating the Desks bar or the Desks Templates grid should not end
-  // overview.
+  // Activating the Desks bar window, the Saved Desk Library window, or the Save
+  // Desk Button Container window should not end overview.
   if (gained_active &&
       (gained_active->GetId() == kShellWindowId_DesksBarWindow ||
-       gained_active->GetId() == kShellWindowId_SavedDeskLibraryWindow)) {
+       gained_active->GetId() == kShellWindowId_SavedDeskLibraryWindow ||
+       gained_active->GetId() == kShellWindowId_SaveDeskButtonContainer)) {
     return;
   }
 
@@ -968,10 +970,7 @@ void OverviewSession::OnHighlightedItemClosed(OverviewItem* item) {
 }
 
 void OverviewSession::OnRootWindowClosing(aura::Window* root) {
-  auto iter = std::find_if(grid_list_.begin(), grid_list_.end(),
-                           [root](std::unique_ptr<OverviewGrid>& grid) {
-                             return grid->root_window() == root;
-                           });
+  auto iter = base::ranges::find(grid_list_, root, &OverviewGrid::root_window);
   DCHECK(iter != grid_list_.end());
   (*iter)->Shutdown(OverviewEnterExitType::kImmediateExit);
   grid_list_.erase(iter);
@@ -1030,7 +1029,7 @@ void OverviewSession::ShowDesksTemplatesGrids(
 
   // Send an a11y alert.
   Shell::Get()->accessibility_controller()->TriggerAccessibilityAlert(
-      AccessibilityAlert::DESK_TEMPLATES_MODE_ENTERED);
+      AccessibilityAlert::SAVED_DESKS_MODE_ENTERED);
 
   for (auto& grid : grid_list_)
     grid->ShowDesksTemplatesGrid(was_zero_state);
@@ -1293,33 +1292,6 @@ void OverviewSession::OnKeyEvent(ui::KeyEvent* event) {
         Move(/*reverse=*/true);
       }
       break;
-    case ui::VKEY_T: {
-      // See default section to see why we want to consume events during the
-      // start animation.
-      if (shell->overview_controller()->IsInStartAnimation())
-        break;
-
-        // Make pressing t while in overview show the templates grid if there
-        // are templates to be viewed. This allows developers to view the
-        // templates grid slightly quicker.
-        // TODO(crbug.com/1281685): Remove before feature launch.
-#if !defined(OFFICIAL_BUILD)
-      if (!saved_desk_util::IsSavedDesksEnabled())
-        return;
-
-      // There are no templates to be viewed.
-      if (!saved_desk_presenter_->should_show_templates_ui())
-        return;
-
-      DCHECK(!grid_list_.empty());
-      ShowDesksTemplatesGrids(grid_list_[0]->desks_bar_view()->IsZeroState(),
-                              base::GUID(), /*saved_desk_name=*/u"",
-                              Shell::GetPrimaryRootWindow());
-      break;
-#else
-      return;
-#endif
-    }
     case ui::VKEY_W: {
       if (!is_control_down)
         return;

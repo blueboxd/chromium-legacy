@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -260,6 +260,11 @@ bool ChromeCaptureModeDelegate::IsCameraDisabledByPolicy() const {
   return policy::SystemFeaturesDisableListPolicyHandler::
       IsSystemFeatureDisabled(policy::SystemFeature::kCamera,
                               g_browser_process->local_state());
+}
+
+bool ChromeCaptureModeDelegate::IsAudioCaptureDisabledByPolicy() const {
+  return !ProfileManager::GetActiveUserProfile()->GetPrefs()->GetBoolean(
+      prefs::kAudioCaptureAllowed);
 }
 
 void ChromeCaptureModeDelegate::OnGetDriveQuotaUsage(

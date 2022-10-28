@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -77,12 +77,6 @@ export class AlbumList extends WithPersonalizationStore {
     }
     const album = albums!.find(album => album.id === changedAlbum.id);
     return !!album && album.checked;
-  }
-
-  private getAriaSelected_(
-      changedAlbum: AmbientModeAlbum|null,
-      albums: AmbientModeAlbum[]|null): string {
-    return this.isAlbumSelected_(changedAlbum, albums).toString();
   }
 
   private getAlbumItemClass_(

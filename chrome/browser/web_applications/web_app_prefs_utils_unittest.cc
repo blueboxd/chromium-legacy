@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -60,8 +60,7 @@ TEST_F(WebAppPrefsUtilsTest, TestIphIgnoreRecorded) {
       GetTimeWebAppPref(prefs(), app_id, kIphLastIgnoreTime);
   EXPECT_TRUE(last_ignore_time.has_value());
   {
-    const auto& dict =
-        prefs()->GetValueDict(prefs::kWebAppsAppAgnosticIphState);
+    const auto& dict = prefs()->GetDict(prefs::kWebAppsAppAgnosticIphState);
     EXPECT_EQ(dict.FindInt(kIphIgnoreCount).value_or(0), 1);
     EXPECT_EQ(base::ValueToTime(dict.Find(kIphLastIgnoreTime)),
               last_ignore_time.value());
@@ -79,8 +78,7 @@ TEST_F(WebAppPrefsUtilsTest, TestIphIgnoreRecordUpdated) {
   EXPECT_NE(GetTimeWebAppPref(prefs(), app_id, kIphLastIgnoreTime).value(),
             last_ignore_time.value());
   {
-    const auto& dict =
-        prefs()->GetValueDict(prefs::kWebAppsAppAgnosticIphState);
+    const auto& dict = prefs()->GetDict(prefs::kWebAppsAppAgnosticIphState);
     EXPECT_EQ(dict.FindInt(kIphIgnoreCount).value_or(0), 2);
     EXPECT_NE(base::ValueToTime(dict.Find(kIphLastIgnoreTime)),
               last_ignore_time.value());
@@ -91,15 +89,13 @@ TEST_F(WebAppPrefsUtilsTest, TestIphInstallResetCounters) {
   RecordInstallIphIgnored(prefs(), app_id, base::Time::Now());
   EXPECT_EQ(GetIntWebAppPref(prefs(), app_id, kIphIgnoreCount).value_or(0), 1);
   {
-    const auto& dict =
-        prefs()->GetValueDict(prefs::kWebAppsAppAgnosticIphState);
+    const auto& dict = prefs()->GetDict(prefs::kWebAppsAppAgnosticIphState);
     EXPECT_EQ(dict.FindInt(kIphIgnoreCount).value_or(0), 1);
   }
   RecordInstallIphInstalled(prefs(), app_id);
   EXPECT_EQ(GetIntWebAppPref(prefs(), app_id, kIphIgnoreCount).value_or(0), 0);
   {
-    const auto& dict =
-        prefs()->GetValueDict(prefs::kWebAppsAppAgnosticIphState);
+    const auto& dict = prefs()->GetDict(prefs::kWebAppsAppAgnosticIphState);
     EXPECT_EQ(dict.FindInt(kIphIgnoreCount).value_or(0), 0);
   }
 }

@@ -1,4 +1,4 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -345,7 +345,7 @@ class CrasAudioClientImpl : public CrasAudioClient {
 
   void SetHotwordModel(uint64_t node_id,
                        const std::string& hotword_model,
-                       VoidDBusMethodCallback callback) override {
+                       chromeos::VoidDBusMethodCallback callback) override {
     dbus::MethodCall method_call(cras::kCrasControlInterface,
                                  cras::kSetHotwordModel);
     dbus::MessageWriter writer(&method_call);
@@ -534,7 +534,7 @@ class CrasAudioClientImpl : public CrasAudioClient {
   }
 
   void WaitForServiceToBeAvailable(
-      WaitForServiceToBeAvailableCallback callback) override {
+      chromeos::WaitForServiceToBeAvailableCallback callback) override {
     cras_proxy_->WaitForServiceToBeAvailable(std::move(callback));
   }
 
@@ -984,7 +984,7 @@ class CrasAudioClientImpl : public CrasAudioClient {
     std::move(callback).Run(deprioritize_bt_wbs_mic);
   }
 
-  void OnSetHotwordModel(VoidDBusMethodCallback callback,
+  void OnSetHotwordModel(chromeos::VoidDBusMethodCallback callback,
                          dbus::Response* response) {
     if (!response) {
       LOG(ERROR) << "Failed to call SetHotwordModel.";
@@ -1077,6 +1077,9 @@ class CrasAudioClientImpl : public CrasAudioClient {
           return false;
       } else if (key == cras::kAudioEffectProperty) {
         if (!value_reader.PopUint32(&node->audio_effect))
+          return false;
+      } else if (key == cras::kNumberOfVolumeStepsProperty) {
+        if (!value_reader.PopInt32(&node->number_of_volume_steps))
           return false;
       }
     }

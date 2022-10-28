@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -164,8 +164,7 @@ void FootprintsFetcherImpl::OnPostComplete(
 void FootprintsFetcherImpl::DeleteUserDevice(const std::string& hex_account_key,
                                              DeleteDeviceCallback callback) {
   QP_LOG(VERBOSE) << __func__ << " Deleting user device for acc key "
-                  << hex_account_key << " with delete URL "
-                  << GetUserDeleteDeviceUrl(hex_account_key);
+                  << hex_account_key;
   auto http_fetcher = CreateHttpFetcher();
   auto* raw_http_fetcher = http_fetcher.get();
   raw_http_fetcher->ExecuteDeleteRequest(

@@ -1,4 +1,4 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,12 +12,12 @@
 // A fake ChromeIdentity used for testing.
 @interface FakeChromeIdentity : ChromeIdentity <NSSecureCoding>
 
-// Encodes |identities| into a string, using NSKeyedArchiver.
+// Encodes `identities` into a string, using NSKeyedArchiver.
 + (std::string)encodeIdentitiesToBase64:
     (NSArray<FakeChromeIdentity*>*)identities;
 
 // Returns a list of FakeChromeIdentity encoded using
-// |encodeIdentitiesToBase64:|.
+// `encodeIdentitiesToBase64:`.
 + (NSArray<FakeChromeIdentity*>*)identitiesFromBase64String:
     (const std::string&)string;
 
@@ -30,10 +30,10 @@
 // Returns a fake managed identity.
 + (FakeChromeIdentity*)fakeManagedIdentity;
 
-// Returns a ChromeIdentity based on |email|, |gaiaID| and |name|.
-// The |hashedGaiaID| property will be derived from |name|.
-// For simplicity, both |userGivenName| and |userFullName| properties use
-// |name|.
+// Returns a ChromeIdentity based on `email`, `gaiaID` and `name`.
+// The `hashedGaiaID` property will be derived from `name`.
+// For simplicity, both `userGivenName` and `userFullName` properties use
+// `name`.
 + (FakeChromeIdentity*)identityWithEmail:(NSString*)email
                                   gaiaID:(NSString*)gaiaID
                                     name:(NSString*)name;

@@ -1,15 +1,20 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 // Include test fixture.
 GEN_INCLUDE([
   '../select_to_speak/select_to_speak_e2e_test_base.js',
-  'repeated_tree_change_handler.js',
 ]);
 
 /** Test fixture for array_util.js. */
-RepeatedTreeChangeHandlerTest = class extends SelectToSpeakE2ETest {};
+RepeatedTreeChangeHandlerTest = class extends SelectToSpeakE2ETest {
+  /** @override */
+  async setUpDeferred() {
+    await importModule(
+        'RepeatedTreeChangeHandler', '/common/repeated_tree_change_handler.js');
+  }
+};
 
 TEST_F(
     'RepeatedTreeChangeHandlerTest', 'RepeatedTreeChangeHandledOnce',

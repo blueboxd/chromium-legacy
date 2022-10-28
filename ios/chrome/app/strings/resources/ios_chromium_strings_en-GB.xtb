@@ -67,6 +67,7 @@
 <translation id="5308226104666789935">Chromium can't check for updates</translation>
 <translation id="5396916991083608703">Set Chromium as default?</translation>
 <translation id="5521125884468363740">To see your tabs from wherever you use Chromium, sign in and turn on sync</translation>
+<translation id="5522297504975449419">Some Chromium features won’t be available anymore.</translation>
 <translation id="5573014823074921752">Chromium tip. For more tab options, touch and hold the Show Tabs button in the toolbar, which is at the bottom or top of your screen.</translation>
 <translation id="5700709190537129682">Chromium can't check your passwords</translation>
 <translation id="5777187867430702742">Chromium page</translation>
@@ -95,6 +96,7 @@
 <translation id="7175400662502680481">Your password was exposed in a data breach. Password Manager recommends changing it now.</translation>
 <translation id="7208566199746267865">Chromium saves you time by bringing your accounts to the web. You can add or remove accounts in Settings.</translation>
 <translation id="725427773388857052">Chromium can help keep you safe from data breaches, unsafe websites and more.</translation>
+<translation id="7255976941681861701">Get to know the new Chromium menu</translation>
 <translation id="7269362888766543920">Some add-ons cause Chromium to crash. Please try uninstalling them.</translation>
 <translation id="7313655110045230863">To make Chromium your default browser, open Settings. Tap 'Default browser app', and then select Chromium.</translation>
 <translation id="7337881442233988129">Chromium</translation>
@@ -113,7 +115,6 @@
 <translation id="7980860476903281594">Chromium shares your location with sites that you allow.</translation>
 <translation id="8013573822802650211">To see your tabs from wherever you use Chromium, sign in on all your devices</translation>
 <translation id="8073677936375100957">Clear your Chromium data from this device?</translation>
-<translation id="8175055321229419309">Tip: <ph name="BEGIN_LINK" />Move Chromium to your dock<ph name="END_LINK" /></translation>
 <translation id="8240981428553046115">Chromium couldn't check for updates. Try again later.</translation>
 <translation id="8308172444429103994">Chromium tip. Sign in faster by selecting your saved password at the top of the keyboard.</translation>
 <translation id="858114650497379505">You can use the passwords that you saved to Password Manager in other apps on your iPhone.</translation>

@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -67,8 +67,8 @@ class MockPasswordManagerClient
               (password_manager::ManagePasswordsReferrer),
               (override));
   MOCK_METHOD(password_manager::WebAuthnCredentialsDelegate*,
-              GetWebAuthnCredentialsDelegate,
-              (),
+              GetWebAuthnCredentialsDelegateForDriver,
+              (password_manager::PasswordManagerDriver*),
               (override));
 };
 
@@ -134,7 +134,7 @@ class TouchToFillControllerTest : public testing::Test {
 
     webauthn_credentials_delegate_ =
         std::make_unique<password_manager::MockWebAuthnCredentialsDelegate>();
-    ON_CALL(client_, GetWebAuthnCredentialsDelegate)
+    ON_CALL(client_, GetWebAuthnCredentialsDelegateForDriver)
         .WillByDefault(Return(webauthn_credentials_delegate_.get()));
     ON_CALL(*webauthn_credentials_delegate_, IsWebAuthnAutofillEnabled)
         .WillByDefault(Return(false));
@@ -676,7 +676,6 @@ TEST_F(TouchToFillControllerTest, ShowWebAuthnCredential) {
 
   TouchToFillWebAuthnCredential credential(
       TouchToFillWebAuthnCredential::Username(u"alice@example.com"),
-      TouchToFillWebAuthnCredential::DisplayName(u"alice"),
       TouchToFillWebAuthnCredential::BackendId("12345"));
   std::vector<TouchToFillWebAuthnCredential> credentials({credential});
 

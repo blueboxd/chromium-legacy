@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -180,6 +180,9 @@ extern const char kGooglePasswordManagerURL[];
 
 // URL of the Google Photos.
 extern const char kGooglePhotosURL[];
+
+// The URL for the "Learn more" link for the High Efficiency Mode.
+extern const char kHighEfficiencyModeLearnMoreUrl[];
 
 // The URL for the "Learn more" page for the usage/crash reporting option in the
 // first run dialog.

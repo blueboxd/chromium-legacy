@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,12 +6,12 @@
 
 #import "base/callback.h"
 #import "base/strings/sys_string_conversions.h"
-#include "base/values.h"
+#import "base/values.h"
 #import "ios/web/js_features/context_menu/context_menu_params_utils.h"
 #import "ios/web/public/browser_state.h"
-#include "ios/web/public/js_messaging/java_script_feature_util.h"
+#import "ios/web/public/js_messaging/java_script_feature_util.h"
 #import "ios/web/public/js_messaging/script_message.h"
-#include "ios/web/public/js_messaging/web_frame_util.h"
+#import "ios/web/public/js_messaging/web_frame_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."

@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -887,7 +887,7 @@ void ProfileAttributesEntry::RecordAccountNamesMetric() const {
 
 const base::Value::Dict* ProfileAttributesEntry::GetEntryData() const {
   const base::Value::Dict& attributes =
-      prefs_->GetValueDict(prefs::kProfileAttributes);
+      prefs_->GetDict(prefs::kProfileAttributes);
   return attributes.FindDict(storage_key_);
 }
 

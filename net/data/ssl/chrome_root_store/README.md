@@ -1,8 +1,7 @@
 # Chrome Root Store
 
-This directory contains the in development definition of the
-[Chrome Root Store](https://www.chromium.org/Home/chromium-security/root-ca-policy).
-It is currently not used for trust decisions in Chrome.
+This directory contains the artifacts related to the
+[Chrome Root Store](https://chromium.googlesource.com/chromium/src/+/main/net/data/ssl/chrome_root_store/root_store.md).
 
 The root store is defined by two files:
 
@@ -14,26 +13,14 @@ The root store is defined by two files:
   `root_store.textproto`
 
 The [`root_store_tool`](/net/tools/root_store_tool/root_store_tool.cc) uses the
-two files above to generate code that is included in Chrome. This generated code
-will eventually be used for trust decisions in Chrome.
+two files above to generate code that is included in Chrome. The Chrome Root
+Store and Certificate Verifier will begin rolling out on Windows and macOS in
+Chrome 105, with other platforms to follow.
 
-## Testing
+## Additional Information
+Learn more about testing with the Chrome Root Store and Certificate Verifier
+[here](testing.md).
 
-To test the Chrome Root store, do the following:
+Learn more about the Chrome Root Program [here](https://g.co/chrome/root-policy).
 
-* On M102 or higher on Windows, run Chrome with the following flag:
-
-  `--enable-features=ChromeRootStoreUsed`
-
-  As of 2022-06, an example of a web site that is trusted by Windows Root Store
-  but not by Chrome Root Store is https://rootcertificateprograms.edicom.es/.
-  This can be used to test if Chrome Root Store is turned on or not (for best
-  results use a fresh incognito window to avoid any caching issues).
-
-* On 105.0.5122.0 or higher on Mac, run Chrome with the following flag:
-
-  `--enable-features=ChromeRootStoreUsed,CertVerifierBuiltin:impl/4`
-
-If you're running 104.0.5110.0 or higher, the currently used Chrome Root Store
-version can be seen in a [NetLog
-dump](https://www.chromium.org/for-testers/providing-network-details/).
+See "Frequently Asked Questions" [here](faq.md).

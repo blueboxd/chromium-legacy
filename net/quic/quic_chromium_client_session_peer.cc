@@ -1,11 +1,10 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "net/quic/quic_chromium_client_session_peer.h"
 
 #include "net/dns/public/secure_dns_policy.h"
-#include "net/quic/quic_chromium_client_session.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 
 namespace net::test {
@@ -46,6 +45,12 @@ QuicChromiumClientStream* QuicChromiumClientSessionPeer::CreateOutgoingStream(
 bool QuicChromiumClientSessionPeer::GetSessionGoingAway(
     QuicChromiumClientSession* session) {
   return session->going_away_;
+}
+
+// static
+MigrationCause QuicChromiumClientSessionPeer::GetCurrentMigrationCause(
+    QuicChromiumClientSession* session) {
+  return session->current_migration_cause_;
 }
 
 }  // namespace net::test

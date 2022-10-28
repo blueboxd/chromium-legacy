@@ -1,4 +1,4 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -107,6 +107,8 @@ void AddStrings(content::WebUIDataSource* html_source) {
       {"landingDescription", IDS_WELCOME_LANDING_DESCRIPTION},
       {"landingNewUser", IDS_WELCOME_LANDING_NEW_USER},
       {"landingExistingUser", IDS_WELCOME_LANDING_EXISTING_USER},
+      {"landingPauseAnimations", IDS_WELCOME_LANDING_PAUSE_ANIMATIONS},
+      {"landingPlayAnimations", IDS_WELCOME_LANDING_PLAY_ANIMATIONS},
   };
   html_source->AddLocalizedStrings(kLocalizedStrings);
 }

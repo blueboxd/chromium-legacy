@@ -21,6 +21,7 @@
 #include "base/containers/flat_set.h"
 #include "base/containers/unique_ptr_adapters.h"
 #include "base/files/file_path.h"
+#include "base/functional/function_ref.h"
 #include "base/gtest_prod_util.h"
 #include "base/i18n/rtl.h"
 #include "base/memory/raw_ptr.h"
@@ -39,6 +40,7 @@
 #include "content/browser/accessibility/browser_accessibility_manager.h"
 #include "content/browser/bad_message.h"
 #include "content/browser/browser_interface_broker_impl.h"
+#include "content/browser/buckets/bucket_context.h"
 #include "content/browser/can_commit_status.h"
 #include "content/browser/net/cross_origin_opener_policy_reporter.h"
 #include "content/browser/preloading/prerender/prerender_host.h"
@@ -90,6 +92,7 @@
 #include "net/base/isolation_info.h"
 #include "net/base/network_isolation_key.h"
 #include "net/net_buildflags.h"
+#include "ppapi/buildflags/buildflags.h"
 #include "services/device/public/mojom/sensor_provider.mojom-forward.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
 #include "services/network/public/cpp/cross_origin_embedder_policy.h"
@@ -103,8 +106,10 @@
 #include "third_party/blink/public/common/frame/frame_owner_element_type.h"
 #include "third_party/blink/public/common/frame/fullscreen_request_token.h"
 #include "third_party/blink/public/common/permissions_policy/permissions_policy.h"
+#include "third_party/blink/public/common/permissions_policy/permissions_policy_declaration.h"
 #include "third_party/blink/public/common/scheduler/web_scheduler_tracked_feature.h"
 #include "third_party/blink/public/common/storage_key/storage_key.h"
+#include "third_party/blink/public/mojom/back_forward_cache_not_restored_reasons.mojom.h"
 #include "third_party/blink/public/mojom/bluetooth/web_bluetooth.mojom-forward.h"
 #include "third_party/blink/public/mojom/broadcastchannel/broadcast_channel.mojom.h"
 #include "third_party/blink/public/mojom/feature_observer/feature_observer.mojom-forward.h"
@@ -220,6 +225,7 @@ class CrossOriginEmbedderPolicyReporter;
 class CrossOriginOpenerPolicyAccessReportManager;
 class FeatureObserver;
 class FencedFrame;
+class FileSystemManagerImpl;
 class FrameTree;
 class FrameTreeNode;
 class GeolocationServiceImpl;
@@ -277,7 +283,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
       public mojom::PepperHost,
       public mojom::PepperHungDetectorHost,
 #endif  //  BUILDFLAG(ENABLE_PPAPI)
-      public network::mojom::CookieAccessObserver {
+      public network::mojom::CookieAccessObserver,
+      public BucketContext {
  public:
   using JavaScriptDialogCallback =
       content::JavaScriptDialogManager::DialogClosedCallback;
@@ -352,9 +359,11 @@ class CONTENT_EXPORT RenderFrameHostImpl
   RenderFrameHostImpl* GetOutermostMainFrame() override;
   bool IsFencedFrameRoot() const override;
   bool IsNestedWithinFencedFrame() const override;
-  void ForEachRenderFrameHost(FrameIterationCallback on_frame) override;
+  void ForEachRenderFrameHostWithAction(
+      base::FunctionRef<FrameIterationAction(RenderFrameHost*)> on_frame)
+      override;
   void ForEachRenderFrameHost(
-      FrameIterationAlwaysContinueCallback on_frame) override;
+      base::FunctionRef<void(RenderFrameHost*)> on_frame) override;
   // TODO (crbug.com/1251545) : Frame tree node id should only be known for
   // subframes. As such, update this method.
   int GetFrameTreeNodeId() const override;
@@ -513,6 +522,11 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // BackForwardCacheBrowserTest::AddBlocklistedFeature should be used.
   void UseDummyStickyBackForwardCacheDisablingFeatureForTesting();
 
+  const blink::mojom::BackForwardCacheNotRestoredReasonsPtr&
+  NotRestoredReasonsForTesting() {
+    return not_restored_reasons_for_testing_;
+  }
+
   // Returns the current WebPreferences for the WebContents associated with this
   // RenderFrameHost. Will create one if it does not exist (and update all the
   // renderers with the newly computed value).
@@ -657,9 +671,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void RemoveChild(FrameTreeNode* child);
   void ResetChildren();
 
-  // Allows FrameTreeNode::SetCurrentURL to update this frame's last committed
-  // URL.  Do not call this directly, since we rely on SetCurrentURL to track
-  // whether a real load has committed or not.
+  // Set the URL of the document represented by this RenderFrameHost. Called
+  // when the navigation commits. See also `GetLastCommittedURL`.
   void SetLastCommittedUrl(const GURL& url);
 
   // The most recent non-net-error URL to commit in this frame.  In almost all
@@ -1150,8 +1163,12 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // BeforeUnload IPC.  This can be called on a main frame or subframe.  If
   // |check_subframes_only| is false, it covers handlers for the frame
   // itself and all its descendants.  If |check_subframes_only| is true, it
-  // only checks the frame's descendants but not the frame itself.
-  bool ShouldDispatchBeforeUnload(bool check_subframes_only);
+  // only checks the frame's descendants but not the frame itself. See
+  // CheckOrDispatchBeforeUnloadForSubtree() for details on
+  // |no_dispatch_because_avoid_unnecessary_sync|.
+  bool ShouldDispatchBeforeUnload(
+      bool check_subframes_only,
+      bool* no_dispatch_because_avoid_unnecessary_sync = nullptr);
 
   // Allow tests to override how long to wait for beforeunload completion
   // callbacks to be invoked before timing out.
@@ -1939,11 +1956,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void DidCommitPageActivation(NavigationRequest* committing_navigation_request,
                                mojom::DidCommitProvisionalLoadParamsPtr params);
 
-  // Whether there's any "unload" event handlers registered on this
-  // RenderFrameHost or subframes that share the same SiteInstance as this
-  // RenderFrameHost.
-  bool UnloadHandlerExistsInSameSiteInstanceSubtree();
-
   bool has_unload_handler() const { return has_unload_handler_; }
 
   bool has_committed_any_navigation() const {
@@ -2003,41 +2015,14 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // for details. Content internals can also access speculative
   // RenderFrameHostImpls if necessary by using the
   // |ForEachRenderFrameHostIncludingSpeculative| variations.
-  using FrameIterationCallbackImpl =
-      base::RepeatingCallback<FrameIterationAction(RenderFrameHostImpl*)>;
-  using FrameIterationAlwaysContinueCallbackImpl =
-      base::RepeatingCallback<void(RenderFrameHostImpl*)>;
-  void ForEachRenderFrameHost(FrameIterationCallbackImpl on_frame);
+  void ForEachRenderFrameHostWithAction(
+      base::FunctionRef<FrameIterationAction(RenderFrameHostImpl*)> on_frame);
   void ForEachRenderFrameHost(
-      FrameIterationAlwaysContinueCallbackImpl on_frame);
+      base::FunctionRef<void(RenderFrameHostImpl*)> on_frame);
+  void ForEachRenderFrameHostIncludingSpeculativeWithAction(
+      base::FunctionRef<FrameIterationAction(RenderFrameHostImpl*)> on_frame);
   void ForEachRenderFrameHostIncludingSpeculative(
-      FrameIterationCallbackImpl on_frame);
-  void ForEachRenderFrameHostIncludingSpeculative(
-      FrameIterationAlwaysContinueCallbackImpl on_frame);
-
-  // |ForEachRenderFrameHost| has multiple overloads for convenience of the
-  // caller that only differ by the provided callback's signature.
-  // |FrameIterationWrapper| converts to a common callback signature for the
-  // implementation to use.
-  template <typename RfhType>
-  static FrameIterationCallbackImpl FrameIterationWrapper(
-      base::RepeatingCallback<FrameIterationAction(RfhType*)> on_frame) {
-    return base::BindRepeating(
-        [](base::RepeatingCallback<FrameIterationAction(RfhType*)> on_frame,
-           RenderFrameHostImpl* rfh) { return on_frame.Run(rfh); },
-        on_frame);
-  }
-  template <typename RfhType>
-  static FrameIterationCallbackImpl FrameIterationWrapper(
-      base::RepeatingCallback<void(RfhType*)> on_frame) {
-    return base::BindRepeating(
-        [](base::RepeatingCallback<void(RfhType*)> on_frame,
-           RenderFrameHostImpl* rfh) {
-          on_frame.Run(rfh);
-          return FrameIterationAction::kContinue;
-        },
-        on_frame);
-  }
+      base::FunctionRef<void(RenderFrameHostImpl*)> on_frame);
 
   bool DocumentUsedWebOTP() override;
 
@@ -2218,7 +2203,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void RequestClose() override;
   void ShowCreatedWindow(const blink::LocalFrameToken& opener_frame_token,
                          WindowOpenDisposition disposition,
-                         const gfx::Rect& initial_rect,
+                         blink::mojom::WindowFeaturesPtr window_features,
                          bool user_gesture,
                          ShowCreatedWindowCallback callback) override;
   void SetWindowRect(const gfx::Rect& bounds,
@@ -2557,6 +2542,14 @@ class CONTENT_EXPORT RenderFrameHostImpl
     HandleAXEvents(tree_id, std::move(updates_and_events), reset_token);
   }
 
+  // BucketContext:
+  blink::StorageKey GetBucketStorageKey() override;
+  blink::mojom::PermissionStatus GetPermissionStatus(
+      blink::PermissionType permission_type) override;
+  void BindCacheStorageForBucket(
+      const storage::BucketInfo& bucket,
+      mojo::PendingReceiver<blink::mojom::CacheStorage> receiver) override;
+
  protected:
   friend class RenderFrameHostFactory;
 
@@ -2577,7 +2570,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
       const blink::LocalFrameToken& frame_token,
       bool renderer_initiated_creation_of_main_frame,
       LifecycleStateImpl lifecycle_state,
-      scoped_refptr<BrowsingContextState> browsing_context_state);
+      scoped_refptr<BrowsingContextState> browsing_context_state,
+      blink::FrameOwnerElementType frame_owner_element_type);
 
   // The SendCommit* functions below are wrappers for commit calls
   // made to mojom::NavigationClient.
@@ -2599,8 +2593,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
       blink::mojom::ServiceWorkerContainerInfoForClientPtr container_info,
       mojo::PendingRemote<network::mojom::URLLoaderFactory>
           prefetch_loader_factory,
-      const std::vector<blink::ParsedPermissionsPolicyDeclaration>&
-          permissions_policy,
+      const absl::optional<blink::ParsedPermissionsPolicy>& permissions_policy,
       blink::mojom::PolicyContainerPtr policy_container,
       const base::UnguessableToken& devtools_navigation_token);
   virtual void SendCommitFailedNavigation(
@@ -3113,9 +3106,25 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // whether beforeunload is needed and returns the answer.  |subframes_only|
   // indicates whether to only check subframes of the current frame, and skip
   // the current frame itself.
-  bool CheckOrDispatchBeforeUnloadForSubtree(bool subframes_only,
-                                             bool send_ipc,
-                                             bool is_reload);
+  // |no_dispatch_because_avoid_unnecessary_sync| is set to true if there are no
+  // before-unload handlers because the feature
+  // |kAvoidUnnecessaryBeforeUnloadCheckSync| is enabled (see description of
+  // |kAvoidUnnecessaryBeforeUnloadCheckSync| for more details).
+  bool CheckOrDispatchBeforeUnloadForSubtree(
+      bool subframes_only,
+      bool send_ipc,
+      bool is_reload,
+      bool* no_dispatch_because_avoid_unnecessary_sync);
+
+  // |ForEachRenderFrameHost|'s callback used in
+  // |CheckOrDispatchBeforeUnloadForSubtree|.
+  FrameIterationAction CheckOrDispatchBeforeUnloadForFrame(
+      bool subframes_only,
+      bool send_ipc,
+      bool is_reload,
+      bool* found_beforeunload,
+      bool* run_beforeunload_for_legacy,
+      RenderFrameHostImpl* rfh);
 
   // Called by |beforeunload_timeout_| when the beforeunload timeout fires.
   void BeforeUnloadTimeout();
@@ -3154,12 +3163,13 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // under the root at A0, but only B, C, and E are considered immediate local
   // roots of A0. Note that this will exclude any speculative RFHs.
   void ForEachImmediateLocalRoot(
-      const base::RepeatingCallback<void(RenderFrameHostImpl*)>& callback);
+      base::FunctionRef<void(RenderFrameHostImpl*)> func_ref);
 
   // This is the actual implementation of the various overloads of
   // |ForEachRenderFrameHost|.
-  void ForEachRenderFrameHostImpl(FrameIterationCallbackImpl on_frame,
-                                  bool include_speculative);
+  void ForEachRenderFrameHostImpl(
+      base::FunctionRef<FrameIterationAction(RenderFrameHostImpl*)> on_frame,
+      bool include_speculative);
 
   // Returns the mojom::Frame interface for this frame in the renderer process.
   // May be overridden by friend subclasses for e.g. tests which wish to
@@ -3487,6 +3497,9 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // frame_tree_node_ (per crbug.com/1179502).
   // TODO(crbug.com/1270671): make this field const when legacy mode is removed.
   scoped_refptr<BrowsingContextState> browsing_context_state_;
+
+  // Enum for the type of the frame owner element for a frame.
+  blink::FrameOwnerElementType frame_owner_element_type_;
 
   // The immediate children of this specific frame.
   std::vector<std::unique_ptr<FrameTreeNode>> children_;
@@ -4190,6 +4203,11 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // If true, RenderFrameHost should not be actually deleted and should be left
   // stuck in pending deletion.
   bool do_not_delete_for_testing_ = false;
+
+  // Contains NotRestoredReasons for the navigation. Gets reset whenever
+  // |SendCommitNavigation()| is called.
+  blink::mojom::BackForwardCacheNotRestoredReasonsPtr
+      not_restored_reasons_for_testing_;
 
   // Embedding token for the document in this RenderFrameHost. This differs from
   // |frame_token_| in that |frame_token_| has a lifetime matching that of the

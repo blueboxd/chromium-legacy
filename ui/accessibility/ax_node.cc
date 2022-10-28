@@ -17,6 +17,7 @@
 #include "ui/accessibility/ax_hypertext.h"
 #include "ui/accessibility/ax_language_detection.h"
 #include "ui/accessibility/ax_role_properties.h"
+#include "ui/accessibility/ax_selection.h"
 #include "ui/accessibility/ax_table_info.h"
 #include "ui/accessibility/ax_tree.h"
 #include "ui/accessibility/ax_tree_manager.h"
@@ -31,7 +32,7 @@ constexpr char16_t AXNode::kEmbeddedObjectCharacterUTF16[];
 constexpr int AXNode::kEmbeddedObjectCharacterLengthUTF8;
 constexpr int AXNode::kEmbeddedObjectCharacterLengthUTF16;
 
-AXNode::AXNode(AXNode::OwnerTree* tree,
+AXNode::AXNode(AXTree* tree,
                AXNode* parent,
                AXNodeID id,
                size_t index_in_parent,
@@ -105,7 +106,7 @@ AXNode* AXNode::GetChildAtIndexCrossingTreeBoundary(size_t index) const {
     DCHECK_EQ(index, 0u)
         << "A node cannot be hosting both a child tree and other nodes as "
            "children.";
-    return child_tree_manager->GetRootAsAXNode();
+    return child_tree_manager->GetRoot();
   }
 
   return GetChildAtIndex(index);
@@ -135,7 +136,7 @@ AXNode* AXNode::GetUnignoredChildAtIndexCrossingTreeBoundary(
         << "A node cannot be hosting both a child tree and other nodes as "
            "children.";
     // A child tree is never ignored.
-    return child_tree_manager->GetRootAsAXNode();
+    return child_tree_manager->GetRoot();
   }
 
   return GetUnignoredChildAtIndex(index);
@@ -215,7 +216,7 @@ AXNode* AXNode::GetFirstUnignoredChildCrossingTreeBoundary() const {
 
   const AXTreeManager* child_tree_manager = AXTreeManager::ForChildTree(*this);
   if (child_tree_manager)
-    return child_tree_manager->GetRootAsAXNode();
+    return child_tree_manager->GetRoot();
 
   return ComputeFirstUnignoredChildRecursive();
 }
@@ -246,7 +247,7 @@ AXNode* AXNode::GetLastUnignoredChildCrossingTreeBoundary() const {
 
   const AXTreeManager* child_tree_manager = AXTreeManager::ForChildTree(*this);
   if (child_tree_manager)
-    return child_tree_manager->GetRootAsAXNode();
+    return child_tree_manager->GetRoot();
 
   return ComputeLastUnignoredChildRecursive();
 }
@@ -632,6 +633,23 @@ bool AXNode::CanFireEvents() const {
   return !IsChildOfLeaf();
 }
 
+AXNode* AXNode::GetLowestCommonAncestor(const AXNode& other) {
+  if (this == &other)
+    return this;
+
+  AXNode* common_ancestor = nullptr;
+  base::stack<AXNode*> our_ancestors = GetAncestorsCrossingTreeBoundary();
+  base::stack<AXNode*> other_ancestors =
+      other.GetAncestorsCrossingTreeBoundary();
+  while (!our_ancestors.empty() && !other_ancestors.empty() &&
+         our_ancestors.top() == other_ancestors.top()) {
+    common_ancestor = our_ancestors.top();
+    our_ancestors.pop();
+    other_ancestors.pop();
+  }
+  return common_ancestor;
+}
+
 absl::optional<int> AXNode::CompareTo(const AXNode& other) const {
   if (this == &other)
     return 0;
@@ -770,7 +788,7 @@ AXTreeManager* AXNode::GetManager() const {
 }
 
 bool AXNode::HasVisibleCaretOrSelection() const {
-  const OwnerTree::Selection selection = GetSelection();
+  const AXSelection selection = GetSelection();
   const AXNode* focus = tree()->GetFromId(selection.focus_object_id);
   if (!focus || !focus->IsDescendantOf(this))
     return false;
@@ -786,18 +804,18 @@ bool AXNode::HasVisibleCaretOrSelection() const {
   return !selection.IsCollapsed();
 }
 
-AXNode::OwnerTree::Selection AXNode::GetSelection() const {
+AXSelection AXNode::GetSelection() const {
   DCHECK(tree()) << "Cannot retrieve the current selection if the node is not "
                     "attached to an accessibility tree.\n"
                  << *this;
   return tree()->GetSelection();
 }
 
-AXNode::OwnerTree::Selection AXNode::GetUnignoredSelection() const {
+AXSelection AXNode::GetUnignoredSelection() const {
   DCHECK(tree()) << "Cannot retrieve the current selection if the node is not "
                     "attached to an accessibility tree.\n"
                  << *this;
-  OwnerTree::Selection selection = tree()->GetUnignoredSelection();
+  AXSelection selection = tree()->GetUnignoredSelection();
 
   // "selection.anchor_offset" and "selection.focus_ofset" might need to be
   // adjusted if the anchor or the focus nodes include ignored children.
@@ -942,7 +960,7 @@ const std::string& AXNode::GetNameUTF8() const {
     const AXTreeManager* child_tree_manager =
         AXTreeManager::ForChildTree(*this);
     if (child_tree_manager)
-      node = child_tree_manager->GetRootAsAXNode();
+      node = child_tree_manager->GetRoot();
   }
 
   return node->GetStringAttribute(ax::mojom::StringAttribute::kName);
@@ -1356,6 +1374,20 @@ const std::vector<AXNode*>* AXNode::GetExtraMacNodes() const {
     return nullptr;
 
   return &table_info->extra_mac_nodes;
+}
+
+bool AXNode::IsGenerated() const {
+  bool is_generated_node = id() < 0;
+#if DCHECK_IS_ON()
+  // Currently, the only generated nodes are columns and table header
+  // containers, and when those roles occur, they are always extra mac nodes.
+  // This could change in the future.
+  bool is_extra_mac_node_role =
+      GetRole() == ax::mojom::Role::kColumn ||
+      GetRole() == ax::mojom::Role::kTableHeaderContainer;
+  DCHECK_EQ(is_generated_node, is_extra_mac_node_role);
+#endif
+  return is_generated_node;
 }
 
 //

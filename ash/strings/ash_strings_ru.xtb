@@ -28,7 +28,6 @@
 <translation id="1111021433905331574">Изменить цвет подсветки клавиатуры можно в разделе "Настройки" &gt; "<ph name="APP_TITLE" />".</translation>
 <translation id="112308213915226829">Автоматически скрывать панель запуска</translation>
 <translation id="1142002900084379065">Недавние фотографии</translation>
-<translation id="114451698114044150">Автомасштабирование включено</translation>
 <translation id="1148499908455722006">Открыть диалоговое окно с информацией об аккаунте <ph name="USER_NAME" /></translation>
 <translation id="1150989369772528668">Календарь</translation>
 <translation id="1153356358378277386">Сопряженные устройства</translation>
@@ -330,7 +329,6 @@
 <translation id="2894949423239620203">Подключенный кабель может ограничивать производительность</translation>
 <translation id="2903844815300039659">Подключено к сети <ph name="NAME" />, <ph name="STRENGTH" /></translation>
 <translation id="2914580577416829331">Снимки экрана</translation>
-<translation id="2925246975070834767">Попробуйте использовать автомасштабирование, чтобы оставаться в центре экрана. Эту функцию можно включить в быстрых настройках.</translation>
 <translation id="2941112035454246133">Низкий</translation>
 <translation id="2942350706960889382">Закрепленная лупа</translation>
 <translation id="2942516765047364088">Положение панели запуска</translation>
@@ -474,7 +472,6 @@
 <translation id="3708186454126126312">Ранее подключенные устройства</translation>
 <translation id="371370241367527062">Фронтальный микрофон</translation>
 <translation id="3713734891607377840">Открыть после скачивания</translation>
-<translation id="3724279623330129812">Автомасштабирование применено по центру кадра.</translation>
 <translation id="3726171378575546917">Приложения "<ph name="UNAVAILABLE_APPS_ONE" />", "<ph name="UNAVAILABLE_APPS_TWO" />" и ещё несколько сервисов (<ph name="UNAVAILABLE_APPS_COUNT" />) не установлены на этом устройстве.</translation>
 <translation id="3735740477244556633">Сортировать по:</translation>
 <translation id="3742055079367172538">Сделан скриншот</translation>
@@ -508,6 +505,7 @@
 <translation id="3922427723338465344">{0,plural, =1{Вернитесь к предыдущей версии ОС в течение 1 минуты}one{Вернитесь к предыдущей версии ОС в течение # минуты}few{Вернитесь к предыдущей версии ОС в течение # минут}many{Вернитесь к предыдущей версии ОС в течение # минут}other{Вернитесь к предыдущей версии ОС в течение # минуты}}</translation>
 <translation id="3923494859158167397">Нет настроенных мобильных сетей</translation>
 <translation id="3925540965556789199"><ph name="DATE" />, загрузка мероприятий</translation>
+<translation id="392627956579011934">Для установки файлов для распознавания речи требуется перезапуск</translation>
 <translation id="3932043219784172185">Нет подключенных устройств</translation>
 <translation id="3934456833412894880">Адаптивная зарядка включена. Чтобы продлить срок службы батареи, заряд будет доводиться до уровня 80 % и удерживаться на нем. Полностью батарея будет заряжаться, только когда это необходимо.</translation>
 <translation id="3943857333388298514">Вставить</translation>
@@ -562,6 +560,7 @@
 <translation id="4242533952199664413">Открыть настройки</translation>
 <translation id="4247123849143712100">Обновить и завершить работу</translation>
 <translation id="4250229828105606438">Скриншот</translation>
+<translation id="4250899820387052060">Быстрый доступ к файлам</translation>
 <translation id="425364040945105958">Нет SIM-карты</translation>
 <translation id="4261870227682513959">Показать настройки уведомлений. Уведомления отключены.</translation>
 <translation id="4269883910223712419">Администратор этого устройства имеет возможность:</translation>
@@ -746,6 +745,7 @@
 <translation id="5283198616748585639">Добавить 1 мин.</translation>
 <translation id="528468243742722775">Завершить</translation>
 <translation id="5286194356314741248">Сканирование...</translation>
+<translation id="5293671101077843611">Сегодня мероприятий нет</translation>
 <translation id="5297423144044956168">Мобильные устройства не найдены.</translation>
 <translation id="5297704307811127955">Отключено</translation>
 <translation id="5300589172476337783">Показать</translation>
@@ -908,7 +908,6 @@
 <translation id="6137566720514957455">Открыть диалоговое окно удаления аккаунта <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="6141988275892716286">Подтвердите скачивание</translation>
 <translation id="6154006699632741460">Периферийное устройство не поддерживается</translation>
-<translation id="6156262341071374681">Просмотреть все приложения</translation>
 <translation id="615957422585914272">Показывать экранную клавиатуру</translation>
 <translation id="6165508094623778733">Подробнее</translation>
 <translation id="6166852626429024716">Поиск на устройстве, в приложениях, настройках и Интернете…</translation>
@@ -1032,7 +1031,6 @@
 <translation id="685782768769951078">{NUM_DIGITS,plural, =1{Осталась 1 цифра}one{Осталась # цифра}few{Осталось # цифры}many{Осталось # цифр}other{Осталось # цифры}}</translation>
 <translation id="6867938213751067702">Скачивание файла <ph name="FILENAME" /> приостановлено</translation>
 <translation id="6878400149835617132">Быстрые клавиши отключены</translation>
-<translation id="6878709625737492815">Автомасштабирование выключено</translation>
 <translation id="6884665277231944629">Вернуться к сегодняшней дате</translation>
 <translation id="6886172995547742638"><ph name="DEVICE_TYPE" /> может работать неэффективно. Используйте сертифицированный адаптер питания USB-C на <ph name="PREFERRED_MINIMUM_POWER" /> Вт или выше.</translation>
 <translation id="688631446150864480">Чтобы перейти к другому окну, нажмите клавишу со стрелкой вниз</translation>
@@ -1198,7 +1196,6 @@
 <translation id="7868900307798234037">Экран разблокирован с помощью отпечатка пальца</translation>
 <translation id="7872195908557044066">Администратор выполняет сброс eSIM. Подождите несколько минут.</translation>
 <translation id="7872786842639831132">Отключено</translation>
-<translation id="7875280185395705476">Автомасштаб</translation>
 <translation id="7875575368831396199">Включите Bluetooth на устройстве <ph name="DEVICE_TYPE" />, чтобы использовать функцию "Управление телефоном".</translation>
 <translation id="7877557217297072640">{0,plural, =0{Вернитесь к предыдущей версии ОС сейчас}=1{Вернитесь к предыдущей версии ОС в течение 1 секунды}one{Вернитесь к предыдущей версии ОС в течение # секунды}few{Вернитесь к предыдущей версии ОС в течение # секунд}many{Вернитесь к предыдущей версии ОС в течение # секунд}other{Вернитесь к предыдущей версии ОС в течение # секунды}}</translation>
 <translation id="7886169021410746335">Изменять настройки конфиденциальности.</translation>
@@ -1254,6 +1251,7 @@
 <translation id="8152264887680882389"><ph name="TEXT" />, автозаполнение</translation>
 <translation id="8155007568264258537">Функцией "<ph name="FEATURE_NAME" />" управляет администратор.</translation>
 <translation id="8155628902202578800">Открыть диалоговое окно с информацией об аккаунте <ph name="USER_EMAIL_ADDRESS" /></translation>
+<translation id="8157728322324420120">Рекомендуем</translation>
 <translation id="8167567890448493835">Используемый язык: <ph name="LOCALE_NAME" /></translation>
 <translation id="8183592608247778598">Просмотр недавних фотографий, медиафайлов, уведомлений и приложений с телефона на устройстве <ph name="DEVICE_TYPE" /></translation>
 <translation id="8192202700944119416">Уведомления скрыты</translation>
@@ -1321,7 +1319,6 @@
 <translation id="856298576161209842">Согласно рекомендациям <ph name="MANAGER" /> вам нужно обновить устройство <ph name="DEVICE_TYPE" />.</translation>
 <translation id="8563862697512465947">Настройки оповещений</translation>
 <translation id="857201607579416096">Меню перемещено в правый нижний угол экрана.</translation>
-<translation id="8576288697319745668">Переключатель автомасштабирования. <ph name="STATE_TEXT" />.</translation>
 <translation id="8594115950068821369">-<ph name="FORMATTED_TIME" /></translation>
 <translation id="8598235756057743477">Упорядочить приложения по названию или цвету</translation>
 <translation id="8614517853887502247">Уведомления "<ph name="APP_1_TITLE" />" и "<ph name="APP_2_TITLE" />" скрыты, потому что включен режим безопасного просмотра.</translation>
@@ -1433,6 +1430,7 @@
 <translation id="9211490828691860325">Все рабочие столы</translation>
 <translation id="9211681782751733685">Оставшееся время до полной зарядки батареи: <ph name="TIME_REMAINING" />.</translation>
 <translation id="9215934040295798075">Выбрать обои</translation>
+<translation id="9219103736887031265">Картинки</translation>
 <translation id="921989828232331238">Ваш родитель заблокировал это устройство на целый день.</translation>
 <translation id="9220525904950070496">Удалить аккаунт</translation>
 <translation id="923686485342484400">Чтобы выйти, дважды нажмите Control+Shift+Q.</translation>

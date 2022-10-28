@@ -1,4 +1,4 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,18 +10,19 @@ import 'chrome://resources/cr_elements/cr_button/cr_button.js';
 import 'chrome://resources/cr_elements/cr_checkbox/cr_checkbox.js';
 import 'chrome://resources/cr_elements/cr_dialog/cr_dialog.js';
 import 'chrome://resources/cr_elements/cr_search_field/cr_search_field.js';
-import 'chrome://resources/cr_elements/shared_vars_css.m.js';
+import 'chrome://resources/cr_elements/cr_shared_vars.css.js';
 import 'chrome://resources/polymer/v3_0/iron-list/iron-list.js';
 import '../settings_shared.css.js';
 
 import {CrCheckboxElement} from 'chrome://resources/cr_elements/cr_checkbox/cr_checkbox.js';
 import {CrDialogElement} from 'chrome://resources/cr_elements/cr_dialog/cr_dialog.js';
-import {CrScrollableBehavior} from 'chrome://resources/cr_elements/cr_scrollable_behavior.m.js';
+import {CrScrollableMixin} from 'chrome://resources/cr_elements/cr_scrollable_mixin.js';
 import {CrSearchFieldElement} from 'chrome://resources/cr_elements/cr_search_field/cr_search_field.js';
-import {FindShortcutMixin, FindShortcutMixinInterface} from 'chrome://resources/cr_elements/find_shortcut_mixin.js';
-import {mixinBehaviors, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {FindShortcutMixin} from 'chrome://resources/cr_elements/find_shortcut_mixin.js';
+import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {getTemplate} from './add_languages_dialog.html.js';
+import {LanguageHelper} from './languages_types.js';
 
 export interface SettingsAddLanguagesDialogElement {
   $: {
@@ -37,8 +38,7 @@ interface Repeaterevent extends Event {
 }
 
 const SettingsAddLanguagesDialogElementBase =
-    mixinBehaviors([CrScrollableBehavior], FindShortcutMixin(PolymerElement)) as
-    {new (): PolymerElement & FindShortcutMixinInterface};
+    CrScrollableMixin(FindShortcutMixin(PolymerElement));
 
 export class SettingsAddLanguagesDialogElement extends
     SettingsAddLanguagesDialogElementBase {
@@ -56,6 +56,8 @@ export class SettingsAddLanguagesDialogElement extends
         type: Array,
         notify: true,
       },
+
+      languageHelper: Object,
 
       languagesToAdd_: {
         type: Object,
@@ -77,6 +79,7 @@ export class SettingsAddLanguagesDialogElement extends
   }
 
   languages: chrome.languageSettingsPrivate.Language[];
+  languageHelper: LanguageHelper;
   private languagesToAdd_: Set<string>;
   private disableActionButton_: boolean;
   private filterValue_: string;
@@ -126,12 +129,7 @@ export class SettingsAddLanguagesDialogElement extends
 
   private getDisplayText_(language: chrome.languageSettingsPrivate.Language):
       string {
-    let displayText = language.displayName;
-    // If the native name is different, add it.
-    if (language.displayName !== language.nativeDisplayName) {
-      displayText += ' - ' + language.nativeDisplayName;
-    }
-    return displayText;
+    return this.languageHelper.getFullName(language);
   }
 
   /**

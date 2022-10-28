@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,6 +8,7 @@
 #include "base/callback.h"
 #include "base/memory/scoped_refptr.h"
 #include "components/segmentation_platform/internal/database/segment_info_database.h"
+#include "components/segmentation_platform/internal/execution/execution_request.h"
 #include "components/segmentation_platform/public/input_context.h"
 #include "components/segmentation_platform/public/proto/segmentation_platform.pb.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -48,13 +49,19 @@ class SegmentResultProvider {
   };
   struct SegmentResult {
     explicit SegmentResult(ResultState state);
-    SegmentResult(ResultState state, int rank);
+    SegmentResult(ResultState state,
+                  float rank,
+                  std::unique_ptr<ModelExecutionResult> execution_result);
     ~SegmentResult();
     SegmentResult(SegmentResult&) = delete;
     SegmentResult& operator=(SegmentResult&) = delete;
 
     ResultState state = ResultState::kUnknown;
-    absl::optional<int> rank;
+    absl::optional<float> rank;
+
+    // The execution result is only available when the model is executed.
+    // TODO(ssid): Support storing inputs to disk if needed.
+    std::unique_ptr<ModelExecutionResult> execution_result;
   };
   using SegmentResultCallback =
       base::OnceCallback<void(std::unique_ptr<SegmentResult>)>;
@@ -85,8 +92,15 @@ class SegmentResultProvider {
     //  * Execution of default model when score is missing.
     // When set to true, the result could be from following:
     //  * Execution of TFLite model.
-    //  * TODO(ssid): Support fallback to default when model is missing.
+    //  * Fallback to default when model is missing.
     bool ignore_db_scores = false;
+
+    // If `ignore_db_scores` is true and TFLite model is available, then write
+    // the results to database. Used when user wants to rerun the database
+    // model. `callback` should be null if set to true.
+    // TODO(ssid): Consider moving this option out as a different SaveRequest
+    // method in this class.
+    bool save_results_to_db = false;
 
     // Callback to return the segment result.
     SegmentResultCallback callback;

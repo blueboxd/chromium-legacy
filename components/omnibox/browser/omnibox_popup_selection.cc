@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -202,17 +202,17 @@ OmniboxPopupSelection::GetAllAvailableSelectionsSorted(
   // Now, for each accessible line, add all the available line states to a list.
   std::vector<OmniboxPopupSelection> available_selections;
   {
-    auto add_available_line_states_for_line = [&](size_t line) {
-      for (LineState state : all_states) {
-        OmniboxPopupSelection selection(line, state);
+    auto add_available_line_states_for_line = [&](size_t line_number) {
+      for (LineState line_state : all_states) {
+        OmniboxPopupSelection selection(line_number, line_state);
         if (selection.IsControlPresentOnMatch(result, pref_service)) {
           available_selections.push_back(selection);
         }
       }
     };
 
-    for (size_t line = 0; line < result.size(); ++line) {
-      add_available_line_states_for_line(line);
+    for (size_t line_number = 0; line_number < result.size(); ++line_number) {
+      add_available_line_states_for_line(line_number);
     }
   }
   DCHECK(

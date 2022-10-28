@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -118,9 +118,9 @@ class SSLClientCertificateSelectorMultiTabTest
         AddTabAtIndex(1, GURL("about:blank"), ui::PAGE_TRANSITION_LINK));
     ASSERT_TRUE(
         AddTabAtIndex(2, GURL("about:blank"), ui::PAGE_TRANSITION_LINK));
-    ASSERT_TRUE(NULL != browser()->tab_strip_model()->GetWebContentsAt(0));
-    ASSERT_TRUE(NULL != browser()->tab_strip_model()->GetWebContentsAt(1));
-    ASSERT_TRUE(NULL != browser()->tab_strip_model()->GetWebContentsAt(2));
+    ASSERT_TRUE(nullptr != browser()->tab_strip_model()->GetWebContentsAt(0));
+    ASSERT_TRUE(nullptr != browser()->tab_strip_model()->GetWebContentsAt(1));
+    ASSERT_TRUE(nullptr != browser()->tab_strip_model()->GetWebContentsAt(2));
     EXPECT_TRUE(content::WaitForLoadStop(
         browser()->tab_strip_model()->GetWebContentsAt(1)));
     EXPECT_TRUE(content::WaitForLoadStop(

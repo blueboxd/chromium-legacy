@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -52,6 +52,15 @@ class LanguagePrefs {
   void SetUserSelectedLanguagesList(const std::vector<std::string>& languages);
   // Returns true if the target language is forced through policy.
   bool IsForcedLanguage(const std::string& language);
+
+#if BUILDFLAG(IS_ANDROID)
+  // Get the ULP languages from a preference. This is an unfiltered list of
+  // languages and may contain country specific language locales. If you do not
+  // need specific locals always compare base languages from the list.
+  std::vector<std::string> GetULPLanguages();
+  // Clear the previous ULP language pref and set to the new list of languages.
+  void SetULPLanguages(std::vector<std::string> ulp_languages);
+#endif
 
  private:
   // Updates the language list containing combination of policy-forced and

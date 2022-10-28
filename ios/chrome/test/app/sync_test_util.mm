@@ -1,30 +1,29 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #import "ios/chrome/test/app/sync_test_util.h"
 
-#include <set>
-#include <string>
+#import <set>
+#import <string>
 
-#include "base/bind.h"
-#include "base/check.h"
-#include "base/guid.h"
-#include "base/memory/ptr_util.h"
-#include "base/strings/sys_string_conversions.h"
-#include "base/strings/utf_string_conversions.h"
+#import "base/bind.h"
+#import "base/check.h"
+#import "base/guid.h"
+#import "base/memory/ptr_util.h"
+#import "base/strings/sys_string_conversions.h"
+#import "base/strings/utf_string_conversions.h"
 #import "base/test/ios/wait_util.h"
 #import "base/time/time.h"
-#include "components/autofill/core/browser/personal_data_manager.h"
-#include "components/history/core/browser/history_service.h"
-#include "components/keyed_service/core/service_access_type.h"
-#include "components/metrics/demographics/demographic_metrics_test_utils.h"
-#include "components/sync/base/pref_names.h"
+#import "components/autofill/core/browser/personal_data_manager.h"
+#import "components/history/core/browser/history_service.h"
+#import "components/keyed_service/core/service_access_type.h"
+#import "components/metrics/demographics/demographic_metrics_test_utils.h"
+#import "components/sync/base/pref_names.h"
 #import "components/sync/base/time.h"
-#include "components/sync/driver/sync_service.h"
-#include "components/sync/driver/sync_service_impl.h"
-#include "components/sync/engine/loopback_server/loopback_server_entity.h"
-#include "components/sync/nigori/nigori_test_utils.h"
+#import "components/sync/driver/sync_service.h"
+#import "components/sync/driver/sync_service_impl.h"
+#import "components/sync/engine/loopback_server/loopback_server_entity.h"
 #import "components/sync/protocol/device_info_specifics.pb.h"
 #import "components/sync/protocol/sync_enums.pb.h"
 #import "components/sync/test/entity_builder_factory.h"
@@ -32,20 +31,21 @@
 #import "components/sync/test/fake_server_network_resources.h"
 #import "components/sync/test/fake_server_nigori_helper.h"
 #import "components/sync/test/fake_server_verifier.h"
+#import "components/sync/test/nigori_test_utils.h"
 #import "components/sync/test/sessions_hierarchy.h"
-#include "components/sync_device_info/device_info.h"
-#include "components/sync_device_info/device_info_sync_service.h"
+#import "components/sync_device_info/device_info.h"
+#import "components/sync_device_info/device_info_sync_service.h"
 #import "components/sync_device_info/device_info_util.h"
-#include "components/sync_device_info/local_device_info_provider.h"
-#include "ios/chrome/browser/autofill/personal_data_manager_factory.h"
-#include "ios/chrome/browser/browser_state/chrome_browser_state.h"
-#include "ios/chrome/browser/history/history_service_factory.h"
-#include "ios/chrome/browser/sync/device_info_sync_service_factory.h"
-#include "ios/chrome/browser/sync/sync_service_factory.h"
-#include "ios/chrome/browser/sync/sync_setup_service.h"
-#include "ios/chrome/browser/sync/sync_setup_service_factory.h"
+#import "components/sync_device_info/local_device_info_provider.h"
+#import "ios/chrome/browser/autofill/personal_data_manager_factory.h"
+#import "ios/chrome/browser/browser_state/chrome_browser_state.h"
+#import "ios/chrome/browser/history/history_service_factory.h"
+#import "ios/chrome/browser/sync/device_info_sync_service_factory.h"
+#import "ios/chrome/browser/sync/sync_service_factory.h"
+#import "ios/chrome/browser/sync/sync_setup_service.h"
+#import "ios/chrome/browser/sync/sync_setup_service_factory.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
-#include "testing/gtest/include/gtest/gtest.h"
+#import "testing/gtest/include/gtest/gtest.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -58,7 +58,7 @@ fake_server::FakeServer* gSyncFakeServer = nullptr;
 NSString* const kSyncTestErrorDomain = @"SyncTestDomain";
 
 // Overrides the network callback of the current SyncServiceImpl with
-// |create_http_post_provider_factory_cb|.
+// `create_http_post_provider_factory_cb`.
 void OverrideSyncNetwork(const syncer::CreateHttpPostProviderFactory&
                              create_http_post_provider_factory_cb) {
   ChromeBrowserState* browser_state =
@@ -70,7 +70,7 @@ void OverrideSyncNetwork(const syncer::CreateHttpPostProviderFactory&
   service->OverrideNetworkForTest(create_http_post_provider_factory_cb);
 }
 
-// Returns a bookmark server entity based on |title| and |url|.
+// Returns a bookmark server entity based on `title` and `url`.
 std::unique_ptr<syncer::LoopbackServerEntity> CreateBookmarkServerEntity(
     const std::string& title,
     const GURL& url) {
@@ -222,7 +222,7 @@ bool VerifySyncInvalidationFieldsPopulated() {
     if (entity.specifics().device_info().cache_guid() == cache_guid) {
       const sync_pb::InvalidationSpecificFields& invalidation_fields =
           entity.specifics().device_info().invalidation_fields();
-      // TODO(crbug.com/1187481): check if |instance_id_token| is present once
+      // TODO(crbug.com/1187481): check if `instance_id_token` is present once
       // fixed.
       return !invalidation_fields.interested_data_type_ids().empty();
     }

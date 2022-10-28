@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -38,15 +38,18 @@ namespace {
 
 class MockStreamCaptureInterface : public StreamCaptureInterface {
  public:
-  void ProcessCaptureRequest(cros::mojom::Camera3CaptureRequestPtr request,
-                             base::OnceCallback<void(int32_t)> callback) {
+  void ProcessCaptureRequest(
+      cros::mojom::Camera3CaptureRequestPtr request,
+      base::OnceCallback<void(int32_t)> callback) override {
     DoProcessCaptureRequest(request, callback);
   }
   MOCK_METHOD2(DoProcessCaptureRequest,
                void(cros::mojom::Camera3CaptureRequestPtr& request,
                     base::OnceCallback<void(int32_t)>& callback));
 
-  void Flush(base::OnceCallback<void(int32_t)> callback) { DoFlush(callback); }
+  void Flush(base::OnceCallback<void(int32_t)> callback) override {
+    DoFlush(callback);
+  }
   MOCK_METHOD1(DoFlush, void(base::OnceCallback<void(int32_t)>& callback));
 };
 

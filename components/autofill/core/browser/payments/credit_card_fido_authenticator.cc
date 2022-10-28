@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -18,7 +18,6 @@
 #include "base/containers/flat_set.h"
 #include "base/strings/string_util.h"
 #include "base/synchronization/waitable_event.h"
-#include "build/build_config.h"
 #include "components/autofill/core/browser/autofill_client.h"
 #include "components/autofill/core/browser/autofill_experiments.h"
 #include "components/autofill/core/browser/autofill_progress_dialog_type.h"
@@ -611,10 +610,6 @@ CreditCardFIDOAuthenticator::ParseCreationOptions(
   options->relying_party.name =
       relying_party_name ? *relying_party_name : kGooglePaymentsRpName;
 
-  const auto* icon_url = creation_options.FindStringKey("icon_url");
-  if (icon_url)
-    options->relying_party.icon_url = GURL(*icon_url);
-
   const std::string gaia =
       autofill_client_->GetIdentityManager()
           ->GetPrimaryAccountInfo(signin::ConsentLevel::kSync)
@@ -629,9 +624,6 @@ CreditCardFIDOAuthenticator::ParseCreationOptions(
           autofill_client_->GetPersonalDataManager()
               ->GetAccountInfoForPaymentsServer());
   options->user.display_name = account_info.given_name;
-  if (!account_info.IsEmpty()) {
-    options->user.icon_url = GURL(account_info.picture_url);
-  }
 
   const auto* challenge = creation_options.FindStringKey("challenge");
   DCHECK(challenge);

@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -253,17 +253,6 @@ Browser* LaunchSystemWebAppImpl(Profile* profile,
 
   browser->window()->Show();
   return browser;
-}
-
-void FlushSystemWebAppLaunchesForTesting(Profile* profile) {
-  Profile* profile_for_launch = GetProfileForSystemWebAppLaunch(profile);
-  CHECK(profile_for_launch)
-      << "FlushSystemWebAppLaunchesForTesting is called for a profile that "
-         "can't run System Apps. Check your code.";
-  auto* app_service_proxy =
-      apps::AppServiceProxyFactory::GetForProfile(profile_for_launch);
-  DCHECK(app_service_proxy);
-  app_service_proxy->FlushMojoCallsForTesting();  // IN-TEST
 }
 
 Browser* FindSystemWebAppBrowser(Profile* profile,

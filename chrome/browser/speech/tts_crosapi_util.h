@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -15,6 +15,9 @@ content::TtsEventType FromMojo(crosapi::mojom::TtsEventType mojo_event);
 crosapi::mojom::TtsEventType ToMojo(content::TtsEventType event_type);
 content::VoiceData FromMojo(const crosapi::mojom::TtsVoicePtr& mojo_voice);
 crosapi::mojom::TtsVoicePtr ToMojo(const content::VoiceData& voice);
+crosapi::mojom::TtsUtterancePtr ToMojo(content::TtsUtterance* utterance);
+std::unique_ptr<content::TtsUtterance> FromMojo(
+    crosapi::mojom::TtsUtterancePtr& mojo_utterance);
 
 bool ShouldEnableLacrosTtsSupport();
 

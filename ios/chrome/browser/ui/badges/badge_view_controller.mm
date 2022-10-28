@@ -1,10 +1,10 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #import "ios/chrome/browser/ui/badges/badge_view_controller.h"
 
-#include "base/check.h"
+#import "base/check.h"
 #import "ios/chrome/browser/infobars/badge_state.h"
 #import "ios/chrome/browser/ui/badges/badge_button.h"
 #import "ios/chrome/browser/ui/badges/badge_button_factory.h"
@@ -211,7 +211,7 @@ const CGFloat kUpdateDisplayedBadgeAnimationDamping = 0.85;
   self.view.alpha = 0;
   self.view.transform = CGAffineTransformMakeScale(0.1, 0.1);
   [self.stackView addArrangedSubview:_displayedBadge];
-  [UIView animateWithDuration:ios::material::kDuration2
+  [UIView animateWithDuration:kMaterialDuration2
                         delay:0
        usingSpringWithDamping:kUpdateDisplayedBadgeAnimationDamping
         initialSpringVelocity:0

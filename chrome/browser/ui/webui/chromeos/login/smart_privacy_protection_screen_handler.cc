@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -30,10 +30,6 @@ void SmartPrivacyProtectionScreenHandler::DeclareLocalizedValues(
                IDS_SMART_PRIVACY_PROTECTION_SCREEN_LOCK);
   builder->Add("smartPrivacyProtectionScreenLockDesc",
                IDS_SMART_PRIVACY_PROTECTION_SCREEN_LOCK_DESCRIPTION);
-  builder->Add("smartPrivacyProtectionSnoopingDetection",
-               IDS_SMART_PRIVACY_PROTECTION_SNOOPING_DETECTION);
-  builder->Add("smartPrivacyProtectionSnoopingDetectionDesc",
-               IDS_SMART_PRIVACY_PROTECTION_SNOOPING_DETECTION_DESCRIPTION);
   builder->Add("smartPrivacyProtectionContent",
                IDS_SMART_PRIVACY_PROTECTION_CONTENT);
   builder->Add("smartPrivacyProtectionTurnOnButton",
@@ -46,8 +42,6 @@ void SmartPrivacyProtectionScreenHandler::GetAdditionalParameters(
     base::Value::Dict* dict) {
   dict->Set("isQuickDimEnabled",
             base::Value(ash::features::IsQuickDimEnabled()));
-  dict->Set("isSnoopingProtectionEnabled",
-            base::Value(ash::features::IsSnoopingProtectionEnabled()));
 }
 
 }  // namespace chromeos

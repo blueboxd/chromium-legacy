@@ -142,13 +142,6 @@ class StyleEngineTest : public PageTestBase {
     return ListMarker::Get(marker)->GetTextChild(*marker).GetText();
   }
 
-  StyleRuleScrollTimeline* FindScrollTimelineRule(AtomicString name) {
-    CSSScrollTimeline* timeline = GetStyleEngine().FindScrollTimeline(name);
-    if (!timeline)
-      return nullptr;
-    return timeline->GetRule();
-  }
-
   void SimulateFrame() {
     auto new_time = GetAnimationClock().CurrentTime() + base::Milliseconds(100);
     GetPage().Animator().ServiceScriptedAnimations(new_time);
@@ -3183,23 +3176,6 @@ TEST_F(StyleEngineTest, AtPropertyUseCount) {
   EXPECT_TRUE(GetDocument().IsUseCounted(WebFeature::kCSSAtRuleProperty));
 }
 
-TEST_F(StyleEngineTest, AtScrollTimelineUseCount) {
-  ScopedCSSScrollTimelineForTest scoped_feature(true);
-
-  GetDocument().body()->setInnerHTML("<div>No @scroll-timline</div>");
-  UpdateAllLifecyclePhases();
-  EXPECT_FALSE(
-      GetDocument().IsUseCounted(WebFeature::kCSSAtRuleScrollTimeline));
-
-  GetDocument().body()->setInnerHTML(R"HTML(
-    <style>
-      @scroll-timeline foo { }
-    </style>
-  )HTML");
-  UpdateAllLifecyclePhases();
-  EXPECT_TRUE(GetDocument().IsUseCounted(WebFeature::kCSSAtRuleScrollTimeline));
-}
-
 TEST_F(StyleEngineTest, CSSMatchMediaUnknownUseCounter) {
   ScopedCSSMediaQueries4ForTest media_queries_4_flag(false);
 
@@ -3494,46 +3470,6 @@ TEST_F(StyleEngineTest, AtPropertyInUserOrigin) {
   ASSERT_TRUE(ComputedValue(GetDocument().body(), "--y"));
   EXPECT_EQ("20px", ComputedValue(GetDocument().body(), "--x")->CssText());
   EXPECT_EQ("30px", ComputedValue(GetDocument().body(), "--y")->CssText());
-}
-
-TEST_F(StyleEngineTest, AtScrollTimelineInUserOrigin) {
-  ScopedCSSScrollTimelineForTest scoped_feature(true);
-
-  // @scroll-timeline in the user origin:
-  InjectSheet("user1", WebCssOrigin::kUser, R"CSS(
-    @scroll-timeline timeline1 {
-      source: selector(#scroller1);
-    }
-  )CSS");
-  UpdateAllLifecyclePhases();
-  StyleRuleScrollTimeline* rule1 = FindScrollTimelineRule("timeline1");
-  ASSERT_TRUE(rule1);
-  ASSERT_TRUE(rule1->GetSource());
-  EXPECT_EQ("selector(#scroller1)", rule1->GetSource()->CssText());
-
-  // @scroll-timeline in the author origin (should win over user origin)
-  InjectSheet("author", WebCssOrigin::kAuthor, R"CSS(
-    @scroll-timeline timeline1 {
-      source: selector(#scroller2);
-    }
-  )CSS");
-  UpdateAllLifecyclePhases();
-  StyleRuleScrollTimeline* rule2 = FindScrollTimelineRule("timeline1");
-  ASSERT_TRUE(rule2);
-  ASSERT_TRUE(rule2->GetSource());
-  EXPECT_EQ("selector(#scroller2)", rule2->GetSource()->CssText());
-
-  // An additional @scroll-timeline in the user origin:
-  InjectSheet("user2", WebCssOrigin::kUser, R"CSS(
-    @scroll-timeline timeline2 {
-      source: selector(#scroller3);
-    }
-  )CSS");
-  UpdateAllLifecyclePhases();
-  StyleRuleScrollTimeline* rule3 = FindScrollTimelineRule("timeline2");
-  ASSERT_TRUE(rule3);
-  ASSERT_TRUE(rule3->GetSource());
-  EXPECT_EQ("selector(#scroller3)", rule3->GetSource()->CssText());
 }
 
 // https://crbug.com/1050564
@@ -4511,6 +4447,26 @@ TEST_F(StyleEngineTest, AtCounterStyleUseCounter) {
   EXPECT_TRUE(IsUseCounted(WebFeature::kCSSAtRuleCounterStyle));
 }
 
+TEST_F(StyleEngineTest, AtContainerUseCount) {
+  GetDocument().body()->setInnerHTML(R"HTML(
+    <style>
+      body { --x: No @container rule here; }
+    </style>
+  )HTML");
+  UpdateAllLifecyclePhases();
+  EXPECT_FALSE(GetDocument().IsUseCounted(WebFeature::kCSSAtRuleContainer));
+
+  GetDocument().body()->setInnerHTML(R"HTML(
+    <style>
+      @container (width > 0px) {
+        body { --x: Hello world; }
+      }
+    </style>
+  )HTML");
+  UpdateAllLifecyclePhases();
+  EXPECT_TRUE(GetDocument().IsUseCounted(WebFeature::kCSSAtRuleContainer));
+}
+
 TEST_F(StyleEngineTest, SystemFontsObeyDefaultFontSize) {
   // <input> get assigned "font: -webkit-small-control" in the UA sheet.
   Element* body = GetDocument().body();
@@ -4996,125 +4952,6 @@ TEST_F(StyleEngineTest, UserAndAuthorPropertyOverrideWithCascadeLayers) {
   EXPECT_EQ(100, target->OffsetWidth());
 }
 
-TEST_F(StyleEngineTest, UserScrollTimelineOverrideWithCascadeLayers) {
-  ScopedCSSScrollTimelineForTest scroll_timeline_enabled(true);
-
-  auto* user_sheet = MakeGarbageCollected<StyleSheetContents>(
-      MakeGarbageCollected<CSSParserContext>(GetDocument()));
-  user_sheet->ParseString(R"CSS(
-    @layer base, override;
-
-    #scroller {
-      overflow: hidden;
-      width: 100px;
-      height: 100px;
-    }
-
-    #scroll-contents {
-      height: 200px;
-      width: 300px;
-    }
-
-    @keyframes expand {
-      from { width: 100px; }
-      to { width: 200px; }
-    }
-
-    #target {
-      animation: expand 10s linear;
-      animation-timeline: timeline;
-      height: 100px;
-    }
-
-    @layer override {
-      @scroll-timeline timeline {
-        source: selector(#scroller);
-        orientation: block;
-      }
-    }
-
-    @layer base {
-      @scroll-timeline timeline {
-        source: selector(#scroller);
-        orientation: inline;
-      }
-    }
-  )CSS");
-  StyleSheetKey key("user");
-  GetStyleEngine().InjectSheet(key, user_sheet, WebCssOrigin::kUser);
-
-  GetDocument().body()->setInnerHTML(
-      "<div id=scroller><div id=scroll-contents></div></div>"
-      "<div id=target></div>");
-
-  Element* scroller = GetDocument().getElementById("scroller");
-  scroller->setScrollTop(25);
-  UpdateAllLifecyclePhases();
-
-  Element* target = GetDocument().getElementById("target");
-  EXPECT_EQ(125, target->OffsetWidth());
-}
-
-TEST_F(StyleEngineTest, UserAndAuthorScrollTimelineOverrideWithCascadeLayers) {
-  ScopedCSSScrollTimelineForTest scroll_timeline_enabled(true);
-
-  auto* user_sheet = MakeGarbageCollected<StyleSheetContents>(
-      MakeGarbageCollected<CSSParserContext>(GetDocument()));
-  user_sheet->ParseString(R"CSS(
-    @layer base, override;
-
-    #scroller {
-      overflow: hidden;
-      width: 100px;
-      height: 100px;
-    }
-
-    #scroll-contents {
-      height: 200px;
-    }
-
-    @keyframes expand {
-      from { width: 100px; }
-      to { width: 200px; }
-    }
-
-    @layer override {
-      @scroll-timeline timeline {
-        source: selector(#scroller);
-        orientation: inline;
-      }
-    }
-  )CSS");
-  StyleSheetKey key("user");
-  GetStyleEngine().InjectSheet(key, user_sheet, WebCssOrigin::kUser);
-
-  GetDocument().body()->setInnerHTML(R"HTML(
-    <style>
-      @scroll-timeline timeline {
-        source: selector(#scroller);
-        orientation: block;
-      }
-
-      #target {
-        animation: expand 10s linear;
-        animation-timeline: timeline;
-        height: 100px;
-      }
-    </style>
-    <div id=scroller><div id=scroll-contents></div></div>
-    <div id=target></div>
-  )HTML");
-
-  Element* scroller = GetDocument().getElementById("scroller");
-  scroller->setScrollTop(25);
-  UpdateAllLifecyclePhases();
-
-  // User-defined scroll timelines should not override author-defined
-  // scroll timelines regardless of cascade layers.
-  Element* target = GetDocument().getElementById("target");
-  EXPECT_EQ(125, target->OffsetWidth());
-}
-
 TEST_F(StyleEngineSimTest, UserFontFaceOverrideWithCascadeLayers) {
   SimRequest main_resource("https://example.com", "text/html");
   SimSubresourceRequest ahem_resource("https://example.com/ahem.woff2",
@@ -5327,20 +5164,20 @@ TEST_F(StyleEngineTest, ScrollbarStyleNoExcessiveCaching) {
   scrollbar->SetHoveredPart(kThumbPart);
   UpdateAllLifecyclePhases();
   EXPECT_FALSE(container->GetComputedStyle()->GetPseudoElementStyleCache());
-  EXPECT_EQ("#ff0000", custom_scrollbar->GetPart(kThumbPart)
-                           ->Style()
-                           ->BackgroundColor()
-                           .GetColor()
-                           .Serialized());
+  EXPECT_EQ("rgb(255, 0, 0)", custom_scrollbar->GetPart(kThumbPart)
+                                  ->Style()
+                                  ->BackgroundColor()
+                                  .GetColor()
+                                  .SerializeAsCSSColor());
 
   scrollbar->SetHoveredPart(kNoPart);
   UpdateAllLifecyclePhases();
   EXPECT_FALSE(container->GetComputedStyle()->GetPseudoElementStyleCache());
-  EXPECT_EQ("#008000", custom_scrollbar->GetPart(kThumbPart)
-                           ->Style()
-                           ->BackgroundColor()
-                           .GetColor()
-                           .Serialized());
+  EXPECT_EQ("rgb(0, 128, 0)", custom_scrollbar->GetPart(kThumbPart)
+                                  ->Style()
+                                  ->BackgroundColor()
+                                  .GetColor()
+                                  .SerializeAsCSSColor());
 }
 
 TEST_F(StyleEngineTest, HasPseudoClassInvalidationSkipIrrelevantClassChange) {
@@ -6011,6 +5848,93 @@ TEST_F(StyleEngineSimTest, ContainerQueryLegacyConsoleWarning_AddColumns) {
   EXPECT_TRUE(ConsoleMessages().Contains(CQLegacyWarningText()));
 }
 
+TEST_F(StyleEngineSimTest,
+       ShouldInvalidateSubjectPseudoHasAfterChildrenParsingFinished) {
+  SimRequest main_resource("https://example.com/", "text/html");
+
+  LoadURL("https://example.com/");
+
+  main_resource.Write(R"HTML(
+    <!DOCTYPE html>
+    <style>
+      .a { color: black }
+      .a:not(:has(+ div)) { color: red }
+    </style>
+    <div id="first" class="a"> First </div>
+    <div id="second" class="a"> Second
+  )HTML");
+
+  Compositor().BeginFrame();
+  test::RunPendingTasks();
+
+  Element* first = GetDocument().getElementById("first");
+  EXPECT_TRUE(first);
+  EXPECT_EQ(
+      Color::FromRGB(0, 0, 0),
+      first->GetComputedStyle()->VisitedDependentColor(GetCSSPropertyColor()));
+
+  Element* second = GetDocument().getElementById("second");
+  EXPECT_TRUE(second);
+  EXPECT_EQ(
+      Color::FromRGB(255, 0, 0),
+      second->GetComputedStyle()->VisitedDependentColor(GetCSSPropertyColor()));
+
+  main_resource.Write(R"HTML(
+    </div>
+    <div id="third" class="a"> Third
+  )HTML");
+
+  Compositor().BeginFrame();
+  test::RunPendingTasks();
+
+  first = GetDocument().getElementById("first");
+  EXPECT_TRUE(first);
+  EXPECT_EQ(
+      Color::FromRGB(0, 0, 0),
+      first->GetComputedStyle()->VisitedDependentColor(GetCSSPropertyColor()));
+
+  second = GetDocument().getElementById("second");
+  EXPECT_TRUE(second);
+  EXPECT_EQ(
+      Color::FromRGB(255, 0, 0),
+      second->GetComputedStyle()->VisitedDependentColor(GetCSSPropertyColor()));
+
+  Element* third = GetDocument().getElementById("third");
+  EXPECT_TRUE(third);
+  EXPECT_EQ(
+      Color::FromRGB(255, 0, 0),
+      third->GetComputedStyle()->VisitedDependentColor(GetCSSPropertyColor()));
+
+  main_resource.Complete(R"HTML(
+    </div>
+    <div id="fourth"> Fourth </div>
+  )HTML");
+
+  first = GetDocument().getElementById("first");
+  EXPECT_TRUE(first);
+  EXPECT_EQ(
+      Color::FromRGB(0, 0, 0),
+      first->GetComputedStyle()->VisitedDependentColor(GetCSSPropertyColor()));
+
+  second = GetDocument().getElementById("second");
+  EXPECT_TRUE(second);
+  EXPECT_EQ(
+      Color::FromRGB(0, 0, 0),
+      second->GetComputedStyle()->VisitedDependentColor(GetCSSPropertyColor()));
+
+  third = GetDocument().getElementById("third");
+  EXPECT_TRUE(third);
+  EXPECT_EQ(
+      Color::FromRGB(0, 0, 0),
+      third->GetComputedStyle()->VisitedDependentColor(GetCSSPropertyColor()));
+
+  Element* fourth = GetDocument().getElementById("fourth");
+  EXPECT_TRUE(fourth);
+  EXPECT_EQ(
+      Color::FromRGB(0, 0, 0),
+      fourth->GetComputedStyle()->VisitedDependentColor(GetCSSPropertyColor()));
+}
+
 TEST_F(StyleEngineTest, UsesCachedTokenizer) {
   // Make sure the parser exists.
   GetDocument().write("<body></body>");
@@ -6024,6 +5948,26 @@ TEST_F(StyleEngineTest, UsesCachedTokenizer) {
   auto& style_element =
       To<HTMLStyleElement>(*GetDocument().getElementById("style"));
   EXPECT_EQ(style_element.sheet()->length(), 2u);
+}
+
+TEST_F(StyleEngineTest, StyleElementTypeAttrChange) {
+  Element* style = GetDocument().CreateElementForBinding("style");
+  style->setAttribute("type", "invalid");
+  style->setInnerHTML("body { color: red }");
+  GetDocument().body()->appendChild(style);
+
+  // <style> has no effect due to invalid type attribute value
+  UpdateAllLifecyclePhases();
+  EXPECT_EQ(Color::FromRGB(0, 0, 0),
+            GetDocument().body()->GetComputedStyle()->VisitedDependentColor(
+                GetCSSPropertyColor()));
+
+  // <style> should now be effective with a valid type attribute value
+  style->setAttribute("type", "text/css");
+  UpdateAllLifecyclePhases();
+  EXPECT_EQ(Color::FromRGB(255, 0, 0),
+            GetDocument().body()->GetComputedStyle()->VisitedDependentColor(
+                GetCSSPropertyColor()));
 }
 
 }  // namespace blink

@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -87,6 +87,9 @@ class FullRestoreService : public KeyedService,
 
   void MaybeCloseNotification(bool allow_save = true);
 
+  // Implement the restoration.
+  void Restore();
+
   // message_center::NotificationObserver:
   void Close(bool by_user) override;
   void Click(const absl::optional<int>& button_index,
@@ -121,9 +124,6 @@ class FullRestoreService : public KeyedService,
   // Show the restore notification on startup.
   void MaybeShowRestoreNotification(const std::string& id,
                                     bool& show_notification);
-
-  // Implement the restoration.
-  void Restore();
 
   void RecordRestoreAction(const std::string& notification_id,
                            RestoreAction restore_action);

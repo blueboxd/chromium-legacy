@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -196,16 +196,13 @@ std::unique_ptr<SharedImageBacking> GLImageBackingFactory::CreateSharedImage(
   const bool for_framebuffer_attachment =
       (usage & (SHARED_IMAGE_USAGE_RASTER |
                 SHARED_IMAGE_USAGE_GLES2_FRAMEBUFFER_HINT)) != 0;
-  const bool is_rgb_emulation = (usage & SHARED_IMAGE_USAGE_RGB_EMULATION) != 0;
 
   InitializeGLTextureParams params;
   params.target = target;
-  params.internal_format =
-      is_rgb_emulation ? GL_RGB : image->GetInternalFormat();
-  params.format = is_rgb_emulation ? GL_RGB : image->GetDataFormat();
+  params.internal_format = image->GetInternalFormat();
+  params.format = image->GetDataFormat();
   params.type = image->GetDataType();
   params.is_cleared = true;
-  params.is_rgb_emulation = is_rgb_emulation;
   params.framebuffer_attachment_angle =
       for_framebuffer_attachment && texture_usage_angle_;
   return std::make_unique<GLImageBacking>(
@@ -245,12 +242,12 @@ scoped_refptr<gl::GLImage> GLImageBackingFactory::MakeGLImage(
 
 bool GLImageBackingFactory::IsSupported(uint32_t usage,
                                         viz::ResourceFormat format,
+                                        const gfx::Size& size,
                                         bool thread_safe,
                                         gfx::GpuMemoryBufferType gmb_type,
                                         GrContextType gr_context_type,
-                                        bool* allow_legacy_mailbox,
-                                        bool is_pixel_used) {
-  if (is_pixel_used && gr_context_type != GrContextType::kGL) {
+                                        base::span<const uint8_t> pixel_data) {
+  if (!pixel_data.empty() && gr_context_type != GrContextType::kGL) {
     return false;
   }
   if (thread_safe) {
@@ -268,7 +265,6 @@ bool GLImageBackingFactory::IsSupported(uint32_t usage,
 #if BUILDFLAG(IS_MAC)
   // On macOS, there is no separate interop factory. Any GpuMemoryBuffer-backed
   // image can be used with both OpenGL and Metal
-  *allow_legacy_mailbox = gr_context_type == GrContextType::kGL;
   return true;
 #else
   // Doesn't support contexts other than GL for OOPR Canvas
@@ -282,7 +278,6 @@ bool GLImageBackingFactory::IsSupported(uint32_t usage,
     // return false if it needs interop factory
     return false;
   }
-  *allow_legacy_mailbox = gr_context_type == GrContextType::kGL;
   return true;
 #endif
 }

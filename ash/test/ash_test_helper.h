@@ -1,4 +1,4 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -17,7 +17,7 @@
 #include "ash/shell_delegate.h"
 #include "ash/system/message_center/test_notifier_settings_controller.h"
 #include "base/test/scoped_command_line.h"
-#include "chromeos/services/bluetooth_config/scoped_bluetooth_config_test_helper.h"
+#include "chromeos/ash/services/bluetooth_config/scoped_bluetooth_config_test_helper.h"
 #include "chromeos/system/fake_statistics_provider.h"
 #include "ui/aura/test/aura_test_helper.h"
 
@@ -48,6 +48,7 @@ namespace ash {
 class AppListTestHelper;
 class AmbientAshTestHelper;
 class AshTestUiStabilizer;
+class SavedDeskTestHelper;
 class TestKeyboardControllerObserver;
 class TestNewWindowDelegateProvider;
 class TestWallpaperControllerClient;
@@ -154,9 +155,13 @@ class AshTestHelper : public aura::test::AuraTestHelper {
     return ambient_ash_test_helper_.get();
   }
 
-  chromeos::bluetooth_config::ScopedBluetoothConfigTestHelper*
+  bluetooth_config::ScopedBluetoothConfigTestHelper*
   bluetooth_config_test_helper() {
     return &scoped_bluetooth_config_test_helper_;
+  }
+
+  SavedDeskTestHelper* saved_desk_test_helper() {
+    return saved_desk_test_helper_.get();
   }
 
  private:
@@ -193,11 +198,12 @@ class AshTestHelper : public aura::test::AuraTestHelper {
       test_keyboard_controller_observer_;
   std::unique_ptr<AmbientAshTestHelper> ambient_ash_test_helper_;
   std::unique_ptr<TestWallpaperControllerClient> wallpaper_controller_client_;
+  std::unique_ptr<SavedDeskTestHelper> saved_desk_test_helper_;
 
   // Used only for pixel tests.
   std::unique_ptr<AshTestUiStabilizer> ui_stabilizer_;
 
-  chromeos::bluetooth_config::ScopedBluetoothConfigTestHelper
+  bluetooth_config::ScopedBluetoothConfigTestHelper
       scoped_bluetooth_config_test_helper_;
 
   // InputMethodManager is not owned by this class. It is stored in a

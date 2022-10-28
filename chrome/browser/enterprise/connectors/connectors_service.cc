@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -26,6 +26,7 @@
 #include "chrome/browser/profiles/profile_attributes_entry.h"
 #include "chrome/browser/profiles/profile_attributes_storage.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/profiles/profiles_state.h"
 #include "chrome/browser/profiles/reporting_util.h"
 #include "chrome/browser/safe_browsing/cloud_content_scanning/deep_scanning_utils.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
@@ -140,6 +141,9 @@ absl::optional<std::string> GetDeviceDMToken() {
 
 const base::Feature kEnterpriseConnectorsEnabled{
     "EnterpriseConnectorsEnabled", base::FEATURE_ENABLED_BY_DEFAULT};
+
+const base::Feature kEnterpriseConnectorsEnabledOnMGS{
+    "EnterpriseConnectorsEnabledOnMGS", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // --------------------------------
 // ConnectorsService implementation
@@ -305,6 +309,14 @@ std::vector<std::string> ConnectorsService::GetReportingServiceProviderNames(
   return connectors_manager_->GetReportingServiceProviderNames(connector);
 }
 
+std::vector<const AnalysisConfig*> ConnectorsService::GetAnalysisServiceConfigs(
+    AnalysisConnector connector) {
+  if (!ConnectorsEnabled())
+    return {};
+
+  return connectors_manager_->GetAnalysisServiceConfigs(connector);
+}
+
 bool ConnectorsService::DelayUntilVerdict(AnalysisConnector connector) {
   if (!ConnectorsEnabled())
     return false;
@@ -459,13 +471,21 @@ ConnectorsService::DmToken::~DmToken() = default;
 
 absl::optional<ConnectorsService::DmToken> ConnectorsService::GetDmToken(
     const char* scope_pref) const {
-#if BUILDFLAG(IS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   // On CrOS the settings from primary profile applies to all profiles.
   return GetBrowserDmToken();
 #else
-  return GetPolicyScope(scope_pref) == policy::POLICY_SCOPE_USER
-             ? GetProfileDmToken()
-             : GetBrowserDmToken();
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+  Profile* profile = Profile::FromBrowserContext(context_);
+  if (profile->IsMainProfile()) {
+    return GetBrowserDmToken();
+  } else
+#endif
+  {
+    return GetPolicyScope(scope_pref) == policy::POLICY_SCOPE_USER
+               ? GetProfileDmToken()
+               : GetBrowserDmToken();
+  }
 #endif
 }
 
@@ -480,7 +500,7 @@ ConnectorsService::GetBrowserDmToken() const {
   return DmToken(dm_token.value(), policy::POLICY_SCOPE_MACHINE);
 }
 
-#if !BUILDFLAG(IS_CHROMEOS)
+#if !BUILDFLAG(IS_CHROMEOS_ASH)
 absl::optional<ConnectorsService::DmToken>
 ConnectorsService::GetProfileDmToken() const {
   if (!CanUseProfileDmToken())
@@ -518,6 +538,10 @@ policy::PolicyScope ConnectorsService::GetPolicyScope(
 
 bool ConnectorsService::ConnectorsEnabled() const {
   if (!base::FeatureList::IsEnabled(kEnterpriseConnectorsEnabled))
+    return false;
+
+  if (profiles::IsPublicSession() &&
+      !base::FeatureList::IsEnabled(kEnterpriseConnectorsEnabledOnMGS))
     return false;
 
   return !Profile::FromBrowserContext(context_)->IsOffTheRecord();
@@ -579,13 +603,20 @@ ConnectorsServiceFactory::~ConnectorsServiceFactory() = default;
 
 KeyedService* ConnectorsServiceFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
+  bool observe_prefs =
+      base::FeatureList::IsEnabled(kEnterpriseConnectorsEnabled);
+
+  if (profiles::IsPublicSession()) {
+    observe_prefs &=
+        base::FeatureList::IsEnabled(kEnterpriseConnectorsEnabledOnMGS);
+  }
+
   return new ConnectorsService(
-      context,
-      std::make_unique<ConnectorsManager>(
-          std::make_unique<BrowserCrashEventRouter>(context),
-          ExtensionInstallEventRouter(context),
-          user_prefs::UserPrefs::Get(context), GetServiceProviderConfig(),
-          base::FeatureList::IsEnabled(kEnterpriseConnectorsEnabled)));
+      context, std::make_unique<ConnectorsManager>(
+                   std::make_unique<BrowserCrashEventRouter>(context),
+                   ExtensionInstallEventRouter(context),
+                   user_prefs::UserPrefs::Get(context),
+                   GetServiceProviderConfig(), observe_prefs));
 }
 
 content::BrowserContext* ConnectorsServiceFactory::GetBrowserContextToUse(
@@ -601,9 +632,9 @@ content::BrowserContext* ConnectorsServiceFactory::GetBrowserContextToUse(
     if (primary_profile)
       return primary_profile;
 #elif BUILDFLAG(IS_CHROMEOS_LACROS)
-    Profile* main_profile = GetMainProfileLacros();
-    if (main_profile)
-      return main_profile;
+    Profile* profile = Profile::FromBrowserContext(context);
+    if (profile)
+      return profile;
 #endif
   }
   return context;

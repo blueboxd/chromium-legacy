@@ -1,4 +1,4 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -392,7 +392,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionSessionsTest, GetRecentlyClosedMaxResults) {
         browser()));
     ASSERT_TRUE(result);
     ASSERT_TRUE(result->is_list());
-    EXPECT_EQ(kTabCount, result->GetListDeprecated().size());
+    EXPECT_EQ(kTabCount, result->GetList().size());
   }
   {
     std::unique_ptr<base::Value> result(utils::RunFunctionAndReturnSingleResult(
@@ -400,7 +400,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionSessionsTest, GetRecentlyClosedMaxResults) {
         "[{\"maxResults\": 0}]", browser()));
     ASSERT_TRUE(result);
     ASSERT_TRUE(result->is_list());
-    EXPECT_EQ(0u, result->GetListDeprecated().size());
+    EXPECT_EQ(0u, result->GetList().size());
   }
   {
     std::unique_ptr<base::Value> result(utils::RunFunctionAndReturnSingleResult(
@@ -408,7 +408,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionSessionsTest, GetRecentlyClosedMaxResults) {
         "[{\"maxResults\": 2}]", browser()));
     ASSERT_TRUE(result);
     ASSERT_TRUE(result->is_list());
-    EXPECT_EQ(2u, result->GetListDeprecated().size());
+    EXPECT_EQ(2u, result->GetList().size());
   }
 }
 

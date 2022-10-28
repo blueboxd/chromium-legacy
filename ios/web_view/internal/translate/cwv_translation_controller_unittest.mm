@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -96,7 +96,7 @@ class CWVTranslationControllerTest : public TestWithLocaleAndResources {
     pref_service_.registry()->RegisterListPref(
         translate::TranslatePrefs::kPrefNeverPromptSitesDeprecated);
     pref_service_.registry()->RegisterDictionaryPref(
-        translate::TranslatePrefs::kPrefNeverPromptSitesWithTime);
+        translate::prefs::kPrefNeverPromptSitesWithTime);
     pref_service_.registry()->RegisterDictionaryPref(
         translate::prefs::kPrefAlwaysTranslateList);
     pref_service_.registry()->RegisterDictionaryPref(

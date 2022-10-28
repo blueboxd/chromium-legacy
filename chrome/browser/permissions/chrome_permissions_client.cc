@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -53,18 +53,18 @@
 #if BUILDFLAG(IS_ANDROID)
 #include "chrome/browser/android/resource_mapper.h"
 #include "chrome/browser/android/search_permissions/search_permissions_service.h"
-#include "chrome/browser/permissions/grouped_permission_infobar_delegate_android.h"
 #include "chrome/browser/permissions/notification_blocked_message_delegate_android.h"
+#include "chrome/browser/permissions/permission_infobar_delegate_android.h"
 #include "chrome/browser/permissions/permission_update_infobar_delegate_android.h"
 #include "chrome/browser/permissions/permission_update_message_controller_android.h"
 #include "components/infobars/content/content_infobar_manager.h"
 #include "components/messages/android/messages_feature.h"
 #include "components/permissions/permission_request_manager.h"
 #else
-#include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/ui/hats/hats_service.h"
 #include "chrome/browser/ui/hats/hats_service_factory.h"
 #include "chrome/browser/ui/permission_bubble/permission_prompt.h"
+#include "components/vector_icons/vector_icons.h"
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -287,7 +287,7 @@ permissions::IconId ChromePermissionsClient::GetOverrideIconId(
 #if BUILDFLAG(IS_CHROMEOS)
   // TODO(xhwang): fix this icon, see crbug.com/446263.
   if (request_type == permissions::RequestType::kProtectedMediaIdentifier)
-    return kProductIcon;
+    return vector_icons::kProductIcon;
 #endif
   return PermissionsClient::GetOverrideIconId(request_type);
 }
@@ -465,8 +465,8 @@ infobars::InfoBar* ChromePermissionsClient::MaybeCreateInfoBar(
   infobars::ContentInfoBarManager* infobar_manager =
       infobars::ContentInfoBarManager::FromWebContents(web_contents);
   if (infobar_manager && ShouldUseQuietUI(web_contents, type)) {
-    return GroupedPermissionInfoBarDelegate::Create(std::move(prompt),
-                                                    infobar_manager);
+    return PermissionInfoBarDelegate::Create(std::move(prompt),
+                                             infobar_manager);
   }
   return nullptr;
 }

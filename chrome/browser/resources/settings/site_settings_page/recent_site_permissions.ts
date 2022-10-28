@@ -1,16 +1,16 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import 'chrome://resources/cr_elements/policy/cr_tooltip_icon.m.js';
-import 'chrome://resources/cr_elements/shared_style_css.m.js';
+import 'chrome://resources/cr_elements/policy/cr_tooltip_icon.js';
+import 'chrome://resources/cr_elements/cr_shared_style.css.js';
 import 'chrome://resources/polymer/v3_0/paper-tooltip/paper-tooltip.js';
 import '../settings_shared.css.js';
 import '../i18n_setup.js';
 
-import {CrTooltipIconElement} from 'chrome://resources/cr_elements/policy/cr_tooltip_icon.m.js';
+import {CrTooltipIconElement} from 'chrome://resources/cr_elements/policy/cr_tooltip_icon.js';
 import {assert} from 'chrome://resources/js/assert_ts.js';
-import {focusWithoutInk} from 'chrome://resources/js/cr/ui/focus_without_ink.m.js';
+import {focusWithoutInk} from 'chrome://resources/js/cr/ui/focus_without_ink.js';
 import {I18nMixin, I18nMixinInterface} from 'chrome://resources/js/i18n_mixin.js';
 import {WebUIListenerMixin, WebUIListenerMixinInterface} from 'chrome://resources/js/web_ui_listener_mixin.js';
 import {PaperTooltipElement} from 'chrome://resources/polymer/v3_0/paper-tooltip/paper-tooltip.js';
@@ -376,12 +376,13 @@ export class SettingsRecentSitePermissionsElement extends
       const icon = this.shadowRoot!.querySelector<CrTooltipIconElement>(
           `#incognitoInfoIcon_${index}`);
       assert(!!icon);
-      const toFocus = icon.getFocusableElement();
+      const toFocus = icon.getFocusableElement() as HTMLElement;
       assert(!!toFocus);
       focusWithoutInk(toFocus);
     } else {
       const toFocus =
-          this.shadowRoot!.querySelector(`#siteEntryButton_${index}`);
+          this.shadowRoot!.querySelector<HTMLElement>(
+              `#siteEntryButton_${index}`);
       assert(!!toFocus);
       focusWithoutInk(toFocus);
     }

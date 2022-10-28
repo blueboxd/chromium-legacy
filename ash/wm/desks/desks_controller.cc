@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -57,6 +57,7 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/notreached.h"
+#include "base/ranges/algorithm.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
@@ -485,10 +486,7 @@ Desk* DesksController::GetPreviousDesk(bool use_target_active_desk) const {
 }
 
 Desk* DesksController::GetDeskByUuid(const base::GUID& desk_uuid) const {
-  auto it = std::find_if(desks_.begin(), desks_.end(),
-                         [&desk_uuid](const std::unique_ptr<Desk>& desk) {
-                           return desk->uuid() == desk_uuid;
-                         });
+  auto it = base::ranges::find(desks_, desk_uuid, &Desk::uuid);
   return it != desks_.end() ? it->get() : nullptr;
 }
 
@@ -649,9 +647,9 @@ void DesksController::ActivateDesk(const Desk* desk, DesksSwitchSource source) {
   const bool is_user_switch = source == DesksSwitchSource::kUserSwitch;
   std::vector<base::AutoReset<bool>> desks_scoped_notify_disablers;
   if (is_user_switch) {
-    for (const auto& desk : desks_) {
+    for (const auto& desk_to_notify : desks_) {
       desks_scoped_notify_disablers.push_back(
-          desk->GetScopedNotifyContentChangedDisabler());
+          desk_to_notify->GetScopedNotifyContentChangedDisabler());
     }
   }
 
@@ -1100,7 +1098,8 @@ const Desk* DesksController::CreateNewDeskForTemplate(
     auto active_desk_windows = active_desk_->windows();
     for (aura::Window* window : active_desk_windows) {
       if (window->GetId() == kShellWindowId_DesksBarWindow ||
-          window->GetId() == kShellWindowId_SaveDeskButtonContainer) {
+          window->GetId() == kShellWindowId_SaveDeskButtonContainer ||
+          window->GetId() == kShellWindowId_SavedDeskLibraryWindow) {
         aura::Window* destination_container =
             desk->GetDeskContainerForRoot(window->GetRootWindow());
         destination_container->AddChild(window);
@@ -1400,18 +1399,11 @@ void DesksController::OnAnimationFinished(DeskAnimationBase* animation) {
 }
 
 bool DesksController::HasDesk(const Desk* desk) const {
-  auto iter = std::find_if(
-      desks_.begin(), desks_.end(),
-      [desk](const std::unique_ptr<Desk>& d) { return d.get() == desk; });
-  return iter != desks_.end();
+  return base::Contains(desks_, desk, &std::unique_ptr<Desk>::get);
 }
 
 bool DesksController::HasDeskWithName(const std::u16string& desk_name) const {
-  auto iter = std::find_if(desks_.begin(), desks_.end(),
-                           [desk_name](const std::unique_ptr<Desk>& d) {
-                             return d->name() == desk_name;
-                           });
-  return iter != desks_.end();
+  return base::Contains(desks_, desk_name, &Desk::name);
 }
 
 void DesksController::ActivateDeskInternal(const Desk* desk,
@@ -1478,9 +1470,7 @@ void DesksController::RemoveDeskInternal(const Desk* desk,
 
   base::AutoReset<bool> in_progress(&are_desks_being_modified_, true);
 
-  auto iter = std::find_if(
-      desks_.begin(), desks_.end(),
-      [desk](const std::unique_ptr<Desk>& d) { return d.get() == desk; });
+  auto iter = base::ranges::find(desks_, desk, &std::unique_ptr<Desk>::get);
   DCHECK(iter != desks_.end());
 
   const int removed_desk_index = std::distance(desks_.begin(), iter);
@@ -1840,8 +1830,8 @@ void DesksController::RestackVisibleOnAllDesksWindowsOnActiveDesk() {
   auto mru_windows =
       Shell::Get()->mru_window_tracker()->BuildMruWindowList(kActiveDesk);
   for (auto* visible_on_all_desks_window : visible_on_all_desks_windows_) {
-    auto visible_on_all_desks_window_iter = std::find(
-        mru_windows.begin(), mru_windows.end(), visible_on_all_desks_window);
+    auto visible_on_all_desks_window_iter =
+        base::ranges::find(mru_windows, visible_on_all_desks_window);
     if (visible_on_all_desks_window_iter == mru_windows.end())
       continue;
 

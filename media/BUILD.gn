@@ -1,4 +1,4 @@
-# Copyright 2014 The Chromium Authors. All rights reserved.
+# Copyright 2014 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -227,9 +227,14 @@ test("media_unittests") {
 
     additional_manifest_fragments = [
       "//build/config/fuchsia/test/audio_output.shard.test-cml",
+      "//build/config/fuchsia/test/mark_vmo_executable.shard.test-cml",
       "//build/config/fuchsia/test/platform_video_codecs.shard.test-cml",
       "//third_party/fuchsia-sdk/sdk/pkg/vulkan/client.shard.cml",
     ]
+
+    if (enable_library_cdms) {
+      excluded_files = [ "lib.unstripped/libclearkeycdm.so" ]
+    }
   }
 
   if (enable_media_remoting) {

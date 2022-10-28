@@ -9,9 +9,9 @@
 #include <string>
 #include <vector>
 
-#include "base/gtest_prod_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "base/values.h"
 #include "build/chromeos_buildflags.h"
 #include "remoting/host/host_status_observer.h"
 #include "remoting/host/it2me/it2me_confirmation_dialog.h"
@@ -23,10 +23,6 @@
 #include "remoting/protocol/validating_authenticator.h"
 #include "remoting/signaling/signal_strategy.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
-
-namespace base {
-class DictionaryValue;
-}  // namespace base
 
 namespace remoting {
 
@@ -101,15 +97,22 @@ class It2MeHost : public base::RefCountedThreadSafe<It2MeHost>,
   // Enable or disable whether or not the session should be terminated if local
   // input is detected.
   void set_terminate_upon_input(bool terminate_upon_input);
+  bool terminate_upon_input() const { return terminate_upon_input_; }
+
+  // Enable, disable, or query whether or not the local user session is
+  // curtained when a remote user has connected.
+  void set_enable_curtaining(bool enable);
+  bool enable_curtaining() const { return enable_curtaining_; }
 
   // Indicates whether the session was initiated through the remote command
   // infrastructure for a managed device.
   void set_is_enterprise_session(bool is_enterprise_session);
+  bool is_enterprise_session() const { return is_enterprise_session_; }
 
   // Creates It2Me host structures and starts the host.
   virtual void Connect(
       std::unique_ptr<ChromotingHostContext> context,
-      std::unique_ptr<base::DictionaryValue> policies,
+      base::Value::Dict policies,
       std::unique_ptr<It2MeConfirmationDialogFactory> dialog_factory,
       base::WeakPtr<It2MeHost::Observer> observer,
       CreateDeferredConnectContext create_context,
@@ -135,7 +138,7 @@ class It2MeHost : public base::RefCountedThreadSafe<It2MeHost>,
   GetValidationCallbackForTesting();
 
   // Called when initial policies are read and when they change.
-  void OnPolicyUpdate(std::unique_ptr<base::DictionaryValue> policies);
+  void OnPolicyUpdate(base::Value::Dict policies);
 
  protected:
   friend class base::RefCountedThreadSafe<It2MeHost>;
@@ -240,6 +243,7 @@ class It2MeHost : public base::RefCountedThreadSafe<It2MeHost>,
   bool enable_dialogs_ = true;
   bool enable_notifications_ = true;
   bool terminate_upon_input_ = false;
+  bool enable_curtaining_ = false;
 };
 
 // Having a factory interface makes it possible for the test to provide a mock

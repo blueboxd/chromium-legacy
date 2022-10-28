@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -21,6 +21,9 @@
 // Voice search button.
 @property(nonatomic, strong, readonly) UIButton* voiceSearchButton;
 
+// The button that opens Lens. May be nil if Lens is not enabled.
+@property(nonatomic, strong, readonly) UIButton* lensButton;
+
 // Fake cancel button, used for animations. Hidden by default.
 @property(nonatomic, strong) UIView* cancelButton;
 // Fake omnibox, used for animations. Hidden by default.
@@ -32,6 +35,9 @@
     NSLayoutConstraint* fakeLocationBarTrailingConstraint;
 @property(nonatomic, strong) UIView* fakeLocationBar;
 @property(nonatomic, strong) UILabel* searchHintLabel;
+
+// `YES` if Google is the default search engine.
+@property(nonatomic, assign) BOOL isGoogleDefaultSearchEngine;
 
 // Adds the separator to the searchField. Must be called after the searchField
 // is added as a subview.

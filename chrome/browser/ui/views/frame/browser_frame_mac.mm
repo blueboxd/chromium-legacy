@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -110,9 +110,19 @@ API_AVAILABLE(macos(10.12.2))
 
 BrowserFrameMac::BrowserFrameMac(BrowserFrame* browser_frame,
                                  BrowserView* browser_view)
-    : views::NativeWidgetMac(browser_frame), browser_view_(browser_view) {}
+    : views::NativeWidgetMac(browser_frame), browser_view_(browser_view) {
+  if (GetRemoteCocoaApplicationHost()) {
+    // Only add observer on PWA.
+    chrome::AddCommandObserver(browser_view_->browser(), IDC_BACK, this);
+    chrome::AddCommandObserver(browser_view_->browser(), IDC_FORWARD, this);
+  }
+}
 
 BrowserFrameMac::~BrowserFrameMac() {
+  if (GetRemoteCocoaApplicationHost()) {
+    chrome::RemoveCommandObserver(browser_view_->browser(), IDC_BACK, this);
+    chrome::RemoveCommandObserver(browser_view_->browser(), IDC_FORWARD, this);
+  }
 }
 
 BrowserWindowTouchBarController* BrowserFrameMac::GetTouchBarController()
@@ -388,6 +398,19 @@ void BrowserFrameMac::OnWindowDestroying(gfx::NativeWindow native_window) {
 int BrowserFrameMac::GetMinimizeButtonOffset() const {
   NOTIMPLEMENTED();
   return 0;
+}
+
+void BrowserFrameMac::EnabledStateChangedForCommand(int id, bool enabled) {
+  switch (id) {
+    case IDC_BACK:
+      GetNSWindowHost()->CanGoBack(enabled);
+      break;
+    case IDC_FORWARD:
+      GetNSWindowHost()->CanGoForward(enabled);
+      break;
+    default:
+      NOTREACHED();
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////

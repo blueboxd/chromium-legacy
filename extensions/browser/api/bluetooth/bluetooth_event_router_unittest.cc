@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -55,7 +55,7 @@ class BluetoothEventRouterTest : public ExtensionsTest {
   void TearDown() override {
     // It's important to destroy the router before the browser context keyed
     // services so it removes itself as an ExtensionRegistry observer.
-    router_.reset(NULL);
+    router_.reset();
     ExtensionsTest::TearDown();
   }
 

@@ -1,21 +1,21 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #import "ios/chrome/browser/ui/omnibox/omnibox_coordinator.h"
 
-#include "base/check.h"
+#import "base/check.h"
 #import "base/ios/ios_util.h"
-#include "base/metrics/user_metrics.h"
-#include "base/metrics/user_metrics_action.h"
-#include "base/strings/sys_string_conversions.h"
-#include "components/omnibox/browser/omnibox_edit_model.h"
+#import "base/metrics/user_metrics.h"
+#import "base/metrics/user_metrics_action.h"
+#import "base/strings/sys_string_conversions.h"
+#import "components/omnibox/browser/omnibox_edit_model.h"
 #import "components/omnibox/common/omnibox_features.h"
-#include "components/omnibox/common/omnibox_focus_state.h"
-#include "components/open_from_clipboard/clipboard_recent_content.h"
-#include "components/strings/grit/components_strings.h"
-#include "ios/chrome/browser/browser_state/chrome_browser_state.h"
-#include "ios/chrome/browser/favicon/ios_chrome_favicon_loader_factory.h"
+#import "components/omnibox/common/omnibox_focus_state.h"
+#import "components/open_from_clipboard/clipboard_recent_content.h"
+#import "components/strings/grit/components_strings.h"
+#import "ios/chrome/browser/browser_state/chrome_browser_state.h"
+#import "ios/chrome/browser/favicon/ios_chrome_favicon_loader_factory.h"
 #import "ios/chrome/browser/main/browser.h"
 #import "ios/chrome/browser/search_engines/template_url_service_factory.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
@@ -35,15 +35,15 @@
 #import "ios/chrome/browser/ui/omnibox/omnibox_mediator.h"
 #import "ios/chrome/browser/ui/omnibox/omnibox_return_key_forwarding_delegate.h"
 #import "ios/chrome/browser/ui/omnibox/omnibox_text_field_ios.h"
-#include "ios/chrome/browser/ui/omnibox/omnibox_text_field_paste_delegate.h"
+#import "ios/chrome/browser/ui/omnibox/omnibox_text_field_paste_delegate.h"
 #import "ios/chrome/browser/ui/omnibox/omnibox_util.h"
-#include "ios/chrome/browser/ui/omnibox/omnibox_view_controller.h"
-#include "ios/chrome/browser/ui/omnibox/omnibox_view_ios.h"
+#import "ios/chrome/browser/ui/omnibox/omnibox_view_controller.h"
+#import "ios/chrome/browser/ui/omnibox/omnibox_view_ios.h"
 #import "ios/chrome/browser/ui/omnibox/popup/omnibox_popup_coordinator.h"
-#include "ios/chrome/browser/ui/omnibox/popup/omnibox_popup_view_ios.h"
+#import "ios/chrome/browser/ui/omnibox/popup/omnibox_popup_view_ios.h"
 #import "ios/chrome/browser/ui/omnibox/popup/pedal_section_extractor.h"
 #import "ios/chrome/browser/ui/omnibox/zero_suggest_prefetch_helper.h"
-#include "ios/chrome/browser/ui/ui_feature_flags.h"
+#import "ios/chrome/browser/ui/ui_feature_flags.h"
 #import "ios/chrome/browser/url_loading/image_search_param_generator.h"
 #import "ios/chrome/browser/url_loading/url_loading_browser_agent.h"
 #import "ios/chrome/browser/url_loading/url_loading_params.h"
@@ -53,7 +53,7 @@
 #error "This file requires ARC support."
 #endif
 
-@interface OmniboxCoordinator () <OmniboxViewControllerDelegate>
+@interface OmniboxCoordinator () <OmniboxViewControllerTextInputDelegate>
 // Object taking care of adding the accessory views to the keyboard.
 @property(nonatomic, strong)
     OmniboxAssistiveKeyboardDelegateImpl* keyboardDelegate;
@@ -96,13 +96,8 @@
 
   self.viewController.defaultLeadingImage =
       GetOmniboxSuggestionIcon(DEFAULT_FAVICON);
-  // TODO(crbug.com/1045047): Use HandlerForProtocol after commands protocol
-  // clean up.
-  self.viewController.dispatcher =
-      static_cast<id<BrowserCommands, LoadQueryCommands, OmniboxCommands>>(
-          self.browser->GetCommandDispatcher());
-  self.viewController.delegate = self;
-  self.mediator = [[OmniboxMediator alloc] init];
+  self.viewController.textInputDelegate = self;
+  self.mediator = [[OmniboxMediator alloc] initWithIncognito:isIncognito];
   self.mediator.templateURLService =
       ios::TemplateURLServiceFactory::GetForBrowserState(
           self.browser->GetBrowserState());
@@ -110,6 +105,15 @@
       IOSChromeFaviconLoaderFactory::GetForBrowserState(
           self.browser->GetBrowserState());
   self.mediator.consumer = self.viewController;
+  self.mediator.omniboxCommandsHandler =
+      HandlerForProtocol(self.browser->GetCommandDispatcher(), OmniboxCommands);
+  self.mediator.loadQueryCommandsHandler = HandlerForProtocol(
+      self.browser->GetCommandDispatcher(), LoadQueryCommands);
+  self.mediator.sceneState =
+      SceneStateBrowserAgent::FromBrowser(self.browser)->GetSceneState();
+  self.mediator.URLLoadingBrowserAgent =
+      UrlLoadingBrowserAgent::FromBrowser(self.browser);
+  self.viewController.pasteDelegate = self.mediator;
 
   DCHECK(self.editController);
 
@@ -228,9 +232,9 @@
   self.returnDelegate = [[ForwardingReturnDelegate alloc] init];
   self.returnDelegate.acceptDelegate = _editView.get();
 
-  coordinator.pedalExtractor.matchPreviewDelegate = self.mediator;
-  coordinator.pedalExtractor.acceptDelegate = self.returnDelegate;
-  self.viewController.returnKeyDelegate = coordinator.pedalExtractor;
+  coordinator.popupMatchPreviewDelegate = self.mediator;
+  coordinator.acceptReturnDelegate = self.returnDelegate;
+  self.viewController.returnKeyDelegate = coordinator.popupReturnDelegate;
 
   return coordinator;
 }
@@ -258,36 +262,11 @@
   return self.viewController.textField;
 }
 
-#pragma mark - OmniboxViewControllerDelegate
+#pragma mark - OmniboxViewControllerTextInputDelegate
 
 - (void)omniboxViewControllerTextInputModeDidChange:
     (OmniboxViewController*)omniboxViewController {
   _editView->UpdatePopupAppearance();
-}
-
-- (void)omniboxViewControllerUserDidVisitCopiedLink:
-    (OmniboxViewController*)omniboxViewController {
-  // Don't log pastes in incognito.
-  if (self.browser->GetBrowserState()->IsOffTheRecord()) {
-    return;
-  }
-
-  SceneState* sceneState =
-      SceneStateBrowserAgent::FromBrowser(self.browser)->GetSceneState();
-  DefaultBrowserSceneAgent* agent =
-      [DefaultBrowserSceneAgent agentFromScene:sceneState];
-  [agent.nonModalScheduler logUserPastedInOmnibox];
-}
-
-- (void)omniboxViewControllerSearchImage:(UIImage*)image {
-  DCHECK(image);
-  web::NavigationManager::WebLoadParams webParams =
-      ImageSearchParamGenerator::LoadParamsForImage(
-          image, ios::TemplateURLServiceFactory::GetForBrowserState(
-                     self.browser->GetBrowserState()));
-  UrlLoadParams params = UrlLoadParams::InCurrentTab(webParams);
-
-  UrlLoadingBrowserAgent::FromBrowser(self.browser)->Load(params);
 }
 
 #pragma mark - private

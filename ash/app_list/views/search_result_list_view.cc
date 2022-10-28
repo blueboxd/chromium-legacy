@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -231,6 +231,8 @@ void SearchResultListView::SetListType(SearchResultListType list_type) {
       break;
   }
 
+  // A valid role must be set prior to setting the name.
+  GetViewAccessibility().OverrideRole(ax::mojom::Role::kListBox);
   GetViewAccessibility().OverrideName(l10n_util::GetStringFUTF16(
       IDS_ASH_SEARCH_RESULT_CATEGORY_LABEL_ACCESSIBLE_NAME,
       title_label_->GetText()));
@@ -491,7 +493,7 @@ void SearchResultListView::OnThemeChanged() {
   SearchResultContainerView::OnThemeChanged();
   title_label_->SetEnabledColor(
       AppListColorProvider::Get()->GetSearchBoxSecondaryTextColor(
-          kDeprecatedSearchBoxTextDefaultColor));
+          kDeprecatedSearchBoxTextDefaultColor, GetWidget()));
 }
 
 void SearchResultListView::SearchResultActivated(SearchResultView* view,

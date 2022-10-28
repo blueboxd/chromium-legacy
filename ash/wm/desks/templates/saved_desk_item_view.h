@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -98,7 +98,7 @@ class ASH_EXPORT SavedDeskItemView : public views::Button,
                               const base::GUID& uuid);
   // Rename current saved desk with new name, delete old saved desk with same
   // name by uuid. Used for callback functions for Replace Dialog.
-  void ReplaceTemplate(const std::string& uuid);
+  void ReplaceTemplate(const base::GUID& uuid);
   void RevertTemplateName();
 
   // This allows us to update an existing template view. Currently, this

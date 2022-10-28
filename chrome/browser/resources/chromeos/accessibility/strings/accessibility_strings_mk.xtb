@@ -138,9 +138,9 @@
 <translation id="1812527064848182527">пејзаж</translation>
 <translation id="1829244130665387512">Најди на страница</translation>
 <translation id="1834891354138622109">Колона</translation>
-<translation id="1845944666972354496">Допрете двапати за да активирате</translation>
 <translation id="1846771122725914429">Екран за брајово писмо со Bluetooth</translation>
 <translation id="1852018405765032699">Менијата на ChromeVox се отвораат и затвораат со допирање на екранот со четири прста. Овие менија содржат корисни информации за наредби и кратенки. Кога се отворени, може да повлекувате со еден прст за да се движите низ ставките и да допирате двапати за да активирате ставки. За да продолжите, допрете го екранот со четири прста.</translation>
+<translation id="1864430479908918647">Притиснете „Пребарување + празно место“</translation>
 <translation id="1865601187525349519">Крај на текст</translation>
 <translation id="1876229593313240038">документ</translation>
 <translation id="1902396333223336119">Ќелија</translation>
@@ -238,6 +238,7 @@
 <translation id="2619344480613750862">Може да се движите и помеѓу делови на екранот. На пример, може да се движите помеѓу стартерот, полицата и картичките на Chrome. За да одите на следниот дел, повлечете одлево надесно со четири прста. Пробајте сега за да продолжите.</translation>
 <translation id="2624431853467395961">Отвори режим за учење</translation>
 <translation id="2626530649491650971">на кој може да се кликне</translation>
+<translation id="263637551280112393">Притиснете Search + Shift + Space</translation>
 <translation id="2637227747952042642">Математика</translation>
 <translation id="2638785836053527382">Преземањето на <ph name="FILE_NAME" /> продолжи</translation>
 <translation id="2639750663247012216">Модификатор на ChromeVox</translation>
@@ -530,6 +531,7 @@
 <translation id="4479068155583208887">Црвена како цигла</translation>
 <translation id="4482330759234983253">Претходна табела</translation>
 <translation id="4491109536499578614">Слика</translation>
+<translation id="4507332368061453500">Кликнете долго на тековната ставка</translation>
 <translation id="4511186779140817916">Боја на бланширан бадем</translation>
 <translation id="451510441928265982">Нема претходен наслов на ниво 2</translation>
 <translation id="4515799157838123044">Затемни ги содржините во заднина</translation>
@@ -598,7 +600,6 @@
 <translation id="4993152509206108683">Брзина <ph name="PERCENT" /> проценти</translation>
 <translation id="4994420463726586413">Соопшти го тековниот статус на батеријата</translation>
 <translation id="4997282455736854877"><ph name="NAME" />, избрано радиокопче</translation>
-<translation id="5011664330025416377">Притиснете Search+Space за да активирате</translation>
 <translation id="5012724933919010465"><ph name="NAME" />, тркалезно копче за ставка на менито, избрано</translation>
 <translation id="5020651427400641814">Овозможи евидентирање говор</translation>
 <translation id="5041394372352067729">Премести го брајовиот екран на врвот од страницата</translation>
@@ -651,6 +652,7 @@
 <translation id="5355014376930441909">Нема следна секција</translation>
 <translation id="5368000168321181111">Исклучени звучни сигнали</translation>
 <translation id="5368505757342402527">Преземањето на <ph name="FILE_NAME" /> е <ph name="PROGRESS" /> % завршено. Преостанува уште околу <ph name="TIME" /> <ph name="UNITS" />.</translation>
+<translation id="5381388086899614489">долго кликнување</translation>
 <translation id="5400836586163650660">Сива</translation>
 <translation id="5402367795255837559">Браилово писмо</translation>
 <translation id="5402791055281059602">Модално предупредување</translation>
@@ -763,6 +765,7 @@
 <translation id="6100239002225743044">Преместете нагоре за еден ред</translation>
 <translation id="6118126368611144850">Апликации на Android за Chrome. Доколку имате Play Store на уредот, разгледајте ја ChromeVox со апликации на Android. Испробајте ја експерименталната поддршка, така што ќе је преземете Google Chrome Canary од Play Store.</translation>
 <translation id="611827076493383239">vtd</translation>
+<translation id="6119846243427417423">активирај</translation>
 <translation id="6122013438240733403">btn</translation>
 <translation id="6132506484792346370">Список или поле со комбинации</translation>
 <translation id="613344593214611552">избришете ја претходната реченица</translation>
@@ -779,6 +782,7 @@
 <translation id="6236061028292614533">Следен наслов</translation>
 <translation id="6254901459154107917">Следна област за уредување текст</translation>
 <translation id="6259464875943891919">Излеговте од <ph name="TYPE" />.</translation>
+<translation id="6280088282605782512">Допрете двапати</translation>
 <translation id="6282062888058716985">nav</translation>
 <translation id="6295699829709583154">Основни копчиња: Search</translation>
 <translation id="6305702903308659374">Пуштај со нормална јачина на звук дури и кога зборува ChromeVox</translation>
@@ -982,6 +986,7 @@
 <translation id="7731785449856576010">Нема следен виџет за аудиовизуелни содржини</translation>
 <translation id="7735498529470878067">„Истражувај со допир“ може да ви помогне брзо да ги разгледате работите на екранот.</translation>
 <translation id="773906353055481349">Притиснете Search+Ctrl+Alt со стрелките за навигација по ќелија</translation>
+<translation id="7746976083433980639"><ph name="ACTION" /> за да <ph name="LABEL" /></translation>
 <translation id="7763537600611320912">Преземањето на <ph name="FILE_NAME" /> започна</translation>
 <translation id="7768784765476638775">Изберете за говор</translation>
 <translation id="7776293189010177726">Отворете ги менијата на ChromeVox</translation>

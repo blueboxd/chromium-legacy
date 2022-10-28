@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/containers/contains.h"
+#include "base/memory/raw_ptr.h"
 #include "base/metrics/metrics_hashes.h"
 #include "base/metrics/statistics_recorder.h"
 #include "base/strings/string_split.h"
@@ -28,7 +29,7 @@ bool ExpiredHistogramsChecker::ShouldRecord(uint32_t histogram_hash) const {
   // If histogram is explicitly allowed then it should always be recorded.
   if (base::Contains(allowlist_, histogram_hash))
     return true;
-  return !std::binary_search(expired_histogram_hashes_.get(),
+  return !std::binary_search(expired_histogram_hashes_,
                              expired_histogram_hashes_ + size_, histogram_hash);
 }
 

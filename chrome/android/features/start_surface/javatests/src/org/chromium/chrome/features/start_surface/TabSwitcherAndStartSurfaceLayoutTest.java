@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -1288,6 +1288,7 @@ public class TabSwitcherAndStartSurfaceLayoutTest {
     @EnableFeatures({ChromeFeatureList.TAB_GROUPS_ANDROID,
             ChromeFeatureList.TAB_TO_GTS_ANIMATION + "<Study"})
     @CommandLineFlags.Add({BASE_PARAMS + "/thumbnail_aspect_ratio/1.0"})
+    @DisabledTest(message = "https://crbug.com/1359687")
     public void testRenderGrid_withAspectRatioOfOne() throws IOException {
         // clang-format on
         ChromeTabbedActivity cta = mActivityTestRule.getActivity();

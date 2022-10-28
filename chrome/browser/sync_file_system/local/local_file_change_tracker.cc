@@ -1,10 +1,11 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome/browser/sync_file_system/local/local_file_change_tracker.h"
 
 #include <stddef.h>
+#include <memory>
 #include <utility>
 
 #include "base/containers/circular_deque.h"
@@ -81,10 +82,9 @@ LocalFileChangeTracker::LocalFileChangeTracker(
     base::SequencedTaskRunner* file_task_runner)
     : initialized_(false),
       file_task_runner_(file_task_runner),
-      tracker_db_(new TrackerDB(base_path, env_override)),
+      tracker_db_(std::make_unique<TrackerDB>(base_path, env_override)),
       current_change_seq_number_(0),
-      num_changes_(0) {
-}
+      num_changes_(0) {}
 
 LocalFileChangeTracker::~LocalFileChangeTracker() {
   DCHECK(file_task_runner_->RunsTasksInCurrentSequence());
@@ -279,7 +279,7 @@ SyncStatusCode LocalFileChangeTracker::Initialize(
 void LocalFileChangeTracker::ResetForFileSystem(const GURL& origin,
                                                 storage::FileSystemType type) {
   DCHECK(file_task_runner_->RunsTasksInCurrentSequence());
-  std::unique_ptr<leveldb::WriteBatch> batch(new leveldb::WriteBatch);
+  auto batch = std::make_unique<leveldb::WriteBatch>();
   for (auto iter = changes_.begin(); iter != changes_.end();) {
     storage::FileSystemURL url = iter->first;
     int change_seq = iter->second.change_seq;

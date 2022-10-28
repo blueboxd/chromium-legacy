@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -93,6 +93,14 @@ class SitePermissionsHelper {
   // actually be given access when it tries to run.
   bool HasActiveTabAndCanAccess(const Extension& extension,
                                 const GURL& url) const;
+
+  // Returns true if `extension_id` can show site access requests in the
+  // toolbar.
+  bool ShowAccessRequestsInToolbar(const std::string& extension_id);
+
+  // Sets whether `extenson_id` can show site access requests in the toolbar.
+  void SetShowAccessRequestsInToolbar(const std::string& extension_id,
+                                      bool show_access_requests_in_toolbar);
 
  private:
   raw_ptr<Profile> profile_;

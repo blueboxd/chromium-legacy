@@ -1,4 +1,4 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -57,6 +57,8 @@ class FeedbackService : public base::RefCountedThreadSafe<FeedbackService> {
   virtual void SendFeedback(const FeedbackParams& params,
                             scoped_refptr<feedback::FeedbackData> feedback_data,
                             SendFeedbackCallback callback);
+
+  FeedbackPrivateDelegate* GetFeedbackPrivateDelegate() { return delegate_; }
 
  protected:
   virtual ~FeedbackService();

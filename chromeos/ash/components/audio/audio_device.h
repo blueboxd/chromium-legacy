@@ -1,4 +1,4 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -103,6 +103,7 @@ struct COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_AUDIO) AudioDevice {
   uint64_t plugged_time = 0;
   uint32_t max_supported_channels = 0;
   uint32_t audio_effect = 0;
+  int32_t number_of_volume_steps = 0;
 };
 
 typedef std::vector<AudioDevice> AudioDeviceList;

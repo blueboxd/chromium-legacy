@@ -1,17 +1,17 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome/updater/win/ui/progress_wnd.h"
 
-#include <algorithm>
-
 #include "base/check_op.h"
 #include "base/i18n/message_formatter.h"
 #include "base/notreached.h"
 #include "base/process/launch.h"
+#include "base/ranges/algorithm.h"
 #include "base/strings/string_number_conversions_win.h"
 #include "base/strings/string_util.h"
+#include "base/strings/string_util_win.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "chrome/updater/constants.h"
@@ -72,9 +72,9 @@ int GetPriority(CompletionCodes code) {
 
 // Returns true if all apps are cancelled or if the range is empty.
 bool AreAllAppsCanceled(const std::vector<AppCompletionInfo>& apps_info) {
-  return std::all_of(
-      apps_info.begin(), apps_info.end(),
-      [](const AppCompletionInfo& app_info) { return app_info.is_canceled; });
+  return base::ranges::all_of(apps_info, [](const AppCompletionInfo& app_info) {
+    return app_info.is_canceled;
+  });
 }
 
 }  // namespace
@@ -474,8 +474,7 @@ void ProgressWnd::DeterminePostInstallUrls(const ObserverCompletionInfo& info) {
   DCHECK(post_install_urls_.empty());
   post_install_urls_.clear();
 
-  for (size_t i = 0; i < info.apps_info.size(); ++i) {
-    const AppCompletionInfo& app_info = info.apps_info[i];
+  for (const AppCompletionInfo& app_info : info.apps_info) {
     if (!app_info.post_install_url.empty() &&
         (app_info.completion_code ==
              CompletionCodes::COMPLETION_CODE_RESTART_ALL_BROWSERS ||
@@ -497,15 +496,37 @@ CompletionCodes ProgressWnd::GetBundleOverallCompletionCode(
 
   DCHECK(info.completion_code == CompletionCodes::COMPLETION_CODE_SUCCESS);
 
-  CompletionCodes overall_completion_code = kCompletionCodesActionPriority[0];
-  for (size_t i = 0; i < info.apps_info.size(); ++i) {
-    if (GetPriority(overall_completion_code) <
-        GetPriority(info.apps_info[i].completion_code)) {
-      overall_completion_code = info.apps_info[i].completion_code;
-    }
+  return info.apps_info.empty()
+             ? kCompletionCodesActionPriority[0]
+             : base::ranges::max_element(
+                   info.apps_info,
+                   [](const auto& app_info1, const auto& app_info2) {
+                     return GetPriority(app_info1.completion_code) <
+                            GetPriority(app_info2.completion_code);
+                   })
+                   ->completion_code;
+}
+
+std::wstring ProgressWnd::GetBundleCompletionErrorMessages(
+    const ObserverCompletionInfo& info) const {
+  // Combine non-empty app installation completion messages. App-specific
+  // installation error message usually gives more details than the generic one.
+  std::vector<std::wstring> completion_texts;
+  for (const AppCompletionInfo& app_info : info.apps_info) {
+    if (!app_info.completion_message.empty())
+      completion_texts.push_back(base::AsWString(app_info.completion_message));
   }
 
-  return overall_completion_code;
+  // Or fallback to the default bundle failure message if nothing is available.
+  if (completion_texts.empty() && !info.completion_text.empty())
+    completion_texts.push_back(info.completion_text);
+
+  // TODO(crbug.com/1353148): Legacy updater allows simple HTML elements in the
+  // completion message for better presentation of the installation result.
+  // Review if feature parity is needed, which also enables a better message
+  // layout.
+  //
+  return base::JoinString(completion_texts, L"\n");
 }
 
 void ProgressWnd::OnComplete(const ObserverCompletionInfo& observer_info) {
@@ -517,9 +538,6 @@ void ProgressWnd::OnComplete(const ObserverCompletionInfo& observer_info) {
   CloseInstallStoppedWindow();
 
   bool launch_commands_succeeded = LaunchCmdLines(observer_info);
-
-  // TODO(crbug.com/1353148): Figure out how to display app-specific
-  // installation result in addition to `observer_info.completion_text`.
 
   CompletionCodes overall_completion_code =
       GetBundleOverallCompletionCode(observer_info);
@@ -537,8 +555,9 @@ void ProgressWnd::OnComplete(const ObserverCompletionInfo& observer_info) {
         return;
       }
       cur_state_ = States::STATE_COMPLETE_ERROR;
-      CompleteWnd::DisplayCompletionDialog(false, observer_info.completion_text,
-                                           observer_info.help_url);
+      CompleteWnd::DisplayCompletionDialog(
+          false, GetBundleCompletionErrorMessages(observer_info),
+          observer_info.help_url);
       break;
     case CompletionCodes::COMPLETION_CODE_RESTART_ALL_BROWSERS:
       cur_state_ = States::STATE_COMPLETE_RESTART_ALL_BROWSERS;

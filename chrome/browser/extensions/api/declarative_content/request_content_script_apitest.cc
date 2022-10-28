@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -135,7 +135,8 @@ testing::AssertionResult RequestContentScriptAPITest::RunTest(
       browser(), embedded_test_server()->GetURL("/extensions/test_file.html")));
 
   content::WebContents* web_contents =
-      browser() ? browser()->tab_strip_model()->GetActiveWebContents() : NULL;
+      browser() ? browser()->tab_strip_model()->GetActiveWebContents()
+                : nullptr;
   if (!web_contents)
     return testing::AssertionFailure() << "No web contents.";
 

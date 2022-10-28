@@ -421,7 +421,7 @@ void DesktopWindowTreeHostPlatform::Show(ui::WindowShowState show_state,
       platform_window()->Minimize();
       break;
     case ui::SHOW_STATE_FULLSCREEN:
-      SetFullscreen(true);
+      SetFullscreen(true, display::kInvalidDisplayId);
       break;
     default:
       break;
@@ -692,7 +692,11 @@ void DesktopWindowTreeHostPlatform::FrameTypeChanged() {
     GetWidget()->non_client_view()->UpdateFrame();
 }
 
-void DesktopWindowTreeHostPlatform::SetFullscreen(bool fullscreen) {
+void DesktopWindowTreeHostPlatform::SetFullscreen(bool fullscreen,
+                                                  int64_t target_display_id) {
+  // TODO(crbug.com/1034783) Support `target_display_id` on this platform.
+  DCHECK_EQ(target_display_id, display::kInvalidDisplayId);
+
   if (IsFullscreen() == fullscreen)
     return;
 
@@ -894,8 +898,10 @@ DesktopWindowTreeHostPlatform::GetMaximumSizeForWindow() {
 SkPath DesktopWindowTreeHostPlatform::GetWindowMaskForWindowShapeInPixels() {
   SkPath window_mask = GetWindowMask(GetWidget());
   // Convert SkPath in DIPs to pixels.
-  if (!window_mask.isEmpty())
-    window_mask.transform(GetRootTransform().matrix().asM33());
+  if (!window_mask.isEmpty()) {
+    window_mask.transform(
+        gfx::TransformToFlattenedSkMatrix(GetRootTransform()));
+  }
   return window_mask;
 }
 

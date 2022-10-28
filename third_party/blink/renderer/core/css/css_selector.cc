@@ -329,7 +329,7 @@ PseudoId CSSSelector::GetPseudoId(PseudoType type) {
     case kPseudoPlaceholder:
     case kPseudoPlaceholderShown:
     case kPseudoPlaying:
-    case kPseudoPopupHidden:
+    case kPseudoPopupOpeningOrOpen:
     case kPseudoReadOnly:
     case kPseudoReadWrite:
     case kPseudoRelativeAnchor:
@@ -383,7 +383,7 @@ const static NameToPseudoStruct kPseudoTypeWithoutArgumentsMap[] = {
     {"-internal-media-controls-overlay-cast-button",
      CSSSelector::kPseudoWebKitCustomElement},
     {"-internal-multi-select-focus", CSSSelector::kPseudoMultiSelectFocus},
-    {"-internal-popup-hidden", CSSSelector::kPseudoPopupHidden},
+    {"-internal-popup-opening-or-open", CSSSelector::kPseudoPopupOpeningOrOpen},
     {"-internal-relative-anchor", CSSSelector::kPseudoRelativeAnchor},
     {"-internal-selector-fragment-anchor",
      CSSSelector::kPseudoSelectorFragmentAnchor},
@@ -576,7 +576,7 @@ CSSSelector::PseudoType CSSSelector::NameToPseudoType(
   if (match->type == CSSSelector::kPseudoOpen && !popup_attribute_enabled)
     return CSSSelector::kPseudoUnknown;
 
-  if (match->type == CSSSelector::kPseudoPopupHidden &&
+  if (match->type == CSSSelector::kPseudoPopupOpeningOrOpen &&
       !popup_attribute_enabled)
     return CSSSelector::kPseudoUnknown;
 
@@ -642,7 +642,8 @@ void CSSSelector::UpdatePseudoPage(const AtomicString& value,
                                    const Document* document) {
   DCHECK_EQ(Match(), kPagePseudoClass);
   SetValue(value);
-  PseudoType type = CSSSelectorParser::ParsePseudoType(value, false, document);
+  PseudoType type = CSSSelectorParser</*UseArena=*/true>::ParsePseudoType(
+      value, false, document);
   if (type != kPseudoFirstPage && type != kPseudoLeftPage &&
       type != kPseudoRightPage) {
     type = kPseudoUnknown;
@@ -656,8 +657,9 @@ void CSSSelector::UpdatePseudoType(const AtomicString& value,
                                    CSSParserMode mode) {
   DCHECK(match_ == kPseudoClass || match_ == kPseudoElement);
   AtomicString lower_value = value.LowerASCII();
-  PseudoType pseudo_type = CSSSelectorParser::ParsePseudoType(
-      lower_value, has_arguments, context.GetDocument());
+  PseudoType pseudo_type =
+      CSSSelectorParser</*UseArena=*/true>::ParsePseudoType(
+          lower_value, has_arguments, context.GetDocument());
   SetPseudoType(pseudo_type);
   SetValue(pseudo_type == kPseudoState ? value : lower_value);
 
@@ -779,7 +781,7 @@ void CSSSelector::UpdatePseudoType(const AtomicString& value,
     case kPseudoPictureInPicture:
     case kPseudoPlaceholderShown:
     case kPseudoPlaying:
-    case kPseudoPopupHidden:
+    case kPseudoPopupOpeningOrOpen:
     case kPseudoReadOnly:
     case kPseudoReadWrite:
     case kPseudoRelativeAnchor:

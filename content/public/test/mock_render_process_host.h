@@ -22,6 +22,7 @@
 #include "base/metrics/persistent_memory_allocator.h"
 #include "base/observer_list.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_process_host_factory.h"
 #include "content/public/browser/storage_partition_config.h"
@@ -33,6 +34,7 @@
 #include "net/base/network_isolation_key.h"
 
 #if BUILDFLAG(IS_ANDROID)
+#include "base/android/child_process_binding_types.h"
 #include "content/public/browser/android/child_process_importance.h"
 #endif
 
@@ -52,6 +54,7 @@ namespace content {
 
 class MockRenderProcessHostFactory;
 class ProcessLock;
+class RenderProcessHostPriorityClient;
 class SiteInfo;
 class SiteInstance;
 class StoragePartition;
@@ -105,7 +108,7 @@ class MockRenderProcessHost : public RenderProcessHost {
   void AddObserver(RenderProcessHostObserver* observer) override;
   void RemoveObserver(RenderProcessHostObserver* observer) override;
   void ShutdownForBadMessage(CrashReportMode crash_report_mode) override;
-  void UpdateClientPriority(PriorityClient* client) override;
+  void UpdateClientPriority(RenderProcessHostPriorityClient* client) override;
   int VisibleClientCount() override;
   unsigned int GetFrameDepth() override;
   bool GetIntersectsViewport() override;
@@ -135,13 +138,16 @@ class MockRenderProcessHost : public RenderProcessHost {
   void Cleanup() override;
   void AddPendingView() override;
   void RemovePendingView() override;
-  void AddPriorityClient(PriorityClient* priority_client) override;
-  void RemovePriorityClient(PriorityClient* priority_client) override;
+  void AddPriorityClient(
+      RenderProcessHostPriorityClient* priority_client) override;
+  void RemovePriorityClient(
+      RenderProcessHostPriorityClient* priority_client) override;
   void SetPriorityOverride(bool foreground) override;
   bool HasPriorityOverride() override;
   void ClearPriorityOverride() override;
 #if BUILDFLAG(IS_ANDROID)
   ChildProcessImportance GetEffectiveImportance() override;
+  base::android::ChildBindingState GetEffectiveChildBindingState() override;
   void DumpProcessStack() override;
 #endif
   void SetSuddenTerminationAllowed(bool allowed) override;
@@ -214,12 +220,8 @@ class MockRenderProcessHost : public RenderProcessHost {
   void BindIndexedDB(
       const blink::StorageKey& storage_key,
       mojo::PendingReceiver<blink::mojom::IDBFactory> receiver) override;
-  void BindBucketManagerHostForRenderFrame(
-      const GlobalRenderFrameHostId& render_frame_host_id,
-      mojo::PendingReceiver<blink::mojom::BucketManagerHost> receiver)
-      override {}
-  void BindBucketManagerHostForWorker(
-      const blink::StorageKey& storage_key,
+  void BindBucketManagerHost(
+      base::WeakPtr<BucketContext> bucket_context,
       mojo::PendingReceiver<blink::mojom::BucketManagerHost> receiver)
       override {}
   void BindRestrictedCookieManagerForServiceWorker(
@@ -270,6 +272,11 @@ class MockRenderProcessHost : public RenderProcessHost {
   std::string GetInfoForBrowserContextDestructionCrashReporting() override;
   void WriteIntoTrace(perfetto::TracedProto<TraceProto> proto) const override;
 
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  void ReinitializeLogging(uint32_t logging_dest,
+                           base::ScopedFD log_file_descriptor) override;
+#endif
+
   void PauseSocketManagerForRenderFrameHost(
       const GlobalRenderFrameHostId& render_frame_host_id) override {}
   void ResumeSocketManagerForRenderFrameHost(
@@ -315,7 +322,7 @@ class MockRenderProcessHost : public RenderProcessHost {
   base::ObserverList<RenderProcessHostObserver> observers_;
 
   StoragePartitionConfig storage_partition_config_;
-  base::flat_set<PriorityClient*> priority_clients_;
+  base::flat_set<RenderProcessHostPriorityClient*> priority_clients_;
   int prev_routing_id_;
   base::IDMap<IPC::Listener*> listeners_;
   bool shutdown_requested_;

@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -184,6 +184,10 @@ export class CameraManager implements EventListener {
   getPreviewResolution(): Resolution {
     const {video} = this.getPreviewVideo();
     const {videoWidth, videoHeight} = video;
+    if (this.preferSquarePhoto()) {
+      const size = Math.min(videoWidth, videoHeight);
+      return new Resolution(size, size);
+    }
     return new Resolution(videoWidth, videoHeight);
   }
 

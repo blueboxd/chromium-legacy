@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,7 +9,9 @@
 #include "ash/constants/ash_features.h"
 #include "ash/public/cpp/assistant/assistant_state.h"
 #include "ash/public/cpp/tablet_mode.h"
+#include "ash/rgb_keyboard/rgb_keyboard_manager.h"
 #include "ash/services/multidevice_setup/public/cpp/prefs.h"
+#include "ash/shell.h"
 #include "ash/webui/help_app_ui/help_app_untrusted_ui.h"
 #include "ash/webui/help_app_ui/url_constants.h"
 #include "base/bind.h"
@@ -85,8 +87,6 @@ void PopulateLoadTimeData(content::WebUI* web_ui,
   source->AddBoolean(
       "HelpAppSearchServiceIntegration",
       base::FeatureList::IsEnabled(features::kEnableLocalSearchService));
-  source->AddBoolean("HelpAppDiscoverTab", base::FeatureList::IsEnabled(
-                                               features::kHelpAppDiscoverTab));
   source->AddBoolean(
       "HelpAppBackgroundPage",
       base::FeatureList::IsEnabled(features::kHelpAppBackgroundPage));
@@ -112,6 +112,15 @@ void PopulateLoadTimeData(content::WebUI* web_ui,
       "multiDeviceFeaturesAllowed",
       multidevice_setup::AreAnyMultiDeviceFeaturesAllowed(pref_service));
   source->AddBoolean("tabletMode", TabletMode::Get()->InTabletMode());
+  // Whether or not RGB Keyboard is supported and configurable from the
+  // Personalization Hub.
+  RgbKeyboardManager* rgb_keyboard_manager =
+      Shell::Get()->rgb_keyboard_manager();
+  source->AddBoolean("rgbKeyboard",
+                     rgb_keyboard_manager &&
+                         rgb_keyboard_manager->IsRgbKeyboardSupported() &&
+                         features::IsPersonalizationHubEnabled());
+
   // Checks if there are active touch screens.
   source->AddBoolean(
       "hasTouchScreen",

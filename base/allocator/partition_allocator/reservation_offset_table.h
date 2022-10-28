@@ -1,4 +1,4 @@
-// Copyright (c) 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -17,6 +17,7 @@
 #include "base/allocator/partition_allocator/partition_alloc_base/debug/debugging_buildflags.h"
 #include "base/allocator/partition_allocator/partition_alloc_buildflags.h"
 #include "base/allocator/partition_allocator/partition_alloc_check.h"
+#include "base/allocator/partition_allocator/partition_alloc_config.h"
 #include "base/allocator/partition_allocator/partition_alloc_constants.h"
 #include "base/allocator/partition_allocator/tagging.h"
 #include "build/build_config.h"
@@ -168,8 +169,8 @@ PA_ALWAYS_INLINE uintptr_t GetDirectMapReservationStart(uintptr_t address) {
 #if BUILDFLAG(PA_DCHECK_IS_ON)
   bool is_in_brp_pool = IsManagedByPartitionAllocBRPPool(address);
   bool is_in_regular_pool = IsManagedByPartitionAllocRegularPool(address);
-  // When USE_BACKUP_REF_PTR is off, BRP pool isn't used.
-#if !BUILDFLAG(USE_BACKUP_REF_PTR)
+  // When ENABLE_BACKUP_REF_PTR_SUPPORT is off, BRP pool isn't used.
+#if !BUILDFLAG(ENABLE_BACKUP_REF_PTR_SUPPORT)
   PA_DCHECK(!is_in_brp_pool);
 #endif
 #endif  // BUILDFLAG(PA_DCHECK_IS_ON)
@@ -179,17 +180,21 @@ PA_ALWAYS_INLINE uintptr_t GetDirectMapReservationStart(uintptr_t address) {
     return 0;
   uintptr_t reservation_start = ComputeReservationStart(address, offset_ptr);
 #if BUILDFLAG(PA_DCHECK_IS_ON)
-  // Make sure the reservation start is in the same pool as |address|.
-  // In the 32-bit mode, the beginning of a reservation may be excluded from the
-  // BRP pool, so shift the pointer. The other pools don't have this logic.
-  PA_DCHECK(is_in_brp_pool ==
-            IsManagedByPartitionAllocBRPPool(
-                reservation_start
+  // MSVC workaround: the preprocessor seems to choke on an `#if` embedded
+  // inside another macro (PA_DCHECK).
 #if !defined(PA_HAS_64_BITS_POINTERS)
-                + AddressPoolManagerBitmap::kBytesPer1BitOfBRPPoolBitmap *
-                      AddressPoolManagerBitmap::kGuardOffsetOfBRPPoolBitmap
+  constexpr size_t kBRPOffset =
+      AddressPoolManagerBitmap::kBytesPer1BitOfBRPPoolBitmap *
+      AddressPoolManagerBitmap::kGuardOffsetOfBRPPoolBitmap;
+#else
+  constexpr size_t kBRPOffset = 0ull;
 #endif  // !defined(PA_HAS_64_BITS_POINTERS)
-                ));
+  // Make sure the reservation start is in the same pool as |address|.
+  // In the 32-bit mode, the beginning of a reservation may be excluded
+  // from the BRP pool, so shift the pointer. The other pools don't have
+  // this logic.
+  PA_DCHECK(is_in_brp_pool ==
+            IsManagedByPartitionAllocBRPPool(reservation_start + kBRPOffset));
   PA_DCHECK(is_in_regular_pool ==
             IsManagedByPartitionAllocRegularPool(reservation_start));
   PA_DCHECK(*ReservationOffsetPointer(reservation_start) == 0);

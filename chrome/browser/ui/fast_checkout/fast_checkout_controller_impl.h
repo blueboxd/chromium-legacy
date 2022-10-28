@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,7 +10,6 @@
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/ui/fast_checkout/fast_checkout_view.h"
-#include "components/autofill/core/browser/personal_data_manager.h"
 #include "ui/gfx/native_widget_types.h"
 
 namespace content {
@@ -44,11 +43,14 @@ class FastCheckoutControllerImpl : public FastCheckoutController {
       delete;
 
   // FastCheckoutController:
-  void Show() override;
+  void Show(const std::vector<autofill::AutofillProfile*>& autofill_profiles,
+            const std::vector<autofill::CreditCard*>& credit_cards) override;
   void OnOptionsSelected(
       std::unique_ptr<autofill::AutofillProfile> profile,
       std::unique_ptr<autofill::CreditCard> credit_card) override;
   void OnDismiss() override;
+  void OpenAutofillProfileSettings() override;
+  void OpenCreditCardSettings() override;
   gfx::NativeView GetNativeView() override;
 
  protected:
@@ -58,9 +60,6 @@ class FastCheckoutControllerImpl : public FastCheckoutController {
   // Gets or creates (if needed) the FastCheckoutView associated with this
   // controller.
   virtual FastCheckoutView* GetOrCreateView();
-
-  // Returns the current active personal data manager.
-  virtual autofill::PersonalDataManager* GetPersonalDataManager();
 
  private:
   // Weak pointer to the WebContents this class is tied to.

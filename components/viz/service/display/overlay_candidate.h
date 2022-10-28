@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -131,9 +131,6 @@ class VIZ_SERVICE_EXPORT OverlayCandidate {
   // an overlay.
   bool overlay_handled = false;
 
-  // Gpu fence to wait for before overlay is ready for display.
-  unsigned gpu_fence_id = 0;
-
   // The total area in square pixels of damage for this candidate's quad. This
   // is an estimate when 'EstimateOccludedDamage' function is used.
   float damage_area_estimate = 0.f;
@@ -179,6 +176,9 @@ class VIZ_SERVICE_EXPORT OverlayCandidate {
   // surface and have the same |DrawQuad::rect| they will have the same
   // |tracking_id|.
   TrackingId tracking_id = kDefaultTrackingId;
+
+  // Whether this overlay candidate represents the root render pass.
+  bool is_root_render_pass = false;
 };
 
 using OverlayCandidateList = std::vector<OverlayCandidate>;

@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -272,7 +272,7 @@ views::BubbleDialogDelegate* SessionCrashedBubbleView::ShowBubble(
       .SetDialogDestroyingCallback(
           base::BindOnce(&SessionCrashedBubbleDelegate::OnWindowClosing,
                          base::Unretained(bubble_delegate)))
-      .AddBodyText(ui::DialogModelLabel(IDS_SESSION_CRASHED_VIEW_MESSAGE));
+      .AddParagraph(ui::DialogModelLabel(IDS_SESSION_CRASHED_VIEW_MESSAGE));
 
   if (offer_uma_optin) {
     RecordBubbleHistogramValue(SESSION_CRASHED_BUBBLE_OPTIN_BAR_SHOWN);

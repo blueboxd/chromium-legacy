@@ -72,10 +72,19 @@ void RemoteRouterLink::SetLinkState(FragmentRef<RouterLinkState> state) {
   // SetLinkState() must be called with an addressable fragment only once.
   ABSL_ASSERT(link_state_.load(std::memory_order_acquire) == nullptr);
 
-  // The release when storing `link_state_` is balanced by an acquire in
-  // GetLinkState().
   link_state_fragment_ = std::move(state);
-  link_state_.store(link_state_fragment_.get(), std::memory_order_release);
+
+  std::vector<std::function<void()>> callbacks;
+  {
+    absl::MutexLock lock(&mutex_);
+    // This store-release is balanced by a load-acquire in GetLinkState().
+    link_state_.store(link_state_fragment_.get(), std::memory_order_release);
+    link_state_callbacks_.swap(callbacks);
+  }
+
+  for (auto& callback : callbacks) {
+    callback();
+  }
 
   // If this side of the link was already marked stable before the
   // RouterLinkState was available, `side_is_stable_` will be true. In that
@@ -96,6 +105,18 @@ LinkType RemoteRouterLink::GetType() const {
 
 RouterLinkState* RemoteRouterLink::GetLinkState() const {
   return link_state_.load(std::memory_order_acquire);
+}
+
+void RemoteRouterLink::WaitForLinkStateAsync(std::function<void()> callback) {
+  {
+    absl::MutexLock lock(&mutex_);
+    if (!link_state_.load(std::memory_order_relaxed)) {
+      link_state_callbacks_.push_back(std::move(callback));
+      return;
+    }
+  }
+
+  callback();
 }
 
 Ref<Router> RemoteRouterLink::GetLocalPeer() {
@@ -195,7 +216,14 @@ void RemoteRouterLink::AcceptParcel(Parcel& parcel) {
   // Serialize attached objects. We accumulate the Routers of all attached
   // portals, because we need to reference them again after transmission, with
   // a 1:1 correspondence to the serialized RouterDescriptors.
-  absl::InlinedVector<Ref<Router>, 4> routers_to_proxy;
+  absl::InlinedVector<Ref<Router>, 4> routers_to_proxy(num_portals);
+  absl::InlinedVector<RouterDescriptor, 4> descriptors(num_portals);
+
+  // Explicitly zero the descriptor memory since there may be padding bits
+  // within and we'll be copying the full contents into message data below.
+  memset(descriptors.data(), 0, descriptors.size() * sizeof(descriptors[0]));
+
+  size_t portal_index = 0;
   for (size_t i = 0; i < objects.size(); ++i) {
     APIObject& object = *objects[i];
 
@@ -204,8 +232,10 @@ void RemoteRouterLink::AcceptParcel(Parcel& parcel) {
         handle_types[i] = HandleType::kPortal;
 
         Ref<Router> router = Portal::FromObject(&object)->router();
-        router->SerializeNewRouter(*node_link(), new_routers[i]);
-        routers_to_proxy.push_back(std::move(router));
+        ABSL_ASSERT(portal_index < num_portals);
+        router->SerializeNewRouter(*node_link(), descriptors[portal_index]);
+        routers_to_proxy[portal_index] = std::move(router);
+        ++portal_index;
         break;
       }
 
@@ -219,6 +249,11 @@ void RemoteRouterLink::AcceptParcel(Parcel& parcel) {
         break;
     }
   }
+
+  // Copy all the serialized router descriptors into the message. Our local
+  // copy will supply inputs for BeginProxyingToNewRouter() calls below.
+  memcpy(new_routers.data(), descriptors.data(),
+         new_routers.size() * sizeof(new_routers[0]));
 
   if (must_split_parcel) {
     msg::AcceptParcelDriverObjects accept_objects;
@@ -241,9 +276,9 @@ void RemoteRouterLink::AcceptParcel(Parcel& parcel) {
 
   // Now that the parcel has been transmitted, it's safe to start proxying from
   // any routers whose routes have just been extended to the destination.
-  ABSL_ASSERT(routers_to_proxy.size() == new_routers.size());
+  ABSL_ASSERT(routers_to_proxy.size() == descriptors.size());
   for (size_t i = 0; i < routers_to_proxy.size(); ++i) {
-    routers_to_proxy[i]->BeginProxyingToNewRouter(*node_link(), new_routers[i]);
+    routers_to_proxy[i]->BeginProxyingToNewRouter(*node_link(), descriptors[i]);
   }
 
   // Finally, a Parcel will normally close all attached objects when destroyed.
@@ -261,50 +296,24 @@ void RemoteRouterLink::AcceptRouteClosure(SequenceNumber sequence_length) {
   node_link()->Transmit(route_closed);
 }
 
-size_t RemoteRouterLink::GetParcelCapacityInBytes(const IpczPutLimits& limits) {
-  if (limits.max_queued_bytes == 0 || limits.max_queued_parcels == 0) {
-    return 0;
-  }
-
-  RouterLinkState* state = GetLinkState();
-  if (!state) {
-    // This is only a best-effort estimate. With no link state yet, err on the
-    // side of more data flow.
-    return limits.max_queued_bytes;
-  }
-
-  const RouterLinkState::QueueState peer_queue =
-      state->GetQueueState(side_.opposite());
-  if (peer_queue.num_parcels >= limits.max_queued_parcels ||
-      peer_queue.num_bytes >= limits.max_queued_bytes) {
-    return 0;
-  }
-
-  return limits.max_queued_bytes - peer_queue.num_bytes;
-}
-
-RouterLinkState::QueueState RemoteRouterLink::GetPeerQueueState() {
+AtomicQueueState* RemoteRouterLink::GetPeerQueueState() {
   if (auto* state = GetLinkState()) {
-    return state->GetQueueState(side_.opposite());
+    return &state->GetQueueState(side_.opposite());
   }
-  return {.num_parcels = 0, .num_bytes = 0};
+  return nullptr;
 }
 
-bool RemoteRouterLink::UpdateInboundQueueState(size_t num_parcels,
-                                               size_t num_bytes) {
-  RouterLinkState* state = GetLinkState();
-  return state && state->UpdateQueueState(side_, num_parcels, num_bytes);
+AtomicQueueState* RemoteRouterLink::GetLocalQueueState() {
+  if (auto* state = GetLinkState()) {
+    return &state->GetQueueState(side_);
+  }
+  return nullptr;
 }
 
-void RemoteRouterLink::NotifyDataConsumed() {
-  msg::NotifyDataConsumed notify;
-  notify.params().sublink = sublink_;
-  node_link()->Transmit(notify);
-}
-
-bool RemoteRouterLink::EnablePeerMonitoring(bool enable) {
-  RouterLinkState* state = GetLinkState();
-  return state && state->SetSideIsMonitoringPeer(side_, enable);
+void RemoteRouterLink::SnapshotPeerQueueState() {
+  msg::SnapshotPeerQueueState snapshot;
+  snapshot.params().sublink = sublink_;
+  node_link()->Transmit(snapshot);
 }
 
 void RemoteRouterLink::AcceptRouteDisconnected() {

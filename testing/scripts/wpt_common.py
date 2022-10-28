@@ -41,14 +41,12 @@ class BaseWptScriptAdapter(common.BaseIsolatedScriptArgsAdapter):
     (usually platform-specific) logic."""
 
     def __init__(self, host=None):
+        self.host = host or Host()
+        self.fs = self.host.filesystem
+        self.path_finder = PathFinder(self.fs)
+        self.port = self.host.port_factory.get()
         super(BaseWptScriptAdapter, self).__init__()
         self._parser = self._override_options(self._parser)
-        if not host:
-            host = Host()
-        self.host = host
-        self.fs = host.filesystem
-        self.path_finder = PathFinder(self.fs)
-        self.port = host.port_factory.get()
         self.wptreport = None
         self._include_filename = None
         self.layout_test_results_subdir = 'layout-test-results'
@@ -191,10 +189,10 @@ class BaseWptScriptAdapter(common.BaseIsolatedScriptArgsAdapter):
             test_group = included_tests
             if pattern.startswith('-'):
                 test_group, pattern = excluded_tests, pattern[1:]
-            pattern_on_disk = self.fs.join(
-                self.wpt_root_dir,
-                self.path_finder.strip_wpt_path(pattern),
-            )
+            if self.path_finder.is_wpt_internal_path(pattern):
+                pattern_on_disk = self.path_finder.path_from_web_tests(pattern)
+            else:
+                pattern_on_disk = self.fs.join(self.wpt_root_dir, pattern)
             test_group.extend(glob.glob(pattern_on_disk))
         return included_tests, excluded_tests
 

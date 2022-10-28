@@ -1,4 +1,4 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -63,6 +63,10 @@ const int kSettingsButtonId = 2;
 
 // Insets for the title view (dp).
 constexpr auto kTitleViewPadding = gfx::Insets::TLBR(0, 0, 0, 16);
+
+// Insets for the bubble view to fix the overlapping
+// between the floating menu and the IME tray in kiosk session (dp).
+constexpr auto kKioskBubbleViewPadding = gfx::Insets::TLBR(-19, 0, -23, 0);
 
 // Returns the height range of ImeListView.
 gfx::Range GetImeListViewRange() {
@@ -210,6 +214,7 @@ class ImeButtonsView : public views::View {
     const int kImeKeysetUmaBoundary = 4;
     UMA_HISTOGRAM_ENUMERATION("InputMethod.ImeMenu.EmojiHandwritingVoiceButton",
                               keyset, kImeKeysetUmaBoundary);
+
     // The |keyset| will be used for drawing input view keyset in IME
     // extensions. ImeMenuTray::ShowKeyboardWithKeyset() will deal with
     // the |keyset| string to generate the right input view url.
@@ -232,8 +237,10 @@ class ImeButtonsView : public views::View {
 
     if (show_emoji) {
       emoji_button_ = new SystemMenuButton(
-          base::BindRepeating(&ui::ShowEmojiPanel), kImeMenuEmoticonIcon,
-          IDS_ASH_STATUS_TRAY_IME_EMOJI);
+          base::BindRepeating(&ImeButtonsView::KeysetButtonPressed,
+                              base::Unretained(this),
+                              input_method::ImeKeyset::kEmoji),
+          kImeMenuEmoticonIcon, IDS_ASH_STATUS_TRAY_IME_EMOJI);
       emoji_button_->SetID(kEmojiButtonId);
       AddChildView(emoji_button_);
     }
@@ -345,13 +352,16 @@ ImeMenuTray::~ImeMenuTray() {
 }
 
 void ImeMenuTray::ShowImeMenuBubbleInternal() {
+  gfx::Insets bubble_anchor_insets =
+      IsKioskSession() ? kKioskBubbleViewPadding : GetBubbleAnchorInsets();
+
   TrayBubbleView::InitParams init_params;
   init_params.delegate = GetWeakPtr();
   init_params.parent_window = GetBubbleWindowContainer();
   init_params.anchor_view = nullptr;
   init_params.anchor_mode = TrayBubbleView::AnchorMode::kRect;
   init_params.anchor_rect = GetBubbleAnchor()->GetAnchorBoundsInScreen();
-  init_params.anchor_rect.Inset(GetBubbleAnchorInsets());
+  init_params.anchor_rect.Inset(bubble_anchor_insets);
   init_params.shelf_alignment = shelf()->alignment();
   init_params.preferred_width = kTrayMenuWidth;
   init_params.close_on_deactivate = true;
@@ -396,10 +406,16 @@ void ImeMenuTray::ShowImeMenuBubbleInternal() {
 void ImeMenuTray::ShowKeyboardWithKeyset(input_method::ImeKeyset keyset) {
   CloseBubble();
 
-  Shell::Get()
-      ->keyboard_controller()
-      ->virtual_keyboard_controller()
-      ->ForceShowKeyboardWithKeyset(keyset);
+  // Show emoji in the same way as other means of opening and showing emoji
+  // for laptop and tablet mode.
+  if (keyset == input_method::ImeKeyset::kEmoji) {
+    ui::ShowEmojiPanel();
+  } else {
+    Shell::Get()
+        ->keyboard_controller()
+        ->virtual_keyboard_controller()
+        ->ForceShowKeyboardWithKeyset(keyset);
+  }
 }
 
 bool ImeMenuTray::ShouldShowBottomButtons() {

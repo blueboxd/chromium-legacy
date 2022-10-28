@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,6 +12,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/types/optional_util.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/common/extensions/api/scripting.h"
@@ -474,17 +475,19 @@ std::unique_ptr<UserScript> ParseUserScript(
 
   DCHECK(content_script.matches);
   if (!script_parsing::ParseMatchPatterns(
-          *content_script.matches, content_script.exclude_matches.get(),
-          definition_index, extension.creation_flags(),
-          scripting::kScriptsCanExecuteEverywhere, valid_schemes,
-          scripting::kAllUrlsIncludesChromeUrls, result.get(), error,
+          *content_script.matches,
+          base::OptionalToPtr(content_script.exclude_matches), definition_index,
+          extension.creation_flags(), scripting::kScriptsCanExecuteEverywhere,
+          valid_schemes, scripting::kAllUrlsIncludesChromeUrls, result.get(),
+          error,
           /*wants_file_access=*/nullptr)) {
     return nullptr;
   }
 
   if (!script_parsing::ParseFileSources(
-          &extension, content_script.js.get(), content_script.css.get(),
-          definition_index, result.get(), error)) {
+          &extension, base::OptionalToPtr(content_script.js),
+          base::OptionalToPtr(content_script.css), definition_index,
+          result.get(), error)) {
     return nullptr;
   }
 
@@ -517,13 +520,13 @@ api::scripting::RegisteredContentScript CreateRegisteredContentScriptInfo(
   api::scripting::RegisteredContentScript script_info;
   script_info.id = script.id();
 
-  script_info.matches = std::make_unique<std::vector<std::string>>();
+  script_info.matches.emplace();
   script_info.matches->reserve(script.url_patterns().size());
   for (const URLPattern& pattern : script.url_patterns())
     script_info.matches->push_back(pattern.GetAsString());
 
   if (!script.exclude_url_patterns().is_empty()) {
-    script_info.exclude_matches = std::make_unique<std::vector<std::string>>();
+    script_info.exclude_matches.emplace();
     script_info.exclude_matches->reserve(script.exclude_url_patterns().size());
     for (const URLPattern& pattern : script.exclude_url_patterns())
       script_info.exclude_matches->push_back(pattern.GetAsString());
@@ -532,23 +535,22 @@ api::scripting::RegisteredContentScript CreateRegisteredContentScriptInfo(
   // File paths may be normalized in the returned object and can differ slightly
   // compared to what was originally passed into registerContentScripts.
   if (!script.js_scripts().empty()) {
-    script_info.js = std::make_unique<std::vector<std::string>>();
+    script_info.js.emplace();
     script_info.js->reserve(script.js_scripts().size());
     for (const auto& js_script : script.js_scripts())
       script_info.js->push_back(js_script->relative_path().AsUTF8Unsafe());
   }
 
   if (!script.css_scripts().empty()) {
-    script_info.css = std::make_unique<std::vector<std::string>>();
+    script_info.css.emplace();
     script_info.css->reserve(script.css_scripts().size());
     for (const auto& css_script : script.css_scripts())
       script_info.css->push_back(css_script->relative_path().AsUTF8Unsafe());
   }
 
-  script_info.all_frames = std::make_unique<bool>(script.match_all_frames());
-  script_info.match_origin_as_fallback =
-      std::make_unique<bool>(script.match_origin_as_fallback() ==
-                             MatchOriginAsFallbackBehavior::kAlways);
+  script_info.all_frames = script.match_all_frames();
+  script_info.match_origin_as_fallback = script.match_origin_as_fallback() ==
+                                         MatchOriginAsFallbackBehavior::kAlways;
   script_info.run_at = ConvertRunLocationForAPI(script.run_location());
   script_info.world = ConvertExecutionWorldForAPI(script.execution_world());
 
@@ -616,9 +618,8 @@ ExtensionFunction::ResponseAction ScriptingExecuteScriptFunction::Run() {
     std::vector<std::string> string_args;
     string_args.reserve(injection_.args->size());
     for (const auto& arg : *injection_.args) {
-      DCHECK(arg);
       std::string json;
-      if (!base::JSONWriter::Write(*arg, &json))
+      if (!base::JSONWriter::Write(arg, &json))
         return RespondNow(Error("Unserializable argument passed."));
       string_args.push_back(std::move(json));
     }
@@ -713,8 +714,7 @@ void ScriptingExecuteScriptFunction::OnScriptExecuted(
     if (!result.error.empty())
       continue;
     api::scripting::InjectionResult injection_result;
-    injection_result.result =
-        base::Value::ToUniquePtrValue(std::move(result.value));
+    injection_result.result = std::move(result.value);
     injection_result.frame_id = result.frame_id;
     if (result.document_id)
       injection_result.document_id = result.document_id.ToString();
@@ -1064,8 +1064,8 @@ ScriptingGetRegisteredContentScriptsFunction::Run() {
   for (const std::unique_ptr<UserScript>& script : dynamic_scripts) {
     if (id_filter.empty() || base::Contains(id_filter, script->id())) {
       auto registered_script = CreateRegisteredContentScriptInfo(*script);
-      registered_script.persist_across_sessions = std::make_unique<bool>(
-          base::Contains(persistent_script_ids, script->id()));
+      registered_script.persist_across_sessions =
+          base::Contains(persistent_script_ids, script->id());
       script_infos.push_back(std::move(registered_script));
     }
   }

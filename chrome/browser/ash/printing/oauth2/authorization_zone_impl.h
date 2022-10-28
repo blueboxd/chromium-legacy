@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -100,9 +100,6 @@ class AuthorizationZoneImpl : public AuthorizationZone {
   bool FindAndRemovePendingAuthorization(const std::string& state,
                                          base::flat_set<std::string>& scopes,
                                          std::string& code_verifier);
-
-  // Adds context info to error messages returned with `callback`.
-  void AddContextToErrorMessage(StatusCallback& callback);
 
   // Represents started authorization procedure waiting for opening
   // communication with the server. This object is created when

@@ -1,19 +1,19 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #import "ios/chrome/browser/signin/chrome_account_manager_service.h"
 
-#include "base/check.h"
-#include "base/strings/sys_string_conversions.h"
-#include "components/prefs/pref_service.h"
-#include "components/signin/public/base/signin_pref_names.h"
-#include "ios/chrome/browser/application_context.h"
+#import "base/check.h"
+#import "base/strings/sys_string_conversions.h"
+#import "components/prefs/pref_service.h"
+#import "components/signin/public/base/signin_pref_names.h"
+#import "ios/chrome/browser/application_context/application_context.h"
 #import "ios/chrome/browser/signin/resized_avatar_cache.h"
 #import "ios/chrome/browser/ui/util/ui_util.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
-#include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
-#include "ios/public/provider/chrome/browser/signin/chrome_identity_service.h"
+#import "ios/public/provider/chrome/browser/chrome_browser_provider.h"
+#import "ios/public/provider/chrome/browser/signin/chrome_identity_service.h"
 #import "ios/public/provider/chrome/browser/signin/signin_resources_api.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -154,8 +154,7 @@ class FunctorHasRestrictedIdentities
 PatternAccountRestriction PatternAccountRestrictionFromPreference(
     PrefService* pref_service) {
   auto maybe_restriction = PatternAccountRestrictionFromValue(
-      pref_service->GetList(prefs::kRestrictAccountsToPatterns)
-          ->GetListDeprecated());
+      pref_service->GetList(prefs::kRestrictAccountsToPatterns));
   return *std::move(maybe_restriction);
 }
 
@@ -313,6 +312,8 @@ void ChromeAccountManagerService::OnChromeIdentityServiceDidChange(
   small_size_avatar_cache_ = nil;
   default_large_avatar_cache_ = nil;
   OnIdentityListChanged(false);
+  for (auto& observer : observer_list_)
+    observer.OnServiceSupportedChanged();
 }
 
 void ChromeAccountManagerService::OnChromeBrowserProviderWillBeDestroyed() {

@@ -1,8 +1,8 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <string>
+#import <string>
 
 #import "base/bind.h"
 #import "base/strings/stringprintf.h"
@@ -15,7 +15,7 @@
 #import "ios/chrome/browser/https_upgrades/https_upgrade_app_interface.h"
 #import "ios/chrome/browser/https_upgrades/https_upgrade_test_helper.h"
 #import "ios/chrome/browser/metrics/metrics_app_interface.h"
-#import "ios/chrome/browser/pref_names.h"
+#import "ios/chrome/browser/prefs/pref_names.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
@@ -271,9 +271,10 @@ std::string GetURLWithoutScheme(const GURL& url) {
   [self assertNoUpgrade];
 }
 
+// TODO(crbug.com/1359356): Test is consistently failing.
 // Type an HTTP URL without scheme. The navigation should be upgraded to HTTPS
 // which should load successfully.
-- (void)test_TypeHTTPWithGoodHTTPS_ShouldUpgrade {
+- (void)DISABLED_test_TypeHTTPWithGoodHTTPS_ShouldUpgrade {
   [HttpsUpgradeAppInterface setHTTPSPortForTesting:self.goodHTTPSServer->port()
                                       useFakeHTTPS:true];
 
@@ -301,9 +302,10 @@ std::string GetURLWithoutScheme(const GURL& url) {
   [self assertSuccessfulUpgrade:2];
 }
 
+// TODO(crbug.com/1359356): Test is consistently failing.
 // Same as test_TypeHTTPWithGoodHTTPS_ShouldUpgrade but with HTTPS-Only Mode
 // enabled.
-- (void)test_TypeHTTPWithGoodHTTPS_HTTPSOnlyModeEnabled_ShouldUpgrade {
+- (void)DISABLED_test_TypeHTTPWithGoodHTTPS_HTTPSOnlyModeEnabled_ShouldUpgrade {
   // Enable HTTPS-Only Mode.
   [ChromeEarlGrey setBoolValue:NO forUserPref:prefs::kHttpsOnlyModeEnabled];
 
@@ -341,10 +343,11 @@ std::string GetURLWithoutScheme(const GURL& url) {
                 @"HTTPS-Only mode unexpectedly recorded a histogram event");
 }
 
+// TODO(crbug.com/1359356): Test is consistently failing.
 // Type an HTTP URL without scheme. The navigation should be upgraded to HTTPS,
 // but the HTTPS URL serves bad response. The navigation should fall back to
 // HTTP.
-- (void)test_HTTPWithBadHTTPS_ShouldFallback {
+- (void)DISABLED_test_HTTPWithBadHTTPS_ShouldFallback {
   [HttpsUpgradeAppInterface setHTTPSPortForTesting:self.badHTTPSServer->port()
                                       useFakeHTTPS:false];
   [HttpsUpgradeAppInterface
@@ -376,10 +379,11 @@ std::string GetURLWithoutScheme(const GURL& url) {
   [self assertFailedUpgrade:1];
 }
 
+// TODO(crbug.com/1359356): Test is consistently failing.
 // Type an HTTP URL without scheme. The navigation should be upgraded to HTTPS,
 // but the HTTPS URL serves a slow loading response. The upgrade should timeout
 // and the navigation should fall back to HTTP.
-- (void)test_HTTPWithSlowHTTPS_ShouldFallBack {
+- (void)DISABLED_test_HTTPWithSlowHTTPS_ShouldFallBack {
   [HttpsUpgradeAppInterface setHTTPSPortForTesting:self.slowHTTPSServer->port()
                                       useFakeHTTPS:true];
   [HttpsUpgradeAppInterface

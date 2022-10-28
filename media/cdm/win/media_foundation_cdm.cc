@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -18,6 +18,7 @@
 #include "base/win/win_util.h"
 #include "base/win/windows_version.h"
 #include "media/base/cdm_promise.h"
+#include "media/base/win/hresults.h"
 #include "media/base/win/media_foundation_cdm_proxy.h"
 #include "media/base/win/mf_helpers.h"
 #include "media/cdm/win/media_foundation_cdm_module.h"
@@ -237,7 +238,7 @@ class CdmProxyImpl : public MediaFoundationCdmProxy {
     RETURN_IF_FAILED(
         mf_cdm_->GetProtectionSystemIds(&protection_system_ids, &count));
     if (count == 0)
-      return E_FAIL;
+      return kErrorZeroProtectionSystemId;
 
     *protection_system_id = *protection_system_ids;
     DVLOG(2) << __func__ << " protection_system_id="

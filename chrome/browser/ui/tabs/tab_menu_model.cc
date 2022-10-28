@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -18,7 +18,9 @@
 #include "chrome/browser/ui/tabs/tab_strip_model_delegate.h"
 #include "chrome/browser/ui/tabs/tab_utils.h"
 #include "chrome/browser/ui/ui_features.h"
+#include "chrome/browser/ui/web_applications/web_app_tabbed_utils.h"
 #include "chrome/common/chrome_features.h"
+#include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/feed/feed_feature_list.h"
 #include "components/reading_list/features/reading_list_switches.h"
@@ -51,7 +53,7 @@ void TabMenuModel::Build(TabStripModel* tab_strip, int index) {
   AddItemWithStringId(TabStripModel::CommandNewTabToRight,
                       base::i18n::IsRTL() ? IDS_TAB_CXMENU_NEWTABTOLEFT
                                           : IDS_TAB_CXMENU_NEWTABTORIGHT);
-  if (!tab_strip->profile()->IsGuestSession()) {
+  if (tab_strip->delegate()->SupportsReadLater()) {
     AddItem(
         TabStripModel::CommandAddToReadLater,
         l10n_util::GetPluralStringFUTF16(IDS_TAB_CXMENU_READ_LATER, num_tabs));
@@ -70,7 +72,7 @@ void TabMenuModel::Build(TabStripModel* tab_strip, int index) {
                add_to_existing_group_submenu_.get());
     if (base::FeatureList::IsEnabled(features::kTabGroupsNewBadgePromo))
       SetIsNewFeatureAt(GetItemCount() - 1, true);
-  } else {
+  } else if (!tab_strip->delegate()->IsForWebApp()) {
     AddItem(TabStripModel::CommandAddToNewGroup,
             l10n_util::GetPluralStringFUTF16(
                 IDS_TAB_CXMENU_ADD_TAB_TO_NEW_GROUP, num_tabs));
@@ -87,35 +89,50 @@ void TabMenuModel::Build(TabStripModel* tab_strip, int index) {
     }
   }
 
-  if (ExistingWindowSubMenuModel::ShouldShowSubmenu(tab_strip->profile())) {
-    // Create submenu with existing windows
-    add_to_existing_window_submenu_ = ExistingWindowSubMenuModel::Create(
-        delegate(), tab_menu_model_delegate_, tab_strip, index);
-    AddSubMenu(TabStripModel::CommandMoveToExistingWindow,
-               l10n_util::GetPluralStringFUTF16(
-                   IDS_TAB_CXMENU_MOVETOANOTHERWINDOW, num_tabs),
-               add_to_existing_window_submenu_.get());
-  } else {
-    AddItem(TabStripModel::CommandMoveTabsToNewWindow,
-            l10n_util::GetPluralStringFUTF16(
-                IDS_TAB_CXMENU_MOVE_TABS_TO_NEW_WINDOW, num_tabs));
+  if (!tab_strip->delegate()->IsForWebApp()) {
+    if (ExistingWindowSubMenuModel::ShouldShowSubmenu(tab_strip->profile())) {
+      // Create submenu with existing windows
+      add_to_existing_window_submenu_ = ExistingWindowSubMenuModel::Create(
+          delegate(), tab_menu_model_delegate_, tab_strip, index);
+      AddSubMenu(TabStripModel::CommandMoveToExistingWindow,
+                 l10n_util::GetPluralStringFUTF16(
+                     IDS_TAB_CXMENU_MOVETOANOTHERWINDOW, num_tabs),
+                 add_to_existing_window_submenu_.get());
+    } else {
+      AddItem(TabStripModel::CommandMoveTabsToNewWindow,
+              l10n_util::GetPluralStringFUTF16(
+                  IDS_TAB_CXMENU_MOVE_TABS_TO_NEW_WINDOW, num_tabs));
+    }
+  }
+
+  if (tab_strip->delegate()->IsForWebApp()) {
+    AddItemWithStringId(TabStripModel::CommandCopyURL, IDS_COPY_URL);
   }
 
   AddSeparator(ui::NORMAL_SEPARATOR);
   AddItemWithStringId(TabStripModel::CommandReload, IDS_TAB_CXMENU_RELOAD);
-  AddItemWithStringId(TabStripModel::CommandDuplicate,
-                      IDS_TAB_CXMENU_DUPLICATE);
-  bool will_pin = tab_strip->WillContextMenuPin(index);
-  AddItemWithStringId(
-      TabStripModel::CommandTogglePinned,
-      will_pin ? IDS_TAB_CXMENU_PIN_TAB : IDS_TAB_CXMENU_UNPIN_TAB);
+
+  if (!(tab_strip->delegate()->IsForWebApp() &&
+        web_app::IsPinnedHomeTab(tab_strip, index))) {
+    AddItemWithStringId(TabStripModel::CommandDuplicate,
+                        IDS_TAB_CXMENU_DUPLICATE);
+  }
+
+  if (!tab_strip->delegate()->IsForWebApp()) {
+    bool will_pin = tab_strip->WillContextMenuPin(index);
+    AddItemWithStringId(
+        TabStripModel::CommandTogglePinned,
+        will_pin ? IDS_TAB_CXMENU_PIN_TAB : IDS_TAB_CXMENU_UNPIN_TAB);
+  }
+
   const bool will_mute = !chrome::AreAllSitesMuted(*tab_strip, indices);
   AddItem(TabStripModel::CommandToggleSiteMuted,
           will_mute ? l10n_util::GetPluralStringFUTF16(
                           IDS_TAB_CXMENU_SOUND_MUTE_SITE, num_tabs)
                     : l10n_util::GetPluralStringFUTF16(
                           IDS_TAB_CXMENU_SOUND_UNMUTE_SITE, num_tabs));
-  if (base::FeatureList::IsEnabled(feed::kWebUiFeed)) {
+  if (base::FeatureList::IsEnabled(feed::kWebUiFeed) &&
+      !tab_strip->delegate()->IsForWebApp()) {
     const TabWebFeedFollowState follow_state =
         chrome::GetAggregatedFollowStateOfAllSites(*tab_strip, indices);
     if (follow_state == TabWebFeedFollowState::kNotFollowed) {
@@ -141,7 +158,11 @@ void TabMenuModel::Build(TabStripModel* tab_strip, int index) {
   }
 
   AddSeparator(ui::NORMAL_SEPARATOR);
-  AddItemWithStringId(TabStripModel::CommandCloseTab, IDS_TAB_CXMENU_CLOSETAB);
+  if (!(tab_strip->delegate()->IsForWebApp() &&
+        web_app::IsPinnedHomeTab(tab_strip, index))) {
+    AddItemWithStringId(TabStripModel::CommandCloseTab,
+                        IDS_TAB_CXMENU_CLOSETAB);
+  }
   AddItemWithStringId(TabStripModel::CommandCloseOtherTabs,
                       IDS_TAB_CXMENU_CLOSEOTHERTABS);
   AddItemWithStringId(TabStripModel::CommandCloseTabsToRight,

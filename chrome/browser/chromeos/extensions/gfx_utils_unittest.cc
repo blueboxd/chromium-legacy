@@ -1,4 +1,4 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -88,7 +88,7 @@ class DualBadgeMapTest : public ExtensionServiceTestBase {
 
   void RemoveExtension(const Extension* extension) {
     service()->UninstallExtension(
-        extension->id(), extensions::UNINSTALL_REASON_FOR_TESTING, NULL);
+        extension->id(), extensions::UNINSTALL_REASON_FOR_TESTING, nullptr);
   }
 
  private:

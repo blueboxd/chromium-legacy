@@ -27,6 +27,7 @@
 #include "third_party/blink/renderer/core/layout/ng/table/ng_table_fragment_data.h"
 #include "third_party/blink/renderer/core/style/computed_style_constants.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
 
 namespace blink {
 
@@ -415,6 +416,24 @@ class CORE_EXPORT NGBoxFragmentBuilder final
     previous_break_after_ = break_after;
   }
 
+  void SetStartPageNameIfNeeded(AtomicString name) {
+    if (start_page_name_ == g_null_atom)
+      start_page_name_ = name;
+  }
+  void SetPreviousPageName(AtomicString name) { previous_page_name_ = name; }
+  AtomicString PreviousPageName() const { return previous_page_name_; }
+
+  void SetPageName(const AtomicString name) {
+    if (!name)
+      return;
+    if (page_name_) {
+      DCHECK_EQ(page_name_, name);
+      return;
+    }
+    page_name_ = name;
+  }
+  AtomicString PageName() const { return page_name_; }
+
   // Join/"collapse" the previous (stored) break-after value with the next
   // break-before value, to determine how to deal with breaking between two
   // in-flow siblings.
@@ -549,17 +568,25 @@ class CORE_EXPORT NGBoxFragmentBuilder final
     custom_layout_data_ = std::move(custom_layout_data);
   }
 
-  // Sets the alignment baseline for this fragment.
-  void SetBaseline(LayoutUnit baseline) { baseline_ = baseline; }
-  absl::optional<LayoutUnit> Baseline() const { return baseline_; }
+  // Sets the first baseline for this fragment.
+  void SetFirstBaseline(LayoutUnit baseline) { first_baseline_ = baseline; }
+  absl::optional<LayoutUnit> FirstBaseline() const { return first_baseline_; }
 
   // Sets the last baseline for this fragment.
-  void SetLastBaseline(LayoutUnit baseline) {
-    DCHECK_EQ(space_.BaselineAlgorithmType(),
-              NGBaselineAlgorithmType::kInlineBlock);
+  void SetLastBaseline(LayoutUnit baseline) { last_baseline_ = baseline; }
+  absl::optional<LayoutUnit> LastBaseline() const { return last_baseline_; }
+
+  // Sets both the first and last baseline to the same value.
+  void SetBaselines(LayoutUnit baseline) {
+    first_baseline_ = baseline;
     last_baseline_ = baseline;
   }
-  absl::optional<LayoutUnit> LastBaseline() const { return last_baseline_; }
+
+  // Lets the parent layout algorithm know if it should use the first or last
+  // baseline for the special inline-block baseline algorithm.
+  void SetUseLastBaselineForInlineBaseline() {
+    use_last_baseline_for_inline_baseline_ = true;
+  }
 
   // The inline block baseline is at the block end margin edge under some
   // circumstances. This function updates |LastBaseline| in such cases.
@@ -741,6 +768,7 @@ class CORE_EXPORT NGBoxFragmentBuilder final
   bool is_at_block_end_ = false;
   bool disable_oof_descendants_propagation_ = false;
   bool disable_simplified_layout = false;
+  bool use_last_baseline_for_inline_baseline_ = false;
   LayoutUnit block_offset_for_additional_columns_;
 
   LayoutUnit minimal_space_shortage_ = kIndefiniteSize;
@@ -754,10 +782,15 @@ class CORE_EXPORT NGBoxFragmentBuilder final
   // The break-after value of the previous in-flow sibling.
   EBreakBetween previous_break_after_ = EBreakBetween::kAuto;
 
+  AtomicString start_page_name_ = g_null_atom;
+  AtomicString previous_page_name_;
+
+  AtomicString page_name_;
+
   // The appeal of breaking inside this container.
   NGBreakAppeal break_appeal_ = kBreakAppealPerfect;
 
-  absl::optional<LayoutUnit> baseline_;
+  absl::optional<LayoutUnit> first_baseline_;
   absl::optional<LayoutUnit> last_baseline_;
   LayoutUnit math_italic_correction_;
 

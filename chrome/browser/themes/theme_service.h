@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -21,6 +21,7 @@
 #include "extensions/buildflags/buildflags.h"
 #include "extensions/common/extension_id.h"
 #include "ui/base/theme_provider.h"
+#include "ui/color/system_theme.h"
 
 class BrowserThemePack;
 class CustomThemeSupplier;
@@ -43,7 +44,6 @@ class ColorProvider;
 class BrowserThemeProviderDelegate {
  public:
   virtual CustomThemeSupplier* GetThemeSupplier() const = 0;
-  virtual bool ShouldUseSystemTheme() const = 0;
   virtual bool ShouldUseCustomFrame() const = 0;
 };
 
@@ -86,7 +86,6 @@ class ThemeService : public KeyedService, public BrowserThemeProviderDelegate {
 
   // Overridden from BrowserThemeProviderDelegate:
   CustomThemeSupplier* GetThemeSupplier() const override;
-  bool ShouldUseSystemTheme() const override;
   bool ShouldUseCustomFrame() const override;
 
   // Set the current theme to the theme defined in |extension|.
@@ -96,6 +95,9 @@ class ThemeService : public KeyedService, public BrowserThemeProviderDelegate {
 
   // Similar to SetTheme, but doesn't show an undo infobar.
   void RevertToExtensionTheme(const std::string& extension_id);
+
+  // Sets the platform theme based on `system_theme`.
+  virtual void UseTheme(ui::SystemTheme system_theme);
 
   // Reset the theme to default.
   virtual void UseDefaultTheme();
@@ -112,8 +114,8 @@ class ThemeService : public KeyedService, public BrowserThemeProviderDelegate {
   // Virtual for testing.
   virtual bool UsingDefaultTheme() const;
 
-  // Whether we are using the system theme. On GTK, the system theme is the GTK
-  // theme, not the "Classic" theme.
+  // Whether we are using the system theme. On Linux, the system theme is the
+  // GTK or QT themes, not the "Classic" theme.
   virtual bool UsingSystemTheme() const;
 
   // Forwards to ThemeProviderBase::IsExtensionTheme().
@@ -193,8 +195,8 @@ class ThemeService : public KeyedService, public BrowserThemeProviderDelegate {
   virtual void SetCustomDefaultTheme(
       scoped_refptr<CustomThemeSupplier> theme_supplier);
 
-  // Returns true if the ThemeService should use the system theme on startup.
-  virtual bool ShouldInitWithSystemTheme() const;
+  // Returns the theme service type that should be used on startup.
+  virtual ui::SystemTheme GetDefaultSystemTheme() const;
 
   // Clears all the override fields and saves the dictionary.
   virtual void ClearAllThemeData();
@@ -254,7 +256,6 @@ class ThemeService : public KeyedService, public BrowserThemeProviderDelegate {
   // virtual for testing.
   virtual void DoSetTheme(const extensions::Extension* extension,
                           bool suppress_infobar);
-
 
   // Called when the extension service is ready.
   void OnExtensionServiceReady();

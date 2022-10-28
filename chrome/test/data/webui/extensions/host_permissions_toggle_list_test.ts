@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -356,7 +356,7 @@ suite('HostPermissionsToggleList', function() {
 
         const [siteSet, removedSites] =
             await delegate.whenCalled('removeUserSpecifiedSites');
-        assertEquals(chrome.developerPrivate.UserSiteSet.RESTRICTED, siteSet);
+        assertEquals(chrome.developerPrivate.SiteSet.USER_RESTRICTED, siteSet);
         assertDeepEquals(['http://restricted.com'], removedSites);
 
         const metricName = await delegate.whenCalled('recordUserAction');

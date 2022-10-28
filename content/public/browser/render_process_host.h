@@ -63,6 +63,11 @@ namespace base {
 class PersistentMemoryAllocator;
 class TimeDelta;
 class Token;
+#if BUILDFLAG(IS_ANDROID)
+namespace android {
+enum class ChildBindingState;
+}
+#endif
 }  // namespace base
 
 namespace blink {
@@ -84,10 +89,12 @@ class Origin;
 namespace content {
 class BrowserContext;
 class BrowserMessageFilter;
+class BucketContext;
 class IsolationContext;
 class ProcessLock;
 class RenderFrameHost;
 class RenderProcessHostObserver;
+class RenderProcessHostPriorityClient;
 class SiteInfo;
 class StoragePartition;
 struct GlobalRenderFrameHostId;
@@ -107,29 +114,6 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
                                          public base::SupportsUserData {
  public:
   using iterator = base::IDMap<RenderProcessHost*>::iterator;
-
-  // Priority (or on Android, the importance) that a client contributes to this
-  // RenderProcessHost. Eg a RenderProcessHost with a visible client has higher
-  // priority / importance than a RenderProcessHost with hidden clients only.
-  struct Priority {
-    bool is_hidden;
-    unsigned int frame_depth;
-    bool intersects_viewport;
-#if BUILDFLAG(IS_ANDROID)
-    ChildProcessImportance importance;
-#endif
-  };
-
-  // Interface for a client that contributes Priority to this
-  // RenderProcessHost. Clients can call UpdateClientPriority when their
-  // Priority changes.
-  class PriorityClient {
-   public:
-    virtual Priority GetPriority() = 0;
-
-   protected:
-    virtual ~PriorityClient() {}
-  };
 
   // Crash reporting mode for ShutdownForBadMessage.
   enum class CrashReportMode {
@@ -178,17 +162,19 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
   // will be reported as well.
   virtual void ShutdownForBadMessage(CrashReportMode crash_report_mode) = 0;
 
-  // Recompute Priority state. PriorityClient should call this when their
-  // individual priority changes.
-  virtual void UpdateClientPriority(PriorityClient* client) = 0;
+  // Recompute Priority state. RenderProcessHostPriorityClient should call this
+  // when their individual priority changes.
+  virtual void UpdateClientPriority(
+      RenderProcessHostPriorityClient* client) = 0;
 
-  // Number of visible (ie |!is_hidden|) PriorityClients.
+  // Number of visible (ie |!is_hidden|) RenderProcessHostPriorityClients.
   virtual int VisibleClientCount() = 0;
 
-  // Get computed frame depth from PriorityClients.
+  // Get computed frame depth from RenderProcessHostPriorityClients.
   virtual unsigned int GetFrameDepth() = 0;
 
-  // Get computed viewport intersection state from PriorityClients.
+  // Get computed viewport intersection state from
+  // RenderProcessHostPriorityClients.
   virtual bool GetIntersectsViewport() = 0;
 
   // Called when a video capture stream or an audio stream is added or removed
@@ -321,8 +307,10 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
   virtual void RemovePendingView() = 0;
 
   // Adds and removes priority clients.
-  virtual void AddPriorityClient(PriorityClient* priority_client) = 0;
-  virtual void RemovePriorityClient(PriorityClient* priority_client) = 0;
+  virtual void AddPriorityClient(
+      RenderProcessHostPriorityClient* priority_client) = 0;
+  virtual void RemovePriorityClient(
+      RenderProcessHostPriorityClient* priority_client) = 0;
 
   // Sets a process priority override. This overrides the entire built-in
   // priority setting mechanism for the process.
@@ -333,6 +321,9 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
 #if BUILDFLAG(IS_ANDROID)
   // Return the highest importance of all widgets in this process.
   virtual ChildProcessImportance GetEffectiveImportance() = 0;
+
+  // Return the highest binding this process has.
+  virtual base::android::ChildBindingState GetEffectiveChildBindingState() = 0;
 
   // Dumps the stack of this render process without crashing it.
   virtual void DumpProcessStack() = 0;
@@ -584,11 +575,8 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
   virtual void BindIndexedDB(
       const blink::StorageKey& storage_key,
       mojo::PendingReceiver<blink::mojom::IDBFactory> receiver) = 0;
-  virtual void BindBucketManagerHostForRenderFrame(
-      const GlobalRenderFrameHostId& render_frame_host_id,
-      mojo::PendingReceiver<blink::mojom::BucketManagerHost> receiver) = 0;
-  virtual void BindBucketManagerHostForWorker(
-      const blink::StorageKey& storage_key,
+  virtual void BindBucketManagerHost(
+      base::WeakPtr<BucketContext> bucket_context,
       mojo::PendingReceiver<blink::mojom::BucketManagerHost> receiver) = 0;
   virtual void BindRestrictedCookieManagerForServiceWorker(
       const blink::StorageKey& storage_key,
@@ -662,6 +650,14 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
   virtual void DumpProfilingData(base::OnceClosure callback) {}
 #endif
 
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  // Reinitializes the child process's logging with the given settings. This
+  // is needed on Chrome OS, which switches to a log file in the user's home
+  // directory once they log in.
+  virtual void ReinitializeLogging(uint32_t logging_dest,
+                                   base::ScopedFD log_file_descriptor) = 0;
+#endif
+
   // Static management functions -----------------------------------------------
 
   // Possibly start an unbound, spare RenderProcessHost. A subsequent creation
@@ -733,7 +729,8 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
   // Returns true if the caller should attempt to use an existing
   // RenderProcessHost rather than creating a new one.
   static bool ShouldTryToUseExistingProcessHost(
-      content::BrowserContext* browser_context, const GURL& site_url);
+      content::BrowserContext* browser_context,
+      const GURL& site_url);
 
   // Overrides the default heuristic for limiting the max renderer process
   // count.  This is useful for unit testing process limit behaviors.  It is

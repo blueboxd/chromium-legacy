@@ -1,4 +1,4 @@
-# Copyright 2017 The Chromium Authors. All rights reserved.
+# Copyright 2017 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -13,10 +13,10 @@ from devil.utils import reraiser_thread
 from pylib import constants
 
 
-_MINIUMUM_TIMEOUT = 5.0
-_PER_LINE_TIMEOUT = .002  # Should be able to process 500 lines per second.
-_PROCESS_START_TIMEOUT = 10.0
-_MAX_RESTARTS = 10  # Should be plenty unless tool is crashing on start-up.
+_MINIUMUM_TIMEOUT = 10.0
+_PER_LINE_TIMEOUT = .005  # Should be able to process 200 lines per second.
+_PROCESS_START_TIMEOUT = 20.0
+_MAX_RESTARTS = 4  # Should be plenty unless tool is crashing on start-up.
 
 
 class Deobfuscator:
@@ -110,7 +110,18 @@ class Deobfuscator:
               'deobfuscator: Close() called by another thread during join().')
           return lines
         if reader_thread.is_alive():
-          logging.error('deobfuscator: Timed out.')
+          logging.error('deobfuscator: Timed out after %f seconds with input:',
+                        timeout)
+          # We are seeing timeouts but don't know why. Hopefully seeing the
+          # lines that cause timeouts can make it obvious what the deobfuscator
+          # is struggling with.
+          for l in lines:
+            logging.error(l)
+          logging.error('deobfuscator: End of timed out input.')
+          logging.error('deobfuscator: Timed out output was:')
+          for l in out_lines:
+            logging.error(l)
+          logging.error('deobfuscator: End of timed out output.')
           self.Close()
           return lines
         return out_lines

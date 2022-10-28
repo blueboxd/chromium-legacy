@@ -1,13 +1,13 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <algorithm>
 #include <string>
 #include <vector>
 
 #include "base/bind.h"
 #include "base/feature_list.h"
+#include "base/ranges/algorithm.h"
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
@@ -35,6 +35,7 @@
 #include "components/feature_engagement/test/mock_tracker.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/live_caption/caption_util.h"
+#include "components/user_education/common/feature_promo_controller.h"
 #include "content/public/test/browser_test.h"
 #include "media/base/media_switches.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -104,10 +105,15 @@ class FeaturePromoDialogTest : public DialogBrowserTest {
     std::vector<const base::Feature*> iph_features =
         feature_engagement::GetAllFeatures();
     auto feature_it =
-        std::find_if(iph_features.begin(), iph_features.end(),
-                     [&](const base::Feature* f) { return f->name == name; });
+        base::ranges::find(iph_features, name, &base::Feature::name);
     ASSERT_NE(feature_it, iph_features.end());
     const base::Feature& feature = **feature_it;
+
+    // The browser may have already queued a promo for startup. Since the test
+    // uses a mock, cancel that and just show it directly.
+    const auto status = promo_controller->GetPromoStatus(feature);
+    if (status == user_education::FeaturePromoStatus::kQueuedForStartup)
+      promo_controller->EndPromo(feature);
 
     // Set up mock tracker to allow the IPH, then attempt to show it.
     EXPECT_CALL(*mock_tracker, ShouldTriggerHelpUI(Ref(feature)))

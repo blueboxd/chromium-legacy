@@ -1,4 +1,4 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -15,7 +15,7 @@
  *   playStoreEnabled: boolean,
  *   settingsAppAvailable: boolean,
  * }}
- * @see chrome/browser/ui/webui/settings/chromeos/android_apps_handler.cc
+ * @see chrome/browser/ui/webui/settings/ash/android_apps_handler.cc
  */
 export let AndroidAppsInfo;
 

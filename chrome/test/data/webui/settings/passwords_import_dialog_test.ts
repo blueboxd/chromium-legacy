@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,7 +8,7 @@
 import 'chrome://settings/lazy_load.js';
 
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
-import {ImportDialogState, PasswordsImportDialogElement} from 'chrome://settings/lazy_load.js';
+import {IMPORT_HELP_LANDING_PAGE, ImportDialogState, PasswordsImportDialogElement} from 'chrome://settings/lazy_load.js';
 import {PasswordManagerImpl, SettingsPluralStringProxyImpl, CrButtonElement} from 'chrome://settings/settings.js';
 import {assertEquals, assertFalse, assertTrue} from 'chrome://webui-test/chai_assert.js';
 import {TestPluralStringProxy} from 'chrome://webui-test/test_plural_string_proxy.js';
@@ -59,6 +59,9 @@ function assertIntialStatePartsAndClose(
   assertFalse(cancel.disabled);
   assertFalse(chooseFile.disabled);
 
+  assertFalse(isVisible(
+      importDialog.shadowRoot!.querySelector<HTMLElement>('#tipBox')));
+
   assertEquals(importDialog.i18n('cancel'), cancel.textContent!.trim());
   assertEquals(
       importDialog.i18n('importPasswordsChooseFile'),
@@ -77,7 +80,10 @@ async function assertErrorStateAndClose(
   assertEquals(ImportDialogState.ERROR, importDialog.dialogState);
 
   assertEquals(
-      expectedDescription, importDialog.$.descriptionText.textContent!.trim());
+      expectedDescription, importDialog.$.descriptionText.innerHTML!.trim());
+
+  assertFalse(isVisible(
+      importDialog.shadowRoot!.querySelector<HTMLElement>('#tipBox')));
 
   const close =
       importDialog.shadowRoot!.querySelector<CrButtonElement>('#close');
@@ -154,12 +160,12 @@ suite('PasswordsImportDialog', function() {
     // After the import, the dialog should switch to SUCCESS state.
     assertEquals(ImportDialogState.SUCCESS, importDialog.dialogState);
 
-    const successTip =
-        importDialog.shadowRoot!.querySelector<HTMLElement>('#successTip');
-    assertTrue(!!successTip);
+    assertTrue(isVisible(
+        importDialog.shadowRoot!.querySelector<HTMLElement>('#tipBox')));
     assertEquals(
-        importDialog.i18n('importPasswordsSuccessTip', 'test.csv'),
-        successTip.textContent!.trim());
+        importDialog.i18nAdvanced('importPasswordsSuccessTip')
+            .replace('<b></b>', 'test.csv'),
+        importDialog.$.successTip.textContent!.trim());
 
     // Failed imports summary should not be visible.
     assertFalse(!!importDialog.shadowRoot!.querySelector<HTMLElement>(
@@ -185,7 +191,12 @@ suite('PasswordsImportDialog', function() {
 
     await assertErrorStateAndClose(
         importDialog, passwordManager,
-        importDialog.i18n('importPasswordsBadFormatError', 'test.csv'));
+        importDialog
+            .i18nAdvanced(
+                'importPasswordsBadFormatError',
+                {substitutions: [IMPORT_HELP_LANDING_PAGE]},
+                )
+            .replace('<b></b>', '<b>test.csv</b>'));
   });
 
   test('hasCorrectUnknownErrorState', async function() {
@@ -219,6 +230,21 @@ suite('PasswordsImportDialog', function() {
         importDialog.i18n('importPasswordsLimitExceeded', 3000));
   });
 
+  test('hasCorrectFileSizeExceededState', async function() {
+    const importDialog = elementFactory.createPasswordsImportDialog();
+    assertEquals(ImportDialogState.START, importDialog.dialogState);
+    passwordManager.setImportResults({
+      status: chrome.passwordsPrivate.ImportResultsStatus.MAX_FILE_SIZE,
+      numberImported: 0,
+      failedImports: [],
+      fileName: 'test.csv',
+    });
+
+    await assertErrorStateAndClose(
+        importDialog, passwordManager,
+        importDialog.i18n('importPasswordsFileSizeExceeded'));
+  });
+
   test('hasCorrectSuccessStateWithFailures', async function() {
     const importDialog = elementFactory.createPasswordsImportDialog();
     assertEquals(ImportDialogState.START, importDialog.dialogState);
@@ -227,9 +253,54 @@ suite('PasswordsImportDialog', function() {
       numberImported: 42,
       failedImports: [
         {
+          status: chrome.passwordsPrivate.ImportEntryStatus.MISSING_PASSWORD,
+          username: 'username',
+          url: 'https://google.com',
+        },
+        {
+          status: chrome.passwordsPrivate.ImportEntryStatus.MISSING_URL,
+          username: 'username',
+          url: '',
+        },
+        {
+          status: chrome.passwordsPrivate.ImportEntryStatus.INVALID_URL,
+          username: 'username',
+          url: 'http/google.com',
+        },
+        {
+          status: chrome.passwordsPrivate.ImportEntryStatus.LONG_URL,
+          username: 'username',
+          url: 'https://morethan2048chars.com',
+        },
+        {
+          status: chrome.passwordsPrivate.ImportEntryStatus.NON_ASCII_URL,
+          username: 'username',
+          url: 'https://أهلا.com',
+        },
+        {
           status: chrome.passwordsPrivate.ImportEntryStatus.LONG_PASSWORD,
           username: 'username',
           url: 'https://google.com',
+        },
+        {
+          status: chrome.passwordsPrivate.ImportEntryStatus.LONG_USERNAME,
+          username: 'morethan1000chars',
+          url: 'https://google.com',
+        },
+        {
+          status: chrome.passwordsPrivate.ImportEntryStatus.CONFLICT_PROFILE,
+          username: 'username',
+          url: 'https://google.com',
+        },
+        {
+          status: chrome.passwordsPrivate.ImportEntryStatus.CONFLICT_ACCOUNT,
+          username: 'username',
+          url: 'https://google.com',
+        },
+        {
+          status: chrome.passwordsPrivate.ImportEntryStatus.UNKNOWN_ERROR,
+          username: '',
+          url: '',
         },
       ],
       fileName: 'test.csv',
@@ -242,15 +313,15 @@ suite('PasswordsImportDialog', function() {
     assertEquals(ImportDialogState.SUCCESS, importDialog.dialogState);
 
     // Success tip should not be visible.
-    assertFalse(
-        !!importDialog.shadowRoot!.querySelector<HTMLElement>('#successTip'));
+    assertFalse(isVisible(
+        importDialog.shadowRoot!.querySelector<HTMLElement>('#tipBox')));
 
     const failuresSummary =
         importDialog.shadowRoot!.querySelector<HTMLElement>('#failuresSummary');
     assertTrue(!!failuresSummary);
 
     assertEquals(
-        importDialog.i18n('importPasswordsFailuresSummary', 1),
+        importDialog.i18n('importPasswordsFailuresSummary', 10),
         failuresSummary.textContent!.trim());
 
     const done = importDialog.shadowRoot!.querySelector<HTMLElement>('#done');
@@ -284,6 +355,9 @@ suite('PasswordsImportDialog', function() {
     assertEquals(
         importDialog.i18n('importPasswordsAlreadyActive'),
         importDialog.$.descriptionText.textContent!.trim());
+
+    assertFalse(isVisible(
+        importDialog.shadowRoot!.querySelector<HTMLElement>('#tipBox')));
 
     const close =
         importDialog.shadowRoot!.querySelector<CrButtonElement>('#close');

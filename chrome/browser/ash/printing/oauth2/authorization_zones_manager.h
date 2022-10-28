@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -43,7 +43,7 @@ class AuthorizationZone;
 //    Authorization Server to mark it as trusted. The list of trusted
 //    Authorization Servers is saved in user's profile. All API calls for any
 //    Authorization Server not included in the trusted list will fail with the
-//    error StatusCode::kUnknownAuthorizationServer.
+//    error StatusCode::kUntrustedAuthorizationServer.
 //  * InitAuthorization() - the callback returns a URL that must be opened in an
 //    internet browser to allow a user to go through an authorization procedure.
 //  * FinishAuthorization() - this method finalizes the authorization procedure

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright 2011 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -29,8 +29,8 @@
 #include "net/base/network_isolation_key.h"
 #include "net/dns/host_resolver.h"
 #include "net/dns/host_resolver_proc.h"
-#include "net/dns/host_resolver_results.h"
 #include "net/dns/public/dns_query_type.h"
+#include "net/dns/public/host_resolver_results.h"
 #include "net/dns/public/host_resolver_source.h"
 #include "net/dns/public/mdns_listener_update_type.h"
 #include "net/dns/public/secure_dns_policy.h"

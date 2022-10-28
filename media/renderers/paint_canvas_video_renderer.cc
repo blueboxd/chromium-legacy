@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -77,6 +77,39 @@ namespace media {
 
 namespace {
 
+// Return the full-range RGB component of the color space of this frame's
+// content. This will replace several color spaces (Rec601, Rec709, and
+// Apple's Rec709) with sRGB, for compatibility with existing behavior.
+gfx::ColorSpace GetVideoFrameRGBColorSpacePreferringSRGB(
+    const VideoFrame* frame) {
+  const auto rgb_color_space = frame->ColorSpace().GetAsFullRangeRGB();
+  auto primary_id = rgb_color_space.GetPrimaryID();
+  switch (primary_id) {
+    case gfx::ColorSpace::PrimaryID::CUSTOM:
+      return rgb_color_space;
+    case gfx::ColorSpace::PrimaryID::SMPTE170M:
+    case gfx::ColorSpace::PrimaryID::SMPTE240M:
+      primary_id = gfx::ColorSpace::PrimaryID::BT709;
+      break;
+    default:
+      break;
+  }
+  auto transfer_id = rgb_color_space.GetTransferID();
+  switch (transfer_id) {
+    case gfx::ColorSpace::TransferID::CUSTOM:
+    case gfx::ColorSpace::TransferID::CUSTOM_HDR:
+      return rgb_color_space;
+    case gfx::ColorSpace::TransferID::BT709_APPLE:
+    case gfx::ColorSpace::TransferID::SMPTE170M:
+    case gfx::ColorSpace::TransferID::SMPTE240M:
+      transfer_id = gfx::ColorSpace::TransferID::SRGB;
+      break;
+    default:
+      break;
+  }
+  return gfx::ColorSpace(primary_id, transfer_id);
+}
+
 // This class keeps the last image drawn.
 // We delete the temporary resource if it is not used for 3 seconds.
 const int kTemporaryResourceDeletionDelay = 3;  // Seconds;
@@ -146,10 +179,6 @@ const gpu::MailboxHolder& GetVideoFrameMailboxHolder(VideoFrame* video_frame) {
       << "Format: " << VideoPixelFormatToString(video_frame->format());
 
   const gpu::MailboxHolder& mailbox_holder = video_frame->mailbox_holder(0);
-  DCHECK(mailbox_holder.texture_target == GL_TEXTURE_2D ||
-         mailbox_holder.texture_target == GL_TEXTURE_RECTANGLE_ARB ||
-         mailbox_holder.texture_target == GL_TEXTURE_EXTERNAL_OES)
-      << mailbox_holder.texture_target;
   return mailbox_holder;
 }
 
@@ -1144,7 +1173,7 @@ scoped_refptr<VideoFrame> DownShiftHighbitVideoFrame(
                                   video_frame->visible_rect().height());
     const uint16_t* src =
         reinterpret_cast<const uint16_t*>(video_frame->visible_data(plane));
-    uint8_t* dst = ret->visible_data(plane);
+    uint8_t* dst = ret->GetWritableVisibleData(plane);
     if (!src) {
       // An AV1 monochrome (grayscale) frame has no U and V planes. Set all U
       // and V samples to the neutral value (128).
@@ -1443,6 +1472,10 @@ bool PaintCanvasVideoRenderer::CopyVideoFrameTexturesToGLTexture(
 
     const gpu::MailboxHolder& mailbox_holder =
         GetVideoFrameMailboxHolder(video_frame.get());
+    DCHECK(mailbox_holder.texture_target == GL_TEXTURE_2D ||
+           mailbox_holder.texture_target == GL_TEXTURE_RECTANGLE_ARB ||
+           mailbox_holder.texture_target == GL_TEXTURE_EXTERNAL_OES)
+        << mailbox_holder.texture_target;
     CopyMailboxToTexture(
         destination_gl, video_frame->coded_size(), video_frame->visible_rect(),
         mailbox_holder.mailbox, mailbox_holder.sync_token, target, texture,
@@ -1681,7 +1714,8 @@ bool PaintCanvasVideoRenderer::CopyVideoFrameYUVDataToGLTexture(
     }
 
     yuv_cache_.mailbox = sii->CreateSharedImage(
-        RESOURCE_FORMAT, video_frame->coded_size(), gfx::ColorSpace(),
+        RESOURCE_FORMAT, video_frame->coded_size(),
+        GetVideoFrameRGBColorSpacePreferringSRGB(video_frame.get()),
         kTopLeft_GrSurfaceOrigin, kPremul_SkAlphaType, usage,
         gpu::kNullSurfaceHandle);
     token = sii->GenUnverifiedSyncToken();
@@ -1849,7 +1883,12 @@ bool PaintCanvasVideoRenderer::UpdateLastImage(
     bool wraps_video_frame_texture = false;
     gpu::Mailbox mailbox;
 
-    if (allow_wrap_texture && video_frame->NumTextures() == 1) {
+    // `texture_target` is set only when the image backing the frame is
+    // compatible with GL.
+    bool can_wrap_texture = video_frame->NumTextures() == 1 &&
+                            video_frame->mailbox_holder(0).texture_target != 0;
+
+    if (allow_wrap_texture && can_wrap_texture) {
       cache_.emplace(video_frame->unique_id());
       const gpu::MailboxHolder& holder =
           GetVideoFrameMailboxHolder(video_frame.get());
@@ -1885,7 +1924,8 @@ bool PaintCanvasVideoRenderer::UpdateLastImage(
           flags |= gpu::SHARED_IMAGE_USAGE_OOP_RASTERIZATION;
         }
         mailbox = sii->CreateSharedImage(
-            RESOURCE_FORMAT, video_frame->coded_size(), gfx::ColorSpace(),
+            RESOURCE_FORMAT, video_frame->coded_size(),
+            GetVideoFrameRGBColorSpacePreferringSRGB(video_frame.get()),
             kTopLeft_GrSurfaceOrigin, kPremul_SkAlphaType, flags,
             gpu::kNullSurfaceHandle);
         ri->WaitSyncTokenCHROMIUM(sii->GenUnverifiedSyncToken().GetConstData());

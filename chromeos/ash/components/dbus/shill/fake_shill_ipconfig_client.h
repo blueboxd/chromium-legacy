@@ -1,4 +1,4 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -38,12 +38,12 @@ class COMPONENT_EXPORT(SHILL_CLIENT) FakeShillIPConfigClient
   void SetProperty(const dbus::ObjectPath& ipconfig_path,
                    const std::string& name,
                    const base::Value& value,
-                   VoidDBusMethodCallback callback) override;
+                   chromeos::VoidDBusMethodCallback callback) override;
   void ClearProperty(const dbus::ObjectPath& ipconfig_path,
                      const std::string& name,
-                     VoidDBusMethodCallback callback) override;
+                     chromeos::VoidDBusMethodCallback callback) override;
   void Remove(const dbus::ObjectPath& ipconfig_path,
-              VoidDBusMethodCallback callback) override;
+              chromeos::VoidDBusMethodCallback callback) override;
   ShillIPConfigClient::TestInterface* GetTestInterface() override;
 
   // ShillIPConfigClient::TestInterface overrides.

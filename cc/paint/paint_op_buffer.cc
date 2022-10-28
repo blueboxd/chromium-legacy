@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,7 +12,7 @@
 #include "base/bind.h"
 #include "base/memory/raw_ptr.h"
 #include "base/notreached.h"
-#include "base/stl_util.h"
+#include "base/types/optional_util.h"
 #include "cc/paint/decoded_draw_image.h"
 #include "cc/paint/display_item_list.h"
 #include "cc/paint/image_provider.h"
@@ -23,6 +23,7 @@
 #include "cc/paint/paint_record.h"
 #include "cc/paint/scoped_raster_flags.h"
 #include "cc/paint/skottie_serialization_history.h"
+#include "third_party/abseil-cpp/absl/types/variant.h"
 #include "third_party/skia/include/core/SkAnnotation.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkColorSpace.h"
@@ -388,7 +389,7 @@ PlaybackParams::PlaybackParams(ImageProvider* image_provider,
       custom_callback(custom_callback),
       did_draw_op_callback(did_draw_op_callback) {}
 
-PlaybackParams::~PlaybackParams() {}
+PlaybackParams::~PlaybackParams() = default;
 
 PlaybackParams::PlaybackParams(const PlaybackParams& other) = default;
 PlaybackParams& PlaybackParams::operator=(const PlaybackParams& other) =
@@ -1915,7 +1916,7 @@ void SaveLayerAlphaOp::Raster(const SaveLayerAlphaOp* op,
     paint->setAlpha(op->alpha * 255.0f);
   }
   SkCanvas::SaveLayerRec rec(unset ? nullptr : &op->bounds,
-                             base::OptionalOrNullptr(paint));
+                             base::OptionalToPtr(paint));
   if (params.save_layer_alpha_should_preserve_lcd_text.has_value() &&
       *params.save_layer_alpha_should_preserve_lcd_text) {
     rec.fSaveLayerFlags = SkCanvas::kPreserveLCDText_SaveLayerFlag |
@@ -2501,79 +2502,78 @@ PaintOp* PaintOp::Deserialize(const volatile void* input,
 }
 
 // static
-bool PaintOp::GetBounds(const PaintOp* op, SkRect* rect) {
-  DCHECK(op->IsDrawOp());
+bool PaintOp::GetBounds(const PaintOp& op, SkRect* rect) {
+  DCHECK(op.IsDrawOp());
 
-  switch (op->GetType()) {
+  switch (op.GetType()) {
     case PaintOpType::DrawColor:
       return false;
     case PaintOpType::DrawDRRect: {
-      auto* rect_op = static_cast<const DrawDRRectOp*>(op);
-      *rect = rect_op->outer.getBounds();
+      const auto& rect_op = static_cast<const DrawDRRectOp&>(op);
+      *rect = rect_op.outer.getBounds();
       rect->sort();
       return true;
     }
     case PaintOpType::DrawImage: {
-      auto* image_op = static_cast<const DrawImageOp*>(op);
-      *rect =
-          SkRect::MakeXYWH(image_op->left, image_op->top,
-                           image_op->image.width(), image_op->image.height());
+      const auto& image_op = static_cast<const DrawImageOp&>(op);
+      *rect = SkRect::MakeXYWH(image_op.left, image_op.top,
+                               image_op.image.width(), image_op.image.height());
       rect->sort();
       return true;
     }
     case PaintOpType::DrawImageRect: {
-      auto* image_rect_op = static_cast<const DrawImageRectOp*>(op);
-      *rect = image_rect_op->dst;
+      const auto& image_rect_op = static_cast<const DrawImageRectOp&>(op);
+      *rect = image_rect_op.dst;
       rect->sort();
       return true;
     }
     case PaintOpType::DrawIRect: {
-      auto* rect_op = static_cast<const DrawIRectOp*>(op);
-      *rect = SkRect::Make(rect_op->rect);
+      const auto& rect_op = static_cast<const DrawIRectOp&>(op);
+      *rect = SkRect::Make(rect_op.rect);
       rect->sort();
       return true;
     }
     case PaintOpType::DrawLine: {
-      auto* line_op = static_cast<const DrawLineOp*>(op);
-      rect->setLTRB(line_op->x0, line_op->y0, line_op->x1, line_op->y1);
+      const auto& line_op = static_cast<const DrawLineOp&>(op);
+      rect->setLTRB(line_op.x0, line_op.y0, line_op.x1, line_op.y1);
       rect->sort();
       return true;
     }
     case PaintOpType::DrawOval: {
-      auto* oval_op = static_cast<const DrawOvalOp*>(op);
-      *rect = oval_op->oval;
+      const auto& oval_op = static_cast<const DrawOvalOp&>(op);
+      *rect = oval_op.oval;
       rect->sort();
       return true;
     }
     case PaintOpType::DrawPath: {
-      auto* path_op = static_cast<const DrawPathOp*>(op);
-      *rect = path_op->path.getBounds();
+      const auto& path_op = static_cast<const DrawPathOp&>(op);
+      *rect = path_op.path.getBounds();
       rect->sort();
       return true;
     }
     case PaintOpType::DrawRect: {
-      auto* rect_op = static_cast<const DrawRectOp*>(op);
-      *rect = rect_op->rect;
+      const auto& rect_op = static_cast<const DrawRectOp&>(op);
+      *rect = rect_op.rect;
       rect->sort();
       return true;
     }
     case PaintOpType::DrawRRect: {
-      auto* rect_op = static_cast<const DrawRRectOp*>(op);
-      *rect = rect_op->rrect.rect();
+      const auto& rect_op = static_cast<const DrawRRectOp&>(op);
+      *rect = rect_op.rrect.rect();
       rect->sort();
       return true;
     }
     case PaintOpType::DrawRecord:
       return false;
     case PaintOpType::DrawSkottie: {
-      auto* skottie_op = static_cast<const DrawSkottieOp*>(op);
-      *rect = skottie_op->dst;
+      const auto& skottie_op = static_cast<const DrawSkottieOp&>(op);
+      *rect = skottie_op.dst;
       rect->sort();
       return true;
     }
     case PaintOpType::DrawTextBlob: {
-      auto* text_op = static_cast<const DrawTextBlobOp*>(op);
-      *rect = text_op->blob->bounds().makeOffset(text_op->x, text_op->y);
+      const auto& text_op = static_cast<const DrawTextBlobOp&>(op);
+      *rect = text_op.blob->bounds().makeOffset(text_op.x, text_op.y);
       rect->sort();
       return true;
     }
@@ -2584,20 +2584,20 @@ bool PaintOp::GetBounds(const PaintOp* op, SkRect* rect) {
 }
 
 // static
-gfx::Rect PaintOp::ComputePaintRect(const PaintOp* op,
+gfx::Rect PaintOp::ComputePaintRect(const PaintOp& op,
                                     const SkRect& clip_rect,
                                     const SkMatrix& ctm) {
   gfx::Rect transformed_rect;
   SkRect op_rect;
-  if (!op->IsDrawOp() || !PaintOp::GetBounds(op, &op_rect)) {
+  if (!op.IsDrawOp() || !PaintOp::GetBounds(op, &op_rect)) {
     // If we can't provide a conservative bounding rect for the op, assume it
     // covers the complete current clip.
     // TODO(khushalsagar): See if we can do something better for non-draw ops.
     transformed_rect = gfx::ToEnclosingRect(gfx::SkRectToRectF(clip_rect));
   } else {
     const PaintFlags* flags =
-        op->IsPaintOpWithFlags()
-            ? &(static_cast<const PaintOpWithFlags*>(op)->flags)
+        op.IsPaintOpWithFlags()
+            ? &(static_cast<const PaintOpWithFlags&>(op).flags)
             : nullptr;
     SkRect paint_rect = MapRect(ctm, op_rect);
     if (flags) {
@@ -2628,8 +2628,8 @@ gfx::Rect PaintOp::ComputePaintRect(const PaintOp* op,
 }
 
 // static
-bool PaintOp::QuickRejectDraw(const PaintOp* op, const SkCanvas* canvas) {
-  if (!op->IsDrawOp())
+bool PaintOp::QuickRejectDraw(const PaintOp& op, const SkCanvas* canvas) {
+  if (!op.IsDrawOp())
     return false;
 
   SkRect rect;
@@ -2638,8 +2638,8 @@ bool PaintOp::QuickRejectDraw(const PaintOp* op, const SkCanvas* canvas) {
   if (!rect.isFinite())
     return true;
 
-  if (op->IsPaintOpWithFlags()) {
-    SkPaint paint = static_cast<const PaintOpWithFlags*>(op)->flags.ToSkPaint();
+  if (op.IsPaintOpWithFlags()) {
+    SkPaint paint = static_cast<const PaintOpWithFlags&>(op).flags.ToSkPaint();
     if (!paint.canComputeFastBounds())
       return false;
     // canvas->quickReject tried to be very fast, and sometimes give a false
@@ -2658,23 +2658,23 @@ bool PaintOp::QuickRejectDraw(const PaintOp* op, const SkCanvas* canvas) {
 }
 
 // static
-bool PaintOp::OpHasDiscardableImages(const PaintOp* op) {
-  if (op->IsPaintOpWithFlags() && static_cast<const PaintOpWithFlags*>(op)
-                                      ->HasDiscardableImagesFromFlags()) {
+bool PaintOp::OpHasDiscardableImages(const PaintOp& op) {
+  if (op.IsPaintOpWithFlags() && static_cast<const PaintOpWithFlags&>(op)
+                                     .HasDiscardableImagesFromFlags()) {
     return true;
   }
 
-  if (op->GetType() == PaintOpType::DrawImage &&
-      static_cast<const DrawImageOp*>(op)->HasDiscardableImages()) {
+  if (op.GetType() == PaintOpType::DrawImage &&
+      static_cast<const DrawImageOp&>(op).HasDiscardableImages()) {
     return true;
-  } else if (op->GetType() == PaintOpType::DrawImageRect &&
-             static_cast<const DrawImageRectOp*>(op)->HasDiscardableImages()) {
+  } else if (op.GetType() == PaintOpType::DrawImageRect &&
+             static_cast<const DrawImageRectOp&>(op).HasDiscardableImages()) {
     return true;
-  } else if (op->GetType() == PaintOpType::DrawRecord &&
-             static_cast<const DrawRecordOp*>(op)->HasDiscardableImages()) {
+  } else if (op.GetType() == PaintOpType::DrawRecord &&
+             static_cast<const DrawRecordOp&>(op).HasDiscardableImages()) {
     return true;
-  } else if (op->GetType() == PaintOpType::DrawSkottie &&
-             static_cast<const DrawSkottieOp*>(op)->HasDiscardableImages()) {
+  } else if (op.GetType() == PaintOpType::DrawSkottie &&
+             static_cast<const DrawSkottieOp&>(op).HasDiscardableImages()) {
     return true;
   }
 
@@ -2778,8 +2778,7 @@ DrawImageOp::DrawImageOp(const PaintImage& image, SkScalar left, SkScalar top)
     : PaintOpWithFlags(kType, PaintFlags()),
       image(image),
       left(left),
-      top(top),
-      sampling(SkSamplingOptions()) {}
+      top(top) {}
 
 DrawImageOp::DrawImageOp(const PaintImage& image,
                          SkScalar left,
@@ -2808,7 +2807,6 @@ DrawImageRectOp::DrawImageRectOp(const PaintImage& image,
       image(image),
       src(src),
       dst(dst),
-      sampling(SkSamplingOptions()),
       constraint(constraint) {}
 
 DrawImageRectOp::DrawImageRectOp(const PaintImage& image,
@@ -2893,12 +2891,14 @@ DrawTextBlobOp::~DrawTextBlobOp() = default;
 PaintOpBuffer::CompositeIterator::CompositeIterator(
     const PaintOpBuffer* buffer,
     const std::vector<size_t>* offsets)
-    : using_offsets_(!!offsets) {
+    : iter_(offsets == nullptr ? absl::variant<Iterator, OffsetIterator>(
+                                     absl::in_place_type<Iterator>,
+                                     buffer)
+                               : absl::variant<Iterator, OffsetIterator>(
+                                     absl::in_place_type<OffsetIterator>,
+                                     buffer,
+                                     offsets)) {
   DCHECK(!buffer->are_ops_destroyed());
-  if (using_offsets_)
-    offset_iter_.emplace(buffer, offsets);
-  else
-    iter_.emplace(buffer);
 }
 
 PaintOpBuffer::CompositeIterator::CompositeIterator(
@@ -2951,8 +2951,8 @@ PaintOpBuffer& PaintOpBuffer::operator=(PaintOpBuffer&& other) {
 
 void PaintOpBuffer::Reset() {
   if (!are_ops_destroyed_) {
-    for (auto* op : Iterator(this)) {
-      op->DestroyThis();
+    for (PaintOp& op : Iterator(this)) {
+      op.DestroyThis();
     }
   }
 
@@ -2990,7 +2990,7 @@ static const PaintOp* GetNestedSingleDrawingOp(const PaintOp* op) {
 
     // Recurse into the single-op DrawRecordOp and make sure it's a
     // drawing op.
-    op = draw_record_op->record->GetFirstOp();
+    op = &draw_record_op->record->GetFirstOp();
     if (!op->IsDrawOp())
       return nullptr;
   }
@@ -3085,9 +3085,9 @@ const PaintOp* PaintOpBuffer::PlaybackFoldingIterator::NextUnfoldedOp() {
   }
   if (!iter_)
     return nullptr;
-  const PaintOp* op = *iter_;
+  const PaintOp& op = *iter_;
   ++iter_;
-  return op;
+  return &op;
 }
 
 void PaintOpBuffer::Playback(SkCanvas* canvas,
@@ -3125,7 +3125,7 @@ void PaintOpBuffer::Playback(SkCanvas* canvas,
       save_layer_alpha_should_preserve_lcd_text;
   new_params.is_analyzing = params.is_analyzing;
   for (PlaybackFoldingIterator iter(this, offsets); iter; ++iter) {
-    const PaintOp* op = *iter;
+    const PaintOp& op = *iter;
 
     // This is an optimization to replicate the behaviour in SkCanvas
     // which rejects ops that draw outside the current clip. In the
@@ -3138,17 +3138,17 @@ void PaintOpBuffer::Playback(SkCanvas* canvas,
     if (skip_op)
       continue;
 
-    if (op->IsPaintOpWithFlags()) {
-      const auto* flags_op = static_cast<const PaintOpWithFlags*>(op);
+    if (op.IsPaintOpWithFlags()) {
+      const auto& flags_op = static_cast<const PaintOpWithFlags&>(op);
       auto* context = canvas->recordingContext();
       const ScopedRasterFlags scoped_flags(
-          &flags_op->flags, new_params.image_provider, canvas->getTotalMatrix(),
+          &flags_op.flags, new_params.image_provider, canvas->getTotalMatrix(),
           context ? context->maxTextureSize() : 0, iter.alpha() / 255.0f);
       if (const auto* raster_flags = scoped_flags.flags())
-        flags_op->RasterWithFlags(canvas, raster_flags, new_params);
+        flags_op.RasterWithFlags(canvas, raster_flags, new_params);
     } else {
       DCHECK_EQ(iter.alpha(), 255);
-      op->Raster(canvas, new_params);
+      op.Raster(canvas, new_params);
     }
 
     if (!new_params.did_draw_op_callback.is_null())
@@ -3297,11 +3297,11 @@ bool PaintOpBuffer::operator==(const PaintOpBuffer& other) const {
   if (has_discardable_images_ != other.has_discardable_images_)
     return false;
 
-  auto left_iter = Iterator(this);
-  auto right_iter = Iterator(&other);
+  Iterator left_iter(this);
+  Iterator right_iter(&other);
 
   for (; left_iter != left_iter.end(); ++left_iter, ++right_iter) {
-    if (**left_iter != **right_iter)
+    if (*left_iter != *right_iter)
       return false;
   }
 

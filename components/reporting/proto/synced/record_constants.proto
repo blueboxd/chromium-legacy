@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -77,6 +77,13 @@ enum Destination {
 
   // |LOCK_UNLOCK_EVENTS| is for lock/unlock events.
   LOCK_UNLOCK_EVENTS = 21;
+
+  // |CROS_SECURITY_AGENT| is for events that starts the secagentd agent or
+  // indicates that it is running.
+  CROS_SECURITY_AGENT = 22;
+
+  // |CROS_SECURITY_PROCESS| is for events that exec or terminate process.
+  CROS_SECURITY_PROCESS = 23;
 
   reserved 8;
 }

@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -316,7 +316,6 @@ static std::set<net::HostPortPair> ParseTargetDiscoveryPreferenceValue(
   std::set<net::HostPortPair> targets;
   if (!preferenceValue || preferenceValue->empty())
     return targets;
-  std::string address;
   for (const auto& address : *preferenceValue) {
     if (!address.is_string())
       continue;
@@ -361,8 +360,7 @@ void DevToolsAndroidBridge::CreateDeviceProviders() {
   PrefService* service = profile_->GetPrefs();
   const base::Value::List* targets =
       service->GetBoolean(prefs::kDevToolsDiscoverTCPTargetsEnabled)
-          ? std::addressof(
-                service->GetValueList(prefs::kDevToolsTCPDiscoveryConfig))
+          ? std::addressof(service->GetList(prefs::kDevToolsTCPDiscoveryConfig))
           : nullptr;
   scoped_refptr<TCPDeviceProvider> provider = CreateTCPDeviceProvider(targets);
   if (tcp_provider_callback_)

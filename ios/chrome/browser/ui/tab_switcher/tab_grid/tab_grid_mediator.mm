@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,29 +6,29 @@
 
 #import <MobileCoreServices/UTCoreTypes.h>
 #import <UIKit/UIKit.h>
-#include <memory>
+#import <memory>
 
-#include "base/bind.h"
-#include "base/metrics/histogram_functions.h"
-#include "base/metrics/histogram_macros.h"
-#include "base/metrics/user_metrics.h"
-#include "base/metrics/user_metrics_action.h"
-#include "base/scoped_multi_source_observation.h"
-#include "base/strings/stringprintf.h"
-#include "base/strings/sys_string_conversions.h"
-#include "components/bookmarks/browser/bookmark_model.h"
+#import "base/bind.h"
+#import "base/metrics/histogram_functions.h"
+#import "base/metrics/histogram_macros.h"
+#import "base/metrics/user_metrics.h"
+#import "base/metrics/user_metrics_action.h"
+#import "base/scoped_multi_source_observation.h"
+#import "base/strings/stringprintf.h"
+#import "base/strings/sys_string_conversions.h"
+#import "components/bookmarks/browser/bookmark_model.h"
 #import "components/bookmarks/common/bookmark_pref_names.h"
-#include "components/favicon/ios/web_favicon_driver.h"
+#import "components/favicon/ios/web_favicon_driver.h"
 #import "components/prefs/pref_service.h"
-#include "components/sessions/core/tab_restore_service.h"
-#include "ios/chrome/browser/bookmarks/bookmark_model_factory.h"
-#include "ios/chrome/browser/browser_state/chrome_browser_state.h"
-#include "ios/chrome/browser/chrome_url_constants.h"
+#import "components/sessions/core/tab_restore_service.h"
+#import "ios/chrome/browser/bookmarks/bookmark_model_factory.h"
+#import "ios/chrome/browser/browser_state/chrome_browser_state.h"
+#import "ios/chrome/browser/chrome_url_constants.h"
 #import "ios/chrome/browser/chrome_url_util.h"
-#import "ios/chrome/browser/commerce/price_alert_util.h"
 #import "ios/chrome/browser/commerce/shopping_persisted_data_tab_helper.h"
 #import "ios/chrome/browser/drag_and_drop/drag_item_util.h"
-#include "ios/chrome/browser/main/browser.h"
+#import "ios/chrome/browser/flags/system_flags.h"
+#import "ios/chrome/browser/main/browser.h"
 #import "ios/chrome/browser/main/browser_list.h"
 #import "ios/chrome/browser/main/browser_list_factory.h"
 #import "ios/chrome/browser/main/browser_util.h"
@@ -37,7 +37,6 @@
 #import "ios/chrome/browser/snapshots/snapshot_cache.h"
 #import "ios/chrome/browser/snapshots/snapshot_cache_observer.h"
 #import "ios/chrome/browser/snapshots/snapshot_tab_helper.h"
-#include "ios/chrome/browser/system_flags.h"
 #import "ios/chrome/browser/tabs/tab_title_util.h"
 #import "ios/chrome/browser/tabs_search/tabs_search_service.h"
 #import "ios/chrome/browser/tabs_search/tabs_search_service_factory.h"
@@ -53,15 +52,15 @@
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/grid/grid_item.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_switcher_item.h"
 #import "ios/chrome/browser/ui/util/url_with_title.h"
-#include "ios/chrome/browser/web_state_list/web_state_list.h"
+#import "ios/chrome/browser/web_state_list/web_state_list.h"
 #import "ios/chrome/browser/web_state_list/web_state_list_observer_bridge.h"
 #import "ios/chrome/browser/web_state_list/web_state_list_serialization.h"
-#include "ios/chrome/browser/web_state_list/web_state_opener.h"
+#import "ios/chrome/browser/web_state_list/web_state_opener.h"
 #import "ios/web/public/navigation/navigation_manager.h"
 #import "ios/web/public/web_state.h"
 #import "ios/web/public/web_state_observer_bridge.h"
 #import "net/base/mac/url_conversions.h"
-#include "ui/gfx/image/image.h"
+#import "ui/gfx/image/image.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -420,8 +419,14 @@ Browser* GetBrowserForTabWithId(BrowserList* browser_list,
                          }];
   }
 
-  if (IsPriceAlertsEnabled())
-    LogPriceDropMetrics(itemWebStateList->GetWebStateAt(index));
+  web::WebState* selectedWebState = itemWebStateList->GetWebStateAt(index);
+  LogPriceDropMetrics(selectedWebState);
+
+  base::TimeDelta timeSinceLastActivation =
+      base::Time::Now() - selectedWebState->GetLastActiveTime();
+  base::UmaHistogramCustomTimes(
+      "IOS.TabGrid.TabSelected.TimeSinceLastActivation",
+      timeSinceLastActivation, base::Minutes(1), base::Days(24), 50);
 
   // Don't attempt a no-op activation. Normally this is not an issue, but it's
   // possible that this method (-selectItemWithID:) is being called as part of

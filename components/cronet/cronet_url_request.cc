@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -404,7 +404,8 @@ void CronetURLRequest::NetworkTasks::MaybeReportMetrics() {
   url_request_->PopulateNetErrorDetails(&net_error_details);
   callback_->OnMetricsCollected(
       metrics.request_start_time, metrics.request_start,
-      metrics.connect_timing.dns_start, metrics.connect_timing.dns_end,
+      metrics.connect_timing.domain_lookup_start,
+      metrics.connect_timing.domain_lookup_end,
       metrics.connect_timing.connect_start, metrics.connect_timing.connect_end,
       metrics.connect_timing.ssl_start, metrics.connect_timing.ssl_end,
       metrics.send_start, metrics.send_end, metrics.push_start,

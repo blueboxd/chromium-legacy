@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -121,6 +121,9 @@ bool IsTryingToQuit();
 // Allows setting a fake shutdown type for testing purposes.
 base::AutoReset<ShutdownType> SetShutdownTypeForTesting(
     ShutdownType shutdown_type);
+
+// Allows resetting the shutdown globals for testing purposes.
+void ResetShutdownGlobalsForTesting();
 
 }  // namespace browser_shutdown
 

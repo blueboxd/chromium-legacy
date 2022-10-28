@@ -1,11 +1,10 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #ifndef EXTENSIONS_BROWSER_API_MESSAGING_MESSAGE_PORT_H_
 #define EXTENSIONS_BROWSER_API_MESSAGING_MESSAGE_PORT_H_
 
-#include <memory>
 #include <string>
 
 #include "base/values.h"
@@ -66,7 +65,7 @@ class MessagePort {
   // Notifies the port that the channel has been opened.
   virtual void DispatchOnConnect(
       const std::string& channel_name,
-      std::unique_ptr<base::DictionaryValue> source_tab,
+      absl::optional<base::Value::Dict> source_tab,
       const ExtensionApiFrameIdMap::FrameData& source_frame,
       int guest_process_id,
       int guest_render_frame_routing_id,

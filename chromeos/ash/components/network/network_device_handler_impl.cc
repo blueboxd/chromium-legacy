@@ -1,4 +1,4 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -466,10 +466,10 @@ void NetworkDeviceHandlerImpl::ApplyUseAttachApnToShill() {
        it != list.end(); ++it) {
     const DeviceState* device_state = *it;
 
-    SetDevicePropertyInternal(
-        device_state->path(), shill::kUseAttachAPNProperty,
-        base::Value(features::ShouldUseAttachApn()), base::DoNothing(),
-        network_handler::ErrorCallback());
+    SetDevicePropertyInternal(device_state->path(),
+                              shill::kUseAttachAPNProperty,
+                              /*value=*/base::Value(true), base::DoNothing(),
+                              network_handler::ErrorCallback());
   }
 }
 

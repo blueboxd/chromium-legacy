@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -32,7 +32,7 @@ namespace {
 
 class MockDeviceSettingsObserver : public DeviceSettingsService::Observer {
  public:
-  virtual ~MockDeviceSettingsObserver() {}
+  ~MockDeviceSettingsObserver() override {}
 
   MOCK_METHOD0(OwnershipStatusChanged, void());
   MOCK_METHOD0(DeviceSettingsUpdated, void());
@@ -243,7 +243,8 @@ TEST_F(DeviceSettingsServiceTest, OwnershipStatus) {
             device_settings_service_->GetOwnershipStatus());
   EXPECT_EQ(DeviceSettingsService::OWNERSHIP_TAKEN, ownership_status_);
 
-  owner_key_util_->SetPrivateKey(device_policy_->GetSigningKey());
+  owner_key_util_->ImportPrivateKeyAndSetPublicKey(
+      device_policy_->GetSigningKey());
   InitOwner(AccountId::FromUserEmail(device_policy_->policy_data().username()),
             true);
   device_settings_service_->GetOwnershipStatusAsync(base::BindOnce(
@@ -326,7 +327,8 @@ TEST_F(DeviceSettingsServiceTest, OwnerPrivateKeyInTPMToken) {
   EXPECT_EQ(DeviceSettingsService::OWNERSHIP_TAKEN,
             device_settings_service_->GetOwnershipStatus());
 
-  owner_key_util_->SetPrivateKey(device_policy_->GetSigningKey());
+  owner_key_util_->ImportPrivateKeyAndSetPublicKey(
+      device_policy_->GetSigningKey());
   service->OnTPMTokenReady();
   FlushDeviceSettings();
 
@@ -364,7 +366,8 @@ TEST_F(DeviceSettingsServiceTest, OnTPMTokenReadyForOwner) {
             device_settings_service_->GetOwnershipStatus());
   EXPECT_FALSE(is_owner_set_);
 
-  owner_key_util_->SetPrivateKey(device_policy_->GetSigningKey());
+  owner_key_util_->ImportPrivateKeyAndSetPublicKey(
+      device_policy_->GetSigningKey());
   service->OnTPMTokenReady();
   FlushDeviceSettings();
 
@@ -388,7 +391,8 @@ TEST_F(DeviceSettingsServiceTest, IsCurrentUserOwnerAsyncWithLoadedCerts) {
             device_settings_service_->GetOwnershipStatus());
 
   owner_key_util_->SetPublicKeyFromPrivateKey(*device_policy_->GetSigningKey());
-  owner_key_util_->SetPrivateKey(device_policy_->GetSigningKey());
+  owner_key_util_->ImportPrivateKeyAndSetPublicKey(
+      device_policy_->GetSigningKey());
 
   InitOwner(AccountId::FromUserEmail(device_policy_->policy_data().username()),
             true);
@@ -491,7 +495,8 @@ TEST_F(DeviceSettingsServiceTest, LoadDeferredDuringOwnershipEstablishment) {
   EXPECT_FALSE(is_owner_set_);
 
   // Load the private key and trigger a reload. Load operations should finish.
-  owner_key_util_->SetPrivateKey(device_policy_->GetSigningKey());
+  owner_key_util_->ImportPrivateKeyAndSetPublicKey(
+      device_policy_->GetSigningKey());
   service->OnTPMTokenReady();
   FlushDeviceSettings();
 

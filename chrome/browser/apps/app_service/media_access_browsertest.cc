@@ -1,4 +1,4 @@
-// Copyright (c) 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -29,18 +29,18 @@ using extensions::Extension;
 namespace {
 
 bool AccessingCamera(Profile* profile, const std::string& app_id) {
-  auto accessing_camera = apps::mojom::OptionalBool::kUnknown;
+  absl::optional<bool> accessing_camera;
   auto* proxy = apps::AppServiceProxyFactory::GetForProfile(profile);
   proxy->FlushMojoCallsForTesting();
   proxy->AppCapabilityAccessCache().ForOneApp(
       app_id, [&accessing_camera](const apps::CapabilityAccessUpdate& update) {
         accessing_camera = update.Camera();
       });
-  return accessing_camera == apps::mojom::OptionalBool::kTrue;
+  return accessing_camera.value_or(false);
 }
 
 bool AccessingMicrophone(Profile* profile, const std::string& app_id) {
-  auto accessing_microphone = apps::mojom::OptionalBool::kUnknown;
+  absl::optional<bool> accessing_microphone;
   auto* proxy = apps::AppServiceProxyFactory::GetForProfile(profile);
   proxy->FlushMojoCallsForTesting();
   proxy->AppCapabilityAccessCache().ForOneApp(
@@ -48,7 +48,7 @@ bool AccessingMicrophone(Profile* profile, const std::string& app_id) {
       [&accessing_microphone](const apps::CapabilityAccessUpdate& update) {
         accessing_microphone = update.Microphone();
       });
-  return accessing_microphone == apps::mojom::OptionalBool::kTrue;
+  return accessing_microphone.value_or(false);
 }
 
 class FakeMediaObserver : public MediaCaptureDevicesDispatcher::Observer {

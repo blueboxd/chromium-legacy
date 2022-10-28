@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -117,7 +117,7 @@ void ContentSettingsStore::SetExtensionContentSetting(
       map->DeleteValue(primary_pattern, secondary_pattern, type);
     } else {
       // Do not set a timestamp for extension settings.
-      map->SetValue(primary_pattern, secondary_pattern, type, base::Time(),
+      map->SetValue(primary_pattern, secondary_pattern, type,
                     base::Value(setting), {});
     }
   }

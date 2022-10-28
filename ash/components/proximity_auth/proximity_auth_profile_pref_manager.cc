@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -178,7 +178,7 @@ void ProximityAuthProfilePrefManager::SetHasShownLoginDisabledMessage(
 
 bool ProximityAuthProfilePrefManager::HasShownLoginDisabledMessage() const {
   const base::Value::Dict& all_user_prefs_dict =
-      local_state_->GetValueDict(prefs::kEasyUnlockLocalStateUserPrefs);
+      local_state_->GetDict(prefs::kEasyUnlockLocalStateUserPrefs);
   const base::Value::Dict* current_user_prefs =
       all_user_prefs_dict.FindDict(account_id_.GetUserEmail());
   if (!current_user_prefs) {

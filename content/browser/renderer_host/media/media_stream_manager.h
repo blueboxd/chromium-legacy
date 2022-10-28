@@ -37,7 +37,6 @@
 #include "base/gtest_prod_util.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
-#include "base/power_monitor/power_observer.h"
 #include "base/task/current_thread.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/threading/thread.h"
@@ -47,6 +46,7 @@
 #include "content/browser/media/capture_handle_manager.h"
 #include "content/browser/media/media_devices_util.h"
 #include "content/browser/renderer_host/media/media_devices_manager.h"
+#include "content/browser/renderer_host/media/media_stream_power_logger.h"
 #include "content/browser/renderer_host/media/media_stream_provider.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/desktop_media_id.h"
@@ -93,9 +93,7 @@ typedef std::map<const base::UnguessableToken, TransferStatus> TransferMap;
 // using callbacks.
 class CONTENT_EXPORT MediaStreamManager
     : public MediaStreamProviderListener,
-      public base::CurrentThread::DestructionObserver,
-      public base::PowerSuspendObserver,
-      public base::PowerThermalObserver {
+      public base::CurrentThread::DestructionObserver {
  public:
   // Callback to deliver the result of a media access request.
   using MediaAccessRequestCallback = base::OnceCallback<void(
@@ -138,9 +136,6 @@ class CONTENT_EXPORT MediaStreamManager
   // Callback for testing.
   using GenerateStreamTestCallback =
       base::OnceCallback<bool(const blink::StreamControls&)>;
-
-  using KeepDeviceAliveForTransferCallback =
-      base::OnceCallback<void(bool device_found)>;
 
   // Adds |message| to native logs for outstanding device requests, for use by
   // render processes hosts whose corresponding render processes are requesting
@@ -333,15 +328,6 @@ class CONTENT_EXPORT MediaStreamManager
   // webrtcLoggingPrivate API if requested.
   void AddLogMessageOnIOThread(const std::string& message);
 
-  // base::PowerSuspendObserver overrides.
-  void OnSuspend() override;
-  void OnResume() override;
-
-  // base::PowerThermalObserver overrides.
-  void OnThermalStateChange(
-      base::PowerThermalObserver::DeviceThermalState new_state) override;
-  void OnSpeedLimitChange(int new_limit) override;
-
   // Called by the tests to specify a factory for creating
   // FakeMediaStreamUIProxys to be used for generated streams.
   void UseFakeUIFactoryForTests(
@@ -425,14 +411,13 @@ class CONTENT_EXPORT MediaStreamManager
   void OnStreamStarted(const std::string& label);
 
   // Keeps MediaStreamDevice alive to allow transferred tracks to successfully
-  // find and clone it.
-  void KeepDeviceAliveForTransfer(
-      int render_process_id,
-      int render_frame_id,
-      int requester_id,
-      const base::UnguessableToken& session_id,
-      const base::UnguessableToken& transfer_id,
-      KeepDeviceAliveForTransferCallback keep_device_alive_cb);
+  // find and clone it. Returns whether the specified device was found and
+  // successfully kept alive.
+  bool KeepDeviceAliveForTransfer(int render_process_id,
+                                  int render_frame_id,
+                                  int requester_id,
+                                  const base::UnguessableToken& session_id,
+                                  const base::UnguessableToken& transfer_id);
 
   void OnRegionCaptureRectChanged(
       const base::UnguessableToken& session_id,
@@ -781,6 +766,9 @@ class CONTENT_EXPORT MediaStreamManager
       log_callbacks_;
 
   std::unique_ptr<AudioServiceListener> audio_service_listener_;
+
+  // Provider of system power change logging to the WebRTC logs.
+  MediaStreamPowerLogger power_logger_;
 
   GenerateStreamTestCallback generate_stream_test_callback_;
 };

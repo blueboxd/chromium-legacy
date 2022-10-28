@@ -1,4 +1,4 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -46,19 +46,11 @@ class ArcImeBridgeImpl : public ArcImeBridge, public mojom::ImeHost {
   void OnTextInputTypeChanged(ui::TextInputType type,
                               bool is_personalized_learning_allowed,
                               int32_t flags) override;
-  void OnCursorRectChangedDeprecated(const gfx::Rect& rect,
-                                     bool screen_coordinates) override;
   void OnCursorRectChanged(
       const gfx::Rect& rect,
       mojom::CursorCoordinateSpace coordinate_space) override;
   void OnCancelComposition() override;
   void ShowVirtualKeyboardIfEnabled() override;
-  void OnCursorRectChangedWithSurroundingTextDeprecated(
-      const gfx::Rect& rect,
-      const gfx::Range& text_range,
-      const std::string& text_in_range,
-      const gfx::Range& selection_range,
-      bool screen_coordinates) override;
   void OnCursorRectChangedWithSurroundingText(
       const gfx::Rect& rect,
       const gfx::Range& text_range,

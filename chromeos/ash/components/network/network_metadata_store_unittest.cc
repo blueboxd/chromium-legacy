@@ -1,4 +1,4 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -308,13 +308,13 @@ TEST_F(NetworkMetadataStoreTest, ConfigurationUpdated) {
   ASSERT_TRUE(metadata_store()->GetIsConfiguredBySync(kGuid));
   ASSERT_EQ(0, metadata_observer()->GetNumberOfUpdates(kGuid));
 
-  base::Value properties(base::Value::Type::DICTIONARY);
-  properties.SetKey(shill::kSecurityClassProperty,
-                    base::Value(shill::kSecurityClassPsk));
-  properties.SetKey(shill::kPassphraseProperty, base::Value("secret"));
+  base::Value::Dict properties;
+  properties.Set(shill::kSecurityClassProperty, shill::kSecurityClassPsk);
+  properties.Set(shill::kPassphraseProperty, "secret");
 
   network_configuration_handler()->SetShillProperties(
-      service_path, properties, base::DoNothing(), base::DoNothing());
+      service_path, base::Value(std::move(properties)), base::DoNothing(),
+      base::DoNothing());
   base::RunLoop().RunUntilIdle();
 
   ASSERT_TRUE(metadata_store()->GetLastConnectedTimestamp(kGuid).is_zero());
@@ -332,25 +332,25 @@ TEST_F(NetworkMetadataStoreTest, SharedConfigurationUpdatedByOtherUser) {
 
   LoginUser(secondary_user_);
 
-  base::Value other_properties(base::Value::Type::DICTIONARY);
-  other_properties.SetKey(shill::kAutoConnectProperty, base::Value(true));
-  other_properties.SetKey(shill::kProxyConfigProperty,
-                          base::Value("proxy_details"));
+  base::Value::Dict other_properties;
+  other_properties.Set(shill::kAutoConnectProperty, true);
+  other_properties.Set(shill::kProxyConfigProperty, "proxy_details");
 
   network_configuration_handler()->SetShillProperties(
-      service_path, other_properties, base::DoNothing(), base::DoNothing());
+      service_path, base::Value(std::move(other_properties)), base::DoNothing(),
+      base::DoNothing());
   base::RunLoop().RunUntilIdle();
 
   ASSERT_TRUE(metadata_store()->GetIsFieldExternallyModified(
       kGuid, shill::kProxyConfigProperty));
 
   LoginUser(primary_user_);
-  base::Value owner_properties(base::Value::Type::DICTIONARY);
-  owner_properties.SetKey(shill::kProxyConfigProperty,
-                          base::Value("new_proxy_details"));
+  base::Value::Dict owner_properties;
+  owner_properties.Set(shill::kProxyConfigProperty, "new_proxy_details");
 
   network_configuration_handler()->SetShillProperties(
-      service_path, owner_properties, base::DoNothing(), base::DoNothing());
+      service_path, base::Value(std::move(owner_properties)), base::DoNothing(),
+      base::DoNothing());
   base::RunLoop().RunUntilIdle();
 
   ASSERT_FALSE(metadata_store()->GetIsFieldExternallyModified(
@@ -369,11 +369,12 @@ TEST_F(NetworkMetadataStoreTest, SharedConfigurationUpdated_NewPassword) {
 
   ASSERT_FALSE(metadata_store()->GetIsCreatedByUser(kGuid));
 
-  base::Value other_properties(base::Value::Type::DICTIONARY);
-  other_properties.SetKey(shill::kPassphraseProperty, base::Value("pass2"));
+  base::Value::Dict other_properties;
+  other_properties.Set(shill::kPassphraseProperty, "pass2");
 
   network_configuration_handler()->SetShillProperties(
-      service_path, other_properties, base::DoNothing(), base::DoNothing());
+      service_path, base::Value(std::move(other_properties)), base::DoNothing(),
+      base::DoNothing());
   base::RunLoop().RunUntilIdle();
 
   ASSERT_TRUE(metadata_store()->GetIsCreatedByUser(kGuid));
@@ -487,19 +488,19 @@ TEST_F(NetworkMetadataStoreTest, NetworkCreationTimestampNonWifi) {
   scoped_feature_list.InitAndEnableFeature(features::kHiddenNetworkMigration);
   ConfigureService(kConfigEthernet);
   EXPECT_EQ(metadata_store()->UpdateAndRetrieveWiFiTimestamp(kGuid3),
-            base::Time::UnixEpoch());
+            base::Time::Now().UTCMidnight());
 }
 
 TEST_F(NetworkMetadataStoreTest, NetworkCreationTimestampNonExistentNetwork) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndEnableFeature(features::kHiddenNetworkMigration);
   EXPECT_EQ(metadata_store()->UpdateAndRetrieveWiFiTimestamp(kGuid),
-            base::Time::UnixEpoch());
+            base::Time::Now().UTCMidnight());
   // Fast forward 2 weeks to check that creation timestamp is always
   // base::Time::UnixEpoch() for non-existent networks.
   task_environment()->FastForwardBy(base::Days(14));
   EXPECT_EQ(metadata_store()->UpdateAndRetrieveWiFiTimestamp(kGuid),
-            base::Time::UnixEpoch());
+            base::Time::Now().UTCMidnight());
 }
 
 TEST_F(NetworkMetadataStoreTest, FixSyncedHiddenNetworks) {

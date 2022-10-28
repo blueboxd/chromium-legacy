@@ -1,4 +1,4 @@
-// Copyright 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -20,7 +20,6 @@
 #include "chrome/android/chrome_jni_headers/TabWebContentsDelegateAndroidImpl_jni.h"
 #include "chrome/browser/android/customtabs/client_data_header_web_contents_observer.h"
 #include "chrome/browser/android/framebust_intervention/framebust_blocked_delegate_android.h"
-#include "chrome/browser/android/hung_renderer_infobar_delegate.h"
 #include "chrome/browser/android/tab_android.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
@@ -108,17 +107,6 @@ JNI_TabWebContentsDelegateAndroidImpl_CreateJavaRect(JNIEnv* env,
       Java_TabWebContentsDelegateAndroidImpl_createRect(
           env, static_cast<int>(rect.x()), static_cast<int>(rect.y()),
           static_cast<int>(rect.right()), static_cast<int>(rect.bottom())));
-}
-
-infobars::InfoBar* FindHungRendererInfoBar(
-    infobars::ContentInfoBarManager* infobar_manager) {
-  DCHECK(infobar_manager);
-  for (size_t i = 0; i < infobar_manager->infobar_count(); ++i) {
-    infobars::InfoBar* infobar = infobar_manager->infobar_at(i);
-    if (infobar->delegate()->AsHungRendererInfoBarDelegate())
-      return infobar;
-  }
-  return nullptr;
 }
 
 void ShowFramebustBlockMessageInternal(content::WebContents* web_contents,
@@ -375,7 +363,7 @@ void TabWebContentsDelegateAndroid::AddNewContents(
     std::unique_ptr<WebContents> new_contents,
     const GURL& target_url,
     WindowOpenDisposition disposition,
-    const gfx::Rect& initial_rect,
+    const blink::mojom::WindowFeatures& window_features,
     bool user_gesture,
     bool* was_blocked) {
   // No code for this yet.
@@ -639,32 +627,6 @@ void JNI_TabWebContentsDelegateAndroidImpl_OnRendererUnresponsive(
       content::WebContents::FromJavaWebContents(java_web_contents);
   if (base::RandDouble() < 0.01)
     web_contents->GetPrimaryMainFrame()->GetProcess()->DumpProcessStack();
-
-  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableHungRendererInfoBar)) {
-    return;
-  }
-
-  infobars::ContentInfoBarManager* infobar_manager =
-      infobars::ContentInfoBarManager::FromWebContents(web_contents);
-  DCHECK(!FindHungRendererInfoBar(infobar_manager));
-  HungRendererInfoBarDelegate::Create(
-      infobar_manager, web_contents->GetPrimaryMainFrame()->GetProcess());
-}
-
-void JNI_TabWebContentsDelegateAndroidImpl_OnRendererResponsive(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& java_web_contents) {
-  content::WebContents* web_contents =
-          content::WebContents::FromJavaWebContents(java_web_contents);
-  infobars::ContentInfoBarManager* infobar_manager =
-      infobars::ContentInfoBarManager::FromWebContents(web_contents);
-  infobars::InfoBar* hung_renderer_infobar =
-      FindHungRendererInfoBar(infobar_manager);
-  if (!hung_renderer_infobar)
-    return;
-
-  infobar_manager->RemoveInfoBar(hung_renderer_infobar);
 }
 
 void JNI_TabWebContentsDelegateAndroidImpl_ShowFramebustBlockInfoBar(

@@ -1,28 +1,28 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ios/chrome/browser/gcm/ios_chrome_gcm_profile_service_factory.h"
+#import "ios/chrome/browser/gcm/ios_chrome_gcm_profile_service_factory.h"
 
-#include "base/bind.h"
-#include "base/memory/ptr_util.h"
-#include "base/memory/ref_counted.h"
-#include "base/no_destructor.h"
-#include "base/task/sequenced_task_runner.h"
-#include "base/task/thread_pool.h"
-#include "build/branding_buildflags.h"
-#include "components/gcm_driver/gcm_client_factory.h"
-#include "components/gcm_driver/gcm_profile_service.h"
-#include "components/keyed_service/ios/browser_state_dependency_manager.h"
-#include "ios/chrome/browser/application_context.h"
-#include "ios/chrome/browser/browser_state/chrome_browser_state.h"
-#include "ios/chrome/browser/signin/identity_manager_factory.h"
-#include "ios/chrome/common/channel_info.h"
-#include "ios/web/public/thread/web_task_traits.h"
-#include "ios/web/public/thread/web_thread.h"
-#include "mojo/public/cpp/bindings/pending_receiver.h"
-#include "services/network/public/cpp/shared_url_loader_factory.h"
-#include "services/network/public/mojom/proxy_resolving_socket.mojom.h"
+#import "base/bind.h"
+#import "base/memory/ptr_util.h"
+#import "base/memory/ref_counted.h"
+#import "base/no_destructor.h"
+#import "base/task/sequenced_task_runner.h"
+#import "base/task/thread_pool.h"
+#import "build/branding_buildflags.h"
+#import "components/gcm_driver/gcm_client_factory.h"
+#import "components/gcm_driver/gcm_profile_service.h"
+#import "components/keyed_service/ios/browser_state_dependency_manager.h"
+#import "ios/chrome/browser/application_context/application_context.h"
+#import "ios/chrome/browser/browser_state/chrome_browser_state.h"
+#import "ios/chrome/browser/signin/identity_manager_factory.h"
+#import "ios/chrome/common/channel_info.h"
+#import "ios/web/public/thread/web_task_traits.h"
+#import "ios/web/public/thread/web_thread.h"
+#import "mojo/public/cpp/bindings/pending_receiver.h"
+#import "services/network/public/cpp/shared_url_loader_factory.h"
+#import "services/network/public/mojom/proxy_resolving_socket.mojom.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -32,7 +32,7 @@ namespace {
 
 // Requests a network::mojom::ProxyResolvingSocketFactory on the UI thread. Note
 // that a WeakPtr of GCMProfileService is needed to detect when the KeyedService
-// shuts down, and avoid calling into |profile| which might have also been
+// shuts down, and avoid calling into `profile` which might have also been
 // destroyed.
 void RequestProxyResolvingSocketFactoryOnUIThread(
     web::BrowserState* context,

@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -34,9 +34,10 @@ FakeArcCameraClient* FakeArcCameraClient::Get() {
   return g_instance;
 }
 
-void FakeArcCameraClient::StartService(int fd,
-                                       const std::string& token,
-                                       VoidDBusMethodCallback callback) {
+void FakeArcCameraClient::StartService(
+    int fd,
+    const std::string& token,
+    chromeos::VoidDBusMethodCallback callback) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::BindOnce(std::move(callback), true));
 }

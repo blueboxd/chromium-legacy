@@ -1,28 +1,29 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #import "ios/chrome/browser/ui/first_run/welcome_to_chrome_view.h"
 
-#include <ostream>
+#import <ostream>
 
-#include "base/check_op.h"
-#include "base/i18n/rtl.h"
-#include "base/ios/ns_range.h"
-#include "base/notreached.h"
-#include "base/strings/sys_string_conversions.h"
+#import "base/check_op.h"
+#import "base/i18n/rtl.h"
+#import "base/ios/ns_range.h"
+#import "base/notreached.h"
+#import "base/strings/sys_string_conversions.h"
 #import "components/policy/core/common/policy_loader_ios_constants.h"
+#import "ios/chrome/browser/policy/policy_util.h"
 #import "ios/chrome/browser/ui/elements/text_view_selection_disabled.h"
-#include "ios/chrome/browser/ui/fancy_ui/primary_action_button.h"
-#include "ios/chrome/browser/ui/first_run/first_run_util.h"
-#include "ios/chrome/browser/ui/util/ui_util.h"
+#import "ios/chrome/browser/ui/fancy_ui/primary_action_button.h"
+#import "ios/chrome/browser/ui/first_run/first_run_util.h"
+#import "ios/chrome/browser/ui/util/ui_util.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
-#include "ios/chrome/common/string_util.h"
+#import "ios/chrome/common/string_util.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
-#include "ios/chrome/grit/ios_chromium_strings.h"
-#include "ios/chrome/grit/ios_strings.h"
-#include "ui/base/l10n/l10n_util.h"
-#include "url/gurl.h"
+#import "ios/chrome/grit/ios_chromium_strings.h"
+#import "ios/chrome/grit/ios_strings.h"
+#import "ui/base/l10n/l10n_util.h"
+#import "url/gurl.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -348,11 +349,6 @@ const char kTermsOfServiceUrl[] = "internal://terms-of-service";
   return _OKButton;
 }
 
-- (BOOL)isBrowserManaged {
-  return [[[NSUserDefaults standardUserDefaults]
-             dictionaryForKey:kPolicyLoaderIOSConfigurationKey] count] > 0;
-}
-
 #pragma mark - Layout
 
 - (void)willMoveToSuperview:(nullable UIView*)newSuperview {
@@ -370,7 +366,7 @@ const char kTermsOfServiceUrl[] = "internal://terms-of-service";
   [self.containerView addSubview:self.TOSTextView];
   [self.containerView addSubview:self.optInLabel];
   [self.containerView addSubview:self.checkBoxButton];
-  if ([self isBrowserManaged]) {
+  if (IsApplicationManagedByPlatform()) {
     [self.containerView addSubview:self.managedLabel];
     [self.containerView addSubview:self.enterpriseIcon];
   }
@@ -394,7 +390,7 @@ const char kTermsOfServiceUrl[] = "internal://terms-of-service";
   [self layoutTOSTextView];
   [self layoutOptInLabel];
   [self layoutCheckBoxButton];
-  if ([self isBrowserManaged]) {
+  if (IsApplicationManagedByPlatform()) {
     [self layoutManagedLabel];
     [self layoutEnterpriseIcon];
   }
@@ -540,11 +536,11 @@ const char kTermsOfServiceUrl[] = "internal://terms-of-service";
   // `kmanagedLabelPadding` or `kOptInLabelPadding` (depending if the browser is
   // managed) between `optInLabel` and `OKButton`.
   CGSize containerViewSize = self.containerView.bounds.size;
-  containerViewSize.height = [self isBrowserManaged]
+  containerViewSize.height = IsApplicationManagedByPlatform()
                                  ? CGRectGetMaxY(self.managedLabel.frame)
                                  : CGRectGetMaxY(self.checkBoxButton.frame);
 
-  CGFloat padding = [self isBrowserManaged]
+  CGFloat padding = IsApplicationManagedByPlatform()
                         ? kManagedLabelPadding[[self heightSizeClassIdiom]]
                         : kOptInLabelPadding[[self heightSizeClassIdiom]];
 
@@ -583,7 +579,7 @@ const char kTermsOfServiceUrl[] = "internal://terms-of-service";
   [self configureImageView];
   [self configureTOSTextView];
   [self configureOptInLabel];
-  if ([self isBrowserManaged]) {
+  if (IsApplicationManagedByPlatform()) {
     [self configureManagedLabel];
   }
   [self configureOKButton];

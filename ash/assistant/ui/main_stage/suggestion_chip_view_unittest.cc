@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -34,6 +34,7 @@
 #include "ui/views/controls/focus_ring.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/focus/focus_manager.h"
+#include "ui/views/test/views_test_utils.h"
 #include "ui/views/widget/widget.h"
 
 namespace ash {
@@ -145,8 +146,7 @@ TEST_F(SuggestionChipViewTest, DarkAndLightTheme) {
   views::Label* label = static_cast<views::Label*>(
       suggestion_chip_view->GetViewByID(kSuggestionChipViewLabel));
 
-  suggestion_chip_view->SetSize(kSuggestionChipViewSize);
-  views::FocusRing::Get(suggestion_chip_view)->Layout();
+  widget->SetSize(kSuggestionChipViewSize);
 
   // No background if dark and light theme is on.
   EXPECT_EQ(suggestion_chip_view->GetBackground(), nullptr);
@@ -164,6 +164,7 @@ TEST_F(SuggestionChipViewTest, DarkAndLightTheme) {
 
   // Focus the chip view and confirm that focus ring is rendered.
   suggestion_chip_view->RequestFocus();
+  views::test::RunScheduledLayout(views::FocusRing::Get(suggestion_chip_view));
   EXPECT_TRUE(
       cc::ExactPixelComparator(/*discard_alpha=*/false)
           .Compare(
@@ -210,6 +211,8 @@ TEST_F(SuggestionChipViewTest, DarkAndLightModeFlagOff) {
       /*enabled_features=*/{}, /*disabled_features=*/{
           chromeos::features::kDarkLightMode, features::kNotificationsRefresh,
           features::kProductivityLauncher});
+  // ColorProvider cache needs to be cleared to update for the feature flags.
+  ui::ColorProviderManager::Get().ResetColorProviderCache();
 
   auto widget = CreateFramelessTestWidget();
   auto* suggestion_chip_view =

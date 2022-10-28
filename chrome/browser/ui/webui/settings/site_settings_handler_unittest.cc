@@ -1,4 +1,4 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -59,6 +59,7 @@
 #include "components/permissions/object_permission_context_base.h"
 #include "components/permissions/permission_decision_auto_blocker.h"
 #include "components/permissions/permission_uma_util.h"
+#include "components/permissions/permission_util.h"
 #include "components/permissions/test/object_permission_context_base_mock_permission_observer.h"
 #include "components/permissions/test/permission_test_util.h"
 #include "components/services/app_service/public/cpp/app_registry_cache.h"
@@ -142,11 +143,17 @@ void ValidateSitesWithFps(
     if (first_party_sets.count(schemeful_site)) {
       // Ensure that the `fpsOwner` is set correctly and aligned with
       // |first_party_sets| mapping of site group owners.
-      ASSERT_EQ(first_party_sets[schemeful_site].Serialize(),
-                *site_group.GetDict().FindString("fpsOwner"));
+      std::string owner_etldplus1 =
+          first_party_sets[schemeful_site].GetURL().host();
+      ASSERT_EQ(owner_etldplus1, *site_group.GetDict().FindString("fpsOwner"));
+      if (owner_etldplus1 == "google.com") {
+        ASSERT_EQ(2, *site_group.GetDict().FindInt("fpsNumMembers"));
+      }
     } else {
-      // The site doesn't have `fpsOwner` set, `FindString` should return null.
+      // The site is not part of a FPS therefore doesn't have `fpsOwner` or
+      // `fpsNumMembers` set. `FindString` and `FindInt` should return null.
       ASSERT_FALSE(site_group.GetDict().FindString("fpsOwner"));
+      ASSERT_FALSE(site_group.GetDict().FindInt("fpsNumMembers"));
     }
   }
 }
@@ -485,21 +492,25 @@ class SiteSettingsHandlerTest : public testing::Test,
 
   void ValidateUsageInfo(const std::string& expected_usage_host,
                          const std::string& expected_usage_string,
-                         const std::string& expected_cookie_string) {
+                         const std::string& expected_cookie_string,
+                         const std::string& expected_fps_member_count_string) {
     const content::TestWebUI::CallData& data = *web_ui()->call_data().back();
     EXPECT_EQ("cr.webUIListenerCallback", data.function_name());
 
-    ASSERT_TRUE(data.arg1()->is_string());
-    EXPECT_EQ("usage-total-changed", data.arg1()->GetString());
+    ASSERT_TRUE(data.arg_nth(0)->is_string());
+    EXPECT_EQ("usage-total-changed", data.arg_nth(0)->GetString());
 
-    ASSERT_TRUE(data.arg2()->is_string());
-    EXPECT_EQ(expected_usage_host, data.arg2()->GetString());
+    ASSERT_TRUE(data.arg_nth(1)->is_string());
+    EXPECT_EQ(expected_usage_host, data.arg_nth(1)->GetString());
 
-    ASSERT_TRUE(data.arg3()->is_string());
-    EXPECT_EQ(expected_usage_string, data.arg3()->GetString());
+    ASSERT_TRUE(data.arg_nth(2)->is_string());
+    EXPECT_EQ(expected_usage_string, data.arg_nth(2)->GetString());
 
-    ASSERT_TRUE(data.arg4()->is_string());
-    EXPECT_EQ(expected_cookie_string, data.arg4()->GetString());
+    ASSERT_TRUE(data.arg_nth(3)->is_string());
+    EXPECT_EQ(expected_cookie_string, data.arg_nth(3)->GetString());
+
+    ASSERT_TRUE(data.arg_nth(4)->is_string());
+    EXPECT_EQ(expected_fps_member_count_string, data.arg_nth(4)->GetString());
   }
 
   void CreateIncognitoProfile() {
@@ -2549,16 +2560,18 @@ TEST_F(SiteSettingsHandlerTest, HandleClearEtldPlus1DataAndCookies) {
   auto remaining_host_nodes = GetHostNodes(GURL("https://www.example.com"));
 
   // example.com storage partitioned on other sites should still remain.
-  ASSERT_EQ(1u, remaining_host_nodes.size());
-  ASSERT_EQ(1u, remaining_host_nodes[0]->children().size());
-  const auto& storage_node = remaining_host_nodes[0]->children()[0];
-  ASSERT_EQ(CookieTreeNode::DetailedInfo::TYPE_COOKIES,
-            storage_node->GetDetailedInfo().node_type);
-  ASSERT_EQ(2u, storage_node->children().size());
-  for (const auto& cookie_node : storage_node->children()) {
-    const auto& cookie = cookie_node->GetDetailedInfo().cookie;
-    EXPECT_EQ("www.example.com", cookie->Domain());
-    EXPECT_TRUE(cookie->IsPartitioned());
+  {
+    ASSERT_EQ(1u, remaining_host_nodes.size());
+    ASSERT_EQ(1u, remaining_host_nodes[0]->children().size());
+    const auto& storage_node = remaining_host_nodes[0]->children()[0];
+    ASSERT_EQ(CookieTreeNode::DetailedInfo::TYPE_COOKIES,
+              storage_node->GetDetailedInfo().node_type);
+    ASSERT_EQ(2u, storage_node->children().size());
+    for (const auto& cookie_node : storage_node->children()) {
+      const auto& cookie = cookie_node->GetDetailedInfo().cookie;
+      EXPECT_EQ("www.example.com", cookie->Domain());
+      EXPECT_TRUE(cookie->IsPartitioned());
+    }
   }
 
   EXPECT_EQ(22u,
@@ -2957,6 +2970,20 @@ TEST_F(SiteSettingsHandlerTest, CookieSettingDescription) {
   ValidateCookieSettingUpdate(kBlocked(2), expected_call_index);
 }
 
+TEST_F(SiteSettingsHandlerTest, HandleGetFpsMembershipLabel) {
+  base::Value::List args;
+  args.Append("getFpsMembershipLabel");
+  args.Append(5);
+  args.Append("google.com");
+  handler()->HandleGetFpsMembershipLabel(args);
+  const content::TestWebUI::CallData& data = *web_ui()->call_data().back();
+
+  EXPECT_EQ("cr.webUIResponse", data.function_name());
+  EXPECT_EQ("getFpsMembershipLabel", data.arg1()->GetString());
+  ASSERT_TRUE(data.arg2()->GetBool());
+  EXPECT_EQ("Allowed for 5 google.com sites", data.arg3()->GetString());
+}
+
 TEST_F(SiteSettingsHandlerTest, HandleGetFormattedBytes) {
   const double size = 120000000000;
   base::Value::List get_args;
@@ -2974,6 +3001,19 @@ TEST_F(SiteSettingsHandlerTest, HandleGetFormattedBytes) {
 }
 
 TEST_F(SiteSettingsHandlerTest, HandleGetUsageInfo) {
+  base::flat_map<net::SchemefulSite, net::SchemefulSite> first_party_sets = {
+      {ConvertEtldToSchemefulSite("google.com"),
+       ConvertEtldToSchemefulSite("google.com")},
+      {ConvertEtldToSchemefulSite("google.com.au"),
+       ConvertEtldToSchemefulSite("google.com")},
+      {ConvertEtldToSchemefulSite("unrelated.com"),
+       ConvertEtldToSchemefulSite("unrelated.com")},
+  };
+
+  EXPECT_CALL(*mock_privacy_sandbox_service(), GetFirstPartySets())
+      .Times(3)
+      .WillRepeatedly(Return(first_party_sets));
+
   // Confirm that usage info only returns unpartitioned storage.
   SetUpCookiesTreeModel();
 
@@ -2984,13 +3024,20 @@ TEST_F(SiteSettingsHandlerTest, HandleGetUsageInfo) {
   args.Append("www.example.com");
   handler()->HandleFetchUsageTotal(args);
   handler()->OnGetUsageInfo();
-  ValidateUsageInfo("www.example.com", "2 B", "1 cookie");
+  ValidateUsageInfo("www.example.com", "2 B", "1 cookie", "");
 
   args.clear();
   args.Append("example.com");
   handler()->HandleFetchUsageTotal(args);
   handler()->OnGetUsageInfo();
-  ValidateUsageInfo("example.com", "", "1 cookie");
+  ValidateUsageInfo("example.com", "", "1 cookie", "");
+
+  args.clear();
+  args.Append("google.com");
+  handler()->HandleFetchUsageTotal(args);
+  handler()->OnGetUsageInfo();
+  ValidateUsageInfo("google.com", "", "2 cookies",
+                    "Allowed for 2 google.com sites");
 }
 
 TEST_F(SiteSettingsHandlerTest, NonTreeModelDeletion) {

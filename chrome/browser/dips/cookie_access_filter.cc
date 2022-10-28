@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -77,6 +77,12 @@ bool CookieAccessFilter::Filter(const std::vector<GURL>& urls,
 
   // Return true iff we consumed all the cookie accesses recorded by calls to
   // AddAccess().
-  return access_idx == accesses_.size() ||
-         (access_idx == accesses_.size() - 1 && matched);
+  if (access_idx == accesses_.size() ||
+      (access_idx == accesses_.size() - 1 && matched)) {
+    return true;
+  }
+
+  // Otherwise, fill the entire result vector with kUnknown and return false.
+  std::fill(result->begin(), result->end(), CookieAccessType::kUnknown);
+  return false;
 }

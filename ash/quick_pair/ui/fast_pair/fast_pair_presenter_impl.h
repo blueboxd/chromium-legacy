@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -110,6 +110,17 @@ class FastPairPresenterImpl : public FastPairPresenter {
                                            AssociateAccountCallback callback,
                                            DeviceMetadata* device_metadata,
                                            bool has_retryable_error);
+
+  // Store the device we are currently displaying a discovery notification
+  // for. In the Fast Pair flow, it is possible for a discovery notification to
+  // repeatedly appear for some devices, especially in the case of
+  // Subsequent Pairing when we are parsing multiple advertisements and finding
+  // a match each time. We only need this check for Discovery Notifications
+  // since the Error Notification and AssociateAccount notifications are
+  // triggered once per device action (e.g., pairing failed, classic Bluetooth
+  // pairing). Without this logic, the undesired 'cycle' behavior would occur
+  // for every advertisement parsed.
+  scoped_refptr<Device> device_with_discovery_notification_showing_;
 
   std::unique_ptr<FastPairNotificationController> notification_controller_;
   base::WeakPtrFactory<FastPairPresenterImpl> weak_pointer_factory_{this};

@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,7 +10,15 @@
 #include "chrome/browser/ui/webui/chromeos/system_web_dialog_delegate.h"
 #include "storage/browser/file_system/file_system_url.h"
 
+class Profile;
+
 namespace chromeos::cloud_upload {
+
+// Either OneDrive for the Office PWA or Drive for Web Drive editing.
+enum class UploadType {
+  kOneDrive,
+  kDrive,
+};
 
 // The string conversions of chromeos::cloud_upload::mojom::UserAction.
 const char kUserActionCancel[] = "cancel";
@@ -27,19 +35,23 @@ class CloudUploadDialog : public SystemWebDialogDelegate {
 
   // Creates and shows a new dialog for the cloud upload workflow. Returns true
   // if a new dialog has been effectively created.
-  static bool Show(const std::vector<storage::FileSystemURL>& file_urls);
+  static bool Show(Profile* profile,
+                   const std::vector<storage::FileSystemURL>& file_urls,
+                   const UploadType upload_type);
 
   void OnDialogClosed(const std::string& json_retval) override;
 
  protected:
-  explicit CloudUploadDialog(const storage::FileSystemURL& file_url,
-                             UploadRequestCallback callback);
+  CloudUploadDialog(const storage::FileSystemURL& file_url,
+                    const UploadType upload_type,
+                    UploadRequestCallback callback);
   std::string GetDialogArgs() const override;
   ~CloudUploadDialog() override;
   bool ShouldShowCloseButton() const override;
 
  private:
   const storage::FileSystemURL file_url_;
+  const UploadType upload_type_;
   UploadRequestCallback callback_;
 };
 

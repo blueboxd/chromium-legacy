@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -731,7 +731,7 @@ class NET_EXPORT URLRequest : public base::SupportsUserData {
   void SetRequestHeadersCallback(RequestHeadersCallback callback);
 
   // Sets a callback that will be invoked each time the response is received
-  // from the remote party with the actual response headers recieved. Note this
+  // from the remote party with the actual response headers received. Note this
   // is different from response_headers() getter in that in case of revalidation
   // request, the latter will return cached headers, while the callback will be
   // called with a response from the server.
@@ -955,7 +955,7 @@ class NET_EXPORT URLRequest : public base::SupportsUserData {
 
   // Never access methods of the |delegate_| directly. Always use the
   // Notify... methods for this.
-  raw_ptr<Delegate> delegate_;
+  raw_ptr<Delegate, DanglingUntriaged> delegate_;
 
   const bool is_for_websockets_;
 

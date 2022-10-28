@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -223,7 +223,7 @@ void ChromeAppDelegate::InitWebContents(content::WebContents* web_contents) {
   favicon::CreateContentFaviconDriverForWebContents(web_contents);
 
 #if BUILDFLAG(ENABLE_PRINTING)
-  printing::InitializePrinting(web_contents);
+  printing::InitializePrintingForWebContents(web_contents);
 #endif
 
   apps::AudioFocusWebContentsObserver::CreateForWebContents(web_contents);
@@ -272,7 +272,7 @@ void ChromeAppDelegate::AddNewContents(
     std::unique_ptr<content::WebContents> new_contents,
     const GURL& target_url,
     WindowOpenDisposition disposition,
-    const gfx::Rect& initial_rect,
+    const blink::mojom::WindowFeatures& window_features,
     bool user_gesture) {
   if (!disable_external_open_for_testing_) {
     // We don't really want to open a window for |new_contents|, but we need to
@@ -292,7 +292,7 @@ void ChromeAppDelegate::AddNewContents(
                     ? disposition
                     : WindowOpenDisposition::NEW_FOREGROUND_TAB;
   chrome::AddWebContents(displayer.browser(), nullptr, std::move(new_contents),
-                         target_url, disposition, initial_rect);
+                         target_url, disposition, window_features);
 }
 
 void ChromeAppDelegate::RunFileChooser(

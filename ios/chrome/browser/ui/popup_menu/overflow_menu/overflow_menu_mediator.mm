@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -53,7 +53,7 @@
 #import "ios/chrome/browser/ui/default_promo/default_browser_utils.h"
 #import "ios/chrome/browser/ui/icons/action_icon.h"
 #import "ios/chrome/browser/ui/icons/chrome_symbol.h"
-#import "ios/chrome/browser/ui/ntp/feed_metrics_recorder.h"
+#import "ios/chrome/browser/ui/ntp/metrics/feed_metrics_recorder.h"
 #import "ios/chrome/browser/ui/popup_menu/overflow_menu/destination_usage_history/destination_usage_history.h"
 #import "ios/chrome/browser/ui/popup_menu/overflow_menu/feature_flags.h"
 #import "ios/chrome/browser/ui/popup_menu/overflow_menu/overflow_menu_constants.h"
@@ -67,8 +67,7 @@
 #import "ios/chrome/browser/web_state_list/web_state_list_observer_bridge.h"
 #import "ios/chrome/browser/window_activities/window_activity_helpers.h"
 #import "ios/chrome/grit/ios_strings.h"
-#import "ios/public/provider/chrome/browser/chrome_browser_provider.h"
-#import "ios/public/provider/chrome/browser/user_feedback/user_feedback_provider.h"
+#import "ios/public/provider/chrome/browser/user_feedback/user_feedback_api.h"
 #import "ios/web/common/user_agent.h"
 #import "ios/web/public/js_messaging/web_frame.h"
 #import "ios/web/public/js_messaging/web_frame_util.h"
@@ -99,9 +98,10 @@ OverflowMenuAction* CreateOverflowMenuAction(int nameID,
                                              NSString* imageName,
                                              NSString* accessibilityID,
                                              Handler handler) {
+  DCHECK(!UseSymbols());
   NSString* name = l10n_util::GetNSString(nameID);
   return [[OverflowMenuAction alloc] initWithName:name
-                                          uiImage:[UIImage imageNamed:imageName]
+                                            image:[UIImage imageNamed:imageName]
                           accessibilityIdentifier:accessibilityID
                                enterpriseDisabled:NO
                                           handler:handler];
@@ -124,7 +124,7 @@ OverflowMenuAction* CreateOverflowMenuAction(int nameID,
           imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
 
   return [[OverflowMenuAction alloc] initWithName:name
-                                          uiImage:symbolImage
+                                            image:symbolImage
                           accessibilityIdentifier:accessibilityID
                                enterpriseDisabled:NO
                                           handler:handler];
@@ -138,7 +138,7 @@ OverflowMenuFooter* CreateOverflowMenuManagedFooter(int nameID,
   NSString* link = l10n_util::GetNSString(linkID);
   return [[OverflowMenuFooter alloc] initWithName:name
                                              link:link
-                                        imageName:imageName
+                                            image:[UIImage imageNamed:imageName]
                           accessibilityIdentifier:kTextMenuEnterpriseInfo
                                           handler:handler];
 }
@@ -578,7 +578,7 @@ OverflowMenuFooter* CreateOverflowMenuManagedFooter(int nameID,
 
       OverflowMenuAction* action =
           [[OverflowMenuAction alloc] initWithName:name
-                                           uiImage:symbolImage
+                                             image:symbolImage
                            accessibilityIdentifier:kToolsMenuFollow
                                 enterpriseDisabled:NO
                                            handler:^{
@@ -704,7 +704,7 @@ OverflowMenuFooter* CreateOverflowMenuManagedFooter(int nameID,
 
       OverflowMenuAction* action = [[OverflowMenuAction alloc]
                      initWithName:name
-                          uiImage:[UIImage
+                            image:[UIImage
                                       imageNamed:@"overflow_menu_action_follow"]
           accessibilityIdentifier:kToolsMenuFollow
                enterpriseDisabled:NO
@@ -847,7 +847,7 @@ OverflowMenuFooter* CreateOverflowMenuManagedFooter(int nameID,
 
   OverflowMenuDestination* result = [[OverflowMenuDestination alloc]
                  initWithName:name
-                      uiImage:[UIImage imageNamed:imageName]
+                        image:[UIImage imageNamed:imageName]
       accessibilityIdentifier:accessibilityID
            enterpriseDisabled:NO
                       handler:handlerWithMetrics];
@@ -943,7 +943,9 @@ OverflowMenuFooter* CreateOverflowMenuManagedFooter(int nameID,
     ];
   }
 
-  if (IsNewOverflowMenuCBDActionEnabled()) {
+  // Clear Browsing Data Action is not relevant in incognito, so don't show it.
+  // History is also hidden for similar reasons.
+  if (IsNewOverflowMenuCBDActionEnabled() && !self.isIncognito) {
     self.pageActionsGroup.actions = [@[ self.clearBrowsingDataAction ]
         arrayByAddingObjectsFromArray:basePageActions];
   } else {
@@ -957,9 +959,7 @@ OverflowMenuFooter* CreateOverflowMenuManagedFooter(int nameID,
     [helpActions addObject:self.settingsAction];
   }
 
-  if (ios::GetChromeBrowserProvider()
-          .GetUserFeedbackProvider()
-          ->IsUserFeedbackEnabled()) {
+  if (ios::provider::IsUserFeedbackSupported()) {
     [helpActions addObject:self.reportIssueAction];
   }
 
@@ -1246,7 +1246,8 @@ OverflowMenuFooter* CreateOverflowMenuManagedFooter(int nameID,
     __weak __typeof(self) weakSelf = self;
     self.followAction.name = l10n_util::GetNSStringF(
         IDS_IOS_TOOLS_MENU_UNFOLLOW, base::SysNSStringToUTF16(domainName));
-    self.followAction.storedImageName = @"overflow_menu_action_unfollow";
+    self.followAction.storedImage =
+        [UIImage imageNamed:@"overflow_menu_action_unfollow"];
     self.followAction.handler = ^{
       [weakSelf unfollowWebPage:webPageURLs];
     };
@@ -1254,7 +1255,8 @@ OverflowMenuFooter* CreateOverflowMenuManagedFooter(int nameID,
     __weak __typeof(self) weakSelf = self;
     self.followAction.name = l10n_util::GetNSStringF(
         IDS_IOS_TOOLS_MENU_FOLLOW, base::SysNSStringToUTF16(domainName));
-    self.followAction.storedImageName = @"overflow_menu_action_follow";
+    self.followAction.storedImage =
+        [UIImage imageNamed:@"overflow_menu_action_follow"];
     self.followAction.handler = ^{
       [weakSelf followWebPage:webPageURLs];
     };

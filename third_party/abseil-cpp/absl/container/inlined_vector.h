@@ -275,8 +275,10 @@ class InlinedVector {
   size_type max_size() const noexcept {
     // One bit of the size storage is used to indicate whether the inlined
     // vector contains allocated memory. As a result, the maximum size that the
-    // inlined vector can express is half of the max for `size_type`.
-    return (std::numeric_limits<size_type>::max)() / 2;
+    // inlined vector can express is the minimum of the limit of how many
+    // objects we can allocate and std::numeric_limits<size_type>::max() / 2.
+    return (std::min)(AllocatorTraits<A>::max_size(storage_.GetAllocator()),
+                      (std::numeric_limits<size_type>::max)() / 2);
   }
 
   // `InlinedVector::capacity()`
@@ -624,9 +626,9 @@ class InlinedVector {
     ABSL_HARDENING_ASSERT(pos <= end());
 
     if (ABSL_PREDICT_TRUE(first != last)) {
-      return storage_.Insert(pos,
-                             IteratorValueAdapter<A, ForwardIterator>(first),
-                             std::distance(first, last));
+      return storage_.Insert(
+          pos, IteratorValueAdapter<A, ForwardIterator>(first),
+          static_cast<size_type>(std::distance(first, last)));
     } else {
       return const_cast<iterator>(pos);
     }
@@ -643,7 +645,7 @@ class InlinedVector {
     ABSL_HARDENING_ASSERT(pos >= begin());
     ABSL_HARDENING_ASSERT(pos <= end());
 
-    size_type index = std::distance(cbegin(), pos);
+    size_type index = static_cast<size_type>(std::distance(cbegin(), pos));
     for (size_type i = index; first != last; ++i, static_cast<void>(++first)) {
       insert(data() + i, *first);
     }

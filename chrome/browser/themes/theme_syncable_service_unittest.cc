@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -94,6 +94,13 @@ class FakeThemeService : public ThemeService {
     using_system_theme_ = false;
     using_default_theme_ = false;
     using_policy_theme_ = false;
+  }
+
+  void UseTheme(ui::SystemTheme system_theme) override {
+    if (system_theme == ui::SystemTheme::kDefault)
+      UseDefaultTheme();
+    else
+      UseSystemTheme();
   }
 
   void UseDefaultTheme() override {

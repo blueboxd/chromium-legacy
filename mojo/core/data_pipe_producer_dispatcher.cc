@@ -1,4 +1,4 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -163,7 +163,8 @@ MojoResult DataPipeProducerDispatcher::WriteData(
 
 MojoResult DataPipeProducerDispatcher::BeginWriteData(
     void** buffer,
-    uint32_t* buffer_num_bytes) {
+    uint32_t* buffer_num_bytes,
+    MojoBeginWriteDataFlags flags) {
   base::AutoLock lock(lock_);
   if (!shared_ring_buffer_.IsValid() || in_transit_)
     return MOJO_RESULT_INVALID_ARGUMENT;

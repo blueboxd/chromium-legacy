@@ -1,9 +1,10 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "components/autofill/core/browser/touch_to_fill_delegate_impl.h"
 
+#include "components/autofill/core/browser/autofill_driver.h"
 #include "components/autofill/core/browser/browser_autofill_manager.h"
 #include "components/autofill/core/common/autofill_clock.h"
 #include "components/autofill/core/common/autofill_util.h"
@@ -16,7 +17,11 @@ TouchToFillDelegateImpl::TouchToFillDelegateImpl(
   DCHECK(manager);
 }
 
-TouchToFillDelegateImpl::~TouchToFillDelegateImpl() = default;
+TouchToFillDelegateImpl::~TouchToFillDelegateImpl() {
+  // Invalidate pointers to avoid post hide callbacks.
+  weak_ptr_factory_.InvalidateWeakPtrs();
+  HideTouchToFill();
+}
 
 bool TouchToFillDelegateImpl::TryToShowTouchToFill(int query_id,
                                                    const FormData& form,
@@ -41,12 +46,9 @@ bool TouchToFillDelegateImpl::TryToShowTouchToFill(int query_id,
   DCHECK(pdm);
   std::vector<CreditCard*> cards_to_suggest = pdm->GetCreditCardsToSuggest(
       manager_->client()->AreServerCardsSupported());
-  auto NotACompleteValidCard = [](const CreditCard* card) {
-    return card->IsExpired(AutofillClock::Now()) || !card->HasNameOnCard() ||
-           (card->record_type() != autofill::CreditCard::MASKED_SERVER_CARD &&
-            !card->HasValidCardNumber());
-  };
-  base::EraseIf(cards_to_suggest, NotACompleteValidCard);
+
+  base::EraseIf(cards_to_suggest,
+                base::not_fn(&CreditCard::IsCompleteValidCard));
   if (cards_to_suggest.empty())
     return false;
   // Trigger only if the UI is available.
@@ -77,6 +79,10 @@ void TouchToFillDelegateImpl::HideTouchToFill() {
 void TouchToFillDelegateImpl::Reset() {
   HideTouchToFill();
   ttf_credit_card_state_ = TouchToFillState::kShouldShow;
+}
+
+AutofillDriver* TouchToFillDelegateImpl::GetDriver() {
+  return manager_->driver();
 }
 
 base::WeakPtr<TouchToFillDelegateImpl> TouchToFillDelegateImpl::GetWeakPtr() {

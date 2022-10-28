@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -125,6 +125,10 @@ bool WebApp::IsWebAppStoreInstalledApp() const {
 
 bool WebApp::IsSubAppInstalledApp() const {
   return sources_[WebAppManagement::kSubApp];
+}
+
+bool WebApp::IsKioskInstalledApp() const {
+  return sources_[WebAppManagement::kKiosk];
 }
 
 bool WebApp::CanUserUninstallWebApp() const {
@@ -508,77 +512,6 @@ base::Value::Dict WebApp::ExternalManagementConfig::AsDebugValue() const {
   return root;
 }
 
-WebApp::IsolationData::IsolationData(
-    absl::variant<InstalledBundle, DevModeBundle, DevModeProxy> content)
-    : content(content) {}
-WebApp::IsolationData::~IsolationData() = default;
-WebApp::IsolationData::IsolationData(const IsolationData&) = default;
-WebApp::IsolationData& WebApp::IsolationData::operator=(
-    const WebApp::IsolationData&) = default;
-WebApp::IsolationData::IsolationData(IsolationData&&) = default;
-WebApp::IsolationData& WebApp::IsolationData::operator=(
-    WebApp::IsolationData&&) = default;
-bool WebApp::IsolationData::operator==(
-    const WebApp::IsolationData& other) const {
-  return content == other.content;
-}
-bool WebApp::IsolationData::operator!=(
-    const WebApp::IsolationData& other) const {
-  return !(*this == other);
-}
-bool WebApp::IsolationData::InstalledBundle::operator==(
-    const WebApp::IsolationData::InstalledBundle& other) const {
-  return path == other.path;
-}
-bool WebApp::IsolationData::InstalledBundle::operator!=(
-    const WebApp::IsolationData::InstalledBundle& other) const {
-  return !(*this == other);
-}
-bool WebApp::IsolationData::DevModeBundle::operator==(
-    const WebApp::IsolationData::DevModeBundle& other) const {
-  return path == other.path;
-}
-bool WebApp::IsolationData::DevModeBundle::operator!=(
-    const WebApp::IsolationData::DevModeBundle& other) const {
-  return !(*this == other);
-}
-bool WebApp::IsolationData::DevModeProxy::operator==(
-    const WebApp::IsolationData::DevModeProxy& other) const {
-  return proxy_url == other.proxy_url;
-}
-bool WebApp::IsolationData::DevModeProxy::operator!=(
-    const WebApp::IsolationData::DevModeProxy& other) const {
-  return !(*this == other);
-}
-base::Value WebApp::IsolationData::AsDebugValue() const {
-  struct ContentVisitor {
-    base::Value::Dict operator()(
-        const WebApp::IsolationData::InstalledBundle& bundle) {
-      base::Value::Dict content;
-      content.SetByDottedPath("installed_bundle.path", bundle.path);
-      return content;
-    }
-
-    base::Value::Dict operator()(
-        const WebApp::IsolationData::DevModeBundle& bundle) {
-      base::Value::Dict content;
-      content.SetByDottedPath("dev_mode_bundle.path", bundle.path);
-      return content;
-    }
-
-    base::Value::Dict operator()(
-        const WebApp::IsolationData::DevModeProxy& proxy) {
-      base::Value::Dict content;
-      content.SetByDottedPath("dev_mode_proxy.proxy_url", proxy.proxy_url);
-      return content;
-    }
-  };
-
-  base::Value::Dict value;
-  value.Set("content", absl::visit(ContentVisitor(), content));
-  return base::Value(std::move(value));
-}
-
 bool WebApp::operator==(const WebApp& other) const {
   auto AsTuple = [](const WebApp& app) {
     // Keep in order declared in web_app.h.
@@ -684,24 +617,6 @@ base::Value WebApp::AsDebugValue() const {
     return value ? base::Value(*value) : base::Value();
   };
 
-  auto ConvertWebAppManagementToStringType =
-      [](const WebAppManagement::Type& source) {
-        switch (source) {
-          case WebAppManagement::Type::kSystem:
-            return "System";
-          case WebAppManagement::Type::kPolicy:
-            return "Policy";
-          case WebAppManagement::Type::kSubApp:
-            return "SubApp";
-          case WebAppManagement::Type::kWebAppStore:
-            return "WebAppStore";
-          case WebAppManagement::Type::kSync:
-            return "Sync";
-          case WebAppManagement::Type::kDefault:
-            return "Default";
-        }
-      };
-
   // Prefix with a ! so these fields appear at the top when serialized.
   root.SetStringKey("!app_id", app_id_);
 
@@ -803,10 +718,9 @@ base::Value WebApp::AsDebugValue() const {
   }
 
   base::Value::Dict external_map;
-  for (auto it : management_to_external_config_map_) {
-    external_map.Set(ConvertWebAppManagementToStringType(it.first),
-                     it.second.AsDebugValue());
-  }
+  for (auto it : management_to_external_config_map_)
+    external_map.Set(ConvertToString(it.first), it.second.AsDebugValue());
+
   root.SetKey("management_type_to_external_configuration_map",
               base::Value(std::move(external_map)));
 

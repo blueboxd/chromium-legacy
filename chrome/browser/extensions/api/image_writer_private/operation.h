@@ -1,4 +1,4 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -24,7 +24,7 @@
 #include "extensions/common/extension_id.h"
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-#include "ash/components/disks/disk_mount_manager.h"
+#include "chromeos/ash/components/disks/disk_mount_manager.h"
 #endif
 
 namespace image_writer_api = extensions::api::image_writer_private;

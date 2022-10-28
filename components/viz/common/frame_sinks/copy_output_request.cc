@@ -1,4 +1,4 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/check_op.h"
+#include "base/ranges/algorithm.h"
 #include "base/strings/stringprintf.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
@@ -115,11 +116,9 @@ void CopyOutputRequest::set_blit_request(BlitRequest blit_request) {
 
 #if DCHECK_IS_ON()
   {
-    const gpu::MailboxHolder* first_zeroed_mailbox_it = std::find_if(
-        blit_request.mailboxes().begin(), blit_request.mailboxes().end(),
-        [](const gpu::MailboxHolder& mailbox_holder) {
-          return mailbox_holder.mailbox.IsZero();
-        });
+    const gpu::MailboxHolder* first_zeroed_mailbox_it =
+        base::ranges::find_if(blit_request.mailboxes(), &gpu::Mailbox::IsZero,
+                              &gpu::MailboxHolder::mailbox);
 
     size_t num_nonzeroed_mailboxes =
         first_zeroed_mailbox_it - blit_request.mailboxes().begin();

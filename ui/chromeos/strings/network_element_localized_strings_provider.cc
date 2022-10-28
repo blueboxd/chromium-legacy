@@ -431,11 +431,11 @@ void AddDetailsLocalizedStrings(content::WebUIDataSource* html_source) {
       {"networkProxyWpad", IDS_SETTINGS_INTERNET_NETWORK_PROXY_WPAD},
       {"networkProxyWpadNone", IDS_SETTINGS_INTERNET_NETWORK_PROXY_WPAD_NONE},
       {"remove", IDS_REMOVE},
+      {"controlledSettingPolicy",
+       IDS_SETTINGS_INTERNET_NETWORK_SETTING_MANAGED_BY_ADMIN_TOOLTIP},
   };
   html_source->AddLocalizedStrings(kLocalizedStrings);
 
-  html_source->AddBoolean("useAttachApn",
-                          chromeos::features::ShouldUseAttachApn());
   html_source->AddBoolean("isSimLockPolicyEnabled",
                           chromeos::features::IsSimLockPolicyEnabled());
 }

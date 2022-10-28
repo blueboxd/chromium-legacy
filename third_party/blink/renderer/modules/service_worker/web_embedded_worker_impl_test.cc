@@ -10,6 +10,7 @@
 #include "base/synchronization/waitable_event.h"
 #include "mojo/public/cpp/bindings/pending_associated_remote.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -26,6 +27,7 @@
 #include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
 #include "third_party/blink/public/platform/web_back_forward_cache_loader_helper.h"
 #include "third_party/blink/public/platform/web_content_settings_client.h"
+#include "third_party/blink/public/platform/web_policy_container.h"
 #include "third_party/blink/public/platform/web_url_loader_client.h"
 #include "third_party/blink/public/platform/web_url_loader_factory.h"
 #include "third_party/blink/public/platform/web_url_loader_mock_factory.h"
@@ -288,6 +290,7 @@ class WebEmbeddedWorkerImplTest : public testing::Test {
     start_data->script_type = mojom::blink::ScriptType::kClassic;
     start_data->wait_for_debugger_mode =
         WebEmbeddedWorkerStartData::kDontWaitForDebugger;
+    start_data->policy_container = std::make_unique<WebPolicyContainer>();
     return start_data;
   }
 

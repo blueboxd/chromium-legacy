@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,7 +13,7 @@ GEN_INCLUDE([
 GEN('#include "ash/constants/ash_features.h"');
 GEN('#include "content/public/test/browser_test.h"');
 
-var PolymerSecurityTokenPinTest = class extends Polymer2DeprecatedTest {
+var PolymerSecurityTokenPinTest = class extends PolymerTest {
   /** @override */
   get browsePreload() {
     return 'chrome://oobe/login';
@@ -29,7 +29,12 @@ var PolymerSecurityTokenPinTest = class extends Polymer2DeprecatedTest {
   }
 
   get extraLibraries() {
-    return super.extraLibraries.concat(['components/oobe_types.js']);
+    return [
+      '//ui/webui/resources/js/assert.js',
+      '//third_party/mocha/mocha.js',
+      '//chrome/test/data/webui/mocha_adapter.js',
+      'components/oobe_types.js',
+    ];
   }
 };
 

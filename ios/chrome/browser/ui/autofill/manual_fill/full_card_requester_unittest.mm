@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -150,7 +150,7 @@ class PaymentRequestFullCardRequesterTest : public PlatformTest {
 // respectively.
 TEST_F(PaymentRequestFullCardRequesterTest, PresentAndDismissLegacyPrompt) {
   scoped_feature_list_.InitAndDisableFeature(
-      kAutofillEnableNewCardUnmaskPromptView);
+      autofill::features::kAutofillEnableNewCardUnmaskPromptView);
 
   UIViewController* base_view_controller = [[UIViewController alloc] init];
   ScopedKeyWindow scoped_key_window_;
@@ -198,12 +198,9 @@ TEST_F(PaymentRequestFullCardRequesterTest, PresentAndDismissLegacyPrompt) {
 // prompt, when the new prompt feature flag is enabled, the full card is
 // requested and when the user enters the CVC/expiration information
 // respectively.
-// This test will fail until the new cvc prompt is fully implemented.
-// TODO(crbug.com/1347184)
-TEST_F(PaymentRequestFullCardRequesterTest,
-       DISABLED_PresentAndDismissNewPrompt) {
+TEST_F(PaymentRequestFullCardRequesterTest, PresentAndDismissNewPrompt) {
   scoped_feature_list_.InitAndEnableFeature(
-      kAutofillEnableNewCardUnmaskPromptView);
+      autofill::features::kAutofillEnableNewCardUnmaskPromptView);
 
   UIViewController* base_view_controller = [[UIViewController alloc] init];
   ScopedKeyWindow scoped_key_window_;

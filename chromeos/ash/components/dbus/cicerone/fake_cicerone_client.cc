@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -164,6 +164,14 @@ bool FakeCiceroneClient::IsFileWatchTriggeredSignalConnected() {
 
 bool FakeCiceroneClient::IsLowDiskSpaceTriggeredSignalConnected() {
   return is_low_disk_space_triggered_signal_connected_;
+}
+
+bool FakeCiceroneClient::IsInhibitScreensaverSignalConencted() {
+  return is_inhibit_screensaver_signal_connected_;
+}
+
+bool FakeCiceroneClient::IsUninhibitScreensaverSignalConencted() {
+  return is_uninhibit_screensaver_signal_connected_;
 }
 
 // Currently no tests need to change the output of this method. If you want to

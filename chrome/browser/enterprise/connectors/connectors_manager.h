@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -91,6 +91,9 @@ class ConnectorsManager {
       AnalysisConnector connector);
   std::vector<std::string> GetReportingServiceProviderNames(
       ReportingConnector connector);
+
+  std::vector<const AnalysisConfig*> GetAnalysisServiceConfigs(
+      AnalysisConnector connector);
 
   // Public testing functions.
   const AnalysisConnectorsSettings& GetAnalysisConnectorsSettingsForTesting()

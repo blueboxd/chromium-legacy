@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -62,9 +62,6 @@ const char kErrorAccessToSharedConfig[] = "Error.CannotChangeSharedConfig";
 const char kErrorInvalidONCConfiguration[] = "Error.InvalidONCConfiguration";
 const char kErrorNetworkUnavailable[] = "Error.NetworkUnavailable";
 const char kErrorNotReady[] = "Error.NotReady";
-
-// IKEv2 string from Shill SupportedVPNType property.
-const char kIKEv2VPNType[] = "ikev2";
 
 // Default traffic counter reset day.
 const int kDefaultResetDay = 1;
@@ -954,8 +951,8 @@ mojom::ManagedSubjectAltNameMatchListPtr GetManagedSubjectAltNameMatchList(
 
   if (value->is_list()) {
     std::vector<mojom::SubjectAltNamePtr> active;
-    for (const base::Value& value : value->GetListDeprecated())
-      active.push_back(GetSubjectAltName(&value));
+    for (const base::Value& e : value->GetListDeprecated())
+      active.push_back(GetSubjectAltName(&e));
     result->active_value = std::move(active);
     return result;
   }
@@ -1120,8 +1117,8 @@ mojom::ManagedApnListPtr GetManagedApnList(const base::Value* value) {
   if (value->is_list()) {
     auto result = mojom::ManagedApnList::New();
     std::vector<mojom::ApnPropertiesPtr> active;
-    for (const base::Value& value : value->GetListDeprecated())
-      active.push_back(GetApnProperties(&value));
+    for (const base::Value& e : value->GetListDeprecated())
+      active.push_back(GetApnProperties(&e));
     result->active_value = std::move(active);
     return result;
   } else if (value->is_dict()) {
@@ -1445,8 +1442,8 @@ mojom::ManagedWireGuardPeerListPtr GetManagedWireGuardPeerList(
     return result;
   if (value->is_list()) {
     std::vector<mojom::WireGuardPeerPropertiesPtr> active;
-    for (const base::Value& value : value->GetListDeprecated())
-      active.push_back(GetWireGuardPeerProperties(&value));
+    for (const base::Value& e : value->GetListDeprecated())
+      active.push_back(GetWireGuardPeerProperties(&e));
     result->active_value = std::move(active);
     return result;
   }
@@ -3193,12 +3190,6 @@ void CrosNetworkConfig::OnGetSupportedVpnTypes(
     result =
         base::SplitString(*value->GetIfString(), ",", base::TRIM_WHITESPACE,
                           base::SPLIT_WANT_NONEMPTY);
-  }
-  if (!base::FeatureList::IsEnabled(ash::features::kEnableIkev2Vpn)) {
-    auto iter = std::find(result.begin(), result.end(), kIKEv2VPNType);
-    if (iter != result.end()) {
-      result.erase(iter);
-    }
   }
   std::move(callback).Run(result);
 }

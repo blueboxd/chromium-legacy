@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,7 +6,9 @@
 
 #include <sys/types.h>
 #include <iterator>
+#include <memory>
 #include <string>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/check.h"
@@ -18,10 +20,16 @@
 #include "base/ranges/algorithm.h"
 #include "chrome/browser/ash/drive/drive_integration_service.h"
 #include "chrome/browser/ash/file_manager/path_util.h"
-#include "chrome/browser/chromeos/policy/dlp/dlp_rules_manager.h"
+#include "chrome/browser/chromeos/policy/dlp/dlp_confidential_contents.h"
+#include "chrome/browser/chromeos/policy/dlp/dlp_histogram_helper.h"
+#include "chrome/browser/chromeos/policy/dlp/dlp_reporting_manager.h"
 #include "chrome/browser/chromeos/policy/dlp/dlp_rules_manager_factory.h"
+#include "chrome/browser/chromeos/policy/dlp/dlp_warn_dialog.h"
+#include "chrome/browser/chromeos/policy/dlp/dlp_warn_notifier.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chromeos/dbus/dlp/dlp_client.h"
 #include "chromeos/dbus/dlp/dlp_service.pb.h"
+#include "chromeos/ui/base/file_icon_util.h"
 #include "storage/browser/file_system/file_system_url.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/mojom/choosers/file_chooser.mojom.h"
@@ -51,7 +59,7 @@ std::vector<absl::optional<ino_t>> GetFilesInodes(
 absl::optional<DlpRulesManager::Component> MapFilePathtoPolicyComponent(
     Profile* profile,
     const base::FilePath file_path) {
-  if (base::FilePath(file_manager::util::kAndroidFilesPath)
+  if (base::FilePath(file_manager::util::GetAndroidFilesPath())
           .IsParent(file_path)) {
     return DlpRulesManager::Component::kArc;
   }
@@ -77,6 +85,26 @@ absl::optional<DlpRulesManager::Component> MapFilePathtoPolicyComponent(
   return {};
 }
 
+// Maps |component| to DlpRulesManager::Component.
+DlpRulesManager::Component MapProtoToPolicyComponent(
+    ::dlp::DlpComponent component) {
+  switch (component) {
+    case ::dlp::DlpComponent::ARC:
+      return DlpRulesManager::Component::kArc;
+    case ::dlp::DlpComponent::CROSTINI:
+      return DlpRulesManager::Component::kCrostini;
+    case ::dlp::DlpComponent::PLUGIN_VM:
+      return DlpRulesManager::Component::kPluginVm;
+    case ::dlp::DlpComponent::USB:
+      return DlpRulesManager::Component::kUsb;
+    case ::dlp::DlpComponent::GOOGLE_DRIVE:
+      return DlpRulesManager::Component::kDrive;
+    case ::dlp::DlpComponent::UNKOWN_COMPONENT:
+    case ::dlp::DlpComponent::SYSTEM:
+      return DlpRulesManager::Component::kUnknownComponent;
+  }
+}
+
 }  // namespace
 
 DlpFilesController::DlpFileMetadata::DlpFileMetadata(
@@ -96,12 +124,41 @@ DlpFilesController::DlpFileRestrictionDetails::operator=(
 DlpFilesController::DlpFileRestrictionDetails::~DlpFileRestrictionDetails() =
     default;
 
-DlpFilesController::DlpFilesController() = default;
+DlpFilesController::FileDaemonInfo::FileDaemonInfo(
+    ino_t inode,
+    const base::FilePath& path,
+    const std::string& source_url)
+    : inode(inode), path(path), source_url(source_url) {}
+
+DlpFilesController::DlpFileDestination::DlpFileDestination(
+    const std::string& url)
+    : url_or_path(url) {}
+DlpFilesController::DlpFileDestination::DlpFileDestination(
+    const ::dlp::DlpComponent component)
+    : component(MapProtoToPolicyComponent(component)) {}
+DlpFilesController::DlpFileDestination::DlpFileDestination(
+    const DlpRulesManager::Component component)
+    : component(component) {}
+
+DlpFilesController::DlpFileDestination&
+DlpFilesController::DlpFileDestination::operator=(const DlpFileDestination&) =
+    default;
+DlpFilesController::DlpFileDestination::DlpFileDestination(
+    DlpFileDestination&&) = default;
+DlpFilesController::DlpFileDestination&
+DlpFilesController::DlpFileDestination::operator=(DlpFileDestination&&) =
+    default;
+
+DlpFilesController::DlpFileDestination::~DlpFileDestination() = default;
+
+DlpFilesController::DlpFilesController(const DlpRulesManager& rules_manager)
+    : rules_manager_(rules_manager),
+      warn_notifier_(std::make_unique<DlpWarnNotifier>()) {}
 
 DlpFilesController::~DlpFilesController() = default;
 
 void DlpFilesController::GetDisallowedTransfers(
-    std::vector<storage::FileSystemURL> transferred_files,
+    const std::vector<storage::FileSystemURL>& transferred_files,
     storage::FileSystemURL destination,
     GetDisallowedTransfersCallback result_callback) {
   if (!chromeos::DlpClient::Get() || !chromeos::DlpClient::Get()->IsAlive()) {
@@ -109,7 +166,7 @@ void DlpFilesController::GetDisallowedTransfers(
     return;
   }
 
-  dlp::CheckFilesTransferRequest request;
+  ::dlp::CheckFilesTransferRequest request;
   base::flat_map<std::string, storage::FileSystemURL> filtered_files;
   for (const auto& file : transferred_files) {
     // If the file is in the same file system as the destination, no
@@ -126,7 +183,7 @@ void DlpFilesController::GetDisallowedTransfers(
   }
 
   request.set_destination_url(destination.path().value());
-
+  request.set_file_action(::dlp::FileAction::TRANSFER);
   chromeos::DlpClient::Get()->CheckFilesTransfer(
       request,
       base::BindOnce(&DlpFilesController::ReturnDisallowedTransfers,
@@ -135,7 +192,7 @@ void DlpFilesController::GetDisallowedTransfers(
 }
 
 void DlpFilesController::GetDlpMetadata(
-    std::vector<storage::FileSystemURL> files,
+    const std::vector<storage::FileSystemURL>& files,
     GetDlpMetadataCallback result_callback) {
   if (!chromeos::DlpClient::Get() || !chromeos::DlpClient::Get()->IsAlive()) {
     std::move(result_callback).Run(std::vector<DlpFileMetadata>());
@@ -143,7 +200,7 @@ void DlpFilesController::GetDlpMetadata(
   }
 
   std::vector<absl::optional<ino_t>> inodes = GetFilesInodes(files);
-  dlp::GetFilesSourcesRequest request;
+  ::dlp::GetFilesSourcesRequest request;
   for (const auto& inode : inodes) {
     if (inode.has_value()) {
       request.add_files_inodes(inode.value());
@@ -169,7 +226,7 @@ void DlpFilesController::FilterDisallowedUploads(
     return;
   }
 
-  dlp::CheckFilesTransferRequest request;
+  ::dlp::CheckFilesTransferRequest request;
   for (const auto& file : uploaded_files) {
     if (file && file->is_native_file())
       request.add_files_paths(file->get_native_file()->file_path.value());
@@ -180,7 +237,7 @@ void DlpFilesController::FilterDisallowedUploads(
   }
 
   request.set_destination_url(destination.spec());
-
+  request.set_file_action(::dlp::FileAction::UPLOAD);
   chromeos::DlpClient::Get()->CheckFilesTransfer(
       request,
       base::BindOnce(&DlpFilesController::ReturnAllowedUploads,
@@ -188,56 +245,145 @@ void DlpFilesController::FilterDisallowedUploads(
                      std::move(result_callback)));
 }
 
-void DlpFilesController::IsFilesTransferRestricted(
-    Profile* profile,
-    std::vector<GURL> files_sources,
-    std::string destination,
-    IsFilesTransferRestrictedCallback result_callback) {
-  DCHECK(profile);
-  policy::DlpRulesManager* dlp_rules_manager =
-      policy::DlpRulesManagerFactory::GetForPrimaryProfile();
-  if (!dlp_rules_manager) {
-    std::move(result_callback).Run(std::vector<GURL>());
+void DlpFilesController::MaybeReportEvent(
+    const std::string& src,
+    absl::optional<DlpFileDestination> dst,
+    DlpRulesManager::Level level) {
+  if (level == DlpRulesManager::Level::kAllow ||
+      level == DlpRulesManager::Level::kNotSet)
+    return;
+
+  DlpReportingManager* reporting_manager = rules_manager_.GetReportingManager();
+  if (!reporting_manager)
+    return;
+
+  if (!dst.has_value()) {
+    reporting_manager->ReportEvent(src, DlpRulesManager::Restriction::kFiles,
+                                   level);
     return;
   }
 
-  auto dst_component =
-      MapFilePathtoPolicyComponent(profile, base::FilePath(destination));
-  std::vector<GURL> restricted_files_sources;
-  for (const auto& src : files_sources) {
-    DlpRulesManager::Level level;
-    if (dst_component.has_value()) {
-      level = dlp_rules_manager->IsRestrictedComponent(
-          src, dst_component.value(), DlpRulesManager::Restriction::kFiles,
-          nullptr);
-    } else {
-      // TODO(crbug.com/1286366): Revisit whether passing files paths here make
-      // sense.
-      level = dlp_rules_manager->IsRestrictedDestination(
-          src, GURL(destination), DlpRulesManager::Restriction::kFiles, nullptr,
-          nullptr);
-    }
-
-    if (level == DlpRulesManager::Level::kBlock)
-      restricted_files_sources.push_back(src);
+  if (dst->component.has_value()) {
+    reporting_manager->ReportEvent(src, dst->component.value(),
+                                   DlpRulesManager::Restriction::kFiles, level);
+  } else if (dst->url_or_path.has_value()) {
+    reporting_manager->ReportEvent(src, dst->url_or_path.value(),
+                                   DlpRulesManager::Restriction::kFiles, level);
   }
-  std::move(result_callback).Run(std::move(restricted_files_sources));
 }
 
-std::vector<DlpFilesController::DlpFileRestrictionDetails>
-DlpFilesController::GetDlpRestrictionDetails(const std::string& sourceUrl) {
+void DlpFilesController::CheckIfDownloadAllowed(
+    const GURL& download_url,
+    const base::FilePath& file_path,
+    CheckIfDownloadAllowedCallback result_callback) {
+  auto* profile = ProfileManager::GetPrimaryUserProfile();
+  DCHECK(profile);
+
+  auto dst_component =
+      MapFilePathtoPolicyComponent(profile, base::FilePath(file_path));
+  if (!dst_component.has_value()) {
+    // We may block downloads only if saved to external component, otherwise
+    // downloads should be allowed.
+    std::move(result_callback).Run(true);
+    return;
+  }
+
+  FileDaemonInfo file_info({}, base::FilePath(""), download_url.spec());
+  IsFilesTransferRestricted(
+      {std::move(file_info)}, DlpFileDestination(file_path.value()),
+      FileAction::kDownload,
+      base::BindOnce(
+          [](CheckIfDownloadAllowedCallback result_callback,
+             const std::vector<FileDaemonInfo>& restricted_files) {
+            bool is_allowed = restricted_files.empty();
+            std::move(result_callback).Run(is_allowed);
+          },
+          std::move(result_callback)));
+}
+
+void DlpFilesController::IsFilesTransferRestricted(
+    const std::vector<FileDaemonInfo>& transferred_files,
+    const DlpFileDestination& destination,
+    FileAction files_action,
+    IsFilesTransferRestrictedCallback result_callback) {
   policy::DlpRulesManager* dlp_rules_manager =
       policy::DlpRulesManagerFactory::GetForPrimaryProfile();
   if (!dlp_rules_manager) {
-    return {};
+    std::move(result_callback).Run(std::vector<FileDaemonInfo>());
+    return;
+  }
+  auto* profile = ProfileManager::GetPrimaryUserProfile();
+  DCHECK(profile);
+  absl::optional<DlpRulesManager::Component> dst_component;
+  if (destination.component.has_value()) {
+    dst_component = *destination.component;
+  } else {
+    DCHECK(destination.url_or_path.has_value());
+    dst_component = MapFilePathtoPolicyComponent(
+        profile, base::FilePath(*destination.url_or_path));
   }
 
-  const GURL source(sourceUrl);
+  std::vector<FileDaemonInfo> restricted_files;
+  std::vector<FileDaemonInfo> warned_files;
+  DlpConfidentialContents dialog_files;
+  std::string source_pattern, destination_pattern;
+  for (const auto& file : transferred_files) {
+    DlpRulesManager::Level level;
+    if (dst_component.has_value()) {
+      level = rules_manager_.IsRestrictedComponent(
+          GURL(file.source_url), dst_component.value(),
+          DlpRulesManager::Restriction::kFiles, &source_pattern);
+      MaybeReportEvent(file.source_url.spec(),
+                       DlpFileDestination((dst_component.value())), level);
+    } else {
+      // TODO(crbug.com/1286366): Revisit whether passing files paths here
+      // make sense.
+      DCHECK(destination.url_or_path.has_value());
+      level = rules_manager_.IsRestrictedDestination(
+          GURL(file.source_url), GURL(*destination.url_or_path),
+          DlpRulesManager::Restriction::kFiles, &source_pattern,
+          &destination_pattern);
+      MaybeReportEvent(file.source_url.spec(),
+                       DlpFileDestination(*destination.url_or_path), level);
+    }
+
+    if (level == DlpRulesManager::Level::kBlock) {
+      restricted_files.push_back(file);
+      DlpHistogramEnumeration(dlp::kFileActionBlockedUMA, files_action);
+    } else if (level == DlpRulesManager::Level::kWarn) {
+      warned_files.push_back(file);
+      if (files_action != FileAction::kDownload) {
+        dialog_files.Add(
+            // TODO(crbug.com/1357593): Pass the proper |dark_background|
+            chromeos::GetIconForPath(file.path, /*dark_background=*/false),
+            file.path.BaseName().LossyDisplayName(), GURL(file.source_url));
+      }
+      DlpHistogramEnumeration(dlp::kFileActionWarnedUMA, files_action);
+    }
+  }
+
+  if (warned_files.empty()) {
+    std::move(result_callback).Run(std::move(restricted_files));
+    return;
+  }
+
+  warn_notifier_->ShowDlpFilesWarningDialog(
+      base::BindOnce(&DlpFilesController::OnDlpWarnDialogReply,
+                     weak_ptr_factory_.GetWeakPtr(),
+                     std::move(restricted_files), std::move(warned_files),
+                     files_action, std::move(result_callback)),
+      std::move(dialog_files), dst_component, destination_pattern,
+      files_action);
+}
+
+std::vector<DlpFilesController::DlpFileRestrictionDetails>
+DlpFilesController::GetDlpRestrictionDetails(const std::string& source_url) {
+  const GURL source(source_url);
   const DlpRulesManager::AggregatedDestinations aggregated_destinations =
-      dlp_rules_manager->GetAggregatedDestinations(
+      rules_manager_.GetAggregatedDestinations(
           source, DlpRulesManager::Restriction::kFiles);
   const DlpRulesManager::AggregatedComponents aggregated_components =
-      dlp_rules_manager->GetAggregatedComponents(
+      rules_manager_.GetAggregatedComponents(
           source, DlpRulesManager::Restriction::kFiles);
 
   std::vector<DlpFilesController::DlpFileRestrictionDetails> result;
@@ -273,32 +419,73 @@ DlpFilesController::GetDlpRestrictionDetails(const std::string& sourceUrl) {
   return result;
 }
 
-bool DlpFilesController::IsDlpPolicyMatched(const std::string& source_url) {
-  bool restricted = false;
-  policy::DlpRulesManager* dlp_rules_manager =
-      policy::DlpRulesManagerFactory::GetForPrimaryProfile();
-  if (dlp_rules_manager) {
-    policy::DlpRulesManager::Level level =
-        dlp_rules_manager->IsRestrictedByAnyRule(
-            GURL(source_url), policy::DlpRulesManager::Restriction::kFiles);
+std::vector<DlpRulesManager::Component>
+DlpFilesController::GetBlockedComponents(const std::string& source_url) {
+  const GURL source(source_url);
+  const DlpRulesManager::AggregatedComponents aggregated_components =
+      rules_manager_.GetAggregatedComponents(
+          source, DlpRulesManager::Restriction::kFiles);
 
-    switch (level) {
-      case policy::DlpRulesManager::Level::kBlock:
-        restricted = true;
-        break;
-      case policy::DlpRulesManager::Level::kWarn:
-        // TODO(crbug.com/1172959): Implement Warning mode for Files restriction
-        break;
-      default:;
-    }
+  std::vector<DlpRulesManager::Component> result;
+  const auto it = aggregated_components.find(DlpRulesManager::Level::kBlock);
+  if (it != aggregated_components.end()) {
+    base::ranges::move(it->second.begin(), it->second.end(),
+                       std::back_inserter(result));
   }
+  return result;
+}
+
+bool DlpFilesController::IsDlpPolicyMatched(const FileDaemonInfo& file) {
+  bool restricted = false;
+
+  policy::DlpRulesManager::Level level = rules_manager_.IsRestrictedByAnyRule(
+      GURL(file.source_url.spec()),
+      policy::DlpRulesManager::Restriction::kFiles);
+
+  switch (level) {
+    case policy::DlpRulesManager::Level::kBlock:
+      restricted = true;
+      DlpHistogramEnumeration(dlp::kFileActionBlockedUMA, FileAction::kUnknown);
+      break;
+    case policy::DlpRulesManager::Level::kWarn:
+      DlpHistogramEnumeration(dlp::kFileActionWarnedUMA, FileAction::kUnknown);
+      // TODO(crbug.com/1172959): Implement Warning mode for Files restriction
+      break;
+    default:
+      break;
+  }
+
+  MaybeReportEvent(file.source_url.spec(), {}, level);
+
   return restricted;
+}
+
+void DlpFilesController::SetWarnNotifierForTesting(
+    std::unique_ptr<DlpWarnNotifier> warn_notifier) {
+  DCHECK(warn_notifier);
+  warn_notifier_ = std::move(warn_notifier);
+}
+
+void DlpFilesController::OnDlpWarnDialogReply(
+    std::vector<FileDaemonInfo> restricted_files,
+    std::vector<FileDaemonInfo> warned_files,
+    FileAction files_action,
+    IsFilesTransferRestrictedCallback callback,
+    bool should_proceed) {
+  if (!should_proceed) {
+    restricted_files.insert(restricted_files.end(),
+                            std::make_move_iterator(warned_files.begin()),
+                            std::make_move_iterator(warned_files.end()));
+  } else {
+    DlpHistogramEnumeration(dlp::kFileActionWarnProceededUMA, files_action);
+  }
+  std::move(callback).Run(std::move(restricted_files));
 }
 
 void DlpFilesController::ReturnDisallowedTransfers(
     base::flat_map<std::string, storage::FileSystemURL> files_map,
     GetDisallowedTransfersCallback result_callback,
-    dlp::CheckFilesTransferResponse response) {
+    ::dlp::CheckFilesTransferResponse response) {
   if (response.has_error_message()) {
     LOG(ERROR) << "Failed to get check files transfer, error: "
                << response.error_message();
@@ -315,7 +502,7 @@ void DlpFilesController::ReturnDisallowedTransfers(
 void DlpFilesController::ReturnAllowedUploads(
     std::vector<blink::mojom::FileChooserFileInfoPtr> uploaded_files,
     FilterDisallowedUploadsCallback result_callback,
-    dlp::CheckFilesTransferResponse response) {
+    ::dlp::CheckFilesTransferResponse response) {
   if (response.has_error_message()) {
     LOG(ERROR) << "Failed to get check files transfer, error: "
                << response.error_message();
@@ -337,22 +524,15 @@ void DlpFilesController::ReturnAllowedUploads(
 void DlpFilesController::ReturnDlpMetadata(
     std::vector<absl::optional<ino_t>> inodes,
     GetDlpMetadataCallback result_callback,
-    const dlp::GetFilesSourcesResponse response) {
+    const ::dlp::GetFilesSourcesResponse response) {
   if (response.has_error_message()) {
     LOG(ERROR) << "Failed to get files sources, error: "
                << response.error_message();
   }
 
-  policy::DlpRulesManager* dlp_rules_manager =
-      policy::DlpRulesManagerFactory::GetForPrimaryProfile();
-  if (!dlp_rules_manager) {
-    std::move(result_callback).Run(std::vector<DlpFileMetadata>());
-    return;
-  }
-
   base::flat_map<ino_t, DlpFileMetadata> metadata_map;
   for (const auto& metadata : response.files_metadata()) {
-    DlpRulesManager::Level level = dlp_rules_manager->IsRestrictedByAnyRule(
+    DlpRulesManager::Level level = rules_manager_.IsRestrictedByAnyRule(
         GURL(metadata.source_url()), DlpRulesManager::Restriction::kFiles);
     bool is_dlp_restricted = level != DlpRulesManager::Level::kNotSet &&
                              level != DlpRulesManager::Level::kAllow;

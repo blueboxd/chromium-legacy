@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,9 +7,9 @@ import '//resources/cr_elements/cr_button/cr_button.js';
 import '//resources/cr_elements/cr_dialog/cr_dialog.js';
 import '//resources/cr_elements/cr_input/cr_input.js';
 import '//resources/cr_elements/cr_link_row/cr_link_row.js';
-import '//resources/cr_elements/icons.m.js';
-import '//resources/cr_elements/shared_style_css.m.js';
-import '//resources/cr_elements/shared_vars_css.m.js';
+import '//resources/cr_elements/icons.html.js';
+import '//resources/cr_elements/cr_shared_style.css.js';
+import '//resources/cr_elements/cr_shared_vars.css.js';
 import '//resources/cr_elements/cr_expand_button/cr_expand_button.js';
 import '//resources/polymer/v3_0/iron-collapse/iron-collapse.js';
 import '//resources/polymer/v3_0/iron-icon/iron-icon.js';
@@ -27,7 +27,7 @@ import '//resources/cr_elements/cr_toast/cr_toast.js';
 import {CrDialogElement} from '//resources/cr_elements/cr_dialog/cr_dialog.js';
 import {CrInputElement} from '//resources/cr_elements/cr_input/cr_input.js';
 import {assert, assertNotReached} from '//resources/js/assert_ts.js';
-import {focusWithoutInk} from '//resources/js/cr/ui/focus_without_ink.m.js';
+import {focusWithoutInk} from '//resources/js/cr/ui/focus_without_ink.js';
 import {WebUIListenerMixin, WebUIListenerMixinInterface} from '//resources/js/web_ui_listener_mixin.js';
 import {IronCollapseElement} from '//resources/polymer/v3_0/iron-collapse/iron-collapse.js';
 import {flush, PolymerElement} from '//resources/polymer/v3_0/polymer/polymer_bundled.min.js';
@@ -391,7 +391,8 @@ export class SettingsSyncPageElement extends SettingsSyncPageElementBase {
 
   private onFocusConfigChange_() {
     this.focusConfig.set(this.getSyncAdvancedPageRoute_().path, () => {
-      const toFocus = this.shadowRoot!.querySelector('#sync-advanced-row');
+      const toFocus =
+          this.shadowRoot!.querySelector<HTMLElement>('#sync-advanced-row');
       assert(toFocus);
       focusWithoutInk(toFocus);
     });

@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -105,6 +105,9 @@ class ProfileOAuth2TokenServiceDelegate {
   // Add or remove observers of this token service.
   void AddObserver(ProfileOAuth2TokenServiceObserver* observer);
   void RemoveObserver(ProfileOAuth2TokenServiceObserver* observer);
+
+  // Returns true if there is at least one observer.
+  bool HasObserver() const;
 
   // Returns a pointer to its instance of net::BackoffEntry if it has one
   // (`use_backoff` was true in the constructor), or a nullptr otherwise.

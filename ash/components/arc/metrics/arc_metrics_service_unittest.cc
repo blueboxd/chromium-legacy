@@ -1,10 +1,9 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "ash/components/arc/metrics/arc_metrics_service.h"
 
-#include <algorithm>
 #include <array>
 #include <map>
 #include <utility>
@@ -19,6 +18,7 @@
 #include "ash/constants/app_types.h"
 #include "base/command_line.h"
 #include "base/metrics/histogram_samples.h"
+#include "base/ranges/algorithm.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/metrics/histogram_tester.h"
@@ -371,8 +371,8 @@ TEST_F(ArcMetricsServiceTest, GetArcStartTimeFromEvents) {
   EXPECT_EQ(*arc_start_time, base::Milliseconds(10) + base::TimeTicks());
 
   // Check that the upgrade event was removed from events.
-  EXPECT_TRUE(std::none_of(
-      events.begin(), events.end(), [](const mojom::BootProgressEventPtr& ev) {
+  EXPECT_TRUE(
+      base::ranges::none_of(events, [](const mojom::BootProgressEventPtr& ev) {
         return ev->event.compare(kBootProgressArcUpgraded) == 0;
       }));
 }
@@ -390,8 +390,8 @@ TEST_F(ArcMetricsServiceTest, GetArcStartTimeFromEvents_NoArcUpgradedEvent) {
 TEST_F(ArcMetricsServiceTest, UserInteractionObserver) {
   class Observer : public ArcMetricsService::UserInteractionObserver {
    public:
-    void OnUserInteraction(UserInteractionType type) override {
-      this->type = type;
+    void OnUserInteraction(UserInteractionType interaction_type) override {
+      type = interaction_type;
     }
     absl::optional<UserInteractionType> type;
   } observer;
@@ -407,6 +407,24 @@ TEST_F(ArcMetricsServiceTest, UserInteractionObserver) {
             *observer.type);
 
   service()->RemoveUserInteractionObserver(&observer);
+}
+
+TEST_F(ArcMetricsServiceTest, BootTypeObserver) {
+  class Observer : public ArcMetricsService::BootTypeObserver {
+   public:
+    void OnBootTypeRetrieved(mojom::BootType type) override {
+      this->type = type;
+    }
+    absl::optional<mojom::BootType> type;
+  } observer;
+
+  service()->AddBootTypeObserver(&observer);
+
+  service()->ReportBootProgress({}, mojom::BootType::FIRST_BOOT_AFTER_UPDATE);
+  ASSERT_TRUE(observer.type);
+  EXPECT_EQ(mojom::BootType::FIRST_BOOT_AFTER_UPDATE, *observer.type);
+
+  service()->RemoveBootTypeObserver(&observer);
 }
 
 class ArcVmArcMetricsServiceTest
@@ -583,7 +601,6 @@ static void ExpectOneSampleAppKillCounts(
 }
 
 TEST_P(ArcVmArcMetricsServiceTest, AppLowMemoryKills) {
-  base::HistogramTester tester;
   // The test code sets the initial counts to 0.
   auto c0 = mojom::LowMemoryKillCounts::New(0, 0, 0, 0, 0, 0, 0);
   // First sample counts.

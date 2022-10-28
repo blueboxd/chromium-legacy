@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -34,6 +34,7 @@
 #include "base/run_loop.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/animation/tween.h"
+#include "ui/views/widget/root_view.h"
 
 namespace ash {
 
@@ -152,7 +153,7 @@ void AppListTestHelper::CheckState(AppListViewState state) {
 
 void AppListTestHelper::AddAppItems(int num_apps) {
   AddAppItemsWithColorAndName(num_apps, IconColorType::kNotSet,
-                              /*set_name=*/false);
+                              /*set_name=*/true);
 }
 
 void AppListTestHelper::AddAppItemsWithColorAndName(int num_apps,
@@ -231,6 +232,15 @@ bool AppListTestHelper::IsInFolderView() {
 
 void AppListTestHelper::DisableAppListNudge(bool disable) {
   AppListNudgeController::SetReorderNudgeDisabledForTest(disable);
+}
+
+views::View* AppListTestHelper::GetAccessibilityAnnounceView() {
+  views::Widget* widget = ShouldUseBubbleAppList()
+                              ? GetBubbleView()->GetWidget()
+                              : GetAppListView()->GetWidget();
+  DCHECK(widget);
+  return static_cast<views::internal::RootView*>(widget->GetRootView())
+      ->GetAnnounceViewForTesting();
 }
 
 AppListView* AppListTestHelper::GetAppListView() {

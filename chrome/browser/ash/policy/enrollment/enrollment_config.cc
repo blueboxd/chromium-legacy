@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -126,7 +126,7 @@ EnrollmentConfig EnrollmentConfig::GetPrescribedEnrollmentConfig(
 
   // Gather enrollment signals from various sources.
   const base::Value::Dict& device_state =
-      local_state.GetValueDict(prefs::kServerBackedDeviceState);
+      local_state.GetDict(prefs::kServerBackedDeviceState);
 
   const std::string device_state_mode =
       GetString(device_state, kDeviceStateMode);

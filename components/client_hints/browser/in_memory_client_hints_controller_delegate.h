@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -65,6 +65,9 @@ class InMemoryClientHintsControllerDelegate final
                            content::RenderFrameHost* parent_rfh) override;
   bool AreThirdPartyCookiesBlocked(const GURL& url) override;
   blink::UserAgentMetadata GetUserAgentMetadata() override;
+  void SetMostRecentMainFrameViewportSize(
+      const gfx::Size& viewport_size) override;
+  gfx::Size GetMostRecentMainFrameViewportSize() override;
 
  private:
   SEQUENCE_CHECKER(sequence_checker_);
@@ -90,6 +93,11 @@ class InMemoryClientHintsControllerDelegate final
       are_third_party_cookies_blocked_callback_;
 
   const blink::UserAgentMetadata user_agent_metadata_;
+
+  // This stores the viewport size of the most recent visible main frame tree
+  // node. This value is only used when the viewport size cannot be directly
+  // queried such as for prefetch requests and for tab restores.
+  gfx::Size viewport_size_;
 };
 
 }  // namespace client_hints

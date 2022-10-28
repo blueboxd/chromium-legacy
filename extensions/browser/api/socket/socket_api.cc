@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,7 +13,6 @@
 #include "base/containers/span.h"
 #include "base/values.h"
 #include "build/build_config.h"
-#include "build/chromeos_buildflags.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/network_service_instance.h"
@@ -42,6 +41,10 @@ using extensions::mojom::APIPermissionID;
 
 namespace extensions {
 
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+const char kCrOSTerminal[] = "chrome-untrusted://terminal";
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+
 namespace {
 
 const char kAddressKey[] = "address";
@@ -66,7 +69,6 @@ const uint16_t kWildcardPort = 0;
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 const char kFirewallFailure[] = "Failed to open firewall port";
-const char kCrOSTerminal[] = "chrome-untrusted://terminal";
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 bool IsPortValid(int port) {
@@ -221,13 +223,16 @@ void SocketExtensionWithDnsLookupFunction::StartDnsLookup(
   network::mojom::ResolveHostParametersPtr params =
       network::mojom::ResolveHostParameters::New();
   params->dns_query_type = dns_query_type;
+  // Intentionally using a HostPortPair because scheme isn't specified.
   host_resolver_->ResolveHost(
-      host_port_pair, net::NetworkIsolationKey(origin, origin),
-      std::move(params), receiver_.BindNewPipeAndPassRemote());
-  receiver_.set_disconnect_handler(
-      base::BindOnce(&SocketExtensionWithDnsLookupFunction::OnComplete,
-                     base::Unretained(this), net::ERR_NAME_NOT_RESOLVED,
-                     net::ResolveErrorInfo(net::ERR_FAILED), absl::nullopt));
+      network::mojom::HostResolverHost::NewHostPortPair(host_port_pair),
+      net::NetworkIsolationKey(origin, origin), std::move(params),
+      receiver_.BindNewPipeAndPassRemote());
+  receiver_.set_disconnect_handler(base::BindOnce(
+      &SocketExtensionWithDnsLookupFunction::OnComplete, base::Unretained(this),
+      net::ERR_NAME_NOT_RESOLVED, net::ResolveErrorInfo(net::ERR_FAILED),
+      /*resolved_addresses=*/absl::nullopt,
+      /*endpoint_results_with_metadata=*/absl::nullopt));
 
   // Balanced in OnComplete().
   AddRef();
@@ -236,7 +241,9 @@ void SocketExtensionWithDnsLookupFunction::StartDnsLookup(
 void SocketExtensionWithDnsLookupFunction::OnComplete(
     int result,
     const net::ResolveErrorInfo& resolve_error_info,
-    const absl::optional<net::AddressList>& resolved_addresses) {
+    const absl::optional<net::AddressList>& resolved_addresses,
+    const absl::optional<net::HostResolverEndpointResults>&
+        endpoint_results_with_metadata) {
   host_resolver_.reset();
   receiver_.reset();
   if (result == net::OK) {
@@ -469,8 +476,7 @@ ExtensionFunction::ResponseAction SocketListenFunction::Work() {
     return RespondNow(ErrorWithCode(-1, kPermissionError));
   }
 
-  socket->Listen(params_->address, params_->port,
-                 params_->backlog.get() ? *params_->backlog : 5,
+  socket->Listen(params_->address, params_->port, params_->backlog.value_or(5),
                  base::BindOnce(&SocketListenFunction::OnCompleted, this));
   return RespondLater();
 }
@@ -550,7 +556,7 @@ ExtensionFunction::ResponseAction SocketReadFunction::Work() {
         api::socket::Read::Results::Create(info), kSocketNotFoundError));
   }
 
-  socket->Read(params->buffer_size.get() ? *params->buffer_size : 4096,
+  socket->Read(params->buffer_size.value_or(4096),
                base::BindOnce(&SocketReadFunction::OnCompleted, this));
   return RespondLater();
 }
@@ -622,7 +628,7 @@ ExtensionFunction::ResponseAction SocketRecvFromFunction::Work() {
         api::socket::RecvFrom::Results::Create(info), kSocketNotFoundError));
   }
 
-  socket->RecvFrom(params->buffer_size.get() ? *params->buffer_size : 4096,
+  socket->RecvFrom(params->buffer_size.value_or(4096),
                    base::BindOnce(&SocketRecvFromFunction::OnCompleted, this));
   return RespondLater();
 }
@@ -730,7 +736,7 @@ ExtensionFunction::ResponseAction SocketSetKeepAliveFunction::Work() {
                            kSocketNotFoundError));
   }
   int delay = 0;
-  if (params->delay.get())
+  if (params->delay)
     delay = *params->delay;
   socket->SetKeepAlive(
       params->enable, delay,
@@ -794,17 +800,15 @@ ExtensionFunction::ResponseAction SocketGetInfoFunction::Work() {
   // that it should be closed locally.
   net::IPEndPoint peerAddress;
   if (socket->GetPeerAddress(&peerAddress)) {
-    info.peer_address =
-        std::make_unique<std::string>(peerAddress.ToStringWithoutPort());
-    info.peer_port = std::make_unique<int>(peerAddress.port());
+    info.peer_address = peerAddress.ToStringWithoutPort();
+    info.peer_port = peerAddress.port();
   }
 
   // Grab the local address as known by the OS.
   net::IPEndPoint localAddress;
   if (socket->GetLocalAddress(&localAddress)) {
-    info.local_address =
-        std::make_unique<std::string>(localAddress.ToStringWithoutPort());
-    info.local_port = std::make_unique<int>(localAddress.port());
+    info.local_address = localAddress.ToStringWithoutPort();
+    info.local_port = localAddress.port();
   }
 
   return RespondNow(ArgumentList(api::socket::GetInfo::Results::Create(info)));

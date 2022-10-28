@@ -1,9 +1,10 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include <utility>
 
+#include "ash/components/settings/cros_settings_names.h"
 #include "ash/constants/ash_features.h"
 #include "ash/constants/ash_switches.h"
 #include "ash/webui/media_app_ui/buildflags.h"
@@ -30,7 +31,12 @@
 #include "chrome/browser/ash/file_manager/app_service_file_tasks.h"
 #include "chrome/browser/ash/file_manager/file_manager_test_util.h"
 #include "chrome/browser/ash/file_manager/volume_manager.h"
+#include "chrome/browser/ash/hats/hats_config.h"
+#include "chrome/browser/ash/hats/hats_notification_controller.h"
 #include "chrome/browser/ash/login/test/network_portal_detector_mixin.h"
+#include "chrome/browser/ash/profiles/profile_helper.h"
+#include "chrome/browser/ash/settings/scoped_testing_cros_settings.h"
+#include "chrome/browser/ash/settings/stub_cros_settings_provider.h"
 #include "chrome/browser/ash/system_web_apps/system_web_app_manager.h"
 #include "chrome/browser/ash/system_web_apps/test_support/system_web_app_integration_test.h"
 #include "chrome/browser/ash/web_applications/media_app/media_web_app_info.h"
@@ -128,7 +134,20 @@ bool ExtractBoolInGlobalScope(content::WebContents* web_ui,
 class MediaAppIntegrationTest : public ash::SystemWebAppIntegrationTest {
  public:
   MediaAppIntegrationTest() {
-    feature_list_.InitAndEnableFeature(ash::features::kMediaAppHandlesPdf);
+    // Init with survey triggers enabled to ensure no bad interactions.
+    // Always enable because not all bots run with
+    // fieldtrial_testing_config.json. Simplify (slightly) by using the same
+    // survey trigger ID in the params.
+    const base::FieldTrialParams survey_params{
+        {"prob", "1"},  // 100% probability for testing.
+        {"survey_cycle_length", "90"},
+        {"survey_start_date_ms", "1662336000000"},
+        {"trigger_id", "s5EmUqzvY0jBnuKU19R0Tdf9ticy"}};
+
+    feature_list_.InitWithFeaturesAndParameters(
+        {{ash::kHatsMediaAppPdfSurvey.feature, survey_params},
+         {ash::kHatsPhotosExperienceSurvey.feature, survey_params}},
+        {});
   }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
@@ -174,6 +193,7 @@ class MediaAppIntegrationTest : public ash::SystemWebAppIntegrationTest {
 
  protected:
   ash::NetworkPortalDetectorMixin network_portal_detector_{&mixin_host_};
+  ash::ScopedTestingCrosSettings scoped_testing_cros_settings_;
 
  private:
   base::test::ScopedFeatureList feature_list_;
@@ -368,18 +388,6 @@ class MediaAppIntegrationPhotosIntegrationVideoDisabledTest
   MediaAppIntegrationPhotosIntegrationVideoDisabledTest() {
     feature_list_.InitAndDisableFeature(
         chromeos::features::kMediaAppPhotosIntegrationVideo);
-  }
-
- private:
-  base::test::ScopedFeatureList feature_list_;
-};
-
-class MediaAppIntegrationPdfDisabledTest : public MediaAppIntegrationTest {
- public:
-  MediaAppIntegrationPdfDisabledTest() {
-    // This reverts the "default"-enabled state of the feature set in the
-    // base class test harness.
-    feature_list_.InitAndDisableFeature(ash::features::kMediaAppHandlesPdf);
   }
 
  private:
@@ -642,7 +650,6 @@ IN_PROC_BROWSER_TEST_P(MediaAppIntegrationTest,
   audio_params.launch_paths.push_back(TestFile(kFilePng800x600));
   ash::LaunchSystemWebAppAsync(profile(), ash::SystemWebAppType::MEDIA,
                                audio_params);
-  ash::FlushSystemWebAppLaunchesForTesting(profile());
   Browser* first_browser = chrome::FindBrowserWithActiveWindow();
   content::WebContents* app = PrepareActiveBrowserForTest();
 
@@ -654,7 +661,6 @@ IN_PROC_BROWSER_TEST_P(MediaAppIntegrationTest,
   image_params.launch_paths.push_back(TestFile(kFileJpeg640x480));
   ash::LaunchSystemWebAppAsync(profile(), ash::SystemWebAppType::MEDIA,
                                image_params);
-  ash::FlushSystemWebAppLaunchesForTesting(profile());
   app = PrepareActiveBrowserForTest(3);
   Browser* second_browser = chrome::FindBrowserWithActiveWindow();
 
@@ -671,7 +677,6 @@ IN_PROC_BROWSER_TEST_P(MediaAppIntegrationTest, MediaAppLaunchImageMulti) {
 
   ash::LaunchSystemWebAppAsync(profile(), ash::SystemWebAppType::MEDIA,
                                image_params);
-  ash::FlushSystemWebAppLaunchesForTesting(profile());
 
   const BrowserList* browser_list = BrowserList::GetInstance();
   EXPECT_EQ(2u, browser_list->size());  // 1 extra for the browser test browser.
@@ -690,7 +695,6 @@ IN_PROC_BROWSER_TEST_P(MediaAppIntegrationTest, MediaAppLaunchPdfMulti) {
 
   ash::LaunchSystemWebAppAsync(profile(), ash::SystemWebAppType::MEDIA,
                                pdf_params);
-  ash::FlushSystemWebAppLaunchesForTesting(profile());
 
   WaitForBrowserCount(3);  // 1 extra for the browser test browser.
   const BrowserList* browser_list = BrowserList::GetInstance();
@@ -1148,16 +1152,6 @@ IN_PROC_BROWSER_TEST_P(MediaAppIntegrationAllProfilesTest,
   auto* system_app = GetManager().GetSystemApp(ash::SystemWebAppType::MEDIA);
   EXPECT_TRUE(system_app->ShouldShowInLauncher());
   EXPECT_TRUE(system_app->ShouldShowInSearch());
-}
-
-// Test for the old behaviour with fewer permutations. Can be removed along with
-// features::MediaAppHandlesPdf.
-IN_PROC_BROWSER_TEST_P(MediaAppIntegrationPdfDisabledTest,
-                       HiddenInLauncherAndSearch) {
-  // Check system_web_app_manager has the correct attributes for Media App.
-  auto* system_app = GetManager().GetSystemApp(ash::SystemWebAppType::MEDIA);
-  EXPECT_FALSE(system_app->ShouldShowInLauncher());
-  EXPECT_FALSE(system_app->ShouldShowInSearch());
 }
 
 // Note: Error reporting tests are limited to one per test instance otherwise we
@@ -1820,6 +1814,32 @@ IN_PROC_BROWSER_TEST_P(MediaAppIntegrationTest, MaybeTriggerPhotosHats) {
   SetPhotosExperienceSurveyTriggerAppIdForTesting("");
 }
 
+// Tests the survey trigger codepaths without kForceHappinessTrackingSystem,
+// which skips over some important coverage.
+IN_PROC_BROWSER_TEST_P(MediaAppIntegrationTest, SurveyTriggers) {
+  // Surveys only trigger for the device owner. Fake it.
+  scoped_testing_cros_settings_.device_settings()->Set(
+      ash::kDeviceOwner, base::Value(ash::ProfileHelper::Get()
+                                         ->GetUserByProfile(profile())
+                                         ->GetAccountId()
+                                         .GetUserEmail()));
+
+  // Do some consistency checks. If these fail then the method we want to test
+  // will bail out early.
+  EXPECT_TRUE(ash::ProfileHelper::IsOwnerProfile(profile()));
+  EXPECT_TRUE(
+      base::FeatureList::IsEnabled(ash::kHatsMediaAppPdfSurvey.feature));
+  EXPECT_TRUE(
+      base::FeatureList::IsEnabled(ash::kHatsPhotosExperienceSurvey.feature));
+
+  // The constructor configures the survey features with a 100% probability, so
+  // it should always trigger.
+  EXPECT_TRUE(ash::HatsNotificationController::ShouldShowSurveyToProfile(
+      profile(), ash::kHatsMediaAppPdfSurvey));
+  EXPECT_TRUE(ash::HatsNotificationController::ShouldShowSurveyToProfile(
+      profile(), ash::kHatsPhotosExperienceSurvey));
+}
+
 IN_PROC_BROWSER_TEST_P(MediaAppIntegrationTest, CapturesUserActionsForHats) {
   ExpectProductSurveyData({});  // Initially nothing.
 
@@ -1884,9 +1904,6 @@ IN_PROC_BROWSER_TEST_P(MediaAppIntegrationTest, GuestCanReadLocalFonts) {
   content::WebContents* web_ui = LaunchWithNoFiles();
   EXPECT_EQ("success", ExtractStringInGlobalScope(web_ui, script));
 }
-
-INSTANTIATE_SYSTEM_WEB_APP_MANAGER_TEST_SUITE_REGULAR_PROFILE_P(
-    MediaAppIntegrationPdfDisabledTest);
 
 INSTANTIATE_SYSTEM_WEB_APP_MANAGER_TEST_SUITE_REGULAR_PROFILE_P(
     MediaAppIntegrationDarkLightModeEnabledTest);

@@ -1,4 +1,4 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -64,6 +64,11 @@ extern const base::Feature kAppDiscoveryForOobe;
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kAppManagementAppDetails;
+#endif
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+COMPONENT_EXPORT(CHROME_FEATURES)
+extern const base::Feature kAppPreloadService;
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -172,18 +177,13 @@ extern const base::Feature kPreinstalledWebAppDuplicationFixer;
 #endif
 
 COMPONENT_EXPORT(CHROME_FEATURES)
+extern const base::Feature kPWAsDefaultOfflinePage;
+
+COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kDesktopPWAsAdditionalWindowingControls;
 
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kDesktopPWAsCacheDuringDefaultInstall;
-
-#if BUILDFLAG(IS_ANDROID)
-COMPONENT_EXPORT(CHROME_FEATURES)
-extern const base::Feature kAndroidPWAsDefaultOfflinePage;
-#else
-COMPONENT_EXPORT(CHROME_FEATURES)
-extern const base::Feature kDesktopPWAsDefaultOfflinePage;
-#endif
 
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kDesktopPWAsElidedExtensionsMenu;
@@ -193,6 +193,9 @@ extern const base::Feature kDesktopPWAsEnforceWebAppSettingsPolicy;
 
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kDesktopPWAsFlashAppNameInsteadOfOrigin;
+
+COMPONENT_EXPORT(CHROME_FEATURES)
+extern const base::Feature kDesktopPWAsIconHealthChecks;
 
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kDesktopPWAsRunOnOsLogin;
@@ -400,6 +403,8 @@ extern const base::Feature kHttpsOnlyMode;
 #if BUILDFLAG(IS_MAC)
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kImmersiveFullscreen;
+COMPONENT_EXPORT(CHROME_FEATURES)
+extern const base::Feature kImmersiveFullscreenPWAs;
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -530,9 +535,6 @@ extern const base::Feature kPluginVm;
 
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kPredictivePrefetchingAllowedOnAllConnectionTypes;
-
-COMPONENT_EXPORT(CHROME_FEATURES)
-extern const base::Feature kPrefixWebAppWindowsWithAppName;
 
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kPrerenderFallbackToPreconnect;

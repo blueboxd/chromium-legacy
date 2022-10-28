@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -98,7 +98,7 @@ class EncryptedReportingServiceProviderTest : public ::testing::Test {
 
  protected:
   void SetUp() override {
-    MissiveClient::InitializeFake();
+    chromeos::MissiveClient::InitializeFake();
     mock_client_.SetDMToken(
         policy::DMToken::CreateValidTokenForTesting("FAKE_DM_TOKEN").value());
 
@@ -122,7 +122,7 @@ class EncryptedReportingServiceProviderTest : public ::testing::Test {
   void TearDown() override {
     // Destruct test helper before the client shut down.
     test_helper_.TearDown();
-    MissiveClient::Shutdown();
+    chromeos::MissiveClient::Shutdown();
   }
 
   void SetupForRequestUploadEncryptedRecord() {

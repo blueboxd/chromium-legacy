@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -382,30 +382,30 @@ void FakeAppInstance::GetRecentAndSuggestedAppsFromPlayStore(
               ArcPlayStoreSearchRequestState::PHONESKY_RESULT_INVALID_DATA);
   }
 
-  auto icon = GetFakeIcon(mojom::ScaleFactor::SCALE_FACTOR_100P);
-  const auto& fake_icon_png_data = (!icon || !icon->icon_png_data)
-                                       ? std::vector<uint8_t>()
-                                       : icon->icon_png_data.value();
+  const bool has_price_and_rating = query != "QueryWithoutRatingAndPrice";
+  {
+    auto icon = GetFakeIcon(mojom::ScaleFactor::SCALE_FACTOR_100P);
+    const auto& fake_icon_png_data = (!icon || !icon->icon_png_data)
+                                         ? std::vector<uint8_t>()
+                                         : icon->icon_png_data.value();
+    fake_apps.push_back(mojom::AppDiscoveryResult::New(
+        std::string("LauncherIntentUri"),  // launch_intent_uri
+        std::string("InstallIntentUri"),   // install_intent_uri
+        std::string(query),                // label
+        false,                             // is_instant_app
+        false,                             // is_recent
+        std::string("Publisher"),          // publisher_name
+        has_price_and_rating ? std::string("$7.22")
+                             : std::string(),  // formatted_price
+        has_price_and_rating ? 5 : -1,         // review_score
+        fake_icon_png_data,                    // icon_png_data
+        std::string("com.google.android.gm"),  // package_name
+        std::move(icon)));                     // icon
+  }
 
   const int num_results =
       (state_code == ArcPlayStoreSearchRequestState::SUCCESS) ? max_results
                                                               : max_results / 2;
-  const bool has_price_and_rating = query != "QueryWithoutRatingAndPrice";
-
-  fake_apps.push_back(mojom::AppDiscoveryResult::New(
-      std::string("LauncherIntentUri"),  // launch_intent_uri
-      std::string("InstallIntentUri"),   // install_intent_uri
-      std::string(query),                // label
-      false,                             // is_instant_app
-      false,                             // is_recent
-      std::string("Publisher"),          // publisher_name
-      has_price_and_rating ? std::string("$7.22")
-                           : std::string(),  // formatted_price
-      has_price_and_rating ? 5 : -1,         // review_score
-      fake_icon_png_data,                    // icon_png_data
-      std::string("com.google.android.gm"),  // package_name
-      std::move(icon)));                     // icon
-
   for (int i = 0; i < num_results - 1; ++i) {
     const bool has_icon =
         query != "QueryWithSomeResultsMissingIcon" || i < num_results / 2;
@@ -503,6 +503,15 @@ void FakeAppInstance::RequestAssistStructure(
 void FakeAppInstance::IsInstallable(const std::string& package_name,
                                     IsInstallableCallback callback) {
   std::move(callback).Run(is_installable_);
+}
+
+void FakeAppInstance::GetAppCategory(const std::string& package_name,
+                                     GetAppCategoryCallback callback) {
+  auto itr = pkg_name_to_app_category_.find(package_name);
+  auto category = mojom::AppCategory::kUndefined;
+
+  if (itr != pkg_name_to_app_category_.end()) category = itr->second;
+  std::move(callback).Run(category);
 }
 
 void FakeAppInstance::LaunchIntentWithWindowInfo(

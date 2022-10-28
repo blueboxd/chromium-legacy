@@ -67,6 +67,7 @@
 <translation id="5308226104666789935">Chromium ne može provjeriti ima li ažuriranja</translation>
 <translation id="5396916991083608703">Želite li postaviti Chromium kao zadani preglednik?</translation>
 <translation id="5521125884468363740">Da biste vidjeli svoje kartice bez obzira na to gdje koristite Chromium, prijavite se i uključite sinkronizaciju</translation>
+<translation id="5522297504975449419">Neke značajke Chromiuma više neće biti dostupne.</translation>
 <translation id="5573014823074921752">Savjet za Chromium. Za više opcija za kartice dodirnite i držite gumb Prikaži kartice na alatnoj traci pri dnu ili vrhu zaslona.</translation>
 <translation id="5700709190537129682">Chromium ne može provjeriti vaše zaporke</translation>
 <translation id="5777187867430702742">Chromiumova stranica</translation>
@@ -95,6 +96,7 @@
 <translation id="7175400662502680481">Vaša je zaporka ugrožena zbog povrede podataka. Upravitelj zaporki preporučuje da je odmah promijenite.</translation>
 <translation id="7208566199746267865">Chromium vam štedi vrijeme sinkronizacijom vaših računa na webu. Račune možete dodavati i uklanjati u postavkama.</translation>
 <translation id="725427773388857052">Chromium vam može pomoći da se bolje zaštitite od povrede podataka, nesigurnih web-lokacija i još mnogo toga.</translation>
+<translation id="7255976941681861701">Upoznajte novi izbornik Chromiuma</translation>
 <translation id="7269362888766543920">Neki programski dodaci uzrokuju rušenje Chromiuma. Pokušajte ih deinstalirati.</translation>
 <translation id="7313655110045230863">Da biste postavili Chromium kao svoj zadani preglednik, otvorite postavke. Dodirnite opciju Zadana aplikacija preglednika i odaberite Chromium.</translation>
 <translation id="7337881442233988129">Chromium</translation>
@@ -113,7 +115,6 @@
 <translation id="7980860476903281594">Chromium dijeli vašu lokaciju s web-lokacijama za koje dopustite dijeljenje.</translation>
 <translation id="8013573822802650211">Da biste vidjeli svoje kartice bez obzira na to gdje koristite Chromium, prijavite se na svim svojim uređajima</translation>
 <translation id="8073677936375100957">Želite li izbrisati svoje podatke iz Chromiuma s ovog uređaja?</translation>
-<translation id="8175055321229419309">Savjet: <ph name="BEGIN_LINK" />premjestite Chromium na priključnu stanicu<ph name="END_LINK" /></translation>
 <translation id="8240981428553046115">Chromium nije uspio provjeriti ima li ažuriranja. Pokušajte ponovo kasnije.</translation>
 <translation id="8308172444429103994">Savjet za Chromium. Brže se prijavite odabirom spremljene zaporke pri vrhu tipkovnice.</translation>
 <translation id="858114650497379505">Zaporke koje ste spremili u Upravitelj zaporki možete koristiti u drugim aplikacijama na iPhoneu.</translation>

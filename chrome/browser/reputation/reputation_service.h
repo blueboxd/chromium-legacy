@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -95,6 +95,10 @@ class ReputationService : public KeyedService {
   void SetSensitiveKeywordsForTesting(const char* const* new_keywords,
                                       size_t num_new_keywords);
   void ResetSensitiveKeywordsForTesting();
+
+  // Reset set of eTLD+1s to forget the user action that ignores warning. Only
+  // for testing.
+  void ResetWarningDismissedETLDPlusOnesForTesting();
 
  private:
   // Callback once we have up-to-date |engaged_sites|. Performs checks on the

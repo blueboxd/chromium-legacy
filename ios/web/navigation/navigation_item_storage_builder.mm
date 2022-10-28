@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -44,7 +44,7 @@ NavigationItemStorageBuilder::BuildNavigationItemImpl(
   std::unique_ptr<NavigationItemImpl> item(new web::NavigationItemImpl());
   // While the virtual URL is persisted, we still need the original request URL
   // and the non-virtual URL to be set upon NavigationItem creation.  Since
-  // GetVirtualURL() returns |url_| for the non-overridden case, this will also
+  // GetVirtualURL() returns `url_` for the non-overridden case, this will also
   // update the virtual URL reported by this object.
   item->original_request_url_ = navigation_item_storage.URL;
 

@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,7 +6,6 @@
 
 #include <memory>
 
-#include "ash/components/disks/mock_disk_mount_manager.h"
 #include "base/barrier_closure.h"
 #include "base/bind.h"
 #include "base/callback_helpers.h"
@@ -32,6 +31,7 @@
 #include "chrome/browser/component_updater/fake_cros_component_manager.h"
 #include "chrome/browser/notifications/notification_display_service_tester.h"
 #include "chrome/browser/notifications/system_notification_helper.h"
+#include "chrome/browser/ui/views/crostini/crostini_ansible_software_config_view.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/test/base/browser_process_platform_part_test_api_chromeos.h"
 #include "chrome/test/base/scoped_testing_local_state.h"
@@ -47,10 +47,11 @@
 #include "chromeos/ash/components/dbus/concierge/concierge_service.pb.h"
 #include "chromeos/ash/components/dbus/concierge/fake_concierge_client.h"
 #include "chromeos/ash/components/dbus/debug_daemon/debug_daemon_client.h"
+#include "chromeos/ash/components/dbus/dlcservice/dlcservice_client.h"
 #include "chromeos/ash/components/dbus/seneschal/seneschal_client.h"
 #include "chromeos/ash/components/dbus/session_manager/fake_session_manager_client.h"
 #include "chromeos/ash/components/dbus/userdataauth/fake_cryptohome_misc_client.h"
-#include "chromeos/dbus/dlcservice/dlcservice_client.h"
+#include "chromeos/ash/components/disks/mock_disk_mount_manager.h"
 #include "components/account_id/account_id.h"
 #include "components/policy/proto/chrome_device_policy.pb.h"
 #include "components/user_manager/scoped_user_manager.h"
@@ -228,7 +229,7 @@ class CrostiniManagerTest : public testing::Test {
             component_updater::CrOSComponentManager::Error::NONE,
             base::FilePath("/install/path"), base::FilePath("/mount/path")));
     browser_part_.InitializeCrosComponentManager(component_manager_);
-    chromeos::DlcserviceClient::InitializeFake();
+    ash::DlcserviceClient::InitializeFake();
 
     scoped_feature_list_.InitWithFeatures({features::kCrostini}, {});
     run_loop_ = std::make_unique<base::RunLoop>();
@@ -276,7 +277,7 @@ class CrostiniManagerTest : public testing::Test {
     crostini_manager_->Shutdown();
     profile_.reset();
     run_loop_.reset();
-    chromeos::DlcserviceClient::Shutdown();
+    ash::DlcserviceClient::Shutdown();
     browser_part_.ShutdownCrosComponentManager();
     component_manager_.reset();
   }
@@ -715,21 +716,20 @@ TEST_F(CrostiniManagerTest, UninstallPackageOwningFileSignalOperationBlocked) {
 
 TEST_F(CrostiniManagerTest, RegisterContainerPrefWhenContainerCreated) {
   const base::Value::List* pref =
-      &profile_->GetPrefs()->GetValueList(guest_os::prefs::kGuestOsContainers);
+      &profile_->GetPrefs()->GetList(guest_os::prefs::kGuestOsContainers);
   EXPECT_EQ(pref->size(), 0);
   crostini_manager()->CreateLxdContainer(
       container_id(), absl::nullopt, absl::nullopt,
       base::BindOnce(&ExpectCrostiniResult, run_loop()->QuitClosure(),
                      CrostiniResult::SUCCESS));
   run_loop()->Run();
-  pref =
-      &profile_->GetPrefs()->GetValueList(guest_os::prefs::kGuestOsContainers);
+  pref = &profile_->GetPrefs()->GetList(guest_os::prefs::kGuestOsContainers);
   EXPECT_EQ(pref->size(), 1);
 }
 
 TEST_F(CrostiniManagerTest, RegisterContainerPrefWhenContainerExists) {
   const base::Value::List* pref =
-      &profile_->GetPrefs()->GetValueList(guest_os::prefs::kGuestOsContainers);
+      &profile_->GetPrefs()->GetList(guest_os::prefs::kGuestOsContainers);
   EXPECT_EQ(pref->size(), 0);
   vm_tools::cicerone::CreateLxdContainerResponse response;
   response.set_status(vm_tools::cicerone::CreateLxdContainerResponse::EXISTS);
@@ -739,8 +739,7 @@ TEST_F(CrostiniManagerTest, RegisterContainerPrefWhenContainerExists) {
       base::BindOnce(&ExpectCrostiniResult, run_loop()->QuitClosure(),
                      CrostiniResult::SUCCESS));
   run_loop()->Run();
-  pref =
-      &profile_->GetPrefs()->GetValueList(guest_os::prefs::kGuestOsContainers);
+  pref = &profile_->GetPrefs()->GetList(guest_os::prefs::kGuestOsContainers);
   EXPECT_EQ(pref->size(), 1);
 }
 
@@ -2326,124 +2325,52 @@ TEST_F(CrostiniManagerTest, StartLxdSuccess) {
   run_loop()->Run();
 }
 
-class CrostiniManagerAnsibleInfraTest
-    : public CrostiniManagerRestartTest,
-      public AnsibleManagementService::Observer {
+class CrostiniManagerAnsibleInfraTest : public CrostiniManagerRestartTest {
  public:
   void SetUp() override {
     CrostiniManagerTest::SetUp();
+    mock_ansible_management_service_ =
+        AnsibleManagementTestHelper::SetUpMockAnsibleManagementService(
+            profile_.get());
     ansible_management_test_helper_ =
         std::make_unique<AnsibleManagementTestHelper>(profile_.get());
     ansible_management_test_helper_->SetUpAnsibleInfra();
     SetUpViewsEnvironmentForTesting();
-    AnsibleManagementService::GetForProfile(profile_.get())->AddObserver(this);
-
-    // Set sensible default values.
-    is_install_ansible_success_ = true;
-    is_apply_ansible_success_ = true;
   }
 
   void TearDown() override {
-    crostini::CloseCrostiniAnsibleSoftwareConfigViewForTesting();
-    // Wait for view triggered to be closed.
     base::RunLoop().RunUntilIdle();
 
     TearDownViewsEnvironmentForTesting();
 
     ansible_management_test_helper_.reset();
-    AnsibleManagementService::GetForProfile(profile_.get())
-        ->RemoveObserver(this);
     CrostiniManagerTest::TearDown();
   }
 
-  // AnsibleManagementService::Observer
-  void OnAnsibleSoftwareConfigurationStarted(
-      const guest_os::GuestId& container_id) override {}
-  void OnAnsibleSoftwareConfigurationFinished(
-      const guest_os::GuestId& container_id,
-      bool success) override {}
-  void OnAnsibleSoftwareInstall(
-      const guest_os::GuestId& container_id) override {
-    if (is_install_ansible_success_) {
-      ansible_management_test_helper_->SendSucceededInstallSignal();
-    } else {
-      ansible_management_test_helper_->SendFailedInstallSignal();
-    }
-  }
-  void OnApplyAnsiblePlaybook(const guest_os::GuestId& container_id) override {
-    if (is_apply_ansible_success_) {
-      ansible_management_test_helper_->SendSucceededApplySignal();
-    } else {
-      ansible_management_test_helper_->SendFailedApplySignal();
-    }
-  }
-
  protected:
-  void SetInstallAnsibleStatus(bool status) {
-    is_install_ansible_success_ = status;
-  }
-  void SetApplyAnsibleStatus(bool status) {
-    is_apply_ansible_success_ = status;
+  MockAnsibleManagementService* mock_ansible_management_service() {
+    return mock_ansible_management_service_;
   }
 
   std::unique_ptr<AnsibleManagementTestHelper> ansible_management_test_helper_;
-
-  bool is_install_ansible_success_;
-  bool is_apply_ansible_success_;
+  MockAnsibleManagementService* mock_ansible_management_service_;
 };
 
-TEST_F(CrostiniManagerAnsibleInfraTest, StartContainerAnsibleInstallFailure) {
-  ansible_management_test_helper_->SetUpAnsibleInstallation(
-      vm_tools::cicerone::InstallLinuxPackageResponse::FAILED);
+TEST_F(CrostiniManagerAnsibleInfraTest, StartContainerFailure) {
+  EXPECT_CALL(*mock_ansible_management_service(), ConfigureContainer).Times(1);
+  ON_CALL(*mock_ansible_management_service(), ConfigureContainer)
+      .WillByDefault([](const guest_os::GuestId& container_id,
+                        base::FilePath playbook,
+                        base::OnceCallback<void(bool success)> callback) {
+        std::move(callback).Run(false);
+      });
 
-  crostini_manager()->RestartCrostini(
-      DefaultContainerId(),
-      base::BindOnce(&ExpectCrostiniResult, run_loop()->QuitClosure(),
-                     CrostiniResult::CONTAINER_CONFIGURATION_FAILED),
-      this);
+  CrostiniManager::RestartOptions ansible_restart;
+  ansible_restart.ansible_playbook = profile_->GetPrefs()->GetFilePath(
+      prefs::kCrostiniAnsiblePlaybookFilePath);
 
-  run_loop()->Run();
-}
-
-TEST_F(CrostiniManagerAnsibleInfraTest, StartContainerInstallSignalFailure) {
-  ansible_management_test_helper_->SetUpAnsibleInstallation(
-      vm_tools::cicerone::InstallLinuxPackageResponse::STARTED);
-  SetInstallAnsibleStatus(false);
-
-  crostini_manager()->RestartCrostini(
-      DefaultContainerId(),
-      base::BindOnce(&ExpectCrostiniResult, run_loop()->QuitClosure(),
-                     CrostiniResult::CONTAINER_CONFIGURATION_FAILED),
-      this);
-
-  run_loop()->Run();
-}
-
-TEST_F(CrostiniManagerAnsibleInfraTest, StartContainerApplyFailure) {
-  ansible_management_test_helper_->SetUpAnsibleInstallation(
-      vm_tools::cicerone::InstallLinuxPackageResponse::STARTED);
-  ansible_management_test_helper_->SetUpPlaybookApplication(
-      vm_tools::cicerone::ApplyAnsiblePlaybookResponse::FAILED);
-
-  crostini_manager()->RestartCrostini(
-      DefaultContainerId(),
-      base::BindOnce(&ExpectCrostiniResult, run_loop()->QuitClosure(),
-                     CrostiniResult::CONTAINER_CONFIGURATION_FAILED),
-      this);
-
-  run_loop()->Run();
-}
-
-TEST_F(CrostiniManagerAnsibleInfraTest, StartContainerApplySignalFailure) {
-  ansible_management_test_helper_->SetUpAnsibleInstallation(
-      vm_tools::cicerone::InstallLinuxPackageResponse::STARTED);
-  ansible_management_test_helper_->SetUpPlaybookApplication(
-      vm_tools::cicerone::ApplyAnsiblePlaybookResponse::STARTED);
-
-  SetApplyAnsibleStatus(false);
-
-  crostini_manager()->RestartCrostini(
-      DefaultContainerId(),
+  crostini_manager()->RestartCrostiniWithOptions(
+      DefaultContainerId(), std::move(ansible_restart),
       base::BindOnce(&ExpectCrostiniResult, run_loop()->QuitClosure(),
                      CrostiniResult::CONTAINER_CONFIGURATION_FAILED),
       this);
@@ -2452,13 +2379,20 @@ TEST_F(CrostiniManagerAnsibleInfraTest, StartContainerApplySignalFailure) {
 }
 
 TEST_F(CrostiniManagerAnsibleInfraTest, StartContainerSuccess) {
-  ansible_management_test_helper_->SetUpAnsibleInstallation(
-      vm_tools::cicerone::InstallLinuxPackageResponse::STARTED);
-  ansible_management_test_helper_->SetUpPlaybookApplication(
-      vm_tools::cicerone::ApplyAnsiblePlaybookResponse::STARTED);
+  EXPECT_CALL(*mock_ansible_management_service(), ConfigureContainer).Times(1);
+  ON_CALL(*mock_ansible_management_service(), ConfigureContainer)
+      .WillByDefault([](const guest_os::GuestId& container_id,
+                        base::FilePath playbook,
+                        base::OnceCallback<void(bool success)> callback) {
+        std::move(callback).Run(true);
+      });
 
-  crostini_manager()->RestartCrostini(
-      DefaultContainerId(),
+  CrostiniManager::RestartOptions ansible_restart;
+  ansible_restart.ansible_playbook = profile_->GetPrefs()->GetFilePath(
+      prefs::kCrostiniAnsiblePlaybookFilePath);
+
+  crostini_manager()->RestartCrostiniWithOptions(
+      DefaultContainerId(), std::move(ansible_restart),
       base::BindOnce(&ExpectCrostiniResult, run_loop()->QuitClosure(),
                      CrostiniResult::SUCCESS),
       this);

@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -45,7 +45,7 @@ class ScopedWKScriptMessageHandlerTest : public WebTestWithWebState {
   ScopedWKScriptMessageHandlerTest() = default;
   ~ScopedWKScriptMessageHandlerTest() override = default;
 
-  // Returns the user content controller associated with |GetBrowserState()|.
+  // Returns the user content controller associated with `GetBrowserState()`.
   WKUserContentController* GetUserContentController() {
     WKWebViewConfigurationProvider& configuration_provider =
         WKWebViewConfigurationProvider::FromBrowserState(GetBrowserState());

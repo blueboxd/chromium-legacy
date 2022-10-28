@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -288,6 +288,8 @@ void RecordAppLaunch(const std::string& app_id,
     RecordDefaultAppLaunch(DefaultAppName::kProjector, launch_source);
   } else if (app_id == web_app::kFirmwareUpdateAppId) {
     RecordDefaultAppLaunch(DefaultAppName::kFirmwareUpdateApp, launch_source);
+  } else if (app_id == arc::kGoogleTVAppId) {
+    RecordDefaultAppLaunch(DefaultAppName::kGoogleTv, launch_source);
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
   }
 

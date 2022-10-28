@@ -1,4 +1,4 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -99,7 +99,7 @@ TEST_F(ContentScriptsManifestTest, FailLoadingNonUTF8Scripts) {
   scoped_refptr<Extension> extension(
       file_util::LoadExtension(install_dir, mojom::ManifestLocation::kUnpacked,
                                Extension::NO_FLAGS, &error));
-  ASSERT_TRUE(extension.get() == NULL);
+  ASSERT_TRUE(extension.get() == nullptr);
   ASSERT_STREQ(
       "Could not load file 'bad_encoding.js' for content script. "
       "It isn't UTF-8 encoded.",

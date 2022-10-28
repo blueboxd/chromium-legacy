@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -43,7 +43,7 @@ void CryptAuthKeyRegistryImpl::RegisterPrefs(PrefRegistrySimple* registry) {
 CryptAuthKeyRegistryImpl::CryptAuthKeyRegistryImpl(PrefService* pref_service)
     : pref_service_(pref_service) {
   const base::Value::Dict& dict =
-      pref_service_->GetValueDict(prefs::kCryptAuthKeyRegistry);
+      pref_service_->GetDict(prefs::kCryptAuthKeyRegistry);
 
   for (const CryptAuthKeyBundle::Name& name : CryptAuthKeyBundle::AllNames()) {
     std::string name_string =

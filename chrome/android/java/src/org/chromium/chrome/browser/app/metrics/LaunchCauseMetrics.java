@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -16,8 +16,8 @@ import org.chromium.base.ApplicationState;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.Log;
 import org.chromium.base.ThreadUtils;
-import org.chromium.base.annotations.CheckDiscard;
 import org.chromium.base.metrics.RecordHistogram;
+import org.chromium.build.annotations.CheckDiscard;
 import org.chromium.chrome.browser.app.ChromeActivity;
 import org.chromium.ui.display.DisplayAndroidManager;
 

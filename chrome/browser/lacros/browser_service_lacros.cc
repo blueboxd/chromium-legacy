@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -14,12 +14,14 @@
 #include "base/memory/raw_ptr.h"
 #include "base/metrics/statistics_recorder.h"
 #include "base/ranges/algorithm.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/arc/arc_web_contents_data.h"
 #include "chrome/browser/feedback/feedback_dialog_utils.h"
 #include "chrome/browser/lacros/app_mode/kiosk_session_service_lacros.h"
+#include "chrome/browser/lacros/browser_launcher.h"
 #include "chrome/browser/lacros/feedback_util.h"
 #include "chrome/browser/lacros/system_logs/lacros_system_log_fetcher.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
@@ -40,12 +42,12 @@
 #include "chrome/browser/ui/profile_picker.h"
 #include "chrome/browser/ui/scoped_tabbed_browser_displayer.h"
 #include "chrome/browser/ui/startup/lacros_first_run_service.h"
-#include "chrome/browser/ui/startup/startup_browser_creator.h"
 #include "chrome/browser/ui/startup/startup_tab.h"
 #include "chrome/browser/ui/views/tabs/tab_scrubber_chromeos.h"
 #include "chrome/browser/ui/webui/tab_strip/tab_strip_ui_util.h"
 #include "chrome/common/channel_info.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/extensions/api/tabs.h"
 #include "chrome/common/webui_url_constants.h"
 #include "chromeos/crosapi/mojom/crosapi.mojom.h"
 #include "chromeos/lacros/lacros_service.h"
@@ -56,6 +58,7 @@
 #include "components/feedback/system_logs/system_logs_fetcher.h"
 #include "components/keep_alive_registry/keep_alive_types.h"
 #include "components/keep_alive_registry/scoped_keep_alive.h"
+#include "components/sessions/content/session_tab_helper.h"
 #include "content/public/browser/browser_thread.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "ui/platform_window/platform_window.h"
@@ -86,39 +89,31 @@ void MaybeProceedWithProfile(base::OnceCallback<void(Profile*)> callback,
   std::move(callback).Run(proceed ? profile : nullptr);
 }
 
-// Helper function to handle profile loading errors.
-void OnMainProfileLoaded(base::OnceCallback<void(Profile*)>& callback,
-                         bool can_trigger_fre,
-                         Profile* profile,
-                         Profile::CreateStatus status) {
+// Helper function to handle profile initialization.
+void OnMainProfileInitialized(base::OnceCallback<void(Profile*)> callback,
+                              bool can_trigger_fre,
+                              Profile* profile) {
   DCHECK(callback);
-  switch (status) {
-    case Profile::CREATE_STATUS_LOCAL_FAIL:
-      LOG(ERROR) << "Profile creation failed.";
-      // Profile creation failed, show the profile picker instead.
-      ProfilePicker::Show(ProfilePicker::Params::FromEntryPoint(
-          ProfilePicker::EntryPoint::kNewSessionOnExistingProcess));
-      std::move(callback).Run(nullptr);
-      return;
-    case Profile::CREATE_STATUS_CREATED:
-      // Do nothing, wait for the profile to be fully initialized.
-      return;
-    case Profile::CREATE_STATUS_INITIALIZED:
-      DCHECK(profile);
+  if (!profile) {
+    LOG(ERROR) << "Profile creation failed.";
+    // Profile creation failed, show the profile picker instead.
+    ProfilePicker::Show(ProfilePicker::Params::FromEntryPoint(
+        ProfilePicker::EntryPoint::kNewSessionOnExistingProcess));
+    std::move(callback).Run(nullptr);
+    return;
+  }
 
-      auto* fre_service =
-          LacrosFirstRunServiceFactory::GetForBrowserContext(profile);
-      if (fre_service && can_trigger_fre && fre_service->ShouldOpenFirstRun()) {
-        // TODO(https://crbug.com/1313848): Consider taking a
-        // `ScopedProfileKeepAlive`.
-        fre_service->OpenFirstRunIfNeeded(
-            LacrosFirstRunService::EntryPoint::kOther,
-            base::BindOnce(&MaybeProceedWithProfile, std::move(callback),
-                           base::Unretained(profile)));
-      } else {
-        std::move(callback).Run(profile);
-      }
-      return;
+  auto* fre_service =
+      LacrosFirstRunServiceFactory::GetForBrowserContext(profile);
+  if (fre_service && can_trigger_fre && fre_service->ShouldOpenFirstRun()) {
+    // TODO(https://crbug.com/1313848): Consider taking a
+    // `ScopedProfileKeepAlive`.
+    fre_service->OpenFirstRunIfNeeded(
+        LacrosFirstRunService::EntryPoint::kOther,
+        base::BindOnce(&MaybeProceedWithProfile, std::move(callback),
+                       base::Unretained(profile)));
+  } else {
+    std::move(callback).Run(profile);
   }
 }
 
@@ -127,11 +122,8 @@ void LoadMainProfile(base::OnceCallback<void(Profile*)> callback,
   ProfileManager* profile_manager = g_browser_process->profile_manager();
   profile_manager->CreateProfileAsync(
       ProfileManager::GetPrimaryUserProfilePath(),
-      // Use base::OwnedRef as `OnMainProfileLoaded()` is called multiple
-      // times, but `callback` is only called once.
-      base::BindRepeating(&OnMainProfileLoaded,
-                          base::OwnedRef(std::move(callback)),
-                          can_trigger_fre));
+      base::BindOnce(&OnMainProfileInitialized, std::move(callback),
+                     can_trigger_fre));
 }
 
 NavigateParams::PathBehavior ConvertPathBehavior(
@@ -142,6 +134,34 @@ NavigateParams::PathBehavior ConvertPathBehavior(
     case crosapi::mojom::OpenUrlParams_SwitchToTabPathBehavior::kIgnore:
       return NavigateParams::IGNORE_AND_NAVIGATE;
   }
+}
+
+// Find the browser containing the tab with ID |tab_id_str| or nullptr if none
+// is found within the given |profile|.
+Browser* FindBrowserWithTabId(const std::string& tab_id_str) {
+  if (tab_id_str.empty())
+    return nullptr;
+
+  int tab_id = -1;
+  if (!base::StringToInt(tab_id_str, &tab_id))
+    return nullptr;
+
+  if (tab_id == extensions::api::tabs::TAB_ID_NONE)
+    return nullptr;
+
+  for (auto* target_browser : *BrowserList::GetInstance()) {
+    TabStripModel* target_tab_strip = target_browser->tab_strip_model();
+    for (int i = 0; i < target_tab_strip->count(); ++i) {
+      content::WebContents* target_contents =
+          target_tab_strip->GetWebContentsAt(i);
+      if (sessions::SessionTabHelper::IdForTab(target_contents).id() ==
+          tab_id) {
+        return target_browser;
+      }
+    }
+  }
+
+  return nullptr;
 }
 
 }  // namespace
@@ -254,11 +274,20 @@ void BrowserServiceLacros::NewWindowForDetachingTab(
     const std::u16string& tab_id,
     const std::u16string& group_id,
     NewWindowForDetachingTabCallback callback) {
-  LoadMainProfile(
-      base::BindOnce(&BrowserServiceLacros::NewWindowForDetachingTabWithProfile,
-                     weak_ptr_factory_.GetWeakPtr(), tab_id, group_id,
-                     std::move(callback)),
-      /*can_trigger_fre=*/false);
+  auto* browser = FindBrowserWithTabId(base::UTF16ToUTF8(tab_id));
+  if (!browser) {
+    browser = tab_strip_ui::GetBrowserWithGroupId(/*profile=*/nullptr,
+                                                  base::UTF16ToUTF8(group_id));
+  }
+
+  if (!browser) {
+    std::move(callback).Run(crosapi::mojom::CreationResult::kUnknown,
+                            std::string());
+    return;
+  }
+
+  NewWindowForDetachingTabWithProfile(tab_id, group_id, std::move(callback),
+                                      browser->profile());
 }
 
 void BrowserServiceLacros::NewTab(bool should_trigger_session_restore,
@@ -682,48 +711,8 @@ void BrowserServiceLacros::OpenForFullRestoreWithProfile(
                     "Aborting the requested action.";
     return;
   }
-
-  // There must not be any previously opened browsers as this could change the
-  // list of profiles returned from `GetLastOpenedProfiles()` below.
-  if (BrowserList::GetInstance()->size() != 0) {
-    LOG(ERROR) << "Cannot full restore with pre-existing browser instances.";
-    return;
-  }
-
-  // Ensure that we do not start with the profile picker.
-  StartupProfileInfo profile_info{profile, StartupProfileMode::kBrowserWindow};
-
-  // Get the last opened profiles from the last session. This is only valid
-  // before any browsers have been opened for the current session as opening /
-  // closing browsers will cause the last opened profiles to change.
-  auto last_opened_profiles =
-      g_browser_process->profile_manager()->GetLastOpenedProfiles();
-
-  // Currently the kNoStartupWindow flag is set when lacros-chrome is launched
-  // with crosapi::mojom::InitialBrowserAction::kDoNotOpenWindow. The intention
-  // is to prevent lacros-chrome from launching a window during startup. However
-  // this flag remains set throughout the life of the browser process.
-  // This leads to issues where browsers can no longer be opened by the startup
-  // browser creator (such as below and in SessionService::RestoreIfNecessary).
-  // As a temporary workaround remove the kNoStartupWindow switch from the
-  // command line when launching for full restore. This is safe as by this point
-  // the browser process has already been started in its windowless state and
-  // the flag is no longer required.
-  base::CommandLine* lacros_command_line =
-      base::CommandLine::ForCurrentProcess();
-  lacros_command_line->RemoveSwitch(switches::kNoStartupWindow);
-
-  // Modify the command line to restore browser sessions.
-  lacros_command_line->AppendSwitch(switches::kRestoreLastSession);
-
-  if (skip_crash_restore)
-    lacros_command_line->AppendSwitch(switches::kHideCrashRestoreBubble);
-
-  StartupBrowserCreator browser_creator;
-  browser_creator.LaunchBrowserForLastProfiles(
-      *lacros_command_line, base::FilePath(),
-      chrome::startup::IsProcessStartup::kYes, chrome::startup::IsFirstRun::kNo,
-      profile_info, last_opened_profiles);
+  BrowserLauncher::GetForProfile(profile)->LaunchForFullRestore(
+      skip_crash_restore);
 }
 
 void BrowserServiceLacros::UpdateComponentPolicy(

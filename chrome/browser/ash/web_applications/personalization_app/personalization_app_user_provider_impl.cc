@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -335,7 +335,9 @@ void PersonalizationAppUserProviderImpl::OnUserProfileImageUpdated(
     return;
 
   user_image_observer_remote_->OnUserProfileImageUpdated(
-      GURL(webui::GetBitmapDataUrl(*profile_image.bitmap())));
+      profile_image.isNull()
+          ? GURL()
+          : GURL(webui::GetBitmapDataUrl(*profile_image.bitmap())));
 }
 
 void PersonalizationAppUserProviderImpl::OnCameraPresenceCheckDone(

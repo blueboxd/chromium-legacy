@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -51,11 +51,8 @@ class DlpFilesPolicyServiceProvider
   void RespondWithRestrictedFilesTransfer(
       dbus::MethodCall* method_call,
       dbus::ExportedObject::ResponseSender response_sender,
-      const std::vector<GURL>& restricted_sources);
-
-  // DlpFilesController is responsible for checking whether any of the selected
-  // files is restricted according to the DataLeakPrevention policy.
-  policy::DlpFilesController dlp_files_controller_;
+      const std::vector<policy::DlpFilesController::FileDaemonInfo>&
+          restricted_files);
 
   base::WeakPtrFactory<DlpFilesPolicyServiceProvider> weak_ptr_factory_{this};
 };

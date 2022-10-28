@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -74,7 +74,8 @@ AboutThisSiteStatus ValidateSiteInfo(const proto::SiteInfo& site_info) {
   if (site_info.has_description()) {
     status = ValidateDescription(site_info.description());
   } else {
-    if (!base::FeatureList::IsEnabled(
+    if (!base::FeatureList::IsEnabled(kPageInfoAboutThisSiteMoreInfo) ||
+        !base::FeatureList::IsEnabled(
             kPageInfoAboutThisSiteDescriptionPlaceholder))
       return AboutThisSiteStatus::kMissingDescription;
   }
@@ -98,14 +99,6 @@ AboutThisSiteStatus ValidateSiteInfo(const proto::SiteInfo& site_info) {
     status = ValidateMoreAbout(site_info.more_about());
 
   return status;
-}
-
-AboutThisSiteStatus ValidateBannerInfo(const proto::BannerInfo& banner_info) {
-  if (!banner_info.has_label())
-    return AboutThisSiteStatus::kMissingDescription;
-  if (!banner_info.has_url())
-    return AboutThisSiteStatus::kIncompleteSource;
-  return ValidateSource(banner_info.url());
 }
 
 AboutThisSiteStatus ValidateMetadata(

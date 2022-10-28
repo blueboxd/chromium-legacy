@@ -1,4 +1,4 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -251,9 +251,10 @@ void FakeCrasAudioClient::SetActiveInputNode(uint64_t node_id) {
     observer.ActiveInputNodeChanged(node_id);
 }
 
-void FakeCrasAudioClient::SetHotwordModel(uint64_t node_id,
-                                          const std::string& hotword_model,
-                                          VoidDBusMethodCallback callback) {}
+void FakeCrasAudioClient::SetHotwordModel(
+    uint64_t node_id,
+    const std::string& hotword_model,
+    chromeos::VoidDBusMethodCallback callback) {}
 
 void FakeCrasAudioClient::SetFixA2dpPacketSize(bool enabled) {}
 
@@ -308,7 +309,7 @@ void FakeCrasAudioClient::ResendBluetoothBattery() {
 }
 
 void FakeCrasAudioClient::WaitForServiceToBeAvailable(
-    WaitForServiceToBeAvailableCallback callback) {
+    chromeos::WaitForServiceToBeAvailableCallback callback) {
   std::move(callback).Run(true);
 }
 

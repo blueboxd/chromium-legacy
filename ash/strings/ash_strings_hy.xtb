@@ -28,7 +28,6 @@
 <translation id="1111021433905331574">Ստեղնաշարի հետնալույսի գույնը փոխելու համար անցեք Կարգավորումներ &gt; <ph name="APP_TITLE" /></translation>
 <translation id="112308213915226829">Ինքնաթաքցնել դարակը</translation>
 <translation id="1142002900084379065">Վերջին լուսանկարները</translation>
-<translation id="114451698114044150">Ավտոմատ մասշտաբավորումը միացված է։</translation>
 <translation id="1148499908455722006">Բացել <ph name="USER_NAME" /> հաշվի տեղեկությունների երկխոսության պատուհանը</translation>
 <translation id="1150989369772528668">Օրացույց</translation>
 <translation id="1153356358378277386">Զուգակցված սարքեր</translation>
@@ -330,7 +329,6 @@
 <translation id="2894949423239620203">Մալուխը կարող է ազդել աշխատանքի արդյունավետության վրա</translation>
 <translation id="2903844815300039659">Միացած է <ph name="NAME" /> ցանցին։ <ph name="STRENGTH" /></translation>
 <translation id="2914580577416829331">Էկրանի լուսանկարներ</translation>
-<translation id="2925246975070834767">Փորձեք ավտոմատ մասշտաբավորումն էկրանի կենտրոնով։ Միացրեք այն Արագ կարգավորումներում։</translation>
 <translation id="2941112035454246133">Ցածր</translation>
 <translation id="2942350706960889382">Ամրացված խոշորացույց</translation>
 <translation id="2942516765047364088">Դարակի դիրքը</translation>
@@ -474,7 +472,6 @@
 <translation id="3708186454126126312">Նախկինում միացված սարքեր</translation>
 <translation id="371370241367527062">Առջևի խոսափող</translation>
 <translation id="3713734891607377840">Բացել ներբեռնելուց հետո</translation>
-<translation id="3724279623330129812">Տեսախցիկն ավտոմատ մասշտաբավորման միջոցով կենտրոնաբերվեց</translation>
 <translation id="3726171378575546917"><ph name="UNAVAILABLE_APPS_ONE" /> և <ph name="UNAVAILABLE_APPS_TWO" /> հավելվածներն ու ևս <ph name="UNAVAILABLE_APPS_COUNT" /> հավելված տեղադրված չեն այս սարքում։</translation>
 <translation id="3735740477244556633">Դասավորել ըստ</translation>
 <translation id="3742055079367172538">Սքրինշոթը ստեղծված է</translation>
@@ -508,6 +505,7 @@
 <translation id="3922427723338465344">{0,plural, =1{Վերադարձեք սարքի օպերացիոն համակարգի նախորդ տարբերակին 1 րոպեի ընթացքում}one{Վերադարձեք սարքի օպերացիոն համակարգի նախորդ տարբերակին # րոպեի ընթացքում}other{Վերադարձեք սարքի օպերացիոն համակարգի նախորդ տարբերակին # րոպեի ընթացքում}}</translation>
 <translation id="3923494859158167397">Բջջային ցանց կարգավորված չէ</translation>
 <translation id="3925540965556789199"><ph name="DATE" />, միջոցառումների բեռնում։</translation>
+<translation id="392627956579011934">Խոսքի ֆայլեր տեղադրելու համար անհրաժեշտ է վերագործարկել համակարգը։</translation>
 <translation id="3932043219784172185">Միացած սարքեր չկան</translation>
 <translation id="3934456833412894880">Հարմարվող լիցքավորումը միացված է։ Մարտկոցի աշխատաժամանակը երկարացնելու համար այն կլիցքավորվի մինչև 80%։ Մարտկոցն ամբողջությամբ կլիցքավորվի միայն այն դեպքում, երբ իսկապես դրա անհրաժեշտությունը լինի։</translation>
 <translation id="3943857333388298514">Տեղադրել</translation>
@@ -562,6 +560,7 @@
 <translation id="4242533952199664413">Բացել կարգավորումները</translation>
 <translation id="4247123849143712100">Թարմացնել և անջատել</translation>
 <translation id="4250229828105606438">Սքրինշոթ</translation>
+<translation id="4250899820387052060">Ֆայլերի արագ մուտք</translation>
 <translation id="425364040945105958">SIM քարտ չկա</translation>
 <translation id="4261870227682513959">Ցուցադրել ծանուցումների կարգավորումները: Ծանուցումներն անջատված են:</translation>
 <translation id="4269883910223712419">Այս սարքի ադմինիստրատորը կարող է՝</translation>
@@ -746,6 +745,7 @@
 <translation id="5283198616748585639">Ավելացնել 1 րոպե</translation>
 <translation id="528468243742722775">Վերջ</translation>
 <translation id="5286194356314741248">Որոնում</translation>
+<translation id="5293671101077843611">Այսօր միջոցառումներ չկան</translation>
 <translation id="5297423144044956168">Բջջային սարքեր չեն գտնվել</translation>
 <translation id="5297704307811127955">Անջատված է</translation>
 <translation id="5300589172476337783">Ցույց տալ</translation>
@@ -908,7 +908,6 @@
 <translation id="6137566720514957455">Բացել <ph name="USER_EMAIL_ADDRESS" /> հաշվի հեռացման երկխոսության պատուհանը</translation>
 <translation id="6141988275892716286">Հաստատեք ներբեռնումը</translation>
 <translation id="6154006699632741460">Արտաքին սարքերը չեն աջակցվում</translation>
-<translation id="6156262341071374681">Ցուցադրել բոլոր հավելվածները</translation>
 <translation id="615957422585914272">Ցույց տալ էկրանի ստեղնաշարը</translation>
 <translation id="6165508094623778733">Իմանալ ավելին</translation>
 <translation id="6166852626429024716">Որոնեք սարքում, հավելվածներում, կարգավորումներում, համացանցում…</translation>
@@ -1032,7 +1031,6 @@
 <translation id="685782768769951078">{NUM_DIGITS,plural, =1{Մնաց 1 թվանշան}one{Մնաց # թվանշան}other{Մնաց # թվանշան}}</translation>
 <translation id="6867938213751067702"><ph name="FILENAME" /> ֆայլի ներբեռնումը դադարեցված է</translation>
 <translation id="6878400149835617132">Դյուրանցումն անջատված է</translation>
-<translation id="6878709625737492815">Ավտոմատ մասշտաբավորումն անջատված է։</translation>
 <translation id="6884665277231944629">Վերադառնալ այսօրվա ամսաթվին</translation>
 <translation id="6886172995547742638"><ph name="DEVICE_TYPE" /> սարքի արդյունավետությունը կարող է նվազել։ Օգտագործեք հավաստագրված <ph name="PREFERRED_MINIMUM_POWER" />Վ կամ ավելի բարձր USB-C սնուցման ադապտեր։</translation>
 <translation id="688631446150864480">Մյուս պատուհան անցնելու համար սեղմեք վար սլաքը</translation>
@@ -1197,7 +1195,6 @@
 <translation id="7868900307798234037">Ապակողպում մատնահետքով</translation>
 <translation id="7872195908557044066">Ադմինիստրատորը վերակայում է ձեր eSIM-ը։ Մի փոքր սպասեք։</translation>
 <translation id="7872786842639831132">Անջատված է</translation>
-<translation id="7875280185395705476">Ավտոմատ մասշտաբ․</translation>
 <translation id="7875575368831396199">Bluetooth-ն անջատված է ձեր <ph name="DEVICE_TYPE" /> սարքում։ Հեռախոսի կառավարման կենտրոնն օգտագործելու համար միացրեք Bluetooth-ը։</translation>
 <translation id="7877557217297072640">{0,plural, =0{Այժմ վերադարձեք սարքի օպերացիոն համակարգի նախորդ տարբերակին}=1{Վերադարձեք սարքի օպերացիոն համակարգի նախորդ տարբերակին 1 վայրկյանի ընթացքում}one{Վերադարձեք սարքի օպերացիոն համակարգի նախորդ տարբերակին # վայրկյանի ընթացքում}other{Վերադարձեք սարքի օպերացիոն համակարգի նախորդ տարբերակին # վայրկյանի ընթացքում}}</translation>
 <translation id="7886169021410746335">Փոփոխել գաղտնիության կարգավորումները</translation>
@@ -1253,6 +1250,7 @@
 <translation id="8152264887680882389"><ph name="TEXT" />, ինքնալրացում</translation>
 <translation id="8155007568264258537"><ph name="FEATURE_NAME" /> Այս կարգավորումը կառավարվում է ձեր ադմինիստրատորի կողմից։</translation>
 <translation id="8155628902202578800">Բացել <ph name="USER_EMAIL_ADDRESS" /> հաշվի տեղեկությունների երկխոսության պատուհանը</translation>
+<translation id="8157728322324420120">Առաջարկում ենք</translation>
 <translation id="8167567890448493835">Օգտագործվում է՝ <ph name="LOCALE_NAME" /></translation>
 <translation id="8183592608247778598">Դիտեք ձեր հեռախոսի վերջին լուսանկարները, մեդիաֆայլերը, ծանուցումներն ու հավելվածները <ph name="DEVICE_TYPE" /> սարքում</translation>
 <translation id="8192202700944119416">Ծանուցումները թաքցված են:</translation>
@@ -1320,7 +1318,6 @@
 <translation id="856298576161209842">Կառավարիչը (<ph name="MANAGER" />) խորհուրդ է տալիս, որ թարմացնեք ձեր <ph name="DEVICE_TYPE" /> սարքը։</translation>
 <translation id="8563862697512465947">Ծանուցումների կարգավորումներ</translation>
 <translation id="857201607579416096">Ընտրացանկը տեղափոխվեց էկրանի ներքևի աջ անկյուն։</translation>
-<translation id="8576288697319745668">Միացնել/անջատել ավտոմատ մասշտաբավորումը։ <ph name="STATE_TEXT" /></translation>
 <translation id="8594115950068821369">–<ph name="FORMATTED_TIME" /></translation>
 <translation id="8598235756057743477">Դասավորեք ձեր հավելվածներն ըստ անվանման կամ գույնի</translation>
 <translation id="8614517853887502247"><ph name="APP_1_TITLE" /> և <ph name="APP_2_TITLE" /> հավելվածների ծանուցումները թաքցված են, քանի որ միացված է ապահով դիտումը։</translation>
@@ -1432,6 +1429,7 @@
 <translation id="9211490828691860325">Բոլոր աշխատասեղանները</translation>
 <translation id="9211681782751733685">Մարտկոցի լրիվ լիցքավորման համար մնացել է <ph name="TIME_REMAINING" />։</translation>
 <translation id="9215934040295798075">Ընտրել պաստառ</translation>
+<translation id="9219103736887031265">Պատկերներ</translation>
 <translation id="921989828232331238">Ձեր ծնողը կողպել է սարքը մեկ օրով</translation>
 <translation id="9220525904950070496">Հեռացնել հաշիվը</translation>
 <translation id="923686485342484400">Դուրս գրվելու համար երկու անգամ սեղմեք Control Shift Q:</translation>

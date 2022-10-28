@@ -87,6 +87,7 @@ PerformanceResourceTiming::PerformanceResourceTiming(
       cache_state_(info.cache_state),
       encoded_body_size_(info.encoded_body_size),
       decoded_body_size_(info.decoded_body_size),
+      response_status_(info.response_status),
       did_reuse_connection_(info.did_reuse_connection),
       allow_timing_details_(info.allow_timing_details),
       allow_redirect_details_(info.allow_redirect_details),
@@ -178,6 +179,10 @@ AtomicString PerformanceResourceTiming::renderBlockingStatus() const {
   }
   NOTREACHED();
   return "non-blocking";
+}
+
+uint16_t PerformanceResourceTiming::responseStatus() const {
+  return response_status_;
 }
 
 AtomicString PerformanceResourceTiming::AlpnNegotiatedProtocol() const {
@@ -310,11 +315,11 @@ DOMHighResTimeStamp PerformanceResourceTiming::domainLookupStart() const {
   if (!AllowTimingDetails())
     return 0.0;
   ResourceLoadTiming* timing = GetResourceLoadTiming();
-  if (!timing || timing->DnsStart().is_null())
+  if (!timing || timing->DomainLookupStart().is_null())
     return fetchStart();
 
   return Performance::MonotonicTimeToDOMHighResTimeStamp(
-      TimeOrigin(), timing->DnsStart(), AllowNegativeValue(),
+      TimeOrigin(), timing->DomainLookupStart(), AllowNegativeValue(),
       CrossOriginIsolatedCapability());
 }
 
@@ -322,11 +327,11 @@ DOMHighResTimeStamp PerformanceResourceTiming::domainLookupEnd() const {
   if (!AllowTimingDetails())
     return 0.0;
   ResourceLoadTiming* timing = GetResourceLoadTiming();
-  if (!timing || timing->DnsEnd().is_null())
+  if (!timing || timing->DomainLookupEnd().is_null())
     return domainLookupStart();
 
   return Performance::MonotonicTimeToDOMHighResTimeStamp(
-      TimeOrigin(), timing->DnsEnd(), AllowNegativeValue(),
+      TimeOrigin(), timing->DomainLookupEnd(), AllowNegativeValue(),
       CrossOriginIsolatedCapability());
 }
 
@@ -340,8 +345,8 @@ DOMHighResTimeStamp PerformanceResourceTiming::connectStart() const {
 
   // connectStart includes any DNS time, so we may need to trim that off.
   base::TimeTicks connect_start = timing->ConnectStart();
-  if (!timing->DnsEnd().is_null())
-    connect_start = timing->DnsEnd();
+  if (!timing->DomainLookupEnd().is_null())
+    connect_start = timing->DomainLookupEnd();
 
   return Performance::MonotonicTimeToDOMHighResTimeStamp(
       TimeOrigin(), connect_start, AllowNegativeValue(),
@@ -470,6 +475,9 @@ void PerformanceResourceTiming::BuildJSONValue(V8ObjectBuilder& builder) const {
   builder.AddNumber("transferSize", transferSize());
   builder.AddNumber("encodedBodySize", encodedBodySize());
   builder.AddNumber("decodedBodySize", decodedBodySize());
+  if (RuntimeEnabledFeatures::ResourceTimingResponseStatusEnabled()) {
+    builder.AddNumber("responseStatus", responseStatus());
+  }
 
   ScriptState* script_state = builder.GetScriptState();
   builder.Add("serverTiming", FreezeV8Object(ToV8(serverTiming(), script_state),

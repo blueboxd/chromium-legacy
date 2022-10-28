@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -91,6 +91,14 @@ void IssueManager::ClearNonBlockingIssues() {
 
   non_blocking_issues_.clear();
   MaybeUpdateTopIssue();
+}
+
+void IssueManager::ClearTopIssueForSink(const MediaSink::Id& sink_id) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  if (!top_issue_ || top_issue_->info().sink_id != sink_id)
+    return;
+
+  ClearIssue(top_issue_->id());
 }
 
 void IssueManager::RegisterObserver(IssuesObserver* observer) {

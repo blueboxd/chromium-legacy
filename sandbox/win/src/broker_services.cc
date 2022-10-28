@@ -410,7 +410,7 @@ BrokerServicesBase::~BrokerServicesBase() {
   ::PostQueuedCompletionStatus(job_port_.Get(), 0, THREAD_CTRL_QUIT, nullptr);
 
   if (job_thread_.IsValid() &&
-      WAIT_TIMEOUT == ::WaitForSingleObject(job_thread_.Get(), 1000)) {
+      WAIT_TIMEOUT == ::WaitForSingleObject(job_thread_.Get(), 5000)) {
     // Cannot clean broker services.
     NOTREACHED();
     return;
@@ -522,11 +522,11 @@ ResultCode BrokerServicesBase::SpawnTarget(const wchar_t* exe_path,
 
   // We don't want any child processes causing the IDC_APPSTARTING cursor.
   startup_info->UpdateFlags(STARTF_FORCEOFFFEEDBACK);
-  startup_info->SetDesktop(policy_base->GetAlternateDesktop());
-  startup_info->SetMitigations(policy_base->GetProcessMitigations());
+  startup_info->SetDesktop(policy_base->GetDesktopName());
+  startup_info->SetMitigations(config_base->GetProcessMitigations());
 
   if (base::win::GetVersion() >= base::win::Version::WIN10_TH2 &&
-      policy_base->GetJobLevel() <= JobLevel::kLimitedUser) {
+      config_base->GetJobLevel() <= JobLevel::kLimitedUser) {
     startup_info->SetRestrictChildProcessCreation(true);
   }
 
@@ -538,7 +538,7 @@ ResultCode BrokerServicesBase::SpawnTarget(const wchar_t* exe_path,
   for (HANDLE handle : policy_handle_list)
     startup_info->AddInheritedHandle(handle);
 
-  scoped_refptr<AppContainer> container = policy_base->GetAppContainer();
+  scoped_refptr<AppContainer> container = config_base->GetAppContainer();
   if (container)
     startup_info->SetAppContainer(container);
 
@@ -574,7 +574,7 @@ ResultCode BrokerServicesBase::SpawnTarget(const wchar_t* exe_path,
   }
 
   if (policy_base->HasJob() &&
-      policy_base->GetJobLevel() <= JobLevel::kLimitedUser) {
+      config_base->GetJobLevel() <= JobLevel::kLimitedUser) {
     // Restrict the job from containing any processes. Job restrictions
     // are only applied at process creation, so the target process is
     // unaffected.

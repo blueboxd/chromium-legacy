@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -33,6 +33,9 @@
 
 // Returns whether this coordinator is showing a popup menu.
 - (BOOL)isShowingPopupMenu;
+
+// Starts the popup menu's child help coordinator.
+- (void)startPopupMenuHelpCoordinator;
 
 @end
 

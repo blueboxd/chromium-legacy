@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -62,9 +62,6 @@ void AppRegistryCache::OnApps(std::vector<apps::mojom::AppPtr> deltas,
 
   if (should_notify_initialized) {
     DCHECK_NE(apps::mojom::AppType::kUnknown, app_type);
-    if (!IsAppTypeInitialized(ConvertMojomAppTypToAppType(app_type))) {
-      in_progress_initialized_mojom_app_types_.insert(app_type);
-    }
   }
 
   if (!mojom_deltas_in_progress_.empty()) {
@@ -79,8 +76,6 @@ void AppRegistryCache::OnApps(std::vector<apps::mojom::AppPtr> deltas,
     pending.swap(mojom_deltas_pending_);
     DoOnApps(std::move(pending));
   }
-
-  OnAppTypeInitialized();
 }
 
 void AppRegistryCache::OnApps(std::vector<AppPtr> deltas,
@@ -292,33 +287,21 @@ bool AppRegistryCache::IsAppTypeInitialized(apps::AppType app_type) const {
 }
 
 void AppRegistryCache::OnAppTypeInitialized() {
-  // Check both the non mojom and mojom initialized status. Only when they are
-  // not initialized, call OnAppTypeInitialized to notify observers, because
-  // observers might use the non mojom or mojom App struct.
-  //
-  // TODO(crbug.com/1253250): Remove the mojom initialized checking when all
-  // observers use the non mojom App struct only.
-  if (in_progress_initialized_mojom_app_types_.empty() ||
-      in_progress_initialized_app_types_.empty()) {
+  if (in_progress_initialized_app_types_.empty()) {
     return;
   }
 
-  // In observer's OnAppTypeInitialized callback, `OnApp` might be call  to
+  // In observer's OnAppTypeInitialized callback, `OnApp` might be called to
   // update the app, then this OnAppTypeInitialized might be called again. So we
   // need to check the initialized `app_type` first, and remove it from
   // `in_progress_initialized_app_types_` to prevent the dead loop.
   std::set<AppType> in_progress_initialized_app_types;
   for (auto app_type : in_progress_initialized_app_types_) {
-    if (base::Contains(in_progress_initialized_mojom_app_types_,
-                       ConvertAppTypeToMojomAppType(app_type))) {
-      in_progress_initialized_app_types.insert(app_type);
-    }
+    in_progress_initialized_app_types.insert(app_type);
   }
 
   for (auto app_type : in_progress_initialized_app_types) {
-    auto mojom_app_type = ConvertAppTypeToMojomAppType(app_type);
     in_progress_initialized_app_types_.erase(app_type);
-    in_progress_initialized_mojom_app_types_.erase(mojom_app_type);
     initialized_app_types_.insert(app_type);
     for (auto& obs : observers_) {
       obs.OnAppTypeInitialized(app_type);

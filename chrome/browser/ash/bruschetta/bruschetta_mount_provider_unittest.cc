@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,6 +8,7 @@
 #include "base/test/bind.h"
 #include "chrome/browser/ash/bruschetta/bruschetta_launcher.h"
 #include "chrome/browser/ash/bruschetta/bruschetta_service.h"
+#include "chrome/browser/ash/bruschetta/bruschetta_service_factory.h"
 #include "chrome/browser/ash/bruschetta/fake_bruschetta_launcher.h"
 #include "chrome/browser/ash/guest_os/guest_id.h"
 #include "chrome/browser/ash/guest_os/guest_os_session_tracker.h"
@@ -21,6 +22,7 @@ namespace bruschetta {
 class BruschettaMountProviderTest : public testing::Test {
  protected:
   BruschettaMountProviderTest() {
+    BruschettaServiceFactory::EnableForTesting(&profile_);
     BruschettaMountProvider provider{&profile_, id_};
 
     guest_os::GuestOsSessionTracker::GetForProfile(&profile_)

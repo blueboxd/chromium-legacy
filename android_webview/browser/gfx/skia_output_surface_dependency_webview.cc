@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -39,7 +39,8 @@ SkiaOutputSurfaceDependencyWebView::~SkiaOutputSurfaceDependencyWebView() =
 std::unique_ptr<gpu::SingleTaskSequence>
 SkiaOutputSurfaceDependencyWebView::CreateSequence() {
   return std::make_unique<TaskForwardingSequence>(
-      this->task_queue_, this->gpu_service_->sync_point_manager());
+      task_queue_, gpu_service_->sync_point_manager(),
+      gpu_service_->scheduler());
 }
 
 gpu::SharedImageManager*

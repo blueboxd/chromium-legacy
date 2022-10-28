@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -36,12 +36,10 @@ class ChromeBrowserState;
 - (void)fetchManagedStatus:(ChromeBrowserState*)browserState
                forIdentity:(ChromeIdentity*)identity;
 
-// Signs `identity` with `hostedDomain` into `browserState` and calls
-// `completion` after sign-in is complete.
+// Signs `identity` with `hostedDomain` into `browserState`.
 - (void)signInIdentity:(ChromeIdentity*)identity
       withHostedDomain:(NSString*)hostedDomain
-        toBrowserState:(ChromeBrowserState*)browserState
-            completion:(signin_ui::CompletionCallback)completion;
+        toBrowserState:(ChromeBrowserState*)browserState;
 
 // Signs out of `browserState` and sends `didSignOut` to the delegate when
 // complete.

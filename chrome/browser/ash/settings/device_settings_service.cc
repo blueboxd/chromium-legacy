@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -39,7 +39,7 @@ void DeviceSettingsService::Observer::DeviceSettingsUpdated() {}
 
 void DeviceSettingsService::Observer::OnDeviceSettingsServiceShutdown() {}
 
-static DeviceSettingsService* g_device_settings_service = NULL;
+static DeviceSettingsService* g_device_settings_service = nullptr;
 
 // static
 void DeviceSettingsService::Initialize() {
@@ -56,7 +56,7 @@ bool DeviceSettingsService::IsInitialized() {
 void DeviceSettingsService::Shutdown() {
   DCHECK(g_device_settings_service);
   delete g_device_settings_service;
-  g_device_settings_service = NULL;
+  g_device_settings_service = nullptr;
 }
 
 // static
@@ -116,7 +116,7 @@ void DeviceSettingsService::UnsetSessionManager() {
 
   if (session_manager_client_)
     session_manager_client_->RemoveObserver(this);
-  session_manager_client_ = NULL;
+  session_manager_client_ = nullptr;
   owner_key_util_.reset();
 }
 

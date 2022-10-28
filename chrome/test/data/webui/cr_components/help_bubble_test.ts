@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,8 +6,9 @@ import 'chrome://webui-test/mojo_webui_test_support.js';
 import 'chrome://resources/cr_components/help_bubble/help_bubble.js';
 
 import {CrButtonElement} from '//resources/cr_elements/cr_button/cr_button.js';
-import {HELP_BUBBLE_DISMISSED_EVENT, HelpBubbleDismissedEvent, HelpBubbleElement} from 'chrome://resources/cr_components/help_bubble/help_bubble.js';
-import {HelpBubbleButtonParams, HelpBubblePosition} from 'chrome://resources/cr_components/help_bubble/help_bubble.mojom-webui.js';
+import {IronIconElement} from '//resources/polymer/v3_0/iron-icon/iron-icon.js';
+import {HELP_BUBBLE_DISMISSED_EVENT, HELP_BUBBLE_TIMED_OUT_EVENT, HelpBubbleDismissedEvent, HelpBubbleElement, HelpBubbleTimedOutEvent} from 'chrome://resources/cr_components/help_bubble/help_bubble.js';
+import {HelpBubbleArrowPosition, HelpBubbleButtonParams} from 'chrome://resources/cr_components/help_bubble/help_bubble.mojom-webui.js';
 import {assertEquals, assertFalse, assertTrue} from 'chrome://webui-test/chai_assert.js';
 import {isVisible, waitAfterNextRender} from 'chrome://webui-test/test_util.js';
 
@@ -52,6 +53,15 @@ suite('CrComponentsHelpBubbleTest', () => {
     return mainEl;
   }
 
+  /**
+   * Create a promise that resolves after a given amount of time
+   */
+  async function sleep(milliseconds: number) {
+    return new Promise((resolve) => {
+      setTimeout(resolve, milliseconds);
+    });
+  }
+
   setup(() => {
     document.body.innerHTML = `
     <div id='container'>
@@ -80,7 +90,7 @@ suite('CrComponentsHelpBubbleTest', () => {
 
   test('help bubble shows and anchors correctly', () => {
     helpBubble.anchorId = 'p1';
-    helpBubble.position = HelpBubblePosition.BELOW;
+    helpBubble.position = HelpBubbleArrowPosition.TOP_CENTER;
     helpBubble.bodyText = HELP_BUBBLE_BODY;
     helpBubble.show();
 
@@ -98,7 +108,7 @@ suite('CrComponentsHelpBubbleTest', () => {
 
   test('help bubble titles shows', () => {
     helpBubble.anchorId = 'p1';
-    helpBubble.position = HelpBubblePosition.BELOW;
+    helpBubble.position = HelpBubbleArrowPosition.TOP_CENTER;
     helpBubble.bodyText = HELP_BUBBLE_BODY;
     helpBubble.titleText = HELP_BUBBLE_TITLE;
     helpBubble.show();
@@ -116,7 +126,7 @@ suite('CrComponentsHelpBubbleTest', () => {
 
   test('help bubble titles hides when no title set', () => {
     helpBubble.anchorId = 'p1';
-    helpBubble.position = HelpBubblePosition.BELOW;
+    helpBubble.position = HelpBubbleArrowPosition.TOP_CENTER;
     helpBubble.bodyText = HELP_BUBBLE_BODY;
     helpBubble.show();
 
@@ -127,9 +137,43 @@ suite('CrComponentsHelpBubbleTest', () => {
     assertTrue(titleElement.hidden, 'title element should be hidden');
   });
 
+  test('help bubble body icon shows when set', () => {
+    helpBubble.anchorId = 'p1';
+    helpBubble.position = HelpBubbleArrowPosition.TOP_CENTER;
+    helpBubble.bodyText = HELP_BUBBLE_BODY;
+    helpBubble.bodyIconName = 'icon_name';
+    helpBubble.bodyIconAltText = '';
+    helpBubble.show();
+
+    assertTrue(isVisible(helpBubble), 'help bubble should be visible');
+    const bodyIcon = helpBubble.$.bodyIcon;
+    assertTrue(!!bodyIcon, 'body icon element should exist');
+    assertFalse(bodyIcon.hidden, 'body icon element should not be hidden');
+    assertTrue(isVisible(bodyIcon), 'body icon element should be visible');
+    assertEquals(
+        bodyIcon.querySelector<IronIconElement>('iron-icon')!.icon,
+        'iph:icon_name',
+        'bodyIcon passes icon name to iron-icon with iph namespace');
+  });
+
+  test('help bubble body icon is hidden when null', () => {
+    helpBubble.anchorId = 'p1';
+    helpBubble.position = HelpBubbleArrowPosition.TOP_CENTER;
+    helpBubble.bodyText = HELP_BUBBLE_BODY;
+    helpBubble.bodyIconName = null;
+    helpBubble.bodyIconAltText = '';
+    helpBubble.show();
+
+    assertTrue(isVisible(helpBubble), 'help bubble should be visible');
+    const bodyIcon = helpBubble.$.bodyIcon;
+    assertTrue(!!bodyIcon, 'body icon element should exist');
+    assertTrue(bodyIcon.hidden, 'body icon element should be hidden');
+    assertFalse(isVisible(bodyIcon), 'body icon element should not be visible');
+  });
+
   test('help bubble closes', () => {
     helpBubble.anchorId = 'title';
-    helpBubble.position = HelpBubblePosition.BELOW;
+    helpBubble.position = HelpBubbleArrowPosition.TOP_CENTER;
     helpBubble.bodyText = HELP_BUBBLE_BODY;
     helpBubble.show();
 
@@ -147,7 +191,7 @@ suite('CrComponentsHelpBubbleTest', () => {
 
   test('help bubble open close open', () => {
     helpBubble.anchorId = 'title';
-    helpBubble.position = HelpBubblePosition.BELOW;
+    helpBubble.position = HelpBubbleArrowPosition.TOP_CENTER;
     helpBubble.bodyText = HELP_BUBBLE_BODY;
     helpBubble.show();
     helpBubble.hide();
@@ -166,10 +210,15 @@ suite('CrComponentsHelpBubbleTest', () => {
 
   test('help bubble close button has correct alt text', () => {
     const CLOSE_TEXT: string = 'Close button text.';
-    helpBubble.closeText = CLOSE_TEXT;
+    const ICON_TEXT: string = 'Body icon text.';
+    helpBubble.closeButtonAltText = CLOSE_TEXT;
+    helpBubble.bodyIconAltText = ICON_TEXT;
     assertEquals(
         CLOSE_TEXT, helpBubble.$.close.getAttribute('aria-label'),
         'close button should have aria-label content');
+    assertEquals(
+        ICON_TEXT, helpBubble.$.bodyIcon.getAttribute('aria-label'),
+        'body icon should have aria-label content');
   });
 
   test('help bubble click close button generates event', async () => {
@@ -184,7 +233,7 @@ suite('CrComponentsHelpBubbleTest', () => {
     };
     helpBubble.addEventListener(HELP_BUBBLE_DISMISSED_EVENT, callback);
     helpBubble.anchorId = 'title';
-    helpBubble.position = HelpBubblePosition.BELOW;
+    helpBubble.position = HelpBubbleArrowPosition.TOP_CENTER;
     helpBubble.bodyText = HELP_BUBBLE_BODY;
     helpBubble.show();
     await waitAfterNextRender(helpBubble);
@@ -194,9 +243,46 @@ suite('CrComponentsHelpBubbleTest', () => {
     assertEquals(1, clicked, 'close button should be clicked once');
   });
 
+  test('help bubble timeout generates event', async () => {
+    let timedOut: number = 0;
+    const callback = (e: HelpBubbleTimedOutEvent) => {
+      assertEquals(
+          'title', e.detail.anchorId, 'timeout event anchorId should match');
+      ++timedOut;
+    };
+    helpBubble.addEventListener(HELP_BUBBLE_TIMED_OUT_EVENT, callback);
+    helpBubble.anchorId = 'title';
+    helpBubble.position = HelpBubbleArrowPosition.TOP_CENTER;
+    helpBubble.bodyText = HELP_BUBBLE_BODY;
+    helpBubble.timeoutMs = 250;  // 250ms
+    helpBubble.show();
+    assertEquals(0, timedOut, 'timeout should not be triggered');
+    await waitAfterNextRender(helpBubble);
+    await sleep(500);  // 500ms
+    assertEquals(1, timedOut, 'timeout should only emit event once');
+  });
+
+  test('help bubble without timeout does not generate event', async () => {
+    let timedOut: number = 0;
+    const callback = (e: HelpBubbleTimedOutEvent) => {
+      assertEquals(
+          'title', e.detail.anchorId, 'timeout event anchorId should match');
+      ++timedOut;
+    };
+    helpBubble.addEventListener(HELP_BUBBLE_TIMED_OUT_EVENT, callback);
+    helpBubble.anchorId = 'title';
+    helpBubble.position = HelpBubbleArrowPosition.TOP_CENTER;
+    helpBubble.bodyText = HELP_BUBBLE_BODY;
+    helpBubble.show();
+    assertEquals(0, timedOut, 'timeout should not be triggered');
+    await waitAfterNextRender(helpBubble);
+    await sleep(500);  // 500ms
+    assertEquals(0, timedOut, 'timeout is never triggered');
+  });
+
   test('help bubble adds one button', async () => {
     helpBubble.anchorId = 'title';
-    helpBubble.position = HelpBubblePosition.BELOW;
+    helpBubble.position = HelpBubbleArrowPosition.TOP_CENTER;
     helpBubble.bodyText = HELP_BUBBLE_BODY;
     helpBubble.buttons = [{text: 'button1', isDefault: false}];
     helpBubble.show();
@@ -214,7 +300,7 @@ suite('CrComponentsHelpBubbleTest', () => {
 
   test('help bubble adds several buttons', async () => {
     helpBubble.anchorId = 'title';
-    helpBubble.position = HelpBubblePosition.BELOW;
+    helpBubble.position = HelpBubbleArrowPosition.TOP_CENTER;
     helpBubble.bodyText = HELP_BUBBLE_BODY;
     helpBubble.buttons = [
       {text: 'button1', isDefault: false},
@@ -238,7 +324,7 @@ suite('CrComponentsHelpBubbleTest', () => {
 
   test('help bubble adds default button', async () => {
     helpBubble.anchorId = 'title';
-    helpBubble.position = HelpBubblePosition.BELOW;
+    helpBubble.position = HelpBubbleArrowPosition.TOP_CENTER;
     helpBubble.bodyText = HELP_BUBBLE_BODY;
     helpBubble.buttons = [{text: 'button1', isDefault: true}];
     helpBubble.show();
@@ -258,7 +344,7 @@ suite('CrComponentsHelpBubbleTest', () => {
 
   test('help bubble adds default button among several', async () => {
     helpBubble.anchorId = 'title';
-    helpBubble.position = HelpBubblePosition.BELOW;
+    helpBubble.position = HelpBubbleArrowPosition.TOP_CENTER;
     helpBubble.bodyText = HELP_BUBBLE_BODY;
     helpBubble.buttons = THREE_BUTTONS_MIDDLE_DEFAULT;
     helpBubble.show();
@@ -303,7 +389,7 @@ suite('CrComponentsHelpBubbleTest', () => {
     };
     helpBubble.addEventListener(HELP_BUBBLE_DISMISSED_EVENT, callback);
     helpBubble.anchorId = 'title';
-    helpBubble.position = HelpBubblePosition.BELOW;
+    helpBubble.position = HelpBubbleArrowPosition.TOP_CENTER;
     helpBubble.bodyText = HELP_BUBBLE_BODY;
     helpBubble.buttons = THREE_BUTTONS_MIDDLE_DEFAULT;
 
@@ -323,7 +409,7 @@ suite('CrComponentsHelpBubbleTest', () => {
 
   test('help bubble with no progress doesn\'t show progress', async () => {
     helpBubble.anchorId = 'title';
-    helpBubble.position = HelpBubblePosition.BELOW;
+    helpBubble.position = HelpBubbleArrowPosition.TOP_CENTER;
     helpBubble.bodyText = HELP_BUBBLE_BODY;
     helpBubble.buttons = THREE_BUTTONS_MIDDLE_DEFAULT;
 
@@ -341,7 +427,7 @@ suite('CrComponentsHelpBubbleTest', () => {
       'help bubble with no progress and title doesn\'t show progress',
       async () => {
         helpBubble.anchorId = 'title';
-        helpBubble.position = HelpBubblePosition.BELOW;
+        helpBubble.position = HelpBubbleArrowPosition.TOP_CENTER;
         helpBubble.bodyText = HELP_BUBBLE_BODY;
         helpBubble.titleText = HELP_BUBBLE_TITLE;
         helpBubble.buttons = THREE_BUTTONS_MIDDLE_DEFAULT;
@@ -363,7 +449,7 @@ suite('CrComponentsHelpBubbleTest', () => {
 
   test('help bubble with progress shows progress', async () => {
     helpBubble.anchorId = 'title';
-    helpBubble.position = HelpBubblePosition.BELOW;
+    helpBubble.position = HelpBubbleArrowPosition.TOP_CENTER;
     helpBubble.bodyText = HELP_BUBBLE_BODY;
     helpBubble.progress = {current: 1, total: 3};
     helpBubble.buttons = THREE_BUTTONS_MIDDLE_DEFAULT;
@@ -387,7 +473,7 @@ suite('CrComponentsHelpBubbleTest', () => {
 
   test('help bubble with progress and title shows progress', async () => {
     helpBubble.anchorId = 'title';
-    helpBubble.position = HelpBubblePosition.BELOW;
+    helpBubble.position = HelpBubbleArrowPosition.TOP_CENTER;
     helpBubble.bodyText = HELP_BUBBLE_BODY;
     helpBubble.titleText = HELP_BUBBLE_TITLE;
     helpBubble.progress = {current: 1, total: 2};
@@ -416,7 +502,7 @@ suite('CrComponentsHelpBubbleTest', () => {
 
   test('help bubble with full progress', async () => {
     helpBubble.anchorId = 'title';
-    helpBubble.position = HelpBubblePosition.BELOW;
+    helpBubble.position = HelpBubbleArrowPosition.TOP_CENTER;
     helpBubble.bodyText = HELP_BUBBLE_BODY;
     helpBubble.progress = {current: 2, total: 2};
 
@@ -435,7 +521,7 @@ suite('CrComponentsHelpBubbleTest', () => {
 
   test('help bubble with empty progress', async () => {
     helpBubble.anchorId = 'title';
-    helpBubble.position = HelpBubblePosition.BELOW;
+    helpBubble.position = HelpBubbleArrowPosition.TOP_CENTER;
     helpBubble.bodyText = HELP_BUBBLE_BODY;
     helpBubble.progress = {current: 0, total: 2};
 

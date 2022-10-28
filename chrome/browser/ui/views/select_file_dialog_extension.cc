@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,12 +9,7 @@
 #include <string>
 #include <utility>
 
-#include "ash/constants/ash_features.h"
 #include "ash/public/cpp/shell_window_ids.h"
-#include "ash/public/cpp/style/color_mode_observer.h"
-#include "ash/public/cpp/style/color_provider.h"
-#include "ash/public/cpp/style/dark_light_mode_controller.h"
-#include "ash/public/cpp/style/scoped_light_mode_as_default.h"
 #include "ash/public/cpp/tablet_mode.h"
 #include "base/feature_list.h"
 #include "base/files/file_path.h"
@@ -51,6 +46,8 @@
 #include "extensions/browser/app_window/native_app_window.h"
 #include "ui/aura/window.h"
 #include "ui/base/base_window.h"
+#include "ui/chromeos/styles/cros_tokens_color_mappings.h"
+#include "ui/color/color_provider.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/shell_dialogs/select_file_policy.h"
 #include "ui/shell_dialogs/selected_file_info.h"
@@ -188,8 +185,7 @@ SelectFileDialogExtension::RoutingID GetRoutingID(
 // A customization of SystemWebDialogDelegate that provides notifications
 // to SelectFileDialogExtension about web dialog closing events. Must be outside
 // anonymous namespace for the friend declaration to work.
-class SystemFilesAppDialogDelegate : public chromeos::SystemWebDialogDelegate,
-                                     public ash::ColorModeObserver {
+class SystemFilesAppDialogDelegate : public chromeos::SystemWebDialogDelegate {
  public:
   SystemFilesAppDialogDelegate(base::WeakPtr<SelectFileDialogExtension> parent,
                                const std::string& id,
@@ -197,12 +193,8 @@ class SystemFilesAppDialogDelegate : public chromeos::SystemWebDialogDelegate,
                                std::u16string title)
       : chromeos::SystemWebDialogDelegate(url, title),
         id_(id),
-        parent_(std::move(parent)) {
-    ash::DarkLightModeController::Get()->AddObserver(this);
-  }
-  ~SystemFilesAppDialogDelegate() override {
-    ash::DarkLightModeController::Get()->RemoveObserver(this);
-  }
+        parent_(std::move(parent)) {}
+  ~SystemFilesAppDialogDelegate() override = default;
 
   void SetModal(bool modal) {
     set_modal_type(modal ? ui::MODAL_TYPE_WINDOW : ui::MODAL_TYPE_NONE);
@@ -265,10 +257,7 @@ SelectFileDialogExtension::SelectFileDialogExtension(
     : SelectFileDialog(listener, std::move(policy)),
       system_files_app_web_contents_(nullptr) {}
 
-SelectFileDialogExtension::~SelectFileDialogExtension() {
-  if (extension_dialog_.get())
-    extension_dialog_->ObserverDestroyed();
-}
+SelectFileDialogExtension::~SelectFileDialogExtension() = default;
 
 bool SelectFileDialogExtension::IsRunning(
     gfx::NativeWindow owner_window) const {
@@ -281,40 +270,6 @@ void SelectFileDialogExtension::ListenerDestroyed() {
   PendingDialog::GetInstance()->Remove(routing_id_);
 }
 
-void SelectFileDialogExtension::ExtensionDialogClosing(
-    ExtensionDialog* /*dialog*/) {
-  if (!ash::features::IsFileManagerSwaEnabled() &&
-      ash::DarkLightModeController::Get()) {
-    ash::DarkLightModeController::Get()->RemoveObserver(this);
-  }
-  profile_ = nullptr;
-  owner_window_ = nullptr;
-  // Release our reference to the underlying dialog to allow it to close.
-  extension_dialog_ = nullptr;
-  system_files_app_web_contents_ = nullptr;
-  PendingDialog::GetInstance()->Remove(routing_id_);
-  // Actually invoke the appropriate callback on our listener.
-  NotifyListener();
-}
-
-void SelectFileDialogExtension::ExtensionTerminated(
-    ExtensionDialog* dialog) {
-  // The extension crashed (or the process was killed). Close the dialog.
-  dialog->GetWidget()->Close();
-}
-
-void SelectFileDialogExtension::OnColorModeChanged(bool dark_mode_enabled) {
-  if (!ash::features::IsFileManagerSwaEnabled() && extension_dialog_.get()) {
-    auto* color_provider = ash::ColorProvider::Get();
-    gfx::NativeWindow native_view =
-        extension_dialog_->GetWidget()->GetNativeView();
-    native_view->SetProperty(chromeos::kFrameActiveColorKey,
-                             color_provider->GetActiveDialogTitleBarColor());
-    native_view->SetProperty(chromeos::kFrameInactiveColorKey,
-                             color_provider->GetInactiveDialogTitleBarColor());
-  }
-}
-
 void SelectFileDialogExtension::OnSystemDialogShown(
     content::WebContents* web_contents,
     const std::string& id) {
@@ -324,7 +279,12 @@ void SelectFileDialogExtension::OnSystemDialogShown(
 }
 
 void SelectFileDialogExtension::OnSystemDialogWillClose() {
-  ExtensionDialogClosing(nullptr);
+  profile_ = nullptr;
+  owner_window_ = nullptr;
+  system_files_app_web_contents_ = nullptr;
+  PendingDialog::GetInstance()->Remove(routing_id_);
+  // Actually invoke the appropriate callback on our listener.
+  NotifyListener();
 }
 
 // static
@@ -367,9 +327,7 @@ void SelectFileDialogExtension::OnFileSelectionCanceled(RoutingID routing_id) {
 }
 
 content::RenderFrameHost* SelectFileDialogExtension::GetPrimaryMainFrame() {
-  if (extension_dialog_)
-    return extension_dialog_->host()->main_frame_host();
-  else if (system_files_app_web_contents_)
+  if (system_files_app_web_contents_)
     return system_files_app_web_contents_->GetPrimaryMainFrame();
   return nullptr;
 }
@@ -515,41 +473,11 @@ void SelectFileDialogExtension::SelectFileWithFileManagerParams(
   gfx::NativeWindow parent_window =
       base_window ? base_window->GetNativeWindow() : owner.window;
 
-  if (ash::features::IsFileManagerSwaEnabled()) {
-    auto* dialog_delegate = new SystemFilesAppDialogDelegate(
-        weak_factory_.GetWeakPtr(), routing_id, file_manager_url, dialog_title);
-    dialog_delegate->SetModal(owner.window != nullptr);
-    dialog_delegate->set_can_resize(can_resize_);
-    dialog_delegate->ShowSystemDialogForBrowserContext(profile_, parent_window);
-  } else {
-    ExtensionDialog::InitParams dialog_params(
-        {kFileManagerWidth, kFileManagerHeight});
-    dialog_params.is_modal = (owner.window != nullptr);
-    dialog_params.min_size = {kFileManagerMinimumWidth,
-                              kFileManagerMinimumHeight};
-    dialog_params.title = dialog_title;
-    auto* color_provider = ash::ColorProvider::Get();
-    ash::ScopedLightModeAsDefault scoped_light_mode_as_default;
-    dialog_params.title_color = color_provider->GetActiveDialogTitleBarColor();
-    dialog_params.title_inactive_color =
-        color_provider->GetInactiveDialogTitleBarColor();
-
-    ash::DarkLightModeController::Get()->AddObserver(this);
-
-    ExtensionDialog* dialog = ExtensionDialog::Show(
-        file_manager_url, parent_window, profile_, web_contents,
-        /*ExtensionDialogObserver=*/this, dialog_params);
-    if (!dialog) {
-      LOG(ERROR) << "Unable to create extension dialog";
-      return;
-    }
-
-    dialog->SetCanResize(can_resize_);
-    SelectFileDialogExtensionUserData::SetRoutingIdForWebContents(
-        dialog->host()->host_contents(), routing_id);
-
-    extension_dialog_ = dialog;
-  }
+  auto* dialog_delegate = new SystemFilesAppDialogDelegate(
+      weak_factory_.GetWeakPtr(), routing_id, file_manager_url, dialog_title);
+  dialog_delegate->SetModal(owner.window != nullptr);
+  dialog_delegate->set_can_resize(can_resize_);
+  dialog_delegate->ShowSystemDialogForBrowserContext(profile_, parent_window);
 
   // Connect our listener to FileDialogFunction's per-tab callbacks.
   AddPending(routing_id);

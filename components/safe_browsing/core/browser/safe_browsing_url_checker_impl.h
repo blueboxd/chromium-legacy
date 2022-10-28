@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -181,7 +181,8 @@ class SafeBrowsingUrlCheckerImpl : public mojom::SafeBrowsingUrlChecker,
   void OnUrlResult(const GURL& url,
                    SBThreatType threat_type,
                    const ThreatMetadata& metadata,
-                   bool is_from_real_time_check);
+                   bool is_from_real_time_check,
+                   bool timed_out = false);
 
   void CheckUrlImpl(const GURL& url,
                     const std::string& method,

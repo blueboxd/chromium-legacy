@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,8 +9,8 @@
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
 #import "ios/chrome/common/ui/table_view/table_view_cells_constants.h"
 #import "ios/chrome/common/ui/util/constraints_ui_util.h"
-#include "ios/chrome/grit/ios_strings.h"
-#include "ui/base/l10n/l10n_util_mac.h"
+#import "ios/chrome/grit/ios_strings.h"
+#import "ui/base/l10n/l10n_util_mac.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -26,7 +26,7 @@ const CGFloat kCellLabelsWidthProportion = 0.2f;
 
 @interface TableViewInfoButtonCell ()
 
-// The image view for the leading icon.
+// Views for the leading icon.
 @property(nonatomic, readonly, strong) UIImageView* iconImageView;
 
 // Constraints that are used when the iconImageView is visible and hidden.
@@ -65,8 +65,8 @@ const CGFloat kCellLabelsWidthProportion = 0.2f;
 
     _iconImageView = [[UIImageView alloc] init];
     _iconImageView.translatesAutoresizingMaskIntoConstraints = NO;
-    _iconImageView.hidden = YES;
     _iconImageView.contentMode = UIViewContentModeCenter;
+    _iconImageView.hidden = YES;
     [self.contentView addSubview:_iconImageView];
 
     UILayoutGuide* textLayoutGuide = [[UILayoutGuide alloc] init];
@@ -253,19 +253,20 @@ const CGFloat kCellLabelsWidthProportion = 0.2f;
   }
 }
 
-- (void)setIconImage:(UIImage*)image withTintColor:(UIColor*)color {
-  if (color) {
-    self.iconImageView.tintColor = color;
-    self.iconImageView.image =
-        [image imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
-  } else {
-    self.iconImageView.image = image;
+- (void)setIconImage:(UIImage*)image
+           tintColor:(UIColor*)tintColor
+     backgroundColor:(UIColor*)backgroundColor
+        cornerRadius:(CGFloat)cornerRadius {
+  if (tintColor) {
+    image = [image imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
   }
 
-  BOOL hidden = !image;
-  if (hidden == self.iconImageView.hidden)
-    return;
+  self.iconImageView.image = image;
+  self.iconImageView.tintColor = tintColor;
+  self.iconImageView.layer.cornerRadius = cornerRadius;
+  self.iconImageView.backgroundColor = backgroundColor;
 
+  BOOL hidden = (image == nil);
   self.iconImageView.hidden = hidden;
   if (hidden) {
     self.iconVisibleConstraint.active = NO;
@@ -317,7 +318,7 @@ const CGFloat kCellLabelsWidthProportion = 0.2f;
   self.detailTextLabel.text = nil;
   self.statusTextLabel.text = nil;
   self.trailingButton.tag = 0;
-  [self setIconImage:nil withTintColor:nil];
+  [self setIconImage:nil tintColor:nil backgroundColor:nil cornerRadius:0];
   [_trailingButton removeTarget:nil
                          action:nil
                forControlEvents:[_trailingButton allControlEvents]];

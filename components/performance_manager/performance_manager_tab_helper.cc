@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -88,11 +88,10 @@ PerformanceManagerTabHelper::PerformanceManagerTabHelper(
 #if DCHECK_IS_ON()
   DCHECK(!web_contents->GetPrimaryMainFrame()->IsRenderFrameLive());
   size_t frame_count = 0;
-  web_contents->ForEachRenderFrameHost(base::BindRepeating(
-      [](size_t* frame_count, content::RenderFrameHost* render_frame_host) {
-        (*frame_count)++;
-      },
-      &frame_count));
+  web_contents->ForEachRenderFrameHost(
+      [&frame_count](content::RenderFrameHost* render_frame_host) {
+        ++frame_count;
+      });
   DCHECK_EQ(1u, frame_count);
 #endif
 

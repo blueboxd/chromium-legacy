@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -174,19 +174,27 @@ class DownloadProtectionService {
 
   double allowlist_sample_rate() const { return allowlist_sample_rate_; }
 
-  static void SetDownloadPingToken(download::DownloadItem* item,
-                                   const std::string& token);
+  static void SetDownloadProtectionData(
+      download::DownloadItem* item,
+      const std::string& token,
+      const ClientDownloadResponse::Verdict& verdict,
+      const ClientDownloadResponse::TailoredVerdict& tailored_verdict);
 
   static std::string GetDownloadPingToken(const download::DownloadItem* item);
+
+  static ClientDownloadResponse::Verdict GetDownloadProtectionVerdict(
+      const download::DownloadItem* item);
+
+  static ClientDownloadResponse::TailoredVerdict
+  GetDownloadProtectionTailoredVerdict(const download::DownloadItem* item);
 
   // Sends dangerous download opened report when download is opened or
   // shown in folder, and if the following conditions are met:
   // (1) it is a dangerous download.
   // (2) user is NOT in incognito mode.
   // (3) user is opted-in for extended reporting.
-  void MaybeSendDangerousDownloadOpenedReport(
-      const download::DownloadItem* item,
-      bool show_download_in_folder);
+  void MaybeSendDangerousDownloadOpenedReport(download::DownloadItem* item,
+                                              bool show_download_in_folder);
 
   // Called to trigger a bypass event report for |download|. This is used when
   // the async scan verdict is received for a file that was already opened by
@@ -252,21 +260,34 @@ class DownloadProtectionService {
   FRIEND_TEST_ALL_PREFIXES(DownloadProtectionServiceTest,
                            VerifyReferrerChainLengthForExtendedReporting);
 
-  static const void* const kDownloadPingTokenKey;
+  static const void* const kDownloadProtectionDataKey;
 
-  // Helper class for easy setting and getting token string.
-  class DownloadPingToken : public base::SupportsUserData::Data {
+  // Helper class for easy setting and getting data related to download
+  // protection. The data is only set when the server returns an unsafe verdict
+  // (i.e. not safe or unknown).
+  class DownloadProtectionData : public base::SupportsUserData::Data {
    public:
-    explicit DownloadPingToken(const std::string& token)
-        : token_string_(token) {}
+    explicit DownloadProtectionData(
+        const std::string& token,
+        const ClientDownloadResponse::Verdict& verdict,
+        const ClientDownloadResponse::TailoredVerdict& tailored_verdict)
+        : token_string_(token),
+          verdict_(verdict),
+          tailored_verdict_(tailored_verdict) {}
 
-    DownloadPingToken(const DownloadPingToken&) = delete;
-    DownloadPingToken& operator=(const DownloadPingToken&) = delete;
+    DownloadProtectionData(const DownloadProtectionData&) = delete;
+    DownloadProtectionData& operator=(const DownloadProtectionData&) = delete;
 
     std::string token_string() { return token_string_; }
+    ClientDownloadResponse::Verdict verdict() { return verdict_; }
+    ClientDownloadResponse::TailoredVerdict tailored_verdict() {
+      return tailored_verdict_;
+    }
 
    private:
     std::string token_string_;
+    ClientDownloadResponse::Verdict verdict_;
+    ClientDownloadResponse::TailoredVerdict tailored_verdict_;
   };
 
   // Cancels all requests in |download_requests_|, and empties it, releasing

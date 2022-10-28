@@ -516,8 +516,7 @@ class CORE_EXPORT NGPhysicalFragment
     PostLayoutChildLinkList(wtf_size_t count, const NGLink* buffer)
         : count_(count), buffer_(buffer) {}
 
-    class ConstIterator
-        : public std::iterator<std::input_iterator_tag, NGLink> {
+    class ConstIterator {
       STACK_ALLOCATED();
 
      public:
@@ -539,6 +538,11 @@ class CORE_EXPORT NGPhysicalFragment
         ++current_;
         SkipInvalidAndSetPostLayout();
         return *this;
+      }
+      ConstIterator operator++(int) {
+        ConstIterator copy = *this;
+        ++*this;
+        return copy;
       }
       bool operator==(const ConstIterator& other) const {
         return current_ == other.current_;
@@ -725,8 +729,9 @@ class CORE_EXPORT NGPhysicalFragment
   unsigned is_legacy_layout_root_ : 1;
   unsigned is_painted_atomically_ : 1;
   unsigned has_collapsed_borders_ : 1;
-  unsigned has_baseline_ : 1;
+  unsigned has_first_baseline_ : 1;
   unsigned has_last_baseline_ : 1;
+  unsigned use_last_baseline_for_inline_baseline_ : 1;
   const unsigned has_fragmented_out_of_flow_data_ : 1;
   const unsigned has_out_of_flow_fragment_child_ : 1;
   const unsigned has_out_of_flow_in_fragmentainer_subtree_ : 1;
@@ -762,6 +767,7 @@ CORE_EXPORT void ShowFragmentTree(
 
 // Output the fragment tree(s) from the entire document to the log.
 // See DumpFragmentTree(const LayoutObject& ...).
+CORE_EXPORT void ShowEntireFragmentTree(const blink::LayoutObject& target);
 CORE_EXPORT void ShowEntireFragmentTree(
     const blink::NGPhysicalFragment* target);
 #endif  // DCHECK_IS_ON()

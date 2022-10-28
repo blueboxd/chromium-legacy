@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,6 +11,7 @@
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shell.h"
+#include "ash/strings/grit/ash_strings.h"
 #include "ash/system/message_center/unified_message_center_bubble.h"
 #include "ash/system/message_center/unified_message_center_view.h"
 #include "ash/system/status_area_widget.h"
@@ -25,6 +26,11 @@
 #include "ash/test/ash_test_base.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
+#include "chromeos/ash/components/audio/audio_device.h"
+#include "chromeos/ash/components/audio/cras_audio_handler.h"
+#include "chromeos/ash/components/dbus/audio/audio_node.h"
+#include "chromeos/ash/components/dbus/audio/fake_cras_audio_client.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/events/event.h"
@@ -36,7 +42,8 @@ namespace ash {
 using message_center::MessageCenter;
 using message_center::Notification;
 
-class UnifiedSystemTrayTest : public AshTestBase {
+class UnifiedSystemTrayTest : public AshTestBase,
+                              public testing::WithParamInterface<bool> {
  public:
   UnifiedSystemTrayTest()
       : AshTestBase(base::test::TaskEnvironment::TimeSource::MOCK_TIME) {}
@@ -45,9 +52,12 @@ class UnifiedSystemTrayTest : public AshTestBase {
   ~UnifiedSystemTrayTest() override = default;
 
   void SetUp() override {
-    feature_list_.InitAndEnableFeature(features::kCalendarView);
+    if (IsQsRevampEnabled())
+      feature_list_.InitAndEnableFeature(features::kQsRevamp);
     AshTestBase::SetUp();
   }
+
+  bool IsQsRevampEnabled() { return GetParam(); }
 
  protected:
   const std::string AddNotification() {
@@ -79,6 +89,12 @@ class UnifiedSystemTrayTest : public AshTestBase {
   UnifiedSliderBubbleController::SliderType GetSliderBubbleType() {
     return GetPrimaryUnifiedSystemTray()
         ->slider_bubble_controller_->slider_type_;
+  }
+
+  bool IsMicrophoneMuteToastShown() {
+    return IsSliderBubbleShown() &&
+           GetSliderBubbleType() ==
+               UnifiedSliderBubbleController::SLIDER_TYPE_MIC;
   }
 
   UnifiedSystemTrayBubble* GetUnifiedSystemTrayBubble() {
@@ -116,7 +132,21 @@ class UnifiedSystemTrayTest : public AshTestBase {
   base::test::ScopedFeatureList feature_list_;
 };
 
-TEST_F(UnifiedSystemTrayTest, ShowVolumeSliderBubble) {
+INSTANTIATE_TEST_SUITE_P(All,
+                         UnifiedSystemTrayTest,
+                         testing::Bool() /* IsQsRevampEnabled() */);
+
+// Regression test for crbug/1360579
+TEST_P(UnifiedSystemTrayTest, GetAccessibleNameForQuickSettingsBubble) {
+  auto* tray = GetPrimaryUnifiedSystemTray();
+  tray->ShowBubble();
+
+  EXPECT_EQ(tray->GetAccessibleNameForQuickSettingsBubble(),
+            l10n_util::GetStringUTF16(
+                IDS_ASH_QUICK_SETTINGS_BUBBLE_ACCESSIBLE_DESCRIPTION));
+}
+
+TEST_P(UnifiedSystemTrayTest, ShowVolumeSliderBubble) {
   // The volume popup is not visible initially.
   EXPECT_FALSE(IsSliderBubbleShown());
 
@@ -137,7 +167,7 @@ TEST_F(UnifiedSystemTrayTest, ShowVolumeSliderBubble) {
   EXPECT_FALSE(status->ShouldShowShelf());
 }
 
-TEST_F(UnifiedSystemTrayTest, SliderBubbleMovesOnShelfAutohide) {
+TEST_P(UnifiedSystemTrayTest, SliderBubbleMovesOnShelfAutohide) {
   // The slider button should be moved when the autohidden shelf is shown, so
   // as to not overlap. Regression test for crbug.com/1136564
   auto* shelf = GetPrimaryShelf();
@@ -209,7 +239,7 @@ TEST_F(UnifiedSystemTrayTest, SliderBubbleMovesOnShelfAutohide) {
   EXPECT_EQ(after_bounds, before_bounds);
 }
 
-TEST_F(UnifiedSystemTrayTest, ShowBubble_MultipleDisplays_OpenedOnSameDisplay) {
+TEST_P(UnifiedSystemTrayTest, ShowBubble_MultipleDisplays_OpenedOnSameDisplay) {
   // Initialize two displays with 800x700 resolution.
   UpdateDisplay("400+400-800x600,1220+400-800x600");
   auto* screen = display::Screen::GetScreen();
@@ -231,7 +261,7 @@ TEST_F(UnifiedSystemTrayTest, ShowBubble_MultipleDisplays_OpenedOnSameDisplay) {
   }
 }
 
-TEST_F(UnifiedSystemTrayTest, HorizontalImeAndTimeLabelAlignment) {
+TEST_P(UnifiedSystemTrayTest, HorizontalImeAndTimeLabelAlignment) {
   ime_mode_view()->label()->SetText(u"US");
   ime_mode_view()->SetVisible(true);
 
@@ -245,7 +275,7 @@ TEST_F(UnifiedSystemTrayTest, HorizontalImeAndTimeLabelAlignment) {
   EXPECT_EQ(time_bounds.height(), ime_bounds.height());
 }
 
-TEST_F(UnifiedSystemTrayTest, VerticalClockPadding) {
+TEST_P(UnifiedSystemTrayTest, VerticalClockPadding) {
   // Padding can only be visible if shelf is vertically aligned.
   GetPrimaryShelf()->SetAlignment(ShelfAlignment::kLeft);
 
@@ -264,7 +294,7 @@ TEST_F(UnifiedSystemTrayTest, VerticalClockPadding) {
   EXPECT_TRUE(vertical_clock_padding()->GetVisible());
 }
 
-TEST_F(UnifiedSystemTrayTest, VerticalClockPaddingAfterAlignmentChange) {
+TEST_P(UnifiedSystemTrayTest, VerticalClockPaddingAfterAlignmentChange) {
   auto* shelf = GetPrimaryShelf();
 
   // Padding can only be visible if shelf is vertically aligned.
@@ -281,7 +311,10 @@ TEST_F(UnifiedSystemTrayTest, VerticalClockPaddingAfterAlignmentChange) {
   EXPECT_FALSE(vertical_clock_padding()->GetVisible());
 }
 
-TEST_F(UnifiedSystemTrayTest, FocusMessageCenter) {
+TEST_P(UnifiedSystemTrayTest, FocusMessageCenter) {
+  if (IsQsRevampEnabled())
+    return;
+
   auto* tray = GetPrimaryUnifiedSystemTray();
   tray->ShowBubble();
 
@@ -305,7 +338,10 @@ TEST_F(UnifiedSystemTrayTest, FocusMessageCenter) {
   EXPECT_TRUE(message_center_view->Contains(focus_manager->GetFocusedView()));
 }
 
-TEST_F(UnifiedSystemTrayTest, FocusMessageCenter_MessageCenterBubbleNotShown) {
+TEST_P(UnifiedSystemTrayTest, FocusMessageCenter_MessageCenterBubbleNotShown) {
+  if (IsQsRevampEnabled())
+    return;
+
   auto* tray = GetPrimaryUnifiedSystemTray();
   tray->ShowBubble();
   auto* message_center_bubble = tray->message_center_bubble();
@@ -317,7 +353,10 @@ TEST_F(UnifiedSystemTrayTest, FocusMessageCenter_MessageCenterBubbleNotShown) {
   EXPECT_FALSE(did_focus);
 }
 
-TEST_F(UnifiedSystemTrayTest, FocusMessageCenter_VoxEnabled) {
+TEST_P(UnifiedSystemTrayTest, FocusMessageCenter_VoxEnabled) {
+  if (IsQsRevampEnabled())
+    return;
+
   auto* tray = GetPrimaryUnifiedSystemTray();
   tray->ShowBubble();
 
@@ -342,9 +381,24 @@ TEST_F(UnifiedSystemTrayTest, FocusMessageCenter_VoxEnabled) {
   EXPECT_FALSE(message_center_view->Contains(focus_manager->GetFocusedView()));
 }
 
-TEST_F(UnifiedSystemTrayTest, FocusQuickSettings) {
+TEST_P(UnifiedSystemTrayTest, FocusQuickSettings) {
   auto* tray = GetPrimaryUnifiedSystemTray();
   tray->ShowBubble();
+
+  if (IsQsRevampEnabled()) {
+    auto* quick_settings_view = tray->bubble()->quick_settings_view();
+    auto* focus_manager = quick_settings_view->GetFocusManager();
+    EXPECT_FALSE(
+        quick_settings_view->Contains(focus_manager->GetFocusedView()));
+
+    // There's no `FocusQuickSettings` method in the new view. Press the tab key
+    // should focus on the first button in the qs bubble.
+    ui::test::EventGenerator generator(Shell::GetPrimaryRootWindow());
+    generator.PressKey(ui::KeyboardCode::VKEY_TAB, ui::EF_NONE);
+    EXPECT_TRUE(quick_settings_view->Contains(focus_manager->GetFocusedView()));
+    return;
+  }
+
   auto* unified_system_tray_view = tray->bubble()->unified_view();
   auto* focus_manager = unified_system_tray_view->GetFocusManager();
 
@@ -359,7 +413,7 @@ TEST_F(UnifiedSystemTrayTest, FocusQuickSettings) {
       unified_system_tray_view->Contains(focus_manager->GetFocusedView()));
 }
 
-TEST_F(UnifiedSystemTrayTest, FocusQuickSettings_BubbleNotShown) {
+TEST_P(UnifiedSystemTrayTest, FocusQuickSettings_BubbleNotShown) {
   auto* tray = GetPrimaryUnifiedSystemTray();
 
   auto did_focus = tray->FocusQuickSettings(false);
@@ -367,7 +421,7 @@ TEST_F(UnifiedSystemTrayTest, FocusQuickSettings_BubbleNotShown) {
   EXPECT_FALSE(did_focus);
 }
 
-TEST_F(UnifiedSystemTrayTest, FocusQuickSettings_VoxEnabled) {
+TEST_P(UnifiedSystemTrayTest, FocusQuickSettings_VoxEnabled) {
   auto* tray = GetPrimaryUnifiedSystemTray();
   tray->ShowBubble();
   auto* tray_bubble_widget = tray->bubble()->GetBubbleWidget();
@@ -380,6 +434,15 @@ TEST_F(UnifiedSystemTrayTest, FocusQuickSettings_VoxEnabled) {
 
   EXPECT_TRUE(did_focus);
 
+  if (IsQsRevampEnabled()) {
+    auto* quick_settings_view = tray->bubble()->quick_settings_view();
+    auto* focus_manager = quick_settings_view->GetFocusManager();
+    EXPECT_TRUE(tray_bubble_widget->IsActive());
+    EXPECT_FALSE(
+        quick_settings_view->Contains(focus_manager->GetFocusedView()));
+    return;
+  }
+
   auto* unified_system_tray_view = tray->bubble()->unified_view();
   auto* focus_manager = unified_system_tray_view->GetFocusManager();
 
@@ -388,7 +451,7 @@ TEST_F(UnifiedSystemTrayTest, FocusQuickSettings_VoxEnabled) {
       unified_system_tray_view->Contains(focus_manager->GetFocusedView()));
 }
 
-TEST_F(UnifiedSystemTrayTest, TimeInQuickSettingsMetric) {
+TEST_P(UnifiedSystemTrayTest, TimeInQuickSettingsMetric) {
   base::HistogramTester histogram_tester;
   constexpr base::TimeDelta kTimeInQuickSettings = base::Seconds(3);
   auto* tray = GetPrimaryUnifiedSystemTray();
@@ -424,7 +487,7 @@ TEST_F(UnifiedSystemTrayTest, TimeInQuickSettingsMetric) {
 
 // Tests that pressing the TOGGLE_CALENDAR accelerator once results in the
 // calendar view showing.
-TEST_F(UnifiedSystemTrayTest, PressCalendarAccelerator) {
+TEST_P(UnifiedSystemTrayTest, PressCalendarAccelerator) {
   ShellTestApi().PressAccelerator(
       ui::Accelerator(ui::VKEY_C, ui::EF_COMMAND_DOWN));
 
@@ -433,7 +496,7 @@ TEST_F(UnifiedSystemTrayTest, PressCalendarAccelerator) {
 
 // Tests that pressing the TOGGLE_CALENDAR accelerator twice results in a hidden
 // QuickSettings bubble.
-TEST_F(UnifiedSystemTrayTest, ToggleCalendarViewAccelerator) {
+TEST_P(UnifiedSystemTrayTest, ToggleCalendarViewAccelerator) {
   ShellTestApi().PressAccelerator(
       ui::Accelerator(ui::VKEY_C, ui::EF_COMMAND_DOWN));
 
@@ -445,7 +508,7 @@ TEST_F(UnifiedSystemTrayTest, ToggleCalendarViewAccelerator) {
 
 // Tests that showing the calendar view by the TOGGLE_CALENDAR accelerator
 // results in the CalendarDateCellView being focused.
-TEST_F(UnifiedSystemTrayTest, CalendarAcceleratorFocusesDateCell) {
+TEST_P(UnifiedSystemTrayTest, CalendarAcceleratorFocusesDateCell) {
   ShellTestApi().PressAccelerator(
       ui::Accelerator(ui::VKEY_C, ui::EF_COMMAND_DOWN));
 
@@ -458,7 +521,10 @@ TEST_F(UnifiedSystemTrayTest, CalendarAcceleratorFocusesDateCell) {
 
 // Tests that CalendarView switches back to Quick Settings when screen size is
 // limited and the bubble requires a collapsed state.
-TEST_F(UnifiedSystemTrayTest, CalendarGoesToMainView) {
+TEST_P(UnifiedSystemTrayTest, CalendarGoesToMainView) {
+  if (IsQsRevampEnabled())
+    return;
+
   auto* tray = GetPrimaryUnifiedSystemTray();
   tray->ShowBubble();
 
@@ -488,6 +554,46 @@ TEST_F(UnifiedSystemTrayTest, CalendarGoesToMainView) {
   tray->message_center_bubble()->ExpandMessageCenter();
   EXPECT_FALSE(message_center_view->collapsed());
   EXPECT_FALSE(tray->IsShowingCalendarView());
+}
+
+// Tests microphone mute toast is visible only when the device has an
+// internal/external microphone attached.
+TEST_P(UnifiedSystemTrayTest, MicrophoneMuteToastVisibility) {
+  // Creating an input device for simple usage.
+  AudioNode internal_mic;
+  internal_mic.is_input = true;
+  internal_mic.id = 1;
+  internal_mic.stable_device_id_v1 = internal_mic.id;
+  internal_mic.type = AudioDevice::GetTypeString(AudioDeviceType::kInternalMic);
+
+  // Creating an output device.
+  AudioNode internal_speaker;
+  internal_speaker.is_input = false;
+  internal_speaker.id = 2;
+  internal_speaker.stable_device_id_v1 = internal_speaker.id;
+  internal_speaker.type =
+      AudioDevice::GetTypeString(AudioDeviceType::kInternalSpeaker);
+
+  // The microphone mute toast should not be visible initially.
+  EXPECT_FALSE(IsMicrophoneMuteToastShown());
+
+  FakeCrasAudioClient* fake_cras_audio_client = FakeCrasAudioClient::Get();
+  CrasAudioHandler* cras_audio_handler = CrasAudioHandler::Get();
+
+  fake_cras_audio_client->SetAudioNodesAndNotifyObserversForTesting(
+      {internal_speaker, internal_mic});
+  cras_audio_handler->SetInputMute(!cras_audio_handler->IsInputMuted());
+  // The toast should be visible as the input mute has changed and there is a
+  // microphone for simple usage attached to the device.
+  EXPECT_TRUE(IsMicrophoneMuteToastShown());
+
+  fake_cras_audio_client->SetAudioNodesAndNotifyObserversForTesting(
+      {internal_speaker});
+  cras_audio_handler->SetInputMute(!cras_audio_handler->IsInputMuted());
+  // There is no microphone for simple usage attached to the device. The toast
+  // should not be displayed even though the input mute has changed in the
+  // backend.
+  EXPECT_FALSE(IsMicrophoneMuteToastShown());
 }
 
 }  // namespace ash

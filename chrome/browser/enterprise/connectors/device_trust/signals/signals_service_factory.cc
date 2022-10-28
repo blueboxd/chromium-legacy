@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -96,7 +96,7 @@ std::unique_ptr<SignalsService> CreateSignalsService(
     auto* policy_connector_ash = platform_part->browser_policy_connector_ash();
     if (policy_connector_ash) {
       decorators.push_back(
-          std::make_unique<AshSignalsDecorator>(policy_connector_ash));
+          std::make_unique<AshSignalsDecorator>(policy_connector_ash, profile));
     }
   }
 

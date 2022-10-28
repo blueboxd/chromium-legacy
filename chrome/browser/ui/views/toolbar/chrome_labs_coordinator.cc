@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -63,7 +63,7 @@ void ChromeLabsCoordinator::Show(ShowUserType user_type) {
   flags_state_ = about_flags::GetCurrentFlagsState();
 
   auto chrome_labs_bubble_view =
-      std::make_unique<ChromeLabsBubbleView>(anchor_view_, browser_);
+      std::make_unique<ChromeLabsBubbleView>(anchor_view_);
   chrome_labs_bubble_view_ = chrome_labs_bubble_view.get();
   chrome_labs_bubble_view_->View::AddObserver(this);
 

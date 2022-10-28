@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -104,7 +104,8 @@ void PrefetchProxyFromStringURLLoader::BindAndStart(
     return;
   }
 
-  client_->OnReceiveResponse(std::move(head_), std::move(consumer_handle));
+  client_->OnReceiveResponse(std::move(head_), std::move(consumer_handle),
+                             absl::nullopt);
 
   producer_handle_ = std::move(producer_handle);
 

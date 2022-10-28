@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -201,6 +201,29 @@ const char* ProtoEnumToString(
     ENUM_CASE(sync_pb::SearchEngineSpecifics, ACTIVE_STATUS_UNSPECIFIED);
     ENUM_CASE(sync_pb::SearchEngineSpecifics, ACTIVE_STATUS_TRUE);
     ENUM_CASE(sync_pb::SearchEngineSpecifics, ACTIVE_STATUS_FALSE);
+  }
+  NOTREACHED();
+  return "";
+}
+
+const char* ProtoEnumToString(
+    sync_pb::SegmentationSpecifics::DeviceMetadata::PlatformType
+        platform_type) {
+  ASSERT_ENUM_BOUNDS(sync_pb::SegmentationSpecifics::DeviceMetadata,
+                     PlatformType, PLATFORM_TYPE_UNSPECIFIED,
+                     PLATFORM_CHROMEOS_LACROS);
+  switch (platform_type) {
+    ENUM_CASE(sync_pb::SegmentationSpecifics::DeviceMetadata,
+              PLATFORM_TYPE_UNSPECIFIED);
+    ENUM_CASE(sync_pb::SegmentationSpecifics::DeviceMetadata, PLATFORM_WINDOWS);
+    ENUM_CASE(sync_pb::SegmentationSpecifics::DeviceMetadata, PLATFORM_MAC);
+    ENUM_CASE(sync_pb::SegmentationSpecifics::DeviceMetadata, PLATFORM_LINUX);
+    ENUM_CASE(sync_pb::SegmentationSpecifics::DeviceMetadata,
+              PLATFORM_CHROMEOS_ASH);
+    ENUM_CASE(sync_pb::SegmentationSpecifics::DeviceMetadata, PLATFORM_ANDROID);
+    ENUM_CASE(sync_pb::SegmentationSpecifics::DeviceMetadata, PLATFORM_IOS);
+    ENUM_CASE(sync_pb::SegmentationSpecifics::DeviceMetadata,
+              PLATFORM_CHROMEOS_LACROS);
   }
   NOTREACHED();
   return "";

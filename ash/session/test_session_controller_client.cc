@@ -1,10 +1,9 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "ash/session/test_session_controller_client.h"
 
-#include <algorithm>
 #include <string>
 
 #include "ash/login/login_screen_controller.h"
@@ -15,6 +14,7 @@
 #include "ash/wallpaper/wallpaper_controller_impl.h"
 #include "base/bind.h"
 #include "base/logging.h"
+#include "base/ranges/algorithm.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -236,6 +236,10 @@ void TestSessionControllerClient::RequestSignOut() {
   ++request_sign_out_count_;
 }
 
+void TestSessionControllerClient::RequestRestartForUpdate() {
+  ++request_restart_for_update_count_;
+}
+
 void TestSessionControllerClient::AttemptRestartChrome() {
   ++attempt_restart_chrome_count_;
 }
@@ -276,11 +280,10 @@ void TestSessionControllerClient::CycleActiveUser(
     session_id = 1u;
 
   // Maps session id to AccountId and call SwitchActiveUser.
-  auto it =
-      std::find_if(sessions.begin(), sessions.end(),
-                   [session_id](const std::unique_ptr<UserSession>& session) {
-                     return session && session->session_id == session_id;
-                   });
+  auto it = base::ranges::find_if(
+      sessions, [session_id](const std::unique_ptr<UserSession>& session) {
+        return session && session->session_id == session_id;
+      });
   if (it == sessions.end()) {
     NOTREACHED();
     return;

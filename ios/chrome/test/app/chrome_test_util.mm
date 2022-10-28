@@ -1,15 +1,15 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #import "ios/chrome/test/app/chrome_test_util.h"
 
-#include "base/check.h"
+#import "base/check.h"
 #import "base/ios/ios_util.h"
-#include "base/mac/foundation_util.h"
+#import "base/mac/foundation_util.h"
 #import "base/test/ios/wait_util.h"
-#include "components/metrics/metrics_pref_names.h"
-#include "components/metrics/metrics_service.h"
+#import "components/metrics/metrics_pref_names.h"
+#import "components/metrics/metrics_service.h"
 #import "components/previous_session_info/previous_session_info.h"
 #import "components/previous_session_info/previous_session_info_private.h"
 #import "ios/chrome/app/application_delegate/app_state.h"
@@ -19,10 +19,10 @@
 #import "ios/chrome/app/main_application_delegate_testing.h"
 #import "ios/chrome/app/main_controller.h"
 #import "ios/chrome/app/main_controller_private.h"
-#include "ios/chrome/browser/application_context.h"
-#include "ios/chrome/browser/browser_state/chrome_browser_state.h"
-#include "ios/chrome/browser/browser_state/chrome_browser_state_manager.h"
-#include "ios/chrome/browser/infobars/infobar_manager_impl.h"
+#import "ios/chrome/browser/application_context/application_context.h"
+#import "ios/chrome/browser/browser_state/chrome_browser_state.h"
+#import "ios/chrome/browser/browser_state/chrome_browser_state_manager.h"
+#import "ios/chrome/browser/infobars/infobar_manager_impl.h"
 #import "ios/chrome/browser/main/browser.h"
 #import "ios/chrome/browser/main/browser_list.h"
 #import "ios/chrome/browser/main/browser_list_factory.h"
@@ -31,13 +31,13 @@
 #import "ios/chrome/browser/ui/main/scene_controller.h"
 #import "ios/chrome/browser/ui/main/scene_controller_testing.h"
 #import "ios/chrome/browser/ui/main/scene_state.h"
-#include "ios/chrome/browser/ui/util/ui_util.h"
-#include "ios/chrome/browser/ui/util/uikit_ui_util.h"
+#import "ios/chrome/browser/ui/util/ui_util.h"
+#import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #import "ios/chrome/test/app/tab_test_util.h"
 #import "ios/web/public/navigation/navigation_context.h"
 #import "ios/web/public/navigation/navigation_manager.h"
-#include "ios/web/public/test/fakes/fake_web_state_observer.h"
-#include "net/base/mac/url_conversions.h"
+#import "ios/web/public/test/fakes/fake_web_state_observer.h"
+#import "net/base/mac/url_conversions.h"
 #import "third_party/breakpad/breakpad/src/client/ios/BreakpadController.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -77,8 +77,8 @@
 @end
 
 namespace {
-// Returns the original ChromeBrowserState if |incognito| is false. If
-// |ingonito| is true, returns an off-the-record ChromeBrowserState.
+// Returns the original ChromeBrowserState if `incognito` is false. If
+// `incognito` is true, returns an off-the-record ChromeBrowserState.
 ChromeBrowserState* GetBrowserState(bool incognito) {
   std::vector<ChromeBrowserState*> browser_states =
       GetApplicationContext()

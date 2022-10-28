@@ -19,6 +19,8 @@ CREATE TABLE content_annotations(visit_id INTEGER PRIMARY KEY,visibility_score N
 CREATE TABLE context_annotations(visit_id INTEGER PRIMARY KEY,context_annotation_flags INTEGER NOT NULL,duration_since_last_visit INTEGER,page_end_reason INTEGER,total_foreground_duration INTEGER,browser_type INTEGER DEFAULT 0 NOT NULL,window_id INTEGER DEFAULT -1 NOT NULL,tab_id INTEGER DEFAULT -1 NOT NULL,task_id INTEGER DEFAULT -1 NOT NULL,root_task_id INTEGER DEFAULT -1 NOT NULL,parent_task_id INTEGER DEFAULT -1 NOT NULL,response_code INTEGER DEFAULT 0 NOT NULL);
 CREATE TABLE clusters(cluster_id INTEGER PRIMARY KEY,should_show_on_prominent_ui_surfaces BOOLEAN NOT NULL,label VARCHAR NOT NULL,raw_label VARCHAR NOT NULL);
 CREATE TABLE clusters_and_visits(cluster_id INTEGER NOT NULL,visit_id INTEGER NOT NULL,score NUMERIC NOT NULL,engagement_score NUMERIC NOT NULL,url_for_deduping LONGVARCHAR NOT NULL,normalized_url LONGVARCHAR NOT NULL,url_for_display LONGVARCHAR NOT NULL,PRIMARY KEY(cluster_id,visit_id))WITHOUT ROWID;
+CREATE TABLE cluster_keywords(cluster_id INTEGER NOT NULL,keyword VARCHAR NOT NULL,type INTEGER NOT NULL,score NUMERIC NOT NULL,collections VARCHAR NOT NULL);
+CREATE TABLE cluster_visit_duplicates(visit_id INTEGER NOT NULL,duplicate_visit_id INTEGER NOT NULL,PRIMARY KEY(visit_id,duplicate_visit_id))WITHOUT ROWID;
 DELETE FROM sqlite_sequence;
 CREATE INDEX visits_url_index ON visits (url);
 CREATE INDEX visits_from_index ON visits (from_visit);
@@ -32,5 +34,6 @@ CREATE INDEX segments_url_id ON segments(url_id);
 CREATE INDEX segment_usage_time_slot_segment_id ON segment_usage(time_slot, segment_id);
 CREATE INDEX segments_usage_seg_id ON segment_usage(segment_id);
 CREATE INDEX clusters_for_visit ON clusters_and_visits(visit_id);
+CREATE INDEX cluster_keywords_cluster_id_index ON cluster_keywords(cluster_id);
 CREATE INDEX urls_url_index ON urls (url);
 COMMIT;

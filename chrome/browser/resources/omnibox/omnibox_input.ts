@@ -1,10 +1,10 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 import {OmniboxElement} from './omnibox_element.js';
 
-interface QueryInputs {
+export interface QueryInputs {
   inputText: string;
   resetAutocompleteController: boolean;
   cursorLock: boolean;
@@ -16,7 +16,7 @@ interface QueryInputs {
   pageClassification: number;
 }
 
-interface DisplayInputs {
+export interface DisplayInputs {
   showIncompleteResults: boolean;
   showDetails: boolean;
   showAllProviders: boolean;

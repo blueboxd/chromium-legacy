@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -72,7 +72,7 @@ void OverlayProcessorWin::ProcessForOverlays(
       resource_provider, gfx::RectF(root_render_pass->output_rect),
       render_pass_filters, render_pass_backdrop_filters, root_render_pass,
       damage_rect, std::move(surface_damage_rect_list), candidates,
-      is_video_capture_enabled_, is_video_fullscreen_mode_);
+      is_video_capture_enabled_, is_page_fullscreen_mode_);
 
   bool was_using_dc_layers = using_dc_layers_;
   if (!candidates->empty()) {
@@ -100,8 +100,8 @@ void OverlayProcessorWin::SetIsVideoCaptureEnabled(bool enabled) {
   is_video_capture_enabled_ = enabled;
 }
 
-void OverlayProcessorWin::SetIsVideoFullscreen(bool enabled) {
-  is_video_fullscreen_mode_ = enabled;
+void OverlayProcessorWin::SetIsPageFullscreen(bool enabled) {
+  is_page_fullscreen_mode_ = enabled;
 }
 
 }  // namespace viz

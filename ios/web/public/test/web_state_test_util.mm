@@ -1,12 +1,12 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #import "ios/web/public/test/web_state_test_util.h"
 
-#include "base/logging.h"
-#include "base/run_loop.h"
-#include "base/strings/sys_string_conversions.h"
+#import "base/logging.h"
+#import "base/run_loop.h"
+#import "base/strings/sys_string_conversions.h"
 #import "base/test/ios/wait_util.h"
 #import "ios/web/navigation/crw_wk_navigation_states.h"
 #import "ios/web/public/navigation/navigation_manager.h"
@@ -14,7 +14,7 @@
 #import "ios/web/web_state/ui/crw_web_controller.h"
 #import "ios/web/web_state/ui/wk_web_view_configuration_provider.h"
 #import "ios/web/web_state/web_state_impl.h"
-#include "url/gurl.h"
+#import "url/gurl.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -66,9 +66,9 @@ void LoadHtml(NSString* html, const GURL& url, web::WebState* web_state) {
 
   // If the underlying WKWebView is empty, first load a placeholder to create a
   // WKBackForwardListItem to store the NavigationItem associated with the
-  // |-loadHTML|.
-  // TODO(crbug.com/777884): consider changing |-loadHTML| to match WKWebView's
-  // |-loadHTMLString:baseURL| that doesn't create a navigation entry.
+  // `-loadHTML`.
+  // TODO(crbug.com/777884): consider changing `-loadHTML` to match WKWebView's
+  // `-loadHTMLString:baseURL` that doesn't create a navigation entry.
   if (!web_state->GetNavigationManager()->GetItemCount()) {
     GURL placeholder_url(url::kAboutBlankURL);
 

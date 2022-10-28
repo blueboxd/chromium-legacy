@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -98,7 +98,7 @@ public class StartSurfaceToolbarCoordinator {
                 StartSurfaceConfiguration.TAB_COUNT_BUTTON_ON_START_SURFACE.getValue(),
                 isTabToGtsFadeAnimationEnabled, isTabGroupsAndroidContinuationEnabled,
                 isIncognitoModeEnabledSupplier, profileSupplier, logoClickedCallback,
-                isRefactorEnabled);
+                isRefactorEnabled, StartSurfaceConfiguration.IS_DOODLE_SUPPORTED.getValue());
 
         mThemeColorProvider = provider;
         mMenuButtonCoordinator = menuButtonCoordinator;

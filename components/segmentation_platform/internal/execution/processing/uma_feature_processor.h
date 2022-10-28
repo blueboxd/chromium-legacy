@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -24,13 +24,12 @@ class FeatureProcessorState;
 // execution.
 class UmaFeatureProcessor : public QueryProcessor {
  public:
-  UmaFeatureProcessor(
-      base::flat_map<FeatureIndex, proto::UMAFeature>&& uma_features,
-      SignalDatabase* signal_database,
-      FeatureAggregator* feature_aggregator,
-      const base::Time prediction_time,
-      const base::TimeDelta bucket_duration,
-      const proto::SegmentId segment_id);
+  UmaFeatureProcessor(base::flat_map<FeatureIndex, Data>&& uma_features,
+                      SignalDatabase* signal_database,
+                      FeatureAggregator* feature_aggregator,
+                      const base::Time prediction_time,
+                      const base::TimeDelta bucket_duration,
+                      const proto::SegmentId segment_id);
 
   ~UmaFeatureProcessor() override;
 
@@ -58,7 +57,7 @@ class UmaFeatureProcessor : public QueryProcessor {
                                  std::vector<SignalDatabase::Sample> samples);
 
   // List of custom inputs to process into input tensors.
-  base::flat_map<FeatureIndex, proto::UMAFeature> uma_features_;
+  base::flat_map<FeatureIndex, Data> uma_features_;
 
   // Main signal database for user actions and histograms.
   const raw_ptr<SignalDatabase> signal_database_;

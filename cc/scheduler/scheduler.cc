@@ -1,4 +1,4 @@
-// Copyright 2011 The Chromium Authors. All rights reserved.
+// Copyright 2011 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -223,6 +223,7 @@ void Scheduler::NotifyReadyToCommit(
     compositor_frame_reporting_controller_->NotifyReadyToCommit(
         std::move(details));
     state_machine_.NotifyReadyToCommit();
+    next_commit_origin_frame_args_ = last_dispatched_begin_main_frame_args_;
   }
   ProcessScheduledActions();
 }
@@ -312,7 +313,7 @@ void Scheduler::StartOrStopBeginFrames() {
     return;
   }
 
-  bool needs_begin_frames = state_machine_.BeginFrameNeeded();
+  bool needs_begin_frames = state_machine_.ShouldSubscribeToBeginFrames();
   if (needs_begin_frames == observing_begin_frame_source_)
     return;
 
@@ -860,6 +861,15 @@ void Scheduler::SetDeferBeginMainFrame(bool defer_begin_main_frame) {
   ProcessScheduledActions();
 }
 
+void Scheduler::SetPauseRendering(bool pause_rendering) {
+  {
+    TRACE_EVENT1("cc", "Scheduler::SetPauseRendering", "pause_rendering",
+                 pause_rendering);
+    state_machine_.SetPauseRendering(pause_rendering);
+  }
+  ProcessScheduledActions();
+}
+
 void Scheduler::SetMainThreadWantsBeginMainFrameNotExpected(bool new_state) {
   state_machine_.SetMainThreadWantsBeginMainFrameNotExpectedMessages(new_state);
   ProcessScheduledActions();
@@ -917,7 +927,7 @@ void Scheduler::ProcessScheduledActions() {
         compositor_timing_history_->DidCommit();
         compositor_frame_reporting_controller_->DidCommit();
         state_machine_.DidCommit();
-        last_commit_origin_frame_args_ = last_dispatched_begin_main_frame_args_;
+        last_commit_origin_frame_args_ = next_commit_origin_frame_args_;
         break;
       case SchedulerStateMachine::Action::POST_COMMIT:
         client_->ScheduledActionPostCommit();

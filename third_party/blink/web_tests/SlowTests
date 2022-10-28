@@ -587,7 +587,7 @@ crbug.com/1093849 external/wpt/dom/nodes/Element-classlist.html [ Slow ]
 crbug.com/1093853 external/wpt/dom/ranges/Range-surroundContents.html [ Slow ]
 crbug.com/1093478 external/wpt/quirks/unitless-length/limited-quirks.html [ Slow ]
 crbug.com/1133836 external/wpt/scroll-to-text-fragment/redirects.html [ Slow ]
-crbug.com/1134580 virtual/eye-dropper/http/tests/eye-dropper/color-picker-show-eye-dropper.html [ Slow ]
+crbug.com/1134580 http/tests/eye-dropper/color-picker-show-eye-dropper.html [ Slow ]
 crbug.com/1145716 fast/forms/calendar-picker/datetimelocal-picker-open-to-focused-field.html [ Slow ]
 
 # These began to hit timeouts when moving from Windows-10-15063 to Windows-10-18363
@@ -766,6 +766,7 @@ crbug.com/1186753 virtual/threaded-prefer-compositing/fast/scroll-snap/snaps-aft
 crbug.com/1186753 virtual/threaded-prefer-compositing/fast/scroll-snap/snaps-after-scrollbar-scrolling-thumb.html [ Slow ]
 crbug.com/1186753 virtual/threaded-prefer-compositing/fast/scroll-snap/snaps-after-scrollbar-scrolling-tap.html [ Slow ]
 crbug.com/1186753 virtual/threaded-prefer-compositing/fast/scroll-snap/animate-fling-to-snap-points-2.html [ Slow ]
+crbug.com/1361889 virtual/threaded-prefer-compositing/fast/scrolling/scrollbars/mouse-scrolling-on-div-custom-scrollbar.html [ Slow ]
 
 # Mac11 IDB timeouts
 crbug.com/1195814 [ Mac11 ] external/wpt/clear-site-data/storage.https.html [ Slow ]
@@ -827,3 +828,12 @@ crbug.com/1344358 inspector-protocol/page/frameNavigatedContext.js [ Slow ]
 
 crbug.com/1353929 editing/spelling/cold_mode_spellcheck_reenable.html [ Slow ]
 crbug.com/1356029 editing/spelling/cold_mode_no_repeated_full_testing.html [ Slow ]
+
+crbug.com/1361922 virtual/document-transition-wide-gamut/wpt_internal/document-transition/new-content-captures-different-size.html [ Slow ]
+crbug.com/1361922 virtual/document-transition-wide-gamut/wpt_internal/document-transition/object-view-box-old-image.html [ Slow ]
+crbug.com/1361922 virtual/document-transition-wide-gamut/wpt_internal/document-transition/old-content-captures-different-size.html [ Slow ]
+crbug.com/1361922 virtual/document-transition-wide-gamut/wpt_internal/document-transition/old-content-captures-opacity.html [ Slow ]
+crbug.com/1361922 virtual/document-transition-wide-gamut/wpt_internal/document-transition/old-content-container-writing-modes.html [ Slow ]
+crbug.com/1361922 virtual/document-transition/wpt_internal/document-transition/old-content-captures-different-size.html [ Slow ]
+crbug.com/1361922 virtual/document-transition/wpt_internal/document-transition/new-content-captures-different-size.html [ Slow ]
+crbug.com/1361922 virtual/document-transition/wpt_internal/document-transition/japanese-tag.html [ Slow ]

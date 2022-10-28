@@ -1,10 +1,11 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #ifndef ASH_WM_TABLET_MODE_TABLET_MODE_MULTITASK_MENU_EVENT_HANDLER_H_
 #define ASH_WM_TABLET_MODE_TABLET_MODE_MULTITASK_MENU_EVENT_HANDLER_H_
 
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/aura/window_observer.h"
 #include "ui/events/event_handler.h"
 
@@ -14,8 +15,7 @@ class TabletModeMultitaskMenu;
 
 // TabletModeMultitaskMenuEventHandler handles gestures in tablet mode that may
 // show or hide the multitask menu.
-class TabletModeMultitaskMenuEventHandler : public ui::EventHandler,
-                                            public aura::WindowObserver {
+class TabletModeMultitaskMenuEventHandler : public ui::EventHandler {
  public:
   TabletModeMultitaskMenuEventHandler();
   TabletModeMultitaskMenuEventHandler(
@@ -25,26 +25,27 @@ class TabletModeMultitaskMenuEventHandler : public ui::EventHandler,
   ~TabletModeMultitaskMenuEventHandler() override;
 
   // ui::EventHandler:
+  // TODO(crbug.com/1336836): Temporarily allow mouse wheel events to show or
+  // hide the multitask menu for developers. Remove this before launch.
+  void OnMouseEvent(ui::MouseEvent* event) override;
   void OnGestureEvent(ui::GestureEvent* event) override;
 
-  // aura::WindowObserver:
-  void OnWindowDestroying(aura::Window* window) override;
+  void CloseMultitaskMenu();
 
   TabletModeMultitaskMenu* multitask_menu_for_testing() {
     return multitask_menu_.get();
   }
 
  private:
-  // TODO(crbug.com/1349534): Override touch events on windows underneath.
+  bool ProcessBeginFlingOrSwipe(const ui::GestureEvent& event);
 
   void ShowMultitaskMenu(aura::Window* active_window);
-  void HideMultitaskMenu();
 
   std::unique_ptr<TabletModeMultitaskMenu> multitask_menu_;
 
-  // True if a swipe down gesture that can trigger the multitask menu was
-  // started.
-  bool swipe_down_started_ = false;
+  // Used to show or hide the multitask menu. Null if no drag is in
+  // progress.
+  absl::optional<bool> is_drag_to_open_;
 };
 
 }  // namespace ash

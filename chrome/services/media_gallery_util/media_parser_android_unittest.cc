@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -155,7 +155,7 @@ TEST_F(MediaParserAndroidTest, VideoFrameExtractionVp8) {
   EXPECT_TRUE(frame->IsMappable());
   EXPECT_FALSE(frame->HasTextures());
   EXPECT_EQ(frame->storage_type(),
-            media::VideoFrame::StorageType::STORAGE_MOJO_SHARED_BUFFER);
+            media::VideoFrame::StorageType::STORAGE_OWNED_MEMORY);
 }
 
 // Test to verify a decoded video frame can be extracted for vp8 codec with
@@ -173,7 +173,7 @@ TEST_F(MediaParserAndroidTest, VideoFrameExtractionVp8WithAlphaPlane) {
   EXPECT_TRUE(frame->IsMappable());
   EXPECT_FALSE(frame->HasTextures());
   EXPECT_EQ(frame->storage_type(),
-            media::VideoFrame::StorageType::STORAGE_MOJO_SHARED_BUFFER);
+            media::VideoFrame::StorageType::STORAGE_OWNED_MEMORY);
 }
 
 // Test to verify frame extraction will fail on invalid video file.

@@ -1,4 +1,4 @@
-# Copyright 2019 The Chromium Authors. All rights reserved.
+# Copyright 2019 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -122,7 +122,10 @@ ts_library("build_ts") {
     ":preload_images",
   ]
 
-  definitions = [ "externs/types.d.ts" ]
+  definitions = [
+    "externs/types.d.ts",
+    "//tools/typescript/definitions/pending.d.ts",
+  ]
   foreach(file, get_target_outputs(":build_mojo_dts")) {
     # Only take the .d.ts files, and ignoring the manifest.json that is also
     # listed as output file.

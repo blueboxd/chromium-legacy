@@ -1,4 +1,4 @@
-# Copyright 2020 The Chromium Authors. All rights reserved.
+# Copyright 2020 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -84,8 +84,8 @@ source_set("document_scanning") {
   deps = [
     "//ash/constants",
     "//base",
-    "//chromeos/dbus/dlcservice",
-    "//chromeos/dbus/dlcservice:dlcservice_proto",
+    "//chromeos/ash/components/dbus/dlcservice",
+    "//chromeos/ash/components/dbus/dlcservice:dlcservice_proto",
     "//chromeos/services/machine_learning/public/cpp",
     "//chromeos/services/machine_learning/public/mojom",
     "//components/device_event_log",

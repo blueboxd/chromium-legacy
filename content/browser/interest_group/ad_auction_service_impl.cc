@@ -207,8 +207,10 @@ void AdAuctionServiceImpl::UpdateAdInterestGroups() {
       origin(), GetClientSecurityState());
 }
 
-void AdAuctionServiceImpl::RunAdAuction(const blink::AuctionConfig& config,
-                                        RunAdAuctionCallback callback) {
+void AdAuctionServiceImpl::RunAdAuction(
+    const blink::AuctionConfig& config,
+    mojo::PendingReceiver<blink::mojom::AbortableAdAuction> abort_receiver,
+    RunAdAuctionCallback callback) {
   // If the run ad auction API is not allowed for this context by Permissions
   // Policy, do nothing
   if (!render_frame_host().IsFeatureEnabled(
@@ -220,7 +222,18 @@ void AdAuctionServiceImpl::RunAdAuction(const blink::AuctionConfig& config,
   auto* auction_result_metrics =
       AdAuctionResultMetrics::GetOrCreateForPage(render_frame_host().GetPage());
   if (!auction_result_metrics->ShouldRunAuction()) {
-    std::move(callback).Run(absl::nullopt);
+    std::move(callback).Run(/*manually_aborted=*/false, absl::nullopt);
+    return;
+  }
+
+  FencedFrameURLMapping& fenced_frame_urls_map =
+      GetFrame()->GetPage().fenced_frame_urls_map();
+  auto urn_uuid = fenced_frame_urls_map.GeneratePlaceholderURN();
+
+  // If placeholder URN cannot be generated due to number of mappings has
+  // reached limit, stop the auction.
+  if (!urn_uuid.has_value()) {
+    std::move(callback).Run(/*manually_aborted=*/false, absl::nullopt);
     return;
   }
 
@@ -229,8 +242,10 @@ void AdAuctionServiceImpl::RunAdAuction(const blink::AuctionConfig& config,
       GetClientSecurityState(),
       base::BindRepeating(&AdAuctionServiceImpl::IsInterestGroupAPIAllowed,
                           base::Unretained(this)),
+      std::move(abort_receiver),
       base::BindOnce(&AdAuctionServiceImpl::OnAuctionComplete,
-                     base::Unretained(this), std::move(callback)));
+                     base::Unretained(this), std::move(callback),
+                     std::move(urn_uuid.value())));
   auctions_.insert(std::move(auction));
 }
 
@@ -417,7 +432,7 @@ AdAuctionServiceImpl::~AdAuctionServiceImpl() {
     // callbacks from the renderers are invoked. Uninvoked Mojo callbacks may
     // not be destroyed before the Mojo pipe is, and the parent DocumentService
     // class owns the pipe, so it may still be open at this point.
-    (*auctions_.begin())->FailAuction();
+    (*auctions_.begin())->FailAuction(/*manually_aborted=*/false);
   }
 }
 
@@ -504,7 +519,9 @@ void AdAuctionServiceImpl::SendPrivateAggregationRequests(
 
 void AdAuctionServiceImpl::OnAuctionComplete(
     RunAdAuctionCallback callback,
+    GURL urn_uuid,
     AuctionRunner* auction,
+    bool manually_aborted,
     absl::optional<blink::InterestGroupKey> winning_group_id,
     absl::optional<GURL> render_url,
     std::vector<GURL> ad_component_urls,
@@ -529,14 +546,16 @@ void AdAuctionServiceImpl::OnAuctionComplete(
         base::StrCat({"Worklet error: ", error}));
   }
 
-  SendPrivateAggregationRequests(std::move(private_aggregation_requests));
+  if (!manually_aborted) {
+    SendPrivateAggregationRequests(std::move(private_aggregation_requests));
+  }
 
   auto* auction_result_metrics =
       AdAuctionResultMetrics::GetForPage(render_frame_host().GetPage());
 
   if (!render_url) {
     DCHECK(report_urls.empty());
-    std::move(callback).Run(absl::nullopt);
+    std::move(callback).Run(manually_aborted, absl::nullopt);
     if (auction_result_metrics) {
       // `auction_result_metrics` can be null since PageUserData like
       // AdAuctionResultMetrics isn't guaranteed to be destroyed after document
@@ -557,12 +576,12 @@ void AdAuctionServiceImpl::OnAuctionComplete(
   DCHECK(blink::IsValidFencedFrameURL(*render_url));
   FencedFrameURLMapping& fenced_frame_urls_map =
       GetFrame()->GetPage().fenced_frame_urls_map();
-  render_url = fenced_frame_urls_map.AddFencedFrameURLWithInterestGroupInfo(
-      *render_url, {winning_group_id->owner, winning_group_id->name},
+  DCHECK(urn_uuid.is_valid());
+  fenced_frame_urls_map.AssignFencedFrameURLAndInterestGroupInfo(
+      urn_uuid, *render_url, {winning_group_id->owner, winning_group_id->name},
       ad_component_urls, ad_beacon_map);
-  DCHECK(render_url->is_valid());
 
-  std::move(callback).Run(render_url);
+  std::move(callback).Run(/*manually_aborted=*/false, urn_uuid);
   if (auction_result_metrics) {
     auction_result_metrics->ReportAuctionResult(
         AdAuctionResultMetrics::AuctionResult::kSucceeded);

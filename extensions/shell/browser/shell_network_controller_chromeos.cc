@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -65,7 +65,7 @@ ShellNetworkController::ShellNetworkController(
       base::BindRepeating(&HandleEnableWifiError));
 
   // If we're unconnected, trigger a connection attempt and start scanning.
-  NetworkConnectionStateChanged(NULL);
+  NetworkConnectionStateChanged(nullptr);
 }
 
 ShellNetworkController::~ShellNetworkController() {
@@ -130,7 +130,7 @@ const ash::NetworkState* ShellNetworkController::GetActiveWiFiNetwork() {
   return network &&
                  (network->IsConnectedState() || network->IsConnectingState())
              ? network
-             : NULL;
+             : nullptr;
 }
 
 void ShellNetworkController::SetScanningEnabled(bool enabled) {
@@ -161,7 +161,7 @@ void ShellNetworkController::ConnectIfUnconnected() {
       state_ == STATE_WAITING_FOR_PREFERRED_RESULT)
     return;
 
-  const ash::NetworkState* best_network = NULL;
+  const ash::NetworkState* best_network = nullptr;
   bool can_connect_to_preferred_network = false;
 
   ash::NetworkHandler* handler = ash::NetworkHandler::Get();

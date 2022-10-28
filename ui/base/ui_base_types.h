@@ -9,6 +9,8 @@
 #include <type_traits>
 
 #include "base/component_export.h"
+#include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "ui/gfx/geometry/rect.h"
 
 namespace ui {
@@ -35,6 +37,30 @@ enum WindowShowState {
   SHOW_STATE_END = 6  // The end of show state enum.
 };
 
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
+// Specifies which edges of the window are tiled.
+//
+// Wayland can notify the application if certain edge of the window is
+// "tiled": https://wayland.app/protocols/xdg-shell#xdg_toplevel:enum:state.
+// Chromium should not draw frame decorations for the tiled edges.
+struct WindowTiledEdges {
+  bool left{false};
+  bool right{false};
+  bool top{false};
+  bool bottom{false};
+
+  bool operator==(const WindowTiledEdges& other) const {
+    return left == other.left && right == other.right && top == other.top &&
+           bottom == other.bottom;
+  }
+
+  bool operator!=(const WindowTiledEdges& other) const {
+    return left != other.left || right != other.right || top != other.top ||
+           bottom != other.bottom;
+  }
+};
+#endif  // IS_LINUX || IS_CHROMEOS_LACROS
+
 // Dialog button identifiers used to specify which buttons to show the user.
 enum DialogButton {
   DIALOG_BUTTON_NONE = 0,
@@ -52,10 +78,12 @@ enum ModalType {
   MODAL_TYPE_SYSTEM = 3   // Window is modal to all other windows.
 };
 
-// The class of window and its overall z-order. Not all platforms provide this
-// level of z-order granularity. For such platforms, which only provide a
+// The class of window and its overall z-order. Only the Mac provides this
+// level of z-order granularity. For other platforms, which only provide a
 // distinction between "normal" and "always on top" windows, any of the values
-// here that aren't |kNormal| are treated equally as "always on top".
+// here that aren't `kNormal` are treated equally as "always on top".
+// TODO(crbug.com/1358586): For non-desktop widgets on Linux and Windows,
+// this z-order currently does not have any effect.
 enum class ZOrderLevel {
   // The default level for windows.
   kNormal = 0,

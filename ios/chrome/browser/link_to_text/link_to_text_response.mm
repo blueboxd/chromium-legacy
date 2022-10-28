@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -26,22 +26,22 @@ using shared_highlighting::TextFragment;
 
 @interface LinkToTextResponse ()
 
-// Initializes an object with a |sourceID| representing the current WebState,
-// along with the |latency| for link generation.
+// Initializes an object with a `sourceID` representing the current WebState,
+// along with the `latency` for link generation.
 - (instancetype)initWithSourceID:(ukm::SourceId)sourceID
                          latency:(base::TimeDelta)latency
     NS_DESIGNATED_INITIALIZER;
 
-// Initializes an object with the given |payload| of the link generation
-// request, a |sourceID| representing the current WebState and the |latency| for
+// Initializes an object with the given `payload` of the link generation
+// request, a `sourceID` representing the current WebState and the `latency` for
 // link generation.
 - (instancetype)initWithPayload:(LinkToTextPayload*)payload
                        sourceID:(ukm::SourceId)sourceID
                         latency:(base::TimeDelta)latency;
 
-// Initializes an object with the given |error| which occurred while trying to
-// generate a link, a |sourceID| representing the current WebState and the
-// |latency| for link generation.
+// Initializes an object with the given `error` which occurred while trying to
+// generate a link, a `sourceID` representing the current WebState and the
+// `latency` for link generation.
 - (instancetype)initWithError:(LinkGenerationError)error
                      sourceID:(ukm::SourceId)sourceID
                       latency:(base::TimeDelta)latency;

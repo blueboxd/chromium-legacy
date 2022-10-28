@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,26 +10,18 @@
 #include "ash/constants/ash_pref_names.h"
 #include "ash/services/ime/public/mojom/input_method.mojom.h"
 #include "base/feature_list.h"
-#include "base/i18n/i18n_constants.h"
-#include "base/i18n/icu_string_conversions.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
-#include "base/strings/strcat.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_offset_string_conversions.h"
 #include "base/strings/utf_string_conversion_utils.h"
-#include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/ash/input_method/assistive_suggester_client_filter.h"
 #include "chrome/browser/ash/input_method/assistive_suggester_prefs.h"
 #include "chrome/browser/ash/input_method/assistive_suggester_switch.h"
 #include "chrome/browser/ash/input_method/autocorrect_manager.h"
 #include "chrome/browser/ash/input_method/diacritics_checker.h"
-#include "chrome/browser/ash/input_method/get_current_window_properties.h"
-#include "chrome/browser/ash/input_method/grammar_service_client.h"
 #include "chrome/browser/ash/input_method/input_method_quick_settings_helpers.h"
 #include "chrome/browser/ash/input_method/input_method_settings.h"
-#include "chrome/browser/ash/input_method/suggestions_service_client.h"
 #include "chrome/browser/ash/input_method/ui/input_method_menu_manager.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/settings_window_manager_chromeos.h"
@@ -116,7 +108,7 @@ bool IsPhysicalKeyboardAutocorrectEnabled(PrefService* prefs,
   }
 
   const base::Value::Dict& input_method_settings =
-      prefs->GetValueDict(::prefs::kLanguageInputMethodSpecificSettings);
+      prefs->GetDict(::prefs::kLanguageInputMethodSpecificSettings);
   const base::Value* autocorrect_setting =
       input_method_settings.FindByDottedPath(
           engine_id + ".physicalKeyboardAutoCorrectionLevel");
@@ -520,7 +512,7 @@ void MigratePinyinAndZhuyinSettings(PrefService* prefs,
     return;
 
   const base::Value::Dict& all_input_method_pref =
-      prefs->GetValueDict(::prefs::kLanguageInputMethodSpecificSettings);
+      prefs->GetDict(::prefs::kLanguageInputMethodSpecificSettings);
 
   // Check if the settings are already migrated.
   if (all_input_method_pref.FindDict(engine_id))
@@ -777,6 +769,7 @@ void NativeInputMethodEngineObserver::OnBlur(const std::string& engine_id,
 
   if (assistive_suggester_->IsAssistiveFeatureEnabled())
     assistive_suggester_->OnBlur();
+  autocorrect_manager_->OnBlur();
 
   if (ShouldRouteToNativeMojoEngine(engine_id)) {
     if (IsInputMethodBound()) {
@@ -793,17 +786,18 @@ void NativeInputMethodEngineObserver::OnKeyEvent(
     ui::IMEEngineHandlerInterface::KeyEventDoneCallback callback) {
   if (assistive_suggester_->IsAssistiveFeatureEnabled()) {
     if (assistive_suggester_->OnKeyEvent(event)) {
-      std::move(callback).Run(true);
+      std::move(callback).Run(
+          ui::ime::KeyEventHandledState::kHandledByAssistiveSuggester);
       return;
     }
   }
   if (autocorrect_manager_->OnKeyEvent(event)) {
-    std::move(callback).Run(true);
+    std::move(callback).Run(ui::ime::KeyEventHandledState::kHandledByIME);
     return;
   }
   if (grammar_manager_->IsOnDeviceGrammarEnabled() &&
       grammar_manager_->OnKeyEvent(event)) {
-    std::move(callback).Run(true);
+    std::move(callback).Run(ui::ime::KeyEventHandledState::kHandledByIME);
     return;
   }
 
@@ -817,20 +811,20 @@ void NativeInputMethodEngineObserver::OnKeyEvent(
       // Don't send dead keys to the system IME. Dead keys should be handled at
       // the OS level and not exposed to IMEs.
       if (event.GetDomKey().IsDeadKey()) {
-        std::move(callback).Run(true);
+        std::move(callback).Run(ui::ime::KeyEventHandledState::kHandledByIME);
         return;
       }
 
       mojom::PhysicalKeyEventPtr key_event =
           CreatePhysicalKeyEventFromKeyEvent(event);
       if (!key_event) {
-        std::move(callback).Run(false);
+        std::move(callback).Run(ui::ime::KeyEventHandledState::kNotHandled);
         return;
       }
 
       // Hot switches to turn on/off certain IME features.
       if (IsFstEngine(engine_id) && autocorrect_manager_->DisabledByRule()) {
-        std::move(callback).Run(false);
+        std::move(callback).Run(ui::ime::KeyEventHandledState::kNotHandled);
         return;
       }
 
@@ -846,14 +840,16 @@ void NativeInputMethodEngineObserver::OnKeyEvent(
                  original_callback,
              mojom::KeyEventResult result) {
             std::move(original_callback)
-                .Run(result == mojom::KeyEventResult::kConsumedByIme);
+                .Run((result == mojom::KeyEventResult::kConsumedByIme)
+                         ? ui::ime::KeyEventHandledState::kHandledByIME
+                         : ui::ime::KeyEventHandledState::kNotHandled);
           },
           std::move(callback));
 
       input_method_->ProcessKeyEvent(std::move(key_event),
                                      std::move(process_key_event_callback));
     } else {
-      std::move(callback).Run(false);
+      std::move(callback).Run(ui::ime::KeyEventHandledState::kNotHandled);
     }
   } else {
     ime_base_observer_->OnKeyEvent(engine_id, event, std::move(callback));

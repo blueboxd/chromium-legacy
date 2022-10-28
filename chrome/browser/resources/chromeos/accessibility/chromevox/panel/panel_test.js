@@ -1,4 +1,4 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -227,6 +227,24 @@ AX_TEST_F('ChromeVoxPanelTest', 'ActionsMenu', async function() {
   this.assertActiveMenuItem('panel_menu_actions', 'Click On Current Item');
 });
 
+AX_TEST_F('ChromeVoxPanelTest', 'ActionsMenuLongClick', async function() {
+  await this.runWithLoadedTree(this.linksDoc);
+  // Get the node that will be checked for actions.
+  const activeNode = ChromeVoxState.instance.currentRange.start.node;
+  // Override the standard actions to have long click.
+  Object.defineProperty(activeNode, 'standardActions', {
+    value: ['longClick'],
+    writable: true,
+  });
+  CommandHandlerInterface.instance.onCommand('showActionsMenu');
+  await this.waitForMenu('panel_menu_actions');
+  // Go down three times
+  this.fireMockEvent('ArrowUp')();
+  this.assertActiveMenuItem('panel_menu_actions', 'Long click on current item');
+  this.fireMockEvent('ArrowDown')();
+  this.assertActiveMenuItem('panel_menu_actions', 'Click On Current Item');
+});
+
 AX_TEST_F(
     'ChromeVoxPanelTest', 'ShortcutsAreInternationalized', async function() {
       await this.runWithLoadedTree(this.linksDoc);
@@ -278,3 +296,19 @@ AX_TEST_F(
       this.assertActiveMenuItem(
           'panel_menu_touchgestures', 'Click on current item');
     });
+
+// Ensure 'Perform default action' in the actions tab invokes a click event.
+AX_TEST_F('ChromeVoxPanelTest', 'PerformDoDefaultAction', async function() {
+  const rootNode = await this.runWithLoadedTree(`<button>OK</button>`);
+  const button = rootNode.find({role: RoleType.BUTTON});
+  await this.waitForEvent(button, chrome.automation.EventType.FOCUS);
+  CommandHandlerInterface.instance.onCommand('showActionsMenu');
+  await this.waitForMenu('panel_menu_actions');
+  this.fireMockEvent('ArrowDown')();
+  this.assertActiveMenuItem('panel_menu_actions', 'Start Or End Selection');
+  this.fireMockEvent('ArrowDown')();
+  this.fireMockEvent('ArrowDown')();
+  this.assertActiveMenuItem('panel_menu_actions', 'Perform default action');
+  this.fireMockEvent('Enter')();
+  await this.waitForEvent(button, chrome.automation.EventType.CLICKED);
+});

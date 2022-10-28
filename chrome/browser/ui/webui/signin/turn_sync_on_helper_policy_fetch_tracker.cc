@@ -1,10 +1,13 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome/browser/ui/webui/signin/turn_sync_on_helper_policy_fetch_tracker.h"
 
 #include "base/memory/raw_ptr.h"
+#include "base/scoped_observation.h"
+#include "base/threading/sequenced_task_runner_handle.h"
+#include "base/timer/timer.h"
 #include "chrome/browser/policy/chrome_policy_conversions_client.h"
 #include "chrome/browser/policy/cloud/user_policy_signin_service.h"
 #include "chrome/browser/policy/cloud/user_policy_signin_service_factory.h"
@@ -12,9 +15,13 @@
 #include "chrome/browser/signin/account_id_from_account_info.h"
 #include "components/policy/core/browser/policy_conversions.h"
 #include "components/policy/core/common/cloud/user_cloud_policy_manager.h"
+#include "components/policy/core/common/policy_service.h"
 #include "content/public/browser/storage_partition.h"
 
 namespace {
+
+constexpr base::TimeDelta kPolicyUpdateTimeout = base::Seconds(3);
+
 class PolicyFetchTracker
     : public TurnSyncOnHelperPolicyFetchTracker,
       public policy::PolicyService::ProviderUpdateObserver {
@@ -65,9 +72,17 @@ class PolicyFetchTracker
                    std::make_unique<policy::ChromePolicyConversionsClient>(
                        profile_))
                    .ToJSON();
-    profile_->GetProfilePolicyConnector()
-        ->policy_service()
-        ->RemoveProviderUpdateObserver(this);
+    scoped_policy_update_observer_.Reset();
+    policy_update_timeout_timer_.Reset();
+    if (on_policy_updated_callback_)
+      std::move(on_policy_updated_callback_).Run();
+  }
+
+  void OnProviderUpdateTimedOut() {
+    DVLOG(1) << "Waiting for policies update propagated timed out";
+    scoped_policy_update_observer_.Reset();
+    if (on_policy_updated_callback_)
+      std::move(on_policy_updated_callback_).Run();
   }
 
  private:
@@ -91,19 +106,24 @@ class PolicyFetchTracker
   }
 
   void OnPolicyFetchComplete(base::OnceClosure callback, bool success) {
-    // For now, we allow signin to complete even if the policy fetch fails. If
-    // we ever want to change this behavior, we could call
-    // PrimaryAccountMutator::ClearPrimaryAccount() here instead.
     DLOG_IF(ERROR, !success) << "Error fetching policy for user";
     DVLOG_IF(1, success) << "Policy fetch successful - completing signin";
-    if (VLOG_IS_ON(2)) {
-      // User cloud policies have been fetched from the server. Dump all policy
-      // values into log once these new policies are merged.
-      profile_->GetProfilePolicyConnector()
-          ->policy_service()
-          ->AddProviderUpdateObserver(this);
+    if (!success) {
+      // For now, we allow signin to complete even if the policy fetch fails. If
+      // we ever want to change this behavior, we could call
+      // PrimaryAccountMutator::ClearPrimaryAccount() here instead.
+      std::move(callback).Run();
+      return;
     }
-    std::move(callback).Run();
+
+    // User cloud policies have been successfully fetched from the server. Wait
+    // until these new policies are merged.
+    on_policy_updated_callback_ = std::move(callback);
+    scoped_policy_update_observer_.Observe(
+        profile_->GetProfilePolicyConnector()->policy_service());
+    policy_update_timeout_timer_.Start(
+        FROM_HERE, kPolicyUpdateTimeout, this,
+        &PolicyFetchTracker::OnProviderUpdateTimedOut);
   }
 
   raw_ptr<Profile> profile_;
@@ -113,6 +133,14 @@ class PolicyFetchTracker
   // a new profile for an enterprise user or not.
   std::string dm_token_;
   std::string client_id_;
+
+  base::OnceClosure on_policy_updated_callback_;
+  base::OneShotTimer policy_update_timeout_timer_;
+  base::ScopedObservation<policy::PolicyService,
+                          policy::PolicyService::ProviderUpdateObserver,
+                          &policy::PolicyService::AddProviderUpdateObserver,
+                          &policy::PolicyService::RemoveProviderUpdateObserver>
+      scoped_policy_update_observer_{this};
 
   base::WeakPtrFactory<PolicyFetchTracker> weak_pointer_factory_{this};
 };

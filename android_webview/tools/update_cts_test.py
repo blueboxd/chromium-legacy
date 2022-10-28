@@ -1,5 +1,5 @@
 #!/usr/bin/env vpython3
-# Copyright 2020 The Chromium Authors. All rights reserved.
+# Copyright 2020 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -344,7 +344,7 @@ class UpdateCTSTest(unittest.TestCase):
           'cipd', 'ensure', '-root',
           os.path.dirname(repo_cipd_yaml), '-ensure-file', mock.ANY
       ])
-      run_mock.assert_any_call(['python', GENERATE_BUILDBOT_JSON])
+      run_mock.assert_any_call(['vpython3', GENERATE_BUILDBOT_JSON])
 
   @patch('devil.utils.cmd_helper.RunCmd')
   @patch('devil.utils.cmd_helper.GetCmdOutput')

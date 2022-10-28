@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -59,6 +59,6 @@ void CloudUploadUI::RespondAndCloseDialog(mojom::UserAction action) {
   ui::MojoWebDialogUI::CloseDialog(args);
 }
 
-WEB_UI_CONTROLLER_TYPE_IMPL(CloudUploadUI);
+WEB_UI_CONTROLLER_TYPE_IMPL(CloudUploadUI)
 
 }  // namespace chromeos::cloud_upload

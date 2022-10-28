@@ -53,7 +53,6 @@ CONTENT_EXPORT extern const base::Feature kBrowserVerifiedUserActivationMouse;
 CONTENT_EXPORT extern const base::Feature kCanvas2DImageChromium;
 CONTENT_EXPORT extern const base::Feature
     kClearCrossSiteCrossBrowsingContextGroupWindowName;
-CONTENT_EXPORT extern const base::Feature kClickPointerEvent;
 CONTENT_EXPORT extern const base::Feature kCompositeBGColorAnimation;
 CONTENT_EXPORT extern const base::Feature kCodeCacheDeletionWithoutFilter;
 CONTENT_EXPORT extern const base::Feature kConsolidatedMovementXY;
@@ -91,10 +90,13 @@ CONTENT_EXPORT extern const base::Feature kFedCm;
 CONTENT_EXPORT extern const char kFedCmAutoSigninFieldTrialParamName[];
 CONTENT_EXPORT extern const char kFedCmIdpSignoutFieldTrialParamName[];
 CONTENT_EXPORT extern const char kFedCmIframeSupportFieldTrialParamName[];
+CONTENT_EXPORT extern const char kFedCmIdpSigninStatusFieldTrialParamName[];
 CONTENT_EXPORT extern const base::Feature kFedCmManifestValidation;
 CONTENT_EXPORT extern const base::Feature kFedCmMultipleIdentityProviders;
 CONTENT_EXPORT extern const base::Feature kFirstPartySets;
 CONTENT_EXPORT extern const base::FeatureParam<bool> kFirstPartySetsIsDogfooder;
+CONTENT_EXPORT extern const base::FeatureParam<int>
+    kFirstPartySetsMaxAssociatedSites;
 CONTENT_EXPORT extern const base::Feature kFontManagerEarlyInit;
 CONTENT_EXPORT extern const base::Feature kFontSrcLocalMatching;
 #if !BUILDFLAG(IS_ANDROID)
@@ -117,6 +119,7 @@ CONTENT_EXPORT extern const base::Feature kInstalledApp;
 CONTENT_EXPORT extern const base::Feature kInstalledAppProvider;
 CONTENT_EXPORT extern const base::Feature kInstalledAppsInCbd;
 CONTENT_EXPORT extern const base::Feature kIsolatedWebApps;
+CONTENT_EXPORT extern const base::Feature kIsolateFencedFrames;
 CONTENT_EXPORT extern const base::Feature kIsolateOrigins;
 CONTENT_EXPORT extern const char kIsolateOriginsFieldTrialParamName[];
 CONTENT_EXPORT extern const base::Feature kIsolateSandboxedIframes;
@@ -220,7 +223,6 @@ CONTENT_EXPORT extern const base::Feature kSharedArrayBuffer;
 CONTENT_EXPORT extern const base::Feature kSharedArrayBufferOnDesktop;
 CONTENT_EXPORT extern const base::Feature
     kSignedExchangeReportingForDistributors;
-CONTENT_EXPORT extern const base::Feature kSignedExchangeSubresourcePrefetch;
 CONTENT_EXPORT extern const base::Feature kSignedHTTPExchange;
 CONTENT_EXPORT extern const base::Feature kSignedHTTPExchangePingValidity;
 CONTENT_EXPORT extern const base::Feature
@@ -279,6 +281,7 @@ CONTENT_EXPORT extern const base::Feature kUserActivationSameOriginVisibility;
 CONTENT_EXPORT extern const base::Feature kVerifyDidCommitParams;
 CONTENT_EXPORT extern const base::Feature kVideoPlaybackQuality;
 CONTENT_EXPORT extern const base::Feature kV8VmFuture;
+CONTENT_EXPORT extern const base::Feature kJavaScriptExperimentalSharedMemory;
 CONTENT_EXPORT extern const base::Feature kWebAppWindowControlsOverlay;
 CONTENT_EXPORT extern const base::Feature kWebAssemblyBaseline;
 CONTENT_EXPORT extern const base::Feature kWebAssemblyCodeProtection;
@@ -312,9 +315,11 @@ CONTENT_EXPORT extern const base::Feature kWebXr;
 CONTENT_EXPORT extern const base::Feature kWebXrArModule;
 
 #if BUILDFLAG(IS_ANDROID)
+CONTENT_EXPORT extern const base::Feature kAccessibilityAsyncTreeConstruction;
 CONTENT_EXPORT extern const base::Feature kAccessibilityPageZoom;
 CONTENT_EXPORT extern const base::Feature
     kBackgroundMediaRendererHasModerateBinding;
+CONTENT_EXPORT extern const base::Feature kBindingManagerConnectionLimit;
 CONTENT_EXPORT extern const base::Feature
     kBindingManagerUseNotPerceptibleBinding;
 CONTENT_EXPORT extern const base::Feature kReduceGpuPriorityOnBackground;
@@ -324,6 +329,7 @@ CONTENT_EXPORT extern const base::Feature kRequestDesktopSiteExceptions;
 CONTENT_EXPORT extern const base::Feature kUserMediaScreenCapturing;
 CONTENT_EXPORT extern const base::Feature kWarmUpNetworkProcess;
 CONTENT_EXPORT extern const base::Feature kWebNfc;
+CONTENT_EXPORT extern const base::Feature kWebViewThrottleBackgroundBeginFrame;
 
 extern const char kDragAndDropMovementThresholdDipParam[];
 

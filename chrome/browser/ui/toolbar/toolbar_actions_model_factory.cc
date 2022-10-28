@@ -1,4 +1,4 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,7 +9,6 @@
 #include "chrome/browser/extensions/extension_system_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/toolbar/toolbar_actions_model.h"
-#include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_prefs_factory.h"
 #include "extensions/browser/extension_registry_factory.h"
@@ -29,9 +28,9 @@ ToolbarActionsModelFactory* ToolbarActionsModelFactory::GetInstance() {
 }
 
 ToolbarActionsModelFactory::ToolbarActionsModelFactory()
-    : BrowserContextKeyedServiceFactory(
+    : ProfileKeyedServiceFactory(
           "ToolbarActionsModel",
-          BrowserContextDependencyManager::GetInstance()) {
+          ProfileSelections::BuildForRegularAndIncognito()) {
   DependsOn(extensions::ExtensionActionAPI::GetFactoryInstance());
   DependsOn(extensions::ExtensionPrefsFactory::GetInstance());
   DependsOn(extensions::ExtensionRegistryFactory::GetInstance());
@@ -47,11 +46,6 @@ KeyedService* ToolbarActionsModelFactory::BuildServiceInstanceFor(
   return new ToolbarActionsModel(
       Profile::FromBrowserContext(context),
       extensions::ExtensionPrefsFactory::GetForBrowserContext(context));
-}
-
-content::BrowserContext* ToolbarActionsModelFactory::GetBrowserContextToUse(
-    content::BrowserContext* context) const {
-  return context;
 }
 
 bool ToolbarActionsModelFactory::ServiceIsCreatedWithBrowserContext() const {

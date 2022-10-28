@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,6 +11,7 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/notreached.h"
+#include "base/ranges/algorithm.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/timer/timer.h"
 #include "build/build_config.h"
@@ -105,10 +106,8 @@ std::vector<std::unique_ptr<password_manager::PasswordForm>> CopyFormVector(
 const password_manager::InteractionsStats* FindStatsByUsername(
     base::span<const password_manager::InteractionsStats> stats,
     const std::u16string& username) {
-  auto it = std::find_if(stats.begin(), stats.end(),
-                         [&username](const auto& element) {
-                           return username == element.username_value;
-                         });
+  auto it = base::ranges::find(
+      stats, username, &password_manager::InteractionsStats::username_value);
   return it == stats.end() ? nullptr : &*it;
 }
 
@@ -852,10 +851,13 @@ void ManagePasswordsUIController::ReopenBubbleAfterAuth(
 }
 
 bool ManagePasswordsUIController::ShowAuthenticationDialog() {
+// TODO(crbug.com/1353344): Use biometric authentication to reveal password in
+// the bubble.
 #if BUILDFLAG(IS_WIN)
   return password_manager_util_win::AuthenticateUser(
       web_contents()->GetNativeView(),
-      password_manager::ReauthPurpose::VIEW_PASSWORD);
+      password_manager_util_win::GetMessageForLoginPrompt(
+          password_manager::ReauthPurpose::VIEW_PASSWORD));
 #elif BUILDFLAG(IS_MAC)
   return password_manager_util_mac::AuthenticateUser(
       password_manager::ReauthPurpose::VIEW_PASSWORD);

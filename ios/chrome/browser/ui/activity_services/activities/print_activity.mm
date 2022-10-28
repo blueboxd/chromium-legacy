@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,8 +7,10 @@
 #import "ios/chrome/browser/ui/activity_services/data/share_image_data.h"
 #import "ios/chrome/browser/ui/activity_services/data/share_to_data.h"
 #import "ios/chrome/browser/ui/commands/browser_coordinator_commands.h"
-#include "ios/chrome/grit/ios_strings.h"
-#include "ui/base/l10n/l10n_util_mac.h"
+#import "ios/chrome/browser/ui/icons/action_icon.h"
+#import "ios/chrome/browser/ui/icons/chrome_symbol.h"
+#import "ios/chrome/grit/ios_strings.h"
+#import "ui/base/l10n/l10n_util_mac.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -67,6 +69,9 @@ NSString* const kPrintActivityType = @"com.google.chrome.printActivity";
 }
 
 - (UIImage*)activityImage {
+  if (UseSymbols()) {
+    return DefaultSymbolWithPointSize(kPrinterSymbol, kSymbolActionPointSize);
+  }
   return [UIImage imageNamed:@"activity_services_print"];
 }
 

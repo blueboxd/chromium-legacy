@@ -25,10 +25,9 @@
 
 #include "third_party/blink/renderer/platform/graphics/color.h"
 
+#include "base/notreached.h"
 #include "build/build_config.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
-#include "third_party/blink/renderer/platform/wtf/decimal.h"
-#include "third_party/blink/renderer/platform/wtf/dtoa.h"
 #include "third_party/blink/renderer/platform/wtf/math_extras.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_view.h"
@@ -231,6 +230,14 @@ constexpr int AlphaChannel(RGBA32 color) {
 
 }  // namespace
 
+// The color parameters will use 16 bytes (for 4 floats). Ensure that the
+// remaining parameters fit into another 4 bytes (or 8 bytes, on Windows)
+#if BUILDFLAG(IS_WIN)
+static_assert(sizeof(Color) <= 24, "blink::Color should be <= 24 bytes.");
+#else
+static_assert(sizeof(Color) <= 20, "blink::Color should be <= 20 bytes.");
+#endif
+
 Color::Color(int r, int g, int b) {
   *this = FromRGB(r, g, b);
 }
@@ -250,6 +257,98 @@ Color Color::FromHWBA(double h, double w, double b, double a) {
 }
 
 // static
+Color Color::FromColorFunction(ColorFunctionSpace space,
+                               absl::optional<float> red_or_x,
+                               absl::optional<float> green_or_y,
+                               absl::optional<float> blue_or_z,
+                               absl::optional<float> alpha) {
+  Color result;
+  result.serialization_type_ = SerializationType::kColor;
+  result.color_function_space_ = space;
+  result.param0_is_none_ = !red_or_x;
+  result.param1_is_none_ = !green_or_y;
+  result.param2_is_none_ = !blue_or_z;
+  result.alpha_is_none_ = !alpha;
+  result.param0_ = red_or_x.value_or(0.f);
+  result.param1_ = green_or_y.value_or(0.f);
+  result.param2_ = blue_or_z.value_or(0.f);
+  result.alpha_ = ClampTo(alpha.value_or(1.f), 0.f, 1.f);
+  return result;
+}
+
+// static
+Color Color::FromLab(absl::optional<float> L,
+                     absl::optional<float> a,
+                     absl::optional<float> b,
+                     absl::optional<float> alpha) {
+  Color result;
+  result.serialization_type_ = SerializationType::kLab;
+  result.param0_is_none_ = !L;
+  result.param1_is_none_ = !a;
+  result.param2_is_none_ = !b;
+  result.alpha_is_none_ = !alpha;
+  result.param0_ = std::max(L.value_or(0.f), 0.f);
+  result.param1_ = a.value_or(0.f);
+  result.param2_ = b.value_or(0.f);
+  result.alpha_ = ClampTo(alpha.value_or(1.f), 0.f, 1.f);
+  return result;
+}
+
+// static
+Color Color::FromOKLab(absl::optional<float> L,
+                       absl::optional<float> a,
+                       absl::optional<float> b,
+                       absl::optional<float> alpha) {
+  Color result;
+  result.serialization_type_ = SerializationType::kOKLab;
+  result.param0_is_none_ = !L;
+  result.param1_is_none_ = !a;
+  result.param2_is_none_ = !b;
+  result.alpha_is_none_ = !alpha;
+  result.param0_ = std::max(L.value_or(0.f), 0.f);
+  result.param1_ = a.value_or(0.f);
+  result.param2_ = b.value_or(0.f);
+  result.alpha_ = ClampTo(alpha.value_or(1.f), 0.f, 1.f);
+  return result;
+}
+
+// static
+Color Color::FromLCH(absl::optional<float> L,
+                     absl::optional<float> chroma,
+                     absl::optional<float> hue,
+                     absl::optional<float> alpha) {
+  Color result;
+  result.serialization_type_ = SerializationType::kLCH;
+  result.param0_is_none_ = !L;
+  result.param1_is_none_ = !chroma;
+  result.param2_is_none_ = !hue;
+  result.alpha_is_none_ = !alpha;
+  result.param0_ = std::max(L.value_or(0.f), 0.f);
+  result.param1_ = std::max(chroma.value_or(0.f), 0.f);
+  result.param2_ = hue.value_or(0.f);
+  result.alpha_ = ClampTo(alpha.value_or(1.f), 0.f, 1.f);
+  return result;
+}
+
+// static
+Color Color::FromOKLCH(absl::optional<float> L,
+                       absl::optional<float> chroma,
+                       absl::optional<float> hue,
+                       absl::optional<float> alpha) {
+  Color result;
+  result.serialization_type_ = SerializationType::kOKLCH;
+  result.param0_is_none_ = !L;
+  result.param1_is_none_ = !chroma;
+  result.param2_is_none_ = !hue;
+  result.alpha_is_none_ = !alpha;
+  result.param0_ = std::max(L.value_or(0.f), 0.f);
+  result.param1_ = std::max(chroma.value_or(0.f), 0.f);
+  result.param2_ = hue.value_or(0.f);
+  result.alpha_ = ClampTo(alpha.value_or(1.f), 0.f, 1.f);
+  return result;
+}
+
+// static
 Color Color::FromRGBAFloat(float r, float g, float b, float a) {
   return Color(MakeRGBA32FromFloats(r, g, b, a));
 }
@@ -259,8 +358,49 @@ Color Color::FromSkColor4f(SkColor4f fc) {
   return Color(MakeRGBA32FromFloats(fc.fR, fc.fG, fc.fB, fc.fA));
 }
 
+// This converts -0.0 to 0.0, so that they have the same hash value. This
+// ensures that equal FontDescription have the same hash value.
+float NormalizeSign(float number) {
+  if (UNLIKELY(number == 0.0))
+    return 0.0;
+  return number;
+}
+
+unsigned Color::GetHash() const {
+  unsigned result = WTF::HashInts(static_cast<uint8_t>(serialization_type_),
+                                  static_cast<uint8_t>(color_function_space_));
+  WTF::AddFloatToHash(result, NormalizeSign(param0_));
+  WTF::AddFloatToHash(result, NormalizeSign(param1_));
+  WTF::AddFloatToHash(result, NormalizeSign(param2_));
+  WTF::AddFloatToHash(result, NormalizeSign(alpha_));
+  WTF::AddIntToHash(result, param0_is_none_);
+  WTF::AddIntToHash(result, param1_is_none_);
+  WTF::AddIntToHash(result, param2_is_none_);
+  WTF::AddIntToHash(result, alpha_is_none_);
+  return result;
+}
+
 SkColor4f Color::toSkColor4f() const {
-  return SkColor4f{param0_, param1_, param2_, alpha_};
+  switch (serialization_type_) {
+    case SerializationType::kRGB:
+      return SkColor4f{param0_, param1_, param2_, alpha_};
+    case SerializationType::kColor:
+      switch (color_function_space_) {
+        case ColorFunctionSpace::kSRGB:
+          return SkColor4f{param0_, param1_, param2_, alpha_};
+        default:
+          NOTIMPLEMENTED();
+          return SkColor4f{0.f, 0.f, 0.f, 0.f};
+      }
+    case SerializationType::kLab:
+    case SerializationType::kOKLab:
+      // TODO(crbug.com/1354622): Implement CSSColor4 types.
+      // https://www.w3.org/TR/css-color-4/
+      return SkColor4f{0.0f, 0.0f, 0.0f, 0.0f};
+    default:
+      NOTIMPLEMENTED();
+      return SkColor4f{0.f, 0.f, 0.f, 0.f};
+  }
 }
 
 bool Color::HasAlpha() const {
@@ -308,6 +448,7 @@ int DifferenceSquared(const Color& c1, const Color& c2) {
 }
 
 bool Color::SetFromString(const String& name) {
+  // TODO(https://crbug.com/1333988): Implement CSS Color level 4 parsing.
   if (name[0] != '#')
     return SetNamedColor(name);
   if (name.Is8Bit())
@@ -315,32 +456,153 @@ bool Color::SetFromString(const String& name) {
   return ParseHexColor(name.Characters16() + 1, name.length() - 1, *this);
 }
 
-String Color::Serialized() const {
-  if (!HasAlpha())
+static String ColorFunctionSpaceToString(
+    Color::ColorFunctionSpace color_space) {
+  switch (color_space) {
+    case Color::ColorFunctionSpace::kSRGB:
+      return "srgb";
+    case Color::ColorFunctionSpace::kSRGBLinear:
+      return "srgb-linear";
+    case Color::ColorFunctionSpace::kDisplayP3:
+      return "display-p3";
+    case Color::ColorFunctionSpace::kA98RGB:
+      return "a98-rgb";
+    case Color::ColorFunctionSpace::kProPhotoRGB:
+      return "prophoto-rgb";
+    case Color::ColorFunctionSpace::kRec2020:
+      return "rec2020";
+    case Color::ColorFunctionSpace::kXYZD50:
+      return "xyz-d50";
+    case Color::ColorFunctionSpace::kXYZD65:
+      return "xyz-d65";
+  }
+}
+
+String Color::SerializeAsCanvasColor() const {
+  if (serialization_type_ == SerializationType::kRGB && !HasAlpha())
     return String::Format("#%02x%02x%02x", Red(), Green(), Blue());
 
+  return SerializeAsCSSColor();
+}
+
+String Color::SerializeAsCSSColor() const {
   StringBuilder result;
   result.ReserveCapacity(28);
 
-  result.Append("rgba(");
-  result.AppendNumber(Red());
-  result.Append(", ");
-  result.AppendNumber(Green());
-  result.Append(", ");
-  result.AppendNumber(Blue());
-  result.Append(", ");
+  switch (serialization_type_) {
+    case SerializationType::kRGB:
+      if (HasAlpha())
+        result.Append("rgba(");
+      else
+        result.Append("rgb(");
 
-  if (!Alpha())
-    result.Append('0');
-  else {
-    result.Append(Decimal::FromDouble(Alpha() / 255.0).ToString());
+      result.AppendNumber(Red());
+      result.Append(", ");
+      result.AppendNumber(Green());
+      result.Append(", ");
+      result.AppendNumber(Blue());
+
+      if (HasAlpha()) {
+        result.Append(", ");
+        // See <alphavalue> section in
+        // https://drafts.csswg.org/cssom/#serializing-css-values
+        float rounded = round(Alpha() * 100 / 255.0f) / 100;
+        if (round(rounded * 255) == Alpha()) {
+          result.AppendNumber(rounded, 2);
+        } else {
+          rounded = round(Alpha() * 1000 / 255.0f) / 1000;
+          result.AppendNumber(rounded, 3);
+        }
+      }
+
+      result.Append(')');
+      return result.ToString();
+
+    case SerializationType::kLab:
+    case SerializationType::kOKLab:
+    case SerializationType::kLCH:
+    case SerializationType::kOKLCH:
+      if (serialization_type_ == SerializationType::kLab)
+        result.Append("lab(");
+      if (serialization_type_ == SerializationType::kOKLab)
+        result.Append("oklab(");
+      if (serialization_type_ == SerializationType::kLCH)
+        result.Append("lch(");
+      if (serialization_type_ == SerializationType::kOKLCH)
+        result.Append("oklch(");
+
+      if (param0_is_none_) {
+        result.Append("none ");
+      } else {
+        result.AppendNumber(param0_);
+        result.Append("% ");
+      }
+
+      if (param1_is_none_)
+        result.Append("none");
+      else
+        result.AppendNumber(param1_);
+      result.Append(" ");
+
+      if (param2_is_none_)
+        result.Append("none");
+      else
+        result.AppendNumber(param2_);
+
+      if (alpha_ != 1.0 || alpha_is_none_) {
+        result.Append(" / ");
+        if (alpha_is_none_)
+          result.Append("none");
+        else
+          result.AppendNumber(alpha_);
+      }
+      result.Append(")");
+      return result.ToString();
+
+    case SerializationType::kColor:
+      result.Append("color(");
+      result.Append(ColorFunctionSpaceToString(color_function_space_));
+
+      result.Append(" ");
+      if (param0_is_none_)
+        result.Append("none");
+      else
+        result.AppendNumber(param0_);
+
+      result.Append(" ");
+      if (param1_is_none_)
+        result.Append("none");
+      else
+        result.AppendNumber(param1_);
+
+      result.Append(" ");
+      if (param2_is_none_)
+        result.Append("none");
+      else
+        result.AppendNumber(param2_);
+
+      if (alpha_ != 1.0 || alpha_is_none_) {
+        result.Append(" / ");
+        if (alpha_is_none_)
+          result.Append("none");
+        else
+          result.AppendNumber(alpha_);
+      }
+      result.Append(")");
+      return result.ToString();
+
+    default:
+      NOTIMPLEMENTED();
+      return "rgb(0, 0, 0)";
   }
-
-  result.Append(')');
-  return result.ToString();
 }
 
 String Color::NameForLayoutTreeAsText() const {
+  if (serialization_type_ != SerializationType::kRGB) {
+    // TODO(https://crbug.com/1333988): Determine if CSS Color Level 4 colors
+    // should use this representation here.
+    return SerializeAsCSSColor();
+  }
   if (Alpha() < 0xFF)
     return String::Format("#%02X%02X%02X%02X", Red(), Green(), Blue(), Alpha());
   return String::Format("#%02X%02X%02X", Red(), Green(), Blue());
@@ -353,7 +615,7 @@ bool Color::SetNamedColor(const String& name) {
   return found_color;
 }
 
-Color::operator SkColor() const {
+SkColor Color::ToSkColorDeprecated() const {
   return SkColorSetARGB(Alpha(), Red(), Green(), Blue());
 }
 
@@ -382,6 +644,7 @@ Color Color::CombineWithAlpha(float other_alpha) const {
 }
 
 Color Color::Blend(const Color& source) const {
+  // TODO(https://crbug.com/1333988): Implement CSS Color level 4 blending.
   if (!Alpha() || !source.HasAlpha())
     return source;
 
@@ -513,6 +776,24 @@ RGBA32 PremultipliedARGBFromColor(const Color& color) {
   }
 
   return pixel_color;
+}
+
+// https://www.w3.org/TR/css-color-4/#legacy-color-syntax
+bool Color::IsLegacyColor() const {
+  return serialization_type_ == SerializationType::kRGB;
+}
+
+// From https://www.w3.org/TR/css-color-4/#interpolation
+// If the host syntax does not define what color space interpolation should
+// take place in, it defaults to OKLab.
+// However, user agents may handle interpolation between legacy sRGB color
+// formats (hex colors, named colors, rgb(), hsl() or hwb() and the equivalent
+// alpha-including forms) in gamma-encoded sRGB space.
+Color::ColorInterpolationSpace Color::GetColorInterpolationSpace() const {
+  if (IsLegacyColor())
+    return ColorInterpolationSpace::kSRGB;
+
+  return ColorInterpolationSpace::kOKLab;
 }
 
 }  // namespace blink

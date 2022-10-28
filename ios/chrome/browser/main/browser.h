@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -21,7 +21,7 @@ class WebStateList;
 // See src/docs/ios/objects.md for more information.
 class Browser : public base::SupportsUserData {
  public:
-  // Creates a new Browser attached to |browser_state|.
+  // Creates a new Browser attached to `browser_state`.
   static std::unique_ptr<Browser> Create(ChromeBrowserState* browser_state);
 
   Browser(const Browser&) = delete;

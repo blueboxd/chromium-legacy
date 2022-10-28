@@ -1,4 +1,4 @@
-# Copyright 2018 The Chromium Authors. All rights reserved.
+# Copyright 2018 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -13,39 +13,24 @@ assert(is_chromeos, "OOBE UI is only available on ChromeOS builds")
 
 group("polymer3_elements") {
   public_deps = [
-    ":app_downloading_module",
     ":app_launch_splash_module",
     ":assistant_optin_module",
-    ":autolaunch_module",
     ":consolidated_consent_module",
     ":device_disabled_module",
-    ":enable_kiosk_module",
-    ":error_message_module",
     ":family_link_notice_module",
-    ":fingerprint_setup_module",
     ":gaia_signin_module",
-    ":gesture_navigation_module",
     ":guest_tos_module",
     ":hw_data_collection_module",
-    ":managed_terms_of_service_module",
-    ":marketing_opt_in_module",
     ":multidevice_setup_module",
     ":offline_ad_login_module",
     ":oobe_eula_module",
-    ":oobe_reset_module",
     ":os_install_module",
     ":os_trial_module",
-    ":parental_handoff_module",
-    ":pin_setup_module",
     ":recommend_apps_module",
-    ":saml_confirm_password_module",
     ":signin_fatal_error_module",
     ":smart_privacy_protection_module",
     ":sync_consent_module",
-    ":theme_selection_module",
-    ":tpm_error_module",
     ":user_creation_module",
-    ":wrong_hwid_module",
   ]
 }
 
@@ -61,40 +46,41 @@ js_type_check("closure_compile_local") {
   closure_flags = default_closure_args
   deps = [
     ":adb_sideloading",
-    ":app_downloading.m",
+    ":app_downloading",
     ":app_launch_splash.m",
     ":arc_terms_of_service",
 
     #":assistant_optin.m",
-    ":autolaunch.m",
+    ":autolaunch",
     ":consolidated_consent.m",
     ":device_disabled.m",
-    ":enable_kiosk.m",
-    ":error_message.m",
+    ":enable_kiosk",
+    ":error_message",
     ":family_link_notice.m",
-    ":fingerprint_setup.m",
+    ":fingerprint_setup",
     ":gaia_signin.m",
-    ":gesture_navigation.m",
+    ":gesture_navigation",
     ":guest_tos.m",
     ":hw_data_collection.m",
-    ":managed_terms_of_service.m",
-    ":marketing_opt_in.m",
+    ":local_state_error",
+    ":managed_terms_of_service",
+    ":marketing_opt_in",
     ":offline_ad_login.m",
     ":oobe_eula.m",
-    ":oobe_reset.m",
+    ":oobe_reset",
     ":os_install.m",
     ":os_trial.m",
-    ":parental_handoff.m",
-    ":pin_setup.m",
+    ":parental_handoff",
+    ":pin_setup",
     ":recommend_apps.m",
-    ":saml_confirm_password.m",
+    ":saml_confirm_password",
     ":signin_fatal_error.m",
     ":smart_privacy_protection.m",
     ":sync_consent.m",
-    ":theme_selection.m",
-    ":tpm_error.m",
+    ":theme_selection",
+    ":tpm_error",
     ":user_creation.m",
-    ":wrong_hwid.m",
+    ":wrong_hwid",
   ]
 }
 
@@ -121,8 +107,8 @@ js_library("adb_sideloading") {
   extra_deps = [ ":web_components" ]
 }
 
-js_library("app_downloading.m") {
-  sources = [ "$root_gen_dir/chrome/browser/resources/chromeos/login/screens/common/app_downloading.m.js" ]
+js_library("app_downloading") {
+  sources = [ "$root_gen_dir/chrome/browser/resources/chromeos/login/screens/common/app_downloading.js" ]
   deps = [
     "../../components:oobe_cr_lottie.m",
     "../../components/behaviors:login_screen_behavior.m",
@@ -131,7 +117,7 @@ js_library("app_downloading.m") {
     "../../components/buttons:oobe_text_button.m",
     "../../components/dialogs:oobe_adaptive_dialog.m",
   ]
-  extra_deps = [ ":app_downloading_module" ]
+  extra_deps = [ ":web_components" ]
 }
 
 js_library("app_launch_splash.m") {
@@ -172,8 +158,8 @@ js_library("assistant_optin.m") {
   extra_deps = [ ":assistant_optin_module" ]
 }
 
-js_library("autolaunch.m") {
-  sources = [ "$root_gen_dir/chrome/browser/resources/chromeos/login/screens/common/autolaunch.m.js" ]
+js_library("autolaunch") {
+  sources = [ "$root_gen_dir/chrome/browser/resources/chromeos/login/screens/common/autolaunch.js" ]
   deps = [
     "../../components/behaviors:login_screen_behavior.m",
     "../../components/behaviors:oobe_dialog_host_behavior.m",
@@ -181,7 +167,7 @@ js_library("autolaunch.m") {
     "../../components/buttons:oobe_text_button.m",
     "../../components/dialogs:oobe_adaptive_dialog.m",
   ]
-  extra_deps = [ ":autolaunch_module" ]
+  extra_deps = [ ":web_components" ]
 }
 
 js_library("consolidated_consent.m") {
@@ -203,12 +189,12 @@ js_library("consolidated_consent.m") {
     "../../components/dialogs:oobe_loading_dialog.m",
     "../../components/dialogs:oobe_modal_dialog.m",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
-    "//ui/webui/resources/cr_elements/cr_toggle:cr_toggle",
   ]
   extra_deps = [ ":consolidated_consent_module" ]
   externs_list = [
     "$externs_path/chrome_extensions.js",
     "$externs_path/webview_tag.js",
+    "//ui/webui/resources/cr_elements/cr_toggle/cr_toggle_externs.js",
   ]
 }
 
@@ -224,8 +210,8 @@ js_library("device_disabled.m") {
   extra_deps = [ ":device_disabled_module" ]
 }
 
-js_library("enable_kiosk.m") {
-  sources = [ "$root_gen_dir/chrome/browser/resources/chromeos/login/screens/common/enable_kiosk.m.js" ]
+js_library("enable_kiosk") {
+  sources = [ "$root_gen_dir/chrome/browser/resources/chromeos/login/screens/common/enable_kiosk.js" ]
   deps = [
     "../../components/behaviors:login_screen_behavior.m",
     "../../components/behaviors:oobe_dialog_host_behavior.m",
@@ -233,7 +219,7 @@ js_library("enable_kiosk.m") {
     "../../components/buttons:oobe_text_button.m",
     "../../components/dialogs:oobe_adaptive_dialog.m",
   ]
-  extra_deps = [ ":enable_kiosk_module" ]
+  extra_deps = [ ":web_components" ]
 }
 
 js_library("family_link_notice.m") {
@@ -249,8 +235,8 @@ js_library("family_link_notice.m") {
   extra_deps = [ ":family_link_notice_module" ]
 }
 
-js_library("fingerprint_setup.m") {
-  sources = [ "$root_gen_dir/chrome/browser/resources/chromeos/login/screens/common/fingerprint_setup.m.js" ]
+js_library("fingerprint_setup") {
+  sources = [ "$root_gen_dir/chrome/browser/resources/chromeos/login/screens/common/fingerprint_setup.js" ]
   deps = [
     "../../components:display_manager_types.m",
     "../../components:oobe_cr_lottie.m",
@@ -264,11 +250,11 @@ js_library("fingerprint_setup.m") {
   ]
   externs_list = [ "//ui/webui/resources/cr_elements/cr_fingerprint/cr_fingerprint_progress_arc_externs.js" ]
 
-  extra_deps = [ ":fingerprint_setup_module" ]
+  extra_deps = [ ":web_components" ]
 }
 
-js_library("gesture_navigation.m") {
-  sources = [ "$root_gen_dir/chrome/browser/resources/chromeos/login/screens/common/gesture_navigation.m.js" ]
+js_library("gesture_navigation") {
+  sources = [ "$root_gen_dir/chrome/browser/resources/chromeos/login/screens/common/gesture_navigation.js" ]
   deps = [
     "../../components:oobe_cr_lottie.m",
     "../../components/behaviors:login_screen_behavior.m",
@@ -280,7 +266,7 @@ js_library("gesture_navigation.m") {
     "../../components/dialogs:oobe_adaptive_dialog.m",
     "//ui/webui/resources/js:cr.m",
   ]
-  extra_deps = [ ":gesture_navigation_module" ]
+  extra_deps = [ ":web_components" ]
 }
 
 js_library("gaia_signin.m") {
@@ -317,12 +303,12 @@ js_library("guest_tos.m") {
     "../../components/dialogs:oobe_loading_dialog.m",
     "../../components/dialogs:oobe_modal_dialog.m",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
-    "//ui/webui/resources/cr_elements/cr_toggle:cr_toggle",
   ]
   extra_deps = [ ":guest_tos_module" ]
   externs_list = [
     "$externs_path/chrome_extensions.js",
     "$externs_path/webview_tag.js",
+    "//ui/webui/resources/cr_elements/cr_toggle/cr_toggle_externs.js",
   ]
 }
 
@@ -337,8 +323,21 @@ js_library("hw_data_collection.m") {
   extra_deps = [ ":hw_data_collection_module" ]
 }
 
-js_library("managed_terms_of_service.m") {
-  sources = [ "$root_gen_dir/chrome/browser/resources/chromeos/login/screens/common/managed_terms_of_service.m.js" ]
+js_library("local_state_error") {
+  sources = [ "$root_gen_dir/chrome/browser/resources/chromeos/login/screens/common/local_state_error.js" ]
+  deps = [
+    "../../components/behaviors:login_screen_behavior.m",
+    "../../components/behaviors:oobe_dialog_host_behavior.m",
+    "../../components/behaviors:oobe_i18n_behavior.m",
+    "../../components/buttons:oobe_text_button.m",
+    "../../components/dialogs:oobe_adaptive_dialog.m",
+    "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
+  ]
+  extra_deps = [ ":web_components" ]
+}
+
+js_library("managed_terms_of_service") {
+  sources = [ "$root_gen_dir/chrome/browser/resources/chromeos/login/screens/common/managed_terms_of_service.js" ]
   deps = [
     "../../components/behaviors:login_screen_behavior.m",
     "../../components/behaviors:multi_step_behavior.m",
@@ -355,11 +354,11 @@ js_library("managed_terms_of_service.m") {
     "$externs_path/webview_tag.js",
   ]
 
-  extra_deps = [ ":managed_terms_of_service_module" ]
+  extra_deps = [ ":web_components" ]
 }
 
-js_library("marketing_opt_in.m") {
-  sources = [ "$root_gen_dir/chrome/browser/resources/chromeos/login/screens/common/marketing_opt_in.m.js" ]
+js_library("marketing_opt_in") {
+  sources = [ "$root_gen_dir/chrome/browser/resources/chromeos/login/screens/common/marketing_opt_in.js" ]
   deps = [
     "../../components:display_manager_types.m",
     "../../components:oobe_a11y_option.m",
@@ -369,9 +368,10 @@ js_library("marketing_opt_in.m") {
     "../../components/behaviors:oobe_i18n_behavior.m",
     "../../components/dialogs:oobe_adaptive_dialog.m",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
-    "//ui/webui/resources/cr_elements/cr_toggle:cr_toggle",
   ]
-  extra_deps = [ ":marketing_opt_in_module" ]
+  externs_list =
+      [ "//ui/webui/resources/cr_elements/cr_toggle/cr_toggle_externs.js" ]
+  extra_deps = [ ":web_components" ]
 }
 
 js_library("multidevice_setup.m") {
@@ -382,10 +382,10 @@ js_library("multidevice_setup.m") {
     "../../components/behaviors:oobe_i18n_behavior.m",
     "../../components/buttons:oobe_next_button.m",
     "../../components/buttons:oobe_text_button.m",
+    "//ash/webui/common/resources/multidevice_setup:mojo_api",
+    "//ash/webui/common/resources/multidevice_setup:multidevice_setup",
+    "//ash/webui/common/resources/multidevice_setup:multidevice_setup_delegate",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
-    "//ui/webui/resources/cr_components/chromeos/multidevice_setup:mojo_api.m",
-    "//ui/webui/resources/cr_components/chromeos/multidevice_setup:multidevice_setup.m",
-    "//ui/webui/resources/cr_components/chromeos/multidevice_setup:multidevice_setup_delegate.m",
   ]
   extra_deps = [ ":multidevice_setup_module" ]
 }
@@ -402,9 +402,11 @@ js_library("offline_ad_login.m") {
     "../../components/buttons:oobe_next_button.m",
     "../../components/buttons:oobe_text_button.m",
     "../../components/dialogs:oobe_adaptive_dialog.m",
-    "//ui/webui/resources/cr_elements/cr_input:cr_input",
-    "//ui/webui/resources/cr_elements/cr_toggle:cr_toggle",
     "//ui/webui/resources/js:load_time_data.m",
+  ]
+  externs_list = [
+    "//ui/webui/resources/cr_elements/cr_input/cr_input_externs.js",
+    "//ui/webui/resources/cr_elements/cr_toggle/cr_toggle_externs.js",
   ]
   extra_deps = [ ":offline_ad_login_module" ]
 }
@@ -429,8 +431,8 @@ js_library("oobe_eula.m") {
   extra_deps = [ ":oobe_eula_module" ]
 }
 
-js_library("oobe_reset.m") {
-  sources = [ "$root_gen_dir/chrome/browser/resources/chromeos/login/screens/common/oobe_reset.m.js" ]
+js_library("oobe_reset") {
+  sources = [ "$root_gen_dir/chrome/browser/resources/chromeos/login/screens/common/oobe_reset.js" ]
   deps = [
     "../../components/behaviors:login_screen_behavior.m",
     "../../components/behaviors:oobe_dialog_host_behavior.m",
@@ -441,7 +443,7 @@ js_library("oobe_reset.m") {
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
     "//ui/webui/resources/js:util.m",
   ]
-  extra_deps = [ ":oobe_reset_module" ]
+  extra_deps = [ ":web_components" ]
 }
 
 js_library("os_install.m") {
@@ -465,8 +467,8 @@ js_library("os_install.m") {
   extra_deps = [ ":os_install_module" ]
 }
 
-js_library("parental_handoff.m") {
-  sources = [ "$root_gen_dir/chrome/browser/resources/chromeos/login/screens/common/parental_handoff.m.js" ]
+js_library("parental_handoff") {
+  sources = [ "$root_gen_dir/chrome/browser/resources/chromeos/login/screens/common/parental_handoff.js" ]
   deps = [
     "../../components/behaviors:login_screen_behavior.m",
     "../../components/behaviors:oobe_dialog_host_behavior.m",
@@ -475,7 +477,7 @@ js_library("parental_handoff.m") {
     "../../components/dialogs:oobe_adaptive_dialog.m",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
   ]
-  extra_deps = [ ":parental_handoff_module" ]
+  extra_deps = [ ":web_components" ]
 }
 
 js_library("os_trial.m") {
@@ -488,17 +490,19 @@ js_library("os_trial.m") {
     "../../components/buttons:oobe_text_button.m",
     "../../components/dialogs:oobe_adaptive_dialog.m",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
-    "//ui/webui/resources/cr_elements/cr_lottie:cr_lottie.m",
-    "//ui/webui/resources/cr_elements/cr_toggle:cr_toggle",
   ]
 
-  externs_list = [ "$externs_path/webview_tag.js" ]
+  externs_list = [
+    "$externs_path/webview_tag.js",
+    "//ui/webui/resources/cr_elements/cr_lottie/cr_lottie_externs.js",
+    "//ui/webui/resources/cr_elements/cr_toggle/cr_toggle_externs.js",
+  ]
 
   extra_deps = [ ":os_trial_module" ]
 }
 
-js_library("pin_setup.m") {
-  sources = [ "$root_gen_dir/chrome/browser/resources/chromeos/login/screens/common/pin_setup.m.js" ]
+js_library("pin_setup") {
+  sources = [ "$root_gen_dir/chrome/browser/resources/chromeos/login/screens/common/pin_setup.js" ]
   deps = [
     "../../components:oobe_types.m",
     "../../components/behaviors:login_screen_behavior.m",
@@ -509,10 +513,11 @@ js_library("pin_setup.m") {
     "../../components/buttons:oobe_next_button.m",
     "../../components/buttons:oobe_text_button.m",
     "../../components/dialogs:oobe_adaptive_dialog.m",
-    "//ui/webui/resources/cr_components/chromeos/quick_unlock:setup_pin_keyboard.m",
+    "//ui/webui/resources/cr_components/chromeos/quick_unlock:lock_screen_constants",
+    "//ui/webui/resources/cr_components/chromeos/quick_unlock:setup_pin_keyboard",
     "//ui/webui/resources/js:cr.m",
   ]
-  extra_deps = [ ":pin_setup_module" ]
+  extra_deps = [ ":web_components" ]
 }
 
 js_library("recommend_apps.m") {
@@ -533,8 +538,8 @@ js_library("recommend_apps.m") {
   extra_deps = [ ":recommend_apps_module" ]
 }
 
-js_library("saml_confirm_password.m") {
-  sources = [ "$root_gen_dir/chrome/browser/resources/chromeos/login/screens/common/saml_confirm_password.m.js" ]
+js_library("saml_confirm_password") {
+  sources = [ "$root_gen_dir/chrome/browser/resources/chromeos/login/screens/common/saml_confirm_password.js" ]
   deps = [
     "../../:login_ui_tools.m",
     "../../components/behaviors:oobe_i18n_behavior.m",
@@ -544,7 +549,7 @@ js_library("saml_confirm_password.m") {
     "../../components/dialogs:oobe_loading_dialog.m",
     "../../components/dialogs:oobe_modal_dialog.m",
   ]
-  extra_deps = [ ":saml_confirm_password_module" ]
+  extra_deps = [ ":web_components" ]
 }
 
 js_library("signin_fatal_error.m") {
@@ -590,8 +595,8 @@ js_library("sync_consent.m") {
   extra_deps = [ ":sync_consent_module" ]
 }
 
-js_library("theme_selection.m") {
-  sources = [ "$root_gen_dir/chrome/browser/resources/chromeos/login/screens/common/theme_selection.m.js" ]
+js_library("theme_selection") {
+  sources = [ "$root_gen_dir/chrome/browser/resources/chromeos/login/screens/common/theme_selection.js" ]
   deps = [
     "../../components:display_manager_types.m",
     "../../components/behaviors:login_screen_behavior.m",
@@ -601,11 +606,11 @@ js_library("theme_selection.m") {
     "../../components/dialogs:oobe_adaptive_dialog.m",
     "//ui/webui/resources/js:load_time_data.m",
   ]
-  extra_deps = [ ":theme_selection_module" ]
+  extra_deps = [ ":web_components" ]
 }
 
-js_library("tpm_error.m") {
-  sources = [ "$root_gen_dir/chrome/browser/resources/chromeos/login/screens/common/tpm_error.m.js" ]
+js_library("tpm_error") {
+  sources = [ "$root_gen_dir/chrome/browser/resources/chromeos/login/screens/common/tpm_error.js" ]
   deps = [
     "../../components/behaviors:login_screen_behavior.m",
     "../../components/behaviors:multi_step_behavior.m",
@@ -614,7 +619,7 @@ js_library("tpm_error.m") {
     "../../components/dialogs:oobe_adaptive_dialog.m",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
   ]
-  extra_deps = [ ":tpm_error_module" ]
+  extra_deps = [ ":web_components" ]
 }
 
 js_library("user_creation.m") {
@@ -624,15 +629,17 @@ js_library("user_creation.m") {
     "../../components/behaviors:multi_step_behavior.m",
     "../../components/behaviors:oobe_i18n_behavior.m",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
-    "//ui/webui/resources/cr_elements/cr_lottie:cr_lottie.m",
-    "//ui/webui/resources/cr_elements/cr_toggle:cr_toggle",
     "//ui/webui/resources/js:cr.m",
+  ]
+  externs_list = [
+    "//ui/webui/resources/cr_elements/cr_lottie/cr_lottie_externs.js",
+    "//ui/webui/resources/cr_elements/cr_toggle/cr_toggle_externs.js",
   ]
   extra_deps = [ ":user_creation_module" ]
 }
 
-js_library("wrong_hwid.m") {
-  sources = [ "$root_gen_dir/chrome/browser/resources/chromeos/login/screens/common/wrong_hwid.m.js" ]
+js_library("wrong_hwid") {
+  sources = [ "$root_gen_dir/chrome/browser/resources/chromeos/login/screens/common/wrong_hwid.js" ]
   deps = [
     "../../components/behaviors:login_screen_behavior.m",
     "../../components/behaviors:oobe_dialog_host_behavior.m",
@@ -640,11 +647,11 @@ js_library("wrong_hwid.m") {
     "../../components/buttons:oobe_text_button.m",
     "../../components/dialogs:oobe_adaptive_dialog.m",
   ]
-  extra_deps = [ ":wrong_hwid_module" ]
+  extra_deps = [ ":web_components" ]
 }
 
-js_library("error_message.m") {
-  sources = [ "$root_gen_dir/chrome/browser/resources/chromeos/login/screens/common/error_message.m.js" ]
+js_library("error_message") {
+  sources = [ "$root_gen_dir/chrome/browser/resources/chromeos/login/screens/common/error_message.js" ]
   deps = [
     "../../:cr_ui.m",
     "../../components:display_manager_types.m",
@@ -655,18 +662,9 @@ js_library("error_message.m") {
     "../../components/buttons:oobe_back_button.m",
     "../../components/buttons:oobe_text_button.m",
     "../../components/dialogs:oobe_adaptive_dialog.m",
-    "//ui/webui/resources/js:parse_html_subset.m",
+    "//ui/webui/resources/js:parse_html_subset",
   ]
-  extra_deps = [ ":error_message_module" ]
-}
-
-polymer_modulizer("app_downloading") {
-  js_file = "app_downloading.js"
-  html_file = "app_downloading.html"
-  html_type = "dom-module"
-  auto_imports = oobe_auto_imports
-  migrated_imports = oobe_migrated_imports
-  namespace_rewrites = oobe_namespace_rewrites
+  extra_deps = [ ":web_components" ]
 }
 
 polymer_modulizer("app_launch_splash") {
@@ -680,14 +678,6 @@ polymer_modulizer("app_launch_splash") {
 polymer_modulizer("assistant_optin") {
   js_file = "assistant_optin.js"
   html_file = "assistant_optin.html"
-  html_type = "dom-module"
-  auto_imports = oobe_auto_imports
-  namespace_rewrites = oobe_namespace_rewrites
-}
-
-polymer_modulizer("autolaunch") {
-  js_file = "autolaunch.js"
-  html_file = "autolaunch.html"
   html_type = "dom-module"
   auto_imports = oobe_auto_imports
   namespace_rewrites = oobe_namespace_rewrites
@@ -710,25 +700,9 @@ polymer_modulizer("device_disabled") {
   namespace_rewrites = oobe_namespace_rewrites
 }
 
-polymer_modulizer("enable_kiosk") {
-  js_file = "enable_kiosk.js"
-  html_file = "enable_kiosk.html"
-  html_type = "dom-module"
-  auto_imports = oobe_auto_imports
-  namespace_rewrites = oobe_namespace_rewrites
-}
-
 polymer_modulizer("family_link_notice") {
   js_file = "family_link_notice.js"
   html_file = "family_link_notice.html"
-  html_type = "dom-module"
-  auto_imports = oobe_auto_imports
-  namespace_rewrites = oobe_namespace_rewrites
-}
-
-polymer_modulizer("fingerprint_setup") {
-  js_file = "fingerprint_setup.js"
-  html_file = "fingerprint_setup.html"
   html_type = "dom-module"
   auto_imports = oobe_auto_imports
   migrated_imports = oobe_migrated_imports
@@ -738,14 +712,6 @@ polymer_modulizer("fingerprint_setup") {
 polymer_modulizer("gaia_signin") {
   js_file = "gaia_signin.js"
   html_file = "gaia_signin.html"
-  html_type = "dom-module"
-  auto_imports = oobe_auto_imports
-  namespace_rewrites = oobe_namespace_rewrites
-}
-
-polymer_modulizer("gesture_navigation") {
-  js_file = "gesture_navigation.js"
-  html_file = "gesture_navigation.html"
   html_type = "dom-module"
   auto_imports = oobe_auto_imports
   namespace_rewrites = oobe_namespace_rewrites
@@ -769,28 +735,12 @@ polymer_modulizer("hw_data_collection") {
   migrated_imports = oobe_migrated_imports
 }
 
-polymer_modulizer("managed_terms_of_service") {
-  js_file = "managed_terms_of_service.js"
-  html_file = "managed_terms_of_service.html"
-  html_type = "dom-module"
-  auto_imports = oobe_auto_imports
-  namespace_rewrites = oobe_namespace_rewrites
-}
-
-polymer_modulizer("marketing_opt_in") {
-  js_file = "marketing_opt_in.js"
-  html_file = "marketing_opt_in.html"
-  html_type = "dom-module"
-  auto_imports = oobe_auto_imports + [ "ui/webui/resources/cr_elements/cr_toggle/cr_toggle.html|CrToggleElement" ]
-  migrated_imports = oobe_migrated_imports
-  namespace_rewrites = oobe_namespace_rewrites
-}
-
 polymer_modulizer("multidevice_setup") {
   js_file = "multidevice_setup.js"
   html_file = "multidevice_setup.html"
   html_type = "dom-module"
   auto_imports = oobe_auto_imports
+  migrated_imports = oobe_migrated_imports
   namespace_rewrites = oobe_namespace_rewrites
 }
 
@@ -798,7 +748,7 @@ polymer_modulizer("offline_ad_login") {
   js_file = "offline_ad_login.js"
   html_file = "offline_ad_login.html"
   html_type = "dom-module"
-  auto_imports = oobe_auto_imports + [ "ui/webui/resources/cr_elements/cr_toggle/cr_toggle.html|CrToggleElement" ]
+  auto_imports = oobe_auto_imports
   migrated_imports = oobe_migrated_imports
   namespace_rewrites = oobe_namespace_rewrites
 }
@@ -812,42 +762,18 @@ polymer_modulizer("oobe_eula") {
   migrated_imports = oobe_migrated_imports
 }
 
-polymer_modulizer("oobe_reset") {
-  js_file = "oobe_reset.js"
-  html_file = "oobe_reset.html"
-  html_type = "dom-module"
-  auto_imports = oobe_auto_imports
-  namespace_rewrites = oobe_namespace_rewrites
-  migrated_imports = oobe_migrated_imports
-}
-
 polymer_modulizer("os_install") {
   js_file = "os_install.js"
   html_file = "os_install.html"
   html_type = "dom-module"
   auto_imports = oobe_auto_imports
+  migrated_imports = oobe_migrated_imports
   namespace_rewrites = oobe_namespace_rewrites
 }
 
 polymer_modulizer("os_trial") {
   js_file = "os_trial.js"
   html_file = "os_trial.html"
-  html_type = "dom-module"
-  auto_imports = oobe_auto_imports
-  namespace_rewrites = oobe_namespace_rewrites
-}
-
-polymer_modulizer("parental_handoff") {
-  js_file = "parental_handoff.js"
-  html_file = "parental_handoff.html"
-  html_type = "dom-module"
-  auto_imports = oobe_auto_imports
-  namespace_rewrites = oobe_namespace_rewrites
-}
-
-polymer_modulizer("pin_setup") {
-  js_file = "pin_setup.js"
-  html_file = "pin_setup.html"
   html_type = "dom-module"
   auto_imports = oobe_auto_imports
   migrated_imports = oobe_migrated_imports
@@ -866,15 +792,6 @@ polymer_modulizer("recommend_apps") {
 polymer_modulizer("user_creation") {
   js_file = "user_creation.js"
   html_file = "user_creation.html"
-  html_type = "dom-module"
-  auto_imports = oobe_auto_imports
-  migrated_imports = oobe_migrated_imports
-  namespace_rewrites = oobe_namespace_rewrites
-}
-
-polymer_modulizer("saml_confirm_password") {
-  js_file = "saml_confirm_password.js"
-  html_file = "saml_confirm_password.html"
   html_type = "dom-module"
   auto_imports = oobe_auto_imports
   migrated_imports = oobe_migrated_imports
@@ -906,41 +823,25 @@ polymer_modulizer("sync_consent") {
   migrated_imports = oobe_migrated_imports
 }
 
-polymer_modulizer("theme_selection") {
-  js_file = "theme_selection.js"
-  html_file = "theme_selection.html"
-  html_type = "dom-module"
-  auto_imports = oobe_auto_imports
-  namespace_rewrites = oobe_namespace_rewrites
-}
-
-polymer_modulizer("tpm_error") {
-  js_file = "tpm_error.js"
-  html_file = "tpm_error.html"
-  html_type = "dom-module"
-  auto_imports = oobe_auto_imports
-  namespace_rewrites = oobe_namespace_rewrites
-}
-
-polymer_modulizer("wrong_hwid") {
-  js_file = "wrong_hwid.js"
-  html_file = "wrong_hwid.html"
-  html_type = "dom-module"
-  auto_imports = oobe_auto_imports
-  namespace_rewrites = oobe_namespace_rewrites
-}
-
-polymer_modulizer("error_message") {
-  js_file = "error_message.js"
-  html_file = "error_message.html"
-  html_type = "dom-module"
-  auto_imports = oobe_auto_imports
-  namespace_rewrites = oobe_namespace_rewrites
-}
-
 html_to_js("web_components") {
   js_files = [
     "adb_sideloading.js",
+    "app_downloading.js",
     "arc_terms_of_service.js",
+    "autolaunch.js",
+    "enable_kiosk.js",
+    "error_message.js",
+    "fingerprint_setup.js",
+    "gesture_navigation.js",
+    "local_state_error.js",
+    "managed_terms_of_service.js",
+    "marketing_opt_in.js",
+    "oobe_reset.js",
+    "parental_handoff.js",
+    "pin_setup.js",
+    "saml_confirm_password.js",
+    "theme_selection.js",
+    "tpm_error.js",
+    "wrong_hwid.js",
   ]
 }

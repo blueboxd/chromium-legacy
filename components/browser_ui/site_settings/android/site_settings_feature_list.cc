@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -20,6 +20,7 @@ namespace {
 // in other locations in the code base (e.g. content_features.h).
 const base::Feature* const kFeaturesExposedToJava[] = {
     &kSiteDataImprovements,
+    &kRequestDesktopSiteExceptionsDowngrade,
 };
 
 // TODO(crbug.com/1060097): Remove this once a generalized FeatureList exists.

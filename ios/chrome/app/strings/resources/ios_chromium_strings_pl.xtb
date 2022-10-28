@@ -67,6 +67,7 @@
 <translation id="5308226104666789935">Chromium nie może sprawdzić dostępności aktualizacji</translation>
 <translation id="5396916991083608703">Ustawić Chromium jako domyślną przeglądarkę?</translation>
 <translation id="5521125884468363740">Aby widzieć swoje karty zawsze, kiedy korzystasz z Chromium, zaloguj się i włącz synchronizację</translation>
+<translation id="5522297504975449419">Niektóre funkcje Chromium nie będą już dostępne.</translation>
 <translation id="5573014823074921752">Wskazówka dla użytkowników Chromium. Aby zobaczyć więcej opcji kart, naciśnij i przytrzymaj przycisk Pokaż karty na pasku narzędzi, który znajduje się na dole lub na górze ekranu.</translation>
 <translation id="5700709190537129682">Chromium nie może sprawdzić Twoich haseł</translation>
 <translation id="5777187867430702742">Strona Chromium</translation>
@@ -95,6 +96,7 @@
 <translation id="7175400662502680481">Wskutek naruszenia bezpieczeństwa danych doszło do ujawnienia hasła. Menedżer haseł zaleca, aby jak najszybciej je zmienić.</translation>
 <translation id="7208566199746267865">Chromium oszczędza Twój czas, zapisując konta w internecie. Konta możesz dodawać i usuwać w Ustawieniach.</translation>
 <translation id="725427773388857052">Chromium pomaga chronić Cię przed naruszeniami bezpieczeństwa danych, niebezpiecznymi stronami internetowymi i innymi zagrożeniami.</translation>
+<translation id="7255976941681861701">Poznaj nowe menu Chromium</translation>
 <translation id="7269362888766543920">Niektóre dodatki mogą powodować awarie Chromium. Spróbuj je odinstalować.</translation>
 <translation id="7313655110045230863">Aby ustawić Chromium jako przeglądarkę domyślną, otwórz Ustawienia. Kliknij Domyślna przeglądarka i wybierz Chromium.</translation>
 <translation id="7337881442233988129">Chromium</translation>
@@ -113,7 +115,6 @@
 <translation id="7980860476903281594">Chromium udostępnia Twoją lokalizację witrynom, którym zgadzasz się ją ujawnić.</translation>
 <translation id="8013573822802650211">Aby widzieć swoje karty zawsze, kiedy korzystasz z Chromium, zaloguj się na wszystkich urządzeniach</translation>
 <translation id="8073677936375100957">Usunąć dane Chromium z tego urządzenia?</translation>
-<translation id="8175055321229419309">Wskazówka: <ph name="BEGIN_LINK" />przenieś Chromium do Docka<ph name="END_LINK" /></translation>
 <translation id="8240981428553046115">Chromium nie udało się sprawdzić dostępności aktualizacji. Spróbuj ponownie później.</translation>
 <translation id="8308172444429103994">Wskazówka dotycząca Chromium. Loguj się szybciej, wybierając zapisane hasło w górnej części klawiatury.</translation>
 <translation id="858114650497379505">Haseł zapisanych w menedżerze haseł możesz używać w innych aplikacjach na iPhonie.</translation>

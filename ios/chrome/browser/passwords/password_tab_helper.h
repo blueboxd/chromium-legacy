@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -21,7 +21,6 @@ namespace password_manager {
 class PasswordGenerationFrameHelper;
 class PasswordManager;
 class PasswordManagerClient;
-class PasswordManagerDriver;
 }
 
 // Class binding a PasswordController to a WebState. This class also opens a
@@ -35,7 +34,7 @@ class PasswordTabHelper : public web::WebStateObserver,
 
   ~PasswordTabHelper() override;
 
-  // Creates a PasswordTabHelper and attaches it to the given |web_state|.
+  // Creates a PasswordTabHelper and attaches it to the given `web_state`.
   static void CreateForWebState(web::WebState* web_state);
 
   // Sets the BaseViewController from which to present UI.
@@ -59,9 +58,6 @@ class PasswordTabHelper : public web::WebStateObserver,
 
   // Returns the PasswordManagerClient owned by the PasswordController.
   password_manager::PasswordManagerClient* GetPasswordManagerClient();
-
-  // Returns the PasswordManagerDriver owned by the PasswordController.
-  password_manager::PasswordManagerDriver* GetPasswordManagerDriver();
 
   // Returns an object that can provide password generation from the
   // PasswordController. May return nil.

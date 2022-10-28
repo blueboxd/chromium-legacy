@@ -1,4 +1,4 @@
-# Copyright 2021 The Chromium Authors. All rights reserved.
+# Copyright 2021 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -23,15 +23,7 @@ test("ash_components_unittests") {
     "//ash/components/arc:unit_tests",
     "//ash/components/arc/mojom:unit_tests",
     "//ash/components/arc/session:unit_tests",
-    "//ash/components/device_activity:unit_tests",
-    "//ash/components/disks:unit_tests",
-    "//ash/components/drivefs:unit_tests",
     "//ash/components/fwupd:unit_tests",
-    "//ash/components/geolocation:unit_tests",
-    "//ash/components/hid_detection:unit_tests",
-    "//ash/components/login/auth:unit_tests",
-    "//ash/components/login/hibernate:unit_tests",
-    "//ash/components/login/session:unit_tests",
     "//ash/components/multidevice:unit_tests",
     "//ash/components/peripheral_notification:unit_tests",
     "//ash/components/phonehub:unit_tests",

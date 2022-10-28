@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -302,6 +302,20 @@ void ShillPropertyHandler::RequestProperties(ManagedState::ManagedType type,
       return;
   }
   NOTREACHED();
+}
+
+void ShillPropertyHandler::RequestPortalDetection(
+    const std::string& service_path) {
+  ShillServiceClient::Get()->RequestPortalDetection(
+      dbus::ObjectPath(service_path),
+      base::BindOnce(
+          [](const std::string& service_path, bool success) {
+            if (!success) {
+              NET_LOG(ERROR) << "Shill RecheckPortal call failed for: "
+                             << NetworkPathId(service_path);
+            }
+          },
+          service_path));
 }
 
 void ShillPropertyHandler::RequestTrafficCounters(

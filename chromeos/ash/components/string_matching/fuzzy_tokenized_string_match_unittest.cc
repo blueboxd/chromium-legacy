@@ -1,4 +1,4 @@
-// Copyright (c) 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -146,7 +146,6 @@ class FuzzyTokenizedStringMatchTest : public testing::Test {};
 /**********************************************************************
  * Benchmarking section 1 - Abstract test cases                       *
  **********************************************************************/
-// TODO(crbug.com/1336160): Expand abstract benchmarking tests.
 
 TEST_F(FuzzyTokenizedStringMatchTest, BenchmarkCaseInsensitivity) {
   std::u16string text = u"abcde";
@@ -1469,6 +1468,23 @@ TEST_F(FuzzyTokenizedStringMatchTest, ExactTextMatchTest) {
   EXPECT_EQ(match.hits().size(), 1u);
   EXPECT_EQ(match.hits()[0].start(), 0u);
   EXPECT_EQ(match.hits()[0].end(), 3u);
+}
+
+TEST_F(FuzzyTokenizedStringMatchTest, DiacriticsStripTest) {
+  FuzzyTokenizedStringMatch match;
+  std::u16string text = u"áêïôu";
+  std::vector<std::u16string> queries = {u"aeiou", u"ÀēíÔù", u"aÉiøÚ",
+                                         u"ÅĒÎÓÙ"};
+  std::vector<double> scores;
+  for (const auto& query : queries) {
+    const double relevance =
+        match.Relevance(TokenizedString(query), TokenizedString(text),
+                        kUseWeightedRatio, /*strip_diacritics*/ true);
+    scores.push_back(relevance);
+    VLOG(1) << FormatRelevanceResult(query, text, relevance,
+                                     /*query_first*/ false);
+  }
+  ExpectAllNearlyEqual(scores);
 }
 
 }  // namespace ash::string_matching

@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -214,7 +214,7 @@ void DomDistillerViewerSourceBrowserTest::ViewSingleDistilledPage(
   // Ensure no bindings for the loaded |url|.
   content::WebContents* contents_after_nav =
       browser()->tab_strip_model()->GetActiveWebContents();
-  ASSERT_TRUE(contents_after_nav != NULL);
+  ASSERT_TRUE(contents_after_nav != nullptr);
   EXPECT_EQ(url, contents_after_nav->GetLastCommittedURL());
   content::RenderFrameHost* render_frame_host =
       contents_after_nav->GetPrimaryMainFrame();

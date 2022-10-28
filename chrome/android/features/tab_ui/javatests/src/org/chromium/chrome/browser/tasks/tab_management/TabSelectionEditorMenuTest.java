@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -190,7 +190,8 @@ public class TabSelectionEditorMenuTest extends BlankUiTestActivityTestCase {
             action.getPropertyModel().set(TabSelectionEditorActionProperties.ICON_TINT,
                     AppCompatResources.getColorStateList(
                             getActivity(), R.color.default_icon_color_tint_list));
-            action.configure(mTabModelSelector, mSelectionDelegate, mDelegate);
+            action.configure(mTabModelSelector, mSelectionDelegate, mDelegate,
+                    /*editorSupportsActionOnRelatedTabs=*/false);
             models.add(action.getPropertyModel());
         }
         mPropertyListModel.addAll(models, 0);

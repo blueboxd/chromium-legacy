@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -201,12 +201,24 @@ class FakeSafeBrowsingService : public TestSafeBrowsingService {
     return it->second;
   }
 
-  PingManager::ReportThreatDetailsResult SendDownloadReport(
-      Profile* profile,
-      std::unique_ptr<ClientSafeBrowsingReportRequest> report) override {
+  bool SendDownloadReport(
+      download::DownloadItem* download,
+      ClientSafeBrowsingReportRequest::ReportType report_type,
+      bool did_proceed,
+      absl::optional<bool> show_download_in_folder) override {
+    auto report = std::make_unique<ClientSafeBrowsingReportRequest>();
+    report->set_type(report_type);
+    report->set_download_verdict(
+        DownloadProtectionService::GetDownloadProtectionVerdict(download));
+    report->set_url(download->GetURL().spec());
+    report->set_did_proceed(did_proceed);
+    EXPECT_TRUE(show_download_in_folder.has_value());
+    report->set_show_download_in_folder(show_download_in_folder.value());
+    report->set_token(
+        DownloadProtectionService::GetDownloadPingToken(download));
     report->SerializeToString(&latest_report_);
     download_report_count_++;
-    return PingManager::ReportThreatDetailsResult::SUCCESS;
+    return true;
   }
 
   network::TestURLLoaderFactory* GetTestURLLoaderFactory(Profile* profile) {
@@ -2503,15 +2515,34 @@ TEST_F(DownloadProtectionServiceTest, ShowDetailsForDownloadHasContext) {
                                             &mock_page_navigator);
 }
 
-TEST_F(DownloadProtectionServiceTest, GetAndSetDownloadPingToken) {
+TEST_F(DownloadProtectionServiceTest, GetAndSetDownloadProtectionData) {
   NiceMockDownloadItem item;
   EXPECT_TRUE(DownloadProtectionService::GetDownloadPingToken(&item).empty());
   std::string token = "download_ping_token";
-  DownloadProtectionService::SetDownloadPingToken(&item, token);
+  ClientDownloadResponse::Verdict verdict = ClientDownloadResponse::DANGEROUS;
+  ClientDownloadResponse::TailoredVerdict tailored_verdict;
+  tailored_verdict.set_tailored_verdict_type(
+      ClientDownloadResponse::TailoredVerdict::COOKIE_THEFT);
+  DownloadProtectionService::SetDownloadProtectionData(&item, token, verdict,
+                                                       tailored_verdict);
   EXPECT_EQ(token, DownloadProtectionService::GetDownloadPingToken(&item));
+  EXPECT_EQ(verdict,
+            DownloadProtectionService::GetDownloadProtectionVerdict(&item));
+  EXPECT_EQ(
+      ClientDownloadResponse::TailoredVerdict::COOKIE_THEFT,
+      DownloadProtectionService::GetDownloadProtectionTailoredVerdict(&item)
+          .tailored_verdict_type());
 
-  DownloadProtectionService::SetDownloadPingToken(&item, std::string());
+  DownloadProtectionService::SetDownloadProtectionData(
+      &item, std::string(), ClientDownloadResponse::SAFE,
+      ClientDownloadResponse::TailoredVerdict());
   EXPECT_TRUE(DownloadProtectionService::GetDownloadPingToken(&item).empty());
+  EXPECT_EQ(ClientDownloadResponse::SAFE,
+            DownloadProtectionService::GetDownloadProtectionVerdict(&item));
+  EXPECT_EQ(
+      ClientDownloadResponse::TailoredVerdict::VERDICT_TYPE_UNSPECIFIED,
+      DownloadProtectionService::GetDownloadProtectionTailoredVerdict(&item)
+          .tailored_verdict_type());
 }
 
 TEST_F(DownloadProtectionServiceTest, PPAPIDownloadRequest_Unsupported) {
@@ -2735,7 +2766,9 @@ TEST_F(DownloadProtectionServiceTest,
   EXPECT_EQ(0, sb_service_->download_report_count());
 
   // No report sent if user is in incognito mode.
-  DownloadProtectionService::SetDownloadPingToken(&item, token);
+  DownloadProtectionService::SetDownloadProtectionData(
+      &item, token, ClientDownloadResponse::DANGEROUS,
+      ClientDownloadResponse::TailoredVerdict());
   content::DownloadItemUtils::AttachInfoForTesting(
       &item, profile()->GetPrimaryOTRProfile(/*create_if_needed=*/true),
       nullptr);
@@ -2755,14 +2788,16 @@ TEST_F(DownloadProtectionServiceTest,
 
   // Report successfully sent if user opted-in extended reporting, not in
   // incognito, download item has a token stored and the download is detected to
-  // be dangerous.
-  EXPECT_CALL(item, IsDangerous()).WillRepeatedly(Return(true));
+  // be dangerous and bypassed by the user.
+  EXPECT_CALL(item, IsDangerous()).WillRepeatedly(Return(false));
+  EXPECT_CALL(item, GetDangerType())
+      .WillRepeatedly(Return(download::DOWNLOAD_DANGER_TYPE_USER_VALIDATED));
   auto validate_report_contents = [this, token](bool show_download_in_folder) {
     ClientSafeBrowsingReportRequest expected_report;
     expected_report.set_url(GURL::EmptyGURL().spec());
     expected_report.set_type(
         ClientSafeBrowsingReportRequest::DANGEROUS_DOWNLOAD_OPENED);
-    expected_report.set_download_verdict(ClientDownloadResponse::SAFE);
+    expected_report.set_download_verdict(ClientDownloadResponse::DANGEROUS);
     expected_report.set_did_proceed(true);
     expected_report.set_token(token);
     expected_report.set_show_download_in_folder(show_download_in_folder);
@@ -2814,7 +2849,9 @@ TEST_F(DownloadProtectionServiceTest,
       {} /* expected_scan_id */);
 
   content::DownloadItemUtils::AttachInfoForTesting(&item, profile(), nullptr);
-  DownloadProtectionService::SetDownloadPingToken(&item, "token");
+  DownloadProtectionService::SetDownloadProtectionData(
+      &item, "token", ClientDownloadResponse::SAFE,
+      ClientDownloadResponse::TailoredVerdict());
   SetExtendedReportingPreference(true);
   EXPECT_CALL(item, IsDangerous()).WillRepeatedly(Return(true));
   EXPECT_CALL(item, GetDangerType())
@@ -2840,7 +2877,9 @@ TEST_F(DownloadProtectionServiceTest,
                            FILE_PATH_LITERAL("a.exe"));  // final_path
 
   content::DownloadItemUtils::AttachInfoForTesting(&item, profile(), nullptr);
-  DownloadProtectionService::SetDownloadPingToken(&item, "token");
+  DownloadProtectionService::SetDownloadProtectionData(
+      &item, "token", ClientDownloadResponse::SAFE,
+      ClientDownloadResponse::TailoredVerdict());
   SetExtendedReportingPreference(true);
   enterprise_connectors::ContentAnalysisResponse response;
   auto* result = response.add_results();
@@ -2893,7 +2932,9 @@ TEST_F(DownloadProtectionServiceTest,
                            FILE_PATH_LITERAL("a.tmp"),   // tmp_path
                            FILE_PATH_LITERAL("a.exe"));  // final_path
   content::DownloadItemUtils::AttachInfoForTesting(&item, profile(), nullptr);
-  DownloadProtectionService::SetDownloadPingToken(&item, "token");
+  DownloadProtectionService::SetDownloadProtectionData(
+      &item, "token", ClientDownloadResponse::SAFE,
+      ClientDownloadResponse::TailoredVerdict());
   SetExtendedReportingPreference(true);
   EXPECT_CALL(item, IsDangerous()).WillRepeatedly(Return(false));
   EXPECT_CALL(item, GetDangerType())
@@ -2942,7 +2983,9 @@ TEST_F(DownloadProtectionServiceTest,
                            FILE_PATH_LITERAL("a.tmp"),   // tmp_path
                            FILE_PATH_LITERAL("a.exe"));  // final_path
   content::DownloadItemUtils::AttachInfoForTesting(&item, profile(), nullptr);
-  DownloadProtectionService::SetDownloadPingToken(&item, "token");
+  DownloadProtectionService::SetDownloadProtectionData(
+      &item, "token", ClientDownloadResponse::UNCOMMON,
+      ClientDownloadResponse::TailoredVerdict());
   SetExtendedReportingPreference(true);
   EXPECT_CALL(item, IsDangerous()).WillRepeatedly(Return(false));
   EXPECT_CALL(item, GetDangerType())
@@ -2999,7 +3042,9 @@ TEST_F(DownloadProtectionServiceTest,
                            FILE_PATH_LITERAL("a.tmp"),   // tmp_path
                            FILE_PATH_LITERAL("a.exe"));  // final_path
   content::DownloadItemUtils::AttachInfoForTesting(&item, profile(), nullptr);
-  DownloadProtectionService::SetDownloadPingToken(&item, "token");
+  DownloadProtectionService::SetDownloadProtectionData(
+      &item, "token", ClientDownloadResponse::UNCOMMON,
+      ClientDownloadResponse::TailoredVerdict());
   SetExtendedReportingPreference(true);
   EXPECT_CALL(item, IsDangerous()).WillRepeatedly(Return(false));
   EXPECT_CALL(item, GetDangerType())

@@ -1,4 +1,4 @@
-// Copyright (c) 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -340,12 +340,12 @@ TEST_P(ScrollableShelfViewRTLTest, VerifyApplyMaskGradientShaderWhenNeeded) {
   AddAppShortcut();
   ASSERT_EQ(ScrollableShelfView::LayoutStrategy::kNotShowArrowButtons,
             scrollable_shelf_view_->layout_strategy_for_test());
-  EXPECT_FALSE(scrollable_shelf_view_->layer()->layer_mask_layer());
+  EXPECT_TRUE(scrollable_shelf_view_->layer()->gradient_mask().IsEmpty());
 
   AddAppShortcutsUntilOverflow();
   ASSERT_EQ(ScrollableShelfView::LayoutStrategy::kShowRightArrowButton,
             scrollable_shelf_view_->layout_strategy_for_test());
-  EXPECT_TRUE(scrollable_shelf_view_->layer()->layer_mask_layer());
+  EXPECT_FALSE(scrollable_shelf_view_->layer()->gradient_mask().IsEmpty());
 }
 
 // When hovering mouse on a shelf icon, the tooltip only shows for the visible

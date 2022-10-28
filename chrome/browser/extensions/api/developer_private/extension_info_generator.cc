@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -26,6 +26,7 @@
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/extensions/scripting_permissions_modifier.h"
 #include "chrome/browser/extensions/shared_module_service.h"
+#include "chrome/browser/extensions/site_permissions_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/extensions/extension_icon_source.h"
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
@@ -129,8 +130,7 @@ developer::ManifestError ConstructManifestError(const ManifestError& error) {
   PopulateErrorBase(error, &result);
   result.manifest_key = base::UTF16ToUTF8(error.manifest_key());
   if (!error.manifest_specific().empty()) {
-    result.manifest_specific = std::make_unique<std::string>(
-        base::UTF16ToUTF8(error.manifest_specific()));
+    result.manifest_specific = base::UTF16ToUTF8(error.manifest_specific());
   }
   return result;
 }
@@ -241,76 +241,74 @@ std::vector<developer::SiteControl> GetSpecificSiteControls(
     const PermissionSet& withheld_permissions) {
   std::vector<developer::SiteControl> controls;
 
-  // NOTE(devlin): This is similar, but not identical, to our host collapsing
-  // for permission warnings. The primary difference is that this will not
-  // collapse permissions for sites with separate TLDs; i.e., google.com and
-  // google.net will remain distinct entities in this list.
-  auto get_distinct_hosts = [](const URLPatternSet& patterns) {
-    std::vector<URLPattern> pathless_hosts;
-    for (URLPattern pattern : patterns) {
-      // We only allow addition/removal of full hosts (since from a
-      // permissions point of view, path is irrelevant). We always make the
-      // path wildcard when adding through this UI, but the optional
-      // permissions API may allow adding permissions with paths.
-      // TODO(devlin): Investigate, and possibly change the optional
-      // permissions API.
-      pattern.SetPath("/*");
-      pathless_hosts.push_back(std::move(pattern));
-    }
-
-    // Iterate over the list of hosts and add any that aren't entirely contained
-    // by another pattern. This is pretty inefficient, but the list of hosts
-    // should be reasonably small.
-    std::vector<const URLPattern*> distinct_hosts;
-    for (const URLPattern& host : pathless_hosts) {
-      // If the host is fully contained within the set, we don't add it again.
-      bool consumed_by_other = false;
-      for (const URLPattern* added_host : distinct_hosts) {
-        if (added_host->Contains(host)) {
-          consumed_by_other = true;
-          break;
-        }
-      }
-      if (consumed_by_other)
-        continue;
-
-      // Otherwise, add the host. This might mean we get to prune some hosts
-      // from |distinct_hosts|.
-      base::EraseIf(distinct_hosts, [host](const URLPattern* other_host) {
-        return host.Contains(*other_host);
-      });
-
-      distinct_hosts.push_back(&host);
-    }
-
-    std::vector<std::string> distinct_host_strings;
-    distinct_host_strings.reserve(distinct_hosts.size());
-    for (const URLPattern* host : distinct_hosts)
-      distinct_host_strings.push_back(host->GetAsString());
-
-    return distinct_host_strings;
-  };
-
-  std::vector<std::string> distinct_granted =
-      get_distinct_hosts(granted_permissions.effective_hosts());
-  std::vector<std::string> distinct_withheld =
-      get_distinct_hosts(withheld_permissions.effective_hosts());
+  std::vector<URLPattern> distinct_granted =
+      ExtensionInfoGenerator::GetDistinctHosts(
+          granted_permissions.effective_hosts());
+  std::vector<URLPattern> distinct_withheld =
+      ExtensionInfoGenerator::GetDistinctHosts(
+          withheld_permissions.effective_hosts());
   controls.reserve(distinct_granted.size() + distinct_withheld.size());
 
   for (auto& host : distinct_granted) {
     developer::SiteControl host_control;
-    host_control.host = std::move(host);
+    host_control.host = host.GetAsString();
     host_control.granted = true;
     controls.push_back(std::move(host_control));
   }
   for (auto& host : distinct_withheld) {
     developer::SiteControl host_control;
-    host_control.host = std::move(host);
+    host_control.host = host.GetAsString();
     host_control.granted = false;
     controls.push_back(std::move(host_control));
   }
 
   return controls;
+}
+
+// Creates and returns a RuntimeHostPermissions object with the
+// given extension's host permissions.
+developer::RuntimeHostPermissions CreateRuntimeHostPermissionsInfo(
+    content::BrowserContext* browser_context,
+    const Extension& extension) {
+  ScriptingPermissionsModifier permissions_modifier(
+      browser_context, base::WrapRefCounted(&extension));
+  developer::RuntimeHostPermissions runtime_host_permissions;
+
+  ExtensionPrefs* extension_prefs = ExtensionPrefs::Get(browser_context);
+  // "Effective" granted permissions are stored in different prefs, based on
+  // whether host permissions are withheld.
+  // TODO(devlin): Create a common helper method to retrieve granted prefs based
+  // on whether host permissions are withheld?
+  std::unique_ptr<const PermissionSet> granted_permissions;
+  // Add the host access data, including the mode and any runtime-granted
+  // hosts.
+  if (!permissions_modifier.HasWithheldHostPermissions()) {
+    granted_permissions =
+        extension_prefs->GetGrantedPermissions(extension.id());
+    runtime_host_permissions.host_access = developer::HOST_ACCESS_ON_ALL_SITES;
+  } else {
+    granted_permissions =
+        extension_prefs->GetRuntimeGrantedPermissions(extension.id());
+    if (granted_permissions->effective_hosts().is_empty()) {
+      runtime_host_permissions.host_access = developer::HOST_ACCESS_ON_CLICK;
+    } else if (granted_permissions->ShouldWarnAllHosts(false)) {
+      runtime_host_permissions.host_access =
+          developer::HOST_ACCESS_ON_ALL_SITES;
+    } else {
+      runtime_host_permissions.host_access =
+          developer::HOST_ACCESS_ON_SPECIFIC_SITES;
+    }
+  }
+
+  runtime_host_permissions.hosts = GetSpecificSiteControls(
+      *granted_permissions,
+      extension.permissions_data()->withheld_permissions());
+  constexpr bool kIncludeApiPermissions = false;
+  runtime_host_permissions.has_all_hosts =
+      extension.permissions_data()->withheld_permissions().ShouldWarnAllHosts(
+          kIncludeApiPermissions) ||
+      granted_permissions->ShouldWarnAllHosts(kIncludeApiPermissions);
+  return runtime_host_permissions;
 }
 
 // Populates the |permissions| data for the given |extension|.
@@ -362,8 +360,7 @@ void AddPermissionsInfo(content::BrowserContext* browser_context,
 
   permissions->runtime_host_permissions =
       std::make_unique<developer::RuntimeHostPermissions>(
-          ExtensionInfoGenerator::CreateRuntimeHostPermissionsInfo(
-              browser_context, extension));
+          CreateRuntimeHostPermissionsInfo(browser_context, extension));
 }
 
 }  // namespace
@@ -454,49 +451,46 @@ void ExtensionInfoGenerator::CreateExtensionsInfo(
   }
 }
 
-developer::RuntimeHostPermissions
-ExtensionInfoGenerator::CreateRuntimeHostPermissionsInfo(
-    content::BrowserContext* browser_context,
-    const Extension& extension) {
-  ScriptingPermissionsModifier permissions_modifier(
-      browser_context, base::WrapRefCounted(&extension));
-  developer::RuntimeHostPermissions runtime_host_permissions;
-
-  ExtensionPrefs* extension_prefs = ExtensionPrefs::Get(browser_context);
-  // "Effective" granted permissions are stored in different prefs, based on
-  // whether host permissions are withheld.
-  // TODO(devlin): Create a common helper method to retrieve granted prefs based
-  // on whether host permissions are withheld?
-  std::unique_ptr<const PermissionSet> granted_permissions;
-  // Add the host access data, including the mode and any runtime-granted
-  // hosts.
-  if (!permissions_modifier.HasWithheldHostPermissions()) {
-    granted_permissions =
-        extension_prefs->GetGrantedPermissions(extension.id());
-    runtime_host_permissions.host_access = developer::HOST_ACCESS_ON_ALL_SITES;
-  } else {
-    granted_permissions =
-        extension_prefs->GetRuntimeGrantedPermissions(extension.id());
-    if (granted_permissions->effective_hosts().is_empty()) {
-      runtime_host_permissions.host_access = developer::HOST_ACCESS_ON_CLICK;
-    } else if (granted_permissions->ShouldWarnAllHosts(false)) {
-      runtime_host_permissions.host_access =
-          developer::HOST_ACCESS_ON_ALL_SITES;
-    } else {
-      runtime_host_permissions.host_access =
-          developer::HOST_ACCESS_ON_SPECIFIC_SITES;
-    }
+std::vector<URLPattern> ExtensionInfoGenerator::GetDistinctHosts(
+    const URLPatternSet& patterns) {
+  std::vector<URLPattern> pathless_hosts;
+  for (URLPattern pattern : patterns) {
+    // We only allow addition/removal of full hosts (since from a
+    // permissions point of view, path is irrelevant). We always make the
+    // path wildcard when adding through this UI, but the optional
+    // permissions API may allow adding permissions with paths.
+    // TODO(devlin): Investigate, and possibly change the optional
+    // permissions API.
+    pattern.SetPath("/*");
+    pathless_hosts.push_back(std::move(pattern));
   }
 
-  runtime_host_permissions.hosts = GetSpecificSiteControls(
-      *granted_permissions,
-      extension.permissions_data()->withheld_permissions());
-  constexpr bool kIncludeApiPermissions = false;
-  runtime_host_permissions.has_all_hosts =
-      extension.permissions_data()->withheld_permissions().ShouldWarnAllHosts(
-          kIncludeApiPermissions) ||
-      granted_permissions->ShouldWarnAllHosts(kIncludeApiPermissions);
-  return runtime_host_permissions;
+  // Iterate over the list of hosts and add any that aren't entirely contained
+  // by another pattern. This is pretty inefficient, but the list of hosts
+  // should be reasonably small.
+  std::vector<URLPattern> distinct_hosts;
+  for (const URLPattern& host : pathless_hosts) {
+    // If the host is fully contained within the set, we don't add it again.
+    bool consumed_by_other = false;
+    for (const URLPattern& added_host : distinct_hosts) {
+      if (added_host.Contains(host)) {
+        consumed_by_other = true;
+        break;
+      }
+    }
+    if (consumed_by_other)
+      continue;
+
+    // Otherwise, add the host. This might mean we get to prune some hosts
+    // from |distinct_hosts|.
+    base::EraseIf(distinct_hosts, [host](const URLPattern& other_host) {
+      return host.Contains(other_host);
+    });
+
+    distinct_hosts.push_back(host);
+  }
+
+  return distinct_hosts;
 }
 
 void ExtensionInfoGenerator::CreateExtensionInfoHelper(
@@ -528,8 +522,7 @@ void ExtensionInfoGenerator::CreateExtensionInfoHelper(
       break;
   }
   if (blocklist_text != -1) {
-    info->blacklist_text =
-        std::make_unique<std::string>(l10n_util::GetStringUTF8(blocklist_text));
+    info->blacklist_text = l10n_util::GetStringUTF8(blocklist_text);
   }
 
   if (extension_system_->extension_service()->allowlist()->ShouldDisplayWarning(
@@ -647,8 +640,7 @@ void ExtensionInfoGenerator::CreateExtensionInfoHelper(
 
   // Launch url.
   if (extension.is_app()) {
-    info->launch_url = std::make_unique<std::string>(
-        AppLaunchInfo::GetFullLaunchURL(&extension).spec());
+    info->launch_url = AppLaunchInfo::GetFullLaunchURL(&extension).spec();
   }
 
   // Location.
@@ -678,8 +670,7 @@ void ExtensionInfoGenerator::CreateExtensionInfoHelper(
   else if (extension.is_shared_module())
     location_text = IDS_EXTENSIONS_INSTALL_LOCATION_SHARED_MODULE;
   if (location_text != -1) {
-    info->location_text =
-        std::make_unique<std::string>(l10n_util::GetStringUTF8(location_text));
+    info->location_text = l10n_util::GetStringUTF8(location_text);
   }
 
   // Runtime/Manifest errors.
@@ -724,9 +715,9 @@ void ExtensionInfoGenerator::CreateExtensionInfoHelper(
 
   // Path.
   if (Manifest::IsUnpackedLocation(extension.location())) {
-    info->path = std::make_unique<std::string>(extension.path().AsUTF8Unsafe());
-    info->prettified_path = std::make_unique<std::string>(
-        extensions::path_util::PrettifyPath(extension.path()).AsUTF8Unsafe());
+    info->path = extension.path().AsUTF8Unsafe();
+    info->prettified_path =
+        extensions::path_util::PrettifyPath(extension.path()).AsUTF8Unsafe();
   }
 
   AddPermissionsInfo(browser_context_, extension, &info->permissions);
@@ -753,6 +744,11 @@ void ExtensionInfoGenerator::CreateExtensionInfoHelper(
     info->views = InspectableViewsFinder(profile).
                       GetViewsForExtension(extension, is_enabled);
   }
+
+  // Show access requests in toolbar.
+  info->show_access_requests_in_toolbar =
+      SitePermissionsHelper(profile).ShowAccessRequestsInToolbar(
+          extension.id());
 
   // The icon.
   ExtensionResource icon =

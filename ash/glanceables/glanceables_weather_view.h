@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -29,10 +29,9 @@ class ASH_EXPORT GlanceablesWeatherView : public views::View,
   // AmbientWeatherModelObserver:
   void OnWeatherInfoUpdated() override;
 
-  views::ImageView* icon_for_test() { return icon_; }
-  views::Label* temperature_for_test() { return temperature_; }
-
  private:
+  friend class GlanceablesTest;
+
   views::ImageView* icon_ = nullptr;
   views::Label* temperature_ = nullptr;
 };

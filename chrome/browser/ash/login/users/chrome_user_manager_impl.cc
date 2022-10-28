@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -31,6 +31,7 @@
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/ranges/algorithm.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -67,9 +68,6 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/chromeos/extensions/active_tab_permission_granter_delegate_chromeos.h"
-#include "chrome/browser/chromeos/extensions/extension_tab_util_delegate_chromeos.h"
-#include "chrome/browser/chromeos/extensions/permissions_updater_delegate_chromeos.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/extensions/permissions_updater.h"
 #include "chrome/browser/policy/networking/policy_cert_service_factory.h"
@@ -170,22 +168,6 @@ bool GetUserLockAttributes(const user_manager::User* user,
         prefs->GetString(::prefs::kMultiProfileUserBehavior);
   }
   return true;
-}
-
-// Sets the necessary delegates in Public Session. They will be active for the
-// whole user-session and they will go away together with the browser process
-// during logout (the browser process is destroyed during logout), ie. they are
-// not freed and they leak but that is fine.
-void SetPublicAccountDelegates() {
-  extensions::PermissionsUpdater::SetPlatformDelegate(
-      std::make_unique<extensions::PermissionsUpdaterDelegateChromeOS>());
-
-  extensions::ExtensionTabUtil::SetPlatformDelegate(
-      std::make_unique<extensions::ExtensionTabUtilDelegateChromeOS>());
-
-  extensions::ActiveTabPermissionGranter::SetPlatformDelegate(
-      std::make_unique<
-          extensions::ActiveTabPermissionGranterDelegateChromeOS>());
 }
 
 policy::MinimumVersionPolicyHandler* GetMinimumVersionPolicyHandler() {
@@ -292,19 +274,12 @@ ChromeUserManagerImpl::CreateChromeUserManager() {
   return std::unique_ptr<ChromeUserManager>(new ChromeUserManagerImpl());
 }
 
-// static
-void ChromeUserManagerImpl::ResetPublicAccountDelegatesForTesting() {
-  extensions::PermissionsUpdater::SetPlatformDelegate(nullptr);
-  extensions::ExtensionTabUtil::SetPlatformDelegate(nullptr);
-  extensions::ActiveTabPermissionGranter::SetPlatformDelegate(nullptr);
-}
-
 ChromeUserManagerImpl::ChromeUserManagerImpl()
     : ChromeUserManager(base::ThreadTaskRunnerHandle::IsSet()
                             ? base::ThreadTaskRunnerHandle::Get()
                             : nullptr),
       cros_settings_(CrosSettings::Get()),
-      device_local_account_policy_service_(NULL),
+      device_local_account_policy_service_(nullptr),
       supervised_user_manager_(new SupervisedUserManagerImpl(this)) {
   UpdateNumberOfUsers();
 
@@ -706,7 +681,7 @@ const std::string& ChromeUserManagerImpl::GetApplicationLocale() const {
 }
 
 PrefService* ChromeUserManagerImpl::GetLocalState() const {
-  return g_browser_process ? g_browser_process->local_state() : NULL;
+  return g_browser_process ? g_browser_process->local_state() : nullptr;
 }
 
 bool ChromeUserManagerImpl::IsEnterpriseManaged() const {
@@ -718,7 +693,7 @@ bool ChromeUserManagerImpl::IsEnterpriseManaged() const {
 void ChromeUserManagerImpl::LoadDeviceLocalAccounts(
     std::set<AccountId>* device_local_accounts_set) {
   const base::Value::List& prefs_device_local_accounts =
-      GetLocalState()->GetValueList(kDeviceLocalAccountsWithSavedData);
+      GetLocalState()->GetList(kDeviceLocalAccountsWithSavedData);
   std::vector<AccountId> device_local_accounts;
   ParseUserList(prefs_device_local_accounts, std::set<AccountId>(),
                 &device_local_accounts, device_local_accounts_set);
@@ -875,8 +850,6 @@ void ChromeUserManagerImpl::PublicAccountUserLoggedIn(
   // controlled wallpaper was fetched/cleared but not updated in the login
   // screen, we need to update the wallpaper after the public user logged in.
   WallpaperControllerClientImpl::Get()->ShowUserWallpaper(user->GetAccountId());
-
-  SetPublicAccountDelegates();
 }
 
 void ChromeUserManagerImpl::KioskAppLoggedIn(user_manager::User* user) {
@@ -897,17 +870,13 @@ void ChromeUserManagerImpl::KioskAppLoggedIn(user_manager::User* user) {
   // device-local account list here to extract the kiosk_app_id.
   const std::vector<policy::DeviceLocalAccount> device_local_accounts =
       policy::GetDeviceLocalAccounts(cros_settings_);
-  const policy::DeviceLocalAccount* account = NULL;
-  for (std::vector<policy::DeviceLocalAccount>::const_iterator it =
-           device_local_accounts.begin();
-       it != device_local_accounts.end(); ++it) {
-    if (it->user_id == kiosk_app_account_id.GetUserEmail()) {
-      account = &*it;
-      break;
-    }
-  }
+  const auto account = base::ranges::find_if(
+      device_local_accounts,
+      [&kiosk_app_account_id](const policy::DeviceLocalAccount& account) {
+        return account.user_id == kiosk_app_account_id.GetUserEmail();
+      });
   std::string kiosk_app_id;
-  if (account) {
+  if (account != device_local_accounts.end()) {
     kiosk_app_id = account->kiosk_app_id;
   } else {
     LOG(ERROR) << "Logged into nonexistent kiosk-app account: "
@@ -1255,7 +1224,7 @@ void ChromeUserManagerImpl::UpdateNumberOfUsers() {
 void ChromeUserManagerImpl::UpdateUserTimeZoneRefresher(Profile* profile) {
   const user_manager::User* user =
       ProfileHelper::Get()->GetUserByProfile(profile);
-  if (user == NULL)
+  if (user == nullptr)
     return;
 
   // In Multi-Profile mode only primary user settings are in effect.
@@ -1300,15 +1269,10 @@ void ChromeUserManagerImpl::SetUserAffiliation(
 }
 
 bool ChromeUserManagerImpl::ShouldReportUser(const std::string& user_id) const {
-  const base::Value& reporting_users =
-      *(GetLocalState()->GetList(::prefs::kReportingUsers));
+  const base::Value::List& reporting_users =
+      GetLocalState()->GetList(::prefs::kReportingUsers);
   base::Value user_id_value(FullyCanonicalize(user_id));
-  // TODO(crbug.com/1187106): Use base::Contains once |reporting_users| is not a
-  // ListValue.
-  return !(std::find(reporting_users.GetListDeprecated().begin(),
-                     reporting_users.GetListDeprecated().end(),
-                     user_id_value) ==
-           reporting_users.GetListDeprecated().end());
+  return base::Contains(reporting_users, user_id_value);
 }
 
 bool ChromeUserManagerImpl::IsFullManagementDisclosureNeeded(

@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -320,7 +320,7 @@ void AppTimeController::TimeLimitsPolicyUpdated(const std::string& pref_name) {
   DCHECK_EQ(pref_name, prefs::kPerAppTimeLimitsPolicy);
 
   const base::Value::Dict& policy =
-      pref_registrar_->prefs()->GetValueDict(prefs::kPerAppTimeLimitsPolicy);
+      pref_registrar_->prefs()->GetDict(prefs::kPerAppTimeLimitsPolicy);
 
   std::map<AppId, AppLimit> app_limits = policy::AppLimitsFromDict(policy);
 
@@ -358,11 +358,11 @@ void AppTimeController::TimeLimitsAllowlistPolicyUpdated(
     const std::string& pref_name) {
   DCHECK_EQ(pref_name, prefs::kPerAppTimeLimitsAllowlistPolicy);
 
-  const base::Value* policy = pref_registrar_->prefs()->GetDictionary(
+  const base::Value::Dict& policy = pref_registrar_->prefs()->GetDict(
       prefs::kPerAppTimeLimitsAllowlistPolicy);
 
   // Figure out a way to avoid cloning
-  AppTimeLimitsAllowlistPolicyWrapper wrapper(policy);
+  AppTimeLimitsAllowlistPolicyWrapper wrapper(&policy);
 
   app_registry_->OnTimeLimitAllowlistChanged(wrapper);
 }
@@ -403,18 +403,14 @@ void AppTimeController::OnAppInstalled(const AppId& app_id) {
   if (IsWebAppOrExtension(app_id))
     return;
 
-  const base::Value* allowlist_policy = pref_registrar_->prefs()->GetDictionary(
+  const base::Value::Dict& allowlist_policy = pref_registrar_->prefs()->GetDict(
       prefs::kPerAppTimeLimitsAllowlistPolicy);
-  if (allowlist_policy && allowlist_policy->is_dict()) {
-    AppTimeLimitsAllowlistPolicyWrapper wrapper(allowlist_policy);
-    if (base::Contains(wrapper.GetAllowlistAppList(), app_id))
-      app_registry_->SetAppAllowlisted(app_id);
-  } else {
-    LOG(WARNING) << " Invalid PerAppTimeLimitAllowlist policy";
-  }
+  AppTimeLimitsAllowlistPolicyWrapper wrapper(&allowlist_policy);
+  if (base::Contains(wrapper.GetAllowlistAppList(), app_id))
+    app_registry_->SetAppAllowlisted(app_id);
 
   const base::Value::Dict& policy =
-      pref_registrar_->prefs()->GetValueDict(prefs::kPerAppTimeLimitsPolicy);
+      pref_registrar_->prefs()->GetDict(prefs::kPerAppTimeLimitsPolicy);
 
   // Update the application's time limit.
   const std::map<AppId, AppLimit> limits = policy::AppLimitsFromDict(policy);

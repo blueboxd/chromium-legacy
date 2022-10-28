@@ -83,6 +83,7 @@ class WebContentsViewAndroid : public WebContentsView,
                              RenderViewHost* new_host) override;
   void SetOverscrollControllerEnabled(bool enabled) override;
   void OnCapturerCountChanged() override;
+  void FullscreenStateChanged(bool is_fullscreen) override;
 
   // Backend implementation of RenderViewHostDelegateView.
   void ShowContextMenu(RenderFrameHost& render_frame_host,
@@ -101,7 +102,8 @@ class WebContentsViewAndroid : public WebContentsView,
   void StartDragging(const DropData& drop_data,
                      blink::DragOperationsMask allowed_ops,
                      const gfx::ImageSkia& image,
-                     const gfx::Vector2d& image_offset,
+                     const gfx::Vector2d& cursor_offset,
+                     const gfx::Rect& drag_obj_rect,
                      const blink::mojom::DragEventSourceInfo& event_info,
                      RenderWidgetHostImpl* source_rwh) override;
   void UpdateDragCursor(ui::mojom::DragOperation operation) override;

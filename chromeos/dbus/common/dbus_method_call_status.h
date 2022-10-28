@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -44,12 +44,5 @@ using WaitForServiceToBeAvailableCallback =
     base::OnceCallback<void(bool service_is_available)>;
 
 }  // namespace chromeos
-
-// TODO(https://crbug.com/1164001): remove when //chromeos/dbus moved to ash.
-namespace ash {
-using ::chromeos::ObjectPathCallback;
-using ::chromeos::VoidDBusMethodCallback;
-using ::chromeos::WaitForServiceToBeAvailableCallback;
-}  // namespace ash
 
 #endif  // CHROMEOS_DBUS_COMMON_DBUS_METHOD_CALL_STATUS_H_

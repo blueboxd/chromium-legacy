@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -47,7 +47,6 @@ class MockSecureEnclaveClient : public SecureEnclaveClient {
               (SecKeyRef, base::span<const uint8_t>, std::vector<uint8_t>&),
               (override));
   MOCK_METHOD(bool, VerifySecureEnclaveSupported, (), (override));
-  MOCK_METHOD(bool, VerifyKeychainUnlocked, (), (override));
 };
 
 }  // namespace enterprise_connectors::test

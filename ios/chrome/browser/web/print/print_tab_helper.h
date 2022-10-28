@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -20,10 +20,10 @@ class PrintTabHelper : public web::WebStateUserData<PrintTabHelper> {
 
   ~PrintTabHelper() override;
 
-  // Sets the |printer|, which is held weakly by this object.
+  // Sets the `printer`, which is held weakly by this object.
   void set_printer(id<WebStatePrinter> printer);
 
-  // Prints |web_state_| using |printer_|. Does nothing if printing is
+  // Prints `web_state_` using `printer_`. Does nothing if printing is
   // disabled, for example by policy.
   void Print();
 

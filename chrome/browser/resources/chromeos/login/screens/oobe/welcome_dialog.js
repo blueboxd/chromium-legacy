@@ -1,4 +1,4 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -18,7 +18,7 @@
  * @typedef {{
  *   title:  HTMLAnchorElement,
  *   chromeVoxHint:  OobeModalDialogElement,
- *   welcomeAnimation:  CrLottieElement,
+ *   welcomeAnimation:  OobeCrLottie,
  * }}
  */
 OobeWelcomeDialogBase.$;
@@ -65,9 +65,7 @@ OobeWelcomeDialogBase.$;
         readOnly: true,
       },
 
-      isQuickStartEnabled_: {
-        type: Boolean,
-      },
+      isQuickStartEnabled: Boolean,
     };
   }
 
@@ -87,7 +85,7 @@ OobeWelcomeDialogBase.$;
      */
     this.focusedElement_ = null;
 
-    this.isQuickStartEnabled_ = loadTimeData.getBoolean('isQuickStartEnabled');
+    this.isQuickStartEnabled = false;
   }
 
   onBeforeShow() {
@@ -116,7 +114,7 @@ OobeWelcomeDialogBase.$;
   }
 
   onQuickStartClicked_() {
-    assert(this.isQuickStartEnabled_);
+    assert(this.isQuickStartEnabled);
     this.dispatchEvent(new CustomEvent(
         'quick-start-clicked', {bubbles: true, composed: true}));
   }

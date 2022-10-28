@@ -27,7 +27,7 @@
 [
     DoNotCheckConstants
 ] interface Internals {
-    GCObservation observeGC(any observed);
+    [RaisesException] GCObservation observeGC(any observed);
 
     [RaisesException] DOMString elementLayoutTreeAsText(Element element);
     boolean isPreloaded(DOMString url);
@@ -62,6 +62,7 @@
     Node parentTreeScope(Node node);
     [RaisesException] unsigned short compareTreeScopePosition(Node treeScope1, Node treeScope2);
     [RaisesException] unsigned long updateStyleAndReturnAffectedElementCount();
+    [RaisesException] unsigned long styleForElementCount();
     [RaisesException] unsigned long needsLayoutCount();
     [RaisesException] unsigned long layoutCountForTesting();
     [RaisesException] unsigned long hitTestCount(Document document);
@@ -436,7 +437,7 @@
     // Request generation of a Reporting report.
     void generateTestReport(DOMString message);
 
-    [RaisesException] void setIsAdFrame(HTMLIFrameElement iframe);
+    [RaisesException] void setIsAdFrame(Document target_doc);
 
     [RaisesException, CallWith=ScriptState] ReadableStream createReadableStream(long queueSize, DOMString optimizer);
     // The return value consists of a WritableStream (.stream) and a promise of

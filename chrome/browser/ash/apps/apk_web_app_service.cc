@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -724,7 +724,7 @@ void ApkWebAppService::UpdatePackageInfo(
 
 const base::Value::Dict& ApkWebAppService::WebAppToApks() const {
   const base::Value::Dict& value =
-      profile_->GetPrefs()->GetValueDict(kWebAppToApkDictPref);
+      profile_->GetPrefs()->GetDict(kWebAppToApkDictPref);
   return value;
 }
 

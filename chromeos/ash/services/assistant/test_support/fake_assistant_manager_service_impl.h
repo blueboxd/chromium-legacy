@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,7 +13,7 @@
 #include "base/observer_list.h"
 #include "chromeos/ash/services/assistant/assistant_manager_service.h"
 #include "chromeos/ash/services/assistant/test_support/fake_assistant_settings_impl.h"
-#include "chromeos/services/libassistant/public/mojom/notification_delegate.mojom-forward.h"
+#include "chromeos/ash/services/libassistant/public/mojom/notification_delegate.mojom-forward.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"

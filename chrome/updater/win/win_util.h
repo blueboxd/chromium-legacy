@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,6 +13,7 @@
 
 #include "base/containers/span.h"
 #include "base/files/file_path.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/hash/hash.h"
 #include "base/process/process_iterator.h"
 #include "base/scoped_generic.h"
@@ -80,19 +81,6 @@ class ProcessFilterName : public base::ProcessFilter {
 // The macro maps a NO_ERROR to S_OK, whereas the HRESULTFromLastError maps a
 // NO_ERROR to E_FAIL.
 HRESULT HRESULTFromLastError();
-
-// Returns an HRESULT with a custom facility code representing an updater error.
-// The updater error should be a small positive or a small negative 16-bit
-// integral value.
-template <typename Error>
-HRESULT HRESULTFromUpdaterError(Error error) {
-  constexpr ULONG kSeverityError = 0x80000000;
-  constexpr ULONG kCustomerBit = 0x20000000;
-  constexpr ULONG kFacilityOmaha = 67;
-  return static_cast<HRESULT>(kSeverityError | kCustomerBit |
-                              (kFacilityOmaha << 16) |
-                              static_cast<ULONG>(error));
-}
 
 // Checks whether a process is running with the image |executable|. Returns true
 // if a process is found.
@@ -291,6 +279,10 @@ bool CompareOSVersions(const OSVERSIONINFOEX& os, BYTE oper);
 // operations are detected. This call enables protection for the entire process
 // and cannot be reversed.
 bool EnableProcessHeapMetadataProtection();
+
+// Creates a unique temporary directory. The directory is created under
+// %ProgramFiles% if the caller is admin, so it is secure.
+absl::optional<base::ScopedTempDir> CreateSecureTempDir();
 
 }  // namespace updater
 

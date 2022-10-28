@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -326,8 +326,10 @@ class StreamWrapper {
  private:
   StreamType* CreateStream() {
     StreamType* stream = StreamTraits::CreateStream(
-        audio_manager_, AudioParameters(format_, channel_layout_, sample_rate_,
-                                        samples_per_packet_));
+        audio_manager_,
+        AudioParameters(format_,
+                        ChannelLayoutConfig(channel_layout_, channels()),
+                        sample_rate_, samples_per_packet_));
     EXPECT_TRUE(stream);
     return stream;
   }

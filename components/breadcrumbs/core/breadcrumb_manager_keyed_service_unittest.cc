@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -20,7 +20,7 @@ TEST_F(BreadcrumbManagerKeyedServiceTest, EventsLabeledWithBrowserState) {
           /*is_off_the_record=*/false);
   breadcrumb_manager_service->AddEvent("event");
 
-  const std::string event = breadcrumb_manager_service->GetEvents(0).front();
+  const std::string event = breadcrumb_manager_service->GetEvents().front();
 
   std::unique_ptr<BreadcrumbManagerKeyedService>
       otr_breadcrumb_manager_service =
@@ -29,7 +29,7 @@ TEST_F(BreadcrumbManagerKeyedServiceTest, EventsLabeledWithBrowserState) {
   otr_breadcrumb_manager_service->AddEvent("event");
 
   const std::string off_the_record_event =
-      otr_breadcrumb_manager_service->GetEvents(0).front();
+      otr_breadcrumb_manager_service->GetEvents().front();
   // Event should indicate it was logged from an off-the-record "Incognito"
   // browser state.
   EXPECT_NE(std::string::npos, off_the_record_event.find(" I "));

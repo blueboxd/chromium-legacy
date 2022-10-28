@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -105,18 +105,13 @@ void CrostiniInstallerDialog::AdjustWidgetInitParams(
 }
 
 bool CrostiniInstallerDialog::OnDialogCloseRequested() {
-  return installer_ui_ == nullptr || installer_ui_->RequestClosePage();
+  return !installer_ui_ || installer_ui_->RequestClosePage();
 }
 
 void CrostiniInstallerDialog::OnDialogShown(content::WebUI* webui) {
-  installer_ui_ = static_cast<CrostiniInstallerUI*>(webui->GetController());
+  installer_ui_ =
+      static_cast<CrostiniInstallerUI*>(webui->GetController())->GetWeakPtr();
   return SystemWebDialogDelegate::OnDialogShown(webui);
-}
-
-void CrostiniInstallerDialog::OnCloseContents(content::WebContents* source,
-                                              bool* out_close_dialog) {
-  installer_ui_ = nullptr;
-  return SystemWebDialogDelegate::OnCloseContents(source, out_close_dialog);
 }
 
 void CrostiniInstallerDialog::OnWebContentsFinishedLoad() {

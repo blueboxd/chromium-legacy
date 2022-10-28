@@ -183,7 +183,7 @@ TEST(TransformUtilTest, NoSnapSkewedCompositeTransform) {
 TEST(TransformUtilTest, TransformAboutPivot) {
   Transform transform;
   transform.Scale(3, 4);
-  transform = TransformAboutPivot(Point(7, 8), transform);
+  transform = TransformAboutPivot(PointF(7, 8), transform);
 
   Point point;
 
@@ -221,8 +221,8 @@ double ComputeDecompRecompError(const Transform& transform) {
 
   float expected[16];
   float actual[16];
-  transform.matrix().getRowMajor(expected);
-  composed.matrix().getRowMajor(actual);
+  transform.GetColMajorF(expected);
+  composed.GetColMajorF(actual);
   double sse = 0;
   for (int i = 0; i < 16; i++) {
     double diff = expected[i] - actual[i];

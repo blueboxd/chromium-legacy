@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -330,8 +330,7 @@ void FeatureList::RegisterFieldTrialOverride(const std::string& feature_name,
                                              OverrideState override_state,
                                              FieldTrial* field_trial) {
   DCHECK(field_trial);
-  DCHECK(!Contains(overrides_, feature_name) ||
-         !overrides_.find(feature_name)->second.field_trial)
+  DCHECK(!HasAssociatedFieldTrialByFeatureName(feature_name))
       << "Feature " << feature_name << " is overriden multiple times in these "
       << "trials: "
       << overrides_.find(feature_name)->second.field_trial->trial_name()
@@ -528,8 +527,12 @@ void FeatureList::SetInstance(std::unique_ptr<FeatureList> instance) {
   // Note: Intentional leak of global singleton.
   g_feature_list_instance = instance.release();
 
+#if !BUILDFLAG(IS_NACL)
+  // Configured first because it takes precedence over the getrandom() trial.
+  internal::ConfigureBoringSSLBackedRandBytesFieldTrial();
+#endif
 #if BUILDFLAG(IS_ANDROID)
-  ConfigureRandBytesFieldTrial();
+  internal::ConfigureRandBytesFieldTrial();
 #endif
 
   g_cache_override_state =
@@ -657,7 +660,7 @@ FeatureList::OverrideState FeatureList::GetOverrideStateByFeatureName(
 
     // Activate the corresponding field trial, if necessary.
     if (entry.field_trial)
-      entry.field_trial->group();
+      entry.field_trial->Activate();
 
     // TODO(asvitkine) Expand this section as more support is added.
 
@@ -697,6 +700,12 @@ FieldTrial* FeatureList::GetAssociatedFieldTrialByFeatureName(
     return entry->field_trial;
   }
   return nullptr;
+}
+
+bool FeatureList::HasAssociatedFieldTrialByFeatureName(StringPiece name) const {
+  DCHECK(!initialized_);
+  auto entry = overrides_.find(name);
+  return entry != overrides_.end() && entry->second.field_trial != nullptr;
 }
 
 FieldTrial* FeatureList::GetEnabledFieldTrialByFeatureName(

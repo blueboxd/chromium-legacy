@@ -1,4 +1,4 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -78,6 +78,16 @@ GURL GetWebstoreReportAbuseUrl(const std::string& extension_id,
   return GURL(base::StringPrintf("%s/report/%s?utm_source=%s",
                                  GetWebstoreLaunchURL().spec().c_str(),
                                  extension_id.c_str(), referrer_id.c_str()));
+}
+
+bool IsWebstoreDomain(const GURL& url) {
+  return url.DomainIs(GetWebstoreLaunchURL().host()) ||
+         url.DomainIs(GetNewWebstoreLaunchURL().host());
+}
+
+bool IsWebstoreOrigin(const url::Origin& origin) {
+  return origin.IsSameOriginWith(GetWebstoreLaunchURL()) ||
+         origin.IsSameOriginWith(GetNewWebstoreLaunchURL());
 }
 
 bool IsWebstoreUpdateUrl(const GURL& update_url) {

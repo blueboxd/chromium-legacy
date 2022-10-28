@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -80,6 +80,10 @@ void ScopedTouchIdTestEnvironment::SimulateTouchIdPromptFailure() {
   CHECK(!next_touch_id_context_);
   next_touch_id_context_.reset(new FakeTouchIdContext);
   next_touch_id_context_->set_callback_result(false);
+}
+
+void ScopedTouchIdTestEnvironment::DoNotResolveNextPrompt() {
+  next_touch_id_context_->DoNotResolveNextPrompt();
 }
 
 std::unique_ptr<TouchIdContext>

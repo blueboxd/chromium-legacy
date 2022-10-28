@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,11 +10,11 @@
 #include <string>
 #include <utility>
 
-#include "ash/components/disks/disk_mount_manager.h"
 #include "base/files/file_path.h"
 #include "base/memory/weak_ptr.h"
 #include "base/task/sequenced_task_runner.h"
 #include "chrome/browser/ash/app_mode/kiosk_external_update_validator.h"
+#include "chromeos/ash/components/disks/disk_mount_manager.h"
 
 namespace ash {
 

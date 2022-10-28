@@ -304,8 +304,8 @@ class CONTENT_EXPORT NavigationRequest
   bool IsInMainFrame() const override;
   bool IsInPrimaryMainFrame() const override;
   bool IsInPrerenderedMainFrame() override;
-  bool IsPrerenderedPageActivation() override;
-  bool IsInFencedFrameTree() override;
+  bool IsPrerenderedPageActivation() const override;
+  bool IsInFencedFrameTree() const override;
   FrameType GetNavigatingFrameType() const override;
   bool IsRendererInitiated() override;
   bool IsSameOrigin() override;
@@ -928,13 +928,9 @@ class CONTENT_EXPORT NavigationRequest
     return prerender_frame_tree_node_id_.value();
   }
 
-  const absl::optional<FencedFrameURLMapping::PendingAdComponentsMap>&
-  pending_ad_components_map() const {
-    return pending_ad_components_map_;
-  }
-
-  const absl::optional<AdAuctionData>& ad_auction_data() const {
-    return ad_auction_data_;
+  const absl::optional<FencedFrameURLMapping::FencedFrameProperties>&
+  fenced_frame_properties() const {
+    return fenced_frame_properties_;
   }
 
   void RenderFallbackContentForObjectTag();
@@ -987,6 +983,11 @@ class CONTENT_EXPORT NavigationRequest
   const scoped_refptr<NavigationOrDocumentHandle>&
   navigation_or_document_handle() {
     return navigation_or_document_handle_;
+  }
+
+  const std::pair<url::Origin, std::string>&
+  browser_side_origin_to_commit_with_debug_info() {
+    return browser_side_origin_to_commit_with_debug_info_;
   }
 
  private:
@@ -1617,6 +1618,11 @@ class CONTENT_EXPORT NavigationRequest
   blink::mojom::BeginNavigationParamsPtr begin_params_;
   blink::mojom::CommitNavigationParamsPtr commit_params_;
   bool same_origin_ = false;
+  // This member is calculated at ReadyToCommit time. It is used to compare
+  // against renderer calculated origin and browser calculated one at commit
+  // time.
+  std::pair<url::Origin, std::string>
+      browser_side_origin_to_commit_with_debug_info_;
 
   // Stores the NavigationUIData for this navigation until the NavigationHandle
   // is created. This can be null if the embedded did not provide a
@@ -1793,12 +1799,12 @@ class CONTENT_EXPORT NavigationRequest
   // prior (most likely <a download>) download attempt.
   bool from_download_cross_origin_redirect_ = false;
 
-  // Used when SignedExchangeSubresourcePrefetch is enabled to hold the
-  // prefetched signed exchanges. This is shared with the navigation initiator's
-  // RenderFrameHostImpl. This also means that only the navigations that were
-  // directly initiated by the frame that made the prefetches could use the
-  // prefetched resources, which is a different behavior from regular prefetches
-  // (where all prefetched resources are stored and shared in http cache).
+  // Used to hold prefetched signed exchanges. This is shared with the
+  // navigation initiator's RenderFrameHostImpl. This also means that only the
+  // navigations that were directly initiated by the frame that made the
+  // prefetches could use the prefetched resources, which is a different
+  // behavior from regular prefetches (where all prefetched resources are
+  // stored and shared in http cache).
   scoped_refptr<PrefetchedSignedExchangeCache>
       prefetched_signed_exchange_cache_;
 
@@ -2082,20 +2088,18 @@ class CONTENT_EXPORT NavigationRequest
   // Indicates that this navigation is for PDF content in a renderer.
   bool is_pdf_ = false;
 
-  // Only for fenced frames based on MPArch:
   // Indicates that this navigation is an embedder-initiated navigation of a
   // fenced frame root. That is to say, the navigation is caused by a `src`
   // attribute mutation on the <fencedframe> element, which cannot be performed
   // from inside the fenced frame tree.
-  const bool is_embedder_initiated_fenced_frame_navigation_ = false;
+  // TODO(crbug.com/1262022): Make this `const` again once ShadowDOM is gone.
+  bool is_embedder_initiated_fenced_frame_navigation_ = false;
 
-  // Only for fenced frames based on MPArch:
   // Indicates that this navigation is to an opaque url (urn:uuid). This value
   // may only be true when `is_embedder_initiated_fenced_frame_navigation` is
   // true.
   const bool is_embedder_initiated_fenced_frame_opaque_url_navigation_ = false;
 
-  // Only for fenced frames based on MPArch:
   // Indicates that the target of this navigation is the root of a fenced frame
   // tree whose most recent embedder-initiated navigation was to an opaque URL
   // (urn:uuid). The most recent navigation may be the current
@@ -2114,27 +2118,6 @@ class CONTENT_EXPORT NavigationRequest
   // fenced frame properties.
   absl::optional<FencedFrameURLMapping::FencedFrameProperties>
       fenced_frame_properties_;
-
-  // If this navigation is a load in a fenced frame of a URN URL that resulted
-  // from an interest group auction, this contains some information about the
-  // auction that should be attached to the renderer as AdAuctionDocumentData.
-  absl::optional<AdAuctionData> ad_auction_data_;
-
-  // If this navigation is a load in a fenced frame of a URN URL that resulted
-  // from an interest group auction, this contains the ad component URLs
-  // associated with that auction's winning bid, and the corresponding URNs that
-  // will be mapped to them.
-  absl::optional<FencedFrameURLMapping::PendingAdComponentsMap>
-      pending_ad_components_map_;
-
-  // If this navigation is a load in a fenced frame of a URN URL that resulted
-  // from a shared storage url selection operation, this contains the metadata
-  // for shared storage budget charging. A non-null pointer will stay valid
-  // during the `FencedFrameURLMapping`'s (thus the page's) lifetime, and a page
-  // will outlive any NavigationRequest occurring in fenced frames in the page,
-  // thus it's safe for this NavigationRequest to store this pointer.
-  raw_ptr<FencedFrameURLMapping::SharedStorageBudgetMetadata>
-      shared_storage_budget_metadata_ = nullptr;
 
   // Prerender2:
   // The type to trigger prerendering. The value is valid only when Prerender2

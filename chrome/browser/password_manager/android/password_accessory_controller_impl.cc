@@ -1,10 +1,11 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome/browser/password_manager/android/password_accessory_controller_impl.h"
 
 #include <algorithm>
+#include <string>
 #include <utility>
 
 #include "base/bind.h"
@@ -17,6 +18,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/ranges/algorithm.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/trace_event/trace_event.h"
 #include "chrome/browser/autofill/manual_filling_controller.h"
 #include "chrome/browser/autofill/manual_filling_utils.h"
 #include "chrome/browser/password_manager/android/all_passwords_bottom_sheet_controller.h"
@@ -78,16 +80,20 @@ autofill::UserInfo TranslateCredentials(bool current_field_is_password,
                    !credential.is_affiliation_based_match().value()));
 
   std::u16string username = GetDisplayUsername(credential);
-  user_info.add_field(
-      AccessorySheetField(username, username, /*is_password=*/false,
-                          /*selectable=*/!credential.username().empty() &&
-                              !current_field_is_password));
+  user_info.add_field(AccessorySheetField(
+      /*display_text=*/username, /*text_to_fill=*/username,
+      /*a11y_description=*/username, /*id=*/std::string(),
+      /*is_obfuscated=*/false,
+      /*selectable=*/!credential.username().empty()));
 
   user_info.add_field(AccessorySheetField(
-      credential.password(),
+      /*display_text=*/credential.password(),
+      /*text_to_fill=*/credential.password(),
+      /*a11y_description=*/
       l10n_util::GetStringFUTF16(
           IDS_PASSWORD_MANAGER_ACCESSORY_PASSWORD_DESCRIPTION, username),
-      /*is_password=*/true, /*selectable=*/current_field_is_password));
+      /*id=*/std::string(),
+      /*is_obfuscated=*/true, /*selectable=*/current_field_is_password));
 
   return user_info;
 }
@@ -363,6 +369,8 @@ void PasswordAccessoryControllerImpl::RefreshSuggestionsForField(
   url::Origin origin = GetFocusedFrameOrigin();
   if (origin.opaque())
     return;  // Don't proceed for invalid origins.
+  TRACE_EVENT0("passwords",
+               "PasswordAccessoryControllerImpl::RefreshSuggestionsForField");
   last_focused_field_info_.emplace(origin, focused_field_type,
                                    is_manual_generation_available);
 
@@ -532,7 +540,7 @@ bool PasswordAccessoryControllerImpl::ShouldTriggerBiometricReauth(
       password_client_->GetBiometricAuthenticator();
   return password_manager_util::CanUseBiometricAuth(
       authenticator.get(),
-      device_reauth::BiometricAuthRequester::kFallbackSheet);
+      device_reauth::BiometricAuthRequester::kFallbackSheet, password_client_);
 }
 
 void PasswordAccessoryControllerImpl::OnReauthCompleted(

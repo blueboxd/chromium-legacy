@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -159,6 +159,9 @@ extern const char kHealthCheckSwitch[];
 // `/enterprise`. Manual argument parsing is needed for that scenario.
 extern const char kEnterpriseSwitch[];
 
+// Specifies that no UI should be shown.
+extern const char kSilentSwitch[];
+
 // Specifies the handoff request argument. On Windows, the request may
 // be from legacy updaters which pass the argument in the format of
 // `/handoff <install-args-details>`. Manual argument parsing is needed for that
@@ -168,6 +171,13 @@ extern const char kHandoffSwitch[];
 // Specifies the full path to the offline install resources. The folder
 // contains offline installer and the manifest file.
 extern const char kOfflineDirSwitch[];
+
+// Specifies extra app args. The switch must be in the following format:
+//     --appargs="appguid=<appid>&installerdata=<URL-encoded-installer-data>"
+// On Windows, the request may be from legacy updaters which pass the argument
+// in the format of `/appargs <value>`. Manual argument parsing is needed for
+// that scenario.
+extern const char kAppArgsSwitch[];
 
 // The "expect-elevated" switch indicates that updater setup should be running
 // elevated (at high integrity). This switch is needed to avoid running into a
@@ -324,6 +334,9 @@ constexpr int kErrorFailedToStartLaunchdWakeJob = 31;
 // Timed out while awaiting launchctl to become aware of the update service
 // internal job.
 constexpr int kErrorFailedAwaitingLaunchdUpdateServiceInternalJob = 32;
+
+// DM registration failure with mandatory enrollment.
+constexpr int kErrorDMRegistrationFailed = 33;
 
 constexpr int kErrorTagParsing = 50;
 

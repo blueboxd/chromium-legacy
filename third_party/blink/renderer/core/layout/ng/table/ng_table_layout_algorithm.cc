@@ -1043,10 +1043,13 @@ const NGLayoutResult* NGTableLayoutAlgorithm::GenerateFragment(
   // look for repeatable headers and footers. This is especially important for
   // footers, since we need to reserve space for it after any preceding
   // non-repeated sections (typically tbody). We'll only repeat headers /
-  // footers if we're not already inside repeatable content, though.
-  // See crbug.com/1352931
+  // footers if we're not already inside repeatable content, though. See
+  // crbug.com/1352931 for more details. Furthermore, we cannot repeat content
+  // if side-effects are disabled, as that machinery depends on updating and
+  // reading the physical fragments vector of the LayoutBox.
   if (ConstraintSpace().HasKnownFragmentainerBlockSize() &&
       !ConstraintSpace().IsInsideRepeatableContent() &&
+      !NGDisableSideEffectsScope::IsDisabled() &&
       (grouped_children.header || grouped_children.footer)) {
     LayoutUnit max_section_block_size =
         ConstraintSpace().FragmentainerBlockSize() / 4;
@@ -1274,7 +1277,7 @@ const NGLayoutResult* NGTableLayoutAlgorithm::GenerateFragment(
         To<NGPhysicalBoxFragment>(child_result->PhysicalFragment());
     NGBoxFragment fragment(table_writing_direction, physical_fragment);
     if (child.IsTableSection() && !table_baseline) {
-      if (const auto& section_baseline = fragment.Baseline())
+      if (const auto& section_baseline = fragment.FirstBaseline())
         table_baseline = *section_baseline + child_block_offset;
     }
 
@@ -1437,10 +1440,12 @@ const NGLayoutResult* NGTableLayoutAlgorithm::GenerateFragment(
   container_builder_.SetFragmentsTotalBlockSize(block_size);
 
   if (RuntimeEnabledFeatures::MathMLCoreEnabled() && Node().GetDOMNode() &&
-      Node().GetDOMNode()->HasTagName(mathml_names::kMtableTag))
-    table_baseline = MathTableBaseline(Style(), child_block_offset);
-  if (table_baseline)
-    container_builder_.SetBaseline(*table_baseline);
+      Node().GetDOMNode()->HasTagName(mathml_names::kMtableTag)) {
+    container_builder_.SetBaselines(
+        MathTableBaseline(Style(), child_block_offset));
+  } else if (table_baseline) {
+    container_builder_.SetFirstBaseline(*table_baseline);
+  }
 
   container_builder_.SetIsTableNGPart();
 

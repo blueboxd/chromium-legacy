@@ -1,14 +1,14 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #import "ios/web/public/test/task_observer_util.h"
 
-#include "base/pending_task.h"
-#include "base/run_loop.h"
-#include "base/task/current_thread.h"
-#include "base/test/ios/wait_util.h"
-#include "ios/web/public/web_state.h"
+#import "base/pending_task.h"
+#import "base/run_loop.h"
+#import "base/task/current_thread.h"
+#import "base/test/ios/wait_util.h"
+#import "ios/web/public/web_state.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."

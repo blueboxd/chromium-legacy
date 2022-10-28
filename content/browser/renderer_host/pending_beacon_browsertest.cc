@@ -72,7 +72,6 @@ class PendingBeaconTimeoutBrowserTestBase : public ContentBrowserTest {
     // Navigate to A.
     ASSERT_TRUE(
         NavigateToURL(embedded_test_server()->GetURL("a.com", "/title1.html")));
-    RenderFrameHostWrapper rfh_a(current_frame_host());
     // Execute `script` in A.
     ASSERT_TRUE(ExecJs(web_contents(), script));
   }

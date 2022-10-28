@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -457,11 +457,11 @@ void TCPSocket::UpgradeToTLS(api::socket::SecureOptions* options,
     bool has_version_min = false;
     bool has_version_max = false;
     api::socket::TLSVersionConstraints* versions = options->tls_version.get();
-    if (versions->min.get()) {
+    if (versions->min) {
       has_version_min =
           SSLProtocolVersionFromString(*versions->min, &version_min);
     }
-    if (versions->max.get()) {
+    if (versions->max) {
       has_version_max =
           SSLProtocolVersionFromString(*versions->max, &version_max);
     }

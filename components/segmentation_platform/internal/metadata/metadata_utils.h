@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -102,9 +102,9 @@ base::TimeDelta GetTimeUnit(
 SignalKey::Kind SignalTypeToSignalKind(proto::SignalType signal_type);
 
 // Helper method to convert continuous to discrete score.
-int ConvertToDiscreteScore(const std::string& mapping_key,
-                           float input_score,
-                           const proto::SegmentationModelMetadata& metadata);
+float ConvertToDiscreteScore(const std::string& mapping_key,
+                             float input_score,
+                             const proto::SegmentationModelMetadata& metadata);
 
 std::string SegmetationModelMetadataToString(
     const proto::SegmentationModelMetadata& model_metadata);

@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -22,28 +22,28 @@
 #include "base/run_loop.h"
 #include "base/strings/string_piece.h"
 #include "base/test/scoped_feature_list.h"
-#include "chromeos/services/bluetooth_config/fake_adapter_state_controller.h"
-#include "chromeos/services/bluetooth_config/fake_device_cache.h"
-#include "chromeos/services/bluetooth_config/fake_device_operation_handler.h"
-#include "chromeos/services/bluetooth_config/public/mojom/cros_bluetooth_config.mojom.h"
-#include "chromeos/services/bluetooth_config/scoped_bluetooth_config_test_helper.h"
+#include "chromeos/ash/services/bluetooth_config/fake_adapter_state_controller.h"
+#include "chromeos/ash/services/bluetooth_config/fake_device_cache.h"
+#include "chromeos/ash/services/bluetooth_config/fake_device_operation_handler.h"
+#include "chromeos/ash/services/bluetooth_config/public/mojom/cros_bluetooth_config.mojom.h"
+#include "chromeos/ash/services/bluetooth_config/scoped_bluetooth_config_test_helper.h"
 #include "mojo/public/cpp/bindings/clone_traits.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace ash {
+
 namespace {
 
-const char kDeviceId[] = "/device/id";
+using bluetooth_config::FakeDeviceOperationHandler;
+using bluetooth_config::ScopedBluetoothConfigTestHelper;
+using bluetooth_config::mojom::AudioOutputCapability;
+using bluetooth_config::mojom::BluetoothDeviceProperties;
+using bluetooth_config::mojom::BluetoothSystemState;
+using bluetooth_config::mojom::DeviceConnectionState;
+using bluetooth_config::mojom::PairedBluetoothDeviceProperties;
+using bluetooth_config::mojom::PairedBluetoothDevicePropertiesPtr;
 
-using chromeos::bluetooth_config::AdapterStateController;
-using chromeos::bluetooth_config::FakeDeviceOperationHandler;
-using chromeos::bluetooth_config::ScopedBluetoothConfigTestHelper;
-using chromeos::bluetooth_config::mojom::AudioOutputCapability;
-using chromeos::bluetooth_config::mojom::BluetoothDeviceProperties;
-using chromeos::bluetooth_config::mojom::BluetoothSystemState;
-using chromeos::bluetooth_config::mojom::DeviceConnectionState;
-using chromeos::bluetooth_config::mojom::PairedBluetoothDeviceProperties;
-using chromeos::bluetooth_config::mojom::PairedBluetoothDevicePropertiesPtr;
+const char kDeviceId[] = "/device/id";
 
 class FakeBluetoothDetailedViewFactory : public BluetoothDetailedView::Factory {
  public:

@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -27,6 +27,7 @@
 #include "ui/views/controls/menu/menu_runner.h"
 #include "ui/views/controls/tabbed_pane/tabbed_pane.h"
 #include "ui/views/controls/tabbed_pane/tabbed_pane_listener.h"
+#include "ui/views/controls/throbber.h"
 #include "ui/views/window/non_client_view.h"
 
 namespace views {
@@ -58,7 +59,7 @@ class PartialTranslateBubbleView : public LocationBarBubbleDelegateView,
 
   PartialTranslateBubbleView(views::View* anchor_view,
                              std::unique_ptr<PartialTranslateBubbleModel> model,
-                             translate::TranslateErrors::Type error_type,
+                             translate::TranslateErrors error_type,
                              content::WebContents* web_contents,
                              const std::u16string& text_selection,
                              base::OnceClosure on_closing);
@@ -89,7 +90,7 @@ class PartialTranslateBubbleView : public LocationBarBubbleDelegateView,
 
   // Initialize the bubble in the correct view state when it is shown.
   void SetViewState(PartialTranslateBubbleModel::ViewState view_state,
-                    translate::TranslateErrors::Type error_type);
+                    translate::TranslateErrors error_type);
 
   // LocationBarBubbleDelegateView:
   void CloseBubble() override;
@@ -147,6 +148,9 @@ class PartialTranslateBubbleView : public LocationBarBubbleDelegateView,
   std::unique_ptr<views::View> CreateViewErrorNoTitle(
       std::unique_ptr<views::Button> advanced_button);
 
+  // Creates the 'waiting' view that shows an empty bubble with a throbber.
+  std::unique_ptr<views::View> CreateViewWaiting();
+
   // Creates source language label and combobox for Tab UI advanced view. Caller
   // takes ownership of the returned view.
   std::unique_ptr<views::View> CreateViewAdvancedSource();
@@ -188,7 +192,7 @@ class PartialTranslateBubbleView : public LocationBarBubbleDelegateView,
   void SwitchTabForViewState(PartialTranslateBubbleModel::ViewState view_state);
 
   // Switches to the error view.
-  void SwitchToErrorView(translate::TranslateErrors::Type error_type);
+  void SwitchToErrorView(translate::TranslateErrors error_type);
 
   // Updates the advanced view.
   void UpdateAdvancedView();
@@ -216,12 +220,19 @@ class PartialTranslateBubbleView : public LocationBarBubbleDelegateView,
   // Function bound to the "Translate full page" button.
   void TranslateFullPage();
 
+  // Update the alignment of |partial_text_label_| to match the direction of
+  // the locale being used.
+  void SetTextAlignmentForLocaleTextDirection(std::string locale);
+
   static PartialTranslateBubbleView* partial_translate_bubble_view_;
 
+  raw_ptr<views::View> translate_view_waiting_ = nullptr;
   raw_ptr<views::View> translate_view_ = nullptr;
   raw_ptr<views::View> error_view_ = nullptr;
   raw_ptr<views::View> advanced_view_source_ = nullptr;
   raw_ptr<views::View> advanced_view_target_ = nullptr;
+
+  views::Throbber* throbber_;
 
   raw_ptr<views::Combobox> source_language_combobox_ = nullptr;
   raw_ptr<views::Combobox> target_language_combobox_ = nullptr;
@@ -244,7 +255,7 @@ class PartialTranslateBubbleView : public LocationBarBubbleDelegateView,
 
   std::unique_ptr<PartialTranslateBubbleModel> model_;
 
-  translate::TranslateErrors::Type error_type_;
+  translate::TranslateErrors error_type_;
 
   std::unique_ptr<WebContentMouseHandler> mouse_handler_;
 

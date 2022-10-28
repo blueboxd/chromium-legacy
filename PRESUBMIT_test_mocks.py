@@ -1,4 +1,4 @@
-# Copyright 2014 The Chromium Authors. All rights reserved.
+# Copyright 2014 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -129,7 +129,7 @@ class MockInputApi(object):
   def PresubmitLocalPath(self):
     return self.presubmit_local_path
 
-  def ReadFile(self, filename, mode='rU'):
+  def ReadFile(self, filename, mode='r'):
     if hasattr(filename, 'AbsoluteLocalPath'):
        filename = filename.AbsoluteLocalPath()
     for file_ in self.files:

@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -497,15 +497,13 @@ void ChromeVirtualKeyboardDelegate::OnGetHistoryValuesAfterItemsUpdated(
     return;
 
   // Broadcast an api event for each updated item.
-  for (auto& item : updated_items.GetListDeprecated()) {
+  for (auto& item : updated_items.GetList()) {
     keyboard_api::ClipboardItem clipboard_item;
     if (item.FindKey("imageData")) {
-      clipboard_item.image_data =
-          std::make_unique<std::string>(item.FindKey("imageData")->GetString());
+      clipboard_item.image_data = item.FindKey("imageData")->GetString();
     }
     if (item.FindKey("textData")) {
-      clipboard_item.text_data =
-          std::make_unique<std::string>(item.FindKey("textData")->GetString());
+      clipboard_item.text_data = item.FindKey("textData")->GetString();
     }
     if (item.FindKey("idToken")) {
       clipboard_item.id = item.FindKey("idToken")->GetString();
@@ -563,6 +561,9 @@ void ChromeVirtualKeyboardDelegate::OnHasInputDevices(
       base::FeatureList::IsEnabled(
           chromeos::features::kHandwritingLegacyRecognitionAllLang)));
   features.Append(GenerateFeatureFlag(
+      "hindiinscriptlayout",
+      base::FeatureList::IsEnabled(chromeos::features::kHindiInscriptLayout)));
+  features.Append(GenerateFeatureFlag(
       "multiword", chromeos::features::IsAssistiveMultiWordEnabled()));
   features.Append(GenerateFeatureFlag(
       "stylushandwriting",
@@ -570,6 +571,10 @@ void ChromeVirtualKeyboardDelegate::OnHasInputDevices(
   features.Append(GenerateFeatureFlag(
       "darkmode",
       base::FeatureList::IsEnabled(chromeos::features::kDarkLightMode)));
+  features.Append(
+      GenerateFeatureFlag("touchtexteditingredesign",
+                          base::FeatureList::IsEnabled(
+                              chromeos::features::kTouchTextEditingRedesign)));
   features.Append(GenerateFeatureFlag(
       "newheader", base::FeatureList::IsEnabled(
                        chromeos::features::kVirtualKeyboardNewHeader)));
@@ -638,32 +643,27 @@ void ChromeVirtualKeyboardDelegate::RestrictFeatures(
   keyboard::KeyboardConfig config(current_config);
   if (restrictions.spell_check_enabled &&
       config.spell_check != *restrictions.spell_check_enabled) {
-    update.spell_check_enabled =
-        std::make_unique<bool>(*restrictions.spell_check_enabled);
+    update.spell_check_enabled = *restrictions.spell_check_enabled;
     config.spell_check = *restrictions.spell_check_enabled;
   }
   if (restrictions.auto_complete_enabled &&
       config.auto_complete != *restrictions.auto_complete_enabled) {
-    update.auto_complete_enabled =
-        std::make_unique<bool>(*restrictions.auto_complete_enabled);
+    update.auto_complete_enabled = *restrictions.auto_complete_enabled;
     config.auto_complete = *restrictions.auto_complete_enabled;
   }
   if (restrictions.auto_correct_enabled &&
       config.auto_correct != *restrictions.auto_correct_enabled) {
-    update.auto_correct_enabled =
-        std::make_unique<bool>(*restrictions.auto_correct_enabled);
+    update.auto_correct_enabled = *restrictions.auto_correct_enabled;
     config.auto_correct = *restrictions.auto_correct_enabled;
   }
   if (restrictions.voice_input_enabled &&
       config.voice_input != *restrictions.voice_input_enabled) {
-    update.voice_input_enabled =
-        std::make_unique<bool>(*restrictions.voice_input_enabled);
+    update.voice_input_enabled = *restrictions.voice_input_enabled;
     config.voice_input = *restrictions.voice_input_enabled;
   }
   if (restrictions.handwriting_enabled &&
       config.handwriting != *restrictions.handwriting_enabled) {
-    update.handwriting_enabled =
-        std::make_unique<bool>(*restrictions.handwriting_enabled);
+    update.handwriting_enabled = *restrictions.handwriting_enabled;
     config.handwriting = *restrictions.handwriting_enabled;
   }
 

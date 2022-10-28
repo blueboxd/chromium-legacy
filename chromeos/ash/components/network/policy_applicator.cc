@@ -1,4 +1,4 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -98,10 +98,6 @@ void CopyRequiredCellularProperies(const base::Value& old_shill_properties,
                 shill::kEidProperty);
 }
 
-// Special service name in shill remembering settings across ethernet services.
-// Chrome should not attempt to configure / delete this.
-const char kEthernetAnyService[] = "ethernet_any";
-
 }  // namespace
 
 PolicyApplicator::PolicyApplicator(
@@ -151,12 +147,6 @@ void PolicyApplicator::GetProfilePropertiesCallback(
 
     std::string entry_identifier = it.GetString();
 
-    // Skip "ethernet_any", as this is used by shill internally to persist
-    // ethernet settings and the policy application logic should not mess with
-    // it.
-    if (entry_identifier == kEthernetAnyService)
-      continue;
-
     pending_get_entry_calls_.insert(entry_identifier);
     ShillProfileClient::Get()->GetEntry(
         dbus::ObjectPath(profile_.path), entry_identifier,
@@ -186,7 +176,7 @@ void PolicyApplicator::GetEntryCallback(const std::string& entry_identifier,
 
   base::Value onc_part = onc::TranslateShillServiceToONCPart(
       entry_properties, ::onc::ONC_SOURCE_UNKNOWN,
-      &onc::kNetworkWithStateSignature, nullptr /* network_state */);
+      &chromeos::onc::kNetworkWithStateSignature, nullptr /* network_state */);
 
   std::string old_guid = GetGUIDFromONCPart(onc_part);
   std::unique_ptr<NetworkUIData> ui_data =

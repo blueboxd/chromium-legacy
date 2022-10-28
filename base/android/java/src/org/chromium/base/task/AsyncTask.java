@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,8 +13,8 @@ import androidx.annotation.WorkerThread;
 import org.chromium.base.Log;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.TraceEvent;
-import org.chromium.base.annotations.DoNotInline;
 import org.chromium.base.metrics.RecordHistogram;
+import org.chromium.build.annotations.DoNotInline;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;

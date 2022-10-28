@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,6 +12,7 @@
 #include "build/buildflag.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/sessions/session_service.h"
 #include "chrome/browser/sessions/session_service_factory.h"
 #include "chrome/browser/ui/browser.h"
@@ -117,6 +118,21 @@ bool IsDSESupportEnabled(const Profile* profile) {
 
 bool IsEnabledForBrowser(const Browser* browser) {
   return IsSideSearchEnabled(browser->profile()) && browser->is_type_normal();
+}
+
+bool IsSearchWebInSidePanelSupported(const Browser* browser) {
+  if (!browser)
+    return false;
+
+  const TemplateURL* const default_provider =
+      TemplateURLServiceFactory::GetForProfile(browser->profile())
+          ->GetDefaultSearchProvider();
+  DCHECK(default_provider);
+  return IsEnabledForBrowser(browser) &&
+         IsDSESupportEnabled(browser->profile()) &&
+         default_provider->IsSideSearchSupported() &&
+         base::FeatureList::IsEnabled(features::kSearchWebInSidePanel) &&
+         base::FeatureList::IsEnabled(features::kUnifiedSidePanel);
 }
 
 }  // namespace side_search

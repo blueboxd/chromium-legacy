@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -204,11 +204,8 @@ class AudioOutputStreamWrapper {
 
  private:
   AudioOutputStream* CreateOutputStream() {
-    AudioParameters params(format_, channel_layout_, sample_rate_,
+    AudioParameters params(format_, {channel_layout_, channels_}, sample_rate_,
                            samples_per_packet_);
-    if (channel_layout_ == CHANNEL_LAYOUT_DISCRETE) {
-      params.set_channels_for_discrete(channels_);
-    }
     DVLOG(1) << params.AsHumanReadableString();
     AudioOutputStream* aos = audio_man_->MakeAudioOutputStream(
         params, std::string(), AudioManager::LogCallback());

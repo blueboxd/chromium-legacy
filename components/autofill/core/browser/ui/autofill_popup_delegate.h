@@ -1,4 +1,4 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -39,7 +39,7 @@ class AutofillPopupDelegate {
   // the guid of the backend data model.
   virtual void DidSelectSuggestion(const std::u16string& value,
                                    int frontend_id,
-                                   const std::string& backend_id) = 0;
+                                   const Suggestion::BackendId& backend_id) = 0;
 
   // Inform the delegate that a row in the popup has been chosen. |value| is the
   // suggestion's value, and is usually the main text to be shown. |frontend_id|

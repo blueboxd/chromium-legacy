@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -21,9 +21,9 @@ import com.squareup.javapoet.TypeSpec;
 
 import org.chromium.base.JniStaticTestMocker;
 import org.chromium.base.NativeLibraryLoadedStatus;
-import org.chromium.base.annotations.CheckDiscard;
-import org.chromium.base.annotations.MainDex;
 import org.chromium.base.annotations.NativeMethods;
+import org.chromium.build.annotations.CheckDiscard;
+import org.chromium.build.annotations.MainDex;
 
 import java.util.ArrayList;
 import java.util.List;

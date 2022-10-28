@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -228,6 +228,10 @@ class ASH_EXPORT AcceleratorControllerImpl
                                    base::OnceClosure on_accept_callback,
                                    base::OnceClosure on_cancel_callback);
 
+  // If set to true, all accelerators will not be processed.
+  void SetPreventProcessingAccelerators(bool prevent_processing_accelerators);
+  bool ShouldPreventProcessingAccelerators() const;
+
  private:
   // A map for looking up actions from accelerators.
   using AcceleratorActionMap = ui::AcceleratorMap<AcceleratorAction>;
@@ -363,6 +367,9 @@ class ASH_EXPORT AcceleratorControllerImpl
 
   // The initial volume percentage when volume adjust starts.
   int initial_volume_percent_ = 0;
+
+  // Prevents the processing of all KB shortcuts in the controller.
+  bool prevent_processing_accelerators_ = false;
 };
 
 }  // namespace ash

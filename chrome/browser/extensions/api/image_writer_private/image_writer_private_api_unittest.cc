@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -50,7 +50,7 @@ TEST_F(ImageWriterPrivateApiUnittest,
       ImageWriterPrivateListRemovableStorageDevicesFunction>();
   std::unique_ptr<base::Value> devices =
       RunFunctionAndReturnList(function.get(), "[]");
-  ASSERT_TRUE(devices.get() && devices.get()->GetListDeprecated().empty())
+  ASSERT_TRUE(devices.get() && devices.get()->GetList().empty())
       << "Under policy ListDevices should return an empty list.";
 }
 

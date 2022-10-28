@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -108,4 +108,12 @@ interface DeviceSettingsService {
   [MinVersion=3]
   GetDeviceReportSources@3() => (mojo_base.mojom.ListValue report_sources,
                                  bool plugin_vm_data_collection_enabled);
+
+  // Returns true if the device is deprovisioned; false otherwise. The result
+  // can be used to immediately halt certain operations like metric collection
+  // and reporting.
+  // TODO (https://crbug.com/1362108): Remove once fixed so we can reuse the
+  // methods above to derive this information.
+  [MinVersion=4]
+  IsDeviceDeprovisioned@4() => (bool is_deprovisioned);
 };

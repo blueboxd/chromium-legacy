@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 #include "components/feed/core/v2/user_actions_collector.h"
@@ -71,7 +71,7 @@ void UserActionsCollector::UpdateUserProfileOnLinkClick(
 
 void UserActionsCollector::InitStoreFromPrefs() {
   const base::Value::List& list_value_from_disk =
-      profile_prefs_->GetValueList(prefs::kFeedOnDeviceUserActionsCollector);
+      profile_prefs_->GetList(prefs::kFeedOnDeviceUserActionsCollector);
   size_t count_values_during_store_initialization = 0;
 
   const size_t entries_in_pref = list_value_from_disk.size();

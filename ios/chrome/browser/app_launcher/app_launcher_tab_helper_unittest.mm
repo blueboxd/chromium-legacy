@@ -1,35 +1,34 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #import "ios/chrome/browser/app_launcher/app_launcher_tab_helper.h"
 
-#include <memory>
+#import <memory>
 
-#include "base/bind.h"
-#include "base/command_line.h"
-#include "base/files/scoped_temp_dir.h"
-#include "base/test/scoped_feature_list.h"
-#include "base/test/task_environment.h"
-#include "base/time/default_clock.h"
-#include "components/policy/policy_constants.h"
-#include "components/reading_list/core/reading_list_entry.h"
-#include "components/reading_list/core/reading_list_model_impl.h"
+#import "base/bind.h"
+#import "base/command_line.h"
+#import "base/files/scoped_temp_dir.h"
+#import "base/test/scoped_feature_list.h"
+#import "base/test/task_environment.h"
+#import "base/time/default_clock.h"
+#import "components/policy/policy_constants.h"
+#import "components/reading_list/core/reading_list_entry.h"
+#import "components/reading_list/core/reading_list_model_impl.h"
 #import "ios/chrome/browser/app_launcher/app_launcher_tab_helper_delegate.h"
 #import "ios/chrome/browser/app_launcher/fake_app_launcher_abuse_detector.h"
-#include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
+#import "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #import "ios/chrome/browser/chrome_url_util.h"
 #import "ios/chrome/browser/policy/enterprise_policy_test_helper.h"
-#include "ios/chrome/browser/policy_url_blocking/policy_url_blocking_service.h"
-#include "ios/chrome/browser/reading_list/reading_list_model_factory.h"
-#import "ios/chrome/browser/u2f/u2f_tab_helper.h"
+#import "ios/chrome/browser/policy_url_blocking/policy_url_blocking_service.h"
+#import "ios/chrome/browser/reading_list/reading_list_model_factory.h"
 #import "ios/web/common/features.h"
 #import "ios/web/public/test/fakes/fake_navigation_manager.h"
 #import "ios/web/public/test/fakes/fake_web_state.h"
-#include "testing/gtest/include/gtest/gtest.h"
+#import "testing/gtest/include/gtest/gtest.h"
 #import "testing/gtest_mac.h"
-#include "testing/platform_test.h"
-#include "url/gurl.h"
+#import "testing/platform_test.h"
+#import "url/gurl.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -103,7 +102,6 @@ class AppLauncherTabHelperTest : public PlatformTest {
       : browser_state_(TestChromeBrowserState::Builder().Build()),
         abuse_detector_([[FakeAppLauncherAbuseDetector alloc] init]) {
     AppLauncherTabHelper::CreateForWebState(&web_state_, abuse_detector_);
-    U2FTabHelper::CreateForWebState(&web_state_);
     // Allow is the default policy for this test.
     abuse_detector_.policy = ExternalAppLaunchPolicyAllow;
     auto navigation_manager = std::make_unique<FakeNavigationManager>();
@@ -419,51 +417,6 @@ TEST_F(AppLauncherTabHelperTest, MAYBE_TelUrls) {
                                       /*target_frame_is_cross_origin=*/false,
                                       /*has_user_gesture=*/false));
   EXPECT_EQ(1U, delegate_.app_launch_count());
-}
-
-// Tests that URLs with U2F schemes are handled correctly.
-// This test is using https://chromeiostesting-dot-u2fdemo.appspot.com URL which
-// is a URL allowed for the purpose of testing, but the test doesn't send any
-// requests to the server.
-// TODO(crbug.com/1172516): The test fails on device.
-#if TARGET_IPHONE_SIMULATOR
-#define MAYBE_U2FUrls U2FUrls
-#else
-#define MAYBE_U2FUrls DISABLED_U2FUrls
-#endif
-TEST_F(AppLauncherTabHelperTest, MAYBE_U2FUrls) {
-  std::unique_ptr<web::NavigationItem> item = web::NavigationItem::Create();
-
-  // "u2f-x-callback" scheme should only be created by the browser. External
-  // URLs with that scheme should be blocked to prevent malicious sites from
-  // bypassing the browser origin/security check for u2f schemes.
-  item->SetURL(GURL("https://chromeiostesting-dot-u2fdemo.appspot.com"));
-  navigation_manager_->SetLastCommittedItem(item.get());
-  EXPECT_FALSE(TestShouldAllowRequest(@"u2f-x-callback://chromium.test",
-                                      /*target_frame_is_main=*/true,
-                                      /*target_frame_is_cross_origin=*/false,
-                                      /*has_user_gesture=*/false));
-  EXPECT_EQ(0U, delegate_.app_launch_count());
-
-  // Source URL is not trusted, so u2f scheme should not be allowed.
-  item->SetURL(GURL("https://chromium.test"));
-  navigation_manager_->SetLastCommittedItem(item.get());
-  EXPECT_FALSE(TestShouldAllowRequest(@"u2f://chromium.test",
-                                      /*target_frame_is_main=*/true,
-                                      /*target_frame_is_cross_origin=*/false,
-                                      /*has_user_gesture=*/false));
-  EXPECT_EQ(0U, delegate_.app_launch_count());
-
-  // Source URL is trusted, so u2f scheme should be allowed and an external app
-  // is launched via URL with u2f-x-callback scheme.
-  item->SetURL(GURL("https://chromeiostesting-dot-u2fdemo.appspot.com"));
-  navigation_manager_->SetLastCommittedItem(item.get());
-  EXPECT_FALSE(TestShouldAllowRequest(@"u2f://chromium.test",
-                                      /*target_frame_is_main=*/true,
-                                      /*target_frame_is_cross_origin=*/false,
-                                      /*has_user_gesture=*/false));
-  EXPECT_EQ(1U, delegate_.app_launch_count());
-  EXPECT_TRUE(delegate_.last_launched_app_url().SchemeIs("u2f-x-callback"));
 }
 
 // Tests that URLs with Chrome Bundle schemes are blocked on iframes.

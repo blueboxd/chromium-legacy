@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -24,23 +24,21 @@
 #include "ui/views/view.h"
 
 namespace ash {
+
 namespace {
 
-using base::UserMetricsAction;
-
-using chromeos::network_config::NetworkTypeMatchesType;
-
-using chromeos::network_config::mojom::ActivationStateType;
-using chromeos::network_config::mojom::CellularStateProperties;
-using chromeos::network_config::mojom::ConnectionStateType;
-using chromeos::network_config::mojom::DeviceStateProperties;
-using chromeos::network_config::mojom::DeviceStateType;
-using chromeos::network_config::mojom::NetworkStateProperties;
-using chromeos::network_config::mojom::NetworkStatePropertiesPtr;
-using chromeos::network_config::mojom::NetworkType;
-
-using chromeos::bluetooth_config::mojom::BluetoothSystemPropertiesPtr;
-using chromeos::bluetooth_config::mojom::BluetoothSystemState;
+using ::base::UserMetricsAction;
+using bluetooth_config::mojom::BluetoothSystemPropertiesPtr;
+using bluetooth_config::mojom::BluetoothSystemState;
+using ::chromeos::network_config::NetworkTypeMatchesType;
+using ::chromeos::network_config::mojom::ActivationStateType;
+using ::chromeos::network_config::mojom::CellularStateProperties;
+using ::chromeos::network_config::mojom::ConnectionStateType;
+using ::chromeos::network_config::mojom::DeviceStateProperties;
+using ::chromeos::network_config::mojom::DeviceStateType;
+using ::chromeos::network_config::mojom::NetworkStateProperties;
+using ::chromeos::network_config::mojom::NetworkStatePropertiesPtr;
+using ::chromeos::network_config::mojom::NetworkType;
 
 void LogUserNetworkEvent(const NetworkStateProperties& network) {
   auto* const logger = ml::UserSettingsEventLogger::Get();
@@ -110,14 +108,6 @@ bool IsNetworkConnectable(const NetworkStatePropertiesPtr& network_properties) {
   }
 
   return false;
-}
-
-bool IsCellularSimLocked() {
-  const DeviceStateProperties* cellular_device =
-      Shell::Get()->system_tray_model()->network_state_model()->GetDevice(
-          NetworkType::kCellular);
-  return cellular_device &&
-         !cellular_device->sim_lock_status->lock_type.empty();
 }
 
 }  // namespace
@@ -203,10 +193,6 @@ void NetworkDetailedViewController::OnMobileToggleClicked(bool new_state) {
 
   // When Cellular is available, the toggle controls Cellular enabled state.
   if (cellular_state != DeviceStateType::kUnavailable) {
-    if (new_state && IsCellularSimLocked()) {
-      Shell::Get()->system_tray_model()->client()->ShowSettingsSimUnlock();
-      return;
-    }
     model_->SetNetworkTypeEnabledState(NetworkType::kCellular, new_state);
     return;
   }

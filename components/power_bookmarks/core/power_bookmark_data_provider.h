@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -15,6 +15,9 @@ class PowerBookmarkMeta;
 
 class PowerBookmarkDataProvider {
  public:
+  PowerBookmarkDataProvider() = default;
+  virtual ~PowerBookmarkDataProvider() = default;
+
   // Allow features the opportunity to add metadata to `meta` when a bookmark
   // `node` is created. The `meta` object is attached to and stored with the
   // bookmark.

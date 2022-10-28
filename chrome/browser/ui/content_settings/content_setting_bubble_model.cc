@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -388,9 +388,8 @@ void ContentSettingMixedScriptBubbleModel::OnCustomLinkClicked() {
   }
 
   // Update renderer side settings to allow active mixed content.
-  GetPage().GetMainDocument().ForEachRenderFrameHost(base::BindRepeating(
-      [](MixedContentSettingsTabHelper* mixed_content_settings,
-         content::RenderFrameHost* frame) {
+  GetPage().GetMainDocument().ForEachRenderFrameHostWithAction(
+      [mixed_content_settings](content::RenderFrameHost* frame) {
         // Stop the child frame enumeration if we have reached a fenced frame.
         // This is correct since fence frames should ignore InsecureContent
         // setting.
@@ -398,8 +397,7 @@ void ContentSettingMixedScriptBubbleModel::OnCustomLinkClicked() {
           return content::RenderFrameHost::FrameIterationAction::kSkipChildren;
         SetAllowRunningInsecureContent(mixed_content_settings, frame);
         return content::RenderFrameHost::FrameIterationAction::kContinue;
-      },
-      mixed_content_settings));
+      });
 }
 
 // Don't set any manage text since none is displayed.
@@ -1334,7 +1332,7 @@ void ContentSettingGeolocationBubbleModel::SetCustomLink() {
   const GURL url =
       GetPage().GetMainDocument().GetLastCommittedOrigin().GetURL();
   map->GetWebsiteSetting(url, url, ContentSettingsType::GEOLOCATION, &info);
-  if (info.session_model == SessionModel::OneTime)
+  if (info.metadata.session_model == SessionModel::OneTime)
     set_custom_link(l10n_util::GetStringUTF16(IDS_GEOLOCATION_WILL_ASK_AGAIN));
 }
 

@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -15,6 +15,7 @@
 #import "chrome/browser/ui/cocoa/applescript/bookmark_item_applescript.h"
 #import "chrome/browser/ui/cocoa/applescript/error_applescript.h"
 #include "components/bookmarks/browser/bookmark_model.h"
+#import "components/bookmarks/common/bookmark_metrics.h"
 
 using bookmarks::BookmarkModel;
 using bookmarks::BookmarkNode;
@@ -103,7 +104,8 @@ using bookmarks::BookmarkNode;
   if (!model)
     return;
 
-  model->SetTitle(_bookmarkNode, base::SysNSStringToUTF16(aTitle));
+  model->SetTitle(_bookmarkNode, base::SysNSStringToUTF16(aTitle),
+                  bookmarks::metrics::BookmarkEditSource::kOther);
 }
 
 - (NSNumber*)index {

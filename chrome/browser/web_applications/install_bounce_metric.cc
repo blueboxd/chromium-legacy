@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -57,7 +57,7 @@ absl::optional<InstallMetrics> ParseInstallMetricsFromPrefs(
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   const base::Value::Dict& ids_to_metrics =
-      pref_service->GetValueDict(prefs::kWebAppInstallMetrics);
+      pref_service->GetDict(prefs::kWebAppInstallMetrics);
 
   const base::Value::Dict* metrics = ids_to_metrics.FindDict(app_id);
   if (!metrics)

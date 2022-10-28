@@ -1,11 +1,11 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #import "ios/chrome/browser/ui/settings/cells/settings_check_cell.h"
 
-#include "base/check.h"
-#include "base/ios/ios_util.h"
+#import "base/check.h"
+#import "base/ios/ios_util.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
 #import "ios/chrome/common/ui/table_view/table_view_cells_constants.h"
@@ -62,6 +62,7 @@
     _leadingImageView = [[UIImageView alloc] init];
     _leadingImageView.translatesAutoresizingMaskIntoConstraints = NO;
     _leadingImageView.tintColor = [UIColor colorNamed:kTextPrimaryColor];
+    _leadingImageView.contentMode = UIViewContentModeCenter;
     _leadingImageView.hidden = NO;
     [contentView addSubview:_leadingImageView];
 
@@ -244,11 +245,15 @@
   [self updateTrailingImageTextConstraints];
 }
 
-- (void)setLeadingImage:(UIImage*)leadingImage
-          withTintColor:(UIColor*)leadingImageColor {
-  self.leadingImageView.tintColor = leadingImageColor;
-  BOOL hidden = !leadingImage;
-  self.leadingImageView.image = leadingImage;
+- (void)setLeadingIconImage:(UIImage*)image
+                  tintColor:(UIColor*)tintColor
+            backgroundColor:(UIColor*)backgroundColor
+               cornerRadius:(CGFloat)cornerRadius {
+  self.leadingImageView.tintColor = tintColor;
+  self.leadingImageView.backgroundColor = backgroundColor;
+  self.leadingImageView.layer.cornerRadius = cornerRadius;
+  BOOL hidden = !image;
+  self.leadingImageView.image = image;
   self.leadingImageView.hidden = hidden;
   // Update the leading text constraint based on `image` being provided.
   if (hidden) {
@@ -311,7 +316,10 @@
   self.detailTextLabel.text = nil;
   self.accessibilityTraits = UIAccessibilityTraitNone;
   [self setTrailingImage:nil withTintColor:nil];
-  [self setLeadingImage:nil withTintColor:nil];
+  [self setLeadingIconImage:nil
+                  tintColor:nil
+            backgroundColor:nil
+               cornerRadius:0];
   [self hideActivityIndicator];
 }
 

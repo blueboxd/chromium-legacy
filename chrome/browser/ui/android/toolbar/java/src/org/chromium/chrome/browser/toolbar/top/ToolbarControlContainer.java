@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -255,8 +255,8 @@ public class ToolbarControlContainer extends OptimizedFrameLayout implements Con
         @Override
         public boolean isDirty() {
             if (!super.isDirty()) {
-                CaptureReadinessResult.logBlockCaptureReason(
-                        TopToolbarBlockCaptureReason.VIEW_NOT_DIRTY);
+                CaptureReadinessResult.logCaptureReasonFromResult(CaptureReadinessResult.notReady(
+                        TopToolbarBlockCaptureReason.VIEW_NOT_DIRTY));
                 return false;
             }
 
@@ -271,8 +271,9 @@ public class ToolbarControlContainer extends OptimizedFrameLayout implements Con
                 boolean isNativePage = tab == null || tab.isNativePage();
                 if (!isNativePage && mConstraintsObserver.areControlsLocked()) {
                     mConstraintsObserver.scheduleRequestResourceOnUnlock();
-                    CaptureReadinessResult.logBlockCaptureReason(
-                            TopToolbarBlockCaptureReason.BROWSER_CONTROLS_LOCKED);
+                    CaptureReadinessResult.logCaptureReasonFromResult(
+                            CaptureReadinessResult.notReady(
+                                    TopToolbarBlockCaptureReason.BROWSER_CONTROLS_LOCKED));
                     return false;
                 }
             }

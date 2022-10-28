@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,6 +12,7 @@
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/style/ash_color_provider.h"
+#include "ash/style/color_util.h"
 #include "ash/system/model/system_tray_model.h"
 #include "ash/system/network/network_icon.h"
 #include "ash/system/network/network_icon_animation.h"
@@ -24,7 +25,6 @@
 #include "base/i18n/number_formatting.h"
 #include "chromeos/services/network_config/public/cpp/cros_network_config_util.h"
 #include "chromeos/services/network_config/public/mojom/cros_network_config.mojom.h"
-#include "network_list_network_item_view.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/gfx/image/image_skia.h"
@@ -32,6 +32,7 @@
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/controls/image_view.h"
+#include "ui/views/view_utils.h"
 
 namespace ash {
 namespace {
@@ -256,10 +257,17 @@ NetworkListNetworkItemView::NetworkListNetworkItemView(
     ViewClickListener* listener)
     : NetworkListItemView(listener) {}
 
-NetworkListNetworkItemView::~NetworkListNetworkItemView() = default;
+NetworkListNetworkItemView::~NetworkListNetworkItemView() {
+  network_icon::NetworkIconAnimation::GetInstance()->RemoveObserver(this);
+}
 
 void NetworkListNetworkItemView::UpdateViewForNetwork(
     const NetworkStatePropertiesPtr& network_properties) {
+  const bool was_connecting = network_properties_
+                                  ? network_properties_->connection_state ==
+                                        chromeos::network_config::mojom::
+                                            ConnectionStateType::kConnecting
+                                  : false;
   network_properties_ = mojo::Clone(network_properties);
 
   Reset();
@@ -290,9 +298,25 @@ void NetworkListNetworkItemView::UpdateViewForNetwork(
     AddPolicyView();
   }
 
+  const bool is_connecting =
+      network_properties_->connection_state ==
+      chromeos::network_config::mojom::ConnectionStateType::kConnecting;
+
+  if (!was_connecting && is_connecting) {
+    network_icon::NetworkIconAnimation::GetInstance()->AddObserver(this);
+  } else if (is_connecting) {
+    network_icon::NetworkIconAnimation::GetInstance()->RemoveObserver(this);
+  }
+
   SetAccessibleName(GenerateAccessibilityLabel(label));
   GetViewAccessibility().OverrideDescription(
       GenerateAccessibilityDescription());
+}
+
+void NetworkListNetworkItemView::NetworkIconChanged() {
+  DCHECK(views::IsViewClass<views::ImageView>(left_view()));
+  static_cast<views::ImageView*>(left_view())
+      ->SetImage(GetNetworkImageForNetwork(network_properties_));
 }
 
 void NetworkListNetworkItemView::SetupCellularSubtext() {
@@ -330,12 +354,12 @@ void NetworkListNetworkItemView::UpdateDisabledTextColor() {
   if (text_label()) {
     SkColor primary_text_color = text_label()->GetEnabledColor();
     text_label()->SetEnabledColor(
-        AshColorProvider::GetDisabledColor(primary_text_color));
+        ColorUtil::GetDisabledColor(primary_text_color));
   }
   if (sub_text_label()) {
     SkColor sub_text_color = sub_text_label()->GetEnabledColor();
     sub_text_label()->SetEnabledColor(
-        AshColorProvider::GetDisabledColor(sub_text_color));
+        ColorUtil::GetDisabledColor(sub_text_color));
   }
 }
 
@@ -352,7 +376,7 @@ void NetworkListNetworkItemView::AddPowerStatusView() {
   icon_info.charge_percent = battery_percentage;
   image_icon->SetImage(PowerStatus::GetBatteryImage(
       icon_info, kMobileNetworkBatteryIconSize,
-      AshColorProvider::GetSecondToneColor(icon_color), icon_color));
+      ColorUtil::GetSecondToneColor(icon_color), icon_color));
 
   // Show the numeric battery percentage on hover.
   image_icon->SetTooltipText(base::FormatPercent(battery_percentage));

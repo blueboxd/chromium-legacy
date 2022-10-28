@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -19,5 +19,13 @@ void ChromeWebAuthnClientAndroid::OnWebAuthnRequestPending(
   auto* delegate = ConditionalUiDelegateAndroid::GetConditionalUiDelegate(
       content::WebContents::FromRenderFrameHost(frame_host));
 
-  delegate->OnWebAuthnRequestPending(credentials, std::move(callback));
+  delegate->OnWebAuthnRequestPending(frame_host, credentials,
+                                     std::move(callback));
+}
+
+void ChromeWebAuthnClientAndroid::CancelWebAuthnRequest(
+    content::RenderFrameHost* frame_host) {
+  auto* delegate = ConditionalUiDelegateAndroid::GetConditionalUiDelegate(
+      content::WebContents::FromRenderFrameHost(frame_host));
+  delegate->CancelWebAuthnRequest(frame_host);
 }

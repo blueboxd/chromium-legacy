@@ -1,4 +1,4 @@
-# Copyright 2015 The Chromium Authors. All rights reserved.
+# Copyright 2015 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -275,8 +275,11 @@ test("device_unittests") {
       "bluetooth/dbus/bluetooth_gatt_application_service_provider_unittest.cc",
       "bluetooth/dbus/bluetooth_gatt_characteristic_service_provider_unittest.cc",
       "bluetooth/floss/bluetooth_floss_unittest.cc",
+      "bluetooth/floss/bluetooth_socket_floss_unittest.cc",
       "bluetooth/floss/exported_callback_manager_unittest.cc",
       "bluetooth/floss/floss_adapter_client_unittest.cc",
+      "bluetooth/floss/floss_gatt_client_unittest.cc",
+      "bluetooth/floss/floss_lescan_client_unittest.cc",
       "bluetooth/floss/floss_manager_client_unittest.cc",
       "bluetooth/floss/floss_socket_manager_unittest.cc",
       "bluetooth/test/bluetooth_test_bluez.cc",

@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -48,34 +48,32 @@ SocketInfo CreateSocketInfo(int socket_id, BluetoothApiSocket* socket) {
   // to the system.
   socket_info.socket_id = socket_id;
   if (socket->name()) {
-    socket_info.name = std::make_unique<std::string>(*socket->name());
+    socket_info.name = *socket->name();
   }
   socket_info.persistent = socket->persistent();
   if (socket->buffer_size() > 0) {
-    socket_info.buffer_size = std::make_unique<int>(socket->buffer_size());
+    socket_info.buffer_size = socket->buffer_size();
   }
   socket_info.paused = socket->paused();
   socket_info.connected = socket->IsConnected();
 
   if (socket->IsConnected()) {
-    socket_info.address =
-        std::make_unique<std::string>(socket->device_address());
+    socket_info.address = socket->device_address();
   }
-  socket_info.uuid =
-      std::make_unique<std::string>(socket->uuid().canonical_value());
+  socket_info.uuid = socket->uuid().canonical_value();
 
   return socket_info;
 }
 
 void SetSocketProperties(BluetoothApiSocket* socket,
                          SocketProperties* properties) {
-  if (properties->name.get()) {
+  if (properties->name) {
     socket->set_name(*properties->name);
   }
-  if (properties->persistent.get()) {
+  if (properties->persistent) {
     socket->set_persistent(*properties->persistent);
   }
-  if (properties->buffer_size.get()) {
+  if (properties->buffer_size) {
     // buffer size is validated when issuing the actual Recv operation
     // on the socket.
     socket->set_buffer_size(*properties->buffer_size);
@@ -346,7 +344,7 @@ void BluetoothSocketListenUsingRfcommFunction::CreateService(
   service_options.name = std::move(name);
 
   ListenOptions* options = params_->options.get();
-  if (options && options->channel.get())
+  if (options && options->channel)
     service_options.channel = *options->channel;
 
   adapter->CreateRfcommService(uuid, service_options, std::move(callback),

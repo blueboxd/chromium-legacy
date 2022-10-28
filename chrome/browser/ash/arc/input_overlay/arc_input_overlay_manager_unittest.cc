@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -127,22 +127,6 @@ TEST_F(ArcInputOverlayManagerTest, TestPropertyChangeAndWindowDestroy) {
           exo_test_helper(), ash::Shell::GetPrimaryRootWindow(),
           kRandomPackageName);
   EXPECT_FALSE(IsInputOverlayEnabled(arc_window_no_data->GetWindow()));
-}
-
-TEST_F(ArcInputOverlayManagerTest, TestWindowDestroyNoWait) {
-  // This test is to check UAF issue reported in crbug.com/1363030.
-  auto arc_window = std::make_unique<input_overlay::test::ArcTestWindow>(
-      exo_test_helper(), ash::Shell::GetPrimaryRootWindow(),
-      kEnabledPackageName);
-  const auto* arc_window_ptr = arc_window->GetWindow();
-
-  // Destroy window before finishing I/O reading. The window can't be destroyed
-  // during ReadDefaultData(), but it can be destroyed before
-  // ReadCustomizedData() and TouchInjector.RecordMenuStateOnLaunch() would
-  // catch it.
-  arc_window.reset();
-  task_environment()->FastForwardBy(kIORead);
-  EXPECT_FALSE(IsInputOverlayEnabled(arc_window_ptr));
 }
 
 TEST_F(ArcInputOverlayManagerTest, TestInputMethodObsever) {
@@ -379,12 +363,12 @@ TEST_F(ArcInputOverlayManagerTest, TestDisplayRotationChanged) {
   UpdateDisplay("800x600/r");
   EXPECT_TRUE(injector->rotation_transform());
   EXPECT_EQ(injector->content_bounds(), gfx::RectF(10, 10, 100, 100));
-  auto expect_pos = gfx::PointF(60, 60);
-  injector->rotation_transform()->TransformPoint(&expect_pos);
-  EXPECT_EQ(injector->actions()[0]->touch_down_positions()[0], expect_pos);
-  expect_pos = gfx::PointF(100, 100);
-  injector->rotation_transform()->TransformPoint(&expect_pos);
-  EXPECT_EQ(injector->actions()[1]->touch_down_positions()[0], expect_pos);
+  auto expected_pos = gfx::PointF(60, 60);
+  injector->rotation_transform()->TransformPoint(&expected_pos);
+  EXPECT_EQ(injector->actions()[0]->touch_down_positions()[0], expected_pos);
+  expected_pos = gfx::PointF(100, 100);
+  injector->rotation_transform()->TransformPoint(&expected_pos);
+  EXPECT_EQ(injector->actions()[1]->touch_down_positions()[0], expected_pos);
 }
 
 }  // namespace arc

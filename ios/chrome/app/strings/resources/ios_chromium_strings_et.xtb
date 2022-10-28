@@ -67,6 +67,7 @@
 <translation id="5308226104666789935">Chromium ei saa värskendusi otsida</translation>
 <translation id="5396916991083608703">Kas määrata Chromium vaikebrauseriks?</translation>
 <translation id="5521125884468363740">Selleks et näha vahelehti kõikjalt, kus Chromiumi kasutate, logige sisse ja lülitage sisse sünkroonimine</translation>
+<translation id="5522297504975449419">Mõned Chromiumi funktsioonid pole enam saadaval.</translation>
 <translation id="5573014823074921752">Chromiumi nõuanne. Vahelehtede lisavalikute nägemiseks puudutage ja hoidke all ekraanikuva üla- või alaosas tööriistaribal olevat nuppu Kuva vahelehed.</translation>
 <translation id="5700709190537129682">Chromiumil ei õnnestu teie paroole kontrollida</translation>
 <translation id="5777187867430702742">Chromiumi leht</translation>
@@ -95,6 +96,7 @@
 <translation id="7175400662502680481">Teie parool oli andmetega seotud rikkumise käigus avalikustatud. Paroolihaldur soovitab teil kohe seda parooli muuta.</translation>
 <translation id="7208566199746267865">Chromium säästab aega, tuues teie kontod veebi. Kontosid saate lisada või eemaldada menüüs Seaded.</translation>
 <translation id="725427773388857052">Chromium aitab teid kaitsta andmetega seotud rikkumiste, ebaturvaliste veebisaitide ja muu eest</translation>
+<translation id="7255976941681861701">Tutvuge Chromiumi uue menüüga</translation>
 <translation id="7269362888766543920">Mõned pistikprogrammid põhjustavad Chromiumi kokkujooksmise. Proovige need desinstallida.</translation>
 <translation id="7313655110045230863">Chromiumi vaikebrauseriks määramiseks avage jaotis Seaded. Puudutage valikut Vaikebrauserirakendus ja seejärel valige Chromium.</translation>
 <translation id="7337881442233988129">Chromium</translation>
@@ -113,7 +115,6 @@
 <translation id="7980860476903281594">Chromium jagab teie asukohateavet saitidega, millele olete loa andnud.</translation>
 <translation id="8013573822802650211">Selleks et näha vahelehti kõikjalt, kus Chromiumi kasutate, logige kõigisse oma seadmetesse sisse</translation>
 <translation id="8073677936375100957">Kas kustutada sellest seadmest Chromiumi andmed?</translation>
-<translation id="8175055321229419309">Nõuanne: <ph name="BEGIN_LINK" />lisage Chromium dokki<ph name="END_LINK" /></translation>
 <translation id="8240981428553046115">Chromium ei saanud värskendusi otsida. Proovige hiljem uuesti.</translation>
 <translation id="8308172444429103994">Chromiumi nõuanne. Logige kiiremini sisse, valides klaviatuuri ülaosas oma salvestatud parooli.</translation>
 <translation id="858114650497379505">Saate paroolihaldurisse salvestatud paroole oma iPhone'i muudes rakendustes kasutada.</translation>

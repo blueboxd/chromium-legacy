@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,6 +13,8 @@
 #include "chrome/browser/ui/views/side_panel/side_panel_coordinator.h"
 #include "components/lens/lens_entrypoints.h"
 #include "components/lens/lens_features.h"
+#include "components/lens/lens_rendering_environment.h"
+#include "components/lens/lens_url_utils.h"
 #include "content/public/browser/navigation_handle.h"
 #include "net/base/url_util.h"
 #include "ui/views/widget/widget.h"
@@ -25,8 +27,17 @@ bool IsValidLensResultUrl(const GURL& url) {
 
   std::string payload;
   // Make sure the payload is present
-  return net::GetValueForKeyInQuery(url, lens::kPayloadQueryParameter,
-                                    &payload);
+  return net::GetValueForKeyInQuery(url, kPayloadQueryParameter, &payload);
+}
+
+bool IsLensUrl(const GURL& url) {
+  return !url.is_empty() &&
+         url.host() == GURL(lens::features::GetHomepageURLForLens()).host();
+}
+
+bool ShouldPageBeVisible(const GURL& url) {
+  return lens::IsValidLensResultUrl(url) || !lens::IsLensUrl(url) ||
+         !lens::features::GetEnableLensHtmlRedirectFix();
 }
 
 // We need to create a new URL with the specified query parameters while
@@ -36,8 +47,9 @@ GURL CreateURLForNewTab(const GURL& original_url) {
     return GURL();
 
   // Append or replace query parameters related to entry point.
-  return lens::AppendOrReplaceQueryParametersForLensRequest(
-      original_url, lens::EntryPoint::CHROME_OPEN_NEW_TAB_SIDE_PANEL,
+  return AppendOrReplaceQueryParametersForLensRequest(
+      original_url, EntryPoint::CHROME_OPEN_NEW_TAB_SIDE_PANEL,
+      RenderingEnvironment::ONELENS_DESKTOP_WEB_FULLSCREEN,
       /*is_side_panel_request=*/false);
 }
 
@@ -89,10 +101,10 @@ void CreateLensUnifiedSidePanelEntryForTesting(Browser* browser) {
   auto* lens_side_panel_coordinator =
       LensSidePanelCoordinator::GetOrCreateForBrowser(browser);
   DCHECK(lens_side_panel_coordinator);
-  lens_side_panel_coordinator->RegisterEntryAndShow(
-      content::OpenURLParams(GURL("http://foo.com"), content::Referrer(),
-                             WindowOpenDisposition::NEW_FOREGROUND_TAB,
-                             ui::PAGE_TRANSITION_LINK, false));
+  lens_side_panel_coordinator->RegisterEntryAndShow(content::OpenURLParams(
+      GURL(lens::features::GetHomepageURLForLens()), content::Referrer(),
+      WindowOpenDisposition::NEW_FOREGROUND_TAB, ui::PAGE_TRANSITION_LINK,
+      false));
   DCHECK(lens_side_panel_coordinator->GetViewWebContentsForTesting());
 }
 

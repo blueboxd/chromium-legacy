@@ -1,12 +1,12 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #import "ios/chrome/browser/ui/authentication/signin/signin_utils.h"
 
-#include "base/command_line.h"
+#import "base/command_line.h"
 #import "base/strings/sys_string_conversions.h"
-#include "base/time/time.h"
+#import "base/time/time.h"
 #import "base/version.h"
 #import "components/policy/core/common/policy_loader_ios_constants.h"
 #import "components/policy/policy_constants.h"
@@ -14,11 +14,11 @@
 #import "components/signin/ios/browser/features.h"
 #import "components/signin/public/base/signin_pref_names.h"
 #import "ios/chrome/app/tests_hook.h"
-#include "ios/chrome/browser/application_context.h"
+#import "ios/chrome/browser/application_context/application_context.h"
 #import "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/main/browser.h"
 #import "ios/chrome/browser/policy/policy_util.h"
-#import "ios/chrome/browser/pref_names.h"
+#import "ios/chrome/browser/prefs/pref_names.h"
 #import "ios/chrome/browser/signin/authentication_service.h"
 #import "ios/chrome/browser/signin/authentication_service_factory.h"
 #import "ios/chrome/browser/signin/chrome_account_manager_service.h"
@@ -111,8 +111,17 @@ bool ShouldPresentUserSigninUpgrade(ChromeBrowserState* browser_state,
     return false;
 
   // Sign-in can be disabled by policy or through user Settings.
-  if (!signin::IsSigninAllowed(browser_state->GetPrefs()))
-    return false;
+  AuthenticationService* authentication_service =
+      AuthenticationServiceFactory::GetForBrowserState(browser_state);
+  switch (authentication_service->GetServiceStatus()) {
+    case AuthenticationService::ServiceStatus::SigninDisabledByUser:
+    case AuthenticationService::ServiceStatus::SigninDisabledByInternal:
+    case AuthenticationService::ServiceStatus::SigninDisabledByPolicy:
+      return false;
+    case AuthenticationService::ServiceStatus::SigninForcedByPolicy:
+    case AuthenticationService::ServiceStatus::SigninAllowed:
+      break;
+  }
 
   AuthenticationService* auth_service =
       AuthenticationServiceFactory::GetForBrowserState(browser_state);
@@ -182,13 +191,6 @@ void RecordUpgradePromoSigninStarted(
       [defaults integerForKey:kSigninPromoViewDisplayCountKey];
   ++display_count;
   [defaults setInteger:display_count forKey:kSigninPromoViewDisplayCountKey];
-}
-
-bool IsSigninAllowed(const PrefService* prefs) {
-  ios::ChromeIdentityService* identityService =
-      ios::GetChromeBrowserProvider().GetChromeIdentityService();
-  return identityService->IsServiceSupported() &&
-         prefs->GetBoolean(prefs::kSigninAllowed) && IsSigninAllowedByPolicy();
 }
 
 bool IsSigninAllowedByPolicy() {

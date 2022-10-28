@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -50,7 +50,7 @@ namespace updater {
 Configurator::Configurator(scoped_refptr<UpdaterPrefs> prefs,
                            scoped_refptr<ExternalConstants> external_constants)
     : prefs_(prefs),
-      policy_service_(PolicyService::Create(external_constants)),
+      policy_service_(base::MakeRefCounted<PolicyService>(external_constants)),
       external_constants_(external_constants),
       activity_data_service_(
           std::make_unique<ActivityDataService>(GetUpdaterScope())),
@@ -125,9 +125,10 @@ std::string Configurator::GetDownloadPreference() const {
 
 scoped_refptr<update_client::NetworkFetcherFactory>
 Configurator::GetNetworkFetcherFactory() {
-  if (!network_fetcher_factory_)
-    network_fetcher_factory_ =
-        base::MakeRefCounted<NetworkFetcherFactory>(GetPolicyService());
+  if (!network_fetcher_factory_) {
+    network_fetcher_factory_ = base::MakeRefCounted<NetworkFetcherFactory>(
+        PolicyServiceProxyConfiguration::Get(policy_service_));
+  }
   return network_fetcher_factory_;
 }
 
@@ -206,10 +207,6 @@ absl::optional<bool> Configurator::IsMachineExternallyManaged() const {
 
 scoped_refptr<PolicyService> Configurator::GetPolicyService() const {
   return policy_service_;
-}
-
-void Configurator::ResetPolicyService() {
-  policy_service_ = PolicyService::Create(external_constants_);
 }
 
 crx_file::VerifierFormat Configurator::GetCrxVerifierFormat() const {

@@ -1,16 +1,16 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #import "ios/components/security_interstitials/safe_browsing/safe_browsing_unsafe_resource_container.h"
 
-#include "base/bind.h"
+#import "base/bind.h"
 #import "components/safe_browsing/ios/browser/safe_browsing_url_allow_list.h"
 #import "ios/web/public/navigation/navigation_item.h"
 #import "ios/web/public/test/fakes/fake_navigation_manager.h"
 #import "ios/web/public/test/fakes/fake_web_state.h"
-#include "services/network/public/mojom/fetch_api.mojom.h"
-#include "testing/platform_test.h"
+#import "services/network/public/mojom/fetch_api.mojom.h"
+#import "testing/platform_test.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -66,7 +66,7 @@ TEST_F(SafeBrowsingUnsafeResourceContainerTest, MainFrameResource) {
   // The container should not have any unsafe main frame resources initially.
   EXPECT_FALSE(container()->GetMainFrameUnsafeResource());
 
-  // Store |resource| in the container.
+  // Store `resource` in the container.
   container()->StoreMainFrameUnsafeResource(resource);
   const UnsafeResource* resource_copy =
       container()->GetMainFrameUnsafeResource();
@@ -87,7 +87,7 @@ TEST_F(SafeBrowsingUnsafeResourceContainerTest, SubFrameResource) {
   // The container should not have any unsafe sub frame resources initially.
   EXPECT_FALSE(container()->GetSubFrameUnsafeResource(item_.get()));
 
-  // Store |resource| in the container.
+  // Store `resource` in the container.
   container()->StoreSubFrameUnsafeResource(resource, item_.get());
   const UnsafeResource* resource_copy =
       container()->GetSubFrameUnsafeResource(item_.get());

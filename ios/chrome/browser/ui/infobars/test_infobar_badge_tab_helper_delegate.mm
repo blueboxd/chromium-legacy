@@ -1,10 +1,10 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #import "ios/chrome/browser/ui/infobars/test_infobar_badge_tab_helper_delegate.h"
 
-#include <map>
+#import <map>
 #import "ios/chrome/browser/ui/badges/badge_tappable_item.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)

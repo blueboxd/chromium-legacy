@@ -37,6 +37,9 @@
 #include "remoting/host/linux/x11_util.h"
 #endif
 
+#include "base/task/task_traits.h"
+#include "base/task/thread_pool.h"
+
 namespace remoting {
 
 #if defined(REMOTING_USE_X11)
@@ -189,11 +192,24 @@ std::unique_ptr<DesktopCapturer>
 BasicDesktopEnvironment::CreateVideoCapturer() {
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
 
-  auto result = std::make_unique<DesktopCapturerProxy>(
-      video_capture_task_runner_, ui_task_runner_);
-  result->set_desktop_display_info_monitor(GetDisplayInfoMonitor());
-  result->CreateCapturer(desktop_capture_options());
-  return std::move(result);
+  // TODO(joedow): Detangle the threads involved in the mouse cursor composer
+  // classes so we can run the capturer and scheduler on a dedicated thread.
+  scoped_refptr<base::SingleThreadTaskRunner> capture_task_runner;
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  capture_task_runner = ui_task_runner_;
+#else   // !BUILDFLAG(IS_CHROMEOS_ASH)
+  // Each capturer instance should get its own thread so the capturers don't
+  // compete with each other in multistream mode.
+  capture_task_runner = base::ThreadPool::CreateSingleThreadTaskRunner(
+      {base::TaskPriority::HIGHEST},
+      base::SingleThreadTaskRunnerThreadMode::DEDICATED);
+#endif  // !BUILDFLAG(IS_CHROMEOS_ASH)
+
+  auto desktop_capturer =
+      std::make_unique<DesktopCapturerProxy>(std::move(capture_task_runner));
+
+  desktop_capturer->CreateCapturer(desktop_capture_options());
+  return std::move(desktop_capturer);
 }
 
 BasicDesktopEnvironment::BasicDesktopEnvironment(

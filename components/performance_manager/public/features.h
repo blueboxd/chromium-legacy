@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -43,11 +43,18 @@ extern const base::FeatureParam<base::TimeDelta>
 
 // The default state of the high-efficiency mode pref
 extern const base::FeatureParam<bool> kHighEfficiencyModeDefaultState;
+
+// The number of tabs at which the user may be prompted to enable high
+// efficiency mode.
+extern const base::FeatureParam<int> kHighEfficiencyModePromoTabCountThreshold;
 #endif
 
 // Policy that evicts the BFCache of pages that become non visible or the
 // BFCache of all pages when the system is under memory pressure.
 extern const base::Feature kBFCachePerformanceManagerPolicy;
+
+// Whether tabs are discarded under high memory pressure.
+extern const base::Feature kUrgentPageDiscarding;
 
 }  // namespace performance_manager::features
 

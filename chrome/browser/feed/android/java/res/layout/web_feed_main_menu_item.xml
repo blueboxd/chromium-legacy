@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Copyright 2021 The Chromium Authors. All rights reserved.
-     Use of this source code is governed by a BSD-style license that can be
-     found in the LICENSE file. -->
+<!--
+Copyright 2021 The Chromium Authors
+Use of this source code is governed by a BSD-style license that can be
+found in the LICENSE file.
+-->
 
 <org.chromium.chrome.browser.feed.webfeed.WebFeedMainMenuItem
     xmlns:android="http://schemas.android.com/apk/res/android"
@@ -18,7 +20,9 @@
         android:layout_marginTop="@dimen/divider_height"
         android:gravity="center_vertical"
         android:paddingBottom="4dp"
+        android:paddingEnd="0dp"
         android:paddingTop="4dp"
+        android:paddingStart="0dp"
         android:orientation="vertical"
         android:weightSum="1">
 
@@ -27,6 +31,8 @@
           android:layout_height="wrap_content"
           android:layout_marginTop="@dimen/divider_height"
           android:gravity="center_vertical"
+          android:paddingEnd="16dp"
+          android:paddingStart="16dp"
           android:weightSum="1">
 
           <org.chromium.components.browser_ui.widget.RoundedCornerImageView
@@ -81,15 +87,22 @@
 
       <!-- Chips get pushed to a second row when both are displayed.
            The second row is hidden by default. -->
-      <LinearLayout
-          android:id="@+id/footer_second_chip_row"
-          android:layout_width="match_parent"
-          android:layout_marginTop="@dimen/divider_height"
-          android:layout_weight="1"
-          android:layout_height="0dp"
-          android:orientation="horizontal"
-          android:visibility="gone">
-      </LinearLayout>
+      <HorizontalScrollView
+          android:layout_width="fill_parent"
+          android:layout_height="wrap_content">
+
+          <LinearLayout
+              android:id="@+id/footer_second_chip_row"
+              android:layout_width="wrap_content"
+              android:layout_marginTop="@dimen/divider_height"
+              android:layout_height="wrap_content"
+              android:paddingEnd="16dp"
+              android:paddingStart="16dp"
+              android:orientation="horizontal"
+              android:visibility="gone">
+          </LinearLayout>
+
+      </HorizontalScrollView>
 
     </LinearLayout>
 

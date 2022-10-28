@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -32,27 +32,27 @@ import org.chromium.mojo_base.mojom.String16;
  */
 class DirectWritingServiceCallback
         extends android.widget.directwriting.IDirectWritingServiceCallback.Stub {
-    public static final String BUNDLE_KEY_SHOW_KEYBOARD = "showKeyboard";
+    static final String BUNDLE_KEY_SHOW_KEYBOARD = "showKeyboard";
     private static final String TAG = "DWCallbackImpl";
 
     // The following GESTURE_ and ACTION_ constants are defined as per the bundle data sent by the
     // Direct Writing service when any gesture is recognized.
-    private static final String GESTURE_ACTION_RECOGNITION_INFO = "recognition_info";
-    private static final String GESTURE_BUNDLE_KEY_START_POINT = "start_point";
-    private static final String GESTURE_BUNDLE_KEY_END_POINT = "end_point";
-    private static final String GESTURE_BUNDLE_KEY_LOWEST_POINT = "lowest_point";
-    private static final String GESTURE_BUNDLE_KEY_HIGHEST_POINT = "highest_point";
-    private static final String GESTURE_BUNDLE_KEY_GESTURE_TYPE = "gesture_type";
-    private static final String GESTURE_BUNDLE_KEY_TEXT_ALTERNATIVE = "text_alternative";
-    private static final String GESTURE_BUNDLE_KEY_TEXT_INSERTION = "text_insertion";
+    static final String GESTURE_ACTION_RECOGNITION_INFO = "recognition_info";
+    static final String GESTURE_BUNDLE_KEY_START_POINT = "start_point";
+    static final String GESTURE_BUNDLE_KEY_END_POINT = "end_point";
+    static final String GESTURE_BUNDLE_KEY_LOWEST_POINT = "lowest_point";
+    static final String GESTURE_BUNDLE_KEY_HIGHEST_POINT = "highest_point";
+    static final String GESTURE_BUNDLE_KEY_GESTURE_TYPE = "gesture_type";
+    static final String GESTURE_BUNDLE_KEY_TEXT_ALTERNATIVE = "text_alternative";
+    static final String GESTURE_BUNDLE_KEY_TEXT_INSERTION = "text_insertion";
 
     // Gesture types in Bundle for GESTURE_BUNDLE_KEY_GESTURE_TYPE
-    private static final String GESTURE_TYPE_BACKSPACE = "backspace";
-    private static final String GESTURE_TYPE_ZIGZAG = "zigzag";
-    private static final String GESTURE_TYPE_V_SPACE = "v_space";
-    private static final String GESTURE_TYPE_WEDGE_SPACE = "wedge_space";
-    private static final String GESTURE_TYPE_U_TYPE_REMOVE_SPACE = "u_type_remove_space";
-    private static final String GESTURE_TYPE_ARCH_TYPE_REMOVE_SPACE = "arch_type_remove_space";
+    static final String GESTURE_TYPE_BACKSPACE = "backspace";
+    static final String GESTURE_TYPE_ZIGZAG = "zigzag";
+    static final String GESTURE_TYPE_V_SPACE = "v_space";
+    static final String GESTURE_TYPE_WEDGE_SPACE = "wedge_space";
+    static final String GESTURE_TYPE_U_TYPE_REMOVE_SPACE = "u_type_remove_space";
+    static final String GESTURE_TYPE_ARCH_TYPE_REMOVE_SPACE = "arch_type_remove_space";
 
     private EditorInfo mEditorInfo;
     private int mLastSelectionStart;

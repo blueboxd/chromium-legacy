@@ -1,18 +1,18 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #import <UIKit/UIKit.h>
 #import <WebKit/WebKit.h>
 
-#include "base/bind.h"
-#include "base/callback.h"
-#include "base/run_loop.h"
+#import "base/bind.h"
+#import "base/callback.h"
+#import "base/run_loop.h"
 #import "base/test/ios/wait_util.h"
 #import "ios/web/find_in_page/find_in_page_constants.h"
 #import "ios/web/find_in_page/find_in_page_java_script_feature.h"
 #import "ios/web/js_messaging/java_script_feature_manager.h"
-#include "ios/web/js_messaging/web_frame_impl.h"
+#import "ios/web/js_messaging/web_frame_impl.h"
 #import "ios/web/public/js_messaging/web_frame.h"
 #import "ios/web/public/js_messaging/web_frames_manager.h"
 #import "ios/web/public/test/js_test_util.h"
@@ -21,7 +21,7 @@
 #import "ios/web/public/ui/crw_web_view_scroll_view_proxy.h"
 #import "ios/web/public/web_state.h"
 #import "ios/web/web_state/ui/wk_web_view_configuration_provider.h"
-#include "testing/gtest_mac.h"
+#import "testing/gtest_mac.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -68,7 +68,7 @@ class FindInPageJsTest : public WebTestWithWebState {
     });
   }
 
-  // Returns all web frames for |web_state()|.
+  // Returns all web frames for `web_state()`.
   std::set<WebFrameImpl*> all_web_frames() {
     std::set<WebFrameImpl*> frames;
     for (WebFrame* frame :
@@ -77,7 +77,7 @@ class FindInPageJsTest : public WebTestWithWebState {
     }
     return frames;
   }
-  // Returns main frame for |web_state_|.
+  // Returns main frame for `web_state_`.
   WebFrameInternal* main_web_frame() {
     WebFrame* main_frame =
         web_state()->GetWebFramesManager()->GetMainWebFrame();

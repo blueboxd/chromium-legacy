@@ -89,7 +89,7 @@ class AudioDeviceFactoryTestingPlatformSupport : public blink::Platform {
             ? media::OUTPUT_DEVICE_STATUS_ERROR_INTERNAL
             : media::OUTPUT_DEVICE_STATUS_OK,
         media::AudioParameters(media::AudioParameters::AUDIO_PCM_LOW_LATENCY,
-                               media::CHANNEL_LAYOUT_STEREO,
+                               media::ChannelLayoutConfig::Stereo(),
                                kHardwareSampleRate, kHardwareBufferSize));
 
     if (params.device_id != kInvalidOutputDeviceId) {
@@ -154,7 +154,7 @@ class WebRtcAudioRendererTest : public testing::Test {
                                                   /*policy_container=*/nullptr))
 #endif
   {
-    MediaStreamSourceVector dummy_components;
+    MediaStreamComponentVector dummy_components;
     stream_descriptor_ = MakeGarbageCollected<MediaStreamDescriptor>(
         String::FromUTF8("new stream"), dummy_components, dummy_components);
   }

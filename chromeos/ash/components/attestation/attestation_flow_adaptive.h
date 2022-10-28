@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -15,7 +15,7 @@
 #include "chromeos/ash/components/attestation/attestation_flow_status_reporter.h"
 #include "chromeos/ash/components/attestation/attestation_flow_type_decider.h"
 #include "chromeos/ash/components/dbus/attestation/interface.pb.h"
-#include "chromeos/dbus/constants/attestation_constants.h"
+#include "chromeos/ash/components/dbus/constants/attestation_constants.h"
 #include "components/account_id/account_id.h"
 
 namespace ash {

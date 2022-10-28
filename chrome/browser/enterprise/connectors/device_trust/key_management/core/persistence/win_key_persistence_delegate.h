@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,6 +9,9 @@
 
 #include <memory>
 #include <vector>
+
+#include "base/win/registry.h"
+#include "crypto/signature_verifier.h"
 
 namespace enterprise_connectors {
 
@@ -25,6 +28,14 @@ class WinKeyPersistenceDelegate : public KeyPersistenceDelegate {
                     std::vector<uint8_t> wrapped) override;
   std::unique_ptr<SigningKeyPair> LoadKeyPair() override;
   std::unique_ptr<SigningKeyPair> CreateKeyPair() override;
+
+ private:
+  friend class WinKeyPersistenceDelegateTest;
+
+  // static
+  void SetAcceptableKeyAlgorithmForTesting(
+      base::span<const crypto::SignatureVerifier::SignatureAlgorithm>
+          acceptable_algorithms);
 };
 
 }  // namespace enterprise_connectors

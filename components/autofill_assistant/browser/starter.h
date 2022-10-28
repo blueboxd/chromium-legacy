@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -27,6 +27,7 @@
 #include "components/autofill_assistant/browser/starter_platform_delegate.h"
 #include "components/autofill_assistant/browser/startup_util.h"
 #include "components/autofill_assistant/browser/trigger_scripts/trigger_script_coordinator.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
@@ -73,6 +74,10 @@ class Starter : public content::WebContentsObserver,
           preconditions_checked_callback);
 
   // content::WebContentsObserver:
+  // Only one function will execute, the other will early return based on the
+  // AutofillAssistantUseDidFinishNavigation feature.
+  void DidFinishNavigation(
+      content::NavigationHandle* navigation_handle) override;
   void PrimaryPageChanged(content::Page& page) override;
 
   // Invoked when the tab interactability has changed.
@@ -171,6 +176,9 @@ class Starter : public content::WebContentsObserver,
   // successful.
   void ReportPreconditionsChecked(bool start_script);
 
+  void RecordNavigatedAwayMetrics(ukm::SourceId source_id,
+                                  bool is_error_document) const;
+
   WEB_CONTENTS_USER_DATA_KEY_DECL();
 
   // The UKM source id to use for UKM metrics.
@@ -200,7 +208,7 @@ class Starter : public content::WebContentsObserver,
   // from the command line and intended only for debugging and testing.
   ImplicitTriggeringDebugParametersProto implicit_triggering_debug_parameters_;
 
-  std::vector<std::unique_ptr<StarterHeuristicConfig>> heuristic_configs_;
+  std::vector<const StarterHeuristicConfig*> heuristic_configs_;
   bool waiting_for_onboarding_ = false;
   bool waiting_for_deeplink_navigation_ = false;
   bool is_custom_tab_ = false;

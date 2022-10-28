@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -71,11 +71,11 @@ class GPU_GLES2_EXPORT GLTextureImageBackingFactory
       uint32_t usage) override;
   bool IsSupported(uint32_t usage,
                    viz::ResourceFormat format,
+                   const gfx::Size& size,
                    bool thread_safe,
                    gfx::GpuMemoryBufferType gmb_type,
                    GrContextType gr_context_type,
-                   bool* allow_legacy_mailbox,
-                   bool is_pixel_used) override;
+                   base::span<const uint8_t> pixel_data) override;
 
   static std::unique_ptr<SharedImageBacking> CreateSharedImageForTest(
       const Mailbox& mailbox,

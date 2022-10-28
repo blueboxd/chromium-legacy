@@ -135,6 +135,11 @@ class COMPONENT_EXPORT(UI_BASE) DialogModel final {
       return *this;
     }
 
+    Builder& SetSubtitle(std::u16string subtitle) {
+      model_->subtitle_ = std::move(subtitle);
+      return *this;
+    }
+
     Builder& SetBannerImage(ImageModel banner,
                             ImageModel dark_mode_banner = ImageModel()) {
       model_->banner_ = std::move(banner);
@@ -215,10 +220,11 @@ class COMPONENT_EXPORT(UI_BASE) DialogModel final {
     // Adds an extra link to the dialog.
     Builder& AddExtraLink(ui::DialogModelLabel::Link link);
 
-    // Adds body text. See DialogModel::AddBodyText().
-    Builder& AddBodyText(const DialogModelLabel& label,
-                         ElementIdentifier id = ElementIdentifier()) {
-      model_->AddBodyText(label, id);
+    // Adds a paragraph. See DialogModel::AddParagraph().
+    Builder& AddParagraph(const DialogModelLabel& label,
+                          std::u16string header = std::u16string(),
+                          ElementIdentifier id = ElementIdentifier()) {
+      model_->AddParagraph(label, header, id);
       return *this;
     }
 
@@ -297,9 +303,11 @@ class COMPONENT_EXPORT(UI_BASE) DialogModel final {
   // during Host construction where it takes ownership of |this|.
   DialogModelHost* host() { return host_; }
 
-  // Adds body text at the end of the dialog model.
-  void AddBodyText(const DialogModelLabel& label,
-                   ElementIdentifier id = ElementIdentifier());
+  // Adds a paragraph at the end of the dialog model. A paragraph consists of a
+  // label and an optional header.
+  void AddParagraph(const DialogModelLabel& label,
+                    std::u16string header,
+                    ElementIdentifier id = ElementIdentifier());
 
   // Adds a checkbox ([checkbox] label) at the end of the dialog model.
   void AddCheckbox(ElementIdentifier id,
@@ -377,6 +385,10 @@ class COMPONENT_EXPORT(UI_BASE) DialogModel final {
     return title_;
   }
 
+  const std::u16string& subtitle(base::PassKey<DialogModelHost>) const {
+    return subtitle_;
+  }
+
   const ImageModel& main_image(base::PassKey<DialogModelHost>) const {
     return main_image_;
   }
@@ -446,6 +458,7 @@ class COMPONENT_EXPORT(UI_BASE) DialogModel final {
   bool close_on_deactivate_ = true;
   std::string internal_name_;
   std::u16string title_;
+  std::u16string subtitle_;
   ImageModel icon_;
   ImageModel dark_mode_icon_;
 

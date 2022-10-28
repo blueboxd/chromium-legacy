@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -31,6 +31,7 @@
 #include "content/public/test/browser_test.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/accessibility/accessibility_features.h"
 #include "url/gurl.h"
 
 namespace {
@@ -53,6 +54,31 @@ Browser* GetLastActiveBrowser() {
 }
 
 using ArcOpenUrlDelegateImplBrowserTest = InProcessBrowserTest;
+
+class ArcOpenUrlDelegateImplBrowserParamTest
+    : public ArcOpenUrlDelegateImplBrowserTest,
+      public testing::WithParamInterface<bool> {
+ public:
+  ArcOpenUrlDelegateImplBrowserParamTest() = default;
+  ArcOpenUrlDelegateImplBrowserParamTest(
+      const ArcOpenUrlDelegateImplBrowserParamTest&) = delete;
+  ArcOpenUrlDelegateImplBrowserParamTest& operator=(
+      const ArcOpenUrlDelegateImplBrowserParamTest&) = delete;
+  ~ArcOpenUrlDelegateImplBrowserParamTest() override = default;
+
+  // ArcOpenUrlDelegateImplBrowserTest:
+  void SetUp() override {
+    scoped_feature_list_.InitWithFeatureState(
+        features::kAccessibilityOSSettingsVisibility,
+        IsAccessibilityOSSettingsVisibilityEnabled());
+    ArcOpenUrlDelegateImplBrowserTest::SetUp();
+  }
+
+  bool IsAccessibilityOSSettingsVisibilityEnabled() const { return GetParam(); }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
 
 using ArcOpenUrlDelegateImplWebAppBrowserTest =
     web_app::WebAppNavigationBrowserTest;
@@ -104,10 +130,6 @@ void TestOpenSettingFromArc(Browser* browser,
       ->InstallSystemAppsForTesting();
 
   ArcOpenUrlDelegateImpl::GetForTesting()->OpenChromePageFromArc(page);
-
-  // The above OpenChromePageFromArc() should trigger an asynchronous call to
-  // launch OS Settings SWA. Flush Mojo calls so the browser window is created.
-  ash::FlushSystemWebAppLaunchesForTesting(GetLastActiveBrowser()->profile());
 
   EXPECT_EQ(expected_setting_window_count, GetNumberOfSettingsWindows());
 
@@ -262,8 +284,6 @@ void TestOpenOSSettingsChromePage(ChromePage page, const GURL& expected_url) {
   chrome::SettingsWindowManager::SetInstanceForTesting(&test_manager);
 
   ArcOpenUrlDelegateImpl::GetForTesting()->OpenChromePageFromArc(page);
-  ash::FlushSystemWebAppLaunchesForTesting(
-      ProfileManager::GetActiveUserProfile());
 
   EXPECT_EQ(expected_url, test_manager.last_navigation_url());
 
@@ -306,9 +326,6 @@ void TestAllOSSettingPages(const GURL& base_url) {
       base_url.Resolve(
           chromeos::settings::mojom::kBluetoothDevicesSubpagePath));
   TestOpenOSSettingsChromePage(
-      ChromePage::CHANGEPICTURE,
-      base_url.Resolve(chromeos::settings::mojom::kChangePictureSubpagePath));
-  TestOpenOSSettingsChromePage(
       ChromePage::CUPSPRINTERS,
       base_url.Resolve(chromeos::settings::mojom::kPrintingDetailsSubpagePath));
   TestOpenOSSettingsChromePage(
@@ -327,7 +344,9 @@ void TestAllOSSettingPages(const GURL& base_url) {
   TestOpenOSSettingsChromePage(
       ChromePage::MANAGEACCESSIBILITY,
       base_url.Resolve(
-          chromeos::settings::mojom::kManageAccessibilitySubpagePath));
+          features::IsAccessibilityOSSettingsVisibilityEnabled()
+              ? chromeos::settings::mojom::kAccessibilitySectionPath
+              : chromeos::settings::mojom::kManageAccessibilitySubpagePath));
   TestOpenOSSettingsChromePage(
       ChromePage::NETWORKSTYPEVPN,
       base_url.Resolve(chromeos::settings::mojom::kVpnDetailsSubpagePath));
@@ -381,7 +400,13 @@ void TestAllAboutPages() {
   TestOpenChromePage(ChromePage::ABOUTBLANK, GURL(url::kAboutBlankURL));
 }
 
-IN_PROC_BROWSER_TEST_F(ArcOpenUrlDelegateImplBrowserTest, TestOpenChromePage) {
+INSTANTIATE_TEST_SUITE_P(
+    All,
+    ArcOpenUrlDelegateImplBrowserParamTest,
+    /*IsAccessibilityOSSettingsVisibilityEnabled()=*/::testing::Bool());
+
+IN_PROC_BROWSER_TEST_P(ArcOpenUrlDelegateImplBrowserParamTest,
+                       TestOpenChromePage) {
   // Install the Settings App.
   ash::SystemWebAppManager::GetForTest(browser()->profile())
       ->InstallSystemAppsForTesting();

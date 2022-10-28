@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -414,6 +414,14 @@ struct GPU_EXPORT GPUInfo {
   bool is_asan = true;
 #else
   bool is_asan = false;
+#endif
+
+#if defined(ARCH_CPU_64_BITS)
+  uint32_t target_cpu_bits = 64;
+#elif defined(ARCH_CPU_32_BITS)
+  uint32_t target_cpu_bits = 32;
+#elif defined(ARCH_CPU_31_BITS)
+  uint32_t target_cpu_bits = 31;
 #endif
 
 #if BUILDFLAG(IS_MAC)

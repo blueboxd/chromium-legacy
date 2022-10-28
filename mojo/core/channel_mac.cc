@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -225,6 +225,7 @@ class ChannelMac : public Channel,
     send_buffer_.reset();
     receive_buffer_.reset();
     incoming_handles_.clear();
+    reject_writes_ = true;
 
     if (leak_handles_) {
       std::ignore = receive_port_.release();
@@ -715,7 +716,8 @@ class ChannelMac : public Channel,
 
   // Lock that protects the following members.
   base::Lock write_lock_;
-  // Whether writes should be rejected due to an internal error.
+  // Whether writes should be rejected due to an internal error or channel
+  // shutdown.
   bool reject_writes_ = false;
   // IO buffer for sending Mach messages.
   base::mac::ScopedMachVM send_buffer_;

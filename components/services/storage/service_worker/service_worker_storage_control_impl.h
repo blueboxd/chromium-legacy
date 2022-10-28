@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -98,6 +98,11 @@ class ServiceWorkerStorageControlImpl
       const blink::StorageKey& key,
       const std::string& value,
       UpdateNavigationPreloadHeaderCallback callback) override;
+  void UpdateFetchHandlerType(
+      int64_t registration_id,
+      const blink::StorageKey& key,
+      blink::mojom::ServiceWorkerFetchHandlerType fetch_handler_type,
+      UpdateFetchHandlerTypeCallback callback) override;
   void GetNewRegistrationId(GetNewRegistrationIdCallback callback) override;
   void GetNewVersionId(GetNewVersionIdCallback callback) override;
   void GetNewResourceId(GetNewResourceIdCallback callback) override;

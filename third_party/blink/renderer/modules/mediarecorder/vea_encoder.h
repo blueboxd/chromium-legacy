@@ -6,10 +6,13 @@
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIARECORDER_VEA_ENCODER_H_
 
 #include "base/containers/queue.h"
+#include "base/memory/read_only_shared_memory_region.h"
+#include "base/memory/shared_memory_mapping.h"
+#include "base/memory/unsafe_shared_memory_region.h"
+#include "base/time/time.h"
+#include "media/base/bitrate.h"
 #include "media/video/video_encode_accelerator.h"
 #include "third_party/blink/renderer/modules/mediarecorder/video_track_recorder.h"
-
-#include "base/time/time.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 #include "ui/gfx/geometry/size.h"
 
@@ -33,6 +36,7 @@ class VEAEncoder final : public VideoTrackRecorder::Encoder,
   static scoped_refptr<VEAEncoder> Create(
       const VideoTrackRecorder::OnEncodedVideoCB& on_encoded_video_cb,
       const VideoTrackRecorder::OnErrorCB& on_error_cb,
+      media::Bitrate::Mode bitrate_mode,
       uint32_t bits_per_second,
       media::VideoCodecProfile codec,
       absl::optional<uint8_t> level,
@@ -55,11 +59,6 @@ class VEAEncoder final : public VideoTrackRecorder::Encoder,
   using VideoParamsAndTimestamp =
       std::pair<media::WebmMuxer::VideoParameters, base::TimeTicks>;
 
-  struct InputBuffer {
-    base::UnsafeSharedMemoryRegion region;
-    base::WritableSharedMemoryMapping mapping;
-  };
-
   struct OutputBuffer {
     base::UnsafeSharedMemoryRegion region;
     base::WritableSharedMemoryMapping mapping;
@@ -69,6 +68,7 @@ class VEAEncoder final : public VideoTrackRecorder::Encoder,
 
   VEAEncoder(const VideoTrackRecorder::OnEncodedVideoCB& on_encoded_video_cb,
              const VideoTrackRecorder::OnErrorCB& on_error_cb,
+             media::Bitrate::Mode bitrate_mode,
              uint32_t bits_per_second,
              media::VideoCodecProfile codec,
              absl::optional<uint8_t> level,
@@ -76,7 +76,7 @@ class VEAEncoder final : public VideoTrackRecorder::Encoder,
              scoped_refptr<base::SequencedTaskRunner> task_runner);
 
   void UseOutputBitstreamBufferId(int32_t bitstream_buffer_id);
-  void FrameFinished(std::unique_ptr<InputBuffer> shm);
+  void FrameFinished(std::unique_ptr<base::MappedReadOnlyRegion> shm);
 
   // VideoTrackRecorder::Encoder implementation.
   ~VEAEncoder() override;
@@ -94,15 +94,15 @@ class VEAEncoder final : public VideoTrackRecorder::Encoder,
 
   const absl::optional<uint8_t> level_;
 
+  const media::Bitrate::Mode bitrate_mode_;
+
   // The underlying VEA to perform encoding on.
   std::unique_ptr<media::VideoEncodeAccelerator> video_encoder_;
 
   // Shared memory buffers for output with the VEA.
   Vector<std::unique_ptr<OutputBuffer>> output_buffers_;
 
-  // Shared memory buffers for output with the VEA as FIFO.
-  // TODO(crbug.com/960665): Replace with a WTF equivalent.
-  base::queue<std::unique_ptr<InputBuffer>> input_buffers_;
+  Vector<std::unique_ptr<base::MappedReadOnlyRegion>> input_buffers_;
 
   // Tracks error status.
   bool error_notified_;

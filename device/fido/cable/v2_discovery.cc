@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -45,7 +45,7 @@ void RecordEvent(CableV2DiscoveryEvent event) {
 }  // namespace
 
 Discovery::Discovery(
-    FidoRequestType request_type,
+    CableRequestType request_type,
     network::mojom::NetworkContext* network_context,
     absl::optional<base::span<const uint8_t, kQRKeySize>> qr_generator_key,
     std::unique_ptr<AdvertEventStream> advert_stream,

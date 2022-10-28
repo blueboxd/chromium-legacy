@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -72,7 +72,7 @@ class FirstPartySetsPolicyInitializationTest : public LoginManagerTest {
     policy_provider_.UpdateChromePolicy(policy_);
   }
 
-  AccountId test_account_id() { return test_account_id_; };
+  AccountId test_account_id() { return test_account_id_; }
 
  private:
   ash::LoginManagerMixin login_mixin_{&mixin_host_};
@@ -172,10 +172,9 @@ IN_PROC_BROWSER_TEST_F(FirstPartySetsPolicyInitializationTest,
         EXPECT_EQ(profile->GetPrefs()->GetBoolean(
                       ::first_party_sets::kFirstPartySetsEnabled),
                   true);
-        EXPECT_TRUE(
-            profile->GetPrefs()
-                ->GetDictionary(::first_party_sets::kFirstPartySetsOverrides)
-                ->GetDict() == expected_overrides.GetDict());
+        EXPECT_TRUE(profile->GetPrefs()->GetDict(
+                        ::first_party_sets::kFirstPartySetsOverrides) ==
+                    expected_overrides.GetDict());
         loop.Quit();
         return base::WrapUnique<KeyedService>(
             new ::first_party_sets::FirstPartySetsPolicyService(

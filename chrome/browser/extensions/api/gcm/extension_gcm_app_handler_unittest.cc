@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -354,7 +354,7 @@ class ExtensionGCMAppHandlerTest : public testing::Test {
     path = path.Append(data_dir.BaseName());
     ASSERT_TRUE(base::CopyFile(data_dir, path));
 
-    extensions::CrxInstaller* installer = NULL;
+    extensions::CrxInstaller* installer = nullptr;
     content::WindowedNotificationObserver observer(
         extensions::NOTIFICATION_CRX_INSTALLER_DONE,
         base::BindRepeating(&IsCrxInstallerDone, &installer));
@@ -377,9 +377,7 @@ class ExtensionGCMAppHandlerTest : public testing::Test {
 
   void UninstallExtension(const Extension* extension) {
     extension_service_->UninstallExtension(
-        extension->id(),
-        extensions::UNINSTALL_REASON_FOR_TESTING,
-        NULL);
+        extension->id(), extensions::UNINSTALL_REASON_FOR_TESTING, nullptr);
   }
 
   void Register(const std::string& app_id,

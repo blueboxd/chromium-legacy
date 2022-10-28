@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -33,12 +33,5 @@ extern const char kRegisterMaxDarkSuspendDelay[];
 
 }  // namespace switches
 }  // namespace chromeos
-
-// TODO(https://crbug.com/1164001): remove after the migration is finished.
-namespace ash {
-namespace switches {
-using ::chromeos::switches::kFakeOobeConfiguration;
-}
-}  // namespace ash
 
 #endif  // CHROMEOS_DBUS_CONSTANTS_DBUS_SWITCHES_H_

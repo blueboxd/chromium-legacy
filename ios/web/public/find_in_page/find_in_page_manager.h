@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -32,9 +32,9 @@ enum class FindInPageOptions {
 // Manager for searching text on a page. Supports searching within all iframes.
 class FindInPageManager : public web::WebStateUserData<FindInPageManager> {
  public:
-  // Searches for string |query|. Executes new search or traverses results based
-  // on |options|. |query| must not be null if |options| is |FindInPageSearch|.
-  // |query| is ignored if |options| is not |FindInPageSearch|. If new search is
+  // Searches for string `query`. Executes new search or traverses results based
+  // on `options`. `query` must not be null if `options` is `FindInPageSearch`.
+  // `query` is ignored if `options` is not `FindInPageSearch`. If new search is
   // started before previous search finishes, old request will be discarded.
   // Check CanSearchContent() before calling Find().
   //

@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,6 +11,7 @@
 #include "base/test/scoped_command_line.h"
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
+#include "chrome/browser/password_manager/chrome_webauthn_credentials_delegate_factory.h"
 #include "chrome/browser/webauthn/authenticator_request_dialog_model.h"
 #include "chrome/browser/webauthn/webauthn_pref_names.h"
 #include "chrome/browser/webauthn/webauthn_switches.h"
@@ -19,6 +20,7 @@
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/authenticator_request_client_delegate.h"
 #include "content/public/browser/browser_context.h"
+#include "content/public/test/web_contents_tester.h"
 #include "device/fido/cable/cable_discovery_data.h"
 #include "device/fido/features.h"
 #include "device/fido/fido_constants.h"
@@ -29,6 +31,7 @@
 #include "device/fido/virtual_ctap2_device.h"
 #include "device/fido/virtual_fido_device_authenticator.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "url/gurl.h"
 
 #if BUILDFLAG(IS_WIN)
 #include "device/fido/win/authenticator.h"
@@ -147,15 +150,15 @@ TEST_F(ChromeAuthenticatorRequestDelegateTest, CableConfiguration) {
   class DiscoveryFactory : public device::FidoDiscoveryFactory {
    public:
     void set_cable_data(
-        device::FidoRequestType request_type,
-        std::vector<device::CableDiscoveryData> cable_data,
+        device::CableRequestType request_type,
+        std::vector<device::CableDiscoveryData> data,
         const absl::optional<std::array<uint8_t, device::cablev2::kQRKeySize>>&
             qr_generator_key,
-        std::vector<std::unique_ptr<device::cablev2::Pairing>> v2_pairings)
+        std::vector<std::unique_ptr<device::cablev2::Pairing>> pairings)
         override {
-      this->cable_data = std::move(cable_data);
-      this->qr_key = qr_generator_key;
-      this->v2_pairings = std::move(v2_pairings);
+      cable_data = std::move(data);
+      qr_key = qr_generator_key;
+      v2_pairings = std::move(pairings);
     }
 
     void set_android_accessory_params(
@@ -198,27 +201,27 @@ TEST_F(ChromeAuthenticatorRequestDelegateTest, CableConfiguration) {
   const struct {
     const char* origin;
     std::vector<device::CableDiscoveryData> extensions;
-    device::FidoRequestType request_type;
+    device::CableRequestType request_type;
     Result expected_result;
   } kTests[] = {
       {
           "https://example.com",
           {},
-          device::FidoRequestType::kGetAssertion,
+          device::CableRequestType::kGetAssertion,
           Result::k3rdParty,
       },
       {
           // Extensions should be ignored on a 3rd-party site.
           "https://example.com",
           {v1_extension},
-          device::FidoRequestType::kGetAssertion,
+          device::CableRequestType::kGetAssertion,
           Result::k3rdParty,
       },
       {
           // Extensions should be ignored on a 3rd-party site.
           "https://example.com",
           {v2_extension},
-          device::FidoRequestType::kGetAssertion,
+          device::CableRequestType::kGetAssertion,
           Result::k3rdParty,
       },
       {
@@ -226,26 +229,26 @@ TEST_F(ChromeAuthenticatorRequestDelegateTest, CableConfiguration) {
           // if it doesn't send an extension in an assertion request.
           "https://accounts.google.com",
           {},
-          device::FidoRequestType::kGetAssertion,
+          device::CableRequestType::kGetAssertion,
           Result::k3rdParty,
       },
       {
           // ... but not for registration.
           "https://accounts.google.com",
           {},
-          device::FidoRequestType::kMakeCredential,
+          device::CableRequestType::kMakeCredential,
           Result::kNone,
       },
       {
           "https://accounts.google.com",
           {v1_extension},
-          device::FidoRequestType::kGetAssertion,
+          device::CableRequestType::kGetAssertion,
           NONE_ON_LINUX(Result::kV1),
       },
       {
           "https://accounts.google.com",
           {v2_extension},
-          device::FidoRequestType::kGetAssertion,
+          device::CableRequestType::kGetAssertion,
           Result::kServerLink,
       },
   };
@@ -304,6 +307,13 @@ TEST_F(ChromeAuthenticatorRequestDelegateTest, CableConfiguration) {
 }
 
 TEST_F(ChromeAuthenticatorRequestDelegateTest, ConditionalUI) {
+  // The RenderFrame has to be live for the ChromeWebAuthnCredentialsDelegate to
+  // be created.
+  content::WebContentsTester::For(web_contents())
+      ->NavigateAndCommit(GURL("https://example.com"));
+  ChromeWebAuthnCredentialsDelegateFactory::CreateForWebContents(
+      web_contents());
+
   // Enabling conditional mode should cause the modal dialog to stay hidden at
   // the beginning of a request. An omnibar icon might be shown instead.
   for (bool conditional_ui : {true, false}) {

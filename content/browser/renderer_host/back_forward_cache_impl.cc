@@ -4,7 +4,6 @@
 
 #include "content/browser/renderer_host/back_forward_cache_impl.h"
 
-#include <algorithm>
 #include <string>
 #include <vector>
 
@@ -14,6 +13,7 @@
 #include "base/containers/cxx20_erase.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/ranges/algorithm.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/trace_event/typed_macros.h"
@@ -24,6 +24,7 @@
 #include "content/browser/renderer_host/render_frame_host_delegate.h"
 #include "content/browser/renderer_host/render_frame_host_impl.h"
 #include "content/browser/renderer_host/render_frame_proxy_host.h"
+#include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/renderer_host/visible_time_request_trigger.h"
@@ -150,68 +151,66 @@ bool ShouldIgnoreBlocklists() {
   return should_ignore_blocklists.Get();
 }
 
-enum RequestedFeatures { kAll, kOnlySticky };
-
-BlockListedFeatures GetDisallowedFeatures(
-    RenderFrameHostImpl* rfh,
-    RequestedFeatures requested_features) {
-  // TODO(https://crbug.com/1015784): Finalize disallowed feature list, and test
-  // for each disallowed feature.
-  constexpr WebSchedulerTrackedFeatures kAlwaysDisallowedFeatures(
-      WebSchedulerTrackedFeature::kAppBanner,
-      WebSchedulerTrackedFeature::kBroadcastChannel,
-      WebSchedulerTrackedFeature::kContainsPlugins,
-      WebSchedulerTrackedFeature::kDedicatedWorkerOrWorklet,
-      WebSchedulerTrackedFeature::kDummy,
-      WebSchedulerTrackedFeature::kIdleManager,
-      WebSchedulerTrackedFeature::kIndexedDBConnection,
-      WebSchedulerTrackedFeature::kKeyboardLock,
-      WebSchedulerTrackedFeature::kOutstandingIndexedDBTransaction,
-      WebSchedulerTrackedFeature::kPaymentManager,
-      WebSchedulerTrackedFeature::kPictureInPicture,
-      WebSchedulerTrackedFeature::kPortal,
-      WebSchedulerTrackedFeature::kPrinting,
-      WebSchedulerTrackedFeature::kRequestedAudioCapturePermission,
-      WebSchedulerTrackedFeature::kRequestedBackForwardCacheBlockedSensors,
-      WebSchedulerTrackedFeature::kRequestedBackgroundWorkPermission,
-      WebSchedulerTrackedFeature::kRequestedMIDIPermission,
-      WebSchedulerTrackedFeature::kRequestedNotificationsPermission,
-      WebSchedulerTrackedFeature::kRequestedVideoCapturePermission,
-      WebSchedulerTrackedFeature::kSharedWorker,
-      WebSchedulerTrackedFeature::kWebOTPService,
-      WebSchedulerTrackedFeature::kSpeechRecognizer,
-      WebSchedulerTrackedFeature::kSpeechSynthesis,
-      WebSchedulerTrackedFeature::kWebDatabase,
-      WebSchedulerTrackedFeature::kWebHID,
-      WebSchedulerTrackedFeature::kWebLocks,
-      WebSchedulerTrackedFeature::kWebRTC,
-      WebSchedulerTrackedFeature::kWebShare,
-      WebSchedulerTrackedFeature::kWebSocket,
-      WebSchedulerTrackedFeature::kWebTransport,
-      WebSchedulerTrackedFeature::kWebXR);
-
-  WebSchedulerTrackedFeatures result = kAlwaysDisallowedFeatures;
-
-  if (!IsContentInjectionSupported()) {
-    result.Put(WebSchedulerTrackedFeature::kInjectedJavascript);
-    result.Put(WebSchedulerTrackedFeature::kInjectedStyleSheet);
-  }
-
-  if (!IgnoresOutstandingNetworkRequestForTesting()) {
-    result.Put(WebSchedulerTrackedFeature::kOutstandingNetworkRequestOthers);
-    result.Put(WebSchedulerTrackedFeature::kOutstandingNetworkRequestFetch);
-    result.Put(WebSchedulerTrackedFeature::kOutstandingNetworkRequestXHR);
-  }
-
-  if (requested_features == RequestedFeatures::kOnlySticky) {
-    // Remove all non-sticky features from |result|.
-    result = Intersection(result, blink::scheduler::StickyFeatures());
-  }
-
-  result.RemoveAll(SupportedFeatures());
-
-  return result;
-}
+// A list of WebSchedulerTrackedFeatures that always block back/forward
+// cache. Some of these features are listed as blocking back/forward cache
+// when actually the blocking is flag controlled and they are not registered
+// as being used if we don't want them to block.
+constexpr WebSchedulerTrackedFeatures kDisallowedFeatures(
+    WebSchedulerTrackedFeature::kAppBanner,
+    WebSchedulerTrackedFeature::kBroadcastChannel,
+    WebSchedulerTrackedFeature::kContainsPlugins,
+    WebSchedulerTrackedFeature::kDedicatedWorkerOrWorklet,
+    WebSchedulerTrackedFeature::kDummy,
+    WebSchedulerTrackedFeature::kIdleManager,
+    WebSchedulerTrackedFeature::kIndexedDBConnection,
+    WebSchedulerTrackedFeature::kKeyboardLock,
+    WebSchedulerTrackedFeature::kOutstandingIndexedDBTransaction,
+    WebSchedulerTrackedFeature::kPaymentManager,
+    WebSchedulerTrackedFeature::kPictureInPicture,
+    WebSchedulerTrackedFeature::kPortal,
+    WebSchedulerTrackedFeature::kPrinting,
+    WebSchedulerTrackedFeature::kRequestedAudioCapturePermission,
+    WebSchedulerTrackedFeature::kRequestedBackForwardCacheBlockedSensors,
+    WebSchedulerTrackedFeature::kRequestedBackgroundWorkPermission,
+    WebSchedulerTrackedFeature::kRequestedMIDIPermission,
+    WebSchedulerTrackedFeature::kRequestedNotificationsPermission,
+    WebSchedulerTrackedFeature::kRequestedVideoCapturePermission,
+    WebSchedulerTrackedFeature::kSharedWorker,
+    WebSchedulerTrackedFeature::kWebDatabase,
+    WebSchedulerTrackedFeature::kWebOTPService,
+    WebSchedulerTrackedFeature::kSpeechRecognizer,
+    WebSchedulerTrackedFeature::kSpeechSynthesis,
+    WebSchedulerTrackedFeature::kWebDatabase,
+    WebSchedulerTrackedFeature::kWebHID,
+    WebSchedulerTrackedFeature::kWebLocks,
+    WebSchedulerTrackedFeature::kWebRTC,
+    WebSchedulerTrackedFeature::kWebShare,
+    WebSchedulerTrackedFeature::kWebSocket,
+    WebSchedulerTrackedFeature::kWebTransport,
+    WebSchedulerTrackedFeature::kWebXR);
+constexpr WebSchedulerTrackedFeatures kInjectionFeatures(
+    WebSchedulerTrackedFeature::kInjectedJavascript,
+    WebSchedulerTrackedFeature::kInjectedStyleSheet);
+constexpr WebSchedulerTrackedFeatures kNetworkFeatures(
+    WebSchedulerTrackedFeature::kOutstandingNetworkRequestOthers,
+    WebSchedulerTrackedFeature::kOutstandingNetworkRequestFetch,
+    WebSchedulerTrackedFeature::kOutstandingNetworkRequestXHR);
+// A list of WebSchedulerTrackedFeatures that should never block back/forward
+// cache.
+constexpr WebSchedulerTrackedFeatures kAllowedFeatures(
+    WebSchedulerTrackedFeature::kDocumentLoaded,
+    WebSchedulerTrackedFeature::kMainResourceHasCacheControlNoCache,
+    // This is handled in |UpdateCanStoreToIncludeCacheControlNoStore()|, and no
+    // need to include in |GetDisallowedFeatures()|.
+    WebSchedulerTrackedFeature::kMainResourceHasCacheControlNoStore,
+    // TODO(crbug.com/1357482): Figure out if these two should be allowed.
+    WebSchedulerTrackedFeature::kOutstandingNetworkRequestDirectSocket,
+    WebSchedulerTrackedFeature::kRequestedStorageAccessGrant,
+    // We don't block on subresource cache-control:no-store or no-cache.
+    WebSchedulerTrackedFeature::kSubresourceHasCacheControlNoCache,
+    WebSchedulerTrackedFeature::kSubresourceHasCacheControlNoStore,
+    // TODO(crbug.com/1357482): Figure out if this should be allowed.
+    WebSchedulerTrackedFeature::kWebNfc);
 
 // The BackForwardCache feature is controlled via an experiment. This function
 // returns the allowed URL list where it is enabled.
@@ -376,6 +375,52 @@ CacheControlNoStoreExperimentLevel GetCacheControlNoStoreLevel() {
 }
 
 }  // namespace
+
+// static
+BlockListedFeatures BackForwardCacheImpl::GetAllowedFeatures(
+    RequestedFeatures requested_features) {
+  WebSchedulerTrackedFeatures result = kAllowedFeatures;
+  if (IsContentInjectionSupported()) {
+    result.PutAll(kInjectionFeatures);
+  }
+  if (IgnoresOutstandingNetworkRequestForTesting()) {
+    result.PutAll(kNetworkFeatures);
+  }
+  result.PutAll(SupportedFeatures());
+  if (requested_features == RequestedFeatures::kOnlySticky) {
+    // Add non-sticky disallowed features.
+    WebSchedulerTrackedFeatures non_sticky =
+        Difference(kDisallowedFeatures, blink::scheduler::StickyFeatures());
+    if (!IsContentInjectionSupported()) {
+      non_sticky.PutAll(
+          Difference(kInjectionFeatures, blink::scheduler::StickyFeatures()));
+    }
+    if (!IgnoresOutstandingNetworkRequestForTesting()) {
+      non_sticky.PutAll(
+          Difference(kNetworkFeatures, blink::scheduler::StickyFeatures()));
+    }
+    result.PutAll(non_sticky);
+  }
+  return result;
+}
+
+// static
+BlockListedFeatures BackForwardCacheImpl::GetDisallowedFeatures(
+    RequestedFeatures requested_features) {
+  WebSchedulerTrackedFeatures result = kDisallowedFeatures;
+  if (!IsContentInjectionSupported()) {
+    result.PutAll(kInjectionFeatures);
+  }
+  if (!IgnoresOutstandingNetworkRequestForTesting()) {
+    result.PutAll(kNetworkFeatures);
+  }
+  result.RemoveAll(SupportedFeatures());
+  if (requested_features == RequestedFeatures::kOnlySticky) {
+    // Remove all non-sticky features from |result|.
+    result = Intersection(result, blink::scheduler::StickyFeatures());
+  }
+  return result;
+}
 
 // static
 BackForwardCacheImpl::MessageHandlingPolicyWhenCached
@@ -837,7 +882,7 @@ void BackForwardCacheImpl::PopulateStickyReasonsForDocument(
   // will always result in a page becoming ineligible for back-forward cache
   // since the first time it's used.
   WebSchedulerTrackedFeatures banned_features =
-      Intersection(GetDisallowedFeatures(rfh, RequestedFeatures::kOnlySticky),
+      Intersection(GetDisallowedFeatures(RequestedFeatures::kOnlySticky),
                    rfh->GetBackForwardCacheDisablingFeatures());
   if (!banned_features.Empty()) {
     if (!ShouldIgnoreBlocklists()) {
@@ -857,7 +902,7 @@ void BackForwardCacheImpl::PopulateNonStickyReasonsForDocument(
   // (not only the "sticky" features), because this time we're making a decision
   // on whether we should store a page in the back-forward cache or not.
   WebSchedulerTrackedFeatures banned_features =
-      Intersection(GetDisallowedFeatures(rfh, RequestedFeatures::kAll),
+      Intersection(GetDisallowedFeatures(RequestedFeatures::kAll),
                    rfh->GetBackForwardCacheDisablingFeatures());
   if (!banned_features.Empty() && !ShouldIgnoreBlocklists() &&
       rfh->render_view_host()->DidReceiveBackForwardCacheAck()) {
@@ -1071,12 +1116,10 @@ std::unique_ptr<BackForwardCacheImpl::Entry> BackForwardCacheImpl::RestoreEntry(
           kYesInBrowser_BackForwardCache_RestoreEntry_Attempt);
 
   // Select the RenderFrameHostImpl matching the navigation entry.
-  auto matching_entry =
-      std::find_if(entries_.begin(), entries_.end(),
-                   [navigation_entry_id](std::unique_ptr<Entry>& entry) {
-                     return entry->render_frame_host()->nav_entry_id() ==
-                            navigation_entry_id;
-                   });
+  auto matching_entry = base::ranges::find(
+      entries_, navigation_entry_id, [](std::unique_ptr<Entry>& entry) {
+        return entry->render_frame_host()->nav_entry_id();
+      });
 
   // Not found.
   if (matching_entry == entries_.end())
@@ -1148,11 +1191,6 @@ bool BackForwardCache::IsBackForwardCacheFeatureEnabled() {
 }
 
 // static
-bool BackForwardCache::IsSameSiteBackForwardCacheFeatureEnabled() {
-  return IsSameSiteBackForwardCacheEnabled();
-}
-
-// static
 void BackForwardCache::DisableForRenderFrameHost(
     RenderFrameHost* render_frame_host,
     BackForwardCache::DisabledReason reason) {
@@ -1195,12 +1233,10 @@ BackForwardCacheImpl::GetEntries() {
 
 BackForwardCacheImpl::Entry* BackForwardCacheImpl::GetEntry(
     int navigation_entry_id) {
-  auto matching_entry =
-      std::find_if(entries_.begin(), entries_.end(),
-                   [navigation_entry_id](std::unique_ptr<Entry>& entry) {
-                     return entry->render_frame_host()->nav_entry_id() ==
-                            navigation_entry_id;
-                   });
+  auto matching_entry = base::ranges::find(
+      entries_, navigation_entry_id, [](std::unique_ptr<Entry>& entry) {
+        return entry->render_frame_host()->nav_entry_id();
+      });
 
   if (matching_entry == entries_.end())
     return nullptr;
@@ -1394,6 +1430,9 @@ BackForwardCacheCanStoreTreeResult::BackForwardCacheCanStoreTreeResult(
       children_(std::move(children)),
       is_same_origin_(
           rfh->GetLastCommittedOrigin().IsSameOriginWith(main_document_origin)),
+      id_(rfh->frame_tree_node()->html_id()),
+      name_(rfh->frame_tree_node()->html_name()),
+      src_(rfh->frame_tree_node()->html_src()),
       url_(rfh->GetLastCommittedURL()) {}
 
 BackForwardCacheCanStoreTreeResult::~BackForwardCacheCanStoreTreeResult() =
@@ -1428,6 +1467,38 @@ BackForwardCacheCanStoreTreeResult::CreateEmptyTree(RenderFrameHostImpl* rfh) {
                                              empty_result,
                                              std::move(empty_vector)));
   return empty_tree;
+}
+
+blink::mojom::BackForwardCacheNotRestoredReasonsPtr
+BackForwardCacheCanStoreTreeResult::GetWebExposedNotRestoredReasons() {
+  blink::mojom::BackForwardCacheNotRestoredReasonsPtr not_restored_reasons =
+      blink::mojom::BackForwardCacheNotRestoredReasons::New();
+  if (IsSameOrigin()) {
+    // Only include same_origin_details for documents that are same-origin with
+    // the main document. Stop recursion as soon as we hit a cross-origin
+    // document.
+    not_restored_reasons->same_origin_details =
+        blink::mojom::SameOriginBfcacheNotRestoredDetails::New();
+    not_restored_reasons->same_origin_details->url = url_.spec();
+    not_restored_reasons->same_origin_details->src = src_;
+    not_restored_reasons->same_origin_details->id = id_;
+    not_restored_reasons->same_origin_details->name = name_;
+    not_restored_reasons->same_origin_details->reasons =
+        GetDocumentResult().GetStringReasons();
+
+    not_restored_reasons->blocked = !GetDocumentResult().CanRestore();
+    for (const auto& subtree : GetChildren()) {
+      not_restored_reasons->same_origin_details->children.push_back(
+          subtree->GetWebExposedNotRestoredReasons());
+    }
+  } else {
+    // If the subtree's root document is cross-origin from the main frame
+    // document, report whether or not this entire subtree is blocking
+    // back/forward cache.
+    not_restored_reasons->blocked =
+        !GetDocumentResult().CanRestore() || !FlattenTree().CanRestore();
+  }
+  return not_restored_reasons;
 }
 
 BackForwardCacheCanStoreDocumentResultWithTree::

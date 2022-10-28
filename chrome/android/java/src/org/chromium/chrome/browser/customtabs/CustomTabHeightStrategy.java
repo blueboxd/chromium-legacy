@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,6 +12,7 @@ import androidx.annotation.Px;
 import androidx.browser.customtabs.CustomTabsSessionToken;
 
 import org.chromium.chrome.browser.customtabs.features.toolbar.CustomTabToolbar;
+import org.chromium.chrome.browser.fullscreen.FullscreenManager;
 import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
 
 /**
@@ -20,15 +21,17 @@ import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
 public class CustomTabHeightStrategy {
     public static CustomTabHeightStrategy createStrategy(Activity activity, @Px int initialHeight,
             Integer navigationBarColor, Integer navigationBarDividerColor,
-            CustomTabsConnection connection, @Nullable CustomTabsSessionToken session,
-            ActivityLifecycleDispatcher lifecycleDispatcher) {
+            boolean isPartialCustomTabFixedHeight, CustomTabsConnection connection,
+            @Nullable CustomTabsSessionToken session,
+            ActivityLifecycleDispatcher lifecycleDispatcher, FullscreenManager fullscreenManager) {
         if (initialHeight <= 0) {
             return new CustomTabHeightStrategy();
         }
 
         return new PartialCustomTabHeightStrategy(activity, initialHeight, navigationBarColor,
-                navigationBarDividerColor,
-                size -> connection.onResized(session, size), lifecycleDispatcher);
+                navigationBarDividerColor, isPartialCustomTabFixedHeight,
+                size -> connection.onResized(session, size),
+                lifecycleDispatcher, fullscreenManager);
     }
 
     /**
@@ -74,4 +77,9 @@ public class CustomTabHeightStrategy {
     public boolean canDrawOutsideScreen() {
         return false;
     }
+
+    /**
+     * Destroy the height strategy object.
+     */
+    public void destroy() {}
 }

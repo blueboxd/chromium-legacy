@@ -226,9 +226,73 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
   </summary>
 </histogram>
 
+<histogram name="ChromeOS.Camera.AutoFraming.AverageDetectionLatency"
+    units="microseconds" expires_after="2023-03-01">
+  <owner>kamesan@chromium.org</owner>
+  <owner>chromeos-camera-eng@google.com</owner>
+  <summary>
+    Records the average latency in running the detector during an Auto Framing
+    enabled camera session. Emitted when the camera session is closed.
+
+    This metric is reported on ChromeOS devices with Auto Framing enabled.
+  </summary>
+</histogram>
+
+<histogram name="ChromeOS.Camera.AutoFraming.DetectionHitRate" units="%"
+    expires_after="2023-03-01">
+  <owner>kamesan@chromium.org</owner>
+  <owner>chromeos-camera-eng@google.com</owner>
+  <summary>
+    Records the rate that the detector successfully detects a subject in the
+    scene during an Auto Framing enabled camera session. Emitted when the camera
+    session is closed.
+  </summary>
+</histogram>
+
+<histogram name="ChromeOS.Camera.AutoFraming.EnabledCount" units="times"
+    expires_after="2023-03-01">
+  <owner>kamesan@chromium.org</owner>
+  <owner>chromeos-camera-eng@google.com</owner>
+  <summary>
+    Records the number of times that Auto Framing is toggled from off to on by
+    the user during a camera session. Emitted when the camera session is closed.
+  </summary>
+</histogram>
+
+<histogram name="ChromeOS.Camera.AutoFraming.EnabledTime" units="%"
+    expires_after="2023-03-01">
+  <owner>kamesan@chromium.org</owner>
+  <owner>chromeos-camera-eng@google.com</owner>
+  <summary>
+    Records the percentage of time that Auto Framing is turned on during a
+    camera session. Emitted when the camera session is closed.
+  </summary>
+</histogram>
+
+<histogram name="ChromeOS.Camera.AutoFraming.Error" enum="AutoFramingError"
+    expires_after="2023-03-01">
+  <owner>kamesan@chromium.org</owner>
+  <owner>chromeos-camera-eng@google.com</owner>
+  <summary>
+    Records errors in Auto Framing that can break camera functionality or cause
+    frame drops. Emitted at most once for each error when the camera session is
+    closed.
+  </summary>
+</histogram>
+
+<histogram name="ChromeOS.Camera.AutoFraming.MedianZoomRatio" units="tenths"
+    expires_after="2023-03-01">
+  <owner>kamesan@chromium.org</owner>
+  <owner>chromeos-camera-eng@google.com</owner>
+  <summary>
+    Records the median of sampled zoom ratios when Auto Framing zooms in camera
+    frames to the subject during a camera session.
+  </summary>
+</histogram>
+
 <histogram base="true"
     name="ChromeOS.Camera.ConfigureStreams.Output.Resolution" units="pixels"
-    expires_after="2022-10-01">
+    expires_after="2023-10-01">
 <!-- Name completed by histogram_suffixes
      name="ChromeOS.Camera.StreamFormat" -->
 
@@ -241,7 +305,7 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ChromeOS.Camera.ConfigureStreamsLatency" units="microseconds"
-    expires_after="2022-10-01">
+    expires_after="2023-10-01">
   <owner>wtlee@chromium.org</owner>
   <owner>chromeos-camera-eng@google.com</owner>
   <summary>
@@ -254,7 +318,7 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ChromeOS.Camera.ErrorType" enum="ChromeOSCameraErrorType"
-    expires_after="2023-02-12">
+    expires_after="2023-10-01">
   <owner>wtlee@chromium.org</owner>
   <owner>chromeos-camera-eng@google.com</owner>
   <summary>
@@ -265,7 +329,7 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="ChromeOS.Camera.FaceAutoExposure.FunctionStatus"
     enum="ChromeOSCameraFaceAutoExposureFunctionStatus"
-    expires_after="2022-11-16">
+    expires_after="2023-10-01">
   <owner>mojahsu@chromium.org</owner>
   <owner>chromeos-camera-eng@google.com</owner>
   <summary>
@@ -275,7 +339,7 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ChromeOS.Camera.FaceAutoExposure.MaxNumDetectedFaces"
-    units="faces" expires_after="2022-11-16">
+    units="faces" expires_after="2023-10-01">
   <owner>mojahsu@chromium.org</owner>
   <owner>chromeos-camera-eng@google.com</owner>
   <summary>
@@ -285,7 +349,7 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ChromeOS.Camera.Facing" enum="ChromeOSCameraFacing"
-    expires_after="2023-02-12">
+    expires_after="2023-10-01">
   <owner>wtlee@chromium.org</owner>
   <owner>chromeos-camera-eng@google.com</owner>
   <summary>
@@ -294,7 +358,7 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ChromeOS.Camera.GcamAutoExposure.AverageConvergenceLatency"
-    units="frames" expires_after="2022-11-01">
+    units="frames" expires_after="2023-10-01">
   <owner>jcliang@chromium.org</owner>
   <owner>chromeos-camera-eng@google.com</owner>
   <summary>
@@ -305,7 +369,7 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ChromeOS.Camera.GcamAutoExposure.AverageHdrRatio"
-    units="ratio" expires_after="2022-11-01">
+    units="ratio" expires_after="2023-10-01">
   <owner>jcliang@chromium.org</owner>
   <owner>chromeos-camera-eng@google.com</owner>
   <summary>
@@ -315,7 +379,7 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ChromeOS.Camera.GcamAutoExposure.AverageTet" units="TET"
-    expires_after="2022-11-01">
+    expires_after="2023-10-01">
   <owner>jcliang@chromium.org</owner>
   <owner>chromeos-camera-eng@google.com</owner>
   <summary>
@@ -326,7 +390,7 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram base="true"
     name="ChromeOS.Camera.HDRnet.AverageLatency.{ProcessingType}"
-    units="microseconds" expires_after="2022-11-01">
+    units="microseconds" expires_after="2023-10-01">
   <owner>jcliang@chromium.org</owner>
   <owner>chromeos-camera-eng@google.com</owner>
   <summary>
@@ -347,7 +411,7 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ChromeOS.Camera.HDRnet.Error" enum="HdrnetError"
-    expires_after="2023-01-15">
+    expires_after="2023-10-01">
   <owner>jcliang@chromium.org</owner>
   <owner>chromeos-camera-eng@google.com</owner>
   <summary>
@@ -359,7 +423,7 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ChromeOS.Camera.HDRnet.MaxOutputBuffersRendered"
-    units="buffers" expires_after="2022-11-01">
+    units="buffers" expires_after="2023-03-05">
   <owner>jcliang@chromium.org</owner>
   <owner>chromeos-camera-eng@google.com</owner>
   <summary>
@@ -371,7 +435,7 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram base="true" name="ChromeOS.Camera.HDRnet.MaxStreamSize.{StreamType}"
-    units="pixels" expires_after="2022-11-01">
+    units="pixels" expires_after="2023-10-01">
   <owner>jcliang@chromium.org</owner>
   <owner>chromeos-camera-eng@google.com</owner>
   <summary>
@@ -386,7 +450,7 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ChromeOS.Camera.HDRnet.NumConcurrentStreams" units="streams"
-    expires_after="2022-11-01">
+    expires_after="2023-10-01">
   <owner>jcliang@chromium.org</owner>
   <owner>chromeos-camera-eng@google.com</owner>
   <summary>
@@ -396,7 +460,7 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ChromeOS.Camera.HDRnet.NumStillShotsTaken" units="captures"
-    expires_after="2022-11-01">
+    expires_after="2023-10-01">
   <owner>jcliang@chromium.org</owner>
   <owner>chromeos-camera-eng@google.com</owner>
   <summary>
@@ -406,7 +470,7 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ChromeOS.Camera.HDRnet.StreamConfiguration"
-    enum="HdrnetStreamConfiguration" expires_after="2022-11-01">
+    enum="HdrnetStreamConfiguration" expires_after="2023-10-01">
   <owner>jcliang@chromium.org</owner>
   <owner>chromeos-camera-eng@google.com</owner>
   <summary>
@@ -417,7 +481,7 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram base="true" name="ChromeOS.Camera.Jpeg.Latency" units="microseconds"
-    expires_after="2022-12-25">
+    expires_after="2023-10-01">
 <!-- Name completed by histogram_suffixes
      name="ChromeOS.Camera.JpegProcessMethod" and
      name="ChromeOS.Camera.JpegProcessType" -->
@@ -436,7 +500,7 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram base="true" name="ChromeOS.Camera.Jpeg.Resolution" units="pixels"
-    expires_after="2022-12-18">
+    expires_after="2023-10-01">
 <!-- Name completed by histogram_suffixes
      name="ChromeOS.Camera.JpegProcessMethod" and
      name="ChromeOS.Camera.JpegProcessType" -->
@@ -452,7 +516,7 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ChromeOS.Camera.OpenDeviceClientType"
-    enum="ChromeOSCameraClientType" expires_after="2023-01-15">
+    enum="ChromeOSCameraClientType" expires_after="2023-10-01">
   <owner>lnishan@chromium.org</owner>
   <owner>chromeos-camera-eng@google.com</owner>
   <summary>
@@ -462,7 +526,7 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ChromeOS.Camera.OpenDeviceLatency" units="microseconds"
-    expires_after="2022-10-01">
+    expires_after="2023-10-01">
   <owner>wtlee@chromium.org</owner>
   <owner>chromeos-camera-eng@google.com</owner>
   <summary>
@@ -474,7 +538,7 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ChromeOS.Camera.SessionDuration" units="seconds"
-    expires_after="2023-02-12">
+    expires_after="2023-10-01">
   <owner>wtlee@chromium.org</owner>
   <owner>chromeos-camera-eng@google.com</owner>
   <summary>Records the session duration in Chrome OS camera service.</summary>
@@ -632,7 +696,7 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ChromeOS.CWP.RecordPerf" enum="ChromeOSProfileRecordStatus"
-    expires_after="2022-12-20">
+    expires_after="2023-02-19">
   <owner>shantuo@google.com</owner>
   <owner>cwp-team@google.com</owner>
   <summary>
@@ -682,6 +746,43 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
   </summary>
 </histogram>
 
+<histogram
+    name="ChromeOS.DiagnosticsUi.Error.CrosHealthdProbeError.{ProbeErrorSourceStruct}"
+    enum="CrosDiagnosticsCrosHealthdProbeError" expires_after="2023-06-15">
+  <owner>ashleydp@google.com</owner>
+  <owner>zentaro@chromium.org</owner>
+  <owner>cros-peripherals@google.com</owner>
+  <summary>
+    Records the ProbeError::ErrorType returned on request for
+    {ProbeErrorSourceStruct}. Recorded on the event a request to cros_healthd
+    probe service returns a ProbeError.
+  </summary>
+  <token key="ProbeErrorSourceStruct">
+    <variant name="BatteryInfo"/>
+    <variant name="CpuInfo"/>
+    <variant name="MemoryInfo"/>
+    <variant name="SystemInfo"/>
+  </token>
+</histogram>
+
+<histogram name="ChromeOS.DiagnosticsUi.Error.{ErrorSource}"
+    enum="CrosDiagnosticsDataError" expires_after="2023-06-15">
+  <owner>ashleydp@google.com</owner>
+  <owner>zhangwenyu@google.com</owner>
+  <owner>zentaro@chromium.org</owner>
+  <owner>cros-peripherals@google.com</owner>
+  <summary>
+    Records error type such as no data error, not a number error and expectation
+    not met error when receiving system information including battery info,
+    network info and system info. All errors are recorded.
+  </summary>
+  <token key="ErrorSource">
+    <variant name="Battery"/>
+    <variant name="Network"/>
+    <variant name="System"/>
+  </token>
+</histogram>
+
 <histogram name="ChromeOS.DiagnosticsUi.InitialScreen"
     units="CrosDiagnosticsNavigationView" expires_after="2022-12-04">
   <owner>ashleydp@google.com</owner>
@@ -728,6 +829,27 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
     open. Begins at zero each time the app is open and recorded each time the
     app is closed.
   </summary>
+</histogram>
+
+<histogram name="ChromeOS.DiagnosticsUi.{NavigationView}.OpenDuration"
+    units="ms" expires_after="2023-02-12">
+  <owner>ashleydp@google.com</owner>
+  <owner>gavinwill@chromium.org</owner>
+  <owner>zentaro@chromium.org</owner>
+  <owner>cros-peripherals@google.com</owner>
+  <summary>
+    Records the duration that the Diagnostics App is open for a given page view.
+    Emitted when the active page changes or when the app is closed. Cumulatively
+    adds up to the total duration recorded by
+    &quot;ChromeOS.DiagnosticsUi.OpenDuration&quot; or
+    &quot;ChromeOS.FeatureUsage.DiagnosticsUi.Usetime&quot;.
+  </summary>
+  <token key="NavigationView">
+    <variant name="Connectivity" summary="chrome://diagnostics/?connectivity"/>
+    <variant name="Input" summary="chrome://diagnostics/?input"/>
+    <variant name="System"
+        summary="chrome://diagnostics/?system or chrome://diagnostics"/>
+  </token>
 </histogram>
 
 <histogram name="ChromeOS.DiagnosticsUi.{RoutineType}Result"
@@ -782,7 +904,7 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ChromeOS.FirmwareUpdateUi.InstallResult"
-    enum="FirmwareUpdateInstallResult" expires_after="2023-01-01">
+    enum="FirmwareUpdateInstallResult" expires_after="2023-03-05">
   <owner>jimmyxgong@chromium.org</owner>
   <owner>zentaro@chromium.org</owner>
   <owner>cros-peripherals@google.com</owner>
@@ -966,7 +1088,7 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ChromeOS.Intents.IntentPickerAction"
-    enum="IntentPickerDialogAction" expires_after="2023-02-12">
+    enum="IntentPickerDialogAction" expires_after="2023-02-19">
   <owner>tsergeant@chromium.org</owner>
   <owner>chromeos-apps-foundation-team@google.com</owner>
   <summary>
@@ -978,7 +1100,7 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ChromeOS.Intents.IntentPickerAction.From{LaunchSource}"
-    enum="IntentPickerDialogAction" expires_after="2022-10-09">
+    enum="IntentPickerDialogAction" expires_after="2023-02-19">
   <owner>tsergeant@chromium.org</owner>
   <owner>chromeos-apps-foundation-team@google.com</owner>
   <summary>
@@ -1037,7 +1159,7 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ChromeOS.Intents.LinkCapturingEvent2"
-    enum="LinkCapturingEvent" expires_after="2023-02-12">
+    enum="LinkCapturingEvent" expires_after="2023-03-12">
   <owner>vpao@google.com</owner>
   <owner>chromeos-apps-foundation-team@google.com</owner>
   <summary>
@@ -1126,7 +1248,7 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ChromeOS.Lacros.LoadTime" units="ms"
-    expires_after="2022-10-01">
+    expires_after="2023-04-01">
   <owner>erikchen@chromium.org</owner>
   <owner>tvignatti@igalia.com</owner>
   <owner>lacros-team@google.com</owner>
@@ -1162,7 +1284,7 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ChromeOS.LanguagePacks.GetPackState.LanguageCode"
-    enum="LanguagePackLanguageCodes" expires_after="2023-01-01">
+    enum="LanguagePackLanguageCodes" expires_after="2023-01-30">
   <owner>claudiomagni@chromium.org</owner>
   <owner>mlcui@google.com</owner>
   <owner>dvallet@chromium.org</owner>
@@ -1173,7 +1295,7 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ChromeOS.LanguagePacks.InstallComplete.Success"
-    enum="BooleanSuccess" expires_after="2022-12-11">
+    enum="BooleanSuccess" expires_after="2023-01-30">
   <owner>claudiomagni@chromium.org</owner>
   <owner>mlcui@google.com</owner>
   <owner>dvallet@chromium.org</owner>
@@ -1184,7 +1306,7 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ChromeOS.LanguagePacks.Mojo.BasePackStateResponse"
-    enum="LanguagePackMojoPackState" expires_after="2022-12-11">
+    enum="LanguagePackMojoPackState" expires_after="2023-01-30">
   <owner>mlcui@google.com</owner>
   <owner>cros-borders-eng@google.com</owner>
   <summary>
@@ -1194,7 +1316,7 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ChromeOS.LanguagePacks.Mojo.GetPackInfo.Feature"
-    enum="LanguagePackMojoFeatureId" expires_after="2022-12-04">
+    enum="LanguagePackMojoFeatureId" expires_after="2023-01-30">
   <owner>mlcui@google.com</owner>
   <owner>cros-borders-eng@google.com</owner>
   <summary>
@@ -1204,7 +1326,7 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ChromeOS.LanguagePacks.Mojo.InstallBasePack.Feature"
-    enum="LanguagePackMojoFeatureId" expires_after="2022-12-11">
+    enum="LanguagePackMojoFeatureId" expires_after="2023-01-30">
   <owner>mlcui@google.com</owner>
   <owner>cros-borders-eng@google.com</owner>
   <summary>
@@ -1214,7 +1336,7 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ChromeOS.LanguagePacks.Mojo.InstallPack.Feature"
-    enum="LanguagePackMojoFeatureId" expires_after="2022-12-11">
+    enum="LanguagePackMojoFeatureId" expires_after="2023-01-30">
   <owner>mlcui@google.com</owner>
   <owner>cros-borders-eng@google.com</owner>
   <summary>
@@ -1224,7 +1346,7 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ChromeOS.LanguagePacks.Mojo.PackStateResponse"
-    enum="LanguagePackMojoPackState" expires_after="2022-10-01">
+    enum="LanguagePackMojoPackState" expires_after="2023-01-30">
   <owner>mlcui@google.com</owner>
   <owner>cros-borders-eng@google.com</owner>
   <summary>
@@ -1234,7 +1356,7 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ChromeOS.LanguagePacks.UninstallComplete.Success"
-    enum="BooleanSuccess" expires_after="2022-10-01">
+    enum="BooleanSuccess" expires_after="2023-01-30">
   <owner>claudiomagni@chromium.org</owner>
   <owner>mlcui@google.com</owner>
   <owner>dvallet@chromium.org</owner>
@@ -1484,7 +1606,7 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ChromeOS.SAML.APILogin" enum="ChromeOSSamlApiUsed"
-    expires_after="2022-10-02">
+    expires_after="2023-04-02">
   <owner>mslus@chromium.org</owner>
   <owner>emaxx@chromium.org</owner>
   <summary>
@@ -1493,7 +1615,7 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ChromeOS.SAML.InSessionPasswordChangeEvent"
-    enum="SamlInSessionPasswordChangeEvent" expires_after="2022-09-12">
+    enum="SamlInSessionPasswordChangeEvent" expires_after="2023-03-12">
   <owner>mslus@chromium.org</owner>
   <owner>rsorokin@chromium.org</owner>
   <summary>
@@ -1513,7 +1635,7 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ChromeOS.SAML.Provider" enum="ChromeOSSamlProvider"
-    expires_after="2022-10-17">
+    expires_after="2023-02-26">
   <owner>mslus@chromium.org</owner>
   <owner>mohammedabdon@chromium.org</owner>
   <summary>Records SAML provider when SAML login flow is used.</summary>
@@ -1556,7 +1678,7 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ChromeOS.SecurityAnomalyUploadSuccess" enum="Boolean"
-    expires_after="2022-12-11">
+    expires_after="2023-02-19">
   <owner>jorgelo@chromium.org</owner>
   <owner>chromeos-security-core@google.com</owner>
   <summary>
@@ -1574,7 +1696,7 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ChromeOS.Sharesheet.AppCount2.{AppType}" units="apps"
-    expires_after="2022-10-08">
+    expires_after="2023-02-19">
   <owner>dominickn@chromium.org</owner>
   <owner>melzhang@chromium.org</owner>
   <summary>
@@ -1592,7 +1714,7 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ChromeOS.Sharesheet.CopyToClipboard.FormFactor"
-    enum="ChromeOSSharesheetFormFactor" expires_after="2023-02-16">
+    enum="ChromeOSSharesheetFormFactor" expires_after="2023-02-19">
   <owner>melzhang@chromium.org</owner>
   <owner>vpao@google.com</owner>
   <owner>chromeos-apps-foundation-team@google.com</owner>
@@ -1603,7 +1725,7 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ChromeOS.Sharesheet.FileCount" units="files"
-    expires_after="2022-12-11">
+    expires_after="2023-02-19">
   <owner>dominickn@chromium.org</owner>
   <owner>melzhang@chromium.org</owner>
   <summary>
@@ -1613,14 +1735,14 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ChromeOS.Sharesheet.FormFactor"
-    enum="ChromeOSSharesheetFormFactor" expires_after="2023-02-12">
+    enum="ChromeOSSharesheetFormFactor" expires_after="2023-02-19">
   <owner>dominickn@chromium.org</owner>
   <owner>melzhang@chromium.org</owner>
   <summary>Records the form factor when the Sharesheet is invoked.</summary>
 </histogram>
 
 <histogram name="ChromeOS.Sharesheet.IsDriveFolder" enum="Boolean"
-    expires_after="2022-10-08">
+    expires_after="2023-02-19">
   <owner>dominickn@chromium.org</owner>
   <owner>melzhang@chromium.org</owner>
   <summary>
@@ -1630,7 +1752,7 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ChromeOS.Sharesheet.IsImagePreviewPressed"
-    enum="BooleanSelected" expires_after="2022-10-08">
+    enum="BooleanSelected" expires_after="2023-02-19">
   <owner>dominickn@chromium.org</owner>
   <owner>melzhang@chromium.org</owner>
   <summary>
@@ -1640,7 +1762,7 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ChromeOS.Sharesheet.LaunchSource"
-    enum="ChromeOSSharesheetLaunchSource" expires_after="2023-02-12">
+    enum="ChromeOSSharesheetLaunchSource" expires_after="2023-02-19">
   <owner>dominickn@chromium.org</owner>
   <owner>melzhang@chromium.org</owner>
   <summary>
@@ -1651,7 +1773,7 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ChromeOS.Sharesheet.ShareActionCount"
-    enum="ChromeOSSharesheetAction" expires_after="2022-10-08">
+    enum="ChromeOSSharesheetAction" expires_after="2023-02-19">
   <owner>dominickn@chromium.org</owner>
   <owner>melzhang@chromium.org</owner>
   <summary>
@@ -1662,14 +1784,14 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ChromeOS.Sharesheet.UserAction"
-    enum="ChromeOSSharesheetAction" expires_after="2023-02-12">
+    enum="ChromeOSSharesheetAction" expires_after="2023-02-19">
   <owner>dominickn@chromium.org</owner>
   <owner>melzhang@chromium.org</owner>
   <summary>Records user action on sharesheet invocations.</summary>
 </histogram>
 
 <histogram name="ChromeOS.Sharesheet.{Location}.MimeType"
-    enum="ChromeOSSharesheetMimeType" expires_after="2022-10-08">
+    enum="ChromeOSSharesheetMimeType" expires_after="2023-02-19">
   <owner>melzhang@chromium.org</owner>
   <owner>chromeos-apps-foundation-team@google.com</owner>
   <summary>
@@ -2011,6 +2133,36 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
   </token>
 </histogram>
 
+<histogram name="ChromeOS.USB.ExternalDeviceAttached.{USBPortType}.DeviceClass"
+    enum="ChromeOSUsbDeviceClass" expires_after="2023-06-30">
+  <owner>wonchung@google.com</owner>
+  <owner>chromeos-usb@google.com</owner>
+  <summary>
+    USB device class per {USBPortType}. This is emitted each time an external
+    device is attached via USB and when user logs in with an external device
+    attached.
+  </summary>
+  <token key="USBPortType">
+    <variant name="TypeA"/>
+    <variant name="TypeC"/>
+  </token>
+</histogram>
+
+<histogram name="ChromeOS.USB.ExternalDeviceAttached.{USBPortType}.DeviceSpeed"
+    enum="ChromeOSUsbDeviceSpeed" expires_after="2023-06-30">
+  <owner>wonchung@google.com</owner>
+  <owner>chromeos-usb@google.com</owner>
+  <summary>
+    USB device speed per {USBPortType}. This is emitted each time an external
+    device is attached via USB and when user logs in with an external device
+    attached.
+  </summary>
+  <token key="USBPortType">
+    <variant name="TypeA"/>
+    <variant name="TypeC"/>
+  </token>
+</histogram>
+
 <histogram name="ChromeOS.UserTypeByDeviceType.LogSegment"
     enum="UserDeviceMatrix" expires_after="2023-04-24">
   <owner>bmalcolm@chromium.org</owner>
@@ -2026,25 +2178,8 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
   </summary>
 </histogram>
 
-<histogram name="ChromeOS.WebAPK.{InstallType}.ArcInstallResult"
-    enum="WebApkArcInstallResultChromeOS" expires_after="2022-10-14">
-  <owner>tsergeant@chromium.org</owner>
-  <owner>chromeos-apps-foundation-team@google.com</owner>
-  <summary>
-    Records the detailed result when WebAPK is installed through ARC. A WebAPK
-    is generated and installed when a PWA which supports Web Share Target is
-    installed in the browser, and updated when the PWA's manifest updates. This
-    histogram records successes/errors in the last step of the WebAPK
-    {InstallType} process, when the generated WebAPK is installed in ARC.
-  </summary>
-  <token key="InstallType">
-    <variant name="Install"/>
-    <variant name="Update"/>
-  </token>
-</histogram>
-
 <histogram name="ChromeOS.WebAPK.{InstallType}.Result"
-    enum="WebApkInstallResultChromeOS" expires_after="2022-10-14">
+    enum="WebApkInstallResultChromeOS" expires_after="2023-10-14">
   <owner>tsergeant@chromium.org</owner>
   <owner>chromeos-apps-foundation-team@google.com</owner>
   <summary>

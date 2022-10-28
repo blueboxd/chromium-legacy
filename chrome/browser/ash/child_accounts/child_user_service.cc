@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -139,7 +139,7 @@ bool ChildUserService::AppTimeLimitAllowlistedApp(
 
 void ChildUserService ::ReportTimeLimitPolicy() const {
   const base::Value::Dict& time_limit_prefs =
-      profile_->GetPrefs()->GetValueDict(prefs::kUsageTimeLimit);
+      profile_->GetPrefs()->GetDict(prefs::kUsageTimeLimit);
 
   std::set<usage_time_limit::PolicyType> enabled_policies =
       usage_time_limit::GetEnabledTimeLimitPolicies(time_limit_prefs);

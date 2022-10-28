@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -37,16 +37,14 @@
 // scoped_refptr<base::FieldTrial> trial(
 //     base::FieldTrialList::FactoryGetFieldTrial(
 //         "MemoryExperiment", 1000, "StandardMem",
-//         base::FieldTrial::ONE_TIME_RANDOMIZED, nullptr));
+//          base::FieldTrialList::GetEntropyProviderForOneTimeRandomization());
 //
-// const int high_mem_group =
-//     trial->AppendGroup("HighMem", 20);  // 2% in HighMem group.
-// const int low_mem_group =
-//     trial->AppendGroup("LowMem", 20);   // 2% in LowMem group.
+// trial->AppendGroup("HighMem", 20);  // 2% in HighMem group.
+// trial->AppendGroup("LowMem", 20);   // 2% in LowMem group.
 // // Take action depending of which group we randomly land in.
-// if (trial->group() == high_mem_group)
+// if (trial->group_name() == "HighMem")
 //   SetPruningAlgorithm(kType1);  // Sample setting of browser state.
-// else if (trial->group() == low_mem_group)
+// else if (trial->group_name() == "LowMem")
 //   SetPruningAlgorithm(kType2);  // Sample alternate setting.
 
 //------------------------------------------------------------------------------
@@ -92,17 +90,6 @@ struct LaunchOptions;
 class BASE_EXPORT FieldTrial : public RefCounted<FieldTrial> {
  public:
   typedef int Probability;  // Probability type for being selected in a trial.
-
-  // Specifies the persistence of the field trial group choice.
-  enum RandomizationType {
-    // One time randomized trials will persist the group choice between
-    // restarts, which is recommended for most trials, especially those that
-    // change user visible behavior.
-    ONE_TIME_RANDOMIZED,
-    // Session randomized trials will roll the dice to select a group on every
-    // process restart.
-    SESSION_RANDOMIZED,
-  };
 
   // EntropyProvider is an interface for providing entropy for one-time
   // randomized (persistent) field trials.
@@ -210,20 +197,19 @@ class BASE_EXPORT FieldTrial : public RefCounted<FieldTrial> {
   // Establishes the name and probability of the next group in this trial.
   // Sometimes, based on construction randomization, this call may cause the
   // provided group to be *THE* group selected for use in this instance.
-  // The return value is the group number of the new group. AppendGroup can be
-  // called after calls to group() but it should be avoided if possible. Doing
-  // so may be confusing since it won't change the group selection.
-  int AppendGroup(const std::string& name, Probability group_probability);
+  // AppendGroup can be called after calls to group() but it should be avoided
+  // if possible. Doing so may be confusing since it won't change the group
+  // selection.
+  void AppendGroup(const std::string& name, Probability group_probability);
 
   // Return the name of the FieldTrial (excluding the group name).
   const std::string& trial_name() const { return trial_name_; }
 
-  // Return the randomly selected group number that was assigned, and notify
-  // any/all observers that this finalized group number has presumably been used
-  // (queried), and will never change. Note that this will force an instance to
+  // Finalizes the group assignment and notifies any/all observers. This is a
+  // no-op if the trial is already active. Note this will force an instance to
   // participate, and make it illegal to attempt to probabilistically add any
   // other groups to the trial.
-  int group();
+  void Activate();
 
   // If the group's name is empty, a string version containing the group number
   // is used as the group name. This causes a winner to be chosen if none was.
@@ -287,6 +273,8 @@ class BASE_EXPORT FieldTrial : public RefCounted<FieldTrial> {
   FRIEND_TEST_ALL_PREFIXES(FieldTrialListTest,
                            DoNotAddSimulatedFieldTrialsToAllocator);
   FRIEND_TEST_ALL_PREFIXES(FieldTrialListTest, ClearParamsFromSharedMemory);
+  FRIEND_TEST_ALL_PREFIXES(FieldTrialListTest,
+                           TestGetRandomizedFieldTrialCount);
 
   friend class base::FieldTrialList;
 
@@ -444,42 +432,25 @@ class BASE_EXPORT FieldTrialList {
   // for each name). |default_group_name| is the name of the group that is
   // chosen if none of the subsequent appended groups are chosen. Note that the
   // default group is also chosen whenever |enable_benchmarking_| is true.
-  // |default_group_number| can receive the group number of the default group as
-  // AppendGroup returns the number of the subsequence groups. |trial_name| and
-  // |default_group_name| must not be empty, but |default_group_number| can be
-  // null if the value is not needed.
   //
   // Group probabilities that are later supplied must sum to less than or equal
   // to the |total_probability|.
   //
-  // Use this static method to get a startup-randomized FieldTrial or a
+  // The |entropy_provider| is used for randomizing group selection. The
+  // |randomization_seed| will be passed to the EntropyProvider in addition
+  // to the trial name, and it's handling is defined by the EntropyProvider.
+  // * SessionEntropyProvider requires it to be 0 by DCHECK.
+  // * SHA1 and NormalizedMurmurHash providers will use a non-zero value as a
+  //   salt _instead_ of using the trial name.
+  //
+  // This static method can be used to get a startup-randomized FieldTrial or a
   // previously created forced FieldTrial.
   static FieldTrial* FactoryGetFieldTrial(
       StringPiece trial_name,
       FieldTrial::Probability total_probability,
       StringPiece default_group_name,
-      FieldTrial::RandomizationType randomization_type,
-      int* default_group_number);
-
-  // Same as FactoryGetFieldTrial(), but allows specifying a custom seed to be
-  // used on one-time randomized field trials (instead of a hash of the trial
-  // name, which is used otherwise or if |randomization_seed| has value 0). The
-  // |randomization_seed| value (other than 0) should never be the same for two
-  // trials, else this would result in correlated group assignments.  Note:
-  // Using a custom randomization seed is only supported by the
-  // NormalizedMurmurHashEntropyProvider, which is used when UMA is not enabled
-  // (and is always used in Android WebView, where UMA is enabled
-  // asyncronously). If |override_entropy_provider| is not null, then it will be
-  // used for randomization instead of the provider given when the
-  // FieldTrialList was instantiated.
-  static FieldTrial* FactoryGetFieldTrialWithRandomizationSeed(
-      StringPiece trial_name,
-      FieldTrial::Probability total_probability,
-      StringPiece default_group_name,
-      FieldTrial::RandomizationType randomization_type,
-      uint32_t randomization_seed,
-      int* default_group_number,
-      const FieldTrial::EntropyProvider* override_entropy_provider);
+      const FieldTrial::EntropyProvider& entropy_provider,
+      uint32_t randomization_seed = 0);
 
   // The Find() method can be used to test to see if a named trial was already
   // registered, or to retrieve a pointer to it from the global map.
@@ -629,6 +600,11 @@ class BASE_EXPORT FieldTrialList {
   // Return the number of active field trials.
   static size_t GetFieldTrialCount();
 
+  // Return the number of active field trials registered as randomized trials.
+  // Trials created using the CreateFieldTrial() do not count towards this
+  // total.
+  static size_t GetRandomizedFieldTrialCount();
+
   // Gets the parameters for |field_trial| from shared memory and stores them in
   // |params|. This is only exposed for use by FieldTrialParamAssociator and
   // shouldn't be used by anything else.
@@ -651,10 +627,14 @@ class BASE_EXPORT FieldTrialList {
   GetAllFieldTrialsFromPersistentAllocator(
       PersistentMemoryAllocator const& allocator);
 
-  // If one-time randomization is enabled, returns a weak pointer to the
-  // corresponding EntropyProvider. Otherwise, returns nullptr.
-  static const FieldTrial::EntropyProvider*
+  // Returns the EntropyProvider for one-time randomization.
+  // Crashes if one-time randomization is not enabled.
+  static const FieldTrial::EntropyProvider&
   GetEntropyProviderForOneTimeRandomization();
+
+  // Returns an entropy-provider that can be used for session randomized trials.
+  static const FieldTrial::EntropyProvider&
+  GetEntropyProviderForSessionRandomization();
 
   // Returns a pointer to the global instance. This is exposed so that it can
   // be used in a DCHECK in FeatureList and ScopedFeatureList test-only logic
@@ -771,7 +751,10 @@ class BASE_EXPORT FieldTrialList {
   // Register() stores a pointer to the given trial in a global map.
   // This method also AddRef's the indicated trial.
   // This should always be called after creating a new FieldTrial instance.
-  static void Register(FieldTrial* trial);
+  // If the caller wants to select the instance's group randomly,
+  // |is_randomized_trial| should be true to count the number of randomized
+  // trials correctly. Otherwise, false.
+  static void Register(FieldTrial* trial, bool is_randomized_trial);
 
   // Returns all the registered trials.
   static RegistrationMap GetRegisteredTrials();
@@ -790,9 +773,13 @@ class BASE_EXPORT FieldTrialList {
   // FieldTrialList is created after that.
   static bool used_without_global_;
 
-  // Lock for access to |registered_|, |observers_|.
+  // Lock for access to |registered_|, |observers_|,
+  // |count_of_manually_created_field_trials_|.
   Lock lock_;
   RegistrationMap registered_ GUARDED_BY(lock_);
+
+  // Counts the number of field trials whose groups are selected randomly.
+  size_t num_registered_randomized_trials_ GUARDED_BY(lock_) = 0;
 
   // Entropy provider to be used for one-time randomized field trials. If NULL,
   // one-time randomization is not supported.

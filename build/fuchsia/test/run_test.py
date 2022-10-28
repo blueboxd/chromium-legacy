@@ -1,5 +1,5 @@
 #!/usr/bin/env vpython3
-# Copyright 2022 The Chromium Authors. All rights reserved.
+# Copyright 2022 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 """Implements commands for running tests E2E on a Fuchsia device."""
@@ -18,8 +18,9 @@ from flash_device import flash, register_flash_args
 from log_manager import LogManager, start_system_log
 from publish_package import publish_packages, register_package_args
 from run_blink_test import BlinkTestRunner
-from run_executable_test import create_executable_test_runner
-from run_gpu_test import GPUTestRunner
+from run_executable_test import create_executable_test_runner, \
+                                register_executable_test_args
+from run_telemetry_test import TelemetryTestRunner
 from serve_repo import register_serve_args, serve_repository
 from start_emulator import create_emulator_from_args, register_emulator_args
 from test_runner import TestRunner
@@ -32,9 +33,9 @@ def _get_test_runner(runner_args: argparse.Namespace,
     if runner_args.test_type == 'blink':
         return BlinkTestRunner(runner_args.out_dir, test_args,
                                runner_args.target_id)
-    if runner_args.test_type == 'gpu':
-        return GPUTestRunner(runner_args.out_dir, test_args,
-                             runner_args.target_id)
+    if runner_args.test_type in ['gpu', 'perf']:
+        return TelemetryTestRunner(runner_args.test_type, runner_args.out_dir,
+                                   test_args, runner_args.target_id)
     return create_executable_test_runner(runner_args, test_args)
 
 
@@ -55,6 +56,7 @@ def main():
     register_common_args(parser)
     register_device_args(parser)
     register_emulator_args(parser)
+    register_executable_test_args(parser)
     register_flash_args(parser, default_os_check='ignore')
     register_log_args(parser)
     register_package_args(parser, allow_temp_repo=True)
@@ -73,7 +75,7 @@ def main():
         log_manager = stack.enter_context(LogManager(runner_args.logs_dir))
         if runner_args.device:
             flash(runner_args.system_image_dir, runner_args.os_check,
-                  runner_args.target_id)
+                  runner_args.target_id, runner_args.serial_num)
         else:
             runner_args.target_id = stack.enter_context(
                 create_emulator_from_args(runner_args))

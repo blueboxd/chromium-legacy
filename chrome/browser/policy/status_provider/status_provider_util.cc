@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -16,6 +16,9 @@
 #include "chrome/browser/enterprise/util/affiliation.h"
 #include "components/enterprise/browser/controller/browser_dm_token_storage.h"
 #endif
+
+const char kDevicePolicyStatusDescription[] = "statusDevice";
+const char kUserPolicyStatusDescription[] = "statusUser";
 
 void ExtractDomainFromUsername(base::Value::Dict* dict) {
   const std::string* username = dict->FindString("username");
@@ -46,6 +49,12 @@ void GetUserAffiliationStatus(base::Value::Dict* dict, Profile* profile) {
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 }
 
+void SetDomainInUserStatus(base::Value::Dict& user_status) {
+  const std::string* username = user_status.FindString("username");
+  if (username && !username->empty())
+    user_status.Set("domain", gaia::ExtractDomainName(*username));
+}
+
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 void GetOffHoursStatus(base::Value::Dict* dict) {
   policy::off_hours::DeviceOffHoursController* off_hours_controller =
@@ -65,11 +74,3 @@ void GetUserManager(base::Value::Dict* dict, Profile* profile) {
   }
 }
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
-
-std::string GetMachineStatusLegendKey() {
-#if BUILDFLAG(IS_ANDROID)
-  return "statusDevice";
-#else
-  return "statusMachine";
-#endif  // BUILDFLAG(IS_ANDROID)
-}

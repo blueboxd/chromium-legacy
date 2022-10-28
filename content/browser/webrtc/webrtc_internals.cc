@@ -311,9 +311,9 @@ void WebRTCInternals::OnGetUserMedia(GlobalRenderFrameHostId frame_id,
     return;
   }
 
-  RenderFrameHost* host = RenderFrameHost::FromID(frame_id);
+  RenderFrameHost* rfh = RenderFrameHost::FromID(frame_id);
   // Frame may be gone (and does not exist in tests).
-  std::string origin = host ? host->GetLastCommittedOrigin().Serialize() : "";
+  std::string origin = rfh ? rfh->GetLastCommittedOrigin().Serialize() : "";
 
   base::Value::Dict dict;
   dict.Set("rid", frame_id.child_id);
@@ -332,9 +332,9 @@ void WebRTCInternals::OnGetUserMedia(GlobalRenderFrameHostId frame_id,
   get_user_media_requests_.Append(std::move(dict));
 
   if (render_process_id_set_.insert(frame_id.child_id).second) {
-    RenderProcessHost* host = RenderProcessHost::FromID(frame_id.child_id);
-    if (host)
-      host->AddObserver(this);
+    RenderProcessHost* rph = RenderProcessHost::FromID(frame_id.child_id);
+    if (rph)
+      rph->AddObserver(this);
   }
 }
 
@@ -423,7 +423,11 @@ void WebRTCInternals::RemoveObserver(WebRTCInternalsUIObserver* observer) {
   // Disables event log and audio debug recordings if enabled and the last
   // webrtc-internals page is going away.
   DisableAudioDebugRecordings();
-  DisableLocalEventLogRecordings();
+  if (CanToggleEventLogRecordings()) {
+    // Do not disable event log recording when the browser was started
+    // with the flag to enable the recordings on the command line.
+    DisableLocalEventLogRecordings();
+  }
 
   // TODO(tommi): Consider removing all the peer_connection_data().
   for (auto& dictionary : peer_connection_data())

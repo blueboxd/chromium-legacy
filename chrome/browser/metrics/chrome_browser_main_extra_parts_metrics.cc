@@ -1,4 +1,4 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -82,6 +82,7 @@
 #include "base/win/scoped_handle.h"
 #include "base/win/windows_version.h"
 #include "chrome/browser/shell_integration_win.h"
+#include "chrome/installer/util/taskbar_util.h"
 #endif  // BUILDFLAG(IS_WIN)
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
@@ -386,6 +387,26 @@ void OnIsPinnedToTaskbarResult(bool succeeded, bool is_pinned_to_taskbar) {
 
   base::UmaHistogramEnumeration("Windows.IsPinnedToTaskbar", result,
                                 NUM_RESULTS);
+
+  // If Chrome is not pinned to taskbar, clear the recording that the installer
+  // pinned Chrome to the taskbar, so that if the user pins Chrome back to the
+  // taskbar, we don't count launches as coming from an installer-pinned
+  // shortcut.  TODO(https://crbug.com/1353953): We currently only check if
+  // Chrome is pinned to the taskbar 1 out every 100 launches, which makes this
+  // less meaningful, so if keeping track of whether the installer pinned Chrome
+  // to the taskbar is important, we need to deal with that.
+
+  // Record whether or not the user unpinned an installer pin of Chrome. Records
+  // true if the installer pinned Chrome, and it's not pinned on this startup,
+  // false if the installer pinned Chrome, and it's still pinned.
+  if (GetInstallerPinnedChromeToTaskbar().value_or(false)) {
+    if (result == NOT_PINNED)
+      SetInstallerPinnedChromeToTaskbar(false);
+    if (result != FAILURE) {
+      base::UmaHistogramBoolean("Windows.InstallerPinUnpinned",
+                                result == NOT_PINNED);
+    }
+  }
 }
 
 // Records the pinned state of the current executable into a histogram. Should
@@ -395,48 +416,6 @@ void RecordIsPinnedToTaskbarHistogram() {
   shell_integration::win::GetIsPinnedToTaskbarState(
       base::BindOnce(&OnShellHandlerConnectionError),
       base::BindOnce(&OnIsPinnedToTaskbarResult));
-}
-
-class ScHandleTraits {
- public:
-  typedef SC_HANDLE Handle;
-
-  ScHandleTraits() = delete;
-  ScHandleTraits(const ScHandleTraits&) = delete;
-  ScHandleTraits& operator=(const ScHandleTraits&) = delete;
-
-  // Closes the handle.
-  static bool CloseHandle(SC_HANDLE handle) {
-    return ::CloseServiceHandle(handle) != FALSE;
-  }
-
-  // Returns true if the handle value is valid.
-  static bool IsHandleValid(SC_HANDLE handle) { return handle != nullptr; }
-
-  // Returns null handle value.
-  static SC_HANDLE NullHandle() { return nullptr; }
-};
-
-typedef base::win::GenericScopedHandle<ScHandleTraits,
-                                       base::win::DummyVerifierTraits>
-    ScopedScHandle;
-
-bool IsApplockerRunning() {
-  ScopedScHandle scm_handle(
-      ::OpenSCManagerW(nullptr, nullptr, SC_MANAGER_CONNECT));
-  if (!scm_handle.IsValid())
-    return false;
-
-  ScopedScHandle service_handle(
-      ::OpenServiceW(scm_handle.Get(), L"appid", SERVICE_QUERY_STATUS));
-  if (!service_handle.IsValid())
-    return false;
-
-  SERVICE_STATUS status;
-  if (!::QueryServiceStatus(service_handle.Get(), &status))
-    return false;
-
-  return status.dwCurrentState == SERVICE_RUNNING;
 }
 
 // This registry key is not fully documented but there is information on it
@@ -499,10 +478,6 @@ void RecordStartupMetrics() {
 
   base::UmaHistogramBoolean("Windows.HasHighResolutionTimeTicks",
                             base::TimeTicks::IsHighResolution());
-
-  // Determine if Applocker is enabled and running. This does not check if
-  // Applocker rules are being enforced.
-  base::UmaHistogramBoolean("Windows.ApplockerRunning", IsApplockerRunning());
 
   // Determine whether parallel DLL loading is enabled for the browser process
   // executable. This is disabled by default on fresh Windows installations, but

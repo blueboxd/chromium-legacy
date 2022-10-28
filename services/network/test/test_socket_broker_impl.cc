@@ -12,15 +12,47 @@
 #include "net/log/net_log_source.h"
 #include "net/socket/socket_descriptor.h"
 #include "net/socket/tcp_socket.h"
+#include "services/network/public/cpp/transferable_socket.h"
 
 #if !BUILDFLAG(IS_WIN)
 #include <netinet/in.h>
 #include <sys/socket.h>
 
 #include "base/files/scoped_file.h"
+#else
+#include <winsock2.h>
+
+#include "base/process/process.h"
+#include "base/scoped_generic.h"
 #endif
 
 namespace network {
+
+namespace {
+
+#if BUILDFLAG(IS_WIN)
+struct SocketDescriptorTraitsWin {
+  static void Free(net::SocketDescriptor socket) { ::closesocket(socket); }
+  static net::SocketDescriptor InvalidValue() { return net::kInvalidSocket; }
+};
+
+using ScopedSocketDescriptor =
+    base::ScopedGeneric<net::SocketDescriptor, SocketDescriptorTraitsWin>;
+
+net::Error GetSystemError() {
+  return net::MapSystemError(::WSAGetLastError());
+}
+
+#else
+
+using ScopedSocketDescriptor = base::ScopedFD;
+
+net::Error GetSystemError() {
+  return net::MapSystemError(errno);
+}
+
+#endif  // BUILDFLAG(IS_WIN)
+}  // namespace
 
 TestSocketBrokerImpl::TestSocketBrokerImpl() = default;
 
@@ -29,25 +61,27 @@ TestSocketBrokerImpl::~TestSocketBrokerImpl() = default;
 void TestSocketBrokerImpl::CreateTcpSocket(net::AddressFamily address_family,
                                            CreateTcpSocketCallback callback) {
   if (is_mock_socket_test_) {
-    std::move(callback).Run(mojo::PlatformHandle(), net::ERR_CONNECTION_FAILED);
+    std::move(callback).Run(network::TransferableSocket(),
+                            net::ERR_CONNECTION_FAILED);
     return;
   }
 
-// TODO(https://crbug.com/1311014): Open and release raw socket on Windows.
-#if BUILDFLAG(IS_WIN)
-  std::move(callback).Run(mojo::PlatformHandle(), net::OK);
-#else
-  base::ScopedFD socket(net::CreatePlatformSocket(
+  ScopedSocketDescriptor socket(net::CreatePlatformSocket(
       net::ConvertAddressFamily(address_family), SOCK_STREAM,
       address_family == AF_UNIX ? 0 : IPPROTO_TCP));
   int rv = net::OK;
   if (!socket.is_valid()) {
-    rv = net::MapSystemError(errno);
+    rv = GetSystemError();
   } else if (!base::SetNonBlocking(socket.get())) {
-    rv = net::MapSystemError(errno);
+    rv = GetSystemError();
     socket.reset();
   }
-  std::move(callback).Run(mojo::PlatformHandle(std::move(socket)), rv);
+#if BUILDFLAG(IS_WIN)
+  std::move(callback).Run(
+      network::TransferableSocket(socket.release(), base::Process::Current()),
+      rv);
+#else
+  std::move(callback).Run(network::TransferableSocket(socket.release()), rv);
 #endif
 }
 

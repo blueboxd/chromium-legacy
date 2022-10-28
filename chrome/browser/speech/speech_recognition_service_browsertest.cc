@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -79,7 +79,7 @@ class TestStreamFactory : public audio::FakeStreamFactory {
       bool enable_agc,
       base::ReadOnlySharedMemoryRegion key_press_count_buffer,
       media::mojom::AudioProcessingConfigPtr processing_config,
-      CreateInputStreamCallback created_callback) {
+      CreateInputStreamCallback created_callback) override {
     device_id_ = device_id;
     params_ = params;
     if (stream_receiver_.is_bound())
@@ -487,7 +487,8 @@ IN_PROC_BROWSER_TEST_F(SpeechRecognitionServiceTest, CreateAudioSourceFetcher) {
   // TestStreamFactory::stream_, to test end-to-end.
   std::string device_id = media::AudioDeviceDescription::kDefaultDeviceId;
   media::AudioParameters params(media::AudioParameters::AUDIO_PCM_LOW_LATENCY,
-                                media::CHANNEL_LAYOUT_STEREO, 10000, 1000);
+                                media::ChannelLayoutConfig::Stereo(), 10000,
+                                1000);
 
   // Create a fake stream factory.
   std::unique_ptr<StrictMock<TestStreamFactory>> stream_factory =

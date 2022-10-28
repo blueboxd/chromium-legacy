@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -135,6 +135,10 @@ ASH_PUBLIC_EXPORT void RecordBubbleResizeAnimationSmoothness(int smoothness);
 // `smoothness` is expected to be between 0 and 100 (inclusively) with 100
 // representing ideal smoothness of >= 60 frames per second.
 ASH_PUBLIC_EXPORT void RecordPodResizeAnimationSmoothness(int smoothness);
+
+// Records counts for the visible holding space `items` specified.
+ASH_PUBLIC_EXPORT void RecordVisibleItemCounts(
+    const std::vector<const HoldingSpaceItem*>& items);
 
 }  // namespace holding_space_metrics
 }  // namespace ash

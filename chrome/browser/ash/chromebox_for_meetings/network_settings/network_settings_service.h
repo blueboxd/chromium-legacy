@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,9 +7,9 @@
 
 #include <string>
 
-#include "ash/services/chromebox_for_meetings/public/mojom/cfm_network_settings.mojom.h"
 #include "chrome/browser/ash/chromebox_for_meetings/service_adaptor.h"
 #include "chromeos/ash/components/dbus/chromebox_for_meetings/cfm_observer.h"
+#include "chromeos/ash/services/chromebox_for_meetings/public/mojom/cfm_network_settings.mojom.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
 
 namespace ash::cfm {

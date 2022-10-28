@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -139,7 +139,8 @@ inline void AddTypedTraceEventImpl(char phase,
 
     perfetto::internal::WriteTrackEventArgs(
         perfetto::EventContext(track_event.get(),
-                               track_event.incremental_state()),
+                               track_event.incremental_state(),
+                               track_event.ShouldFilterDebugAnnotations()),
         std::forward<Args>(args)...);
   }
 

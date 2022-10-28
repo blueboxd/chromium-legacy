@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -165,7 +165,7 @@ class PerUserTopicSubscriptionManagerTest : public testing::Test {
 
   const base::Value::Dict& GetSubscribedTopics() const {
     const base::Value::Dict* subscribed_topics =
-        pref_service_.GetValueDict(kTypeSubscribedForInvalidation)
+        pref_service_.GetDict(kTypeSubscribedForInvalidation)
             .FindDict(kProjectId);
     DCHECK(subscribed_topics);
     return *subscribed_topics;
@@ -653,7 +653,7 @@ TEST_F(PerUserTopicSubscriptionManagerTest,
   }
 
   EXPECT_EQ(kFakeInstanceIdToken, *pref_service()
-                                       ->GetValueDict(kActiveRegistrationTokens)
+                                       ->GetDict(kActiveRegistrationTokens)
                                        .FindString(kProjectId));
 
   std::string token = "new-fake-token";
@@ -663,7 +663,7 @@ TEST_F(PerUserTopicSubscriptionManagerTest,
   base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(token, *pref_service()
-                        ->GetValueDict(kActiveRegistrationTokens)
+                        ->GetDict(kActiveRegistrationTokens)
                         .FindString(kProjectId));
   EXPECT_EQ(TopicSetFromTopics(topics),
             per_user_topic_subscription_manager->GetSubscribedTopicsForTest());

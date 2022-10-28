@@ -1,4 +1,4 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -44,7 +44,7 @@ class COMPONENT_EXPORT(ASH_DBUS_IMAGE_LOADER) FakeImageLoaderClient
   // Returns empty file path if the component is not loaded at the time.
   base::FilePath GetComponentInstallPath(const std::string& name) const;
 
-  // DBusClient override.
+  // chromeos::DBusClient override.
   void Init(dbus::Bus* dbus) override {}
 
   // ImageLoaderClient override:

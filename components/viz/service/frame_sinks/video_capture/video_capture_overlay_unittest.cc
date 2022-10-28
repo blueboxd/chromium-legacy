@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -330,7 +330,7 @@ class VideoCaptureOverlayRenderTest
     // as those of the YUV tests, and so only one set of golden files needs to
     // be used.
     if (is_argb_test()) {
-      uint8_t* dst = frame->visible_data(VideoFrame::kARGBPlane);
+      uint8_t* dst = frame->GetWritableVisibleData(VideoFrame::kARGBPlane);
       const int stride = frame->stride(VideoFrame::kARGBPlane);
       for (int row = 0; row < size.height(); ++row, dst += stride) {
         uint32_t* const begin = reinterpret_cast<uint32_t*>(dst);

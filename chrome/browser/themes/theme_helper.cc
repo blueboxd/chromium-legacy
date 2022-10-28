@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -170,21 +170,7 @@ bool ThemeHelper::UseDarkModeColors(const CustomThemeSupplier* theme_supplier) {
   if (IsCustomTheme(theme_supplier))
     return false;
 
-  ui::NativeTheme const* native_theme =
-      ui::NativeTheme::GetInstanceForNativeUi();
-#if BUILDFLAG(IS_LINUX)
-  if (const auto* linux_ui = ui::LinuxUi::instance()) {
-    // We rely on the fact that the system theme is in use iff `theme_supplier`
-    // is non-null, but this is cheating. In the future this might not hold
-    // after we fully migrate to the color provider and remove SystemThemeLinux.
-    native_theme = linux_ui->GetNativeTheme(
-        theme_supplier &&
-        theme_supplier->get_theme_type() ==
-            ui::ColorProviderManager::ThemeInitializerSupplier::ThemeType::
-                kNativeX11);
-  }
-#endif
-  return native_theme->ShouldUseDarkColors();
+  return theme_supplier->GetNativeTheme()->ShouldUseDarkColors();
 }
 
 gfx::Image ThemeHelper::GetImageNamed(

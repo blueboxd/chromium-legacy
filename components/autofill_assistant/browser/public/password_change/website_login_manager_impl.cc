@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,6 +6,7 @@
 
 #include "base/containers/cxx20_erase.h"
 #include "base/memory/raw_ptr.h"
+#include "base/ranges/algorithm.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "components/password_manager/content/browser/content_password_manager_driver.h"
@@ -46,8 +47,8 @@ const password_manager::PasswordForm* FindPasswordForLogin(
     const std::vector<const password_manager::PasswordForm*>& matches,
     const WebsiteLoginManager::Login& login) {
   auto result =
-      std::find_if(matches.begin(), matches.end(), [&](const auto& match) {
-        return base::UTF16ToUTF8(match->username_value) == login.username;
+      base::ranges::find(matches, login.username, [](const auto& match) {
+        return base::UTF16ToUTF8(match->username_value);
       });
   if (result == matches.end()) {
     return nullptr;

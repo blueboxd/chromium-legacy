@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -143,6 +143,50 @@ TEST(PaintedScrollbarLayerImplTest, PaintedOpacityChangesInvalidate) {
       scrollbar_layer_impl->LayerPropertyChangedNotFromPropertyTrees());
   scrollbar_layer_impl->SetScrollbarPaintedOpacity(0.3f);
   EXPECT_TRUE(scrollbar_layer_impl->LayerPropertyChangedNotFromPropertyTrees());
+}
+
+class PaintedScrollbarLayerImplFluentTest : public ::testing::Test {
+ protected:
+  void SetUp() override {
+    LayerTreeSettings settings;
+    settings.enable_fluent_scrollbar = true;
+    impl_ = std::make_unique<LayerTreeImplTestBase>(settings);
+  }
+
+  std::unique_ptr<LayerTreeImplTestBase> impl_;
+};
+
+TEST_F(PaintedScrollbarLayerImplFluentTest, ComputeThumbQuadRect) {
+  PaintedScrollbarLayerImpl* scrollbar_layer_impl_vertical =
+      impl_->AddLayer<PaintedScrollbarLayerImpl>(
+          ScrollbarOrientation::VERTICAL,
+          /*is_left_side_vertical_scrollbar=*/false,
+          /*is_overlay=*/false);
+  scrollbar_layer_impl_vertical->SetTrackRect(gfx::Rect(0, 0, 14, 100));
+  scrollbar_layer_impl_vertical->SetThumbThickness(6);
+  EXPECT_EQ(scrollbar_layer_impl_vertical->ComputeThumbQuadRect().origin(),
+            gfx::Point(4, 0));
+
+  PaintedScrollbarLayerImpl* scrollbar_layer_impl_vertical_left =
+      impl_->AddLayer<PaintedScrollbarLayerImpl>(
+          ScrollbarOrientation::VERTICAL,
+          /*is_left_side_vertical_scrollbar=*/true,
+          /*is_overlay=*/false);
+  scrollbar_layer_impl_vertical_left->SetTrackRect(gfx::Rect(0, 0, 14, 100));
+  scrollbar_layer_impl_vertical_left->SetThumbThickness(6);
+  scrollbar_layer_impl_vertical_left->SetBounds(gfx::Size(14, 100));
+  EXPECT_EQ(scrollbar_layer_impl_vertical_left->ComputeThumbQuadRect().origin(),
+            gfx::Point(4, 0));
+
+  PaintedScrollbarLayerImpl* scrollbar_layer_impl_horizontal =
+      impl_->AddLayer<PaintedScrollbarLayerImpl>(
+          ScrollbarOrientation::HORIZONTAL,
+          /*is_left_side_vertical_scrollbar=*/false,
+          /*is_overlay=*/false);
+  scrollbar_layer_impl_horizontal->SetTrackRect(gfx::Rect(0, 0, 100, 14));
+  scrollbar_layer_impl_horizontal->SetThumbThickness(6);
+  EXPECT_EQ(scrollbar_layer_impl_horizontal->ComputeThumbQuadRect().origin(),
+            gfx::Point(0, 4));
 }
 
 }  // namespace

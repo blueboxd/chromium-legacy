@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -134,7 +134,7 @@
 
 #if BUILDFLAG(ENABLE_CROS_LIBASSISTANT)
 #include "chromeos/ash/services/assistant/audio_decoder/assistant_audio_decoder_factory.h"  // nogncheck
-#include "chromeos/services/libassistant/libassistant_service.h"  // nogncheck
+#include "chromeos/ash/services/libassistant/libassistant_service.h"  // nogncheck
 #endif  // BUILDFLAG(ENABLE_CROS_LIBASSISTANT)
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
@@ -388,9 +388,9 @@ auto RunTtsService(
 }
 
 auto RunLocalSearchService(
-    mojo::PendingReceiver<
-        chromeos::local_search_service::mojom::LocalSearchService> receiver) {
-  return std::make_unique<chromeos::local_search_service::LocalSearchService>(
+    mojo::PendingReceiver<ash::local_search_service::mojom::LocalSearchService>
+        receiver) {
+  return std::make_unique<ash::local_search_service::LocalSearchService>(
       std::move(receiver));
 }
 

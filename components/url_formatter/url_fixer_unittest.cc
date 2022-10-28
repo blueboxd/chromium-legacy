@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright 2011 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -106,6 +106,17 @@ static const SegmentCase segment_cases[] = {
         url::Component(),       // path
         url::Component(23, 3),  // query
         url::Component(27, 0),  // ref
+    },
+    {
+        " \u00A0 www.google.com", "http",
+        url::Component(),       // scheme
+        url::Component(),       // username
+        url::Component(),       // password
+        url::Component(4, 14),  // host
+        url::Component(),       // port
+        url::Component(),       // path
+        url::Component(),       // query
+        url::Component(),       // ref
     },
     {
         "user@www.google.com", "http",

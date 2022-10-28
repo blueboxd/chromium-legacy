@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -30,6 +30,7 @@
 #include "chrome/common/chrome_features.h"
 #include "chromeos/lacros/lacros_service.h"
 #include "components/content_settings/core/common/content_settings_pattern.h"
+#include "components/services/app_service/public/cpp/capability_access.h"
 #include "components/services/app_service/public/cpp/intent.h"
 #include "components/services/app_service/public/cpp/intent_util.h"
 #include "content/public/browser/render_frame_host.h"
@@ -73,10 +74,10 @@ LacrosWebAppsController::LacrosWebAppsController(Profile* profile)
       publisher_helper_(profile,
                         provider_,
                         /*swa_manager=*/nullptr,
-                        apps::AppType::kWeb,
                         this,
                         /*observe_media_requests=*/true) {
   DCHECK(provider_);
+  DCHECK_EQ(publisher_helper_.app_type(), apps::AppType::kWeb);
 }
 
 LacrosWebAppsController::~LacrosWebAppsController() = default;
@@ -183,8 +184,7 @@ void LacrosWebAppsController::OpenNativeSettings(const std::string& app_id) {
 
 void LacrosWebAppsController::SetWindowMode(const std::string& app_id,
                                             apps::WindowMode window_mode) {
-  return publisher_helper().SetWindowMode(
-      app_id, apps::ConvertWindowModeToMojomWindowMode(window_mode));
+  return publisher_helper().SetWindowMode(app_id, window_mode);
 }
 
 void LacrosWebAppsController::GetMenuModel(const std::string& app_id,
@@ -417,22 +417,10 @@ void LacrosWebAppsController::ModifyWebAppCapabilityAccess(
     return;
   }
 
-  std::vector<apps::mojom::CapabilityAccessPtr> capability_accesses;
-  auto capability_access = apps::mojom::CapabilityAccess::New();
-  capability_access->app_id = app_id;
-
-  if (accessing_camera.has_value()) {
-    capability_access->camera = accessing_camera.value()
-                                    ? apps::mojom::OptionalBool::kTrue
-                                    : apps::mojom::OptionalBool::kFalse;
-  }
-
-  if (accessing_microphone.has_value()) {
-    capability_access->microphone = accessing_microphone.value()
-                                        ? apps::mojom::OptionalBool::kTrue
-                                        : apps::mojom::OptionalBool::kFalse;
-  }
-
+  std::vector<apps::CapabilityAccessPtr> capability_accesses;
+  auto capability_access = std::make_unique<apps::CapabilityAccess>(app_id);
+  capability_access->camera = accessing_camera;
+  capability_access->microphone = accessing_microphone;
   capability_accesses.push_back(std::move(capability_access));
 
   if (remote_publisher_version_ <

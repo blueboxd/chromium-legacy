@@ -11,7 +11,7 @@
 
 <base-page>
   <div slot="left-pane">
-    <h1>[[i18n('restockTitleText')]]</h1>
+    <h1 tabindex="-1">[[i18n('restockTitleText')]]</h1>
     <div class="instructions">[[i18n('restockInstructionsText')]]</div>
     <div id="navigationButtonWrapper">
       <cr-button id="continue" class="action-button"
@@ -26,7 +26,7 @@
     </div>
   </div>
   <div slot="right-pane">
-    <div class="illustration-wrapper">
+    <div class="illustration-wrapper" aria-hidden="true">
       <img class="illustration" src="illustrations/repair_start.svg"
           alt="[[i18n('repairStartAltText')]]">
     </div>

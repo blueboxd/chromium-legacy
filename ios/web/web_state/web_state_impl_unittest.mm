@@ -1,30 +1,30 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #import "ios/web/web_state/web_state_impl.h"
 
-#include <stddef.h>
+#import <stddef.h>
 
-#include <memory>
+#import <memory>
 
 #import <OCMock/OCMock.h>
 
-#include "base/base64.h"
-#include "base/bind.h"
-#include "base/logging.h"
-#include "base/mac/foundation_util.h"
+#import "base/base64.h"
+#import "base/bind.h"
+#import "base/logging.h"
+#import "base/mac/foundation_util.h"
 #import "base/strings/sys_string_conversions.h"
-#include "base/test/gmock_callback_support.h"
+#import "base/test/gmock_callback_support.h"
 #import "base/test/ios/wait_util.h"
-#include "base/test/scoped_feature_list.h"
-#include "ios/web/common/features.h"
+#import "base/test/scoped_feature_list.h"
+#import "ios/web/common/features.h"
 #import "ios/web/common/uikit_ui_util.h"
 #import "ios/web/navigation/navigation_context_impl.h"
 #import "ios/web/navigation/navigation_item_impl.h"
 #import "ios/web/navigation/serializable_user_data_manager_impl.h"
 #import "ios/web/navigation/wk_navigation_util.h"
-#include "ios/web/public/deprecated/global_web_state_observer.h"
+#import "ios/web/public/deprecated/global_web_state_observer.h"
 #import "ios/web/public/navigation/navigation_item.h"
 #import "ios/web/public/navigation/web_state_policy_decider.h"
 #import "ios/web/public/session/crw_navigation_item_storage.h"
@@ -36,21 +36,21 @@
 #import "ios/web/public/test/fakes/fake_web_frame.h"
 #import "ios/web/public/test/fakes/fake_web_state_delegate.h"
 #import "ios/web/public/test/fakes/fake_web_state_observer.h"
-#include "ios/web/public/test/web_test.h"
+#import "ios/web/public/test/web_test.h"
 #import "ios/web/public/test/web_view_content_test_util.h"
 #import "ios/web/public/ui/context_menu_params.h"
 #import "ios/web/public/ui/java_script_dialog_presenter.h"
 #import "ios/web/public/web_state_delegate.h"
-#include "ios/web/public/web_state_observer.h"
+#import "ios/web/public/web_state_observer.h"
 #import "ios/web/web_state/global_web_state_event_tracker.h"
 #import "ios/web/web_state/ui/crw_web_controller.h"
-#include "ios/web/web_state/web_state_policy_decider_test_util.h"
-#include "net/http/http_response_headers.h"
-#include "net/http/http_util.h"
-#include "testing/gmock/include/gmock/gmock.h"
-#include "testing/gtest/include/gtest/gtest.h"
+#import "ios/web/web_state/web_state_policy_decider_test_util.h"
+#import "net/http/http_response_headers.h"
+#import "net/http/http_util.h"
+#import "testing/gmock/include/gmock/gmock.h"
+#import "testing/gtest/include/gtest/gtest.h"
 #import "testing/gtest_mac.h"
-#include "url/gurl.h"
+#import "url/gurl.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -119,7 +119,7 @@ class MockWebStatePolicyDecider : public WebStatePolicyDecider {
  public:
   explicit MockWebStatePolicyDecider(WebState* web_state)
       : WebStatePolicyDecider(web_state) {}
-  virtual ~MockWebStatePolicyDecider() {}
+  ~MockWebStatePolicyDecider() override {}
 
   MOCK_METHOD3(ShouldAllowRequest,
                void(NSURLRequest* request,
@@ -136,7 +136,7 @@ class MockWebStatePolicyDecider : public WebStatePolicyDecider {
 };
 
 // Test callback for script commands.
-// Sets |is_called| to true if it is called, and checks that the parameters
+// Sets `is_called` to true if it is called, and checks that the parameters
 // match their expected values.
 void HandleScriptCommand(bool* is_called,
                          base::Value* expected_value,
@@ -183,10 +183,10 @@ class WebStateImplTest : public web::WebTest {
 TEST_F(WebStateImplTest, GetWeakPtr) {
   base::WeakPtr<WebState> weak_ptr = web_state_->GetWeakPtr();
 
-  // Verify that |weak_ptr| points to |web_state_|.
+  // Verify that `weak_ptr` points to `web_state_`.
   EXPECT_EQ(weak_ptr.get(), web_state_.get());
 
-  // Verify that |weak_ptr| is null after |web_state_| destruction.
+  // Verify that `weak_ptr` is null after `web_state_` destruction.
   web_state_.reset();
   EXPECT_EQ(weak_ptr.get(), nullptr);
 }
@@ -847,7 +847,7 @@ TEST_F(WebStateImplTest, ScriptCommand) {
   EXPECT_FALSE(is_called_2);
   EXPECT_FALSE(is_called_3);
   is_called_1 = false;
-  // Check that sending message from iframe sets |is_main_frame| to false.
+  // Check that sending message from iframe sets `is_main_frame` to false.
   web_state_->OnScriptCommandReceived(kCommand3, value_3, kUrl3,
                                       /*user_is_interacting*/ false,
 
@@ -881,7 +881,7 @@ TEST_F(WebStateImplTest, CreatedWithOpener) {
   // Verify that the HasOpener() returns false if not specified in the create
   // params.
   EXPECT_FALSE(web_state_->HasOpener());
-  // Set |created_with_opener| to true and verify that HasOpener() returns true.
+  // Set `created_with_opener` to true and verify that HasOpener() returns true.
   WebState::CreateParams params_with_opener =
       WebState::CreateParams(GetBrowserState());
   params_with_opener.created_with_opener = true;
@@ -960,7 +960,7 @@ TEST_F(WebStateImplTest, UncommittedRestoreSession) {
   web::WebState::CreateParams params(GetBrowserState());
   WebStateImpl web_state(params, session_storage);
 
-  // After restoring |web_state| change the uncommitted state's user data.
+  // After restoring `web_state` change the uncommitted state's user data.
   web::SerializableUserDataManager* user_data_manager =
       web::SerializableUserDataManager::FromWebState(&web_state);
   user_data_manager->AddSerializableData(@(1), @"user_data_key");
@@ -1025,13 +1025,14 @@ TEST_F(WebStateImplTest, BuildStorageDuringRestore) {
 
   // Now wait until the last committed item is fully loaded, and
   // lastCommittedItemIndex goes back to 0.
-  EXPECT_TRUE(WaitUntilConditionOrTimeout(kWaitForPageLoadTimeout, ^{
+  auto block = ^{
     EXPECT_FALSE(
         wk_navigation_util::IsWKInternalUrl(web_state_->GetVisibleURL()));
 
     return !web_state_->GetNavigationManager()->GetPendingItem() &&
            !web_state_->IsLoading() && web_state_->GetLoadingProgress() == 1.0;
-  }));
+  };
+  EXPECT_TRUE(WaitUntilConditionOrTimeout(kWaitForPageLoadTimeout, block));
   session_storage = web_state_->BuildSessionStorage();
   EXPECT_EQ(0, session_storage.lastCommittedItemIndex);
 
@@ -1205,6 +1206,7 @@ TEST_F(WebStateImplTest, VisibilitychangeEventFired) {
 // Test that changing visibility update the WebState last active time.
 TEST_F(WebStateImplTest, LastActiveTimeUpdatedWhenBecomeVisible) {
   base::Time last_active_time = web_state_->GetLastActiveTime();
+  base::Time creation_time = web_state_->GetCreationTime();
 
   // Spin the RunLoop a bit to ensure that the active time changes.
   {
@@ -1220,6 +1222,7 @@ TEST_F(WebStateImplTest, LastActiveTimeUpdatedWhenBecomeVisible) {
   // Mark the WebState has visible. The last active time should be updated.
   web_state_->WasShown();
   EXPECT_GT(web_state_->GetLastActiveTime(), last_active_time);
+  EXPECT_EQ(web_state_->GetCreationTime(), creation_time);
 }
 
 // Tests that WebState sessionState data doesn't load things with unsafe

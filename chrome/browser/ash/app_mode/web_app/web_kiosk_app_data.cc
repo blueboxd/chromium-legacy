@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -22,10 +22,12 @@
 
 namespace ash {
 
+constexpr int kWebKioskIconSize = 128;  // size of the icon in px.
+
 namespace {
-constexpr int kIconSize = 128;  // size of the icon in px.
 // Maximum image size is 256x256..
-constexpr int kMaxIconFileSize = (2 * kIconSize) * (2 * kIconSize) * 4 + 1000;
+constexpr int kMaxIconFileSize =
+    (2 * kWebKioskIconSize) * (2 * kWebKioskIconSize) * 4 + 1000;
 
 const char kKeyLaunchUrl[] = "launch_url";
 const char kKeyLastIconUrl[] = "last_icon_url";
@@ -121,7 +123,7 @@ class WebKioskAppData::IconFetcher : public ImageDecoder::ImageRequest {
     }
 
     int size = decoded_image.width();
-    if (size == kIconSize) {
+    if (size == kWebKioskIconSize) {
       client_->OnDidDownloadIcon(decoded_image);
       return;
     }
@@ -130,7 +132,7 @@ class WebKioskAppData::IconFetcher : public ImageDecoder::ImageRequest {
         FROM_HERE,
         {base::TaskPriority::USER_VISIBLE,
          base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
-        base::BindOnce(ResizeImageBlocking, decoded_image, kIconSize),
+        base::BindOnce(ResizeImageBlocking, decoded_image, kWebKioskIconSize),
         base::BindOnce(&WebKioskAppData::OnDidDownloadIcon, client_));
   }
 
@@ -164,7 +166,7 @@ WebKioskAppData::~WebKioskAppData() = default;
 
 bool WebKioskAppData::LoadFromCache() {
   PrefService* local_state = g_browser_process->local_state();
-  const base::Value::Dict& dict = local_state->GetValueDict(dictionary_name());
+  const base::Value::Dict& dict = local_state->GetDict(dictionary_name());
 
   if (!LoadFromDictionary(dict, /* lazy_icon_load= */ true))
     return false;
@@ -213,13 +215,21 @@ GURL WebKioskAppData::GetLaunchableUrl() const {
 }
 
 void WebKioskAppData::UpdateFromWebAppInfo(const WebAppInstallInfo& app_info) {
-  name_ = base::UTF16ToUTF8(app_info.title);
+  UpdateAppInfo(base::UTF16ToUTF8(app_info.title), app_info.start_url,
+                app_info.icon_bitmaps);
+}
+
+void WebKioskAppData::UpdateAppInfo(const std::string& title,
+                                    const GURL& start_url,
+                                    const IconBitmaps& icon_bitmaps) {
+  name_ = title;
+
   base::FilePath cache_dir;
   if (delegate_)
     delegate_->GetKioskAppIconCacheDir(&cache_dir);
 
-  auto it = app_info.icon_bitmaps.any.find(kIconSize);
-  if (it != app_info.icon_bitmaps.any.end()) {
+  auto it = icon_bitmaps.any.find(kWebKioskIconSize);
+  if (it != icon_bitmaps.any.end()) {
     const SkBitmap& bitmap = it->second;
     icon_ = gfx::ImageSkia::CreateFrom1xBitmap(bitmap);
     icon_.MakeThreadSafe();
@@ -230,7 +240,7 @@ void WebKioskAppData::UpdateFromWebAppInfo(const WebAppInstallInfo& app_info) {
   DictionaryPrefUpdate dict_update(local_state, dictionary_name());
   SaveToDictionary(dict_update);
 
-  launch_url_ = GURL(app_info.start_url);
+  launch_url_ = start_url;
   dict_update->FindDictKey(KioskAppDataBase::kKeyApps)
       ->FindDictKey(app_id())
       ->SetStringKey(kKeyLaunchUrl, launch_url_.spec());

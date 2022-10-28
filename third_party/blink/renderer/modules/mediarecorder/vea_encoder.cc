@@ -9,6 +9,7 @@
 #include <utility>
 
 #include "base/metrics/histogram_macros.h"
+#include "base/numerics/checked_math.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/task/sequenced_task_runner.h"
 #include "base/trace_event/trace_event.h"
@@ -49,15 +50,16 @@ const uint32_t kMaxKeyframeInterval = 100;
 scoped_refptr<VEAEncoder> VEAEncoder::Create(
     const VideoTrackRecorder::OnEncodedVideoCB& on_encoded_video_cb,
     const VideoTrackRecorder::OnErrorCB& on_error_cb,
+    media::Bitrate::Mode bitrate_mode,
     uint32_t bits_per_second,
     media::VideoCodecProfile codec,
     absl::optional<uint8_t> level,
     const gfx::Size& size,
     bool use_native_input,
     scoped_refptr<base::SequencedTaskRunner> task_runner) {
-  auto encoder = base::AdoptRef(new VEAEncoder(on_encoded_video_cb, on_error_cb,
-                                               bits_per_second, codec, level,
-                                               size, std::move(task_runner)));
+  auto encoder = base::AdoptRef(new VEAEncoder(
+      on_encoded_video_cb, on_error_cb, bitrate_mode, bits_per_second, codec,
+      level, size, std::move(task_runner)));
   PostCrossThreadTask(
       *encoder->encoding_task_runner_.get(), FROM_HERE,
       CrossThreadBindOnce(&VEAEncoder::ConfigureEncoderOnEncodingTaskRunner,
@@ -72,6 +74,7 @@ bool VEAEncoder::OutputBuffer::IsValid() {
 VEAEncoder::VEAEncoder(
     const VideoTrackRecorder::OnEncodedVideoCB& on_encoded_video_cb,
     const VideoTrackRecorder::OnErrorCB& on_error_cb,
+    media::Bitrate::Mode bitrate_mode,
     uint32_t bits_per_second,
     media::VideoCodecProfile codec,
     absl::optional<uint8_t> level,
@@ -85,6 +88,7 @@ VEAEncoder::VEAEncoder(
       gpu_factories_(Platform::Current()->GetGpuFactories()),
       codec_(codec),
       level_(level),
+      bitrate_mode_(bitrate_mode),
       error_notified_(false),
       num_frames_after_keyframe_(0),
       force_next_frame_to_be_keyframe_(false),
@@ -126,7 +130,7 @@ void VEAEncoder::RequireBitstreamBuffers(unsigned int /*input_count*/,
 
   vea_requested_input_coded_size_ = input_coded_size;
   output_buffers_.clear();
-  base::queue<std::unique_ptr<InputBuffer>>().swap(input_buffers_);
+  input_buffers_.clear();
 
   for (int i = 0; i < kVEAEncoderOutputBufferCount; ++i) {
     auto output_buffer = std::make_unique<OutputBuffer>();
@@ -191,10 +195,11 @@ void VEAEncoder::UseOutputBitstreamBufferId(int32_t bitstream_buffer_id) {
       output_buffers_[bitstream_buffer_id]->region.GetSize()));
 }
 
-void VEAEncoder::FrameFinished(std::unique_ptr<InputBuffer> shm) {
+void VEAEncoder::FrameFinished(
+    std::unique_ptr<base::MappedReadOnlyRegion> shm) {
   DVLOG(3) << __func__;
   DCHECK_CALLED_ON_VALID_SEQUENCE(encoding_sequence_checker_);
-  input_buffers_.push(std::move(shm));
+  input_buffers_.push_back(std::move(shm));
 }
 
 void VEAEncoder::EncodeOnEncodingTaskRunner(scoped_refptr<VideoFrame> frame,
@@ -254,16 +259,17 @@ void VEAEncoder::EncodeOnEncodingTaskRunner(scoped_refptr<VideoFrame> frame,
     // instances will be shared with GPU process.
     const size_t desired_mapped_size = media::VideoFrame::AllocationSize(
         media::PIXEL_FORMAT_I420, vea_requested_input_coded_size_);
-    auto input_buffer = std::make_unique<InputBuffer>();
-    if (input_buffers_.empty()) {
-      input_buffer->region =
-          gpu_factories_->CreateSharedMemoryRegion(desired_mapped_size);
-      input_buffer->mapping = input_buffer->region.Map();
+    std::unique_ptr<base::MappedReadOnlyRegion> input_buffer;
+    if (input_buffers_.IsEmpty()) {
+      input_buffer = std::make_unique<base::MappedReadOnlyRegion>(
+          base::ReadOnlySharedMemoryRegion::Create(desired_mapped_size));
+      if (!input_buffer->IsValid())
+        return;
     } else {
       do {
-        input_buffer = std::move(input_buffers_.front());
-        input_buffers_.pop();
-      } while (!input_buffers_.empty() &&
+        input_buffer = std::move(input_buffers_.back());
+        input_buffers_.pop_back();
+      } while (!input_buffers_.IsEmpty() &&
                input_buffer->mapping.size() < desired_mapped_size);
       if (!input_buffer || input_buffer->mapping.size() < desired_mapped_size)
         return;
@@ -278,23 +284,24 @@ void VEAEncoder::EncodeOnEncodingTaskRunner(scoped_refptr<VideoFrame> frame,
       NotifyError(media::VideoEncodeAccelerator::kPlatformFailureError);
       return;
     }
+    libyuv::I420Copy(
+        frame->visible_data(media::VideoFrame::kYPlane),
+        frame->stride(media::VideoFrame::kYPlane),
+        frame->visible_data(media::VideoFrame::kUPlane),
+        frame->stride(media::VideoFrame::kUPlane),
+        frame->visible_data(media::VideoFrame::kVPlane),
+        frame->stride(media::VideoFrame::kVPlane),
+        video_frame->GetWritableVisibleData(media::VideoFrame::kYPlane),
+        video_frame->stride(media::VideoFrame::kYPlane),
+        video_frame->GetWritableVisibleData(media::VideoFrame::kUPlane),
+        video_frame->stride(media::VideoFrame::kUPlane),
+        video_frame->GetWritableVisibleData(media::VideoFrame::kVPlane),
+        video_frame->stride(media::VideoFrame::kVPlane),
+        input_visible_size_.width(), input_visible_size_.height());
     video_frame->BackWithSharedMemory(&input_buffer->region);
     video_frame->AddDestructionObserver(media::BindToCurrentLoop(
         WTF::Bind(&VEAEncoder::FrameFinished, WrapRefCounted(this),
                   std::move(input_buffer))));
-    libyuv::I420Copy(frame->visible_data(media::VideoFrame::kYPlane),
-                     frame->stride(media::VideoFrame::kYPlane),
-                     frame->visible_data(media::VideoFrame::kUPlane),
-                     frame->stride(media::VideoFrame::kUPlane),
-                     frame->visible_data(media::VideoFrame::kVPlane),
-                     frame->stride(media::VideoFrame::kVPlane),
-                     video_frame->visible_data(media::VideoFrame::kYPlane),
-                     video_frame->stride(media::VideoFrame::kYPlane),
-                     video_frame->visible_data(media::VideoFrame::kUPlane),
-                     video_frame->stride(media::VideoFrame::kUPlane),
-                     video_frame->visible_data(media::VideoFrame::kVPlane),
-                     video_frame->stride(media::VideoFrame::kVPlane),
-                     input_visible_size_.width(), input_visible_size_.height());
   }
   frames_in_encode_.push(std::make_pair(
       media::WebmMuxer::VideoParameters(frame), capture_timestamp));
@@ -325,12 +332,27 @@ void VEAEncoder::ConfigureEncoderOnEncodingTaskRunner(const gfx::Size& size,
         media::VideoEncodeAccelerator::Config::StorageType::kGpuMemoryBuffer;
   }
 
+  auto bitrate = media::Bitrate::ConstantBitrate(bits_per_second_);
+  if (bitrate_mode_ == media::Bitrate::Mode::kVariable) {
+    constexpr uint32_t kNumPixelsIn4KResolution = 3840 * 2160;
+    constexpr uint32_t kMaxAllowedBitrate =
+        kNumPixelsIn4KResolution * kVEADefaultBitratePerPixel;
+    const uint32_t max_peak_bps =
+        std::max(bits_per_second_, kMaxAllowedBitrate);
+    // This magnification is determined in crbug.com/1342850.
+    constexpr uint32_t kPeakBpsMagnification = 2;
+    base::CheckedNumeric<uint32_t> peak_bps = bits_per_second_;
+    peak_bps *= kPeakBpsMagnification;
+    bitrate = media::Bitrate::VariableBitrate(
+        bits_per_second_,
+        base::strict_cast<uint32_t>(peak_bps.ValueOrDefault(max_peak_bps)));
+  }
+
   // TODO(b/181797390): Use VBR bitrate mode.
   // TODO(crbug.com/1289907): remove the cast to uint32_t once
   // |bits_per_second_| is stored as uint32_t.
   const media::VideoEncodeAccelerator::Config config(
-      pixel_format, input_visible_size_, codec_,
-      media::Bitrate::ConstantBitrate(bits_per_second_), absl::nullopt,
+      pixel_format, input_visible_size_, codec_, bitrate, absl::nullopt,
       absl::nullopt, level_, false, storage_type,
       media::VideoEncodeAccelerator::Config::ContentType::kCamera);
   if (!video_encoder_ ||

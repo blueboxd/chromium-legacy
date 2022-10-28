@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -375,6 +375,61 @@ suite('PaymentsSection', function() {
         getCardRowShadowRoot(section.$.paymentsList)
             .querySelector<HTMLElement>(
                 '#summarySublabel')!.textContent!.trim());
+  });
+
+  test('verifyPaymentsLabel', function() {
+    loadTimeData.overrideValues({
+      virtualCardMetadataEnabled: false,
+    });
+    const creditCard = createCreditCardEntry();
+    creditCard.metadata!.isLocal = false;
+    creditCard.metadata!.isVirtualCardEnrollmentEligible = false;
+    creditCard.metadata!.isVirtualCardEnrolled = false;
+    const section =
+        createPaymentsSection([creditCard], /*upiIds=*/[], /*prefValues=*/ {});
+
+    const creditCardList = section.$.paymentsList;
+    assertTrue(!!creditCardList);
+    assertEquals(1, getLocalAndServerCreditCardListItems().length);
+    assertFalse(getCardRowShadowRoot(section.$.paymentsList)
+                    .querySelector<HTMLElement>('#paymentsLabel')!.hidden);
+    assertTrue(getCardRowShadowRoot(section.$.paymentsList)
+                   .querySelector<HTMLElement>('#paymentsIndicator')!.hidden);
+  });
+
+  test('verifyPaymentsIndicator', function() {
+    loadTimeData.overrideValues({
+      virtualCardMetadataEnabled: true,
+    });
+    const creditCard = createCreditCardEntry();
+    creditCard.metadata!.isLocal = false;
+    creditCard.metadata!.isVirtualCardEnrollmentEligible = false;
+    creditCard.metadata!.isVirtualCardEnrolled = false;
+    const section =
+        createPaymentsSection([creditCard], /*upiIds=*/[], /*prefValues=*/ {});
+
+    const creditCardList = section.$.paymentsList;
+    assertTrue(!!creditCardList);
+    assertEquals(1, getLocalAndServerCreditCardListItems().length);
+    assertTrue(getCardRowShadowRoot(section.$.paymentsList)
+                   .querySelector<HTMLElement>('#paymentsLabel')!.hidden);
+    assertFalse(getCardRowShadowRoot(section.$.paymentsList)
+                    .querySelector<HTMLElement>('#paymentsIndicator')!.hidden);
+  });
+
+  test('verifyCardImage', function() {
+    loadTimeData.overrideValues({
+      virtualCardMetadataEnabled: true,
+    });
+    const creditCard = createCreditCardEntry();
+    const section =
+        createPaymentsSection([creditCard], /*upiIds=*/[], /*prefValues=*/ {});
+
+    const creditCardList = section.$.paymentsList;
+    assertTrue(!!creditCardList);
+    assertEquals(1, getLocalAndServerCreditCardListItems().length);
+    assertFalse(getCardRowShadowRoot(section.$.paymentsList)
+                    .querySelector<HTMLElement>('#cardImage')!.hidden);
   });
 
   test('verifyAddVsEditCreditCardTitle', function() {

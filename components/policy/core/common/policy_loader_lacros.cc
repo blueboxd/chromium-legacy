@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -141,11 +141,12 @@ std::unique_ptr<PolicyBundle> PolicyLoaderLacros::Load() {
   bundle->Get(PolicyNamespace(POLICY_DOMAIN_CHROME, std::string()))
       .MergeFrom(policy_map);
 
-  // Remember if the policy is managed or not.
-  g_is_main_user_managed_ = IsManaged(*validator.policy_data());
-  if (g_is_main_user_managed_ &&
-      per_profile_ == PolicyPerProfileFilter::kFalse) {
-    *MainUserPolicyDataStorage() = *validator.policy_data();
+  // Remember if the main profile is managed or not.
+  if (per_profile_ == PolicyPerProfileFilter::kFalse) {
+    g_is_main_user_managed_ = IsManaged(*validator.policy_data());
+    if (g_is_main_user_managed_) {
+      *MainUserPolicyDataStorage() = *validator.policy_data();
+    }
   }
   policy_data_ = std::move(validator.policy_data());
 

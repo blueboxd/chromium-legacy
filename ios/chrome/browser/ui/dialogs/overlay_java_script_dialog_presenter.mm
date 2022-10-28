@@ -1,13 +1,13 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #import "ios/chrome/browser/ui/dialogs/overlay_java_script_dialog_presenter.h"
 
-#include "base/bind.h"
-#include "base/metrics/histogram_macros.h"
+#import "base/bind.h"
+#import "base/metrics/histogram_macros.h"
 #import "base/strings/sys_string_conversions.h"
-#include "ios/chrome/browser/overlays/public/overlay_callback_manager.h"
+#import "ios/chrome/browser/overlays/public/overlay_callback_manager.h"
 #import "ios/chrome/browser/overlays/public/overlay_request.h"
 #import "ios/chrome/browser/overlays/public/overlay_request_queue.h"
 #import "ios/chrome/browser/overlays/public/overlay_response.h"

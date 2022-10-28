@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_WEBUI_CHROMEOS_CROSTINI_UPGRADER_CROSTINI_UPGRADER_UI_H_
 
 #include "base/callback.h"
+#include "base/memory/weak_ptr.h"
 #include "chrome/browser/ui/webui/chromeos/crostini_upgrader/crostini_upgrader.mojom.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
@@ -43,6 +44,10 @@ class CrostiniUpgraderUI
                      chromeos::crostini_upgrader::mojom::PageHandlerFactory>
                          pending_receiver);
 
+  base::WeakPtr<CrostiniUpgraderUI> GetWeakPtr() {
+    return weak_ptr_factory_.GetWeakPtr();
+  }
+
  private:
   // chromeos::crostini_upgrader::mojom::PageHandlerFactory:
   void CreatePageHandler(
@@ -61,6 +66,8 @@ class CrostiniUpgraderUI
   base::OnceCallback<void(bool)> launch_callback_;
 
   bool page_closed_ = false;
+
+  base::WeakPtrFactory<CrostiniUpgraderUI> weak_ptr_factory_{this};
 
   WEB_UI_CONTROLLER_TYPE_DECL();
 };

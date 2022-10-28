@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -48,7 +48,7 @@ class ExtensionOverrideTest : public ExtensionApiTest {
   bool CheckHistoryOverridesContainsNoDupes() {
     // There should be no duplicate entries in the preferences.
     const base::Value::Dict& overrides =
-        browser()->profile()->GetPrefs()->GetValueDict(
+        browser()->profile()->GetPrefs()->GetDict(
             ExtensionWebUI::kExtensionURLOverrides);
 
     const base::Value::List* values = overrides.FindList("history");

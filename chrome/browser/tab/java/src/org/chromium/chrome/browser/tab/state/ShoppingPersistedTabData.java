@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -14,11 +14,11 @@ import com.google.protobuf.InvalidProtocolBufferException;
 import org.chromium.base.Callback;
 import org.chromium.base.FeatureList;
 import org.chromium.base.Log;
-import org.chromium.base.annotations.DoNotClassMerge;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.supplier.ObservableSupplierImpl;
 import org.chromium.base.task.PostTask;
 import org.chromium.base.task.TaskTraits;
+import org.chromium.build.annotations.DoNotClassMerge;
 import org.chromium.chrome.browser.commerce.PriceUtils;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.optimization_guide.OptimizationGuideBridgeFactory;

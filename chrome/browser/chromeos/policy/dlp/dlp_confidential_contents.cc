@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -58,6 +58,11 @@ DlpConfidentialContent::DlpConfidentialContent(aura::Window* window,
     : icon(GetWindowIcon(window)),
       title(window->GetTitle()),
       url(GetWithoutRef(url)) {}
+
+DlpConfidentialContent::DlpConfidentialContent(const gfx::ImageSkia& icon,
+                                               const std::u16string& title,
+                                               const GURL& url)
+    : icon(icon), title(title), url(url) {}
 
 DlpConfidentialContent::DlpConfidentialContent(
     const DlpConfidentialContent& other) = default;
@@ -125,6 +130,12 @@ void DlpConfidentialContents::Add(content::WebContents* web_contents) {
 
 void DlpConfidentialContents::Add(aura::Window* window, const GURL& url) {
   contents_.insert(DlpConfidentialContent(window, url));
+}
+
+void DlpConfidentialContents::Add(const gfx::ImageSkia& icon,
+                                  const std::u16string& title,
+                                  const GURL& url) {
+  contents_.insert(DlpConfidentialContent(icon, title, url));
 }
 
 void DlpConfidentialContents::ClearAndAdd(content::WebContents* web_contents) {

@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -81,7 +81,6 @@
 #include "chrome/android/chrome_jni_headers/PushMessagingServiceObserver_jni.h"
 #include "chrome/browser/installable/installed_webapp_bridge.h"
 #include "components/permissions/android/android_permission_util.h"
-#include "components/prefs/pref_service.h"
 #endif
 
 using instance_id::InstanceID;

@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 #include "chromeos/ash/components/dbus/cdm_factory_daemon/cdm_factory_daemon_client.h"
@@ -49,7 +49,7 @@ class CdmFactoryDaemonClientImpl : public CdmFactoryDaemonClient {
   }
 
   void WaitForServiceToBeAvailable(
-      WaitForServiceToBeAvailableCallback callback) override {
+      chromeos::WaitForServiceToBeAvailableCallback callback) override {
     proxy_->WaitForServiceToBeAvailable(std::move(callback));
   }
 

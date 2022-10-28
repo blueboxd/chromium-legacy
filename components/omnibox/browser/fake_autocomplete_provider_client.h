@@ -1,4 +1,4 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -78,6 +78,9 @@ class FakeAutocompleteProviderClient : public MockAutocompleteProviderClient {
     history_clusters_service_ = service;
   }
 
+  // There should be no reason to set this unless the tested provider actually
+  // uses the AutocompleteProviderClient's InMemoryURLIndex, like the
+  // HistoryQuickProvider does.
   void set_in_memory_url_index(std::unique_ptr<InMemoryURLIndex> index) {
     in_memory_url_index_ = std::move(index);
   }

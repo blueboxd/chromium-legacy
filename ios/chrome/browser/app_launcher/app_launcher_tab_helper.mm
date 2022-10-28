@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,24 +6,23 @@
 
 #import <UIKit/UIKit.h>
 
-#include "base/memory/ptr_util.h"
-#include "base/metrics/histogram_macros.h"
+#import "base/memory/ptr_util.h"
+#import "base/metrics/histogram_macros.h"
 #import "base/strings/sys_string_conversions.h"
-#include "components/policy/core/browser/url_blocklist_manager.h"
-#include "components/reading_list/core/reading_list_model.h"
+#import "components/policy/core/browser/url_blocklist_manager.h"
+#import "components/reading_list/core/reading_list_model.h"
 #import "ios/chrome/browser/app_launcher/app_launcher_tab_helper_delegate.h"
-#include "ios/chrome/browser/browser_state/chrome_browser_state.h"
+#import "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/chrome_url_util.h"
 #import "ios/chrome/browser/policy_url_blocking/policy_url_blocking_service.h"
 #import "ios/chrome/browser/policy_url_blocking/policy_url_blocking_util.h"
-#include "ios/chrome/browser/reading_list/reading_list_model_factory.h"
-#import "ios/chrome/browser/u2f/u2f_tab_helper.h"
+#import "ios/chrome/browser/reading_list/reading_list_model_factory.h"
 #import "ios/web/common/url_scheme_util.h"
 #import "ios/web/public/navigation/navigation_item.h"
 #import "ios/web/public/navigation/navigation_manager.h"
 #import "ios/web/public/web_client.h"
 #import "net/base/mac/url_conversions.h"
-#include "url/gurl.h"
+#import "url/gurl.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -36,12 +35,6 @@ bool IsValidAppUrl(const GURL& app_url) {
     return false;
 
   if (!app_url.has_scheme())
-    return false;
-
-  // If the url is a direct FIDO U2F x-callback call, consider it as invalid, to
-  // prevent pages from spoofing requests with different origins.
-  // See https://crbug.com/897329#c2 for details on how U2F works.
-  if (app_url.SchemeIs("u2f-x-callback"))
     return false;
 
   // Block attempts to open this application's settings in the native system
@@ -213,23 +206,6 @@ void AppLauncherTabHelper::ShouldAllowRequest(
   if (!IsValidAppUrl(request_url)) {
     return std::move(callback).Run(
         web::WebStatePolicyDecider::PolicyDecision::Cancel());
-  }
-
-  // If this is a Universal 2nd Factor (U2F) call, the origin needs to be
-  // checked to make sure it's secure and then update the `request_url` with
-  // the generated x-callback GURL based on x-callback-url specs.
-  if (request_url.SchemeIs("u2f")) {
-    GURL origin = web_state_->GetNavigationManager()
-                      ->GetLastCommittedItem()
-                      ->GetURL()
-                      .DeprecatedGetOriginAsURL();
-    U2FTabHelper* u2f_helper = U2FTabHelper::FromWebState(web_state_);
-    request_url = u2f_helper->GetXCallbackUrl(request_url, origin);
-    // If the URL was rejected by the U2F handler, `request_url` will be empty.
-    if (!request_url.is_valid()) {
-      return std::move(callback).Run(
-          web::WebStatePolicyDecider::PolicyDecision::Cancel());
-    }
   }
 
   GURL last_committed_url = web_state_->GetLastCommittedURL();

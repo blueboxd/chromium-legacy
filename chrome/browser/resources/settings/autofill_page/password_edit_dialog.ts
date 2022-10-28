@@ -1,4 +1,4 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,8 +11,8 @@ import 'chrome://resources/cr_elements/cr_button/cr_button.js';
 import 'chrome://resources/cr_elements/cr_dialog/cr_dialog.js';
 import 'chrome://resources/cr_elements/cr_icon_button/cr_icon_button.js';
 import 'chrome://resources/cr_elements/cr_input/cr_input.js';
-import 'chrome://resources/cr_elements/cr_icons_css.m.js';
-import 'chrome://resources/cr_elements/shared_vars_css.m.js';
+import 'chrome://resources/cr_elements/cr_icons.css.js';
+import 'chrome://resources/cr_elements/cr_shared_vars.css.js';
 import '../icons.html.js';
 import '../settings_shared.css.js';
 import '../settings_vars.css.js';
@@ -28,8 +28,10 @@ import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bu
 import {loadTimeData} from '../i18n_setup.js';
 
 import {getTemplate} from './password_edit_dialog.html.js';
+import {PasswordListItemElement} from './password_list_item.js';
 import {PasswordManagerImpl} from './password_manager_proxy.js';
 import {PasswordRequestorMixin} from './password_requestor_mixin.js';
+import {PASSWORD_VIEW_PAGE_REQUESTED_EVENT_NAME} from './password_view.js';
 
 export type SavedPasswordEditedEvent =
     CustomEvent<chrome.passwordsPrivate.PasswordUiEntry>;
@@ -257,7 +259,7 @@ export class PasswordEditDialogElement extends PasswordEditDialogElementBase {
         },
       },
 
-      /* If true, change event will be dispatched. */
+      /* Enables dispatching change events and extending auth. */
       isPasswordViewPageEnabled_: {
         type: Boolean,
         value() {
@@ -265,6 +267,12 @@ export class PasswordEditDialogElement extends PasswordEditDialogElementBase {
         },
       },
     };
+  }
+
+  static get observers() {
+    return [
+      'extendAuthValidityOnUserInteraction_(username_, password_, note_)',
+    ];
   }
 
   existingEntry: chrome.passwordsPrivate.PasswordUiEntry|null;
@@ -712,6 +720,18 @@ export class PasswordEditDialogElement extends PasswordEditDialogElementBase {
       return entry.urls.signonRealm === this.websiteUrls_!.signonRealm &&
           entry.username === this.username_;
     })!;
+    if (this.isPasswordViewPageEnabled_) {
+      // wrap the id in a PasswordListItemElement:
+      this.dispatchEvent(
+          new CustomEvent(PASSWORD_VIEW_PAGE_REQUESTED_EVENT_NAME, {
+            bubbles: true,
+            composed: true,
+            detail: {entry: existingEntry} as unknown as
+                PasswordListItemElement,
+          }));
+      this.close();
+      return;
+    }
     this.requestPlaintextPassword(
             existingEntry.id, chrome.passwordsPrivate.PlaintextReason.EDIT)
         .then(password => {
@@ -779,6 +799,13 @@ export class PasswordEditDialogElement extends PasswordEditDialogElementBase {
       usernamesByOrigin.get(origin).add(entry.username);
       return usernamesByOrigin;
     }, new Map());
+  }
+
+  private extendAuthValidityOnUserInteraction_() {
+    if (!this.isPasswordViewPageEnabled_) {
+      return;
+    }
+    PasswordManagerImpl.getInstance().extendAuthValidity();
   }
 }
 

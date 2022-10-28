@@ -1,8 +1,28 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-/* #js_imports_placeholder */
+import '//resources/cr_elements/cr_shared_style.css.js';
+import '//resources/cr_elements/cr_button/cr_button.js';
+import '//resources/cr_elements/cr_input/cr_input.js';
+import '//resources/polymer/v3_0/iron-icon/iron-icon.js';
+import '../../components/oobe_icons.m.js';
+import '../../components/common_styles/common_styles.m.js';
+import '../../components/common_styles/oobe_dialog_host_styles.m.js';
+import '../../components/dialogs/oobe_adaptive_dialog.m.js';
+import '../../components/dialogs/oobe_loading_dialog.m.js';
+import '../../components/dialogs/oobe_modal_dialog.m.js';
+import '../../components/buttons/oobe_next_button.m.js';
+import '../../components/buttons/oobe_text_button.m.js';
+
+import {html, mixinBehaviors, PolymerElement} from '//resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+
+import {LoginScreenBehavior, LoginScreenBehaviorInterface} from '../../components/behaviors/login_screen_behavior.m.js';
+import {MultiStepBehavior, MultiStepBehaviorInterface} from '../../components/behaviors/multi_step_behavior.m.js';
+import {OobeI18nBehavior, OobeI18nBehaviorInterface} from '../../components/behaviors/oobe_i18n_behavior.m.js';
+import {OOBE_UI_STATE} from '../../components/display_manager_types.m.js';
+import {addSubmitListener} from '../../login_ui_tools.m.js';
+
 
 /**
  * UI mode for the dialog.
@@ -20,9 +40,8 @@ const SamlConfirmPasswordState = {
  * @implements {MultiStepBehaviorInterface}
  * @implements {OobeI18nBehaviorInterface}
  */
- const SamlConfirmPasswordBase = Polymer.mixinBehaviors(
-  [OobeI18nBehavior, LoginScreenBehavior, MultiStepBehavior],
-  Polymer.Element);
+const SamlConfirmPasswordBase = mixinBehaviors(
+    [OobeI18nBehavior, LoginScreenBehavior, MultiStepBehavior], PolymerElement);
 
 /**
  * @typedef {{
@@ -41,7 +60,9 @@ class SamlConfirmPassword extends SamlConfirmPasswordBase {
     return 'saml-confirm-password-element';
   }
 
-  /* #html_template_placeholder */
+  static get template() {
+    return html`{__html_template__}`;
+  }
 
   static get properties() {
     return {
@@ -77,10 +98,8 @@ class SamlConfirmPassword extends SamlConfirmPasswordBase {
     super.ready();
     this.initializeLoginScreen('ConfirmSamlPasswordScreen');
 
-    cr.ui.LoginUITools.addSubmitListener(
-        this.$.passwordInput, this.submit_.bind(this));
-    cr.ui.LoginUITools.addSubmitListener(
-        this.$.confirmPasswordInput, this.submit_.bind(this));
+    addSubmitListener(this.$.passwordInput, this.submit_.bind(this));
+    addSubmitListener(this.$.confirmPasswordInput, this.submit_.bind(this));
   }
 
   /** Initial UI State for screen */

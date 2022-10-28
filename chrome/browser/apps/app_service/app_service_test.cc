@@ -1,4 +1,4 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,7 +7,6 @@
 #include "base/run_loop.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
-#include "components/services/app_service/public/cpp/app_types.h"
 #include "components/services/app_service/public/cpp/icon_types.h"
 #include "ui/gfx/image/image_unittest_util.h"
 
@@ -23,31 +22,22 @@ AppServiceTest::AppServiceTest() = default;
 AppServiceTest::~AppServiceTest() = default;
 
 void AppServiceTest::SetUp(Profile* profile) {
-  app_service_proxy_ = apps::AppServiceProxyFactory::GetForProfile(profile);
+  app_service_proxy_ = AppServiceProxyFactory::GetForProfile(profile);
   app_service_proxy_->ReInitializeForTesting(profile);
-
-  // Allow async callbacks to run.
-  WaitForAppService();
 }
 
 void AppServiceTest::UninstallAllApps(Profile* profile) {
-  auto* app_service_proxy =
-      apps::AppServiceProxyFactory::GetForProfile(profile);
-  std::vector<apps::mojom::AppPtr> apps;
+  auto* app_service_proxy = AppServiceProxyFactory::GetForProfile(profile);
+  std::vector<AppPtr> apps;
   app_service_proxy->AppRegistryCache().ForEachApp(
       [&apps](const apps::AppUpdate& update) {
-        apps::mojom::AppPtr app = apps::mojom::App::New();
-        app->app_type = ConvertAppTypeToMojomAppType(update.AppType());
-        app->app_id = update.AppId();
-        app->readiness = apps::mojom::Readiness::kUninstalledByUser;
-        apps.push_back(app.Clone());
+        AppPtr app = std::make_unique<App>(update.AppType(), update.AppId());
+        app->readiness = Readiness::kUninstalledByUser;
+        apps.push_back(std::move(app));
       });
   app_service_proxy->AppRegistryCache().OnApps(
-      std::move(apps), apps::mojom::AppType::kUnknown,
+      std::move(apps), AppType::kUnknown,
       false /* should_notify_initialized */);
-
-  // Allow async callbacks to run.
-  WaitForAppService();
 }
 
 std::string AppServiceTest::GetAppName(const std::string& app_id) const {
@@ -55,20 +45,19 @@ std::string AppServiceTest::GetAppName(const std::string& app_id) const {
   if (!app_service_proxy_)
     return name;
   app_service_proxy_->AppRegistryCache().ForOneApp(
-      app_id, [&name](const apps::AppUpdate& update) { name = update.Name(); });
+      app_id, [&name](const AppUpdate& update) { name = update.Name(); });
   return name;
 }
 
-gfx::ImageSkia AppServiceTest::LoadAppIconBlocking(
-    apps::mojom::AppType app_type,
-    const std::string& app_id,
-    int32_t size_hint_in_dip) {
+gfx::ImageSkia AppServiceTest::LoadAppIconBlocking(AppType app_type,
+                                                   const std::string& app_id,
+                                                   int32_t size_hint_in_dip) {
   gfx::ImageSkia image_skia;
   base::RunLoop run_loop;
 
   app_service_proxy_->LoadIcon(
-      ConvertMojomAppTypToAppType(app_type), app_id, IconType::kStandard,
-      size_hint_in_dip, false /* allow_placeholder_icon */,
+      app_type, app_id, IconType::kStandard, size_hint_in_dip,
+      false /* allow_placeholder_icon */,
       base::BindOnce(
           [](gfx::ImageSkia* icon, base::OnceClosure load_app_icon_callback,
              IconValuePtr icon_value) {
@@ -89,12 +78,6 @@ bool AppServiceTest::AreIconImageEqual(const gfx::ImageSkia& src,
 
 void AppServiceTest::WaitForAppService() {
   base::RunLoop().RunUntilIdle();
-}
-
-void AppServiceTest::FlushMojoCalls() {
-  if (app_service_proxy_) {
-    app_service_proxy_->FlushMojoCallsForTesting();
-  }
 }
 
 }  // namespace apps

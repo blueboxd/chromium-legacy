@@ -1,22 +1,22 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #import "ios/chrome/browser/ui/authentication/signin_promo_view_mediator.h"
 
-#include "base/run_loop.h"
-#include "base/strings/sys_string_conversions.h"
+#import "base/run_loop.h"
+#import "base/strings/sys_string_conversions.h"
 #import "base/test/ios/wait_util.h"
 #import "components/pref_registry/pref_registry_syncable.h"
-#include "components/prefs/pref_service.h"
-#include "components/signin/public/base/signin_metrics.h"
-#import "components/sync/driver/mock_sync_service.h"
+#import "components/prefs/pref_service.h"
+#import "components/signin/public/base/signin_metrics.h"
+#import "components/sync/test/mock_sync_service.h"
 #import "components/sync_preferences/pref_service_mock_factory.h"
 #import "components/sync_preferences/pref_service_syncable.h"
 #import "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #import "ios/chrome/browser/policy/policy_util.h"
-#include "ios/chrome/browser/pref_names.h"
 #import "ios/chrome/browser/prefs/browser_prefs.h"
+#import "ios/chrome/browser/prefs/pref_names.h"
 #import "ios/chrome/browser/signin/authentication_service_factory.h"
 #import "ios/chrome/browser/signin/authentication_service_fake.h"
 #import "ios/chrome/browser/signin/chrome_account_manager_service_factory.h"
@@ -28,16 +28,16 @@
 #import "ios/chrome/browser/ui/authentication/cells/signin_promo_view_configurator.h"
 #import "ios/chrome/browser/ui/authentication/cells/signin_promo_view_constants.h"
 #import "ios/chrome/browser/ui/authentication/cells/signin_promo_view_consumer.h"
-#include "ios/chrome/grit/ios_chromium_strings.h"
-#include "ios/chrome/grit/ios_strings.h"
-#include "ios/chrome/test/ios_chrome_scoped_testing_local_state.h"
+#import "ios/chrome/grit/ios_chromium_strings.h"
+#import "ios/chrome/grit/ios_strings.h"
+#import "ios/chrome/test/ios_chrome_scoped_testing_local_state.h"
 #import "ios/public/provider/chrome/browser/signin/fake_chrome_identity.h"
 #import "ios/public/provider/chrome/browser/signin/fake_chrome_identity_service.h"
 #import "ios/web/public/test/web_task_environment.h"
 #import "testing/platform_test.h"
 #import "third_party/ocmock/OCMock/OCMock.h"
-#include "third_party/ocmock/gtest_support.h"
-#include "ui/base/l10n/l10n_util.h"
+#import "third_party/ocmock/gtest_support.h"
+#import "ui/base/l10n/l10n_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -529,6 +529,7 @@ TEST_F(SigninPromoViewMediatorTest,
   EXPECT_FALSE([SigninPromoViewMediator
       shouldDisplaySigninPromoViewWithAccessPoint:signin_metrics::AccessPoint::
                                                       ACCESS_POINT_RECENT_TABS
+                            authenticationService:GetAuthenticationService()
                                       prefService:browser_state->GetPrefs()]);
 }
 
@@ -542,7 +543,7 @@ TEST_F(SigninPromoViewMediatorTest, SigninPromoWhileSignedIn) {
                                        name:@"johndoe2"];
   ios::FakeChromeIdentityService::GetInstanceFromChromeProvider()->AddIdentity(
       expected_default_identity_);
-  GetAuthenticationService()->SignIn(expected_default_identity_, nil);
+  GetAuthenticationService()->SignIn(expected_default_identity_);
   CreateMediator(signin_metrics::AccessPoint::ACCESS_POINT_RECENT_TABS);
   ExpectConfiguratorNotification(NO /* identity changed */);
   [mediator_ signinPromoViewIsVisible];

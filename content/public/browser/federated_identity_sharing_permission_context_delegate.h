@@ -5,6 +5,7 @@
 #ifndef CONTENT_PUBLIC_BROWSER_FEDERATED_IDENTITY_SHARING_PERMISSION_CONTEXT_DELEGATE_H_
 #define CONTENT_PUBLIC_BROWSER_FEDERATED_IDENTITY_SHARING_PERMISSION_CONTEXT_DELEGATE_H_
 
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "url/origin.h"
 
 namespace content {
@@ -17,17 +18,32 @@ class FederatedIdentitySharingPermissionContextDelegate {
   FederatedIdentitySharingPermissionContextDelegate() = default;
   virtual ~FederatedIdentitySharingPermissionContextDelegate() = default;
 
-  // Determine whether the requester has an existing permission grant to share
-  // identity information for the given account to the relying party.
-  virtual bool HasSharingPermission(const url::Origin& relying_party,
+  // Determine whether there is an existing permission grant to share identity
+  // information for the given account to the `relying_party_requester` when
+  // embedded in `relying_party_embedder`.
+  virtual bool HasSharingPermission(const url::Origin& relying_party_requester,
+                                    const url::Origin& relying_party_embedder,
                                     const url::Origin& identity_provider,
                                     const std::string& account_id) = 0;
 
-  // Grant permission for the requester to share identity information for the
-  // given account to the relying party.
-  virtual void GrantSharingPermission(const url::Origin& relying_party,
-                                      const url::Origin& identity_provider,
-                                      const std::string& account_id) = 0;
+  // Grants permission to share identity information for the given account to
+  // `relying_party_requester` when embedded in `relying_party_embedder`.
+  virtual void GrantSharingPermission(
+      const url::Origin& relying_party_requester,
+      const url::Origin& relying_party_embedder,
+      const url::Origin& identity_provider,
+      const std::string& account_id) = 0;
+
+  // Returns whether the user is signed in with the IDP. If unknown, return
+  // absl::nullopt.
+  virtual absl::optional<bool> GetIdpSigninStatus(
+      const url::Origin& idp_origin) = 0;
+
+  // Updates the IDP sign-in status. This could be called by
+  //   1. IdpSigninStatus API
+  //   2. fetching accounts response callback
+  virtual void SetIdpSigninStatus(const url::Origin& idp_origin,
+                                  bool idp_signin_status) = 0;
 };
 
 }  // namespace content

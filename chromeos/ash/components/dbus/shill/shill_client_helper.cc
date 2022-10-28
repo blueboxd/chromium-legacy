@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -99,7 +99,7 @@ void OnStringMethodWithErrorCallback(
 
 // Handles responses for methods without results.
 void OnVoidMethod(ShillClientHelper::RefHolder* ref_holder,
-                  VoidDBusMethodCallback callback,
+                  chromeos::VoidDBusMethodCallback callback,
                   dbus::Response* response) {
   std::move(callback).Run(response != nullptr);
 }
@@ -107,7 +107,7 @@ void OnVoidMethod(ShillClientHelper::RefHolder* ref_holder,
 // Handles responses for methods with ObjectPath results and no status.
 void OnObjectPathMethodWithoutStatus(
     ShillClientHelper::RefHolder* ref_holder,
-    ObjectPathCallback callback,
+    chromeos::ObjectPathCallback callback,
     ShillClientHelper::ErrorCallback error_callback,
     dbus::Response* response) {
   if (!response) {
@@ -267,8 +267,9 @@ void ShillClientHelper::MonitorPropertyChangedInternal(
                      weak_ptr_factory_.GetWeakPtr()));
 }
 
-void ShillClientHelper::CallVoidMethod(dbus::MethodCall* method_call,
-                                       VoidDBusMethodCallback callback) {
+void ShillClientHelper::CallVoidMethod(
+    dbus::MethodCall* method_call,
+    chromeos::VoidDBusMethodCallback callback) {
   DCHECK(!callback.is_null());
   proxy_->CallMethod(
       method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
@@ -279,7 +280,7 @@ void ShillClientHelper::CallVoidMethod(dbus::MethodCall* method_call,
 
 void ShillClientHelper::CallObjectPathMethodWithErrorCallback(
     dbus::MethodCall* method_call,
-    ObjectPathCallback callback,
+    chromeos::ObjectPathCallback callback,
     ErrorCallback error_callback) {
   DCHECK(!callback.is_null());
   DCHECK(!error_callback.is_null());

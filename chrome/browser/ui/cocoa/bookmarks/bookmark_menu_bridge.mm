@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,6 +9,7 @@
 #import "chrome/browser/app_controller_mac.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/bookmarks/managed_bookmark_service_factory.h"
+#include "chrome/browser/favicon/favicon_utils.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -58,7 +59,6 @@ BookmarkMenuBridge::BookmarkMenuBridge(Profile* profile, NSMenu* menu_root)
   DCHECK(![menu_root_ delegate]);
   [menu_root_ setDelegate:controller_];
 
-  DCHECK(GetBookmarkModel());
   ObserveBookmarkModel();
 }
 
@@ -66,7 +66,6 @@ BookmarkMenuBridge::~BookmarkMenuBridge() {
   ClearBookmarkMenu();
   [menu_root_ setDelegate:nil];
   BookmarkModel* model = GetBookmarkModel();
-  DCHECK(model);
   if (model)
     model->RemoveObserver(this);
 }
@@ -159,7 +158,8 @@ void BookmarkMenuBridge::BookmarkNodeMoved(BookmarkModel* model,
 
 void BookmarkMenuBridge::BookmarkNodeAdded(BookmarkModel* model,
                                            const BookmarkNode* parent,
-                                           size_t index) {
+                                           size_t index,
+                                           bool added_by_user) {
   InvalidateMenu();
 }
 
@@ -200,6 +200,11 @@ void BookmarkMenuBridge::BookmarkNodeChildrenReordered(
 // Watch for changes.
 void BookmarkMenuBridge::ObserveBookmarkModel() {
   BookmarkModel* model = GetBookmarkModel();
+
+  // In Guest mode, there is no bookmark model.
+  if (!model)
+    return;
+
   model->AddObserver(this);
   if (model->loaded())
     BookmarkModelLoaded(model, false);
@@ -311,8 +316,7 @@ void BookmarkMenuBridge::ConfigureMenuItem(const BookmarkNode* node,
   }
   // If we do not have a loaded favicon, use the default site image instead.
   if (!favicon) {
-    ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-    favicon = rb.GetNativeImageNamed(IDR_DEFAULT_FAVICON).ToNSImage();
+    favicon = favicon::GetDefaultFavicon().ToNSImage();
     [favicon setTemplate:YES];
   }
   [item setImage:favicon];

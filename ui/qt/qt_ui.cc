@@ -28,6 +28,7 @@
 #include "ui/gfx/image/image_skia_rep.h"
 #include "ui/gfx/image/image_skia_source.h"
 #include "ui/linux/linux_ui.h"
+#include "ui/linux/nav_button_provider.h"
 #include "ui/native_theme/native_theme_aura.h"
 #include "ui/native_theme/native_theme_base.h"
 #include "ui/qt/qt_interface.h"
@@ -85,7 +86,7 @@ class QtNativeTheme : public ui::NativeThemeAura {
   explicit QtNativeTheme(QtInterface* shim)
       : ui::NativeThemeAura(/*use_overlay_scrollbars=*/false,
                             /*should_only_use_dark_colors=*/false,
-                            /*is_custom_system_theme=*/true),
+                            ui::SystemTheme::kQt),
         shim_(shim) {}
   QtNativeTheme(const QtNativeTheme&) = delete;
   QtNativeTheme& operator=(const QtNativeTheme&) = delete;
@@ -116,8 +117,8 @@ class QtNativeTheme : public ui::NativeThemeAura {
   raw_ptr<QtInterface> const shim_;
 };
 
-QtUi::QtUi(std::unique_ptr<ui::LinuxUi> fallback_linux_ui)
-    : fallback_linux_ui_(std::move(fallback_linux_ui)) {}
+QtUi::QtUi(ui::LinuxUi* fallback_linux_ui)
+    : fallback_linux_ui_(fallback_linux_ui) {}
 
 QtUi::~QtUi() {
   shell_dialog_linux::Finalize();
@@ -180,6 +181,10 @@ bool QtUi::Initialize() {
   shell_dialog_linux::Initialize();
 
   return true;
+}
+
+ui::NativeTheme* QtUi::GetNativeTheme() const {
+  return native_theme_.get();
 }
 
 bool QtUi::GetColor(int id, SkColor* color, bool use_custom_frame) const {
@@ -298,10 +303,6 @@ int QtUi::GetCursorThemeSize() {
   return 0;
 }
 
-ui::NativeTheme* QtUi::GetNativeThemeImpl() const {
-  return native_theme_.get();
-}
-
 bool QtUi::GetTextEditCommandsForEvent(
     const ui::Event& event,
     std::vector<ui::TextEditCommandAuraLinux>* commands) {
@@ -362,7 +363,7 @@ void QtUi::ThemeChanged() {
 
 void QtUi::AddNativeColorMixer(ui::ColorProvider* provider,
                                const ui::ColorProviderManager::Key& key) {
-  if (key.system_theme == ui::ColorProviderManager::SystemTheme::kDefault)
+  if (key.system_theme != ui::SystemTheme::kQt)
     return;
 
   ui::ColorMixer& mixer = provider->AddMixer();
@@ -491,9 +492,9 @@ absl::optional<SkColor> QtUi::GetColor(int id, bool use_custom_frame) const {
   }
 }
 
-std::unique_ptr<ui::LinuxUi> CreateQtUi(
-    std::unique_ptr<ui::LinuxUi> fallback_linux_ui) {
-  return std::make_unique<QtUi>(std::move(fallback_linux_ui));
+std::unique_ptr<ui::LinuxUiAndTheme> CreateQtUi(
+    ui::LinuxUi* fallback_linux_ui) {
+  return std::make_unique<QtUi>(fallback_linux_ui);
 }
 
 }  // namespace qt

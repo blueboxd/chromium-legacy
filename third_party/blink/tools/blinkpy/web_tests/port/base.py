@@ -40,6 +40,7 @@ import re
 import sys
 import tempfile
 from collections import defaultdict
+from copy import deepcopy
 
 import six
 from six.moves import zip_longest
@@ -248,7 +249,7 @@ class Port(object):
 
         # FIXME: Ideally we'd have a package-wide way to get a well-formed
         # options object that had all of the necessary options defined on it.
-        self._options = options or optparse.Values()
+        self._options = deepcopy(options) or optparse.Values()
 
         self.host = host
         self._executive = host.executive
@@ -263,13 +264,16 @@ class Port(object):
         self._http_lock = None  # FIXME: Why does this live on the port object?
         self._dump_reader = None
 
+        # Configuration and target are always set by PortFactory so this is only
+        # relevant in cases where a Port is created without it (testing mostly).
         if not hasattr(options, 'configuration') or not options.configuration:
             self.set_option_default('configuration',
                                     self.default_configuration())
         if not hasattr(options, 'target') or not options.target:
             self.set_option_default('target', self._options.configuration)
-        if not hasattr(options, 'no_virtual_tests'):
-            self.set_option_default('no_virtual_tests', False)
+        # set the default to make unit tests happy
+        if not hasattr(options, 'wpt_only'):
+            self.set_option_default('wpt_only', False)
         self._test_configuration = None
         self._results_directory = None
         self._virtual_test_suites = None
@@ -305,14 +309,14 @@ class Port(object):
         """
         config_name = self.get_option('flag_specific')
         if config_name:
-            configs = self._flag_specific_configs()
+            configs = self.flag_specific_configs()
             assert config_name in configs, '{} is not defined in FlagSpecificConfig'.format(
                 config_name)
             return config_name
         return None
 
     @memoized
-    def _flag_specific_configs(self):
+    def flag_specific_configs(self):
         """Reads configuration from FlagSpecificConfig and returns a dictionary from name to args."""
         config_file = self._filesystem.join(self.web_tests_dir(),
                                             'FlagSpecificConfig')
@@ -359,7 +363,7 @@ class Port(object):
 
         flag_specific_option = self.flag_specific_config_name()
         if flag_specific_option:
-            flags += self._flag_specific_configs()[flag_specific_option]
+            flags += self.flag_specific_configs()[flag_specific_option]
 
         flags += self.get_option('additional_driver_flag', [])
         return flags
@@ -781,7 +785,9 @@ class Port(object):
             if not all_baselines and baselines:
                 return baselines
 
-        baseline_dir = self.generic_baselines_dir()
+        # If it wasn't found in a platform directory, return the expected
+        # result in the test directory.
+        baseline_dir = self.web_tests_dir()
         if self._filesystem.exists(
                 self._filesystem.join(baseline_dir, baseline_filename)):
             baselines.append((baseline_dir, baseline_filename))
@@ -796,8 +802,7 @@ class Port(object):
                           extension,
                           return_default=True,
                           fallback_base_for_virtual=True,
-                          match=True,
-                          look_for_same_folder_reference_file=False):
+                          match=True):
         """Given a test name, returns an absolute path to its expected results.
 
         If no expected results are found in any of the searched directories,
@@ -820,8 +825,6 @@ class Port(object):
                 to find baselines of the base test; if False, depending on
                 |return_default|, returns the generic virtual baseline or None.
             match: Whether the baseline is a match or a mismatch.
-            look_for_same_folder_reference_file: For reference test only. Returns
-                the reference file if found in the same folder of the test file.
 
         Returns:
             An absolute path to its expected results, or None if not found.
@@ -833,25 +836,16 @@ class Port(object):
         if baseline_dir:
             return self._filesystem.join(baseline_dir, baseline_filename)
 
-        if look_for_same_folder_reference_file:
-            path = self._filesystem.join(self.web_tests_dir(),
-                                         baseline_filename)
-            if self._filesystem.exists(path):
-                return path
-
         if fallback_base_for_virtual:
             actual_test_name = self.lookup_virtual_test_base(test_name)
             if actual_test_name:
-                return self.expected_filename(
-                    actual_test_name,
-                    extension,
-                    return_default,
-                    match=match,
-                    look_for_same_folder_reference_file=look_for_same_folder_reference_file
-                )
+                return self.expected_filename(actual_test_name,
+                                              extension,
+                                              return_default,
+                                              match=match)
 
         if return_default:
-            return self._filesystem.join(self.generic_baselines_dir(),
+            return self._filesystem.join(self.web_tests_dir(),
                                          baseline_filename)
         return None
 
@@ -946,12 +940,9 @@ class Port(object):
         reftest_list = []
         for expectation in ('==', '!='):
             for extension in Port.supported_file_extensions:
-                path = self.expected_filename(
-                    test_name,
-                    extension,
-                    match=(expectation == '=='),
-                    look_for_same_folder_reference_file=True
-                )
+                path = self.expected_filename(test_name,
+                                              extension,
+                                              match=(expectation == '=='))
                 if self._filesystem.exists(path):
                     reftest_list.append((expectation, path))
         if reftest_list:
@@ -986,8 +977,7 @@ class Port(object):
         tests = self.real_tests(paths)
 
         if paths:
-            if not self._options.no_virtual_tests:
-                tests.extend(self._virtual_tests_matching_paths(paths))
+            tests.extend(self._virtual_tests_matching_paths(paths))
             if (any(wpt_path in path for wpt_path in self.WPT_DIRS
                     for path in paths)
                     # TODO(robertma): Remove this special case when external/wpt is moved to wpt.
@@ -1005,8 +995,7 @@ class Port(object):
                 dirname = self._filesystem.dirname(test) + '/'
                 tests_by_dir[dirname].append(test)
 
-            if not self._options.no_virtual_tests:
-                tests.extend(self._all_virtual_tests(tests_by_dir))
+            tests.extend(self._all_virtual_tests(tests_by_dir))
             tests.extend(wpt_tests)
         return tests
 
@@ -1028,6 +1017,9 @@ class Port(object):
 
     def real_tests(self, paths):
         """Find all real tests in paths except WPT."""
+        if self._options.wpt_only:
+            return []
+
         # When collecting test cases, skip these directories.
         skipped_directories = set([
             'platform', 'resources', 'support', 'script-tests', 'reference',
@@ -1125,6 +1117,16 @@ class Port(object):
         wpt_path = match.group(1)
         path_in_wpt = match.group(2)
         return self.wpt_manifest(wpt_path).is_crash_test(path_in_wpt)
+
+    def is_wpt_print_reftest(self, test):
+        """Returns whether a WPT test is a print reftest."""
+        match = self.WPT_REGEX.match(test)
+        if not match:
+            return False
+
+        wpt_path = match.group(1)
+        path_in_wpt = match.group(2)
+        return self.wpt_manifest(wpt_path).is_print_reftest(path_in_wpt)
 
     def is_slow_wpt_test(self, test_name):
         # When DCHECK is enabled, idlharness tests run 5-6x slower due to the
@@ -1338,9 +1340,6 @@ class Port(object):
         if custom_web_tests_dir:
             return self._filesystem.abspath(custom_web_tests_dir)
         return self._path_finder.web_tests_dir()
-
-    def generic_baselines_dir(self):
-        return self._filesystem.join(self.web_tests_dir(), "platform", "generic")
 
     def skips_test(self, test):
         """Checks whether the given test is skipped for this port.
@@ -1583,6 +1582,14 @@ class Port(object):
     def num_workers(self, requested_num_workers):
         """Returns the number of available workers (possibly less than the number requested)."""
         return requested_num_workers
+
+    def child_kwargs(self):
+        """Returns additional kwargs to pass to the Port objects in the worker processes.
+        This can be used to transmit additional state such as initialized emulators.
+
+        Note: these must be able to be pickled.
+        """
+        return {}
 
     def clean_up_test_run(self):
         """Performs port-specific work at the end of a test run."""

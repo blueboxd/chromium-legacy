@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -141,6 +141,8 @@ StorageQueue::StorageQueue(
     scoped_refptr<CompressionModule> compression_module)
     : base::RefCountedDeleteOnSequence<StorageQueue>(sequenced_task_runner),
       sequenced_task_runner_(std::move(sequenced_task_runner)),
+      low_priority_task_runner_(base::ThreadPool::CreateSequencedTaskRunner(
+          {base::TaskPriority::BEST_EFFORT, base::MayBlock()})),
       options_(options),
       async_start_upload_cb_(async_start_upload_cb),
       encryption_module_(encryption_module),
@@ -611,10 +613,9 @@ Status StorageQueue::WriteMetadata(base::StringPiece current_record_digest) {
   meta_file_ = std::move(meta_file);
   // Asynchronously delete all earlier metafiles. Do not wait for this to
   // happen.
-  base::ThreadPool::PostTask(
-      FROM_HERE, {base::TaskPriority::BEST_EFFORT, base::MayBlock()},
-      base::BindOnce(&StorageQueue::DeleteOutdatedMetadata, this,
-                     next_sequencing_id_));
+  low_priority_task_runner_->PostTask(
+      FROM_HERE, base::BindOnce(&StorageQueue::DeleteOutdatedMetadata, this,
+                                next_sequencing_id_));
   return Status::StatusOK();
 }
 
@@ -755,7 +756,7 @@ void StorageQueue::DeleteUnusedFiles(
                     &used_files_set));
 }
 
-void StorageQueue::DeleteOutdatedMetadata(int64_t sequencing_id_to_keep) {
+void StorageQueue::DeleteOutdatedMetadata(int64_t sequencing_id_to_keep) const {
   // Delete file on disk. Note: disk space has already been released when the
   // metafile was destructed, and so we don't need to do that here.
   // If the deletion of a file fails, the file will be naturally handled next
@@ -1585,13 +1586,13 @@ StorageQueue::CollectFilesForUpload(int64_t sequencing_id) const {
 
 class StorageQueue::ConfirmContext : public TaskRunnerContext<Status> {
  public:
-  ConfirmContext(absl::optional<int64_t> sequencing_id,
+  ConfirmContext(SequenceInformation sequence_information,
                  bool force,
                  base::OnceCallback<void(Status)> end_callback,
                  scoped_refptr<StorageQueue> storage_queue)
       : TaskRunnerContext<Status>(std::move(end_callback),
                                   storage_queue->sequenced_task_runner_),
-        sequencing_id_(sequencing_id),
+        sequence_information_(std::move(sequence_information)),
         force_(force),
         storage_queue_(storage_queue) {
     DCHECK(storage_queue.get());
@@ -1604,29 +1605,41 @@ class StorageQueue::ConfirmContext : public TaskRunnerContext<Status> {
   void OnStart() override {
     DCHECK_CALLED_ON_VALID_SEQUENCE(
         storage_queue_->storage_queue_sequence_checker_);
+    if (sequence_information_.generation_id() !=
+        storage_queue_->generation_id_) {
+      Response(Status(
+          error::FAILED_PRECONDITION,
+          base::StrCat(
+              {"Generation mismatch - ",
+               base::NumberToString(sequence_information_.generation_id()),
+               ", expected=",
+               base::NumberToString(storage_queue_->generation_id_)})));
+      return;
+    }
     if (force_) {
       storage_queue_->first_unconfirmed_sequencing_id_ =
-          sequencing_id_.has_value() ? (sequencing_id_.value() + 1) : 0;
+          sequence_information_.sequencing_id() + 1;
       Response(Status::StatusOK());
     } else {
-      Response(sequencing_id_.has_value()
-                   ? storage_queue_->RemoveConfirmedData(sequencing_id_.value())
-                   : Status::StatusOK());
+      Response(storage_queue_->RemoveConfirmedData(
+          sequence_information_.sequencing_id()));
     }
   }
 
-  // Confirmed sequencing id.
-  absl::optional<int64_t> sequencing_id_;
+  // Confirmed sequencing information.
+  const SequenceInformation sequence_information_;
 
-  bool force_;
+  // Force-confirm flag.
+  const bool force_;
 
-  scoped_refptr<StorageQueue> storage_queue_;
+  const scoped_refptr<StorageQueue> storage_queue_;
 };
 
-void StorageQueue::Confirm(absl::optional<int64_t> sequencing_id,
+void StorageQueue::Confirm(SequenceInformation sequence_information,
                            bool force,
                            base::OnceCallback<void(Status)> completion_cb) {
-  Start<ConfirmContext>(sequencing_id, force, std::move(completion_cb), this);
+  Start<ConfirmContext>(std::move(sequence_information), force,
+                        std::move(completion_cb), this);
 }
 
 Status StorageQueue::RemoveConfirmedData(int64_t sequencing_id) {

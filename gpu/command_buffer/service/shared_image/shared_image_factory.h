@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -30,7 +30,6 @@ class VulkanContextProvider;
 namespace gpu {
 class GpuDriverBugWorkarounds;
 class ImageFactory;
-class MailboxManager;
 class MemoryTracker;
 class SharedContextState;
 class SharedImageBackingFactory;
@@ -51,7 +50,6 @@ class GPU_GLES2_EXPORT SharedImageFactory {
                      const GpuDriverBugWorkarounds& workarounds,
                      const GpuFeatureInfo& gpu_feature_info,
                      SharedContextState* context_state,
-                     MailboxManager* mailbox_manager,
                      SharedImageManager* manager,
                      ImageFactory* image_factory,
                      MemoryTracker* tracker,
@@ -65,7 +63,6 @@ class GPU_GLES2_EXPORT SharedImageFactory {
                          GrSurfaceOrigin surface_origin,
                          SkAlphaType alpha_type,
                          gpu::SurfaceHandle surface_handle,
-
                          uint32_t usage);
   bool CreateSharedImage(const Mailbox& mailbox,
                          viz::ResourceFormat format,
@@ -116,10 +113,9 @@ class GPU_GLES2_EXPORT SharedImageFactory {
 
   bool OnMemoryDump(const base::trace_event::MemoryDumpArgs& args,
                     base::trace_event::ProcessMemoryDump* pmd,
-                    int client_id,
+                    const std::string& dump_base_name,
                     uint64_t client_tracing_id);
-  bool RegisterBacking(std::unique_ptr<SharedImageBacking> backing,
-                       bool allow_legacy_mailbox);
+  bool RegisterBacking(std::unique_ptr<SharedImageBacking> backing);
 
   SharedContextState* GetSharedContextState() const {
     return shared_context_state_;
@@ -137,8 +133,6 @@ class GPU_GLES2_EXPORT SharedImageFactory {
   void RegisterSharedImageBackingFactoryForTesting(
       SharedImageBackingFactory* factory);
 
-  MailboxManager* mailbox_manager() { return mailbox_manager_; }
-
   static bool set_dmabuf_supported_metric_;
 
  private:
@@ -151,12 +145,11 @@ class GPU_GLES2_EXPORT SharedImageFactory {
   SharedImageBackingFactory* GetFactoryByUsage(
       uint32_t usage,
       viz::ResourceFormat format,
-      bool* allow_legacy_mailbox,
-      bool is_pixel_used,
+      const gfx::Size& size,
+      base::span<const uint8_t> pixel_data,
       gfx::GpuMemoryBufferType gmb_type,
       bool* use_compound_backing = nullptr);
 
-  raw_ptr<MailboxManager> mailbox_manager_;
   raw_ptr<SharedImageManager> shared_image_manager_;
   raw_ptr<SharedContextState> shared_context_state_;
   std::unique_ptr<MemoryTypeTracker> memory_tracker_;
@@ -196,15 +189,17 @@ class GPU_GLES2_EXPORT SharedImageFactory {
 
 class GPU_GLES2_EXPORT SharedImageRepresentationFactory {
  public:
+  // All arguments must outlive this object.
   SharedImageRepresentationFactory(SharedImageManager* manager,
                                    MemoryTracker* tracker);
   ~SharedImageRepresentationFactory();
 
   // Helpers which call similar classes on SharedImageManager, providing a
   // MemoryTypeTracker.
+  // NOTE: This object *must* outlive all objects created via the below methods,
+  // as the |tracker_| instance variable that it supplies to them is used in
+  // their destruction process.
   std::unique_ptr<GLTextureImageRepresentation> ProduceGLTexture(
-      const Mailbox& mailbox);
-  std::unique_ptr<GLTextureImageRepresentation> ProduceRGBEmulationGLTexture(
       const Mailbox& mailbox);
   std::unique_ptr<GLTexturePassthroughImageRepresentation>
   ProduceGLTexturePassthrough(const Mailbox& mailbox);

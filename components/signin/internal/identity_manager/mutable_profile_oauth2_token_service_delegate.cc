@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,6 +13,7 @@
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/ranges/algorithm.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "components/signin/public/base/signin_client.h"
@@ -179,13 +180,10 @@ void MutableProfileOAuth2TokenServiceDelegate::RevokeServerRefreshToken::
   }
   // |this| pointer will be deleted when removed from the vector, so don't
   // access any members after call to erase().
-  token_service_delegate_->server_revokes_.erase(std::find_if(
-      token_service_delegate_->server_revokes_.begin(),
-      token_service_delegate_->server_revokes_.end(),
-      [this](const std::unique_ptr<MutableProfileOAuth2TokenServiceDelegate::
-                                       RevokeServerRefreshToken>& item) {
-        return item.get() == this;
-      }));
+  token_service_delegate_->server_revokes_.erase(base::ranges::find(
+      token_service_delegate_->server_revokes_, this,
+      &std::unique_ptr<MutableProfileOAuth2TokenServiceDelegate::
+                           RevokeServerRefreshToken>::get));
 }
 
 MutableProfileOAuth2TokenServiceDelegate::
@@ -346,6 +344,7 @@ void MutableProfileOAuth2TokenServiceDelegate::OnWebDataServiceRequestDone(
 
   DCHECK_EQ(web_data_service_request_, handle);
   web_data_service_request_ = 0;
+  ScopedBatchChange batch(this);
 
   if (result) {
     DCHECK(result->GetType() == TOKEN_RESULT);
@@ -458,7 +457,6 @@ void MutableProfileOAuth2TokenServiceDelegate::UpdateCredentials(
   ValidateAccountId(account_id);
   const std::string& existing_token = GetRefreshToken(account_id);
   if (existing_token != refresh_token) {
-    ScopedBatchChange batch(this);
     UpdateCredentialsInMemory(account_id, refresh_token);
     PersistCredentials(account_id, refresh_token);
     FireRefreshTokenAvailable(account_id);
@@ -643,7 +641,6 @@ void MutableProfileOAuth2TokenServiceDelegate::RevokeCredentialsImpl(
 
   if (refresh_tokens_.count(account_id) > 0) {
     VLOG(1) << "MutablePO2TS::RevokeCredentials for account_id=" << account_id;
-    ScopedBatchChange batch(this);
     if (revoke_on_server)
       RevokeCredentialsOnServer(refresh_tokens_[account_id]);
     refresh_tokens_.erase(account_id);

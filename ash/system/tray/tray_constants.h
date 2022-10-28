@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -134,7 +134,6 @@ constexpr int kUnifiedTrayTimeLeftPadding = 1;
 constexpr int kUnifiedTraySpacingBetweenIcons = 6;
 constexpr int kUnifiedTrayBatteryWidth = 12;
 constexpr int kUnifiedTrayBatteryBottomPadding = 1;
-constexpr int kUnifiedTrayChannelIndicatorDimension = 16;
 constexpr int kUnifiedTrayContentPadding = 12;
 constexpr int kUnifiedTopShortcutSpacing = 16;
 constexpr int kUnifiedNotificationHiddenLineHeight = 20;
@@ -252,7 +251,7 @@ constexpr SkColor kIconColorInOobe = gfx::kGoogleGrey700;
 
 // Constants used for the autozoom toast.
 constexpr int kAutozoomToastMinWidth = 160;
-constexpr int kAutozoomToastMaxWidth = 320;
+constexpr int kAutozoomToastMaxWidth = 400;
 constexpr int kAutozoomToastMainLabelFontSize = 14;
 constexpr auto kAutozoomToastInsets = gfx::Insets::VH(10, 16);
 constexpr int kAutozoomToastSpacing = 16;

@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -58,7 +58,7 @@ class SharingSyncPreferenceTest : public testing::Test {
 
   void AddEnabledFeature(int feature) {
     const base::Value::Dict& registration =
-        prefs_.GetValueDict(prefs::kSharingLocalSharingInfo);
+        prefs_.GetDict(prefs::kSharingLocalSharingInfo);
     base::Value::List enabled_features =
         registration.FindList(kSharingInfoEnabledFeatures)->Clone();
 

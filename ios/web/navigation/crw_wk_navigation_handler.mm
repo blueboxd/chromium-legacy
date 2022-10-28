@@ -1,22 +1,21 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #import "ios/web/navigation/crw_wk_navigation_handler.h"
 
-#include "base/feature_list.h"
+#import "base/feature_list.h"
 #import "base/ios/ns_error_util.h"
-#include "base/metrics/histogram_functions.h"
-#include "base/metrics/histogram_macros.h"
-#include "base/strings/sys_string_conversions.h"
-#include "base/timer/timer.h"
+#import "base/metrics/histogram_functions.h"
+#import "base/metrics/histogram_macros.h"
+#import "base/strings/sys_string_conversions.h"
+#import "base/timer/timer.h"
 #import "ios/net/http_response_headers_util.h"
 #import "ios/net/protocol_handler_util.h"
 #import "ios/net/url_scheme_util.h"
-#include "ios/web/common/features.h"
+#import "ios/web/common/features.h"
 #import "ios/web/common/url_scheme_util.h"
 #import "ios/web/download/download_native_task_bridge.h"
-#import "ios/web/js_messaging/web_frames_manager_java_script_feature.h"
 #import "ios/web/navigation/crw_error_page_helper.h"
 #import "ios/web/navigation/crw_navigation_item_holder.h"
 #import "ios/web/navigation/crw_pending_navigation_info.h"
@@ -24,13 +23,13 @@
 #import "ios/web/navigation/navigation_context_impl.h"
 #import "ios/web/navigation/navigation_item_impl.h"
 #import "ios/web/navigation/navigation_manager_impl.h"
-#include "ios/web/navigation/navigation_manager_util.h"
+#import "ios/web/navigation/navigation_manager_util.h"
 #import "ios/web/navigation/web_kit_constants.h"
 #import "ios/web/navigation/wk_back_forward_list_item_holder.h"
 #import "ios/web/navigation/wk_navigation_action_policy_util.h"
 #import "ios/web/navigation/wk_navigation_action_util.h"
 #import "ios/web/navigation/wk_navigation_util.h"
-#include "ios/web/public/browser_state.h"
+#import "ios/web/public/browser_state.h"
 #import "ios/web/public/download/download_controller.h"
 #import "ios/web/public/web_client.h"
 #import "ios/web/security/crw_cert_verification_controller.h"
@@ -39,15 +38,15 @@
 #import "ios/web/web_state/ui/crw_web_controller.h"
 #import "ios/web/web_state/user_interaction_state.h"
 #import "ios/web/web_state/web_state_impl.h"
-#include "ios/web/web_view/content_type_util.h"
+#import "ios/web/web_view/content_type_util.h"
 #import "ios/web/web_view/error_translation_util.h"
 #import "ios/web/web_view/wk_security_origin_util.h"
 #import "ios/web/web_view/wk_web_view_util.h"
 #import "net/base/mac/url_conversions.h"
-#include "net/base/net_errors.h"
-#include "net/cert/x509_util_apple.h"
-#include "net/http/http_content_disposition.h"
-#include "url/gurl.h"
+#import "net/base/net_errors.h"
+#import "net/cert/x509_util_apple.h"
+#import "net/http/http_content_disposition.h"
+#import "url/gurl.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -94,18 +93,18 @@ web::HttpsUpgradeType GetFailedHttpsUpgradeType(
   NSString* _currentReferrerString;
 
   // CertVerification errors which happened inside
-  // |webView:didReceiveAuthenticationChallenge:completionHandler:|.
+  // `webView:didReceiveAuthenticationChallenge:completionHandler:`.
   // Key is leaf-cert/host pair. This storage is used to carry calculated
-  // cert status from |didReceiveAuthenticationChallenge:| to
-  // |didFailProvisionalNavigation:| delegate method.
+  // cert status from `didReceiveAuthenticationChallenge:` to
+  // `didFailProvisionalNavigation:` delegate method.
   std::unique_ptr<web::CertVerificationErrorsCacheType> _certVerificationErrors;
 
   // Used to keep track of newly created and current download
   // task objects created from
-  // |webView:navigationAction:didBecomeDownload| and
-  // |webView:navigationResponse:didBecomeDownload|. Respectively,
+  // `webView:navigationAction:didBecomeDownload` and
+  // `webView:navigationResponse:didBecomeDownload`. Respectively,
   // DownloadNativeTaskBridge objects will help provide a valid
-  // |navigationAction| or |navigationResponse|.
+  // `navigationAction` or `navigationResponse`.
   NSMutableSet<DownloadNativeTaskBridge*>* _nativeTaskBridges;
 
   // Stores navigation policy state of download task to indicate if a download
@@ -167,6 +166,8 @@ web::HttpsUpgradeType GetFailedHttpsUpgradeType(
                         preferences:(WKWebpagePreferences*)preferences
                     decisionHandler:(void (^)(WKNavigationActionPolicy,
                                               WKWebpagePreferences*))handler {
+  GURL requestURL = net::GURLWithNSURL(action.request.URL);
+
   const web::UserAgentType userAgentType =
       [self userAgentForNavigationAction:action webView:webView];
 
@@ -179,9 +180,14 @@ web::HttpsUpgradeType GetFailedHttpsUpgradeType(
       self.webStateImpl->SetUserAgent(userAgentType);
     }
 
+    GURL URLForUserAgent = requestURL;
+    if ([CRWErrorPageHelper isErrorPageFileURL:URLForUserAgent]) {
+      URLForUserAgent = [CRWErrorPageHelper
+          failedNavigationURLFromErrorPageFileURL:URLForUserAgent];
+    }
+
     if (action.navigationType == WKNavigationTypeReload &&
-        web::wk_navigation_util::URLNeedsUserAgentType(
-            net::GURLWithNSURL(action.request.URL))) {
+        web::wk_navigation_util::URLNeedsUserAgentType(URLForUserAgent)) {
       // When reloading the page, the UserAgent will be updated to the one for
       // the new page.
       web::NavigationItem* item = [[CRWNavigationItemHolder
@@ -221,10 +227,8 @@ web::HttpsUpgradeType GetFailedHttpsUpgradeType(
     return;
   }
 
-  GURL requestURL = net::GURLWithNSURL(action.request.URL);
-
   // The page will not be changed until this navigation is committed, so the
-  // retrieved state will be pending until |didCommitNavigation| callback.
+  // retrieved state will be pending until `didCommitNavigation` callback.
   [self createPendingNavigationInfoFromNavigationAction:action];
 
   if (action.targetFrame.mainFrame &&
@@ -256,7 +260,7 @@ web::HttpsUpgradeType GetFailedHttpsUpgradeType(
   if (isMainFrameNavigationAction) {
     web::NavigationContextImpl* context =
         [self contextForPendingMainFrameNavigationWithURL:requestURL];
-    // Theoretically if |context| can be found here, the navigation should be
+    // Theoretically if `context` can be found here, the navigation should be
     // either user-initiated or JS back/forward. The second part in the "if"
     // condition used to be a DCHECK, but it would fail in this case:
     // 1. Multiple render-initiated navigation with the same URL happens at the
@@ -313,7 +317,7 @@ web::HttpsUpgradeType GetFailedHttpsUpgradeType(
   web::WebStatePolicyDecider::PolicyDecision policyDecision =
       web::WebStatePolicyDecider::PolicyDecision::Allow();
   if (web::GetWebClient()->IsAppSpecificURL(requestURL)) {
-    // |policyDecision| is initialized above this conditional to allow loads, so
+    // `policyDecision` is initialized above this conditional to allow loads, so
     // it only needs to be overwritten if the load should be cancelled.
     if (![self shouldAllowAppSpecificURLNavigationAction:action
                                               transition:transition]) {
@@ -337,8 +341,8 @@ web::HttpsUpgradeType GetFailedHttpsUpgradeType(
   }
 
   __weak CRWWKNavigationHandler* weakSelf = self;
-  auto callback = base::BindOnce(
-      ^(web::WebStatePolicyDecider::PolicyDecision policyDecision) {
+  auto callback =
+      base::BindOnce(^(web::WebStatePolicyDecider::PolicyDecision decision) {
         __strong CRWWKNavigationHandler* strongSelf = weakSelf;
         // The WebState may have been closed in the ShouldAllowRequest callback.
         if (!strongSelf || strongSelf.beingDestroyed) {
@@ -347,12 +351,12 @@ web::HttpsUpgradeType GetFailedHttpsUpgradeType(
         }
 
         if (!webControllerCanShow) {
-          policyDecision = web::WebStatePolicyDecider::PolicyDecision::Cancel();
+          decision = web::WebStatePolicyDecider::PolicyDecision::Cancel();
         }
 
         [strongSelf answerDecisionHandler:decisionHandler
                       forNavigationAction:action
-                       withPolicyDecision:policyDecision
+                       withPolicyDecision:decision
                                   webView:webView
                  forceBlockUniversalLinks:forceBlockUniversalLinks];
       });
@@ -414,7 +418,7 @@ web::HttpsUpgradeType GetFailedHttpsUpgradeType(
   }
 
   // The page will not be changed until this navigation is committed, so the
-  // retrieved state will be pending until |didCommitNavigation| callback.
+  // retrieved state will be pending until `didCommitNavigation` callback.
   [self updatePendingNavigationInfoFromNavigationResponse:WKResponse
                                               HTTPHeaders:headers];
 
@@ -666,7 +670,7 @@ web::HttpsUpgradeType GetFailedHttpsUpgradeType(
   [self didReceiveWKNavigationDelegateCallback];
 
   // For reasons not yet fully understood, sometimes WKWebView triggers
-  // |webView:didFinishNavigation| before |webView:didCommitNavigation|. If a
+  // `webView:didFinishNavigation` before `webView:didCommitNavigation`. If a
   // navigation is already finished, stop processing
   // (https://crbug.com/818796#c2).
   if ([self.navigationStates stateForNavigation:navigation] ==
@@ -682,11 +686,11 @@ web::HttpsUpgradeType GetFailedHttpsUpgradeType(
     _certVerificationErrors->Clear();
   }
 
-  // Invariant: Every |navigation| should have a |context|. Note that violation
+  // Invariant: Every `navigation` should have a `context`. Note that violation
   // of this invariant is currently observed in production, but the cause is not
   // well understood. This DCHECK is meant to catch such cases in testing if
   // they arise.
-  // TODO(crbug.com/864769): Remove nullptr checks on |context| in this method
+  // TODO(crbug.com/864769): Remove nullptr checks on `context` in this method
   // once the root cause of the invariant violation is found.
   DCHECK(context);
   UMA_HISTOGRAM_BOOLEAN("IOS.CommittedNavigationHasContext", context);
@@ -700,14 +704,14 @@ web::HttpsUpgradeType GetFailedHttpsUpgradeType(
   // TODO(crbug.com/787497): Always use webView.backForwardList.currentItem.URL
   // to obtain lastCommittedURL once loadHTML: is no longer user for WebUI.
   if (webViewURL.is_empty()) {
-    // It is possible for |webView.URL| to be nil, in which case
+    // It is possible for `webView.URL` to be nil, in which case
     // webView.backForwardList.currentItem.URL will return the right committed
     // URL (crbug.com/784480).
     webViewURL = currentWKItemURL;
   } else if (context &&
              context->GetUrl() == currentWKItemURL) {
-    // If webView.backForwardList.currentItem.URL matches |context|, then this
-    // is a known edge case where |webView.URL| is wrong.
+    // If webView.backForwardList.currentItem.URL matches `context`, then this
+    // is a known edge case where `webView.URL` is wrong.
     // TODO(crbug.com/826013): Remove this workaround.
     webViewURL = currentWKItemURL;
   }
@@ -721,7 +725,7 @@ web::HttpsUpgradeType GetFailedHttpsUpgradeType(
 
   [self.delegate navigationHandlerDisplayWebView:self];
 
-  // |context| will be nil if this navigation has been already committed and
+  // `context` will be nil if this navigation has been already committed and
   // finished.
   if (context) {
     web::NavigationManager* navigationManager =
@@ -759,7 +763,7 @@ web::HttpsUpgradeType GetFailedHttpsUpgradeType(
 
   // This point should closely approximate the document object change, so reset
   // the list of injected scripts to those that are automatically injected.  For
-  // WebUI, let the window ID be injected when the |loadHTMLString:baseURL|
+  // WebUI, let the window ID be injected when the `loadHTMLString:baseURL`
   // navigation is committed.
   const std::string& mime_type = self.webStateImpl->GetContentsMimeType();
   if (web::IsContentTypeHtml(mime_type) || web::IsContentTypeImage(mime_type) ||
@@ -769,9 +773,7 @@ web::HttpsUpgradeType GetFailedHttpsUpgradeType(
     // does not get a chance to properly update MIME type.
     [self.webStateImpl->GetWebController() injectWindowID];
 
-    web::BrowserState* browserState = self.webStateImpl->GetBrowserState();
-    web::WebFramesManagerJavaScriptFeature::FromBrowserState(browserState)
-        ->RegisterExistingFrames(self.webStateImpl);
+    self.webStateImpl->RetrieveExistingFrames();
   }
 
   if (committedNavigation) {
@@ -784,7 +786,7 @@ web::HttpsUpgradeType GetFailedHttpsUpgradeType(
     [self resetDocumentSpecificState];
     [self.delegate navigationHandlerDidStartLoading:self];
   } else if (context) {
-    // If |navigation| is nil (which happens for windows open by DOM), then it
+    // If `navigation` is nil (which happens for windows open by DOM), then it
     // should be the first and the only pending navigation.
     BOOL isLastNavigation =
         !navigation ||
@@ -840,8 +842,8 @@ web::HttpsUpgradeType GetFailedHttpsUpgradeType(
     didFinishNavigation:(WKNavigation*)navigation {
   [self didReceiveWKNavigationDelegateCallback];
 
-  // Sometimes |webView:didFinishNavigation| arrives before
-  // |webView:didCommitNavigation|. Explicitly trigger post-commit processing.
+  // Sometimes `webView:didFinishNavigation` arrives before
+  // `webView:didCommitNavigation`. Explicitly trigger post-commit processing.
   bool navigationCommitted =
       [self.navigationStates isCommittedNavigation:navigation];
   UMA_HISTOGRAM_BOOLEAN("IOS.WKWebViewFinishBeforeCommit",
@@ -852,7 +854,7 @@ web::HttpsUpgradeType GetFailedHttpsUpgradeType(
               [self.navigationStates stateForNavigation:navigation]);
   }
 
-  // Sometimes |didFinishNavigation| callback arrives after |stopLoading| has
+  // Sometimes `didFinishNavigation` callback arrives after `stopLoading` has
   // been called. Abort in this case.
   if ([self.navigationStates stateForNavigation:navigation] ==
       web::WKNavigationState::NONE) {
@@ -878,8 +880,8 @@ web::HttpsUpgradeType GetFailedHttpsUpgradeType(
 
   if (context && item) {
     if (context->GetUrl() == currentWKItemURL) {
-      // If webView.backForwardList.currentItem.URL matches |context|, then this
-      // is a known edge case where |webView.URL| is wrong.
+      // If webView.backForwardList.currentItem.URL matches `context`, then this
+      // is a known edge case where `webView.URL` is wrong.
       // TODO(crbug.com/826013): Remove this workaround.
       webViewURL = currentWKItemURL;
     }
@@ -891,7 +893,7 @@ web::HttpsUpgradeType GetFailedHttpsUpgradeType(
             currentWKItemURL.DeprecatedGetOriginAsURL()) {
       // WKWebView sometimes changes URL on the same navigation, likely due to
       // location.replace() or history.replaceState in onload handler that does
-      // not change the origin. It's safe to update |item| and |context| URL
+      // not change the origin. It's safe to update `item` and `context` URL
       // because they are both associated to WKNavigation*, which is a stable ID
       // for the navigation. See https://crbug.com/869540 for a real-world case.
       item->SetURL(currentWKItemURL);
@@ -925,7 +927,7 @@ web::HttpsUpgradeType GetFailedHttpsUpgradeType(
             withError:(NSError*)error {
   [self didReceiveWKNavigationDelegateCallback];
 
-  // |webView:didFailNavigation:withError:| may be called after the document has
+  // `webView:didFailNavigation:withError:` may be called after the document has
   // already loaded which should be ignored. This can happen when navigating
   // back to a page which loads from the back forward cache. See
   // crbug.com/1249735 for more details. This will also be called when the user
@@ -1107,8 +1109,8 @@ web::HttpsUpgradeType GetFailedHttpsUpgradeType(
 
 #pragma mark - Private methods
 
-// Returns the UserAgent that needs to be used for the |navigationAction| from
-// the |webView|.
+// Returns the UserAgent that needs to be used for the `navigationAction` from
+// the `webView`.
 - (web::UserAgentType)userAgentForNavigationAction:
                           (WKNavigationAction*)navigationAction
                                            webView:(WKWebView*)webView {
@@ -1189,8 +1191,8 @@ web::HttpsUpgradeType GetFailedHttpsUpgradeType(
 
 // Extracts navigation info from WKNavigationAction and sets it as a pending.
 // Some pieces of navigation information are only known in
-// |decidePolicyForNavigationAction|, but must be in a pending state until
-// |didgo/Navigation| where it becames current.
+// `decidePolicyForNavigationAction`, but must be in a pending state until
+// `didgo/Navigation` where it becames current.
 - (void)createPendingNavigationInfoFromNavigationAction:
     (WKNavigationAction*)action {
   if (action.targetFrame.mainFrame) {
@@ -1207,8 +1209,8 @@ web::HttpsUpgradeType GetFailedHttpsUpgradeType(
 
 // Extracts navigation info from WKNavigationResponse and sets it as a pending.
 // Some pieces of navigation information are only known in
-// |decidePolicyForNavigationResponse|, but must be in a pending state until
-// |didCommitNavigation| where it becames current.
+// `decidePolicyForNavigationResponse`, but must be in a pending state until
+// `didCommitNavigation` where it becames current.
 - (void)
     updatePendingNavigationInfoFromNavigationResponse:
         (WKNavigationResponse*)response
@@ -1232,11 +1234,11 @@ web::HttpsUpgradeType GetFailedHttpsUpgradeType(
   }
   // According to WKNavigationAction documentation, in the case of a new window
   // navigation, target frame will be nil. In this case check if the
-  // |sourceFrame| is the mainFrame.
+  // `sourceFrame` is the mainFrame.
   return action.sourceFrame.mainFrame;
 }
 
-// Returns YES if the given |action| should be allowed to continue for app
+// Returns YES if the given `action` should be allowed to continue for app
 // specific URL. If this returns NO, the navigation should be cancelled.
 // App specific pages have elevated privileges and WKWebView uses the same
 // renderer process for all page frames. With that Chromium does not allow
@@ -1323,10 +1325,10 @@ web::HttpsUpgradeType GetFailedHttpsUpgradeType(
     item->ResetHttpRequestHeaders();
     item->AddHttpRequestHeaders([request allHTTPHeaderFields]);
     // Don't cache the "Cookie" header.
-    // According to NSURLRequest documentation, |-valueForHTTPHeaderField:| is
+    // According to NSURLRequest documentation, `-valueForHTTPHeaderField:` is
     // case insensitive, so it's enough to test the lower case only.
     if ([request valueForHTTPHeaderField:cookieHeaderName]) {
-      // Case insensitive search in |headers|.
+      // Case insensitive search in `headers`.
       NSSet* cookieKeys = [item->GetHttpRequestHeaders()
           keysOfEntriesPassingTest:^(id key, id obj, BOOL* stop) {
             NSString* header = (NSString*)key;
@@ -1383,8 +1385,8 @@ web::HttpsUpgradeType GetFailedHttpsUpgradeType(
     return NO;
   }
 
-  // TODO(crbug.com/1308875): Remove this when |canShowMIMEType| is fixed.
-  // On iOS 15 |canShowMIMEType| returns true for AR files although WebKit is
+  // TODO(crbug.com/1308875): Remove this when `canShowMIMEType` is fixed.
+  // On iOS 15 `canShowMIMEType` returns true for AR files although WebKit is
   // not capable of displaying them natively.
   if (@available(iOS 15, *)) {
     NSString* MIMEType = WKResponse.response.MIMEType;
@@ -1449,7 +1451,7 @@ web::HttpsUpgradeType GetFailedHttpsUpgradeType(
     // when WKWebView.URL did not change to redirected page inside
     // webView:didReceiveServerRedirectForProvisionalNavigation:
     // as happened in crbug.com/820375). In that case it's not possible
-    // to locate correct context to update |HTTPMethod| and call
+    // to locate correct context to update `HTTPMethod` and call
     // WebStateObserver::DidFinishNavigation. Download will fail with incorrect
     // HTTPMethod, which is better than a crash on null pointer dereferencing.
     // Missing DidFinishNavigation for download navigation does not cause any
@@ -1483,8 +1485,8 @@ web::HttpsUpgradeType GetFailedHttpsUpgradeType(
 }
 
 // This method should be called on deciding policy for navigation action. It
-// Answers the |decisionHandler| with a final decision caculated with passed
-// |policyDecision|. The passed |policyDecision| should be determined by some
+// Answers the `decisionHandler` with a final decision caculated with passed
+// `policyDecision`. The passed `policyDecision` should be determined by some
 // conditions and policy deciders
 - (void)answerDecisionHandler:
             (void (^)(WKNavigationActionPolicy))decisionHandler
@@ -1525,7 +1527,7 @@ web::HttpsUpgradeType GetFailedHttpsUpgradeType(
       if (!self.beingDestroyed && policyDecision.ShouldDisplayError()) {
         DCHECK(policyDecision.GetDisplayError());
 
-        // Navigation was blocked by |ShouldProvisionallyFailRequest|. Cancel
+        // Navigation was blocked by `ShouldProvisionallyFailRequest`. Cancel
         // load of page.
         decisionHandler(WKNavigationActionPolicyCancel);
 
@@ -1596,10 +1598,10 @@ web::HttpsUpgradeType GetFailedHttpsUpgradeType(
   if (policy != web::CERT_ACCEPT_POLICY_ALLOW &&
       SecTrustGetCertificateCount(trust)) {
     // The cert is invalid and the user has not agreed to proceed. Cache the
-    // cert verification result in |_certVerificationErrors|, so that it can
-    // later be reused inside |didFailProvisionalNavigation:|.
+    // cert verification result in `_certVerificationErrors`, so that it can
+    // later be reused inside `didFailProvisionalNavigation:`.
     // The leaf cert is used as the key, because the chain provided by
-    // |didFailProvisionalNavigation:| will differ (it is the server-supplied
+    // `didFailProvisionalNavigation:` will differ (it is the server-supplied
     // chain), thus if intermediates were considered, the keys would mismatch.
     scoped_refptr<net::X509Certificate> leafCert =
         net::x509_util::CreateX509CertificateFromSecCertificate(
@@ -1787,8 +1789,8 @@ web::HttpsUpgradeType GetFailedHttpsUpgradeType(
   return;
 }
 
-// Displays an error page with details from |error| in |webView|. The error page
-// is presented with |transition| and associated with |blockedNSURL|.
+// Displays an error page with details from `error` in `webView`. The error page
+// is presented with `transition` and associated with `blockedNSURL`.
 - (void)displayError:(NSError*)error
     forCancelledNavigationToURL:(NSURL*)blockedNSURL
                       inWebView:(WKWebView*)webView
@@ -1838,7 +1840,7 @@ web::HttpsUpgradeType GetFailedHttpsUpgradeType(
 }
 
 // Creates and returns a new WKNavigation to load an error page displaying
-// details of |error| inside |webView|. |provisionalLoad| should be set
+// details of `error` inside `webView`. `provisionalLoad` should be set
 // according to whether or not the error occurred during a provisionalLoad.
 - (WKNavigation*)displayErrorPageWithError:(NSError*)error
                                  inWebView:(WKWebView*)webView
@@ -1906,9 +1908,10 @@ web::HttpsUpgradeType GetFailedHttpsUpgradeType(
   }
 
     if (provisionalLoad) {
-      if (!navigationContext &&
-          web::RequiresProvisionalNavigationFailureWorkaround()) {
-        // It is likely that |navigationContext| is null because
+      // TODO(crbug.com/973653): Remove this workaround when WebKit bug is
+      // fixed.
+      if (!navigationContext) {
+        // It is likely that `navigationContext` is null because
         // didStartProvisionalNavigation: was not called with this WKNavigation
         // object. Do not call OnNavigationFinished() to avoid crash on null
         // pointer dereferencing. See crbug.com/973653 for details.
@@ -1953,8 +1956,8 @@ web::HttpsUpgradeType GetFailedHttpsUpgradeType(
       // Retrieve verification results from _certVerificationErrors cache to
       // avoid unnecessary recalculations. Verification results are cached for
       // the leaf cert, because the cert chain in
-      // |didReceiveAuthenticationChallenge:| is the OS constructed chain, while
-      // |chain| is the chain from the server.
+      // `didReceiveAuthenticationChallenge:` is the OS constructed chain, while
+      // `chain` is the chain from the server.
       NSArray* chain = error.userInfo[web::kNSErrorPeerCertificateChainKey];
       NSURL* requestURL = error.userInfo[web::kNSErrorFailingURLKey];
       NSString* host = requestURL.host;
@@ -1965,12 +1968,12 @@ web::HttpsUpgradeType GetFailedHttpsUpgradeType(
         // storing the cert decision.
         leafCert = web::CreateCertFromChain(@[ chain.firstObject ]);
         if (leafCert) {
-          auto error = _certVerificationErrors->Get(
+          auto verificationError = _certVerificationErrors->Get(
               {leafCert, base::SysNSStringToUTF8(host)});
-          bool cacheHit = error != _certVerificationErrors->end();
+          bool cacheHit = verificationError != _certVerificationErrors->end();
           if (cacheHit) {
-            info.is_fatal_cert_error = error->second.is_recoverable;
-            info.cert_status = error->second.status;
+            info.is_fatal_cert_error = verificationError->second.is_recoverable;
+            info.cert_status = verificationError->second.status;
           }
           UMA_HISTOGRAM_BOOLEAN("WebController.CertVerificationErrorsCacheHit",
                                 cacheHit);
@@ -1996,43 +1999,44 @@ web::HttpsUpgradeType GetFailedHttpsUpgradeType(
               evaluateJavaScript:[errorPageHelper
                                      scriptForInjectingHTML:errorHTML
                                          addAutomaticReload:YES]
-               completionHandler:^(id result, NSError* error) {
-                 if (error) {
+               completionHandler:^(id result, NSError* nserror) {
+                 if (nserror) {
                    // WKErrorJavaScriptResultTypeIsUnsupported can be received
                    // if the WKWebView is released during this call.
-                   DCHECK(error.code == WKErrorWebViewInvalidated ||
-                          error.code == WKErrorWebContentProcessTerminated ||
-                          error.code ==
+                   DCHECK(nserror.code == WKErrorWebViewInvalidated ||
+                          nserror.code == WKErrorWebContentProcessTerminated ||
+                          nserror.code ==
                               WKErrorJavaScriptResultTypeIsUnsupported)
                        << "Error injecting error page HTML: "
-                       << base::SysNSStringToUTF8(error.description);
+                       << base::SysNSStringToUTF8(nserror.description);
                  }
                }];
         }
 
-        // TODO(crbug.com/973765): This is a workaround because |item| might
+        // TODO(crbug.com/973765): This is a workaround because `item` might
         // get released after
-        // |self.navigationManagerImpl->
-        // CommitPendingItem(context->ReleaseItem()|.
+        // `self.navigationManagerImpl->
+        // CommitPendingItem(context->ReleaseItem()`.
         // Remove this once navigation refactor is done.
-        web::NavigationContextImpl* context =
+        web::NavigationContextImpl* navContext =
             [self.navigationStates contextForNavigation:navigation];
-        self.navigationManagerImpl->CommitPendingItem(context->ReleaseItem());
+        self.navigationManagerImpl->CommitPendingItem(
+            navContext->ReleaseItem());
         [self.delegate navigationHandler:self
                           setDocumentURL:itemURL
-                                 context:context];
+                                 context:navContext];
 
         // Rewrite the context URL to actual URL and trigger the deferred
-        // |OnNavigationFinished| callback.
-        context->SetUrl(failingURL);
-        context->SetHasCommitted(true);
-        self.webStateImpl->OnNavigationFinished(context);
+        // `OnNavigationFinished` callback.
+        navContext->SetUrl(failingURL);
+        navContext->SetHasCommitted(true);
+        self.webStateImpl->OnNavigationFinished(navContext);
 
         // For SSL cert error pages, SSLStatus needs to be set manually because
         // the placeholder navigation for the error page is committed and
         // there is no server trust (since there's no network navigation), which
         // is required to create a cert in CRWSSLStatusUpdater.
-        if (web::IsWKWebViewSSLCertError(context->GetError()) && info.cert) {
+        if (web::IsWKWebViewSSLCertError(navContext->GetError()) && info.cert) {
           web::SSLStatus& SSLStatus =
               self.navigationManagerImpl->GetLastCommittedItem()->GetSSL();
           SSLStatus.cert_status = info.cert_status;
@@ -2043,7 +2047,7 @@ web::HttpsUpgradeType GetFailedHttpsUpgradeType(
 
         [self.delegate navigationHandler:self
               didCompleteLoadWithSuccess:NO
-                              forContext:context];
+                              forContext:navContext];
         self.webStateImpl->OnPageLoaded(failingURL, NO);
       }));
 }
@@ -2073,11 +2077,11 @@ web::HttpsUpgradeType GetFailedHttpsUpgradeType(
   }
 }
 
-// Returns context for pending navigation that has |URL|. null if there is no
+// Returns context for pending navigation that has `URL`. null if there is no
 // matching pending navigation.
 - (web::NavigationContextImpl*)contextForPendingMainFrameNavigationWithURL:
     (const GURL&)URL {
-  // Here the enumeration variable |navigation| is __strong to allow setting it
+  // Here the enumeration variable `navigation` is __strong to allow setting it
   // to nil.
   for (__strong id navigation in [self.navigationStates pendingNavigations]) {
     if (navigation == [NSNull null]) {
@@ -2104,7 +2108,7 @@ web::HttpsUpgradeType GetFailedHttpsUpgradeType(
 }
 
 - (BOOL)isCurrentNavigationItemPOST {
-  // |self.navigationHandler.pendingNavigationInfo| will be nil if the
+  // `self.navigationHandler.pendingNavigationInfo` will be nil if the
   // decidePolicy* delegate methods were not called.
   NSString* HTTPMethod =
       self.pendingNavigationInfo

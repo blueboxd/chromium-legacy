@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -256,10 +256,10 @@ void CrossFadeAnimationInternal(
   ui::Layer* new_layer = window->layer();
 
   DCHECK(old_layer);
-  const gfx::Rect old_bounds(old_layer_owner->root()->bounds());
+  const gfx::Rect old_bounds(old_layer->bounds());
 
   gfx::RectF old_transformed_bounds(old_bounds);
-  gfx::Transform old_transform(old_layer_owner->root()->transform());
+  gfx::Transform old_transform(old_layer->transform());
   gfx::Transform old_transform_in_root;
   old_transform_in_root.Translate(old_bounds.x(), old_bounds.y());
   old_transform_in_root.PreconcatTransform(old_transform);
@@ -282,7 +282,6 @@ void CrossFadeAnimationInternal(
 
   // Scale up the old layer while translating to new position.
   {
-    ui::Layer* old_layer = old_layer_owner->root();
     old_layer->GetAnimator()->StopAnimating();
     // If Overview exit animation is in the sequence, stopping animation may
     // trigger `OverviewController::OnEndingAnimationComplete` which may finally

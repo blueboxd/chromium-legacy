@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_DEVICE_REAUTH_MAC_BIOMETRIC_AUTHENTICATOR_MAC_H_
 
 #include "base/callback.h"
+#include "base/sequence_checker.h"
 #include "chrome/browser/device_reauth/chrome_biometric_authenticator_common.h"
 #include "chrome/browser/device_reauth/chrome_biometric_authenticator_factory.h"
 #include "components/device_reauth/biometric_authenticator.h"
@@ -40,8 +41,11 @@ class BiometricAuthenticatorMac : public ChromeBiometricAuthenticatorCommon {
   // box with that information will appear on the screen and the `message` will
   // be displayed there) using his touchId or if it's not setUp default one with
   // password will appear.
+  // Always use CanAuthenticate() before using this method, and if it fails use
+  // password_manager_util_mac::AuthenticateUser() instead, until
+  // crbug.com/1358442 is fixed.
   void AuthenticateWithMessage(device_reauth::BiometricAuthRequester requester,
-                               const std::u16string message,
+                               const std::u16string& message,
                                AuthenticateCallback callback) override;
 
   // Should be called by the object using the authenticator if the purpose
@@ -63,6 +67,8 @@ class BiometricAuthenticatorMac : public ChromeBiometricAuthenticatorCommon {
   // TouchId authenticator object that will handle biometric authentication
   // itself.
   std::unique_ptr<device::fido::mac::TouchIdContext> touch_id_auth_context_;
+
+  SEQUENCE_CHECKER(sequence_checker_);
 
   // Factory for weak pointers to this class.
   base::WeakPtrFactory<BiometricAuthenticatorMac> weak_ptr_factory_{this};

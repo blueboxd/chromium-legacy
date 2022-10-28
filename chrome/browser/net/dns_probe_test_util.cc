@@ -1,4 +1,4 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -63,7 +63,7 @@ FakeHostResolver::FakeHostResolver(
 FakeHostResolver::~FakeHostResolver() = default;
 
 void FakeHostResolver::ResolveHost(
-    const net::HostPortPair& host,
+    network::mojom::HostResolverHostPtr host,
     const net::NetworkIsolationKey& network_isolation_key,
     network::mojom::ResolveHostParametersPtr optional_parameters,
     mojo::PendingRemote<network::mojom::ResolveHostClient>
@@ -76,7 +76,8 @@ void FakeHostResolver::ResolveHost(
   mojo::Remote<network::mojom::ResolveHostClient> response_client(
       std::move(pending_response_client));
   response_client->OnComplete(cur_result.result, cur_result.resolve_error_info,
-                              AddressListForResponse(cur_result.response));
+                              AddressListForResponse(cur_result.response),
+                              /*endpoint_results_with_metadata=*/absl::nullopt);
 }
 
 void FakeHostResolver::MdnsListen(
@@ -94,7 +95,7 @@ HangingHostResolver::HangingHostResolver(
 HangingHostResolver::~HangingHostResolver() = default;
 
 void HangingHostResolver::ResolveHost(
-    const net::HostPortPair& host,
+    network::mojom::HostResolverHostPtr host,
     const net::NetworkIsolationKey& network_isolation_key,
     network::mojom::ResolveHostParametersPtr optional_parameters,
     mojo::PendingRemote<network::mojom::ResolveHostClient> response_client) {

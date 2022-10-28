@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -65,6 +65,10 @@ const char kImei[] = "imei";
 // Name of the signal for getting information about installed hotfixes on
 // the device.
 const char kInstalledHotfixes[] = "hotfixes";
+
+// Name of the signal for getting information about the ip address on the
+// device.
+const char kIpAddress[] = "ipAddress";
 
 // Name of the signal for getting information about whether the disk
 // on the device is encrypted.

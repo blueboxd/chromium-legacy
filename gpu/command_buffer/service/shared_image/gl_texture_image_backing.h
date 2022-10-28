@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -42,13 +42,12 @@ class GLTextureImageBacking : public ClearTrackingSharedImageBacking {
  private:
   // SharedImageBacking:
   void OnMemoryDump(const std::string& dump_name,
-                    base::trace_event::MemoryAllocatorDump* dump,
+                    base::trace_event::MemoryAllocatorDumpGuid client_guid,
                     base::trace_event::ProcessMemoryDump* pmd,
                     uint64_t client_tracing_id) override;
   SharedImageBackingType GetType() const override;
   gfx::Rect ClearedRect() const final;
   void SetClearedRect(const gfx::Rect& cleared_rect) final;
-  bool ProduceLegacyMailbox(MailboxManager* mailbox_manager) final;
   std::unique_ptr<GLTextureImageRepresentation> ProduceGLTexture(
       SharedImageManager* manager,
       MemoryTypeTracker* tracker) final;

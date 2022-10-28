@@ -10,7 +10,7 @@
 
 #include "cc/layers/picture_layer.h"
 #include "third_party/blink/public/mojom/loader/request_context_frame_type.mojom-blink.h"
-#include "third_party/blink/renderer/bindings/core/v8/source_location.h"
+#include "third_party/blink/renderer/bindings/core/v8/capture_source_location.h"
 #include "third_party/blink/renderer/core/animation/animation.h"
 #include "third_party/blink/renderer/core/animation/keyframe_effect.h"
 #include "third_party/blink/renderer/core/css/invalidation/invalidation_set.h"
@@ -35,6 +35,7 @@
 #include "third_party/blink/renderer/core/workers/worker_global_scope.h"
 #include "third_party/blink/renderer/core/workers/worker_thread.h"
 #include "third_party/blink/renderer/core/xmlhttprequest/xml_http_request.h"
+#include "third_party/blink/renderer/platform/bindings/source_location.h"
 #include "third_party/blink/renderer/platform/instrumentation/instance_counters.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/traced_value.h"
@@ -109,9 +110,9 @@ void SetCallStack(perfetto::TracedDictionary& dict) {
   if (!*trace_category_enabled)
     return;
   // The CPU profiler stack trace does not include call site line numbers.
-  // So we collect the top frame with SourceLocation::capture() to get the
-  // binding call site info.
-  auto source_location = SourceLocation::Capture();
+  // So we collect the top frame with  CaptureSourceLocation() to
+  // get the binding call site info.
+  auto source_location = CaptureSourceLocation();
   if (source_location->HasStackTrace())
     dict.Add("stackTrace", source_location);
   v8::CpuProfiler::CollectSample(v8::Isolate::GetCurrent());
@@ -382,7 +383,7 @@ const char* PseudoTypeToString(CSSSelector::PseudoType pseudo_type) {
     DEFINE_STRING_MAPPING(PseudoListBox)
     DEFINE_STRING_MAPPING(PseudoMultiSelectFocus)
     DEFINE_STRING_MAPPING(PseudoOpen)
-    DEFINE_STRING_MAPPING(PseudoPopupHidden)
+    DEFINE_STRING_MAPPING(PseudoPopupOpeningOrOpen)
     DEFINE_STRING_MAPPING(PseudoHostHasAppearance)
     DEFINE_STRING_MAPPING(PseudoVideoPersistent)
     DEFINE_STRING_MAPPING(PseudoVideoPersistentAncestor)
@@ -478,7 +479,7 @@ void FillCommonPart(perfetto::TracedDictionary& dict,
   dict.Add("invalidationSet",
            DescendantInvalidationSetToIdString(invalidation_set));
   dict.Add("invalidatedSelectorId", invalidated_selector);
-  auto source_location = SourceLocation::Capture();
+  auto source_location = CaptureSourceLocation();
   if (source_location->HasStackTrace())
     dict.Add("stackTrace", source_location);
 }
@@ -644,7 +645,7 @@ void inspector_style_recalc_invalidation_tracking_event::Data(
   dict.Add("subtree", change_type == kSubtreeStyleChange);
   dict.Add("reason", reason.ReasonString());
   dict.Add("extraData", reason.GetExtraData());
-  auto source_location = SourceLocation::Capture();
+  auto source_location = CaptureSourceLocation();
   if (source_location->HasStackTrace())
     dict.Add("stackTrace", source_location);
 }
@@ -760,7 +761,6 @@ const char kTextControlChanged[] = "Text control changed";
 const char kSvgChanged[] = "SVG changed";
 const char kScrollbarChanged[] = "Scrollbar changed";
 const char kDisplayLock[] = "Display lock";
-const char kCanvasFormattedTextRunChange[] = "CanvasFormattedText runs changed";
 const char kDevtools[] = "Inspected by devtools";
 }  // namespace layout_invalidation_reason
 
@@ -773,7 +773,7 @@ void inspector_layout_invalidation_tracking_event::Data(
   dict.Add("frame", IdentifiersFactory::FrameId(layout_object->GetFrame()));
   SetGeneratingNodeInfo(dict, layout_object, "nodeId", "nodeName");
   dict.Add("reason", reason);
-  auto source_location = SourceLocation::Capture();
+  auto source_location = CaptureSourceLocation();
   if (source_location->HasStackTrace())
     dict.Add("stackTrace", source_location);
 }
@@ -887,8 +887,10 @@ void RecordTiming(perfetto::TracedValue context,
   dict.Add("requestTime", timing.RequestTime().since_origin().InSecondsF());
   dict.Add("proxyStart", timing.CalculateMillisecondDelta(timing.ProxyStart()));
   dict.Add("proxyEnd", timing.CalculateMillisecondDelta(timing.ProxyEnd()));
-  dict.Add("dnsStart", timing.CalculateMillisecondDelta(timing.DnsStart()));
-  dict.Add("dnsEnd", timing.CalculateMillisecondDelta(timing.DnsEnd()));
+  dict.Add("dnsStart",
+           timing.CalculateMillisecondDelta(timing.DomainLookupStart()));
+  dict.Add("dnsEnd",
+           timing.CalculateMillisecondDelta(timing.DomainLookupEnd()));
   dict.Add("connectStart",
            timing.CalculateMillisecondDelta(timing.ConnectStart()));
   dict.Add("connectEnd", timing.CalculateMillisecondDelta(timing.ConnectEnd()));
@@ -1277,7 +1279,7 @@ void inspector_function_call_event::Data(
     dict.Add("functionName", ToCoreString(function_name.As<v8::String>()));
   }
   std::unique_ptr<SourceLocation> location =
-      SourceLocation::FromFunction(original_function);
+      CaptureSourceLocation(original_function);
   dict.Add("scriptId", String::Number(location->ScriptId()));
   dict.Add("url", location->Url());
   dict.Add("lineNumber", location->LineNumber());

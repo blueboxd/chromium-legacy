@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -228,11 +228,12 @@ base::Time CalendarViewController::GetOnScreenMonthFirstDayUTC() {
          time_difference;
 }
 
-bool CalendarViewController::isSuccessfullyFetched(base::Time start_of_month) {
-  return Shell::Get()
-             ->system_tray_model()
-             ->calendar_model()
-             ->FindFetchingStatus(start_of_month) == CalendarModel::kSuccess;
+bool CalendarViewController::IsSuccessfullyFetched(base::Time start_of_month) {
+  auto fetch_status =
+      Shell::Get()->system_tray_model()->calendar_model()->FindFetchingStatus(
+          start_of_month);
+  return fetch_status == CalendarModel::kSuccess ||
+         fetch_status == CalendarModel::kRefetching;
 }
 
 base::Time CalendarViewController::ApplyTimeDifference(base::Time date) {

@@ -1263,9 +1263,8 @@ struct FuzzTraits<media::AudioParameters> {
       return false;
     media::AudioParameters params(
         static_cast<media::AudioParameters::Format>(format),
-        static_cast<media::ChannelLayout>(channel_layout), sample_rate,
-        frames_per_buffer);
-    params.set_channels_for_discrete(channels);
+        {static_cast<media::ChannelLayout>(channel_layout), channels},
+        sample_rate, frames_per_buffer);
     params.set_effects(effects);
     *p = params;
     return true;
@@ -1313,8 +1312,8 @@ struct FuzzTraits<net::LoadTimingInfo> {
            FuzzParam(&p->request_start, fuzzer) &&
            FuzzParam(&p->proxy_resolve_start, fuzzer) &&
            FuzzParam(&p->proxy_resolve_end, fuzzer) &&
-           FuzzParam(&p->connect_timing.dns_start, fuzzer) &&
-           FuzzParam(&p->connect_timing.dns_end, fuzzer) &&
+           FuzzParam(&p->connect_timing.domain_lookup_start, fuzzer) &&
+           FuzzParam(&p->connect_timing.domain_lookup_end, fuzzer) &&
            FuzzParam(&p->connect_timing.connect_start, fuzzer) &&
            FuzzParam(&p->connect_timing.connect_end, fuzzer) &&
            FuzzParam(&p->connect_timing.ssl_start, fuzzer) &&

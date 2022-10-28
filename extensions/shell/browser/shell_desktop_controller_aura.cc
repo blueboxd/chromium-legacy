@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -163,7 +163,7 @@ ShellDesktopControllerAura::~ShellDesktopControllerAura() {
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   chromeos::PowerManagerClient::Get()->RemoveObserver(this);
 #endif
-  extensions::AppWindowClient::Set(NULL);
+  extensions::AppWindowClient::Set(nullptr);
 }
 
 void ShellDesktopControllerAura::PreMainMessageLoopRun() {

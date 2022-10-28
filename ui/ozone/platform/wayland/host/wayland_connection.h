@@ -93,10 +93,7 @@ class WaylandConnection {
 
   bool Initialize();
 
-  // Schedules a flush of the Wayland connection.
-  void ScheduleFlush();
-
-  // Immediately flushes. Public for testing.
+  // Immediately flushes the Wayland display.
   void Flush();
 
   // Calls wl_display_roundtrip_queue. Might be required during initialization
@@ -123,6 +120,9 @@ class WaylandConnection {
   // version binded).
   uint32_t compositor_version() const { return compositor_version_; }
   wl_subcompositor* subcompositor() const { return subcompositor_.get(); }
+  wp_content_type_manager_v1* content_type_manager_v1() const {
+    return content_type_manager_v1_.get();
+  }
   wp_viewporter* viewporter() const { return viewporter_.get(); }
   zcr_alpha_compositing_v1* alpha_compositing() const {
     return alpha_compositing_.get();
@@ -303,6 +303,7 @@ class WaylandConnection {
     return tablet_layout_state_ == display::TabletState::kInTabletMode ||
            tablet_layout_state_ == display::TabletState::kEnteringTabletMode;
   }
+  display::TabletState GetTabletState() { return tablet_layout_state_; }
 
   const gfx::PointF MaybeConvertLocation(const gfx::PointF& location,
                                          const WaylandWindow* window) const;
@@ -375,6 +376,7 @@ class WaylandConnection {
   wl::Object<wl_subcompositor> subcompositor_;
   wl::Object<xdg_wm_base> shell_;
   wl::Object<zxdg_shell_v6> shell_v6_;
+  wl::Object<wp_content_type_manager_v1> content_type_manager_v1_;
   wl::Object<wp_presentation> presentation_;
   wl::Object<wp_viewporter> viewporter_;
   wl::Object<zcr_alpha_compositing_v1> alpha_compositing_;
@@ -452,8 +454,6 @@ class WaylandConnection {
   // The current window table mode layout state.
   display::TabletState tablet_layout_state_ =
       display::TabletState::kInClamshellMode;
-
-  bool scheduled_flush_ = false;
 
   // Surfaces are submitted in pixel coordinates. Their buffer scales are always
   // advertised to server as 1, and the scale via vp_viewporter won't be

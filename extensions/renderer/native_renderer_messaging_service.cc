@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -454,7 +454,7 @@ void NativeRendererMessagingService::DispatchOnConnectToListeners(
 
   const Extension* extension = script_context->extension();
   if (extension) {
-    if (!source->tab.DictEmpty() && !extension->is_platform_app()) {
+    if (!source->tab.empty() && !extension->is_platform_app()) {
       sender_builder.Set("tab", content::V8ValueConverter::Create()->ToV8Value(
                                     source->tab, v8_context));
     }

@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -42,7 +42,7 @@ class TranslateBannerRequestConfig
 
   // The InfoBar causing this banner.
   infobars::InfoBar* const infobar_;
-  // Configuration data extracted from |infobar_|'s translate delegate.
+  // Configuration data extracted from `infobar_`'s translate delegate.
   std::u16string source_language_;
   std::u16string target_language_;
   translate::TranslateStep translate_step_;

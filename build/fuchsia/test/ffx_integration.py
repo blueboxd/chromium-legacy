@@ -1,4 +1,4 @@
-# Copyright 2022 The Chromium Authors. All rights reserved.
+# Copyright 2022 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 """Provide helpers for running Fuchsia's `ffx`."""
@@ -16,6 +16,9 @@ from typing import Iterable, Optional
 
 from common import get_host_arch, run_ffx_command, run_continuous_ffx_command, \
                    SDK_ROOT
+
+RUN_SUMMARY_SCHEMA = \
+    'https://fuchsia.dev/schema/ffx_test/run_summary-8d1dd964.json'
 
 
 def get_config(name: str) -> Optional[str]:
@@ -225,13 +228,10 @@ class FfxTestRunner(AbstractContextManager):
         """
         self._results_dir = results_dir
         self._custom_artifact_directory = None
-        self._structured_output_config = None
         self._temp_results_dir = None
+        self._debug_data_directory = None
 
     def __enter__(self):
-        self._structured_output_config = ScopedFfxConfig(
-            'test.experimental_structured_output', 'true')
-        self._structured_output_config.__enter__()
         if self._results_dir:
             os.makedirs(self._results_dir, exist_ok=True)
         else:
@@ -243,8 +243,6 @@ class FfxTestRunner(AbstractContextManager):
         if self._temp_results_dir:
             self._temp_results_dir.__exit__(exc_type, exc_val, exc_tb)
             self._temp_results_dir = None
-        self._structured_output_config.__exit__(exc_type, exc_val, exc_tb)
-        self._structured_output_config = None
 
         # Do not suppress exceptions.
         return False
@@ -262,8 +260,8 @@ class FfxTestRunner(AbstractContextManager):
             A subprocess.Popen object.
         """
         command = [
-            'test', 'run', '--output-directory', self._results_dir,
-            component_uri
+            '--config', 'test.experimental_structured_output=false', 'test',
+            'run', '--output-directory', self._results_dir, component_uri
         ]
         if test_args:
             command.append('--')
@@ -297,35 +295,33 @@ class FfxTestRunner(AbstractContextManager):
                               run_summary_path)
             return
 
-        assert run_summary['version'] == '0', \
+        assert run_summary['schema_id'] == RUN_SUMMARY_SCHEMA, \
             'Unsupported version found in %s' % run_summary_path
 
-        # There should be precisely one suite for the test that ran. Find and
-        # parse its file.
-        suite_summary_filename = run_summary.get('suites',
-                                                 [{}])[0].get('summary')
-        suite_summary_path = os.path.join(self._results_dir,
-                                          suite_summary_filename)
-        with open(suite_summary_path) as suite_summary_file:
-            suite_summary = json.load(suite_summary_file)
+        run_artifact_dir = run_summary.get('data', {})['artifact_dir']
+        for artifact_path, artifact in run_summary.get(
+                'data', {})['artifacts'].items():
+            if artifact['artifact_type'] == 'DEBUG':
+                self._debug_data_directory = os.path.join(
+                    self._results_dir, run_artifact_dir, artifact_path)
+                break
 
-        assert suite_summary['version'] == '0', \
-            'Unsupported version found in %s' % suite_summary_path
+        # There should be precisely one suite for the test that ran.
+        suite_summary = run_summary.get('data', {}).get('suites', [{}])[0]
 
         # Get the top-level directory holding all artifacts for this suite.
         artifact_dir = suite_summary.get('artifact_dir')
         if not artifact_dir:
             logging.error('Failed to find suite\'s artifact_dir in %s',
-                          suite_summary_path)
+                          run_summary_path)
             return
 
-        # Get the path corresponding to the CUSTOM artifact.
+        # Get the path corresponding to artifacts
         for artifact_path, artifact in suite_summary['artifacts'].items():
-            if artifact['artifact_type'] != 'CUSTOM':
-                continue
-            self._custom_artifact_directory = os.path.join(
-                self._results_dir, artifact_dir, artifact_path)
-            break
+            if artifact['artifact_type'] == 'CUSTOM':
+                self._custom_artifact_directory = os.path.join(
+                    self._results_dir, artifact_dir, artifact_path)
+                break
 
     def get_custom_artifact_directory(self) -> str:
         """Returns the full path to the directory holding custom artifacts
@@ -333,3 +329,10 @@ class FfxTestRunner(AbstractContextManager):
         """
         self._parse_test_outputs()
         return self._custom_artifact_directory
+
+    def get_debug_data_directory(self):
+        """Returns the full path to the directory holding debug data
+        emitted by the test, or None if the path cannot be determined.
+        """
+        self._parse_test_outputs()
+        return self._debug_data_directory

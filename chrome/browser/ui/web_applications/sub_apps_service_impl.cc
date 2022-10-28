@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -102,9 +102,11 @@ void SubAppsServiceImpl::CreateIfAllowed(
     content::RenderFrameHost* render_frame_host,
     mojo::PendingReceiver<blink::mojom::SubAppsService> receiver) {
   CHECK(render_frame_host);
-  // This class is created only on the primary main frame (this excludes
-  // fenced frames and prerendered pages).
-  DCHECK(render_frame_host->IsInPrimaryMainFrame());
+
+  // This class is created only on the primary main frame.
+  if (!render_frame_host->IsInPrimaryMainFrame()) {
+    return;
+  }
 
   // Bail if Web Apps aren't enabled on current profile.
   if (!AreWebAppsEnabled(Profile::FromBrowserContext(

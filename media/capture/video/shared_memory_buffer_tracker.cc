@@ -1,4 +1,4 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -58,7 +58,7 @@ size_t CalculateRequiredBufferSize(
 namespace media {
 
 SharedMemoryBufferTracker::SharedMemoryBufferTracker(bool strict_pixel_format)
-    : strict_pixel_format_(strict_pixel_format){};
+    : strict_pixel_format_(strict_pixel_format) {}
 
 SharedMemoryBufferTracker::~SharedMemoryBufferTracker() = default;
 

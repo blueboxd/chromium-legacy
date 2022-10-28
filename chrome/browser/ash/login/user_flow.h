@@ -1,11 +1,11 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #ifndef CHROME_BROWSER_ASH_LOGIN_USER_FLOW_H_
 #define CHROME_BROWSER_ASH_LOGIN_USER_FLOW_H_
 
-#include "ash/components/login/auth/auth_status_consumer.h"
+#include "chromeos/ash/components/login/auth/auth_status_consumer.h"
 #include "components/account_id/account_id.h"
 #include "components/user_manager/user.h"
 

@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -109,6 +109,8 @@ ProxyImpl::ProxyImpl(
   last_raster_priority_ = SAME_PRIORITY_FOR_BOTH_TREES;
 
   SchedulerSettings scheduler_settings(settings->ToSchedulerSettings());
+  scheduler_settings.main_frame_before_commit_enabled =
+      base::FeatureList::IsEnabled(features::kNonBlockingCommit);
 
   std::unique_ptr<CompositorTimingHistory> compositor_timing_history(
       new CompositorTimingHistory(
@@ -206,6 +208,11 @@ void ProxyImpl::SetDeferBeginMainFrameFromMain(bool defer_begin_main_frame) {
     scheduler_->SetDeferBeginMainFrame(ShouldDeferBeginMainFrame());
 }
 
+void ProxyImpl::SetPauseRendering(bool pause_rendering) {
+  DCHECK(IsImplThread());
+  scheduler_->SetPauseRendering(pause_rendering);
+}
+
 void ProxyImpl::SetDeferBeginMainFrameFromImpl(bool defer_begin_main_frame) {
   // This is a request from the impl thread to defer BeginMainFrame.
   DCHECK(IsImplThread());
@@ -247,6 +254,7 @@ void ProxyImpl::BeginMainFrameAbortedOnImpl(
   host_impl_->BeginMainFrameAborted(
       reason, std::move(swap_promises),
       scheduler_->last_dispatched_begin_main_frame_args(),
+      static_cast<bool>(data_for_commit_.get()),
       scroll_and_viewport_changes_synced);
   scheduler_->NotifyBeginMainFrameStarted(main_thread_start_time);
   scheduler_->BeginMainFrameAborted(reason);
@@ -324,6 +332,7 @@ void ProxyImpl::NotifyReadyToCommitOnImpl(
     const ThreadUnsafeCommitState* unsafe_state,
     base::TimeTicks main_thread_start_time,
     const viz::BeginFrameArgs& commit_args,
+    bool scroll_and_viewport_changes_synced,
     CommitTimestamps* commit_timestamps,
     bool commit_timeout) {
   {
@@ -365,8 +374,8 @@ void ProxyImpl::NotifyReadyToCommitOnImpl(
 
   auto& begin_main_frame_metrics = commit_state->begin_main_frame_metrics;
 
-  host_impl_->ReadyToCommit(commit_args, begin_main_frame_metrics.get(),
-                            commit_timeout);
+  host_impl_->ReadyToCommit(commit_args, scroll_and_viewport_changes_synced,
+                            begin_main_frame_metrics.get(), commit_timeout);
 
   data_for_commit_ = std::make_unique<DataForCommit>(
       std::make_unique<ScopedCommitCompletionEvent>(
@@ -377,6 +386,11 @@ void ProxyImpl::NotifyReadyToCommitOnImpl(
   // Extract metrics data from the layer tree host and send them to the
   // scheduler to pass them to the compositor_timing_history object.
   scheduler_->NotifyReadyToCommit(std::move(begin_main_frame_metrics));
+
+  // If scroll offsets were not synchronized by this commit we need another main
+  // frame to sync them.
+  if (!scroll_and_viewport_changes_synced)
+    scheduler_->SetNeedsBeginMainFrame();
 }
 
 void ProxyImpl::DidLoseLayerTreeFrameSinkOnImplThread() {
@@ -606,6 +620,13 @@ void ProxyImpl::NotifyImageDecodeRequestFinished() {
   SetNeedsCommitOnImplThread();
 }
 
+void ProxyImpl::NotifyTransitionRequestFinished(uint32_t sequence_id) {
+  DCHECK(IsImplThread());
+  MainThreadTaskRunner()->PostTask(
+      FROM_HERE, base::BindOnce(&ProxyMain::NotifyTransitionRequestFinished,
+                                proxy_main_weak_ptr_, sequence_id));
+}
+
 void ProxyImpl::DidPresentCompositorFrameOnImplThread(
     uint32_t frame_token,
     PresentationTimeCallbackBuffer::PendingCallbacks activated,
@@ -697,11 +718,12 @@ void ProxyImpl::ScheduledActionSendBeginMainFrame(
   std::unique_ptr<BeginMainFrameAndCommitState> begin_main_frame_state(
       new BeginMainFrameAndCommitState);
   begin_main_frame_state->begin_frame_args = args;
-  begin_main_frame_state->commit_data = host_impl_->ProcessCompositorDeltas();
+  DCHECK(!data_for_commit_ || data_for_commit_->unsafe_state->mutator_host);
+  begin_main_frame_state->commit_data = host_impl_->ProcessCompositorDeltas(
+      data_for_commit_ ? data_for_commit_->unsafe_state->mutator_host
+                       : nullptr);
   begin_main_frame_state->completed_image_decode_requests =
       host_impl_->TakeCompletedImageDecodeRequests();
-  begin_main_frame_state->finished_transition_request_sequence_ids =
-      host_impl_->TakeFinishedTransitionRequestSequenceIds();
   begin_main_frame_state->mutator_events = host_impl_->TakeMutatorEvents();
   begin_main_frame_state->active_sequence_trackers =
       host_impl_->FrameSequenceTrackerActiveTypes();

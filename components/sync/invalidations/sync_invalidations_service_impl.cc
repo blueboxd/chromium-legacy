@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,7 +13,6 @@ namespace syncer {
 
 namespace {
 
-// TODO(crbug.com/1082115): change to real sync sender id: 8181035976.
 constexpr char kSenderId[] = "361488507004";
 constexpr char kApplicationId[] = "com.google.chrome.sync.invalidations";
 

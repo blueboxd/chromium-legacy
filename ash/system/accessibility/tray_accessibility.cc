@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -629,10 +629,22 @@ void AccessibilityDetailedView::OnSodaInstalled(
 void AccessibilityDetailedView::OnSodaInstallError(
     speech::LanguageCode language_code,
     speech::SodaInstaller::ErrorCode error_code) {
-  std::u16string message = l10n_util::GetStringUTF16(
-      IDS_ASH_ACCESSIBILITY_SETTING_SUBTITLE_SODA_DOWNLOAD_ERROR);
-  MaybeShowSodaMessage(SodaFeature::kDictation, language_code, message);
-  MaybeShowSodaMessage(SodaFeature::kLiveCaption, language_code, message);
+  std::u16string error_message;
+  switch (error_code) {
+    case speech::SodaInstaller::ErrorCode::kUnspecifiedError: {
+      error_message = l10n_util::GetStringUTF16(
+          IDS_ASH_ACCESSIBILITY_SETTING_SUBTITLE_SODA_DOWNLOAD_ERROR);
+      break;
+    }
+    case speech::SodaInstaller::ErrorCode::kNeedsReboot: {
+      error_message = l10n_util::GetStringUTF16(
+          IDS_ASH_ACCESSIBILITY_SETTING_SUBTITLE_SODA_DOWNLOAD_ERROR_REBOOT_REQUIRED);
+      break;
+    }
+  }
+
+  MaybeShowSodaMessage(SodaFeature::kDictation, language_code, error_message);
+  MaybeShowSodaMessage(SodaFeature::kLiveCaption, language_code, error_message);
 }
 
 void AccessibilityDetailedView::OnSodaProgress(

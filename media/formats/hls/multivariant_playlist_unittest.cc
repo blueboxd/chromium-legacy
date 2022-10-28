@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -34,7 +34,8 @@ TEST(HlsMultivariantPlaylistTest, VariableSubstitution) {
   builder.ExpectAdditionalVariant();
   builder.ExpectVariant(HasPrimaryRenditionUri,
                         GURL("http://www.example.com/playlist1.m3u8"));
-  builder.ExpectVariant(HasCodecs, "mp4a.40.2,avc1.4d401e");
+  builder.ExpectVariant(HasCodecs,
+                        std::vector<std::string>{"mp4a.40.2", "avc1.4d401e"});
 
   // Invalid variable references should result in an error
   {
@@ -242,7 +243,7 @@ TEST(HlsMultivariantPlaylistTest, XStreamInfTag) {
   builder.ExpectVariant(HasBandwidth, 108u);
   builder.ExpectVariant(HasAverageBandwidth, absl::nullopt);
   builder.ExpectVariant(HasScore, absl::nullopt);
-  builder.ExpectVariant(HasCodecs, "foo,bar");
+  builder.ExpectVariant(HasCodecs, std::vector<std::string>{"foo", "bar"});
   builder.ExpectVariant(HasResolution, absl::nullopt);
   builder.ExpectVariant(HasFrameRate, absl::nullopt);
   builder.ExpectOk();

@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -78,7 +78,7 @@ static void SetHostPatterns(
     const SocketsManifestPermission* permission,
     content::SocketPermissionRequest::OperationType operation_type) {
   host_patterns = std::make_unique<SocketHostPatterns>();
-  host_patterns->as_strings = std::make_unique<std::vector<std::string>>();
+  host_patterns->as_strings.emplace();
   for (auto it = permission->entries().cbegin();
        it != permission->entries().cend(); ++it) {
     if (it->pattern().type == operation_type) {
@@ -247,24 +247,24 @@ std::unique_ptr<base::Value> SocketsManifestPermission::ToValue() const {
   if (sockets.udp->bind->as_strings->size() == 0 &&
       sockets.udp->send->as_strings->size() == 0 &&
       sockets.udp->multicast_membership->as_strings->size() == 0) {
-    sockets.udp.reset(NULL);
+    sockets.udp.reset();
   }
 
   sockets.tcp = std::make_unique<Sockets::Tcp>();
   SetHostPatterns(
       sockets.tcp->connect, this, SocketPermissionRequest::TCP_CONNECT);
   if (sockets.tcp->connect->as_strings->size() == 0) {
-    sockets.tcp.reset(NULL);
+    sockets.tcp.reset();
   }
 
   sockets.tcp_server = std::make_unique<Sockets::TcpServer>();
   SetHostPatterns(
       sockets.tcp_server->listen, this, SocketPermissionRequest::TCP_LISTEN);
   if (sockets.tcp_server->listen->as_strings->size() == 0) {
-    sockets.tcp_server.reset(NULL);
+    sockets.tcp_server.reset();
   }
 
-  return std::unique_ptr<base::Value>(sockets.ToValue().release());
+  return base::Value::ToUniquePtrValue(base::Value(sockets.ToValue()));
 }
 
 std::unique_ptr<ManifestPermission> SocketsManifestPermission::Diff(

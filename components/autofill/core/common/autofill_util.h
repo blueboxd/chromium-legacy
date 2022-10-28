@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -67,7 +67,7 @@ void SetCheckStatus(FormFieldData* form_field_data,
 // Considers any ASCII whitespace character as a possible separator.
 // Also ignores empty tokens, resulting in a collapsing of whitespace.
 std::vector<std::string> LowercaseAndTokenizeAttributeString(
-    const std::string& attribute);
+    base::StringPiece attribute);
 
 // Returns true if and only if the field value has no character except the
 // formatting characters. This means that the field value is a formatting string

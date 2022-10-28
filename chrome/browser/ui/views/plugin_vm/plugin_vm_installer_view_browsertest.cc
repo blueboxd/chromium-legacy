@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -172,8 +172,8 @@ class PluginVmInstallerViewBrowserTest : public DialogBrowserTest {
   }
 
   void SetUserWithAffiliation() {
-    const AccountId account_id(AccountId::FromUserEmailGaiaId(
-        browser()->profile()->GetProfileUserName(), "id"));
+    const AccountId account_id(
+        AccountId::FromUserEmailGaiaId("test@test", "id"));
     auto user_manager = std::make_unique<ash::FakeChromeUserManager>();
     user_manager->AddUserWithAffiliation(account_id, true);
     user_manager->LoginUser(account_id);

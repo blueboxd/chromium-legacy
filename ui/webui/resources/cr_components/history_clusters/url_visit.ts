@@ -40,7 +40,7 @@ declare global {
   }
 }
 
-const MenuContainerElementBase = I18nMixin(PolymerElement);
+const ClusterMenuElementBase = I18nMixin(PolymerElement);
 
 interface VisitRowElement {
   $: {
@@ -51,7 +51,7 @@ interface VisitRowElement {
   };
 }
 
-class VisitRowElement extends MenuContainerElementBase {
+class VisitRowElement extends ClusterMenuElementBase {
   static get is() {
     return 'url-visit';
   }
@@ -98,6 +98,15 @@ class VisitRowElement extends MenuContainerElementBase {
       },
 
       /**
+       * Whether the cluster is in the side panel.
+       */
+      inSidePanel_: {
+        type: Boolean,
+        value: () => loadTimeData.getBoolean('inSidePanel'),
+        reflectToAttribute: true,
+      },
+
+      /**
        * Page title for the visit. This property is actually unused. The side
        * effect of the compute function is used to insert the HTML elements for
        * highlighting into this.$.title element.
@@ -128,6 +137,7 @@ class VisitRowElement extends MenuContainerElementBase {
   private annotations_: string[];
   private allowDeletingHistory_: boolean;
   private debugInfo_: string;
+  private inSidePanel_: boolean;
   private unusedTitle_: string;
   private unusedVisibleUrl_: string;
 

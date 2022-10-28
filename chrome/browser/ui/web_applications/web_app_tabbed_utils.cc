@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,6 +12,10 @@ bool HasPinnedHomeTab(TabStripModel* tab_strip_model) {
   if (!tab_strip_model->ContainsIndex(0))
     return false;
   return tab_strip_model->IsTabPinned(0);
+}
+
+bool IsPinnedHomeTab(TabStripModel* tab_strip_model, int index) {
+  return HasPinnedHomeTab(tab_strip_model) && index == 0;
 }
 
 bool IsPinnedHomeTabUrl(const WebAppRegistrar& registrar,

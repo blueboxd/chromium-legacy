@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -94,6 +94,14 @@ GURL WebAppFrameToolbarTestHelper::
   constexpr char kTestHTML[] =
       "<!DOCTYPE html>"
       "<style>"
+      "  body {"
+      "    background: blue;"
+      "  }"
+      "  @media (display-mode: window-controls-overlay) {"
+      "    body {"
+      "      background: red;"
+      "    }"
+      "  }"
       "  #draggable {"
       "     app-region: drag;"
       "     position: absolute;"
@@ -148,6 +156,14 @@ GURL WebAppFrameToolbarTestHelper::LoadBorderlessTestPageWithDataAndGetURL(
   constexpr char kTestHTML[] =
       "<!DOCTYPE html>"
       "<style>"
+      "  body {"
+      "    background: blue;"
+      "  }"
+      "  @media (display-mode: borderless) {"
+      "    body {"
+      "      background: red;"
+      "    }"
+      "  }"
       "  #draggable {"
       "     app-region: drag;"
       "     position: absolute;"
@@ -171,8 +187,16 @@ GURL WebAppFrameToolbarTestHelper::LoadBorderlessTestPageWithDataAndGetURL(
       "</style>"
       "<script>"
       "window.onload = function() {"
-      "document.title = 'Borderless'"
+      "  document.title = 'Borderless';"
       "};"
+      "const mql = window.matchMedia('(display-mode: borderless)');"
+      "mql.addEventListener('change', event => {"
+      "  if (event.matches) {"
+      "    document.title = 'match-media-borderless';"
+      "  } else {"
+      "    document.title = 'Borderless';"  // The same title as set onload.
+      "  }"
+      "});"
       "</script>"
       "<div id=\"draggable\">"
       "  <div id=\"non-draggable\"></div>"

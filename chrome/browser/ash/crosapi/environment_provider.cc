@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -103,7 +103,7 @@ mojom::DefaultPathsPtr EnvironmentProvider::GetDefaultPaths() {
       default_paths->drivefs = integration_service->GetMountPointPath();
     }
     default_paths->android_files =
-        base::FilePath(file_manager::util::kAndroidFilesPath);
+        base::FilePath(file_manager::util::GetAndroidFilesPath());
     default_paths->linux_files =
         file_manager::util::GetCrostiniMountDirectory(profile);
     base::FilePath ash_resources;

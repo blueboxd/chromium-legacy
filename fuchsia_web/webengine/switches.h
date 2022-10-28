@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -60,6 +60,10 @@ extern const char kGoogleApiKey[];
 
 // Used to tell the WebEngine executable to run the ContextProvider service.
 extern const char kContextProvider[];
+
+// Used to tell the WebEngine executable that it is being run via a .cm
+// manifest.
+extern const char kEnableCfv2[];
 
 }  // namespace switches
 

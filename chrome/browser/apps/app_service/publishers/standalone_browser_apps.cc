@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -175,6 +175,14 @@ void StandaloneBrowserApps::LaunchAppWithParams(AppLaunchParams&& params,
   std::move(callback).Run(LaunchResult());
 }
 
+void StandaloneBrowserApps::GetMenuModel(
+    const std::string& app_id,
+    MenuType menu_type,
+    int64_t display_id,
+    base::OnceCallback<void(MenuItems)> callback) {
+  std::move(callback).Run(CreateBrowserMenuItems(profile_));
+}
+
 void StandaloneBrowserApps::Connect(
     mojo::PendingRemote<apps::mojom::Subscriber> subscriber_remote,
     apps::mojom::ConnectOptionsPtr opts) {
@@ -201,7 +209,8 @@ void StandaloneBrowserApps::GetMenuModel(const std::string& app_id,
                                          apps::mojom::MenuType menu_type,
                                          int64_t display_id,
                                          GetMenuModelCallback callback) {
-  std::move(callback).Run(CreateBrowserMenuItems(profile_));
+  std::move(callback).Run(
+      ConvertMenuItemsToMojomMenuItems(CreateBrowserMenuItems(profile_)));
 }
 
 void StandaloneBrowserApps::OpenNativeSettings(const std::string& app_id) {

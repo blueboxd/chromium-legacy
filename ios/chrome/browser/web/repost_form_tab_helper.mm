@@ -1,10 +1,10 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #import "ios/chrome/browser/web/repost_form_tab_helper.h"
 
-#include "base/memory/ptr_util.h"
+#import "base/memory/ptr_util.h"
 #import "ios/chrome/browser/web/repost_form_tab_helper_delegate.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)

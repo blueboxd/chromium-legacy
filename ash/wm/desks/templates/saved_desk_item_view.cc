@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -31,6 +31,7 @@
 #include "ash/wm/overview/overview_highlight_controller.h"
 #include "ash/wm/overview/overview_highlightable_view.h"
 #include "ash/wm/overview/overview_session.h"
+#include "ash/wm/overview/overview_utils.h"
 #include "base/i18n/time_formatting.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
@@ -223,7 +224,8 @@ SavedDeskItemView::SavedDeskItemView(
   launch_button_ = hover_container_->AddChildView(std::make_unique<PillButton>(
       base::BindRepeating(&SavedDeskItemView::OnGridItemPressed,
                           weak_ptr_factory_.GetWeakPtr()),
-      l10n_util::GetStringUTF16(button_text_id), PillButton::Type::kIconless,
+      l10n_util::GetStringUTF16(button_text_id),
+      PillButton::Type::kDefaultWithoutIcon,
       /*icon=*/nullptr));
 
   // Users cannot delete admin templates.
@@ -326,24 +328,18 @@ void SavedDeskItemView::MaybeRemoveNameNumber(
 
 void SavedDeskItemView::MaybeShowReplaceDialog(DeskTemplateType type,
                                                const base::GUID& uuid) {
-  // If the user has somehow exited the overview session don't attempt to
-  // show the dialogue in order to avoid the DCHECK crash.
-  // TODO(avynn): Find a more permanent fix for this.
-  if (!Shell::Get()->overview_controller()->InOverviewSession())
-    return;
-
   // Show replace template dialog. If accepted, replace old template and commit
   // name change.
   aura::Window* root_window = GetWidget()->GetNativeWindow()->GetRootWindow();
   saved_desk_util::GetSavedDeskDialogController()->ShowReplaceDialog(
       root_window, name_view_->GetText(), type,
       base::BindOnce(&SavedDeskItemView::ReplaceTemplate,
-                     weak_ptr_factory_.GetWeakPtr(), uuid.AsLowercaseString()),
+                     weak_ptr_factory_.GetWeakPtr(), uuid),
       base::BindOnce(&SavedDeskItemView::RevertTemplateName,
                      weak_ptr_factory_.GetWeakPtr()));
 }
 
-void SavedDeskItemView::ReplaceTemplate(const std::string& uuid) {
+void SavedDeskItemView::ReplaceTemplate(const base::GUID& uuid) {
   // Make sure we delete the template we are replacing first, so that we don't
   // get template name collisions. Passing `nullopt` as `record_for_type` since
   // we only record the delete operation when the user specifically deletes an
@@ -548,17 +544,7 @@ void SavedDeskItemView::OnViewBlurred(views::View* observed_view) {
 }
 
 void SavedDeskItemView::OnFocus() {
-  auto* highlight_controller = Shell::Get()
-                                   ->overview_controller()
-                                   ->overview_session()
-                                   ->highlight_controller();
-  DCHECK(highlight_controller);
-  AccessibilityControllerImpl* accessibility_controller =
-      Shell::Get()->accessibility_controller();
-  if (highlight_controller->IsFocusHighlightVisible() ||
-      accessibility_controller->spoken_feedback().enabled()) {
-    highlight_controller->MoveHighlightToView(this);
-  }
+  UpdateOverviewHighlightForFocusAndSpokenFeedback(this);
   OnViewHighlighted();
   View::OnFocus();
 }
@@ -716,8 +702,8 @@ views::View* SavedDeskItemView::TargetForRect(views::View* root,
 }
 
 void SavedDeskItemView::OnDeleteTemplate() {
-  saved_desk_util::GetSavedDeskPresenter()->DeleteEntry(
-      desk_template_->uuid().AsLowercaseString(), desk_template_->type());
+  saved_desk_util::GetSavedDeskPresenter()->DeleteEntry(desk_template_->uuid(),
+                                                        desk_template_->type());
 }
 
 void SavedDeskItemView::OnDeleteButtonPressed() {

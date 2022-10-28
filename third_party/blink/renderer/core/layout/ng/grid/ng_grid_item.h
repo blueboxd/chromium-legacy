@@ -7,6 +7,7 @@
 
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/layout/ng/grid/ng_grid_track_collection.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_baseline_utils.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_block_node.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
@@ -15,7 +16,6 @@ namespace blink {
 class NGGridPlacement;
 
 enum class AxisEdge { kStart, kCenter, kEnd, kBaseline };
-enum class BaselineGroup { kMajor, kMinor };
 enum class SizingConstraint { kLayout, kMinContent, kMaxContent };
 
 struct GridItemIndices {
@@ -40,6 +40,15 @@ struct CORE_EXPORT GridItemData : public GarbageCollected<GridItemData> {
   }
   AxisEdge BlockAxisAlignment() const {
     return block_axis_alignment_fallback.value_or(block_axis_alignment);
+  }
+
+  bool IsInlineAxisOverflowSafe() const {
+    return is_inline_axis_overflow_safe_fallback.value_or(
+        is_inline_axis_overflow_safe);
+  }
+  bool IsBlockAxisOverflowSafe() const {
+    return is_block_axis_overflow_safe_fallback.value_or(
+        is_block_axis_overflow_safe);
   }
 
   bool IsBaselineAlignedForDirection(
@@ -187,6 +196,9 @@ struct CORE_EXPORT GridItemData : public GarbageCollected<GridItemData> {
 
   absl::optional<AxisEdge> inline_axis_alignment_fallback;
   absl::optional<AxisEdge> block_axis_alignment_fallback;
+
+  absl::optional<bool> is_inline_axis_overflow_safe_fallback;
+  absl::optional<bool> is_block_axis_overflow_safe_fallback;
 
   NGAutoBehavior inline_auto_behavior;
   NGAutoBehavior block_auto_behavior;

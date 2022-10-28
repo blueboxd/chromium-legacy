@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,6 +8,7 @@
 #include "chrome/browser/ui/views/frame/browser_frame.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/frame/native_browser_frame_factory.h"
+#include "chromeos/ui/base/window_properties.h"
 
 DesktopBrowserFrameLacros::DesktopBrowserFrameLacros(
     BrowserFrame* browser_frame,
@@ -24,6 +25,8 @@ views::Widget::InitParams DesktopBrowserFrameLacros::GetWidgetParams() {
   Browser* browser = browser_view()->browser();
   params.restore_session_id = browser->session_id().id();
   params.restore_window_id = browser->create_params().restore_id;
+  params.init_properties_container.SetProperty(
+      chromeos::kShouldHaveHighlightBorderOverlay, true);
   return params;
 }
 

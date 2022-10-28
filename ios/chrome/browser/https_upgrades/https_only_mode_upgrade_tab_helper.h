@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -29,7 +29,7 @@ class HttpsOnlyModeUpgradeTabHelper
       public web::WebStatePolicyDecider,
       public web::WebStateUserData<HttpsOnlyModeUpgradeTabHelper> {
  public:
-  // Creates TabHelper. |web_state| and |model| must not be null.
+  // Creates TabHelper. `web_state` and `prefs` must not be null.
   static void CreateForWebState(web::WebState* web_state, PrefService* prefs);
 
   ~HttpsOnlyModeUpgradeTabHelper() override;

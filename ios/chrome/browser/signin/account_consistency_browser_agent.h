@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -25,8 +25,8 @@ class AccountConsistencyBrowserAgent
       public ManageAccountsDelegate,
       BrowserObserver {
  public:
-  // |browser| is the browser this agent is attached to.
-  // |base_view_controller| is the view controller which UI will be presented
+  // `browser` is the browser this agent is attached to.
+  // `base_view_controller` is the view controller which UI will be presented
   // from.
   static void CreateForBrowser(Browser* browser,
                                UIViewController* base_view_controller,

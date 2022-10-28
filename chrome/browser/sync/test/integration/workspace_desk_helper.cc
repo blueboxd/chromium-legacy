@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -48,7 +48,7 @@ void DeskUuidChecker::EntriesAddedOrUpdatedRemotely(
 }
 
 void DeskUuidChecker::EntriesRemovedRemotely(
-    const std::vector<std::string>& uuids) {
+    const std::vector<base::GUID>& uuids) {
   CheckExitCondition();
 }
 
@@ -88,7 +88,7 @@ void DeskUuidDeletedChecker::EntriesAddedOrUpdatedRemotely(
 }
 
 void DeskUuidDeletedChecker::EntriesRemovedRemotely(
-    const std::vector<std::string>& uuids) {
+    const std::vector<base::GUID>& uuids) {
   CheckExitCondition();
 }
 
@@ -119,7 +119,7 @@ void DeskModelReadyChecker::EntriesAddedOrUpdatedRemotely(
 }
 
 void DeskModelReadyChecker::EntriesRemovedRemotely(
-    const std::vector<std::string>& uuids) {
+    const std::vector<base::GUID>& uuids) {
   CheckExitCondition();
 }
 

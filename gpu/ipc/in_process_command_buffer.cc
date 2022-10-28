@@ -1,4 +1,4 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -97,19 +97,12 @@ class ScopedEvent {
 
 }  // namespace
 
-void InProcessCommandBuffer::SetError() {
-  // Signal errors by losing the command buffer.
-  command_buffer_->SetParseError(error::kLostContext);
-}
-
-void InProcessCommandBuffer::WrapTaskWithGpuCheck(base::OnceClosure task) {
-  RunTaskOnGpuThread(std::move(task));
-}
-
 InProcessCommandBuffer::InProcessCommandBuffer(
     CommandBufferTaskExecutor* task_executor,
     const GURL& active_url)
-    : active_url_(active_url),
+    : command_buffer_id_(
+          DisplayCompositorMemoryAndTaskControllerOnGpu::NextCommandBufferId()),
+      active_url_(active_url),
       flush_event_(base::WaitableEvent::ResetPolicy::AUTOMATIC,
                    base::WaitableEvent::InitialState::NOT_SIGNALED),
       task_executor_(task_executor),
@@ -217,7 +210,12 @@ gpu::ContextResult InProcessCommandBuffer::Initialize(
   if (result == gpu::ContextResult::kSuccess) {
     capabilities_ = capabilities;
     shared_image_interface_ = std::make_unique<SharedImageInterfaceInProcess>(
-        task_sequence_, gpu_dependency_.get(), this);
+        task_sequence_, task_executor_->sync_point_manager(),
+        task_executor_->gpu_preferences(),
+        context_group_->feature_info()->workarounds(),
+        task_executor_->gpu_feature_info(), context_state_.get(),
+        task_executor_->shared_image_manager(), image_factory,
+        /*is_for_display_compositor=*/false);
   }
 
   return result;
@@ -229,10 +227,6 @@ gpu::ContextResult InProcessCommandBuffer::InitializeOnGpuThread(
   TRACE_EVENT0("gpu", "InProcessCommandBuffer::InitializeOnGpuThread");
   UpdateActiveUrl();
 
-  gpu_dependency_ =
-      std::make_unique<DisplayCompositorMemoryAndTaskControllerOnGpu>(
-          task_executor_, params.image_factory);
-
   GpuDriverBugWorkarounds workarounds(
       task_executor_->gpu_feature_info().enabled_gpu_driver_bug_workarounds);
 
@@ -243,7 +237,7 @@ gpu::ContextResult InProcessCommandBuffer::InitializeOnGpuThread(
         base::trace_event::MemoryDumpManager::GetInstance()
             ->GetTracingProcessId();
     memory_tracker = std::make_unique<GpuCommandBufferMemoryTracker>(
-        gpu_dependency_->command_buffer_id(), client_tracing_id,
+        GetCommandBufferID(), client_tracing_id,
         base::ThreadTaskRunnerHandle::Get(), /* obserer=*/nullptr);
   }
 
@@ -280,7 +274,7 @@ gpu::ContextResult InProcessCommandBuffer::InitializeOnGpuThread(
   }
 
   command_buffer_ = std::make_unique<CommandBufferService>(
-      this, gpu_dependency_->memory_tracker());
+      this, context_group_->memory_tracker());
 
   context_state_ = task_executor_->GetSharedContextState();
 
@@ -321,7 +315,7 @@ gpu::ContextResult InProcessCommandBuffer::InitializeOnGpuThread(
     std::unique_ptr<webgpu::WebGPUDecoder> webgpu_decoder(
         webgpu::WebGPUDecoder::Create(
             this, command_buffer_.get(), task_executor_->shared_image_manager(),
-            gpu_dependency_->memory_tracker(), task_executor_->outputter(),
+            context_group_->memory_tracker(), task_executor_->outputter(),
             task_executor_->gpu_preferences(), context_state_));
     gpu::ContextResult result =
         webgpu_decoder->Initialize(task_executor_->gpu_feature_info());
@@ -332,47 +326,11 @@ gpu::ContextResult InProcessCommandBuffer::InitializeOnGpuThread(
     }
     decoder_ = std::move(webgpu_decoder);
   } else {
-    // TODO(khushalsagar): A lot of this initialization code is duplicated in
-    // GpuChannelManager. Pull it into a common util method.
-    scoped_refptr<gl::GLContext> real_context =
-        use_virtualized_gl_context_ ? gl_share_group_->shared_context()
-                                    : nullptr;
-    if (real_context &&
-        (!real_context->MakeCurrent(surface_.get()) ||
-         real_context->CheckStickyGraphicsResetStatus() != GL_NO_ERROR)) {
-      real_context = nullptr;
-    }
-    if (!real_context) {
-      real_context = gl::init::CreateGLContext(
-          gl_share_group_.get(), surface_.get(),
-          GenerateGLContextAttribs(params.attribs, context_group_.get()));
-      if (!real_context) {
-        // TODO(piman): This might not be fatal, we could recurse into
-        // CreateGLContext to get more info, tho it should be exceedingly
-        // rare and may not be recoverable anyway.
-        DestroyOnGpuThread();
-        LOG(ERROR) << "ContextResult::kFatalFailure: "
-                      "Failed to create shared context for virtualization.";
-        return gpu::ContextResult::kFatalFailure;
-      }
-      // Ensure that context creation did not lose track of the intended share
-      // group.
-      DCHECK(real_context->share_group() == gl_share_group_.get());
-      task_executor_->gpu_feature_info().ApplyToGLContext(real_context.get());
-
-      if (use_virtualized_gl_context_)
-        gl_share_group_->SetSharedContext(real_context.get());
-    }
-
-    if (!real_context->MakeCurrent(surface_.get())) {
-      LOG(ERROR)
-          << "ContextResult::kTransientFailure, failed to make context current";
-      DestroyOnGpuThread();
-      return ContextResult::kTransientFailure;
-    }
-
     if (params.attribs.enable_raster_interface &&
         !params.attribs.enable_gles2_interface) {
+      // RasterDecoder uses the shared context.
+      use_virtualized_gl_context_ = false;
+
       gr_shader_cache_ = params.gr_shader_cache;
 
       if (!context_state_ ||
@@ -392,10 +350,49 @@ gpu::ContextResult InProcessCommandBuffer::InitializeOnGpuThread(
       decoder_.reset(raster::RasterDecoder::Create(
           this, command_buffer_.get(), task_executor_->outputter(),
           task_executor_->gpu_feature_info(), task_executor_->gpu_preferences(),
-          gpu_dependency_->memory_tracker(),
+          context_group_->memory_tracker(),
           task_executor_->shared_image_manager(), params.image_factory,
           context_state_, true /*is_privileged*/));
     } else {
+      // TODO(khushalsagar): A lot of this initialization code is duplicated in
+      // GpuChannelManager. Pull it into a common util method.
+      scoped_refptr<gl::GLContext> real_context =
+          use_virtualized_gl_context_ ? gl_share_group_->shared_context()
+                                      : nullptr;
+      if (real_context &&
+          (!real_context->MakeCurrent(surface_.get()) ||
+           real_context->CheckStickyGraphicsResetStatus() != GL_NO_ERROR)) {
+        real_context = nullptr;
+      }
+      if (!real_context) {
+        real_context = gl::init::CreateGLContext(
+            gl_share_group_.get(), surface_.get(),
+            GenerateGLContextAttribs(params.attribs, context_group_.get()));
+        if (!real_context) {
+          // TODO(piman): This might not be fatal, we could recurse into
+          // CreateGLContext to get more info, tho it should be exceedingly
+          // rare and may not be recoverable anyway.
+          DestroyOnGpuThread();
+          LOG(ERROR) << "ContextResult::kFatalFailure: "
+                        "Failed to create shared context for virtualization.";
+          return gpu::ContextResult::kFatalFailure;
+        }
+        // Ensure that context creation did not lose track of the intended share
+        // group.
+        DCHECK(real_context->share_group() == gl_share_group_.get());
+        task_executor_->gpu_feature_info().ApplyToGLContext(real_context.get());
+
+        if (use_virtualized_gl_context_)
+          gl_share_group_->SetSharedContext(real_context.get());
+      }
+
+      if (!real_context->MakeCurrent(surface_.get())) {
+        LOG(ERROR) << "ContextResult::kTransientFailure, failed to make "
+                      "context current";
+        DestroyOnGpuThread();
+        return ContextResult::kTransientFailure;
+      }
+
       decoder_.reset(gles2::GLES2Decoder::Create(this, command_buffer_.get(),
                                                  task_executor_->outputter(),
                                                  context_group_.get()));
@@ -521,8 +518,6 @@ bool InProcessCommandBuffer::DestroyOnGpuThread() {
   if (context_state_)
     context_state_->MakeCurrent(nullptr);
   context_state_ = nullptr;
-
-  gpu_dependency_.reset();
 
   return true;
 }
@@ -998,7 +993,7 @@ CommandBufferNamespace InProcessCommandBuffer::GetNamespaceID() const {
 }
 
 CommandBufferId InProcessCommandBuffer::GetCommandBufferID() const {
-  return gpu_dependency_->command_buffer_id();
+  return command_buffer_id_;
 }
 
 void InProcessCommandBuffer::FlushPendingWork() {

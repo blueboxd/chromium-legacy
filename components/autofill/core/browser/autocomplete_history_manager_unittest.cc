@@ -1,4 +1,4 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -87,7 +87,7 @@ class MockSuggestionsHandler
 
 class AutocompleteHistoryManagerTest : public testing::Test {
  protected:
-  AutocompleteHistoryManagerTest() {}
+  AutocompleteHistoryManagerTest() = default;
 
   void SetUp() override {
     prefs_ = test::PrefServiceForTesting();
@@ -143,6 +143,7 @@ class AutocompleteHistoryManagerTest : public testing::Test {
   }
 
   base::test::SingleThreadTaskEnvironment task_environment_;
+  test::AutofillEnvironment autofill_environment_;
   scoped_refptr<MockAutofillWebDataService> web_data_service_;
   std::unique_ptr<AutocompleteHistoryManager> autocomplete_manager_;
   std::unique_ptr<PrefService> prefs_;

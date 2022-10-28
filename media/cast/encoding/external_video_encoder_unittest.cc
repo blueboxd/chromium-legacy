@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -24,7 +24,7 @@ scoped_refptr<VideoFrame> CreateFrame(const uint8_t* y_plane_data,
   scoped_refptr<VideoFrame> result = VideoFrame::CreateFrame(
       PIXEL_FORMAT_I420, size, gfx::Rect(size), size, base::TimeDelta());
   for (int y = 0, y_end = size.height(); y < y_end; ++y) {
-    memcpy(result->visible_data(VideoFrame::kYPlane) +
+    memcpy(result->GetWritableVisibleData(VideoFrame::kYPlane) +
                y * result->stride(VideoFrame::kYPlane),
            y_plane_data + y * size.width(), size.width());
   }
@@ -114,10 +114,19 @@ TEST(ExternalVideoEncoderTest,
 }
 
 TEST(ExternalVideoEncoderTest, RecommendsExternalVp8EncoderForChromecast) {
+#if BUILDFLAG(IS_CHROMEOS) && ARCH_CPU_X86_64
+  EXPECT_TRUE(ExternalVideoEncoder::IsRecommended(
+      CODEC_VIDEO_VP8, "Eureka Dongle", kValidVeaProfiles));
+  EXPECT_FALSE(ExternalVideoEncoder::IsRecommended(
+      CODEC_VIDEO_VP8, "Chromecast", kValidVeaProfiles));
+  EXPECT_FALSE(ExternalVideoEncoder::IsRecommended(
+      CODEC_VIDEO_VP8, "Chromecast Ultra", kValidVeaProfiles));
+#else
   for (const char* model_name : kFirstPartyModelNames) {
     EXPECT_TRUE(ExternalVideoEncoder::IsRecommended(
         CODEC_VIDEO_VP8, std::string(model_name), kValidVeaProfiles));
   }
+#endif
 }
 
 TEST(ExternalVideoEncoderTest, RecommendsH264HardwareEncoderProperly) {

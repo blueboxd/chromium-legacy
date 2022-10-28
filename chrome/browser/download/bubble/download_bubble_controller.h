@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -64,9 +64,6 @@ class DownloadBubbleUIController
   virtual void InitOfflineItems(DownloadDisplayController* display_controller,
                                 base::OnceCallback<void()> callback);
 
-  // Remove the entry from Partial view candidates.
-  void RemoveContentIdFromPartialView(const ContentId& id);
-
   // Submits download to download feedback service if the user has approved and
   // the download is suitable for submission, then applies |command|.
   // If user hasn't seen SBER opt-in text before, show SBER opt-in dialog first.
@@ -80,6 +77,9 @@ class DownloadBubbleUIController
   // Notify when a new download is ready to be shown on UI, and if the window
   // this controller belongs to should show the partial view.
   void OnNewItem(download::DownloadItem* item, bool show_details);
+
+  // Notify when a download toolbar button (in any window) is pressed.
+  void HandleButtonPressed();
 
   // Returns whether the incognito icon should be shown for the download.
   bool ShouldShowIncognitoIcon(const DownloadUIModel* model) const;
@@ -178,9 +178,6 @@ class DownloadBubbleUIController
 
   // Pruned list of offline items.
   OfflineItemList offline_items_;
-
-  // set of ids to be shown in partial_view.
-  std::set<ContentId> partial_view_ids_;
 
   absl::optional<base::Time> last_partial_view_shown_time_ = absl::nullopt;
 

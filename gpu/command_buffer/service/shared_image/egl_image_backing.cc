@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -222,11 +222,6 @@ SharedImageBackingType EGLImageBacking::GetType() const {
 
 void EGLImageBacking::Update(std::unique_ptr<gfx::GpuFence> in_fence) {
   NOTREACHED();
-}
-
-bool EGLImageBacking::ProduceLegacyMailbox(MailboxManager* mailbox_manager) {
-  // This backing doe not support legacy mailbox system.
-  return false;
 }
 
 template <class T>

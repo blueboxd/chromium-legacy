@@ -1,18 +1,18 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #import "ios/chrome/browser/infobars/overlays/permissions_overlay_tab_helper.h"
 
 #import "base/timer/timer.h"
-#include "ios/chrome/browser/infobars/infobar_ios.h"
-#include "ios/chrome/browser/infobars/infobar_manager_impl.h"
+#import "ios/chrome/browser/infobars/infobar_ios.h"
+#import "ios/chrome/browser/infobars/infobar_manager_impl.h"
 #import "ios/chrome/browser/infobars/overlays/infobar_overlay_request_inserter.h"
-#include "ios/chrome/browser/infobars/overlays/infobar_overlay_util.h"
+#import "ios/chrome/browser/infobars/overlays/infobar_overlay_util.h"
 #import "ios/chrome/browser/infobars/overlays/permissions_overlay_infobar_delegate.h"
 #import "ios/chrome/browser/overlays/public/infobar_banner/infobar_banner_placeholder_request_config.h"
 #import "ios/chrome/browser/overlays/public/overlay_request_queue.h"
-#include "ios/chrome/browser/overlays/public/overlay_request_queue_util.h"
+#import "ios/chrome/browser/overlays/public/overlay_request_queue_util.h"
 #import "ios/web/common/features.h"
 #import "ios/web/public/permissions/permissions.h"
 

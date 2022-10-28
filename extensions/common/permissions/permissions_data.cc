@@ -1,4 +1,4 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -15,6 +15,7 @@
 #include "extensions/common/constants.h"
 #include "extensions/common/error_utils.h"
 #include "extensions/common/extension_features.h"
+#include "extensions/common/extension_urls.h"
 #include "extensions/common/extensions_client.h"
 #include "extensions/common/manifest.h"
 #include "extensions/common/manifest_constants.h"
@@ -522,8 +523,7 @@ bool PermissionsData::CanCaptureVisiblePage(
     // sufficient.
     if ((origin_url.SchemeIs(url::kHttpScheme) ||
          origin_url.SchemeIs(url::kHttpsScheme)) &&
-        !origin.IsSameOriginWith(
-            ExtensionsClient::Get()->GetWebstoreBaseURL())) {
+        !extension_urls::IsWebstoreOrigin(origin)) {
       return true;
     }
   }
@@ -559,7 +559,7 @@ bool PermissionsData::CanCaptureVisiblePage(
       origin_url.SchemeIs(kExtensionScheme) ||
       // Note: The origin of a data: url is empty, so check the url itself.
       document_url.SchemeIs(url::kDataScheme) ||
-      origin.IsSameOriginWith(ExtensionsClient::Get()->GetWebstoreBaseURL());
+      extension_urls::IsWebstoreOrigin(origin);
 
   if (!allowed_with_active_tab) {
     if (error)

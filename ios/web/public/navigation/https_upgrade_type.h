@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -31,7 +31,7 @@ enum class HttpsUpgradeType {
   kOmnibox,
 };
 
-// Returns a string representation of |type|.
+// Returns a string representation of `type`.
 std::string GetHttpsUpgradeTypeDescription(HttpsUpgradeType type);
 
 }  // namespace web

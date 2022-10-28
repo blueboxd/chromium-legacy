@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -249,8 +249,16 @@ IN_PROC_BROWSER_TEST_P(
   EXPECT_TRUE(GetSidePanelFor(browser())->GetVisible());
 }
 
+#if BUILDFLAG(IS_MAC)
+// TODO(crbug.com/1348296): Test is flaky on Mac.
+#define MAYBE_SidePanelTogglesCorrectlyMultipleTabs \
+  DISABLED_SidePanelTogglesCorrectlyMultipleTabs
+#else
+#define MAYBE_SidePanelTogglesCorrectlyMultipleTabs \
+  SidePanelTogglesCorrectlyMultipleTabs
+#endif
 IN_PROC_BROWSER_TEST_P(SideSearchBrowserControllerTest,
-                       SidePanelTogglesCorrectlyMultipleTabs) {
+                       MAYBE_SidePanelTogglesCorrectlyMultipleTabs) {
   // Navigate to a matching search URL followed by a non-matching URL in two
   // independent browser tabs such that both have the side panel ready. The
   // side panel should respect the state-per-tab flag.
@@ -595,7 +603,7 @@ class SideSearchDSEClobberingTest : public SideSearchBrowserTest {
   }
 
   SidePanel* GetGlobalSidePanelFor(Browser* browser) {
-    return BrowserViewFor(browser)->right_aligned_side_panel();
+    return BrowserViewFor(browser)->unified_side_panel();
   }
 
  private:

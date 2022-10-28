@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -197,7 +197,7 @@ class ExtensionPrefsGrantedPermissions : public ExtensionPrefsTest {
       value->Append("tcp-connect:*.example.com:80");
       value->Append("udp-bind::8080");
       value->Append("udp-send-to::8888");
-      ASSERT_TRUE(permission->FromValue(value.get(), NULL, NULL));
+      ASSERT_TRUE(permission->FromValue(value.get(), nullptr, nullptr));
     }
     api_perm_set1_.insert(std::move(permission));
 
@@ -412,7 +412,7 @@ class ExtensionPrefsAcknowledgment : public ExtensionPrefsTest {
       std::string name = "test" + base::NumberToString(i);
       extensions_.push_back(prefs_.AddExtension(name));
     }
-    EXPECT_EQ(NULL,
+    EXPECT_EQ(nullptr,
               prefs()->GetInstalledExtensionInfo(not_installed_id_).get());
 
     ExtensionList::const_iterator iter;
@@ -641,7 +641,7 @@ class ExtensionPrefsFinishDelayedInstallInfo : public ExtensionPrefsTest {
     EXPECT_FALSE(dict.FindString(manifest_keys::kBackgroundPage));
     const base::ListValue* scripts;
     ASSERT_TRUE(manifest->GetList(manifest_keys::kBackgroundScripts, &scripts));
-    EXPECT_EQ(1u, scripts->GetListDeprecated().size());
+    EXPECT_EQ(1u, scripts->GetList().size());
   }
 
  protected:
@@ -1226,7 +1226,7 @@ TEST_F(ExtensionPrefsSimpleTest, MigrateToNewExternalUninstallBits) {
 
   auto has_extension_pref_entry = [&prefs](const std::string& id) {
     const base::Value::Dict& extensions_dictionary =
-        prefs.pref_service()->GetValueDict(pref_names::kExtensions);
+        prefs.pref_service()->GetDict(pref_names::kExtensions);
     return extensions_dictionary.FindDict(id) != nullptr;
   };
 
@@ -1367,8 +1367,8 @@ TEST_F(ExtensionPrefsSimpleTest, ExtensionSpecificPrefsMapTest) {
 
   const base::ListValue* list_val = nullptr;
   prefs.prefs()->ReadPrefAsList(extension_id, kTestListPref, &list_val);
-  EXPECT_TRUE(list_val->GetListDeprecated()[0].is_string());
-  EXPECT_EQ(list_val->GetListDeprecated()[0].GetString(), "list_val");
+  EXPECT_TRUE(list_val->GetList()[0].is_string());
+  EXPECT_EQ(list_val->GetList()[0].GetString(), "list_val");
 
   EXPECT_EQ(time, prefs.prefs()->ReadPrefAsTime(extension_id, kTestTimePref));
 }

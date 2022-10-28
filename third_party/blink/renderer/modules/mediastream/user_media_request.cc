@@ -33,6 +33,7 @@
 
 #include <type_traits>
 
+#include "base/metrics/histogram_functions.h"
 #include "base/strings/stringprintf.h"
 #include "third_party/blink/public/common/privacy_budget/identifiability_metric_builder.h"
 #include "third_party/blink/public/mojom/permissions_policy/permissions_policy.mojom-blink.h"
@@ -64,6 +65,30 @@
 namespace blink {
 
 namespace {
+
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
+enum class GetDisplayMediaIncludeExcludeConstraint {
+  kNotSpecified = 0,
+  kInclude = 1,
+  kExclude = 2,
+  kMaxValue = kExclude
+};
+
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
+enum class GetDisplayMediaConstraintsDisplaySurface {
+  kNotSpecified = 0,
+  kTab = 1,
+  kWindow = 2,
+  kMonitor = 3,
+  kMaxValue = kMonitor
+};
+
+void RecordUma(GetDisplayMediaConstraintsDisplaySurface value) {
+  base::UmaHistogramEnumeration(
+      "Media.GetDisplayMedia.Constraints.DisplaySurface", value);
+}
 
 template <typename NumericConstraint>
 bool SetUsesNumericConstraint(
@@ -281,6 +306,63 @@ void CountVideoConstraintUses(ExecutionContext* context,
   }
 }
 
+void RecordSystemAudioConstraintUma(const MediaStreamConstraints* options) {
+  const GetDisplayMediaIncludeExcludeConstraint value =
+      (!options->hasSystemAudio()
+           ? GetDisplayMediaIncludeExcludeConstraint::kNotSpecified
+       : options->systemAudio().AsEnum() ==
+               V8SystemAudioPreferenceEnum::Enum::kInclude
+           ? GetDisplayMediaIncludeExcludeConstraint::kInclude
+           : GetDisplayMediaIncludeExcludeConstraint::kExclude);
+  base::UmaHistogramEnumeration("Media.GetDisplayMedia.Constraints.SystemAudio",
+                                value);
+}
+
+void RecordSelfBrowserSurfaceConstraintUma(
+    const MediaStreamConstraints* options) {
+  const GetDisplayMediaIncludeExcludeConstraint value =
+      (!options->hasSelfBrowserSurface()
+           ? GetDisplayMediaIncludeExcludeConstraint::kNotSpecified
+       : options->selfBrowserSurface().AsEnum() ==
+               V8SelfCapturePreferenceEnum::Enum::kInclude
+           ? GetDisplayMediaIncludeExcludeConstraint::kInclude
+           : GetDisplayMediaIncludeExcludeConstraint::kExclude);
+  base::UmaHistogramEnumeration(
+      "Media.GetDisplayMedia.Constraints.SelfBrowserSurface", value);
+}
+
+void RecordPreferredDisplaySurfaceConstraintUma(
+    const mojom::blink::PreferredDisplaySurface preferred_display_surface) {
+  switch (preferred_display_surface) {
+    case mojom::blink::PreferredDisplaySurface::NO_PREFERENCE:
+      RecordUma(GetDisplayMediaConstraintsDisplaySurface::kNotSpecified);
+      return;
+    case mojom::blink::PreferredDisplaySurface::MONITOR:
+      RecordUma(GetDisplayMediaConstraintsDisplaySurface::kMonitor);
+      return;
+    case mojom::blink::PreferredDisplaySurface::WINDOW:
+      RecordUma(GetDisplayMediaConstraintsDisplaySurface::kWindow);
+      return;
+    case mojom::blink::PreferredDisplaySurface::BROWSER:
+      RecordUma(GetDisplayMediaConstraintsDisplaySurface::kTab);
+      return;
+  }
+  NOTREACHED();
+}
+
+void RecordSurfaceSwitchingConstraintUma(
+    const MediaStreamConstraints* options) {
+  const GetDisplayMediaIncludeExcludeConstraint value =
+      (!options->hasSurfaceSwitching()
+           ? GetDisplayMediaIncludeExcludeConstraint::kNotSpecified
+       : options->surfaceSwitching().AsEnum() ==
+               V8SurfaceSwitchingPreferenceEnum::Enum::kInclude
+           ? GetDisplayMediaIncludeExcludeConstraint::kInclude
+           : GetDisplayMediaIncludeExcludeConstraint::kExclude);
+  base::UmaHistogramEnumeration(
+      "Media.GetDisplayMedia.Constraints.SurfaceSwitching", value);
+}
+
 MediaConstraints ParseOptions(
     ExecutionContext* execution_context,
     const V8UnionBooleanOrMediaTrackConstraints* options,
@@ -320,6 +402,8 @@ UserMediaRequest* UserMediaRequest::Create(
   MediaConstraints video = ParseOptions(context, options->video(), error_state);
   if (error_state.HadException())
     return nullptr;
+
+  std::string display_surface_constraint;
 
   if (media_type == UserMediaRequestType::kUserMedia && !video.IsNull()) {
     if (video.Basic().pan.HasMandatory()) {
@@ -388,6 +472,11 @@ UserMediaRequest* UserMediaRequest::Create(
       if (error_state.HadException())
         return nullptr;
     }
+    if (video.Basic().display_surface.HasIdeal() &&
+        video.Basic().display_surface.Ideal().size() > 0) {
+      display_surface_constraint =
+          video.Basic().display_surface.Ideal()[0].Utf8();
+    }
   }
 
   if (audio.IsNull() && video.IsNull()) {
@@ -411,6 +500,44 @@ UserMediaRequest* UserMediaRequest::Create(
       options->hasSystemAudio() &&
       options->systemAudio().AsEnum() ==
           V8SystemAudioPreferenceEnum::Enum::kExclude);
+  if (media_type == UserMediaRequestType::kDisplayMedia)
+    RecordSystemAudioConstraintUma(options);
+
+  // The default is to include.
+  const bool exclude_self_browser_surface =
+      options->hasSelfBrowserSurface() &&
+      options->selfBrowserSurface().AsEnum() ==
+          V8SelfCapturePreferenceEnum::Enum::kExclude;
+  if (exclude_self_browser_surface && options->preferCurrentTab()) {
+    error_state.ThrowTypeError(
+        "Self-contradictory configuration (preferCurrentTab and "
+        "selfBrowserSurface=exclude).");
+    return nullptr;
+  }
+  result->set_exclude_self_browser_surface(exclude_self_browser_surface);
+  if (media_type == UserMediaRequestType::kDisplayMedia)
+    RecordSelfBrowserSurfaceConstraintUma(options);
+
+  mojom::blink::PreferredDisplaySurface preferred_display_surface =
+      mojom::blink::PreferredDisplaySurface::NO_PREFERENCE;
+  if (display_surface_constraint == "monitor") {
+    preferred_display_surface = mojom::blink::PreferredDisplaySurface::MONITOR;
+  } else if (display_surface_constraint == "window") {
+    preferred_display_surface = mojom::blink::PreferredDisplaySurface::WINDOW;
+  } else if (display_surface_constraint == "browser") {
+    preferred_display_surface = mojom::blink::PreferredDisplaySurface::BROWSER;
+  }
+  result->set_preferred_display_surface(preferred_display_surface);
+  if (media_type == UserMediaRequestType::kDisplayMedia)
+    RecordPreferredDisplaySurfaceConstraintUma(preferred_display_surface);
+
+  // The default is to request dynamic surface switching.
+  result->set_dynamic_surface_switching_requested(
+      !options->hasSurfaceSwitching() ||
+      options->surfaceSwitching().AsEnum() ==
+          V8SurfaceSwitchingPreferenceEnum::Enum::kInclude);
+  if (media_type == UserMediaRequestType::kDisplayMedia)
+    RecordSurfaceSwitchingConstraintUma(options);
 
   return result;
 }
@@ -527,21 +654,14 @@ void UserMediaRequest::Start() {
 void UserMediaRequest::Succeed(
     const MediaStreamDescriptorVector& streams_descriptors) {
   DCHECK(!is_resolved_);
-  DCHECK(transferred_track_ == nullptr || streams_descriptors.size() == 1u);
+  DCHECK(transferred_track_ == nullptr);
   if (!GetExecutionContext())
     return;
 
-  if (transferred_track_) {
-    MediaStream::Create(GetExecutionContext(), streams_descriptors[0],
-                        transferred_track_,
-                        WTF::Bind(&UserMediaRequest::OnMediaStreamInitialized,
-                                  WrapPersistent(this)));
-  } else {
-    MediaStreamSet::Create(
-        GetExecutionContext(), streams_descriptors,
-        WTF::Bind(&UserMediaRequest::OnMediaStreamsInitialized,
-                  WrapPersistent(this)));
-  }
+  MediaStreamSet::Create(GetExecutionContext(), streams_descriptors,
+                         media_type_,
+                         WTF::Bind(&UserMediaRequest::OnMediaStreamsInitialized,
+                                   WrapPersistent(this)));
 }
 
 void UserMediaRequest::OnMediaStreamInitialized(MediaStream* stream) {
@@ -666,6 +786,19 @@ void UserMediaRequest::ContextDestroyed() {
 void UserMediaRequest::SetTransferredTrackComponent(
     MediaStreamComponent* component) {
   transferred_track_->SetComponentImplementation(component);
+}
+
+void UserMediaRequest::FinalizeTransferredTrackInitialization(
+    const MediaStreamDescriptorVector& streams_descriptors) {
+  DCHECK(transferred_track_);
+  DCHECK_EQ(streams_descriptors.size(), 1u);
+  if (!GetExecutionContext())
+    return;
+
+  MediaStream::Create(GetExecutionContext(), streams_descriptors[0],
+                      transferred_track_,
+                      WTF::Bind(&UserMediaRequest::OnMediaStreamInitialized,
+                                WrapPersistent(this)));
 }
 
 void UserMediaRequest::Trace(Visitor* visitor) const {

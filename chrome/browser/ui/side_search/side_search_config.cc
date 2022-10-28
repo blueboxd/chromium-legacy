@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -136,6 +136,9 @@ SideSearchConfig* SideSearchConfig::Get(content::BrowserContext* context) {
 }
 
 void SideSearchConfig::OnTemplateURLServiceChanged() {
+  if (skip_on_template_url_changed_)
+    return;
+
   const auto* default_template_url =
       TemplateURLServiceFactory::GetForProfile(profile_)
           ->GetDefaultSearchProvider();
@@ -201,14 +204,9 @@ void SideSearchConfig::RemoveObserver(Observer* observer) {
 void SideSearchConfig::ResetStateAndNotifyConfigChanged() {
   // Reset the availabiliy bit before propagating notifications.
   is_side_panel_srp_available_ = false;
-  page_action_label_shown_count_ = 0;
 
   for (auto& observer : observers_)
     observer.OnSideSearchConfigChanged();
-}
-
-void SideSearchConfig::DidShowPageActionLabel() {
-  ++page_action_label_shown_count_;
 }
 
 void SideSearchConfig::ApplyGoogleSearchConfigurationForTesting() {

@@ -1,4 +1,4 @@
-# Copyright 2014 The Chromium Authors. All rights reserved.
+# Copyright 2014 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -22,6 +22,7 @@ static_library("safe_browsing") {
     "//build:branding_buildflags",
     "//chrome/app:generated_resources",
     "//chrome/browser:browser_process",
+    "//chrome/browser/google",
     "//chrome/browser/profiles",
     "//chrome/browser/profiles:profile",
     "//chrome/common",
@@ -256,6 +257,10 @@ static_library("safe_browsing") {
         "download_protection/ppapi_download_request.h",
         "download_protection/two_phase_uploader.cc",
         "download_protection/two_phase_uploader.h",
+        "extension_telemetry/cookies_get_all_signal.cc",
+        "extension_telemetry/cookies_get_all_signal.h",
+        "extension_telemetry/cookies_get_all_signal_processor.cc",
+        "extension_telemetry/cookies_get_all_signal_processor.h",
         "extension_telemetry/extension_signal.h",
         "extension_telemetry/extension_signal_processor.h",
         "extension_telemetry/extension_telemetry_persister.cc",

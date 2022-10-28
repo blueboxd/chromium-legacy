@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -140,45 +140,48 @@ bool GenerateInfoSpec(content::BrowserContext* browser_context,
 
 }  // namespace
 
-// Tests that |render_process_id| is not relevant for adding and removing
-// listeners with |web_view_instance_id| = 0.
+// Tests adding and removing listeners from the event router.
 TEST_F(ExtensionWebRequestTest, AddAndRemoveListeners) {
   std::string ext_id("abcdefghijklmnopabcdefghijklmnop");
-  ExtensionWebRequestEventRouter::RequestFilter filter;
   const std::string kEventName(web_request::OnBeforeRequest::kEventName);
-  const std::string kSubEventName = kEventName + "/1";
+  const std::string kSubEventName1 = kEventName + "/1";
+  const std::string kSubEventName2 = kEventName + "/2";
   EXPECT_EQ(
       0u,
       ExtensionWebRequestEventRouter::GetInstance()->GetListenerCountForTesting(
           &profile_, kEventName));
 
-  // Add two non-webview listeners.
+  // Add two listeners.
   ExtensionWebRequestEventRouter::GetInstance()->AddEventListener(
-      &profile_, ext_id, ext_id, events::FOR_TEST, kEventName, kSubEventName,
-      filter, 0, 1 /* render_process_id */, 0, extensions::kMainThreadId,
+      &profile_, ext_id, ext_id, events::FOR_TEST, kEventName, kSubEventName1,
+      ExtensionWebRequestEventRouter::RequestFilter(), 0,
+      1 /* render_process_id */, 0, extensions::kMainThreadId,
       blink::mojom::kInvalidServiceWorkerVersionId);
   ExtensionWebRequestEventRouter::GetInstance()->AddEventListener(
-      &profile_, ext_id, ext_id, events::FOR_TEST, kEventName, kSubEventName,
-      filter, 0, 2 /* render_process_id */, 0, extensions::kMainThreadId,
+      &profile_, ext_id, ext_id, events::FOR_TEST, kEventName, kSubEventName2,
+      ExtensionWebRequestEventRouter::RequestFilter(), 0,
+      1 /* render_process_id */, 0, extensions::kMainThreadId,
       blink::mojom::kInvalidServiceWorkerVersionId);
   EXPECT_EQ(
       2u,
       ExtensionWebRequestEventRouter::GetInstance()->GetListenerCountForTesting(
           &profile_, kEventName));
 
-  // Now remove the events without passing an explicit process ID.
-  ExtensionWebRequestEventRouter::EventListener::ID id1(
-      &profile_, ext_id, kSubEventName, 0, 0, extensions::kMainThreadId,
+  // Now remove the listeners one at a time, verifying the counts after each
+  // removal.
+  ExtensionWebRequestEventRouter::GetInstance()->UpdateActiveListener(
+      ExtensionWebRequestEventRouter::ListenerUpdateType::kRemove, &profile_,
+      ext_id, kSubEventName1, extensions::kMainThreadId,
       blink::mojom::kInvalidServiceWorkerVersionId);
-  ExtensionWebRequestEventRouter::GetInstance()->RemoveEventListener(id1,
-                                                                     false);
   EXPECT_EQ(
       1u,
       ExtensionWebRequestEventRouter::GetInstance()->GetListenerCountForTesting(
           &profile_, kEventName));
 
-  ExtensionWebRequestEventRouter::GetInstance()->RemoveEventListener(id1,
-                                                                     false);
+  ExtensionWebRequestEventRouter::GetInstance()->UpdateActiveListener(
+      ExtensionWebRequestEventRouter::ListenerUpdateType::kRemove, &profile_,
+      ext_id, kSubEventName2, extensions::kMainThreadId,
+      blink::mojom::kInvalidServiceWorkerVersionId);
   EXPECT_EQ(
       0u,
       ExtensionWebRequestEventRouter::GetInstance()->GetListenerCountForTesting(
@@ -193,7 +196,6 @@ TEST_F(ExtensionWebRequestTest, BrowserContextShutdown) {
   ASSERT_TRUE(event_router);
 
   std::string ext_id("abcdefghijklmnopabcdefghijklmnop");
-  ExtensionWebRequestEventRouter::RequestFilter filter;
   const std::string kEventName(web_request::OnBeforeRequest::kEventName);
   const std::string kSubEventName = kEventName + "/1";
   EXPECT_EQ(0u,
@@ -203,11 +205,13 @@ TEST_F(ExtensionWebRequestTest, BrowserContextShutdown) {
   // Add two listeners for the main profile.
   event_router->AddEventListener(
       &profile_, ext_id, ext_id, events::FOR_TEST, kEventName, kSubEventName,
-      filter, 0, 1 /* render_process_id */, 0, extensions::kMainThreadId,
+      ExtensionWebRequestEventRouter::RequestFilter(), 0,
+      1 /* render_process_id */, 0, extensions::kMainThreadId,
       blink::mojom::kInvalidServiceWorkerVersionId);
   event_router->AddEventListener(
       &profile_, ext_id, ext_id, events::FOR_TEST, kEventName, kSubEventName,
-      filter, 0, 2 /* render_process_id */, 0, extensions::kMainThreadId,
+      ExtensionWebRequestEventRouter::RequestFilter(), 0,
+      2 /* render_process_id */, 0, extensions::kMainThreadId,
       blink::mojom::kInvalidServiceWorkerVersionId);
   event_router->IncrementExtraHeadersListenerCount(&profile_);
   EXPECT_EQ(2u,
@@ -233,11 +237,13 @@ TEST_F(ExtensionWebRequestTest, BrowserContextShutdown) {
   // Add two listeners for the otr profile.
   event_router->AddEventListener(
       otr_profile, ext_id, ext_id, events::FOR_TEST, kEventName, kSubEventName,
-      filter, 0, 1 /* render_process_id */, 0, extensions::kMainThreadId,
+      ExtensionWebRequestEventRouter::RequestFilter(), 0,
+      1 /* render_process_id */, 0, extensions::kMainThreadId,
       blink::mojom::kInvalidServiceWorkerVersionId);
   event_router->AddEventListener(
       otr_profile, ext_id, ext_id, events::FOR_TEST, kEventName, kSubEventName,
-      filter, 0, 2 /* render_process_id */, 0, extensions::kMainThreadId,
+      ExtensionWebRequestEventRouter::RequestFilter(), 0,
+      2 /* render_process_id */, 0, extensions::kMainThreadId,
       blink::mojom::kInvalidServiceWorkerVersionId);
   event_router->IncrementExtraHeadersListenerCount(otr_profile);
   EXPECT_EQ(2u,

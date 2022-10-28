@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -467,7 +467,7 @@ void AutofillManager::OnAskForValuesToFill(
     const gfx::RectF& bounding_box,
     int query_id,
     bool autoselect_first_suggestion,
-    TouchToFillEligible touch_to_fill_eligible) {
+    FormElementWasClicked form_element_was_clicked) {
   if (!IsValidFormData(form) || !IsValidFormFieldData(field))
     return;
 
@@ -475,7 +475,7 @@ void AutofillManager::OnAskForValuesToFill(
   if (!base::FeatureList::IsEnabled(features::kAutofillParseAsync)) {
     OnAskForValuesToFillImpl(form, field, bounding_box, query_id,
                              autoselect_first_suggestion,
-                             touch_to_fill_eligible);
+                             form_element_was_clicked);
     NotifyObservers(&Observer::OnAfterAskForValuesToFill);
     return;
   }
@@ -483,7 +483,7 @@ void AutofillManager::OnAskForValuesToFill(
       form, ParsingCallback(&AutofillManager::OnAskForValuesToFillImpl,
                             &Observer::OnAfterAskForValuesToFill, field,
                             bounding_box, query_id, autoselect_first_suggestion,
-                            touch_to_fill_eligible));
+                            form_element_was_clicked));
 }
 
 void AutofillManager::OnFocusOnFormField(const FormData& form,
@@ -648,7 +648,6 @@ void AutofillManager::ParseFormsAsync(
     }
 
     auto form_structure = std::make_unique<FormStructure>(form_data);
-    form_structure->ParseFieldTypesFromAutocompleteAttributes();
     if (!form_structure->ShouldBeParsed(log_manager_))
       continue;
 
@@ -742,7 +741,6 @@ void AutofillManager::ParseFormAsync(
   }
 
   auto form_structure = std::make_unique<FormStructure>(form_data);
-  form_structure->ParseFieldTypesFromAutocompleteAttributes();
   if (!form_structure->ShouldBeParsed(log_manager_)) {
     // For Autocomplete, events need to be handled even for forms that cannot be
     // parsed.
@@ -818,7 +816,6 @@ FormStructure* AutofillManager::ParseForm(const FormData& form,
   }
 
   auto form_structure = std::make_unique<FormStructure>(form);
-  form_structure->ParseFieldTypesFromAutocompleteAttributes();
   if (!form_structure->ShouldBeParsed(log_manager_))
     return nullptr;
 

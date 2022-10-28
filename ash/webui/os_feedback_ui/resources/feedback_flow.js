@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,7 +11,7 @@ import './strings.m.js';
 import {stringToMojoString16} from 'chrome://resources/ash/common/mojo_utils.js';
 import {html, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
-import {FeedbackAppExitPath, FeedbackContext, FeedbackServiceProviderInterface, Report, SendReportStatus} from './feedback_types.js';
+import {FeedbackAppExitPath, FeedbackAppHelpContentOutcome, FeedbackAppPreSubmitAction, FeedbackContext, FeedbackServiceProviderInterface, Report, SendReportStatus} from './feedback_types.js';
 import {getFeedbackServiceProvider} from './mojo_interface_provider.js';
 
 /**
@@ -25,6 +25,15 @@ const OS_FEEDBACK_UNTRUSTED_ORIGIN = 'chrome-untrusted://os-feedback';
  * @type {string}
  */
 const HELP_CONTENT_CLICKED = 'help-content-clicked';
+
+/**
+ * Enum for actions on search page.
+ * @enum {string}
+ */
+export const SearchPageAction = {
+  CONTINUE: 'continue',
+  QUIT: 'quit',
+};
 
 /**
  * Enum for feedback flow states.
@@ -44,7 +53,90 @@ export const FeedbackFlowState = {
 export const AdditionalContextQueryParam = {
   DESCRIPTION_TEMPLATE: 'description_template',
   EXTRA_DIAGNOSTICS: 'extra_diagnostics',
+  CATEGORY_TAG: 'category_tag',
 };
+
+/**
+ * Builds a RegExp that matches one of the given words. Each word has to match
+ * at word boundary and is not at the end of the tested string. For example,
+ * the word "SIM" would match the string "I have a sim card issue" but not
+ * "I have a simple issue" nor "I have a sim" (because the user might not have
+ * finished typing yet).
+ * @param {!Array<!string>} words
+ * @return {!RegExp}
+ * @protected
+ */
+export function buildWordMatcher(words) {
+  return new RegExp(
+      words.map((word) => '\\b' + word + '\\b[^$]').join('|'), 'i');
+}
+
+/**
+ * Regular expression to check for all variants of blu[e]toot[h] with or
+ * without space between the words; for BT when used as an individual word,
+ * or as two individual characters, and for BLE, BlueZ, and Floss when used
+ * as an individual word. Case insensitive matching.
+ * @type {!RegExp}
+ * @protected
+ */
+const btRegEx = new RegExp(
+    'blu[e]?[ ]?toot[h]?|\\bb[ ]?t\\b|\\bble\\b|\\bfloss\\b|\\bbluez\\b', 'i');
+
+/**
+ * Regular expression to check for all strings indicating that a user can't
+ * connect to a HID or Audio device.
+ * Sample strings this will match:
+ * "I can't connect the speaker!",
+ * "The keyboard has connection problem."
+ * @type {!RegExp}
+ * @protected
+ */
+const cantConnectRegEx = new RegExp(
+    '((headphone|keyboard|mouse|speaker)((?!(connect|pair)).*)(connect|pair))' +
+        '|((connect|pair).*(headphone|keyboard|mouse|speaker))',
+    'i');
+
+/**
+ * Regular expression to check for "tether" or "tethering". Case insensitive
+ * matching.
+ * @type {!RegExp}
+ * @protected
+ */
+const tetherRegEx = new RegExp('tether(ing)?', 'i');
+
+/**
+ * Regular expression to check for "Smart (Un)lock" or "Easy (Un)lock" with
+ * or without space between the words. Case insensitive matching.
+ * @type {!RegExp}
+ * @protected
+ */
+const smartLockRegEx = new RegExp('(smart|easy)[ ]?(un)?lock', 'i');
+
+/**
+ * Regular expression to check for keywords related to Nearby Share like
+ * "nearby (share)" or "phone (hub)".
+ * Case insensitive matching.
+ * @type {!RegExp}
+ * @protected
+ */
+const nearbyShareRegEx = new RegExp('nearby|phone', 'i');
+
+/**
+ * Regular expression to check for keywords related to Fast Pair like
+ * "fast pair".
+ * Case insensitive matching.
+ * @type {!RegExp}
+ * @protected
+ */
+const fastPairRegEx = new RegExp('fast[ ]?pair', 'i');
+
+/**
+ * Regular expression to check for Bluetooth device specific keywords.
+ * @type {!RegExp}
+ * @protected
+ */
+const btDeviceRegEx =
+    buildWordMatcher(['apple', 'allegro', 'pixelbud', 'microsoft', 'sony']);
 
 /**
  * @fileoverview
@@ -82,6 +174,12 @@ export class FeedbackFlowElement extends PolymerElement {
      */
     this.feedbackContext_ = null;
 
+    /**
+     * Whether to show the bluetooth Logs checkbox in share data page.
+     * @type {boolean}
+     */
+    this.shouldShowBluetoothCheckbox_;
+
     /** @private {!FeedbackServiceProviderInterface} */
     this.feedbackServiceProvider_ = getFeedbackServiceProvider();
 
@@ -114,6 +212,27 @@ export class FeedbackFlowElement extends PolymerElement {
      * @private
      */
     this.helpContentClicked_ = false;
+
+    /**
+     * To avoid helpContentOutcome metric emit more than one time.
+     * @type {boolean}
+     * @private
+     */
+    this.helpContentOutcomeMetricEmitted_ = false;
+
+    /**
+     * Number of results returned in each search.
+     * @type {number}
+     * @private
+     */
+    this.helpContentSearchResultCount_;
+
+    /**
+     * Whether there is no help content shown(offline or search is down).
+     * @type {boolean}
+     * @private
+     */
+    this.noHelpContentDisplayed_;
   }
 
   ready() {
@@ -133,17 +252,27 @@ export class FeedbackFlowElement extends PolymerElement {
         return;
       }
       this.helpContentClicked_ = true;
+      this.feedbackServiceProvider_.recordPreSubmitAction(
+          FeedbackAppPreSubmitAction.kViewedHelpContent);
+      this.feedbackServiceProvider_.recordHelpContentSearchResultCount(
+          this.helpContentSearchResultCount_);
     });
 
     window.addEventListener('beforeunload', event => {
       event.preventDefault();
 
-      // TODO(longbowei): Handle kQuitNoResultFound case.
       switch (this.currentState_) {
         case FeedbackFlowState.SEARCH:
           this.recordExitPath_(
               FeedbackAppExitPath.kQuitSearchPageHelpContentClicked,
               FeedbackAppExitPath.kQuitSearchPageNoHelpContentClicked);
+          if (!this.helpContentOutcomeMetricEmitted_) {
+            this.recordHelpContentOutcome_(
+                SearchPageAction.QUIT,
+                FeedbackAppHelpContentOutcome.kQuitHelpContentClicked,
+                FeedbackAppHelpContentOutcome.kQuitNoHelpContentClicked);
+            this.helpContentOutcomeMetricEmitted_ = true;
+          }
           break;
         case FeedbackFlowState.SHARE_DATA:
           this.recordExitPath_(
@@ -194,6 +323,9 @@ export class FeedbackFlowElement extends PolymerElement {
         descriptionTemplate && descriptionTemplate.length > 0 ?
         decodeURIComponent(descriptionTemplate) :
         '';
+    const categoryTag = params.get(AdditionalContextQueryParam.CATEGORY_TAG);
+    this.feedbackContext_.categoryTag =
+        categoryTag ? decodeURIComponent(categoryTag) : '';
   }
 
   /**
@@ -205,7 +337,18 @@ export class FeedbackFlowElement extends PolymerElement {
       case FeedbackFlowState.SEARCH:
         this.currentState_ = FeedbackFlowState.SHARE_DATA;
         this.description_ = event.detail.description;
+        this.shouldShowBluetoothCheckbox_ = this.feedbackContext_ !== null &&
+            this.feedbackContext_.isInternalAccount &&
+            this.isDescriptionRelatedToBluetooth(this.description_);
         this.fetchScreenshot_();
+
+        if (!this.helpContentOutcomeMetricEmitted_) {
+          this.recordHelpContentOutcome_(
+              SearchPageAction.CONTINUE,
+              FeedbackAppHelpContentOutcome.kContinueHelpContentClicked,
+              FeedbackAppHelpContentOutcome.kContinueNoHelpContentClicked);
+          this.helpContentOutcomeMetricEmitted_ = true;
+        }
         break;
       case FeedbackFlowState.SHARE_DATA:
         /** @type {!Report} */
@@ -242,6 +385,9 @@ export class FeedbackFlowElement extends PolymerElement {
         const shareDataPage = this.shadowRoot.querySelector('share-data-page');
         shareDataPage.reEnableSendReportButton();
 
+        // Re-enable helpContentOutcomeMetric to be emitted in search page.
+        this.helpContentOutcomeMetricEmitted_ = false;
+
         this.navigateToSearchPage_();
         break;
       default:
@@ -256,11 +402,40 @@ export class FeedbackFlowElement extends PolymerElement {
   }
 
   /**
+   * @param {!SearchPageAction} action
+   * @param {!FeedbackAppHelpContentOutcome} outcomeHelpContentClicked
+   * @param {!FeedbackAppHelpContentOutcome} outcomeNoHelpContentClicked
+   * @private
+   */
+  recordHelpContentOutcome_(
+      action, outcomeHelpContentClicked, outcomeNoHelpContentClicked) {
+    if (this.noHelpContentDisplayed_) {
+      action == SearchPageAction.CONTINUE ?
+          this.feedbackServiceProvider_.recordHelpContentOutcome(
+              FeedbackAppHelpContentOutcome.kContinueNoHelpContentDisplayed) :
+          this.feedbackServiceProvider_.recordHelpContentOutcome(
+              FeedbackAppHelpContentOutcome.kQuitNoHelpContentDisplayed);
+      return;
+    }
+
+    this.helpContentClicked_ ?
+        this.feedbackServiceProvider_.recordHelpContentOutcome(
+            outcomeHelpContentClicked) :
+        this.feedbackServiceProvider_.recordHelpContentOutcome(
+            outcomeNoHelpContentClicked);
+  }
+
+  /**
    * @param {!FeedbackAppExitPath} pathHelpContentClicked
    * @param {!FeedbackAppExitPath} pathNoHelpContentClicked
    * @private
    */
   recordExitPath_(pathHelpContentClicked, pathNoHelpContentClicked) {
+    if (this.noHelpContentDisplayed_) {
+      this.feedbackServiceProvider_.recordExitPath(
+          FeedbackAppExitPath.kQuitNoHelpContentDisplayed);
+      return;
+    }
     this.helpContentClicked_ ?
         this.feedbackServiceProvider_.recordExitPath(pathHelpContentClicked) :
         this.feedbackServiceProvider_.recordExitPath(pathNoHelpContentClicked);
@@ -292,6 +467,32 @@ export class FeedbackFlowElement extends PolymerElement {
    */
   setHelpContentClickedForTesting(helpContentClicked) {
     this.helpContentClicked_ = helpContentClicked;
+  }
+
+  /**
+   * @param {boolean} noHelpContentDisplayed
+   */
+  setNoHelpContentDisplayedForTesting(noHelpContentDisplayed) {
+    this.noHelpContentDisplayed_ = noHelpContentDisplayed;
+  }
+
+  /**
+   * Checks if any keywords related to bluetooth have been typed. If they are,
+   * we show the bluetooth logs option, otherwise hide it.
+   * @return {boolean}
+   * @param {!string} textInput The input text for the description textarea.
+   * @protected
+   */
+  isDescriptionRelatedToBluetooth(textInput) {
+    /**
+     * If the user is not signed in with a internal google account, the
+     * bluetooth checkbox should be hidden and skip the relative check.
+     */
+    const isRelatedToBluetooth = btRegEx.test(textInput) ||
+        cantConnectRegEx.test(textInput) || tetherRegEx.test(textInput) ||
+        smartLockRegEx.test(textInput) || nearbyShareRegEx.test(textInput) ||
+        fastPairRegEx.test(textInput) || btDeviceRegEx.test(textInput);
+    return isRelatedToBluetooth;
   }
 }
 

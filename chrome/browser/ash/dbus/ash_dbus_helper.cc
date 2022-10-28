@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -37,6 +37,7 @@
 #include "chromeos/ash/components/dbus/cups_proxy/cups_proxy_client.h"
 #include "chromeos/ash/components/dbus/dbus_thread_manager.h"
 #include "chromeos/ash/components/dbus/debug_daemon/debug_daemon_client.h"
+#include "chromeos/ash/components/dbus/dlcservice/dlcservice_client.h"
 #include "chromeos/ash/components/dbus/easy_unlock/easy_unlock_client.h"
 #include "chromeos/ash/components/dbus/federated/federated_client.h"
 #include "chromeos/ash/components/dbus/fusebox/fusebox_reverse_client.h"
@@ -78,7 +79,6 @@
 #include "chromeos/ash/components/hibernate/buildflags.h"  // ENABLE_HIBERNATE
 #include "chromeos/ash/components/install_attributes/install_attributes.h"
 #include "chromeos/dbus/constants/dbus_paths.h"
-#include "chromeos/dbus/dlcservice/dlcservice_client.h"
 #include "chromeos/dbus/dlp/dlp_client.h"
 #include "chromeos/dbus/init/initialize_dbus_client.h"
 #include "chromeos/dbus/machine_learning/machine_learning_client.h"
@@ -125,10 +125,10 @@ void InitializeDBus() {
   chromeos::SystemSaltGetter::Initialize();
 
   // Initialize DBusThreadManager for the browser.
-  chromeos::DBusThreadManager::Initialize();
+  DBusThreadManager::Initialize();
 
   // Initialize Chrome dbus clients.
-  dbus::Bus* bus = chromeos::DBusThreadManager::Get()->GetSystemBus();
+  dbus::Bus* bus = DBusThreadManager::Get()->GetSystemBus();
 
   shill_clients::Initialize(bus);
 
@@ -159,7 +159,7 @@ void InitializeDBus() {
   InitializeDBusClient<CryptohomePkcs11Client>(bus);
   InitializeDBusClient<CupsProxyClient>(bus);
   InitializeDBusClient<DebugDaemonClient>(bus);
-  InitializeDBusClient<chromeos::DlcserviceClient>(bus);
+  InitializeDBusClient<DlcserviceClient>(bus);
   InitializeDBusClient<chromeos::DlpClient>(bus);
   InitializeDBusClient<EasyUnlockClient>(bus);
   InitializeDBusClient<FederatedClient>(bus);
@@ -212,7 +212,7 @@ void InitializeDBus() {
 void InitializeFeatureListDependentDBus() {
   using chromeos::InitializeDBusClient;
 
-  dbus::Bus* bus = chromeos::DBusThreadManager::Get()->GetSystemBus();
+  dbus::Bus* bus = DBusThreadManager::Get()->GetSystemBus();
   if (floss::features::IsFlossEnabled()) {
     InitializeDBusClient<floss::FlossDBusManager>(bus);
   } else {
@@ -302,7 +302,7 @@ void ShutdownDBus() {
   FuseBoxReverseClient::Shutdown();
   FederatedClient::Shutdown();
   EasyUnlockClient::Shutdown();
-  chromeos::DlcserviceClient::Shutdown();
+  DlcserviceClient::Shutdown();
   chromeos::DlpClient::Shutdown();
   DebugDaemonClient::Shutdown();
   CupsProxyClient::Shutdown();
@@ -329,7 +329,7 @@ void ShutdownDBus() {
   AnomalyDetectorClient::Shutdown();
 
   shill_clients::Shutdown();
-  chromeos::DBusThreadManager::Shutdown();
+  DBusThreadManager::Shutdown();
   chromeos::SystemSaltGetter::Shutdown();
 }
 

@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -298,7 +298,7 @@ gpu::MailboxHolder ArImageTransport::TransferCameraImageFrame(
 
   std::unique_ptr<gl::GLFence> gl_fence = gl::GLFence::CreateForGpuFence();
   std::unique_ptr<gfx::GpuFence> gpu_fence = gl_fence->GetGpuFence();
-  mailbox_bridge_->WaitForClientGpuFence(gpu_fence.release());
+  mailbox_bridge_->WaitForClientGpuFence(gpu_fence.get());
 
   mailbox_bridge_->GenSyncToken(
       &camera_image_shared_buffer->mailbox_holder.sync_token);

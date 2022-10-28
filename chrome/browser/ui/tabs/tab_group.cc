@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -95,6 +95,9 @@ bool TabGroup::IsCustomized() const {
 }
 
 bool TabGroup::IsSaved() const {
+  // TODO(dljames): Retrieving the service factory each time we want to check
+  // the saved status of a tab group is expensive computationally. Find a way to
+  // simplify this.
   SavedTabGroupKeyedService* backend =
       SavedTabGroupServiceFactory::GetForProfile(controller_->GetProfile());
   return backend && backend->model() && backend->model()->Contains(id());

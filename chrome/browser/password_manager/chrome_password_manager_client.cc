@@ -1,11 +1,10 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome/browser/password_manager/chrome_password_manager_client.h"
 
 #include <memory>
-
 #include <string>
 #include <utility>
 
@@ -18,7 +17,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram_functions.h"
-#include "base/stl_util.h"
+#include "base/types/optional_util.h"
 #include "build/branding_buildflags.h"
 #include "build/build_config.h"
 #include "build/buildflag.h"
@@ -26,8 +25,11 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/device_reauth/chrome_biometric_authenticator_factory.h"
 #include "chrome/browser/favicon/favicon_service_factory.h"
+#include "chrome/browser/history/history_tab_helper.h"
 #include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
 #include "chrome/browser/password_manager/account_password_store_factory.h"
+#include "chrome/browser/password_manager/chrome_webauthn_credentials_delegate.h"
+#include "chrome/browser/password_manager/chrome_webauthn_credentials_delegate_factory.h"
 #include "chrome/browser/password_manager/field_info_manager_factory.h"
 #include "chrome/browser/password_manager/password_manager_settings_service_factory.h"
 #include "chrome/browser/password_manager/password_reuse_manager_factory.h"
@@ -50,6 +52,7 @@
 #include "components/autofill/content/browser/content_autofill_driver_factory.h"
 #include "components/autofill/core/browser/logging/log_manager.h"
 #include "components/autofill/core/browser/logging/log_receiver.h"
+#include "components/autofill/core/browser/ui/suggestion.h"
 #include "components/autofill/core/common/password_generation_util.h"
 #include "components/autofill_assistant/browser/public/runtime_manager.h"
 #include "components/back_forward_cache/back_forward_cache_disable.h"
@@ -112,6 +115,7 @@
 #include "services/metrics/public/cpp/metrics_utils.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
 #include "services/network/public/cpp/is_potentially_trustworthy.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/re2/src/re2/re2.h"
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/base/data_transfer_policy/data_transfer_endpoint.h"
@@ -137,7 +141,6 @@
 #include "chrome/browser/password_manager/android/password_manager_launcher_android.h"
 #include "chrome/browser/password_manager/android/save_password_infobar_delegate_android.h"
 #include "chrome/browser/password_manager/android/update_password_infobar_delegate_android.h"
-#include "chrome/browser/password_manager/password_scripts_fetcher_factory.h"
 #include "chrome/browser/touch_to_fill/touch_to_fill_controller.h"
 #include "components/infobars/content/content_infobar_manager.h"
 #include "components/infobars/core/infobar.h"
@@ -449,20 +452,23 @@ void ChromePasswordManagerClient::ShowTouchToFill(
     PasswordManagerDriver* driver,
     autofill::mojom::SubmissionReadinessState submission_readiness) {
   std::vector<TouchToFillWebAuthnCredential> webauthn_credentials;
-  if (GetWebAuthnCredentialsDelegate() &&
-      GetWebAuthnCredentialsDelegate()->IsWebAuthnAutofillEnabled()) {
-    const std::vector<autofill::Suggestion>& suggestions =
-        GetWebAuthnCredentialsDelegate()->GetWebAuthnSuggestions();
-    base::ranges::transform(
-        suggestions, std::back_inserter(webauthn_credentials),
-        [](const auto& suggestion) {
-          return TouchToFillWebAuthnCredential(
-              TouchToFillWebAuthnCredential::Username(suggestion.label),
-              TouchToFillWebAuthnCredential::DisplayName(
-                  suggestion.main_text.value),
-              TouchToFillWebAuthnCredential::BackendId(
-                  suggestion.template GetPayload<std::string>()));
-        });
+  auto* webauthn_delegate = GetWebAuthnCredentialsDelegateForDriver(driver);
+  if (webauthn_delegate && webauthn_delegate->IsWebAuthnAutofillEnabled()) {
+    const absl::optional<std::vector<autofill::Suggestion>>& suggestions =
+        webauthn_delegate->GetWebAuthnSuggestions();
+    if (suggestions.has_value()) {
+      base::ranges::transform(*suggestions,
+                              std::back_inserter(webauthn_credentials),
+                              [](const auto& suggestion) {
+                                return TouchToFillWebAuthnCredential(
+                                    TouchToFillWebAuthnCredential::Username(
+                                        suggestion.main_text.value),
+                                    TouchToFillWebAuthnCredential::BackendId(
+                                        (suggestion.template GetPayload<
+                                             autofill::Suggestion::BackendId>())
+                                            .value()));
+                              });
+    }
   }
 
   GetOrCreateTouchToFillController()->Show(
@@ -488,7 +494,7 @@ bool ChromePasswordManagerClient::IsAutofillAssistantUIVisible() const {
 
 scoped_refptr<device_reauth::BiometricAuthenticator>
 ChromePasswordManagerClient::GetBiometricAuthenticator() {
-#if BUILDFLAG(IS_ANDROID)
+#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_MAC)
   return ChromeBiometricAuthenticatorFactory::GetBiometricAuthenticator();
 #else
   return nullptr;
@@ -695,6 +701,10 @@ PrefService* ChromePasswordManagerClient::GetPrefs() const {
   return profile_->GetPrefs();
 }
 
+PrefService* ChromePasswordManagerClient::GetLocalStatePrefs() const {
+  return g_browser_process->local_state();
+}
+
 const syncer::SyncService* ChromePasswordManagerClient::GetSyncService() const {
   return GetSyncServiceForProfile(profile_);
 }
@@ -871,6 +881,10 @@ void ChromePasswordManagerClient::AnnotateNavigationEntry(
 
   if (new_state > old_state) {
     SetPasswordStateInNavigation(new_state, entry);
+    if (HistoryTabHelper* history_tab_helper =
+            HistoryTabHelper::FromWebContents(web_contents())) {
+      history_tab_helper->OnPasswordStateUpdated(new_state);
+    }
   }
 }
 
@@ -910,7 +924,9 @@ void ChromePasswordManagerClient::CheckProtectedPasswordEntry(
     const std::string& username,
     const std::vector<password_manager::MatchingReusedCredential>&
         matching_reused_credentials,
-    bool password_field_exists) {
+    bool password_field_exists,
+    uint64_t reused_password_hash,
+    const std::string& domain) {
   safe_browsing::PasswordProtectionService* pps =
       GetPasswordProtectionService();
   if (!pps)
@@ -919,6 +935,10 @@ void ChromePasswordManagerClient::CheckProtectedPasswordEntry(
   pps->MaybeStartProtectedPasswordEntryRequest(
       web_contents(), web_contents()->GetLastCommittedURL(), username,
       password_type, matching_reused_credentials, password_field_exists);
+
+#if !BUILDFLAG(IS_ANDROID)
+  // TODO(crbug.com/1351484): Hook this to the extension service in the next CL.
+#endif  // !BUILDFLAG(IS_ANDROID)
 }
 
 void ChromePasswordManagerClient::LogPasswordReuseDetectedEvent() {
@@ -977,7 +997,7 @@ ChromePasswordManagerClient::GetMetricsRecorder() {
   if (!metrics_recorder_) {
     metrics_recorder_.emplace(GetUkmSourceId());
   }
-  return base::OptionalOrNullptr(metrics_recorder_);
+  return base::OptionalToPtr(metrics_recorder_);
 }
 
 password_manager::PasswordRequirementsService*
@@ -1041,8 +1061,13 @@ FieldInfoManager* ChromePasswordManagerClient::GetFieldInfoManager() const {
 }
 
 password_manager::WebAuthnCredentialsDelegate*
-ChromePasswordManagerClient::GetWebAuthnCredentialsDelegate() {
-  return &webauthn_credentials_delegate_;
+ChromePasswordManagerClient::GetWebAuthnCredentialsDelegateForDriver(
+    PasswordManagerDriver* driver) {
+  auto* frame_host =
+      static_cast<password_manager::ContentPasswordManagerDriver*>(driver)
+          ->render_frame_host();
+  return ChromeWebAuthnCredentialsDelegateFactory::GetFactory(web_contents())
+      ->GetDelegateForFrame(frame_host);
 }
 
 version_info::Channel ChromePasswordManagerClient::GetChannel() const {
@@ -1146,8 +1171,8 @@ void ChromePasswordManagerClient::ShowPasswordEditingPopup(
           bounds));
   autofill::password_generation::PasswordGenerationUIData ui_data(
       bounds, /*max_length=*/0, /*generation_element=*/std::u16string(),
-      field_renderer_id, /*is_generation_element_password_type=*/true,
-      base::i18n::TextDirection(),
+      /*user_typed_password=*/std::u16string(), field_renderer_id,
+      /*is_generation_element_password_type=*/true, base::i18n::TextDirection(),
       password_manager::GetFormWithFrameAndFormMetaData(
           password_generation_driver_receivers_.GetCurrentTargetFrame(),
           form_data));
@@ -1156,7 +1181,7 @@ void ChromePasswordManagerClient::ShowPasswordEditingPopup(
       driver->AsWeakPtr(), observer_, web_contents(),
       password_generation_driver_receivers_.GetCurrentTargetFrame());
   DCHECK(!password_value.empty());
-  popup_controller_->UpdatePassword(password_value);
+  popup_controller_->UpdateGeneratedPassword(password_value);
   popup_controller_->Show(
       PasswordGenerationPopupController::kEditGeneratedPassword);
 }
@@ -1170,7 +1195,7 @@ void ChromePasswordManagerClient::PresaveGeneratedPassword(
     const autofill::FormData& form_data,
     const std::u16string& password_value) {
   if (popup_controller_)
-    popup_controller_->UpdatePassword(password_value);
+    popup_controller_->UpdateGeneratedPassword(password_value);
 
   content::RenderFrameHost* rfh =
       password_generation_driver_receivers_.GetCurrentTargetFrame();
@@ -1341,7 +1366,6 @@ ChromePasswordManagerClient::ChromePasswordManagerClient(
       httpauth_manager_(this),
       password_reuse_detection_manager_(this),
       driver_factory_(nullptr),
-      webauthn_credentials_delegate_(this),
       content_credential_manager_(this),
       password_generation_driver_receivers_(web_contents, this),
       observer_(nullptr),
@@ -1629,6 +1653,7 @@ void ChromePasswordManagerClient::ShowPasswordGenerationPopup(
       popup_controller_, element_bounds_in_screen_space, ui_data,
       driver->AsWeakPtr(), observer_, web_contents(),
       driver->render_frame_host());
+  popup_controller_->UpdateTypedPassword(ui_data.user_typed_password);
   popup_controller_->Show(PasswordGenerationPopupController::kOfferGeneration);
 }
 

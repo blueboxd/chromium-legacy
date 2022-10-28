@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -25,8 +25,8 @@ enum class PsmResult {
   kEmptyQueryResponseError = 6,
   kConnectionError = 7,
   kServerError = 8,
-  kTimeout = 9,
-  kMaxValue = kTimeout,
+  // [deleted] kTimeout = 9,
+  kMaxValue = kServerError,
 };
 
 // Interface for the PSM RLWE Client which uses DMServer, allowing to replace

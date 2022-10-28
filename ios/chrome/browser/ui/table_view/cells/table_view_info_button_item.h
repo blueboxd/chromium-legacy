@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -14,11 +14,17 @@
 // TableViewInfoButtonItem is a model class that uses TableViewInfoButtonCell.
 @interface TableViewInfoButtonItem : TableViewItem
 
-// The UIImage for the leading image. If nil, no image will be shown.
-@property(nonatomic, strong) UIImage* image;
+// The leading icon.  If empty, no icon will be shown.
+@property(nonatomic, copy) UIImage* iconImage;
 
-// Tint color for the icon.
-@property(nonatomic, strong) UIColor* tintColor;
+// The background color of the icon.
+@property(nonatomic, strong) UIColor* iconBackgroundColor;
+
+// The corner radius of the UIImage view.
+@property(nonatomic, assign) CGFloat iconCornerRadius;
+
+// The tint color of the icon.
+@property(nonatomic, strong) UIColor* iconTintColor;
 
 // The main text string.
 @property(nonatomic, copy) NSString* text;

@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -14,6 +14,7 @@
 #include "base/memory/scoped_refptr.h"
 #include "build/build_config.h"
 #include "mojo/core/ipcz_api.h"
+#include "mojo/core/system_impl_export.h"
 #include "mojo/public/cpp/platform/platform_handle.h"
 #include "third_party/ipcz/include/ipcz/ipcz.h"
 
@@ -22,7 +23,8 @@ namespace mojo::core::ipcz_driver {
 class Transport;
 
 // Common base class for objects managed by Mojo's ipcz driver.
-class ObjectBase : public base::RefCountedThreadSafe<ObjectBase> {
+class MOJO_SYSTEM_IMPL_EXPORT ObjectBase
+    : public base::RefCountedThreadSafe<ObjectBase> {
  public:
   REQUIRE_ADOPTION_FOR_REFCOUNTED_TYPE();
 
@@ -49,6 +51,9 @@ class ObjectBase : public base::RefCountedThreadSafe<ObjectBase> {
     // Channel implementation, but which can at least be transformed into
     // something transmissible during serialization.
     kWrappedPlatformHandle,
+
+    // A DataPipe instance used to emulate Mojo data pipes over ipcz portals.
+    kDataPipe,
 
     // A MojoTrap instance used to emulate a Mojo trap. These objects are not
     // serializable and cannot be transmitted over a Transport.
@@ -85,6 +90,15 @@ class ObjectBase : public base::RefCountedThreadSafe<ObjectBase> {
     return object;
   }
 
+  // Peeks at `box` and returns a pointer to its underlying object. Does not
+  // invalidate `box`.
+  static ObjectBase* FromBox(IpczHandle box) {
+    return FromHandle(PeekBox(box));
+  }
+
+  // Boxes a reference to `object` and returns an IpczHandle for the box.
+  static IpczHandle Box(scoped_refptr<ObjectBase> object);
+
   // Closes this object.
   virtual void Close();
 
@@ -107,9 +121,6 @@ class ObjectBase : public base::RefCountedThreadSafe<ObjectBase> {
 
  protected:
   virtual ~ObjectBase();
-
-  // Boxes a reference to `object` and returns an IpczHandle for the box.
-  static IpczHandle Box(scoped_refptr<ObjectBase> object);
 
   // Peeks at `box` and returns its underlying driver handle.
   static IpczDriverHandle PeekBox(IpczHandle box);

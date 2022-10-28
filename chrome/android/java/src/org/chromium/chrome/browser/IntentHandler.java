@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -151,6 +151,12 @@ public class IntentHandler {
      */
     public static final String EXTRA_ACTIVITY_REFERRER =
             "org.chromium.chrome.browser.activity_referrer";
+
+    /**
+     * Intent extra used to deliver the package name of original #getCallingActivity if present.
+     */
+    public static final String EXTRA_CALLING_ACTIVITY_PACKAGE =
+            "org.chromium.chrome.browser.calling_activity_package";
 
     /**
      * A referrer id used for Chrome to Chrome referrer passing.

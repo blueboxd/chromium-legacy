@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -19,8 +19,8 @@
 #include "chromeos/ash/components/network/network_connect.h"
 #include "chromeos/ash/components/network/network_handler.h"
 #include "chromeos/ash/components/network/network_state_handler.h"
-#include "chromeos/services/bluetooth_config/fake_adapter_state_controller.h"
-#include "chromeos/services/bluetooth_config/scoped_bluetooth_config_test_helper.h"
+#include "chromeos/ash/services/bluetooth_config/fake_adapter_state_controller.h"
+#include "chromeos/ash/services/bluetooth_config/scoped_bluetooth_config_test_helper.h"
 #include "chromeos/services/network_config/public/cpp/cros_network_config_test_helper.h"
 #include "third_party/cros_system_api/dbus/shill/dbus-constants.h"
 
@@ -28,13 +28,12 @@ namespace ash {
 
 namespace {
 
-using chromeos::network_config::mojom::ActivationStateType;
-using chromeos::network_config::mojom::ConnectionStateType;
-using chromeos::network_config::mojom::NetworkStatePropertiesPtr;
-using chromeos::network_config::mojom::NetworkType;
-
-using chromeos::bluetooth_config::ScopedBluetoothConfigTestHelper;
-using chromeos::bluetooth_config::mojom::BluetoothSystemState;
+using bluetooth_config::ScopedBluetoothConfigTestHelper;
+using bluetooth_config::mojom::BluetoothSystemState;
+using ::chromeos::network_config::mojom::ActivationStateType;
+using ::chromeos::network_config::mojom::ConnectionStateType;
+using ::chromeos::network_config::mojom::NetworkStatePropertiesPtr;
+using ::chromeos::network_config::mojom::NetworkType;
 
 const std::string kCellular = "cellular";
 constexpr char kCellularDevicePath[] = "/device/cellular_device";
@@ -209,20 +208,6 @@ class NetworkDetailedViewControllerTest : public AshTestBase {
 
   void ClearDevices() {
     network_state_helper()->ClearDevices();
-    base::RunLoop().RunUntilIdle();
-  }
-
-  void SetCellularSimLockStatus(const std::string& lock_type, bool sim_locked) {
-    base::Value sim_lock_status(base::Value::Type::DICTIONARY);
-    sim_lock_status.SetKey(shill::kSIMLockEnabledProperty,
-                           base::Value(sim_locked));
-    sim_lock_status.SetKey(shill::kSIMLockTypeProperty, base::Value(lock_type));
-    sim_lock_status.SetKey(shill::kSIMLockRetriesLeftProperty, base::Value(3));
-    network_state_helper()->device_test()->SetDeviceProperty(
-        kCellularDevicePath, shill::kSIMLockStatusProperty,
-        std::move(sim_lock_status),
-        /*notify_changed=*/true);
-
     base::RunLoop().RunUntilIdle();
   }
 
@@ -547,19 +532,6 @@ TEST_F(NetworkDetailedViewControllerTest, MobileToggleClicked) {
       /*total_count=*/1u);
   EXPECT_EQ(NetworkStateHandler::TechnologyState::TECHNOLOGY_AVAILABLE,
             GetTechnologyState(NetworkTypePattern::Cellular()));
-  EXPECT_EQ(0, GetSystemTrayClient()->show_sim_unlock_settings_count());
-
-  // When SIM is locked and new state is being toggled on show SIM unlock
-  // dialog.
-  SetCellularSimLockStatus(shill::kSIMLockPin, /*sim_locked=*/true);
-  ToggleMobileState(/*new_state=*/true);
-  EXPECT_EQ(1, GetSystemTrayClient()->show_sim_unlock_settings_count());
-  EXPECT_EQ(NetworkStateHandler::TechnologyState::TECHNOLOGY_AVAILABLE,
-            GetTechnologyState(NetworkTypePattern::Cellular()));
-  CheckNetworkTypeToggledHistogramBuckets(
-      /*network_type=*/kNetworkTechnologyMobile,
-      /*new_state=*/true, /*count=*/1u,
-      /*total_count=*/2u);
 
   // When Cellular and Tether are both available toggle should control cellular.
   AddTetherDevice();
@@ -570,18 +542,16 @@ TEST_F(NetworkDetailedViewControllerTest, MobileToggleClicked) {
   // Set Tether to available and check toggle updates Cellular.
   SetTetherTechnologyState(
       NetworkStateHandler::TechnologyState::TECHNOLOGY_AVAILABLE);
-  SetCellularSimLockStatus(/*lock_type=*/"", /*sim_locked=*/false);
 
   ToggleMobileState(/*new_state=*/true);
-  EXPECT_EQ(1, GetSystemTrayClient()->show_sim_unlock_settings_count());
   EXPECT_EQ(NetworkStateHandler::TechnologyState::TECHNOLOGY_AVAILABLE,
             GetTechnologyState(NetworkTypePattern::Tether()));
   EXPECT_EQ(NetworkStateHandler::TechnologyState::TECHNOLOGY_ENABLED,
             GetTechnologyState(NetworkTypePattern::Cellular()));
   CheckNetworkTypeToggledHistogramBuckets(
       /*network_type=*/kNetworkTechnologyMobile,
-      /*new_state=*/true, /*count=*/2u,
-      /*total_count=*/3u);
+      /*new_state=*/true, /*count=*/1u,
+      /*total_count=*/2u);
 
   ClearDevices();
   AddTetherDevice();
@@ -591,13 +561,12 @@ TEST_F(NetworkDetailedViewControllerTest, MobileToggleClicked) {
             GetTechnologyState(NetworkTypePattern::Tether()));
 
   ToggleMobileState(/*new_state=*/false);
-  EXPECT_EQ(1, GetSystemTrayClient()->show_sim_unlock_settings_count());
   EXPECT_EQ(NetworkStateHandler::TechnologyState::TECHNOLOGY_AVAILABLE,
             GetTechnologyState(NetworkTypePattern::Tether()));
   CheckNetworkTypeToggledHistogramBuckets(
       /*network_type=*/kNetworkTechnologyMobile,
       /*new_state=*/false, /*count=*/2u,
-      /*total_count=*/4u);
+      /*total_count=*/3u);
 
   // When Tether is uninitialized and Bluetooth is disabled, toggling Mobile on
   // should enable Bluetooth.
@@ -607,13 +576,12 @@ TEST_F(NetworkDetailedViewControllerTest, MobileToggleClicked) {
 
   ToggleMobileState(/*new_state=*/true);
   EXPECT_EQ(BluetoothSystemState::kEnabling, GetBluetoothAdapterState());
-  EXPECT_EQ(1, GetSystemTrayClient()->show_sim_unlock_settings_count());
   EXPECT_EQ(NetworkStateHandler::TechnologyState::TECHNOLOGY_UNINITIALIZED,
             GetTechnologyState(NetworkTypePattern::Tether()));
   CheckNetworkTypeToggledHistogramBuckets(
       /*network_type=*/kNetworkTechnologyMobile,
-      /*new_state=*/true, /*count=*/3u,
-      /*total_count=*/5u);
+      /*new_state=*/true, /*count=*/2u,
+      /*total_count=*/4u);
 
   // Simulate Bluetooth adapter being enabled. Note that when testing Bluetooth
   // will be set to kEnabling and needs to be manually changed to kEnabled using

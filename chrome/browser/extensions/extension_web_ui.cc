@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -358,7 +358,7 @@ std::vector<GURL> GetOverridesForChromeURL(
 
   Profile* profile = Profile::FromBrowserContext(browser_context);
   const base::Value::Dict& overrides =
-      profile->GetPrefs()->GetValueDict(ExtensionWebUI::kExtensionURLOverrides);
+      profile->GetPrefs()->GetDict(ExtensionWebUI::kExtensionURLOverrides);
 
   const base::Value::List* url_list =
       overrides.FindListByDottedPath(url.host_piece());
@@ -453,7 +453,7 @@ bool ExtensionWebUI::HandleChromeURLOverrideReverse(
     GURL* url, content::BrowserContext* browser_context) {
   Profile* profile = Profile::FromBrowserContext(browser_context);
   const base::Value::Dict& overrides =
-      profile->GetPrefs()->GetValueDict(kExtensionURLOverrides);
+      profile->GetPrefs()->GetDict(kExtensionURLOverrides);
 
   // Find the reverse mapping based on the given URL. For example this maps the
   // internal URL
@@ -463,7 +463,7 @@ bool ExtensionWebUI::HandleChromeURLOverrideReverse(
     if (!dict_iter.second.is_list())
       continue;
 
-    for (const auto& list_iter : dict_iter.second.GetListDeprecated()) {
+    for (const auto& list_iter : dict_iter.second.GetList()) {
       const std::string* override = nullptr;
       if (list_iter.is_dict())
         override = list_iter.FindStringKey(kEntry);

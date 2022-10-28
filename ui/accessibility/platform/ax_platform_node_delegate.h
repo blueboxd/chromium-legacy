@@ -23,6 +23,7 @@
 #include "ui/accessibility/ax_coordinate_system.h"
 #include "ui/accessibility/ax_enums.mojom-forward.h"
 #include "ui/accessibility/ax_export.h"
+#include "ui/accessibility/ax_node.h"
 #include "ui/accessibility/ax_node_position.h"
 #include "ui/accessibility/ax_offscreen_result.h"
 #include "ui/accessibility/ax_position.h"
@@ -78,6 +79,10 @@ class AX_EXPORT AXPlatformNodeDelegate {
   AXPlatformNodeDelegate& operator=(const AXPlatformNodeDelegate&) = delete;
 
   virtual ~AXPlatformNodeDelegate() = default;
+
+  const AXNode* node() const { return node_; }
+  AXNode* node() { return node_; }
+  void SetNode(AXNode& node);
 
   // Get the accessibility data that should be exposed for this node. This data
   // is readonly and comes directly from the accessibility tree's source, e.g.
@@ -190,7 +195,7 @@ class AX_EXPORT AXPlatformNodeDelegate {
   virtual std::u16string GetValueForControl() const = 0;
 
   // See `AXNode::GetUnignoredSelection`.
-  virtual const AXTree::Selection GetUnignoredSelection() const = 0;
+  virtual const AXSelection GetUnignoredSelection() const = 0;
 
   // Creates a text position rooted at this object if it's a leaf node, or a
   // tree position otherwise.
@@ -625,9 +630,19 @@ class AX_EXPORT AXPlatformNodeDelegate {
   }
 
  protected:
-  AXPlatformNodeDelegate() = default;
+  AXPlatformNodeDelegate();
+  explicit AXPlatformNodeDelegate(AXNode* node);
 
   virtual std::string SubtreeToStringHelper(size_t level) = 0;
+
+ private:
+  // The underlying node. This could change during the lifetime of this object
+  // if this object has been reparented, i.e. moved to another part of the tree.
+  // In this case, a new `AXNode` would be created by `AXTree`, which would
+  // however reuse the same `AXNodeID`.
+  //
+  // Weak, `AXTree` owns this.
+  raw_ptr<AXNode, DanglingUntriaged> node_;
 };
 
 }  // namespace ui

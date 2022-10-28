@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,7 +8,7 @@
  * passwords, payment methods and addresses.
  */
 import 'chrome://resources/cr_elements/cr_link_row/cr_link_row.js';
-import 'chrome://resources/cr_elements/shared_vars_css.m.js';
+import 'chrome://resources/cr_elements/cr_shared_vars.css.js';
 // <if expr="is_chromeos">
 import '../controls/password_prompt_dialog.js';
 // </if>
@@ -152,6 +152,7 @@ export class SettingsAutofillPageElement extends
             params.set(PasswordViewPageUrlParams.ID, String(id));
             Router.getInstance().navigateTo(routes.PASSWORD_VIEW, params);
           }
+          PasswordManagerImpl.getInstance().extendAuthValidity();
         })
         .catch(() => {
           if (Router.getInstance().getCurrentRoute() === routes.PASSWORD_VIEW) {

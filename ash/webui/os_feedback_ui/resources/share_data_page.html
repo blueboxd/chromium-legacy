@@ -4,7 +4,7 @@
     font-size: 13px;
     font-weight: 400;
     line-height: 18px;
-    margin-bottom: 0;
+    margin-bottom: 20px;
     text-align: justify;
     text-justify: inter-word;
   }
@@ -26,8 +26,7 @@
   #attachFiles {
     display: flex;
     flex-direction: column;
-    height: 96px;
-    margin-bottom: 24px;
+    margin-bottom: 20px;
   }
 
   #attachFilesContainer {
@@ -66,9 +65,21 @@
     opacity: 0.7;
   }
 
-  dialog {
-    bottom: auto;
-    top: auto;
+  #closeDialogButton {
+    border: none;
+    height: 48px;
+    margin-bottom: 4px;
+    margin-inline-end: 8px;
+    margin-top: 4px;
+    min-width: 48px;
+    padding: 0;
+    width: 48px;
+  }
+
+  #backArrow {
+    --iron-icon-fill-color: var(--cros-icon-color-primary);
+    height: 20px;
+    width: 20px;
   }
 
   #addFileContainer {
@@ -90,7 +101,7 @@
   }
 
   #shareDiagnosticData {
-    margin-bottom: 16px;
+    margin-bottom: 20px;
   }
 
   .checkbox-field-container {
@@ -102,6 +113,11 @@
     display: flex;
     margin-bottom: 8px;
     white-space: nowrap;
+  }
+
+  #pageUrlLabel {
+    display: flex;
+    max-width: 488px;
   }
 
   #tooltipContent {
@@ -135,7 +151,7 @@
 
   #userConsent {
     display: flex;
-    margin-bottom: 24px;
+    margin-bottom: 20px;
   }
 
   h2 {
@@ -208,13 +224,14 @@
       <!-- URL -->
       <div id="pageUrl" class="checkbox-field-container" hidden="[[!feedbackContext.pageUrl.url]]">
         <cr-checkbox id="pageUrlCheckbox" aria-labelledby="pageUrlLabel" checked></cr-checkbox>
-        <label id="pageUrlLabel">[[i18n('sharePageUrlLabel')]]&nbsp;</label>
-        <a href="[[feedbackContext.pageUrl.url]]" class="overflow-text" id="pageUrlText" target="_blank">
-          [[feedbackContext.pageUrl.url]]
-        </a>
-        <paper-tooltip for="pageUrlText" fitToVisibleBounds>
-          <div id="tooltipContent">[[feedbackContext.pageUrl.url]]</div>
-        </paper-tooltip>
+        <label id="pageUrlLabel">[[i18n('sharePageUrlLabel')]]&nbsp;
+          <a href="[[feedbackContext.pageUrl.url]]" class="overflow-text" id="pageUrlText" target="_blank">
+            [[feedbackContext.pageUrl.url]]
+          </a>
+          <paper-tooltip for="pageUrlText" fitToVisibleBounds>
+            <div id="tooltipContent">[[feedbackContext.pageUrl.url]]</div>
+          </paper-tooltip>
+        </label>
       </div>
       <!-- System Information -->
       <div id="sysInfoContainer" class="checkbox-field-container">
@@ -223,8 +240,9 @@
         <label id="sysInfoCheckboxLabel" inner-h-t-m-l="[[sysInfoCheckboxLabel_]]"></label>
       </div>
       <!-- Bluetooth Logs (Googler Internal Only) -->
-      <div id="bluetoothCheckboxContainer" class="checkbox-field-container">
-        <cr-checkbox id="bluetoothLogsCheckbox" aria-labelledby="sysInfoCheckboxLabel" checked>
+      <div id="bluetoothCheckboxContainer" class="checkbox-field-container"
+          hidden="[[!shouldShowBluetoothCheckbox]]">
+        <cr-checkbox id="bluetoothLogsCheckbox" aria-labelledby="bluetoothInfoLabel" checked>
         </cr-checkbox>
         <label id="bluetoothInfoLabel" inner-h-t-m-l="[[bluetoothLogsCheckboxLabel_]]"></label>
       </div>
@@ -243,15 +261,18 @@
     </cr-button>
   </div>
 </div>
-<cr-dialog id="screenshotDialog">
-  <div id="modalDialogTitle" slot="title">
-    <cr-icon-button id="closeDialogButton" class="icon-arrow-back"
-        on-click="handleScreenshotDialogCloseClick_"
-        title="[[i18n('attachScreenshotLabel')]]">
-    </cr-icon-button>
-    <span>[[i18n('attachScreenshotLabel')]]</span>
+<dialog id="screenshotDialog">
+  <div id="toolbar" class="dialog-toolbar">
+    <cr-button id="closeDialogButton"
+        title="[[i18n('attachScreenshotLabel')]]"
+        on-click="handleScreenshotDialogCloseClick_">
+      <iron-icon id="backArrow" icon="cr:arrow-back"></iron-icon>
+    </cr-button>
+    <div id="dialogTitle">[[i18n('attachScreenshotLabel')]]</div>
   </div>
-  <div slot="body">
-    <img src="[[screenshotUrl]]" class="image-preview">
+  <div id="mainPanel" class="dialog-main-panel">
+    <div id="innerContentPanel" class="dialog-content-panel">
+      <img src="[[screenshotUrl]]" class="image-preview">
+    </div> 
   </div>
-</cr-dialog>
+</dialog>

@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -14,7 +14,7 @@ import org.json.JSONObject;
 
 import org.chromium.base.Callback;
 import org.chromium.base.Log;
-import org.chromium.base.annotations.DoNotClassMerge;
+import org.chromium.build.annotations.DoNotClassMerge;
 import org.chromium.chrome.browser.endpoint_fetcher.EndpointFetcher;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.Tab;

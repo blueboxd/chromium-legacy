@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -46,9 +46,6 @@ class PsmRlweDmserverClientImpl : public PsmRlweDmserverClient {
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       PrivateMembershipRlweClient::Factory* psm_rlwe_client_factory,
       PsmRlweIdProvider* psm_rlwe_id_provider);
-
-  // Timeout for running PSM protocol (combined timeout for both requests).
-  static constexpr base::TimeDelta kPsmTimeout = base::Seconds(30);
 
   // Disallow copy constructor and assignment operator.
   PsmRlweDmserverClientImpl(const PsmRlweDmserverClientImpl&) = delete;
@@ -125,10 +122,6 @@ class PsmRlweDmserverClientImpl : public PsmRlweDmserverClient {
 
   // PSM identifier, which is going to be used while preparing the PSM requests.
   private_membership::rlwe::RlwePlaintextId psm_rlwe_id_;
-
-  // A timer that puts a hard limit on the maximum time to wait for PSM
-  // protocol.
-  base::OneShotTimer psm_timeout_;
 
   // The time when the PSM request started.
   base::TimeTicks time_start_;

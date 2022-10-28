@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,6 +7,7 @@
 
 #include "components/performance_manager/public/features.h"
 
+#include "base/feature_list.h"
 #include "base/metrics/field_trial_params.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
@@ -30,11 +31,21 @@ const base::Feature kBatterySaverModeAvailable{
 const base::FeatureParam<base::TimeDelta> kHighEfficiencyModeTimeBeforeDiscard{
     &kHighEfficiencyModeAvailable, "time_before_discard", base::Hours(2)};
 
-extern const base::FeatureParam<bool> kHighEfficiencyModeDefaultState{
+const base::FeatureParam<bool> kHighEfficiencyModeDefaultState{
     &kHighEfficiencyModeAvailable, "default_state", false};
+
+// 10 tabs is the 70th percentile of tab counts based on UMA data.
+const base::FeatureParam<int> kHighEfficiencyModePromoTabCountThreshold{
+    &kHighEfficiencyModeAvailable,
+    "tab_count_threshold",
+    10,
+};
 #endif
 
 const base::Feature kBFCachePerformanceManagerPolicy{
     "BFCachePerformanceManagerPolicy", base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kUrgentPageDiscarding{"UrgentPageDiscarding",
+                                          base::FEATURE_ENABLED_BY_DEFAULT};
 
 }  // namespace performance_manager::features

@@ -1,4 +1,4 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,6 +11,7 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/callback_forward.h"
 #include "base/files/file_util.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
@@ -314,10 +315,12 @@ Status InitSessionHelper(const InitSessionParams& bound_params,
   // |session| will own the |CommandListener|s.
   session->command_listeners.swap(command_listeners);
 
-  BidiTracker* bidi_tracker = new BidiTracker();
-  bidi_tracker->SetBidiCallback(
-      base::BindRepeating(&Session::OnBidiResponse, base::Unretained(session)));
-  devtools_event_listeners.emplace_back(bidi_tracker);
+  if (session->webSocketUrl) {
+    BidiTracker* bidi_tracker = new BidiTracker();
+    bidi_tracker->SetBidiCallback(base::BindRepeating(
+        &Session::OnBidiResponse, base::Unretained(session)));
+    devtools_event_listeners.emplace_back(bidi_tracker);
+  }
 
   status =
       LaunchChrome(bound_params.url_loader_factory, bound_params.socket_factory,
@@ -361,9 +364,10 @@ Status InitSessionHelper(const InitSessionParams& bound_params,
 
   if (session->webSocketUrl) {
     WebView* web_view = nullptr;
-    Status status = session->GetTargetWindow(&web_view);
+    status = session->GetTargetWindow(&web_view);
     if (status.IsError())
       return status;
+    session->bidi_mapper_web_view_id = session->window;
     ChromeImpl* chrome = static_cast<ChromeImpl*>(session->chrome.get());
     DevToolsClient* client = chrome->Client();
 
@@ -403,6 +407,18 @@ Status InitSessionHelper(const InitSessionParams& bound_params,
       if (status.IsError())
         return status;
     }
+
+    base::RepeatingCallback<Status(bool*)> bidi_mapper_is_launched =
+        base::BindRepeating(
+            [](Session* session, bool* condition_is_met) {
+              *condition_is_met = session->BidiMapperIsLaunched();
+              return Status{kOk};
+            },
+            base::Unretained(session));
+    // Assume that BiDiMapper initialization requires the same time as a regular
+    // script
+    web_view->HandleEventsUntil(bidi_mapper_is_launched,
+                                Timeout(session->script_timeout));
 
     {
       // Create a new tab because the default one is occupied by the BiDiMapper
@@ -1446,14 +1462,9 @@ Status ExecuteBidiCommand(Session* session,
   std::string data;
   params.GetString("bidiCommand", &data);
 
-  std::string web_view_id;
-  Status status = session->chrome->GetWebViewIdForFirstTab(
-      &web_view_id, session->w3c_compliant);
-  if (status.IsError()) {
-    return status;
-  }
   WebView* web_view = nullptr;
-  status = session->chrome->GetWebViewById(web_view_id, &web_view);
+  Status status = session->chrome->GetWebViewById(
+      session->bidi_mapper_web_view_id, &web_view);
   if (status.IsError()) {
     return status;
   }

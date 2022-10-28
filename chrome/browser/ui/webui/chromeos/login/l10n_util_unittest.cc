@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -100,7 +100,7 @@ TEST_F(L10nUtilTest, GetUILanguageList) {
 
   // This requires initialized StatisticsProvider (see L10nUtilTest()).
   std::unique_ptr<base::ListValue> list(
-      GetUILanguageList(NULL, std::string(), &input_manager_));
+      GetUILanguageList(nullptr, std::string(), &input_manager_));
 
   VerifyOnlyUILanguages(*list);
 }
@@ -161,7 +161,7 @@ TEST_F(L10nUtilTest, GetUILanguageListMulti) {
 
   // This requires initialized StatisticsProvider (see L10nUtilTest()).
   std::unique_ptr<base::ListValue> list(
-      GetUILanguageList(NULL, std::string(), &input_manager_));
+      GetUILanguageList(nullptr, std::string(), &input_manager_));
 
   VerifyOnlyUILanguages(*list);
 

@@ -1,4 +1,4 @@
-// Copyright 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -1461,9 +1461,9 @@ void AwContents::RenderViewHostChanged(content::RenderViewHost* old_host,
 }
 
 void AwContents::PrimaryPageChanged(content::Page& page) {
-  std::string scheme = page.GetMainDocument().GetLastCommittedURL().scheme();
   const url::Origin& origin = page.GetMainDocument().GetLastCommittedOrigin();
-  const std::string& etld_plus1 =
+  const std::string& scheme = origin.scheme();
+  std::string etld_plus1 =
       net::registry_controlled_domains::GetDomainAndRegistry(
           origin, net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES);
   if (scheme_ != scheme) {

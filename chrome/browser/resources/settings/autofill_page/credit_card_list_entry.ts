@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,7 +8,7 @@
  */
 
 import 'chrome://resources/cr_elements/cr_icon_button/cr_icon_button.js';
-import 'chrome://resources/cr_elements/shared_vars_css.m.js';
+import 'chrome://resources/cr_elements/cr_shared_vars.css.js';
 import '../i18n_setup.js';
 import '../settings_shared.css.js';
 import './passwords_shared.css.js';
@@ -158,6 +158,23 @@ class SettingsCreditCardListEntryElement extends
       return this.i18nAdvanced('virtualCardAvailable');
     }
     return this.creditCard.metadata!.summarySublabel!;
+  }
+
+  private shouldShowPaymentsLabel_(): boolean {
+    return !this.creditCard.metadata!.isLocal &&
+        !this.isVirtualCardMetadataEnabled_();
+  }
+
+  private shouldShowPaymentsIndicator_(): boolean {
+    return !this.creditCard.metadata!.isLocal &&
+        this.isVirtualCardMetadataEnabled_();
+  }
+
+  private getPaymentsLabel_(): string {
+    if (this.creditCard.metadata!.isCached) {
+      return this.i18nAdvanced('googlePaymentsCached');
+    }
+    return this.i18nAdvanced('googlePayments');
   }
 }
 

@@ -1,4 +1,4 @@
-# Copyright (c) 2013 The Chromium Authors. All rights reserved.
+# Copyright 2013 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -36,6 +36,12 @@ import("//v8/gni/v8.gni")
 
 if (is_android) {
   import("//build/config/android/config.gni")
+}
+
+if (is_fuchsia) {
+  import("//build/config/fuchsia/generate_runner_scripts.gni")
+  import("//third_party/fuchsia-sdk/sdk/build/component.gni")
+  import("//third_party/fuchsia-sdk/sdk/build/package.gni")
 }
 
 if (is_linux) {
@@ -226,15 +232,12 @@ group("gn_all") {
     }
   }
 
-  if (!is_ios && !is_android && !is_fuchsia) {
-    deps += [ "//components/viz/demo:viz_demo" ]
-    if (!use_libfuzzer) {
-      # TODO(crbug.com/1241949): libcronet.$version.so fails to link in libfuzzer builds.
-      deps += [
-        "//components/cronet:cronet_tests",
-        "//components/cronet:cronet_unittests",
-      ]
-    }
+  if (!is_ios && !is_android) {
+    deps += [
+      "//components/cronet:cronet_tests",
+      "//components/cronet:cronet_unittests",
+      "//components/viz/demo:viz_demo",
+    ]
   }
 
   if (!is_ios) {
@@ -313,6 +316,7 @@ group("gn_all") {
     deps += [
       "//ui/aura:aura_demo",
       "//ui/aura:aura_unittests",
+      "//ui/webui/examples:webui_examples",
       "//ui/wm:wm_unittests",
     ]
   }
@@ -321,8 +325,10 @@ group("gn_all") {
     deps += [
       "//ui/ozone",
       "//ui/ozone:unittests",
-      "//ui/ozone/demo",
     ]
+    if (!is_fuchsia) {
+      deps += [ "//ui/ozone/demo" ]
+    }
   }
 
   if (is_win) {
@@ -932,16 +938,19 @@ if (is_android) {
 if (is_fuchsia) {
   # TODO(https://crbug.com/731217): This can't practically be in //v8 without
   # duplicating all the Fuchsia running infrastructure there.
-  cr_fuchsia_package("d8_fuchsia_pkg") {
+  fuchsia_component("d8_component") {
     testonly = true
-    binary = "//v8:d8"
-    manifest = "//v8/gni/v8.cmx"
-    package_name = "d8"
+    manifest = "//v8/gni/v8.cml"
+    data_deps = [ "//v8:d8" ]
   }
-
+  fuchsia_package("d8_pkg") {
+    testonly = true
+    package_name = "d8"
+    deps = [ ":d8_component" ]
+  }
   fuchsia_package_installer("d8_fuchsia") {
     testonly = true
-    package = ":d8_fuchsia_pkg"
+    package = ":d8_pkg"
     package_name = "d8"
   }
 }
@@ -1146,12 +1155,19 @@ if (!is_ios) {
       }
     }
     script_test("wpt_tests_isolate") {
-      script = "//testing/scripts/run_wpt_tests.py"
+      script = "//third_party/blink/tools/run_wpt_tests.py"
       data_deps = [
         "//chrome:chrome",
         "//chrome/test/chromedriver",
         "//third_party/blink/tools:wpt_tests_isolate",
-        "//tools/imagediff",
+      ]
+    }
+    script_test("wpt_tests_isolate_content_shell") {
+      script = "//third_party/blink/tools/run_wpt_tests.py"
+      args = [ "--product=content_shell" ]
+      data_deps = [
+        ":blink_web_tests_support_data",
+        "//third_party/blink/tools:wpt_tests_isolate",
       ]
     }
   }
@@ -1320,9 +1336,6 @@ if (!is_ios) {
       "//third_party/blink/web_tests/WebDriverExpectations",
       "//third_party/blink/web_tests/WebGPUExpectations",
 
-      # Generic baselines
-      "//third_party/blink/web_tests/platform/generic/",
-
       # === List Test Cases folders here ===
       "//third_party/blink/web_tests/accessibility/",
       "//third_party/blink/web_tests/android/",
@@ -1451,6 +1464,9 @@ if (!is_ios) {
 
     args = _common_web_test_args
 
+    # Use --wpt-only to skip tests under web_tests/virtual/
+    args += [ "--wpt-only" ]
+
     data_deps = [ ":blink_web_tests_support_data" ]
     data = [
       "//third_party/blink/perf_tests/",
@@ -1468,12 +1484,10 @@ if (!is_ios) {
       "//third_party/blink/web_tests/WebDriverExpectations",
       "//third_party/blink/web_tests/WebGPUExpectations",
 
-      # Generic baselines
-      "//third_party/blink/web_tests/platform/generic/",
-
       # === List Test Cases folders here ===
       "//third_party/blink/web_tests/external/",
       "//third_party/blink/web_tests/wpt_internal/",
+      "//third_party/blink/web_tests/virtual/",
 
       # === Test Case Folders Ends ===
     ]

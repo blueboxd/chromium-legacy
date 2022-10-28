@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -17,11 +17,13 @@ export class TestManageProfilesBrowserProxy extends TestBrowserProxy implements
       'openManageProfileSettingsSubPage', 'launchSelectedProfile',
       'askOnStartupChanged', 'getNewProfileSuggestedThemeInfo',
       'getProfileThemeInfo', 'removeProfile', 'getProfileStatistics',
-      'selectAccountLacros', 'createProfile', 'setProfileName',
+      'selectNewAccount', 'createProfile',
+      'createProfileAndOpenCustomizationDialog', 'setProfileName',
       'recordSignInPromoImpression', 'getAvailableIcons', 'getSwitchProfile',
       'confirmProfileSwitch', 'cancelProfileSwitch',
       // <if expr="chromeos_lacros">
       'getAvailableAccounts', 'openAshAccountSettingsPage',
+      'selectExistingAccountLacros',
       // </if>
     ]);
 
@@ -100,8 +102,8 @@ export class TestManageProfilesBrowserProxy extends TestBrowserProxy implements
     this.methodCalled('getProfileStatistics', profilePath);
   }
 
-  selectAccountLacros(profileColor: number|null, gaiaId: string) {
-    this.methodCalled('selectAccountLacros', [profileColor, gaiaId]);
+  selectNewAccount(profileColor: number|null) {
+    this.methodCalled('selectNewAccount', [profileColor]);
   }
 
   createProfile(
@@ -110,6 +112,11 @@ export class TestManageProfilesBrowserProxy extends TestBrowserProxy implements
     this.methodCalled(
         'createProfile',
         [profileName, profileColor, avatarIndex, createShortcut]);
+  }
+
+  createProfileAndOpenCustomizationDialog(profileColor: number) {
+    this.methodCalled(
+        'createProfileAndOpenCustomizationDialog', [profileColor]);
   }
 
   setProfileName(profilePath: string, profileName: string) {
@@ -167,6 +174,10 @@ export class TestManageProfilesBrowserProxy extends TestBrowserProxy implements
 
   openAshAccountSettingsPage() {
     this.methodCalled('openAshAccountSettingsPage');
+  }
+
+  selectExistingAccountLacros(profileColor: number|null, gaiaId: string) {
+    this.methodCalled('selectExistingAccountLacros', [profileColor, gaiaId]);
   }
   // </if>
 }

@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -89,7 +89,7 @@ TEST_F(CrashReporterBreadcrumbObserverTest, EventsAttachedToCrashReport) {
 
   breadcrumb_service->AddEvent(std::string("Breadcrumb Event"));
 
-  const std::list<std::string> events = breadcrumb_service->GetEvents(0);
+  const std::list<std::string> events = breadcrumb_service->GetEvents();
   std::string expected_breadcrumbs;
   for (const auto& event : events)
     expected_breadcrumbs += event + "\n";

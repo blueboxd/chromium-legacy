@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -158,6 +158,9 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) ShillPropertyHandler
   // Requests all properties for the service or device (called for new items).
   void RequestProperties(ManagedState::ManagedType type,
                          const std::string& path);
+
+  // Requests portal detection for |service_path|.
+  void RequestPortalDetection(const std::string& service_path);
 
   // Requests traffic counters for a Service denoted by |service_path|.
   // Traffic counters are returned via |callback|.

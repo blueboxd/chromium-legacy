@@ -156,9 +156,11 @@ TEST_F(BrowserAccessibilityStateImplTest,
   root.role = ax::mojom::Role::kRootWebArea;
   std::unique_ptr<BrowserAccessibilityManager> browser_accessibility_manager(
       BrowserAccessibilityManager::Create(
-          MakeAXTreeUpdate(root), test_browser_accessibility_delegate_.get()));
+          MakeAXTreeUpdateForTesting(root),
+          test_browser_accessibility_delegate_.get()));
 
-  BrowserAccessibility* ax_root = browser_accessibility_manager->GetRoot();
+  BrowserAccessibility* ax_root =
+      browser_accessibility_manager->GetBrowserAccessibilityRoot();
   ASSERT_NE(nullptr, ax_root);
 
   // Initially, accessibility should be disabled.

@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -62,7 +62,7 @@
 #pragma mark - Private
 
 - (BOOL)canSaveCurrentSession {
-  // The |_webStateList| needs to be alive for the session to be saved.
+  // The `_webStateList` needs to be alive for the session to be saved.
   if (!_webStateList)
     return NO;
 

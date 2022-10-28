@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -146,7 +146,31 @@ suite('PrivacyPageTests', function() {
     return (el !== null) && (el.style.display !== 'none');
   }
 
+  test(
+      'Suggested content, hidden when privacy hub feature flag is enabled',
+      async () => {
+        loadTimeData.overrideValues({
+          showPrivacyHubPage: true,
+          showPrivacyHubMVPPage: true,
+          showPrivacyHubDogfoodPage: true,
+          showPrivacyHubFuturePage: true,
+        });
+
+        privacyPage = document.createElement('os-settings-privacy-page');
+        document.body.appendChild(privacyPage);
+        flush();
+
+        assertFalse(elementExists('#suggested-content'));
+      });
+
   test('Suggested content, pref disabled', async () => {
+    loadTimeData.overrideValues({
+      showPrivacyHubPage: false,
+      showPrivacyHubMVPPage: false,
+      showPrivacyHubDogfoodPage: false,
+      showPrivacyHubFuturePage: false,
+    });
+
     privacyPage = document.createElement('os-settings-privacy-page');
     document.body.appendChild(privacyPage);
     flush();
@@ -158,6 +182,13 @@ suite('PrivacyPageTests', function() {
   });
 
   test('Suggested content, pref enabled', async () => {
+    loadTimeData.overrideValues({
+      showPrivacyHubPage: false,
+      showPrivacyHubMVPPage: false,
+      showPrivacyHubDogfoodPage: false,
+      showPrivacyHubFuturePage: false,
+    });
+
     // Update the backing pref to enabled.
     privacyPage.prefs = {
       'settings': {

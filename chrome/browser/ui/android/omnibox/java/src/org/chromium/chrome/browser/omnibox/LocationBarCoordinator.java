@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -96,6 +96,8 @@ public class LocationBarCoordinator implements LocationBar, NativeInitObserver,
     private CallbackController mCallbackController = new CallbackController();
 
     private boolean mNativeInitialized;
+    private final int mSuggestionsStandardBackgroundColor;
+    private final int mSuggestionsIncognitoBackgroundColor;
 
     /**
      * Creates {@link LocationBarCoordinator} and its subcoordinator: {@link
@@ -227,6 +229,11 @@ public class LocationBarCoordinator implements LocationBar, NativeInitObserver,
         mLocationBarLayout.getContext().registerComponentCallbacks(mLocationBarMediator);
         mLocationBarLayout.initialize(mAutocompleteCoordinator, mUrlCoordinator, mStatusCoordinator,
                 locationBarDataProvider, searchEngineLogoUtils);
+
+        mSuggestionsStandardBackgroundColor =
+                locationBarDataProvider.getSuggestionsStandardBackgroundColor();
+        mSuggestionsIncognitoBackgroundColor =
+                locationBarDataProvider.getSuggestionsIncognitoBackgroundColor();
 
         if (isPhoneLayout()) {
             mSubCoordinator = new LocationBarCoordinatorPhone(
@@ -646,5 +653,13 @@ public class LocationBarCoordinator implements LocationBar, NativeInitObserver,
 
     /* package */ StatusCoordinator getStatusCoordinatorForTesting() {
         return mStatusCoordinator;
+    }
+
+    public int getSuggestionsStandardBackgroundColor() {
+        return mSuggestionsStandardBackgroundColor;
+    }
+
+    public int getSuggestionsIncognitoBackgroundColor() {
+        return mSuggestionsIncognitoBackgroundColor;
     }
 }

@@ -1,9 +1,10 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright 2011 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "components/content_settings/core/test/content_settings_mock_provider.h"
 #include "components/content_settings/core/browser/content_settings_rule.h"
+#include "components/content_settings/core/common/content_settings_metadata.h"
 
 namespace content_settings {
 
@@ -29,8 +30,9 @@ bool MockProvider::SetWebsiteSetting(
     return false;
   if (!in_value.is_none()) {
     value_map_.SetValue(requesting_url_pattern, embedding_url_pattern,
-                        content_type, base::Time(), std::move(in_value),
-                        constraints);
+                        content_type, std::move(in_value),
+                        {.expiration = constraints.expiration,
+                         .session_model = constraints.session_model});
   } else {
     base::Value value(std::move(in_value));
     value_map_.DeleteValue(requesting_url_pattern, embedding_url_pattern,

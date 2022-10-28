@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -95,6 +95,9 @@ extern const char kOsPasswordBlank[];
 
 // The number of seconds since epoch that the OS password was last changed.
 extern const char kOsPasswordLastChanged[];
+
+// Whether biometric authentication is available on this device.
+extern const char kIsBiometricAvailable[];
 #endif
 
 #if BUILDFLAG(IS_APPLE)
@@ -163,6 +166,15 @@ extern const char kPasswordChangeSuccessTrackerFlows[];
 // Integer indicating the format version of the list saved under
 // |kPasswordChangeSuccessTrackerFlows|.
 extern const char kPasswordChangeSuccessTrackerVersion[];
+
+#if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN)
+// Boolean indicating whether user enabled biometric authentication before
+// filling.
+extern const char kBiometricAuthenticationBeforeFilling[];
+// Boolean indicating whether user had ever biometrics available on their
+// device.
+extern const char kHadBiometricsAvailable[];
+#endif
 
 }  // namespace prefs
 }  // namespace password_manager

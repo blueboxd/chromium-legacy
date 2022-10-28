@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,13 +6,18 @@
 
 #include <memory>
 
+#include "base/bind.h"
+#include "chrome/browser/ui/translate/partial_translate_bubble_model.h"
 #include "chrome/browser/ui/translate/partial_translate_bubble_model_impl.h"
 #include "chrome/browser/ui/translate/partial_translate_bubble_ui_action_logger.h"
 #include "chrome/browser/ui/translate/translate_bubble_model_impl.h"
 #include "chrome/browser/ui/translate/translate_bubble_ui_action_logger.h"
 #include "chrome/browser/ui/views/translate/partial_translate_bubble_view.h"
 #include "components/translate/core/browser/translate_manager.h"
+#include "components/translate/core/common/translate_util.h"
 #include "content/public/browser/web_contents.h"
+#include "ui/gfx/text_constants.h"
+#include "ui/gfx/text_elider.h"
 
 TranslateBubbleController::~TranslateBubbleController() = default;
 
@@ -30,7 +35,7 @@ views::Widget* TranslateBubbleController::ShowTranslateBubble(
     translate::TranslateStep step,
     const std::string& source_language,
     const std::string& target_language,
-    translate::TranslateErrors::Type error_type,
+    translate::TranslateErrors error_type,
     LocationBarBubbleDelegateView::DisplayReason reason) {
   // If the Partial Translate bubble is already being shown, close it before
   // showing the full translate bubble.
@@ -92,6 +97,60 @@ views::Widget* TranslateBubbleController::ShowTranslateBubble(
   return bubble_widget;
 }
 
+void TranslateBubbleController::StartPartialTranslate(
+    views::View* anchor_view,
+    views::Button* highlighted_button,
+    const std::string& source_language,
+    const std::string& target_language,
+    const std::u16string& text_selection) {
+  // TODO(crbug/1314825): When PartialTranslateManager is completed this
+  // function will be updated to show the Partial Translate bubble as soon as
+  // the translate response is received. If response time is <=500ms the bubble
+  // will be shown directly with the translation. If response time is >500ms the
+  // bubble will be shown in a loading state until the translation is ready.
+  // Current implementation is only for UI purposes and simulates the latter
+  // case.
+  partial_translate_timer_.Start(
+      FROM_HERE, base::Milliseconds(500),
+      base::BindOnce(&TranslateBubbleController::OnPartialTranslateWaitExpired,
+                     weak_ptr_factory_.GetWeakPtr(), anchor_view,
+                     highlighted_button, source_language, target_language,
+                     text_selection));
+}
+
+void TranslateBubbleController::OnPartialTranslateWaitExpired(
+    views::View* anchor_view,
+    views::Button* highlighted_button,
+    const std::string& source_language,
+    const std::string& target_language,
+    const std::u16string& text_selection) {
+  // TODO(crbug/1314825): When PartialTranslateManager is completed this
+  // callback will be updated to handle two cases depending on the response. If
+  // the response is quick, the bubble will be shown in the translated state
+  // with the translated text. If there's a longer response time, the bubble
+  // will be shown in an intermediate loading state.
+  ShowPartialTranslateBubble(anchor_view, highlighted_button,
+                             PartialTranslateBubbleModel::VIEW_STATE_WAITING,
+                             source_language, target_language, text_selection,
+                             translate::TranslateErrors::NONE);
+
+  // TODO(crbug/1314825): When PartialTranslateManager is completed, this
+  // duration will be updated to depend on the backend response time. For now, a
+  // 2 second timer is used to mimic this delay.
+  throbber_timer_.Start(
+      FROM_HERE, base::Milliseconds(2000),
+      base::BindOnce(
+          [](base::WeakPtr<TranslateBubbleController> controller) {
+            if (!controller->partial_translate_bubble_view_)
+              return;
+            controller->partial_translate_bubble_view_->SetViewState(
+                PartialTranslateBubbleModel::ViewState::
+                    VIEW_STATE_AFTER_TRANSLATE,
+                translate::TranslateErrors::NONE);
+          },
+          weak_ptr_factory_.GetWeakPtr()));
+}
+
 views::Widget* TranslateBubbleController::ShowPartialTranslateBubble(
     views::View* anchor_view,
     views::Button* highlighted_button,
@@ -99,7 +158,7 @@ views::Widget* TranslateBubbleController::ShowPartialTranslateBubble(
     const std::string& source_language,
     const std::string& target_language,
     const std::u16string& text_selection,
-    translate::TranslateErrors::Type error_type) {
+    translate::TranslateErrors error_type) {
   // If the other Translate bubble is already being shown, close it before
   // showing this one.
   if (translate_bubble_view_)
@@ -133,19 +192,25 @@ views::Widget* TranslateBubbleController::ShowPartialTranslateBubble(
         view_state, std::move(ui_delegate));
   }
 
+  // Truncate text selection, if needed.
+  std::u16string truncated_selection = gfx::TruncateString(
+      text_selection,
+      translate::kDesktopPartialTranslateTextSelectionMaxCharacters.Get(),
+      gfx::WORD_BREAK);
+
+  // TODO: When the PartialTranslateManager is integrated, this constructor will
+  // take both the truncated original selection and the translation of the
+  // selection.
   auto partial_translate_bubble_view =
       std::make_unique<PartialTranslateBubbleView>(
           anchor_view, std::move(model), error_type, web_contents,
-          text_selection, GetOnPartialTranslateBubbleClosedCallback());
+          truncated_selection, GetOnPartialTranslateBubbleClosedCallback());
   partial_translate_bubble_view_ = partial_translate_bubble_view.get();
-
   if (highlighted_button)
     partial_translate_bubble_view_->SetHighlightedButton(highlighted_button);
   views::Widget* bubble_widget = views::BubbleDialogDelegateView::CreateBubble(
       std::move(partial_translate_bubble_view));
-
   partial_translate_bubble_view_->SetViewState(view_state, error_type);
-
   partial_translate_bubble_view_->ShowForReason(
       LocationBarBubbleDelegateView::USER_GESTURE);
   translate::ReportPartialTranslateBubbleUiAction(

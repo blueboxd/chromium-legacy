@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -175,6 +175,8 @@ class FakeAppInstance : public mojom::AppInstance {
   void RequestAssistStructure(RequestAssistStructureCallback callback) override;
   void IsInstallable(const std::string& package_name,
                      IsInstallableCallback callback) override;
+  void GetAppCategory(const std::string& package_name,
+                      GetAppCategoryCallback callback) override;
 
   // Methods to reply messages.
   void SendRefreshAppList(const std::vector<mojom::AppInfoPtr>& apps);
@@ -263,6 +265,11 @@ class FakeAppInstance : public mojom::AppInstance {
     is_installable_ = is_installable;
   }
 
+  void set_app_category_of_pkg(
+      std::string_view pkg_name, mojom::AppCategory category) {
+    pkg_name_to_app_category_[std::string(pkg_name)] = category;
+  }
+
  private:
   using TaskIdToInfo = std::map<int32_t, std::unique_ptr<Request>>;
 
@@ -300,6 +307,8 @@ class FakeAppInstance : public mojom::AppInstance {
       IconResponseType::ICON_RESPONSE_SEND_GOOD;
   // Keeps latest generated icons per icon dimension.
   std::map<int, std::string> icon_responses_;
+  // Stores information for serving GetAppCategory calls.
+  std::map<std::string, mojom::AppCategory> pkg_name_to_app_category_;
 
   bool is_installable_ = false;
 

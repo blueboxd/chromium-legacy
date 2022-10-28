@@ -1,4 +1,4 @@
-# Copyright 2014 The Chromium Authors. All rights reserved.
+# Copyright 2014 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -783,6 +783,7 @@ static_library("extensions") {
     "//chrome/browser/devtools",
     "//chrome/browser/favicon",
     "//chrome/browser/first_party_sets",
+    "//chrome/browser/google",
     "//chrome/browser/image_decoder",
     "//chrome/browser/media/router",
     "//chrome/browser/media/router:media_router_feature",
@@ -795,7 +796,9 @@ static_library("extensions") {
     "//chrome/browser/safe_browsing:metrics_collector",
     "//chrome/browser/ui/tabs:tab_enums",
     "//chrome/browser/web_applications",
+    "//components/autofill_assistant/browser/public",
     "//components/cbor:cbor",
+    "//components/commerce/core:pref_names",
     "//components/device_reauth",
     "//components/safe_browsing/content/browser",
     "//components/safe_browsing/core/browser:safe_browsing_metrics_collector",
@@ -975,6 +978,7 @@ static_library("extensions") {
       "api/certificate_provider/certificate_provider_api.h",
       "api/document_scan/document_scan_api.cc",
       "api/document_scan/document_scan_api.h",
+      "api/enterprise_device_attributes/enterprise_device_attributes_api.cc",
       "api/enterprise_device_attributes/enterprise_device_attributes_api.h",
       "api/enterprise_networking_attributes/enterprise_networking_attributes_api.cc",
       "api/enterprise_networking_attributes/enterprise_networking_attributes_api.h",
@@ -985,8 +989,8 @@ static_library("extensions") {
       "api/file_manager/file_selector.h",
       "api/file_manager/file_selector_impl.cc",
       "api/file_manager/file_selector_impl.h",
-      "api/file_system/consent_provider.cc",
-      "api/file_system/consent_provider.h",
+      "api/file_system/consent_provider_impl.cc",
+      "api/file_system/consent_provider_impl.h",
       "api/file_system/request_file_system_notification.cc",
       "api/file_system/request_file_system_notification.h",
       "api/messaging/native_message_built_in_host.cc",
@@ -1014,8 +1018,6 @@ static_library("extensions") {
       "system_display/display_info_provider_chromeos.h",
       "system_display/display_info_provider_utils.cc",
       "system_display/display_info_provider_utils.h",
-      "system_display/system_display_serialization.cc",
-      "system_display/system_display_serialization.h",
     ]
     if (use_cups) {
       sources += [
@@ -1083,8 +1085,6 @@ static_library("extensions") {
     sources += [
       "api/crash_report_private/crash_report_private_api.cc",
       "api/crash_report_private/crash_report_private_api.h",
-      "api/enterprise_device_attributes/enterprise_device_attributes_api_ash.cc",
-      "api/enterprise_device_attributes/enterprise_device_attributes_api_ash.h",
       "api/enterprise_platform_keys_private/enterprise_platform_keys_private_api.cc",
       "api/enterprise_platform_keys_private/enterprise_platform_keys_private_api.h",
       "api/file_handlers/non_native_file_system_delegate_chromeos.cc",
@@ -1142,17 +1142,12 @@ static_library("extensions") {
     deps += [
       "//ash",
       "//ash/components/arc",
-      "//ash/components/disks",
-      "//ash/components/enhanced_network_tts/mojom",
-      "//ash/components/login/auth",
       "//ash/components/proximity_auth",
       "//ash/components/settings",
       "//ash/components/tpm",
       "//ash/constants",
       "//ash/keyboard/ui:resources_grit_grit",
       "//ash/public/cpp",
-      "//ash/services/chromebox_for_meetings/public/cpp",
-      "//ash/services/chromebox_for_meetings/public/mojom",
       "//ash/services/ime/public/mojom",
       "//ash/webui/camera_app_ui",
       "//ash/webui/camera_app_ui:mojo_bindings",
@@ -1168,15 +1163,21 @@ static_library("extensions") {
       "//chromeos/ash/components/dbus",
       "//chromeos/ash/components/dbus/cicerone:cicerone",
       "//chromeos/ash/components/dbus/cicerone:cicerone_proto",
+      "//chromeos/ash/components/dbus/constants",
       "//chromeos/ash/components/dbus/cros_disks",
       "//chromeos/ash/components/dbus/cryptohome",
       "//chromeos/ash/components/dbus/image_burner",
       "//chromeos/ash/components/dbus/update_engine",
+      "//chromeos/ash/components/disks",
+      "//chromeos/ash/components/enhanced_network_tts/mojom",
+      "//chromeos/ash/components/language/language_packs",
+      "//chromeos/ash/components/language/public/mojom",
+      "//chromeos/ash/components/login/auth",
       "//chromeos/ash/components/network",
       "//chromeos/ash/services/assistant/public/cpp",
+      "//chromeos/ash/services/chromebox_for_meetings/public/cpp",
+      "//chromeos/ash/services/chromebox_for_meetings/public/mojom",
       "//chromeos/components/remote_apps/mojom",
-      "//chromeos/language/language_packs",
-      "//chromeos/language/public/mojom",
       "//chromeos/login/login_state",
       "//chromeos/process_proxy",
       "//chromeos/services/machine_learning/public/cpp",
@@ -1213,8 +1214,6 @@ static_library("extensions") {
 
   if (is_chromeos_lacros) {
     sources += [
-      "api/enterprise_device_attributes/enterprise_device_attributes_api_lacros.cc",
-      "api/enterprise_device_attributes/enterprise_device_attributes_api_lacros.h",
       "api/enterprise_reporting_private/chrome_desktop_report_request_helper.cc",
       "api/enterprise_reporting_private/chrome_desktop_report_request_helper.h",
       "api/file_browser_handler/file_browser_handler_flow_lacros.cc",

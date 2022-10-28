@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -69,9 +69,10 @@ class Platform {
     DISCOVERABLE_CREDENTIALS_REQUEST = 115,
   };
 
-  using MakeCredentialCallback =
-      base::OnceCallback<void(uint32_t status,
-                              base::span<const uint8_t> attestation_obj)>;
+  using MakeCredentialCallback = base::OnceCallback<void(
+      uint32_t status,
+      base::span<const uint8_t> attestation_obj,
+      absl::optional<base::span<const uint8_t>> device_public_key_signature)>;
 
   virtual void MakeCredential(
       blink::mojom::PublicKeyCredentialCreationOptionsPtr params,
@@ -144,8 +145,7 @@ std::unique_ptr<Transaction> TransactFromQRCode(
     // TODO: name this constant.
     base::span<const uint8_t, 16> qr_secret,
     base::span<const uint8_t, kP256X962Length> peer_identity,
-    absl::optional<std::vector<uint8_t>> contact_id,
-    bool use_new_crypter_construction);
+    absl::optional<std::vector<uint8_t>> contact_id);
 
 // TransactFromFCM starts a network-based transaction based on the decoded
 // contents of a cloud message.

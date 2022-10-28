@@ -138,9 +138,9 @@
 <translation id="1812527064848182527">लॅंडस्केप</translation>
 <translation id="1829244130665387512">या पृष्ठामध्ये शोधा</translation>
 <translation id="1834891354138622109">स्तंभ</translation>
-<translation id="1845944666972354496">अ‍ॅक्टिव्ह कण्यासाठी दोनदा टॅप करा</translation>
 <translation id="1846771122725914429">ब्लूटूथ ब्रेल डिस्प्ले</translation>
 <translation id="1852018405765032699">चार बोटांनी स्क्रीनवर टॅप केल्यामुळे ChromeVox मेनू उघडतील आणि बंद होतील. या मेनूमध्ये कमांड आणि शॉर्टकटविषयी उपयुक्त माहिती समाविष्ट आहे. मेनू उघडल्यानंतर, आयटमदरम्यान नेव्हिगेट करण्यासाठी तुम्ही एका बोटाने स्वाइप करू शकता आणि आयटम ॲक्टिव्हेट करण्यासाठी दोनदा टॅप करू शकता. पुढे सुरू ठेवण्यासाठी, चार बोटांनी स्क्रीनवर टॅप करा.</translation>
+<translation id="1864430479908918647">Search+Space दाबा</translation>
 <translation id="1865601187525349519">मजकूराची समाप्ती</translation>
 <translation id="1876229593313240038">दस्तऐवज</translation>
 <translation id="1902396333223336119">सेल</translation>
@@ -529,6 +529,7 @@
 <translation id="4479068155583208887">लालभडक</translation>
 <translation id="4482330759234983253">मागील सारणी</translation>
 <translation id="4491109536499578614">इमेज</translation>
+<translation id="4507332368061453500">सध्याच्या आयटमवर दीर्घ क्लिक करा</translation>
 <translation id="4511186779140817916">फिकट बदामी</translation>
 <translation id="451510441928265982">मागील पातळी दोन शीर्षक नाही</translation>
 <translation id="4515799157838123044">आशयाच्या बॅकग्राउंडची रंगछटा</translation>
@@ -597,7 +598,6 @@
 <translation id="4993152509206108683">दर <ph name="PERCENT" /> टक्के</translation>
 <translation id="4994420463726586413">बॅटरीची सध्याची स्थिती सूचित करा</translation>
 <translation id="4997282455736854877"><ph name="NAME" />, रेडिओ बटण निवडले</translation>
-<translation id="5011664330025416377">अ‍ॅक्टिव्हेट करण्यासाठी Search+Space दाबा</translation>
 <translation id="5012724933919010465"><ph name="NAME" /> हे मेनू आयटम रेडिओ बटण निवडले</translation>
 <translation id="5020651427400641814">स्पीच लॉगिंग सुरू करा</translation>
 <translation id="5041394372352067729">ब्रेल डिस्प्ले पेजच्या सर्वात वर हलवा</translation>
@@ -762,6 +762,7 @@
 <translation id="6100239002225743044">एक ओळ वर जा</translation>
 <translation id="6118126368611144850">Chrome साठी Android अ‍ॅप्स. तुमच्या डिव्हाइसवर Play स्टोअर असल्यास, Android अ‍ॅप्सने ChromeVox वर एक नजर टाका. Play स्टोअर वरून Google Chrome Canary डाउनलोड करून प्रायोगिक सपोर्ट वापरून पहा.</translation>
 <translation id="611827076493383239">vtd</translation>
+<translation id="6119846243427417423">सक्रिय करा</translation>
 <translation id="6122013438240733403">btn</translation>
 <translation id="6132506484792346370">एक सूचीबॉक्स किंवा काँबो बॉक्स</translation>
 <translation id="613344593214611552">मागील वाक्य हटवा</translation>
@@ -778,6 +779,7 @@
 <translation id="6236061028292614533">पुढील शीर्षक</translation>
 <translation id="6254901459154107917">पुढील संपादनयोग्य मजकूर क्षेत्र</translation>
 <translation id="6259464875943891919"><ph name="TYPE" /> निर्गमन केले.</translation>
+<translation id="6280088282605782512">दोनदा टॅप करा</translation>
 <translation id="6282062888058716985">nav</translation>
 <translation id="6295699829709583154">अत्यावश्यक की: सर्च</translation>
 <translation id="6305702903308659374">ChromeVox बोलत असताना देखील सामान्य व्हॉल्यूममध्ये प्ले करा</translation>
@@ -981,6 +983,7 @@
 <translation id="7731785449856576010">पुढील मीडिया विजेट नाही</translation>
 <translation id="7735498529470878067">स्क्रीनवर काय आहे याचा झटपटपणे अंदाज लावण्यासाठी स्‍पर्शाने एक्‍सप्‍लोर करा तुमची मदत करू शकते.</translation>
 <translation id="773906353055481349">सेलनुसार नेव्हिगेट करण्यासाठी ॲरोंसोबत Search+Ctrl+Alt दाबा</translation>
+<translation id="7746976083433980639"><ph name="ACTION" /> ते <ph name="LABEL" /></translation>
 <translation id="7763537600611320912"><ph name="FILE_NAME" /> चे डाउनलोड सुरू झाले</translation>
 <translation id="7768784765476638775">बोलण्यासाठी निवडा</translation>
 <translation id="7776293189010177726">ChromeVox मेनू उघडा</translation>

@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -44,6 +44,7 @@ namespace ash {
 class ValueMatcher : public MatcherInterface<const base::Value&> {
  public:
   explicit ValueMatcher(const base::Value& value);
+  ~ValueMatcher();
 
   // MatcherInterface overrides.
   bool MatchAndExplain(const base::Value& value,
@@ -66,7 +67,7 @@ class ShillClientUnittestBase : public testing::Test {
   class MockPropertyChangeObserver : public ShillPropertyChangedObserver {
    public:
     MockPropertyChangeObserver();
-    ~MockPropertyChangeObserver();
+    ~MockPropertyChangeObserver() override;
     MOCK_METHOD2(OnPropertyChanged,
                  void(const std::string& name, const base::Value& value));
   };

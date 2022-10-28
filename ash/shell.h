@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -133,7 +133,7 @@ class FrameThrottlingController;
 class FullscreenMagnifierController;
 class GeolocationController;
 class GlanceablesController;
-class HighContrastController;
+class ColorEnhancementController;
 class HighlighterController;
 class HoldingSpaceController;
 class HumanPresenceOrientationController;
@@ -222,6 +222,7 @@ class WallpaperControllerImpl;
 class WindowCycleController;
 class WindowPositioner;
 class WindowTreeHostManager;
+class WmModeController;
 class ArcInputMethodBoundsTracker;
 class MultiCaptureServiceClient;
 
@@ -467,8 +468,8 @@ class ASH_EXPORT Shell : public SessionObserver,
   HighlighterController* highlighter_controller() {
     return highlighter_controller_.get();
   }
-  HighContrastController* high_contrast_controller() {
-    return high_contrast_controller_.get();
+  ColorEnhancementController* color_enhancement_controller() {
+    return color_enhancement_controller_.get();
   }
   HumanPresenceOrientationController* human_presence_orientation_controller() {
     return human_presence_orientation_controller_.get();
@@ -906,7 +907,7 @@ class ASH_EXPORT Shell : public SessionObserver,
   std::unique_ptr<VideoDetector> video_detector_;
   std::unique_ptr<WindowTreeHostManager> window_tree_host_manager_;
   std::unique_ptr<PersistentWindowController> persistent_window_controller_;
-  std::unique_ptr<HighContrastController> high_contrast_controller_;
+  std::unique_ptr<ColorEnhancementController> color_enhancement_controller_;
   std::unique_ptr<FullscreenMagnifierController>
       fullscreen_magnifier_controller_;
   std::unique_ptr<AutoclickController> autoclick_controller_;
@@ -994,6 +995,8 @@ class ASH_EXPORT Shell : public SessionObserver,
   std::unique_ptr<DockedMagnifierController> docked_magnifier_controller_;
 
   std::unique_ptr<chromeos::SnapController> snap_controller_;
+
+  std::unique_ptr<WmModeController> wm_mode_controller_;
 
   // |native_cursor_manager_| is owned by |cursor_manager_|, but we keep a
   // pointer to vend to test code.

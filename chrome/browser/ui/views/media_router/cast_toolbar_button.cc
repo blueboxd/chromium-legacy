@@ -1,10 +1,11 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome/browser/ui/views/media_router/cast_toolbar_button.h"
 
 #include "base/bind.h"
+#include "base/containers/contains.h"
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/color/chrome_color_id.h"
@@ -119,10 +120,8 @@ void CastToolbarButton::OnIssuesCleared() {
 
 void CastToolbarButton::OnRoutesUpdated(
     const std::vector<media_router::MediaRoute>& routes) {
-  has_local_route_ = std::find_if(routes.begin(), routes.end(),
-                                  [](const media_router::MediaRoute& route) {
-                                    return route.is_local();
-                                  }) != routes.end();
+  has_local_route_ =
+      base::Contains(routes, true, &media_router::MediaRoute::is_local);
   UpdateIcon();
 }
 

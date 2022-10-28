@@ -1249,8 +1249,9 @@ IN_PROC_BROWSER_TEST_P(UserAgentServiceWorkerBrowserTest, NavigatorUserAgent) {
           }
         }
 
-        URLLoaderInterceptor::WriteResponse(path, params->client.get(),
-                                            &headers);
+        URLLoaderInterceptor::WriteResponse(
+            path, params->client.get(), &headers,
+            absl::optional<net::SSLInfo>(), params->url_request.url);
 
         if (--it->second == 0)
           expected_request_urls.erase(it);
@@ -3503,10 +3504,7 @@ class ServiceWorkerBackForwardCacheAndKeepActiveFreezingBrowserTest
     feature_list_.InitWithFeaturesAndParameters(
         {{{features::kBackForwardCache,
            {{"TimeToLiveInBackForwardCacheInSeconds", "3600"},
-            {"enable_same_site", "true"},
-            {"process_binding_strength", "NORMAL"}}}}
-
-        },
+            {"process_binding_strength", "NORMAL"}}}}},
         {features::kBackForwardCacheMemoryControls});
   }
 
@@ -3748,7 +3746,7 @@ class ServiceWorkerBackForwardCacheBrowserTest
  protected:
   ServiceWorkerBackForwardCacheBrowserTest() {
     feature_list_.InitAndEnableFeatureWithParameters(
-        features::kBackForwardCache, {{"enable_same_site", "true"}});
+        features::kBackForwardCache, {});
   }
 
   RenderFrameHostImpl* current_frame_host() {
@@ -3903,13 +3901,78 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerFencedFrameBrowserTest,
             EvalJs(fenced_frame, "backgroundFetchFromServiceWorker()"));
 }
 
+class ServiceWorkerFencedFrameProcessAllocationBrowserTest
+    : public ServiceWorkerFencedFrameBrowserTest,
+      public testing::WithParamInterface<bool> {
+ public:
+  ServiceWorkerFencedFrameProcessAllocationBrowserTest() {
+    scoped_feature_list_.InitWithFeatureState(features::kIsolateFencedFrames,
+                                              GetParam());
+  }
+  ~ServiceWorkerFencedFrameProcessAllocationBrowserTest() override = default;
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+INSTANTIATE_TEST_SUITE_P(All,
+                         ServiceWorkerFencedFrameProcessAllocationBrowserTest,
+                         testing::Bool(),
+                         [](const testing::TestParamInfo<bool>& info) {
+                           return info.param
+                                      ? "WithFencedFrameProcessIsolation"
+                                      : "WithoutFencedFrameProcessIsolation";
+                         });
+
+IN_PROC_BROWSER_TEST_P(ServiceWorkerFencedFrameProcessAllocationBrowserTest,
+                       ServiceWorkerIsInFencedFrameProcess) {
+  WorkerRunningStatusObserver observer(public_context());
+
+  ASSERT_TRUE(
+      NavigateToURL(shell(), embedded_test_server()->GetURL("/title1.html")));
+  const GURL kFencedFrameUrl =
+      embedded_test_server()->GetURL("/service_worker/fenced_frame.html");
+
+  RenderFrameHost* fenced_frame = fenced_frame_test_helper().CreateFencedFrame(
+      shell()->web_contents()->GetPrimaryMainFrame(), kFencedFrameUrl);
+
+  // Register the service worker.
+  ASSERT_EQ("ok - service worker registered",
+            EvalJs(fenced_frame, "RegisterServiceWorker()"));
+  observer.WaitUntilRunning();
+
+  // Assert that there's only 1 service worker running.
+  const base::flat_map<int64_t, ServiceWorkerRunningInfo>& infos =
+      public_context()->GetRunningServiceWorkerInfos();
+  ASSERT_EQ(1u, infos.size());
+
+  // Assert that |is_fenced()| for the worker's SiteInfo is true if process
+  // isolation is enabled for fenced frames.
+  scoped_refptr<ServiceWorkerVersion> version =
+      wrapper()->GetLiveVersion(observer.version_id());
+  auto* site_instance = static_cast<SiteInstanceImpl*>(
+      wrapper()->process_manager()->GetSiteInstanceForWorker(
+          version->embedded_worker()->embedded_worker_id()));
+  EXPECT_EQ(version->ancestor_frame_type(),
+            blink::mojom::AncestorFrameType::kFencedFrame);
+  EXPECT_EQ(site_instance->GetSiteInfo().is_fenced(), GetParam());
+
+  // The service worker shares the process with the page that requested it.
+  const ServiceWorkerRunningInfo& running_info = infos.begin()->second;
+  EXPECT_EQ(fenced_frame->GetProcess()->GetID(),
+            running_info.render_process_id);
+}
+
 class ServiceWorkerBrowserTestWithStoragePartitioning
     : public base::test::WithFeatureOverride,
       public ServiceWorkerBrowserTest {
  public:
+  // Dedicated worker clients only exist with PlzDedicatedWorker enabled, so
+  // turn on that flag.
   ServiceWorkerBrowserTestWithStoragePartitioning()
       : base::test::WithFeatureOverride(
-            net::features::kThirdPartyStoragePartitioning) {}
+            net::features::kThirdPartyStoragePartitioning),
+        scoped_feature_list_(blink::features::kPlzDedicatedWorker) {}
   bool ThirdPartyStoragePartitioningEnabled() {
     return IsParamFeatureEnabled();
   }
@@ -3929,113 +3992,140 @@ class ServiceWorkerBrowserTestWithStoragePartitioning
   std::vector<GURL> GetClientURLsForStorageKey(const blink::StorageKey& key) {
     std::vector<GURL> urls;
     for (auto it = wrapper()->context()->GetClientContainerHostIterator(
-             key, /*include_reserved_clients=*/false,
-             /*include_back_forward_cached_cleints=*/false);
+             key, /*include_reserved_clients=*/true,
+             /*include_back_forward_cached_clients=*/false);
          !it->IsAtEnd(); it->Advance()) {
       urls.push_back(it->GetContainerHost()->url());
     }
     return urls;
   }
+
+  void RunTestWithWorkers(const std::string& worker_attribute) {
+    GURL main_url(embedded_test_server()->GetURL(
+        "a.com", "/cross_site_iframe_factory.html?a{" + worker_attribute +
+                     "}(b(a{" + worker_attribute + "}))"));
+    GURL main_worker_url(embedded_test_server()->GetURL(
+        "a.com", "/workers/empty.js?a{" + worker_attribute + "}(b(a{" +
+                     worker_attribute + "}))"));
+    GURL child_url(embedded_test_server()->GetURL(
+        "b.com", "/cross_site_iframe_factory.html?b(a%7B" + worker_attribute +
+                     "%7D())"));
+    GURL grandchild_url(embedded_test_server()->GetURL(
+        "a.com",
+        "/cross_site_iframe_factory.html?a%7B" + worker_attribute + "%7D()"));
+    GURL grandchild_worker_url(embedded_test_server()->GetURL(
+        "a.com", "/workers/empty.js?a{" + worker_attribute + "}()"));
+    ASSERT_TRUE(NavigateToURL(shell(), main_url));
+
+    RenderFrameHostImpl* root_rfh = web_contents()->GetPrimaryMainFrame();
+
+    // Check root document setup. The StorageKey at the root should be the same
+    // regardless of if `kThirdPartyStoragePartitioning` is enabled.
+    auto root_storage_key = blink::StorageKey(url::Origin::Create(main_url));
+    EXPECT_EQ(root_storage_key, root_rfh->storage_key());
+
+    if (ThirdPartyStoragePartitioningEnabled()) {
+      // With storage partitioning enabled, the three different frames should
+      // each have a different storage key when no host permissions are set.
+      EXPECT_THAT(GetClientURLsForStorageKey(root_storage_key),
+                  testing::UnorderedElementsAre(main_url, main_worker_url));
+      EXPECT_THAT(
+          GetClientURLsForStorageKey(blink::StorageKey::CreateWithOptionalNonce(
+              url::Origin::Create(child_url),
+              net::SchemefulSite(root_rfh->GetLastCommittedOrigin()), nullptr,
+              blink::mojom::AncestorChainBit::kCrossSite)),
+          testing::UnorderedElementsAre(child_url));
+      EXPECT_THAT(
+          GetClientURLsForStorageKey(blink::StorageKey::CreateWithOptionalNonce(
+              url::Origin::Create(grandchild_url),
+              net::SchemefulSite(root_rfh->GetLastCommittedOrigin()), nullptr,
+              blink::mojom::AncestorChainBit::kCrossSite)),
+          testing::UnorderedElementsAre(grandchild_url, grandchild_worker_url));
+    } else {
+      // With storage partitioning disabled, main frame and grand child should
+      // use the same storage key.
+      EXPECT_THAT(
+          GetClientURLsForStorageKey(root_storage_key),
+          testing::UnorderedElementsAre(main_url, main_worker_url,
+                                        grandchild_url, grandchild_worker_url));
+      EXPECT_THAT(GetClientURLsForStorageKey(
+                      blink::StorageKey(url::Origin::Create(child_url))),
+                  testing::UnorderedElementsAre(child_url));
+    }
+
+    // Give host permissions for b.com (child_rfh) to a.com (root_rfh).
+    {
+      std::vector<network::mojom::CorsOriginPatternPtr> patterns;
+      base::RunLoop run_loop;
+      patterns.push_back(network::mojom::CorsOriginPattern::New(
+          "http", "b.com", 0,
+          network::mojom::CorsDomainMatchMode::kAllowSubdomains,
+          network::mojom::CorsPortMatchMode::kAllowAnyPort,
+          network::mojom::CorsOriginAccessMatchPriority::kDefaultPriority));
+      CorsOriginPatternSetter::Set(
+          root_rfh->GetBrowserContext(), root_rfh->GetLastCommittedOrigin(),
+          std::move(patterns), {}, run_loop.QuitClosure());
+      run_loop.Run();
+    }
+    // Navigate main host to re-calculate StorageKey calculation.
+    EXPECT_TRUE(NavigateToURL(shell(), main_url));
+    root_rfh = web_contents()->GetPrimaryMainFrame();
+
+    // root_rfh's storage key should not have changed.
+    EXPECT_EQ(root_storage_key, root_rfh->storage_key());
+
+    if (ThirdPartyStoragePartitioningEnabled()) {
+      EXPECT_THAT(GetClientURLsForStorageKey(root_storage_key),
+                  testing::UnorderedElementsAre(main_url, main_worker_url));
+      // With storage partitioning enabled, the child frame should now have a
+      // top level StorageKey because it is the direct child of the root
+      // document and the root has host permissions to it.
+      EXPECT_THAT(
+          GetClientURLsForStorageKey(blink::StorageKey::CreateWithOptionalNonce(
+              url::Origin::Create(child_url),
+              net::SchemefulSite(url::Origin::Create(child_url)), nullptr,
+              blink::mojom::AncestorChainBit::kSameSite)),
+          testing::UnorderedElementsAre(child_url));
+      // Similarly the grandchild document should now use the child document's
+      // origin as the top level site.
+      EXPECT_THAT(
+          GetClientURLsForStorageKey(blink::StorageKey::CreateWithOptionalNonce(
+              url::Origin::Create(grandchild_url),
+              net::SchemefulSite(url::Origin::Create(child_url)), nullptr,
+              blink::mojom::AncestorChainBit::kCrossSite)),
+          testing::UnorderedElementsAre(grandchild_url, grandchild_worker_url));
+    } else {
+      // With storage partitioning disabled, main frame and grand child should
+      // use the same storage key, and generally storage keys are only dependent
+      // on the origin.
+      EXPECT_THAT(
+          GetClientURLsForStorageKey(root_storage_key),
+          testing::UnorderedElementsAre(main_url, main_worker_url,
+                                        grandchild_url, grandchild_worker_url));
+      EXPECT_THAT(GetClientURLsForStorageKey(
+                      blink::StorageKey(url::Origin::Create(child_url))),
+                  testing::UnorderedElementsAre(child_url));
+    }
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
 };
 
 INSTANTIATE_FEATURE_OVERRIDE_TEST_SUITE(
     ServiceWorkerBrowserTestWithStoragePartitioning);
 
 IN_PROC_BROWSER_TEST_P(ServiceWorkerBrowserTestWithStoragePartitioning,
-                       StorageKeyWithHostPermissions) {
-  GURL main_url(embedded_test_server()->GetURL(
-      "a.com", "/cross_site_iframe_factory.html?a(b(a))"));
-  GURL child_url(embedded_test_server()->GetURL(
-      "b.com", "/cross_site_iframe_factory.html?b(a())"));
-  GURL grandchild_url(embedded_test_server()->GetURL(
-      "a.com", "/cross_site_iframe_factory.html?a()"));
-  ASSERT_TRUE(NavigateToURL(shell(), main_url));
-
-  RenderFrameHostImpl* root_rfh = web_contents()->GetPrimaryMainFrame();
-
-  // Check root document setup. The StorageKey at the root should be the same
-  // regardless of if `kThirdPartyStoragePartitioning` is enabled.
-  auto root_storage_key = blink::StorageKey(url::Origin::Create(main_url));
-  EXPECT_EQ(root_storage_key, root_rfh->storage_key());
-
-  if (ThirdPartyStoragePartitioningEnabled()) {
-    // With storage partitioning enabled, the three different frames should
-    // each have a different storage key when no host permissions are set.
-    EXPECT_THAT(GetClientURLsForStorageKey(root_storage_key),
-                testing::UnorderedElementsAre(main_url));
-    EXPECT_THAT(
-        GetClientURLsForStorageKey(blink::StorageKey::CreateWithOptionalNonce(
-            url::Origin::Create(child_url),
-            net::SchemefulSite(root_rfh->GetLastCommittedOrigin()), nullptr,
-            blink::mojom::AncestorChainBit::kCrossSite)),
-        testing::UnorderedElementsAre(child_url));
-    EXPECT_THAT(
-        GetClientURLsForStorageKey(blink::StorageKey::CreateWithOptionalNonce(
-            url::Origin::Create(grandchild_url),
-            net::SchemefulSite(root_rfh->GetLastCommittedOrigin()), nullptr,
-            blink::mojom::AncestorChainBit::kCrossSite)),
-        testing::UnorderedElementsAre(grandchild_url));
-  } else {
-    // With storage partitioning disabled, main frame and grand child should
-    // use the same storage key.
-    EXPECT_THAT(GetClientURLsForStorageKey(root_storage_key),
-                testing::UnorderedElementsAre(main_url, grandchild_url));
-    EXPECT_THAT(GetClientURLsForStorageKey(
-                    blink::StorageKey(url::Origin::Create(child_url))),
-                testing::UnorderedElementsAre(child_url));
-  }
-
-  // Give host permissions for b.com (child_rfh) to a.com (root_rfh).
-  {
-    std::vector<network::mojom::CorsOriginPatternPtr> patterns;
-    base::RunLoop run_loop;
-    patterns.push_back(network::mojom::CorsOriginPattern::New(
-        "http", "b.com", 0,
-        network::mojom::CorsDomainMatchMode::kAllowSubdomains,
-        network::mojom::CorsPortMatchMode::kAllowAnyPort,
-        network::mojom::CorsOriginAccessMatchPriority::kDefaultPriority));
-    CorsOriginPatternSetter::Set(
-        root_rfh->GetBrowserContext(), root_rfh->GetLastCommittedOrigin(),
-        std::move(patterns), {}, run_loop.QuitClosure());
-    run_loop.Run();
-  }
-  // Navigate main host to re-calculate StorageKey calculation.
-  EXPECT_TRUE(NavigateToURL(shell(), main_url));
-  root_rfh = web_contents()->GetPrimaryMainFrame();
-
-  // root_rfh's storage key should not have changed.
-  EXPECT_EQ(root_storage_key, root_rfh->storage_key());
-
-  if (ThirdPartyStoragePartitioningEnabled()) {
-    EXPECT_THAT(GetClientURLsForStorageKey(root_storage_key),
-                testing::UnorderedElementsAre(main_url));
-    // With storage partitioning enabled, the child frame should now have a
-    // top level StorageKey because it is the direct child of the root document
-    // and the root has host permissions to it.
-    EXPECT_THAT(
-        GetClientURLsForStorageKey(blink::StorageKey::CreateWithOptionalNonce(
-            url::Origin::Create(child_url),
-            net::SchemefulSite(url::Origin::Create(child_url)), nullptr,
-            blink::mojom::AncestorChainBit::kSameSite)),
-        testing::UnorderedElementsAre(child_url));
-    // Similarly the grandchild document should now use the child document's
-    // origin as the top level site.
-    EXPECT_THAT(
-        GetClientURLsForStorageKey(blink::StorageKey::CreateWithOptionalNonce(
-            url::Origin::Create(grandchild_url),
-            net::SchemefulSite(url::Origin::Create(child_url)), nullptr,
-            blink::mojom::AncestorChainBit::kCrossSite)),
-        testing::UnorderedElementsAre(grandchild_url));
-  } else {
-    // With storage partitioning disabled, main frame and grand child should
-    // use the same storage key, and generally storage keys are only dependent
-    // on the origin.
-    EXPECT_THAT(GetClientURLsForStorageKey(root_storage_key),
-                testing::UnorderedElementsAre(main_url, grandchild_url));
-    EXPECT_THAT(GetClientURLsForStorageKey(
-                    blink::StorageKey(url::Origin::Create(child_url))),
-                testing::UnorderedElementsAre(child_url));
-  }
+                       StorageKeyWithHostPermissionsWithDedicatedWorkers) {
+  RunTestWithWorkers("with-worker");
 }
+
+// Android does not have Shared Workers, so skip the shared worker test.
+#if !BUILDFLAG(IS_ANDROID)
+IN_PROC_BROWSER_TEST_P(ServiceWorkerBrowserTestWithStoragePartitioning,
+                       StorageKeyWithHostPermissionsWithSharedWorkers) {
+  RunTestWithWorkers("with-shared-worker");
+}
+#endif
 
 }  // namespace content

@@ -1,4 +1,4 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -159,6 +159,7 @@ export function createCreditCardEntry():
     expirationMonth: Math.ceil(Math.random() * 11).toString(),
     expirationYear: (2016 + Math.floor(Math.random() * 5)).toString(),
     network: `${card}_network`,
+    imageSrc: 'chrome://theme/IDR_AUTOFILL_CC_GENERIC',
     metadata: {
       isLocal: true,
       summaryLabel: card + ' ' +

@@ -1,18 +1,18 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #import "ios/chrome/browser/ui/authentication/enterprise/enterprise_utils.h"
 
-#include "base/values.h"
-#include "components/policy/policy_constants.h"
-#include "components/prefs/pref_service.h"
-#include "components/signin/public/base/signin_pref_names.h"
-#include "components/sync/base/pref_names.h"
-#include "components/sync/driver/sync_service.h"
-#include "ios/chrome/browser/application_context.h"
-#include "ios/chrome/browser/policy/policy_util.h"
-#include "ios/chrome/browser/pref_names.h"
+#import "base/values.h"
+#import "components/policy/policy_constants.h"
+#import "components/prefs/pref_service.h"
+#import "components/signin/public/base/signin_pref_names.h"
+#import "components/sync/base/pref_names.h"
+#import "components/sync/driver/sync_service.h"
+#import "ios/chrome/browser/application_context/application_context.h"
+#import "ios/chrome/browser/policy/policy_util.h"
+#import "ios/chrome/browser/prefs/pref_names.h"
 #import "ios/chrome/browser/signin/authentication_service.h"
 #import "ios/chrome/browser/sync/sync_service_factory.h"
 
@@ -37,9 +37,10 @@ const std::map<SyncSetupService::SyncableDatatype, const char*>
 }  // namespace
 
 bool IsRestrictAccountsToPatternsEnabled() {
-  const base::Value* value = GetApplicationContext()->GetLocalState()->GetList(
-      prefs::kRestrictAccountsToPatterns);
-  return !value->GetListDeprecated().empty();
+  return !GetApplicationContext()
+              ->GetLocalState()
+              ->GetList(prefs::kRestrictAccountsToPatterns)
+              .empty();
 }
 
 // TODO(crbug.com/1244632): Use the Authentication Service sign-in status API

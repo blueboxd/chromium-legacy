@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -196,6 +196,10 @@ extern const char kLiveCaptionEnabled[];
 extern const char kLiveCaptionLanguageCode[];
 #endif
 extern const char kPageColors[];
+extern const char kApplyPageColorsOnlyOnIncreasedContrast[];
+#if BUILDFLAG(IS_WIN)
+extern const char kIsDefaultPageColorsOnHighContrast[];
+#endif
 #if BUILDFLAG(IS_MAC)
 extern const char kConfirmToQuitEnabled[];
 extern const char kShowFullscreenToolbar[];
@@ -390,7 +394,9 @@ extern const char kUseAshProxy[];
 // TODO(crbug.com/1052397): Revisit the macro expression once build flag switch
 // of lacros-chrome is complete.
 #if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
-extern const char kUsesSystemTheme[];
+// TODO(https://crbug.com/1317782): Remove in M110.
+extern const char kUsesSystemThemeDeprecated[];
+extern const char kSystemTheme[];
 #endif
 extern const char kCurrentThemePackFilename[];
 extern const char kCurrentThemeID[];
@@ -506,6 +512,7 @@ extern const char kPrintingSendUsernameAndFilenameEnabled[];
 extern const char kPrintingMaxSheetsAllowed[];
 extern const char kPrintJobHistoryExpirationPeriod[];
 extern const char kDeletePrintJobHistoryAllowed[];
+extern const char kPrintingClientNameTemplate[];
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 extern const char kDefaultSupervisedUserFilteringBehavior[];
@@ -568,10 +575,6 @@ extern const char kManagedSerialAllowUsbDevicesForUrls[];
 extern const char kManagedWebHidAllowAllDevicesForUrls[];
 extern const char kManagedWebHidAllowDevicesForUrls[];
 extern const char kManagedWebHidAllowDevicesWithHidUsagesForUrls[];
-#endif  // !BUILDFLAG(IS_ANDROID)
-
-#if !BUILDFLAG(IS_ANDROID)
-extern const char kAutofillAssistantOnDesktopEnabled[];
 #endif  // !BUILDFLAG(IS_ANDROID)
 
 extern const char kProfileLastUsed[];
@@ -783,7 +786,6 @@ extern const char kDeviceEnrollmentSubOrganization[];
 extern const char kDeviceEnrollmentAutoStart[];
 extern const char kDeviceEnrollmentCanExit[];
 extern const char kDeviceDMToken[];
-extern const char kUsersLastInputMethod[];
 extern const char kCachedMultiProfileUserBehavior[];
 extern const char kInitialLocale[];
 extern const char kDeviceRegistered[];
@@ -981,6 +983,7 @@ extern const char kSigninInterceptionEnabled[];
 #if BUILDFLAG(IS_CHROMEOS)
 extern const char kEchoCheckedOffers[];
 extern const char kLacrosSecondaryProfilesAllowed[];
+extern const char kLacrosDataBackwardMigrationMode[];
 #endif  // BUILDFLAG(IS_CHROMEOS)
 
 extern const char kCryptAuthDeviceId[];
@@ -1137,10 +1140,6 @@ extern const char kClientCertificateManagementAllowed[];
 extern const char kCACertificateManagementAllowed[];
 #endif
 
-#if BUILDFLAG(BUILTIN_CERT_VERIFIER_POLICY_SUPPORTED)
-extern const char kBuiltinCertificateVerifierEnabled[];
-#endif
-
 #if BUILDFLAG(CHROME_ROOT_STORE_POLICY_SUPPORTED)
 extern const char kChromeRootStoreEnabled[];
 #endif
@@ -1263,6 +1262,12 @@ extern const char kSCTAuditingHashdanceReportCount[];
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 extern const char kConsumerAutoUpdateToggle[];
 #endif
+
+#if !BUILDFLAG(IS_ANDROID)
+extern const char kHighEfficiencyChipExpandedCount[];
+#endif
+
+extern const char kStrictMimetypeCheckForWorkerScriptsEnabled[];
 
 }  // namespace prefs
 

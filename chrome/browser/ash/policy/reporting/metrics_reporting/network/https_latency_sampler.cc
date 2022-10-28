@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,6 +12,7 @@
 #include "chromeos/ash/components/network/network_state_handler.h"
 #include "chromeos/ash/components/network/network_type_pattern.h"
 #include "components/reporting/proto/synced/metric_data.pb.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace reporting {
 namespace {
@@ -105,6 +106,11 @@ HttpsLatencySampler::~HttpsLatencySampler() {
 void HttpsLatencySampler::MaybeCollect(OptionalMetricCallback callback) {
   CHECK(base::SequencedTaskRunnerHandle::IsSet());
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  if (!IsDeviceOnline()) {
+    std::move(callback).Run(absl::nullopt);
+    return;
+  }
 
   metric_callbacks_.push(std::move(callback));
   if (is_routine_running_) {

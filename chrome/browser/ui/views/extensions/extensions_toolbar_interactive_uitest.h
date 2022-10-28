@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -54,6 +54,14 @@ class ExtensionsToolbarUITest : public DialogBrowserTest {
   scoped_refptr<const extensions::Extension> LoadTestExtension(
       const std::string& path,
       bool allow_incognito = false);
+
+  // Loads and returns a extension given a `name`, `host_permission` and
+  // optional `content_script_run_location`.
+  scoped_refptr<const extensions::Extension>
+  InstallExtensionWithHostPermissions(
+      const std::string& name,
+      const std::string& host_permission,
+      const std::string& content_script_run_location = "");
 
   // Adds |extension| to the back of |extensions_|.
   void AppendExtension(scoped_refptr<const extensions::Extension> extension);

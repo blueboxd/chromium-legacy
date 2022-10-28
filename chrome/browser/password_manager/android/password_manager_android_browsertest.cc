@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -96,7 +96,7 @@ IN_PROC_BROWSER_TEST_P(PasswordManagerAndroidBrowserTest,
   // To make the test closer to TouchToFill, use |FillSuggestion| to fill a
   // credential later.
   fill_data.wait_for_username = true;
-  driver->FillPasswordForm(fill_data);
+  driver->SetPasswordFillData(fill_data);
 
   // A user taps the username field.
   ASSERT_TRUE(content::ExecuteScript(

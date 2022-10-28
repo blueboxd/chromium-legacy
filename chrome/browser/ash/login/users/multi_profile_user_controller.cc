@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -169,7 +169,7 @@ void MultiProfileUserController::RemoveCachedValues(
 std::string MultiProfileUserController::GetCachedValue(
     const std::string& user_email) const {
   const base::Value::Dict& dict =
-      local_state_->GetValueDict(prefs::kCachedMultiProfileUserBehavior);
+      local_state_->GetDict(prefs::kCachedMultiProfileUserBehavior);
 
   const std::string* value = dict.FindString(user_email);
   if (value)
@@ -190,7 +190,8 @@ void MultiProfileUserController::CheckSessionUsers() {
       user_manager::UserManager::Get()->GetLoggedInUsers();
   for (user_manager::UserList::const_iterator it = users.begin();
        it != users.end(); ++it) {
-    if (!IsUserAllowedInSession((*it)->GetAccountId().GetUserEmail(), NULL)) {
+    if (!IsUserAllowedInSession((*it)->GetAccountId().GetUserEmail(),
+                                nullptr)) {
       delegate_->OnUserNotAllowed((*it)->GetAccountId().GetUserEmail());
       return;
     }

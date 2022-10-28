@@ -4,7 +4,6 @@
 
 #include <stdint.h>
 
-#include <algorithm>
 #include <utility>
 #include <vector>
 
@@ -16,6 +15,7 @@
 #include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "base/ranges/algorithm.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/sequenced_task_runner.h"
@@ -160,8 +160,7 @@ void InitBackForwardCacheFeature(base::test::ScopedFeatureList* feature_list,
                                  bool enable_back_forward_cache) {
   if (enable_back_forward_cache) {
     std::vector<base::test::ScopedFeatureList::FeatureAndParams> features;
-    features.push_back(
-        {features::kBackForwardCache, {{"enable_same_site", "true"}}});
+    features.push_back({features::kBackForwardCache, {}});
     features.push_back({kBackForwardCacheNoTimeEviction, {}});
     features.push_back({features::kBackForwardCacheMemoryControls, {}});
     feature_list->InitWithFeaturesAndParameters(features, {});
@@ -14010,11 +14009,8 @@ class RequestMonitoringNavigationBrowserTest
       const GURL& url_to_find) {
     DCHECK(url_to_find.SchemeIsHTTPOrHTTPS());
 
-    auto it = std::find_if(
-        accumulated_requests_.begin(), accumulated_requests_.end(),
-        [&url_to_find](const net::test_server::HttpRequest& request) {
-          return request.GetURL() == url_to_find;
-        });
+    auto it = base::ranges::find(accumulated_requests_, url_to_find,
+                                 &net::test_server::HttpRequest::GetURL);
     if (it == accumulated_requests_.end())
       return nullptr;
     return &*it;

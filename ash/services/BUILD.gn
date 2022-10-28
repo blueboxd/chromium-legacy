@@ -1,4 +1,4 @@
-# Copyright 2021 The Chromium Authors. All rights reserved.
+# Copyright 2021 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -16,8 +16,6 @@ assert(is_chromeos_ash, "Non-ChromeOS builds cannot depend on //ash")
 source_set("unit_tests") {
   testonly = true
   deps = [
-    "//ash/services/cellular_setup:unit_tests",
-    "//ash/services/chromebox_for_meetings/public/cpp:unit_tests",
     "//ash/services/device_sync:unit_tests",
     "//ash/services/ime:services_unittests",
     "//ash/services/ime:unit_tests",
@@ -25,6 +23,5 @@ source_set("unit_tests") {
     "//ash/services/nearby/public/cpp:unit_tests",
     "//ash/services/quick_pair:unit_tests",
     "//ash/services/secure_channel:unit_tests",
-    "//chromeos/services/machine_learning/public/cpp:ash_unit_tests",
   ]
 }

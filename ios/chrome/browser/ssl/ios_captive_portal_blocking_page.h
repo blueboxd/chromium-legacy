@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -24,8 +24,8 @@ class IOSCaptivePortalBlockingPage
 
   // Creates a captive portal blocking page. If the blocking page isn't shown,
   // the caller is responsible for cleaning up the blocking page, otherwise the
-  // interstitial takes ownership when shown. The |web_state| and |request_url|
-  // of the request which this interstitial page is associated. |landing_url| is
+  // interstitial takes ownership when shown. The `web_state` and `request_url`
+  // of the request which this interstitial page is associated. `landing_url` is
   // the web page which allows the user to complete their connection to the
   // network.
   IOSCaptivePortalBlockingPage(

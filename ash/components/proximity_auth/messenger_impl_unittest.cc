@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -50,7 +50,7 @@ class MockMessengerObserver : public MessengerObserver {
   MOCK_METHOD1(OnUnlockResponse, void(bool success));
   MOCK_METHOD0(OnDisconnected, void());
 
-  virtual void OnDecryptResponse(const std::string& decrypted_bytes) {
+  void OnDecryptResponse(const std::string& decrypted_bytes) override {
     OnDecryptResponseProxy(decrypted_bytes);
   }
 

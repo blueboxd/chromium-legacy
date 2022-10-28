@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -31,7 +31,6 @@
 #include "base/strings/string_split.h"
 #include "base/strings/stringprintf.h"
 #include "base/system/sys_info.h"
-#include "build/build_config.h"
 #include "gpu/config/device_perf_info.h"
 #include "gpu/config/gpu_blocklist.h"
 #include "gpu/config/gpu_crash_keys.h"

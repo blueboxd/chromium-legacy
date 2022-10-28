@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -283,7 +283,7 @@ TerminalPrivateOpenTerminalProcessFunction::Run() {
 ExtensionFunction::ResponseAction
 TerminalPrivateOpenTerminalProcessFunction::OpenProcess(
     const std::string& process_name,
-    std::unique_ptr<std::vector<std::string>> args) {
+    absl::optional<std::vector<std::string>> args) {
   const std::string& user_id_hash =
       extensions::ExtensionsBrowserClient::Get()->GetUserIdHashFromContext(
           browser_context());
@@ -323,7 +323,7 @@ TerminalPrivateOpenTerminalProcessFunction::OpenProcess(
     // are set, and the specified vm/container is running.
     base::CommandLine cmdline((base::FilePath(kVmShellCommand)));
     if (!args)
-      args = std::make_unique<std::vector<std::string>>();
+      args.emplace();
     args->insert(args->begin(), kVmShellCommand);
     base::CommandLine params_args(*args);
     VLOG(1) << "Original cmdline= " << params_args.GetCommandLineString();
@@ -685,7 +685,7 @@ ExtensionFunction::ResponseAction TerminalPrivateOpenWindowFunction::Run() {
   auto& data = params->data;
   if (data) {
     if (data->url) {
-      url = data->url.get();
+      url = &*data->url;
     }
     if (data->as_tab) {
       as_tab = *data->as_tab;
@@ -784,17 +784,16 @@ ExtensionFunction::ResponseAction TerminalPrivateSetPrefsFunction::Run() {
       kAllowList{{{guest_os::prefs::kGuestOsTerminalSettings,
                    base::Value::Type::DICTIONARY}}};
 
-  for (base::DictionaryValue::Iterator it(params->prefs.additional_properties);
-       !it.IsAtEnd(); it.Advance()) {
+  for (const auto item : params->prefs.additional_properties) {
     // Write prefs if they are allowed, and match expected type, else ignore.
-    auto allow_it = kAllowList->find(it.key());
+    auto allow_it = kAllowList->find(item.first);
     if (allow_it == kAllowList->end() ||
-        allow_it->second != it.value().type()) {
-      LOG(WARNING) << "Ignoring non-allowed SetPrefs path=" << it.key()
-                   << ", type=" << it.value().type();
+        allow_it->second != item.second.type()) {
+      LOG(WARNING) << "Ignoring non-allowed SetPrefs path=" << item.first
+                   << ", type=" << item.second.type();
       continue;
     }
-    service->Set(it.key(), it.value());
+    service->Set(item.first, item.second);
   }
   return RespondNow(NoArguments());
 }

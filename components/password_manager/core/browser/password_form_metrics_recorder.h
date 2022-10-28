@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -236,7 +236,9 @@ class PasswordFormMetricsRecorder
     kAffiliatedWebsite = 9,
     // The form may accept WebAuthn credentials.
     kAcceptsWebAuthnCredentials = 10,
-    kMaxValue = kAcceptsWebAuthnCredentials,
+    // User need to reauthenticate using biometric.
+    kBiometricAuthentication = 11,
+    kMaxValue = kBiometricAuthentication,
   };
 
   // Used in UMA histogram, please do NOT reorder.

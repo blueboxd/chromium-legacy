@@ -5,7 +5,7 @@
 import {addEntries, ENTRIES, RootPath, sendTestMessage, TestEntryInfo} from '../test_util.js';
 import {testcase} from '../testcase.js';
 
-import {IGNORE_APP_ERRORS, isSinglePartitionFormat, openNewWindow, remoteCall, setupAndWaitUntilReady} from './background.js';
+import {IGNORE_APP_ERRORS, isSinglePartitionFormat, navigateWithDirectoryTree, openNewWindow, remoteCall, setupAndWaitUntilReady} from './background.js';
 import {BASIC_DRIVE_ENTRY_SET, BASIC_FAKE_ENTRY_SET, BASIC_LOCAL_ENTRY_SET, COMPUTERS_ENTRY_SET} from './test_data.js';
 
 /**
@@ -223,16 +223,13 @@ testcase.fileDisplayComputers = async () => {
       await setupAndWaitUntilReady(RootPath.DRIVE, [], COMPUTERS_ENTRY_SET);
 
   // Navigate to Comuter Grand Root.
-  await remoteCall.navigateWithDirectoryTree(
-      appId, '/Computers', 'Computers', 'drive');
+  await navigateWithDirectoryTree(appId, '/Computers');
 
   // Navigiate to a Computer Root.
-  await remoteCall.navigateWithDirectoryTree(
-      appId, '/Computers/Computer A', 'Computers', 'drive');
+  await navigateWithDirectoryTree(appId, '/Computers/Computer A');
 
   // Navigiate to a subdirectory under a Computer Root.
-  await remoteCall.navigateWithDirectoryTree(
-      appId, '/Computers/Computer A/A', 'Computers', 'drive');
+  await navigateWithDirectoryTree(appId, '/Computers/Computer A/A');
 };
 
 
@@ -379,7 +376,7 @@ testcase.fileDisplayUsbPartitionSort = async () => {
 
   // Sort by type in ascending order.
   await remoteCall.callRemoteTestUtil(
-      'fakeMouseClick', appId, ['.table-header-cell:nth-of-type(4)']);
+      'fakeMouseClick', appId, ['.table-header-cell:nth-of-type(3)']);
   const iconSortedAsc =
       '.table-header-cell .sorted [iron-icon="files16:arrow_up_small"]';
   await remoteCall.waitForElement(appId, iconSortedAsc);
@@ -395,7 +392,7 @@ testcase.fileDisplayUsbPartitionSort = async () => {
 
   // Sort by type in descending order.
   await remoteCall.callRemoteTestUtil(
-      'fakeMouseClick', appId, ['.table-header-cell:nth-of-type(4)']);
+      'fakeMouseClick', appId, ['.table-header-cell:nth-of-type(3)']);
   const iconSortedDesc =
       '.table-header-cell .sorted [iron-icon="files16:arrow_down_small"]';
   await remoteCall.waitForElement(appId, iconSortedDesc);
@@ -976,11 +973,8 @@ testcase.fileDisplayCheckNoReadOnlyIconOnLinuxFiles = async () => {
   const appId =
       await setupAndWaitUntilReady(RootPath.DOWNLOADS, [ENTRIES.hello], []);
 
-  // Linux files fake root is shown.
-  await remoteCall.waitForElement(appId, fakeRoot);
-
   // Click on Linux files.
-  await remoteCall.callRemoteTestUtil('fakeMouseClick', appId, [fakeRoot]);
+  remoteCall.waitAndClickElement(appId, fakeRoot);
 
   // Check: the loading indicator should be visible.
   await remoteCall.waitForElement(
@@ -991,28 +985,35 @@ testcase.fileDisplayCheckNoReadOnlyIconOnLinuxFiles = async () => {
 };
 
 /**
- * Tests that a failure opening one window won't block opening other windows.
+ * Tests to make sure read-only indicator is NOT visible when the current
+ * directory is a "GuestOs" fake root.
  */
-testcase.fileDisplayStartupError = async () => {
-  // Fake chrome.app.window.create to return undefined.
-  const fakeData = {
-    'chrome.app.window.create': ['static_fake', [undefined]],
-  };
-  await remoteCall.callRemoteTestUtil('backgroundFake', null, [fakeData]);
+testcase.fileDisplayCheckNoReadOnlyIconOnGuestOs = async () => {
+  const fakeRoot = '#directory-tree [root-type-icon="bruschetta"]';
 
-  // Check: opening a Files app window should fail and return null.
-  const failedAppId = await openNewWindow(RootPath.DOWNLOADS);
-  chrome.test.assertEq(null, failedAppId);
+  // Create a Bruschetta guest for this test.
+  const guestId = await sendTestMessage({
+    name: 'registerMountableGuest',
+    displayName: 'mogsaur',
+    canMount: true,
+    vmType: 'bruschetta',
+  });
 
-  // Remove fakes.
-  const removedCount =
-      await remoteCall.callRemoteTestUtil('removeAllBackgroundFakes', null, []);
-  chrome.test.assertEq(1, removedCount);
+  // Block mounts from progressing. This should cause the file manager to always
+  // show the loading bar for our mount.
+  await sendTestMessage({name: 'blockMounts'});
 
-  // Check: opening a Files app window should succeed.
-  const appId = await openNewWindow(RootPath.DOWNLOADS);
-  chrome.test.assertTrue(null !== appId);
+  // Open files app on Downloads.
+  const appId =
+      await setupAndWaitUntilReady(RootPath.DOWNLOADS, [ENTRIES.hello], []);
 
-  // The failed attempt logs the error.
-  return IGNORE_APP_ERRORS;
+  // Click on the placeholder.
+  remoteCall.waitAndClickElement(appId, fakeRoot);
+
+  // Check: the loading indicator should be visible.
+  await remoteCall.waitForElement(
+      appId, '#list-container .loading-indicator:not([hidden])');
+
+  // Check: the toolbar read-only indicator should not be visible.
+  await remoteCall.waitForElement(appId, '#read-only-indicator[hidden]');
 };

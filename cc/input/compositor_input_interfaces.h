@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -25,6 +25,7 @@ namespace cc {
 struct CompositorCommitData;
 class LayerTreeHostImpl;
 class LayerTreeSettings;
+class MutatorHost;
 class ScrollTree;
 enum class ScrollbarOrientation;
 
@@ -38,7 +39,9 @@ class InputDelegateForCompositor {
 
   // Called during a commit to fill in the changes that have occurred since the
   // last commit.
-  virtual void ProcessCommitDeltas(CompositorCommitData* commit_data) = 0;
+  virtual void ProcessCommitDeltas(
+      CompositorCommitData* commit_data,
+      const MutatorHost* main_thread_mutator_host) = 0;
 
   // Called to let the input handler perform animations.
   virtual void TickAnimations(base::TimeTicks monotonic_time) = 0;

@@ -1,16 +1,26 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 // <include src="saml_handler.js">
 // Note: webview_event_manager.js is already included by saml_handler.js.
 
+// clang-format off
+// #import {assert} from 'chrome://resources/js/assert.m.js';
+// #import {NativeEventTarget as EventTarget} from 'chrome://resources/js/cr/event_target.js';
+// #import {$, appendParam} from 'chrome://resources/js/util.m.js';
+
+// #import {SamlHandler} from './saml_handler.m.js';
+// #import {WebviewEventManager} from './webview_event_manager.m.js';
+// clang-format on
+
+
 /**
  * @fileoverview Support password change on with SAML provider.
  */
 
 cr.define('cr.samlPasswordChange', function() {
-  'use strict';
+  /* #ignore */ 'use strict';
 
   /** @const */
   const oktaInjectedScriptName = 'oktaInjected';
@@ -25,18 +35,23 @@ cr.define('cr.samlPasswordChange', function() {
    * The script to inject into Okta user settings page.
    * @type {string}
    */
-  const oktaInjectedJs = String.raw`
-      // <include src="okta_detect_success_injected.js">
-  `;
+  const oktaInjectedJsFile = 'gaia_auth_host/okta_detect_success_injected.js';
 
   const BLANK_PAGE_URL = 'about:blank';
 
+  /**
+   * @typedef {{
+   *   old_passwords: Array<string>,
+   *   new_passwords: Array<string>,
+   * }}
+   */
+  /* #export */ let PasswordChangeEventData;
 
   /**
    * @param {string} extensionId The ID of the extension to send the message to.
-   * @param {any} message The message to send. This message should be a
+   * @param {Object} message The message to send. This message should be a
    *     JSON-ifiable object.
-   * @param {function} callback the response callback function
+   * @param {function(?)} callback the response callback function
    * @private
    * @see: https://developer.chrome.com/extensions/runtime#method-sendMessage
    */
@@ -63,7 +78,7 @@ cr.define('cr.samlPasswordChange', function() {
 
   /**
    * @param {URL?} url The url of the webpage that is being interacted with.
-   * @return {PasswordChangePageProvider} The provider of the password change
+   * @return {PasswordChangePageProvider?} The provider of the password change
    *         page, as detected based on the URL.
    */
   function detectProvider_(url) {
@@ -92,7 +107,7 @@ cr.define('cr.samlPasswordChange', function() {
    */
   function safeParseUrl_(str) {
     try {
-      return new URL(str);
+      return new URL(/** @type {string} */ (str));
     } catch (error) {
       console.error('Invalid url: ' + str);
       return null;
@@ -104,7 +119,7 @@ cr.define('cr.samlPasswordChange', function() {
    * @param {URL?} redirectUrl Where the response redirected the browser.
    * @return {boolean} True if we detect that a password change was successful.
    */
-  function detectPasswordChangeSuccess(postUrl, redirectUrl) {
+  /* #export */ function detectPasswordChangeSuccess(postUrl, redirectUrl) {
     if (!postUrl || !redirectUrl) {
       return false;
     }
@@ -144,9 +159,9 @@ cr.define('cr.samlPasswordChange', function() {
   /**
    * Initializes the authenticator component.
    */
-  class Authenticator extends cr.EventTarget {
+  /* #export */ class PasswordChangeAuthenticator extends cr.EventTarget {
     /**
-     * @param {webview|string} webview The webview element or its ID to host
+     * @param {!WebView|string} webview The webview element or its ID to host
      *     IdP web pages.
      */
     constructor(webview) {
@@ -154,6 +169,15 @@ cr.define('cr.samlPasswordChange', function() {
 
       this.initialFrameUrl_ = null;
       this.webviewEventManager_ = WebviewEventManager.create();
+
+      /**
+       * @private {WebView|undefined}
+       */
+      this.webview_ = undefined;
+      /**
+       * @private {!SamlHandler|undefined}
+       */
+      this.samlHandler_ = undefined;
 
       this.bindToWebview_(webview);
 
@@ -178,7 +202,7 @@ cr.define('cr.samlPasswordChange', function() {
 
     /**
      * Binds this authenticator to the passed webview.
-     * @param {!Object} webview the new webview to be used by this
+     * @param {!WebView|string} webview the new webview to be used by this
      *     Authenticator.
      * @private
      */
@@ -186,7 +210,10 @@ cr.define('cr.samlPasswordChange', function() {
       assert(!this.webview_);
       assert(!this.samlHandler_);
 
-      this.webview_ = typeof webview === 'string' ? $(webview) : webview;
+      this.webview_ = typeof webview === 'string' ?
+          /** @type {WebView} */ ($(webview)) :
+          webview;
+      assert(this.webview_);
 
       this.samlHandler_ =
           new cr.login.SamlHandler(this.webview_, true /* startsOnSamlPage */);
@@ -201,13 +228,14 @@ cr.define('cr.samlPasswordChange', function() {
           this.webview_.request.onBeforeRedirect,
           this.onBeforeRedirect_.bind(this),
           {urls: ['*://*/*'], types: ['main_frame']},
+          null, /* extraInfoSpec */
       );
 
       // Inject a custom script for detecting password change success in Okta.
       this.webview_.addContentScripts([{
         name: oktaInjectedScriptName,
         matches: ['*://*.okta.com/*'],
-        js: {code: oktaInjectedJs},
+        js: {files: [oktaInjectedJsFile]},
         all_frames: true,
         run_at: 'document_start',
       }]);
@@ -217,6 +245,7 @@ cr.define('cr.samlPasswordChange', function() {
           this.webview_.request.onCompleted,
           this.onOktaCompleted_.bind(this),
           {urls: ['*://*.okta.com/*'], types: ['main_frame']},
+          null, /* extraInfoSpec */
       );
 
       // Okta-detect-success-inject script signals success by posting a message
@@ -242,7 +271,8 @@ cr.define('cr.samlPasswordChange', function() {
 
     /**
      * Re-binds to another webview.
-     * @param {Object} webview the new webview to be used by this Authenticator.
+     * @param {!WebView} webview the new webview to be used by this
+     *     Authenticator.
      */
     rebindWebview(webview) {
       this.unbindFromWebview_();
@@ -251,7 +281,6 @@ cr.define('cr.samlPasswordChange', function() {
 
     /**
      * Loads the authenticator component with the given parameters.
-     * @param {AuthMode} authMode Authorization mode.
      * @param {Object} data Parameters for the authorization flow.
      */
     load(data) {
@@ -272,7 +301,7 @@ cr.define('cr.samlPasswordChange', function() {
 
     /**
      * Invoked when the sign-in page takes focus.
-     * @param {object} e The focus event being triggered.
+     * @param {Object} e The focus event being triggered.
      * @private
      */
     onFocus_(e) {
@@ -281,7 +310,7 @@ cr.define('cr.samlPasswordChange', function() {
 
     /**
      * Sends scraped password and resets the state.
-     * @param {bool} isOkta whether the page is Okta page.
+     * @param {boolean} isOkta whether the page is Okta page.
      * @private
      */
     onPasswordChangeSuccess_(isOkta) {
@@ -303,10 +332,10 @@ cr.define('cr.samlPasswordChange', function() {
           passwordsTwice = [];
         }
       } else {
-        passwordsOnce =
-            this.samlHandler_.getPasswordsWithPropertyScrapedTimes(1);
-        passwordsTwice =
-            this.samlHandler_.getPasswordsWithPropertyScrapedTimes(2);
+        passwordsOnce = this.samlHandler_.getPasswordsWithPropertyScrapedTimes(
+            1, null /*passwordProperty*/);
+        passwordsTwice = this.samlHandler_.getPasswordsWithPropertyScrapedTimes(
+            2, null /*passwordProperty*/);
       }
 
       this.dispatchEvent(new CustomEvent('authCompleted', {
@@ -398,8 +427,9 @@ cr.define('cr.samlPasswordChange', function() {
     }
   }
 
+  // #cr_define_end
   return {
-    Authenticator: Authenticator,
+    PasswordChangeAuthenticator: PasswordChangeAuthenticator,
     detectPasswordChangeSuccess: detectPasswordChangeSuccess,
   };
 });

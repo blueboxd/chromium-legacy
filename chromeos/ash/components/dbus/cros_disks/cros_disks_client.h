@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -105,24 +105,33 @@ enum class RenameError {
   kInvalidCharacter,
 };
 
+// Output operator for logging.
+COMPONENT_EXPORT(ASH_DBUS_CROS_DISKS)
+std::ostream& operator<<(std::ostream& out, RenameError error);
+
 // Format error reported by cros-disks.
 // These values are persisted to logs. Entries should not be renumbered and
 // numeric values should never be reused.
+// See enum CrosDisksClientFormatError in tools/metrics/histograms/enums.xml.
 enum class FormatError {
-  kNone,
-  kUnknown,
-  kInternal,
-  kInvalidDevicePath,
-  kDeviceBeingFormatted,
-  kUnsupportedFilesystem,
-  kFormatProgramNotFound,
-  kFormatProgramFailed,
-  kDeviceNotAllowed,
-  kInvalidOptions,
-  kLongName,
-  kInvalidCharacter,
-  kCount,
+  kNone = 0,
+  kUnknown = 1,
+  kInternal = 2,
+  kInvalidDevicePath = 3,
+  kDeviceBeingFormatted = 4,
+  kUnsupportedFilesystem = 5,
+  kFormatProgramNotFound = 6,
+  kFormatProgramFailed = 7,
+  kDeviceNotAllowed = 8,
+  kInvalidOptions = 9,
+  kLongName = 10,
+  kInvalidCharacter = 11,
+  kCount = 12,
 };
+
+// Output operator for logging.
+COMPONENT_EXPORT(ASH_DBUS_CROS_DISKS)
+std::ostream& operator<<(std::ostream& out, FormatError error);
 
 // Partition error reported by cros-disks.
 enum class PartitionError {
@@ -135,6 +144,10 @@ enum class PartitionError {
   kProgramFailed = 6,
   kDeviceNotAllowed = 7,
 };
+
+// Output operator for logging.
+COMPONENT_EXPORT(ASH_DBUS_CROS_DISKS)
+std::ostream& operator<<(std::ostream& out, PartitionError error);
 
 // Event type each corresponding to a signal sent from cros-disks.
 enum class MountEventType {
@@ -294,7 +307,7 @@ std::ostream& operator<<(std::ostream& out, const MountEntry& entry);
 // This class only makes calls, result/error handling should be done
 // by callbacks.
 class COMPONENT_EXPORT(ASH_DBUS_CROS_DISKS) CrosDisksClient
-    : public DBusClient {
+    : public chromeos::DBusClient {
  public:
   // A callback to handle the result of EnumerateDevices.
   // The argument is the enumerated device paths.
@@ -376,7 +389,7 @@ class COMPONENT_EXPORT(ASH_DBUS_CROS_DISKS) CrosDisksClient
                      const std::vector<std::string>& mount_options,
                      MountAccessMode access_mode,
                      RemountOption remount,
-                     VoidDBusMethodCallback callback) = 0;
+                     chromeos::VoidDBusMethodCallback callback) = 0;
 
   // Calls Unmount method.  On method call completion, |callback| is called
   // with the error code.
@@ -398,7 +411,7 @@ class COMPONENT_EXPORT(ASH_DBUS_CROS_DISKS) CrosDisksClient
   virtual void Format(const std::string& device_path,
                       const std::string& filesystem,
                       const std::string& label,
-                      VoidDBusMethodCallback callback) = 0;
+                      chromeos::VoidDBusMethodCallback callback) = 0;
 
   // Calls SinglePartitionFormat async method. |callback| is called when
   // response received.
@@ -409,7 +422,7 @@ class COMPONENT_EXPORT(ASH_DBUS_CROS_DISKS) CrosDisksClient
   // success, or with |false| otherwise.
   virtual void Rename(const std::string& device_path,
                       const std::string& volume_name,
-                      VoidDBusMethodCallback callback) = 0;
+                      chromeos::VoidDBusMethodCallback callback) = 0;
 
   // Calls GetDeviceProperties method.  |callback| is called after the method
   // call succeeds, otherwise, |error_callback| is called.

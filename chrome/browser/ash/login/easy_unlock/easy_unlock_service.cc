@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,7 +7,6 @@
 #include <memory>
 #include <utility>
 
-#include "ash/components/login/auth/public/user_context.h"
 #include "ash/components/multidevice/logging/logging.h"
 #include "ash/components/proximity_auth/proximity_auth_local_state_pref_manager.h"
 #include "ash/components/proximity_auth/proximity_auth_profile_pref_manager.h"
@@ -41,6 +40,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/ash/components/dbus/dbus_thread_manager.h"
+#include "chromeos/ash/components/login/auth/public/user_context.h"
 #include "chromeos/dbus/power/power_manager_client.h"
 #include "chromeos/dbus/power_manager/idle.pb.h"
 #include "components/account_id/account_id.h"
@@ -58,7 +58,7 @@ namespace ash {
 namespace {
 
 PrefService* GetLocalState() {
-  return g_browser_process ? g_browser_process->local_state() : NULL;
+  return g_browser_process ? g_browser_process->local_state() : nullptr;
 }
 
 void RecordAuthResultFailure(
@@ -100,16 +100,19 @@ EasyUnlockService* EasyUnlockService::GetForUser(
   return EasyUnlockService::Get(profile);
 }
 
-class EasyUnlockService::PowerMonitor : public PowerManagerClient::Observer {
+class EasyUnlockService::PowerMonitor
+    : public chromeos::PowerManagerClient::Observer {
  public:
   explicit PowerMonitor(EasyUnlockService* service) : service_(service) {
-    PowerManagerClient::Get()->AddObserver(this);
+    chromeos::PowerManagerClient::Get()->AddObserver(this);
   }
 
   PowerMonitor(const PowerMonitor&) = delete;
   PowerMonitor& operator=(const PowerMonitor&) = delete;
 
-  ~PowerMonitor() override { PowerManagerClient::Get()->RemoveObserver(this); }
+  ~PowerMonitor() override {
+    chromeos::PowerManagerClient::Get()->RemoveObserver(this);
+  }
 
  private:
   // PowerManagerClient::Observer:
@@ -267,7 +270,7 @@ bool EasyUnlockService::GetPersistedHardlockState(
     return false;
 
   const base::Value::Dict& dict =
-      local_state->GetValueDict(prefs::kEasyUnlockHardlockState);
+      local_state->GetDict(prefs::kEasyUnlockHardlockState);
 
   absl::optional<int> state_int = dict.FindInt(account_id.GetUserEmail());
   if (!state_int.has_value())
@@ -487,7 +490,7 @@ void EasyUnlockService::CheckCryptohomeKeysAndMaybeHardlock() {
   if (!account_id.is_valid() || !IsChromeOSLoginEnabled())
     return;
 
-  const base::ListValue* device_list = GetRemoteDevices();
+  const base::Value::List* device_list = GetRemoteDevices();
   std::set<std::string> paired_devices;
   if (device_list) {
     EasyUnlockDeviceKeyDataList parsed_paired;

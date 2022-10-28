@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -65,8 +65,7 @@ ExtensionFunction::ResponseAction IdentityGetProfileUserInfoFunction::Run() {
     profile_user_info.id = account_info.gaia;
   }
 
-  return RespondNow(OneArgument(
-      base::Value::FromUniquePtrValue(profile_user_info.ToValue())));
+  return RespondNow(WithArguments(profile_user_info.ToValue()));
 }
 
 }  // namespace extensions

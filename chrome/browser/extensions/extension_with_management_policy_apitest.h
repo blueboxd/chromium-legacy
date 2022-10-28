@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -32,7 +32,7 @@ class ExtensionApiTestWithManagementPolicy
       const ExtensionApiTestWithManagementPolicy&) = delete;
 
   ~ExtensionApiTestWithManagementPolicy() override;
-  void SetUpInProcessBrowserTestFixture() override;
+  void SetUp() override;
   void SetUpOnMainThread() override;
 
  protected:

@@ -32,6 +32,7 @@
 #include "third_party/blink/renderer/platform/mediastream/media_stream_component_impl.h"
 
 #include "base/synchronization/lock.h"
+#include "third_party/blink/public/platform/modules/mediastream/web_media_stream_audio_sink.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/mediastream/media_stream_source.h"
 #include "third_party/blink/renderer/platform/wtf/uuid.h"
@@ -81,12 +82,8 @@ MediaStreamComponentImpl::MediaStreamComponentImpl(
     MediaStreamSource* source,
     std::unique_ptr<MediaStreamTrackPlatform> platform_track)
     : MediaStreamComponentImpl(id, source) {
-  // TODO(https://crbug.com/1302689): Change to a DCHECK(platform_track) once
-  // all callers provide a platform_track here, rather than using
-  // SetPlatformTrack().
-  if (platform_track) {
-    CheckSourceAndTrackSameType(source, platform_track.get());
-  }
+  DCHECK(platform_track);
+  CheckSourceAndTrackSameType(source, platform_track.get());
   platform_track_ = std::move(platform_track);
 }
 
@@ -94,12 +91,8 @@ MediaStreamComponentImpl::MediaStreamComponentImpl(
     MediaStreamSource* source,
     std::unique_ptr<MediaStreamTrackPlatform> platform_track)
     : MediaStreamComponentImpl(source) {
-  // TODO(https://crbug.com/1302689): Change to a DCHECK(platform_track) once
-  // all callers provide a platform_track here, rather than using
-  // SetPlatformTrack().
-  if (platform_track) {
-    CheckSourceAndTrackSameType(source, platform_track.get());
-  }
+  DCHECK(platform_track);
+  CheckSourceAndTrackSameType(source, platform_track.get());
   platform_track_ = std::move(platform_track);
 }
 
@@ -160,6 +153,25 @@ void MediaStreamComponentImpl::SetContentHint(
   MediaStreamTrackPlatform* native_track = GetPlatformTrack();
   if (native_track)
     native_track->SetContentHint(ContentHint());
+}
+
+void MediaStreamComponentImpl::AddSourceObserver(
+    MediaStreamSource::Observer* observer) {
+  Source()->AddObserver(observer);
+}
+
+void MediaStreamComponentImpl::AddSink(WebMediaStreamAudioSink* sink) {
+  DCHECK(GetPlatformTrack());
+  GetPlatformTrack()->AddSink(sink);
+}
+
+void MediaStreamComponentImpl::AddSink(
+    WebMediaStreamSink* sink,
+    const VideoCaptureDeliverFrameCB& callback,
+    MediaStreamVideoSink::IsSecure is_secure,
+    MediaStreamVideoSink::UsesAlpha uses_alpha) {
+  DCHECK(GetPlatformTrack());
+  GetPlatformTrack()->AddSink(sink, callback, is_secure, uses_alpha);
 }
 
 String MediaStreamComponentImpl::ToString() const {

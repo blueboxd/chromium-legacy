@@ -1,4 +1,4 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/containers/span.h"
+#include "base/strings/string_piece_forward.h"
 #include "media/base/media_export.h"
 #include "media/base/media_log.h"
 #include "media/base/mime_util.h"
@@ -30,7 +31,7 @@ class MEDIA_EXPORT StreamParserFactory {
   // supported for the mime type.
   // kMaybeSupported indicates the mime type is supported, but the mime type
   // requires a codecs parameter that is missing.
-  static SupportsType IsTypeSupported(const std::string& type,
+  static SupportsType IsTypeSupported(base::StringPiece type,
                                       base::span<const std::string> codecs);
 
   // Creates a new StreamParser object if the specified |type| and |codecs| list
@@ -54,7 +55,7 @@ class MEDIA_EXPORT StreamParserFactory {
   // error should occur for unsupported or invalid decoder configs during
   // attempted decode.
   static std::unique_ptr<StreamParser> Create(
-      const std::string& type,
+      base::StringPiece type,
       base::span<const std::string> codecs,
       MediaLog* media_log);
   static std::unique_ptr<StreamParser> Create(

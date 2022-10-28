@@ -49,6 +49,17 @@ crbug.com/1209223 external/wpt/html/browsers/browsing-the-web/navigating-across-
 crbug.com/1209223 external/wpt/html/browsers/browsing-the-web/navigating-across-documents/javascript-url-security-check-same-origin-domain.sub.html [ Failure ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 external/wpt/css/css-flexbox/flex-item-transferred-sizes-padding-border-sizing.html [ Failure ]
+crbug.com/626703 external/wpt/css/css-flexbox/flex-item-transferred-sizes-padding-content-sizing.html [ Failure ]
+crbug.com/626703 external/wpt/page-visibility/visibility-state-entry.tentative.html [ Timeout ]
+crbug.com/626703 external/wpt/css/filter-effects/filter-invalid.html [ Failure ]
+crbug.com/626703 external/wpt/mathml/relations/css-styling/mathvariant-double-struck-font-style-font-weight.html [ Failure ]
+crbug.com/626703 virtual/scalefactor200/external/wpt/css/filter-effects/filter-invalid.html [ Failure ]
+crbug.com/626703 external/wpt/dom/nodes/NodeList-static-length-getter-tampered-3.html [ Failure Timeout ]
+crbug.com/626703 external/wpt/dom/nodes/NodeList-static-length-getter-tampered-indexOf-1.html [ Timeout ]
+crbug.com/626703 external/wpt/dom/nodes/NodeList-static-length-getter-tampered-indexOf-2.html [ Timeout ]
+crbug.com/626703 external/wpt/dom/nodes/NodeList-static-length-getter-tampered-indexOf-3.html [ Timeout ]
+crbug.com/626703 external/wpt/html/semantics/embedded-content/the-img-element/image-loading-lazy-zero-intersection-area.html [ Timeout ]
 crbug.com/626703 external/wpt/html/browsers/windows/clear-window-name.https.html [ Timeout ]
 crbug.com/626703 external/wpt/custom-elements/form-associated/ElementInternals-target-element-is-held-strongly.html [ Timeout ]
 crbug.com/626703 external/wpt/custom-elements/throw-on-dynamic-markup-insertion-counter-construct-xml-parser.xhtml [ Crash ]
@@ -101,3 +112,6 @@ crbug.com/1339051 virtual/document-transition/wpt_internal/document-transition/o
 crbug.com/1339051 virtual/document-transition/wpt_internal/document-transition/web-animations-api.html [ Failure ]
 crbug.com/1339051 virtual/off-main-thread-css-paint/external/wpt/css/css-paint-api/paint2d-canvasFilter.tentative.https.html [ Failure ]
 crbug.com/1339051 virtual/off-main-thread-css-paint/external/wpt/css/css-paint-api/paint2d-filter.https.html [ Failure ]
+
+crbug.com/1311518 virtual/document-transition-wide-gamut/wpt_internal/document-transition/iframe-transition.sub.html [ Crash Failure Timeout ]
+crbug.com/1311518 virtual/document-transition/wpt_internal/document-transition/iframe-transition.sub.html [ Crash Failure Timeout ]

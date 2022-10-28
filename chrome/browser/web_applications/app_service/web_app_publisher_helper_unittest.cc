@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -48,12 +48,12 @@ namespace {
 
 class NoOpWebAppPublisherDelegate : public WebAppPublisherHelper::Delegate {
   // WebAppPublisherHelper::Delegate:
-  void PublishWebApps(std::vector<apps::AppPtr> apps) override{};
-  void PublishWebApp(apps::AppPtr app) override{};
+  void PublishWebApps(std::vector<apps::AppPtr> apps) override {}
+  void PublishWebApp(apps::AppPtr app) override {}
   void ModifyWebAppCapabilityAccess(
       const std::string& app_id,
       absl::optional<bool> accessing_camera,
-      absl::optional<bool> accessing_microphone) override{};
+      absl::optional<bool> accessing_microphone) override {}
 };
 
 std::string ToString(const apps::AppPtr& app) {
@@ -100,7 +100,7 @@ class WebAppPublisherHelperTest : public testing::Test {
 
     publisher_ = std::make_unique<WebAppPublisherHelper>(
         profile(), provider_,
-        /*swa_manager=*/swa_manager_ptr, apps::AppType::kWeb, &no_op_delegate_,
+        /*swa_manager=*/swa_manager_ptr, &no_op_delegate_,
         /*observe_media_requests=*/false);
 
     test::AwaitStartWebAppProviderAndSubsystems(profile());

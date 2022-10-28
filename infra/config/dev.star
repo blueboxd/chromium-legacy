@@ -1,5 +1,5 @@
 #!/usr/bin/env lucicfg
-# Copyright 2020 The Chromium Authors. All rights reserved.
+# Copyright 2020 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -22,6 +22,7 @@ lucicfg.config(
     tracked_files = [
         "luci/chops-weetbix-dev.cfg",
         "luci/cr-buildbucket-dev.cfg",
+        "luci/luci-analysis-dev.cfg",
         "luci/luci-logdog-dev.cfg",
         "luci/luci-milo-dev.cfg",
         "luci/luci-scheduler-dev.cfg",
@@ -30,7 +31,14 @@ lucicfg.config(
     fail_on_warnings = True,
 )
 
-# Just copy chops-weetbix-dev.cfg to generated outputs.
+# Just copy LUCI Analysis config to generated outputs.
+lucicfg.emit(
+    dest = "luci/luci-analysis-dev.cfg",
+    data = io.read_file("luci-analysis-dev.cfg"),
+)
+
+# TODO(b/243488110): Delete when Weetbix renaming to
+# LUCI Analysis complete.
 lucicfg.emit(
     dest = "luci/chops-weetbix-dev.cfg",
     data = io.read_file("chops-weetbix-dev.cfg"),

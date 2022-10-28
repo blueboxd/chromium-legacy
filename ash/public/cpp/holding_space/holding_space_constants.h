@@ -1,11 +1,10 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #ifndef ASH_PUBLIC_CPP_HOLDING_SPACE_HOLDING_SPACE_CONSTANTS_H_
 #define ASH_PUBLIC_CPP_HOLDING_SPACE_HOLDING_SPACE_CONSTANTS_H_
 
-#include "ash/public/cpp/app_menu_constants.h"
 #include "base/time/time.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/geometry/size.h"
@@ -20,14 +19,14 @@ constexpr int kHoldingSpaceChildBubbleChildSpacing = 16;
 constexpr int kHoldingSpaceChipCountPerRow = 2;
 constexpr int kHoldingSpaceChipIconSize = 24;
 constexpr int kHoldingSpaceCornerRadius = 8;
-constexpr int kHoldingSpaceDownloadsChevronIconSize = 20;
-constexpr int kHoldingSpaceDownloadsHeaderSpacing = 16;
 constexpr int kHoldingSpaceFocusCornerRadius = 11;
 constexpr int kHoldingSpaceFocusInsets = -4;
 constexpr int kHoldingSpaceIconSize = 20;
 constexpr gfx::Size kHoldingSpaceScreenCaptureSize(104, 80);
+constexpr int kHoldingSpaceSectionChevronIconSize = 20;
 constexpr int kHoldingSpaceSectionChildSpacing = 16;
 constexpr int kHoldingSpaceSectionContainerChildSpacing = 8;
+constexpr int kHoldingSpaceSectionHeaderSpacing = 16;
 constexpr float kHoldingSpaceSelectedOverlayOpacity = 0.3f;
 constexpr int kHoldingSpaceTrayIconMaxVisiblePreviews = 3;
 constexpr int kHoldingSpaceTrayIconDefaultPreviewSize = 32;
@@ -71,11 +70,16 @@ constexpr int kHoldingSpaceItemPrimaryChipLabelId = 10;
 constexpr int kHoldingSpaceItemSecondaryChipLabelId = 11;
 constexpr int kHoldingSpaceItemResumeButtonId = 12;
 constexpr int kHoldingSpacePinnedFilesBubbleId = 13;
-constexpr int kHoldingSpaceRecentFilesBubbleId = 14;
-constexpr int kHoldingSpaceScreenCapturePlayIconId = 15;
-constexpr int kHoldingSpaceTrayDefaultIconId = 16;
-constexpr int kHoldingSpaceTrayDropTargetOverlayId = 17;
-constexpr int kHoldingSpaceTrayPreviewsIconId = 18;
+constexpr int kHoldingSpacePinnedFilesSectionId = 14;
+constexpr int kHoldingSpaceRecentFilesBubbleId = 15;
+constexpr int kHoldingSpaceScreenCapturePlayIconId = 16;
+constexpr int kHoldingSpaceSuggestionsChevronIconId = 17;
+constexpr int kHoldingSpaceSuggestionsSectionContainerId = 18;
+constexpr int kHoldingSpaceSuggestionsSectionHeaderId = 19;
+constexpr int kHoldingSpaceSuggestionsSectionId = 20;
+constexpr int kHoldingSpaceTrayDefaultIconId = 21;
+constexpr int kHoldingSpaceTrayDropTargetOverlayId = 22;
+constexpr int kHoldingSpaceTrayPreviewsIconId = 23;
 
 // The maximum allowed age for files restored into the holding space model.
 // Note that this is not enforced for pinned items.
@@ -86,6 +90,13 @@ constexpr size_t kMaxDownloads = 4u;
 
 // The maximum allowed number of screen captures to display in holding space UI.
 constexpr size_t kMaxScreenCaptures = 3u;
+
+// The maximum allowed number of suggestions to display in holding space UI.
+constexpr size_t kMaxSuggestions = 4u;
+
+// The maximum number of items to store in the `HoldingSpaceModel` for screen
+// captures and downloads.
+constexpr size_t kMaxItemsPerSection = 50;
 
 // Mime type with wildcard which matches all image types.
 constexpr char kMimeTypeImage[] = "image/*";

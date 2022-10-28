@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -81,9 +81,15 @@ constexpr FeatureParam<BackupRefPtrEnabledProcesses>::Option
 
 const base::FeatureParam<BackupRefPtrEnabledProcesses>
     kBackupRefPtrEnabledProcessesParam{
-        &kPartitionAllocBackupRefPtr, "enabled-processes",
-        BackupRefPtrEnabledProcesses::kBrowserOnly,
-        &kBackupRefPtrEnabledProcessesOptions};
+  &kPartitionAllocBackupRefPtr, "enabled-processes",
+#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_WIN) || \
+    (BUILDFLAG(USE_ASAN_BACKUP_REF_PTR) && BUILDFLAG(IS_LINUX))
+      BackupRefPtrEnabledProcesses::kNonRenderer,
+#else
+      BackupRefPtrEnabledProcesses::kBrowserOnly,
+#endif
+      &kBackupRefPtrEnabledProcessesOptions
+};
 
 constexpr FeatureParam<BackupRefPtrMode>::Option kBackupRefPtrModeOptions[] = {
     {BackupRefPtrMode::kDisabled, "disabled"},

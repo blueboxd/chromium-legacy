@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -52,6 +52,17 @@ void ProfileAccountManager::OnAccountRemoved(
     obs.OnAccountRemoved(account);
 }
 
+void ProfileAccountManager::OnAuthErrorChanged(
+    const base::FilePath& profile_path,
+    const account_manager::AccountKey& account,
+    const GoogleServiceAuthError& error) {
+  DCHECK_EQ(account.account_type(), account_manager::AccountType::kGaia);
+  if (profile_path != profile_path_)
+    return;
+  for (auto& obs : observers_)
+    obs.OnAuthErrorChanged(account, error);
+}
+
 void ProfileAccountManager::GetAccounts(
     base::OnceCallback<void(const std::vector<account_manager::Account>&)>
         callback) {
@@ -100,7 +111,7 @@ ProfileAccountManager::CreateAccessTokenFetcher(
 void ProfileAccountManager::ReportAuthError(
     const account_manager::AccountKey& account,
     const GoogleServiceAuthError& error) {
-  NOTIMPLEMENTED();
+  mapper_->ReportAuthError(profile_path_, account, error);
 }
 
 void ProfileAccountManager::UpsertAccountForTesting(

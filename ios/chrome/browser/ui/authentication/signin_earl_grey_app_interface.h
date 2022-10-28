@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -41,9 +41,6 @@ enum class ConsentLevel;
 
 // Checks that no identity is signed in.
 + (BOOL)isSignedOut;
-
-// Checks whether there is a primary identity.
-+ (BOOL)hasPrimaryIdentity;
 
 // Signs out the current user.
 + (void)signOut;

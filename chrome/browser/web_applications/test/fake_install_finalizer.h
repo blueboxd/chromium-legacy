@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -53,7 +53,7 @@ class FakeInstallFinalizer final : public WebAppInstallFinalizer {
   void ReparentTab(const AppId& app_id,
                    bool shortcut_created,
                    content::WebContents* web_contents) override;
-  void SetRemoveSourceCallbackForTesting(
+  void SetRemoveManagementTypeCallbackForTesting(
       base::RepeatingCallback<void(const AppId&)>) override;
 
   void SetNextFinalizeInstallResult(const AppId& app_id,

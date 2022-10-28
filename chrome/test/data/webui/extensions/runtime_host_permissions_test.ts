@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -259,7 +259,8 @@ suite('RuntimeHostPermissions', function() {
     const input = dialog.shadowRoot!.querySelector('cr-input');
     assertTrue(!!input);
     input.value = 'https://example.com';
-    input.fire('input');
+    input.dispatchEvent(
+        new CustomEvent('input', {bubbles: true, composed: true}));
 
     // Closing the dialog (as opposed to canceling) should keep the
     // selectHostAccess value at ON_SPECIFIC_SITES.

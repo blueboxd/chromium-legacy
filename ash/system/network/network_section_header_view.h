@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,7 +11,7 @@
 #include "ash/system/tray/tri_view.h"
 #include "base/memory/weak_ptr.h"
 #include "base/timer/timer.h"
-#include "chromeos/services/bluetooth_config/public/mojom/cros_bluetooth_config.mojom.h"
+#include "chromeos/ash/services/bluetooth_config/public/mojom/cros_bluetooth_config.mojom.h"
 #include "chromeos/services/network_config/public/mojom/cros_network_config.mojom-forward.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "ui/views/controls/button/toggle_button.h"
@@ -141,7 +141,7 @@ class MobileSectionHeaderView : public NetworkSectionHeaderView,
 
   // CrosBluetoothConfig remote that is only bound if the Bluetooth
   // Revamp flag is enabled.
-  mojo::Remote<chromeos::bluetooth_config::mojom::CrosBluetoothConfig>
+  mojo::Remote<bluetooth_config::mojom::CrosBluetoothConfig>
       remote_cros_bluetooth_config_;
 
   base::WeakPtrFactory<MobileSectionHeaderView> weak_ptr_factory_{this};

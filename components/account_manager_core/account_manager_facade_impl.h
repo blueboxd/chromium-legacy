@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -81,6 +81,7 @@ class COMPONENT_EXPORT(ACCOUNT_MANAGER_CORE) AccountManagerFacadeImpl
   void OnAuthErrorChanged(
       crosapi::mojom::AccountKeyPtr account,
       crosapi::mojom::GoogleServiceAuthErrorPtr error) override;
+  void OnSigninDialogClosed() override;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(AccountManagerFacadeImplTest,

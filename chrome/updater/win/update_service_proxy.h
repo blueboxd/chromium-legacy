@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -47,6 +47,7 @@ class UpdateServiceProxy : public UpdateService {
   // Overrides for updater::UpdateService.
   void GetVersion(
       base::OnceCallback<void(const base::Version&)> callback) override;
+  void FetchPolicies(base::OnceCallback<void(int)> callback) override;
   void RegisterApp(const RegistrationRequest& request,
                    RegisterAppCallback callback) override;
   void GetAppStates(
@@ -83,6 +84,8 @@ class UpdateServiceProxy : public UpdateService {
   void UninitializeOnSTA();
   void GetVersionOnSTA(base::OnceCallback<void(const base::Version&)> callback,
                        HRESULT prev_hr);
+  void FetchPoliciesOnSTA(base::OnceCallback<void(int)> callback,
+                          HRESULT prev_hr);
   void RegisterAppOnSTA(const RegistrationRequest& request,
                         RegisterAppCallback callback,
                         HRESULT prev_hr);
@@ -130,9 +133,9 @@ class UpdateServiceProxy : public UpdateService {
   // This task runner is thread-affine with the COM STA.
   scoped_refptr<base::SingleThreadTaskRunner> com_task_runner_;
 
-  // COM server instance owned by the STA. That means the instance must be
-  // created and destroyed on the com_task_runner_.
-  Microsoft::WRL::ComPtr<IUnknown> server_;
+  // Updater COM server instance owned by the STA. That means the instance must
+  // be created and destroyed on the com_task_runner_.
+  Microsoft::WRL::ComPtr<IUpdater> updater_;
 };
 
 }  // namespace updater

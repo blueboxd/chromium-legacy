@@ -324,7 +324,8 @@ chrome.developerPrivate.Permissions;
  *   version: string,
  *   views: !Array<!chrome.developerPrivate.ExtensionView>,
  *   webStoreUrl: string,
- *   showSafeBrowsingAllowlistWarning: boolean
+ *   showSafeBrowsingAllowlistWarning: boolean,
+ *   showAccessRequestsInToolbar: boolean
  * }}
  */
 chrome.developerPrivate.ExtensionInfo;
@@ -387,7 +388,8 @@ chrome.developerPrivate.GetExtensionsInfoOptions;
  *   fileAccess: (boolean|undefined),
  *   incognitoAccess: (boolean|undefined),
  *   errorCollection: (boolean|undefined),
- *   hostAccess: (!chrome.developerPrivate.HostAccess|undefined)
+ *   hostAccess: (!chrome.developerPrivate.HostAccess|undefined),
+ *   showAccessRequestsInToolbar: (boolean|undefined)
  * }}
  */
 chrome.developerPrivate.ExtensionConfigurationUpdate;
@@ -430,14 +432,15 @@ chrome.developerPrivate.LoadUnpackedOptions;
 /**
  * @enum {string}
  */
-chrome.developerPrivate.UserSiteSet = {
-  PERMITTED: 'PERMITTED',
-  RESTRICTED: 'RESTRICTED',
+chrome.developerPrivate.SiteSet = {
+  USER_PERMITTED: 'USER_PERMITTED',
+  USER_RESTRICTED: 'USER_RESTRICTED',
+  EXTENSION_SPECIFIED: 'EXTENSION_SPECIFIED',
 };
 
 /**
  * @typedef {{
- *   siteList: !chrome.developerPrivate.UserSiteSet,
+ *   siteSet: !chrome.developerPrivate.SiteSet,
  *   hosts: !Array<string>
  * }}
  */
@@ -453,7 +456,7 @@ chrome.developerPrivate.UserSiteSettings;
 
 /**
  * @typedef {{
- *   siteList: (!chrome.developerPrivate.UserSiteSet|undefined),
+ *   siteSet: !chrome.developerPrivate.SiteSet,
  *   numExtensions: number,
  *   site: string
  * }}
@@ -834,7 +837,7 @@ chrome.developerPrivate.removeHostPermission = function(extensionId, host, callb
 /**
  * Returns the user specified site settings (which origins can extensions
  * always/never run on) for the current profile.
- * @param {function(!chrome.developerPrivate.UserSiteSettings): void=} callback
+ * @param {function(!chrome.developerPrivate.UserSiteSettings): void} callback
  */
 chrome.developerPrivate.getUserSiteSettings = function(callback) {};
 
@@ -857,13 +860,15 @@ chrome.developerPrivate.removeUserSpecifiedSites = function(options, callback) {
 /**
  * Returns all hosts specified by user site settings, grouped by each host's
  * eTLD+1.
- * @param {function(!Array<!chrome.developerPrivate.SiteGroup>): void=} callback
+ * @param {function(!Array<!chrome.developerPrivate.SiteGroup>): void} callback
  */
 chrome.developerPrivate.getUserAndExtensionSitesByEtld = function(callback) {};
 
 /**
+ * Returns a list of extensions which have at least one matching site in common
+ * between its set of host permissions and `site`.
  * @param {string} site
- * @param {function(!Array<!chrome.developerPrivate.MatchingExtensionInfo>): void=}
+ * @param {function(!Array<!chrome.developerPrivate.MatchingExtensionInfo>): void}
  *     callback
  */
 chrome.developerPrivate.getMatchingExtensionsForSite = function(site, callback) {};

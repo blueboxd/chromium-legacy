@@ -1,29 +1,29 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #import "ios/chrome/browser/ui/autofill/form_input_accessory/form_input_accessory_mediator.h"
 
-#include "base/ios/block_types.h"
-#include "base/ios/ios_util.h"
-#include "base/mac/foundation_util.h"
-#include "base/metrics/histogram_functions.h"
+#import "base/ios/block_types.h"
+#import "base/ios/ios_util.h"
+#import "base/mac/foundation_util.h"
+#import "base/metrics/histogram_functions.h"
 #import "base/strings/sys_string_conversions.h"
-#include "components/autofill/core/browser/personal_data_manager.h"
-#include "components/autofill/core/common/autofill_features.h"
+#import "components/autofill/core/browser/personal_data_manager.h"
+#import "components/autofill/core/common/autofill_features.h"
 #import "components/autofill/ios/browser/form_suggestion.h"
 #import "components/autofill/ios/browser/form_suggestion_provider.h"
 #import "components/autofill/ios/browser/personal_data_manager_observer_bridge.h"
 #import "components/autofill/ios/form_util/form_activity_observer_bridge.h"
-#include "components/autofill/ios/form_util/form_activity_params.h"
+#import "components/autofill/ios/form_util/form_activity_params.h"
 #import "ios/chrome/browser/autofill/form_input_accessory_view_handler.h"
 #import "ios/chrome/browser/autofill/form_input_suggestions_provider.h"
 #import "ios/chrome/browser/autofill/form_suggestion_tab_helper.h"
-#import "ios/chrome/browser/autofill/form_suggestion_view.h"
 #import "ios/chrome/browser/autofill/manual_fill/passwords_fetcher.h"
 #import "ios/chrome/browser/passwords/password_generation_utils.h"
 #import "ios/chrome/browser/ui/autofill/form_input_accessory/form_input_accessory_chromium_text_data.h"
 #import "ios/chrome/browser/ui/autofill/form_input_accessory/form_input_accessory_consumer.h"
+#import "ios/chrome/browser/ui/autofill/form_input_accessory/form_suggestion_view.h"
 #import "ios/chrome/browser/ui/bubble/bubble_features.h"
 #import "ios/chrome/browser/ui/commands/security_alert_commands.h"
 #import "ios/chrome/browser/ui/coordinators/chrome_coordinator.h"
@@ -34,14 +34,14 @@
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
 #import "ios/chrome/common/ui/elements/form_input_accessory_view.h"
-#include "ios/chrome/common/ui/reauthentication/reauthentication_event.h"
+#import "ios/chrome/common/ui/reauthentication/reauthentication_event.h"
 #import "ios/chrome/common/ui/reauthentication/reauthentication_module.h"
-#include "ios/chrome/grit/ios_strings.h"
+#import "ios/chrome/grit/ios_strings.h"
 #import "ios/web/common/url_scheme_util.h"
-#include "ios/web/public/js_messaging/web_frame.h"
-#include "ios/web/public/js_messaging/web_frames_manager.h"
+#import "ios/web/public/js_messaging/web_frame.h"
+#import "ios/web/public/js_messaging/web_frames_manager.h"
 #import "ios/web/public/web_state.h"
-#include "ui/base/l10n/l10n_util_mac.h"
+#import "ui/base/l10n/l10n_util_mac.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -498,9 +498,9 @@ const base::Feature kFormInputKeyboardReloadInputViews{
   DCHECK_EQ(webState, self.webState);
   DCHECK(_hasLastSeenParams);
 
-  __weak id<FormInputSuggestionsProvider> provider = self.provider;
+  __weak id<FormInputSuggestionsProvider> weakProvider = self.provider;
   __weak __typeof(self) weakSelf = self;
-  [provider
+  [weakProvider
       retrieveSuggestionsForForm:params
                         webState:self.webState
         accessoryViewUpdateBlock:^(NSArray<FormSuggestion*>* suggestions,
@@ -528,11 +528,7 @@ const base::Feature kFormInputKeyboardReloadInputViews{
       LogLikelyInterestedDefaultBrowserUserActivity(DefaultPromoTypeMadeForIOS);
     }
     if (provider.type == SuggestionProviderTypePassword) {
-      if (base::FeatureList::IsEnabled(kBubbleRichIPH)) {
-        [self.handler showPasswordSuggestionIPHIfNeeded];
-      } else {
-        [self.handler notifyPasswordSuggestionsShown];
-      }
+      [self.handler showPasswordSuggestionIPHIfNeeded];
     }
   }
 }

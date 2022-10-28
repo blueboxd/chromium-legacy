@@ -206,9 +206,6 @@ void PaintLayerScrollableArea::DisposeImpl() {
 
   non_composited_main_thread_scrolling_reasons_ = 0;
 
-  if (ScrollingCoordinator* scrolling_coordinator = GetScrollingCoordinator())
-    scrolling_coordinator->WillDestroyScrollableArea(this);
-
   if (!GetLayoutBox()->DocumentBeingDestroyed()) {
     if (auto* element = DynamicTo<Element>(GetLayoutBox()->GetNode()))
       element->SetSavedLayerScrollOffset(scroll_offset_);
@@ -1497,6 +1494,7 @@ void PaintLayerScrollableArea::ComputeScrollbarExistence(
       !CanHaveOverflowScrollbars(*GetLayoutBox()) ||
       GetLayoutBox()->GetFrame()->GetSettings()->GetHideScrollbars() ||
       GetLayoutBox()->IsLayoutNGFieldset() ||
+      GetLayoutBox()->IsLayoutNGFrameSet() ||
       GetLayoutBox()->StyleRef().ScrollbarWidth() == EScrollbarWidth::kNone) {
     needs_horizontal_scrollbar = false;
     needs_vertical_scrollbar = false;
@@ -1864,9 +1862,8 @@ bool PaintLayerScrollableArea::ShouldOverflowControlsPaintAsOverlay() const {
 
   // The global root scrollbars and corner also paint as overlay so that they
   // appear on top of all content within the viewport. This is important since
-  // these scrollbar's transform parent is the 'overscroll elasticity'
-  // transform node of the visual viewport, i.e. they don't move during elastic
-  // overscroll or on pinch zoom.
+  // these scrollbar's transform state is
+  // VisualViewport::TransformNodeForViewportScrollbars().
   return GetLayoutBox() && GetLayoutBox()->IsGlobalRootScroller();
 }
 

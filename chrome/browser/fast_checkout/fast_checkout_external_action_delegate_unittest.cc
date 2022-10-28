@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -62,6 +62,7 @@ TEST_F(FastCheckoutExternalActionDelegateTest,
   EXPECT_CALL(end_action_callback, Run).WillOnce(testing::SaveArg<0>(&result));
 
   delegate()->OnActionRequested(autofill_assistant::external::Action(),
+                                /* is_interrupt= */ false,
                                 start_dom_checks_callback.Get(),
                                 end_action_callback.Get());
 
@@ -87,6 +88,7 @@ TEST_F(FastCheckoutExternalActionDelegateTest,
   EXPECT_CALL(end_action_callback, Run).WillOnce(testing::SaveArg<0>(&result));
 
   delegate()->OnActionRequested(CreateWaitForUserSelectionAction(),
+                                /* is_interrupt= */ false,
                                 start_dom_checks_callback.Get(),
                                 end_action_callback.Get());
 
@@ -112,6 +114,7 @@ TEST_F(FastCheckoutExternalActionDelegateTest,
   EXPECT_CALL(end_action_callback, Run).WillOnce(testing::SaveArg<0>(&result));
 
   delegate()->OnActionRequested(CreateWaitForUserSelectionAction(),
+                                /* is_interrupt= */ false,
                                 start_dom_checks_callback.Get(),
                                 end_action_callback.Get());
   // Here `result` must not have been set yet. It will be after the

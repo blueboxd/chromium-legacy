@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -60,11 +60,11 @@ class DeltaCounter {
 ThreadSafePartitionRoot* CreatePartitionRoot() {
   ThreadSafePartitionRoot* root = new ThreadSafePartitionRoot({
     PartitionOptions::AlignedAlloc::kAllowed,
-#if !BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
+#if !BUILDFLAG(ENABLE_PARTITION_ALLOC_AS_MALLOC_SUPPORT)
         PartitionOptions::ThreadCache::kEnabled,
 #else
         PartitionOptions::ThreadCache::kDisabled,
-#endif  // BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
+#endif  // BUILDFLAG(ENABLE_PARTITION_ALLOC_AS_MALLOC_SUPPORT)
         PartitionOptions::Quarantine::kAllowed,
         PartitionOptions::Cookie::kDisallowed,
         PartitionOptions::BackupRefPtr::kDisabled,
@@ -1104,7 +1104,8 @@ TEST_P(PartitionAllocThreadCacheTest, ClearFromTail) {
     uint8_t count = 0;
     auto* head = tcache->buckets_[index].freelist_head;
     while (head) {
-      head = head->GetNext(tcache->buckets_[index].slot_size);
+      head =
+          head->GetNextForThreadCache<true>(tcache->buckets_[index].slot_size);
       count++;
     }
     return count;

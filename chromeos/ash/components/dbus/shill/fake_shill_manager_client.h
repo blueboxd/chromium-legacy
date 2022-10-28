@@ -1,4 +1,4 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -54,14 +54,14 @@ class COMPONENT_EXPORT(SHILL_CLIENT) FakeShillManagerClient
                          base::OnceClosure callback,
                          ErrorCallback error_callback) override;
   void ConfigureService(const base::Value& properties,
-                        ObjectPathCallback callback,
+                        chromeos::ObjectPathCallback callback,
                         ErrorCallback error_callback) override;
   void ConfigureServiceForProfile(const dbus::ObjectPath& profile_path,
                                   const base::Value& properties,
-                                  ObjectPathCallback callback,
+                                  chromeos::ObjectPathCallback callback,
                                   ErrorCallback error_callback) override;
   void GetService(const base::Value& properties,
-                  ObjectPathCallback callback,
+                  chromeos::ObjectPathCallback callback,
                   ErrorCallback error_callback) override;
   void ScanAndConnectToBestServices(base::OnceClosure callback,
                                     ErrorCallback error_callback) override;
@@ -119,7 +119,8 @@ class COMPONENT_EXPORT(SHILL_CLIENT) FakeShillManagerClient
   void SetSimulateConfigurationResult(
       FakeShillSimulatedResult configuration_result) override;
   void SetSimulateTetheringEnableResult(
-      FakeShillSimulatedResult tethering_enable_result) override;
+      FakeShillSimulatedResult tethering_enable_result,
+      const std::string& tethering_enable_error) override;
   void SetSimulateCheckTetheringReadinessResult(
       FakeShillSimulatedResult tethering_readiness_result,
       const std::string& readiness_status) override;
@@ -193,11 +194,21 @@ class COMPONENT_EXPORT(SHILL_CLIENT) FakeShillManagerClient
       FakeShillSimulatedResult::kSuccess;
   FakeShillSimulatedResult simulate_tethering_enable_result_ =
       FakeShillSimulatedResult::kSuccess;
+  std::string simulate_enable_tethering_error_;
   FakeShillSimulatedResult simulate_check_tethering_readiness_result_ =
       FakeShillSimulatedResult::kSuccess;
   std::string simulate_tethering_readiness_status_;
 
   bool return_null_properties_;
+
+  // For testing multiple wifi networks.
+  int extra_wifi_networks_ = 0;
+
+  // For testing dynamic WEP networks (uses wifi2).
+  bool dynamic_wep_ = false;
+
+  // For testing proxy-auth case for shill service state.
+  bool proxy_auth_ = false;
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.

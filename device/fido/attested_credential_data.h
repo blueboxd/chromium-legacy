@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -54,8 +54,9 @@ class COMPONENT_EXPORT(DEVICE_FIDO) AttestedCredentialData {
   bool IsAaguidZero() const;
 
   // Invoked when sending "none" attestation statement to the relying party.
-  // Replaces AAGUID with zero bytes.
-  void DeleteAaguid();
+  // Replaces AAGUID with zero bytes. Returns true if the AAGUID was modified
+  // or false if it was already zeros.
+  bool DeleteAaguid();
 
   // Produces a byte array consisting of:
   // * AAGUID (16 bytes)

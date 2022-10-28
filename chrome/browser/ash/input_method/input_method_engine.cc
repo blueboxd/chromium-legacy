@@ -1,4 +1,4 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -113,7 +113,7 @@ void InputMethodEngine::Initialize(
     profile_observation_.Observe(profile);
     input_method_settings_snapshot_ =
         profile->GetPrefs()
-            ->GetValueDict(prefs::kLanguageInputMethodSpecificSettings)
+            ->GetDict(prefs::kLanguageInputMethodSpecificSettings)
             .Clone();
 
     pref_change_registrar_ = std::make_unique<PrefChangeRegistrar>();
@@ -577,7 +577,9 @@ void InputMethodEngine::KeyEventHandled(const std::string& extension_id,
     return;
   }
 
-  std::move(it->second.callback).Run(handled);
+  std::move(it->second.callback)
+      .Run(handled ? ui::ime::KeyEventHandledState::kHandledByIME
+                   : ui::ime::KeyEventHandledState::kNotHandled);
   pending_key_events_.erase(it);
 }
 
@@ -595,7 +597,8 @@ std::string InputMethodEngine::AddPendingKeyEvent(
 
 void InputMethodEngine::CancelPendingKeyEvents() {
   for (auto& event : pending_key_events_) {
-    std::move(event.second.callback).Run(false);
+    std::move(event.second.callback)
+        .Run(ui::ime::KeyEventHandledState::kNotHandled);
   }
   pending_key_events_.clear();
 }
@@ -669,7 +672,7 @@ void InputMethodEngine::Reset() {
 void InputMethodEngine::ProcessKeyEvent(const ui::KeyEvent& key_event,
                                         KeyEventDoneCallback callback) {
   if (key_event.IsCommandDown()) {
-    std::move(callback).Run(false);
+    std::move(callback).Run(ui::ime::KeyEventHandledState::kNotHandled);
     return;
   }
 
@@ -681,11 +684,12 @@ void InputMethodEngine::ProcessKeyEvent(const ui::KeyEvent& key_event,
         active_component_id_, key_event,
         base::BindOnce(
             [](base::Time start, int context_id, int* context_id_ptr,
-               KeyEventDoneCallback callback, bool handled) {
+               KeyEventDoneCallback callback,
+               ui::ime::KeyEventHandledState handled_state) {
               // If the input_context has changed, assume the key event is
               // invalid as a precaution.
               if (context_id == *context_id_ptr) {
-                std::move(callback).Run(handled);
+                std::move(callback).Run(handled_state);
               }
               UMA_HISTOGRAM_TIMES("InputMethod.KeyEventLatency",
                                   base::Time::Now() - start);
@@ -709,8 +713,7 @@ void InputMethodEngine::SetCompositionBounds(
   observer_->OnCompositionBoundsChanged(bounds);
 }
 
-void InputMethodEngine::SetCaretBounds(const gfx::Rect& caret_bounds)
-{
+void InputMethodEngine::SetCaretBounds(const gfx::Rect& caret_bounds) {
   observer_->OnCaretBoundsChanged(caret_bounds);
 }
 
@@ -1097,7 +1100,7 @@ void InputMethodEngine::HideInputView() {
 }
 
 void InputMethodEngine::OnInputMethodOptionsChanged() {
-  const base::Value::Dict& new_settings = profile_->GetPrefs()->GetValueDict(
+  const base::Value::Dict& new_settings = profile_->GetPrefs()->GetDict(
       prefs::kLanguageInputMethodSpecificSettings);
   const base::Value::Dict& old_settings = input_method_settings_snapshot_;
   for (const auto&& [path, value] : new_settings) {
@@ -1137,7 +1140,13 @@ bool InputMethodEngine::SetAutocorrectRange(const gfx::Range& range) {
       ui::IMEBridge::Get()->GetInputContextHandler();
   if (!input_context)
     return false;
-  return input_context->SetAutocorrectRange(range);
+
+  // TODO(b/161490813): Remove SetAutocorrectRange from |InputMethodEngine|.
+  //    The only way to set autocorrect range must be through
+  //    |AutocorrectManager|, otherwise it can conflict with
+  //    |AutocorrectManager| functionalities.
+  input_context->SetAutocorrectRange(range, base::DoNothing());
+  return true;
 }
 
 void InputMethodEngine::CommitTextToInputContext(int context_id,

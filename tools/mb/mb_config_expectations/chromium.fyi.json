@@ -133,6 +133,34 @@
       }
     }
   },
+  "Comparison Mac arm64 on arm64 (reclient)": {
+    "goma": {
+      "gn_args": {
+        "dcheck_always_on": false,
+        "enable_nacl": false,
+        "ffmpeg_branding": "Chrome",
+        "is_component_build": false,
+        "is_debug": false,
+        "proprietary_codecs": true,
+        "symbol_level": 1,
+        "target_cpu": "arm64",
+        "use_goma": true
+      }
+    },
+    "reclient": {
+      "gn_args": {
+        "dcheck_always_on": false,
+        "enable_nacl": false,
+        "ffmpeg_branding": "Chrome",
+        "is_component_build": false,
+        "is_debug": false,
+        "proprietary_codecs": true,
+        "symbol_level": 1,
+        "target_cpu": "arm64",
+        "use_remoteexec": true
+      }
+    }
+  },
   "Comparison Simple Chrome (reclient)": {
     "goma": {
       "args_file": "//build/args/chromeos/amd64-generic-vm.gni",
@@ -370,6 +398,16 @@
       "use_remoteexec": true
     }
   },
+  "Linux Builder (py2 less)": {
+    "gn_args": {
+      "dcheck_always_on": false,
+      "ffmpeg_branding": "Chrome",
+      "is_component_build": false,
+      "is_debug": false,
+      "proprietary_codecs": true,
+      "use_remoteexec": true
+    }
+  },
   "Linux Builder (reclient compare)": {
     "gn_args": {
       "dcheck_always_on": false,
@@ -581,10 +619,13 @@
     "gn_args": {
       "dcheck_always_on": true,
       "enable_backup_ref_ptr_slow_checks": true,
+      "enable_backup_ref_ptr_support": true,
+      "enable_dangling_raw_ptr_checks": true,
       "ffmpeg_branding": "Chrome",
       "is_component_build": false,
       "is_debug": false,
       "proprietary_codecs": true,
+      "put_ref_count_in_previous_slot": true,
       "symbol_level": 1,
       "target_cpu": "arm",
       "target_os": "android",
@@ -597,10 +638,13 @@
     "gn_args": {
       "dcheck_always_on": true,
       "enable_backup_ref_ptr_slow_checks": true,
+      "enable_backup_ref_ptr_support": true,
+      "enable_dangling_raw_ptr_checks": true,
       "ffmpeg_branding": "Chrome",
       "is_component_build": false,
       "is_debug": false,
       "proprietary_codecs": true,
+      "put_ref_count_in_previous_slot": true,
       "symbol_level": 1,
       "target_cpu": "arm64",
       "target_os": "android",
@@ -611,8 +655,8 @@
   },
   "android-code-coverage": {
     "gn_args": {
+      "android_static_analysis": "off",
       "dcheck_always_on": false,
-      "disable_android_lint": true,
       "enable_resource_allowlist_generation": true,
       "ffmpeg_branding": "Chrome",
       "is_component_build": false,
@@ -623,7 +667,6 @@
       "system_webview_package_name": "com.google.android.webview",
       "target_cpu": "arm64",
       "target_os": "android",
-      "use_errorprone_java_compiler": false,
       "use_jacoco_coverage": true,
       "use_remoteexec": true,
       "use_static_angle": true
@@ -631,8 +674,8 @@
   },
   "android-code-coverage-native": {
     "gn_args": {
+      "android_static_analysis": "off",
       "dcheck_always_on": false,
-      "disable_android_lint": true,
       "enable_resource_allowlist_generation": true,
       "ffmpeg_branding": "Chrome",
       "is_component_build": false,
@@ -643,15 +686,14 @@
       "target_cpu": "arm64",
       "target_os": "android",
       "use_clang_coverage": true,
-      "use_errorprone_java_compiler": false,
       "use_remoteexec": true,
       "use_static_angle": true
     }
   },
   "android-fieldtrial-rel": {
     "gn_args": {
+      "android_static_analysis": "off",
       "dcheck_always_on": false,
-      "disable_android_lint": true,
       "ffmpeg_branding": "Chrome",
       "is_component_build": false,
       "is_debug": false,
@@ -661,14 +703,13 @@
       "system_webview_package_name": "com.google.android.apps.chrome",
       "target_cpu": "x86",
       "target_os": "android",
-      "use_errorprone_java_compiler": false,
       "use_remoteexec": true
     }
   },
   "build-perf-android": {
     "gn_args": {
+      "android_static_analysis": "off",
       "dcheck_always_on": true,
-      "disable_android_lint": true,
       "fail_on_android_expectations": true,
       "ffmpeg_branding": "Chrome",
       "is_component_build": false,
@@ -680,7 +721,6 @@
       "system_webview_package_name": "com.google.android.apps.chrome",
       "target_cpu": "arm64",
       "target_os": "android",
-      "use_errorprone_java_compiler": false,
       "use_remoteexec": true
     }
   },
@@ -995,8 +1035,20 @@
       "target_cpu": "x64",
       "target_environment": "simulator",
       "target_os": "ios",
-      "use_goma": true,
-      "use_lld": false
+      "use_goma": true
+    }
+  },
+  "ios-wpt-fyi-rel": {
+    "gn_args": {
+      "enable_run_ios_unittests_with_xctest": true,
+      "ios_set_attributes_for_xcode_project_generation": false,
+      "is_component_build": false,
+      "is_debug": true,
+      "symbol_level": 1,
+      "target_cpu": "x64",
+      "target_environment": "simulator",
+      "target_os": "ios",
+      "use_goma": true
     }
   },
   "ios15-beta-simulator": {
@@ -1023,7 +1075,7 @@
       "target_cpu": "arm64",
       "target_environment": "device",
       "target_os": "ios",
-      "use_goma": true
+      "use_remoteexec": true
     }
   },
   "ios15-sdk-simulator": {
@@ -1062,9 +1114,7 @@
       "target_cpu": "x64",
       "target_environment": "simulator",
       "target_os": "ios",
-      "treat_warnings_as_errors": false,
-      "use_goma": true,
-      "use_lld": false
+      "use_goma": true
     }
   },
   "lacros-amd64-generic-rel (goma cache silo)": {
@@ -1115,6 +1165,19 @@
       "use_goma": true
     }
   },
+  "lacros-arm64-generic-rel-skylab-fyi": {
+    "args_file": "//build/args/chromeos/arm64-generic-crostoolchain.gni",
+    "gn_args": {
+      "chromeos_is_browser_only": true,
+      "dcheck_always_on": false,
+      "is_chromeos_device": true,
+      "is_debug": false,
+      "is_skylab": true,
+      "ozone_platform_headless": true,
+      "target_os": "chromeos",
+      "use_goma": true
+    }
+  },
   "linux-annotator-rel": {
     "gn_args": {
       "dcheck_always_on": false,
@@ -1138,8 +1201,11 @@
     "gn_args": {
       "dcheck_always_on": true,
       "enable_backup_ref_ptr_slow_checks": true,
+      "enable_backup_ref_ptr_support": true,
+      "enable_dangling_raw_ptr_checks": true,
       "is_component_build": false,
       "is_debug": false,
+      "put_ref_count_in_previous_slot": true,
       "symbol_level": 1,
       "target_cpu": "x64",
       "use_allocator": "partition",
@@ -1344,6 +1410,17 @@
       "use_goma": true
     }
   },
+  "linux-lacros-tester-rel-reviver": {
+    "gn_args": {
+      "also_build_ash_chrome": true,
+      "chromeos_is_browser_only": true,
+      "dcheck_always_on": false,
+      "is_component_build": false,
+      "is_debug": false,
+      "target_os": "chromeos",
+      "use_goma": true
+    }
+  },
   "linux-lacros-version-skew-fyi": {
     "gn_args": {
       "chromeos_is_browser_only": true,
@@ -1380,6 +1457,15 @@
       "enable_perfetto_zlib": true,
       "is_component_build": false,
       "is_debug": false,
+      "use_remoteexec": true
+    }
+  },
+  "linux-wpt-content-shell-fyi-rel": {
+    "gn_args": {
+      "dcheck_always_on": true,
+      "is_component_build": false,
+      "is_debug": false,
+      "symbol_level": 1,
       "use_remoteexec": true
     }
   },
@@ -1423,8 +1509,11 @@
     "gn_args": {
       "dcheck_always_on": true,
       "enable_backup_ref_ptr_slow_checks": true,
+      "enable_backup_ref_ptr_support": true,
+      "enable_dangling_raw_ptr_checks": true,
       "is_component_build": false,
       "is_debug": false,
+      "put_ref_count_in_previous_slot": true,
       "symbol_level": 1,
       "target_cpu": "x64",
       "use_allocator": "partition",
@@ -1485,8 +1574,11 @@
     "gn_args": {
       "dcheck_always_on": true,
       "enable_backup_ref_ptr_slow_checks": true,
+      "enable_backup_ref_ptr_support": true,
+      "enable_dangling_raw_ptr_checks": true,
       "is_component_build": false,
       "is_debug": false,
+      "put_ref_count_in_previous_slot": true,
       "symbol_level": 1,
       "target_cpu": "x64",
       "use_allocator": "partition",
@@ -1498,8 +1590,11 @@
     "gn_args": {
       "dcheck_always_on": true,
       "enable_backup_ref_ptr_slow_checks": true,
+      "enable_backup_ref_ptr_support": true,
+      "enable_dangling_raw_ptr_checks": true,
       "is_component_build": false,
       "is_debug": false,
+      "put_ref_count_in_previous_slot": true,
       "symbol_level": 1,
       "target_cpu": "x86",
       "use_allocator": "partition",

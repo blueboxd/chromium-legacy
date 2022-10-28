@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,6 +10,10 @@
 
 class PrefRegistrySimple;
 class PrefService;
+
+namespace base {
+class FeatureList;
+}  // namespace base
 
 // Version of the new Default Browser Promo FRE to show.
 enum class NewDefaultBrowserPromoFRE {
@@ -34,34 +38,6 @@ enum class NewMobileIdentityConsistencyFRE {
   // Old FRE.
   kOld,
 };
-
-namespace base {
-class FeatureList;
-}  // namespace base
-
-// Name of current experiment.
-extern const char kIOSMICeAndDefaultBrowserTrialName[];
-
-// Indicates which FRE default browser promo variant to use.
-extern const char kFREDefaultBrowserPromoParam[];
-
-// Indicates if the FRE default browser promo variant "Wait 14 days after FRE
-// default browser promo" is enabled.
-extern const char kFREDefaultBrowserPromoDefaultDelayParam[];
-
-// Indicates if the FRE default browser promo variant "FRE default browser
-// promo only" is enabled.
-extern const char kFREDefaultBrowserPromoFirstRunOnlyParam[];
-
-// Indicates if the FRE default browser promo variant "Wait 3 days after FRE
-// default promo" is enabled.
-extern const char kFREDefaultBrowserPromoShortDelayParam[];
-
-// Indicates which variant of the new MICE FRE to use.
-extern const char kNewMobileIdentityConsistencyFREParam[];
-extern const char kNewMobileIdentityConsistencyFREParamUMADialog[];
-extern const char kNewMobileIdentityConsistencyFREParamThreeSteps[];
-extern const char kNewMobileIdentityConsistencyFREParamTwoSteps[];
 
 namespace fre_field_trial {
 

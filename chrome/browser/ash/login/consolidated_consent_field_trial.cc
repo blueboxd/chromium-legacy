@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -25,8 +25,7 @@ const base::FieldTrial::Probability kTotalProbability = 100;
 scoped_refptr<base::FieldTrial> CreateFieldTrial() {
   return base::FieldTrialList::FactoryGetFieldTrial(
       kTrialName, kTotalProbability, kDisabledGroup,
-      base::FieldTrial::ONE_TIME_RANDOMIZED,
-      /*default_group_number=*/nullptr);
+      base::FieldTrialList::GetEntropyProviderForOneTimeRandomization());
 }
 
 // Sets the feature state based on the trial group.

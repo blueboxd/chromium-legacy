@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,6 +13,7 @@
 #include "base/callback_helpers.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/scoped_refptr.h"
+#include "base/task/sequence_manager/task_queue.h"
 #include "base/task/sequence_manager/thread_controller_power_monitor.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/task/task_features.h"
@@ -136,7 +137,8 @@ class FakeSequencedTaskSource : public SequencedTaskSource {
     }
     running_stack_.push_back(std::move(tasks_.front()));
     tasks_.pop();
-    return SelectedTask(running_stack_.back(), TaskExecutionTraceLogger());
+    return SelectedTask(running_stack_.back(), TaskExecutionTraceLogger(),
+                        TaskQueue::QueuePriority::kNormalPriority);
   }
 
   void DidRunTask(LazyNow& lazy_now) override { running_stack_.pop_back(); }

@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -113,6 +113,10 @@ class BASE_EXPORT SequenceManagerImpl
   // Resets the global cached state of the NoWakeUpsForCanceledTasks feature
   // according to its default state.
   static void ResetNoWakeUpsForCanceledTasksForTesting();
+
+  // Emitting the task priority if scheduler category is enabled.
+  static void EmitTaskPriority(perfetto::EventContext& ctx,
+                               TaskQueue::QueuePriority task_queue_priority);
 
   // SequenceManager implementation:
   void BindToCurrentThread() override;
@@ -358,7 +362,7 @@ class BASE_EXPORT SequenceManagerImpl
   // Called by the task queue to inform this SequenceManager of a task that's
   // about to be queued. This SequenceManager may use this opportunity to add
   // metadata to |pending_task| before it is moved into the queue.
-  void WillQueueTask(Task* pending_task, const char* task_queue_name);
+  void WillQueueTask(Task* pending_task);
 
   // Enqueues onto delayed WorkQueues all delayed tasks which must run now
   // (cannot be postponed) and possibly some delayed tasks which can run now but

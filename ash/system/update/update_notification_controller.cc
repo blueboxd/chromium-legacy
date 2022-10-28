@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -292,7 +292,7 @@ void UpdateNotificationController::RestartForUpdate() {
     return;
   }
   // System updates require restarting the device.
-  Shell::Get()->system_tray_model()->client()->RequestRestartForUpdate();
+  Shell::Get()->session_controller()->RequestRestartForUpdate();
   base::RecordAction(
       base::UserMetricsAction("StatusArea_OS_Update_Default_Selected"));
 }
@@ -319,7 +319,8 @@ void UpdateNotificationController::HandleNotificationClick(
 
     if (ShouldShowDeferredUpdate()) {
       // When the "update" button is clicked, apply the deferred update.
-      ash::UpdateEngineClient::Get()->ApplyDeferredUpdate(base::DoNothing());
+      ash::UpdateEngineClient::Get()->ApplyDeferredUpdate(
+          /*shutdown_after_update=*/false, base::DoNothing());
     } else if (model_->update_required()) {
       // Restart
       if (slow_boot_file_path_exists_) {

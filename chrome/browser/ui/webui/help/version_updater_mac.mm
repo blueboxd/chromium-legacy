@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -113,9 +113,9 @@ void VersionUpdaterMac::CheckForUpdate(StatusCallback status_callback,
   base::ThreadPool::PostTaskAndReplyWithResult(
       FROM_HERE, {base::MayBlock()}, base::BindOnce(&GetUpdaterScope),
       base::BindOnce(
-          [](base::RepeatingCallback<void(updater::UpdaterScope,
-                                          updater::UpdateService::UpdateState)>
-                 status_callback,
+          [](base::RepeatingCallback<void(
+                 updater::UpdaterScope,
+                 const updater::UpdateService::UpdateState&)> status_callback,
              updater::UpdaterScope scope) {
             BrowserUpdaterClient::Create(scope)->CheckForUpdate(
                 base::BindRepeating(status_callback, scope));
@@ -361,7 +361,7 @@ void VersionUpdaterMac::UpdateStatusFromChromiumUpdater(
     VersionUpdater::StatusCallback status_callback,
     VersionUpdater::PromoteCallback promote_callback,
     updater::UpdaterScope scope,
-    updater::UpdateService::UpdateState update_state) {
+    const updater::UpdateService::UpdateState& update_state) {
   VersionUpdater::Status status = VersionUpdater::Status::CHECKING;
   int progress = 0;
   std::string version;

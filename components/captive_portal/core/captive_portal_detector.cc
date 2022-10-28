@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -142,8 +142,7 @@ void CaptivePortalDetector::OnSimpleLoaderCompleteInternal(
   GetCaptivePortalResultFromResponse(net_error, response_code, url, headers,
                                      &results);
   simple_loader_.reset();
-  if (detection_callback_)
-    std::move(detection_callback_).Run(results);
+  std::move(detection_callback_).Run(results);
 }
 
 void CaptivePortalDetector::GetCaptivePortalResultFromResponse(

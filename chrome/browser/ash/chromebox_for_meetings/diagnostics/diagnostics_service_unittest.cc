@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,11 +8,6 @@
 #include <utility>
 #include <vector>
 
-#include "ash/services/chromebox_for_meetings/public/cpp/fake_service_connection.h"
-#include "ash/services/chromebox_for_meetings/public/cpp/fake_service_context.h"
-#include "ash/services/chromebox_for_meetings/public/cpp/service_connection.h"
-#include "ash/services/chromebox_for_meetings/public/mojom/cfm_service_manager.mojom.h"
-#include "ash/services/chromebox_for_meetings/public/mojom/meet_devices_diagnostics.mojom.h"
 #include "base/bind.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
@@ -20,6 +15,11 @@
 #include "base/test/mock_callback.h"
 #include "base/test/task_environment.h"
 #include "chromeos/ash/components/dbus/chromebox_for_meetings/fake_cfm_hotline_client.h"
+#include "chromeos/ash/services/chromebox_for_meetings/public/cpp/fake_service_connection.h"
+#include "chromeos/ash/services/chromebox_for_meetings/public/cpp/fake_service_context.h"
+#include "chromeos/ash/services/chromebox_for_meetings/public/cpp/service_connection.h"
+#include "chromeos/ash/services/chromebox_for_meetings/public/mojom/cfm_service_manager.mojom.h"
+#include "chromeos/ash/services/chromebox_for_meetings/public/mojom/meet_devices_diagnostics.mojom.h"
 #include "chromeos/ash/services/cros_healthd/public/cpp/fake_cros_healthd.h"
 #include "chromeos/ash/services/cros_healthd/public/cpp/service_connection.h"
 #include "content/public/test/test_utils.h"
@@ -33,8 +33,6 @@
 namespace ash::cfm {
 namespace {
 
-// TODO(https://crbug.com/1164001): remove after the migration to namespace ash.
-namespace cros_healthd = ::chromeos::cros_healthd;
 namespace mojom = ::chromeos::cfm::mojom;
 
 class CfmDiagnosticsServiceTest : public ::testing::Test {

@@ -1,19 +1,19 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #import "ios/chrome/browser/tabs/tab_helper_delegate_installer.h"
 
-#include "base/test/task_environment.h"
-#include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
-#include "ios/chrome/browser/main/test_browser.h"
+#import "base/test/task_environment.h"
+#import "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
+#import "ios/chrome/browser/main/test_browser.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
-#include "ios/chrome/browser/web_state_list/web_state_list_delegate.h"
+#import "ios/chrome/browser/web_state_list/web_state_list_delegate.h"
 #import "ios/chrome/browser/web_state_list/web_state_opener.h"
 #import "ios/web/public/test/fakes/fake_web_state.h"
 #import "ios/web/public/web_state_user_data.h"
-#include "testing/gtest/include/gtest/gtest.h"
-#include "testing/platform_test.h"
+#import "testing/gtest/include/gtest/gtest.h"
+#import "testing/platform_test.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -178,8 +178,8 @@ TEST_F(TabHelperDelegateInstallerTest, InstallDelegatesForReplacedWebStates) {
   FakeTabHelper* replacement_tab_helper = FakeTabHelper::FromWebState(
       browser_->GetWebStateList()->GetWebStateAt(0));
 
-  // Verify that the delegates were uninstalled from |tab_helper| and installed
-  // for |replacement_tab_helper|.
+  // Verify that the delegates were uninstalled from `tab_helper` and installed
+  // for `replacement_tab_helper`.
   EXPECT_FALSE(tab_helper->GetDelegate());
   EXPECT_FALSE(tab_helper->GetSecondDelegate());
   EXPECT_EQ(replacement_tab_helper->GetDelegate(), &delegate_);
@@ -207,7 +207,7 @@ TEST_F(TabHelperDelegateInstallerTest,
   std::unique_ptr<web::WebState> detached_web_state =
       browser_->GetWebStateList()->DetachWebStateAt(0);
 
-  // Verify that the delegates were uninstalled from |tab_helper|.
+  // Verify that the delegates were uninstalled from `tab_helper`.
   EXPECT_FALSE(tab_helper->GetDelegate());
   EXPECT_FALSE(tab_helper->GetSecondDelegate());
 }
@@ -248,7 +248,7 @@ TEST_F(TabHelperDelegateInstallerTest,
     browser_.reset();
   }
 
-  // Verify that the delegates were uninstalled from |tab_helper|.
+  // Verify that the delegates were uninstalled from `tab_helper`.
   EXPECT_FALSE(set_delegate);
   EXPECT_FALSE(set_second_delegate);
 }
@@ -276,7 +276,7 @@ TEST_F(TabHelperDelegateInstallerTest,
   installer = nullptr;
   second_installer = nullptr;
 
-  // Verify that the delegates were uninstalled from |tab_helper|.
+  // Verify that the delegates were uninstalled from `tab_helper`.
   EXPECT_FALSE(tab_helper->GetDelegate());
   EXPECT_FALSE(tab_helper->GetSecondDelegate());
 }

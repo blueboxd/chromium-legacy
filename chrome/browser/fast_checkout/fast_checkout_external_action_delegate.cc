@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -24,6 +24,7 @@ FastCheckoutExternalActionDelegate::~FastCheckoutExternalActionDelegate() =
 
 void FastCheckoutExternalActionDelegate::OnActionRequested(
     const autofill_assistant::external::Action& action,
+    bool is_interrupt,
     base::OnceCallback<void(DomUpdateCallback)> start_dom_checks_callback,
     base::OnceCallback<void(const autofill_assistant::external::Result&)>
         end_action_callback) {

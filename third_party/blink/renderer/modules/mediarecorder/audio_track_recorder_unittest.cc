@@ -18,6 +18,7 @@
 #include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
 #include "third_party/blink/public/web/web_heap.h"
 #include "third_party/blink/renderer/platform/mediastream/media_stream_audio_source.h"
+#include "third_party/blink/renderer/platform/mediastream/media_stream_audio_track.h"
 #include "third_party/blink/renderer/platform/mediastream/media_stream_component_impl.h"
 #include "third_party/blink/renderer/platform/mediastream/media_stream_source.h"
 #include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
@@ -48,7 +49,7 @@ namespace blink {
 
 struct ATRTestParams {
   const media::AudioParameters::Format input_format;
-  const media::ChannelLayout channel_layout;
+  const media::ChannelLayoutConfig channel_layout;
   const int sample_rate;
   const AudioTrackRecorder::CodecId codec;
   const AudioTrackRecorder::BitrateMode bitrateMode;
@@ -57,45 +58,52 @@ struct ATRTestParams {
 const ATRTestParams kATRTestParams[] = {
     // Equivalent to default settings:
     {media::AudioParameters::AUDIO_PCM_LOW_LATENCY, /* input format */
-     media::CHANNEL_LAYOUT_STEREO,                  /* channel layout */
+     media::ChannelLayoutConfig::Stereo(),          /* channel layout */
      kDefaultSampleRate,                            /* sample rate */
      AudioTrackRecorder::CodecId::kOpus,            /* codec for encoding */
      AudioTrackRecorder::BitrateMode::kVariable},   /* constant/variable rate */
 
     // Change to mono:
-    {media::AudioParameters::AUDIO_PCM_LOW_LATENCY, media::CHANNEL_LAYOUT_MONO,
-     kDefaultSampleRate, AudioTrackRecorder::CodecId::kOpus,
+    {media::AudioParameters::AUDIO_PCM_LOW_LATENCY,
+     media::ChannelLayoutConfig::Mono(), kDefaultSampleRate,
+     AudioTrackRecorder::CodecId::kOpus,
      AudioTrackRecorder::BitrateMode::kVariable},
 
     // Different sampling rate as well:
-    {media::AudioParameters::AUDIO_PCM_LOW_LATENCY, media::CHANNEL_LAYOUT_MONO,
-     24000, AudioTrackRecorder::CodecId::kOpus,
+    {media::AudioParameters::AUDIO_PCM_LOW_LATENCY,
+     media::ChannelLayoutConfig::Mono(), 24000,
+     AudioTrackRecorder::CodecId::kOpus,
      AudioTrackRecorder::BitrateMode::kVariable},
     {media::AudioParameters::AUDIO_PCM_LOW_LATENCY,
-     media::CHANNEL_LAYOUT_STEREO, 8000, AudioTrackRecorder::CodecId::kOpus,
+     media::ChannelLayoutConfig::Stereo(), 8000,
+     AudioTrackRecorder::CodecId::kOpus,
      AudioTrackRecorder::BitrateMode::kVariable},
 
     // Using a non-default Opus sampling rate (48, 24, 16, 12, or 8 kHz).
-    {media::AudioParameters::AUDIO_PCM_LOW_LATENCY, media::CHANNEL_LAYOUT_MONO,
-     22050, AudioTrackRecorder::CodecId::kOpus,
+    {media::AudioParameters::AUDIO_PCM_LOW_LATENCY,
+     media::ChannelLayoutConfig::Mono(), 22050,
+     AudioTrackRecorder::CodecId::kOpus,
      AudioTrackRecorder::BitrateMode::kVariable},
     {media::AudioParameters::AUDIO_PCM_LOW_LATENCY,
-     media::CHANNEL_LAYOUT_STEREO, 44100, AudioTrackRecorder::CodecId::kOpus,
+     media::ChannelLayoutConfig::Stereo(), 44100,
+     AudioTrackRecorder::CodecId::kOpus,
      AudioTrackRecorder::BitrateMode::kVariable},
     {media::AudioParameters::AUDIO_PCM_LOW_LATENCY,
-     media::CHANNEL_LAYOUT_STEREO, 96000, AudioTrackRecorder::CodecId::kOpus,
-     AudioTrackRecorder::BitrateMode::kVariable},
-    {media::AudioParameters::AUDIO_PCM_LOW_LATENCY, media::CHANNEL_LAYOUT_MONO,
-     kDefaultSampleRate, AudioTrackRecorder::CodecId::kPcm,
+     media::ChannelLayoutConfig::Stereo(), 96000,
+     AudioTrackRecorder::CodecId::kOpus,
      AudioTrackRecorder::BitrateMode::kVariable},
     {media::AudioParameters::AUDIO_PCM_LOW_LATENCY,
-     media::CHANNEL_LAYOUT_STEREO, kDefaultSampleRate,
+     media::ChannelLayoutConfig::Mono(), kDefaultSampleRate,
+     AudioTrackRecorder::CodecId::kPcm,
+     AudioTrackRecorder::BitrateMode::kVariable},
+    {media::AudioParameters::AUDIO_PCM_LOW_LATENCY,
+     media::ChannelLayoutConfig::Stereo(), kDefaultSampleRate,
      AudioTrackRecorder::CodecId::kPcm,
      AudioTrackRecorder::BitrateMode::kVariable},
 
     // Use Opus in constatnt bitrate mode:
     {media::AudioParameters::AUDIO_PCM_LOW_LATENCY,
-     media::CHANNEL_LAYOUT_STEREO, kDefaultSampleRate,
+     media::ChannelLayoutConfig::Stereo(), kDefaultSampleRate,
      AudioTrackRecorder::CodecId::kOpus,
      AudioTrackRecorder::BitrateMode::kConstant},
 };
@@ -116,7 +124,7 @@ class AudioTrackRecorderTest : public testing::TestWithParam<ATRTestParams> {
                       GetParam().sample_rate,
                       FramesPerBuffer(GetParam().sample_rate)),
         second_params_(media::AudioParameters::AUDIO_PCM_LOW_LATENCY,
-                       media::CHANNEL_LAYOUT_STEREO,
+                       media::ChannelLayoutConfig::Stereo(),
                        kDefaultSampleRate,
                        FramesPerBuffer(kDefaultSampleRate)),
         first_source_(first_params_.channels(),     /* # channels */
@@ -266,8 +274,9 @@ class AudioTrackRecorderTest : public testing::TestWithParam<ATRTestParams> {
         String::FromUTF8("dummy_source_name"), false /* remote */,
         std::move(audio_source));
     media_stream_component_ = MakeGarbageCollected<MediaStreamComponentImpl>(
-        String::FromUTF8("audio_track"), source);
-    CHECK(MediaStreamAudioSource::From(source)->ConnectToTrack(
+        String::FromUTF8("audio_track"), source,
+        std::make_unique<MediaStreamAudioTrack>(/*is_local=*/true));
+    CHECK(MediaStreamAudioSource::From(source)->ConnectToInitializedTrack(
         media_stream_component_));
   }
 };

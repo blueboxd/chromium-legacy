@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -22,9 +22,11 @@ class DeskActionView : public views::BoxLayoutView {
                  base::RepeatingClosure combine_desks_callback,
                  base::RepeatingClosure close_all_callback);
 
-  CloseButton* close_all_button() { return close_all_button_; }
+  const CloseButton* close_all_button() const { return close_all_button_; }
 
-  CloseButton* combine_desks_button() { return combine_desks_button_; }
+  const CloseButton* combine_desks_button() const {
+    return combine_desks_button_;
+  }
 
   // Changes the tooltip assigned to `combine_desks_button_` to use
   // `new_combine_desks_target_name` as the name of the target desk where

@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -17,6 +17,7 @@
 #include "chrome/browser/extensions/api/settings_private/generated_prefs.h"
 #include "chrome/browser/extensions/api/settings_private/generated_prefs_factory.h"
 #include "chrome/browser/extensions/settings_api_helpers.h"
+#include "chrome/browser/first_party_sets/first_party_sets_pref_names.h"
 #include "chrome/browser/metrics/profile_pref_names.h"
 #include "chrome/browser/nearby_sharing/common/nearby_share_prefs.h"
 #include "chrome/browser/password_manager/generated_password_leak_detection_pref.h"
@@ -26,8 +27,10 @@
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
 #include "components/autofill/core/common/autofill_prefs.h"
+#include "components/autofill_assistant/browser/public/prefs.h"
 #include "components/bookmarks/common/bookmark_pref_names.h"
 #include "components/browsing_data/core/pref_names.h"
+#include "components/commerce/core/pref_names.h"
 #include "components/component_updater/pref_names.h"
 #include "components/content_settings/core/common/pref_names.h"
 #include "components/dom_distiller/core/pref_names.h"
@@ -39,6 +42,7 @@
 #include "components/omnibox/browser/omnibox_prefs.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "components/payments/core/payment_prefs.h"
+#include "components/performance_manager/public/user_tuning/prefs.h"
 #include "components/prefs/pref_service.h"
 #include "components/privacy_sandbox/privacy_sandbox_prefs.h"
 #include "components/proxy_config/proxy_config_pref_names.h"
@@ -199,11 +203,11 @@ const PrefsUtil::TypedPrefMap& PrefsUtil::GetAllowlistedKeys() {
       settings_api::PrefType::PREF_TYPE_STRING;
   (*s_allowlist)[::prefs::kPolicyThemeColor] =
       settings_api::PrefType::PREF_TYPE_NUMBER;
-// TODO(crbug.com/1052397): Revisit the macro expression once build flag switch
-// of lacros-chrome is complete.
-#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
-  (*s_allowlist)[::prefs::kUsesSystemTheme] =
+#if BUILDFLAG(IS_LINUX)
+  (*s_allowlist)[::prefs::kUsesSystemThemeDeprecated] =
       settings_api::PrefType::PREF_TYPE_BOOLEAN;
+  (*s_allowlist)[::prefs::kSystemTheme] =
+      settings_api::PrefType::PREF_TYPE_NUMBER;
 #endif
   (*s_allowlist)[::prefs::kHomePage] = settings_api::PrefType::PREF_TYPE_URL;
   (*s_allowlist)[::prefs::kHomePageIsNewTabPage] =
@@ -273,6 +277,11 @@ const PrefsUtil::TypedPrefMap& PrefsUtil::GetAllowlistedKeys() {
   (*s_allowlist)
       [password_manager::prefs::kPasswordDismissCompromisedAlertEnabled] =
           settings_api::PrefType::PREF_TYPE_BOOLEAN;
+#if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN)
+  (*s_allowlist)
+      [password_manager::prefs::kBiometricAuthenticationBeforeFilling] =
+          settings_api::PrefType::PREF_TYPE_BOOLEAN;
+#endif
 
   // Privacy page
   (*s_allowlist)[::prefs::kSigninAllowedOnNextStartup] =
@@ -312,6 +321,16 @@ const PrefsUtil::TypedPrefMap& PrefsUtil::GetAllowlistedKeys() {
   (*s_allowlist)[::prefs::kHttpsOnlyModeEnabled] =
       settings_api::PrefType::PREF_TYPE_BOOLEAN;
 
+  // Cookies page
+  (*s_allowlist)[::content_settings::kCookiePrimarySetting] =
+      settings_api::PrefType::PREF_TYPE_NUMBER;
+  (*s_allowlist)[::content_settings::kCookieSessionOnly] =
+      settings_api::PrefType::PREF_TYPE_BOOLEAN;
+  (*s_allowlist)[::prefs::kCookieControlsMode] =
+      settings_api::PrefType::PREF_TYPE_NUMBER;
+  (*s_allowlist)[::first_party_sets::kFirstPartySetsEnabled] =
+      settings_api::PrefType::PREF_TYPE_BOOLEAN;
+
   // Sync and personalization page.
   (*s_allowlist)[::prefs::kSearchSuggestEnabled] =
       settings_api::PrefType::PREF_TYPE_BOOLEAN;
@@ -320,7 +339,9 @@ const PrefsUtil::TypedPrefMap& PrefsUtil::GetAllowlistedKeys() {
           settings_api::PrefType::PREF_TYPE_BOOLEAN;
   (*s_allowlist)[::omnibox::kDocumentSuggestEnabled] =
       settings_api::PrefType::PREF_TYPE_BOOLEAN;
-  (*s_allowlist)[::prefs::kAutofillAssistantOnDesktopEnabled] =
+  (*s_allowlist)[autofill_assistant::prefs::kAutofillAssistantEnabled] =
+      settings_api::PrefType::PREF_TYPE_BOOLEAN;
+  (*s_allowlist)[::commerce::kPriceEmailNotificationsEnabled] =
       settings_api::PrefType::PREF_TYPE_BOOLEAN;
 
   // Languages page
@@ -337,6 +358,8 @@ const PrefsUtil::TypedPrefMap& PrefsUtil::GetAllowlistedKeys() {
   (*s_allowlist)[translate::prefs::kOfferTranslateEnabled] =
       settings_api::PrefType::PREF_TYPE_BOOLEAN;
   (*s_allowlist)[translate::prefs::kBlockedLanguages] =
+      settings_api::PrefType::PREF_TYPE_LIST;
+  (*s_allowlist)[translate::prefs::kPrefNeverPromptSitesWithTime] =
       settings_api::PrefType::PREF_TYPE_LIST;
   (*s_allowlist)[language::prefs::kSelectedLanguages] =
       settings_api::PrefType::PREF_TYPE_STRING;
@@ -391,12 +414,6 @@ const PrefsUtil::TypedPrefMap& PrefsUtil::GetAllowlistedKeys() {
       settings_api::PrefType::PREF_TYPE_BOOLEAN;
 
   // Site Settings prefs.
-  (*s_allowlist)[::content_settings::kCookiePrimarySetting] =
-      settings_api::PrefType::PREF_TYPE_NUMBER;
-  (*s_allowlist)[::content_settings::kCookieSessionOnly] =
-      settings_api::PrefType::PREF_TYPE_BOOLEAN;
-  (*s_allowlist)[::prefs::kCookieControlsMode] =
-      settings_api::PrefType::PREF_TYPE_NUMBER;
   (*s_allowlist)[::content_settings::kGeneratedNotificationPref] =
       settings_api::PrefType::PREF_TYPE_NUMBER;
   (*s_allowlist)[::prefs::kPluginsAlwaysOpenPdfExternally] =
@@ -495,6 +512,14 @@ const PrefsUtil::TypedPrefMap& PrefsUtil::GetAllowlistedKeys() {
   (*s_allowlist)[ash::prefs::kAccessibilityAutoclickStabilizePosition] =
       settings_api::PrefType::PREF_TYPE_BOOLEAN;
   (*s_allowlist)[ash::prefs::kAccessibilityAutoclickMovementThreshold] =
+      settings_api::PrefType::PREF_TYPE_NUMBER;
+  (*s_allowlist)[ash::prefs::kAccessibilityGreyscaleAmount] =
+      settings_api::PrefType::PREF_TYPE_NUMBER;
+  (*s_allowlist)[ash::prefs::kAccessibilitySaturationAmount] =
+      settings_api::PrefType::PREF_TYPE_NUMBER;
+  (*s_allowlist)[ash::prefs::kAccessibilitySepiaAmount] =
+      settings_api::PrefType::PREF_TYPE_NUMBER;
+  (*s_allowlist)[ash::prefs::kAccessibilityHueRotationAmount] =
       settings_api::PrefType::PREF_TYPE_NUMBER;
   (*s_allowlist)[ash::prefs::kShouldAlwaysShowAccessibilityMenu] =
       settings_api::PrefType::PREF_TYPE_BOOLEAN;
@@ -798,6 +823,8 @@ const PrefsUtil::TypedPrefMap& PrefsUtil::GetAllowlistedKeys() {
       settings_api::PrefType::PREF_TYPE_BOOLEAN;
   (*s_allowlist)[ash::prefs::kUserMicrophoneAllowed] =
       settings_api::PrefType::PREF_TYPE_BOOLEAN;
+  (*s_allowlist)[ash::prefs::kUserGeolocationAllowed] =
+      settings_api::PrefType::PREF_TYPE_BOOLEAN;
 #else
   // System settings.
   (*s_allowlist)[::prefs::kBackgroundModeEnabled] =
@@ -817,6 +844,10 @@ const PrefsUtil::TypedPrefMap& PrefsUtil::GetAllowlistedKeys() {
   (*s_allowlist)[::prefs::kImportDialogSearchEngine] =
       settings_api::PrefType::PREF_TYPE_BOOLEAN;
 #endif
+
+  // Supervised Users.  This setting is queried in our Tast tests (b/241943380).
+  (*s_allowlist)[::prefs::kSupervisedUserExtensionsMayRequestPermissions] =
+      settings_api::PrefType::PREF_TYPE_BOOLEAN;
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
   (*s_allowlist)[::prefs::kUseAshProxy] =
@@ -892,6 +923,11 @@ const PrefsUtil::TypedPrefMap& PrefsUtil::GetAllowlistedKeys() {
       settings_api::PrefType::PREF_TYPE_BOOLEAN;
 #endif
 
+  // Performance settings.
+  (*s_allowlist)
+      [performance_manager::user_tuning::prefs::kHighEfficiencyModeEnabled] =
+          settings_api::PrefType::PREF_TYPE_BOOLEAN;
+
   return *s_allowlist;
 }
 
@@ -936,7 +972,7 @@ std::unique_ptr<settings_api::PrefObject> PrefsUtil::GetCrosSettingsPref(
   }
   pref_object->key = name;
   pref_object->type = GetType(name, value->type());
-  pref_object->value = base::Value::ToUniquePtrValue(value->Clone());
+  pref_object->value = value->Clone();
 #endif
 
   return pref_object;
@@ -967,8 +1003,7 @@ std::unique_ptr<settings_api::PrefObject> PrefsUtil::GetPref(
     pref_object = std::make_unique<settings_api::PrefObject>();
     pref_object->key = pref->name();
     pref_object->type = GetType(name, pref->GetType());
-    pref_object->value =
-        base::Value::ToUniquePtrValue(pref->GetValue()->Clone());
+    pref_object->value = pref->GetValue()->Clone();
   }
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -990,11 +1025,10 @@ std::unique_ptr<settings_api::PrefObject> PrefsUtil::GetPref(
     pref_object->controlled_by =
         settings_api::ControlledBy::CONTROLLED_BY_PRIMARY_USER;
     pref_object->enforcement = settings_api::Enforcement::ENFORCEMENT_ENFORCED;
-    pref_object->controlled_by_name =
-        std::make_unique<std::string>(user_manager::UserManager::Get()
+    pref_object->controlled_by_name = user_manager::UserManager::Get()
                                           ->GetPrimaryUser()
                                           ->GetAccountId()
-                                          .GetUserEmail());
+                                          .GetUserEmail();
     return pref_object;
   }
 #endif
@@ -1020,8 +1054,7 @@ std::unique_ptr<settings_api::PrefObject> PrefsUtil::GetPref(
         settings_api::ControlledBy::CONTROLLED_BY_USER_POLICY;
     pref_object->enforcement =
         settings_api::Enforcement::ENFORCEMENT_RECOMMENDED;
-    pref_object->recommended_value =
-        base::Value::ToUniquePtrValue(recommended->Clone());
+    pref_object->recommended_value = recommended->Clone();
     return pref_object;
   }
 
@@ -1034,8 +1067,8 @@ std::unique_ptr<settings_api::PrefObject> PrefsUtil::GetPref(
     pref_object->controlled_by =
         settings_api::ControlledBy::CONTROLLED_BY_OWNER;
     pref_object->enforcement = settings_api::Enforcement::ENFORCEMENT_ENFORCED;
-    pref_object->controlled_by_name = std::make_unique<std::string>(
-        user_manager::UserManager::Get()->GetOwnerAccountId().GetUserEmail());
+    pref_object->controlled_by_name =
+        user_manager::UserManager::Get()->GetOwnerAccountId().GetUserEmail();
     return pref_object;
   }
 
@@ -1043,7 +1076,7 @@ std::unique_ptr<settings_api::PrefObject> PrefsUtil::GetPref(
     pref_object->controlled_by =
         settings_api::ControlledBy::CONTROLLED_BY_CHILD_RESTRICTION;
     pref_object->enforcement = settings_api::Enforcement::ENFORCEMENT_ENFORCED;
-    pref_object->value = std::make_unique<base::Value>(
+    pref_object->value = base::Value(
         GetRestrictedCrosSettingValueForChildUser(profile_, name)->Clone());
     return pref_object;
   }
@@ -1062,14 +1095,12 @@ std::unique_ptr<settings_api::PrefObject> PrefsUtil::GetPref(
     pref_object->controlled_by =
         settings_api::ControlledBy::CONTROLLED_BY_EXTENSION;
     pref_object->enforcement = settings_api::Enforcement::ENFORCEMENT_ENFORCED;
-    pref_object->extension_id = std::make_unique<std::string>(extension->id());
-    pref_object->controlled_by_name =
-        std::make_unique<std::string>(extension->name());
+    pref_object->extension_id = extension->id();
+    pref_object->controlled_by_name = extension->name();
     bool can_be_disabled =
         !ExtensionSystem::Get(profile_)->management_policy()->MustRemainEnabled(
             extension, nullptr);
-    pref_object->extension_can_be_disabled =
-        std::make_unique<bool>(can_be_disabled);
+    pref_object->extension_can_be_disabled = can_be_disabled;
     return pref_object;
   }
 

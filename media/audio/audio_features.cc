@@ -1,4 +1,4 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,18 +8,6 @@
 #include "build/build_config.h"
 
 namespace features {
-
-// When the audio service in a separate process, kill it when a hang is
-// detected. It will be restarted when needed.
-const base::Feature kAudioServiceOutOfProcessKillAtHang{
-  "AudioServiceOutOfProcessKillAtHang",
-#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX) || \
-    BUILDFLAG(IS_CHROMEOS)
-      base::FEATURE_ENABLED_BY_DEFAULT
-#else
-      base::FEATURE_DISABLED_BY_DEFAULT
-#endif
-};
 
 // If enabled, base::DumpWithoutCrashing is called whenever an audio service
 // hang is detected.

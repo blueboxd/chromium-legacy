@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -38,6 +38,24 @@ class ProtocolUtils {
   static std::string CreateCapabilitiesByHashRequest(
       uint32_t hash_prefix_length,
       const std::vector<uint64_t>& hash_prefix,
+      const ClientContextProto& client_context,
+      const ScriptParameters& script_parameters);
+
+  // Create request to get trigger scripts via their url hash prefix.
+  // Note: Only a subset of allowed fields from |client_context| will be sent to
+  // the server.
+  static std::string CreateTriggerScriptsByHashRequest(
+      uint32_t hash_prefix_length,
+      const std::vector<uint64_t>& hash_prefix,
+      const ClientContextProto& client_context,
+      const ScriptParameters& script_parameters);
+
+  // Create request to get all available initial scripts via a url hash prefix.
+  // Note: Only a subset of allowed fields from |client_context| will be sent to
+  // the server.
+  static std::string CreateGetNoRoundTripScriptsByHashRequest(
+      uint32_t hash_prefix_length,
+      uint64_t hash_prefix,
       const ClientContextProto& client_context,
       const ScriptParameters& script_parameters);
 
@@ -141,6 +159,13 @@ class ProtocolUtils {
       absl::optional<int>* trigger_condition_timeout_ms,
       absl::optional<std::unique_ptr<ScriptParameters>>* script_parameters);
 
+  // Parse <domain, domain trigger scripts proto> pairs from the given
+  // |response| string and insert them into |domain_scripts|. Returns false if
+  // parsing failed or the proto contained invalid values.
+  static bool ParseTriggerScriptsByHashPrefix(
+      const std::string& response,
+      std::vector<std::pair<std::string, std::string>>* domainScripts);
+
   // Computes network stats for a roundtrip that returned |response| and
   // |response_info|, which were successfully parsed into |actions|.
   static RoundtripNetworkStats ComputeNetworkStats(
@@ -153,6 +178,8 @@ class ProtocolUtils {
   // regexes that cannot be compiled).
   static bool ValidateTriggerCondition(
       const TriggerScriptConditionProto& trigger_condition);
+  static ClientContextProto CreateNonSensitiveContext(
+      const ClientContextProto& client_context);
   FRIEND_TEST_ALL_PREFIXES(ProtocolUtilsTest,
                            ValidateTriggerConditionsSimpleConditions);
   FRIEND_TEST_ALL_PREFIXES(ProtocolUtilsTest,

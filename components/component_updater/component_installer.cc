@@ -1,10 +1,9 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "components/component_updater/component_installer.h"
 
-#include <algorithm>
 #include <cstdint>
 #include <string>
 #include <tuple>
@@ -20,6 +19,7 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/path_service.h"
+#include "base/ranges/algorithm.h"
 #include "base/strings/string_util.h"
 #include "base/task/sequenced_task_runner.h"
 #include "base/task/single_thread_task_runner.h"
@@ -362,12 +362,10 @@ void ComponentInstaller::StartRegistration(
       const base::Value::List* accept_archs =
           manifest.GetDict().FindList("accept_arch");
       if (accept_archs != nullptr &&
-          std::none_of(accept_archs->begin(), accept_archs->end(),
-                       [](const base::Value& v) {
-                         return v.is_string() &&
-                                v.GetString() ==
-                                    update_client::UpdateQueryParams::GetArch();
-                       })) {
+          base::ranges::none_of(*accept_archs, [](const base::Value& v) {
+            return v.is_string() &&
+                   v.GetString() == update_client::UpdateQueryParams::GetArch();
+          })) {
         older_paths.push_back(path);
         continue;
       }

@@ -30,6 +30,7 @@
 <translation id="1717218214683051432">Capteurs de mouvements</translation>
 <translation id="1743802530341753419">Demander avant d'autoriser des sites à se connecter à un appareil (recommandé)</translation>
 <translation id="1779089405699405702">Décodeur d’image</translation>
+<translation id="1785415724048343560">Recommandé pour une expérience optimale</translation>
 <translation id="1818308510395330587">Pour autoriser <ph name="APP_NAME" /> à utiliser la RA, activez aussi l'accès à l'appareil photo dans les <ph name="BEGIN_LINK" />paramètres d'Android<ph name="END_LINK" />.</translation>
 <translation id="1864927262126810325">De <ph name="SOURCE_NAME" /></translation>
 <translation id="1887786770086287077">L'accès à la localisation est désactivé pour cet appareil. Activez-le dans les <ph name="BEGIN_LINK" />paramètres Android<ph name="END_LINK" />.</translation>
@@ -79,6 +80,7 @@
 <translation id="2653659639078652383">Envoyer</translation>
 <translation id="2677748264148917807">Quitter</translation>
 <translation id="2687403674020088961">Bloquer tous les témoins (non recommandé)</translation>
+<translation id="2692299144678073135">Autoriser les sites associés à se souvenir de vous sur tous les sites</translation>
 <translation id="2704606927547763573">Copié</translation>
 <translation id="2713106313042589954">Désactiver la caméra</translation>
 <translation id="2717722538473713889">Adresses de courriel</translation>
@@ -101,6 +103,7 @@
 <translation id="3115898365077584848">Afficher les renseignements</translation>
 <translation id="3123473560110926937">Annonces bloquées sur certains sites</translation>
 <translation id="3143754809889689516">Faire jouer depuis le début</translation>
+<translation id="3162899666601560689">Les sites peuvent utiliser des témoins afin d'améliorer votre expérience de navigation, par exemple en vous permettant de rester connecté ou en mémorisant des articles de votre panier d'achats</translation>
 <translation id="3198916472715691905">Stockage de données : <ph name="STORAGE_AMOUNT" /></translation>
 <translation id="3203366800380907218">Du Web</translation>
 <translation id="321187648315454507">Pour autoriser <ph name="APP_NAME" /> à vous envoyer des notifications, vous devez aussi activer celles-ci dans les <ph name="BEGIN_LINK" />paramètres d'Android<ph name="END_LINK" />.</translation>
@@ -138,6 +141,7 @@
 <translation id="4002066346123236978">Titre</translation>
 <translation id="4008040567710660924">Autoriser les témoins pour un site en particulier.</translation>
 <translation id="4046123991198612571">Chanson suivante</translation>
+<translation id="4048876521107516222">Les sites associés utilisent des témoins pour vous aider, par exemple, à vous garder connecté</translation>
 <translation id="4149994727733219643">Affichage simplifié pour les pages Web</translation>
 <translation id="4165986682804962316">Paramètres du site</translation>
 <translation id="4169549551965910670">Connecté à un appareil USB</translation>
@@ -149,6 +153,7 @@
 <translation id="429312253194641664">Un site lit du contenu multimédia</translation>
 <translation id="42981349822642051">Développer</translation>
 <translation id="4336434711095810371">Effacer toutes les données</translation>
+<translation id="4338831206024587507">Tous les sites associés à <ph name="DOMAIN" /></translation>
 <translation id="4402755511846832236">Empêcher les sites de savoir quand vous êtes en train d'utiliser cet appareil</translation>
 <translation id="4428065317363009941">Personnalisation des annonces</translation>
 <translation id="4434045419905280838">Fenêt. context. et redirections</translation>
@@ -164,6 +169,7 @@
 <translation id="4751476147751820511">Capteurs de mouvement ou de luminosité</translation>
 <translation id="4811450222531576619">En savoir plus sur sa source et son sujet</translation>
 <translation id="4836046166855586901">Demander une autorisation lorsqu'un site veut savoir si vous êtes en train d'utiliser cet appareil</translation>
+<translation id="483914009762354899">Inclure tous les sites sous ce domaine</translation>
 <translation id="4883854917563148705">Les paramètres gérés ne peuvent pas être réinitialisés</translation>
 <translation id="4887024562049524730">Demander avant d'autoriser les sites à utiliser votre appareil et vos données de réalité virtuelle (recommandé)</translation>
 <translation id="4962975101802056554">Révoquer toutes les autorisations pour l'appareil</translation>
@@ -219,6 +225,7 @@
 <translation id="5887687176710214216">Dernière visite : hier.</translation>
 <translation id="5916664084637901428">Activé</translation>
 <translation id="5922853908706496913">Partage de votre écran en cours…</translation>
+<translation id="5922967540311291836">Bloquer les témoins tiers :</translation>
 <translation id="5939518447894949180">Recommencer</translation>
 <translation id="5975083100439434680">Zoom arrière</translation>
 <translation id="5976059395673079613"><ph name="PERMISSION" /> : <ph name="WARNING_MESSAGE" /></translation>
@@ -302,6 +309,7 @@
 <translation id="7791543448312431591">Ajouter</translation>
 <translation id="780301667611848630">Non merci</translation>
 <translation id="7804248752222191302">Un site utilise votre appareil photo</translation>
+<translation id="7816129586531226979">Les sites connexes peuvent se souvenir de vous sur tous les sites</translation>
 <translation id="7817023149356982970">Vous serez déconnecté de ce site.</translation>
 <translation id="7828557259026017104">Les témoins sont des fichiers créés par les sites Web que vous visitez. Les sites les utilisent pour mémoriser vos préférences. Les témoins tiers sont ceux que créent d'autres sites. Ces sites possèdent certains types de contenu, comme des annonces et des images, que vous voyez sur les pages que vous visitez.</translation>
 <translation id="7835852323729233924">Élém. multim. en cours de lecture</translation>
@@ -309,6 +317,7 @@
 <translation id="7846076177841592234">Annuler la sélection</translation>
 <translation id="7846621471902887024">Vous serez déconnecté de tous les sites.</translation>
 <translation id="7882806643839505685">Autorisez le son sur un site précis.</translation>
+<translation id="789180354981963912">Bloquer les témoins tiers en navigation privée :</translation>
 <translation id="7940722705963108451">Me rappeler</translation>
 <translation id="7986741934819883144">Sélectionner un contact</translation>
 <translation id="7999064672810608036">Voulez-vous vraiment effacer toutes les données locales de ce site Web, y compris les témoins, et réinitialiser toutes les autorisations pour ce site Web?</translation>
@@ -331,6 +340,7 @@
 <translation id="8284326494547611709">Sous-titres</translation>
 <translation id="8300705686683892304">Gérés par une application</translation>
 <translation id="8324158725704657629">Ne plus me demander</translation>
+<translation id="834785183489258869">Lorsque vous êtes en mode de navigation privée, les sites ne peuvent pas utiliser vos témoins pour voir votre activité de navigation sur différents sites (par exemple, pour personnaliser les annonces). Des fonctionnalités de certains sites pourraient ne pas fonctionner.</translation>
 <translation id="8372893542064058268">Autorisez la synchronisation en arrière-plan pour un site en particulier.</translation>
 <translation id="8376384591331888629">Y compris les témoins tiers sur ce site</translation>
 <translation id="83792324527827022">Un site utilise votre appareil photo et votre microphone</translation>

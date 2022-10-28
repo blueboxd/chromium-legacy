@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -55,7 +55,7 @@ EventBasedStatusReportingService::EventBasedStatusReportingService(
     arc_app_prefs->AddObserver(this);
   session_manager::SessionManager::Get()->AddObserver(this);
   content::GetNetworkConnectionTracker()->AddNetworkConnectionObserver(this);
-  PowerManagerClient::Get()->AddObserver(this);
+  chromeos::PowerManagerClient::Get()->AddObserver(this);
   ScreenTimeControllerFactory::GetForBrowserContext(context_)->AddObserver(
       this);
 }
@@ -128,7 +128,7 @@ void EventBasedStatusReportingService::Shutdown() {
     arc_app_prefs->RemoveObserver(this);
   session_manager::SessionManager::Get()->RemoveObserver(this);
   content::GetNetworkConnectionTracker()->RemoveNetworkConnectionObserver(this);
-  PowerManagerClient::Get()->RemoveObserver(this);
+  chromeos::PowerManagerClient::Get()->RemoveObserver(this);
   ScreenTimeControllerFactory::GetForBrowserContext(context_)->RemoveObserver(
       this);
 }

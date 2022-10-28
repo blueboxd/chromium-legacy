@@ -1,10 +1,11 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome/browser/ash/file_manager/trash_io_task.h"
 
-#include "ash/components/disks/disk_mount_manager.h"
+#include <sys/xattr.h>
+
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/rand_util.h"
@@ -19,6 +20,7 @@
 #include "chrome/browser/ash/file_manager/trash_unittest_base.h"
 #include "chromeos/ash/components/dbus/cicerone/cicerone_client.h"
 #include "chromeos/ash/components/dbus/concierge/concierge_client.h"
+#include "chromeos/ash/components/disks/disk_mount_manager.h"
 #include "components/account_id/account_id.h"
 #include "components/drive/drive_pref_names.h"
 #include "components/prefs/pref_service.h"
@@ -59,6 +61,19 @@ MATCHER_P(EntryStatusErrors, matcher, "") {
   return testing::ExplainMatchResult(matcher, errors, result_listener);
 }
 
+std::string GetTrackedExtendedAttributeAsString(const base::FilePath& path) {
+  ssize_t output_size =
+      lgetxattr(path.value().c_str(), trash::kTrackedDirectoryName, nullptr, 0);
+  EXPECT_GT(output_size, 0);
+  std::vector<char> output_value(output_size);
+  EXPECT_GT(lgetxattr(path.value().c_str(), trash::kTrackedDirectoryName,
+                      output_value.data(), output_size),
+            0);
+  std::string xattr;
+  xattr.assign(output_value.data(), output_size);
+  return xattr;
+}
+
 class TrashIOTaskTest : public TrashBaseTest {
  public:
   TrashIOTaskTest() = default;
@@ -70,9 +85,24 @@ class TrashIOTaskTest : public TrashBaseTest {
 void AssertTrashSetup(const base::FilePath& parent_path) {
   base::FilePath trash_path = parent_path.Append(trash::kTrashFolderName);
   ASSERT_TRUE(base::DirectoryExists(trash_path));
-  ASSERT_TRUE(
-      base::DirectoryExists(trash_path.Append(trash::kFilesFolderName)));
-  ASSERT_TRUE(base::DirectoryExists(trash_path.Append(trash::kInfoFolderName)));
+
+  auto files_path = trash_path.Append(trash::kFilesFolderName);
+  ASSERT_TRUE(base::DirectoryExists(files_path));
+
+  auto info_path = trash_path.Append(trash::kInfoFolderName);
+  ASSERT_TRUE(base::DirectoryExists(info_path));
+
+  int mode = 0;
+  ASSERT_TRUE(base::GetPosixFilePermissions(trash_path, &mode));
+  EXPECT_EQ(mode, 0711);
+
+  constexpr char expected_files_xattr[] = "trash_files";
+  auto actual_files_xattr = GetTrackedExtendedAttributeAsString(files_path);
+  EXPECT_EQ(actual_files_xattr, expected_files_xattr);
+
+  constexpr char expected_info_xattr[] = "trash_info";
+  auto actual_info_xattr = GetTrackedExtendedAttributeAsString(info_path);
+  EXPECT_EQ(actual_info_xattr, expected_info_xattr);
 }
 
 void ExpectFileContents(const base::FilePath& path,
@@ -329,112 +359,6 @@ TEST_F(TrashIOTaskTest, MultipleFilesInvokeProgress) {
   ExpectFileContents(GenerateInfoPath(file_name_2), file_trashinfo_contents_2);
   ExpectFileContents(GenerateFilesPath(file_name_1), foo_contents);
   ExpectFileContents(GenerateFilesPath(file_name_2), foo_contents);
-}
-
-TEST_F(TrashIOTaskTest, WhenCrostiniContainerIsRunningPathsShouldTrash) {
-  std::string foo_contents = base::RandBytesAsString(kTestFileSize);
-  std::string file_name("foo.txt");
-  const base::FilePath file_path = crostini_dir_.Append(file_name);
-
-  // The .trashinfo file gets prepended with the users home directory, the file
-  // foo.txt might look like Path=/home/<username>/foo.txt as the restore path.
-  const std::string file_trashinfo_contents = CreateTrashInfoContentsFromPath(
-      file_path, crostini_dir_, crostini_remote_mount_);
-  const size_t total_expected_bytes =
-      kTestFileSize + file_trashinfo_contents.size();
-  ASSERT_TRUE(base::WriteFile(file_path, foo_contents));
-
-  base::RunLoop run_loop;
-  std::vector<storage::FileSystemURL> source_urls = {
-      CreateFileSystemURL(file_path),
-  };
-
-  base::MockRepeatingCallback<void(const ProgressStatus&)> progress_callback;
-  base::MockOnceCallback<void(ProgressStatus)> complete_callback;
-
-  // Completion callback should contain the one metadata file written with the
-  // `total_expected_bytes` containing the size of both the file to trash and
-  // the size of the metadata.
-  EXPECT_CALL(
-      complete_callback,
-      Run(AllOf(Field(&ProgressStatus::state, State::kSuccess),
-                Field(&ProgressStatus::bytes_transferred, total_expected_bytes),
-                Field(&ProgressStatus::total_bytes, total_expected_bytes),
-                Field(&ProgressStatus::sources, EntryStatusUrls(source_urls)),
-                Field(&ProgressStatus::outputs,
-                      EntryStatusErrors(ElementsAre(base::File::FILE_OK,
-                                                    base::File::FILE_OK))))))
-      .WillOnce(RunClosure(run_loop.QuitClosure()));
-
-  {
-    base::subtle::ScopedTimeClockOverrides mock_time_now(
-        []() { return base::Time(); }, nullptr, nullptr);
-    TrashIOTask task(source_urls, profile_.get(), file_system_context_,
-                     temp_dir_.GetPath());
-    task.Execute(progress_callback.Get(), complete_callback.Get());
-    run_loop.Run();
-  }
-
-  // Ensure the contents of the files at .local/share/Trash/files/foo.txt
-  // contains the expected content.
-  const base::FilePath trash_path =
-      crostini_dir_.AppendASCII(".local/share/Trash");
-  const base::FilePath files_path =
-      trash::GenerateTrashPath(trash_path, trash::kFilesFolderName, file_name);
-  ExpectFileContents(files_path, foo_contents);
-
-  // Ensure the contents of the files at
-  // .local/share/Trash/info/foo.txt.trashinfo contains the expected content.
-  const base::FilePath info_path =
-      trash::GenerateTrashPath(trash_path, trash::kInfoFolderName, file_name);
-  ExpectFileContents(info_path, file_trashinfo_contents);
-}
-
-TEST_F(TrashIOTaskTest,
-       WhenCrostiniContainerIsStoppedPathsShouldNotBeTrashable) {
-  std::string foo_contents = base::RandBytesAsString(kTestFileSize);
-  std::string file_name("foo.txt");
-  const base::FilePath file_path = crostini_dir_.Append(file_name);
-  ASSERT_TRUE(base::WriteFile(file_path, foo_contents));
-
-  base::RunLoop run_loop;
-  std::vector<storage::FileSystemURL> source_urls = {
-      CreateFileSystemURL(file_path),
-  };
-
-  base::MockRepeatingCallback<void(const ProgressStatus&)> progress_callback;
-  base::MockOnceCallback<void(ProgressStatus)> complete_callback;
-
-  // Ensure the container is stopped before running the IOTask.
-  base::RunLoop crostini_stop;
-  crostini_manager_->StopVm(
-      crostini::kCrostiniDefaultVmName,
-      base::BindLambdaForTesting(
-          [&crostini_stop](crostini::CrostiniResult result) {
-            crostini_stop.QuitClosure().Run();
-            ASSERT_EQ(result, crostini::CrostiniResult::SUCCESS);
-          }));
-  crostini_stop.Run();
-
-  // The supplied files match on a mounted crostini container, however, by
-  // stopping the container we expect the paths to no longer match as we check
-  // if the container is running.
-  EXPECT_CALL(
-      complete_callback,
-      Run(AllOf(Field(&ProgressStatus::state, State::kError),
-                Field(&ProgressStatus::bytes_transferred, 0),
-                Field(&ProgressStatus::total_bytes, 0),
-                Field(&ProgressStatus::sources, EntryStatusUrls(source_urls)),
-                Field(&ProgressStatus::sources,
-                      EntryStatusErrors(ElementsAre(
-                          base::File::FILE_ERROR_INVALID_OPERATION))),
-                Field(&ProgressStatus::outputs, IsEmpty()))))
-      .WillOnce(RunClosure(run_loop.QuitClosure()));
-
-  TrashIOTask task(source_urls, profile_.get(), file_system_context_,
-                   temp_dir_.GetPath());
-  task.Execute(progress_callback.Get(), complete_callback.Get());
-  run_loop.Run();
 }
 
 }  // namespace

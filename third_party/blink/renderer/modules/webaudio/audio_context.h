@@ -12,11 +12,12 @@
 #include "third_party/blink/renderer/bindings/modules/v8/v8_audio_context_options.h"
 #include "third_party/blink/renderer/core/html/media/autoplay_policy.h"
 #include "third_party/blink/renderer/modules/webaudio/base_audio_context.h"
+#include "third_party/blink/renderer/modules/webaudio/setsinkid_resolver.h"
+#include "third_party/blink/renderer/platform/heap/collection_support/heap_deque.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/heap/self_keep_alive.h"
 #include "third_party/blink/renderer/platform/mojo/heap_mojo_receiver.h"
 #include "third_party/blink/renderer/platform/mojo/heap_mojo_remote.h"
-#include "third_party/blink/renderer/platform/mojo/heap_mojo_wrapper_mode.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
@@ -48,6 +49,9 @@ class MODULES_EXPORT AudioContext : public BaseAudioContext,
                const WebAudioLatencyHint&,
                absl::optional<float> sample_rate);
   ~AudioContext() override;
+
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(sinkchange, kSinkchange)
+
   void Trace(Visitor*) const override;
 
   // For ContextLifeCycleObserver
@@ -94,6 +98,16 @@ class MODULES_EXPORT AudioContext : public BaseAudioContext,
 
   // mojom::blink::PermissionObserver
   void OnPermissionStatusChange(mojom::blink::PermissionStatus) override;
+
+  String sinkId() const { return sink_id_; }
+
+  ScriptPromise setSinkId(ScriptState*, const String&, ExceptionState&);
+
+  void NotifySetSinkIdIsDone(const String& sink_id);
+
+  HeapDeque<Member<SetSinkIdResolver>>& GetSetSinkIdResolver() {
+    return set_sink_id_resolvers_;
+  }
 
  protected:
   void Uninitialize() final;
@@ -228,6 +242,13 @@ class MODULES_EXPORT AudioContext : public BaseAudioContext,
   HeapMojoRemote<mojom::blink::PermissionService> permission_service_;
   HeapMojoReceiver<mojom::blink::PermissionObserver, AudioContext>
       permission_receiver_;
+
+  // Initializes 'sink_id_' with "" for the default audio output device.
+  String sink_id_ = "";
+
+  // A queue for setSinkId() Promise resolvers. Requests are handled in the
+  // order it was received and only one request is handled at a time.
+  HeapDeque<Member<SetSinkIdResolver>> set_sink_id_resolvers_;
 };
 
 }  // namespace blink

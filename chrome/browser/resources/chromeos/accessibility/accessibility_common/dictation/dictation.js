@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -569,6 +569,15 @@ export class Dictation {
   runHiddenMacroWithTwoStringArgsForTesting(name, arg1, arg2) {
     this.hiddenMacroManager_.runMacroWithTwoStringArgsForTesting(
         name, arg1, arg2);
+  }
+
+  /**
+   * Used to increase the NO_FOCUSED_IME_MS timeout to reduce the flakiness of
+   * Dictation tests on slower builds. For testing purposes only.
+   * @private
+   */
+  increaseNoFocusedImeTimeoutForTesting_() {
+    Dictation.Timeouts.NO_FOCUSED_IME_MS = 20 * 1000;
   }
 }
 

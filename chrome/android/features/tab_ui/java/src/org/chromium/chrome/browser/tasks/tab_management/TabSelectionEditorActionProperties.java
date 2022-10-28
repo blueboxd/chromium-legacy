@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -30,7 +30,13 @@ public class TabSelectionEditorActionProperties {
             new WritableObjectPropertyKey();
     public static final WritableObjectPropertyKey<Drawable> ICON =
             new WritableObjectPropertyKey<>();
-    public static final WritableBooleanPropertyKey ENABLED = new WritableBooleanPropertyKey();
+
+    /**
+     * Force enabled to update on each selection state change. Otherwise it gets set to enabled by
+     * by something in the Selection Layout if more than 1 tab is selected.
+     */
+    public static final WritableObjectPropertyKey<Boolean> ENABLED =
+            new WritableObjectPropertyKey<>(/*skipEquality=*/true);
     public static final WritableIntPropertyKey ITEM_COUNT = new WritableIntPropertyKey();
     public static final WritableObjectPropertyKey<ColorStateList> TEXT_TINT =
             new WritableObjectPropertyKey<>();

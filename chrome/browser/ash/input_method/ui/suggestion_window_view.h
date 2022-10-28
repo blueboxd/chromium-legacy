@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -63,7 +63,8 @@ class UI_CHROMEOS_EXPORT SuggestionWindowView
   void Show(const SuggestionDetails& details);
 
   void ShowMultipleCandidates(
-      const ash::input_method::AssistiveWindowProperties& properties);
+      const ash::input_method::AssistiveWindowProperties& properties,
+      Orientation orientation);
 
   // Sets |button|'s highlight state to |highlighted|. At most one button with
   // the same id will be highlighted at any given time.
@@ -95,6 +96,8 @@ class UI_CHROMEOS_EXPORT SuggestionWindowView
   // |candidate_area_|) to |size|.
   void ResizeCandidateArea(const std::vector<std::u16string>& new_candidates,
                            bool use_legacy_candidate = false);
+
+  void Reorient(Orientation orientation);
 
   void MakeVisible();
 

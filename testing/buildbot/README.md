@@ -102,6 +102,12 @@ current bot, that means that the top-level builder will also take 10 minutes
 longer to run -- or 20 minutes longer if there are failures and retries. Ensure
 that the builder pool has enough capacity to handle that increase as well.
 
+Additionally, if your change is expected to increase utilization in the testing
+pools by any more than 10 VMs or 100 CPU cores, it will need to be approved via
+a resource request. (Consult anyone in //infra/OWNERS if you need help
+calculating the resource usage of a test change.) See http://go/i-need-hw
+for the steps involved in getting the approval.
+
 ## How to use the generate_buildbot_json tool
 ### Test suites
 #### Basic test suites
@@ -135,6 +141,9 @@ generated JSON file. Commonly used arguments include:
   of run both post-submit and on any matching pre-submit / cq / try builders.
   This flag should be set rarely, usually only temporarily to manage capacity
   concerns during an outage.
+
+* `description`: a string to describe the test suite. The text will be shown on
+  Milo.
 
 * `swarming`: a dictionary of Swarming parameters. Note that these will be
   applied to *every* bot that refers to this test suite. It is often more useful

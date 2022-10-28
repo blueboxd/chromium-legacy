@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -25,6 +25,7 @@
 #include "ash/system/power/backlights_forced_off_setter.h"
 #include "ash/system/status_area_widget.h"
 #include "ash/system/unified/unified_system_tray.h"
+#include "ash/wm/desks/templates/saved_desk_util.h"
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/test/scoped_feature_list.h"
@@ -1026,8 +1027,9 @@ IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest,
   widget->Init(std::move(params));
 
   views::View* view = new views::View();
-  view->GetViewAccessibility().OverrideName("hello");
+  // A valid role must be set prior to setting the name.
   view->GetViewAccessibility().OverrideRole(ax::mojom::Role::kButton);
+  view->GetViewAccessibility().OverrideName("hello");
   view->SetFocusBehavior(views::View::FocusBehavior::ALWAYS);
   widget->GetRootView()->AddChildView(view);
 
@@ -1103,8 +1105,9 @@ IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, TouchExploreSecondaryDisplay) {
   widget->Init(std::move(params));
 
   views::View* view = new views::View();
-  view->GetViewAccessibility().OverrideName("hello");
+  // A valid role must be set prior to setting the name.
   view->GetViewAccessibility().OverrideRole(ax::mojom::Role::kButton);
+  view->GetViewAccessibility().OverrideName("hello");
   view->SetFocusBehavior(views::View::FocusBehavior::ALWAYS);
   widget->GetRootView()->AddChildView(view);
 
@@ -1729,6 +1732,14 @@ IN_PROC_BROWSER_TEST_F(DeskTemplatesSpokenFeedbackTest, DeskTemplatesBasic) {
       "Entered window overview mode. Swipe to navigate, or press tab if using "
       "a keyboard.");
 
+  // TODO(crbug.com/1360638): Remove the conditional here when the Save & Recall
+  // flag flip has landed since it will always be true.
+  if (saved_desk_util::IsDeskSaveAndRecallEnabled()) {
+    sm_.Call([this]() { SendKeyPressWithShift(ui::VKEY_TAB); });
+    sm_.ExpectSpeechPattern("Save desk for later");
+    sm_.ExpectSpeech("Button");
+  }
+
   // Reverse tab to focus the save desk as template button.
   sm_.Call([this]() { SendKeyPressWithShift(ui::VKEY_TAB); });
   sm_.ExpectSpeechPattern("Save desk as a template");
@@ -1738,7 +1749,7 @@ IN_PROC_BROWSER_TEST_F(DeskTemplatesSpokenFeedbackTest, DeskTemplatesBasic) {
   // templates grid, which triggers an accessibility alert. This should nudge
   // the template name view but not say anything extra.
   sm_.Call([this]() { SendKeyPress(ui::VKEY_RETURN); });
-  sm_.ExpectSpeech("Viewing templates. Press tab to navigate.");
+  sm_.ExpectSpeech("Viewing saved desks and templates. Press tab to navigate.");
 
   // The first item in the tab order is the template card, which is a button. It
   // has the same name as the desk it was created from, in this case the default

@@ -157,7 +157,8 @@ class ReadWriteWaiter {
       DCHECK(send_stream_.is_valid());
       DCHECK_LT(bytes_sent_, required_send_bytes_);
       void* buffer = nullptr;
-      uint32_t num_bytes = 0;
+      uint32_t num_bytes =
+          static_cast<uint32_t>(required_send_bytes_ - bytes_sent_);
       MojoResult mojo_result = send_stream_->BeginWriteData(
           &buffer, &num_bytes, MOJO_WRITE_DATA_FLAG_NONE);
       if (mojo_result == MOJO_RESULT_SHOULD_WAIT) {
@@ -389,6 +390,25 @@ IN_PROC_BROWSER_TEST_F(DirectSocketsTcpBrowserTest, WriteTcp) {
       listening_port, kRequiredBytes);
 
   EXPECT_EQ("write succeeded", EvalJs(shell(), script));
+  waiter.Await();
+}
+
+IN_PROC_BROWSER_TEST_F(DirectSocketsTcpBrowserTest, WriteLargeTcpPacket) {
+  // The default capacity of TCPSocket mojo pipe is 65536 bytes. This test
+  // verifies that out asynchronous writing logic actually works.
+  constexpr uint32_t defaultMojoPipeCapacity = (1 << 16);
+  constexpr int32_t kRequiredBytes = 3 * defaultMojoPipeCapacity + 1;
+
+  const int listening_port = StartTcpServer();
+  ReadWriteWaiter waiter(/*required_receive_bytes=*/kRequiredBytes,
+                         /*required_send_bytes=*/0, tcp_server_socket());
+
+  const std::string script =
+      JsReplace("writeLargeTcpPacket($1, $2, $3)",
+                net::IPAddress::IPv4Localhost().ToString(), listening_port,
+                kRequiredBytes);
+
+  EXPECT_EQ("writeLargeTcpPacket succeeded", EvalJs(shell(), script));
   waiter.Await();
 }
 

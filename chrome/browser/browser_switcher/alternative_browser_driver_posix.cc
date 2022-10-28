@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,6 +9,7 @@
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/process/launch.h"
+#include "base/ranges/algorithm.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -88,7 +89,7 @@ void ExpandEnvironmentVariables(std::string* arg) {
   static re2::LazyRE2 re = {
       "\\$\\{([a-zA-Z_][a-zA-Z_0-9]*)\\}|\\$([a-zA-Z_][a-zA-Z_0-9]*)"};
   std::string out;
-  re2::StringPiece submatch[3] = {0};
+  re2::StringPiece submatch[3] = {nullptr};
   size_t start = 0;
   bool matched = false;
   while (re->Match(*arg, start, arg->size(), re2::RE2::Anchor::UNANCHORED,
@@ -100,7 +101,7 @@ void ExpandEnvironmentVariables(std::string* arg) {
     } else {
       std::string var_name((submatch[1].empty() ? submatch[2] : submatch[1]));
       const char* var_value = getenv(var_name.c_str());
-      if (var_value != NULL)
+      if (var_value != nullptr)
         out.append(var_value);
     }
     start = submatch[0].end() - arg->data();
@@ -114,10 +115,9 @@ void ExpandEnvironmentVariables(std::string* arg) {
 
 #if BUILDFLAG(IS_MAC)
 bool ContainsUrlVarName(const std::vector<std::string>& tokens) {
-  return std::any_of(tokens.begin(), tokens.end(),
-                     [](const std::string& token) {
-                       return token.find(kUrlVarName) != std::string::npos;
-                     });
+  return base::ranges::any_of(tokens, [](const std::string& token) {
+    return token.find(kUrlVarName) != std::string::npos;
+  });
 }
 #endif  // BUILDFLAG(IS_MAC)
 

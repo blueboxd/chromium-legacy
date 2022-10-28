@@ -1,10 +1,10 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chromeos/ash/services/assistant/test_support/fake_libassistant_service.h"
 
-#include "chromeos/services/libassistant/public/mojom/notification_delegate.mojom-forward.h"
+#include "chromeos/ash/services/libassistant/public/mojom/notification_delegate.mojom-forward.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

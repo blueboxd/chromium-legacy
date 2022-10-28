@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -43,7 +43,7 @@ class DeferredUpdateDialog {
   // Invoked when "cancel" button is clicked.
   void OnContinueWithoutUpdate();
   // Invoked when the dialog is closing.
-  void OnDialogClosing(base::OnceClosure callback);
+  void OnDialogClosing(bool shutdown_after_update, base::OnceClosure callback);
 
   DECLARE_CLASS_ELEMENT_IDENTIFIER_VALUE(kAutoUpdateCheckboxId);
   static DeferredUpdateDialog* dialog_;

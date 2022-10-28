@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -14,7 +14,7 @@
 #include "net/base/schemeful_site.h"
 #include "net/cookies/cookie_access_delegate.h"
 #include "net/cookies/cookie_partition_key.h"
-#include "net/cookies/first_party_set_entry.h"
+#include "net/first_party_sets/first_party_set_entry.h"
 
 namespace net {
 
@@ -82,7 +82,7 @@ CookiePartitionKeyCollection::FirstPartySetify(
   if (sites.empty())
     return *this;
   absl::optional<base::flat_map<SchemefulSite, FirstPartySetEntry>>
-      maybe_sites_to_entries = cookie_access_delegate->FindFirstPartySetOwners(
+      maybe_sites_to_entries = cookie_access_delegate->FindFirstPartySetEntries(
           sites,
           base::BindOnce(&TransformWithFirstPartySetEntries, PartitionKeys())
               .Then(std::move(callback)));

@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -29,9 +29,7 @@ TEST_F(ModelTypeTest, ModelTypeToValue) {
 TEST_F(ModelTypeTest, ModelTypeSetToValue) {
   const ModelTypeSet model_types(BOOKMARKS, APPS);
 
-  std::unique_ptr<base::ListValue> value(ModelTypeSetToValue(model_types));
-  ASSERT_TRUE(value->is_list());
-  base::Value::ConstListView value_list = value->GetListDeprecated();
+  base::Value::List value_list(ModelTypeSetToValue(model_types));
   ASSERT_EQ(2u, value_list.size());
   ASSERT_TRUE(value_list[0].is_string());
   EXPECT_EQ("Bookmarks", value_list[0].GetString());
@@ -152,6 +150,28 @@ TEST_F(ModelTypeTest, ModelTypeNotificationTypeMapping) {
       EXPECT_TRUE(notification_type.empty());
     }
   }
+}
+
+TEST_F(ModelTypeTest, ModelTypesSubsetsSanity) {
+  // UserTypes and ControlTypes shouldn't overlap.
+  EXPECT_TRUE(Intersection(UserTypes(), ControlTypes()).Empty());
+
+  // UserTypes should contain all *UserTypes.
+  EXPECT_TRUE(UserTypes().HasAll(AlwaysPreferredUserTypes()));
+  EXPECT_TRUE(UserTypes().HasAll(AlwaysEncryptedUserTypes()));
+  EXPECT_TRUE(UserTypes().HasAll(LowPriorityUserTypes()));
+  EXPECT_TRUE(UserTypes().HasAll(HighPriorityUserTypes()));
+
+  // Low-prio types and high-prio types shouldn't overlap.
+  EXPECT_TRUE(
+      Intersection(LowPriorityUserTypes(), HighPriorityUserTypes()).Empty());
+
+  // The always-encrypted types should be encryptable.
+  EXPECT_TRUE(EncryptableUserTypes().HasAll(AlwaysEncryptedUserTypes()));
+
+  // Commit-only types are meant for consumption on the server, and so should
+  // not be encryptable (with a custom passphrase).
+  EXPECT_TRUE(Intersection(CommitOnlyTypes(), EncryptableUserTypes()).Empty());
 }
 
 }  // namespace

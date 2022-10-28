@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -277,7 +277,7 @@ void SiteIsolationPolicy::ApplyPersistedIsolatedOrigins(
     std::vector<url::Origin> origins;
     for (const auto& value :
          user_prefs::UserPrefs::Get(browser_context)
-             ->GetValueList(prefs::kUserTriggeredIsolatedOrigins)) {
+             ->GetList(prefs::kUserTriggeredIsolatedOrigins)) {
       origins.push_back(url::Origin::Create(GURL(value.GetString())));
     }
 
@@ -299,7 +299,7 @@ void SiteIsolationPolicy::ApplyPersistedIsolatedOrigins(
 
     auto* pref_service = user_prefs::UserPrefs::Get(browser_context);
     const auto& dict =
-        pref_service->GetValueDict(prefs::kWebTriggeredIsolatedOrigins);
+        pref_service->GetDict(prefs::kWebTriggeredIsolatedOrigins);
     for (auto site_time_pair : dict) {
       // Only isolate origins that haven't expired.
       absl::optional<base::Time> timestamp =

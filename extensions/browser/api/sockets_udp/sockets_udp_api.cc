@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -59,20 +59,19 @@ sockets_udp::SocketInfo CreateSocketInfo(int socket_id,
   // to the system.
   socket_info.socket_id = socket_id;
   if (!socket->name().empty()) {
-    socket_info.name = std::make_unique<std::string>(socket->name());
+    socket_info.name = socket->name();
   }
   socket_info.persistent = socket->persistent();
   if (socket->buffer_size() > 0) {
-    socket_info.buffer_size = std::make_unique<int>(socket->buffer_size());
+    socket_info.buffer_size = socket->buffer_size();
   }
   socket_info.paused = socket->paused();
 
   // Grab the local address as known by the OS.
   net::IPEndPoint localAddress;
   if (socket->GetLocalAddress(&localAddress)) {
-    socket_info.local_address =
-        std::make_unique<std::string>(localAddress.ToStringWithoutPort());
-    socket_info.local_port = std::make_unique<int>(localAddress.port());
+    socket_info.local_address = localAddress.ToStringWithoutPort();
+    socket_info.local_port = localAddress.port();
   }
 
   return socket_info;
@@ -80,13 +79,13 @@ sockets_udp::SocketInfo CreateSocketInfo(int socket_id,
 
 void SetSocketProperties(ResumableUDPSocket* socket,
                          sockets_udp::SocketProperties* properties) {
-  if (properties->name.get()) {
+  if (properties->name) {
     socket->set_name(*properties->name);
   }
-  if (properties->persistent.get()) {
+  if (properties->persistent) {
     socket->set_persistent(*properties->persistent);
   }
-  if (properties->buffer_size.get()) {
+  if (properties->buffer_size) {
     socket->set_buffer_size(*properties->buffer_size);
   }
 }
@@ -113,7 +112,7 @@ ExtensionFunction::ResponseAction SocketsUdpCreateFunction::Work() {
 
   ResumableUDPSocket* socket = new ResumableUDPSocket(
       std::move(udp_socket), std::move(socket_listener_receiver),
-      extension_->id());
+      GetOriginId());
 
   sockets_udp::SocketProperties* properties = params->properties.get();
   if (properties) {
@@ -169,8 +168,7 @@ ExtensionFunction::ResponseAction SocketsUdpSetPausedFunction::Work() {
   if (socket->paused() != params->paused) {
     socket->set_paused(params->paused);
     if (socket->IsConnected() && !params->paused) {
-      socket_event_dispatcher->OnSocketResume(extension_->id(),
-                                              params->socket_id);
+      socket_event_dispatcher->OnSocketResume(GetOriginId(), params->socket_id);
     }
   }
 
@@ -214,8 +212,7 @@ void SocketsUdpBindFunction::OnCompleted(int net_result) {
     return;
   }
   if (net_result == net::OK) {
-    socket_event_dispatcher_->OnSocketBind(extension_->id(),
-                                           params_->socket_id);
+    socket_event_dispatcher_->OnSocketBind(GetOriginId(), params_->socket_id);
   } else {
     Respond(ErrorWithCode(net_result, net::ErrorToString(net_result)));
     return;
@@ -302,7 +299,7 @@ void SocketsUdpSendFunction::SetSendResult(int net_result, int bytes_sent) {
   sockets_udp::SendInfo send_info;
   send_info.result_code = net_result;
   if (net_result == net::OK) {
-    send_info.bytes_sent = std::make_unique<int>(bytes_sent);
+    send_info.bytes_sent = bytes_sent;
   }
 
   auto args = sockets_udp::Send::Results::Create(send_info);

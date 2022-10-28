@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -223,7 +223,7 @@ void ValidateManagedPreference(
   if (pref->user_selectable_values) {
     for (const auto& value : *pref->user_selectable_values) {
       pref_user_selectable_values.push_back(
-          static_cast<NotificationSetting>(value->GetInt()));
+          static_cast<NotificationSetting>(value.GetInt()));
     }
   }
   EXPECT_EQ(pref_user_selectable_values.size(),

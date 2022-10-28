@@ -1,4 +1,4 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -416,11 +416,10 @@ void PrintViewManagerBase::ScriptedPrintReply(
 
 void PrintViewManagerBase::UpdatePrintingEnabled() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  // The Unretained() is safe because ForEachRenderFrameHost() is synchronous.
   web_contents()->GetPrimaryMainFrame()->ForEachRenderFrameHost(
-      base::BindRepeating(&PrintViewManagerBase::SendPrintingEnabled,
-                          base::Unretained(this),
-                          printing_enabled_.GetValue()));
+      [this](content::RenderFrameHost* rfh) {
+        SendPrintingEnabled(printing_enabled_.GetValue(), rfh);
+      });
 }
 
 void PrintViewManagerBase::NavigationStopped() {

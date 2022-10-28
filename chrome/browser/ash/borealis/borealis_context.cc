@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -202,7 +202,7 @@ BorealisContext::BorealisContext(Profile* profile)
               kBorealisStabilityHistogram)),
       engagement_metrics_(std::make_unique<BorealisEngagementMetrics>(profile)),
       disk_manager_(std::make_unique<BorealisDiskManagerImpl>(this)),
-      power_controller_(std::make_unique<BorealisPowerController>()) {}
+      power_controller_(std::make_unique<BorealisPowerController>(profile)) {}
 
 std::unique_ptr<BorealisContext>
 BorealisContext::CreateBorealisContextForTesting(Profile* profile) {

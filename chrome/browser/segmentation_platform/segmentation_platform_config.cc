@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,10 +11,14 @@
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
+#include "components/segmentation_platform/embedder/default_model/cross_device_user_segment.h"
 #include "components/segmentation_platform/embedder/default_model/feed_user_segment.h"
+#include "components/segmentation_platform/embedder/default_model/intentional_user_model.h"
 #include "components/segmentation_platform/embedder/default_model/low_user_engagement_model.h"
+#include "components/segmentation_platform/embedder/default_model/shopping_user_model.h"
 #include "components/segmentation_platform/internal/config_parser.h"
 #include "components/segmentation_platform/public/config.h"
+#include "components/segmentation_platform/public/constants.h"
 #include "components/segmentation_platform/public/features.h"
 #include "components/segmentation_platform/public/model_provider.h"
 #include "components/segmentation_platform/public/proto/segmentation_platform.pb.h"
@@ -52,6 +56,17 @@ constexpr int kChromeLowUserEngagementSelectionTTLDays = 7;
 constexpr int kFeedUserSegmentSelectionTTLDays = 14;
 constexpr int kFeedUserSegmentUnknownSelectionTTLDays = 14;
 
+constexpr int kShoppingUserDefaultSelectionTTLDays = 7;
+constexpr int kShoppingUserDefaultUnknownSelectionTTLDays = 7;
+
+constexpr int kCrossDeviceUserSegmentSelectionTTLDays = 7;
+constexpr int kCrossDeviceUserSegmentUnknownSelectionTTLDays = 7;
+
+constexpr char kVariationsParamNameSegmentSelectionTTLDays[] =
+    "segment_selection_ttl_days";
+constexpr char kVariationsParamNameUnknownSelectionTTLDays[] =
+    "unknown_selection_ttl_days";
+
 #if BUILDFLAG(IS_ANDROID)
 
 constexpr int kAdaptiveToolbarDefaultSelectionTTLDays = 56;
@@ -79,7 +94,8 @@ std::unique_ptr<Config> GetConfigForAdaptiveToolbar() {
 
   int segment_selection_ttl_days = base::GetFieldTrialParamByFeatureAsInt(
       chrome::android::kAdaptiveButtonInTopToolbarCustomizationV2,
-      "segment_selection_ttl_days", kAdaptiveToolbarDefaultSelectionTTLDays);
+      kVariationsParamNameSegmentSelectionTTLDays,
+      kAdaptiveToolbarDefaultSelectionTTLDays);
   config->segment_selection_ttl = base::Days(segment_selection_ttl_days);
   // Do not set unknown TTL so that the platform ignores unknown results.
 
@@ -121,7 +137,8 @@ std::unique_ptr<Config> GetConfigForChromeStartAndroid() {
       GetChromeStartAndroidModel());
 
   int segment_selection_ttl_days = base::GetFieldTrialParamByFeatureAsInt(
-      chrome::android::kStartSurfaceAndroid, "segment_selection_ttl_days",
+      chrome::android::kStartSurfaceAndroid,
+      kVariationsParamNameSegmentSelectionTTLDays,
       kChromeStartDefaultSelectionTTLDays);
   int unknown_selection_ttl_days = base::GetFieldTrialParamByFeatureAsInt(
       chrome::android::kStartSurfaceAndroid,
@@ -156,6 +173,18 @@ std::unique_ptr<Config> GetConfigForQueryTiles() {
       kNumDaysMVCkicksBelowThreshold, kQueryTilesDefaultUnknownTTLDays);
   config->segment_selection_ttl = base::Days(segment_selection_ttl_days);
   config->unknown_selection_ttl = base::Days(unknown_selection_ttl_days);
+  return config;
+}
+
+std::unique_ptr<Config> GetConfigForIntentionalUser() {
+  auto config = std::make_unique<Config>();
+  config->segmentation_key = kIntentionalUserKey;
+  config->segmentation_uma_name = kIntentionalUserUmaName;
+  config->AddSegmentId(SegmentId::INTENTIONAL_USER_SEGMENT,
+                       std::make_unique<IntentionalUserModel>());
+  config->segment_selection_ttl = base::Days(28);
+  config->unknown_selection_ttl = base::Days(28);
+
   return config;
 }
 
@@ -229,11 +258,13 @@ std::unique_ptr<Config> GetConfigForChromeLowUserEngagement() {
 #if BUILDFLAG(IS_ANDROID)
   int segment_selection_ttl_days = base::GetFieldTrialParamByFeatureAsInt(
       feature_guide::features::kSegmentationModelLowEngagedUsers,
-      "segment_selection_ttl_days", kChromeLowUserEngagementSelectionTTLDays);
+      kVariationsParamNameSegmentSelectionTTLDays,
+      kChromeLowUserEngagementSelectionTTLDays);
 #else
   int segment_selection_ttl_days = base::GetFieldTrialParamByFeatureAsInt(
       features::kSegmentationPlatformLowEngagementFeature,
-      "segment_selection_ttl_days", kChromeLowUserEngagementSelectionTTLDays);
+      kVariationsParamNameSegmentSelectionTTLDays,
+      kChromeLowUserEngagementSelectionTTLDays);
 #endif
 
   config->segment_selection_ttl = base::Days(segment_selection_ttl_days);
@@ -259,12 +290,59 @@ std::unique_ptr<Config> GetConfigForFeedSegments() {
   config->segment_selection_ttl =
       base::Days(base::GetFieldTrialParamByFeatureAsInt(
           features::kSegmentationPlatformFeedSegmentFeature,
-          "segment_selection_ttl_days", kFeedUserSegmentSelectionTTLDays));
+          kVariationsParamNameSegmentSelectionTTLDays,
+          kFeedUserSegmentSelectionTTLDays));
   config->unknown_selection_ttl =
       base::Days(base::GetFieldTrialParamByFeatureAsInt(
           features::kSegmentationPlatformFeedSegmentFeature,
-          "unknown_selection_ttl_days",
+          kVariationsParamNameUnknownSelectionTTLDays,
           kFeedUserSegmentUnknownSelectionTTLDays));
+  return config;
+}
+
+std::unique_ptr<ModelProvider> GetShoppingUserDefaultModel() {
+  if (!base::GetFieldTrialParamByFeatureAsBool(
+          features::kShoppingUserSegmentFeature, kDefaultModelEnabledParam,
+          true)) {
+    return nullptr;
+  }
+  return std::make_unique<ShoppingUserModel>();
+}
+
+std::unique_ptr<Config> GetConfigForShoppingUser() {
+  auto config = std::make_unique<Config>();
+  config->segmentation_key = kShoppingUserSegmentationKey;
+  config->segmentation_uma_name = kShoppingUserUmaName;
+  config->AddSegmentId(
+      SegmentId::OPTIMIZATION_TARGET_SEGMENTATION_SHOPPING_USER,
+      GetShoppingUserDefaultModel());
+  config->segment_selection_ttl =
+      base::Days(base::GetFieldTrialParamByFeatureAsInt(
+          features::kShoppingUserSegmentFeature,
+          kVariationsParamNameSegmentSelectionTTLDays,
+          kShoppingUserDefaultSelectionTTLDays));
+  config->unknown_selection_ttl =
+      base::Days(base::GetFieldTrialParamByFeatureAsInt(
+          features::kShoppingUserSegmentFeature,
+          kVariationsParamNameUnknownSelectionTTLDays,
+          kShoppingUserDefaultUnknownSelectionTTLDays));
+  return config;
+}
+
+std::unique_ptr<ModelProvider> GetCrossDeviceUserSegmentDefautlModel() {
+  return std::make_unique<CrossDeviceUserSegment>();
+}
+
+std::unique_ptr<Config> GetConfigForCrossDeviceSegments() {
+  auto config = std::make_unique<Config>();
+  config->segmentation_key = kCrossDeviceUserKey;
+  config->segmentation_uma_name = kCrossDeviceUserUmaName;
+  config->AddSegmentId(SegmentId::CROSS_DEVICE_USER_SEGMENT,
+                       GetCrossDeviceUserSegmentDefautlModel());
+  config->segment_selection_ttl =
+      base::Days(kCrossDeviceUserSegmentSelectionTTLDays);
+  config->unknown_selection_ttl =
+      base::Days(kCrossDeviceUserSegmentUnknownSelectionTTLDays);
   return config;
 }
 
@@ -305,6 +383,8 @@ std::vector<std::unique_ptr<Config>> GetSegmentationPlatformConfig(
           query_tiles::features::kQueryTilesSegmentation)) {
     configs.emplace_back(GetConfigForQueryTiles());
   }
+
+  configs.emplace_back(GetConfigForIntentionalUser());
 #endif
   if (IsLowEngagementFeatureEnabled()) {
     configs.emplace_back(GetConfigForChromeLowUserEngagement());
@@ -314,6 +394,12 @@ std::vector<std::unique_ptr<Config>> GetSegmentationPlatformConfig(
           features::kSegmentationPlatformFeedSegmentFeature)) {
     configs.emplace_back(GetConfigForFeedSegments());
   }
+
+  if (base::FeatureList::IsEnabled(features::kShoppingUserSegmentFeature)) {
+    configs.emplace_back(GetConfigForShoppingUser());
+  }
+
+  configs.emplace_back(GetConfigForCrossDeviceSegments());
 
   AppendConfigsFromExperiments(configs);
   return configs;
@@ -351,6 +437,9 @@ void FieldTrialRegisterImpl::RegisterSubsegmentFieldTrialIfNeeded(
   // subsegment process is more stable.
   if (segment_id == SegmentId::OPTIMIZATION_TARGET_SEGMENTATION_FEED_USER) {
     group_name = FeedUserSegment::GetSubsegmentName(subsegment_rank);
+  }
+  if (segment_id == SegmentId::CROSS_DEVICE_USER_SEGMENT) {
+    group_name = CrossDeviceUserSegment::GetSubsegmentName(subsegment_rank);
   }
 
   if (!group_name) {

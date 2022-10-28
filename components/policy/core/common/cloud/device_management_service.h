@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -76,6 +76,7 @@ class POLICY_EXPORT DeviceManagementService {
   static constexpr int kPendingApproval = 412;
   static constexpr int kRequestTooLarge = 413;
   static constexpr int kConsumerAccountWithPackagedLicense = 417;
+  static constexpr int kInvalidPackagedDeviceForKiosk = 418;
   static constexpr int kTooManyRequests = 429;
   static constexpr int kInternalServerError = 500;
   static constexpr int kServiceUnavailable = 503;

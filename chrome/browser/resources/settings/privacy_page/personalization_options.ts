@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -154,6 +154,24 @@ export class SettingsPersonalizationOptionsElement extends
     // sync bridge for consent recording.
     return loadTimeData.getBoolean('isAutomatedPasswordChangeEnabled') &&
         !!this.syncStatus && !!this.syncStatus.signedIn;
+  }
+
+  private showPriceEmailNotificationsToggle_(): boolean {
+    // <if expr="chromeos_ash">
+    if (loadTimeData.getBoolean('syncSettingsCategorizationEnabled') &&
+        loadTimeData.getBoolean('isOSSettings')) {
+      // Should be hidden in OS settings.
+      return false;
+    }
+    // </if>
+    // Only show the toggle when the user signed in.
+    return loadTimeData.getBoolean('changePriceEmailNotificationsEnabled') &&
+        !!this.syncStatus && !!this.syncStatus.signedIn;
+  }
+
+  private getPriceEmailNotificationsPrefDesc_(): string {
+    const username = this.syncStatus!.signedInUsername || '';
+    return loadTimeData.getStringF('priceEmailNotificationsPrefDesc', username);
   }
 
   override ready() {

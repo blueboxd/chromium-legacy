@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -135,7 +135,7 @@ bool StructTraits<NotDiscoverableAdvertisementDataView,
   if (!data.ReadSalt(&out->salt))
     return false;
 
-  if (out->salt.size() != 1 && out->salt.size() != 6)
+  if (out->salt.size() != 1 && out->salt.size() != 2 && out->salt.size() != 6)
     return false;
 
   out->show_ui = data.show_ui();

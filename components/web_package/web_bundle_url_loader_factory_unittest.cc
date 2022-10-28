@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,6 +11,7 @@
 #include "components/web_package/web_bundle_memory_quota_consumer.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/system/data_pipe_utils.h"
+#include "mojo/public/cpp/system/functions.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
@@ -210,11 +211,11 @@ class WebBundleURLLoaderFactoryTest : public ::testing::Test {
   StartRequestResult StartRequest(const network::ResourceRequest& request) {
     StartRequestResult result;
     result.client = std::make_unique<network::TestURLLoaderClient>();
-    factory_->StartSubresourceRequest(
+    factory_->StartLoader(WebBundleURLLoaderFactory::CreateURLLoader(
         result.loader.BindNewPipeAndPassReceiver(), request,
         result.client->CreateRemote(),
         mojo::Remote<network::mojom::TrustedHeaderClient>(), base::Time::Now(),
-        base::TimeTicks::Now());
+        base::TimeTicks::Now(), base::DoNothing()));
     return result;
   }
 

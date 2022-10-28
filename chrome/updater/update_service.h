@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -210,6 +210,9 @@ class UpdateService : public base::RefCountedThreadSafe<UpdateService> {
   // Returns the version of the active updater. The version object is invalid
   // if an error (including timeout) occurs.
   virtual void GetVersion(base::OnceCallback<void(const base::Version&)>) = 0;
+
+  // Fetches policies from device management.
+  virtual void FetchPolicies(base::OnceCallback<void(int)> callback) = 0;
 
   // Registers given request to the updater.
   virtual void RegisterApp(const RegistrationRequest& request,

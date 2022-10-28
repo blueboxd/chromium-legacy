@@ -38,7 +38,7 @@ void GetManifestParseError(base::StringPiece manifest_json,
   simple_api::ManifestKeys manifest_keys;
   std::u16string error_16;
   bool result = simple_api::ManifestKeys::ParseFromDictionary(
-      base::Value::AsDictionaryValue(*manifest), &manifest_keys, &error_16);
+      manifest->GetDict(), &manifest_keys, &error_16);
 
   ASSERT_FALSE(result);
   *error = base::UTF16ToASCII(error_16);
@@ -51,7 +51,7 @@ void PopulateManifestKeys(base::StringPiece manifest_json,
 
   std::u16string error_16;
   bool result = simple_api::ManifestKeys::ParseFromDictionary(
-      base::Value::AsDictionaryValue(*manifest), manifest_keys, &error_16);
+      manifest->GetDict(), manifest_keys, &error_16);
 
   ASSERT_TRUE(result) << error_16;
   ASSERT_TRUE(error_16.empty()) << error_16;
@@ -98,7 +98,7 @@ TEST(JsonSchemaCompilerSimpleTest, OptionalStringParamsCreate) {
     std::unique_ptr<simple_api::OptionalString::Params> params(
         simple_api::OptionalString::Params::Create(params_value));
     EXPECT_TRUE(params.get());
-    EXPECT_FALSE(params->str.get());
+    EXPECT_FALSE(params->str);
   }
   {
     base::Value::List params_value;
@@ -106,7 +106,7 @@ TEST(JsonSchemaCompilerSimpleTest, OptionalStringParamsCreate) {
     std::unique_ptr<simple_api::OptionalString::Params> params(
         simple_api::OptionalString::Params::Create(params_value));
     EXPECT_TRUE(params.get());
-    EXPECT_TRUE(params->str.get());
+    EXPECT_TRUE(params->str);
     EXPECT_EQ("asdf", *params->str);
   }
 }
@@ -118,7 +118,7 @@ TEST(JsonSchemaCompilerSimpleTest, OptionalParamsTakingNull) {
     std::unique_ptr<simple_api::OptionalString::Params> params(
         simple_api::OptionalString::Params::Create(params_value));
     EXPECT_TRUE(params.get());
-    EXPECT_FALSE(params->str.get());
+    EXPECT_FALSE(params->str);
   }
 }
 
@@ -140,7 +140,7 @@ TEST(JsonSchemaCompilerSimpleTest, OptionalBeforeRequired) {
     std::unique_ptr<simple_api::OptionalBeforeRequired::Params> params(
         simple_api::OptionalBeforeRequired::Params::Create(params_value));
     EXPECT_TRUE(params.get());
-    EXPECT_FALSE(params->first.get());
+    EXPECT_FALSE(params->first);
     EXPECT_EQ("asdf", params->second);
   }
 }
@@ -160,7 +160,7 @@ TEST(JsonSchemaCompilerSimpleTest, TestTypePopulate) {
     EXPECT_EQ(1.1, test_type->number);
     EXPECT_EQ(4, test_type->integer);
     EXPECT_EQ(true, test_type->boolean);
-    EXPECT_EQ(*value, *test_type->ToValue());
+    EXPECT_EQ(*value, test_type->ToValue());
   }
   {
     auto test_type = std::make_unique<simple_api::TestType>();

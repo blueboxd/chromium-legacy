@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -127,7 +127,8 @@ class DiscardsGraphDumpImpl : public discards::mojom::GraphDump,
       const performance_manager::FrameNode* previous_embedder,
       EmbeddingType previous_embedding_type) override;
   // Ignored.
-  void OnTypeChanged(const performance_manager::PageNode* page_node) override {}
+  void OnTypeChanged(const performance_manager::PageNode* page_node,
+                     performance_manager::PageType previous_type) override {}
   // Ignored.
   void OnIsVisibleChanged(
       const performance_manager::PageNode* page_node) override {}

@@ -1,39 +1,46 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #ifndef CHROME_BROWSER_ASH_SYSTEM_EXTENSIONS_API_WINDOW_MANAGEMENT_WINDOW_MANAGEMENT_IMPL_H_
 #define CHROME_BROWSER_ASH_SYSTEM_EXTENSIONS_API_WINDOW_MANAGEMENT_WINDOW_MANAGEMENT_IMPL_H_
 
+#include "ash/wm/wm_default_layout_manager.h"
 #include "base/unguessable_token.h"
 #include "chrome/browser/profiles/profile.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
 #include "third_party/blink/public/mojom/chromeos/system_extensions/window_management/cros_window_management.mojom.h"
-#include "ui/aura/window.h"
-#include "ui/events/event_handler.h"
 
 namespace views {
 class Widget;
 }  // namespace views
 
+namespace aura {
+class Window;
+}  // namespace aura
+
 namespace ash {
 
-class WindowManagementImpl : public blink::mojom::CrosWindowManagement,
-                             public ui::EventHandler {
+class WindowManagementImpl : public WmDefaultLayoutManager,
+                             public blink::mojom::CrosWindowManagement {
  public:
   explicit WindowManagementImpl(
       int32_t render_process_host_id,
-      mojo::PendingAssociatedRemote<
-          blink::mojom::CrosWindowManagementStartObserver>
+      mojo::PendingAssociatedRemote<blink::mojom::CrosWindowManagementObserver>
           observer_pending_remote);
   ~WindowManagementImpl() override;
 
   // Sends a 'start' event to the renderer through the
-  // blink::mojom::CrosWindowManagementStartObserver interface.
+  // blink::mojom::CrosWindowManagementObserver interface.
   void DispatchStartEvent();
 
-  // ui::EventHandler
-  void OnKeyEvent(ui::KeyEvent* event) override;
+  void DispatchWindowClosedEvent(const base::UnguessableToken& id);
+
+  void DispatchWindowOpenedEvent(const base::UnguessableToken& id);
+
+  // Sends an AcceleratorEvent to the renderer through the
+  // blink::mojom::CrosWindowManagementObserver interface.
+  void DispatchAcceleratorEvent(blink::mojom::AcceleratorEventPtr event_ptr);
 
   // blink::mojom::CrosWindowManagement
   void GetAllWindows(GetAllWindowsCallback callback) override;
@@ -60,6 +67,8 @@ class WindowManagementImpl : public blink::mojom::CrosWindowManagement,
                 MaximizeCallback callback) override;
   void Minimize(const base::UnguessableToken& id,
                 MinimizeCallback callback) override;
+  void Restore(const base::UnguessableToken& id,
+               RestoreCallback callback) override;
   void Focus(const base::UnguessableToken& id, FocusCallback callback) override;
   void Close(const base::UnguessableToken& id, CloseCallback callback) override;
   void GetAllScreens(GetAllScreensCallback callback) override;
@@ -77,8 +86,7 @@ class WindowManagementImpl : public blink::mojom::CrosWindowManagement,
   int32_t render_process_host_id_;
 
   // Used to send events to the renderer.
-  mojo::AssociatedRemote<blink::mojom::CrosWindowManagementStartObserver>
-      observer_;
+  mojo::AssociatedRemote<blink::mojom::CrosWindowManagementObserver> observer_;
 };
 
 }  // namespace ash

@@ -1,4 +1,4 @@
-# Copyright 2014 The Chromium Authors. All rights reserved.
+# Copyright 2014 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -52,6 +52,8 @@ source_set("audio") {
     "//media/base/android",
   ]
   sources = [
+    "aecdump_recording_manager.cc",
+    "aecdump_recording_manager.h",
     "agc_audio_stream.h",
     "alive_checker.cc",
     "alive_checker.h",
@@ -358,6 +360,8 @@ static_library("test_support") {
     "audio_system_test_util.h",
     "audio_unittest_util.cc",
     "audio_unittest_util.h",
+    "mock_aecdump_recording_manager.cc",
+    "mock_aecdump_recording_manager.h",
     "mock_audio_debug_recording_manager.cc",
     "mock_audio_debug_recording_manager.h",
     "mock_audio_manager.cc",
@@ -394,6 +398,7 @@ static_library("test_support") {
 source_set("unit_tests") {
   testonly = true
   sources = [
+    "aecdump_recording_manager_unittest.cc",
     "alive_checker_unittest.cc",
     "audio_debug_file_writer_unittest.cc",
     "audio_debug_recording_helper_unittest.cc",
@@ -455,16 +460,20 @@ source_set("unit_tests") {
     ]
 
     if (use_cras) {
-      sources += [
-        "cras/audio_manager_chromeos_unittest.cc",
-        "cras/cras_input_unittest.cc",
-        "cras/cras_unified_unittest.cc",
-      ]
+      sources += [ "cras/audio_manager_chromeos_unittest.cc" ]
     }
   }
 
   if (is_chromeos_lacros && use_cras) {
     sources += [ "cras/audio_manager_cras_unittest.cc" ]
+  }
+
+  if (use_cras) {
+    sources += [
+      "cras/audio_manager_cras_base_unittest.cc",
+      "cras/cras_input_unittest.cc",
+      "cras/cras_unified_unittest.cc",
+    ]
   }
 
   if (is_win) {

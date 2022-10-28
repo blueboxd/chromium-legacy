@@ -1,10 +1,11 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #ifndef COMPONENTS_DEVICE_SIGNALS_CORE_SYSTEM_SIGNALS_BASE_PLATFORM_DELEGATE_H_
 #define COMPONENTS_DEVICE_SIGNALS_CORE_SYSTEM_SIGNALS_BASE_PLATFORM_DELEGATE_H_
 
+#include "build/build_config.h"
 #include "components/device_signals/core/system_signals/platform_delegate.h"
 
 namespace device_signals {
@@ -18,16 +19,16 @@ class BasePlatformDelegate : public PlatformDelegate {
   // PlatformDelegate:
   bool PathIsReadable(const base::FilePath& file_path) const override;
   bool DirectoryExists(const base::FilePath& file_path) const override;
-  FilePathMap<ExecutableMetadata> GetAllExecutableMetadata(
+  FilePathMap<bool> AreExecutablesRunning(
       const FilePathSet& file_paths) override;
+
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC)
+  absl::optional<ProductMetadata> GetProductMetadata(
+      const base::FilePath& file_path) override;
+#endif  // BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC)
 
  protected:
   BasePlatformDelegate();
-
-  // Returns a map of file paths to whether a currently running process was
-  // spawned from that file. The set of file paths in the map are specified by
-  // `file_paths`.
-  FilePathMap<bool> AreExecutablesRunning(const FilePathSet& file_paths);
 };
 
 }  // namespace device_signals

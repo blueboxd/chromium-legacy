@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -249,7 +249,7 @@ class TypedURLSyncBridge : public syncer::ModelTypeSyncBridge,
 
   // Since HistoryBackend use SequencedTaskRunner, so should use SequenceChecker
   // here.
-  base::SequenceChecker sequence_checker_;
+  SEQUENCE_CHECKER(sequence_checker_);
 
   // Tracks observed history backend, for receiving updates from history
   // backend.

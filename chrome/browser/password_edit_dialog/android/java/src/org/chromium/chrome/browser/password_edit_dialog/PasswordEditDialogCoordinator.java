@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -127,7 +127,7 @@ class PasswordEditDialogCoordinator {
         PropertyModelChangeProcessor.create(
                 mDialogViewModel, mDialogView, PasswordEditDialogViewBinder::bind);
 
-        mModalDialogManager.showDialog(mDialogModel, ModalDialogManager.ModalDialogType.TAB);
+        mModalDialogManager.showDialog(mDialogModel, ModalDialogManager.ModalDialogType.APP);
     }
 
     /**
@@ -143,7 +143,10 @@ class PasswordEditDialogCoordinator {
      */
     void showUpdatePasswordDialog(@NonNull String[] usernames, int selectedUsernameIndex,
             @NonNull String password, @Nullable String account) {
-        mDialogModel = createModalDialogModel(mIsDialogWithDetailsFeatureEnabled
+        // If there is more than one username possible,
+        // the user is asked to confirm the one to be saved.
+        // Otherwise, they are just asked if they want to update the password.
+        mDialogModel = createModalDialogModel(usernames.length < 2
                         ? R.string.password_update_dialog_title
                         : R.string.confirm_username_dialog_title,
                 R.string.password_manager_update_button);
@@ -157,7 +160,9 @@ class PasswordEditDialogCoordinator {
         PropertyModelChangeProcessor.create(
                 mDialogViewModel, mDialogView, PasswordEditDialogViewBinder::bind);
 
-        mModalDialogManager.showDialog(mDialogModel, ModalDialogManager.ModalDialogType.TAB);
+        mModalDialogManager.showDialog(mDialogModel,
+                mIsDialogWithDetailsFeatureEnabled ? ModalDialogManager.ModalDialogType.APP
+                                                   : ModalDialogManager.ModalDialogType.TAB);
     }
 
     private PropertyModel createDialogViewModel(

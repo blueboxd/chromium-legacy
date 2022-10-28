@@ -1,18 +1,18 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #import "ios/components/security_interstitials/safe_browsing/safe_browsing_unsafe_resource_container.h"
 
-#include <list>
+#import <list>
 
-#include "base/callback.h"
-#include "base/check.h"
-#include "base/memory/ptr_util.h"
+#import "base/callback.h"
+#import "base/check.h"
+#import "base/memory/ptr_util.h"
 #import "ios/web/public/navigation/navigation_item.h"
 #import "ios/web/public/navigation/navigation_manager.h"
 #import "ios/web/public/web_state.h"
-#include "services/network/public/mojom/fetch_api.mojom.h"
+#import "services/network/public/mojom/fetch_api.mojom.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -28,7 +28,7 @@ class UnsafeSubresourceContainer : public base::SupportsUserData::Data {
  public:
   ~UnsafeSubresourceContainer() override = default;
 
-  // Lazily instantiates and returns the UnsafeSubresourceContainer for |item|.
+  // Lazily instantiates and returns the UnsafeSubresourceContainer for `item`.
   static UnsafeSubresourceContainer* FromNavigationItem(
       web::NavigationItem* item) {
     DCHECK(item);
@@ -57,7 +57,7 @@ class UnsafeSubresourceContainer : public base::SupportsUserData::Data {
     return nullptr;
   }
 
-  // Stores |resource| in the container.
+  // Stores `resource` in the container.
   void StoreUnsafeResource(const UnsafeResource& resource) {
     unsafe_resources_.push_back(PendingUnsafeResourceStorage(resource));
   }
@@ -94,7 +94,7 @@ void SafeBrowsingUnsafeResourceContainer::StoreMainFrameUnsafeResource(
             resource.request_destination);
 
   // For main frame navigations, the copy is stored in
-  // |main_frame_unsafe_resource_|.  It corresponds with the pending
+  // `main_frame_unsafe_resource_`.  It corresponds with the pending
   // NavigationItem, which may have not been created yet and will be discarded
   // after navigation failures.
   main_frame_unsafe_resource_ = PendingUnsafeResourceStorage(resource);

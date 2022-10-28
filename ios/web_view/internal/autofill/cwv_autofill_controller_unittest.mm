@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -27,10 +27,11 @@
 #include "components/password_manager/core/browser/password_manager.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
 #import "components/password_manager/ios/ios_password_manager_driver.h"
+#import "components/password_manager/ios/ios_password_manager_driver_factory.h"
 #import "components/password_manager/ios/shared_password_controller.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/testing_pref_service.h"
-#include "components/sync/driver/test_sync_service.h"
+#import "components/sync/test/test_sync_service.h"
 #include "ios/web/public/js_messaging/web_frames_manager.h"
 #include "ios/web/public/test/fakes/fake_browser_state.h"
 #import "ios/web/public/test/fakes/fake_web_frame.h"
@@ -105,8 +106,8 @@ class CWVAutofillControllerTest : public web::WebTest {
     auto password_manager = std::make_unique<password_manager::PasswordManager>(
         password_manager_client.get());
     password_controller_ = OCMClassMock([SharedPasswordController class]);
-    auto password_manager_driver = std::make_unique<IOSPasswordManagerDriver>(
-        password_controller_, password_manager.get());
+    IOSPasswordManagerDriverFactory::CreateForWebState(
+        password_controller_, password_manager.get(), &web_state_);
     password_manager_client_ = password_manager_client.get();
 
     auto autofill_client = std::make_unique<autofill::WebViewAutofillClientIOS>(
@@ -120,7 +121,6 @@ class CWVAutofillControllerTest : public web::WebTest {
                 autofillAgent:autofill_agent_
               passwordManager:std::move(password_manager)
         passwordManagerClient:std::move(password_manager_client)
-        passwordManagerDriver:std::move(password_manager_driver)
            passwordController:password_controller_
             applicationLocale:kApplicationLocale];
     form_activity_tab_helper_ =
@@ -171,7 +171,6 @@ TEST_F(CWVAutofillControllerTest, FetchProfileSuggestions) {
 
   OCMExpect([password_controller_
       checkIfSuggestionsAvailableForForm:[OCMArg any]
-                             isMainFrame:NO
                           hasUserGesture:YES
                                 webState:&web_state_
                        completionHandler:[OCMArg checkWithBlock:^(void (
@@ -213,7 +212,6 @@ TEST_F(CWVAutofillControllerTest, FetchPasswordSuggestions) {
                            requiresReauth:NO];
   OCMExpect([password_controller_
       checkIfSuggestionsAvailableForForm:[OCMArg any]
-                             isMainFrame:NO
                           hasUserGesture:YES
                                 webState:&web_state_
                        completionHandler:[OCMArg checkWithBlock:^(void (
@@ -401,8 +399,7 @@ TEST_F(CWVAutofillControllerTest, SubmitCallback) {
   form_activity_tab_helper_->DocumentSubmitted(
       /*sender_frame*/ frame.get(), base::SysNSStringToUTF8(kTestFormName),
       /*form_data=*/"",
-      /*user_initiated=*/true,
-      /*is_main_frame=*/true);
+      /*user_initiated=*/true);
 
   [[delegate expect] autofillController:autofill_controller_
                   didSubmitFormWithName:kTestFormName
@@ -412,8 +409,7 @@ TEST_F(CWVAutofillControllerTest, SubmitCallback) {
   form_activity_tab_helper_->DocumentSubmitted(
       /*sender_frame*/ frame.get(), base::SysNSStringToUTF8(kTestFormName),
       /*form_data=*/"",
-      /*user_initiated=*/false,
-      /*is_main_frame=*/true);
+      /*user_initiated=*/false);
 
   [delegate verify];
 }

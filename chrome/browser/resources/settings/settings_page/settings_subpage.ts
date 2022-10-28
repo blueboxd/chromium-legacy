@@ -1,4 +1,4 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,8 +10,8 @@
 
 import '//resources/cr_elements/cr_icon_button/cr_icon_button.js';
 import '//resources/cr_elements/cr_search_field/cr_search_field.js';
-import '//resources/cr_elements/icons.m.js';
-import '//resources/cr_elements/shared_style_css.m.js';
+import '//resources/cr_elements/icons.html.js';
+import '//resources/cr_elements/cr_shared_style.css.js';
 import '//resources/polymer/v3_0/paper-spinner/paper-spinner-lite.js';
 import '../settings_shared.css.js';
 import '../site_favicon.js';
@@ -19,12 +19,12 @@ import '../site_favicon.js';
 import {CrSearchFieldElement} from '//resources/cr_elements/cr_search_field/cr_search_field.js';
 import {FindShortcutMixin, FindShortcutMixinInterface} from '//resources/cr_elements/find_shortcut_mixin.js';
 import {assert} from '//resources/js/assert_ts.js';
-import {focusWithoutInk} from '//resources/js/cr/ui/focus_without_ink.m.js';
+import {focusWithoutInk} from '//resources/js/cr/ui/focus_without_ink.js';
 import {I18nMixin, I18nMixinInterface} from '//resources/js/i18n_mixin.js';
 import {listenOnce} from '//resources/js/util.m.js';
 import {IronResizableBehavior} from '//resources/polymer/v3_0/iron-resizable-behavior/iron-resizable-behavior.js';
 import {afterNextRender, mixinBehaviors, PolymerElement} from '//resources/polymer/v3_0/polymer/polymer_bundled.min.js';
-import {EventTracker} from 'chrome://resources/js/event_tracker.m.js';
+import {EventTracker} from 'chrome://resources/js/event_tracker.js';
 
 import {loadTimeData} from '../i18n_setup.js';
 import {Route, RouteObserverMixin, RouteObserverMixinInterface, Router} from '../router.js';

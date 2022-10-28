@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -63,10 +63,33 @@ struct GetAppAvailabilityRequest
   std::string app_id;
 };
 
+struct LaunchSessionCallbackWrapper;
+
 // Represents an app launch request to a Cast sink.
+// The callback sets `out_callback` if launch handling is not done and we're
+// expecting another launch response from the receiver that we'd need to handle.
+// `out_callback` is not set if the caller is certain that no more launch
+// response handling is needed (alternatively we could guarantee that it's not
+// null, but that'd require more boilerplate code).
+// We need to use an output parameter instead of a return value because we
+// cannot bind a weak_ptr to a function with a return value.
+// We need a wrapper struct because LaunchSessionCallback's definition cannot
+// depend on itself.
 using LaunchSessionCallback =
-    base::OnceCallback<void(LaunchSessionResponse response)>;
+    base::OnceCallback<void(LaunchSessionResponse response,
+                            LaunchSessionCallbackWrapper* out_callback)>;
 using LaunchSessionRequest = PendingRequest<LaunchSessionCallback>;
+
+struct LaunchSessionCallbackWrapper {
+  LaunchSessionCallbackWrapper();
+  LaunchSessionCallbackWrapper(const LaunchSessionCallbackWrapper& other) =
+      delete;
+  LaunchSessionCallbackWrapper& operator=(
+      const LaunchSessionCallbackWrapper& other) = delete;
+  ~LaunchSessionCallbackWrapper();
+
+  LaunchSessionCallback callback;
+};
 
 enum class Result { kOk, kFailed };
 using ResultCallback = base::OnceCallback<void(Result result)>;
@@ -255,7 +278,7 @@ class CastMessageHandler : public CastSocket::Observer {
   void OnMessage(const CastSocket& socket, const CastMessage& message) override;
   void OnReadyStateChanged(const CastSocket& socket) override;
 
-  const std::string& sender_id() const { return sender_id_; }
+  const std::string& source_id() const { return source_id_; }
 
  private:
   friend class CastMessageHandlerTest;
@@ -327,7 +350,7 @@ class CastMessageHandler : public CastSocket::Observer {
 
   // Source ID used for platform messages. The suffix is randomized to
   // distinguish it from other Cast senders on the same network.
-  const std::string sender_id_;
+  const std::string source_id_;
 
   // Used for parsing JSON payload from receivers.
   ParseJsonCallback parse_json_;

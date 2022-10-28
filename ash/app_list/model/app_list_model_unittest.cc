@@ -1,4 +1,4 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -125,8 +125,8 @@ class AppListModelTest : public testing::Test {
     AppListFolderItem* folder = new AppListFolderItem(name, model_.get());
     model_->AddItem(folder);  // Takes ownership.
     for (int i = 0; static_cast<size_t>(i) < num_apps; ++i) {
-      std::string name = model_->GetItemName(i);
-      model_->AddItemToFolder(model_->CreateItem(name), folder->id());
+      model_->AddItemToFolder(model_->CreateItem(model_->GetItemName(i)),
+                              folder->id());
     }
     return folder;
   }

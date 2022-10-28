@@ -1,4 +1,4 @@
-# Copyright 2016 The Chromium Authors. All rights reserved.
+# Copyright 2016 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -85,8 +85,11 @@ java_annotation_processor("jni_processor") {
 
     # Avoids a circular dependency with base:base_java. This is okay because
     # no target should ever expect to package an annotation processor.
+    # TODO(https://crbug.com/1038372): Remove base after downstream migrates.
     "//build/android/java/src/org/chromium/base/annotations/CheckDiscard.java",
     "//build/android/java/src/org/chromium/base/annotations/MainDex.java",
+    "//build/android/java/src/org/chromium/build/annotations/CheckDiscard.java",
+    "//build/android/java/src/org/chromium/build/annotations/MainDex.java",
   ]
 
   main_class = "org.chromium.jni_generator.JniProcessor"

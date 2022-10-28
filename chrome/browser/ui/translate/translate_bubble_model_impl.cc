@@ -1,4 +1,4 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -66,7 +66,7 @@ void TranslateBubbleModelImpl::SetViewState(
 }
 
 void TranslateBubbleModelImpl::ShowError(
-    translate::TranslateErrors::Type error_type) {
+    translate::TranslateErrors error_type) {
   ui_delegate_->OnErrorShown(error_type);
 }
 

@@ -1,10 +1,9 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include <memory>
 
-#include "ash/components/drivefs/fake_drivefs.h"
 #include "ash/webui/projector_app/buildflags.h"
 #include "ash/webui/projector_app/projector_app_client.h"
 #include "ash/webui/projector_app/projector_screencast.h"
@@ -21,11 +20,16 @@
 #include "chrome/browser/ash/drive/drivefs_test_support.h"
 #include "chrome/browser/ash/system_web_apps/test_support/system_web_app_integration_test.h"
 #include "chrome/browser/ash/system_web_apps/types/system_web_app_type.h"
+#include "chrome/browser/notifications/notification_display_service.h"
+#include "chrome/browser/notifications/notification_display_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/ash/projector/projector_utils.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/web_applications/test/profile_test_helper.h"
 #include "chrome/test/base/in_process_browser_test.h"
+#include "chromeos/ash/components/drivefs/fake_drivefs.h"
+#include "chromeos/ash/components/drivefs/mojom/drivefs.mojom.h"
 #include "components/drive/file_errors.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
@@ -133,6 +137,35 @@ class ScreencastManagerTestWithDriveFs : public ScreencastManagerTest {
                            /*shared_with_me=*/shared_with_me);
   }
 
+  void MockDriveSyncingStatusUpdateForPaths(
+      const std::vector<std::string>& paths) {
+    drivefs::mojom::SyncingStatus syncing_status;
+    for (const std::string& path : paths) {
+      syncing_status.item_events.emplace_back(
+          absl::in_place, /*stable_id=*/1, /*group_id=*/1, path,
+          drivefs::mojom::ItemEvent::State::kInProgress,
+          /*bytes_transferred=*/50, /*bytes_to_transfer=*/100,
+          drivefs::mojom::ItemEventReason::kTransfer);
+    }
+
+    auto& drivefs_delegate =
+        GetFakeDriveFsForProfile(browser()->profile())->delegate();
+    drivefs_delegate->OnSyncingStatusUpdate(syncing_status.Clone());
+    drivefs_delegate.FlushForTesting();
+  }
+
+  void VerifyNotificationSize(size_t size) {
+    base::RunLoop run_loop;
+    NotificationDisplayServiceFactory::GetForProfile(browser()->profile())
+        ->GetDisplayed(base::BindLambdaForTesting(
+            [&run_loop, &size](std::set<std::string> displayed_notifications,
+                               bool supports_synchronization) {
+              EXPECT_EQ(size, displayed_notifications.size());
+              run_loop.Quit();
+            }));
+    run_loop.Run();
+  }
+
  protected:
   drivefs::FakeDriveFs* GetFakeDriveFsForProfile(Profile* profile) {
     return &fake_drivefs_helpers_[profile]->fake_drivefs();
@@ -226,23 +259,46 @@ IN_PROC_BROWSER_TEST_P(ScreencastManagerTestWithDriveFs, GetVideoSuccess) {
   // `kVideoFileName`.
   AddTestMediaFileToDefaultFolder(kTestVideoFile, kVideoFileName,
                                   kProjectorMediaMimeType, false);
+
+  const base::FilePath test_path = GetTestFile(kVideoFileName, true);
+
   base::RunLoop run_loop;
   ProjectorAppClient::Get()->GetVideo(
       kVideoFileId, kResourceKey,
       base::BindLambdaForTesting(
-          [&run_loop](std::unique_ptr<ProjectorScreencastVideo> video,
-                      const std::string& error_message) {
+          [&](std::unique_ptr<ProjectorScreencastVideo> video,
+              const std::string& error_message) {
             EXPECT_EQ(video->file_id, kVideoFileId);
             EXPECT_EQ(video->duration_millis, kTestVideoDurationMilliesecond);
             EXPECT_TRUE(error_message.empty());
+
+            // Simulates both Projector test files and another unrelated file
+            // are syncing.:
+            MockDriveSyncingStatusUpdateForPaths(
+                {test_path.value(), "unrelated file"});
+            // Expects 1 notification is shown:
+            VerifyNotificationSize(1);
+
+            // Mocks only one Projector file is syncing:
+            MockDriveSyncingStatusUpdateForPaths({test_path.value()});
+            // Expects no notification is shown:
+            VerifyNotificationSize(0);
+
             run_loop.Quit();
           }));
+
   run_loop.Run();
+
+  // Verifies the notification shows up again if app closed:
+  ProjectorAppClient::Get()->NotifyAppUIActive(false);
+  MockDriveSyncingStatusUpdateForPaths({test_path.value()});
+  // Expects 1 notification is shown:
+  VerifyNotificationSize(1);
 }
 
 // Tests that the ScreencastManager rejects malformed video files.
 IN_PROC_BROWSER_TEST_P(ScreencastManagerTestWithDriveFs,
-                       GetMalFormedVideoFail) {
+                       GetMalformedVideoFail) {
   // Uses a binary file for this test and renames it to `kVideoFileName`.
   AddTestMediaFileToDefaultFolder("bear-audio-mp4a.69.ts", kVideoFileName,
                                   kProjectorMediaMimeType, true);
@@ -250,12 +306,18 @@ IN_PROC_BROWSER_TEST_P(ScreencastManagerTestWithDriveFs,
   ProjectorAppClient::Get()->GetVideo(
       kVideoFileId, kResourceKey,
       base::BindLambdaForTesting(
-          [&run_loop](std::unique_ptr<ProjectorScreencastVideo> video,
-                      const std::string& error_message) {
+          [&](std::unique_ptr<ProjectorScreencastVideo> video,
+              const std::string& error_message) {
             EXPECT_EQ(error_message,
                       base::StringPrintf(
                           "Media might be malformed with video file id=%s",
                           kVideoFileId));
+            // Mocks the test file is syncing:
+            MockDriveSyncingStatusUpdateForPaths(
+                {GetTestFile(kVideoFileName, true).value()});
+
+            // Expects the notification is suppressed.
+            VerifyNotificationSize(0);
             run_loop.Quit();
           }));
   run_loop.Run();
@@ -296,14 +358,11 @@ IN_PROC_BROWSER_TEST_P(ScreencastManagerTestWithDriveFs,
   ASSERT_TRUE(first_browser);
   EXPECT_EQ(first_browser->tab_strip_model()->GetActiveWebContents(), app);
 
-  // Use LaunchAppWithFileWithoutWaiting() instead of LaunchAppWithFile()
-  // because the second one waits for the app to finish loading, but we don't
-  // reload the app when we send files. Thus, LaunchAppWithFile() would time out
-  // and we should use LaunchAppWithFileWithoutWaiting() instead.
+  base::FilePath fake_path(kVideoFileId);
   base::FilePath absolute_path =
       GetTestFile(kVideoFileName, /*relative=*/false);
-  app = LaunchAppWithFileWithoutWaiting(SystemWebAppType::PROJECTOR,
-                                        absolute_path);
+  SendFilesToProjectorApp({fake_path, absolute_path});
+
   Browser* second_browser = chrome::FindBrowserWithActiveWindow();
   // Launching the app with files should not open a new window.
   EXPECT_EQ(first_browser, second_browser);
@@ -368,10 +427,10 @@ IN_PROC_BROWSER_TEST_P(ScreencastManagerTestWithDriveFs,
   // Launch the app for the first time.
   content::WebContents* app = LaunchApp(ash::SystemWebAppType::PROJECTOR);
   EXPECT_TRUE(WaitForLoadStop(app));
+  base::FilePath fake_path(kVideoFileId);
   base::FilePath absolute_path =
       GetTestFile("NotFoundError.file", /*relative=*/false);
-  app = LaunchAppWithFileWithoutWaiting(SystemWebAppType::PROJECTOR,
-                                        absolute_path);
+  SendFilesToProjectorApp({fake_path, absolute_path});
 
   const std::string& script = base::StringPrintf(kGetVideoScript, kVideoFileId);
   content::EvalJsResult result =
@@ -391,10 +450,10 @@ IN_PROC_BROWSER_TEST_P(ScreencastManagerTestWithDriveFs, NotAVideoMimeType) {
   // Launch the app for the first time.
   content::WebContents* app = LaunchApp(ash::SystemWebAppType::PROJECTOR);
   EXPECT_TRUE(WaitForLoadStop(app));
+  base::FilePath fake_path(kVideoFileId);
   base::FilePath absolute_path =
       GetTestFile("MyTestScreencast.txt", /*relative=*/false);
-  app = LaunchAppWithFileWithoutWaiting(SystemWebAppType::PROJECTOR,
-                                        absolute_path);
+  SendFilesToProjectorApp({fake_path, absolute_path});
 
   AddTestMediaFileToDefaultFolder(kTestVideoFile, kVideoFileName, "text/plain",
                                   /*shared_with_me=*/true);

@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -91,7 +91,7 @@ void SnapshotHoursPolicyService::UpdatePolicy() {
     return;
 
   const base::Value::Dict& dict =
-      local_state_->GetValueDict(prefs::kArcSnapshotHours);
+      local_state_->GetDict(prefs::kArcSnapshotHours);
 
   const auto* timezone = dict.FindString("timezone");
   std::string timezone_str = "";

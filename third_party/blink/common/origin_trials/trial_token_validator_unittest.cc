@@ -465,8 +465,8 @@ class ValidateTokenAndTrialWithOriginInfoWrapper : public ValidateTokenWrapper {
                             base::span<const url::Origin> script_origins,
                             base::Time timestamp) const override {
     std::vector<TrialTokenValidator::OriginInfo> info;
-    for (const url::Origin& origin : script_origins) {
-      info.emplace_back(origin);
+    for (const url::Origin& script_origin : script_origins) {
+      info.emplace_back(script_origin);
     }
     return validator_.ValidateTokenAndTrialWithOriginInfo(
         token, TrialTokenValidator::OriginInfo(origin), info, timestamp);
@@ -479,7 +479,7 @@ class ValidateTokenWrapperFactory {
   virtual std::unique_ptr<const ValidateTokenWrapper> CreateWrapper(
       const blink::TrialTokenValidator& validator) const {
     return std::make_unique<ValidateTokenWrapper>(validator);
-  };
+  }
 };
 
 class ValidateTokenAndTrialWrapperFactory : public ValidateTokenWrapperFactory {
@@ -488,7 +488,7 @@ class ValidateTokenAndTrialWrapperFactory : public ValidateTokenWrapperFactory {
   std::unique_ptr<const ValidateTokenWrapper> CreateWrapper(
       const blink::TrialTokenValidator& validator) const override {
     return std::make_unique<ValidateTokenAndTrialWrapper>(validator);
-  };
+  }
 };
 
 class ValidateTokenAndTrialWithOriginInfoWrapperFactory
@@ -499,7 +499,7 @@ class ValidateTokenAndTrialWithOriginInfoWrapperFactory
       const blink::TrialTokenValidator& validator) const override {
     return std::make_unique<ValidateTokenAndTrialWithOriginInfoWrapper>(
         validator);
-  };
+  }
 };
 
 // Test suite for tests where TrialTokenValidator::ValidateToken and

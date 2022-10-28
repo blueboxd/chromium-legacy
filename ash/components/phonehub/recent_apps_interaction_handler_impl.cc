@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -155,7 +155,7 @@ void RecentAppsInteractionHandlerImpl::
   if (!has_loaded_prefs_) {
     PA_LOG(INFO) << "LoadRecentAppMetadataListFromPref";
     const base::Value::List& recent_apps_history_pref =
-        pref_service_->GetValueList(prefs::kRecentAppsHistory);
+        pref_service_->GetList(prefs::kRecentAppsHistory);
     for (const auto& value : recent_apps_history_pref) {
       DCHECK(value.is_dict());
       recent_app_metadata_list_.emplace_back(

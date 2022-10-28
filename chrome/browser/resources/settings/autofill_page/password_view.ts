@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -31,6 +31,7 @@ import {Route, RouteObserverMixin, RouteObserverMixinInterface, Router} from '..
 
 import {SavedPasswordEditedEvent} from './password_edit_dialog.js';
 import {PasswordListItemElement} from './password_list_item.js';
+import {PasswordManagerImpl} from './password_manager_proxy.js';
 import {PasswordRemovalMixin, PasswordRemovalMixinInterface} from './password_removal_mixin.js';
 import {PasswordRemoveDialogPasswordsRemovedEvent} from './password_remove_dialog.js';
 import {PasswordRequestorMixin, PasswordRequestorMixinInterface} from './password_requestor_mixin.js';
@@ -70,6 +71,8 @@ export enum PasswordViewPageUrlParams {
   ID = 'id',
 }
 
+export const PASSWORD_MANAGER_AUTH_TIMEOUT_PARAM = 'authTimeout';
+
 export function recordPasswordViewInteraction(
     interaction: PasswordViewPageInteractions) {
   chrome.metricsPrivate.recordEnumerationValue(
@@ -93,8 +96,11 @@ export enum PasswordViewPageInteractions {
   PASSWORD_EDIT_BUTTON_CLICKED = 6,
   PASSWORD_DELETE_BUTTON_CLICKED = 7,
   CREDENTIAL_EDITED = 8,
+  TIMED_OUT_IN_EDIT_DIALOG = 9,
+  TIMED_OUT_IN_VIEW_PAGE = 10,
+  CREDENTIAL_REQUESTED_BY_URL = 11,
   // Must be last.
-  COUNT = 9,
+  COUNT = 12,
 }
 
 export class PasswordViewElement extends PasswordViewElementBase {
@@ -147,6 +153,34 @@ export class PasswordViewElement extends PasswordViewElementBase {
   private isPasswordVisible_: boolean;
   private showEditDialog_: boolean;
   private visibilityChangedListener_: () => void;
+  private passwordManagerAuthTimeoutListener_: () => void;
+
+  override connectedCallback() {
+    super.connectedCallback();
+
+    this.passwordManagerAuthTimeoutListener_ = () => {
+      if (Router.getInstance().getCurrentRoute() !== routes.PASSWORD_VIEW) {
+        return;
+      }
+      recordPasswordViewInteraction(
+          this.showEditDialog_ ?
+              PasswordViewPageInteractions.TIMED_OUT_IN_EDIT_DIALOG :
+              PasswordViewPageInteractions.TIMED_OUT_IN_VIEW_PAGE);
+
+      const params = new URLSearchParams();
+      params.set(PASSWORD_MANAGER_AUTH_TIMEOUT_PARAM, 'true');
+      Router.getInstance().navigateTo(routes.PASSWORDS, params);
+    };
+
+    PasswordManagerImpl.getInstance().addPasswordManagerAuthTimeoutListener(
+        this.passwordManagerAuthTimeoutListener_);
+  }
+
+  override disconnectedCallback() {
+    super.disconnectedCallback();
+    PasswordManagerImpl.getInstance().removePasswordManagerAuthTimeoutListener(
+        this.passwordManagerAuthTimeoutListener_);
+  }
 
   override currentRouteChanged(route: Route): void {
     if (route !== routes.PASSWORD_VIEW) {
@@ -218,6 +252,9 @@ export class PasswordViewElement extends PasswordViewElementBase {
           composed: true,
           detail: eventDetail,
         }));
+
+    recordPasswordViewInteraction(
+        PasswordViewPageInteractions.CREDENTIAL_REQUESTED_BY_URL);
   }
 
   /** Gets the title text for the show/hide icon. */

@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -21,6 +21,13 @@ class KeyNetworkDelegate;
 // installer.
 class KeyRotationManager {
  public:
+  //  Status of the key rotation.
+  enum class Result {
+    SUCCEEDED,
+    FAILED,
+    FAILED_KEY_CONFLICT,
+  };
+
   virtual ~KeyRotationManager() = default;
 
   static std::unique_ptr<KeyRotationManager> Create(
@@ -29,6 +36,9 @@ class KeyRotationManager {
   static std::unique_ptr<KeyRotationManager> CreateForTesting(
       std::unique_ptr<KeyNetworkDelegate> network_delegate,
       std::unique_ptr<KeyPersistenceDelegate> persistence_delegate);
+
+  static void SetForTesting(
+      std::unique_ptr<KeyRotationManager> key_rotation_manager);
 
   // Rotates the key pair and returns the result of the key rotation to the
   // callback. If no key pair already exists, simply creates a new one.
@@ -40,7 +50,7 @@ class KeyRotationManager {
   virtual void Rotate(const GURL& dm_server_url,
                       const std::string& dm_token,
                       const std::string& nonce,
-                      base::OnceCallback<void(bool)> result_callback) = 0;
+                      base::OnceCallback<void(Result)> result_callback) = 0;
 };
 
 }  // namespace enterprise_connectors

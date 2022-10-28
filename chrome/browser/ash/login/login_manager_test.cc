@@ -1,4 +1,4 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,8 +6,6 @@
 
 #include <string>
 
-#include "ash/components/login/auth/public/key.h"
-#include "ash/components/login/auth/public/user_context.h"
 #include "ash/constants/ash_switches.h"
 #include "ash/metrics/login_unlock_throughput_recorder.h"
 #include "ash/shell.h"
@@ -22,6 +20,8 @@
 #include "chrome/browser/ash/login/test/profile_prepared_waiter.h"
 #include "chrome/browser/ash/login/ui/login_display_host_webui.h"
 #include "chrome/browser/browser_process.h"
+#include "chromeos/ash/components/login/auth/public/key.h"
+#include "chromeos/ash/components/login/auth/public/user_context.h"
 #include "components/account_id/account_id.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "components/user_manager/known_user.h"
@@ -49,8 +49,6 @@ void LoginManagerTest::SetUpCommandLine(base::CommandLine* command_line) {
 }
 
 void LoginManagerTest::SetUpOnMainThread() {
-  LoginDisplayHostWebUI::DisableRestrictiveProxyCheckForTest();
-
   host_resolver()->AddRule("*", "127.0.0.1");
 
   test::UserSessionManagerTestApi session_manager_test_api(

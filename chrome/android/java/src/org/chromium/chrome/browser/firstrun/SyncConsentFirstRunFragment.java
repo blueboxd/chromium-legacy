@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -54,8 +54,9 @@ public class SyncConsentFirstRunFragment
 
     @Override
     protected void onSyncRefused() {
-        if (!ChromeFeatureList.isEnabled(ChromeFeatureList.ALLOW_SYNC_OFF_FOR_CHILD_ACCOUNTS)
-                && mIsChild) {
+        if (mIsChild
+                && !ChromeFeatureList.isEnabled(
+                        ChromeFeatureList.ALLOW_SYNC_OFF_FOR_CHILD_ACCOUNTS)) {
             // Somehow the child account disappeared while we were in the FRE.
             // The user would have to go through the FRE again.
             getPageDelegate().abortFirstRunExperience();

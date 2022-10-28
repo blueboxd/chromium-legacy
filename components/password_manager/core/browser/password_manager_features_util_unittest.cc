@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,7 +12,7 @@
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/testing_pref_service.h"
 #include "components/signin/public/identity_manager/account_info.h"
-#include "components/sync/driver/test_sync_service.h"
+#include "components/sync/test/test_sync_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace password_manager {
@@ -437,9 +437,6 @@ TEST_F(PasswordManagerFeaturesUtilTest, OptOutClearsStorePreference) {
   EXPECT_EQ(GetDefaultPasswordStore(&pref_service_, &sync_service_),
             PasswordForm::Store::kProfileStore);
 
-  histogram_tester.ExpectUniqueSample(
-      "PasswordManager.AccountStorage.SignedInAccountFoundDuringOptOut", true,
-      1);
   // The change to the profile store above should have been recorded. Clearing
   // the pref does not get recorded in this histogram!
   histogram_tester.ExpectUniqueSample("PasswordManager.DefaultPasswordStoreSet",

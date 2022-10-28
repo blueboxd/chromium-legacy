@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -18,7 +18,7 @@ class UpgradeCenterBrowserAgent
       public WebStateListObserver,
       public BrowserUserData<UpgradeCenterBrowserAgent> {
  public:
-  // Creates an UpgradeCenterBrowserAgent scoped to |browser|.
+  // Creates an UpgradeCenterBrowserAgent scoped to `browser`.
   static void CreateForBrowser(Browser* browser, UpgradeCenter* upgradeCenter);
 
   UpgradeCenterBrowserAgent(const UpgradeCenterBrowserAgent&) = delete;

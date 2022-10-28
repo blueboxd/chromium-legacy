@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -38,12 +38,9 @@ class FloatingWorkspaceService : public KeyedService {
   void TryRestoreMostRecentlyUsedSession();
 
  private:
-  // Virtual for testing.
-  virtual const sync_sessions::SyncedSession*
-  GetMostRecentlyUsedRemoteSession();
+  const sync_sessions::SyncedSession* GetMostRecentlyUsedRemoteSession();
 
-  // Virtual for testing.
-  virtual const sync_sessions::SyncedSession* GetLocalSession();
+  const sync_sessions::SyncedSession* GetLocalSession();
 
   // Virtual for testing.
   virtual void RestoreForeignSessionWindows(
@@ -52,7 +49,8 @@ class FloatingWorkspaceService : public KeyedService {
   // Virtual for testing.
   virtual void RestoreLocalSessionWindows();
 
-  sync_sessions::OpenTabsUIDelegate* GetOpenTabsUIDelegate();
+  // Virtual for testing.
+  virtual sync_sessions::OpenTabsUIDelegate* GetOpenTabsUIDelegate();
 
   Profile* const profile_;
 

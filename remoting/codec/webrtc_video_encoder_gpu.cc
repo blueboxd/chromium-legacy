@@ -266,9 +266,9 @@ void WebrtcVideoEncoderGpu::Core::Encode(
 
   // H264 encoder on Windows uses NV12 so convert here.
   libyuv::ARGBToNV12(frame->data(), frame->stride(),
-                     video_frame->data(VideoFrame::kYPlane),
+                     video_frame->writable_data(VideoFrame::kYPlane),
                      video_frame->stride(VideoFrame::kYPlane),
-                     video_frame->data(VideoFrame::kUVPlane),
+                     video_frame->writable_data(VideoFrame::kUVPlane),
                      video_frame->stride(VideoFrame::kUVPlane),
                      video_frame->visible_rect().width(),
                      video_frame->visible_rect().height());
@@ -367,8 +367,8 @@ void WebrtcVideoEncoderGpu::Core::BeginInitialization() {
   // TODO(zijiehe): Implement some logical way to set an initial bitrate.
   // Currently we set the bitrate to 8M bits / 1M bytes per frame, and 30 frames
   // per second.
-  // TODO(joedow): Use the framerate from SessionOptions instead of the constant
-  // framerate value if we decide to make H.264 generally available.
+  // TODO(joedow): Use the bitrate from the SDP format params instead of the
+  // constant framerate value if we decide to make H.264 generally available.
   media::Bitrate initial_bitrate = media::Bitrate::ConstantBitrate(
       static_cast<uint32_t>(kTargetFrameRate * 1024 * 1024 * 8));
 

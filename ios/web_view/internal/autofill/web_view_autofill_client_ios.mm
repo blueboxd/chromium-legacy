@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -15,6 +15,7 @@
 #include "components/autofill/core/browser/logging/log_router.h"
 #include "components/autofill/core/browser/payments/payments_client.h"
 #include "components/autofill/core/common/autofill_prefs.h"
+#import "components/autofill/ios/browser/autofill_driver_ios.h"
 #include "components/autofill/ios/browser/autofill_util.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "components/security_state/ios/security_state_utils.h"
@@ -240,6 +241,26 @@ void WebViewAutofillClientIOS::ScanCreditCard(CreditCardScanCallback callback) {
   NOTREACHED();
 }
 
+bool WebViewAutofillClientIOS::IsFastCheckoutSupported() {
+  return false;
+}
+
+bool WebViewAutofillClientIOS::IsFastCheckoutTriggerForm(
+    const FormData& form,
+    const FormFieldData& field) {
+  return false;
+}
+
+bool WebViewAutofillClientIOS::ShowFastCheckout(
+    base::WeakPtr<FastCheckoutDelegate> delegate) {
+  NOTREACHED();
+  return false;
+}
+
+void WebViewAutofillClientIOS::HideFastCheckout() {
+  NOTREACHED();
+}
+
 bool WebViewAutofillClientIOS::IsTouchToFillCreditCardSupported() {
   return false;
 }
@@ -304,7 +325,11 @@ bool WebViewAutofillClientIOS::IsPasswordManagerEnabled() {
 void WebViewAutofillClientIOS::PropagateAutofillPredictions(
     AutofillDriver* driver,
     const std::vector<FormStructure*>& forms) {
-  [bridge_ propagateAutofillPredictionsForForms:forms];
+  [bridge_
+      propagateAutofillPredictionsForForms:forms
+                                   inFrame:(static_cast<AutofillDriverIOS*>(
+                                                driver))
+                                               ->web_frame()];
 }
 
 void WebViewAutofillClientIOS::DidFillOrPreviewField(

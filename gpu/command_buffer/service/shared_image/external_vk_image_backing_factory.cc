@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -163,11 +163,11 @@ bool ExternalVkImageBackingFactory::CanImportGpuMemoryBuffer(
 bool ExternalVkImageBackingFactory::IsSupported(
     uint32_t usage,
     viz::ResourceFormat format,
+    const gfx::Size& size,
     bool thread_safe,
     gfx::GpuMemoryBufferType gmb_type,
     GrContextType gr_context_type,
-    bool* allow_legacy_mailbox,
-    bool is_pixel_used) {
+    base::span<const uint8_t> pixel_data) {
   if (gmb_type != gfx::EMPTY_BUFFER && !CanImportGpuMemoryBuffer(gmb_type)) {
     return false;
   }
@@ -193,7 +193,6 @@ bool ExternalVkImageBackingFactory::IsSupported(
   }
 #endif
 
-  *allow_legacy_mailbox = false;
   return true;
 }
 

@@ -1,4 +1,4 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,7 +6,6 @@
 
 #include <stddef.h>
 
-#include <algorithm>
 #include <list>
 #include <map>
 #include <memory>
@@ -18,6 +17,7 @@
 #include "base/containers/contains.h"
 #include "base/guid.h"
 #include "base/memory/raw_ptr.h"
+#include "base/ranges/algorithm.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -52,7 +52,8 @@
 #include "components/autofill/core/common/form_data.h"
 #include "components/signin/public/base/signin_switches.h"
 #include "components/signin/public/identity_manager/identity_test_environment.h"
-#include "components/sync/driver/test_sync_service.h"
+#include "components/sync/base/user_selectable_type.h"
+#include "components/sync/test/test_sync_service.h"
 #include "components/version_info/version_info.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -67,6 +68,7 @@ namespace {
 
 const char kPrimaryAccountEmail[] = "syncuser@example.com";
 const char16_t kPrimaryAccountEmail16[] = u"syncuser@example.com";
+const std::string kAddressEntryIcon = "accountIcon";
 
 enum UserMode { USER_MODE_NORMAL, USER_MODE_INCOGNITO };
 
@@ -121,6 +123,31 @@ void ExpectSameElements(const std::vector<T*>& expectations,
                 .first,
             results_copy.end());
 }
+
+class ScopedFeatureListWrapper {
+ public:
+  explicit ScopedFeatureListWrapper(
+      const std::vector<base::Feature>& default_enabled_features,
+      const std::vector<base::Feature>& additional_enabled_features) {
+    std::vector<base::Feature> all_enabled_features(default_enabled_features);
+    std::copy(additional_enabled_features.begin(),
+              additional_enabled_features.end(),
+              std::back_inserter(all_enabled_features));
+    scoped_features_.InitWithFeatures(all_enabled_features,
+                                      /*disabled_features=*/{});
+  }
+  ~ScopedFeatureListWrapper() = default;
+
+ private:
+  base::test::ScopedFeatureList scoped_features_;
+};
+
+#if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
+std::vector<std::vector<Suggestion::Text>> ConstructLabelLineMatrix(
+    const std::vector<std::u16string>& parts) {
+  return {{Suggestion::Text(ConstructLabelLine(parts))}};
+}
+#endif
 
 }  // anonymous namespace
 
@@ -2045,8 +2072,12 @@ TEST_F(PersonalDataManagerTest, GetProfileSuggestions_HideSubsets) {
   std::vector<Suggestion> suggestions = personal_data_->GetProfileSuggestions(
       AutofillType(ADDRESS_HOME_STREET_ADDRESS), u"123", false, types);
   ASSERT_EQ(2U, suggestions.size());
-  EXPECT_EQ(u"Hollywood, CA", suggestions[0].label);
-  EXPECT_EQ(u"Hollywood, TX", suggestions[1].label);
+  ASSERT_EQ(1U, suggestions[0].labels.size());
+  ASSERT_EQ(1U, suggestions[0].labels[0].size());
+  EXPECT_EQ(u"Hollywood, CA", suggestions[0].labels[0][0].value);
+  ASSERT_EQ(1U, suggestions[1].labels.size());
+  ASSERT_EQ(1U, suggestions[1].labels.size());
+  EXPECT_EQ(u"Hollywood, TX", suggestions[1].labels[0][0].value);
 }
 
 TEST_F(PersonalDataManagerTest, GetProfileSuggestions_SuggestionsLimit) {
@@ -2412,10 +2443,10 @@ TEST_F(PersonalDataManagerTest, GetProfileSuggestions_ForContactForm) {
           std::vector<ServerFieldType>{NAME_FIRST, NAME_LAST, EMAIL_ADDRESS,
                                        PHONE_HOME_WHOLE_NUMBER}),
       ElementsAre(AllOf(
-          testing::Field(
-              &Suggestion::label,
-              ConstructLabelLine({u"(978) 674-4120", u"hoa.pham@comcast.net"})),
-          testing::Field(&Suggestion::icon, ""))));
+          testing::Field(&Suggestion::labels,
+                         ConstructLabelLineMatrix(
+                             {u"(978) 674-4120", u"hoa.pham@comcast.net"})),
+          testing::Field(&Suggestion::icon, kAddressEntryIcon))));
 }
 #endif  // !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
 
@@ -2431,15 +2462,16 @@ TEST_F(PersonalDataManagerTest, GetProfileSuggestions_AddressForm) {
   scoped_features.InitAndEnableFeature(
       features::kAutofillUseImprovedLabelDisambiguation);
 
-  EXPECT_THAT(
-      personal_data_->GetProfileSuggestions(
-          AutofillType(NAME_FULL), std::u16string(), false,
-          std::vector<ServerFieldType>{NAME_FULL, ADDRESS_HOME_STREET_ADDRESS,
-                                       ADDRESS_HOME_CITY, ADDRESS_HOME_STATE,
-                                       ADDRESS_HOME_ZIP}),
-      ElementsAre(AllOf(testing::Field(&Suggestion::label,
-                                       u"401 Merrimack St, Lowell, MA 01852"),
-                        testing::Field(&Suggestion::icon, ""))));
+  EXPECT_THAT(personal_data_->GetProfileSuggestions(
+                  AutofillType(NAME_FULL), std::u16string(), false,
+                  std::vector<ServerFieldType>{
+                      NAME_FULL, ADDRESS_HOME_STREET_ADDRESS, ADDRESS_HOME_CITY,
+                      ADDRESS_HOME_STATE, ADDRESS_HOME_ZIP}),
+              ElementsAre(AllOf(
+                  testing::Field(&Suggestion::labels,
+                                 ConstructLabelLineMatrix(
+                                     {u"401 Merrimack St, Lowell, MA 01852"})),
+                  testing::Field(&Suggestion::icon, kAddressEntryIcon))));
 }
 #endif  // !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
 
@@ -2460,11 +2492,11 @@ TEST_F(PersonalDataManagerTest, GetProfileSuggestions_AddressPhoneForm) {
           AutofillType(NAME_FULL), std::u16string(), false,
           std::vector<ServerFieldType>{NAME_FULL, ADDRESS_HOME_STREET_ADDRESS,
                                        PHONE_HOME_WHOLE_NUMBER}),
-      ElementsAre(AllOf(
-          testing::Field(
-              &Suggestion::label,
-              ConstructLabelLine({u"(978) 674-4120", u"401 Merrimack St"})),
-          testing::Field(&Suggestion::icon, ""))));
+      ElementsAre(
+          AllOf(testing::Field(&Suggestion::labels,
+                               ConstructLabelLineMatrix(
+                                   {u"(978) 674-4120", u"401 Merrimack St"})),
+                testing::Field(&Suggestion::icon, kAddressEntryIcon))));
 }
 #endif  // !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
 
@@ -2480,15 +2512,16 @@ TEST_F(PersonalDataManagerTest, GetProfileSuggestions_AddressEmailForm) {
   scoped_features.InitAndEnableFeature(
       features::kAutofillUseImprovedLabelDisambiguation);
 
-  EXPECT_THAT(personal_data_->GetProfileSuggestions(
-                  AutofillType(NAME_FULL), std::u16string(), false,
-                  std::vector<ServerFieldType>{
-                      NAME_FULL, ADDRESS_HOME_STREET_ADDRESS, EMAIL_ADDRESS}),
-              ElementsAre(AllOf(
-                  testing::Field(&Suggestion::label,
-                                 ConstructLabelLine({u"401 Merrimack St",
-                                                     u"hoa.pham@comcast.net"})),
-                  testing::Field(&Suggestion::icon, ""))));
+  EXPECT_THAT(
+      personal_data_->GetProfileSuggestions(
+          AutofillType(NAME_FULL), std::u16string(), false,
+          std::vector<ServerFieldType>{NAME_FULL, ADDRESS_HOME_STREET_ADDRESS,
+                                       EMAIL_ADDRESS}),
+      ElementsAre(AllOf(
+          testing::Field(&Suggestion::labels,
+                         ConstructLabelLineMatrix(
+                             {u"401 Merrimack St", u"hoa.pham@comcast.net"})),
+          testing::Field(&Suggestion::icon, kAddressEntryIcon))));
 }
 #endif  // !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
 
@@ -2510,9 +2543,9 @@ TEST_F(PersonalDataManagerTest, GetProfileSuggestions_FormWithOneProfile) {
           std::vector<ServerFieldType>{NAME_FULL, ADDRESS_HOME_STREET_ADDRESS,
                                        EMAIL_ADDRESS, PHONE_HOME_WHOLE_NUMBER}),
       ElementsAre(
-          AllOf(testing::Field(&Suggestion::label,
-                               ConstructLabelLine({u"401 Merrimack St"})),
-                testing::Field(&Suggestion::icon, ""))));
+          AllOf(testing::Field(&Suggestion::labels,
+                               ConstructLabelLineMatrix({u"401 Merrimack St"})),
+                testing::Field(&Suggestion::icon, kAddressEntryIcon))));
 }
 #endif  // !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
 
@@ -2556,16 +2589,16 @@ TEST_F(PersonalDataManagerTest,
           std::vector<ServerFieldType>{NAME_FULL, ADDRESS_HOME_STREET_ADDRESS,
                                        EMAIL_ADDRESS, PHONE_HOME_WHOLE_NUMBER}),
       ElementsAre(
-          AllOf(testing::Field(
-                    &Suggestion::label,
-                    ConstructLabelLine({u"401 Merrimack St", u"(978) 674-4120",
-                                        u"hoa.pham@comcast.net"})),
-                testing::Field(&Suggestion::icon, "")),
-          AllOf(testing::Field(
-                    &Suggestion::label,
-                    ConstructLabelLine({u"216 Broadway St", u"(978) 452-3366",
-                                        u"hp@aol.com"})),
-                testing::Field(&Suggestion::icon, ""))));
+          AllOf(testing::Field(&Suggestion::labels,
+                               ConstructLabelLineMatrix(
+                                   {u"401 Merrimack St", u"(978) 674-4120",
+                                    u"hoa.pham@comcast.net"})),
+                testing::Field(&Suggestion::icon, kAddressEntryIcon)),
+          AllOf(testing::Field(&Suggestion::labels,
+                               ConstructLabelLineMatrix({u"216 Broadway St",
+                                                         u"(978) 452-3366",
+                                                         u"hp@aol.com"})),
+                testing::Field(&Suggestion::icon, kAddressEntryIcon))));
 }
 #endif  // !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
 
@@ -2606,10 +2639,15 @@ TEST_F(PersonalDataManagerTest, GetProfileSuggestions_MobileShowOne) {
           AutofillType(EMAIL_ADDRESS), std::u16string(), false,
           std::vector<ServerFieldType>{NAME_FIRST, NAME_LAST, EMAIL_ADDRESS,
                                        PHONE_HOME_WHOLE_NUMBER}),
-      ElementsAre(AllOf(testing::Field(&Suggestion::label, u"(978) 674-4120"),
-                        testing::Field(&Suggestion::icon, "")),
-                  AllOf(testing::Field(&Suggestion::label, u"(617) 268-6862"),
-                        testing::Field(&Suggestion::icon, ""))));
+      ElementsAre(
+          AllOf(testing::Field(&Suggestion::labels,
+                               std::vector<std::vector<Suggestion::Text>>{
+                                   {Suggestion::Text(u"(978) 674-4120")}}),
+                testing::Field(&Suggestion::icon, kAddressEntryIcon)),
+          AllOf(testing::Field(&Suggestion::labels,
+                               std::vector<std::vector<Suggestion::Text>>{
+                                   {Suggestion::Text(u"(617) 268-6862")}}),
+                testing::Field(&Suggestion::icon, kAddressEntryIcon))));
 
   // Tests a form with name, address, phone number, and email address fields.
   EXPECT_THAT(
@@ -2618,10 +2656,15 @@ TEST_F(PersonalDataManagerTest, GetProfileSuggestions_MobileShowOne) {
           std::vector<ServerFieldType>{NAME_FULL, ADDRESS_HOME_STREET_ADDRESS,
                                        ADDRESS_HOME_CITY, EMAIL_ADDRESS,
                                        PHONE_HOME_WHOLE_NUMBER}),
-      ElementsAre(AllOf(testing::Field(&Suggestion::label, u"401 Merrimack St"),
-                        testing::Field(&Suggestion::icon, "")),
-                  AllOf(testing::Field(&Suggestion::label, u"11 Elkins St"),
-                        testing::Field(&Suggestion::icon, ""))));
+      ElementsAre(
+          AllOf(testing::Field(&Suggestion::labels,
+                               std::vector<std::vector<Suggestion::Text>>{
+                                   {Suggestion::Text(u"401 Merrimack St")}}),
+                testing::Field(&Suggestion::icon, kAddressEntryIcon)),
+          AllOf(testing::Field(&Suggestion::labels,
+                               std::vector<std::vector<Suggestion::Text>>{
+                                   {Suggestion::Text(u"11 Elkins St")}}),
+                testing::Field(&Suggestion::icon, kAddressEntryIcon))));
 }
 #endif  // if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_IOS)
 
@@ -2662,31 +2705,39 @@ TEST_F(PersonalDataManagerTest, GetProfileSuggestions_MobileShowAll) {
           AutofillType(EMAIL_ADDRESS), std::u16string(), false,
           std::vector<ServerFieldType>{NAME_FIRST, NAME_LAST, EMAIL_ADDRESS,
                                        PHONE_HOME_WHOLE_NUMBER}),
-      ElementsAre(AllOf(testing::Field(&Suggestion::label,
-                                       ConstructMobileLabelLine(
-                                           {u"Hoa", u"(978) 674-4120"})),
-                        testing::Field(&Suggestion::icon, "")),
-                  AllOf(testing::Field(&Suggestion::label,
-                                       ConstructMobileLabelLine(
-                                           {u"María", u"(617) 268-6862"})),
-                        testing::Field(&Suggestion::icon, ""))));
+      ElementsAre(
+          AllOf(testing::Field(&Suggestion::labels,
+                               std::vector<std::vector<Suggestion::Text>>{
+                                   {Suggestion::Text(ConstructMobileLabelLine(
+                                       {u"Hoa", u"(978) 674-4120"}))}}),
+                testing::Field(&Suggestion::icon, kAddressEntryIcon)),
+          AllOf(testing::Field(&Suggestion::labels,
+                               std::vector<std::vector<Suggestion::Text>>{
+                                   {Suggestion::Text(ConstructMobileLabelLine(
+                                       {u"María", u"(617) 268-6862"}))}}),
+                testing::Field(&Suggestion::icon, kAddressEntryIcon))));
 
   // Tests a form with name, address, phone number, and email address fields.
-  EXPECT_THAT(personal_data_->GetProfileSuggestions(
-                  AutofillType(EMAIL_ADDRESS), std::u16string(), false,
-                  std::vector<ServerFieldType>{
-                      NAME_FULL, ADDRESS_HOME_STREET_ADDRESS, ADDRESS_HOME_CITY,
-                      EMAIL_ADDRESS, PHONE_HOME_WHOLE_NUMBER}),
-              ElementsAre(AllOf(testing::Field(&Suggestion::label,
-                                               ConstructMobileLabelLine(
-                                                   {u"Hoa", u"401 Merrimack St",
-                                                    u"(978) 674-4120"})),
-                                testing::Field(&Suggestion::icon, "")),
-                          AllOf(testing::Field(&Suggestion::label,
-                                               ConstructMobileLabelLine(
-                                                   {u"María", u"11 Elkins St",
-                                                    u"(617) 268-6862"})),
-                                testing::Field(&Suggestion::icon, ""))));
+  EXPECT_THAT(
+      personal_data_->GetProfileSuggestions(
+          AutofillType(EMAIL_ADDRESS), std::u16string(), false,
+          std::vector<ServerFieldType>{NAME_FULL, ADDRESS_HOME_STREET_ADDRESS,
+                                       ADDRESS_HOME_CITY, EMAIL_ADDRESS,
+                                       PHONE_HOME_WHOLE_NUMBER}),
+      ElementsAre(
+          AllOf(
+              testing::Field(
+                  &Suggestion::labels,
+                  std::vector<std::vector<Suggestion::Text>>{
+                      {Suggestion::Text(ConstructMobileLabelLine(
+                          {u"Hoa", u"401 Merrimack St", u"(978) 674-4120"}))}}),
+              testing::Field(&Suggestion::icon, kAddressEntryIcon)),
+          AllOf(testing::Field(
+                    &Suggestion::labels,
+                    std::vector<std::vector<Suggestion::Text>>{
+                        {Suggestion::Text(ConstructMobileLabelLine(
+                            {u"María", u"11 Elkins St", u"(617) 268-6862"}))}}),
+                testing::Field(&Suggestion::icon, kAddressEntryIcon))));
 }
 #endif  // if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_IOS)
 
@@ -4660,7 +4711,9 @@ TEST_F(PersonalDataManagerTest, LogStoredCreditCardMetrics) {
 
 TEST_F(PersonalDataManagerTest, CreateDataForTest) {
   // Disable sync so the data gets created.
-  sync_service_.SetPreferredDataTypes(syncer::ModelTypeSet());
+  sync_service_.GetUserSettings()->SetSelectedTypes(
+      /*sync_everything=*/false,
+      /*types=*/{});
   sync_service_.SetActiveDataTypes(syncer::ModelTypeSet());
 
   // By default, the creation of test data is disabled.
@@ -4685,71 +4738,55 @@ TEST_F(PersonalDataManagerTest, CreateDataForTest) {
   const base::Time deletion_threshold = AutofillClock::Now() - base::Days(395);
 
   // Verify that there was a valid address created.
+  const auto profile_to_name = [this](const AutofillProfile* p) {
+    return p->GetInfo(NAME_FULL, this->personal_data_->app_locale());
+  };
   {
-    auto it = std::find_if(
-        addresses.begin(), addresses.end(), [this](const AutofillProfile* p) {
-          return p->GetInfo(NAME_FULL, this->personal_data_->app_locale()) ==
-                 u"John McTester";
-        });
+    auto it = base::ranges::find(addresses, u"John McTester", profile_to_name);
     ASSERT_TRUE(it != addresses.end());
     EXPECT_GT((*it)->use_date(), disused_threshold);
   }
 
   // Verify that there was a disused address created.
   {
-    auto it = std::find_if(
-        addresses.begin(), addresses.end(), [this](const AutofillProfile* p) {
-          return p->GetInfo(NAME_FULL, this->personal_data_->app_locale()) ==
-                 u"Polly Disused";
-        });
+    auto it = base::ranges::find(addresses, u"Polly Disused", profile_to_name);
     ASSERT_TRUE(it != addresses.end());
     EXPECT_LT((*it)->use_date(), disused_threshold);
   }
 
   // Verify that there was a disused deletable address created.
   {
-    auto it = std::find_if(
-        addresses.begin(), addresses.end(), [this](const AutofillProfile* p) {
-          return p->GetInfo(NAME_FULL, this->personal_data_->app_locale()) ==
-                 u"Polly Deletable";
-        });
+    auto it =
+        base::ranges::find(addresses, u"Polly Deletable", profile_to_name);
     ASSERT_TRUE(it != addresses.end());
     EXPECT_LT((*it)->use_date(), deletion_threshold);
     EXPECT_FALSE((*it)->IsVerified());
   }
 
   // Verify that there was a valid credit card created.
+  const auto profile_to_cc_name = [this](const CreditCard* cc) {
+    return cc->GetInfo(CREDIT_CARD_NAME_FULL,
+                       this->personal_data_->app_locale());
+  };
   {
-    auto it = std::find_if(
-        credit_cards.begin(), credit_cards.end(), [this](const CreditCard* cc) {
-          return cc->GetInfo(CREDIT_CARD_NAME_FULL,
-                             this->personal_data_->app_locale()) ==
-                 u"Alice Testerson";
-        });
+    auto it = base::ranges::find(credit_cards, u"Alice Testerson",
+                                 profile_to_cc_name);
     ASSERT_TRUE(it != credit_cards.end());
     EXPECT_GT((*it)->use_date(), disused_threshold);
   }
 
   // Verify that there was a disused credit card created.
   {
-    auto it = std::find_if(
-        credit_cards.begin(), credit_cards.end(), [this](const CreditCard* cc) {
-          return cc->GetInfo(CREDIT_CARD_NAME_FULL,
-                             this->personal_data_->app_locale()) ==
-                 u"Bob Disused";
-        });
+    auto it =
+        base::ranges::find(credit_cards, u"Bob Disused", profile_to_cc_name);
     ASSERT_TRUE(it != credit_cards.end());
     EXPECT_LT((*it)->use_date(), disused_threshold);
   }
 
   // Verify that there was a disused deletable credit card created.
   {
-    auto it = std::find_if(
-        credit_cards.begin(), credit_cards.end(), [this](const CreditCard* cc) {
-          return cc->GetInfo(CREDIT_CARD_NAME_FULL,
-                             this->personal_data_->app_locale()) ==
-                 u"Charlie Deletable";
-        });
+    auto it = base::ranges::find(credit_cards, u"Charlie Deletable",
+                                 profile_to_cc_name);
     ASSERT_TRUE(it != credit_cards.end());
     EXPECT_LT((*it)->use_date(), deletion_threshold);
     EXPECT_TRUE((*it)->IsExpired(deletion_threshold));
@@ -4910,9 +4947,15 @@ TEST_F(
   AddProfileToPersonalDataManager(profile);
 
   // Turn off autofill profile sync.
+  syncer::UserSelectableTypeSet user_selectable_type_set =
+      sync_service_.GetUserSettings()->GetSelectedTypes();
+  user_selectable_type_set.Remove(syncer::UserSelectableType::kAutofill);
+  sync_service_.GetUserSettings()->SetSelectedTypes(
+      /*sync_everything=*/false,
+      /*types=*/user_selectable_type_set);
+
   auto model_type_set = sync_service_.GetActiveDataTypes();
   model_type_set.Remove(syncer::AUTOFILL_PROFILE);
-  sync_service_.SetPreferredDataTypes(model_type_set);
   sync_service_.SetActiveDataTypes(model_type_set);
 
   // The data should still exist.
@@ -4945,8 +4988,14 @@ TEST_F(
   auto model_type_set = sync_service_.GetActiveDataTypes();
   model_type_set.Remove(syncer::AUTOFILL_WALLET_DATA);
   model_type_set.Remove(syncer::AUTOFILL_WALLET_METADATA);
-  sync_service_.SetPreferredDataTypes(model_type_set);
   sync_service_.SetActiveDataTypes(model_type_set);
+
+  syncer::UserSelectableTypeSet user_selectable_type_set =
+      sync_service_.GetUserSettings()->GetSelectedTypes();
+  user_selectable_type_set.Remove(syncer::UserSelectableType::kAutofill);
+  sync_service_.GetUserSettings()->SetSelectedTypes(
+      /*sync_everything=*/false,
+      /*types=*/user_selectable_type_set);
 
   // The credit card should still exist.
   ASSERT_EQ(1U, personal_data_->GetCreditCards().size());
@@ -5186,14 +5235,13 @@ TEST_F(PersonalDataManagerTest, OnAccountsCookieDeletedByUserAction) {
   // Set up some sync transport opt-ins in the prefs.
   ::autofill::prefs::SetUserOptedInWalletSyncTransport(
       prefs_.get(), CoreAccountId("account1"), true);
-  EXPECT_FALSE(
-      prefs_->GetValueDict(prefs::kAutofillSyncTransportOptIn).empty());
+  EXPECT_FALSE(prefs_->GetDict(prefs::kAutofillSyncTransportOptIn).empty());
 
   // Simulate that the cookies get cleared by the user.
   personal_data_->OnAccountsCookieDeletedByUserAction();
 
   // Make sure the pref is now empty.
-  EXPECT_TRUE(prefs_->GetValueDict(prefs::kAutofillSyncTransportOptIn).empty());
+  EXPECT_TRUE(prefs_->GetDict(prefs::kAutofillSyncTransportOptIn).empty());
 }
 
 TEST_F(PersonalDataManagerTest, SaveProfileUpdateStrikes) {

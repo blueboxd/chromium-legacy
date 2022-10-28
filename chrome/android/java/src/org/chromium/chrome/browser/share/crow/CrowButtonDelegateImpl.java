@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,15 +11,21 @@ import androidx.annotation.VisibleForTesting;
 import androidx.browser.customtabs.CustomTabsIntent;
 
 import org.chromium.base.Callback;
+import org.chromium.base.LocaleUtils;
+import org.chromium.chrome.browser.ChromeActivitySessionTracker;
 import org.chromium.chrome.browser.customtabs.CustomTabActivity;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
+import org.chromium.chrome.browser.language.AppLocaleUtils;
 import org.chromium.chrome.browser.optimization_guide.OptimizationGuideBridgeFactory;
 import org.chromium.chrome.browser.privacy.settings.PrivacyPreferencesManagerImpl;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.signin.services.UnifiedConsentServiceBridge;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab.TabLaunchType;
+import org.chromium.chrome.browser.tabmodel.document.TabDelegate;
 import org.chromium.components.optimization_guide.OptimizationGuideDecision;
 import org.chromium.components.optimization_guide.proto.HintsProto;
+import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.ui.util.ColorUtils;
 import org.chromium.url.GURL;
 
@@ -30,6 +36,8 @@ import java.util.HashMap;
 public class CrowButtonDelegateImpl implements CrowButtonDelegate {
     /** Domain to ID map, populated on first read. */
     private HashMap<String, String> mDomainIdMap;
+    // Tracker used to get the latest country of the user.
+    private final ChromeActivitySessionTracker mChromeActivitySessionTracker;
 
     private static final String APP_MENU_BUTTON_TEXT_PARAM = "AppMenuButtonText";
     private static final String DEBUG_SERVER_URL_PARAM = "DebugServerURL";
@@ -41,7 +49,9 @@ public class CrowButtonDelegateImpl implements CrowButtonDelegate {
     private static final String TAG = "CrowButton";
 
     /** Constructs a new {@link CrowButtonDelegateImpl}. */
-    public CrowButtonDelegateImpl() {}
+    public CrowButtonDelegateImpl() {
+        mChromeActivitySessionTracker = ChromeActivitySessionTracker.getInstance();
+    }
 
     // Lazy initialization of OptimizationGuideBridgeFactory
     private static class OptimizationGuideBridgeFactoryHolder {
@@ -91,23 +101,47 @@ public class CrowButtonDelegateImpl implements CrowButtonDelegate {
 
     @Override
     public void launchCustomTab(
-            Context currentContext, GURL pageUrl, GURL canonicalUrl, boolean isFollowing) {
-        String customTabUrl = buildServerUrl(new GURL(getServerUrl()), pageUrl, canonicalUrl,
-                getPublicationId(pageUrl), areMetricsEnabled(), isFollowing);
+            Tab tab, Context currentContext, GURL pageUrl, GURL canonicalUrl, boolean isFollowing) {
+        String customTabUrl = getUrlForWebFlow(pageUrl, canonicalUrl, isFollowing);
 
-        CustomTabsIntent.Builder builder = new CustomTabsIntent.Builder();
-        builder.setShowTitle(true);
-        builder.setColorScheme(ColorUtils.inNightMode(currentContext)
-                        ? CustomTabsIntent.COLOR_SCHEME_DARK
-                        : CustomTabsIntent.COLOR_SCHEME_LIGHT);
-        builder.setShareState(CustomTabsIntent.SHARE_STATE_OFF);
-        CustomTabsIntent customTabsIntent = builder.build();
-        customTabsIntent.intent.setClassName(currentContext, CustomTabActivity.class.getName());
-        customTabsIntent.launchUrl(currentContext, Uri.parse(customTabUrl));
+        // Experiment flag: open in standard new tab.
+        if (ChromeFeatureList.isInitialized()
+                && ChromeFeatureList.isEnabled(ChromeFeatureList.SHARE_CROW_BUTTON_LAUNCH_TAB)) {
+            // TabLaunchType.FROM_LINK will allow back to navigate back to the
+            // current tab.
+            LoadUrlParams loadUrlParams = new LoadUrlParams(customTabUrl);
+            new TabDelegate(false).createNewTab(loadUrlParams, TabLaunchType.FROM_LINK, tab);
+        } else {
+            // Default to custom tab.
+            CustomTabsIntent.Builder builder = new CustomTabsIntent.Builder();
+            builder.setShowTitle(true);
+            builder.setColorScheme(ColorUtils.inNightMode(currentContext)
+                            ? CustomTabsIntent.COLOR_SCHEME_DARK
+                            : CustomTabsIntent.COLOR_SCHEME_LIGHT);
+            builder.setShareState(CustomTabsIntent.SHARE_STATE_OFF);
+            CustomTabsIntent customTabsIntent = builder.build();
+            customTabsIntent.intent.setClassName(currentContext, CustomTabActivity.class.getName());
+            customTabsIntent.launchUrl(currentContext, Uri.parse(customTabUrl));
+        }
+    }
+
+    /**
+     * Returns true if the user is in the US using en-US, and false otherwise.
+     *
+     * <p>This should match how Finch gates features by locale and country. See
+     * VariationsService::GetLatestCountry() and language::GetApplicationLocale().
+     */
+    private boolean isEnabledForLocaleAndCountry() {
+        String country = mChromeActivitySessionTracker.getVariationsLatestCountry();
+        String locale = AppLocaleUtils.getAppLanguagePref();
+        if (locale == null) {
+            locale = LocaleUtils.getDefaultLocaleString();
+        }
+        return country != null && country.equals("us") && locale.equals("en-US");
     }
 
     public boolean isCrowEnabled() {
-        return ChromeFeatureList.isInitialized()
+        return isEnabledForLocaleAndCountry() && ChromeFeatureList.isInitialized()
                 && ChromeFeatureList.isEnabled(ChromeFeatureList.SHARE_CROW_BUTTON);
     }
 
@@ -187,8 +221,14 @@ public class CrowButtonDelegateImpl implements CrowButtonDelegate {
                         Profile.getLastUsedRegularProfile()));
     }
 
+    @Override
+    public String getUrlForWebFlow(GURL pageUrl, GURL canonicalPageUrl, boolean isFollowing) {
+        return buildServerUrlInternal(new GURL(getServerUrl()), pageUrl, canonicalPageUrl,
+                getPublicationId(pageUrl), areMetricsEnabled(), isFollowing);
+    }
+
     @VisibleForTesting
-    public String buildServerUrl(GURL serverUrl, GURL pageUrl, GURL canonicalPageUrl,
+    public String buildServerUrlInternal(GURL serverUrl, GURL pageUrl, GURL canonicalPageUrl,
             String publicationId, boolean allowMetrics, boolean isFollowing) {
         String serverSpec = serverUrl.getSpec();
         if (serverSpec.isEmpty()) return "";

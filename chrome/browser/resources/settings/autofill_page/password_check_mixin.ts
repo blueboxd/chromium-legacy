@@ -1,12 +1,10 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 import {assert} from 'chrome://resources/js/assert_ts.js';
 import {PluralStringProxyImpl} from 'chrome://resources/js/plural_string_proxy.js';
 import {dedupingMixin, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
-
-import {loadTimeData} from '../i18n_setup.js';
 
 import {CredentialsChangedListener, PasswordCheckStatusChangedListener, PasswordManagerImpl, PasswordManagerProxy} from './password_manager_proxy.js';
 
@@ -78,17 +76,6 @@ export const PasswordCheckMixin = dedupingMixin(
               type: Boolean,
               value: true,
             },
-
-            /**
-             * The flag for enabling (un)muting passwords.
-             */
-            isMutedPasswordsEnabled: {
-              type: Boolean,
-              value() {
-                return loadTimeData.getBoolean(
-                    'showDismissCompromisedPasswordOption');
-              },
-            },
           };
         }
 
@@ -101,7 +88,6 @@ export const PasswordCheckMixin = dedupingMixin(
         insecurePasswordsCount: string;
         status: chrome.passwordsPrivate.PasswordCheckStatus;
         isInitialStatus: boolean;
-        isMutedPasswordsEnabled: boolean;
 
         private leakedCredentialsListener_: CredentialsChangedListener|null =
             null;
@@ -202,12 +188,7 @@ export const PasswordCheckMixin = dedupingMixin(
          */
         updateCompromisedPasswordList(
             newList: chrome.passwordsPrivate.PasswordUiEntry[]) {
-          if (this.isMutedPasswordsEnabled) {
-            this.updateLeakedAndMutedPasswordLists(newList);
-            return;
-          }
-          this.leakedPasswords = this.createCombinedCompromisedPasswordList(
-              this.leakedPasswords, newList);
+          this.updateLeakedAndMutedPasswordLists(newList);
         }
 
         private updateLeakedAndMutedPasswordLists(
@@ -280,7 +261,6 @@ export interface PasswordCheckMixinInterface {
   insecurePasswordsCount: string;
   status: chrome.passwordsPrivate.PasswordCheckStatus;
   isInitialStatus: boolean;
-  isMutedPasswordsEnabled: boolean;
   updateCompromisedPasswordList(
       newList: chrome.passwordsPrivate.PasswordUiEntry[]): void;
 }

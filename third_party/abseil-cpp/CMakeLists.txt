@@ -14,12 +14,9 @@
 # limitations under the License.
 #
 
-# Most widely used distributions have cmake 3.5 or greater available as of March
-# 2019.  A notable exception is RHEL-7 (CentOS7).  You can install a current
-# version of CMake by first installing Extra Packages for Enterprise Linux
-# (https://fedoraproject.org/wiki/EPEL#Extra_Packages_for_Enterprise_Linux_.28EPEL.29)
-# and then issuing `yum install cmake3` on the command line.
-cmake_minimum_required(VERSION 3.5)
+# https://github.com/google/oss-policies-info/blob/main/foundational-cxx-support-matrix.md
+# As of 2022-09-06, CMake 3.10 is the minimum supported version.
+cmake_minimum_required(VERSION 3.10)
 
 # Compiler id for Apple Clang is now AppleClang.
 if (POLICY CMP0025)
@@ -45,6 +42,11 @@ endif (POLICY CMP0077)
 if (POLICY CMP0091)
   cmake_policy(SET CMP0091 NEW)
 endif (POLICY CMP0091)
+
+# try_compile() honors the CMAKE_CXX_STANDARD value
+if (POLICY CMP0067)
+  cmake_policy(SET CMP0067 NEW)
+endif (POLICY CMP0067)
 
 project(absl LANGUAGES CXX)
 include(CTest)
@@ -114,6 +116,10 @@ include(CMakeDependentOption)
 option(ABSL_BUILD_TESTING
   "If ON, Abseil will build all of Abseil's own tests." OFF)
 
+option(ABSL_BUILD_TEST_HELPERS
+  "If ON, Abseil will build libraries that you can use to write tests against Abseil code. This option requires that Abseil is configured to use GoogleTest."
+  OFF)
+
 option(ABSL_USE_EXTERNAL_GOOGLETEST
   "If ON, Abseil will assume that the targets for GoogleTest are already provided by the including project. This makes sense when Abseil is used with add_subdirectory." OFF)
 
@@ -133,7 +139,7 @@ set(ABSL_LOCAL_GOOGLETEST_DIR "/usr/src/googletest" CACHE PATH
   "If ABSL_USE_GOOGLETEST_HEAD is OFF and ABSL_GOOGLETEST_URL is not set, specifies the directory of a local GoogleTest checkout."
   )
 
-if(BUILD_TESTING AND ABSL_BUILD_TESTING)
+if((BUILD_TESTING AND ABSL_BUILD_TESTING) OR ABSL_BUILD_TEST_HELPERS)
   ## check targets
   if (ABSL_USE_EXTERNAL_GOOGLETEST)
     if (ABSL_FIND_GOOGLETEST)
@@ -225,4 +231,25 @@ if(ABSL_ENABLE_INSTALL)
       PATTERN "copts" EXCLUDE
       PATTERN "testdata" EXCLUDE
     )
+
+  file(READ "absl/base/options.h" ABSL_INTERNAL_OPTIONS_H_CONTENTS)
+  if (ABSL_INTERNAL_AT_LEAST_CXX17)
+    string(REGEX REPLACE
+      "#define ABSL_OPTION_USE_STD_([^ ]*) 2"
+      "#define ABSL_OPTION_USE_STD_\\1 1"
+      ABSL_INTERNAL_OPTIONS_H_PINNED
+      "${ABSL_INTERNAL_OPTIONS_H_CONTENTS}")
+  else()
+    string(REGEX REPLACE
+      "#define ABSL_OPTION_USE_STD_([^ ]*) 2"
+      "#define ABSL_OPTION_USE_STD_\\1 0"
+      ABSL_INTERNAL_OPTIONS_H_PINNED
+      "${ABSL_INTERNAL_OPTIONS_H_CONTENTS}")
+  endif()
+  file(WRITE "${CMAKE_BINARY_DIR}/options-pinned.h" "${ABSL_INTERNAL_OPTIONS_H_PINNED}")
+
+  install(FILES "${CMAKE_BINARY_DIR}/options-pinned.h"
+         DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/absl/base
+         RENAME "options.h")
+
 endif()  # ABSL_ENABLE_INSTALL

@@ -20,6 +20,7 @@
 #include "ui/display/util/gpu_info_util.h"
 #include "ui/gfx/buffer_types.h"
 #include "ui/gfx/display_color_spaces.h"
+#include "ui/gfx/font_render_params.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/native_widget_types.h"
@@ -31,6 +32,10 @@
 #include "ui/ozone/platform/wayland/host/wayland_window.h"
 #include "ui/ozone/platform/wayland/host/wayland_zcr_color_management_output.h"
 #include "ui/ozone/platform/wayland/host/zwp_idle_inhibit_manager.h"
+
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+#include "chromeos/ui/base/display_util.h"
+#endif
 
 #if defined(USE_DBUS)
 #include "ui/ozone/platform/wayland/host/org_gnome_mutter_idle_monitor.h"
@@ -111,6 +116,8 @@ WaylandScreen::WaylandScreen(WaylandConnection* connection)
     image_format_no_alpha_ = image_format_alpha_;
   if (!image_format_hdr_)
     image_format_hdr_ = image_format_alpha_;
+
+  tablet_state_ = connection_->GetTabletState();
 }
 
 WaylandScreen::~WaylandScreen() = default;
@@ -240,13 +247,19 @@ void WaylandScreen::AddOrUpdateDisplay(uint32_t output_id,
   changed_display.set_label(label);
 
   display_list_.AddOrUpdateDisplay(changed_display, type);
+
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+  gfx::SetFontRenderParamsDeviceScaleFactor(
+      chromeos::GetRepresentativeDeviceScaleFactor(display_list_.displays()));
+#endif
 }
 
 void WaylandScreen::OnTabletStateChanged(display::TabletState tablet_state) {
+  tablet_state_ = tablet_state;
+
   auto* observer_list = display_list_.observers();
-  for (auto& observer : *observer_list) {
+  for (auto& observer : *observer_list)
     observer.OnDisplayTabletStateChanged(tablet_state);
-  }
 }
 
 base::WeakPtr<WaylandScreen> WaylandScreen::GetWeakPtr() {
@@ -258,9 +271,10 @@ const std::vector<display::Display>& WaylandScreen::GetAllDisplays() const {
 }
 
 display::Display WaylandScreen::GetPrimaryDisplay() const {
-  auto iter = display_list_.GetPrimaryDisplayIterator();
-  DCHECK(iter != display_list_.displays().end());
-  return *iter;
+  DCHECK(display_list_.IsValid());
+  return display_list_.displays().empty()
+             ? display::Display::GetDefaultDisplay()
+             : *display_list_.GetPrimaryDisplayIterator();
 }
 
 display::Display WaylandScreen::GetDisplayForAcceleratedWidget(
@@ -445,6 +459,7 @@ base::TimeDelta WaylandScreen::CalculateIdleTime() const {
 
 void WaylandScreen::AddObserver(display::DisplayObserver* observer) {
   display_list_.AddObserver(observer);
+  observer->OnDisplayTabletStateChanged(tablet_state_);
 }
 
 void WaylandScreen::RemoveObserver(display::DisplayObserver* observer) {

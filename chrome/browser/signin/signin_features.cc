@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -15,6 +15,12 @@ const base::Feature kEnableFamilyInfoFeedback{"EnableFamilyInfoFeedback",
 // Enables the new style, "For You" First Run Experience
 const base::Feature kForYouFre{"ForYouFre", base::FEATURE_DISABLED_BY_DEFAULT};
 #endif
+
+// Kill-switch for the change to show the Sync consent screen without advancing
+// to the `ConsentLevel::kSync` first.
+// TODO(https://crbug.com/1353733): Remove by M108.
+const base::Feature kDelayConsentLevelUpgrade{"DelayConsentLevelUpgrade",
+                                              base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enables the client-side processing of the HTTP response header
 // Google-Accounts-RemoveLocalAccount.

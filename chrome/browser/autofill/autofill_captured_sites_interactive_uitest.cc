@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -188,8 +188,10 @@ class AutofillCapturedSitesInteractiveTest
           field_type;
     }
 
-    for (size_t i = HTML_TYPE_UNSPECIFIED; i < HTML_TYPE_UNRECOGNIZED; ++i) {
-      AutofillType field_type(static_cast<HtmlFieldType>(i), HTML_MODE_NONE);
+    for (size_t i = static_cast<size_t>(HtmlFieldType::kUnspecified);
+         i <= static_cast<size_t>(HtmlFieldType::kMaxValue); ++i) {
+      AutofillType field_type(static_cast<HtmlFieldType>(i),
+                              HtmlFieldMode::kNone);
       string_to_field_type_map_[field_type.ToString()] =
           field_type.GetStorableType();
     }

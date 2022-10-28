@@ -1,12 +1,12 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #import "ios/chrome/browser/ui/overlays/infobar_modal/infobar_modal_overlay_coordinator.h"
 #import "ios/chrome/browser/ui/overlays/infobar_modal/infobar_modal_overlay_coordinator+modal_configuration.h"
 
-#include "base/mac/foundation_util.h"
-#include "base/notreached.h"
+#import "base/mac/foundation_util.h"
+#import "base/notreached.h"
 #import "ios/chrome/browser/ui/infobars/presentation/infobar_modal_positioner.h"
 #import "ios/chrome/browser/ui/infobars/presentation/infobar_modal_transition_driver.h"
 #import "ios/chrome/browser/ui/overlays/infobar_modal/infobar_modal_overlay_mediator.h"

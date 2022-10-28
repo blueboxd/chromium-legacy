@@ -1,4 +1,4 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -72,7 +72,7 @@ jboolean RecentTabsPagePrefs::GetForeignSessionCollapsed(
     JNIEnv* env,
     const JavaParamRef<jstring>& session_tag) {
   const base::Value::Dict& dict =
-      profile_->GetPrefs()->GetValueDict(prefs::kNtpCollapsedForeignSessions);
+      profile_->GetPrefs()->GetDict(prefs::kNtpCollapsedForeignSessions);
   return dict.contains(ConvertJavaStringToUTF8(env, session_tag));
 }
 

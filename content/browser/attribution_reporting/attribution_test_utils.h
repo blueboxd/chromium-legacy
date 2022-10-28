@@ -47,6 +47,7 @@
 #include "content/public/test/attribution_config.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "content/test/test_content_browser_client.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/attribution_reporting/constants.h"
@@ -82,11 +83,11 @@ class MockAttributionReportingContentBrowserClient
 
   // ContentBrowserClient:
   MOCK_METHOD(bool,
-              IsConversionMeasurementOperationAllowed,
+              IsAttributionReportingOperationAllowed,
               (content::BrowserContext * browser_context,
-               ConversionMeasurementOperation operation,
-               const url::Origin* impression_origin,
-               const url::Origin* conversion_origin,
+               AttributionReportingOperation operation,
+               const url::Origin* source_origin,
+               const url::Origin* destination_origin,
                const url::Origin* reporting_origin),
               (override));
 };
@@ -336,7 +337,6 @@ class MockAttributionManager : public AttributionManager {
 
   void NotifySourcesChanged();
   void NotifyReportsChanged(AttributionReport::ReportType report_type);
-  void NotifySourceDeactivated(const StoredSource& source);
   void NotifySourceHandled(const StorableSource& source,
                            StorableSource::Result result);
   void NotifyReportSent(const AttributionReport& report,
@@ -373,11 +373,6 @@ class MockAttributionObserver : public AttributionObserver {
   MOCK_METHOD(void,
               OnSourceHandled,
               (const StorableSource& source, StorableSource::Result result),
-              (override));
-
-  MOCK_METHOD(void,
-              OnSourceDeactivated,
-              (const StoredSource& source),
               (override));
 
   MOCK_METHOD(void,
@@ -438,9 +433,9 @@ class SourceBuilder {
 
   SourceBuilder& SetSourceEventId(uint64_t source_event_id);
 
-  SourceBuilder& SetImpressionOrigin(url::Origin origin);
+  SourceBuilder& SetSourceOrigin(url::Origin origin);
 
-  SourceBuilder& SetConversionOrigin(url::Origin domain);
+  SourceBuilder& SetDestinationOrigin(url::Origin origin);
 
   SourceBuilder& SetReportingOrigin(url::Origin origin);
 
@@ -475,10 +470,10 @@ class SourceBuilder {
 
  private:
   uint64_t source_event_id_ = 123;
-  base::Time impression_time_;
+  base::Time source_time_;
   base::TimeDelta expiry_;
-  url::Origin impression_origin_;
-  url::Origin conversion_origin_;
+  url::Origin source_origin_;
+  url::Origin destination_origin_;
   url::Origin reporting_origin_;
   AttributionSourceType source_type_ = AttributionSourceType::kNavigation;
   int64_t priority_ = 0;
@@ -737,12 +732,12 @@ MATCHER_P(SourceEventIdIs, matcher, "") {
 }
 
 MATCHER_P(ImpressionOriginIs, matcher, "") {
-  return ExplainMatchResult(matcher, arg.common_info().impression_origin(),
+  return ExplainMatchResult(matcher, arg.common_info().source_origin(),
                             result_listener);
 }
 
-MATCHER_P(ConversionOriginIs, matcher, "") {
-  return ExplainMatchResult(matcher, arg.common_info().conversion_origin(),
+MATCHER_P(DestinationOriginIs, matcher, "") {
+  return ExplainMatchResult(matcher, arg.common_info().destination_origin(),
                             result_listener);
 }
 
@@ -753,11 +748,6 @@ MATCHER_P(SourceTypeIs, matcher, "") {
 
 MATCHER_P(SourcePriorityIs, matcher, "") {
   return ExplainMatchResult(matcher, arg.common_info().priority(),
-                            result_listener);
-}
-
-MATCHER_P(ImpressionTimeIs, matcher, "") {
-  return ExplainMatchResult(matcher, arg.common_info().impression_time(),
                             result_listener);
 }
 

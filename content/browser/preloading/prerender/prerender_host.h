@@ -24,9 +24,22 @@
 #include "third_party/blink/public/mojom/navigation/navigation_params.mojom.h"
 #include "url/gurl.h"
 
+namespace blink {
+class EnabledClientHints;
+}  // namespace blink
+
+namespace network::mojom {
+enum class WebClientHintsType;
+}  // namespace network::mojom
+
+namespace url {
+class Origin;
+}  // namespace url
+
 namespace content {
 
 class FrameTree;
+class FrameTreeNode;
 class PrerenderHostRegistry;
 class PrerenderPageHolder;
 class RenderFrameHostImpl;
@@ -42,16 +55,6 @@ class WebContentsImpl;
 // is owned by PrerenderHostRegistry.
 class CONTENT_EXPORT PrerenderHost : public WebContentsObserver {
  public:
-  class Observer : public base::CheckedObserver {
-   public:
-    // Called on the page activation.
-    virtual void OnActivated() {}
-
-    // Called from the PrerenderHost's destructor. The observer should drop any
-    // reference to the host.
-    virtual void OnHostDestroyed() {}
-  };
-
   // These values are persisted to logs. Entries should not be renumbered and
   // numeric values should never be reused.
   enum class FinalStatus {
@@ -98,13 +101,14 @@ class CONTENT_EXPORT PrerenderHost : public WebContentsObserver {
     kMemoryLimitExceeded = 36,
     kFailToGetMemoryUsage = 37,
     kDataSaverEnabled = 38,
-    kMaxValue = kDataSaverEnabled,
+    kHasEffectiveUrl = 39,
+    kMaxValue = kHasEffectiveUrl,
   };
 
   // These values are persisted to logs. Entries should not be renumbered and
   // numeric values should never be reused. This enum corresponds to
   // PrerenderActivationNavigationParamsMatch in
-  // tools/metrics/histograms/test_data/enums.xml
+  // tools/metrics/histograms/enums.xml
   enum class ActivationNavigationParamsMatch {
     kOk = 0,
     kInitiatorFrameToken = 1,
@@ -129,10 +133,28 @@ class CONTENT_EXPORT PrerenderHost : public WebContentsObserver {
     kInitiatorOriginTrialFeature = 20,
     kHrefTranslate = 21,
     kIsHistoryNavigationInNewChildFrame = 22,
-    kReferrerPolicy = 23,
+    // kReferrerPolicy = 23,  Obsolete
     kRequestDestination = 24,
     kMaxValue = kRequestDestination,
   };
+
+  class Observer : public base::CheckedObserver {
+   public:
+    // Called on the page activation.
+    virtual void OnActivated() {}
+
+    // Called from the PrerenderHost's destructor. The observer should drop any
+    // reference to the host.
+    virtual void OnHostDestroyed(PrerenderHost::FinalStatus status) {}
+  };
+
+  // Returns the PrerenderHost that the given `frame_tree_node` is in, if it is
+  // being prerendered. Note that this function returns false if the prerender
+  // has been canceled.
+  // TODO(https://crbug.com/1355279): Always return a non-null ptr if the
+  // frame_tree_node is in a prerendering tree.
+  static PrerenderHost* GetPrerenderHostFromFrameTreeNode(
+      FrameTreeNode& frame_tree_node);
 
   PrerenderHost(const PrerenderAttributes& attributes,
                 WebContents& web_contents,
@@ -205,6 +227,18 @@ class CONTENT_EXPORT PrerenderHost : public WebContentsObserver {
   // initial_url.
   bool IsUrlMatch(const GURL& url) const;
 
+  // Called when the prerender pages asks the client to change the Accept Client
+  // Hints. The instruction applies to the prerendering page before activation,
+  // and will be persisted to the global setting upon activation.
+  void OnAcceptClientHintChanged(
+      const url::Origin& origin,
+      const std::vector<network::mojom::WebClientHintsType>& client_hints_type);
+
+  // Updates the given `client_hints`.
+  void GetAllowedClientHintsOnPage(
+      const url::Origin& origin,
+      blink::EnabledClientHints* client_hints) const;
+
   // Returns absl::nullopt iff prerendering is initiated by the browser (not by
   // a renderer using Speculation Rules API).
   absl::optional<url::Origin> initiator_origin() const {
@@ -221,6 +255,8 @@ class CONTENT_EXPORT PrerenderHost : public WebContentsObserver {
   int initiator_frame_tree_node_id() const {
     return attributes_.initiator_frame_tree_node_id;
   }
+
+  int initiator_ukm_id() const { return attributes_.initiator_ukm_id; }
 
   bool is_ready_for_activation() const { return is_ready_for_activation_; }
 
@@ -288,6 +324,10 @@ class CONTENT_EXPORT PrerenderHost : public WebContentsObserver {
   // for a navigation.
   blink::mojom::BeginNavigationParamsPtr begin_params_;
   blink::mojom::CommonNavigationParamsPtr common_params_;
+
+  // Stores the client hints type that applies to this page.
+  base::flat_map<url::Origin, std::vector<network::mojom::WebClientHintsType>>
+      client_hints_type_;
 
   // Holds the navigation ID for the main frame initial navigation.
   absl::optional<int64_t> initial_navigation_id_;

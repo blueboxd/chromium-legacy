@@ -1,20 +1,19 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome/browser/ui/ash/session_controller_client_impl.h"
 
-#include <algorithm>
 #include <memory>
 #include <utility>
 
-#include "ash/components/login/session/session_termination_manager.h"
 #include "ash/constants/ash_pref_names.h"
 #include "ash/public/cpp/session/session_controller.h"
 #include "ash/public/cpp/session/session_types.h"
 #include "base/bind.h"
 #include "base/cxx17_backports.h"
 #include "base/logging.h"
+#include "base/ranges/algorithm.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "chrome/browser/app_mode/app_mode_utils.h"
@@ -41,6 +40,7 @@
 #include "chrome/common/pref_names.h"
 #include "chromeos/ash/components/assistant/buildflags.h"
 #include "chromeos/ash/components/dbus/session_manager/session_manager_client.h"
+#include "chromeos/ash/components/login/session/session_termination_manager.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "components/prefs/pref_service.h"
 #include "components/session_manager/core/session_manager.h"
@@ -227,6 +227,10 @@ void SessionControllerClientImpl::RequestHideLockScreen() {
 
 void SessionControllerClientImpl::RequestSignOut() {
   chrome::AttemptUserExit();
+}
+
+void SessionControllerClientImpl::RequestRestartForUpdate() {
+  browser_shutdown::NotifyAndTerminate(/*fast_path=*/true);
 }
 
 void SessionControllerClientImpl::AttemptRestartChrome() {
@@ -453,10 +457,8 @@ void SessionControllerClientImpl::DoCycleActiveUser(
   AccountId account_id = UserManager::Get()->GetActiveUser()->GetAccountId();
 
   // Get an iterator positioned at the active user.
-  auto it = std::find_if(logged_in_users.begin(), logged_in_users.end(),
-                         [account_id](const User* user) {
-                           return user->GetAccountId() == account_id;
-                         });
+  auto it =
+      base::ranges::find(logged_in_users, account_id, &User::GetAccountId);
 
   // Active user not found.
   if (it == logged_in_users.end())

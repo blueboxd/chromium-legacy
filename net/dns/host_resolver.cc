@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -26,8 +26,8 @@
 #include "net/dns/dns_util.h"
 #include "net/dns/host_cache.h"
 #include "net/dns/host_resolver_manager.h"
-#include "net/dns/host_resolver_results.h"
 #include "net/dns/mapped_host_resolver.h"
+#include "net/dns/public/host_resolver_results.h"
 #include "net/dns/resolve_context.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
@@ -462,6 +462,16 @@ AddressList HostResolver::EndpointResultToAddressList(
   list.SetDnsAliases(std::move(aliases_vector));
 
   return list;
+}
+
+// static
+std::vector<IPEndPoint> HostResolver::GetNonProtocolEndpoints(
+    const std::vector<HostResolverEndpointResult>& endpoints) {
+  auto non_protocol_endpoint =
+      base::ranges::find_if(endpoints, &EndpointResultIsNonProtocol);
+  if (non_protocol_endpoint == endpoints.end())
+    return std::vector<IPEndPoint>();
+  return non_protocol_endpoint->ip_endpoints;
 }
 
 HostResolver::HostResolver() = default;

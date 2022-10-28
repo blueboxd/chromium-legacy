@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -27,9 +27,7 @@ SharedImageRepresentation::SharedImageRepresentation(
   // TODO(hitawala): Rewrite the reference counting so that
   // SharedImageRepresentation does not need manager and manager attaches to
   // backing in Register().
-  // If mailbox is zero this is owned by a compound backing and not reference
-  // counted.
-  if (manager_ && !backing_->mailbox().IsZero()) {
+  if (manager_ && backing_->is_ref_counted()) {
     backing_->AddRef(this);
   }
 }
@@ -39,10 +37,9 @@ SharedImageRepresentation::~SharedImageRepresentation() {
   // error is.
   CHECK(!has_scoped_access_) << "Destroying a SharedImageRepresentation with "
                                 "outstanding Scoped*Access objects.";
-  // If mailbox is zero this is owned by a compound backing and not reference
-  // counted.
-  if (manager_ && !backing_->mailbox().IsZero()) {
-    manager_->OnRepresentationDestroyed(backing_->mailbox(), this);
+  if (manager_ && backing_->is_ref_counted()) {
+    manager_->OnRepresentationDestroyed(backing_.ExtractAsDangling()->mailbox(),
+                                        this);
   }
 }
 
@@ -222,7 +219,9 @@ SkiaImageRepresentation::ScopedReadAccess::~ScopedReadAccess() {
 }
 
 sk_sp<SkImage> SkiaImageRepresentation::ScopedReadAccess::CreateSkImage(
-    GrDirectContext* context) const {
+    GrDirectContext* context,
+    SkImage::TextureReleaseProc texture_release_proc,
+    SkImage::ReleaseContext release_context) const {
   auto surface_origin = representation()->surface_origin();
   auto color_type =
       viz::ResourceFormatToClosestSkColorType(true, representation()->format());
@@ -231,7 +230,8 @@ sk_sp<SkImage> SkiaImageRepresentation::ScopedReadAccess::CreateSkImage(
       representation()->color_space().GetAsFullRangeRGB().ToSkColorSpace();
   return SkImage::MakeFromTexture(
       context, promise_image_texture_->backendTexture(), surface_origin,
-      color_type, alpha_type, sk_color_space);
+      color_type, alpha_type, sk_color_space, texture_release_proc,
+      release_context);
 }
 
 std::unique_ptr<GrBackendSurfaceMutableState>
@@ -272,15 +272,6 @@ sk_sp<SkSurface> SkiaImageRepresentation::BeginWriteAccess(
     std::vector<GrBackendSemaphore>* begin_semaphores,
     std::vector<GrBackendSemaphore>* end_semaphores,
     std::unique_ptr<GrBackendSurfaceMutableState>* end_state) {
-  return BeginWriteAccess(final_msaa_count, surface_props, begin_semaphores,
-                          end_semaphores);
-}
-
-sk_sp<SkSurface> SkiaImageRepresentation::BeginWriteAccess(
-    int final_msaa_count,
-    const SkSurfaceProps& surface_props,
-    std::vector<GrBackendSemaphore>* begin_semaphores,
-    std::vector<GrBackendSemaphore>* end_semaphores) {
   return nullptr;
 }
 
@@ -288,12 +279,6 @@ sk_sp<SkPromiseImageTexture> SkiaImageRepresentation::BeginReadAccess(
     std::vector<GrBackendSemaphore>* begin_semaphores,
     std::vector<GrBackendSemaphore>* end_semaphores,
     std::unique_ptr<GrBackendSurfaceMutableState>* end_state) {
-  return BeginReadAccess(begin_semaphores, end_semaphores);
-}
-
-sk_sp<SkPromiseImageTexture> SkiaImageRepresentation::BeginReadAccess(
-    std::vector<GrBackendSemaphore>* begin_semaphores,
-    std::vector<GrBackendSemaphore>* end_semaphores) {
   return nullptr;
 }
 

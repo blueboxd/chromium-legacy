@@ -1,4 +1,4 @@
-# Copyright 2021 The Chromium Authors. All rights reserved.
+# Copyright 2021 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 """Definitions of builders in the tryserver.chromium.win builder group."""
@@ -63,6 +63,7 @@ try_.builder(
     tryjob = try_.job(),
     experiments = {
         "enable_weetbix_queries": 100,
+        "weetbix.retry_weak_exonerations": 100,
     },
 )
 
@@ -186,6 +187,7 @@ try_.orchestrator_builder(
     experiments = {
         "remove_src_checkout_experiment": 100,
         "enable_weetbix_queries": 100,
+        "weetbix.retry_weak_exonerations": 100,
     },
     use_orchestrator_pool = True,
 )

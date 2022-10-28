@@ -1,4 +1,4 @@
-# Copyright 2016 The Chromium Authors. All rights reserved.
+# Copyright 2016 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -10,7 +10,6 @@ source_set("providers") {
   deps = [
     "//ios/public/provider/chrome/browser",
     "//ios/public/provider/chrome/browser/signin",
-    "//ios/public/provider/chrome/browser/user_feedback",
   ]
   configs += [ "//build/config/compiler:enable_arc" ]
 }
@@ -54,6 +53,7 @@ group("chromium_providers") {
     "//ios/chrome/browser/providers/text_zoom:chromium_text_zoom",
     "//ios/chrome/browser/providers/ui_utils:chromium_ui_utils",
     "//ios/chrome/browser/providers/url_rewriters:chromium_url_rewriters",
+    "//ios/chrome/browser/providers/user_feedback:chromium_user_feedback",
     "//ios/chrome/browser/providers/voice_search:chromium_voice_search",
 
     # The provider API needs to provide MaterialDesignComponent API (as the

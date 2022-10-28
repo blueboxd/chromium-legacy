@@ -1,4 +1,4 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -169,7 +169,7 @@ class MultiProfileSupportTest : public ChromeAshTestBase {
   // Delete the window at the given index, and set the referefence to NULL.
   void delete_window_at(size_t index) {
     delete windows_[index];
-    windows_[index] = NULL;
+    windows_[index] = nullptr;
   }
 
   ash::MultiUserWindowManager* multi_user_window_manager() {
@@ -813,7 +813,7 @@ TEST_F(MultiProfileSupportTest, ActiveWindowTests) {
   StartUserTransitionAnimation(account_id_C);
   ::wm::ActivationClient* activation_client =
       ::wm::GetActivationClient(window(0)->GetRootWindow());
-  EXPECT_EQ(NULL, activation_client->GetActiveWindow());
+  EXPECT_EQ(nullptr, activation_client->GetActiveWindow());
 
   // Now test that a minimized window stays minimized upon switch and back.
   StartUserTransitionAnimation(account_id_A);

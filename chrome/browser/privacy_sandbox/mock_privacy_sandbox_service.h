@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -30,12 +30,11 @@ class MockPrivacySandboxService : public PrivacySandboxService {
   MOCK_METHOD((base::flat_map<net::SchemefulSite, net::SchemefulSite>),
               GetFirstPartySets,
               (),
-              (override));
+              (override, const));
   MOCK_METHOD(absl::optional<std::u16string>,
-              GetFpsOwnerForDisplay,
+              GetFirstPartySetOwnerForDisplay,
               (const GURL& site_url),
-              (override));
-  MOCK_METHOD(bool, ShouldShowDetailedFpsControls, (), (override));
+              (override, const));
 };
 
 std::unique_ptr<KeyedService> BuildMockPrivacySandboxService(

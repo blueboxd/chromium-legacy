@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -135,12 +135,11 @@ void EditSearchEngineController::CleanUpCancelledAdd() {
 
 std::string EditSearchEngineController::GetFixedUpURL(
     const std::string& url_input) const {
-  std::string url;
-  base::TrimWhitespaceASCII(
-      TemplateURLRef::DisplayURLToURLRef(base::UTF8ToUTF16(url_input)),
-      base::TRIM_ALL, &url);
-  if (url.empty())
-    return url;
+  std::u16string url16;
+  base::TrimWhitespace(base::UTF8ToUTF16(url_input), base::TRIM_ALL, &url16);
+  if (url16.empty())
+    return std::string();
+  std::string url = TemplateURLRef::DisplayURLToURLRef(url16);
 
   // Parse the string as a URL to determine the scheme. If we need to, add the
   // scheme. As the scheme may be expanded (as happens with {google:baseURL})

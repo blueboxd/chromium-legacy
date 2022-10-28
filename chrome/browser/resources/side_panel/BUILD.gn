@@ -1,4 +1,4 @@
-# Copyright 2020 The Chromium Authors. All rights reserved.
+# Copyright 2020 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -88,6 +88,7 @@ ts_library("build_ts") {
   deps = [
     "//third_party/polymer/v3_0:library",
     "//ui/webui/resources:library",
+    "//ui/webui/resources/cr_components/history_clusters:build_ts",
     "//ui/webui/resources/mojo:library",
   ]
   extra_deps = [

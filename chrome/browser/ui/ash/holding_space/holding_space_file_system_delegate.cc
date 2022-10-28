@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,6 +9,7 @@
 
 #include "ash/components/arc/session/arc_bridge_service.h"
 #include "ash/components/arc/session/arc_service_manager.h"
+#include "ash/constants/ash_features.h"
 #include "ash/public/cpp/holding_space/holding_space_constants.h"
 #include "ash/public/cpp/holding_space/holding_space_item.h"
 #include "ash/public/cpp/holding_space/holding_space_model.h"
@@ -16,6 +17,7 @@
 #include "base/files/file_path.h"
 #include "base/files/file_path_watcher.h"
 #include "base/files/file_util.h"
+#include "base/ranges/algorithm.h"
 #include "base/sequence_checker.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
@@ -166,8 +168,10 @@ void HoldingSpaceFileSystemDelegate::OnConnectionReady() {
       continue;
 
     holding_space_util::ValidityRequirement requirements;
-    if (item->type() != HoldingSpaceItem::Type::kPinnedFile)
-      requirements.must_be_newer_than = kMaxFileAge;
+    if (!features::IsHoldingSpacePredictabilityEnabled()) {
+      if (item->type() != HoldingSpaceItem::Type::kPinnedFile)
+        requirements.must_be_newer_than = kMaxFileAge;
+    }
     ScheduleFilePathValidityCheck({item->file_path(), requirements});
   }
 }
@@ -234,11 +238,11 @@ void HoldingSpaceFileSystemDelegate::OnFilesChanged(
   model()->RemoveIf(base::BindRepeating(
       [](const std::set<base::FilePath>& deleted_paths,
          const HoldingSpaceItem* item) {
-        return std::any_of(deleted_paths.begin(), deleted_paths.end(),
-                           [&](const base::FilePath& deleted_path) {
-                             return item->file_path() == deleted_path ||
-                                    deleted_path.IsParent(item->file_path());
-                           });
+        return base::ranges::any_of(
+            deleted_paths, [&](const base::FilePath& deleted_path) {
+              return item->file_path() == deleted_path ||
+                     deleted_path.IsParent(item->file_path());
+            });
       },
       std::cref(deleted_paths)));
 }
@@ -323,9 +327,10 @@ void HoldingSpaceFileSystemDelegate::OnHoldingSpaceItemsAdded(
       continue;
 
     holding_space_util::ValidityRequirement requirements;
-    if (item->type() != HoldingSpaceItem::Type::kPinnedFile)
-      requirements.must_be_newer_than = kMaxFileAge;
-
+    if (!features::IsHoldingSpacePredictabilityEnabled()) {
+      if (item->type() != HoldingSpaceItem::Type::kPinnedFile)
+        requirements.must_be_newer_than = kMaxFileAge;
+    }
     ScheduleFilePathValidityCheck({item->file_path(), requirements});
   }
 }
@@ -368,8 +373,10 @@ void HoldingSpaceFileSystemDelegate::OnVolumeMounted(
       continue;
 
     holding_space_util::ValidityRequirement requirements;
-    if (item->type() != HoldingSpaceItem::Type::kPinnedFile)
-      requirements.must_be_newer_than = kMaxFileAge;
+    if (!features::IsHoldingSpacePredictabilityEnabled()) {
+      if (item->type() != HoldingSpaceItem::Type::kPinnedFile)
+        requirements.must_be_newer_than = kMaxFileAge;
+    }
     ScheduleFilePathValidityCheck({item->file_path(), requirements});
   }
 }
@@ -605,11 +612,10 @@ void HoldingSpaceFileSystemDelegate::MaybeRemoveWatch(
   // The watch for `file_path` should only be removed if no holding space items
   // exist in the model which are backed by files it directly parents.
   const bool remove_watch =
-      std::none_of(model()->items().begin(), model()->items().end(),
-                   [&file_path](const auto& item) {
-                     return item->IsInitialized() &&
-                            item->file_path().DirName() == file_path;
-                   });
+      base::ranges::none_of(model()->items(), [&file_path](const auto& item) {
+        return item->IsInitialized() &&
+               item->file_path().DirName() == file_path;
+      });
 
   if (!remove_watch)
     return;

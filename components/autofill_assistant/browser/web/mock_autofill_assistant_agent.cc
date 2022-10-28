@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -25,13 +25,13 @@ void MockAutofillAssistantAgent::RegisterForAllFrames(
     content::WebContents* web_contents,
     MockAutofillAssistantAgent* agent) {
   web_contents->GetPrimaryMainFrame()->ForEachRenderFrameHost(
-      base::BindLambdaForTesting([agent](content::RenderFrameHost* host) {
+      [agent](content::RenderFrameHost* host) {
         host->GetRemoteAssociatedInterfaces()->OverrideBinderForTesting(
             mojom::AutofillAssistantAgent::Name_,
             base::BindRepeating(
                 &MockAutofillAssistantAgent::BindPendingReceiver,
                 base::Unretained(agent)));
-      }));
+      });
 }
 
 }  // namespace autofill_assistant

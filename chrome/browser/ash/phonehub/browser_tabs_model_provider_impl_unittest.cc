@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,7 +13,7 @@
 #include "ash/components/phonehub/mutable_phone_model.h"
 #include "ash/components/phonehub/phone_model_test_util.h"
 #include "ash/services/multidevice_setup/public/cpp/fake_multidevice_setup_client.h"
-#include "components/sync/driver/mock_sync_service.h"
+#include "components/sync/test/mock_sync_service.h"
 #include "components/sync_sessions/open_tabs_ui_delegate.h"
 #include "components/sync_sessions/session_sync_service.h"
 #include "testing/gmock/include/gmock/gmock.h"

@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,9 +13,11 @@ enum class RpcType {
   GET_TRIGGER_SCRIPTS,
   SUPPORTS_SCRIPT,
   GET_CAPABILITIES_BY_HASH_PREFIX,
+  GET_TRIGGER_SCRIPTS_BY_HASH_PREFIX,
   GET_USER_DATA,
   REPORT_PROGRESS,
+  GET_NO_ROUNDTRIP_SCRIPTS_BY_HASH_PREFIX,
 };
-}
+}  // namespace autofill_assistant
 
 #endif  // COMPONENTS_AUTOFILL_ASSISTANT_BROWSER_SERVICE_RPC_TYPE_H_

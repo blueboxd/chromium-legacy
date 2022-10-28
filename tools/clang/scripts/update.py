@@ -35,7 +35,7 @@ import zlib
 # https://chromium.googlesource.com/chromium/src/+/main/docs/updating_clang.md
 # Reverting problematic clang rolls is safe, though.
 # This is the output of `git describe` and is usable as a commit-ish.
-CLANG_REVISION = 'llvmorg-16-init-907-g8b740747'
+CLANG_REVISION = 'llvmorg-16-init-4438-gc922cac8'
 CLANG_SUB_REVISION = 1
 
 PACKAGE_VERSION = '%s-%s' % (CLANG_REVISION, CLANG_SUB_REVISION)
@@ -240,19 +240,14 @@ def UpdatePackage(package_name, host_os):
   if package_name == 'clang':
     stamp_file = STAMP_FILE
     package_file = 'clang'
-  elif package_name == 'clang-tidy':
-    package_file = 'clang-tidy'
-  elif package_name == 'clang-libs':
-    package_file = 'clang-libs'
-  elif package_name == 'objdump':
-    package_file = 'llvmobjdump'
-  elif package_name == 'translation_unit':
-    package_file = 'translation_unit'
   elif package_name == 'coverage_tools':
     stamp_file = os.path.join(LLVM_BUILD_DIR, 'cr_coverage_revision')
     package_file = 'llvm-code-coverage'
-  elif package_name == 'libclang':
-    package_file = 'libclang'
+  elif package_name == 'objdump':
+    package_file = 'llvmobjdump'
+  elif package_name in ['clang-libs', 'clang-tidy', 'clangd', 'libclang',
+                        'translation_unit']:
+    package_file = package_name
   else:
     print('Unknown package: "%s".' % package_name)
     return 1
@@ -345,6 +340,11 @@ def main():
     print(RELEASE_VERSION)
     return 0
 
+  if args.output_dir:
+    global LLVM_BUILD_DIR, STAMP_FILE
+    LLVM_BUILD_DIR = os.path.abspath(args.output_dir)
+    STAMP_FILE = os.path.join(LLVM_BUILD_DIR, 'cr_build_revision')
+
   if args.print_revision:
     if args.llvm_force_head_revision:
       force_head_revision = ReadStampFile(FORCE_HEAD_REVISION_FILE)
@@ -354,17 +354,19 @@ def main():
       print(force_head_revision)
       return 0
 
+    stamp_version = ReadStampFile(STAMP_FILE).partition(',')[0]
+    if PACKAGE_VERSION != stamp_version:
+      print('The expected clang version is %s but the actual version is %s' %
+            (PACKAGE_VERSION, stamp_version))
+      print('Did you run "gclient sync"?')
+      return 1
+
     print(PACKAGE_VERSION)
     return 0
 
   if args.llvm_force_head_revision:
     print('--llvm-force-head-revision can only be used for --print-revision')
     return 1
-
-  if args.output_dir:
-    global LLVM_BUILD_DIR, STAMP_FILE
-    LLVM_BUILD_DIR = os.path.abspath(args.output_dir)
-    STAMP_FILE = os.path.join(LLVM_BUILD_DIR, 'cr_build_revision')
 
   return UpdatePackage(args.package, args.host_os)
 

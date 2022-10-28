@@ -1,11 +1,11 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #ifndef ASH_SYSTEM_GEOLOCATION_TEST_GEOLOCATION_URL_LOADER_FACTORY_H_
 #define ASH_SYSTEM_GEOLOCATION_TEST_GEOLOCATION_URL_LOADER_FACTORY_H_
 
-#include "ash/components/geolocation/geoposition.h"
+#include "chromeos/ash/components/geolocation/geoposition.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/test/test_url_loader_factory.h"

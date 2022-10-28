@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,9 +10,12 @@
 
 #include "base/callback_forward.h"
 #include "base/containers/flat_map.h"
+#include "build/build_config.h"
 #include "components/autofill_assistant/browser/public/external_action_delegate.h"
 #include "components/autofill_assistant/browser/public/headless_script_controller.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
+
+class PrefRegistrySimple;
 
 namespace autofill {
 class FormSignature;
@@ -68,6 +71,13 @@ class AutofillAssistant {
 
   virtual ~AutofillAssistant() = default;
 
+  // Registers the Autofill Assistant profile prefs that are exposed to
+  // users of the Autofill Assistant component, i.e. whether Autofill Assistant
+  // is turned on and whether consent has been given.
+#if !BUILDFLAG(IS_ANDROID)
+  static void RegisterProfilePrefs(PrefRegistrySimple* registry);
+#endif  // !BUILDFLAG(IS_ANDROID)
+
   // Creates a hash prefix of `hash_prefix_length` for `origin` for use in
   // `GetCapabilitiesByHashPrefix`.
   static uint64_t GetHashPrefix(uint32_t hash_prefix_length,
@@ -77,8 +87,6 @@ class AutofillAssistant {
   // number of leading bits of the domain url hashes. CityHash64 should be used
   // to calculate the hashes and only the leading |hash_prefix_length| bits
   // should be sent.
-  // |intent| should contain the string representation of the enum:
-  // https://source.corp.google.com/piper///depot/google3/quality/genie/autobot/dev/proto/script/intent.proto
   virtual void GetCapabilitiesByHashPrefix(
       uint32_t hash_prefix_length,
       const std::vector<uint64_t>& hash_prefix,

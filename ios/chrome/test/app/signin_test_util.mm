@@ -1,23 +1,23 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ios/chrome/test/app/signin_test_util.h"
+#import "ios/chrome/test/app/signin_test_util.h"
 
-#include "base/check.h"
+#import "base/check.h"
 #import "base/test/ios/wait_util.h"
-#include "components/prefs/pref_service.h"
-#include "components/signin/public/base/signin_pref_names.h"
+#import "components/prefs/pref_service.h"
+#import "components/signin/public/base/signin_pref_names.h"
 #import "components/sync/driver/sync_service.h"
 #import "components/sync/driver/sync_user_settings.h"
-#include "google_apis/gaia/gaia_constants.h"
-#include "ios/chrome/browser/browser_state/chrome_browser_state.h"
-#include "ios/chrome/browser/pref_names.h"
+#import "google_apis/gaia/gaia_constants.h"
+#import "ios/chrome/browser/browser_state/chrome_browser_state.h"
+#import "ios/chrome/browser/prefs/pref_names.h"
 #import "ios/chrome/browser/signin/authentication_service.h"
-#include "ios/chrome/browser/signin/authentication_service_factory.h"
+#import "ios/chrome/browser/signin/authentication_service_factory.h"
 #import "ios/chrome/browser/signin/chrome_account_manager_service.h"
 #import "ios/chrome/browser/signin/chrome_account_manager_service_factory.h"
-#include "ios/chrome/browser/signin/gaia_auth_fetcher_ios.h"
+#import "ios/chrome/browser/signin/gaia_auth_fetcher_ios.h"
 #import "ios/chrome/browser/sync/sync_service_factory.h"
 #import "ios/chrome/browser/ui/authentication/authentication_flow.h"
 #import "ios/chrome/browser/ui/authentication/cells/signin_promo_view.h"
@@ -89,7 +89,7 @@ void SignOutAndClearIdentities() {
     browser_state->GetPrefs()->ClearPref(prefs::kGoogleServicesLastAccountId);
     browser_state->GetPrefs()->ClearPref(prefs::kGoogleServicesLastUsername);
 
-    // |SignOutAndClearIdentities()| is called during shutdown. Commit all pref
+    // `SignOutAndClearIdentities()` is called during shutdown. Commit all pref
     // changes to ensure that clearing the last signed in account is saved on
     // disk in case Chrome crashes during shutdown.
     browser_state->GetPrefs()->CommitPendingWrite();

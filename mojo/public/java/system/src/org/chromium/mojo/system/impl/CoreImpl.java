@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,10 +8,9 @@ import android.os.ParcelFileDescriptor;
 
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
-import org.chromium.base.annotations.MainDex;
 import org.chromium.base.annotations.NativeMethods;
+import org.chromium.build.annotations.MainDex;
 import org.chromium.mojo.system.Core;
-import org.chromium.mojo.system.Core.HandleSignalsState;
 import org.chromium.mojo.system.DataPipe;
 import org.chromium.mojo.system.DataPipe.ConsumerHandle;
 import org.chromium.mojo.system.DataPipe.ProducerHandle;

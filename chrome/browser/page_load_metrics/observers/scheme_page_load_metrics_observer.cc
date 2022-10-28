@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -38,6 +38,16 @@ SchemePageLoadMetricsObserver::OnStart(
         started_in_foreground);
   }
   return started_in_foreground ? CONTINUE_OBSERVING : STOP_OBSERVING;
+}
+
+page_load_metrics::PageLoadMetricsObserver::ObservePolicy
+SchemePageLoadMetricsObserver::OnPrerenderStart(
+    content::NavigationHandle* navigation_handle,
+    const GURL& currently_committed_url) {
+  // This observer is interested in comparing performance among HTTP and HTTPS.
+  // Including prerendering cases can be another factor to differentiate
+  // performance, and it will be a noise for the original goal.
+  return STOP_OBSERVING;
 }
 
 page_load_metrics::PageLoadMetricsObserver::ObservePolicy

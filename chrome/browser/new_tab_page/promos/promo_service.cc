@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -366,9 +366,8 @@ bool PromoService::IsBlockedAfterClearingExpired(
 
   std::vector<std::string> expired_ids;
 
-  for (auto blocked : profile_->GetPrefs()
-                          ->GetDictionary(prefs::kNtpPromoBlocklist)
-                          ->DictItems()) {
+  for (auto blocked :
+       profile_->GetPrefs()->GetDict(prefs::kNtpPromoBlocklist)) {
     if (!blocked.second.is_double() || blocked.second.GetDouble() < expired)
       expired_ids.emplace_back(blocked.first);
     else if (!found && blocked.first == promo_id)

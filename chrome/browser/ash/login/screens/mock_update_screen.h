@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -17,7 +17,7 @@ class MockUpdateScreen : public UpdateScreen {
   MockUpdateScreen(base::WeakPtr<UpdateView> view,
                    ErrorScreen* error_screen,
                    const ScreenExitCallback& exit_callback);
-  virtual ~MockUpdateScreen();
+  ~MockUpdateScreen() override;
 
   MOCK_METHOD(void, ShowImpl, ());
   MOCK_METHOD(void, HideImpl, ());
@@ -28,7 +28,7 @@ class MockUpdateScreen : public UpdateScreen {
 class MockUpdateView : public UpdateView {
  public:
   MockUpdateView();
-  virtual ~MockUpdateView();
+  ~MockUpdateView() override;
 
   MOCK_METHOD(void, Show, (bool is_opt_out_enabled));
 

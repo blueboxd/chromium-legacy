@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,11 +12,6 @@
 #include "mojo/public/cpp/bindings/remote_set.h"
 
 namespace ash {
-
-// TODO(https://crbug.com/1164001): Remove if cros_healthd::mojom moved to ash.
-namespace cros_healthd {
-namespace mojom = ::chromeos::cros_healthd::mojom;
-}  // namespace cros_healthd
 
 class LidObserver : public cros_healthd::mojom::CrosHealthdLidObserver {
  public:

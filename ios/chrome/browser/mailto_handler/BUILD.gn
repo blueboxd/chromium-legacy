@@ -1,4 +1,4 @@
-# Copyright 2022 The Chromium Authors. All rights reserved.
+# Copyright 2022 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -32,7 +32,7 @@ source_set("mailto_handler_factory") {
     ":mailto_handler",
     "//base",
     "//components/keyed_service/ios",
-    "//ios/chrome/browser:application_context",
+    "//ios/chrome/browser/application_context",
     "//ios/chrome/browser/browser_state",
     "//ios/chrome/browser/signin",
     "//ios/chrome/browser/sync",

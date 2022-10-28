@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -72,6 +72,9 @@ class TrayContainer : public views::View {
 
   // Collects the inputs for layout.
   LayoutInputs GetLayoutInputs() const;
+
+  // views::View:
+  void OnThemeChanged() override;
 
   // The set of inputs that impact this widget's layout. The assumption is that
   // this widget needs a relayout if, and only if, one or more of these has

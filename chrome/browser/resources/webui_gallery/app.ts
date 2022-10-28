@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -47,7 +47,7 @@ export class WebuiGalleryAppElement extends PolymerElement {
             {
               name: 'Buttons',
               path: 'buttons',
-              src: 'cr_button_demo.html',
+              src: 'buttons_demo.html',
             },
             {
               name: 'Checkboxes',
@@ -70,19 +70,44 @@ export class WebuiGalleryAppElement extends PolymerElement {
               src: 'cr_radio_demo.html',
             },
             {
+              name: 'Select menu',
+              path: 'select-menu',
+              src: 'md_select/md_select_demo.html',
+            },
+            {
               name: 'Sliders',
               path: 'sliders',
               src: 'cr_slider/cr_slider_demo.html',
             },
             {
-              name: 'Tabs, non Polymer',
+              name: 'Tabs, non-Polymer',
               path: 'tabs1',
               src: 'cr_tab_box/cr_tab_box_demo.html',
+            },
+            {
+              name: 'Tabs, Polymer',
+              path: 'tabs2',
+              src: 'cr_tabs/cr_tabs_demo.html',
+            },
+            {
+              name: 'Toast',
+              path: 'toast',
+              src: 'cr_toast/cr_toast_demo.html',
             },
             {
               name: 'Toggles',
               path: 'toggles',
               src: 'cr_toggle_demo.html',
+            },
+            {
+              name: 'Toolbar',
+              path: 'toolbar',
+              src: 'cr_toolbar/cr_toolbar_demo.html',
+            },
+            {
+              name: 'Tree, non-Polymer',
+              path: 'tree',
+              src: 'cr_tree/cr_tree_demo.html',
             },
           ];
         },

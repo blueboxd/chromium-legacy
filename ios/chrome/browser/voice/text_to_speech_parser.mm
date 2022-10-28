@@ -1,13 +1,13 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #import "ios/chrome/browser/voice/text_to_speech_parser.h"
 
-#include "base/base64.h"
-#include "base/logging.h"
-#include "base/strings/sys_string_conversions.h"
-#include "base/values.h"
+#import "base/base64.h"
+#import "base/logging.h"
+#import "base/strings/sys_string_conversions.h"
+#import "base/values.h"
 #import "ios/web/public/js_messaging/web_frame.h"
 #import "ios/web/public/js_messaging/web_frame_util.h"
 #import "ios/web/public/web_state.h"
@@ -22,7 +22,7 @@ namespace {
 NSString* const kTTSStartTag = @"function(){var _a_tts='";
 NSString* const kTTSEndTag = @"'";
 
-// When |kTTSAudioDataExtractorScriptFormat| is evaluated on a Google voice
+// When `kTTSAudioDataExtractorScriptFormat` is evaluated on a Google voice
 // search results page, this script will extract the innerHTML from the script
 // element containing TTS data.  The format takes one parameter, which is the
 // start tag from the TTS config singleton.
@@ -58,7 +58,7 @@ NSData* ExtractVoiceSearchAudioDataFromPageHTML(NSString* page_html) {
   }
 
   // The base64-encoded data will be everything between
-  // |audioDataStartTag| and |audioDataEndTag|.
+  // `audioDataStartTag` and `audioDataEndTag`.
   NSUInteger start_position =
       data_start_tag_range.location + data_start_tag_range.length;
   NSRange data_range =

@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -99,17 +99,10 @@ StartupTabs PinnedTabCodec::ReadPinnedTabs(Profile* profile) {
   PrefService* prefs = profile->GetPrefs();
   if (!prefs)
     return {};
-  return ReadPinnedTabs(prefs->GetList(prefs::kPinnedTabs));
-}
 
-// static
-StartupTabs PinnedTabCodec::ReadPinnedTabs(const base::Value* value) {
   StartupTabs results;
 
-  if (!value->is_list())
-    return results;
-
-  for (const auto& serialized_tab : value->GetListDeprecated()) {
+  for (const auto& serialized_tab : prefs->GetList(prefs::kPinnedTabs)) {
     if (!serialized_tab.is_dict())
       continue;
     absl::optional<StartupTab> tab = DecodeTab(serialized_tab);

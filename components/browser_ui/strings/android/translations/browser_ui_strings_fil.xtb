@@ -30,6 +30,7 @@
 <translation id="1717218214683051432">Mga sensor ng paggalaw</translation>
 <translation id="1743802530341753419">Magtanong bago payagan ang mga site na kumonekta sa isang device (inirerekomenda)</translation>
 <translation id="1779089405699405702">Pang-decode ng larawan</translation>
+<translation id="1785415724048343560">Inirerekomenda para sa pinakamagandang experience</translation>
 <translation id="1818308510395330587">Para payagan ang <ph name="APP_NAME" /> na gumamit ng AR, i-on din ang camera sa <ph name="BEGIN_LINK" />Mga Setting ng Android<ph name="END_LINK" />.</translation>
 <translation id="1864927262126810325">Mula sa <ph name="SOURCE_NAME" /></translation>
 <translation id="1887786770086287077">Naka-off ang access sa lokasyon para sa device na ito. I-on ito sa <ph name="BEGIN_LINK" />Mga Setting ng Android<ph name="END_LINK" />.</translation>
@@ -79,6 +80,7 @@
 <translation id="2653659639078652383">Isumite</translation>
 <translation id="2677748264148917807">Umalis</translation>
 <translation id="2687403674020088961">I-block ang lahat ng cookies (hindi inirerekomenda)</translation>
+<translation id="2692299144678073135">Payagan ang mga nauugnay na site na tandaan ka sa mga site</translation>
 <translation id="2704606927547763573">Kinopya</translation>
 <translation id="2713106313042589954">I-off ang camera</translation>
 <translation id="2717722538473713889">Mga email address</translation>
@@ -101,6 +103,7 @@
 <translation id="3115898365077584848">Ipakita ang Impormasyon</translation>
 <translation id="3123473560110926937">Naka-block sa ilang site</translation>
 <translation id="3143754809889689516">I-play mula sa simula</translation>
+<translation id="3162899666601560689">Puwedeng gumamit ng cookies ang mga site para pahusayin ang iyong karanasan sa pag-browse, halimbawa, para mapanatili kang naka-sign in o para maalala ang mga item sa shopping cart mo</translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT" /> ang naka-store na data</translation>
 <translation id="3203366800380907218">Mula sa web</translation>
 <translation id="321187648315454507">Para payagan ang <ph name="APP_NAME" /> na magpadala sa iyo ng mga notification, i-on din ang mga notification sa <ph name="BEGIN_LINK" />Mga Setting ng Android<ph name="END_LINK" />.</translation>
@@ -138,6 +141,7 @@
 <translation id="4002066346123236978">Pamagat</translation>
 <translation id="4008040567710660924">Payagan ang cookies para sa isang partikular na site.</translation>
 <translation id="4046123991198612571">Susunod na track</translation>
+<translation id="4048876521107516222">Gumagamit ng cookies ang mga nauugnay na site para makatulong sa mga bagay gaya ng pagpapanatili sa iyong naka-sign in</translation>
 <translation id="4149994727733219643">Pinasimpleng view para sa mga web page</translation>
 <translation id="4165986682804962316">Mga setting ng site</translation>
 <translation id="4169549551965910670">Nakakonekta sa USB device</translation>
@@ -149,6 +153,7 @@
 <translation id="429312253194641664">May site na nagpe-play ng media</translation>
 <translation id="42981349822642051">Palawakin</translation>
 <translation id="4336434711095810371">I-clear ang lahat ng data</translation>
+<translation id="4338831206024587507">Lahat ng site sa ilalim ng <ph name="DOMAIN" /></translation>
 <translation id="4402755511846832236">Pigilan ang mga site na malaman kung kailan mo aktibong ginagamit ang device na ito</translation>
 <translation id="4428065317363009941">Pag-personalize ng ad</translation>
 <translation id="4434045419905280838">Mga pop-up at pag-redirect</translation>
@@ -164,6 +169,7 @@
 <translation id="4751476147751820511">Mga motion o light sensor</translation>
 <translation id="4811450222531576619">Alamin ang tungkol sa source at paksa nito</translation>
 <translation id="4836046166855586901">Magtanong kapag gusto ng site na alamin kung kailan mo aktibong ginagamit ang device na ito</translation>
+<translation id="483914009762354899">Isama ang lahat ng site sa ilalim ng domain na ito</translation>
 <translation id="4883854917563148705">Hindi puwedeng i-reset ang mga pinapamahalaang setting</translation>
 <translation id="4887024562049524730">Magtanong bago payagan ang mga site na gamitin ang iyong virtual reality device at data (inirerekomenda)</translation>
 <translation id="4962975101802056554">Bawiin ang lahat ng pahintulot para sa device</translation>
@@ -219,6 +225,7 @@
 <translation id="5887687176710214216">Huling binisita kahapon</translation>
 <translation id="5916664084637901428">Naka-on</translation>
 <translation id="5922853908706496913">Ibinabahagi ang iyong screen</translation>
+<translation id="5922967540311291836">I-block ang third-party na cookies:</translation>
 <translation id="5939518447894949180">I-reset</translation>
 <translation id="5975083100439434680">Mag-zoom out</translation>
 <translation id="5976059395673079613"><ph name="PERMISSION" /> - <ph name="WARNING_MESSAGE" /></translation>
@@ -302,6 +309,7 @@
 <translation id="7791543448312431591">Idagdag</translation>
 <translation id="780301667611848630">Hindi salamat</translation>
 <translation id="7804248752222191302">Ginagamit ng isang site ang iyong camera</translation>
+<translation id="7816129586531226979">Posibleng tandaan ka ng mga nauugnay na site sa lahat ng site</translation>
 <translation id="7817023149356982970">Masa-sign out ka sa site na ito.</translation>
 <translation id="7828557259026017104">Ang cookies ay mga file na ginagawa ng mga website na binibisita mo. Ginagamit ng mga site ang mga ito para tandaan ang iyong mga kagustuhan. Ginagawa ng iba pang site ang third-party na cookies. Nagmamay-ari ang mga site na ito ng ilan sa content, gaya ng mga ad o larawan, na nakikita mo sa webpage na iyong binibisita.</translation>
 <translation id="7835852323729233924">Nagpe-play ng media</translation>
@@ -309,6 +317,7 @@
 <translation id="7846076177841592234">Kanselahin ang pinili</translation>
 <translation id="7846621471902887024">Masa-sign out ka sa lahat ng site.</translation>
 <translation id="7882806643839505685">Payagan ang tunog para sa isang partikular na site.</translation>
+<translation id="789180354981963912">I-block ang third-party na cookies sa Incognito:</translation>
 <translation id="7940722705963108451">Ipaalala sa akin</translation>
 <translation id="7986741934819883144">Pumili ng contact</translation>
 <translation id="7999064672810608036">Sigurado ka bang gusto mong i-clear ang lahat ng lokal na data, kasama ang cookies, at i-reset ang lahat ng pahintulot para sa website na ito?</translation>
@@ -331,6 +340,7 @@
 <translation id="8284326494547611709">Mga Caption</translation>
 <translation id="8300705686683892304">Pinapamahalaan ng app</translation>
 <translation id="8324158725704657629">Huwag nang itanong ulit</translation>
+<translation id="834785183489258869">Habang nasa Incognito, hindi magagamit ng mga site ang cookies mo para makita ang iyong aktibidad sa pag-browse sa iba't ibang site, halimbawa, para mag-personalize ng mga ad. Posibleng hindi gumana ang mga feature sa ilang site.</translation>
 <translation id="8372893542064058268">Payagan ang Pag-sync sa Background para sa isang partikular na site.</translation>
 <translation id="8376384591331888629">Kasama ang third-party na cookies sa site na ito</translation>
 <translation id="83792324527827022">Ginagamit ng isang site ang iyong camera at mikropono</translation>

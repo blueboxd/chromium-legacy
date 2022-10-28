@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -62,11 +62,14 @@ enum class AutofillProfileImportType {
 // profile in FormDataImporter.
 struct ProfileImportMetadata {
   // Whether the profile's country was complemented automatically.
-  // TODO(crbug.com/1297032): Cleanup when launched.
   bool did_complement_country = false;
-  // Whether the profile originally contained an invalid phone number, that was:
-  // - removed due to |kAutofillRemoveInvalidPhoneNumberOnImport|
-  // - the only requirement preventing an import.
+  // Whether the form original contained an invalid country, that was ignored
+  // due to AutofillOverwriteInvalidCountryOnImport.
+  // TODO(crbug.com/1362472): Cleanup when launched.
+  bool did_ignore_invalid_country = false;
+  // Whether the form originally contained an invalid phone number, that was:
+  // - Removed due to AutofillRemoveInvalidPhoneNumberOnImport.
+  // - The only requirement preventing an import.
   // TODO(crbug.com/1298424): Cleanup when launched.
   bool did_remove_invalid_phone_number = false;
 };

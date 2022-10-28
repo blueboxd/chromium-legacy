@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -44,7 +44,9 @@ ShortcutCustomizationAppUI::ShortcutCustomizationAppUI(content::WebUI* web_ui)
       kChromeUIShortcutCustomizationAppHost);
   source->OverrideContentSecurityPolicy(
       network::mojom::CSPDirectiveName::ScriptSrc,
-      "script-src chrome://resources chrome://test 'self';");
+      "script-src chrome://resources chrome://test chrome://webui-test "
+      "'self';");
+
   source->DisableTrustedTypesCSP();
 
   const auto resources =

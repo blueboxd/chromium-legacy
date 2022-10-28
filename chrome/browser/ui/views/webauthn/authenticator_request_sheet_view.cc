@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -70,6 +70,9 @@ void AuthenticatorRequestSheetView::ReInitChildViews() {
 views::View* AuthenticatorRequestSheetView::GetInitiallyFocusedView() {
   if (should_focus_step_specific_content_ == AutoFocus::kYes) {
     return step_specific_content_;
+  }
+  if (model()->ShouldFocusBackArrow()) {
+    return back_arrow_button_;
   }
   return nullptr;
 }

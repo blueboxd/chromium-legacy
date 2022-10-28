@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -15,12 +15,12 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
-#include "base/stl_util.h"
 #include "base/strings/escape.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/system/sys_info.h"
+#include "base/types/optional_util.h"
 #include "base/values.h"
 #include "google_apis/gaia/gaia_auth_consumer.h"
 #include "google_apis/gaia/gaia_auth_util.h"
@@ -111,7 +111,7 @@ std::unique_ptr<base::DictionaryValue> ParseJSONDict(const std::string& data) {
   absl::optional<base::Value> message_value = base::JSONReader::Read(data);
   if (message_value && message_value->is_dict()) {
     response_dict = std::make_unique<base::DictionaryValue>();
-    response_dict->MergeDictionary(base::OptionalOrNullptr(message_value));
+    response_dict->MergeDictionary(base::OptionalToPtr(message_value));
   }
   return response_dict;
 }
@@ -220,9 +220,6 @@ const char GaiaAuthFetcher::kErrorParam[] = "Error";
 // static
 const char GaiaAuthFetcher::kErrorUrlParam[] = "Url";
 
-// static
-const char GaiaAuthFetcher::kAuthHeaderFormat[] =
-    "Authorization: GoogleLogin auth=%s";
 // static
 const char GaiaAuthFetcher::kOAuthHeaderFormat[] = "Authorization: OAuth %s";
 // static
@@ -417,12 +414,6 @@ std::string GaiaAuthFetcher::MakeMergeSessionQuery(
   }
 
   return result;
-}
-
-// static
-std::string GaiaAuthFetcher::MakeGetAuthCodeHeader(
-    const std::string& auth_token) {
-  return base::StringPrintf(kAuthHeaderFormat, auth_token.c_str());
 }
 
 // Helper method that extracts tokens from a successful reply.

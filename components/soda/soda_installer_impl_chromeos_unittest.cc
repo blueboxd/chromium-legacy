@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,7 +9,7 @@
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
-#include "chromeos/dbus/dlcservice/fake_dlcservice_client.h"
+#include "chromeos/ash/components/dbus/dlcservice/fake_dlcservice_client.h"
 #include "components/live_caption/pref_names.h"
 #include "components/prefs/testing_pref_service.h"
 #include "components/soda/pref_names.h"
@@ -47,15 +47,15 @@ class SodaInstallerImplChromeOSTest : public testing::Test {
     pref_service_->registry()->RegisterStringPref(
         prefs::kLiveCaptionLanguageCode, kUsEnglishLocale);
 
-    chromeos::DlcserviceClient::InitializeFake();
-    fake_dlcservice_client_ = static_cast<chromeos::FakeDlcserviceClient*>(
-        chromeos::DlcserviceClient::Get());
+    ash::DlcserviceClient::InitializeFake();
+    fake_dlcservice_client_ =
+        static_cast<ash::FakeDlcserviceClient*>(ash::DlcserviceClient::Get());
   }
 
   void TearDown() override {
     soda_installer_impl_.reset();
     pref_service_.reset();
-    chromeos::DlcserviceClient::Shutdown();
+    ash::DlcserviceClient::Shutdown();
   }
 
   SodaInstallerImplChromeOS* GetInstance() {
@@ -125,7 +125,7 @@ class SodaInstallerImplChromeOSTest : public testing::Test {
       base::test::TaskEnvironment::TimeSource::MOCK_TIME};
   std::unique_ptr<SodaInstallerImplChromeOS> soda_installer_impl_;
   std::unique_ptr<TestingPrefServiceSimple> pref_service_;
-  chromeos::FakeDlcserviceClient* fake_dlcservice_client_;
+  ash::FakeDlcserviceClient* fake_dlcservice_client_;
   base::test::ScopedFeatureList scoped_feature_list_;
 };
 

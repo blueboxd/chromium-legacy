@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -170,26 +170,6 @@ TEST_F(AboutThisSiteServiceTest, Unknown) {
                        AboutThisSiteStatus::kUnknown, 1);
   t.ExpectUniqueSample("Security.PageInfo.AboutThisSiteInteraction",
                        AboutThisSiteInteraction::kNotShown, 1);
-}
-
-// Tests that banner dismisses are handled.
-TEST_F(AboutThisSiteServiceTest, Banner) {
-  const GURL kExampleFoo("https://example.com/foo");
-  const GURL kExampleBar("https://example.com/foo");
-
-  EXPECT_TRUE(service()->CanShowBanner(kExampleFoo));
-  EXPECT_TRUE(service()->CanShowBanner(kExampleBar));
-
-  // Showing or opening a banner URL does not change whether we can show more
-  // banners.
-  service()->OnBannerURLOpened(kExampleFoo, ukm::SourceId());
-  EXPECT_TRUE(service()->CanShowBanner(kExampleFoo));
-  EXPECT_TRUE(service()->CanShowBanner(kExampleBar));
-
-  // Explicitly dismissing a banner prevents more from being shown.
-  service()->OnBannerDismissed(kExampleFoo, ukm::SourceId());
-  EXPECT_FALSE(service()->CanShowBanner(kExampleFoo));
-  EXPECT_FALSE(service()->CanShowBanner(kExampleBar));
 }
 
 }  // namespace page_info

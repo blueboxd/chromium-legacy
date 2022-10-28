@@ -1,10 +1,10 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #import "ios/web/js_messaging/java_script_content_world.h"
 
-#include "base/test/gtest_util.h"
+#import "base/test/gtest_util.h"
 #import "ios/web/public/test/web_test.h"
 #import "ios/web/test/fakes/fake_java_script_feature.h"
 #import "ios/web/web_state/ui/wk_web_view_configuration_provider.h"

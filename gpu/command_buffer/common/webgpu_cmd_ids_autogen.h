@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -15,7 +15,8 @@
   OP(DawnCommands)                /* 256 */ \
   OP(AssociateMailboxImmediate)   /* 257 */ \
   OP(DissociateMailbox)           /* 258 */ \
-  OP(DissociateMailboxForPresent) /* 259 */
+  OP(DissociateMailboxForPresent) /* 259 */ \
+  OP(SetExecutionContextToken)    /* 260 */
 
 enum CommandId {
   kOneBeforeStartPoint =

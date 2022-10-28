@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -50,9 +50,10 @@ class AppProvisioningComponentInstallerPolicy
   std::string GetName() const override;
   update_client::InstallerAttributes GetInstallerAttributes() const override;
 
-  static base::FilePath GetInstalledPath(const base::FilePath& base);
-  void UpdateAppMetadataOnUI(const base::FilePath& install_dir,
-                             const std::string& binary_pb);
+  static base::FilePath GetAppWithLocaleInstalledPath(
+      const base::FilePath& base);
+  static base::FilePath GetDeduplicationInstalledPath(
+      const base::FilePath& base);
 };
 
 // Call once during startup to make the component update service aware of

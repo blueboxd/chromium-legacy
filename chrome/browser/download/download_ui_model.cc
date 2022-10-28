@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -436,6 +436,12 @@ bool DownloadUIModel::WasUINotified() const {
 }
 
 void DownloadUIModel::SetWasUINotified(bool should_notify) {}
+
+bool DownloadUIModel::WasActionedOn() const {
+  return false;
+}
+
+void DownloadUIModel::SetActionedOn(bool actioned_on) {}
 
 bool DownloadUIModel::WasUIWarningShown() const {
   return false;

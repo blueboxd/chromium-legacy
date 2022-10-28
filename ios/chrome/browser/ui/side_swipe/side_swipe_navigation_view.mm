@@ -1,18 +1,18 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #import "ios/chrome/browser/ui/side_swipe/side_swipe_navigation_view.h"
 
-#include "base/check.h"
+#import "base/check.h"
 
-#include "base/metrics/user_metrics.h"
-#include "base/metrics/user_metrics_action.h"
-#include "base/numerics/math_constants.h"
+#import "base/metrics/user_metrics.h"
+#import "base/metrics/user_metrics_action.h"
+#import "base/numerics/math_constants.h"
 #import "ios/chrome/browser/ui/side_swipe/side_swipe_gesture_recognizer.h"
 #import "ios/chrome/browser/ui/side_swipe/side_swipe_util.h"
 #import "ios/chrome/browser/ui/toolbar/public/toolbar_constants.h"
-#include "ios/chrome/browser/ui/util/ui_util.h"
+#import "ios/chrome/browser/ui/util/ui_util.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #import "ios/chrome/common/material_timing.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
@@ -245,7 +245,7 @@ UIColor* SelectionCircleColor() {
   }];
 
   CAMediaTimingFunction* timing =
-      ios::material::TimingFunction(ios::material::CurveEaseInOut);
+      MaterialTimingFunction(MaterialCurveEaseInOut);
   CABasicAnimation* scaleAnimation =
       [CABasicAnimation animationWithKeyPath:@"transform"];
   scaleAnimation.fromValue =

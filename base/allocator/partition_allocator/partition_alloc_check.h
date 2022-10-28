@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -28,9 +28,9 @@
 // As a consequence:
 // - When PartitionAlloc is not malloc(), use the regular macros
 // - Otherwise, crash immediately. This provides worse error messages though.
-#if BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
+#if BUILDFLAG(ENABLE_PARTITION_ALLOC_AS_MALLOC_SUPPORT)
 // For official build discard log strings to reduce binary bloat.
-#if defined(OFFICIAL_BUILD) && defined(NDEBUG)
+#if !CHECK_WILL_STREAM()
 // See base/check.h for implementation details.
 #define PA_CHECK(condition)                        \
   PA_UNLIKELY(!(condition)) ? PA_IMMEDIATE_CRASH() \
@@ -44,7 +44,7 @@
   ? ::partition_alloc::internal::logging::RawCheck(                        \
         __FILE__ "(" PA_STRINGIFY(__LINE__) ") Check failed: " #condition) \
   : PA_EAT_CHECK_STREAM_PARAMS()
-#endif  // defined(OFFICIAL_BUILD) && defined(NDEBUG)
+#endif  // !CHECK_WILL_STREAM()
 
 #if BUILDFLAG(PA_DCHECK_IS_ON)
 #define PA_DCHECK(condition) PA_CHECK(condition)
@@ -70,7 +70,7 @@
 #define PA_DCHECK(condition) PA_BASE_DCHECK(condition)
 #define PA_PCHECK(condition) PA_BASE_PCHECK(condition)
 #define PA_DPCHECK(condition) PA_BASE_DPCHECK(condition)
-#endif  // BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
+#endif  // BUILDFLAG(ENABLE_PARTITION_ALLOC_AS_MALLOC_SUPPORT)
 
 // Expensive dchecks that run within *Scan. These checks are only enabled in
 // debug builds with dchecks enabled.
@@ -125,7 +125,7 @@ struct PA_DEBUGKV_ALIGN DebugKv {
   char k[8] = {};  // Not necessarily 0-terminated.
   uint64_t v = 0;
 
-  DebugKv(const char* key, size_t value) {
+  DebugKv(const char* key, uint64_t value) : v(value) {
     // Fill with ' ', so that the stack dump is nicer to read.  Not using
     // memset() on purpose, this header is included from *many* places.
     for (int index = 0; index < 8; index++) {
@@ -137,7 +137,6 @@ struct PA_DEBUGKV_ALIGN DebugKv {
       if (key[index] == '\0')
         break;
     }
-    v = value;
   }
 };
 

@@ -7,6 +7,7 @@
 #include "base/no_destructor.h"
 #include "base/strings/strcat.h"
 #include "cc/paint/paint_canvas.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/color/color_id.h"
 #include "ui/color/color_provider.h"
 #include "ui/color/color_provider_manager.h"
@@ -20,7 +21,6 @@
 #include "ui/native_theme/common_theme.h"
 #include "ui/native_theme/native_theme_aura.h"
 #include "ui/native_theme/native_theme_utils.h"
-#include "third_party/skia/include/core/SkBitmap.h"
 
 using base::StrCat;
 
@@ -82,7 +82,7 @@ NativeThemeGtk* NativeThemeGtk::instance() {
 
 NativeThemeGtk::NativeThemeGtk()
     : NativeThemeBase(/*should_only_use_dark_colors=*/false,
-                      /*is_custom_system_theme=*/true) {
+                      ui::SystemTheme::kGtk) {
   // g_type_from_name() is only used in GTK3.
   if (!GtkCheckVersion(4)) {
     // These types are needed by g_type_from_name(), but may not be registered
@@ -161,7 +161,7 @@ void NativeThemeGtk::NotifyOnNativeThemeUpdated() {
   // Update the preferred contrast settings for the NativeThemeAura instance and
   // notify its observers about the change.
   ui::NativeTheme* native_theme = ui::NativeTheme::GetInstanceForNativeUi();
-  native_theme->set_preferred_contrast(
+  native_theme->SetPreferredContrast(
       UserHasContrastPreference()
           ? ui::NativeThemeBase::PreferredContrast::kMore
           : ui::NativeThemeBase::PreferredContrast::kNoPreference);
@@ -206,7 +206,7 @@ void NativeThemeGtk::OnThemeChanged(GtkSettings* settings,
                  ::tolower);
   bool high_contrast = theme_name.find("high") != std::string::npos &&
                        theme_name.find("contrast") != std::string::npos;
-  set_preferred_contrast(
+  SetPreferredContrast(
       high_contrast ? ui::NativeThemeBase::PreferredContrast::kMore
                     : ui::NativeThemeBase::PreferredContrast::kNoPreference);
 

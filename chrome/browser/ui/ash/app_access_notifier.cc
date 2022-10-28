@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -40,8 +40,10 @@ apps::AppCapabilityAccessCache* GetAppCapabilityAccessCache(
 
 apps::AppRegistryCache* GetActiveUserAppRegistryCache() {
   Profile* profile = ProfileManager::GetActiveUserProfile();
-  if (!profile)
+  if (!profile ||
+      !apps::AppServiceProxyFactory::IsAppServiceAvailableForProfile(profile)) {
     return nullptr;
+  }
 
   apps::AppServiceProxy* proxy =
       apps::AppServiceProxyFactory::GetForProfile(profile);
@@ -77,8 +79,11 @@ void LaunchApp(const std::string& app_id) {
 // Launch the native settings page of the app with `app_id`.
 void LaunchAppSettings(const std::string& app_id) {
   Profile* profile = ProfileManager::GetActiveUserProfile();
-  if (!profile)
+  if (!profile ||
+      !apps::AppServiceProxyFactory::IsAppServiceAvailableForProfile(profile)) {
     return;
+  }
+
   apps::AppServiceProxyFactory::GetForProfile(profile)->OpenNativeSettings(
       app_id);
 }
@@ -116,9 +121,8 @@ void AppAccessNotifier::OnCapabilityAccessUpdate(
     const apps::CapabilityAccessUpdate& update) {
   base::Erase(mic_using_app_ids[active_user_account_id_], update.AppId());
 
-  bool microphone_is_used =
-      update.Microphone() == apps::mojom::OptionalBool::kTrue;
-  bool camera_is_used = update.Camera() == apps::mojom::OptionalBool::kTrue;
+  bool microphone_is_used = update.Microphone().value_or(false);
+  bool camera_is_used = update.Camera().value_or(false);
 
   if (ash::features::IsPrivacyIndicatorsEnabled()) {
     auto app_id = update.AppId();

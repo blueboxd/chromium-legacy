@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -62,6 +62,8 @@ message SourcesProto {
   required bool sync = 4;
   required bool default = 5;
   optional bool sub_app = 6;
+  optional bool kiosk = 7;
+  optional bool command_line = 8;
 }
 
 // Properties for integrating with Chrome OS UI surfaces.
@@ -112,6 +114,8 @@ enum WebAppManagementProto {
   WEBAPPSTORE = 4;
   SYNC = 5;
   DEFAULT = 6;
+  KIOSK = 7;
+  COMMAND_LINE = 8;
 }
 
 message ManagementToExternalConfigInfo {
@@ -123,7 +127,7 @@ message ManagementToExternalConfigInfo {
 }
 
 // Contains information specific to Isolated Web Apps.
-message IsolationData {
+message IsolationDataProto {
   // Information needed to load data from an installed web bundle.
   message InstalledBundle {
     optional string path = 1;
@@ -381,5 +385,5 @@ message WebAppProto {
 
   // If present, signals that this app is an Isolated Web App, and contains
   // IWA-specific information like bundle location.
-  optional IsolationData isolation_data = 60;
+  optional IsolationDataProto isolation_data = 60;
 }

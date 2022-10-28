@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -15,6 +15,7 @@
 #include "chrome/common/pref_names.h"
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "components/page_info/core/about_this_site_service.h"
+#include "components/page_info/core/features.h"
 #include "components/permissions/permission_decision_auto_blocker.h"
 #include "components/permissions/permission_manager.h"
 #include "components/permissions/permissions_client.h"
@@ -33,7 +34,6 @@
 #include "chrome/browser/extensions/window_controller_list.h"
 #include "chrome/browser/page_info/about_this_site_service_factory.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/page_info/about_this_site_side_panel.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/web_applications/web_app_ui_utils.h"
@@ -126,20 +126,10 @@ void ChromePageInfoUiDelegate::AboutThisSiteSourceClicked(
 void ChromePageInfoUiDelegate::OpenMoreAboutThisPageUrl(
     const GURL& url,
     const ui::Event& event) {
-  content::OpenURLParams url_params(
-      net::AppendOrReplaceQueryParameter(
-          url, page_info::AboutThisSiteRenderModeParameterName,
-          page_info::AboutThisSiteRenderModeParameterValue),
-      content::Referrer(),
-      ui::DispositionFromEventFlags(event.flags(),
-                                    WindowOpenDisposition::NEW_FOREGROUND_TAB),
-      ui::PAGE_TRANSITION_LINK, /*is_renderer_initiated=*/false);
-
-  if (base::FeatureList::IsEnabled(features::kUnifiedSidePanel)) {
-    ShowAboutThisSiteSidePanel(web_contents_, url_params);
-  } else {
-    web_contents_->OpenURL(url_params);
-  }
+  DCHECK(base::FeatureList::IsEnabled(features::kUnifiedSidePanel));
+  DCHECK(
+      base::FeatureList::IsEnabled(page_info::kPageInfoAboutThisSiteMoreInfo));
+  ShowAboutThisSiteSidePanel(web_contents_, url);
 }
 #endif
 

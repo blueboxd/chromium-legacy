@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -124,6 +124,9 @@ class ColorProvider;
 
   // This will be true after receiving a NSWorkspaceWillPowerOffNotification.
   BOOL _isPoweringOff;
+
+  // This will be true after receiving a |-applicationWillTerminate:| event.
+  BOOL _isShuttingDown;
 
   // Request to keep the browser alive during that object's lifetime.
   std::unique_ptr<ScopedKeepAlive> _keep_alive;

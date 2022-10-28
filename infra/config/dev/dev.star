@@ -1,4 +1,4 @@
-# Copyright 2020 The Chromium Authors. All rights reserved.
+# Copyright 2020 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -33,6 +33,22 @@ luci.project(
         ),
     ],
     bindings = [
+        # Roles for LUCI Analysis.
+        luci.binding(
+            roles = "role/analysis.reader",
+            groups = "all",
+        ),
+        luci.binding(
+            roles = "role/analysis.queryUser",
+            groups = "authenticated-users",
+        ),
+        luci.binding(
+            roles = "role/analysis.editor",
+            groups = ["project-chromium-committers", "googlers"],
+        ),
+        # Roles for Weetbix.
+        # TODO(b/243488110): Delete when renaming to
+        # LUCI Analysis complete.
         luci.binding(
             roles = "role/weetbix.reader",
             groups = "all",
@@ -43,7 +59,7 @@ luci.project(
         ),
         luci.binding(
             roles = "role/weetbix.editor",
-            groups = "project-chromium-committers",
+            groups = ["project-chromium-committers", "googlers"],
         ),
     ],
 )

@@ -1950,6 +1950,12 @@ be describing additional metrics about the same event.
       Number of Autocomplete fills invoked by the user on the current form.
     </summary>
   </metric>
+  <metric name="AutofillAssistantIntent" enum="AutofillAssistantIntent">
+    <summary>
+      Describes the trigger source that invoked Autofill. Only recorded if
+      AutofillAssistantIntent was not undefined.
+    </summary>
+  </metric>
   <metric name="AutofillFills">
     <summary>
       Number of Autofill fills invoked by the user on the current form.
@@ -6938,6 +6944,72 @@ be describing additional metrics about the same event.
         <index fields="profile.country"/>
         <statistics>
           <quantiles type="std-percentiles"/>
+        </statistics>
+      </history>
+    </aggregation>
+  </metric>
+</event>
+
+<event name="GamingInputOverlay.Customization">
+  <owner>pjlee@google.com</owner>
+  <owner>cuicuiruan@google.com</owner>
+  <owner>arc-gaming@google.com</owner>
+  <summary>
+    An event for gaming input overlay that is logged when users enter into edit
+    mode.
+  </summary>
+  <metric name="CustomizationUsed" enum="Boolean">
+    <summary>
+      Whether the customization option was used.
+    </summary>
+    <aggregation>
+      <history>
+        <statistics>
+          <enumeration/>
+        </statistics>
+      </history>
+    </aggregation>
+  </metric>
+</event>
+
+<event name="GamingInputOverlay.Feature">
+  <owner>pjlee@google.com</owner>
+  <owner>cuicuiruan@google.com</owner>
+  <owner>arc-gaming@google.com</owner>
+  <summary>
+    An event for gaming input overlay that is logged when the input overlay
+    feature itself changes state.
+  </summary>
+  <metric name="FeatureStateOn" enum="Boolean">
+    <summary>
+      Whether the gaming input overlay feature is in use.
+    </summary>
+    <aggregation>
+      <history>
+        <statistics>
+          <enumeration/>
+        </statistics>
+      </history>
+    </aggregation>
+  </metric>
+</event>
+
+<event name="GamingInputOverlay.MappingHint">
+  <owner>pjlee@google.com</owner>
+  <owner>cuicuiruan@google.com</owner>
+  <owner>arc-gaming@google.com</owner>
+  <summary>
+    An event for gaming input overlay that is logged when the mapping hint state
+    is changed.
+  </summary>
+  <metric name="MappingHintStateOn" enum="Boolean">
+    <summary>
+      Whether the mapping hint for gaming input overlay is on.
+    </summary>
+    <aggregation>
+      <history>
+        <statistics>
+          <enumeration/>
         </statistics>
       </history>
     </aggregation>
@@ -12669,6 +12741,24 @@ be describing additional metrics about the same event.
   </metric>
 </event>
 
+<event name="Navigation.IDNA2008Transition" singular="True">
+  <owner>meacer@google.com</owner>
+  <owner>chrome-trusty-transport@google.com</owner>
+  <summary>
+    Recorded upon main frame navigations to hostnames that contain characters
+    that are treated differently between IDNA 2003 and IDNA 2008, aka deviation
+    characters. Ignores reload navigations.
+  </summary>
+  <metric name="Character" enum="IDNA2008DeviationCharacter">
+    <summary>
+      The deviation character in the URLs eTLD+1. Chrome's URL parsing code
+      normalizes deviation characters so the characters don't appear in the
+      recorded URL. This is recorded to make the deviation character
+      identification simpler.
+    </summary>
+  </metric>
+</event>
+
 <event name="Navigation.ReceivedResponse">
   <owner>miketaylr@chromium.org</owner>
   <owner>potassium-katabolism@google.com</owner>
@@ -12912,7 +13002,7 @@ be describing additional metrics about the same event.
   </metric>
 </event>
 
-<event name="NavigationThrottleDeferredTime" singular="False">
+<event name="NavigationThrottleDeferredTime">
   <owner>ryansturm@chromium.org</owner>
   <owner>chrome-brapp-loading@google.com</owner>
   <summary>
@@ -14361,6 +14451,19 @@ be describing additional metrics about the same event.
       interactions by Responsiveness.UserInteraction.MaxEventDuration.
     </summary>
   </metric>
+  <metric
+      name="InteractiveTiming.UserInteractionLatencyAtFirstOnHidden.HighPercentile2.MaxEventDuration">
+    <summary>
+      An approximation of a high percentile of user interaction latency of a
+      page load, in ms. For this metric, we measure the latency of user
+      interactions by Responsiveness.UserInteraction.MaxEventDuration. We record
+      it when a page is moved from the foreground to the background for the
+      first time. This metric is trying to record the INP values which are not
+      able to be recorded in
+      InteractiveTiming.UserInteractionLatency.HighPercentile2.MaxEventDuration
+      for some reasons.
+    </summary>
+  </metric>
   <metric name="InteractiveTiming.WorstUserInteractionLatency.MaxEventDuration">
     <summary>
       The maximum value of user interaction latency of a page load, in ms. For
@@ -15212,6 +15315,31 @@ be describing additional metrics about the same event.
       image) within viewport, in the main frame. Includes content that has been
       removed from the page. See http://bit.ly/fcp_plus_plus for more details.
     </summary>
+  </metric>
+  <metric name="PaintTiming.NavigationToLargestContentfulPaint2AtFirstOnHidden">
+    <summary>
+      Measures the time in milliseconds from navigation timing's navigation
+      start to the time when the page first paints the largest content (text or
+      image) within viewport, across all frames. Recorded at the point when a
+      page which has been opened in the foreground is moved to the background
+      for the first time. See http://bit.ly/fcp_plus_plus for more details. Log
+      of major changes: http://bit.ly/chrome-speed-metrics-changelog. This
+      metric is trying to record the LCP values which are not able to be
+      recorded in PaintTiming.NavigationToLargestContentfulPaint2 for some
+      reasons.
+    </summary>
+    <aggregation>
+      <history>
+        <index fields="profile.country"/>
+        <index fields="profile.country,profile.system_ram"/>
+        <index fields="profile.is_dominant_version"/>
+        <index fields="profile.is_latest_version"/>
+        <index fields="profile.system_ram"/>
+        <statistics>
+          <quantiles type="std-percentiles"/>
+        </statistics>
+      </history>
+    </aggregation>
   </metric>
   <metric name="ParseTiming.NavigationToParseStart">
     <summary>
@@ -17133,10 +17261,30 @@ be describing additional metrics about the same event.
       SRP link.
     </summary>
   </metric>
+  <metric name="PrefetchHeaderLatencyMs">
+    <summary>
+      Time between the prefetch request was sent and the time the response
+      headers were received. Unset if the headers have not been receved by the
+      time the user navigated to the current page.
+    </summary>
+  </metric>
+  <metric name="PrivatePrefetch">
+    <summary>
+      This is 1 if the prefetched resource was prefetched via the private
+      prefetch proxy. This is not logged otherwise.
+    </summary>
+  </metric>
   <metric name="ProbeLatencyMs">
     <summary>
       How long the network probe blocked commit in milliseconds. Recorded only
       when a probe was required.
+    </summary>
+  </metric>
+  <metric name="SameTabAsPrefetchingTab">
+    <summary>
+      This is 1 if the page load matching the prefetch was in the same
+      WebContents as the page that triggerd the prefetch. This is not logged
+      otherwise.
     </summary>
   </metric>
   <metric name="SRPClickPrefetchStatus" enum="PrefetchProxyPrefetchStatus">

@@ -39,6 +39,17 @@
 
 namespace blink {
 
+namespace {
+
+const char* ViewLayerName() {
+  return RuntimeEnabledFeatures::LayoutNGViewEnabled() &&
+                 RuntimeEnabledFeatures::LayoutNGEnabled()
+             ? "LayoutNGView #document"
+             : "LayoutView #document";
+}
+
+}  // namespace
+
 // Tests the integration between blink and cc where a layer list is sent to cc.
 class CompositingTest : public PaintTestConfigurations, public testing::Test {
  public:
@@ -458,7 +469,7 @@ TEST_P(CompositingTest, BackgroundColorInScrollingContentsLayer) {
   // The root layer and root scrolling contents layer get background_color by
   // blending the CSS background-color of the <html> element with
   // LocalFrameView::BaseBackgroundColor(), which is white by default.
-  auto* layer = CcLayersByName(RootCcLayer(), "LayoutView #document")[0];
+  auto* layer = CcLayersByName(RootCcLayer(), ViewLayerName())[0];
   SkColor4f expected_color = SkColor4f::FromColor(SkColorSetRGB(10, 20, 30));
   EXPECT_EQ(layer->background_color(), SkColors::kTransparent);
   auto* scrollable_area = GetLocalFrameView()->LayoutViewport();
@@ -520,7 +531,7 @@ TEST_P(CompositingTest, BackgroundColorInGraphicsLayer) {
   // background is painted into the root graphics layer, the root scrolling
   // contents layer should not checkerboard, so its background color should be
   // transparent.
-  auto* layer = CcLayersByName(RootCcLayer(), "LayoutView #document")[0];
+  auto* layer = CcLayersByName(RootCcLayer(), ViewLayerName())[0];
   EXPECT_EQ(layer->background_color(), SkColors::kWhite);
   auto* scrollable_area = GetLocalFrameView()->LayoutViewport();
   layer = ScrollingContentsCcLayerByScrollElementId(
@@ -889,6 +900,82 @@ TEST_P(CompositingSimTest, DirectTransformPropertyUpdate) {
   UpdateAllLifecyclePhasesExceptPaint();
   EXPECT_TRUE(transform_node->transform_changed);
   EXPECT_FALSE(paint_artifact_compositor()->NeedsUpdate());
+
+  // After a frame the |transform_changed| value should be reset.
+  Compositor().BeginFrame();
+  EXPECT_FALSE(transform_node->transform_changed);
+}
+
+// Test that, for simple transform updates with an existing cc transform node,
+// we can go from style change to updated cc transform node without running
+// the blink property tree builder and without running paint artifact
+// compositor.
+// This is similar to |DirectTransformPropertyUpdate|, but the update is done
+// from style rather than the property tree builder.
+TEST_P(CompositingSimTest, FastPathTransformUpdateFromStyle) {
+  InitializeWithHTML(R"HTML(
+      <!DOCTYPE html>
+      <style>
+        @keyframes animation {
+          0% { transform: translateX(200px); }
+          100% { transform: translateX(300px); }
+        }
+        #div {
+          transform: translateX(100px);
+          width: 100px;
+          height: 100px;
+          /*
+            This causes the transform to have an active animation, but because
+            the delay is so large, it will not have an effect for the duration
+            of this unit test.
+          */
+          animation-name: animation;
+          animation-duration: 999s;
+          animation-delay: 999s;
+        }
+      </style>
+      <div id='div'></div>
+  )HTML");
+
+  Compositor().BeginFrame();
+
+  // Check the initial state of the blink transform node.
+  auto* div = GetElementById("div");
+  auto* div_properties =
+      div->GetLayoutObject()->FirstFragment().PaintProperties();
+  ASSERT_TRUE(div_properties);
+  EXPECT_EQ(TransformationMatrix().Translate(100, 0),
+            div_properties->Transform()->Matrix());
+  EXPECT_TRUE(div_properties->Transform()->HasActiveTransformAnimation());
+  EXPECT_FALSE(div->GetLayoutObject()->NeedsPaintPropertyUpdate());
+
+  // Check the initial state of the cc transform node.
+  auto* div_cc_layer = CcLayerByDOMElementId("div");
+  auto transform_tree_index = div_cc_layer->transform_tree_index();
+  const auto* transform_node =
+      GetPropertyTrees()->transform_tree().Node(transform_tree_index);
+  EXPECT_FALSE(transform_node->transform_changed);
+  EXPECT_FALSE(paint_artifact_compositor()->NeedsUpdate());
+  EXPECT_EQ(100.0f, transform_node->local.To2dTranslation().x());
+
+  // Change the transform style and ensure the blink and cc transform nodes are
+  // not marked for a full update.
+  div->setAttribute(html_names::kStyleAttr, "transform: translateX(400px)");
+  GetDocument().View()->UpdateLifecycleToLayoutClean(
+      DocumentUpdateReason::kTest);
+  EXPECT_FALSE(div->GetLayoutObject()->NeedsPaintPropertyUpdate());
+  EXPECT_FALSE(paint_artifact_compositor()->NeedsUpdate());
+
+  // Continue to run the lifecycle to paint and ensure that updates are
+  // performed.
+  UpdateAllLifecyclePhasesExceptPaint();
+  EXPECT_EQ(TransformationMatrix().Translate(400, 0),
+            div_properties->Transform()->Matrix());
+  EXPECT_EQ(400.0f, transform_node->local.To2dTranslation().x());
+  EXPECT_TRUE(transform_node->transform_changed);
+  EXPECT_FALSE(div->GetLayoutObject()->NeedsPaintPropertyUpdate());
+  EXPECT_FALSE(paint_artifact_compositor()->NeedsUpdate());
+  EXPECT_TRUE(transform_node->transform_changed);
 
   // After a frame the |transform_changed| value should be reset.
   Compositor().BeginFrame();

@@ -1,4 +1,4 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -685,6 +685,10 @@ void KeyboardUIController::SetContainerBehaviorInternal(ContainerType type) {
 }
 
 void KeyboardUIController::ShowKeyboard(bool lock) {
+  // TODO(b/245019967): Delete lock arg.
+  // Outside of unittests, this function is only ever called with
+  // lock = false.
+  // Maybe it could be refactored to not support the lock = true case.
   DVLOG(1) << "ShowKeyboard";
   set_keyboard_locked(lock);
   ShowKeyboardInternal(layout_delegate_->GetContainerForDefaultDisplay());

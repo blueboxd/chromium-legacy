@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -259,7 +259,7 @@ CWV_EXPORT
 // when the web view is navigating or if the current page content does not allow
 // JavaScript execution (ex: JS disabled or PDF content).
 - (void)evaluateJavaScript:(NSString*)javaScriptString
-                completion:(void (^)(id result, BOOL success))completion;
+                completion:(void (^)(id result, NSError* error))completion;
 
 // Registers a handler that will be called when a command matching
 // |commandPrefix| is received.

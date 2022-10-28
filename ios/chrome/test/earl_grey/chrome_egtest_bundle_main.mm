@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,15 +6,15 @@
 
 #import <XCTest/XCTest.h>
 #import <objc/runtime.h>
-#include <memory>
+#import <memory>
 
-#include "base/at_exit.h"
-#include "base/check.h"
-#include "base/command_line.h"
-#include "base/i18n/icu_util.h"
-#include "base/strings/sys_string_conversions.h"
-#include "ui/base/l10n/l10n_util_mac.h"
-#include "ui/base/resource/resource_bundle.h"
+#import "base/at_exit.h"
+#import "base/check.h"
+#import "base/command_line.h"
+#import "base/i18n/icu_util.h"
+#import "base/strings/sys_string_conversions.h"
+#import "ui/base/l10n/l10n_util_mac.h"
+#import "ui/base/resource/resource_bundle.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -31,7 +31,7 @@ class TestMain {
   TestMain() {
     NSArray* arguments = NSProcessInfo.processInfo.arguments;
 
-    // Convert NSArray to the required input type of |base::CommandLine::Init|.
+    // Convert NSArray to the required input type of `base::CommandLine::Init`.
     int argc = arguments.count;
     const char* argv[argc];
     std::vector<std::string> argv_store;

@@ -17,8 +17,7 @@
 #include "remoting/protocol/message_pipe.h"
 #include "remoting/protocol/message_serialization.h"
 
-namespace remoting {
-namespace protocol {
+namespace remoting::protocol {
 
 namespace {
 
@@ -125,6 +124,12 @@ void ClientControlDispatcher::ControlPeerConnection(
   message_pipe()->Send(&message, {});
 }
 
+void ClientControlDispatcher::SetVideoLayout(const VideoLayout& video_layout) {
+  ControlMessage message;
+  message.mutable_video_layout()->CopyFrom(video_layout);
+  message_pipe()->Send(&message, {});
+}
+
 void ClientControlDispatcher::OnIncomingMessage(
     std::unique_ptr<CompoundBuffer> buffer) {
   DCHECK(client_stub_);
@@ -153,5 +158,4 @@ void ClientControlDispatcher::OnIncomingMessage(
   }
 }
 
-}  // namespace protocol
-}  // namespace remoting
+}  // namespace remoting::protocol

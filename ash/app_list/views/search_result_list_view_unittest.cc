@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -178,6 +178,8 @@ class SearchResultListViewTest : public views::test::WidgetTest,
         std::make_unique<TestSearchResult>();
     result->set_display_type(ash::SearchResultDisplayType::kList);
     result->set_best_match(true);
+    result->SetTitle(base::UTF8ToUTF16(
+        base::StringPrintf("Added Result %d", GetUnifiedViewResultCount())));
     GetResults()->Add(std::move(result));
   }
 

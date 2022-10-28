@@ -33,7 +33,7 @@ namespace {
 
 class MockTextInputClient : public TextInputClient {
  public:
-  ~MockTextInputClient() {}
+  ~MockTextInputClient() override {}
   MOCK_METHOD1(SetCompositionText, void(const ui::CompositionText&));
   MOCK_METHOD1(ConfirmCompositionText, size_t(bool));
   MOCK_METHOD0(ClearCompositionText, void());
@@ -80,7 +80,7 @@ class MockTextInputClient : public TextInputClient {
 
 class MockImeKeyEventDispatcher : public ImeKeyEventDispatcher {
  public:
-  ~MockImeKeyEventDispatcher() {}
+  ~MockImeKeyEventDispatcher() override {}
   MOCK_METHOD1(DispatchKeyEventPostIME, EventDispatchDetails(KeyEvent*));
 };
 
@@ -1562,7 +1562,6 @@ TEST_F(TSFTextStoreTest, RetrieveRequestedAttrs) {
     SCOPED_TRACE("Verify URL and InputScope support");
     TS_ATTRVAL buffer[2] = {};
     num_copied = 0xfffffff;
-    base::win::ScopedVariant variant;
     const TS_ATTRID inputScopeAndUrlAttributes[] = {GUID_PROP_INPUTSCOPE,
                                                     GUID_PROP_URL};
 

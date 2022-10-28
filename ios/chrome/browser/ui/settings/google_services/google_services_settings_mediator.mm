@@ -1,25 +1,24 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #import "ios/chrome/browser/ui/settings/google_services/google_services_settings_mediator.h"
 
-#include "base/auto_reset.h"
-#include "base/mac/foundation_util.h"
-#include "base/notreached.h"
-#include "components/metrics/metrics_pref_names.h"
-#include "components/password_manager/core/common/password_manager_features.h"
-#include "components/password_manager/core/common/password_manager_pref_names.h"
-#include "components/prefs/pref_service.h"
-#include "components/safe_browsing/core/common/features.h"
-#include "components/safe_browsing/core/common/safe_browsing_prefs.h"
-#include "components/signin/public/base/signin_pref_names.h"
-#include "components/sync/driver/sync_service.h"
-#include "components/unified_consent/pref_names.h"
-#include "ios/chrome/browser/application_context.h"
-#import "ios/chrome/browser/commerce/price_alert_util.h"
+#import "base/auto_reset.h"
+#import "base/mac/foundation_util.h"
+#import "base/notreached.h"
+#import "components/metrics/metrics_pref_names.h"
+#import "components/password_manager/core/common/password_manager_features.h"
+#import "components/password_manager/core/common/password_manager_pref_names.h"
+#import "components/prefs/pref_service.h"
+#import "components/safe_browsing/core/common/features.h"
+#import "components/safe_browsing/core/common/safe_browsing_prefs.h"
+#import "components/signin/public/base/signin_pref_names.h"
+#import "components/sync/driver/sync_service.h"
+#import "components/unified_consent/pref_names.h"
+#import "ios/chrome/browser/application_context/application_context.h"
 #import "ios/chrome/browser/policy/policy_util.h"
-#include "ios/chrome/browser/pref_names.h"
+#import "ios/chrome/browser/prefs/pref_names.h"
 #import "ios/chrome/browser/signin/authentication_service.h"
 #import "ios/chrome/browser/signin/authentication_service_factory.h"
 #import "ios/chrome/browser/signin/chrome_account_manager_service.h"
@@ -41,11 +40,11 @@
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
 #import "ios/chrome/common/ui/table_view/table_view_cells_constants.h"
-#include "ios/chrome/grit/ios_chromium_strings.h"
-#include "ios/chrome/grit/ios_strings.h"
+#import "ios/chrome/grit/ios_chromium_strings.h"
+#import "ios/chrome/grit/ios_strings.h"
 #import "ios/public/provider/chrome/browser/signin/chrome_identity.h"
 #import "ios/public/provider/chrome/browser/signin/signin_resources_api.h"
-#include "ui/base/l10n/l10n_util.h"
+#import "ui/base/l10n/l10n_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -447,28 +446,25 @@ bool GetStatusForSigninPolicy() {
           kBetterSearchAndBrowsingItemAccessibilityID;
       [items addObject:betterSearchAndBrowsingItem];
     }
-    if (IsPriceAlertsWithOptOutEnabled()) {
-      if (self.userPrefService->IsManagedPreference(
-              prefs::kTrackPricesOnTabsEnabled)) {
-        TableViewInfoButtonItem* trackPricesOnTabsItem = [self
-            tableViewInfoButtonItemType:TrackPricesOnTabsItemType
-                           textStringID:IDS_IOS_TRACK_PRICES_ON_TABS
-                         detailStringID:IDS_IOS_TRACK_PRICES_ON_TABS_DESCRIPTION
-                                 status:self.trackPricesOnTabsPreference];
-        trackPricesOnTabsItem.accessibilityIdentifier =
-            kTrackPricesOnTabsItemAccessibilityID;
-        [items addObject:trackPricesOnTabsItem];
-      } else {
-        SyncSwitchItem* trackPricesOnTabsItem = [self
-            switchItemWithItemType:TrackPricesOnTabsItemType
-                      textStringID:IDS_IOS_TRACK_PRICES_ON_TABS
-                    detailStringID:IDS_IOS_TRACK_PRICES_ON_TABS_DESCRIPTION];
-        trackPricesOnTabsItem.accessibilityIdentifier =
-            kTrackPricesOnTabsItemAccessibilityID;
-        [items addObject:trackPricesOnTabsItem];
-      }
+    if (self.userPrefService->IsManagedPreference(
+            prefs::kTrackPricesOnTabsEnabled)) {
+      TableViewInfoButtonItem* trackPricesOnTabsItem = [self
+          tableViewInfoButtonItemType:TrackPricesOnTabsItemType
+                         textStringID:IDS_IOS_TRACK_PRICES_ON_TABS
+                       detailStringID:IDS_IOS_TRACK_PRICES_ON_TABS_DESCRIPTION
+                               status:self.trackPricesOnTabsPreference];
+      trackPricesOnTabsItem.accessibilityIdentifier =
+          kTrackPricesOnTabsItemAccessibilityID;
+      [items addObject:trackPricesOnTabsItem];
+    } else {
+      SyncSwitchItem* trackPricesOnTabsItem = [self
+          switchItemWithItemType:TrackPricesOnTabsItemType
+                    textStringID:IDS_IOS_TRACK_PRICES_ON_TABS
+                  detailStringID:IDS_IOS_TRACK_PRICES_ON_TABS_DESCRIPTION];
+      trackPricesOnTabsItem.accessibilityIdentifier =
+          kTrackPricesOnTabsItemAccessibilityID;
+      [items addObject:trackPricesOnTabsItem];
     }
-
     _nonPersonalizedItems = items;
   }
   return _nonPersonalizedItems;
@@ -515,7 +511,7 @@ bool GetStatusForSigninPolicy() {
   managedItem.statusText = status ? l10n_util::GetNSString(IDS_IOS_SETTING_ON)
                                   : l10n_util::GetNSString(IDS_IOS_SETTING_OFF);
   if (!status) {
-    managedItem.tintColor = [UIColor colorNamed:kGrey300Color];
+    managedItem.iconTintColor = [UIColor colorNamed:kGrey300Color];
   }
 
   // This item is not controllable, then set the color opacity to 40%.

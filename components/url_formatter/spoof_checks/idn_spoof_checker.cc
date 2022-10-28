@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -609,6 +609,23 @@ std::u16string IDNSpoofChecker::MaybeRemoveDiacritics(
   return skeleton_generator_
              ? skeleton_generator_->MaybeRemoveDiacritics(hostname)
              : hostname;
+}
+
+IDNA2008DeviationCharacter IDNSpoofChecker::GetDeviationCharacter(
+    base::StringPiece16 hostname) const {
+  if (hostname.find(u"\u00df") != base::StringPiece16::npos) {
+    return IDNA2008DeviationCharacter::kEszett;
+  }
+  if (hostname.find(u"\u03c2") != base::StringPiece16::npos) {
+    return IDNA2008DeviationCharacter::kGreekFinalSigma;
+  }
+  if (hostname.find(u"\u200d") != base::StringPiece16::npos) {
+    return IDNA2008DeviationCharacter::kZeroWidthJoiner;
+  }
+  if (hostname.find(u"\u200c") != base::StringPiece16::npos) {
+    return IDNA2008DeviationCharacter::kZeroWidthNonJoiner;
+  }
+  return IDNA2008DeviationCharacter::kNone;
 }
 
 void IDNSpoofChecker::SetAllowedUnicodeSet(UErrorCode* status) {

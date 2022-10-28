@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -56,7 +56,6 @@
 #include "ash/constants/ash_switches.h"
 #include "base/path_service.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
-#include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
 #include "chromeos/ash/components/browser_context_helper/browser_context_helper.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -72,24 +71,13 @@
 
 namespace {
 
-// An observer that returns back to test code after a new profile is
-// initialized.
-void OnUnblockOnProfileCreation(base::RunLoop* run_loop,
-                                Profile* profile,
-                                Profile::CreateStatus status) {
-  if (status == Profile::CREATE_STATUS_INITIALIZED)
-    run_loop->Quit();
-}
-
 void ProfileCreationComplete(base::OnceClosure completion_callback,
-                             Profile* profile,
-                             Profile::CreateStatus status) {
-  ASSERT_NE(status, Profile::CREATE_STATUS_LOCAL_FAIL);
+                             Profile* profile) {
+  ASSERT_TRUE(profile);
   // No browser should have been created for this profile yet.
   EXPECT_EQ(chrome::GetBrowserCount(profile), 0U);
   EXPECT_EQ(chrome::GetTotalBrowserCount(), 1U);
-  if (status == Profile::CREATE_STATUS_INITIALIZED)
-    std::move(completion_callback).Run();
+  std::move(completion_callback).Run();
 }
 
 // An observer that returns back to test code after one or more profiles was
@@ -169,11 +157,10 @@ class MultipleProfileDeletionObserver
 };
 
 void EphemeralProfileCreationComplete(base::OnceClosure completion_callback,
-                                      Profile* profile,
-                                      Profile::CreateStatus status) {
-  if (status == Profile::CREATE_STATUS_INITIALIZED)
+                                      Profile* profile) {
+  if (profile)
     profile->GetPrefs()->SetBoolean(prefs::kForceEphemeralProfiles, true);
-  ProfileCreationComplete(std::move(completion_callback), profile, status);
+  ProfileCreationComplete(std::move(completion_callback), profile);
 }
 
 class ProfileRemovalObserver : public ProfileAttributesStorage::Observer {
@@ -538,7 +525,7 @@ class ProfileManagerCrOSBrowserTest : public ProfileManagerBrowserTest {
 IN_PROC_BROWSER_TEST_P(ProfileManagerCrOSBrowserTest, GetLastUsedProfile) {
   // Make sure that last used profile is correct.
   Profile* last_used_profile = ProfileManager::GetLastUsedProfile();
-  EXPECT_TRUE(last_used_profile != NULL);
+  EXPECT_TRUE(last_used_profile != nullptr);
 
   base::FilePath profile_path;
   base::PathService::Get(chrome::DIR_USER_DATA, &profile_path);
@@ -564,8 +551,7 @@ IN_PROC_BROWSER_TEST_P(ProfileManagerBrowserTest, CreateProfileWithCallback) {
   ProfileManager::CreateMultiProfileAsync(
       u"New Profile",
       /*icon_index=*/0, /*is_hidden=*/false,
-      base::BindRepeating(&ProfileCreationComplete,
-                          run_loop.QuitWhenIdleClosure()));
+      base::BindOnce(&ProfileCreationComplete, run_loop.QuitWhenIdleClosure()));
   run_loop.Run();
   EXPECT_EQ(profile_manager->GetNumberOfProfiles(), 2U);
 }
@@ -630,16 +616,11 @@ IN_PROC_BROWSER_TEST_P(ProfileManagerBrowserTest, PRE_AddMultipleProfiles) {
       GetFirstNonSigninNonLockScreenAppProfile(&storage);
   ASSERT_NE(0U, initial_profile_count);
   EXPECT_EQ(1U, chrome::GetTotalBrowserCount());
-  // Create an additional profile.
   base::FilePath path_profile2 =
       profile_manager->GenerateNextProfileDirectoryPath();
-  base::RunLoop run_loop;
-  profile_manager->CreateProfileAsync(
-      path_profile2,
-      base::BindRepeating(&OnUnblockOnProfileCreation, &run_loop));
-  // Run the message loop to allow profile creation to take place; the loop is
-  // terminated by OnUnblockOnProfileCreation when the profile is created.
-  run_loop.Run();
+  // Create an additional profile.
+  profiles::testing::CreateProfileSync(profile_manager, path_profile2);
+
   BrowserList* browser_list = BrowserList::GetInstance();
   ASSERT_EQ(initial_profile_count + 1U, storage.GetNumberOfProfiles());
   EXPECT_EQ(1U, browser_list->size());
@@ -684,11 +665,14 @@ IN_PROC_BROWSER_TEST_P(ProfileManagerBrowserTest, EphemeralProfile) {
   // Create an ephemeral profile.
   base::FilePath path_profile2 =
       profile_manager->GenerateNextProfileDirectoryPath();
-  base::RunLoop run_loop;
-  profile_manager->CreateProfileAsync(
-      path_profile2, base::BindRepeating(&EphemeralProfileCreationComplete,
-                                         run_loop.QuitWhenIdleClosure()));
-  run_loop.Run();
+  {
+    base::RunLoop run_loop;
+    profile_manager->CreateProfileAsync(
+        path_profile2, base::BindOnce(&EphemeralProfileCreationComplete,
+                                      run_loop.QuitWhenIdleClosure()));
+
+    run_loop.Run();
+  }
 
   BrowserList* browser_list = BrowserList::GetInstance();
   ASSERT_EQ(initial_profile_count + 1U, storage.GetNumberOfProfiles());

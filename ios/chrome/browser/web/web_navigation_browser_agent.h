@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -58,9 +58,9 @@ class WebNavigationBrowserAgent
   explicit WebNavigationBrowserAgent(Browser* browser);
 
   // Reloads the original url of the last non-redirect item (including
-  // non-history items) with |userAgentType|.
+  // non-history items) with `userAgentType`.
   void ReloadWithUserAgentType(web::UserAgentType userAgentType);
-  // Return the UserAgentType for a given |web_state|.
+  // Return the UserAgentType for a given `web_state`.
   web::UserAgentType UserAgentType(web::WebState* web_state);
 
   // The web state list for the associated browser. This should never be

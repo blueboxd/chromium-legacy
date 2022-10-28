@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -29,9 +29,9 @@
 #include "chromeos/ash/components/network/network_state.h"
 #include "chromeos/ash/components/network/network_state_handler.h"
 #include "chromeos/ash/components/network/network_type_pattern.h"
-#include "chromeos/services/bluetooth_config/fake_adapter_state_controller.h"
-#include "chromeos/services/bluetooth_config/public/mojom/cros_bluetooth_config.mojom.h"
-#include "chromeos/services/bluetooth_config/scoped_bluetooth_config_test_helper.h"
+#include "chromeos/ash/services/bluetooth_config/fake_adapter_state_controller.h"
+#include "chromeos/ash/services/bluetooth_config/public/mojom/cros_bluetooth_config.mojom.h"
+#include "chromeos/ash/services/bluetooth_config/scoped_bluetooth_config_test_helper.h"
 #include "chromeos/services/network_config/public/cpp/cros_network_config_test_helper.h"
 #include "chromeos/services/network_config/public/cpp/cros_network_config_util.h"
 #include "chromeos/services/network_config/public/mojom/cros_network_config.mojom.h"
@@ -45,21 +45,14 @@ namespace ash {
 
 namespace {
 
-using testing::_;
-using testing::Return;
-
-using chromeos::bluetooth_config::ScopedBluetoothConfigTestHelper;
-using chromeos::bluetooth_config::mojom::BluetoothSystemState;
-
-using chromeos::network_config::CrosNetworkConfigTestHelper;
-using chromeos::network_config::NetworkTypeMatchesType;
-
-using chromeos::network_config::mojom::ActivationStateType;
-using chromeos::network_config::mojom::ConnectionStateType;
-using chromeos::network_config::mojom::NetworkStatePropertiesPtr;
-using chromeos::network_config::mojom::NetworkType;
-using chromeos::network_config::mojom::OncSource;
-using chromeos::network_config::mojom::SecurityType;
+using bluetooth_config::ScopedBluetoothConfigTestHelper;
+using bluetooth_config::mojom::BluetoothSystemState;
+using ::chromeos::network_config::NetworkTypeMatchesType;
+using ::chromeos::network_config::mojom::ConnectionStateType;
+using ::chromeos::network_config::mojom::NetworkStatePropertiesPtr;
+using ::chromeos::network_config::mojom::NetworkType;
+using ::testing::_;
+using ::testing::Return;
 
 const std::string kCellularName = "cellular";
 const std::string kCellularName2 = "cellular_2";

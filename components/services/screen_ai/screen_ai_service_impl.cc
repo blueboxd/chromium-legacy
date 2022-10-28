@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,6 +7,7 @@
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/process/process.h"
+#include "base/strings/string_util.h"
 #include "components/services/screen_ai/proto/proto_convertor.h"
 #include "components/services/screen_ai/public/cpp/utilities.h"
 #include "components/services/screen_ai/screen_ai_ax_tree_serializer.h"
@@ -34,6 +35,16 @@ base::FilePath GetLibraryFilePath() {
   return library_path;
 }
 
+std::string MakeString(const char* content, uint32_t length) {
+  DCHECK(content);
+  DCHECK(length);
+
+  std::string output;
+  memcpy(base::WriteInto(&output, length + 1), content, length);
+  output[length] = 0;
+  return output;
+}
+
 }  // namespace
 
 ScreenAIService::ScreenAIService(
@@ -49,19 +60,24 @@ ScreenAIService::ScreenAIService(
       receiver_(this, std::move(receiver)) {
   DCHECK(init_function_ && annotate_function_ &&
          extract_main_content_function_);
-  if (!init_function_(
-          /*init_visual_annotations = */ features::
-                  IsScreenAIVisualAnnotationsEnabled() ||
-              features::IsPdfOcrEnabled(),
-          /*init_main_content_extraction = */
-          features::IsReadAnythingWithScreen2xEnabled(),
-          /*debug_mode = */ features::IsScreenAIDebugModeEnabled(),
-          /*models_path = */
-          GetLibraryFilePath().DirName().MaybeAsASCII().c_str())) {
+  if (!CallLibraryInitFunction()) {
     // TODO(https://crbug.com/1278249): Add UMA metrics to monitor failures.
     VLOG(0) << "Screen AI library initialization failed.";
     base::Process::TerminateCurrentProcessImmediately(-1);
   }
+}
+
+NO_SANITIZE("cfi-icall")
+bool ScreenAIService::CallLibraryInitFunction() {
+  return init_function_(
+      /*init_visual_annotations = */ features::
+              IsScreenAIVisualAnnotationsEnabled() ||
+          features::IsPdfOcrEnabled(),
+      /*init_main_content_extraction = */
+      features::IsReadAnythingWithScreen2xEnabled(),
+      /*debug_mode = */ features::IsScreenAIDebugModeEnabled(),
+      /*models_path = */
+      GetLibraryFilePath().DirName().MaybeAsASCII().c_str());
 }
 
 ScreenAIService::~ScreenAIService() = default;
@@ -69,6 +85,12 @@ ScreenAIService::~ScreenAIService() = default;
 void ScreenAIService::BindAnnotator(
     mojo::PendingReceiver<mojom::ScreenAIAnnotator> annotator) {
   screen_ai_annotators_.Add(this, std::move(annotator));
+}
+
+void ScreenAIService::BindAnnotatorClient(
+    mojo::PendingRemote<mojom::ScreenAIAnnotatorClient> annotator_client) {
+  DCHECK(!screen_ai_annotator_client_.is_bound());
+  screen_ai_annotator_client_.Bind(std::move(annotator_client));
 }
 
 void ScreenAIService::BindMainContentExtractor(
@@ -80,6 +102,8 @@ void ScreenAIService::BindMainContentExtractor(
 
 void ScreenAIService::Annotate(const SkBitmap& image,
                                AnnotationCallback callback) {
+  DCHECK(screen_ai_annotator_client_.is_bound());
+
   ui::AXTreeUpdate update;
 
   VLOG(2) << "Screen AI library starting to process " << image.width() << "x"
@@ -89,27 +113,42 @@ void ScreenAIService::Annotate(const SkBitmap& image,
   uint32_t annotation_proto_length = 0;
   // TODO(https://crbug.com/1278249): Consider adding a signature that
   // verifies the data integrity and source.
-  if (annotate_function_(image, annotation_proto, annotation_proto_length)) {
-    DCHECK(annotation_proto);
-    std::string proto_as_string;
-    proto_as_string.resize(annotation_proto_length);
-    memcpy(static_cast<void*>(proto_as_string.data()), annotation_proto,
-           annotation_proto_length);
-    delete annotation_proto;
-    gfx::Rect image_rect(image.width(), image.height());
-    update =
-        ScreenAIVisualAnnotationToAXTreeUpdate(proto_as_string, image_rect);
-    // TODO(nektar): Get the parent tree ID from the calling process (i.e.
-    // browser or renderer).
-    ScreenAIAXTreeSerializer serializer(
-        /* parent_tree_id */ ui::AXTreeID::CreateNewAXTreeID(),
-        std::move(update.nodes));
-    update = serializer.Serialize();
-  } else {
+  if (!CallLibraryAnnotateFunction(image, annotation_proto,
+                                   annotation_proto_length)) {
+    std::move(callback).Run(ui::AXTreeID());
     VLOG(1) << "Screen AI library could not process snapshot.";
+    return;
   }
 
-  std::move(callback).Run(update);
+  // TODO(https://crbug.com/1278249): Create an AXTreeSource and send the ID
+  // back to the caller.
+  std::move(callback).Run(ui::AXTreeID());
+
+  std::string proto_as_string =
+      MakeString(annotation_proto, annotation_proto_length);
+  delete annotation_proto;
+
+  gfx::Rect image_rect(image.width(), image.height());
+  update = ScreenAIVisualAnnotationToAXTreeUpdate(proto_as_string, image_rect);
+  // TODO(nektar): Get the parent tree ID from the calling process (i.e.
+  // browser or renderer).
+  ScreenAIAXTreeSerializer serializer(
+      /* parent_tree_id */ ui::AXTreeID::CreateNewAXTreeID(),
+      std::move(update.nodes));
+  update = serializer.Serialize();
+
+  // ScreenAI service is created per profile and all clients are in the same
+  // browser process. As the updates are passed to global AXTreeManager, it is
+  // enough to sent it to only one client.
+  // TODO(https://crbug.com/1278249): Call [client]::HandleAXTreeUpdate(update);
+}
+
+NO_SANITIZE("cfi-icall")
+bool ScreenAIService::CallLibraryAnnotateFunction(
+    const SkBitmap& image,
+    char*& annotation_proto,
+    uint32_t& annotation_proto_length) {
+  return annotate_function_(image, annotation_proto, annotation_proto_length);
 }
 
 void ScreenAIService::ExtractMainContent(const ui::AXTreeUpdate& snapshot,
@@ -119,9 +158,9 @@ void ScreenAIService::ExtractMainContent(const ui::AXTreeUpdate& snapshot,
 
   int32_t* node_ids = nullptr;
   uint32_t nodes_count = 0;
-  if (!extract_main_content_function_(serialized_snapshot.c_str(),
-                                      serialized_snapshot.length(), node_ids,
-                                      nodes_count)) {
+  if (!CallLibraryExtractMainContentFunction(serialized_snapshot.c_str(),
+                                             serialized_snapshot.length(),
+                                             node_ids, nodes_count)) {
     VLOG(1) << "Screen2x did not return main content.";
   } else {
     content_node_ids.resize(nodes_count);
@@ -135,6 +174,16 @@ void ScreenAIService::ExtractMainContent(const ui::AXTreeUpdate& snapshot,
   }
 
   std::move(callback).Run(content_node_ids);
+}
+
+NO_SANITIZE("cfi-icall")
+bool ScreenAIService::CallLibraryExtractMainContentFunction(
+    const char* serialized_snapshot,
+    const uint32_t serialized_snapshot_length,
+    int32_t*& node_ids,
+    uint32_t& nodes_count) {
+  return extract_main_content_function_(
+      serialized_snapshot, serialized_snapshot_length, node_ids, nodes_count);
 }
 
 }  // namespace screen_ai

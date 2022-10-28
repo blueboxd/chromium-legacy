@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -16,7 +16,7 @@ namespace ash {
 // RuntimeProbeClient is used to communicate with Runtime Probe, which provides
 // data for hardware telemetry.
 class COMPONENT_EXPORT(ASH_DBUS_RUNTIME_PROBE) RuntimeProbeClient
-    : public DBusClient {
+    : public chromeos::DBusClient {
  public:
   using RuntimeProbeCallback =
       chromeos::DBusMethodCallback<runtime_probe::ProbeResult>;

@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -21,6 +21,7 @@
 #include "base/test/task_environment.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
+#include "components/heap_profiling/in_process/heap_profiler_parameters.h"
 #include "components/metrics/call_stack_profile_builder.h"
 #include "components/metrics/call_stack_profile_params.h"
 #include "components/metrics/public/mojom/call_stack_profile_collector.mojom.h"
@@ -91,6 +92,12 @@ class HeapProfilerControllerTest : public ::testing::Test {
     EXPECT_EQ(sampled_profile.trigger_event(),
               metrics::SampledProfile::PERIODIC_HEAP_COLLECTION);
     EXPECT_EQ(sampled_profile.process(), expected_process_);
+    // The mock clock should not have advanced since the sample was recorded, so
+    // the collection time can be compared exactly.
+    const base::TimeDelta expected_time_offset =
+        task_environment_.NowTicks() - profiler_creation_time_;
+    EXPECT_EQ(sampled_profile.call_stack_profile().profile_time_offset_ms(),
+              expected_time_offset.InMilliseconds());
     sample_received_ = true;
   }
 
@@ -107,7 +114,7 @@ class HeapProfilerControllerTest : public ::testing::Test {
     // threads are started.
     if (feature_enabled) {
       feature_list_.InitAndEnableFeatureWithParameters(
-          HeapProfilerController::kHeapProfilerReporting,
+          kHeapProfilerReporting,
           {
               {"stable-probability", base::NumberToString(stable_probability)},
               {"nonstable-probability",
@@ -116,8 +123,7 @@ class HeapProfilerControllerTest : public ::testing::Test {
               {"supported-processes", supported_processes},
           });
     } else {
-      feature_list_.InitAndDisableFeature(
-          HeapProfilerController::kHeapProfilerReporting);
+      feature_list_.InitAndDisableFeature(kHeapProfilerReporting);
       // Set the sampling rate manually since there's no param to read.
       base::SamplingHeapProfiler::Get()->SetSamplingInterval(kSamplingRate);
     }
@@ -134,14 +140,6 @@ class HeapProfilerControllerTest : public ::testing::Test {
     metrics::CallStackProfileBuilder::
         ResetChildCallStackProfileCollectorForTesting();
   }
-
-#if BUILDFLAG(IS_POSIX) && !BUILDFLAG(IS_APPLE) && defined(ARCH_CPU_ARM64)
-  void SetUp() override {
-    // TODO(crbug.com/1297724): The heap profiler is never started on these
-    // platforms so there is nothing to test.
-    GTEST_SKIP();
-  }
-#endif
 
   void StartHeapProfiling(version_info::Channel channel,
                           ProcessType process_type,
@@ -166,6 +164,7 @@ class HeapProfilerControllerTest : public ::testing::Test {
 
     ASSERT_EQ(HeapProfilerController::GetProfilingEnabled(),
               HeapProfilerController::ProfilingEnabled::kNoController);
+    profiler_creation_time_ = task_environment_.NowTicks();
     controller_ =
         std::make_unique<HeapProfilerController>(channel, process_type);
     controller_->SuppressRandomnessForTesting();
@@ -213,6 +212,11 @@ class HeapProfilerControllerTest : public ::testing::Test {
   base::HistogramTester histogram_tester_;
   mojo::SelfOwnedReceiverRef<metrics::mojom::CallStackProfileCollector>
       child_profile_collector_;
+
+  // The creation time of the HeapProfilerController, saved so that
+  // RecordSampleReceived() can test that SampledProfile::ms_after_login() in
+  // that sample is a delta from the creation time.
+  base::TimeTicks profiler_creation_time_;
 
   // Expected process type in a sample.
   metrics::Process expected_process_ = metrics::Process::UNKNOWN_PROCESS;

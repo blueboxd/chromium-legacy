@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -56,13 +56,13 @@ ScopedListen::ScopedListen(IdleManager* idle_manager,
                            const std::string& extension_id)
     : idle_manager_(idle_manager), extension_id_(extension_id) {
   const EventListenerInfo details(idle::OnStateChanged::kEventName,
-                                  extension_id_, GURL(), NULL);
+                                  extension_id_, GURL(), nullptr);
   idle_manager_->OnListenerAdded(details);
 }
 
 ScopedListen::~ScopedListen() {
   const EventListenerInfo details(idle::OnStateChanged::kEventName,
-                                  extension_id_, GURL(), NULL);
+                                  extension_id_, GURL(), nullptr);
   idle_manager_->OnListenerRemoved(details);
 }
 

@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -52,10 +52,6 @@ extern const int kHistogramImagesCount;
 // index is invalid, returns the default user image for index 0 (anonymous
 // avatar image).
 GURL GetDefaultImageUrl(int index);
-
-// Checks if the given URL points to one of the default images. If it is,
-// returns true and its index through `image_id`. If not, returns false.
-bool IsDefaultImageUrl(const std::string& url, int* image_id);
 
 // Returns bitmap of default user image with specified index.
 const gfx::ImageSkia& GetDefaultImage(int index);

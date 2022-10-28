@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -48,11 +48,13 @@ void NetworkListWifiHeaderViewImpl::AddExtraButtons() {
   join_wifi_button_ = join_wifi_button.get();
   container()->AddViewAt(TriView::Container::END, join_wifi_button.release(),
                          /*index=*/0);
-};
+}
 
-void NetworkListWifiHeaderViewImpl::SetToggleState(bool enabled, bool is_on) {
+void NetworkListWifiHeaderViewImpl::SetToggleState(bool enabled,
+                                                   bool is_on,
+                                                   bool animate_toggle) {
   join_wifi_button_->SetEnabled(enabled && is_on);
-  NetworkListNetworkHeaderView::SetToggleState(enabled, is_on);
+  NetworkListNetworkHeaderView::SetToggleState(enabled, is_on, animate_toggle);
 }
 
 void NetworkListWifiHeaderViewImpl::OnToggleToggled(bool is_on) {

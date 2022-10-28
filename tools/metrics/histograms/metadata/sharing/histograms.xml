@@ -104,7 +104,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Sharing.ClickToCallSelectedAppIndex" units="index"
-    expires_after="2023-01-01">
+    expires_after="2023-03-05">
 <!-- Name completed by histogram_suffixes name="SharingClickToCallUi" -->
 
   <owner>mvanouwerkerk@chromium.org</owner>
@@ -116,7 +116,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Sharing.ClickToCallSelectedDeviceIndex" units="index"
-    expires_after="2023-01-01">
+    expires_after="2023-03-05">
 <!-- Name completed by histogram_suffixes name="SharingClickToCallUi" -->
 
   <owner>mvanouwerkerk@chromium.org</owner>
@@ -128,7 +128,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Sharing.DefaultSharesheetAndroid.Opened" enum="ShareOrigin"
-    expires_after="2022-12-25">
+    expires_after="2023-02-26">
   <owner>sophey@chromium.org</owner>
   <owner>src/chrome/browser/share/OWNERS</owner>
   <summary>
@@ -138,7 +138,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Sharing.DesktopScreenshot.Action"
-    enum="SharingDesktopScreenshotAction" expires_after="2022-10-04">
+    enum="SharingDesktopScreenshotAction" expires_after="2023-02-26">
   <owner>jeffreycohen@chromium.org</owner>
   <owner>src/chrome/browser/share/OWNERS</owner>
   <summary>
@@ -168,7 +168,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Sharing.LongScreenshots.BitmapGenerationStatus"
-    enum="SharingLongScreenshotsEvent" expires_after="M107">
+    enum="SharingLongScreenshotsEvent" expires_after="M110">
   <owner>skare@chromium.org</owner>
   <owner>src/chrome/browser/share/OWNERS</owner>
   <summary>
@@ -179,7 +179,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Sharing.LongScreenshots.BitmapSelectedHeight" units="pixels"
-    expires_after="M107">
+    expires_after="M110">
   <owner>skare@chromium.org</owner>
   <owner>src/chrome/browser/share/OWNERS</owner>
   <summary>
@@ -189,7 +189,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Sharing.LongScreenshots.Event"
-    enum="SharingLongScreenshotsEvent" expires_after="M107">
+    enum="SharingLongScreenshotsEvent" expires_after="M110">
   <owner>skare@chromium.org</owner>
   <owner>src/chrome/browser/share/OWNERS</owner>
   <summary>
@@ -369,7 +369,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="Sharing.ScrollCapture.BitmapGeneratorStatus"
     enum="SharingScrollCaptureBitmapGenerationStatus"
-    expires_after="2022-12-25">
+    expires_after="2023-02-26">
   <owner>ckitagawa@chromium.org</owner>
   <owner>src/components/paint_preview/OWNERS</owner>
   <summary>
@@ -381,7 +381,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Sharing.ScrollCapture.SuccessfulCaptureDuration" units="ms"
-    expires_after="2022-12-25">
+    expires_after="2023-02-26">
   <owner>ckitagawa@chromium.org</owner>
   <owner>src/components/paint_preview/OWNERS</owner>
   <summary>
@@ -419,7 +419,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Sharing.SendTabToSelf.NotificationStatus"
-    enum="SendTabToSelfNotificationStatus" expires_after="2022-12-25">
+    enum="SendTabToSelfNotificationStatus" expires_after="2023-02-26">
   <owner>ellyjones@chromium.org</owner>
   <owner>src/chrome/browser/share/OWNERS</owner>
   <summary>
@@ -511,7 +511,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Sharing.SharingHubAndroid.Opened" enum="ShareOrigin"
-    expires_after="2022-12-25">
+    expires_after="2023-02-26">
   <owner>sophey@chromium.org</owner>
   <owner>src/chrome/browser/share/OWNERS</owner>
   <summary>
@@ -532,7 +532,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="Sharing.SharingHubAndroid.TimeToSaveScreenshotImageBeforeShare"
-    units="ms" expires_after="M107">
+    units="ms" expires_after="M110">
   <owner>skare@chromium.org</owner>
   <owner>src/chrome/browser/share/OWNERS</owner>
   <summary>
@@ -543,7 +543,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Sharing.SharingHubAndroid.TimeToShare" units="ms"
-    expires_after="2022-12-25">
+    expires_after="2023-02-26">
   <owner>sophey@chromium.org</owner>
   <owner>src/chrome/browser/share/OWNERS</owner>
   <summary>
@@ -622,7 +622,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Sharing.SharingHubDesktop.TimeToShow" units="ms"
-    expires_after="2022-10-08">
+    expires_after="2023-02-26">
   <owner>ellyjones@chromium.org</owner>
   <owner>src/chrome/browser/share/OWNERS</owner>
   <summary>
@@ -633,7 +633,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Sharing.SmsFetcherAvailableDeviceCount" units="devices"
-    expires_after="2022-12-25">
+    expires_after="2023-02-26">
   <owner>yigu@chromium.org</owner>
   <owner>src/content/browser/sms/OWNERS</owner>
   <summary>
@@ -655,7 +655,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Sharing.SmsFetcherScreenOnAndUnlocked" enum="Boolean"
-    expires_after="2022-12-25">
+    expires_after="2023-02-26">
   <owner>yigu@chromium.org</owner>
   <owner>src/content/browser/sms/OWNERS</owner>
   <summary>
@@ -666,7 +666,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Sharing.SmsFetcherTapWithChromeDestroyed" enum="Boolean"
-    expires_after="2022-12-25">
+    expires_after="2023-02-26">
   <owner>yigu@chromium.org</owner>
   <owner>src/content/browser/sms/OWNERS</owner>
   <summary>

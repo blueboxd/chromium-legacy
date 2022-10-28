@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -42,10 +42,10 @@ public class InstalledWebappRegistrar {
     /**
      * Registers to various stores that the app is linked with the origin.
      *
-     * We do this here, when the Trusted Web Activity UI is shown instead of in OriginVerifier when
-     * verification completes because when an origin is being verified, we don't know whether it is
-     * for the purposes of Trusted Web Activities or for Post Message (where this behaviour is not
-     * required).
+     * We do this here, when the Trusted Web Activity UI is shown instead of in ChromeOriginVerifier
+     * when verification completes because when an origin is being verified, we don't know whether
+     * it is for the purposes of Trusted Web Activities or for Post Message (where this behaviour is
+     * not required).
      *
      * Additionally we do it on every page navigation because an app can be verified for more than
      * one Origin, eg:

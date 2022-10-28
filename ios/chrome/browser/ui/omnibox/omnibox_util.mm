@@ -1,14 +1,14 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #import "ios/chrome/browser/ui/omnibox/omnibox_util.h"
 
-#include "base/notreached.h"
-#include "base/strings/utf_string_conversions.h"
+#import "base/notreached.h"
+#import "base/strings/utf_string_conversions.h"
 #import "ios/chrome/browser/ui/icons/chrome_symbol.h"
-#include "ios/chrome/browser/ui/ui_feature_flags.h"
-#include "ios/chrome/grit/ios_theme_resources.h"
+#import "ios/chrome/browser/ui/ui_feature_flags.h"
+#import "ios/chrome/grit/ios_theme_resources.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -50,6 +50,7 @@ OmniboxSuggestionIconType GetOmniboxSuggestionIconTypeForAutocompleteMatchType(
     case AutocompleteMatchType::OPEN_TAB:
     case AutocompleteMatchType::HISTORY_CLUSTER:
     case AutocompleteMatchType::STARTER_PACK:
+    case AutocompleteMatchType::TILE_NAVSUGGEST:
       return DEFAULT_FAVICON;
     case AutocompleteMatchType::CONTACT_DEPRECATED:
     case AutocompleteMatchType::SEARCH_OTHER_ENGINE:
@@ -69,7 +70,6 @@ OmniboxSuggestionIconType GetOmniboxSuggestionIconTypeForAutocompleteMatchType(
       return CALCULATOR;
     case AutocompleteMatchType::EXTENSION_APP_DEPRECATED:
     case AutocompleteMatchType::TILE_SUGGESTION:
-    case AutocompleteMatchType::TILE_NAVSUGGEST:
     case AutocompleteMatchType::NULL_RESULT_MESSAGE:
     case AutocompleteMatchType::NUM_TYPES:
       NOTREACHED();

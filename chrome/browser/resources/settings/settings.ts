@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -20,10 +20,10 @@ export {AboutPageBrowserProxy, AboutPageBrowserProxyImpl, UpdateStatus} from './
 export {PromoteUpdaterStatus} from './about_page/about_page_browser_proxy.js';
 // </if>
 export {AppearanceBrowserProxy, AppearanceBrowserProxyImpl} from './appearance_page/appearance_browser_proxy.js';
-export {SettingsAppearancePageElement} from './appearance_page/appearance_page.js';
+export {SettingsAppearancePageElement, SystemTheme} from './appearance_page/appearance_page.js';
 export {HomeUrlInputElement} from './appearance_page/home_url_input.js';
 export {SettingsAutofillPageElement} from './autofill_page/autofill_page.js';
-export {AccountStorageOptInStateChangedListener, CredentialsChangedListener, PasswordCheckInteraction, PasswordCheckReferrer, PasswordCheckStatusChangedListener, PasswordExceptionListChangedListener, PasswordManagerImpl, PasswordManagerProxy, PasswordsFileExportProgressListener, SavedPasswordListChangedListener} from './autofill_page/password_manager_proxy.js';
+export {AccountStorageOptInStateChangedListener, CredentialsChangedListener, PasswordCheckInteraction, PasswordCheckReferrer, PasswordCheckStatusChangedListener, PasswordExceptionListChangedListener, PasswordManagerAuthTimeoutListener, PasswordManagerImpl, PasswordManagerProxy, PasswordsFileExportProgressListener, SavedPasswordListChangedListener} from './autofill_page/password_manager_proxy.js';
 export {BaseMixin} from './base_mixin.js';
 export {SettingsBasicPageElement} from './basic_page/basic_page.js';
 export {ControlledRadioButtonElement} from './controls/controlled_radio_button.js';
@@ -55,6 +55,8 @@ export {SettingsPeoplePageElement} from './people_page/people_page.js';
 export {ProfileInfo, ProfileInfoBrowserProxy, ProfileInfoBrowserProxyImpl} from './people_page/profile_info_browser_proxy.js';
 export {MAX_SIGNIN_PROMO_IMPRESSION, SettingsSyncAccountControlElement} from './people_page/sync_account_control.js';
 export {PageStatus, StatusAction, StoredAccount, SyncBrowserProxy, SyncBrowserProxyImpl, SyncPrefs, syncPrefsIndividualDataTypes, SyncStatus, TrustedVaultBannerState} from './people_page/sync_browser_proxy.js';
+export {PerformanceBrowserProxy, PerformanceBrowserProxyImpl} from './performance_page/performance_browser_proxy.js';
+export {SettingsPerformancePageElement} from './performance_page/performance_page.js';
 export {prefToString, stringToPrefValue} from './prefs/pref_util.js';
 export {SettingsPrefsElement} from './prefs/prefs.js';
 export {PrefsMixin, PrefsMixinInterface} from './prefs/prefs_mixin.js';

@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -30,8 +30,11 @@ class OneTimeRuleIterator : public content_settings::RuleIterator {
     content_settings::Rule rule(
         begin_iterator_->first, ContentSettingsPattern::Wildcard(),
         content_settings::ContentSettingToValue(CONTENT_SETTING_ALLOW),
-        begin_iterator_->second + base::Days(1),
-        content_settings::SessionModel::OneTime);
+        {
+            .last_modified = begin_iterator_->second,
+            .expiration = begin_iterator_->second + base::Days(1),
+            .session_model = content_settings::SessionModel::OneTime,
+        });
     begin_iterator_++;
     return rule;
   }
@@ -91,20 +94,12 @@ bool OneTimeGeolocationPermissionProvider::SetWebsiteSetting(
   return false;
 }
 
-base::Time OneTimeGeolocationPermissionProvider::GetWebsiteSettingLastModified(
+bool OneTimeGeolocationPermissionProvider::UpdateLastVisitTime(
     const ContentSettingsPattern& primary_pattern,
     const ContentSettingsPattern& secondary_pattern,
     ContentSettingsType content_type) {
-  if (content_type != ContentSettingsType::GEOLOCATION)
-    return base::Time();
-  std::map<ContentSettingsPattern, base::Time>::const_iterator
-      matching_iterator = grants_with_open_tabs_.find(primary_pattern);
-  if (matching_iterator == grants_with_open_tabs_.end())
-    return base::Time();
-  if (matching_iterator->second + base::Days(1) < base::Time::Now()) {
-    return base::Time();
-  }
-  return matching_iterator->second;
+  // LastVisit time is not tracked for one-time permissions.
+  return false;
 }
 
 void OneTimeGeolocationPermissionProvider::ClearAllContentSettingsRules(

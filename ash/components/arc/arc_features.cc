@@ -1,4 +1,4 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -24,6 +24,11 @@ const base::Feature kDocumentsProviderUnknownSizeFeature{
 // its sharesheet.
 const base::Feature kEnableArcNearbyShare{"ArcNearbySharing",
                                           base::FEATURE_ENABLED_BY_DEFAULT};
+
+// Controls whether files shared to ARC Nearby Share are shared through the
+// FuseBox filesystem, instead of creating a temporary copy.
+const base::Feature kEnableArcNearbyShareFuseBox{
+    "ArcNearbyShareFuseBox", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Controls whether crosvm for ARCVM does per-VM core scheduling on devices with
 // MDS/L1TF vulnerabilities. When this feature is disabled, crosvm does per-vCPU
@@ -69,10 +74,22 @@ const base::Feature kEnableUsap{"ArcEnableUsap",
 const base::Feature kEnableVirtioBlkForData{"ArcEnableVirtioBlkForData",
                                             base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Controls whether to pop up ghost window for ARC app before fixup finishes.
+const base::Feature kFixupWindowFeature{"ArcFixupWindowFeature",
+                                        base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Used for overriding config params for the virtio-blk feature above.
+const base::Feature kVirtioBlkDataConfigOverride{
+    "ArcVirtioBlkDataConfigOverride", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Controls whether to use the LVM-provided disk as the backend device for
 // Android /data instead of using the concierge-provided disk.
-const base::FeatureParam<bool> kEnableVirtioBlkForDataUseLvm{
-    &kEnableVirtioBlkForData, "use_lvm", false};
+const base::FeatureParam<bool> kVirtioBlkDataConfigUseLvm{
+    &kVirtioBlkDataConfigOverride, "use_lvm", false};
+
+// Indicates whether LVM application containers feature is supported.
+const base::Feature kLvmApplicationContainers{
+    "ArcLvmApplicationContainers", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Controls experimental file picker feature for ARC.
 const base::Feature kFilePickerExperimentFeature{
@@ -130,10 +147,6 @@ const base::Feature kOutOfProcessVideoDecoding{
 // will be disabled.
 const base::Feature kPictureInPictureFeature{"ArcPictureInPicture",
                                              base::FEATURE_ENABLED_BY_DEFAULT};
-
-// Controls ARC right click long press compatibility feature.
-const base::Feature kRightClickLongPress{"ArcRightClickLongPress",
-                                         base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Controls ARCVM real time vcpu feature on a device with 2 logical cores
 // online.

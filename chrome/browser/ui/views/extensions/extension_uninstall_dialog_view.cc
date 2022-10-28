@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -89,7 +89,7 @@ void ExtensionUninstallDialogViews::Show() {
           base::OnceClosure() /* Cancel is covered by WindowClosingCallback */);
 
   if (triggering_extension()) {
-    dialog_builder.AddBodyText(
+    dialog_builder.AddParagraph(
         ui::DialogModelLabel(
             l10n_util::GetStringFUTF16(
                 IDS_EXTENSION_PROMPT_UNINSTALL_TRIGGERED_BY_EXTENSION,

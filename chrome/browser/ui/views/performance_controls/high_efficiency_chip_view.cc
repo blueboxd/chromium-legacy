@@ -1,0 +1,106 @@
+// Copyright 2022 The Chromium Authors
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "chrome/browser/ui/views/performance_controls/high_efficiency_chip_view.h"
+#include "chrome/app/vector_icons/vector_icons.h"
+#include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/browser_element_identifiers.h"
+#include "chrome/browser/ui/performance_controls/tab_discard_tab_helper.h"
+#include "chrome/browser/ui/views/page_action/page_action_icon_view.h"
+#include "chrome/browser/ui/views/performance_controls/high_efficiency_bubble_view.h"
+#include "chrome/common/pref_names.h"
+#include "chrome/grit/generated_resources.h"
+#include "components/prefs/pref_service.h"
+#include "ui/base/l10n/l10n_util.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
+#include "ui/views/view_class_properties.h"
+
+namespace {
+
+// The duration that the chip should be expanded for.
+constexpr base::TimeDelta kChipAnimationDuration = base::Milliseconds(12000);
+// The number of times a user should see the expanded chip.
+constexpr int kChipAnimationCount = 3;
+
+}  // namespace
+
+HighEfficiencyChipView::HighEfficiencyChipView(
+    CommandUpdater* command_updater,
+    Browser* browser,
+    IconLabelBubbleView::Delegate* icon_label_bubble_delegate,
+    PageActionIconView::Delegate* page_action_icon_delegate)
+    : PageActionIconView(command_updater,
+                         0,
+                         icon_label_bubble_delegate,
+                         page_action_icon_delegate,
+                         "HighEfficiency"),
+      browser_(browser) {
+  DCHECK(browser_);
+
+  SetUpForInOutAnimation(kChipAnimationDuration);
+  SetPaintLabelOverSolidBackground(true);
+  SetProperty(views::kElementIdentifierKey, kHighEfficiencyChipElementId);
+}
+
+HighEfficiencyChipView::~HighEfficiencyChipView() = default;
+
+void HighEfficiencyChipView::OnBubbleShown() {
+  PauseAnimation();
+}
+
+void HighEfficiencyChipView::OnBubbleHidden() {
+  UnpauseAnimation();
+  bubble_ = nullptr;
+}
+
+void HighEfficiencyChipView::UpdateImpl() {
+  content::WebContents* const web_contents = GetWebContents();
+  if (!web_contents) {
+    return;
+  }
+  TabDiscardTabHelper* const tab_helper =
+      TabDiscardTabHelper::FromWebContents(web_contents);
+  if (tab_helper->IsChipVisible()) {
+    SetVisible(true);
+
+    if (tab_helper->ShouldIconAnimate()) {
+      // Only animate the chip to the expanded view the first 3 times it is
+      // viewed.
+      PrefService* const pref_service = browser_->profile()->GetPrefs();
+      int times_rendered =
+          pref_service->GetInteger(prefs::kHighEfficiencyChipExpandedCount);
+      if (times_rendered < kChipAnimationCount) {
+        AnimateIn(IDS_HIGH_EFFICIENCY_CHIP_LABEL);
+        tab_helper->SetWasAnimated();
+        pref_service->SetInteger(prefs::kHighEfficiencyChipExpandedCount,
+                                 times_rendered + 1);
+      }
+    }
+  } else {
+    AnimateOut();
+    ResetSlideAnimation(false);
+    SetVisible(false);
+  }
+}
+
+void HighEfficiencyChipView::OnExecuting(
+    PageActionIconView::ExecuteSource execute_source) {
+  bubble_ = HighEfficiencyBubbleView::ShowBubble(browser_, this, this);
+}
+
+const gfx::VectorIcon& HighEfficiencyChipView::GetVectorIcon() const {
+  return kHighEfficiencyIcon;
+}
+
+views::BubbleDialogDelegate* HighEfficiencyChipView::GetBubble() const {
+  return bubble_;
+}
+
+std::u16string HighEfficiencyChipView::GetTextForTooltipAndAccessibleName()
+    const {
+  return l10n_util::GetStringUTF16(IDS_HIGH_EFFICIENCY_CHIP_ACCNAME);
+}
+
+BEGIN_METADATA(HighEfficiencyChipView, PageActionIconView)
+END_METADATA

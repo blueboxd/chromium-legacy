@@ -60,7 +60,7 @@ _CONFIG = [
             'base::AutoReset',
             'base::Contains',
             'base::ConditionVariable',
-            'base::CpuReductionExperimentFilter',
+            'base::ShouldLogHistogramForCpuReductionExperiment',
             'base::ValuesEquivalent',
             'base::Days',
             'base::DefaultTickClock',
@@ -82,13 +82,14 @@ _CONFIG = [
             "base::i18n::ToUCharPtr",
             'base::Location',
             'base::MakeRefCounted',
+            'base::MappedReadOnlyRegion',
             'base::MatcherStringPattern',
             'base::Microseconds',
             'base::Milliseconds',
             'base::Minutes',
             'base::Nanoseconds',
             'base::OptionalFromPtr',
-            'base::OptionalOrNullptr',
+            'base::OptionalToPtr',
             'base::PassKey',
             'base::PlatformThread',
             'base::PlatformThreadId',
@@ -275,6 +276,7 @@ _CONFIG = [
             'base::WithBaseSyncPrimitives',
             'base::ThreadPolicy',
             'base::ThreadPool',
+            'base::SingleThreadTaskRunnerThreadMode',
 
             # Byte order
             'base::ByteSwap',
@@ -660,9 +662,15 @@ _CONFIG = [
             'ui::AXMode',
             'ui::AXNodeData',
             'ui::AXRelativeBounds',
+            'ui::AXTreeData',
+            'ui::AXTreeSerializer',
+            'ui::AXTreeSource',
+            'ui::AXTreeUpdate',
             'ui::AXTreeID',
+            'ui::AXTreeIDUnknown',
             'ui::kAXModeBasic',
             'ui::kAXModeComplete',
+            'ui::ToString',
             'ax::mojom::BoolAttribute',
             'ax::mojom::HasPopup',
             'ax::mojom::State',
@@ -1126,6 +1134,7 @@ _CONFIG = [
             'third_party/blink/renderer/core/html/media/',
             'third_party/blink/renderer/modules/canvas/',
             'third_party/blink/renderer/modules/vr/',
+            'third_party/blink/renderer/modules/webcodecs/',
             'third_party/blink/renderer/modules/webgl/',
             'third_party/blink/renderer/modules/webgpu/',
             'third_party/blink/renderer/modules/xr/',
@@ -1467,6 +1476,17 @@ _CONFIG = [
     },
     {
         'paths': [
+            'third_party/blink/renderer/modules/accessibility',
+        ],
+        # These are necessary because BlinkAXTreeSource inherits from
+        # ui::AXTreeSource, which has these in its interface.
+        'allowed': [
+            'std::vector',
+            'std::set',
+        ],
+    },
+    {
+        'paths': [
             'third_party/blink/renderer/modules/animationworklet/',
         ],
         'allowed': [
@@ -1671,8 +1691,10 @@ _CONFIG = [
     {
         'paths': [
             'third_party/blink/renderer/core/frame/local_frame_mojo_handler.cc',
-            'third_party/blink/renderer/core/frame/local_frame_mojo_handler.h'
+            'third_party/blink/renderer/core/frame/local_frame_mojo_handler.h',
+            'third_party/blink/renderer/core/frame/pausable_script_executor.cc',
         ],
+        # base::Value is used as a part of script evaluation APIs.
         'allowed': ['base::Value'],
     },
     {

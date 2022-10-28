@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -28,6 +28,12 @@ ChromeVoxEditingTest = class extends ChromeVoxNextE2ETest {
     await importModule(
         'TtsBackground', '/chromevox/background/tts_background.js');
     await importModule('KeyCode', '/common/key_code.js');
+    await importModule(
+        'BrailleCommandHandler',
+        '/chromevox/background/braille/braille_command_handler.js');
+    await importModule(
+        ['BrailleKeyEvent', 'BrailleKeyCommand'],
+        '/chromevox/common/braille/braille_key_types.js');
   }
 
   press(keyCode, modifiers) {
@@ -49,6 +55,12 @@ ChromeVoxEditingTest = class extends ChromeVoxNextE2ETest {
     input.focus();
     await this.waitForEvent(input, EventType.FOCUS);
     return input;
+  }
+
+  routeBraille(mockFeedback, position) {
+    BrailleCommandHandler.onBrailleKeyEvent(
+        {command: BrailleKeyCommand.ROUTING, displayPosition: position},
+        mockFeedback.lastMatchedBraille);
   }
 };
 
@@ -1988,7 +2000,8 @@ AX_TEST_F(
       await mockFeedback.replay();
     });
 
-AX_TEST_F('ChromeVoxEditingTest', 'TableNavigation', async function() {
+// crbug.com/1356181 Disable due to flaky.
+AX_TEST_F('ChromeVoxEditingTest', 'DISABLED_TableNavigation', async function() {
   const mockFeedback = this.createMockFeedback();
   const site = `
     <div contenteditable role="textbox" tabindex=0>
@@ -2375,3 +2388,73 @@ AX_TEST_F('ChromeVoxEditingTest', 'GiantTextAreaPerformance', async function() {
 
       .replay();
 });
+
+AX_TEST_F(
+    'ChromeVoxEditingTest', 'BrailleMoveByCharacterWord', async function() {
+      const mockFeedback = this.createMockFeedback();
+      const site = `
+    <p>start</p>
+    <div role="textbox" contenteditable><p>this is a test</p></div>
+  `;
+      const root = await this.runWithLoadedTree(site);
+      await this.focusFirstTextField(root);
+
+      const doBrailleEditCommand = command => () =>
+          BrailleCommandHandler.onEditCommand_(command);
+      const route = position => () => this.routeBraille(mockFeedback, position);
+
+      const textField = root.find({role: RoleType.TEXT_FIELD});
+      mockFeedback.expectSpeech('Text area')
+          .expectBraille('this is a test mled', {startIndex: -1, endIndex: -1})
+
+          .call(doBrailleEditCommand('nextWord'))
+          .expectSpeech('this')
+          .expectBraille('this is a test mled', {startIndex: 4, endIndex: 4})
+
+          .call(doBrailleEditCommand('nextWord'))
+          .expectSpeech('is')
+          .expectBraille('this is a test mled', {startIndex: 7, endIndex: 7})
+
+          .call(doBrailleEditCommand('nextWord'))
+          .expectSpeech('a')
+          .expectBraille('this is a test mled', {startIndex: 9, endIndex: 9})
+
+          .call(doBrailleEditCommand('previousWord'))
+          .expectSpeech('a')
+          .expectBraille('this is a test mled', {startIndex: 8, endIndex: 8})
+
+          .call(doBrailleEditCommand('previousWord'))
+          .expectSpeech('is')
+          .expectBraille('this is a test mled', {startIndex: 5, endIndex: 5})
+
+          .call(doBrailleEditCommand('previousCharacter'))
+          .expectSpeech(' ')
+          .expectBraille('this is a test mled', {startIndex: 4, endIndex: 4})
+
+
+          .call(doBrailleEditCommand('previousCharacter'))
+          .expectSpeech('s')
+          .expectBraille('this is a test mled', {startIndex: 3, endIndex: 3})
+
+          .call(doBrailleEditCommand('previousCharacter'))
+          .expectSpeech('i')
+          .expectBraille('this is a test mled', {startIndex: 2, endIndex: 2})
+
+          .call(doBrailleEditCommand('nextCharacter'))
+          .expectSpeech('s')
+          .expectBraille('this is a test mled', {startIndex: 3, endIndex: 3})
+
+          .call(route(0))
+          .expectSpeech('t')
+          .expectBraille('this is a test mled', {startIndex: 0, endIndex: 0})
+
+          .call(route(6))
+          .expectSpeech('s')
+          .expectBraille('this is a test mled', {startIndex: 6, endIndex: 6})
+
+          .call(route(7))
+          .expectSpeech(' ')
+          .expectBraille('this is a test mled', {startIndex: 7, endIndex: 7});
+
+      await mockFeedback.replay();
+    });

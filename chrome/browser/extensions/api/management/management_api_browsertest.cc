@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -287,7 +287,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementApiBrowserTest,
       test_utils::RunFunctionAndReturnSingleResult(function.get(), "[]",
                                                    browser()));
   ASSERT_TRUE(result->is_list());
-  EXPECT_EQ(1U, result->GetListDeprecated().size());
+  EXPECT_EQ(1U, result->GetList().size());
 
   // And it should continue to do so even after it crashes.
   ASSERT_TRUE(CrashEnabledExtension(extension->id()));
@@ -296,7 +296,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementApiBrowserTest,
   result = test_utils::RunFunctionAndReturnSingleResult(function.get(), "[]",
                                                         browser());
   ASSERT_TRUE(result->is_list());
-  EXPECT_EQ(1U, result->GetListDeprecated().size());
+  EXPECT_EQ(1U, result->GetList().size());
 }
 
 class ExtensionManagementApiEscalationTest :

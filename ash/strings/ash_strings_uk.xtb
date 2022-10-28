@@ -28,7 +28,6 @@
 <translation id="1111021433905331574">Щоб змінити колір підсвічування клавіатури, перейдіть у налаштування &gt; <ph name="APP_TITLE" /></translation>
 <translation id="112308213915226829">Автоматично ховати панель запуску</translation>
 <translation id="1142002900084379065">Останні фотографії</translation>
-<translation id="114451698114044150">Автомасштабування ввімкнено.</translation>
 <translation id="1148499908455722006">Відкрити вікно з інформацією про обліковий запис <ph name="USER_NAME" /></translation>
 <translation id="1150989369772528668">Календар</translation>
 <translation id="1153356358378277386">Підключені пристрої</translation>
@@ -330,7 +329,6 @@
 <translation id="2894949423239620203">Через кабель може знизитися продуктивність</translation>
 <translation id="2903844815300039659">Під’єдано до мережі "<ph name="NAME" />", <ph name="STRENGTH" /></translation>
 <translation id="2914580577416829331">Знімки екрана</translation>
-<translation id="2925246975070834767">Щоб ваше обличчя було в центрі екрана, спробуйте автомасштабування. Увімкніть цю функцію в меню "Швидкі налаштування".</translation>
 <translation id="2941112035454246133">Низький</translation>
 <translation id="2942350706960889382">Закріплена лупа</translation>
 <translation id="2942516765047364088">Розташування полиці</translation>
@@ -474,7 +472,6 @@
 <translation id="3708186454126126312">Підключені раніше</translation>
 <translation id="371370241367527062">Мікрофон на передній панелі</translation>
 <translation id="3713734891607377840">Відкриється після завершення</translation>
-<translation id="3724279623330129812">Автомасштабування по центру кадру камери</translation>
 <translation id="3726171378575546917">На цьому пристрої не встановлено додатки <ph name="UNAVAILABLE_APPS_ONE" />, <ph name="UNAVAILABLE_APPS_TWO" /> і ще <ph name="UNAVAILABLE_APPS_COUNT" />.</translation>
 <translation id="3735740477244556633">Параметри сортування</translation>
 <translation id="3742055079367172538">Знімок екрана зроблено</translation>
@@ -508,6 +505,7 @@
 <translation id="3922427723338465344">{0,plural, =1{Поверніться до попередньої версії на пристрої протягом 1 хвилини}one{Поверніться до попередньої версії на пристрої протягом # хвилини}few{Поверніться до попередньої версії на пристрої протягом # хвилин}many{Поверніться до попередньої версії на пристрої протягом # хвилин}other{Поверніться до попередньої версії на пристрої протягом # хвилини}}</translation>
 <translation id="3923494859158167397">Мобільні мережі не налаштовано</translation>
 <translation id="3925540965556789199"><ph name="DATE" />, завантаження подій.</translation>
+<translation id="392627956579011934">Щоб установити файли для розпізнавання мовлення, перезапустіть ОС.</translation>
 <translation id="3932043219784172185">Немає підключених пристроїв</translation>
 <translation id="3934456833412894880">Адаптивне заряджання ввімкнено. Заряд акумулятора підтримуватиметься на рівні 80%, щоб подовжити час роботи. Акумулятор повністю зарядиться до того, як вам знадобиться пристрій.</translation>
 <translation id="3943857333388298514">Вставити</translation>
@@ -562,6 +560,7 @@
 <translation id="4242533952199664413">Відкрити налаштування</translation>
 <translation id="4247123849143712100">Оновити й завершити роботу</translation>
 <translation id="4250229828105606438">Знімок екрана</translation>
+<translation id="4250899820387052060">Швидкі файли</translation>
 <translation id="425364040945105958">Немає SIM-карти</translation>
 <translation id="4261870227682513959">Показати налаштування сповіщень. Сповіщення вимкнено</translation>
 <translation id="4269883910223712419">Адміністратор цього пристрою може:</translation>
@@ -746,6 +745,7 @@
 <translation id="5283198616748585639">Додати 1 хв</translation>
 <translation id="528468243742722775">Завершити</translation>
 <translation id="5286194356314741248">Сканування</translation>
+<translation id="5293671101077843611">Сьогодні немає подій</translation>
 <translation id="5297423144044956168">Мобільних пристроїв не знайдено</translation>
 <translation id="5297704307811127955">Вимкнено</translation>
 <translation id="5300589172476337783">Показати</translation>
@@ -908,7 +908,6 @@
 <translation id="6137566720514957455">Відкрити вікно видалення облікового запису <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="6141988275892716286">Підтвердити завантаження</translation>
 <translation id="6154006699632741460">Периферійний пристрій не підтримується</translation>
-<translation id="6156262341071374681">Розгорнути всі додатки</translation>
 <translation id="615957422585914272">Показувати екранну клавіатуру</translation>
 <translation id="6165508094623778733">Докладніше</translation>
 <translation id="6166852626429024716">Шукайте на пристрої, в додатках, налаштуваннях та Інтернеті…</translation>
@@ -1032,7 +1031,6 @@
 <translation id="685782768769951078">{NUM_DIGITS,plural, =1{Залишилась одна цифра}one{Залишилася # цифра}few{Залишилося # цифри}many{Залишилося # цифр}other{Залишилося # цифри}}</translation>
 <translation id="6867938213751067702">Завантаження файлу <ph name="FILENAME" /> призупинено</translation>
 <translation id="6878400149835617132">Комбінацію клавіш вимкнено</translation>
-<translation id="6878709625737492815">Автомасштабування вимкнено.</translation>
 <translation id="6884665277231944629">Повернутися до сьогоднішнього дня</translation>
 <translation id="6886172995547742638">Продуктивність пристрою <ph name="DEVICE_TYPE" /> може знизитися. Використовуйте сертифікований адаптер живлення USB-C на <ph name="PREFERRED_MINIMUM_POWER" /> Вт або більше.</translation>
 <translation id="688631446150864480">Щоб переходити між вікнами, використовуйте клавішу зі стрілкою вниз</translation>
@@ -1198,7 +1196,6 @@
 <translation id="7868900307798234037">Розблокування відбитком</translation>
 <translation id="7872195908557044066">Адміністратор скидає вашу eSIM-карту. Зачекайте кілька хвилин.</translation>
 <translation id="7872786842639831132">Вимкнено</translation>
-<translation id="7875280185395705476">Автомасштаб.</translation>
 <translation id="7875575368831396199">Схоже, на пристрої <ph name="DEVICE_TYPE" /> вимкнено Bluetooth. Увімкніть його, щоб скористатися функцією "Керування телефоном".</translation>
 <translation id="7877557217297072640">{0,plural, =0{Поверніться до попередньої версії на пристрої негайно}=1{Поверніться до попередньої версії на пристрої протягом 1 секунди}one{Поверніться до попередньої версії на пристрої протягом # секунди}few{Поверніться до попередньої версії на пристрої протягом # секунд}many{Поверніться до попередньої версії на пристрої протягом # секунд}other{Поверніться до попередньої версії на пристрої протягом # секунди}}</translation>
 <translation id="7886169021410746335">змінювати налаштування конфіденційності.</translation>
@@ -1254,6 +1251,7 @@
 <translation id="8152264887680882389"><ph name="TEXT" />: автозавершення</translation>
 <translation id="8155007568264258537"><ph name="FEATURE_NAME" /> Цим налаштуванням керує адміністратор.</translation>
 <translation id="8155628902202578800">Відкрити вікно з інформацією про обліковий запис <ph name="USER_EMAIL_ADDRESS" /></translation>
+<translation id="8157728322324420120">Пропозиції для вас</translation>
 <translation id="8167567890448493835">Використовується: <ph name="LOCALE_NAME" /></translation>
 <translation id="8183592608247778598">Переглядайте нещодавно додані на телефон фотографії, медіафайли, сповіщення й додатки на пристрої <ph name="DEVICE_TYPE" /></translation>
 <translation id="8192202700944119416">Сповіщення сховано.</translation>
@@ -1321,7 +1319,6 @@
 <translation id="856298576161209842"><ph name="MANAGER" /> радить оновити пристрій <ph name="DEVICE_TYPE" /></translation>
 <translation id="8563862697512465947">Налаштування сповіщення</translation>
 <translation id="857201607579416096">Меню переміщено в нижній правий кут екрана.</translation>
-<translation id="8576288697319745668">Увімкнути або вимкнути автомасштабування. <ph name="STATE_TEXT" /></translation>
 <translation id="8594115950068821369">-<ph name="FORMATTED_TIME" /></translation>
 <translation id="8598235756057743477">Сортуйте додатки за назвою чи кольором</translation>
 <translation id="8614517853887502247">Сповіщення з додатків <ph name="APP_1_TITLE" /> і <ph name="APP_2_TITLE" /> приховано, оскільки ввімкнено безпечний перегляд</translation>
@@ -1433,6 +1430,7 @@
 <translation id="9211490828691860325">Усі робочі столи</translation>
 <translation id="9211681782751733685">До повного зарядження акумулятора залишилося <ph name="TIME_REMAINING" />.</translation>
 <translation id="9215934040295798075">Вибрати фоновий малюнок</translation>
+<translation id="9219103736887031265">Зображення</translation>
 <translation id="921989828232331238">Батьки заблокували твій пристрій на весь день</translation>
 <translation id="9220525904950070496">Видалення облікового запису</translation>
 <translation id="923686485342484400">Щоб вийти, двічі натисніть Control Shift Q.</translation>

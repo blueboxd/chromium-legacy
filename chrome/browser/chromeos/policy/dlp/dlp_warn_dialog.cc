@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,12 +9,15 @@
 #include <utility>
 
 #include "build/chromeos_buildflags.h"
+#include "chrome/browser/ash/policy/dlp/dlp_files_controller.h"
 #include "chrome/browser/chromeos/policy/dlp/dlp_confidential_contents.h"
+#include "chrome/browser/chromeos/policy/dlp/dlp_rules_manager.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/vector_icons/vector_icons.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/base/ui_base_types.h"
+#include "ui/chromeos/strings/grit/ui_chromeos_strings.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/controls/image_view.h"
@@ -79,10 +82,100 @@ constexpr int kConfidentialContentLineHeight = 20;
 // This can hold seven rows.
 constexpr int kConfidentialContentListMaxHeight = 240;
 
+// Returns the destination name for |dst_component|
+const std::u16string GetDestinationForFiles(
+    DlpRulesManager::Component dst_component) {
+  switch (dst_component) {
+    case DlpRulesManager::Component::kArc:
+      return l10n_util::GetStringUTF16(
+          IDS_FILE_BROWSER_ANDROID_FILES_ROOT_LABEL);
+    case DlpRulesManager::Component::kCrostini:
+      return l10n_util::GetStringUTF16(IDS_FILE_BROWSER_LINUX_FILES_ROOT_LABEL);
+    case DlpRulesManager::Component::kPluginVm:
+      return l10n_util::GetStringUTF16(
+          IDS_FILE_BROWSER_PLUGIN_VM_DIRECTORY_LABEL);
+    case DlpRulesManager::Component::kUsb:
+      return l10n_util::GetStringUTF16(
+          IDS_POLICY_DLP_FILES_DESTINATION_REMOVABLE_STORAGE);
+    case DlpRulesManager::Component::kDrive:
+      return l10n_util::GetStringUTF16(IDS_FILE_BROWSER_DRIVE_DIRECTORY_LABEL);
+    case DlpRulesManager::Component::kUnknownComponent:
+      NOTREACHED();
+      return u"";
+  }
+}
+
+// Returns the OK button label for |files_action|.
+const std::u16string GetDialogButtonOkLabelForFiles(
+    DlpFilesController::FileAction files_action) {
+  switch (files_action) {
+    case DlpFilesController::FileAction::kDownload:
+      return l10n_util::GetStringUTF16(
+          IDS_POLICY_DLP_FILES_DOWNLOAD_WARN_CONTINUE_BUTTON);
+    case DlpFilesController::FileAction::kTransfer:
+    case DlpFilesController::FileAction::kUnknown:  // TODO(crbug.com/1361900)
+                                                    // Set proper text when file
+                                                    // action is unknown
+      return l10n_util::GetStringUTF16(
+          IDS_POLICY_DLP_FILES_TRANSFER_WARN_CONTINUE_BUTTON);
+  }
+}
+
+// Returns the title for |files_action|.
+const std::u16string GetTitleForFiles(
+    DlpFilesController::FileAction files_action,
+    int files_number) {
+  switch (files_action) {
+    case DlpFilesController::FileAction::kDownload:
+      return l10n_util::GetPluralStringFUTF16(
+          // Download action is only allowed for one file.
+          IDS_POLICY_DLP_FILES_DOWNLOAD_WARN_TITLE, 1);
+    case DlpFilesController::FileAction::kTransfer:
+    case DlpFilesController::FileAction::kUnknown:  // TODO(crbug.com/1361900)
+                                                    // Set proper text when file
+                                                    // action is unknown
+      return l10n_util::GetPluralStringFUTF16(
+          IDS_POLICY_DLP_FILES_TRANSFER_WARN_TITLE, files_number);
+  }
+}
+
+// Returns the message for |files_action|.
+const std::u16string GetMessageForFiles(
+    const DlpWarnDialog::DlpWarnDialogOptions& options) {
+  DCHECK(options.files_action.has_value());
+  switch (options.files_action.value()) {
+    case DlpFilesController::FileAction::kDownload:
+      return base::ReplaceStringPlaceholders(
+          l10n_util::GetPluralStringFUTF16(
+              // Download action is only allowed for one file.
+              IDS_POLICY_DLP_FILES_DOWNLOAD_WARN_MESSAGE, 1),
+          GetDestinationForFiles(options.destination_component.value()),
+          /*offset=*/nullptr);
+    case DlpFilesController::FileAction::kTransfer:
+    case DlpFilesController::FileAction::kUnknown:  // TODO(crbug.com/1361900)
+                                                    // Set proper text when file
+                                                    // action is unknown
+      std::u16string destination;
+      if (options.destination_component.has_value()) {
+        destination =
+            GetDestinationForFiles(options.destination_component.value());
+      } else {
+        DCHECK(!options.destination_pattern->empty());
+        destination = base::UTF8ToUTF16(options.destination_pattern.value());
+      }
+      return base::ReplaceStringPlaceholders(
+          l10n_util::GetPluralStringFUTF16(
+              IDS_POLICY_DLP_FILES_TRANSFER_WARN_MESSAGE,
+              options.confidential_contents.GetContents().size()),
+          destination,
+          /*offset=*/nullptr);
+  }
+}
+
 // Returns the OK button label for |restriction|.
 const std::u16string GetDialogButtonOkLabel(
-    DlpWarnDialog::Restriction restriction) {
-  switch (restriction) {
+    DlpWarnDialog::DlpWarnDialogOptions options) {
+  switch (options.restriction) {
     case DlpWarnDialog::Restriction::kScreenCapture:
       return l10n_util::GetStringUTF16(
           IDS_POLICY_DLP_SCREEN_CAPTURE_WARN_CONTINUE_BUTTON);
@@ -95,6 +188,9 @@ const std::u16string GetDialogButtonOkLabel(
     case DlpWarnDialog::Restriction::kScreenShare:
       return l10n_util::GetStringUTF16(
           IDS_POLICY_DLP_SCREEN_SHARE_WARN_CONTINUE_BUTTON);
+    case DlpWarnDialog::Restriction::kFiles:
+      DCHECK(options.files_action.has_value());
+      return GetDialogButtonOkLabelForFiles(options.files_action.value());
   }
 }
 
@@ -102,24 +198,20 @@ const std::u16string GetDialogButtonOkLabel(
 const std::u16string GetDialogButtonCancelLabel(
     DlpWarnDialog::Restriction restriction) {
   switch (restriction) {
-    case DlpWarnDialog::Restriction::kScreenCapture:
-      return l10n_util::GetStringUTF16(
-          IDS_POLICY_DLP_SCREEN_CAPTURE_WARN_CANCEL_BUTTON);
     case DlpWarnDialog::Restriction::kVideoCapture:
       return l10n_util::GetStringUTF16(
           IDS_POLICY_DLP_VIDEO_CAPTURE_WARN_CANCEL_BUTTON);
+    case DlpWarnDialog::Restriction::kScreenCapture:
     case DlpWarnDialog::Restriction::kPrinting:
-      return l10n_util::GetStringUTF16(
-          IDS_POLICY_DLP_PRINTING_WARN_CANCEL_BUTTON);
     case DlpWarnDialog::Restriction::kScreenShare:
-      return l10n_util::GetStringUTF16(
-          IDS_POLICY_DLP_SCREEN_SHARE_WARN_CANCEL_BUTTON);
+    case DlpWarnDialog::Restriction::kFiles:
+      return l10n_util::GetStringUTF16(IDS_POLICY_DLP_WARN_CANCEL_BUTTON);
   }
 }
 
 // Returns the title for |restriction|.
-const std::u16string GetTitle(DlpWarnDialog::Restriction restriction) {
-  switch (restriction) {
+const std::u16string GetTitle(DlpWarnDialog::DlpWarnDialogOptions options) {
+  switch (options.restriction) {
     case DlpWarnDialog::Restriction::kScreenCapture:
       return l10n_util::GetStringUTF16(
           IDS_POLICY_DLP_SCREEN_CAPTURE_WARN_TITLE);
@@ -129,6 +221,11 @@ const std::u16string GetTitle(DlpWarnDialog::Restriction restriction) {
       return l10n_util::GetStringUTF16(IDS_POLICY_DLP_PRINTING_WARN_TITLE);
     case DlpWarnDialog::Restriction::kScreenShare:
       return l10n_util::GetStringUTF16(IDS_POLICY_DLP_SCREEN_SHARE_WARN_TITLE);
+    case DlpWarnDialog::Restriction::kFiles:
+      DCHECK(options.files_action.has_value());
+      return GetTitleForFiles(
+          options.files_action.value(),
+          options.confidential_contents.GetContents().size());
   }
 }
 
@@ -148,6 +245,9 @@ const std::u16string GetMessage(DlpWarnDialog::DlpWarnDialogOptions options) {
       return l10n_util::GetStringFUTF16(
           IDS_POLICY_DLP_SCREEN_SHARE_WARN_MESSAGE,
           options.application_title.value());
+    case DlpWarnDialog::Restriction::kFiles:
+      DCHECK(options.files_action.has_value());
+      return GetMessageForFiles(options);
   }
 }
 
@@ -184,7 +284,7 @@ void AddGeneralInformation(views::View* upper_panel,
                                                kManagedIconSize, color));
 
   views::Label* title_label = upper_panel->AddChildView(
-      std::make_unique<views::Label>(GetTitle(options.restriction)));
+      std::make_unique<views::Label>(GetTitle(options)));
   title_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   title_label->SetAllowCharacterBreak(true);
 // TODO(crbug.com/1261496) Enable dynamic UI color & theme in lacros
@@ -309,6 +409,18 @@ DlpWarnDialog::DlpWarnDialogOptions::DlpWarnDialogOptions(
 }
 
 DlpWarnDialog::DlpWarnDialogOptions::DlpWarnDialogOptions(
+    Restriction restriction,
+    DlpConfidentialContents confidential_contents,
+    absl::optional<DlpRulesManager::Component> dst_component,
+    const std::string& destination_pattern,
+    DlpFilesController::FileAction files_action)
+    : restriction(restriction),
+      confidential_contents(confidential_contents),
+      destination_component(dst_component),
+      destination_pattern(destination_pattern),
+      files_action(files_action) {}
+
+DlpWarnDialog::DlpWarnDialogOptions::DlpWarnDialogOptions(
     const DlpWarnDialogOptions& other) = default;
 
 DlpWarnDialog::DlpWarnDialogOptions&
@@ -326,8 +438,7 @@ DlpWarnDialog::DlpWarnDialog(OnDlpRestrictionCheckedCallback callback,
   SetModalType(ui::MODAL_TYPE_SYSTEM);
 
   SetShowCloseButton(false);
-  SetButtonLabel(ui::DIALOG_BUTTON_OK,
-                 GetDialogButtonOkLabel(options.restriction));
+  SetButtonLabel(ui::DIALOG_BUTTON_OK, GetDialogButtonOkLabel(options));
   SetButtonLabel(ui::DIALOG_BUTTON_CANCEL,
                  GetDialogButtonCancelLabel(options.restriction));
 

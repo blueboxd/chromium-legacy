@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,7 +10,6 @@
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/strings/strcat.h"
-#include "base/test/bind.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_run_loop_timeout.h"
@@ -24,6 +23,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_key.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/profiles/profile_test_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -758,21 +758,9 @@ IN_PROC_BROWSER_TEST_F(PredictionManagerModelDownloadingBrowserTest,
   ProfileManager* profile_manager = g_browser_process->profile_manager();
   base::FilePath other_path =
       profile_manager->GenerateNextProfileDirectoryPath();
-
-  base::RunLoop run_loop;
-
   // Create an additional profile.
-  profile_manager->CreateProfileAsync(
-      other_path,
-      base::BindLambdaForTesting(
-          [&run_loop](Profile* profile, Profile::CreateStatus status) {
-            if (status == Profile::CREATE_STATUS_INITIALIZED)
-              run_loop.Quit();
-          }));
-
-  run_loop.Run();
-
-  Profile* profile = profile_manager->GetProfileByPath(other_path);
+  Profile* profile =
+      profiles::testing::CreateProfileSync(profile_manager, other_path);
   ASSERT_TRUE(profile);
   CreateBrowser(profile);
 }

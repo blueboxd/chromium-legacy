@@ -130,7 +130,8 @@ void WorkerMainScriptLoader::OnReceiveEarlyHints(
 
 void WorkerMainScriptLoader::OnReceiveResponse(
     network::mojom::URLResponseHeadPtr response_head,
-    mojo::ScopedDataPipeConsumerHandle handle) {
+    mojo::ScopedDataPipeConsumerHandle handle,
+    absl::optional<mojo_base::BigBuffer> cached_metadata) {
   // This has already happened in the browser process.
   NOTREACHED();
 }
@@ -150,9 +151,6 @@ void WorkerMainScriptLoader::OnUploadProgress(
   NOTREACHED();
 }
 
-void WorkerMainScriptLoader::OnReceiveCachedMetadata(
-    mojo_base::BigBuffer data) {}
-
 void WorkerMainScriptLoader::OnTransferSizeUpdated(int32_t transfer_size_diff) {
 }
 
@@ -162,10 +160,10 @@ void WorkerMainScriptLoader::OnComplete(
     has_seen_end_of_data_ = true;
 
   // Reports resource timing info for the worker main script.
-  scoped_refptr<ResourceTimingInfo> timing_info =
-      ResourceTimingInfo::Create(g_empty_atom, base::TimeTicks::Now(),
-                                 initial_request_.GetRequestContext(),
-                                 initial_request_.GetRequestDestination());
+  scoped_refptr<ResourceTimingInfo> timing_info = ResourceTimingInfo::Create(
+      g_empty_atom, base::TimeTicks::Now(),
+      initial_request_.GetRequestContext(),
+      initial_request_.GetRequestDestination(), initial_request_.GetMode());
   timing_info->SetInitialURL(initial_request_url_);
   timing_info->SetFinalResponse(resource_response_);
   timing_info->SetLoadResponseEnd(status.completion_time);

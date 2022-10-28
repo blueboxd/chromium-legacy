@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -247,10 +247,10 @@ class ArcInputMethodManagerService::InputMethodEngineObserver
       // events here to make sure that Android side receives "keyup" events
       // always to prevent never-ending key repeat from happening.
       owner_->SendHideVirtualKeyboard();
-      std::move(key_data).Run(true);
+      std::move(key_data).Run(ui::ime::KeyEventHandledState::kHandledByIME);
       return;
     }
-    std::move(key_data).Run(false);
+    std::move(key_data).Run(ui::ime::KeyEventHandledState::kNotHandled);
   }
   void OnReset(const std::string& engine_id) override {}
   void OnDeactivated(const std::string& engine_id) override {

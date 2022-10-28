@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -24,7 +24,7 @@ class RepostFormTabHelper : public web::WebStateUserData<RepostFormTabHelper>,
 
   ~RepostFormTabHelper() override;
 
-  // Presents a repost form dialog at the given |location|. |callback| is called
+  // Presents a repost form dialog at the given `location`. `callback` is called
   // with true if the repost was confirmed and with false if it was cancelled.
   void PresentDialog(CGPoint location, base::OnceCallback<void(bool)> callback);
 

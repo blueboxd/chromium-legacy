@@ -1,4 +1,4 @@
-# Copyright 2021 The Chromium Authors. All rights reserved.
+# Copyright 2021 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 """Definitions of builders in the chromium.fuzz builder group."""
@@ -17,6 +17,7 @@ ci.defaults.set(
     execution_timeout = 10 * time.hour,
     goma_backend = goma.backend.RBE_PROD,
     pool = ci.DEFAULT_POOL,
+    priority = ci.DEFAULT_FYI_PRIORITY,
     service_account = ci.DEFAULT_SERVICE_ACCOUNT,
 )
 
@@ -339,13 +340,13 @@ ci.builder(
     console_view_entry = [
         consoles.console_view_entry(
             category = "fuchsia|x64",
-            short_name = "wst",
+            short_name = "work",
         ),
         consoles.console_view_entry(
             branch_selector = branches.MAIN,
             console_view = "sheriff.fuchsia",
             category = "fyi",
-            short_name = "wst",
+            short_name = "work",
         ),
     ],
     notifies = ["cr-fuchsia"],
@@ -393,6 +394,43 @@ ci.builder(
         ),
         skylab_upload_location = builder_config.skylab_upload_location(
             gs_bucket = "lacros-amd64-generic-rel-skylab-try",
+        ),
+        test_results_config = builder_config.test_results_config(
+            config = "staging_server",
+        ),
+        build_gs_bucket = "chromium-fyi-archive",
+    ),
+)
+
+ci.builder(
+    name = "lacros-arm64-generic-rel-skylab-fyi",
+    console_view_entry = consoles.console_view_entry(
+        category = "lacros",
+        short_name = "larsf",
+    ),
+    os = os.LINUX_DEFAULT,
+    # Some tests on this bot depend on being unauthenticated with GS, so
+    # don't run the tests inside a luci-auth context to avoid having the
+    # BOTO config setup for the task's service account.
+    # TODO(crbug.com/1217155): Fix this.
+    builder_spec = builder_config.builder_spec(
+        chromium_config = builder_config.chromium_config(
+            config = "chromium",
+            apply_configs = ["mb", "mb_no_luci_auth"],
+            target_bits = 64,
+            target_cros_boards = "kevin",
+            cros_boards_with_qemu_images = "arm64-generic",
+            target_platform = "chromeos",
+        ),
+        gclient_config = builder_config.gclient_config(
+            config = "chromium",
+            apply_configs = [
+                "chromeos",
+                "checkout_lacros_sdk",
+            ],
+        ),
+        skylab_upload_location = builder_config.skylab_upload_location(
+            gs_bucket = "lacros-arm64-generic-rel-skylab-try",
         ),
         test_results_config = builder_config.test_results_config(
             config = "staging_server",
@@ -468,6 +506,36 @@ ci.builder(
             ],
         },
     },
+)
+
+ci.builder(
+    name = "linux-lacros-tester-rel-reviver",
+    builder_spec = builder_config.builder_spec(
+        gclient_config = builder_config.gclient_config(
+            config = "chromium_no_telemetry_dependencies",
+            apply_configs = [
+                "chromeos",
+            ],
+        ),
+        chromium_config = builder_config.chromium_config(
+            config = "chromium",
+            apply_configs = [
+                "mb",
+            ],
+            build_config = builder_config.build_config.RELEASE,
+            target_arch = builder_config.target_arch.INTEL,
+            target_bits = 64,
+        ),
+        build_gs_bucket = "chromium-chromiumos-archive",
+    ),
+    console_view_entry = consoles.console_view_entry(
+        category = "default",
+        short_name = "rev",
+    ),
+    os = os.LINUX_DEFAULT,
+    # To avoid peak hours, we run it from 8PM TO 4AM PST. It is
+    # 3 AM to 11 AM UTC.
+    schedule = "0 3,5,7,9 * * *",
 )
 
 ci.builder(
@@ -689,6 +757,29 @@ ci.builder(
 )
 
 ci.builder(
+    name = "linux-wpt-content-shell-fyi-rel",
+    console_view_entry = consoles.console_view_entry(
+        category = "linux",
+    ),
+    experimental = True,
+    os = os.LINUX_DEFAULT,
+    goma_backend = None,
+    reclient_jobs = reclient.jobs.DEFAULT,
+    reclient_instance = reclient.instance.DEFAULT_TRUSTED,
+    builder_spec = builder_config.builder_spec(
+        chromium_config = builder_config.chromium_config(
+            config = "chromium",
+            apply_configs = ["mb"],
+            build_config = builder_config.build_config.RELEASE,
+            target_bits = 64,
+        ),
+        gclient_config = builder_config.gclient_config(
+            config = "chromium",
+        ),
+    ),
+)
+
+ci.builder(
     name = "linux-wpt-fyi-rel",
     console_view_entry = consoles.console_view_entry(
         category = "linux",
@@ -722,6 +813,32 @@ ci.builder(
     goma_backend = None,
     reclient_jobs = reclient.jobs.DEFAULT,
     reclient_instance = reclient.instance.DEFAULT_TRUSTED,
+)
+
+fyi_ios_builder(
+    name = "ios-wpt-fyi-rel",
+    builderless = False,
+    # TODO(crbug.com/1351820): Enable scheduler when machine has been allocated.
+    schedule = "triggered",
+    triggered_by = [],
+    console_view_entry = consoles.console_view_entry(
+        category = "mac",
+    ),
+    builder_spec = builder_config.builder_spec(
+        chromium_config = builder_config.chromium_config(
+            config = "chromium",
+            apply_configs = [
+                "mb",
+                "mac_toolchain",
+            ],
+            build_config = builder_config.build_config.RELEASE,
+            target_bits = 64,
+            target_platform = "ios",
+        ),
+        gclient_config = builder_config.gclient_config(
+            config = "ios",
+        ),
+    ),
 )
 
 # This is launching & collecting entirely isolated tests.
@@ -980,6 +1097,24 @@ ci.builder(
 )
 
 ci.builder(
+    name = "Comparison Mac arm64 on arm64 (reclient)",
+    builderless = True,
+    console_view_entry = consoles.console_view_entry(
+        category = "mac",
+        short_name = "cmp",
+    ),
+    goma_jobs = 250,
+    executable = "recipe:reclient_goma_comparison",
+    execution_timeout = 10 * time.hour,
+    reclient_cache_silo = "Comparison Mac - cache siloed",
+    reclient_instance = reclient.instance.TEST_TRUSTED,
+    reclient_jobs = 250,
+    os = os.MAC_DEFAULT,
+    cores = None,
+    cpu = cpu.ARM64,
+)
+
+ci.builder(
     name = "Comparison Windows (8 cores) (reclient)",
     builderless = True,
     console_view_entry = consoles.console_view_entry(
@@ -1124,6 +1259,7 @@ This builder measures Windows build performance with goma vs reclient in cq conf
 The bot specs should be in sync with <a href="https://ci.chromium.org/p/chromium/builders/try/win10_chromium_x64_rel_ng-compilator">win10_chromium_x64_rel_ng-compilator</a>.\
 """,
     goma_jobs = 300,
+    goma_enable_ats = False,
     executable = "recipe:reclient_goma_comparison",
     execution_timeout = 6 * time.hour,
     reclient_cache_silo = "Comparison Windows CQ - cache siloed",
@@ -1344,6 +1480,46 @@ ci.builder(
     reclient_ensure_verified = True,
     os = os.LINUX_DEFAULT,
     execution_timeout = 14 * time.hour,
+)
+
+ci.builder(
+    name = "Linux Builder (py2 less)",
+    description_html = "This is mirror of <a href=\"https://ci.chromium.org/p/chromium/builders/ci/Linux%20Builder\">Linux Builder</a>, but runs on bots not having python2.",
+    builder_spec = builder_config.copy_from("ci/Linux Builder", lambda spec: structs.evolve(
+        spec,
+        build_gs_bucket = "chromium-fyi-archive",
+    )),
+    builderless = True,
+    console_view_entry = consoles.console_view_entry(
+        category = "lin",
+        short_name = "py3",
+    ),
+    cores = 8,
+    goma_backend = None,
+    reclient_instance = reclient.instance.DEFAULT_TRUSTED,
+    os = os.LINUX_DEFAULT,
+    experiments = {
+        "luci.buildbucket.omit_python2": 100,
+    },
+)
+
+ci.builder(
+    name = "Linux Tests (py2 less)",
+    description_html = "This is mirror of <a href=\"https://ci.chromium.org/p/chromium/builders/ci/Linux%20Tests\">Linux Tests</a>, but runs on bots not having python2.",
+    builder_spec = builder_config.copy_from("ci/Linux Tests", lambda spec: structs.evolve(
+        spec,
+        build_gs_bucket = "chromium-fyi-archive",
+    )),
+    builderless = True,
+    console_view_entry = consoles.console_view_entry(
+        category = "lin",
+        short_name = "py3",
+    ),
+    os = os.LINUX_DEFAULT,
+    triggered_by = ["ci/Linux Builder"],
+    experiments = {
+        "luci.buildbucket.omit_python2": 100,
+    },
 )
 
 # Start - Reclient migration, phase 2, block 1 shadow builders
@@ -1628,6 +1804,7 @@ fyi_coverage_builder(
     schedule = "triggered",
     triggered_by = [],
     use_java_coverage = True,
+    export_coverage_to_zoss = True,
     goma_backend = None,
     reclient_jobs = reclient.jobs.HIGH_JOBS_FOR_CI,
     reclient_instance = reclient.instance.DEFAULT_TRUSTED,
@@ -1658,7 +1835,7 @@ fyi_coverage_builder(
         consoles.console_view_entry(
             branch_selector = branches.MAIN,
             console_view = "sheriff.fuchsia",
-            category = "misc",
+            category = "fyi",
             short_name = "cov",
         ),
     ],
@@ -1919,6 +2096,9 @@ fyi_ios_builder(
         ),
     ],
     os = os.MAC_12,
+    goma_backend = None,
+    reclient_instance = reclient.instance.DEFAULT_TRUSTED,
+    reclient_jobs = reclient.jobs.DEFAULT,
 )
 
 fyi_ios_builder(
@@ -2087,7 +2267,7 @@ fyi_mac_builder(
     builderless = True,
     goma_backend = None,
     reclient_instance = reclient.instance.DEFAULT_TRUSTED,
-    reclient_jobs = 40,
+    reclient_jobs = 200,
 )
 
 fyi_mac_builder(
@@ -2161,4 +2341,40 @@ ci.builder(
     goma_backend = None,
     reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CI,
     reclient_instance = reclient.instance.DEFAULT_TRUSTED,
+)
+
+ci.builder(
+    name = "Blink Unexpected Pass Finder",
+    builderless = True,
+    console_view_entry = consoles.console_view_entry(
+        short_name = "upf",
+    ),
+    executable = "recipe:chromium_expectation_files/expectation_file_scripts",
+    # This will eventually be set to run on a schedule, but only support
+    # manual triggering for now until we get a successful build.
+    schedule = "triggered",
+    triggered_by = [],
+    service_account = "chromium-automated-expectation@chops-service-accounts.iam.gserviceaccount.com",
+    properties = {
+        "scripts": [
+            {
+                "step_name": "remove_stale_blink_expectations",
+                "script": "third_party/blink/tools/remove_stale_expectations.py",
+                "script_type": "UNEXPECTED_PASS",
+                "submit_type": "MANUAL",
+                "reviewer_list": {
+                    "reviewer": ["bsheedy@chromium.org"],
+                },
+                "cl_title": "Remove stale Blink expectations",
+                "args": [
+                    "--project",
+                    "chrome-unexpected-pass-data",
+                    "--no-include-internal-builders",
+                    "--remove-stale-expectations",
+                    "--num-samples",
+                    "200",
+                ],
+            },
+        ],
+    },
 )

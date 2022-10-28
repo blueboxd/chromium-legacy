@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -61,6 +61,8 @@ std::ostream& operator<<(std::ostream& out,
       return out << "kCommanderFrontend";
     case ProfileKeepAliveOrigin::kDiceWebSigninInterceptionBubble:
       return out << "kDiceWebSigninInterceptionBubble";
+    case ProfileKeepAliveOrigin::kHistoryMenuBridge:
+      return out << "kHistoryMenuBridge";
   }
   NOTREACHED();
   return out << static_cast<int>(origin);

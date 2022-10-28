@@ -76,11 +76,10 @@ BrowserAccessibility* BrowserAccessibilityManagerMac::GetFocus() const {
   return GetActiveDescendant(focus);
 }
 
-void BrowserAccessibilityManagerMac::FireFocusEvent(
-    BrowserAccessibility* node) {
-  BrowserAccessibilityManager::FireFocusEvent(node);
+void BrowserAccessibilityManagerMac::FireFocusEvent(ui::AXNode* node) {
+  ui::AXTreeManager::FireFocusEvent(node);
   FireNativeMacNotification(NSAccessibilityFocusedUIElementChangedNotification,
-                            node);
+                            GetFromAXNode(node));
 }
 
 void BrowserAccessibilityManagerMac::FireBlinkEvent(ax::mojom::Event event_type,
@@ -193,7 +192,7 @@ void BrowserAccessibilityManagerMac::FireGeneratedEvent(
       BrowserAccessibilityManager* root_manager = GetRootManager();
       if (!root_manager)
         return;
-      BrowserAccessibility* root = root_manager->GetRoot();
+      BrowserAccessibility* root = root_manager->GetBrowserAccessibilityRoot();
       if (!root)
         return;
 
@@ -260,7 +259,8 @@ void BrowserAccessibilityManagerMac::FireGeneratedEvent(
       // AXMenuClosed on the document itself when an accessible menu is being
       // detached. See WebKit's AccessibilityObject::detachRemoteParts
       if (BrowserAccessibilityManager* root_manager = GetRootManager()) {
-        if (BrowserAccessibility* root = root_manager->GetRoot())
+        if (BrowserAccessibility* root =
+                root_manager->GetBrowserAccessibilityRoot())
           FireNativeMacNotification((NSString*)kAXMenuClosedNotification, root);
       }
       return;
@@ -332,7 +332,7 @@ void BrowserAccessibilityManagerMac::FireGeneratedEvent(
         NSDictionary* user_info = GetUserInfoForValueChangedNotification(
             native_node, deleted_text, inserted_text, edit_text_marker);
 
-        BrowserAccessibility* root = GetRoot();
+        BrowserAccessibility* root = GetBrowserAccessibilityRoot();
         if (!root)
           return;
 
@@ -348,6 +348,7 @@ void BrowserAccessibilityManagerMac::FireGeneratedEvent(
       break;
 
     // Currently unused events on this platform.
+    case ui::AXEventGenerator::Event::NONE:
     case ui::AXEventGenerator::Event::ACCESS_KEY_CHANGED:
     case ui::AXEventGenerator::Event::ATK_TEXT_OBJECT_ATTRIBUTE_CHANGED:
     case ui::AXEventGenerator::Event::ATOMIC_CHANGED:
@@ -480,7 +481,7 @@ NSDictionary* BrowserAccessibilityManagerMac::
   BrowserAccessibility* focus_object = GetFocus();
   DCHECK(focus_object);
 
-  if (focus_object != GetLastFocusedNode()) {
+  if (focus_object != GetFromAXNode(GetLastFocusedNode())) {
     [user_info setObject:@(ui::AXTextStateChangeTypeSelectionMove)
                   forKey:ui::NSAccessibilityTextStateChangeTypeKey];
   } else {

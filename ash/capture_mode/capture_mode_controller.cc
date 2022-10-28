@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -461,6 +461,14 @@ bool CaptureModeController::IsActive() const {
   return capture_mode_session_ && !capture_mode_session_->is_shutting_down();
 }
 
+bool CaptureModeController::GetAudioRecordingEnabled() const {
+  return enable_audio_recording_ && !IsAudioCaptureDisabledByPolicy();
+}
+
+bool CaptureModeController::IsAudioCaptureDisabledByPolicy() const {
+  return delegate_->IsAudioCaptureDisabledByPolicy();
+}
+
 void CaptureModeController::SetSource(CaptureModeSource source) {
   if (source == source_)
     return;
@@ -718,31 +726,32 @@ bool CaptureModeController::IsLinuxFilesPath(const base::FilePath& path) const {
   return path == delegate_->GetLinuxFilesPath();
 }
 
-aura::Window* CaptureModeController::GetCameraPreviewParentWindow() const {
+aura::Window* CaptureModeController::GetOnCaptureSurfaceWidgetParentWindow()
+    const {
   // Trying to get camera preview's parent from `video_recording_watcher_` first
   // if a video recording is in progress. As a capture session can be started
   // with `kImage` type while recording, and we should get the parent of the
   // camera preview with the settings inside VideoRecordingWatcher in this case,
   // e.g, CaptureModeSource for taking the video.
   if (is_recording_in_progress())
-    return video_recording_watcher_->GetCameraPreviewParentWindow();
+    return video_recording_watcher_->GetOnCaptureSurfaceWidgetParentWindow();
 
   if (IsActive())
-    return capture_mode_session_->GetCameraPreviewParentWindow();
+    return capture_mode_session_->GetOnCaptureSurfaceWidgetParentWindow();
 
   return nullptr;
 }
 
-gfx::Rect CaptureModeController::GetCameraPreviewConfineBounds() const {
+gfx::Rect CaptureModeController::GetCaptureSurfaceConfineBounds() const {
   // Getting the bounds from `video_recording_watcher_` first if a video
   // recording is in progress. As a capture session can be started with `kImage`
   // type while recording, and we should get the bounds with the settings inside
   // VideoRecordingWatcher in this case, e.g, user-selected region.
   if (is_recording_in_progress())
-    return video_recording_watcher_->GetCameraPreviewConfineBounds();
+    return video_recording_watcher_->GetCaptureSurfaceConfineBounds();
 
   if (IsActive())
-    return capture_mode_session_->GetCameraPreviewConfineBounds();
+    return capture_mode_session_->GetCaptureSurfaceConfineBounds();
 
   return gfx::Rect();
 }
@@ -969,7 +978,7 @@ void CaptureModeController::LaunchRecordingServiceAndStartRecording(
   // is ok since the |audio_stream_factory| parameter in the recording service
   // APIs is optional, and can be not bound.
   mojo::PendingRemote<media::mojom::AudioStreamFactory> audio_stream_factory;
-  if (enable_audio_recording_) {
+  if (GetAudioRecordingEnabled()) {
     delegate_->BindAudioStreamFactory(
         audio_stream_factory.InitWithNewPipeAndPassReceiver());
   }
@@ -1555,6 +1564,18 @@ void CaptureModeController::OnDlpRestrictionCheckedAtCountDownFinished(
   capture_mode_session_->set_can_exit_on_escape(false);
 
   if (capture_mode_session_->is_in_projector_mode()) {
+    // Before creating the DriveFS folder for the screencast, check if audio
+    // recording cannot be done due to admin policy. In this case we just abort
+    // the recording by stopping the capture mode session without starting any
+    // recording. This will eventually call
+    // `ProjectorControllerImpl::OnRecordingStartAborted()` which should take
+    // care of cleaning up the Projector state, and updating the preconditions
+    // for the "New screencast" button.
+    if (!GetAudioRecordingEnabled()) {
+      Stop();
+      return;
+    }
+
     ProjectorControllerImpl::Get()->CreateScreencastContainerFolder(
         base::BindOnce(
             &CaptureModeController::OnProjectorContainerFolderCreated,
@@ -1609,6 +1630,10 @@ void CaptureModeController::OnDlpRestrictionCheckedAtSessionInit(
     SetType(CaptureModeType::kImage);
   } else if (entry_type == CaptureModeEntryType::kProjector) {
     DCHECK(features::IsProjectorEnabled());
+    DCHECK(!delegate_->IsAudioCaptureDisabledByPolicy())
+        << "A projector session should not be allowed to begin if audio "
+           "capture is disabled by policy.";
+
     for_projector = true;
     // TODO(afakhry): Discuss with PM whether we want this to affect the audio
     // settings of future generic capture mode sessions.

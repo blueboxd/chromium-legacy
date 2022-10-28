@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -413,7 +413,8 @@ void AppBannerManager::OnDidPerformInstallableWebAppCheck(
   bool worker_errors_ignored_for_installs = false;
   if (features::SkipInstallServiceWorkerCheck() &&
       data.HasErrorOnlyServiceWorkerErrors()) {
-    DCHECK(!is_installable);
+    DCHECK(!is_installable || base::FeatureList::IsEnabled(
+                                  features::kCreateShortcutIgnoresManifest));
     worker_errors_ignored_for_installs = true;
     is_installable = true;
   }
@@ -440,20 +441,20 @@ void AppBannerManager::OnDidPerformInstallableWebAppCheck(
     return;
   }
 
-  if (no_matching_service_worker &&
-      base::FeatureList::IsEnabled(features::kCreateShortcutIgnoresManifest)) {
-    SetInstallableWebAppCheckResult(
-        InstallableWebAppCheckResult::kYes_ByUserRequest);
-    Stop(NO_MATCHING_SERVICE_WORKER);
-    return;
-  }
-
   if (worker_errors_ignored_for_installs) {
     DCHECK(data.HasErrorOnlyServiceWorkerErrors());
 
     SetInstallableWebAppCheckResult(
         InstallableWebAppCheckResult::kYes_ByUserRequest);
     Stop(SERVICE_WORKER_NOT_REQUIRED);
+    return;
+  }
+
+  if (no_matching_service_worker &&
+      base::FeatureList::IsEnabled(features::kCreateShortcutIgnoresManifest)) {
+    SetInstallableWebAppCheckResult(
+        InstallableWebAppCheckResult::kYes_ByUserRequest);
+    Stop(NO_MATCHING_SERVICE_WORKER);
     return;
   }
 

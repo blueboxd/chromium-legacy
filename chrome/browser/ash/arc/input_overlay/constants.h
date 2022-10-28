@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -66,6 +66,14 @@ enum class MessageType {
   // |kInfoLabelFocus| is the type for info message when the |ActionLabel| is
   // focused.
   kInfoLabelFocus,
+};
+
+// Position type enum.
+enum class PositionType {
+  // Default position type.
+  kDefault = 0,
+  // Dependent position type which x or y value depend on the other one.
+  kDependent = 1,
 };
 
 }  // namespace input_overlay

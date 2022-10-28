@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -90,10 +90,6 @@ export class WebAppSettingsAppElement extends PolymerElement {
 declare global {
   interface HTMLElementTagNameMap {
     'web-app-settings-app': WebAppSettingsAppElement;
-  }
-
-  interface Window {
-    CrPolicyStrings: {[key: string]: string};
   }
 }
 

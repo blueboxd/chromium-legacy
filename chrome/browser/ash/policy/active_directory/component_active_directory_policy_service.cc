@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -137,11 +137,9 @@ bool ParsePolicy(const std::string& policy_fetch_response_blob,
       LOG(ERROR) << "Failed to filter JSON policy at level " << level->json_key;
       continue;
     }
-    const base::DictionaryValue& converted_dict =
-        base::Value::AsDictionaryValue(converted_value.value());
 
     // Put the policy into the right spot.
-    policy->LoadFrom(&converted_dict, level->level, scope,
+    policy->LoadFrom(converted_value->GetDict(), level->level, scope,
                      POLICY_SOURCE_ACTIVE_DIRECTORY);
   }
   return true;

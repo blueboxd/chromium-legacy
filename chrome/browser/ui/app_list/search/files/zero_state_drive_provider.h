@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,7 +8,6 @@
 #include <string>
 #include <vector>
 
-#include "ash/components/drivefs/mojom/drivefs.mojom.h"
 #include "base/callback_list.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
@@ -16,8 +15,10 @@
 #include "base/time/time.h"
 #include "chrome/browser/ash/drive/drive_integration_service.h"
 #include "chrome/browser/ui/app_list/search/files/file_result.h"
+#include "chrome/browser/ui/app_list/search/files/file_suggest_keyed_service.h"
 #include "chrome/browser/ui/app_list/search/files/item_suggest_cache.h"
 #include "chrome/browser/ui/app_list/search/search_provider.h"
+#include "chromeos/ash/components/drivefs/mojom/drivefs.mojom-forward.h"
 #include "chromeos/dbus/power/power_manager_client.h"
 #include "components/session_manager/core/session_manager.h"
 #include "components/session_manager/core/session_manager_observer.h"
@@ -26,19 +27,19 @@
 class Profile;
 
 namespace app_list {
-
+struct FileSuggestData;
 class SearchController;
 
 class ZeroStateDriveProvider : public SearchProvider,
                                public drive::DriveIntegrationServiceObserver,
                                public session_manager::SessionManagerObserver,
-                               public chromeos::PowerManagerClient::Observer {
+                               public chromeos::PowerManagerClient::Observer,
+                               public FileSuggestKeyedService::Observer {
  public:
   ZeroStateDriveProvider(Profile* profile,
                          SearchController* search_controller,
                          drive::DriveIntegrationService* drive_service,
-                         session_manager::SessionManager* session_manager,
-                         std::unique_ptr<ItemSuggestCache> item_suggest_cache);
+                         session_manager::SessionManager* session_manager);
   ~ZeroStateDriveProvider() override;
 
   ZeroStateDriveProvider(const ZeroStateDriveProvider&) = delete;
@@ -61,32 +62,18 @@ class ZeroStateDriveProvider : public SearchProvider,
   ash::AppListSearchResultType ResultType() const override;
   bool ShouldBlockZeroState() const override;
 
-  // The minimum time between hypothetical queries.
-  // These values persist to logs. Entries should not be renumbered and numeric
-  // values should never be reused.
-  enum class ThrottleInterval {
-    kUnknown = 0,
-    kFiveMinutes = 1,
-    kTenMinutes = 2,
-    kFifteenMinutes = 3,
-    kThirtyMinutes = 4,
-    kMaxValue = kThirtyMinutes,
-  };
-
  private:
-  void OnFilePathsLocated(
-      absl::optional<std::vector<drivefs::mojom::FilePathOrErrorPtr>> paths);
+  // Called when file suggestion data are fetched from the service.
+  void OnSuggestFileDataFetched(
+      absl::optional<std::vector<FileSuggestData>> suggest_results);
 
-  void SetSearchResults(
-      std::vector<absl::optional<base::FilePath>> filtered_paths);
+  // Builds the search results from file suggestions then publishes the results.
+  void SetSearchResults(std::vector<FileSuggestData> suggest_results);
 
   std::unique_ptr<FileResult> MakeListResult(
       const base::FilePath& filepath,
       const absl::optional<std::string>& prediction_reason,
       const float relevance);
-
-  // Callback for when the ItemSuggestCache updates its results.
-  void OnCacheUpdated();
 
   // Requests an update from the ItemSuggestCache, but only if the call is long
   // enough after the provider was constructed. This helps ease resource
@@ -95,43 +82,21 @@ class ZeroStateDriveProvider : public SearchProvider,
   // this does nothing.
   void MaybeUpdateCache();
 
-  // We are intending to change the triggers of queries to ItemSuggest, but
-  // first want to know the QPS impact of the change. This method records
-  // metrics to track how many queries we will send under the proposed new
-  // logic. It does not actually make any queries. The new logic is as follows:
-  // - Query on login and wake from sleep.
-  // - Query on every launcher open.
-  // - Query at most every 5, 10 or 15 minutes. These are tracked separately in
-  //   the metrics.
-  void MaybeLogHypotheticalQuery();
+  // FileSuggestKeyedService::Observer:
+  void OnFileSuggestionUpdated(
+      FileSuggestKeyedService::SuggestionType type) override;
 
   Profile* const profile_;
   drive::DriveIntegrationService* const drive_service_;
   session_manager::SessionManager* const session_manager_;
 
-  std::unique_ptr<ItemSuggestCache> item_suggest_cache_;
-  base::CallbackListSubscription item_suggest_subscription_;
-
-  // The most recent results retrieved from |item_suggested_cache_|. This is
-  // updated on a call to Start and is used only to store the results until
-  // OnFilePathsLocated has finished.
-  absl::optional<ItemSuggestCache::Results> cache_results_;
+  const base::raw_ptr<FileSuggestKeyedService> file_suggest_service_;
 
   const base::Time construction_time_;
   base::TimeTicks query_start_time_;
 
-  // The time we last logged a hypothetical query, keyed by the minimum time
-  // between queries in minutes (5, 10 or 15 minutes). See
-  // MaybeLogHypotheticalQuery for details.
-  std::map<int, base::TimeTicks> last_hypothetical_query_;
-
-  // Whether or not the screen is off due to idling. Used for logging a
-  // hypothetical query on wake.
+  // Whether or not the screen is off due to idling.
   bool screen_off_ = true;
-
-  // A file needs to have been modified more recently than this to be considered
-  // valid.
-  const base::TimeDelta max_last_modified_time_;
 
   base::ScopedObservation<drive::DriveIntegrationService,
                           drive::DriveIntegrationServiceObserver>
@@ -142,10 +107,12 @@ class ZeroStateDriveProvider : public SearchProvider,
   base::ScopedObservation<chromeos::PowerManagerClient,
                           chromeos::PowerManagerClient::Observer>
       power_observation_{this};
+  base::ScopedObservation<FileSuggestKeyedService,
+                          FileSuggestKeyedService::Observer>
+      file_suggest_service_observation_{this};
 
   SEQUENCE_CHECKER(sequence_checker_);
 
-  scoped_refptr<base::SequencedTaskRunner> task_runner_;
   base::WeakPtrFactory<ZeroStateDriveProvider> weak_factory_{this};
 };
 

@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -140,9 +140,9 @@ class MediaFoundationRendererClient
   void OnOverlayStateChanged(const gpu::Mailbox& mailbox, bool promoted);
   void UpdateRenderMode();
 
-  // This class is constructed on the main thread and used exclusively on the
-  // media thread. Hence we store PendingRemotes so we can bind the Remotes
-  // on the media task runner during/after Initialize().
+  // This class is constructed on the main thread. Hence we store
+  // PendingRemotes so we can bind the Remotes on the media task
+  // runner during/after Initialize().
   scoped_refptr<base::SingleThreadTaskRunner> media_task_runner_;
   std::unique_ptr<MediaLog> media_log_;
   std::unique_ptr<MojoRenderer> mojo_renderer_;

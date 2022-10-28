@@ -28,7 +28,6 @@
 <translation id="1111021433905331574">அமைப்புகள் &gt; <ph name="APP_TITLE" /> என்பதற்குச் சென்று கீபோர்டு பேக்லைட்டின் வண்ணத்தை மாற்றலாம்</translation>
 <translation id="112308213915226829">அடுக்கைத் தானாக மறை</translation>
 <translation id="1142002900084379065">சமீபத்திய படங்கள்</translation>
-<translation id="114451698114044150">தானியங்கு அளவு மாற்ற அம்சம் இயக்கப்பட்டுள்ளது.</translation>
 <translation id="1148499908455722006"><ph name="USER_NAME" /> கணக்கிற்கான தகவலைக் காட்டும் உரையாடலைத் திறக்கும்</translation>
 <translation id="1150989369772528668">கேலெண்டர்</translation>
 <translation id="1153356358378277386">இணைத்த சாதனங்கள்</translation>
@@ -330,7 +329,6 @@
 <translation id="2894949423239620203">செயல்திறனை, கேபிள் பாதிக்கக்கூடும்</translation>
 <translation id="2903844815300039659"><ph name="NAME" /> உடன் இணைக்கப்பட்டுள்ளீர்கள், <ph name="STRENGTH" /></translation>
 <translation id="2914580577416829331">ஸ்கிரீன்ஷாட்டுகள்</translation>
-<translation id="2925246975070834767">'தானியங்கு அளவு மாற்றம்' அம்சத்தைப் பயன்படுத்துவதன் மூலம் திரையின் நடுவில் தெரிவீர்கள். விரைவு அமைப்புகளுக்குச் சென்று இதை இயக்கலாம்.</translation>
 <translation id="2941112035454246133">குறைவு</translation>
 <translation id="2942350706960889382">டாக் செய்யப்பட்ட பெரிதாக்கி</translation>
 <translation id="2942516765047364088">அடுக்கின் நிலை</translation>
@@ -474,7 +472,6 @@
 <translation id="3708186454126126312">ஏற்கெனவே இணைத்தவை</translation>
 <translation id="371370241367527062">முன்பக்க மைக்ரோஃபோன்</translation>
 <translation id="3713734891607377840">பதிவிறக்கியதும் திற</translation>
-<translation id="3724279623330129812">'தானியங்கு அளவு மாற்றம்' கேமராவை மையப்படுத்தியது</translation>
 <translation id="3726171378575546917"><ph name="UNAVAILABLE_APPS_ONE" />, <ph name="UNAVAILABLE_APPS_TWO" /> ஆகியவையும் மேலும் <ph name="UNAVAILABLE_APPS_COUNT" /> ஆப்ஸும் இந்தச் சாதனத்தில் இல்லை.</translation>
 <translation id="3735740477244556633">இதன்படி வரிசைப்படுத்து</translation>
 <translation id="3742055079367172538">ஸ்கிரீன்ஷாட் எடுக்கப்பட்டது</translation>
@@ -508,6 +505,7 @@
 <translation id="3922427723338465344">{0,plural, =1{சாதனத்தை ஒரு நிமிடத்திற்குள் முந்தைய பதிப்பிற்கு மாற்றுங்கள்}other{சாதனத்தை # நிமிடங்களுக்குள் முந்தைய பதிப்பிற்கு மாற்றுங்கள்}}</translation>
 <translation id="3923494859158167397">மொபைல் நெட்வொர்க்குகள் எதுவும் அமைக்கப்படவில்லை</translation>
 <translation id="3925540965556789199"><ph name="DATE" />, நிகழ்வுகளை ஏற்றுகிறது.</translation>
+<translation id="392627956579011934">பேச்சு அறிதல் ஃபைல்களை நிறுவ மீண்டும் தொடங்க வேண்டும்.</translation>
 <translation id="3932043219784172185">சாதனம் எதுவும் இணைக்கப்படவில்லை</translation>
 <translation id="3934456833412894880">சூழலுக்கேற்பச் சார்ஜ் செய்தல் அம்சம் இயக்கப்பட்டுள்ளது. பேட்டரியின் ஆயுளை நீட்டிக்க, அது 80% மட்டுமே சார்ஜ் செய்யப்படும், மேலும் தேவைப்படும்போது முழுமையாகச் சார்ஜ் செய்துகொள்ளலாம்.</translation>
 <translation id="3943857333388298514">ஒட்டு</translation>
@@ -562,6 +560,7 @@
 <translation id="4242533952199664413">அமைப்புகளைத் திற</translation>
 <translation id="4247123849143712100">புதுப்பித்து ஷட் டவுன் செய்</translation>
 <translation id="4250229828105606438">ஸ்கிரீன்ஷாட்</translation>
+<translation id="4250899820387052060">துரித ஃபைல் அணுகல்</translation>
 <translation id="425364040945105958">சிம் இல்லை</translation>
 <translation id="4261870227682513959">அறிவிப்பு அமைப்புகளைக் காண்பிக்கும். அறிவிப்புகள் முடக்கப்பட்டுள்ளன</translation>
 <translation id="4269883910223712419">இந்தச் சாதனத்தின் நிர்வாகி இவற்றைச் செய்ய முடியும்:</translation>
@@ -746,6 +745,7 @@
 <translation id="5283198616748585639">1 நிமிடத்தைச் சேர்</translation>
 <translation id="528468243742722775">நிறுத்து</translation>
 <translation id="5286194356314741248">ஸ்கேன் செய்கிறது</translation>
+<translation id="5293671101077843611">இன்று நிகழ்வுகள் எதுவுமில்லை</translation>
 <translation id="5297423144044956168">மொபைல்கள் எதுவும் கண்டறியப்படவில்லை</translation>
 <translation id="5297704307811127955">முடக்கப்பட்டுள்ளது</translation>
 <translation id="5300589172476337783">காண்பி</translation>
@@ -908,7 +908,6 @@
 <translation id="6137566720514957455"><ph name="USER_EMAIL_ADDRESS" /> என்ற கணக்கை அகற்றுவதற்கான உரையாடலைத் திறக்கும்</translation>
 <translation id="6141988275892716286">பதிவிறக்கத்தை உறுதிப்படுத்து</translation>
 <translation id="6154006699632741460">சாதனம் ஆதரிக்கப்படவில்லை</translation>
-<translation id="6156262341071374681">எல்லாப் பயன்பாடுகளையும் காட்டும் பட்டன்</translation>
 <translation id="615957422585914272">ஸ்கிரீன் கீபோர்டைக் காட்டு</translation>
 <translation id="6165508094623778733">மேலும் அறிக</translation>
 <translation id="6166852626429024716">உங்கள் சாதனம், ஆப்ஸ், அமைப்புகள், இணையம் ஆகியவற்றில் தேடுக...</translation>
@@ -1032,7 +1031,6 @@
 <translation id="685782768769951078">{NUM_DIGITS,plural, =1{இன்னும் ஓர் இலக்கத்தை உள்ளிட வேண்டும்}other{இன்னும் # இலக்கங்களை உள்ளிட வேண்டும்}}</translation>
 <translation id="6867938213751067702"><ph name="FILENAME" /> ஃபைலைப் பதிவிறக்குவது இடைநிறுத்தப்பட்டது</translation>
 <translation id="6878400149835617132">ஷார்ட்கட் முடக்கப்பட்டுள்ளது</translation>
-<translation id="6878709625737492815">தானியங்கு அளவு மாற்ற அம்சம் முடக்கப்பட்டுள்ளது.</translation>
 <translation id="6884665277231944629">இன்றைய தேதிக்குச் செல்லும்</translation>
 <translation id="6886172995547742638">உங்கள் <ph name="DEVICE_TYPE" /> இன் செயல்திறன் குறையலாம். சான்றளிக்கப்பட்ட <ph name="PREFERRED_MINIMUM_POWER" />W அல்லது அதற்கும் அதிகமான USB-C பவர் அடாப்டரைப் பயன்படுத்தவும்.</translation>
 <translation id="688631446150864480">சாளரங்களுக்கு இடையே மாற கீழ்நோக்கிய அம்புக்குறி விசையை அழுத்துக</translation>
@@ -1198,7 +1196,6 @@
 <translation id="7868900307798234037">கைரேகை மூலம் திறக்கிறது</translation>
 <translation id="7872195908557044066">நிர்வாகி உங்கள் eSIMமை மீட்டமைக்கிறார். சில நிமிடங்கள் காத்திருக்கவும்.</translation>
 <translation id="7872786842639831132">முடக்கு</translation>
-<translation id="7875280185395705476">தானியங்கு அளவு மாற்றம்</translation>
 <translation id="7875575368831396199">உங்கள் <ph name="DEVICE_TYPE" /> சாதனத்தில் புளூடூத் முடக்கப்பட்டுள்ளதாகத் தெரிகிறது. ஃபோன் ஹப்பைப் பயன்படுத்த புளூடூத்தை இயக்கவும்.</translation>
 <translation id="7877557217297072640">{0,plural, =0{சாதனத்தை உடனடியாக முந்தைய பதிப்பிற்கு மாற்றுங்கள்}=1{சாதனத்தை ஒரு வினாடிக்குள் முந்தைய பதிப்பிற்கு மாற்றுங்கள்}other{சாதனத்தை # வினாடிகளுக்குள் முந்தைய பதிப்பிற்கு மாற்றுங்கள்}}</translation>
 <translation id="7886169021410746335">தனியுரிமை அமைப்புகளை மாற்றலாம்</translation>
@@ -1254,6 +1251,7 @@
 <translation id="8152264887680882389"><ph name="TEXT" />, தானே நிரப்பியது</translation>
 <translation id="8155007568264258537"><ph name="FEATURE_NAME" /> உங்கள் நிர்வாகி இந்த அமைப்பை நிர்வகிக்கிறார்.</translation>
 <translation id="8155628902202578800"><ph name="USER_EMAIL_ADDRESS" /> என்ற கணக்கிற்கான தகவலைக் காட்டும் உரையாடலைத் திறக்கும்</translation>
+<translation id="8157728322324420120">உங்களுக்கான பரிந்துரைகள்</translation>
 <translation id="8167567890448493835"><ph name="LOCALE_NAME" />ஐப் பயன்படுத்துகிறது</translation>
 <translation id="8183592608247778598">மொபைலில் உள்ள சமீபத்திய படங்கள், மீடியா, அறிவிப்புகள், ஆப்ஸ் ஆகியவற்றை <ph name="DEVICE_TYPE" /> இல் பார்க்கலாம்</translation>
 <translation id="8192202700944119416">அறிவிப்புகள் மறைக்கப்பட்டுள்ளன.</translation>
@@ -1321,7 +1319,6 @@
 <translation id="856298576161209842">உங்கள் <ph name="DEVICE_TYPE" /> ஐப் புதுப்பிக்குமாறு <ph name="MANAGER" /> பரிந்துரைக்கிறது</translation>
 <translation id="8563862697512465947">அறிவிப்பு  அமைப்புகள்</translation>
 <translation id="857201607579416096">திரையின் கீழ் வலது மூலைக்கு மெனு நகர்த்தப்பட்டது.</translation>
-<translation id="8576288697319745668">தானியங்கு அளவு மாற்ற அம்சத்தை நிலைமாற்றும். <ph name="STATE_TEXT" /></translation>
 <translation id="8594115950068821369">-<ph name="FORMATTED_TIME" /></translation>
 <translation id="8598235756057743477">பெயர் அல்லது வண்ணத்தின்படி ஆப்ஸை வரிசைப்படுத்துங்கள்</translation>
 <translation id="8614517853887502247">பார்ப்பதற்கான கட்டுப்பாடு இயக்கத்தில் உள்ளதால் <ph name="APP_1_TITLE" />, <ph name="APP_2_TITLE" /> ஆகியவற்றின் அறிவிப்புகள் மறைக்கப்பட்டுள்ளன</translation>
@@ -1433,6 +1430,7 @@
 <translation id="9211490828691860325">அனைத்து டெஸ்குகளும்</translation>
 <translation id="9211681782751733685">பேட்டரி முழுவதும் சார்ஜ் ஆவதற்கான நேரம்: <ph name="TIME_REMAINING" />.</translation>
 <translation id="9215934040295798075">வால்பேப்பரை அமை</translation>
+<translation id="9219103736887031265">Images</translation>
 <translation id="921989828232331238">உங்கள் பெற்றோர் இன்று சாதனத்தைப் பயன்படுத்த முடியாதபடி பூட்டிவிட்டனர்</translation>
 <translation id="9220525904950070496">கணக்கை அகற்றுக</translation>
 <translation id="923686485342484400">வெளியேற Control Shift Q ஐ இருமுறை அழுத்தவும்.</translation>

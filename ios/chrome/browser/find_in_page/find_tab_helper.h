@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -41,7 +41,7 @@ class FindTabHelper : public web::WebStateObserver,
 
   // Runs an asynchronous Find operation that will call the given completion
   // handler with results.  Highlights matches on the current page.  Uses the
-  // previously remembered search string and searches in the given |direction|.
+  // previously remembered search string and searches in the given `direction`.
   void ContinueFinding(FindDirection direction);
 
   // Stops any running find operations and runs the given completion block.
@@ -75,7 +75,7 @@ class FindTabHelper : public web::WebStateObserver,
   // Private constructor used by CreateForWebState().
   FindTabHelper(web::WebState* web_state);
 
-  // Create the FindInPageController for |web_state|. Only called if/when
+  // Create the FindInPageController for `web_state`. Only called if/when
   // the WebState is realized.
   void CreateFindInPageController(web::WebState* web_state);
 

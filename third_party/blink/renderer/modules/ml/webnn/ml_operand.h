@@ -8,6 +8,7 @@
 #include "third_party/blink/renderer/bindings/modules/v8/v8_ml_operand_descriptor.h"
 #include "third_party/blink/renderer/core/typed_arrays/array_buffer_view_helpers.h"
 #include "third_party/blink/renderer/core/typed_arrays/dom_array_buffer_view.h"
+#include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/heap/member.h"
 #include "third_party/blink/renderer/platform/heap/visitor.h"
@@ -17,7 +18,7 @@ namespace blink {
 class MLGraphBuilder;
 class MLOperator;
 
-class MLOperand final : public ScriptWrappable {
+class MODULES_EXPORT MLOperand final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
@@ -25,15 +26,15 @@ class MLOperand final : public ScriptWrappable {
 
   static MLOperand* CreateInput(MLGraphBuilder* builder,
                                 const V8MLOperandType::Enum type,
-                                Vector<int32_t> dimensions,
+                                Vector<uint32_t> dimensions,
                                 String name);
   static MLOperand* CreateConstant(MLGraphBuilder* builder,
                                    const V8MLOperandType::Enum type,
-                                   Vector<int32_t> dimensions,
+                                   Vector<uint32_t> dimensions,
                                    const DOMArrayBufferView* array_buffer_view);
   static MLOperand* CreateOutput(MLGraphBuilder* builder,
                                  const V8MLOperandType::Enum type,
-                                 Vector<int32_t> dimensions,
+                                 Vector<uint32_t> dimensions,
                                  const MLOperator* ml_operator);
 
   // The constructor shouldn't be called directly. The callers should use
@@ -41,7 +42,7 @@ class MLOperand final : public ScriptWrappable {
   MLOperand(MLGraphBuilder* builder,
             OperandKind kind,
             const V8MLOperandType::Enum type,
-            Vector<int32_t> dimensions);
+            Vector<uint32_t> dimensions);
 
   MLOperand(const MLOperand&) = delete;
   MLOperand& operator=(const MLOperand&) = delete;
@@ -53,7 +54,7 @@ class MLOperand final : public ScriptWrappable {
   MLGraphBuilder* Builder() const;
   OperandKind Kind() const;
   V8MLOperandType::Enum Type() const;
-  const Vector<int32_t>& Dimensions() const;
+  const Vector<uint32_t>& Dimensions() const;
   const String& Name() const;
   const DOMArrayBufferView* ArrayBufferView() const;
   const MLOperator* Operator() const;
@@ -63,7 +64,7 @@ class MLOperand final : public ScriptWrappable {
   OperandKind kind_;
   V8MLOperandType::Enum type_;
   // The dimensions of the operand. For scalar value, set {1}.
-  Vector<int32_t> dimensions_;
+  Vector<uint32_t> dimensions_;
   // The name of input operand. According to
   // https://www.w3.org/TR/webnn/#dom-mlgraphbuilder-input, only input operand
   // is created with a name.

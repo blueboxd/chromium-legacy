@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -135,6 +135,7 @@ export enum ViewName {
   CAMERA = 'view-camera',
   CROP_DOCUMENT = 'view-crop-document',
   DOCUMENT_MODE_DIALOG = 'view-document-mode-dialog',
+  DOCUMENT_REVIEW = 'view-document-review',
   EXPERT_SETTINGS = 'view-expert-settings',
   FLASH = 'view-flash',
   MESSAGE_DIALOG = 'view-message-dialog',
@@ -168,6 +169,7 @@ export enum VideoResolutionLevel {
   FULL_HD = 'Full HD',
   HD = 'HD',
   UNKNOWN = 'unknown',
+  THREE_SIXTY_P = '360p',
 }
 
 export enum AspectRatioSet {
@@ -189,6 +191,10 @@ export enum Rotation {
   ANGLE_180 = 180,
   ANGLE_270 = 270,
 }
+// `ROTATION_ORDER` is used for document scanning fix mode to show/crop images.
+// The length must be fixed at 4.
+export const ROTATION_ORDER =
+    Object.values(Rotation).filter((r): r is Rotation => typeof r === 'number');
 
 export interface VideoConfig {
   width: number;
@@ -449,6 +455,7 @@ export class PortraitModeProcessError extends Error {
 export enum LocalStorageKey {
   CUSTOM_VIDEO_PARAMETERS = 'customVideoParameters',
   DOC_MODE_DIALOG_SHOWN = 'isDocModeDialogShown',
+  DOC_MODE_MULTI_PAGE_TOAST_SHOWN = 'isDocModeMultiPageToastShown',
   DOC_MODE_TOAST_SHOWN = 'isDocModeToastShown',
   ENABLE_FPS_PICKER = 'enableFPSPicker',
   ENABLE_FULL_SIZED_VIDEO_SNAPSHOT = 'enableFullSizedVideoSnapshot',

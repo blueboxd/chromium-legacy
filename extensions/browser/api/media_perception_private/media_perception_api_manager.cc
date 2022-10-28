@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -73,10 +73,8 @@ GetFailedToInstallComponentState() {
 // Pulls out the version number from a mount_point location for the media
 // perception component. Mount points look like
 // /run/imageloader/rtanalytics-light/1.0, where 1.0 is the version string.
-std::unique_ptr<std::string> ExtractVersionFromMountPoint(
-    const std::string& mount_point) {
-  return std::make_unique<std::string>(
-      base::FilePath(mount_point).BaseName().value());
+std::string ExtractVersionFromMountPoint(const std::string& mount_point) {
+  return base::FilePath(mount_point).BaseName().value();
 }
 
 }  // namespace

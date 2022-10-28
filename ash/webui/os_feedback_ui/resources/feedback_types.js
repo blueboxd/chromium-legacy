@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -97,6 +97,13 @@ export const FeedbackAppPostSubmitAction =
  * @typedef {ash.osFeedbackUi.mojom.FeedbackAppExitPath}
  */
 export const FeedbackAppExitPath = ash.osFeedbackUi.mojom.FeedbackAppExitPath;
+
+/**
+ * Type alias for FeedbackAppHelpContentOutcome.
+ * @typedef {ash.osFeedbackUi.mojom.FeedbackAppHelpContentOutcome}
+ */
+export const FeedbackAppHelpContentOutcome =
+    ash.osFeedbackUi.mojom.FeedbackAppHelpContentOutcome;
 
 /**
  * Type alias for SendReportStatus.

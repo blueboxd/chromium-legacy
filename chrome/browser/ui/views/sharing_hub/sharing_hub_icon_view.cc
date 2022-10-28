@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -52,7 +52,8 @@ SharingHubIconView::SharingHubIconView(
     : PageActionIconView(command_updater,
                          IDC_SHARING_HUB,
                          icon_label_bubble_delegate,
-                         page_action_icon_delegate) {
+                         page_action_icon_delegate,
+                         "SharingHub") {
   SetID(VIEW_ID_SHARING_HUB_BUTTON);
   SetVisible(false);
   SetLabel(

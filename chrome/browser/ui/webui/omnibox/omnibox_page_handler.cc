@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -33,10 +33,10 @@
 #include "components/omnibox/browser/autocomplete_match.h"
 #include "components/omnibox/browser/autocomplete_provider.h"
 #include "components/omnibox/browser/omnibox_controller_emitter.h"
-#include "components/search_engines/omnibox_focus_type.h"
 #include "components/search_engines/template_url.h"
 #include "content/public/browser/web_ui.h"
 #include "third_party/metrics_proto/omnibox_event.pb.h"
+#include "third_party/metrics_proto/omnibox_focus_type.pb.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/image/image.h"
 
@@ -164,7 +164,7 @@ struct TypeConverter<mojom::AutocompleteMatchPtr, AutocompleteMatch> {
     result->type = AutocompleteMatchType::ToString(input.type);
     result->is_search_type = AutocompleteMatch::IsSearchType(input.type);
     auto subtypes = input.subtypes;
-    size_t type = std::u16string::npos;
+    omnibox::SuggestType type = omnibox::TYPE_NATIVE_CHROME;
     AutocompleteController::GetMatchTypeAndExtendSubtypes(input, &type,
                                                           &subtypes);
     std::vector<std::string> subtypes_str;
@@ -358,8 +358,9 @@ void OmniboxPageHandler::StartOmniboxQuery(const std::string& input_string,
   input.set_prefer_keyword(prefer_keyword);
   if (prefer_keyword)
     input.set_keyword_mode_entry_method(metrics::OmniboxEventProto::TAB);
-  input.set_focus_type(zero_suggest ? OmniboxFocusType::ON_FOCUS
-                                    : OmniboxFocusType::DEFAULT);
+  input.set_focus_type(zero_suggest
+                           ? metrics::OmniboxFocusType::INTERACTION_FOCUS
+                           : metrics::OmniboxFocusType::INTERACTION_DEFAULT);
 
   controller_->Start(input);
 }

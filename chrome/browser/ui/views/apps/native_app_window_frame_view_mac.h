@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_UI_VIEWS_APPS_NATIVE_APP_WINDOW_FRAME_VIEW_MAC_H_
 
 #include "base/memory/raw_ptr.h"
-#include "ui/views/window/native_frame_view.h"
+#include "ui/views/window/native_frame_view_mac.h"
 
 namespace extensions {
 class NativeAppWindow;
@@ -16,7 +16,7 @@ class Widget;
 
 // Provides metrics consistent with a native frame on Mac. The actual frame is
 // drawn by NSWindow.
-class NativeAppWindowFrameViewMac : public views::NativeFrameView {
+class NativeAppWindowFrameViewMac : public views::NativeFrameViewMac {
  public:
   NativeAppWindowFrameViewMac(views::Widget* frame,
                               extensions::NativeAppWindow* window);
@@ -28,8 +28,6 @@ class NativeAppWindowFrameViewMac : public views::NativeFrameView {
   ~NativeAppWindowFrameViewMac() override;
 
   // NonClientFrameView:
-  gfx::Rect GetWindowBoundsForClientBounds(
-      const gfx::Rect& client_bounds) const override;
   int NonClientHitTest(const gfx::Point& point) override;
 
  private:

@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -43,9 +43,9 @@
 #include "components/signin/public/identity_manager/identity_test_utils.h"
 #include "components/sync/base/passphrase_enums.h"
 #include "components/sync/base/user_selectable_type.h"
-#include "components/sync/driver/mock_sync_service.h"
 #include "components/sync/driver/sync_user_settings_impl.h"
-#include "components/sync/driver/sync_user_settings_mock.h"
+#include "components/sync/test/mock_sync_service.h"
+#include "components/sync/test/sync_user_settings_mock.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_controller.h"

@@ -100,6 +100,7 @@
 #include "third_party/blink/renderer/core/loader/mixed_content_checker.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/page/page.h"
+#include "third_party/blink/renderer/core/speech/speech_synthesis_base.h"
 #include "third_party/blink/renderer/platform/audio/audio_bus.h"
 #include "third_party/blink/renderer/platform/audio/audio_source_provider_client.h"
 #include "third_party/blink/renderer/platform/bindings/exception_messages.h"
@@ -500,6 +501,7 @@ HTMLMediaElement::HTMLMediaElement(const QualifiedName& tag_name,
       audio_tracks_(MakeGarbageCollected<AudioTrackList>(*this)),
       video_tracks_(MakeGarbageCollected<VideoTrackList>(*this)),
       audio_source_node_(nullptr),
+      speech_synthesis_(nullptr),
       autoplay_policy_(MakeGarbageCollected<AutoplayPolicy>(this)),
       remote_playback_client_(nullptr),
       media_controls_(nullptr),
@@ -559,6 +561,13 @@ void HTMLMediaElement::DidMoveToNewDocument(Document& old_document) {
 
   if (cue_timeline_) {
     cue_timeline_->DidMoveToNewDocument(old_document);
+  }
+
+  // Stop speaking and set speech_synthesis_ to nullptr so that it is
+  // re-created on-demand when SpeechSynthesis() is called.
+  if (speech_synthesis_) {
+    speech_synthesis_->Cancel();
+    speech_synthesis_.Clear();
   }
 
   if (should_delay_load_event_) {
@@ -3194,7 +3203,7 @@ void HTMLMediaElement::AddTextTrack(WebInbandTextTrack* web_track) {
   // 4.8.12.11.2 Sourcing in-band text tracks
   // 1. Associate the relevant data with a new text track and its corresponding
   // new TextTrack object.
-  auto* text_track = MakeGarbageCollected<InbandTextTrack>(web_track);
+  auto* text_track = MakeGarbageCollected<InbandTextTrack>(web_track, *this);
 
   // 2. Set the new text track's kind, label, and language based on the
   // semantics of the relevant data, as defined by the relevant specification.
@@ -3269,7 +3278,8 @@ TextTrack* HTMLMediaElement::addTextTrack(const AtomicString& kind,
   //    text track kind to kind, its text track label to label, its text
   //    track language to language, ..., and its text track list of cues to
   //    an empty list.
-  auto* text_track = MakeGarbageCollected<TextTrack>(kind, label, language);
+  auto* text_track =
+      MakeGarbageCollected<TextTrack>(kind, label, language, *this);
   //    ..., its text track readiness state to the text track loaded state, ...
   text_track->SetReadinessState(TextTrack::kLoaded);
 
@@ -4098,6 +4108,16 @@ void HTMLMediaElement::UpdateTextTrackDisplay() {
       *this, TextTrackContainer::kDidNotStartExposingControls);
 }
 
+SpeechSynthesisBase* HTMLMediaElement::SpeechSynthesis() {
+  if (!speech_synthesis_) {
+    speech_synthesis_ =
+        SpeechSynthesisBase::Create(*(GetDocument().domWindow()));
+    speech_synthesis_->SetOnSpeakingCompletedCallback(WTF::BindRepeating(
+        &HTMLMediaElement::OnSpeakingCompleted, WrapWeakPersistent(this)));
+  }
+  return speech_synthesis_;
+}
+
 void HTMLMediaElement::MediaControlsDidBecomeVisible() {
   DVLOG(3) << "mediaControlsDidBecomeVisible(" << *this << ")";
 
@@ -4320,8 +4340,14 @@ void HTMLMediaElement::BindMediaPlayerReceiver(
       GetDocument().GetTaskRunner(TaskType::kInternalMedia));
 }
 
+void HTMLMediaElement::OnSpeakingCompleted() {
+  if (paused())
+    Play();
+}
+
 void HTMLMediaElement::Trace(Visitor* visitor) const {
   visitor->Trace(audio_source_node_);
+  visitor->Trace(speech_synthesis_);
   visitor->Trace(load_timer_);
   visitor->Trace(audio_tracks_timer_);
   visitor->Trace(removed_from_document_timer_);

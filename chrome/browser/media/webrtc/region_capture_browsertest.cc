@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -403,8 +403,16 @@ IN_PROC_BROWSER_TEST_F(RegionCaptureBrowserTest,
   EXPECT_TRUE(tab.CropTo(crop_target, Frame::kTopLevelDocument));
 }
 
+// TODO(crbug.com/1359258): Flaky on Mac.
+#if BUILDFLAG(IS_MAC)
+#define MAYBE_CropToAllowedIfTopLevelCropsToElementInEmbedded \
+  DISABLED_CropToAllowedIfTopLevelCropsToElementInEmbedded
+#else
+#define MAYBE_CropToAllowedIfTopLevelCropsToElementInEmbedded \
+  CropToAllowedIfTopLevelCropsToElementInEmbedded
+#endif
 IN_PROC_BROWSER_TEST_F(RegionCaptureBrowserTest,
-                       CropToAllowedIfTopLevelCropsToElementInEmbedded) {
+                       MAYBE_CropToAllowedIfTopLevelCropsToElementInEmbedded) {
   SetUpTest(Frame::kTopLevelDocument, /*self_capture=*/true);
   TabInfo& tab = tabs_[kMainTab];
 
@@ -447,8 +455,16 @@ IN_PROC_BROWSER_TEST_F(RegionCaptureBrowserTest, CropToAllowedToUncrop) {
   EXPECT_TRUE(tab.CropTo("undefined", Frame::kTopLevelDocument));
 }
 
+// TODO(crbug.com/1360552): Flaky on Mac.
+#if BUILDFLAG(IS_MAC)
+#define MAYBE_CropToForUncroppingAllowedOnUncroppedTracks \
+  DISABLED_CropToForUncroppingAllowedOnUncroppedTracks
+#else
+#define MAYBE_CropToForUncroppingAllowedOnUncroppedTracks \
+  CropToForUncroppingAllowedOnUncroppedTracks
+#endif
 IN_PROC_BROWSER_TEST_F(RegionCaptureBrowserTest,
-                       CropToForUncroppingAllowedOnUncroppedTracks) {
+                       MAYBE_CropToForUncroppingAllowedOnUncroppedTracks) {
   SetUpTest(Frame::kTopLevelDocument, /*self_capture=*/true);
   TabInfo& tab = tabs_[kMainTab];
 
@@ -465,8 +481,16 @@ IN_PROC_BROWSER_TEST_F(RegionCaptureBrowserTest,
 // be issued with an earlier crop version. That an actual frame be issued
 // at all, let alone with the new crop version, is not actually required,
 // or else these promises could languish unfulfilled indefinitely.
+// TODO(crbug.com/1361257): Test is flaky on Mac.
+#if BUILDFLAG(IS_MAC)
+#define MAYBE_CropToOfInvisibleElementResolvesInTimelyFashion \
+  DISABLED_CropToOfInvisibleElementResolvesInTimelyFashion
+#else
+#define MAYBE_CropToOfInvisibleElementResolvesInTimelyFashion \
+  CropToOfInvisibleElementResolvesInTimelyFashion
+#endif
 IN_PROC_BROWSER_TEST_F(RegionCaptureBrowserTest,
-                       CropToOfInvisibleElementResolvesInTimelyFashion) {
+                       MAYBE_CropToOfInvisibleElementResolvesInTimelyFashion) {
   SetUpTest(Frame::kTopLevelDocument, /*self_capture=*/true);
   TabInfo& tab = tabs_[kMainTab];
 
@@ -478,7 +502,13 @@ IN_PROC_BROWSER_TEST_F(RegionCaptureBrowserTest,
   EXPECT_TRUE(tab.CropTo(crop_target, Frame::kTopLevelDocument));
 }
 
-IN_PROC_BROWSER_TEST_F(RegionCaptureBrowserTest, CropToWorksForAllElements) {
+// https://crbug.com/1358839: Flaky on Mac and Linux
+#if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX)
+#define MAYBE_CropToWorksForAllElements DISABLED_CropToWorksForAllElements
+#else
+#define MAYBE_CropToWorksForAllElements CropToWorksForAllElements
+#endif
+IN_PROC_BROWSER_TEST_F(RegionCaptureBrowserTest, MAYBE_CropToWorksForAllElements) {
   // NOTE: this list is intentionally non-exhaustive, but represents a wide
   // variety of element types.
   static const std::vector<const char*> kElementTags{"a",
@@ -756,8 +786,10 @@ IN_PROC_BROWSER_TEST_F(
 }
 
 // Original track becomes unblocked for cropping after clone is GCed 3/3.
-IN_PROC_BROWSER_TEST_F(RegionCaptureClonesBrowserTest,
-                       CanUncropOriginalTrackAfterCloneIsGarbageCollected) {
+IN_PROC_BROWSER_TEST_F(
+    RegionCaptureClonesBrowserTest,
+    // TODO(crbug.com/1356788): Re-enable this test
+    DISABLED_CanUncropOriginalTrackAfterCloneIsGarbageCollected) {
   ManualSetUp();
 
   ASSERT_TRUE(CropTo(kCropTarget0, Frame::kTopLevelDocument, Track::kOriginal));

@@ -5,6 +5,7 @@
 #include "ui/ozone/platform/wayland/host/wayland_surface.h"
 
 #include <alpha-compositing-unstable-v1-client-protocol.h>
+#include <content-type-v1-client-protocol.h>
 #include <keyboard-shortcuts-inhibit-unstable-v1-client-protocol.h>
 #include <linux-explicit-synchronization-unstable-v1-client-protocol.h>
 #include <overlay-prioritizer-client-protocol.h>
@@ -14,6 +15,7 @@
 #include <utility>
 
 #include "base/check_op.h"
+#include "base/files/scoped_file.h"
 #include "base/logging.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rect_conversions.h"
@@ -22,6 +24,7 @@
 #include "ui/gfx/geometry/transform.h"
 #include "ui/gfx/gpu_fence.h"
 #include "ui/gfx/native_widget_types.h"
+#include "ui/gfx/overlay_priority_hint.h"
 #include "ui/ozone/platform/wayland/common/wayland_util.h"
 #include "ui/ozone/platform/wayland/host/overlay_prioritizer.h"
 #include "ui/ozone/platform/wayland/host/surface_augmenter.h"
@@ -44,6 +47,7 @@ uint32_t TranslatePriority(gfx::OverlayPriorityHint priority_hint) {
       priority = OVERLAY_PRIORITIZED_SURFACE_OVERLAY_PRIORITY_NONE;
       break;
     case gfx::OverlayPriorityHint::kRegular:
+    case gfx::OverlayPriorityHint::kVideo:
       priority = OVERLAY_PRIORITIZED_SURFACE_OVERLAY_PRIORITY_REGULAR;
       break;
     case gfx::OverlayPriorityHint::kLowLatencyCanvas:
@@ -62,8 +66,11 @@ uint32_t TranslatePriority(gfx::OverlayPriorityHint priority_hint) {
 
 WaylandSurface::ExplicitReleaseInfo::ExplicitReleaseInfo(
     wl::Object<zwp_linux_buffer_release_v1>&& linux_buffer_release,
-    wl_buffer* buffer)
-    : linux_buffer_release(std::move(linux_buffer_release)), buffer(buffer) {}
+    wl_buffer* buffer,
+    ExplicitReleaseCallback explicit_release_callback)
+    : linux_buffer_release(std::move(linux_buffer_release)),
+      buffer(buffer),
+      explicit_release_callback(std::move(explicit_release_callback)) {}
 
 WaylandSurface::ExplicitReleaseInfo::~ExplicitReleaseInfo() = default;
 
@@ -80,12 +87,16 @@ WaylandSurface::WaylandSurface(WaylandConnection* connection,
       surface_(connection->CreateSurface()) {}
 
 WaylandSurface::~WaylandSurface() {
-  if (explicit_release_callback_.is_null())
-    return;
   for (auto& release : linux_buffer_releases_) {
-    explicit_release_callback_.Run(release.second.buffer.get(),
-                                   base::ScopedFD());
+    DCHECK(release.second.explicit_release_callback);
+    std::move(release.second.explicit_release_callback)
+        .Run(release.second.buffer.get(), base::ScopedFD());
   }
+}
+
+void WaylandSurface::RequestExplicitRelease(ExplicitReleaseCallback callback) {
+  DCHECK(!next_explicit_release_request_);
+  next_explicit_release_request_ = std::move(callback);
 }
 
 uint32_t WaylandSurface::GetSurfaceId() const {
@@ -151,6 +162,17 @@ bool WaylandSurface::Initialize() {
     LOG(WARNING) << "Server doesn't support surface_augmenter.";
   }
 
+  if (auto* content_type_manager = connection_->content_type_manager_v1()) {
+    content_type_.reset(wp_content_type_manager_v1_get_surface_content_type(
+        content_type_manager, surface()));
+    if (!content_type_) {
+      LOG(ERROR)
+          << "Failed to create wp_content_type_v1. Continuing without it.";
+    }
+  } else {
+    LOG(WARNING) << "Server doesn't support wp_content_type_v1";
+  }
+
   return true;
 }
 
@@ -205,7 +227,7 @@ void WaylandSurface::UpdateBufferDamageRegion(const gfx::Rect& damage_px) {
 void WaylandSurface::Commit(bool flush) {
   wl_surface_commit(surface_.get());
   if (flush)
-    connection_->ScheduleFlush();
+    connection_->Flush();
 }
 
 void WaylandSurface::SetBufferTransform(gfx::OverlayTransform transform) {
@@ -367,7 +389,7 @@ void WaylandSurface::ApplyPendingState() {
               surface_sync, pending_state_.acquire_fence.owned_fd.get());
         }
 
-        if (!explicit_release_callback_.is_null()) {
+        if (!next_explicit_release_request_.is_null()) {
           auto* linux_buffer_release =
               zwp_linux_surface_synchronization_v1_get_release(surface_sync);
 
@@ -383,7 +405,8 @@ void WaylandSurface::ApplyPendingState() {
               linux_buffer_release,
               ExplicitReleaseInfo(
                   wl::Object<zwp_linux_buffer_release_v1>(linux_buffer_release),
-                  pending_state_.buffer));
+                  pending_state_.buffer,
+                  std::move(next_explicit_release_request_)));
         }
       }
     }
@@ -493,6 +516,14 @@ void WaylandSurface::ApplyPendingState() {
                   .GetCornerRadii(gfx::RRectF::Corner::kLowerLeft)
                   .x()));
     }
+  }
+
+  if (content_type_ &&
+      (pending_state_.contains_video != state_.contains_video)) {
+    wp_content_type_v1_set_content_type(content_type_.get(),
+                                        pending_state_.contains_video
+                                            ? WP_CONTENT_TYPE_V1_TYPE_VIDEO
+                                            : WP_CONTENT_TYPE_V1_TYPE_NONE);
   }
 
   // Buffer-local coordinates are in pixels, surface coordinates are in DIP.
@@ -677,8 +708,8 @@ void WaylandSurface::ExplicitRelease(
   auto iter = linux_buffer_releases_.find(linux_buffer_release);
   DCHECK(iter != linux_buffer_releases_.end());
   DCHECK(iter->second.buffer);
-  if (!explicit_release_callback_.is_null())
-    explicit_release_callback_.Run(iter->second.buffer.get(), std::move(fence));
+  std::move(iter->second.explicit_release_callback)
+      .Run(iter->second.buffer.get(), std::move(fence));
   linux_buffer_releases_.erase(iter);
 }
 
@@ -687,7 +718,8 @@ WaylandSurface::State::State() = default;
 WaylandSurface::State::~State() = default;
 
 WaylandSurface::State& WaylandSurface::State::operator=(
-    WaylandSurface::State& other) {
+    const WaylandSurface::State& other) {
+  damage_px = other.damage_px;
   opaque_region_px = other.opaque_region_px;
   input_region_px = other.input_region_px;
   buffer_id = other.buffer_id;
@@ -698,10 +730,11 @@ WaylandSurface::State& WaylandSurface::State::operator=(
   crop = other.crop;
   viewport_px = other.viewport_px;
   opacity = other.opacity;
-  rounded_clip_bounds = other.rounded_clip_bounds;
   use_blending = other.use_blending;
+  rounded_clip_bounds = other.rounded_clip_bounds;
   priority_hint = other.priority_hint;
   background_color = other.background_color;
+  contains_video = other.contains_video;
   return *this;
 }
 
@@ -789,6 +822,10 @@ void WaylandSurface::SetBackgroundColor(
     absl::optional<SkColor4f> background_color) {
   if (GetAugmentedSurface())
     pending_state_.background_color = background_color;
+}
+
+void WaylandSurface::SetContainsVideo(bool contains_video) {
+  pending_state_.contains_video = contains_video;
 }
 
 // static

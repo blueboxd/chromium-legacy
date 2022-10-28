@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,8 +7,10 @@
 #include <utility>
 
 #include "base/json/json_writer.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
+#include "components/history_clusters/core/history_clusters_util.h"
 
 namespace history_clusters {
 
@@ -18,25 +20,34 @@ std::string GetDebugJSONForVisits(
   base::Value::List debug_visits_list;
   for (auto& visit : visits) {
     base::Value::Dict debug_visit;
-    debug_visit.Set("visitId", static_cast<int>(visit.visit_row.visit_id));
-    debug_visit.Set("url", visit.url_row.url().spec());
+    debug_visit.Set("visitId", base::NumberToString(visit.visit_row.visit_id));
+    debug_visit.Set(
+        "url", visit.content_annotations.search_normalized_url.is_empty()
+                   ? visit.url_row.url().spec()
+                   : visit.content_annotations.search_normalized_url.spec());
     debug_visit.Set("title", visit.url_row.title());
     debug_visit.Set(
-        "foreground_time_secs",
-        static_cast<int>(visit.visit_row.visit_duration.InSeconds()));
-    debug_visit.Set(
-        "navigationTimeMs",
-        static_cast<int>(visit.visit_row.visit_time.ToDeltaSinceWindowsEpoch()
-                             .InMilliseconds()));
+        "foregroundTimeSecs",
+        base::NumberToString(visit.visit_row.visit_duration.InSeconds()));
+    debug_visit.Set("navigationTimeMs",
+                    base::NumberToString(
+                        visit.visit_row.visit_time.ToDeltaSinceWindowsEpoch()
+                            .InMilliseconds()));
     debug_visit.Set("pageEndReason", visit.context_annotations.page_end_reason);
     debug_visit.Set("pageTransition",
-                    static_cast<int>(visit.visit_row.transition));
+                    base::NumberToString(visit.visit_row.transition));
     debug_visit.Set(
         "referringVisitId",
-        static_cast<int>(visit.referring_visit_of_redirect_chain_start));
+        base::NumberToString(visit.referring_visit_of_redirect_chain_start));
     debug_visit.Set(
         "openerVisitId",
-        static_cast<int>(visit.opener_visit_of_redirect_chain_start));
+        base::NumberToString(visit.opener_visit_of_redirect_chain_start));
+    debug_visit.Set("searchTerms", visit.content_annotations.search_terms);
+    debug_visit.Set(
+        "urlForDeduping",
+        visit.content_annotations.search_normalized_url.is_empty()
+            ? ComputeURLForDeduping(visit.url_row.url()).spec()
+            : visit.content_annotations.search_normalized_url.spec());
     debug_visits_list.Append(std::move(debug_visit));
   }
 
@@ -106,10 +117,8 @@ std::string GetDebugJSONForClusters(
       debug_visit.Set("site_engagement_score", visit.engagement_score);
 
       base::Value::List debug_duplicate_visits;
-      for (const auto& duplicate_visit : visit.duplicate_visits) {
-        debug_duplicate_visits.Append(static_cast<int>(
-            duplicate_visit.annotated_visit.visit_row.visit_id));
-      }
+      for (const auto& duplicate_visit : visit.duplicate_visits)
+        debug_duplicate_visits.Append(duplicate_visit.url.spec());
       debug_visit.Set("duplicate_visits", std::move(debug_duplicate_visits));
 
       debug_visits.Append(std::move(debug_visit));

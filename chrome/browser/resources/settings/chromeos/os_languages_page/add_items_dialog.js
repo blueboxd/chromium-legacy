@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,12 +13,14 @@ import 'chrome://resources/cr_elements/cr_dialog/cr_dialog.js';
 import 'chrome://resources/polymer/v3_0/iron-flex-layout/iron-flex-layout-classes.js';
 import 'chrome://resources/polymer/v3_0/iron-list/iron-list.js';
 import './cr_checkbox_with_policy.js';
-import './shared_style.js';
+import './shared_style.css.js';
 import '../../settings_shared.css.js';
 
-import {CrScrollableBehavior, CrScrollableBehaviorInterface} from 'chrome://resources/cr_elements/cr_scrollable_behavior.m.js';
+import {CrScrollableBehavior, CrScrollableBehaviorInterface} from 'chrome://resources/cr_elements/cr_scrollable_behavior.js';
 import {FindShortcutBehavior, FindShortcutBehaviorInterface} from 'chrome://resources/cr_elements/find_shortcut_behavior.js';
-import {afterNextRender, html, mixinBehaviors, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {afterNextRender, mixinBehaviors, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+
+import {getTemplate} from './add_items_dialog.html.js';
 
 /**
  * `id` must unique.
@@ -27,7 +29,7 @@ import {afterNextRender, html, mixinBehaviors, PolymerElement} from 'chrome://re
  * search.
  * `disabledByPolicy` can be set to show that a given item is disabled by
  * policy. These items will never appear as a suggestion.
- * @typedef {!{id: string, name: string, searchTerms: !Array<string>,
+ * @typedef {{id: string, name: string, searchTerms: !Array<string>,
  * disabledByPolicy: boolean}}
  */
 export let Item;
@@ -49,7 +51,7 @@ class OsSettingsAddItemsDialogElement extends
   }
 
   static get template() {
-    return html`{__html_template__}`;
+    return getTemplate();
   }
 
   static get properties() {
@@ -181,7 +183,7 @@ class OsSettingsAddItemsDialogElement extends
   }
 
   /**
-   * @param {!{model: !{item: !Item}, target: !Element}} e
+   * @param {{model: {item: !Item}, target: !Element}} e
    * @private
    */
   onCheckboxChange_(e) {

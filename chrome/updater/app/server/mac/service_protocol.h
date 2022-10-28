@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -30,6 +30,9 @@
 // Checks for the updater's version and returns the result in the reply block.
 - (void)getVersionWithReply:
     (void (^_Nonnull)(NSString* _Nullable version))reply;
+
+// Fetches policies from device management.
+- (void)fetchPoliciesWithReply:(void (^_Nullable)(int))reply;
 
 // Checks for updates and returns the result in the reply block.
 - (void)checkForUpdatesWithUpdateState:

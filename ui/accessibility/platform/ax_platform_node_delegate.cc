@@ -8,6 +8,18 @@
 
 namespace ui {
 
+AXPlatformNodeDelegate::AXPlatformNodeDelegate() = default;
+
+AXPlatformNodeDelegate::AXPlatformNodeDelegate(ui::AXNode* node) : node_(node) {
+  DCHECK(node);
+  DCHECK(node->IsDataValid());
+}
+
+void AXPlatformNodeDelegate::SetNode(AXNode& node) {
+  DCHECK(node.IsDataValid());
+  node_ = &node;
+}
+
 gfx::Rect AXPlatformNodeDelegate::GetClippedScreenBoundsRect(
     AXOffscreenResult* offscreen_result) const {
   return GetBoundsRect(AXCoordinateSystem::kScreenDIPs,
@@ -60,10 +72,9 @@ std::vector<ax::mojom::Action> AXPlatformNodeDelegate::GetSupportedActions()
            ax::mojom::Action::kScrollBackward});
   std::vector<ax::mojom::Action> supported_actions;
 
-  // The default action must be listed at index 0.
-  // TODO(crbug.com/1370076): Find out why some nodes do not expose a
-  // default action (HasDefaultActionVerb() is false).
-  supported_actions.push_back(ax::mojom::Action::kDoDefault);
+  // The default action, if it exists, must be listed at index 0.
+  if (HasDefaultActionVerb())
+    supported_actions.push_back(ax::mojom::Action::kDoDefault);
 
   // Users expect to be able to bring a context menu on any object via e.g.
   // right click, so we make the context menu action available to any object

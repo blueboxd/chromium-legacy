@@ -67,6 +67,7 @@
 <translation id="5308226104666789935">Chromium kan ikke søge efter opdateringer</translation>
 <translation id="5396916991083608703">Vil du angive Chromium som standard?</translation>
 <translation id="5521125884468363740">Log ind, og aktivér synkronisering på alle de enheder, hvor du bruger Chromium, for at se dine faner på dem</translation>
+<translation id="5522297504975449419">Visse Chromium-funktioner er ikke længere tilgængelige.</translation>
 <translation id="5573014823074921752">Chromium-tip. Hvis du vil se flere faneindstillinger, skal du trykke på knappen Vis faner på værktøjslinjen og holde fingeren nede. Du finder knappen nederst eller øverst på skærmen.</translation>
 <translation id="5700709190537129682">Chromium kan ikke tjekke dine adgangskoder</translation>
 <translation id="5777187867430702742">Chromium-side</translation>
@@ -95,6 +96,7 @@
 <translation id="7175400662502680481">Din adgangskode er blevet offentliggjort i forbindelse med et brud på datasikkerheden. Adgangskodeadministrator anbefaler, at du ændrer det nu.</translation>
 <translation id="7208566199746267865">Med Chromium sparer du tid ved at gøre alle dine konti tilgængelige online. Du kan tilføje eller fjerne konti under Indstillinger.</translation>
 <translation id="725427773388857052">Chromium kan hjælpe med at beskytte dig mod brud på datasikkerheden, usikre websites og meget mere.</translation>
+<translation id="7255976941681861701">Lær den nye Chromium-menu at kende</translation>
 <translation id="7269362888766543920">Nogle tilføjelser får Chromium til at gå ned. Prøv at afinstallere dem.</translation>
 <translation id="7313655110045230863">Du kan gøre Chromium til din standardbrowser ved at åbne Indstillinger. Tryk på Standardbrowserapp, og vælg derefter Chromium.</translation>
 <translation id="7337881442233988129">Chromium</translation>
@@ -113,7 +115,6 @@
 <translation id="7980860476903281594">Chromium deler din lokation med godkendte websites.</translation>
 <translation id="8013573822802650211">Log ind på alle de enheder, hvor du bruger Chromium, for at se dine faner på dem</translation>
 <translation id="8073677936375100957">Vil du rydde dine Chromium-data på denne enhed?</translation>
-<translation id="8175055321229419309">Tip! <ph name="BEGIN_LINK" />Flyt Chromium til din dock<ph name="END_LINK" /></translation>
 <translation id="8240981428553046115">Chromium kunne ikke søge efter opdateringer. Prøv igen senere.</translation>
 <translation id="8308172444429103994">Tip til Chromium. Log ind hurtigere ved at vælge din gemte adgangskode øverst på tastaturet.</translation>
 <translation id="858114650497379505">Du kan bruge de adgangskoder, du har gemt i Adgangskodeadministrator, i andre apps på din iPhone.</translation>

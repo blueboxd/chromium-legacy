@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,6 +12,7 @@
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/style/ash_color_provider.h"
+#include "ash/style/color_util.h"
 #include "ash/system/palette/palette_ids.h"
 #include "ash/system/palette/palette_utils.h"
 #include "ash/system/toast/toast_manager_impl.h"
@@ -281,7 +282,7 @@ void MetalayerMode::UpdateView() {
   auto label_color = color_provider->GetContentLayerColor(
       AshColorProvider::ContentLayerType::kTextColorPrimary);
   if (!enabled)
-    label_color = AshColorProvider::GetDisabledColor(label_color);
+    label_color = ColorUtil::GetDisabledColor(label_color);
   highlight_view_->text_label()->SetEnabledColor(label_color);
   TrayPopupUtils::SetLabelFontList(
       highlight_view_->text_label(),
@@ -290,7 +291,7 @@ void MetalayerMode::UpdateView() {
   auto icon_color = color_provider->GetContentLayerColor(
       AshColorProvider::ContentLayerType::kIconColorPrimary);
   if (!enabled)
-    icon_color = AshColorProvider::GetDisabledColor(icon_color);
+    icon_color = ColorUtil::GetDisabledColor(icon_color);
 
   DCHECK(views::IsViewClass<views::ImageView>(highlight_view_->left_view()));
   views::ImageView* left_icon =

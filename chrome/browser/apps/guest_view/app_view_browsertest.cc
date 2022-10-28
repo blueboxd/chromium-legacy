@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -230,11 +230,9 @@ IN_PROC_BROWSER_TEST_F(AppViewTest,
           ->GetBackgroundHostForExtension(bad_app->id())
           ->render_process_host(),
       content::RenderProcessHostWatcher::WATCH_FOR_PROCESS_EXIT);
-  std::unique_ptr<base::DictionaryValue> fake_embed_request_param(
-      new base::DictionaryValue);
-  fake_embed_request_param->SetIntKey(appview::kGuestInstanceID,
-                                      guest_instance_id);
-  fake_embed_request_param->SetStringKey(appview::kEmbedderID, host_app->id());
+  base::Value::Dict fake_embed_request_param;
+  fake_embed_request_param.Set(appview::kGuestInstanceID, guest_instance_id);
+  fake_embed_request_param.Set(appview::kEmbedderID, host_app->id());
   extensions::AppRuntimeEventRouter::DispatchOnEmbedRequestedEvent(
       browser()->profile(), std::move(fake_embed_request_param), bad_app);
   bad_app_obs.Wait();

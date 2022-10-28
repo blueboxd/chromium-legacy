@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 package org.chromium.chrome.browser.password_check;
@@ -14,9 +14,6 @@ public final class PasswordCheckMetricsRecorder {
 
     public static void recordPasswordCheckReferrer(
             @PasswordCheckReferrer int passwordCheckReferrer) {
-        RecordHistogram.recordEnumeratedHistogram(
-                "PasswordManager.BulkCheck.PasswordCheckReferrerAndroid", passwordCheckReferrer,
-                PasswordCheckReferrer.COUNT);
         RecordHistogram.recordEnumeratedHistogram(
                 "PasswordManager.BulkCheck.PasswordCheckReferrerAndroid2", passwordCheckReferrer,
                 PasswordCheckReferrer.COUNT);

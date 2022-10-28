@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,10 +10,10 @@
 #include "chromeos/ash/components/local_search_service/public/mojom/local_search_service.mojom.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote_set.h"
 
-namespace chromeos {
-namespace local_search_service {
+namespace ash::local_search_service {
 
 class LocalSearchService : public mojom::LocalSearchService {
  public:
@@ -34,7 +34,6 @@ class LocalSearchService : public mojom::LocalSearchService {
   std::map<IndexId, std::unique_ptr<Index>> indices_;
 };
 
-}  // namespace local_search_service
-}  // namespace chromeos
+}  // namespace ash::local_search_service
 
 #endif  // CHROMEOS_ASH_COMPONENTS_LOCAL_SEARCH_SERVICE_LOCAL_SEARCH_SERVICE_H_

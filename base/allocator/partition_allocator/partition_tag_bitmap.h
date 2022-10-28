@@ -1,18 +1,20 @@
-// Copyright (c) 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #ifndef BASE_ALLOCATOR_PARTITION_ALLOCATOR_PARTITION_TAG_BITMAP_H_
 #define BASE_ALLOCATOR_PARTITION_ALLOCATOR_PARTITION_TAG_BITMAP_H_
 
+#include "base/allocator/partition_allocator/freeslot_bitmap_constants.h"
 #include "base/allocator/partition_allocator/page_allocator_constants.h"
 #include "base/allocator/partition_allocator/partition_alloc_base/compiler_specific.h"
 #include "base/allocator/partition_allocator/partition_alloc_buildflags.h"
+#include "base/allocator/partition_allocator/partition_alloc_config.h"
 #include "base/allocator/partition_allocator/partition_alloc_constants.h"
 
 namespace partition_alloc::internal {
 
-#if defined(PA_USE_MTE_CHECKED_PTR_WITH_64_BITS_POINTERS)
+#if defined(PA_ENABLE_MTE_CHECKED_PTR_SUPPORT_WITH_64_BITS_POINTERS)
 
 namespace tag_bitmap {
 // kPartitionTagSize should be equal to sizeof(PartitionTag).
@@ -84,7 +86,8 @@ PAGE_ALLOCATOR_CONSTANTS_DECLARE_CONSTEXPR PA_ALWAYS_INLINE size_t
 NumSystemPagesPerTagBitmap() {
   return tag_bitmap::CeilCountOfUnits(
       kSuperPageSize / SystemPageSize() -
-          2 * PartitionPageSize() / SystemPageSize(),
+          2 * PartitionPageSize() / SystemPageSize() -
+          ReservedFreeSlotBitmapSize() / SystemPageSize(),
       tag_bitmap::kBytesPerPartitionTagRatio + 1);
 }
 
@@ -110,10 +113,11 @@ static_assert(ReservedTagBitmapSize() - ActualTagBitmapSize() <
 
 // The region available for slot spans is the reminder of the super page, after
 // taking away the first and last partition page (for metadata and guard pages)
-// and partition pages reserved for the tag bitmap.
+// and partition pages reserved for the freeslot bitmap and the tag bitmap.
 PAGE_ALLOCATOR_CONSTANTS_DECLARE_CONSTEXPR PA_ALWAYS_INLINE size_t
 SlotSpansSize() {
-  return kSuperPageSize - 2 * PartitionPageSize() - ReservedTagBitmapSize();
+  return kSuperPageSize - 2 * PartitionPageSize() - ReservedTagBitmapSize() -
+         ReservedFreeSlotBitmapSize();
 }
 
 static_assert(ActualTagBitmapSize() * tag_bitmap::kBytesPerPartitionTagRatio >=
@@ -139,7 +143,7 @@ constexpr PA_ALWAYS_INLINE size_t ReservedTagBitmapSize() {
   return 0;
 }
 
-#endif  // defined(PA_USE_MTE_CHECKED_PTR_WITH_64_BITS_POINTERS)
+#endif  // defined(PA_ENABLE_MTE_CHECKED_PTR_SUPPORT_WITH_64_BITS_POINTERS)
 
 }  // namespace partition_alloc::internal
 

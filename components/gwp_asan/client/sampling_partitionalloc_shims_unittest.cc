@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -70,9 +70,10 @@ class SamplingPartitionAllocShimsTest : public base::MultiProcessTest {
   static void multiprocessTestSetup() {
     crash_reporter::InitializeCrashKeys();
     partition_alloc::PartitionAllocGlobalInit(HandleOOM);
-    InstallPartitionAllocHooks(
-        AllocatorState::kMaxMetadata, AllocatorState::kMaxMetadata,
-        AllocatorState::kMaxSlots, kSamplingFrequency, base::DoNothing());
+    InstallPartitionAllocHooks(AllocatorState::kMaxMetadata,
+                               AllocatorState::kMaxMetadata,
+                               AllocatorState::kMaxRequestedSlots,
+                               kSamplingFrequency, base::DoNothing());
   }
 
  protected:
@@ -141,7 +142,8 @@ MULTIPROCESS_TEST_MAIN_WITH_SETUP(
   allocator.init(kAllocatorOptions);
 
   std::set<void*> type1, type2;
-  for (size_t i = 0; i < kLoopIterations * AllocatorState::kMaxSlots; i++) {
+  for (size_t i = 0; i < kLoopIterations * AllocatorState::kMaxRequestedSlots;
+       i++) {
     void* ptr1 = allocator.root()->Alloc(1, kFakeType);
     void* ptr2 = allocator.root()->Alloc(1, kFakeType2);
 

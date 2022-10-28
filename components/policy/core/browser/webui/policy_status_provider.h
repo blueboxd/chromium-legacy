@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -25,6 +25,8 @@ namespace policy {
 class CloudPolicyClient;
 class CloudPolicyCore;
 class CloudPolicyStore;
+
+POLICY_EXPORT extern const char kPolicyDescriptionKey[];
 
 // An interface for querying the status of a policy provider.  It surfaces
 // things like last fetch time or status of the backing store, but not the

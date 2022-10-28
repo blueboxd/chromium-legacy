@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -45,6 +45,14 @@ class TabContainer : public views::View, public BrowserRootView::DropTarget {
   // Changes the active tab from |prev_active_index| to |new_active_index|.
   virtual void SetActiveTab(absl::optional<size_t> prev_active_index,
                             absl::optional<size_t> new_active_index) = 0;
+
+  // Transfer the tab at `model_index` our of this container so it can be
+  // parented elsewhere. Unlike RemoveTab, this method does not close the tab,
+  // but it does remove it from the layout viewmodel.
+  // TODO(crbug.com/1346023): Find a better name for this once the full suite of
+  // ownership-transferring methods is in place.
+  [[nodiscard]] virtual std::unique_ptr<Tab> TransferTabOut(
+      int model_index) = 0;
 
   // `view` is no longer being dragged. This TabContainer takes ownership of it
   // in the view hierarchy.

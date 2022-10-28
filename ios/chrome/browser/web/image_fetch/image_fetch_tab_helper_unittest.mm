@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,11 +6,11 @@
 
 #import <WebKit/WebKit.h>
 
-#include "base/strings/sys_string_conversions.h"
+#import "base/strings/sys_string_conversions.h"
 #import "base/test/ios/wait_util.h"
-#include "base/test/metrics/histogram_tester.h"
-#include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
-#include "ios/chrome/browser/web/image_fetch/image_fetch_java_script_feature.h"
+#import "base/test/metrics/histogram_tester.h"
+#import "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
+#import "ios/chrome/browser/web/image_fetch/image_fetch_java_script_feature.h"
 #import "ios/web/js_messaging/java_script_feature_manager.h"
 #import "ios/web/public/js_messaging/java_script_feature.h"
 #import "ios/web/public/test/fakes/fake_web_client.h"
@@ -19,13 +19,13 @@
 #import "ios/web/public/test/web_task_environment.h"
 #import "ios/web/test/js_test_util_internal.h"
 #import "ios/web/web_state/ui/crw_web_controller.h"
-#include "net/http/http_util.h"
-#include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
-#include "services/network/public/mojom/url_response_head.mojom.h"
-#include "services/network/test/test_url_loader_factory.h"
-#include "testing/gtest/include/gtest/gtest.h"
-#include "testing/gtest_mac.h"
-#include "testing/platform_test.h"
+#import "net/http/http_util.h"
+#import "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
+#import "services/network/public/mojom/url_response_head.mojom.h"
+#import "services/network/test/test_url_loader_factory.h"
+#import "testing/gtest/include/gtest/gtest.h"
+#import "testing/gtest_mac.h"
+#import "testing/platform_test.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -126,7 +126,7 @@ class ImageFetchTabHelperTest : public PlatformTest {
 
 // Tests that ImageFetchTabHelper::GetImageData can get image data from Js.
 TEST_F(ImageFetchTabHelperTest, GetImageDataWithJsSucceedFromCanvas) {
-  // Inject fake |__gCrWeb.imageFetch.getImageData| that returns |kImageData|
+  // Inject fake `__gCrWeb.imageFetch.getImageData` that returns `kImageData`
   // in base64 format.
   id script_result = ExecuteJavaScriptForFeature(
       [NSString
@@ -158,7 +158,7 @@ TEST_F(ImageFetchTabHelperTest, GetImageDataWithJsSucceedFromCanvas) {
 
 // Tests that ImageFetchTabHelper::GetImageData can get image data from Js.
 TEST_F(ImageFetchTabHelperTest, GetImageDataWithJsSucceedFromXmlHttpRequest) {
-  // Inject fake |__gCrWeb.imageFetch.getImageData| that returns |kImageData|
+  // Inject fake `__gCrWeb.imageFetch.getImageData` that returns `kImageData`
   // in base64 format.
   id script_result = ExecuteJavaScriptForFeature(
       [NSString
@@ -218,7 +218,7 @@ TEST_F(ImageFetchTabHelperTest, GetImageDataWithJsFail) {
 // Tests that ImageFetchTabHelper::GetImageData gets image data from server when
 // Js does not send a message back.
 TEST_F(ImageFetchTabHelperTest, GetImageDataWithJsTimeout) {
-  // Inject fake |__gCrWeb.imageFetch.getImageData| that does not do anything.
+  // Inject fake `__gCrWeb.imageFetch.getImageData` that does not do anything.
   id script_result = ExecuteJavaScriptForFeature(
       @"__gCrWeb.imageFetch = {}; __gCrWeb.imageFetch.getImageData = "
       @"function(id, url) {}; true;",
@@ -245,7 +245,7 @@ TEST_F(ImageFetchTabHelperTest, GetImageDataWithJsTimeout) {
 // Tests that ImageFetchTabHelper::GetImageData gets image data from server when
 // WebState is destroyed.
 TEST_F(ImageFetchTabHelperTest, GetImageDataWithWebStateDestroy) {
-  // Inject fake |__gCrWeb.imageFetch.getImageData| that does not do anything.
+  // Inject fake `__gCrWeb.imageFetch.getImageData` that does not do anything.
   id script_result = ExecuteJavaScriptForFeature(
       @"__gCrWeb.imageFetch = {}; __gCrWeb.imageFetch.getImageData = "
       @"function(id, url) {}; true;",
@@ -272,7 +272,7 @@ TEST_F(ImageFetchTabHelperTest, GetImageDataWithWebStateDestroy) {
 // Tests that ImageFetchTabHelper::GetImageData gets image data from server when
 // WebState navigates to a new web page.
 TEST_F(ImageFetchTabHelperTest, GetImageDataWithWebStateNavigate) {
-  // Inject fake |__gCrWeb.imageFetch.getImageData| that does not do anything.
+  // Inject fake `__gCrWeb.imageFetch.getImageData` that does not do anything.
   id script_result = ExecuteJavaScriptForFeature(
       @"__gCrWeb.imageFetch = {}; __gCrWeb.imageFetch.getImageData = "
       @"function(id, url) {}; true;",

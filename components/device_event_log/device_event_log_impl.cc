@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -15,6 +15,7 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/process/process_handle.h"
+#include "base/ranges/algorithm.h"
 #include "base/strings/string_tokenizer.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -178,23 +179,23 @@ std::string LogEntryToString(const DeviceEventLogImpl::LogEntry& log_entry,
   return line;
 }
 
-void LogEntryToDictionary(const DeviceEventLogImpl::LogEntry& log_entry,
-                          base::DictionaryValue* output) {
-  output->SetString("timestamp", DateAndTimeWithMicroseconds(log_entry.time));
-  output->SetString("timestampshort", TimeWithSeconds(log_entry.time));
-  output->SetString("level", kLogLevelName[log_entry.log_level]);
-  output->SetString("type", GetLogTypeString(log_entry.log_type));
-  output->SetString("file", base::StringPrintf("%s:%d ", log_entry.file.c_str(),
-                                               log_entry.file_line));
-  output->SetString("event", log_entry.event);
+base::Value::Dict LogEntryToDictionary(
+    const DeviceEventLogImpl::LogEntry& log_entry) {
+  base::Value::Dict entry_dict;
+  entry_dict.Set("timestamp", DateAndTimeWithMicroseconds(log_entry.time));
+  entry_dict.Set("timestampshort", TimeWithSeconds(log_entry.time));
+  entry_dict.Set("level", kLogLevelName[log_entry.log_level]);
+  entry_dict.Set("type", GetLogTypeString(log_entry.log_type));
+  entry_dict.Set("file", base::StringPrintf("%s:%d ", log_entry.file.c_str(),
+                                            log_entry.file_line));
+  entry_dict.Set("event", log_entry.event);
+  return entry_dict;
 }
 
 std::string LogEntryAsJSON(const DeviceEventLogImpl::LogEntry& log_entry) {
-  base::DictionaryValue entry_dict;
-  LogEntryToDictionary(log_entry, &entry_dict);
   std::string json;
   JSONStringValueSerializer serializer(&json);
-  if (!serializer.Serialize(entry_dict)) {
+  if (!serializer.Serialize(LogEntryToDictionary(log_entry))) {
     LOG(ERROR) << "Failed to serialize to JSON";
   }
   return json;
@@ -467,14 +468,9 @@ void DeviceEventLogImpl::ClearAll() {
 }
 
 void DeviceEventLogImpl::Clear(const base::Time& begin, const base::Time& end) {
-  auto begin_it = std::find_if(
-      entries_.begin(), entries_.end(),
-      [begin](const LogEntry& entry) { return entry.time >= begin; });
-  auto end_rev_it =
-      std::find_if(entries_.rbegin(), entries_.rend(),
-                   [end](const LogEntry& entry) { return entry.time <= end; });
-
-  entries_.erase(begin_it, end_rev_it.base());
+  entries_.erase(
+      base::ranges::lower_bound(entries_, begin, {}, &LogEntry::time),
+      base::ranges::upper_bound(entries_, end, {}, &LogEntry::time));
 }
 
 int DeviceEventLogImpl::GetCountByLevelForTesting(LogLevel level) {

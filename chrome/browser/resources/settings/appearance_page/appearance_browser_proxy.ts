@@ -1,4 +1,4 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -17,7 +17,8 @@ export interface AppearanceBrowserProxy {
   useDefaultTheme(): void;
 
   // <if expr="is_linux">
-  useSystemTheme(): void;
+  useGtkTheme(): void;
+  useQtTheme(): void;
   // </if>
 
   validateStartupPage(url: string): Promise<boolean>;
@@ -45,8 +46,12 @@ export class AppearanceBrowserProxyImpl implements AppearanceBrowserProxy {
   }
 
   // <if expr="is_linux">
-  useSystemTheme() {
-    chrome.send('useSystemTheme');
+  useGtkTheme() {
+    chrome.send('useGtkTheme');
+  }
+
+  useQtTheme() {
+    chrome.send('useQtTheme');
   }
   // </if>
 

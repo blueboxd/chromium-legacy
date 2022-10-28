@@ -1,4 +1,4 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,6 +13,7 @@
 #include <memory>
 #include <set>
 #include <string>
+#include <tuple>
 #include <unordered_map>
 #include <utility>
 #include <vector>
@@ -60,6 +61,7 @@
 #include "components/autofill/core/browser/data_model/autofill_profile_comparator.h"
 #include "components/autofill/core/browser/data_model/credit_card.h"
 #include "components/autofill/core/browser/data_model/phone_number.h"
+#include "components/autofill/core/browser/fast_checkout_delegate_impl.h"
 #include "components/autofill/core/browser/field_types.h"
 #include "components/autofill/core/browser/form_data_importer.h"
 #include "components/autofill/core/browser/form_structure.h"
@@ -121,6 +123,9 @@ constexpr size_t kMaxRecentFormSignaturesToRemember = 3;
 // Time to wait after a dynamic form change before triggering a refill.
 // This is used for sites that change multiple things consecutively.
 constexpr base::TimeDelta kWaitTimeForDynamicForms = base::Milliseconds(200);
+
+// Characters to be removed from the string before comparisons.
+constexpr char16_t kCharsToBeRemoved[] = u"-_/\\.";
 
 // Returns whether the |field| is predicted as being any kind of name.
 bool IsNameType(const AutofillField& field) {
@@ -224,10 +229,11 @@ void LogAutocompletePredictionCollisionTypeMetrics(
     auto autocomplete_state = AutofillMetrics::AutocompleteState::kNone;
     if (ShouldIgnoreAutocompleteAttribute(field->autocomplete_attribute)) {
       autocomplete_state = AutofillMetrics::AutocompleteState::kOff;
-    } else if (auto autocomplete = ParseAutocompleteAttribute(*field)) {
-      autocomplete_state = autocomplete->field_type != HTML_TYPE_UNRECOGNIZED
-                               ? AutofillMetrics::AutocompleteState::kValid
-                               : AutofillMetrics::AutocompleteState::kGarbage;
+    } else if (field->parsed_autocomplete) {
+      autocomplete_state =
+          field->parsed_autocomplete->field_type != HtmlFieldType::kUnrecognized
+              ? AutofillMetrics::AutocompleteState::kValid
+              : AutofillMetrics::AutocompleteState::kGarbage;
     }
 
     AutofillMetrics::LogAutocompletePredictionCollisionState(
@@ -407,6 +413,15 @@ size_t TypeValueFormFillingLimit(ServerFieldType field_type) {
   }
 }
 
+// Removes whitespace and `kCharsToBeRemoved` from the `value` and returns it.
+std::u16string RemoveWhiteSpaceAndConjugatingCharacters(
+    const std::u16string& value) {
+  std::u16string sanitized_value;
+  base::TrimWhitespace(value, base::TRIM_ALL, &sanitized_value);
+  base::RemoveChars(sanitized_value, kCharsToBeRemoved, &sanitized_value);
+  return sanitized_value;
+}
+
 }  // namespace
 
 BrowserAutofillManager::FillingContext::FillingContext(
@@ -445,11 +460,12 @@ BrowserAutofillManager::BrowserAutofillManager(
                       enable_download_manager),
       external_delegate_(
           std::make_unique<AutofillExternalDelegate>(this, driver)),
+      fast_checkout_delegate_(std::make_unique<FastCheckoutDelegateImpl>(this)),
       touch_to_fill_delegate_(std::make_unique<TouchToFillDelegateImpl>(this)),
       app_locale_(app_locale),
       personal_data_(client->GetPersonalDataManager()),
       field_filler_(app_locale, client->GetAddressNormalizer()),
-      single_field_form_fill_router_(client->GetSingleFieldFormFillRouter()),
+      single_field_form_fill_router_(client->CreateSingleFieldFormFillRouter()),
       suggestion_generator_(
           std::make_unique<AutofillSuggestionGenerator>(client,
                                                         personal_data_)) {
@@ -742,12 +758,14 @@ void BrowserAutofillManager::OnFormSubmittedImpl(const FormData& form,
         (submitted_form->field(i)->properties_mask & kUserTyped)) {
       // Compare and record if the currently filled value is same as the
       // non-empty value that was to be autofilled in the field.
+      std::u16string sanitized_submitted_value =
+          RemoveWhiteSpaceAndConjugatingCharacters(
+              submitted_form->field(i)->value);
       AutofillMetrics::
           LogIsValueNotAutofilledOverExistingValueSameAsSubmittedValue(
               *submitted_form->field(i)
                    ->value_not_autofilled_over_existing_value_hash() ==
-              base::FastHash(
-                  base::UTF16ToUTF8(submitted_form->field(i)->value)));
+              base::FastHash(base::UTF16ToUTF8(sanitized_submitted_value)));
     }
   }
   single_field_form_fill_router_->OnWillSubmitForm(
@@ -763,6 +781,27 @@ void BrowserAutofillManager::OnFormSubmittedImpl(const FormData& form,
   }
 
   submitted_form->set_submission_source(source);
+
+  // Update Personal Data with the form's submitted data.
+  // Also triggers offering local/upload credit card save, if applicable.
+  if (submitted_form->IsAutofillable() ||
+      ContainsAutofillableValue(*submitted_form)) {
+    FormDataImporter* form_data_importer = client()->GetFormDataImporter();
+    form_data_importer->ImportFormData(*submitted_form,
+                                       IsAutofillProfileEnabled(),
+                                       IsAutofillCreditCardEnabled());
+    // Associate the form signatures of recently submitted address/credit card
+    // forms to `submitted_form`, if it is an address/credit card form itself.
+    // This information is attached to the vote.
+    if (base::FeatureList::IsEnabled(features::kAutofillAssociateForms)) {
+      if (absl::optional<FormStructure::FormAssociations> associations =
+              form_data_importer->GetFormAssociations(
+                  submitted_form->form_signature())) {
+        submitted_form->set_form_associations(*associations);
+      }
+    }
+  }
+
   MaybeStartVoteUploadProcess(std::move(submitted_form),
                               /*observed_submission=*/true);
 
@@ -782,17 +821,6 @@ void BrowserAutofillManager::OnFormSubmittedImpl(const FormData& form,
     credit_card_form_event_logger_->OnFormSubmitted(sync_state_,
                                                     *submitted_form);
   }
-
-  if (!submitted_form->IsAutofillable() &&
-      !ContainsAutofillableValue(*submitted_form)) {
-    return;
-  }
-
-  // Update Personal Data with the form's submitted data.
-  // Also triggers offering local/upload credit card save, if applicable.
-  client()->GetFormDataImporter()->ImportFormData(
-      *submitted_form, IsAutofillProfileEnabled(),
-      IsAutofillCreditCardEnabled());
 }
 
 bool BrowserAutofillManager::MaybeStartVoteUploadProcess(
@@ -982,7 +1010,7 @@ void BrowserAutofillManager::OnAskForValuesToFillImpl(
     const gfx::RectF& transformed_box,
     int query_id,
     bool autoselect_first_suggestion,
-    TouchToFillEligible touch_to_fill_eligible) {
+    FormElementWasClicked form_element_was_clicked) {
   if (base::FeatureList::IsEnabled(features::kAutofillDisableFilling)) {
     return;
   }
@@ -1072,8 +1100,8 @@ void BrowserAutofillManager::OnAskForValuesToFillImpl(
     }
 
     // Therefore, we check the attribute explicitly.
-    if (context.focused_field &&
-        context.focused_field->Type().html_type() == HTML_TYPE_UNRECOGNIZED) {
+    if (context.focused_field && context.focused_field->Type().html_type() ==
+                                     HtmlFieldType::kUnrecognized) {
       return false;
     }
 
@@ -1098,13 +1126,25 @@ void BrowserAutofillManager::OnAskForValuesToFillImpl(
 
   single_field_form_fill_router_->CancelPendingQueries(this);
   if (touch_to_fill_delegate_->IsShowingTouchToFill() ||
-      (touch_to_fill_eligible &&
+      (form_element_was_clicked &&
        touch_to_fill_delegate_->TryToShowTouchToFill(query_id, form, field))) {
     // Touch To Fill surface is shown, so abort showing regular Autofill UI.
     // Now the flow is controlled by the |touch_to_fill_delegate_| instead
     // of |external_delegate_|.
     return;
   }
+
+  if (fast_checkout_delegate_->IsShowingFastCheckoutUI() ||
+      (form_element_was_clicked &&
+       fast_checkout_delegate_->TryToShowFastCheckout(form, field))) {
+    // The Fast Checkout surface is shown, so abort showing regular Autofill UI.
+    // Now the flow is controlled by the `fast_checkout_delegate_` instead
+    // of `external_delegate_`.
+    // In principle, touch_to_fill is prioritized, but the triggering surfaces
+    // are different and the two screens should never coincide.
+    return;
+  }
+
   // Send Autofill suggestions (could be an empty list).
   external_delegate_->OnSuggestionsReturned(query_id, suggestions,
                                             autoselect_first_suggestion,
@@ -1409,6 +1449,7 @@ void BrowserAutofillManager::OnHidePopupImpl() {
 
   single_field_form_fill_router_->CancelPendingQueries(this);
   client()->HideAutofillPopup(PopupHidingReason::kRendererEvent);
+  fast_checkout_delegate_->HideFastCheckoutUI();
   touch_to_fill_delegate_->HideTouchToFill();
 }
 
@@ -1739,10 +1780,19 @@ void BrowserAutofillManager::UploadFormDataAsyncCallback(
   if (submitted_form->ShouldRunHeuristics() ||
       submitted_form->ShouldRunHeuristicsForSingleFieldForms() ||
       submitted_form->ShouldBeQueried()) {
+    autofill_assistant::AutofillAssistantIntent intent =
+        autofill_assistant::AutofillAssistantIntent::UNDEFINED_INTENT;
+    if (submitted_form->field_count() > 0) {
+      const AutofillField* autofill_field = submitted_form->field(0);
+      auto* logger = GetEventFormLogger(autofill_field->Type().group());
+      if (logger)
+        intent = logger->autofill_assistant_intent();
+    }
+
     submitted_form->LogQualityMetrics(
         submitted_form->form_parsed_timestamp(), interaction_time,
         submission_time, form_interactions_ukm_logger(), did_show_suggestions_,
-        observed_submission, form_interactions_counter_->GetCounts());
+        observed_submission, form_interactions_counter_->GetCounts(), intent);
   }
   if (submitted_form->ShouldBeUploaded())
     UploadFormData(*submitted_form, observed_submission);
@@ -1810,6 +1860,7 @@ void BrowserAutofillManager::Reset() {
   credit_card_action_ = mojom::RendererFormDataAction::kPreview;
   initial_interaction_timestamp_ = TimeTicks();
   external_delegate_->Reset();
+  fast_checkout_delegate_->Reset();
   touch_to_fill_delegate_->Reset();
   filling_context_.clear();
   form_interactions_counter_ = std::make_unique<FormInteractionsCounter>();
@@ -1844,22 +1895,23 @@ bool BrowserAutofillManager::RefreshDataModels() {
 
 CreditCard* BrowserAutofillManager::GetCreditCard(int unique_id) {
   // Unpack the |unique_id| into component parts.
-  std::string credit_card_id;
-  std::string profile_id;
+  Suggestion::BackendId credit_card_id;
+  Suggestion::BackendId profile_id;
   suggestion_generator_->SplitFrontendId(unique_id, &credit_card_id,
                                          &profile_id);
-  return personal_data_->GetCreditCardByGUID(credit_card_id);
+  return personal_data_->GetCreditCardByGUID(credit_card_id.value());
 }
 
 AutofillProfile* BrowserAutofillManager::GetProfile(int unique_id) {
   // Unpack the |unique_id| into component parts.
-  std::string credit_card_id;
-  std::string profile_id;
+  Suggestion::BackendId credit_card_id;
+  Suggestion::BackendId profile_id;
   suggestion_generator_->SplitFrontendId(unique_id, &credit_card_id,
                                          &profile_id);
 
-  if (base::IsValidGUID(profile_id))
-    return personal_data_->GetProfileByGUID(profile_id);
+  std::string guid = profile_id.value();
+  if (base::IsValidGUID(guid))
+    return personal_data_->GetProfileByGUID(guid);
   return nullptr;
 }
 
@@ -1966,37 +2018,12 @@ void BrowserAutofillManager::FillOrPreviewDataModelForm(
         filling_context && base::Contains(filling_context->forced_fill_values,
                                           form.fields[i].global_id());
 
-    // Do not override prefilled text/input field values. Selection fields are
-    // excluded from this check because they may have a non-empty value.
-    // If the initiating element had a prefilled value but the autofill
-    // suggestion is present that includes the currently filled value in the
-    // field as a substring, Autofill would override the filled value in that
-    // case.
-    if (base::FeatureList::IsEnabled(
-            features::kAutofillPreventOverridingPrefilledValues)) {
-      form_structure->field(i)
-          ->set_value_not_autofilled_over_existing_value_hash(absl::nullopt);
-      if (form.fields[i].form_control_type != "select-one" &&
-          !form.fields[i].value.empty() && !has_override &&
-          !FormFieldData::DeepEqual(form.fields[i], field)) {
-        buffer << Tr{} << field_number << "Skipped: value is prefilled";
-        std::string unused_failure_to_fill;
-        const std::u16string kEmptyCvc{};
-        const std::u16string fill_value = field_filler_.GetValueForFilling(
-            *cached_field, profile_or_credit_card, &result.fields[i],
-            optional_cvc ? *optional_cvc : kEmptyCvc, action,
-            &unused_failure_to_fill);
-        if (action == mojom::RendererFormDataAction::kFill &&
-            !fill_value.empty() && fill_value != form.fields[i].value &&
-            !form_structure->field(i)->value.empty()) {
-          // Save the value that was supposed to be autofilled for this field if
-          // the field contained an initial value.
-          form_structure->field(i)
-              ->set_value_not_autofilled_over_existing_value_hash(
-                  base::FastHash(base::UTF16ToUTF8(fill_value)));
-        }
-        continue;
-      }
+    if (!has_override &&
+        ShouldPreventAutofillFromOverridingPrefilledField(
+            action, field, form.fields[i], cached_field, &result.fields[i],
+            profile_or_credit_card, optional_cvc)) {
+      LOG_AF(buffer) << Tr{} << field_number << "Skipped: value is prefilled";
+      continue;
     }
 
     // Do not fill fields that have been edited by the user, except if the field
@@ -2160,6 +2187,61 @@ void BrowserAutofillManager::FillOrPreviewDataModelForm(
   }
 }
 
+bool BrowserAutofillManager::ShouldPreventAutofillFromOverridingPrefilledField(
+    mojom::RendererFormDataAction action,
+    const FormFieldData& initiating_field,
+    const FormFieldData& to_be_filled_field,
+    AutofillField* cached_field,
+    FormFieldData* field_data,
+    absl::variant<const AutofillProfile*, const CreditCard*>
+        profile_or_credit_card,
+    const std::u16string* optional_cvc) {
+  // Keeping the credit card fields out of the experiment group.
+  // The default behaviour would be to override the credit card pre-filled
+  // fields.
+  if (cached_field->Type().group() == FieldTypeGroup::kCreditCard)
+    return false;
+
+  if (!base::FeatureList::IsEnabled(
+          features::kAutofillPreventOverridingPrefilledValues)) {
+    return false;
+  }
+
+  cached_field->set_value_not_autofilled_over_existing_value_hash(
+      absl::nullopt);
+
+  // Some sites have empty values in the fields, for example.
+  std::u16string sanitized_field_value =
+      RemoveWhiteSpaceAndConjugatingCharacters(to_be_filled_field.value);
+
+  if (to_be_filled_field.form_control_type != "select-one" &&
+      !sanitized_field_value.empty() &&
+      !FormFieldData::DeepEqual(to_be_filled_field, initiating_field)) {
+    std::string unused_failure_to_fill;
+    const std::u16string kEmptyCvc{};
+    std::u16string fill_value = field_filler_.GetValueForFilling(
+        *cached_field, profile_or_credit_card, field_data,
+        optional_cvc ? *optional_cvc : kEmptyCvc, action,
+        &unused_failure_to_fill);
+    std::u16string sanitized_fill_value =
+        RemoveWhiteSpaceAndConjugatingCharacters(fill_value);
+
+    if (action == mojom::RendererFormDataAction::kFill &&
+        !sanitized_fill_value.empty() &&
+        !base::EqualsCaseInsensitiveASCII(sanitized_field_value,
+                                          sanitized_fill_value) &&
+        !cached_field->value.empty()) {
+      // Save the value that was supposed to be autofilled for this
+      // field if the field contained an initial value.
+      cached_field->set_value_not_autofilled_over_existing_value_hash(
+          base::FastHash(base::UTF16ToUTF8(sanitized_fill_value)));
+    }
+    return true;
+  }
+
+  return false;
+}
+
 std::unique_ptr<FormStructure> BrowserAutofillManager::ValidateSubmittedForm(
     const FormData& form) {
   // Ignore forms not present in our cache.  These are typically forms with
@@ -2263,7 +2345,7 @@ void BrowserAutofillManager::OnFormProcessed(
                             client()->GetUkmSourceId(), form_structure);
 
   for (const auto& field : form_structure) {
-    if (field->Type().html_type() == HTML_TYPE_ONE_TIME_CODE) {
+    if (field->Type().html_type() == HtmlFieldType::kOneTimeCode) {
       has_observed_one_time_code_field_ = true;
       break;
     }
@@ -2624,42 +2706,34 @@ void BrowserAutofillManager::TriggerRefill(const FormData& form) {
 
   filling_context->attempted_refill = true;
 
-  // Try to find the field from which the original field originated.
-  // Precedence is given to look up by |filled_field_id|.
-  // If that is unsuccessful, look up is done by |filled_field_signature|.
-  // TODO(crbug/896689): Clean up after feature launch.
-  AutofillField* autofill_field = nullptr;
-  for (const std::unique_ptr<AutofillField>& field : *form_structure) {
-    if (field->global_id() == filling_context->filled_field_id &&
-        field->origin == filling_context->filled_origin) {
-      autofill_field = field.get();
-      break;
-    }
-  }
-
-  // If the field was deleted, look for one with a matching signature. Prefer
-  // focusable and newer fields over invisible or older ones.
-  if (autofill_field == nullptr) {
-    auto is_better = [](const AutofillField& f, const AutofillField& g) {
-      return std::forward_as_tuple(f.IsFocusable(),
-                                   f.unique_renderer_id.value()) >
-             std::forward_as_tuple(g.IsFocusable(),
-                                   g.unique_renderer_id.value());
-    };
-
-    for (const std::unique_ptr<AutofillField>& field : *form_structure) {
-      if (field->GetFieldSignature() ==
-              filling_context->filled_field_signature &&
-          field->origin == filling_context->filled_origin) {
-        if (autofill_field == nullptr || is_better(*field, *autofill_field)) {
-          autofill_field = field.get();
-        }
-      }
-    }
-  }
-
-  // If it was not found cancel the refill.
-  if (!autofill_field)
+  // Try to find the field from which the original fill originated.
+  // The precedence for the look up is the following:
+  //  - focusable `filled_field_id`
+  //  - focusable `filled_field_signature`
+  //  - non-focusable `filled_field_id`
+  //  - non-focusable `filled_field_signature`
+  // and prefer newer renderer ids.
+  auto comparison_attributes =
+      [&](const std::unique_ptr<AutofillField>& field) {
+        return std::make_tuple(
+            field->origin == filling_context->filled_origin,
+            field->IsFocusable(),
+            field->global_id() == filling_context->filled_field_id,
+            field->GetFieldSignature() ==
+                filling_context->filled_field_signature,
+            field->unique_renderer_id);
+      };
+  auto it =
+      base::ranges::max_element(*form_structure, {}, comparison_attributes);
+  AutofillField* autofill_field =
+      it != form_structure->end() ? it->get() : nullptr;
+  bool found_matching_element =
+      autofill_field &&
+      autofill_field->origin == filling_context->filled_origin &&
+      (autofill_field->global_id() == filling_context->filled_field_id ||
+       autofill_field->GetFieldSignature() ==
+           filling_context->filled_field_signature);
+  if (!found_matching_element)
     return;
 
   FormFieldData field = *autofill_field;
@@ -2915,7 +2989,8 @@ void BrowserAutofillManager::PreProcessStateMatchingTypes(
     if (!canonical_state_name_from_profile)
       continue;
 
-    const AutofillType kCountryCode(HTML_TYPE_COUNTRY_CODE, HTML_MODE_NONE);
+    const AutofillType kCountryCode(HtmlFieldType::kCountryCode,
+                                    HtmlFieldMode::kNone);
     const std::u16string& country_code =
         profile.GetInfo(kCountryCode, app_locale_);
 

@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -25,6 +25,7 @@ class MdTextButton;
 class ImageButton;
 class ProgressBar;
 class FlexLayoutView;
+class InkDropContainerView;
 }  // namespace views
 
 class DownloadShelfContextMenuView;
@@ -58,6 +59,8 @@ class DownloadBubbleRowView : public views::View,
   void OnMouseEntered(const ui::MouseEvent& event) override;
   void OnMouseExited(const ui::MouseEvent& event) override;
   gfx::Size CalculatePreferredSize() const override;
+  void AddLayerBeneathView(ui::Layer* layer) override;
+  void RemoveLayerBeneathView(ui::Layer* layer) override;
 
   // Overrides views::FocusChangeListener
   void OnWillChangeFocus(views::View* before, views::View* now) override;
@@ -190,6 +193,8 @@ class DownloadBubbleRowView : public views::View,
   // Button for transparent button click, inkdrop animations and drag and drop
   // events.
   raw_ptr<views::Button> transparent_button_ = nullptr;
+
+  raw_ptr<views::InkDropContainerView> inkdrop_container_;
 
   // Drag and drop:
   // Whether we are dragging the download bubble row.

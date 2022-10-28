@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -120,7 +120,7 @@ void FakeMediaAnalyticsClient::GetDiagnostics(
 
 void FakeMediaAnalyticsClient::BootstrapMojoConnection(
     base::ScopedFD file_descriptor,
-    VoidDBusMethodCallback callback) {
+    chromeos::VoidDBusMethodCallback callback) {
   // Fake that the mojo connection has been successfully established.
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::BindOnce(std::move(callback), true));

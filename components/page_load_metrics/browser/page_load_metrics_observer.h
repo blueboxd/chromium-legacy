@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -135,13 +135,9 @@ class PageLoadMetricsObserver : public PageLoadMetricsObserverInterface {
 
   static bool IsStandardWebPageMimeType(const std::string& mime_type);
 
-  // Gets/Sets the delegate. The delegate must outlive the observer and is
-  // normally set when the observer is first registered for the page load. The
-  // delegate can only be set once.
-  const PageLoadMetricsObserverDelegate& GetDelegate() const;
-  void SetDelegate(PageLoadMetricsObserverDelegate*);
-
   // PageLoadMetricsObserverInterface implementation:
+  const PageLoadMetricsObserverDelegate& GetDelegate() const override;
+  void SetDelegate(PageLoadMetricsObserverDelegate*) override;
   const char* GetObserverName() const override;
   ObservePolicy OnStart(content::NavigationHandle* navigation_handle,
                         const GURL& currently_committed_url,
@@ -257,6 +253,7 @@ class PageLoadMetricsObserver : public PageLoadMetricsObserverInterface {
       content::NavigationHandle* navigation_handle) override {}
   void OnV8MemoryChanged(
       const std::vector<MemoryUpdate>& memory_updates) override {}
+  void OnSharedStorageWorkletHostCreated() override {}
 
  private:
   raw_ptr<PageLoadMetricsObserverDelegate> delegate_ = nullptr;

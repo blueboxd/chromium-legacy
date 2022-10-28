@@ -1,10 +1,11 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome/browser/ash/guest_os/guest_os_mime_types_service.h"
 
 #include <stddef.h>
+#include <vector>
 
 #include "base/files/file_path.h"
 #include "chrome/browser/ash/crostini/crostini_test_helper.h"
@@ -61,6 +62,12 @@ class GuestOsMimeTypesServiceTest : public testing::Test {
                                  kTestContainerName);
   }
 
+  std::vector<std::string> GetExtensionTypesFromMimeTypes(
+      std::set<std::string> supported_mime_types) {
+    return service_->GetExtensionTypesFromMimeTypes(
+        supported_mime_types, kTestVmName, kTestContainerName);
+  }
+
  private:
   content::BrowserTaskEnvironment task_environment_;
   TestingProfile profile_;
@@ -70,11 +77,12 @@ class GuestOsMimeTypesServiceTest : public testing::Test {
 };
 
 TEST_F(GuestOsMimeTypesServiceTest, SetAndGetMimeTypes) {
+  // 'text/plain' is already mapped by system, so we will not store it.
   std::vector<std::string> file_extensions = {
-      "foo", "bar", "gz", "xz", "tar.gz", "c", "C", "z", "🦈x"};
-  std::vector<std::string> mime_types = {"x/foo", "x/bar",    "x/gz",
-                                         "x/xz",  "x/tar.gz", "x/c",
-                                         "x/C",   "x/z",      "x/shark"};
+      "foo", "bar", "gz", "xz", "tar.gz", "c", "C", "z", "🦈x", "txt"};
+  std::vector<std::string> mime_types = {
+      "x/foo", "x/bar", "x/gz", "x/xz",    "x/tar.gz",
+      "x/c",   "x/C",   "x/z",  "x/shark", "text/plain"};
 
   // Mime types not registered yet.
   EXPECT_EQ("", GetMimeType("test.foo"));
@@ -96,6 +104,8 @@ TEST_F(GuestOsMimeTypesServiceTest, SetAndGetMimeTypes) {
   EXPECT_EQ("x/tar.gz", GetMimeType("test.tar.GZ"));
   // Support unicode.
   EXPECT_EQ("x/shark", GetMimeType("test.🦈X"));
+  // We only store items different to platform.
+  EXPECT_EQ("", GetMimeType("test.txt"));
 }
 
 // Test that UpdateMimeTypes doesn't clobber MIME types from different VMs or
@@ -157,6 +167,32 @@ TEST_F(GuestOsMimeTypesServiceTest, ClearMimeTypes) {
                                                "vm 1", "container 2"));
   EXPECT_EQ("", service()->GetMimeType(base::FilePath("test.foobar"), "vm 2",
                                        "container 1"));
+}
+
+TEST_F(GuestOsMimeTypesServiceTest, SetMimeTypesAndGetExtensionTypes) {
+  std::vector<std::string> mime_types = {"x/foo", "x/bar", "x/abcdef",
+                                         "x/abcdef"};
+  std::vector<std::string> file_extensions = {"foo", "bar", "abc", "def"};
+
+  // Mime/ extension types not registered yet.
+  std::vector<std::string> result = GetExtensionTypesFromMimeTypes({"x/foo"});
+  EXPECT_EQ(0, result.size());
+
+  service()->UpdateMimeTypes(CreateMimeTypesProto(
+      file_extensions, mime_types, kTestVmName, kTestContainerName));
+  result = GetExtensionTypesFromMimeTypes({"x/foo"});
+  EXPECT_EQ(1, result.size());
+  EXPECT_EQ("foo", result[0]);
+
+  result = GetExtensionTypesFromMimeTypes({"x/bar"});
+  EXPECT_EQ(1, result.size());
+  EXPECT_EQ("bar", result[0]);
+
+  // We should have 2 possible extensions for this mime type case.
+  result = GetExtensionTypesFromMimeTypes({"x/abcdef"});
+  EXPECT_EQ(2, result.size());
+  EXPECT_TRUE(base::Contains(result, "abc"));
+  EXPECT_TRUE(base::Contains(result, "def"));
 }
 
 }  // namespace guest_os

@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -136,39 +136,53 @@ void UserNoteService::OnAddNoteRequested(content::RenderFrameHost* frame,
 
   // TODO(crbug.com/1313967): `has_selected_text` is used to determine whether
   // or not to create a page-level note. This will need to be reassessed when
-  // page-level UX is finalized.
+  // page-level UX is finalized. In addition, record/use
+  // LinkGenerationReadyStatus.
   if (has_selected_text) {
     auto create_agent_callback = base::BindOnce(
         [](base::SafeRef<UserNoteService> service,
            content::WeakDocumentPtr document,
-           mojo::PendingReceiver<blink::mojom::AnnotationAgentHost>
-               host_receiver,
-           mojo::PendingRemote<blink::mojom::AnnotationAgent> agent_remote,
-           const std::string& serialized_selector,
-           const std::u16string& selected_text) {
-          if (agent_remote.is_valid() != host_receiver.is_valid()) {
-            mojo::ReportBadMessage(
-                "User note creation received only one invalid remote/receiver");
+           blink::mojom::SelectorCreationResultPtr selector_creation_result,
+           shared_highlighting::LinkGenerationError error,
+           shared_highlighting::LinkGenerationReadyStatus) {
+          if ((error != shared_highlighting::LinkGenerationError::kNone) !=
+              (!selector_creation_result)) {
+            mojo::ReportBadMessage("User note creation was invalid");
             return;
           }
 
-          if (agent_remote.is_valid() == serialized_selector.empty()) {
+          if (!selector_creation_result->host_receiver.is_valid()) {
             mojo::ReportBadMessage(
-                "User note creation received unexpected selector for mojo "
+                "User note creation received an invalid receiver");
+            return;
+          }
+
+          if (!selector_creation_result->agent_remote.is_valid()) {
+            mojo::ReportBadMessage(
+                "User note creation received an invalid remote");
+            return;
+          }
+
+          if (selector_creation_result->serialized_selector.empty()) {
+            mojo::ReportBadMessage(
+                "User note creation received an empty selector for mojo "
                 "binding result");
             return;
           }
 
-          if (agent_remote.is_valid() == selected_text.empty()) {
+          if (selector_creation_result->selected_text.empty()) {
             mojo::ReportBadMessage(
-                "User note creation received unexpected text for mojo binding "
+                "User note creation received an empty text for mojo binding "
                 "result");
             return;
           }
 
           service->InitializeNewNoteForCreation(
-              document, /*is_page_level=*/false, std::move(host_receiver),
-              std::move(agent_remote), serialized_selector, selected_text);
+              document, /*is_page_level=*/false,
+              std::move(selector_creation_result->host_receiver),
+              std::move(selector_creation_result->agent_remote),
+              selector_creation_result->serialized_selector,
+              selector_creation_result->selected_text);
         },
         // SafeRef is safe since the service owns the UserNoteManager which
         // owns the mojo binding so if we receive this callback both manager
@@ -401,14 +415,14 @@ void UserNoteService::OnNoteMetadataFetchedForNavigation(
     // in the foreground. This is to fix edge cases around back/forward
     // navigations, where the Page (and attached UserNoteManager) is kept alive
     // in the BFCache. If the notes didn't change on disk by the time the user
-    // does a back/forward navigation, Invalidate() will never get called
-    // because there won't be any diff between the instances in the Page and the
-    // notes on disk. Ideally, Invalidate() should only be called if this is a
-    // back/forward navigation and the notes didn't change, but there's no way
-    // to know whether the notes changed until further down the callback stack.
-    // Since Invalidate() is cheap enough, always calling it here is considered
-    // an acceptable fix for now.
-    ui->Invalidate();
+    // does a back/forward navigation, InvalidateIfVisible() will never get
+    // called because there won't be any diff between the instances in the Page
+    // and the notes on disk. Ideally, InvalidateIfVisible() should only be
+    // called if this is a back/forward navigation and the notes didn't change,
+    // but there's no way to know whether the notes changed until further down
+    // the callback stack. Since InvalidateIfVisible() is cheap enough, always
+    // calling it here is considered an acceptable fix for now.
+    ui->InvalidateIfVisible();
 
     if (!metadata_snapshot.IsEmpty()) {
       // TODO(crbug.com/1313967): For now, automatically activate User Notes UI
@@ -513,7 +527,7 @@ void UserNoteService::OnFrameChangesApplied(base::UnguessableToken change_id) {
     UserNotesUI* ui =
         delegate_->GetUICoordinatorForFrame(frame_changes->render_frame_host());
     DCHECK(ui);
-    ui->Invalidate();
+    ui->InvalidateIfVisible();
   }
 
   note_changes_in_progress_.erase(changes_it);

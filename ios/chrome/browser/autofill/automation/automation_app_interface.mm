@@ -1,16 +1,16 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #import "ios/chrome/browser/autofill/automation/automation_app_interface.h"
 
-#include "base/guid.h"
-#include "base/json/json_reader.h"
-#include "base/strings/sys_string_conversions.h"
-#include "base/strings/utf_string_conversions.h"
-#include "base/values.h"
-#include "components/autofill/core/browser/personal_data_manager.h"
-#include "ios/chrome/browser/autofill/personal_data_manager_factory.h"
+#import "base/guid.h"
+#import "base/json/json_reader.h"
+#import "base/strings/sys_string_conversions.h"
+#import "base/strings/utf_string_conversions.h"
+#import "base/values.h"
+#import "components/autofill/core/browser/personal_data_manager.h"
+#import "ios/chrome/browser/autofill/personal_data_manager_factory.h"
 #import "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
 #import "ios/chrome/test/app/tab_test_util.h"
@@ -47,10 +47,11 @@ autofill::ServerFieldType ServerFieldTypeFromString(const std::string& str,
           autofill_type.GetStorableType();
     }
 
-    for (size_t i = autofill::HTML_TYPE_UNSPECIFIED;
-         i < autofill::HTML_TYPE_UNRECOGNIZED; ++i) {
+    for (size_t i = static_cast<size_t>(autofill::HtmlFieldType::kUnspecified);
+         i <= static_cast<size_t>(autofill::HtmlFieldType::kMaxValue); ++i) {
       autofill::AutofillType autofill_type(
-          static_cast<autofill::HtmlFieldType>(i), autofill::HTML_MODE_NONE);
+          static_cast<autofill::HtmlFieldType>(i),
+          autofill::HtmlFieldMode::kNone);
       string_to_field_type_map[autofill_type.ToString()] =
           autofill_type.GetStorableType();
     }

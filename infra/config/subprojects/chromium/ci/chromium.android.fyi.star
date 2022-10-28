@@ -1,4 +1,4 @@
-# Copyright 2021 The Chromium Authors. All rights reserved.
+# Copyright 2021 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 """Definitions of builders in the chromium.android.fyi builder group."""
@@ -15,6 +15,7 @@ ci.defaults.set(
     execution_timeout = ci.DEFAULT_EXECUTION_TIMEOUT,
     os = os.LINUX_DEFAULT,
     pool = ci.DEFAULT_POOL,
+    priority = ci.DEFAULT_FYI_PRIORITY,
     service_account = ci.DEFAULT_SERVICE_ACCOUNT,
     reclient_jobs = reclient.jobs.DEFAULT,
     reclient_instance = reclient.instance.DEFAULT_TRUSTED,
@@ -111,31 +112,6 @@ ci.builder(
     triggered_by = [],
 )
 
-ci.builder(
-    name = "android-nougat-x86-rel",
-    builder_spec = builder_config.builder_spec(
-        gclient_config = builder_config.gclient_config(
-            config = "chromium",
-            apply_configs = ["android", "enable_reclient", "enable_wpr_tests"],
-        ),
-        chromium_config = builder_config.chromium_config(
-            config = "android",
-            build_config = builder_config.build_config.RELEASE,
-            target_bits = 32,
-            target_platform = builder_config.target_platform.ANDROID,
-        ),
-        android_config = builder_config.android_config(
-            config = "x86_builder_mb",
-        ),
-        execution_mode = builder_config.execution_mode.COMPILE_AND_TEST,
-    ),
-    console_view_entry = consoles.console_view_entry(
-        category = "emulator|x86|rel",
-        short_name = "N",
-    ),
-    execution_timeout = 4 * time.hour,
-)
-
 # TODO(crbug.com/1022533#c40): Remove this builder once there are no associated
 # disabled tests.
 ci.builder(
@@ -175,9 +151,12 @@ ci.builder(
         build_gs_bucket = "chromium-android-archive",
     ),
     console_view_entry = consoles.console_view_entry(
-        category = "builder_tester|x86",
+        category = "reviver",
         short_name = "P",
     ),
+    execution_timeout = 5 * time.hour,
+    # To avoid peak hours, we run it at 1 AM, 4 AM, 7 AM, 10AM, 1 PM UTC.
+    schedule = "0 1,4,7,10,13 * * *",
     # Set to an empty list to avoid chromium-gitiles-trigger triggering new
     # builds. Also we don't set any `schedule` since this builder is for
     # reference only and should not run any new builds.

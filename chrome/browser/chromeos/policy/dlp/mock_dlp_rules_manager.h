@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -50,6 +50,10 @@ class MockDlpRulesManager : public DlpRulesManager {
   MOCK_CONST_METHOD0(IsReportingEnabled, bool());
 
   MOCK_CONST_METHOD0(GetReportingManager, DlpReportingManager*());
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  MOCK_CONST_METHOD0(GetDlpFilesController, DlpFilesController*());
+#endif
 
   MOCK_CONST_METHOD3(GetSourceUrlPattern,
                      std::string(const GURL& source_url,

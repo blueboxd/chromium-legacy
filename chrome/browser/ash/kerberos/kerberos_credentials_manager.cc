@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -314,7 +314,8 @@ KerberosCredentialsManager::KerberosCredentialsManager(PrefService* local_state,
   substitutions[kLoginId] =
       primary_user->GetAccountName(false /* use_display_email */);
   substitutions[kLoginEmail] = primary_user->GetAccountId().GetUserEmail();
-  principal_expander_ = std::make_unique<VariableExpander>(substitutions);
+  principal_expander_ =
+      std::make_unique<chromeos::VariableExpander>(substitutions);
 
   // Connect to a signal that indicates when Kerberos files change.
   kerberos_file_changed_signal_subscription_ =
@@ -462,7 +463,10 @@ void KerberosCredentialsManager::OnAddAccountRunnerDone(
   auto it = std::find_if(
       add_account_runners_.begin(), add_account_runners_.end(),
       [runner](const auto& runner_ptr) { return runner_ptr.get() == runner; });
-  DCHECK(it != add_account_runners_.end());
+
+  // Semantically, this `CHECK()` should never trigger. However, it protects
+  // the `erase()` call from semantically incorrect changes to this class.
+  CHECK(it != add_account_runners_.end());
   add_account_runners_.erase(it);
 
   LogError("AddAccountAndAuthenticate", error);
@@ -818,7 +822,7 @@ void KerberosCredentialsManager::UpdateAccountsFromPref(bool is_retry) {
   }
 
   const base::Value::List& accounts =
-      local_state_->GetValueList(prefs::kKerberosAccounts);
+      local_state_->GetList(prefs::kKerberosAccounts);
   if (accounts.empty()) {
     VLOG(1) << "Empty KerberosAccounts policy";
     NotifyRequiresLoginPassword(false);

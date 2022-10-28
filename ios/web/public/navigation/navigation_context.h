@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -73,8 +73,8 @@ class NavigationContext {
   // redirect).
   //
   // Note: page and frame navigations can only be done using POST or GET
-  // methods Therefore API exposes only |bool IsPost()| as opposed to
-  // |const std::string& GetMethod()| method.
+  // methods Therefore API exposes only `bool IsPost()` as opposed to
+  // `const std::string& GetMethod()` method.
   virtual bool IsPost() const = 0;
 
   // Returns error if the navigation has failed.

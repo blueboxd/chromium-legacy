@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -31,7 +31,6 @@ class MockSecureEnclaveHelper : public SecureEnclaveHelper {
               (override));
   MOCK_METHOD(bool, Update, (CFDictionaryRef, CFDictionaryRef), (override));
   MOCK_METHOD(bool, Delete, (CFDictionaryRef), (override));
-  MOCK_METHOD(bool, CheckKeychainUnlocked, (), (override));
   MOCK_METHOD(bool, IsSecureEnclaveSupported, (), (override));
 };
 

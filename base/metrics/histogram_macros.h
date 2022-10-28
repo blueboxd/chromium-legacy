@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -327,6 +327,11 @@ enum class ScopedHistogramTiming {
 // approximately 500M.
 #define UMA_HISTOGRAM_MEMORY_KB(name, sample)                                  \
     UMA_HISTOGRAM_CUSTOM_COUNTS(name, sample, 1000, 500000, 50)
+
+// Used to measure common MB-granularity memory stats. Range is up to 4000MiB -
+// approximately 4GiB.
+#define UMA_HISTOGRAM_MEMORY_MEDIUM_MB(name, sample) \
+  UMA_HISTOGRAM_CUSTOM_COUNTS(name, sample, 1, 4000, 100)
 
 // Used to measure common MB-granularity memory stats. Range is up to ~64G.
 #define UMA_HISTOGRAM_MEMORY_LARGE_MB(name, sample)                            \

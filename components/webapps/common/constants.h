@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -19,6 +19,9 @@ extern const char kWebAppsMigratedPreinstalledApps[];
 
 // Maximum allowed screenshot ratio between the max dimension and min dimension.
 extern const double kMaximumScreenshotRatio;
+
+// Maximum length of description to be displayed on the richer install dialog.
+extern const size_t kMaximumDescriptionLength;
 
 }  // namespace webapps
 

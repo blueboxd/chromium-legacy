@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,6 +11,7 @@
 #include "ash/capture_mode/test_capture_mode_delegate.h"
 #include "ash/public/cpp/capture_mode/capture_mode_test_api.h"
 #include "ash/public/cpp/projector/projector_controller.h"
+#include "ash/public/cpp/projector/projector_new_screencast_precondition.h"
 #include "ash/public/cpp/projector/projector_session.h"
 #include "ash/shell.h"
 #include "ash/wm/cursor_manager_chromeos.h"
@@ -185,6 +186,11 @@ void ProjectorCaptureModeIntegrationHelper::SetUp() {
       SpeechRecognitionAvailability::kAvailable);
   EXPECT_CALL(projector_client_, IsDriveFsMounted())
       .WillRepeatedly(testing::Return(true));
+}
+
+bool ProjectorCaptureModeIntegrationHelper::CanStartProjectorSession() const {
+  return ProjectorController::Get()->GetNewScreencastPrecondition().state !=
+         NewScreencastPreconditionState::kDisabled;
 }
 
 void ProjectorCaptureModeIntegrationHelper::StartProjectorModeSession() {

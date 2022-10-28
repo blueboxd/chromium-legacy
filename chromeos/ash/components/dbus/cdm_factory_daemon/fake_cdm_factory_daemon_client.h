@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -29,7 +29,7 @@ class FakeCdmFactoryDaemonClient : public CdmFactoryDaemonClient {
       base::ScopedFD fd,
       base::OnceCallback<void(bool success)> callback) override;
   void WaitForServiceToBeAvailable(
-      WaitForServiceToBeAvailableCallback callback) override;
+      chromeos::WaitForServiceToBeAvailableCallback callback) override;
 };
 
 }  // namespace ash

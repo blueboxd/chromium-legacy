@@ -1,4 +1,4 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -420,7 +420,7 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
                         && UrlUtilities.isDownloadableScheme(mParams.getLinkUrl())) {
                     linkGroup.add(createListItem(Item.SAVE_LINK_AS));
                 }
-                if (!mParams.isImage() && ChromeFeatureList.isEnabled(ChromeFeatureList.READ_LATER)
+                if (!mParams.isImage()
                         && ReadingListUtils.isReadingListSupported(mParams.getLinkUrl())) {
                     linkGroup.add(createListItem(Item.READ_LATER, shouldTriggerReadLaterHelpUi()));
                 }

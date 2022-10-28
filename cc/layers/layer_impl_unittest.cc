@@ -1,4 +1,4 @@
-// Copyright 2011 The Chromium Authors. All rights reserved.
+// Copyright 2011 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -418,7 +418,7 @@ TEST_F(LayerImplScrollTest, ApplySentScrollsNoListener) {
                        layer()->element_id()));
 
   scroll_tree(layer())->ApplySentScrollDeltasFromAbortedCommit(
-      /*main_frame_applied_deltas=*/true);
+      /* next_bmf */ false, /* main_frame_applied_deltas */ true);
 
   EXPECT_POINTF_EQ(scroll_offset + scroll_delta, CurrentScrollOffset(layer()));
   EXPECT_VECTOR2DF_EQ(scroll_delta - sent_scroll_delta, ScrollDelta(layer()));

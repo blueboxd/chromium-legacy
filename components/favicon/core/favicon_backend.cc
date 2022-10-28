@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -442,6 +442,16 @@ std::set<GURL> FaviconBackend::CloneFaviconMappingsForPages(
                              std::make_move_iterator(v.end()));
   }
   return changed_page_urls;
+}
+
+std::vector<GURL> FaviconBackend::GetFaviconUrlsForUrl(const GURL& page_url) {
+  std::vector<IconMapping> icon_mappings;
+  db_->GetIconMappingsForPageURL(page_url, &icon_mappings);
+  std::vector<GURL> urls;
+  for (const IconMapping& icon_mapping : icon_mappings) {
+    urls.push_back(icon_mapping.icon_url);
+  }
+  return urls;
 }
 
 bool FaviconBackend::CanSetOnDemandFavicons(const GURL& page_url,

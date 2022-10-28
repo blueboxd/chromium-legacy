@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -513,7 +513,7 @@ void WebcamPrivateGetFunction::OnGetWebcamParameters(InquiryType type,
     result.tilt = tilt_;
     result.zoom = zoom_;
     result.focus = focus_;
-    Respond(OneArgument(base::Value::FromUniquePtrValue(result.ToValue())));
+    Respond(OneArgument(base::Value(result.ToValue())));
   }
 }
 
@@ -534,8 +534,8 @@ ExtensionFunction::ResponseAction WebcamPrivateResetFunction::Run() {
     return RespondNow(Error(kUnknownWebcam));
 
   webcam->Reset(
-      params->config.pan != nullptr, params->config.tilt != nullptr,
-      params->config.zoom != nullptr,
+      params->config.pan.has_value(), params->config.tilt.has_value(),
+      params->config.zoom.has_value(),
       base::BindRepeating(&WebcamPrivateResetFunction::OnResetWebcam, this));
 
   // Reset() might have responded already.

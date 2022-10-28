@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,14 +13,18 @@
 #include "ash/webui/help_app_ui/url_constants.h"
 #include "ash/webui/os_feedback_ui/url_constants.h"
 #include "base/bind.h"
+#include "base/callback.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/ref_counted_memory.h"
+#include "base/notreached.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/bind.h"
 #include "base/test/metrics/histogram_tester.h"
+#include "base/test/repeating_test_future.h"
 #include "base/test/test_future.h"
+#include "base/values.h"
 #include "chrome/browser/ash/os_feedback/os_feedback_screenshot_manager.h"
 #include "chrome/browser/ash/system_web_apps/system_web_app_manager.h"
 #include "chrome/browser/ash/system_web_apps/types/system_web_app_type.h"
@@ -34,13 +38,17 @@
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/feedback/content/feedback_uploader_factory.h"
+#include "components/feedback/feedback_data.h"
 #include "components/feedback/feedback_report.h"
+#include "components/feedback/feedback_uploader.h"
 #include "components/prefs/testing_pref_service.h"
 #include "components/signin/public/identity_manager/identity_test_utils.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "extensions/browser/api/feedback_private/feedback_service.h"
 #include "extensions/browser/api/feedback_private/mock_feedback_service.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/views/widget/widget.h"
@@ -56,12 +64,14 @@ using ::ash::os_feedback_ui::mojom::Report;
 using ::ash::os_feedback_ui::mojom::ReportPtr;
 using ::ash::os_feedback_ui::mojom::SendReportStatus;
 using extensions::FeedbackParams;
+using extensions::FeedbackPrivateDelegate;
 using feedback::FeedbackData;
 using testing::_;
 
 constexpr char kExtraDiagnosticsKey[] = "EXTRA_DIAGNOSTICS";
 constexpr char kFakeExtraDiagnosticsValue[] =
     "Failed to connect to wifi network.";
+constexpr char kFakeCategoryTag[] = "FakeCategoryTag";
 constexpr char kPageUrl[] = "https://www.google.com/?q=123";
 constexpr char kSignedInUserEmail[] = "test_user_email@gmail.com";
 constexpr char kFeedbackUserConsentKey[] = "feedbackUserCtlConsent";
@@ -69,6 +79,104 @@ constexpr char kFeedbackUserConsentGrantedValue[] = "true";
 constexpr char kFeedbackUserConsentDeniedValue[] = "false";
 constexpr char kFeedbackCategoryTag[] = "BluetoothReportWithLogs";
 const std::u16string kDescription = u"This is a fake description";
+
+constexpr char kFakeKey[] = "fake key";
+constexpr char kFakeValue[] = "fake value";
+constexpr char kTabTitleValue[] = "some sensitive info";
+
+class FakeFeedbackPrivateDelegate : public FeedbackPrivateDelegate {
+ public:
+  explicit FakeFeedbackPrivateDelegate(
+      base::RepeatingCallback<void(bool)> callback)
+      : on_fetch_completed_(std::move(callback)) {}
+
+  FakeFeedbackPrivateDelegate(const FakeFeedbackPrivateDelegate&) = delete;
+  FakeFeedbackPrivateDelegate& operator=(const FakeFeedbackPrivateDelegate&) =
+      delete;
+
+  ~FakeFeedbackPrivateDelegate() override = default;
+
+  // FeedbackPrivateDelegate:
+  base::Value::Dict GetStrings(content::BrowserContext* browser_context,
+                               bool from_crash) const override;
+  void FetchSystemInformation(
+      content::BrowserContext* context,
+      system_logs::SysLogsFetcherCallback callback) const override;
+  std::unique_ptr<system_logs::SystemLogsSource> CreateSingleLogSource(
+      extensions::api::feedback_private::LogSource source_type) const override;
+  void FetchExtraLogs(
+      scoped_refptr<feedback::FeedbackData> feedback_data,
+      extensions::FetchExtraLogsCallback callback) const override;
+  extensions::api::feedback_private::LandingPageType GetLandingPageType(
+      const feedback::FeedbackData& feedback_data) const override;
+  void GetLacrosHistograms(GetHistogramsCallback callback) override;
+  std::string GetSignedInUserEmail(
+      content::BrowserContext* context) const override;
+  void NotifyFeedbackDelayed() const override;
+  feedback::FeedbackUploader* GetFeedbackUploaderForContext(
+      content::BrowserContext* context) const override;
+
+ private:
+  base::RepeatingCallback<void(bool)> on_fetch_completed_;
+};
+
+base::Value::Dict FakeFeedbackPrivateDelegate::GetStrings(
+    content::BrowserContext* browser_context,
+    bool from_crash) const {
+  NOTIMPLEMENTED();
+  return {};
+}
+
+void FakeFeedbackPrivateDelegate::FetchSystemInformation(
+    content::BrowserContext* context,
+    system_logs::SysLogsFetcherCallback callback) const {
+  auto sys_info = std::make_unique<system_logs::SystemLogsResponse>();
+  sys_info->emplace(kFakeKey, kFakeValue);
+  sys_info->emplace(feedback::FeedbackReport::kMemUsageWithTabTitlesKey,
+                    kTabTitleValue);
+  std::move(callback).Run(std::move(sys_info));
+
+  if (on_fetch_completed_) {
+    on_fetch_completed_.Run(true);
+  }
+}
+
+std::unique_ptr<system_logs::SystemLogsSource>
+FakeFeedbackPrivateDelegate::CreateSingleLogSource(
+    extensions::api::feedback_private::LogSource source_type) const {
+  NOTIMPLEMENTED();
+  return nullptr;
+}
+
+void FakeFeedbackPrivateDelegate::FetchExtraLogs(
+    scoped_refptr<feedback::FeedbackData> feedback_data,
+    extensions::FetchExtraLogsCallback callback) const {
+  std::move(callback).Run(feedback_data);
+}
+
+extensions::api::feedback_private::LandingPageType
+FakeFeedbackPrivateDelegate::GetLandingPageType(
+    const feedback::FeedbackData& feedback_data) const {
+  return extensions::api::feedback_private::LANDING_PAGE_TYPE_NOLANDINGPAGE;
+}
+
+void FakeFeedbackPrivateDelegate::GetLacrosHistograms(
+    GetHistogramsCallback callback) {
+  std::move(callback).Run(std::string());
+}
+
+std::string FakeFeedbackPrivateDelegate::GetSignedInUserEmail(
+    content::BrowserContext* context) const {
+  return std::string();
+}
+
+void FakeFeedbackPrivateDelegate::NotifyFeedbackDelayed() const {}
+
+feedback::FeedbackUploader*
+FakeFeedbackPrivateDelegate::GetFeedbackUploaderForContext(
+    content::BrowserContext* context) const {
+  return feedback::FeedbackUploaderFactory::GetForBrowserContext(context);
+}
 
 }  // namespace
 
@@ -88,11 +196,20 @@ class ChromeOsFeedbackDelegateTest : public InProcessBrowserTest {
  protected:
   void RunSendReport(ReportPtr report,
                      const FeedbackParams& expected_params,
-                     scoped_refptr<FeedbackData>& actual_feedback_data) {
+                     scoped_refptr<FeedbackData>& actual_feedback_data,
+                     bool preload_system_logs = false) {
+    // Will be called when preloading system logs is done.
+    base::test::RepeatingTestFuture<bool> fetch_future;
     auto* profile_ = browser()->profile();
-    auto mock = base::MakeRefCounted<extensions::MockFeedbackService>(profile_);
+    auto mock_private_delegate = std::make_unique<FakeFeedbackPrivateDelegate>(
+        fetch_future.GetCallback());
+    auto mock_feedback_service =
+        base::MakeRefCounted<extensions::MockFeedbackService>(
+            profile_, mock_private_delegate.get());
+    EXPECT_EQ(mock_private_delegate.get(),
+              mock_feedback_service->GetFeedbackPrivateDelegate());
 
-    EXPECT_CALL(*mock, SendFeedback(_, _, _))
+    EXPECT_CALL(*mock_feedback_service, SendFeedback(_, _, _))
         .WillOnce([&](const extensions::FeedbackParams& params,
                       scoped_refptr<FeedbackData> feedback_data,
                       extensions::SendFeedbackCallback callback) {
@@ -111,8 +228,15 @@ class ChromeOsFeedbackDelegateTest : public InProcessBrowserTest {
           std::move(callback).Run(true);
         });
 
-    auto feedback_delegate_ =
-        std::make_unique<ChromeOsFeedbackDelegate>(profile_, std::move(mock));
+    auto feedback_delegate_ = std::make_unique<ChromeOsFeedbackDelegate>(
+        profile_, std::move(mock_feedback_service));
+
+    if (preload_system_logs) {
+      // Trigger preloading.
+      feedback_delegate_->GetLastActivePageUrl();
+      // Wait for preloading is completed.
+      EXPECT_TRUE(fetch_future.Take());
+    }
 
     OsFeedbackScreenshotManager::GetInstance()->SetPngDataForTesting(
         CreateFakePngData());
@@ -208,6 +332,7 @@ IN_PROC_BROWSER_TEST_F(ChromeOsFeedbackDelegateTest, GetSignedInUserEmail) {
 // - Non-empty extra_diagnostics provided.
 // - sentBluetoothLog flag is set true.
 // - category_tag is set to "BluetoothReportWithLogs".
+// - User is logged in with internal google account.
 IN_PROC_BROWSER_TEST_F(ChromeOsFeedbackDelegateTest,
                        FeedbackDataPopulatedIncludeSysLogsAndScreenshot) {
   ReportPtr report = Report::New();
@@ -219,7 +344,8 @@ IN_PROC_BROWSER_TEST_F(ChromeOsFeedbackDelegateTest,
   report->send_bluetooth_logs = true;
   report->feedback_context->category_tag = kFeedbackCategoryTag;
   report->include_system_logs_and_histograms = true;
-  const FeedbackParams expected_params{/*is_internal_email=*/false,
+  report->feedback_context->is_internal_account = true;
+  const FeedbackParams expected_params{/*is_internal_email=*/true,
                                        /*load_system_info=*/true,
                                        /*send_tab_titles=*/false,
                                        /*send_histograms=*/true,
@@ -249,12 +375,63 @@ IN_PROC_BROWSER_TEST_F(ChromeOsFeedbackDelegateTest,
 
 // Test that feedback params and data are populated with correct data before
 // passed to SendFeedback method of the feedback service.
+// - System logs and histograms are included.
+// - Screenshot is included.
+// - Consent granted.
+// - Non-empty extra_diagnostics provided.
+// - sentBluetoothLog flag is set false.
+// - category_tag is set to a fake value.
+// - User is logged in with internal google account.
+IN_PROC_BROWSER_TEST_F(
+    ChromeOsFeedbackDelegateTest,
+    FeedbackDataPopulatedIncludeSysLogsAndScreenshotAndFakeCategoryTag) {
+  ReportPtr report = Report::New();
+  report->feedback_context = FeedbackContext::New();
+  report->description = kDescription;
+  report->include_screenshot = true;
+  report->contact_user_consent_granted = true;
+  report->feedback_context->extra_diagnostics = kFakeExtraDiagnosticsValue;
+  report->send_bluetooth_logs = false;
+  report->feedback_context->category_tag = kFakeCategoryTag;
+  report->include_system_logs_and_histograms = true;
+  report->feedback_context->is_internal_account = true;
+  const FeedbackParams expected_params{/*is_internal_email=*/true,
+                                       /*load_system_info=*/true,
+                                       /*send_tab_titles=*/false,
+                                       /*send_histograms=*/true,
+                                       /*send_bluetooth_logs=*/false};
+
+  scoped_refptr<FeedbackData> feedback_data;
+  RunSendReport(std::move(report), expected_params, feedback_data);
+
+  EXPECT_EQ("", feedback_data->user_email());
+  EXPECT_EQ("", feedback_data->page_url());
+  EXPECT_EQ(base::UTF16ToUTF8(kDescription), feedback_data->description());
+  // Verify screenshot is added to feedback data.
+  EXPECT_GT(feedback_data->image().size(), 0);
+  // Verify consent data appended to sys_info map.
+  auto consent_granted =
+      feedback_data->sys_info()->find(kFeedbackUserConsentKey);
+  EXPECT_NE(feedback_data->sys_info()->end(), consent_granted);
+  EXPECT_EQ(kFeedbackUserConsentKey, consent_granted->first);
+  EXPECT_EQ(kFeedbackUserConsentGrantedValue, consent_granted->second);
+  auto extra_diagnostics =
+      feedback_data->sys_info()->find(kExtraDiagnosticsKey);
+  EXPECT_EQ(kExtraDiagnosticsKey, extra_diagnostics->first);
+  EXPECT_EQ(kFakeExtraDiagnosticsValue, extra_diagnostics->second);
+  // Verify category_tag is marked as a fake category tag in the report.
+  EXPECT_EQ(kFakeCategoryTag, feedback_data->category_tag());
+}
+
+// Test that feedback params and data are populated with correct data before
+// passed to SendFeedback method of the feedback service.
 // - System logs and histograms are not included.
 // - Screenshot is not included.
 // - Consent not granted.
 // - sentBluetoothLogs flag is set false.
 // - category_tag is not set to "BluetoothReportWithLogs".
 // - Empty string Extra Diagnostics provided.
+// - User is not logged in with an internal google account.
 IN_PROC_BROWSER_TEST_F(ChromeOsFeedbackDelegateTest,
                        FeedbackDataPopulatedNotIncludeSysLogsOrScreenshot) {
   ReportPtr report = Report::New();
@@ -266,7 +443,7 @@ IN_PROC_BROWSER_TEST_F(ChromeOsFeedbackDelegateTest,
   report->include_screenshot = false;
   report->contact_user_consent_granted = false;
   report->send_bluetooth_logs = false;
-
+  report->feedback_context->is_internal_account = false;
   report->include_system_logs_and_histograms = false;
   const FeedbackParams expected_params{/*is_internal_email=*/false,
                                        /*load_system_info=*/false,
@@ -328,8 +505,6 @@ IN_PROC_BROWSER_TEST_F(ChromeOsFeedbackDelegateTest, OpenDiagnosticsApp) {
 
   feedback_delegate_.OpenDiagnosticsApp();
 
-  ash::FlushSystemWebAppLaunchesForTesting(browser()->profile());
-
   Browser* app_browser = ash::FindSystemWebAppBrowser(
       browser()->profile(), ash::SystemWebAppType::DIAGNOSTICS);
 
@@ -344,8 +519,6 @@ IN_PROC_BROWSER_TEST_F(ChromeOsFeedbackDelegateTest, OpenExploreApp) {
       ->InstallSystemAppsForTesting();
 
   feedback_delegate_.OpenExploreApp();
-
-  ash::FlushSystemWebAppLaunchesForTesting(browser()->profile());
 
   Browser* app_browser = ash::FindSystemWebAppBrowser(
       browser()->profile(), ash::SystemWebAppType::HELP);
@@ -428,6 +601,94 @@ IN_PROC_BROWSER_TEST_F(ChromeOsFeedbackDelegateTest,
                                     &owned_widgets_post_dialog);
 
   EXPECT_EQ(owned_widgets_post_dialog.size(), 1);
+}
+
+// Test that system logs are preloaded and they are needed.
+IN_PROC_BROWSER_TEST_F(ChromeOsFeedbackDelegateTest,
+                       PreloadSystemLogsSuccessful) {
+  ReportPtr report = Report::New();
+  report->description = kDescription;
+  report->feedback_context = FeedbackContext::New();
+  // System logs are needed.
+  report->include_system_logs_and_histograms = true;
+  // FeedbackParams.load_system_info should be false so that system logs will
+  // not be loaded again by feedback service.
+  const FeedbackParams expected_params{/*is_internal_email=*/false,
+                                       /*load_system_info=*/false,
+                                       /*send_tab_titles=*/false,
+                                       /*send_histograms=*/true,
+                                       /*send_bluetooth_logs=*/false};
+
+  scoped_refptr<FeedbackData> feedback_data;
+  RunSendReport(std::move(report), expected_params, feedback_data,
+                /*preload=*/true);
+
+  // Verify that the system logs have been added to the feedback data when
+  // feedback service receives it.
+  EXPECT_EQ(3u, feedback_data->sys_info()->size());
+  EXPECT_EQ("false",
+            feedback_data->sys_info()->find(kFeedbackUserConsentKey)->second);
+  EXPECT_EQ(kFakeValue, feedback_data->sys_info()->find(kFakeKey)->second);
+  EXPECT_EQ(kTabTitleValue,
+            feedback_data->sys_info()
+                ->find(feedback::FeedbackReport::kMemUsageWithTabTitlesKey)
+                ->second);
+}
+
+// Test that system logs are preloaded but they are not needed.
+IN_PROC_BROWSER_TEST_F(ChromeOsFeedbackDelegateTest,
+                       PreloadSystemLogsSuccessfulButLogsNotNeeded) {
+  ReportPtr report = Report::New();
+  report->description = kDescription;
+  report->feedback_context = FeedbackContext::New();
+  // System logs are not needed.
+  report->include_system_logs_and_histograms = false;
+  // FeedbackParams.load_system_info should be false so that system logs will
+  // not be loaded by feedback service.
+  const FeedbackParams expected_params{/*is_internal_email=*/false,
+                                       /*load_system_info=*/false,
+                                       /*send_tab_titles=*/false,
+                                       /*send_histograms=*/false,
+                                       /*send_bluetooth_logs=*/false};
+
+  scoped_refptr<FeedbackData> feedback_data;
+  RunSendReport(std::move(report), expected_params, feedback_data,
+                /*preload=*/true);
+
+  // Verify that the system logs have not been added to the feedback data when
+  // feedback service receives it.
+  EXPECT_EQ(1u, feedback_data->sys_info()->size());
+  EXPECT_EQ("false",
+            feedback_data->sys_info()->find(kFeedbackUserConsentKey)->second);
+}
+
+// Test that preloading did not finish when the report is being sent.
+IN_PROC_BROWSER_TEST_F(ChromeOsFeedbackDelegateTest,
+                       PreloadSystemLogsNotCompleted) {
+  ReportPtr report = Report::New();
+  report->description = kDescription;
+  report->feedback_context = FeedbackContext::New();
+  // System logs are needed.
+  report->include_system_logs_and_histograms = true;
+  // FeedbackParams.load_system_info should be true so that system logs will be
+  // loaded by feedback service.
+  const FeedbackParams expected_params{/*is_internal_email=*/false,
+                                       /*load_system_info=*/true,
+                                       /*send_tab_titles=*/false,
+                                       /*send_histograms=*/true,
+                                       /*send_bluetooth_logs=*/false};
+
+  scoped_refptr<FeedbackData> feedback_data;
+  // Set preload to false to simulate preloading did not complete before sending
+  // report.
+  RunSendReport(std::move(report), expected_params, feedback_data,
+                /*preload=*/false);
+
+  // Verify that the system logs have not been added to the feedback data when
+  // feedback service receives it.
+  EXPECT_EQ(1u, feedback_data->sys_info()->size());
+  EXPECT_EQ("false",
+            feedback_data->sys_info()->find(kFeedbackUserConsentKey)->second);
 }
 
 }  // namespace ash

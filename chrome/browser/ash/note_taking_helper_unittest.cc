@@ -1,4 +1,4 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -16,8 +16,6 @@
 #include "ash/components/arc/session/connection_holder.h"
 #include "ash/components/arc/test/connection_holder_util.h"
 #include "ash/components/arc/test/fake_file_system_instance.h"
-#include "ash/components/disks/disk.h"
-#include "ash/components/disks/disk_mount_manager.h"
 #include "ash/constants/ash_switches.h"
 #include "ash/public/cpp/note_taking_client.h"
 #include "base/bind.h"
@@ -56,6 +54,8 @@
 #include "chromeos/ash/components/dbus/cros_disks/cros_disks_client.h"
 #include "chromeos/ash/components/dbus/session_manager/fake_session_manager_client.h"
 #include "chromeos/ash/components/dbus/session_manager/session_manager_client.h"
+#include "chromeos/ash/components/disks/disk.h"
+#include "chromeos/ash/components/disks/disk_mount_manager.h"
 #include "components/arc/test/fake_intent_helper_host.h"
 #include "components/arc/test/fake_intent_helper_instance.h"
 #include "components/crx_file/id_util.h"
@@ -479,10 +479,10 @@ class NoteTakingHelperTest : public BrowserWithTestWindowTest {
   // Callback registered with the helper to record Chrome app launch requests.
   void LaunchChromeApp(content::BrowserContext* passed_context,
                        const extensions::Extension* extension,
-                       std::unique_ptr<app_runtime::ActionData> action_data) {
+                       app_runtime::ActionData action_data) {
     EXPECT_EQ(profile(), passed_context);
     EXPECT_EQ(app_runtime::ActionType::ACTION_TYPE_NEW_NOTE,
-              action_data->action_type);
+              action_data.action_type);
     launched_chrome_apps_.push_back(ChromeAppLaunchInfo{extension->id()});
   }
 

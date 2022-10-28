@@ -15,7 +15,7 @@
 #include "net/base/schemeful_site.h"
 #include "net/cookies/cookie_access_delegate.h"
 #include "net/cookies/cookie_constants.h"
-#include "net/cookies/first_party_set_metadata.h"
+#include "net/first_party_sets/first_party_set_metadata.h"
 #include "services/network/cookie_settings.h"
 #include "services/network/first_party_sets/first_party_sets_access_delegate.h"
 #include "services/network/public/mojom/cookie_manager.mojom.h"
@@ -62,10 +62,10 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CookieAccessDelegateImpl
       const std::set<net::SchemefulSite>& party_context,
       base::OnceCallback<void(net::FirstPartySetMetadata)> callback)
       const override;
-  [[nodiscard]] absl::optional<FirstPartySetsAccessDelegate::OwnersResult>
-  FindFirstPartySetOwners(
+  [[nodiscard]] absl::optional<FirstPartySetsAccessDelegate::EntriesResult>
+  FindFirstPartySetEntries(
       const base::flat_set<net::SchemefulSite>& sites,
-      base::OnceCallback<void(FirstPartySetsAccessDelegate::OwnersResult)>
+      base::OnceCallback<void(FirstPartySetsAccessDelegate::EntriesResult)>
           callback) const override;
 
  private:

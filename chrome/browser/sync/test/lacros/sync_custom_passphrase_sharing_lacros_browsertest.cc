@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -14,11 +14,11 @@
 #include "chromeos/crosapi/mojom/sync.mojom.h"
 #include "chromeos/lacros/lacros_service.h"
 #include "components/sync/chromeos/explicit_passphrase_mojo_utils.h"
-#include "components/sync/chromeos/lacros/fake_sync_explicit_passphrase_client_ash.h"
-#include "components/sync/chromeos/lacros/fake_sync_mojo_service.h"
 #include "components/sync/engine/nigori/nigori.h"
-#include "components/sync/nigori/nigori_test_utils.h"
 #include "components/sync/test/fake_server_nigori_helper.h"
+#include "components/sync/test/fake_sync_explicit_passphrase_client_ash.h"
+#include "components/sync/test/fake_sync_mojo_service.h"
+#include "components/sync/test/nigori_test_utils.h"
 #include "content/public/test/browser_test.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -59,7 +59,7 @@ class SyncCustomPassphraseSharingLacrosBrowserTest : public SyncTest {
     return base::FilePath(chrome::kInitialProfile);
   }
 
-  // This test replaces production SyncService Crosapi interface with a mock.
+  // This test replaces production SyncService Crosapi interface with a fake.
   // It needs to be done before connection between Ash and Lacros explicit
   // passphrase clients is established (during creation of browser extra parts),
   // but after LacrosService is initialized. Thus CreatedBrowserMainParts() is
@@ -74,7 +74,7 @@ class SyncCustomPassphraseSharingLacrosBrowserTest : public SyncTest {
       return;
     }
 
-    // Replace the production SyncService Crosapi interface with a mock for
+    // Replace the production SyncService Crosapi interface with a fake for
     // testing.
     mojo::Remote<crosapi::mojom::SyncService>& remote =
         chromeos::LacrosService::Get()

@@ -26,6 +26,7 @@
 #include "content/web_test/renderer/gamepad_controller.h"
 #include "content/web_test/renderer/layout_dump.h"
 #include "content/web_test/renderer/web_test_content_settings_client.h"
+#include "printing/page_range.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/platform/web_effective_connection_type.h"
 #include "third_party/blink/public/platform/web_url.h"
@@ -128,6 +129,16 @@ class TestRunner {
   // Returns false if the browser should capture the pixel output, true if it
   // can be done locally in the renderer via DumpPixelsInRenderer().
   bool CanDumpPixelsFromRenderer() const;
+
+  // Returns the page size to be used for printing. This is either the size that
+  // was explicitly set via SetPrintingSize or the size of the frame if no size
+  // was set.
+  gfx::Size GetPrintingPageSize(blink::WebLocalFrame* frame) const;
+
+  // Returns the page ranges to be printed. This is specified in the document
+  // via a tag of the form <meta name=reftest-pages content="1,2-3,5-">. If no
+  // tag is found, print all pages.
+  printing::PageRanges GetPrintingPageRanges(blink::WebLocalFrame* frame) const;
 
   // Snapshots the content of |main_frame| using the mode requested by the
   // current test.
@@ -453,6 +464,7 @@ class TestRunner {
   // Causes layout to happen as if targetted to printed pages.
   void SetPrinting();
   void SetPrintingForFrame(const std::string& frame_name);
+  void SetPrintingSize(int width, int height);
 
   void SetShouldStayOnPageAfterHandlingBeforeUnload(bool value);
 

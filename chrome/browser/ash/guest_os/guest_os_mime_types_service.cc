@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 
+#include "base/containers/contains.h"
 #include "base/logging.h"
 #include "base/strings/string_util.h"
 #include "chrome/browser/ash/guest_os/guest_os_pref_names.h"
@@ -16,6 +17,7 @@
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
+#include "third_party/xdg_shared_mime_info/mime_cache.h"
 
 namespace guest_os {
 
@@ -29,7 +31,7 @@ std::string GuestOsMimeTypesService::GetMimeType(
     const std::string& vm_name,
     const std::string& container_name) const {
   const base::Value::Dict* vm =
-      prefs_->GetValueDict(prefs::kGuestOsMimeTypes).FindDict(vm_name);
+      prefs_->GetDict(prefs::kGuestOsMimeTypes).FindDict(vm_name);
   if (vm) {
     const base::Value::Dict* container = vm->FindDict(container_name);
     if (container) {
@@ -60,6 +62,34 @@ std::string GuestOsMimeTypesService::GetMimeType(
   return "";
 }
 
+std::vector<std::string>
+GuestOsMimeTypesService::GetExtensionTypesFromMimeTypes(
+    const std::set<std::string>& supported_mime_types,
+    const std::string& vm_name,
+    const std::string& container_name) const {
+  const base::Value::Dict* vm =
+      prefs_->GetDict(prefs::kGuestOsMimeTypes).FindDict(vm_name);
+  if (!vm) {
+    return {};
+  }
+  const base::Value::Dict* container = vm->FindDict(container_name);
+  if (!container) {
+    return {};
+  }
+  const base::Value::Dict* extension_to_mime = vm->FindDict(container_name);
+  if (!extension_to_mime) {
+    return {};
+  }
+
+  std::vector<std::string> extension_types;
+  for (auto entry : *extension_to_mime) {
+    if (base::Contains(supported_mime_types, entry.second.GetString())) {
+      extension_types.push_back(entry.first);
+    }
+  }
+  return extension_types;
+}
+
 void GuestOsMimeTypesService::ClearMimeTypes(
     const std::string& vm_name,
     const std::string& container_name) {
@@ -88,7 +118,13 @@ void GuestOsMimeTypesService::UpdateMimeTypes(
 
   base::Value exts(base::Value::Type::DICTIONARY);
   for (const auto& mapping : mime_type_mappings.mime_type_mappings()) {
-    exts.SetStringKey(mapping.first, mapping.second);
+    // Only store mappings from container that are different to host.
+    std::string type;
+    if (!xdg_shared_mime_info::GetMimeCacheTypeFromExtension(mapping.first,
+                                                             &type) ||
+        mapping.second != type) {
+      exts.SetStringKey(mapping.first, mapping.second);
+    }
   }
   VLOG(1) << "UpdateMimeTypes(" << mime_type_mappings.vm_name() << ", "
           << mime_type_mappings.container_name() << ")=" << exts;

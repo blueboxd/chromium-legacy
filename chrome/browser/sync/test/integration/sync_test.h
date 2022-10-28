@@ -1,4 +1,4 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -340,12 +340,6 @@ class SyncTest : public PlatformBrowserTest {
   // Handles Profile creation for given index. Profile's path and type is
   // determined at runtime based on server type.
   bool CreateProfile(int index);
-
-  // Callback for MakeProfileForUISignin() method. It runs the quit_closure once
-  // profile is created successfully.
-  static void CreateProfileCallback(const base::RepeatingClosure& quit_closure,
-                                    Profile* profile,
-                                    Profile::CreateStatus status);
 
   static std::unique_ptr<KeyedService> CreateProfileInvalidationProvider(
       std::map<const Profile*, invalidation::FCMNetworkHandler*>*

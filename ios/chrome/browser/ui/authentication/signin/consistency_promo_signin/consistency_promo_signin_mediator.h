@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,6 +10,7 @@
 #import "base/ios/block_types.h"
 #import "ios/chrome/browser/ui/authentication/signin/signin_constants.h"
 
+@class AuthenticationFlow;
 class AuthenticationService;
 class ChromeAccountManagerService;
 @class ChromeIdentity;
@@ -31,6 +32,8 @@ typedef NS_ENUM(NSInteger, ConsistencyPromoSigninMediatorError) {
   ConsistencyPromoSigninMediatorErrorTimeout,
   // Generic error.
   ConsistencyPromoSigninMediatorErrorGeneric,
+  // Failed to sign-in.
+  ConsistencyPromoSigninMediatorErrorFailedToSignin,
 };
 
 // Delegate for ConsistencyPromoSigninMediator.
@@ -77,7 +80,7 @@ typedef NS_ENUM(NSInteger, ConsistencyPromoSigninMediatorError) {
 - (void)chromeIdentityAdded:(ChromeIdentity*)identity;
 
 // Starts the sign-in flow.
-- (void)signinWithIdentity:(ChromeIdentity*)identity;
+- (void)signinWithAuthenticationFlow:(AuthenticationFlow*)authenticationFlow;
 
 @end
 

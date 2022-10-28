@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -238,7 +238,7 @@ TEST(CastInternalMessageUtilTest, CastSessionFromReceiverStatusNoStatusText) {
   ASSERT_TRUE(session);
   EXPECT_EQ("sessionId", session->session_id());
   EXPECT_EQ("ABCDEFGH", session->app_id());
-  EXPECT_EQ("transportId", session->transport_id());
+  EXPECT_EQ("transportId", session->destination_id());
   base::flat_set<std::string> message_namespaces = {
       "urn:x-cast:com.google.cast.media", "urn:x-cast:com.google.foo"};
   EXPECT_EQ(message_namespaces, session->message_namespaces());
@@ -503,7 +503,7 @@ TEST(CastInternalMessageUtilTest, CreateAppMessage) {
   base::Value message_body(base::Value::Type::DICTIONARY);
   message_body.SetKey("foo", base::Value("bar"));
   cast::channel::CastMessage cast_message = cast_channel::CreateCastMessage(
-      "urn:x-cast:com.google.foo", message_body, "sourceId", "destinationId");
+      "urn:x-cast:com.google.foo", message_body, "sourceId", "transportId");
 
   auto message = CreateAppMessage(session_id, client_id, cast_message);
   EXPECT_THAT(message, IsPresentationConnectionMessage(R"({

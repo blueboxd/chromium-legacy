@@ -25,4 +25,15 @@ bool IsFedCmManifestValidationEnabled() {
   return base::FeatureList::IsEnabled(features::kFedCmManifestValidation);
 }
 
+bool IsFedCmMultipleIdentityProvidersEnabled() {
+  return base::FeatureList::IsEnabled(
+      features::kFedCmMultipleIdentityProviders);
+}
+
+bool IsFedCmIdpSigninStatusEnabled() {
+  return GetFieldTrialParamByFeatureAsBool(
+      features::kFedCm, features::kFedCmIdpSigninStatusFieldTrialParamName,
+      false);
+}
+
 }  // namespace content

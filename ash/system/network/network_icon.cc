@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,6 +12,7 @@
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/style/ash_color_provider.h"
+#include "ash/style/color_util.h"
 #include "ash/style/dark_light_mode_controller_impl.h"
 #include "ash/system/network/network_icon_animation.h"
 #include "ash/system/network/network_icon_animation_observer.h"
@@ -461,7 +462,7 @@ SkColor GetDefaultColorForIconType(IconType icon_type) {
           AshColorProvider::ContentLayerType::kButtonIconColorPrimary);
     case ICON_TYPE_FEATURE_POD_DISABLED:
       return color_utils::GetResultingPaintColor(
-          AshColorProvider::GetDisabledColor(
+          ColorUtil::GetDisabledColor(
               GetDefaultColorForIconType(ICON_TYPE_FEATURE_POD)),
           ash_color_provider->GetBackgroundColor());
     default:

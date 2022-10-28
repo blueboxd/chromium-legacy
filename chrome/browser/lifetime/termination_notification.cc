@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -14,11 +14,11 @@
 #include "content/public/browser/notification_service.h"
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-#include "ash/components/login/session/session_termination_manager.h"
 #include "chrome/browser/lifetime/application_lifetime_chromeos.h"
 #include "chromeos/ash/components/dbus/dbus_thread_manager.h"  // nogncheck
 #include "chromeos/ash/components/dbus/session_manager/session_manager_client.h"
 #include "chromeos/ash/components/dbus/update_engine/update_engine_client.h"
+#include "chromeos/ash/components/login/session/session_termination_manager.h"
 #include "chromeos/dbus/power/power_policy_controller.h"
 #endif
 

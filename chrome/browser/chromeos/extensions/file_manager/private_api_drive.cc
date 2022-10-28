@@ -1,4 +1,4 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,7 +9,6 @@
 #include <set>
 #include <utility>
 
-#include "ash/components/drivefs/drivefs_util.h"
 #include "ash/constants/ash_features.h"
 #include "base/base64.h"
 #include "base/bind.h"
@@ -34,6 +33,7 @@
 #include "chrome/browser/ash/file_manager/url_util.h"
 #include "chrome/browser/ash/file_system_provider/mount_path_util.h"
 #include "chrome/browser/ash/file_system_provider/provided_file_system_interface.h"
+#include "chrome/browser/ash/fusebox/fusebox_server.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/extensions/file_manager/event_router.h"
 #include "chrome/browser/chromeos/extensions/file_manager/event_router_factory.h"
@@ -47,6 +47,7 @@
 #include "chrome/browser/ui/webui/chromeos/manage_mirrorsync/manage_mirrorsync_dialog.h"
 #include "chrome/common/extensions/api/file_manager_private_internal.h"
 #include "chrome/common/extensions/extension_constants.h"
+#include "chromeos/ash/components/drivefs/drivefs_util.h"
 #include "chromeos/ash/components/network/network_handler.h"
 #include "chromeos/ash/components/network/network_state_handler.h"
 #include "components/drive/chromeos/search_metadata.h"
@@ -180,30 +181,27 @@ class SingleEntryPropertiesGetterForFileSystemProvider {
 
     if (names_.find(api::file_manager_private::ENTRY_PROPERTY_NAME_SIZE) !=
         names_.end()) {
-      properties_->size = std::make_unique<double>(*metadata->size.get());
+      properties_->size = *metadata->size;
     }
 
     if (names_.find(
             api::file_manager_private::ENTRY_PROPERTY_NAME_MODIFICATIONTIME) !=
         names_.end()) {
-      properties_->modification_time =
-          std::make_unique<double>(metadata->modification_time->ToJsTime());
+      properties_->modification_time = metadata->modification_time->ToJsTime();
     }
 
     if (names_.find(
             api::file_manager_private::ENTRY_PROPERTY_NAME_CONTENTMIMETYPE) !=
             names_.end() &&
         metadata->mime_type.get()) {
-      properties_->content_mime_type =
-          std::make_unique<std::string>(*metadata->mime_type);
+      properties_->content_mime_type = *metadata->mime_type;
     }
 
     if (names_.find(
             api::file_manager_private::ENTRY_PROPERTY_NAME_THUMBNAILURL) !=
             names_.end() &&
         metadata->thumbnail.get()) {
-      properties_->thumbnail_url =
-          std::make_unique<std::string>(*metadata->thumbnail);
+      properties_->thumbnail_url = *metadata->thumbnail;
     }
 
     CompleteGetEntryProperties(base::File::FILE_OK);
@@ -255,7 +253,7 @@ class SingleEntryPropertiesGetterForDocumentsProvider {
       Profile* const profile,
       ResultCallback callback)
       : callback_(std::move(callback)),
-        file_system_url_(file_system_url),
+        file_system_url_(ResolveFuseBoxFSURL(profile, file_system_url)),
         profile_(profile),
         properties_(new EntryProperties) {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -282,6 +280,21 @@ class SingleEntryPropertiesGetterForDocumentsProvider {
                              weak_ptr_factory_.GetWeakPtr()));
   }
 
+  static storage::FileSystemURL ResolveFuseBoxFSURL(
+      Profile* profile,
+      const storage::FileSystemURL& file_system_url) {
+    if (!base::StartsWith(file_system_url.filesystem_id(),
+                          file_manager::util::kFuseBoxMountNamePrefix)) {
+      return file_system_url;
+    }
+    fusebox::Server* fusebox_server = fusebox::Server::GetInstance();
+    if (!fusebox_server) {
+      return storage::FileSystemURL();
+    }
+    return fusebox_server->ResolveFilename(profile,
+                                           file_system_url.path().value());
+  }
+
   void OnGetExtraFileMetadata(
       base::File::Error error,
       const arc::ArcDocumentsProviderRoot::ExtraFileMetadata& metadata) {
@@ -291,15 +304,14 @@ class SingleEntryPropertiesGetterForDocumentsProvider {
       CompleteGetEntryProperties(error);
       return;
     }
-    properties_->can_delete = std::make_unique<bool>(metadata.supports_delete);
-    properties_->can_rename = std::make_unique<bool>(metadata.supports_rename);
-    properties_->can_add_children =
-        std::make_unique<bool>(metadata.dir_supports_create);
+    properties_->can_delete = metadata.supports_delete;
+    properties_->can_rename = metadata.supports_rename;
+    properties_->can_add_children = metadata.dir_supports_create;
     if (!metadata.last_modified.is_null()) {
-      properties_->modification_time = std::make_unique<double>(
-          metadata.last_modified.ToJsTimeIgnoringNull());
+      properties_->modification_time =
+          metadata.last_modified.ToJsTimeIgnoringNull();
     }
-    properties_->size = std::make_unique<double>(metadata.size);
+    properties_->size = metadata.size;
     CompleteGetEntryProperties(base::File::FILE_OK);
   }
 
@@ -453,55 +465,40 @@ FileManagerPrivateInternalGetEntryPropertiesFunction::Run() {
     const storage::FileSystemURL file_system_url =
         file_system_context->CrackURLInFirstPartyContext(url);
 
-    constexpr auto is_fusebox_fsp = [](const storage::FileSystemURL& url) {
-      if (url.type() != storage::kFileSystemTypeFuseBox)
-        return false;
-      if (!base::StartsWith(url.filesystem_id(), file_manager::util::kFuseBox))
-        return false;
-      static const base::FilePath::CharType kFuseBoxMediaPathFSPSuffix[] =
-          FILE_PATH_LITERAL("/media/fuse/fusebox/fsp:");
-      if (!base::StartsWith(url.path().value(), kFuseBoxMediaPathFSPSuffix))
-        return false;
-      return true;
-    };
+    storage::FileSystemType file_system_type = file_system_url.type();
+    if (file_system_type == storage::kFileSystemTypeFuseBox) {
+      base::StringPiece path(file_system_url.path().value());
+      if (base::StartsWith(path, file_manager::util::kFuseBoxMediaSlashPath)) {
+        path.remove_prefix(strlen(file_manager::util::kFuseBoxMediaSlashPath));
+        if (base::StartsWith(path,
+                             file_manager::util::kFuseBoxSubdirPrefixADP)) {
+          file_system_type = storage::kFileSystemTypeArcDocumentsProvider;
+        } else if (base::StartsWith(
+                       path, file_manager::util::kFuseBoxSubdirPrefixFSP)) {
+          file_system_type = storage::kFileSystemTypeProvided;
+        }
+      }
+    }
 
-    switch (file_system_url.type()) {
+    auto callback =
+        base::BindOnce(&FileManagerPrivateInternalGetEntryPropertiesFunction::
+                           CompleteGetEntryProperties,
+                       this, i, file_system_url);
+
+    switch (file_system_type) {
       case storage::kFileSystemTypeProvided:
         SingleEntryPropertiesGetterForFileSystemProvider::Start(
-            file_system_url, names_as_set,
-            base::BindOnce(
-                &FileManagerPrivateInternalGetEntryPropertiesFunction::
-                    CompleteGetEntryProperties,
-                this, i, file_system_url));
+            file_system_url, names_as_set, std::move(callback));
         break;
       case storage::kFileSystemTypeDriveFs:
         file_manager::util::SingleEntryPropertiesGetterForDriveFs::Start(
-            file_system_url, profile,
-            base::BindOnce(
-                &FileManagerPrivateInternalGetEntryPropertiesFunction::
-                    CompleteGetEntryProperties,
-                this, i, file_system_url));
+            file_system_url, profile, std::move(callback));
         break;
       case storage::kFileSystemTypeArcDocumentsProvider:
         SingleEntryPropertiesGetterForDocumentsProvider::Start(
-            file_system_url, profile,
-            base::BindOnce(
-                &FileManagerPrivateInternalGetEntryPropertiesFunction::
-                    CompleteGetEntryProperties,
-                this, i, file_system_url));
+            file_system_url, profile, std::move(callback));
         break;
       default:
-        // Handle FuseBox provided storage::kFileSystemTypeProvided file system.
-        if (is_fusebox_fsp(file_system_url)) {
-          SingleEntryPropertiesGetterForFileSystemProvider::Start(
-              file_system_url, names_as_set,
-              base::BindOnce(
-                  &FileManagerPrivateInternalGetEntryPropertiesFunction::
-                      CompleteGetEntryProperties,
-                  this, i, file_system_url));
-          break;
-        }
-
         // TODO(yawano) Change this to support other voluems (e.g. local) ,and
         // integrate fileManagerPrivate.getMimeType to this method.
         LOG(ERROR) << "Not supported file system type.";
@@ -523,8 +520,8 @@ void FileManagerPrivateInternalGetEntryPropertiesFunction::
   DCHECK(0 <= processed_count_ && processed_count_ < properties_list_.size());
 
   if (error == base::File::FILE_OK) {
-    properties->external_file_url = std::make_unique<std::string>(
-        chromeos::FileSystemURLToExternalFileURL(url).spec());
+    properties->external_file_url =
+        chromeos::FileSystemURLToExternalFileURL(url).spec();
   }
   properties_list_[index] = std::move(*properties);
 

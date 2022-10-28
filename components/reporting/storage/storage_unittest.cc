@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -44,6 +44,7 @@
 
 using ::testing::_;
 using ::testing::AtLeast;
+using ::testing::AtMost;
 using ::testing::Between;
 using ::testing::DoAll;
 using ::testing::Eq;
@@ -62,6 +63,33 @@ namespace {
 
 // Test uploader counter - for generation of unique ids.
 std::atomic<int64_t> next_uploader_id{0};
+
+// Storage options to be used in tests.
+class TestStorageOptions : public StorageOptions {
+ public:
+  TestStorageOptions() = default;
+
+  QueuesOptionsList ProduceQueuesOptions() const override {
+    // Call base class method.
+    auto queues_options = StorageOptions::ProduceQueuesOptions();
+    for (auto& queue_options : queues_options) {
+      // Disable upload retry.
+      queue_options.second.set_upload_retry_delay(upload_retry_delay_);
+    }
+    // Make adjustments.
+    return queues_options;
+  }
+
+  // Prepare options adjustment.
+  // Must be called before the options are used by Storage::Create().
+  void set_upload_retry_delay(base::TimeDelta upload_retry_delay) {
+    upload_retry_delay_ = upload_retry_delay;
+  }
+
+ private:
+  base::TimeDelta upload_retry_delay_{
+      base::TimeDelta()};  // no retry by default
+};
 
 // Context of single decryption. Self-destructs upon completion or failure.
 class SingleDecryptionContext {
@@ -187,15 +215,13 @@ class StorageTest
  protected:
   void SetUp() override {
     ASSERT_TRUE(location_.CreateUniqueTempDir());
+    options_.set_directory(location_.GetPath());
 
-    // Disallow uploads unless other expectation is set (any later EXPECT_CALL
-    // will take precedence over this one).
+    // Turn uploads to no-ops unless other expectation is set (any later
+    // EXPECT_CALL will take precedence over this one).
     EXPECT_CALL(set_mock_uploader_expectations_, Call(_))
-        .WillRepeatedly(Invoke([](UploaderInterface::UploadReason reason) {
-          return Status(
-              error::UNAVAILABLE,
-              base::StrCat({"Test uploader not provided by the test, reason=",
-                            UploaderInterface::ReasonToString(reason)}));
+        .WillRepeatedly(Invoke([this](UploaderInterface::UploadReason reason) {
+          return TestUploader::SetUpDummy(this);
         }));
     // Encryption is enabled by default.
     ASSERT_TRUE(EncryptionModuleInterface::is_enabled());
@@ -203,6 +229,9 @@ class StorageTest
       // Generate signing key pair.
       test::GenerateSigningKeyPair(signing_private_key_,
                                    signature_verification_public_key_);
+      options_.set_signature_verification_public_key(std::string(
+          reinterpret_cast<const char*>(signature_verification_public_key_),
+          kKeySize));
       // Create decryption module.
       auto decryptor_result = test::Decryptor::Create();
       ASSERT_OK(decryptor_result.status()) << decryptor_result.status();
@@ -259,8 +288,8 @@ class StorageTest
   // the main test thread.
   class SequenceBoundUpload {
    public:
-    explicit SequenceBoundUpload(const MockUpload* mock_upload)
-        : mock_upload_(mock_upload) {
+    explicit SequenceBoundUpload(std::unique_ptr<const MockUpload> mock_upload)
+        : mock_upload_(std::move(mock_upload)) {
       DETACH_FROM_SEQUENCE(scoped_checker_);
       upload_progress_.assign("\nStart\n");
     }
@@ -270,10 +299,13 @@ class StorageTest
 
     void DoEncounterSeqId(int64_t uploader_id,
                           Priority priority,
-                          int64_t sequencing_id) {
+                          int64_t sequencing_id,
+                          int64_t generation_id) {
       DCHECK_CALLED_ON_VALID_SEQUENCE(scoped_checker_);
       upload_progress_.append("SeqId: ")
           .append(base::NumberToString(sequencing_id))
+          .append("/")
+          .append(base::NumberToString(generation_id))
           .append("\n");
       mock_upload_->EncounterSeqId(uploader_id, priority, sequencing_id);
     }
@@ -281,12 +313,15 @@ class StorageTest
     void DoUploadRecord(int64_t uploader_id,
                         Priority priority,
                         int64_t sequencing_id,
+                        int64_t generation_id,
                         base::StringPiece data,
                         base::OnceCallback<void(bool)> processed_cb) {
-      DoEncounterSeqId(uploader_id, priority, sequencing_id);
+      DoEncounterSeqId(uploader_id, priority, sequencing_id, generation_id);
       DCHECK_CALLED_ON_VALID_SEQUENCE(scoped_checker_);
       upload_progress_.append("Record: ")
           .append(base::NumberToString(sequencing_id))
+          .append("/")
+          .append(base::NumberToString(generation_id))
           .append(" '")
           .append(data.data(), data.size())
           .append("'\n");
@@ -298,11 +333,14 @@ class StorageTest
     void DoUploadRecordFailure(int64_t uploader_id,
                                Priority priority,
                                int64_t sequencing_id,
+                               int64_t generation_id,
                                Status status,
                                base::OnceCallback<void(bool)> processed_cb) {
       DCHECK_CALLED_ON_VALID_SEQUENCE(scoped_checker_);
       upload_progress_.append("Failure: ")
           .append(base::NumberToString(sequencing_id))
+          .append("/")
+          .append(base::NumberToString(generation_id))
           .append(" '")
           .append(status.ToString())
           .append("'\n");
@@ -314,16 +352,20 @@ class StorageTest
     void DoUploadGap(int64_t uploader_id,
                      Priority priority,
                      int64_t sequencing_id,
+                     int64_t generation_id,
                      uint64_t count,
                      base::OnceCallback<void(bool)> processed_cb) {
       DCHECK_CALLED_ON_VALID_SEQUENCE(scoped_checker_);
       for (uint64_t c = 0; c < count; ++c) {
         DoEncounterSeqId(uploader_id, priority,
-                         sequencing_id + static_cast<int64_t>(c));
+                         sequencing_id + static_cast<int64_t>(c),
+                         generation_id);
       }
       upload_progress_.append("Gap: ")
           .append(base::NumberToString(sequencing_id))
-          .append("(")
+          .append("/")
+          .append(base::NumberToString(generation_id))
+          .append(" (")
           .append(base::NumberToString(count))
           .append(")\n");
       std::move(processed_cb)
@@ -341,7 +383,7 @@ class StorageTest
     }
 
    private:
-    const raw_ptr<const MockUpload> mock_upload_;
+    const std::unique_ptr<const MockUpload> mock_upload_;
 
     SEQUENCE_CHECKER(scoped_checker_);
 
@@ -495,9 +537,15 @@ class StorageTest
 
     explicit TestUploader(StorageTest* self)
         : uploader_id_(next_uploader_id.fetch_add(1)),
+          last_upload_generation_id_(&self->last_upload_generation_id_),
           last_record_digest_map_(&self->last_record_digest_map_),
-          mock_upload_(&self->mock_upload_),
-          sequence_bound_upload_(self->main_task_runner_, &self->mock_upload_),
+          // Allocate MockUpload as raw pointer and immediately wrap it in
+          // unique_ptr and pass to SequenceBoundUpload to own.
+          // MockUpload outlives TestUploader and is destructed together with
+          // SequenceBoundUpload (on a sequenced task runner).
+          mock_upload_(new ::testing::NiceMock<const MockUpload>()),
+          sequence_bound_upload_(self->main_task_runner_,
+                                 base::WrapUnique(mock_upload_.get())),
           decryptor_(self->decryptor_) {
       DETACH_FROM_SEQUENCE(test_uploader_checker_);
     }
@@ -558,6 +606,7 @@ class StorageTest
             .AsyncCall(&SequenceBoundUpload::DoUploadRecordFailure)
             .WithArgs(uploader_id_, sequence_information.priority(),
                       sequence_information.sequencing_id(),
+                      sequence_information.generation_id(),
                       Status(error::DATA_LOSS,
                              base::StrCat(
                                  {"Generation id mismatch, expected=",
@@ -570,6 +619,9 @@ class StorageTest
       }
       if (!generation_id_.has_value()) {
         generation_id_ = sequence_information.generation_id();
+        last_upload_generation_id_->emplace(
+            sequence_information.priority(),
+            sequence_information.generation_id());
       }
 
       last_record_digest_map_->emplace(
@@ -580,7 +632,8 @@ class StorageTest
 
       sequence_bound_upload_.AsyncCall(&SequenceBoundUpload::DoUploadGap)
           .WithArgs(uploader_id_, sequence_information.priority(),
-                    sequence_information.sequencing_id(), count,
+                    sequence_information.sequencing_id(),
+                    sequence_information.generation_id(), count,
                     std::move(processed_cb));
     }
 
@@ -588,6 +641,34 @@ class StorageTest
       DCHECK_CALLED_ON_VALID_SEQUENCE(test_uploader_checker_);
       sequence_bound_upload_.AsyncCall(&SequenceBoundUpload::DoUploadComplete)
           .WithArgs(uploader_id_, status);
+    }
+
+    // Helper method for setting up dummy mock uploader expectations.
+    // To be used only for uploads that we want to just ignore and do not care
+    // about their outcome.
+    static std::unique_ptr<TestUploader> SetUpDummy(StorageTest* self) {
+      auto uploader = std::make_unique<TestUploader>(self);
+      // Any Record, RecordFailure of Gap could be encountered, and
+      // returning false will cut the upload short.
+      EXPECT_CALL(*uploader->mock_upload_,
+                  UploadRecord(Eq(uploader->uploader_id_), _, _, _))
+          .InSequence(uploader->test_upload_sequence_)
+          .WillRepeatedly(Return(false));
+      EXPECT_CALL(*uploader->mock_upload_,
+                  UploadRecordFailure(Eq(uploader->uploader_id_), _, _, _))
+          .InSequence(uploader->test_upload_sequence_)
+          .WillRepeatedly(Return(false));
+      EXPECT_CALL(*uploader->mock_upload_,
+                  UploadGap(Eq(uploader->uploader_id_), _, _, _))
+          .InSequence(uploader->test_upload_sequence_)
+          .WillRepeatedly(Return(false));
+      // Complete will always happen last (whether records/gaps were
+      // encountered or not).
+      EXPECT_CALL(*uploader->mock_upload_,
+                  UploadComplete(Eq(uploader->uploader_id_), _))
+          .InSequence(uploader->test_upload_sequence_)
+          .Times(1);
+      return uploader;
     }
 
    private:
@@ -602,6 +683,7 @@ class StorageTest
             .AsyncCall(&SequenceBoundUpload::DoUploadRecordFailure)
             .WithArgs(uploader_id_, sequence_information.priority(),
                       sequence_information.sequencing_id(),
+                      sequence_information.generation_id(),
                       Status(error::DATA_LOSS,
                              base::StrCat(
                                  {"Generation id mismatch, expected=",
@@ -614,6 +696,9 @@ class StorageTest
       }
       if (!generation_id_.has_value()) {
         generation_id_ = sequence_information.generation_id();
+        last_upload_generation_id_->emplace(
+            sequence_information.priority(),
+            sequence_information.generation_id());
       }
 
       // Verify digest and its match.
@@ -627,6 +712,7 @@ class StorageTest
               .AsyncCall(&SequenceBoundUpload::DoUploadRecordFailure)
               .WithArgs(uploader_id_, sequence_information.priority(),
                         sequence_information.sequencing_id(),
+                        sequence_information.generation_id(),
                         Status(error::DATA_LOSS, "Record digest mismatch"),
                         std::move(processed_cb));
           return;
@@ -644,6 +730,7 @@ class StorageTest
                 .WithArgs(
                     uploader_id_, sequence_information.priority(),
                     sequence_information.sequencing_id(),
+                    sequence_information.generation_id(),
                     Status(error::DATA_LOSS, "Last record digest mismatch"),
                     std::move(processed_cb));
             return;
@@ -659,6 +746,7 @@ class StorageTest
       sequence_bound_upload_.AsyncCall(&SequenceBoundUpload::DoUploadRecord)
           .WithArgs(uploader_id_, sequence_information.priority(),
                     sequence_information.sequencing_id(),
+                    sequence_information.generation_id(),
                     wrapped_record.record().data(), std::move(processed_cb));
     }
 
@@ -671,11 +759,11 @@ class StorageTest
     const int64_t uploader_id_;
 
     absl::optional<int64_t> generation_id_;
+    base::flat_map<Priority, int64_t>* const last_upload_generation_id_;
     const raw_ptr<LastRecordDigestMap> last_record_digest_map_;
 
     const raw_ptr<const MockUpload> mock_upload_;
-
-    base::SequenceBound<SequenceBoundUpload> sequence_bound_upload_;
+    const base::SequenceBound<SequenceBoundUpload> sequence_bound_upload_;
 
     const scoped_refptr<test::Decryptor> decryptor_;
 
@@ -686,6 +774,16 @@ class StorageTest
   StatusOr<scoped_refptr<Storage>> CreateTestStorage(
       const StorageOptions& options,
       scoped_refptr<EncryptionModuleInterface> encryption_module) {
+    // Handle and reject PERIODIC (optionally), as long as there is no explicit
+    // expectation set.
+    EXPECT_CALL(set_mock_uploader_expectations_,
+                Call(Eq(UploaderInterface::UploadReason::PERIODIC)))
+        .WillRepeatedly(Invoke([](UploaderInterface::UploadReason reason) {
+          return Status(
+              error::UNAVAILABLE,
+              base::StrCat({"Test uploader not provided by the test, reason=",
+                            UploaderInterface::ReasonToString(reason)}));
+        }));
     // Initialize Storage with no key.
     test::TestEvent<StatusOr<scoped_refptr<Storage>>> e;
     test_compression_module_ =
@@ -731,20 +829,28 @@ class StorageTest
     // Let asynchronous activity finish.
     task_environment_.RunUntilIdle();
     if (storage_) {
-      const auto memory_resource = storage_->options().memory_resource();
-      const auto disk_space_resource =
-          storage_->options().disk_space_resource();
       storage_.reset();
       // StorageQueue is destructed on a thread,
       // so we need to wait for all queues to destruct.
       task_environment_.RunUntilIdle();
-      // Make sure all memory is deallocated.
-      ASSERT_THAT(memory_resource->GetUsed(), Eq(0u));
-      // Make sure all disk is not reserved (files remain, but Storage is not
-      // responsible for them anymore).
-      ASSERT_THAT(disk_space_resource->GetUsed(), Eq(0u));
     }
     expect_to_need_key_ = false;
+    // Make sure all memory is deallocated.
+    ASSERT_THAT(options_.memory_resource()->GetUsed(), Eq(0u));
+    // Make sure all disk is not reserved (files remain, but Storage is not
+    // responsible for them anymore).
+    ASSERT_THAT(options_.disk_space_resource()->GetUsed(), Eq(0u));
+    // Handle and reject INIT_RESUME (optionally), in case the storage is
+    // recreated.
+    EXPECT_CALL(set_mock_uploader_expectations_,
+                Call(Eq(UploaderInterface::UploadReason::INIT_RESUME)))
+        .Times(AtMost(1))
+        .WillRepeatedly(Invoke([](UploaderInterface::UploadReason reason) {
+          return Status(
+              error::UNAVAILABLE,
+              base::StrCat({"Test uploader not provided by the test, reason=",
+                            UploaderInterface::ReasonToString(reason)}));
+        }));
   }
 
   StatusOr<scoped_refptr<Storage>> CreateTestStorageWithFailedKeyDelivery(
@@ -765,17 +871,7 @@ class StorageTest
     return storage;
   }
 
-  StorageOptions BuildTestStorageOptions() const {
-    StorageOptions options;
-    options.set_directory(location_.GetPath());
-    if (is_encryption_enabled()) {
-      // Encryption enabled.
-      options.set_signature_verification_public_key(std::string(
-          reinterpret_cast<const char*>(signature_verification_public_key_),
-          kKeySize));
-    }
-    return options;
-  }
+  const StorageOptions& BuildTestStorageOptions() const { return options_; }
 
   void AsyncStartMockUploader(
       UploaderInterface::UploadReason reason,
@@ -786,11 +882,13 @@ class StorageTest
             [](UploaderInterface::UploadReason reason,
                UploaderInterface::UploaderInterfaceResultCb start_uploader_cb,
                StorageTest* self) {
+              LOG(ERROR) << "Attempt upload, reason="
+                         << UploaderInterface::ReasonToString(reason);
               auto result = self->set_mock_uploader_expectations_.Call(reason);
-              LOG(ERROR) << "Upload reason="
-                         << UploaderInterface::ReasonToString(reason) << " "
-                         << result.status();
               if (!result.ok()) {
+                LOG(ERROR) << "Upload not allowed, reason="
+                           << UploaderInterface::ReasonToString(reason) << " "
+                           << result.status();
                 std::move(start_uploader_cb).Run(result.status());
                 return;
               }
@@ -831,15 +929,18 @@ class StorageTest
   }
 
   void ConfirmOrDie(Priority priority,
-                    absl::optional<std::int64_t> sequencing_id,
+                    int64_t sequencing_id,
                     bool force = false) {
-    test::TestEvent<Status> c;
+    auto generation_it = last_upload_generation_id_.find(priority);
+    ASSERT_NE(generation_it, last_upload_generation_id_.end()) << priority;
     LOG(ERROR) << "Confirm priority=" << priority << " force=" << force
-               << " seq="
-               << (sequencing_id.has_value()
-                       ? base::NumberToString(sequencing_id.value())
-                       : "null");
-    storage_->Confirm(priority, sequencing_id, force, c.cb());
+               << " seq=" << sequencing_id << " gen=" << generation_it->second;
+    SequenceInformation seq_info;
+    seq_info.set_sequencing_id(sequencing_id);
+    seq_info.set_generation_id(generation_it->second);
+    seq_info.set_priority(priority);
+    test::TestEvent<Status> c;
+    storage_->Confirm(std::move(seq_info), force, c.cb());
     const Status c_result = c.result();
     ASSERT_OK(c_result) << c_result;
   }
@@ -909,8 +1010,10 @@ class StorageTest
   uint8_t signing_private_key_[kSignKeySize];
 
   base::ScopedTempDir location_;
+  TestStorageOptions options_;
   scoped_refptr<test::Decryptor> decryptor_;
   scoped_refptr<Storage> storage_;
+  base::flat_map<Priority, int64_t> last_upload_generation_id_;
   SignedEncryptionInfo signed_encryption_key_;
   bool expect_to_need_key_{false};
   std::atomic<bool> key_delivery_failure_{false};
@@ -919,8 +1022,6 @@ class StorageTest
   // Test-wide global mapping of <generation id, sequencing id> to record
   // digest. Serves all TestUploaders created by test fixture.
   TestUploader::LastRecordDigestMap last_record_digest_map_;
-
-  const ::testing::NiceMock<const MockUpload> mock_upload_;
 
   ::testing::MockFunction<StatusOr<std::unique_ptr<TestUploader>>(
       UploaderInterface::UploadReason /*reason*/)>
@@ -1236,6 +1337,45 @@ TEST_P(StorageTest, WriteAndRepeatedlyUploadWithConfirmations) {
   }
 }
 
+TEST_P(StorageTest, WriteAndUploadWithBadConfirmation) {
+  CreateTestStorageOrDie(BuildTestStorageOptions());
+
+  WriteStringOrDie(FAST_BATCH, kData[0]);
+  WriteStringOrDie(FAST_BATCH, kData[1]);
+  WriteStringOrDie(FAST_BATCH, kData[2]);
+
+  {
+    // Set uploader expectations.
+    test::TestCallbackAutoWaiter waiter;
+    EXPECT_CALL(set_mock_uploader_expectations_,
+                Call(Eq(UploaderInterface::UploadReason::PERIODIC)))
+        .WillOnce(
+            Invoke([&waiter, this](UploaderInterface::UploadReason reason) {
+              return TestUploader::SetUp(FAST_BATCH, &waiter, this)
+                  .Required(0, kData[0])
+                  .Required(1, kData[1])
+                  .Required(2, kData[2])
+                  .Complete();
+            }))
+        .RetiresOnSaturation();
+
+    // Forward time to trigger upload
+    task_environment_.FastForwardBy(base::Seconds(1));
+  }
+
+  // Confirm #0 with bad generation.
+  test::TestEvent<Status> c;
+  SequenceInformation seq_info;
+  seq_info.set_priority(FAST_BATCH);
+  seq_info.set_sequencing_id(/*sequencing_id=*/0);
+  // Do not set generation!
+  LOG(ERROR) << "Bad confirm priority=" << seq_info.priority()
+             << " seq=" << seq_info.sequencing_id();
+  storage_->Confirm(std::move(seq_info), /*force=*/false, c.cb());
+  const Status c_result = c.result();
+  ASSERT_FALSE(c_result.ok()) << c_result;
+}
+
 TEST_P(StorageTest, WriteAndRepeatedlySecurityUpload) {
   CreateTestStorageOrDie(BuildTestStorageOptions());
 
@@ -1549,6 +1689,9 @@ TEST_P(StorageTest, WriteAndRepeatedlyUploadMultipleQueues) {
 }
 
 TEST_P(StorageTest, WriteAndImmediateUploadWithFailure) {
+  // Reset options to enable failure retry.
+  options_.set_upload_retry_delay(base::Seconds(1));
+
   CreateTestStorageOrDie(BuildTestStorageOptions());
 
   // Write a record as Immediate, initiating an upload which fails
@@ -1558,7 +1701,7 @@ TEST_P(StorageTest, WriteAndImmediateUploadWithFailure) {
     EXPECT_CALL(set_mock_uploader_expectations_,
                 Call(Eq(UploaderInterface::UploadReason::IMMEDIATE_FLUSH)))
         .WillOnce(Invoke([](UploaderInterface::UploadReason reason) {
-          return Status(error::UNAVAILABLE, "Test uploader unavailable");
+          return Status(error::UNAVAILABLE, "Intended failure in test");
         }))
         .RetiresOnSaturation();
     EXPECT_CALL(set_mock_uploader_expectations_,
@@ -1645,7 +1788,7 @@ TEST_P(StorageTest, ForceConfirm) {
   }
 
   // Now force confirm #0 and forward time again.
-  ConfirmOrDie(FAST_BATCH, /*sequencing_id=*/absl::nullopt, /*force=*/true);
+  ConfirmOrDie(FAST_BATCH, /*sequencing_id=*/-1, /*force=*/true);
   // Set uploader expectations: #0 and #1 could be returned as Gaps
   {
     test::TestCallbackAutoWaiter waiter;
@@ -1714,7 +1857,7 @@ TEST_P(StorageTest, KeyDeliveryFailureOnNewStorage) {
   key_delivery_failure_.store(true);
   for (size_t failure = 1; failure < kFailuresCount; ++failure) {
     // Failing attempt to write
-    const Status write_result = WriteString(FAST_BATCH, kData[0]);
+    const Status write_result = WriteString(MANUAL_BATCH, kData[0]);
     EXPECT_FALSE(write_result.ok());
     EXPECT_THAT(write_result.error_code(), Eq(error::FAILED_PRECONDITION))
         << write_result;
@@ -1729,29 +1872,34 @@ TEST_P(StorageTest, KeyDeliveryFailureOnNewStorage) {
   // Set uploader expectations for any queue; expect no records and need
   // key. Make sure no uploads happen, and key is requested.
   key_delivery_failure_.store(false);
-  EXPECT_CALL(set_mock_uploader_expectations_,
-              Call(Eq(UploaderInterface::UploadReason::KEY_DELIVERY)))
-      .Times(AtLeast(1))
-      .WillRepeatedly(Invoke([this](UploaderInterface::UploadReason) {
-        return TestUploader::SetKeyDelivery(this).Complete();
-      }));
+  {
+    test::TestCallbackAutoWaiter waiter;
+    EXPECT_CALL(set_mock_uploader_expectations_,
+                Call(Eq(UploaderInterface::UploadReason::KEY_DELIVERY)))
+        .WillOnce(Invoke([&waiter, this](UploaderInterface::UploadReason) {
+          auto result = TestUploader::SetKeyDelivery(this).Complete();
+          waiter.Signal();
+          return result;
+        }))
+        .RetiresOnSaturation();
 
-  // Forward time to trigger upload
-  task_environment_.FastForwardBy(base::Seconds(1));
+    // Forward time to trigger upload
+    task_environment_.FastForwardBy(base::Seconds(1));
+  }
 
   // Successfully write data
-  WriteStringOrDie(FAST_BATCH, kData[0]);
-  WriteStringOrDie(FAST_BATCH, kData[1]);
-  WriteStringOrDie(FAST_BATCH, kData[2]);
+  WriteStringOrDie(MANUAL_BATCH, kData[0]);
+  WriteStringOrDie(MANUAL_BATCH, kData[1]);
+  WriteStringOrDie(MANUAL_BATCH, kData[2]);
 
   // Set uploader expectations.
   {
     test::TestCallbackAutoWaiter waiter;
     EXPECT_CALL(set_mock_uploader_expectations_,
-                Call(Eq(UploaderInterface::UploadReason::PERIODIC)))
+                Call(Eq(UploaderInterface::UploadReason::MANUAL)))
         .WillOnce(
             Invoke([&waiter, this](UploaderInterface::UploadReason reason) {
-              return TestUploader::SetUp(FAST_BATCH, &waiter, this)
+              return TestUploader::SetUp(MANUAL_BATCH, &waiter, this)
                   .Required(0, kData[0])
                   .Required(1, kData[1])
                   .Required(2, kData[2])
@@ -1759,26 +1907,26 @@ TEST_P(StorageTest, KeyDeliveryFailureOnNewStorage) {
             }))
         .RetiresOnSaturation();
 
-    // Trigger successful upload.
-    task_environment_.FastForwardBy(base::Seconds(1));
+    // Trigger upload.
+    EXPECT_OK(storage_->Flush(MANUAL_BATCH));
   }
 
   ResetTestStorage();
 
   // Reopen and write more data.
   CreateTestStorageOrDie(BuildTestStorageOptions());
-  WriteStringOrDie(FAST_BATCH, kMoreData[0]);
-  WriteStringOrDie(FAST_BATCH, kMoreData[1]);
-  WriteStringOrDie(FAST_BATCH, kMoreData[2]);
+  WriteStringOrDie(MANUAL_BATCH, kMoreData[0]);
+  WriteStringOrDie(MANUAL_BATCH, kMoreData[1]);
+  WriteStringOrDie(MANUAL_BATCH, kMoreData[2]);
 
   // Set uploader expectations.
   {
     test::TestCallbackAutoWaiter waiter;
     EXPECT_CALL(set_mock_uploader_expectations_,
-                Call(Eq(UploaderInterface::UploadReason::PERIODIC)))
+                Call(Eq(UploaderInterface::UploadReason::MANUAL)))
         .WillOnce(
             Invoke([&waiter, this](UploaderInterface::UploadReason reason) {
-              return TestUploader::SetUp(FAST_BATCH, &waiter, this)
+              return TestUploader::SetUp(MANUAL_BATCH, &waiter, this)
                   .Required(0, kData[0])
                   .Required(1, kData[1])
                   .Required(2, kData[2])
@@ -1790,7 +1938,7 @@ TEST_P(StorageTest, KeyDeliveryFailureOnNewStorage) {
         .RetiresOnSaturation();
 
     // Trigger upload.
-    task_environment_.FastForwardBy(base::Seconds(1));
+    EXPECT_OK(storage_->Flush(MANUAL_BATCH));
   }
 }
 

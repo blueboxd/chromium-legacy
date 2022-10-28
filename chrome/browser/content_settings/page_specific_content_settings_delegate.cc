@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -217,8 +217,7 @@ void PageSpecificContentSettingsDelegate::OnContentAllowed(
   GetSettingsMap()->GetWebsiteSetting(web_contents()->GetLastCommittedURL(),
                                       web_contents()->GetLastCommittedURL(),
                                       type, &setting_info);
-  const base::Time grant_time = GetSettingsMap()->GetSettingLastModifiedDate(
-      setting_info.primary_pattern, setting_info.secondary_pattern, type);
+  const base::Time grant_time = setting_info.metadata.last_modified;
   if (grant_time.is_null())
     return;
   permissions::PermissionUmaUtil::RecordTimeElapsedBetweenGrantAndUse(

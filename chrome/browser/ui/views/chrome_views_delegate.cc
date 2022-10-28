@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -39,7 +39,7 @@ namespace {
 
 Profile* GetProfileForWindow(const views::Widget* window) {
   if (!window)
-    return NULL;
+    return nullptr;
   return reinterpret_cast<Profile*>(
       window->GetNativeWindowProperty(Profile::kProfileKey));
 }
@@ -117,7 +117,7 @@ bool ChromeViewsDelegate::GetSavedWindowPlacement(
     return false;
 
   DCHECK(prefs->FindPreference(window_name));
-  const base::Value::Dict& dictionary = prefs->GetValueDict(window_name);
+  const base::Value::Dict& dictionary = prefs->GetDict(window_name);
   absl::optional<int> left = dictionary.FindInt("left");
   absl::optional<int> top = dictionary.FindInt("top");
   absl::optional<int> right = dictionary.FindInt("right");

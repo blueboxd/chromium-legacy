@@ -1,4 +1,4 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -164,9 +164,12 @@ class FormField {
   static bool MatchesFormControlType(base::StringPiece type,
                                      DenseSet<MatchFieldType> match_type);
 
+  // TODO(crbug.com/1352826) Undo making this temporarily a public function.
+ public:
   // Returns true if |field_type| is a single field parseable type.
   static bool IsSingleFieldParseableType(ServerFieldType field_type);
 
+ protected:
   // Derived classes must implement this interface to supply field type
   // information.  |ParseFormFields| coordinates the parsing and extraction
   // of types from an input vector of |AutofillField| objects and delegates

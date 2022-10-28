@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -85,6 +85,7 @@ HRESULT Run([in] LONG result);
 ]
 interface IUpdater : IUnknown {
   HRESULT GetVersion([out, retval] BSTR* version);
+  HRESULT FetchPolicies([in] IUpdaterCallback* callback);
   HRESULT CheckForUpdate([in, string] const WCHAR* app_id);
   HRESULT RegisterApp([in, string] const WCHAR* app_id,
                       [in, string] const WCHAR* brand_code,

@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -904,7 +904,7 @@ class DriveInternalsWebUIHandler : public content::WebUIMessageHandler {
     drive::DriveIntegrationService* service =
         drive::DriveIntegrationServiceFactory::FindForProfile(profile());
     if (!service || !service->is_enabled())
-      return NULL;
+      return nullptr;
     return service;
   }
 

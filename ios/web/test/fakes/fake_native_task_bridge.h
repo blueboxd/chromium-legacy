@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,7 +10,7 @@
 // Used to simulate methods in NativeTaskBridge
 @interface FakeNativeTaskBridge : DownloadNativeTaskBridge
 
-// Called in |_startDownloadBlock| in DownloadNativeTaskBridge to check if the
+// Called in `_startDownloadBlock` in DownloadNativeTaskBridge to check if the
 // block was called.
 @property(nonatomic, readwrite) BOOL calledStartDownloadBlock;
 

@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -95,7 +95,7 @@ class MockPointerDelegate : public PointerDelegate {
 class MockRelativePointerDelegate : public RelativePointerDelegate {
  public:
   MockRelativePointerDelegate() = default;
-  ~MockRelativePointerDelegate() = default;
+  ~MockRelativePointerDelegate() override = default;
 
   // Overridden from RelativePointerDelegate:
   MOCK_METHOD1(OnPointerDestroying, void(Pointer*));
@@ -115,7 +115,7 @@ class MockPointerConstraintDelegate : public PointerConstraintDelegate {
       broken_count++;
     });
   }
-  ~MockPointerConstraintDelegate() = default;
+  ~MockPointerConstraintDelegate() override = default;
 
   // Overridden from PointerConstraintDelegate:
   MOCK_METHOD0(OnConstraintActivated, void());
@@ -222,10 +222,8 @@ class PointerConstraintTest : public PointerTest {
   std::unique_ptr<ShellSurface> BuildShellSurfaceWhichPermitsPointerLock() {
     std::unique_ptr<ShellSurface> shell_surface =
         test::ShellSurfaceBuilder({10, 10}).BuildShellSurface();
-
     shell_surface->GetWidget()->GetNativeWindow()->SetProperty(
         chromeos::kUseOverviewToExitPointerLock, true);
-
     return shell_surface;
   }
 
@@ -1815,7 +1813,7 @@ TEST_F(PointerConstraintTest, UserCanBreakAndActivatePersistentConstraint) {
   pointer_.reset();
 }
 
-TEST_F(PointerConstraintTest, DefaultSecrityDeletegate) {
+TEST_F(PointerConstraintTest, DefaultSecurityDeletegate) {
   auto default_security_delegate =
       SecurityDelegate::GetDefaultSecurityDelegate();
   auto shell_surface = test::ShellSurfaceBuilder({10, 10})
@@ -1860,6 +1858,60 @@ TEST_F(PointerConstraintTest, DefaultSecrityDeletegate) {
   pointer_.reset();
 }
 
+TEST_F(PointerConstraintTest, NoPointerMotionEventWhenUnconstrainingPointer) {
+  testing::MockFunction<void(std::string check_point_name)> check;
+  {
+    testing::InSequence s;
+
+    EXPECT_CALL(check, Call("Unconstrain pointer"));
+    EXPECT_CALL(delegate_, OnPointerMotion(testing::_, testing::_)).Times(0);
+  }
+
+  generator_->MoveMouseTo(
+      surface_->window()->GetBoundsInScreen().CenterPoint() +
+      gfx::Vector2d(4, 4));
+
+  EXPECT_TRUE(pointer_->ConstrainPointer(&constraint_delegate_));
+
+  generator_->MoveMouseTo(
+      surface_->window()->GetBoundsInScreen().CenterPoint() +
+      gfx::Vector2d(-4, -4));
+
+  check.Call("Unconstrain pointer");
+
+  pointer_->UnconstrainPointerByUserAction();
+
+  // Ensure the posted task for synthesized mouse move event is run.
+  base::RunLoop().RunUntilIdle();
+
+  pointer_.reset();
+}
+
+TEST_F(PointerConstraintTest, ConstrainPointerWithUncommittedShellSurface) {
+  std::unique_ptr<ShellSurface> uncommitted_shell_surface =
+      test::ShellSurfaceBuilder({10, 10}).SetNoCommit().BuildShellSurface();
+
+  Surface* surface = uncommitted_shell_surface->surface_for_testing();
+  surface->window()->GetToplevelWindow()->SetProperty(
+      chromeos::kUseOverviewToExitPointerLock, true);
+
+  focus_client_->FocusWindow(surface->window());
+  EXPECT_CALL(delegate_, CanAcceptPointerEventsForSurface(surface))
+      .WillRepeatedly(testing::Return(true));
+  testing::NiceMock<MockPointerConstraintDelegate> second_constraint;
+  EXPECT_CALL(second_constraint, GetConstrainedSurface())
+      .WillRepeatedly(testing::Return(surface));
+  ON_CALL(second_constraint, IsPersistent())
+      .WillByDefault(testing::Return(true));
+
+  // Verify that the operation doesn't crash.
+  // The operation fails because the window associated with |surface| (or its
+  // ancestors) cannot be activated before a widget is created in the commit
+  // process, while pointer capture is not allowed on an inactive window.
+  EXPECT_FALSE(pointer_->ConstrainPointer(&second_constraint));
+
+  pointer_.reset();
+}
 #endif
 
 TEST_F(PointerTest, PointerStylus) {

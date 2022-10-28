@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -1124,12 +1124,6 @@ void GLES2InterfaceStub::FramebufferTextureMultiviewOVR(
 void GLES2InterfaceStub::MaxShaderCompilerThreadsKHR(GLuint /* count */) {}
 GLuint GLES2InterfaceStub::CreateAndTexStorage2DSharedImageCHROMIUM(
     const GLbyte* /* mailbox */) {
-  return 0;
-}
-GLuint
-GLES2InterfaceStub::CreateAndTexStorage2DSharedImageWithInternalFormatCHROMIUM(
-    const GLbyte* /* mailbox */,
-    GLenum /* internalformat */) {
   return 0;
 }
 void GLES2InterfaceStub::BeginSharedImageAccessDirectCHROMIUM(

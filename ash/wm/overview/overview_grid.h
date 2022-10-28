@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,13 +12,12 @@
 
 #include "ash/public/cpp/wallpaper/wallpaper_controller_observer.h"
 #include "ash/rotator/screen_rotation_animator_observer.h"
-#include "ash/wm/desks/templates/save_desk_template_button_container.h"
+#include "ash/wm/desks/templates/saved_desk_save_desk_button_container.h"
 #include "ash/wm/overview/overview_session.h"
 #include "ash/wm/overview/rounded_label_widget.h"
 #include "ash/wm/splitview/split_view_controller.h"
 #include "ash/wm/splitview/split_view_drag_indicators.h"
 #include "ash/wm/splitview/split_view_observer.h"
-#include "ash/wm/window_state.h"
 #include "base/containers/flat_set.h"
 #include "ui/aura/window.h"
 #include "ui/gfx/geometry/rect.h"
@@ -37,8 +36,8 @@ namespace ash {
 class DesksBarView;
 class OverviewGridEventHandler;
 class OverviewItem;
-class SaveDeskTemplateButton;
-class SaveDeskTemplateButtonContainer;
+class SavedDeskSaveDeskButton;
+class SavedDeskSaveDeskButtonContainer;
 class SavedDeskLibraryView;
 
 // Represents a grid of windows in the Overview Mode in a particular root
@@ -377,13 +376,13 @@ class ASH_EXPORT OverviewGrid : public SplitViewObserver,
   bool IsSaveDeskForLaterButtonVisible() const;
 
   // Returns the save desk as template button if available, otherwise null.
-  SaveDeskTemplateButton* GetSaveDeskAsTemplateButton() const;
+  SavedDeskSaveDeskButton* GetSaveDeskAsTemplateButton() const;
 
   // Returns the save desk for later button if available, otherwise null.
-  SaveDeskTemplateButton* GetSaveDeskForLaterButton() const;
+  SavedDeskSaveDeskButton* GetSaveDeskForLaterButton() const;
 
-  // Returns the save desk button container if available, otherwise null.
-  SaveDeskTemplateButtonContainer* GetSaveDeskTemplateButtonContainer() const;
+  // Returns the save button container if available, otherwise null.
+  SavedDeskSaveDeskButtonContainer* GetSaveDeskButtonContainer() const;
 
   // SplitViewObserver:
   void OnSplitViewStateChanged(SplitViewController::State previous_state,

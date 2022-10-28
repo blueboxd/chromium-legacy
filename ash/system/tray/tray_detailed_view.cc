@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -280,7 +280,9 @@ TrayDetailedView::TrayDetailedView(DetailedViewDelegate* delegate)
       delegate_->GetBackgroundColor().value_or(SK_ColorTRANSPARENT)));
 }
 
-TrayDetailedView::~TrayDetailedView() = default;
+TrayDetailedView::~TrayDetailedView() {
+  is_destroying_ = true;
+}
 
 void TrayDetailedView::OnViewClicked(views::View* sender) {
   HandleViewClicked(sender);
@@ -487,6 +489,10 @@ const char* TrayDetailedView::GetClassName() const {
 
 void TrayDetailedView::OnThemeChanged() {
   views::View::OnThemeChanged();
+
+  if (is_destroying_)
+    return;
+
   delegate_->UpdateColors();
 
   auto* color_provider = AshColorProvider::Get();

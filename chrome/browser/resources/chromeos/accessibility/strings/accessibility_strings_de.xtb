@@ -138,9 +138,9 @@
 <translation id="1812527064848182527">Querformat</translation>
 <translation id="1829244130665387512">Auf Seite suchen</translation>
 <translation id="1834891354138622109">Spalte</translation>
-<translation id="1845944666972354496">Zum Aktivieren doppeltippen</translation>
 <translation id="1846771122725914429">Bluetooth-Braillezeile</translation>
 <translation id="1852018405765032699">Du kannst ChromeVox-Menüs öffnen und schließen, indem du mit vier Fingern auf den Bildschirm tippst. Die Menüs enthalten hilfreiche Informationen zu Befehlen und Tastenkombinationen. Sobald die Menüs geöffnet sind, kannst du mit einem Finger wischen, um Elemente auszuwählen, und sie anschließend durch Doppeltippen aktivieren. Tippe mit vier Fingern auf den Bildschirm, um fortzufahren.</translation>
+<translation id="1864430479908918647">Suchtaste + Leertaste drücken</translation>
 <translation id="1865601187525349519">Ende des Texts</translation>
 <translation id="1876229593313240038">doc</translation>
 <translation id="1902396333223336119">Zelle</translation>
@@ -529,6 +529,7 @@
 <translation id="4479068155583208887">Backstein</translation>
 <translation id="4482330759234983253">Vorherige Tabelle</translation>
 <translation id="4491109536499578614">Bild</translation>
+<translation id="4507332368061453500">Langer Klick auf aktuelles Element</translation>
 <translation id="4511186779140817916">Mandelweiß</translation>
 <translation id="451510441928265982">Keine vorherige Überschrift der Ebene 2</translation>
 <translation id="4515799157838123044">Inhalte im Hintergrund abdunkeln</translation>
@@ -597,7 +598,6 @@
 <translation id="4993152509206108683">Geschwindigkeit: <ph name="PERCENT" /> %</translation>
 <translation id="4994420463726586413">Aktuellen Akkustatus ansagen</translation>
 <translation id="4997282455736854877">Optionsfeld "<ph name="NAME" />" ist ausgewählt.</translation>
-<translation id="5011664330025416377">Zum Aktivieren Suchtaste + Leertaste drücken</translation>
 <translation id="5012724933919010465"><ph name="NAME" />, Optionsfeld für Menüpunkt, ausgewählt</translation>
 <translation id="5020651427400641814">Sprachprotokollierung aktivieren</translation>
 <translation id="5041394372352067729">Braillezeile an den Seitenanfang verschieben</translation>
@@ -762,6 +762,7 @@
 <translation id="6100239002225743044">Eine Zeile nach oben</translation>
 <translation id="6118126368611144850">Android-Apps für Chrome. Wenn du den Play Store auf deinem Gerät installiert hast, kannst du vorab einen Blick auf ChromeVox mit Android-Apps werfen. Um die experimentelle Unterstützung auszuprobieren, lade Google Chrome Canary aus dem Play Store herunter.</translation>
 <translation id="611827076493383239">vtd</translation>
+<translation id="6119846243427417423">aktivieren</translation>
 <translation id="6122013438240733403">btn</translation>
 <translation id="6132506484792346370">Ein Listen- oder Kombinationsfeld</translation>
 <translation id="613344593214611552">vorherigen Satz löschen</translation>
@@ -778,6 +779,7 @@
 <translation id="6236061028292614533">Nächste Überschrift</translation>
 <translation id="6254901459154107917">Nächster bearbeitbarer Textbereich</translation>
 <translation id="6259464875943891919"><ph name="TYPE" /> beendet</translation>
+<translation id="6280088282605782512">Doppeltippen</translation>
 <translation id="6282062888058716985">nav</translation>
 <translation id="6295699829709583154">Wichtige Tasten: Suchtaste</translation>
 <translation id="6305702903308659374">Mit normaler Lautstärke wiedergeben, auch wenn eine Sprachausgabe durch ChromeVox stattfindet</translation>
@@ -981,6 +983,7 @@
 <translation id="7731785449856576010">Kein weiteres Medien-Widget</translation>
 <translation id="7735498529470878067">Mit „Tippen &amp; Entdecken“ kannst du dir schnell einen Überblick über den Bildschirminhalt verschaffen.</translation>
 <translation id="773906353055481349">Drücke die Suchtaste + Strg + Alt und Pfeiltasten, um zwischen Zellen zu wechseln</translation>
+<translation id="7746976083433980639"><ph name="ACTION" /> für folgende Aktion: <ph name="LABEL" /></translation>
 <translation id="7763537600611320912">Download von <ph name="FILE_NAME" /> gestartet</translation>
 <translation id="7768784765476638775">Vorlesen</translation>
 <translation id="7776293189010177726">ChromeVox-Menüs öffnen</translation>

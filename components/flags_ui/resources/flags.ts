@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,7 +11,7 @@ import './strings.m.js';
 
 import {assert} from 'chrome://resources/js/assert_ts.js';
 import {isIOS, sendWithPromise} from 'chrome://resources/js/cr.m.js';
-import {FocusOutlineManager} from 'chrome://resources/js/cr/ui/focus_outline_manager.m.js';
+import {FocusOutlineManager} from 'chrome://resources/js/cr/ui/focus_outline_manager.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {PromiseResolver} from 'chrome://resources/js/promise_resolver.m.js';
 import {$} from 'chrome://resources/js/util.m.js';
@@ -186,7 +186,10 @@ function registerFocusEvents(el: HTMLElement) {
     if (lastChanged && e.key === 'Tab' && !e.shiftKey) {
       lastFocused = lastChanged;
       e.preventDefault();
-      restartButton.focus();
+      // There is no restart button on iOS.
+      if (restartButton) {
+        restartButton.focus();
+      }
     }
   });
   el.addEventListener('blur', function() {
@@ -267,7 +270,7 @@ function crosUrlFlagsRedirect() {
  */
 function showRestartToast(show: boolean) {
   $('needs-restart').classList.toggle('show', show);
-  const restartButton = $('experiment-restart-button');
+  // There is no restart button on iOS.
   if (restartButton) {
     restartButton.setAttribute('tabindex', show ? '9' : '-1');
   }
@@ -665,6 +668,11 @@ let instance: FlagSearch|null = null;
  * in the list instead of going to the top of the page.
  */
 function setupRestartButton() {
+  // There is no restart button on iOS.
+  if (!restartButton) {
+    return;
+  }
+
   restartButton.addEventListener('keydown', function(e) {
     if (e.shiftKey && e.key === 'Tab' && lastFocused) {
       e.preventDefault();

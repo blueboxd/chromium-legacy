@@ -75,17 +75,17 @@ testcase.directoryTreeSelectedDirectory = async () => {
   treeRow = await remoteCall.waitForElement(appId, '.tree-row[active]');
   chrome.test.assertTrue(treeRow.text.includes('My files'));
 
-  // Check: the Videos Media View folder should be [selected].
+  // Check: the Recent Media View folder should be [selected].
   treeRow = await remoteCall.waitForElement(appId, '.tree-row[selected]');
-  chrome.test.assertTrue(treeRow.text.includes('Videos'));
+  chrome.test.assertTrue(treeRow.text.includes('Recent'));
 
   // Send Enter key to activate the selected folder.
   const enter = ['#directory-tree', 'Enter', false, false, false];
   await remoteCall.callRemoteTestUtil('fakeKeyDown', appId, enter);
 
-  // Check: the Videos folder should be [selected] and [active].
+  // Check: the Recent folder should be [selected] and [active].
   treeRow = await remoteCall.waitForElement(appId, selectedActiveRow);
-  chrome.test.assertTrue(treeRow.text.includes('Videos'));
+  chrome.test.assertTrue(treeRow.text.includes('Recent'));
 };
 
 /**
@@ -236,8 +236,8 @@ testcase.directoryTreeExpandHorizontalScroll = async () => {
 
   // Expand the tree Downloads > nested-folder1 > nested-folder2 ...
   const lastFolderPath = nestedFolderTestEntries.pop().targetPath;
-  await remoteCall.navigateWithDirectoryTree(
-      appId, '/Downloads/' + lastFolderPath, 'My files');
+  await navigateWithDirectoryTree(
+      appId, `/My files/Downloads/${lastFolderPath}`);
 
   // Check: the directory tree should be showing the last test entry.
   await remoteCall.waitForElement(
@@ -304,8 +304,8 @@ testcase.directoryTreeExpandHorizontalScrollRTL = async () => {
 
   // Expand the tree Downloads > nested-folder1 > nested-folder2 ...
   const lastFolderPath = nestedFolderTestEntries.pop().targetPath;
-  await remoteCall.navigateWithDirectoryTree(
-      appId, '/Downloads/' + lastFolderPath, 'My files');
+  await navigateWithDirectoryTree(
+      appId, `/My files/Downloads/${lastFolderPath}`);
 
   // Check: the directory tree should be showing the last test entry.
   await remoteCall.waitForElement(

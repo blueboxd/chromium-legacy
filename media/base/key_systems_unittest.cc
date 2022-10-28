@@ -1,4 +1,4 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -66,7 +66,7 @@ static_assert((TEST_CODEC_FOO_ALL & EME_CODEC_ALL) == EME_CODEC_NONE,
               "test codec masks should only use invalid codec masks");
 
 // Base class to provide default implementations.
-class TestKeySystemPropertiesBase : public KeySystemProperties {
+class TestKeySystemInfoBase : public KeySystemInfo {
  public:
   bool IsSupportedInitDataType(EmeInitDataType init_data_type) const override {
     return init_data_type == EmeInitDataType::WEBM;
@@ -89,9 +89,9 @@ class TestKeySystemPropertiesBase : public KeySystemProperties {
   }
 };
 
-class AesKeySystemProperties : public TestKeySystemPropertiesBase {
+class AesKeySystemInfo : public TestKeySystemInfoBase {
  public:
-  AesKeySystemProperties(const std::string& name) : name_(name) {}
+  explicit AesKeySystemInfo(const std::string& name) : name_(name) {}
 
   std::string GetBaseKeySystemName() const override { return name_; }
 
@@ -122,7 +122,7 @@ class AesKeySystemProperties : public TestKeySystemPropertiesBase {
   std::string name_;
 };
 
-class ExternalKeySystemProperties : public TestKeySystemPropertiesBase {
+class ExternalKeySystemInfo : public TestKeySystemInfoBase {
  public:
   std::string GetBaseKeySystemName() const override { return kExternal; }
 
@@ -231,21 +231,12 @@ EmeConfig::Rule GetRobustnessConfigRule(
 // Therefore, SetMediaClient() must be called before this function to make sure
 // MediaClient in effect when constructing KeySystems.
 void AddContainerAndCodecMasksForTest() {
-  // Since KeySystems is a singleton. Make sure we only add test container and
-  // codec masks once per process.
-  static bool is_test_masks_added = false;
-
-  if (is_test_masks_added)
-    return;
-
   AddCodecMaskForTesting(EmeMediaType::AUDIO, "fooaudio", TEST_CODEC_FOO_AUDIO);
   AddCodecMaskForTesting(EmeMediaType::VIDEO, "foovideo", TEST_CODEC_FOO_VIDEO);
   AddCodecMaskForTesting(EmeMediaType::VIDEO, "securefoovideo",
                          TEST_CODEC_FOO_SECURE_VIDEO);
   AddMimeTypeCodecMaskForTesting("audio/foo", TEST_CODEC_FOO_AUDIO_ALL);
   AddMimeTypeCodecMaskForTesting("video/foo", TEST_CODEC_FOO_VIDEO_ALL);
-
-  is_test_masks_added = true;
 }
 
 class TestMediaClient : public MediaClient {
@@ -267,7 +258,7 @@ class TestMediaClient : public MediaClient {
   GetAudioRendererAlgorithmParameters(AudioParameters audio_parameters) final;
 
  private:
-  KeySystemPropertiesVector GetSupportedKeySystemsInternal();
+  KeySystemInfoVector GetSupportedKeySystemsInternal();
 
   GetSupportedKeySystemsCB get_supported_key_systems_cb_;
   bool supports_external_key_system_ = true;
@@ -278,7 +269,6 @@ TestMediaClient::~TestMediaClient() = default;
 
 void TestMediaClient::GetSupportedKeySystems(GetSupportedKeySystemsCB cb) {
   // Save the callback for future updates.
-  DCHECK(!get_supported_key_systems_cb_);
   get_supported_key_systems_cb_ = cb;
 
   get_supported_key_systems_cb_.Run(GetSupportedKeySystemsInternal());
@@ -307,13 +297,13 @@ TestMediaClient::GetAudioRendererAlgorithmParameters(
   return absl::nullopt;
 }
 
-KeySystemPropertiesVector TestMediaClient::GetSupportedKeySystemsInternal() {
-  KeySystemPropertiesVector key_systems;
+KeySystemInfoVector TestMediaClient::GetSupportedKeySystemsInternal() {
+  KeySystemInfoVector key_systems;
 
-  key_systems.emplace_back(std::make_unique<AesKeySystemProperties>(kUsesAes));
+  key_systems.emplace_back(std::make_unique<AesKeySystemInfo>(kUsesAes));
 
   if (supports_external_key_system_)
-    key_systems.emplace_back(std::make_unique<ExternalKeySystemProperties>());
+    key_systems.emplace_back(std::make_unique<ExternalKeySystemInfo>());
 
   return key_systems;
 }
@@ -360,6 +350,9 @@ class KeySystemsTest : public testing::Test {
     mixed_codecs_.push_back("foovideo");
 
     SetMediaClient(&test_media_client_);
+
+    // Reset KeySystems since it's a singleton.
+    ResetKeySystemsForTesting();
   }
 
   void SetUp() override {
@@ -372,7 +365,7 @@ class KeySystemsTest : public testing::Test {
 
   ~KeySystemsTest() override {
     // Clear the use of |test_media_client_|, which was set in SetUp().
-    // NOTE: This does not clear any cached KeySystemProperties in the global
+    // NOTE: This does not clear any cached KeySystemInfo in the global
     // KeySystems instance.
     SetMediaClient(nullptr);
   }

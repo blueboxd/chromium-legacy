@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -21,7 +21,7 @@ namespace ash {
 //
 // This class is implemented as a global singleton, initialized after
 // DBusThreadManager which it depends on.
-class PowerDataCollector : public PowerManagerClient::Observer {
+class PowerDataCollector : public chromeos::PowerManagerClient::Observer {
  public:
   struct PowerSupplySample {
     PowerSupplySample();

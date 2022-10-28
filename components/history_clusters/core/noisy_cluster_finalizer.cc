@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -29,7 +29,7 @@ void NoisyClusterFinalizer::FinalizeCluster(history::Cluster& cluster) {
   }
 
   // If we check all the visits in the cluster and all have high engagement
-  // scores, then its probably not interesting so we can hide it.
+  // scores, then it's probably not interesting so we can hide it.
   cluster.should_show_on_prominent_ui_surfaces = false;
   metrics_recorder.set_was_filtered(true);
 }

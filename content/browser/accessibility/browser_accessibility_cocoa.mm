@@ -34,6 +34,7 @@
 #include "ui/accessibility/ax_enum_util.h"
 #include "ui/accessibility/ax_range.h"
 #include "ui/accessibility/ax_role_properties.h"
+#include "ui/accessibility/ax_selection.h"
 #include "ui/accessibility/platform/ax_platform_node.h"
 #include "ui/accessibility/platform/ax_utils_mac.h"
 #include "ui/gfx/mac/coordinate_conversion.h"
@@ -239,7 +240,7 @@ AXRange GetSelectedRange(BrowserAccessibility& owner) {
   if (!manager)
     return {};
 
-  const ui::AXTree::Selection unignored_selection =
+  const ui::AXSelection unignored_selection =
       manager->ax_tree()->GetUnignoredSelection();
   int32_t anchor_id = unignored_selection.anchor_object_id;
   const BrowserAccessibility* anchor_object = manager->GetFromID(anchor_id);
@@ -1511,6 +1512,8 @@ bool content::IsNSRange(id value) {
   if (![self instanceActive])
     return nil;
 
+  DCHECK(_owner->node()->IsDataValid());
+
   if (ui::IsNameExposedInAXValueForRole([self internalRole])) {
     std::u16string name = _owner->GetTextContentUTF16();
     // Leaf node with aria-label will have empty text content.
@@ -2186,7 +2189,8 @@ bool content::IsNSRange(id value) {
     if (index < 0)
       return nil;
 
-    const BrowserAccessibility* root = _owner->manager()->GetRoot();
+    const BrowserAccessibility* root =
+        _owner->manager()->GetBrowserAccessibilityRoot();
     if (!root)
       return nil;
 

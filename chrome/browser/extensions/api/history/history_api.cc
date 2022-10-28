@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -66,13 +66,11 @@ HistoryItem GetHistoryItem(const history::URLRow& row) {
   HistoryItem history_item;
 
   history_item.id = base::NumberToString(row.id());
-  history_item.url = std::make_unique<std::string>(row.url().spec());
-  history_item.title =
-      std::make_unique<std::string>(base::UTF16ToUTF8(row.title()));
-  history_item.last_visit_time =
-      std::make_unique<double>(MilliSecondsFromTime(row.last_visit()));
-  history_item.typed_count = std::make_unique<int>(row.typed_count());
-  history_item.visit_count = std::make_unique<int>(row.visit_count());
+  history_item.url = row.url().spec();
+  history_item.title = base::UTF16ToUTF8(row.title());
+  history_item.last_visit_time = MilliSecondsFromTime(row.last_visit());
+  history_item.typed_count = row.typed_count();
+  history_item.visit_count = row.visit_count();
 
   return history_item;
 }
@@ -82,8 +80,7 @@ VisitItem GetVisitItem(const history::VisitRow& row) {
 
   visit_item.id = base::NumberToString(row.url_id);
   visit_item.visit_id = base::NumberToString(row.visit_id);
-  visit_item.visit_time =
-      std::make_unique<double>(MilliSecondsFromTime(row.visit_time));
+  visit_item.visit_time = MilliSecondsFromTime(row.visit_time);
   visit_item.referring_visit_id = base::NumberToString(row.referring_visit);
 
   api::history::TransitionType transition = api::history::TRANSITION_TYPE_LINK;
@@ -156,10 +153,9 @@ void HistoryEventRouter::OnURLsDeleted(
   OnVisitRemoved::Removed removed;
   removed.all_history = deletion_info.IsAllHistory();
 
-  std::vector<std::string>* urls = new std::vector<std::string>();
+  removed.urls.emplace();
   for (const auto& row : deletion_info.deleted_rows())
-    urls->push_back(row.url().spec());
-  removed.urls.reset(urls);
+    removed.urls->push_back(row.url().spec());
 
   auto args = OnVisitRemoved::Create(removed);
   DispatchEvent(profile_, events::HISTORY_ON_VISIT_REMOVED,
@@ -296,11 +292,11 @@ ExtensionFunction::ResponseAction HistorySearchFunction::Run() {
   options.SetRecentDayRange(1);
   options.max_count = 100;
 
-  if (params->query.start_time.get())
+  if (params->query.start_time)
     options.begin_time = GetTime(*params->query.start_time);
-  if (params->query.end_time.get())
+  if (params->query.end_time)
     options.end_time = GetTime(*params->query.end_time);
-  if (params->query.max_results.get())
+  if (params->query.max_results)
     options.max_count = *params->query.max_results;
 
   history::HistoryService* hs = HistoryServiceFactory::GetForProfile(

@@ -16,8 +16,7 @@
 #include "ui/gfx/text_elider.h"
 #include "ui/wm/public/tooltip_client.h"
 
-namespace views {
-namespace corewm {
+namespace views::corewm {
 namespace {
 
 constexpr auto kDelayForTooltipUpdate = base::Milliseconds(500);
@@ -113,16 +112,8 @@ void TooltipStateManager::ShowNow(const std::u16string& trimmed_text,
   if (!tooltip_parent_window_)
     return;
 
-  gfx::Point anchor_point =
-      position_ +
-      tooltip_parent_window_->GetBoundsInScreen().OffsetFromOrigin();
-
-  TooltipPositionBehavior behavior =
-      tooltip_trigger_ == TooltipTrigger::kCursor
-          ? TooltipPositionBehavior::kRelativeToCursor
-          : TooltipPositionBehavior::kCentered;
-  tooltip_->Update(tooltip_parent_window_, trimmed_text,
-                   {anchor_point, behavior});
+  tooltip_->Update(tooltip_parent_window_, trimmed_text, position_,
+                   tooltip_trigger_);
   tooltip_->Show();
   if (!hide_delay.is_zero()) {
     will_hide_tooltip_timer_.Start(FROM_HERE, hide_delay, this,
@@ -147,5 +138,4 @@ void TooltipStateManager::StartWillShowTooltipTimer(
   }
 }
 
-}  // namespace corewm
-}  // namespace views
+}  // namespace views::corewm

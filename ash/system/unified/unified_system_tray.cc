@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -570,7 +570,12 @@ void UnifiedSystemTray::ShowBubble() {
   // ShowBubbleInternal will be called from UiDelegate.
   if (!bubble_) {
     time_opened_ = base::TimeTicks::Now();
-    ui_delegate_->ui_controller()->ShowMessageCenterBubble();
+
+    if (features::IsQsRevampEnabled())
+      ShowBubbleInternal();
+    else
+      ui_delegate_->ui_controller()->ShowMessageCenterBubble();
+
     Shell::Get()->system_tray_notifier()->NotifySystemTrayBubbleShown();
   }
 }
@@ -592,6 +597,14 @@ std::u16string UnifiedSystemTray::GetAccessibleNameForBubble() {
 }
 
 std::u16string UnifiedSystemTray::GetAccessibleNameForQuickSettingsBubble() {
+  if (features::IsQsRevampEnabled()) {
+    if (bubble_->quick_settings_view()->IsDetailedViewShown())
+      return bubble_->quick_settings_view()->GetDetailedViewAccessibleName();
+
+    return l10n_util::GetStringUTF16(
+        IDS_ASH_QUICK_SETTINGS_BUBBLE_ACCESSIBLE_DESCRIPTION);
+  }
+
   if (bubble_->unified_view()->IsDetailedViewShown())
     return bubble_->unified_view()->GetDetailedViewAccessibleName();
 
@@ -655,6 +668,8 @@ void UnifiedSystemTray::ClickedOutsideBubble() {
 void UnifiedSystemTray::UpdateLayout() {
   TrayBackgroundView::UpdateLayout();
   time_view_->UpdateAlignmentForShelf(shelf());
+  if (privacy_indicators_view_)
+    privacy_indicators_view_->UpdateAlignmentForShelf(shelf());
 }
 
 void UnifiedSystemTray::ShowBubbleInternal() {
@@ -674,8 +689,10 @@ void UnifiedSystemTray::ShowBubbleInternal() {
   bubble_ = std::make_unique<UnifiedSystemTrayBubble>(this);
   bubble_->unified_system_tray_controller()->AddObserver(this);
 
-  message_center_bubble_ = std::make_unique<UnifiedMessageCenterBubble>(this);
-  message_center_bubble_->ShowBubble();
+  if (!features::IsQsRevampEnabled()) {
+    message_center_bubble_ = std::make_unique<UnifiedMessageCenterBubble>(this);
+    message_center_bubble_->ShowBubble();
+  }
 
   // crbug/1310675 Add observers in `UnifiedSystemTrayBubble` after both bubbles
   // have been completely created, without this the bubbles can be destroyed

@@ -1,36 +1,36 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 #import "ios/chrome/browser/passwords/well_known_change_password_tab_helper.h"
 
 #import <Foundation/Foundation.h>
 
-#include "base/test/bind.h"
-#include "base/test/scoped_feature_list.h"
-#include "components/password_manager/core/browser/site_affiliation/mock_affiliation_service.h"
-#include "components/password_manager/core/browser/well_known_change_password_util.h"
-#include "components/password_manager/core/common/password_manager_features.h"
-#include "components/ukm/test_ukm_recorder.h"
-#include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
-#include "ios/chrome/browser/passwords/ios_chrome_affiliation_service_factory.h"
+#import "base/test/bind.h"
+#import "base/test/scoped_feature_list.h"
+#import "components/password_manager/core/browser/site_affiliation/mock_affiliation_service.h"
+#import "components/password_manager/core/browser/well_known_change_password_util.h"
+#import "components/password_manager/core/common/password_manager_features.h"
+#import "components/ukm/test_ukm_recorder.h"
+#import "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
+#import "ios/chrome/browser/passwords/ios_chrome_affiliation_service_factory.h"
 #import "ios/web/public/navigation/navigation_manager.h"
 #import "ios/web/public/test/fakes/fake_web_client.h"
 #import "ios/web/public/test/fakes/fake_web_state_delegate.h"
 #import "ios/web/public/test/navigation_test_util.h"
 #import "ios/web/public/test/scoped_testing_web_client.h"
 #import "ios/web/public/test/task_observer_util.h"
-#include "ios/web/public/test/web_task_environment.h"
+#import "ios/web/public/test/web_task_environment.h"
 #import "ios/web/public/test/web_view_content_test_util.h"
-#include "net/cert/x509_certificate.h"
-#include "net/http/http_status_code.h"
-#include "net/test/embedded_test_server/embedded_test_server.h"
-#include "net/test/embedded_test_server/http_request.h"
-#include "net/test/embedded_test_server/http_response.h"
-#include "services/metrics/public/cpp/ukm_builders.h"
-#include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
-#include "services/network/test/test_url_loader_factory.h"
-#include "testing/gtest/include/gtest/gtest.h"
-#include "testing/platform_test.h"
+#import "net/cert/x509_certificate.h"
+#import "net/http/http_status_code.h"
+#import "net/test/embedded_test_server/embedded_test_server.h"
+#import "net/test/embedded_test_server/http_request.h"
+#import "net/test/embedded_test_server/http_response.h"
+#import "services/metrics/public/cpp/ukm_builders.h"
+#import "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
+#import "services/network/test/test_url_loader_factory.h"
+#import "testing/gtest/include/gtest/gtest.h"
+#import "testing/platform_test.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -118,7 +118,7 @@ class WellKnownChangePasswordTabHelperTest : public PlatformTest {
     test_recorder_ = std::make_unique<ukm::TestAutoSetUkmRecorder>();
   }
 
-  // Sets a response for the |test_url_loader_factory_| with the |test_server_|
+  // Sets a response for the `test_url_loader_factory_` with the `test_server_`
   // as the host.
   void SetUrlLoaderResponse(const std::string& path,
                             net::HttpStatusCode status_code) {
@@ -159,9 +159,9 @@ class WellKnownChangePasswordTabHelperTest : public PlatformTest {
   std::unique_ptr<web::WebState> web_state_;
 
  private:
-  // Returns a response for the given request. Uses |path_response_map_| to
+  // Returns a response for the given request. Uses `path_response_map_` to
   // construct the response. Returns nullptr when the path is not defined in
-  // |path_response_map_|.
+  // `path_response_map_`.
   std::unique_ptr<HttpResponse> HandleRequest(const HttpRequest& request);
 
   base::test::ScopedFeatureList feature_list_;
@@ -174,7 +174,7 @@ GURL WellKnownChangePasswordTabHelperTest::GetNavigatedUrl() const {
   web::URLVerificationTrustLevel trust_level =
       web::URLVerificationTrustLevel::kAbsolute;
   GURL url = web_state()->GetCurrentURL(&trust_level);
-  // When redirecting with WebState::OpenURL() |web_state_| is not
+  // When redirecting with WebState::OpenURL() `web_state_` is not
   // updated, we only see the registered request in
   // FakeWebStateDelegate::last_open_url_request().
   if (delegate_.last_open_url_request()) {

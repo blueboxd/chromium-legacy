@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -18,6 +18,7 @@
 #include "chrome/browser/task_manager/task_manager_interface.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_dialogs.h"
+#include "chrome/browser/ui/cocoa/task_manager_mac_table_view.h"
 #import "chrome/browser/ui/cocoa/window_size_autosaver.h"
 #include "chrome/browser/ui/task_manager/task_manager_columns.h"
 #include "chrome/browser/ui/ui_features.h"
@@ -291,8 +292,9 @@ NSString* ColumnIdentifier(int id) {
 
   // Create the table view. The data source and delegate are connected in
   // the designated initializer.
-  base::scoped_nsobject<NSTableView> tableView(
-      [[NSTableView alloc] initWithFrame:NSMakeRect(0, 0, 400, 200)]);
+  base::scoped_nsobject<TaskManagerMacTableView> tableView(
+      [[TaskManagerMacTableView alloc]
+          initWithFrame:NSMakeRect(0, 0, 400, 200)]);
   [tableView setAllowsColumnReordering:NO];
   [tableView setAllowsMultipleSelection:YES];
   // No autosaving, since column identifiers are IDS_ values which are not

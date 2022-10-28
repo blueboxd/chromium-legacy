@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -77,9 +77,10 @@ UrlRequestRewriteRulesManager::Updater::Updater(
     content::WebContents* web_contents,
     const scoped_refptr<UrlRequestRewriteRules>& cached_rules)
     : content::WebContentsObserver(web_contents), cached_rules_(cached_rules) {
-  web_contents->ForEachRenderFrameHost(base::BindRepeating(
-      &UrlRequestRewriteRulesManager::Updater::MaybeRegisterExistingRenderFrame,
-      base::Unretained(this)));
+  web_contents->ForEachRenderFrameHost(
+      [this](content::RenderFrameHost* render_frame_host) {
+        MaybeRegisterExistingRenderFrame(render_frame_host);
+      });
 }
 
 UrlRequestRewriteRulesManager::Updater::~Updater() {

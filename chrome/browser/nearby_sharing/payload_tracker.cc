@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -53,8 +53,6 @@ PayloadTracker::PayloadTracker(
 
   for (const auto& wifi_credentials :
        share_target.wifi_credentials_attachments) {
-    DCHECK(base::FeatureList::IsEnabled(
-        features::kNearbySharingReceiveWifiCredentials));
     auto it = attachment_info_map.find(wifi_credentials.id());
     if (it == attachment_info_map.end() || !it->second.payload_id) {
       NS_LOG(WARNING) << __func__

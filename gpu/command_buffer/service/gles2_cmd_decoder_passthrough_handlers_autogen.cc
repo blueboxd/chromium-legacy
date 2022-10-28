@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -4548,7 +4548,6 @@ error::Error GLES2DecoderPassthroughImpl::
                            CreateAndTexStorage2DSharedImageINTERNALImmediate*>(
           cmd_data);
   GLuint texture = static_cast<GLuint>(c.texture);
-  GLenum internalformat = static_cast<GLenum>(c.internalformat);
   uint32_t mailbox_size;
   if (!GLES2Util::ComputeDataSize<GLbyte, 16>(1, &mailbox_size)) {
     return error::kOutOfBounds;
@@ -4561,8 +4560,8 @@ error::Error GLES2DecoderPassthroughImpl::
   if (mailbox == nullptr) {
     return error::kOutOfBounds;
   }
-  error::Error error = DoCreateAndTexStorage2DSharedImageINTERNAL(
-      texture, internalformat, mailbox);
+  error::Error error =
+      DoCreateAndTexStorage2DSharedImageINTERNAL(texture, mailbox);
   if (error != error::kNoError) {
     return error;
   }

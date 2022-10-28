@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -20,6 +20,8 @@ export type CredentialsChangedListener = (credentials: InsecureCredentials) =>
     void;
 export type PasswordCheckStatusChangedListener =
     (status: chrome.passwordsPrivate.PasswordCheckStatus) => void;
+
+export type PasswordManagerAuthTimeoutListener = () => void;
 
 /**
  * Interface for all callbacks to the password API.
@@ -266,6 +268,11 @@ export interface PasswordManagerProxy {
       isManualFlow: boolean): void;
 
   /**
+   * Requests extension of authentication validity.
+   */
+  extendAuthValidity(): void;
+
+  /**
    * Add an observer to the compromised passwords change.
    */
   addCompromisedCredentialsListener(listener: CredentialsChangedListener): void;
@@ -297,6 +304,18 @@ export interface PasswordManagerProxy {
    */
   removePasswordCheckStatusListener(
       listener: PasswordCheckStatusChangedListener): void;
+
+  /**
+   * Add an observer for authentication timeout.
+   */
+  addPasswordManagerAuthTimeoutListener(
+      listener: PasswordManagerAuthTimeoutListener): void;
+
+  /**
+   * Remove the specified observer for authentication timeout.
+   */
+  removePasswordManagerAuthTimeoutListener(
+      listener: PasswordManagerAuthTimeoutListener): void;
 
   /**
    * Records a given interaction on the Password Check page.
@@ -595,6 +614,10 @@ export class PasswordManagerImpl implements PasswordManagerProxy {
         insecureCredential, isManualFlow);
   }
 
+  extendAuthValidity() {
+    chrome.passwordsPrivate.extendAuthValidity();
+  }
+
   addCompromisedCredentialsListener(listener: CredentialsChangedListener) {
     chrome.passwordsPrivate.onCompromisedCredentialsChanged.addListener(
         listener);
@@ -620,6 +643,17 @@ export class PasswordManagerImpl implements PasswordManagerProxy {
   removePasswordCheckStatusListener(listener:
                                         PasswordCheckStatusChangedListener) {
     chrome.passwordsPrivate.onPasswordCheckStatusChanged.removeListener(
+        listener);
+  }
+
+  addPasswordManagerAuthTimeoutListener(
+      listener: PasswordManagerAuthTimeoutListener) {
+    chrome.passwordsPrivate.onPasswordManagerAuthTimeout.addListener(listener);
+  }
+
+  removePasswordManagerAuthTimeoutListener(
+      listener: PasswordManagerAuthTimeoutListener) {
+    chrome.passwordsPrivate.onPasswordManagerAuthTimeout.removeListener(
         listener);
   }
 

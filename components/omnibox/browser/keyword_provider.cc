@@ -1,14 +1,14 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "components/omnibox/browser/keyword_provider.h"
 
-#include <algorithm>
 #include <string>
 #include <utility>
 #include <vector>
 
+#include "base/containers/contains.h"
 #include "base/containers/cxx20_erase.h"
 #include "base/i18n/case_conversion.h"
 #include "base/memory/raw_ptr.h"
@@ -23,12 +23,12 @@
 #include "components/omnibox/browser/keyword_extensions_delegate.h"
 #include "components/omnibox/browser/omnibox_field_trial.h"
 #include "components/omnibox/browser/search_provider.h"
-#include "components/search_engines/omnibox_focus_type.h"
 #include "components/search_engines/template_url.h"
 #include "components/search_engines/template_url_service.h"
 #include "components/search_engines/template_url_starter_pack_data.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/url_formatter/url_formatter.h"
+#include "third_party/metrics_proto/omnibox_focus_type.pb.h"
 #include "third_party/metrics_proto/omnibox_input_type.pb.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "url/url_constants.h"
@@ -318,7 +318,7 @@ void KeywordProvider::Start(const AutocompleteInput& input,
       extensions_delegate_->IncrementInputId();
   }
 
-  if (input.focus_type() != OmniboxFocusType::DEFAULT)
+  if (input.focus_type() != metrics::OmniboxFocusType::INTERACTION_DEFAULT)
     return;
 
   GetTemplateURLService();
@@ -429,12 +429,8 @@ void KeywordProvider::Start(const AutocompleteInput& input,
       // retrieved the same keyword twice.  For example, the keyword
       // "abc.abc.com" may be retrieved for the input "abc" from the full
       // keyword matching and the domain matching passes.
-      ACMatches::const_iterator duplicate = std::find_if(
-          matches_.begin(), matches_.end(),
-          [&i] (const AutocompleteMatch& m) {
-            return m.keyword == i->first->keyword();
-          });
-      if (duplicate == matches_.end()) {
+      if (!base::Contains(matches_, i->first->keyword(),
+                          &AutocompleteMatch::keyword)) {
         matches_.push_back(CreateAutocompleteMatch(
             i->first, i->second, input, keyword.length(), remaining_input,
             false, -1, false));

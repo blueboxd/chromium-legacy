@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -52,7 +52,8 @@ MicGainSliderView::MicGainSliderView(MicGainSliderController* controller)
   slider()->SetVisible(false);
   announcement_view_ = AddChildView(std::make_unique<views::View>());
   Update(false /* by_user */);
-  announcement_view_->NotifyAccessibilityEvent(ax::mojom::Event::kAlert, true);
+  announcement_view_->GetViewAccessibility().AnnounceText(
+      toast_label()->GetText());
 }
 
 MicGainSliderView::MicGainSliderView(MicGainSliderController* controller,
@@ -114,12 +115,6 @@ void MicGainSliderView::Update(bool by_user) {
                                            : IDS_ASH_STATUS_AREA_TOAST_MIC_ON));
   }
 
-  if (announcement_view_) {
-    announcement_view_->GetViewAccessibility().OverrideName(
-        l10n_util::GetStringUTF16(is_muted ? IDS_ASH_STATUS_AREA_TOAST_MIC_OFF
-                                           : IDS_ASH_STATUS_AREA_TOAST_MIC_ON));
-  }
-
   // To indicate that the volume is muted, set the volume slider to the minimal
   // visual style.
   slider()->SetRenderingStyle(
@@ -159,7 +154,9 @@ void MicGainSliderView::OnInputMutedByMicrophoneMuteSwitchChanged(bool muted) {
 
 void MicGainSliderView::OnInputMuteChanged(bool mute_on) {
   Update(true /* by_user */);
-  announcement_view_->NotifyAccessibilityEvent(ax::mojom::Event::kAlert, true);
+  announcement_view_->GetViewAccessibility().AnnounceText(
+      l10n_util::GetStringUTF16(mute_on ? IDS_ASH_STATUS_AREA_TOAST_MIC_OFF
+                                        : IDS_ASH_STATUS_AREA_TOAST_MIC_ON));
 }
 
 void MicGainSliderView::OnActiveInputNodeChanged() {

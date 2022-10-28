@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -19,7 +19,7 @@ constexpr char kGroupName[] = "Default";
 
 void CreateAndActivateFieldTrial(const std::string& trial_name,
                                  const std::string& group_name) {
-  base::FieldTrialList::CreateFieldTrial(trial_name, group_name)->group();
+  base::FieldTrialList::CreateFieldTrial(trial_name, group_name)->Activate();
 }
 
 void VerifyFieldTrial(const mojom::FieldTrialGroupInfoPtr& info,

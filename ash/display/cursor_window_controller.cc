@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,6 +8,7 @@
 #include "ash/capture_mode/capture_mode_camera_controller.h"
 #include "ash/capture_mode/capture_mode_controller.h"
 #include "ash/capture_mode/capture_mode_session.h"
+#include "ash/color_enhancement/color_enhancement_controller.h"
 #include "ash/constants/ash_constants.h"
 #include "ash/constants/ash_pref_names.h"
 #include "ash/constants/ash_switches.h"
@@ -198,6 +199,11 @@ bool CursorWindowController::ShouldEnableCursorCompositing() {
                               displays_ctm_support);
     if (displays_ctm_support != DisplayColorManager::DisplayCtmSupport::kAll)
       return true;
+  }
+
+  if (shell->color_enhancement_controller()
+          ->ShouldEnableCursorCompositingForSepia()) {
+    return true;
   }
 
   return prefs->GetBoolean(prefs::kAccessibilityLargeCursorEnabled) ||

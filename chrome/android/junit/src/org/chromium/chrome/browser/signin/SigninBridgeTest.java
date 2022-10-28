@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -105,6 +105,7 @@ public class SigninBridgeTest {
     private void checkHistogramRecording(@AccountConsistencyPromoAction int action) {
         verify(mUmaRecorderMock)
                 .recordLinearHistogram("Signin.AccountConsistencyPromoAction", action, 1,
-                        AccountConsistencyPromoAction.MAX, AccountConsistencyPromoAction.MAX + 1);
+                        AccountConsistencyPromoAction.MAX_VALUE + 1,
+                        AccountConsistencyPromoAction.MAX_VALUE + 2);
     }
 }

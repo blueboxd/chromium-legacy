@@ -1,4 +1,4 @@
-# Copyright 2019 The Chromium Authors. All rights reserved.
+# Copyright 2019 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -37,9 +37,9 @@ component("cpp") {
     "//ash/constants",
     "//ash/public/mojom",
     "//chromeos/ash/services/assistant/public/mojom",
+    "//chromeos/ash/services/libassistant/public/cpp:structs",
+    "//chromeos/ash/services/libassistant/public/mojom",
     "//chromeos/services/assistant/public/shared",
-    "//chromeos/services/libassistant/public/cpp:structs",
-    "//chromeos/services/libassistant/public/mojom",
     "//chromeos/services/network_config/public/mojom",
     "//services/audio/public/mojom",
     "//services/device/public/mojom",

@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -28,6 +28,10 @@
 #include "components/variations/android/variations_seed_bridge.h"
 #include "components/variations/metrics.h"
 #endif  // BUILDFLAG(IS_ANDROID)
+
+#if BUILDFLAG(IS_IOS)
+#include "components/variations/metrics.h"
+#endif  // BUILDFLAG(IS_IOS)
 
 namespace variations {
 namespace {
@@ -135,10 +139,10 @@ VariationsSeedStore::VariationsSeedStore(
     : local_state_(local_state),
       signature_verification_enabled_(signature_verification_enabled),
       use_first_run_prefs_(use_first_run_prefs) {
-#if BUILDFLAG(IS_ANDROID)
+#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_IOS)
   if (initial_seed)
     ImportInitialSeed(std::move(initial_seed));
-#endif  // BUILDFLAG(IS_ANDROID)
+#endif  // BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_IOS)
 }
 
 VariationsSeedStore::~VariationsSeedStore() = default;
@@ -365,7 +369,7 @@ void VariationsSeedStore::ClearPrefs(SeedType seed_type) {
   local_state_->ClearPref(prefs::kVariationsSafeSeedSignature);
 }
 
-#if BUILDFLAG(IS_ANDROID)
+#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_IOS)
 void VariationsSeedStore::ImportInitialSeed(
     std::unique_ptr<SeedResponse> initial_seed) {
   if (initial_seed->data.empty()) {
@@ -373,15 +377,6 @@ void VariationsSeedStore::ImportInitialSeed(
     RecordFirstRunSeedImportResult(
         FirstRunSeedImportResult::FAIL_NO_FIRST_RUN_SEED);
     return;
-  }
-
-  // Clear the Java-side seed prefs. At this point, the seed has
-  // already been fetched from the Java side, so it's no longer
-  // needed there. This is done regardless if we fail or succeed
-  // below - since if we succeed, we're good to go and if we fail,
-  // we probably don't want to keep around the bad content anyway.
-  if (use_first_run_prefs_) {
-    android::ClearJavaFirstRunPrefs();
   }
 
   if (initial_seed->date == 0) {
@@ -401,7 +396,7 @@ void VariationsSeedStore::ImportInitialSeed(
   }
   RecordFirstRunSeedImportResult(FirstRunSeedImportResult::SUCCESS);
 }
-#endif  // BUILDFLAG(IS_ANDROID)
+#endif  // BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_IOS)
 
 LoadSeedResult VariationsSeedStore::LoadSeedImpl(
     SeedType seed_type,

@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -49,6 +49,7 @@ class BookmarksSidePanelUI
 
   // shopping_list::mojom::ShoppingListHandlerFactory:
   void CreateShoppingListHandler(
+      mojo::PendingRemote<shopping_list::mojom::Page> page,
       mojo::PendingReceiver<shopping_list::mojom::ShoppingListHandler> receiver)
       override;
 

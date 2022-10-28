@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -27,6 +27,7 @@
 #include "components/services/app_service/public/cpp/instance.h"
 #include "components/services/app_service/public/cpp/instance_registry.h"
 #include "components/services/app_service/public/cpp/intent.h"
+#include "components/services/app_service/public/cpp/menu.h"
 #include "components/services/app_service/public/mojom/app_service.mojom.h"
 #include "extensions/browser/app_window/app_window_registry.h"
 #include "mojo/public/cpp/bindings/remote.h"
@@ -83,6 +84,10 @@ class ExtensionAppsChromeOs : public ExtensionAppsBase,
                            LaunchSource launch_source,
                            WindowInfoPtr window_info,
                            base::OnceCallback<void(bool)> callback) override;
+  void GetMenuModel(const std::string& app_id,
+                    MenuType menu_type,
+                    int64_t display_id,
+                    base::OnceCallback<void(MenuItems)> callback) override;
 
   // apps::mojom::Publisher overrides.
   void LaunchAppWithIntent(const std::string& app_id,

@@ -106,8 +106,8 @@ const NGLayoutResult* NGTableSectionLayoutAlgorithm::Layout() {
         To<NGPhysicalBoxFragment>(row_result->PhysicalFragment()));
 
     if (!section_baseline) {
-      DCHECK(fragment.Baseline());
-      section_baseline = fragment.Baseline();
+      DCHECK(fragment.FirstBaseline());
+      section_baseline = fragment.FirstBaseline();
     }
     container_builder_.AddResult(*row_result, offset);
     offset.block_offset += fragment.BlockSize();
@@ -140,7 +140,7 @@ const NGLayoutResult* NGTableSectionLayoutAlgorithm::Layout() {
   container_builder_.SetFragmentsTotalBlockSize(block_size);
 
   if (section_baseline)
-    container_builder_.SetBaseline(*section_baseline);
+    container_builder_.SetFirstBaseline(*section_baseline);
   container_builder_.SetIsTableNGPart();
 
   // Store the collapsed-borders row geometry on this section fragment.

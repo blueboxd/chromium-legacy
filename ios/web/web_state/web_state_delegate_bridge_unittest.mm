@@ -1,4 +1,4 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,19 +6,19 @@
 
 #import <Foundation/Foundation.h>
 
-#include <memory>
+#import <memory>
 
-#include "base/bind.h"
-#include "base/callback_helpers.h"
-#include "base/strings/utf_string_conversions.h"
+#import "base/bind.h"
+#import "base/callback_helpers.h"
+#import "base/strings/utf_string_conversions.h"
 #import "ios/web/public/test/crw_fake_web_state_delegate.h"
 #import "ios/web/public/test/fakes/fake_web_state.h"
 #import "ios/web/public/ui/context_menu_params.h"
 #import "testing/gtest_mac.h"
-#include "testing/platform_test.h"
+#import "testing/platform_test.h"
 #import "third_party/ocmock/OCMock/OCMock.h"
 #import "third_party/ocmock/gtest_support.h"
-#include "ui/base/page_transition_types.h"
+#import "ui/base/page_transition_types.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -58,7 +58,7 @@ class WebStateDelegateBridgeTest : public PlatformTest {
   web::FakeWebState fake_web_state_;
 };
 
-// Tests |webState:createNewWebStateForURL:openerURL:initiatedByUser:|
+// Tests `webState:createNewWebStateForURL:openerURL:initiatedByUser:`
 // forwarding.
 TEST_F(WebStateDelegateBridgeTest, CreateNewWebState) {
   ASSERT_FALSE([delegate_ webState]);
@@ -71,7 +71,7 @@ TEST_F(WebStateDelegateBridgeTest, CreateNewWebState) {
   ASSERT_TRUE([delegate_ webStateCreationRequested]);
 }
 
-// Tests |closeWebState:| forwarding.
+// Tests `closeWebState:` forwarding.
 TEST_F(WebStateDelegateBridgeTest, CloseWebState) {
   ASSERT_FALSE([delegate_ webState]);
   ASSERT_FALSE([delegate_ webStateClosingRequested]);
@@ -82,7 +82,7 @@ TEST_F(WebStateDelegateBridgeTest, CloseWebState) {
   ASSERT_TRUE([delegate_ webStateClosingRequested]);
 }
 
-// Tests |webState:openURLWithParams:| forwarding.
+// Tests `webState:openURLWithParams:` forwarding.
 TEST_F(WebStateDelegateBridgeTest, OpenURLFromWebState) {
   ASSERT_FALSE([delegate_ webState]);
   ASSERT_FALSE([delegate_ openURLParams]);
@@ -107,7 +107,7 @@ TEST_F(WebStateDelegateBridgeTest, OpenURLFromWebState) {
   EXPECT_EQ(params.is_renderer_initiated, result_params->is_renderer_initiated);
 }
 
-// Tests |ShowRepostFormWarningDialog| forwarding.
+// Tests `ShowRepostFormWarningDialog` forwarding.
 TEST_F(WebStateDelegateBridgeTest, ShowRepostFormWarningDialog) {
   EXPECT_FALSE([delegate_ repostFormWarningRequested]);
   EXPECT_FALSE([delegate_ webState]);
@@ -117,8 +117,8 @@ TEST_F(WebStateDelegateBridgeTest, ShowRepostFormWarningDialog) {
   EXPECT_EQ(&fake_web_state_, [delegate_ webState]);
 }
 
-// Tests |ShowRepostFormWarningDialog| forwarding to delegate which does not
-// implement |webState:runRepostFormDialogWithCompletionHandler:| method.
+// Tests `ShowRepostFormWarningDialog` forwarding to delegate which does not
+// implement `webState:runRepostFormDialogWithCompletionHandler:` method.
 TEST_F(WebStateDelegateBridgeTest, ShowRepostFormWarningWithNoDelegateMethod) {
   __block bool callback_called = false;
   empty_delegate_bridge_->ShowRepostFormWarningDialog(
@@ -129,14 +129,14 @@ TEST_F(WebStateDelegateBridgeTest, ShowRepostFormWarningWithNoDelegateMethod) {
   EXPECT_TRUE(callback_called);
 }
 
-// Tests |GetJavaScriptDialogPresenter| forwarding.
+// Tests `GetJavaScriptDialogPresenter` forwarding.
 TEST_F(WebStateDelegateBridgeTest, GetJavaScriptDialogPresenter) {
   EXPECT_FALSE([delegate_ javaScriptDialogPresenterRequested]);
   bridge_->GetJavaScriptDialogPresenter(nullptr);
   EXPECT_TRUE([delegate_ javaScriptDialogPresenterRequested]);
 }
 
-// Tests |OnAuthRequired| forwarding.
+// Tests `OnAuthRequired` forwarding.
 TEST_F(WebStateDelegateBridgeTest, OnAuthRequired) {
   EXPECT_FALSE([delegate_ authenticationRequested]);
   EXPECT_FALSE([delegate_ webState]);

@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -19,8 +19,6 @@
 class Profile;
 
 namespace ash {
-
-class WebAppProvider;
 
 // Returns the system app type for the given App ID.
 absl::optional<SystemWebAppType> GetSystemWebAppTypeForAppId(
@@ -70,24 +68,13 @@ struct SystemAppLaunchParams {
 //   - Other unsuitable profiles (e.g. Sign-in profile): Don't launch, and send
 //     a crash report
 //
-// In tests, remember to call FlushSystemWebAppLaunchesForTesting on the same
-// |profile|, or use content::TestNavigationObserver to wait the navigation.
+// In tests, remember to use content::TestNavigationObserver to wait the
+// navigation.
 void LaunchSystemWebAppAsync(
     Profile* profile,
     SystemWebAppType type,
     const SystemAppLaunchParams& params = SystemAppLaunchParams(),
     apps::WindowInfoPtr window_info = nullptr);
-
-// When this method returns, it makes sure all previous LaunchSystemWebAppAsync
-// calls on |profile| are processed (i.e. LaunchSystemWebAppImpl finishes
-// executing). Useful for testing SWA launch behaviors.
-void FlushSystemWebAppLaunchesForTesting(Profile* profile);
-
-// Utility function to set up launch files and launch directory as appropriate.
-void SetLaunchFiles(bool should_include_launch_directory,
-                    const apps::AppLaunchParams& params,
-                    content::WebContents* web_contents,
-                    WebAppProvider* provider);
 
 // Implementation of LaunchSystemWebApp. Do not use this before discussing your
 // use case with the System Web Apps team.
@@ -99,22 +86,38 @@ Browser* LaunchSystemWebAppImpl(Profile* profile,
                                 const GURL& url,
                                 const apps::AppLaunchParams& params);
 
-// Returns a browser that is hosting the given system |app_type|,
-// |browser_type| and |url| (if not empty) or nullptr if not found.
+// Returns a browser that is dedicated (i.e. has a standalone shelf icon) to
+// hosting the given system |app_type| that matches |browser_type| and
+// optionally |url|.
+//
+// If |url| is is not empty, this method only returns the browser if it is
+// showing |url| page.
+//
+// If there are multiple browsers hosting the app, returns the currently active
+// (focused) one (if it exists), otherwise the most recently created one.
+//
+// This method is intended for performing UI manipulations (e.g. changing
+// window size and position). Don't retrieve and interact with the WebContents
+// in the returned browser, as it might be rendering a different origin.
+//
+// Consider using the WebUIController to retrieve the WebContents currently
+// rendering the app if you want to interact with app's JavaScript environment.
 Browser* FindSystemWebAppBrowser(Profile* profile,
                                  SystemWebAppType app_type,
                                  Browser::Type browser_type = Browser::TYPE_APP,
                                  const GURL& url = GURL());
 
-// Returns true if the |browser| is a system web app.
+// Returns true if the |browser| is dedicated (see above) to hosting a system
+// web app.
 bool IsSystemWebApp(Browser* browser);
+
+// Returns whether the |browser| is dedicated (see above) to hosting the system
+// app |type|.
+bool IsBrowserForSystemWebApp(Browser* browser, SystemWebAppType type);
 
 // Returns the SystemWebAppType that should capture the |url|.
 absl::optional<SystemWebAppType> GetCapturingSystemAppForURL(Profile* profile,
                                                              const GURL& url);
-
-// Returns whether the |browser| hosts the system app |type|.
-bool IsBrowserForSystemWebApp(Browser* browser, SystemWebAppType type);
 
 // Returns the minimum window size for a system web app, or an empty size if
 // the app does not specify a minimum size.

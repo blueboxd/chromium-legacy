@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -16,6 +16,7 @@ const char kCustomNameKey[] = "custom_name";
 const char kCustomIconKey[] = "custom_icon";
 const char kCustomIconURLKey[] = "url";
 const char kCustomIconHashKey[] = "hash";
+const char kInstallAsShortcut[] = "install_as_shortcut";
 const char kUninstallAndReplaceKey[] = "uninstall_and_replace";
 
 const char kWildcard[] = "*";

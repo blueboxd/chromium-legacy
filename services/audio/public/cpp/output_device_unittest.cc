@@ -59,7 +59,7 @@ class MockRenderCallback : public media::AudioRendererSink::RenderCallback {
                    base::TimeTicks timestamp,
                    int prior_frames_skipped,
                    media::AudioBus* dest));
-  void OnRenderError() {}
+  void OnRenderError() override {}
 };
 
 class MockStream : public media::mojom::AudioOutputStream {
@@ -258,7 +258,7 @@ TEST_F(AudioServiceOutputDeviceTest, MAYBE_VerifyDataFlow) {
 TEST_F(AudioServiceOutputDeviceTest, CreateBitStreamStream) {
   const int kAudioParameterFrames = 4321;
   media::AudioParameters params(media::AudioParameters::AUDIO_BITSTREAM_EAC3,
-                                media::CHANNEL_LAYOUT_STEREO, 48000,
+                                media::ChannelLayoutConfig::Stereo(), 48000,
                                 kAudioParameterFrames);
 
   DataFlowTestEnvironment env(params);

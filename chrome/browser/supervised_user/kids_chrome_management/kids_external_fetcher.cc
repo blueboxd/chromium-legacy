@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -131,7 +131,7 @@ class FetcherImpl final : public Fetcher<Request, Response> {
         url_loader_factory_.get(),
         base::BindOnce(&FetcherImpl::OnSimpleUrlLoaderComplete,
                        weak_ptr_factory_.GetSafeRef()));
-  };
+  }
 
   // Not copyable
   FetcherImpl(const FetcherImpl&) = delete;

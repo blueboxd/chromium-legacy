@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -268,6 +268,9 @@ const int kURLLabelDefaultNumberOfLines = 3;
         CGFLOAT_EPSILON, CGFLOAT_EPSILON, CGFLOAT_EPSILON, CGFLOAT_EPSILON);
     _expandURLButton.backgroundColor = self.view.backgroundColor;
     _expandURLButton.translatesAutoresizingMaskIntoConstraints = NO;
+    // On voice over, the full info is on the URL field and this button isn't
+    // needed.
+    _expandURLButton.accessibilityElementsHidden = YES;
   }
   return _expandURLButton;
 }

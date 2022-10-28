@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,6 +12,7 @@
 #include "base/check.h"
 #include "base/files/file_path.h"
 #include "base/memory/scoped_refptr.h"
+#include "base/ranges/algorithm.h"
 #include "base/time/time.h"
 #include "base/values.h"
 #include "build/chromeos_buildflags.h"
@@ -329,10 +330,9 @@ void SupportToolMessageHandler::OnDataExportDone(
     std::set<SupportToolError> errors) {
   data_path_ = path;
   base::Value::Dict data_export_result;
-  const auto& export_error = std::find_if(
-      errors.begin(), errors.end(), [](const SupportToolError& error) {
-        return (error.error_code == SupportToolErrorCode::kDataExportError);
-      });
+  const auto& export_error =
+      base::ranges::find(errors, SupportToolErrorCode::kDataExportError,
+                         &SupportToolError::error_code);
   if (export_error == errors.end()) {
     data_export_result.Set("success", true);
     data_export_result.Set("path", path.BaseName().AsUTF8Unsafe());

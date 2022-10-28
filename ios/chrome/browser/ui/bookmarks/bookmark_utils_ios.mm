@@ -1,35 +1,36 @@
-// Copyright (c) 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #import "ios/chrome/browser/ui/bookmarks/bookmark_utils_ios.h"
 
-#include <stdint.h>
+#import <stdint.h>
 
-#include <memory>
-#include <vector>
+#import <memory>
+#import <vector>
 
 #import <MaterialComponents/MaterialSnackbar.h>
 
-#include "base/check.h"
-#include "base/hash/hash.h"
-#include "base/i18n/string_compare.h"
-#include "base/metrics/user_metrics_action.h"
-#include "base/strings/sys_string_conversions.h"
-#include "base/strings/utf_string_conversions.h"
-#include "components/bookmarks/browser/bookmark_model.h"
-#include "components/query_parser/query_parser.h"
-#include "components/strings/grit/components_strings.h"
-#include "ios/chrome/browser/bookmarks/bookmarks_utils.h"
-#include "ios/chrome/browser/system_flags.h"
-#include "ios/chrome/browser/ui/bookmarks/undo_manager_wrapper.h"
-#include "ios/chrome/browser/ui/util/ui_util.h"
+#import "base/check.h"
+#import "base/hash/hash.h"
+#import "base/i18n/string_compare.h"
+#import "base/metrics/user_metrics_action.h"
+#import "base/strings/sys_string_conversions.h"
+#import "base/strings/utf_string_conversions.h"
+#import "components/bookmarks/browser/bookmark_model.h"
+#import "components/bookmarks/common/bookmark_metrics.h"
+#import "components/query_parser/query_parser.h"
+#import "components/strings/grit/components_strings.h"
+#import "ios/chrome/browser/bookmarks/bookmarks_utils.h"
+#import "ios/chrome/browser/flags/system_flags.h"
+#import "ios/chrome/browser/ui/bookmarks/undo_manager_wrapper.h"
+#import "ios/chrome/browser/ui/util/ui_util.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
-#include "ios/chrome/grit/ios_strings.h"
-#include "third_party/skia/include/core/SkColor.h"
-#include "ui/base/l10n/l10n_util.h"
-#include "ui/base/l10n/l10n_util_mac.h"
-#include "ui/base/models/tree_node_iterator.h"
+#import "ios/chrome/grit/ios_strings.h"
+#import "third_party/skia/include/core/SkColor.h"
+#import "ui/base/l10n/l10n_util.h"
+#import "ui/base/l10n/l10n_util_mac.h"
+#import "ui/base/models/tree_node_iterator.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -186,8 +187,10 @@ MDCSnackbarMessage* CreateOrUpdateBookmarkWithUndoToast(
     node = bookmark_model->AddURL(folder, folder->children().size(),
                                   titleString, url);
   } else {  // Update the information.
-    bookmark_model->SetTitle(node, titleString);
-    bookmark_model->SetURL(node, url);
+    bookmark_model->SetTitle(node, titleString,
+                             bookmarks::metrics::BookmarkEditSource::kUser);
+    bookmark_model->SetURL(node, url,
+                           bookmarks::metrics::BookmarkEditSource::kUser);
 
     DCHECK(folder);
     DCHECK(!folder->HasAncestor(node));

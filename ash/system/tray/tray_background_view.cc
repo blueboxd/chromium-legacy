@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -633,11 +633,11 @@ void TrayBackgroundView::BounceInAnimation() {
   initial_scale.Scale3d(kAnimationBounceScaleFactor,
                         kAnimationBounceScaleFactor, 1);
 
-  gfx::Transform initial_state =
-      gfx::TransformAboutPivot(GetLocalBounds().CenterPoint(), initial_scale);
+  const gfx::Transform initial_state = gfx::TransformAboutPivot(
+      gfx::RectF(GetLocalBounds()).CenterPoint(), initial_scale);
 
   gfx::Transform scale_about_pivot = gfx::TransformAboutPivot(
-      GetLocalBounds().CenterPoint(), gfx::Transform());
+      gfx::RectF(GetLocalBounds()).CenterPoint(), gfx::Transform());
   scale_about_pivot.Translate(bounce_up_location);
 
   gfx::Transform move_down;
@@ -689,8 +689,8 @@ void TrayBackgroundView::HideAnimation() {
   gfx::Transform scale;
   scale.Scale3d(kAnimationBounceScaleFactor, kAnimationBounceScaleFactor, 1);
 
-  gfx::Transform scale_about_pivot =
-      gfx::TransformAboutPivot(GetLocalBounds().CenterPoint(), scale);
+  const gfx::Transform scale_about_pivot = gfx::TransformAboutPivot(
+      gfx::RectF(GetLocalBounds()).CenterPoint(), scale);
 
   ui::AnimationThroughputReporter reporter(
       layer()->GetAnimator(),

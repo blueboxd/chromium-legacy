@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -75,7 +75,6 @@
     mediaStoppedPlaying,
     menuEnd,
     menuItemSelected,
-    menuListItemSelected,
     menuListValueChanged,
     menuPopupEnd,
     menuPopupStart,
@@ -397,6 +396,7 @@
     increment,
     internalInvalidateTree,
     loadInlineTextBoxes,
+    longClick,
     replaceSelectedText,
     resumeMedia,
     scrollBackward,
@@ -925,6 +925,12 @@ enum SortDirectionType {
     // <a href="http://www.w3.org/TR/wai-aria/#namecalculation">
     // Accessible Name Calculation</a> process.
     DOMString? name;
+
+    // Explains what will happen when the doDefault action is performed.
+    DOMString? doDefaultLabel;
+
+    // Explains what will happen when the long click action is performed.
+    DOMString? longClickLabel;
 
     // The tooltip of the node, if any.
     DOMString? tooltip;

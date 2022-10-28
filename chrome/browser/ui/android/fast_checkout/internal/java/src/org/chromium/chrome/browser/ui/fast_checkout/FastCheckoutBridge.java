@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -70,6 +70,7 @@ class FastCheckoutBridge implements FastCheckoutComponent.Delegate {
     @CalledByNative
     private void destroy() {
         mNativeFastCheckoutBridge = 0;
+        mFastCheckoutComponent.destroy();
     }
 
     @Override
@@ -88,10 +89,26 @@ class FastCheckoutBridge implements FastCheckoutComponent.Delegate {
         }
     }
 
+    @Override
+    public void openAutofillProfileSettings() {
+        if (mNativeFastCheckoutBridge != 0) {
+            FastCheckoutBridgeJni.get().openAutofillProfileSettings(mNativeFastCheckoutBridge);
+        }
+    }
+
+    @Override
+    public void openCreditCardSettings() {
+        if (mNativeFastCheckoutBridge != 0) {
+            FastCheckoutBridgeJni.get().openCreditCardSettings(mNativeFastCheckoutBridge);
+        }
+    }
+
     @NativeMethods
     interface Natives {
         void onOptionsSelected(long nativeFastCheckoutViewImpl, FastCheckoutAutofillProfile profile,
                 FastCheckoutCreditCard creditCard);
         void onDismiss(long nativeFastCheckoutViewImpl);
+        void openAutofillProfileSettings(long nativeFastCheckoutViewImpl);
+        void openCreditCardSettings(long nativeFastCheckoutViewImpl);
     }
 }

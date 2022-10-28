@@ -9,7 +9,7 @@ import {ContentMetadataProvider} from './content_metadata_provider.js';
 import {DlpMetadataProvider} from './dlp_metadata_provider.js';
 import {ExternalMetadataProvider} from './external_metadata_provider.js';
 import {FileSystemMetadataProvider} from './file_system_metadata_provider.js';
-import {MetadataCacheSet, MetadataCacheSetStorageForObject} from './metadata_cache_set.js';
+import {MetadataCacheSet} from './metadata_cache_set.js';
 import {MetadataItem} from './metadata_item.js';
 import {MetadataProvider} from './metadata_provider.js';
 import {MultiMetadataProvider} from './multi_metadata_provider.js';
@@ -45,8 +45,8 @@ export class MetadataModel {
     /** @private @const {!MetadataProvider} */
     this.rawProvider_ = rawProvider;
 
-    /** @private @const {!MetadataProviderCache} */
-    this.cache_ = new MetadataProviderCache();
+    /** @private @const {!MetadataCacheSet} */
+    this.cache_ = new MetadataCacheSet();
 
     /** @private @const {!Array<!MetadataProviderCallbackRequest>} */
     this.callbackRequests_ = [];
@@ -233,7 +233,7 @@ class MetadataProviderCallbackRequest {
    * @param {!Array<!Entry>} entries
    * @param {!Array<string>} names
    * @param {!MetadataCacheSet} cache
-   * @param {function(!MetadataItem):undefined} fulfill
+   * @param {function(!Array<MetadataItem>):undefined} fulfill
    */
   constructor(entries, names, cache, fulfill) {
     /**
@@ -255,7 +255,7 @@ class MetadataProviderCallbackRequest {
     this.cache_ = cache;
 
     /**
-     * @private {function(!MetadataItem):undefined}
+     * @private {function(!Array<MetadataItem>):undefined}
      * @const
      */
     this.fulfill_ = fulfill;
@@ -276,28 +276,5 @@ class MetadataProviderCallbackRequest {
       return true;
     }
     return false;
-  }
-}
-
-/**
- * Helper wrapper for LRUCache.
- * @final
- */
-class MetadataProviderCache extends MetadataCacheSet {
-  constructor() {
-    super(new MetadataCacheSetStorageForObject({}));
-
-    /**
-     * @private {number}
-     */
-    this.requestIdCounter_ = 0;
-  }
-
-  /**
-   * Generates a unique request ID every time when it is called.
-   * @return {number}
-   */
-  generateRequestId() {
-    return this.requestIdCounter_++;
   }
 }

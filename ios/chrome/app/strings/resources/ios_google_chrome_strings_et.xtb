@@ -78,6 +78,7 @@
 <translation id="5998675059699164418">Teie organisatsioon nõuab, et logiksite Chrome'i kasutamiseks sisse.</translation>
 <translation id="6054613632208573261">Kasutage Chrome'i vaikimisi</translation>
 <translation id="6063091872902370735">Luba Chrome'i sisselogimine</translation>
+<translation id="6110625574506755980">Mõned Chrome'i funktsioonid pole enam saadaval.</translation>
 <translation id="6181930887571472871">Lülituge Chrome'ile</translation>
 <translation id="6238746320622508509">Laske Chrome'il oma inkognito vahelehed lukustada.</translation>
 <translation id="6387994324662817823">Paroolid salvestatakse Google'i rakendusse Paroolihaldur ainult selles seadmes.</translation>
@@ -90,11 +91,11 @@
 <translation id="6709398533399187136">Teie parool oli andmetega seotud rikkumise käigus avalikustatud. Google'i paroolihaldur soovitab teil kohe seda parooli muuta.</translation>
 <translation id="6822673484890854830">Chrome'il ei õnnestunud kõiki paroole kontrollida. Proovige hiljem uuesti.</translation>
 <translation id="6964931465519938134">Nüüd saate kasutada Chrome'i iga kord, kui puudutate linke sõnumites, dokumentides ja muudes rakendustes.</translation>
+<translation id="701356708427365932">Tutvuge Chrome'i uue menüüga</translation>
 <translation id="7059914902409643750">Isikupärastage Chrome'i</translation>
 <translation id="7124339256045485976">Hoidke Chrome ajakohasena</translation>
 <translation id="7161390184744336561">Google Chrome on aegunud</translation>
 <translation id="7165736900384873061">Google Chrome'i QR-skanneri kasutamise alustamine</translation>
-<translation id="7172660552945675509">Nõuanne: <ph name="BEGIN_LINK" />lisage Chrome dokki<ph name="END_LINK" /></translation>
 <translation id="7173660919484573146">Chrome kasutab paroolide volitatud juurdepääsu kontrollimiseks Face ID-d.</translation>
 <translation id="7187993566681480880">Kaitseb teid Chrome'is ja seda võidakse kasutada teie turvalisuse suurendamiseks muudes Google'i rakendustes, kui olete sisse logitud.</translation>
 <translation id="72119412072970160">Saate Google'i paroolihaldurisse salvestatud paroole oma iPadi muudes rakendustes kasutada.</translation>

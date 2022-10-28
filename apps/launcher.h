@@ -1,4 +1,4 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -72,7 +72,7 @@ void LaunchPlatformAppWithFilePaths(
 void LaunchPlatformAppWithAction(
     content::BrowserContext* context,
     const extensions::Extension* app,
-    std::unique_ptr<extensions::api::app_runtime::ActionData> action_data);
+    extensions::api::app_runtime::ActionData action_data);
 
 // Launches the platform app |app|. |source| tells us how the app is launched.
 void LaunchPlatformApp(content::BrowserContext* context,

@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -42,7 +42,7 @@ IN_PROC_BROWSER_TEST_F(SocketsUdpApiTest, SocketsUdpCreateGood) {
       api_test_utils::RunFunctionAndReturnSingleResult(
           socket_create_function.get(), "[]", browser_context()));
 
-  base::DictionaryValue* value = NULL;
+  base::DictionaryValue* value = nullptr;
   ASSERT_TRUE(result->GetAsDictionary(&value));
   absl::optional<int> socketId = value->FindIntKey("socketId");
   EXPECT_TRUE(socketId);

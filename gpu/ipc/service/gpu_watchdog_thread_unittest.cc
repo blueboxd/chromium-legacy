@@ -1,4 +1,4 @@
-// Copyright (c) 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -267,6 +267,26 @@ TEST_F(GpuWatchdogTest, GpuInitializationHang) {
   // Gpu hangs. OnInitComplete() is not called
   bool result = watchdog_thread_->IsGpuHangDetectedForTesting();
   EXPECT_TRUE(result);
+  // retry on failure.
+}
+
+// GPU Hang In Initialization.
+TEST_F(GpuWatchdogTest, GpuInitializationHangWithReportOnly) {
+  auto allowed_time =
+      timeout_ * (kInitFactor + 1) + full_thread_time_on_windows_;
+
+  watchdog_thread_->EnableReportOnlyMode();
+
+  // GPU init takes longer than timeout.
+  SimpleTask(allowed_time, /*extra_time=*/extra_gpu_job_time_);
+
+  // Gpu hangs. OnInitComplete() is not called
+  bool result = watchdog_thread_->IsGpuHangDetectedWithoutKillForTesting();
+  bool non_result = watchdog_thread_->IsGpuHangDetectedForTesting();
+  EXPECT_TRUE(result);
+  EXPECT_FALSE(non_result);
+
+  watchdog_thread_->DisableReportOnlyMode();
   // retry on failure.
 }
 

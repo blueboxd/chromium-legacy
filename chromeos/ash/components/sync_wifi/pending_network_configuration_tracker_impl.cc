@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -65,8 +65,8 @@ void PendingNetworkConfigurationTrackerImpl::RegisterProfilePrefs(
 PendingNetworkConfigurationTrackerImpl::PendingNetworkConfigurationTrackerImpl(
     PrefService* pref_service)
     : pref_service_(pref_service),
-      dict_(pref_service_->GetValueDict(kPendingNetworkConfigurationsPref)
-                .Clone()) {}
+      dict_(pref_service_->GetDict(kPendingNetworkConfigurationsPref).Clone()) {
+}
 
 PendingNetworkConfigurationTrackerImpl::
     ~PendingNetworkConfigurationTrackerImpl() = default;

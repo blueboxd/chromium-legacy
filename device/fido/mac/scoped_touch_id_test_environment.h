@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -50,6 +50,9 @@ class COMPONENT_EXPORT(DEVICE_FIDO)
   // Sets the value returned by TouchIdContext::TouchIdAvailable. The default on
   // instantiation of the test environment is true.
   bool SetTouchIdAvailable(bool available);
+
+  // Will prevent the next call to PromptTouchId from running the callback.
+  void DoNotResolveNextPrompt();
 
  private:
   static std::unique_ptr<TouchIdContext> ForwardCreate();

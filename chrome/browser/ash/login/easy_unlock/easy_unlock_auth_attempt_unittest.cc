@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -183,7 +183,7 @@ class EasyUnlockAuthAttemptUnlockTest : public testing::Test {
   }
 
   void TearDown() override {
-    proximity_auth::ScreenlockBridge::Get()->SetLockHandler(NULL);
+    proximity_auth::ScreenlockBridge::Get()->SetLockHandler(nullptr);
     auth_attempt_.reset();
   }
 
@@ -318,7 +318,7 @@ class EasyUnlockAuthAttemptSigninTest : public testing::Test {
   }
 
   void TearDown() override {
-    proximity_auth::ScreenlockBridge::Get()->SetLockHandler(NULL);
+    proximity_auth::ScreenlockBridge::Get()->SetLockHandler(nullptr);
     auth_attempt_.reset();
   }
 

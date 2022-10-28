@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,9 +11,9 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/callback_forward.h"
+#include "base/containers/contains.h"
 #include "base/logging.h"
 #include "base/memory/weak_ptr.h"
-#include "base/notreached.h"
 #include "chromeos/crosapi/mojom/account_manager.mojom.h"
 #include "components/account_manager_core/account.h"
 #include "components/account_manager_core/account_addition_result.h"
@@ -21,6 +21,7 @@
 #include "components/account_manager_core/chromeos/access_token_fetcher.h"
 #include "components/account_manager_core/chromeos/account_manager.h"
 #include "components/account_manager_core/chromeos/account_manager_ui.h"
+#include "google_apis/gaia/google_service_auth_error.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -50,21 +51,6 @@ void ReportErrorStatusFromHasDummyGaiaToken(
   }
   std::move(callback).Run(account_manager::ToMojoGoogleServiceAuthError(error));
 }
-
-#if DCHECK_IS_ON()
-void VerifyThatAccountExists(
-    const account_manager::AccountKey& account_key,
-    const std::vector<account_manager::Account>& known_accounts) {
-  bool account_exists = false;
-  for (const account_manager::Account& known_account : known_accounts) {
-    if (known_account.key == account_key) {
-      account_exists = true;
-      break;
-    }
-  }
-  DCHECK(account_exists);
-}
-#endif  // DCHECK_IS_ON()
 
 }  // namespace
 
@@ -153,7 +139,18 @@ void AccountManagerMojoService::ShowReauthAccountDialog(
   if (account_manager_ui_->IsDialogShown())
     return;
 
-  account_manager_ui_->ShowReauthAccountDialog(email, std::move(closure));
+  // `closure` is used by the entity which launched the account
+  // re-authentication flow in the first place to know about the completion of
+  // the flow. The notification that we are going to chain here will inform all
+  // observers of `AccountManagerFacade` (see
+  // `AccountManagerFacade::Observer::OnSigninDialogClosed()`), that the signin
+  // dialog was closed.
+  // As of this writing, this notification is used by `AccountReconcilor` to
+  // force mint cookies.
+  account_manager_ui_->ShowReauthAccountDialog(
+      email, std::move(closure).Then(base::BindOnce(
+                 &AccountManagerMojoService::NotifySigninDialogClosed,
+                 weak_ptr_factory_.GetWeakPtr())));
 }
 
 void AccountManagerMojoService::ShowManageAccountsSettings() {
@@ -182,20 +179,28 @@ void AccountManagerMojoService::CreateAccessTokenFetcher(
 
 void AccountManagerMojoService::ReportAuthError(
     mojom::AccountKeyPtr mojo_account_key,
-    mojom::GoogleServiceAuthErrorPtr error) {
+    mojom::GoogleServiceAuthErrorPtr mojo_error) {
   absl::optional<account_manager::AccountKey> maybe_account_key =
       account_manager::FromMojoAccountKey(mojo_account_key);
   DCHECK(maybe_account_key)
       << "Can't unmarshal account of type: " << mojo_account_key->account_type;
 
-#if DCHECK_IS_ON()
-  // Verify that `maybe_account_key` is known to Account Manager.
-  account_manager_->GetAccounts(
-      base::BindOnce(&VerifyThatAccountExists, maybe_account_key.value()));
-#endif  // DCHECK_IS_ON()
+  absl::optional<GoogleServiceAuthError> maybe_error =
+      account_manager::FromMojoGoogleServiceAuthError(mojo_error);
+  DCHECK(maybe_error) << "Can't unmarshal error with state: "
+                      << mojo_error->state;
 
-  for (auto& observer : observers_)
-    observer->OnAuthErrorChanged(mojo_account_key.Clone(), error.Clone());
+  const GoogleServiceAuthError& error = maybe_error.value();
+  if (error.IsTransientError()) {
+    // Silently ignore transient errors reported by apps to avoid polluting
+    // other apps' error caches with transient errors like
+    // `GoogleServiceAuthError::CONNECTION_FAILED`.
+    return;
+  }
+
+  account_manager_->GetAccounts(base::BindOnce(
+      &AccountManagerMojoService::MaybeNotifyAuthErrorObservers,
+      weak_ptr_factory_.GetWeakPtr(), maybe_account_key.value(), error));
 }
 
 void AccountManagerMojoService::OnTokenUpserted(
@@ -235,6 +240,7 @@ void AccountManagerMojoService::FinishAddAccount(
   DCHECK(!account_addition_callback_.is_null());
   std::move(account_addition_callback_)
       .Run(ToMojoAccountAdditionResult(result));
+  NotifySigninDialogClosed();
 }
 
 void AccountManagerMojoService::DeletePendingAccessTokenFetchRequest(
@@ -246,6 +252,31 @@ void AccountManagerMojoService::DeletePendingAccessTokenFetchRequest(
           [&request](const std::unique_ptr<AccessTokenFetcher>& pending_request)
               -> bool { return pending_request.get() == request; }),
       pending_access_token_requests_.end());
+}
+
+void AccountManagerMojoService::MaybeNotifyAuthErrorObservers(
+    const account_manager::AccountKey& account_key,
+    const GoogleServiceAuthError& error,
+    const std::vector<account_manager::Account>& known_accounts) {
+  if (!base::Contains(known_accounts, account_key,
+                      [](const account_manager::Account& account) {
+                        return account.key;
+                      })) {
+    // Ignore if the account is not known.
+    return;
+  }
+
+  for (auto& observer : observers_) {
+    observer->OnAuthErrorChanged(
+        account_manager::ToMojoAccountKey(account_key),
+        account_manager::ToMojoGoogleServiceAuthError(error));
+  }
+}
+
+void AccountManagerMojoService::NotifySigninDialogClosed() {
+  for (auto& observer : observers_) {
+    observer->OnSigninDialogClosed();
+  }
 }
 
 void AccountManagerMojoService::FlushMojoForTesting() {

@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,22 +7,24 @@
 #import "base/bind.h"
 #import "base/callback.h"
 #import "base/check.h"
+#import "base/metrics/histogram_functions.h"
 #import "base/strings/sys_string_conversions.h"
 #import "components/feed/core/shared_prefs/pref_names.h"
 #import "components/prefs/pref_service.h"
 #import "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/discover_feed/discover_feed_service.h"
 #import "ios/chrome/browser/discover_feed/discover_feed_service_factory.h"
+#import "ios/chrome/browser/flags/system_flags.h"
 #import "ios/chrome/browser/follow/follow_service.h"
 #import "ios/chrome/browser/follow/follow_service_factory.h"
 #import "ios/chrome/browser/follow/web_page_urls.h"
 #import "ios/chrome/browser/main/browser.h"
-#import "ios/chrome/browser/pref_names.h"
-#import "ios/chrome/browser/system_flags.h"
+#import "ios/chrome/browser/prefs/pref_names.h"
 #import "ios/chrome/browser/ui/commands/feed_commands.h"
 #import "ios/chrome/browser/ui/commands/new_tab_page_commands.h"
 #import "ios/chrome/browser/ui/commands/snackbar_commands.h"
-#import "ios/chrome/browser/ui/ntp/feed_metrics_recorder.h"
+#import "ios/chrome/browser/ui/ntp/metrics/feed_metrics_constants.h"
+#import "ios/chrome/browser/ui/ntp/metrics/feed_metrics_recorder.h"
 #import "ios/chrome/grit/ios_strings.h"
 #import "ui/base/l10n/l10n_util_mac.h"
 
@@ -206,6 +208,10 @@ void FollowBrowserAgent::OnFollowSuccess(WebPageURLs* web_page_urls,
     [metrics_recorder_ recordFollowCount:count
                             forLogReason:FollowCountLogReasonAfterFollow];
   }
+
+  base::UmaHistogramBoolean(
+      "ContentSuggestions.Feed.WebFeed.NewFollow.IsRecommended",
+      service_->GetRecommendedSiteURL(web_page_urls) ? 1 : 0);
 
   // Enable the feed prefs to show the feed and to expand it if they
   // are disabled.

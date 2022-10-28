@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,8 +8,8 @@
 #include "base/strings/stringprintf.h"
 #include "base/task/bind_post_task.h"
 #include "chromecast/cast_core/runtime/browser/message_port_service.h"
-#include "chromecast/media/base/video_plane_controller.h"
 #include "components/cast/message_port/platform_message_port.h"
+#include "components/cast_receiver/browser/public/application_client.h"
 #include "components/cast_streaming/browser/public/receiver_session.h"
 #include "components/cast_streaming/public/cast_streaming_url.h"
 #include "content/public/browser/navigation_handle.h"
@@ -40,26 +40,27 @@ StreamingRuntimeApplication::StreamingRuntimeApplication(
     cast::common::ApplicationConfig app_config,
     CastWebService* web_service,
     scoped_refptr<base::SequencedTaskRunner> task_runner,
-    cast_streaming::NetworkContextGetter network_context_getter,
-    media::VideoPlaneController* video_plane_controller)
+    cast_receiver::ApplicationClient& application_client,
+    RuntimeApplicationPlatform::Factory runtime_application_factory)
     : RuntimeApplicationBase(std::move(cast_session_id),
                              std::move(app_config),
                              mojom::RendererType::MOJO_RENDERER,
                              web_service,
-                             std::move(task_runner)),
-      video_plane_controller_(video_plane_controller),
-      network_context_getter_(std::move(network_context_getter)) {
-  DCHECK(video_plane_controller_);
-}
+                             std::move(task_runner),
+                             std::move(runtime_application_factory)),
+      application_client_(application_client) {}
 
 StreamingRuntimeApplication::~StreamingRuntimeApplication() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   StopApplication(cast::common::StopReason::USER_REQUEST, net::OK);
 }
 
-cast::utils::GrpcStatusOr<cast::web::MessagePortStatus>
-StreamingRuntimeApplication::HandlePortMessage(cast::web::Message message) {
+bool StreamingRuntimeApplication::OnMessagePortMessage(
+    cast::web::Message message) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  if (!message_port_service_) {
+    return false;
+  }
   return message_port_service_->HandleMessage(std::move(message));
 }
 
@@ -79,35 +80,34 @@ void StreamingRuntimeApplication::StartAvSettingsQuery(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   // Connect the port to allow for sending messages. Querying will be done by
   // the associated |receiver_session_client_|.
-  message_port_service_->ConnectToPort(kMediaCapabilitiesBindingName,
-                                       std::move(message_port));
+  message_port_service_->ConnectToPortAsync(kMediaCapabilitiesBindingName,
+                                            std::move(message_port));
 }
 
 void StreamingRuntimeApplication::OnResolutionChanged(
     const gfx::Rect& size,
     const ::media::VideoTransformation& transformation) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  video_plane_controller_->SetGeometryFromMediaType(size, transformation);
+  application_client_->OnStreamingResolutionChanged(size, transformation);
 }
 
-void StreamingRuntimeApplication::LaunchApplication() {
+void StreamingRuntimeApplication::OnApplicationLaunched() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  message_port_service_ =
-      std::make_unique<MessagePortService>(core_message_port_app_stub());
+  message_port_service_ = application_platform().CreateMessagePortService();
 
   // Bind Cast Transport.
   std::unique_ptr<cast_api_bindings::MessagePort> server_port;
   std::unique_ptr<cast_api_bindings::MessagePort> client_port;
   cast_api_bindings::CreatePlatformMessagePortPair(&client_port, &server_port);
-  message_port_service_->ConnectToPort(kCastTransportBindingName,
-                                       std::move(client_port));
+  message_port_service_->ConnectToPortAsync(kCastTransportBindingName,
+                                            std::move(client_port));
 
   // Initialize the streaming receiver.
   receiver_session_client_ = std::make_unique<StreamingReceiverSessionClient>(
-      task_runner(), network_context_getter_, std::move(server_port),
-      GetCastWebContents(), this,
-      /* supports_audio= */ GetAppConfig().app_id() !=
+      task_runner(), application_client_->GetNetworkContextGetter(),
+      std::move(server_port), cast_web_contents()->web_contents(), this,
+      /* supports_audio= */ config().app_id() !=
           openscreen::cast::GetIosAppStreamingAudioVideoAppId(),
       /* supports_video= */ true);
   receiver_session_client_->LaunchStreamingReceiverAsync();

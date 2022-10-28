@@ -78,6 +78,7 @@
 <translation id="5998675059699164418">Organisaatiosi edellyttää sisäänkirjautumista, jotta voit käyttää Chromea.</translation>
 <translation id="6054613632208573261">Käytä oletuksena Chromea</translation>
 <translation id="6063091872902370735">Salli Chrome-kirjautuminen</translation>
+<translation id="6110625574506755980">Jotkin Chromen ominaisuudet eivät ole enää käytettävissä.</translation>
 <translation id="6181930887571472871">Vaihda Chromeen</translation>
 <translation id="6238746320622508509">Anna Chromen lukita incognito-välilehtesi.</translation>
 <translation id="6387994324662817823">Salasanat tallennetaan Googlen Salasanojen ylläpitoon vain tällä laitteella.</translation>
@@ -90,11 +91,11 @@
 <translation id="6709398533399187136">Salasanasi vaarantui tietosuojaloukkauksessa. Googlen Salasanojen ylläpito suosittelee, että vaihdat sen heti.</translation>
 <translation id="6822673484890854830">Chrome ei voinut tarkistaa kaikkia salasanoja. Yritä myöhemmin uudelleen.</translation>
 <translation id="6964931465519938134">Voit nyt käyttää Chromea aina, kun napautat linkkejä viesteissä, dokumenteissa tai muissa sovelluksissa.</translation>
+<translation id="701356708427365932">Tutustu uuteen Chrome-valikkoon</translation>
 <translation id="7059914902409643750">Tee Chromesta näköisesi</translation>
 <translation id="7124339256045485976">Pidä Chrome ajan tasalla</translation>
 <translation id="7161390184744336561">Google Chrome on vanhentunut</translation>
 <translation id="7165736900384873061">Aloita Google Chromen QR-lukijan käyttö</translation>
-<translation id="7172660552945675509">Vinkki: <ph name="BEGIN_LINK" />Siirrä Chrome Dockiin.<ph name="END_LINK" /></translation>
 <translation id="7173660919484573146">Chrome varmistaa Face ID:llä, että sinulla on lupa käyttää salasanoja.</translation>
 <translation id="7187993566681480880">Pitää sinut turvassa Chromessa ja voi parantaa suojaustasi muissa Google-sovelluksissa, kun olet sisäänkirjautuneena.</translation>
 <translation id="72119412072970160">Voit käyttää Googlen Salasanojen ylläpitoon tallennettuja salasanoja muissa iPadisi sovelluksissa.</translation>

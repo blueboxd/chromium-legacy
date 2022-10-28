@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -85,11 +85,9 @@ class WebAppOfflinePageTest
  public:
   WebAppOfflinePageTest() {
     if (GetParam() == PageFlagParam::kWithDefaultPageFlag) {
-      feature_list_.InitAndEnableFeature(
-          features::kDesktopPWAsDefaultOfflinePage);
+      feature_list_.InitAndEnableFeature(features::kPWAsDefaultOfflinePage);
     } else {
-      feature_list_.InitAndDisableFeature(
-          features::kDesktopPWAsDefaultOfflinePage);
+      feature_list_.InitAndDisableFeature(features::kPWAsDefaultOfflinePage);
     }
   }
 
@@ -227,7 +225,7 @@ class WebAppOfflineDarkModeTest
     disabled_features.push_back(ash::features::kNotificationsRefresh);
 #endif
 
-    feature_list_.InitWithFeatures({features::kDesktopPWAsDefaultOfflinePage,
+    feature_list_.InitWithFeatures({features::kPWAsDefaultOfflinePage,
                                     blink::features::kWebAppEnableDarkMode},
                                    {disabled_features});
   }
@@ -281,14 +279,14 @@ IN_PROC_BROWSER_TEST_P(WebAppOfflineDarkModeTest,
             .ExtractBool());
     EXPECT_EQ(
         EvalJs(web_contents,
-               "window.getComputedStyle(document.querySelector('h2')).color")
+               "window.getComputedStyle(document.querySelector('div')).color")
             .ExtractString(),
-        "rgb(255, 0, 0)");
+        "rgb(227, 227, 227)");
     EXPECT_EQ(EvalJs(web_contents,
                      "window.getComputedStyle(document.querySelector('body'))."
                      "backgroundColor")
                   .ExtractString(),
-              "rgb(255, 0, 0)");
+              "rgb(31, 31, 31)");
   } else {
     EXPECT_TRUE(
         EvalJs(web_contents,
@@ -296,14 +294,14 @@ IN_PROC_BROWSER_TEST_P(WebAppOfflineDarkModeTest,
             .ExtractBool());
     EXPECT_EQ(
         EvalJs(web_contents,
-               "window.getComputedStyle(document.querySelector('h2')).color")
+               "window.getComputedStyle(document.querySelector('div')).color")
             .ExtractString(),
-        "rgb(0, 0, 255)");
+        "rgb(31, 31, 31)");
     EXPECT_EQ(EvalJs(web_contents,
                      "window.getComputedStyle(document.querySelector('body'))."
                      "backgroundColor")
                   .ExtractString(),
-              "rgb(0, 0, 255)");
+              "rgb(255, 255, 255)");
   }
 }
 
@@ -328,14 +326,14 @@ IN_PROC_BROWSER_TEST_P(WebAppOfflineDarkModeTest,
             .ExtractBool());
     EXPECT_EQ(
         EvalJs(web_contents,
-               "window.getComputedStyle(document.querySelector('h2')).color")
+               "window.getComputedStyle(document.querySelector('div')).color")
             .ExtractString(),
-        "rgb(255, 0, 0)");
+        "rgb(227, 227, 227)");
     EXPECT_EQ(EvalJs(web_contents,
                      "window.getComputedStyle(document.querySelector('body'))."
                      "backgroundColor")
                   .ExtractString(),
-              "rgb(255, 0, 0)");
+              "rgb(31, 31, 31)");
   } else {
     // Expect that the default offline page is showing with light mode colors.
     EXPECT_TRUE(
@@ -344,14 +342,14 @@ IN_PROC_BROWSER_TEST_P(WebAppOfflineDarkModeTest,
             .ExtractBool());
     EXPECT_EQ(
         EvalJs(web_contents,
-               "window.getComputedStyle(document.querySelector('h2')).color")
+               "window.getComputedStyle(document.querySelector('div')).color")
             .ExtractString(),
-        "rgb(0, 0, 255)");
+        "rgb(31, 31, 31)");
     EXPECT_EQ(EvalJs(web_contents,
                      "window.getComputedStyle(document.querySelector('body'))."
                      "backgroundColor")
                   .ExtractString(),
-              "rgb(0, 0, 255)");
+              "rgb(255, 255, 255)");
   }
 }
 
@@ -371,23 +369,33 @@ IN_PROC_BROWSER_TEST_P(WebAppOfflineDarkModeTest,
         EvalJs(web_contents,
                "window.matchMedia('(prefers-color-scheme: dark)').matches")
             .ExtractBool());
+    EXPECT_EQ(
+        EvalJs(web_contents,
+               "window.getComputedStyle(document.querySelector('div')).color")
+            .ExtractString(),
+        "rgb(227, 227, 227)");
+    EXPECT_EQ(EvalJs(web_contents,
+                     "window.getComputedStyle(document.querySelector('body'))."
+                     "backgroundColor")
+                  .ExtractString(),
+              "rgb(31, 31, 31)");
   } else {
     // Expect that the default offline page is showing with light mode colors.
     EXPECT_TRUE(
         EvalJs(web_contents,
                "window.matchMedia('(prefers-color-scheme: light)').matches")
             .ExtractBool());
+    EXPECT_EQ(
+        EvalJs(web_contents,
+               "window.getComputedStyle(document.querySelector('div')).color")
+            .ExtractString(),
+        "rgb(31, 31, 31)");
+    EXPECT_EQ(EvalJs(web_contents,
+                     "window.getComputedStyle(document.querySelector('body'))."
+                     "backgroundColor")
+                  .ExtractString(),
+              "rgb(255, 255, 255)");
   }
-  EXPECT_EQ(
-      EvalJs(web_contents,
-             "window.getComputedStyle(document.querySelector('h2')).color")
-          .ExtractString(),
-      "rgb(0, 255, 0)");
-  EXPECT_EQ(EvalJs(web_contents,
-                   "window.getComputedStyle(document.querySelector('body'))."
-                   "backgroundColor")
-                .ExtractString(),
-            "rgb(255, 255, 0)");
 }
 
 INSTANTIATE_TEST_SUITE_P(

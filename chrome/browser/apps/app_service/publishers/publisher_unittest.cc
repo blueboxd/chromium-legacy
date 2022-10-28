@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -32,7 +32,6 @@
 #include "components/services/app_service/public/cpp/intent_util.h"
 #include "components/services/app_service/public/cpp/permission.h"
 #include "components/services/app_service/public/cpp/publisher_base.h"
-#include "components/services/app_service/public/mojom/types.mojom.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
@@ -400,10 +399,6 @@ class PublisherTest : public extensions::ExtensionServiceTestBase {
   }
 
   void VerifyAppTypeIsInitialized(AppType app_type) {
-    // TODO(crbug.com/1253250): Remove FlushMojoCallsForTesting when
-    // OnAppTypeInitialized doesn't check the mojom App struct.
-    AppServiceProxyFactory::GetForProfile(profile())
-        ->FlushMojoCallsForTesting();
     AppRegistryCache& cache =
         AppServiceProxyFactory::GetForProfile(profile())->AppRegistryCache();
     ASSERT_TRUE(cache.IsAppTypeInitialized(app_type));
@@ -411,10 +406,10 @@ class PublisherTest : public extensions::ExtensionServiceTestBase {
   }
 
   void VerifyCapabilityAccess(const std::string& app_id,
-                              apps::mojom::OptionalBool accessing_camera,
-                              apps::mojom::OptionalBool accessing_microphone) {
-    apps::mojom::OptionalBool camera = apps::mojom::OptionalBool::kUnknown;
-    apps::mojom::OptionalBool microphone = apps::mojom::OptionalBool::kUnknown;
+                              absl::optional<bool> accessing_camera,
+                              absl::optional<bool> accessing_microphone) {
+    absl::optional<bool> camera;
+    absl::optional<bool> microphone;
     apps::AppServiceProxyFactory::GetForProfile(profile())
         ->AppCapabilityAccessCache()
         .ForOneApp(app_id, [&camera, &microphone](
@@ -512,7 +507,6 @@ TEST_F(PublisherTest, ArcAppsOnApps) {
 TEST_F(PublisherTest, ArcApps_CapabilityAccess) {
   ArcAppTest arc_test;
   arc_test.SetUp(profile());
-  AppServiceProxyFactory::GetForProfile(profile())->FlushMojoCallsForTesting();
   ArcApps* arc_apps = apps::ArcAppsFactory::GetForProfile(profile());
   ASSERT_TRUE(arc_apps);
 
@@ -529,24 +523,18 @@ TEST_F(PublisherTest, ArcApps_CapabilityAccess) {
     privacy_items.push_back(CreateArcPrivacyItem(
         arc::mojom::AppPermissionGroup::CAMERA, package_name1));
     arc_apps->OnPrivacyItemsChanged(std::move(privacy_items));
-    AppServiceProxyFactory::GetForProfile(profile())
-        ->FlushMojoCallsForTesting();
-    VerifyCapabilityAccess(
-        ArcAppTest::GetAppId(*fake_apps[0]),
-        /*accessing_camera=*/apps::mojom::OptionalBool::kTrue,
-        /*accessing_microphone=*/apps::mojom::OptionalBool::kUnknown);
+    VerifyCapabilityAccess(ArcAppTest::GetAppId(*fake_apps[0]),
+                           /*accessing_camera=*/true,
+                           /*accessing_microphone=*/absl::nullopt);
   }
 
   // Cancel accessing Camera for `package_name1`.
   {
     std::vector<arc::mojom::PrivacyItemPtr> privacy_items;
     arc_apps->OnPrivacyItemsChanged(std::move(privacy_items));
-    AppServiceProxyFactory::GetForProfile(profile())
-        ->FlushMojoCallsForTesting();
-    VerifyCapabilityAccess(
-        ArcAppTest::GetAppId(*fake_apps[0]),
-        /*accessing_camera=*/apps::mojom::OptionalBool::kFalse,
-        /*accessing_microphone=*/apps::mojom::OptionalBool::kFalse);
+    VerifyCapabilityAccess(ArcAppTest::GetAppId(*fake_apps[0]),
+                           /*accessing_camera=*/false,
+                           /*accessing_microphone=*/false);
   }
 
   // Set accessing Camera and Microphone for `package_name1`, and accessing
@@ -560,16 +548,12 @@ TEST_F(PublisherTest, ArcApps_CapabilityAccess) {
     privacy_items.push_back(CreateArcPrivacyItem(
         arc::mojom::AppPermissionGroup::CAMERA, package_name2));
     arc_apps->OnPrivacyItemsChanged(std::move(privacy_items));
-    AppServiceProxyFactory::GetForProfile(profile())
-        ->FlushMojoCallsForTesting();
-    VerifyCapabilityAccess(
-        ArcAppTest::GetAppId(*fake_apps[0]),
-        /*accessing_camera=*/apps::mojom::OptionalBool::kTrue,
-        /*accessing_microphone=*/apps::mojom::OptionalBool::kTrue);
-    VerifyCapabilityAccess(
-        ArcAppTest::GetAppId(*fake_apps[1]),
-        /*accessing_camera=*/apps::mojom::OptionalBool::kTrue,
-        /*accessing_microphone=*/apps::mojom::OptionalBool::kUnknown);
+    VerifyCapabilityAccess(ArcAppTest::GetAppId(*fake_apps[0]),
+                           /*accessing_camera=*/true,
+                           /*accessing_microphone=*/true);
+    VerifyCapabilityAccess(ArcAppTest::GetAppId(*fake_apps[1]),
+                           /*accessing_camera=*/true,
+                           /*accessing_microphone=*/absl::nullopt);
   }
 
   // Cancel accessing Microphone for `package_name1`.
@@ -580,32 +564,24 @@ TEST_F(PublisherTest, ArcApps_CapabilityAccess) {
     privacy_items.push_back(CreateArcPrivacyItem(
         arc::mojom::AppPermissionGroup::CAMERA, package_name2));
     arc_apps->OnPrivacyItemsChanged(std::move(privacy_items));
-    AppServiceProxyFactory::GetForProfile(profile())
-        ->FlushMojoCallsForTesting();
-    VerifyCapabilityAccess(
-        ArcAppTest::GetAppId(*fake_apps[0]),
-        /*accessing_camera=*/apps::mojom::OptionalBool::kTrue,
-        /*accessing_microphone=*/apps::mojom::OptionalBool::kFalse);
-    VerifyCapabilityAccess(
-        ArcAppTest::GetAppId(*fake_apps[1]),
-        /*accessing_camera=*/apps::mojom::OptionalBool::kTrue,
-        /*accessing_microphone=*/apps::mojom::OptionalBool::kFalse);
+    VerifyCapabilityAccess(ArcAppTest::GetAppId(*fake_apps[0]),
+                           /*accessing_camera=*/true,
+                           /*accessing_microphone=*/false);
+    VerifyCapabilityAccess(ArcAppTest::GetAppId(*fake_apps[1]),
+                           /*accessing_camera=*/true,
+                           /*accessing_microphone=*/false);
   }
 
   // Cancel accessing CAMERA for `package_name1` and `package_name2`.
   {
     std::vector<arc::mojom::PrivacyItemPtr> privacy_items;
     arc_apps->OnPrivacyItemsChanged(std::move(privacy_items));
-    AppServiceProxyFactory::GetForProfile(profile())
-        ->FlushMojoCallsForTesting();
-    VerifyCapabilityAccess(
-        ArcAppTest::GetAppId(*fake_apps[0]),
-        /*accessing_camera=*/apps::mojom::OptionalBool::kFalse,
-        /*accessing_microphone=*/apps::mojom::OptionalBool::kFalse);
-    VerifyCapabilityAccess(
-        ArcAppTest::GetAppId(*fake_apps[1]),
-        /*accessing_camera=*/apps::mojom::OptionalBool::kFalse,
-        /*accessing_microphone=*/apps::mojom::OptionalBool::kFalse);
+    VerifyCapabilityAccess(ArcAppTest::GetAppId(*fake_apps[0]),
+                           /*accessing_camera=*/false,
+                           /*accessing_microphone=*/false);
+    VerifyCapabilityAccess(ArcAppTest::GetAppId(*fake_apps[1]),
+                           /*accessing_camera=*/false,
+                           /*accessing_microphone=*/false);
   }
 
   arc_apps->Shutdown();
@@ -769,8 +745,6 @@ TEST_F(StandaloneBrowserPublisherTest,
                          /*name=*/"TestApp", Readiness::kReady));
   chrome_apps->OnApps(std::move(apps));
 
-  AppServiceProxyFactory::GetForProfile(profile())->FlushMojoCallsForTesting();
-
   // Verify no app updated.
   EXPECT_EQ(AppType::kUnknown, cache.GetAppType(app_id));
   EXPECT_TRUE(observer.app_types().empty());
@@ -801,8 +775,6 @@ TEST_F(StandaloneBrowserPublisherTest, StandaloneBrowserExtensionAppsUpdated) {
                           /*name=*/"TestApp", Readiness::kReady));
   chrome_apps->OnApps(std::move(apps2));
 
-  AppServiceProxyFactory::GetForProfile(profile())->FlushMojoCallsForTesting();
-
   // Verify no app updated, since Crosapi is not ready yet.
   EXPECT_EQ(AppType::kUnknown, cache.GetAppType(app_id1));
   EXPECT_EQ(AppType::kUnknown, cache.GetAppType(app_id2));
@@ -815,8 +787,6 @@ TEST_F(StandaloneBrowserPublisherTest, StandaloneBrowserExtensionAppsUpdated) {
   mojo::PendingRemote<crosapi::mojom::AppController> pending_remote1 =
       pending_receiver1.InitWithNewPipeAndPassRemote();
   chrome_apps->RegisterAppController(std::move(pending_remote1));
-
-  AppServiceProxyFactory::GetForProfile(profile())->FlushMojoCallsForTesting();
 
   EXPECT_EQ(AppType::kStandaloneBrowserChromeApp, cache.GetAppType(app_id1));
   EXPECT_EQ(AppType::kStandaloneBrowserChromeApp, cache.GetAppType(app_id2));
@@ -858,8 +828,6 @@ TEST_F(StandaloneBrowserPublisherTest, StandaloneBrowserExtensionAppsUpdated) {
       pending_receiver2.InitWithNewPipeAndPassRemote();
   chrome_apps->RegisterAppController(std::move(pending_remote2));
 
-  AppServiceProxyFactory::GetForProfile(profile())->FlushMojoCallsForTesting();
-
   EXPECT_EQ(AppType::kStandaloneBrowserChromeApp, cache.GetAppType(app_id5));
   EXPECT_EQ(AppType::kStandaloneBrowserChromeApp, cache.GetAppType(app_id6));
   ASSERT_EQ(1u, observer.app_types().size());
@@ -896,8 +864,6 @@ TEST_F(StandaloneBrowserPublisherTest, WebAppsCrosapiNotUpdated) {
                          /*name=*/"TestApp", Readiness::kReady));
   web_apps_crosapi->OnApps(std::move(apps));
 
-  AppServiceProxyFactory::GetForProfile(profile())->FlushMojoCallsForTesting();
-
   // Verify no app updated.
   EXPECT_EQ(AppType::kUnknown, cache.GetAppType(app_id));
   EXPECT_TRUE(observer.app_types().empty());
@@ -928,8 +894,6 @@ TEST_F(StandaloneBrowserPublisherTest, WebAppsCrosapiUpdated) {
                           /*name=*/"TestApp", Readiness::kReady));
   web_apps_crosapi->OnApps(std::move(apps2));
 
-  AppServiceProxyFactory::GetForProfile(profile())->FlushMojoCallsForTesting();
-
   // Verify no app updated, since Crosapi is not ready yet.
   EXPECT_EQ(AppType::kUnknown, cache.GetAppType(app_id1));
   EXPECT_EQ(AppType::kUnknown, cache.GetAppType(app_id2));
@@ -942,8 +906,6 @@ TEST_F(StandaloneBrowserPublisherTest, WebAppsCrosapiUpdated) {
   mojo::PendingRemote<crosapi::mojom::AppController> pending_remote1 =
       pending_receiver1.InitWithNewPipeAndPassRemote();
   web_apps_crosapi->RegisterAppController(std::move(pending_remote1));
-
-  AppServiceProxyFactory::GetForProfile(profile())->FlushMojoCallsForTesting();
 
   EXPECT_EQ(AppType::kWeb, cache.GetAppType(app_id1));
   EXPECT_EQ(AppType::kWeb, cache.GetAppType(app_id2));
@@ -985,8 +947,6 @@ TEST_F(StandaloneBrowserPublisherTest, WebAppsCrosapiUpdated) {
       pending_receiver2.InitWithNewPipeAndPassRemote();
   web_apps_crosapi->RegisterAppController(std::move(pending_remote2));
 
-  AppServiceProxyFactory::GetForProfile(profile())->FlushMojoCallsForTesting();
-
   EXPECT_EQ(AppType::kWeb, cache.GetAppType(app_id5));
   EXPECT_EQ(AppType::kWeb, cache.GetAppType(app_id6));
   ASSERT_EQ(1u, observer.app_types().size());
@@ -1005,8 +965,6 @@ TEST_F(StandaloneBrowserPublisherTest, WebAppsNotInitializedIfRegisterFirst) {
       AppServiceProxyFactory::GetForProfile(profile())->AppRegistryCache();
   AppRegistryCacheObserver observer(&cache);
 
-  AppServiceProxyFactory::GetForProfile(profile())->FlushMojoCallsForTesting();
-
   // Verify no app updated, since Crosapi is not ready yet.
   EXPECT_TRUE(observer.app_types().empty());
   EXPECT_TRUE(observer.updated_ids().empty());
@@ -1017,7 +975,6 @@ TEST_F(StandaloneBrowserPublisherTest, WebAppsNotInitializedIfRegisterFirst) {
   mojo::PendingRemote<crosapi::mojom::AppController> pending_remote1 =
       pending_receiver1.InitWithNewPipeAndPassRemote();
   web_apps_crosapi->RegisterAppController(std::move(pending_remote1));
-  AppServiceProxyFactory::GetForProfile(profile())->FlushMojoCallsForTesting();
 
   EXPECT_TRUE(observer.app_types().empty());
   EXPECT_TRUE(observer.updated_ids().empty());
@@ -1036,7 +993,6 @@ TEST_F(StandaloneBrowserPublisherTest, WebAppsNotInitializedIfRegisterFirst) {
   apps2.push_back(MakeApp(AppType::kWeb, app_id3,
                           /*name=*/"TestApp", Readiness::kReady));
   web_apps_crosapi->OnApps(std::move(apps2));
-  AppServiceProxyFactory::GetForProfile(profile())->FlushMojoCallsForTesting();
 
   EXPECT_EQ(AppType::kWeb, cache.GetAppType(app_id1));
   EXPECT_EQ(AppType::kWeb, cache.GetAppType(app_id2));
@@ -1058,7 +1014,6 @@ TEST_F(StandaloneBrowserPublisherTest, WebAppsInitializedForEmptyList) {
   AppRegistryCacheObserver observer(&cache);
 
   web_apps_crosapi->OnApps(std::vector<AppPtr>{});
-  AppServiceProxyFactory::GetForProfile(profile())->FlushMojoCallsForTesting();
   // Verify no app updated, since Crosapi is not ready yet.
   EXPECT_TRUE(observer.app_types().empty());
   EXPECT_TRUE(observer.updated_ids().empty());
@@ -1067,7 +1022,6 @@ TEST_F(StandaloneBrowserPublisherTest, WebAppsInitializedForEmptyList) {
   mojo::PendingRemote<crosapi::mojom::AppController> pending_remote1 =
       pending_receiver1.InitWithNewPipeAndPassRemote();
   web_apps_crosapi->RegisterAppController(std::move(pending_remote1));
-  AppServiceProxyFactory::GetForProfile(profile())->FlushMojoCallsForTesting();
   ASSERT_EQ(1u, observer.app_types().size());
   EXPECT_EQ(AppType::kWeb, observer.app_types()[0]);
   EXPECT_TRUE(observer.updated_ids().empty());

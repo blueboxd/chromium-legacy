@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -23,7 +23,7 @@ const void* const kSerializableUserDataManagerKey =
 // associated WebState.
 class SerializableUserDataManagerWrapper : public base::SupportsUserData::Data {
  public:
-  // Returns the SerializableUserDataManagerWrapper associated with |web_state|,
+  // Returns the SerializableUserDataManagerWrapper associated with `web_state`,
   // creating one if necessary.
   static SerializableUserDataManagerWrapper* FromWebState(WebState* web_state) {
     DCHECK(web_state);

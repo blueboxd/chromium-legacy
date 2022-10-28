@@ -1,10 +1,10 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 import 'chrome://tab-strip.top-chrome/tab_list.js';
 
-import {FocusOutlineManager} from 'chrome://resources/js/cr/ui/focus_outline_manager.m.js';
+import {FocusOutlineManager} from 'chrome://resources/js/cr/ui/focus_outline_manager.js';
 import {TabElement} from 'chrome://tab-strip.top-chrome/tab.js';
 import {TabGroupElement} from 'chrome://tab-strip.top-chrome/tab_group.js';
 import {setScrollAnimationEnabledForTesting, TabListElement} from 'chrome://tab-strip.top-chrome/tab_list.js';

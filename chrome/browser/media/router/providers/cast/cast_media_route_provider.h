@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -90,6 +90,9 @@ class CastMediaRouteProvider : public mojom::MediaRouteProvider {
   void GetState(GetStateCallback callback) override;
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(CastMediaRouteProviderTest,
+                           GetRemotePlaybackCompatibleSinks);
+
   void Init(mojo::PendingReceiver<mojom::MediaRouteProvider> receiver,
             mojo::PendingRemote<mojom::MediaRouter> media_router,
             CastSessionTracker* session_tracker,

@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -63,6 +63,8 @@ GPU_EXPORT extern const base::Feature kVulkan;
 GPU_EXPORT extern const base::Feature kSkiaDawn;
 
 GPU_EXPORT extern const base::Feature kEnableGrShaderCacheForVulkan;
+
+GPU_EXPORT extern const base::Feature kEnableWatchdogReportOnlyModeOnGpuInit;
 
 GPU_EXPORT extern const base::Feature kEnableVkPipelineCache;
 

@@ -1,36 +1,37 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #import "ios/chrome/browser/ui/settings/safety_check/safety_check_mediator.h"
 
-#include "base/mac/foundation_util.h"
+#import "base/mac/foundation_util.h"
 #import "base/metrics/histogram_functions.h"
-#include "base/metrics/histogram_macros.h"
-#include "base/metrics/user_metrics.h"
-#include "base/numerics/safe_conversions.h"
-#include "base/strings/sys_string_conversions.h"
-#include "base/strings/utf_string_conversions.h"
-#include "base/time/time.h"
-#include "base/version.h"
-#include "components/password_manager/core/browser/leak_detection_dialog_utils.h"
-#include "components/password_manager/core/browser/ui/password_check_referrer.h"
-#include "components/password_manager/core/common/password_manager_features.h"
-#include "components/prefs/pref_service.h"
-#include "components/safe_browsing/core/common/features.h"
-#include "components/safe_browsing/core/common/safe_browsing_prefs.h"
-#include "components/safety_check/safety_check.h"
-#include "components/version_info/version_info.h"
-#include "ios/chrome/browser/application_context.h"
+#import "base/metrics/histogram_macros.h"
+#import "base/metrics/user_metrics.h"
+#import "base/numerics/safe_conversions.h"
+#import "base/strings/sys_string_conversions.h"
+#import "base/strings/utf_string_conversions.h"
+#import "base/time/time.h"
+#import "base/version.h"
+#import "components/password_manager/core/browser/leak_detection_dialog_utils.h"
+#import "components/password_manager/core/browser/ui/password_check_referrer.h"
+#import "components/password_manager/core/common/password_manager_features.h"
+#import "components/prefs/pref_service.h"
+#import "components/safe_browsing/core/common/features.h"
+#import "components/safe_browsing/core/common/safe_browsing_prefs.h"
+#import "components/safety_check/safety_check.h"
+#import "components/version_info/version_info.h"
+#import "ios/chrome/browser/application_context/application_context.h"
 #import "ios/chrome/browser/omaha/omaha_service.h"
-#include "ios/chrome/browser/passwords/ios_chrome_password_check_manager.h"
-#include "ios/chrome/browser/passwords/ios_chrome_password_check_manager_factory.h"
-#include "ios/chrome/browser/passwords/password_check_observer_bridge.h"
-#include "ios/chrome/browser/passwords/password_store_observer_bridge.h"
-#include "ios/chrome/browser/pref_names.h"
+#import "ios/chrome/browser/passwords/ios_chrome_password_check_manager.h"
+#import "ios/chrome/browser/passwords/ios_chrome_password_check_manager_factory.h"
+#import "ios/chrome/browser/passwords/password_check_observer_bridge.h"
+#import "ios/chrome/browser/passwords/password_store_observer_bridge.h"
+#import "ios/chrome/browser/prefs/pref_names.h"
 #import "ios/chrome/browser/signin/authentication_service.h"
-#include "ios/chrome/browser/sync/sync_setup_service.h"
+#import "ios/chrome/browser/sync/sync_setup_service.h"
 #import "ios/chrome/browser/ui/icons/chrome_symbol.h"
+#import "ios/chrome/browser/ui/icons/settings_icon.h"
 #import "ios/chrome/browser/ui/settings/cells/settings_check_item.h"
 #import "ios/chrome/browser/ui/settings/safety_check/safety_check_constants.h"
 #import "ios/chrome/browser/ui/settings/safety_check/safety_check_consumer.h"
@@ -44,21 +45,21 @@
 #import "ios/chrome/browser/ui/table_view/table_view_utils.h"
 #import "ios/chrome/browser/ui/ui_feature_flags.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
-#include "ios/chrome/browser/upgrade/upgrade_constants.h"
-#include "ios/chrome/browser/upgrade/upgrade_recommended_details.h"
-#include "ios/chrome/browser/upgrade/upgrade_utils.h"
-#include "ios/chrome/common/channel_info.h"
+#import "ios/chrome/browser/upgrade/upgrade_constants.h"
+#import "ios/chrome/browser/upgrade/upgrade_recommended_details.h"
+#import "ios/chrome/browser/upgrade/upgrade_utils.h"
+#import "ios/chrome/common/channel_info.h"
 #import "ios/chrome/common/string_util.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
 #import "ios/chrome/common/ui/table_view/table_view_cells_constants.h"
-#include "ios/chrome/grit/ios_chromium_strings.h"
-#include "ios/chrome/grit/ios_strings.h"
+#import "ios/chrome/grit/ios_chromium_strings.h"
+#import "ios/chrome/grit/ios_strings.h"
 #import "ios/web/common/url_scheme_util.h"
 #import "net/base/mac/url_conversions.h"
-#include "services/network/public/cpp/shared_url_loader_factory.h"
-#include "ui/base/l10n/l10n_util.h"
-#include "ui/base/l10n/time_format.h"
-#include "url/gurl.h"
+#import "services/network/public/cpp/shared_url_loader_factory.h"
+#import "ui/base/l10n/l10n_util.h"
+#import "ui/base/l10n/time_format.h"
+#import "url/gurl.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -244,8 +245,8 @@ constexpr double kSafeBrowsingRowMinDelay = 3.0;
                                                  kLeadingSymbolImagePointSize)
             : [[UIImage imageNamed:@"settings_info"]
                   imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
-    _updateCheckItem.leadingImage = updateCheckIcon;
-    _updateCheckItem.leadingImageTintColor = [UIColor colorNamed:kGrey400Color];
+    _updateCheckItem.leadingIcon = updateCheckIcon;
+    _updateCheckItem.leadingIconTintColor = [UIColor colorNamed:kGrey400Color];
     _updateCheckItem.enabled = YES;
     _updateCheckItem.indicatorHidden = YES;
     _updateCheckItem.infoButtonHidden = YES;
@@ -264,15 +265,23 @@ constexpr double kSafeBrowsingRowMinDelay = 3.0;
         [[SettingsCheckItem alloc] initWithType:PasswordItemType];
     _passwordCheckItem.text =
         l10n_util::GetNSString(IDS_IOS_SETTINGS_SAFETY_CHECK_PASSWORDS_TITLE);
-    NSString* imageName =
-        base::FeatureList::IsEnabled(
-            password_manager::features::kIOSEnablePasswordManagerBrandingUpdate)
-            ? @"password_key"
-            : @"legacy_password_key";
-    UIImage* passwordCheckIcon = [[UIImage imageNamed:imageName]
-        imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
-    _passwordCheckItem.leadingImage = passwordCheckIcon;
-    _passwordCheckItem.leadingImageTintColor =
+
+    UIImage* passwordCheckIcon = nil;
+    if (UseSymbols()) {
+      passwordCheckIcon = CustomSymbolTemplateWithPointSize(
+          kPasswordSymbol, kLeadingSymbolImagePointSize);
+    } else {
+      NSString* imageName = base::FeatureList::IsEnabled(
+                                password_manager::features::
+                                    kIOSEnablePasswordManagerBrandingUpdate)
+                                ? @"password_key"
+                                : @"legacy_password_key";
+      passwordCheckIcon = [[UIImage imageNamed:imageName]
+          imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
+    }
+
+    _passwordCheckItem.leadingIcon = passwordCheckIcon;
+    _passwordCheckItem.leadingIconTintColor =
         [UIColor colorNamed:kGrey400Color];
     _passwordCheckItem.enabled = YES;
     _passwordCheckItem.indicatorHidden = YES;
@@ -295,10 +304,13 @@ constexpr double kSafeBrowsingRowMinDelay = 3.0;
     _safeBrowsingCheckItem.text = l10n_util::GetNSString(
         IDS_IOS_SETTINGS_SAFETY_CHECK_SAFE_BROWSING_TITLE);
     UIImage* safeBrowsingCheckIcon =
-        [[UIImage imageNamed:@"settings_safe_browsing"]
-            imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
-    _safeBrowsingCheckItem.leadingImage = safeBrowsingCheckIcon;
-    _safeBrowsingCheckItem.leadingImageTintColor =
+        UseSymbols()
+            ? CustomSymbolWithPointSize(kPrivacySymbol,
+                                        kLeadingSymbolImagePointSize)
+            : [[UIImage imageNamed:@"settings_safe_browsing"]
+                  imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
+    _safeBrowsingCheckItem.leadingIcon = safeBrowsingCheckIcon;
+    _safeBrowsingCheckItem.leadingIconTintColor =
         [UIColor colorNamed:kGrey400Color];
     _safeBrowsingCheckItem.enabled = YES;
     _safeBrowsingCheckItem.indicatorHidden = YES;

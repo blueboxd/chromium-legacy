@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -23,9 +23,8 @@ class ShellFeedbackPrivateDelegate : public FeedbackPrivateDelegate {
   ~ShellFeedbackPrivateDelegate() override;
 
   // FeedbackPrivateDelegate:
-  std::unique_ptr<base::DictionaryValue> GetStrings(
-      content::BrowserContext* browser_context,
-      bool from_crash) const override;
+  base::Value::Dict GetStrings(content::BrowserContext* browser_context,
+                               bool from_crash) const override;
   void FetchSystemInformation(
       content::BrowserContext* context,
       system_logs::SysLogsFetcherCallback callback) const override;

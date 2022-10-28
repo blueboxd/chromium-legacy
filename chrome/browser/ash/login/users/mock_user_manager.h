@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -23,7 +23,7 @@ class FakeSupervisedUserManager;
 class MockUserManager : public ChromeUserManager {
  public:
   MockUserManager();
-  virtual ~MockUserManager();
+  ~MockUserManager() override;
 
   MOCK_METHOD0(Shutdown, void(void));
   MOCK_CONST_METHOD0(GetUsersAllowedForMultiProfile,

@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,7 +10,9 @@
 #include "ash/quick_pair/repository/fast_pair_repository.h"
 #include "base/callback.h"
 #include "base/containers/flat_map.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/time/time.h"
+#include "chromeos/ash/components/network/network_state_handler_observer.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace chromeos {
@@ -20,6 +22,7 @@ class DeviceImageInfo;
 }  // namespace chromeos
 
 namespace device {
+class BluetoothAdapter;
 class BluetoothDevice;
 }  // namespace device
 
@@ -37,20 +40,24 @@ class DeviceImageStore;
 class DeviceMetadataFetcher;
 class FastPairImageDecoder;
 class FootprintsFetcher;
+class PendingWriteStore;
 class SavedDeviceRegistry;
 
 // The entry point for the Repository component in the Quick Pair system,
 // responsible for connecting to back-end services.
-class FastPairRepositoryImpl : public FastPairRepository {
+class FastPairRepositoryImpl : public FastPairRepository,
+                               public NetworkStateHandlerObserver {
  public:
   FastPairRepositoryImpl();
   FastPairRepositoryImpl(
+      scoped_refptr<device::BluetoothAdapter> adapter,
       std::unique_ptr<DeviceMetadataFetcher> device_metadata_fetcher,
       std::unique_ptr<FootprintsFetcher> footprints_fetcher,
       std::unique_ptr<FastPairImageDecoder> image_decoder,
       std::unique_ptr<DeviceIdMap> device_id_map,
       std::unique_ptr<DeviceImageStore> device_image_store,
-      std::unique_ptr<SavedDeviceRegistry> saved_device_registry);
+      std::unique_ptr<SavedDeviceRegistry> saved_device_registry,
+      std::unique_ptr<PendingWriteStore> pending_write_store);
   FastPairRepositoryImpl(const FastPairRepositoryImpl&) = delete;
   FastPairRepositoryImpl& operator=(const FastPairRepositoryImpl&) = delete;
   ~FastPairRepositoryImpl() override;
@@ -73,17 +80,22 @@ class FastPairRepositoryImpl : public FastPairRepository {
   void FetchDeviceImages(scoped_refptr<Device> device) override;
   bool PersistDeviceImages(scoped_refptr<Device> device) override;
   bool EvictDeviceImages(const device::BluetoothDevice* device) override;
-  absl::optional<chromeos::bluetooth_config::DeviceImageInfo>
-  GetImagesForDevice(const std::string& device_id) override;
+  absl::optional<bluetooth_config::DeviceImageInfo> GetImagesForDevice(
+      const std::string& device_id) override;
   void CheckOptInStatus(CheckOptInStatusCallback callback) override;
   void UpdateOptInStatus(nearby::fastpair::OptInStatus opt_in_status,
                          UpdateOptInStatusCallback callback) override;
   void GetSavedDevices(GetSavedDevicesCallback callback) override;
+  void IsDeviceSavedToAccount(const std::string& mac_address,
+                              IsDeviceSavedToAccountCallback callback) override;
+
+  // NetworkStateHandlerObserver:
+  void DefaultNetworkChanged(const NetworkState* network) override;
 
  private:
   void CheckAccountKeysImpl(const AccountKeyFilter& account_key_filter,
                             CheckAccountKeysCallback callback,
-                            bool refresh_cache_on_miss);
+                            bool allow_cache_refresh);
   void OnMetadataFetched(
       const std::string& normalized_model_id,
       DeviceMetadataCallback callback,
@@ -94,6 +106,10 @@ class FastPairRepositoryImpl : public FastPairRepository {
                       nearby::fastpair::GetObservedDeviceResponse response,
                       gfx::Image image);
   void RetryCheckAccountKeys(
+      const AccountKeyFilter& account_key_filter,
+      CheckAccountKeysCallback callback,
+      absl::optional<nearby::fastpair::UserReadDevicesResponse> user_devices);
+  void UpdateCacheAndRetryCheckAccountKeys(
       const AccountKeyFilter& account_key_filter,
       CheckAccountKeysCallback callback,
       absl::optional<nearby::fastpair::UserReadDevicesResponse> user_devices);
@@ -128,9 +144,26 @@ class FastPairRepositoryImpl : public FastPairRepository {
       const std::vector<uint8_t>& account_key,
       DeleteAssociatedDeviceByAccountKeyCallback callback,
       bool footprints_removal_success);
+  void RetryPendingDeletes(
+      nearby::fastpair::OptInStatus status,
+      std::vector<nearby::fastpair::FastPairDevice> devices);
   void OnGetSavedDevices(
       GetSavedDevicesCallback callback,
       absl::optional<nearby::fastpair::UserReadDevicesResponse> user_devices);
+
+  // Iterates over the list of |user_devices| and checks if the given
+  // |mac_address| matches any by comparing the
+  // SHA256(concat (account key, mac address)).
+  void CompleteIsDeviceSavedToAccount(
+      const std::string& mac_address,
+      IsDeviceSavedToAccountCallback callback,
+      absl::optional<nearby::fastpair::UserReadDevicesResponse> user_devices);
+
+  // Internal method called by BluetoothAdapterFactory to provide the adapter
+  // object.
+  void OnGetAdapter(scoped_refptr<device::BluetoothAdapter> adapter);
+
+  scoped_refptr<device::BluetoothAdapter> adapter_;
 
   std::unique_ptr<DeviceMetadataFetcher> device_metadata_fetcher_;
   std::unique_ptr<FootprintsFetcher> footprints_fetcher_;
@@ -138,10 +171,12 @@ class FastPairRepositoryImpl : public FastPairRepository {
   std::unique_ptr<DeviceIdMap> device_id_map_;
   std::unique_ptr<DeviceImageStore> device_image_store_;
   std::unique_ptr<SavedDeviceRegistry> saved_device_registry_;
+  std::unique_ptr<PendingWriteStore> pending_write_store_;
 
   base::flat_map<std::string, std::unique_ptr<DeviceMetadata>> metadata_cache_;
   nearby::fastpair::UserReadDevicesResponse user_devices_cache_;
   base::Time footprints_last_updated_;
+  base::Time retry_write_last_attempted_;
 
   base::WeakPtrFactory<FastPairRepositoryImpl> weak_ptr_factory_{this};
 };

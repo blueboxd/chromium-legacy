@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -79,6 +79,7 @@ class MEDIA_EXPORT AudioRendererImpl
       AudioRendererSink* sink,
       const CreateAudioDecodersCB& create_audio_decoders_cb,
       MediaLog* media_log,
+      MediaPlayerLoggingID media_player_id,
       SpeechRecognitionClient* speech_recognition_client = nullptr);
 
   AudioRendererImpl(const AudioRendererImpl&) = delete;
@@ -269,6 +270,8 @@ class MEDIA_EXPORT AudioRendererImpl
   std::unique_ptr<AudioDecoderStream> audio_decoder_stream_;
 
   raw_ptr<MediaLog> media_log_;
+
+  MediaPlayerLoggingID player_id_;
 
   // Cached copy of audio params that the renderer is initialized with.
   AudioParameters audio_parameters_;

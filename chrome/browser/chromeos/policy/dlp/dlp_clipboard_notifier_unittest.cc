@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,9 +7,9 @@
 #include <memory>
 #include <string>
 
-#include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/mock_callback.h"
+#include "base/types/optional_util.h"
 #include "chrome/browser/chromeos/policy/dlp/clipboard_bubble.h"
 #include "chrome/browser/chromeos/policy/dlp/dlp_clipboard_bubble_constants.h"
 #include "chrome/grit/generated_resources.h"
@@ -123,7 +123,7 @@ TEST_P(ClipboardBubbleTestWithParam, BlockBubble) {
 
   EXPECT_CALL(notifier, ShowBlockBubble);
 
-  notifier.NotifyBlockedAction(&data_src, base::OptionalOrNullptr(data_dst));
+  notifier.NotifyBlockedAction(&data_src, base::OptionalToPtr(data_dst));
 }
 
 TEST_P(ClipboardBubbleTestWithParam, WarnBubble) {
@@ -138,7 +138,7 @@ TEST_P(ClipboardBubbleTestWithParam, WarnBubble) {
                                     views::Widget::ClosedReason::kUnspecified));
   EXPECT_CALL(notifier, ShowWarningBubble);
 
-  notifier.WarnOnPaste(&data_src, base::OptionalOrNullptr(data_dst));
+  notifier.WarnOnPaste(&data_src, base::OptionalToPtr(data_dst));
 }
 
 INSTANTIATE_TEST_SUITE_P(DlpClipboardNotifierTest,

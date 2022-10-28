@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -17,6 +17,7 @@
 #include "components/content_settings/core/common/pref_names.h"
 #include "components/policy/core/browser/policy_error_map.h"
 #include "components/policy/core/common/policy_map.h"
+#include "components/policy/core/common/schema.h"
 #include "components/policy/policy_constants.h"
 #include "components/prefs/pref_value_map.h"
 #include "components/strings/grit/components_strings.h"
@@ -30,11 +31,6 @@ constexpr char kDevicesKey[] = "devices";
 constexpr char kVendorIdKey[] = "vendor_id";
 constexpr char kProductIdKey[] = "product_id";
 constexpr char kUrlsKey[] = "urls";
-constexpr char kErrorPathTemplate[] = "items[%d].%s.items[%d]";
-constexpr char kMissingVendorIdError[] = "A vendor_id must also be specified";
-constexpr char kInvalidNumberOfUrlsError[] =
-    "Each urls string entry must contain between 1 to 2 URLs";
-constexpr char kInvalidUrlError[] = "The urls item must contain valid URLs";
 
 }  // namespace
 
@@ -56,8 +52,8 @@ bool WebUsbAllowDevicesForUrlsPolicyHandler::CheckPolicySettings(
   bool result =
       SchemaValidatingPolicyHandler::CheckPolicySettings(policies, errors);
 
-  std::string error_path;
-  std::string error;
+  PolicyErrorPath error_path;
+  int error_message_id;
   if (!result)
     return result;
 
@@ -78,9 +74,8 @@ bool WebUsbAllowDevicesForUrlsPolicyHandler::CheckPolicySettings(
         // If a |product_id| is specified, then a |vendor_id| must also be
         // specified. Otherwise, the policy is invalid.
         if (!vendor_id.has_value()) {
-          error_path = base::StringPrintf(kErrorPathTemplate, item_index,
-                                          kDevicesKey, device_index);
-          error = kMissingVendorIdError;
+          error_path = {item_index, kDevicesKey, device_index};
+          error_message_id = IDS_POLICY_MISSING_VENDOR_ID_ERROR;
           result = false;
           break;
         }
@@ -93,8 +88,7 @@ bool WebUsbAllowDevicesForUrlsPolicyHandler::CheckPolicySettings(
     auto* urls_list = item.GetDict().FindList(kUrlsKey);
     DCHECK(urls_list);
     for (const auto& url_value : *urls_list) {
-      const std::string url_error_path = base::StringPrintf(
-          kErrorPathTemplate, item_index, kUrlsKey, url_index);
+      PolicyErrorPath url_error_path = {item_index, kUrlsKey, url_index};
 
       DCHECK(url_value.is_string());
       const std::vector<std::string> urls =
@@ -102,7 +96,7 @@ bool WebUsbAllowDevicesForUrlsPolicyHandler::CheckPolicySettings(
                             base::SPLIT_WANT_ALL);
       if (urls.size() > 2 || urls.empty()) {
         error_path = url_error_path;
-        error = kInvalidNumberOfUrlsError;
+        error_message_id = IDS_POLICY_INVALID_NUMBER_OF_URLS_ERROR;
         result = false;
         break;
       }
@@ -110,7 +104,7 @@ bool WebUsbAllowDevicesForUrlsPolicyHandler::CheckPolicySettings(
       GURL requesting_url(urls[0]);
       if (!requesting_url.is_valid()) {
         error_path = url_error_path;
-        error = kInvalidUrlError;
+        error_message_id = IDS_POLICY_INVALID_URL_ERROR;
         result = false;
         break;
       }
@@ -123,7 +117,7 @@ bool WebUsbAllowDevicesForUrlsPolicyHandler::CheckPolicySettings(
         // checked to see if it is empty to signify a wildcard.
         if (!embedding_url_is_wildcard && !embedding_url.is_valid()) {
           error_path = url_error_path;
-          error = kInvalidUrlError;
+          error_message_id = IDS_POLICY_INVALID_URL_ERROR;
           result = false;
           break;
         }
@@ -132,14 +126,14 @@ bool WebUsbAllowDevicesForUrlsPolicyHandler::CheckPolicySettings(
       ++url_index;
     }
 
-    if (!error_path.empty() || !error.empty())
+    if (!result)
       break;
 
     ++item_index;
   }
 
-  if (errors && !error.empty()) {
-    errors->AddError(policy_name(), error_path, error);
+  if (errors && !result) {
+    errors->AddError(policy_name(), error_message_id, error_path);
   }
 
   return result;

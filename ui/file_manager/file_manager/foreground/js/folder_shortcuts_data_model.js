@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {NativeEventTarget as EventTarget} from 'chrome://resources/js/cr/event_target.m.js';
+import {NativeEventTarget as EventTarget} from 'chrome://resources/js/cr/event_target.js';
 
 import {getPreferences} from '../../common/js/api.js';
 import {AsyncUtil} from '../../common/js/async_util.js';
@@ -239,23 +239,6 @@ export class FolderShortcutsDataModel extends EventTarget {
    * @private
    */
   async getPersistedShortcutPaths_() {
-    if (!window.isSWA) {
-      // Migration code works for non SWA.
-      const legacyPaths = await this.getPersistedShortcutPathsLegacy_();
-      if (legacyPaths.length) {
-        // Migrate to prefs. The onPreferencesChanged listener will make the
-        // value to be reloaded from prefs.
-        chrome.fileManagerPrivate.setPreferences(
-            {folderShortcuts: legacyPaths});
-
-        // Remove from legacy storage: xfm.storage.sync.
-        const prefs = {};
-        prefs[FolderShortcutsDataModel.NAME] = [];
-        xfm.storage.sync.setAsync(prefs);
-        return legacyPaths;
-      }
-    }
-
     const prefs = await getPreferences();
     if (prefs.folderShortcuts && prefs.folderShortcuts.length) {
       return prefs.folderShortcuts;

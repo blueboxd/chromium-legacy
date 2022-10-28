@@ -454,6 +454,7 @@ Jika Anda menghapus histori penjelajahan, baik semua histori maupun histori untu
 <translation id="3435465986463792564">Membuka banyak jendela Chrome? Anda dapat mengelolanya dari sini</translation>
 <translation id="3443221991560634068">Memuat ulang halaman saat ini</translation>
 <translation id="3444179773590444986">Bagikan masukan terkait tema gelap untuk situs?</translation>
+<translation id="3452832259067974318">Untuk melindungi privasi Anda, Chrome tidak akan mengisi otomatis sandi Anda di kolom ini.</translation>
 <translation id="3469665409713263828">{FILE_COUNT,plural, =1{1 download dijadwalkan}other{# download dijadwalkan}}</translation>
 <translation id="3474624961160222204">Lanjutkan sebagai <ph name="NAME" /></translation>
 <translation id="3478363558367712427">Anda dapat memilih mesin telusur Anda</translation>
@@ -679,6 +680,7 @@ Akun Google Anda mungkin memiliki bentuk histori penjelajahan lain seperti penel
 <translation id="4763480195061959176">video</translation>
 <translation id="4766313118839197559">Sandi disimpan ke Pengelola Sandi di perangkat ini</translation>
 <translation id="4766678251456904326">Tambahkan akun ke perangkat</translation>
+<translation id="4787736314074622408">Ingin menghapus <ph name="ITEM_TITLE" />?</translation>
 <translation id="4791358705705538979">Membantu Anda menyelesaikan tugas, seperti checkout, di seluruh web</translation>
 <translation id="4794291718671962615">(<ph name="MEGABYTES" />) <ph name="URL" /></translation>
 <translation id="4802417911091824046">Enkripsi frasa sandi tidak mencakup alamat dan metode pembayaran dari Google Pay.
@@ -748,6 +750,7 @@ Untuk mengubah setelan ini, <ph name="BEGIN_LINK" />reset sinkronisasi<ph name="
 <translation id="5091199029769593641">Sebentar lagi, Anda akan melihat cerita dari <ph name="SITE_NAME" /> saat membuka tab baru. Situs yang Anda ikuti akan disimpan di Akun Google Anda. Anda dapat mengelolanya di setelan Discover.</translation>
 <translation id="5091249083535528968">Data penggunaan yang diperluas</translation>
 <translation id="509429900233858213">Terjadi error.</translation>
+<translation id="5099845111805573968">Sekali Anda memilih situs desktop, setelan ini akan diterapkan setiap kali Anda membuka situs</translation>
 <translation id="5102401324271069229">Jika situs berusaha mencuri sandi Anda, atau jika Anda mendownload file berbahaya, Chrome dapat mengirimkan URL, termasuk bit konten halaman, ke Safe Browsing</translation>
 <translation id="510275257476243843">1 jam lagi</translation>
 <translation id="5115811374190515607">ke <ph name="PRODUCT_NAME" /></translation>
@@ -907,6 +910,7 @@ Untuk mengubah setelan ini, <ph name="BEGIN_LINK" />reset sinkronisasi<ph name="
 <translation id="5958275228015807058">Temukan file dan halaman di Download</translation>
 <translation id="5962718611393537961">Ketuk untuk menciutkan</translation>
 <translation id="5964869237734432770">Hentikan deskripsi gambar</translation>
+<translation id="5966233851250124270">Chrome akan mengingat pilihan Anda</translation>
 <translation id="5979084224081478209">Periksa sandi</translation>
 <translation id="5995726099713306770">Download halaman lagi?</translation>
 <translation id="6000066717592683814">Tetap menggunakan Google</translation>
@@ -1083,6 +1087,7 @@ Trust token meningkatkan privasi di web dan tidak dapat digunakan untuk menemuka
 <translation id="6820686453637990663">CVC</translation>
 <translation id="6824899148643461612">Tab <ph name="TAB_TITLE" /> dipilih</translation>
 <translation id="6828070228333235514">Berhenti memantau harga</translation>
+<translation id="6830728435402077660">Tidak aman</translation>
 <translation id="6833996806551876956">Uji coba Privacy Sandbox</translation>
 <translation id="6836206421467243968">Pulihkan grup tab <ph name="TITLE_OF_GROUP" /> sebagai grup tab latar belakang baru.</translation>
 <translation id="6846298663435243399">Memuat...</translation>

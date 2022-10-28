@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -39,12 +39,17 @@ absl::optional<bool> IsShortcutPinnedToTaskbar(const base::FilePath& shortcut);
 // registry key to record when the installer pins a shortcut to Chrome
 // on the taskbar, on a fresh install. This is on a per-user basis, so for a
 // system level install, each user who runs Chrome for the first time will have
-// this set. The value is deleted if Chrome detects that the user has unpinned
-// Chrome from the taskbar.
+// this set. The value is set to false if Chrome detects that the user has
+// unpinned Chrome from the taskbar.
 // Returns true if registry key operation was successful, false otherwise.
 bool SetInstallerPinnedChromeToTaskbar(bool installed);
 
-// Returns whether the current user has an installer-pinned shortcut to Chrome.
-bool GetInstallerPinnedChromeToTaskbar();
+// Returns true if the current user has a Win10+ installer-pinned shortcut to
+// Chrome, false if the user doesn't and the installer at the time of the
+// install pinned some percentage of installs to the taskbar, and absl::nullopt
+// if the Chrome install was done before the installer pinned Chrome to the
+// taskbar for versions of Windows 10+ that support programmatic pinning to the
+// taskbar.
+absl::optional<bool> GetInstallerPinnedChromeToTaskbar();
 
 #endif  // CHROME_INSTALLER_UTIL_TASKBAR_UTIL_H_

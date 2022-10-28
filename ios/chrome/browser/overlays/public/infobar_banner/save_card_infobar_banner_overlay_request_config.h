@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -57,7 +57,7 @@ class SaveCardBannerRequestConfig
 
   // The InfoBar causing this banner.
   infobars::InfoBar* infobar_ = nullptr;
-  // Configuration data extracted from |infobar_|'s save card delegate.
+  // Configuration data extracted from `infobar_`'s save card delegate.
   std::u16string message_text_;
   std::u16string card_label_;
   std::u16string cardholder_name_;

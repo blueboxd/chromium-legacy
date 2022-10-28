@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -14,11 +14,9 @@
 class TouchToFillWebAuthnCredential {
  public:
   using Username = base::StrongAlias<struct UsernameTag, std::u16string>;
-  using DisplayName = base::StrongAlias<struct DisplayNameTag, std::u16string>;
   using BackendId = base::StrongAlias<struct BackendIdTag, std::string>;
 
   TouchToFillWebAuthnCredential(const Username& username,
-                                const DisplayName& display_name,
                                 const BackendId& backend_id);
   ~TouchToFillWebAuthnCredential();
 
@@ -31,13 +29,10 @@ class TouchToFillWebAuthnCredential {
 
   const Username& username() const { return username_; }
 
-  const DisplayName& display_name() const { return display_name_; }
-
   const BackendId& id() const { return backend_id_; }
 
  private:
   Username username_;
-  DisplayName display_name_;
   BackendId backend_id_;
 };
 

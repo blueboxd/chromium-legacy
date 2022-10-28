@@ -1,5 +1,4 @@
-
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -42,8 +41,7 @@ void MockInputMethodEngine::SetSurroundingText(const std::u16string& text,
 void MockInputMethodEngine::SetCompositionBounds(
     const std::vector<gfx::Rect>& bounds) {}
 
-void MockInputMethodEngine::SetCaretBounds(
-    const gfx::Rect& caret_bounds) {}
+void MockInputMethodEngine::SetCaretBounds(const gfx::Rect& caret_bounds) {}
 
 ui::VirtualKeyboardController*
 MockInputMethodEngine::GetVirtualKeyboardController() const {

@@ -1,4 +1,4 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -129,7 +129,7 @@ bool ChromeOmniboxClient::IsPasteAndGoEnabled() const {
 }
 
 bool ChromeOmniboxClient::IsDefaultSearchProviderEnabled() const {
-  const base::Value::Dict& url_dict = profile_->GetPrefs()->GetValueDict(
+  const base::Value::Dict& url_dict = profile_->GetPrefs()->GetDict(
       DefaultSearchManager::kDefaultSearchProviderDataPrefName);
   return !url_dict.FindBool(DefaultSearchManager::kDisabledByPolicy)
               .value_or(false);

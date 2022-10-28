@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,14 +6,14 @@ import './help_resources_icons.js';
 import './strings.m.js';
 import '//resources/polymer/v3_0/iron-icon/iron-icon.js';
 import '//resources/polymer/v3_0/iron-media-query/iron-media-query.js';
-import '//resources/cr_elements/cr_icons_css.m.js';
-import '//resources/cr_elements/hidden_style_css.m.js';
-import '//resources/cr_elements/icons.m.js';
-import '//resources/cr_elements/policy/cr_tooltip_icon.m.js';
-import '//resources/cr_elements/shared_vars_css.m.js';
+import '//resources/cr_elements/cr_icons.css.js';
+import '//resources/cr_elements/cr_hidden_style.css.js';
+import '//resources/cr_elements/icons.html.js';
+import '//resources/cr_elements/policy/cr_tooltip_icon.js';
+import '//resources/cr_elements/cr_shared_vars.css.js';
 
 import {mojoString16ToString} from '//resources/ash/common/mojo_utils.js';
-import {I18nBehavior, I18nBehaviorInterface} from '//resources/js/i18n_behavior.m.js';
+import {I18nBehavior, I18nBehaviorInterface} from '//resources/cr_elements/i18n_behavior.js';
 import {html, mixinBehaviors, PolymerElement} from '//resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {HelpContent, HelpContentList, HelpContentType, SearchResult} from './feedback_types.js';

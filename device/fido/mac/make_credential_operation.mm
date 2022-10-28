@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,6 +9,7 @@
 #import <Foundation/Foundation.h>
 
 #include "base/bind.h"
+#include "base/containers/contains.h"
 #include "base/mac/foundation_util.h"
 #include "base/mac/mac_logging.h"
 #include "base/mac/scoped_cftyperef.h"
@@ -45,14 +46,10 @@ MakeCredentialOperation::~MakeCredentialOperation() = default;
 void MakeCredentialOperation::Run() {
   // Verify pubKeyCredParams contains ES-256, which is the only algorithm we
   // support.
-  const auto is_es256 =
-      [](const PublicKeyCredentialParams::CredentialInfo& cred_info) {
-        return cred_info.algorithm ==
-               static_cast<int>(CoseAlgorithmIdentifier::kEs256);
-      };
-  const std::vector<PublicKeyCredentialParams::CredentialInfo>& key_params =
-      request_.public_key_credential_params.public_key_credential_params();
-  if (!std::any_of(key_params.begin(), key_params.end(), is_es256)) {
+  if (!base::Contains(
+          request_.public_key_credential_params.public_key_credential_params(),
+          static_cast<int>(CoseAlgorithmIdentifier::kEs256),
+          &PublicKeyCredentialParams::CredentialInfo::algorithm)) {
     DVLOG(1) << "No supported algorithm found.";
     std::move(callback_).Run(
         CtapDeviceResponseCode::kCtap2ErrUnsupportedAlgorithm, absl::nullopt);

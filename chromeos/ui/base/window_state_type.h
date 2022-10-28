@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -76,6 +76,10 @@ bool IsMinimizedWindowStateType(WindowStateType type);
 // Returns true if |type| is either NORMAL or DEFAULT.
 COMPONENT_EXPORT(CHROMEOS_UI_BASE)
 bool IsNormalWindowStateType(WindowStateType type);
+
+// Returns true if `type` is either kPrimarySnapped or kSecondarySnapped.
+COMPONENT_EXPORT(CHROMEOS_UI_BASE)
+bool IsSnappedWindowStateType(WindowStateType type);
 
 }  // namespace chromeos
 

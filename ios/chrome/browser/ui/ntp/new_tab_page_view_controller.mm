@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -17,9 +17,10 @@
 #import "ios/chrome/browser/ui/content_suggestions/ntp_home_constant.h"
 #import "ios/chrome/browser/ui/gestures/view_revealing_vertical_pan_handler.h"
 #import "ios/chrome/browser/ui/ntp/feed_header_view_controller.h"
-#import "ios/chrome/browser/ui/ntp/feed_metrics_recorder.h"
 #import "ios/chrome/browser/ui/ntp/feed_top_section/feed_top_section_view_controller.h"
 #import "ios/chrome/browser/ui/ntp/feed_wrapper_view_controller.h"
+#import "ios/chrome/browser/ui/ntp/metrics/feed_metrics_constants.h"
+#import "ios/chrome/browser/ui/ntp/metrics/feed_metrics_recorder.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_constants.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_content_delegate.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_feature.h"
@@ -32,7 +33,7 @@
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
 #import "ios/chrome/common/ui/elements/gradient_view.h"
 #import "ios/chrome/common/ui/util/constraints_ui_util.h"
-#include "ui/base/device_form_factor.h"
+#import "ui/base/device_form_factor.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -364,11 +365,9 @@
   [self.overscrollActionsController invalidate];
   [self configureOverscrollActionsController];
 
-  // If viewDidAppear, then we are just changing the NTP collection view. In
-  // that case, we apply the constraints here.
-  if (self.viewDidAppear) {
-    [self applyCollectionViewConstraints];
-  }
+  // Update NTP collection view constraints to ensure the layout adapts to
+  // changes in feed visibility.
+  [self applyCollectionViewConstraints];
 
   // If the feed is not visible, we control the delegate ourself (since it is
   // otherwise controlled by the feed service). The view is also layed out
@@ -1202,7 +1201,7 @@
 // Sets the y content offset of the NTP collection view.
 - (void)setContentOffset:(CGFloat)offset {
   self.collectionView.contentOffset = CGPointMake(0, offset);
-  self.scrolledIntoFeed = offset >= -[self offsetWhenScrolledIntoFeed];
+  self.scrolledIntoFeed = offset > [self offsetWhenScrolledIntoFeed];
   if (self.feedHeaderViewController) {
     [self.feedHeaderViewController toggleBackgroundBlur:self.scrolledIntoFeed
                                                animated:NO];

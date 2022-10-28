@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -64,15 +64,10 @@ int ShellFileSystemDelegate::GetDescriptionIdForAcceptType(
 }
 
 #if BUILDFLAG(IS_CHROMEOS)
-bool ShellFileSystemDelegate::IsGrantable(
-    content::BrowserContext* browser_context,
-    const Extension& extension) {
-  return false;
-}
-
 void ShellFileSystemDelegate::RequestFileSystem(
     content::BrowserContext* browser_context,
     scoped_refptr<ExtensionFunction> requester,
+    ConsentProvider* consent_provider,
     const Extension& extension,
     std::string volume_id,
     bool writable,

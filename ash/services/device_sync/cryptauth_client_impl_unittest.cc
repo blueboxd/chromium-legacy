@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -84,7 +84,7 @@ class MockCryptAuthApiCallFlow : public CryptAuthApiCallFlow {
   MockCryptAuthApiCallFlow(const MockCryptAuthApiCallFlow&) = delete;
   MockCryptAuthApiCallFlow& operator=(const MockCryptAuthApiCallFlow&) = delete;
 
-  virtual ~MockCryptAuthApiCallFlow() {}
+  ~MockCryptAuthApiCallFlow() override {}
 
   void StartPostRequest(
       const GURL& request_url,

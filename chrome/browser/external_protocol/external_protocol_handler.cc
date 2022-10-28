@@ -1,19 +1,20 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome/browser/external_protocol/external_protocol_handler.h"
 
 #include <stddef.h>
+
 #include <utility>
 
 #include "base/bind.h"
 #include "base/check_op.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/notreached.h"
-#include "base/stl_util.h"
 #include "base/strings/escape.h"
 #include "base/strings/string_util.h"
+#include "base/types/optional_util.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/external_protocol/auto_launch_protocols_policy_handler.h"
@@ -261,7 +262,7 @@ bool IsSchemeOriginPairAllowedByPolicy(const std::string& scheme,
     return false;
 
   const base::Value::List& exempted_protocols =
-      prefs->GetValueList(prefs::kAutoLaunchProtocolsFromOrigins);
+      prefs->GetList(prefs::kAutoLaunchProtocolsFromOrigins);
 
   const base::Value::List* origin_patterns = nullptr;
   for (const base::Value& entry : exempted_protocols) {
@@ -343,7 +344,7 @@ ExternalProtocolHandler::BlockState ExternalProtocolHandler::GetBlockState(
     if (MayRememberAllowDecisionsForThisOrigin(initiating_origin)) {
       // Check if there is a matching {Origin+Protocol} pair exemption:
       const base::Value::Dict& allowed_origin_protocol_pairs =
-          profile_prefs->GetValueDict(
+          profile_prefs->GetDict(
               prefs::kProtocolHandlerPerOriginAllowedProtocols);
       const base::Value::Dict* allowed_protocols_for_origin =
           allowed_origin_protocol_pairs.FindDict(
@@ -439,7 +440,7 @@ void ExternalProtocolHandler::LaunchUrl(
   if (web_contents)  // Maybe NULL during testing.
     profile = Profile::FromBrowserContext(web_contents->GetBrowserContext());
   BlockState block_state = GetBlockStateWithDelegate(
-      escaped_url.scheme(), base::OptionalOrNullptr(initiating_origin),
+      escaped_url.scheme(), base::OptionalToPtr(initiating_origin),
       g_external_protocol_handler_delegate, profile);
   if (block_state == BLOCK) {
     AddMessageToConsole(

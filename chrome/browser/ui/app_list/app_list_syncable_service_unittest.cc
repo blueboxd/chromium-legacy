@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -1688,7 +1688,7 @@ TEST_F(AppListSyncableServiceTest, EphemeralAppsNotSynced) {
 
   // Ephemeral sync items are not added to the local storage.
   const base::Value::Dict& local_items =
-      profile_->GetPrefs()->GetValueDict(prefs::kAppListLocalState);
+      profile_->GetPrefs()->GetDict(prefs::kAppListLocalState);
 
   const base::Value::Dict* dict_item = local_items.FindDict(ephemeral_app_id);
   EXPECT_FALSE(dict_item);
@@ -1740,7 +1740,7 @@ TEST_F(AppListSyncableServiceTest, EphemeralFoldersNotSynced) {
 
   // Ephemeral sync items are not added to the local storage.
   const base::Value::Dict& local_items =
-      profile_->GetPrefs()->GetValueDict(prefs::kAppListLocalState);
+      profile_->GetPrefs()->GetDict(prefs::kAppListLocalState);
   const base::Value::Dict* dict_item =
       local_items.FindDict(ephemeral_folder_id);
   EXPECT_FALSE(dict_item);

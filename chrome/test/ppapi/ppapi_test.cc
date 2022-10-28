@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -124,7 +124,7 @@ void PPAPITestBase::InfoBarObserver::VerifyInfoBarState() {
   infobars::InfoBar* infobar = infobar_manager->infobar_at(0);
   ConfirmInfoBarDelegate* delegate =
       infobar->delegate()->AsConfirmInfoBarDelegate();
-  ASSERT_TRUE(delegate != NULL);
+  ASSERT_TRUE(delegate != nullptr);
   if (should_accept_)
     delegate->Accept();
   else

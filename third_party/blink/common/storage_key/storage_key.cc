@@ -13,9 +13,9 @@
 
 #include "base/feature_list.h"
 #include "base/ranges/algorithm.h"
-#include "base/stl_util.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/types/optional_util.h"
 #include "net/base/features.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "url/gurl.h"
@@ -87,12 +87,12 @@ absl::optional<StorageKey> StorageKey::Deserialize(base::StringPiece in) {
     return absl::nullopt;
 
   // Otherwise the key is partitioned, let's see what it's partitioned by.
-  absl::optional<EncodedAttribute> encoded_attribute =
+  absl::optional<EncodedAttribute> first_attribute =
       DeserializeAttributeSeparator(in.substr(pos_first_caret, 2));
-  if (!encoded_attribute.has_value())
+  if (!first_attribute.has_value())
     return absl::nullopt;
 
-  switch (encoded_attribute.value()) {
+  switch (first_attribute.value()) {
     case EncodedAttribute::kTopLevelSite: {
       // A top-level site is serialized.
 
@@ -113,10 +113,10 @@ absl::optional<StorageKey> StorageKey::Deserialize(base::StringPiece in) {
           !ValidSeparatorWithData(in, pos_last_caret))
         return absl::nullopt;
 
-      absl::optional<EncodedAttribute> encoded_attribute =
+      absl::optional<EncodedAttribute> last_attribute =
           DeserializeAttributeSeparator(in.substr(pos_last_caret, 2));
-      if (!encoded_attribute.has_value() ||
-          encoded_attribute.value() != EncodedAttribute::kAncestorChainBit)
+      if (!last_attribute.has_value() ||
+          last_attribute.value() != EncodedAttribute::kAncestorChainBit)
         return absl::nullopt;
 
       // The ancestor_chain_bit is the portion beyond the last separator.
@@ -157,10 +157,10 @@ absl::optional<StorageKey> StorageKey::Deserialize(base::StringPiece in) {
           !ValidSeparatorWithData(in, pos_second_caret))
         return absl::nullopt;
 
-      absl::optional<EncodedAttribute> encoded_attribute =
+      absl::optional<EncodedAttribute> second_attribute =
           DeserializeAttributeSeparator(in.substr(pos_second_caret, 2));
-      if (!encoded_attribute.has_value() ||
-          encoded_attribute.value() != EncodedAttribute::kNonceLow)
+      if (!second_attribute.has_value() ||
+          second_attribute.value() != EncodedAttribute::kNonceLow)
         return absl::nullopt;
 
       // The origin is the portion up to, but not including, the first
@@ -209,6 +209,21 @@ StorageKey StorageKey::CreateFromStringForTesting(const std::string& origin) {
 }
 
 // static
+StorageKey StorageKey::CreateForTesting(const url::Origin& origin,
+                                        const url::Origin& top_level_site) {
+  return StorageKey(origin, net::SchemefulSite(top_level_site), nullptr,
+                    blink::mojom::AncestorChainBit::kSameSite);
+}
+
+// static
+StorageKey StorageKey::CreateForTesting(
+    const url::Origin& origin,
+    const net::SchemefulSite& top_level_site) {
+  return StorageKey(origin, top_level_site, nullptr,
+                    blink::mojom::AncestorChainBit::kSameSite);
+}
+
+// static
 bool StorageKey::IsThirdPartyStoragePartitioningEnabled() {
   return base::FeatureList::IsEnabled(
       net::features::kThirdPartyStoragePartitioning);
@@ -240,10 +255,16 @@ StorageKey StorageKey::CreateFromOriginAndIsolationInfo(
     const net::IsolationInfo& isolation_info) {
   return CreateWithOptionalNonce(
       origin, net::SchemefulSite(isolation_info.top_frame_origin().value()),
-      base::OptionalOrNullptr(isolation_info.nonce()),
+      base::OptionalToPtr(isolation_info.nonce()),
       isolation_info.site_for_cookies().IsNull()
           ? blink::mojom::AncestorChainBit::kCrossSite
           : blink::mojom::AncestorChainBit::kSameSite);
+}
+
+StorageKey StorageKey::WithOrigin(const url::Origin& origin) const {
+  return CreateWithOptionalNonce(origin, top_level_site_,
+                                 base::OptionalToPtr(nonce_),
+                                 ancestor_chain_bit_);
 }
 
 std::string StorageKey::Serialize() const {
@@ -297,12 +318,9 @@ std::string StorageKey::SerializeForLocalStorage() const {
   DCHECK(!origin_.opaque());
 
   // If this is a third-party StorageKey we'll use the standard serialization
-  // scheme.
-  if (nonce_.has_value())
-    return Serialize();
-
-  if (IsThirdPartyStoragePartitioningEnabled() &&
-      top_level_site_ != net::SchemefulSite(origin_)) {
+  // scheme when partitioning is enabled or if there is a nonce.
+  if (nonce_.has_value() ||
+      (IsThirdPartyContext() && IsThirdPartyStoragePartitioningEnabled())) {
     return Serialize();
   }
 
@@ -415,6 +433,12 @@ bool StorageKey::ShouldSkipKeyDueToPartitioning(
   }
   // If otherwise first-party, nonce, or corrupted, don't skip.
   return false;
+}
+
+const absl::optional<net::CookiePartitionKey> StorageKey::ToCookiePartitionKey()
+    const {
+  return net::CookiePartitionKey::FromStorageKeyComponents(top_level_site_,
+                                                           nonce_);
 }
 
 bool operator==(const StorageKey& lhs, const StorageKey& rhs) {

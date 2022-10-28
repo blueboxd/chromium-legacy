@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -124,8 +124,10 @@ WebContentsTaskProvider::WebContentsEntry::~WebContentsEntry() {
 
 void WebContentsTaskProvider::WebContentsEntry::CreateAllTasks() {
   DCHECK(web_contents()->GetPrimaryMainFrame());
-  web_contents()->ForEachRenderFrameHost(base::BindRepeating(
-      &WebContentsEntry::CreateTaskForFrame, base::Unretained(this)));
+  web_contents()->ForEachRenderFrameHost(
+      [this](content::RenderFrameHost* render_frame_host) {
+        CreateTaskForFrame(render_frame_host);
+      });
 }
 
 void WebContentsTaskProvider::WebContentsEntry::ClearAllTasks(
@@ -269,13 +271,15 @@ void WebContentsTaskProvider::WebContentsEntry::DidFinishNavigation(
   // which cannot currently be called inside RenderFrameCreated (due to a DCHECK
   // which doesn't allow the method to be called when the state is
   // 'kSpeculative').
-  auto* rfh = navigation_handle->GetRenderFrameHost();
-  auto* site_instance = rfh->GetSiteInstance();
-  auto it = site_instance_infos_.find(site_instance);
-  if (!navigation_handle->IsSameDocument() &&
-      (it == site_instance_infos_.end() ||
-       it->second.frames.find(rfh) == it->second.frames.end())) {
-    CreateTaskForFrame(rfh);
+  {
+    auto* rfh = navigation_handle->GetRenderFrameHost();
+    auto* site_instance = rfh->GetSiteInstance();
+    auto it = site_instance_infos_.find(site_instance);
+    if (!navigation_handle->IsSameDocument() &&
+        (it == site_instance_infos_.end() ||
+         it->second.frames.find(rfh) == it->second.frames.end())) {
+      CreateTaskForFrame(rfh);
+    }
   }
 
   // Update.
@@ -453,7 +457,7 @@ void WebContentsTaskProvider::WebContentsEntry::ClearTaskForFrame(
   // asynchronously after the main frame is deleted.
 
   bool only_bfcache_or_prerender_rfhs = true;
-  for (auto& [site_instance, site_instance_info] : site_instance_infos_) {
+  for (auto& [ignore, site_instance_info] : site_instance_infos_) {
     for (auto* rfh : site_instance_info.frames) {
       const auto state = rfh->GetLifecycleState();
       if (state != RenderFrameHost::LifecycleState::kInBackForwardCache &&
@@ -470,15 +474,12 @@ void WebContentsTaskProvider::WebContentsEntry::ClearTaskForFrame(
 
 void WebContentsTaskProvider::WebContentsEntry::ClearTasksForDescendantsOf(
     RenderFrameHost* ancestor) {
-  ancestor->ForEachRenderFrameHost(base::BindRepeating(
-      [](WebContentsTaskProvider::WebContentsEntry* provider,
-         content::RenderFrameHost* ancestor,
-         content::RenderFrameHost* render_frame_host) {
+  ancestor->ForEachRenderFrameHost(
+      [this, ancestor](content::RenderFrameHost* render_frame_host) {
         if (render_frame_host == ancestor)
           return;
-        provider->ClearTaskForFrame(render_frame_host);
-      },
-      this, ancestor));
+        ClearTaskForFrame(render_frame_host);
+      });
 }
 
 ////////////////////////////////////////////////////////////////////////////////

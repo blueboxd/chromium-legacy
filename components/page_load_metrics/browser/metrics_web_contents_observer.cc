@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -1098,9 +1098,12 @@ void MetricsWebContentsObserver::SetUpSharedMemoryForSmoothness(
     base::ReadOnlySharedMemoryRegion shared_memory) {
   content::RenderFrameHost* render_frame_host =
       page_load_metrics_receivers_.GetCurrentTargetFrame();
-  const bool is_main_frame = render_frame_host->GetParent() == nullptr;
-  if (!is_main_frame) {
-    // TODO(1115136): Merge smoothness metrics from OOPIFs with the main-frame.
+  const bool is_outermost_main_frame =
+      render_frame_host->GetParentOrOuterDocument() == nullptr;
+  if (!is_outermost_main_frame) {
+    // TODO(https://crbug.com/1115136): Merge smoothness metrics from OOPIFs and
+    // FencedFrames with the main-frame. Also need to check if FencedFrames
+    // send this request correctly.
     return;
   }
 
@@ -1204,6 +1207,15 @@ void MetricsWebContentsObserver::OnV8MemoryChanged(
 
   for (const auto& map_pair : per_tracker_updates)
     map_pair.first->OnV8MemoryChanged(map_pair.second);
+}
+
+void MetricsWebContentsObserver::OnSharedStorageWorkletHostCreated(
+    content::RenderFrameHost* rfh) {
+  if (!rfh)
+    return;
+
+  if (PageLoadTracker* tracker = GetPageLoadTracker(rfh))
+    tracker->OnSharedStorageWorkletHostCreated();
 }
 
 // This contains some bugs. RenderFrameHost::IsActive is not relevant to

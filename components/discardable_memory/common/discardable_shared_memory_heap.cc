@@ -1,10 +1,9 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "components/discardable_memory/common/discardable_shared_memory_heap.h"
 
-#include <algorithm>
 #include <memory>
 #include <string>
 #include <utility>
@@ -17,6 +16,7 @@
 #include "base/memory/page_size.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/ranges/algorithm.h"
 #include "base/strings/stringprintf.h"
 #include "base/trace_event/memory_dump_manager.h"
 
@@ -391,10 +391,11 @@ bool DiscardableSharedMemoryHeap::OnMemoryDump(
     // This iterates over all the memory allocated by the heap, and calls
     // |OnMemoryDump| for each. It does not contain any information about the
     // DiscardableSharedMemoryHeap itself.
-    std::for_each(memory_segments_.begin(), memory_segments_.end(),
-                  [pmd](const std::unique_ptr<ScopedMemorySegment>& segment) {
-                    segment->OnMemoryDump(pmd);
-                  });
+    base::ranges::for_each(
+        memory_segments_,
+        [pmd](const std::unique_ptr<ScopedMemorySegment>& segment) {
+          segment->OnMemoryDump(pmd);
+        });
   }
 
   return true;
@@ -570,11 +571,11 @@ DiscardableSharedMemoryHeap::CreateMemoryAllocatorDump(
     return dump;
   }
 
-  auto it =
-      std::find_if(memory_segments_.begin(), memory_segments_.end(),
-                   [span](const std::unique_ptr<ScopedMemorySegment>& segment) {
-                     return segment->ContainsSpan(span);
-                   });
+  auto it = base::ranges::find_if(
+      memory_segments_,
+      [span](const std::unique_ptr<ScopedMemorySegment>& segment) {
+        return segment->ContainsSpan(span);
+      });
   DCHECK(it != memory_segments_.end());
   return (*it)->CreateMemoryAllocatorDump(span, block_size_, name, pmd);
 }

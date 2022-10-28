@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -71,7 +71,7 @@ class VIZ_SERVICE_EXPORT DCLayerOverlay {
 
   gfx::HDRMetadata hdr_metadata;
 
-  bool is_video_fullscreen_mode;
+  bool is_video_fullscreen_letterboxing;
 };
 
 typedef std::vector<DCLayerOverlay> DCLayerOverlayList;
@@ -103,7 +103,7 @@ class VIZ_SERVICE_EXPORT DCLayerOverlayProcessor final
                        SurfaceDamageRectList surface_damage_rect_list,
                        DCLayerOverlayList* dc_layer_overlays,
                        bool is_video_capture_enabled,
-                       bool is_video_fullscreen_mode);
+                       bool is_page_fullscreen_mode);
   void ClearOverlayState();
   // This is the damage contribution due to previous frame's overlays which can
   // be empty.
@@ -134,7 +134,7 @@ class VIZ_SERVICE_EXPORT DCLayerOverlayProcessor final
                              size_t* new_index,
                              gfx::Rect* damage_rect,
                              DCLayerOverlayList* dc_layer_overlays,
-                             bool is_video_fullscreen_mode);
+                             bool is_page_fullscreen_mode);
 
   // Returns an iterator to the element after |it|.
   QuadList::Iterator ProcessForOverlay(const gfx::RectF& display_rect,

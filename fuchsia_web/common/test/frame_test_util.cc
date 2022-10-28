@@ -1,9 +1,13 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "fuchsia_web/common/test/frame_test_util.h"
 
+#include <utility>
+#include <vector>
+
+#include "base/check.h"
 #include "base/fuchsia/mem_buffer_util.h"
 #include "base/json/json_reader.h"
 #include "base/run_loop.h"
@@ -11,6 +15,7 @@
 #include "base/test/test_future.h"
 #include "fuchsia_web/common/test/fit_adapter.h"
 #include "fuchsia_web/common/test/test_navigation_listener.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 bool LoadUrlAndExpectResponse(
     fuchsia::web::NavigationController* navigation_controller,

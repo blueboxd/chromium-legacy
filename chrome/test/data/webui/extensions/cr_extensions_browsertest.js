@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,8 +13,6 @@ GEN('#include "chrome/browser/ui/webui/extensions/' +
 GEN('#include "chrome/browser/ui/ui_features.h"');
 GEN('#include "content/public/test/browser_test.h"');
 GEN('#include "build/chromeos_buildflags.h"');
-
-/* eslint-disable no-var */
 
 /**
  * Basic test fixture for the MD chrome://extensions page. Installs no
@@ -305,6 +303,11 @@ TEST_F(
 TEST_F('CrExtensionsDetailViewTest', 'InspectableViewSortOrder', function() {
   this.runMochaTest(
       extension_detail_view_tests.TestNames.InspectableViewSortOrder);
+});
+
+TEST_F('CrExtensionsDetailViewTest', 'ShowAccessRequestsInToolbar', function() {
+  this.runMochaTest(
+      extension_detail_view_tests.TestNames.ShowAccessRequestsInToolbar);
 });
 
 ////////////////////////////////////////////////////////////////////////////////

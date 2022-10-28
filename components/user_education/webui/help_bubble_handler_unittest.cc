@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,6 +12,7 @@
 #include "components/user_education/webui/help_bubble_handler.h"
 #include "components/user_education/webui/help_bubble_webui.h"
 #include "components/user_education/webui/tracked_element_webui.h"
+#include "components/vector_icons/vector_icons.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/interaction/element_identifier.h"
@@ -89,6 +90,10 @@ class TestHelpBubbleHandler : public HelpBubbleHandlerBase {
 MATCHER_P(MatchesHelpBubbleParams, expected, "") {
   EXPECT_EQ(expected->body_text, arg->body_text);
   EXPECT_EQ(expected->close_button_alt_text, arg->close_button_alt_text);
+  EXPECT_EQ(expected->force_close_button, arg->force_close_button);
+  EXPECT_EQ(expected->timeout, arg->timeout);
+  EXPECT_EQ(expected->body_icon_name, arg->body_icon_name);
+  EXPECT_EQ(expected->body_icon_alt_text, arg->body_icon_alt_text);
   EXPECT_EQ(expected->native_identifier, arg->native_identifier);
   EXPECT_EQ(expected->position, arg->position);
   EXPECT_EQ(expected->title_text, arg->title_text);
@@ -215,6 +220,8 @@ TEST_F(HelpBubbleHandlerTest, ShowHelpBubble) {
   HelpBubbleParams params;
   params.body_text = u"Help bubble body.";
   params.close_button_alt_text = u"Close button alt text.";
+  params.body_icon = &vector_icons::kCelebrationIcon;
+  params.body_icon_alt_text = u"Celebration";
   params.arrow = HelpBubbleArrow::kTopCenter;
 
   // Check the parameters passed to the ShowHelpBubble mojo method.
@@ -224,7 +231,10 @@ TEST_F(HelpBubbleHandlerTest, ShowHelpBubble) {
   expected->body_text = base::UTF16ToUTF8(params.body_text);
   expected->close_button_alt_text =
       base::UTF16ToUTF8(params.close_button_alt_text);
-  expected->position = help_bubble::mojom::HelpBubblePosition::BELOW;
+  expected->body_icon_name = "celebration";
+  expected->body_icon_alt_text = "Celebration";
+  expected->position = help_bubble::mojom::HelpBubbleArrowPosition::TOP_CENTER;
+  expected->timeout = base::Seconds(10);
 
   EXPECT_CALL(test_handler_->mock(),
               ShowHelpBubble(MatchesHelpBubbleParams(expected.get())));
@@ -254,6 +264,9 @@ TEST_F(HelpBubbleHandlerTest, ShowHelpBubbleWithButtonsAndProgress) {
   HelpBubbleParams params;
   params.body_text = u"Help bubble body.";
   params.close_button_alt_text = u"Close button alt text.";
+  params.force_close_button = true;
+  params.body_icon = &vector_icons::kLightbulbOutlineIcon;
+  params.body_icon_alt_text = u"Body icon alt text.";
   params.arrow = HelpBubbleArrow::kTopCenter;
   params.progress = std::make_pair(1, 3);
 
@@ -269,7 +282,10 @@ TEST_F(HelpBubbleHandlerTest, ShowHelpBubbleWithButtonsAndProgress) {
   expected->body_text = base::UTF16ToUTF8(params.body_text);
   expected->close_button_alt_text =
       base::UTF16ToUTF8(params.close_button_alt_text);
-  expected->position = help_bubble::mojom::HelpBubblePosition::BELOW;
+  expected->force_close_button = true;
+  expected->body_icon_name = "lightbulb_outline";
+  expected->body_icon_alt_text = "Body icon alt text.";
+  expected->position = help_bubble::mojom::HelpBubbleArrowPosition::TOP_CENTER;
 
   auto expected_button = help_bubble::mojom::HelpBubbleButtonParams::New();
   expected_button->text = "button1";
@@ -373,7 +389,8 @@ TEST_F(HelpBubbleHandlerTest, HelpBubbleClosedWhenClosedRemotely) {
   EXPECT_CALL_IN_SCOPE(
       closed, Run,
       handler()->HelpBubbleClosed(
-          kHelpBubbleHandlerTestElementIdentifier.GetName(), false));
+          kHelpBubbleHandlerTestElementIdentifier.GetName(),
+          help_bubble::mojom::HelpBubbleClosedReason::kPageChanged));
   EXPECT_FALSE(help_bubble->is_open());
 }
 
@@ -434,7 +451,8 @@ TEST_F(HelpBubbleHandlerTest, HelpBubbleClosedWhenClosedByUserCallsDismiss) {
   EXPECT_CALL_IN_SCOPE(
       dismissed, Run,
       handler()->HelpBubbleClosed(
-          kHelpBubbleHandlerTestElementIdentifier.GetName(), true));
+          kHelpBubbleHandlerTestElementIdentifier.GetName(),
+          help_bubble::mojom::HelpBubbleClosedReason::kDismissedByUser));
   EXPECT_FALSE(help_bubble->is_open());
 }
 
@@ -554,8 +572,9 @@ TEST_F(HelpBubbleHandlerTest, ShowMultipleBubblesAndCloseOneViaCallback) {
   EXPECT_TRUE(help_bubble2->is_open());
 
   // Close one bubble without closing the other.
-  handler()->HelpBubbleClosed(kHelpBubbleHandlerTestElementIdentifier.GetName(),
-                              false);
+  handler()->HelpBubbleClosed(
+      kHelpBubbleHandlerTestElementIdentifier.GetName(),
+      help_bubble::mojom::HelpBubbleClosedReason::kPageChanged);
   EXPECT_FALSE(help_bubble->is_open());
   EXPECT_TRUE(help_bubble2->is_open());
 

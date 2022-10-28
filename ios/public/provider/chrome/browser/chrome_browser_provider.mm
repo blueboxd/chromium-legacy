@@ -1,4 +1,4 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -58,10 +58,6 @@ ChromeIdentityService* ChromeBrowserProvider::GetChromeIdentityService() {
     chrome_identity_service_ = CreateChromeIdentityService();
   }
   return chrome_identity_service_.get();
-}
-
-UserFeedbackProvider* ChromeBrowserProvider::GetUserFeedbackProvider() const {
-  return nullptr;
 }
 
 void ChromeBrowserProvider::AddObserver(Observer* observer) {

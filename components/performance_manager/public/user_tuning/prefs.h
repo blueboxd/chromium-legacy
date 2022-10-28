@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -25,7 +25,14 @@ enum class BatterySaverModeState {
 
 extern const char kBatterySaverModeState[];
 
+// The pref storing the list of URL patterns that prevent a tab from being
+// discarded.
 extern const char kTabDiscardingExceptions[];
+
+// The pref storing the enterprise-managed list of URL patterns that prevent a
+// tab from being discarded. This list is merged with
+// `kTabDiscardingExceptions`.
+extern const char kManagedTabDiscardingExceptions[];
 
 void RegisterLocalStatePrefs(PrefRegistrySimple* registry);
 

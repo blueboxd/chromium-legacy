@@ -496,17 +496,17 @@ void SpellChecker::ReplaceMisspelledRange(const String& text) {
 }
 
 void SpellChecker::RespondToChangedSelection() {
-  idle_spell_check_controller_->SetNeedsInvocation();
+  idle_spell_check_controller_->RespondToChangedSelection();
 }
 
 void SpellChecker::RespondToChangedContents() {
-  idle_spell_check_controller_->SetNeedsInvocation();
+  idle_spell_check_controller_->RespondToChangedContents();
 }
 
 void SpellChecker::RespondToChangedEnablement(const HTMLElement& element,
                                               bool enabled) {
   if (enabled) {
-    idle_spell_check_controller_->SetNeedsInvocation();
+    idle_spell_check_controller_->RespondToChangedEnablement();
   } else {
     RemoveSpellingAndGrammarMarkers(element);
     idle_spell_check_controller_->SetSpellCheckingDisabled(element);
@@ -730,6 +730,10 @@ bool SpellChecker::IsSpellCheckingEnabledAt(const Position& position) {
     return false;
   if (TextControlElement* text_control = EnclosingTextControl(position)) {
     if (auto* input = DynamicTo<HTMLInputElement>(text_control)) {
+      // TODO(tkent): The following password type check should be done in
+      // HTMLElement::spellcheck(). crbug.com/371567
+      if (input->type() == input_type_names::kPassword)
+        return false;
       if (!input->IsFocusedElementInDocument())
         return false;
     }

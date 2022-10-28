@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -315,8 +315,13 @@ class VTVideoDecodeAccelerator : public VideoDecodeAccelerator,
   base::flat_map<int, std::vector<uint8_t>> seen_vps_;
   // VPS most recently activated by an IDR.
   std::vector<uint8_t> active_vps_;
-  // VPS the decoder is currently confgured with.
-  std::vector<uint8_t> configured_vps_;
+
+  // VPSs the decoder is currently confgured with.
+  base::flat_map<int, std::vector<uint8_t>> configured_vpss_;
+  // SPSs the decoder is currently confgured with.
+  base::flat_map<int, std::vector<uint8_t>> configured_spss_;
+  // PPSs the decoder is currently confgured with.
+  base::flat_map<int, std::vector<uint8_t>> configured_ppss_;
 
   H265POC hevc_poc_;
 #endif  // BUILDFLAG(ENABLE_HEVC_PARSER_AND_HW_DECODER)
@@ -329,6 +334,10 @@ class VTVideoDecodeAccelerator : public VideoDecodeAccelerator,
 
   bool waiting_for_idr_ = true;
   bool missing_idr_logged_ = false;
+
+  // currently only HEVC is supported, VideoToolbox doesn't
+  // support VP9 with alpha for now.
+  bool has_alpha_ = false;
 
   // Used to accumulate the output picture count as a workaround to solve
   // the VT CRA/RASL bug

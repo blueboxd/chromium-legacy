@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -182,8 +182,18 @@ class SnoopingProtectionNotificationBlockerTest : public AshTestBase {
  public:
   SnoopingProtectionNotificationBlockerTest()
       : AshTestBase(base::test::TaskEnvironment::TimeSource::MOCK_TIME) {
-    scoped_feature_list_.InitWithFeatures({ash::features::kSnoopingProtection},
-                                          {ash::features::kQuickDim});
+    scoped_feature_list_.InitWithFeaturesAndParameters(
+        {{ash::features::kSnoopingProtection,
+          {
+              {"SnoopingProtection_pos_window_ms", "4000"},
+              {"SnoopingProtection_filter_config_case", "2"},
+              {"SnoopingProtection_positive_count_threshold", "1"},
+              {"SnoopingProtection_negative_count_threshold", "1"},
+              {"SnoopingProtection_uncertain_count_threshold", "1"},
+              {"SnoopingProtection_positive_score_threshold", "0"},
+              {"SnoopingProtection_negative_score_threshold", "0"},
+          }}},
+        {ash::features::kQuickDim});
     scoped_command_line_.GetProcessCommandLine()->AppendSwitch(
         switches::kHasHps);
   }

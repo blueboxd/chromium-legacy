@@ -1,38 +1,28 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome/browser/ash/login/screens/mock_consolidated_consent_screen.h"
 
+#include "base/memory/weak_ptr.h"
+
 namespace ash {
 
 MockConsolidatedConsentScreen::MockConsolidatedConsentScreen(
-    ConsolidatedConsentScreenView* view,
+    base::WeakPtr<ConsolidatedConsentScreenView> view,
     const ScreenExitCallback& exit_callback)
-    : ConsolidatedConsentScreen(view, exit_callback) {}
+    : ConsolidatedConsentScreen(std::move(view), exit_callback) {}
 
-MockConsolidatedConsentScreen::~MockConsolidatedConsentScreen() {}
+MockConsolidatedConsentScreen::~MockConsolidatedConsentScreen() = default;
 
 void MockConsolidatedConsentScreen::ExitScreen(Result result) {
   exit_callback()->Run(result);
 }
 
-MockConsolidatedConsentScreenView::MockConsolidatedConsentScreenView() {}
+MockConsolidatedConsentScreenView::MockConsolidatedConsentScreenView() =
+    default;
 
-MockConsolidatedConsentScreenView::~MockConsolidatedConsentScreenView() {
-  if (screen_)
-    screen_->OnViewDestroyed(this);
-}
-
-void MockConsolidatedConsentScreenView::Bind(
-    ConsolidatedConsentScreen* screen) {
-  screen_ = screen;
-  MockBind(screen);
-}
-
-void MockConsolidatedConsentScreenView::Unbind() {
-  screen_ = nullptr;
-  MockUnbind();
-}
+MockConsolidatedConsentScreenView::~MockConsolidatedConsentScreenView() =
+    default;
 
 }  // namespace ash

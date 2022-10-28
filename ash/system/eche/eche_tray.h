@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -105,7 +105,7 @@ class ASH_EXPORT EcheTray : public TrayBackgroundView,
 
   // KeyboardControllerObserver:
   void OnKeyboardUIDestroyed() override;
-  void OnKeyboardVisibilityChanged(bool visible) override;
+  void OnKeyboardHidden(bool is_temporary_hide) override;
 
   // Sets the url that will be passed to the webview.
   // Setting a new value will cause the current bubble be destroyed.

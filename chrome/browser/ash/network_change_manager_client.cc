@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -28,7 +28,7 @@ NetworkChangeManagerClient::NetworkChangeManagerClient(
   DCHECK(!g_network_change_manager_client);
   g_network_change_manager_client = this;
 
-  PowerManagerClient::Get()->AddObserver(this);
+  chromeos::PowerManagerClient::Get()->AddObserver(this);
 
   network_state_handler_observer_.Observe(
       NetworkHandler::Get()->network_state_handler());
@@ -42,7 +42,7 @@ NetworkChangeManagerClient::NetworkChangeManagerClient(
 }
 
 NetworkChangeManagerClient::~NetworkChangeManagerClient() {
-  PowerManagerClient::Get()->RemoveObserver(this);
+  chromeos::PowerManagerClient::Get()->RemoveObserver(this);
   DCHECK_EQ(g_network_change_manager_client, this);
   g_network_change_manager_client = nullptr;
 }

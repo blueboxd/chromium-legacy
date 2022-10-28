@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -17,6 +17,7 @@ import androidx.annotation.IntDef;
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 
+import org.chromium.base.BuildInfo;
 import org.chromium.base.Callback;
 import org.chromium.base.Log;
 import org.chromium.base.MathUtils;
@@ -132,7 +133,10 @@ public class FullscreenVideoPictureInPictureController {
         mActivityTabProvider = activityTabProvider;
         mFullscreenManager = fullscreenManager;
 
-        mListenForAutoEnterability = Build.VERSION.SDK_INT >= Build.VERSION_CODES.S;
+        // TODO(crbug.com/1345586): This should be Build.VERSION.SDK_INT > Build.VERSION_CODES.S,
+        // rather than checking for T or later.  However, auto-enter seems to be causing a very bad
+        // display issue on S (31 or 32), so turn this off for S.
+        mListenForAutoEnterability = BuildInfo.isAtLeastT();
         if (mListenForAutoEnterability) addObserversIfNeeded();
     }
 

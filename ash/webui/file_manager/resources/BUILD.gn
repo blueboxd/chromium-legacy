@@ -1,4 +1,4 @@
-# Copyright 2020 The Chromium Authors. All rights reserved.
+# Copyright 2020 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -51,15 +51,17 @@ files_app_path =
 js_type_check("closure_compile") {
   deps = [
     ":main_js",
-    "//ui/webui/resources/js:cr",
-    "//ui/webui/resources/js:load_time_data",
+    "//ui/webui/resources/js:cr.m",
+    "//ui/webui/resources/js:load_time_data.m",
   ]
-  closure_flags = default_closure_args + mojom_js_args + [
-                    "js_module_root=" + rebase_path(".", root_build_dir),
-                    "js_module_root=" +
-                        rebase_path(mojom_webui_folder, root_build_dir),
-                    "browser_resolver_prefix_replacements=\"chrome://file-manager/=../../ui/file_manager/file_manager/\"",
-                  ]
+  closure_flags =
+      default_closure_args + mojom_js_args + [
+        "js_module_root=" + rebase_path(".", root_build_dir),
+        "js_module_root=" + rebase_path(mojom_webui_folder, root_build_dir),
+        "browser_resolver_prefix_replacements=\"chrome://file-manager/=" +
+            rebase_path("//ui/file_manager/file_manager/", root_build_dir) +
+            "\"",
+      ]
 }
 
 action("gen_main_html") {
@@ -86,7 +88,6 @@ preprocess_if_expr("preprocess") {
   out_manifest = "$target_gen_dir/manifest_preprocess.json"
 
   in_files = [
-    "init_globals.js",
     "main.js",
     "runtime_loaded_test_util_swa.js",
     "script_loader.js",
@@ -94,7 +95,6 @@ preprocess_if_expr("preprocess") {
   ]
 
   deps = [
-    ":init_globals",
     ":main",
     ":script_loader",
   ]
@@ -142,7 +142,10 @@ optimize_webui("build") {
     "shared.rollup.js",
   ]
 
-  excludes = [ "chrome://resources/mojo/mojo/public/js/bindings.js" ]
+  excludes = [
+    "chrome://resources/js/load_time_data.m.js",
+    "chrome://resources/mojo/mojo/public/js/bindings.js",
+  ]
 
   external_paths = [ "chrome://file-manager|$files_app_path" ]
 
@@ -163,7 +166,10 @@ generate_grd("build_static_grdp") {
 
   input_files_base_dir = rebase_path(".", "//")
 
-  input_files = [ "images/icon192.png" ]
+  input_files = [
+    "images/icon192.png",
+    "init_globals.js",
+  ]
 }
 
 grd_prefix = "file_manager_swa"

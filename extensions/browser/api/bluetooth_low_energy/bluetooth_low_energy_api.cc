@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -145,27 +145,22 @@ void DoWorkCallback(base::OnceCallback<T()> callback) {
   std::move(callback).Run();
 }
 
-std::unique_ptr<device::BluetoothAdvertisement::ManufacturerData>
-CreateManufacturerData(
-    std::vector<apibtle::ManufacturerData>* manufacturer_data) {
-  std::unique_ptr<device::BluetoothAdvertisement::ManufacturerData>
-      created_data(new device::BluetoothAdvertisement::ManufacturerData());
-  for (const auto& it : *manufacturer_data) {
-    std::vector<uint8_t> data(it.data.size());
-    std::copy(it.data.begin(), it.data.end(), data.begin());
-    (*created_data)[it.id] = data;
+device::BluetoothAdvertisement::ManufacturerData CreateManufacturerData(
+    const std::vector<apibtle::ManufacturerData>& manufacturer_data) {
+  device::BluetoothAdvertisement::ManufacturerData created_data;
+  for (const auto& it : manufacturer_data) {
+    std::vector<uint8_t> data(it.data.begin(), it.data.end());
+    created_data[it.id] = std::move(data);
   }
   return created_data;
 }
 
-std::unique_ptr<device::BluetoothAdvertisement::ServiceData> CreateServiceData(
-    std::vector<apibtle::ServiceData>* service_data) {
-  std::unique_ptr<device::BluetoothAdvertisement::ServiceData> created_data(
-      new device::BluetoothAdvertisement::ServiceData());
-  for (const auto& it : *service_data) {
-    std::vector<uint8_t> data(it.data.size());
-    std::copy(it.data.begin(), it.data.end(), data.begin());
-    (*created_data)[it.uuid] = data;
+device::BluetoothAdvertisement::ServiceData CreateServiceData(
+    const std::vector<apibtle::ServiceData>& service_data) {
+  device::BluetoothAdvertisement::ServiceData created_data;
+  for (const auto& it : service_data) {
+    std::vector<uint8_t> data(it.data.begin(), it.data.end());
+    created_data[it.uuid] = std::move(data);
   }
   return created_data;
 }
@@ -512,15 +507,13 @@ void BluetoothLowEnergyGetServiceFunction::DoWork() {
     return;
   }
 
-  apibtle::Service service;
-  BluetoothLowEnergyEventRouter::Status status =
-      event_router->GetService(params_->service_id, &service);
-  if (status != BluetoothLowEnergyEventRouter::kStatusSuccess) {
-    Respond(Error(StatusToString(status)));
+  auto service = event_router->GetService(params_->service_id);
+  if (!service.has_value()) {
+    Respond(Error(StatusToString(service.error())));
     return;
   }
 
-  Respond(ArgumentList(apibtle::GetService::Results::Create(service)));
+  Respond(ArgumentList(apibtle::GetService::Results::Create(*service)));
 }
 
 BluetoothLowEnergyGetServicesFunction::BluetoothLowEnergyGetServicesFunction() {
@@ -545,13 +538,13 @@ void BluetoothLowEnergyGetServicesFunction::DoWork() {
     return;
   }
 
-  BluetoothLowEnergyEventRouter::ServiceList service_list;
-  if (!event_router->GetServices(params_->device_address, &service_list)) {
+  auto service_list = event_router->GetServices(params_->device_address);
+  if (!service_list) {
     Respond(Error(kErrorNotFound));
     return;
   }
 
-  Respond(ArgumentList(apibtle::GetServices::Results::Create(service_list)));
+  Respond(ArgumentList(apibtle::GetServices::Results::Create(*service_list)));
 }
 
 BluetoothLowEnergyGetCharacteristicFunction::
@@ -576,19 +569,17 @@ void BluetoothLowEnergyGetCharacteristicFunction::DoWork() {
     return;
   }
 
-  apibtle::Characteristic characteristic;
-  BluetoothLowEnergyEventRouter::Status status =
-      event_router->GetCharacteristic(extension(), params_->characteristic_id,
-                                      &characteristic);
-  if (status != BluetoothLowEnergyEventRouter::kStatusSuccess) {
-    Respond(Error(StatusToString(status)));
+  auto characteristic =
+      event_router->GetCharacteristic(extension(), params_->characteristic_id);
+  if (!characteristic.has_value()) {
+    Respond(Error(StatusToString(characteristic.error())));
     return;
   }
 
   // Manually construct the result instead of using
   // apibtle::GetCharacteristic::Result::Create as it doesn't convert lists of
   // enums correctly.
-  Respond(WithArguments(apibtle::CharacteristicToValue(&characteristic)));
+  Respond(WithArguments(apibtle::CharacteristicToValue(*characteristic)));
 }
 
 BluetoothLowEnergyGetCharacteristicsFunction::
@@ -613,12 +604,10 @@ void BluetoothLowEnergyGetCharacteristicsFunction::DoWork() {
     return;
   }
 
-  BluetoothLowEnergyEventRouter::CharacteristicList characteristic_list;
-  BluetoothLowEnergyEventRouter::Status status =
-      event_router->GetCharacteristics(extension(), params_->service_id,
-                                       &characteristic_list);
-  if (status != BluetoothLowEnergyEventRouter::kStatusSuccess) {
-    Respond(Error(StatusToString(status)));
+  auto characteristic_list =
+      event_router->GetCharacteristics(extension(), params_->service_id);
+  if (!characteristic_list.has_value()) {
+    Respond(Error(StatusToString(characteristic_list.error())));
     return;
   }
 
@@ -626,8 +615,8 @@ void BluetoothLowEnergyGetCharacteristicsFunction::DoWork() {
   // apibtle::GetCharacteristics::Result::Create as it doesn't convert lists of
   // enums correctly.
   base::Value::List result;
-  for (apibtle::Characteristic& characteristic : characteristic_list)
-    result.Append(apibtle::CharacteristicToValue(&characteristic));
+  for (apibtle::Characteristic& characteristic : *characteristic_list)
+    result.Append(apibtle::CharacteristicToValue(characteristic));
 
   Respond(WithArguments(std::move(result)));
 }
@@ -654,16 +643,14 @@ void BluetoothLowEnergyGetIncludedServicesFunction::DoWork() {
     return;
   }
 
-  BluetoothLowEnergyEventRouter::ServiceList service_list;
-  BluetoothLowEnergyEventRouter::Status status =
-      event_router->GetIncludedServices(params_->service_id, &service_list);
-  if (status != BluetoothLowEnergyEventRouter::kStatusSuccess) {
-    Respond(Error(StatusToString(status)));
+  auto service_list = event_router->GetIncludedServices(params_->service_id);
+  if (!service_list.has_value()) {
+    Respond(Error(StatusToString(service_list.error())));
     return;
   }
 
   Respond(ArgumentList(
-      apibtle::GetIncludedServices::Results::Create(service_list)));
+      apibtle::GetIncludedServices::Results::Create(*service_list)));
 }
 
 BluetoothLowEnergyGetDescriptorFunction::
@@ -688,19 +675,17 @@ void BluetoothLowEnergyGetDescriptorFunction::DoWork() {
     return;
   }
 
-  apibtle::Descriptor descriptor;
-  BluetoothLowEnergyEventRouter::Status status = event_router->GetDescriptor(
-      extension(), params_->descriptor_id, &descriptor);
-  if (status != BluetoothLowEnergyEventRouter::kStatusSuccess) {
-    Respond(Error(StatusToString(status)));
+  auto descriptor =
+      event_router->GetDescriptor(extension(), params_->descriptor_id);
+  if (!descriptor.has_value()) {
+    Respond(Error(StatusToString(descriptor.error())));
     return;
   }
 
   // Manually construct the result instead of using
   // apibtle::GetDescriptor::Result::Create as it doesn't convert lists of enums
   // correctly.
-  Respond(WithArguments(base::Value::FromUniquePtrValue(
-      apibtle::DescriptorToValue(&descriptor))));
+  Respond(WithArguments(apibtle::DescriptorToValue(*descriptor)));
 }
 
 BluetoothLowEnergyGetDescriptorsFunction::
@@ -725,11 +710,10 @@ void BluetoothLowEnergyGetDescriptorsFunction::DoWork() {
     return;
   }
 
-  BluetoothLowEnergyEventRouter::DescriptorList descriptor_list;
-  BluetoothLowEnergyEventRouter::Status status = event_router->GetDescriptors(
-      extension(), params_->characteristic_id, &descriptor_list);
-  if (status != BluetoothLowEnergyEventRouter::kStatusSuccess) {
-    Respond(Error(StatusToString(status)));
+  auto descriptor_list =
+      event_router->GetDescriptors(extension(), params_->characteristic_id);
+  if (!descriptor_list.has_value()) {
+    Respond(Error(StatusToString(descriptor_list.error())));
     return;
   }
 
@@ -737,9 +721,8 @@ void BluetoothLowEnergyGetDescriptorsFunction::DoWork() {
   // apibtle::GetDescriptors::Result::Create as it doesn't convert lists of
   // enums correctly.
   base::Value::List result;
-  for (apibtle::Descriptor& descriptor : descriptor_list)
-    result.Append(base::Value::FromUniquePtrValue(
-        apibtle::DescriptorToValue(&descriptor)));
+  for (apibtle::Descriptor& descriptor : *descriptor_list)
+    result.Append(apibtle::DescriptorToValue(descriptor));
 
   Respond(WithArguments(std::move(result)));
 }
@@ -780,19 +763,17 @@ void BluetoothLowEnergyReadCharacteristicValueFunction::DoWork() {
 void BluetoothLowEnergyReadCharacteristicValueFunction::SuccessCallback() {
   // Obtain info on the characteristic and see whether or not the characteristic
   // is still around.
-  apibtle::Characteristic characteristic;
-  BluetoothLowEnergyEventRouter::Status status =
-      GetEventRouter(browser_context())
-          ->GetCharacteristic(extension(), instance_id_, &characteristic);
-  if (status != BluetoothLowEnergyEventRouter::kStatusSuccess) {
-    Respond(Error(StatusToString(status)));
+  auto characteristic = GetEventRouter(browser_context())
+                            ->GetCharacteristic(extension(), instance_id_);
+  if (!characteristic.has_value()) {
+    Respond(Error(StatusToString(characteristic.error())));
     return;
   }
 
   // Manually construct the result instead of using
   // apibtle::GetCharacteristic::Result::Create as it doesn't convert lists of
   // enums correctly.
-  Respond(WithArguments(apibtle::CharacteristicToValue(&characteristic)));
+  Respond(WithArguments(apibtle::CharacteristicToValue(*characteristic)));
 }
 
 void BluetoothLowEnergyReadCharacteristicValueFunction::ErrorCallback(
@@ -970,20 +951,17 @@ void BluetoothLowEnergyReadDescriptorValueFunction::DoWork() {
 void BluetoothLowEnergyReadDescriptorValueFunction::SuccessCallback() {
   // Obtain info on the descriptor and see whether or not the descriptor is
   // still around.
-  apibtle::Descriptor descriptor;
-  BluetoothLowEnergyEventRouter::Status status =
-      GetEventRouter(browser_context())
-          ->GetDescriptor(extension(), instance_id_, &descriptor);
-  if (status != BluetoothLowEnergyEventRouter::kStatusSuccess) {
-    Respond(Error(StatusToString(status)));
+  auto descriptor = GetEventRouter(browser_context())
+                        ->GetDescriptor(extension(), instance_id_);
+  if (!descriptor.has_value()) {
+    Respond(Error(StatusToString(descriptor.error())));
     return;
   }
 
   // Manually construct the result instead of using
   // apibtle::GetDescriptor::Results::Create as it doesn't convert lists of
   // enums correctly.
-  Respond(WithArguments(base::Value::FromUniquePtrValue(
-      apibtle::DescriptorToValue(&descriptor))));
+  Respond(WithArguments(apibtle::DescriptorToValue(*descriptor)));
 }
 
 void BluetoothLowEnergyReadDescriptorValueFunction::ErrorCallback(
@@ -1115,11 +1093,11 @@ void BluetoothLowEnergyRegisterAdvertisementFunction::DoWork() {
       std::move(params_->advertisement.solicit_uuids));
   if (params_->advertisement.manufacturer_data) {
     advertisement_data->set_manufacturer_data(
-        CreateManufacturerData(params_->advertisement.manufacturer_data.get()));
+        CreateManufacturerData(*params_->advertisement.manufacturer_data));
   }
   if (params_->advertisement.service_data) {
     advertisement_data->set_service_data(
-        CreateServiceData(params_->advertisement.service_data.get()));
+        CreateServiceData(*params_->advertisement.service_data));
   }
 
   event_router->adapter()->RegisterAdvertisement(
@@ -1505,9 +1483,7 @@ void BluetoothLowEnergyNotifyCharacteristicValueChangedFunction::DoWork() {
   uint8_vector.assign(params_->notification.value.begin(),
                       params_->notification.value.end());
 
-  bool indicate = params_->notification.should_indicate.get()
-                      ? *params_->notification.should_indicate
-                      : false;
+  bool indicate = params_->notification.should_indicate.value_or(false);
   device::BluetoothLocalGattCharacteristic::NotificationStatus status =
       characteristic->NotifyValueChanged(nullptr, uint8_vector, indicate);
 

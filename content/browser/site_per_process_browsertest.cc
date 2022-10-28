@@ -71,6 +71,7 @@
 #include "content/browser/renderer_host/navigator.h"
 #include "content/browser/renderer_host/render_frame_host_impl.h"
 #include "content/browser/renderer_host/render_frame_proxy_host.h"
+#include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_input_event_router.h"
 #include "content/browser/renderer_host/render_widget_host_view_child_frame.h"
@@ -90,6 +91,7 @@
 #include "content/public/browser/global_routing_id.h"
 #include "content/public/browser/javascript_dialog_manager.h"
 #include "content/public/browser/navigation_handle.h"
+#include "content/public/browser/render_process_host_priority_client.h"
 #include "content/public/browser/site_isolation_policy.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_features.h"
@@ -178,9 +180,7 @@
 #include "content/browser/renderer_host/render_widget_host_view_android.h"
 #include "content/browser/web_contents/web_contents_view_android.h"
 #include "content/public/browser/android/child_process_importance.h"
-#include "content/public/common/content_client.h"
 #include "content/test/mock_overscroll_refresh_handler_android.h"
-#include "content/test/test_content_browser_client.h"
 #include "ui/android/view_android.h"
 #include "ui/android/window_android.h"
 #include "ui/events/android/event_handler_android.h"
@@ -412,7 +412,7 @@ blink::ParsedPermissionsPolicy CreateParsedPermissionsPolicyMatchesNone(
 // Check frame depth on node, widget, and process all match expected depth.
 void CheckFrameDepth(unsigned int expected_depth, FrameTreeNode* node) {
   EXPECT_EQ(expected_depth, node->current_frame_host()->GetFrameDepth());
-  RenderProcessHost::Priority priority =
+  RenderProcessHostPriorityClient::Priority priority =
       node->current_frame_host()->GetRenderWidgetHost()->GetPriority();
   EXPECT_EQ(expected_depth, priority.frame_depth);
   EXPECT_EQ(expected_depth,
@@ -5873,13 +5873,13 @@ class ShowCreatedWindowInterceptor
 
   void ShowCreatedWindow(const blink::LocalFrameToken& opener_frame_token,
                          WindowOpenDisposition disposition,
-                         const gfx::Rect& initial_rect,
+                         blink::mojom::WindowFeaturesPtr window_features,
                          bool user_gesture,
                          ShowCreatedWindowCallback callback) override {
     show_callback_ = std::move(callback);
     opener_frame_token_ = opener_frame_token;
     user_gesture_ = user_gesture;
-    initial_rect_ = initial_rect;
+    window_features_ = std::move(window_features);
     disposition_ = disposition;
     std::move(test_callback_)
         .Run(render_frame_host_->GetRenderWidgetHost()->GetRoutingID());
@@ -5887,8 +5887,8 @@ class ShowCreatedWindowInterceptor
 
   void ResumeShowCreatedWindow() {
     GetForwardingInterface()->ShowCreatedWindow(
-        opener_frame_token_, disposition_, initial_rect_, user_gesture_,
-        std::move(show_callback_));
+        opener_frame_token_, disposition_, std::move(window_features_),
+        user_gesture_, std::move(show_callback_));
   }
 
  private:
@@ -5896,7 +5896,7 @@ class ShowCreatedWindowInterceptor
   base::OnceCallback<void(int32_t pending_widget_routing_id)> test_callback_;
   ShowCreatedWindowCallback show_callback_;
   blink::LocalFrameToken opener_frame_token_;
-  gfx::Rect initial_rect_;
+  blink::mojom::WindowFeaturesPtr window_features_;
   bool user_gesture_ = false;
   WindowOpenDisposition disposition_;
   mojo::test::ScopedSwapImplForTesting<
@@ -10603,7 +10603,7 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest, FrameDepthTest) {
   FrameTreeNode* child0 = root->child_at(0);
   {
     EXPECT_EQ(1u, child0->current_frame_host()->GetFrameDepth());
-    RenderProcessHost::Priority priority =
+    RenderProcessHostPriorityClient::Priority priority =
         child0->current_frame_host()->GetRenderWidgetHost()->GetPriority();
     // Same site instance as root.
     EXPECT_EQ(0u, priority.frame_depth);
@@ -10624,7 +10624,7 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest, FrameDepthTest) {
   FrameTreeNode* grand_child = root->child_at(1)->child_at(0);
   {
     EXPECT_EQ(2u, grand_child->current_frame_host()->GetFrameDepth());
-    RenderProcessHost::Priority priority =
+    RenderProcessHostPriorityClient::Priority priority =
         grand_child->current_frame_host()->GetRenderWidgetHost()->GetPriority();
     EXPECT_EQ(2u, priority.frame_depth);
     // Same process as root

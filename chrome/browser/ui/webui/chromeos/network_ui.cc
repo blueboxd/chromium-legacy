@@ -1,4 +1,4 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,7 +11,6 @@
 #include "ash/constants/ash_features.h"
 #include "ash/public/cpp/esim_manager.h"
 #include "ash/public/cpp/network_config_service.h"
-#include "ash/services/cellular_setup/public/mojom/esim_manager.mojom.h"
 #include "ash/webui/network_ui/network_diagnostics_resource_provider.h"
 #include "ash/webui/network_ui/network_health_resource_provider.h"
 #include "ash/webui/network_ui/traffic_counters_resource_provider.h"
@@ -23,7 +22,7 @@
 #include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/ui/ash/system_tray_client_impl.h"
 #include "chrome/browser/ui/chrome_pages.h"
-#include "chrome/browser/ui/webui/chromeos/cellular_setup/cellular_setup_localized_strings_provider.h"
+#include "chrome/browser/ui/webui/ash/cellular_setup/cellular_setup_localized_strings_provider.h"
 #include "chrome/browser/ui/webui/chromeos/internet_config_dialog.h"
 #include "chrome/browser/ui/webui/chromeos/internet_detail_dialog.h"
 #include "chrome/browser/ui/webui/chromeos/network_logs_message_handler.h"
@@ -46,6 +45,7 @@
 #include "chromeos/ash/components/network/network_state.h"
 #include "chromeos/ash/components/network/network_state_handler.h"
 #include "chromeos/ash/components/network/onc/network_onc_utils.h"
+#include "chromeos/ash/services/cellular_setup/public/mojom/esim_manager.mojom.h"
 #include "chromeos/services/network_config/public/mojom/cros_network_config.mojom.h"
 #include "chromeos/services/network_health/public/mojom/network_diagnostics.mojom.h"
 #include "chromeos/services/network_health/public/mojom/network_health.mojom.h"

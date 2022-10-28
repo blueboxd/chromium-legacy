@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -16,6 +16,8 @@ namespace commerce {
 // A mock ShoppingService that allows us to decide the response.
 class MockShoppingService : public commerce::ShoppingService {
  public:
+  static std::unique_ptr<KeyedService> Build();
+
   MockShoppingService();
   ~MockShoppingService() override;
 
@@ -24,6 +26,8 @@ class MockShoppingService : public commerce::ShoppingService {
                             commerce::ProductInfoCallback callback) override;
   void GetMerchantInfoForUrl(const GURL& url,
                              MerchantInfoCallback callback) override;
+  absl::optional<ProductInfo> GetAvailableProductInfoForUrl(
+      const GURL& url) override;
   void Subscribe(
       std::unique_ptr<std::vector<CommerceSubscription>> subscriptions,
       base::OnceCallback<void(bool)> callback) override;

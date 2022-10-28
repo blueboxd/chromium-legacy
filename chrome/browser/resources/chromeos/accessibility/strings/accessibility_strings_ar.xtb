@@ -138,9 +138,9 @@
 <translation id="1812527064848182527">معالم</translation>
 <translation id="1829244130665387512">البحث في الصفحة</translation>
 <translation id="1834891354138622109">عمود</translation>
-<translation id="1845944666972354496">انقر مرّتين للتفعيل</translation>
 <translation id="1846771122725914429">عرض البلوتوث بلغة برايل</translation>
 <translation id="1852018405765032699">‏يمكنك فتح قوائم ChromeVox أو إغلاقها من خلال النقر على الشاشة بأربعة أصابع. تحتوي هذه القوائم على معلومات مفيدة عن الأوامر واختصاراتها. بعد فتح القوائم، يمكنك التمرير بإصبع واحد للتنقُّل بين العناصر والنقر مرّتين لتفعيل العناصر. للمتابعة، انقر على الشاشة بأربعة أصابع.</translation>
+<translation id="1864430479908918647">الضغط على مفتاح البحث + مفتاح المسافة</translation>
 <translation id="1865601187525349519">نهاية النص</translation>
 <translation id="1876229593313240038">doc</translation>
 <translation id="1902396333223336119">خلوي</translation>
@@ -530,6 +530,7 @@
 <translation id="4479068155583208887">أحمر قرميدي ناري</translation>
 <translation id="4482330759234983253">الجدول السابق</translation>
 <translation id="4491109536499578614">صورة</translation>
+<translation id="4507332368061453500">النقر مع الاستمرار على العنصر الحالي</translation>
 <translation id="4511186779140817916">لوزي</translation>
 <translation id="451510441928265982">ليس هناك عنوان سابق من المستوى الثاني.</translation>
 <translation id="4515799157838123044">تظليل محتوى الخلفية</translation>
@@ -598,7 +599,6 @@
 <translation id="4993152509206108683">تقييم بنسبة <ph name="PERCENT" /> في المائة</translation>
 <translation id="4994420463726586413">الإعلان عن حالة البطارية الحالية</translation>
 <translation id="4997282455736854877">تم اختيار زر الاختيار <ph name="NAME" /></translation>
-<translation id="5011664330025416377">‏اضغط على "Search" + "مسافة" للتفعيل.</translation>
 <translation id="5012724933919010465">تم اختيار الزر الخاص باختيار عنصر القائمة <ph name="NAME" />.</translation>
 <translation id="5020651427400641814">تفعيل تسجيل الكلام</translation>
 <translation id="5041394372352067729">نقل عرض برايل إلى أعلى الصفحة</translation>
@@ -763,6 +763,7 @@
 <translation id="6100239002225743044">نقل للأعلى سطر واحد</translation>
 <translation id="6118126368611144850">‏تطبيقات Android في متصفح Chrome. إذا كان لديك متجر Play على جهازك، يمكنك إلقاء نظرة سريعة على ChromeVox مع تطبيقات Android، كما يمكنك تجربة الدعم التجريبي من خلال تنزيل Google Chrome Canary من متجر Play.</translation>
 <translation id="611827076493383239">vtd</translation>
+<translation id="6119846243427417423">تفعيل</translation>
 <translation id="6122013438240733403">btn</translation>
 <translation id="6132506484792346370">مربع القائمة أو مربع التحرير والسرد</translation>
 <translation id="613344593214611552">حذف الجملة السابقة</translation>
@@ -779,6 +780,7 @@
 <translation id="6236061028292614533">العنوان التالي</translation>
 <translation id="6254901459154107917">منطقة النص التالي القابل للتعديل</translation>
 <translation id="6259464875943891919">تم الخروج من <ph name="TYPE" />.</translation>
+<translation id="6280088282605782512">النقر مرتين</translation>
 <translation id="6282062888058716985">nav</translation>
 <translation id="6295699829709583154">مفاتيح مهمّة على لوحة المفاتيح: مفتاح البحث</translation>
 <translation id="6305702903308659374">‏التشغيل بصوت عادي حتى أثناء تحدُّث ChromeVox</translation>
@@ -981,6 +983,7 @@
 <translation id="7731785449856576010">ليست هناك أداة وسائط تالية.</translation>
 <translation id="7735498529470878067">تساعدك ميزة "الاستكشاف باللمس" في التعرّف سريعًا على ما يتم عرضه على الشاشة.</translation>
 <translation id="773906353055481349">‏اضغط على Search+Ctrl+Alt مع استخدام الأسهم للتنقل بين الخلايا.</translation>
+<translation id="7746976083433980639"><ph name="ACTION" /> من أجل <ph name="LABEL" /></translation>
 <translation id="7763537600611320912">بدأ تنزيل <ph name="FILE_NAME" />.</translation>
 <translation id="7768784765476638775">الاختيار والاستماع</translation>
 <translation id="7776293189010177726">‏فتح قوائم ChromeVox</translation>

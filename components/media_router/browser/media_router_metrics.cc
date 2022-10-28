@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -141,6 +141,10 @@ const char MediaRouterMetrics::kHistogramUiAndroidDialogType[] =
     "MediaRouter.Ui.Android.DialogType";
 const char MediaRouterMetrics::kHistogramUiAndroidDialogAction[] =
     "MediaRouter.Ui.Android.DialogAction";
+const char MediaRouterMetrics::kHistogramUserPromptWhenLaunchingCast[] =
+    "MediaRouter.Cast.UserPromptWhenLaunchingCast";
+const char MediaRouterMetrics::kHistogramPendingUserAuthLatency[] =
+    "MediaRouter.Cast.PendingUserAuthLatency";
 
 // static
 const base::TimeDelta MediaRouterMetrics::kDeviceCountMetricDelay =
@@ -354,6 +358,18 @@ void MediaRouterMetrics::RecordMediaRouterAndroidDialogType(
 void MediaRouterMetrics::RecordMediaRouterAndroidDialogAction(
     MediaRouterAndroidDialogAction action) {
   base::UmaHistogramEnumeration(kHistogramUiAndroidDialogAction, action);
+}
+
+// static
+void MediaRouterMetrics::RecordMediaRouterUserPromptWhenLaunchingCast(
+    MediaRouterUserPromptWhenLaunchingCast user_prompt) {
+  UMA_HISTOGRAM_ENUMERATION(kHistogramUserPromptWhenLaunchingCast, user_prompt);
+}
+
+// static
+void MediaRouterMetrics::RecordMediaRouterPendingUserAuthLatency(
+    const base::TimeDelta& delta) {
+  UMA_HISTOGRAM_TIMES(kHistogramPendingUserAuthLatency, delta);
 }
 
 }  // namespace media_router

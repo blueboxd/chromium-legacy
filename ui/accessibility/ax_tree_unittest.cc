@@ -19,6 +19,7 @@
 #include "ui/accessibility/ax_enum_util.h"
 #include "ui/accessibility/ax_node.h"
 #include "ui/accessibility/ax_node_position.h"
+#include "ui/accessibility/ax_selection.h"
 #include "ui/accessibility/ax_serializable_tree.h"
 #include "ui/accessibility/ax_tree_data.h"
 #include "ui/accessibility/ax_tree_id.h"
@@ -37,7 +38,7 @@
     tree_update.tree_data.sel_focus_object_id = input.focus_id;    \
     tree_update.tree_data.sel_focus_offset = input.focus_offset;   \
     EXPECT_TRUE(tree->Unserialize(tree_update));                   \
-    AXTree::Selection actual = tree->GetUnignoredSelection();      \
+    AXSelection actual = tree->GetUnignoredSelection();            \
     EXPECT_EQ(expected.anchor_id, actual.anchor_object_id);        \
     EXPECT_EQ(expected.anchor_offset, actual.anchor_offset);       \
     EXPECT_EQ(expected.focus_id, actual.focus_object_id);          \
@@ -1204,52 +1205,35 @@ TEST(AXTreeTest, TreeObserverIsNotCalledForReparenting) {
   ASSERT_TRUE(test_observer.root_changed());
 }
 
+// https://crbug.com/1359080
 // UAF caught by ax_tree_fuzzer
-TEST(AXTreeTest, BogusAXTree) {
+TEST(AXTreeTest, DISABLED_BogusAXTree) {
   AXTreeUpdate initial_state;
   AXNodeData node;
   node.id = 0;
   initial_state.nodes.push_back(node);
   initial_state.nodes.push_back(node);
   ui::AXTree tree;
+#if DCHECK_IS_ON()
+  EXPECT_DEATH_IF_SUPPORTED(tree.Unserialize(initial_state),
+                            "AXTreeUpdate contains invalid node");
+#else
   tree.Unserialize(initial_state);
+#endif
 }
 
 // UAF caught by ax_tree_fuzzer
 TEST(AXTreeTest, BogusAXTree2) {
   AXTreeUpdate initial_state;
+  initial_state.root_id = 1;
   AXNodeData node;
-  node.id = 0;
+  node.id = 1;
   initial_state.nodes.push_back(node);
-  AXNodeData node2;
-  node2.id = 0;
-  node2.child_ids.push_back(0);
-  node2.child_ids.push_back(0);
-  initial_state.nodes.push_back(node2);
-  ui::AXTree tree;
-#if defined(AX_FAIL_FAST_BUILD)
-  EXPECT_DEATH_IF_SUPPORTED(tree.Unserialize(initial_state),
-                            "Node 0 has duplicate child id 0");
-#else
-  EXPECT_FALSE(tree.Unserialize(initial_state));
-  EXPECT_EQ("Node 0 has duplicate child id 0", tree.error());
-#endif
-}
-
-// UAF caught by ax_tree_fuzzer
-TEST(AXTreeTest, BogusAXTree3) {
-  AXTreeUpdate initial_state;
-  AXNodeData node;
-  node.id = 0;
-  node.child_ids.push_back(1);
-  initial_state.nodes.push_back(node);
-
   AXNodeData node2;
   node2.id = 1;
   node2.child_ids.push_back(1);
   node2.child_ids.push_back(1);
   initial_state.nodes.push_back(node2);
-
   ui::AXTree tree;
 #if defined(AX_FAIL_FAST_BUILD)
   EXPECT_DEATH_IF_SUPPORTED(tree.Unserialize(initial_state),
@@ -1257,6 +1241,30 @@ TEST(AXTreeTest, BogusAXTree3) {
 #else
   EXPECT_FALSE(tree.Unserialize(initial_state));
   EXPECT_EQ("Node 1 has duplicate child id 1", tree.error());
+#endif
+}
+
+// UAF caught by ax_tree_fuzzer
+TEST(AXTreeTest, BogusAXTree3) {
+  AXTreeUpdate initial_state;
+  initial_state.root_id = 1;
+  AXNodeData node;
+  node.id = 1;
+  node.child_ids.push_back(2);
+  node.child_ids.push_back(2);
+  initial_state.nodes.push_back(node);
+
+  AXNodeData node2;
+  node2.id = 2;
+  initial_state.nodes.push_back(node2);
+
+  ui::AXTree tree;
+#if defined(AX_FAIL_FAST_BUILD)
+  EXPECT_DEATH_IF_SUPPORTED(tree.Unserialize(initial_state),
+                            "Node 1 has duplicate child id 2");
+#else
+  EXPECT_FALSE(tree.Unserialize(initial_state));
+  EXPECT_EQ("Node 1 has duplicate child id 2", tree.error());
 #endif
 }
 
@@ -3057,7 +3065,7 @@ TEST(AXTreeTest, UnignoredSelection) {
   tree_update.nodes[15].SetName("text");
 
   TestAXTreeManager test_ax_tree_manager(std::make_unique<AXTree>(tree_update));
-  AXTree::Selection unignored_selection =
+  AXSelection unignored_selection =
       test_ax_tree_manager.GetTree()->GetUnignoredSelection();
 
   EXPECT_EQ(kInvalidAXNodeID, unignored_selection.anchor_object_id);

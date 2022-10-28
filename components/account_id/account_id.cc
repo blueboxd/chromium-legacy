@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -165,12 +165,6 @@ void AccountId::SetUserEmail(const std::string& email) {
 AccountId AccountId::FromUserEmail(const std::string& email) {
   // TODO(alemate): DCHECK(!email.empty());
   return AccountId(std::string() /* id */, email, AccountType::UNKNOWN);
-}
-
-// static
-AccountId AccountId::FromGaiaId(const std::string& gaia_id) {
-  DCHECK(!gaia_id.empty());
-  return AccountId(gaia_id, std::string() /* email */, AccountType::GOOGLE);
 }
 
 // static

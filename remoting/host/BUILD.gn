@@ -101,6 +101,7 @@ source_set("common_headers") {
     "input_injector.h",
     "input_injector_metadata.h",
     "sas_injector.h",
+    "usage_stats_consent.h",
     "worker_process_ipc_delegate.h",
   ]
   if (!is_chromeos_ash) {
@@ -123,6 +124,7 @@ source_set("ipc_constants") {
   deps = [
     "//base",
     "//mojo/public/cpp/platform",
+    "//remoting/host/base",
     "//remoting/host/mojo_ipc",
   ]
 }
@@ -269,6 +271,8 @@ static_library("common") {
     "desktop_display_info_loader.h",
     "desktop_display_info_monitor.cc",
     "desktop_display_info_monitor.h",
+    "desktop_display_layout_util.cc",
+    "desktop_display_layout_util.h",
     "desktop_process.cc",
     "desktop_process.h",
     "desktop_resizer.h",
@@ -368,7 +372,6 @@ static_library("common") {
     "token_validator_base.h",
     "token_validator_factory_impl.cc",
     "token_validator_factory_impl.h",
-    "usage_stats_consent.h",
     "xmpp_register_support_host_request.cc",
     "xmpp_register_support_host_request.h",
     "xsession_chooser_ui.inc",
@@ -487,6 +490,8 @@ static_library("common") {
       "input_injector_x11.cc",
       "x11_crtc_resizer.cc",
       "x11_crtc_resizer.h",
+      "x11_display_util.cc",
+      "x11_display_util.h",
     ]
     deps += [
       "//remoting/host/linux:x11",
@@ -507,10 +512,21 @@ static_library("common") {
       "linux/remote_desktop_portal.h",
       "linux/remote_desktop_portal_injector.cc",
       "linux/remote_desktop_portal_injector.h",
+      "linux/wayland_connection.cc",
+      "linux/wayland_connection.h",
       "linux/wayland_desktop_capturer.cc",
       "linux/wayland_desktop_capturer.h",
+      "linux/wayland_display.cc",
+      "linux/wayland_display.h",
+      "linux/wayland_display_info.cc",
+      "linux/wayland_display_info.h",
+      "linux/wayland_manager.cc",
+      "linux/wayland_manager.h",
     ]
-    public_deps += [ "//third_party/wayland-protocols:xdg_shell_protocol" ]
+    public_deps += [
+      "//third_party/wayland-protocols:xdg_output_protocol",
+      "//third_party/wayland-protocols:xdg_shell_protocol",
+    ]
   }
 
   if (is_linux && (!remoting_use_x11 || is_chromeos)) {
@@ -547,6 +563,8 @@ static_library("common") {
     sources += [
       "audio_capturer_chromeos.cc",
       "continue_window_chromeos.cc",
+      "curtain_mode_chromeos.cc",
+      "curtain_mode_chromeos.h",
       "desktop_display_info_loader_chromeos.cc",
       "disconnect_window_chromeos.cc",
       "input_injector_chromeos.cc",
@@ -700,6 +718,7 @@ source_set("unit_tests") {
     "config_file_watcher_unittest.cc",
     "daemon_process_unittest.cc",
     "desktop_display_info_unittest.cc",
+    "desktop_display_layout_util_unittest.cc",
     "desktop_process_unittest.cc",
     "desktop_session_agent_unittest.cc",
     "ftl_echo_message_listener_unittest.cc",
@@ -717,6 +736,7 @@ source_set("unit_tests") {
     "it2me/it2me_confirmation_dialog_proxy_unittest.cc",
     "it2me/it2me_host_unittest.cc",
     "it2me/it2me_native_messaging_host_unittest.cc",
+    "it2me_desktop_environment_unittest.cc",
     "mouse_cursor_monitor_proxy_unittest.cc",
     "mouse_shape_pump_unittest.cc",
     "native_messaging/native_messaging_reader_unittest.cc",
@@ -789,10 +809,15 @@ source_set("unit_tests") {
 
   if (is_linux) {
     sources += [ "pairing_registry_delegate_linux_unittest.cc" ]
+    deps += [ "//remoting/host/linux:unit_tests" ]
   }
 
-  if (is_linux) {
-    deps += [ "//remoting/host/linux:unit_tests" ]
+  if (remoting_use_x11) {
+    sources += [
+      "x11_crtc_resizer_unittest.cc",
+      "x11_display_util_unittest.cc",
+    ]
+    deps += [ "//ui/gfx/x" ]
   }
 
   if (is_chromeos_ash) {

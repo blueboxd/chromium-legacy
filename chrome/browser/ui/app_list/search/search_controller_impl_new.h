@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,12 +13,10 @@
 #include <vector>
 
 #include "base/callback.h"
-#include "base/containers/flat_map.h"
 #include "base/observer_list.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/ui/app_list/search/burnin_controller.h"
-#include "chrome/browser/ui/app_list/search/mixer.h"
 #include "chrome/browser/ui/app_list/search/ranking/launch_data.h"
 #include "chrome/browser/ui/app_list/search/ranking/ranker_delegate.h"
 #include "chrome/browser/ui/app_list/search/search_controller.h"
@@ -36,7 +34,7 @@ enum class AppListSearchResultType;
 
 namespace app_list {
 
-class SearchMetricsObserver;
+class SearchMetricsManager;
 class SearchProvider;
 enum class RankingItemType;
 
@@ -73,7 +71,7 @@ class SearchControllerImplNew : public SearchController {
   ChromeSearchResult* GetResultByTitleForTest(
       const std::string& title) override;
   void Train(LaunchData&& launch_data) override;
-  void ViewClosing() override;
+  void AppListClosing() override;
   void AddObserver(Observer* observer) override;
   void RemoveObserver(Observer* observer) override;
   void set_results_changed_callback_for_test(
@@ -146,7 +144,7 @@ class SearchControllerImplNew : public SearchController {
   // If set, called when results set by a provider change.
   ResultsChangedCallback results_changed_callback_;
 
-  std::unique_ptr<SearchMetricsObserver> metrics_observer_;
+  std::unique_ptr<SearchMetricsManager> metrics_manager_;
   using Providers = std::vector<std::unique_ptr<SearchProvider>>;
   Providers providers_;
   AppListModelUpdater* const model_updater_;

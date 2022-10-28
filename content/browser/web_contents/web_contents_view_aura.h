@@ -194,6 +194,7 @@ class CONTENT_EXPORT WebContentsViewAura
                              RenderViewHost* new_host) override;
   void SetOverscrollControllerEnabled(bool enabled) override;
   void OnCapturerCountChanged() override;
+  void FullscreenStateChanged(bool is_fullscreen) override;
 
   // Overridden from RenderViewHostDelegateView:
   void ShowContextMenu(RenderFrameHost& render_frame_host,
@@ -201,7 +202,8 @@ class CONTENT_EXPORT WebContentsViewAura
   void StartDragging(const DropData& drop_data,
                      blink::DragOperationsMask operations,
                      const gfx::ImageSkia& image,
-                     const gfx::Vector2d& image_offset,
+                     const gfx::Vector2d& cursor_offset,
+                     const gfx::Rect& drag_obj_rect,
                      const blink::mojom::DragEventSourceInfo& event_info,
                      RenderWidgetHostImpl* source_rwh) override;
   void UpdateDragCursor(ui::mojom::DragOperation operation) override;

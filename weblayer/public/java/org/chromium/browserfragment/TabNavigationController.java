@@ -9,6 +9,7 @@ import android.os.RemoteException;
 import androidx.annotation.NonNull;
 import androidx.concurrent.futures.CallbackToFutureAdapter;
 
+import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 
 import org.chromium.browserfragment.interfaces.IBooleanCallback;
@@ -18,7 +19,10 @@ import org.chromium.browserfragment.interfaces.ITabNavigationControllerProxy;
  * TabNavigationController controls the navigation in a Tab.
  */
 public class TabNavigationController {
-    private final ITabNavigationControllerProxy mTabNavigationControllerProxy;
+    private ITabNavigationControllerProxy mTabNavigationControllerProxy;
+
+    private NavigationObserverDelegate mNavigationObserverDelegate =
+            new NavigationObserverDelegate();
 
     private final class RequestNavigationCallback extends IBooleanCallback.Stub {
         private CallbackToFutureAdapter.Completer<Boolean> mCompleter;
@@ -35,6 +39,11 @@ public class TabNavigationController {
 
     TabNavigationController(ITabNavigationControllerProxy tabNavigationControllerProxy) {
         mTabNavigationControllerProxy = tabNavigationControllerProxy;
+        try {
+            mTabNavigationControllerProxy.setNavigationObserverDelegate(
+                    mNavigationObserverDelegate);
+        } catch (RemoteException e) {
+        }
     }
 
     /**
@@ -43,6 +52,9 @@ public class TabNavigationController {
      * @param uri The destination URI.
      */
     public void navigate(@NonNull String uri) {
+        if (mTabNavigationControllerProxy == null) {
+            throw new IllegalStateException("Browser has been destroyed");
+        }
         try {
             mTabNavigationControllerProxy.navigate(uri);
         } catch (RemoteException e) {
@@ -53,6 +65,9 @@ public class TabNavigationController {
      * Navigates to the previous navigation.
      */
     public void goBack() {
+        if (mTabNavigationControllerProxy == null) {
+            throw new IllegalStateException("Browser has been destroyed");
+        }
         try {
             mTabNavigationControllerProxy.goBack();
         } catch (RemoteException e) {
@@ -63,6 +78,9 @@ public class TabNavigationController {
      * Navigates to the next navigation.
      */
     public void goForward() {
+        if (mTabNavigationControllerProxy == null) {
+            throw new IllegalStateException("Browser has been destroyed");
+        }
         try {
             mTabNavigationControllerProxy.goForward();
         } catch (RemoteException e) {
@@ -77,6 +95,10 @@ public class TabNavigationController {
      */
     @NonNull
     public ListenableFuture<Boolean> canGoBack() {
+        if (mTabNavigationControllerProxy == null) {
+            return Futures.immediateFailedFuture(
+                    new IllegalStateException("Browser has been destroyed"));
+        }
         return CallbackToFutureAdapter.getFuture(completer -> {
             mTabNavigationControllerProxy.canGoBack(new RequestNavigationCallback(completer));
 
@@ -93,11 +115,41 @@ public class TabNavigationController {
      */
     @NonNull
     public ListenableFuture<Boolean> canGoForward() {
+        if (mTabNavigationControllerProxy == null) {
+            return Futures.immediateFailedFuture(
+                    new IllegalStateException("Browser has been destroyed"));
+        }
         return CallbackToFutureAdapter.getFuture(completer -> {
             mTabNavigationControllerProxy.canGoForward(new RequestNavigationCallback(completer));
 
             // Debug string.
             return "Can navigate forward Future";
         });
+    }
+
+    /**
+     * Registers a {@link NavigationObserver} and returns if successful.
+     *
+     * @param navigationObserver The {@link NavigationObserver}.
+     *
+     * @return true if observer was added to the list of observers.
+     */
+    public boolean registerNavigationObserver(@NonNull NavigationObserver navigationObserver) {
+        return mNavigationObserverDelegate.registerObserver(navigationObserver);
+    }
+
+    /**
+     * Unregisters a {@link NavigationObserver} and returns if successful.
+     *
+     * @param navigationObserver The TabObserver to remove.
+     *
+     * @return true if observer was removed from the list of observers.
+     */
+    public boolean unregisterNavigationObserver(@NonNull NavigationObserver navigationObserver) {
+        return mNavigationObserverDelegate.unregisterObserver(navigationObserver);
+    }
+
+    void invalidate() {
+        mTabNavigationControllerProxy = null;
     }
 }

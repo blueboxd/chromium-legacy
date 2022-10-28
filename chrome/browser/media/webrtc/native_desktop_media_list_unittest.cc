@@ -1,4 +1,4 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -126,6 +126,8 @@ class MockObserver : public DesktopMediaListObserver {
   MOCK_METHOD1(OnSourceNameChanged, void(int index));
   MOCK_METHOD1(OnSourceThumbnailChanged, void(int index));
   MOCK_METHOD1(OnSourcePreviewChanged, void(size_t index));
+  MOCK_METHOD0(OnDelegatedSourceListSelection, void());
+  MOCK_METHOD0(OnDelegatedSourceListDismissed, void());
 };
 
 class FakeScreenCapturer : public webrtc::DesktopCapturer {
@@ -507,6 +509,125 @@ TEST_F(NativeDesktopMediaListTest, ScreenOnly) {
 
   EXPECT_EQ(model_->GetSource(0).id.type, DesktopMediaID::TYPE_SCREEN);
   EXPECT_EQ(model_->GetSource(0).id.id, 0);
+}
+
+class DelegatedFakeScreenCapturer
+    : public FakeScreenCapturer,
+      public webrtc::DelegatedSourceListController {
+ public:
+  webrtc::DelegatedSourceListController* GetDelegatedSourceListController()
+      override {
+    return this;
+  }
+
+  void Observe(
+      webrtc::DelegatedSourceListController::Observer* observer) override {
+    DCHECK(!observer_ || !observer);
+    observer_ = observer;
+  }
+
+  void SimulateSourceListSelection() {
+    DCHECK(observer_);
+    observer_->OnSelection();
+  }
+
+  void SimulateSourceListCancelled() {
+    DCHECK(observer_);
+    observer_->OnCancelled();
+  }
+
+  void SimulateSourceListError() {
+    DCHECK(observer_);
+    observer_->OnError();
+  }
+
+  void EnsureVisible() override {}
+  void EnsureHidden() override {}
+
+ private:
+  webrtc::DelegatedSourceListController::Observer* observer_ = nullptr;
+};
+
+TEST_F(NativeDesktopMediaListTest, DelegatedScreenCapturerSelection) {
+  auto capturer = std::make_unique<DelegatedFakeScreenCapturer>();
+  auto* capturer_ptr = capturer.get();
+  model_ = std::make_unique<NativeDesktopMediaList>(
+      DesktopMediaList::Type::kScreen, std::move(capturer));
+
+  model_->SetUpdatePeriod(base::Milliseconds(20));
+
+  // We don't call SimulateSourceListSelection until we get notified that the
+  // source has been added so that we can guarantee that the Capturer has been
+  // started by the MediaList. Otherwise, the callback_ may be null, which would
+  // cause a crash.
+  EXPECT_CALL(observer_, OnSourceAdded(0)).WillOnce([capturer_ptr]() {
+    capturer_ptr->SimulateSourceListSelection();
+  });
+  EXPECT_CALL(observer_, OnSourceThumbnailChanged(0))
+      .Times(testing::AnyNumber());
+
+  base::RunLoop run_loop;
+  EXPECT_CALL(observer_, OnDelegatedSourceListSelection())
+      .WillOnce(QuitRunLoop(base::ThreadTaskRunnerHandle::Get(), &run_loop));
+  model_->StartUpdating(&observer_);
+
+  run_loop.Run();
+}
+
+TEST_F(NativeDesktopMediaListTest, DelegatedScreenCapturerCancelled) {
+  auto capturer = std::make_unique<DelegatedFakeScreenCapturer>();
+  auto* capturer_ptr = capturer.get();
+  model_ = std::make_unique<NativeDesktopMediaList>(
+      DesktopMediaList::Type::kScreen, std::move(capturer));
+
+  model_->SetUpdatePeriod(base::Milliseconds(20));
+
+  // We don't call SimulateSourceListCancelled until we get notified that the
+  // source has been added so that we can guarantee that the Capturer has been
+  // started by the MediaList. Otherwise, the callback_ may be null, which would
+  // cause a crash.
+  EXPECT_CALL(observer_, OnSourceAdded(0)).WillOnce([capturer_ptr]() {
+    capturer_ptr->SimulateSourceListCancelled();
+  });
+  EXPECT_CALL(observer_, OnSourceThumbnailChanged(0))
+      .Times(testing::AnyNumber());
+
+  // We don't differentiate to the DesktopMediaListObserver *why* the list was
+  // dismissed, just that it was.
+  base::RunLoop run_loop;
+  EXPECT_CALL(observer_, OnDelegatedSourceListDismissed())
+      .WillOnce(QuitRunLoop(base::ThreadTaskRunnerHandle::Get(), &run_loop));
+  model_->StartUpdating(&observer_);
+
+  run_loop.Run();
+}
+
+TEST_F(NativeDesktopMediaListTest, DelegatedScreenCapturerError) {
+  auto capturer = std::make_unique<DelegatedFakeScreenCapturer>();
+  auto* capturer_ptr = capturer.get();
+  model_ = std::make_unique<NativeDesktopMediaList>(
+      DesktopMediaList::Type::kScreen, std::move(capturer));
+
+  model_->SetUpdatePeriod(base::Milliseconds(20));
+
+  // We don't call SimulateSourceListError until we get notified that the source
+  // has been added so that we can guarantee that the Capturer has been started
+  // by the MediaList. Otherwise, the callback_ may be null, which would cause a
+  // crash.
+  EXPECT_CALL(observer_, OnSourceAdded(0)).WillOnce([capturer_ptr]() {
+    capturer_ptr->SimulateSourceListError();
+  });
+  EXPECT_CALL(observer_, OnSourceThumbnailChanged(0))
+      .Times(testing::AnyNumber());
+
+  // We don't differentiate to the DesktopMediaListObserver *why* the list was
+  // dismissed, just that it was.
+  base::RunLoop run_loop;
+  EXPECT_CALL(observer_, OnDelegatedSourceListDismissed())
+      .WillOnce(QuitRunLoop(base::ThreadTaskRunnerHandle::Get(), &run_loop));
+  model_->StartUpdating(&observer_);
+
+  run_loop.Run();
 }
 
 // Verifies that the window specified with SetViewDialogWindowId() is filtered

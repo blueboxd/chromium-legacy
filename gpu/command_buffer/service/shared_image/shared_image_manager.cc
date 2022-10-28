@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -16,14 +16,14 @@
 #include "base/trace_event/process_memory_dump.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
+#include "components/viz/common/resources/resource_format_utils.h"
 #include "gpu/command_buffer/common/shared_image_trace_utils.h"
-#include "gpu/command_buffer/common/shared_image_usage.h"
 #include "gpu/command_buffer/service/shared_context_state.h"
 #include "gpu/command_buffer/service/shared_image/shared_image_representation.h"
 #include "ui/gl/trace_util.h"
 
 #if BUILDFLAG(IS_WIN)
-#include "gpu/command_buffer/service/dxgi_shared_handle_manager.h"
+#include "gpu/command_buffer/service/dxgi_keyed_mutex_manager.h"
 #include "ui/gl/gl_angle_util_win.h"
 #endif
 
@@ -79,8 +79,8 @@ SharedImageManager::SharedImageManager(bool thread_safe,
 #if BUILDFLAG(IS_WIN)
   auto d3d11_device = gl::QueryD3D11DeviceObjectFromANGLE();
   if (d3d11_device) {
-    dxgi_shared_handle_manager_ =
-        base::MakeRefCounted<DXGISharedHandleManager>(std::move(d3d11_device));
+    dxgi_keyed_mutex_manager_ =
+        base::MakeRefCounted<DXGIKeyedMutexManager>(std::move(d3d11_device));
   }
 #endif
   CALLED_ON_VALID_THREAD();
@@ -148,29 +148,6 @@ SharedImageManager::ProduceGLTexture(const Mailbox& mailbox,
   if (!representation) {
     LOG(ERROR) << "SharedImageManager::ProduceGLTexture: Trying to produce a "
                   "representation from an incompatible mailbox.";
-    return nullptr;
-  }
-
-  return representation;
-}
-
-std::unique_ptr<GLTextureImageRepresentation>
-SharedImageManager::ProduceRGBEmulationGLTexture(const Mailbox& mailbox,
-                                                 MemoryTypeTracker* tracker) {
-  CALLED_ON_VALID_THREAD();
-
-  AutoLock autolock(this);
-  auto found = images_.find(mailbox);
-  if (found == images_.end()) {
-    LOG(ERROR) << "SharedImageManager::ProduceRGBEmulationGLTexture: Trying to "
-                  "produce a representation from a non-existent mailbox.";
-    return nullptr;
-  }
-
-  auto representation = (*found)->ProduceRGBEmulationGLTexture(this, tracker);
-  if (!representation) {
-    LOG(ERROR) << "SharedImageManager::ProduceRGBEmulationGLTexture: Trying to "
-                  "produce a representation from an incompatible mailbox.";
     return nullptr;
   }
 
@@ -396,7 +373,7 @@ void SharedImageManager::OnRepresentationDestroyed(
 
 void SharedImageManager::OnMemoryDump(const Mailbox& mailbox,
                                       base::trace_event::ProcessMemoryDump* pmd,
-                                      int client_id,
+                                      const std::string& dump_base_name,
                                       uint64_t client_tracing_id) {
   CALLED_ON_VALID_THREAD();
 
@@ -414,31 +391,16 @@ void SharedImageManager::OnMemoryDump(const Mailbox& mailbox,
     return;
 
   // Unique name in the process.
-  std::string dump_name =
-      base::StringPrintf("gpu/shared_images/client_0x%" PRIX32 "/mailbox_%s",
-                         client_id, mailbox.ToDebugString().c_str());
+  std::string dump_name = base::StringPrintf(
+      "%s/mailbox_%s", dump_base_name.c_str(), mailbox.ToDebugString().c_str());
 
-  base::trace_event::MemoryAllocatorDump* dump =
-      pmd->CreateAllocatorDump(dump_name);
-  dump->AddScalar(base::trace_event::MemoryAllocatorDump::kNameSize,
-                  base::trace_event::MemoryAllocatorDump::kUnitsBytes,
-                  estimated_size);
-  // Usage is optional, but |CreateLabelForSharedImageUsage()| expects one to be
-  // set.
-  if (backing->usage()) {
-    dump->AddString("usage", "",
-                    CreateLabelForSharedImageUsage(backing->usage()));
-  }
-  // Add a mailbox guid which expresses shared ownership with the client
-  // process.
-  // This must match the client-side.
-  auto client_guid = GetSharedImageGUIDForTracing(mailbox);
-  pmd->CreateSharedGlobalAllocatorDump(client_guid);
-  pmd->AddOwnershipEdge(dump->guid(), client_guid);
+  // GUID which expresses shared ownership with the client process. This must
+  // match the client-side GUID for mailbox.
+  auto client_guid = GetSharedImageGUIDForTracing(backing->mailbox());
 
-  // Allow the SharedImageBacking to attach additional data to the dump
-  // or dump additional sub-paths.
-  backing->OnMemoryDump(dump_name, dump, pmd, client_tracing_id);
+  // Backing will produce dump with relevant information along with ownership
+  // edge to `client_guid`.
+  backing->OnMemoryDump(dump_name, client_guid, pmd, client_tracing_id);
 }
 
 scoped_refptr<gfx::NativePixmap> SharedImageManager::GetNativePixmap(

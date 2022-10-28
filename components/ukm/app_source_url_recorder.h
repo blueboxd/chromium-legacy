@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -22,6 +22,10 @@ namespace app_list {
 class AppLaunchEventLogger;
 }  // namespace app_list
 
+namespace arc::input_overlay {
+class InputOverlayUkm;
+}  // namespace arc::input_overlay
+
 namespace badging {
 class BadgeManager;
 }  // namespace badging
@@ -37,6 +41,8 @@ class AppSourceUrlRecorder {
   friend class AppSourceUrlRecorderTest;
 
   friend class app_list::AppLaunchEventLogger;
+
+  friend class arc::input_overlay::InputOverlayUkm;
 
   friend class badging::BadgeManager;
 

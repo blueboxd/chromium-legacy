@@ -1,16 +1,16 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 import './shimless_rma_shared_css.js';
 import './base_page.js';
 
-import {I18nBehavior, I18nBehaviorInterface} from 'chrome://resources/js/i18n_behavior.m.js';
+import {I18nBehavior, I18nBehaviorInterface} from 'chrome://resources/cr_elements/i18n_behavior.js';
 import {html, mixinBehaviors, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {getShimlessRmaService} from './mojo_interface_provider.js';
 import {ShimlessRmaServiceInterface, StateResult} from './shimless_rma_types.js';
-import {disableNextButton, enableNextButton} from './shimless_rma_util.js';
+import {disableNextButton, enableNextButton, focusPageTitle} from './shimless_rma_util.js';
 
 /**
  * @fileoverview
@@ -60,6 +60,13 @@ export class OnboardingChooseWpDisableMethodPage extends
     super();
     /** @private {ShimlessRmaServiceInterface} */
     this.shimlessRmaService_ = getShimlessRmaService();
+  }
+
+  /** @override */
+  ready() {
+    super.ready();
+
+    focusPageTitle(this);
   }
 
   /**

@@ -1,8 +1,9 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 import {ArrayUtil} from '../common/array_util.js';
+import {EventHandler} from '../common/event_handler.js';
 
 import {ActionManager} from './action_manager.js';
 import {Navigator} from './navigator.js';

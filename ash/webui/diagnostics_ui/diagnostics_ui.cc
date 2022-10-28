@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -442,11 +442,12 @@ DiagnosticsDialogUI::~DiagnosticsDialogUI() {
 
 void DiagnosticsDialogUI::BindInterface(
     mojo::PendingReceiver<diagnostics::mojom::NetworkHealthProvider> receiver) {
-  DCHECK(features::IsNetworkingInDiagnosticsAppEnabled());
-  diagnostics::NetworkHealthProvider* network_health_provider =
-      diagnostics_manager_->GetNetworkHealthProvider();
-  if (network_health_provider) {
-    network_health_provider->BindInterface(std::move(receiver));
+  if (features::IsNetworkingInDiagnosticsAppEnabled()) {
+    diagnostics::NetworkHealthProvider* network_health_provider =
+        diagnostics_manager_->GetNetworkHealthProvider();
+    if (network_health_provider) {
+      network_health_provider->BindInterface(std::move(receiver));
+    }
   }
 }
 

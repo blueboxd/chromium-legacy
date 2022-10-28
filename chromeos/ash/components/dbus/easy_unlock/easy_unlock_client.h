@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -25,7 +25,7 @@ namespace ash {
 // TODO(tbarzic): Get rid of this client when Chrome switches from NSS to
 // OpenSSL (http://crbug.com/338888).
 class COMPONENT_EXPORT(ASH_DBUS_EASY_UNLOCK) EasyUnlockClient
-    : public DBusClient {
+    : public chromeos::DBusClient {
  public:
   // Callback for |GenerateEcP256KeyPair|. Carries the generated keys.
   // On error, arguments are empty strings.

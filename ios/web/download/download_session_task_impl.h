@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -28,8 +28,8 @@ class DownloadSessionTaskImpl final : public DownloadTaskImpl {
       NSURLSessionConfiguration* configuration,
       id<NSURLSessionDataDelegate> delegate)>;
 
-  // Constructs a new DownloadSessionTaskImpl objects. |web_state|, |identifier|
-  // and |delegate| must be valid.
+  // Constructs a new DownloadSessionTaskImpl objects. `web_state`, `identifier`
+  // and `delegate` must be valid.
   DownloadSessionTaskImpl(
       WebState* web_state,
       const GURL& original_url,

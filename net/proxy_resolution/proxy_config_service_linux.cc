@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -1250,6 +1250,7 @@ ProxyConfigServiceLinux::Delegate::Delegate(
           std::make_unique<SettingGetterImplKDE>(env_var_getter_.get());
       break;
     case base::nix::DESKTOP_ENVIRONMENT_XFCE:
+    case base::nix::DESKTOP_ENVIRONMENT_LXQT:
     case base::nix::DESKTOP_ENVIRONMENT_OTHER:
       break;
   }

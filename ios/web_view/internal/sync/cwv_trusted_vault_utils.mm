@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -14,7 +14,7 @@ namespace {
 syncer::TrustedVaultDeviceRegistrationStateForUMA CWVConvertTrustedVaultState(
     CWVTrustedVaultState state) {
   switch (state) {
-    case CWVTrustedVaultStateAlreadyRegistered:
+    case CWVTrustedVaultStateAlreadyRegisteredV0:
       return syncer::TrustedVaultDeviceRegistrationStateForUMA::
           kAlreadyRegisteredV0;
     case CWVTrustedVaultStateLocalKeysAreStale:
@@ -32,6 +32,9 @@ syncer::TrustedVaultDeviceRegistrationStateForUMA CWVConvertTrustedVaultState(
     case CWVTrustedVaultStateAttemptingRegistrationWithPersistentAuthError:
       return syncer::TrustedVaultDeviceRegistrationStateForUMA::
           kAttemptingRegistrationWithPersistentAuthError;
+    case CWVTrustedVaultStateAlreadyRegisteredV1:
+      return syncer::TrustedVaultDeviceRegistrationStateForUMA::
+          kAlreadyRegisteredV1;
   }
 }
 }  // namespace

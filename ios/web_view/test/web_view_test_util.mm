@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -47,23 +47,23 @@ bool TapWebViewElementWithId(CWVWebView* web_view, NSString* element_id) {
   return [EvaluateJavaScript(web_view, script) boolValue];
 }
 
-id EvaluateJavaScript(CWVWebView* web_view, NSString* script, bool* success) {
+id EvaluateJavaScript(CWVWebView* web_view, NSString* script, NSError** error) {
   __block bool callback_called = false;
   __block id evaluation_result = nil;
-  __block bool evaluation_success = false;
+  __block NSError* evaluation_error = nil;
   [web_view evaluateJavaScript:script
-                    completion:^(id local_result, BOOL local_success) {
+                    completion:^(id local_result, NSError* local_error) {
                       callback_called = true;
                       evaluation_result = [local_result copy];
-                      evaluation_success = local_success;
+                      evaluation_error = [local_error copy];
                     }];
 
   bool completed = WaitUntilConditionOrTimeout(kWaitForJSCompletionTimeout, ^{
     return callback_called;
   });
 
-  if (success) {
-    *success = evaluation_success;
+  if (error) {
+    *error = evaluation_error;
   }
 
   return completed ? evaluation_result : nil;

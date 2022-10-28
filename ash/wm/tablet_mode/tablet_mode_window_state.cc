@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -27,6 +27,7 @@
 #include "ash/wm/wm_event.h"
 #include "chromeos/ui/base/window_state_type.h"
 #include "chromeos/ui/wm/features.h"
+#include "chromeos/ui/wm/window_util.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_delegate.h"
 #include "ui/compositor/layer.h"
@@ -152,9 +153,9 @@ bool IsTabDraggingSourceWindow(aura::Window* window) {
   // Find the window that's currently in tab-dragging process. There is at most
   // one such window.
   aura::Window* dragged_window = nullptr;
-  for (auto* window : window_list) {
-    if (window_util::IsDraggingTabs(window)) {
-      dragged_window = window;
+  for (auto* maybe_dragged_window : window_list) {
+    if (window_util::IsDraggingTabs(maybe_dragged_window)) {
+      dragged_window = maybe_dragged_window;
       break;
     }
   }
@@ -290,9 +291,10 @@ void TabletModeWindowState::OnWMEvent(WindowState* window_state,
                    true /* animated */);
       break;
     case WM_EVENT_PIN:
-      if (!Shell::Get()->screen_pinning_controller()->IsPinned())
+      if (!Shell::Get()->screen_pinning_controller()->IsPinned()) {
         UpdateWindow(window_state, WindowStateType::kPinned,
                      true /* animated */);
+      }
       break;
     case WM_EVENT_PIP:
       if (!window_state->IsPip()) {
@@ -300,9 +302,10 @@ void TabletModeWindowState::OnWMEvent(WindowState* window_state,
       }
       break;
     case WM_EVENT_TRUSTED_PIN:
-      if (!Shell::Get()->screen_pinning_controller()->IsPinned())
+      if (!Shell::Get()->screen_pinning_controller()->IsPinned()) {
         UpdateWindow(window_state, WindowStateType::kTrustedPinned,
                      true /* animated */);
+      }
       break;
     case WM_EVENT_TOGGLE_MAXIMIZE_CAPTION:
     case WM_EVENT_TOGGLE_VERTICAL_MAXIMIZE:
@@ -333,7 +336,7 @@ void TabletModeWindowState::OnWMEvent(WindowState* window_state,
     }
     case WM_EVENT_FLOAT:
       // Not all windows can be floated.
-      if (!FloatController::CanFloatWindowInTablet(window_state->window()))
+      if (!chromeos::wm::CanFloatWindow(window_state->window()))
         return;
 
       UpdateWindow(window_state, WindowStateType::kFloated,
@@ -456,13 +459,14 @@ void TabletModeWindowState::DetachState(WindowState* window_state) {
 void TabletModeWindowState::UpdateWindow(WindowState* window_state,
                                          WindowStateType target_state,
                                          bool animated) {
+  aura::Window* window = window_state->window();
+
   DCHECK(target_state == WindowStateType::kMinimized ||
          target_state == WindowStateType::kMaximized ||
          target_state == WindowStateType::kPinned ||
          target_state == WindowStateType::kTrustedPinned ||
          (target_state == WindowStateType::kNormal &&
-          (!window_state->CanMaximize() ||
-           !!wm::GetTransientParent(window_state->window()))) ||
+          (!window_state->CanMaximize() || !!wm::GetTransientParent(window))) ||
          target_state == WindowStateType::kFullscreen ||
          target_state == WindowStateType::kPrimarySnapped ||
          target_state == WindowStateType::kSecondarySnapped ||
@@ -482,46 +486,42 @@ void TabletModeWindowState::UpdateWindow(WindowState* window_state,
   window_state->NotifyPreStateTypeChange(old_state_type);
 
   if (target_state == WindowStateType::kFloated)
-    Shell::Get()->float_controller()->Float(window_state->window());
+    Shell::Get()->float_controller()->FloatForTablet(window, old_state_type);
 
   // Unfloat floated window when exiting float state to another state.
   if (old_state_type == WindowStateType::kFloated)
-    Shell::Get()->float_controller()->Unfloat(window_state->window());
+    Shell::Get()->float_controller()->UnfloatImpl(window);
 
   if (target_state == WindowStateType::kMinimized) {
     wm::SetWindowVisibilityAnimationType(
-        window_state->window(), WINDOW_VISIBILITY_ANIMATION_TYPE_MINIMIZE);
-    window_state->window()->Hide();
+        window, WINDOW_VISIBILITY_ANIMATION_TYPE_MINIMIZE);
+    window->Hide();
     if (window_state->IsActive())
       window_state->Deactivate();
   } else {
     UpdateBounds(window_state, animated);
   }
 
-  if ((window_state->window()->layer()->GetTargetVisibility() ||
+  if ((window->layer()->GetTargetVisibility() ||
        old_state_type == WindowStateType::kMinimized) &&
-      !window_state->window()->layer()->visible()) {
+      !window->layer()->visible()) {
     // The layer may be hidden if the window was previously minimized. Make
     // sure it's visible.
-    window_state->window()->Show();
+    window->Show();
   }
 
   window_state->NotifyPostStateTypeChange(old_state_type);
 
-  if (old_state_type == WindowStateType::kPinned ||
-      target_state == WindowStateType::kPinned ||
-      old_state_type == WindowStateType::kTrustedPinned ||
-      target_state == WindowStateType::kTrustedPinned) {
-    Shell::Get()->screen_pinning_controller()->SetPinnedWindow(
-        window_state->window());
+  if (chromeos::IsPinnedWindowStateType(old_state_type) ||
+      chromeos::IsPinnedWindowStateType(target_state)) {
+    Shell::Get()->screen_pinning_controller()->SetPinnedWindow(window);
   }
 }
 
 WindowStateType TabletModeWindowState::GetSnappedWindowStateType(
     WindowState* window_state,
     WindowStateType target_state) {
-  DCHECK(target_state == WindowStateType::kPrimarySnapped ||
-         target_state == WindowStateType::kSecondarySnapped);
+  DCHECK(chromeos::IsSnappedWindowStateType(target_state));
   return SplitViewController::Get(Shell::GetPrimaryRootWindow())
                  ->CanSnapWindow(window_state->window())
              ? target_state

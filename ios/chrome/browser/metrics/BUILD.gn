@@ -1,4 +1,4 @@
-# Copyright 2016 The Chromium Authors. All rights reserved.
+# Copyright 2016 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -29,7 +29,7 @@ source_set("accessor") {
     "//components/metrics",
     "//components/prefs",
     "//components/variations",
-    "//ios/chrome/browser:application_context",
+    "//ios/chrome/browser/application_context",
   ]
 }
 source_set("metrics") {
@@ -95,11 +95,11 @@ source_set("metrics") {
     "//components/version_info",
     "//ios/chrome/app/application_delegate:app_state_header",
     "//ios/chrome/browser",
-    "//ios/chrome/browser:chrome_paths",
     "//ios/chrome/browser/browser_state",
     "//ios/chrome/browser/crash_report",
     "//ios/chrome/browser/history",
     "//ios/chrome/browser/main:public",
+    "//ios/chrome/browser/paths",
     "//ios/chrome/browser/signin",
     "//ios/chrome/browser/sync",
     "//ios/chrome/browser/tabs",
@@ -157,7 +157,6 @@ source_set("unit_tests") {
     "//ios/chrome/browser/browser_state:test_support",
     "//ios/chrome/browser/ui/default_promo:utils",
     "//ios/chrome/browser/ui/main:scene_state_header",
-    "//ios/chrome/browser/ui/ntp:feature_flags",
     "//ios/chrome/test:test_support",
     "//ios/web/common",
     "//ios/web/public",

@@ -362,8 +362,8 @@ void NGBoxFragmentBuilder::MoveChildrenInBlockDirection(LayoutUnit delta) {
   if (delta == LayoutUnit())
     return;
 
-  if (baseline_)
-    *baseline_ += delta;
+  if (first_baseline_)
+    *first_baseline_ += delta;
   if (last_baseline_)
     *last_baseline_ += delta;
 
@@ -495,6 +495,25 @@ void NGBoxFragmentBuilder::PropagateChildBreakValues(
   SetPreviousBreakAfter(break_after);
   if (flex_column_break_after)
     *flex_column_break_after = break_after;
+
+  if (ConstraintSpace().IsPaginated()) {
+    AtomicString start_page_name = child_layout_result.StartPageName();
+    if (!start_page_name) {
+      start_page_name = fragment.Style().Page();
+      if (!start_page_name)
+        start_page_name = ConstraintSpace().PageName();
+    }
+    SetStartPageNameIfNeeded(start_page_name);
+
+    AtomicString previous_page_name = child_layout_result.EndPageName();
+    if (!previous_page_name) {
+      previous_page_name = fragment.Style().Page();
+      if (!previous_page_name)
+        previous_page_name = ConstraintSpace().PageName();
+    }
+    SetPreviousPageName(previous_page_name);
+    SetPageName(To<NGPhysicalBoxFragment>(fragment).PageName());
+  }
 }
 
 const NGLayoutResult* NGBoxFragmentBuilder::ToBoxFragment(

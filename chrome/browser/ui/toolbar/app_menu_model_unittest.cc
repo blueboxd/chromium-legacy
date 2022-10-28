@@ -1,10 +1,11 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome/browser/ui/toolbar/app_menu_model.h"
 
 #include "base/memory/ptr_util.h"
+#include "base/test/scoped_feature_list.h"
 #include "build/branding_buildflags.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
@@ -22,6 +23,7 @@
 #include "chrome/test/base/menu_model_test.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
+#include "components/performance_manager/public/features.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/color_palette.h"
@@ -33,7 +35,6 @@
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "ash/constants/ash_features.h"
-#include "base/test/scoped_feature_list.h"
 #include "chrome/browser/ash/crosapi/browser_util.h"
 #include "components/user_manager/fake_user_manager.h"
 #endif
@@ -61,7 +62,7 @@ class MenuError : public GlobalError {
   bool HasBubbleView() override { return false; }
   bool HasShownBubbleView() override { return false; }
   void ShowBubbleView(Browser* browser) override { ADD_FAILURE(); }
-  GlobalErrorBubbleViewBase* GetBubbleView() override { return NULL; }
+  GlobalErrorBubbleViewBase* GetBubbleView() override { return nullptr; }
 
  private:
   int command_id_;
@@ -257,6 +258,25 @@ TEST_F(AppMenuModelTest, GlobalError) {
   EXPECT_EQ(0, error2->execute_count());
   model.ActivatedAt(index2.value());
   EXPECT_EQ(1, error1->execute_count());
+}
+
+TEST_F(AppMenuModelTest, EnabledPerformanceItem) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(
+      performance_manager::features::kHighEfficiencyModeAvailable);
+  AppMenuModel model(this, browser());
+  model.Init();
+  ToolsMenuModel toolModel(&model, browser());
+  size_t performance_index =
+      toolModel.GetIndexOfCommandId(IDC_PERFORMANCE).value();
+  EXPECT_TRUE(toolModel.IsEnabledAt(performance_index));
+}
+
+TEST_F(AppMenuModelTest, DisabledPerformanceItem) {
+  AppMenuModel model(this, browser());
+  model.Init();
+  ToolsMenuModel toolModel(&model, browser());
+  EXPECT_FALSE(toolModel.GetIndexOfCommandId(IDC_PERFORMANCE).has_value());
 }
 
 #if BUILDFLAG(IS_CHROMEOS)

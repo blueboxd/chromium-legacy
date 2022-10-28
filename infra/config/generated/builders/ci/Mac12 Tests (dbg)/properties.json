@@ -69,6 +69,10 @@
         {
           "builder": "mac_chromium_compile_dbg_ng",
           "group": "tryserver.chromium.mac"
+        },
+        {
+          "builder": "mac_chromium_dbg_ng",
+          "group": "tryserver.chromium.mac"
         }
       ]
     }
@@ -81,8 +85,5 @@
     ]
   },
   "builder_group": "chromium.mac",
-  "recipe": "chromium",
-  "sheriff_rotations": [
-    "chrome_browser_release"
-  ]
+  "recipe": "chromium"
 }

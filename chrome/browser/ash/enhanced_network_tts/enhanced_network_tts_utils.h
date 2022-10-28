@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,8 +8,8 @@
 #include <string>
 #include <vector>
 
-#include "ash/components/enhanced_network_tts/mojom/enhanced_network_tts.mojom.h"
 #include "base/values.h"
+#include "chromeos/ash/components/enhanced_network_tts/mojom/enhanced_network_tts.mojom.h"
 
 namespace ash {
 namespace enhanced_network_tts {

@@ -1,16 +1,16 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #import "ios/chrome/browser/ui/settings/password/password_details/password_details_table_view_controller.h"
 
-#include "base/ios/ios_util.h"
-#include "base/mac/foundation_util.h"
-#include "base/metrics/histogram_functions.h"
-#include "base/metrics/histogram_macros.h"
-#include "base/strings/sys_string_conversions.h"
-#include "components/password_manager/core/browser/password_manager_metrics_util.h"
-#include "components/password_manager/core/common/password_manager_features.h"
+#import "base/ios/ios_util.h"
+#import "base/mac/foundation_util.h"
+#import "base/metrics/histogram_functions.h"
+#import "base/metrics/histogram_macros.h"
+#import "base/strings/sys_string_conversions.h"
+#import "components/password_manager/core/browser/password_manager_metrics_util.h"
+#import "components/password_manager/core/common/password_manager_features.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/commands/browser_commands.h"
 #import "ios/chrome/browser/ui/commands/open_new_tab_command.h"
@@ -29,15 +29,15 @@
 #import "ios/chrome/browser/ui/table_view/cells/table_view_text_edit_item_delegate.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_text_item.h"
 #import "ios/chrome/browser/ui/table_view/table_view_utils.h"
-#include "ios/chrome/browser/ui/ui_feature_flags.h"
-#include "ios/chrome/browser/ui/util/uikit_ui_util.h"
+#import "ios/chrome/browser/ui/ui_feature_flags.h"
+#import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
 #import "ios/chrome/common/ui/elements/popover_label_view_controller.h"
 #import "ios/chrome/common/ui/reauthentication/reauthentication_module.h"
 #import "ios/chrome/common/ui/table_view/table_view_cells_constants.h"
-#include "ios/chrome/grit/ios_chromium_strings.h"
-#include "ios/chrome/grit/ios_strings.h"
-#include "ui/base/l10n/l10n_util_mac.h"
+#import "ios/chrome/grit/ios_chromium_strings.h"
+#import "ios/chrome/grit/ios_strings.h"
+#import "ui/base/l10n/l10n_util_mac.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -1252,9 +1252,11 @@ typedef NS_ENUM(NSInteger, ReauthenticationReason) {
       break;
     case ItemTypeFederation:
       generalPasteboard.string = self.password.federation;
+      [self logCopyPasswordDetailsFailure:NO];
       return;
     case ItemTypePassword:
       [self attemptToShowPasswordFor:ReauthenticationReasonCopy];
+      [self logCopyPasswordDetailsFailure:NO];
       return;
     case ItemTypeDuplicateCredentialMessage:
     case ItemTypeDuplicateCredentialButton:
@@ -1262,7 +1264,18 @@ typedef NS_ENUM(NSInteger, ReauthenticationReason) {
       NOTREACHED();
       return;
   }
-  [self showToast:message forSuccess:YES];
+
+  if (message.length) {
+    [self logCopyPasswordDetailsFailure:NO];
+    [self showToast:message forSuccess:YES];
+  } else {
+    // TODO(crbug.com/1359331): There's a bug that is caused by `menu` being
+    // nil, which leads to a nil message and a crash. Avoiding the crash and
+    // logging for monitoring the issue. Since `menu` is an instance of
+    // `UIMenuController` which is deprecated on iOS 16, this crash should go
+    // away once we switch to `UIEditMenuInteraction`.
+    [self logCopyPasswordDetailsFailure:YES];
+  }
 }
 
 #pragma mark - UIResponder
@@ -1317,6 +1330,11 @@ typedef NS_ENUM(NSInteger, ReauthenticationReason) {
           password_manager::metrics_util::ACCESS_PASSWORD_COUNT);
       break;
   }
+}
+
+- (void)logCopyPasswordDetailsFailure:(BOOL)failure {
+  base::UmaHistogramBoolean(
+      "PasswordManager.iOS.PasswordDetails.CopyDetailsFailed", failure);
 }
 
 #pragma mark - Public

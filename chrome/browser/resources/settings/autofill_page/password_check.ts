@@ -1,12 +1,12 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 import 'chrome://resources/cr_elements/cr_action_menu/cr_action_menu.js';
 import 'chrome://resources/cr_elements/cr_button/cr_button.js';
 import '../settings_shared.css.js';
-import 'chrome://resources/cr_elements/icons.m.js';
-import 'chrome://resources/cr_elements/shared_style_css.m.js';
+import 'chrome://resources/cr_elements/icons.html.js';
+import 'chrome://resources/cr_elements/cr_shared_style.css.js';
 import 'chrome://resources/polymer/v3_0/iron-flex-layout/iron-flex-layout-classes.js';
 import 'chrome://resources/polymer/v3_0/iron-icon/iron-icon.js';
 import 'chrome://resources/polymer/v3_0/iron-list/iron-list.js';
@@ -296,7 +296,7 @@ export class SettingsPasswordCheckElement extends
    * @return true if there are any compromised credentials that are dismissed.
    */
   private computeShowMutedLeakedCredentials_(): boolean {
-    return this.isMutedPasswordsEnabled && !!this.mutedPasswords.length;
+    return !!this.mutedPasswords.length;
   }
 
   /**
@@ -508,20 +508,18 @@ export class SettingsPasswordCheckElement extends
   }
 
   /**
-   * @return true if muting is enabled
-   * and the password is compromised and is dismissable/mutable.
+   * @return true if the password is compromised and is dismissable/mutable.
    */
   private computeIsMutePasswordButtonEnabled_(): boolean {
-    return this.isMutedPasswordsEnabled && this.isPasswordCompromised_() &&
+    return this.isPasswordCompromised_() &&
         !this.activePassword_!.compromisedInfo!.isMuted;
   }
 
   /**
-   * @return true if unmuting is enabled
-   * and the password is compromised and is dismissed/muted.
+   * @return true if the password is compromised and is dismissed/muted.
    */
   private computeIsUnmutePasswordButtonEnabled_(): boolean {
-    return this.isMutedPasswordsEnabled && this.isPasswordCompromised_() &&
+    return this.isPasswordCompromised_() &&
         !!this.activePassword_!.compromisedInfo!.isMuted;
   }
 

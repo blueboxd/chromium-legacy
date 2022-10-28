@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -1172,6 +1172,9 @@ AutomationNodeImpl.prototype = {
   suspendMedia: function() {
     this.performAction_('suspendMedia');
   },
+  longClick: function() {
+    this.performAction_('longClick');
+  },
 
   domQuerySelector: function(selector, callback) {
     if (!this.rootImpl) {
@@ -1506,6 +1509,7 @@ const stringAttributes = [
   'containerLiveStatus',
   'description',
   'display',
+  'doDefaultLabel',
   'fontFamily',
   'htmlTag',
   'imageDataUrl',
@@ -1513,6 +1517,7 @@ const stringAttributes = [
   'language',
   'liveRelevant',
   'liveStatus',
+  'longClickLabel',
   'placeholder',
   'roleDescription',
   'tooltip',
@@ -2161,6 +2166,7 @@ utils.expose(AutomationNode, AutomationNodeImpl, {
     'startDuckingMedia',
     'stopDuckingMedia',
     'suspendMedia',
+    'longClick',
     'toString',
     'unclippedBoundsForRange',
   ],

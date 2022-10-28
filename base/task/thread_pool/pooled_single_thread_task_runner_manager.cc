@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -216,8 +216,7 @@ class WorkerThreadDelegate : public WorkerThread::Delegate {
   bool EnqueueTaskSource(
       TransactionWithRegisteredTaskSource transaction_with_task_source) {
     CheckedAutoLock auto_lock(lock_);
-    auto sort_key = transaction_with_task_source.task_source->GetSortKey(
-        /* disable_fair_scheduling */ false);
+    auto sort_key = transaction_with_task_source.task_source->GetSortKey();
     priority_queue_.Push(std::move(transaction_with_task_source.task_source),
                          sort_key);
     if (!worker_awake_ && CanRunNextTaskSource()) {
@@ -535,10 +534,10 @@ void PooledSingleThreadTaskRunnerManager::Start(
     WorkerThreadObserver* worker_thread_observer) {
   DCHECK(!worker_thread_observer_);
   worker_thread_observer_ = worker_thread_observer;
-#if BUILDFLAG(IS_POSIX) && !BUILDFLAG(IS_NACL)
+#if (BUILDFLAG(IS_POSIX) && !BUILDFLAG(IS_NACL)) || BUILDFLAG(IS_FUCHSIA)
   DCHECK(io_thread_task_runner);
   io_thread_task_runner_ = std::move(io_thread_task_runner);
-#endif
+#endif  // (BUILDFLAG(IS_POSIX) && !BUILDFLAG(IS_NACL)) || BUILDFLAG(IS_FUCHSIA)
 
   decltype(workers_) workers_to_start;
   {

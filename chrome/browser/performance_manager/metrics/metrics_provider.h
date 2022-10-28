@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_PERFORMANCE_MANAGER_METRICS_METRICS_PROVIDER_H_
 
 #include "base/memory/raw_ptr.h"
-#include "chrome/browser/performance_manager/user_tuning/user_performance_tuning_manager.h"
+#include "chrome/browser/performance_manager/public/user_tuning/user_performance_tuning_manager.h"
 #include "components/metrics/metrics_provider.h"
 #include "components/prefs/pref_change_registrar.h"
 
@@ -56,12 +56,6 @@ class MetricsProvider : public ::metrics::MetricsProvider,
 
   // UserPerformanceTuningManager::Observer:
   void OnBatterySaverModeChanged(bool is_active) override;
-  void OnExternalPowerConnectedChanged(
-      bool external_power_connected) override{};
-  void OnBatteryThresholdReached() override{};
-  void OnMemoryThresholdReached() override{};
-  void OnTabCountThresholdReached() override{};
-  void OnJankThresholdReached() override{};
 
   void OnTuningModesChanged();
   EfficiencyMode ComputeCurrentMode() const;
@@ -70,8 +64,9 @@ class MetricsProvider : public ::metrics::MetricsProvider,
   const raw_ptr<PrefService> local_state_;
   EfficiencyMode current_mode_ = EfficiencyMode::kNormal;
 
+  bool battery_saver_enabled_ = false;
+
   bool initialized_ = false;
-  ;
 };
 
 }  // namespace performance_manager

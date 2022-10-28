@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,7 +12,7 @@
 #include "components/prefs/pref_service.h"
 #include "components/prefs/pref_value_map.h"
 #include "components/strings/grit/components_strings.h"
-#include "ios/chrome/browser/pref_names.h"
+#import "ios/chrome/browser/prefs/pref_names.h"
 #include "url/gurl.h"
 
 class GURL;
@@ -56,7 +56,7 @@ bool NewTabPageLocationPolicyHandler::CheckPolicySettings(
     policy::PolicyErrorMap* errors) {
   if (!TypeCheckingPolicyHandler::CheckPolicySettings(policies, errors))
     return false;
-  // |GetValueUnsafe| is used to differentiate between the policy value being
+  // `GetValueUnsafe` is used to differentiate between the policy value being
   // unset vs being set with an incorrect type.
   const base::Value* value = policies.GetValueUnsafe(policy_name());
   if (NewTabPageLocationPolicyHandler::ValidateNewTabPageLocationURL(value)) {

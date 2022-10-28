@@ -1,10 +1,9 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome/browser/webauthn/authenticator_request_dialog_model.h"
 
-#include <algorithm>
 #include <iterator>
 #include <utility>
 
@@ -14,19 +13,28 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/observer_list.h"
 #include "base/process/launch.h"
+#include "base/ranges/algorithm.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "build/build_config.h"
+#include "build/buildflag.h"
 #include "chrome/app/vector_icons/vector_icons.h"
+#include "chrome/browser/password_manager/chrome_webauthn_credentials_delegate.h"
+#include "chrome/browser/password_manager/chrome_webauthn_credentials_delegate_factory.h"
 #include "chrome/browser/ui/webauthn/authenticator_request_dialog.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/vector_icons/vector_icons.h"
+#include "content/public/browser/global_routing_id.h"
+#include "content/public/browser/render_frame_host.h"
+#include "content/public/browser/web_contents.h"
 #include "device/fido/discoverable_credential_metadata.h"
 #include "device/fido/features.h"
 #include "device/fido/fido_authenticator.h"
 #include "device/fido/pin.h"
 #include "device/fido/public_key_credential_user_entity.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/gfx/paint_vector_icon.h"
 #include "ui/gfx/text_elider.h"
 
 #if BUILDFLAG(IS_MAC)
@@ -98,23 +106,29 @@ std::u16string GetTransportShortDescription(AuthenticatorTransport transport) {
   return l10n_util::GetStringUTF16(msg_id);
 }
 
-constexpr const gfx::VectorIcon* GetTransportIcon(
+constexpr const gfx::VectorIcon& GetTransportIcon(
     AuthenticatorTransport transport) {
   switch (transport) {
     case AuthenticatorTransport::kUsbHumanInterfaceDevice:
-      return &vector_icons::kUsbIcon;
+      return vector_icons::kUsbIcon;
     case AuthenticatorTransport::kInternal:
-      return &kLaptopIcon;
+      return kLaptopIcon;
     case AuthenticatorTransport::kHybrid:
-      return &kSmartphoneIcon;
+      return kSmartphoneIcon;
     case AuthenticatorTransport::kAndroidAccessory:
-      return &kUsbCableIcon;
+      return kUsbCableIcon;
     case AuthenticatorTransport::kBluetoothLowEnergy:
     case AuthenticatorTransport::kNearFieldCommunication:
       NOTREACHED();
-      return nullptr;
+      return gfx::kNoneIcon;
   }
 }
+
+// Whether to show Step::kCreatePasskey, which prompts the user before platform
+// authenticator dispatch during MakeCredential. This is currently only shown on
+// MacOS, because that is the only desktop platform authenticator without a
+// "native" WebAuthn UI.
+constexpr bool kShowCreatePlatformPasskeyStep = BUILDFLAG(IS_MAC);
 
 }  // namespace
 
@@ -125,7 +139,7 @@ AuthenticatorRequestDialogModel::Mechanism::Mechanism(
     AuthenticatorRequestDialogModel::Mechanism::Type in_type,
     std::u16string in_name,
     std::u16string in_short_name,
-    const gfx::VectorIcon* in_icon,
+    const gfx::VectorIcon& in_icon,
     base::RepeatingClosure in_callback,
     bool is_priority)
     : type(std::move(in_type)),
@@ -159,8 +173,11 @@ void AuthenticatorRequestDialogModel::EphemeralState::Reset() {
 }
 
 AuthenticatorRequestDialogModel::AuthenticatorRequestDialogModel(
-    content::WebContents* web_contents)
-    : web_contents_(web_contents) {}
+    content::RenderFrameHost* frame_host) {
+  if (frame_host) {
+    frame_host_id_ = frame_host->GetGlobalId();
+  }
+}
 
 AuthenticatorRequestDialogModel::~AuthenticatorRequestDialogModel() {
   for (auto& observer : observers_)
@@ -378,20 +395,33 @@ void AuthenticatorRequestDialogModel::StartPlatformAuthenticatorFlow() {
              .empty()) {
       ephemeral_state_.creds_ =
           transport_availability_.recognized_platform_authenticator_credentials;
-      SetCurrentStep(Step::kPreSelectAccount);
+      SetCurrentStep(ephemeral_state_.creds_.size() == 1
+                         ? Step::kPreSelectSingleAccount
+                         : Step::kPreSelectAccount);
       return;
     }
   }
 
   if (transport_availability_.request_type ==
-          device::FidoRequestType::kMakeCredential &&
-      transport_availability_.is_off_the_record_context) {
-    after_off_the_record_interstitial_ =
-        base::BindOnce(&AuthenticatorRequestDialogModel::
-                           HideDialogAndDispatchToPlatformAuthenticator,
-                       weak_factory_.GetWeakPtr());
-    SetCurrentStep(Step::kOffTheRecordInterstitial);
-    return;
+      device::FidoRequestType::kMakeCredential) {
+    if (kShowCreatePlatformPasskeyStep &&
+        base::FeatureList::IsEnabled(
+            device::kWebAuthnNewDiscoverableCredentialsUi)) {
+      SetCurrentStep(Step::kCreatePasskey);
+      return;
+    }
+
+    if (transport_availability_.is_off_the_record_context) {
+      // Step::kCreatePasskey incorporates an incognito warning if
+      // applicable, so the OTR interstitial step only needs to show in the
+      // "old" UI.
+      after_off_the_record_interstitial_ =
+          base::BindOnce(&AuthenticatorRequestDialogModel::
+                             HideDialogAndDispatchToPlatformAuthenticator,
+                         weak_factory_.GetWeakPtr());
+      SetCurrentStep(Step::kOffTheRecordInterstitial);
+      return;
+    }
   }
 
   HideDialogAndDispatchToPlatformAuthenticator();
@@ -536,13 +566,13 @@ bool AuthenticatorRequestDialogModel::OnWinUserCancelled() {
   // dialog) then start the request over (once) if the user cancels the Windows
   // UI and there are other options in Chrome's UI.
   if (!have_restarted_due_to_windows_cancel_) {
-    bool have_other_option = std::any_of(
-        mechanisms_.begin(), mechanisms_.end(), [](const Mechanism& m) -> bool {
+    bool have_other_option =
+        base::ranges::any_of(mechanisms_, [](const Mechanism& m) -> bool {
           return absl::holds_alternative<Mechanism::Phone>(m.type) ||
                  absl::holds_alternative<Mechanism::AddPhone>(m.type);
         });
-    bool windows_was_priority = std::any_of(
-        mechanisms_.begin(), mechanisms_.end(), [](const Mechanism& m) -> bool {
+    bool windows_was_priority =
+        base::ranges::any_of(mechanisms_, [](const Mechanism& m) -> bool {
           return m.priority &&
                  absl::holds_alternative<Mechanism::WindowsAPI>(m.type);
         });
@@ -647,6 +677,13 @@ void AuthenticatorRequestDialogModel::SelectAccount(
         relying_party_id_, response.credential->id, *response.user_entity);
   }
   selection_callback_ = std::move(callback);
+  if (base::FeatureList::IsEnabled(
+          device::kWebAuthnNewDiscoverableCredentialsUi)) {
+    SetCurrentStep(ephemeral_state_.creds_.size() == 1
+                       ? Step::kSelectSingleAccount
+                       : Step::kSelectAccount);
+    return;
+  }
   SetCurrentStep(Step::kSelectAccount);
 }
 
@@ -799,17 +836,6 @@ void AuthenticatorRequestDialogModel::RequestAttestationPermission(
                      : Step::kAttestationPermissionRequest);
 }
 
-void AuthenticatorRequestDialogModel::GetCredentialListForConditionalUi(
-    base::OnceCallback<void(
-        const std::vector<device::DiscoverableCredentialMetadata>&)> callback) {
-  if (current_step() == Step::kConditionalMediation) {
-    std::move(callback).Run(ephemeral_state_.creds_);
-    return;
-  }
-
-  conditional_ui_user_list_callback_ = std::move(callback);
-}
-
 void AuthenticatorRequestDialogModel::set_cable_transport_info(
     absl::optional<bool> extension_is_v2,
     std::vector<PairedPhone> paired_phones,
@@ -857,6 +883,11 @@ AuthenticatorRequestDialogModel::GetWeakPtr() {
   return weak_factory_.GetWeakPtr();
 }
 
+content::WebContents* AuthenticatorRequestDialogModel::GetWebContents() {
+  return content::WebContents::FromRenderFrameHost(
+      content::RenderFrameHost::FromID(frame_host_id_));
+}
+
 void AuthenticatorRequestDialogModel::SetCurrentStep(Step step) {
   if (!started_) {
     // Dialog isn't showing yet. Remember to show this step when it appears.
@@ -869,8 +900,9 @@ void AuthenticatorRequestDialogModel::SetCurrentStep(Step step) {
     // The dialog will close itself.
     showing_dialog_ = false;
   } else {
-    if (!showing_dialog_ && web_contents_) {
-      ShowAuthenticatorRequestDialog(web_contents_, this);
+    auto* web_contents = GetWebContents();
+    if (!showing_dialog_ && web_contents) {
+      ShowAuthenticatorRequestDialog(web_contents, this);
       showing_dialog_ = true;
     }
   }
@@ -889,6 +921,7 @@ void AuthenticatorRequestDialogModel::StartGuidedFlowForTransport(
          current_step() == Step::kCableActivate ||
          current_step() == Step::kAndroidAccessory ||
          current_step() == Step::kConditionalMediation ||
+         current_step() == Step::kCreatePasskey ||
          current_step() == Step::kNotStarted);
   switch (transport) {
     case AuthenticatorTransport::kUsbHumanInterfaceDevice:
@@ -980,8 +1013,12 @@ void AuthenticatorRequestDialogModel::StartConditionalMediationRequest() {
   ephemeral_state_.creds_ =
       transport_availability_.recognized_platform_authenticator_credentials;
 
-  if (conditional_ui_user_list_callback_) {
-    std::move(conditional_ui_user_list_callback_).Run(ephemeral_state_.creds_);
+  auto* render_frame_host = content::RenderFrameHost::FromID(frame_host_id_);
+  auto* web_contents = GetWebContents();
+  if (web_contents && render_frame_host) {
+    ChromeWebAuthnCredentialsDelegateFactory::GetFactory(web_contents)
+        ->GetDelegateForFrame(render_frame_host)
+        ->OnCredentialsReceived(ephemeral_state_.creds_);
   }
 
   SetCurrentStep(Step::kConditionalMediation);
@@ -1038,12 +1075,16 @@ void AuthenticatorRequestDialogModel::PopulateMechanisms(
   // immediately, if this is a getAssertion.
   absl::optional<AuthenticatorTransport> priority_transport;
 
+  const bool show_create_passkey_step =
+      !is_get_assertion && kShowCreatePlatformPasskeyStep &&
+      base::FeatureList::IsEnabled(
+          device::kWebAuthnNewDiscoverableCredentialsUi);
   if (base::Contains(transport_availability_.available_transports,
                      AuthenticatorTransport::kInternal) &&
-      is_get_assertion &&
-      transport_availability_.has_platform_authenticator_credential ==
-          device::FidoRequestHandlerBase::RecognizedCredential::
-              kHasRecognizedCredential) {
+      (transport_availability_.has_platform_authenticator_credential ==
+           device::FidoRequestHandlerBase::RecognizedCredential::
+               kHasRecognizedCredential ||
+       show_create_passkey_step)) {
     priority_transport = AuthenticatorTransport::kInternal;
   }
 
@@ -1110,8 +1151,8 @@ void AuthenticatorRequestDialogModel::PopulateMechanisms(
     // showing a QR code.
     bool is_priority = false;
     if (base::FeatureList::IsEnabled(device::kWebAuthPasskeysUI)) {
-      if (std::any_of(mechanisms_.begin(), mechanisms_.end(),
-                      [](const Mechanism& m) { return m.priority; })) {
+      if (base::ranges::any_of(mechanisms_,
+                               [](const Mechanism& m) { return m.priority; })) {
         LOG(ERROR) << "Not jumping to QR because of other priority";
       } else if (!paired_phone_names().empty()) {
         LOG(ERROR) << "Not jumping to QR because linked phones exist";
@@ -1128,7 +1169,7 @@ void AuthenticatorRequestDialogModel::PopulateMechanisms(
     const std::u16string label =
         l10n_util::GetStringUTF16(IDS_WEBAUTHN_CABLEV2_ADD_PHONE);
     mechanisms_.emplace_back(
-        Mechanism::AddPhone(), label, label, &kQrcodeGeneratorIcon,
+        Mechanism::AddPhone(), label, label, kQrcodeGeneratorIcon,
         base::BindRepeating(
             &AuthenticatorRequestDialogModel::StartGuidedFlowForAddPhone,
             base::Unretained(this), mechanisms_.size()),
@@ -1147,9 +1188,7 @@ void AuthenticatorRequestDialogModel::PopulateMechanisms(
         base::BindRepeating(
             &AuthenticatorRequestDialogModel::StartGuidedFlowForTransport,
             base::Unretained(this), transport, mechanisms_.size()),
-        transport_availability_.request_type ==
-                device::FidoRequestType::kGetAssertion &&
-            priority_transport.has_value() && *priority_transport == transport);
+        priority_transport.has_value() && *priority_transport == transport);
   }
 
   if (base::Contains(transport_availability_.available_transports, kCable)) {
@@ -1163,7 +1202,7 @@ void AuthenticatorRequestDialogModel::PopulateMechanisms(
 
       mechanisms_.emplace_back(
           Mechanism::Phone(phone_name), std::move(long_name),
-          std::move(short_name), &kSmartphoneIcon,
+          std::move(short_name), kSmartphoneIcon,
           base::BindRepeating(&AuthenticatorRequestDialogModel::ContactPhone,
                               base::Unretained(this), phone_name,
                               mechanisms_.size()),

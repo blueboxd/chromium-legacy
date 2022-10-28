@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -137,11 +137,6 @@ class AngleVulkanImageBacking : public ClearTrackingSharedImageBacking,
     return SharedImageBackingType::kAngleVulkan;
   }
 
-  bool ProduceLegacyMailbox(MailboxManager* mailbox_manager) override {
-    NOTREACHED() << "Not supported.";
-    return false;
-  }
-
   bool UploadFromMemory(const SkPixmap& pixmap) override {
     PrepareBackendTexture();
     DCHECK(backend_texture_.isValid());
@@ -154,31 +149,6 @@ class AngleVulkanImageBacking : public ClearTrackingSharedImageBacking,
 
   void Update(std::unique_ptr<gfx::GpuFence> in_fence) override {
     NOTREACHED();
-  }
-
-  void OnMemoryDump(const std::string& dump_name,
-                    base::trace_event::MemoryAllocatorDump* dump,
-                    base::trace_event::ProcessMemoryDump* pmd,
-                    uint64_t client_tracing_id) override {
-    if (auto tracing_id = GrBackendTextureTracingID(backend_texture_)) {
-      // Add a |service_guid| which expresses shared ownership between the
-      // various GPU dumps.
-      auto client_guid = GetSharedImageGUIDForTracing(mailbox());
-      auto service_guid = gl::GetGLTextureServiceGUIDForTracing(tracing_id);
-      pmd->CreateSharedGlobalAllocatorDump(service_guid);
-
-      std::string format_dump_name =
-          base::StringPrintf("%s/format=%d", dump_name.c_str(), format());
-      base::trace_event::MemoryAllocatorDump* format_dump =
-          pmd->CreateAllocatorDump(format_dump_name);
-      format_dump->AddScalar(
-          base::trace_event::MemoryAllocatorDump::kNameSize,
-          base::trace_event::MemoryAllocatorDump::kUnitsBytes,
-          static_cast<uint64_t>(EstimatedSizeForMemTracking()));
-
-      int importance = 2;  // This client always owns the ref.
-      pmd->AddOwnershipEdge(client_guid, service_guid, importance);
-    }
   }
 
   std::unique_ptr<GLTexturePassthroughImageRepresentation>
@@ -575,17 +545,11 @@ AngleVulkanImageBackingFactory::CreateSharedImage(
     SkAlphaType alpha_type,
     uint32_t usage,
     bool is_thread_safe) {
-  const FormatInfo& format_info = format_info_[format];
-  if (!CanCreateSharedImage(size, /*pixel_data=*/{}, format_info,
-                            GL_TEXTURE_2D)) {
-    return nullptr;
-  }
-
   auto backing = std::make_unique<AngleVulkanImageBacking>(
       context_state_, mailbox, format, size, color_space, surface_origin,
       alpha_type, usage);
 
-  if (!backing->Initialize(format_info, {}))
+  if (!backing->Initialize(format_info_[format], {}))
     return nullptr;
 
   return backing;
@@ -601,15 +565,11 @@ AngleVulkanImageBackingFactory::CreateSharedImage(
     SkAlphaType alpha_type,
     uint32_t usage,
     base::span<const uint8_t> data) {
-  const FormatInfo& format_info = format_info_[format];
-  if (!CanCreateSharedImage(size, data, format_info, GL_TEXTURE_2D))
-    return nullptr;
-
   auto backing = std::make_unique<AngleVulkanImageBacking>(
       context_state_, mailbox, format, size, color_space, surface_origin,
       alpha_type, usage);
 
-  if (!backing->Initialize(format_info, data))
+  if (!backing->Initialize(format_info_[format], data))
     return nullptr;
 
   return backing;
@@ -659,11 +619,11 @@ bool AngleVulkanImageBackingFactory::CanUseAngleVulkanImageBacking(
 bool AngleVulkanImageBackingFactory::IsSupported(
     uint32_t usage,
     viz::ResourceFormat format,
+    const gfx::Size& size,
     bool thread_safe,
     gfx::GpuMemoryBufferType gmb_type,
     GrContextType gr_context_type,
-    bool* allow_legacy_mailbox,
-    bool is_pixel_used) {
+    base::span<const uint8_t> pixel_data) {
   DCHECK_EQ(gr_context_type, GrContextType::kVulkan);
   if (!CanUseAngleVulkanImageBacking(usage))
     return false;
@@ -675,9 +635,8 @@ bool AngleVulkanImageBackingFactory::IsSupported(
     return false;
   }
 
-  *allow_legacy_mailbox = false;
-
-  return true;
+  return CanCreateSharedImage(size, pixel_data, format_info_[format],
+                              GL_TEXTURE_2D);
 }
 
 }  // namespace gpu

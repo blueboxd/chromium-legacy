@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -72,6 +72,9 @@ bool IsConstraintPersistent(const ContentSettingConstraints& constraints);
 
 // Returns the expiration time for a supplied |duration|.
 base::Time GetConstraintExpiration(const base::TimeDelta duration);
+
+// Returns whether the given type supports tracking last_visit timestamps.
+bool CanTrackLastVisit(ContentSettingsType type);
 
 }  // namespace content_settings
 

@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -176,7 +176,7 @@ history::URLDatabase* ChromeAutocompleteProviderClient::GetInMemoryDatabase() {
 
   // This method is called in unit test contexts where the HistoryService isn't
   // loaded.
-  return history_service ? history_service->InMemoryDatabase() : NULL;
+  return history_service ? history_service->InMemoryDatabase() : nullptr;
 }
 
 InMemoryURLIndex* ChromeAutocompleteProviderClient::GetInMemoryURLIndex() {
@@ -454,7 +454,7 @@ void ChromeAutocompleteProviderClient::CloseIncognitoWindows() {
 #endif  // !BUILDFLAG(IS_ANDROID)
 }
 
-bool ChromeAutocompleteProviderClient::OpenJourneys() {
+bool ChromeAutocompleteProviderClient::OpenJourneys(const std::string& query) {
 #if !BUILDFLAG(IS_ANDROID)
   if (!base::FeatureList::IsEnabled(features::kUnifiedSidePanel) ||
       !base::FeatureList::IsEnabled(features::kSidePanelJourneys) ||

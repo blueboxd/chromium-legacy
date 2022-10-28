@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -17,6 +17,7 @@
 #include "base/guid.h"
 #include "base/i18n/case_conversion.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/ranges/algorithm.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_util.h"
 #include "base/task/thread_pool.h"
@@ -208,15 +209,6 @@ void ShortcutsBackend::AddOrUpdateShortcut(const std::u16string& text,
   match.Validate();
 #endif  // DCHECK_IS_ON()
 
-  // TODO(manukh): If we decide to launch history cluster suggestions, adding
-  //  them to the shortcuts provider would be useful to help users get to
-  //  repeat journeys but would require some logic to limit the joint history
-  //  cluster provider and shortcuts provider history cluster suggestions to
-  //  just 1. Until then, don't add history cluster suggestions to the shortcuts
-  //  DB to avoid showing more than 1 history cluster suggestion.
-  if (match.type == AutocompleteMatchType::HISTORY_CLUSTER)
-    return;
-
   // Trim `text` since `ExpandToFullWord()` trims the shortcut text; otherwise,
   // inputs with trailing whitespace wouldn't match a shortcut even if the user
   // previously used the input with a trailing whitespace.
@@ -331,9 +323,8 @@ void ShortcutsBackend::OnURLsDeleted(
 
   ShortcutsDatabase::ShortcutIDs shortcut_ids;
   for (const auto& guid_pair : guid_map_) {
-    if (std::find_if(
-            deletion_info.deleted_rows().begin(),
-            deletion_info.deleted_rows().end(),
+    if (base::ranges::find_if(
+            deletion_info.deleted_rows(),
             history::URLRow::URLRowHasURL(
                 guid_pair.second->second.match_core.destination_url)) !=
         deletion_info.deleted_rows().end()) {

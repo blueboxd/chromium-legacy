@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,7 +8,7 @@
 
 #import "base/mac/foundation_util.h"
 #import "base/test/task_environment.h"
-#include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
+#import "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #import "ios/chrome/browser/link_to_text/link_to_text_payload.h"
 #import "ios/chrome/browser/main/test_browser.h"
 #import "ios/chrome/browser/ui/browser_container/browser_container_view_controller.h"

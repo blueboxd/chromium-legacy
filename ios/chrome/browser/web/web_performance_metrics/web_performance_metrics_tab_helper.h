@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -39,7 +39,7 @@ class WebPerformanceMetricsTabHelper
       double absolute_first_contentful_paint);
 
   // If the web page has logged its First Input Delay, the function
-  // returns |true| otherwise it returns |false|
+  // returns `true` otherwise it returns `false`
   bool GetFirstInputDelayLoggingStatus() const;
 
   // Returns whether the WebState has been hidden at any point since the start

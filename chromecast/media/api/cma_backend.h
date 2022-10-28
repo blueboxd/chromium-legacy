@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -71,6 +71,7 @@ class CmaBackend {
     virtual RenderingDelay GetRenderingDelay() = 0;
     virtual void GetStatistics(Statistics* statistics) = 0;
     virtual AudioTrackTimestamp GetAudioTrackTimestamp() = 0;
+    virtual int GetStartThresholdInFrames() = 0;
 
     // Returns true if the audio decoder requires that encrypted buffers be
     // decrypted before being passed to PushBuffer(). The return value may

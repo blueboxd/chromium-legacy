@@ -1,10 +1,9 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "components/password_manager/core/browser/password_form_manager.h"
 
-#include <algorithm>
 #include <memory>
 #include <set>
 #include <string>
@@ -41,6 +40,7 @@
 #include "components/password_manager/core/common/password_manager_features.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "google_apis/gaia/core_account_id.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/abseil-cpp/absl/types/variant.h"
 
 using autofill::FieldDataManager;
@@ -140,18 +140,10 @@ PasswordFormManager::PasswordFormManager(
     owned_form_fetcher_->Fetch();
 
     WebAuthnCredentialsDelegate* delegate =
-        client_->GetWebAuthnCredentialsDelegate();
-    bool is_webauthn_autofill_enabled =
-        delegate && delegate->IsWebAuthnAutofillEnabled();
-
-    // The barrier closure is invoked by the WebAuthnCredentialsDelegate,
-    // if enabled, and by ProcessServerPredictions. A fill will trigger
-    // when both requests are satisfied.
-    async_predictions_waiter_.InitializeClosure(
-        is_webauthn_autofill_enabled ? 2 : 1);
-    if (is_webauthn_autofill_enabled) {
+        client_->GetWebAuthnCredentialsDelegateForDriver(driver_.get());
+    if (delegate && delegate->IsWebAuthnAutofillEnabled()) {
       delegate->RetrieveWebAuthnSuggestions(
-          async_predictions_waiter_.closure());
+          async_predictions_waiter_.CreateClosure());
     }
   }
   votes_uploader_.StoreInitialFieldValues(*observed_form());
@@ -541,15 +533,9 @@ bool PasswordFormManager::UpdateStateOnUserInput(
     FormRendererId form_id,
     FieldRendererId field_id,
     const std::u16string& field_value) {
-  if (form_id) {
-    if (!observed_form()->is_form_tag ||
-        (observed_form()->is_form_tag &&
-         observed_form()->unique_renderer_id != form_id)) {
-      return false;
-    }
-  } else if (observed_form()->is_form_tag) {
-    return false;
-  }
+  DCHECK((form_id && observed_form()->is_form_tag &&
+          observed_form()->unique_renderer_id == form_id) ||
+         (!form_id && !observed_form()->is_form_tag));
 
   bool form_data_changed = false;
   for (FormFieldData& field : mutable_observed_form()->fields) {
@@ -662,6 +648,7 @@ PasswordFormManager::PasswordFormManager(
 void PasswordFormManager::DelayFillForServerSidePredictions() {
   waiting_for_server_predictions_ = true;
   async_predictions_waiter_.StartTimer();
+  server_predictions_closure_ = async_predictions_waiter_.CreateClosure();
 }
 
 void PasswordFormManager::OnFetchCompleted() {
@@ -697,6 +684,19 @@ void PasswordFormManager::OnFetchCompleted() {
 
 void PasswordFormManager::OnWaitCompleted() {
   Fill();
+}
+
+void PasswordFormManager::OnTimeout() {
+  Fill();
+}
+
+bool PasswordFormManager::WebAuthnCredentialsAvailable() const {
+  WebAuthnCredentialsDelegate* delegate =
+      client_->GetWebAuthnCredentialsDelegateForDriver(driver_.get());
+  if (delegate && delegate->IsWebAuthnAutofillEnabled()) {
+    return delegate->GetWebAuthnSuggestions().has_value();
+  }
+  return false;
 }
 
 void PasswordFormManager::CreatePendingCredentials() {
@@ -814,10 +814,10 @@ void PasswordFormManager::ProcessServerPredictions(
   }
   UpdatePredictionsForObservedForm(predictions);
   if (parser_.predictions()) {
-    if (!async_predictions_waiter_.closure().is_null()) {
+    if (!server_predictions_closure_.is_null()) {
       // Signals the availability of server predictions, but there might be
       // other callbacks still outstanding.
-      async_predictions_waiter_.closure().Run();
+      std::move(server_predictions_closure_).Run();
     } else {
       Fill();
     }
@@ -865,19 +865,11 @@ void PasswordFormManager::Fill() {
     return;
 #endif
 
-  bool webauthn_suggestions_available = false;
-  WebAuthnCredentialsDelegate* delegate =
-      client_->GetWebAuthnCredentialsDelegate();
-  if (delegate && delegate->IsWebAuthnAutofillEnabled()) {
-    webauthn_suggestions_available =
-        delegate->GetWebAuthnSuggestions().size() > 0;
-  }
-
   SendFillInformationToRenderer(
       client_, driver_.get(), *observed_password_form.get(),
       form_fetcher_->GetBestMatches(), form_fetcher_->GetFederatedMatches(),
       form_fetcher_->GetPreferredMatch(), form_fetcher_->IsBlocklisted(),
-      metrics_recorder_.get(), webauthn_suggestions_available);
+      metrics_recorder_.get(), WebAuthnCredentialsAvailable());
 }
 
 void PasswordFormManager::FillForm(
@@ -904,11 +896,8 @@ void PasswordFormManager::OnGeneratedPasswordAccepted(
     const std::u16string& password) {
   // Find the generating element to update its value. The parser needs a non
   // empty value.
-  auto it = std::find_if(form_data.fields.begin(), form_data.fields.end(),
-                         [generation_element_id](const auto& field_data) {
-                           return generation_element_id ==
-                                  field_data.unique_renderer_id;
-                         });
+  auto it = base::ranges::find(form_data.fields, generation_element_id,
+                               &FormFieldData::unique_renderer_id);
   // The parameters are coming from the renderer and can't be trusted.
   if (it == form_data.fields.end())
     return;

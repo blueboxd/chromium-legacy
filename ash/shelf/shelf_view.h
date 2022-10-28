@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -377,6 +377,10 @@ class ASH_EXPORT ShelfView : public views::AccessiblePaneView,
 
   // Animates the bounds of each view to its ideal bounds.
   void AnimateToIdealBounds();
+
+  // Animates the separator to its ideal bounds if `animate` is true, or sets
+  // the bounds directly otherwise.
+  void UpdateSeparatorBounds(bool animate);
 
   // Fades |view| from an opacity of 0 to 1. This is when adding a new item.
   void FadeIn(views::View* view);

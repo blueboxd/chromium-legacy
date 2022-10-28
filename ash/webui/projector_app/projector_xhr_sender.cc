@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -164,6 +164,9 @@ void ProjectorXhrSender::SendRequest(const GURL& url,
   // Send resource request.
   auto loader = network::SimpleURLLoader::Create(std::move(resource_request),
                                                  kNetworkTrafficAnnotationTag);
+  // Return response body of non-2xx response. This allows passing response body
+  // for non-2xx response.
+  loader->SetAllowHttpErrorResults(true);
 
   if (!request_body.empty())
     loader->AttachStringForUpload(request_body, "application/json");
@@ -185,19 +188,23 @@ void ProjectorXhrSender::OnSimpleURLLoaderComplete(
     SendRequestCallback callback,
     std::unique_ptr<std::string> response_body) {
   auto& loader = loader_map_[request_id];
-  if (!response_body || loader->NetError() != net::OK ||
-      !loader->ResponseInfo() || !loader->ResponseInfo()->headers) {
-    std::move(callback).Run(
-        /*success=*/false,
-        /*response_body=*/std::string(),
-        /*error=*/"XHR_FETCH_FAILURE");
-  } else {
-    std::move(callback).Run(
-        /*success=*/true,
-        /*response_body=*/*response_body,
-        /*error=*/std::string());
+
+  auto hasHeaders = loader->ResponseInfo() && loader->ResponseInfo()->headers;
+  int response_code = -1;
+  if (hasHeaders) {
+    response_code = loader->ResponseInfo()->headers->response_code();
   }
 
+  // A request was successful if there is response body and the response code is
+  // 2XX.
+  bool is_success =
+      response_body && response_code >= 200 && response_code < 300;
+  auto response_body_or_empty = response_body ? *response_body : std::string();
+  // TODO(b/243180842): Include response code in XhrResponse when needed.
+  std::move(callback).Run(
+      /*success=*/is_success,
+      /*response_body=*/response_body_or_empty,
+      /*error=*/is_success ? std::string() : "XHR_FETCH_FAILURE");
   loader_map_.erase(request_id);
 }
 

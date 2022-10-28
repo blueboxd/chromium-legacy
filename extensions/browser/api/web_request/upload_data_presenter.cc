@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -140,10 +140,9 @@ std::unique_ptr<ParsedDataPresenter> ParsedDataPresenter::CreateForTests() {
 }
 
 ParsedDataPresenter::ParsedDataPresenter(const std::string& form_type)
-  : parser_(FormDataParser::CreateFromContentTypeHeader(&form_type)),
-    success_(parser_.get() != NULL),
-    dictionary_(success_ ? new base::DictionaryValue() : NULL) {
-}
+    : parser_(FormDataParser::CreateFromContentTypeHeader(&form_type)),
+      success_(parser_.get() != nullptr),
+      dictionary_(success_ ? new base::DictionaryValue() : nullptr) {}
 
 void ParsedDataPresenter::Abort() {
   success_ = false;

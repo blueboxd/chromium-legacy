@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -24,6 +24,7 @@
 #include "chrome/browser/extensions/permissions_test_util.h"
 #include "chrome/browser/extensions/permissions_updater.h"
 #include "chrome/browser/extensions/scripting_permissions_modifier.h"
+#include "chrome/browser/extensions/site_permissions_helper.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/extensions/api/developer_private.h"
 #include "chrome/common/pref_names.h"
@@ -138,9 +139,9 @@ void AddUserSpecifiedSites(Profile* profile,
                            bool restricted) {
   scoped_refptr<ExtensionFunction> function = base::MakeRefCounted<
       api::DeveloperPrivateAddUserSpecifiedSitesFunction>();
-  std::string args = base::StringPrintf(R"([{"siteList":"%s","hosts":%s}])",
-                                        restricted ? "RESTRICTED" : "PERMITTED",
-                                        hosts.c_str());
+  std::string args = base::StringPrintf(
+      R"([{"siteSet":"%s","hosts":%s}])",
+      restricted ? "USER_RESTRICTED" : "USER_PERMITTED", hosts.c_str());
   EXPECT_TRUE(api_test_utils::RunFunction(function.get(), args, profile))
       << function->GetError();
 }
@@ -150,9 +151,9 @@ void RemoveUserSpecifiedSites(Profile* profile,
                               bool restricted) {
   scoped_refptr<ExtensionFunction> function = base::MakeRefCounted<
       api::DeveloperPrivateRemoveUserSpecifiedSitesFunction>();
-  std::string args = base::StringPrintf(R"([{"siteList":"%s","hosts":%s}])",
-                                        restricted ? "RESTRICTED" : "PERMITTED",
-                                        hosts.c_str());
+  std::string args = base::StringPrintf(
+      R"([{"siteSet":"%s","hosts":%s}])",
+      restricted ? "USER_RESTRICTED" : "USER_PERMITTED", hosts.c_str());
   EXPECT_TRUE(api_test_utils::RunFunction(function.get(), args, profile))
       << function->GetError();
 }
@@ -250,7 +251,8 @@ class DeveloperPrivateApiUnitTest : public ExtensionServiceTestWithInstall {
   // Tests modifying the extension's configuration.
   void TestExtensionPrefSetting(const base::RepeatingCallback<bool()>& has_pref,
                                 const std::string& key,
-                                const std::string& extension_id);
+                                const std::string& extension_id,
+                                bool expected_default_value);
 
   testing::AssertionResult TestPackExtensionFunction(
       const base::ListValue& args,
@@ -342,11 +344,12 @@ const Extension* DeveloperPrivateApiUnitTest::LoadSimpleExtension() {
 void DeveloperPrivateApiUnitTest::TestExtensionPrefSetting(
     const base::RepeatingCallback<bool()>& has_pref,
     const std::string& key,
-    const std::string& extension_id) {
+    const std::string& extension_id,
+    bool expected_default_value) {
   scoped_refptr<ExtensionFunction> function(
       new api::DeveloperPrivateUpdateExtensionConfigurationFunction());
 
-  EXPECT_FALSE(has_pref.Run()) << key;
+  EXPECT_EQ(expected_default_value, has_pref.Run()) << key;
 
   {
     base::Value::Dict parameters;
@@ -503,11 +506,17 @@ TEST_F(DeveloperPrivateApiUnitTest,
   TestExtensionPrefSetting(
       base::BindRepeating(&HasPrefsPermission, &util::IsIncognitoEnabled,
                           profile(), id),
-      "incognitoAccess", id);
+      "incognitoAccess", id, /*expected_default_value=*/false);
   TestExtensionPrefSetting(
       base::BindRepeating(&HasPrefsPermission, &util::AllowFileAccess,
                           profile(), id),
-      "fileAccess", id);
+      "fileAccess", id, /*expected_default_value=*/false);
+
+  SitePermissionsHelper helper(profile());
+  TestExtensionPrefSetting(
+      base::BindRepeating(&SitePermissionsHelper::ShowAccessRequestsInToolbar,
+                          base::Unretained(&helper), id),
+      "showAccessRequestsInToolbar", id, /*expected_default_value=*/true);
 }
 
 // Test developerPrivate.reload.
@@ -1115,13 +1124,12 @@ TEST_F(DeveloperPrivateApiUnitTest, DeveloperPrivateRequestFileSource) {
   properties.extension_id = extension->id();
   properties.path_suffix = "manifest.json";
   properties.message = kErrorMessage;
-  properties.manifest_key = std::make_unique<std::string>("name");
+  properties.manifest_key = "name";
 
   scoped_refptr<ExtensionFunction> function(
       new api::DeveloperPrivateRequestFileSourceFunction());
   base::ListValue file_source_args;
-  file_source_args.Append(
-      base::Value::FromUniquePtrValue(properties.ToValue()));
+  file_source_args.Append(base::Value(properties.ToValue()));
   EXPECT_TRUE(RunFunction(function, file_source_args)) << function->GetError();
 
   const base::Value& response_value = (*function->GetResultList())[0];
@@ -1143,33 +1151,39 @@ TEST_F(DeveloperPrivateApiUnitTest, DeveloperPrivateGetExtensionsInfo) {
   // ExtensionInfoGenerator's unittest), but rather just to make sure we can
   // serialize/deserialize the result - which implicity tests that everything
   // has a sane value.
-  scoped_refptr<ExtensionFunction> function(
-      new api::DeveloperPrivateGetExtensionsInfoFunction());
-  EXPECT_TRUE(RunFunction(function, base::ListValue())) << function->GetError();
-  const base::Value::List* results = function->GetResultList();
-  ASSERT_EQ(1u, results->size());
-  ASSERT_TRUE((*results)[0].is_list());
-  base::Value::ConstListView list = (*results)[0].GetListDeprecated();
-  ASSERT_EQ(1u, list.size());
-  std::unique_ptr<api::developer_private::ExtensionInfo> info =
-      api::developer_private::ExtensionInfo::FromValue(list[0]);
-  ASSERT_TRUE(info);
+  {
+    scoped_refptr<ExtensionFunction> function(
+        new api::DeveloperPrivateGetExtensionsInfoFunction());
+    EXPECT_TRUE(RunFunction(function, base::ListValue()))
+        << function->GetError();
+    const base::Value::List* results = function->GetResultList();
+    ASSERT_EQ(1u, results->size());
+    ASSERT_TRUE((*results)[0].is_list());
+    const base::Value::List& list = (*results)[0].GetList();
+    ASSERT_EQ(1u, list.size());
+    std::unique_ptr<api::developer_private::ExtensionInfo> info =
+        api::developer_private::ExtensionInfo::FromValue(list[0]);
+    ASSERT_TRUE(info);
+  }
 
   // As a sanity check, also run the GetItemsInfo and make sure it returns a
   // sane value.
-  function = new api::DeveloperPrivateGetItemsInfoFunction();
-  base::ListValue args;
-  args.Append(false);
-  args.Append(false);
-  EXPECT_TRUE(RunFunction(function, args)) << function->GetError();
-  results = function->GetResultList();
-  ASSERT_EQ(1u, results->size());
-  ASSERT_TRUE((*results)[0].is_list());
-  list = (*results)[0].GetListDeprecated();
-  ASSERT_EQ(1u, list.size());
-  std::unique_ptr<api::developer_private::ItemInfo> item_info =
-      api::developer_private::ItemInfo::FromValue(list[0]);
-  ASSERT_TRUE(item_info);
+  {
+    scoped_refptr<ExtensionFunction> function(
+        new api::DeveloperPrivateGetItemsInfoFunction());
+    base::ListValue args;
+    args.Append(false);
+    args.Append(false);
+    EXPECT_TRUE(RunFunction(function, args)) << function->GetError();
+    const base::Value::List* results = function->GetResultList();
+    ASSERT_EQ(1u, results->size());
+    ASSERT_TRUE((*results)[0].is_list());
+    const base::Value::List& list = (*results)[0].GetList();
+    ASSERT_EQ(1u, list.size());
+    std::unique_ptr<api::developer_private::ItemInfo> item_info =
+        api::developer_private::ItemInfo::FromValue(list[0]);
+    ASSERT_TRUE(item_info);
+  }
 }
 
 // Test developerPrivate.deleteExtensionErrors.
@@ -2036,21 +2050,21 @@ TEST_F(DeveloperPrivateApiUnitTest,
     "etldPlusOne": "example.com",
     "numExtensions": 0,
     "sites": [{
-      "siteList": "PERMITTED",
+      "siteSet": "USER_PERMITTED",
       "numExtensions": 0,
-      "site": "http://a.example.com",
+      "site": "a.example.com",
     }, {
-      "siteList": "RESTRICTED",
+      "siteSet": "USER_RESTRICTED",
       "numExtensions": 0,
-      "site": "http://b.example.com",
+      "site": "b.example.com",
     }]
   }, {
     "etldPlusOne": "google.ca",
     "numExtensions": 0,
     "sites": [{
-      "siteList": "RESTRICTED",
+      "siteSet": "USER_RESTRICTED",
       "numExtensions": 0,
-      "site": "http://google.ca",
+      "site": "google.ca",
     }]
   }])"));
 }
@@ -2069,6 +2083,7 @@ TEST_F(DeveloperPrivateApiUnitTest,
           .AddPermission("http://www.google.com/")
           .AddPermission("http://images.google.com/")
           .AddPermission("https://example.com/")
+          .AddPermission("*://localhost/")
           .Build();
 
   scoped_refptr<const Extension> extension_2 =
@@ -2076,6 +2091,7 @@ TEST_F(DeveloperPrivateApiUnitTest,
           .AddPermission("https://mail.google.com/")
           .AddPermission("http://www.google.com/")
           .AddPermission("http://www.asdf.com/")
+          .AddPermission("http://localhost:8080/")
           .Build();
   AddExtensionAndGrantPermissions(profile(), service(), *extension_1);
   AddExtensionAndGrantPermissions(profile(), service(), *extension_2);
@@ -2092,33 +2108,45 @@ TEST_F(DeveloperPrivateApiUnitTest,
     "etldPlusOne": "asdf.com",
     "numExtensions": 0,
     "sites": [{
-      "siteList": "RESTRICTED",
+      "siteSet": "USER_RESTRICTED",
       "numExtensions": 0,
-      "site": "http://www.asdf.com",
+      "site": "www.asdf.com",
     }]
   }, {
     "etldPlusOne": "example.com",
     "numExtensions": 1,
     "sites": [{
+      "siteSet": "EXTENSION_SPECIFIED",
       "numExtensions": 1,
-      "site": "https://example.com/*",
+      "site": "example.com",
     }]
   }, {
     "etldPlusOne": "google.com",
     "numExtensions": 2,
     "sites": [{
-      "siteList": "PERMITTED",
+      "siteSet": "USER_PERMITTED",
       "numExtensions": 0,
-      "site": "http://images.google.com",
+      "site": "images.google.com",
     }, {
+      "siteSet": "EXTENSION_SPECIFIED",
       "numExtensions": 2,
-      "site": "http://www.google.com/*",
+      "site": "mail.google.com",
     }, {
-      "numExtensions": 1,
-      "site": "https://*.google.com/*",
+      "siteSet": "EXTENSION_SPECIFIED",
+      "numExtensions": 2,
+      "site": "www.google.com",
     }, {
+      "siteSet": "EXTENSION_SPECIFIED",
       "numExtensions": 1,
-      "site": "https://mail.google.com/*",
+      "site": "*.google.com",
+    },]
+  }, {
+    "etldPlusOne": "localhost",
+    "numExtensions": 2,
+    "sites": [{
+      "siteSet": "EXTENSION_SPECIFIED",
+      "numExtensions": 2,
+      "site": "localhost",
     }]
   }])"));
 }
@@ -2128,6 +2156,7 @@ TEST_F(DeveloperPrivateApiUnitTest,
   PermissionsManager* manager = PermissionsManager::Get(browser_context());
   manager->AddUserPermittedSite(
       url::Origin::Create(GURL("http://images.google.ca")));
+  manager->AddUserRestrictedSite(url::Origin::Create(GURL("https://yahoo.ca")));
 
   scoped_refptr<const Extension> extension_1 =
       ExtensionBuilder("specific_hosts")
@@ -2156,19 +2185,37 @@ TEST_F(DeveloperPrivateApiUnitTest,
     "etldPlusOne": "example.com",
     "numExtensions": 3,
     "sites": [{
+      "siteSet": "EXTENSION_SPECIFIED",
       "numExtensions": 3,
-      "site": "http://www.example.com/*",
+      "site": "www.example.com",
+    }, {
+      "siteSet": "EXTENSION_SPECIFIED",
+      "numExtensions": 2,
+      "site": "*.example.com",
     }]
   }, {
     "etldPlusOne": "google.ca",
     "numExtensions": 2,
     "sites": [{
+      "siteSet": "USER_PERMITTED",
       "numExtensions": 0,
-      "site": "http://images.google.ca",
-      "siteList": "PERMITTED",
+      "site": "images.google.ca",
     }, {
+      "siteSet": "EXTENSION_SPECIFIED",
       "numExtensions": 2,
-      "site": "https://*.google.ca/*",
+      "site": "*.google.ca",
+    }]
+  }, {
+    "etldPlusOne": "yahoo.ca",
+    "numExtensions": 1,
+    "sites": [{
+      "siteSet": "USER_RESTRICTED",
+      "numExtensions": 0,
+      "site": "yahoo.ca",
+    }, {
+      "siteSet": "EXTENSION_SPECIFIED",
+      "numExtensions": 1,
+      "site": "*.yahoo.ca",
     }]
   }])"));
 }
@@ -2205,8 +2252,9 @@ TEST_F(DeveloperPrivateApiUnitTest,
     "etldPlusOne": "example.com",
     "numExtensions": 1,
     "sites": [{
+      "siteSet": "EXTENSION_SPECIFIED",
       "numExtensions": 1,
-      "site": "https://example.com/*",
+      "site": "example.com",
     }]
   }])");
 
@@ -2218,8 +2266,9 @@ TEST_F(DeveloperPrivateApiUnitTest,
     "etldPlusOne": "example.com",
     "numExtensions": 2,
     "sites": [{
+      "siteSet": "EXTENSION_SPECIFIED",
       "numExtensions": 2,
-      "site": "https://example.com/*",
+      "site": "example.com",
     }]
   }])");
 
@@ -2228,8 +2277,13 @@ TEST_F(DeveloperPrivateApiUnitTest,
     "etldPlusOne": "example.com",
     "numExtensions": 2,
     "sites": [{
+      "siteSet": "EXTENSION_SPECIFIED",
       "numExtensions": 2,
-      "site": "https://example.com/*",
+      "site": "example.com",
+    }, {
+      "siteSet": "EXTENSION_SPECIFIED",
+      "numExtensions": 1,
+      "site": "*.example.com",
     }]
   }])");
 }

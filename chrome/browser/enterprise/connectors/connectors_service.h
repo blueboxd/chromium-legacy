@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -32,6 +32,10 @@ namespace enterprise_connectors {
 // Controls whether the Enterprise Connectors policies should be read by
 // ConnectorsManager.
 extern const base::Feature kEnterpriseConnectorsEnabled;
+
+// Controls whether the Enterprise Connectors policies should be read by
+// ConnectorsManager in Managed Guest Sessions.
+extern const base::Feature kEnterpriseConnectorsEnabledOnMGS;
 
 // A keyed service to access ConnectorsManager, which tracks Connector policies.
 class ConnectorsService : public KeyedService {
@@ -86,6 +90,9 @@ class ConnectorsService : public KeyedService {
   std::vector<std::string> GetReportingServiceProviderNames(
       ReportingConnector connector);
 
+  std::vector<const AnalysisConfig*> GetAnalysisServiceConfigs(
+      AnalysisConnector connector);
+
   // DM token accessor function for real-time URL checks. Returns a profile or
   // browser DM token depending on the policy scope, and absl::nullopt if there
   // is no token to use.
@@ -128,7 +135,7 @@ class ConnectorsService : public KeyedService {
   // contain either POLICY_SCOPE_MACHINE or POLICY_SCOPE_USER.
   absl::optional<DmToken> GetDmToken(const char* scope_pref) const;
   absl::optional<DmToken> GetBrowserDmToken() const;
-#if !BUILDFLAG(IS_CHROMEOS)
+#if !BUILDFLAG(IS_CHROMEOS_ASH)
   absl::optional<DmToken> GetProfileDmToken() const;
 
   // Returns true if the browser isn't managed by CBCM, otherwise this checks if

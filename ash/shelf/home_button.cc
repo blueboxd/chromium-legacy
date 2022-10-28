@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -449,7 +449,8 @@ void HomeButton::AnimateNudgeRipple(views::AnimationBuilder& builder) {
   shelf_container_layer->StackBelow(ripple_layer, layer()->parent());
 
   // The point of the center of the round button.
-  gfx::Point ripple_center = gfx::Rect(ripple_layer->size()).CenterPoint();
+  const gfx::PointF ripple_center =
+      gfx::RectF(gfx::SizeF(ripple_layer->size())).CenterPoint();
 
   gfx::Transform initial_disc_scale;
   initial_disc_scale.Scale(0.1f, 0.1f);

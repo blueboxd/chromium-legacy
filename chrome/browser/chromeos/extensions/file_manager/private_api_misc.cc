@@ -1,4 +1,4 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -263,14 +263,13 @@ FileManagerPrivateGetPreferencesFunction::Run() {
       service->GetBoolean(arc::prefs::kArcHasAccessToRemovableMedia);
   std::vector<std::string> folder_shortcuts;
   const auto& value_list =
-      service->GetValueList(ash::prefs::kFilesAppFolderShortcuts);
+      service->GetList(ash::prefs::kFilesAppFolderShortcuts);
   for (const base::Value& value : value_list) {
     folder_shortcuts.push_back(value.is_string() ? value.GetString() : "");
   }
   result.folder_shortcuts = folder_shortcuts;
 
-  return RespondNow(
-      WithArguments(base::Value::FromUniquePtrValue(result.ToValue())));
+  return RespondNow(WithArguments(result.ToValue()));
 }
 
 ExtensionFunction::ResponseAction
@@ -1046,9 +1045,8 @@ void FileManagerPrivateInternalGetLinuxPackageInfoFunction::
 
   result.name = linux_package_info.name;
   result.version = linux_package_info.version;
-  result.summary = std::make_unique<std::string>(linux_package_info.summary);
-  result.description =
-      std::make_unique<std::string>(linux_package_info.description);
+  result.summary = linux_package_info.summary;
+  result.description = linux_package_info.description;
 
   Respond(ArgumentList(extensions::api::file_manager_private_internal::
                            GetLinuxPackageInfo::Results::Create(result)));
@@ -1145,7 +1143,7 @@ void FileManagerPrivateInternalGetCustomActionsFunction::OnCompleted(
   for (const auto& action : actions) {
     Action item;
     item.id = action.id;
-    item.title = std::make_unique<std::string>(action.title);
+    item.title = action.title;
     items.push_back(std::move(item));
   }
 
@@ -1267,6 +1265,11 @@ void FileManagerPrivateInternalGetRecentFilesFunction::OnGetRecentFiles(
     }
   }
 
+  // During this conversion a GET_METADATA_FIELD_IS_DIRECTORY will be triggered
+  // in file_system_context.cc DidOpenFileSystemForResolveURL() which will
+  // might not use file_definition.is_directory in some scenarios, which will
+  // make entry_definition's is_directory become true, so in the callback we
+  // need to filter out is_directory=true.
   file_manager::util::ConvertFileDefinitionListToEntryDefinitionList(
       file_manager::util::GetFileSystemContextForSourceURL(profile,
                                                            source_url()),
@@ -1283,23 +1286,18 @@ void FileManagerPrivateInternalGetRecentFilesFunction::
             entry_definition_list) {
   DCHECK(entry_definition_list);
 
+  // Remove all directories entries.
+  entry_definition_list->erase(
+      std::remove_if(entry_definition_list->begin(),
+                     entry_definition_list->end(),
+                     [](const file_manager::util::EntryDefinition& e) {
+                       return e.is_directory == true;
+                     }),
+      entry_definition_list->end());
+
   Respond(
       WithArguments(file_manager::util::ConvertEntryDefinitionListToListValue(
           *entry_definition_list)));
-}
-
-// TODO(crbug.com/1212768): Remove this once Files app SWA has fully launched.
-ExtensionFunction::ResponseAction
-FileManagerPrivateGetFrameColorFunction::Run() {
-  ash::ScopedLightModeAsDefault scoped_light_mode_as_default;
-  std::string frame_color = SkColorToHexString(SK_ColorWHITE);
-  if (auto* dark_light_mode_controller = ash::DarkLightModeController::Get()) {
-    frame_color = SkColorToHexString(cros_styles::ResolveColor(
-        cros_styles::ColorName::kBgColor,
-        dark_light_mode_controller->IsDarkModeEnabled(),
-        /*use_debug_colors=*/false));
-  }
-  return RespondNow(WithArguments(frame_color));
 }
 
 ExtensionFunction::ResponseAction

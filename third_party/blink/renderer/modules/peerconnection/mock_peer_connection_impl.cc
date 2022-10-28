@@ -153,6 +153,10 @@ std::vector<std::string> FakeRtpSender::stream_ids() const {
   return stream_ids_;
 }
 
+void FakeRtpSender::SetStreams(const std::vector<std::string>& stream_ids) {
+  stream_ids_ = stream_ids;
+}
+
 std::vector<webrtc::RtpEncodingParameters> FakeRtpSender::init_send_encodings()
     const {
   return {};
@@ -384,6 +388,18 @@ MockPeerConnectionImpl::AddTrack(
   rtc::scoped_refptr<FakeRtpSender> sender(
       new rtc::RefCountedObject<FakeRtpSender>(track, stream_ids));
   senders_.push_back(sender);
+  // This mock is dumb. It creates an audio transceiver without checking the
+  // kind of the sender track.
+  rtc::scoped_refptr<webrtc::MediaStreamTrackInterface> dummy_receiver_track(
+      blink::MockWebRtcAudioTrack::Create("dummy_track").get());
+  rtc::scoped_refptr<FakeRtpReceiver> dummy_receiver(
+      new rtc::RefCountedObject<FakeRtpReceiver>(dummy_receiver_track));
+  rtc::scoped_refptr<FakeRtpTransceiver> transceiver(
+      new rtc::RefCountedObject<FakeRtpTransceiver>(
+          cricket::MediaType::MEDIA_TYPE_AUDIO, sender, dummy_receiver,
+          absl::nullopt, false, webrtc::RtpTransceiverDirection::kSendRecv,
+          absl::nullopt));
+  transceivers_.push_back(transceiver);
   return rtc::scoped_refptr<webrtc::RtpSenderInterface>(sender);
 }
 
@@ -396,6 +412,8 @@ webrtc::RTCError MockPeerConnectionImpl::RemoveTrackOrError(
     return webrtc::RTCError(webrtc::RTCErrorType::INVALID_PARAMETER,
                             "Mock: sender not found in senders");
   }
+  // TODO(https://crbug.com/1302249): This is old Plan B behavior, don't remove
+  // the sender.
   senders_.erase(it);
   auto track = sender->track();
 
@@ -430,6 +448,14 @@ MockPeerConnectionImpl::GetReceivers() const {
     }
   }
   return receivers;
+}
+
+std::vector<rtc::scoped_refptr<webrtc::RtpTransceiverInterface>>
+MockPeerConnectionImpl::GetTransceivers() const {
+  std::vector<rtc::scoped_refptr<webrtc::RtpTransceiverInterface>> transceivers;
+  for (const auto& transceiver : transceivers_)
+    transceivers.push_back(transceiver);
+  return transceivers;
 }
 
 rtc::scoped_refptr<webrtc::DataChannelInterface>

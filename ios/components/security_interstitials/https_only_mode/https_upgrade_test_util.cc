@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -15,7 +15,7 @@ bool FakeHttpsUpgradeService::IsHttpAllowedForHost(
 
 void FakeHttpsUpgradeService::AllowHttpForHost(const std::string& host) {
   allowed_http_hosts_.insert(host);
-};
+}
 
 void FakeHttpsUpgradeService::ClearAllowlist(base::Time delete_begin,
                                              base::Time delete_end) {

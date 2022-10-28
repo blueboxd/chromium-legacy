@@ -134,7 +134,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Extensions.ActiveScriptController.PermittedExtensions"
-    units="Extension Count" expires_after="2022-12-25">
+    units="Extension Count" expires_after="2023-02-26">
   <owner>rdevlin.cronin@chromium.org</owner>
   <owner>extensions-core@chromium.org</owner>
   <summary>
@@ -203,11 +203,12 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Extensions.AppTabLaunchType" enum="ExtensionLaunchType"
-    expires_after="2022-09-11">
-  <owner>benwells@chromium.org</owner>
-  <owner>tapted@chromium.org</owner>
+    expires_after="2023-03-11">
+  <owner>rdevlin.cronin@chromium.org</owner>
+  <owner>extensions-core@chromium.org</owner>
   <summary>
-    The number of apps launched grouped by extensions::LaunchType.
+    The number of extension apps launched grouped by extensions::LaunchType.
+    From 2022-09 this no longer includes web app launches.
   </summary>
 </histogram>
 
@@ -223,7 +224,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Extensions.BackgroundHostCreatedForExtension"
-    enum="BackgroundHostCreatedForExtensionValues" expires_after="2023-01-01">
+    enum="BackgroundHostCreatedForExtensionValues" expires_after="2023-03-05">
   <owner>fdoray@chromium.org</owner>
   <owner>catan-team@chromium.org</owner>
   <summary>
@@ -326,7 +327,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Extensions.BookmarkAppLaunchSource" enum="AppLaunchSource"
-    expires_after="2023-01-01">
+    expires_after="2023-03-05">
   <owner>phillis@chromium.org</owner>
   <owner>benwells@chromium.org</owner>
   <owner>dominickn@chromium.org</owner>
@@ -870,7 +871,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Extensions.DevTools.UserIsInDeveloperMode"
-    enum="InDeveloperMode" expires_after="2022-11-13">
+    enum="InDeveloperMode" expires_after="2023-02-26">
   <owner>ghazale@chromium.org</owner>
   <owner>extensions-core@chromium.org</owner>
   <summary>
@@ -1215,7 +1216,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Extensions.ExtensionCacheCount" units="units"
-    expires_after="2022-12-25">
+    expires_after="2023-02-26">
   <owner>vkovalova@google.com</owner>
   <owner>burunduk@chromium.org</owner>
   <owner>managed-devices@google.com</owner>
@@ -1226,7 +1227,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Extensions.ExtensionCacheSize" units="MB"
-    expires_after="2022-12-25">
+    expires_after="2023-02-26">
   <owner>vkovalova@google.com</owner>
   <owner>burunduk@chromium.org</owner>
   <owner>managed-devices@google.com</owner>
@@ -1503,7 +1504,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Extensions.ForceInstalledFailureReason3"
-    enum="ExtensionInstallationFailureReason" expires_after="2022-12-18">
+    enum="ExtensionInstallationFailureReason" expires_after="2023-02-19">
 <!-- Name completed by histogram_suffixes name="ExtensionSource" -->
 
   <owner>vkovalova@google.com</owner>
@@ -1610,7 +1611,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Extensions.ForceInstalledLoadTime" units="ms"
-    expires_after="2022-12-18">
+    expires_after="2023-02-19">
   <owner>vkovalova@google.com</owner>
   <owner>burunduk@chromium.org</owner>
   <owner>managed-devices@google.com</owner>
@@ -1621,7 +1622,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Extensions.ForceInstalledNotLoadedDisableReason"
-    enum="ExtensionDisableReason" expires_after="2022-12-01">
+    enum="ExtensionDisableReason" expires_after="2023-03-05">
   <owner>vkovalova@google.com</owner>
   <owner>burunduk@chromium.org</owner>
   <owner>managed-devices@google.com</owner>
@@ -1646,7 +1647,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="Extensions.ForceInstalledSessionsWithNonMisconfigurationFailureOccured"
-    enum="Boolean" expires_after="2022-12-18">
+    enum="Boolean" expires_after="2023-02-19">
   <owner>vkovalova@google.com</owner>
   <owner>burunduk@chromium.org</owner>
   <owner>managed-devices@google.com</owner>
@@ -1691,7 +1692,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Extensions.ForceInstalledTimedOutCount" units="units"
-    expires_after="2022-12-18">
+    expires_after="2023-02-19">
   <owner>vkovalova@google.com</owner>
   <owner>burunduk@chromium.org</owner>
   <owner>managed-devices@google.com</owner>
@@ -1953,7 +1954,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Extensions.Functions.SucceededTotalExecutionTime" units="ms"
-    expires_after="2022-12-25">
+    expires_after="2023-02-26">
   <owner>rdevlin.cronin@chromium.org</owner>
   <owner>extensions-core@chromium.org</owner>
   <summary>
@@ -1966,7 +1967,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Extensions.Functions.SynchronousExecutionTime" units="ms"
-    expires_after="2022-12-25">
+    expires_after="2023-02-26">
   <owner>rdevlin.cronin@chromium.org</owner>
   <owner>extensions-core@chromium.org</owner>
   <summary>
@@ -2017,8 +2018,8 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Extensions.Greylist.Disabled" enum="ExtensionLocation"
-    expires_after="2022-09-07">
-  <owner>xinghuilu@chromium.org</owner>
+    expires_after="2023-09-07">
+  <owner>anunoy@chromium.org</owner>
   <owner>chrome-counter-abuse-alerts@google.com</owner>
   <summary>
     Emits the Extension::Location of a newly-disabled greylisted extension.
@@ -2028,8 +2029,8 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Extensions.Greylist.Enabled" enum="ExtensionLocation"
-    expires_after="2022-09-07">
-  <owner>xinghuilu@chromium.org</owner>
+    expires_after="2023-09-07">
+  <owner>anunoy@chromium.org</owner>
   <owner>chrome-counter-abuse-alerts@google.com</owner>
   <summary>
     Emits the Extension::Location of an extension that was ungreylisted. Logged
@@ -2535,7 +2536,7 @@ chromium-metrics-reviews@google.com.
   <summary>The number of platform apps loaded at profile open.</summary>
 </histogram>
 
-<histogram name="Extensions.LoadTheme" units="units" expires_after="2023-01-01">
+<histogram name="Extensions.LoadTheme" units="units" expires_after="2023-03-05">
   <owner>rdevlin.cronin@chromium.org</owner>
   <owner>extensions-core@chromium.org</owner>
   <summary>The number of themes loaded at profile open.</summary>
@@ -2561,7 +2562,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Extensions.Management_Refresh" units="ms"
-    expires_after="2023-01-01">
+    expires_after="2023-03-05">
   <owner>jam@chromium.org</owner>
   <owner>cduvall@chromium.org</owner>
   <summary>
@@ -2787,7 +2788,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Extensions.NewTabPageOverrides" units="units"
-    expires_after="2022-12-18">
+    expires_after="2023-02-19">
   <owner>rdevlin.cronin@chromium.org</owner>
   <owner>kelvinjiang@chromium.org</owner>
   <summary>

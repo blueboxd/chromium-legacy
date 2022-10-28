@@ -420,7 +420,6 @@ fast/css3-text/css3-text-decoration/text-decoration-style-inherit.html
 fast/css3-text/css3-text-decoration/text-decoration-style-inherit-links.html
 fast/css3-text/css3-text-decoration/text-decoration-style-inherit-not-propagated-by-out-of-flow.html
 fast/css3-text/css3-text-decoration/text-decoration-style-inherit-simple-underlines.html
-fast/css3-text/css3-text-indent/text-indent-leading-out-of-flow.html
 fast/css3-text/css3-word-break/word-break-all-rtl.html
 fast/css/child-style-can-override-visited-style.html
 fast/css/clip-zooming.html
@@ -761,7 +760,6 @@ fast/xsl/xslt-fragment-in-empty-doc.html
 fragmentation/margin-top-at-top-of-fragmentainer.html
 fullscreen/full-screen-inline-split-crash.html
 fullscreen/full-screen-request-rejected.html
-harness-tests/wpt/console_logging.html
 hittesting/border-hittest-inlineFlowBox.html
 hittesting/hittest-inline-block-with-abspos.html
 html5lib/generated/run-tests24-write.html
@@ -979,6 +977,7 @@ webexposed/internal-properties-should-not-be-exposed.html
 webexposed/permissions-attribute.html
 webexposed/web-animations-api.html
 wpt_internal/geolocation-api/enabled.html
+wpt_internal/harness-tests/console_logging.html
 wpt_internal/presentation/presentationconnectionavailableevent-ctor-mock.html
 wpt_internal/webmidi/permission.html
 wpt_internal/speech/scripted/speechrecognition-re-restart.html

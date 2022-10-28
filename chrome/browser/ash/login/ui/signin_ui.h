@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 #ifndef CHROME_BROWSER_ASH_LOGIN_UI_SIGNIN_UI_H_
@@ -6,10 +6,10 @@
 
 #include <memory>
 
-#include "ash/components/login/auth/public/user_context.h"
 #include "base/callback.h"
 #include "chrome/browser/ash/login/oobe_screen.h"
 #include "chrome/browser/ash/login/screens/encryption_migration_mode.h"
+#include "chromeos/ash/components/login/auth/public/user_context.h"
 #include "components/account_id/account_id.h"
 #include "components/login/base_screen_handler_utils.h"
 

@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -19,7 +19,8 @@ namespace autofill {
 CardUnmaskPromptView* CreateCardUnmaskPromptViewBridge(
     CardUnmaskPromptController* unmask_controller,
     UIViewController* base_view_controller) {
-  if (base::FeatureList::IsEnabled(kAutofillEnableNewCardUnmaskPromptView)) {
+  if (base::FeatureList::IsEnabled(
+          features::kAutofillEnableNewCardUnmaskPromptView)) {
     return new CardUnmaskPromptViewBridge(unmask_controller,
                                           base_view_controller);
   }

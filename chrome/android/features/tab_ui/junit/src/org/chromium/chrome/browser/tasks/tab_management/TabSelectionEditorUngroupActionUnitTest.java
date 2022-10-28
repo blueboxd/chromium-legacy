@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -67,7 +67,7 @@ public class TabSelectionEditorUngroupActionUnitTest {
         when(mTabModelFilterProvider.getCurrentTabModelFilter()).thenReturn(mGroupFilter);
         when(mTabModelSelector.getTabModelFilterProvider()).thenReturn(mTabModelFilterProvider);
         when(mTabModelSelector.getCurrentModel()).thenReturn(mTabModel);
-        mAction.configure(mTabModelSelector, mSelectionDelegate, mDelegate);
+        mAction.configure(mTabModelSelector, mSelectionDelegate, mDelegate, false);
     }
 
     @Test

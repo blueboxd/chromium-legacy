@@ -9,6 +9,7 @@ import android.os.RemoteException;
 import androidx.annotation.NonNull;
 import androidx.concurrent.futures.CallbackToFutureAdapter;
 
+import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 
 import org.chromium.browserfragment.interfaces.IStringCallback;
@@ -25,7 +26,7 @@ import java.util.List;
 public class Tab {
     private ITabProxy mTabProxy;
     private TabNavigationController mTabNavigationController;
-
+    private TabObserverDelegate mTabObserverDelegate = new TabObserverDelegate();
     private String mGuid;
 
     Tab(@NonNull ITabParams tabParams) {
@@ -36,6 +37,11 @@ public class Tab {
         mTabProxy = tabParams.tabProxy;
         mGuid = tabParams.tabGuid;
         mTabNavigationController = new TabNavigationController(tabParams.navigationControllerProxy);
+
+        try {
+            mTabProxy.setTabObserverDelegate(mTabObserverDelegate);
+        } catch (RemoteException e) {
+        }
     }
 
     public String getGuid() {
@@ -46,6 +52,9 @@ public class Tab {
      * Sets this Tab to active.
      */
     public void setActive() {
+        if (mTabProxy == null) {
+            throw new IllegalStateException("Browser has been destroyed");
+        }
         try {
             mTabProxy.setActive();
         } catch (RemoteException e) {
@@ -56,6 +65,9 @@ public class Tab {
      * Closes this Tab.
      */
     public void close() {
+        if (mTabProxy == null) {
+            throw new IllegalStateException("Browser has been destroyed");
+        }
         try {
             mTabProxy.close();
         } catch (RemoteException e) {
@@ -64,6 +76,10 @@ public class Tab {
 
     public ListenableFuture<String> executeScript(
             @NonNull String script, boolean useSeparateIsolate) {
+        if (mTabProxy == null) {
+            return Futures.immediateFailedFuture(
+                    new IllegalStateException("Browser has been destroyed"));
+        }
         return CallbackToFutureAdapter.getFuture(completer -> {
             try {
                 mTabProxy.executeScript(script, useSeparateIsolate, new IStringCallback.Stub() {
@@ -101,6 +117,9 @@ public class Tab {
      */
     public void registerWebMessageCallback(
             WebMessageCallback callback, String jsObjectName, List<String> allowedOrigins) {
+        if (mTabProxy == null) {
+            throw new IllegalStateException("Browser has been destroyed");
+        }
         try {
             mTabProxy.registerWebMessageCallback(new IWebMessageCallback.Stub() {
                 @Override
@@ -132,10 +151,34 @@ public class Tab {
      * @param jsObjectName Name of the JavaScript object.
      */
     public void unregisterWebMessageCallback(String jsObjectName) {
+        if (mTabProxy == null) {
+            throw new IllegalStateException("Browser has been destroyed");
+        }
         try {
             mTabProxy.unregisterWebMessageCallback(jsObjectName);
         } catch (RemoteException e) {
         }
+    }
+    /**
+     * Registers a {@link TabObserver} and returns if successful.
+     *
+     * @param tabObserver The TabObserver.
+     *
+     * @return true if observer was added to the list of observers.
+     */
+    public boolean registerTabObserver(@NonNull TabObserver tabObserver) {
+        return mTabObserverDelegate.registerObserver(tabObserver);
+    }
+
+    /**
+     * Unregisters a {@link Tabobserver} and returns if successful.
+     *
+     * @param tabObserver The TabObserver to remove.
+     *
+     * @return true if observer was removed from the list of observers.
+     */
+    public boolean unregisterTabObserver(@NonNull TabObserver tabObserver) {
+        return mTabObserverDelegate.unregisterObserver(tabObserver);
     }
 
     @Override
@@ -149,5 +192,10 @@ public class Tab {
             return this == obj || mGuid.equals(((Tab) obj).getGuid());
         }
         return false;
+    }
+
+    void invalidate() {
+        mTabProxy = null;
+        mTabNavigationController.invalidate();
     }
 }

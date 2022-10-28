@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -17,8 +17,8 @@
 #include "base/task/sequenced_task_runner.h"
 #include "chromeos/ash/components/local_search_service/shared_structs.h"
 
-namespace chromeos {
-namespace local_search_service {
+namespace ash::local_search_service {
+
 // A posting is a list of WeightedPosition.
 using Posting = std::vector<WeightedPosition>;
 
@@ -160,7 +160,6 @@ class InvertedIndex {
   base::WeakPtrFactory<InvertedIndex> weak_ptr_factory_{this};
 };
 
-}  // namespace local_search_service
-}  // namespace chromeos
+}  // namespace ash::local_search_service
 
 #endif  // CHROMEOS_ASH_COMPONENTS_LOCAL_SEARCH_SERVICE_INVERTED_INDEX_H_

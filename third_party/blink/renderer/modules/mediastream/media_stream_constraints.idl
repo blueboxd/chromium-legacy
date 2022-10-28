@@ -8,6 +8,18 @@ enum SystemAudioPreferenceEnum {
   "exclude"
 };
 
+// https://github.com/w3c/mediacapture-screen-share/pull/216/files
+enum SelfCapturePreferenceEnum {
+  "include",
+  "exclude"
+};
+
+// https://github.com/w3c/mediacapture-screen-share/pull/225/files
+enum SurfaceSwitchingPreferenceEnum {
+  "include",
+  "exclude"
+};
+
 // https://w3c.github.io/mediacapture-main/#idl-def-mediastreamconstraints
 dictionary MediaStreamConstraints {
     (boolean or MediaTrackConstraints) video = false;
@@ -24,4 +36,14 @@ dictionary MediaStreamConstraints {
     [
       RuntimeEnabled = SystemAudioConstraint
     ] SystemAudioPreferenceEnum systemAudio;
+
+    // https://github.com/w3c/mediacapture-screen-share/pull/216/files
+    [
+      RuntimeEnabled = SelfBrowserSurfaceConstraint
+    ] SelfCapturePreferenceEnum selfBrowserSurface;
+
+    // https://github.com/w3c/mediacapture-screen-share/pull/225/files
+    [
+      RuntimeEnabled = SurfaceSwitchingConstraint
+    ] SurfaceSwitchingPreferenceEnum surfaceSwitching;
 };

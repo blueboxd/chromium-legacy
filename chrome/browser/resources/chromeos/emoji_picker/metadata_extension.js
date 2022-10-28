@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -129,7 +129,7 @@ const CATEGORY_TABS = {
   'emoticon': [
     {name: 'Classic', pagination: 1},
     {name: 'Smiling'},
-    {name: 'Loving'},
+    {name: 'Love'},
     {name: 'Hugging'},
     {name: 'Flexing'},
     {name: 'Animals', pagination: 2},

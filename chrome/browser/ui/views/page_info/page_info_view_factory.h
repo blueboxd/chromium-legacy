@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -39,10 +39,13 @@ class PageInfoViewFactory {
     VIEW_ID_PAGE_INFO_BUTTON_CHANGE_PASSWORD,
     VIEW_ID_PAGE_INFO_BUTTON_ALLOWLIST_PASSWORD_REUSE,
     VIEW_ID_PAGE_INFO_LABEL_EV_CERTIFICATE_DETAILS,
+    VIEW_ID_PAGE_INFO_BLOCK_THIRD_PARTY_COOKIES_ROW,
+    VIEW_ID_PAGE_INFO_BLOCK_THIRD_PARTY_COOKIES_SUBTITLE,
     VIEW_ID_PAGE_INFO_LINK_OR_BUTTON_COOKIE_DIALOG,
     VIEW_ID_PAGE_INFO_LINK_OR_BUTTON_COOKIES_SUBPAGE,
     VIEW_ID_PAGE_INFO_COOKIES_DESCRIPTION_LABEL,
     VIEW_ID_PAGE_INFO_LINK_OR_BUTTON_FPS_SETTINGS,
+    VIEW_ID_PAGE_INFO_COOKIES_BUTTONS_CONTAINER,
     VIEW_ID_PAGE_INFO_LINK_OR_BUTTON_SITE_SETTINGS,
     VIEW_ID_PAGE_INFO_LINK_OR_BUTTON_CERTIFICATE_VIEWER,
     VIEW_ID_PAGE_INFO_BUTTON_END_VR,
@@ -112,6 +115,11 @@ class PageInfoViewFactory {
   static const ui::ImageModel GetManagedPermissionIcon(
       const PageInfo::PermissionInfo& info);
 
+  // Returns the icon for third party cookies control in a state not managed
+  // by the user.
+  static const ui::ImageModel GetEnforcedCookieControlsIcon(
+      CookieControlsEnforcement enforcement);
+
   // Returns the icon for 'About this site' button.
   static const ui::ImageModel GetAboutThisSiteIcon();
 
@@ -123,6 +131,9 @@ class PageInfoViewFactory {
 
   // Returns the icon for the 'Ad personalization' button.
   static const ui::ImageModel GetAdPersonalizationIcon();
+
+  // Returns the icon for the 'Block third party cookies' button.
+  static const ui::ImageModel GetBlockingThirdPartyCookiesIcon();
 
   [[nodiscard]] std::unique_ptr<views::View> CreateMainPageView(
       base::OnceClosure initialized_callback);

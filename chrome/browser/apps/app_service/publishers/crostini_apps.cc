@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -22,6 +22,8 @@
 #include "chrome/browser/ash/crostini/crostini_shelf_utils.h"
 #include "chrome/browser/ash/crostini/crostini_util.h"
 #include "chrome/browser/ash/file_manager/fileapi_util.h"
+#include "chrome/browser/ash/guest_os/guest_os_mime_types_service.h"
+#include "chrome/browser/ash/guest_os/guest_os_mime_types_service_factory.h"
 #include "chrome/browser/ash/guest_os/guest_os_registry_service_factory.h"
 #include "chrome/browser/ash/guest_os/guest_os_terminal.h"
 #include "chrome/browser/profiles/profile.h"
@@ -45,12 +47,16 @@
 
 namespace {
 
+const char kTextPlainMimeType[] = "text/plain";
+const char kTextTypeMimeType[] = "text/";
+const char kTextWildcardMimeType[] = "text/*";
+
 bool ShouldShowDisplayDensityMenuItem(const std::string& app_id,
-                                      apps::mojom::MenuType menu_type,
+                                      apps::MenuType menu_type,
                                       int64_t display_id) {
   // The default terminal app is crosh in a Chrome window and it doesn't run in
   // the Crostini container so it doesn't support display density the same way.
-  if (menu_type != apps::mojom::MenuType::kShelf) {
+  if (menu_type != apps::MenuType::kShelf) {
     return false;
   }
 
@@ -64,21 +70,47 @@ bool ShouldShowDisplayDensityMenuItem(const std::string& app_id,
 
 // Create a file intent filter with mime type conditions for App Service.
 apps::IntentFilters CreateIntentFilterForCrostini(
-    const std::set<std::string>& mime_types) {
-  apps::IntentFilters intent_filters;
-
-  if (mime_types.empty()) {
-    return intent_filters;
+    const guest_os::GuestOsMimeTypesService* mime_types_service,
+    const guest_os::GuestOsRegistryService::Registration& registration) {
+  const std::set<std::string> mime_types_set = registration.MimeTypes();
+  if (mime_types_set.empty()) {
+    return {};
   }
 
-  std::vector<std::string> mime_types_vector(mime_types.begin(),
-                                             mime_types.end());
-  apps::IntentFilterPtr intent_filter = apps_util::CreateFileFilter(
-      {apps_util::kIntentActionView}, mime_types_vector, {},
+  // When a file has a mime type that Files App can't recognise but Crostini can
+  // (e.g. a proprietary file type), we should look at the file extensions that
+  // the app can support. We find these extension types by checking what
+  // extensions correspond to the app's supported mime types.
+  std::vector<std::string> extension_types;
+  if (ash::features::ShouldArcAndGuestOsFileTasksUseAppService()) {
+    extension_types = mime_types_service->GetExtensionTypesFromMimeTypes(
+        mime_types_set, registration.VmName(), registration.ContainerName());
+  }
+  std::vector<std::string> mime_types(mime_types_set.begin(),
+                                      mime_types_set.end());
+
+  // If we see that the app supports the text/plain mime-type, then the app
+  // supports all files with type text/*, as per xdg spec.
+  // https://specifications.freedesktop.org/shared-mime-info-spec/shared-mime-info-spec-latest.html.
+  // In this case, remove all mime types that begin with "text/" and replace
+  // them with a single "text/*" mime type.
+  if (base::Contains(mime_types, kTextPlainMimeType)) {
+    mime_types.erase(std::remove_if(mime_types.begin(), mime_types.end(),
+                                    [](const std::string& mime) {
+                                      return mime.find(kTextTypeMimeType) !=
+                                             std::string::npos;
+                                    }),
+                     mime_types.end());
+    mime_types.push_back(kTextWildcardMimeType);
+  }
+
+  apps::IntentFilters intent_filters;
+  intent_filters.push_back(apps_util::CreateFileFilter(
+      {apps_util::kIntentActionView}, mime_types, extension_types,
       // TODO(crbug/1349974): Remove activity_name when default file handling
       // preferences for Files App are migrated.
-      /*activity_name=*/apps_util::kGuestOsActivityName);
-  intent_filters.push_back(std::move(intent_filter));
+      /*activity_name=*/apps_util::kGuestOsActivityName));
+
   return intent_filters;
 }
 
@@ -200,6 +232,51 @@ void CrostiniApps::Uninstall(const std::string& app_id,
       ->QueueUninstallApplication(app_id);
 }
 
+void CrostiniApps::GetMenuModel(const std::string& app_id,
+                                MenuType menu_type,
+                                int64_t display_id,
+                                base::OnceCallback<void(MenuItems)> callback) {
+  MenuItems menu_items;
+
+  if (menu_type == MenuType::kShelf) {
+    AddCommandItem(ash::APP_CONTEXT_MENU_NEW_WINDOW, IDS_APP_LIST_NEW_WINDOW,
+                   menu_items);
+  }
+
+  if (crostini::IsUninstallable(profile_, app_id)) {
+    AddCommandItem(ash::UNINSTALL, IDS_APP_LIST_UNINSTALL_ITEM, menu_items);
+  }
+
+  if (ShouldAddOpenItem(app_id, menu_type, profile_)) {
+    AddCommandItem(ash::LAUNCH_NEW, IDS_APP_CONTEXT_MENU_ACTIVATE_ARC,
+                   menu_items);
+  }
+
+  if (ShouldAddCloseItem(app_id, menu_type, profile_)) {
+    AddCommandItem(ash::MENU_CLOSE, IDS_SHELF_CONTEXT_MENU_CLOSE, menu_items);
+  }
+
+  // Offer users the ability to toggle per-application UI scaling.
+  // Some apps have high-density display support and do not require scaling
+  // to match the system display density, but others are density-unaware and
+  // look better when scaled to match the display density.
+  if (ShouldShowDisplayDensityMenuItem(app_id, menu_type, display_id)) {
+    absl::optional<guest_os::GuestOsRegistryService::Registration>
+        registration = registry_->GetRegistration(app_id);
+    if (registration) {
+      if (registration->IsScaled()) {
+        AddCommandItem(ash::CROSTINI_USE_HIGH_DENSITY,
+                       IDS_CROSTINI_USE_HIGH_DENSITY, menu_items);
+      } else {
+        AddCommandItem(ash::CROSTINI_USE_LOW_DENSITY,
+                       IDS_CROSTINI_USE_LOW_DENSITY, menu_items);
+      }
+    }
+  }
+
+  std::move(callback).Run(std::move(menu_items));
+}
+
 void CrostiniApps::Connect(
     mojo::PendingRemote<apps::mojom::Subscriber> subscriber_remote,
     apps::mojom::ConnectOptionsPtr opts) {
@@ -269,45 +346,8 @@ void CrostiniApps::GetMenuModel(const std::string& app_id,
                                 apps::mojom::MenuType menu_type,
                                 int64_t display_id,
                                 GetMenuModelCallback callback) {
-  apps::mojom::MenuItemsPtr menu_items = apps::mojom::MenuItems::New();
-
-  if (menu_type == apps::mojom::MenuType::kShelf) {
-    AddCommandItem(ash::APP_CONTEXT_MENU_NEW_WINDOW, IDS_APP_LIST_NEW_WINDOW,
-                   &menu_items);
-  }
-
-  if (crostini::IsUninstallable(profile_, app_id)) {
-    AddCommandItem(ash::UNINSTALL, IDS_APP_LIST_UNINSTALL_ITEM, &menu_items);
-  }
-
-  if (ShouldAddOpenItem(app_id, menu_type, profile_)) {
-    AddCommandItem(ash::LAUNCH_NEW, IDS_APP_CONTEXT_MENU_ACTIVATE_ARC,
-                   &menu_items);
-  }
-
-  if (ShouldAddCloseItem(app_id, menu_type, profile_)) {
-    AddCommandItem(ash::MENU_CLOSE, IDS_SHELF_CONTEXT_MENU_CLOSE, &menu_items);
-  }
-
-  // Offer users the ability to toggle per-application UI scaling.
-  // Some apps have high-density display support and do not require scaling
-  // to match the system display density, but others are density-unaware and
-  // look better when scaled to match the display density.
-  if (ShouldShowDisplayDensityMenuItem(app_id, menu_type, display_id)) {
-    absl::optional<guest_os::GuestOsRegistryService::Registration>
-        registration = registry_->GetRegistration(app_id);
-    if (registration) {
-      if (registration->IsScaled()) {
-        AddCommandItem(ash::CROSTINI_USE_HIGH_DENSITY,
-                       IDS_CROSTINI_USE_HIGH_DENSITY, &menu_items);
-      } else {
-        AddCommandItem(ash::CROSTINI_USE_LOW_DENSITY,
-                       IDS_CROSTINI_USE_LOW_DENSITY, &menu_items);
-      }
-    }
-  }
-
-  std::move(callback).Run(std::move(menu_items));
+  GetMenuModel(app_id, ConvertMojomMenuTypeToMenuType(menu_type), display_id,
+               MenuItemsToMojomMenuItemsCallback(std::move(callback)));
 }
 
 void CrostiniApps::OnRegistryUpdated(
@@ -389,8 +429,13 @@ AppPtr CrostiniApps::CreateApp(
   app->allow_uninstall =
       crostini::IsUninstallable(profile_, registration.app_id());
 
-  app->handles_intents = show;
-  app->intent_filters = CreateIntentFilterForCrostini(registration.MimeTypes());
+  app->handles_intents = true;
+
+  const guest_os::GuestOsMimeTypesService* mime_types_service =
+      guest_os::GuestOsMimeTypesServiceFactory::GetForProfile(profile_);
+
+  app->intent_filters =
+      CreateIntentFilterForCrostini(mime_types_service, registration);
 
   // TODO(crbug.com/1253250): Add other fields for the App struct.
   return app;
@@ -437,9 +482,13 @@ apps::mojom::AppPtr CrostiniApps::Convert(
           ? apps::mojom::OptionalBool::kTrue
           : apps::mojom::OptionalBool::kFalse;
 
-  app->handles_intents = show;
+  app->handles_intents = apps::mojom::OptionalBool::kTrue;
+
+  const guest_os::GuestOsMimeTypesService* mime_types_service =
+      guest_os::GuestOsMimeTypesServiceFactory::GetForProfile(profile_);
+
   app->intent_filters = ConvertIntentFiltersToMojomIntentFilters(
-      CreateIntentFilterForCrostini(registration.MimeTypes()));
+      CreateIntentFilterForCrostini(mime_types_service, registration));
 
   return app;
 }

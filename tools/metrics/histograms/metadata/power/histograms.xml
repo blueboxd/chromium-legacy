@@ -134,19 +134,19 @@ chromium-metrics-reviews@google.com.
                but there was in the last 2 minutes"/>
 </variants>
 
-<histogram name="PerformanceMonitor.AverageCPU5.Total{UsageScenario}"
+<histogram name="PerformanceMonitor.AverageCPU6.Total{UsageScenario}"
     units="1/100 %" expires_after="2022-11-30">
   <owner>fdoray@chromium.org</owner>
   <owner>pmonette@chromium.org</owner>
   <owner>catan-team@chromium.org</owner>
   <summary>
-    See definition of PerformanceClass.AverageCPU5.ProcessName. This is recorded
+    See definition of PerformanceClass.AverageCPU6.ProcessName. This is recorded
     for {UsageScenario} (see go/chrome_power_use_per_scenario).
   </summary>
   <token key="UsageScenario" variants="UsageScenario"/>
 </histogram>
 
-<histogram name="PerformanceMonitor.AverageCPU5.{ProcessName}" units="1/100 %"
+<histogram name="PerformanceMonitor.AverageCPU6.{ProcessName}" units="1/100 %"
     expires_after="2022-11-30">
   <owner>fdoray@chromium.org</owner>
   <owner>pmonette@chromium.org</owner>
@@ -160,12 +160,11 @@ chromium-metrics-reviews@google.com.
     type {ProcessName} existed during the interval, a sample of zero is still
     emitted.
 
+    Not recorded on Android.
+
     NOTE: This metric has one significant limitation, it doesn't report the CPU
-    usage of processes that terminate before the end of the interval. This means
-    that short lived processes will rarely be included in the data. Furthermore,
-    we know that short-lived processes are very common (see
-    Renderer.ProcessLifetime). A future version of this metric will address this
-    limitation.
+    usage of non-renderer processes that terminate before the end of the
+    interval.
 
     ANOTHER NOTE: On Windows, this is not recorded on CPUs that do not support
     constant rate TSC.
@@ -647,7 +646,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Power.AvgCpuLoad.{ProcessType}" units="%"
-    expires_after="2022-10-04">
+    expires_after="2023-07-31">
   <owner>eseckler@chromium.org</owner>
   <owner>khokhlov@chromium.org</owner>
   <owner>woa-performance@google.com</owner>
@@ -714,7 +713,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Power.BatteryDischargeRate" units="mW"
-    expires_after="2023-02-12">
+    expires_after="2023-03-12">
   <owner>puthik@chromium.org</owner>
   <owner>chromeos-platform-power@google.com</owner>
   <summary>
@@ -777,7 +776,18 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Power.BatteryPercentDrop" units="%" expires_after="2022-12-18">
+<histogram name="Power.BatteryMaxCapacity" units="MWh"
+    expires_after="2023-03-12">
+  <owner>fdoray@chromium.org</owner>
+  <owner>olivierli@chromium.org</owner>
+  <summary>
+    Battery max capacity as reported by the operating system. Reported every 2
+    minutes on Windows, when a single battery is installed and the operating
+    system says that the unit is MWh.
+  </summary>
+</histogram>
+
+<histogram name="Power.BatteryPercentDrop" units="%" expires_after="2023-02-19">
   <owner>ryansturm@chromium.org</owner>
   <owner>tbansal@chromium.org</owner>
   <summary>
@@ -942,7 +952,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Power.CpuTimeSecondsPerPowerMode.{ProcessType}"
-    enum="PowerMode" expires_after="2022-12-31">
+    enum="PowerMode" expires_after="2023-03-31">
   <owner>eseckler@chromium.org</owner>
   <owner>oksamyt@chromium.org</owner>
   <owner>woa-performance@google.com</owner>
@@ -967,7 +977,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Power.CpuTimeSecondsPerProcessType" enum="ProcessType2"
-    expires_after="2023-01-29">
+    expires_after="2023-07-31">
   <owner>eseckler@chromium.org</owner>
   <owner>skyostil@chromium.org</owner>
   <owner>woa-performance@google.com</owner>
@@ -985,7 +995,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Power.CpuTimeSecondsPerProcessType.{Visibility}"
-    enum="ProcessType2" expires_after="2023-06-07">
+    enum="ProcessType2" expires_after="2023-07-31">
   <owner>eseckler@chromium.org</owner>
   <owner>skyostil@chromium.org</owner>
   <owner>woa-performance@google.com</owner>
@@ -1009,7 +1019,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Power.CpuTimeSecondsPerThreadType.{ProcessType}"
-    enum="CpuTimeMetricsThreadType" expires_after="2022-10-04">
+    enum="CpuTimeMetricsThreadType" expires_after="2023-07-31">
   <owner>eseckler@chromium.org</owner>
   <owner>skyostil@chromium.org</owner>
   <owner>woa-performance@google.com</owner>
@@ -1492,7 +1502,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Power.IdleCpuLoad.{ProcessType}" units="%"
-    expires_after="2022-10-04">
+    expires_after="2023-07-31">
   <owner>eseckler@chromium.org</owner>
   <owner>khokhlov@chromium.org</owner>
   <owner>woa-performance@google.com</owner>
@@ -1850,7 +1860,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Power.PowerScheduler.ProcessPowerModeChange.{ProcessType}"
-    enum="PowerMode" expires_after="2022-10-04">
+    enum="PowerMode" expires_after="2023-03-31">
   <owner>eseckler@chromium.org</owner>
   <owner>skyostil@chromium.org</owner>
   <owner>woa-performance@google.com</owner>
@@ -2152,7 +2162,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PowerML.SmartDimModel.RequestCanceledDuration" units="ms"
-    expires_after="2023-01-01">
+    expires_after="2023-03-05">
   <owner>amoylan@chromium.org</owner>
   <owner>napper@chromium.org</owner>
   <owner>napper@chromium.org</owner>
@@ -2164,7 +2174,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PowerML.SmartDimModel.RequestCompleteDuration" units="ms"
-    expires_after="2023-01-01">
+    expires_after="2023-03-05">
   <owner>amoylan@chromium.org</owner>
   <owner>napper@chromium.org</owner>
   <owner>napper@chromium.org</owner>

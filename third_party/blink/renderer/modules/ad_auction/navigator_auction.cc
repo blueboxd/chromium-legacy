@@ -9,6 +9,7 @@
 #include "base/check.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/time/time.h"
+#include "mojo/public/cpp/bindings/map_traits_wtf_hash_map.h"
 #include "third_party/blink/public/common/browser_interface_broker_proxy.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/fenced_frame/fenced_frame_utils.h"
@@ -29,6 +30,7 @@
 #include "third_party/blink/renderer/bindings/modules/v8/v8_auction_ad_config.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_auction_ad_interest_group.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_union_adproperties_adpropertiessequence.h"
+#include "third_party/blink/renderer/core/dom/abort_signal.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
@@ -175,6 +177,18 @@ bool CopyOwnerFromIdlToMojo(const ExecutionContext& execution_context,
 
   output.owner = std::move(owner);
   return true;
+}
+
+// Converts a sparse vector used in `priority_vector` and
+// `priority_signals_overrides` to a WTF::HashMap, as is used in mojom structs.
+// Has no failure cases.
+WTF::HashMap<WTF::String, double> ConvertSparseVectorIdlToMojo(
+    const Vector<std::pair<WTF::String, double>>& priority_signals_in) {
+  WTF::HashMap<WTF::String, double> priority_signals_out;
+  for (const auto& key_value_pair : priority_signals_in) {
+    priority_signals_out.insert(key_value_pair.first, key_value_pair.second);
+  }
+  return priority_signals_out;
 }
 
 bool CopyExecutionModeFromIdlToMojo(const ExecutionContext& execution_context,
@@ -786,6 +800,61 @@ bool CopyPerBuyerGroupLimitsFromIdlToMojo(
   return true;
 }
 
+bool ConvertAuctionConfigPrioritySignalsFromIdlToMojo(
+    ExceptionState& exception_state,
+    const AuctionAdConfig& input,
+    const Vector<std::pair<WTF::String, double>>& priority_signals_in,
+    WTF::HashMap<WTF::String, double>& priority_signals_out) {
+  for (const auto& key_value_pair : priority_signals_in) {
+    if (key_value_pair.first.StartsWith("browserSignals.")) {
+      exception_state.ThrowTypeError(ErrorInvalidAuctionConfig(
+          input, "perBuyerPrioritySignals key", key_value_pair.first,
+          "must not start with reserved \"browserSignals.\" prefix."));
+      return false;
+    }
+    priority_signals_out.insert(key_value_pair.first, key_value_pair.second);
+  }
+  return true;
+}
+
+bool CopyPerBuyerPrioritySignalsFromIdlToMojo(
+    ExceptionState& exception_state,
+    const AuctionAdConfig& input,
+    mojom::blink::AuctionAdConfig& output) {
+  if (!input.hasPerBuyerPrioritySignals())
+    return true;
+
+  output.auction_ad_config_non_shared_params->per_buyer_priority_signals
+      .emplace();
+  for (const auto& per_buyer_priority_signals :
+       input.perBuyerPrioritySignals()) {
+    WTF::HashMap<WTF::String, double> signals;
+    if (!ConvertAuctionConfigPrioritySignalsFromIdlToMojo(
+            exception_state, input, per_buyer_priority_signals.second,
+            signals)) {
+      return false;
+    }
+    if (per_buyer_priority_signals.first == "*") {
+      output.auction_ad_config_non_shared_params->all_buyers_priority_signals =
+          std::move(signals);
+      continue;
+    }
+    scoped_refptr<const SecurityOrigin> buyer =
+        ParseOrigin(per_buyer_priority_signals.first);
+    if (!buyer) {
+      exception_state.ThrowTypeError(ErrorInvalidAuctionConfig(
+          input, "perBuyerPrioritySignals buyer",
+          per_buyer_priority_signals.first,
+          "must be \"*\" (wildcard) or a valid https origin."));
+      return false;
+    }
+    output.auction_ad_config_non_shared_params->per_buyer_priority_signals
+        ->insert(buyer, std::move(signals));
+  }
+
+  return true;
+}
+
 // Attempts to convert the AuctionAdConfig `config`, passed in via Javascript,
 // to a `mojom::blink::AuctionAdConfig`. Throws a Javascript exception and
 // return null on failure.
@@ -816,7 +885,9 @@ mojom::blink::AuctionAdConfigPtr IdlAuctionConfigToMojo(
       !CopyPerBuyerExperimentIdsFromIdlToMojo(script_state, exception_state,
                                               config, *mojo_config) ||
       !CopyPerBuyerGroupLimitsFromIdlToMojo(script_state, exception_state,
-                                            config, *mojo_config)) {
+                                            config, *mojo_config) ||
+      !CopyPerBuyerPrioritySignalsFromIdlToMojo(exception_state, config,
+                                                *mojo_config)) {
     return mojom::blink::AuctionAdConfigPtr();
   }
 
@@ -925,6 +996,30 @@ void RecordCommonFledgeUseCounters(Document* document) {
 
 }  // namespace
 
+// Helper to manage runtime of abort pipe and to connect it to AbortController.
+class NavigatorAuction::AuctionHandle final : public AbortSignal::Algorithm {
+ public:
+  AuctionHandle(ExecutionContext* context,
+                mojo::PendingRemote<mojom::blink::AbortableAdAuction> remote)
+      : abortable_ad_auction_(context) {
+    abortable_ad_auction_.Bind(
+        std::move(remote), context->GetTaskRunner(TaskType::kMiscPlatformAPI));
+  }
+
+  ~AuctionHandle() override = default;
+
+  // AbortSignal::Algorithm implementation:
+  void Run() override { abortable_ad_auction_->Abort(); }
+
+  void Trace(Visitor* visitor) const override {
+    visitor->Trace(abortable_ad_auction_);
+    AbortSignal::Algorithm::Trace(visitor);
+  }
+
+ private:
+  HeapMojoRemote<mojom::blink::AbortableAdAuction> abortable_ad_auction_;
+};
+
 NavigatorAuction::NavigatorAuction(Navigator& navigator)
     : Supplement(navigator),
       queued_cross_site_joins_(kMaxActiveCrossSiteJoins,
@@ -967,6 +1062,20 @@ ScriptPromise NavigatorAuction::joinAdInterestGroup(
     return ScriptPromise();
   mojo_group->name = group->name();
   mojo_group->priority = (group->hasPriority()) ? group->priority() : 0.0;
+
+  mojo_group->enable_bidding_signals_prioritization =
+      group->hasEnableBiddingSignalsPrioritization()
+          ? group->enableBiddingSignalsPrioritization()
+          : false;
+  if (group->hasPriorityVector()) {
+    mojo_group->priority_vector =
+        ConvertSparseVectorIdlToMojo(group->priorityVector());
+  }
+  if (group->hasPrioritySignalsOverrides()) {
+    mojo_group->priority_signals_overrides =
+        ConvertSparseVectorIdlToMojo(group->prioritySignalsOverrides());
+  }
+
   if (!CopyExecutionModeFromIdlToMojo(*context, exception_state, *group,
                                       *mojo_group)) {
     return ScriptPromise();
@@ -1190,18 +1299,30 @@ void NavigatorAuction::updateAdInterestGroups(ScriptState* script_state,
 ScriptPromise NavigatorAuction::runAdAuction(ScriptState* script_state,
                                              const AuctionAdConfig* config,
                                              ExceptionState& exception_state) {
-  const ExecutionContext* context = ExecutionContext::From(script_state);
+  ExecutionContext* context = ExecutionContext::From(script_state);
   auto mojo_config = IdlAuctionConfigToMojo(
       /*is_top_level=*/true, *script_state, *context, exception_state, *config);
   if (!mojo_config)
     return ScriptPromise();
 
   auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
+  mojo::PendingReceiver<mojom::blink::AbortableAdAuction> abort_receiver;
   ScriptPromise promise = resolver->Promise();
+  if (config->hasSignal()) {
+    if (config->signal()->aborted()) {
+      resolver->Reject(config->signal()->reason(script_state));
+      return promise;
+    }
+    auto* auction_handle = MakeGarbageCollected<AuctionHandle>(
+        context, abort_receiver.InitWithNewPipeAndPassRemote());
+    config->signal()->AddAlgorithm(auction_handle);
+  }
   ad_auction_service_->RunAdAuction(
-      std::move(mojo_config),
-      WTF::Bind(&NavigatorAuction::AuctionComplete, WrapPersistent(this),
-                WrapPersistent(resolver)));
+      std::move(mojo_config), std::move(abort_receiver),
+      WTF::Bind(
+          &NavigatorAuction::AuctionComplete, WrapPersistent(this),
+          WrapPersistent(resolver),
+          WrapPersistent(config->hasSignal() ? config->signal() : nullptr)));
   return promise;
 }
 
@@ -1493,14 +1614,21 @@ void NavigatorAuction::LeaveComplete(bool is_cross_origin,
 }
 
 void NavigatorAuction::AuctionComplete(ScriptPromiseResolver* resolver,
+                                       AbortSignal* abort_signal,
+                                       bool manually_aborted,
                                        const absl::optional<KURL>& result_url) {
   if (!resolver->GetExecutionContext() ||
       resolver->GetExecutionContext()->IsContextDestroyed())
     return;
-  if (result_url) {
+  ScriptState* script_state = resolver->GetScriptState();
+  ScriptState::Scope script_state_scope(script_state);
+  if (manually_aborted) {
+    DCHECK(abort_signal && abort_signal->aborted());
+    resolver->Reject(abort_signal->reason(script_state));
+  } else if (result_url) {
     resolver->Resolve(result_url);
   } else {
-    resolver->Resolve(v8::Null(resolver->GetScriptState()->GetIsolate()));
+    resolver->Resolve(v8::Null(script_state->GetIsolate()));
   }
 }
 

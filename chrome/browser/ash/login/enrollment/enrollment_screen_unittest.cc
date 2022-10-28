@@ -1,4 +1,4 @@
-// Copyright (c) 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -150,8 +150,8 @@ class EnrollmentScreenUnitTest : public testing::Test {
   }
 
   void ConfigureRestoreAfterRollback() {
-    wizard_context_.configuration.SetBoolKey(
-        configuration::kRestoreAfterRollback, true);
+    wizard_context_.configuration.Set(configuration::kRestoreAfterRollback,
+                                      true);
   }
 
   void ShowEnrollmentScreen(bool suppress_jitter = false) {

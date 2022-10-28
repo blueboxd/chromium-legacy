@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -21,6 +21,7 @@
 #include "components/cbor/diagnostic_writer.h"
 #include "components/device_event_log/device_event_log.h"
 #include "device/fido/cable/fido_cable_discovery.h"
+#include "device/fido/device_public_key_extension.h"
 #include "device/fido/discoverable_credential_metadata.h"
 #include "device/fido/features.h"
 #include "device/fido/fido_authenticator.h"
@@ -124,6 +125,18 @@ bool ValidateResponseExtensions(const CtapGetAssertionRequest& request,
       if (!request.get_cred_blob || !it.second.is_bytestring()) {
         return false;
       }
+    } else if (ext_name == kExtensionDevicePublicKey) {
+      if (!request.device_public_key) {
+        FIDO_LOG(ERROR) << "unsolicited devicePubKey extension output";
+        return false;
+      }
+      const absl::optional<const char*> error =
+          CheckDevicePublicKeyExtensionForErrors(
+              it.second, request.device_public_key->attestation);
+      if (error.has_value()) {
+        FIDO_LOG(ERROR) << error.value();
+        return false;
+      }
     } else {
       // Authenticators may not return unknown extensions.
       return false;
@@ -165,8 +178,7 @@ bool ResponseValid(bool is_first_response,
   // published.
   const auto& user_entity = response.user_entity;
   const bool has_user_identifying_info =
-      user_entity &&
-      (user_entity->display_name || user_entity->name || user_entity->icon_url);
+      user_entity && (user_entity->display_name || user_entity->name);
   if (!response.authenticator_data.obtained_user_verification() &&
       has_user_identifying_info) {
     return false;
@@ -197,6 +209,15 @@ bool ResponseValid(bool is_first_response,
 
   if (!is_first_response && response.user_selected) {
     // It is invalid to set `userSelected` on subsequent responses.
+    return false;
+  }
+
+  const bool has_dpk_extension =
+      extensions &&
+      extensions->GetMap().count(cbor::Value(kExtensionDevicePublicKey));
+  if (has_dpk_extension != response.device_public_key_signature.has_value()) {
+    FIDO_LOG(ERROR)
+        << "DPK extension isn't coherent with presence of DPK signature";
     return false;
   }
 
@@ -267,6 +288,9 @@ CtapGetAssertionRequest SpecializeRequestForAuthenticator(
   }
   if (request.get_cred_blob && !authenticator.SupportsCredBlobOfSize(0)) {
     specialized_request.get_cred_blob = false;
+  }
+  if (request.device_public_key && !authenticator.SupportsDevicePublicKey()) {
+    specialized_request.device_public_key.reset();
   }
   return specialized_request;
 }

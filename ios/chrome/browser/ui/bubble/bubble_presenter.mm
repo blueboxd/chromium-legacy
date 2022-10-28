@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,8 +13,9 @@
 #import "components/feature_engagement/public/tracker.h"
 #import "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/chrome_url_constants.h"
+#import "ios/chrome/browser/chrome_url_util.h"
 #import "ios/chrome/browser/feature_engagement/tracker_factory.h"
-#import "ios/chrome/browser/system_flags.h"
+#import "ios/chrome/browser/flags/system_flags.h"
 #import "ios/chrome/browser/ui/bubble/bubble_presenter_delegate.h"
 #import "ios/chrome/browser/ui/bubble/bubble_util.h"
 #import "ios/chrome/browser/ui/bubble/bubble_view_controller_presenter.h"
@@ -252,6 +253,12 @@ const CGFloat kBubblePresentationDelay = 1;
   if (![self canPresentBubble])
     return;
 
+  web::WebState* webState =
+      [self.delegate currentWebStateForBubblePresenter:self];
+  if (!webState ||
+      ShouldLoadUrlInDesktopMode(webState->GetVisibleURL(), self.browserState))
+    return;
+
   BubbleArrowDirection arrowDirection =
       IsSplitToolbarMode(self.rootViewController) ? BubbleArrowDirectionDown
                                                   : BubbleArrowDirectionUp;
@@ -274,8 +281,6 @@ const CGFloat kBubblePresentationDelay = 1;
     return;
 
   self.defaultPageModeTipBubblePresenter = presenter;
-  feature_engagement::TrackerFactory::GetForBrowserState(self.browserState)
-      ->NotifyEvent(feature_engagement::events::kDefaultSiteViewShown);
   base::UmaHistogramBoolean("IOS.IPH.DefaultSite.Presented", true);
 }
 

@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -204,6 +204,10 @@ void GuestOsSessionTracker::HandleNewGuest(const std::string& vm_name,
   if (cb_list != container_start_callbacks_.end()) {
     cb_list->second->Notify(info);
   }
+  // Let the observers of ANY guest know too.
+  for (auto& observer : container_started_observers_) {
+    observer.OnContainerStarted(id);
+  }
 }
 
 void GuestOsSessionTracker::OnContainerShutdown(
@@ -250,6 +254,16 @@ base::CallbackListSubscription GuestOsSessionTracker::RunOnShutdown(
     cb_list = std::make_unique<base::OnceCallbackList<void()>>();
   }
   return cb_list->Add(std::move(callback));
+}
+
+void GuestOsSessionTracker::AddContainerStartedObserver(
+    ContainerStartedObserver* observer) {
+  container_started_observers_.AddObserver(observer);
+}
+
+void GuestOsSessionTracker::RemoveContainerStartedObserver(
+    ContainerStartedObserver* observer) {
+  container_started_observers_.RemoveObserver(observer);
 }
 
 }  // namespace guest_os

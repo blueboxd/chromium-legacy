@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -265,12 +265,15 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTestChromeOS,
   auto* visible_on_all_desks_browser = browser_list->get(1);
   auto* visible_on_all_desks_window =
       visible_on_all_desks_browser->window()->GetNativeWindow();
-  ASSERT_TRUE(visible_on_all_desks_window->GetProperty(
+
+  EXPECT_EQ("", visible_on_all_desks_browser->initial_workspace());
+
+  EXPECT_TRUE(visible_on_all_desks_window->GetProperty(
                   aura::client::kWindowWorkspaceKey) ==
               aura::client::kWindowWorkspaceVisibleOnAllWorkspaces);
   // Visible on all desks windows should always reside on the active desk,
   // even if there is a desk switch.
-  ASSERT_TRUE(chromeos::DesksHelper::Get(visible_on_all_desks_window)
+  EXPECT_TRUE(chromeos::DesksHelper::Get(visible_on_all_desks_window)
                   ->BelongsToActiveDesk(visible_on_all_desks_window));
 
   RemoveInactiveDesks();

@@ -1,4 +1,4 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,11 +6,11 @@
 
 #import <Foundation/Foundation.h>
 
-#include "base/format_macros.h"
-#include "base/json/json_string_value_serializer.h"
-#include "base/logging.h"
-#include "base/mac/foundation_util.h"
-#include "base/strings/sys_string_conversions.h"
+#import "base/format_macros.h"
+#import "base/json/json_string_value_serializer.h"
+#import "base/logging.h"
+#import "base/mac/foundation_util.h"
+#import "base/strings/sys_string_conversions.h"
 #import "base/test/ios/wait_util.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_app_interface.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
@@ -19,8 +19,8 @@
 #import "ios/testing/earl_grey/app_launch_manager.h"
 #import "ios/testing/earl_grey/earl_grey_test.h"
 #import "ios/testing/nserror_util.h"
-#include "ios/web/public/test/element_selector.h"
-#include "net/base/mac/url_conversions.h"
+#import "ios/web/public/test/element_selector.h"
+#import "net/base/mac/url_conversions.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -228,7 +228,7 @@ UIWindow* GetAnyKeyWindow() {
 
 - (void)selectTabAtIndex:(NSUInteger)index {
   [ChromeEarlGreyAppInterface selectTabAtIndex:index];
-  // Tab changes are initiated through |WebStateList|. Need to wait its
+  // Tab changes are initiated through `WebStateList`. Need to wait its
   // obeservers to complete UI changes at app.
   GREYWaitForAppToIdle(@"App failed to idle");
 }
@@ -239,7 +239,7 @@ UIWindow* GetAnyKeyWindow() {
 
 - (void)closeTabAtIndex:(NSUInteger)index {
   [ChromeEarlGreyAppInterface closeTabAtIndex:index];
-  // Tab changes are initiated through |WebStateList|. Need to wait its
+  // Tab changes are initiated through `WebStateList`. Need to wait its
   // obeservers to complete UI changes at app.
   GREYWaitForAppToIdle(@"App failed to idle");
 }
@@ -346,7 +346,7 @@ UIWindow* GetAnyKeyWindow() {
 
 - (void)closeAllTabs {
   [ChromeEarlGreyAppInterface closeAllTabs];
-  // Tab changes are initiated through |WebStateList|. Need to wait its
+  // Tab changes are initiated through `WebStateList`. Need to wait its
   // obeservers to complete UI changes at app.
   GREYWaitForAppToIdle(@"App failed to idle");
 }
@@ -427,7 +427,7 @@ UIWindow* GetAnyKeyWindow() {
   };
 
   bool matched = WaitUntilConditionOrTimeout(timeout, condition);
-  GREYAssert(matched, errorDescription);
+  EG_TEST_HELPER_ASSERT_TRUE(matched, errorDescription);
 }
 
 - (void)waitForUIElementToDisappearWithMatcher:(id<GREYMatcher>)matcher {
@@ -449,7 +449,7 @@ UIWindow* GetAnyKeyWindow() {
   };
 
   bool matched = WaitUntilConditionOrTimeout(timeout, condition);
-  GREYAssert(matched, errorDescription);
+  EG_TEST_HELPER_ASSERT_TRUE(matched, errorDescription);
 }
 
 - (NSString*)currentTabTitle {
@@ -937,7 +937,7 @@ UIWindow* GetAnyKeyWindow() {
   }
   [ChromeEarlGreyAppInterface closeAllExtraWindows];
 
-  // Tab changes are initiated through |WebStateList|. Need to wait its
+  // Tab changes are initiated through `WebStateList`. Need to wait its
   // observers to complete UI changes at app. Wait until window count is
   // officially 1 in the app, otherwise we may start a new test while the
   // removed window is still partly registered.
@@ -1215,10 +1215,6 @@ UIWindow* GetAnyKeyWindow() {
 
 #pragma mark - Check features (EG2)
 
-- (BOOL)isBlockNewTabPagePendingLoadEnabled {
-  return [ChromeEarlGreyAppInterface isBlockNewTabPagePendingLoadEnabled];
-}
-
 - (BOOL)isVariationEnabled:(int)variationID {
   return [ChromeEarlGreyAppInterface isVariationEnabled:variationID];
 }
@@ -1427,10 +1423,22 @@ UIWindow* GetAnyKeyWindow() {
              @"Waiting for '%@' to be copied to pasteboard.", text);
 }
 
+- (BOOL)pasteboardHasImages {
+  return [ChromeEarlGreyAppInterface pasteboardHasImages];
+}
+
 - (GURL)pasteboardURL {
   NSString* absoluteString = [ChromeEarlGreyAppInterface pasteboardURLSpec];
   return absoluteString ? GURL(base::SysNSStringToUTF8(absoluteString))
                         : GURL::EmptyGURL();
+}
+
+- (void)clearPasteboard {
+  [ChromeEarlGreyAppInterface clearPasteboard];
+}
+
+- (void)copyTextToPasteboard:(NSString*)text {
+  [ChromeEarlGreyAppInterface copyTextToPasteboard:text];
 }
 
 #pragma mark - Context Menus Utilities (EG2)

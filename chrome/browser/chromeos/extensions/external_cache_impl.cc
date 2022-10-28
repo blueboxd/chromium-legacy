@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -102,19 +102,18 @@ void ExternalCacheImpl::UpdateExtensionsList(
 }
 
 void ExternalCacheImpl::OnDamagedFileDetected(const base::FilePath& path) {
-  for (base::DictionaryValue::Iterator it(*cached_extensions_.get());
-       !it.IsAtEnd(); it.Advance()) {
+  for (const auto item : cached_extensions_->GetDict()) {
     const base::DictionaryValue* entry = nullptr;
-    if (!it.value().GetAsDictionary(&entry)) {
+    if (!item.second.GetAsDictionary(&entry)) {
       NOTREACHED() << "ExternalCacheImpl found bad entry with type "
-                   << it.value().type();
+                   << item.second.type();
       continue;
     }
 
     const std::string* external_crx = entry->GetDict().FindString(
         extensions::ExternalProviderImpl::kExternalCrx);
     if (external_crx && *external_crx == path.value()) {
-      extensions::ExtensionId id = it.key();
+      extensions::ExtensionId id = item.first;
       LOG(ERROR) << "ExternalCacheImpl extension at " << path.value()
                  << " failed to install, deleting it.";
       RemoveCachedExtension(id);

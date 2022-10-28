@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -17,6 +17,7 @@
 #include "chrome/browser/ui/views/side_panel/side_panel.h"
 #include "chrome/browser/ui/views/side_panel/side_panel_coordinator.h"
 #include "chrome/browser/ui/views/side_search/side_search_browsertest.h"
+#include "chrome/browser/ui/views/side_search/side_search_icon_view.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/feature_engagement/public/feature_constants.h"
 #include "components/feature_engagement/test/test_tracker.h"
@@ -33,13 +34,13 @@ class SideSearchV2Test : public SideSearchBrowserTest {
   void SetUp() override {
     scoped_feature_list_.InitWithFeatures(
         {features::kSideSearch, features::kSideSearchDSESupport,
-         features::kUnifiedSidePanel},
+         features::kUnifiedSidePanel, features::kSearchWebInSidePanel},
         {});
     SideSearchBrowserTest::SetUp();
   }
 
   SidePanel* GetSidePanelFor(Browser* browser) override {
-    return BrowserViewFor(browser)->right_aligned_side_panel();
+    return BrowserViewFor(browser)->unified_side_panel();
   }
 
  private:
@@ -129,6 +130,52 @@ IN_PROC_BROWSER_TEST_F(SideSearchV2Test, SideSearchNotAvailableInOTR) {
 }
 
 IN_PROC_BROWSER_TEST_F(SideSearchV2Test,
+                       SearchWebInSidePanelNotAvailableInOTR) {
+  Browser* browser2 = CreateIncognitoBrowser();
+  EXPECT_TRUE(browser2->profile()->IsOffTheRecord());
+  auto* tab_contents_helper = SideSearchTabContentsHelper::FromWebContents(
+      browser2->tab_strip_model()->GetActiveWebContents());
+  EXPECT_EQ(nullptr, tab_contents_helper);
+}
+
+IN_PROC_BROWSER_TEST_F(SideSearchV2Test, MenuEntryPointNotAvailableOnSRP) {
+  NavigateActiveTab(browser(), GetMatchingSearchUrl());
+  auto* tab_contents_helper = SideSearchTabContentsHelper::FromWebContents(
+      browser()->tab_strip_model()->GetActiveWebContents());
+  EXPECT_FALSE(tab_contents_helper->CanShowSidePanelFromContextMenuSearch());
+}
+
+IN_PROC_BROWSER_TEST_F(SideSearchV2Test,
+                       MenuEntryPointAvailableOnPageWithoutSRP) {
+  NavigateActiveTab(browser(), GetNonMatchingUrl());
+  auto* tab_contents_helper = SideSearchTabContentsHelper::FromWebContents(
+      browser()->tab_strip_model()->GetActiveWebContents());
+  EXPECT_TRUE(tab_contents_helper->CanShowSidePanelFromContextMenuSearch());
+}
+
+IN_PROC_BROWSER_TEST_F(SideSearchV2Test,
+                       MenuEntryPointDisplayAndUpdateSidePanel) {
+  // Initially side panel does not exist.
+  EXPECT_FALSE(GetSidePanelFor(browser())->GetVisible());
+  auto* helper = SideSearchTabContentsHelper::FromWebContents(
+      browser()->tab_strip_model()->GetActiveWebContents());
+  GURL matchingURL_1 = GetMatchingSearchUrl();
+  helper->OpenSidePanelFromContextMenuSearch(matchingURL_1);
+
+  // Clicking menu entrypoint displays search results in side panel.
+  EXPECT_TRUE(GetSidePanelFor(browser())->GetVisible());
+  EXPECT_EQ(matchingURL_1,
+            GetActiveSidePanelWebContents(browser())->GetVisibleURL());
+
+  // Clicking menu entrypoint with a newly-generated search URL updates the
+  // existing side panel.
+  GURL matchingURL_2 = GetMatchingSearchUrl();
+  helper->OpenSidePanelFromContextMenuSearch(matchingURL_2);
+  EXPECT_EQ(matchingURL_2,
+            GetActiveSidePanelWebContents(browser())->GetVisibleURL());
+}
+
+IN_PROC_BROWSER_TEST_F(SideSearchV2Test,
                        SidePanelButtonIsNotShownWhenSRPIsUnavailable) {
   // Set the side panel SRP be unavailable.
   SetIsSidePanelSRPAvailableAt(browser(), 0, false);
@@ -148,17 +195,9 @@ IN_PROC_BROWSER_TEST_F(SideSearchV2Test,
   EXPECT_FALSE(GetSidePanelFor(browser())->GetVisible());
 }
 
-#if BUILDFLAG(IS_MAC)
-// TODO(crbug.com/1340387): Test is flaky on Mac.
-#define MAYBE_SidePanelStatePreservedWhenMovingTabsAcrossBrowserWindows \
-  DISABLED_SidePanelStatePreservedWhenMovingTabsAcrossBrowserWindows
-#else
-#define MAYBE_SidePanelStatePreservedWhenMovingTabsAcrossBrowserWindows \
-  SidePanelStatePreservedWhenMovingTabsAcrossBrowserWindows
-#endif
 IN_PROC_BROWSER_TEST_F(
     SideSearchV2Test,
-    MAYBE_SidePanelStatePreservedWhenMovingTabsAcrossBrowserWindows) {
+    SidePanelStatePreservedWhenMovingTabsAcrossBrowserWindows) {
   NavigateToMatchingSearchPageAndOpenSidePanel(browser());
 
   Browser* browser2 = CreateBrowser(browser()->profile());
@@ -255,14 +294,7 @@ IN_PROC_BROWSER_TEST_F(SideSearchV2Test,
   EXPECT_FALSE(side_panel->GetVisible());
 }
 
-#if BUILDFLAG(IS_MAC)
-// TODO(crbug.com/1347306): This test is flakey on macOS.
-#define MAYBE_SidePanelCrashesCloseSidePanel \
-  DISABLED_SidePanelCrashesCloseSidePanel
-#else
-#define MAYBE_SidePanelCrashesCloseSidePanel SidePanelCrashesCloseSidePanel
-#endif
-IN_PROC_BROWSER_TEST_F(SideSearchV2Test, MAYBE_SidePanelCrashesCloseSidePanel) {
+IN_PROC_BROWSER_TEST_F(SideSearchV2Test, SidePanelCrashesCloseSidePanel) {
   auto* browser_view = BrowserViewFor(browser());
   auto* coordinator = browser_view->side_panel_coordinator();
   coordinator->SetNoDelaysForTesting();
@@ -332,29 +364,22 @@ IN_PROC_BROWSER_TEST_F(SideSearchV2Test, SwitchSidePanelInSingleTab) {
   NotifyButtonClick(browser());
   EXPECT_FALSE(GetSidePanelButtonFor(browser())->GetVisible());
   EXPECT_EQ(SidePanelEntry::Id::kSideSearch,
-            coordinator->GetCurrentSidePanelEntryForTesting()->id());
+            coordinator->GetCurrentSidePanelEntryForTesting()->key().id());
 
   // Switch to reading list side panel.
   coordinator->Show(SidePanelEntry::Id::kReadingList);
   EXPECT_TRUE(GetSidePanelButtonFor(browser())->GetVisible());
   EXPECT_EQ(SidePanelEntry::Id::kReadingList,
-            coordinator->GetCurrentSidePanelEntryForTesting()->id());
+            coordinator->GetCurrentSidePanelEntryForTesting()->key().id());
 
   // Switch back to side search side panel.
   coordinator->Show(SidePanelEntry::Id::kSideSearch);
   EXPECT_FALSE(GetSidePanelButtonFor(browser())->GetVisible());
   EXPECT_EQ(SidePanelEntry::Id::kSideSearch,
-            coordinator->GetCurrentSidePanelEntryForTesting()->id());
+            coordinator->GetCurrentSidePanelEntryForTesting()->key().id());
 }
 
-#if BUILDFLAG(IS_MAC)
-// TODO(crbug.com/1341272): Test is flaky on Mac.
-#define MAYBE_SwitchTabsWithGlobalSidePanel \
-  DISABLED_SwitchTabsWithGlobalSidePanel
-#else
-#define MAYBE_SwitchTabsWithGlobalSidePanel SwitchTabsWithGlobalSidePanel
-#endif
-IN_PROC_BROWSER_TEST_F(SideSearchV2Test, MAYBE_SwitchTabsWithGlobalSidePanel) {
+IN_PROC_BROWSER_TEST_F(SideSearchV2Test, SwitchTabsWithGlobalSidePanel) {
   auto* browser_view = BrowserViewFor(browser());
   auto* coordinator = browser_view->side_panel_coordinator();
   coordinator->SetNoDelaysForTesting();
@@ -364,7 +389,7 @@ IN_PROC_BROWSER_TEST_F(SideSearchV2Test, MAYBE_SwitchTabsWithGlobalSidePanel) {
   EXPECT_FALSE(GetSidePanelButtonFor(browser())->GetVisible());
   coordinator->Show(SidePanelEntry::Id::kReadingList);
   EXPECT_EQ(SidePanelEntry::Id::kReadingList,
-            coordinator->GetCurrentSidePanelEntryForTesting()->id());
+            coordinator->GetCurrentSidePanelEntryForTesting()->key().id());
 
   // Tab 1 with side search available and open.
   AppendTab(browser(), GetMatchingSearchUrl());
@@ -372,7 +397,7 @@ IN_PROC_BROWSER_TEST_F(SideSearchV2Test, MAYBE_SwitchTabsWithGlobalSidePanel) {
   EXPECT_TRUE(GetSidePanelButtonFor(browser())->GetVisible());
   NotifyButtonClick(browser());
   EXPECT_EQ(SidePanelEntry::Id::kSideSearch,
-            coordinator->GetCurrentSidePanelEntryForTesting()->id());
+            coordinator->GetCurrentSidePanelEntryForTesting()->key().id());
 
   // Tab 2 with side search available and open.
   AppendTab(browser(), GetMatchingSearchUrl());
@@ -380,45 +405,37 @@ IN_PROC_BROWSER_TEST_F(SideSearchV2Test, MAYBE_SwitchTabsWithGlobalSidePanel) {
   EXPECT_TRUE(GetSidePanelButtonFor(browser())->GetVisible());
   NotifyButtonClick(browser());
   EXPECT_EQ(SidePanelEntry::Id::kSideSearch,
-            coordinator->GetCurrentSidePanelEntryForTesting()->id());
+            coordinator->GetCurrentSidePanelEntryForTesting()->key().id());
 
   // Tab 3 with side search available but not open.
   AppendTab(browser(), GetMatchingSearchUrl());
   NavigateActiveTab(browser(), GetNonMatchingUrl());
   EXPECT_TRUE(GetSidePanelButtonFor(browser())->GetVisible());
   EXPECT_EQ(SidePanelEntry::Id::kReadingList,
-            coordinator->GetCurrentSidePanelEntryForTesting()->id());
+            coordinator->GetCurrentSidePanelEntryForTesting()->key().id());
 
   // Switch to tab 0, side panel is open with reading list.
   ActivateTabAt(browser(), 0);
   EXPECT_EQ(SidePanelEntry::Id::kReadingList,
-            coordinator->GetCurrentSidePanelEntryForTesting()->id());
+            coordinator->GetCurrentSidePanelEntryForTesting()->key().id());
 
   // Switch to tab 1, side panel is open with side search.
   ActivateTabAt(browser(), 1);
   EXPECT_EQ(SidePanelEntry::Id::kSideSearch,
-            coordinator->GetCurrentSidePanelEntryForTesting()->id());
+            coordinator->GetCurrentSidePanelEntryForTesting()->key().id());
 
   // Switch to tab 2, side panel is open with side search.
   ActivateTabAt(browser(), 2);
   EXPECT_EQ(SidePanelEntry::Id::kSideSearch,
-            coordinator->GetCurrentSidePanelEntryForTesting()->id());
+            coordinator->GetCurrentSidePanelEntryForTesting()->key().id());
 
   // Switch to tab 3, side panel is open with reading list.
   ActivateTabAt(browser(), 3);
   EXPECT_EQ(SidePanelEntry::Id::kReadingList,
-            coordinator->GetCurrentSidePanelEntryForTesting()->id());
+            coordinator->GetCurrentSidePanelEntryForTesting()->key().id());
 }
 
-#if BUILDFLAG(IS_MAC)
-// TODO(crbug.com/1340387): Test is flaky on Mac.
-#define MAYBE_SwitchTabsWithoutGlobalSidePanel \
-  DISABLED_SwitchTabsWithoutGlobalSidePanel
-#else
-#define MAYBE_SwitchTabsWithoutGlobalSidePanel SwitchTabsWithoutGlobalSidePanel
-#endif
-IN_PROC_BROWSER_TEST_F(SideSearchV2Test,
-                       MAYBE_SwitchTabsWithoutGlobalSidePanel) {
+IN_PROC_BROWSER_TEST_F(SideSearchV2Test, SwitchTabsWithoutGlobalSidePanel) {
   auto* browser_view = BrowserViewFor(browser());
   auto* coordinator = browser_view->side_panel_coordinator();
 
@@ -433,7 +450,7 @@ IN_PROC_BROWSER_TEST_F(SideSearchV2Test,
   EXPECT_TRUE(GetSidePanelButtonFor(browser())->GetVisible());
   NotifyButtonClick(browser());
   EXPECT_EQ(SidePanelEntry::Id::kSideSearch,
-            coordinator->GetCurrentSidePanelEntryForTesting()->id());
+            coordinator->GetCurrentSidePanelEntryForTesting()->key().id());
 
   // Tab 2 with side search available and open.
   AppendTab(browser(), GetMatchingSearchUrl());
@@ -441,7 +458,7 @@ IN_PROC_BROWSER_TEST_F(SideSearchV2Test,
   EXPECT_TRUE(GetSidePanelButtonFor(browser())->GetVisible());
   NotifyButtonClick(browser());
   EXPECT_EQ(SidePanelEntry::Id::kSideSearch,
-            coordinator->GetCurrentSidePanelEntryForTesting()->id());
+            coordinator->GetCurrentSidePanelEntryForTesting()->key().id());
 
   // Tab 3 with side search available but not open.
   AppendTab(browser(), GetMatchingSearchUrl());
@@ -456,26 +473,19 @@ IN_PROC_BROWSER_TEST_F(SideSearchV2Test,
   // Switch to tab 1, side panel is open with side search.
   ActivateTabAt(browser(), 1);
   EXPECT_EQ(SidePanelEntry::Id::kSideSearch,
-            coordinator->GetCurrentSidePanelEntryForTesting()->id());
+            coordinator->GetCurrentSidePanelEntryForTesting()->key().id());
 
   // Switch to tab 2, side panel is open with side search.
   ActivateTabAt(browser(), 2);
   EXPECT_EQ(SidePanelEntry::Id::kSideSearch,
-            coordinator->GetCurrentSidePanelEntryForTesting()->id());
+            coordinator->GetCurrentSidePanelEntryForTesting()->key().id());
 
   // Switch to tab 3, side panel is closed.
   ActivateTabAt(browser(), 3);
   EXPECT_EQ(nullptr, coordinator->GetCurrentSidePanelEntryForTesting());
 }
 
-#if BUILDFLAG(IS_MAC)
-// TODO(crbug.com/1340387): Test is flaky on Mac.
-#define MAYBE_CloseSidePanelShouldClearCache \
-  DISABLED_CloseSidePanelShouldClearCache
-#else
-#define MAYBE_CloseSidePanelShouldClearCache CloseSidePanelShouldClearCache
-#endif
-IN_PROC_BROWSER_TEST_F(SideSearchV2Test, MAYBE_CloseSidePanelShouldClearCache) {
+IN_PROC_BROWSER_TEST_F(SideSearchV2Test, CloseSidePanelShouldClearCache) {
   auto* browser_view = BrowserViewFor(browser());
   NavigateActiveTab(browser(), GetMatchingSearchUrl());
   NavigateActiveTab(browser(), GetNonMatchingUrl());
@@ -484,7 +494,8 @@ IN_PROC_BROWSER_TEST_F(SideSearchV2Test, MAYBE_CloseSidePanelShouldClearCache) {
   EXPECT_EQ(SidePanelEntry::Id::kSideSearch,
             browser_view->side_panel_coordinator()
                 ->GetCurrentSidePanelEntryForTesting()
-                ->id());
+                ->key()
+                .id());
 
   // When side panel is open,  side panel web contents is present.
   auto* tab_contents_helper = SideSearchTabContentsHelper::FromWebContents(
@@ -497,18 +508,9 @@ IN_PROC_BROWSER_TEST_F(SideSearchV2Test, MAYBE_CloseSidePanelShouldClearCache) {
   EXPECT_EQ(nullptr, tab_contents_helper->side_panel_contents_for_testing());
 }
 
-#if BUILDFLAG(IS_MAC)
-// TODO(crbug.com/1340387): Test is flaky on Mac.
-#define MAYBE_NewForegroundTabShouldNotDestroySidePanelContents \
-  DISABLED_NewForegroundTabShouldNotDestroySidePanelContents
-#else
-#define MAYBE_NewForegroundTabShouldNotDestroySidePanelContents \
-  NewForegroundTabShouldNotDestroySidePanelContents
-#endif
 // Test added for crbug.com/1349687 .
-IN_PROC_BROWSER_TEST_F(
-    SideSearchV2Test,
-    MAYBE_NewForegroundTabShouldNotDestroySidePanelContents) {
+IN_PROC_BROWSER_TEST_F(SideSearchV2Test,
+                       NewForegroundTabShouldNotDestroySidePanelContents) {
   auto* browser_view = BrowserViewFor(browser());
   NavigateActiveTab(browser(), GetMatchingSearchUrl());
   NavigateActiveTab(browser(), GetNonMatchingUrl());
@@ -517,7 +519,8 @@ IN_PROC_BROWSER_TEST_F(
   EXPECT_EQ(SidePanelEntry::Id::kSideSearch,
             browser_view->side_panel_coordinator()
                 ->GetCurrentSidePanelEntryForTesting()
-                ->id());
+                ->key()
+                .id());
 
   // When side panel is open,  side panel web contents is present.
   auto* tab_contents_helper = SideSearchTabContentsHelper::FromWebContents(
@@ -536,33 +539,34 @@ IN_PROC_BROWSER_TEST_F(
   EXPECT_NE(nullptr, tab_contents_helper->side_panel_contents_for_testing());
 }
 
-class SideSearchV2TestAutoTriggeringBrowserTest : public SideSearchBrowserTest {
+// Test added for crbug.com/1356966 .
+IN_PROC_BROWSER_TEST_F(SideSearchV2Test,
+                       CloseTabWithSideSearchOpenShouldNotCrash) {
+  auto* browser_view = BrowserViewFor(browser());
+  NavigateActiveTab(browser(), GetMatchingSearchUrl());
+  NavigateActiveTab(browser(), GetNonMatchingUrl());
+  EXPECT_TRUE(GetSidePanelButtonFor(browser())->GetVisible());
+  NotifyButtonClick(browser());
+  EXPECT_EQ(SidePanelEntry::Id::kSideSearch,
+            browser_view->side_panel_coordinator()
+                ->GetCurrentSidePanelEntryForTesting()
+                ->key()
+                .id());
+  browser()->tab_strip_model()->CloseAllTabs();
+}
+
+// Fixture base to test feature engagement functionality for the side search
+// feature.
+class SideSearchFeatureEngagementTest : public SideSearchBrowserTest {
  public:
-  SideSearchV2TestAutoTriggeringBrowserTest() {
-    constexpr char kParam[] = "SideSearchAutoTriggeringReturnCount";
-    constexpr char kTriggerCount[] = "2";
-    base::FieldTrialParams params = {{kParam, kTriggerCount}};
-
-    feature_list_.InitWithFeaturesAndParameters(
-        {
-            {features::kSideSearch, {}},
-            {features::kSideSearchDSESupport, {}},
-            {features::kUnifiedSidePanel, {}},
-            {features::kSideSearchAutoTriggering, params},
-            {feature_engagement::kIPHSideSearchAutoTriggeringFeature,
-             GetFeatureEngagementParams()},
-        },
-        {});
-
-    subscription_ =
-        BrowserContextDependencyManager::GetInstance()
-            ->RegisterCreateServicesCallbackForTesting(
-                base::BindRepeating(&SideSearchV2TestAutoTriggeringBrowserTest::
-                                        RegisterTestTracker));
-  }
+  SideSearchFeatureEngagementTest()
+      : subscription_(
+            BrowserContextDependencyManager::GetInstance()
+                ->RegisterCreateServicesCallbackForTesting(base::BindRepeating(
+                    &SideSearchFeatureEngagementTest::RegisterTestTracker))) {}
 
   SidePanel* GetSidePanelFor(Browser* browser) override {
-    return BrowserViewFor(browser)->right_aligned_side_panel();
+    return BrowserViewFor(browser)->unified_side_panel();
   }
 
   // Navigates one page backwards in navigation history and waits for the
@@ -578,6 +582,14 @@ class SideSearchV2TestAutoTriggeringBrowserTest : public SideSearchBrowserTest {
     ASSERT_TRUE(ui_test_utils::NavigateToURL(browser, url));
   }
 
+  std::map<std::string, std::string> GetFeatureEngagementParams() {
+    return {
+        {"availability", "any"},
+        {"event_used", "name:used;comparator:any;window:360;storage:360"},
+        {"event_trigger", "name:trigger;comparator:any;window:360;storage:360"},
+        {"session_rate", "<1"}};
+  }
+
   base::HistogramTester& histogram_tester() { return histogram_tester_; }
 
  private:
@@ -591,33 +603,36 @@ class SideSearchV2TestAutoTriggeringBrowserTest : public SideSearchBrowserTest {
     return feature_engagement::CreateTestTracker();
   }
 
-  std::map<std::string, std::string> GetFeatureEngagementParams() {
-    constexpr char kEventUsedKey[] = "event_used";
-    constexpr char kEventUsedValue[] =
-        "name:used;comparator:any;window:360;storage:360";
-    constexpr char kEventTriggerKey[] = "event_trigger";
-    constexpr char kEventTriggerValue[] =
-        "name:trigger;comparator:any;window:360;storage:360";
-    return {{kEventUsedKey, kEventUsedValue},
-            {kEventTriggerKey, kEventTriggerValue}};
-  }
-
   base::HistogramTester histogram_tester_;
-  base::test::ScopedFeatureList feature_list_;
   base::CallbackListSubscription subscription_;
 };
 
-#if BUILDFLAG(IS_MAC)
-// Test is flaky on Mac.
-#define MAYBE_SidePanelAutoTriggersAfterReturningToAPreviousSRP \
-  DISABLED_SidePanelAutoTriggersAfterReturningToAPreviousSRP
-#else
-#define MAYBE_SidePanelAutoTriggersAfterReturningToAPreviousSRP \
-  SidePanelAutoTriggersAfterReturningToAPreviousSRP
-#endif
-IN_PROC_BROWSER_TEST_F(
-    SideSearchV2TestAutoTriggeringBrowserTest,
-    MAYBE_SidePanelAutoTriggersAfterReturningToAPreviousSRP) {
+class SideSearchAutoTriggeringBrowserTest
+    : public SideSearchFeatureEngagementTest {
+ public:
+  SideSearchAutoTriggeringBrowserTest() {
+    constexpr char kParam[] = "SideSearchAutoTriggeringReturnCount";
+    constexpr char kTriggerCount[] = "2";
+    base::FieldTrialParams params = {{kParam, kTriggerCount}};
+
+    feature_list_.InitWithFeaturesAndParameters(
+        {
+            {features::kSideSearch, {}},
+            {features::kSideSearchDSESupport, {}},
+            {features::kUnifiedSidePanel, {}},
+            {features::kSideSearchAutoTriggering, params},
+            {feature_engagement::kIPHSideSearchAutoTriggeringFeature,
+             GetFeatureEngagementParams()},
+        },
+        {});
+  }
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
+};
+
+IN_PROC_BROWSER_TEST_F(SideSearchAutoTriggeringBrowserTest,
+                       SidePanelAutoTriggersAfterReturningToAPreviousSRP) {
   const auto srp_url = GetMatchingSearchUrl();
   const auto non_srp_url_1 = GetNonMatchingUrl();
   const auto non_srp_url_2 = GetNonMatchingUrl();
@@ -649,7 +664,7 @@ IN_PROC_BROWSER_TEST_F(
   EXPECT_NE(nullptr, GetSidePanelContentsFor(browser(), 0));
   EXPECT_TRUE(GetSidePanelFor(browser())->GetVisible());
   EXPECT_EQ(SidePanelEntry::Id::kSideSearch,
-            coordinator->GetCurrentSidePanelEntryForTesting()->id());
+            coordinator->GetCurrentSidePanelEntryForTesting()->key().id());
 
   // Navigate matching and non-matching URLs in the side contents and verify
   // that metrics are emitted correctly.
@@ -685,4 +700,74 @@ IN_PROC_BROWSER_TEST_F(
       "SideSearch.AutoTrigger."
       "NavigationCommittedWithinSideSearchCountPerJourney",
       1, 1);
+}
+
+class SideSearchPageActionLabelTriggerBrowserTest
+    : public SideSearchFeatureEngagementTest {
+ public:
+  SideSearchPageActionLabelTriggerBrowserTest() {
+    feature_list_.InitWithFeaturesAndParameters(
+        {
+            {features::kSideSearch, {}},
+            {features::kSideSearchDSESupport, {}},
+            {features::kUnifiedSidePanel, {}},
+            {feature_engagement::kIPHSideSearchPageActionLabelFeature,
+             GetFeatureEngagementParams()},
+        },
+        {});
+  }
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
+};
+
+IN_PROC_BROWSER_TEST_F(SideSearchPageActionLabelTriggerBrowserTest,
+                       SideSearchPageActionLabelAnimationTriggersCorrectly) {
+  auto* button_view = GetSidePanelButtonFor(browser());
+  ASSERT_NE(nullptr, button_view);
+  auto* icon_view = views::AsViewClass<SideSearchIconView>(button_view);
+
+  // Get the browser into a state where the icon view is visible.
+  NavigateActiveTab(browser(), GetNonMatchingUrl());
+  ASSERT_FALSE(icon_view->GetVisible());
+  NavigateActiveTab(browser(), GetMatchingSearchUrl());
+  NavigateActiveTab(browser(), GetNonMatchingUrl());
+
+  EXPECT_TRUE(icon_view->GetVisible());
+  EXPECT_TRUE(icon_view->IsLabelVisibleForTesting());
+
+  // Show the icon's label and toggle the side panel. It should correctly log
+  // being shown while the label was visible.
+  NotifyButtonClick(browser());
+  EXPECT_FALSE(icon_view->GetVisible());
+  EXPECT_FALSE(icon_view->IsLabelVisibleForTesting());
+  EXPECT_TRUE(GetSidePanelFor(browser())->GetVisible());
+  histogram_tester().ExpectBucketCount(
+      "SideSearch.PageActionIcon.LabelVisibleWhenToggled",
+      SideSearchPageActionLabelVisibility::kVisible, 1);
+  histogram_tester().ExpectBucketCount(
+      "SideSearch.PageActionIcon.LabelVisibleWhenToggled",
+      SideSearchPageActionLabelVisibility::kNotVisible, 0);
+
+  // Close the side panel.
+  NotifyCloseButtonClick(browser());
+  EXPECT_TRUE(icon_view->GetVisible());
+  EXPECT_FALSE(GetSidePanelFor(browser())->GetVisible());
+
+  // The Label should no longer be visible.
+  EXPECT_TRUE(icon_view->GetVisible());
+  EXPECT_FALSE(icon_view->IsLabelVisibleForTesting());
+
+  // Toggle the side panel again, it should correctly log
+  // being shown while the label was hidden.
+  NotifyButtonClick(browser());
+  EXPECT_FALSE(icon_view->GetVisible());
+  EXPECT_FALSE(icon_view->IsLabelVisibleForTesting());
+  EXPECT_TRUE(GetSidePanelFor(browser())->GetVisible());
+  histogram_tester().ExpectBucketCount(
+      "SideSearch.PageActionIcon.LabelVisibleWhenToggled",
+      SideSearchPageActionLabelVisibility::kVisible, 1);
+  histogram_tester().ExpectBucketCount(
+      "SideSearch.PageActionIcon.LabelVisibleWhenToggled",
+      SideSearchPageActionLabelVisibility::kNotVisible, 1);
 }

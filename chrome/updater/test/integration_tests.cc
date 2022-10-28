@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -123,7 +123,7 @@ class IntegrationTest : public ::testing::Test {
     PrintLog();
     CopyLog();
     test_commands_->Uninstall();
-    WaitForUpdaterExit();
+    EXPECT_TRUE(WaitForUpdaterExit());
   }
 
   void ExpectCandidateUninstalled() {
@@ -153,6 +153,10 @@ class IntegrationTest : public ::testing::Test {
 #if BUILDFLAG(IS_WIN)
   void ExpectInterfacesRegistered() {
     test_commands_->ExpectInterfacesRegistered();
+  }
+
+  void ExpectMarshalInterfaceSucceeds() {
+    test_commands_->ExpectMarshalInterfaceSucceeds();
   }
 
   void ExpectLegacyUpdate3WebSucceeds(const std::string& app_id,
@@ -252,7 +256,9 @@ class IntegrationTest : public ::testing::Test {
     return test_commands_->GetDifferentUserPath();
   }
 
-  void WaitForUpdaterExit() { test_commands_->WaitForUpdaterExit(); }
+  [[nodiscard]] bool WaitForUpdaterExit() {
+    return test_commands_->WaitForUpdaterExit();
+  }
 
   void SetUpTestService() {
 #if BUILDFLAG(IS_WIN)
@@ -316,7 +322,9 @@ class IntegrationTest : public ::testing::Test {
 
   void ExpectLastStarted() { test_commands_->ExpectLastStarted(); }
 
-  void RunOfflineInstall() { test_commands_->RunOfflineInstall(); }
+  void RunOfflineInstall(bool is_silent_install) {
+    test_commands_->RunOfflineInstall(is_silent_install);
+  }
 
   scoped_refptr<IntegrationTestCommands> test_commands_;
 
@@ -332,7 +340,7 @@ class IntegrationTest : public ::testing::Test {
 
 TEST_F(IntegrationTest, InstallUninstall) {
   Install();
-  WaitForUpdaterExit();
+  EXPECT_TRUE(WaitForUpdaterExit());
   ExpectInstalled();
   ExpectVersionActive(kUpdaterVersion);
   ExpectActiveUpdater();
@@ -345,29 +353,37 @@ TEST_F(IntegrationTest, InstallUninstall) {
   Uninstall();
 }
 
-TEST_F(IntegrationTest, OverinstallWorking) {
+// TODO(crbug.com/1345407): this test is disabled temporarily. Reenable after
+// the build that adds `IUpdater::FetchPolicies` is published to CIPD.
+TEST_F(IntegrationTest, DISABLED_OverinstallWorking) {
   SetupRealUpdaterLowerVersion();
-  WaitForUpdaterExit();
+  EXPECT_TRUE(WaitForUpdaterExit());
   ExpectVersionNotActive(kUpdaterVersion);
 
   // A new version hands off installation to the old version, and doesn't
   // change the active version of the updater.
   Install();
-  WaitForUpdaterExit();
+  EXPECT_TRUE(WaitForUpdaterExit());
   ExpectVersionNotActive(kUpdaterVersion);
 
   Uninstall();
 }
 
-TEST_F(IntegrationTest, OverinstallBroken) {
+// TODO(crbug.com/1359334): Flaky on Win10.
+#if BUILDFLAG(IS_WIN)
+#define MAYBE_OverinstallBroken DISABLED_OverinstallBroken
+#else
+#define MAYBE_OverinstallBroken OverinstallBroken
+#endif
+TEST_F(IntegrationTest, MAYBE_OverinstallBroken) {
   SetupRealUpdaterLowerVersion();
-  WaitForUpdaterExit();
+  EXPECT_TRUE(WaitForUpdaterExit());
   DeleteUpdaterDirectory();
 
   // Since the old version is not working, the new version should install and
   // become active.
   Install();
-  WaitForUpdaterExit();
+  EXPECT_TRUE(WaitForUpdaterExit());
   ExpectVersionActive(kUpdaterVersion);
 
   Uninstall();
@@ -376,12 +392,12 @@ TEST_F(IntegrationTest, OverinstallBroken) {
 TEST_F(IntegrationTest, SelfUninstallOutdatedUpdater) {
   Install();
   ExpectInstalled();
-  WaitForUpdaterExit();
+  EXPECT_TRUE(WaitForUpdaterExit());
   SetupFakeUpdaterHigherVersion();
   ExpectVersionNotActive(kUpdaterVersion);
 
   RunWake(0);
-  WaitForUpdaterExit();
+  EXPECT_TRUE(WaitForUpdaterExit());
 
   ExpectCandidateUninstalled();
   // The candidate uninstall should not have altered global prefs.
@@ -396,7 +412,7 @@ TEST_F(IntegrationTest, QualifyUpdater) {
   ScopedServer test_server(test_commands_);
   Install();
   ExpectInstalled();
-  WaitForUpdaterExit();
+  EXPECT_TRUE(WaitForUpdaterExit());
   SetupFakeUpdaterLowerVersion();
   ExpectVersionNotActive(kUpdaterVersion);
 
@@ -404,7 +420,7 @@ TEST_F(IntegrationTest, QualifyUpdater) {
                        base::Version("0.1"), base::Version("0.2"));
 
   RunWake(0);
-  WaitForUpdaterExit();
+  EXPECT_TRUE(WaitForUpdaterExit());
 
   // This instance is now qualified and should activate itself and check itself
   // for updates on the next check.
@@ -413,7 +429,7 @@ TEST_F(IntegrationTest, QualifyUpdater) {
                            base::StringPrintf(".*%s.*", kUpdaterAppId))},
       ")]}'\n");
   RunWake(0);
-  WaitForUpdaterExit();
+  EXPECT_TRUE(WaitForUpdaterExit());
   ExpectVersionActive(kUpdaterVersion);
 
   Uninstall();
@@ -429,7 +445,7 @@ TEST_F(IntegrationTest, SelfUpdate) {
                        base::Version(kUpdaterVersion), next_version);
 
   RunWake(0);
-  WaitForUpdaterExit();
+  EXPECT_TRUE(WaitForUpdaterExit());
   ExpectAppVersion(kUpdaterAppId, next_version);
 
   Uninstall();
@@ -440,8 +456,10 @@ TEST_F(IntegrationTest, ReportsActive) {
   // A longer than usual timeout is needed for this test because the macOS
   // UpdateServiceInternal server takes at least 10 seconds to shut down after
   // Install, and InstallApp cannot make progress until it shut downs and
-  // releases the global prefs lock. We give it at most 18 seconds to be safe.
-  base::test::ScopedRunLoopTimeout timeout(FROM_HERE, base::Seconds(18));
+  // releases the global prefs lock.
+  EXPECT_GE(TestTimeouts::action_timeout(), base::Seconds(18));
+  base::test::ScopedRunLoopTimeout timeout(FROM_HERE,
+                                           TestTimeouts::action_timeout());
 
   ScopedServer test_server(test_commands_);
   Install();
@@ -488,7 +506,7 @@ TEST_F(IntegrationTest, UpdateApp) {
   const std::string kInstallDataIndex("test_install_data_index");
   ExpectUpdateSequence(&test_server, kAppId, kInstallDataIndex, v1, v2);
   Update(kAppId, kInstallDataIndex);
-  WaitForUpdaterExit();
+  EXPECT_TRUE(WaitForUpdaterExit());
   ExpectAppVersion(kAppId, v2);
   ExpectLastChecked();
   ExpectLastStarted();
@@ -516,7 +534,7 @@ TEST_F(IntegrationTest, ForceInstallApp) {
   ExpectUpdateSequence(&test_server, kAppId, "", v0point1, v1);
   RunWake(0);
 
-  WaitForUpdaterExit();
+  EXPECT_TRUE(WaitForUpdaterExit());
   ExpectAppVersion(kAppId, v1);
 
   Uninstall();
@@ -551,6 +569,12 @@ TEST_F(IntegrationTest, MultipleUpdateAllsMultipleNetRequests) {
 }
 
 #if BUILDFLAG(IS_WIN)
+TEST_F(IntegrationTest, MarshalInterface) {
+  Install();
+  ExpectMarshalInterfaceSucceeds();
+  Uninstall();
+}
+
 TEST_F(IntegrationTest, LegacyUpdate3Web) {
   ScopedServer test_server(test_commands_);
   Install();
@@ -625,15 +649,14 @@ TEST_F(IntegrationTest, UninstallCmdLine) {
   // Running the uninstall command does not uninstall this instance of the
   // updater right after installing it (not enough server starts).
   RunUninstallCmdLine();
-  WaitForUpdaterExit();
+  EXPECT_TRUE(WaitForUpdaterExit());
   ExpectInstalled();
 
   SetServerStarts(24);
 
   // Uninstall the idle updater.
   RunUninstallCmdLine();
-  WaitForUpdaterExit();
-  ExpectClean();
+  EXPECT_TRUE(WaitForUpdaterExit());
 }
 #endif  // BUILDFLAG(IS_WIN)
 
@@ -643,14 +666,14 @@ TEST_F(IntegrationTest, UnregisterUninstalledApp) {
   InstallApp("test1");
   InstallApp("test2");
 
-  WaitForUpdaterExit();
+  EXPECT_TRUE(WaitForUpdaterExit());
   ExpectVersionActive(kUpdaterVersion);
   ExpectActiveUpdater();
   UninstallApp("test1");
 
   RunWake(0);
 
-  WaitForUpdaterExit();
+  EXPECT_TRUE(WaitForUpdaterExit());
   ExpectInstalled();
   ExpectNotRegistered("test1");
   ExpectRegistered("test2");
@@ -660,30 +683,28 @@ TEST_F(IntegrationTest, UnregisterUninstalledApp) {
 
 TEST_F(IntegrationTest, UninstallIfMaxServerWakesBeforeRegistrationExceeded) {
   Install();
-  WaitForUpdaterExit();
+  EXPECT_TRUE(WaitForUpdaterExit());
   ExpectInstalled();
   SetServerStarts(24);
   RunWake(0);
-  WaitForUpdaterExit();
-  ExpectClean();
+  EXPECT_TRUE(WaitForUpdaterExit());
 }
 
 TEST_F(IntegrationTest, UninstallUpdaterWhenAllAppsUninstalled) {
   Install();
   InstallApp("test1");
   ExpectInstalled();
-  WaitForUpdaterExit();
+  EXPECT_TRUE(WaitForUpdaterExit());
   // TODO(crbug.com/1287235): The test is flaky without the following line.
   SetServerStarts(24);
   RunWake(0);
-  WaitForUpdaterExit();
+  EXPECT_TRUE(WaitForUpdaterExit());
   ExpectInstalled();
   ExpectVersionActive(kUpdaterVersion);
   ExpectActiveUpdater();
   UninstallApp("test1");
   RunWake(0);
-  WaitForUpdaterExit();
-  ExpectClean();
+  EXPECT_TRUE(WaitForUpdaterExit());
 }
 
 // Windows does not currently have a concept of app ownership, so this
@@ -697,12 +718,12 @@ TEST_F(IntegrationTest, UnregisterUnownedApp) {
 
   InstallApp("test1");
   InstallApp("test2");
-  WaitForUpdaterExit();
+  EXPECT_TRUE(WaitForUpdaterExit());
 
   SetExistenceCheckerPath("test1", GetDifferentUserPath());
 
   RunWake(0);
-  WaitForUpdaterExit();
+  EXPECT_TRUE(WaitForUpdaterExit());
 
   ExpectNotRegistered("test1");
   ExpectRegistered("test2");
@@ -713,7 +734,8 @@ TEST_F(IntegrationTest, UnregisterUnownedApp) {
 
 #if BUILDFLAG(CHROMIUM_BRANDING) || BUILDFLAG(GOOGLE_CHROME_BRANDING)
 #if !defined(COMPONENT_BUILD)
-// Disabled on Windows due to high flake rate; see https://crbug.com/1341471.
+// Disabled on Windows due to undiagnosed typelib errors even after
+// instrumenting the build; see https://crbug.com/1341471.
 #if BUILDFLAG(IS_WIN)
 #define MAYBE_SelfUpdateFromOldReal DISABLED_SelfUpdateFromOldReal
 #else
@@ -733,26 +755,47 @@ TEST_F(IntegrationTest, MAYBE_SelfUpdateFromOldReal) {
   ExpectUpdateSequence(&test_server, kQualificationAppId, "",
                        base::Version("0.1"), base::Version("0.2"));
   RunWake(0);
-  WaitForUpdaterExit();
+  EXPECT_TRUE(WaitForUpdaterExit());
 
   // Activate the new instance. (It should not check itself for updates.)
   RunWake(0);
-  WaitForUpdaterExit();
+  EXPECT_TRUE(WaitForUpdaterExit());
 
   ExpectVersionActive(kUpdaterVersion);
   Uninstall();
 }
+
+// Tests that installing and uninstalling an old version of the updater from
+// CIPD is possible.
+// TODO(crbug.com/1341471) - this may be slightly flaky as the typelib errors
+// showing up on Windows (which resulted in disabling SelfUpdateFromOldReal) are
+// being investigated. This test is simpler than SelfUpdateFromOldReal.
+#if BUILDFLAG(IS_WIN)
+#define MAYBE_InstallUninstallLowerVersion DISABLED_InstallUninstallLowerVersion
+#else
+#define MAYBE_InstallUninstallLowerVersion InstallUninstallLowerVersion
+#endif
+TEST_F(IntegrationTest, MAYBE_InstallUninstallLowerVersion) {
+  SetupRealUpdaterLowerVersion();
+  ExpectVersionNotActive(kUpdaterVersion);
+  Uninstall();
+
+#if BUILDFLAG(IS_WIN)
+  // This deletes a tree of empty subdirectories corresponding to the crash
+  // handler of the lower version updater installed above. `Uninstall` runs
+  // `updater --uninstall` from the out directory of the build, which attempts
+  // to launch the `uninstall.cmd` script corresponding to this version of the
+  // updater from the install directory. However, there is no such script
+  // because this version was never installed, and the script is not found
+  // there.
+  DeleteUpdaterDirectory();
+#endif  // IS_WIN
+}
+
 #endif
 #endif
 
-// TODO(crbug.com/1336591) - enable test after investigating crbug.com/1336591
-// or open a new crbug for debugging this test if it is the culprit.
-#if BUILDFLAG(IS_WIN)
-#define MAYBE_UpdateServiceStress DISABLED_UpdateServiceStress
-#else
-#define MAYBE_UpdateServiceStress UpdateServiceStress
-#endif
-TEST_F(IntegrationTest, MAYBE_UpdateServiceStress) {
+TEST_F(IntegrationTest, UpdateServiceStress) {
   Install();
   ExpectInstalled();
   StressUpdateService();
@@ -851,7 +894,7 @@ TEST_F(IntegrationTest, RecoveryNoUpdater) {
   const std::string appid = "test1";
   const base::Version version("0.1");
   RunRecoveryComponent(appid, version);
-  WaitForUpdaterExit();
+  EXPECT_TRUE(WaitForUpdaterExit());
   ExpectInstalled();
   ExpectActiveUpdater();
   ExpectAppVersion(appid, version);
@@ -861,7 +904,14 @@ TEST_F(IntegrationTest, RecoveryNoUpdater) {
 TEST_F(IntegrationTest, OfflineInstall) {
   Install();
   ExpectInstalled();
-  RunOfflineInstall();
+  RunOfflineInstall(/*is_silent_install=*/false);
+  Uninstall();
+}
+
+TEST_F(IntegrationTest, SilentOfflineInstall) {
+  Install();
+  ExpectInstalled();
+  RunOfflineInstall(/*is_silent_install=*/true);
   Uninstall();
 }
 

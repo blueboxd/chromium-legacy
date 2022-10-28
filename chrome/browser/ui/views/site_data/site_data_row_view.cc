@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,6 +7,7 @@
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/ui/views/accessibility/non_accessible_image_view.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
+#include "chrome/browser/ui/views/site_data/page_specific_site_data_dialog.h"
 #include "components/omnibox/browser/favicon_cache.h"
 #include "ui/base/models/dialog_model.h"
 #include "ui/base/models/dialog_model_menu_model_adapter.h"
@@ -66,10 +67,17 @@ std::unique_ptr<views::TableLayout> SetupTableLayout() {
 
 }  // namespace
 
-SiteDataRowView::SiteDataRowView(const url::Origin& origin,
-                                 ContentSetting setting,
-                                 FaviconCache* favicon_cache)
-    : setting_(setting) {
+SiteDataRowView::SiteDataRowView(
+    const url::Origin& origin,
+    ContentSetting setting,
+    FaviconCache* favicon_cache,
+    base::RepeatingCallback<void(const url::Origin&)> delete_callback,
+    base::RepeatingCallback<void(const url::Origin&, ContentSetting)>
+        create_exception_callback)
+    : origin_(origin),
+      setting_(setting),
+      delete_callback_(std::move(delete_callback)),
+      create_exception_callback_(std::move(create_exception_callback)) {
   const int icon_size = 16;
   views::TableLayout* layout = SetLayoutManager(SetupTableLayout());
   favicon_image_ = AddChildView(std::make_unique<NonAccessibleImageView>());
@@ -106,6 +114,8 @@ SiteDataRowView::SiteDataRowView(const url::Origin& origin,
   state_label_->SetVisible(setting_ != CONTENT_SETTING_ALLOW);
 }
 
+SiteDataRowView::~SiteDataRowView() = default;
+
 void SiteDataRowView::SetFaviconImage(const gfx::Image& image) {
   favicon_image_->SetImage(ui::ImageModel::FromImage(image));
 }
@@ -115,12 +125,14 @@ void SiteDataRowView::OnMenuIconClicked() {
   // TODO(crbug.com/1344787): Respect partitioned cookies state and provide
   // special options for it.
   auto builder = ui::DialogModel::Builder();
-  builder.AddMenuItem(
-      ui::ImageModel(), u"Delete",
-      base::BindRepeating(&SiteDataRowView::OnDeleteMenuItemClicked,
-                          base::Unretained(this)));
-
   if (setting_ != CONTENT_SETTING_BLOCK) {
+    // Provide delete option for the sites that aren't blocked.
+    builder.AddMenuItem(
+        ui::ImageModel(), u"Delete",
+        base::BindRepeating(&SiteDataRowView::OnDeleteMenuItemClicked,
+                            base::Unretained(this)));
+    // TODO(crbug.com/1344787): Consider clearing the data before blocking the
+    // site to have a clean slate.
     builder.AddMenuItem(
         ui::ImageModel(), u"Don't allow",
         base::BindRepeating(&SiteDataRowView::OnBlockMenuItemClicked,
@@ -153,7 +165,9 @@ void SiteDataRowView::OnDeleteMenuItemClicked(int event_flags) {
   // Hiding the view instead of trying to delete makes the lifecycle management
   // easier. All the related items to the dialog have the same lifecycle and are
   // created when dialog is shown and are deleted when the dialog is destroyed.
+  DCHECK_NE(setting_, CONTENT_SETTING_BLOCK);
   SetVisible(false);
+  delete_callback_.Run(origin_);
 }
 
 void SiteDataRowView::OnBlockMenuItemClicked(int event_flags) {
@@ -170,7 +184,7 @@ void SiteDataRowView::OnClearOnExitMenuItemClicked(int event_flags) {
 
 void SiteDataRowView::SetContentSettingException(ContentSetting setting) {
   DCHECK_NE(setting_, setting);
-  // TODO(crbug.com/1344787): Create the exception.
+  create_exception_callback_.Run(origin_, setting);
 
   setting_ = setting;
   state_label_->SetVisible(true);

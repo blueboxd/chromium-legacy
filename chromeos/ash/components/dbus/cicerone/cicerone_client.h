@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -15,7 +15,7 @@ namespace ash {
 
 // CiceroneClient is used to communicate with Cicerone, which is used to
 // communicate with containers running inside VMs.
-class COMPONENT_EXPORT(CICERONE) CiceroneClient : public DBusClient {
+class COMPONENT_EXPORT(CICERONE) CiceroneClient : public chromeos::DBusClient {
  public:
   class Observer {
    public:
@@ -114,6 +114,16 @@ class COMPONENT_EXPORT(CICERONE) CiceroneClient : public DBusClient {
     virtual void OnLowDiskSpaceTriggered(
         const vm_tools::cicerone::LowDiskSpaceTriggeredSignal& signal) {}
 
+    // This is signaled from Cicerone when the VM is requesting to inhibit
+    // sleep.
+    virtual void OnInhibitScreensaver(
+        const vm_tools::cicerone::InhibitScreensaverSignal& signal) {}
+
+    // This is signaled from Cicerone when the VM is requesting to uninhibit
+    // sleep.
+    virtual void OnUninhibitScreensaver(
+        const vm_tools::cicerone::UninhibitScreensaverSignal& signal) {}
+
    protected:
     virtual ~Observer() = default;
   };
@@ -189,6 +199,14 @@ class COMPONENT_EXPORT(CICERONE) CiceroneClient : public DBusClient {
   // This should be true before expecting to receive
   // LowDiskSpaceTriggeredSignal.
   virtual bool IsLowDiskSpaceTriggeredSignalConnected() = 0;
+
+  // This should be true before expecting to receive
+  // InhibitScreensaverSignal
+  virtual bool IsInhibitScreensaverSignalConencted() = 0;
+
+  // This should be true before expecting to receive
+  // UninhibitScreensaverSignal.
+  virtual bool IsUninhibitScreensaverSignalConencted() = 0;
 
   // Launches an application inside a running Container.
   // |callback| is called after the method call finishes.

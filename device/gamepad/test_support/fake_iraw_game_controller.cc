@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -42,7 +42,7 @@ HRESULT WINAPI FakeIRawGameController::get_ForceFeedbackMotors(
 
 HRESULT WINAPI FakeIRawGameController::get_HardwareProductId(UINT16* value) {
   if (FakeWinrtWgiEnvironment::GetError() ==
-      ErrorCode::kErrorWgiRawGameControllerGetHardwareProductIdFailed) {
+      WgiTestErrorCode::kErrorWgiRawGameControllerGetHardwareProductIdFailed) {
     return E_FAIL;
   }
   *value = hardware_product_id_;
@@ -51,7 +51,7 @@ HRESULT WINAPI FakeIRawGameController::get_HardwareProductId(UINT16* value) {
 
 HRESULT WINAPI FakeIRawGameController::get_HardwareVendorId(UINT16* value) {
   if (FakeWinrtWgiEnvironment::GetError() ==
-      ErrorCode::kErrorWgiRawGameControllerGetHardwareVendorIdFailed) {
+      WgiTestErrorCode::kErrorWgiRawGameControllerGetHardwareVendorIdFailed) {
     return E_FAIL;
   }
   *value = hardware_vendor_id_;
@@ -103,7 +103,7 @@ HRESULT WINAPI FakeIRawGameController::get_NonRoamableId(HSTRING* value) {
 
 HRESULT WINAPI FakeIRawGameController::get_DisplayName(HSTRING* value) {
   if (FakeWinrtWgiEnvironment::GetError() ==
-      ErrorCode::kErrorWgiRawGameControllerGetDisplayNameFailed) {
+      WgiTestErrorCode::kErrorWgiRawGameControllerGetDisplayNameFailed) {
     return E_FAIL;
   }
   *value = base::win::ScopedHString::Create(display_name_).release();

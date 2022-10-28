@@ -1,14 +1,14 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
 
-#include <algorithm>
-#include <utility>
+#import <algorithm>
+#import <utility>
 
-#include "base/auto_reset.h"
-#include "base/check_op.h"
+#import "base/auto_reset.h"
+#import "base/check_op.h"
 #import "ios/chrome/browser/web_state_list/web_state_list_delegate.h"
 #import "ios/chrome/browser/web_state_list/web_state_list_observer.h"
 #import "ios/chrome/browser/web_state_list/web_state_list_order_controller.h"
@@ -65,7 +65,7 @@ class WebStateList::WebStateWrapper {
   bool ShouldResetOpenerOnActiveWebStateChange() const;
   void SetShouldResetOpenerOnActiveWebStateChange(bool should_reset_opener);
 
-  // Returns whether |opener| spawned the wrapped WebState. If |use_group| is
+  // Returns whether `opener` spawned the wrapped WebState. If `use_group` is
   // true, also use the opener navigation index to detect navigation changes
   // during the same session.
   bool WasOpenedBy(const web::WebState* opener,

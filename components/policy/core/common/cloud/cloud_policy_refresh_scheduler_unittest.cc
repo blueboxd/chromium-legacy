@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -608,6 +608,7 @@ static const ClientErrorTestParam kClientErrorTestCases[] = {
     {DM_STATUS_SERVICE_TOO_MANY_REQUESTS, kPolicyRefreshRate, 1},
     {DM_STATUS_SERVICE_DEVICE_NEEDS_RESET, -1, 1},
     {DM_STATUS_SERVICE_ILLEGAL_ACCOUNT_FOR_PACKAGED_EDU_LICENSE, -1, 1},
+    {DM_STATUS_SERVICE_INVALID_PACKAGED_DEVICE_FOR_KIOSK, -1, 1},
 };
 
 class CloudPolicyRefreshSchedulerClientErrorTest

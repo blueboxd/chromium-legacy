@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -16,6 +16,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
+#include "chrome/browser/first_party_sets/first_party_sets_pref_names.h"
 #include "chrome/common/webui_url_constants.h"
 #include "components/browsing_topics/browsing_topics_service.h"
 #include "components/content_settings/core/browser/cookie_settings.h"
@@ -308,6 +309,19 @@ void PrivacySandboxService::OnPrivacySandboxV2PrefChanged() {
     browsing_topics_service_->ClearAllTopicsData();
 }
 
+bool PrivacySandboxService::IsFirstPartySetsDataAccessEnabled() {
+  return pref_service_->GetBoolean(first_party_sets::kFirstPartySetsEnabled);
+}
+
+bool PrivacySandboxService::IsFirstPartySetsDataAccessManaged() {
+  return pref_service_->IsManagedPreference(
+      first_party_sets::kFirstPartySetsEnabled);
+}
+
+void PrivacySandboxService::SetFirstPartySetsDataAccessEnabled(bool enabled) {
+  pref_service_->SetBoolean(first_party_sets::kFirstPartySetsEnabled, enabled);
+}
+
 void PrivacySandboxService::GetFledgeJoiningEtldPlusOneForDisplay(
     base::OnceCallback<void(std::vector<std::string>)> callback) {
   if (!interest_group_manager_) {
@@ -323,7 +337,7 @@ void PrivacySandboxService::GetFledgeJoiningEtldPlusOneForDisplay(
 std::vector<std::string>
 PrivacySandboxService::GetBlockedFledgeJoiningTopFramesForDisplay() const {
   const base::Value::Dict& pref_value =
-      pref_service_->GetValueDict(prefs::kPrivacySandboxFledgeJoinBlocked);
+      pref_service_->GetDict(prefs::kPrivacySandboxFledgeJoinBlocked);
 
   std::vector<std::string> blocked_top_frames;
 
@@ -567,7 +581,7 @@ PrivacySandboxService::GetBlockedTopics() const {
     return {fake_blocked_topics_.begin(), fake_blocked_topics_.end()};
 
   const base::Value::List& pref_value =
-      pref_service_->GetValueList(prefs::kPrivacySandboxBlockedTopics);
+      pref_service_->GetList(prefs::kPrivacySandboxBlockedTopics);
 
   std::vector<privacy_sandbox::CanonicalTopic> blocked_topics;
   for (const auto& entry : pref_value) {
@@ -602,7 +616,18 @@ void PrivacySandboxService::SetTopicAllowed(
 }
 
 base::flat_map<net::SchemefulSite, net::SchemefulSite>
-PrivacySandboxService::GetFirstPartySets() {
+PrivacySandboxService::GetFirstPartySets() const {
+  // If FPS is not affecting cookie access, then there are effectively no
+  // first party sets.
+  if (!(cookie_settings_->ShouldBlockThirdPartyCookies() &&
+        cookie_settings_->GetDefaultCookieSetting(/*provider_id=*/nullptr) !=
+            CONTENT_SETTING_BLOCK &&
+        pref_service_->GetBoolean(first_party_sets::kFirstPartySetsEnabled) &&
+        base::FeatureList::IsEnabled(
+            privacy_sandbox::kPrivacySandboxFirstPartySetsUI))) {
+    return {};
+  }
+
   if (privacy_sandbox::kPrivacySandboxFirstPartySetsUISampleSets.Get()) {
     return {{net::SchemefulSite(GURL("https://youtube.com")),
              net::SchemefulSite(GURL("https://google.com"))},
@@ -611,15 +636,20 @@ PrivacySandboxService::GetFirstPartySets() {
             {net::SchemefulSite(GURL("https://google.com.au")),
              net::SchemefulSite(GURL("https://google.com"))},
             {net::SchemefulSite(GURL("https://google.de")),
-             net::SchemefulSite(GURL("https://google.com"))}};
+             net::SchemefulSite(GURL("https://google.com"))},
+            {net::SchemefulSite(GURL("https://chromium.org")),
+             net::SchemefulSite(GURL("https://chromium.org"))},
+            {net::SchemefulSite(GURL("https://googlesource.org")),
+             net::SchemefulSite(GURL("https://chromium.org"))}};
   }
 
   // TODO(crbug.com/1332513): Retrieve set information from FPS delegate.
   return {};
 }
 
-absl::optional<std::u16string> PrivacySandboxService::GetFpsOwnerForDisplay(
-    const GURL& site_url) {
+absl::optional<std::u16string>
+PrivacySandboxService::GetFirstPartySetOwnerForDisplay(
+    const GURL& site_url) const {
   auto sets = GetFirstPartySets();
   auto schemeful_site = net::SchemefulSite(site_url);
 
@@ -631,10 +661,14 @@ absl::optional<std::u16string> PrivacySandboxService::GetFpsOwnerForDisplay(
   return base::UTF8ToUTF16(sets[schemeful_site].GetURL().host());
 }
 
-bool PrivacySandboxService::ShouldShowDetailedFpsControls() {
-  // TODO(crbug.com/1332513): Consult the preference state to determine whether
-  // detailed controls should be shown.
-  return privacy_sandbox::kPrivacySandboxFirstPartySetsUISampleSets.Get();
+bool PrivacySandboxService::IsPartOfManagedFirstPartySet(
+    const net::SchemefulSite& site) const {
+  if (privacy_sandbox::kPrivacySandboxFirstPartySetsUISampleSets.Get()) {
+    return GetFirstPartySets()[site] ==
+           net::SchemefulSite(GURL("https://chromium.org"));
+  }
+  // TODO(crbug.com/1332513): Retrieve set information from FPS delegate.
+  return false;
 }
 
 /*static*/ PrivacySandboxService::PromptType
@@ -839,8 +873,7 @@ void PrivacySandboxService::MaybeInitializeFirstPartySetsPref() {
   // init has been run is not synced). If any of the user's devices local state
   // would disable the pref, it is disabled across all devices.
   if (AreThirdPartyCookiesBlocked(cookie_settings_)) {
-    pref_service_->SetBoolean(
-        prefs::kPrivacySandboxFirstPartySetsDataAccessAllowed, false);
+    pref_service_->SetBoolean(first_party_sets::kFirstPartySetsEnabled, false);
   }
 
   pref_service_->SetBoolean(

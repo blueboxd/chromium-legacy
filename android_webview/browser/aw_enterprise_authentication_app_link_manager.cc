@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -31,7 +31,7 @@ EnterpriseAuthenticationAppLinkManager::
 
 void EnterpriseAuthenticationAppLinkManager::OnPolicyUpdated() {
   const base::Value::List& authentication_urls_policy =
-      pref_service_->GetValueList(prefs::kEnterpriseAuthAppLinkPolicy);
+      pref_service_->GetList(prefs::kEnterpriseAuthAppLinkPolicy);
 
   url_matcher_ = std::make_unique<url_matcher::URLMatcher>();
   url_matcher::util::AddAllowFilters(url_matcher_.get(),

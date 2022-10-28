@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -18,11 +18,15 @@
 #include "chrome/browser/autofill/address_normalizer_factory.h"
 #include "chrome/browser/autofill/autocomplete_history_manager_factory.h"
 #include "chrome/browser/autofill/autofill_offer_manager_factory.h"
+#include "chrome/browser/autofill/iban_manager_factory.h"
 #include "chrome/browser/autofill/merchant_promo_code_manager_factory.h"
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
 #include "chrome/browser/autofill/risk_util.h"
 #include "chrome/browser/autofill/strike_database_factory.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/fast_checkout/fast_checkout_capabilities_fetcher.h"
+#include "chrome/browser/fast_checkout/fast_checkout_capabilities_fetcher_factory.h"
+#include "chrome/browser/fast_checkout/fast_checkout_features.h"
 #include "chrome/browser/password_manager/chrome_password_manager_client.h"
 #include "chrome/browser/password_manager/password_manager_settings_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -52,6 +56,7 @@
 #include "components/autofill/content/browser/content_autofill_driver_factory.h"
 #include "components/autofill/core/browser/data_model/autofill_offer_data.h"
 #include "components/autofill/core/browser/form_data_importer.h"
+#include "components/autofill/core/browser/payments/autofill_error_dialog_context.h"
 #include "components/autofill/core/browser/payments/card_unmask_challenge_option.h"
 #include "components/autofill/core/browser/payments/credit_card_cvc_authenticator.h"
 #include "components/autofill/core/browser/payments/credit_card_otp_authenticator.h"
@@ -62,6 +67,7 @@
 #include "components/autofill/core/common/autofill_payments_features.h"
 #include "components/autofill/core/common/autofill_prefs.h"
 #include "components/autofill/core/common/autofill_switches.h"
+#include "components/autofill_assistant/browser/features.h"
 #include "components/autofill_assistant/browser/public/runtime_manager.h"
 #include "components/password_manager/content/browser/content_password_manager_driver.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
@@ -91,6 +97,7 @@
 #if BUILDFLAG(IS_ANDROID)
 #include "chrome/browser/android/preferences/autofill/autofill_profile_bridge.h"
 #include "chrome/browser/android/signin/signin_bridge.h"
+#include "chrome/browser/android/tab_android.h"
 #include "chrome/browser/flags/android/chrome_feature_list.h"
 #include "chrome/browser/touch_to_fill/payments/android/touch_to_fill_credit_card_view_impl.h"
 #include "chrome/browser/ui/android/autofill/autofill_logger_android.h"
@@ -128,9 +135,6 @@
 
 namespace autofill {
 
-using AutofillErrorDialogType =
-    AutofillErrorDialogController::AutofillErrorDialogType;
-
 using AutoselectFirstSuggestion =
     AutofillClient::PopupOpenArgs::AutoselectFirstSuggestion;
 
@@ -158,6 +162,14 @@ ChromeAutofillClient::GetAutocompleteHistoryManager() {
   Profile* profile =
       Profile::FromBrowserContext(web_contents()->GetBrowserContext());
   return AutocompleteHistoryManagerFactory::GetForProfile(profile);
+}
+
+IBANManager* ChromeAutofillClient::GetIBANManager() {
+  if (!base::FeatureList::IsEnabled(features::kAutofillFillIbanFields))
+    return nullptr;
+  Profile* profile =
+      Profile::FromBrowserContext(web_contents()->GetBrowserContext());
+  return IBANManagerFactory::GetForProfile(profile);
 }
 
 MerchantPromoCodeManager* ChromeAutofillClient::GetMerchantPromoCodeManager() {
@@ -490,28 +502,30 @@ void ChromeAutofillClient::ShowLocalCardMigrationResults(
 
 void ChromeAutofillClient::ShowWebauthnOfferDialog(
     WebauthnDialogCallback offer_dialog_callback) {
-  WebauthnDialogControllerImpl::CreateForWebContents(web_contents());
-  WebauthnDialogControllerImpl::FromWebContents(web_contents())
+  WebauthnDialogControllerImpl::GetOrCreateForPage(
+      web_contents()->GetPrimaryPage())
       ->ShowOfferDialog(std::move(offer_dialog_callback));
 }
 
 void ChromeAutofillClient::ShowWebauthnVerifyPendingDialog(
     WebauthnDialogCallback verify_pending_dialog_callback) {
-  WebauthnDialogControllerImpl::CreateForWebContents(web_contents());
-  WebauthnDialogControllerImpl::FromWebContents(web_contents())
+  WebauthnDialogControllerImpl::GetOrCreateForPage(
+      web_contents()->GetPrimaryPage())
       ->ShowVerifyPendingDialog(std::move(verify_pending_dialog_callback));
 }
 
 void ChromeAutofillClient::UpdateWebauthnOfferDialogWithError() {
   WebauthnDialogControllerImpl* controller =
-      WebauthnDialogControllerImpl::FromWebContents(web_contents());
+      WebauthnDialogControllerImpl::GetForPage(
+          web_contents()->GetPrimaryPage());
   if (controller)
     controller->UpdateDialog(WebauthnDialogState::kOfferError);
 }
 
 bool ChromeAutofillClient::CloseWebauthnDialog() {
   WebauthnDialogControllerImpl* controller =
-      WebauthnDialogControllerImpl::FromWebContents(web_contents());
+      WebauthnDialogControllerImpl::GetForPage(
+          web_contents()->GetPrimaryPage());
   if (controller)
     return controller->CloseDialog();
 
@@ -677,6 +691,83 @@ void ChromeAutofillClient::ScanCreditCard(CreditCardScanCallback callback) {
                                               std::move(callback));
 }
 
+bool ChromeAutofillClient::IsFastCheckoutSupported() {
+#if BUILDFLAG(IS_ANDROID)
+  if (!base::FeatureList::IsEnabled(::features::kFastCheckout)) {
+    return false;
+  }
+
+  if (!GetPersonalDataManager()->IsAutofillProfileEnabled() ||
+      !GetPersonalDataManager()->IsAutofillCreditCardEnabled()) {
+    return false;
+  }
+
+  // Not supported on CCTs.
+  auto* tab_android = TabAndroid::FromWebContents(web_contents());
+  if (tab_android && tab_android->IsCustomTab()) {
+    return false;
+  }
+
+  // TODO(crbug.com/1334642): Check that the assistant settings flag is on.
+
+  return base::FeatureList::IsEnabled(
+      autofill_assistant::features::kAutofillAssistant);
+
+#else
+  return false;
+#endif
+}
+
+bool ChromeAutofillClient::IsFastCheckoutTriggerForm(
+    const FormData& form,
+    const FormFieldData& field) {
+#if BUILDFLAG(IS_ANDROID)
+  FastCheckoutCapabilitiesFetcher* fetcher =
+      FastCheckoutCapabilitiesFetcherFactory::GetForBrowserContext(
+          GetProfile());
+  if (!fetcher) {
+    return false;
+  }
+  // TODO(crbug.com/1356498): Stop calculating the signature once the form
+  // signature has been moved to `form_data`.
+  // Check browser form's signature and renderer form's signature.
+  return fetcher->IsTriggerFormSupported(form.main_frame_origin,
+                                         CalculateFormSignature(form)) ||
+         fetcher->IsTriggerFormSupported(form.main_frame_origin,
+                                         field.host_form_signature);
+#else
+  NOTREACHED();
+  return false;
+#endif
+}
+
+bool ChromeAutofillClient::ShowFastCheckout(
+    base::WeakPtr<FastCheckoutDelegate> delegate) {
+#if BUILDFLAG(IS_ANDROID)
+  if (delegate->IsShowingFastCheckoutUI()) {
+    return false;
+  }
+
+  // Don't show Fast Checkout surface while Autofill Assistant's UI is shown.
+  if (IsAutofillAssistantShowing())
+    return false;
+
+  return FastCheckoutClient::GetOrCreateForWebContents(web_contents())
+      ->Start(delegate, web_contents()->GetLastCommittedURL());
+#else
+  NOTREACHED();
+  return false;
+#endif
+}
+
+void ChromeAutofillClient::HideFastCheckout() {
+#if BUILDFLAG(IS_ANDROID)
+  FastCheckoutClient::GetOrCreateForWebContents(web_contents())->Stop();
+#else
+  NOTREACHED();
+#endif
+}
+
 bool ChromeAutofillClient::IsTouchToFillCreditCardSupported() {
 #if BUILDFLAG(IS_ANDROID)
   return base::FeatureList::IsEnabled(
@@ -695,7 +786,8 @@ bool ChromeAutofillClient::ShowTouchToFillCreditCard(
     return false;
 
   return touch_to_fill_credit_card_controller_.Show(
-      std::make_unique<TouchToFillCreditCardViewImpl>(), delegate);
+      std::make_unique<TouchToFillCreditCardViewImpl>(web_contents()),
+      delegate);
 #else
   // Touch To Fill is not supported on Desktop.
   NOTREACHED();
@@ -888,11 +980,11 @@ void ChromeAutofillClient::OnVirtualCardDataAvailable(
 }
 
 void ChromeAutofillClient::ShowVirtualCardErrorDialog(bool is_permanent_error) {
-  AutofillErrorDialogType error_dialog_type =
-      is_permanent_error
-          ? AutofillErrorDialogType::VIRTUAL_CARD_PERMANENT_ERROR
-          : AutofillErrorDialogType::VIRTUAL_CARD_TEMPORARY_ERROR;
-  autofill_error_dialog_controller_.Show(error_dialog_type);
+  AutofillErrorDialogContext context;
+  context.type = is_permanent_error
+                     ? AutofillErrorDialogType::kVirtualCardPermanentError
+                     : AutofillErrorDialogType::kVirtualCardTemporaryError;
+  autofill_error_dialog_controller_.Show(context);
 }
 
 void ChromeAutofillClient::ShowAutofillProgressDialog(

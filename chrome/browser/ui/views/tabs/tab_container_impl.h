@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -60,6 +60,7 @@ class TabContainerImpl : public TabContainer,
   void SetActiveTab(absl::optional<size_t> prev_active_index,
                     absl::optional<size_t> new_active_index) override;
 
+  std::unique_ptr<Tab> TransferTabOut(int model_index) override;
   void StoppedDraggingView(TabSlotView* view) override;
 
   void ScrollTabToVisible(int model_index) override;

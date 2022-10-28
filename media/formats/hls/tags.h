@@ -1,13 +1,17 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #ifndef MEDIA_FORMATS_HLS_TAGS_H_
 #define MEDIA_FORMATS_HLS_TAGS_H_
 
+#include <string>
+#include <vector>
+
 #include "base/time/time.h"
 #include "media/base/media_export.h"
 #include "media/formats/hls/parse_status.h"
+#include "media/formats/hls/source_string.h"
 #include "media/formats/hls/tag_name.h"
 #include "media/formats/hls/types.h"
 #include "media/formats/hls/variable_dictionary.h"
@@ -168,13 +172,13 @@ struct MEDIA_EXPORT XStreamInfTag {
   // author, however higher scores must indicate a better playback experience.
   absl::optional<types::DecimalFloatingPoint> score;
 
-  // A comma-separated list of formats, where each format specifies a media
+  // A list of formats, where each format specifies a media
   // sample type that is present is one or more renditions of the variant stream
   // this tag applies to. According to the spec this *should* be present on
   // every instance of this tag, but in practice it's not. It's represented as
   // optional here so that the caller may decide how they wish to handle its
   // absence.
-  absl::optional<std::string> codecs;
+  absl::optional<std::vector<std::string>> codecs;
 
   // The optimal pixel resolution at which to display all video in this variant
   // stream.
@@ -182,6 +186,10 @@ struct MEDIA_EXPORT XStreamInfTag {
 
   // This describes the maximum framerate for all video in this variant stream.
   absl::optional<types::DecimalFloatingPoint> frame_rate;
+
+  // The id of an audio rendition group that should be used when playing this
+  // variant.
+  absl::optional<ResolvedSourceString> audio;
 };
 
 // Represents the contents of the #EXTINF tag

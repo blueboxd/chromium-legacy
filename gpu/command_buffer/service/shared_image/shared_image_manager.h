@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -16,7 +16,7 @@
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace gpu {
-class DXGISharedHandleManager;
+class DXGIKeyedMutexManager;
 class SharedImageRepresentationFactoryRef;
 class VaapiDependenciesFactory;
 
@@ -51,9 +51,6 @@ class GPU_GLES2_EXPORT SharedImageManager {
   // take a ref on the mailbox, releasing it when the representation is
   // destroyed.
   std::unique_ptr<GLTextureImageRepresentation> ProduceGLTexture(
-      const Mailbox& mailbox,
-      MemoryTypeTracker* ref);
-  std::unique_ptr<GLTextureImageRepresentation> ProduceRGBEmulationGLTexture(
       const Mailbox& mailbox,
       MemoryTypeTracker* ref);
   std::unique_ptr<GLTexturePassthroughImageRepresentation>
@@ -101,7 +98,7 @@ class GPU_GLES2_EXPORT SharedImageManager {
   // Dump memory for the given mailbox.
   void OnMemoryDump(const Mailbox& mailbox,
                     base::trace_event::ProcessMemoryDump* pmd,
-                    int client_id,
+                    const std::string& dump_base_name,
                     uint64_t client_tracing_id);
 
   bool is_thread_safe() const { return !!lock_; }
@@ -118,9 +115,8 @@ class GPU_GLES2_EXPORT SharedImageManager {
   scoped_refptr<gfx::NativePixmap> GetNativePixmap(const gpu::Mailbox& mailbox);
 
 #if BUILDFLAG(IS_WIN)
-  const scoped_refptr<DXGISharedHandleManager>& dxgi_shared_handle_manager()
-      const {
-    return dxgi_shared_handle_manager_;
+  const scoped_refptr<DXGIKeyedMutexManager>& dxgi_keyed_mutex_manager() const {
+    return dxgi_keyed_mutex_manager_;
   }
 #endif
 
@@ -134,7 +130,7 @@ class GPU_GLES2_EXPORT SharedImageManager {
   const bool display_context_on_another_thread_;
 
 #if BUILDFLAG(IS_WIN)
-  scoped_refptr<DXGISharedHandleManager> dxgi_shared_handle_manager_;
+  scoped_refptr<DXGIKeyedMutexManager> dxgi_keyed_mutex_manager_;
 #endif
 
   THREAD_CHECKER(thread_checker_);

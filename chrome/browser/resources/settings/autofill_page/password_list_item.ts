@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,7 +10,7 @@
  */
 
 import 'chrome://resources/cr_elements/cr_icon_button/cr_icon_button.js';
-import 'chrome://resources/cr_elements/cr_icons_css.m.js';
+import 'chrome://resources/cr_elements/cr_icons.css.js';
 import '../settings_shared.css.js';
 import '../site_favicon.js';
 // <if expr="is_chromeos">
@@ -100,6 +100,11 @@ export class PasswordListItemElement extends PasswordListItemElementBase {
   override focus() {
     this.shouldShowSubpageButton_ ? this.$.seePasswordDetails.focus() :
                                     super.focus();
+  }
+
+  override ready() {
+    super.ready();
+    this.addEventListener('click', this.onRowClick_);
   }
 
   private computeShouldShowSubpageButton_(): boolean {

@@ -1,4 +1,4 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,14 +10,14 @@
 
 #import "base/command_line.h"
 #import "base/mac/foundation_util.h"
-#include "base/strings/sys_string_conversions.h"
+#import "base/strings/sys_string_conversions.h"
 #import "base/test/ios/wait_util.h"
-#include "google_apis/gaia/gaia_auth_util.h"
-#include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
+#import "google_apis/gaia/gaia_auth_util.h"
+#import "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 #import "ios/public/provider/chrome/browser/signin/fake_chrome_identity.h"
 #import "ios/public/provider/chrome/browser/signin/fake_chrome_identity_interaction_manager.h"
 #import "ios/public/provider/chrome/browser/signin/fake_chrome_identity_service_constants.h"
-#include "ios/public/provider/chrome/browser/signin/signin_resources_api.h"
+#import "ios/public/provider/chrome/browser/signin/signin_resources_api.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -228,7 +228,7 @@ void FakeChromeIdentityService::GetAccessToken(
   NSError* error = nil;
   NSDictionary* user_info = nil;
   if (_fakeMDMError) {
-    // |GetAccessToken| is normally an asynchronous operation (that requires
+    // `GetAccessToken` is normally an asynchronous operation (that requires
     // some network calls), this is replicated here by dispatching it.
     error =
         [NSError errorWithDomain:@"com.google.HTTPStatus" code:-1 userInfo:nil];
@@ -236,7 +236,7 @@ void FakeChromeIdentityService::GetAccessToken(
     EXPECT_CALL(*this, HandleMDMNotification(identity, user_info, _))
         .WillRepeatedly(testing::Return(true));
   }
-  // |GetAccessToken| is normally an asynchronous operation (that requires some
+  // `GetAccessToken` is normally an asynchronous operation (that requires some
   // network calls), this is replicated here by dispatching it.
   ++_pendingCallback;
   dispatch_async(dispatch_get_main_queue(), ^{
@@ -260,7 +260,7 @@ UIImage* FakeChromeIdentityService::GetCachedAvatarForIdentity(
 }
 
 void FakeChromeIdentityService::GetAvatarForIdentity(ChromeIdentity* identity) {
-  // |GetAvatarForIdentity| is normally an asynchronous operation, this is
+  // `GetAvatarForIdentity` is normally an asynchronous operation, this is
   // replicated here by dispatching it.
   ++_pendingCallback;
   dispatch_async(dispatch_get_main_queue(), ^{
@@ -278,7 +278,7 @@ void FakeChromeIdentityService::GetHostedDomainForIdentity(
     ChromeIdentity* identity,
     GetHostedDomainCallback callback) {
   NSString* domain = FakeGetHostedDomainForIdentity(identity);
-  // |GetHostedDomainForIdentity| is normally an asynchronous operation , this
+  // `GetHostedDomainForIdentity` is normally an asynchronous operation , this
   // is replicated here by dispatching it.
   ++_pendingCallback;
   dispatch_async(dispatch_get_main_queue(), ^{

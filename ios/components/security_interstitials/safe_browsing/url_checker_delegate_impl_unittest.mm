@@ -1,26 +1,26 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #import "ios/components/security_interstitials/safe_browsing/url_checker_delegate_impl.h"
 
-#include "base/bind.h"
-#include "base/callback.h"
-#include "base/memory/ref_counted.h"
-#include "base/run_loop.h"
+#import "base/bind.h"
+#import "base/callback.h"
+#import "base/memory/ref_counted.h"
+#import "base/run_loop.h"
 #import "base/test/ios/wait_util.h"
-#include "components/safe_browsing/core/browser/db/database_manager.h"
+#import "components/safe_browsing/core/browser/db/database_manager.h"
 #import "components/safe_browsing/ios/browser/safe_browsing_url_allow_list.h"
 #import "ios/components/security_interstitials/safe_browsing/fake_safe_browsing_client.h"
 #import "ios/components/security_interstitials/safe_browsing/safe_browsing_query_manager.h"
 #import "ios/components/security_interstitials/safe_browsing/safe_browsing_unsafe_resource_container.h"
 #import "ios/web/public/navigation/navigation_item.h"
-#include "ios/web/public/test/fakes/fake_browser_state.h"
+#import "ios/web/public/test/fakes/fake_browser_state.h"
 #import "ios/web/public/test/fakes/fake_navigation_manager.h"
 #import "ios/web/public/test/fakes/fake_web_state.h"
-#include "ios/web/public/test/web_task_environment.h"
-#include "net/http/http_request_headers.h"
-#include "testing/platform_test.h"
+#import "ios/web/public/test/web_task_environment.h"
+#import "net/http/http_request_headers.h"
+#import "testing/platform_test.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -69,7 +69,7 @@ class UrlCheckerDelegateImplTest : public PlatformTest {
   }
   ~UrlCheckerDelegateImplTest() override = default;
 
-  // Creates an UnsafeResource whose callback populates |callback_state|.
+  // Creates an UnsafeResource whose callback populates `callback_state`.
   UnsafeResource CreateUnsafeResource(
       UnsafeResourceCallbackState* callback_state) {
     UnsafeResource resource;
@@ -81,7 +81,7 @@ class UrlCheckerDelegateImplTest : public PlatformTest {
     return resource;
   }
 
-  // Waits for |state.executed| to be reset to true.  Returns whether the state
+  // Waits for `state.executed` to be reset to true.  Returns whether the state
   // populated before a timeout.
   bool WaitForUnsafeResourceCallbackExecution(
       UnsafeResourceCallbackState* state) {

@@ -1,4 +1,4 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -285,7 +285,7 @@ gpu::Mailbox StreamTexture::CreateSharedImage(const gfx::Size& coded_size) {
       kTopLeft_GrSurfaceOrigin, kPremul_SkAlphaType, this, context_state_,
       /*drdc_lock=*/nullptr);
   channel_->shared_image_stub()->factory()->RegisterBacking(
-      std::move(shared_image), /*allow_legacy_mailbox=*/false);
+      std::move(shared_image));
 
   return mailbox;
 }
@@ -326,10 +326,6 @@ void StreamTexture::OnMemoryDump(base::trace_event::ProcessMemoryDump* pmd,
                                  uint64_t process_tracing_id,
                                  const std::string& dump_name) {
   // TODO(ericrk): Add OnMemoryDump for GLImages. crbug.com/514914
-}
-
-bool StreamTexture::HasMutableState() const {
-  return false;
 }
 
 std::unique_ptr<base::android::ScopedHardwareBufferFenceSync>

@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -580,11 +580,9 @@ public class ContextMenuTest implements DownloadTestRule.CustomMainActivityStart
         Integer[] expectedItems = {R.id.contextmenu_open_in_new_tab,
                 R.id.contextmenu_open_in_incognito_tab, R.id.contextmenu_save_link_as,
                 R.id.contextmenu_copy_link_text, R.id.contextmenu_copy_link_address,
-                R.id.contextmenu_share_link};
+                R.id.contextmenu_share_link, R.id.contextmenu_read_later};
         expectedItems = addItemsIf(EphemeralTabCoordinator.isSupported(), expectedItems,
                 new Integer[] {R.id.contextmenu_open_in_ephemeral_tab});
-        expectedItems = addItemsIf(ChromeFeatureList.isEnabled(ChromeFeatureList.READ_LATER),
-                expectedItems, new Integer[] {R.id.contextmenu_read_later});
         assertMenuItemsAreEqual(menu, expectedItems);
     }
 

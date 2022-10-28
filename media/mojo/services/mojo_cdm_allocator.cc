@@ -1,4 +1,4 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,14 +10,14 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/compiler_specific.h"
+#include "base/memory/read_only_shared_memory_region.h"
 #include "base/memory/shared_memory_mapping.h"
-#include "base/memory/unsafe_shared_memory_region.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/numerics/safe_math.h"
+#include "media/base/video_frame.h"
 #include "media/cdm/api/content_decryption_module.h"
 #include "media/cdm/cdm_helpers.h"
 #include "media/cdm/cdm_type_conversion.h"
-#include "media/mojo/common/mojo_shared_buffer_video_frame.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
 
@@ -25,26 +25,23 @@ namespace media {
 
 namespace {
 
+using RecycleRegionCB =
+    base::OnceCallback<void(std::unique_ptr<base::MappedReadOnlyRegion>)>;
+
 // cdm::Buffer implementation that provides access to mojo shared memory.
 // It owns the memory until Destroy() is called.
 class MojoCdmBuffer final : public cdm::Buffer {
  public:
-  static MojoCdmBuffer* Create(
-      base::UnsafeSharedMemoryRegion region,
-      MojoSharedBufferVideoFrame::MojoSharedBufferDoneCB
-          mojo_shared_buffer_done_cb) {
-    DCHECK(region.IsValid());
-    DCHECK(mojo_shared_buffer_done_cb);
-
+  MojoCdmBuffer(std::unique_ptr<base::MappedReadOnlyRegion> mapped_region,
+                RecycleRegionCB recycle_region_cb)
+      : mapped_region_(std::move(mapped_region)),
+        recycle_region_cb_(std::move(recycle_region_cb)) {
+    DCHECK(mapped_region_);
+    DCHECK(mapped_region_->IsValid());
+    DCHECK(recycle_region_cb_);
     // cdm::Buffer interface limits capacity to uint32.
-    CHECK_LE(region.GetSize(), std::numeric_limits<uint32_t>::max());
-
-    base::WritableSharedMemoryMapping mapping = region.Map();
-    if (!mapping.IsValid())
-      return nullptr;
-
-    return new MojoCdmBuffer(std::move(region), std::move(mapping),
-                             std::move(mojo_shared_buffer_done_cb));
+    CHECK_LE(mapped_region_->region.GetSize(),
+             std::numeric_limits<uint32_t>::max());
   }
 
   MojoCdmBuffer(const MojoCdmBuffer&) = delete;
@@ -53,17 +50,19 @@ class MojoCdmBuffer final : public cdm::Buffer {
   // cdm::Buffer implementation.
   void Destroy() final {
     // If nobody has claimed the handle, then return it.
-    if (region_.IsValid()) {
-      std::move(mojo_shared_buffer_done_cb_).Run(std::move(region_));
+    if (mapped_region_ && mapped_region_->IsValid()) {
+      std::move(recycle_region_cb_).Run(std::move(mapped_region_));
     }
 
     // No need to exist anymore.
     delete this;
   }
 
-  uint32_t Capacity() const final { return mapping_.size(); }
+  uint32_t Capacity() const final { return mapped_region_->mapping.size(); }
 
-  uint8_t* Data() final { return mapping_.GetMemoryAs<uint8_t>(); }
+  uint8_t* Data() final {
+    return mapped_region_->mapping.GetMemoryAs<uint8_t>();
+  }
 
   void SetSize(uint32_t size) final {
     DCHECK_LE(size, Capacity());
@@ -72,43 +71,28 @@ class MojoCdmBuffer final : public cdm::Buffer {
 
   uint32_t Size() const final { return size_; }
 
-  const base::UnsafeSharedMemoryRegion& Region() const { return region_; }
-
-  base::UnsafeSharedMemoryRegion TakeRegion() { return std::move(region_); }
+  const base::MappedReadOnlyRegion& Region() const { return *mapped_region_; }
+  std::unique_ptr<base::MappedReadOnlyRegion> TakeRegion() {
+    return std::move(mapped_region_);
+  }
 
  private:
-  MojoCdmBuffer(base::UnsafeSharedMemoryRegion region,
-                base::WritableSharedMemoryMapping mapping,
-                MojoSharedBufferVideoFrame::MojoSharedBufferDoneCB
-                    mojo_shared_buffer_done_cb)
-      : region_(std::move(region)),
-        mojo_shared_buffer_done_cb_(std::move(mojo_shared_buffer_done_cb)),
-        mapping_(std::move(mapping)) {
-    DCHECK(mapping_.IsValid());
-  }
-
   ~MojoCdmBuffer() final {
     // Verify that the buffer has been returned so it can be reused.
-    DCHECK(!region_.IsValid());
+    DCHECK(!mapped_region_);
   }
 
-  // Unsafe because of the requirements of VideoFrame; see
-  // MojoSharedBufferVideoFrame for more details.
-  base::UnsafeSharedMemoryRegion region_;
-  MojoSharedBufferVideoFrame::MojoSharedBufferDoneCB
-      mojo_shared_buffer_done_cb_;
-
-  base::WritableSharedMemoryMapping mapping_;
+  std::unique_ptr<base::MappedReadOnlyRegion> mapped_region_;
+  RecycleRegionCB recycle_region_cb_;
   uint32_t size_ = 0;
 };
 
-// VideoFrameImpl that is able to create a MojoSharedBufferVideoFrame
+// VideoFrameImpl that is able to create a STORAGE_SHMEM VideoFrame
 // out of the data.
 class MojoCdmVideoFrame final : public VideoFrameImpl {
  public:
-  explicit MojoCdmVideoFrame(MojoSharedBufferVideoFrame::MojoSharedBufferDoneCB
-                                 mojo_shared_buffer_done_cb)
-      : mojo_shared_buffer_done_cb_(std::move(mojo_shared_buffer_done_cb)) {}
+  explicit MojoCdmVideoFrame(RecycleRegionCB recycle_region_cb)
+      : recycle_region_cb_(std::move(recycle_region_cb)) {}
 
   MojoCdmVideoFrame(const MojoCdmVideoFrame&) = delete;
   MojoCdmVideoFrame& operator=(const MojoCdmVideoFrame&) = delete;
@@ -123,40 +107,45 @@ class MojoCdmVideoFrame final : public VideoFrameImpl {
     MojoCdmBuffer* buffer = static_cast<MojoCdmBuffer*>(FrameBuffer());
     const gfx::Size frame_size(Size().width, Size().height);
 
-    base::UnsafeSharedMemoryRegion region = buffer->TakeRegion();
-    DCHECK(region.IsValid());
+    std::unique_ptr<base::MappedReadOnlyRegion> mapped_region =
+        buffer->TakeRegion();
+    DCHECK(mapped_region);
+    DCHECK(mapped_region->region.IsValid());
 
     // Clear FrameBuffer so that MojoCdmVideoFrame no longer has a reference
-    // to it (memory will be transferred to MojoSharedBufferVideoFrame).
+    // to it (memory will be transferred to media::VideoFrame).
     SetFrameBuffer(nullptr);
 
     // Destroy the MojoCdmBuffer as it is no longer needed.
     buffer->Destroy();
 
-    const uint32_t offsets[] = {PlaneOffset(cdm::kYPlane),
-                                PlaneOffset(cdm::kUPlane),
-                                PlaneOffset(cdm::kVPlane)};
-    const int32_t strides[] = {static_cast<int32_t>(Stride(cdm::kYPlane)),
-                               static_cast<int32_t>(Stride(cdm::kUPlane)),
-                               static_cast<int32_t>(Stride(cdm::kVPlane))};
-    scoped_refptr<MojoSharedBufferVideoFrame> frame =
-        media::MojoSharedBufferVideoFrame::Create(
-            ToMediaVideoFormat(Format()), frame_size, gfx::Rect(frame_size),
-            natural_size, std::move(region), offsets, strides,
-            base::Microseconds(Timestamp()));
+    uint8_t* data =
+        const_cast<uint8_t*>(mapped_region->mapping.GetMemoryAs<uint8_t>());
+    if (PlaneOffset(cdm::kYPlane) != 0u) {
+      LOG(ERROR) << "The first buffer offset is not 0";
+      return nullptr;
+    }
+    auto frame = media::VideoFrame::WrapExternalYuvData(
+        ToMediaVideoFormat(Format()), frame_size, gfx::Rect(frame_size),
+        natural_size, static_cast<int32_t>(Stride(cdm::kYPlane)),
+        static_cast<int32_t>(Stride(cdm::kUPlane)),
+        static_cast<int32_t>(Stride(cdm::kVPlane)),
+        data + PlaneOffset(cdm::kYPlane), data + PlaneOffset(cdm::kUPlane),
+        data + PlaneOffset(cdm::kVPlane), base::Microseconds(Timestamp()));
 
     // |frame| could fail to be created if the memory can't be mapped into
     // this address space.
     if (frame) {
       frame->set_color_space(MediaColorSpace().ToGfxColorSpace());
-      frame->SetMojoSharedBufferDoneCB(std::move(mojo_shared_buffer_done_cb_));
+      frame->BackWithSharedMemory(&mapped_region->region);
+      frame->AddDestructionObserver(base::BindOnce(
+          std::move(recycle_region_cb_), std::move(mapped_region)));
     }
     return frame;
   }
 
  private:
-  MojoSharedBufferVideoFrame::MojoSharedBufferDoneCB
-      mojo_shared_buffer_done_cb_;
+  RecycleRegionCB recycle_region_cb_;
 };
 
 }  // namespace
@@ -176,23 +165,23 @@ cdm::Buffer* MojoCdmAllocator::CreateCdmBuffer(size_t capacity) {
 
   // Reuse a shmem region in the free map if there is one that fits |capacity|.
   // Otherwise, create a new one.
-  base::UnsafeSharedMemoryRegion region;
+  std::unique_ptr<base::MappedReadOnlyRegion> mapped_region;
   auto found = available_regions_.lower_bound(capacity);
   if (found == available_regions_.end()) {
-    region = AllocateNewRegion(capacity);
-    if (!region.IsValid()) {
+    mapped_region = AllocateNewRegion(capacity);
+    if (!mapped_region->IsValid()) {
       return nullptr;
     }
   } else {
-    region = std::move(found->second);
+    mapped_region = std::move(found->second);
     available_regions_.erase(found);
   }
 
   // Ownership of `region` is passed to MojoCdmBuffer. When it is done with the
   // memory, it must call `AddRegionrToAvailableMap()` to make the memory
   // available for another MojoCdmBuffer.
-  return MojoCdmBuffer::Create(
-      std::move(region),
+  return new MojoCdmBuffer(
+      std::move(mapped_region),
       base::BindOnce(&MojoCdmAllocator::AddRegionToAvailableMap,
                      weak_ptr_factory_.GetWeakPtr()));
 }
@@ -205,7 +194,7 @@ std::unique_ptr<VideoFrameImpl> MojoCdmAllocator::CreateCdmVideoFrame() {
                      weak_ptr_factory_.GetWeakPtr()));
 }
 
-base::UnsafeSharedMemoryRegion MojoCdmAllocator::AllocateNewRegion(
+std::unique_ptr<base::MappedReadOnlyRegion> MojoCdmAllocator::AllocateNewRegion(
     size_t capacity) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
@@ -227,19 +216,20 @@ base::UnsafeSharedMemoryRegion MojoCdmAllocator::AllocateNewRegion(
   // calls. That's why we try to avoid AllocateNewRegion() as much as we can.
   base::CheckedNumeric<size_t> requested_capacity(capacity);
   requested_capacity += kBufferPadding;
-  auto region =
-      base::UnsafeSharedMemoryRegion::Create(requested_capacity.ValueOrDie());
-  return region;
+  return std::make_unique<base::MappedReadOnlyRegion>(
+      base::ReadOnlySharedMemoryRegion::Create(
+          requested_capacity.ValueOrDie()));
 }
 
 void MojoCdmAllocator::AddRegionToAvailableMap(
-    base::UnsafeSharedMemoryRegion region) {
+    std::unique_ptr<base::MappedReadOnlyRegion> mapped_region) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  size_t capacity = region.GetSize();
-  available_regions_.insert({capacity, std::move(region)});
+  DCHECK(mapped_region);
+  size_t capacity = mapped_region->region.GetSize();
+  available_regions_.insert({capacity, std::move(mapped_region)});
 }
 
-const base::UnsafeSharedMemoryRegion& MojoCdmAllocator::GetRegionForTesting(
+const base::MappedReadOnlyRegion& MojoCdmAllocator::GetRegionForTesting(
     cdm::Buffer* buffer) const {
   MojoCdmBuffer* mojo_buffer = static_cast<MojoCdmBuffer*>(buffer);
   return mojo_buffer->Region();

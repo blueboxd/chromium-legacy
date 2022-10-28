@@ -1,4 +1,4 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -64,6 +64,8 @@ export interface SiteGroup {
   etldPlus1: string;
   numCookies: number;
   origins: OriginInfo[];
+  fpsOwner?: string;
+  fpsNumMembers?: number;
   hasInstalledPWA: boolean;
 }
 
@@ -163,6 +165,15 @@ export interface ZoomLevelEntry {
   setting: string;
   source: string;
   zoom: string;
+}
+
+/**
+ * The notification permission information passed from
+ * site_settings_handler.cc.
+ */
+export interface NotificationPermission {
+  origin: string;
+  notificationInfoString: string;
 }
 
 export interface SiteSettingsPrefsBrowserProxy {
@@ -437,6 +448,9 @@ export interface SiteSettingsPrefsBrowserProxy {
    * @param action number.
    */
   recordAction(action: number): void;
+
+  /** Gets the site list that send a lot of notifications. */
+  getReviewNotificationPermissions(): Promise<NotificationPermission[]>;
 }
 
 export class SiteSettingsPrefsBrowserProxyImpl implements
@@ -589,6 +603,10 @@ export class SiteSettingsPrefsBrowserProxyImpl implements
 
   recordAction(action: number) {
     chrome.send('recordAction', [action]);
+  }
+
+  getReviewNotificationPermissions() {
+    return sendWithPromise('getReviewNotificationPermissions');
   }
 
   static getInstance(): SiteSettingsPrefsBrowserProxy {

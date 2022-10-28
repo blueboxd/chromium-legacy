@@ -11,6 +11,7 @@
     padding-inline-start: 0;
   }
 
+  .settings-box-row,
   settings-toggle-button,
   cr-link-row {
     padding-inline-end: var(--cr-section-padding);
@@ -49,16 +50,12 @@
     <div class="hr">
       <settings-radio-group id="screenMagnifierMouseFollowingModeRadioGroup"
           pref="{{prefs.settings.a11y.screen_magnifier_mouse_following_mode}}">
-        <template
-            is="dom-if"
-            if="[[isMagnifierContinuousMouseFollowingModeSettingEnabled_]]">
-          <controlled-radio-button
-              id="screenMagnifierMouseFollowingModeContinuous"
-              name="[[screenMagnifierMouseFollowingModePrefValues_.CONTINUOUS]]"
-              pref="[[prefs.settings.a11y.screen_magnifier_mouse_following_mode]]"
-              label="$i18n{screenMagnifierMouseFollowingModeContinuous}">
-          </controlled-radio-button>
-        </template>
+        <controlled-radio-button
+            id="screenMagnifierMouseFollowingModeContinuous"
+            name="[[screenMagnifierMouseFollowingModePrefValues_.CONTINUOUS]]"
+            pref="[[prefs.settings.a11y.screen_magnifier_mouse_following_mode]]"
+            label="$i18n{screenMagnifierMouseFollowingModeContinuous}">
+        </controlled-radio-button>
         <controlled-radio-button
             id="screenMagnifierMouseFollowingModeCentered"
             name="[[screenMagnifierMouseFollowingModePrefValues_.CENTERED]]"
@@ -117,6 +114,56 @@
           disabled="[[!prefs.ash.docked_magnifier.enabled.value]]">
       </settings-dropdown-menu>
     </div>
+  </div>
+</template>
+<template is="dom-if" if="[[experimentalColorEnhancementSettingsEnabled_]]">
+  <div class="settings-box settings-box-row">
+    <div class="start settings-box-text" aria-hidden="true">
+      $i18n{greyscaleLabel}
+    </div>
+    <settings-slider
+        pref="{{prefs.settings.a11y.greyscale_amount}}"
+        min="0" max="100"
+        label-aria="$i18n{greyscaleLabel}"
+        label-min="$i18n{colorFilterMinLabel}"
+        label-max="$i18n{colorFilterMaxLabel}">
+    </settings-slider>
+  </div>
+  <div class="settings-box settings-box-row">
+    <div class="start settings-box-text" aria-hidden="true">
+      $i18n{saturationLabel}
+    </div>
+    <settings-slider
+      pref="{{prefs.settings.a11y.saturation_amount}}"
+      min="100" max="1000"
+      label-aria="$i18n{saturationLabel}"
+      label-min="$i18n{colorFilterMinLabel}"
+      label-max="$i18n{colorFilterMaxLabel}">
+    </settings-slider>
+  </div>
+  <div class="settings-box settings-box-row">
+    <div class="start settings-box-text" aria-hidden="true">
+      $i18n{sepiaLabel}
+    </div>
+    <settings-slider
+      pref="{{prefs.settings.a11y.sepia_amount}}"
+      min="0" max="100"
+      label-aria="$i18n{sepiaLabel}"
+      label-min="$i18n{colorFilterMinLabel}"
+      label-max="$i18n{colorFilterMaxLabel}">
+    </settings-slider>
+  </div>
+  <div class="settings-box settings-box-row">
+    <div class="start settings-box-text" aria-hidden="true">
+      $i18n{hueRotationLabel}
+    </div>
+    <settings-slider
+      pref="{{prefs.settings.a11y.hue_rotation_amount}}"
+      min="0" max="359"
+      label-aria="$i18n{hueRotationLabel}"
+      label-min="$i18n{colorFilterMinLabel}"
+      label-max="$i18n{colorFilterMaxLabel}">
+    </settings-slider>
   </div>
 </template>
 <template is="dom-if" if="[[!isKioskModeActive_]]">

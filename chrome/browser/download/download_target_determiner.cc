@@ -1,4 +1,4 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -738,13 +738,9 @@ void IsHandledBySafePlugin(content::BrowserContext* browser_context,
   }
   // In practice, we assume that retrying once is enough.
   DCHECK(!is_stale);
-  bool is_handled_safely =
-      plugin_found &&
-      (plugin_info.type == WebPluginInfo::PLUGIN_TYPE_PEPPER_IN_PROCESS ||
-       plugin_info.type == WebPluginInfo::PLUGIN_TYPE_PEPPER_OUT_OF_PROCESS ||
-       plugin_info.type == WebPluginInfo::PLUGIN_TYPE_BROWSER_PLUGIN);
   content::GetUIThreadTaskRunner({})->PostTask(
-      FROM_HERE, base::BindOnce(std::move(callback), is_handled_safely));
+      FROM_HERE,
+      base::BindOnce(std::move(callback), /*is_handled_safely=*/plugin_found));
 }
 
 }  // namespace

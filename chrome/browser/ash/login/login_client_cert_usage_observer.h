@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,9 +8,9 @@
 #include <string>
 #include <vector>
 
-#include "ash/components/login/auth/public/challenge_response_key.h"
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/certificate_provider/certificate_provider_service.h"
+#include "chromeos/ash/components/login/auth/public/challenge_response_key.h"
 #include "net/cert/x509_certificate.h"
 
 namespace ash {

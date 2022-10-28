@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -94,11 +94,16 @@ void Autofill(PasswordManagerClient* client,
       ContainsAndroidCredentials(fill_data));
   metrics_util::LogFilledCredentialIsFromAndroidApp(
       PreferredRealmIsFromAndroid(fill_data));
-  driver->FillPasswordForm(fill_data);
+  driver->SetPasswordFillData(fill_data);
 
-  client->PasswordWasAutofilled(best_matches,
-                                url::Origin::Create(form_for_autofill.url),
-                                &federated_matches);
+  // Matches can be empty when there are only WebAuthn credentials available.
+  // In that case there will be no actual fill so the client doesn't need
+  // to be notified.
+  if (!best_matches.empty() || !federated_matches.empty()) {
+    client->PasswordWasAutofilled(best_matches,
+                                  url::Origin::Create(form_for_autofill.url),
+                                  &federated_matches);
+  }
 }
 
 std::string GetPreferredRealm(const PasswordForm& form) {
@@ -197,6 +202,11 @@ LikelyFormFilling SendFillInformationToRenderer(
       WaitForUsernameReason::kDontWait;
   if (client->IsIncognito()) {
     wait_for_username_reason = WaitForUsernameReason::kIncognitoMode;
+#if BUILDFLAG(IS_MAC)
+  } else if (password_manager_util::IsBiometricAuthenticationForFillingEnabled(
+                 client)) {
+    wait_for_username_reason = WaitForUsernameReason::kBiometricAuthentication;
+#endif
   } else if (preferred_match && preferred_match->is_affiliation_based_match &&
              !IsValidAndroidFacetURI(preferred_match->signon_realm)) {
     wait_for_username_reason = WaitForUsernameReason::kAffiliatedWebsite;
@@ -217,7 +227,7 @@ LikelyFormFilling SendFillInformationToRenderer(
   } else if (IsFillOnAccountSelectFeatureEnabled()) {
     wait_for_username_reason = WaitForUsernameReason::kFoasFeature;
   } else if (observed_form.accepts_webauthn_credentials &&
-             client->GetWebAuthnCredentialsDelegate()
+             client->GetWebAuthnCredentialsDelegateForDriver(driver)
                  ->IsWebAuthnAutofillEnabled()) {
     wait_for_username_reason =
         WaitForUsernameReason::kAcceptsWebAuthnCredentials;

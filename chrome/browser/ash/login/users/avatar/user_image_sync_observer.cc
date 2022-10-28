@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -38,7 +38,7 @@ bool IsIndexSupported(int index) {
 
 UserImageSyncObserver::UserImageSyncObserver(const user_manager::User* user)
     : user_(user),
-      prefs_(NULL),
+      prefs_(nullptr),
       is_synced_(false),
       local_image_changed_(false) {
   user_manager::UserManager::Get()->AddObserver(this);
@@ -167,7 +167,7 @@ void UserImageSyncObserver::UpdateLocalImageFromSynced() {
 
 bool UserImageSyncObserver::GetSyncedImageIndex(int* index) {
   *index = user_manager::User::USER_IMAGE_INVALID;
-  const base::Value::Dict& dict = prefs_->GetValueDict(kUserImageInfo);
+  const base::Value::Dict& dict = prefs_->GetDict(kUserImageInfo);
   absl::optional<int> maybe_index = dict.FindInt(kImageIndex);
   if (!maybe_index.has_value()) {
     *index = user_manager::User::USER_IMAGE_INVALID;

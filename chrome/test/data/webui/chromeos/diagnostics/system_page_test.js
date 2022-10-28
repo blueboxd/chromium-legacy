@@ -1,8 +1,9 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 import 'chrome://diagnostics/system_page.js';
+import 'chrome://resources/cr_elements/cr_button/cr_button.js';
 
 import {DiagnosticsBrowserProxyImpl} from 'chrome://diagnostics/diagnostics_browser_proxy.js';
 import {BatteryChargeStatus, BatteryHealth, BatteryInfo, CpuUsage, MemoryUsage, NavigationView, RoutineType, StandardRoutineResult, SystemInfo} from 'chrome://diagnostics/diagnostics_types.js';

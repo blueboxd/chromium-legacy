@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -225,6 +225,15 @@ class ShillServiceClientImpl : public ShillServiceClient {
     GetHelper(service_path)
         ->CallStringMethodWithErrorCallback(&method_call, std::move(callback),
                                             std::move(error_callback));
+  }
+
+  void RequestPortalDetection(
+      const dbus::ObjectPath& service_path,
+      chromeos::VoidDBusMethodCallback callback) override {
+    dbus::MethodCall method_call(shill::kFlimflamServiceInterface,
+                                 shill::kRequestPortalDetectionFunction);
+
+    GetHelper(service_path)->CallVoidMethod(&method_call, std::move(callback));
   }
 
   void RequestTrafficCounters(

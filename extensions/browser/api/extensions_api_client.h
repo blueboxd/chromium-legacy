@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -63,6 +63,10 @@ class WebViewGuest;
 class WebViewGuestDelegate;
 class WebViewPermissionHelper;
 class WebViewPermissionHelperDelegate;
+
+#if BUILDFLAG(IS_CHROMEOS)
+class ConsentProvider;
+#endif  // BUILDFLAG(IS_CHROMEOS)
 
 // Allows the embedder of the extensions module to customize its support for
 // API features. The embedder must create a single instance in the browser
@@ -148,6 +152,13 @@ class ExtensionsAPIClient {
   virtual WebViewPermissionHelperDelegate*
   CreateWebViewPermissionHelperDelegate(
       WebViewPermissionHelper* web_view_permission_helper) const;
+
+#if BUILDFLAG(IS_CHROMEOS)
+  // Returns an interface for requesting consent for file system API. The caller
+  // owns the returned ConsentProvider.
+  virtual std::unique_ptr<ConsentProvider> CreateConsentProvider(
+      content::BrowserContext* browser_context) const;
+#endif  // BUILDFLAG(IS_CHROMEOS)
 
   // TODO(wjmaclean): Remove this when (if) ContentRulesRegistry code moves
   // to extensions/browser/api.

@@ -1,18 +1,18 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #import "ios/chrome/browser/ui/omnibox/popup/omnibox_popup_coordinator.h"
 
-#include "base/feature_list.h"
+#import "base/feature_list.h"
 #import "components/image_fetcher/core/image_data_fetcher.h"
-#include "components/omnibox/browser/autocomplete_result.h"
-#include "components/omnibox/common/omnibox_features.h"
+#import "components/omnibox/browser/autocomplete_result.h"
+#import "components/omnibox/common/omnibox_features.h"
 #import "components/search_engines/template_url_service.h"
-#include "ios/chrome/browser/browser_state/chrome_browser_state.h"
-#include "ios/chrome/browser/favicon/ios_chrome_favicon_loader_factory.h"
+#import "ios/chrome/browser/browser_state/chrome_browser_state.h"
+#import "ios/chrome/browser/favicon/ios_chrome_favicon_loader_factory.h"
 #import "ios/chrome/browser/main/browser.h"
-#include "ios/chrome/browser/search_engines/template_url_service_factory.h"
+#import "ios/chrome/browser/search_engines/template_url_service_factory.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/commands/command_dispatcher.h"
 #import "ios/chrome/browser/ui/commands/omnibox_commands.h"
@@ -26,14 +26,14 @@
 #import "ios/chrome/browser/ui/omnibox/popup/omnibox_popup_mediator.h"
 #import "ios/chrome/browser/ui/omnibox/popup/omnibox_popup_presenter.h"
 #import "ios/chrome/browser/ui/omnibox/popup/omnibox_popup_view_controller.h"
-#include "ios/chrome/browser/ui/omnibox/popup/omnibox_popup_view_ios.h"
+#import "ios/chrome/browser/ui/omnibox/popup/omnibox_popup_view_ios.h"
 #import "ios/chrome/browser/ui/omnibox/popup/pedal_section_extractor.h"
 #import "ios/chrome/browser/ui/omnibox/popup/popup_swift.h"
-#include "ios/chrome/browser/ui/ui_feature_flags.h"
-#include "ios/chrome/browser/ui/util/ui_util.h"
+#import "ios/chrome/browser/ui/ui_feature_flags.h"
+#import "ios/chrome/browser/ui/util/ui_util.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
-#include "services/network/public/cpp/shared_url_loader_factory.h"
-#include "ui/base/device_form_factor.h"
+#import "services/network/public/cpp/shared_url_loader_factory.h"
+#import "ui/base/device_form_factor.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -43,8 +43,7 @@
   std::unique_ptr<OmniboxPopupViewIOS> _popupView;
 }
 
-@property(nonatomic, strong)
-    UIViewController<ContentProviding>* popupViewController;
+@property(nonatomic, strong) OmniboxPopupViewController* popupViewController;
 @property(nonatomic, strong) OmniboxPopupMediator* mediator;
 @property(nonatomic, strong) PopupModel* model;
 @property(nonatomic, strong) PopupUIConfiguration* uiConfiguration;
@@ -52,9 +51,6 @@
 @end
 
 @implementation OmniboxPopupCoordinator
-
-@synthesize mediator = _mediator;
-@synthesize popupViewController = _popupViewController;
 
 #pragma mark - Public
 
@@ -65,7 +61,8 @@
   self = [super initWithBaseViewController:nil browser:browser];
   if (self) {
     _popupView = std::move(popupView);
-    self.pedalExtractor = [[PedalSectionExtractor alloc] init];
+    _popupViewController = [[OmniboxPopupViewController alloc] init];
+    _popupReturnDelegate = _popupViewController;
   }
   return self;
 }
@@ -96,68 +93,21 @@
           templateURLService->search_terms_data()) == SEARCH_ENGINE_GOOGLE;
 
   if (IsSwiftUIPopupEnabled()) {
-    self.model = [[PopupModel alloc] initWithMatches:@[]
-                                             headers:@[]
-                                          dataSource:self.mediator
-                                            delegate:self.pedalExtractor];
-    ToolbarConfiguration* toolbarConfiguration = [[ToolbarConfiguration alloc]
-        initWithStyle:isIncognito ? INCOGNITO : NORMAL];
-    self.uiConfiguration = [[PopupUIConfiguration alloc]
-        initWithToolbarConfiguration:toolbarConfiguration];
-    if (@available(iOS 16, *)) {
-      self.uiConfiguration.shouldDismissKeyboardOnScroll =
-          (ui::GetDeviceFormFactor() != ui::DEVICE_FORM_FACTOR_TABLET ||
-           base::FeatureList::IsEnabled(kEnableSuggestionsScrollingOnIPad));
-    }
-
-    BOOL popupShouldSelfSize =
-        (ui::GetDeviceFormFactor() == ui::DEVICE_FORM_FACTOR_TABLET);
-    self.mediator.model = self.model;
-
-    PopupUIVariation popupUIVariation = IsOmniboxActionsVisualTreatment1()
-                                            ? PopupUIVariationOne
-                                            : PopupUIVariationTwo;
-
-    std::string pasteButtonVariationName =
-        base::GetFieldTrialParamValueByFeature(
-            kOmniboxPasteButton, kOmniboxPasteButtonParameterName);
-
-    PopupPasteButtonVariation popupPasteButtonVariation =
-        (pasteButtonVariationName ==
-         kOmniboxPasteButtonParameterBlueFullCapsule)
-            ? PopupPasteButtonVariationIconText
-            : PopupPasteButtonVariationIcon;
-
-    self.popupViewController = [OmniboxPopupViewProvider
-        makeViewControllerWithModel:self.model
-                    uiConfiguration:self.uiConfiguration
-                   popupUIVariation:popupUIVariation
-          popupPasteButtonVariation:popupPasteButtonVariation
-                popupShouldSelfSize:popupShouldSelfSize
-            appearanceContainerType:[OmniboxPopupContainerView class]];
-    [self.browser->GetCommandDispatcher()
-        startDispatchingToTarget:self.model
-                     forProtocol:@protocol(OmniboxSuggestionCommands)];
-    self.mediator.consumer = self.pedalExtractor;
-    self.pedalExtractor.dataSink = self.model;
-    self.pedalExtractor.delegate = self.mediator;
+    NOTREACHED() << "Swift version not supported anymore.";
   } else {
-    OmniboxPopupViewController* popupViewController =
-        [[OmniboxPopupViewController alloc] init];
-    popupViewController.imageRetriever = self.mediator;
-    popupViewController.faviconRetriever = self.mediator;
-    popupViewController.delegate = self.pedalExtractor;
-    popupViewController.dataSource = self.mediator;
-    popupViewController.incognito = isIncognito;
+    self.popupViewController.imageRetriever = self.mediator;
+    self.popupViewController.faviconRetriever = self.mediator;
+    self.popupViewController.delegate = self.mediator;
+    self.popupViewController.dataSource = self.mediator;
+    self.popupViewController.incognito = isIncognito;
     [self.browser->GetCommandDispatcher()
-        startDispatchingToTarget:popupViewController
+        startDispatchingToTarget:self.popupViewController
                      forProtocol:@protocol(OmniboxSuggestionCommands)];
 
-    self.mediator.consumer = self.pedalExtractor;
-    self.pedalExtractor.dataSink = popupViewController;
-    self.pedalExtractor.delegate = self.mediator;
-
-    self.popupViewController = popupViewController;
+    self.mediator.consumer = self.popupViewController;
+    self.popupViewController.matchPreviewDelegate =
+        self.popupMatchPreviewDelegate;
+    self.popupViewController.acceptReturnDelegate = self.acceptReturnDelegate;
   }
 
   if (IsOmniboxActionsEnabled()) {

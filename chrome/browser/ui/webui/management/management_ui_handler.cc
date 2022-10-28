@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -171,6 +171,8 @@ const char kManagementLogUploadEnabled[] = "managementLogUploadEnabled";
 const char kManagementReportActivityTimes[] = "managementReportActivityTimes";
 const char kManagementReportDeviceAudioStatus[] =
     "managementReportDeviceAudioStatus";
+const char kManagementReportDeviceGraphicsStatus[] =
+    "managementReportDeviceGraphicsStatus";
 const char kManagementReportDevicePeripherals[] =
     "managementReportDevicePeripherals";
 const char kManagementReportNetworkData[] = "managementReportNetworkData";
@@ -350,6 +352,15 @@ void AddDeviceReportingInfo(base::Value::List* report_sources,
   if (report_audio_status) {
     AddDeviceReportingElement(report_sources,
                               kManagementReportDeviceAudioStatus,
+                              DeviceReportingType::kDevice);
+  }
+
+  bool report_graphics_status = false;
+  chromeos::CrosSettings::Get()->GetBoolean(ash::kReportDeviceGraphicsStatus,
+                                            &report_graphics_status);
+  if (report_graphics_status) {
+    AddDeviceReportingElement(report_sources,
+                              kManagementReportDeviceGraphicsStatus,
                               DeviceReportingType::kDevice);
   }
 

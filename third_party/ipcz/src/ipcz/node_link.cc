@@ -626,9 +626,9 @@ bool NodeLink::OnRouteDisconnected(msg::RouteDisconnected& route_closed) {
       sublink->router_link->GetType());
 }
 
-bool NodeLink::OnNotifyDataConsumed(msg::NotifyDataConsumed& notify) {
-  if (Ref<Router> router = GetRouter(notify.params().sublink)) {
-    router->NotifyPeerConsumedData();
+bool NodeLink::OnSnapshotPeerQueueState(msg::SnapshotPeerQueueState& snapshot) {
+  if (Ref<Router> router = GetRouter(snapshot.params().sublink)) {
+    router->SnapshotPeerQueueState();
   }
   return true;
 }
@@ -915,6 +915,8 @@ bool NodeLink::AcceptCompleteParcel(SublinkId for_sublink, Parcel& parcel) {
              << for_sublink;
     return true;
   }
+
+  parcel.set_remote_source(WrapRefCounted(this));
   const LinkType link_type = sublink->router_link->GetType();
   if (link_type.is_outward()) {
     DVLOG(4) << "Accepting inbound " << parcel.Describe() << " at "

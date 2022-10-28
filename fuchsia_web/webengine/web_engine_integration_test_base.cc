@@ -1,12 +1,12 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "fuchsia_web/webengine/web_engine_integration_test_base.h"
 
-#include <dirent.h>
 #include <lib/fdio/directory.h>
 
+#include "base/files/file_enumerator.h"
 #include "base/files/file_path.h"
 #include "base/fuchsia/file_utils.h"
 #include "base/fuchsia/fuchsia_logging.h"
@@ -14,7 +14,6 @@
 #include "base/path_service.h"
 #include "base/strings/string_piece.h"
 #include "fuchsia_web/common/test/frame_test_util.h"
-#include "fuchsia_web/webengine/test/context_provider_test_connector.h"
 #include "net/test/embedded_test_server/default_handlers.h"
 
 namespace {
@@ -36,21 +35,16 @@ WebEngineIntegrationTestBase::WebEngineIntegrationTestBase()
       filtered_service_directory_(std::make_shared<sys::ServiceDirectory>(
           base::OpenDirectoryHandle(base::FilePath("/svc")))) {
   // Push all services from /svc to the filtered service directory.
-  // TODO(fxbug.dev/100207): base::FileEnumerator would stat() each directory
-  // entry, which can hang with some legacy directory implementations.
-  DIR* dir = opendir("/svc");
-  PCHECK(dir);
-  struct dirent* dirent = nullptr;
-  while ((dirent = readdir(dir))) {
-    const base::StringPiece name = dirent->d_name;
-    if (name == base::FilePath::kCurrentDirectory ||
-        name == base::FilePath::kParentDirectory) {
-      continue;
-    }
-    zx_status_t status = filtered_service_directory_.AddService(name);
+  // Calling stat() in /svc is problematic; see https://fxbug.dev/100207. Tell
+  // the enumerator not to recurse, to return both files and directories, and
+  // to report only the names of entries.
+  base::FileEnumerator file_enum(base::FilePath("/svc"), /*recursive=*/false,
+                                 base::FileEnumerator::NAMES_ONLY);
+  for (auto file = file_enum.Next(); !file.empty(); file = file_enum.Next()) {
+    zx_status_t status =
+        filtered_service_directory_.AddService(file.BaseName().value());
     ZX_CHECK(status == ZX_OK, status) << "FilteredServiceDirectory::AddService";
   }
-  closedir(dir);
 }
 
 WebEngineIntegrationTestBase::~WebEngineIntegrationTestBase() = default;
@@ -60,14 +54,6 @@ void WebEngineIntegrationTestBase::SetUp() {
       "fuchsia_web/webengine/test/data");
   net::test_server::RegisterDefaultHandlers(&embedded_test_server_);
   CHECK(embedded_test_server_.Start());
-}
-
-void WebEngineIntegrationTestBase::StartWebEngine(
-    base::CommandLine command_line) {
-  web_context_provider_ = ConnectContextProvider(
-      web_engine_controller_.NewRequest(), std::move(command_line));
-  web_context_provider_.set_error_handler(
-      [](zx_status_t status) { ADD_FAILURE(); });
 }
 
 fuchsia::web::NavigationControllerPtr
@@ -103,8 +89,8 @@ WebEngineIntegrationTestBase::TestContextParamsWithTestData() {
 void WebEngineIntegrationTestBase::CreateContext(
     fuchsia::web::CreateContextParams context_params) {
   CHECK(!context_);
-  web_context_provider_->Create(std::move(context_params),
-                                context_.NewRequest());
+  GetContextProvider()->Create(std::move(context_params),
+                               context_.NewRequest());
   context_.set_error_handler([](zx_status_t status) { ADD_FAILURE(); });
 }
 
@@ -135,7 +121,7 @@ void WebEngineIntegrationTestBase::CreateContextAndExpectError(
     fuchsia::web::CreateContextParams params,
     zx_status_t expected_error) {
   CHECK(!context_);
-  web_context_provider_->Create(std::move(params), context_.NewRequest());
+  GetContextProvider()->Create(std::move(params), context_.NewRequest());
   base::RunLoop run_loop;
   context_.set_error_handler([&run_loop, expected_error](zx_status_t status) {
     EXPECT_EQ(status, expected_error);

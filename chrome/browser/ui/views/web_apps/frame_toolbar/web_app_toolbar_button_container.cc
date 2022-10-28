@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -104,6 +104,8 @@ WebAppToolbarButtonContainer::WebAppToolbarButtonContainer(
                                static_cast<int>(HTCLIENT));
     ConfigureWebAppToolbarButton(window_controls_overlay_toggle_button_,
                                  toolbar_button_provider_);
+    window_controls_overlay_toggle_button_->SetVisible(
+        browser_view_->should_show_window_controls_overlay_toggle());
   }
 
   if (app_controller->HasTitlebarContentSettings()) {

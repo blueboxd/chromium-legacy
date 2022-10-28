@@ -53,10 +53,14 @@ void LayoutFrame::ImageChanged(WrappedImagePtr image, CanDeferInvalidation) {
   }
 }
 
-void LayoutFrame::UpdateFromElement() {
+void LayoutFrame::UpdateLayout() {
   NOT_DESTROYED();
-  if (Parent() && Parent()->IsFrameSet())
-    To<LayoutFrameSet>(Parent())->NotifyFrameEdgeInfoChanged();
+  // Should respect to BoxLayoutExtraInput.
+  if (Parent()->IsLayoutNGObject()) {
+    UpdateLogicalWidth();
+    UpdateLogicalHeight();
+  }
+  LayoutEmbeddedContent::UpdateLayout();
 }
 
 }  // namespace blink

@@ -1,4 +1,4 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -351,6 +351,7 @@ enum SharesheetLaunchSource {
 
 enum IOTaskState {
   queued,
+  scanning,
   in_progress,
   success,
   error,
@@ -365,6 +366,7 @@ enum IOTaskType {
   extract,
   move,
   restore,
+  restore_to_destination,
   trash,
   zip
 };
@@ -388,7 +390,11 @@ enum UserType {
 };
 
 enum DlpLevel {
-  // User cannot perform an action.
+  // Report every action to the admin, doesn't affect the user.
+  report,
+  // Warn the user on every action.
+  warn,
+  // Block the user on every action.
   block,
   // No restriction.
   allow
@@ -691,6 +697,9 @@ dictionary FileTransferStatus {
 
   // Total number of jobs.
   long numTotalJobs;
+
+  // Indicates whether a notification should be shown for the transfer update.
+  boolean showNotification;
 
   // If true, hide when a job is completed when there are zero jobs in
   // progress. Otherwise, hide when one job is in progress.
@@ -996,6 +1005,11 @@ dictionary IOTaskParams {
 
   // Password used for unpacking encrypted archives.
   DOMString? password;
+
+  // Whether to display a notification in the UI. This does not stop the
+  // IOProgressStatus event propagating instead it provides a true boolean on
+  // the event that the UI can choose to show / hide the notification.
+  boolean? showNotification;
 };
 
 // IO Task Progress status, see file_manager::io_task::ProgressStatus.
@@ -1031,6 +1045,9 @@ dictionary ProgressStatus {
 
   // The estimate time to finish the operation.
   double remainingSeconds;
+
+  // Whether notifications should be shown on progress status.
+  boolean showNotification;
 
   // The name of the last error that happened.
   DOMString errorName;
@@ -1108,9 +1125,6 @@ callback GetContentMetadataCallback = void(MediaMetadata result);
 // |result| Hash containing the string assets.
 callback GetStringsCallback = void(object result);
 
-// |color| String containing the color of the title bar.
-callback GetFrameColorCallback = void(DOMString color);
-
 // |success| True when file watch is successfully added.
 callback AddFileWatchCallback = void(optional boolean success);
 
@@ -1142,6 +1156,10 @@ callback GetDlpMetadataCallback =
 // summarized restriction information about an entry.
 callback GetDlpRestrictionDetailsCallback =
     void(DlpRestrictionDetails[] restrictionDetails);
+
+// |blockedComponents| A list of components (subset of VolumeType) to which
+// transferring an Entry is blocked by Data Leak Prevention (DLP) policy.
+callback GetDlpBlockedComponentsCallback = void(VolumeType[] blockedComponents);
 
 // |copyId| ID of the copy task. Can be used to identify the progress, and to
 // cancel the task.
@@ -1445,6 +1463,14 @@ interface Functions {
   static void getDlpRestrictionDetails(
       DOMString sourceUrl,
       GetDlpRestrictionDetailsCallback callback);
+
+  // Retrieves the list of components to which the transfer of an Entry
+  // is blocked by Data Leak Prevention (DLP) policy.
+  // |sourceUrl| Source URL of the Entry that should be checked.
+  // |callback| Result callback.
+  static void getDlpBlockedComponents(
+      DOMString sourceUrl,
+      GetDlpBlockedComponentsCallback callback);
 
   // Starts to copy an entry. If the source is a directory, the copy is done
   // recursively.
@@ -1759,9 +1785,6 @@ interface Functions {
   // the holding space currently contains.
   // |callback| The result callback.
   static void getHoldingSpaceState(HoldingSpaceStateCallback callback);
-
-  // Returns color via `callback` for Files app foreground window frame.
-  static void getFrameColor(GetFrameColorCallback callback);
 
   // Returns true via `callback` if tablet mode is enabled, false otherwise.
   static void isTabletModeEnabled(BooleanCallback callback);

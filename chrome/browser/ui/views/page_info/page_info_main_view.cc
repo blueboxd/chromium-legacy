@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -576,7 +576,8 @@ std::unique_ptr<views::View> PageInfoMainView::CreateAboutThisSiteSection(
 
   PageInfoHoverButton* about_this_site_button = nullptr;
 
-  if (base::FeatureList::IsEnabled(page_info::kPageInfoAboutThisSiteMoreInfo)) {
+  if (base::FeatureList::IsEnabled(page_info::kPageInfoAboutThisSiteMoreInfo) &&
+      base::FeatureList::IsEnabled(features::kUnifiedSidePanel)) {
     const auto& description =
         info.has_description()
             ? base::UTF8ToUTF16(info.description().description())

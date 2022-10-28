@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -122,9 +122,9 @@ class AccountAppsAvailabilityTest : public testing::Test {
   void LoginUserSession() {
     auto account_id = AccountId::FromUserEmailGaiaId(primary_account_.email,
                                                      primary_account_.gaia);
-    fake_user_manager_->AddUser(account_id);
-    fake_user_manager_->UserLoggedIn(
-        account_id, account_id.GetUserEmail() + "-hash", false, false);
+    auto* user = fake_user_manager_->AddUser(account_id);
+    fake_user_manager_->UserLoggedIn(account_id, user->username_hash(), false,
+                                     false);
   }
 
   base::test::SingleThreadTaskEnvironment task_environment_;

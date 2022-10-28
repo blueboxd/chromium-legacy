@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,6 +12,7 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/raw_ptr.h"
+#include "base/ranges/algorithm.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/task_environment.h"
@@ -57,7 +58,7 @@ class ManagedBookmarksTrackerTest : public testing::Test {
     auto client = std::make_unique<TestBookmarkClient>();
     managed_node_ = client->EnableManagedNode();
     ManagedBookmarksTracker::LoadInitial(
-        managed_node_, prefs_.GetValueList(prefs::kManagedBookmarks), 101);
+        managed_node_, prefs_.GetList(prefs::kManagedBookmarks), 101);
     managed_node_->SetTitle(l10n_util::GetStringUTF16(
         IDS_BOOKMARK_BAR_MANAGED_FOLDER_DEFAULT_NAME));
 
@@ -137,16 +138,13 @@ class ManagedBookmarksTrackerTest : public testing::Test {
 
     if (node->is_folder()) {
       const base::Value::List* children = dict.FindList("children");
-      if (!children || node->children().size() != children->size())
-        return false;
-      size_t i = 0;
-      return std::all_of(node->children().cbegin(), node->children().cend(),
-                         [children, &i](const auto& child_node) {
-                           const base::Value& child = (*children)[i++];
-                           return child.is_dict() &&
-                                  NodeMatchesValue(child_node.get(),
-                                                   child.GetDict());
-                         });
+      return children &&
+             base::ranges::equal(
+                 *children, node->children(),
+                 [](const base::Value& child, const auto& child_node) {
+                   return child.is_dict() &&
+                          NodeMatchesValue(child_node.get(), child.GetDict());
+                 });
     }
     if (!node->is_url())
       return false;
@@ -251,7 +249,7 @@ TEST_F(ManagedBookmarksTrackerTest, CreateNewNodes) {
   base::Value::List updated;
   updated.Append(CreateFolder("Container", CreateTestTree()));
 
-  EXPECT_CALL(observer_, BookmarkNodeAdded(model_.get(), _, _)).Times(5);
+  EXPECT_CALL(observer_, BookmarkNodeAdded(model_.get(), _, _, _)).Times(5);
   // The remaining nodes have been pushed to positions 1 and 2; they'll both be
   // removed when at position 1.
   const BookmarkNode* parent = managed_node();
@@ -308,10 +306,10 @@ TEST_F(ManagedBookmarksTrackerTest, RemoveAllUserBookmarksDoesntRemoveManaged) {
   CreateModel();
   EXPECT_EQ(2u, managed_node()->children().size());
 
-  EXPECT_CALL(observer_,
-              BookmarkNodeAdded(model_.get(), model_->bookmark_bar_node(), 0));
-  EXPECT_CALL(observer_,
-              BookmarkNodeAdded(model_.get(), model_->bookmark_bar_node(), 1));
+  EXPECT_CALL(observer_, BookmarkNodeAdded(model_.get(),
+                                           model_->bookmark_bar_node(), 0, _));
+  EXPECT_CALL(observer_, BookmarkNodeAdded(model_.get(),
+                                           model_->bookmark_bar_node(), 1, _));
   model_->AddURL(model_->bookmark_bar_node(), 0, u"Test",
                  GURL("http://google.com/"));
   model_->AddFolder(model_->bookmark_bar_node(), 1, u"Test Folder");

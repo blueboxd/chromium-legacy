@@ -41,6 +41,7 @@
 #include "third_party/blink/public/common/loader/throttling_url_loader.h"
 #include "third_party/blink/public/common/navigation/navigation_params.h"
 #include "third_party/blink/public/common/storage_key/storage_key.h"
+#include "third_party/blink/public/mojom/back_forward_cache_not_restored_reasons.mojom-blink.h"
 #include "third_party/blink/public/mojom/loader/referrer.mojom.h"
 #include "third_party/blink/public/mojom/loader/transferrable_url_loader.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_registration_options.mojom.h"
@@ -91,11 +92,12 @@ class FakeNavigationClient : public mojom::NavigationClient {
       mojo::PendingRemote<network::mojom::URLLoaderFactory>
           prefetch_loader_factory,
       const base::UnguessableToken& devtools_navigation_token,
-      const blink::ParsedPermissionsPolicy& permissions_policy,
+      const absl::optional<blink::ParsedPermissionsPolicy>& permissions_policy,
       blink::mojom::PolicyContainerPtr policy_container,
       mojo::PendingRemote<blink::mojom::CodeCacheHost> code_cache_host,
       mojom::CookieManagerInfoPtr cookie_manager_info,
       mojom::StorageInfoPtr storage_info,
+      blink::mojom::BackForwardCacheNotRestoredReasonsPtr not_restored_reasons,
       CommitNavigationCallback callback) override {
     std::move(on_received_callback_).Run(std::move(container_info));
     std::move(callback).Run(MinimalDidCommitNavigationLoadParams(), nullptr);
@@ -257,6 +259,7 @@ void ServiceWorkerRemoteContainerEndpoint::BindForWindow(
       base::UnguessableToken::Create(),
       std::vector<blink::ParsedPermissionsPolicyDeclaration>(),
       CreateStubPolicyContainer(), mojo::NullRemote(), nullptr, nullptr,
+      /*not_restored_reasons=*/nullptr,
       base::BindOnce(
           [](mojom::DidCommitProvisionalLoadParamsPtr validated_params,
              mojom::DidCommitProvisionalLoadInterfaceParamsPtr
@@ -299,8 +302,8 @@ base::WeakPtr<ServiceWorkerContainerHost> CreateContainerHostForWindow(
   // In production code this is called from NavigationRequest in the browser
   // process right before navigation commit.
   container_host->OnBeginNavigationCommit(
-      render_frame_host_id, network::CrossOriginEmbedderPolicy(),
-      std::move(reporter), ukm::kInvalidSourceId);
+      render_frame_host_id, PolicyContainerPolicies(), std::move(reporter),
+      ukm::kInvalidSourceId);
   return container_host;
 }
 
@@ -423,6 +426,8 @@ scoped_refptr<ServiceWorkerVersion> CreateNewServiceWorkerVersion(
           }));
   run_loop.Run();
   DCHECK(version);
+  version->set_policy_container_host(
+      base::MakeRefCounted<PolicyContainerHost>(PolicyContainerPolicies()));
   return version;
 }
 
@@ -804,6 +809,7 @@ void ServiceWorkerUpdateCheckTestUtils::SetComparedScriptInfoForVersion(
        ServiceWorkerSingleScriptUpdateChecker::Result::kDifferent)
           ? script_url
           : GURL(),
+      base::MakeRefCounted<PolicyContainerHost>(),
       network::CrossOriginEmbedderPolicy());
 }
 

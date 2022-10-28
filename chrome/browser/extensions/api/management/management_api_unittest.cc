@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -564,7 +564,7 @@ TEST_F(ManagementApiUnitTest, ExtensionInfo_MayEnable) {
     ASSERT_TRUE(info);
     EXPECT_TRUE(info->enabled);
     // |may_enable| is only returned for extensions which are not enabled.
-    EXPECT_FALSE(info->may_enable.get());
+    EXPECT_FALSE(info->may_enable);
   }
 
   // Simulate blocklisting the extension and verify that the extension shows as
@@ -586,7 +586,7 @@ TEST_F(ManagementApiUnitTest, ExtensionInfo_MayEnable) {
     std::unique_ptr<ExtensionInfo> info = ExtensionInfo::FromValue(*value);
     ASSERT_TRUE(info);
     EXPECT_FALSE(info->enabled);
-    ASSERT_TRUE(info->may_enable.get());
+    ASSERT_TRUE(info->may_enable);
     EXPECT_FALSE(*(info->may_enable));
   }
 
@@ -609,7 +609,7 @@ TEST_F(ManagementApiUnitTest, ExtensionInfo_MayEnable) {
     std::unique_ptr<ExtensionInfo> info = ExtensionInfo::FromValue(*value);
     ASSERT_TRUE(info);
     EXPECT_FALSE(info->enabled);
-    ASSERT_TRUE(info->may_enable.get());
+    ASSERT_TRUE(info->may_enable);
     EXPECT_TRUE(*(info->may_enable));
   }
 }

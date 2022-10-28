@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -36,7 +36,7 @@ class FakeBrowserState final : public BrowserState {
   void SetSharedURLLoaderFactory(
       scoped_refptr<network::SharedURLLoaderFactory> shared_url_loader_factory);
 
-  // Makes |IsOffTheRecord| return the given flag value.
+  // Makes `IsOffTheRecord` return the given flag value.
   void SetOffTheRecord(bool flag);
 
   // This must be called before the first GetRequestContext() call.

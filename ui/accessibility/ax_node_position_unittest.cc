@@ -20,6 +20,7 @@
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/accessibility/ax_node_position.h"
 #include "ui/accessibility/ax_range.h"
+#include "ui/accessibility/ax_selection.h"
 #include "ui/accessibility/ax_tree.h"
 #include "ui/accessibility/ax_tree_data.h"
 #include "ui/accessibility/ax_tree_id.h"
@@ -4419,7 +4420,7 @@ TEST_F(AXPositionTest, AsUnignoredPosition) {
 
   // TODO(nektar): AXTree has a bug whereby it doesn't update the unignored
   // cached values when the ignored state is flipped on the root.
-  GetNodeFromTree(root_data.id)->UpdateUnignoredCachedValues();
+  GetNode(root_data.id)->UpdateUnignoredCachedValues();
 
   text_position = AXNodePosition::CreateTextPosition(
       GetTreeID(), root_data.id, 0 /* text_offset */,
@@ -7856,7 +7857,7 @@ TEST_F(AXPositionTest, CreateParentPositionWithMoveDirection) {
       AXNodePosition::BEFORE_TEXT /* child_index */);
   ASSERT_NE(nullptr, tree_position);
   TestPositionType ancestor_position = tree_position->CreateAncestorPosition(
-      GetRootAsAXNode(), ax::mojom::MoveDirection::kForward);
+      GetRoot(), ax::mojom::MoveDirection::kForward);
   ASSERT_NE(nullptr, ancestor_position);
   EXPECT_TRUE(ancestor_position->IsTreePosition());
   EXPECT_EQ(root_1.id, ancestor_position->anchor_id());
@@ -7873,7 +7874,7 @@ TEST_F(AXPositionTest, CreateParentPositionWithMoveDirection) {
       AXNodePosition::BEFORE_TEXT /* child_index */);
   ASSERT_NE(nullptr, tree_position);
   ancestor_position = tree_position->CreateAncestorPosition(
-      GetRootAsAXNode(), ax::mojom::MoveDirection::kBackward);
+      GetRoot(), ax::mojom::MoveDirection::kBackward);
   ASSERT_NE(nullptr, ancestor_position);
   EXPECT_TRUE(ancestor_position->IsTreePosition());
   EXPECT_EQ(root_1.id, ancestor_position->anchor_id());
@@ -7889,7 +7890,7 @@ TEST_F(AXPositionTest, CreateParentPositionWithMoveDirection) {
       GetTreeID(), inline_box_4.id, 0 /* child_index */);
   ASSERT_NE(nullptr, tree_position);
   ancestor_position = tree_position->CreateAncestorPosition(
-      GetRootAsAXNode(), ax::mojom::MoveDirection::kForward);
+      GetRoot(), ax::mojom::MoveDirection::kForward);
   ASSERT_NE(nullptr, ancestor_position);
   EXPECT_TRUE(ancestor_position->IsTreePosition());
   EXPECT_EQ(root_1.id, ancestor_position->anchor_id());
@@ -7904,7 +7905,7 @@ TEST_F(AXPositionTest, CreateParentPositionWithMoveDirection) {
       GetTreeID(), inline_box_4.id, 0 /* child_index */);
   ASSERT_NE(nullptr, tree_position);
   ancestor_position = tree_position->CreateAncestorPosition(
-      GetRootAsAXNode(), ax::mojom::MoveDirection::kBackward);
+      GetRoot(), ax::mojom::MoveDirection::kBackward);
   ASSERT_NE(nullptr, ancestor_position);
   EXPECT_TRUE(ancestor_position->IsTreePosition());
   EXPECT_EQ(root_1.id, ancestor_position->anchor_id());
@@ -7919,7 +7920,7 @@ TEST_F(AXPositionTest, CreateParentPositionWithMoveDirection) {
       GetTreeID(), inline_box_7.id, 0 /* child_index */);
   ASSERT_NE(nullptr, tree_position);
   ancestor_position = tree_position->CreateAncestorPosition(
-      GetRootAsAXNode(), ax::mojom::MoveDirection::kForward);
+      GetRoot(), ax::mojom::MoveDirection::kForward);
   ASSERT_NE(nullptr, ancestor_position);
   EXPECT_TRUE(ancestor_position->IsTreePosition());
   EXPECT_EQ(root_1.id, ancestor_position->anchor_id());
@@ -7935,7 +7936,7 @@ TEST_F(AXPositionTest, CreateParentPositionWithMoveDirection) {
       GetTreeID(), inline_box_7.id, 0 /* child_index */);
   ASSERT_NE(nullptr, tree_position);
   ancestor_position = tree_position->CreateAncestorPosition(
-      GetRootAsAXNode(), ax::mojom::MoveDirection::kBackward);
+      GetRoot(), ax::mojom::MoveDirection::kBackward);
   ASSERT_NE(nullptr, ancestor_position);
   EXPECT_TRUE(ancestor_position->IsTreePosition());
   EXPECT_EQ(root_1.id, ancestor_position->anchor_id());
@@ -7956,7 +7957,7 @@ TEST_F(AXPositionTest, CreateParentPositionWithMoveDirection) {
       ax::mojom::TextAffinity::kDownstream);
   ASSERT_NE(nullptr, text_position);
   ancestor_position = text_position->CreateAncestorPosition(
-      GetRootAsAXNode(), ax::mojom::MoveDirection::kForward);
+      GetRoot(), ax::mojom::MoveDirection::kForward);
   ASSERT_NE(nullptr, ancestor_position);
   EXPECT_TRUE(ancestor_position->IsTextPosition());
   EXPECT_EQ(root_1.id, ancestor_position->anchor_id());
@@ -7975,7 +7976,7 @@ TEST_F(AXPositionTest, CreateParentPositionWithMoveDirection) {
       ax::mojom::TextAffinity::kDownstream);
   ASSERT_NE(nullptr, text_position);
   ancestor_position = text_position->CreateAncestorPosition(
-      GetRootAsAXNode(), ax::mojom::MoveDirection::kBackward);
+      GetRoot(), ax::mojom::MoveDirection::kBackward);
   ASSERT_NE(nullptr, ancestor_position);
   EXPECT_TRUE(ancestor_position->IsTextPosition());
   EXPECT_EQ(root_1.id, ancestor_position->anchor_id());
@@ -7994,7 +7995,7 @@ TEST_F(AXPositionTest, CreateParentPositionWithMoveDirection) {
       ax::mojom::TextAffinity::kDownstream);
   ASSERT_NE(nullptr, text_position);
   ancestor_position = text_position->CreateAncestorPosition(
-      GetRootAsAXNode(), ax::mojom::MoveDirection::kForward);
+      GetRoot(), ax::mojom::MoveDirection::kForward);
   ASSERT_NE(nullptr, ancestor_position);
   EXPECT_TRUE(ancestor_position->IsTextPosition());
   EXPECT_EQ(root_1.id, ancestor_position->anchor_id());
@@ -8012,7 +8013,7 @@ TEST_F(AXPositionTest, CreateParentPositionWithMoveDirection) {
       ax::mojom::TextAffinity::kDownstream);
   ASSERT_NE(nullptr, text_position);
   ancestor_position = text_position->CreateAncestorPosition(
-      GetRootAsAXNode(), ax::mojom::MoveDirection::kBackward);
+      GetRoot(), ax::mojom::MoveDirection::kBackward);
   ASSERT_NE(nullptr, ancestor_position);
   EXPECT_TRUE(ancestor_position->IsTextPosition());
   EXPECT_EQ(root_1.id, ancestor_position->anchor_id());
@@ -8030,7 +8031,7 @@ TEST_F(AXPositionTest, CreateParentPositionWithMoveDirection) {
       ax::mojom::TextAffinity::kDownstream);
   ASSERT_NE(nullptr, text_position);
   ancestor_position = text_position->CreateAncestorPosition(
-      GetRootAsAXNode(), ax::mojom::MoveDirection::kForward);
+      GetRoot(), ax::mojom::MoveDirection::kForward);
   ASSERT_NE(nullptr, ancestor_position);
   EXPECT_TRUE(ancestor_position->IsTextPosition());
   EXPECT_EQ(root_1.id, ancestor_position->anchor_id());
@@ -8048,7 +8049,7 @@ TEST_F(AXPositionTest, CreateParentPositionWithMoveDirection) {
       ax::mojom::TextAffinity::kDownstream);
   ASSERT_NE(nullptr, text_position);
   ancestor_position = text_position->CreateAncestorPosition(
-      GetRootAsAXNode(), ax::mojom::MoveDirection::kBackward);
+      GetRoot(), ax::mojom::MoveDirection::kBackward);
   ASSERT_NE(nullptr, ancestor_position);
   EXPECT_TRUE(ancestor_position->IsTextPosition());
   EXPECT_EQ(root_1.id, ancestor_position->anchor_id());
@@ -12385,7 +12386,7 @@ TEST_F(AXPositionTest, GetUnignoredSelectionWithLeafNodes) {
     tree->UpdateDataForTesting(data);
 
     // Should not crash.
-    AXNode::OwnerTree::Selection s = tree->GetUnignoredSelection();
+    AXSelection s = tree->GetUnignoredSelection();
     EXPECT_EQ(valid->anchor_id(), s.anchor_object_id);
     EXPECT_EQ(valid->child_index(), s.anchor_offset);
     EXPECT_EQ(valid->anchor_id(), s.focus_object_id);

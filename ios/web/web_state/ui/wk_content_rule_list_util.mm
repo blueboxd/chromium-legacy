@@ -1,12 +1,12 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #import "ios/web/web_state/ui/wk_content_rule_list_util.h"
 
-#include "base/check.h"
-#include "base/strings/sys_string_conversions.h"
-#include "ios/web/public/web_client.h"
+#import "base/check.h"
+#import "base/strings/sys_string_conversions.h"
+#import "ios/web/public/web_client.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."

@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -34,7 +34,7 @@ class ASH_EXPORT NetworkListWifiHeaderViewImpl
 
   // NetworkListNetworkHeaderView:
   void AddExtraButtons() override;
-  void SetToggleState(bool enabled, bool is_on) override;
+  void SetToggleState(bool enabled, bool is_on, bool animate_toggle) override;
   void OnToggleToggled(bool is_on) override;
 
   // NetworkListWifiHeaderView:

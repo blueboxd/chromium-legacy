@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,8 +11,8 @@
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 
-namespace chromeos {
-namespace local_search_service {
+namespace ash::local_search_service {
+
 namespace {
 
 // Interval for asking metrics::DailyEvent to check whether a day has passed.
@@ -145,5 +145,4 @@ void SearchMetricsReporter::ReportDailyMetrics(
   }
 }
 
-}  // namespace local_search_service
-}  // namespace chromeos
+}  // namespace ash::local_search_service

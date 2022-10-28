@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -207,7 +207,7 @@ NetworkTimeTracker::NetworkTimeTracker(
       pref_service_(pref_service),
       time_query_completed_(false) {
   const base::Value::Dict& time_mapping =
-      pref_service_->GetValueDict(prefs::kNetworkTimeMapping);
+      pref_service_->GetDict(prefs::kNetworkTimeMapping);
   absl::optional<double> time_js = time_mapping.FindDouble(kPrefTime);
   absl::optional<double> ticks_js = time_mapping.FindDouble(kPrefTicks);
   absl::optional<double> uncertainty_js =

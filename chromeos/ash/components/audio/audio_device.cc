@@ -1,4 +1,4 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -154,6 +154,7 @@ AudioDevice::AudioDevice(const AudioNode& node) {
   plugged_time = node.plugged_time;
   max_supported_channels = node.max_supported_channels;
   audio_effect = node.audio_effect;
+  number_of_volume_steps = node.number_of_volume_steps;
 }
 
 AudioDevice::AudioDevice(const AudioDevice& other) = default;

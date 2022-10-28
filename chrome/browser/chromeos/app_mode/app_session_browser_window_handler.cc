@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -68,6 +68,7 @@ void AppSessionBrowserWindowHandler::HandleNewSettingsWindow(
     NavigateParams nav_params(
         settings_browser_, GURL(url_string),
         ui::PageTransition::PAGE_TRANSITION_AUTO_TOPLEVEL);
+    nav_params.window_action = NavigateParams::SHOW_WINDOW;
     Navigate(&nav_params);
     return;
   }
@@ -84,6 +85,10 @@ void AppSessionBrowserWindowHandler::HandleNewSettingsWindow(
         ui::PageTransition::PAGE_TRANSITION_AUTO_TOPLEVEL);
     nav_params.disposition = WindowOpenDisposition::NEW_POPUP;
     Navigate(&nav_params);
+
+    // We do not save the newly created browser to the |settings_browser_| here
+    // because this new browser will be handled by this function after creation,
+    // and it will be saved there.
     return;
   }
 

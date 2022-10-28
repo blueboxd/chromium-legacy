@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -162,6 +162,12 @@ void LogPermissionOnboardingSettingsClicked(
 void LogPermissionOnboardingDialogAction(
     PermissionsOnboardingStep step,
     PermissionsOnboardingScreenEvent event);
+
+// Log setup mode when multidevice permissions set up dialog is displayed.
+void LogPermissionOnboardingSetupMode(PermissionsOnboardingSetUpMode mode);
+
+// Log setup result when multidevice permissions set up dialog is finished.
+void LogPermissionOnboardingSetupResult(PermissionsOnboardingSetUpMode mode);
 
 }  // namespace util
 }  // namespace phonehub

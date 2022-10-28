@@ -13,6 +13,7 @@
 #include "base/base64.h"
 #include "base/bind.h"
 #include "base/build_time.h"
+#include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/containers/unique_ptr_adapters.h"
 #include "base/dcheck_is_on.h"
@@ -29,6 +30,7 @@
 #include "base/task/thread_pool.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
+#include "base/types/optional_util.h"
 #include "build/build_config.h"
 #include "build/chromecast_buildflags.h"
 #include "build/chromeos_buildflags.h"
@@ -59,10 +61,10 @@
 #include "net/cert_net/cert_net_fetcher_url_request.h"
 #include "net/cookies/cookie_access_delegate.h"
 #include "net/cookies/cookie_monster.h"
-#include "net/cookies/first_party_set_metadata.h"
 #include "net/dns/host_cache.h"
 #include "net/dns/mapped_host_resolver.h"
 #include "net/extras/sqlite/sqlite_persistent_cookie_store.h"
+#include "net/first_party_sets/first_party_set_metadata.h"
 #include "net/http/http_auth.h"
 #include "net/http/http_auth_handler_factory.h"
 #include "net/http/http_auth_preferences.h"
@@ -1739,7 +1741,7 @@ void NetworkContext::CreateNetLogExporter(
 }
 
 void NetworkContext::ResolveHost(
-    const net::HostPortPair& host,
+    mojom::HostResolverHostPtr host,
     const net::NetworkIsolationKey& network_isolation_key,
     mojom::ResolveHostParametersPtr optional_parameters,
     mojo::PendingRemote<mojom::ResolveHostClient> response_client) {
@@ -1747,8 +1749,7 @@ void NetworkContext::ResolveHost(
     internal_host_resolver_ = std::make_unique<HostResolver>(
         url_request_context_->host_resolver(), url_request_context_->net_log());
   }
-
-  internal_host_resolver_->ResolveHost(host, network_isolation_key,
+  internal_host_resolver_->ResolveHost(std::move(host), network_isolation_key,
                                        std::move(optional_parameters),
                                        std::move(response_client));
 }
@@ -2926,6 +2927,24 @@ bool NetworkContext::IsAllowedToUseAllHttpAuthSchemes(
     const url::SchemeHostPort& scheme_host_port) {
   DCHECK(url_matcher_);
   return !url_matcher_->MatchURL(scheme_host_port.GetURL()).empty();
+}
+
+void NetworkContext::ComputeFirstPartySetMetadata(
+    const net::SchemefulSite& site,
+    const absl::optional<net::SchemefulSite>& top_frame_site,
+    const std::vector<net::SchemefulSite>& party_context,
+    ComputeFirstPartySetMetadataCallback callback) {
+  auto callbacks = base::SplitOnceCallback(std::move(callback));
+
+  if (absl::optional<net::FirstPartySetMetadata> sync_metadata =
+          first_party_sets_access_delegate_.ComputeMetadata(
+              site, base::OptionalToPtr(top_frame_site),
+              std::set<net::SchemefulSite>(party_context.begin(),
+                                           party_context.end()),
+              std::move(callbacks.first));
+      sync_metadata.has_value()) {
+    std::move(callbacks.second).Run(std::move(sync_metadata).value());
+  }
 }
 
 void NetworkContext::CreateTrustedUrlLoaderFactoryForNetworkService(

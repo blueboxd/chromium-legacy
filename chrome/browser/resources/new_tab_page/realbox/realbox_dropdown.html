@@ -1,10 +1,10 @@
-<style>
+<style include="cr-icons realbox-dropdown-shared-style">
   :host {
     user-select: none;
   }
 
   #selector {
-    background-color: var(--search-box-results-bg, white);
+    background-color: var(--color-realbox-results-background);
     border-radius: calc(0.25 * var(--ntp-realbox-height));
     box-shadow: var(--ntp-realbox-shadow);
     display: block;
@@ -26,7 +26,7 @@
   }
 
   ntp-realbox-match {
-    color: var(--search-box-results-text);
+    color: var(--color-realbox-results-foreground);
   }
 
   .header {
@@ -41,38 +41,27 @@
   }
 
   .header .text {
-    color: var(--search-box-results-dim, var(--google-grey-700));
+    color: var(--color-realbox-results-foreground-dimmed);
     cursor: default;
     font-size: .875em;
     font-weight: 500;
     overflow: hidden;
     padding-inline-end: 8px;
+    padding-inline-start: 8px;
     text-overflow: ellipsis;
     text-transform: uppercase;
     white-space: nowrap;
   }
 
-  .header cr-icon-button {
-    --cr-icon-button-fill-color: var(--search-box-icon, var(--google-grey-700));
-    --cr-icon-button-focus-outline-color: var(--google-blue-600);
-    --cr-icon-button-icon-size: 16px;
-    --cr-icon-button-margin-start: 0;
-    --cr-icon-button-size: 24px;
-    --cr-icon-image: url(chrome://resources/images/icon_expand_more.svg);
-    --cr-icon-image-transform: rotate(180deg);
-  }
-
-  .header[group-is-hidden] cr-icon-button {
-    --cr-icon-image-transform: none;
-  }
-
   .header:focus-within:not(:focus) cr-icon-button {
-      --cr-icon-button-fill-color: var(--search-box-icon-selected, var(--google-grey-700));
+      --cr-icon-button-fill-color:
+          var(--color-realbox-results-icon-selected);
   }
 
   ntp-realbox-match:-webkit-any(:hover, :focus-within, .selected),
   .header:-webkit-any(:hover, :focus-within) {
-    background-color: var(--search-box-results-bg-hovered, rgba(var(--google-grey-900-rgb), .1));
+    background-color:
+        var(--color-realbox-results-background-hovered);
   }
 
   @media (forced-colors: active) {
@@ -91,10 +80,9 @@
            the dropdown from losing focus and closing as a result. -->
       <div class="header" data-id$="[[groupId]]" tabindex="-1"
           on-focusin="onHeaderFocusin_" on-click="onHeaderClick_"
-          aria-hidden="true"
-          group-is-hidden$="[[groupIsHidden_(groupId, hiddenGroupIds_.*)]]">
+          aria-hidden="true">
         <span class="text">[[headerForGroup_(groupId)]]</span>
-        <cr-icon-button class="icon-clear"
+        <cr-icon-button class$="action-icon [[expandIconNameForGroup_(groupId, hiddenGroupIds_.*)]]"
             title="[[toggleButtonTitleForGroup_(groupId, hiddenGroupIds_.*)]]"
             aria-label$="[[toggleButtonA11yLabelForGroup_(groupId, hiddenGroupIds_.*)]]"
             on-mousedown="onToggleButtonMouseDown_">
@@ -107,8 +95,7 @@
           filter="[[computeMatchBelongsToGroup_(groupId)]]"
           on-dom-change="onResultRepaint_">
         <ntp-realbox-match tabindex="0" role="option" match="[[item]]"
-            match-index="[[matchIndex_(item)]]"
-            is-rich-suggestion$="[[item.isRichSuggestion]]">
+            match-index="[[matchIndex_(item)]]">
         </ntp-realbox-match>
       </template>
     </template>

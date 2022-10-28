@@ -1,4 +1,4 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -51,11 +51,11 @@ class SyncServiceAndroidBridge : public syncer::SyncServiceObserver {
   jboolean IsFirstSetupComplete(JNIEnv* env);
   void SetFirstSetupComplete(JNIEnv* env, jint source);
   base::android::ScopedJavaLocalRef<jintArray> GetActiveDataTypes(JNIEnv* env);
-  base::android::ScopedJavaLocalRef<jintArray> GetChosenDataTypes(JNIEnv* env);
-  void SetChosenDataTypes(
-      JNIEnv* env,
-      jboolean sync_everything,
-      const base::android::JavaParamRef<jintArray>& model_type_selection);
+  base::android::ScopedJavaLocalRef<jintArray> GetSelectedTypes(JNIEnv* env);
+  void SetSelectedTypes(JNIEnv* env,
+                        jboolean sync_everything,
+                        const base::android::JavaParamRef<jintArray>&
+                            user_selectable_type_selection);
   jboolean IsCustomPassphraseAllowed(JNIEnv* env);
   jboolean IsEncryptEverythingEnabled(JNIEnv* env);
   jboolean IsPassphraseRequiredForPreferredDataTypes(JNIEnv* env);

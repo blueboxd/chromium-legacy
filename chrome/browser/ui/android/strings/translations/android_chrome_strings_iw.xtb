@@ -748,6 +748,7 @@
 <translation id="5091199029769593641">‏בקרוב יוצגו סטוריז מהאתר <ph name="SITE_NAME" /> בפתיחת כרטיסייה חדשה. אתרים שנמצאים במעקב נשמרים בחשבון Google שלך. יש לך אפשרות לנהל אותם בהגדרות של Discover.</translation>
 <translation id="5091249083535528968">נתונים נוספים על השימוש במכשיר</translation>
 <translation id="509429900233858213">אירעה שגיאה.</translation>
+<translation id="5099845111805573968">כשבוחרים אתר שמותאם למחשב בפעם הראשונה, ההגדרה חלה על האתר בכל פעם שמבקרים בו</translation>
 <translation id="5102401324271069229">‏אם באתר כלשהו מתבצע ניסיון לגנוב את הסיסמה שלך, או אם המערכת מזהה הורדה של קובץ מזיק, Chrome עשוי לשלוח כתובות URL לבדיקה באמצעות 'גלישה בטוחה'. הנתונים שנשלחים לבדיקה כוללים ביטים מתוכן של דפים</translation>
 <translation id="510275257476243843">נותרה שעה אחת</translation>
 <translation id="5115811374190515607">אל <ph name="PRODUCT_NAME" /></translation>
@@ -907,6 +908,7 @@
 <translation id="5958275228015807058">הקבצים והדפים שלך נמצאים ב'הורדות'</translation>
 <translation id="5962718611393537961">יש להקיש כדי לכווץ</translation>
 <translation id="5964869237734432770">הפסקה של תיאורי התמונות</translation>
+<translation id="5966233851250124270">‏הבחירה שלך תישמר ב-Chrome</translation>
 <translation id="5979084224081478209">בדיקת הסיסמאות</translation>
 <translation id="5995726099713306770">להוריד שוב את הדף?</translation>
 <translation id="6000066717592683814">‏להמשיך להשתמש ב-Google</translation>
@@ -1083,6 +1085,7 @@
 <translation id="6820686453637990663">CVC</translation>
 <translation id="6824899148643461612">הכרטיסייה, <ph name="TAB_TITLE" />, נבחרה</translation>
 <translation id="6828070228333235514">הפסקת המעקב אחר מחירים</translation>
+<translation id="6830728435402077660">לא מאובטח</translation>
 <translation id="6833996806551876956">תקופת ניסיון של ארגז חול של הגדרות פרטיות</translation>
 <translation id="6836206421467243968">שחזור של קבוצת הכרטיסיות <ph name="TITLE_OF_GROUP" /> כקבוצת כרטיסיות חדשה ברקע.</translation>
 <translation id="6846298663435243399">הטעינה מתבצעת...</translation>

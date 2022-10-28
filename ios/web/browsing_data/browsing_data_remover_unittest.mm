@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,12 +6,12 @@
 
 #import <WebKit/WebKit.h>
 
-#include "base/bind.h"
+#import "base/bind.h"
 #import "base/test/ios/wait_util.h"
-#include "base/test/task_environment.h"
+#import "base/test/task_environment.h"
 #import "ios/web/common/uikit_ui_util.h"
-#include "ios/web/public/test/fakes/fake_browser_state.h"
-#include "testing/platform_test.h"
+#import "ios/web/public/test/fakes/fake_browser_state.h"
+#import "testing/platform_test.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -60,7 +60,7 @@ namespace {
 }
 
 // Checks that the cookies data store has cookies or not, depending on
-// |should_have_cookies|.
+// `should_have_cookies`.
 [[nodiscard]] bool HasCookies(bool should_have_cookies) {
   __block bool has_cookies = false;
   __block bool completion_called = false;
@@ -78,7 +78,7 @@ namespace {
   return completed && (has_cookies == should_have_cookies);
 }
 
-// Removes the |types| from the data remover associated with |browser_state|.
+// Removes the `types` from the data remover associated with `browser_state`.
 // Returns whether the completion block of the clear browsing data has been
 // called.
 [[nodiscard]] bool RemoveCookies(web::BrowserState* browser_state,

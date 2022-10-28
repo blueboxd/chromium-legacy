@@ -1,4 +1,4 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -1433,7 +1433,7 @@ Status WebViewImpl::CallAsyncFunctionInternal(
       return status;
     }
 
-    base::DictionaryValue* result_info = NULL;
+    base::DictionaryValue* result_info = nullptr;
     if (!query_value->GetAsDictionary(&result_info))
       return Status(kUnknownError, "async result info is not a dictionary");
     absl::optional<int> status_code = result_info->FindIntKey("status");

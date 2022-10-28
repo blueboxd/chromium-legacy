@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,15 +6,9 @@
 #define ASH_STYLE_STYLE_UTIL_H_
 
 #include "ash/ash_export.h"
-#include "ash/style/ash_color_provider_source.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
-#include "ui/color/color_provider.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/geometry/insets.h"
-
-namespace aura {
-class Window;
-}  // namespace aura
 
 namespace views {
 class Button;
@@ -92,11 +86,6 @@ class ASH_EXPORT StyleUtil {
   static views::FocusRing* SetUpFocusRingForView(
       views::View* view,
       absl::optional<int> halo_inset = absl::nullopt);
-
-  // Returns the color provider source for the given `window` if it has
-  // has a root window, otherwise returns nullptr.
-  static AshColorProviderSource* GetColorProviderSourceForWindow(
-      const aura::Window* window);
 
  private:
   StyleUtil() = default;

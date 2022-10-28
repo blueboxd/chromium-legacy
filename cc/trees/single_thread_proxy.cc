@@ -1,4 +1,4 @@
-// Copyright 2011 The Chromium Authors. All rights reserved.
+// Copyright 2011 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -61,6 +61,7 @@ SingleThreadProxy::SingleThreadProxy(LayerTreeHost* layer_tree_host,
 #endif
       inside_draw_(false),
       defer_main_frame_update_(false),
+      pause_rendering_(false),
       animate_requested_(false),
       update_layers_requested_(false),
       commit_requested_(false),
@@ -253,13 +254,6 @@ void SingleThreadProxy::DoPostCommit() {
   DebugScopedSetImplThread impl(task_runner_provider_);
   host_impl_->CommitComplete();
 
-  std::vector<uint32_t> ids =
-      host_impl_->TakeFinishedTransitionRequestSequenceIds();
-  {
-    DebugScopedSetMainThread main(task_runner_provider_);
-    layer_tree_host_->NotifyTransitionRequestsFinished(ids);
-  }
-
   // Commit goes directly to the active tree, but we need to synchronously
   // "activate" the tree still during commit to satisfy any potential
   // SetNextCommitWaitsForActivation calls.  Unfortunately, the tree
@@ -348,6 +342,29 @@ void SingleThreadProxy::SetDeferMainFrameUpdate(bool defer_main_frame_update) {
   // The scheduler needs to know that it should not issue BeginMainFrame.
   DebugScopedSetImplThread impl(task_runner_provider_);
   scheduler_on_impl_thread_->SetDeferBeginMainFrame(defer_main_frame_update_);
+}
+
+void SingleThreadProxy::SetPauseRendering(bool pause_rendering) {
+  DCHECK(task_runner_provider_->IsMainThread());
+  // Pause updates only makes sense if there's a scheduler. In synchronous mode,
+  // the client controls when a frame is produced.
+  if (!scheduler_on_impl_thread_)
+    return;
+  if (pause_rendering_ == pause_rendering)
+    return;
+
+  pause_rendering_ = pause_rendering;
+  if (pause_rendering_) {
+    TRACE_EVENT_NESTABLE_ASYNC_BEGIN0(
+        "cc", "SingleThreadProxy::SetPauseRendering", TRACE_ID_LOCAL(this));
+  } else {
+    TRACE_EVENT_NESTABLE_ASYNC_END0(
+        "cc", "SingleThreadProxy::SetPauseRendering", TRACE_ID_LOCAL(this));
+  }
+
+  // The scheduler needs to know that it should not issue BeginFrame.
+  DebugScopedSetImplThread impl(task_runner_provider_);
+  scheduler_on_impl_thread_->SetPauseRendering(pause_rendering_);
 }
 
 bool SingleThreadProxy::StartDeferringCommits(base::TimeDelta timeout,
@@ -628,13 +645,19 @@ void SingleThreadProxy::NotifyImageDecodeRequestFinished() {
   // If we don't have a scheduler, then just issue the callbacks here.
   // Otherwise, schedule a commit.
   if (!scheduler_on_impl_thread_) {
-    auto sequence_ids = host_impl_->TakeFinishedTransitionRequestSequenceIds();
     DebugScopedSetMainThread main_thread(task_runner_provider_);
     IssueImageDecodeFinishedCallbacks();
-    layer_tree_host_->NotifyTransitionRequestsFinished(sequence_ids);
   } else {
     SetNeedsCommitOnImplThread();
   }
+}
+
+void SingleThreadProxy::NotifyTransitionRequestFinished(uint32_t sequence_id) {
+  DCHECK(!task_runner_provider_->HasImplThread() ||
+         task_runner_provider_->IsImplThread());
+
+  DebugScopedSetMainThread main_thread(task_runner_provider_);
+  layer_tree_host_->NotifyTransitionRequestsFinished({sequence_id});
 }
 
 void SingleThreadProxy::DidPresentCompositorFrameOnImplThread(
@@ -1054,7 +1077,8 @@ void SingleThreadProxy::DoBeginMainFrame(
     std::unique_ptr<CompositorCommitData> commit_data;
     {
       DebugScopedSetImplThread impl(task_runner_provider_);
-      commit_data = host_impl_->ProcessCompositorDeltas();
+      commit_data = host_impl_->ProcessCompositorDeltas(
+          /* main_thread_mutator_host */ nullptr);
     }
     layer_tree_host_->ApplyCompositorChanges(commit_data.get());
     did_apply_compositor_deltas_ = true;
@@ -1082,7 +1106,7 @@ void SingleThreadProxy::DoPainting(const viz::BeginFrameArgs& commit_args) {
 
   std::unique_ptr<BeginMainFrameMetrics> begin_main_frame_metrics =
       layer_tree_host_->TakeBeginMainFrameMetrics();
-  host_impl_->ReadyToCommit(commit_args, begin_main_frame_metrics.get());
+  host_impl_->ReadyToCommit(commit_args, true, begin_main_frame_metrics.get());
 
   // TODO(enne): SingleThreadProxy does not support cancelling commits yet,
   // search for CommitEarlyOutReason::FINISHED_NO_UPDATES inside
@@ -1103,7 +1127,7 @@ void SingleThreadProxy::BeginMainFrameAbortedOnImplThread(
   host_impl_->BeginMainFrameAborted(
       reason, std::move(empty_swap_promises),
       scheduler_on_impl_thread_->last_dispatched_begin_main_frame_args(),
-      did_apply_compositor_deltas_);
+      /* next_bmf */ false, did_apply_compositor_deltas_);
   scheduler_on_impl_thread_->BeginMainFrameAborted(reason);
 }
 

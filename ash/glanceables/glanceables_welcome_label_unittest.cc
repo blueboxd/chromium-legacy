@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,6 +13,10 @@
 namespace ash {
 namespace {
 
+// TODO(crbug.com/crbug.com/1353119): Move this to the GlanceablesTest suite
+// after that suite switches to AshTestBase. These tests only pass because this
+// suite is not enabling the Glanceables feature flag. When the flag is enabled
+// the simulated login causes a weather fetch, which crashes.
 class GlanceablesWelcomeLabelTest : public NoSessionAshTestBase {
  public:
   void SetUp() override {

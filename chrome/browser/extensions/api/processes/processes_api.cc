@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -145,7 +145,7 @@ void FillProcessData(
     task_info.title = base::UTF16ToUTF8(task_manager->GetTitle(task_id));
     const SessionID tab_id = task_manager->GetTabId(task_id);
     if (tab_id.is_valid())
-      task_info.tab_id = std::make_unique<int>(tab_id.id());
+      task_info.tab_id = tab_id.id();
 
     out_process->tasks.push_back(std::move(task_info));
   }
@@ -156,22 +156,22 @@ void FillProcessData(
 
   const double cpu_usage = task_manager->GetPlatformIndependentCPUUsage(id);
   if (!std::isnan(cpu_usage))
-    out_process->cpu = std::make_unique<double>(cpu_usage);
+    out_process->cpu = cpu_usage;
 
   const int64_t network_usage = task_manager->GetProcessTotalNetworkUsage(id);
   if (network_usage != -1)
-    out_process->network = std::make_unique<double>(network_usage);
+    out_process->network = network_usage;
 
   int64_t v8_allocated = 0;
   int64_t v8_used = 0;
   if (task_manager->GetV8Memory(id, &v8_allocated, &v8_used)) {
-    out_process->js_memory_allocated = std::make_unique<double>(v8_allocated);
-    out_process->js_memory_used = std::make_unique<double>(v8_used);
+    out_process->js_memory_allocated = v8_allocated;
+    out_process->js_memory_used = v8_used;
   }
 
   const int64_t sqlite_bytes = task_manager->GetSqliteMemoryUsed(id);
   if (sqlite_bytes != -1)
-    out_process->sqlite_memory = std::make_unique<double>(sqlite_bytes);
+    out_process->sqlite_memory = sqlite_bytes;
 
   blink::WebCacheResourceTypeStats cache_stats;
   if (task_manager->GetWebCacheStats(id, &cache_stats)) {
@@ -264,7 +264,7 @@ void ProcessesEventRouter::OnTasksRefreshedWithBackgroundCalculations(
 
   // Get the data of tasks sharing the same process only once.
   std::set<base::ProcessId> seen_processes;
-  base::DictionaryValue processes_dictionary;
+  base::Value::Dict processes_dictionary;
   for (const auto& task_id : task_ids) {
     // We are not interested in tasks, but rather the processes on which they
     // run.
@@ -291,8 +291,7 @@ void ProcessesEventRouter::OnTasksRefreshedWithBackgroundCalculations(
       // Append the memory footprint to the process data.
       const int64_t memory_footprint =
           observed_task_manager()->GetMemoryFootprintUsage(task_id);
-      process.private_memory =
-          std::make_unique<double>(static_cast<double>(memory_footprint));
+      process.private_memory = static_cast<double>(memory_footprint);
     }
 
     // Store each process indexed by the string version of its ChildProcessHost
@@ -306,7 +305,7 @@ void ProcessesEventRouter::OnTasksRefreshedWithBackgroundCalculations(
   DCHECK(has_on_updated_listeners || has_on_updated_with_memory_listeners);
   if (has_on_updated_listeners) {
     api::processes::OnUpdated::Processes processes;
-    processes.additional_properties.MergeDictionary(&processes_dictionary);
+    processes.additional_properties.Merge(processes_dictionary.Clone());
     // NOTE: If there are listeners to the updates with memory as well,
     // listeners to onUpdated (without memory) will also get the memory info
     // of processes as an added bonus.
@@ -317,7 +316,7 @@ void ProcessesEventRouter::OnTasksRefreshedWithBackgroundCalculations(
 
   if (has_on_updated_with_memory_listeners) {
     api::processes::OnUpdatedWithMemory::Processes processes;
-    processes.additional_properties.MergeDictionary(&processes_dictionary);
+    processes.additional_properties.Merge(std::move(processes_dictionary));
     DispatchEvent(events::PROCESSES_ON_UPDATED_WITH_MEMORY,
                   api::processes::OnUpdatedWithMemory::kEventName,
                   api::processes::OnUpdatedWithMemory::Create(processes));
@@ -674,8 +673,7 @@ void ProcessesGetProcessInfoFunction::GatherDataAndRespond(
       // Append the memory footprint to the process data.
       const int64_t memory_footprint =
           observed_task_manager()->GetMemoryFootprintUsage(task_id);
-      process.private_memory =
-          std::make_unique<double>(static_cast<double>(memory_footprint));
+      process.private_memory = static_cast<double>(memory_footprint);
     }
 
     // Store each process indexed by the string version of its

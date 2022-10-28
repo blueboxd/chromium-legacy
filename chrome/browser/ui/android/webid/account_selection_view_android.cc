@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,7 +9,6 @@
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
 #include "base/strings/string_piece.h"
-#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/android/webid/jni_headers/AccountSelectionBridge_jni.h"
 #include "chrome/browser/ui/android/webid/jni_headers/Account_jni.h"
 #include "chrome/browser/ui/android/webid/jni_headers/ClientIdMetadata_jni.h"
@@ -17,12 +16,9 @@
 #include "chrome/browser/ui/webid/account_selection_view.h"
 #include "content/public/browser/identity_request_dialog_controller.h"
 #include "ui/android/color_utils_android.h"
-#include "ui/android/view_android.h"
 #include "ui/android/window_android.h"
-#include "ui/gfx/android/java_bitmap.h"
 #include "url/android/gurl_android.h"
 #include "url/gurl.h"
-#include "url/origin.h"
 
 using base::android::AttachCurrentThread;
 using base::android::ConvertJavaStringToUTF8;
@@ -53,7 +49,8 @@ ScopedJavaLocalRef<jobject> ConvertToJavaIdentityProviderMetadata(
   return Java_IdentityProviderMetadata_Constructor(
       env, ui::OptionalSkColorToJavaColor(metadata.brand_text_color),
       ui::OptionalSkColorToJavaColor(metadata.brand_background_color),
-      java_brand_icon_url);
+      java_brand_icon_url,
+      url::GURLAndroid::FromNativeGURL(env, metadata.config_url));
 }
 
 ScopedJavaLocalRef<jobject> ConvertToJavaClientIdMetadata(
@@ -66,7 +63,7 @@ ScopedJavaLocalRef<jobject> ConvertToJavaClientIdMetadata(
 
 ScopedJavaLocalRef<jobjectArray> ConvertToJavaAccounts(
     JNIEnv* env,
-    base::span<const Account> accounts) {
+    const std::vector<Account>& accounts) {
   ScopedJavaLocalRef<jclass> account_clazz = base::android::GetClass(
       env, "org/chromium/chrome/browser/ui/android/webid/data/Account");
   ScopedJavaLocalRef<jobjectArray> array(
@@ -116,10 +113,7 @@ AccountSelectionViewAndroid::~AccountSelectionViewAndroid() {
 
 void AccountSelectionViewAndroid::Show(
     const std::string& rp_for_display,
-    const std::string& idp_for_display,
-    base::span<const Account> accounts,
-    const content::IdentityProviderMetadata& idp_metadata,
-    const content::ClientIdData& client_data,
+    const std::vector<content::IdentityProviderData>& identity_provider_data,
     Account::SignInMode sign_in_mode) {
   if (!RecreateJavaObject()) {
     // It's possible that the constructor cannot access the bottom sheet clank
@@ -129,29 +123,43 @@ void AccountSelectionViewAndroid::Show(
     return;
   }
 
-  // Serialize the |accounts| span into a Java array and instruct the bridge
-  // to show it together with |url| to the user.
+  // Serialize the `identity_provider_data.accounts` into a Java array and
+  // instruct the bridge to show it together with |url| to the user.
   JNIEnv* env = AttachCurrentThread();
+  // Multi IDP support does not currently work on mobile. Hence, we use the
+  // first index from the `identity_provider_data` for the IDP-specific
+  // information.
   ScopedJavaLocalRef<jobjectArray> accounts_obj =
-      ConvertToJavaAccounts(env, accounts);
+      ConvertToJavaAccounts(env, identity_provider_data[0].accounts);
   ScopedJavaLocalRef<jobject> idp_metadata_obj =
-      ConvertToJavaIdentityProviderMetadata(env, idp_metadata);
+      ConvertToJavaIdentityProviderMetadata(
+          env, identity_provider_data[0].idp_metadata);
   ScopedJavaLocalRef<jobject> client_id_metadata_obj =
-      ConvertToJavaClientIdMetadata(env, client_data);
+      ConvertToJavaClientIdMetadata(env,
+                                    identity_provider_data[0].client_id_data);
   Java_AccountSelectionBridge_showAccounts(
       env, java_object_internal_, ConvertUTF8ToJavaString(env, rp_for_display),
-      ConvertUTF8ToJavaString(env, idp_for_display), accounts_obj,
-      idp_metadata_obj, client_id_metadata_obj,
+      ConvertUTF8ToJavaString(env, identity_provider_data[0].idp_for_display),
+      accounts_obj, idp_metadata_obj, client_id_metadata_obj,
       sign_in_mode == Account::SignInMode::kAuto);
+}
+
+void AccountSelectionViewAndroid::ShowFailureDialog(
+    const std::string& rp_for_display,
+    const std::string& idp_for_display) {
+  // TODO(crbug.com/1357790): add support on Android.
 }
 
 void AccountSelectionViewAndroid::OnAccountSelected(
     JNIEnv* env,
+    const JavaParamRef<jobject>& idp_config_url,
     const JavaParamRef<jobjectArray>& account_string_fields,
     const JavaParamRef<jobject>& account_picture_url,
     bool is_sign_in) {
-  delegate_->OnAccountSelected(ConvertFieldsToAccount(
-      env, account_string_fields, account_picture_url, is_sign_in));
+  GURL config_url = *url::GURLAndroid::ToNativeGURL(env, idp_config_url);
+  delegate_->OnAccountSelected(
+      config_url, ConvertFieldsToAccount(env, account_string_fields,
+                                         account_picture_url, is_sign_in));
 }
 
 void AccountSelectionViewAndroid::OnDismiss(JNIEnv* env, jint dismiss_reason) {

@@ -1,4 +1,4 @@
-// Copyright (c) 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -44,7 +44,7 @@ void GetDiscoveryNetworkInfoListImpl(
     const struct ifaddrs* if_list,
     std::vector<DiscoveryNetworkInfo>* network_info_list) {
   std::string ssid;
-  for (; if_list != NULL; if_list = if_list->ifa_next) {
+  for (; if_list != nullptr; if_list = if_list->ifa_next) {
     if ((if_list->ifa_flags & IFF_RUNNING) == 0 ||
         (if_list->ifa_flags & IFF_UP) == 0) {
       continue;

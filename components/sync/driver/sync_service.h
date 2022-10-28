@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -69,7 +69,7 @@ class SyncSetupInProgressHandle {
 //      user, then AUTOFILL_PROFILE will also be considered preferred. See
 //      SyncPrefs::ResolvePrefGroups.
 //
-//      This state is controlled by SyncUserSettings::SetChosenDataTypes. They
+//      This state is controlled by SyncUserSettings::SetSelectedTypes. They
 //      are stored in the preferences system and persist; though if a datatype
 //      is not registered, it cannot be a preferred datatype.
 //
@@ -89,7 +89,7 @@ class SyncSetupInProgressHandle {
 // Sync Configuration:
 //
 //   Sync configuration is accomplished via SyncUserSettings, in particular:
-//    * SetChosenDataTypes(): Set the data types the user wants to sync.
+//    * SetSelectedTypes(): Set the data types the user wants to sync.
 //    * SetDecryptionPassphrase(): Attempt to decrypt the user's encrypted data
 //        using the passed passphrase.
 //    * SetEncryptionPassphrase(): Re-encrypt the user's data using the passed
@@ -396,7 +396,7 @@ class SyncService : public KeyedService {
   // Returns some statistics on the most-recently completed sync cycle.
   virtual SyncCycleSnapshot GetLastCycleSnapshotForDebugging() const = 0;
 
-  // Returns a ListValue indicating the status of all registered types.
+  // Returns a Value indicating the status of all registered types.
   //
   // The format is:
   // [ {"name": <name>, "value": <value>, "status": <status> }, ... ]
@@ -405,10 +405,10 @@ class SyncService : public KeyedService {
   // depending on the type's current status.
   //
   // This function is used by sync_internals_util.cc to help populate the
-  // chrome://sync-internals page.  It returns a ListValue rather than a
-  // DictionaryValue in part to make it easier to iterate over its elements when
+  // chrome://sync-internals page.  It returns a Value::List rather than a
+  // Value::Dict in part to make it easier to iterate over its elements when
   // constructing that page.
-  virtual std::unique_ptr<base::Value> GetTypeStatusMapForDebugging() const = 0;
+  virtual base::Value::List GetTypeStatusMapForDebugging() const = 0;
 
   // Retrieves the TypeEntitiesCount for all registered data types.
   virtual void GetEntityCountsForDebugging(

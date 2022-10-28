@@ -10,6 +10,7 @@
 #include <memory>
 #include <set>
 
+#include "base/callback.h"
 #include "base/callback_forward.h"
 #include "base/component_export.h"
 #include "base/memory/weak_ptr.h"
@@ -21,6 +22,10 @@
 #include "ui/base/ime/text_input_client.h"
 
 namespace ui {
+
+namespace ime {
+enum class KeyEventHandledState;
+}
 
 // A `ui::InputMethod` implementation for Ash.
 class COMPONENT_EXPORT(UI_BASE_IME_ASH) InputMethodAsh
@@ -66,7 +71,8 @@ class COMPONENT_EXPORT(UI_BASE_IME_ASH) InputMethodAsh
   gfx::Range GetAutocorrectRange() override;
   gfx::Rect GetAutocorrectCharacterBounds() override;
   gfx::Rect GetTextFieldBounds() override;
-  bool SetAutocorrectRange(const gfx::Range& range) override;
+  void SetAutocorrectRange(const gfx::Range& range,
+                           SetAutocorrectRangeDoneCallback callback) override;
   absl::optional<GrammarFragment> GetGrammarFragmentAtCursor() override;
   bool ClearGrammarFragments(const gfx::Range& range) override;
   bool AddGrammarFragments(
@@ -92,7 +98,7 @@ class COMPONENT_EXPORT(UI_BASE_IME_ASH) InputMethodAsh
   // Process a key returned from the input method.
   [[nodiscard]] virtual ui::EventDispatchDetails ProcessKeyEventPostIME(
       ui::KeyEvent* event,
-      bool handled,
+      ui::ime::KeyEventHandledState handled_state,
       bool stopped_propagation);
 
   // Resets context and abandon all pending results and key events.
@@ -122,6 +128,15 @@ class COMPONENT_EXPORT(UI_BASE_IME_ASH) InputMethodAsh
     size_t cursor = 0;
   };
 
+  struct PendingAutocorrectRange {
+    PendingAutocorrectRange(const gfx::Range& range,
+                            SetAutocorrectRangeDoneCallback callback);
+    ~PendingAutocorrectRange();
+
+    gfx::Range range;
+    SetAutocorrectRangeDoneCallback callback;
+  };
+
   // Checks the availability of focused text input client and update focus
   // state.
   void UpdateContextFocusState();
@@ -131,7 +146,8 @@ class COMPONENT_EXPORT(UI_BASE_IME_ASH) InputMethodAsh
   // It returns the result of whether the event has been stopped propagation
   // when dispatching post IME.
   [[nodiscard]] ui::EventDispatchDetails ProcessFilteredKeyPressEvent(
-      ui::KeyEvent* event);
+      ui::KeyEvent* event,
+      bool only_dispatch_vkey_processkey);
 
   // Processes a key event that was not filtered by the input method.
   [[nodiscard]] ui::EventDispatchDetails ProcessUnfilteredKeyPressEvent(
@@ -171,7 +187,8 @@ class COMPONENT_EXPORT(UI_BASE_IME_ASH) InputMethodAsh
   TextInputMode GetTextInputMode() const;
 
   // Called from the engine when it completes processing.
-  void ProcessKeyEventDone(ui::KeyEvent* event, bool is_handled);
+  void ProcessKeyEventDone(ui::KeyEvent* event,
+                           ui::ime::KeyEventHandledState handled_state);
 
   bool IsPasswordOrNoneInputFieldFocused();
 
@@ -207,7 +224,7 @@ class COMPONENT_EXPORT(UI_BASE_IME_ASH) InputMethodAsh
   // Indicates whether there is a pending SetCompositionRange operation.
   absl::optional<PendingSetCompositionRange> pending_composition_range_;
 
-  absl::optional<gfx::Range> pending_autocorrect_range_;
+  std::unique_ptr<PendingAutocorrectRange> pending_autocorrect_range_;
 
   // An object to compose a character from a sequence of key presses
   // including dead key etc.

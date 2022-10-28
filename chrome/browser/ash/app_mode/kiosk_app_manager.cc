@@ -1,4 +1,4 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -836,7 +836,7 @@ void KioskAppManager::OnExtensionDownloadFailed(
 KioskAppManager::AutoLoginState KioskAppManager::GetAutoLoginState() const {
   PrefService* prefs = g_browser_process->local_state();
   const base::Value::Dict& dict =
-      prefs->GetValueDict(KioskAppManager::kKioskDictionaryName);
+      prefs->GetDict(KioskAppManager::kKioskDictionaryName);
   absl::optional<int> value = dict.FindInt(kKeyAutoLoginState);
   if (!value.has_value())
     return AutoLoginState::kNone;

@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -37,7 +37,7 @@ bool IsInNotDangerousOverrideList(const std::string& extension,
               kExemptDomainFileTypePairsFromFileTypeDownloadWarnings)) {
     return false;
   }
-  const base::Value::List& heuristic_overrides = prefs->GetValueList(
+  const base::Value::List& heuristic_overrides = prefs->GetList(
       file_type::prefs::kExemptDomainFileTypePairsFromFileTypeDownloadWarnings);
 
   const std::string lower_extension = base::ToLowerASCII(extension);

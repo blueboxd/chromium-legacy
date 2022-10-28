@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -39,9 +39,9 @@ ScopedJavaLocalRef<jobject> AutocompleteMatch::GetOrCreateJavaObject(
 
   std::vector<int> contents_class_offsets;
   std::vector<int> contents_class_styles;
-  for (auto contents_class : contents_class) {
-    contents_class_offsets.push_back(contents_class.offset);
-    contents_class_styles.push_back(contents_class.style);
+  for (auto contents_class_item : contents_class) {
+    contents_class_offsets.push_back(contents_class_item.offset);
+    contents_class_styles.push_back(contents_class_item.style);
   }
 
   std::vector<int> description_class_offsets;
@@ -113,8 +113,7 @@ ScopedJavaLocalRef<jobject> AutocompleteMatch::GetOrCreateJavaObject(
           url::GURLAndroid::FromNativeGURL(env, image_url),
           j_image_dominant_color, SupportsDeletion(), j_post_content_type,
           j_post_content,
-          static_cast<int>(
-              suggestion_group_id.value_or(SuggestionGroupId::kInvalid)),
+          suggestion_group_id.value_or(omnibox::GroupId::INVALID),
           j_query_tiles, ToJavaByteArray(env, clipboard_image_data),
           has_tab_match.value_or(false),
           ToJavaArrayOfStrings(env, suggest_titles),

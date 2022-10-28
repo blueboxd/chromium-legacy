@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -300,6 +300,9 @@ class PasswordManagerClient {
   // Gets prefs associated with this embedder.
   virtual PrefService* GetPrefs() const = 0;
 
+  // Gets local state prefs.
+  virtual PrefService* GetLocalStatePrefs() const = 0;
+
   // Gets the sync service associated with this client.
   virtual const syncer::SyncService* GetSyncService() const = 0;
 
@@ -397,12 +400,16 @@ class PasswordManagerClient {
   // warning dialog if it looks like the page is phishy.
   // The |username| is the user name of the reused password. The user name
   // can be an email or a username for a non-GAIA or saved-password reuse. No
-  // validation has been done on it.
+  // validation has been done on it. The |domain| is the origin of the webpage
+  // where password reuse happens. The |reused_password_hash| is the hash of the
+  // reused password.
   virtual void CheckProtectedPasswordEntry(
       metrics_util::PasswordType reused_password_type,
       const std::string& username,
       const std::vector<MatchingReusedCredential>& matching_reused_credentials,
-      bool password_field_exists) = 0;
+      bool password_field_exists,
+      uint64_t reused_password_hash,
+      const std::string& domain) = 0;
 
   // Records a Chrome Sync event that GAIA password reuse was detected.
   virtual void LogPasswordReuseDetectedEvent() = 0;
@@ -472,8 +479,9 @@ class PasswordManagerClient {
   // Returns if the Autofill Assistant UI is shown.
   virtual bool IsAutofillAssistantUIVisible() const = 0;
 
-  // Returns the WebAuthnCredentialsDelegate, if available.
-  virtual WebAuthnCredentialsDelegate* GetWebAuthnCredentialsDelegate();
+  // Returns the WebAuthnCredentialsDelegate for the given driver, if available.
+  virtual WebAuthnCredentialsDelegate* GetWebAuthnCredentialsDelegateForDriver(
+      PasswordManagerDriver* driver);
 
   // Returns the Chrome channel for the installation.
   virtual version_info::Channel GetChannel() const;

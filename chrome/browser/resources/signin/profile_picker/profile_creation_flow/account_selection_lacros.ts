@@ -1,13 +1,13 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 import 'chrome://resources/cr_elements/cr_icon_button/cr_icon_button.js';
-import 'chrome://resources/cr_elements/shared_vars_css.m.js';
+import 'chrome://resources/cr_elements/cr_shared_vars.css.js';
 import './profile_creation_shared.css.js';
 
 import {assert} from 'chrome://resources/js/assert.m.js';
-import {focusWithoutInk} from 'chrome://resources/js/cr/ui/focus_without_ink.m.js';
+import {focusWithoutInk} from 'chrome://resources/js/cr/ui/focus_without_ink.js';
 import {I18nMixin} from 'chrome://resources/js/i18n_mixin.js';
 import {WebUIListenerMixin} from 'chrome://resources/js/web_ui_listener_mixin.js';
 import {afterNextRender, DomRepeatEvent, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
@@ -112,13 +112,13 @@ export class AccountSelectionLacrosElement extends
   private onAccountClick_(e: DomRepeatEvent<AvailableAccount>) {
     this.accountSelected_ = true;
     const gaiaId = e.model.item.gaiaId;
-    this.manageProfilesBrowserProxy_.selectAccountLacros(
+    this.manageProfilesBrowserProxy_.selectExistingAccountLacros(
         this.profileThemeInfo.color, gaiaId);
   }
 
   private onOtherAccountClick_() {
-    this.manageProfilesBrowserProxy_.selectAccountLacros(
-        this.profileThemeInfo.color, '');
+    this.manageProfilesBrowserProxy_.selectNewAccount(
+        this.profileThemeInfo.color);
   }
 
   private handleAvailableAccountsChanged_(availableAccounts:

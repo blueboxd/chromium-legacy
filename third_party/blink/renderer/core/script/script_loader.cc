@@ -46,11 +46,13 @@
 #include "third_party/blink/renderer/core/html/parser/html_parser_idioms.h"
 #include "third_party/blink/renderer/core/html_names.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
+#include "third_party/blink/renderer/core/loader/document_loader.h"
 #include "third_party/blink/renderer/core/loader/fetch_priority_attribute.h"
 #include "third_party/blink/renderer/core/loader/modulescript/module_script_creation_params.h"
 #include "third_party/blink/renderer/core/loader/modulescript/module_script_fetch_request.h"
 #include "third_party/blink/renderer/core/loader/render_blocking_resource_manager.h"
 #include "third_party/blink/renderer/core/loader/subresource_integrity_helper.h"
+#include "third_party/blink/renderer/core/loader/url_matcher.h"
 #include "third_party/blink/renderer/core/loader/web_bundle/script_web_bundle.h"
 #include "third_party/blink/renderer/core/script/classic_pending_script.h"
 #include "third_party/blink/renderer/core/script/classic_script.h"
@@ -240,21 +242,129 @@ bool IsValidClassicScriptTypeAndLanguage(const String& type,
   return false;
 }
 
-enum class ShouldFireErrorEvent {
-  kDoNotFire,
-  kShouldFire,
-};
-
-bool ShouldForceDeferScript() {
-  return base::FeatureList::IsEnabled(features::kForceDeferScriptIntervention);
+bool IsSameSite(const KURL& url, const Document& element_document) {
+  scoped_refptr<const SecurityOrigin> url_origin = SecurityOrigin::Create(url);
+  return url_origin->IsSameSiteWith(
+      element_document.GetExecutionContext()->GetSecurityOrigin());
 }
 
-// Determine if the script should be executed via
-// ScriptSchedulingType::kForceInOrder approach. The script will be loaded
-// asynchronously, executed with in-order (crbug.com/1344772).
-bool ShouldForceInOrderScript() {
-  return base::FeatureList::IsEnabled(features::kForceInOrderScript);
+bool IsDocumentReloadedOrFormSubmitted(const Document& element_document) {
+  Document& top_document = element_document.TopDocument();
+  return top_document.Loader() &&
+         top_document.Loader()->IsReloadedOrFormSubmitted();
 }
+
+// Common eligibility conditions for the interventions below.
+bool IsEligibleCommon(const Document& element_document) {
+  // As some interventions need parser support (e.g. defer), interventions are
+  // enabled only for HTMLDocuments, because XMLDocumentParser lacks support for
+  // e.g. defer scripts. Thus the parser document (==element document) is
+  // checked here.
+  if (!IsA<HTMLDocument>(element_document))
+    return false;
+
+  // Do not enable interventions on reload.
+  // No specific reason to use element document here instead of context
+  // document though.
+  if (IsDocumentReloadedOrFormSubmitted(element_document))
+    return false;
+
+  return true;
+}
+
+// [Intervention, ForceDefer, https://crbug.com/1339112]
+bool IsEligibleForForceDefer(const Document& element_document) {
+  return base::FeatureList::IsEnabled(
+             features::kForceDeferScriptIntervention) &&
+         IsEligibleCommon(element_document);
+}
+
+// [Intervention, ForceInOrderScript, crbug.com/1344772]
+bool IsEligibleForForceInOrder(const Document& element_document) {
+  return base::FeatureList::IsEnabled(features::kForceInOrderScript) &&
+         IsEligibleCommon(element_document);
+}
+
+// [Intervention, DelayAsyncScriptExecution, crbug.com/1340837]
+bool IsEligibleForDelay(const Resource& resource,
+                        const Document& element_document,
+                        const ScriptElementBase& element) {
+  if (!base::FeatureList::IsEnabled(features::kDelayAsyncScriptExecution))
+    return false;
+
+  if (!IsEligibleCommon(element_document))
+    return false;
+
+  if (element.IsPotentiallyRenderBlocking())
+    return false;
+
+  static const bool delay_async_script_execution_cross_site_only =
+      features::kDelayAsyncScriptExecutionCrossSiteOnlyParam.Get();
+  if (delay_async_script_execution_cross_site_only) {
+    // Cross-site scripts only.
+    if (IsSameSite(resource.Url(), element_document))
+      return false;
+  }
+
+  // We don't delay async scripts that have matched a resource in the preload
+  // cache, because we're using <link rel=preload> as a signal that the script
+  // is higher-than-usual priority, and therefore should be executed earlier
+  // rather than later.
+  if (resource.IsLinkPreload())
+    return false;
+
+  static const base::TimeDelta feature_limit =
+      features::kDelayAsyncScriptExecutionFeatureLimitParam.Get();
+  if (!feature_limit.is_zero() &&
+      element_document.GetStartTime().Elapsed() > feature_limit) {
+    return false;
+  }
+
+  return true;
+}
+
+// [Intervention, SelectiveInOrderScript, crbug.com/1356396]
+bool IsEligibleForSelectiveInOrder(const Resource& resource,
+                                   const Document& element_document) {
+  // The feature flag is checked separately.
+
+  if (!IsEligibleCommon(element_document))
+    return false;
+
+  // Cross-site scripts only: 1st party scripts are out of scope of the
+  // intervention.
+  if (IsSameSite(resource.Url(), element_document))
+    return false;
+
+  // Only script request URLs in the allowlist.
+  DEFINE_STATIC_LOCAL(
+      UrlMatcher, url_matcher,
+      (UrlMatcher(features::kSelectiveInOrderScriptAllowList.Get())));
+  return url_matcher.Match(resource.Url());
+}
+
+ScriptRunner::DelayReasons DetermineDelayReasonsToWait(
+    ScriptRunner* script_runner,
+    bool is_eligible_for_delay) {
+  using DelayReason = ScriptRunner::DelayReason;
+  using DelayReasons = ScriptRunner::DelayReasons;
+
+  DelayReasons reasons = static_cast<DelayReasons>(DelayReason::kLoad);
+
+  if (is_eligible_for_delay &&
+      script_runner->IsActive(DelayReason::kMilestone)) {
+    reasons |= static_cast<DelayReasons>(DelayReason::kMilestone);
+  }
+
+  if (base::FeatureList::IsEnabled(features::kForceDeferScriptIntervention)) {
+    if (script_runner->IsActive(DelayReason::kForceDefer)) {
+      reasons |= static_cast<DelayReasons>(DelayReason::kForceDefer);
+    }
+  }
+
+  return reasons;
+}
+
 }  // namespace
 
 ScriptLoader::ScriptTypeAtPrepare ScriptLoader::GetScriptTypeAtPrepare(
@@ -605,6 +715,9 @@ PendingScript* ScriptLoader::PrepareScript(
     }
   }
 
+  bool is_eligible_for_delay = false;
+  bool is_eligible_for_selective_in_order = false;
+
   // <spec step="29">If el has a src content attribute, then:</spec>
   if (element_->HasSourceAttribute()) {
     // <spec step="29.1">Let src be the value of el's src attribute.</spec>
@@ -723,8 +836,21 @@ PendingScript* ScriptLoader::PrepareScript(
         //
         // Fetch a classic script given url, settings object, options, classic
         // script CORS setting, and encoding.</spec>
-        FetchClassicScript(url, element_document, options, cross_origin,
-                           encoding);
+        FetchParameters::DeferOption defer = FetchParameters::kNoDefer;
+        if (!parser_inserted_ || element_->AsyncAttributeValue() ||
+            element_->DeferAttributeValue()) {
+          defer = FetchParameters::kLazyLoad;
+        }
+        ClassicPendingScript* pending_script = ClassicPendingScript::Fetch(
+            url, element_document, options, cross_origin, encoding, element_,
+            defer);
+        prepared_pending_script_ = pending_script;
+        Resource* resource = pending_script->GetResource();
+        resource_keep_alive_ = resource;
+        is_eligible_for_delay =
+            IsEligibleForDelay(*resource, element_document, *element_);
+        is_eligible_for_selective_in_order =
+            IsEligibleForSelectiveInOrder(*resource, element_document);
         break;
       }
       case ScriptTypeAtPrepare::kModule: {
@@ -750,6 +876,17 @@ PendingScript* ScriptLoader::PrepareScript(
     // <spec step="30.1">Let base URL be el's node document's document base
     // URL.</spec>
     KURL base_url = element_document.BaseURL();
+
+    // Don't report source_url to DevTools for dynamically created module or
+    // classic scripts.
+    // If we report a source_url here, the dynamic script would look like
+    // an inline script of the current document to DevTools, which leads to
+    // a confusing debugging experience. The dynamic scripts' source is not
+    // present in the document, so stepping in the document as we would for
+    // an inline script doesn't make any sense.
+    KURL source_url = (!is_in_document_write && parser_inserted_)
+                          ? element_document.Url()
+                          : KURL();
 
     // <spec step="30.2">Switch on el's type:</spec>
 
@@ -853,9 +990,6 @@ PendingScript* ScriptLoader::PrepareScript(
           script_location_type =
               ScriptSourceLocationType::kInlineInsideDocumentWrite;
         }
-        KURL source_url = (!is_in_document_write && parser_inserted_)
-                              ? element_document.Url()
-                              : KURL();
 
         prepared_pending_script_ = ClassicPendingScript::CreateInline(
             element_, position, source_url, base_url, source_text,
@@ -876,7 +1010,7 @@ PendingScript* ScriptLoader::PrepareScript(
         //
         // <specdef label="fetch-an-inline-module-script-graph"
         // href="https://html.spec.whatwg.org/C/#fetch-an-inline-module-script-graph">
-        KURL source_url = element_document.Url();
+
         // Strip any fragment identifiers from the source URL reported to
         // DevTools, so that breakpoints hit reliably for inline module
         // scripts, see crbug.com/1338257 for more details.
@@ -923,10 +1057,9 @@ PendingScript* ScriptLoader::PrepareScript(
   ScriptSchedulingType script_scheduling_type = GetScriptSchedulingTypePerSpec(
       element_document, parser_blocking_inline_option);
 
-  // [intervention, https://crbug.com/1339112] Force-defer parser-blocking and
-  // inline scripts.
-  if (ShouldForceDeferScript() && parser_inserted_ &&
-      IsA<HTMLDocument>(context_window->document())) {
+  // [Intervention, ForceDefer, https://crbug.com/1339112]
+  // Force-defer parser-blocking and inline scripts.
+  if (IsEligibleForForceDefer(element_document) && parser_inserted_) {
     switch (script_scheduling_type) {
       case ScriptSchedulingType::kParserBlocking:
       case ScriptSchedulingType::kImmediate:
@@ -938,14 +1071,33 @@ PendingScript* ScriptLoader::PrepareScript(
     }
   }
 
-  // [intervention, https://crbug.com/1344772] Check for external script that
+  // [Intervention, SelectiveInOrderScript, crbug.com/1356396]
+  // Check for external script that
+  // should be in-order. This simply marks the parser blocking scripts as
+  // kInOrder if it's eligible. We use ScriptSchedulingType::kInOrder
+  // rather than kForceInOrder here since we don't preserve evaluation order
+  // between intervened scripts and ordinary parser-blocking/inline scripts.
+  if (is_eligible_for_selective_in_order) {
+    switch (script_scheduling_type) {
+      case ScriptSchedulingType::kParserBlocking:
+        UseCounter::Count(context_window->document()->TopDocument(),
+                          WebFeature::kSelectiveInOrderScript);
+        if (base::FeatureList::IsEnabled(features::kSelectiveInOrderScript))
+          script_scheduling_type = ScriptSchedulingType::kInOrder;
+        break;
+      default:
+        break;
+    }
+  }
+
+  // [Intervention, ForceInOrderScript, crbug.com/1344772]
+  // Check for external script that
   // should be force in-order. Not only the pending scripts that would be marked
   // (without the intervention) as ScriptSchedulingType::kParserBlocking or
   // kInOrder, but also the scripts that would be marked as kAsync are put into
   // the force in-order queue in ScriptRunner because we have to guarantee the
   // execution order of the scripts.
-  if (ShouldForceInOrderScript() &&
-      IsA<HTMLDocument>(context_window->document())) {
+  if (IsEligibleForForceInOrder(element_document)) {
     switch (script_scheduling_type) {
       case ScriptSchedulingType::kAsync:
       case ScriptSchedulingType::kInOrder:
@@ -957,7 +1109,8 @@ PendingScript* ScriptLoader::PrepareScript(
     }
   }
 
-  // [intervention, https://crbug.com/1344772] If ScriptRunner still has
+  // [Intervention, ForceInOrderScript, crbug.com/1344772]
+  // If ScriptRunner still has
   // ForceInOrder scripts not executed yet, attempt to mark the inline script as
   // parser blocking so that the inline script is evaluated after the
   // ForceInOrder scripts are evaluated.
@@ -986,11 +1139,16 @@ PendingScript* ScriptLoader::PrepareScript(
       // [intervention, https://crbug.com/1344772] Append el to el's
       // preparation-time document's list of force-in-order scripts.
 
-      // TODO(hiroshige): Here the context document is used as "node document"
-      // while Step 14 uses |elementDocument| as "node document". Fix this.
-      context_window->document()->GetScriptRunner()->QueueScriptForExecution(
-          TakePendingScript(script_scheduling_type));
-      // The #mark-as-ready part is implemented in ScriptRunner.
+      {
+        // TODO(hiroshige): Here the context document is used as "node document"
+        // while Step 14 uses |elementDocument| as "node document". Fix this.
+        ScriptRunner* script_runner =
+            context_window->document()->GetScriptRunner();
+        script_runner->QueueScriptForExecution(
+            TakePendingScript(script_scheduling_type),
+            DetermineDelayReasonsToWait(script_runner, is_eligible_for_delay));
+        // The #mark-as-ready part is implemented in ScriptRunner.
+      }
 
       // [no-spec] Do not keep alive ScriptResource controlled by ScriptRunner
       // after loaded.
@@ -1078,23 +1236,6 @@ ScriptSchedulingType ScriptLoader::GetScriptSchedulingTypePerSpec(
     // even if other scripts are already executing.</spec>
     return ScriptSchedulingType::kImmediate;
   }
-}
-
-// https://html.spec.whatwg.org/C/#fetch-a-classic-script
-void ScriptLoader::FetchClassicScript(const KURL& url,
-                                      Document& document,
-                                      const ScriptFetchOptions& options,
-                                      CrossOriginAttributeValue cross_origin,
-                                      const WTF::TextEncoding& encoding) {
-  FetchParameters::DeferOption defer = FetchParameters::kNoDefer;
-  if (!parser_inserted_ || element_->AsyncAttributeValue() ||
-      element_->DeferAttributeValue()) {
-    defer = FetchParameters::kLazyLoad;
-  }
-  ClassicPendingScript* pending_script = ClassicPendingScript::Fetch(
-      url, document, options, cross_origin, encoding, element_, defer);
-  prepared_pending_script_ = pending_script;
-  resource_keep_alive_ = pending_script->GetResource();
 }
 
 void ScriptLoader::FetchModuleScriptTree(

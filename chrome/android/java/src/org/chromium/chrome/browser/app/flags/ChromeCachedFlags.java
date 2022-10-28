@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -86,6 +86,7 @@ public class ChromeCachedFlags {
                 add(ChromeFeatureList.sCctResizableAllowResizeByUserGesture);
                 add(ChromeFeatureList.sCctResizableForFirstParties);
                 add(ChromeFeatureList.sCctResizableForThirdParties);
+                add(ChromeFeatureList.sCctResizableWindowAboveNavbar);
                 add(ChromeFeatureList.sCctToolbarCustomizations);
                 add(ChromeFeatureList.sCloseTabSuggestions);
                 add(ChromeFeatureList.sCommandLineOnNonRooted);
@@ -93,6 +94,7 @@ public class ChromeCachedFlags {
                 add(ChromeFeatureList.sCommerceCoupons);
                 add(ChromeFeatureList.sCreateSafebrowsingOnStartup);
                 add(ChromeFeatureList.sCriticalPersistedTabData);
+                add(ChromeFeatureList.sDiscoverMultiColumn);
                 add(ChromeFeatureList.sDownloadsAutoResumptionNative);
                 add(ChromeFeatureList.sEarlyLibraryLoad);
                 add(ChromeFeatureList.sElasticOverscroll);

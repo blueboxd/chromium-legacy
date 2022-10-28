@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,6 +6,7 @@
 #define COMPONENTS_PAGE_LOAD_METRICS_BROWSER_PAGE_LOAD_METRICS_FORWARD_OBSERVER_H_
 
 #include "base/memory/weak_ptr.h"
+#include "components/page_load_metrics/browser/page_load_metrics_observer_delegate.h"
 #include "components/page_load_metrics/browser/page_load_metrics_observer_interface.h"
 
 namespace page_load_metrics {
@@ -34,6 +35,8 @@ class PageLoadMetricsForwardObserver final
  private:
   // PageLoadMetricsObserverInterface implementation:
   const char* GetObserverName() const override;
+  const PageLoadMetricsObserverDelegate& GetDelegate() const override;
+  void SetDelegate(PageLoadMetricsObserverDelegate*) override;
   ObservePolicy OnStart(content::NavigationHandle* navigation_handle,
                         const GURL& currently_committed_url,
                         bool started_in_foreground) override;
@@ -151,6 +154,7 @@ class PageLoadMetricsForwardObserver final
       content::NavigationHandle* navigation_handle) override;
   void OnV8MemoryChanged(
       const std::vector<MemoryUpdate>& memory_updates) override;
+  void OnSharedStorageWorkletHostCreated() override;
 
   // Holds the forward target observer running in the parent PageLoadTracker.
   base::WeakPtr<PageLoadMetricsObserverInterface> parent_observer_;

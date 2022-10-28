@@ -1,4 +1,4 @@
-// Copyright (c) 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -123,13 +123,13 @@ RemoveQueryConfirmationDialog::RemoveQueryConfirmationDialog(
   cancel_button_ = button_row->AddChildView(std::make_unique<ash::PillButton>(
       views::Button::PressedCallback(
           base::BindRepeating(run_callback, base::Unretained(this), false)),
-      l10n_util::GetStringUTF16(IDS_APP_CANCEL), PillButton::Type::kIconless,
-      nullptr));
+      l10n_util::GetStringUTF16(IDS_APP_CANCEL),
+      PillButton::Type::kDefaultWithoutIcon, nullptr));
   accept_button_ = button_row->AddChildView(std::make_unique<ash::PillButton>(
       views::Button::PressedCallback(
           base::BindRepeating(run_callback, base::Unretained(this), true)),
       l10n_util::GetStringUTF16(IDS_REMOVE_SUGGESTION_BUTTON_LABEL),
-      PillButton::Type::kIconlessProminent, nullptr));
+      PillButton::Type::kPrimaryWithoutIcon, nullptr));
 }
 
 RemoveQueryConfirmationDialog::~RemoveQueryConfirmationDialog() = default;

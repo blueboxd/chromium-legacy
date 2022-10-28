@@ -18,6 +18,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/accessibility/ax_enum_util.h"
+#include "ui/accessibility/ax_enums.mojom-shared.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_role_properties.h"
 #include "ui/accessibility/ax_tree_id.h"
@@ -619,10 +620,12 @@ AXTextAttributes AXNodeData::GetTextAttributes() const {
 
 void AXNodeData::SetName(const std::string& name) {
   // Elements with role='presentation' have Role::kNone. They should not be
-  // named. This check is only relevant if the name is not empty.
+  // named. Objects with Role::kUnknown were never given a role. This check
+  // is only relevant if the name is not empty.
   // TODO(accessibility): It would be nice to have a means to set the name
   // and role at the same time to avoid this ordering requirement.
-  DCHECK(role != ax::mojom::Role::kNone || name.empty())
+  DCHECK(name.empty() ||
+         (role != ax::mojom::Role::kNone && role != ax::mojom::Role::kUnknown))
       << "Cannot set name to '" << name << "' on class: '"
       << GetStringAttribute(ax::mojom::StringAttribute::kClassName)
       << "' because a valid role is needed to set the default NameFrom "
@@ -783,6 +786,7 @@ void AXNodeData::AddAction(ax::mojom::Action action_enum) {
     case ax::mojom::Action::kStartDuckingMedia:
     case ax::mojom::Action::kStopDuckingMedia:
     case ax::mojom::Action::kSuspendMedia:
+    case ax::mojom::Action::kLongClick:
       break;
   }
 
@@ -1505,6 +1509,12 @@ std::string AXNodeData::ToString() const {
       case ax::mojom::StringAttribute::kAriaInvalidValue:
         result += " aria_invalid_value=" + value;
         break;
+      case ax::mojom::StringAttribute::kAriaBrailleLabel:
+        result += " aria_braille_label=" + value;
+        break;
+      case ax::mojom::StringAttribute::kAriaBrailleRoleDescription:
+        result += " aria_braille_role_description=" + value;
+        break;
       case ax::mojom::StringAttribute::kCheckedStateDescription:
         result += " checked_state_description=" + value;
         break;
@@ -1525,6 +1535,9 @@ std::string AXNodeData::ToString() const {
         break;
       case ax::mojom::StringAttribute::kDisplay:
         result += " display=" + value;
+        break;
+      case ax::mojom::StringAttribute::kDoDefaultLabel:
+        result += " doDefaultLabel=" + value;
         break;
       case ax::mojom::StringAttribute::kFontFamily:
         result += " font-family=" + value;
@@ -1575,6 +1588,9 @@ std::string AXNodeData::ToString() const {
         break;
       case ax::mojom::StringAttribute::kRoleDescription:
         result += " role_description=" + value;
+        break;
+      case ax::mojom::StringAttribute::kLongClickLabel:
+        result += " longClickLabel=" + value;
         break;
       case ax::mojom::StringAttribute::kTooltip:
         result += " tooltip=" + value;
@@ -1692,6 +1708,9 @@ std::string AXNodeData::ToString() const {
         break;
       case ax::mojom::BoolAttribute::kTouchPassthrough:
         result += " touch_passthrough=" + value;
+        break;
+      case ax::mojom::BoolAttribute::kLongClickable:
+        result += " long_clickable=" + value;
         break;
       case ax::mojom::BoolAttribute::kNone:
         break;
@@ -1831,6 +1850,46 @@ std::string AXNodeData::ToString() const {
     result += " child_ids=" + IntVectorToString(child_ids);
 
   return result;
+}
+
+size_t AXNodeData::ByteSize() const {
+  // Simple fields.
+  size_t total_size = sizeof(id) + sizeof(role) + sizeof(state) +
+                      sizeof(actions) + sizeof(relative_bounds);
+
+  // Less simple collections.
+  total_size += int_attributes.size() *
+                    (sizeof(ax::mojom::IntAttribute) + sizeof(int32_t)) +
+                float_attributes.size() *
+                    (sizeof(ax::mojom::FloatAttribute) + sizeof(float)) +
+                bool_attributes.size() *
+                    (sizeof(ax::mojom::BoolAttribute) + sizeof(bool)) +
+                child_ids.size() * sizeof(int32_t);
+
+  // Complex collections.
+  for (const auto& pair : string_attributes) {
+    total_size +=
+        sizeof(ax::mojom::StringAttribute) + pair.second.size() * sizeof(char);
+  }
+
+  for (const auto& pair : intlist_attributes) {
+    total_size += sizeof(ax::mojom::IntListAttribute) +
+                  pair.second.size() * sizeof(int32_t);
+  }
+
+  for (const auto& pair : stringlist_attributes) {
+    total_size += sizeof(ax::mojom::StringListAttribute);
+    for (const auto& value : pair.second) {
+      total_size += value.size() * sizeof(char);
+    }
+  }
+
+  for (const auto& pair : html_attributes) {
+    total_size +=
+        pair.first.size() * sizeof(char) + pair.second.size() * sizeof(char);
+  }
+
+  return total_size;
 }
 
 std::string AXNodeData::DropeffectBitfieldToString() const {

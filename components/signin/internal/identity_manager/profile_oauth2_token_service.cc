@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -78,9 +78,12 @@ ProfileOAuth2TokenService::ProfileOAuth2TokenService(
       all_credentials_loaded_(false) {
   DCHECK(user_prefs_);
   DCHECK(delegate_);
-  token_manager_ = std::make_unique<OAuth2AccessTokenManager>(
-      this /* OAuth2AccessTokenManager::Delegate* */);
+  token_manager_ =
+      std::make_unique<OAuth2AccessTokenManager>(/*delegate=*/this);
+  // The `ProfileOAuth2TokenService` must be the first observer of `delegate_`.
+  DCHECK(!delegate_->HasObserver());
   AddObserver(this);
+  DCHECK(delegate_->HasObserver());
 }
 
 ProfileOAuth2TokenService::~ProfileOAuth2TokenService() {

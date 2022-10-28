@@ -1,10 +1,9 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "ash/services/device_sync/remote_device_loader.h"
 
-#include <algorithm>
 #include <utility>
 
 #include "ash/components/multidevice/logging/logging.h"
@@ -15,6 +14,7 @@
 #include "ash/services/device_sync/proto/enum_util.h"
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
+#include "base/ranges/algorithm.h"
 
 namespace ash {
 
@@ -116,12 +116,9 @@ void RemoteDeviceLoader::Load(RemoteDeviceCallback callback) {
 void RemoteDeviceLoader::OnPSKDerived(
     const cryptauth::ExternalDeviceInfo& device,
     const std::string& psk) {
-  std::string public_key = device.public_key();
   auto iterator =
-      std::find_if(remaining_devices_.begin(), remaining_devices_.end(),
-                   [&public_key](const cryptauth::ExternalDeviceInfo& device) {
-                     return device.public_key() == public_key;
-                   });
+      base::ranges::find(remaining_devices_, device.public_key(),
+                         &cryptauth::ExternalDeviceInfo::public_key);
 
   DCHECK(iterator != remaining_devices_.end());
   remaining_devices_.erase(iterator);

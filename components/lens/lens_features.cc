@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -28,6 +28,9 @@ const base::Feature kLensSearchImageInScreenshotSharing{
 const base::Feature kLensUnifiedSidePanelFooter{
     "LensUnifiedSidePanelFooter", base::FEATURE_ENABLED_BY_DEFAULT};
 
+const base::Feature kEnableLatencyLogging{"LensImageLatencyLogging",
+                                          base::FEATURE_ENABLED_BY_DEFAULT};
+
 const base::Feature kEnableRegionSearchOnPdfViewer{
     "LensEnableRegionSearchOnPdfViewer", base::FEATURE_DISABLED_BY_DEFAULT};
 
@@ -45,6 +48,9 @@ const base::FeatureParam<bool> kEnableSidePanelForLens{
 
 constexpr base::FeatureParam<std::string> kHomepageURLForLens{
     &kLensStandalone, "lens-homepage-url", "https://lens.google.com/"};
+
+constexpr base::FeatureParam<bool> kEnableLensHtmlRedirectFix{
+    &kLensStandalone, "lens-html-redirect-fix", true};
 
 constexpr base::FeatureParam<int> kMaxPixelsForRegionSearch{
     &kLensImageCompression, "region-search-dimensions-max-pixels", 1000};
@@ -86,6 +92,11 @@ const base::FeatureParam<bool> kUseSelectionIconWithImage{
 const base::FeatureParam<bool> kUseAltChipString{
     &kLensInstructionChipImprovements, "use-alt-chip-string", false};
 
+bool GetEnableLatencyLogging() {
+  return base::FeatureList::IsEnabled(kEnableLatencyLogging) &&
+         base::FeatureList::IsEnabled(kLensStandalone);
+}
+
 bool GetEnableUKMLoggingForRegionSearch() {
   return kEnableUKMLoggingForRegionSearch.Get();
 }
@@ -112,6 +123,10 @@ int GetMaxPixelsForImageSearch() {
 
 std::string GetHomepageURLForLens() {
   return kHomepageURLForLens.Get();
+}
+
+bool GetEnableLensHtmlRedirectFix() {
+  return kEnableLensHtmlRedirectFix.Get();
 }
 
 bool UseRegionSearchMenuItemAltText1() {
@@ -147,6 +162,10 @@ bool IsLensFullscreenSearchEnabled() {
 bool IsLensSidePanelEnabled() {
   return base::FeatureList::IsEnabled(kLensStandalone) &&
          kEnableSidePanelForLens.Get();
+}
+
+bool IsLensSidePanelEnabledForRegionSearch() {
+  return IsLensSidePanelEnabled() && !IsLensFullscreenSearchEnabled();
 }
 
 bool GetSendImagesAsPng() {

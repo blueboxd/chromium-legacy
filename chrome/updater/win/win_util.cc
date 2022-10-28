@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -30,6 +30,7 @@
 #include "base/path_service.h"
 #include "base/process/process.h"
 #include "base/process/process_iterator.h"
+#include "base/ranges/algorithm.h"
 #include "base/scoped_native_library.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_util.h"
@@ -620,9 +621,8 @@ std::string GetUACState() {
 
 std::wstring GetServiceName(bool is_internal_service) {
   std::wstring service_name = GetServiceDisplayName(is_internal_service);
-  service_name.erase(
-      std::remove_if(service_name.begin(), service_name.end(), isspace),
-      service_name.end());
+  service_name.erase(base::ranges::remove_if(service_name, isspace),
+                     service_name.end());
   return service_name;
 }
 
@@ -870,6 +870,23 @@ bool EnableProcessHeapMetadataProtection() {
   }
 
   return true;
+}
+
+absl::optional<base::ScopedTempDir> CreateSecureTempDir() {
+  base::FilePath temp_dir;
+  if (!base::PathService::Get(::IsUserAnAdmin() ? int{base::DIR_PROGRAM_FILES}
+                                                : int{base::DIR_TEMP},
+                              &temp_dir)) {
+    return absl::nullopt;
+  }
+
+  base::ScopedTempDir temp_path;
+  if (!temp_path.CreateUniqueTempDirUnderPath(
+          temp_dir.AppendASCII(COMPANY_SHORTNAME_STRING))) {
+    return absl::nullopt;
+  }
+
+  return temp_path;
 }
 
 }  // namespace updater

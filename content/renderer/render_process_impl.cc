@@ -127,6 +127,9 @@ RenderProcessImpl::RenderProcessImpl()
   SetV8FlagIfHasSwitch(switches::kEnableExperimentalWebAssemblyFeatures,
                        "--wasm-staging");
 
+  SetV8FlagIfFeature(features::kJavaScriptExperimentalSharedMemory,
+                     "--shared-string-table --harmony-struct");
+
   SetV8FlagIfFeature(features::kV8VmFuture, "--future");
   SetV8FlagIfNotFeature(features::kV8VmFuture, "--no-future");
 
@@ -162,8 +165,9 @@ RenderProcessImpl::RenderProcessImpl()
   SetV8FlagIfNotFeature(features::kWebAssemblySimd,
                         "--no-experimental-wasm-simd");
 
-  SetV8FlagIfFeature(blink::features::kJSONModules,
-                     "--harmony-import-assertions");
+  constexpr char kImportAssertionsFlag[] = "--harmony-import-assertions";
+  v8::V8::SetFlagsFromString(kImportAssertionsFlag,
+                             sizeof(kImportAssertionsFlag));
 
   constexpr char kAtomicsFlag[] = "--harmony-atomics";
   v8::V8::SetFlagsFromString(kAtomicsFlag, sizeof(kAtomicsFlag));
@@ -221,8 +225,6 @@ RenderProcessImpl::RenderProcessImpl()
                      "--wasm-dynamic-tiering");
   SetV8FlagIfNotFeature(features::kWebAssemblyDynamicTiering,
                         "--no-wasm-dynamic-tiering");
-
-  v8::V8::SetFlagsFromString("--freeze-flags-after-init");
 
 #if (BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)) && defined(ARCH_CPU_X86_64)
   if (base::FeatureList::IsEnabled(features::kWebAssemblyTrapHandler)) {

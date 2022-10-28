@@ -138,7 +138,6 @@
 <translation id="1812527064848182527">横向き</translation>
 <translation id="1829244130665387512">ページ内検索</translation>
 <translation id="1834891354138622109">列</translation>
-<translation id="1845944666972354496">有効にするにはダブルタップします</translation>
 <translation id="1846771122725914429">Bluetooth 点字ディスプレイ</translation>
 <translation id="1852018405765032699">ChromeVox メニューを開いたり閉じたりするには、4 本の指で画面をタップします。メニューではコマンドやショートカットに関する便利な情報を確認できます。メニューを開いたら、1 本の指でスワイプしてアイテム間を移動し、アイテムをダブルタップして有効にできます。次に進むには、4 本の指で画面をタップしてください。</translation>
 <translation id="1865601187525349519">テキスト終了</translation>
@@ -529,6 +528,7 @@
 <translation id="4479068155583208887">ファイア ブリック</translation>
 <translation id="4482330759234983253">前の表</translation>
 <translation id="4491109536499578614">画像</translation>
+<translation id="4507332368061453500">現在の項目を長押し</translation>
 <translation id="4511186779140817916">ブランチド アーモンド</translation>
 <translation id="451510441928265982">前のレベル 2 の見出しはありません</translation>
 <translation id="4515799157838123044">背景コンテンツに影をつける</translation>
@@ -597,7 +597,6 @@
 <translation id="4993152509206108683">速度 <ph name="PERCENT" /> パーセント</translation>
 <translation id="4994420463726586413">現在の電池の状態を読み上げる</translation>
 <translation id="4997282455736854877"><ph name="NAME" />、選択されたラジオボタン</translation>
-<translation id="5011664330025416377">検索+スペースキーで有効にします</translation>
 <translation id="5012724933919010465"><ph name="NAME" />、選択されたメニュー項目のラジオボタン</translation>
 <translation id="5020651427400641814">読み上げのログを有効にする</translation>
 <translation id="5041394372352067729">ブライユ点字表示をページ上部に移動</translation>
@@ -761,6 +760,7 @@
 <translation id="6100239002225743044">1 行上へ移動</translation>
 <translation id="6118126368611144850">Chrome 用 Android アプリ。お使いのデバイスに Play ストアがインストールされている場合は、Android アプリで ChromeVox をお試しいただけます。Play ストアから Google Chrome Canary をダウンロードして、試験的にサポートされている機能をご利用ください。</translation>
 <translation id="611827076493383239">アクセス済み</translation>
+<translation id="6119846243427417423">アクティブにする</translation>
 <translation id="6122013438240733403">ボタン</translation>
 <translation id="6132506484792346370">リストボックスまたはコンボボックス</translation>
 <translation id="613344593214611552">前の文を削除</translation>

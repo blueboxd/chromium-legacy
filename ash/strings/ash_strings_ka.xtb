@@ -28,7 +28,6 @@
 <translation id="1111021433905331574">თქვენი კლავიატურის ფონური განათების ფერის შეცვლა შეგიძლიათ აქ: პარამეტრები &gt; <ph name="APP_TITLE" /></translation>
 <translation id="112308213915226829">shelf თვითდამალვა</translation>
 <translation id="1142002900084379065">ბოლოდროინდელი ფოტოები</translation>
-<translation id="114451698114044150">ავტომატური მასშტაბირება ჩართულია.</translation>
 <translation id="1148499908455722006">საინფორმაციო დიალოგის გახსნა <ph name="USER_NAME" />-ისთვის</translation>
 <translation id="1150989369772528668">კალენდარი</translation>
 <translation id="1153356358378277386">დაწყვილებული მოწყობილობები</translation>
@@ -330,7 +329,6 @@
 <translation id="2894949423239620203">კაბელმა შეიძლება გავლენა იქონიოს ეფექტურობაზე</translation>
 <translation id="2903844815300039659">დაკავშირებულია <ph name="NAME" />-თან, <ph name="STRENGTH" /></translation>
 <translation id="2914580577416829331">ეკრანის აღბეჭდვები</translation>
-<translation id="2925246975070834767">ცადეთ ავტომატური მასშტაბირება, ეკრანის ცენტრში რომ მოექცეთ. მისი ჩართვა შეგიძლიათ სწრაფი პარამეტრებიდან.</translation>
 <translation id="2941112035454246133">დაბალი</translation>
 <translation id="2942350706960889382">ჩამაგრებული ლუპა</translation>
 <translation id="2942516765047364088">თაროს პოზიცია</translation>
@@ -474,7 +472,6 @@
 <translation id="3708186454126126312">ადრე დაკავშირებული</translation>
 <translation id="371370241367527062">წინა მიკროფონი</translation>
 <translation id="3713734891607377840">დასრულებისას გახსნა</translation>
-<translation id="3724279623330129812">ავტომატურმა მასშტაბირებამ ცენტრში მოაქცია კამერა</translation>
 <translation id="3726171378575546917"><ph name="UNAVAILABLE_APPS_ONE" />, <ph name="UNAVAILABLE_APPS_TWO" /> და <ph name="UNAVAILABLE_APPS_COUNT" /> სხვა აპი არ არის ამ მოწყობილობაზე.</translation>
 <translation id="3735740477244556633">დალაგება</translation>
 <translation id="3742055079367172538">ეკრანის ანაბეჭდი გადაღებულია</translation>
@@ -508,6 +505,7 @@
 <translation id="3922427723338465344">{0,plural, =1{დააბრუნეთ მოწყობილობა წინა ვერსიაზე 1 წუთის განმავლობაში}other{დააბრუნეთ მოწყობილობა წინა ვერსიაზე # წუთის განმავლობაში}}</translation>
 <translation id="3923494859158167397">მობილური ქსელები დაყენებული არ არის</translation>
 <translation id="3925540965556789199"><ph name="DATE" />, მომდინარეობს მოვლენების ჩატვირთვა.</translation>
+<translation id="392627956579011934">მეტყველების ფაილების ინსტალაციისთვის საჭიროა გადატვირთვა.</translation>
 <translation id="3932043219784172185">დაკავშირებული მოწყობილობები არ არის</translation>
 <translation id="3934456833412894880">ადაპტირებადი დატენა ჩართულია. ბატარეის ვარგისიანობის გასახანგრძლივებლად ის დარჩება 80%-ზე და სრულად დაიტენება, როცა დაგჭირდებათ.</translation>
 <translation id="3943857333388298514">ჩასმა</translation>
@@ -562,6 +560,7 @@
 <translation id="4242533952199664413">პარამეტრების გახსნა</translation>
 <translation id="4247123849143712100">განახლება და გამორთვა</translation>
 <translation id="4250229828105606438">ეკრანის ანაბეჭდი</translation>
+<translation id="4250899820387052060">სწრაფი ფაილები</translation>
 <translation id="425364040945105958">SIM-ბარათი არ არის</translation>
 <translation id="4261870227682513959">შეტყობინების პარამეტრების ჩვენება. შეტყობინებები გამორთულია</translation>
 <translation id="4269883910223712419">ამ მოწყობილობის ადმინისტრატორს შეუძლია:</translation>
@@ -746,6 +745,7 @@
 <translation id="5283198616748585639">1 წუთის დამატება</translation>
 <translation id="528468243742722775">დასასრული</translation>
 <translation id="5286194356314741248">მიმდინარეობს სკანირება</translation>
+<translation id="5293671101077843611">დღეს მოვლენები არ არის</translation>
 <translation id="5297423144044956168">მობილური მოწყობილობები ვერ მოიძებნა</translation>
 <translation id="5297704307811127955">გამორთვა</translation>
 <translation id="5300589172476337783">ჩვენება</translation>
@@ -908,7 +908,6 @@
 <translation id="6137566720514957455"><ph name="USER_EMAIL_ADDRESS" />-ის ამოშლის დიალოგის გახსნა</translation>
 <translation id="6141988275892716286">დაადასტურეთ ჩამოტვირთვა</translation>
 <translation id="6154006699632741460">პერიფერიული მოწყობილობა მხარდაუჭერელია</translation>
-<translation id="6156262341071374681">გაშლა ყველა აპის გამოსაჩენად</translation>
 <translation id="615957422585914272">ეკრანული კლავიატურის ჩვენება</translation>
 <translation id="6165508094623778733">შეიტყვეთ მეტი</translation>
 <translation id="6166852626429024716">წამოიწყეთ ძიება თქვენს მოწყობილობაში, აპებში, პარამეტრებსა და ვებში...</translation>
@@ -1032,7 +1031,6 @@
 <translation id="685782768769951078">{NUM_DIGITS,plural, =1{დარჩენილია 1 ციფრი}other{დარჩენილია # ციფრი}}</translation>
 <translation id="6867938213751067702">ჩამოტვირთვა დაპაუზებულია <ph name="FILENAME" /></translation>
 <translation id="6878400149835617132">მალსახმობი გამოირთო</translation>
-<translation id="6878709625737492815">ავტომატური მასშტაბირება გამორთულია.</translation>
 <translation id="6884665277231944629">დღევანდელ დღეზე დაბრუნება</translation>
 <translation id="6886172995547742638">თქვენმა <ph name="DEVICE_TYPE" />-მა შეიძლება უფრო დაბალი წარმადობით იმუშაოს. გამოიყენეთ სერტიფიცირებული <ph name="PREFERRED_MINIMUM_POWER" /> ვტ-იანი ან უფრო მაღალი სიმძლავრის USB-C ელკვების ადაპტერი.</translation>
 <translation id="688631446150864480">ფანჯრებს შორის გადასართავად დააჭირეთ კლავიშს ქვემოთ მიმართული ისრით</translation>
@@ -1198,7 +1196,6 @@
 <translation id="7868900307798234037">მიმდინარეობს თითის ანაბეჭდით განბლოკვა</translation>
 <translation id="7872195908557044066">ადმინისტრატორი ახორციელებს თქვენი eSIM-ის გადაყენებას. მოითმინეთ რამდენიმე წუთი.</translation>
 <translation id="7872786842639831132">გამორთვა</translation>
-<translation id="7875280185395705476">ავტომატური მასშტაბირება</translation>
 <translation id="7875575368831396199">როგორც ჩანს, თქვენს <ph name="DEVICE_TYPE" />-ზე გამორთულია Bluetooth. ტელეფონის ცენტრის გამოსაყენებლად ჩართეთ Bluetooth.</translation>
 <translation id="7877557217297072640">{0,plural, =0{დააბრუნეთ მოწყობილობა წინა ვერსიაზე ახლავე}=1{დააბრუნეთ მოწყობილობა წინა ვერსიაზე 1 წამის განმავლობაში}other{დააბრუნეთ მოწყობილობა წინა ვერსიაზე # წამის განმავლობაში}}</translation>
 <translation id="7886169021410746335">კონფიდენციალურობის პარამეტრების კორექტირება</translation>
@@ -1254,6 +1251,7 @@
 <translation id="8152264887680882389"><ph name="TEXT" />, ავტომატური დასრულება</translation>
 <translation id="8155007568264258537"><ph name="FEATURE_NAME" /> ამ პარამეტრს მართავს თქვენი ადმინისტრატორი.</translation>
 <translation id="8155628902202578800">საინფორმაციო დიალოგის გახსნა <ph name="USER_EMAIL_ADDRESS" />-ისთვის</translation>
+<translation id="8157728322324420120">თქვენთვის შემოთავაზებული</translation>
 <translation id="8167567890448493835">გამოიყენება <ph name="LOCALE_NAME" /></translation>
 <translation id="8183592608247778598">ნახეთ თქვენი ტელეფონის ბოლოდროინდელი ფოტოები, მედიაფაილები, შეტყობინებები და აპები თქვენს <ph name="DEVICE_TYPE" />-ზე</translation>
 <translation id="8192202700944119416">შეტყობინებები დამალულია.</translation>
@@ -1321,7 +1319,6 @@
 <translation id="856298576161209842"><ph name="MANAGER" /> გირჩევთ, განაახლოთ თქვენი <ph name="DEVICE_TYPE" /></translation>
 <translation id="8563862697512465947">შეტყობინების პარამეტრები</translation>
 <translation id="857201607579416096">მენიუ გადატანილია ეკრანის ქვედა მარჯვენა კუთხეში.</translation>
-<translation id="8576288697319745668">ავტომატური მასშტაბირების გადართვა. <ph name="STATE_TEXT" /></translation>
 <translation id="8594115950068821369">-<ph name="FORMATTED_TIME" /></translation>
 <translation id="8598235756057743477">დაალაგეთ თქვენი აპები სახელის ან ფერის მიხედვით</translation>
 <translation id="8614517853887502247"><ph name="APP_1_TITLE" />-ისა და <ph name="APP_2_TITLE" />-ის შეტყობინებები დამალულია, რადგან ჩართულია ნახვის დაცვა</translation>
@@ -1433,6 +1430,7 @@
 <translation id="9211490828691860325">ყველა სამუშაო მაგიდა</translation>
 <translation id="9211681782751733685">ბატარეის სრულ დატენამდე დარჩენილია <ph name="TIME_REMAINING" />.</translation>
 <translation id="9215934040295798075">ფონის დაყენება</translation>
+<translation id="9219103736887031265">გამოსახულებები</translation>
 <translation id="921989828232331238">თქვენმა მშობელმა ჩაკეტა მოწყობილობა ერთი დღით</translation>
 <translation id="9220525904950070496">ანგარიშის წაშლა</translation>
 <translation id="923686485342484400">დააჭირეთ Control Shift Q ორჯერ, რათა გამოხვიდეთ.</translation>

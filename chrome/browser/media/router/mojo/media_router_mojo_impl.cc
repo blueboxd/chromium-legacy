@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -127,6 +127,11 @@ void MediaRouterMojoImpl::RegisterMediaRouteProvider(
 void MediaRouterMojoImpl::OnIssue(const IssueInfo& issue) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   GetIssueManager()->AddIssue(issue);
+}
+
+void MediaRouterMojoImpl::ClearTopIssueForSink(const MediaSink::Id& sink_id) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  GetIssueManager()->ClearTopIssueForSink(sink_id);
 }
 
 void MediaRouterMojoImpl::OnSinksReceived(

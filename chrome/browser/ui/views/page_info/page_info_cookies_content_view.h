@@ -1,13 +1,15 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #ifndef CHROME_BROWSER_UI_VIEWS_PAGE_INFO_PAGE_INFO_COOKIES_CONTENT_VIEW_H_
 #define CHROME_BROWSER_UI_VIEWS_PAGE_INFO_PAGE_INFO_COOKIES_CONTENT_VIEW_H_
 
+#include "chrome/browser/ui/views/accessibility/non_accessible_image_view.h"
 #include "chrome/browser/ui/views/page_info/page_info_hover_button.h"
 #include "chrome/browser/ui/views/page_info/page_info_row_view.h"
 #include "components/page_info/page_info_ui.h"
+#include "ui/views/controls/button/toggle_button.h"
 #include "ui/views/view.h"
 
 // The view that is used as a content view of the Cookies subpage in page info.
@@ -24,7 +26,7 @@ class PageInfoCookiesContentView : public views::View, public PageInfoUI {
 
   void CookiesSettingsLinkClicked(const ui::Event& event);
 
-  void FPSSettingsButtonClicked(const ui::Event& event);
+  void FpsSettingsButtonClicked(const ui::Event& event);
 
   void OnToggleButtonPressed();
 
@@ -33,13 +35,31 @@ class PageInfoCookiesContentView : public views::View, public PageInfoUI {
   // information if necessary.
   void InitCookiesDialogButton();
 
+  //  Checks if |blocking_third_party_cookies_row_| should be initiated and if
+  //  so does it  and sets its info.
+  void SetBlockingThirdPartyCookiesInfo(const CookiesNewInfo& cookie_info,
+                                        bool is_fps_allowed);
+
+  // Updates toggles state according to info.
+  void UpdateBlockingThirdPartyCookiesToggle(bool are_cookies_blocked);
+
+  // Creates the child view of |blocking_third_party_cookies_row_| which is
+  // either toggle or icon depending on the |enforcement|.
+  void InitBlockingThirdPartyCookiesToggleOrIcon(
+      CookieControlsEnforcement enforcement);
+
   // Ensures the blocked sites information UI is present, with placeholder
   // information if necessary.
   void InitBlockingThirdPartyCookiesRow();
 
+  //  Checks if |fps_button_| should be initiated and if so does it and sets its
+  //  info.
+  void SetFpsCookiesInfo(absl::optional<CookiesFpsInfo> fps_info,
+                         bool is_fps_allowed);
+
   // Ensures the first-party sets information UI is present, with
   // placeholder information if necessary.
-  void InitFPSButton();
+  void InitFpsButton();
 
   raw_ptr<PageInfo> presenter_;
 
@@ -56,6 +76,13 @@ class PageInfoCookiesContentView : public views::View, public PageInfoUI {
 
   // The Label which is a subtitle of |blocking_third_party_cookies_row|.
   raw_ptr<views::Label> blocking_third_party_cookies_subtitle_label_ = nullptr;
+
+  // The toggle on |blocking_third_party_cookies_row| when state is managed by
+  // the user.
+  raw_ptr<views::ToggleButton> blocking_third_party_cookies_toggle_ = nullptr;
+
+  // The icon on |blocking_third_party_cookies_row| when state is enforced.
+  raw_ptr<NonAccessibleImageView> enforced_icon_ = nullptr;
 
   // The button that displays First-Party-Set information with a link to
   // 'All sites' settings page.

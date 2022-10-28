@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -108,11 +108,10 @@ management::ExtensionInfo CreateExtensionInfo(
   info.offline_enabled = OfflineEnabledInfo::IsOfflineEnabled(&extension);
   info.version = extension.VersionString();
   if (!extension.version_name().empty())
-    info.version_name = std::make_unique<std::string>(extension.version_name());
+    info.version_name = extension.version_name();
   info.description = extension.description();
   info.options_url = OptionsPageInfo::GetOptionsPage(&extension).spec();
-  info.homepage_url = std::make_unique<std::string>(
-      ManifestURL::GetHomepageURL(&extension).spec());
+  info.homepage_url = ManifestURL::GetHomepageURL(&extension).spec();
   info.may_disable =
       !system->management_policy()->MustRemainEnabled(&extension, nullptr);
   info.is_app = extension.is_app();
@@ -142,25 +141,23 @@ management::ExtensionInfo CreateExtensionInfo(
       info.disabled_reason = management::EXTENSION_DISABLED_REASON_UNKNOWN;
     }
 
-    info.may_enable = std::make_unique<bool>(
-        system->management_policy()->ExtensionMayModifySettings(
-            source_extension, &extension, nullptr) &&
-        !system->management_policy()->MustRemainDisabled(&extension, nullptr,
-                                                         nullptr));
+    info.may_enable = system->management_policy()->ExtensionMayModifySettings(
+                          source_extension, &extension, nullptr) &&
+                      !system->management_policy()->MustRemainDisabled(
+                          &extension, nullptr, nullptr);
   }
   const GURL update_url = delegate->GetEffectiveUpdateURL(extension, context);
   if (!update_url.is_empty())
-    info.update_url = std::make_unique<std::string>(update_url.spec());
+    info.update_url = update_url.spec();
 
   if (extension.is_app()) {
-    info.app_launch_url = std::make_unique<std::string>(
-        delegate->GetFullLaunchURL(&extension).spec());
+    info.app_launch_url = delegate->GetFullLaunchURL(&extension).spec();
   }
 
   const ExtensionIconSet::IconMap& icons =
       IconsInfo::GetIcons(&extension).map();
   if (!icons.empty()) {
-    info.icons = std::make_unique<IconInfoList>();
+    info.icons.emplace();
     ExtensionIconSet::IconMap::const_iterator icon_iter;
     for (icon_iter = icons.begin(); icon_iter != icons.end(); ++icon_iter) {
       management::IconInfo icon_info;
@@ -243,9 +240,7 @@ management::ExtensionInfo CreateExtensionInfo(
         NOTREACHED();
     }
 
-    info.available_launch_types =
-        std::make_unique<std::vector<management::LaunchType>>(
-            GetAvailableLaunchTypes(extension, delegate));
+    info.available_launch_types = GetAvailableLaunchTypes(extension, delegate);
   }
 
   return info;
@@ -692,9 +687,9 @@ ExtensionFunction::ResponseAction ManagementUninstallFunction::Run() {
       management::Uninstall::Params::Create(args()));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
-  bool show_confirm_dialog = params->options.get() &&
-                             params->options->show_confirm_dialog.get() &&
-                             *params->options->show_confirm_dialog;
+  bool show_confirm_dialog =
+      params->options.get() &&
+      params->options->show_confirm_dialog.value_or(false);
   return Uninstall(params->id, show_confirm_dialog);
 }
 
@@ -710,9 +705,9 @@ ExtensionFunction::ResponseAction ManagementUninstallSelfFunction::Run() {
   EXTENSION_FUNCTION_VALIDATE(params.get());
   EXTENSION_FUNCTION_VALIDATE(extension_.get());
 
-  bool show_confirm_dialog = params->options.get() &&
-                             params->options->show_confirm_dialog.get() &&
-                             *params->options->show_confirm_dialog;
+  bool show_confirm_dialog =
+      params->options.get() &&
+      params->options->show_confirm_dialog.value_or(false);
   return Uninstall(extension_->id(), show_confirm_dialog);
 }
 
@@ -1102,8 +1097,8 @@ void ManagementEventRouter::BroadcastEvent(
   if (event_name == management::OnUninstalled::kEventName) {
     args.Append(extension->id());
   } else {
-    args.Append(base::Value::FromUniquePtrValue(
-        CreateExtensionInfo(nullptr, *extension, browser_context_).ToValue()));
+    args.Append(
+        CreateExtensionInfo(nullptr, *extension, browser_context_).ToValue());
   }
 
   EventRouter::Get(browser_context_)

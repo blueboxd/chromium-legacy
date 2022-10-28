@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -32,6 +32,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "components/lens/lens_entrypoints.h"
 #include "components/lens/lens_features.h"
+#include "components/lens/lens_rendering_environment.h"
 #include "content/public/browser/download_manager.h"
 #include "content/public/browser/download_request_utils.h"
 #include "content/public/browser/web_contents.h"
@@ -336,9 +337,11 @@ void ScreenshotCapturedBubble::SearchImageButtonPressed() {
   set_close_on_deactivate(!lens::features::EnablePersistentBubble());
 
   CoreTabHelper::FromWebContents(web_contents_.get())
-      ->SearchWithLensInNewTab(
-          image_, GetImageSize(), lens::EntryPoint::CHROME_SCREENSHOT_SEARCH,
-          lens::features::UseSidePanelForScreenshotSharing());
+      ->SearchWithLens(image_, GetImageSize(),
+                       lens::EntryPoint::CHROME_SCREENSHOT_SEARCH,
+                       /* is_region_search_request= */ false,
+                       /* is_side_panel_enabled_for_feature= */
+                       lens::features::UseSidePanelForScreenshotSharing());
 
   // Need to manually close the screenshot bubble if side panel is enabled
   if (lens::features::UseSidePanelForScreenshotSharing() &&

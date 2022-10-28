@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -497,6 +497,12 @@ INSTANTIATE_TEST_SUITE_P(
                                  true),
                        ExpectBothNotValid("toplevel-repaired",
                                           "toplevel-repaired")),
+        std::make_pair(
+            OncParams("toplevel-multiple-ethernet-configs",
+                      &kToplevelConfigurationSignature,
+                      true),
+            ExpectBothNotValid("toplevel-multiple-ethernet-configs-repaired",
+                               "toplevel-multiple-ethernet-configs-repaired")),
         // Ignore recommended arrays in unmanaged ONC.
         std::make_pair(OncParams("network-with-illegal-recommended",
                                  &kNetworkConfigurationSignature,

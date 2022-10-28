@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -31,7 +31,7 @@ class TestObserver : public StubInputMethodEngineObserver {
       const std::string& engine_id,
       const ui::KeyEvent& event,
       ui::IMEEngineHandlerInterface::KeyEventDoneCallback callback) override {
-    std::move(callback).Run(/*handled=*/false);
+    std::move(callback).Run(ui::ime::KeyEventHandledState::kNotHandled);
   }
 };
 
@@ -42,7 +42,9 @@ class KeyProcessingWaiter {
                           base::Unretained(this));
   }
 
-  void OnKeyEventDone(bool consumed) { run_loop_.Quit(); }
+  void OnKeyEventDone(ui::ime::KeyEventHandledState handled_state) {
+    run_loop_.Quit();
+  }
 
   void Wait() { run_loop_.Run(); }
 
@@ -138,8 +140,9 @@ constexpr char kEngineIdVietnameseTelex[] = "vkd_vi_telex";
 
 }  // namespace
 
+// TODO(crbug.com/1361212): Test is flaky. Re-enable the test.
 IN_PROC_BROWSER_TEST_F(NativeInputMethodEngineWithImeServiceTest,
-                       VietnameseTelex_SimpleTransform) {
+                       DISABLED_VietnameseTelex_SimpleTransform) {
   engine_->Enable(kEngineIdVietnameseTelex);
   engine_->FlushForTesting();
   EXPECT_TRUE(engine_->IsConnectedForTesting());
@@ -162,8 +165,9 @@ IN_PROC_BROWSER_TEST_F(NativeInputMethodEngineWithImeServiceTest,
   SetFocus(nullptr);
 }
 
+// TODO(crbug.com/1361212): Test is flaky. Re-enable the test.
 IN_PROC_BROWSER_TEST_F(NativeInputMethodEngineWithImeServiceTest,
-                       VietnameseTelex_Reset) {
+                       DISABLED_VietnameseTelex_Reset) {
   engine_->Enable(kEngineIdVietnameseTelex);
   engine_->FlushForTesting();
   EXPECT_TRUE(engine_->IsConnectedForTesting());
@@ -185,8 +189,9 @@ IN_PROC_BROWSER_TEST_F(NativeInputMethodEngineWithImeServiceTest,
   SetFocus(nullptr);
 }
 
+// TODO(crbug.com/1361212): Test is flaky. Re-enable the test.
 IN_PROC_BROWSER_TEST_F(NativeInputMethodEngineWithImeServiceTest,
-                       SwitchActiveController) {
+                       DISABLED_SwitchActiveController) {
   // Swap between two controllers.
   engine_->Enable(kEngineIdVietnameseTelex);
   engine_->FlushForTesting();
@@ -208,8 +213,9 @@ IN_PROC_BROWSER_TEST_F(NativeInputMethodEngineWithImeServiceTest,
   SetFocus(nullptr);
 }
 
+// TODO(crbug.com/1361212): Test is flaky. Re-enable the test.
 IN_PROC_BROWSER_TEST_F(NativeInputMethodEngineWithImeServiceTest,
-                       NoActiveController) {
+                       DISABLED_NoActiveController) {
   engine_->Enable(kEngineIdVietnameseTelex);
   engine_->FlushForTesting();
   engine_->Disable();

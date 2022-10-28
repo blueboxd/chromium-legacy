@@ -1,11 +1,11 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #import "ios/chrome/browser/infobars/overlays/default_infobar_overlay_request_factory.h"
 
-#include "base/check.h"
-#include "components/infobars/core/infobar_delegate.h"
+#import "base/check.h"
+#import "components/infobars/core/infobar_delegate.h"
 #import "ios/chrome/browser/infobars/infobar_ios.h"
 #import "ios/chrome/browser/infobars/infobar_type.h"
 #import "ios/chrome/browser/overlays/public/infobar_banner/add_to_reading_list_infobar_banner_overlay_request_config.h"
@@ -14,6 +14,7 @@
 #import "ios/chrome/browser/overlays/public/infobar_banner/save_address_profile_infobar_banner_overlay_request_config.h"
 #import "ios/chrome/browser/overlays/public/infobar_banner/save_card_infobar_banner_overlay_request_config.h"
 #import "ios/chrome/browser/overlays/public/infobar_banner/save_password_infobar_banner_overlay.h"
+#import "ios/chrome/browser/overlays/public/infobar_banner/tailored_security_service_infobar_banner_overlay_request_config.h"
 #import "ios/chrome/browser/overlays/public/infobar_banner/translate_infobar_banner_overlay_request_config.h"
 #import "ios/chrome/browser/overlays/public/infobar_banner/update_password_infobar_banner_overlay.h"
 #import "ios/chrome/browser/overlays/public/infobar_modal/password_infobar_modal_overlay_request_config.h"
@@ -147,6 +148,14 @@ std::unique_ptr<OverlayRequest> DefaultInfobarOverlayRequestFactory(
         default:
           return nullptr;
       }
+
+    case InfobarType::kInfobarTypeTailoredSecurityService:
+      if (overlay_type == InfobarOverlayType::kBanner) {
+        return OverlayRequest::CreateWithConfig<
+            tailored_security_service_infobar_overlays::
+                TailoredSecurityServiceBannerRequestConfig>(infobar_ios);
+      }
+      return nullptr;
     default:
       return nullptr;
   }

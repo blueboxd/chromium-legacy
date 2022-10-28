@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -82,10 +82,6 @@ class EmptyTrashIOTaskTest : public TrashBaseTest {
     directories.trash_directories.emplace_back(
         SetupTrashDirectory(downloads_dir_, trash::kTrashFolderName,
                             directories.trash_subdirectories));
-
-    // Setup /media/fuse/termina_hash_pengiun/.local/share/Trash
-    directories.trash_directories.emplace_back(SetupTrashDirectory(
-        crostini_dir_, ".local/share/Trash", directories.trash_subdirectories));
 
     return directories;
   }

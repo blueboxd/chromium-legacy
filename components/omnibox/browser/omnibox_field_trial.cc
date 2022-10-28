@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -486,15 +486,9 @@ int OmniboxFieldTrial::MaxNumHQPUrlsIndexedAtStartup() {
 #endif
 
   if (base::SysInfo::IsLowEndDevice()) {
-    return variations::GetVariationParamByFeatureAsInt(
-        omnibox::kHistoryQuickProviderAblateInMemoryURLIndexCacheFile,
-        kMaxNumHQPUrlsIndexedAtStartupOnLowEndDevicesParam,
-        kDefaultOnLowEndDevices);
+    return kDefaultOnLowEndDevices;
   } else {
-    return variations::GetVariationParamByFeatureAsInt(
-        omnibox::kHistoryQuickProviderAblateInMemoryURLIndexCacheFile,
-        kMaxNumHQPUrlsIndexedAtStartupOnNonLowEndDevicesParam,
-        kDefaultOnNonLowEndDevices);
+    return kDefaultOnNonLowEndDevices;
   }
 }
 
@@ -734,17 +728,17 @@ namespace OmniboxFieldTrial {
 
 const base::FeatureParam<bool>
     kAutocompleteStabilityPreserveDefaultAfterTransfer(
-        &omnibox::kAutocompleteStability,
+        &omnibox::kPreserveDefault,
         "AutocompleteStabilityPreserveDefaultAfterTransfer",
         false);
 const base::FeatureParam<int>
     kAutocompleteStabilityPreserveDefaultForSyncUpdatesMinInputLength(
-        &omnibox::kAutocompleteStability,
+        &omnibox::kPreserveDefault,
         "AutocompleteStabilityPreserveDefaultForSyncUpdatesMinInputLength",
         -1);
 const base::FeatureParam<bool>
     kAutocompleteStabilityPreserveDefaultForAsyncUpdates(
-        &omnibox::kAutocompleteStability,
+        &omnibox::kPreserveDefault,
         "AutocompleteStabilityPreserveDefaultForAsyncUpdates",
         true);
 const base::FeatureParam<bool> kAutocompleteStabilityDontCopyDoneProviders(
@@ -757,15 +751,22 @@ const base::FeatureParam<bool> kAutocompleteStabilityAsyncProvidersFirst(
     false);
 const base::FeatureParam<bool>
     kAutocompleteStabilityUpdateResultDebounceFromLastRun(
-        &omnibox::kAutocompleteStability,
+        &omnibox::kUpdateResultDebounce,
         "AutocompleteStabilityUpdateResultDebounceFromLastRun",
         false);
 const base::FeatureParam<int> kAutocompleteStabilityUpdateResultDebounceDelay(
-    &omnibox::kAutocompleteStability,
+    &omnibox::kUpdateResultDebounce,
     "AutocompleteStabilityUpdateResultDebounceDelay",
     0);
 
 // Local history zero-prefix (aka zero-suggest) and prefix suggestions:
+
+// The maximum number of entries stored by the in-memory zero-suggest cache at
+// at any given time (LRU eviction policy is used to enforce this limit).
+const base::FeatureParam<int> kZeroSuggestCacheMaxSize(
+    &omnibox::kZeroSuggestInMemoryCaching,
+    "ZeroSuggestCacheMaxSize",
+    10);
 
 // The relevance score for remote zero-suggest ranges from 550-1400. A default
 // value of 500 places local history zero-suggest below the remote zero-suggest.

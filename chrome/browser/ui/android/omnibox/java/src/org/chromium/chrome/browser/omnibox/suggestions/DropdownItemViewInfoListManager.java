@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -129,8 +129,7 @@ class DropdownItemViewInfoListManager {
                 ? SuggestionCommonProperties.FormFactor.TABLET
                 : SuggestionCommonProperties.FormFactor.PHONE;
         DropdownItemViewInfo prevSuggestionWithBackground = null;
-        // Note: we consider the Omnibox as part of the background rounding group.
-        boolean inDropdownItemBackgroundRoundingGroup = true;
+        boolean inDropdownItemBackgroundRoundingGroup = false;
         for (int i = 0; i < mSourceViewInfoList.size(); i++) {
             final DropdownItemViewInfo item = mSourceViewInfoList.get(i);
             final PropertyModel model = item.model;

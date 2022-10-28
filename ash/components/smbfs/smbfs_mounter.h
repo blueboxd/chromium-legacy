@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,8 +9,6 @@
 #include <string>
 #include <vector>
 
-#include "ash/components/disks/disk_mount_manager.h"
-#include "ash/components/disks/mount_point.h"
 #include "ash/components/smbfs/mojom/smbfs.mojom.h"
 #include "ash/components/smbfs/smbfs_host.h"
 #include "base/callback.h"
@@ -19,6 +17,8 @@
 #include "base/memory/weak_ptr.h"
 #include "base/timer/timer.h"
 #include "base/unguessable_token.h"
+#include "chromeos/ash/components/disks/disk_mount_manager.h"
+#include "chromeos/ash/components/disks/mount_point.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/system/invitation.h"
 #include "net/base/ip_address.h"

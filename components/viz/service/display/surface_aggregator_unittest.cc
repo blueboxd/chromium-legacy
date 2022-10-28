@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -56,6 +56,7 @@
 #include "ui/gfx/geometry/point_f.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rect_conversions.h"
+#include "ui/gfx/video_types.h"
 
 namespace viz {
 namespace {
@@ -284,6 +285,7 @@ class SurfaceAggregatorTest : public testing::Test, public DisplayTimeSource {
     gfx::Rect output_rect;
     gfx::Rect damage_rect;
     bool has_transparent_background = true;
+    bool has_damage_from_contributing_content = false;
   };
 
   // |referenced_surfaces| refers to the SurfaceRanges of all the
@@ -328,6 +330,8 @@ class SurfaceAggregatorTest : public testing::Test, public DisplayTimeSource {
           pass_list, pass.id, pass.output_rect, pass.damage_rect,
           root_transform, cc::FilterOperations());
       test_pass->has_transparent_background = pass.has_transparent_background;
+      test_pass->has_damage_from_contributing_content =
+          pass.has_damage_from_contributing_content;
       for (const auto& quad : pass.quads)
         AddQuadInPass(quad, test_pass, referenced_surfaces);
     }
@@ -450,10 +454,10 @@ class SurfaceAggregatorTest : public testing::Test, public DisplayTimeSource {
                          SkBlendMode::kSrcOver, 0);
     auto* quad = pass->CreateAndAppendDrawQuad<YUVVideoDrawQuad>();
     quad->SetNew(shared_state, output_rect, output_rect, false,
-                 gfx::RectF(output_rect), gfx::RectF(), output_rect.size(),
-                 gfx::Size(), ResourceId(1), ResourceId(2), ResourceId(3),
-                 kInvalidResourceId, gfx::ColorSpace::CreateREC709(), 0, 1.0,
-                 8);
+                 output_rect.size(), gfx::Rect(output_rect.size()),
+                 gfx::Size(1, 1), ResourceId(1), ResourceId(2), ResourceId(3),
+                 kInvalidResourceId, gfx::ColorSpace::CreateREC709(), 0, 1.0, 8,
+                 gfx::ProtectedVideoType::kClear, absl::nullopt);
     if (per_quad_damage_output) {
       quad->damage_rect = output_rect;
     }
@@ -6562,6 +6566,8 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, HasDamageFromRenderPassQuads) {
   root_sink_->SubmitCompositorFrame(root_surface_id_.local_surface_id(),
                                     std::move(root_frame));
 
+  // Both CompositorRenderPass are built with
+  // has_damage_from_contributing_content set to false.
   {
     auto aggregated_frame = AggregateFrame(root_surface_id_);
 
@@ -6590,11 +6596,48 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, HasDamageFromRenderPassQuads) {
                                        std::move(child_frame));
 
     auto aggregated_frame = AggregateFrame(root_surface_id_);
+
     // True for new child_frame.
+    EXPECT_TRUE(aggregated_frame.render_pass_list[0]
+                    ->has_damage_from_contributing_content);
+    // The damage from the child frame will propagate to the root surface.
+    EXPECT_TRUE(aggregated_frame.render_pass_list[1]
+                    ->has_damage_from_contributing_content);
+  }
+
+  // Both CompositorRenderPass are built with
+  // has_damage_from_contributing_content set to true.
+  {
+    CompositorFrame root_frame_2 = MakeEmptyCompositorFrame();
+    root_passes[0].has_damage_from_contributing_content = true;
+    AddPasses(&root_frame_2.render_pass_list, root_passes,
+              &root_frame_2.metadata.referenced_surfaces);
+
+    root_sink_->SubmitCompositorFrame(root_surface_id_.local_surface_id(),
+                                      std::move(root_frame_2));
+
+    CompositorFrame child_frame = MakeEmptyCompositorFrame();
+    child_passes[0].has_damage_from_contributing_content = true;
+    AddPasses(&child_frame.render_pass_list, child_passes,
+              &child_frame.metadata.referenced_surfaces);
+    child_sink_->SubmitCompositorFrame(child_surface_id.local_surface_id(),
+                                       std::move(child_frame));
+
+    auto aggregated_frame = AggregateFrame(root_surface_id_);
+
     EXPECT_TRUE(aggregated_frame.render_pass_list[0]
                     ->has_damage_from_contributing_content);
     EXPECT_TRUE(aggregated_frame.render_pass_list[1]
                     ->has_damage_from_contributing_content);
+  }
+  // No Surface changed, so no damage should be given even if
+  // has_damage_from_contributing_content is true from CompositorRenderPass.
+  {
+    auto aggregated_frame = AggregateFrame(root_surface_id_);
+    EXPECT_FALSE(aggregated_frame.render_pass_list[0]
+                     ->has_damage_from_contributing_content);
+    EXPECT_FALSE(aggregated_frame.render_pass_list[1]
+                     ->has_damage_from_contributing_content);
   }
 }
 
@@ -8588,6 +8631,13 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, DelegatedInkMetadataTest) {
   EXPECT_TRUE(actual_metadata);
   ExpectDelegatedInkMetadataIsEqual(*actual_metadata.get(), metadata);
 
+  // Send a compositor frame with no delegated ink metadata.
+  CompositorFrame blank_frame = MakeEmptyCompositorFrame();
+  AddPasses(&blank_frame.render_pass_list, child_passes,
+            &blank_frame.metadata.referenced_surfaces);
+  child_sink_->SubmitCompositorFrame(child_surface_id.local_surface_id(),
+                                     std::move(blank_frame));
+
   // Then confirm that the |delegated_ink_metadata| was reset and a new
   // aggregated frame does not contain any delegated ink metadata.
   auto new_aggregated_frame = AggregateFrame(root_surface_id_);
@@ -8721,6 +8771,13 @@ TEST_F(SurfaceAggregatorValidSurfaceTest,
   EXPECT_TRUE(actual_metadata);
   ExpectDelegatedInkMetadataIsEqual(*actual_metadata.get(), metadata);
 
+  // Send a compositor frame with no delegated ink metadata.
+  CompositorFrame blank_frame = MakeEmptyCompositorFrame();
+  AddPasses(&blank_frame.render_pass_list, greatgrandchild_passes,
+            &blank_frame.metadata.referenced_surfaces);
+  greatgrand_child_support->SubmitCompositorFrame(
+      great_grandchild_surface_id.local_surface_id(), std::move(blank_frame));
+
   // Then confirm that the |delegated_ink_metadata| was reset and a new
   // aggregated frame does not contain any delegated ink metadata.
   auto new_aggregated_frame = AggregateFrame(root_surface_id_);
@@ -8835,6 +8892,13 @@ TEST_F(SurfaceAggregatorValidSurfaceTest,
       std::move(aggregated_frame.delegated_ink_metadata);
   EXPECT_TRUE(actual_metadata);
   ExpectDelegatedInkMetadataIsEqual(*actual_metadata.get(), metadata);
+
+  // Send a compositor frame with no delegated ink metadata.
+  CompositorFrame blank_frame = MakeEmptyCompositorFrame();
+  AddPasses(&blank_frame.render_pass_list, child_2_passes,
+            &blank_frame.metadata.referenced_surfaces);
+  child_2_support->SubmitCompositorFrame(child_2_surface_id.local_surface_id(),
+                                         std::move(blank_frame));
 
   // Then confirm that the |delegated_ink_metadata| was reset and a new
   // aggregated frame does not contain any delegated ink metadata.
@@ -8967,9 +9031,29 @@ TEST_F(SurfaceAggregatorValidSurfaceTest,
   EXPECT_TRUE(actual_metadata);
   ExpectDelegatedInkMetadataIsEqual(*actual_metadata.get(), expected_metadata);
 
-  // Then confirm that the |delegated_ink_metadata| was reset and a new
-  // aggregated frame does not contain any delegated ink metadata.
+  // Send a compositor frame for child_3 with no delegated ink metadata.
+  CompositorFrame blank_frame = MakeEmptyCompositorFrame();
+  AddPasses(&blank_frame.render_pass_list, child_3_passes,
+            &blank_frame.metadata.referenced_surfaces);
+  child_3_support->SubmitCompositorFrame(child_3_surface_id.local_surface_id(),
+                                         std::move(blank_frame));
+
+  // Then confirm that the |delegated_ink_metadata| was  not reset because the
+  // compositor frame metadata for child_2 still contains delegated ink
+  // metadata.
   auto new_aggregated_frame = AggregateFrame(root_surface_id_);
+  EXPECT_TRUE(new_aggregated_frame.delegated_ink_metadata);
+
+  // Send a compositor frame for child_2 with no delegated ink metadata.
+  blank_frame = MakeEmptyCompositorFrame();
+  AddPasses(&blank_frame.render_pass_list, child_2_passes,
+            &blank_frame.metadata.referenced_surfaces);
+  child_2_support->SubmitCompositorFrame(child_2_surface_id.local_surface_id(),
+                                         std::move(blank_frame));
+
+  // Now confirm that the |delegated_ink_metadata| was reset and a new
+  // aggregated frame does not contain any delegated ink metadata.
+  new_aggregated_frame = AggregateFrame(root_surface_id_);
   EXPECT_FALSE(new_aggregated_frame.delegated_ink_metadata);
 }
 
@@ -9189,7 +9273,7 @@ TEST_F(SurfaceAggregatorWithResourcesTest, TransitionDirectiveFrameBehind) {
   {
     auto frame = BuildCompositorFrameWithResources({}, true, SurfaceId());
     frame.metadata.transition_directives.emplace_back(
-        1, CompositorFrameTransitionDirective::Type::kSave, false,
+        1, CompositorFrameTransitionDirective::Type::kSave,
         CompositorFrameTransitionDirective::Effect::kCoverLeft);
 
     root_sink_->SubmitCompositorFrame(local_surface_id, std::move(frame));
@@ -9204,7 +9288,7 @@ TEST_F(SurfaceAggregatorWithResourcesTest, TransitionDirectiveFrameBehind) {
   {
     auto frame = BuildCompositorFrameWithResources({}, true, SurfaceId());
     frame.metadata.transition_directives.emplace_back(
-        2, CompositorFrameTransitionDirective::Type::kAnimate, false);
+        2, CompositorFrameTransitionDirective::Type::kAnimate);
     root_sink_->SubmitCompositorFrame(local_surface_id, std::move(frame));
   }
   AggregateFrame(surface_id);

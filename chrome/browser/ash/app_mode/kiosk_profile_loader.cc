@@ -1,4 +1,4 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,8 +7,6 @@
 #include <memory>
 #include <tuple>
 
-#include "ash/components/login/auth/public/auth_failure.h"
-#include "ash/components/login/auth/public/user_context.h"
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/logging.h"
@@ -21,10 +19,13 @@
 #include "chrome/browser/ash/app_mode/kiosk_app_manager.h"
 #include "chrome/browser/ash/app_mode/kiosk_app_types.h"
 #include "chrome/browser/ash/login/auth/chrome_login_performer.h"
+#include "chrome/browser/ash/login/session/user_session_manager.h"
 #include "chrome/browser/ash/login/ui/login_display_host.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chromeos/ash/components/dbus/dbus_thread_manager.h"
 #include "chromeos/ash/components/dbus/userdataauth/userdataauth_client.h"
+#include "chromeos/ash/components/login/auth/public/auth_failure.h"
+#include "chromeos/ash/components/login/auth/public/user_context.h"
 #include "components/account_id/account_id.h"
 #include "components/user_manager/user_names.h"
 #include "content/public/browser/browser_thread.h"
@@ -179,7 +180,7 @@ void KioskProfileLoader::ReportLaunchResult(KioskAppLaunchError::Error error) {
 
 void KioskProfileLoader::OnAuthSuccess(const UserContext& user_context) {
   // LoginPerformer will delete itself.
-  login_performer_->set_delegate(NULL);
+  login_performer_->set_delegate(nullptr);
   std::ignore = login_performer_.release();
 
   failed_mount_attempts_ = 0;
@@ -188,7 +189,7 @@ void KioskProfileLoader::OnAuthSuccess(const UserContext& user_context) {
       user_context, UserSessionManager::StartSessionType::kPrimary,
       false,  // has_auth_cookies
       false,  // Start session for user.
-      this);
+      AsWeakPtr());
 }
 
 void KioskProfileLoader::OnAuthFailure(const AuthFailure& error) {
@@ -224,10 +225,6 @@ void KioskProfileLoader::OnOldEncryptionDetected(
 
 void KioskProfileLoader::OnProfilePrepared(Profile* profile,
                                            bool browser_launched) {
-  // This object could be deleted any time after successfully reporting
-  // a profile load, so invalidate the delegate now.
-  UserSessionManager::GetInstance()->DelegateDeleted(this);
-
   delegate_->OnProfileLoaded(profile);
   ReportLaunchResult(KioskAppLaunchError::Error::kNone);
 }

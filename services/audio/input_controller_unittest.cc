@@ -11,6 +11,7 @@
 #include "base/test/bind.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
+#include "media/audio/aecdump_recording_manager.h"
 #include "media/audio/audio_manager.h"
 #include "media/audio/fake_audio_input_stream.h"
 #include "media/audio/fake_audio_log_factory.h"
@@ -20,7 +21,6 @@
 #include "media/base/media_switches.h"
 #include "media/base/user_input_monitor.h"
 #include "mojo/public/cpp/bindings/remote.h"
-#include "services/audio/aecdump_recording_manager.h"
 #include "services/audio/concurrent_stream_metric_reporter.h"
 #include "services/audio/device_output_listener.h"
 #include "services/audio/processing_audio_fifo.h"
@@ -41,7 +41,8 @@ namespace audio {
 namespace {
 
 const int kSampleRate = media::AudioParameters::kAudioCDSampleRate;
-const media::ChannelLayout kChannelLayout = media::CHANNEL_LAYOUT_STEREO;
+const media::ChannelLayoutConfig kChannelLayoutConfig =
+    media::ChannelLayoutConfig::Stereo();
 const int kSamplesPerPacket = kSampleRate / 100;
 
 // InputController will poll once every second, so wait at most a bit
@@ -120,7 +121,7 @@ class TimeSourceInputControllerTest
             &log_factory_)),
         aecdump_recording_manager_(audio_manager_->GetTaskRunner()),
         params_(media::AudioParameters::AUDIO_FAKE,
-                kChannelLayout,
+                kChannelLayoutConfig,
                 kSampleRate,
                 kSamplesPerPacket) {
 #if BUILDFLAG(CHROME_WIDE_ECHO_CANCELLATION)
@@ -171,7 +172,7 @@ class TimeSourceInputControllerTest
 #endif
 
   std::unique_ptr<media::AudioManager> audio_manager_;
-  AecdumpRecordingManager aecdump_recording_manager_;
+  media::AecdumpRecordingManager aecdump_recording_manager_;
   std::unique_ptr<InputController> controller_;
   media::FakeAudioLogFactory log_factory_;
   MockInputControllerEventHandler event_handler_;

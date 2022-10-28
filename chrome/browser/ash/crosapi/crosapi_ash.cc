@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -38,6 +38,7 @@
 #include "chrome/browser/ash/crosapi/crosapi_dependency_registry.h"
 #include "chrome/browser/ash/crosapi/desk_template_ash.h"
 #include "chrome/browser/ash/crosapi/device_attributes_ash.h"
+#include "chrome/browser/ash/crosapi/device_local_account_extension_service_ash.h"
 #include "chrome/browser/ash/crosapi/device_oauth2_token_service_ash.h"
 #include "chrome/browser/ash/crosapi/device_settings_ash.h"
 #include "chrome/browser/ash/crosapi/dlp_ash.h"
@@ -72,7 +73,6 @@
 #include "chrome/browser/ash/crosapi/networking_attributes_ash.h"
 #include "chrome/browser/ash/crosapi/networking_private_ash.h"
 #include "chrome/browser/ash/crosapi/policy_service_ash.h"
-#include "chrome/browser/ash/crosapi/power_ash.h"
 #include "chrome/browser/ash/crosapi/prefs_ash.h"
 #include "chrome/browser/ash/crosapi/remoting_ash.h"
 #include "chrome/browser/ash/crosapi/resource_manager_ash.h"
@@ -82,7 +82,6 @@
 #include "chrome/browser/ash/crosapi/sharesheet_ash.h"
 #include "chrome/browser/ash/crosapi/speech_recognition_ash.h"
 #include "chrome/browser/ash/crosapi/structured_metrics_service_ash.h"
-#include "chrome/browser/ash/crosapi/system_display_ash.h"
 #include "chrome/browser/ash/crosapi/task_manager_ash.h"
 #include "chrome/browser/ash/crosapi/time_zone_service_ash.h"
 #include "chrome/browser/ash/crosapi/url_handler_ash.h"
@@ -96,8 +95,8 @@
 #include "chrome/browser/ash/crosapi/web_page_info_ash.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/ash/remote_apps/remote_apps_manager_factory.h"
-#include "chrome/browser/ash/sync/sync_service_ash.h"
-#include "chrome/browser/ash/sync/sync_service_factory_ash.h"
+#include "chrome/browser/ash/sync/sync_mojo_service_ash.h"
+#include "chrome/browser/ash/sync/sync_mojo_service_factory_ash.h"
 #include "chrome/browser/ash/telemetry_extension/diagnostics_service_ash.h"
 #include "chrome/browser/ash/telemetry_extension/probe_service_ash.h"
 #include "chrome/browser/browser_process.h"
@@ -112,6 +111,7 @@
 #include "chromeos/ash/components/account_manager/account_manager_factory.h"
 #include "chromeos/components/cdm_factory_daemon/cdm_factory_daemon_proxy_ash.h"
 #include "chromeos/components/sensors/ash/sensor_hal_dispatcher.h"
+#include "chromeos/crosapi/mojom/device_local_account_extension_service.mojom.h"
 #include "chromeos/crosapi/mojom/drive_integration_service.mojom.h"
 #include "chromeos/crosapi/mojom/feedback.mojom.h"
 #include "chromeos/crosapi/mojom/file_manager.mojom.h"
@@ -182,6 +182,8 @@ CrosapiAsh::CrosapiAsh(CrosapiDependencyRegistry* registry)
       content_protection_ash_(std::make_unique<ContentProtectionAsh>()),
       desk_template_ash_(std::make_unique<DeskTemplateAsh>()),
       device_attributes_ash_(std::make_unique<DeviceAttributesAsh>()),
+      device_local_account_extension_service_ash_(
+          std::make_unique<DeviceLocalAccountExtensionServiceAsh>()),
       device_oauth2_token_service_ash_(
           std::make_unique<DeviceOAuth2TokenServiceAsh>()),
       device_settings_ash_(std::make_unique<DeviceSettingsAsh>()),
@@ -227,7 +229,6 @@ CrosapiAsh::CrosapiAsh(CrosapiDependencyRegistry* registry)
       network_settings_service_ash_(std::make_unique<NetworkSettingsServiceAsh>(
           g_browser_process->local_state())),
       policy_service_ash_(std::make_unique<PolicyServiceAsh>()),
-      power_ash_(std::make_unique<PowerAsh>()),
       prefs_ash_(
           std::make_unique<PrefsAsh>(g_browser_process->profile_manager(),
                                      g_browser_process->local_state())),
@@ -244,7 +245,6 @@ CrosapiAsh::CrosapiAsh(CrosapiDependencyRegistry* registry)
       speech_recognition_ash_(std::make_unique<SpeechRecognitionAsh>()),
       structured_metrics_service_ash_(
           std::make_unique<StructuredMetricsServiceAsh>()),
-      system_display_ash_(std::make_unique<SystemDisplayAsh>()),
       task_manager_ash_(std::make_unique<TaskManagerAsh>()),
       time_zone_service_ash_(std::make_unique<TimeZoneServiceAsh>()),
       tts_ash_(std::make_unique<TtsAsh>(g_browser_process->profile_manager())),
@@ -550,19 +550,19 @@ void CrosapiAsh::BindSearchControllerRegistry(
 
 void CrosapiAsh::BindSyncService(
     mojo::PendingReceiver<mojom::SyncService> receiver) {
-  ash::SyncServiceAsh* sync_service_ash =
-      ash::SyncServiceFactoryAsh::GetForProfile(GetAshProfile());
-  if (!sync_service_ash) {
-    // |sync_service_ash| is not always available. In particular, sync can be
-    // completely disabled via command line flags.
+  ash::SyncMojoServiceAsh* sync_mojo_service_ash =
+      ash::SyncMojoServiceFactoryAsh::GetForProfile(GetAshProfile());
+  if (!sync_mojo_service_ash) {
+    // |sync_mojo_service_ash| is not always available. In particular, sync can
+    // be completely disabled via command line flags.
     return;
   }
-  sync_service_ash->BindReceiver(std::move(receiver));
+  sync_mojo_service_ash->BindReceiver(std::move(receiver));
 }
 
-void CrosapiAsh::BindSystemDisplay(
-    mojo::PendingReceiver<mojom::SystemDisplay> receiver) {
-  system_display_ash_->BindReceiver(std::move(receiver));
+void CrosapiAsh::REMOVED_29(
+    mojo::PendingReceiver<mojom::SystemDisplayDeprecated> receiver) {
+  NOTIMPLEMENTED();
 }
 
 void CrosapiAsh::BindTaskManager(
@@ -594,6 +594,12 @@ void CrosapiAsh::BindKioskSessionService(
 void CrosapiAsh::BindChromeAppKioskService(
     mojo::PendingReceiver<mojom::ChromeAppKioskService> receiver) {
   chrome_app_kiosk_service_ash_->BindReceiver(std::move(receiver));
+}
+
+void CrosapiAsh::BindDeviceLocalAccountExtensionService(
+    mojo::PendingReceiver<mojom::DeviceLocalAccountExtensionService> receiver) {
+  device_local_account_extension_service_ash_->BindReceiver(
+      std::move(receiver));
 }
 
 void CrosapiAsh::BindTts(mojo::PendingReceiver<mojom::Tts> receiver) {
@@ -704,7 +710,7 @@ void CrosapiAsh::BindPolicyService(
 }
 
 void CrosapiAsh::BindPower(mojo::PendingReceiver<mojom::Power> receiver) {
-  power_ash_->BindReceiver(std::move(receiver));
+  NOTIMPLEMENTED();
 }
 
 void CrosapiAsh::BindPrefs(mojo::PendingReceiver<mojom::Prefs> receiver) {

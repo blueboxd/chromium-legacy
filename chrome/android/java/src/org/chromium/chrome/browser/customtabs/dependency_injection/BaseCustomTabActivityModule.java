@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,8 +12,8 @@ import org.chromium.chrome.browser.browserservices.ui.controller.Verifier;
 import org.chromium.chrome.browser.browserservices.ui.controller.trustedwebactivity.TwaVerifier;
 import org.chromium.chrome.browser.browserservices.ui.controller.webapps.AddToHomescreenVerifier;
 import org.chromium.chrome.browser.browserservices.ui.controller.webapps.WebApkVerifier;
-import org.chromium.chrome.browser.browserservices.verification.OriginVerifierFactory;
-import org.chromium.chrome.browser.browserservices.verification.OriginVerifierFactoryImpl;
+import org.chromium.chrome.browser.browserservices.verification.ChromeOriginVerifierFactory;
+import org.chromium.chrome.browser.browserservices.verification.ChromeOriginVerifierFactoryImpl;
 import org.chromium.chrome.browser.customtabs.CustomTabNightModeStateController;
 import org.chromium.chrome.browser.customtabs.DefaultBrowserProviderImpl;
 import org.chromium.chrome.browser.customtabs.content.CustomTabActivityNavigationController;
@@ -115,8 +115,8 @@ public class BaseCustomTabActivityModule {
 
     @Provides
     @Reusable
-    public OriginVerifierFactory providesOriginVerifierFactory() {
-        return new OriginVerifierFactoryImpl();
+    public ChromeOriginVerifierFactory providesOriginVerifierFactory() {
+        return new ChromeOriginVerifierFactoryImpl();
     }
 
     @Provides

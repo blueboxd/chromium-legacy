@@ -1,20 +1,21 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #import "base/ios/block_types.h"
-#include "base/ios/ios_util.h"
-#include "base/strings/sys_string_conversions.h"
+#import "base/ios/ios_util.h"
+#import "base/strings/sys_string_conversions.h"
 #import "base/test/ios/wait_util.h"
-#include "components/policy/policy_constants.h"
+#import "components/policy/policy_constants.h"
 #import "components/signin/internal/identity_manager/account_capabilities_constants.h"
 #import "components/signin/ios/browser/features.h"
-#include "components/signin/public/base/signin_metrics.h"
-#include "components/strings/grit/components_strings.h"
+#import "components/signin/public/base/signin_metrics.h"
+#import "components/signin/public/base/signin_switches.h"
+#import "components/strings/grit/components_strings.h"
 #import "ios/chrome/browser/metrics/metrics_app_interface.h"
 #import "ios/chrome/browser/policy/policy_earl_grey_utils.h"
-#include "ios/chrome/browser/policy/policy_util.h"
-#include "ios/chrome/browser/pref_names.h"
+#import "ios/chrome/browser/policy/policy_util.h"
+#import "ios/chrome/browser/prefs/pref_names.h"
 #import "ios/chrome/browser/ui/authentication/signin_earl_grey.h"
 #import "ios/chrome/browser/ui/authentication/signin_earl_grey_app_interface.h"
 #import "ios/chrome/browser/ui/authentication/signin_earl_grey_ui_test_util.h"
@@ -23,10 +24,11 @@
 #import "ios/chrome/browser/ui/bookmarks/bookmark_earl_grey.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_earl_grey_ui.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_feature.h"
+#import "ios/chrome/browser/ui/elements/elements_constants.h"
 #import "ios/chrome/browser/ui/recent_tabs/recent_tabs_constants.h"
 #import "ios/chrome/browser/ui/settings/google_services/manage_sync_settings_constants.h"
 #import "ios/chrome/browser/ui/settings/settings_table_view_controller_constants.h"
-#include "ios/chrome/grit/ios_strings.h"
+#import "ios/chrome/grit/ios_strings.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
@@ -35,9 +37,10 @@
 #import "ios/public/provider/chrome/browser/signin/chrome_identity_service.h"
 #import "ios/public/provider/chrome/browser/signin/fake_chrome_identity.h"
 #import "ios/public/provider/chrome/browser/signin/fake_chrome_identity_interaction_manager_constants.h"
+#import "ios/testing/earl_grey/app_launch_manager.h"
 #import "ios/testing/earl_grey/earl_grey_test.h"
 #import "ios/testing/earl_grey/matchers.h"
-#include "ui/base/l10n/l10n_util_mac.h"
+#import "ui/base/l10n/l10n_util_mac.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -221,6 +224,49 @@ void ExpectSyncConsentHistogram(
   [SigninEarlGreyUI signinWithFakeIdentity:fakeIdentity];
 
   [SigninEarlGrey verifySignedInWithFakeIdentity:fakeIdentity];
+}
+
+// Tests that signing out from an unsupervised account without clearing data
+// and then signing in to a supervised account performs a local data clearing
+// on sign-in.
+- (void)testSwitchToSupervisedUser {
+  // Add a fake supervised identity to the device.
+  FakeChromeIdentity* fakeSupervisedIdentity =
+      [FakeChromeIdentity fakeIdentity1];
+  SetParentalControlsCapabilityForIdentity(fakeSupervisedIdentity);
+
+  // Add a fake identity to the device.
+  FakeChromeIdentity* fakeIdentity = [FakeChromeIdentity fakeIdentity2];
+  [SigninEarlGrey addFakeIdentity:fakeIdentity];
+
+  // Sign in with fake identity.
+  [SigninEarlGreyUI signinWithFakeIdentity:fakeIdentity];
+
+  // Add a bookmark after sync is initialized.
+  [ChromeEarlGrey waitForSyncInitialized:YES syncTimeout:kSyncOperationTimeout];
+  [ChromeEarlGrey waitForBookmarksToFinishLoading];
+  [BookmarkEarlGrey setupStandardBookmarks];
+
+  // Sign out with option to keep local data.
+  [SigninEarlGreyUI
+      signOutWithConfirmationChoice:SignOutConfirmationChoiceKeepData];
+
+  // Sign in with fake supervised identity.
+  [SigninEarlGreyUI signinWithFakeIdentity:fakeSupervisedIdentity];
+
+  // Verify bookmarks are cleared.
+  [BookmarkEarlGreyUI openBookmarks];
+  ConditionBlock condition = ^{
+    NSError* error = nil;
+    [[EarlGrey selectElementWithMatcher:grey_text(l10n_util::GetNSString(
+                                            IDS_IOS_BOOKMARK_EMPTY_TITLE))]
+        assertWithMatcher:grey_notVisible()
+                    error:&error];
+    return error == nil;
+  };
+  GREYAssert(base::test::ios::WaitUntilConditionOrTimeout(
+                 base::test::ios::kWaitForUIElementTimeout, condition),
+             @"Waiting for bookmarks to be cleared");
 }
 
 // Tests that signing out a supervised user account with the keep local data
@@ -998,10 +1044,9 @@ void ExpectSyncConsentHistogram(
   [SigninEarlGreyUI verifySigninPromoNotVisible];
 }
 
-// Tests that a user in the `ConsentLevel::kSignin` state will be signed out
-// after clearing their browsing history.
-- (void)testUserSignedOutWhenClearingBrowsingData {
-  FakeChromeIdentity* fakeIdentity = [FakeChromeIdentity fakeIdentity1];
+// Sign-in without sync. Clear browsing data.
+- (void)signInOpenCBDAndClearDataWithFakeIdentity:
+    (FakeChromeIdentity*)fakeIdentity {
   [SigninEarlGrey addFakeIdentity:fakeIdentity];
   [SigninEarlGreyUI signinWithFakeIdentity:fakeIdentity enableSync:NO];
 
@@ -1013,7 +1058,71 @@ void ExpectSyncConsentHistogram(
   [ChromeEarlGreyUI tapClearBrowsingDataMenuButton:ClearBrowsingDataButton()];
   [[EarlGrey selectElementWithMatcher:ConfirmClearBrowsingDataButton()]
       performAction:grey_tap()];
+  [[EarlGrey
+      selectElementWithMatcher:grey_accessibilityID(
+                                   kActivityOverlayViewAccessibilityIdentifier)]
+      assertWithMatcher:grey_nil()];
+  [[EarlGrey selectElementWithMatcher:SettingsDoneButton()]
+      performAction:grey_tap()];
+}
 
+// Tests that a user in the `ConsentLevel::kSignin` state will be signed out
+// after clearing their browsing history if |kEnableCbdSignOut| feature is
+// enabled.
+// TODO(crbug.com/1363372): Flaky on iOS simulator.
+#if TARGET_IPHONE_SIMULATOR
+#define MAYBE_testUserSignedInWhenClearingBrowsingData \
+  DISABLED_testUserSignedInWhenClearingBrowsingData
+#else
+#define MAYBE_testUserSignedInWhenClearingBrowsingData \
+  testUserSignedInWhenClearingBrowsingData
+#endif
+- (void)MAYBE_testUserSignedInWhenClearingBrowsingData {
+  // Reload with forced kEnableCbdSignOut enabled.
+  AppLaunchConfiguration config = self.appConfigurationForTestCase;
+  config.features_enabled.push_back(switches::kEnableCbdSignOut);
+  [[AppLaunchManager sharedManager] ensureAppLaunchedWithConfiguration:config];
+
+  // Remove closed tab history to make sure the sign-in promo is always visible
+  // in recent tabs.
+  [ChromeEarlGrey clearBrowsingHistory];
+  [ChromeEarlGrey waitForBookmarksToFinishLoading];
+  [ChromeEarlGrey clearBookmarks];
+  GREYAssertNil([MetricsAppInterface setupHistogramTester],
+                @"Failed to set up histogram tester.");
+
+  FakeChromeIdentity* fakeIdentity = [FakeChromeIdentity fakeIdentity1];
+  [self signInOpenCBDAndClearDataWithFakeIdentity:fakeIdentity];
+  [SigninEarlGrey verifySignedInWithFakeIdentity:fakeIdentity];
+}
+
+// Tests that a user in the `ConsentLevel::kSignin` state will be signed out
+// after clearing their browsing history if |kEnableCbdSignOut| feature is
+// disabled.
+// TODO(crbug.com/1363372): Flaky on iOS simulator.
+#if TARGET_IPHONE_SIMULATOR
+#define MAYBE_testUserSignedOutWhenClearingBrowsingData \
+  DISABLED_testUserSignedOutWhenClearingBrowsingData
+#else
+#define MAYBE_testUserSignedOutWhenClearingBrowsingData \
+  testUserSignedOutWhenClearingBrowsingData
+#endif
+- (void)MAYBE_testUserSignedOutWhenClearingBrowsingData {
+  // Reload with forced kEnableCbdSignOut disabled.
+  AppLaunchConfiguration config = self.appConfigurationForTestCase;
+  config.features_disabled.push_back(switches::kEnableCbdSignOut);
+  [[AppLaunchManager sharedManager] ensureAppLaunchedWithConfiguration:config];
+
+  // Remove closed tab history to make sure the sign-in promo is always visible
+  // in recent tabs.
+  [ChromeEarlGrey clearBrowsingHistory];
+  [ChromeEarlGrey waitForBookmarksToFinishLoading];
+  [ChromeEarlGrey clearBookmarks];
+  GREYAssertNil([MetricsAppInterface setupHistogramTester],
+                @"Failed to set up histogram tester.");
+
+  FakeChromeIdentity* fakeIdentity = [FakeChromeIdentity fakeIdentity1];
+  [self signInOpenCBDAndClearDataWithFakeIdentity:fakeIdentity];
   [SigninEarlGrey verifySignedOut];
 }
 
@@ -1162,8 +1271,7 @@ void ExpectSyncConsentHistogram(
                             grey_userInteractionEnabled(), nil)]
       performAction:grey_tap()];
   // Open other device tab.
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::ShowTabsButton()]
-      performAction:grey_tap()];
+  [ChromeEarlGreyUI openTabGrid];
   [[EarlGrey selectElementWithMatcher:chrome_test_util::
                                           TabGridOtherDevicesPanelButton()]
       performAction:grey_tap()];

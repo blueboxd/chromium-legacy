@@ -1,4 +1,4 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -85,9 +85,6 @@ class SigninScreenHandler
 
   // NetworkStateInformer::NetworkStateInformerObserver implementation:
   void UpdateState(NetworkError::ErrorReason reason) override;
-
-  // Required Local State preferences.
-  static void RegisterPrefs(PrefRegistrySimple* registry);
 
   // To avoid spurious error messages on flaky networks, the offline message is
   // only shown if the network is offline for a threshold number of seconds.

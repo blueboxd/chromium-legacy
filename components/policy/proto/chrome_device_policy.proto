@@ -1,4 +1,4 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -128,9 +128,12 @@ message DeviceReportingProto {
   optional bool report_activity_times = 2 [default = true];
   optional bool report_boot_mode = 3 [default = true];
   optional bool report_location = 4 [default = false];
-  optional bool report_network_interfaces = 5 [default = true];
+  // TODO(b/243958646): The server side should remove the usage of this field.
+  optional bool report_network_interfaces = 5
+      [default = true, deprecated = true];
   optional bool report_users = 6 [default = true];
-  optional bool report_hardware_status = 7 [default = true];
+  // TODO(b/243960946): The server side should remove the usage of this field.
+  optional bool report_hardware_status = 7 [default = true, deprecated = true];
   optional bool report_session_status = 8 [default = true];
   optional bool report_os_update_status = 10 [default = false];
   optional bool report_running_kiosk_app = 11 [default = false];
@@ -175,6 +178,8 @@ message DeviceReportingProto {
   // Audio telemetry policy
   optional int64 report_device_audio_status_checking_rate_ms = 35
       [default = 600000];
+
+  optional StringList report_signal_strength_event_driven_telemetry = 38;
 }
 
 message EphemeralUsersEnabledProto {
@@ -1873,4 +1878,5 @@ message ChromeDeviceSettingsProto {
   optional SAMLUsernameProto saml_username = 135;
   optional StringListPolicyProto
       device_login_screen_context_aware_access_signals_allowlist = 136;
+  optional StringPolicyProto device_printing_client_name_template = 137;
 }

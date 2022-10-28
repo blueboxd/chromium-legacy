@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -49,6 +49,12 @@ class TestRenderViewContextMenu : public RenderViewContextMenu {
   // Use the constructor if you want to create menu with fine-grained params.
   static std::unique_ptr<TestRenderViewContextMenu> Create(
       content::WebContents* web_contents,
+      const GURL& page_url,
+      const GURL& link_url,
+      const GURL& frame_url);
+
+  static std::unique_ptr<TestRenderViewContextMenu> Create(
+      content::RenderFrameHost* render_frame_host,
       const GURL& page_url,
       const GURL& link_url,
       const GURL& frame_url);

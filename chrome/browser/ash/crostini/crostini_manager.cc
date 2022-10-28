@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -547,14 +547,6 @@ void CrostiniManager::CrostiniRestarter::StartLxdContainerFinished(
   // If arc sideloading is enabled, configure the container for that.
   crostini_manager_->ConfigureForArcSideload();
 
-  // Additional setup might be required in case of default Crostini container
-  // such as installing Ansible in default container and applying
-  // pre-determined configuration to the default container.
-  if (container_id_ == DefaultContainerId() &&
-      ShouldConfigureDefaultContainer(profile_)) {
-    requests_[0].options.ansible_playbook = profile_->GetPrefs()->GetFilePath(
-        prefs::kCrostiniAnsiblePlaybookFilePath);
-  }
   if (requests_[0].options.ansible_playbook.has_value()) {
     // Check to see if there's any additional configuration via Ansible
     // required.
@@ -566,15 +558,16 @@ void CrostiniManager::CrostiniRestarter::StartLxdContainerFinished(
     return;
   }
   // If default termina/penguin, then sshfs mount and reshare folders, else we
-  // are finished. Also, a lot of unit tests don't inject a fake container so
-  // it's possible in tests to end up here without a running container. Don't
-  // try mounting sshfs in that case.
-  bool running =
-      guest_os::GuestOsSessionTracker::GetForProfile(profile_)->IsRunning(
-          container_id_);
-  if (container_id_ == DefaultContainerId() && running) {
-    crostini_manager_->MountCrostiniFiles(container_id_, base::DoNothing(),
-                                          true);
+  // are finished. Because the session tracker update and this method are racing
+  // on the same thread we do the update async once the session tracker is
+  // ready.
+  if (container_id_ == DefaultContainerId()) {
+    crostini_manager_->primary_counter_mount_subscription_ =
+        guest_os::GuestOsSessionTracker::GetForProfile(profile_)
+            ->RunOnceContainerStarted(
+                container_id_,
+                base::BindOnce(&CrostiniManager::MountCrostiniFilesBackground,
+                               crostini_manager_->GetWeakPtr()));
   }
   FinishRestart(result);
 }
@@ -624,7 +617,7 @@ base::OnceClosure CrostiniManager::CrostiniRestarter::ExtractRequests(
     if (it->observer)
       observer_list_.RemoveObserver(it->observer);
     callbacks.push_back(std::move(it->callback));
-    requests_.erase(it);
+    it = requests_.erase(it);
   }
 
   return base::BindOnce(
@@ -2230,16 +2223,6 @@ void CrostiniManager::RemoveCrostiniContainerPropertiesObserver(
   crostini_container_properties_observers_.RemoveObserver(observer);
 }
 
-void CrostiniManager::AddContainerStartedObserver(
-    ContainerStartedObserver* observer) {
-  container_started_observers_.AddObserver(observer);
-}
-
-void CrostiniManager::RemoveContainerStartedObserver(
-    ContainerStartedObserver* observer) {
-  container_started_observers_.RemoveObserver(observer);
-}
-
 void CrostiniManager::AddContainerShutdownObserver(
     ContainerShutdownObserver* observer) {
   container_shutdown_observers_.AddObserver(observer);
@@ -2713,9 +2696,6 @@ void CrostiniManager::OnContainerStarted(
             weak_ptr_factory_.GetWeakPtr(), std::move(profile_),
             guest_os::GuestId(kCrostiniDefaultVmType, signal.vm_name(),
                               signal.container_name())));
-  }
-  for (auto& observer : container_started_observers_) {
-    observer.OnContainerStarted(container_id);
   }
 }
 
@@ -3919,6 +3899,10 @@ void CrostiniManager::MountCrostiniFiles(guest_os::GuestId container_id,
           },
           std::move(callback)),
       background);
+}
+
+void CrostiniManager::MountCrostiniFilesBackground(guest_os::GuestInfo info) {
+  MountCrostiniFiles(info.guest_id, base::DoNothing(), true);
 }
 
 void CrostiniManager::GetInstallLocation(

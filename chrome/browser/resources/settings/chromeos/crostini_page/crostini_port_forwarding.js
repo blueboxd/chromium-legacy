@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,7 +7,7 @@
  * 'crostini-port-forwarding' is the settings port forwarding subpage for
  * Crostini.
  */
-import 'chrome://resources/cr_elements/icons.m.js';
+import 'chrome://resources/cr_elements/icons.html.js';
 import 'chrome://resources/cr_elements/cr_lazy_render/cr_lazy_render.js';
 import 'chrome://resources/cr_elements/cr_icon_button/cr_icon_button.js';
 import 'chrome://resources/cr_elements/cr_toast/cr_toast.js';
@@ -20,7 +20,7 @@ import '../../settings_shared.css.js';
 import 'chrome://resources/cr_elements/cr_action_menu/cr_action_menu.js';
 
 import {assert} from 'chrome://resources/js/assert.m.js';
-import {WebUIListenerBehavior, WebUIListenerBehaviorInterface} from 'chrome://resources/js/web_ui_listener_behavior.m.js';
+import {WebUIListenerBehavior, WebUIListenerBehaviorInterface} from 'chrome://resources/cr_elements/web_ui_listener_behavior.js';
 import {html, mixinBehaviors, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {ContainerInfo, GuestId} from '../guest_os/guest_os_browser_proxy.js';
@@ -28,7 +28,7 @@ import {containerLabel, equalContainerId} from '../guest_os/guest_os_container_s
 import {recordSettingChange} from '../metrics_recorder.js';
 import {PrefsBehavior, PrefsBehaviorInterface} from '../prefs_behavior.js';
 
-import {CrostiniBrowserProxy, CrostiniBrowserProxyImpl, CrostiniPortActiveSetting, CrostiniPortProtocol, CrostiniPortSetting, DEFAULT_CONTAINER_ID, DEFAULT_CROSTINI_CONTAINER, DEFAULT_CROSTINI_VM} from './crostini_browser_proxy.js';
+import {CrostiniBrowserProxy, CrostiniBrowserProxyImpl, CrostiniPortActiveSetting, CrostiniPortProtocol, CrostiniPortSetting, DEFAULT_CROSTINI_CONTAINER, DEFAULT_CROSTINI_GUEST_ID, DEFAULT_CROSTINI_VM} from './crostini_browser_proxy.js';
 
 /**
  * @constructor
@@ -282,7 +282,8 @@ class CrostiniPortForwardingElement extends CrostiniPortForwardingBase {
   showContainerId_(allPorts, id) {
     return allPorts.some(port => equalContainerId(port.container_id, id)) &&
         allPorts.some(
-            port => !equalContainerId(port.container_id, DEFAULT_CONTAINER_ID));
+            port => !equalContainerId(
+                port.container_id, DEFAULT_CROSTINI_GUEST_ID));
   }
 
   /**
@@ -291,9 +292,7 @@ class CrostiniPortForwardingElement extends CrostiniPortForwardingBase {
    * @private
    */
   containerLabel_(id) {
-    return this.showContainerId_(this.allPorts_, id) ?
-        containerLabel(id, DEFAULT_CROSTINI_VM) :
-        '';
+    return containerLabel(id, DEFAULT_CROSTINI_VM);
   }
 
   /**

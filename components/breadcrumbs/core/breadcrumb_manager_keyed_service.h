@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -37,10 +37,9 @@ class BreadcrumbManagerKeyedService : public KeyedService {
   void AddObserver(BreadcrumbManagerObserver* observer);
   void RemoveObserver(BreadcrumbManagerObserver* observer);
 
-  // Returns up to |event_count_limit| events from the underlying
-  // |breadcrumb_manager|. See |BreadcrumbManager::GetEvents| for returned event
-  // details.
-  const std::list<std::string> GetEvents(size_t event_count_limit) const;
+  // Returns events from the underlying `breadcrumb_manager_`. See
+  // `BreadcrumbManager::GetEvents` for returned event details.
+  const std::list<std::string> GetEvents() const;
 
   // Persists all events logged to |breadcrumb_manager_| to
   // |persistent_storage_manager|. If StartPersisting has already been called,

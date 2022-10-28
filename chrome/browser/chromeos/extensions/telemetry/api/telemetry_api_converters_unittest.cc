@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -198,7 +198,7 @@ TEST(TelemetryApiConverters, BatteryInfo) {
   ASSERT_TRUE(result.vendor);
   EXPECT_EQ(kVendor, *result.vendor);
   // serial_number is not converted in ConvertPtr().
-  EXPECT_TRUE(result.serial_number == nullptr);
+  EXPECT_FALSE(result.serial_number);
 
   ASSERT_TRUE(result.charge_full_design);
   EXPECT_EQ(kChargeFullDesign,

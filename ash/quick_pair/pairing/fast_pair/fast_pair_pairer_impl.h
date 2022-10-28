@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -111,7 +111,11 @@ class FastPairPairerImpl : public FastPairPairer,
 
   // device::BluetoothAdapter::ConnectDevice callbacks
   void OnConnectDevice(device::BluetoothDevice* device);
-  void OnConnectError();
+  void OnConnectError(const std::string& error_message);
+
+  //  FastPairHandshakeLookup::Create callback
+  void OnHandshakeComplete(scoped_refptr<Device> device,
+                           absl::optional<PairFailure> failure);
 
   // FastPairGattServiceClient::WritePasskey callback
   void OnPasskeyResponse(std::vector<uint8_t> response_bytes,

@@ -86,6 +86,7 @@ import glob
 import json
 import optparse
 import os
+import platform
 import re
 import shlex
 import shutil
@@ -324,8 +325,17 @@ class PathContext(object):
             pass
       return (revisions, next_marker, githash_svn_dict)
 
+    # crbug.com/1338727
+    # loop_around is used to continue paging from e.g. */999988 to */1000000
+    # due to the lexicographical sort of the prefixes.
+    loop_around = False
+    # only use the flag above when the starting revision is set and less than
+    # this
+    LOOP_AROUND_REV = 1000000
     # Fetch the first list of revisions.
     if last_known_rev:
+      if last_known_rev < LOOP_AROUND_REV:
+        loop_around = True
       revisions = []
       # Optimization: Start paging at the last known revision (local cache).
       next_marker = _GetMarkerForRev(last_known_rev)
@@ -340,7 +350,12 @@ class PathContext(object):
 
     # If the result list was truncated, refetch with the next marker. Do this
     # until an entire directory listing is done.
-    while next_marker:
+    while next_marker or loop_around:
+      # If we got to the end of the listing but we started e.g on rev 999XXX,
+      # then loop around once to get revs >= 1000000.
+      if loop_around and not next_marker:
+        loop_around = False
+        next_marker = _GetMarkerForRev(0)
       sys.stdout.write('\rFetching revisions at marker %s' % next_marker)
       sys.stdout.flush()
 
@@ -624,6 +639,15 @@ def RunRevision(context, revision, zip_file, profile, num_runs, command, args):
   # Create a temp directory and unzip the revision into it.
   cwd = os.getcwd()
   tempdir = tempfile.mkdtemp(prefix='bisect_tmp')
+  # On Windows 10, file system needs to be readable from App Container.
+  if sys.platform == 'win32' and platform.release() == '10':
+    icacls_cmd = ['icacls', tempdir, '/grant', '*S-1-15-2-2:(OI)(CI)(RX)']
+    proc = subprocess.Popen(icacls_cmd,
+                            bufsize=0,
+                            stdout=subprocess.PIPE,
+                            stderr=subprocess.PIPE)
+    proc.communicate()
+
   UnzipFilenameToDir(zip_file, tempdir)
 
   # Hack: Some Chrome OS archives are missing some files; try to copy them

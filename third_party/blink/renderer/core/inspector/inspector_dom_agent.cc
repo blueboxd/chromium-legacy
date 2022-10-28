@@ -819,10 +819,12 @@ Response InspectorDOMAgent::getTopLayerElements(
     return Response::ServerError("DOM agent hasn't been enabled");
 
   *result = std::make_unique<protocol::Array<int>>();
-  for (auto element : document_->TopLayerElements()) {
-    int node_id = PushNodePathToFrontend(element);
-    if (node_id)
-      (*result)->emplace_back(node_id);
+  for (auto document : Documents()) {
+    for (auto element : document->TopLayerElements()) {
+      int node_id = PushNodePathToFrontend(element);
+      if (node_id)
+        (*result)->emplace_back(node_id);
+    }
   }
 
   return Response::Success();
@@ -838,8 +840,7 @@ int InspectorDOMAgent::PushNodePathToFrontend(Node* node_to_push,
     return 0;
 
   // Return id in case the node is known.
-  auto it = node_map->find(node_to_push);
-  if (it != node_map->end())
+  if (auto it = node_map->find(node_to_push); it != node_map->end())
     return it->value;
 
   Node* node = node_to_push;
@@ -856,14 +857,13 @@ int InspectorDOMAgent::PushNodePathToFrontend(Node* node_to_push,
   }
 
   for (int i = path.size() - 1; i >= 0; --i) {
-    auto it = node_map->find(path.at(i).Get());
-    if (it != node_map->end()) {
+    if (auto it = node_map->find(path.at(i).Get()); it != node_map->end()) {
       int node_id = it->value;
       DCHECK(node_id);
       PushChildNodesToFrontend(node_id);
     }
   }
-  it = node_map->find(node_to_push);
+  auto it = node_map->find(node_to_push);
   return it != node_map->end() ? it->value : 0;
 }
 

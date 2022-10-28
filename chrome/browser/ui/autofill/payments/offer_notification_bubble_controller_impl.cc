@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -166,9 +166,11 @@ void OfferNotificationBubbleControllerImpl::ShowOfferNotificationIfApplicable(
     bool should_show_icon_only) {
   DCHECK(offer);
 
-  // If offer to be shown has not changed and it has not been shown for more
-  // than kAutofillBubbleSurviveNavigationTime, do not dismiss the bubble.
-  if (offer_ == *offer && bubble_shown_timestamp_.has_value() &&
+  // If this is not the bubble's first show, and offer to be shown has not
+  // changed, and it has not been shown for more than
+  // kAutofillBubbleSurviveNavigationTime, do not dismiss the bubble.
+  if (offer_.GetOfferType() != AutofillOfferData::OfferType::UNKNOWN &&
+      offer_ == *offer && bubble_shown_timestamp_.has_value() &&
       AutofillClock::Now() - *bubble_shown_timestamp_ <
           kAutofillBubbleSurviveNavigationTime) {
     return;
@@ -226,7 +228,8 @@ void OfferNotificationBubbleControllerImpl::DismissNotification() {
 
 void OfferNotificationBubbleControllerImpl::OnCouponInvalidated(
     const autofill::AutofillOfferData& offer_data) {
-  if (offer_ != offer_data)
+  if (offer_.GetOfferType() == AutofillOfferData::OfferType::UNKNOWN ||
+      offer_ != offer_data)
     return;
   DismissNotification();
 }

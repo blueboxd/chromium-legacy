@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -25,6 +25,7 @@
 #include "chrome/browser/ui/views/location_bar/content_setting_image_view.h"
 #include "chrome/browser/ui/views/location_bar/location_icon_view.h"
 #include "chrome/browser/ui/views/page_action/page_action_icon_view.h"
+#include "chrome/browser/ui/views/permissions/chip_controller.h"
 #include "components/accuracy_tips/accuracy_service.h"
 #include "components/permissions/permission_prompt.h"
 #include "components/security_state/core/security_state.h"
@@ -49,7 +50,6 @@ class OmniboxPopupView;
 class OmniboxViewViews;
 class PageActionIconController;
 class PageActionIconContainerView;
-class PermissionChip;
 class Profile;
 class SelectedKeywordView;
 
@@ -172,30 +172,11 @@ class LocationBarView : public LocationBar,
   // accessibility.
   bool ActivateFirstInactiveBubbleForAccessibility();
 
-  PermissionChip* chip() { return chip_; }
-
-  // Returns true if the permission chip exists, fully initialized and visible.
-  bool IsChipActive();
-
   // Adds chip into the LocationBarView in the first position.
   void CreateChip();
 
-  // Creates and displays an instance of PermissionRequestChip.
-  // If `should_bubble_start_open` is true, a permission prompt bubble will be
-  // displayed automatically after PermissionRequestChip is created.
-  // `should_bubble_start_open` is evaluated based on
-  // `PermissionChipGestureSensitive` and `PermissionChipRequestTypeSensitive`
-  // experiments.
-  PermissionChip* DisplayChip(permissions::PermissionPrompt::Delegate* delegate,
-                              bool should_bubble_start_open);
-
-  // Creates and displays an instance of PermissionQuietChip.
-  PermissionChip* DisplayQuietChip(
-      permissions::PermissionPrompt::Delegate* delegate,
-      bool should_expand);
-
-  // Removes previously displayed PermissionChip.
-  void FinalizeChip();
+  // Controls the chip in the LocationBarView
+  ChipController* chip_controller() { return chip_controller_.get(); }
 
   IntentChipButton* intent_chip() { return intent_chip_; }
 
@@ -424,8 +405,9 @@ class LocationBarView : public LocationBar,
   // Our delegate.
   raw_ptr<Delegate> delegate_;
 
-  // A view that contains a chip button that shows a permission request.
-  raw_ptr<PermissionChip> chip_ = nullptr;
+  // A controller for a view that contains a chip button which is used for
+  // permission information and requests.
+  std::unique_ptr<ChipController> chip_controller_ = nullptr;
 
   // An icon to the left of the edit field: the HTTPS lock, blank page icon,
   // search icon, EV HTTPS bubble, etc.

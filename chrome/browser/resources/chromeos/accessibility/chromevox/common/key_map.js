@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -446,6 +446,13 @@ KeyMap.BINDINGS_ = [
     sequence: {cvoxModifier: true, keys: {keyCode: [KeyCode.SPACE]}},
   },
   {
+    command: 'forceLongClickOnCurrentItem',
+    sequence: {
+      cvoxModifier: true,
+      keys: {keyCode: [KeyCode.SPACE], shiftKey: [true]},
+    },
+  },
+  {
     command: 'contextMenu',
     sequence: {cvoxModifier: true, keys: {keyCode: [KeyCode.M]}},
   },
@@ -802,10 +809,6 @@ KeyMap.BINDINGS_ = [
       cvoxModifier: true,
       keys: {keyCode: [KeyCode.OEM_5], ctrlKey: [true], shiftKey: [true]},
     },
-  },
-  {
-    command: 'logLanguageInformationForCurrentNode',
-    sequence: {cvoxModifier: true, keys: {keyCode: [KeyCode.P, KeyCode.L]}},
   },
   {
     command: 'copy',

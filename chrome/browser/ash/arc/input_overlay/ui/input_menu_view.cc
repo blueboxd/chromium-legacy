@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,6 +12,7 @@
 #include "ash/style/style_util.h"
 #include "base/bind.h"
 #include "base/system/sys_info.h"
+#include "chrome/browser/ash/arc/input_overlay/arc_input_overlay_ukm.h"
 #include "chrome/browser/ash/arc/input_overlay/arc_input_overlay_uma.h"
 #include "chrome/browser/ash/arc/input_overlay/constants.h"
 #include "chrome/browser/ash/arc/input_overlay/display_overlay_controller.h"
@@ -20,6 +21,7 @@
 #include "net/base/url_util.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/models/image_model.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/chromeos/styles/cros_styles.h"
 #include "ui/chromeos/styles/cros_tokens_color_mappings.h"
@@ -220,11 +222,11 @@ void InputMenuView::Init(const gfx::Size& parent_size) {
                           gfx::Font::Weight::MEDIUM),
             /*line_height=*/kHeaderMinHeight));
 
-    auto* alpha_label =
-        header_view->AddChildView(ash::login_views_utils::CreateBubbleLabel(
+    auto* alpha_label = header_view->AddChildView(
+        ash::login_views_utils::CreateThemedBubbleLabel(
             l10n_util::GetStringUTF16(IDS_INPUT_OVERLAY_RELEASE_ALPHA),
-            /*view_defining_max_width=*/nullptr, /*color=*/
-            arc::GetCrOSColor(cros_styles::ColorName::kTextColorSelection),
+            /*view_defining_max_width=*/nullptr,
+            /*enabled_color_type=*/cros_tokens::kColorSelection,
             gfx::FontList({ash::login_views_utils::kGoogleSansFont},
                           gfx::Font::FontStyle::NORMAL, kAlphaFontSize,
                           gfx::Font::Weight::MEDIUM)));
@@ -232,9 +234,8 @@ void InputMenuView::Init(const gfx::Size& parent_size) {
     alpha_label->SetPreferredSize(gfx::Size(
         alpha_label->GetPreferredSize().width() + 2 * kAlphaSidePadding,
         kAlphaHeight));
-    alpha_label->SetBackground(views::CreateRoundedRectBackground(
-        arc::GetCrOSColor(cros_styles::ColorName::kHighlightColor),
-        kAlphaCornerRadius));
+    alpha_label->SetBackground(views::CreateThemedRoundedRectBackground(
+        cros_tokens::kHighlightColor, kAlphaCornerRadius));
 
     game_control_toggle_ =
         header_view->AddChildView(std::make_unique<views::ToggleButton>(
@@ -245,11 +246,11 @@ void InputMenuView::Init(const gfx::Size& parent_size) {
     game_control_toggle_->SetIsOn(
         display_overlay_controller_->GetTouchInjectorEnable());
 
-    auto close_icon =
-        gfx::CreateVectorIcon(views::kIcCloseIcon, kCloseButtonSize, color);
+    auto close_icon = ui::ImageModel::FromVectorIcon(views::kIcCloseIcon, color,
+                                                     kCloseButtonSize);
     auto close_button = std::make_unique<views::ImageButton>(
         base::BindRepeating(&InputMenuView::CloseMenu, base::Unretained(this)));
-    close_button->SetImage(views::Button::STATE_NORMAL, close_icon);
+    close_button->SetImageModel(views::Button::STATE_NORMAL, close_icon);
     close_button->SetBackground(
         views::CreateSolidBackground(SK_ColorTRANSPARENT));
     close_button->SetBorder(views::CreateEmptyBorder(
@@ -297,7 +298,7 @@ void InputMenuView::Init(const gfx::Size& parent_size) {
             base::BindRepeating(&InputMenuView::OnEditButtonPressed,
                                 base::Unretained(this)),
             l10n_util::GetStringUTF16(IDS_INPUT_OVERLAY_MENU_EDIT_BUTTON),
-            ash::PillButton::Type::kIconless,
+            ash::PillButton::Type::kDefaultWithoutIcon,
             /*icon=*/nullptr));
     edit_button_->SetEnabled(game_control_toggle_->GetIsOn());
     key_mapping_label->SetBorder(views::CreateEmptyBorder(CalculateInsets(
@@ -398,9 +399,13 @@ void InputMenuView::OnEditButtonPressed() {
     show_mapping_toggle_->SetIsOn(true);
     display_overlay_controller_->SetInputMappingVisible(true);
   }
-  // Change display mode, load edit UI per action and overall edit buttons.
-  display_overlay_controller_->SetDisplayMode(DisplayMode::kEdit);
   RecordInputOverlayCustomizedUsage();
+  InputOverlayUkm::RecordInputOverlayCustomizedUsageUkm(
+      *(display_overlay_controller_->GetPackageName()));
+  // Change display mode, load edit UI per action and overall edit buttons; make
+  // sure the following line is at the bottom because edit mode will kill this
+  // view.
+  display_overlay_controller_->SetDisplayMode(DisplayMode::kEdit);
 }
 
 void InputMenuView::OnButtonSendFeedbackPressed() {

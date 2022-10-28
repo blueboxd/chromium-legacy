@@ -1,25 +1,25 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #import "ios/chrome/browser/commerce/shopping_persisted_data_tab_helper.h"
 
-#include "base/base64.h"
-#include "base/command_line.h"
-#include "base/strings/sys_string_conversions.h"
-#include "base/strings/utf_string_conversions.h"
-#include "base/test/ios/wait_util.h"
-#include "base/test/metrics/histogram_tester.h"
-#include "base/test/scoped_feature_list.h"
-#include "base/time/time.h"
-#include "components/commerce/core/commerce_feature_list.h"
-#include "components/commerce/core/proto/price_tracking.pb.h"
-#include "components/optimization_guide/core/optimization_guide_features.h"
-#include "components/optimization_guide/core/optimization_guide_switches.h"
-#include "components/optimization_guide/core/optimization_guide_test_util.h"
-#include "components/sync_preferences/testing_pref_service_syncable.h"
-#include "components/unified_consent/pref_names.h"
-#include "components/unified_consent/unified_consent_service.h"
+#import "base/base64.h"
+#import "base/command_line.h"
+#import "base/strings/sys_string_conversions.h"
+#import "base/strings/utf_string_conversions.h"
+#import "base/test/ios/wait_util.h"
+#import "base/test/metrics/histogram_tester.h"
+#import "base/test/scoped_feature_list.h"
+#import "base/time/time.h"
+#import "components/commerce/core/commerce_feature_list.h"
+#import "components/commerce/core/proto/price_tracking.pb.h"
+#import "components/optimization_guide/core/optimization_guide_features.h"
+#import "components/optimization_guide/core/optimization_guide_switches.h"
+#import "components/optimization_guide/core/optimization_guide_test_util.h"
+#import "components/sync_preferences/testing_pref_service_syncable.h"
+#import "components/unified_consent/pref_names.h"
+#import "components/unified_consent/unified_consent_service.h"
 #import "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #import "ios/chrome/browser/optimization_guide/optimization_guide_service.h"
 #import "ios/chrome/browser/optimization_guide/optimization_guide_service_factory.h"
@@ -32,16 +32,14 @@
 #import "ios/web/public/test/fakes/fake_navigation_context.h"
 #import "ios/web/public/test/fakes/fake_web_state.h"
 #import "ios/web/public/test/web_task_environment.h"
-#include "testing/platform_test.h"
-#include "url/gurl.h"
+#import "testing/platform_test.h"
+#import "url/gurl.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
 
 namespace {
-const char kPriceTrackingWithOptimizationGuideParam[] =
-    "price_tracking_with_optimization_guide";
 constexpr char kTypeURL[] =
     "type.googleapis.com/optimization_guide.proto.PriceTrackingData";
 constexpr char kPriceDropUrl[] = "https://merchant.com/has_price_drop.html";
@@ -84,7 +82,7 @@ void FillPriceTrackingProto(commerce::PriceTrackingData& price_tracking_data,
       ->set_amount_micros(old_price_micros);
 }
 
-}
+}  // namespace
 
 class ShoppingPersistedDataTabHelperTest : public PlatformTest {
  public:
@@ -115,7 +113,7 @@ class ShoppingPersistedDataTabHelperTest : public PlatformTest {
     auth_service_ = static_cast<AuthenticationServiceFake*>(
         AuthenticationServiceFactory::GetInstance()->GetForBrowserState(
             browser_state_.get()));
-    auth_service_->SignIn(fake_identity_, nil);
+    auth_service_->SignIn(fake_identity_);
   }
 
   void MockOptimizationGuideResponse(
@@ -131,9 +129,7 @@ class ShoppingPersistedDataTabHelperTest : public PlatformTest {
     scoped_feature_list_.InitWithFeaturesAndParameters(
         {{optimization_guide::features::kOptimizationHints, {}},
          {optimization_guide::features::kOptimizationGuideMetadataValidation,
-          {}},
-         {commerce::kCommercePriceTracking,
-          {{kPriceTrackingWithOptimizationGuideParam, "true"}}}},
+          {}}},
         {});
 
     web_state_.SetBrowserState(browser_state_.get());

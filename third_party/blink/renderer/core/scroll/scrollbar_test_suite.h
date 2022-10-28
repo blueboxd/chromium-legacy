@@ -101,12 +101,13 @@ class MockScrollableArea : public GarbageCollected<MockScrollableArea>,
   bool ScrollAnimatorEnabled() const override { return true; }
   int PageStep(ScrollbarOrientation) const override { return 0; }
   void ScrollControlWasSetNeedsPaintInvalidation() override {}
-  gfx::Point ConvertFromRootFrame(const gfx::Point& point_in_root_frame) const {
+  gfx::Point ConvertFromRootFrame(
+      const gfx::Point& point_in_root_frame) const override {
     return point_in_root_frame;
   }
   gfx::Point ConvertFromContainingEmbeddedContentViewToScrollbar(
       const Scrollbar& scrollbar,
-      const gfx::Point& parent_point) const {
+      const gfx::Point& parent_point) const override {
     return parent_point;
   }
 
@@ -122,6 +123,11 @@ class MockScrollableArea : public GarbageCollected<MockScrollableArea>,
 
   ScrollbarTheme& GetPageScrollbarTheme() const override {
     return ScrollbarTheme::GetTheme();
+  }
+
+  float ScaleFromDIP() const override { return scale_from_dip_; }
+  void SetScaleFromDIP(float scale_from_dip) {
+    scale_from_dip_ = scale_from_dip;
   }
 
   using ScrollableArea::ClearNeedsPaintInvalidationForScrollControls;
@@ -143,6 +149,7 @@ class MockScrollableArea : public GarbageCollected<MockScrollableArea>,
   ScrollOffset scroll_offset_;
   ScrollOffset maximum_scroll_offset_;
   Member<MockPlatformChromeClient> chrome_client_;
+  float scale_from_dip_ = 1.f;
 };
 
 }  // namespace blink

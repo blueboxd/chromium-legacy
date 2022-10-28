@@ -233,6 +233,12 @@ class CORE_EXPORT NGContainerFragmentBuilder : public NGFragmentBuilder {
   // block layout algorithm, to perform the final OOF layout and positioning.
   void MoveOutOfFlowDescendantCandidatesToDescendants();
 
+  // Propagate |child|'s anchor for the CSS Anchor Positioning to |this|
+  // builder. This includes the anchor of the |child| itself and anchors
+  // propagated to the |child| from its descendants.
+  void PropagateChildAnchors(const NGPhysicalFragment& child,
+                             const LogicalOffset& child_offset);
+
   // Propagate the OOF descendants from a fragment to the builder. Since the OOF
   // descendants on the fragment are NGPhysicalOutOfFlowPositionedNodes, we
   // first have to create NGLogicalOutOfFlowPositionedNodes copies before
@@ -352,7 +358,7 @@ class CORE_EXPORT NGContainerFragmentBuilder : public NGFragmentBuilder {
 
   const NGConstraintSpace& ConstraintSpace() const { return space_; }
 
-  const NGLogicalAnchorQuery& AnchorQuery() const { return anchor_query_; }
+  const NGLogicalAnchorQuery* AnchorQuery() const { return anchor_query_; }
 
   const NGLayoutResult* Abort(NGLayoutResult::EStatus);
 
@@ -364,6 +370,8 @@ class CORE_EXPORT NGContainerFragmentBuilder : public NGFragmentBuilder {
   friend class NGInlineLayoutStateStack;
   friend class NGLayoutResult;
   friend class NGPhysicalFragment;
+
+  NGLogicalAnchorQuery& EnsureAnchorQuery();
 
   NGContainerFragmentBuilder(NGLayoutInputNode node,
                              scoped_refptr<const ComputedStyle> style,
@@ -407,7 +415,7 @@ class CORE_EXPORT NGContainerFragmentBuilder : public NGFragmentBuilder {
   HeapVector<NGLogicalOOFNodeForFragmentation>
       oof_positioned_fragmentainer_descendants_;
   HeapVector<NGLogicalOutOfFlowPositionedNode> oof_positioned_descendants_;
-  NGLogicalAnchorQuery anchor_query_;
+  NGLogicalAnchorQuery* anchor_query_ = nullptr;
 
   MulticolCollection multicols_with_pending_oofs_;
 

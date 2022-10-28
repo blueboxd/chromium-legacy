@@ -10,6 +10,7 @@
 #include "base/trace_event/common/trace_event_common.h"
 #include "base/trace_event/trace_conversion_helper.h"
 #include "base/trace_event/typed_macros.h"
+#include "content/browser/client_hints/client_hints.h"
 #include "content/browser/devtools/devtools_instrumentation.h"
 #include "content/browser/preloading/prerender/prerender_host_registry.h"
 #include "content/browser/preloading/prerender/prerender_metrics.h"
@@ -22,6 +23,7 @@
 #include "content/browser/site_info.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/back_forward_cache.h"
+#include "content/public/browser/browser_context.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/prerender_trigger_type.h"
 #include "content/public/browser/web_contents.h"
@@ -30,8 +32,10 @@
 #include "content/public/common/referrer.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_request_headers.h"
+#include "third_party/blink/public/common/client_hints/enabled_client_hints.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/mojom/loader/referrer.mojom.h"
+#include "url/origin.h"
 
 namespace content {
 
@@ -71,6 +75,30 @@ PreloadingFailureReason ToPreloadingFailureReason(
 
 }  // namespace
 
+// static
+PrerenderHost* PrerenderHost::GetPrerenderHostFromFrameTreeNode(
+    FrameTreeNode& frame_tree_node) {
+  WebContentsImpl* web_contents =
+      static_cast<WebContentsImpl*>(WebContentsImpl::FromRenderFrameHost(
+          frame_tree_node.current_frame_host()));
+  DCHECK(web_contents);
+  PrerenderHostRegistry* prerender_registry =
+      web_contents->GetPrerenderHostRegistry();
+  int prerender_host_id =
+      frame_tree_node.frame_tree()->root()->frame_tree_node_id();
+
+  if (PrerenderHost* host =
+          prerender_registry->FindNonReservedHostById(prerender_host_id)) {
+    return host;
+  } else {
+    // TODO(https://crbug.com/1355279): This function can be called during
+    // prerender activation so we have to call FindReservedHostById here and
+    // give it another shot. Consider using delegate after PrerenderHost
+    // implements FrameTree::Delegate.
+    return prerender_registry->FindReservedHostById(prerender_host_id);
+  }
+}
+
 PrerenderHost::PrerenderHost(const PrerenderAttributes& attributes,
                              WebContents& web_contents,
                              base::WeakPtr<PreloadingAttempt> attempt)
@@ -109,7 +137,7 @@ PrerenderHost::~PrerenderHost() {
   Observe(nullptr);
 
   for (auto& observer : observers_)
-    observer.OnHostDestroyed();
+    observer.OnHostDestroyed(final_status_.value_or(FinalStatus::kDestroyed));
 
   if (!final_status_)
     RecordFinalStatus(FinalStatus::kDestroyed, attributes_.initiator_ukm_id,
@@ -155,6 +183,13 @@ bool PrerenderHost::StartPrerendering() {
   if (!created_navigation_handle)
     return false;
 
+  // Even when LoadURLWithParams() returns a valid navigation handle, navigation
+  // can fail during navigation start, for example, due to prerendering a
+  // non-supported URL scheme that is filtered out in
+  // PrerenderNavigationThrottle.
+  if (final_status_.has_value())
+    return false;
+
   if (initial_navigation_id_.has_value()) {
     // In usual code path, `initial_navigation_id_` should be set by
     // PrerenderNavigationThrottle during `LoadURLWithParams` above.
@@ -195,14 +230,24 @@ void PrerenderHost::DidFinishNavigation(NavigationHandle* navigation_handle) {
   if (!is_inside_prerender_frame_tree)
     return;
 
+  const bool is_prerender_main_frame =
+      navigation_request->GetFrameTreeNodeId() == frame_tree_node_id_;
+
+  if (is_prerender_main_frame) {
+    GetPrerenderedMainFrameHost()
+        ->delegate()
+        ->GetPrerenderHostRegistry()
+        ->OnPrerenderNavigationFinished(
+            navigation_request->GetFrameTreeNodeId());
+  }
+
   // Cancel prerendering on navigation request failure.
   //
   // Check net::Error here rather than PrerenderNavigationThrottle as CSP
   // blocking occurs before NavigationThrottles so cannot be observed in
   // NavigationThrottle::WillFailRequest().
   net::Error net_error = navigation_request->GetNetErrorCode();
-  const bool is_prerender_main_frame =
-      navigation_request->GetFrameTreeNodeId() == frame_tree_node_id_;
+
   absl::optional<FinalStatus> status;
   if (net_error == net::Error::ERR_BLOCKED_BY_CSP) {
     status = FinalStatus::kNavigationRequestBlockedByCsp;
@@ -231,6 +276,11 @@ void PrerenderHost::DidFinishNavigation(NavigationHandle* navigation_handle) {
 
 void PrerenderHost::OnVisibilityChanged(Visibility visibility) {
   TRACE_EVENT("navigation", "PrerenderHost::OnVisibilityChanged");
+  // Keep prerenderings alive in the background when their visibility state
+  // changes to HIDDEN if the feature is enabled.
+  if (base::FeatureList::IsEnabled(blink::features::kPrerender2InBackground))
+    return;
+
   if (visibility == Visibility::HIDDEN) {
     Cancel(FinalStatus::kTriggerBackgrounded);
   }
@@ -259,10 +309,24 @@ std::unique_ptr<StoredPage> PrerenderHost::Activate(
   DCHECK(is_ready_for_activation_);
   is_ready_for_activation_ = false;
 
+  FrameTree& target_frame_tree = page_holder_->GetPrimaryFrameTree();
   std::unique_ptr<StoredPage> page = page_holder_->Activate(navigation_request);
 
   for (auto& observer : observers_)
     observer.OnActivated();
+
+  // The activated page is on the primary tree now. It can propagate the client
+  // hints to the global settings.
+  BrowserContext* browser_context =
+      target_frame_tree.controller().GetBrowserContext();
+  ClientHintsControllerDelegate* client_hints_delegate =
+      browser_context->GetClientHintsControllerDelegate();
+  if (client_hints_delegate) {
+    for (auto& [origin, client_hint] : client_hints_type_) {
+      PersistAcceptCH(origin, *(target_frame_tree.root()),
+                      client_hints_delegate, client_hint);
+    }
+  }
 
   // TODO(crbug.com/1299330): Replace
   // `navigation_request.GetNextPageUkmSourceId()` with prerendered page's UKM
@@ -546,14 +610,8 @@ PrerenderHost::AreCommonNavigationParamsCompatibleWithNavigation(
     return ActivationNavigationParamsMatch::kIsHistoryNavigationInNewChildFrame;
   }
 
-  // The spec mandates matching the referrer policy, and not the referrer URL
-  // itself, so we only compare the referrer policy here. Referrer policy is a
-  // more predictable value to match than referrer URL.
-  // https://wicg.github.io/nav-speculation/prerendering.html#navigate-activation
-  if (potential_activation.referrer->policy !=
-      common_params_->referrer->policy) {
-    return ActivationNavigationParamsMatch::kReferrerPolicy;
-  }
+  // We intentionally don't check referrer or referrer->policy. See spec
+  // discussion at https://github.com/WICG/nav-speculation/issues/18.
 
   if (potential_activation.request_destination !=
       common_params_->request_destination) {
@@ -691,7 +749,12 @@ void PrerenderHost::SetFailureReason(FinalStatus status) {
     case FinalStatus::kMemoryLimitExceeded:
     case FinalStatus::kFailToGetMemoryUsage:
     case FinalStatus::kDataSaverEnabled:
+    case FinalStatus::kHasEffectiveUrl:
       attempt_->SetFailureReason(ToPreloadingFailureReason(status));
+      // We reset the attempt to ensure we don't update once we have reported it
+      // as failure or accidentally use it for any other prerender attempts as
+      // PrerenderHost deletion is async.
+      attempt_.reset();
       return;
   }
 }
@@ -706,6 +769,22 @@ bool PrerenderHost::IsUrlMatch(const GURL& url) const {
     return attributes_.url_match_predicate.value().Run(url);
   }
   return GetInitialUrl() == url;
+}
+
+void PrerenderHost::OnAcceptClientHintChanged(
+    const url::Origin& origin,
+    const std::vector<network::mojom::WebClientHintsType>& client_hints_type) {
+  client_hints_type_[origin] = client_hints_type;
+}
+
+void PrerenderHost::GetAllowedClientHintsOnPage(
+    const url::Origin& origin,
+    blink::EnabledClientHints* client_hints) const {
+  if (!client_hints_type_.contains(origin))
+    return;
+  for (const auto& hint : client_hints_type_.at(origin)) {
+    client_hints->SetIsEnabled(hint, true);
+  }
 }
 
 void PrerenderHost::Cancel(FinalStatus status) {

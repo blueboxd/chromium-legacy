@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -78,12 +78,13 @@ class FramePermissionController {
         permission_states;
   };
 
-  // Returns the effective PermissionStatus for |origin|. If the per-|origin|
-  // state is ASK, or there are no specific permissions set for |origin|, then
-  // the default permission status takes effect. This means that it is not
-  // currently possible to set a default of GRANTED/DENIED, and to override that
-  // to ASK for specific origins.
-  PermissionSet GetEffectivePermissionsForOrigin(const url::Origin& origin);
+  absl::optional<PermissionSet> GetPermissionSetForOrigin(
+      const blink::PermissionType requested_permission,
+      const url::Origin& origin);
+
+  void LogUnsetPermissions(
+      const std::vector<blink::PermissionType>& permissions,
+      const url::Origin& requesting_origin);
 
   content::WebContents* const web_contents_;
 

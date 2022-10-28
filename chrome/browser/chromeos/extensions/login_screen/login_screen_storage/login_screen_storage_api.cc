@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -76,7 +76,7 @@ void LoginScreenStorageExtensionFunction::OnDataRetrieved(
       Respond(Error(result->get_error_message()));
       return;
     case Result::Tag::kData:
-      Respond(OneArgument(base::Value(result->get_data())));
+      Respond(WithArguments(result->get_data()));
       return;
   }
 }

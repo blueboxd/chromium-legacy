@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,7 +8,7 @@ import './os_feedback_shared_css.js';
 import 'chrome://resources/cr_elements/cr_button/cr_button.js';
 
 import {stringToMojoString16} from 'chrome://resources/ash/common/mojo_utils.js';
-import {I18nBehavior, I18nBehaviorInterface} from 'chrome://resources/js/i18n_behavior.m.js';
+import {I18nBehavior, I18nBehaviorInterface} from 'chrome://resources/cr_elements/i18n_behavior.js';
 import {html, mixinBehaviors, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {FeedbackFlowState} from './feedback_flow.js';
@@ -64,6 +64,14 @@ export class SearchPageElement extends SearchPageElementBase {
         readonly: true,
         observer: SearchPageElement.prototype.descriptionTemplateChanged_,
       },
+      helpContentSearchResultCount: {
+        type: Number,
+        notify: true,
+      },
+      noHelpContentDisplayed: {
+        type: Boolean,
+        notify: true,
+      },
     };
   }
 
@@ -72,6 +80,12 @@ export class SearchPageElement extends SearchPageElementBase {
 
     /** @type {string} */
     this.descriptionTemplate = '';
+
+    /** @private {number} */
+    this.helpContentSearchResultCount = 0;
+
+    /** @private {boolean} */
+    this.noHelpContentDisplayed = false;
 
     /**
      * Record the most recent number of characters in the input for which a
@@ -184,6 +198,10 @@ export class SearchPageElement extends SearchPageElementBase {
       isQueryEmpty: isQueryEmpty,
       isPopularContent: isPopularContent,
     };
+
+    this.noHelpContentDisplayed = (data.contentList.length === 0);
+
+    this.helpContentSearchResultCount = response.response.results.length;
 
     // Wait for the iframe to complete loading before postMessage.
     await this.iframeLoaded_;
@@ -304,6 +322,13 @@ export class SearchPageElement extends SearchPageElementBase {
    */
   descriptionTemplateChanged_(currentTemplate) {
     this.getInputElement_().value = currentTemplate;
+  }
+
+  /**
+   * @return {!number}
+   */
+  getSearchResultCountForTesting() {
+    return this.helpContentSearchResultCount;
   }
 }
 

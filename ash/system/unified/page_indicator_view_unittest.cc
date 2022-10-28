@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -52,8 +52,6 @@ class PageIndicatorViewTest : public NoSessionAshTestBase {
   bool IsPageSelected(int index) {
     return page_indicator_view()->IsPageSelectedForTesting(index);
   }
-
-  void Layout() { unified_view_->Layout(); }
 
   PaginationModel* pagination_model() { return model_->pagination_model(); }
   PageIndicatorView* page_indicator_view() {

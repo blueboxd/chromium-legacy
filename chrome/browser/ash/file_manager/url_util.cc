@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,7 +9,6 @@
 #include <memory>
 #include <utility>
 
-#include "ash/constants/ash_features.h"
 #include "base/json/json_writer.h"
 #include "base/strings/escape.h"
 #include "base/values.h"
@@ -61,8 +60,7 @@ std::string GetDialogTypeAsString(ui::SelectFileDialog::Type dialog_type) {
 }  // namespace
 
 GURL GetFileManagerMainPageUrl() {
-  return GetFileManagerURL().Resolve(
-      ash::features::IsFileManagerSwaEnabled() ? "" : "/main.html");
+  return GetFileManagerURL().Resolve("");
 }
 
 GURL GetFileManagerMainPageUrlWithParams(

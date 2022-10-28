@@ -1,9 +1,11 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chromeos/ui/frame/caption_buttons/frame_size_button.h"
 
+#include "ash/display/screen_orientation_controller.h"
+#include "ash/display/screen_orientation_controller_test_api.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/splitview/split_view_constants.h"
@@ -25,9 +27,11 @@
 #include "ui/aura/window.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
+#include "ui/display/test/display_manager_test_api.h"
 #include "ui/events/gesture_detection/gesture_configuration.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/gfx/vector_icon_types.h"
+#include "ui/views/widget/any_widget_observer.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
 #include "ui/views/window/caption_button_layout_constants.h"
@@ -65,8 +69,6 @@ class TestWidgetDelegate : public views::WidgetDelegateView {
  private:
   // Overridden from views::View:
   void Layout() override {
-    caption_button_container_->Layout();
-
     // Right align the caption button container.
     gfx::Size preferred_size = caption_button_container_->GetPreferredSize();
     caption_button_container_->SetBounds(width() - preferred_size.width(), 0,
@@ -656,24 +658,40 @@ class MultitaskMenuTest : public FrameSizeButtonTest {
 
   ~MultitaskMenuTest() override = default;
 
-  void SetUp() override {
-    // Ensure float feature is enabled.
-    scoped_feature_list_.InitAndEnableFeature(
-        chromeos::wm::features::kFloatWindow);
-    FrameSizeButtonTest::SetUp();
-  }
-
   void ShowMultitaskMenu() {
     DCHECK(size_button());
-    multitask_menu_ = static_cast<FrameSizeButton*>(size_button())
-                          ->GetMultitaskMenuForTesting();
+
+    views::NamedWidgetShownWaiter waiter(views::test::AnyWidgetTestPasskey{},
+                                         "MultitaskMenuBubbleWidget");
+    static_cast<FrameSizeButton*>(size_button())->ShowMultitaskMenu();
+    views::WidgetDelegate* delegate =
+        waiter.WaitIfNeededAndGet()->widget_delegate();
+    multitask_menu_ = static_cast<MultitaskMenu*>(delegate->AsDialogDelegate());
+
+    // Note that this is sync because we use `views::Widget::CloseNow()` in
+    // `MultitaskMenu.`
+    delegate->RegisterWindowClosingCallback(base::BindOnce(
+        &MultitaskMenuTest::OnMultitaskMenuClosed, base::Unretained(this)));
+  }
+
+  void OnMultitaskMenuClosed() { multitask_menu_ = nullptr; }
+
+  void SetUp() override {
+    // Ensure float feature is enabled.
+    scoped_feature_list_.InitWithFeatures(
+        {chromeos::wm::features::kFloatWindow,
+         chromeos::wm::features::kPartialSplit},
+        {});
+    FrameSizeButtonTest::SetUp();
   }
 
   MultitaskMenu* multitask_menu() { return multitask_menu_; }
 
- private:
-  MultitaskMenu* multitask_menu_;
+ protected:
   base::test::ScopedFeatureList scoped_feature_list_;
+
+ private:
+  MultitaskMenu* multitask_menu_ = nullptr;
 };
 
 // Test Float Button Functionality.
@@ -700,8 +718,52 @@ TEST_F(MultitaskMenuTest, TestMultitaskMenuHalfFunctionality) {
                              ->GetBoundsInScreen()
                              .left_center());
   generator->ClickLeftButton();
-  EXPECT_TRUE(window_state()->GetStateType() ==
-              WindowStateType::kPrimarySnapped);
+  EXPECT_EQ(WindowStateType::kPrimarySnapped, window_state()->GetStateType());
+}
+
+// Tests that clicking the left side of the half button works as intended for
+// RTL setups.
+TEST_F(MultitaskMenuTest, HalfButtonRTL) {
+  UpdateDisplay("800x600");
+
+  base::i18n::SetRTLForTesting(true);
+
+  ShowMultitaskMenu();
+  GetEventGenerator()->MoveMouseTo(multitask_menu()
+                                       ->multitask_menu_view_for_testing()
+                                       ->half_button_for_testing()
+                                       ->GetBoundsInScreen()
+                                       .left_center());
+  GetEventGenerator()->ClickLeftButton();
+  EXPECT_EQ(WindowStateType::kPrimarySnapped, window_state()->GetStateType());
+  EXPECT_EQ(gfx::Rect(400, 552), GetWidget()->GetWindowBoundsInScreen());
+}
+
+// Tests that if the display is in secondary layout, pressing the physically
+// left side button should snap it to the correct side.
+TEST_F(MultitaskMenuTest, HalfButtonSecondaryLayout) {
+  // Rotate the display 180 degrees so its layout is not primary.
+  const int64_t display_id =
+      display::Screen::GetScreen()->GetPrimaryDisplay().id();
+  display::test::ScopedSetInternalDisplayId set_internal(
+      Shell::Get()->display_manager(), display_id);
+  ScreenOrientationControllerTestApi(
+      Shell::Get()->screen_orientation_controller())
+      .SetDisplayRotation(display::Display::ROTATE_180,
+                          display::Display::RotationSource::ACTIVE);
+
+  ShowMultitaskMenu();
+
+  // Click on the left side of the half button. It should be in secondary
+  // snapped state, because in this orientation secondary snapped is actually
+  // physically on the left side.
+  GetEventGenerator()->MoveMouseToInHost(multitask_menu()
+                                             ->multitask_menu_view_for_testing()
+                                             ->half_button_for_testing()
+                                             ->GetBoundsInScreen()
+                                             .left_center());
+  GetEventGenerator()->ClickLeftButton();
+  EXPECT_EQ(WindowStateType::kSecondarySnapped, window_state()->GetStateType());
 }
 
 // Test Partial Split Button Functionality.
@@ -719,8 +781,7 @@ TEST_F(MultitaskMenuTest, TestMultitaskMenuPartialSplit) {
                              ->GetBoundsInScreen()
                              .left_center());
   generator->ClickLeftButton();
-  EXPECT_TRUE(window_state()->GetStateType() ==
-              WindowStateType::kPrimarySnapped);
+  EXPECT_EQ(WindowStateType::kPrimarySnapped, window_state()->GetStateType());
   EXPECT_EQ(window_state()->window()->bounds().width(),
             work_area_bounds_in_screen.width() * 0.67);
 
@@ -735,8 +796,7 @@ TEST_F(MultitaskMenuTest, TestMultitaskMenuPartialSplit) {
                  partial_bounds.y() + partial_bounds.y() / 2));
   generator->MoveMouseTo(secondary_center);
   generator->ClickLeftButton();
-  EXPECT_TRUE(window_state()->GetStateType() ==
-              WindowStateType::kSecondarySnapped);
+  EXPECT_EQ(WindowStateType::kSecondarySnapped, window_state()->GetStateType());
   EXPECT_EQ(window_state()->window()->bounds().width(),
             work_area_bounds_in_screen.width() * 0.33);
 }
@@ -756,10 +816,11 @@ TEST_F(MultitaskMenuTest, TestMultitaskMenuFullFunctionality) {
 
 TEST_F(MultitaskMenuTest, MultitaskMenuClosesOnTabletMode) {
   ShowMultitaskMenu();
+  ASSERT_TRUE(multitask_menu());
   ASSERT_TRUE(multitask_menu()->GetWidget());
 
   ash::TabletMode::Get()->SetEnabledForTest(true);
-  EXPECT_FALSE(multitask_menu()->GetWidget());
+  EXPECT_FALSE(multitask_menu());
 }
 
 }  // namespace ash

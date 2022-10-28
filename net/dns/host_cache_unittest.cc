@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -26,9 +26,9 @@
 #include "net/base/ip_endpoint.h"
 #include "net/base/network_isolation_key.h"
 #include "net/base/schemeful_site.h"
-#include "net/dns/host_resolver_results.h"
 #include "net/dns/host_resolver_results_test_util.h"
 #include "net/dns/https_record_rdata.h"
+#include "net/dns/public/host_resolver_results.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"

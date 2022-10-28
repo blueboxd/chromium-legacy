@@ -1,4 +1,4 @@
-# Copyright 2016 The Chromium Authors. All rights reserved.
+# Copyright 2016 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -10,6 +10,8 @@ source_set("popup_menu") {
     "popup_menu_action_handler_delegate.h",
     "popup_menu_coordinator.h",
     "popup_menu_coordinator.mm",
+    "popup_menu_help_coordinator.h",
+    "popup_menu_help_coordinator.mm",
     "popup_menu_mediator.h",
     "popup_menu_mediator.mm",
   ]
@@ -88,7 +90,9 @@ source_set("popup_menu") {
     "//ios/chrome/browser/ui/icons:action_icons",
     "//ios/chrome/browser/ui/icons:symbols",
     "//ios/chrome/browser/ui/list_model",
-    "//ios/chrome/browser/ui/ntp:metrics",
+    "//ios/chrome/browser/ui/main:layout_guide_scene_agent",
+    "//ios/chrome/browser/ui/main:scene_state_header",
+    "//ios/chrome/browser/ui/ntp/metrics",
     "//ios/chrome/browser/ui/popup_menu:metrics_protocols",
     "//ios/chrome/browser/ui/popup_menu/cells",
     "//ios/chrome/browser/ui/popup_menu/overflow_menu",
@@ -109,9 +113,8 @@ source_set("popup_menu") {
     "//ios/chrome/browser/window_activities",
     "//ios/chrome/common/ui/colors",
     "//ios/components/webui:url_constants",
-    "//ios/public/provider/chrome/browser",
     "//ios/public/provider/chrome/browser/text_zoom:text_zoom_api",
-    "//ios/public/provider/chrome/browser/user_feedback",
+    "//ios/public/provider/chrome/browser/user_feedback:user_feedback_api",
     "//ios/web",
     "//ios/web/common",
     "//ios/web/common:user_agent",
@@ -175,10 +178,8 @@ source_set("unit_tests") {
     "//ios/chrome/browser/web_state_list",
     "//ios/chrome/browser/web_state_list:test_support",
     "//ios/chrome/test:test_support",
-    "//ios/public/provider/chrome/browser",
-    "//ios/public/provider/chrome/browser:test_support",
     "//ios/public/provider/chrome/browser/text_zoom:text_zoom_api",
-    "//ios/public/provider/chrome/browser/user_feedback",
+    "//ios/public/provider/chrome/browser/user_feedback:user_feedback_api",
     "//ios/web",
     "//ios/web/public/test",
     "//ios/web/public/test/fakes",
@@ -206,6 +207,7 @@ source_set("eg2_tests") {
     "//components/strings",
     "//components/version_info",
     "//ios/chrome/app/strings",
+    "//ios/chrome/browser/feature_engagement:eg_test_support+eg2",
     "//ios/chrome/browser/ui:feature_flags",
     "//ios/chrome/browser/ui/settings:constants",
     "//ios/chrome/test/earl_grey:eg_test_support+eg2",

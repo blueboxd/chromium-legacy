@@ -1,4 +1,4 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -649,13 +649,9 @@ void PageLoadTracker::StopTracking() {
 }
 
 void PageLoadTracker::AddObserver(
-    std::unique_ptr<PageLoadMetricsObserver> observer) {
-  observer->SetDelegate(this);
-  AddObserverInterface(std::move(observer));
-}
-
-void PageLoadTracker::AddObserverInterface(
     std::unique_ptr<PageLoadMetricsObserverInterface> observer) {
+  observer->SetDelegate(this);
+
   if (observer->GetObserverName()) {
     DCHECK(observers_map_.find(observer->GetObserverName()) ==
            observers_map_.end())
@@ -665,6 +661,7 @@ void PageLoadTracker::AddObserverInterface(
            "the test. See also constructor of PageLoadMetricsTestWaiter.";
     observers_map_.emplace(observer->GetObserverName(), observer.get());
   }
+
   observers_.push_back(std::move(observer));
 }
 
@@ -810,6 +807,7 @@ void PageLoadTracker::OnTimingChanged() {
     DCHECK(prerendering_state_ ==
            PrerenderingState::kActivatedNoActivationStart);
     prerendering_state_ = PrerenderingState::kActivated;
+    activation_start_ = new_timing.activation_start;
   }
 
   const mojom::PaintTimingPtr& paint_timing =
@@ -1015,6 +1013,10 @@ PrerenderingState PageLoadTracker::GetPrerenderingState() const {
   return prerendering_state_;
 }
 
+absl::optional<base::TimeDelta> PageLoadTracker::GetActivationStart() const {
+  return activation_start_;
+}
+
 const UserInitiatedInfo& PageLoadTracker::GetUserInitiatedInfo() const {
   return user_initiated_info_;
 }
@@ -1173,6 +1175,11 @@ void PageLoadTracker::OnV8MemoryChanged(
     observer->OnV8MemoryChanged(memory_updates);
 }
 
+void PageLoadTracker::OnSharedStorageWorkletHostCreated() {
+  for (const auto& observer : observers_)
+    observer->OnSharedStorageWorkletHostCreated();
+}
+
 void PageLoadTracker::UpdateMetrics(
     content::RenderFrameHost* render_frame_host,
     mojom::PageLoadTimingPtr timing,
@@ -1244,7 +1251,7 @@ void PageLoadTracker::InvokeAndPruneObservers(
   for (auto& observer : forward_observers) {
     DCHECK(observers_map_.find(observer->GetObserverName()) ==
            observers_map_.end());
-    AddObserverInterface(std::move(observer));
+    AddObserver(std::move(observer));
   }
 }
 

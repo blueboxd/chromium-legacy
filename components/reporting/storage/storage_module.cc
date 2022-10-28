@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -35,19 +35,17 @@ void StorageModule::AddRecord(Priority priority,
   storage_->Write(priority, std::move(record), std::move(callback));
 }
 
-void StorageModule::ReportSuccess(SequenceInformation sequence_information,
-                                  bool force) {
-  storage_->Confirm(
-      sequence_information.priority(), sequence_information.sequencing_id(),
-      force, base::BindOnce([](Status status) {
-        if (!status.ok()) {
-          LOG(ERROR) << "Unable to confirm record deletion: " << status;
-        }
-      }));
-}
-
 void StorageModule::Flush(Priority priority, FlushCallback callback) {
   std::move(callback).Run(storage_->Flush(priority));
+}
+
+void StorageModule::ReportSuccess(SequenceInformation sequence_information,
+                                  bool force) {
+  storage_->Confirm(std::move(sequence_information), force,
+                    base::BindOnce([](Status status) {
+                      LOG_IF(ERROR, !status.ok())
+                          << "Unable to confirm record deletion: " << status;
+                    }));
 }
 
 void StorageModule::UpdateEncryptionKey(

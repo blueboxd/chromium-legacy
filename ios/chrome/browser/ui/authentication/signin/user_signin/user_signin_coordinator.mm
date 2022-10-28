@@ -1,5 +1,4 @@
-
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,7 +6,7 @@
 
 #import "base/ios/block_types.h"
 #import "base/mac/foundation_util.h"
-#include "components/sync/driver/sync_service.h"
+#import "components/sync/driver/sync_service.h"
 #import "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/main/browser.h"
 #import "ios/chrome/browser/signin/authentication_service.h"

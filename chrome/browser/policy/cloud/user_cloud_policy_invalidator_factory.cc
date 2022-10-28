@@ -1,4 +1,4 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -39,7 +39,7 @@ KeyedService* UserCloudPolicyInvalidatorFactory::BuildServiceInstanceFor(
   CloudPolicyManager* policy_manager = profile->GetUserCloudPolicyManager();
 #endif
   if (!policy_manager)
-    return NULL;
+    return nullptr;
 
   return new UserCloudPolicyInvalidator(profile, policy_manager);
 }

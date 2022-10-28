@@ -381,6 +381,9 @@
   <message name="IDS_FILE_BROWSER_TASK_OPEN_GSLIDES" desc="Title of the action to open a Google Slides document.">
     Google Slides
   </message>
+  <message name="IDS_FILE_BROWSER_TASK_OPEN_OFFICE" desc="Title of the action to open an office document in the Office app">
+    Office
+  </message>
   <message name="IDS_FILE_BROWSER_TASK_LISTEN" desc="Title of the action to play an audio file.">
     Listen
   </message>
@@ -470,7 +473,7 @@
     Restore from trash
   </message>
   <message name="IDS_FILE_BROWSER_EMPTY_TRASH_BUTTON_LABEL" desc="Context menu item that empties (permanently deletes all items in) the trash / recycle bin.">
-    Empty Trash
+    Empty trash now
   </message>
   <message name="IDS_FILE_BROWSER_PASTE_BUTTON_LABEL" desc="Context menu item that pastes the file(s) in the clipboard.">
     Paste
@@ -570,93 +573,6 @@
   </message>
   <message name="IDS_FILE_BROWSER_FILE_LIST_CHANGED_TO_THUMBNAIL_VIEW" desc="Message spoken by ChromeVox/screen reader after clicking on button to switch to thumbnail view mode.">
     File list has changed to thumbnail view.
-  </message>
-  <message name="IDS_FILE_BROWSER_CLOUD_IMPORT_TITLE" desc="Title of the cloud import feature.">
-    Cloud backup
-  </message>
-  <message name="IDS_FILE_BROWSER_CLOUD_DESTINATION_FOLDER" desc="Title of the cloud import destination folder.">
-    Chrome OS Cloud backup
-  </message>
-  <message name="IDS_FILE_BROWSER_CLOUD_IMPORT_DESCRIPTION" desc="Short description of the cloud import feature.">
-    Back up your media device’s photos and videos to Google Drive.
-  </message>
-  <message name="IDS_FILE_BROWSER_CLOUD_IMPORT_START" desc="Tooltip of the toolbar button that starts backup.">
-    Backup your photos and videos
-  </message>
-  <message name="IDS_FILE_BROWSER_CLOUD_IMPORT_SHOW_DETAILS" desc="Tooltip for button that shows details panel.">
-    Show Cloud backup details
-  </message>
-  <message name="IDS_FILE_BROWSER_CLOUD_IMPORT_COMMAND" desc="Label of button on details panel that invokes cloud import feature.">
-    Back up
-  </message>
-  <message name="IDS_FILE_BROWSER_CLOUD_IMPORT_CANCEL_COMMAND" desc="Label of button on details panel that cancels an active import.">
-    Cancel
-  </message>
-  <message name="IDS_FILE_BROWSER_CLOUD_IMPORT_ONE_FILE" desc="Cloud import 1 new photo.">
-    1 new photo
-  </message>
-  <message name="IDS_FILE_BROWSER_CLOUD_IMPORT_MULTIPLE_FILES" desc="Cloud import multiple new photos.">
-    <ph name="FILE_COUNT">$1<ex>5</ex></ph> new photos
-  </message>
-  <message name="IDS_FILE_BROWSER_CLOUD_IMPORT_STATUS_SCANNING" desc="Cloud import scanning status message.">
-    Scanning your media device...
-    <ph name="LINE_BREAK1">&lt;br&gt;</ph>
-    <ph name="FILE_COUNT">$1<ex>5 new photos</ex></ph> found
-  </message>
-  <message name="IDS_FILE_BROWSER_CLOUD_IMPORT_TOOLTIP_SCANNING" desc="Cloud import scanning tooltip.">
-    Scanning your media device...
-  </message>
-  <message name="IDS_FILE_BROWSER_CLOUD_IMPORT_STATUS_NO_MEDIA" desc="Cloud import no-new-media-found status message. Shown after backup is completed and when a search for new files to backup produces no result.">
-    All backed up to <ph name="BEGIN_LINK">&lt;a is='action-link' class='destination-link'&gt;</ph>Google Drive!<ph name="END_LINK">&lt;/a&gt;</ph>
-  </message>
-  <message name="IDS_FILE_BROWSER_CLOUD_IMPORT_TOOLTIP_NO_MEDIA" desc="Cloud import no-new-media-found tooltip. Shown after backup is completed and when a search for new files to backup produces no result.">
-    All backed up!
-  </message>
-  <message name="IDS_FILE_BROWSER_CLOUD_IMPORT_STATUS_INSUFFICIENT_CLOUD_SPACE" desc="Cloud import insufficient cloud space status message.">
-    <ph name="FILE_COUNT">$1<ex>5 new photos</ex></ph> found.
-    <ph name="LINE_BREAK1">&lt;br&gt;</ph>
-    Your Google Drive quota isn't large enough. Additional <ph name="FILE_SIZE">$2<ex>5 MB</ex></ph> needed.
-    <ph name="LINE_BREAK2">&lt;br&gt;</ph>
-    Try selecting fewer photos.
-  </message>
-  <message name="IDS_FILE_BROWSER_CLOUD_IMPORT_TOOLTIP_INSUFFICIENT_CLOUD_SPACE" desc="Cloud import insufficient cloud space tooltip.">
-    Your Google Drive quota isn't large enough.
-  </message>
-  <message name="IDS_FILE_BROWSER_CLOUD_IMPORT_STATUS_INSUFFICIENT_LOCAL_SPACE" desc="Cloud import insufficient local space status message.">
-    <ph name="FILE_COUNT">$1<ex>5 new photos</ex></ph> found.
-    <ph name="LINE_BREAK1">&lt;br&gt;</ph>
-    Not enough space available in local storage. Additional <ph name="FILE_SIZE">$2<ex>5 MB</ex></ph> needed.
-    <ph name="LINE_BREAK2">&lt;br&gt;</ph>
-    Try selecting fewer photos.
-  </message>
-  <message name="IDS_FILE_BROWSER_CLOUD_IMPORT_TOOLTIP_INSUFFICIENT_LOCAL_SPACE" desc="Cloud import insufficient local space tooltip.">
-    Not enough space available in local storage.
-  </message>
-  <message name="IDS_FILE_BROWSER_CLOUD_IMPORT_STATUS_READY" desc="Cloud import ready status message.">
-    <ph name="FILE_COUNT">$1<ex>5 new photos</ex></ph> found
-    <ph name="LINE_BREAK1">&lt;br&gt;</ph>
-    Ready to back up to <ph name="BEGIN_LINK">&lt;a is='action-link' class='destination-link'&gt;</ph>Google Drive<ph name="END_LINK">&lt;/a&gt;</ph>
-  </message>
-  <message name="IDS_FILE_BROWSER_CLOUD_IMPORT_TOOLTIP_READY" desc="Cloud import ready tooltip.">
-    Ready to backup <ph name="FILE_COUNT">$1<ex>5 new photos</ex></ph>
-  </message>
-  <message name="IDS_FILE_BROWSER_CLOUD_IMPORT_STATUS_IMPORTING" desc="Cloud import active-backup status. Message shown when importing is in progress">
-    Backing up <ph name="FILE_COUNT">$1<ex>5 new photos</ex></ph> to <ph name="BEGIN_LINK">&lt;a is='action-link' class='destination-link'&gt;</ph>Google Drive<ph name="END_LINK">&lt;/a&gt;</ph>
-  </message>
-  <message name="IDS_FILE_BROWSER_CLOUD_IMPORT_TOOLTIP_IMPORTING" desc="Cloud import active-backup tooltip.">
-    Backing up <ph name="FILE_COUNT">$1<ex>5 new photos</ex></ph>
-  </message>
-  <message name="IDS_FILE_BROWSER_CLOUD_IMPORT_STATUS_DONE" desc="Cloud import backup is complete status.">
-    <ph name="FILE_COUNT">$1<ex>5</ex></ph> photos backed up to <ph name="BEGIN_LINK">&lt;a is='action-link' class='destination-link'&gt;</ph>Google Drive<ph name="END_LINK">&lt;/a&gt;</ph>
-  </message>
-  <message name="IDS_FILE_BROWSER_CLOUD_IMPORT_ERROR_ITEM" desc="Cloud import error message for a file it couldn't back up.">
-    Couldn't back up <ph name="FILE_NAME">$1<ex>photo.jpg</ex></ph>
-  </message>
-  <message name="IDS_FILE_BROWSER_CLOUD_IMPORT_TOOLTIP_DONE" desc="Cloud import backup is complete tooltip.">
-    <ph name="FILE_COUNT">$1<ex>5</ex></ph> photos backed up
-  </message>
-  <message name="IDS_FILE_BROWSER_CLOUD_IMPORT_ITEMS_REMAINING" desc="File Manager status message.">
-    Importing <ph name="FILE_COUNT">$1<ex>5</ex></ph> files...
   </message>
   <message name="IDS_FILE_BROWSER_COPY_FILE_NAME" desc="File Manager status message.">
     Copying <ph name="FILE_NAME">$1<ex>movie.avi</ex></ph>...
@@ -808,10 +724,13 @@
     Restoring <ph name="COUNT">$1<ex>10</ex></ph> items...
   </message>
   <message name="IDS_FILE_BROWSER_TRASH_DELETED_FOREVER" desc="Message informing that items in the trash / recycle bin are deleted forever after 30 days.">
-    Items in the trash are deleted forever after 30 days.
+    Files in the trash for more than 30 days will be automatically deleted.
   </message>
   <message name="IDS_FILE_BROWSER_RESTORE_FROM_TRASH_ERROR" desc="Message informing about error while restoring an item or items from the trash / recycle bin.">
     An error occurred. Some items may not have been restored.
+  </message>
+  <message name="IDS_FILE_BROWSER_TRASH_UNEXPECTED_ERROR" desc="Message informing about error while sending an item to the trash / recycle bin.">
+    An error occurred. Some items may not have been trashed.
   </message>
   <message name="IDS_FILE_BROWSER_OPEN_TRASHED_FILES_ERROR" desc="Message informing users they can't open files from the Trash folder">
     Cannot open trashed files. Please restore the files before opening.
@@ -855,6 +774,9 @@
   <message name="IDS_FILE_BROWSER_PENDING_LABEL" desc="Pending label.">
     Pending
   </message>
+  <message name="IDS_FILE_BROWSER_SCANNING_LABEL" desc="Scanning label.">
+    Scanning
+  </message>
   <message name="IDS_FILE_BROWSER_SEARCH_TEXT_LABEL" desc="Search text field label.">
     Search
   </message>
@@ -891,10 +813,16 @@
    Are you sure you want to delete <ph name="NUMBER_OF_ITEMS">$1<ex>3</ex></ph> items?
  </message>
  <message name="IDS_FILE_BROWSER_UNDO_DELETE_ONE" desc="Confirm to a user that they have deleted a single file and offer to undo">
-   <ph name="FILE_NAME">$1<ex>file.txt</ex></ph> deleted
+   <ph name="FILE_NAME">$1<ex>file.txt</ex></ph> moved to Trash
  </message>
  <message name="IDS_FILE_BROWSER_UNDO_DELETE_SOME" desc="Confirm to a user that they have deleted multiple files and offer to undo">
-   <ph name="NUMBER_OF_ITEMS">$1<ex>3</ex></ph> items deleted
+   <ph name="NUMBER_OF_ITEMS">$1<ex>3</ex></ph> items moved to Trash
+ </message>
+ <message name="IDS_FILE_BROWSER_MOVE_TO_TRASH_FILE_NAME" desc="Showing progress that a single item is being moved to trash.">
+   Moving <ph name="FILE_NAME">$1<ex>file.txt</ex></ph> to the Trash
+ </message>
+ <message name="IDS_FILE_BROWSER_MOVE_TO_TRASH_ITEMS_REMAINING" desc="Showing progress that multiple items are being moved to trash.">
+   Moving <ph name="NUMBER_OF_ITEMS">$1<ex>3</ex></ph> items to the Trash
  </message>
  <message name="IDS_FILE_BROWSER_UNDO_DELETE_ACTION_LABEL" desc="Undo label shown on toast to undo delete operation">
    Undo
@@ -1514,6 +1442,12 @@
   </message>
 
 <!-- Holding space -->
+  <message name="IDS_FILE_BROWSER_HOLDING_SPACE_PIN_COMMAND_LABEL" desc="Label for the command which pins one or more files to the holding space.">
+    Pin to Quick Files
+  </message>
+  <message name="IDS_FILE_BROWSER_HOLDING_SPACE_UNPIN_COMMAND_LABEL" desc="Label for the command which unpins one or more files from the holding space.">
+    Unpin from Quick Files
+  </message>
   <message name="IDS_FILE_BROWSER_HOLDING_SPACE_PIN_TO_SHELF_COMMAND_LABEL" desc="Label for the command which pins one or more files to the holding space in the shelf.">
     Pin to shelf
   </message>

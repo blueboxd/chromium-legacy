@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,27 +6,27 @@
 
 #import <UIKit/UIKit.h>
 
-#include "base/bind.h"
-#include "base/strings/stringprintf.h"
+#import "base/bind.h"
+#import "base/strings/stringprintf.h"
 #import "base/strings/sys_string_conversions.h"
 #import "base/test/ios/wait_util.h"
-#include "base/test/scoped_feature_list.h"
-#include "components/sync_preferences/pref_service_mock_factory.h"
-#include "components/sync_preferences/pref_service_syncable.h"
-#include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
-#include "ios/chrome/browser/pref_names.h"
-#include "ios/chrome/browser/prefs/browser_prefs.h"
-#include "ios/chrome/browser/web/features.h"
+#import "base/test/scoped_feature_list.h"
+#import "components/sync_preferences/pref_service_mock_factory.h"
+#import "components/sync_preferences/pref_service_syncable.h"
+#import "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
+#import "ios/chrome/browser/prefs/browser_prefs.h"
+#import "ios/chrome/browser/prefs/pref_names.h"
+#import "ios/chrome/browser/web/features.h"
 #import "ios/chrome/browser/web/font_size/font_size_java_script_feature.h"
 #import "ios/web/public/test/fakes/fake_web_client.h"
 #import "ios/web/public/test/fakes/fake_web_state.h"
 #import "ios/web/public/test/scoped_testing_web_client.h"
 #import "ios/web/public/test/web_state_test_util.h"
 #import "ios/web/public/test/web_task_environment.h"
-#include "testing/gtest/include/gtest/gtest.h"
-#include "testing/platform_test.h"
+#import "testing/gtest/include/gtest/gtest.h"
+#import "testing/platform_test.h"
 #import "third_party/ocmock/OCMock/OCMock.h"
-#include "third_party/ocmock/gtest_support.h"
+#import "third_party/ocmock/gtest_support.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -175,8 +175,8 @@ class FontSizeTabHelperTest : public PlatformTest {
   }
 
   // Waits for the text size adjustment value of the main frame to be
-  // |adjustment|. Returns true if the value matches |adjustment| within
-  // |kWaitForJSCompletionTimeout|, false otherwise.
+  // `adjustment`. Returns true if the value matches `adjustment` within
+  // `kWaitForJSCompletionTimeout`, false otherwise.
   bool WaitForMainFrameTextSizeAdjustmentEqualTo(int adjustment) {
     return base::test::ios::WaitUntilConditionOrTimeout(
         base::test::ios::kWaitForJSCompletionTimeout, ^bool {
@@ -200,7 +200,7 @@ class FontSizeTabHelperTest : public PlatformTest {
 };
 
 // Tests that a web page's font size is set properly in a procedure started
-// with default |UIApplication.sharedApplication.preferredContentSizeCategory|.
+// with default `UIApplication.sharedApplication.preferredContentSizeCategory`.
 TEST_F(FontSizeTabHelperTest, PageLoadedWithDefaultFontSize) {
   LoadWebpage();
   ASSERT_EQ(0ul, [GetMainFrameTextSizeAdjustment() length]);
@@ -219,7 +219,7 @@ TEST_F(FontSizeTabHelperTest, PageLoadedWithDefaultFontSize) {
 }
 
 // Tests that a web page's font size is set properly in a procedure started
-// with special |UIApplication.sharedApplication.preferredContentSizeCategory|.
+// with special `UIApplication.sharedApplication.preferredContentSizeCategory`.
 TEST_F(FontSizeTabHelperTest, PageLoadedWithExtraLargeFontSize) {
   preferred_content_size_category_ = UIContentSizeCategoryExtraLarge;
 
@@ -238,7 +238,7 @@ TEST_F(FontSizeTabHelperTest, PageLoadedWithExtraLargeFontSize) {
 }
 
 // Tests that UMA log is sent when
-// |UIApplication.sharedApplication.preferredContentSizeCategory| returns an
+// `UIApplication.sharedApplication.preferredContentSizeCategory` returns an
 // unrecognizable category.
 TEST_F(FontSizeTabHelperTest, PageLoadedWithUnrecognizableFontSize) {
   preferred_content_size_category_ = @"This is a new Category";
@@ -290,9 +290,9 @@ TEST_F(FontSizeTabHelperTest, ZoomIn) {
   // Check that new zoom value is also saved in the pref under the right key.
   std::string pref_key =
       ZoomMultiplierPrefKey(preferred_content_size_category_, test_url);
-  const base::Value* pref =
-      browser_state_->GetPrefs()->Get(prefs::kIosUserZoomMultipliers);
-  EXPECT_EQ(1.1, pref->FindDoublePath(pref_key));
+  const base::Value::Dict& pref =
+      browser_state_->GetPrefs()->GetDict(prefs::kIosUserZoomMultipliers);
+  EXPECT_EQ(1.1, pref.FindDoubleByDottedPath(pref_key));
 }
 
 // Tests that the user can zoom out, and that after zooming out, the correct
@@ -313,9 +313,9 @@ TEST_F(FontSizeTabHelperTest, ZoomOut) {
   // Check that new zoom value is also saved in the pref under the right key.
   std::string pref_key =
       ZoomMultiplierPrefKey(preferred_content_size_category_, test_url);
-  const base::Value* pref =
-      browser_state_->GetPrefs()->Get(prefs::kIosUserZoomMultipliers);
-  EXPECT_EQ(0.9, pref->FindDoublePath(pref_key));
+  const base::Value::Dict& pref =
+      browser_state_->GetPrefs()->GetDict(prefs::kIosUserZoomMultipliers);
+  EXPECT_EQ(0.9, pref.FindDoubleByDottedPath(pref_key));
 }
 
 // Tests after resetting the zoom level, the correct Javascript has been
@@ -330,15 +330,15 @@ TEST_F(FontSizeTabHelperTest, ResetZoom) {
   font_size_tab_helper->UserZoom(ZOOM_IN);
   std::string pref_key =
       ZoomMultiplierPrefKey(preferred_content_size_category_, test_url);
-  const base::Value* pref =
-      browser_state_->GetPrefs()->Get(prefs::kIosUserZoomMultipliers);
-  EXPECT_EQ(1.1, pref->FindDoublePath(pref_key));
+  const base::Value::Dict& pref =
+      browser_state_->GetPrefs()->GetDict(prefs::kIosUserZoomMultipliers);
+  EXPECT_EQ(1.1, pref.FindDoubleByDottedPath(pref_key));
 
   // Then reset. The pref key should be removed from the dictionary.
   font_size_tab_helper->UserZoom(ZOOM_RESET);
 
   EXPECT_TRUE(WaitForMainFrameTextSizeAdjustmentEqualTo(100));
-  EXPECT_FALSE(pref->FindDoublePath(pref_key));
+  EXPECT_FALSE(pref.FindDoubleByDottedPath(pref_key));
 }
 
 // Tests that when the user changes the accessibility content size category and
@@ -358,9 +358,9 @@ TEST_F(FontSizeTabHelperTest, ZoomAndAccessibilityTextSize) {
   // 1.12 from accessibility * 1.1 from zoom
   EXPECT_TRUE(WaitForMainFrameTextSizeAdjustmentEqualTo(123));
   // Only the user zoom portion is stored in the preferences.
-  const base::Value* pref =
-      browser_state_->GetPrefs()->Get(prefs::kIosUserZoomMultipliers);
-  EXPECT_EQ(1.1, pref->FindDoublePath(pref_key));
+  const base::Value::Dict& pref =
+      browser_state_->GetPrefs()->GetDict(prefs::kIosUserZoomMultipliers);
+  EXPECT_EQ(1.1, pref.FindDoubleByDottedPath(pref_key));
 }
 
 // Tests that the user pref is cleared when requested.
@@ -375,18 +375,18 @@ TEST_F(FontSizeTabHelperTest, ClearUserZoomPrefs) {
       base::Seconds(base::test::ios::kSpinDelaySeconds));
 
   // Make sure the first value is stored in the pref store.
-  const base::Value* pref =
-      browser_state_->GetPrefs()->Get(prefs::kIosUserZoomMultipliers);
+  const base::Value::Dict& pref =
+      browser_state_->GetPrefs()->GetDict(prefs::kIosUserZoomMultipliers);
   std::string pref_key =
       ZoomMultiplierPrefKey(preferred_content_size_category_, test_url);
-  EXPECT_EQ(1.1, pref->FindDoublePath(pref_key));
+  EXPECT_EQ(1.1, pref.FindDoubleByDottedPath(pref_key));
 
   FontSizeTabHelper::ClearUserZoomPrefs(browser_state_->GetPrefs());
 
   EXPECT_TRUE(browser_state_.get()
                   ->GetPrefs()
-                  ->Get(prefs::kIosUserZoomMultipliers)
-                  ->DictEmpty());
+                  ->GetDict(prefs::kIosUserZoomMultipliers)
+                  .empty());
 }
 
 TEST_F(FontSizeTabHelperTest, GoogleCachedAMPPageHasSeparateKey) {
@@ -412,8 +412,8 @@ TEST_F(FontSizeTabHelperTest, GoogleCachedAMPPageHasSeparateKey) {
 
   EXPECT_NE(google_pref_key, google_amp_pref_key);
 
-  const base::Value* pref =
-      browser_state_->GetPrefs()->Get(prefs::kIosUserZoomMultipliers);
-  EXPECT_EQ(1.1, pref->FindDoublePath(google_pref_key));
-  EXPECT_EQ(0.9, pref->FindDoublePath(google_amp_pref_key));
+  const base::Value::Dict& pref =
+      browser_state_->GetPrefs()->GetDict(prefs::kIosUserZoomMultipliers);
+  EXPECT_EQ(1.1, pref.FindDoubleByDottedPath(google_pref_key));
+  EXPECT_EQ(0.9, pref.FindDoubleByDottedPath(google_amp_pref_key));
 }

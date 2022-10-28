@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -41,7 +41,6 @@
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
 #include "components/account_manager_core/account.h"
 #include "components/signin/public/identity_manager/tribool.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 #endif
 
 namespace signin {

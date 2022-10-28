@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -92,7 +92,6 @@ class LongpressDiacriticsSuggester : public Suggester {
   absl::optional<char> displayed_window_base_character_;
   // Highlighted index can be nullopt even if window displayed.
   absl::optional<size_t> highlighted_index_;
-  bool text_changed_since_longpress_ = false;
 };
 
 }  // namespace input_method

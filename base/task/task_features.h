@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,41 +11,6 @@
 #include "build/build_config.h"
 
 namespace base {
-
-// Under this feature, workers blocked with MayBlock are replaced immediately
-// instead of waiting for a threshold in the foreground thread group.
-extern const BASE_EXPORT Feature kMayBlockWithoutDelay;
-
-// Under this feature, ThreadPool::ShouldYield() always returns false
-extern const BASE_EXPORT Feature kDisableJobYield;
-// Under this feature, JobTaskSource doesn't use worker count in its sort key
-// such that worker threads are not distributed among running jobs equally.
-extern const BASE_EXPORT Feature kDisableFairJobScheduling;
-// Under this feature, priority update on Jobs is disabled.
-extern const BASE_EXPORT Feature kDisableJobUpdatePriority;
-// Under this feature, another WorkerThread is signaled only after the current
-// thread was assigned work.
-extern const BASE_EXPORT Feature kWakeUpAfterGetWork;
-
-// Strategy affecting how WorkerThreads are signaled to pick up pending work.
-enum class WakeUpStrategy {
-  // A single thread scheduling new work signals all required WorkerThreads.
-  kCentralizedWakeUps,
-  // Each thread signals at most a single thread, either when scheduling new
-  // work or picking up pending work.
-  kSerializedWakeUps,
-  // Each thread signals at most 2 threads, either when scheduling new
-  // work or picking up pending work.
-  kExponentialWakeUps,
-  // Each thread signals as many threads as necessary, either when scheduling
-  // new work or picking up pending work.
-  kGreedyWakeUps,
-};
-
-// Under this feature, a given WakeUpStrategy param is used.
-extern const BASE_EXPORT Feature kWakeUpStrategyFeature;
-extern const BASE_EXPORT base::FeatureParam<WakeUpStrategy>
-    kWakeUpStrategyParam;
 
 #if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_APPLE)
 #define HAS_NATIVE_THREAD_POOL() 1
@@ -63,9 +28,9 @@ extern const BASE_EXPORT Feature kUseNativeThreadPool;
 extern const BASE_EXPORT Feature kUseBackgroundNativeThreadPool;
 #endif
 
-// Whether threads in the ThreadPool should be reclaimed after being idle for 5
-// minutes, instead of 30 seconds.
-extern const BASE_EXPORT Feature kUseFiveMinutesThreadReclaimTime;
+// Under this feature, worker threads are not reclaimed after a timeout. Rather,
+// only excess workers are cleaned up immediately after finishing a task.
+extern const BASE_EXPORT Feature kNoWorkerThreadReclaim;
 
 // This feature controls whether wake ups are possible for canceled tasks.
 extern const BASE_EXPORT Feature kNoWakeUpsForCanceledTasks;

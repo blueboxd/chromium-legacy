@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -48,7 +48,6 @@
 #include "chrome/browser/ui/views/profiles/profile_menu_coordinator.h"
 #include "chrome/browser/ui/views/profiles/profile_menu_view.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
-#include "chrome/browser/ui/views/user_education/browser_feature_promo_controller.h"
 #include "chrome/browser/ui/webui/signin/login_ui_test_utils.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
@@ -70,6 +69,7 @@
 #include "components/sync/driver/sync_user_settings.h"
 #include "components/sync/test/fake_server_network_resources.h"
 #include "components/user_education/common/feature_promo_controller.h"
+#include "components/user_education/test/feature_promo_test_util.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/test_navigation_observer.h"
@@ -87,9 +87,9 @@
 #include "ui/views/test/widget_test.h"
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
+#include "chrome/browser/lacros/account_manager/fake_account_manager_ui_dialog_waiter.h"
 #include "chrome/browser/signin/signin_ui_delegate_impl_lacros.h"
 #include "components/account_manager_core/chromeos/account_manager_facade_factory.h"
-#include "components/account_manager_core/chromeos/fake_account_manager_ui.h"
 #endif
 
 namespace {
@@ -138,29 +138,6 @@ Profile* CreateAdditionalProfile() {
 std::unique_ptr<KeyedService> CreateTestTracker(content::BrowserContext*) {
   return feature_engagement::CreateTestTracker();
 }
-
-#if BUILDFLAG(IS_CHROMEOS_LACROS)
-class FakeAccountManagerUITestObserver : public FakeAccountManagerUI::Observer {
- public:
-  explicit FakeAccountManagerUITestObserver(
-      FakeAccountManagerUI* account_manager_ui)
-      : account_manager_ui_(account_manager_ui) {
-    scoped_observation_.Observe(account_manager_ui_.get());
-  }
-  ~FakeAccountManagerUITestObserver() override = default;
-
-  void WaitForReauthAccountDialogShown() { reauth_run_loop_.Run(); }
-
-  // FakeAccountManagerUI::Observer:
-  void OnReauthAccountDialogShown() override { reauth_run_loop_.Quit(); }
-
- private:
-  raw_ptr<FakeAccountManagerUI> account_manager_ui_;
-  base::RunLoop reauth_run_loop_;
-  base::ScopedObservation<FakeAccountManagerUI, FakeAccountManagerUI::Observer>
-      scoped_observation_{this};
-};
-#endif
 
 }  // namespace
 
@@ -344,29 +321,20 @@ IN_PROC_BROWSER_TEST_F(ProfileMenuViewExtensionsTest,
 IN_PROC_BROWSER_TEST_F(ProfileMenuViewExtensionsTest, CloseIPH) {
   // Display the IPH.
   auto lock = BrowserFeaturePromoController::BlockActiveWindowCheckForTesting();
-  BrowserFeaturePromoController* const promo_controller =
-      static_cast<BrowserFeaturePromoController*>(
-          browser()->window()->GetFeaturePromoController());
-  feature_engagement::Tracker* tracker =
-      promo_controller->feature_engagement_tracker();
-  base::RunLoop loop;
-  tracker->AddOnInitializedCallback(
-      base::BindLambdaForTesting([&loop](bool success) {
-        DCHECK(success);
-        loop.Quit();
-      }));
-  loop.Run();
-  ASSERT_TRUE(tracker->IsInitialized());
-  EXPECT_TRUE(promo_controller->MaybeShowPromo(
+  BrowserView* const browser_view =
+      BrowserView::GetBrowserViewForBrowser(browser());
+  ASSERT_TRUE(user_education::test::WaitForFeatureEngagementReady(
+      browser_view->GetFeaturePromoController()));
+  EXPECT_TRUE(browser_view->MaybeShowFeaturePromo(
       feature_engagement::kIPHProfileSwitchFeature));
-  EXPECT_TRUE(promo_controller->IsPromoActive(
+  EXPECT_TRUE(browser_view->IsFeaturePromoActive(
       feature_engagement::kIPHProfileSwitchFeature));
 
   // Open the menu.
   ASSERT_NO_FATAL_FAILURE(OpenProfileMenu());
 
   // Check the IPH is no longer showing.
-  EXPECT_FALSE(promo_controller->IsPromoActive(
+  EXPECT_FALSE(browser_view->IsFeaturePromoActive(
       feature_engagement::kIPHProfileSwitchFeature));
 }
 
@@ -625,11 +593,12 @@ class ProfileMenuViewSyncErrorButtonTest : public ProfileMenuViewTestBase,
 IN_PROC_BROWSER_TEST_F(ProfileMenuViewSyncErrorButtonTest, OpenReauthDialog) {
   FakeAccountManagerUI* account_manager_ui = GetFakeAccountManagerUI();
   ASSERT_TRUE(account_manager_ui);
-  FakeAccountManagerUITestObserver observer(account_manager_ui);
+  FakeAccountManagerUIDialogWaiter dialog_waiter(
+      account_manager_ui, FakeAccountManagerUIDialogWaiter::Event::kReauth);
 
   ASSERT_TRUE(Reauth());
 
-  observer.WaitForReauthAccountDialogShown();
+  dialog_waiter.Wait();
   EXPECT_TRUE(account_manager_ui->IsDialogShown());
   EXPECT_EQ(1,
             account_manager_ui->show_account_reauthentication_dialog_calls());
@@ -729,12 +698,13 @@ class ProfileMenuViewSigninErrorButtonTest : public ProfileMenuViewTestBase,
 IN_PROC_BROWSER_TEST_F(ProfileMenuViewSigninErrorButtonTest, OpenReauthDialog) {
   FakeAccountManagerUI* account_manager_ui = GetFakeAccountManagerUI();
   ASSERT_TRUE(account_manager_ui);
-  FakeAccountManagerUITestObserver observer(account_manager_ui);
+  FakeAccountManagerUIDialogWaiter dialog_waiter(
+      account_manager_ui, FakeAccountManagerUIDialogWaiter::Event::kReauth);
 
   ClickTurnOnSync();
 
   // Reauth is shown first.
-  observer.WaitForReauthAccountDialogShown();
+  dialog_waiter.Wait();
   EXPECT_TRUE(account_manager_ui->IsDialogShown());
   EXPECT_EQ(1,
             account_manager_ui->show_account_reauthentication_dialog_calls());

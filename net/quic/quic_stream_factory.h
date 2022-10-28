@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -23,6 +23,7 @@
 #include "net/base/address_list.h"
 #include "net/base/completion_once_callback.h"
 #include "net/base/host_port_pair.h"
+#include "net/base/ip_endpoint.h"
 #include "net/base/net_export.h"
 #include "net/base/network_change_notifier.h"
 #include "net/base/network_handle.h"
@@ -41,7 +42,9 @@
 #include "net/quic/quic_session_key.h"
 #include "net/socket/client_socket_pool.h"
 #include "net/ssl/ssl_config_service.h"
+#include "net/third_party/quiche/src/quiche/quic/core/deterministic_connection_id_generator.h"
 #include "net/third_party/quiche/src/quiche/quic/core/quic_config.h"
+#include "net/third_party/quiche/src/quiche/quic/core/quic_connection_id.h"
 #include "net/third_party/quiche/src/quiche/quic/core/quic_crypto_stream.h"
 #include "net/third_party/quiche/src/quiche/quic/core/quic_packets.h"
 #include "net/third_party/quiche/src/quiche/quic/core/quic_server_id.h"
@@ -405,7 +408,8 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
                std::unique_ptr<QuicCryptoClientConfigOwner>>;
 
   bool HasMatchingIpSession(const QuicSessionAliasKey& key,
-                            const AddressList& address_list,
+                            const std::vector<IPEndPoint>& ip_endpoints,
+                            const std::set<std::string>& aliases,
                             bool use_dns_aliases);
   void OnJobComplete(Job* job, int rv);
   bool HasActiveSession(const QuicSessionKey& session_key) const;
@@ -626,6 +630,9 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
   // respecting NIKs, as that data is fed into the crypto config map using the
   // corresponding NIK.
   const bool use_network_isolation_key_for_crypto_configs_;
+
+  quic::DeterministicConnectionIdGenerator connection_id_generator_{
+      quic::kQuicDefaultConnectionIdLength};
 
   base::WeakPtrFactory<QuicStreamFactory> weak_factory_{this};
 };

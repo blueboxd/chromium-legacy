@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -1084,6 +1084,14 @@ bool FidoDeviceAuthenticator::SupportsCredBlobOfSize(size_t num_bytes) const {
       device_->device_info();
   return get_info_response && get_info_response->max_cred_blob_length &&
          num_bytes <= get_info_response->max_cred_blob_length.value();
+}
+
+bool FidoDeviceAuthenticator::SupportsDevicePublicKey() const {
+  const absl::optional<AuthenticatorGetInfoResponse>& get_info_response =
+      device_->device_info();
+  return get_info_response && get_info_response->extensions &&
+         base::Contains(*get_info_response->extensions,
+                        kExtensionDevicePublicKey);
 }
 
 const absl::optional<AuthenticatorSupportedOptions>&

@@ -1,4 +1,4 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -86,7 +86,13 @@ class EulaLoader {
         js: EULA_CLEAR_ANCHORS_CONTENT_SCRIPT,
       }]);
       webview.addEventListener('contentload', () => {
-        webview.executeScript(EULA_CLEAR_ANCHORS_CONTENT_SCRIPT);
+        webview.executeScript(EULA_CLEAR_ANCHORS_CONTENT_SCRIPT, () => {
+          if (chrome.runtime.lastError) {
+            console.error(
+                'Clear anchors script failed: ' +
+                chrome.runtime.lastError.message);
+          }
+        });
       });
     }
     webview.addEventListener('contentload', () => {

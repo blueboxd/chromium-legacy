@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -124,15 +124,11 @@ void CoreOobeHandler::DeclareLocalizedValues(
 }
 
 void CoreOobeHandler::GetAdditionalParameters(base::Value::Dict* dict) {
-  dict->Set("isInTabletMode",
-            base::Value(ash::TabletMode::Get()->InTabletMode()));
-  dict->Set("isDemoModeEnabled",
-            base::Value(DemoSetupController::IsDemoModeAllowed()));
+  dict->Set("isInTabletMode", ash::TabletMode::Get()->InTabletMode());
+  dict->Set("isDemoModeEnabled", DemoSetupController::IsDemoModeAllowed());
   if (policy::EnrollmentRequisitionManager::IsMeetDevice()) {
-    dict->Set("flowType", base::Value("meet"));
+    dict->Set("flowType", "meet");
   }
-  dict->Set("isQuickStartEnabled",
-            base::Value(ash::features::IsOobeQuickStartEnabled()));
 }
 
 void CoreOobeHandler::RegisterMessages() {
@@ -141,8 +137,6 @@ void CoreOobeHandler::RegisterMessages() {
               &CoreOobeHandler::HandleUpdateCurrentScreen);
   AddCallback("launchHelpApp", &CoreOobeHandler::HandleLaunchHelpApp);
   AddCallback("raiseTabKeyEvent", &CoreOobeHandler::HandleRaiseTabKeyEvent);
-  AddCallback("startDemoModeSetupForTesting",
-              &CoreOobeHandler::HandleStartDemoModeSetupForTesting);
 
   AddCallback("updateOobeUIState", &CoreOobeHandler::HandleUpdateOobeUIState);
   AddCallback("enableShelfButtons", &CoreOobeHandler::HandleEnableShelfButtons);
@@ -160,7 +154,7 @@ void CoreOobeHandler::ShowScreenWithData(
 }
 
 void CoreOobeHandler::ReloadContent(base::Value::Dict dictionary) {
-  CallJS("cr.ui.Oobe.reloadContent", base::Value(std::move(dictionary)));
+  CallJS("cr.ui.Oobe.reloadContent", std::move(dictionary));
 }
 
 void CoreOobeHandler::HandleInitialized() {
@@ -242,10 +236,9 @@ void CoreOobeHandler::LaunchHelpApp(int help_topic_id) {
 }
 
 void CoreOobeHandler::OnOobeConfigurationChanged() {
-  base::Value configuration(base::Value::Type::DICTIONARY);
-  configuration::FilterConfiguration(
-      OobeConfiguration::Get()->GetConfiguration(),
-      configuration::ConfigurationHandlerSide::HANDLER_JS, configuration);
+  base::Value::Dict configuration = configuration::FilterConfiguration(
+      OobeConfiguration::Get()->configuration(),
+      configuration::ConfigurationHandlerSide::HANDLER_JS);
   CallJS("cr.ui.Oobe.updateOobeConfiguration", std::move(configuration));
 }
 
@@ -266,25 +259,6 @@ void CoreOobeHandler::HandleRaiseTabKeyEvent(bool reverse) {
   if (reverse)
     event.set_flags(ui::EF_SHIFT_DOWN);
   SendEventToSink(&event);
-}
-
-void CoreOobeHandler::HandleStartDemoModeSetupForTesting(
-    const std::string& demo_config) {
-  CHECK(base::FeatureList::IsEnabled(features::kOobeStartDemoModeForTesting))
-      << "If you see this crash please report in https://crbug.com/1100910. To "
-         "disable the crash run chrome with "
-         "--enable-features=OobeStartDemoModeForTesting";
-  DemoSession::DemoModeConfig config;
-  if (demo_config == "online") {
-    config = DemoSession::DemoModeConfig::kOnline;
-  } else {
-    NOTREACHED() << "Unknown demo config passed for tests";
-  }
-
-  WizardController* wizard_controller = WizardController::default_controller();
-  DCHECK(wizard_controller);
-  wizard_controller->SimulateDemoModeSetupForTesting(config);  // IN-TEST
-  wizard_controller->AdvanceToScreen(DemoSetupScreenView::kScreenId);
 }
 
 void CoreOobeHandler::HandleUpdateOobeUIState(int state) {

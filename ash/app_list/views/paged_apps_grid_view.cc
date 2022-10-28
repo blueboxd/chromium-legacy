@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -34,13 +34,13 @@
 #include "ui/compositor/animation_throughput_reporter.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/paint_recorder.h"
-#include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/events/event.h"
 #include "ui/events/types/event_type.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/geometry/point_f.h"
 #include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/geometry/transform.h"
 #include "ui/gfx/geometry/transform_util.h"
@@ -50,6 +50,7 @@
 #include "ui/views/animation/bounds_animator.h"
 #include "ui/views/view.h"
 #include "ui/views/view_model_utils.h"
+#include "ui/views/widget/widget.h"
 
 namespace ash {
 namespace {
@@ -129,12 +130,25 @@ int GetFadeoutMaskHeight() {
   return features::IsBackgroundBlurEnabled() ? kDefaultFadeoutMaskHeight : 0;
 }
 
+// Apply `transform` to `bounds` at an origin of (0,0) so that the scaling
+// part of the transform does not modify the position.
+gfx::Rect ApplyTransformAtOrigin(gfx::Rect bounds, gfx::Transform transform) {
+  gfx::Vector2d origin_offset = bounds.OffsetFromOrigin();
+
+  gfx::RectF bounds_f(gfx::SizeF(bounds.size()));
+  transform.TransformRect(&bounds_f);
+  bounds_f.Offset(origin_offset);
+
+  return gfx::ToRoundedRect(bounds_f);
+}
+
 }  // namespace
 
 class PagedAppsGridView::BackgroundCardLayer : public ui::Layer,
                                                public ui::LayerDelegate {
  public:
-  BackgroundCardLayer() : Layer(ui::LAYER_TEXTURED) {
+  explicit BackgroundCardLayer(PagedAppsGridView* paged_apps_grid_view)
+      : Layer(ui::LAYER_TEXTURED), paged_apps_grid_view_(paged_apps_grid_view) {
     SetFillsBoundsOpaquely(false);
     set_delegate(this);
   }
@@ -161,9 +175,12 @@ class PagedAppsGridView::BackgroundCardLayer : public ui::Layer,
     // Draw a solid rounded rect as the background.
     cc::PaintFlags flags;
     auto* color_provider = AppListColorProvider::Get();
+    const views::Widget* app_list_widget = paged_apps_grid_view_->GetWidget();
     SkColor fill_color =
-        is_active_page_ ? color_provider->GetGridBackgroundCardActiveColor()
-                        : color_provider->GetGridBackgroundCardInactiveColor();
+        is_active_page_
+            ? color_provider->GetGridBackgroundCardActiveColor(app_list_widget)
+            : color_provider->GetGridBackgroundCardInactiveColor(
+                  app_list_widget);
     flags.setColor(fill_color);
     flags.setStyle(cc::PaintFlags::kFill_Style);
     flags.setAntiAlias(true);
@@ -187,6 +204,8 @@ class PagedAppsGridView::BackgroundCardLayer : public ui::Layer,
                                   float new_device_scale_factor) override {}
 
   bool is_active_page_ = false;
+
+  PagedAppsGridView* const paged_apps_grid_view_;
 };
 
 PagedAppsGridView::PagedAppsGridView(
@@ -545,7 +564,7 @@ void PagedAppsGridView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
 }
 
 void PagedAppsGridView::OnThemeChanged() {
-  views::View::OnThemeChanged();
+  AppsGridView::OnThemeChanged();
 
   for (auto& card : background_cards_)
     card.get()->SchedulePaint(card->parent()->bounds());
@@ -984,8 +1003,7 @@ bool PagedAppsGridView::ShouldHandleDragEvent(const ui::LocatedEvent& event) {
       (event.IsMouseEvent() || event.type() == ui::ET_GESTURE_SCROLL_BEGIN) &&
       !IsTabletMode() &&
       ((pagination_model_.selected_page() == 0 &&
-        calculate_offset(event) > 0) ||
-       contents_view_->app_list_view()->is_in_drag())) {
+        calculate_offset(event) > 0))) {
     return false;
   }
 
@@ -1248,8 +1266,16 @@ void PagedAppsGridView::AnimateAppListItemsForCardifiedState(
   for (size_t i = 0; i < view_model()->view_size(); ++i) {
     AppListItemView* entry_view = view_model()->view_at(i);
     // Reposition view bounds to compensate for the translation offset.
-    gfx::Rect current_bounds = entry_view->bounds();
+    gfx::Rect current_bounds =
+        items_container()->GetMirroredRect(entry_view->bounds());
     current_bounds.Offset(translate_offset);
+
+    if (entry_view->layer()) {
+      // Apply the current layer transform to current bounds, for the case where
+      // `entry_view` is already transformed by a layer animation.
+      current_bounds = ApplyTransformAtOrigin(current_bounds,
+                                              entry_view->layer()->transform());
+    }
 
     entry_view->EnsureLayer();
 
@@ -1280,7 +1306,7 @@ void PagedAppsGridView::AnimateAppListItemsForCardifiedState(
     // transition transform when needed.
     gfx::Transform transform = gfx::TransformBetweenRects(
         gfx::RectF(items_container()->GetMirroredRect(target_bounds)),
-        gfx::RectF(items_container()->GetMirroredRect(current_bounds)));
+        gfx::RectF(current_bounds));
     entry_view->layer()->SetTransform(transform);
 
     animation_sequence->SetTransform(entry_view->layer(), gfx::Transform(),
@@ -1382,7 +1408,7 @@ gfx::Rect PagedAppsGridView::BackgroundCardBounds(int new_page_index) {
 }
 
 void PagedAppsGridView::AppendBackgroundCard() {
-  background_cards_.push_back(std::make_unique<BackgroundCardLayer>());
+  background_cards_.push_back(std::make_unique<BackgroundCardLayer>(this));
   ui::Layer* current_layer = background_cards_.back().get();
   current_layer->SetBounds(BackgroundCardBounds(background_cards_.size() - 1));
   current_layer->SetVisible(true);

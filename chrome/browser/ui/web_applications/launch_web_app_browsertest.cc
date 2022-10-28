@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,7 +10,8 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/web_applications/web_app_controller_browsertest.h"
-#include "chrome/browser/web_applications/test/app_registration_waiter.h"
+#include "chrome/browser/web_applications/test/app_registry_cache_waiter.h"
+#include "chrome/browser/web_applications/test/web_app_install_test_utils.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/context_menu_params.h"
 #include "content/public/browser/notification_service.h"
@@ -52,9 +53,9 @@ IN_PROC_BROWSER_TEST_F(LaunchWebAppBrowserTest, OpenLinkInWebApp) {
   if (!IsServiceAvailable())
     return;
 
-  const GURL start_url("https://app.site.test/");
+  const GURL start_url("https://app.site.test/example/index");
   const AppId app_id = InstallPWA(start_url);
-  AppRegistrationWaiter(profile(), app_id).Await();
+  AppReadinessWaiter(profile(), app_id).Await();
 
   size_t num_browsers = chrome::GetBrowserCount(browser()->profile());
   const int num_tabs = browser()->tab_strip_model()->count();
@@ -86,6 +87,10 @@ IN_PROC_BROWSER_TEST_F(LaunchWebAppBrowserTest, OpenLinkInWebApp) {
   EXPECT_EQ(start_url, app_browser->tab_strip_model()
                            ->GetActiveWebContents()
                            ->GetLastCommittedURL());
+
+  UninstallWebApp(app_id);
+  AppReadinessWaiter(profile(), app_id, apps::Readiness::kUninstalledByUser)
+      .Await();
 }
 
 }  // namespace web_app

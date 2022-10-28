@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -54,13 +54,13 @@
 #include "components/omnibox/browser/zero_suggest_provider.h"
 #include "components/omnibox/browser/zero_suggest_verbatim_match_provider.h"
 #include "components/open_from_clipboard/clipboard_recent_content.h"
-#include "components/search_engines/omnibox_focus_type.h"
 #include "components/search_engines/template_url.h"
 #include "components/search_engines/template_url_service.h"
 #include "components/search_engines/template_url_starter_pack_data.h"
 #include "components/strings/grit/components_strings.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/metrics_proto/chrome_searchbox_stats.pb.h"
+#include "third_party/metrics_proto/omnibox_focus_type.pb.h"
 #include "ui/base/device_form_factor.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -75,13 +75,14 @@ namespace {
 // Appends available autocompletion of the given type, subtype, and number to
 // the existing available autocompletions string, encoding according to the
 // spec.
-void AppendAvailableAutocompletion(size_t type,
-                                   const base::flat_set<int>& subtypes,
-                                   int count,
-                                   std::string* autocompletions) {
+void AppendAvailableAutocompletion(
+    omnibox::SuggestType type,
+    const base::flat_set<omnibox::SuggestSubtype>& subtypes,
+    int count,
+    std::string* autocompletions) {
   if (!autocompletions->empty())
     autocompletions->append("j");
-  base::StringAppendF(autocompletions, "%" PRIuS, type);
+  base::StringAppendF(autocompletions, "%d", type);
 
   std::ostringstream subtype_str;
   for (auto subtype : subtypes) {
@@ -151,7 +152,7 @@ void RecordMatchDeletion(const AutocompleteMatch& match) {
 // sync/async update. Sync updates may have a minimum input length as well.
 bool ShouldPreserveDefault(bool in_start, size_t input_length) {
   if (in_start) {
-    static const size_t min_input_length =
+    static const int min_input_length =
         OmniboxFieldTrial::
             kAutocompleteStabilityPreserveDefaultForSyncUpdatesMinInputLength
                 .Get();
@@ -168,11 +169,8 @@ bool ShouldPreserveDefault(bool in_start, size_t input_length) {
 // static
 void AutocompleteController::GetMatchTypeAndExtendSubtypes(
     const AutocompleteMatch& match,
-    size_t* type,
-    base::flat_set<int>* subtypes) {
-  // This type indicates a native chrome suggestion.
-  *type = 69;
-
+    omnibox::SuggestType* type,
+    base::flat_set<omnibox::SuggestSubtype>* subtypes) {
   // If provider is TYPE_ZERO_SUGGEST_LOCAL_HISTORY, TYPE_ZERO_SUGGEST, or
   // TYPE_ON_DEVICE_HEAD, set the subtype accordingly. The type will be set in
   // the switch statement below for SEARCH_SUGGEST or NAVSUGGEST types.
@@ -183,114 +181,115 @@ void AutocompleteController::GetMatchTypeAndExtendSubtypes(
       // Make sure changes here are reflected in UpdateAssistedQueryStats()
       // below in which the zero-prefix suggestions are counted.
       if (match.type == AutocompleteMatchType::NAVSUGGEST) {
-        subtypes->emplace(/*SUBTYPE_ZERO_PREFIX_LOCAL_FREQUENT_URLS=*/451);
+        subtypes->emplace(omnibox::SUBTYPE_ZERO_PREFIX_LOCAL_FREQUENT_URLS);
       }
       // We abuse this subtype and use it to for zero-suggest suggestions that
       // aren't personalized by the server. That is, it indicates either
       // client-side most-likely URL suggestions or server-side suggestions
       // that depend only on the URL as context.
-      subtypes->emplace(/*SUBTYPE_URL_BASED=*/66);
+      subtypes->emplace(omnibox::SUBTYPE_URL_BASED);
     } else if (match.provider->type() ==
                AutocompleteProvider::TYPE_ON_DEVICE_HEAD) {
       // This subtype indicates a match from an on-device head provider.
-      subtypes->emplace(/*SUBTYPE_SUGGEST_2G_LITE=*/271);
+      subtypes->emplace(omnibox::SUBTYPE_SUGGEST_2G_LITE);
       // Make sure changes here are reflected in UpdateAssistedQueryStats()
       // below in which the zero-prefix suggestions are counted.
     } else if (match.provider->type() ==
                AutocompleteProvider::TYPE_ZERO_SUGGEST_LOCAL_HISTORY) {
-      subtypes->emplace(/*SUBTYPE_ZERO_PREFIX_LOCAL_HISTORY=*/450);
+      subtypes->emplace(omnibox::SUBTYPE_ZERO_PREFIX_LOCAL_HISTORY);
     }
   }
 
   switch (match.type) {
     case AutocompleteMatchType::SEARCH_SUGGEST: {
       // Do not set subtype here; subtype may have been set above.
-      *type = 0;
+      *type = omnibox::TYPE_QUERY;
       return;
     }
     case AutocompleteMatchType::SEARCH_SUGGEST_ENTITY: {
-      *type = 46;
+      *type = omnibox::TYPE_ENTITY;
       return;
     }
     case AutocompleteMatchType::SEARCH_SUGGEST_TAIL: {
-      *type = 33;
+      *type = omnibox::TYPE_TAIL;
       return;
     }
     case AutocompleteMatchType::SEARCH_SUGGEST_PERSONALIZED: {
-      *type = 35;
-      subtypes->emplace(/*SUBTYPE_PERSONAL=*/39);
+      *type = omnibox::TYPE_PERSONALIZED_QUERY;
+      ;
+      subtypes->emplace(omnibox::SUBTYPE_PERSONAL);
       return;
     }
     case AutocompleteMatchType::SEARCH_SUGGEST_PROFILE: {
-      *type = 44;
+      *type = omnibox::TYPE_ENTITY;
       return;
     }
     case AutocompleteMatchType::NAVSUGGEST: {
       // Do not set subtype here; subtype may have been set above.
-      *type = 5;
+      *type = omnibox::TYPE_NAVIGATION;
       return;
     }
     case AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED: {
-      subtypes->emplace(/*SUBTYPE_OMNIBOX_ECHO_SEARCH=*/57);
+      subtypes->emplace(omnibox::SUBTYPE_OMNIBOX_ECHO_SEARCH);
       return;
     }
     case AutocompleteMatchType::URL_WHAT_YOU_TYPED: {
-      subtypes->emplace(/*SUBTYPE_OMNIBOX_ECHO_URL=*/58);
+      subtypes->emplace(omnibox::SUBTYPE_OMNIBOX_ECHO_URL);
       return;
     }
     case AutocompleteMatchType::SEARCH_HISTORY: {
-      subtypes->emplace(/*SUBTYPE_OMNIBOX_HISTORY_SEARCH=*/59);
+      subtypes->emplace(omnibox::SUBTYPE_OMNIBOX_HISTORY_SEARCH);
       return;
     }
     case AutocompleteMatchType::HISTORY_URL: {
-      subtypes->emplace(/*SUBTYPE_OMNIBOX_HISTORY_URL=*/60);
+      subtypes->emplace(omnibox::SUBTYPE_OMNIBOX_HISTORY_URL);
       return;
     }
     case AutocompleteMatchType::HISTORY_TITLE: {
-      subtypes->emplace(/*SUBTYPE_OMNIBOX_HISTORY_TITLE=*/61);
+      subtypes->emplace(omnibox::SUBTYPE_OMNIBOX_HISTORY_TITLE);
       return;
     }
     case AutocompleteMatchType::HISTORY_BODY: {
-      subtypes->emplace(/*SUBTYPE_OMNIBOX_HISTORY_BODY=*/62);
+      subtypes->emplace(omnibox::SUBTYPE_OMNIBOX_HISTORY_BODY);
       return;
     }
     case AutocompleteMatchType::HISTORY_KEYWORD: {
-      subtypes->emplace(/*SUBTYPE_OMNIBOX_HISTORY_KEYWORD=*/63);
+      subtypes->emplace(omnibox::SUBTYPE_OMNIBOX_HISTORY_KEYWORD);
       return;
     }
     case AutocompleteMatchType::BOOKMARK_TITLE: {
-      subtypes->emplace(/*SUBTYPE_OMNIBOX_BOOKMARK_TITLE=*/65);
+      subtypes->emplace(omnibox::SUBTYPE_OMNIBOX_BOOKMARK_TITLE);
       return;
     }
     case AutocompleteMatchType::NAVSUGGEST_PERSONALIZED: {
-      *type = 5;
-      subtypes->emplace(/*SUBTYPE_PERSONAL=*/39);
+      *type = omnibox::TYPE_NAVIGATION;
+      subtypes->emplace(omnibox::SUBTYPE_PERSONAL);
       return;
     }
     case AutocompleteMatchType::CALCULATOR: {
-      *type = 6;
+      *type = omnibox::TYPE_CALCULATOR;
       return;
     }
     case AutocompleteMatchType::CLIPBOARD_URL: {
-      subtypes->emplace(/*SUBTYPE_CLIPBOARD_URL=*/177);
+      subtypes->emplace(omnibox::SUBTYPE_CLIPBOARD_URL);
       return;
     }
     case AutocompleteMatchType::CLIPBOARD_TEXT: {
-      subtypes->emplace(/*SUBTYPE_CLIPBOARD_TEXT=*/176);
+      subtypes->emplace(omnibox::SUBTYPE_CLIPBOARD_TEXT);
       return;
     }
     case AutocompleteMatchType::CLIPBOARD_IMAGE: {
-      subtypes->emplace(/*SUBTYPE_CLIPBOARD_IMAGE=*/327);
+      subtypes->emplace(omnibox::SUBTYPE_CLIPBOARD_IMAGE);
       return;
     }
     case AutocompleteMatchType::TILE_SUGGESTION: {
-      *type = 171;
+      *type = omnibox::TYPE_CHROME_QUERY_TILES;
       return;
     }
     default: {
       // This value indicates a native chrome suggestion with no named subtype
       // (yet).
-      subtypes->emplace(/*SUBTYPE_OMNIBOX_OTHER=*/64);
+      subtypes->emplace(omnibox::SUBTYPE_OMNIBOX_OTHER);
     }
   }
 }
@@ -308,7 +307,7 @@ AutocompleteController::AutocompleteController(
       zero_suggest_provider_(nullptr),
       on_device_head_provider_(nullptr),
       stop_timer_duration_(OmniboxFieldTrial::StopTimerFieldTrialDuration()),
-      update_debouncer_(
+      notify_changed_debouncer_(
           OmniboxFieldTrial::
               kAutocompleteStabilityUpdateResultDebounceFromLastRun.Get(),
           OmniboxFieldTrial::kAutocompleteStabilityUpdateResultDebounceDelay
@@ -480,9 +479,11 @@ AutocompleteController::AutocompleteController(
   if (provider_types & AutocompleteProvider::TYPE_HISTORY_CLUSTER_PROVIDER &&
       history_clusters::IsApplicationLocaleSupportedByJourneys(
           provider_client_->GetApplicationLocale()) &&
-      search_provider_ != nullptr) {
-    providers_.push_back(new HistoryClusterProvider(provider_client_.get(),
-                                                    this, search_provider_));
+      search_provider_ != nullptr && history_url_provider_ != nullptr &&
+      history_quick_provider_ != nullptr) {
+    providers_.push_back(new HistoryClusterProvider(
+        provider_client_.get(), this, search_provider_, history_url_provider_,
+        history_quick_provider_));
   }
 #endif
 
@@ -513,10 +514,10 @@ void AutocompleteController::Start(const AutocompleteInput& input) {
                base::UTF16ToUTF8(input.text()));
 
   // Providers assume synchronous inputs (`omit_asynchronous_matches() ==
-  // true`) have default focus type (`focus_type() == DEFAULT`). See
+  // true`) have default focus type (`focus_type() == INTERACTION_DEFAULT`). See
   // crbug.com/1339425.
   DCHECK(!input.omit_asynchronous_matches() ||
-         input.focus_type() == OmniboxFocusType::DEFAULT);
+         input.focus_type() == metrics::OmniboxFocusType::INTERACTION_DEFAULT);
 
   // When input.omit_asynchronous_matches() is true, the AutocompleteController
   // is being used for text classification, which should not notify observers.
@@ -543,7 +544,7 @@ void AutocompleteController::Start(const AutocompleteInput& input) {
   const std::u16string old_input_text(input_.text());
   const bool old_allow_exact_keyword_match = input_.allow_exact_keyword_match();
   const bool old_omit_asynchronous_matches = input_.omit_asynchronous_matches();
-  const OmniboxFocusType old_focus_type = input_.focus_type();
+  const metrics::OmniboxFocusType old_focus_type = input_.focus_type();
   input_ = input;
 
   // See if we can avoid rerunning autocomplete when the query hasn't changed
@@ -620,7 +621,7 @@ void AutocompleteController::Start(const AutocompleteInput& input) {
   // signals to the controller so it doesn't realize that anything was
   // cleared or changed.  Even if the default match hasn't changed, we
   // need the edit model to update the display.
-  DelayedUpdateResult(false, true);
+  UpdateResult(false, true);
 
   in_start_ = false;
 
@@ -710,7 +711,7 @@ void AutocompleteController::ExpireCopiedEntries() {
   // The first true makes UpdateResult() clear out the results and
   // regenerate them, thus ensuring that no results from the previous
   // result set remain.
-  DelayedUpdateResult(true, false);
+  UpdateResult(true, false);
 }
 
 void AutocompleteController::OnProviderUpdate(
@@ -735,10 +736,8 @@ void AutocompleteController::OnProviderUpdate(
   CheckIfDone();
   // Multiple providers may provide synchronous results, so we only update the
   // results if we're not in Start().
-  if (done_)
+  if (updated_matches || done_)
     UpdateResult(false, false);
-  else if (updated_matches)
-    DelayedUpdateResult(false, false);
 }
 
 void AutocompleteController::AddProviderAndTriggeringLogs(
@@ -877,7 +876,6 @@ void AutocompleteController::UpdateResult(
     bool regenerate_result,
     bool force_notify_default_match_changed) {
   TRACE_EVENT0("omnibox", "AutocompleteController::UpdateResult");
-  update_debouncer_.CancelRequest();
 
   absl::optional<AutocompleteMatch> last_default_match;
   std::u16string last_default_associated_keyword;
@@ -925,14 +923,14 @@ void AutocompleteController::UpdateResult(
   result_.SortAndCull(input_, template_url_service_, preserve_default_match);
 
   // Only produce Pedals for the default focus case (not on focus or on delete).
-  if (input_.focus_type() == OmniboxFocusType::DEFAULT) {
+  if (input_.focus_type() == metrics::OmniboxFocusType::INTERACTION_DEFAULT) {
     // TODO(tommycli): It sure seems like this should be moved down below
     // `TransferOldMatches()` along with all the other annotation code.
     result_.AttachPedalsToMatches(input_, *provider_client_);
   }
 
-  // Need to validate before invoking CopyOldMatches as the old matches are not
-  // valid against the current input.
+  // Need to validate before invoking `TransferOldMatches()` as the old matches
+  // are not valid against the current input.
 #if DCHECK_IS_ON()
   result_.Validate();
 #endif  // DCHECK_IS_ON()
@@ -1007,15 +1005,8 @@ void AutocompleteController::UpdateResult(
         OmniboxTriggeredFeatureService::Feature::kRichAutocompletion);
   }
 
-  NotifyChanged(force_notify_default_match_changed || notify_default_match);
-}
-
-void AutocompleteController::DelayedUpdateResult(
-    bool regenerate_result,
-    bool force_notify_default_match_changed) {
-  update_debouncer_.RequestRun(base::BindOnce(
-      &AutocompleteController::UpdateResult, base::Unretained(this),
-      regenerate_result, force_notify_default_match_changed));
+  DelayedNotifyChanged(force_notify_default_match_changed ||
+                       notify_default_match);
 }
 
 void AutocompleteController::UpdateAssociatedKeywords(
@@ -1124,19 +1115,18 @@ void AutocompleteController::UpdateAssistedQueryStats(
   std::string autocompletions;
   int count = 0;
   int num_zero_prefix_suggestions_shown = 0;
-  size_t last_type = std::u16string::npos;
-  base::flat_set<int> last_subtypes = {};
+  absl::optional<omnibox::SuggestType> last_type;
+  base::flat_set<omnibox::SuggestSubtype> last_subtypes = {};
   for (size_t index = 0; index < result->size(); ++index) {
     AutocompleteMatch* match = result->match_at(index);
     auto subtypes = match->subtypes;
-    size_t type = std::u16string::npos;
+    omnibox::SuggestType type = omnibox::TYPE_NATIVE_CHROME;
     GetMatchTypeAndExtendSubtypes(*match, &type, &subtypes);
 
     // Count any suggestions that constitute zero-prefix suggestions.
-    if (subtypes.contains(/*SUBTYPE_ZERO_PREFIX_LOCAL_HISTORY*/ 450) ||
-        subtypes.contains(
-            /*SUBTYPE_ZERO_PREFIX_LOCAL_FREQUENT_URLS*/ 451) ||
-        subtypes.contains(/*SUBTYPE_ZERO_PREFIX*/ 362)) {
+    if (subtypes.contains(omnibox::SUBTYPE_ZERO_PREFIX_LOCAL_HISTORY) ||
+        subtypes.contains(omnibox::SUBTYPE_ZERO_PREFIX_LOCAL_FREQUENT_URLS) ||
+        subtypes.contains(omnibox::SUBTYPE_ZERO_PREFIX)) {
       num_zero_prefix_suggestions_shown++;
     }
 
@@ -1147,9 +1137,9 @@ void AutocompleteController::UpdateAssistedQueryStats(
       available_suggestion->add_subtypes(subtype);
     }
 
-    if (last_type != std::u16string::npos &&
+    if (last_type.has_value() &&
         (type != last_type || subtypes != last_subtypes)) {
-      AppendAvailableAutocompletion(last_type, last_subtypes, count,
+      AppendAvailableAutocompletion(*last_type, last_subtypes, count,
                                     &autocompletions);
       count = 1;
     } else {
@@ -1158,8 +1148,10 @@ void AutocompleteController::UpdateAssistedQueryStats(
     last_type = type;
     last_subtypes = subtypes;
   }
-  AppendAvailableAutocompletion(last_type, last_subtypes, count,
-                                &autocompletions);
+  if (last_type.has_value()) {
+    AppendAvailableAutocompletion(*last_type, last_subtypes, count,
+                                  &autocompletions);
+  }
 
   // TODO(crbug.com/1307142): These two fields should take into account all the
   // zero-prefix suggestions shown during the session and not only the ones
@@ -1199,9 +1191,22 @@ void AutocompleteController::UpdateAssistedQueryStats(
   }
 }
 
-void AutocompleteController::NotifyChanged(bool notify_default_match) {
+void AutocompleteController::NotifyChanged() {
   for (Observer& obs : observers_)
-    obs.OnResultChanged(this, notify_default_match);
+    obs.OnResultChanged(this, notify_changed_default_match_);
+  notify_changed_debouncer_.CancelRequest();
+  notify_changed_default_match_ = false;
+}
+
+void AutocompleteController::DelayedNotifyChanged(bool notify_default_match) {
+  if (notify_default_match)
+    notify_changed_default_match_ = true;
+  if (done_ || in_start_) {
+    NotifyChanged();
+  } else {
+    notify_changed_debouncer_.RequestRun(base::BindOnce(
+        &AutocompleteController::NotifyChanged, base::Unretained(this)));
+  }
 }
 
 void AutocompleteController::CheckIfDone() {
@@ -1260,7 +1265,7 @@ void AutocompleteController::StopHelper(bool clear_result,
     result_.Reset();
     // NOTE: We pass in false since we're trying to only clear the popup, not
     // touch the edit... this is all a mess and should be cleaned up :(
-    NotifyChanged(false);
+    DelayedNotifyChanged(false);
   }
 }
 

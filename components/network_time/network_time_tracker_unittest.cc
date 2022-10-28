@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -442,7 +442,7 @@ TEST_F(NetworkTimeTrackerTest, DeserializeOldFormat) {
             tracker_->GetNetworkTime(&out_network_time, nullptr));
   absl::optional<double> local, network;
   const base::Value::Dict& saved_prefs =
-      pref_service_.GetValueDict(prefs::kNetworkTimeMapping);
+      pref_service_.GetDict(prefs::kNetworkTimeMapping);
   local = saved_prefs.FindDouble("local");
   network = saved_prefs.FindDouble("network");
   ASSERT_TRUE(local);

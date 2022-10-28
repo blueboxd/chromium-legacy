@@ -1,8 +1,9 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 import {constants} from '../../common/constants.js';
+import {RepeatedEventHandler} from '../../common/repeated_event_handler.js';
 import {AutomationTreeWalker} from '../../common/tree_walker.js';
 import {SACache} from '../cache.js';
 import {FocusRingManager} from '../focus_ring_manager.js';

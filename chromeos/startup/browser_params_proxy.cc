@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -219,16 +219,16 @@ bool BrowserParamsProxy::IsCurrentUserDeviceOwner() const {
 
 bool BrowserParamsProxy::DoNotMuxExtensionAppIds() const {
   return BrowserInitParams::Get()->do_not_mux_extension_app_ids;
-};
+}
 
 bool BrowserParamsProxy::EnableLacrosTtsSupport() const {
   return BrowserInitParams::Get()->enable_lacros_tts_support;
-};
+}
 
 crosapi::mojom::BrowserInitParams::LacrosSelection
 BrowserParamsProxy::LacrosSelection() const {
   return BrowserInitParams::Get()->lacros_selection;
-};
+}
 
 bool BrowserParamsProxy::IsFloatWindowEnabled() const {
   return BrowserInitParams::Get()->enable_float_window;

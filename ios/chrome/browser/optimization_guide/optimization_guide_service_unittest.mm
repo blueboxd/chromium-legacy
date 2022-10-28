@@ -1,12 +1,12 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ios/chrome/browser/optimization_guide/optimization_guide_service.h"
+#import "ios/chrome/browser/optimization_guide/optimization_guide_service.h"
 
-#include "base/command_line.h"
+#import "base/command_line.h"
 #import "base/test/metrics/histogram_tester.h"
-#include "base/test/scoped_command_line.h"
+#import "base/test/scoped_command_line.h"
 #import "base/test/scoped_feature_list.h"
 #import "components/optimization_guide/core/hints_component_util.h"
 #import "components/optimization_guide/core/optimization_guide_features.h"
@@ -27,7 +27,7 @@
 #import "ios/chrome/browser/prefs/browser_prefs.h"
 #import "ios/web/public/navigation/navigation_manager.h"
 #import "ios/web/public/test/fakes/fake_navigation_context.h"
-#include "ios/web/public/test/web_task_environment.h"
+#import "ios/web/public/test/web_task_environment.h"
 #import "services/metrics/public/cpp/ukm_builders.h"
 #import "services/metrics/public/cpp/ukm_source.h"
 #import "testing/gtest/include/gtest/gtest.h"
@@ -183,8 +183,8 @@ class OptimizationGuideServiceTest : public PlatformTest {
         {optimization_guide::proto::NOSCRIPT});
   }
 
-  // Calls the |CanApplyOptimizationAsync| and expects |expected_decision| when
-  // the decision is returned. |on_decision_callback| is called when the
+  // Calls the `CanApplyOptimizationAsync` and expects `expected_decision` when
+  // the decision is returned. `on_decision_callback` is called when the
   // decision is called.
   void VerifyCanApplyOptimizationAsyncDecision(
       NavigationContextAndData* context_and_data,

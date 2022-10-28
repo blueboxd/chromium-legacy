@@ -1,11 +1,10 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome/browser/ash/login/saml/in_session_password_sync_manager.h"
 #include <memory>
 
-#include "ash/components/login/auth/public/user_context.h"
 #include "ash/constants/ash_features.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/time/default_clock.h"
@@ -19,6 +18,7 @@
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
+#include "chromeos/ash/components/login/auth/public/user_context.h"
 #include "components/user_manager/known_user.h"
 #include "components/user_manager/scoped_user_manager.h"
 #include "components/user_manager/user_names.h"
@@ -79,9 +79,6 @@ class InSessionPasswordSyncManagerTest : public testing::Test {
 
 InSessionPasswordSyncManagerTest::InSessionPasswordSyncManagerTest()
     : manager_(nullptr) {
-  feature_list_.InitAndEnableFeature(
-      features::kEnableSamlReauthenticationOnLockscreen);
-
   std::unique_ptr<FakeChromeUserManager> fake_user_manager =
       std::make_unique<FakeChromeUserManager>();
   scoped_user_manager_ = std::make_unique<user_manager::ScopedUserManager>(

@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -30,7 +30,7 @@ void AcceleratorConfiguration::RemoveAcceleratorsUpdatedCallback(
 }
 
 void AcceleratorConfiguration::NotifyAcceleratorsUpdated(
-    const std::multimap<AcceleratorAction, AcceleratorInfo>& accelerators) {
+    const std::multimap<AcceleratorActionId, AcceleratorInfo>& accelerators) {
   for (auto& cb : callbacks_) {
     cb.Run(source_, accelerators);
   }

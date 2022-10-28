@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -21,9 +21,9 @@ import '../../settings_shared.css.js';
 import '../../settings_page/settings_animated_pages.js';
 
 import {assert} from 'chrome://resources/js/assert.m.js';
-import {focusWithoutInk} from 'chrome://resources/js/cr/ui/focus_without_ink.m.js';
-import {I18nBehavior, I18nBehaviorInterface} from 'chrome://resources/js/i18n_behavior.m.js';
-import {html, mixinBehaviors, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {focusWithoutInk} from 'chrome://resources/js/cr/ui/focus_without_ink_js.js';
+import {I18nBehavior, I18nBehaviorInterface} from 'chrome://resources/cr_elements/i18n_behavior.js';
+import {mixinBehaviors, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {loadTimeData} from '../../i18n_setup.js';
 import {Setting} from '../../mojom-webui/setting.mojom-webui.js';
@@ -35,6 +35,7 @@ import {PrefsBehavior, PrefsBehaviorInterface} from '../prefs_behavior.js';
 import {RouteObserverBehavior, RouteObserverBehaviorInterface} from '../route_observer_behavior.js';
 
 import {hasOptionsPageInSettings} from './input_method_util.js';
+import {getTemplate} from './input_page.html.js';
 import {InputsShortcutReminderState, LanguagesMetricsProxy, LanguagesMetricsProxyImpl, LanguagesPageInteraction} from './languages_metrics_proxy.js';
 import {LanguageHelper, LanguagesModel, LanguageState, SpellCheckLanguageState} from './languages_types.js';
 
@@ -57,7 +58,7 @@ class OsSettingsInputPageElement extends OsSettingsInputPageElementBase {
   }
 
   static get template() {
-    return html`{__html_template__}`;
+    return getTemplate();
   }
 
   static get properties() {
@@ -129,6 +130,14 @@ class OsSettingsInputPageElement extends OsSettingsInputPageElementBase {
       },
 
       /** @private */
+      languageSettingsJapaneseEnabled_: {
+        type: Boolean,
+        value() {
+          return loadTimeData.getBoolean('languageSettingsUpdateJapanese');
+        },
+      },
+
+      /** @private */
       shouldShowLanguagePacksNotice_: {
         type: Boolean,
         value() {
@@ -174,6 +183,13 @@ class OsSettingsInputPageElement extends OsSettingsInputPageElementBase {
         type: Boolean,
         value() {
           return loadTimeData.getBoolean('onDeviceGrammarCheckEnabled');
+        },
+      },
+      /** @private */
+      onJapaneseSettingsEnabled_: {
+        type: Boolean,
+        value() {
+          return loadTimeData.getBoolean('languageSettingsUpdateJapanese');
         },
       },
     };
@@ -236,8 +252,8 @@ class OsSettingsInputPageElement extends OsSettingsInputPageElementBase {
   /**
    * Handler for click events on an input method on the main page,
    * which sets it as the current input method.
-   * @param {!{model: !{item: !chrome.languageSettingsPrivate.InputMethod},
-   *           target: !{tagName: string}}} e
+   * @param {{model: {item: !chrome.languageSettingsPrivate.InputMethod},
+   *           target: {tagName: string}}} e
    * @private
    */
   onInputMethodClick_(e) {
@@ -255,7 +271,7 @@ class OsSettingsInputPageElement extends OsSettingsInputPageElementBase {
   /**
    * Handler for <Enter> events on an input method on the main page,
    * which sets it as the current input method.
-   * @param {!{model: !{item: !chrome.languageSettingsPrivate.InputMethod},
+   * @param {{model: {item: !chrome.languageSettingsPrivate.InputMethod},
    *           key: string}} e
    * @private
    */
@@ -271,7 +287,7 @@ class OsSettingsInputPageElement extends OsSettingsInputPageElementBase {
   /**
    * Opens the input method extension's options page in a new tab (or focuses
    * an existing instance of the IME's options).
-   * @param {!{model: !{item: chrome.languageSettingsPrivate.InputMethod}}} e
+   * @param {{model: {item: chrome.languageSettingsPrivate.InputMethod}}} e
    * @private
    */
   openExtensionOptionsPage_(e) {
@@ -288,11 +304,12 @@ class OsSettingsInputPageElement extends OsSettingsInputPageElementBase {
   hasOptionsPageInSettings_(id) {
     return hasOptionsPageInSettings(
         id, loadTimeData.getBoolean('allowPredictiveWriting'),
-        loadTimeData.getBoolean('allowDiacriticsOnPhysicalKeyboardLongpress'));
+        loadTimeData.getBoolean('allowDiacriticsOnPhysicalKeyboardLongpress'),
+        loadTimeData.getBoolean('languageSettingsUpdateJapanese'));
   }
 
   /**
-   * @param {!{model: !{item: chrome.languageSettingsPrivate.InputMethod}}} e
+   * @param {{model: {item: chrome.languageSettingsPrivate.InputMethod}}} e
    * @private
    */
   navigateToOptionsPageInSettings_(e) {
@@ -404,7 +421,7 @@ class OsSettingsInputPageElement extends OsSettingsInputPageElementBase {
   }
 
   /**
-   * @param {!{model: !{item: chrome.languageSettingsPrivate.InputMethod}}} e
+   * @param {{model: {item: chrome.languageSettingsPrivate.InputMethod}}} e
    * @private
    */
   onRemoveInputMethodClick_(e) {
@@ -422,7 +439,7 @@ class OsSettingsInputPageElement extends OsSettingsInputPageElementBase {
   }
 
   /**
-   * @param {!{model: !{item: SpellCheckLanguageState}}} e
+   * @param {{model: {item: SpellCheckLanguageState}}} e
    * @private
    */
   onRemoveSpellcheckLanguageClick_(e) {
@@ -526,7 +543,7 @@ class OsSettingsInputPageElement extends OsSettingsInputPageElementBase {
 
   /**
    * Handler for enabling or disabling spell check for a specific language.
-   * @param {!{target: Element, model: !{item: !LanguageState}}} e
+   * @param {{target: Element, model: {item: !LanguageState}}} e
    * @private
    */
   onSpellCheckLanguageChange_(e) {
@@ -542,7 +559,7 @@ class OsSettingsInputPageElement extends OsSettingsInputPageElementBase {
   /**
    * Handler for clicking on the name of the language. The action taken must
    * match the control that is available.
-   * @param {!{target: Element, model: !{item: !LanguageState}}} e
+   * @param {{target: Element, model: {item: !LanguageState}}} e
    * @private
    */
   onSpellCheckNameClick_(e) {
@@ -565,7 +582,7 @@ class OsSettingsInputPageElement extends OsSettingsInputPageElementBase {
   /**
    * Handler to initiate another attempt at downloading the spell check
    * dictionary for a specified language.
-   * @param {!{target: Element, model: !{item: !LanguageState}}} e
+   * @param {{target: Element, model: {item: !LanguageState}}} e
    * @private
    */
   onRetryDictionaryDownloadClick_(e) {

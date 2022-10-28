@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -79,7 +79,8 @@ OpenTabProvider::~OpenTabProvider() = default;
 void OpenTabProvider::Start(const AutocompleteInput& input,
                             bool minimal_changes) {
   matches_.clear();
-  if (input.focus_type() != OmniboxFocusType::DEFAULT || input.text().empty()) {
+  if (input.focus_type() != metrics::OmniboxFocusType::INTERACTION_DEFAULT ||
+      input.text().empty()) {
     return;
   }
 

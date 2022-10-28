@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -116,31 +116,30 @@ constexpr char kTypeIntFieldNumber[] = "4";
 constexpr char kStringValueFieldNumber[] = "2";
 
 constexpr auto kReservedGroupIdsMap =
-    base::MakeFixedFlatMap<int, SuggestionGroupId>(
-        {{0, SuggestionGroupId::kNonPersonalizedZeroSuggest1},
-         {1, SuggestionGroupId::kNonPersonalizedZeroSuggest2},
-         {2, SuggestionGroupId::kNonPersonalizedZeroSuggest3},
-         {3, SuggestionGroupId::kNonPersonalizedZeroSuggest4},
-         {4, SuggestionGroupId::kNonPersonalizedZeroSuggest5},
-         {5, SuggestionGroupId::kNonPersonalizedZeroSuggest6},
-         {6, SuggestionGroupId::kNonPersonalizedZeroSuggest7},
-         {7, SuggestionGroupId::kNonPersonalizedZeroSuggest8},
-         {8, SuggestionGroupId::kNonPersonalizedZeroSuggest9},
-         {9, SuggestionGroupId::kNonPersonalizedZeroSuggest10}});
+    base::MakeFixedFlatMap<int, omnibox::GroupId>(
+        {{0, omnibox::GroupId::POLARIS_RESERVED_1},
+         {1, omnibox::GroupId::POLARIS_RESERVED_2},
+         {2, omnibox::GroupId::POLARIS_RESERVED_3},
+         {3, omnibox::GroupId::POLARIS_RESERVED_4},
+         {4, omnibox::GroupId::POLARIS_RESERVED_5},
+         {5, omnibox::GroupId::POLARIS_RESERVED_6},
+         {6, omnibox::GroupId::POLARIS_RESERVED_7},
+         {7, omnibox::GroupId::POLARIS_RESERVED_8},
+         {8, omnibox::GroupId::POLARIS_RESERVED_9},
+         {9, omnibox::GroupId::POLARIS_RESERVED_10}});
 
 // Converts the given group ID to one known to Chrome based on its 0-based index
 // in the server response.
-SuggestionGroupId ChromeGroupIdForRemoteGroupIdAndIndex(const int group_id,
-                                                        const int group_index) {
-  if (group_id ==
-      static_cast<int>(SuggestionGroupId::kPersonalizedZeroSuggest)) {
+omnibox::GroupId ChromeGroupIdForRemoteGroupIdAndIndex(const int group_id,
+                                                       const int group_index) {
+  if (group_id == omnibox::GroupId::PERSONALIZED_ZERO_SUGGEST) {
     // The group ID for personalized zero-suggest is already known to Chrome.
-    return SuggestionGroupId::kPersonalizedZeroSuggest;
+    return omnibox::GroupId::PERSONALIZED_ZERO_SUGGEST;
   } else if (base::Contains(kReservedGroupIdsMap, group_index)) {
     return kReservedGroupIdsMap.at(group_index);
   } else {
     // Return an invalid group ID if we don't have any reserved IDs left.
-    return SuggestionGroupId::kInvalid;
+    return omnibox::GroupId::INVALID;
   }
 }
 
@@ -170,6 +169,17 @@ SuggestionGroupPriority ChromeGroupPriorityForRemoteGroupIndex(
 }
 
 }  // namespace
+
+omnibox::SuggestSubtype SuggestSubtypeForNumber(int value) {
+  // Note that ideally this should first check if `value` is valid by calling
+  // omnibox::SuggestSubtype_IsValid and return omnibox::SUBTYPE_NONE when there
+  // is no corresponding enum object. However, that is not possible because the
+  // current list of subtypes in omnibox::SuggestSubtype is not exhaustive.
+  // However, casting int values into omnibox::SuggestSubtype without testing
+  // membership is expected to be safe as omnibox::SuggestSubtype has a fixed
+  // int underlying type.
+  return static_cast<omnibox::SuggestSubtype>(value);
+}
 
 // SearchSuggestionParser::Result ----------------------------------------------
 
@@ -550,7 +560,7 @@ bool SearchSuggestionParser::ParseSuggestResults(
   int prefetch_index = -1;
   int prerender_index = -1;
   std::unordered_map<int, SuggestionGroup> parsed_suggestion_groups_map;
-  std::unordered_map<int, SuggestionGroupId> chrome_group_ids_map;
+  std::unordered_map<int, omnibox::GroupId> chrome_group_ids_map;
 
   if (root_list.size() > 4u && root_list[4].is_dict()) {
     const base::Value& extras = root_list[4];
@@ -614,8 +624,8 @@ bool SearchSuggestionParser::ParseSuggestResults(
           if (base::StringToInt(it.first, &suggestion_group_id)) {
             parsed_suggestion_groups_map[suggestion_group_id]
                 .original_group_id = suggestion_group_id;
-            parsed_suggestion_groups_map[suggestion_group_id].header =
-                base::UTF8ToUTF16(it.second.GetString());
+            parsed_suggestion_groups_map[suggestion_group_id]
+                .group_config_info.set_header_text(it.second.GetString());
           }
         }
       }
@@ -624,7 +634,9 @@ bool SearchSuggestionParser::ParseSuggestResults(
       if (hidden_group_ids) {
         for (const auto& value : hidden_group_ids->GetListDeprecated()) {
           if (value.is_int()) {
-            parsed_suggestion_groups_map[value.GetInt()].hidden = true;
+            parsed_suggestion_groups_map[value.GetInt()]
+                .group_config_info.set_visibility(
+                    omnibox::GroupConfigInfo_Visibility_HIDDEN);
           }
         }
       }
@@ -831,7 +843,7 @@ bool SearchSuggestionParser::ParseSuggestResults(
           // reserved group IDs to assign.
           const auto chrome_group_id = ChromeGroupIdForRemoteGroupIdAndIndex(
               *suggestion_group_id, group_index);
-          if (chrome_group_id == SuggestionGroupId::kInvalid) {
+          if (chrome_group_id == omnibox::GroupId::INVALID) {
             continue;
           }
 
@@ -871,7 +883,7 @@ bool SearchSuggestionParser::ParseSuggestResults(
     // Convert the server-provided group ID to one known to Chrome.
     const auto chrome_group_id =
         ChromeGroupIdForRemoteGroupIdAndIndex(entry.first, group_index);
-    if (chrome_group_id == SuggestionGroupId::kInvalid) {
+    if (chrome_group_id == omnibox::GroupId::INVALID) {
       continue;
     }
 

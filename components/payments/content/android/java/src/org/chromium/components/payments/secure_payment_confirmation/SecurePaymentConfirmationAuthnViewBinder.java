@@ -1,11 +1,13 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 package org.chromium.components.payments.secure_payment_confirmation;
 
-import org.chromium.components.url_formatter.SchemeDisplay;
-import org.chromium.components.url_formatter.UrlFormatter;
+import android.graphics.drawable.Drawable;
+import android.util.Pair;
+import android.view.ViewGroup.LayoutParams;
+
 import org.chromium.ui.modelutil.PropertyKey;
 import org.chromium.ui.modelutil.PropertyModel;
 
@@ -16,14 +18,20 @@ import org.chromium.ui.modelutil.PropertyModel;
 /* package */ class SecurePaymentConfirmationAuthnViewBinder {
     /* package */ static void bind(
             PropertyModel model, SecurePaymentConfirmationAuthnView view, PropertyKey propertyKey) {
-        if (SecurePaymentConfirmationAuthnProperties.STORE_ORIGIN == propertyKey) {
-            String origin = UrlFormatter.formatOriginForSecurityDisplay(
-                    model.get(SecurePaymentConfirmationAuthnProperties.STORE_ORIGIN),
-                    SchemeDisplay.OMIT_HTTP_AND_HTTPS);
-            view.mStoreOrigin.setText(origin);
+        if (SecurePaymentConfirmationAuthnProperties.STORE_LABEL == propertyKey) {
+            view.mStoreOrigin.setText(
+                    model.get(SecurePaymentConfirmationAuthnProperties.STORE_LABEL));
         } else if (SecurePaymentConfirmationAuthnProperties.PAYMENT_ICON == propertyKey) {
-            view.mPaymentIcon.setImageDrawable(
-                    model.get(SecurePaymentConfirmationAuthnProperties.PAYMENT_ICON));
+            Pair<Drawable, Boolean> iconInfo =
+                    model.get(SecurePaymentConfirmationAuthnProperties.PAYMENT_ICON);
+            view.mPaymentIcon.setImageDrawable(iconInfo.first);
+            // We normally override the input icon's dimensions, to stop developers from passing
+            // arbitrary sized icons. However if we're using the default payment icon we should just
+            // let it use its intrinsic sizing.
+            if (iconInfo.second) {
+                view.mPaymentIcon.getLayoutParams().height = LayoutParams.WRAP_CONTENT;
+                view.mPaymentIcon.getLayoutParams().width = LayoutParams.WRAP_CONTENT;
+            }
         } else if (SecurePaymentConfirmationAuthnProperties.PAYMENT_INSTRUMENT_LABEL
                 == propertyKey) {
             view.mPaymentInstrumentLabel.setText(

@@ -6,7 +6,6 @@
 
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
-#include "third_party/skia/include/core/SkColorSpace.h"
 
 namespace gfx {
 
@@ -122,9 +121,13 @@ bool DisplayColorSpaces::SupportsHDR() const {
 }
 
 SkColorSpacePrimaries DisplayColorSpaces::GetPrimaries() const {
-  // TODO(https://crbug.com/1274220): Store this directly, rather than inferring
-  // it from the raster color space.
-  return GetRasterColorSpace().GetColorSpacePrimaries();
+  // TODO(https://crbug.com/1274220): Use `primaries_`, once it is set on all
+  // platforms.
+  return GetRasterColorSpace().GetPrimaries();
+}
+
+void DisplayColorSpaces::SetPrimaries(const SkColorSpacePrimaries& primaries) {
+  // TODO(https://crbug.com/1274220): Store `primaries` in `primaries_`.
 }
 
 ColorSpace DisplayColorSpaces::GetScreenInfoColorSpace() const {
@@ -197,6 +200,8 @@ bool DisplayColorSpaces::operator==(const DisplayColorSpaces& other) const {
     if (buffer_formats_[i] != other.buffer_formats_[i])
       return false;
   }
+  if (primaries_ != other.primaries_)
+    return false;
   if (sdr_max_luminance_nits_ != other.sdr_max_luminance_nits_)
     return false;
   if (hdr_max_luminance_relative_ != other.hdr_max_luminance_relative_)

@@ -246,7 +246,7 @@ TEST(JsonSchemaCompilerErrorTest, ErrorOnOptionalFailure) {
     EXPECT_FALSE(errors::OptionalTestType::Populate(*value, &out, &error));
     EXPECT_TRUE(EqualsUtf16("'string': expected string, got integer",
         error));
-    EXPECT_EQ(NULL, out.string.get());
+    EXPECT_FALSE(out.string);
   }
 }
 
@@ -285,7 +285,7 @@ TEST(JsonSchemaCompilerErrorTest, OptionalArrayTypeFailure) {
     EXPECT_FALSE(errors::ArrayObject::Populate(*value, &out, &error));
     EXPECT_TRUE(EqualsUtf16("'TheArray': expected list, got integer",
         error));
-    EXPECT_EQ(NULL, out.the_array.get());
+    EXPECT_FALSE(out.the_array.has_value());
   }
 }
 
@@ -308,7 +308,7 @@ TEST(JsonSchemaCompilerErrorTest, OptionalUnableToPopulateArray) {
         EqualsUtf16("Error at key 'integers': Parsing array failed at index 1: "
                     "expected integer, got boolean",
                     error));
-    EXPECT_EQ(NULL, out.as_integer.get());
+    EXPECT_FALSE(out.as_integer.has_value());
   }
 }
 

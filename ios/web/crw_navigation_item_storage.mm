@@ -1,11 +1,11 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #import "ios/web/public/session/crw_navigation_item_storage.h"
 
-#include "base/metrics/histogram_functions.h"
-#include "base/strings/sys_string_conversions.h"
+#import "base/metrics/histogram_functions.h"
+#import "base/strings/sys_string_conversions.h"
 #import "ios/web/navigation/nscoder_util.h"
 #import "ios/web/public/web_client.h"
 #import "net/base/mac/url_conversions.h"
@@ -147,8 +147,8 @@ const char kNavigationItemSerializedRequestHeadersSizeHistogram[] =
 }
 
 - (void)encodeWithCoder:(NSCoder*)aCoder {
-  // Desktop Chrome doesn't persist |url_| or |originalUrl_|, only
-  // |virtualUrl_|. Chrome on iOS is persisting |url_|.
+  // Desktop Chrome doesn't persist `url_` or `originalUrl_`, only
+  // `virtualUrl_`. Chrome on iOS is persisting `url_`.
   int serializedSizeInBytes = 0;
   int serializedVirtualURLSizeInBytes = 0;
   if (_virtualURL != _URL) {

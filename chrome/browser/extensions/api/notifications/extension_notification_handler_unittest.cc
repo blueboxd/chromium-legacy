@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -44,7 +44,7 @@ class TestExtensionNotificationHandler : public ExtensionNotificationHandler {
                  std::unique_ptr<base::ListValue> args) final {
     EXPECT_EQ(event_name_, event_name);
     EXPECT_EQ(extension_id_, extension_id);
-    EXPECT_EQ(param_count_, args->GetListDeprecated().size());
+    EXPECT_EQ(param_count_, args->GetList().size());
   }
 
  private:

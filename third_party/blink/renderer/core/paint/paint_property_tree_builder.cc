@@ -53,6 +53,7 @@
 #include "third_party/blink/renderer/core/paint/find_paint_offset_needing_update.h"
 #include "third_party/blink/renderer/core/paint/find_properties_needing_update.h"
 #include "third_party/blink/renderer/core/paint/object_paint_properties.h"
+#include "third_party/blink/renderer/core/paint/old_cull_rect_updater.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
 #include "third_party/blink/renderer/core/paint/paint_property_tree_printer.h"
@@ -295,8 +296,8 @@ class FragmentPaintPropertyTreeBuilder {
   ALWAYS_INLINE void UpdateTransformIsolationNode();
   ALWAYS_INLINE void UpdateEffectIsolationNode();
   ALWAYS_INLINE void UpdateClipIsolationNode();
-  ALWAYS_INLINE void SetTransformNodeStateForSVGChild(
-      TransformPaintPropertyNode::State&);
+  ALWAYS_INLINE TransformPaintPropertyNode::TransformAndOrigin
+  TransformAndOriginForSVGChild() const;
   ALWAYS_INLINE void UpdateLayoutShiftRootChanged(bool is_layout_shift_root);
 
   bool NeedsPaintPropertyUpdate() const {
@@ -471,7 +472,8 @@ static bool NeedsAnchorScrollTranslation(const LayoutObject& object) {
 
 static bool NeedsPaintOffsetTranslation(
     const LayoutObject& object,
-    CompositingReasons direct_compositing_reasons) {
+    CompositingReasons direct_compositing_reasons,
+    const LayoutObject* container_for_fixed_position) {
   if (!object.IsBoxModelObject())
     return false;
 
@@ -516,6 +518,11 @@ static bool NeedsPaintOffsetTranslation(
       (object.StyleRef().Filter().HasReferenceFilter() ||
        object.HasReflection()))
     return true;
+
+  if (auto* box = DynamicTo<LayoutBox>(box_model)) {
+    if (box->IsFixedToView(container_for_fixed_position))
+      return true;
+  }
 
   // Though we don't treat hidden backface as a direct compositing reason, it's
   // very likely that the object will be composited, so a paint offset
@@ -568,8 +575,9 @@ bool FragmentPaintPropertyTreeBuilder::CanPropagateSubpixelAccumulation()
 
 void FragmentPaintPropertyTreeBuilder::UpdateForPaintOffsetTranslation(
     absl::optional<gfx::Vector2d>& paint_offset_translation) {
-  if (!NeedsPaintOffsetTranslation(
-          object_, full_context_.direct_compositing_reasons))
+  if (!NeedsPaintOffsetTranslation(object_,
+                                   full_context_.direct_compositing_reasons,
+                                   full_context_.container_for_fixed_position))
     return;
 
   // We should use the same subpixel paint offset values for snapping regardless
@@ -635,12 +643,14 @@ void FragmentPaintPropertyTreeBuilder::UpdatePaintOffsetTranslation(
     state.direct_compositing_reasons =
         full_context_.direct_compositing_reasons &
         CompositingReason::kDirectReasonsForPaintOffsetTranslationProperty;
-    if (state.direct_compositing_reasons & CompositingReason::kFixedPosition &&
-        object_.View()->FirstFragment().PaintProperties()->Scroll()) {
-      state.scroll_translation_for_fixed = object_.View()
-                                               ->FirstFragment()
-                                               .PaintProperties()
-                                               ->ScrollTranslation();
+    if (auto* box = DynamicTo<LayoutBox>(object_)) {
+      if (box->IsFixedToView(full_context_.container_for_fixed_position) &&
+          object_.View()->FirstFragment().PaintProperties()->Scroll()) {
+        state.scroll_translation_for_fixed = object_.View()
+                                                 ->FirstFragment()
+                                                 .PaintProperties()
+                                                 ->ScrollTranslation();
+      }
     }
 
     if (IsA<LayoutView>(object_)) {
@@ -817,6 +827,30 @@ void FragmentPaintPropertyTreeBuilder::UpdateAnchorScrollTranslation() {
     context_.current.transform = properties_->AnchorScrollTranslation();
 }
 
+// Directly updates the associated cc transform node if possible, and
+// downgrades the |PaintPropertyChangeType| if successful.
+static void DirectlyUpdateCcTransform(
+    const TransformPaintPropertyNode& transform,
+    const LayoutObject& object,
+    PaintPropertyChangeType& change_type) {
+  // We only assume worst-case overlap testing due to animations (see:
+  // |GeometryMapper::VisualRectForCompositingOverlap()|) so we can only use
+  // the direct transform update (which skips checking for compositing changes)
+  // when animations are present.
+  if (change_type == PaintPropertyChangeType::kChangedOnlySimpleValues &&
+      transform.HasActiveTransformAnimation()) {
+    if (auto* paint_artifact_compositor =
+            object.GetFrameView()->GetPaintArtifactCompositor()) {
+      bool updated =
+          paint_artifact_compositor->DirectlyUpdateTransform(transform);
+      if (updated) {
+        change_type = PaintPropertyChangeType::kChangedOnlyCompositedValues;
+        transform.CompositorSimpleValuesUpdated();
+      }
+    }
+  }
+}
+
 // TODO(dbaron): Remove this function when we can remove the
 // BackfaceVisibilityInteropEnabled() check, and have the caller use
 // CompositingReason::kDirectReasonsForTransformProperty directly.
@@ -845,27 +879,12 @@ static bool NeedsTransformForSVGChild(
   return !object.LocalToSVGParentTransform().IsIdentity();
 }
 
-static void SetTransformNodeStateFromAffineTransform(
-    TransformPaintPropertyNode::State& state,
-    const AffineTransform& transform) {
-  if (transform.IsIdentityOrTranslation())
-    state.transform_and_origin = {gfx::Vector2dF(transform.E(), transform.F())};
-  else
-    state.transform_and_origin = {TransformationMatrix(transform)};
-}
-
-void FragmentPaintPropertyTreeBuilder::SetTransformNodeStateForSVGChild(
-    TransformPaintPropertyNode::State& state) {
+TransformPaintPropertyNode::TransformAndOrigin
+FragmentPaintPropertyTreeBuilder::TransformAndOriginForSVGChild() const {
   if (full_context_.direct_compositing_reasons &
       CompositingReason::kActiveTransformAnimation) {
     if (CompositorAnimations::CanStartTransformAnimationOnCompositorForSVG(
             *To<SVGElement>(object_.GetNode()))) {
-      // For composited transform animation to work, we need to store transform
-      // origin separately. It's baked in object_.LocalToSVGParentTransform().
-      state.transform_and_origin = {
-          TransformationMatrix(TransformHelper::ComputeTransform(
-              object_, ComputedStyle::kExcludeTransformOrigin)),
-          gfx::Point3F(TransformHelper::ComputeTransformOrigin(object_))};
       // Composited transform animation works only if
       // LocalToSVGParentTransform() reflects the CSS transform properties.
       // If this fails, we need to exclude the case in
@@ -873,18 +892,21 @@ void FragmentPaintPropertyTreeBuilder::SetTransformNodeStateForSVGChild(
       DCHECK_EQ(TransformHelper::ComputeTransform(
                     object_, ComputedStyle::kIncludeTransformOrigin),
                 object_.LocalToSVGParentTransform());
+      // For composited transform animation to work, we need to store transform
+      // origin separately. It's baked in object_.LocalToSVGParentTransform().
+      return {TransformationMatrix(TransformHelper::ComputeTransform(
+                  object_, ComputedStyle::kExcludeTransformOrigin)),
+              gfx::Point3F(TransformHelper::ComputeTransformOrigin(object_))};
     } else {
       // We composite the object but can't start composited animation. Still
       // keep the compositing reason because it still improves performance of
       // main thread animation, but avoid the 2d translation optimization to
       // meet the requirement of TransformPaintPropertyNode.
-      state.transform_and_origin = {
-          TransformationMatrix(object_.LocalToSVGParentTransform())};
+      return {TransformationMatrix(object_.LocalToSVGParentTransform())};
     }
-  } else {
-    SetTransformNodeStateFromAffineTransform(
-        state, object_.LocalToSVGParentTransform());
   }
+  return TransformPaintPropertyNode::TransformAndOrigin(
+      object_.LocalToSVGParentTransform());
 }
 
 // SVG does not use the general transform update of |UpdateTransform|, instead
@@ -903,7 +925,7 @@ void FragmentPaintPropertyTreeBuilder::UpdateTransformForSVGChild(
     if (NeedsTransformForSVGChild(object_, direct_compositing_reasons)) {
       // The origin is included in the local transform, so leave origin empty.
       TransformPaintPropertyNode::State state;
-      SetTransformNodeStateForSVGChild(state);
+      state.transform_and_origin = TransformAndOriginForSVGChild();
 
       // TODO(pdr): There is additional logic in
       // FragmentPaintPropertyTreeBuilder::UpdateTransform that likely needs to
@@ -922,24 +944,8 @@ void FragmentPaintPropertyTreeBuilder::UpdateTransformForSVGChild(
           object_.StyleRef().IsRunningTransformAnimationOnCompositor();
       auto effective_change_type = properties_->UpdateTransform(
           *context_.current.transform, std::move(state), animation_state);
-      // We only assume worst-case overlap testing due to animations (see:
-      // |PendingLayer::VisualRectForOverlapTesting|) so we can only use the
-      // direct transform update (which skips checking for compositing changes)
-      // when animations are present.
-      if (effective_change_type ==
-              PaintPropertyChangeType::kChangedOnlySimpleValues &&
-          properties_->Transform()->HasActiveTransformAnimation()) {
-        if (auto* paint_artifact_compositor =
-                object_.GetFrameView()->GetPaintArtifactCompositor()) {
-          bool updated = paint_artifact_compositor->DirectlyUpdateTransform(
-              *properties_->Transform());
-          if (updated) {
-            effective_change_type =
-                PaintPropertyChangeType::kChangedOnlyCompositedValues;
-            properties_->Transform()->CompositorSimpleValuesUpdated();
-          }
-        }
-      }
+      DirectlyUpdateCcTransform(*properties_->Transform(), object_,
+                                effective_change_type);
       OnUpdateTransform(effective_change_type);
     } else {
       OnClearTransform(properties_->ClearTransform());
@@ -953,7 +959,8 @@ void FragmentPaintPropertyTreeBuilder::UpdateTransformForSVGChild(
   }
 }
 
-static gfx::Point3F TransformOrigin(const LayoutBox& box, PhysicalSize size) {
+static gfx::Point3F GetTransformOrigin(const LayoutBox& box,
+                                       PhysicalSize size) {
   // Transform origin has no effect without a transform or motion path.
   if (!box.HasTransform())
     return gfx::Point3F();
@@ -1064,6 +1071,28 @@ static bool UpdateBoxSizeAndCheckActiveAnimationAxisAlignment(
       gfx::SizeF(object.Size()));
 }
 
+static TransformPaintPropertyNode::TransformAndOrigin TransformAndOriginState(
+    const LayoutBox& box,
+    const PhysicalSize& size,
+    bool has_transform_animation_compositing_reasons,
+    void (*compute_matrix)(const ComputedStyle& style,
+                           const PhysicalSize& size,
+                           TransformationMatrix& matrix)) {
+  TransformationMatrix matrix;
+  compute_matrix(box.StyleRef(), size, matrix);
+  // If we are running transform animation on compositor, we should
+  // disable 2d translation optimization to ensure that the compositor
+  // gets the correct origin (which might be omitted by the optimization)
+  // to the compositor, in case later animated values will use the origin.
+  // See http://crbug.com/937929 for why we are not using
+  // style.IsRunningTransformAnimationOnCompositor() etc. here.
+  if (!has_transform_animation_compositing_reasons &&
+      matrix.IsIdentityOr2DTranslation()) {
+    return {matrix.To2DTranslation()};
+  }
+  return {matrix, GetTransformOrigin(box, size)};
+}
+
 void FragmentPaintPropertyTreeBuilder::UpdateIndividualTransform(
     bool (*needs_property)(const LayoutObject&, CompositingReasons),
     void (*compute_matrix)(const ComputedStyle& style,
@@ -1085,7 +1114,6 @@ void FragmentPaintPropertyTreeBuilder::UpdateIndividualTransform(
   DCHECK(properties_);
 
   if (NeedsPaintPropertyUpdate()) {
-    const ComputedStyle& style = object_.StyleRef();
     // A transform node is allocated for transforms, preserves-3d and any
     // direct compositing reason. The latter is required because this is the
     // only way to represent compositing both an element and its stacking
@@ -1099,15 +1127,13 @@ void FragmentPaintPropertyTreeBuilder::UpdateIndividualTransform(
           compositor_namespace ==
           CompositorElementIdNamespace::kPrimaryTransform;
 
+      const ComputedStyle& style = object_.StyleRef();
       if (object_.IsBox()) {
         auto& box = To<LayoutBox>(object_);
         // Each individual fragment should have its own transform origin, based
         // on the fragment size.
-        PhysicalSize size;
-        if (!pre_paint_info_)
-          size = PhysicalSize(box.Size());
-        else
-          size = pre_paint_info_->box_fragment.Size();
+        PhysicalSize size(pre_paint_info_ ? pre_paint_info_->box_fragment.Size()
+                                          : PhysicalSize(box.Size()));
         TransformationMatrix matrix;
         compute_matrix(style, size, matrix);
         // If we are running transform animation on compositor, we should
@@ -1116,27 +1142,10 @@ void FragmentPaintPropertyTreeBuilder::UpdateIndividualTransform(
         // to the compositor, in case later animated values will use the origin.
         // See http://crbug.com/937929 for why we are not using
         // style.IsRunningTransformAnimationOnCompositor() etc. here.
-        bool disable_2d_translation_optimization =
-            full_context_.direct_compositing_reasons & active_animation_reason;
-        if (!disable_2d_translation_optimization &&
-            matrix.IsIdentityOr2DTranslation()) {
-          state.transform_and_origin = {matrix.To2DTranslation()};
-        } else {
-          state.transform_and_origin = {matrix, TransformOrigin(box, size)};
-        }
-
-        // We want to track whether (a) this element is in a preserve-3d scene
-        // and (b) has a matrix that puts it into the third dimension in some
-        // way.  The test we use for (b) is stricter than
-        // !matrix.Is2dTransform() or !matrix.IsFlat(); we're interested
-        // *only* in things that cause this element to have a nonzero z
-        // position within the 3-D scene.
-        if (context_.rendering_context_id &&
-            (matrix.M13() != 0.0 || matrix.M23() != 0.0 ||
-             matrix.M43() != 0.0)) {
-          UseCounter::Count(object_.GetDocument(),
-                            WebFeature::kTransform3dScene);
-        }
+        state.transform_and_origin = TransformAndOriginState(
+            box, size,
+            full_context_.direct_compositing_reasons & active_animation_reason,
+            compute_matrix);
 
         // TODO(trchen): transform-style should only be respected if a
         // PaintLayer is created. If a node with transform-style: preserve-3d
@@ -1189,25 +1198,8 @@ void FragmentPaintPropertyTreeBuilder::UpdateIndividualTransform(
           running_on_compositor_test && (style.*running_on_compositor_test)();
       auto effective_change_type = (properties_->*updater)(
           *context_.current.transform, std::move(state), animation_state);
-      // We only assume worst-case overlap testing due to animations (see:
-      // |PendingLayer::VisualRectForOverlapTesting|) so we can only use the
-      // direct transform update (which skips checking for compositing changes)
-      // when animations are present.
-      const auto* transform = (properties_->*getter)();
-      if (effective_change_type ==
-              PaintPropertyChangeType::kChangedOnlySimpleValues &&
-          transform->HasActiveTransformAnimation()) {
-        if (auto* paint_artifact_compositor =
-                object_.GetFrameView()->GetPaintArtifactCompositor()) {
-          bool updated =
-              paint_artifact_compositor->DirectlyUpdateTransform(*transform);
-          if (updated) {
-            effective_change_type =
-                PaintPropertyChangeType::kChangedOnlyCompositedValues;
-            transform->CompositorSimpleValuesUpdated();
-          }
-        }
-      }
+      DirectlyUpdateCcTransform(*(properties_->*getter)(), object_,
+                                effective_change_type);
       OnUpdateTransform(effective_change_type);
     } else {
       OnClearTransform((properties_->*clearer)());
@@ -1319,6 +1311,10 @@ void FragmentPaintPropertyTreeBuilder::UpdateTransform() {
       &ObjectPaintProperties::Transform,
       &ObjectPaintProperties::UpdateTransform,
       &ObjectPaintProperties::ClearTransform);
+
+  // Since we're doing a full update, clear list of objects waiting for a
+  // deferred update
+  object_.GetFrameView()->RemovePendingTransformUpdate(object_);
 
   // properties_->Transform() is present if a CSS transform is present,
   // and is also present if transform-style: preserve-3d is set.
@@ -2287,7 +2283,9 @@ void FragmentPaintPropertyTreeBuilder::UpdateReplacedContentTransform() {
     }
     if (!content_to_parent_space.IsIdentity()) {
       TransformPaintPropertyNode::State state;
-      SetTransformNodeStateFromAffineTransform(state, content_to_parent_space);
+      state.transform_and_origin =
+          TransformPaintPropertyNode::TransformAndOrigin(
+              content_to_parent_space);
       state.flags.flattens_inherited_transform =
           context_.should_flatten_inherited_transform;
       state.rendering_context_id = context_.rendering_context_id;
@@ -2920,6 +2918,13 @@ void FragmentPaintPropertyTreeBuilder::SetNeedsPaintPropertyUpdateIfNeeded() {
       }
     }
   }
+
+  // If we reach FragmentPaintPropertyTreeBuilder for an object needing a
+  // pending transform update, we need to go ahead and do a regular transform
+  // update so that the context (e.g.,
+  // |translation_2d_to_layout_shift_root_delta|) is updated properly.
+  if (object_.GetFrameView()->RemovePendingTransformUpdate(object_))
+    object_.GetMutableForPainting().SetOnlyThisNeedsPaintPropertyUpdate();
 
   if (box.Size() == box.PreviousSize())
     return;
@@ -3918,8 +3923,8 @@ void PaintPropertyTreeBuilder::UpdateFragments() {
       // If DCHECK is not on, use fast path for text.
       !object_.IsText() &&
 #endif
-      (NeedsPaintOffsetTranslation(object_,
-                                   context_.direct_compositing_reasons) ||
+      (NeedsPaintOffsetTranslation(object_, context_.direct_compositing_reasons,
+                                   context_.container_for_fixed_position) ||
        NeedsStickyTranslation(object_) ||
        NeedsAnchorScrollTranslation(object_) ||
        NeedsTranslate(object_, context_.direct_compositing_reasons) ||
@@ -4173,6 +4178,73 @@ PaintArtifactCompositorUpdateReason PACUpdateReasonForPaintPropertyChange(
 }
 }  // namespace
 
+bool PaintPropertyTreeBuilder::ScheduleDeferredTransformNodeUpdate(
+    LayoutObject& object) {
+  if (CanDoDeferredTransformNodeUpdate(object)) {
+    object.GetFrameView()->AddPendingTransformUpdate(object);
+    return true;
+  }
+  return false;
+}
+
+// Fast-path for directly updating transforms. Returns true if successful. This
+// is similar to |FragmentPaintPropertyTreeBuilder::UpdateIndividualTransform|.
+void PaintPropertyTreeBuilder::DirectlyUpdateTransformMatrix(
+    const LayoutObject& object) {
+  DCHECK(CanDoDeferredTransformNodeUpdate(object));
+
+  // GeometryMapper depends on paint properties. This is typically called from
+  // the PrePaintTreeWalk, but we may skip that for this direct update.
+  GeometryMapper::ClearCache();
+
+  auto& box = To<LayoutBox>(object);
+  PhysicalSize size = PhysicalSize(box.Size());
+  FragmentData* fragment_data = &object.GetMutableForPainting().FirstFragment();
+  auto* properties = fragment_data->PaintProperties();
+  auto* transform = properties->Transform();
+  auto transform_and_origin = TransformAndOriginState(
+      box, size, transform->HasActiveTransformAnimation(),
+      [](const ComputedStyle& style, const PhysicalSize& size,
+         TransformationMatrix& matrix) {
+        style.ApplyTransform(
+            matrix, size.ToLayoutSize(),
+            ComputedStyle::kIncludeTransformOperations,
+            ComputedStyle::kExcludeTransformOrigin,
+            ComputedStyle::kExcludeMotionPath,
+            ComputedStyle::kExcludeIndependentTransformProperties);
+      });
+
+  TransformPaintPropertyNode::AnimationState animation_state;
+  animation_state.is_running_animation_on_compositor =
+      box.StyleRef().IsRunningTransformAnimationOnCompositor();
+  auto effective_change_type = properties->DirectlyUpdateTransformAndOrigin(
+      std::move(transform_and_origin), animation_state);
+  DirectlyUpdateCcTransform(*transform, object, effective_change_type);
+
+  if (effective_change_type >=
+      PaintPropertyChangeType::kChangedOnlySimpleValues) {
+    object.GetFrameView()->SetPaintArtifactCompositorNeedsUpdate(
+        PaintArtifactCompositorUpdateReason::
+            kPaintPropertyTreeBuilderPaintPropertyChanged);
+  }
+
+  PaintPropertiesChangeInfo properties_changed;
+  properties_changed.transform_changed = effective_change_type;
+
+  if (RuntimeEnabledFeatures::ScrollUpdateOptimizationsEnabled()) {
+    CullRectUpdater::PaintPropertiesChanged(object, properties_changed);
+  } else {
+    DCHECK(box.Layer());
+    DCHECK(box.HasSelfPaintingLayer());
+    gfx::Vector2dF old_scroll_offset;
+    if (const auto* scroll_translation = properties->ScrollTranslation()) {
+      old_scroll_offset = scroll_translation->Translation2D();
+    }
+    OldCullRectUpdater::PaintPropertiesChanged(
+        object, *box.Layer(), properties_changed, old_scroll_offset);
+  }
+}
+
 void PaintPropertyTreeBuilder::IssueInvalidationsAfterUpdate() {
   // We need to update property tree states of paint chunks.
   auto max_change = properties_changed_.Max();
@@ -4240,7 +4312,44 @@ void PaintPropertyTreeBuilder::IssueInvalidationsAfterUpdate() {
     }
   }
 
-  CullRectUpdater::PaintPropertiesChanged(object_, properties_changed_);
+  if (RuntimeEnabledFeatures::ScrollUpdateOptimizationsEnabled()) {
+    CullRectUpdater::PaintPropertiesChanged(object_, properties_changed_);
+  } else {
+    OldCullRectUpdater::PaintPropertiesChanged(
+        object_, *context_.painting_layer, properties_changed_,
+        context_.old_scroll_offset);
+  }
+}
+
+bool PaintPropertyTreeBuilder::CanDoDeferredTransformNodeUpdate(
+    const LayoutObject& object) {
+  // If we already need a full update, do not do the direct update.
+  if (object.NeedsPaintPropertyUpdate() ||
+      object.DescendantNeedsPaintPropertyUpdate()) {
+    return false;
+  }
+
+  // SVG transforms use a different codepath (see:
+  // |FragmentPaintPropertyTreeBuilder::UpdateTransformForSVGChild|).
+  if (object.IsSVGChild())
+    return false;
+
+  // Only boxes have transform values (see:
+  // |FragmentPaintPropertyTreeBuilder::UpdateIndividualTransform|).
+  if (!object.IsBox())
+    return false;
+
+  // This fast path does not support iterating over each fragment, so do not
+  // run the fast path in the presence of fragmentation.
+  if (object.FirstFragment().NextFragment())
+    return false;
+
+  auto* properties = object.FirstFragment().PaintProperties();
+  // Cannot directly update properties if they have not been created yet.
+  if (!properties || !properties->Transform())
+    return false;
+
+  return true;
 }
 
 }  // namespace blink

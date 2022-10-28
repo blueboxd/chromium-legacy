@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -16,6 +16,7 @@
 #include "ash/system/time/calendar_model.h"
 #include "ash/system/unified/unified_system_tray_model.h"
 #include "base/memory/scoped_refptr.h"
+#include "quick_settings_view.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/compositor/throughput_tracker.h"
 #include "ui/gfx/geometry/point.h"
@@ -73,8 +74,9 @@ class ASH_EXPORT UnifiedSystemTrayController
   // Registers pref to preserve tray expanded state between reboots.
   static void RegisterProfilePrefs(PrefRegistrySimple* registry);
 
-  // Create the view. The created view is unowned.
-  UnifiedSystemTrayView* CreateView();
+  // Create the view in the bubble.
+  std::unique_ptr<UnifiedSystemTrayView> CreateUnifiedQuickSettingsView();
+  std::unique_ptr<QuickSettingsView> CreateQuickSettingsView();
 
   // Sign out from the current user. Called from the view.
   void HandleSignOutAction();
@@ -252,6 +254,7 @@ class ASH_EXPORT UnifiedSystemTrayController
 
   // Unowned. Owned by Views hierarchy.
   UnifiedSystemTrayView* unified_view_ = nullptr;
+  QuickSettingsView* quick_settings_view_ = nullptr;
 
   // Unowned.
   UnifiedSystemTrayBubble* bubble_ = nullptr;

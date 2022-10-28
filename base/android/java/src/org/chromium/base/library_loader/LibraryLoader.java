@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -27,15 +27,15 @@ import org.chromium.base.StrictModeContext;
 import org.chromium.base.TimeUtils.CurrentThreadTimeMillisTimer;
 import org.chromium.base.TimeUtils.UptimeMillisTimer;
 import org.chromium.base.TraceEvent;
-import org.chromium.base.annotations.CheckDiscard;
 import org.chromium.base.annotations.JNINamespace;
-import org.chromium.base.annotations.MainDex;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.base.compat.ApiHelperForM;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.UmaRecorderHolder;
 import org.chromium.build.BuildConfig;
 import org.chromium.build.NativeLibraries;
+import org.chromium.build.annotations.CheckDiscard;
+import org.chromium.build.annotations.MainDex;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;

@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -24,6 +24,10 @@ class BrowserContext;
 namespace signin {
 class IdentityManager;
 }  // namespace signin
+
+namespace consent_auditor {
+class ConsentAuditor;
+}  // namespace consent_auditor
 
 namespace version_info {
 enum class Channel;
@@ -70,6 +74,9 @@ class CommonDependencies {
   virtual bool IsWebLayer() const = 0;
 
   virtual signin::IdentityManager* GetIdentityManager(
+      content::BrowserContext* browser_context) const = 0;
+
+  virtual consent_auditor::ConsentAuditor* GetConsentAuditor(
       content::BrowserContext* browser_context) const = 0;
 
   virtual version_info::Channel GetChannel() const = 0;

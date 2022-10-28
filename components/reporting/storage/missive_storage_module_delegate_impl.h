@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -34,17 +34,10 @@ class MissiveStorageModuleDelegateImpl
   void Flush(Priority priority,
              MissiveStorageModule::FlushCallback callback) override;
 
-  void ReportSuccess(const SequenceInformation& sequence_information,
-                     bool force) override;
-
-  void UpdateEncryptionKey(
-      const SignedEncryptionInfo& signed_encryption_key) override;
-
  private:
   const AddRecordCallback add_record_;
   const FlushCallback flush_;
 };
 
 }  // namespace reporting
-
 #endif  // COMPONENTS_REPORTING_STORAGE_MISSIVE_STORAGE_MODULE_DELEGATE_IMPL_H_

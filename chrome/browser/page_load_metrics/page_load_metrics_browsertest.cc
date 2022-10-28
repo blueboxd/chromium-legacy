@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -3424,7 +3424,8 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, PageLCPStopsUponInput) {
 }
 
 // Test is flaky. https://crbug.com/1260953
-#if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_LINUX)
+#if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_LINUX) || \
+    BUILDFLAG(IS_WIN)
 #define MAYBE_PageLCPAnimatedImage DISABLED_PageLCPAnimatedImage
 #else
 #define MAYBE_PageLCPAnimatedImage PageLCPAnimatedImage
@@ -3924,7 +3925,7 @@ class PageLoadMetricsBackForwardCacheBrowserTest
     if (GetParam() == BackForwardCacheStatus::kEnabled) {
       // Enable BackForwardCache.
       feature_list_.InitWithFeaturesAndParameters(
-          {{features::kBackForwardCache, {{"enable_same_site", "true"}}}},
+          {{features::kBackForwardCache, {}}},
           // Allow BackForwardCache for all devices regardless of their memory.
           {features::kBackForwardCacheMemoryControls});
     } else {

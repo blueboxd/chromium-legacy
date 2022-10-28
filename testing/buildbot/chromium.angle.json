@@ -28,13 +28,6 @@
         "should_retry_with_patch": false,
         "swarming": {
           "can_use_on_swarming_builders": true,
-          "cipd_packages": [
-            {
-              "cipd_package": "infra/tools/luci/logdog/butler/${platform}",
-              "location": "bin",
-              "revision": "git_revision:ff387eadf445b24c935f1cf7d6ddd279f8a6b04c"
-            }
-          ],
           "containment_type": "AUTO",
           "dimension_sets": [
             {
@@ -63,15 +56,15 @@
     "gtest_tests": [
       {
         "args": [
-          "--gtest_filter=-*Vulkan_SwiftShader*",
+          "--release",
           "--platform",
           "iPhone X",
           "--version",
-          "14.4",
+          "16.0",
           "--out-dir",
           "${ISOLATED_OUTDIR}",
           "--xcode-build-version",
-          "12d4e",
+          "14a309",
           "--xctest"
         ],
         "isolate_profile_data": true,
@@ -79,7 +72,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "angle_end2end_tests iPhone X 14.4",
+        "name": "angle_end2end_tests iPhone X 16.0",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -99,37 +92,37 @@
               "cpu": "x86-64",
               "display_attached": "1",
               "gpu": "8086:3e9b",
-              "os": "Mac-12.4|Mac-12.5"
+              "os": "Mac-12.4"
             }
           ],
           "named_caches": [
             {
-              "name": "xcode_ios_12d4e",
+              "name": "xcode_ios_14a309",
               "path": "Xcode.app"
             },
             {
-              "name": "runtime_ios_14_4",
-              "path": "Runtime-ios-14.4"
+              "name": "runtime_ios_16_0",
+              "path": "Runtime-ios-16.0"
             }
           ],
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
-          "shards": 2
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "angle_end2end_tests",
         "test_id_prefix": "ninja://third_party/angle/src/tests:angle_end2end_tests/",
         "use_isolated_scripts_api": true,
-        "variant_id": "iPhone X 14.4"
+        "variant_id": "iPhone X 16.0"
       },
       {
         "args": [
+          "--release",
           "--platform",
           "iPhone X",
           "--version",
-          "14.4",
+          "16.0",
           "--out-dir",
           "${ISOLATED_OUTDIR}",
           "--xcode-build-version",
-          "12d4e",
+          "14a309",
           "--xctest"
         ],
         "isolate_profile_data": true,
@@ -137,7 +130,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "angle_white_box_tests iPhone X 14.4",
+        "name": "angle_white_box_tests iPhone X 16.0",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -157,17 +150,17 @@
               "cpu": "x86-64",
               "display_attached": "1",
               "gpu": "8086:3e9b",
-              "os": "Mac-12.4|Mac-12.5"
+              "os": "Mac-12.4"
             }
           ],
           "named_caches": [
             {
-              "name": "xcode_ios_12d4e",
+              "name": "xcode_ios_14a309",
               "path": "Xcode.app"
             },
             {
-              "name": "runtime_ios_14_4",
-              "path": "Runtime-ios-14.4"
+              "name": "runtime_ios_16_0",
+              "path": "Runtime-ios-16.0"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -175,7 +168,7 @@
         "test": "angle_white_box_tests",
         "test_id_prefix": "ninja://third_party/angle/src/tests:angle_white_box_tests/",
         "use_isolated_scripts_api": true,
-        "variant_id": "iPhone X 14.4"
+        "variant_id": "iPhone X 16.0"
       }
     ]
   },
@@ -930,7 +923,7 @@
               "cpu": "x86-64",
               "display_attached": "1",
               "gpu": "8086:3e9b",
-              "os": "Mac-12.4|Mac-12.5"
+              "os": "Mac-12.4"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
@@ -955,7 +948,7 @@
               "cpu": "x86-64",
               "display_attached": "1",
               "gpu": "8086:3e9b",
-              "os": "Mac-12.4|Mac-12.5"
+              "os": "Mac-12.4"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -997,7 +990,7 @@
               "cpu": "x86-64",
               "display_attached": "1",
               "gpu": "8086:3e9b",
-              "os": "Mac-12.4|Mac-12.5"
+              "os": "Mac-12.4"
             }
           ],
           "idempotent": false,
@@ -1036,7 +1029,7 @@
               "cpu": "x86-64",
               "display_attached": "1",
               "gpu": "8086:3e9b",
-              "os": "Mac-12.4|Mac-12.5"
+              "os": "Mac-12.4"
             }
           ],
           "idempotent": false,
@@ -1076,7 +1069,7 @@
               "cpu": "x86-64",
               "display_attached": "1",
               "gpu": "8086:3e9b",
-              "os": "Mac-12.4|Mac-12.5"
+              "os": "Mac-12.4"
             }
           ],
           "idempotent": false,
@@ -1115,7 +1108,7 @@
               "cpu": "x86-64",
               "display_attached": "1",
               "gpu": "8086:3e9b",
-              "os": "Mac-12.4|Mac-12.5"
+              "os": "Mac-12.4"
             }
           ],
           "idempotent": false,
@@ -1154,7 +1147,7 @@
               "cpu": "x86-64",
               "display_attached": "1",
               "gpu": "8086:3e9b",
-              "os": "Mac-12.4|Mac-12.5"
+              "os": "Mac-12.4"
             }
           ],
           "idempotent": false,
@@ -1193,7 +1186,7 @@
               "cpu": "x86-64",
               "display_attached": "1",
               "gpu": "8086:3e9b",
-              "os": "Mac-12.4|Mac-12.5"
+              "os": "Mac-12.4"
             }
           ],
           "idempotent": false,
@@ -1346,44 +1339,6 @@
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
         "name": "webgl_conformance_d3d9_passthrough_tests",
-        "resultdb": {
-          "enable": true,
-          "has_native_resultdb_integration": true
-        },
-        "should_retry_with_patch": false,
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "containment_type": "AUTO",
-          "dimension_sets": [
-            {
-              "gpu": "8086:5912-26.20.100.8141|8086:3e92-26.20.100.8141",
-              "os": "Windows-10",
-              "pool": "chromium.tests.gpu"
-            }
-          ],
-          "idempotent": false,
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
-          "shards": 2
-        },
-        "test_id_prefix": "ninja://chrome/test:telemetry_gpu_integration_test/"
-      },
-      {
-        "args": [
-          "webgl_conformance",
-          "--show-stdout",
-          "--browser=release_x64",
-          "--passthrough",
-          "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-gl=angle --use-angle=gl --use-cmd-decoder=passthrough --force_high_performance_gpu",
-          "--read-abbreviated-json-results-from=../../content/test/data/gpu/webgl_conformance_tests_output.json",
-          "--jobs=4"
-        ],
-        "isolate_name": "telemetry_gpu_integration_test",
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
-        },
-        "name": "webgl_conformance_gl_passthrough_tests",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -1579,44 +1534,6 @@
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
         "name": "webgl_conformance_d3d9_passthrough_tests",
-        "resultdb": {
-          "enable": true,
-          "has_native_resultdb_integration": true
-        },
-        "should_retry_with_patch": false,
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "containment_type": "AUTO",
-          "dimension_sets": [
-            {
-              "gpu": "10de:2184-27.21.14.5638",
-              "os": "Windows-10-18363",
-              "pool": "chromium.tests.gpu"
-            }
-          ],
-          "idempotent": false,
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
-          "shards": 2
-        },
-        "test_id_prefix": "ninja://chrome/test:telemetry_gpu_integration_test/"
-      },
-      {
-        "args": [
-          "webgl_conformance",
-          "--show-stdout",
-          "--browser=release_x64",
-          "--passthrough",
-          "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-gl=angle --use-angle=gl --use-cmd-decoder=passthrough --force_high_performance_gpu",
-          "--read-abbreviated-json-results-from=../../content/test/data/gpu/webgl_conformance_tests_output.json",
-          "--jobs=4"
-        ],
-        "isolate_name": "telemetry_gpu_integration_test",
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
-        },
-        "name": "webgl_conformance_gl_passthrough_tests",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true

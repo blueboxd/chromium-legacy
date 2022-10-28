@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -33,6 +33,7 @@
 
 namespace base {
 
+class DictAdapterForMigration;
 class DictionaryValue;
 class ListValue;
 
@@ -347,8 +348,6 @@ class BASE_EXPORT GSL_OWNER Value {
   // Callers that want to transfer ownership can use std::move() in conjunction
   // with one of the mutable variants below, e.g.:
   //   std::string taken_string = std::move(value.GetString());
-  //   base::Value::Dict taken_dict = std::move(value.GetDict());
-  //   base::Value::List taken_list = std::move(value.GetList());
   const std::string& GetString() const;
   std::string& GetString();
   const BlobStorage& GetBlob() const;
@@ -356,6 +355,14 @@ class BASE_EXPORT GSL_OWNER Value {
   Dict& GetDict();
   const List& GetList() const;
   List& GetList();
+
+  // Transfers ownership of the underlying value. Similarly to `Get...()`
+  // variants above, fails with a `CHECK()` on a type mismatch. After
+  // transferring the ownership `*this` is in a valid, but unspecified, state.
+  // Prefer over `std::move(value.Get...())` so clang-tidy can warn about
+  // potential use-after-move mistakes.
+  Dict TakeDict() &&;
+  List TakeList() &&;
 
   // Represents a dictionary of string keys to Values.
   class BASE_EXPORT GSL_OWNER Dict {
@@ -727,27 +734,6 @@ class BASE_EXPORT GSL_OWNER Value {
   void Append(const char* value);
   // DEPRECATED: prefer `Value::List::Append()`.
   void Append(std::string&& value);
-
-  // Erases the Value pointed to by `iter`. Returns false if `iter` is out of
-  // bounds.
-  //
-  // DEPRECATED: prefer `Value::List::erase(iter)`.
-  bool EraseListIter(CheckedContiguousConstIterator<Value> iter);
-
-  // Erases all Values that compare equal to `val`. Returns the number of
-  // deleted Values.
-  //
-  // DEPRECATED: prefer `Value::List::EraseValue(val)`.
-  size_t EraseListValue(const Value& val);
-
-  // Erases all Values for which `pred` returns true. Returns the number of
-  // deleted Values.
-  //
-  // DEPRECATED: prefer `Value::List::EraseIf(pred)`.
-  template <typename Predicate>
-  size_t EraseListValueIf(Predicate pred) {
-    return base::EraseIf(list(), pred);
-  }
 
   // Erases all Values from the list.
   //
@@ -1250,6 +1236,75 @@ class BASE_EXPORT GSL_OWNER Value {
       data_;
 };
 
+// DictAdapterForMigration is an adapter class to help the migration of
+// base::DictionaryValue to base::Value::Dict.
+//
+// DictAdapterForMigration mirrors the API of base::Value::Dict,
+// and is implicitly constructable from both base::DictionaryValue
+// and base::Value::Dict. Currently this is read-only, similar to StringPiece.
+//
+// To migrate a function that takes a base::DictionaryValue, change the
+// signature to take DictAdapterForMigration instead, and update the
+// function body to use the Dict::Value API.
+// The call sites can be left unchanged and migrated later.
+//
+// Note that DictAdapterForMigration is intended as a shim to help migrations,
+// and will go away with base::DictionaryValue.
+class BASE_EXPORT GSL_POINTER DictAdapterForMigration {
+ public:
+  using iterator = detail::dict_iterator;
+  using const_iterator = detail::const_dict_iterator;
+
+  DictAdapterForMigration() = delete;
+
+  // NOLINTNEXTLINE(google-explicit-constructor)
+  DictAdapterForMigration(const Value::Dict&) noexcept;
+  // NOLINTNEXTLINE(google-explicit-constructor)
+  DictAdapterForMigration(const DictionaryValue&) noexcept;
+
+  bool empty() const;
+  size_t size() const;
+
+  const_iterator begin() const;
+  const_iterator cbegin() const;
+  const_iterator end() const;
+  const_iterator cend() const;
+
+  bool contains(base::StringPiece key) const;
+
+  Value::Dict Clone() const;
+
+  const Value* Find(StringPiece key) const;
+  absl::optional<bool> FindBool(StringPiece key) const;
+  absl::optional<int> FindInt(StringPiece key) const;
+  absl::optional<double> FindDouble(StringPiece key) const;
+  const std::string* FindString(StringPiece key) const;
+  const Value::BlobStorage* FindBlob(StringPiece key) const;
+  const Value::Dict* FindDict(StringPiece key) const;
+  const Value::List* FindList(StringPiece key) const;
+
+  const Value* FindByDottedPath(StringPiece path) const;
+
+  absl::optional<bool> FindBoolByDottedPath(StringPiece path) const;
+  absl::optional<int> FindIntByDottedPath(StringPiece path) const;
+  absl::optional<double> FindDoubleByDottedPath(StringPiece path) const;
+  const std::string* FindStringByDottedPath(StringPiece path) const;
+  const Value::BlobStorage* FindBlobByDottedPath(StringPiece path) const;
+  const Value::Dict* FindDictByDottedPath(StringPiece path) const;
+  const Value::List* FindListByDottedPath(StringPiece path) const;
+
+  std::string DebugString() const;
+
+#if BUILDFLAG(ENABLE_BASE_TRACING)
+  void WriteIntoTrace(perfetto::TracedValue) const;
+#endif  // BUILDFLAG(ENABLE_BASE_TRACING)
+
+  const Value::Dict& dict_for_test() const;
+
+ private:
+  const Value::Dict& dict_;
+};
+
 // DictionaryValue provides a key-value dictionary with (optional) "path"
 // parsing for recursive access; see the comment at the top of the file. Keys
 // are std::string's and should be UTF-8 encoded.
@@ -1302,13 +1357,6 @@ class BASE_EXPORT DictionaryValue : public Value {
   // otherwise.
   ListValue* SetList(StringPiece path, std::unique_ptr<ListValue> in_value);
 
-  // Like Set(), but without special treatment of '.'.  This allows e.g. URLs to
-  // be used as paths.
-  //
-  // DEPRECATED: prefer `Value::Dict::Set()`.
-  Value* SetWithoutPathExpansion(StringPiece key,
-                                 std::unique_ptr<Value> in_value);
-
   // Gets the Value associated with the given path starting from this object.
   // A path has the form "<key>" or "<key>.<key>.[...]", where "." indexes
   // into the next DictionaryValue down.  If the path can be resolved
@@ -1350,28 +1398,6 @@ class BASE_EXPORT DictionaryValue : public Value {
 
   // Swaps contents with the `other` dictionary.
   void Swap(DictionaryValue* other);
-
-  // This class provides an iterator over both keys and values in the
-  // dictionary.  It can't be used to modify the dictionary.
-  //
-  // DEPRECATED: Use a range-based for loop over `base::Value::Dict` directly
-  // instead.
-  class BASE_EXPORT Iterator {
-   public:
-    explicit Iterator(const DictionaryValue& target);
-    Iterator(const Iterator& other);
-    ~Iterator();
-
-    bool IsAtEnd() const { return it_ == target_.DictItems().end(); }
-    void Advance() { ++it_; }
-
-    const std::string& key() const { return it_->first; }
-    const Value& value() const { return it_->second; }
-
-   private:
-    const DictionaryValue& target_;
-    detail::const_dict_iterator it_;
-  };
 
   // DEPRECATED, use `Value::Dict::Clone()` instead.
   // TODO(crbug.com/646113): Delete this and migrate callsites.

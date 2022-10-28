@@ -1,13 +1,13 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome/browser/ash/arc/input_overlay/ui/educational_view.h"
 
 #include "ash/components/arc/compat_mode/style/arc_color_provider.h"
+#include "ash/constants/ash_features.h"
 #include "ash/login/ui/views_utils.h"
-#include "ash/public/cpp/style/color_provider.h"
-#include "ash/style/ash_color_provider.h"
+#include "ash/style/ash_color_id.h"
 #include "ash/style/pill_button.h"
 #include "ash/style/style_util.h"
 #include "base/bind.h"
@@ -17,8 +17,8 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/chromeos/styles/cros_styles.h"
+#include "ui/chromeos/styles/cros_tokens_color_mappings.h"
 #include "ui/color/color_id.h"
-#include "ui/gfx/color_palette.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/image/image_skia_operations.h"
 #include "ui/gfx/text_constants.h"
@@ -138,8 +138,8 @@ void EducationalView::Init(const gfx::Size& parent_size) {
       ->SetOrientation(views::LayoutOrientation::kVertical)
       .SetMainAxisAlignment(views::LayoutAlignment::kCenter)
       .SetCrossAxisAlignment(views::LayoutAlignment::kCenter);
-  SetBackground(views::CreateRoundedRectBackground(
-      GetDialogBackgroundBaseColor(), kDialogCornerRadius));
+  SetBackground(views::CreateThemedRoundedRectBackground(
+      ash::kColorAshDialogBackgroundColor, kDialogCornerRadius));
 
   const int parent_width = parent_size.width();
   {
@@ -178,23 +178,28 @@ void EducationalView::Init(const gfx::Size& parent_size) {
         .SetMainAxisAlignment(views::LayoutAlignment::kCenter)
         .SetCrossAxisAlignment(views::LayoutAlignment::kCenter);
     // Game controls.
-    container_view->AddChildView(ash::login_views_utils::CreateBubbleLabel(
-        l10n_util::GetStringUTF16(IDS_INPUT_OVERLAY_GAME_CONTROLS_ALPHA),
-        /*view_defining_max_width=*/nullptr,
-        /*color=*/
-        GetContentLayerColor(
-            ash::AshColorProvider::ContentLayerType::kTextColorPrimary),
-        /*font_list=*/
-        gfx::FontList({ash::login_views_utils::kGoogleSansFont},
-                      gfx::Font::FontStyle::NORMAL,
-                      GetTitleFontSize(portrait_mode_),
-                      gfx::Font::Weight::MEDIUM)));
+    container_view->AddChildView(
+        ash::login_views_utils::CreateThemedBubbleLabel(
+            l10n_util::GetStringUTF16(IDS_INPUT_OVERLAY_GAME_CONTROLS_ALPHA),
+            /*view_defining_max_width=*/nullptr,
+            /*enabled_color_type=*/
+            ash::features::IsDarkLightModeEnabled()
+                ? cros_tokens::kTextColorPrimary
+                : cros_tokens::kTextColorPrimaryLight,
+            /*font_list=*/
+            gfx::FontList({ash::login_views_utils::kGoogleSansFont},
+                          gfx::Font::FontStyle::NORMAL,
+                          GetTitleFontSize(portrait_mode_),
+                          gfx::Font::Weight::MEDIUM)));
 
-    auto* alpha_label =
-        container_view->AddChildView(ash::login_views_utils::CreateBubbleLabel(
+    auto* alpha_label = container_view->AddChildView(
+        ash::login_views_utils::CreateThemedBubbleLabel(
             l10n_util::GetStringUTF16(IDS_INPUT_OVERLAY_RELEASE_ALPHA),
-            /*view_defining_max_width=*/nullptr, /*color=*/
-            arc::GetCrOSColor(cros_styles::ColorName::kTextColorSelection),
+            /*view_defining_max_width=*/nullptr,
+            /*enabled_color_type=*/
+            ash::features::IsDarkLightModeEnabled()
+                ? cros_tokens::kColorSelection
+                : cros_tokens::kColorSelectionLight,
             /*font_list=*/
             gfx::FontList({ash::login_views_utils::kGoogleSansFont},
                           gfx::Font::FontStyle::NORMAL, kAlphaFontSize,
@@ -203,9 +208,8 @@ void EducationalView::Init(const gfx::Size& parent_size) {
     alpha_label->SetPreferredSize(gfx::Size(
         alpha_label->GetPreferredSize().width() + 2 * kAlphaSidePadding,
         kAlphaHeight));
-    alpha_label->SetBackground(views::CreateRoundedRectBackground(
-        arc::GetCrOSColor(cros_styles::ColorName::kHighlightColor),
-        kAlphaCornerRadius));
+    alpha_label->SetBackground(views::CreateThemedRoundedRectBackground(
+        cros_tokens::kHighlightColor, kAlphaCornerRadius));
     alpha_label->SetProperty(views::kMarginsKey,
                              gfx::Insets::TLBR(0, kAlphaLeftMargin, 0, 0));
     container_view->SetProperty(
@@ -217,13 +221,14 @@ void EducationalView::Init(const gfx::Size& parent_size) {
   {
     // Feature's description text.
     auto* description_label =
-        AddChildView(ash::login_views_utils::CreateBubbleLabel(
+        AddChildView(ash::login_views_utils::CreateThemedBubbleLabel(
             l10n_util::GetStringUTF16(
                 IDS_INPUT_OVERLAY_EDUCATIONAL_DESCRIPTION_ALPHA),
             /*view_defining_max_width=*/nullptr,
-            /*color=*/
-            GetContentLayerColor(
-                ash::AshColorProvider::ContentLayerType::kTextColorSecondary),
+            /*enabled_color_type=*/
+            ash::features::IsDarkLightModeEnabled()
+                ? cros_tokens::kTextColorPrimary
+                : cros_tokens::kTextColorPrimaryLight,
             /*font_list=*/
             gfx::FontList({ash::login_views_utils::kGoogleSansFont},
                           gfx::Font::FontStyle::NORMAL, kDescriptionFontSize,
@@ -246,7 +251,7 @@ void EducationalView::Init(const gfx::Size& parent_size) {
         base::BindRepeating(&EducationalView::OnAcceptedPressed,
                             base::Unretained(this)),
         l10n_util::GetStringUTF16(IDS_INPUT_OVERLAY_EDUCATIONAL_ACCEPT_BUTTON),
-        ash::PillButton::Type::kIconless,
+        ash::PillButton::Type::kDefaultWithoutIcon,
         /*icon=*/nullptr));
     accept_button_->SetButtonTextColor(cros_styles::ResolveColor(
         cros_styles::ColorName::kButtonLabelColorPrimary, IsDarkModeEnabled()));

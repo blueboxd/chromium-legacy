@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -144,6 +144,9 @@ class REMOTE_COCOA_APP_SHIM_EXPORT NativeWidgetNSWindowFullscreenController {
   // Set the window's frame back to `windowed_frame_`, and then return to
   // the kWindowed state.
   void RestoreWindowedFrame();
+  // Notifies the client that the fullscreen exit transition has completed after
+  // the frame has been restored to its original position.
+  void OnWindowedFrameRestored();
 
   // Helper function wrapping -[NSWindow toggleFullscreen:].
   void ToggleFullscreen();

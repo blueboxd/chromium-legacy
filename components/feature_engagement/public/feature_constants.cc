@@ -1,4 +1,4 @@
-/// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -25,10 +25,14 @@ const base::Feature kIPHDummyFeature{"IPH_Dummy",
 
 #if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_APPLE) || BUILDFLAG(IS_LINUX) || \
     BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_FUCHSIA)
+const base::Feature kIPHBatterySaverModeFeature{
+    "IPH_BatterySaverMode", base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kIPHDesktopSharedHighlightingFeature{
     "IPH_DesktopSharedHighlighting", base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kIPHDesktopTabGroupsNewGroupFeature{
     "IPH_DesktopTabGroupsNewGroup", base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kIPHExtensionsMenuFeature{
+    "IPH_ExtensionsMenu", base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kIPHFocusHelpBubbleScreenReaderPromoFeature{
     "IPH_FocusHelpBubbleScreenReaderPromo", base::FEATURE_ENABLED_BY_DEFAULT};
 const base::Feature kIPHGMCCastStartStopFeature{
@@ -51,6 +55,8 @@ const base::Feature kIPHSideSearchAutoTriggeringFeature{
     "IPH_SideSearchAutoTriggering", base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kIPHSideSearchFeature{"IPH_SideSearch",
                                           base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kIPHSideSearchPageActionLabelFeature{
+    "IPH_SideSearchPageActionLabel", base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kIPHTabSearchFeature{"IPH_TabSearch",
                                          base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kIPHWebUITabStripFeature{"IPH_WebUITabStrip",
@@ -285,7 +291,7 @@ const base::Feature kIPHBadgedTranslateManualTriggerFeature{
 const base::Feature kIPHDiscoverFeedHeaderFeature{
     "IPH_DiscoverFeedHeaderMenu", base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kIPHDefaultSiteViewFeature{
-    "IPH_DefaultSiteView", base::FEATURE_DISABLED_BY_DEFAULT};
+    "IPH_DefaultSiteView", base::FEATURE_ENABLED_BY_DEFAULT};
 const base::Feature kIPHPasswordSuggestionsFeature{
     "IPH_PasswordSuggestions", base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kIPHFollowWhileBrowsingFeature{

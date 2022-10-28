@@ -1,4 +1,4 @@
-# Copyright 2022 The Chromium Authors. All rights reserved.
+# Copyright 2022 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -15,6 +15,7 @@ static_library("webui") {
   ]
   deps = [
     "//base",
+    "//components/history/core/browser",
     "//components/history_clusters/core",
     "//components/history_clusters/history_clusters_internals/resources:resources",
     "//components/history_clusters/history_clusters_internals/webui:mojo_bindings",

@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -33,9 +33,9 @@ class FirewallHoleTest : public testing::Test {
             base::test::SingleThreadTaskEnvironment::MainThreadType::UI) {}
   ~FirewallHoleTest() override = default;
 
-  void SetUp() override { PermissionBrokerClient::InitializeFake(); }
+  void SetUp() override { chromeos::PermissionBrokerClient::InitializeFake(); }
 
-  void TearDown() override { PermissionBrokerClient::Shutdown(); }
+  void TearDown() override { chromeos::PermissionBrokerClient::Shutdown(); }
 
  private:
   base::test::SingleThreadTaskEnvironment task_environment_;

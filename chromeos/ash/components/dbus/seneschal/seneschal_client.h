@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -16,7 +16,8 @@ namespace ash {
 
 // SeneschalClient is used to communicate with Seneschal, which manages
 // 9p file servers.
-class COMPONENT_EXPORT(SENESCHAL) SeneschalClient : public DBusClient {
+class COMPONENT_EXPORT(SENESCHAL) SeneschalClient
+    : public chromeos::DBusClient {
  public:
   class Observer : public base::CheckedObserver {
    public:

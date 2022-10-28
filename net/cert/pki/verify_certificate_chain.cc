@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -147,16 +147,12 @@ bool VerifySignatureAlgorithmsMatch(const ParsedCertificate& cert,
   // TODO(eroman): Add a unit-test that exercises this case.
   absl::optional<SignatureAlgorithm> alg1 =
       ParseSignatureAlgorithm(alg1_tlv, errors);
-  if (!alg1) {
-    errors->AddError(cert_errors::kUnacceptableSignatureAlgorithm);
+  if (!alg1)
     return false;
-  }
   absl::optional<SignatureAlgorithm> alg2 =
       ParseSignatureAlgorithm(alg2_tlv, errors);
-  if (!alg2) {
-    errors->AddError(cert_errors::kUnacceptableSignatureAlgorithm);
+  if (!alg2)
     return false;
-  }
 
   if (*alg1 == *alg2) {
     errors->AddWarning(
@@ -806,10 +802,8 @@ void PathVerifier::BasicCertificateProcessing(
   // Check that the signature algorithms in Certificate vs TBSCertificate
   // match. This isn't part of RFC 5280 section 6.1.3, but is mandated by
   // sections 4.1.1.2 and 4.1.2.3.
-  if (!VerifySignatureAlgorithmsMatch(cert, errors)) {
-    CHECK(errors->ContainsAnyErrorWithSeverity(CertError::SEVERITY_HIGH));
+  if (!VerifySignatureAlgorithmsMatch(cert, errors))
     *shortcircuit_chain_validation = true;
-  }
 
   // Check whether this signature algorithm is allowed.
   if (!delegate_->IsSignatureAlgorithmAcceptable(cert.signature_algorithm(),
@@ -1287,7 +1281,7 @@ void PathVerifier::Run(
         // Chains that don't start from a trusted root should short-circuit the
         // rest of the verification, as accumulating more errors from untrusted
         // certificates would not be meaningful.
-        CHECK(cert_errors->ContainsAnyErrorWithSeverity(
+        DCHECK(cert_errors->ContainsAnyErrorWithSeverity(
             CertError::SEVERITY_HIGH));
         return;
       }
@@ -1308,7 +1302,7 @@ void PathVerifier::Run(
       // Signature errors should short-circuit the rest of the verification, as
       // accumulating more errors from untrusted certificates would not be
       // meaningful.
-      CHECK(
+      DCHECK(
           cert_errors->ContainsAnyErrorWithSeverity(CertError::SEVERITY_HIGH));
       return;
     }

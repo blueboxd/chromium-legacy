@@ -1,10 +1,11 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome/browser/enterprise/connectors/device_trust/key_management/core/shared_command_constants.h"
 
 #include "build/build_config.h"
+#include "chrome/common/chrome_version.h"
 
 namespace enterprise_connectors {
 
@@ -21,6 +22,9 @@ const char kTemporaryDeviceTrustSigningKeyLabel[] =
     "GoogleChromeEnterpriseTempDTSigningKey";
 
 const char kDeviceTrustSigningKeyLabel[] = "GoogleChromeEnterpriseDTSigningKey";
+
+const char kKeychainAccessGroup[] =
+    MAC_TEAM_IDENTIFIER_STRING "." MAC_BUNDLE_IDENTIFIER_STRING ".devicetrust";
 #endif
 
 }  // namespace constants

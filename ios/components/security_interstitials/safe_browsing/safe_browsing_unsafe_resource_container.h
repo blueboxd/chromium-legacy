@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -28,8 +28,8 @@ class SafeBrowsingUnsafeResourceContainer
       SafeBrowsingUnsafeResourceContainer&& other);
   ~SafeBrowsingUnsafeResourceContainer() override;
 
-  // Stores a copy of |resource| in the container.  An allow list decision must
-  // be pending for |resource| before it is added to the container.
+  // Stores a copy of `resource` in the container.  An allow list decision must
+  // be pending for `resource` before it is added to the container.
   void StoreMainFrameUnsafeResource(
       const security_interstitials::UnsafeResource& resource);
   void StoreSubFrameUnsafeResource(
@@ -41,8 +41,8 @@ class SafeBrowsingUnsafeResourceContainer
   const security_interstitials::UnsafeResource* GetMainFrameUnsafeResource()
       const;
 
-  // Returns the pending sub frame UnsafeResource for |item|, or null if one has
-  // not been stored.  |item| must be non-null.
+  // Returns the pending sub frame UnsafeResource for `item`, or null if one has
+  // not been stored.  `item` must be non-null.
   const security_interstitials::UnsafeResource* GetSubFrameUnsafeResource(
       web::NavigationItem* item) const;
 

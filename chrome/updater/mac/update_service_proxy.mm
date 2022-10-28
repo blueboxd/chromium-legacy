@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -89,6 +89,17 @@ using base::SysUTF8ToNSString;
 
   [[_updateCheckXPCConnection remoteObjectProxyWithErrorHandler:errorHandler]
       getVersionWithReply:reply];
+}
+
+- (void)fetchPoliciesWithReply:(void (^)(int))reply {
+  auto errorHandler = ^(NSError* xpcError) {
+    LOG(ERROR) << "XPC connection failed: "
+               << base::SysNSStringToUTF8([xpcError description]);
+    reply(xpcError.code);
+  };
+
+  [[_updateCheckXPCConnection remoteObjectProxyWithErrorHandler:errorHandler]
+      fetchPoliciesWithReply:reply];
 }
 
 - (void)registerForUpdatesWithAppId:(NSString* _Nullable)appId
@@ -275,6 +286,18 @@ void UpdateServiceProxy::GetVersion(
                        base::Version(base::SysNSStringToUTF8(version))));
   };
   [client_ getVersionWithReply:reply];
+}
+
+void UpdateServiceProxy::FetchPolicies(base::OnceCallback<void(int)> callback) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  VLOG(1) << __func__;
+  __block base::OnceCallback<void(int)> block_callback = std::move(callback);
+  auto reply = ^(int result) {
+    callback_runner_->PostTask(
+        FROM_HERE, base::BindOnce(std::move(block_callback), result));
+  };
+  [client_ fetchPoliciesWithReply:reply];
 }
 
 void UpdateServiceProxy::RegisterApp(

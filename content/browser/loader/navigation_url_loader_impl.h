@@ -189,13 +189,13 @@ class CONTENT_EXPORT NavigationURLLoaderImpl
   void OnReceiveEarlyHints(network::mojom::EarlyHintsPtr early_hints) override;
   void OnReceiveResponse(
       network::mojom::URLResponseHeadPtr head,
-      mojo::ScopedDataPipeConsumerHandle response_body) override;
+      mojo::ScopedDataPipeConsumerHandle response_body,
+      absl::optional<mojo_base::BigBuffer> cached_metadata) override;
   void OnReceiveRedirect(const net::RedirectInfo& redirect_info,
                          network::mojom::URLResponseHeadPtr head) override;
   void OnUploadProgress(int64_t current_position,
                         int64_t total_size,
                         OnUploadProgressCallback callback) override;
-  void OnReceiveCachedMetadata(mojo_base::BigBuffer data) override;
   void OnTransferSizeUpdated(int32_t transfer_size_diff) override {}
   void OnComplete(const network::URLLoaderCompletionStatus& status) override;
 
@@ -243,7 +243,6 @@ class CONTENT_EXPORT NavigationURLLoaderImpl
   std::unique_ptr<NavigationUIData> navigation_ui_data_;
 
   scoped_refptr<network::SharedURLLoaderFactory> network_loader_factory_;
-  std::unique_ptr<blink::ThrottlingURLLoader> url_loader_;
 
   // Caches the modified request headers provided by clients during redirect,
   // will be consumed by next `url_loader_->FollowRedirect()`.
@@ -319,6 +318,11 @@ class CONTENT_EXPORT NavigationURLLoaderImpl
   // calls like WillCreateURLLoaderFactory are already called)
   std::map<std::string, mojo::Remote<network::mojom::URLLoaderFactory>>
       non_network_url_loader_factory_remotes_;
+
+  // This needs to be declared here because the underlying object might take a
+  // reference on a URLLoaderFactory stored in
+  // `non_network_url_loader_factory_remotes_`.
+  std::unique_ptr<blink::ThrottlingURLLoader> url_loader_;
 
   std::unique_ptr<NavigationEarlyHintsManager> early_hints_manager_;
 

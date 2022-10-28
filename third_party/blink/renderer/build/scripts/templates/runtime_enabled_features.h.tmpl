@@ -86,6 +86,7 @@ class PLATFORM_EXPORT RuntimeEnabledFeaturesBase {
   static void SetOriginTrialControlledFeaturesEnabled(bool);
 
   static void SetFeatureEnabledFromString(const std::string& name, bool enabled);
+  static void UpdateStatusFromBaseFeatures();
 
   {% for feature in features %}
   static void Set{{feature.name}}Enabled(bool enabled) { {{feature.data_member_name}} = enabled; }
@@ -109,6 +110,7 @@ class PLATFORM_EXPORT RuntimeEnabledFeatures : public RuntimeEnabledFeaturesBase
   friend class DevToolsEmulator;
   friend class InternalRuntimeFlags;
   friend class V8ContextSnapshotImpl;
+  friend class WebRuntimeFeaturesBase;
   friend class WebRuntimeFeatures;
   friend class WebView;
   FRIEND_TEST_ALL_PREFIXES(RuntimeEnabledFeaturesTest, Relationship);

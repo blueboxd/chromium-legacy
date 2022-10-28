@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -72,7 +72,7 @@ std::string GetPath(TooltipType type, const std::string& sub_pref) {
 
 base::Time GetLastShownTime(PrefService* prefs, TooltipType type) {
   const base::Value* last_shown_time =
-      prefs->GetValueDict(prefs::kContextualTooltips)
+      prefs->GetDict(prefs::kContextualTooltips)
           .FindByDottedPath(GetPath(type, kLastTimeShown));
   if (!last_shown_time)
     return base::Time();
@@ -81,7 +81,7 @@ base::Time GetLastShownTime(PrefService* prefs, TooltipType type) {
 
 int GetSuccessCount(PrefService* prefs, TooltipType type) {
   absl::optional<int> success_count =
-      prefs->GetValueDict(prefs::kContextualTooltips)
+      prefs->GetDict(prefs::kContextualTooltips)
           .FindIntByDottedPath(GetPath(type, kSuccessCount));
   return success_count.value_or(0);
 }
@@ -210,7 +210,7 @@ base::TimeDelta GetNudgeTimeout(PrefService* prefs, TooltipType type) {
 
 int GetShownCount(PrefService* prefs, TooltipType type) {
   absl::optional<int> shown_count =
-      prefs->GetValueDict(prefs::kContextualTooltips)
+      prefs->GetDict(prefs::kContextualTooltips)
           .FindIntByDottedPath(GetPath(type, kShownCount));
   return shown_count.value_or(0);
 }

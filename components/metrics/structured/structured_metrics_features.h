@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,6 +12,9 @@ namespace structured {
 
 // This can be used to disable structured metrics as a whole.
 extern const base::Feature kStructuredMetrics;
+
+// Controls whether CrOSEvents logging is enabled or not.
+extern const base::Feature kCrOSEvents;
 
 extern const base::Feature kBluetoothSessionizedMetrics;
 

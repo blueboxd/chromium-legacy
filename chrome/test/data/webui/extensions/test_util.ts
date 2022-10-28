@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -115,6 +115,8 @@ export class MockItemDelegate extends ClickMock implements ItemDelegate {
     return Promise.resolve();
   }
 
+  setShowAccessRequestsInToolbar(_id: string, _showRequests: boolean) {}
+
   recordUserAction(_metricName: string) {}
 
   getItemStateChangedTarget() {
@@ -217,6 +219,7 @@ export function createExtensionInfo(
         views: [{url: baseUrl + 'foo.html'}, {url: baseUrl + 'bar.html'}],
         webStoreUrl: '',
         showSafeBrowsingAllowlistWarning: false,
+        showAccessRequestsInToolbar: false,
       },
       properties || {});
 }

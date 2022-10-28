@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,8 +7,8 @@ package org.chromium.chrome.browser.base;
 import android.content.Context;
 
 import org.chromium.android_webview.nonembedded.WebViewApkApplication;
-import org.chromium.base.annotations.IdentifierNameString;
 import org.chromium.base.library_loader.LibraryProcessType;
+import org.chromium.build.annotations.IdentifierNameString;
 import org.chromium.components.version_info.VersionInfo;
 import org.chromium.content_public.browser.ChildProcessCreationParams;
 

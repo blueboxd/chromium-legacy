@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -53,6 +53,10 @@ class NetworkTestHelperBase {
   // service could not be configured. Note: the 'GUID' key is also used as the
   // name of the service if no 'Name' key is provided.
   std::string ConfigureService(const std::string& shill_json_string);
+
+  // Configures a new WiFi service with state |state|. Returns the service
+  // path of the new service.
+  std::string ConfigureWiFi(const std::string& state);
 
   // Returns a double value for property |key| associated with |service_path|.
   absl::optional<double> GetServiceDoubleProperty(
@@ -109,6 +113,7 @@ class NetworkTestHelperBase {
   bool hermes_clients_initialized_ = false;
 
   std::string last_created_service_path_;
+  int wifi_index_ = 0;
 
   ShillManagerClient::TestInterface* manager_test_;
   ShillProfileClient::TestInterface* profile_test_;

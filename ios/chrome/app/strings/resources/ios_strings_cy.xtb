@@ -262,7 +262,7 @@ Gweler cyfarwyddiadau eich peiriant chwilio er mwyn dileu eich hanes chwilio, os
 <translation id="3153862085237805241">Cadw'r Cerdyn</translation>
 <translation id="3157387275655328056">Ychwanegu at y Rhestr Ddarllen</translation>
 <translation id="3157684681743766797">Marcio'r Cyfan…</translation>
-<translation id="3169472444629675720">Discover</translation>
+<translation id="3169472444629675720">Darganfod</translation>
 <translation id="3174662312949010067">Gallwch hefyd ddefnyddio cyfrineiriau sydd wedi'u cadw ar eich dyfeisiau eraill.</translation>
 <translation id="3175081911749765310">Gwasanaethau Gwe</translation>
 <translation id="3178650076442119961">Yma Heddiw</translation>
@@ -393,6 +393,7 @@ Gweler cyfarwyddiadau eich peiriant chwilio er mwyn dileu eich hanes chwilio, os
 <translation id="430793432425771671">Cysoni Popeth</translation>
 <translation id="4309403553630140242">Tapiwch ddwywaith am ragor o wybodaeth</translation>
 <translation id="430967081421617822">Erioed</translation>
+<translation id="4324952538601951430">Mae eich nodau tudalen, cyfrineiriau, gosodiadau a rhagor wedi'u cadw yma nawr</translation>
 <translation id="4334428914252001502">Mae 1 erthygl sydd heb ei darllen.</translation>
 <translation id="4338650699862464074">Yn anfon URL o dudalennau rydych yn ymweld â nhw at Google.</translation>
 <translation id="4343046787186034850">Caniateir Mynediad at y Camera a'r Meicroffon</translation>
@@ -766,7 +767,6 @@ Pan fyddwch yn y modd Anhysbys, ni all gwefannau ddefnyddio cwcis i weld eich gw
 <translation id="7192050974311852563">Dechrau Logio</translation>
 <translation id="7203585745079012652">Adrodd Atebion yn Ôl</translation>
 <translation id="7207023858769244910">Cysonwch i gael cynnwys yn seiliedig ar eich diddordebau.</translation>
-<translation id="7207383424303353046">Newydd: Agor gwefannau yn Chrome yn awtomatig drwy ei wneud yn eich Ap Pori Diofyn. <ph name="BEGIN_LINK" />Agor y Gosodiadau<ph name="END_LINK" /></translation>
 <translation id="721597782417389033">Llysenw Cerdyn Annilys</translation>
 <translation id="722454870747268814">Tab Anhysbys Newydd</translation>
 <translation id="7265758999917665941">Byth ar gyfer y Wefan hon</translation>
@@ -916,7 +916,6 @@ Gall gwefannau ddefnyddio cwcis i weld eich gweithgarwch pori ar draws gwahanol 
 <translation id="8533670235862049797">Mae Pori'n Ddiogel ymlaen</translation>
 <translation id="8534481786647257214">Postiad Google+ wedi'i gwblhau.</translation>
 <translation id="8548878600947630424">Chwilio'r Dudalen...</translation>
-<translation id="8574235780160508979">Mae Telerau Gwasanaeth Chrome yn newid ar 31 Mawrth. <ph name="BEGIN_LINK" />Darllenwch<ph name="END_LINK" /></translation>
 <translation id="8588404856427128947">Diffodd</translation>
 <translation id="8590913940444621808">Peidio Byth â Gofyn</translation>
 <translation id="8591976964826315682">Rhwystro Cwcis Trydydd Parti yn y Modd Anhysbys</translation>

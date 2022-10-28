@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -22,6 +22,18 @@ const char* PageLoadMetricsForwardObserver::GetObserverName() const {
   if (parent_observer_)
     return parent_observer_->GetObserverName();
   return nullptr;
+}
+
+const PageLoadMetricsObserverDelegate&
+PageLoadMetricsForwardObserver::GetDelegate() const {
+  NOTREACHED();
+  const PageLoadMetricsObserverDelegate* null_value = nullptr;
+  return *null_value;
+}
+
+void PageLoadMetricsForwardObserver::SetDelegate(
+    PageLoadMetricsObserverDelegate* delegate) {
+  // No need to set. Ignore.
 }
 
 // Registration and initialization of PageLoadMetricsForwardObserver is
@@ -234,11 +246,13 @@ void PageLoadMetricsForwardObserver::OnFeaturesUsageObserved(
   parent_observer_->OnFeaturesUsageObserved(rfh, features);
 }
 
+// SetUpSharedMemoryForSmoothness is called only for the outermost page.
 void PageLoadMetricsForwardObserver::SetUpSharedMemoryForSmoothness(
     const base::ReadOnlySharedMemoryRegion& shared_memory) {
-  if (!parent_observer_)
-    return;
-  parent_observer_->SetUpSharedMemoryForSmoothness(shared_memory);
+  // See also MetricsWebContentsObserver::SetUpSharedMemoryForSmoothness and
+  // the relevant TODO. Currently, information from OOPIFs and FencedFrames are
+  // not handled.
+  NOTREACHED();
 }
 
 // PageLoadTracker already aggregates inter-pages data and processes it via
@@ -380,6 +394,12 @@ void PageLoadMetricsForwardObserver::OnV8MemoryChanged(
   if (!parent_observer_)
     return;
   parent_observer_->OnV8MemoryChanged(memory_updates);
+}
+
+void PageLoadMetricsForwardObserver::OnSharedStorageWorkletHostCreated() {
+  if (!parent_observer_)
+    return;
+  parent_observer_->OnSharedStorageWorkletHostCreated();
 }
 
 }  // namespace page_load_metrics

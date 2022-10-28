@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -17,7 +17,6 @@ export class TestCrostiniBrowserProxy extends TestBrowserProxy {
       'requestCrostiniContainerUpgradeView',
       'requestCrostiniUpgraderDialogStatus',
       'requestCrostiniContainerUpgradeAvailable',
-      'addCrostiniPortForward',
       'getCrostiniDiskInfo',
       'resizeCrostiniDisk',
       'addCrostiniPortForward',
@@ -209,8 +208,9 @@ export class TestCrostiniBrowserProxy extends TestBrowserProxy {
   }
 
   /** @override */
-  createContainer(containerId, imageServer, imageAlias) {
-    this.methodCalled('createContainer');
+  createContainer(containerId, imageServer, imageAlias, containerFile) {
+    this.methodCalled(
+        'createContainer', containerId, imageServer, imageAlias, containerFile);
   }
 
   /** @override */

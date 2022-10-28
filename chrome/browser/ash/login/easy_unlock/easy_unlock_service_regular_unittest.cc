@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -195,7 +195,7 @@ class EasyUnlockServiceRegularTest : public testing::Test {
     display::Screen::SetScreenInstance(&test_screen_);
     display::SetInternalDisplayIds({test_screen_.GetPrimaryDisplay().id()});
 
-    PowerManagerClient::InitializeFake();
+    chromeos::PowerManagerClient::InitializeFake();
 
     // Note: this is necessary because objects owned by EasyUnlockService
     // depend on the BluetoothAdapter -- fetching the real one causes tests
@@ -241,7 +241,7 @@ class EasyUnlockServiceRegularTest : public testing::Test {
   void TearDown() override {
     SetScreenLockState(false /* is_locked */);
     easy_unlock_service_regular_->Shutdown();
-    PowerManagerClient::Shutdown();
+    chromeos::PowerManagerClient::Shutdown();
     TestingBrowserProcess::GetGlobal()->SetLocalState(nullptr);
     display::Screen::SetScreenInstance(nullptr);
   }
@@ -303,12 +303,12 @@ class EasyUnlockServiceRegularTest : public testing::Test {
   }
 
   void VerifyGetRemoteDevices(bool are_local_and_remote_devices_expected) {
-    const base::ListValue* remote_devices =
+    const base::Value::List* remote_devices =
         static_cast<EasyUnlockService*>(easy_unlock_service_regular_.get())
             ->GetRemoteDevices();
     if (are_local_and_remote_devices_expected)
       // 2 devices are expected: the local device and the remote device.
-      EXPECT_EQ(2u, remote_devices->GetListDeprecated().size());
+      EXPECT_EQ(2u, remote_devices->size());
     else
       EXPECT_FALSE(remote_devices);
   }

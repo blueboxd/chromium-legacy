@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -119,7 +119,14 @@ class BASE_EXPORT TraceLog :
   // Note: Returns false even if FILTERING_MODE is enabled.
   bool IsEnabled() {
 #if BUILDFLAG(USE_PERFETTO_CLIENT_LIBRARY)
-    return perfetto::TrackEvent::IsEnabled();
+    // In SDK build we return true as soon as the datasource has been set up and
+    // we know the config. This doesn't necessarily mean that the tracing has
+    // already started.
+    // Note that perfetto::TrackEvent::IsEnabled() can be true even earlier,
+    // before the OnSetup call, so we can't guarantee that we know the config
+    // by the time perfetto::TrackEvent::IsEnabled() is true.
+    AutoLock lock(track_event_lock_);
+    return track_event_enabled_;
 #else   // !BUILDFLAG(USE_PERFETTO_CLIENT_LIBRARY)
     AutoLock lock(lock_);
     return enabled_modes_ & RECORDING_MODE;
@@ -450,6 +457,7 @@ class BASE_EXPORT TraceLog :
   void SetTraceBufferForTesting(std::unique_ptr<TraceBuffer> trace_buffer);
 
 #if BUILDFLAG(USE_PERFETTO_CLIENT_LIBRARY)
+  perfetto::DataSourceConfig GetCurrentTrackEventDataSourceConfig() const;
   void InitializePerfettoIfNeeded();
   void SetEnabledImpl(const TraceConfig& trace_config,
                       const perfetto::TraceConfig& perfetto_config);
@@ -657,6 +665,9 @@ class BASE_EXPORT TraceLog :
   std::unique_ptr<::base::tracing::PerfettoPlatform> perfetto_platform_;
   std::unique_ptr<perfetto::TracingSession> tracing_session_;
   perfetto::TraceConfig perfetto_config_;
+  perfetto::DataSourceConfig track_event_config_ GUARDED_BY(track_event_lock_);
+  bool track_event_enabled_ GUARDED_BY(track_event_lock_) = false;
+  mutable Lock track_event_lock_;
 #if !BUILDFLAG(IS_NACL)
   std::unique_ptr<perfetto::trace_processor::TraceProcessorStorage>
       trace_processor_;

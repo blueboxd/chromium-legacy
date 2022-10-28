@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -33,7 +33,7 @@ class KeyRotationManagerImpl : public KeyRotationManager {
   void Rotate(const GURL& dm_server_url,
               const std::string& dm_token,
               const std::string& nonce,
-              base::OnceCallback<void(bool)> result_callback) override;
+              base::OnceCallback<void(Result)> result_callback) override;
 
  private:
   // Builds the protobuf message needed to tell DM server about the new public
@@ -51,7 +51,7 @@ class KeyRotationManagerImpl : public KeyRotationManager {
   // created during the rotation process.
   void OnDmServerResponse(const std::string& nonce,
                           std::unique_ptr<SigningKeyPair> new_key_pair,
-                          base::OnceCallback<void(bool)> result_callback,
+                          base::OnceCallback<void(Result)> result_callback,
                           KeyNetworkDelegate::HttpResponseCode response_code);
 
   std::unique_ptr<KeyNetworkDelegate> network_delegate_;

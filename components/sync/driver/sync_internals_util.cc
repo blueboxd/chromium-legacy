@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -611,8 +611,7 @@ base::Value::Dict ConstructAboutInformation(
                    base::Value(unrecoverable_error_message));
   }
 
-  about_info.Set("type_status", base::Value::FromUniquePtrValue(
-                                    service->GetTypeStatusMapForDebugging()));
+  about_info.Set("type_status", service->GetTypeStatusMapForDebugging());
 
   return about_info;
 }

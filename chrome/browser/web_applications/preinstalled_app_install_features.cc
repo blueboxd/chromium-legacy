@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -21,9 +21,7 @@ namespace web_app {
 constexpr const base::Feature* kPreinstalledAppInstallFeatures[] = {
     &kMigrateDefaultChromeAppToWebAppsGSuite,
     &kMigrateDefaultChromeAppToWebAppsNonGSuite,
-    &kDefaultCalculatorWebApp,
 #if BUILDFLAG(IS_CHROMEOS)
-    &kCursiveStylusPreinstall,
     &kCursiveManagedStylusPreinstall,
     &kMessagesPreinstall,
 #endif
@@ -69,11 +67,6 @@ const base::Feature kMigrateDefaultChromeAppToWebAppsNonGSuite{
     "MigrateDefaultChromeAppToWebAppsNonGSuite",
     base::FEATURE_ENABLED_BY_DEFAULT};
 
-// Enables installing the PWA version of the chrome os calculator instead of the
-// deprecated chrome app.
-const base::Feature kDefaultCalculatorWebApp{"DefaultCalculatorWebApp",
-                                             base::FEATURE_ENABLED_BY_DEFAULT};
-
 #if BUILDFLAG(IS_CHROMEOS)
 // Whether to allow the MigrateDefaultChromeAppToWebAppsGSuite and
 // MigrateDefaultChromeAppToWebAppsNonGSuite flags for managed users.
@@ -88,11 +81,6 @@ const base::Feature kDefaultCalculatorWebApp{"DefaultCalculatorWebApp",
 const base::Feature kAllowDefaultWebAppMigrationForChromeOsManagedUsers{
     "AllowDefaultWebAppMigrationForChromeOsManagedUsers",
     base::FEATURE_ENABLED_BY_DEFAULT};
-
-// Enables installing the Cursive app on devices with a built-in stylus-capable
-// screen.
-const base::Feature kCursiveStylusPreinstall{"CursiveStylusPreinstall",
-                                             base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enables installing the Cursive app on managed devices with a built-in
 // stylus-capable screen.

@@ -1,4 +1,4 @@
-// Copyright 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -52,7 +52,6 @@
 #include "components/omnibox/browser/verbatim_match.h"
 #include "components/omnibox/common/omnibox_features.h"
 #include "components/prefs/pref_service.h"
-#include "components/search_engines/omnibox_focus_type.h"
 #include "components/search_engines/search_engine_type.h"
 #include "components/search_engines/template_url.h"
 #include "components/search_engines/template_url_prepopulate_data.h"
@@ -61,6 +60,7 @@
 #include "net/cookies/cookie_util.h"
 #include "third_party/icu/source/common/unicode/ubidi.h"
 #include "third_party/metrics_proto/omnibox_event.pb.h"
+#include "third_party/metrics_proto/omnibox_focus_type.pb.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/geometry/rect.h"
@@ -898,8 +898,8 @@ void OmniboxEditModel::OpenMatch(AutocompleteMatch match,
   // dropdown is closed or the user used a paste-and-go action.  (In most
   // cases when this happens, the user never modified the omnibox.)
   const bool popup_open = PopupIsOpen();
-  if (input_.focus_type() != OmniboxFocusType::DEFAULT || !popup_open ||
-      !pasted_text.empty()) {
+  if (input_.focus_type() != metrics::OmniboxFocusType::INTERACTION_DEFAULT ||
+      !popup_open || !pasted_text.empty()) {
     const base::TimeDelta default_time_delta = base::Milliseconds(-1);
     elapsed_time_since_user_first_modified_omnibox = default_time_delta;
     elapsed_time_since_last_change_to_default_match = default_time_delta;
@@ -920,8 +920,9 @@ void OmniboxEditModel::OpenMatch(AutocompleteMatch match,
   fake_single_entry_result.AppendMatches(fake_single_entry_matches);
 
   OmniboxLog log(
-      input_.focus_type() != OmniboxFocusType::DEFAULT ? std::u16string()
-                                                       : input_text,
+      input_.focus_type() != metrics::OmniboxFocusType::INTERACTION_DEFAULT
+          ? std::u16string()
+          : input_text,
       just_deleted_text_, input_.type(), is_keyword_selected(),
       keyword_mode_entry_method_, popup_open, dropdown_ignored ? 0 : index,
       disposition, !pasted_text.empty(),
@@ -961,6 +962,9 @@ void OmniboxEditModel::OpenMatch(AutocompleteMatch match,
     UMA_HISTOGRAM_MEDIUM_TIMES(kFocusToOpenTimeHistogram,
                                now - last_omnibox_focus_);
   }
+
+  IDNA2008DeviationCharacter deviation_char_in_hostname =
+      IDNA2008DeviationCharacter::kNone;
 
   TemplateURLService* service = client_->GetTemplateURLService();
   TemplateURL* template_url = match.GetTemplateURL(service, false);
@@ -1005,7 +1009,7 @@ void OmniboxEditModel::OpenMatch(AutocompleteMatch match,
       navigation_metrics::RecordOmniboxURLNavigation(match.destination_url);
     }
 
-    // The following histogram should be recorded for both TYPED and pasted
+    // The following histograms should be recorded for both TYPED and pasted
     // URLs, but should still exclude reloads.
     if (ui::PageTransitionTypeIncludingQualifiersIs(
             match.transition, ui::PAGE_TRANSITION_TYPED) ||
@@ -1013,6 +1017,24 @@ void OmniboxEditModel::OpenMatch(AutocompleteMatch match,
                                                     ui::PAGE_TRANSITION_LINK)) {
       net::cookie_util::RecordCookiePortOmniboxHistograms(
           match.destination_url);
+
+      if (match.destination_url.SchemeIsHTTPOrHTTPS()) {
+        // Extract the typed hostname from autocomplete input for IDNA 2008
+        // metrics. We can't use GURL here as it removes the deviation
+        // characters that we want to measure.
+        size_t hostname_begin = input_.parts().host.begin;
+        if (input_.added_default_scheme_to_typed_url() && hostname_begin > 0) {
+          // If the omnibox upgrades a navigation to https, it offsets
+          // components by one to the right due to the added "s" to http. Adjust
+          // the offset again. Ideally, hostname_begin should always be non-zero
+          // in that case, but we check it for safety.
+          --hostname_begin;
+        }
+        std::u16string hostname(input_.text(), hostname_begin,
+                                static_cast<size_t>(input_.parts().host.len));
+        deviation_char_in_hostname =
+            navigation_metrics::RecordIDNA2008Metrics(hostname);
+      }
     }
   }
 
@@ -1047,7 +1069,8 @@ void OmniboxEditModel::OpenMatch(AutocompleteMatch match,
         VerbatimMatchForInput(
             autocomplete_controller()->history_url_provider(),
             autocomplete_controller()->autocomplete_provider_client(),
-            alternate_input, alternate_nav_url, false));
+            alternate_input, alternate_nav_url, false),
+        deviation_char_in_hostname);
   }
 
   BookmarkModel* bookmark_model = client_->GetBookmarkModel();
@@ -1282,8 +1305,8 @@ void OmniboxEditModel::StartZeroSuggestRequest(
   input_.set_current_url(client_->GetURL());
   input_.set_current_title(client_->GetTitle());
   input_.set_focus_type(user_clobbered_permanent_text
-                            ? OmniboxFocusType::DELETED_PERMANENT_TEXT
-                            : OmniboxFocusType::ON_FOCUS);
+                            ? metrics::OmniboxFocusType::INTERACTION_CLOBBER
+                            : metrics::OmniboxFocusType::INTERACTION_FOCUS);
   autocomplete_controller()->Start(input_);
 }
 

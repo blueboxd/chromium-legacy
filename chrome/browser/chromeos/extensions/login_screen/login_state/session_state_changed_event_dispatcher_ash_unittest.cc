@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -81,7 +81,7 @@ class SessionStateChangedEventDispatcherAshUnittest : public testing::Test {
     explicit MockSessionStateChangedEventDispatcher(
         content::BrowserContext* context)
         : SessionStateChangedEventDispatcher(context) {}
-    ~MockSessionStateChangedEventDispatcher() = default;
+    ~MockSessionStateChangedEventDispatcher() override = default;
     MOCK_METHOD1(OnSessionStateChanged,
                  void(crosapi::mojom::SessionState state));
   };

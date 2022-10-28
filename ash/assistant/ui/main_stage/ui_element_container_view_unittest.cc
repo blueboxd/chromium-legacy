@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -16,8 +16,8 @@
 #include "ash/style/dark_light_mode_controller_impl.h"
 #include "base/test/scoped_feature_list.h"
 #include "cc/base/math_util.h"
+#include "chromeos/ash/services/libassistant/public/cpp/assistant_interaction_metadata.h"
 #include "chromeos/constants/chromeos_features.h"
-#include "chromeos/services/libassistant/public/cpp/assistant_interaction_metadata.h"
 #include "ui/compositor/layer.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/views/background.h"

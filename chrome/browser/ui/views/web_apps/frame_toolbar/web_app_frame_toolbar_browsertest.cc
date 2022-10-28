@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -41,6 +41,7 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/infobars/content/content_infobar_manager.h"
+#include "components/permissions/permission_request_manager.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/content_features.h"
@@ -442,6 +443,7 @@ class WebAppFrameToolbarBrowserTest_Borderless
 
     if (uses_borderless) {
       web_app_info->display_override = {web_app::DisplayMode::kBorderless};
+      web_app_info->is_storage_isolated = true;
     }
 
     web_app::AppId app_id = helper()->InstallAndLaunchCustomWebApp(
@@ -458,7 +460,44 @@ class WebAppFrameToolbarBrowserTest_Borderless
                   .ExtractString(),
               "Borderless");
 
+    EXPECT_EQ(uses_borderless,
+              helper()->browser_view()->AppUsesBorderlessMode());
+    helper()->browser_view()->set_isolated_web_app_true_for_testing();
     return app_id;
+  }
+
+  void GrantWindowPlacementPermission() {
+    auto* web_contents = helper()->browser_view()->GetActiveWebContents();
+
+    std::string permission_auto_approve_script = R"(
+      const draggable = document.getElementById('draggable');
+      draggable.setAttribute('allow', 'window-placement');
+    )";
+    EXPECT_TRUE(ExecJs(web_contents, permission_auto_approve_script,
+                       content::EXECUTE_SCRIPT_NO_USER_GESTURE));
+
+    permissions::PermissionRequestManager::FromWebContents(web_contents)
+        ->set_auto_response_for_test(
+            permissions::PermissionRequestManager::ACCEPT_ALL);
+
+    EXPECT_TRUE(ExecJs(web_contents, "window.getScreenDetails();"));
+
+    std::string permission_query_script = R"(
+      navigator.permissions.query({
+        name: 'window-placement'
+      }).then(res => res.state)
+    )";
+    EXPECT_EQ("granted", EvalJs(web_contents, permission_query_script));
+
+    // It takes some time to udate the borderless mode state. The title is
+    // updated on a change event hooked to the window.matchMedia() function,
+    // which gets triggered when the permission is granted and the borderless
+    // mode gets enabled.
+    content::TitleWatcher title_watcher(web_contents,
+                                        u"match-media-borderless");
+    std::ignore = title_watcher.WaitAndGetTitle();
+    ASSERT_EQ("match-media-borderless",
+              EvalJs(web_contents, "document.title").ExtractString());
   }
 
  private:
@@ -467,18 +506,67 @@ class WebAppFrameToolbarBrowserTest_Borderless
 };
 
 IN_PROC_BROWSER_TEST_F(WebAppFrameToolbarBrowserTest_Borderless,
-                       AppUsesBorderlessMode) {
-  InstallAndLaunchWebApp(true);
-  ASSERT_TRUE(helper()->browser_view()->AppUsesBorderlessMode());
+                       AppUsesBorderlessModeAndHasWindowPlacementPermission) {
+  InstallAndLaunchWebApp(/*uses_borderless=*/true);
+  GrantWindowPlacementPermission();
+
+  ASSERT_TRUE(helper()->browser_view()->borderless_mode_enabled_for_testing());
+  ASSERT_TRUE(helper()
+                  ->browser_view()
+                  ->window_placement_permission_granted_for_testing());
   ASSERT_TRUE(helper()->browser_view()->IsBorderlessModeEnabled());
   ASSERT_FALSE(
       helper()->web_app_frame_toolbar()->GetAppMenuButton()->GetVisible());
 }
 
 IN_PROC_BROWSER_TEST_F(WebAppFrameToolbarBrowserTest_Borderless,
+                       DisplayModeMediaCSS) {
+  InstallAndLaunchWebApp(/*uses_borderless=*/true);
+  auto* web_contents = helper()->browser_view()->GetActiveWebContents();
+
+  std::string get_background_color = R"(
+    window.getComputedStyle(document.body, null)
+      .getPropertyValue('background-color');
+  )";
+  std::string match_media_standalone =
+      "window.matchMedia('(display-mode: standalone)').matches;";
+  std::string match_media_borderless =
+      "window.matchMedia('(display-mode: borderless)').matches;";
+  std::string blue = "rgb(0, 0, 255)";
+  std::string red = "rgb(255, 0, 0)";
+
+  // Validate that before granting the permission, the display-mode matches with
+  // the default value "standalone" and the default background-color.
+  EXPECT_TRUE(EvalJs(web_contents, match_media_standalone).ExtractBool());
+  ASSERT_EQ(blue, EvalJs(web_contents, get_background_color));
+
+  GrantWindowPlacementPermission();
+  ASSERT_TRUE(helper()->browser_view()->IsBorderlessModeEnabled());
+
+  // Validate that after granting the permission the display-mode matches with
+  // "borderless" and updates the background-color accordingly.
+  EXPECT_TRUE(EvalJs(web_contents, match_media_borderless).ExtractBool());
+  ASSERT_EQ(red, EvalJs(web_contents, get_background_color));
+}
+
+IN_PROC_BROWSER_TEST_F(
+    WebAppFrameToolbarBrowserTest_Borderless,
+    AppUsesBorderlessModeAndDoesNotHaveWindowPlacementPermission) {
+  InstallAndLaunchWebApp(/*uses_borderless=*/true);
+  ASSERT_TRUE(helper()->browser_view()->borderless_mode_enabled_for_testing());
+  ASSERT_FALSE(helper()
+                   ->browser_view()
+                   ->window_placement_permission_granted_for_testing());
+  ASSERT_FALSE(helper()->browser_view()->IsBorderlessModeEnabled());
+}
+
+IN_PROC_BROWSER_TEST_F(WebAppFrameToolbarBrowserTest_Borderless,
                        AppDoesntUseBorderlessMode) {
-  InstallAndLaunchWebApp(false);
-  ASSERT_FALSE(helper()->browser_view()->AppUsesBorderlessMode());
+  InstallAndLaunchWebApp(/*uses_borderless=*/false);
+  ASSERT_FALSE(helper()->browser_view()->borderless_mode_enabled_for_testing());
+  ASSERT_FALSE(helper()
+                   ->browser_view()
+                   ->window_placement_permission_granted_for_testing());
   ASSERT_FALSE(helper()->browser_view()->IsBorderlessModeEnabled());
   ASSERT_TRUE(
       helper()->web_app_frame_toolbar()->GetAppMenuButton()->GetVisible());
@@ -487,7 +575,7 @@ IN_PROC_BROWSER_TEST_F(WebAppFrameToolbarBrowserTest_Borderless,
 // TODO(https://crbug.com/1277860): Flaky.
 IN_PROC_BROWSER_TEST_F(WebAppFrameToolbarBrowserTest_Borderless,
                        DISABLED_DraggableRegions) {
-  InstallAndLaunchWebApp(true);
+  InstallAndLaunchWebApp(/*uses_borderless=*/true);
 
   helper()->TestDraggableRegions();
 }
@@ -1152,4 +1240,81 @@ IN_PROC_BROWSER_TEST_F(WebAppFrameToolbarBrowserTest_WindowControlsOverlay,
   EXPECT_EQ(0, EvalJs(fenced_frame_rfh,
                       "window.navigator.windowControlsOverlay."
                       "getTitlebarAreaRect().height"));
+}
+
+// Extensions in  ChromeOS are not in the titlebar.
+#if !BUILDFLAG(IS_CHROMEOS)
+// Regression test for https://crbug.com/1351566.
+IN_PROC_BROWSER_TEST_F(WebAppFrameToolbarBrowserTest_WindowControlsOverlay,
+                       ExtensionsIconVisibility) {
+  web_app::AppId app_id = InstallAndLaunchWebApp();
+  ToggleWindowControlsOverlayAndWait();
+
+  // There should be no visible Extensions icon.
+  WebAppToolbarButtonContainer* toolbar_button_container =
+      helper()->web_app_frame_toolbar()->get_right_container_for_testing();
+  EXPECT_FALSE(toolbar_button_container->extensions_container()->GetVisible());
+
+  LoadTestPopUpExtension(browser()->profile());
+
+  EXPECT_TRUE(toolbar_button_container->extensions_container()->GetVisible());
+
+  // Shut down the browser with window controls overlay toggled on so for next
+  // launch it stays toggled on.
+  CloseBrowserSynchronously(helper()->app_browser());
+
+  Browser* app_browser =
+      web_app::LaunchWebAppBrowserAndWait(browser()->profile(), app_id);
+
+  BrowserView* browser_view =
+      BrowserView::GetBrowserViewForBrowser(app_browser);
+  views::NonClientFrameView* frame_view =
+      browser_view->GetWidget()->non_client_view()->frame_view();
+  BrowserNonClientFrameView* browser_frame_view =
+      static_cast<BrowserNonClientFrameView*>(frame_view);
+  auto* web_app_frame_toolbar =
+      browser_frame_view->web_app_frame_toolbar_for_testing();
+
+  // There should be a visible Extensions icon.
+  EXPECT_TRUE(web_app_frame_toolbar->get_right_container_for_testing()
+                  ->extensions_container()
+                  ->GetVisible());
+}
+#endif  // !BUILDFLAG(IS_CHROMEOS)
+
+IN_PROC_BROWSER_TEST_F(WebAppFrameToolbarBrowserTest_WindowControlsOverlay,
+                       DisplayModeMediaCSS) {
+  InstallAndLaunchWebApp();
+  auto* web_contents = helper()->browser_view()->GetActiveWebContents();
+
+  std::string get_background_color = R"(
+    window.getComputedStyle(document.body, null)
+      .getPropertyValue('background-color');
+  )";
+  std::string match_media_standalone =
+      "window.matchMedia('(display-mode: standalone)').matches;";
+  std::string match_media_wco =
+      "window.matchMedia('(display-mode: window-controls-overlay)').matches;";
+  std::string blue = "rgb(0, 0, 255)";
+  std::string red = "rgb(255, 0, 0)";
+
+  // Initially launches with WCO off. Validate the display-mode matches with the
+  // default value "standalone" and the default background-color.
+  EXPECT_FALSE(GetWindowControlOverlayVisibility());
+  ASSERT_TRUE(EvalJs(web_contents, match_media_standalone).ExtractBool());
+  ASSERT_EQ(blue, EvalJs(web_contents, get_background_color));
+
+  // Toggle WCO on, and validate the display-mode matches with
+  // "window-controls-overlay" and updates the background-color.
+  ToggleWindowControlsOverlayAndWait();
+  EXPECT_TRUE(GetWindowControlOverlayVisibility());
+  ASSERT_TRUE(EvalJs(web_contents, match_media_wco).ExtractBool());
+  ASSERT_EQ(red, EvalJs(web_contents, get_background_color));
+
+  // Toggle WCO back off and ensure it updates to be the same as in the
+  // beginning.
+  ToggleWindowControlsOverlayAndWait();
+  EXPECT_FALSE(GetWindowControlOverlayVisibility());
+  ASSERT_TRUE(EvalJs(web_contents, match_media_standalone).ExtractBool());
+  ASSERT_EQ(blue, EvalJs(web_contents, get_background_color));
 }

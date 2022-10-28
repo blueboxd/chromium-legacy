@@ -1,4 +1,4 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -68,9 +68,9 @@ class KioskAppUpdateServiceTest
       public system::AutomaticRebootManagerObserver {
  public:
   KioskAppUpdateServiceTest()
-      : app_(NULL),
-        update_service_(NULL),
-        automatic_reboot_manager_(NULL) {}
+      : app_(nullptr),
+        update_service_(nullptr),
+        automatic_reboot_manager_(nullptr) {}
   KioskAppUpdateServiceTest(const KioskAppUpdateServiceTest&) = delete;
   KioskAppUpdateServiceTest& operator=(const KioskAppUpdateServiceTest&) =
       delete;

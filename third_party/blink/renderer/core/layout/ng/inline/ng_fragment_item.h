@@ -98,7 +98,9 @@ class CORE_EXPORT NGFragmentItem final {
     wtf_size_t descendants_count;
   };
 
-  enum ItemType { kText, kSvgText, kGeneratedText, kLine, kBox };
+  // Type of the item. The invalid type is needed to support
+  // kCanClearUnusedSlotsWithMemset.
+  enum ItemType { kInvalid = 0, kText, kSvgText, kGeneratedText, kLine, kBox };
   enum TracedType { kNone, kLineItem, kBoxItem };
 
   // Create appropriate type for |line_item|.
@@ -552,11 +554,11 @@ class CORE_EXPORT NGFragmentItem final {
     return static_cast<NGInkOverflow::Type>(ink_overflow_type_);
   }
   bool IsInkOverflowComputed() const {
-    return InkOverflowType() != NGInkOverflow::kNotSet &&
-           InkOverflowType() != NGInkOverflow::kInvalidated;
+    return InkOverflowType() != NGInkOverflow::Type::kNotSet &&
+           InkOverflowType() != NGInkOverflow::Type::kInvalidated;
   }
   bool HasInkOverflow() const {
-    return InkOverflowType() != NGInkOverflow::kNone;
+    return InkOverflowType() != NGInkOverflow::Type::kNone;
   }
   const LayoutBox* InkOverflowOwnerBox() const;
   LayoutBox* MutableInkOverflowOwnerBox();
@@ -635,5 +637,7 @@ CORE_EXPORT std::ostream& operator<<(std::ostream&, const NGFragmentItem*);
 CORE_EXPORT std::ostream& operator<<(std::ostream&, const NGFragmentItem&);
 
 }  // namespace blink
+
+WTF_ALLOW_CLEAR_UNUSED_SLOTS_WITH_MEM_FUNCTIONS(blink::NGFragmentItem)
 
 #endif  // THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_NG_INLINE_NG_FRAGMENT_ITEM_H_

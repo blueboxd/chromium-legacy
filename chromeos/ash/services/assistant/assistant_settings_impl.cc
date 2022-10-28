@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,8 +13,8 @@
 #include "chromeos/ash/services/assistant/public/cpp/features.h"
 #include "chromeos/ash/services/assistant/public/proto/settings_ui.pb.h"
 #include "chromeos/ash/services/assistant/service_context.h"
-#include "chromeos/services/libassistant/public/mojom/settings_controller.mojom.h"
-#include "chromeos/services/libassistant/public/mojom/speaker_id_enrollment_controller.mojom.h"
+#include "chromeos/ash/services/libassistant/public/mojom/settings_controller.mojom.h"
+#include "chromeos/ash/services/libassistant/public/mojom/speaker_id_enrollment_controller.mojom.h"
 #include "chromeos/version/version_loader.h"
 
 namespace ash::assistant {

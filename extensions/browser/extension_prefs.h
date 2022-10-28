@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -818,7 +818,7 @@ class ExtensionPrefs : public KeyedService {
   // |extension| dictionary.
   std::unique_ptr<ExtensionInfo> GetInstalledInfoHelper(
       const std::string& extension_id,
-      const base::Value* extension,
+      const base::Value::Dict& extension,
       bool include_component_extensions) const;
 
   // Read the boolean preference entry and return true if the preference exists

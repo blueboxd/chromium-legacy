@@ -90,7 +90,9 @@ TestSelectionSource::TestSelectionSource(wl_resource* resource,
       task_runner_(
           base::ThreadPool::CreateSequencedTaskRunner({base::MayBlock()})) {}
 
-TestSelectionSource::~TestSelectionSource() = default;
+TestSelectionSource::~TestSelectionSource() {
+  delegate_->OnDestroying();
+}
 
 void TestSelectionSource::ReadData(const std::string& mime_type,
                                    ReadDataCallback callback) {
@@ -118,6 +120,10 @@ void TestSelectionSource::OnFinished() {
 void TestSelectionSource::OnCancelled() {
   delegate_->SendCancelled();
   mime_types_.clear();
+}
+
+void TestSelectionSource::OnDndAction(uint32_t action) {
+  delegate_->SendDndAction(action);
 }
 
 void TestSelectionSource::Offer(struct wl_client* client,

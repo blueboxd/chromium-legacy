@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,7 +10,7 @@
 import 'chrome://resources/cr_elements/cr_button/cr_button.js';
 import 'chrome://resources/cr_elements/cr_dialog/cr_dialog.js';
 import 'chrome://resources/cr_elements/cr_input/cr_input.js';
-import 'chrome://resources/cr_elements/md_select_css.m.js';
+import 'chrome://resources/cr_elements/md_select.css.js';
 import '../../settings_shared.css.js';
 
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
@@ -44,7 +44,7 @@ class ExtraContainersCreateDialog extends PolymerElement {
       /**
        * @private {string}
        */
-      ansiblePlaybook_: {
+      containerFile_: {
         type: String,
         value: '',
       },
@@ -178,19 +178,20 @@ class ExtraContainersCreateDialog extends PolymerElement {
       // These elements are part of a dom-if on |advancedToggleExpanded_|
       this.inputImageServer_ = this.$.imageServerInput.value;
       this.inputImageAlias_ = this.$.imageAliasInput.value;
-      this.ansiblePlaybook_ = this.$.preconfiguredContainersInput.value;
+      this.containerFile_ = this.$.containerFileInput.value;
     }
 
     this.browserProxy_.createContainer(
         {vm_name: this.inputVmName_, container_name: this.inputContainerName_},
-        this.inputImageServer_, this.inputImageAlias_, this.ansiblePlaybook_);
+        this.inputImageServer_, this.inputImageAlias_, this.containerFile_);
+
     this.$.dialog.close();
   }
 
   /** @private */
-  async onAnsiblePlaybookUploadClick_() {
-    this.$.preconfiguredContainersInput.value =
-        await this.browserProxy_.applyAnsiblePlaybook();
+  async onSelectContainerFileClick_() {
+    this.$.containerFileInput.value =
+        await this.browserProxy_.openContainerFileSelector();
   }
 
   /** @private */

@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -177,6 +177,7 @@ int main(int argc, char** argv) {
       fuchsia::web::ContextFeatureFlags::AUDIO |
       fuchsia::web::ContextFeatureFlags::HARDWARE_VIDEO_DECODER |
       fuchsia::web::ContextFeatureFlags::KEYBOARD |
+      fuchsia::web::ContextFeatureFlags::NETWORK |
       fuchsia::web::ContextFeatureFlags::VIRTUAL_KEYBOARD;
 #if defined(ARCH_CPU_ARM64)
   features |= fuchsia::web::ContextFeatureFlags::WIDEVINE_CDM;

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright 2011 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,6 +11,7 @@
 #include "base/check_op.h"
 #include "base/notreached.h"
 #include "build/build_config.h"
+#include "components/content_settings/core/common/content_settings_metadata.h"
 #include "components/content_settings/core/common/content_settings_utils.h"
 
 namespace {
@@ -75,7 +76,7 @@ constexpr HistogramValue kHistogramValue[] = {
     {ContentSettingsType::WAKE_LOCK_SYSTEM, 55},
     {ContentSettingsType::LEGACY_COOKIE_ACCESS, 56},
     {ContentSettingsType::FILE_SYSTEM_WRITE_GUARD, 57},
-    {ContentSettingsType::INSTALLED_WEB_APP_METADATA, 58},
+    // Removed INSTALLED_WEB_APP_METADATA in M107.
     {ContentSettingsType::NFC, 59},
     {ContentSettingsType::BLUETOOTH_CHOOSER_DATA, 60},
     {ContentSettingsType::CLIPBOARD_READ_WRITE, 61},
@@ -158,11 +159,11 @@ ContentSettingPatternSource::ContentSettingPatternSource(
     base::Value setting_value,
     const std::string& source,
     bool incognito,
-    base::Time expiration)
+    content_settings::RuleMetaData metadata)
     : primary_pattern(primary_pattern),
       secondary_pattern(secondary_pattern),
       setting_value(std::move(setting_value)),
-      expiration(expiration),
+      metadata(metadata),
       source(source),
       incognito(incognito) {}
 
@@ -178,20 +179,21 @@ ContentSettingPatternSource& ContentSettingPatternSource::operator=(
   primary_pattern = other.primary_pattern;
   secondary_pattern = other.secondary_pattern;
   setting_value = other.setting_value.Clone();
-  expiration = other.expiration;
+  metadata = other.metadata;
   source = other.source;
   incognito = other.incognito;
   return *this;
 }
 
-ContentSettingPatternSource::~ContentSettingPatternSource() {}
+ContentSettingPatternSource::~ContentSettingPatternSource() = default;
 
 ContentSetting ContentSettingPatternSource::GetContentSetting() const {
   return content_settings::ValueToContentSetting(setting_value);
 }
 
 bool ContentSettingPatternSource::IsExpired() const {
-  return !expiration.is_null() && expiration < base::Time::Now();
+  return !metadata.expiration.is_null() &&
+         metadata.expiration < base::Time::Now();
 }
 
 // static

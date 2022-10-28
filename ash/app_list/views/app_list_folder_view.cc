@@ -1,4 +1,4 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -37,6 +37,7 @@
 #include "ash/public/cpp/style/color_provider.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
+#include "ash/style/ash_color_id.h"
 #include "ash/style/system_shadow.h"
 #include "base/barrier_closure.h"
 #include "base/bind.h"
@@ -159,10 +160,11 @@ class BackgroundAnimation : public AppListFolderView::Animation,
     gfx::Rect to_rect = show_ ? background_view_->bounds()
                               : folder_view_->folder_item_icon_bounds();
     to_rect -= background_view_->bounds().OffsetFromOrigin();
+    const views::Widget* app_list_widget = folder_view_->GetWidget();
     const SkColor background_color =
-        AppListColorProvider::Get()->GetFolderBackgroundColor();
-    const SkColor bubble_color =
-        AppListColorProvider::Get()->GetFolderBubbleColor();
+        AppListColorProvider::Get()->GetFolderBackgroundColor(app_list_widget);
+    const SkColor bubble_color = app_list_widget->GetColorProvider()->GetColor(
+        kColorAshControlBackgroundColorInactive);
     const SkColor from_color = show_ ? bubble_color : background_color;
     const SkColor to_color = show_ ? background_color : bubble_color;
 
@@ -261,7 +263,7 @@ class FolderItemTitleAnimation : public AppListFolderView::Animation,
         folder_view_(folder_view),
         folder_item_view_(folder_item_view) {
     SkColor title_color = AppListColorProvider::Get()->GetAppListItemTextColor(
-        /*is_in_folder=*/false);
+        /*is_in_folder=*/false, folder_view_->GetWidget());
     // Calculate the source and target states.
     from_color_ = show_ ? title_color : SK_ColorTRANSPARENT;
     to_color_ = show_ ? SK_ColorTRANSPARENT : title_color;
@@ -740,8 +742,7 @@ void AppListFolderView::CreatePagedAppsGrid(ContentsView* contents_view) {
   page_switcher_ =
       contents_container_->AddChildView(std::make_unique<PageSwitcher>(
           items_grid_view->pagination_model(), false /* vertical */,
-          view_delegate_->IsInTabletMode(),
-          AppListColorProvider::Get()->GetFolderBackgroundColor()));
+          view_delegate_->IsInTabletMode()));
 
   contents_container_->SetLayoutManager(std::make_unique<views::FlexLayout>())
       ->SetOrientation(views::LayoutOrientation::kVertical)
@@ -921,7 +922,7 @@ void AppListFolderView::Layout() {
   views::View::Layout();
 
   if (gradient_helper_)
-    gradient_helper_->UpdateGradientZone();
+    gradient_helper_->UpdateGradientMask();
 
   // Position page switcher independently of the layout manager, as its
   // position does not fit with vertical layout alignment (it's expected to
@@ -1020,7 +1021,7 @@ void AppListFolderView::ResetState(bool restore_folder_item_view_state) {
     folder_item_view_->SetIconVisible(true);
     folder_item_view_->title()->SetEnabledColor(
         AppListColorProvider::Get()->GetAppListItemTextColor(
-            /*is_in_folder=*/false));
+            /*is_in_folder=*/false, GetWidget()));
   }
 
   folder_item_view_observer_.Reset();
@@ -1102,7 +1103,7 @@ void AppListFolderView::UpdatePreferredBounds() {
   }
 }
 
-void AppListFolderView::UpdateShadowForVirtualKeyboard() {
+void AppListFolderView::UpdateShadowBounds() {
   shadow_->SetContentBounds(background_view_->layer()->bounds());
 }
 

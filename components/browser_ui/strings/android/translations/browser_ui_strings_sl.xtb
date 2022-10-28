@@ -30,6 +30,7 @@
 <translation id="1717218214683051432">Tipala gibanja</translation>
 <translation id="1743802530341753419">Prikaži poziv, preden se spletnim mestom dovoli povezovanje z napravo (priporočeno)</translation>
 <translation id="1779089405699405702">Slikovni dekodirnik</translation>
+<translation id="1785415724048343560">Priporočljivo za najboljšo izkušnjo</translation>
 <translation id="1818308510395330587">Če želite aplikaciji <ph name="APP_NAME" /> dovoliti uporabo razširjene resničnosti, prav tako vklopite fotoaparat v <ph name="BEGIN_LINK" />nastavitvah za Android<ph name="END_LINK" />.</translation>
 <translation id="1864927262126810325">Iz: <ph name="SOURCE_NAME" /></translation>
 <translation id="1887786770086287077">Dostop do lokacije je izklopljen za to napravo. Vklopite ga lahko v <ph name="BEGIN_LINK" />nastavitvah za Android<ph name="END_LINK" />.</translation>
@@ -79,6 +80,7 @@
 <translation id="2653659639078652383">Pošlji</translation>
 <translation id="2677748264148917807">Zapusti</translation>
 <translation id="2687403674020088961">Blokiranje vseh piškotkov (ni priporočljivo)</translation>
+<translation id="2692299144678073135">Dovolite, da si vas povezana spletna mesta zapomnijo na več spletnih mestih</translation>
 <translation id="2704606927547763573">Kopirano</translation>
 <translation id="2713106313042589954">Izklopi kamero</translation>
 <translation id="2717722538473713889">E-poštni naslovi</translation>
@@ -101,6 +103,7 @@
 <translation id="3115898365077584848">Pokaži informacije</translation>
 <translation id="3123473560110926937">Blokirano na nekaterih spletnih mestih</translation>
 <translation id="3143754809889689516">Predvajaj od začetka</translation>
+<translation id="3162899666601560689">Spletna mesta lahko uporabljajo piškotke za izboljšanje izkušnje brskanja, in sicer tako, da na primer poskrbijo, da ostanete prijavljeni, ali si zapomnijo izdelke v nakupovalnem vozičku.</translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT" /> shranjenih podatkov</translation>
 <translation id="3203366800380907218">Iz spleta</translation>
 <translation id="321187648315454507">Če želite, da vam aplikacija <ph name="APP_NAME" /> pošilja obvestila, obvestila vklopite tudi v <ph name="BEGIN_LINK" />nastavitvah za Android<ph name="END_LINK" />.</translation>
@@ -138,6 +141,7 @@
 <translation id="4002066346123236978">Naslov</translation>
 <translation id="4008040567710660924">Omogočanje piškotkov za določeno spletno mesto.</translation>
 <translation id="4046123991198612571">Naslednja skladba</translation>
+<translation id="4048876521107516222">Povezana spletna mesta uporabljajo piškotke za zagotavljanje na primer tega, da ste prijavljeni.</translation>
 <translation id="4149994727733219643">Poenostavljen pogled za spletne strani</translation>
 <translation id="4165986682804962316">Nastavitve spletnega mesta</translation>
 <translation id="4169549551965910670">Povezano z napravo USB</translation>
@@ -149,6 +153,7 @@
 <translation id="429312253194641664">Spletno mesto predvaja predstavnost</translation>
 <translation id="42981349822642051">Razširi</translation>
 <translation id="4336434711095810371">Izbriši vse podatke</translation>
+<translation id="4338831206024587507">Vsa spletna mesta v domeni <ph name="DOMAIN" />.</translation>
 <translation id="4402755511846832236">Preprečevanje, da bi spletna mesta vedela, kdaj aktivno uporabljate to napravo.</translation>
 <translation id="4428065317363009941">Osebno prilagajanje oglasov</translation>
 <translation id="4434045419905280838">Pojavna okna in preusmeritve</translation>
@@ -164,6 +169,7 @@
 <translation id="4751476147751820511">Tipala za gibanje in svetlobo</translation>
 <translation id="4811450222531576619">Preberite več o njenem viru in temi</translation>
 <translation id="4836046166855586901">Vprašaj, ko želi spletno mesto vedeti, kdaj aktivno uporabljate to napravo.</translation>
+<translation id="483914009762354899">Vključi vsa spletna mesta v tej domeni</translation>
 <translation id="4883854917563148705">Upravljanih nastavitev ni mogoče ponastaviti</translation>
 <translation id="4887024562049524730">Vprašaj, preden se spletnim mestom dovoli uporaba naprav in podatkov za navidezno resničnost (priporočeno)</translation>
 <translation id="4962975101802056554">Umik vseh dovoljenj za napravo</translation>
@@ -219,6 +225,7 @@
 <translation id="5887687176710214216">Nazadnje obiskano včeraj</translation>
 <translation id="5916664084637901428">Vklopljeno</translation>
 <translation id="5922853908706496913">Deljenje zaslona</translation>
+<translation id="5922967540311291836">Blokiranje piškotkov tretjih oseb:</translation>
 <translation id="5939518447894949180">Ponastavi</translation>
 <translation id="5975083100439434680">Pomanjšaj</translation>
 <translation id="5976059395673079613"><ph name="PERMISSION" /> – <ph name="WARNING_MESSAGE" /></translation>
@@ -302,6 +309,7 @@
 <translation id="7791543448312431591">Dodaj</translation>
 <translation id="780301667611848630">Ne, hvala</translation>
 <translation id="7804248752222191302">Spletno mesto uporablja kamero</translation>
+<translation id="7816129586531226979">Povezana spletna mesta si vas lahko zapomnijo na več spletnih mestih.</translation>
 <translation id="7817023149356982970">Odjavljeni boste s tega spletnega mesta.</translation>
 <translation id="7828557259026017104">Piškotki so datoteke, ki jih ustvarijo spletna mesta, ki jih obiščete. Spletna mesta jih uporabljajo, da si zapomnijo vaše nastavitve. Piškotke drugih spletnih mest ustvarijo druga spletna mesta. Ta spletna mesta imajo v lasti nekatero vsebino, na primer oglase ali slike, ki jo vidite na spletni strani, ki jo obiščete.</translation>
 <translation id="7835852323729233924">Predvajanje predstavnosti</translation>
@@ -309,6 +317,7 @@
 <translation id="7846076177841592234">Prekliči izbor</translation>
 <translation id="7846621471902887024">Odjavljeni boste z vseh spletnih mest.</translation>
 <translation id="7882806643839505685">Dovolitev zvoka za določeno spletno mesto.</translation>
+<translation id="789180354981963912">Blokiranje piškotkov tretjih oseb v anonimnem načinu:</translation>
 <translation id="7940722705963108451">Opomni me</translation>
 <translation id="7986741934819883144">Izberite stik</translation>
 <translation id="7999064672810608036">Ali želite res izbrisati vse lokalne podatke, vključno s piškotki, in ponastaviti vsa dovoljenja za to spletno mesto?</translation>
@@ -331,6 +340,7 @@
 <translation id="8284326494547611709">Napisi</translation>
 <translation id="8300705686683892304">Upravlja aplikacija</translation>
 <translation id="8324158725704657629">Ne vprašaj me več</translation>
+<translation id="834785183489258869">Ko uporabljate anonimni način, spletna mesta ne morejo uporabljati piškotkov za ogled dejavnosti brskanja na različnih spletnih mestih, na primer za osebno prilagajanje oglasov. Funkcije na nekaterih spletnih mestih morda ne bodo delovale.</translation>
 <translation id="8372893542064058268">Dovoli sinhroniziranje v ozadju za določeno spletno mesto.</translation>
 <translation id="8376384591331888629">Vključno s piškotki drugih mest na tem spletnem mestu</translation>
 <translation id="83792324527827022">Spletno mesto uporablja kamero in mikrofon</translation>

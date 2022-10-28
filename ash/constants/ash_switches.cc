@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -279,6 +279,13 @@ const char kChildWallpaperLarge[] = "child-wallpaper-large";
 // Default small wallpaper to use for kids accounts (as path to trusted,
 // non-user-writable JPEG file).
 const char kChildWallpaperSmall[] = "child-wallpaper-small";
+
+// Make ash use the chromeos service manager to bootstrap mojo connection to
+// cros_healthd.
+// TODO(b/236953728): This is a temporary flag for migration. remove it after
+// fully sync with chromeos.
+const char kCrosHealthdUsesServiceManager[] =
+    "cros-healthd-uses-service-manager";
 
 // Forces CrOS region value.
 const char kCrosRegion[] = "cros-region";
@@ -689,9 +696,22 @@ const char kLoginUser[] = "login-user";
 // Specifies the user that the browser data migration should happen for.
 const char kBrowserDataMigrationForUser[] = "browser-data-migration-for-user";
 
+// Specifies the user that the browser data backward migration should happen
+// for.
+const char kBrowserDataBackwardMigrationForUser[] =
+    "browser-data-backward-migration-for-user";
+
+// Tells Chrome to forcefully trigger backward data migration.
+extern const char kForceBrowserDataBackwardMigration[] =
+    "force-browser-data-backward-migration";
+
 // Run move migration instead of copy. Passed with
 // `kBrowserDataMigrationForUser`.
-const char kBrowserDataMigrationMoveMode[] = "browser-data-migration-move-mode";
+const char kBrowserDataMigrationMode[] = "browser-data-migration-mode";
+
+// Backward migration mode. Passed with `kBrowserDataBackwardMigrationForUser`.
+const char kBrowserDataBackwardMigrationMode[] =
+    "browser-data-backward-migration-mode";
 
 // Force skip or force migration. Should only be used for testing.
 const char kForceBrowserDataMigrationForTesting[] =
@@ -876,6 +896,15 @@ const char kUpdateRequiredAueForTest[] = "aue-reached-for-update-required-test";
 // uses of this flag.
 const char kWaitForInitialPolicyFetchForTest[] =
     "wait-for-initial-policy-fetch-for-test";
+
+// If provided, any webui will be loaded from <flag value>/<handler_name>, where
+// handler_name is the name passed to MaybeConfigureTestableDataSource, if the
+// file exists.
+// For example, if the flag is /tmp/resource_overrides, attempting to load
+// js/app_main.js from the data source named "help_app/untrusted" will first
+// attempt to load from /tmp/resource_overrides/help_app/untrusted/js/main.js.
+const char kWebUiDataSourcePathForTesting[] =
+    "web-ui-data-source-path-for-testing";
 
 // Used to determine if and how on-device handwriting recognition is supported
 // (e.g. via rootfs or downloadable content).

@@ -35,8 +35,8 @@ using ::testing::AllOf;
 using ::testing::Field;
 using ::testing::Property;
 
-const char kDefaultImpressionOrigin[] = "https://impression.test/";
-const char kDefaultTriggerOrigin[] = "https://sub.conversion.test/";
+const char kDefaultSourceOrigin[] = "https://impression.test/";
+const char kDefaultDestinationOrigin[] = "https://sub.conversion.test/";
 const char kDefaultReportOrigin[] = "https://report.test/";
 
 // Default expiry time for impressions for testing.
@@ -134,7 +134,7 @@ base::Time ConfigurableStorageDelegate::GetEventLevelReportTime(
     const CommonSourceInfo& source,
     base::Time trigger_time) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return source.impression_time() + report_delay_;
+  return source.source_time() + report_delay_;
 }
 
 base::Time ConfigurableStorageDelegate::GetAggregatableReportTime(
@@ -393,12 +393,6 @@ void MockAttributionManager::NotifyReportsChanged(
     observer.OnReportsChanged(report_type);
 }
 
-void MockAttributionManager::NotifySourceDeactivated(
-    const StoredSource& source) {
-  for (auto& observer : observers_)
-    observer.OnSourceDeactivated(source);
-}
-
 void MockAttributionManager::NotifySourceHandled(
     const StorableSource& source,
     StorableSource::Result result) {
@@ -467,10 +461,10 @@ bool SourceObserver::WaitForNavigationWithNoImpression() {
 // Builds an impression with default values. This is done as a builder because
 // all values needed to be provided at construction time.
 SourceBuilder::SourceBuilder(base::Time time)
-    : impression_time_(time),
+    : source_time_(time),
       expiry_(base::Milliseconds(kExpiryTime)),
-      impression_origin_(url::Origin::Create(GURL(kDefaultImpressionOrigin))),
-      conversion_origin_(url::Origin::Create(GURL(kDefaultTriggerOrigin))),
+      source_origin_(url::Origin::Create(GURL(kDefaultSourceOrigin))),
+      destination_origin_(url::Origin::Create(GURL(kDefaultDestinationOrigin))),
       reporting_origin_(url::Origin::Create(GURL(kDefaultReportOrigin))) {}
 
 SourceBuilder::~SourceBuilder() = default;
@@ -493,13 +487,13 @@ SourceBuilder& SourceBuilder::SetSourceEventId(uint64_t source_event_id) {
   return *this;
 }
 
-SourceBuilder& SourceBuilder::SetImpressionOrigin(url::Origin origin) {
-  impression_origin_ = std::move(origin);
+SourceBuilder& SourceBuilder::SetSourceOrigin(url::Origin origin) {
+  source_origin_ = std::move(origin);
   return *this;
 }
 
-SourceBuilder& SourceBuilder::SetConversionOrigin(url::Origin origin) {
-  conversion_origin_ = std::move(origin);
+SourceBuilder& SourceBuilder::SetDestinationOrigin(url::Origin origin) {
+  destination_origin_ = std::move(origin);
   return *this;
 }
 
@@ -562,11 +556,11 @@ SourceBuilder& SourceBuilder::SetAggregationKeys(
 }
 
 CommonSourceInfo SourceBuilder::BuildCommonInfo() const {
-  return CommonSourceInfo(
-      source_event_id_, impression_origin_, conversion_origin_,
-      reporting_origin_, impression_time_,
-      /*expiry_time=*/impression_time_ + expiry_, source_type_, priority_,
-      filter_data_, debug_key_, aggregation_keys_);
+  return CommonSourceInfo(source_event_id_, source_origin_, destination_origin_,
+                          reporting_origin_, source_time_,
+                          /*expiry_time=*/source_time_ + expiry_, source_type_,
+                          priority_, filter_data_, debug_key_,
+                          aggregation_keys_);
 }
 
 StorableSource SourceBuilder::Build() const {
@@ -585,7 +579,7 @@ AttributionTrigger DefaultTrigger() {
 }
 
 TriggerBuilder::TriggerBuilder()
-    : destination_origin_(url::Origin::Create(GURL(kDefaultTriggerOrigin))),
+    : destination_origin_(url::Origin::Create(GURL(kDefaultDestinationOrigin))),
       reporting_origin_(url::Origin::Create(GURL(kDefaultReportOrigin))) {}
 
 TriggerBuilder::~TriggerBuilder() = default;
@@ -783,9 +777,9 @@ bool operator==(const AttributionFilterData& a,
 
 bool operator==(const CommonSourceInfo& a, const CommonSourceInfo& b) {
   const auto tie = [](const CommonSourceInfo& source) {
-    return std::make_tuple(source.source_event_id(), source.impression_origin(),
-                           source.conversion_origin(),
-                           source.reporting_origin(), source.impression_time(),
+    return std::make_tuple(source.source_event_id(), source.source_origin(),
+                           source.destination_origin(),
+                           source.reporting_origin(), source.source_time(),
                            source.expiry_time(), source.source_type(),
                            source.priority(), source.filter_data(),
                            source.debug_key(), source.aggregation_keys());
@@ -1103,10 +1097,10 @@ std::ostream& operator<<(std::ostream& out,
 
 std::ostream& operator<<(std::ostream& out, const CommonSourceInfo& source) {
   return out << "{source_event_id=" << source.source_event_id()
-             << ",impression_origin=" << source.impression_origin()
-             << ",conversion_origin=" << source.conversion_origin()
+             << ",source_origin=" << source.source_origin()
+             << ",destination_origin=" << source.destination_origin()
              << ",reporting_origin=" << source.reporting_origin()
-             << ",impression_time=" << source.impression_time()
+             << ",source_time=" << source.source_time()
              << ",expiry_time=" << source.expiry_time()
              << ",source_type=" << source.source_type()
              << ",priority=" << source.priority()
@@ -1381,11 +1375,10 @@ std::vector<AttributionReport> GetAttributionReportsForTesting(
           AttributionReport::ReportType::kEventLevel,
           AttributionReport::ReportType::kAggregatableAttribution},
       /*limit=*/-1,
-      base::BindOnce(base::BindLambdaForTesting(
-          [&](std::vector<AttributionReport> reports) {
-            attribution_reports = std::move(reports);
-            run_loop.Quit();
-          })));
+      base::BindLambdaForTesting([&](std::vector<AttributionReport> reports) {
+        attribution_reports = std::move(reports);
+        run_loop.Quit();
+      }));
   run_loop.Run();
   return attribution_reports;
 }

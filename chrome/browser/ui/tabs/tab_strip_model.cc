@@ -1,16 +1,16 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 
-#include <algorithm>
 #include <memory>
 #include <set>
 #include <string>
 #include <utility>
 
 #include "base/auto_reset.h"
+#include "base/containers/contains.h"
 #include "base/containers/flat_map.h"
 #include "base/cxx17_backports.h"
 #include "base/memory/raw_ptr.h"
@@ -504,9 +504,8 @@ void TabStripModel::SendDetachWebContentsNotifications(
   selection.old_model = notifications->selection_model;
   selection.new_model = selection_model_;
   selection.reason = TabStripModelObserver::CHANGE_REASON_NONE;
-  selection.selected_tabs_were_removed = std::any_of(
-      notifications->detached_web_contents.begin(),
-      notifications->detached_web_contents.end(), [&notifications](auto& dwc) {
+  selection.selected_tabs_were_removed = base::ranges::any_of(
+      notifications->detached_web_contents, [&notifications](auto& dwc) {
         return notifications->selection_model.IsSelected(
             dwc->index_before_any_removals);
       });
@@ -1154,7 +1153,7 @@ void TabStripModel::RemoveFromGroup(const std::vector<int>& indices) {
 
 bool TabStripModel::IsReadLaterSupportedForAny(
     const std::vector<int>& indices) {
-  if (profile_->IsGuestSession())
+  if (!delegate_->SupportsReadLater())
     return false;
 
   ReadingListModel* model =
@@ -1330,6 +1329,10 @@ bool TabStripModel::IsContextMenuCommandEnabled(
           Profile::FromBrowserContext(web_contents->GetBrowserContext());
       return !profile->IsIncognitoProfile();
     }
+
+    case CommandCopyURL:
+      DCHECK(delegate()->IsForWebApp());
+      return true;
 
     default:
       NOTREACHED();
@@ -1522,6 +1525,12 @@ void TabStripModel::ExecuteContextMenuCommand(int context_index,
     case CommandUnfollowSite: {
       base::RecordAction(UserMetricsAction("DesktopFeed.UnfollowSite"));
       UnfollowSites(GetIndicesForCommand(context_index));
+      break;
+    }
+
+    case CommandCopyURL: {
+      base::RecordAction(UserMetricsAction("TabContextMenu_CopyURL"));
+      delegate()->CopyURL(GetWebContentsAt(context_index));
       break;
     }
 
@@ -2148,9 +2157,7 @@ void TabStripModel::AddToNewGroupImpl(const std::vector<int>& indices,
   if (!group_model_)
     return;
 
-  DCHECK(!std::any_of(
-      contents_data_.cbegin(), contents_data_.cend(),
-      [new_group](const auto& datum) { return datum->group() == new_group; }));
+  DCHECK(!base::Contains(contents_data_, new_group, &Tab::group));
   group_model_->AddTabGroup(new_group, absl::nullopt);
 
   // Find a destination for the first tab that's not pinned or inside another
@@ -2474,11 +2481,11 @@ void TabStripModel::FixOpeners(int index) {
 
   // Sanity check that none of the tabs' openers refer |old_contents| or
   // themselves.
-  DCHECK(!std::any_of(contents_data_.begin(), contents_data_.end(),
-                      [old_contents](const std::unique_ptr<Tab>& data) {
-                        return data->opener() == old_contents ||
-                               data->opener() == data->web_contents();
-                      }));
+  DCHECK(!base::ranges::any_of(
+      contents_data_, [old_contents](const std::unique_ptr<Tab>& data) {
+        return data->opener() == old_contents ||
+               data->opener() == data->web_contents();
+      }));
 }
 
 void TabStripModel::EnsureGroupContiguity(int index) {

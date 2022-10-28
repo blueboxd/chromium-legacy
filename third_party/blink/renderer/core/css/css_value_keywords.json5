@@ -168,6 +168,10 @@
     "fallback",
     "optional",
 
+    // https://drafts.csswg.org/css-conditional-5/#typedef-supports-font-tech-fn
+    "font-tech",
+    "font-format",
+
     //
     // *-color
     //
@@ -442,13 +446,6 @@
     //
     "inline-start",
     "inline-end",
-    //
-    // text-justify
-    //
-    //auto
-    //none
-    "inter-word",
-    "distribute",
     //
     // list-style-position
     //
@@ -1097,10 +1094,6 @@
     "minmax",
     "subgrid",
 
-    // text-indent
-    "each-line",
-    "hanging",
-
     // (scan:) media feature
     "progressive",
     "interlace",
@@ -1142,7 +1135,7 @@
     "text-before-edge",
     "text-after-edge",
     "ideographic",
-    // hanging
+    "hanging",
     "mathematical",
 
     // dominant-baseline
@@ -1251,6 +1244,25 @@
 
     // @font-face src
     "format",
+    "collection",
+    "embedded-opentype",
+    "opentype",
+    "svg",
+    "truetype",
+    "woff",
+    "woff2",
+    "tech",
+    "features-opentype",
+    "features-aat",
+    "features-graphite",
+    "color-COLRv0",
+    "color-COLRv1",
+    "color-SVG",
+    "color-sbix",
+    "color-CBDT",
+    "variations",
+    "palettes",
+    "incremental",
 
     // (-webkit-)filter
     "invert",
@@ -1271,7 +1283,26 @@
     "hsl",
     "hsla",
     "hwb",
+    "lab",
+    "oklab",
+    "lch",
+    "oklch",
+    // "color",
     "-internal-light-dark",
+
+    // color spaces
+    // "srgb", included in color-interpolation
+    // "rec2020", included in color-gamut
+    "srgb-linear",
+    "display-p3",
+    "a98-rgb",
+    "prophoto-rgb",
+    "xyz",
+    "xyz-d50",
+    "xyz-d65",
+
+    // For gradient interpolations in certain color spaces
+    "in",
 
     // transform
     "matrix",
@@ -1318,10 +1349,10 @@
     "sin",
     "cos",
     // "tan" - already declared for color value
+    "asin",
     // "atan",
     // "atan2",
-    // "acos",
-    // "asin",
+    "acos",
 
     //<calc-constant>
     //https://drafts.csswg.org/css-values/#calc-syntax
@@ -1533,5 +1564,9 @@
     // inline,
     "self-block",
     "self-inline",
+
+    // scroll()
+    "root",
+    "nearest",
   ],
 }

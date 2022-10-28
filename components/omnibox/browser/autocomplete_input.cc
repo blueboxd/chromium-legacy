@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -753,7 +753,7 @@ void AutocompleteInput::Clear() {
   prefer_keyword_ = false;
   allow_exact_keyword_match_ = false;
   omit_asynchronous_matches_ = false;
-  focus_type_ = OmniboxFocusType::DEFAULT;
+  focus_type_ = metrics::OmniboxFocusType::INTERACTION_DEFAULT;
   terms_prefixed_by_http_or_https_.clear();
   query_tile_id_.reset();
   https_port_for_testing_ = 0;

@@ -62,8 +62,7 @@ typedef base::RepeatingCallback<
     void(BrowserAccessibilityDelegate*, ui::AXEventGenerator::Event, int)>
     GeneratedEventCallbackForTesting;
 
-// For testing.
-CONTENT_EXPORT ui::AXTreeUpdate MakeAXTreeUpdate(
+CONTENT_EXPORT ui::AXTreeUpdate MakeAXTreeUpdateForTesting(
     const ui::AXNodeData& node,
     const ui::AXNodeData& node2 = ui::AXNodeData(),
     const ui::AXNodeData& node3 = ui::AXNodeData(),
@@ -165,8 +164,6 @@ class CONTENT_EXPORT BrowserAccessibilityManager
 
   ~BrowserAccessibilityManager() override;
 
-  void Initialize(const ui::AXTreeUpdate& initial_tree);
-
   static ui::AXTreeUpdate GetEmptyDocument();
 
   enum RetargetEventType {
@@ -180,8 +177,6 @@ class CONTENT_EXPORT BrowserAccessibilityManager
   virtual BrowserAccessibility* RetargetForEvents(BrowserAccessibility* node,
                                                   RetargetEventType type) const;
 
-  // Subclasses override these methods to send native event notifications.
-  virtual void FireFocusEvent(BrowserAccessibility* node);
   virtual void FireBlinkEvent(ax::mojom::Event event_type,
                               BrowserAccessibility* node,
                               int action_request_id) {}
@@ -197,7 +192,7 @@ class CONTENT_EXPORT BrowserAccessibilityManager
   virtual bool CanFireEvents() const;
 
   // Return a pointer to the root of the tree.
-  BrowserAccessibility* GetRoot() const;
+  BrowserAccessibility* GetBrowserAccessibilityRoot() const;
 
   // Returns a pointer to the BrowserAccessibility object for a given AXNode.
   BrowserAccessibility* GetFromAXNode(const ui::AXNode* node) const;
@@ -247,10 +242,6 @@ class CONTENT_EXPORT BrowserAccessibilityManager
   bool hidden_by_interstitial_page() const {
     return hidden_by_interstitial_page_;
   }
-
-  // For testing only, register a function to be called when focus changes
-  // in any BrowserAccessibilityManager.
-  static void SetFocusChangeCallbackForTesting(base::RepeatingClosure callback);
 
   // For testing only, register a function to be called when
   // a generated event is fired from this BrowserAccessibilityManager.
@@ -378,9 +369,6 @@ class CONTENT_EXPORT BrowserAccessibilityManager
   // descendants.
   BrowserAccessibility* GetFocusFromThisOrDescendantFrame() const;
 
-  // Return the last known node that had focus, without searching.
-  static BrowserAccessibility* GetLastFocusedNode();
-
   // Given a node, returns a descendant of that node if the node has an active
   // descendant, otherwise returns the node itself. The node does not need to be
   // focused.
@@ -483,9 +471,10 @@ class CONTENT_EXPORT BrowserAccessibilityManager
       const std::vector<ui::AXTreeObserver::Change>& changes) override;
 
   // AXTreeManager overrides.
-  ui::AXNode* GetNodeFromTree(ui::AXTreeID tree_id,
+  ui::AXNode* GetNodeFromTree(const ui::AXTreeID& tree_id,
                               ui::AXNodeID node_id) const override;
-  ui::AXNode* GetNodeFromTree(ui::AXNodeID node_id) const override;
+  ui::AXNode* GetNode(const ui::AXNodeID node_id) const override;
+
   ui::AXPlatformNode* GetPlatformNodeFromTree(
       const ui::AXNodeID node_id) const override;
   ui::AXPlatformNode* GetPlatformNodeFromTree(const ui::AXNode&) const override;
@@ -553,13 +542,14 @@ class CONTENT_EXPORT BrowserAccessibilityManager
   BrowserAccessibility* ApproximateHitTest(
       const gfx::Point& blink_screen_point) const;
 
+  // Detaches this instance from its parent manager. Useful during
+  // deconstruction.
+  void DetachFromParentManager();
+
  protected:
   FRIEND_TEST_ALL_PREFIXES(BrowserAccessibilityManagerTest,
                            TestShouldFireEventForNode);
   explicit BrowserAccessibilityManager(BrowserAccessibilityDelegate* delegate);
-
-  BrowserAccessibilityManager(const ui::AXTreeUpdate& initial_tree,
-                              BrowserAccessibilityDelegate* delegate);
 
   // Send platform-specific notifications to each of these objects that
   // their location has changed. This is called by OnLocationChanges
@@ -577,12 +567,14 @@ class CONTENT_EXPORT BrowserAccessibilityManager
 
   bool ShouldFireEventForNode(BrowserAccessibility* node) const;
 
-  static void SetLastFocusedNode(BrowserAccessibility* node);
-
   // The object that can perform actions on our behalf.
   raw_ptr<BrowserAccessibilityDelegate> delegate_;
 
   // A mapping from a node id to its wrapper of type BrowserAccessibility.
+  // This is different from the map in AXTree, which does not contain extra mac
+  // nodes from AXTableInfo.
+  // TODO(accessibility) Find a way to have a single map for both, perhaps by
+  // having BrowserAccessibility into a subclass of AXNode.
   std::map<ui::AXNodeID, std::unique_ptr<BrowserAccessibility>> id_wrapper_map_;
 
   // True if the user has initiated a navigation to another page.
@@ -646,15 +638,6 @@ class CONTENT_EXPORT BrowserAccessibilityManager
     return event_generator_;
   }
   ui::AXEventGenerator& event_generator() { return event_generator_; }
-
-  // Stores the id of the last focused node across all frames, as well as the id
-  // of the tree that contains it, so that when focus might have changed we can
-  // figure out whether we need to fire a focus event.
-  //
-  // NOTE: Don't use or modify these properties directly, use the
-  // SetLastFocusedNode and GetLastFocusedNode methods instead.
-  static absl::optional<int32_t> last_focused_node_id_;
-  static absl::optional<ui::AXTreeID> last_focused_node_tree_id_;
 
   // A flag to ensure that accessibility fatal errors crash immediately.
   static bool is_fail_fast_mode_;

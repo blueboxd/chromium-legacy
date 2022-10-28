@@ -1,4 +1,4 @@
-# Copyright 2014 The Chromium Authors. All rights reserved.
+# Copyright 2014 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 import("//build/config/chromeos/ui_mode.gni")
@@ -440,8 +440,14 @@ component("bluetooth") {
         "floss/bluetooth_adapter_floss.h",
         "floss/bluetooth_device_floss.cc",
         "floss/bluetooth_device_floss.h",
+        "floss/bluetooth_gatt_connection_floss.cc",
+        "floss/bluetooth_gatt_connection_floss.h",
+        "floss/bluetooth_low_energy_scan_session_floss.cc",
+        "floss/bluetooth_low_energy_scan_session_floss.h",
         "floss/bluetooth_pairing_floss.cc",
         "floss/bluetooth_pairing_floss.h",
+        "floss/bluetooth_socket_floss.cc",
+        "floss/bluetooth_socket_floss.h",
         "floss/exported_callback_manager.h",
         "floss/floss_adapter_client.cc",
         "floss/floss_adapter_client.h",
@@ -451,6 +457,10 @@ component("bluetooth") {
         "floss/floss_dbus_manager.h",
         "floss/floss_features.cc",
         "floss/floss_features.h",
+        "floss/floss_gatt_client.cc",
+        "floss/floss_gatt_client.h",
+        "floss/floss_lescan_client.cc",
+        "floss/floss_lescan_client.h",
         "floss/floss_manager_client.cc",
         "floss/floss_manager_client.h",
         "floss/floss_socket_manager.cc",
@@ -528,8 +538,12 @@ component("bluetooth") {
           "dbus/fake_bluetooth_profile_service_provider.h",
           "floss/fake_floss_adapter_client.cc",
           "floss/fake_floss_adapter_client.h",
+          "floss/fake_floss_lescan_client.cc",
+          "floss/fake_floss_lescan_client.h",
           "floss/fake_floss_manager_client.cc",
           "floss/fake_floss_manager_client.h",
+          "floss/fake_floss_socket_manager.cc",
+          "floss/fake_floss_socket_manager.h",
         ]
       }
       if (use_dbus) {

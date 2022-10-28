@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,79 +6,77 @@
 
 #import <MaterialComponents/MaterialSnackbar.h>
 
-#include "base/callback_helpers.h"
+#import "base/callback_helpers.h"
 #import "base/feature_list.h"
-#include "base/i18n/message_formatter.h"
+#import "base/i18n/message_formatter.h"
 #import "base/ios/ios_util.h"
 #import "base/logging.h"
-#include "base/metrics/histogram_functions.h"
-#include "base/metrics/histogram_macros.h"
-#include "base/metrics/user_metrics.h"
-#include "base/metrics/user_metrics_action.h"
-#include "base/strings/sys_string_conversions.h"
-#include "base/time/time.h"
-#include "components/breadcrumbs/core/breadcrumb_manager_keyed_service.h"
-#include "components/breadcrumbs/core/breadcrumb_persistent_storage_manager.h"
-#include "components/breadcrumbs/core/features.h"
-#include "components/infobars/core/infobar_manager.h"
-#include "components/prefs/pref_service.h"
+#import "base/metrics/histogram_functions.h"
+#import "base/metrics/histogram_macros.h"
+#import "base/metrics/user_metrics.h"
+#import "base/metrics/user_metrics_action.h"
+#import "base/strings/sys_string_conversions.h"
+#import "base/time/time.h"
+#import "components/breadcrumbs/core/breadcrumb_manager_keyed_service.h"
+#import "components/breadcrumbs/core/breadcrumb_persistent_storage_manager.h"
+#import "components/breadcrumbs/core/features.h"
+#import "components/infobars/core/infobar_manager.h"
+#import "components/prefs/pref_service.h"
 #import "components/previous_session_info/previous_session_info.h"
-#include "components/signin/public/base/signin_metrics.h"
-#include "components/signin/public/base/signin_pref_names.h"
-#include "components/signin/public/identity_manager/identity_manager.h"
-#include "components/url_formatter/url_formatter.h"
+#import "components/signin/public/base/signin_metrics.h"
+#import "components/signin/public/base/signin_pref_names.h"
+#import "components/signin/public/identity_manager/identity_manager.h"
+#import "components/url_formatter/url_formatter.h"
 #import "components/url_param_filter/core/url_param_filterer.h"
-#include "components/version_info/version_info.h"
-#include "components/web_resource/web_resource_pref_names.h"
+#import "components/version_info/version_info.h"
+#import "components/web_resource/web_resource_pref_names.h"
 #import "ios/chrome/app/application_delegate/app_state.h"
 #import "ios/chrome/app/application_delegate/startup_information.h"
-#include "ios/chrome/app/application_delegate/tab_opening.h"
+#import "ios/chrome/app/application_delegate/tab_opening.h"
 #import "ios/chrome/app/application_delegate/url_opener.h"
 #import "ios/chrome/app/application_delegate/url_opener_params.h"
 #import "ios/chrome/app/application_delegate/user_activity_handler.h"
-#include "ios/chrome/app/application_mode.h"
+#import "ios/chrome/app/application_mode.h"
 #import "ios/chrome/app/chrome_overlay_window.h"
 #import "ios/chrome/app/deferred_initialization_runner.h"
 #import "ios/chrome/app/tests_hook.h"
-#include "ios/chrome/browser/application_context.h"
-#include "ios/chrome/browser/browser_state/chrome_browser_state.h"
-#include "ios/chrome/browser/browsing_data/browsing_data_remove_mask.h"
-#include "ios/chrome/browser/browsing_data/browsing_data_remover.h"
-#include "ios/chrome/browser/browsing_data/browsing_data_remover_factory.h"
-#include "ios/chrome/browser/chrome_url_constants.h"
+#import "ios/chrome/browser/application_context/application_context.h"
+#import "ios/chrome/browser/browser_state/chrome_browser_state.h"
+#import "ios/chrome/browser/browsing_data/browsing_data_remove_mask.h"
+#import "ios/chrome/browser/browsing_data/browsing_data_remover.h"
+#import "ios/chrome/browser/browsing_data/browsing_data_remover_factory.h"
+#import "ios/chrome/browser/chrome_url_constants.h"
 #import "ios/chrome/browser/chrome_url_util.h"
-#include "ios/chrome/browser/crash_report/breadcrumbs/breadcrumb_manager_browser_agent.h"
-#include "ios/chrome/browser/crash_report/breadcrumbs/breadcrumb_manager_keyed_service_factory.h"
-#include "ios/chrome/browser/crash_report/crash_keys_helper.h"
-#include "ios/chrome/browser/crash_report/crash_report_helper.h"
+#import "ios/chrome/browser/crash_report/breadcrumbs/breadcrumb_manager_browser_agent.h"
+#import "ios/chrome/browser/crash_report/breadcrumbs/breadcrumb_manager_keyed_service_factory.h"
+#import "ios/chrome/browser/crash_report/crash_keys_helper.h"
+#import "ios/chrome/browser/crash_report/crash_report_helper.h"
 #import "ios/chrome/browser/crash_report/crash_restore_helper.h"
-#include "ios/chrome/browser/default_browser/promo_source.h"
+#import "ios/chrome/browser/default_browser/promo_source.h"
 #import "ios/chrome/browser/first_run/first_run.h"
 #import "ios/chrome/browser/geolocation/geolocation_logger.h"
-#include "ios/chrome/browser/infobars/infobar_manager_impl.h"
+#import "ios/chrome/browser/infobars/infobar_manager_impl.h"
 #import "ios/chrome/browser/mailto_handler/mailto_handler_service.h"
 #import "ios/chrome/browser/mailto_handler/mailto_handler_service_factory.h"
 #import "ios/chrome/browser/main/browser.h"
 #import "ios/chrome/browser/main/browser_list.h"
 #import "ios/chrome/browser/main/browser_list_factory.h"
 #import "ios/chrome/browser/main/browser_util.h"
-#include "ios/chrome/browser/ntp/features.h"
+#import "ios/chrome/browser/ntp/features.h"
 #import "ios/chrome/browser/policy/cloud/user_policy_signin_service_factory.h"
 #import "ios/chrome/browser/policy/policy_util.h"
 #import "ios/chrome/browser/policy/policy_watcher_browser_agent.h"
-#include "ios/chrome/browser/policy/policy_watcher_browser_agent.h"
 #import "ios/chrome/browser/policy/policy_watcher_browser_agent_observer_bridge.h"
-#include "ios/chrome/browser/pref_names.h"
+#import "ios/chrome/browser/prefs/pref_names.h"
 #import "ios/chrome/browser/promos_manager/features.h"
-#import "ios/chrome/browser/promos_manager/promos_manager_scene_agent.h"
-#include "ios/chrome/browser/screenshot/screenshot_delegate.h"
+#import "ios/chrome/browser/screenshot/screenshot_delegate.h"
 #import "ios/chrome/browser/sessions/session_saving_scene_agent.h"
 #import "ios/chrome/browser/signin/authentication_service.h"
 #import "ios/chrome/browser/signin/authentication_service_factory.h"
 #import "ios/chrome/browser/signin/chrome_account_manager_service.h"
 #import "ios/chrome/browser/signin/chrome_account_manager_service_factory.h"
-#include "ios/chrome/browser/signin/constants.h"
-#include "ios/chrome/browser/signin/identity_manager_factory.h"
+#import "ios/chrome/browser/signin/constants.h"
+#import "ios/chrome/browser/signin/identity_manager_factory.h"
 #import "ios/chrome/browser/snapshots/snapshot_tab_helper.h"
 #import "ios/chrome/browser/ui/appearance/appearance_customization.h"
 #import "ios/chrome/browser/ui/authentication/signed_in_accounts/signed_in_accounts_view_controller.h"
@@ -98,9 +96,9 @@
 #import "ios/chrome/browser/ui/commands/snackbar_commands.h"
 #import "ios/chrome/browser/ui/default_promo/default_browser_promo_non_modal_scheduler.h"
 #import "ios/chrome/browser/ui/default_promo/default_browser_utils.h"
-#include "ios/chrome/browser/ui/first_run/fre_field_trial.h"
+#import "ios/chrome/browser/ui/first_run/fre_field_trial.h"
 #import "ios/chrome/browser/ui/first_run/orientation_limiting_navigation_controller.h"
-#include "ios/chrome/browser/ui/history/history_coordinator.h"
+#import "ios/chrome/browser/ui/history/history_coordinator.h"
 #import "ios/chrome/browser/ui/incognito_interstitial/incognito_interstitial_coordinator.h"
 #import "ios/chrome/browser/ui/incognito_interstitial/incognito_interstitial_coordinator_delegate.h"
 #import "ios/chrome/browser/ui/incognito_reauth/incognito_reauth_scene_agent.h"
@@ -115,14 +113,15 @@
 #import "ios/chrome/browser/ui/policy/signin_policy_scene_agent.h"
 #import "ios/chrome/browser/ui/policy/user_policy_scene_agent.h"
 #import "ios/chrome/browser/ui/policy/user_policy_util.h"
+#import "ios/chrome/browser/ui/promos_manager/promos_manager_scene_agent.h"
 #import "ios/chrome/browser/ui/scoped_ui_blocker/scoped_ui_blocker.h"
 #import "ios/chrome/browser/ui/settings/settings_navigation_controller.h"
 #import "ios/chrome/browser/ui/start_surface/start_surface_features.h"
 #import "ios/chrome/browser/ui/start_surface/start_surface_recent_tab_browser_agent.h"
 #import "ios/chrome/browser/ui/start_surface/start_surface_scene_agent.h"
 #import "ios/chrome/browser/ui/start_surface/start_surface_util.h"
-#include "ios/chrome/browser/ui/tab_switcher/tab_grid/tab_grid_coordinator.h"
-#include "ios/chrome/browser/ui/tab_switcher/tab_grid/tab_grid_coordinator_delegate.h"
+#import "ios/chrome/browser/ui/tab_switcher/tab_grid/tab_grid_coordinator.h"
+#import "ios/chrome/browser/ui/tab_switcher/tab_grid/tab_grid_coordinator_delegate.h"
 #import "ios/chrome/browser/ui/thumb_strip/thumb_strip_feature.h"
 #import "ios/chrome/browser/ui/ui_feature_flags.h"
 #import "ios/chrome/browser/ui/util/top_view_controller.h"
@@ -130,22 +129,22 @@
 #import "ios/chrome/browser/url_loading/scene_url_loading_service.h"
 #import "ios/chrome/browser/url_loading/url_loading_browser_agent.h"
 #import "ios/chrome/browser/url_loading/url_loading_params.h"
-#include "ios/chrome/browser/web_state_list/session_metrics.h"
+#import "ios/chrome/browser/web_state_list/session_metrics.h"
 #import "ios/chrome/browser/web_state_list/tab_insertion_browser_agent.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
 #import "ios/chrome/browser/web_state_list/web_state_list_observer_bridge.h"
 #import "ios/chrome/browser/window_activities/window_activity_helpers.h"
 #import "ios/chrome/common/ui/reauthentication/reauthentication_module.h"
-#include "ios/chrome/grit/ios_strings.h"
-#include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
-#include "ios/public/provider/chrome/browser/signin/chrome_identity_service.h"
+#import "ios/chrome/grit/ios_strings.h"
+#import "ios/public/provider/chrome/browser/chrome_browser_provider.h"
+#import "ios/public/provider/chrome/browser/signin/chrome_identity_service.h"
 #import "ios/public/provider/chrome/browser/ui_utils/ui_utils_api.h"
-#import "ios/public/provider/chrome/browser/user_feedback/user_feedback_provider.h"
-#include "ios/web/public/thread/web_task_traits.h"
-#include "ios/web/public/thread/web_thread.h"
+#import "ios/public/provider/chrome/browser/user_feedback/user_feedback_data.h"
+#import "ios/web/public/thread/web_task_traits.h"
+#import "ios/web/public/thread/web_thread.h"
 #import "ios/web/public/web_state.h"
 #import "net/base/mac/url_conversions.h"
-#include "ui/base/l10n/l10n_util.h"
+#import "ui/base/l10n/l10n_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -211,7 +210,6 @@ bool IsSigninForcedByPolicy() {
                                SceneUIProvider,
                                SceneURLLoadingServiceDelegate,
                                TabGridCoordinatorDelegate,
-                               UserFeedbackDataSource,
                                WebStateListObserving,
                                IncognitoInterstitialCoordinatorDelegate> {
   std::unique_ptr<WebStateListObserverBridge> _webStateListForwardingObserver;
@@ -274,11 +272,6 @@ bool IsSigninForcedByPolicy() {
 // the coordinator.
 @property(nonatomic, strong) SigninCoordinator* signinCoordinator;
 
-// Additional product specific data used by UserFeedbackDataSource.
-// TODO(crbug.com/1117041): Move this into a UserFeedback config object.
-@property(nonatomic, strong)
-    NSDictionary<NSString*, NSString*>* specificProductData;
-
 // YES if the process of dismissing the sign-in prompt is from an external
 // trigger and is currently ongoing. An external trigger isn't done from the
 // signin prompt itself (i.e., tapping a button in the sign-in prompt that
@@ -329,8 +322,6 @@ bool IsSigninForcedByPolicy() {
     [_sceneState addAgent:[[StartSurfaceSceneAgent alloc] init]];
     [_sceneState addAgent:[[SessionSavingSceneAgent alloc] init]];
     [_sceneState addAgent:[[LayoutGuideSceneAgent alloc] init]];
-    if (IsFullscreenPromosManagerEnabled())
-      [_sceneState addAgent:[[PromosManagerSceneAgent alloc] init]];
   }
   return self;
 }
@@ -514,54 +505,6 @@ bool IsSigninForcedByPolicy() {
 
   // Move the tab to the current interface's browser.
   MoveTabToBrowser(tabID, interface.browser, /*destination_tab_index=*/0);
-}
-
-// TODO(crbug.com/1173160): Split and move to the StartSurfaceSceneAgent after
-// refactoring the scene states.
-- (void)handleShowStartSurfaceIfNecessary {
-  if (!ShouldShowStartSurfaceForSceneState(self.sceneState)) {
-    return;
-  }
-
-  // Do not show the Start Surface no matter whether it is enabled or not when
-  // the Tab grid is active by design.
-  if (self.mainCoordinator.isTabGridActive) {
-    return;
-  }
-
-  // If there is no active tab, a NTP will be added, and since there is no
-  // recent tab, there is not need to mark `modifytVisibleNTPForStartSurface`.
-  // Keep showing the last active NTP tab no matter whether the Start Surface is
-  // enabled or not by design.
-  // Note that currentWebState could only be nullptr when the Tab grid is active
-  // for now.
-  web::WebState* currentWebState =
-      self.mainInterface.browser->GetWebStateList()->GetActiveWebState();
-  if (!currentWebState || IsURLNtp(currentWebState->GetVisibleURL())) {
-    return;
-  }
-
-  base::RecordAction(base::UserMetricsAction("IOS.StartSurface.Show"));
-  self.sceneState.modifytVisibleNTPForStartSurface = YES;
-  Browser* browser = self.currentInterface.browser;
-  StartSurfaceRecentTabBrowserAgent::FromBrowser(browser)->SaveMostRecentTab();
-
-  // Activate the existing NTP tab for the Start surface.
-  WebStateList* webStateList = browser->GetWebStateList();
-  for (int i = 0; i < webStateList->count(); i++) {
-    if (IsURLNtp(webStateList->GetWebStateAt(i)->GetVisibleURL())) {
-      webStateList->ActivateWebStateAt(i);
-      return;
-    }
-  }
-
-  // Open a new NTP tab if there is no existing NTP tab for the Start Surface.
-  OpenNewTabCommand* command =
-      [OpenNewTabCommand commandWithIncognito:self.currentInterface.incognito];
-  command.userInitiated = NO;
-  id<ApplicationCommands> applicationHandler =
-      HandlerForProtocol(browser->GetCommandDispatcher(), ApplicationCommands);
-  [applicationHandler openURLInNewTab:command];
 }
 
 - (void)recordWindowCreationForSceneState:(SceneState*)sceneState {
@@ -761,10 +704,6 @@ bool IsSigninForcedByPolicy() {
       [applicationHandler openURLInNewTab:command];
       [self finishActivatingBrowserDismissingTabSwitcher:YES];
     }
-
-    if (!IsStartSurfaceSplashStartupEnabled()) {
-      [self handleShowStartSurfaceIfNecessary];
-    }
   }
 
   [self recordWindowCreationForSceneState:self.sceneState];
@@ -956,6 +895,9 @@ bool IsSigninForcedByPolicy() {
   // Make sure the geolocation controller is created to observe permission
   // events.
   [GeolocationLogger sharedInstance];
+
+  if (IsFullscreenPromosManagerEnabled())
+    [self.sceneState addAgent:[[PromosManagerSceneAgent alloc] init]];
 }
 
 // Determines the mode (normal or incognito) the initial UI should be in.
@@ -1040,14 +982,6 @@ bool IsSigninForcedByPolicy() {
   } else {
     browser = self.mainInterface.browser;
     [self setCurrentInterfaceForMode:ApplicationMode::NORMAL];
-  }
-
-  // Call this right after `setCurrentInterfaceForMode:` to ensure the
-  // currentInterface is set in case a new tab needs to be opened. Since this is
-  // synchronous with `setActivePage:` above, then the user should not see the
-  // last tab if the Start Surface is opened.
-  if (!IsStartSurfaceSplashStartupEnabled()) {
-    [self handleShowStartSurfaceIfNecessary];
   }
 
   // Figure out what UI to show initially.
@@ -1522,26 +1456,88 @@ bool IsSigninForcedByPolicy() {
                     specificProductData:(NSDictionary<NSString*, NSString*>*)
                                             specificProductData {
   DCHECK(baseViewController);
-  self.specificProductData = specificProductData;
   // This dispatch is necessary to give enough time for the tools menu to
   // disappear before taking a screenshot.
+  __weak SceneController* weakSelf = self;
   dispatch_async(dispatch_get_main_queue(), ^{
-    DCHECK(!self.signinCoordinator)
-        << "self.signinCoordinator: "
-        << base::SysNSStringToUTF8([self.signinCoordinator description]);
-    if (self.settingsNavigationController)
-      return;
-    Browser* browser = self.mainInterface.browser;
-    self.settingsNavigationController =
-        [SettingsNavigationController userFeedbackControllerForBrowser:browser
-                                                              delegate:self
-                                                    feedbackDataSource:self
-                                                                sender:sender
-                                                               handler:self];
-    [baseViewController presentViewController:self.settingsNavigationController
-                                     animated:YES
-                                   completion:nil];
+    [weakSelf presentReportAnIssueViewController:baseViewController
+                                          sender:sender
+                             specificProductData:specificProductData];
   });
+}
+
+- (void)presentReportAnIssueViewController:(UIViewController*)baseViewController
+                                    sender:(UserFeedbackSender)sender
+                       specificProductData:(NSDictionary<NSString*, NSString*>*)
+                                               specificProductData {
+  DCHECK(!self.signinCoordinator)
+      << "self.signinCoordinator: "
+      << base::SysNSStringToUTF8([self.signinCoordinator description]);
+  if (self.settingsNavigationController)
+    return;
+
+  UserFeedbackData* data =
+      [self createUserFeedbackDataForSender:sender
+                        specificProductData:specificProductData];
+
+  Browser* browser = self.mainInterface.browser;
+  id<ApplicationCommands> handler =
+      HandlerForProtocol(browser->GetCommandDispatcher(), ApplicationCommands);
+  self.settingsNavigationController =
+      [SettingsNavigationController userFeedbackControllerForBrowser:browser
+                                                            delegate:self
+                                                    userFeedbackData:data
+                                                             handler:handler];
+  [baseViewController presentViewController:self.settingsNavigationController
+                                   animated:YES
+                                 completion:nil];
+}
+
+- (UserFeedbackData*)createUserFeedbackDataForSender:(UserFeedbackSender)sender
+                                 specificProductData:
+                                     (NSDictionary<NSString*, NSString*>*)
+                                         specificProductData {
+  UserFeedbackData* data = [[UserFeedbackData alloc] init];
+  data.origin = sender;
+  data.currentPageIsIncognito = self.currentInterface.incognito;
+
+  CGFloat scale = 0.0;
+  if (!self.mainCoordinator.isTabGridActive) {
+    web::WebState* webState =
+        self.currentInterface.browser->GetWebStateList()->GetActiveWebState();
+    if (webState) {
+      // Record URL of browser tab that is currently showing
+      GURL url = webState->GetVisibleURL();
+      std::u16string urlText = url_formatter::FormatUrl(url);
+      data.currentPageDisplayURL = base::SysUTF16ToNSString(urlText);
+    }
+  } else {
+    // For screenshots of the tab switcher we need to use a scale of 1.0 to
+    // avoid spending too much time since the tab switcher can have lots of
+    // subviews.
+    scale = 1.0;
+  }
+
+  UIView* lastView = self.mainCoordinator.activeViewController.view;
+  DCHECK(lastView);
+  data.currentPageScreenshot = CaptureView(lastView, scale);
+
+  ChromeBrowserState* browserState = self.currentInterface.browserState;
+  if (browserState->IsOffTheRecord()) {
+    data.currentPageIsIncognito = YES;
+  } else {
+    data.currentPageIsIncognito = NO;
+    signin::IdentityManager* identity_manager =
+        IdentityManagerFactory::GetForBrowserState(browserState);
+    std::string username =
+        identity_manager->GetPrimaryAccountInfo(signin::ConsentLevel::kSync)
+            .email;
+    if (!username.empty())
+      data.currentPageSyncedUserName = base::SysUTF8ToNSString(username);
+  }
+
+  data.productSpecificData = specificProductData;
+  return data;
 }
 
 - (void)openURLInNewTab:(OpenNewTabCommand*)command {
@@ -2051,52 +2047,6 @@ bool IsSigninForcedByPolicy() {
   [baseViewController presentViewController:self.settingsNavigationController
                                    animated:YES
                                  completion:nil];
-}
-
-#pragma mark - UserFeedbackDataSource
-
-- (BOOL)currentPageIsIncognito {
-  return self.currentInterface.incognito;
-}
-
-- (NSString*)currentPageDisplayURL {
-  if (self.mainCoordinator.isTabGridActive)
-    return nil;
-  web::WebState* webState =
-      self.currentInterface.browser->GetWebStateList()->GetActiveWebState();
-  if (!webState)
-    return nil;
-  // Returns URL of browser tab that is currently showing.
-  GURL url = webState->GetVisibleURL();
-  std::u16string urlText = url_formatter::FormatUrl(url);
-  return base::SysUTF16ToNSString(urlText);
-}
-
-- (UIImage*)currentPageScreenshot {
-  UIView* lastView = self.mainCoordinator.activeViewController.view;
-  DCHECK(lastView);
-  CGFloat scale = 0.0;
-  // For screenshots of the tab switcher we need to use a scale of 1.0 to avoid
-  // spending too much time since the tab switcher can have lots of subviews.
-  if (self.mainCoordinator.isTabGridActive)
-    scale = 1.0;
-  return CaptureView(lastView, scale);
-}
-
-- (NSString*)currentPageSyncedUserName {
-  ChromeBrowserState* browserState = self.currentInterface.browserState;
-  if (browserState->IsOffTheRecord())
-    return nil;
-  signin::IdentityManager* identity_manager =
-      IdentityManagerFactory::GetForBrowserState(browserState);
-  std::string username =
-      identity_manager->GetPrimaryAccountInfo(signin::ConsentLevel::kSync)
-          .email;
-  return username.empty() ? nil : base::SysUTF8ToNSString(username);
-}
-
-- (NSDictionary<NSString*, NSString*>*)specificProductData {
-  return _specificProductData;
 }
 
 #pragma mark - SettingsNavigationControllerDelegate
@@ -2787,14 +2737,14 @@ bool IsSigninForcedByPolicy() {
   web::WebState* currentWebState =
       targetInterface.browser->GetWebStateList()->GetActiveWebState();
 
-  BOOL forceNewTabForIntentSearch =
+  BOOL alwaysInsertNewTab =
       base::FeatureList::IsEnabled(kForceNewTabForIntentSearch) &&
       (self.startupParameters.postOpeningAction == FOCUS_OMNIBOX);
 
   // Don't call loadWithParams for chrome://newtab when it's already loaded.
   // Note that it's safe to use -GetVisibleURL here, as it doesn't matter if the
   // NTP hasn't finished loading.
-  if (!forceNewTabForIntentSearch && currentWebState &&
+  if (!alwaysInsertNewTab && currentWebState &&
       IsURLNtp(currentWebState->GetVisibleURL()) &&
       IsURLNtp(urlLoadParams.web_params.url)) {
     if (tabOpenedCompletion) {
@@ -2803,13 +2753,6 @@ bool IsSigninForcedByPolicy() {
     return;
   }
 
-  // With kBrowserContainerContainsNTP enabled paired with a restored NTP
-  // session, the NTP may appear committed when it is still loading.  For the
-  // time being, always load within a new tab when this feature is enabled.
-  // TODO(crbug.com/931284): Revert this change when fixed.
-  BOOL alwaysInsertNewTab =
-      forceNewTabForIntentSearch ||
-      base::FeatureList::IsEnabled(kBlockNewTabPagePendingLoad);
   // If the current tab isn't an NTP, open a new tab.  Be sure to use
   // -GetLastCommittedURL incase the NTP is still loading.
   if (alwaysInsertNewTab ||

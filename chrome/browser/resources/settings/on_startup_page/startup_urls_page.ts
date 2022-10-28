@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,17 +8,17 @@
  */
 
 import 'chrome://resources/js/action_link.js';
-import 'chrome://resources/cr_elements/action_link_css.m.js';
+import 'chrome://resources/cr_elements/action_link.css.js';
 import 'chrome://resources/polymer/v3_0/iron-flex-layout/iron-flex-layout-classes.js';
 import 'chrome://resources/polymer/v3_0/iron-list/iron-list.js';
 import '../controls/extension_controlled_indicator.js';
 import '../settings_shared.css.js';
 import './startup_url_dialog.js';
 
-import {CrScrollableBehavior} from 'chrome://resources/cr_elements/cr_scrollable_behavior.m.js';
-import {focusWithoutInk} from 'chrome://resources/js/cr/ui/focus_without_ink.m.js';
-import {WebUIListenerMixin, WebUIListenerMixinInterface} from 'chrome://resources/js/web_ui_listener_mixin.js';
-import {mixinBehaviors, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {CrScrollableMixin} from 'chrome://resources/cr_elements/cr_scrollable_mixin.js';
+import {focusWithoutInk} from 'chrome://resources/js/cr/ui/focus_without_ink.js';
+import {WebUIListenerMixin} from 'chrome://resources/js/web_ui_listener_mixin.js';
+import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {EDIT_STARTUP_URL_EVENT} from './startup_url_entry.js';
 import {getTemplate} from './startup_urls_page.html.js';
@@ -26,11 +26,7 @@ import {StartupPageInfo, StartupUrlsPageBrowserProxy, StartupUrlsPageBrowserProx
 
 
 const SettingsStartupUrlsPageElementBase =
-    mixinBehaviors(
-        [CrScrollableBehavior], WebUIListenerMixin(PolymerElement)) as {
-      new (): PolymerElement & WebUIListenerMixinInterface &
-          CrScrollableBehavior,
-    };
+    CrScrollableMixin(WebUIListenerMixin(PolymerElement));
 
 export class SettingsStartupUrlsPageElement extends
     SettingsStartupUrlsPageElementBase {

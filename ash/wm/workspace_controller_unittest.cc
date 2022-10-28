@@ -1,4 +1,4 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -695,11 +695,11 @@ TEST_F(WorkspaceControllerTest, BasicAutoPlacingOnCreate) {
   {  // With the window shown - but more on the right side then on the left
     // side (and partially out of the screen), it should default to the other
     // side and inside the screen.
-    gfx::Rect source_browser_bounds(gfx::Rect(1000, 600, 640, 320));
-    browser_window->SetBounds(source_browser_bounds);
+    gfx::Rect new_bounds(gfx::Rect(1000, 600, 640, 320));
+    browser_window->SetBounds(new_bounds);
 
     std::unique_ptr<aura::Window> new_browser_window(
-        CreateBrowserLikeWindow(source_browser_bounds));
+        CreateBrowserLikeWindow(new_bounds));
     // The position should be left & bottom flush.
     EXPECT_EQ("0,600 640x320", new_browser_window->bounds().ToString());
 

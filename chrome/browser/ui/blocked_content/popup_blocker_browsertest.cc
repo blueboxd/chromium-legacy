@@ -1,4 +1,4 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -892,6 +892,12 @@ IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest,
   EXPECT_TRUE(content_settings::PageSpecificContentSettings::GetForFrame(
                   tab_2->GetPrimaryMainFrame())
                   ->IsContentBlocked(ContentSettingsType::POPUPS));
+}
+
+IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest,
+                       DocumentPictureInPictureIsNotConsideredForBlocking) {
+  EXPECT_FALSE(blocked_content::ConsiderForPopupBlocking(
+      WindowOpenDisposition::NEW_PICTURE_IN_PICTURE));
 }
 
 class PopupBlockerFencedFrameTest : public PopupBlockerBrowserTest {

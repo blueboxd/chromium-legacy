@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -37,7 +37,7 @@
 #include "components/signin/core/browser/account_reconcilor.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/signin/public/identity_manager/identity_test_utils.h"
-#include "components/sync/driver/test_sync_service.h"
+#include "components/sync/test/test_sync_service.h"
 #include "content/public/browser/browsing_data_filter_builder.h"
 #include "content/public/browser/clear_site_data_utils.h"
 #include "content/public/browser/storage_partition.h"
@@ -78,7 +78,6 @@
 #include "chromeos/startup/browser_init_params.h"
 #include "components/account_manager_core/account.h"
 #include "components/account_manager_core/account_manager_util.h"
-#include "components/signin/public/identity_manager/identity_test_utils.h"
 #endif
 
 using content::BrowserThread;
@@ -588,8 +587,14 @@ IN_PROC_BROWSER_TEST_F(BrowsingDataRemoverBrowserTest, WebrtcVideoPerfHistory) {
   }
 }
 
+// TODO(crbug.com/1317431): WebSQL does not work on Fuchsia.
+#if BUILDFLAG(IS_FUCHSIA)
+#define MAYBE_Database DISABLED_Database
+#else
+#define MAYBE_Database Database
+#endif
 // Verify can modify database after deleting it.
-IN_PROC_BROWSER_TEST_F(BrowsingDataRemoverBrowserTest, Database) {
+IN_PROC_BROWSER_TEST_F(BrowsingDataRemoverBrowserTest, MAYBE_Database) {
   GURL url = embedded_test_server()->GetURL("/simple_database.html");
   ASSERT_TRUE(ui_test_utils::NavigateToURL(GetBrowser(), url));
 
@@ -761,18 +766,21 @@ class BrowsingDataRemoverWithPasswordsAccountStorageBrowserTest
 
   void ClearSiteDataAndWait(
       const url::Origin& origin,
-      const absl::optional<net::CookiePartitionKey>& cookie_partition_key) {
+      const absl::optional<net::CookiePartitionKey>& cookie_partition_key,
+      const absl::optional<blink::StorageKey>& storage_key) {
     base::RunLoop loop;
-    content::ClearSiteData(base::BindRepeating(
+    content::ClearSiteData(/*browser_context_getter=*/base::BindRepeating(
                                [](content::BrowserContext* browser_context) {
                                  return browser_context;
                                },
                                base::Unretained(GetBrowser()->profile())),
-                           origin,
+                           /*origin=*/origin,
                            /*clear_cookies=*/true, /*clear_storage=*/true,
                            /*clear_cache=*/true,
                            /*avoid_closing_connections=*/true,
-                           cookie_partition_key, loop.QuitClosure());
+                           /*cookie_partition_key=*/cookie_partition_key,
+                           /*storage_key=*/storage_key,
+                           /*callback=*/loop.QuitClosure());
     loop.Run();
   }
 
@@ -872,26 +880,46 @@ IN_PROC_BROWSER_TEST_F(
   const struct {
     const url::Origin origin;
     const absl::optional<net::CookiePartitionKey> cookie_partition_key;
+    const absl::optional<blink::StorageKey> storage_key;
     bool expects_opted_in;
   } test_cases[] = {
       {
           url::Origin::Create(kFirstPartyURL),
+          absl::nullopt,
           absl::nullopt,
           false,
       },
       {
           url::Origin::Create(kCrossSiteURL),
           absl::nullopt,
+          absl::nullopt,
           true,
       },
       {
           url::Origin::Create(kFirstPartyURL),
           net::CookiePartitionKey::FromURLForTesting(kFirstPartyURL),
+          absl::nullopt,
+          false,
+      },
+      {
+          url::Origin::Create(kFirstPartyURL),
+          net::CookiePartitionKey::FromURLForTesting(kFirstPartyURL),
+          blink::StorageKey(url::Origin::Create(kFirstPartyURL)),
           false,
       },
       {
           url::Origin::Create(kFirstPartyURL),
           net::CookiePartitionKey::FromURLForTesting(kCrossSiteURL),
+          absl::nullopt,
+          true,
+      },
+      {
+          url::Origin::Create(kFirstPartyURL),
+          net::CookiePartitionKey::FromURLForTesting(kCrossSiteURL),
+          blink::StorageKey::CreateWithOptionalNonce(
+              url::Origin::Create(kCrossSiteURL),
+              net::SchemefulSite(url::Origin::Create(kFirstPartyURL)), nullptr,
+              blink::mojom::AncestorChainBit::kCrossSite),
           true,
       },
   };
@@ -899,7 +927,8 @@ IN_PROC_BROWSER_TEST_F(
     password_manager::features_util::OptInToAccountStorage(prefs,
                                                            &sync_service);
 
-    ClearSiteDataAndWait(test_case.origin, test_case.cookie_partition_key);
+    ClearSiteDataAndWait(test_case.origin, test_case.cookie_partition_key,
+                         test_case.storage_key);
 
     ASSERT_EQ(password_manager::features_util::IsOptedInForAccountStorage(
                   prefs, &sync_service),
@@ -1079,18 +1108,36 @@ IN_PROC_BROWSER_TEST_P(BrowsingDataRemoverBrowserTestP, NativeIODeletion) {
   TestSiteData("StorageFoundation", GetParam());
 }
 
-IN_PROC_BROWSER_TEST_P(BrowsingDataRemoverBrowserTestP, WebSqlDeletion) {
+// TODO(crbug.com/1317431): WebSQL does not work on Fuchsia.
+#if BUILDFLAG(IS_FUCHSIA)
+#define MAYBE_WebSqlDeletion DISABLED_WebSqlDeletion
+#else
+#define MAYBE_WebSqlDeletion WebSqlDeletion
+#endif
+IN_PROC_BROWSER_TEST_P(BrowsingDataRemoverBrowserTestP, MAYBE_WebSqlDeletion) {
   TestSiteData("WebSql", GetParam());
 }
 
+// TODO(crbug.com/1317431): WebSQL does not work on Fuchsia.
+#if BUILDFLAG(IS_FUCHSIA)
+#define MAYBE_WebSqlIncognitoDeletion DISABLED_WebSqlIncognitoDeletion
+#else
+#define MAYBE_WebSqlIncognitoDeletion WebSqlIncognitoDeletion
+#endif
 IN_PROC_BROWSER_TEST_P(BrowsingDataRemoverBrowserTestP,
-                       WebSqlIncognitoDeletion) {
+                       MAYBE_WebSqlIncognitoDeletion) {
   UseIncognitoBrowser();
   TestSiteData("WebSql", GetParam());
 }
 
-// Test that empty websql dbs are deleted correctly.
-IN_PROC_BROWSER_TEST_P(BrowsingDataRemoverBrowserTestP, EmptyWebSqlDeletion) {
+// TODO(crbug.com/1317431): WebSQL does not work on Fuchsia.
+#if BUILDFLAG(IS_FUCHSIA)
+#define MAYBE_EmptyWebSqlDeletion DISABLED_EmptyWebSqlDeletion
+#else
+#define MAYBE_EmptyWebSqlDeletion EmptyWebSqlDeletion
+#endif
+IN_PROC_BROWSER_TEST_P(BrowsingDataRemoverBrowserTestP,
+                       MAYBE_EmptyWebSqlDeletion) {
   TestEmptySiteData("WebSql", GetParam());
 }
 
@@ -1357,9 +1404,16 @@ IN_PROC_BROWSER_TEST_F(BrowsingDataRemoverBrowserTest,
   ExpectCookieTreeModelCount(0);
 }
 
+// TODO(crbug.com/1317431): WebSQL does not work on Fuchsia.
+#if BUILDFLAG(IS_FUCHSIA)
+#define MAYBE_StorageRemovedFromDisk DISABLED_StorageRemovedFromDisk
+#else
+#define MAYBE_StorageRemovedFromDisk StorageRemovedFromDisk
+#endif
 // Check if any data remains after a deletion and a Chrome restart to force
 // all writes to be finished.
-IN_PROC_BROWSER_TEST_F(BrowsingDataRemoverBrowserTest, StorageRemovedFromDisk) {
+IN_PROC_BROWSER_TEST_F(BrowsingDataRemoverBrowserTest,
+                       MAYBE_StorageRemovedFromDisk) {
   // Deletions should remove all traces of browsing data from disk
   // but there are a few bugs that need to be fixed.
   // Any addition to this list must have an associated TODO().
@@ -1400,9 +1454,15 @@ IN_PROC_BROWSER_TEST_F(BrowsingDataRemoverBrowserTest,
                                  CONTENT_SETTING_SESSION_ONLY);
 }
 
+// TODO(crbug.com/1317431): WebSQL does not work on Fuchsia.
+#if BUILDFLAG(IS_FUCHSIA)
+#define MAYBE_SessionOnlyStorageRemoved DISABLED_SessionOnlyStorageRemoved
+#else
+#define MAYBE_SessionOnlyStorageRemoved SessionOnlyStorageRemoved
+#endif
 // Restart to delete session only storage.
 IN_PROC_BROWSER_TEST_F(BrowsingDataRemoverBrowserTest,
-                       SessionOnlyStorageRemoved) {
+                       MAYBE_SessionOnlyStorageRemoved) {
   // All cookies should have been deleted.
   ExpectCookieTreeModelCount(0);
   GURL url = embedded_test_server()->GetURL("/browsing_data/site_data.html");

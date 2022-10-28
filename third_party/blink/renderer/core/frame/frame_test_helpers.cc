@@ -182,6 +182,7 @@ void LoadFrameDontWait(WebLocalFrame* frame, const WebURL& url) {
   } else {
     auto params = std::make_unique<WebNavigationParams>();
     params->url = url;
+    params->storage_key = BlinkStorageKey(SecurityOrigin::Create(url));
     params->navigation_timings.navigation_start = base::TimeTicks::Now();
     params->navigation_timings.fetch_start = base::TimeTicks::Now();
     params->is_browser_initiated = true;
@@ -599,9 +600,8 @@ TestWebFrameWidget* WebViewHelper::CreateFrameWidgetAndInitializeCompositing(
       GetSynchronousSingleThreadLayerTreeSettings();
   display::ScreenInfos initial_screen_infos(
       frame_widget->GetInitialScreenInfo());
-  frame_widget->InitializeCompositing(frame_widget->GetAgentGroupScheduler(),
-                                      initial_screen_infos,
-                                      &layer_tree_settings);
+  frame_widget->InitializeCompositing(
+      *agent_group_scheduler_, initial_screen_infos, &layer_tree_settings);
   // This runs WidgetInputHandlerManager::InitOnInputHandlingThread, which will
   // set up the InputHandlerProxy.
   frame_widget->FlushInputHandlerTasks();
@@ -1006,7 +1006,8 @@ void TestWebFrameWidgetHost::StartDragging(
     const blink::WebDragData& drag_data,
     blink::DragOperationsMask operations_allowed,
     const SkBitmap& bitmap,
-    const gfx::Vector2d& bitmap_offset_in_dip,
+    const gfx::Vector2d& cursor_offset_in_dip,
+    const gfx::Rect& drag_obj_rect_in_dip,
     mojom::blink::DragEventSourceInfoPtr event_info) {}
 
 void TestWebFrameWidgetHost::BindWidgetHost(

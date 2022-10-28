@@ -2,15 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import '../../../cr_elements/shared_style_css.m.js';
-import '../network/network_shared_css.m.js';
+import '../../../cr_elements/cr_shared_style.css.js';
+import '../network/network_shared_css.js';
 
 import {html, Polymer} from '//resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 import {NetworkType, PortalState} from 'chrome://resources/mojo/chromeos/services/network_config/public/mojom/network_types.mojom-webui.js';
 import {Network, NetworkHealthService, NetworkHealthServiceRemote, NetworkHealthState, NetworkState, UInt32Value} from 'chrome://resources/mojo/chromeos/services/network_health/public/mojom/network_health.mojom-webui.js';
 
-import {I18nBehavior} from '../../../js/i18n_behavior.m.js';
-import {OncMojo} from '../network/onc_mojo.m.js';
+import {assertNotReached} from '../../../js/assert.m.js';
+import {I18nBehavior} from '../../../cr_elements/i18n_behavior.js';
+import {OncMojo} from '../network/onc_mojo.js';
 
 const TechnologyIcons = {
   CELLULAR: 'cellular_0.svg',
@@ -140,7 +141,10 @@ Polymer({
    * @return {string}
    */
   getPortalStateString_(state) {
-    return this.i18n('OncPortalState' + OncMojo.getPortalStateString(state));
+    return this.i18n(
+        'OncPortalState' +
+        OncMojo.getPortalStateString(
+            /** @type {chromeos.networkConfig.mojom.PortalState} */ (state)));
   },
 
   /**
@@ -150,7 +154,10 @@ Polymer({
    * @return {string}
    */
   getNetworkTypeString_(type) {
-    return this.i18n('OncType' + OncMojo.getNetworkTypeString(type));
+    return this.i18n(
+        'OncType' +
+        OncMojo.getNetworkTypeString(
+            /** @type {chromeos.networkConfig.mojom.NetworkType} */ (type)));
   },
 
   /**

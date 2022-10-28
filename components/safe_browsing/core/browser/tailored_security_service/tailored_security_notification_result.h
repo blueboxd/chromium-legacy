@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -18,7 +18,8 @@ enum class TailoredSecurityNotificationResult {
   kNoWebContentsAvailable = 4,
   kSafeBrowsingControlledByPolicy = 5,
   kNoBrowserAvailable = 6,
-  kMaxValue = kNoBrowserAvailable,
+  kNoBrowserWindowAvailable = 7,
+  kMaxValue = kNoBrowserWindowAvailable,
 };
 
 #endif  // COMPONENTS_SAFE_BROWSING_CORE_BROWSER_TAILORED_SECURITY_SERVICE_TAILORED_SECURITY_NOTIFICATION_RESULT_H_

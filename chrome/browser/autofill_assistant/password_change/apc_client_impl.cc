@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,6 +10,7 @@
 
 #include "base/bind.h"
 #include "base/feature_list.h"
+#include "base/logging.h"
 #include "base/memory/raw_ptr.h"
 #include "chrome/browser/autofill_assistant/common_dependencies_chrome.h"
 #include "chrome/browser/autofill_assistant/password_change/apc_external_action_delegate.h"
@@ -18,13 +19,16 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/autofill_assistant/password_change/apc_scrim_manager.h"
 #include "chrome/browser/ui/autofill_assistant/password_change/assistant_display_delegate.h"
+#include "chrome/browser/ui/autofill_assistant/password_change/assistant_stopped_bubble_coordinator.h"
 #include "chrome/browser/ui/ui_features.h"
 #include "chrome/common/channel_info.h"
 #include "components/autofill_assistant/browser/public/autofill_assistant_factory.h"
 #include "components/autofill_assistant/browser/public/headless_script_controller.h"
 #include "components/autofill_assistant/browser/public/password_change/website_login_manager_impl.h"
+#include "components/autofill_assistant/browser/public/prefs.h"
 #include "components/autofill_assistant/browser/public/public_script_parameters.h"
 #include "components/password_manager/core/browser/password_manager_client.h"
+#include "components/prefs/pref_service.h"
 #include "content/public/browser/web_contents.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "url/gurl.h"
@@ -51,17 +55,31 @@ void ApcClientImpl::Start(
   // If the unified side panel is not enabled, trying to register an entry in it
   // later on will crash.
   if (!base::FeatureList::IsEnabled(features::kUnifiedSidePanel)) {
+    DVLOG(0) << "Unified side panel disabled, stopping APC.";
+    std::move(callback).Run(false);
+    return;
+  }
+
+  // If Autofill Assistant is disabled, do not start.
+  PrefService* pref_service =
+      Profile::FromBrowserContext(GetWebContents().GetBrowserContext())
+          ->GetPrefs();
+  if (!pref_service->GetBoolean(
+          autofill_assistant::prefs::kAutofillAssistantEnabled)) {
+    DVLOG(0) << "Autofill Assistant pref is false, stopping APC.";
     std::move(callback).Run(false);
     return;
   }
 
   if (GetPasswordManagerClient() == nullptr) {
+    DVLOG(0) << "Cannot obtain password manager client, stopping APC.";
     std::move(callback).Run(false);
     return;
   }
 
   // Ensure that only one run is ongoing.
   if (is_running_) {
+    DVLOG(0) << "APC already ongoing, not starting a new run.";
     std::move(callback).Run(false);
     return;
   }
@@ -170,6 +188,9 @@ void ApcClientImpl::OnOnboardingComplete(bool success) {
         debug_run_information_.value().socket_id;
   }
 
+  assistant_stopped_bubble_coordinator_ =
+      CreateAssistantStoppedBubbleCoordinator();
+
   scrim_manager_ = CreateApcScrimManager();
 
   website_login_manager_ = CreateWebsiteLoginManager();
@@ -203,6 +224,9 @@ void ApcClientImpl::OnRunComplete(
 }
 
 void ApcClientImpl::OnHidden() {
+  if (is_running_) {
+    assistant_stopped_bubble_coordinator_->Show();
+  }
   Stop(/*success=*/false);
 
   // The two resets below are not included in `Stop()`, since we may wish to
@@ -215,6 +239,11 @@ void ApcClientImpl::CloseSidePanel() {
   side_panel_coordinator_.reset();
 }
 
+std::unique_ptr<AssistantStoppedBubbleCoordinator>
+ApcClientImpl::CreateAssistantStoppedBubbleCoordinator() {
+  return AssistantStoppedBubbleCoordinator::Create(&GetWebContents(), url_,
+                                                   username_);
+}
 std::unique_ptr<ApcOnboardingCoordinator>
 ApcClientImpl::CreateOnboardingCoordinator() {
   return ApcOnboardingCoordinator::Create(&GetWebContents());

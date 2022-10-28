@@ -63,7 +63,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="ServiceWorker.ActivateEvent.Time" units="ms"
-    expires_after="2022-12-25">
+    expires_after="2023-02-26">
   <owner>wanderview@chromium.org</owner>
   <owner>asamidoi@chromium.org</owner>
   <owner>chrome-worker@google.com</owner>
@@ -272,7 +272,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="ServiceWorker.DiskCache.ReadResponseResult"
-    enum="ServiceWorkerReadResponseResult" expires_after="2022-12-25">
+    enum="ServiceWorkerReadResponseResult" expires_after="2023-03-12">
   <owner>bashi@chromium.org</owner>
   <owner>nhiroki@chromium.org</owner>
   <summary>
@@ -397,6 +397,17 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="ServiceWorker.FetchHandler.TypeAtContinueWithActivatedVersion"
+    enum="ServiceWorkerFetchHandlerType" expires_after="2023-06-30">
+  <owner>yyanagisawa@chromium.org</owner>
+  <owner>chrome-worker@google.com</owner>
+  <summary>
+    The type of the fetch handler recorded just before dispatching the fetch
+    handler. This represent the fetch handler type, and does not represent if
+    the fetch handler is skipped or not.
+  </summary>
+</histogram>
+
 <histogram name="ServiceWorker.InstallEvent.All.FetchCount" units="fetches"
     expires_after="2023-01-26">
   <owner>wanderview@chromium.org</owner>
@@ -506,6 +517,8 @@ chromium-metrics-reviews@google.com.
 
     The records are breakdown by FetchEventResult.
   </summary>
+  <token key="ServiceWorkerFetchEventResult"
+      variants="ServiceWorkerFetchEventResult"/>
 </histogram>
 
 <histogram
@@ -607,7 +620,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="ServiceWorker.LoadTiming.Subresource.ForwardServiceWorkerToWorkerReady"
-    units="ms" expires_after="2022-12-18">
+    units="ms" expires_after="2023-02-19">
   <owner>bashi@chromium.org</owner>
   <owner>chrome-worker@google.com</owner>
   <summary>
@@ -622,7 +635,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="ServiceWorker.LoadTiming.Subresource.ResponseReceivedToCompleted2"
-    units="ms" expires_after="2022-12-18">
+    units="ms" expires_after="2023-02-19">
   <owner>bashi@chromium.org</owner>
   <owner>chrome-worker@google.com</owner>
   <summary>
@@ -754,6 +767,22 @@ chromium-metrics-reviews@google.com.
   <summary>
     Whether the first navigation requires checking the existence of service
     worker registration in DB. It is recorded only once on browser startup.
+  </summary>
+</histogram>
+
+<histogram name="ServiceWorker.OnStarted.UpdatedFetchHandlerType"
+    enum="ServiceWorkerFetchHandlerType" expires_after="2023-06-30">
+  <owner>yyanagisawa@chromium.org</owner>
+  <owner>chrome-worker@google.com</owner>
+  <summary>
+    The type of the fetch handler type to be stored in the database for update.
+
+    During the start of ServiceWorker, the fetch handler type is decided, and
+    sent via OnStarted. If the fetch handler type is different from the fetch
+    handler type already recognized and stored before, it will eventually be
+    updated when it is read from the database next time.
+
+    This metrics records the name of the new fetch handler detected.
   </summary>
 </histogram>
 
@@ -921,7 +950,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="ServiceWorker.StartTiming.StartToReceivedStartWorker"
-    units="ms" expires_after="2022-12-18">
+    units="ms" expires_after="2023-02-19">
   <owner>wanderview@chromium.org</owner>
   <owner>asamidoi@chromium.org</owner>
   <owner>chrome-worker@google.com</owner>
@@ -988,7 +1017,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="ServiceWorker.StartWorker.Status"
-    enum="ServiceWorkerStatusCode" expires_after="2022-12-25">
+    enum="ServiceWorkerStatusCode" expires_after="2023-02-26">
   <owner>wanderview@chromium.org</owner>
   <owner>asamidoi@chromium.org</owner>
   <owner>chrome-worker@google.com</owner>
@@ -1014,7 +1043,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="ServiceWorker.StartWorker.Time" units="ms"
-    expires_after="2022-12-25">
+    expires_after="2023-02-26">
   <owner>wanderview@chromium.org</owner>
   <owner>asamidoi@chromium.org</owner>
   <owner>chrome-worker@google.com</owner>
@@ -1028,7 +1057,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="ServiceWorker.StartWorker.Timeout.StartPurpose"
-    enum="ServiceWorkerMetrics.EventType" expires_after="2022-12-25">
+    enum="ServiceWorkerMetrics.EventType" expires_after="2023-02-26">
   <owner>wanderview@chromium.org</owner>
   <owner>asamidoi@chromium.org</owner>
   <owner>chrome-worker@google.com</owner>
@@ -1041,7 +1070,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="ServiceWorker.StartWorker.TimeoutPhase"
-    enum="EmbeddedWorkerStartingPhase" expires_after="2022-12-25">
+    enum="EmbeddedWorkerStartingPhase" expires_after="2023-02-26">
   <owner>wanderview@chromium.org</owner>
   <owner>asamidoi@chromium.org</owner>
   <owner>chrome-worker@google.com</owner>
@@ -1053,7 +1082,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="ServiceWorker.Storage.DeleteAndStartOverResult"
-    enum="ServiceWorkerDeleteAndStartOverResult" expires_after="M110">
+    enum="ServiceWorkerDeleteAndStartOverResult" expires_after="2023-03-12">
   <owner>bashi@chromium.org</owner>
   <owner>chrome-worker@google.com</owner>
   <summary>
@@ -1112,6 +1141,20 @@ chromium-metrics-reviews@google.com.
     The number of queued tasks that are waiting to be re-posted after recovering
     from a Storage Service crash. Logged at the same time as
     ServiceWorker.Storage.RetryCountForRecovery.
+  </summary>
+</histogram>
+
+<histogram name="ServiceWorker.WorkaroundForCrBug1342408Applied" units="cases"
+    expires_after="2023-06-30">
+  <owner>yyanagisawa@google.com</owner>
+  <owner>chrome-worker@google.com</owner>
+  <summary>
+    True if the workaround for crbug.com/1342408 has been applied. Otherwise,
+    false. The workaround is applied when the response stream call back is
+    called.
+
+    This information is used to understand if we need to continue this
+    workaround or not.
   </summary>
 </histogram>
 

@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -15,7 +15,7 @@
 #include "base/synchronization/lock.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/time/time.h"
-#include "chromeos/dbus/dlcservice/dlcservice_client.h"
+#include "chromeos/ash/components/dbus/dlcservice/dlcservice_client.h"
 
 namespace ash {
 
@@ -41,8 +41,7 @@ class DocumentScannerInstaller {
 
   DocumentScannerInstaller();
 
-  void OnInstalled(
-      const chromeos::DlcserviceClient::InstallResult& install_result);
+  void OnInstalled(const DlcserviceClient::InstallResult& install_result);
 
   std::string library_path_ GUARDED_BY(library_path_lock_);
 

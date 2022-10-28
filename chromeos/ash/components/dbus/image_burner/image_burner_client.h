@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -20,7 +20,7 @@ namespace ash {
 // All method should be called from the origin thread (UI thread) which
 // initializes the DBusThreadManager instance.
 class COMPONENT_EXPORT(ASH_DBUS_IMAGE_BURNER) ImageBurnerClient
-    : public DBusClient {
+    : public chromeos::DBusClient {
  public:
   // Returns the global instance if initialized. May return null.
   static ImageBurnerClient* Get();

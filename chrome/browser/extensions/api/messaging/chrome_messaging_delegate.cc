@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -52,7 +52,7 @@ ChromeMessagingDelegate::IsNativeMessagingHostAllowed(
   if (!pref_service->IsManagedPreference(pref_names::kNativeMessagingBlocklist))
     return allow_result;
   const base::Value::List& blocklist =
-      pref_service->GetValueList(pref_names::kNativeMessagingBlocklist);
+      pref_service->GetList(pref_names::kNativeMessagingBlocklist);
 
   // Check if the name or the wildcard is in the blocklist.
   base::Value name_value(native_host_name);
@@ -66,7 +66,7 @@ ChromeMessagingDelegate::IsNativeMessagingHostAllowed(
   if (pref_service->IsManagedPreference(
           pref_names::kNativeMessagingAllowlist)) {
     const base::Value::List& allowlist =
-        pref_service->GetValueList(pref_names::kNativeMessagingAllowlist);
+        pref_service->GetList(pref_names::kNativeMessagingAllowlist);
     if (base::Contains(allowlist, name_value))
       return allow_result;
   }
@@ -74,7 +74,7 @@ ChromeMessagingDelegate::IsNativeMessagingHostAllowed(
   return PolicyPermission::DISALLOW;
 }
 
-std::unique_ptr<base::DictionaryValue> ChromeMessagingDelegate::MaybeGetTabInfo(
+absl::optional<base::Value::Dict> ChromeMessagingDelegate::MaybeGetTabInfo(
     content::WebContents* web_contents) {
   // Add info about the opener's tab (if it was a tab).
   if (web_contents && ExtensionTabUtil::GetTabId(web_contents) >= 0) {
@@ -92,9 +92,9 @@ std::unique_ptr<base::DictionaryValue> ChromeMessagingDelegate::MaybeGetTabInfo(
         ExtensionTabUtil::kDontScrubTab, ExtensionTabUtil::kDontScrubTab};
     return ExtensionTabUtil::CreateTabObject(web_contents, scrub_tab_behavior,
                                              nullptr)
-        ->ToValue();
+        .ToValue();
   }
-  return nullptr;
+  return absl::nullopt;
 }
 
 content::WebContents* ChromeMessagingDelegate::GetWebContentsByTabId(

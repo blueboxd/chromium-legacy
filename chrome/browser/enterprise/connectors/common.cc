@@ -1,10 +1,11 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome/browser/enterprise/connectors/common.h"
 
 #include "base/notreached.h"
+#include "base/ranges/algorithm.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/enterprise/connectors/analysis/content_analysis_delegate_base.h"
 #include "chrome/browser/enterprise/connectors/analysis/content_analysis_dialog.h"
@@ -285,8 +286,7 @@ void RunSavePackageScanningCallback(download::DownloadItem* item,
 }
 
 bool ContainsMalwareVerdict(const ContentAnalysisResponse& response) {
-  const auto& results = response.results();
-  return std::any_of(results.begin(), results.end(), [](const auto& result) {
+  return base::ranges::any_of(response.results(), [](const auto& result) {
     return result.tag() == kMalwareTag && !result.triggered_rules().empty();
   });
 }

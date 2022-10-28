@@ -11,8 +11,7 @@
 #include "base/thread_annotations.h"
 #include "base/timer/timer.h"
 
-namespace remoting {
-namespace protocol {
+namespace remoting::protocol {
 
 // WebrtcFrameSchedulerConstantRate is an implementation of WebrtcFrameScheduler
 // that captures frames at a fixed rate. It uses the maximum frame rate provided
@@ -27,16 +26,6 @@ class WebrtcFrameSchedulerConstantRate : public WebrtcFrameScheduler {
       const WebrtcFrameSchedulerConstantRate&) = delete;
 
   ~WebrtcFrameSchedulerConstantRate() override;
-
-  // VideoChannelStateObserver implementation.
-  void OnKeyFrameRequested() override;
-  void OnTargetBitrateChanged(int bitrate_kbps) override;
-  void OnFrameEncoded(
-      WebrtcVideoEncoder::EncodeResult encode_result,
-      const WebrtcVideoEncoder::EncodedFrame* encoded_frame) override;
-  void OnEncodedFrameSent(
-      webrtc::EncodedImageCallback::Result result,
-      const WebrtcVideoEncoder::EncodedFrame& frame) override;
 
   // WebrtcFrameScheduler implementation.
   void Start(const base::RepeatingClosure& capture_callback) override;
@@ -66,7 +55,6 @@ class WebrtcFrameSchedulerConstantRate : public WebrtcFrameScheduler {
   SEQUENCE_CHECKER(sequence_checker_);
 };
 
-}  // namespace protocol
-}  // namespace remoting
+}  // namespace remoting::protocol
 
 #endif  // REMOTING_PROTOCOL_WEBRTC_FRAME_SCHEDULER_CONSTANT_RATE_H_

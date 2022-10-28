@@ -1,4 +1,4 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,7 +6,7 @@
  * Javascript for DeviceTable UI, served from chrome://bluetooth-internals/.
  */
 import {assert} from 'chrome://resources/js/assert.m.js';
-import {define as crUiDefine} from 'chrome://resources/js/cr/ui.m.js';
+import {define as crUiDefine} from 'chrome://resources/js/cr/ui.js';
 import {$} from 'chrome://resources/js/util.m.js';
 
 import {DeviceInfo} from './device.mojom-webui.js';

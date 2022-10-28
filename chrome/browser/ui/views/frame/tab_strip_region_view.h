@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -54,13 +54,18 @@ class TabStripRegionView final : public views::AccessiblePaneView {
   }
 
   // views::View:
+
+  // These system drag & drop methods forward the events to TabDragController to
+  // support its fallback tab dragging mode in the case where the platform
+  // can't support the usual run loop based mode.
   bool CanDrop(const OSExchangeData& data) override;
   bool GetDropFormats(int* formats,
                       std::set<ui::ClipboardFormatType>* format_types) override;
   void OnDragEntered(const ui::DropTargetEvent& event) override;
   int OnDragUpdated(const ui::DropTargetEvent& event) override;
   void OnDragExited() override;
-  DropCallback GetDropCallback(const ui::DropTargetEvent& event) override;
+  // We don't override GetDropCallback() because we don't actually want to
+  // transfer any data.
 
   // views::AccessiblePaneView:
   void ChildPreferredSizeChanged(views::View* child) override;

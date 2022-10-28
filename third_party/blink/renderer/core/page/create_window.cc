@@ -32,6 +32,7 @@
 #include "third_party/blink/public/common/dom_storage/session_storage_namespace_id.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/mojom/loader/request_context_frame_type.mojom-blink.h"
+#include "third_party/blink/public/mojom/window_features/window_features.mojom-blink.h"
 #include "third_party/blink/public/web/web_view_client.h"
 #include "third_party/blink/public/web/web_window_features.h"
 #include "third_party/blink/renderer/core/core_initializer.h"
@@ -146,16 +147,16 @@ WebWindowFeatures GetWindowFeaturesFromString(const String& feature_string,
 
     // Listing a key with no value is shorthand for key=yes
     int value;
+    constexpr auto kLoose = WTF::NumberParsingOptions::Loose();
     if (value_string.IsEmpty() || value_string == "yes" ||
         value_string == "true") {
       value = 1;
     } else if (value_string.Is8Bit()) {
       value = CharactersToInt(value_string.Characters8(), value_string.length(),
-                              WTF::NumberParsingOptions::kLoose, nullptr);
+                              kLoose, nullptr);
     } else {
-      value =
-          CharactersToInt(value_string.Characters16(), value_string.length(),
-                          WTF::NumberParsingOptions::kLoose, nullptr);
+      value = CharactersToInt(value_string.Characters16(),
+                              value_string.length(), kLoose, nullptr);
     }
 
     if (!ui_features_were_disabled && key_string != "noopener" &&
@@ -378,7 +379,10 @@ Frame* CreateNewWindow(LocalFrame& opener_frame,
 
   frame.View()->SetCanHaveScrollbars(features.scrollbars_visible);
 
-  gfx::Rect window_rect = page->GetChromeClient().RootWindowRect(frame);
+  mojom::blink::WindowFeaturesPtr window_features =
+      mojom::blink::WindowFeatures::New();
+  window_features->bounds = page->GetChromeClient().RootWindowRect(frame);
+  gfx::Rect& window_rect = window_features->bounds;
   if (features.x_set)
     window_rect.set_x(features.x);
   if (features.y_set)
@@ -389,7 +393,7 @@ Frame* CreateNewWindow(LocalFrame& opener_frame,
     window_rect.set_height(features.height);
 
   page->GetChromeClient().Show(frame, opener_frame,
-                               request.GetNavigationPolicy(), window_rect,
+                               request.GetNavigationPolicy(), *window_features,
                                consumed_user_gesture);
   MaybeLogWindowOpen(opener_frame);
   return &frame;

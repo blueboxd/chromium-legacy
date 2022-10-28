@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -64,7 +64,7 @@ SuggestionGroupVisibility GetUserPreferenceForSuggestionGroupVisibility(
   DCHECK(prefs);
 
   const base::Value::Dict& dictionary =
-      prefs->GetValueDict(kSuggestionGroupVisibility);
+      prefs->GetDict(kSuggestionGroupVisibility);
 
   absl::optional<int> value =
       dictionary.FindInt(base::NumberToString(suggestion_group_id));
@@ -113,7 +113,7 @@ std::string GetUserPreferenceForZeroSuggestCachedResponse(
   DCHECK(prefs);
 
   const base::Value::Dict& dictionary =
-      prefs->GetValueDict(omnibox::kZeroSuggestCachedResultsWithURL);
+      prefs->GetDict(omnibox::kZeroSuggestCachedResultsWithURL);
   auto* value_ptr = dictionary.FindString(page_url);
   return (value_ptr ? *value_ptr : std::string());
 }

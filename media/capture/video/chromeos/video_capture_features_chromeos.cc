@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -32,7 +32,7 @@ bool ShouldEnableAutoFraming() {
   // TODO(pihsun): Migrate the flag to use base::Feature.
   std::string value =
       command_line->GetSwitchValueASCII(media::switches::kAutoFramingOverride);
-  return value == media::switches::kAutoFramingForceEnabled;
+  return value != media::switches::kAutoFramingForceDisabled;
 }
 
 }  // namespace media

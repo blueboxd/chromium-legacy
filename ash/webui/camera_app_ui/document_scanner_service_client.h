@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,7 +13,7 @@
 #include "base/sequence_checker.h"
 #include "base/synchronization/lock.h"
 #include "base/task/sequenced_task_runner.h"
-#include "chromeos/dbus/dlcservice/dlcservice_client.h"
+#include "chromeos/ash/components/dbus/dlcservice/dlcservice_client.h"
 #include "chromeos/services/machine_learning/public/mojom/document_scanner.mojom.h"
 #include "chromeos/services/machine_learning/public/mojom/machine_learning_service.mojom.h"
 #include "mojo/public/cpp/bindings/remote.h"
@@ -39,7 +39,7 @@ class DocumentScannerServiceClient {
 
   ~DocumentScannerServiceClient();
 
-  void RegisterDocumentScannerReadyCallback(OnReadyCallback callback);
+  void CheckDocumentModeReadiness(OnReadyCallback callback);
 
   bool IsLoaded();
 
@@ -58,7 +58,9 @@ class DocumentScannerServiceClient {
   DocumentScannerServiceClient();
 
  private:
-  void LoadDocumentScanner(const std::string& lib_path);
+  void LoadDocumentScanner();
+
+  void LoadDocumentScannerInternal(const std::string& lib_path);
 
   void OnLoadedDocumentScanner(
       chromeos::machine_learning::mojom::LoadModelResult result);
@@ -66,6 +68,8 @@ class DocumentScannerServiceClient {
   // Guards |document_scanner_loaded_| and |on_ready_callbacks_| which are
   // related to the load status.
   base::Lock load_status_lock_;
+
+  bool is_loading_ GUARDED_BY(load_status_lock_) = false;
 
   bool document_scanner_loaded_ GUARDED_BY(load_status_lock_) = false;
 

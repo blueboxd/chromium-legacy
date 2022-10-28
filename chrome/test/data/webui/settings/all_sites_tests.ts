@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -559,16 +559,16 @@ suite('AllSites_DisabledConsolidatedControls', function() {
         siteEntries[0]!.$$<HTMLElement>('#overflowMenuButton')!;
     assertFalse(
         overflowMenuButton.closest<HTMLElement>('.row-aligned')!.hidden);
-    // Open the reset settings dialog.
-    const overflowMenu = testElement.$.menu.get();
-    const menuItems =
-        overflowMenu.querySelectorAll<HTMLElement>('.dropdown-item');
 
+    // Open the reset settings dialog.
     // Test clicking on the overflow menu button opens the menu.
+    const overflowMenu = testElement.$.menu.get();
     assertFalse(overflowMenu.open);
     overflowMenuButton.click();
     assertTrue(overflowMenu.open);
-
+    flush();
+    const menuItems =
+        overflowMenu.querySelectorAll<HTMLElement>('.dropdown-item');
     // Open the reset settings dialog and tap the |buttonType| button.
     assertFalse(testElement.$.confirmResetSettings.get().open);
     menuItems[0]!.click();
@@ -664,12 +664,13 @@ suite('AllSites_DisabledConsolidatedControls', function() {
 
     // Open the clear data dialog.
     const overflowMenu = testElement.$.menu.get();
-    const menuItems =
-        overflowMenu.querySelectorAll<HTMLElement>('.dropdown-item');
     // Test clicking on the overflow menu button opens the menu.
     assertFalse(overflowMenu.open);
     overflowMenuButton.click();
     assertTrue(overflowMenu.open);
+    flush();
+    const menuItems =
+        overflowMenu.querySelectorAll<HTMLElement>('.dropdown-item');
 
     // Open the clear data dialog and tap the |buttonType| button.
     assertFalse(testElement.$.confirmClearData.get().open);
@@ -859,7 +860,7 @@ suite('AllSites_DisabledConsolidatedControls', function() {
       },
     }));
     assertTrue(overflowMenu.open);
-
+    flush();
     const menuItems =
         overflowMenu.querySelectorAll<HTMLElement>('.dropdown-item');
 
@@ -957,7 +958,7 @@ suite('AllSites_DisabledConsolidatedControls', function() {
       },
     }));
     assertTrue(overflowMenu.open);
-
+    flush();
     const menuItems =
         overflowMenu.querySelectorAll<HTMLElement>('.dropdown-item');
 
@@ -1385,4 +1386,286 @@ suite('AllSites_EnabledConsolidatedControls', function() {
         testElement.shadowRoot!
             .querySelector<HTMLElement>('#logoutBulletPoint')!.innerText);
   });
+});
+
+suite('AllSites_EnableFirstPartySets', function() {
+  /**
+   * An example eTLD+1 Object with multiple origins grouped under it.
+   */
+  const TEST_MULTIPLE_SITE_GROUP = createSiteGroup('example.com', [
+    'http://example.com',
+    'https://www.example.com',
+    'https://login.example.com',
+  ]);
+
+  /**
+   * Example site groups with one owned SiteGroup.
+   */
+  const TEST_SITE_GROUPS: SiteGroup[] = [
+    {
+      etldPlus1: 'foo.com',
+      origins: [createOriginInfo('https://foo.com')],
+      numCookies: 0,
+      fpsOwner: 'foo.com',
+      hasInstalledPWA: false,
+    },
+    {
+      etldPlus1: 'bar.com',
+      origins: [createOriginInfo('https://bar.com')],
+      numCookies: 0,
+      hasInstalledPWA: false,
+    },
+    {
+      etldPlus1: 'example.com',
+      origins: [createOriginInfo('https://example.com')],
+      numCookies: 0,
+      hasInstalledPWA: false,
+    },
+  ];
+
+  /**
+   * Example first party set site groups.
+   */
+  const TEST_FPS_SITE_GROUPS: SiteGroup[] = [
+    {
+      etldPlus1: 'google.com',
+      origins: [createOriginInfo('https://google.com')],
+      numCookies: 0,
+      fpsOwner: 'google.com',
+      fpsNumMembers: 2,
+      hasInstalledPWA: false,
+    },
+    {
+      etldPlus1: 'youtube.com',
+      origins: [createOriginInfo('https://youtube.com')],
+      numCookies: 0,
+      fpsOwner: 'google.com',
+      fpsNumMembers: 2,
+      hasInstalledPWA: false,
+    },
+  ];
+
+  let testElement: AllSitesElement;
+
+  /**
+   * The mock proxy object to use during test.
+   */
+  let browserProxy: TestSiteSettingsPrefsBrowserProxy;
+
+  /**
+   * The mock local data proxy object to use during test.
+   */
+  let localDataBrowserProxy: TestLocalDataBrowserProxy;
+
+  suiteSetup(function() {
+    CrSettingsPrefs.setInitialized();
+
+    loadTimeData.overrideValues({
+      consolidatedSiteStorageControlsEnabled: true,
+      firstPartySetsUIEnabled: true,
+    });
+  });
+
+  suiteTeardown(function() {
+    CrSettingsPrefs.resetForTesting();
+  });
+
+
+  // Initialize a site-list before each test.
+  setup(async function() {
+    document.body.innerHTML = '';
+
+    browserProxy = new TestSiteSettingsPrefsBrowserProxy();
+    localDataBrowserProxy = new TestLocalDataBrowserProxy();
+    SiteSettingsPrefsBrowserProxyImpl.setInstance(browserProxy);
+    LocalDataBrowserProxyImpl.setInstance(localDataBrowserProxy);
+    testElement = document.createElement('all-sites');
+    assertTrue(!!testElement);
+    document.body.appendChild(testElement);
+  });
+
+  teardown(function() {
+    // The code being tested changes the Route. Reset so that state is not
+    // leaked across tests.
+    Router.getInstance().resetRouteForTesting();
+  });
+
+  function removeSiteViaOverflowMenu(buttonType: string) {
+    assertTrue(
+        buttonType === 'cancel-button' || buttonType === 'action-button');
+    flush();
+    const siteEntries =
+        testElement.$.listContainer.querySelectorAll('site-entry');
+    assertTrue(siteEntries.length >= 1);
+    const overflowMenuButton =
+        siteEntries[0]!.shadowRoot!.querySelector<HTMLElement>(
+            '#fpsOverflowMenuButton')!;
+    assertFalse(
+        overflowMenuButton.closest<HTMLElement>('.row-aligned')!.hidden);
+
+    // Test clicking on the overflow menu button opens the menu.
+    const overflowMenu = testElement.$.menu.get();
+    assertFalse(overflowMenu.open);
+    overflowMenuButton.click();
+    assertTrue(overflowMenu.open);
+    flush();
+    const menuItems =
+        overflowMenu.querySelectorAll<HTMLElement>('.dropdown-item');
+    assertFalse(testElement.$.confirmRemoveSite.get().open);
+    menuItems[1]!.click();
+    assertTrue(testElement.$.confirmRemoveSite.get().open);
+    const actionButtonList =
+        testElement.$.confirmRemoveSite.get().querySelectorAll<HTMLElement>(
+            `.${buttonType}`);
+    assertEquals(1, actionButtonList.length);
+    actionButtonList[0]!.click();
+    // Check the dialog and overflow menu are now both closed.
+    assertFalse(testElement.$.confirmRemoveSite.get().open);
+    assertFalse(overflowMenu.open);
+  }
+
+  function removeFirstSiteGroup() {
+    const siteEntries =
+        testElement.$.listContainer.querySelectorAll('site-entry');
+    assertEquals(1, siteEntries.length);
+    siteEntries[0]!.shadowRoot!.querySelector<HTMLElement>(
+                                   '#removeSiteButton')!.click();
+  }
+
+  function confirmDialog() {
+    assertTrue(testElement.$.confirmRemoveSite.get().open);
+    testElement.$.confirmRemoveSite.get()
+        .querySelector<HTMLElement>('.action-button')!.click();
+  }
+
+  function cancelDialog() {
+    assertTrue(testElement.$.confirmRemoveSite.get().open);
+    testElement.$.confirmRemoveSite.get()
+        .querySelector<HTMLElement>('.cancel-button')!.click();
+  }
+
+  test('remove site via overflow menu', async function() {
+    const siteGroup = JSON.parse(JSON.stringify(TEST_MULTIPLE_SITE_GROUP));
+    siteGroup.fpsOwner = 'google.com';
+    testElement.siteGroupMap.set(
+        siteGroup.etldPlus1, JSON.parse(JSON.stringify(siteGroup)));
+    testElement.forceListUpdateForTesting();
+    assertEquals(testElement.$.allSitesList.items!.length, 1);
+    removeSiteViaOverflowMenu('action-button');
+    assertEquals(testElement.$.allSitesList.items!.length, 0);
+  });
+
+  test(
+      'cancelling the confirm dialog on removing site works', async function() {
+        const siteGroup = JSON.parse(JSON.stringify(TEST_MULTIPLE_SITE_GROUP));
+        siteGroup.fpsOwner = 'google.com';
+        testElement.siteGroupMap.set(
+            siteGroup.etldPlus1, JSON.parse(JSON.stringify(siteGroup)));
+        testElement.forceListUpdateForTesting();
+        removeSiteViaOverflowMenu('cancel-button');
+      });
+
+  test('click and remove site entry with remove button', async function() {
+    testElement.siteGroupMap.set(
+        TEST_MULTIPLE_SITE_GROUP.etldPlus1,
+        JSON.parse(JSON.stringify(TEST_MULTIPLE_SITE_GROUP)));
+    testElement.forceListUpdateForTesting();
+    flush();
+    removeFirstSiteGroup();
+    confirmDialog();
+  });
+
+  test(
+      'click and cancel dialog site entry with remove button',
+      async function() {
+        testElement.siteGroupMap.set(
+            TEST_MULTIPLE_SITE_GROUP.etldPlus1,
+            JSON.parse(JSON.stringify(TEST_MULTIPLE_SITE_GROUP)));
+        testElement.forceListUpdateForTesting();
+        flush();
+        removeFirstSiteGroup();
+        cancelDialog();
+      });
+
+  test('filter sites by first party set owner', async function() {
+    TEST_SITE_GROUPS.forEach(siteGroup => {
+      testElement.siteGroupMap.set(
+          siteGroup.etldPlus1, JSON.parse(JSON.stringify(siteGroup)));
+    });
+    testElement.forceListUpdateForTesting();
+    flush();
+    let siteEntries =
+        testElement.$.listContainer.querySelectorAll('site-entry');
+    assertEquals(3, siteEntries.length);
+    const overflowMenuButton =
+        siteEntries[0]!.shadowRoot!.querySelector<HTMLElement>(
+            '#fpsOverflowMenuButton')!;
+    assertFalse(
+        overflowMenuButton.closest<HTMLElement>('.row-aligned')!.hidden);
+
+    // Test clicking on the overflow menu button opens the menu.
+    const overflowMenu = testElement.$.menu.get();
+    assertFalse(overflowMenu.open);
+    overflowMenuButton.click();
+    assertTrue(overflowMenu.open);
+    flush();
+    const menuItems =
+        overflowMenu.querySelectorAll<HTMLElement>('.dropdown-item');
+    assertEquals('', testElement.filter);
+    // Click show related sites.
+    menuItems[0]!.click();
+    // Check the overflow menu is now closed.
+    assertFalse(overflowMenu.open);
+    // Verify filter is applied in search query.
+    assertEquals(
+        'related:foo.com',
+        Router.getInstance().getQueryParameters().get('searchSubpage'));
+    // Filter needs to be set manually here as rerouting to all-sites with a
+    // search query doesn't change it in this test.
+    testElement.filter = 'related:foo.com';
+    flush();
+
+    siteEntries = testElement.$.listContainer.querySelectorAll('site-entry');
+    let hiddenSiteEntries = Array.from(
+        testElement.shadowRoot!.querySelectorAll('site-entry[hidden]'));
+    assertEquals(1, siteEntries.length - hiddenSiteEntries.length);
+    assertEquals('foo.com', siteEntries[0]!.siteGroup.fpsOwner);
+
+    // Clear filter and assert the list is back to 3 elements.
+    testElement.filter = '';
+    flush();
+
+    siteEntries = testElement.$.listContainer.querySelectorAll('site-entry');
+    hiddenSiteEntries = Array.from(
+        testElement.shadowRoot!.querySelectorAll('site-entry[hidden]'));
+    assertEquals(3, siteEntries.length - hiddenSiteEntries.length);
+  });
+
+  test(
+      'site entry first party set information updated on site deletion',
+      async function() {
+        TEST_FPS_SITE_GROUPS.forEach(siteGroup => {
+          testElement.siteGroupMap.set(
+              siteGroup.etldPlus1, JSON.parse(JSON.stringify(siteGroup)));
+        });
+        testElement.forceListUpdateForTesting();
+        flush();
+        let siteEntries =
+            testElement.$.listContainer.querySelectorAll('site-entry');
+        assertEquals(testElement.$.allSitesList.items!.length, 2);
+        await localDataBrowserProxy.whenCalled('getFpsMembershipLabel');
+        assertEquals(
+            '· Allowed for 2 google.com sites',
+            siteEntries[1]!.$.fpsMembership.innerText.trim());
+
+        // Remove first site group.
+        removeSiteViaOverflowMenu('action-button');
+        siteEntries =
+            testElement.$.listContainer.querySelectorAll('site-entry');
+        assertEquals(testElement.$.allSitesList.items!.length, 1);
+        await localDataBrowserProxy.whenCalled('getFpsMembershipLabel');
+        assertEquals(
+            '· Allowed for 1 google.com site',
+            siteEntries[1]!.$.fpsMembership.innerText.trim());
+      });
 });

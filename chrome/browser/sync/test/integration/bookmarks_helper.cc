@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -40,6 +40,7 @@
 #include "components/bookmarks/browser/bookmark_client.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/browser/bookmark_utils.h"
+#include "components/bookmarks/common/bookmark_metrics.h"
 #include "components/bookmarks/managed/managed_bookmark_service.h"
 #include "components/favicon/core/favicon_service.h"
 #include "components/favicon_base/favicon_util.h"
@@ -126,6 +127,9 @@ void ApplyBookmarkFavicon(
 
 // Helper class used to wait for changes to take effect on the favicon of a
 // particular bookmark node in a particular bookmark model.
+// TODO(crbug.com/1359984): Wait for favicon being fully loaded (including check
+// that the right favicon is loaded) instead of being invalidated. Callers need
+// extra audit.
 class FaviconChangeObserver : public bookmarks::BookmarkModelObserver {
  public:
   FaviconChangeObserver(BookmarkModel* model, const BookmarkNode* node)
@@ -137,7 +141,7 @@ class FaviconChangeObserver : public bookmarks::BookmarkModelObserver {
   FaviconChangeObserver& operator=(const FaviconChangeObserver&) = delete;
 
   ~FaviconChangeObserver() override { model_->RemoveObserver(this); }
-  void WaitForSetFavicon() {
+  void WaitUntilFaviconUnset() {
     DCHECK(!run_loop_.running());
     content::RunThisRunLoop(&run_loop_);
   }
@@ -152,7 +156,8 @@ class FaviconChangeObserver : public bookmarks::BookmarkModelObserver {
                          size_t new_index) override {}
   void BookmarkNodeAdded(BookmarkModel* model,
                          const BookmarkNode* parent,
-                         size_t index) override {}
+                         size_t index,
+                         bool added_by_user) override {}
   void BookmarkNodeRemoved(BookmarkModel* model,
                            const BookmarkNode* parent,
                            size_t old_index,
@@ -172,7 +177,7 @@ class FaviconChangeObserver : public bookmarks::BookmarkModelObserver {
                                      const BookmarkNode* node) override {}
   void BookmarkNodeFaviconChanged(BookmarkModel* model,
                                   const BookmarkNode* node) override {
-    if (model == model_ && node == node_) {
+    if (model == model_ && node == node_ && !node->is_favicon_loaded()) {
       run_loop_.Quit();
     }
   }
@@ -295,7 +300,7 @@ void SetFaviconImpl(Profile* profile,
   }
 
   // Wait for the favicon for |node| to be invalidated.
-  observer.WaitForSetFavicon();
+  observer.WaitUntilFaviconUnset();
   model->GetFavicon(node);
 }
 
@@ -340,7 +345,7 @@ void DeleteFaviconMappingsImpl(Profile* profile,
   }
 
   // Wait for the favicon for |node| to be invalidated.
-  observer.WaitForSetFavicon();
+  observer.WaitUntilFaviconUnset();
   model->GetFavicon(node);
 }
 
@@ -606,7 +611,8 @@ void SetTitle(int profile,
   ASSERT_EQ(bookmarks::GetBookmarkNodeByID(model, node->id()), node)
       << "Node " << node->GetTitle() << " does not belong to "
       << "Profile " << profile;
-  model->SetTitle(node, base::UTF8ToUTF16(new_title));
+  model->SetTitle(node, base::UTF8ToUTF16(new_title),
+                  bookmarks::metrics::BookmarkEditSource::kOther);
 }
 
 void SetFavicon(int profile,
@@ -697,7 +703,8 @@ const BookmarkNode* SetURL(int profile,
     return nullptr;
   }
   if (node->is_url()) {
-    model->SetURL(node, new_url);
+    model->SetURL(node, new_url,
+                  bookmarks::metrics::BookmarkEditSource::kOther);
   }
   return node;
 }
@@ -923,7 +930,8 @@ void AnyBookmarkChangeObserver::BookmarkNodeMoved(
 
 void AnyBookmarkChangeObserver::BookmarkNodeAdded(BookmarkModel* model,
                                                   const BookmarkNode* parent,
-                                                  size_t index) {
+                                                  size_t index,
+                                                  bool added_by_user) {
   cb_.Run();
 }
 

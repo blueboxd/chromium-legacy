@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -137,7 +137,7 @@ void CastAudioManagerAlsa::GetAudioInputDeviceNames(
   // Need to send a valid AudioParameters object even when it will be unused.
   return ::media::AudioParameters(
       ::media::AudioParameters::AUDIO_PCM_LOW_LATENCY,
-      ::media::CHANNEL_LAYOUT_STEREO, kDefaultSampleRate,
+      ::media::ChannelLayoutConfig::Stereo(), kDefaultSampleRate,
       kDefaultInputBufferSize);
 }
 

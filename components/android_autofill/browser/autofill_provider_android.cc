@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -107,7 +107,7 @@ void AutofillProviderAndroid::OnAskForValuesToFill(
     const gfx::RectF& bounding_box,
     int32_t query_id,
     bool /*unused_autoselect_first_suggestion*/,
-    TouchToFillEligible /*unused_touch_to_fill_eligible*/) {
+    FormElementWasClicked /*unused_form_element_was_clicked*/) {
   // The id isn't passed to Java side because Android API guarantees the
   // response is always for current session, so we just use the current id
   // in response, see OnAutofillAvailable.
@@ -152,12 +152,7 @@ void AutofillProviderAndroid::StartNewSession(AndroidAutofillManager* manager,
   if (obj.is_null())
     return;
 
-  form_ = std::make_unique<FormDataAndroid>(
-      form,
-      base::BindRepeating(
-          &ContentAutofillDriver::TransformBoundingBoxToViewportCoordinates,
-          base::Unretained(
-              static_cast<ContentAutofillDriver*>(manager->driver()))));
+  form_ = std::make_unique<FormDataAndroid>(form);
   field_id_ = field.global_id();
 
   size_t index;

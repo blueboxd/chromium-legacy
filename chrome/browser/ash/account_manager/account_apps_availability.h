@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -102,6 +102,8 @@ class AccountAppsAvailability
   // `AccountManagerFacade::Observer`:
   void OnAccountUpserted(const account_manager::Account& account) override;
   void OnAccountRemoved(const account_manager::Account& account) override;
+  void OnAuthErrorChanged(const account_manager::AccountKey& account,
+                          const GoogleServiceAuthError& error) override;
 
   // Initialize the prefs: add all Gaia accounts from Account Manager with
   // is_available_in_arc=true.

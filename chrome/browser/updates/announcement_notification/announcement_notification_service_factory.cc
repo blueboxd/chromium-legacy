@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -19,8 +19,6 @@
 
 #if BUILDFLAG(IS_ANDROID)
 #include "chrome/browser/updates/announcement_notification/announcement_notification_delegate_android.h"
-#else
-#include "chrome/browser/updates/announcement_notification/announcement_notification_delegate.h"
 #endif  // BUILDFLAG(IS_ANDROID)
 
 // static

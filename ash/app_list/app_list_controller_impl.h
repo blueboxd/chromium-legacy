@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -124,9 +124,6 @@ class ASH_EXPORT AppListControllerImpl
   void Show(int64_t display_id,
             absl::optional<AppListShowSource> show_source,
             base::TimeTicks event_time_stamp);
-  void UpdateYPositionAndOpacity(int y_position_in_screen,
-                                 float background_opacity);
-  void EndDragFromShelf(AppListViewState app_list_state);
   void ProcessMouseWheelEvent(const ui::MouseWheelEvent& event);
   void ProcessScrollEvent(const ui::ScrollEvent& event);
   void UpdateAppListWithNewTemporarySortOrder(
@@ -329,11 +326,6 @@ class ASH_EXPORT AppListControllerImpl
 
   // Runs `close_assistant_ui_runner_` when it is non-null.
   void MaybeCloseAssistant();
-
-  // Get updated app list view state after dragging from shelf.
-  AppListViewState CalculateStateAfterShelfDrag(
-      const ui::LocatedEvent& event_in_screen,
-      float launcher_above_shelf_bottom_amount) const;
 
   using StateTransitionAnimationCallback =
       base::RepeatingCallback<void(AppListViewState)>;

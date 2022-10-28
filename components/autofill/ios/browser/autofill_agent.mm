@@ -1,4 +1,4 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -29,6 +29,7 @@
 #include "components/autofill/core/browser/keyboard_accessory_metrics_logger.h"
 #include "components/autofill/core/browser/metrics/autofill_metrics.h"
 #include "components/autofill/core/browser/ui/popup_item_ids.h"
+#include "components/autofill/core/browser/ui/suggestion.h"
 #include "components/autofill/core/common/autofill_constants.h"
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/autofill/core/common/autofill_prefs.h"
@@ -334,12 +335,11 @@ void GetFormField(autofill::FormFieldData* field,
   autofillManager->OnAskForValuesToFill(form, field, gfx::RectF(),
                                         ++_lastQueryID,
                                         /*autoselect_first_suggestion=*/false,
-                                        autofill::TouchToFillEligible(false));
+                                        autofill::FormElementWasClicked(false));
 }
 
 - (void)checkIfSuggestionsAvailableForForm:
             (FormSuggestionProviderQuery*)formQuery
-                               isMainFrame:(BOOL)isMainFrame
                             hasUserGesture:(BOOL)hasUserGesture
                                   webState:(web::WebState*)webState
                          completionHandler:
@@ -424,8 +424,8 @@ void GetFormField(autofill::FormFieldData* field,
     if (_popupDelegate) {
       // TODO(966411): Replace 0 with the index of the selected suggestion.
       _popupDelegate->DidAcceptSuggestion(SysNSStringToUTF16(suggestion.value),
-                                          suggestion.identifier, std::string(),
-                                          0);
+                                          suggestion.identifier,
+                                          autofill::Suggestion::BackendId(), 0);
     }
     return;
   }
@@ -581,7 +581,12 @@ void GetFormField(autofill::FormFieldData* field,
       // displayDescription will contain a summary of the data to be filled in
       // the other elements.
       value = SysUTF16ToNSString(popup_suggestion.main_text.value);
-      displayDescription = SysUTF16ToNSString(popup_suggestion.label);
+      if (!popup_suggestion.labels.empty()) {
+        DCHECK_EQ(popup_suggestion.labels.size(), 1U);
+        DCHECK_EQ(popup_suggestion.labels[0].size(), 1U);
+        displayDescription =
+            SysUTF16ToNSString(popup_suggestion.labels[0][0].value);
+      }
     } else if (popup_suggestion.frontend_id ==
                autofill::POPUP_ITEM_ID_CLEAR_FORM) {
       // Show the "clear form" button.
@@ -836,7 +841,6 @@ void GetFormField(autofill::FormFieldData* field,
     didSubmitDocumentWithFormNamed:(const std::string&)formName
                           withData:(const std::string&)formData
                     hasUserGesture:(BOOL)hasUserGesture
-                   formInMainFrame:(BOOL)formInMainFrame
                            inFrame:(web::WebFrame*)frame {
   if (![self isAutofillEnabled])
     return;

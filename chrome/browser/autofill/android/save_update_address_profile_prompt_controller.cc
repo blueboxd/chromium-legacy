@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,8 +6,8 @@
 
 #include <utility>
 
-#include "base/stl_util.h"
 #include "base/strings/string_util.h"
+#include "base/types/optional_util.h"
 #include "chrome/android/chrome_jni_headers/SaveUpdateAddressProfilePromptController_jni.h"
 #include "chrome/browser/autofill/android/personal_data_manager_android.h"
 #include "chrome/browser/browser_process.h"

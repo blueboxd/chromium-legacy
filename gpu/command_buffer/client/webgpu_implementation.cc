@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -346,16 +346,15 @@ void WebGPUImplementation::FlushCommands() {
 bool WebGPUImplementation::EnsureAwaitingFlush() {
 #if BUILDFLAG(USE_DAWN)
   // If there is already a flush waiting, we don't need to flush.
-  // We only want to set |needs_flush| on state transition from
+  // We only want to ask for a flush on state transition from
   // false -> true.
   if (dawn_wire_->serializer()->AwaitingFlush()) {
     return false;
   }
 
-  // Set the state to waiting for flush, and then write |needs_flush|.
-  // Could still be false if there's no data to flush.
+  // Set the state to waiting for flush.
   dawn_wire_->serializer()->SetAwaitingFlush(true);
-  return dawn_wire_->serializer()->AwaitingFlush();
+  return true;
 #else
   return false;
 #endif
@@ -363,10 +362,9 @@ bool WebGPUImplementation::EnsureAwaitingFlush() {
 
 void WebGPUImplementation::FlushAwaitingCommands() {
 #if BUILDFLAG(USE_DAWN)
-  if (dawn_wire_->serializer()->AwaitingFlush()) {
-    dawn_wire_->serializer()->Commit();
-    helper_->Flush();
-  }
+  dawn_wire_->serializer()->Commit();
+  helper_->FlushLazy();
+  dawn_wire_->serializer()->SetAwaitingFlush(false);
 #endif
 }
 
@@ -451,6 +449,17 @@ void WebGPUImplementation::DissociateMailboxForPresent(
   dawn_wire_->serializer()->Commit();
   helper_->DissociateMailboxForPresent(device_id, device_generation, texture_id,
                                        texture_generation);
+#endif
+}
+
+void WebGPUImplementation::SetExecutionContextToken(uint32_t type,
+                                                    uint32_t high_high,
+                                                    uint32_t high_low,
+                                                    uint32_t low_high,
+                                                    uint32_t low_low) {
+#if BUILDFLAG(USE_DAWN)
+  helper_->SetExecutionContextToken(type, high_high, high_low, low_high,
+                                    low_low);
 #endif
 }
 

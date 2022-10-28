@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -82,8 +82,7 @@ TEST_F(GuestIdTest, DuplicateContainerNamesInPrefsAreRemoved) {
 
   RemoveDuplicateContainerEntries(prefs);
 
-  const base::Value::List& result =
-      prefs->GetValueList(prefs::kGuestOsContainers);
+  const base::Value::List& result = prefs->GetList(prefs::kGuestOsContainers);
 
   ASSERT_EQ(result.size(), 3);
   EXPECT_EQ(result[0].GetDict(), dictionary1);

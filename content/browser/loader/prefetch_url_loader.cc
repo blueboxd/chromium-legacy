@@ -73,8 +73,7 @@ PrefetchURLLoader::PrefetchURLLoader(
     resource_request_.headers.SetHeader(
         net::HttpRequestHeaders::kAccept,
         kSignedExchangeEnabledAcceptHeaderForPrefetch);
-    if (prefetched_signed_exchange_cache &&
-        resource_request.is_signed_exchange_prefetch_cache_enabled) {
+    if (prefetched_signed_exchange_cache) {
       prefetched_signed_exchange_cache_adapter_ =
           std::make_unique<PrefetchedSignedExchangeCacheAdapter>(
               std::move(prefetched_signed_exchange_cache),
@@ -144,7 +143,8 @@ void PrefetchURLLoader::OnReceiveEarlyHints(
 
 void PrefetchURLLoader::OnReceiveResponse(
     network::mojom::URLResponseHeadPtr response,
-    mojo::ScopedDataPipeConsumerHandle body) {
+    mojo::ScopedDataPipeConsumerHandle body,
+    absl::optional<mojo_base::BigBuffer> cached_metadata) {
   if (is_signed_exchange_handling_enabled_ &&
       signed_exchange_utils::ShouldHandleAsSignedHTTPExchange(
           resource_request_.url, *response)) {
@@ -179,9 +179,14 @@ void PrefetchURLLoader::OnReceiveResponse(
     response->recursive_prefetch_token = recursive_prefetch_token;
   }
 
+  // Just drop any cached metadata; we don't need to forward it to the renderer
+  // for prefetch.
+  cached_metadata.reset();
+
   if (!body) {
     forwarding_client_->OnReceiveResponse(std::move(response),
-                                          mojo::ScopedDataPipeConsumerHandle());
+                                          mojo::ScopedDataPipeConsumerHandle(),
+                                          absl::nullopt);
     return;
   }
 
@@ -225,11 +230,6 @@ void PrefetchURLLoader::OnUploadProgress(int64_t current_position,
                                        std::move(callback));
 }
 
-void PrefetchURLLoader::OnReceiveCachedMetadata(mojo_base::BigBuffer data) {
-  // Just drop this; we don't need to forward this to the renderer
-  // for prefetch.
-}
-
 void PrefetchURLLoader::OnTransferSizeUpdated(int32_t transfer_size_diff) {
   forwarding_client_->OnTransferSizeUpdated(transfer_size_diff);
 }
@@ -260,7 +260,7 @@ bool PrefetchURLLoader::SendEmptyBody() {
   }
   DCHECK(response_);
   forwarding_client_->OnReceiveResponse(std::move(response_),
-                                        std::move(consumer));
+                                        std::move(consumer), absl::nullopt);
   return true;
 }
 

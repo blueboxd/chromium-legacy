@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,7 +12,7 @@
 #import "components/prefs/testing_pref_service.h"
 #import "components/signin/public/base/signin_pref_names.h"
 #import "components/signin/public/identity_manager/identity_manager.h"
-#import "components/sync/driver/mock_sync_service.h"
+#import "components/sync/test/mock_sync_service.h"
 #import "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #import "ios/chrome/browser/signin/authentication_service_factory.h"
 #import "ios/chrome/browser/signin/authentication_service_fake.h"
@@ -121,7 +121,7 @@ class AdvancedSettingsSigninMediatorTest : public PlatformTest {
 // interrupted.
 TEST_F(AdvancedSettingsSigninMediatorTest,
        saveUserPreferenceSigninInterruptedWithSyncDisabled) {
-  authentication_service_fake_->SignIn(identity_, nil);
+  authentication_service_fake_->SignIn(identity_);
   [mediator_
       saveUserPreferenceForSigninResult:SigninCoordinatorResultInterrupted
                     originalSigninState:
@@ -135,7 +135,7 @@ TEST_F(AdvancedSettingsSigninMediatorTest,
 // interrupted with IdentitySigninStateSignedOut.
 TEST_F(AdvancedSettingsSigninMediatorTest,
        saveUserPreferenceSigninInterruptedWithSignout) {
-  authentication_service_fake_->SignIn(identity_, nil);
+  authentication_service_fake_->SignIn(identity_);
   [mediator_
       saveUserPreferenceForSigninResult:SigninCoordinatorResultInterrupted
                     originalSigninState:IdentitySigninStateSignedOut];

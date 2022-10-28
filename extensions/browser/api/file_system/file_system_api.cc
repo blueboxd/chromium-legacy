@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -37,6 +37,7 @@
 #include "content/public/browser/web_contents.h"
 #include "extensions/browser/api/extensions_api_client.h"
 #include "extensions/browser/api/file_handlers/app_file_handler_util.h"
+#include "extensions/browser/api/file_system/consent_provider.h"
 #include "extensions/browser/api/file_system/file_system_delegate.h"
 #include "extensions/browser/api/file_system/saved_file_entry.h"
 #include "extensions/browser/api/file_system/saved_files_service_interface.h"
@@ -128,13 +129,11 @@ bool GetFileTypesFromAcceptOption(
   std::set<base::FilePath::StringType> extension_set;
   int description_id = 0;
 
-  if (accept_option.mime_types.get()) {
-    std::vector<std::string>* list = accept_option.mime_types.get();
+  if (accept_option.mime_types) {
     bool valid_type = false;
-    for (std::vector<std::string>::const_iterator iter = list->begin();
-         iter != list->end(); ++iter) {
+    for (const auto& item : *accept_option.mime_types) {
       std::vector<base::FilePath::StringType> inner;
-      std::string accept_type = base::ToLowerASCII(*iter);
+      std::string accept_type = base::ToLowerASCII(item);
       net::GetExtensionsForMimeType(accept_type, &inner);
       if (inner.empty())
         continue;
@@ -154,15 +153,12 @@ bool GetFileTypesFromAcceptOption(
     }
   }
 
-  if (accept_option.extensions.get()) {
-    std::vector<std::string>* list = accept_option.extensions.get();
-    for (std::vector<std::string>::const_iterator iter = list->begin();
-         iter != list->end(); ++iter) {
-      std::string extension = base::ToLowerASCII(*iter);
+  if (accept_option.extensions) {
+    for (const auto& item : *accept_option.extensions) {
 #if BUILDFLAG(IS_WIN)
-      extension_set.insert(base::UTF8ToWide(*iter));
+      extension_set.insert(base::UTF8ToWide(item));
 #else
-      extension_set.insert(*iter);
+      extension_set.insert(item);
 #endif
     }
   }
@@ -171,7 +167,7 @@ bool GetFileTypesFromAcceptOption(
   if (extensions->empty())
     return false;
 
-  if (accept_option.description.get())
+  if (accept_option.description)
     *description = base::UTF8ToUTF16(*accept_option.description);
   else if (description_id)
     *description = l10n_util::GetStringUTF16(description_id);
@@ -201,7 +197,7 @@ void PassFileInfoToUIThread(FileInfoOptCallback callback,
                             const base::File::Info& info) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   std::unique_ptr<base::File::Info> file_info(
-      result == base::File::FILE_OK ? new base::File::Info(info) : NULL);
+      result == base::File::FILE_OK ? new base::File::Info(info) : nullptr);
   content::GetUIThreadTaskRunner({})->PostTask(
       FROM_HERE, base::BindOnce(std::move(callback), std::move(file_info)));
 }
@@ -688,11 +684,9 @@ void FileSystemChooseEntryFunction::OnDirectoryAccessConfirmed(
 void FileSystemChooseEntryFunction::BuildFileTypeInfo(
     ui::SelectFileDialog::FileTypeInfo* file_type_info,
     const base::FilePath::StringType& suggested_extension,
-    const AcceptOptions* accepts,
-    const bool* accepts_all_types) {
-  file_type_info->include_all_files = true;
-  if (accepts_all_types)
-    file_type_info->include_all_files = *accepts_all_types;
+    const absl::optional<AcceptOptions>& accepts,
+    const absl::optional<bool>& accepts_all_types) {
+  file_type_info->include_all_files = accepts_all_types.value_or(true);
 
   bool need_suggestion =
       !file_type_info->include_all_files && !suggested_extension.empty();
@@ -723,7 +717,7 @@ void FileSystemChooseEntryFunction::BuildFileTypeInfo(
 }
 
 void FileSystemChooseEntryFunction::BuildSuggestion(
-    const std::string* opt_name,
+    const absl::optional<std::string>& opt_name,
     base::FilePath* suggested_name,
     base::FilePath::StringType* suggested_extension) {
   if (opt_name) {
@@ -821,11 +815,11 @@ ExtensionFunction::ResponseAction FileSystemChooseEntryFunction::Run() {
     }
 
     base::FilePath::StringType suggested_extension;
-    BuildSuggestion(options->suggested_name.get(), &suggested_name,
+    BuildSuggestion(options->suggested_name, &suggested_name,
                     &suggested_extension);
 
-    BuildFileTypeInfo(&file_type_info, suggested_extension,
-                      options->accepts.get(), options->accepts_all_types.get());
+    BuildFileTypeInfo(&file_type_info, suggested_extension, options->accepts,
+                      options->accepts_all_types);
   }
 
   file_type_info.allowed_paths = ui::SelectFileDialog::FileTypeInfo::ANY_PATH;
@@ -1058,18 +1052,21 @@ ExtensionFunction::ResponseAction FileSystemRequestFileSystemFunction::Run() {
   const std::unique_ptr<Params> params(Params::Create(args()));
   EXTENSION_FUNCTION_VALIDATE(params);
 
+  consent_provider_ =
+      ExtensionsAPIClient::Get()->CreateConsentProvider(browser_context());
+
   FileSystemDelegate* delegate =
       ExtensionsAPIClient::Get()->GetFileSystemDelegate();
   DCHECK(delegate);
   // Only kiosk apps in kiosk sessions can use this API.
   // Additionally it is enabled for allowlisted component extensions and apps.
-  if (!delegate->IsGrantable(browser_context(), *extension())) {
+  if (!consent_provider_->IsGrantable(*extension())) {
     return RespondNow(Error(kNotSupportedOnNonKioskSessionError));
   }
 
   delegate->RequestFileSystem(
-      browser_context(), this, *extension(), params->options.volume_id,
-      params->options.writable.get() && *params->options.writable.get(),
+      browser_context(), this, consent_provider_.get(), *extension(),
+      params->options.volume_id, params->options.writable.value_or(false),
       base::BindOnce(&FileSystemRequestFileSystemFunction::OnGotFileSystem,
                      this),
       base::BindOnce(&FileSystemRequestFileSystemFunction::OnError, this));
@@ -1097,12 +1094,15 @@ FileSystemGetVolumeListFunction::FileSystemGetVolumeListFunction() = default;
 FileSystemGetVolumeListFunction::~FileSystemGetVolumeListFunction() = default;
 
 ExtensionFunction::ResponseAction FileSystemGetVolumeListFunction::Run() {
+  consent_provider_ =
+      ExtensionsAPIClient::Get()->CreateConsentProvider(browser_context());
+
   FileSystemDelegate* delegate =
       ExtensionsAPIClient::Get()->GetFileSystemDelegate();
   DCHECK(delegate);
   // Only kiosk apps in kiosk sessions can use this API.
   // Additionally it is enabled for allowlisted component extensions and apps.
-  if (!delegate->IsGrantable(browser_context(), *extension())) {
+  if (!consent_provider_->IsGrantable(*extension())) {
     return RespondNow(Error(kNotSupportedOnNonKioskSessionError));
   }
 

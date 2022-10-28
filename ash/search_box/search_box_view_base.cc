@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -96,10 +96,8 @@ void SetupLabelView(views::Label* label,
 // border.
 class SearchBoxBackground : public views::Background {
  public:
-  SearchBoxBackground(int corner_radius, SkColor color)
-      : corner_radius_(corner_radius) {
-    SetNativeControlColor(color);
-  }
+  explicit SearchBoxBackground(int corner_radius)
+      : corner_radius_(corner_radius) {}
 
   SearchBoxBackground(const SearchBoxBackground&) = delete;
   SearchBoxBackground& operator=(const SearchBoxBackground&) = delete;
@@ -139,7 +137,6 @@ class SearchBoxImageButton : public views::ImageButton {
     SetHasInkDropActionOnClick(true);
     views::InkDrop::UseInkDropForFloodFillRipple(views::InkDrop::Get(this),
                                                  /*highlight_on_hover=*/false);
-    UpdateInkDropColors();
 
     SetPaintToLayer();
     layer()->SetFillsBoundsOpaquely(false);
@@ -194,15 +191,17 @@ class SearchBoxImageButton : public views::ImageButton {
   bool is_showing_ = false;
 
   void UpdateInkDropColors() {
+    const views::Widget* app_list_widget = GetWidget();
     SkColor search_box_card_background_color =
-        AppListColorProvider::Get()->GetSearchBoxCardBackgroundColor();
+        AppListColorProvider::Get()->GetSearchBoxCardBackgroundColor(
+            app_list_widget);
 
     views::InkDrop::Get(this)->SetBaseColor(
         AppListColorProvider::Get()->GetInkDropBaseColor(
-            search_box_card_background_color));
+            app_list_widget, search_box_card_background_color));
     views::InkDrop::Get(this)->SetVisibleOpacity(
         AppListColorProvider::Get()->GetInkDropOpacity(
-            search_box_card_background_color));
+            app_list_widget, search_box_card_background_color));
   }
 
   // views::View:
@@ -210,7 +209,8 @@ class SearchBoxImageButton : public views::ImageButton {
     if (HasFocus()) {
       cc::PaintFlags circle_flags;
       circle_flags.setAntiAlias(true);
-      circle_flags.setColor(AppListColorProvider::Get()->GetFocusRingColor());
+      circle_flags.setColor(
+          AppListColorProvider::Get()->GetFocusRingColor(GetWidget()));
       circle_flags.setStyle(cc::PaintFlags::kStroke_Style);
       circle_flags.setStrokeWidth(kFocusBorderThickness);
       canvas->DrawCircle(GetLocalBounds().CenterPoint(),
@@ -249,7 +249,7 @@ class SearchBoxTextfield : public views::Textfield {
     size.Enlarge(insets.width(), insets.height());
     size.SetToMax(gfx::Size(0, 0));
     return size;
-  };
+  }
 
   void OnFocus() override {
     search_box_view_->OnSearchBoxFocusedChanged();
@@ -468,9 +468,8 @@ void SearchBoxViewBase::Init(const InitParams& params) {
   layer()->SetFillsBoundsOpaquely(false);
   layer()->SetMasksToBounds(true);
   if (params.create_background) {
-    SetBackground(std::make_unique<SearchBoxBackground>(
-        kSearchBoxBorderCornerRadius,
-        AppListColorProvider::Get()->GetSearchBoxBackgroundColor()));
+    SetBackground(
+        std::make_unique<SearchBoxBackground>(kSearchBoxBorderCornerRadius));
   }
 
   if (params.increase_child_view_padding) {
@@ -482,7 +481,6 @@ void SearchBoxViewBase::Init(const InitParams& params) {
   }
 
   UpdateSearchBoxBorder();
-  UpdatePlaceholderTextStyle();
 }
 
 views::ImageButton* SearchBoxViewBase::CreateCloseButton(
@@ -608,18 +606,27 @@ void SearchBoxViewBase::OnMouseEvent(ui::MouseEvent* event) {
 
 void SearchBoxViewBase::OnThemeChanged() {
   views::View::OnThemeChanged();
+  const views::Widget* app_list_widget = GetWidget();
 
   if (features::IsAutocompleteExtendedSuggestionsEnabled()) {
     auto ghost_text_color =
         AppListColorProvider::Get()->GetSearchBoxSuggestionTextColor(
-            kDeprecatedSearchBoxTextDefaultColor);
+            kDeprecatedSearchBoxTextDefaultColor, app_list_widget);
     autocomplete_ghost_text_->SetEnabledColor(ghost_text_color);
     separator_label_->SetEnabledColor(ghost_text_color);
     category_ghost_text_->SetEnabledColor(ghost_text_color);
     category_separator_label_->SetEnabledColor(ghost_text_color);
     search_box_->SetSelectionBackgroundColor(
-        AppListColorProvider::Get()->GetFolderNameSelectionColor());
+        AppListColorProvider::Get()->GetFolderNameSelectionColor(GetWidget()));
   }
+
+  auto* background = GetBackground();
+  if (background) {
+    background->SetNativeControlColor(
+        AppListColorProvider::Get()->GetSearchBoxBackgroundColor(
+            app_list_widget));
+  }
+  UpdatePlaceholderTextStyle();
 }
 
 void SearchBoxViewBase::NotifyGestureEvent() {

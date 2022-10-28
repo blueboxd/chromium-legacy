@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,12 +10,12 @@
 #include "chromeos/crosapi/mojom/app_service_types_mojom_traits.h"
 #include "components/services/app_service/public/cpp/app_launch_util.h"
 #include "components/services/app_service/public/cpp/app_types.h"
+#include "components/services/app_service/public/cpp/capability_access.h"
 #include "components/services/app_service/public/cpp/icon_types.h"
 #include "components/services/app_service/public/cpp/intent_filter.h"
 #include "components/services/app_service/public/cpp/intent_filter_util.h"
 #include "components/services/app_service/public/cpp/permission.h"
 #include "components/services/app_service/public/cpp/shortcut.h"
-#include "components/services/app_service/public/mojom/types.mojom.h"
 #include "mojo/public/cpp/test_support/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/abseil-cpp/absl/types/variant.h"
@@ -353,6 +353,20 @@ TEST(AppServiceTypesMojomTraitsTest, RoundTripInstallReason) {
     ASSERT_TRUE(mojo::test::SerializeAndDeserialize<crosapi::mojom::App>(
         input, output));
     EXPECT_EQ(output->install_reason, apps::InstallReason::kUser);
+  }
+  {
+    input->install_reason = apps::InstallReason::kKiosk;
+    apps::AppPtr output;
+    ASSERT_TRUE(mojo::test::SerializeAndDeserialize<crosapi::mojom::App>(
+        input, output));
+    EXPECT_EQ(output->install_reason, apps::InstallReason::kKiosk);
+  }
+  {
+    input->install_reason = apps::InstallReason::kCommandLine;
+    apps::AppPtr output;
+    ASSERT_TRUE(mojo::test::SerializeAndDeserialize<crosapi::mojom::App>(
+        input, output));
+    EXPECT_EQ(output->install_reason, apps::InstallReason::kCommandLine);
   }
 }
 
@@ -1161,15 +1175,13 @@ TEST(AppServiceTypesMojomTraitsTest, PreferredAppChanges) {
           input, output));
 
   EXPECT_EQ(input->added_filters.size(), output->added_filters.size());
-  for (const auto& added_filters : input->added_filters) {
-    EXPECT_TRUE(IsEqual(added_filters.second,
-                        output->added_filters[added_filters.first]));
+  for (const auto& filter : input->added_filters) {
+    EXPECT_TRUE(IsEqual(filter.second, output->added_filters[filter.first]));
   }
 
   EXPECT_EQ(input->removed_filters.size(), output->removed_filters.size());
-  for (const auto& removed_filters : input->removed_filters) {
-    EXPECT_TRUE(IsEqual(removed_filters.second,
-                        output->removed_filters[removed_filters.first]));
+  for (const auto& filter : input->removed_filters) {
+    EXPECT_TRUE(IsEqual(filter.second, output->removed_filters[filter.first]));
   }
 }
 
@@ -1210,5 +1222,41 @@ TEST(AppServiceTypesMojomTraitsTest, RoundTripShortcuts) {
     ASSERT_TRUE(mojo::test::SerializeAndDeserialize<crosapi::mojom::Shortcut>(
         shortcut, output));
     EXPECT_EQ(*shortcut, *output);
+  }
+}
+
+TEST(AppServiceTypesMojomTraitsTest, RoundTripCapabilityAccess) {
+  {
+    auto capability_access = std::make_unique<apps::CapabilityAccess>("a");
+    apps::CapabilityAccessPtr output;
+    ASSERT_TRUE(
+        mojo::test::SerializeAndDeserialize<crosapi::mojom::CapabilityAccess>(
+            capability_access, output));
+    EXPECT_EQ("a", output->app_id);
+    EXPECT_FALSE(output->camera.has_value());
+    EXPECT_FALSE(output->microphone.has_value());
+  }
+  {
+    auto capability_access = std::make_unique<apps::CapabilityAccess>("b");
+    capability_access->camera = true;
+    apps::CapabilityAccessPtr output;
+    ASSERT_TRUE(
+        mojo::test::SerializeAndDeserialize<crosapi::mojom::CapabilityAccess>(
+            capability_access, output));
+    EXPECT_EQ("b", output->app_id);
+    EXPECT_TRUE(output->camera.value_or(false));
+    EXPECT_FALSE(output->microphone.has_value());
+  }
+  {
+    auto capability_access = std::make_unique<apps::CapabilityAccess>("c");
+    capability_access->camera = false;
+    capability_access->microphone = true;
+    apps::CapabilityAccessPtr output;
+    ASSERT_TRUE(
+        mojo::test::SerializeAndDeserialize<crosapi::mojom::CapabilityAccess>(
+            capability_access, output));
+    EXPECT_EQ("c", output->app_id);
+    EXPECT_FALSE(output->camera.value_or(true));
+    EXPECT_TRUE(output->microphone.value_or(false));
   }
 }

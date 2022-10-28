@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -1251,7 +1251,8 @@ const char kUseAshProxy[] = "lacros.proxy.use_ash_proxy";
 // of lacros-chrome is complete.
 #if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
 // Linux specific preference on whether we should match the system theme.
-const char kUsesSystemTheme[] = "extensions.theme.use_system";
+const char kUsesSystemThemeDeprecated[] = "extensions.theme.use_system";
+const char kSystemTheme[] = "extensions.theme.system_theme";
 #endif
 const char kCurrentThemePackFilename[] = "extensions.theme.pack";
 const char kCurrentThemeID[] = "extensions.theme.id";
@@ -1337,6 +1338,20 @@ const char kAccessibilityFocusHighlightEnabled[] =
 // Pref indicating the page colors option the user wants. Page colors is an
 // accessibility feature that simulates forced colors mode at the browser level.
 const char kPageColors[] = "settings.a11y.page_colors";
+
+// Boolean Pref that indicates whether the user wants to enable page colors only
+// when the OS is in an Increased Contrast mode such as High Contrast on Windows
+// or Increased Contrast on Mac.
+const char kApplyPageColorsOnlyOnIncreasedContrast[] =
+    "settings.a11y.apply_page_colors_only_on_increased_contrast";
+
+#if BUILDFLAG(IS_WIN)
+// Boolean that indicates what the default page colors state should be. When
+// true, page colors will be 'High Contrast' when OS High Contrast is turned on,
+// otherwise page colors will remain 'Off'.
+const char kIsDefaultPageColorsOnHighContrast[] =
+    "settings.a11y.is_default_page_colors_on_high_contrast";
+#endif  // BUILDFLAG(IS_WIN)
 
 #if BUILDFLAG(IS_MAC)
 // Boolean that indicates whether the application should show the info bar
@@ -1583,6 +1598,10 @@ const char kPrintJobHistoryExpirationPeriod[] =
 // deleted.
 const char kDeletePrintJobHistoryAllowed[] =
     "printing.delete_print_job_history_allowed";
+
+// String representing a template for the 'client-name' IPP attribute
+// configured by the administrator
+const char kPrintingClientNameTemplate[] = "printing.client_name_template";
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 // An integer pref specifying the fallback behavior for sites outside of content
@@ -1763,13 +1782,6 @@ const char kManagedWebHidAllowDevicesForUrls[] =
 // policy.
 const char kManagedWebHidAllowDevicesWithHidUsagesForUrls[] =
     "managed.web_hid_allow_devices_with_hid_usages_for_urls";
-#endif  // !BUILDFLAG(IS_ANDROID)
-
-#if !BUILDFLAG(IS_ANDROID)
-// Boolean indicating whether the user has given consent to use Autofill
-// Assistant. Prefs are not synced across devices or platforms and pref
-// keys differ.
-const char kAutofillAssistantOnDesktopEnabled[] = "autofill_assistant.enabled";
 #endif  // !BUILDFLAG(IS_ANDROID)
 
 // Directory of the last profile used.
@@ -2482,11 +2494,6 @@ const char kDeviceEnrollmentCanExit[] = "enrollment.can_exit";
 // Directory devices only.
 const char kDeviceDMToken[] = "device_dm_token";
 
-// Dictionary of per-user last input method (used at login screen). Note that
-// the pref name is UsersLRUInputMethods for compatibility with previous
-// versions.
-const char kUsersLastInputMethod[] = "UsersLRUInputMethod";
-
 // Key name of a dictionary in local state to store cached multiprofle user
 // behavior policy value.
 const char kCachedMultiProfileUserBehavior[] = "CachedMultiProfileUserBehavior";
@@ -2938,6 +2945,10 @@ const char kEchoCheckedOffers[] = "EchoCheckedOffers";
 // for managed users is false.
 const char kLacrosSecondaryProfilesAllowed[] =
     "lacros_secondary_profiles_allowed";
+// String pref indicating what to do when Lacros is disabled and we go back
+// to using Ash.
+const char kLacrosDataBackwardMigrationMode[] =
+    "lacros_data_backward_migration_mode";
 #endif  // BUILDFLAG(IS_CHROMEOS)
 
 // Device identifier used by CryptAuth stored in local state. This ID is
@@ -3320,19 +3331,10 @@ const char kCACertificateManagementAllowed[] =
     "ca_certificate_management_allowed";
 #endif
 
-#if BUILDFLAG(BUILTIN_CERT_VERIFIER_POLICY_SUPPORTED)
-// Boolean that specifies whether the built-in certificate verifier should be
-// used. If false, Chrome will use the platform certificate verifier. If not
-// set, Chrome will choose the certificate verifier based on experiments.
-const char kBuiltinCertificateVerifierEnabled[] =
-    "builtin_certificate_verifier_enabled";
-#endif
-
 #if BUILDFLAG(CHROME_ROOT_STORE_POLICY_SUPPORTED)
 // Boolean that specifies whether the Chrome Root Store and built-in
 // certificate verifier should be used. If false, Chrome will not use the
-// Chrome Root Store. (The built-in certificate verifier may or may not be used
-// depending on the state of kBuiltinCertificateVerifierEnabled, if supported.)
+// Chrome Root Store.
 // If not set, Chrome will choose the root store based on experiments.
 const char kChromeRootStoreEnabled[] = "chrome_root_store_enabled";
 #endif
@@ -3574,5 +3576,15 @@ const char kSCTAuditingHashdanceReportCount[] =
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 const char kConsumerAutoUpdateToggle[] = "settings.consumer_auto_update_toggle";
 #endif
+
+#if !BUILDFLAG(IS_ANDROID)
+// An integer count of how many times the user has seen the high efficiency mode
+// page action chip in the expanded size.
+const char kHighEfficiencyChipExpandedCount[] =
+    "high_efficiency.chip_expanded_count";
+#endif
+
+const char kStrictMimetypeCheckForWorkerScriptsEnabled[] =
+    "strict_mime_type_check_for_worker_scripts_enabled";
 
 }  // namespace prefs

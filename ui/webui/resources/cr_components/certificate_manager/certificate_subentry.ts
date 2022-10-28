@@ -9,15 +9,15 @@
 import '../../cr_elements/cr_action_menu/cr_action_menu.js';
 import '../../cr_elements/cr_icon_button/cr_icon_button.js';
 import '../../cr_elements/cr_lazy_render/cr_lazy_render.js';
-import '../../cr_elements/policy/cr_policy_indicator.m.js';
-import '../../cr_elements/icons.m.js';
+import '../../cr_elements/policy/cr_policy_indicator.js';
+import '../../cr_elements/icons.html.js';
 import './certificate_shared.css.js';
 
 import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {CrActionMenuElement} from '../../cr_elements/cr_action_menu/cr_action_menu.js';
 import {CrLazyRenderElement} from '../../cr_elements/cr_lazy_render/cr_lazy_render.js';
-import {CrPolicyIndicatorType} from '../../cr_elements/policy/cr_policy_indicator_behavior.m.js';
+import {CrPolicyIndicatorType} from '../../cr_elements/policy/cr_policy_indicator_mixin.js';
 import {I18nMixin} from '../../js/i18n_mixin.js';
 
 import {CertificateAction, CertificateActionEvent} from './certificate_manager_types.js';

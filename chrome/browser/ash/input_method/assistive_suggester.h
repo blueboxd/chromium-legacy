@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -94,6 +94,11 @@ class AssistiveSuggester : public SuggestionsSource {
     return &emoji_suggester_;
   }
 
+  absl::optional<AssistiveSuggesterSwitch::EnabledSuggestions>
+  get_enabled_suggestion_from_last_onfocus_for_testing() {
+    return enabled_suggestions_from_last_onfocus_;
+  }
+
  private:
   // Callback that is run after enabled_suggestions is received.
   void ProcessOnSurroundingTextChanged(
@@ -167,8 +172,13 @@ class AssistiveSuggester : public SuggestionsSource {
   void RecordTextInputStateMetrics(
       const AssistiveSuggesterSwitch::EnabledSuggestions& enabled_suggestions);
 
-  void HandleLongpressEnabledKeyEvent(
-      const ui::KeyEvent& key_character,
+  // Does longpress related processing (if enabled).
+  // Returns true if we block the keyevent from passing to IME, and stop
+  // dispatch.
+  // Returns false, if we want IME to process the event and dispatch it.
+  bool HandleLongpressEnabledKeyEvent(const ui::KeyEvent& key_character);
+
+  void HandleEnabledSuggestionsOnFocus(
       const AssistiveSuggesterSwitch::EnabledSuggestions& enabled_suggestions);
 
   void OnLongpressDetected();
@@ -186,8 +196,9 @@ class AssistiveSuggester : public SuggestionsSource {
   // ID of the focused text field, nullopt if none focused.
   absl::optional<int> focused_context_id_;
 
-  // Char of the currently held down key. nullopt if no longpress in progress.
-  absl::optional<char> current_longpress_char_;
+  // KeyEvent of the held down key at key down. nullopt if no longpress in
+  // progress.
+  absl::optional<ui::KeyEvent> current_longpress_keydown_;
 
   // Timer for longpress. Starts when key is held down. Fires when successfully
   // held down for a specified longpress duration.
@@ -195,6 +206,13 @@ class AssistiveSuggester : public SuggestionsSource {
 
   // The current suggester in use, nullptr means no suggestion is shown.
   Suggester* current_suggester_ = nullptr;
+
+  absl::optional<AssistiveSuggesterSwitch::EnabledSuggestions>
+      enabled_suggestions_from_last_onfocus_;
+
+  std::u16string last_surrounding_text_ = u"";
+
+  int last_cursor_pos_ = 0;
 
   base::WeakPtrFactory<AssistiveSuggester> weak_ptr_factory_{this};
 };

@@ -1,4 +1,4 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -515,10 +515,10 @@ void FormField::ParseUsingAutocompleteAttributes(
     FieldCandidatesMap& field_candidates) {
   for (const AutofillField* field : fields) {
     HtmlFieldType html_type = FieldTypeFromAutocompleteAttributeValue(
-        base::UTF16ToUTF8(field->parseable_name()), *field);
+        base::UTF16ToUTF8(field->parseable_name()), field->max_length);
     // The HTML_MODE is irrelevant when converting to a ServerFieldType.
     ServerFieldType type =
-        AutofillType(html_type, HTML_MODE_NONE).GetStorableType();
+        AutofillType(html_type, HtmlFieldMode::kNone).GetStorableType();
     if (type != UNKNOWN_TYPE) {
       AddClassification(field, type, kBaseAutocompleteParserScore,
                         field_candidates);

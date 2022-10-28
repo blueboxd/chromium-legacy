@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -19,7 +19,7 @@ class AuthenticationServiceDelegate {
   virtual ~AuthenticationServiceDelegate() = default;
 
   // Invoked by AuthenticationService after the user has signed out. All the
-  // local browsing data must be cleared out, then |completion| called.
+  // local browsing data must be cleared out, then `completion` called.
   virtual void ClearBrowsingData(ProceduralBlock completion) = 0;
 
  private:

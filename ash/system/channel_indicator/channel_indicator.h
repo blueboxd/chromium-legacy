@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -14,6 +14,10 @@
 #include "base/memory/weak_ptr.h"
 #include "components/session_manager/session_manager_types.h"
 #include "components/version_info/channel.h"
+
+namespace views {
+class BoxLayout;
+}
 
 namespace ash {
 
@@ -67,6 +71,12 @@ class ASH_EXPORT ChannelIndicatorView : public TrayItemView,
 
   // The release track on which this devices resides.
   const version_info::Channel channel_;
+
+  // The `BoxLayout` with which the `TrayItemView`-provided `FillLayout` is
+  // replaced, owned by `views::View`. `FillLayout` wants to size child views to
+  // fit the parent's bounds, but children of `ChannelIndicatorView` need to
+  // have specific sizes and insets regardless of the parent's bounds.
+  views::BoxLayout* box_layout_;
 
   ScopedSessionObserver session_observer_;
 

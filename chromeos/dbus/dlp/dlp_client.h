@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -102,10 +102,5 @@ class COMPONENT_EXPORT(DLP) DlpClient {
 };
 
 }  // namespace chromeos
-
-// TODO(https://crbug.com/1164001): remove when moved to ash.
-namespace ash {
-using ::chromeos::DlpClient;
-}  // namespace ash
 
 #endif  // CHROMEOS_DBUS_DLP_DLP_CLIENT_H_

@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -150,6 +150,16 @@ export class AmbientPreview extends WithPersonalizationStore {
   private onClickPreviewImage_(event: Event) {
     event.stopPropagation();
     PersonalizationRouter.instance().goToRoute(Paths.AMBIENT);
+  }
+
+  /**
+   * Navigate directly to photo selection subpage. Should only be possible to
+   * call this function if |topic_source| is set and photo collage is visible.
+   */
+  private onClickPhotoCollage_(event: Event) {
+    assert(typeof this.topicSource_ === 'number', 'topic source required');
+    event.stopPropagation();
+    PersonalizationRouter.instance().selectAmbientAlbums(this.topicSource_);
   }
 
   /**

@@ -1,4 +1,4 @@
-// Copyright (c) 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -46,7 +46,7 @@ TEST_F(MediaLogTest, ClonedLogsInhertParentPlayerId) {
   child_media_log->AddMessage(MediaLogMessageLevel::kERROR, "test");
   auto event = root_log->take_most_recent_event();
   EXPECT_NE(event, nullptr);
-  EXPECT_EQ(event->id, root_log->id());
+  EXPECT_EQ(event->id, 0);
 }
 
 TEST_F(MediaLogTest, DontTruncateShortUrlString) {

@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -162,6 +162,8 @@ ScrollNode& CreateScrollNodeInternal(LayerType* layer,
   transform_node->should_be_snapped = true;
   transform_node->scrolls = true;
 
+  if (!property_trees->is_main_thread())
+    scroll_tree.GetOrCreateSyncedScrollOffsetForTesting(layer->element_id());
   scroll_tree.SetScrollOffset(layer->element_id(), gfx::PointF());
   return *node;
 }
@@ -372,6 +374,8 @@ ScrollNode& CreateScrollNodeForUncompositedScroller(
     node->transform_id = transform_node->id;
   }
 
+  if (!property_trees->is_main_thread())
+    scroll_tree.GetOrCreateSyncedScrollOffsetForTesting(element_id);
   scroll_tree.SetScrollOffset(element_id, gfx::PointF());
   return *node;
 }

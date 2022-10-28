@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,12 +6,12 @@
 
 #import <SafariServices/SafariServices.h>
 
-#include <memory>
+#import <memory>
 
-#include "base/metrics/histogram_functions.h"
-#include "base/metrics/histogram_macros.h"
-#include "base/scoped_observation.h"
-#include "components/strings/grit/components_strings.h"
+#import "base/metrics/histogram_functions.h"
+#import "base/metrics/histogram_macros.h"
+#import "base/scoped_observation.h"
+#import "components/strings/grit/components_strings.h"
 #import "ios/chrome/browser/download/safari_download_tab_helper.h"
 #import "ios/chrome/browser/download/safari_download_tab_helper_delegate.h"
 #import "ios/chrome/browser/main/browser.h"

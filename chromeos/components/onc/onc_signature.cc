@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -225,7 +225,8 @@ const OncFieldSignature ipconfig_fields[] = {
     {::onc::ipconfig::kSearchDomains, &kStringListSignature},
     {::onc::ipconfig::kIncludedRoutes, &kStringListSignature},
     {::onc::ipconfig::kExcludedRoutes, &kStringListSignature},
-    {::onc::ipconfig::kType, &kStringSignature},
+    {::onc::ipconfig::kType, &kStringSignature,
+     []() { return base::Value(::onc::ipconfig::kIPv4); }},
     {::onc::ipconfig::kWebProxyAutoDiscoveryUrl, &kStringSignature},
     {nullptr}};
 

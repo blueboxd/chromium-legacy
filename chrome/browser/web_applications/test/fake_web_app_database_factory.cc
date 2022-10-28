@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -78,11 +78,11 @@ void FakeWebAppDatabaseFactory::WriteProtos(
 
   store_->CommitWriteBatch(
       std::move(write_batch),
-      base::BindOnce(base::BindLambdaForTesting(
+      base::BindLambdaForTesting(
           [&](const absl::optional<syncer::ModelError>& error) {
             DCHECK(!error);
             run_loop.Quit();
-          })));
+          }));
 
   run_loop.Run();
 }

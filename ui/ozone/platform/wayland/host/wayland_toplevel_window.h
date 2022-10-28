@@ -95,16 +95,12 @@ class WaylandToplevelWindow : public WaylandWindow,
   void UpdateWindowScale(bool update_bounds) override;
   void HandleToplevelConfigure(int32_t width,
                                int32_t height,
-                               bool is_maximized,
-                               bool is_fullscreen,
-                               bool is_activated) override;
+                               const WindowStates& window_states) override;
   void HandleAuraToplevelConfigure(int32_t x,
                                    int32_t y,
                                    int32_t width,
                                    int32_t height,
-                                   bool is_maximized,
-                                   bool is_fullscreen,
-                                   bool is_activated) override;
+                                   const WindowStates& window_states) override;
   void HandleSurfaceConfigure(uint32_t serial) override;
   void UpdateVisualSize(const gfx::Size& size_px) override;
   bool OnInitialize(PlatformWindowInitProperties properties) override;
@@ -224,9 +220,12 @@ class WaylandToplevelWindow : public WaylandWindow,
   std::unique_ptr<ShellToplevelWrapper> shell_toplevel_;
 
   // Contains the current state of the window.
-  PlatformWindowState state_;
+  PlatformWindowState state_ = PlatformWindowState::kUnknown;
   // Contains the previous state of the window.
-  PlatformWindowState previous_state_;
+  PlatformWindowState previous_state_ = PlatformWindowState::kUnknown;
+
+  // Contains the current state of the tiled edges.
+  WindowTiledEdges tiled_state_;
 
   bool is_active_ = false;
 

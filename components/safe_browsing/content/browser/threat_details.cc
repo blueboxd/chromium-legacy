@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -636,8 +636,9 @@ void ThreatDetails::StartCollection() {
     // TODO(mattm): In theory, if the user proceeds through the warning DOM
     // detail collection could be started once the page loads.
     web_contents_->GetPrimaryMainFrame()->ForEachRenderFrameHost(
-        base::BindRepeating(&ThreatDetails::RequestThreatDOMDetails,
-                            GetWeakPtr()));
+        [this](content::RenderFrameHost* frame) {
+          RequestThreatDOMDetails(frame);
+        });
   }
 }
 

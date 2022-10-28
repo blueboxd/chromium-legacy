@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -191,7 +191,7 @@ class AsyncDocumentSubresourceFilter {
 
   absl::optional<mojom::ActivationState> activation_state_;
 
-  base::SequenceChecker sequence_checker_;
+  SEQUENCE_CHECKER(sequence_checker_);
 
   base::WeakPtrFactory<AsyncDocumentSubresourceFilter> weak_ptr_factory_{this};
 };
@@ -210,7 +210,7 @@ class AsyncDocumentSubresourceFilter::Core {
   // Can return nullptr even after initialization in case MemoryMappedRuleset
   // was not present, or was malformed during it.
   DocumentSubresourceFilter* filter() {
-    DCHECK(sequence_checker_.CalledOnValidSequence());
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     return filter_ ? &filter_.value() : nullptr;
   }
 
@@ -235,7 +235,7 @@ class AsyncDocumentSubresourceFilter::Core {
                                 VerifiedRuleset* verified_ruleset);
 
   absl::optional<DocumentSubresourceFilter> filter_;
-  base::SequenceChecker sequence_checker_;
+  SEQUENCE_CHECKER(sequence_checker_);
 };
 
 }  // namespace subresource_filter

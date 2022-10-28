@@ -14,8 +14,8 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/strings/stringprintf.h"
-#include "base/syslog_logging.h"
 #include "base/trace_event/trace_conversion_helper.h"
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/traced_value.h"
@@ -35,6 +35,7 @@
 #include "ui/ozone/platform/drm/gpu/drm_dumb_buffer.h"
 #include "ui/ozone/platform/drm/gpu/hardware_display_plane.h"
 #include "ui/ozone/platform/drm/gpu/page_flip_request.h"
+#include "ui/ozone/platform/drm/gpu/page_flip_watchdog.h"
 
 // Vendor ID for downstream, interim ChromeOS specific modifiers.
 #define DRM_FORMAT_MOD_VENDOR_CHROMEOS 0xf0
@@ -152,15 +153,7 @@ void HardwareDisplayController::GetDisableProps(CommitRequest* commit_request) {
 
 void HardwareDisplayController::UpdateState(
     const CrtcCommitRequest& crtc_request) {
-  if (crash_gpu_timer_.IsRunning()) {
-    crash_gpu_timer_.AbandonAndStop();
-    SYSLOG(INFO)
-        << "Detected a modeset attempt after " << failed_page_flip_counter_
-        << " failed page flips. Aborting GPU process self-destruct with "
-        << crash_gpu_timer_.desired_run_time() - base::TimeTicks::Now()
-        << " to spare.";
-    failed_page_flip_counter_ = 0;
-  }
+  watchdog_.Disarm();
 
   // Verify that the current state matches the requested state.
   if (crtc_request.should_enable() && IsEnabled()) {
@@ -180,9 +173,13 @@ void HardwareDisplayController::SchedulePageFlip(
       base::MakeRefCounted<PageFlipRequest>(GetRefreshInterval());
   gfx::GpuFenceHandle release_fence;
 
-  bool status =
+  PageFlipResult result =
       ScheduleOrTestPageFlip(plane_list, page_flip_request, &release_fence);
-  if (!status) {
+  UMA_HISTOGRAM_ENUMERATION(
+      "Compositing.Display.HardwareDisplayController.SchedulePageFlipResult",
+      result);
+
+  if (PageFlipResult::kSuccess != result) {
     for (const auto& plane : plane_list) {
       // If the page flip failed and we see that the buffer has been allocated
       // before the latest modeset, it could mean it was an in-flight buffer
@@ -201,21 +198,8 @@ void HardwareDisplayController::SchedulePageFlip(
     }
 
     // No outdated buffers detected which makes this a true page flip failure.
-    // Start the GPU self-destruct timer if needed and report the failure.
-    failed_page_flip_counter_++;
-    if (!crash_gpu_timer_.IsRunning()) {
-      DCHECK_EQ(1, failed_page_flip_counter_);
-      LOG(WARNING) << "Initiating GPU process self-destruct in "
-                   << kWaitForModesetTimeout
-                   << " unless a modeset attempt is detected.";
-
-      crash_gpu_timer_.Start(
-          FROM_HERE, kWaitForModesetTimeout, base::BindOnce([] {
-            LOG(FATAL) << "Failed to modeset within " << kWaitForModesetTimeout
-                       << " of the first page flip failure. Crashing GPU "
-                          "process. Goodbye.";
-          }));
-    }
+    // Alert the watchdog.
+    watchdog_.Arm();
 
     std::move(submission_callback)
         .Run(gfx::SwapResult::SWAP_FAILED,
@@ -248,10 +232,12 @@ void HardwareDisplayController::SchedulePageFlip(
 
 bool HardwareDisplayController::TestPageFlip(
     const DrmOverlayPlaneList& plane_list) {
-  return ScheduleOrTestPageFlip(plane_list, nullptr, nullptr);
+  return PageFlipResult::kSuccess ==
+         ScheduleOrTestPageFlip(plane_list, nullptr, nullptr);
 }
 
-bool HardwareDisplayController::ScheduleOrTestPageFlip(
+HardwareDisplayController::PageFlipResult
+HardwareDisplayController::ScheduleOrTestPageFlip(
     const DrmOverlayPlaneList& plane_list,
     scoped_refptr<PageFlipRequest> page_flip_request,
     gfx::GpuFenceHandle* release_fence) {
@@ -260,7 +246,7 @@ bool HardwareDisplayController::ScheduleOrTestPageFlip(
 
   // Ignore requests with no planes to schedule.
   if (plane_list.empty())
-    return true;
+    return PageFlipResult::kSuccess;
 
   DrmOverlayPlaneList pending_planes = DrmOverlayPlane::Clone(plane_list);
   std::sort(pending_planes.begin(), pending_planes.end(),
@@ -269,16 +255,17 @@ bool HardwareDisplayController::ScheduleOrTestPageFlip(
             });
   GetDrmDevice()->plane_manager()->BeginFrame(&owned_hardware_planes_);
 
-  bool status = true;
   for (const auto& controller : crtc_controllers_) {
-    status &= controller->AssignOverlayPlanes(
-        &owned_hardware_planes_, pending_planes, /*is_modesetting=*/false);
+    if (!controller->AssignOverlayPlanes(
+            &owned_hardware_planes_, pending_planes, /*is_modesetting=*/false))
+      return PageFlipResult::kFailedPlaneAssignment;
   }
 
-  status &= GetDrmDevice()->plane_manager()->Commit(
+  bool commit_success = GetDrmDevice()->plane_manager()->Commit(
       &owned_hardware_planes_, page_flip_request, release_fence);
 
-  return status;
+  return commit_success ? PageFlipResult::kSuccess
+                        : PageFlipResult::kFailedCommit;
 }
 
 std::vector<uint64_t> HardwareDisplayController::GetFormatModifiers(
@@ -486,8 +473,6 @@ void HardwareDisplayController::AsValueInto(
 
   value->SetString("origin", ValueToString(origin_));
   value->SetString("cursor_location", ValueToString(cursor_location_));
-  value->SetInteger("failed_page_flip_counter", failed_page_flip_counter_);
-  value->SetBoolean("is_crash_timer_running", crash_gpu_timer_.IsRunning());
   value->SetBoolean("has_page_flip_request", page_flip_request_ != nullptr);
 
   {

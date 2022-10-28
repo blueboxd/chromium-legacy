@@ -1,4 +1,4 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -88,7 +88,7 @@ DictionaryLocalStateValueWaiter::~DictionaryLocalStateValueWaiter() {}
 
 bool DictionaryLocalStateValueWaiter::ExpectedValueFound() {
   const base::Value::Dict& pref =
-      pref_change_registrar_.prefs()->GetValueDict(pref_.c_str());
+      pref_change_registrar_.prefs()->GetDict(pref_.c_str());
 
   const std::string* actual_value = pref.FindString(key_);
   return actual_value && *actual_value == expected_value_.GetString();

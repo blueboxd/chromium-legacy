@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -45,8 +45,7 @@ class LowDiskMetricsServiceTest
   base::HistogramTester* histogram_tester() { return histogram_tester_.get(); }
 
   absl::optional<KioskLowDiskSeverity> GetLowDiskSeverityFromLocalState() {
-    const auto& metrics_dict =
-        local_state()->GetValueDict(prefs::kKioskMetrics);
+    const auto& metrics_dict = local_state()->GetDict(prefs::kKioskMetrics);
     const auto severity_value = metrics_dict.FindInt(kKioskLowDiskSeverity);
     if (!severity_value) {
       return absl::nullopt;

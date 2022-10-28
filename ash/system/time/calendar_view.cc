@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -528,7 +528,7 @@ views::Button* CalendarView::CreateInfoButton(
   auto* button =
       new PillButton(std::move(callback),
                      l10n_util::GetStringUTF16(IDS_ASH_CALENDAR_INFO_BUTTON),
-                     PillButton::Type::kIconless, /*icon=*/nullptr);
+                     PillButton::Type::kDefaultWithoutIcon, /*icon=*/nullptr);
   button->SetAccessibleName(l10n_util::GetStringFUTF16(
       IDS_ASH_CALENDAR_INFO_BUTTON_ACCESSIBLE_DESCRIPTION,
       calendar_utils::GetMonthDayYear(base::Time::Now())));
@@ -673,49 +673,31 @@ void CalendarView::UpdateOnScreenMonthMap() {
   base::Time start_time = calendar_utils::GetStartOfMonthUTC(
       current_date + calendar_utils::GetTimeDifference(current_date));
 
-  MaybeAddOnScreenMonth(start_time);
-
-  std::set<base::Time> updated_on_screen_month;
-  updated_on_screen_month.insert(start_time);
+  on_screen_month_.clear();
+  on_screen_month_[start_time] =
+      calendar_model_->FindFetchingStatus(start_time);
 
   // Checks if `next_month_` is in the visible view. If so, adds it to
-  // `on_screen_month_` if not already presents.
+  // `on_screen_month_` if not already presents. Otherwise updates the fetching
+  // status. This is needed since a refetching request may be sent when this
+  // function is called and we need to update the fetching status to toggle the
+  // visibility of the loading bar.
   if (scroll_view_->GetVisibleRect().bottom() >= next_month_->y()) {
     base::Time next_start_time =
         calendar_utils::GetStartOfNextMonthUTC(start_time);
-    updated_on_screen_month.insert(next_start_time);
-    MaybeAddOnScreenMonth(next_start_time);
+    on_screen_month_[next_start_time] =
+        calendar_model_->FindFetchingStatus(next_start_time);
 
-    // Checks if `next_next_month_` is in the visible view. If so, adds it to
-    // `on_screen_month_` if not already presents.
+    // Checks if `next_next_month_` is in the visible view.
     if (scroll_view_->GetVisibleRect().bottom() >= next_next_month_->y()) {
       base::Time next_next_start_time =
           calendar_utils::GetStartOfNextMonthUTC(next_start_time);
-      updated_on_screen_month.insert(next_next_start_time);
-      MaybeAddOnScreenMonth(next_next_start_time);
+      on_screen_month_[next_next_start_time] =
+          calendar_model_->FindFetchingStatus(next_next_start_time);
     }
-  }
-
-  // Checks if all months in `on_screen_month_` is within the visible window. If
-  // not, removes it from the map.
-  for (auto it = on_screen_month_.begin(); it != on_screen_month_.end();) {
-    if (updated_on_screen_month.find(it->first) ==
-        updated_on_screen_month.end()) {
-      it = on_screen_month_.erase(it);
-      continue;
-    }
-    // Increments the iterator here to avoid a crash since the iterator will
-    // be modified in the loop body.
-    ++it;
   }
 
   MaybeUpdateLoadingBarVisibility();
-}
-
-void CalendarView::MaybeAddOnScreenMonth(base::Time start_of_month) {
-  if (on_screen_month_.find(start_of_month) == on_screen_month_.end())
-    on_screen_month_.emplace(
-        start_of_month, calendar_model_->FindFetchingStatus(start_of_month));
 }
 
 void CalendarView::MaybeUpdateLoadingBarVisibility() {
@@ -854,6 +836,14 @@ void CalendarView::MaybeResetContentViewFocusBehavior() {
 }
 
 void CalendarView::OnViewBoundsChanged(views::View* observed_view) {
+  // When in the tablet mode and the display rotates and the `event_list_view_`
+  // is shown, `event_list_view_` should update its height to fill out the
+  // remaining space.
+  if (observed_view == this && event_list_view_) {
+    SetEventListViewBounds();
+    return;
+  }
+
   if (observed_view != scroll_view_)
     return;
 
@@ -997,7 +987,7 @@ void CalendarView::OnEventsFetched(
 
 void CalendarView::OpenEventList() {
   // Don't show the the `event_list_` view for unlogged in users.
-  if (!calendar_utils::IsActiveUser())
+  if (!calendar_utils::ShouldFetchEvents())
     return;
 
   // If the event list is already open or if any animation is occurring do not
@@ -1025,17 +1015,7 @@ void CalendarView::OpenEventList() {
   event_list_view_->SetProperty(views::kViewIgnoredByLayoutKey, true);
   event_list_view_->SetFocusBehavior(FocusBehavior::NEVER);
 
-  // Set the bounds of the EventListView to be flush with the bottom of the
-  // scroll view. Only the position will be animated, so give the view its final
-  // bounds.
-  event_list_view_->SetBounds(
-      scroll_view_->x() + kEventListViewHorizontalOffset,
-      scroll_view_->y() + calendar_view_controller_->row_height(),
-      scroll_view_->GetVisibleRect().width() -
-          kEventListViewHorizontalOffset * 2,
-      scroll_view_->GetVisibleRect().height() -
-          calendar_view_controller_->row_height() +
-          kEventListViewVerticalPadding);
+  SetEventListViewBounds();
 
   set_should_months_animate(false);
   gfx::Vector2dF moving_up_location = gfx::Vector2dF(
@@ -1089,7 +1069,7 @@ void CalendarView::CloseEventList() {
   // Updates `scroll_view_`'s accessible name without the selected date.
   scroll_view_->GetViewAccessibility().OverrideName(l10n_util::GetStringFUTF16(
       IDS_ASH_CALENDAR_BUBBLE_ACCESSIBLE_DESCRIPTION,
-      calendar_utils::GetMonthNameAndYear(
+      calendar_utils::GetMonthDayYearWeek(
           calendar_view_controller_->currently_shown_date())));
   scroll_view_->NotifyAccessibilityEvent(ax::mojom::Event::kTextChanged,
                                          /*send_native_event=*/true);
@@ -1787,6 +1767,17 @@ int CalendarView::CalculateFirstFullyVisibleRow() {
     }
   }
   return row_index;
+}
+
+void CalendarView::SetEventListViewBounds() {
+  event_list_view_->SetBounds(
+      scroll_view_->x() + kEventListViewHorizontalOffset,
+      scroll_view_->y() + calendar_view_controller_->row_height(),
+      scroll_view_->GetVisibleRect().width() -
+          kEventListViewHorizontalOffset * 2,
+      GetBoundsInScreen().bottom() - scroll_view_->GetBoundsInScreen().y() -
+          calendar_view_controller_->row_height() +
+          kEventListViewVerticalPadding);
 }
 
 BEGIN_METADATA(CalendarView, views::View)

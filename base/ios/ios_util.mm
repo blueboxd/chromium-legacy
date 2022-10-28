@@ -1,4 +1,4 @@
-// Copyright 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,7 +8,6 @@
 #import <UIKit/UIKit.h>
 #include <stddef.h>
 
-#import "base/ios/device_util.h"
 #include "base/mac/foundation_util.h"
 #include "base/system/sys_info.h"
 
@@ -86,13 +85,6 @@ bool IsMultipleScenesSupported() {
 
 bool IsApplicationPreWarmed() {
   return [NSProcessInfo.processInfo.environment objectForKey:@"ActivePrewarm"];
-}
-
-bool HasDynamicIsland() {
-  std::string hardware_model = ::ios::device_util::GetPlatform();
-  static bool is_dynamic_island_model =
-      (hardware_model == "iPhone15,2" || hardware_model == "iPhone15,3");
-  return is_dynamic_island_model;
 }
 
 }  // namespace ios

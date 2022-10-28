@@ -23,7 +23,7 @@ chromium-metrics-reviews@google.com.
 <histograms>
 
 <histogram name="Settings.AdvancedSpellcheck.OnStartup" enum="BooleanEnabled"
-    expires_after="2023-01-01">
+    expires_after="2023-03-05">
   <owner>harrisonsean@chromium.org</owner>
   <owner>chrome-friendly-settings@google.com</owner>
   <summary>
@@ -51,7 +51,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Settings.ClearBrowsingData.OpenMyActivity"
-    enum="ClearBrowsingDataMyActivityNavigation" expires_after="2022-12-25">
+    enum="ClearBrowsingDataMyActivityNavigation" expires_after="2023-02-26">
   <owner>andzaytsev@google.com</owner>
   <owner>chrome-friendly-settings@google.com</owner>
   <summary>
@@ -89,7 +89,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Settings.GivenShowHomeButton_HomePageIsNewTabPage"
-    enum="Boolean" expires_after="2022-12-25">
+    enum="Boolean" expires_after="2023-02-26">
   <owner>mpearson@chromium.org</owner>
   <owner>twellington@chromium.org</owner>
   <summary>
@@ -109,7 +109,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Settings.Homepage.LocationType" enum="HomepageLocationType"
-    expires_after="2023-01-01">
+    expires_after="2023-03-05">
   <owner>bttk@chromium.org</owner>
   <owner>twellington@chromium.org</owner>
   <owner>wenyufu@chromium.org</owner>
@@ -120,7 +120,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Settings.HomePageEngineType" enum="OmniboxSearchEngineType"
-    expires_after="2022-12-18">
+    expires_after="2023-02-19">
   <owner>mpearson@chromium.org</owner>
   <owner>csharp@chromium.org</owner>
   <summary>
@@ -182,7 +182,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Settings.PreloadStatus.OnStartup" enum="BooleanEnabled"
-    expires_after="2022-12-25">
+    expires_after="2023-02-26">
   <owner>harrisonsean@chromium.org</owner>
   <owner>chrome-friendly-settings@google.com</owner>
   <summary>
@@ -192,7 +192,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Settings.PrivacyElementInteractions"
-    enum="SettingsPrivacyElementInteractions" expires_after="2022-12-18">
+    enum="SettingsPrivacyElementInteractions" expires_after="2023-02-19">
   <owner>harrisonsean@chromium.org</owner>
   <owner>msramek@chromium.org</owner>
   <owner>sauski@chromium.org</owner>
@@ -261,7 +261,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Settings.PrivacySandbox.Enabled"
-    enum="SettingsPrivacySandboxEnabled" expires_after="2023-01-01">
+    enum="SettingsPrivacySandboxEnabled" expires_after="2023-03-05">
   <owner>harrisonsean@chromium.org</owner>
   <owner>msramek@chromium.org</owner>
   <owner>chrome-friendly-settings@google.com</owner>
@@ -312,7 +312,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Settings.SafetyCheck.ChromeCleanerResult"
-    enum="SafetyCheckChromeCleanerStatus" expires_after="2023-01-01">
+    enum="SafetyCheckChromeCleanerStatus" expires_after="2023-03-05">
   <owner>rainhard@chromium.org</owner>
   <owner>msramek@chromium.org</owner>
   <summary>
@@ -341,7 +341,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Settings.SafetyCheck.PasswordsResult"
-    enum="SafetyCheckPasswordsStatus" expires_after="2022-12-18">
+    enum="SafetyCheckPasswordsStatus" expires_after="2023-02-19">
   <owner>andzaytsev@google.com</owner>
   <owner>msramek@chromium.org</owner>
   <summary>Resulting state of the safety check password check.</summary>
@@ -355,7 +355,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Settings.SafetyCheck.UpdatesResult"
-    enum="SafetyCheckUpdateStatus" expires_after="2022-12-18">
+    enum="SafetyCheckUpdateStatus" expires_after="2023-02-19">
   <owner>andzaytsev@google.com</owner>
   <owner>msramek@chromium.org</owner>
   <summary>Resulting state of the safety check updates check.</summary>
@@ -424,7 +424,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Settings.ShowHomeButton" enum="BooleanEnabled"
-    expires_after="2022-12-25">
+    expires_after="2023-02-26">
   <owner>mpearson@chromium.org</owner>
   <owner>twellington@chromium.org</owner>
   <summary>
@@ -434,8 +434,9 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Settings.StartSetAsDefault" enum="BooleanHit"
-    expires_after="M77">
+    expires_after="M115">
   <owner>pmonette@chromium.org</owner>
+  <owner>robliao@chromium.org</owner>
   <summary>
     The user clicked &quot;Make Google Chrome the default browser&quot; on the
     settings page.
@@ -456,7 +457,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Settings.StartupPageLoadSettings" enum="SessionStartupPref"
-    expires_after="2022-12-18">
+    expires_after="2023-02-19">
   <owner>mpearson@chromium.org</owner>
   <owner>tiborg@chromium.org</owner>
   <owner>chrome-desktop-ntp@google.com</owner>
@@ -484,7 +485,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Settings.TrackedPreferenceChanged" enum="TrackedPreference"
-    expires_after="2022-12-22">
+    expires_after="2023-02-26">
   <owner>proberge@chromium.org</owner>
   <owner>junhao.huang@microsoft.com</owner>
   <summary>
@@ -543,7 +544,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Settings.TrackedPreferenceReset" enum="TrackedPreference"
-    expires_after="2022-12-22">
+    expires_after="2023-02-26">
   <owner>proberge@chromium.org</owner>
   <owner>junhao.huang@microsoft.com</owner>
   <summary>The id of a tracked preference which was reset by Chrome.</summary>
@@ -583,7 +584,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Settings.TrackedPreferenceWantedReset"
-    enum="TrackedPreference" expires_after="2022-12-22">
+    enum="TrackedPreference" expires_after="2023-02-26">
   <owner>proberge@chromium.org</owner>
   <owner>junhao.huang@microsoft.com</owner>
   <summary>

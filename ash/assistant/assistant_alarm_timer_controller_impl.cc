@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,13 +12,14 @@
 #include "ash/assistant/util/deep_link_util.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "base/bind.h"
+#include "base/containers/contains.h"
 #include "base/i18n/message_formatter.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "chromeos/ash/services/assistant/public/cpp/assistant_service.h"
 #include "chromeos/ash/services/assistant/public/cpp/features.h"
-#include "chromeos/services/libassistant/public/cpp/assistant_notification.h"
-#include "chromeos/services/libassistant/public/cpp/assistant_timer.h"
+#include "chromeos/ash/services/libassistant/public/cpp/assistant_notification.h"
+#include "chromeos/ash/services/libassistant/public/cpp/assistant_timer.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "third_party/icu/source/common/unicode/utypes.h"
@@ -306,10 +307,8 @@ void AssistantAlarmTimerControllerImpl::OnTimerStateChanged(
     const std::vector<AssistantTimer>& new_or_updated_timers) {
   // First we remove all old timers that no longer exist.
   for (const auto* old_timer : model_.GetAllTimers()) {
-    if (std::none_of(new_or_updated_timers.begin(), new_or_updated_timers.end(),
-                     [&old_timer](const auto& new_or_updated_timer) {
-                       return old_timer->id == new_or_updated_timer.id;
-                     })) {
+    if (!base::Contains(new_or_updated_timers, old_timer->id,
+                        &AssistantTimer::id)) {
       model_.RemoveTimer(old_timer->id);
     }
   }

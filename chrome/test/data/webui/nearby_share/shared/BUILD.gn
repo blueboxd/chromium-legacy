@@ -1,4 +1,4 @@
-# Copyright 2020 The Chromium Authors. All rights reserved.
+# Copyright 2020 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -8,11 +8,16 @@ assert(is_chromeos, "Nearby Share is CrOS only")
 
 js_type_check("closure_compile") {
   is_polymer3 = true
-  closure_flags = default_closure_args + [
-                    "browser_resolver_prefix_replacements=\"chrome://nearby/=../../chrome/browser/resources/nearby_share/\"",
-                    "js_module_root=../../chrome/browser/resources/nearby_share/",
-                    "js_module_root=./gen/chrome/browser/resources/nearby_share/",
-                  ]
+  closure_flags =
+      default_closure_args + [
+        "browser_resolver_prefix_replacements=\"chrome://nearby/=" +
+            rebase_path("//chrome/browser/resources/nearby_share/",
+                        root_build_dir) + "\"",
+        "js_module_root=" +
+            rebase_path("//chrome/browser/resources/nearby_share/",
+                        root_build_dir),
+        "js_module_root=./gen/chrome/browser/resources/nearby_share/",
+      ]
   deps = [
     ":fake_nearby_contact_manager",
     ":fake_nearby_share_settings",
@@ -64,9 +69,11 @@ js_library("nearby_onboarding_one_page_test") {
     "../..:chai_assert",
     "../..:test_util",
     "//chrome/browser/resources/nearby_share/shared:nearby_onboarding_one_page",
-    "//ui/webui/resources/cr_elements/cr_input:cr_input",
   ]
-  externs_list = [ "$externs_path/mocha-2.5.js" ]
+  externs_list = [
+    "$externs_path/mocha-2.5.js",
+    "//ui/webui/resources/cr_elements/cr_input/cr_input_externs.js",
+  ]
 }
 
 js_library("nearby_onboarding_page_test") {
@@ -75,9 +82,11 @@ js_library("nearby_onboarding_page_test") {
     "../..:chai_assert",
     "../..:test_util",
     "//chrome/browser/resources/nearby_share/shared:nearby_onboarding_page",
-    "//ui/webui/resources/cr_elements/cr_input:cr_input",
   ]
-  externs_list = [ "$externs_path/mocha-2.5.js" ]
+  externs_list = [
+    "$externs_path/mocha-2.5.js",
+    "//ui/webui/resources/cr_elements/cr_input/cr_input_externs.js",
+  ]
 }
 
 js_library("nearby_page_template_test") {

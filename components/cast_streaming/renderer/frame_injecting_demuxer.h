@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -46,6 +46,7 @@ class FrameInjectingDemuxer final : public media::Demuxer {
   void OnStreamsInitializedOnMediaThread(
       mojom::AudioStreamInitializationInfoPtr audio_stream_info,
       mojom::VideoStreamInitializationInfoPtr video_stream_info);
+  void OnStreamInitializationComplete();
 
   // media::Demuxer implementation.
   std::vector<media::DemuxerStream*> GetAllStreams() override;
@@ -71,6 +72,10 @@ class FrameInjectingDemuxer final : public media::Demuxer {
       const std::vector<media::MediaTrack::Id>& track_ids,
       base::TimeDelta curr_time,
       TrackChangeCB change_completed_cb) override;
+
+  // The number of initialized streams that have yet to call
+  // OnStreamInitializationComplete().
+  int pending_stream_initialization_callbacks_ = 0;
 
   scoped_refptr<base::SingleThreadTaskRunner> media_task_runner_;
   scoped_refptr<base::SequencedTaskRunner> original_task_runner_;

@@ -1,4 +1,4 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -177,6 +177,7 @@ class OobeWelcomeScreen extends OobeWelcomeScreenBase {
       'showEditRequisitionDialog',
       'showRemoraRequisitionDialog',
       'maybeGiveChromeVoxHint',
+      'setQuickStartEnabled',
     ];
   }
 
@@ -706,6 +707,10 @@ class OobeWelcomeScreen extends OobeWelcomeScreenBase {
           /** @type {!chrome.tts.TtsOptions} */ ({lang: locale, voiceName});
       this.giveChromeVoxHint_(locale, ttsOptions, false);
     });
+  }
+
+  setQuickStartEnabled() {
+    this.$.welcomeScreen.isQuickStartEnabled = true;
   }
 
   /**

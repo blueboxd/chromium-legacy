@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -90,10 +90,9 @@ bool ShouldTriggerSubmission(SubmissionReadinessState submission_readiness,
 // Returns whether there is at least one credential with a non-empty username.
 bool ContainsNonEmptyUsername(
     const base::span<const UiCredential>& credentials) {
-  return std::any_of(credentials.begin(), credentials.end(),
-                     [](const UiCredential& credential) {
-                       return !credential.username().empty();
-                     });
+  return base::ranges::any_of(credentials, [](const UiCredential& credential) {
+    return !credential.username().empty();
+  });
 }
 
 }  // namespace
@@ -175,7 +174,8 @@ void TouchToFillController::OnCredentialSelected(
       .Record(ukm::UkmRecorder::Get());
   if (!password_manager_util::CanUseBiometricAuth(
           authenticator_.get(),
-          device_reauth::BiometricAuthRequester::kTouchToFill)) {
+          device_reauth::BiometricAuthRequester::kTouchToFill,
+          password_client_)) {
     FillCredential(credential);
     return;
   }
@@ -195,11 +195,11 @@ void TouchToFillController::OnWebAuthnCredentialSelected(
   if (!driver_)
     return;
 
+  password_client_->GetWebAuthnCredentialsDelegateForDriver(driver_.get())
+      ->SelectWebAuthnCredential(credential.id().value());
+
   CleanUpDriverAndReportOutcome(TouchToFillOutcome::kWebAuthnCredentialSelected,
                                 /*show_virtual_keyboard=*/false);
-
-  password_client_->GetWebAuthnCredentialsDelegate()->SelectWebAuthnCredential(
-      credential.id().value());
 }
 
 void TouchToFillController::OnManagePasswordsSelected() {

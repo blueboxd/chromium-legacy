@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -157,9 +157,7 @@ class BASE_EXPORT ThreadCollisionWarner {
   ThreadCollisionWarner(const ThreadCollisionWarner&) = delete;
   ThreadCollisionWarner& operator=(const ThreadCollisionWarner&) = delete;
 
-  ~ThreadCollisionWarner() {
-    delete asserter_;
-  }
+  ~ThreadCollisionWarner() { asserter_.ClearAndDelete(); }
 
   // This class is meant to be used through the macro
   // DFAKE_SCOPED_LOCK_THREAD_LOCKED

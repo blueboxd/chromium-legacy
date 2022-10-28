@@ -1,4 +1,4 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -481,7 +481,7 @@ GpuServiceImpl::~GpuServiceImpl() {
   }
 
   // Scheduler must be destroyed before sync point manager is destroyed.
-  scheduler_.reset();
+  owned_scheduler_.reset();
   owned_sync_point_manager_.reset();
   owned_shared_image_manager_.reset();
 
@@ -533,7 +533,7 @@ void GpuServiceImpl::UpdateGPUInfo() {
 
 void GpuServiceImpl::UpdateGPUInfoGL() {
   DCHECK(main_runner_->BelongsToCurrentThread());
-  gpu::CollectGraphicsInfoGL(&gpu_info_, gl::GetDefaultDisplay());
+  gpu::CollectGraphicsInfoGL(&gpu_info_, GetContextState()->display());
   gpu_host_->DidUpdateGPUInfo(gpu_info_);
 }
 
@@ -543,6 +543,7 @@ void GpuServiceImpl::InitializeWithHost(
     scoped_refptr<gl::GLSurface> default_offscreen_surface,
     gpu::SyncPointManager* sync_point_manager,
     gpu::SharedImageManager* shared_image_manager,
+    gpu::Scheduler* scheduler,
     base::WaitableEvent* shutdown_event) {
   DCHECK(main_runner_->BelongsToCurrentThread());
 
@@ -595,15 +596,20 @@ void GpuServiceImpl::InitializeWithHost(
     shutdown_event_ = owned_shutdown_event_.get();
   }
 
-  scheduler_ =
-      std::make_unique<gpu::Scheduler>(sync_point_manager, gpu_preferences_);
+  if (scheduler) {
+    scheduler_ = scheduler;
+  } else {
+    owned_scheduler_ =
+        std::make_unique<gpu::Scheduler>(sync_point_manager, gpu_preferences_);
+    scheduler_ = owned_scheduler_.get();
+  }
 
   // Defer creation of the render thread. This is to prevent it from handling
   // IPC messages before the sandbox has been enabled and all other necessary
   // initialization has succeeded.
   gpu_channel_manager_ = std::make_unique<gpu::GpuChannelManager>(
       gpu_preferences_, this, watchdog_thread_.get(), main_runner_, io_runner_,
-      scheduler_.get(), sync_point_manager, shared_image_manager,
+      scheduler_, sync_point_manager, shared_image_manager,
       gpu_memory_buffer_factory_.get(), gpu_feature_info_,
       std::move(activity_flags), std::move(default_offscreen_surface),
       image_decode_accelerator_worker_.get(), vulkan_context_provider(),
@@ -622,6 +628,9 @@ void GpuServiceImpl::InitializeWithHost(
 #else
       nullptr, nullptr,
 #endif
+      gpu_channel_manager_->default_offscreen_surface()
+          ? gpu_channel_manager_->default_offscreen_surface()->GetGLDisplay()
+          : nullptr,
       !!watchdog_thread_);
 }
 
@@ -1328,7 +1337,7 @@ void GpuServiceImpl::GetPeakMemoryUsageOnMainThread(
 }
 
 gpu::Scheduler* GpuServiceImpl::GetGpuScheduler() {
-  return scheduler_.get();
+  return scheduler_;
 }
 
 #if BUILDFLAG(IS_WIN)

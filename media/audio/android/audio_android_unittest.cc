@@ -1,4 +1,4 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -827,7 +827,7 @@ TEST_F(AudioAndroidOutputTest,
        DISABLED_StartOutputStreamCallbacksNonDefaultParameters) {
   GetDefaultOutputStreamParametersOnAudioThread();
   AudioParameters params(audio_output_parameters().format(),
-                         CHANNEL_LAYOUT_MONO,
+                         ChannelLayoutConfig::Mono(),
                          audio_output_parameters().sample_rate(),
                          audio_output_parameters().sample_rate() / 100);
   StartOutputStreamCallbacks(params);

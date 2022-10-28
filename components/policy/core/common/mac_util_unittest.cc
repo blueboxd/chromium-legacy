@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -40,8 +40,8 @@ TEST(PolicyMacUtilTest, PropertyToValue) {
   // base::Value::Type::LIST
   root.Set("emptyl", std::make_unique<base::Value>(base::Value::Type::LIST));
   base::ListValue list;
-  for (base::DictionaryValue::Iterator it(root); !it.IsAtEnd(); it.Advance())
-    list.GetList().Append(it.value().Clone());
+  for (const auto item : root.GetDict())
+    list.GetList().Append(item.second.Clone());
   EXPECT_EQ(root.DictSize(), list.GetList().size());
   list.GetList().Append(root.Clone());
   root.SetKey("list", list.Clone());

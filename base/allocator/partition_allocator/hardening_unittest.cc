@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -139,6 +139,11 @@ TEST(HardeningTest, SuccessfulCorruption) {
   PartitionFreelistEntry::EmplaceAndInitForTest(root.ObjectToSlotStart(data),
                                                 to_corrupt, true);
 
+#if BUILDFLAG(USE_FREESLOT_BITMAP)
+  // This part crashes with freeslot bitmap because it detects freelist
+  // corruptions, which is rather desirable behavior.
+  EXPECT_DEATH_IF_SUPPORTED(root.Alloc(kAllocSize, ""), "");
+#else
   // Next allocation is what was in
   // root->bucket->active_slot_span_head->freelist_head, so not the corrupted
   // pointer.
@@ -149,6 +154,7 @@ TEST(HardeningTest, SuccessfulCorruption) {
   void* new_data2 = root.Alloc(kAllocSize, "");
   // Now we have a pointer to the middle of an existing allocation.
   EXPECT_EQ(new_data2, to_corrupt);
+#endif  // BUILDFLAG(USE_FREESLOT_BITMAP)
 }
 
 }  // namespace

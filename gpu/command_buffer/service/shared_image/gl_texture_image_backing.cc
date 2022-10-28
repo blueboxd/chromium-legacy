@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -20,7 +20,6 @@
 #include "gpu/command_buffer/service/context_state.h"
 #include "gpu/command_buffer/service/gles2_cmd_decoder.h"
 #include "gpu/command_buffer/service/image_factory.h"
-#include "gpu/command_buffer/service/mailbox_manager.h"
 #include "gpu/command_buffer/service/service_utils.h"
 #include "gpu/command_buffer/service/shared_context_state.h"
 #include "gpu/command_buffer/service/shared_image/gl_image_backing.h"
@@ -122,15 +121,17 @@ GLuint GLTextureImageBacking::GetGLServiceId() const {
 
 void GLTextureImageBacking::OnMemoryDump(
     const std::string& dump_name,
-    base::trace_event::MemoryAllocatorDump* dump,
+    base::trace_event::MemoryAllocatorDumpGuid client_guid,
     base::trace_event::ProcessMemoryDump* pmd,
     uint64_t client_tracing_id) {
-  const auto client_guid = GetSharedImageGUIDForTracing(mailbox());
+  SharedImageBacking::OnMemoryDump(dump_name, client_guid, pmd,
+                                   client_tracing_id);
+
   if (!IsPassthrough()) {
     const auto service_guid =
         gl::GetGLTextureServiceGUIDForTracing(texture_->service_id());
     pmd->CreateSharedGlobalAllocatorDump(service_guid);
-    pmd->AddOwnershipEdge(client_guid, service_guid, /* importance */ 2);
+    pmd->AddOwnershipEdge(client_guid, service_guid, kOwningEdgeImportance);
     texture_->DumpLevelMemory(pmd, client_tracing_id, dump_name);
   }
 }
@@ -157,15 +158,6 @@ void GLTextureImageBacking::SetClearedRect(const gfx::Rect& cleared_rect) {
   // Use shared image based tracking for passthrough, because we don't always
   // use angle robust initialization.
   ClearTrackingSharedImageBacking::SetClearedRect(cleared_rect);
-}
-
-bool GLTextureImageBacking::ProduceLegacyMailbox(
-    MailboxManager* mailbox_manager) {
-  if (IsPassthrough())
-    mailbox_manager->ProduceTexture(mailbox(), passthrough_texture_.get());
-  else
-    mailbox_manager->ProduceTexture(mailbox(), texture_);
-  return true;
 }
 
 std::unique_ptr<GLTextureImageRepresentation>

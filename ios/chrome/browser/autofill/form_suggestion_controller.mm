@@ -1,23 +1,22 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #import "ios/chrome/browser/autofill/form_suggestion_controller.h"
 
-#include <memory>
+#import <memory>
 
-#include "base/mac/foundation_util.h"
-#include "base/strings/sys_string_conversions.h"
-#include "base/strings/utf_string_conversions.h"
-#include "components/autofill/core/browser/ui/autofill_popup_delegate.h"
+#import "base/mac/foundation_util.h"
+#import "base/strings/sys_string_conversions.h"
+#import "base/strings/utf_string_conversions.h"
+#import "components/autofill/core/browser/ui/autofill_popup_delegate.h"
 #import "components/autofill/ios/browser/form_suggestion.h"
 #import "components/autofill/ios/browser/form_suggestion_provider.h"
-#include "components/autofill/ios/form_util/form_activity_params.h"
+#import "components/autofill/ios/form_util/form_activity_params.h"
 #import "ios/chrome/browser/autofill/form_input_navigator.h"
 #import "ios/chrome/browser/autofill/form_input_suggestions_provider.h"
-#import "ios/chrome/browser/autofill/form_suggestion_view.h"
 #import "ios/chrome/browser/passwords/password_generation_utils.h"
-#include "ios/chrome/browser/ui/util/ui_util.h"
+#import "ios/chrome/browser/ui/util/ui_util.h"
 #import "ios/web/common/url_scheme_util.h"
 #import "ios/web/public/js_messaging/web_frames_manager.h"
 #import "ios/web/public/ui/crw_web_view_proxy.h"
@@ -184,7 +183,6 @@ AutofillSuggestionState::AutofillSuggestionState(
                            _suggestionState.get()->typed_value)
                frameID:base::SysUTF8ToNSString(params.frame_id)];
 
-  BOOL isMainFrame = params.is_main_frame;
   BOOL hasUserGesture = params.has_user_gesture;
 
   // Build a block for each provider that will invoke its completion with YES
@@ -202,7 +200,6 @@ AutofillSuggestionState::AutofillSuggestionState(
         return;
       id<FormSuggestionProvider> provider = strongSelf->_suggestionProviders[i];
       [provider checkIfSuggestionsAvailableForForm:formQuery
-                                       isMainFrame:isMainFrame
                                     hasUserGesture:hasUserGesture
                                           webState:webState
                                  completionHandler:completion];

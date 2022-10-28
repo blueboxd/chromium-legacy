@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -74,6 +74,11 @@ class ASH_EXPORT UnifiedMessageCenterView
   // Initializes the `UnifiedMessageListView` with existing notifications.
   // Should be called after ctor.
   void Init();
+
+  // Calls the notification bar `Update` function with the current unpinned,
+  // pinned and stacked notification counts. Returns true if the state of the
+  // bar has changed.
+  bool UpdateNotificationBar();
 
   // Sets the maximum height that the view can take.
   // TODO(tengs): The layout of this view is heavily dependant on this max

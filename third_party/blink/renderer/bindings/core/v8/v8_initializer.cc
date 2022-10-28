@@ -37,6 +37,7 @@
 #include "third_party/blink/public/common/switches.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/bindings/core/v8/binding_security.h"
+#include "third_party/blink/renderer/bindings/core/v8/capture_source_location.h"
 #include "third_party/blink/renderer/bindings/core/v8/isolated_world_csp.h"
 #include "third_party/blink/renderer/bindings/core/v8/native_value_traits_impl.h"
 #include "third_party/blink/renderer/bindings/core/v8/referrer_script_info.h"
@@ -45,7 +46,6 @@
 #include "third_party/blink/renderer/bindings/core/v8/script_controller.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_value.h"
-#include "third_party/blink/renderer/bindings/core/v8/source_location.h"
 #include "third_party/blink/renderer/bindings/core/v8/use_counter_callback.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_context_snapshot.h"
@@ -75,6 +75,7 @@
 #include "third_party/blink/renderer/core/workers/worklet_global_scope.h"
 #include "third_party/blink/renderer/platform/bindings/active_script_wrappable_manager.h"
 #include "third_party/blink/renderer/platform/bindings/dom_wrapper_world.h"
+#include "third_party/blink/renderer/platform/bindings/source_location.h"
 #include "third_party/blink/renderer/platform/bindings/v8_dom_wrapper.h"
 #include "third_party/blink/renderer/platform/bindings/v8_per_context_data.h"
 #include "third_party/blink/renderer/platform/bindings/v8_per_isolate_data.h"
@@ -85,7 +86,7 @@
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/scheduler/public/cooperative_scheduling_manager.h"
-#include "third_party/blink/renderer/platform/scheduler/public/thread.h"
+#include "third_party/blink/renderer/platform/scheduler/public/main_thread.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread_scheduler.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/weborigin/reporting_disposition.h"
@@ -148,7 +149,7 @@ const size_t kWasmWireBytesLimit = 1 << 12;
 void V8Initializer::MessageHandlerInMainThread(v8::Local<v8::Message> message,
                                                v8::Local<v8::Value> data) {
   DCHECK(IsMainThread());
-  v8::Isolate* isolate = v8::Isolate::GetCurrent();
+  v8::Isolate* isolate = message->GetIsolate();
 
   if (isolate->GetEnteredOrMicrotaskContext().IsEmpty())
     return;
@@ -164,7 +165,7 @@ void V8Initializer::MessageHandlerInMainThread(v8::Local<v8::Message> message,
   base::UmaHistogramBoolean("V8.UnhandledExceptionCountInMainThread", true);
 
   std::unique_ptr<SourceLocation> location =
-      SourceLocation::FromMessage(isolate, message, context);
+      CaptureSourceLocation(isolate, message, context);
 
   if (message->ErrorLevel() != v8::Isolate::kMessageError) {
     context->AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
@@ -191,7 +192,7 @@ void V8Initializer::MessageHandlerInMainThread(v8::Local<v8::Message> message,
 
 void V8Initializer::MessageHandlerInWorker(v8::Local<v8::Message> message,
                                            v8::Local<v8::Value> data) {
-  v8::Isolate* isolate = v8::Isolate::GetCurrent();
+  v8::Isolate* isolate = message->GetIsolate();
 
   // During the frame teardown, there may not be a valid context.
   ScriptState* script_state = ScriptState::Current(isolate);
@@ -204,7 +205,7 @@ void V8Initializer::MessageHandlerInWorker(v8::Local<v8::Message> message,
   base::UmaHistogramBoolean("V8.UnhandledExceptionCountInWorker", true);
 
   std::unique_ptr<SourceLocation> location =
-      SourceLocation::FromMessage(isolate, message, context);
+      CaptureSourceLocation(isolate, message, context);
 
   if (message->ErrorLevel() != v8::Isolate::kMessageError) {
     context->AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
@@ -286,7 +287,7 @@ static void PromiseRejectHandler(v8::PromiseRejectMessage data,
   if (!message.IsEmpty()) {
     // message->Get() can be empty here. https://crbug.com/450330
     error_message = ToCoreStringWithNullCheck(message->Get());
-    location = SourceLocation::FromMessage(isolate, message, context);
+    location = CaptureSourceLocation(isolate, message, context);
     if (message->IsSharedCrossOrigin())
       sanitize_script_errors = SanitizeScriptErrors::kDoNotSanitize;
   } else {
@@ -353,7 +354,7 @@ static void FailedAccessCheckCallbackInMainThread(v8::Local<v8::Object> holder,
                                                   v8::Local<v8::Value> data) {
   // FIXME: We should modify V8 to pass in more contextual information (context,
   // property, and object).
-  BindingSecurity::FailedAccessCheckFor(v8::Isolate::GetCurrent(),
+  BindingSecurity::FailedAccessCheckFor(holder->GetIsolate(),
                                         WrapperTypeInfo::Unwrap(data), holder);
 }
 
@@ -818,9 +819,18 @@ void V8Initializer::InitializeMainThread(
 
   ThreadScheduler* scheduler = ThreadScheduler::Current();
 
+  V8PerIsolateData::V8ContextSnapshotMode snapshot_mode =
+      GetV8ContextSnapshotMode();
+  v8::CreateHistogramCallback create_histogram_callback = nullptr;
+  v8::AddHistogramSampleCallback add_histogram_sample_callback = nullptr;
+  // We don't log histograms when taking a snapshot.
+  if (snapshot_mode != V8PerIsolateData::V8ContextSnapshotMode::kTakeSnapshot) {
+    create_histogram_callback = CreateHistogram;
+    add_histogram_sample_callback = AddHistogramSample;
+  }
   v8::Isolate* isolate = V8PerIsolateData::Initialize(
-      scheduler->V8TaskRunner(), GetV8ContextSnapshotMode(), CreateHistogram,
-      AddHistogramSample);
+      scheduler->V8TaskRunner(), snapshot_mode, create_histogram_callback,
+      add_histogram_sample_callback);
   scheduler->SetV8Isolate(isolate);
 
   // ThreadState::isolate_ needs to be set before setting the EmbedderHeapTracer

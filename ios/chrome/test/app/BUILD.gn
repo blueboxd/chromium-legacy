@@ -1,4 +1,4 @@
-# Copyright 2016 The Chromium Authors. All rights reserved.
+# Copyright 2016 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -61,6 +61,7 @@ source_set("test_support") {
     "//ios/chrome/browser/browser_state:browser_state_impl",
     "//ios/chrome/browser/browsing_data",
     "//ios/chrome/browser/content_settings",
+    "//ios/chrome/browser/flags:system_flags",
     "//ios/chrome/browser/history",
     "//ios/chrome/browser/infobars",
     "//ios/chrome/browser/main",
@@ -83,6 +84,7 @@ source_set("test_support") {
     "//ios/chrome/browser/ui/settings/password:password_ui",
     "//ios/chrome/browser/ui/settings/password:test_support",
     "//ios/chrome/browser/ui/settings/password/password_details:password_details_ui",
+    "//ios/chrome/browser/ui/settings/password/password_settings:common",
     "//ios/chrome/browser/ui/tab_switcher/tab_grid",
     "//ios/chrome/browser/ui/tabs",
     "//ios/chrome/browser/ui/util",

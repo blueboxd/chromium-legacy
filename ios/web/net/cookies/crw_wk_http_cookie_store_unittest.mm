@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,14 +6,14 @@
 
 #import <WebKit/WebKit.h>
 
-#include "base/run_loop.h"
+#import "base/run_loop.h"
 #import "base/test/ios/wait_util.h"
-#include "ios/net/cookies/cookie_store_ios_test_util.h"
-#include "ios/web/public/test/web_task_environment.h"
-#include "ios/web/public/test/web_test.h"
-#include "testing/gtest/include/gtest/gtest.h"
-#include "testing/gtest_mac.h"
-#include "testing/platform_test.h"
+#import "ios/net/cookies/cookie_store_ios_test_util.h"
+#import "ios/web/public/test/web_task_environment.h"
+#import "ios/web/public/test/web_test.h"
+#import "testing/gtest/include/gtest/gtest.h"
+#import "testing/gtest_mac.h"
+#import "testing/platform_test.h"
 #import "third_party/ocmock/OCMock/OCMock.h"
 #import "third_party/ocmock/gtest_support.h"
 
@@ -59,7 +59,7 @@ class CRWWKHTTPCookieStoreTest : public PlatformTest {
     return data_store;
   }
 
-  // Adds |cookie| to the CRWWKHTTPCookieStore.
+  // Adds `cookie` to the CRWWKHTTPCookieStore.
   [[nodiscard]] bool SetCookie(NSHTTPCookie* cookie) {
     __block bool cookie_set = false;
     [crw_cookie_store_ setCookie:cookie
@@ -71,7 +71,7 @@ class CRWWKHTTPCookieStoreTest : public PlatformTest {
     });
   }
 
-  // Deletes |cookie| from the CRWWKHTTPCookieStore.
+  // Deletes `cookie` from the CRWWKHTTPCookieStore.
   [[nodiscard]] bool DeleteCookie(NSHTTPCookie* cookie) {
     __block bool cookie_deleted = false;
     [crw_cookie_store_ deleteCookie:cookie
@@ -126,7 +126,7 @@ TEST_F(CRWWKHTTPCookieStoreTest, GetCookiesCachedCorrectly) {
   EXPECT_OCMOCK_VERIFY(mock_http_cookie_store_);
 }
 
-// Tests that |setCookie:| works correctly and invalidates the cache.
+// Tests that `setCookie:` works correctly and invalidates the cache.
 TEST_F(CRWWKHTTPCookieStoreTest, SetCookie) {
   // Verify that internal cookie store setCookie method was called.
   OCMExpect([mock_http_cookie_store_ setCookie:test_cookie_1_
@@ -158,7 +158,7 @@ TEST_F(CRWWKHTTPCookieStoreTest, SetCookie) {
   EXPECT_OCMOCK_VERIFY(mock_http_cookie_store_);
 }
 
-// Tests that |deleteCookie:| works correctly and invalidates the cache.
+// Tests that `deleteCookie:` works correctly and invalidates the cache.
 TEST_F(CRWWKHTTPCookieStoreTest, DeleteCookie) {
   EXPECT_TRUE(SetCookie(test_cookie_1_));
   EXPECT_TRUE(SetCookie(test_cookie_2_));

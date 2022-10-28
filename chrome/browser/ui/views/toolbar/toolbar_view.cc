@@ -1,4 +1,4 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -58,6 +58,7 @@
 #include "chrome/browser/ui/views/media_router/cast_toolbar_button.h"
 #include "chrome/browser/ui/views/page_action/page_action_icon_container.h"
 #include "chrome/browser/ui/views/page_action/page_action_icon_controller.h"
+#include "chrome/browser/ui/views/performance_controls/battery_saver_button.h"
 #include "chrome/browser/ui/views/send_tab_to_self/send_tab_to_self_toolbar_icon_view.h"
 #include "chrome/browser/ui/views/side_search/side_search_browser_controller.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
@@ -80,6 +81,7 @@
 #include "chrome/grit/theme_resources.h"
 #include "components/autofill/core/common/autofill_payments_features.h"
 #include "components/omnibox/browser/omnibox_view.h"
+#include "components/performance_manager/public/features.h"
 #include "components/prefs/pref_service.h"
 #include "components/safe_browsing/core/common/features.h"
 #include "components/send_tab_to_self/features.h"
@@ -280,7 +282,7 @@ void ToolbarView::Init() {
   }
 
   std::unique_ptr<SidePanelToolbarButton> side_panel_button;
-  if (browser_view_->right_aligned_side_panel()) {
+  if (browser_view_->unified_side_panel()) {
     side_panel_button = std::make_unique<SidePanelToolbarButton>(browser_);
   }
 
@@ -321,6 +323,12 @@ void ToolbarView::Init() {
       // initial value.
       chrome_labs_button_->SetVisible(show_chrome_labs_button_.GetValue());
     }
+  }
+
+  if (base::FeatureList::IsEnabled(
+          performance_manager::features::kBatterySaverModeAvailable)) {
+    battery_saver_button_ =
+        AddChildView(std::make_unique<BatterySaverButton>(browser_view_));
   }
 
   if (cast)

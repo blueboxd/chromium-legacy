@@ -1,36 +1,36 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #import "ios/chrome/browser/autofill/form_suggestion_controller.h"
 
-#include <utility>
-#include <vector>
+#import <utility>
+#import <vector>
 
-#include "base/mac/foundation_util.h"
-#include "base/path_service.h"
-#include "base/test/scoped_feature_list.h"
+#import "base/mac/foundation_util.h"
+#import "base/path_service.h"
+#import "base/test/scoped_feature_list.h"
 #import "components/autofill/ios/browser/form_suggestion.h"
 #import "components/autofill/ios/browser/form_suggestion_provider.h"
 #import "components/autofill/ios/form_util/form_activity_observer_bridge.h"
-#include "components/autofill/ios/form_util/form_activity_params.h"
-#include "components/autofill/ios/form_util/test_form_activity_tab_helper.h"
+#import "components/autofill/ios/form_util/form_activity_params.h"
+#import "components/autofill/ios/form_util/test_form_activity_tab_helper.h"
 #import "ios/chrome/app/application_delegate/app_state.h"
-#import "ios/chrome/browser/autofill/form_suggestion_view.h"
 #import "ios/chrome/browser/ui/autofill/form_input_accessory/form_input_accessory_consumer.h"
 #import "ios/chrome/browser/ui/autofill/form_input_accessory/form_input_accessory_mediator.h"
+#import "ios/chrome/browser/ui/autofill/form_input_accessory/form_suggestion_view.h"
 #import "ios/chrome/browser/ui/bubble/bubble_features.h"
-#include "ios/chrome/browser/ui/util/ui_util.h"
+#import "ios/chrome/browser/ui/util/ui_util.h"
 #import "ios/web/public/navigation/navigation_manager.h"
 #import "ios/web/public/test/fakes/fake_navigation_context.h"
-#include "ios/web/public/test/fakes/fake_web_frame.h"
+#import "ios/web/public/test/fakes/fake_web_frame.h"
 #import "ios/web/public/test/fakes/fake_web_state.h"
-#include "ios/web/public/test/web_task_environment.h"
+#import "ios/web/public/test/web_task_environment.h"
 #import "ios/web/public/ui/crw_web_view_proxy.h"
 #import "testing/gtest_mac.h"
 #import "testing/platform_test.h"
 #import "third_party/ocmock/OCMock/OCMock.h"
-#include "third_party/ocmock/gtest_support.h"
+#import "third_party/ocmock/gtest_support.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -115,7 +115,6 @@ using autofill::FieldRendererId;
 
 - (void)checkIfSuggestionsAvailableForForm:
             (FormSuggestionProviderQuery*)formQuery
-                               isMainFrame:(BOOL)isMainFrame
                             hasUserGesture:(BOOL)hasUserGesture
                                   webState:(web::WebState*)webState
                          completionHandler:
@@ -462,40 +461,9 @@ TEST_F(FormSuggestionControllerTest, SelectingSuggestionShouldNotifyDelegate) {
   EXPECT_NSEQ(suggestions[0], [provider suggestion]);
 }
 
-// Tests that the password suggestion IPH is not shown, but the event logged,
-// when the feature is not enabled,
-TEST_F(FormSuggestionControllerTest, PasswordSuggestionNoFeatureNoIPH) {
-  // Disable the feature flag for password suggestion IPH.
-  scoped_feature_list_.InitAndDisableFeature(kBubbleRichIPH);
-
-  NSArray* suggestions = @[
-    [FormSuggestion suggestionWithValue:@"foo"
-                     displayDescription:nil
-                                   icon:@""
-                             identifier:0
-                         requiresReauth:NO],
-  ];
-  TestSuggestionProvider* provider =
-      [[TestSuggestionProvider alloc] initWithSuggestions:suggestions];
-  provider.type = SuggestionProviderTypePassword;
-  SetUpController(@[ provider ]);
-  GURL url("http://foo.com");
-  fake_web_state_.SetCurrentURL(url);
-  auto main_frame = web::FakeWebFrame::CreateMainWebFrame(url);
-  autofill::FormActivityParams params;
-
-  [[mock_handler_ reject] showPasswordSuggestionIPHIfNeeded];
-  OCMExpect([mock_handler_ notifyPasswordSuggestionsShown]);
-  test_form_activity_tab_helper_.FormActivityRegistered(main_frame.get(),
-                                                        params);
-  [mock_handler_ verify];
-}
-
-// Tests that the password suggestion IPH is enabled when suggesting a password.
+// Tests that the password suggestion IPH is triggered when suggesting a
+// password.
 TEST_F(FormSuggestionControllerTest, PasswordSuggestionIPH) {
-  // Enable the feature flag for password suggestion IPH.
-  scoped_feature_list_.InitAndEnableFeature(kBubbleRichIPH);
-
   NSArray* suggestions = @[
     [FormSuggestion suggestionWithValue:@"foo"
                      displayDescription:nil
@@ -513,18 +481,14 @@ TEST_F(FormSuggestionControllerTest, PasswordSuggestionIPH) {
   autofill::FormActivityParams params;
 
   OCMExpect([mock_handler_ showPasswordSuggestionIPHIfNeeded]);
-  [[mock_handler_ reject] notifyPasswordSuggestionsShown];
   test_form_activity_tab_helper_.FormActivityRegistered(main_frame.get(),
                                                         params);
   [mock_handler_ verify];
 }
 
-// Tests that the password suggestion iph is disabled when not suggesting a
+// Tests that the password suggestion IPH is not triggered when not suggesting a
 // password.
 TEST_F(FormSuggestionControllerTest, NonPasswordSuggestionNoIPH) {
-  // Enable the feature flag for password suggestion iph.
-  scoped_feature_list_.InitAndEnableFeature(kBubbleRichIPH);
-
   NSArray* suggestions = @[
     [FormSuggestion suggestionWithValue:@"foo"
                      displayDescription:nil
@@ -541,7 +505,6 @@ TEST_F(FormSuggestionControllerTest, NonPasswordSuggestionNoIPH) {
   autofill::FormActivityParams params;
 
   [[mock_handler_ reject] showPasswordSuggestionIPHIfNeeded];
-  [[mock_handler_ reject] notifyPasswordSuggestionsShown];
   test_form_activity_tab_helper_.FormActivityRegistered(main_frame.get(),
                                                         params);
 }

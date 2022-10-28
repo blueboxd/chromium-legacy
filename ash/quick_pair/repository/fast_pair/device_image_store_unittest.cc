@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,14 +13,20 @@
 #include "base/callback_helpers.h"
 #include "base/test/gmock_callback_support.h"
 #include "base/test/mock_callback.h"
-#include "chromeos/services/bluetooth_config/public/cpp/device_image_info.h"
+#include "chromeos/ash/services/bluetooth_config/public/cpp/device_image_info.h"
 #include "components/prefs/pref_service.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/base/webui/web_ui_util.h"
 #include "ui/gfx/image/image_unittest_util.h"
 
+namespace ash::quick_pair {
+
 namespace {
+
+using ::base::test::RunOnceCallback;
+using bluetooth_config::DeviceImageInfo;
+using ::testing::_;
 
 constexpr char kTestModelId[] = "ABC123";
 constexpr char kTestLeftBudUrl[] = "left_bud";
@@ -28,14 +34,6 @@ constexpr char kTestRightBudUrl[] = "right_bud";
 constexpr char kTestCaseUrl[] = "case";
 
 }  // namespace
-
-namespace ash {
-namespace quick_pair {
-
-using ::base::test::RunOnceCallback;
-using chromeos::bluetooth_config::DeviceImageInfo;
-using ::testing::_;
-using ::testing::Return;
 
 class DeviceImageStoreTest : public AshTestBase {
  public:
@@ -200,7 +198,7 @@ TEST_F(DeviceImageStoreTest, PersistDeviceImagesValid) {
   // Validate that the images are persisted to prefs.
   PrefService* local_state = Shell::Get()->local_state();
   const base::Value::Dict& device_image_store_dict =
-      local_state->GetValueDict(DeviceImageStore::kDeviceImageStorePref);
+      local_state->GetDict(DeviceImageStore::kDeviceImageStorePref);
   const base::Value* images_dict = device_image_store_dict.Find(kTestModelId);
   EXPECT_TRUE(images_dict);
   const std::string* persisted_image = images_dict->FindStringKey("Default");
@@ -224,7 +222,7 @@ TEST_F(DeviceImageStoreTest, EvictDeviceImagesValid) {
   // Validate that the images are evicted from prefs.
   PrefService* local_state = Shell::Get()->local_state();
   const base::Value::Dict& device_image_store_dict =
-      local_state->GetValueDict(DeviceImageStore::kDeviceImageStorePref);
+      local_state->GetDict(DeviceImageStore::kDeviceImageStorePref);
   const base::Value* images_dict = device_image_store_dict.Find(kTestModelId);
   EXPECT_FALSE(images_dict);
 }
@@ -316,5 +314,4 @@ TEST_F(DeviceImageStoreTest, LoadPersistedImagesFromPrefs) {
   EXPECT_EQ(case_image, webui::GetBitmapDataUrl(test_image_.AsBitmap()));
 }
 
-}  // namespace quick_pair
-}  // namespace ash
+}  // namespace ash::quick_pair

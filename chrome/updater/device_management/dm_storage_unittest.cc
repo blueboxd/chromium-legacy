@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -30,6 +30,8 @@ class TestTokenService : public TokenServiceInterface {
 
   // Overrides for TokenServiceInterface.
   std::string GetDeviceID() const override { return "TestDeviceID"; }
+
+  bool IsEnrollmentMandatory() const override { return false; }
 
   bool StoreEnrollmentToken(const std::string& enrollment_token) override {
     enrollment_token_ = enrollment_token;

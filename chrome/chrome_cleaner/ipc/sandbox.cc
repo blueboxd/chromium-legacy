@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -57,32 +57,26 @@ std::unique_ptr<sandbox::TargetPolicy> GetSandboxPolicy(
     sandbox::BrokerServices* sandbox_broker_services) {
   auto policy = sandbox_broker_services->CreatePolicy();
 
-  sandbox::ResultCode sandbox_result = policy->SetTokenLevel(
+  sandbox::TargetConfig* config = policy->GetConfig();
+  if (config->IsConfigured())
+    return policy;
+
+  config->SetDesktop(sandbox::Desktop::kAlternateWinstation);
+
+  sandbox::ResultCode sandbox_result = config->SetTokenLevel(
       sandbox::USER_RESTRICTED_SAME_ACCESS, sandbox::USER_LOCKDOWN);
   CHECK_EQ(sandbox::SBOX_ALL_OK, sandbox_result);
 
-  sandbox_result = policy->SetJobLevel(sandbox::JobLevel::kLockdown, 0);
+  sandbox_result = config->SetJobLevel(sandbox::JobLevel::kLockdown, 0);
   CHECK_EQ(sandbox::SBOX_ALL_OK, sandbox_result);
 
-#ifdef NDEBUG
-  // Chromium ignores failures on this function but logs a warning. Do the same
-  // here.
-  // https://chromium.googlesource.com/chromium/src/+/b6a4ff86c730756a73d63cc882ef818fb7818a53/content/common/sandbox_win.cc#420
-  // TODO(crbug.com/893740): SetAlternateDesktop can cause DCHECK's in unit
-  // tests if called more than once. Until we get to the bottom of why, it's
-  // only enabled in release builds.
-  sandbox::ResultCode result = policy->SetAlternateDesktop(true);
-  LOG_IF(WARNING, result != sandbox::SBOX_ALL_OK)
-      << "Failed to apply desktop security";
-#endif
-
   sandbox_result =
-      policy->SetDelayedIntegrityLevel(sandbox::INTEGRITY_LEVEL_UNTRUSTED);
+      config->SetDelayedIntegrityLevel(sandbox::INTEGRITY_LEVEL_UNTRUSTED);
   CHECK_EQ(sandbox::SBOX_ALL_OK, sandbox_result);
 
   // This is all the mitigations from security_level.h, except those that need
   // to be enabled later (set in SetDelayedProcessMitigations below).
-  sandbox_result = policy->SetProcessMitigations(
+  sandbox_result = config->SetProcessMitigations(
       sandbox::MITIGATION_DEP | sandbox::MITIGATION_DEP_NO_ATL_THUNK |
       sandbox::MITIGATION_SEHOP | sandbox::MITIGATION_HEAP_TERMINATE |
       sandbox::MITIGATION_BOTTOM_UP_ASLR |
@@ -99,14 +93,13 @@ std::unique_ptr<sandbox::TargetPolicy> GetSandboxPolicy(
   // SetProcessMitigations above, but they need to be delayed in Debug builds.
   // It's easier to just set them up as delayed for both Debug and Release
   // builds.
-  sandbox_result = policy->SetDelayedProcessMitigations(
+  sandbox_result = config->SetDelayedProcessMitigations(
       sandbox::MITIGATION_RELOCATE_IMAGE |
       sandbox::MITIGATION_RELOCATE_IMAGE_REQUIRED |
       sandbox::MITIGATION_STRICT_HANDLE_CHECKS |
       sandbox::MITIGATION_DLL_SEARCH_ORDER);
   CHECK_EQ(sandbox::SBOX_ALL_OK, sandbox_result);
 
-  sandbox::TargetConfig* config = policy->GetConfig();
   // This rule is needed to allow user32.dll and gdi32.dll to initialize during
   // load, while still blocking other WIN32K calls.
   sandbox_result = config->AddRule(sandbox::SubSystem::kWin32kLockdown,
@@ -127,13 +120,27 @@ std::unique_ptr<sandbox::TargetPolicy> GetSandboxPolicy(
   }
 #endif
 
-  policy->SetLockdownDefaultDacl();
+  config->SetLockdownDefaultDacl();
 
   // Do not include SetDisconnectCsrss because the signature validator uses
   // wincrypt, which uses a garbage-collected connection to csrss.exe that may
   // not be cleaned up yet when we call LowerToken.
 
   return policy;
+}
+
+// One-time actions to call on the broker.
+sandbox::ResultCode InitializeSandboxBroker(sandbox::BrokerServices* broker) {
+  sandbox::ResultCode result = broker->Init();
+  if (result != sandbox::SBOX_ALL_OK)
+    return result;
+  result = broker->CreatePolicy()->CreateAlternateDesktop(
+      sandbox::Desktop::kAlternateWinstation);
+  // Matches Chrome behavior. Silently ignore failures unless we're
+  // in a bad state.
+  if (result == sandbox::SBOX_ERROR_FAILED_TO_SWITCH_BACK_WINSTATION)
+    return result;
+  return sandbox::SBOX_ALL_OK;
 }
 
 }  // namespace
@@ -236,7 +243,7 @@ ResultCode StartSandboxTarget(const base::CommandLine& sandbox_command_line,
   // Make init_result static so broker services will only be initialized once.
   // Otherwise, it could be initialized multiple times during tests.
   static const sandbox::ResultCode init_result =
-      sandbox_broker_services->Init();
+      InitializeSandboxBroker(sandbox_broker_services);
   if (init_result != sandbox::SBOX_ALL_OK) {
     LOG(FATAL) << "Failed to initialize sandbox BrokerServices: "
                << init_result;

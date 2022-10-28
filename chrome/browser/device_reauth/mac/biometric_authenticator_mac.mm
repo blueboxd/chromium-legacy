@@ -1,10 +1,11 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome/browser/device_reauth/mac/biometric_authenticator_mac.h"
 
 #include "base/bind.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/notreached.h"
 #include "components/device_reauth/biometric_authenticator.h"
 #include "device/fido/mac/touch_id_context.h"
@@ -15,8 +16,13 @@ BiometricAuthenticatorMac::~BiometricAuthenticatorMac() = default;
 
 bool BiometricAuthenticatorMac::CanAuthenticate(
     device_reauth::BiometricAuthRequester requester) {
-  NOTIMPLEMENTED();
-  return false;
+  base::scoped_nsobject<LAContext> context([[LAContext alloc] init]);
+  bool is_available =
+      [context canEvaluatePolicy:LAPolicyDeviceOwnerAuthenticationWithBiometrics
+                           error:nil];
+  base::UmaHistogramBoolean("PasswordManager.CanUseBiometricsMac",
+                            is_available);
+  return is_available;
 }
 
 void BiometricAuthenticatorMac::Authenticate(
@@ -26,14 +32,16 @@ void BiometricAuthenticatorMac::Authenticate(
   NOTIMPLEMENTED();
 }
 
-void BiometricAuthenticatorMac::Cancel(
-    device_reauth::BiometricAuthRequester requester) {
-  NOTIMPLEMENTED();
+void BiometricAuthenticatorMac::Cancel(device_reauth::BiometricAuthRequester) {
+  if (callback_) {
+    std::move(callback_).Run(/*success=*/false);
+  }
+  touch_id_auth_context_ = nullptr;
 }
 
 void BiometricAuthenticatorMac::AuthenticateWithMessage(
     device_reauth::BiometricAuthRequester requester,
-    const std::u16string message,
+    const std::u16string& message,
     AuthenticateCallback callback) {
   if (!NeedsToAuthenticate()) {
     DCHECK(callback_.is_null());
@@ -41,9 +49,8 @@ void BiometricAuthenticatorMac::AuthenticateWithMessage(
     return;
   }
 
-  if (callback_) {
-    std::move(callback_).Run(/*success=*/false);
-  }
+  // Cancel old authentication if a new one comes in.
+  Cancel(requester);
 
   touch_id_auth_context_ = device::fido::mac::TouchIdContext::Create();
   callback_ = std::move(callback);
@@ -55,6 +62,7 @@ void BiometricAuthenticatorMac::AuthenticateWithMessage(
 }
 
 void BiometricAuthenticatorMac::OnAuthenticationCompleted(bool result) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (callback_.is_null()) {
     return;
   }

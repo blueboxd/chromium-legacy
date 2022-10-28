@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -84,7 +84,7 @@ enum AppListShowSource : uint8_t {
   kShelfButton = 1,
   kSwipeFromShelf = 2,
   kTabletMode = 3,
-  kSearchKeyFullscreen = 4,
+  kSearchKeyFullscreen_DEPRECATED = 4,  // Migrated to kSearchKey.
   kShelfButtonFullscreen = 5,
   kAssistantEntryPoint = 6,
   kScrollFromShelf = 7,
@@ -171,12 +171,6 @@ enum SearchResultLaunchLocation {
 
 // Different ways to trigger launcher animation in tablet mode.
 enum TabletModeAnimationTransition {
-  // Release drag to show the launcher (launcher animates the rest of the way).
-  kDragReleaseShow,
-
-  // Release drag to hide the launcher (launcher animates the rest of the way).
-  kDragReleaseHide,
-
   // Click the Home button in tablet mode.
   kHomeButtonShow,
 

@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -63,9 +63,9 @@ TEST_F(WebViewScriptCommandTest, TestScriptCommand) {
   NSString* script =
       @"__gCrWeb.message.invokeOnHost("
       @"{'command': 'test.command1', 'key1': 'value1', 'key2': 42});";
-  bool success;
-  test::EvaluateJavaScript(web_view_, script, &success);
-  EXPECT_TRUE(success);
+  NSError* error;
+  test::EvaluateJavaScript(web_view_, script, &error);
+  EXPECT_FALSE(error);
 
   EXPECT_TRUE(base::test::ios::WaitUntilConditionOrTimeout(
       base::test::ios::kWaitForJSCompletionTimeout, ^{
@@ -103,9 +103,9 @@ TEST_F(WebViewScriptCommandTest, TestScriptCommandAfterStateRestoration) {
   NSString* script =
       @"__gCrWeb.message.invokeOnHost("
       @"{'command': 'test.command1', 'key1': 'value1', 'key2': 42});";
-  bool success;
-  test::EvaluateJavaScript(web_view_, script, &success);
-  ASSERT_TRUE(success);
+  NSError* error;
+  test::EvaluateJavaScript(web_view_, script, &error);
+  ASSERT_FALSE(error);
 
   EXPECT_TRUE(base::test::ios::WaitUntilConditionOrTimeout(
       base::test::ios::kWaitForJSCompletionTimeout, ^{

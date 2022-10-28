@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -133,6 +133,7 @@ bool AudioDecoderAndroid::Start(int64_t start_pts) {
   if (!rate_shifter_) {
     CreateRateShifter(config_);
   }
+  sink_->SetPaused(false);
   return true;
 }
 
@@ -324,11 +325,13 @@ void AudioDecoderAndroid::CreateRateShifter(const AudioConfig& config) {
   rate_shifter_output_.reset();
   rate_shifter_.reset(new ::media::AudioRendererAlgorithm(&media_log_));
   bool is_encrypted = false;
+  ::media::ChannelLayout channel_layout =
+      DecoderConfigAdapter::ToMediaChannelLayout(config.channel_layout);
   rate_shifter_->Initialize(
-      ::media::AudioParameters(
-          ::media::AudioParameters::AUDIO_PCM_LINEAR,
-          DecoderConfigAdapter::ToMediaChannelLayout(config.channel_layout),
-          config.samples_per_second, kDefaultFramesPerBuffer),
+      ::media::AudioParameters(::media::AudioParameters::AUDIO_PCM_LINEAR,
+                               {channel_layout, config.channel_number},
+                               config.samples_per_second,
+                               kDefaultFramesPerBuffer),
       is_encrypted);
 }
 
@@ -376,6 +379,11 @@ AudioDecoderAndroid::GetAudioTrackTimestamp() {
   TRACE_FUNCTION_ENTRY0();
   return (sink_ ? sink_->GetAudioTrackTimestamp()
                 : AudioDecoderAndroid::AudioTrackTimestamp());
+}
+
+int AudioDecoderAndroid::GetStartThresholdInFrames() {
+  TRACE_FUNCTION_ENTRY0();
+  return (sink_ ? sink_->GetStartThresholdInFrames() : 0);
 }
 
 void AudioDecoderAndroid::OnBufferDecoded(

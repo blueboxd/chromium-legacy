@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,8 +8,6 @@ GEN_INCLUDE(['//chrome/test/data/webui/polymer_browser_test_base.js']);
 GEN('#include "content/public/test/browser_test.h"');
 GEN('#include "chrome/common/chrome_features.h"');
 GEN('#include "chrome/browser/ui/webui/app_settings/web_app_settings_navigation_throttle.h"');
-
-/* eslint-disable no-var */
 
 class AppSettingsBrowserTest extends PolymerTest {
   get browsePreload() {

@@ -1,4 +1,4 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -80,7 +80,8 @@ class ONCCertificateImporterImplTest : public testing::Test {
 
     CertificateImporterImpl importer(task_runner_, test_nssdb_.get());
     auto onc_parsed_certificates =
-        std::make_unique<OncParsedCertificates>(onc_certificates_);
+        std::make_unique<chromeos::onc::OncParsedCertificates>(
+            onc_certificates_);
     EXPECT_EQ(expected_parse_success, !onc_parsed_certificates->has_error());
     switch (import_type) {
       case ImportType::kClientCertificatesOnly:

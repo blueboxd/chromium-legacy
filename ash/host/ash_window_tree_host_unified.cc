@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,7 +12,9 @@
 #include "ash/host/root_window_transformer.h"
 #include "base/check.h"
 #include "base/containers/contains.h"
+#include "base/memory/weak_ptr.h"
 #include "base/notreached.h"
+#include "base/ranges/algorithm.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/aura/window_targeter.h"
@@ -33,6 +35,7 @@ class UnifiedEventTargeter : public aura::WindowTargeter {
 
   UnifiedEventTargeter(const UnifiedEventTargeter&) = delete;
   UnifiedEventTargeter& operator=(const UnifiedEventTargeter&) = delete;
+  ~UnifiedEventTargeter() override { delegate_ = nullptr; }
 
   ui::EventTarget* FindTargetForEvent(ui::EventTarget* root,
                                       ui::Event* event) override {
@@ -44,8 +47,11 @@ class UnifiedEventTargeter : public aura::WindowTargeter {
         located_event->ConvertLocationToTarget(
             static_cast<aura::Window*>(nullptr), dst_root_);
       }
+      auto ptr = weak_ptr_factory_.GetWeakPtr();
       std::ignore =
           dst_root_->GetHost()->GetEventSink()->OnEventFromSource(event);
+      if (!ptr)
+        return nullptr;
 
       // Reset the source host.
       delegate_->SetCurrentEventTargeterSourceHost(nullptr);
@@ -61,6 +67,7 @@ class UnifiedEventTargeter : public aura::WindowTargeter {
   aura::Window* src_root_;
   aura::Window* dst_root_;
   AshWindowTreeHostDelegate* delegate_;  // Not owned.
+  base::WeakPtrFactory<UnifiedEventTargeter> weak_ptr_factory_{this};
 };
 
 AshWindowTreeHostUnified::AshWindowTreeHostUnified(
@@ -123,11 +130,10 @@ void AshWindowTreeHostUnified::OnBoundsChanged(const BoundsChange& change) {
 }
 
 void AshWindowTreeHostUnified::OnWindowDestroying(aura::Window* window) {
-  auto iter =
-      std::find_if(mirroring_hosts_.begin(), mirroring_hosts_.end(),
-                   [window](AshWindowTreeHost* ash_host) {
-                     return ash_host->AsWindowTreeHost()->window() == window;
-                   });
+  auto iter = base::ranges::find(
+      mirroring_hosts_, window, [](AshWindowTreeHost* ash_host) {
+        return ash_host->AsWindowTreeHost()->window();
+      });
   DCHECK(iter != mirroring_hosts_.end());
   window->RemoveObserver(this);
   mirroring_hosts_.erase(iter);

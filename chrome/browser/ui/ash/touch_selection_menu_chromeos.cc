@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,6 +12,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/ash/ash_util.h"
 #include "chrome/browser/ui/ash/touch_selection_menu_runner_chromeos.h"
+#include "ui/base/models/image_model.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/gfx/image/image_skia.h"
@@ -27,7 +28,7 @@ constexpr size_t kSmallIconSizeInDip = 16;
 
 TouchSelectionMenuChromeOS::TouchSelectionMenuChromeOS(
     views::TouchSelectionMenuRunnerViews* owner,
-    ui::TouchSelectionMenuClient* client,
+    base::WeakPtr<ui::TouchSelectionMenuClient> client,
     aura::Window* context,
     arc::mojom::TextSelectionActionPtr action)
     : views::TouchSelectionMenuViews(owner, client, context),
@@ -61,7 +62,8 @@ void TouchSelectionMenuChromeOS::CreateButtons() {
       gfx::ImageSkia icon = gfx::ImageSkiaOperations::CreateResizedImage(
           original, skia::ImageOperations::RESIZE_BEST,
           gfx::Size(kSmallIconSizeInDip, kSmallIconSizeInDip));
-      button->SetImage(views::Button::ButtonState::STATE_NORMAL, icon);
+      button->SetImageModel(views::Button::ButtonState::STATE_NORMAL,
+                            ui::ImageModel::FromImageSkia(icon));
     }
   }
 

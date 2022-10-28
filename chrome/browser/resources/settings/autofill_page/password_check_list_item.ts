@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,7 +8,7 @@
  */
 
 import 'chrome://resources/cr_elements/cr_icon_button/cr_icon_button.js';
-import 'chrome://resources/cr_elements/cr_icons_css.m.js';
+import 'chrome://resources/cr_elements/cr_icons.css.js';
 import 'chrome://resources/js/action_link.js';
 import '../settings_shared.css.js';
 import '../site_favicon.js';
@@ -80,14 +80,6 @@ export class PasswordCheckListItemElement extends
         type: String,
         computed: 'computeIconClass_(item.compromisedInfo)',
       },
-
-      mutingEnabled: {
-        type: Boolean,
-        value() {
-          return loadTimeData.getBoolean(
-              'showDismissCompromisedPasswordOption');
-        },
-      },
     };
   }
 
@@ -97,7 +89,6 @@ export class PasswordCheckListItemElement extends
   clickedChangePassword: boolean;
   private buttonClass_: string;
   private iconClass_: string;
-  mutingEnabled: boolean;
   private passwordManager_: PasswordManagerProxy =
       PasswordManagerImpl.getInstance();
 
@@ -109,13 +100,10 @@ export class PasswordCheckListItemElement extends
   }
 
   /**
-   * @return Whether |item| is compromised credential but not muted. When muting
-   * is not enabled all compromised items are non muted.
+   * @return Whether |item| is compromised credential but not muted.
    */
   private isNonMutedCompromisedItem_(): boolean {
-    return this.isCompromisedItem_() &&
-        (!this.mutingEnabled ||
-         (this.mutingEnabled && !this.item.compromisedInfo!.isMuted));
+    return this.isCompromisedItem_() && !this.item.compromisedInfo!.isMuted;
   }
 
   private getCompromiseType_(): string {
@@ -141,12 +129,20 @@ export class PasswordCheckListItemElement extends
   private onChangePasswordClick_() {
     this.fire_('change-password-clicked', {id: this.item.id});
 
-    assert(this.item.changePasswordUrl);
-    OpenWindowProxyImpl.getInstance().openURL(this.item.changePasswordUrl);
-    PasswordManagerImpl.getInstance().recordChangePasswordFlowStarted(
-        this.item, /*is_manual_flow=*/ true);
-    PasswordManagerImpl.getInstance().recordPasswordCheckInteraction(
-        PasswordCheckInteraction.CHANGE_PASSWORD);
+    if (this.item.hasStartableScript) {
+      // TODO(crbug.com/1340073): Consider removing element on receiving result.
+      this.passwordManager_.startAutomatedPasswordChange(this.item);
+    } else {
+      assert(this.item.changePasswordUrl);
+      OpenWindowProxyImpl.getInstance().openURL(this.item.changePasswordUrl);
+    }
+
+    this.passwordManager_.recordPasswordCheckInteraction(
+        this.item.hasStartableScript ?
+            PasswordCheckInteraction.CHANGE_PASSWORD_AUTOMATICALLY :
+            PasswordCheckInteraction.CHANGE_PASSWORD);
+    this.passwordManager_.recordChangePasswordFlowStarted(
+        this.item, /*is_manual_flow=*/ !this.item.hasStartableScript);
   }
 
   private onMoreClick_(event: Event) {
@@ -177,6 +173,10 @@ export class PasswordCheckListItemElement extends
     }
     // Weak CTA, non-white-icon.
     return 'icon-weak-cta';
+  }
+
+  private getIconName_(): string {
+    return this.item.hasStartableScript ? '' : 'cr:open-in-new';
   }
 
   private computePassword_(): string {

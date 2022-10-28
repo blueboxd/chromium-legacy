@@ -1,4 +1,4 @@
-# Copyright (c) 2013 The Chromium Authors. All rights reserved.
+# Copyright 2013 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -551,6 +551,14 @@ config("compiler") {
     } else {
       cflags += [ "-ffp-contract=off" ]
     }
+
+    if (default_toolchain != "//build/toolchain/cros:target") {
+      # TODO(crbug.com/1361629): Fix the compiler so this is not needed.
+      cflags += [
+        "-mllvm",
+        "-simplifycfg-hoist-common-skip-limit=0",
+      ]
+    }
   }
 
   # Rust compiler setup (for either clang or rustc).
@@ -762,6 +770,24 @@ config("compiler") {
   if (is_clang && !is_nacl && target_os != "chromeos" &&
       (is_win || use_custom_libcxx)) {
     cflags += [ "-fcomplete-member-pointers" ]
+  }
+
+  # MLGO specific flags. These flags enable an ML-based inliner trained on
+  # Chrome on Android (arm32) with ThinLTO enabled, optimizing for size.
+  # The "release" ML model is embedded into clang as part of its build.
+  # Currently, the ML inliner is only enabled when targeting Android due to:
+  # a) Android is where size matters the most.
+  # b) MLGO presently has the limitation of only being able to embed one model
+  #    at a time; It is unclear if the embedded model is beneficial for
+  #    non-Android targets.
+  # MLGO is only officially supported on linux.
+  if (use_ml_inliner && is_a_target_toolchain) {
+    assert(
+        is_android && host_os == "linux",
+        "MLGO is currently only supported for targeting Android on a linux host")
+    if (use_thin_lto) {
+      ldflags += [ "-Wl,-mllvm,-enable-ml-inliner=release" ]
+    }
   }
 
   # Pass the same C/C++ flags to the objective C/C++ compiler.
@@ -1509,9 +1535,6 @@ config("default_warnings") {
         # TODO(thakis): https://crbug.com/617318
         # Currently goma can not handle case sensitiveness for windows well.
         cflags += [ "-Wno-nonportable-include-path" ]
-
-        # Warns in ATL headers; see https://crbug.com/1208419.
-        cflags += [ "-Wno-null-pointer-subtraction" ]
       }
 
       cflags += [
@@ -1527,18 +1550,18 @@ config("default_warnings") {
         "-Wno-ignored-pragma-optimize",
       ]
 
-      if (llvm_force_head_revision && !is_nacl) {
-        cflags += [
-          # TODO(crbug.com/1352183) Evaluate and possibly enable.
-          "-Wno-bitfield-constant-conversion",
-        ]
-      }
-
       if (!is_nacl) {
         cflags += [
           # TODO(crbug.com/1343975) Evaluate and possibly enable.
           "-Wno-deprecated-builtins",
+
+          # TODO(crbug.com/1352183) Evaluate and possibly enable.
+          "-Wno-bitfield-constant-conversion",
         ]
+        if (is_win) {
+          # TODO(https://crbug.com/1363759): Evaluate and possibly enable.
+          cflags += [ "-Wno-deprecated-copy-with-user-provided-copy" ]
+        }
       }
     }
   }
@@ -1646,6 +1669,9 @@ config("chromium_code") {
       # Warn on missing break statements at the end of switch cases.
       # For intentional fallthrough, use [[fallthrough]].
       "-Wimplicit-fallthrough",
+
+      # Warn on unnecessary extra semicolons outside of function definitions.
+      "-Wextra-semi",
     ]
 
     # TODO(thakis): Enable this more often, https://crbug.com/346399
@@ -2034,6 +2060,13 @@ config("optimize") {
     # Favor size over speed.
     if (is_clang) {
       cflags = [ "-Oz" ] + common_optimize_on_cflags
+
+      if (use_ml_inliner && is_a_target_toolchain) {
+        cflags += [
+          "-mllvm",
+          "-enable-ml-inliner=release",
+        ]
+      }
     } else {
       cflags = [ "-Os" ] + common_optimize_on_cflags
     }
@@ -2199,8 +2232,9 @@ if (is_clang && is_a_target_toolchain) {
       _clang_sample_profile = "//chrome/android/profiles/afdo.prof"
     } else {
       assert(chromeos_afdo_platform == "atom" ||
-                 chromeos_afdo_platform == "bigcore",
-             "Only atom and bigcore are valid Chrome OS profiles.")
+                 chromeos_afdo_platform == "bigcore" ||
+                 chromeos_afdo_platform == "arm",
+             "Only atom, bigcore and arm are valid Chrome OS profiles.")
       _clang_sample_profile =
           "//chromeos/profiles/${chromeos_afdo_platform}.afdo.prof"
     }
@@ -2375,6 +2409,14 @@ config("symbols") {
       }
       ldflags += [ "-Wl,--gdb-index" ]
     }
+  }
+
+  configs = []
+  # Compress debug on 32-bit ARM to stay under 4GB for ChromeOS
+  # https://b/243982712.
+  if (symbol_level == 2 && is_chromeos_device && !use_debug_fission &&
+        !is_nacl && current_cpu == "arm") {
+    configs += [ "//build/config:compress_debug_sections" ]
   }
 
   if (is_clang && (!is_nacl || is_nacl_saigo) && current_os != "zos") {

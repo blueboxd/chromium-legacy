@@ -1,4 +1,4 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,10 +11,10 @@
 #include <utility>
 #include <vector>
 
-#include "base/allocator/allocator_shim.h"
-#include "base/allocator/allocator_shim_default_dispatch_to_partition_alloc.h"
 #include "base/allocator/buildflags.h"
 #include "base/allocator/partition_allocator/partition_alloc_config.h"
+#include "base/allocator/partition_allocator/shim/allocator_shim.h"
+#include "base/allocator/partition_allocator/shim/allocator_shim_default_dispatch_to_partition_alloc.h"
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/compiler_specific.h"
@@ -916,7 +916,7 @@ class WorkerThreadThreadCacheDelegate : public WorkerThreadDefaultDelegate {
 
 TEST(ThreadPoolWorkerThreadCachePurgeTest, Purge) {
   // Make sure the thread cache is enabled in the main partition.
-  base::internal::PartitionAllocMalloc::Allocator()
+  allocator_shim::internal::PartitionAllocMalloc::Allocator()
       ->EnableThreadCacheIfSupported();
 
   Thread service_thread = Thread("ServiceThread");

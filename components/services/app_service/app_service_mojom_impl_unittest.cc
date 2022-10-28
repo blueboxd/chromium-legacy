@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -239,8 +239,9 @@ class FakeSubscriber : public apps::mojom::Subscriber {
 class AppServiceMojomImplTest : public testing::Test {
  protected:
   AppServiceMojomImplTest() {
-    scoped_feature_list_.InitAndDisableFeature(
-        kAppServicePreferredAppsWithoutMojom);
+    scoped_feature_list_.InitWithFeatures(
+        {}, {kAppServicePreferredAppsWithoutMojom,
+             kAppServiceCapabilityAccessWithoutMojom});
   }
 
   content::BrowserTaskEnvironment task_environment_;

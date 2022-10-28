@@ -1,10 +1,12 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "components/segmentation_platform/internal/metadata/metadata_writer.h"
 
 #include "base/metrics/metrics_hashes.h"
+#include "base/strings/strcat.h"
+#include "components/segmentation_platform/public/constants.h"
 #include "components/segmentation_platform/public/proto/model_metadata.pb.h"
 
 namespace segmentation_platform {
@@ -28,6 +30,10 @@ void MetadataWriter::AddUmaFeatures(const UMAFeature features[],
 
     for (size_t j = 0; j < feature.enum_ids_size; j++) {
       uma_feature->add_enum_ids(feature.accepted_enum_ids[j]);
+    }
+
+    for (size_t j = 0; j < feature.default_values_size; j++) {
+      uma_feature->add_default_values(feature.default_values[j]);
     }
   }
 }
@@ -72,6 +78,34 @@ void MetadataWriter::AddDiscreteMappingEntries(
   }
 }
 
+void MetadataWriter::AddBooleanSegmentDiscreteMapping(const std::string& key) {
+  const int selected_rank = 1;
+  const float model_score = 1;
+  const std::pair<float, int> mappings[]{{model_score, selected_rank}};
+  AddDiscreteMappingEntries(key, mappings, 1);
+}
+
+void MetadataWriter::AddBooleanSegmentDiscreteMappingWithSubsegments(
+    const std::string& key,
+    float threshold,
+    int max_value) {
+  DCHECK_GT(threshold, 0);
+  // Should record at least 2 subsegments.
+  DCHECK_GT(max_value, 1);
+  const int selected_rank = 1;
+  const std::pair<float, int> mappings[]{{threshold, selected_rank}};
+  AddDiscreteMappingEntries(key, mappings, 1);
+
+  std::vector<std::pair<float, int>> subsegment_mapping;
+  for (int i = 1; i <= max_value; ++i) {
+    subsegment_mapping.emplace_back(i, i);
+  }
+  AddDiscreteMappingEntries(
+      base::StrCat(
+          {key, segmentation_platform::kSubsegmentDiscreteMappingSuffix}),
+      subsegment_mapping.data(), subsegment_mapping.size());
+}
+
 void MetadataWriter::SetSegmentationMetadataConfig(
     proto::TimeUnit time_unit,
     uint64_t bucket_duration,
@@ -83,6 +117,15 @@ void MetadataWriter::SetSegmentationMetadataConfig(
   metadata_->set_signal_storage_length(signal_storage_length);
   metadata_->set_min_signal_collection_length(min_signal_collection_length);
   metadata_->set_result_time_to_live(result_time_to_live);
+}
+
+void MetadataWriter::SetDefaultSegmentationMetadataConfig(
+    int min_signal_collection_length_days,
+    int signal_storage_length_days) {
+  SetSegmentationMetadataConfig(proto::TimeUnit::DAY, /*bucket_duration=*/1,
+                                signal_storage_length_days,
+                                min_signal_collection_length_days,
+                                /*result_time_to_live=*/1);
 }
 
 }  // namespace segmentation_platform

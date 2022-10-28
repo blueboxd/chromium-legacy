@@ -1,4 +1,4 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -59,6 +59,11 @@ const base::Feature kAppManagementAppDetails{"AppManagementAppDetails",
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 const base::Feature kAppDeduplicationService{"AppDeduplicationService",
                                              base::FEATURE_DISABLED_BY_DEFAULT};
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+const base::Feature kAppPreloadService{"AppPreloadService",
+                                       base::FEATURE_DISABLED_BY_DEFAULT};
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -230,6 +235,11 @@ const base::Feature kPreinstalledWebAppDuplicationFixer{
     "PreinstalledWebAppDuplicationFixer", base::FEATURE_ENABLED_BY_DEFAULT};
 #endif
 
+// Generates customised default offline page that is shown when web app is
+// offline if no custom page is provided by developer.
+const base::Feature kPWAsDefaultOfflinePage{"PWAsDefaultOfflinePage",
+                                            base::FEATURE_DISABLED_BY_DEFAULT};
+
 // API that allows PWAs manually minimizing, maximizing and restoring windows.
 const base::Feature kDesktopPWAsAdditionalWindowingControls{
     "DesktopPWAsAdditionalWindowingControls",
@@ -239,16 +249,6 @@ const base::Feature kDesktopPWAsAdditionalWindowingControls{
 // to cache resources.
 const base::Feature kDesktopPWAsCacheDuringDefaultInstall{
     "DesktopPWAsCacheDuringDefaultInstall", base::FEATURE_ENABLED_BY_DEFAULT};
-
-// Generates customised default offline page that is shown when web app is
-// offline if no custom page is provided by developer.
-#if BUILDFLAG(IS_ANDROID)
-const base::Feature kAndroidPWAsDefaultOfflinePage{
-    "AndroidPWAsDefaultOfflinePage", base::FEATURE_DISABLED_BY_DEFAULT};
-#else
-const base::Feature kDesktopPWAsDefaultOfflinePage{
-    "DesktopPWAsDefaultOfflinePage", base::FEATURE_DISABLED_BY_DEFAULT};
-#endif  // BUILDFLAG(IS_ANDROID)
 
 // Moves the Extensions "puzzle piece" icon from the title bar into the app menu
 // for web app windows.
@@ -274,6 +274,11 @@ const base::Feature kDesktopPWAsRunOnOsLogin {
       base::FEATURE_DISABLED_BY_DEFAULT
 #endif
 };
+
+// Runs diagnostics during start up to measure how broken web app icons are to
+// feed into metrics.
+const base::Feature kDesktopPWAsIconHealthChecks{
+    "DesktopPWAsIconHealthChecks", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Adds a user settings that allows PWAs to be opened with a tab strip.
 const base::Feature kDesktopPWAsTabStripSettings{
@@ -566,6 +571,11 @@ const base::Feature kHttpsOnlyMode{"HttpsOnlyMode",
 #if BUILDFLAG(IS_MAC)
 const base::Feature kImmersiveFullscreen{"ImmersiveFullscreen",
                                          base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Enables immerisve fullscreen mode for PWA windows. The above feature only
+// affects non-PWA windows.
+const base::Feature kImmersiveFullscreenPWAs{"ImmersiveFullscreenPWAs",
+                                             base::FEATURE_DISABLED_BY_DEFAULT};
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -757,9 +767,6 @@ const base::Feature kPluginVm{"PluginVm", base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kPredictivePrefetchingAllowedOnAllConnectionTypes{
     "PredictivePrefetchingAllowedOnAllConnectionTypes",
     base::FEATURE_ENABLED_BY_DEFAULT};
-
-const base::Feature kPrefixWebAppWindowsWithAppName{
-    "PrefixWebAppWindowsWithAppName", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Allows Chrome to do preconnect when prerender fails.
 const base::Feature kPrerenderFallbackToPreconnect{

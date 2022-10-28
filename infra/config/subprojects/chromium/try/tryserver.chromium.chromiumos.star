@@ -1,4 +1,4 @@
-# Copyright 2021 The Chromium Authors. All rights reserved.
+# Copyright 2021 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 """Definitions of builders in the tryserver.chromium.chromiumos builder group."""
@@ -58,8 +58,10 @@ try_.orchestrator_builder(
     main_list_view = "try",
     tryjob = try_.job(),
     experiments = {
+        "chromium_swarming.expose_merge_script_failures": 0,
         "remove_src_checkout_experiment": 100,
         "enable_weetbix_queries": 100,
+        "weetbix.retry_weak_exonerations": 100,
     },
     use_orchestrator_pool = True,
 )
@@ -87,6 +89,7 @@ try_.builder(
     tryjob = try_.job(),
     experiments = {
         "enable_weetbix_queries": 100,
+        "weetbix.retry_weak_exonerations": 100,
     },
 )
 
@@ -107,7 +110,39 @@ try_.builder(
     tryjob = try_.job(),
     experiments = {
         "enable_weetbix_queries": 100,
+        "weetbix.retry_weak_exonerations": 100,
     },
+)
+
+try_.builder(
+    name = "lacros-amd64-generic-rel-skylab-fyi",
+    branch_selector = branches.STANDARD_MILESTONE,
+    builder_spec = builder_config.builder_spec(
+        chromium_config = builder_config.chromium_config(
+            config = "chromium",
+            apply_configs = ["mb", "mb_no_luci_auth"],
+            target_bits = 64,
+            target_cros_boards = "eve",
+            cros_boards_with_qemu_images = "amd64-generic",
+            target_platform = "chromeos",
+        ),
+        gclient_config = builder_config.gclient_config(
+            config = "chromium",
+            apply_configs = [
+                "chromeos",
+                "checkout_lacros_sdk",
+            ],
+        ),
+        skylab_upload_location = builder_config.skylab_upload_location(
+            gs_bucket = "gs://lacros-amd64-generic-rel-skylab-try",
+        ),
+        test_results_config = builder_config.test_results_config(
+            config = "staging_server",
+        ),
+        build_gs_bucket = "chromium-fyi-archive",
+    ),
+    builderless = not settings.is_main,
+    main_list_view = "try",
 )
 
 try_.builder(
@@ -129,6 +164,7 @@ try_.builder(
     tryjob = try_.job(),
     experiments = {
         "enable_weetbix_queries": 100,
+        "weetbix.retry_weak_exonerations": 100,
     },
 )
 
@@ -154,6 +190,15 @@ try_.builder(
     builderless = not settings.is_main,
     main_list_view = "try",
     tryjob = try_.job(),
+)
+
+try_.builder(
+    name = "linux-lacros-tester-rel-reviver",
+    mirrors = [
+        "ci/linux-lacros-tester-rel-reviver",
+    ],
+    builderless = True,
+    main_list_view = "try",
 )
 
 try_.builder(
@@ -220,6 +265,7 @@ try_.orchestrator_builder(
     experiments = {
         "remove_src_checkout_experiment": 100,
         "enable_weetbix_queries": 100,
+        "weetbix.retry_weak_exonerations": 100,
     },
     use_orchestrator_pool = True,
 )
@@ -253,7 +299,8 @@ try_.builder(
     ],
     branch_selector = branches.STANDARD_MILESTONE,
     builderless = not settings.is_main,
-    check_for_flakiness = True,
+    # TODO(sshrimp): Re-enable when there's less traffic on the test bots
+    check_for_flakiness = False,
     cores = 16,
     ssd = True,
     goma_jobs = goma.jobs.J300,
@@ -261,6 +308,8 @@ try_.builder(
     tryjob = try_.job(),
     experiments = {
         "enable_weetbix_queries": 100,
+        "weetbix.retry_weak_exonerations": 100,
+        "weetbix.enable_weetbix_exonerations": 50,
     },
 )
 
@@ -287,7 +336,7 @@ try_.builder(
         location_regexp = [
             ".+/[+]/chromeos/ash/components/chromebox_for_meetings/.+",
             ".+/[+]/chromeos/ash/components/dbus/chromebox_for_meetings/.+",
-            ".+/[+]/ash/services/chromebox_for_meetings/.+",
+            ".+/[+]/chromeos/ash/services/chromebox_for_meetings/.+",
             ".+/[+]/chrome/browser/ash/chromebox_for_meetings/.+",
             ".+/[+]/chrome/browser/resources/chromeos/chromebox_for_meetings/.+",
             ".+/[+]/chrome/browser/ui/webui/chromeos/chromebox_for_meetings/.+",

@@ -1,4 +1,4 @@
-# Copyright 2020 The Chromium Authors. All rights reserved.
+# Copyright 2020 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -46,7 +46,6 @@ source_set("browser") {
     "//components/cast_channel",
     "//components/keyed_service/content",
     "//components/keyed_service/core",
-    "//components/openscreen_platform:openscreen_platform_network_service",
     "//components/prefs",
     "//components/sessions",
     "//components/user_prefs",

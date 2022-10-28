@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -45,8 +45,8 @@
 #include "ui/ozone/public/ozone_switches.h"
 
 #if defined(HEADLESS_USE_EMBEDDED_RESOURCES)
-#include "headless/embedded_resource_pack_data.h"
-#include "headless/embedded_resource_pack_strings.h"
+#include "headless/embedded_resource_pack_data.h"     // nogncheck
+#include "headless/embedded_resource_pack_strings.h"  // nogncheck
 #endif
 
 #if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)

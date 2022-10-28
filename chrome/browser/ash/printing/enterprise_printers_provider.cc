@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -29,13 +29,11 @@ namespace ash {
 
 namespace {
 
-std::vector<std::string> ConvertToVector(const base::Value* list) {
+std::vector<std::string> ConvertToVector(const base::Value::List& list) {
   std::vector<std::string> string_list;
-  if (list && list->is_list()) {
-    for (const base::Value& value : list->GetList()) {
-      if (value.is_string()) {
-        string_list.push_back(value.GetString());
-      }
+  for (const base::Value& value : list) {
+    if (value.is_string()) {
+      string_list.push_back(value.GetString());
     }
   }
   return string_list;

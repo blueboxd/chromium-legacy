@@ -127,8 +127,6 @@
 #include "chromeos/crosapi/cpp/crosapi_constants.h"  // nogncheck
 #include "chromeos/lacros/lacros_test_helper.h"
 #include "chromeos/startup/startup_switches.h"  // nogncheck
-#include "mojo/public/cpp/platform/named_platform_channel.h"
-#include "mojo/public/cpp/platform/platform_channel.h"
 #include "mojo/public/cpp/platform/socket_utils_posix.h"
 #endif
 
@@ -276,6 +274,7 @@ BrowserTestBase::BrowserTestBase() {
 #elif BUILDFLAG(IS_MAC)
   ui::test::EventGeneratorDelegate::SetFactoryFunction(
       base::BindRepeating(&views::test::CreateEventGeneratorDelegateMac));
+  EnableNativeWindowActivation();
 #endif
 }
 
@@ -356,7 +355,7 @@ void BrowserTestBase::SetUp() {
     enable_pixel_output_ = true;
 
   if (command_line->HasSwitch(switches::kDisableGLDrawingForTests)) {
-    NOTREACHED() << "kDisableGLDrawingForTests should not be used as it"
+    NOTREACHED() << "kDisableGLDrawingForTests should not be used as it "
                     "is chosen by tests. Use kEnablePixelOutputInTests "
                     "to enable pixel output.";
   }
@@ -450,45 +449,22 @@ void BrowserTestBase::SetUp() {
                                       &descriptors, true /*block*/);
       if (size < 0)
         PLOG(ERROR) << "Error receiving message from the socket" << helper_msg;
-      ASSERT_EQ(1, size);
 
-      // TODO(crbug.com/1156033): Clean up when both ash-chrome and
-      // lacros-chrome become new enough.
-      if (buf[0] == 0u) {
-        // We have three variation of ash-chrome behaviors depending on the age.
-        // Older ash-chrome gives us one FD, which will become a Mojo
-        // connection. Next ash-chrome gives us another FD, too, which contains
-        // startup data. The newest ash-chrome gives us yet another FD, which
-        // will become a crosapi Mojo connection.
-        ASSERT_LE(descriptors.size(), 3u);
-        // It's OK to release the FD because lacros-chrome's code will consume
-        // it.
-        command_line->AppendSwitchASCII(
-            mojo::PlatformChannel::kHandleSwitch,
-            base::NumberToString(descriptors[0].release()));
-        if (descriptors.size() >= 2) {
-          // Ok to release the FD here, too.
-          command_line->AppendSwitchASCII(
-              chromeos::switches::kCrosStartupDataFD,
-              base::NumberToString(descriptors[1].release()));
-        }
-        if (descriptors.size() == 3) {
-          command_line->AppendSwitchASCII(
-              crosapi::kCrosapiMojoPlatformChannelHandle,
-              base::NumberToString(descriptors[2].release()));
-        }
-      } else if (buf[0] == 1u) {
-        ASSERT_EQ(descriptors.size(), 2u);
-        // Ok to release the FD here, too.
-        command_line->AppendSwitchASCII(
-            chromeos::switches::kCrosStartupDataFD,
-            base::NumberToString(descriptors[0].release()));
-        command_line->AppendSwitchASCII(
-            crosapi::kCrosapiMojoPlatformChannelHandle,
-            base::NumberToString(descriptors[1].release()));
-      } else {
-        FAIL() << "Unexpected version";
-      }
+      ASSERT_EQ(1, size) << "It must receive a version number with 1 byte.";
+      ASSERT_EQ(buf[0], 1u)
+          << "Mojo connection protocol version must be 1. Version 0 is "
+          << "deprecated.";
+      ASSERT_EQ(descriptors.size(), 2u)
+          << "ash-chrome must sends 2 FDs, the first one contains startup data "
+          << "and the second one is for a crosapi Mojo connection.";
+
+      // Ok to release the FD here, too.
+      command_line->AppendSwitchASCII(
+          chromeos::switches::kCrosStartupDataFD,
+          base::NumberToString(descriptors[0].release()));
+      command_line->AppendSwitchASCII(
+          crosapi::kCrosapiMojoPlatformChannelHandle,
+          base::NumberToString(descriptors[1].release()));
     }
   }
 #endif
@@ -602,8 +578,6 @@ void BrowserTestBase::SetUp() {
 
   absl::optional<int> startup_error = delegate->BasicStartupComplete();
   ASSERT_FALSE(startup_error.has_value());
-
-  InitializeMojo();
 
   // We can only setup startup tracing after mojo is initialized above.
   tracing::EnableStartupTracingIfNeeded();

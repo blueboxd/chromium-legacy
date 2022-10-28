@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -159,10 +159,6 @@ enum class ContentSettingsType : int32_t {
   // to save changes to an original file selected by the user through the
   // File System Access API.
   FILE_SYSTEM_WRITE_GUARD,
-
-  // Content settings for installed web apps that browsing history may be
-  // inferred from e.g. last update check timestamp.
-  INSTALLED_WEB_APP_METADATA,
 
   // Used to store whether to allow a website to exchange data with NFC devices.
   NFC,

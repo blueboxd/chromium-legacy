@@ -1,4 +1,4 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,6 +13,9 @@ namespace core {
 
 // Initializes the global Core object.
 MOJO_SYSTEM_IMPL_EXPORT void InitializeCore();
+
+// Destroys the global Core object.
+MOJO_SYSTEM_IMPL_EXPORT void ShutDownCore();
 
 // Returns a MojoSystemThunks2 struct populated with the EDK's implementation
 // of each function. This may be used by embedders to populate thunks for

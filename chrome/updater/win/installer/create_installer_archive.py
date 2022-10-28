@@ -1,4 +1,4 @@
-# Copyright 2019 The Chromium Authors. All rights reserved.
+# Copyright 2019 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 """Script to create the Chrome Updater Installer archive.
@@ -86,12 +86,15 @@ def CopySectionFilesToStagingDir(config, section, staging_dir, src_dir,
 
 
 def GetLZMAExec(build_dir):
-    executable = '7za'
     if sys.platform == 'win32':
-        executable += '.exe'
-
-    return os.path.join(build_dir, "..", "..", "third_party", "lzma_sdk",
-                        "bin", "host_platform", executable)
+        lzma_exec = os.path.join(build_dir, "..", "..", "third_party",
+                                 "lzma_sdk", "bin", "win64", "7za.exe")
+    elif sys.platform == 'darwin':
+        lzma_exec = os.path.join(build_dir, "..", "..", "third_party",
+                                 "lzma_sdk", "bin", "mac64", "7zz")
+    else:
+        lzma_exec = '7zr'  # Use system 7zr.
+    return lzma_exec
 
 
 def MakeStagingDirectory(staging_dir):

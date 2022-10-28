@@ -8,13 +8,13 @@
 #include "remoting/codec/webrtc_video_encoder.h"
 #include "third_party/webrtc/api/video_codecs/video_encoder.h"
 
-namespace remoting {
-namespace protocol {
+namespace remoting::protocol {
 
 class VideoChannelStateObserver {
  public:
   virtual void OnKeyFrameRequested() = 0;
   virtual void OnTargetBitrateChanged(int bitrate_kbps) = 0;
+  virtual void OnTargetFramerateChanged(int framerate) = 0;
 
   // Called when the encoder has finished encoding a frame, and before it is
   // passed to WebRTC's registered callback. |frame| may be null if encoding
@@ -35,7 +35,6 @@ class VideoChannelStateObserver {
   virtual ~VideoChannelStateObserver() = default;
 };
 
-}  // namespace protocol
-}  // namespace remoting
+}  // namespace remoting::protocol
 
 #endif  // REMOTING_PROTOCOL_VIDEO_CHANNEL_STATE_OBSERVER_H_

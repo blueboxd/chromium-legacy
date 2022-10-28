@@ -78,6 +78,7 @@
 <translation id="5998675059699164418">Chrome を使用するためにログインするよう、組織が求めています。</translation>
 <translation id="6054613632208573261">Chrome をデフォルトに設定</translation>
 <translation id="6063091872902370735">Chrome へのログインを許可する</translation>
+<translation id="6110625574506755980">Chrome の一部の機能は使用できなくなります。</translation>
 <translation id="6181930887571472871">Chrome に切り替え</translation>
 <translation id="6238746320622508509">Chrome でシークレット タブをロックできるようにします。</translation>
 <translation id="6387994324662817823">パスワードは、このデバイスの Google パスワード マネージャーにのみ保存されます。</translation>
@@ -90,11 +91,11 @@
 <translation id="6709398533399187136">データ侵害によってパスワードが漏洩しました。Google パスワード マネージャーでは、このパスワードを今すぐ変更することをおすすめします。</translation>
 <translation id="6822673484890854830">Chrome ですべてのパスワードを確認できませんでした。しばらくしてからもう一度お試しください。</translation>
 <translation id="6964931465519938134">メッセージ、ドキュメント、他のアプリでタップしたリンクが常に Chrome で開かれるようになります。</translation>
+<translation id="701356708427365932">新しい Chrome メニューについて</translation>
 <translation id="7059914902409643750">Chrome を独自にカスタマイズ</translation>
 <translation id="7124339256045485976">Chrome を最新の状態に維持します</translation>
 <translation id="7161390184744336561">Google Chrome は古いバージョンです</translation>
 <translation id="7165736900384873061">Google Chrome の QR スキャナの使用を開始する</translation>
-<translation id="7172660552945675509">ヒント: <ph name="BEGIN_LINK" />Chrome を Dock に移動<ph name="END_LINK" />するとアクセスしやすくなります</translation>
 <translation id="7173660919484573146">Chrome では Face ID の使用により、パスワードへの認証されたアクセスのみが許可されます。</translation>
 <translation id="7187993566681480880">ログイン時に、Chrome を安全に利用できるようにするほか、他の Google アプリのセキュリティ強化に使用されることがあります。</translation>
 <translation id="72119412072970160">他のアプリや iPad で Google パスワード マネージャに保存したパスワードを使用できます。</translation>

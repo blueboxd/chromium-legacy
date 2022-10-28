@@ -1,4 +1,4 @@
-// Copyright 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -241,6 +241,11 @@ class CC_EXPORT LayerTreeImpl {
       ++it_;
       return *this;
     }
+    IteratorAdapter operator++(int) {
+      IteratorAdapter other(*this);
+      ++*this;
+      return other;
+    }
 
    private:
     Iterator it_;
@@ -361,6 +366,7 @@ class CC_EXPORT LayerTreeImpl {
   void ClearCurrentlyScrollingNode();
 
   void ApplySentScrollAndScaleDeltasFromAbortedCommit(
+      bool next_bmf,
       bool main_frame_applied_deltas);
 
   SkColor4f background_color() const { return background_color_; }

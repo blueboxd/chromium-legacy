@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -66,6 +66,14 @@ const base::Feature kAutofillEnableFIDOProgressDialog{
 const base::Feature kAutofillEnableManualFallbackForVirtualCards{
     "AutofillEnableManualFallbackForVirtualCards",
     base::FEATURE_ENABLED_BY_DEFAULT};
+
+// When enabled, if the user attempts to use a virtual card on a website
+// where the merchant has opted out of virtual cards, a descriptive error
+// message will appear letting the user know that the merchant has opted
+// out.
+const base::Feature kAutofillEnableMerchantOptOutErrorDialog{
+    "AutofillEnableMerchantOptOutErrorDialog",
+    base::FEATURE_DISABLED_BY_DEFAULT};
 
 // When enabled, card product name (instead of issuer network) will be shown in
 // Payments UI.
@@ -180,12 +188,6 @@ const base::Feature kAutofillParseVcnCardOnFileStandaloneCvcFields{
 const base::Feature kAutofillSaveCardDismissOnNavigation{
     "AutofillSaveCardDismissOnNavigation", base::FEATURE_ENABLED_BY_DEFAULT};
 
-// When enabled, the expiration date of the card will not be shown in the
-// Autofill Suggestions.
-const base::Feature kAutofillRemoveCardExpiryFromDownstreamSuggestion{
-    "AutofillRemoveCardExpiryFromDownstreamSuggestion",
-    base::FEATURE_DISABLED_BY_DEFAULT};
-
 // When enabled, the Save Card infobar supports editing before submitting.
 const base::Feature kAutofillSaveCardInfobarEditSupport{
     "AutofillSaveCardInfobarEditSupport", base::FEATURE_ENABLED_BY_DEFAULT};
@@ -220,7 +222,7 @@ const base::Feature kAutofillUpstream{"AutofillUpstream",
 // enterprise or education user).
 const base::Feature kAutofillUpstreamAllowAdditionalEmailDomains{
     "AutofillUpstreamAllowAdditionalEmailDomains",
-    base::FEATURE_DISABLED_BY_DEFAULT};
+    base::FEATURE_ENABLED_BY_DEFAULT};
 
 // When enabled, Chrome allows credit card upload to Google Payments, no matter
 // the user's email domain.

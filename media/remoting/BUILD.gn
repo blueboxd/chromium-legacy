@@ -1,4 +1,4 @@
-# Copyright 2016 The Chromium Authors. All rights reserved.
+# Copyright 2016 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -39,15 +39,24 @@ source_set("remoting_sender") {
 
     # Consumers of the CourierRenderer implicitly take a dependency on the
     # generated remoting.pb.h file.
-    public_deps += [
-      "//components/cast_streaming/public:remoting_utils",
-      "//components/openscreen_platform:openscreen_platform_network_service",
-    ]
+    public_deps += [ "//components/cast_streaming/public:remoting_utils" ]
   }
 }
 
 source_set("remoting_constants") {
   sources = [ "remoting_constants.h" ]
+}
+
+source_set("remoting_device_capability") {
+  sources = [
+    "device_capability_checker.cc",
+    "device_capability_checker.h",
+  ]
+
+  deps = [
+    "//base",
+    "//media",
+  ]
 }
 
 source_set("remoting_renderer") {
@@ -64,7 +73,6 @@ source_set("remoting_renderer") {
 
   deps = [
     ":remoting_constants",
-    "//components/openscreen_platform:openscreen_platform_network_service",
     "//media/mojo/common:common",
     "//media/mojo/mojom:remoting",
   ]
@@ -77,6 +85,7 @@ source_set("remoting_renderer") {
 source_set("media_remoting_tests") {
   testonly = true
   sources = [
+    "device_capability_checker_unittest.cc",
     "fake_remoter.cc",
     "fake_remoter.h",
     "mock_receiver_controller.cc",
@@ -89,12 +98,12 @@ source_set("media_remoting_tests") {
   ]
 
   deps = [
+    ":remoting_device_capability",
     ":remoting_renderer",
     ":remoting_sender",
     "//base",
     "//base/test:test_support",
     "//components/cast_streaming/public:remoting_utils",
-    "//components/openscreen_platform:openscreen_platform_network_service",
     "//media:test_support",
     "//media/mojo/common",
     "//media/mojo/mojom:remoting",

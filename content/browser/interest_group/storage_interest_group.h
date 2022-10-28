@@ -42,7 +42,7 @@ struct CONTENT_EXPORT StorageInterestGroup {
 
     // Unique identifier associated with the data being anonymized, usually a
     // URL.
-    GURL key;
+    std::string key;
     // Whether the `key` was k-anonymous during the last update.
     bool is_k_anonymous;
     // The last time the unique user count was updated.
@@ -56,6 +56,9 @@ struct CONTENT_EXPORT StorageInterestGroup {
   std::vector<KAnonymityData> ads_kanon;
   // Top level page origin from when the interest group was joined.
   url::Origin joining_origin;
+  // Most recent time the interset group was joined. Stored in database as
+  // `exact_join_time`.
+  base::Time join_time;
   // The last time this interest group was updated.
   base::Time last_updated;
 };

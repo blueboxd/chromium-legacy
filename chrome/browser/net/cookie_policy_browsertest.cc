@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -620,8 +620,16 @@ IN_PROC_BROWSER_TEST_F(CookiePolicyBrowserTest,
   TestNestedThirdPartyIFrameStorage(TestType::kWorker);
 }
 
+// TODO(crbug.com/1317431): WebSQL does not work on Fuchsia.
+#if BUILDFLAG(IS_FUCHSIA)
+#define MAYBE_NestedFirstPartyIFrameStorageForFrame \
+  DISABLED_NestedFirstPartyIFrameStorageForFrame
+#else
+#define MAYBE_NestedFirstPartyIFrameStorageForFrame \
+  NestedFirstPartyIFrameStorageForFrame
+#endif
 IN_PROC_BROWSER_TEST_F(CookiePolicyBrowserTest,
-                       NestedFirstPartyIFrameStorageForFrame) {
+                       MAYBE_NestedFirstPartyIFrameStorageForFrame) {
   TestNestedFirstPartyIFrameStorage(TestType::kFrame);
 }
 
@@ -749,8 +757,9 @@ class SamePartyIsFirstPartyCookiePolicyBrowserTest
     CookiePolicyBrowserTest::SetUpCommandLine(command_line);
     command_line->AppendSwitchASCII(
         network::switches::kUseFirstPartySet,
-        base::StringPrintf("https://%s,https://%s,https://%s", kHostA, kHostB,
-                           kHostC));
+        base::StringPrintf(R"({"primary": "https://%s",)"
+                           R"("associatedSites": ["https://%s","https://%s"]})",
+                           kHostA, kHostB, kHostC));
   }
 
   std::string AllCookies() const { return "thirdparty=1; firstparty=1"; }

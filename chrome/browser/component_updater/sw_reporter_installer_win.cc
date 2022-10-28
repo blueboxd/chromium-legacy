@@ -1,4 +1,4 @@
-// Copyright (c) 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,7 +6,6 @@
 
 #include <stdint.h>
 
-#include <algorithm>
 #include <map>
 #include <memory>
 #include <string>
@@ -29,6 +28,7 @@
 #include "base/no_destructor.h"
 #include "base/path_service.h"
 #include "base/rand_util.h"
+#include "base/ranges/algorithm.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_tokenizer.h"
 #include "base/strings/string_util.h"
@@ -114,7 +114,7 @@ bool ValidateString(const std::string& str,
                     const std::string& extras,
                     size_t max_length) {
   return str.size() <= max_length &&
-         std::all_of(str.cbegin(), str.cend(), [&extras](char c) {
+         base::ranges::all_of(str, [&extras](char c) {
            return base::IsAsciiAlpha(c) || base::IsAsciiDigit(c) ||
                   extras.find(c) != std::string::npos;
          });

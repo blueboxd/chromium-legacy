@@ -1,10 +1,9 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "net/dns/dns_transaction.h"
 
-#include <algorithm>
 #include <memory>
 #include <set>
 #include <string>
@@ -26,6 +25,7 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/rand_util.h"
+#include "base/ranges/algorithm.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/stringprintf.h"
 #include "base/task/single_thread_task_runner.h"
@@ -240,9 +240,7 @@ class DnsUDPAttempt : public DnsAttempt {
   base::Value GetRawResponseBufferForLog() const override {
     if (!response_)
       return base::Value();
-
-    return NetLogBinaryValue(response_->io_buffer()->data(),
-                             response_->io_buffer_size());
+    return NetLogBinaryValue(response_->io_buffer()->data(), read_size_);
   }
 
   const NetLogWithSource& GetSocketNetLog() const override {
@@ -324,6 +322,7 @@ class DnsUDPAttempt : public DnsAttempt {
     DCHECK_NE(ERR_IO_PENDING, rv);
     if (rv < 0)
       return rv;
+    read_size_ = rv;
 
     DCHECK(rv);
     bool parse_result = response_->InitParse(rv, *query_);
@@ -360,6 +359,7 @@ class DnsUDPAttempt : public DnsAttempt {
   const raw_ptr<DnsUdpTracker> udp_tracker_;
 
   std::unique_ptr<DnsResponse> response_;
+  int read_size_ = 0;
 
   CompletionOnceCallback callback_;
 };
@@ -591,7 +591,7 @@ class DnsHTTPAttempt : public DnsAttempt, public URLRequest::Delegate {
     buffer_->set_offset(0);
     if (size == 0u)
       return ERR_DNS_MALFORMED_RESPONSE;
-    response_ = std::make_unique<DnsResponse>(buffer_, size + 1);
+    response_ = std::make_unique<DnsResponse>(buffer_, size);
     if (!response_->InitParse(size, *query_))
       return ERR_DNS_MALFORMED_RESPONSE;
     if (response_->rcode() == dns_protocol::kRcodeNXDOMAIN)
@@ -822,8 +822,7 @@ class DnsTCPAttempt : public DnsAttempt {
     // Check if advertised response is too short. (Optimization only.)
     if (response_length_ < query_->io_buffer()->size())
       return ERR_DNS_MALFORMED_RESPONSE;
-    // Allocate more space so that DnsResponse::InitParse sanity check passes.
-    response_ = std::make_unique<DnsResponse>(response_length_ + 1);
+    response_ = std::make_unique<DnsResponse>(response_length_);
     buffer_ = base::MakeRefCounted<DrainableIOBuffer>(response_->io_buffer(),
                                                       response_length_);
     next_state_ = STATE_READ_RESPONSE;
@@ -1612,10 +1611,10 @@ class DnsTransactionImpl : public DnsTransaction,
   }
 
   bool AnyAttemptPending() {
-    return std::any_of(attempts_.begin(), attempts_.end(),
-                       [](std::unique_ptr<DnsAttempt>& attempt) {
-                         return attempt->IsPending();
-                       });
+    return base::ranges::any_of(attempts_,
+                                [](std::unique_ptr<DnsAttempt>& attempt) {
+                                  return attempt->IsPending();
+                                });
   }
 
   void OnFallbackPeriodExpired() {

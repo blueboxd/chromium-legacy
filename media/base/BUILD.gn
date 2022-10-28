@@ -1,4 +1,4 @@
-# Copyright 2014 The Chromium Authors. All rights reserved.
+# Copyright 2014 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -175,10 +175,10 @@ source_set("base") {
     "format_utils.h",
     "frame_rate_estimator.cc",
     "frame_rate_estimator.h",
+    "key_system_info.cc",
+    "key_system_info.h",
     "key_system_names.cc",
     "key_system_names.h",
-    "key_system_properties.cc",
-    "key_system_properties.h",
     "key_systems.cc",
     "key_systems.h",
     "localized_strings.cc",
@@ -208,6 +208,8 @@ source_set("base") {
     "media_observer.h",
     "media_permission.cc",
     "media_permission.h",
+    "media_player_logging_id.cc",
+    "media_player_logging_id.h",
     "media_resource.cc",
     "media_resource.h",
     "media_serializers.h",

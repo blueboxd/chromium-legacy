@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,7 +11,7 @@
 // #import {Channel} from './channel.m.js';
 // #import {PostMessageChannel} from './post_message_channel.m.js';
 // #import {WebviewEventManager} from './webview_event_manager.m.js';
-// #import {NativeEventTarget as EventTarget} from 'chrome://resources/js/cr/event_target.m.js'
+// #import {NativeEventTarget as EventTarget} from 'chrome://resources/js/cr/event_target.js'
 // #import {PasswordAttributes, readPasswordAttributes} from './saml_password_attributes.m.js';
 // #import {maybeAutofillUsername} from './saml_username_autofill.m.js' ;
 // clang-format on
@@ -267,7 +267,7 @@ cr.define('cr.login', function() {
           samlPasswordAttributes.PasswordAttributes.EMPTY;
 
       /**
-       * User's email/
+       * User's email.
        * @public {?string}
        */
       this.email = null;
@@ -618,6 +618,10 @@ cr.define('cr.login', function() {
      * @private
      */
     onMainFrameHttpsWebRequest_(details) {
+      // Ignore GAIA page - we are only interested in 3P IdP page here.
+      if (!this.isSamlPage_ && !this.pendingIsSamlPage_) {
+        return {};
+      }
       const urlToAutofillUsername = samlUsernameAutofill.maybeAutofillUsername(
           details.url, this.urlParameterToAutofillSAMLUsername, this.email);
       if (urlToAutofillUsername) {

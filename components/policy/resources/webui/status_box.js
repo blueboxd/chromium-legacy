@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -42,7 +42,7 @@ export class StatusBoxElement extends CustomElement {
 
     // Set appropriate box legend based on status key
     this.shadowRoot.querySelector('.legend').textContent =
-        loadTimeData.getString(status.boxLegendKey);
+        loadTimeData.getString(status.policyDescriptionKey);
 
     if (scope === 'device') {
       // Populate the device naming information.

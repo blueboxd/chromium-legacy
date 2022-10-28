@@ -1,4 +1,4 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,7 +7,7 @@
 
 namespace android_webview {
 
-void AwAddKeySystems(std::vector<std::unique_ptr<media::KeySystemProperties>>*
+void AwAddKeySystems(std::vector<std::unique_ptr<media::KeySystemInfo>>*
                          key_systems_properties) {
 #if BUILDFLAG(ENABLE_WIDEVINE)
   cdm::AddAndroidWidevine(key_systems_properties);

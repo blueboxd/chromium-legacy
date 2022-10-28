@@ -30,6 +30,7 @@
 #include "content/public/common/bindings_policy.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/common/result_codes.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/test/back_forward_cache_util.h"
 #include "content/public/test/browser_test.h"
@@ -3775,20 +3776,37 @@ class NavigationRequestMPArchBrowserTest
   std::unique_ptr<test::FencedFrameTestHelper> fenced_frame_helper_;
 };
 
+class WaitForDocumentElementAvailableObserver : public WebContentsObserver {
+ public:
+  explicit WaitForDocumentElementAvailableObserver(WebContents* web_contents)
+      : WebContentsObserver(web_contents) {
+    run_loop_ = std::make_unique<base::RunLoop>();
+  }
+  ~WaitForDocumentElementAvailableObserver() override = default;
+
+  WaitForDocumentElementAvailableObserver(
+      const WaitForDocumentElementAvailableObserver&) = delete;
+  WaitForDocumentElementAvailableObserver& operator=(
+      const WaitForDocumentElementAvailableObserver&) = delete;
+
+  void Wait() { run_loop_->Run(); }
+
+ protected:
+  // WebContentsObserver:
+  void PrimaryMainDocumentElementAvailable() override { run_loop_->Quit(); }
+
+ private:
+  std::unique_ptr<base::RunLoop> run_loop_;
+};
+
 INSTANTIATE_TEST_SUITE_P(All,
                          NavigationRequestMPArchBrowserTest,
                          ::testing::Values(TestMPArchType::kPrerender,
                                            TestMPArchType::kFencedFrame,
                                            TestMPArchType::kPortal));
 
-// TODO(https://crbug.com/1317838): The kPortal variant is flaky on Mac bots.
-#if BUILDFLAG(IS_MAC)
-#define MAYBE_ShouldNotUpdateHistory DISABLED_ShouldNotUpdateHistory
-#else
-#define MAYBE_ShouldNotUpdateHistory ShouldNotUpdateHistory
-#endif
 IN_PROC_BROWSER_TEST_P(NavigationRequestMPArchBrowserTest,
-                       MAYBE_ShouldNotUpdateHistory) {
+                       ShouldNotUpdateHistory) {
   const auto get_observer = [&](WebContents* web_contents) {
     return DidFinishNavigationObserver(
         web_contents,
@@ -3813,8 +3831,10 @@ IN_PROC_BROWSER_TEST_P(NavigationRequestMPArchBrowserTest,
         }));
 
     // Navigate the primary page.
+    WaitForDocumentElementAvailableObserver wait_for_observer(web_contents());
     EXPECT_TRUE(
         NavigateToURL(shell(), embedded_test_server()->GetURL("/title1.html")));
+    wait_for_observer.Wait();
   }
   {
     switch (GetParam()) {

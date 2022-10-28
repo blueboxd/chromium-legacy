@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -730,6 +730,29 @@ TEST_P(ConnectorsManagerAnalysisConnectorsTest, DynamicPolicies) {
 
   // The cache should be empty again after the pref is reset.
   ASSERT_TRUE(manager.GetAnalysisConnectorsSettingsForTesting().empty());
+}
+
+TEST_P(ConnectorsManagerAnalysisConnectorsTest, NamesAndConfigs) {
+  ConnectorsManager manager(std::make_unique<BrowserCrashEventRouter>(profile_),
+                            ExtensionInstallEventRouter(profile_),
+                            pref_service(), GetServiceProviderConfig());
+  ScopedConnectorPref scoped_pref(pref_service(), pref(), pref_value());
+
+  auto names = manager.GetAnalysisServiceProviderNames(connector());
+  ASSERT_EQ(1u, names.size());
+
+  auto configs = manager.GetAnalysisServiceConfigs(connector());
+  ASSERT_EQ(1u, configs.size());
+
+  if (names[0] == "google") {
+    EXPECT_TRUE(configs[0]->url);
+    EXPECT_FALSE(configs[0]->local_path);
+  } else if (names[0] == "local_user_agent") {
+    EXPECT_FALSE(configs[0]->url);
+    EXPECT_TRUE(configs[0]->local_path);
+  } else {
+    NOTREACHED() << "Unexpected service provider name";
+  }
 }
 
 INSTANTIATE_TEST_SUITE_P(

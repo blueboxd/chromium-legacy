@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -18,6 +18,7 @@
 #include "build/chromeos_buildflags.h"
 #include "components/cbor/diagnostic_writer.h"
 #include "components/device_event_log/device_event_log.h"
+#include "device/fido/device_public_key_extension.h"
 #include "device/fido/fido_authenticator.h"
 #include "device/fido/fido_discovery_factory.h"
 #include "device/fido/fido_parsing_utils.h"
@@ -308,6 +309,18 @@ bool ValidateResponseExtensions(const CtapMakeCredentialRequest& request,
       if (!request.min_pin_length_requested || !it.second.is_unsigned()) {
         return false;
       }
+    } else if (ext_name == kExtensionDevicePublicKey) {
+      if (!request.device_public_key) {
+        FIDO_LOG(ERROR) << "unsolicited devicePubKey extension output";
+        return false;
+      }
+      const absl::optional<const char*> error =
+          CheckDevicePublicKeyExtensionForErrors(
+              it.second, request.device_public_key->attestation);
+      if (error.has_value()) {
+        FIDO_LOG(ERROR) << error.value();
+        return false;
+      }
     } else {
       // Authenticators may not return unknown extensions.
       return false;
@@ -330,11 +343,20 @@ bool ResponseValid(const FidoAuthenticator& authenticator,
   }
 
   const absl::optional<cbor::Value>& extensions =
-      response.attestation_object().authenticator_data().extensions();
+      response.attestation_object.authenticator_data().extensions();
   if (extensions && !ValidateResponseExtensions(request, options, authenticator,
                                                 *extensions)) {
     FIDO_LOG(ERROR) << "Invalid extensions block: "
                     << cbor::DiagnosticWriter::Write(*extensions);
+    return false;
+  }
+
+  const bool has_dpk_extension =
+      extensions &&
+      extensions->GetMap().count(cbor::Value(kExtensionDevicePublicKey));
+  if (has_dpk_extension != response.device_public_key_signature.has_value()) {
+    FIDO_LOG(ERROR)
+        << "DPK extension isn't coherent with presence of DPK signature";
     return false;
   }
 
@@ -348,7 +370,7 @@ bool ResponseValid(const FidoAuthenticator& authenticator,
     return false;
   }
 
-  if (request.large_blob_key && !response.large_blob_key()) {
+  if (request.large_blob_key && !response.large_blob_key) {
     FIDO_LOG(ERROR) << "Large blob key requested but not returned";
     return false;
   }
@@ -1045,6 +1067,10 @@ void MakeCredentialRequestHandler::SpecializeRequestForAuthenticator(
   if (request->cred_blob &&
       !authenticator->SupportsCredBlobOfSize(request->cred_blob->size())) {
     request->cred_blob.reset();
+  }
+
+  if (request->device_public_key && !authenticator->SupportsDevicePublicKey()) {
+    request->device_public_key.reset();
   }
 }
 

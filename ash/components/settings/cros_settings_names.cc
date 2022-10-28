@@ -1,4 +1,4 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -149,11 +149,6 @@ const char kReportDeviceLocation[] = "cros.device_status.report_location";
 const char kReportDeviceNetworkConfiguration[] =
     "cros.device_status.report_network_configuration";
 
-// Determines whether the device reports network interface types and addresses
-// in device status reports to the device management server.
-const char kReportDeviceNetworkInterfaces[] =
-    "cros.device_status.report_network_interfaces";
-
 // Determines whether the device reports dynamic network information such
 // connection state, signal strength, and IP Address in device status reports
 // and to management server.
@@ -182,11 +177,6 @@ const char kReportDeviceSecurityStatus[] =
 // Determines whether the device reports recently logged in users in device
 // status reports to the device management server.
 const char kReportDeviceUsers[] = "cros.device_status.report_users";
-
-// Determines whether the device reports hardware status (CPU utilization,
-// disk space, etc) in device status reports to the device management server.
-const char kReportDeviceHardwareStatus[] =
-    "cros.device_status.report_hardware_status";
 
 // Determines whether the device reports kiosk session status (app IDs,
 // versions, etc) in device status reports to the device management server.
@@ -272,6 +262,10 @@ const char kReportDeviceNetworkTelemetryEventCheckingRateMs[] =
 // How frequently the audio data are checked for events.
 const char kReportDeviceAudioStatusCheckingRateMs[] =
     "cros.telemetry_reporting.report_device_audio_status_checking_rate_ms";
+
+// How frequently the audio data are checked for events.
+const char kReportDeviceSignalStrengthEventDrivenTelemetry[] =
+    "cros.telemetry_reporting.report_signal_strength_event_driven_telemetry";
 
 // This policy should not appear in the protobuf ever but is used internally to
 // signal that we are running in a "safe-mode" for policy recovery.

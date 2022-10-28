@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -60,8 +60,7 @@ export class FocusAutomationHandler extends BaseAutomationHandler {
     this.addListener_(
         EventType.ACTIVE_DESCENDANT_CHANGED, this.onActiveDescendantChanged);
     this.addListener_(EventType.DETAILS_CHANGED, this.onDetailsChanged);
-    this.addListener_(
-        EventType.MENU_LIST_ITEM_SELECTED, this.onEventIfSelected);
+    this.addListener_(EventType.MENU_ITEM_SELECTED, this.onEventIfSelected);
     this.addListener_(
         EventType.SELECTED_VALUE_CHANGED, this.onSelectedValueChanged_);
   }

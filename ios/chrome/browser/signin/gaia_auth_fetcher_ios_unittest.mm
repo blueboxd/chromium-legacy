@@ -1,22 +1,22 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ios/chrome/browser/signin/gaia_auth_fetcher_ios.h"
+#import "ios/chrome/browser/signin/gaia_auth_fetcher_ios.h"
 
-#include <memory>
+#import <memory>
 
-#include "base/run_loop.h"
-#include "google_apis/gaia/gaia_constants.h"
-#include "google_apis/gaia/gaia_urls.h"
-#include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
-#include "ios/web/public/test/web_task_environment.h"
-#include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
-#include "services/network/test/test_url_loader_factory.h"
-#include "testing/gmock/include/gmock/gmock.h"
-#include "testing/gtest/include/gtest/gtest.h"
+#import "base/run_loop.h"
+#import "google_apis/gaia/gaia_constants.h"
+#import "google_apis/gaia/gaia_urls.h"
+#import "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
+#import "ios/web/public/test/web_task_environment.h"
+#import "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
+#import "services/network/test/test_url_loader_factory.h"
+#import "testing/gmock/include/gmock/gmock.h"
+#import "testing/gtest/include/gtest/gtest.h"
 #import "testing/gtest_mac.h"
-#include "testing/platform_test.h"
+#import "testing/platform_test.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -77,7 +77,7 @@ class FakeGaiaAuthFetcherIOSBridge : public GaiaAuthFetcherIOSBridge {
 class MockGaiaConsumer : public GaiaAuthConsumer {
  public:
   MockGaiaConsumer() {}
-  ~MockGaiaConsumer() {}
+  ~MockGaiaConsumer() override {}
 
   MOCK_METHOD1(OnMergeSessionSuccess, void(const std::string& data));
   MOCK_METHOD1(OnClientLoginFailure, void(const GoogleServiceAuthError& error));

@@ -1,4 +1,4 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -362,7 +362,7 @@ TEST(ExtensionTest, WantsFileAccess) {
   GURL file_url("file:///etc/passwd");
 
   // Ignore the policy delegate for this test.
-  PermissionsData::SetPolicyDelegate(NULL);
+  PermissionsData::SetPolicyDelegate(nullptr);
 
   // <all_urls> permission
   extension = LoadManifest("permissions", "permissions_all_urls.json");

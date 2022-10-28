@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -17,13 +17,13 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
-using ::testing::HasSubstr;
-
 namespace system_logs {
 
 namespace {
 
-namespace healthd = ::chromeos::cros_healthd::mojom;
+namespace healthd = ::ash::cros_healthd::mojom;
+using ::testing::HasSubstr;
+
 constexpr char kRevenLogKey[] = "CHROMEOSFLEX_HARDWARE_INFO";
 
 constexpr char kCpuNameKey[] = "cpu_name";

@@ -1,22 +1,22 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #import "ios/chrome/browser/ui/authentication/signin_earl_grey_app_interface.h"
 
-#include "base/strings/sys_string_conversions.h"
-#include "components/bookmarks/browser/bookmark_model.h"
-#include "components/bookmarks/browser/titled_url_match.h"
+#import "base/strings/sys_string_conversions.h"
+#import "components/bookmarks/browser/bookmark_model.h"
+#import "components/bookmarks/browser/titled_url_match.h"
 #import "components/prefs/pref_service.h"
 #import "components/signin/public/base/signin_pref_names.h"
-#include "components/signin/public/identity_manager/account_info.h"
-#include "components/signin/public/identity_manager/identity_manager.h"
-#include "ios/chrome/browser/bookmarks/bookmark_model_factory.h"
-#include "ios/chrome/browser/bookmarks/bookmarks_utils.h"
-#include "ios/chrome/browser/browser_state/chrome_browser_state.h"
-#include "ios/chrome/browser/signin/authentication_service.h"
-#include "ios/chrome/browser/signin/authentication_service_factory.h"
-#include "ios/chrome/browser/signin/identity_manager_factory.h"
+#import "components/signin/public/identity_manager/account_info.h"
+#import "components/signin/public/identity_manager/identity_manager.h"
+#import "ios/chrome/browser/bookmarks/bookmark_model_factory.h"
+#import "ios/chrome/browser/bookmarks/bookmarks_utils.h"
+#import "ios/chrome/browser/browser_state/chrome_browser_state.h"
+#import "ios/chrome/browser/signin/authentication_service.h"
+#import "ios/chrome/browser/signin/authentication_service_factory.h"
+#import "ios/chrome/browser/signin/identity_manager_factory.h"
 #import "ios/chrome/browser/ui/authentication/cells/table_view_identity_cell.h"
 #import "ios/chrome/browser/ui/commands/show_signin_command.h"
 #import "ios/chrome/browser/ui/main/scene_controller.h"
@@ -26,7 +26,7 @@
 #import "ios/public/provider/chrome/browser/signin/fake_chrome_identity_service.h"
 #import "ios/testing/earl_grey/earl_grey_app.h"
 #import "net/base/mac/url_conversions.h"
-#include "url/gurl.h"
+#import "url/gurl.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -76,15 +76,6 @@
 
   return !IdentityManagerFactory::GetForBrowserState(browserState)
               ->HasPrimaryAccount(signin::ConsentLevel::kSignin);
-}
-
-+ (BOOL)hasPrimaryIdentity {
-  ChromeBrowserState* browserState =
-      chrome_test_util::GetOriginalBrowserState();
-  AuthenticationService* authentication_service =
-      AuthenticationServiceFactory::GetForBrowserState(browserState);
-  return authentication_service->HasPrimaryIdentity(
-      signin::ConsentLevel::kSignin);
 }
 
 + (void)signOut {

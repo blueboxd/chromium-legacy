@@ -1,11 +1,11 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #import "ios/chrome/browser/ui/infobars/modals/infobar_translate_language_selection_table_view_controller.h"
 
-#include "base/strings/sys_string_conversions.h"
-#include "components/translate/core/browser/translate_infobar_delegate.h"
+#import "base/strings/sys_string_conversions.h"
+#import "components/translate/core/browser/translate_infobar_delegate.h"
 #import "ios/chrome/browser/ui/infobars/modals/infobar_translate_language_selection_delegate.h"
 #import "ios/chrome/browser/ui/infobars/modals/infobar_translate_modal_constants.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_text_item.h"

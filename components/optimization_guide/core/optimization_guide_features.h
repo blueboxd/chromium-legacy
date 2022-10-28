@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -244,13 +244,17 @@ bool ShouldExecutePageEntitiesModelOnPageContent(const std::string& locale);
 // for a user using |locale| as their browser language.
 bool ShouldExecutePageVisibilityModelOnPageContent(const std::string& locale);
 
-// Returns whether page entities should be retrieved from the remote
-// Optimization Guide service.
-bool RemotePageEntitiesEnabled();
-
 // Returns whether page metadata should be retrieved from the remote
 // Optimization Guide service.
 bool RemotePageMetadataEnabled();
+
+// Returns the allowlist of categories to persist, provided that the confidence
+// score associated with it is greater than the minimum score allowed.
+base::flat_set<std::string> GetRemotePageCategoriesToPersist();
+
+// Returns the minimum score associated with a category for it to be persisted.
+// Will be a value from 0 to 100, inclusive.
+int GetMinimumPageCategoryScoreToPersist();
 
 // The time to wait beyond the onload event before sending the hints request for
 // link predictions.

@@ -111,21 +111,72 @@ def GPUExpectedDeviceId(test_config, _=None, __=None):
   return retval
 
 
-def GPUParallelJobs(_, __, tester_config):
+def GPUParallelJobs(test_config, _, tester_config):
   """Substitutes the correct number of jobs for GPU tests.
 
   Linux/Mac/Windows can run tests in parallel since multiple windows can be open
   but other platforms cannot.
 
   Args:
+    test_config: A dict containing a configuration for a specific test on a
+        specific builder.
     tester_config: A dict containing the configuration for the builder
         that |test_config| is for.
   """
   os_type = tester_config.get('os_type')
   assert os_type
+
+  test_name = test_config.get('name', '')
+
+  # Return --jobs=1 for Windows Intel bots running the WebGPU CTS
+  # These bots can't handle parallel tests. See crbug.com/1353938.
+  is_webgpu_cts = test_name.startswith('webgpu_cts') or test_config.get(
+      'telemetry_test_name') == 'webgpu_cts'
+  if os_type == 'win' and is_webgpu_cts:
+    dimensions = test_config.get('swarming', {}).get('dimension_sets', [])
+    assert dimensions
+    for d in dimensions:
+      # Split up multiple GPU/driver combinations if the swarming OR operator is
+      # being used.
+      if 'gpu' in d:
+        gpus = d['gpu'].split('|')
+        for gpu in gpus:
+          if gpu.startswith('8086'):
+            return ['--jobs=1']
+
   if os_type in ['lacros', 'linux', 'mac', 'win']:
     return ['--jobs=4']
   return ['--jobs=1']
+
+
+def GPUTelemetryNoRootForUnrootedDevices(test_config, _, tester_config):
+  """Disables Telemetry's root requests for unrootable Android devices.
+
+  Args:
+    test_config: A dict containing a configuration for a specific test on a
+        specific builder.
+    tester_config: A dict containing the configuration for the builder
+        that |test_config| is for.
+  """
+  os_type = tester_config.get('os_type')
+  assert os_type
+  if os_type != 'android':
+    return []
+
+  unrooted_devices = {'a13', 'a23'}
+  dimensions = test_config.get('swarming', {}).get('dimension_sets', [])
+  assert dimensions
+  num_unrooted_devices = 0
+  for d in dimensions:
+    device_type = d.get('device_type')
+    if device_type in unrooted_devices:
+      num_unrooted_devices += 1
+  # All devices should be either rooted or unrooted.
+  if num_unrooted_devices == 0:
+    return []
+  if num_unrooted_devices == len(dimensions):
+    return ['--compatibility-mode=dont-require-rooted-device']
+  raise RuntimeError('All devices must be either rooted or unrooted')
 
 
 def TestOnlySubstitution(_, __, ___):

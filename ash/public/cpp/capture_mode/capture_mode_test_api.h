@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -98,6 +98,10 @@ class ASH_EXPORT CaptureModeTestApi {
   // Sets whether or not audio will be recorded when capturing a video. Should
   // only be called before recording starts, otherwise it has no effect.
   void SetAudioRecordingEnabled(bool enabled);
+
+  // Returns the effective enabled state of audio recording which takes into
+  // account the `AudioCaptureAllowed` policy.
+  bool GetAudioRecordingEnabled() const;
 
   // Flushes the recording service pipe synchronously. Can only be called while
   // recording is in progress.

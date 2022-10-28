@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -14,6 +14,7 @@
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/ash/system_web_apps/types/system_web_app_data.h"
+#include "chrome/browser/web_applications/isolation_data.h"
 #include "chrome/browser/web_applications/os_integration/os_integration_manager.h"
 #include "chrome/browser/web_applications/web_app_chromeos_data.h"
 #include "chrome/browser/web_applications/web_app_constants.h"
@@ -70,6 +71,7 @@ class WebAppInstallFinalizer {
     absl::optional<WebAppChromeOsData> chromeos_data;
     absl::optional<ash::SystemWebAppData> system_web_app_data;
     absl::optional<AppId> parent_app_id;
+    absl::optional<web_app::IsolationData> isolation_data;
 
     // If true, OsIntegrationManager::InstallOsHooks won't be called at all,
     // meaning that all other OS Hooks related parameters below will be ignored.
@@ -146,7 +148,7 @@ class WebAppInstallFinalizer {
                      WebAppTranslationManager* translation_manager,
                      WebAppCommandManager* command_manager);
 
-  virtual void SetRemoveSourceCallbackForTesting(
+  virtual void SetRemoveManagementTypeCallbackForTesting(
       base::RepeatingCallback<void(const AppId&)>);
 
   Profile* profile() { return profile_; }
@@ -159,17 +161,17 @@ class WebAppInstallFinalizer {
                                   bool is_placeholder,
                                   GURL install_url);
 
+  // Used to schedule a WebAppUninstallCommand. The |external_install_source|
+  // field is only required for external app uninstalls to verify OS
+  // unregistration, and is not used for sync/manual uninstalls.
+  void ScheduleUninstallCommand(
+      const AppId& app_id,
+      absl::optional<WebAppManagement::Type> external_install_source,
+      webapps::WebappUninstallSource uninstall_source,
+      UninstallWebAppCallback callback);
+
  private:
   using CommitCallback = base::OnceCallback<void(bool success)>;
-
-  void UninstallWebAppInternal(const AppId& app_id,
-                               webapps::WebappUninstallSource uninstall_surface,
-                               UninstallWebAppCallback callback);
-  void UninstallExternalWebAppOrRemoveSource(
-      const AppId& app_id,
-      WebAppManagement::Type install_source,
-      webapps::WebappUninstallSource uninstall_surface,
-      UninstallWebAppCallback callback);
 
   void OnMaybeRegisterOsUninstall(const AppId& app_id,
                                   WebAppManagement::Type source,
@@ -237,7 +239,7 @@ class WebAppInstallFinalizer {
   bool started_ = false;
 
   base::RepeatingCallback<void(const AppId& app_id)>
-      install_source_removed_callback_for_testing_;
+      management_type_removed_callback_for_testing_;
 
   base::WeakPtrFactory<WebAppInstallFinalizer> weak_ptr_factory_{this};
 };

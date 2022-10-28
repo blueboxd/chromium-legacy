@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,6 +7,8 @@ const AutomationEvent = chrome.automation.AutomationEvent;
 const EventType = chrome.automation.EventType;
 
 import {AutomationPredicate} from '../../common/automation_predicate.js';
+import {EventHandler} from '../../common/event_handler.js';
+
 export class FocusHandler {
   constructor() {
     /** @private {boolean} */

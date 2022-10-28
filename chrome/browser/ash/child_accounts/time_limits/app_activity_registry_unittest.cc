@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -48,7 +48,7 @@ class AppTimeNotificationDelegateMock : public AppTimeNotificationDelegate {
   AppTimeNotificationDelegateMock& operator=(
       const AppTimeNotificationDelegateMock&) = delete;
 
-  ~AppTimeNotificationDelegateMock() = default;
+  ~AppTimeNotificationDelegateMock() override = default;
 
   MOCK_METHOD3(ShowAppTimeLimitNotification,
                void(const AppId&,
@@ -62,7 +62,7 @@ class AppStateObserverMock : public AppActivityRegistry::AppStateObserver {
   AppStateObserverMock(const AppStateObserverMock&) = delete;
   AppStateObserverMock& operator=(const AppStateObserverMock&) = delete;
 
-  ~AppStateObserverMock() = default;
+  ~AppStateObserverMock() override = default;
 
   MOCK_METHOD3(OnAppLimitReached, void(const AppId&, base::TimeDelta, bool));
   MOCK_METHOD1(OnAppLimitRemoved, void(const AppId&));
@@ -568,7 +568,7 @@ TEST_F(AppActivityRegistryTest, RemoveLimitsFromAllowlistedApps) {
   builder.SetUp();
   builder.AppendToAllowlistAppList(kApp1);
 
-  AppTimeLimitsAllowlistPolicyWrapper wrapper(&builder.value());
+  AppTimeLimitsAllowlistPolicyWrapper wrapper(&builder.dict());
   registry().OnTimeLimitAllowlistChanged(wrapper);
 
   EXPECT_FALSE(registry_test().GetAppLimit(kApp1));
@@ -580,7 +580,7 @@ TEST_F(AppActivityRegistryTest, AllowlistedAppsNoLimits) {
   AppTimeLimitsAllowlistPolicyBuilder builder;
   builder.SetUp();
   builder.AppendToAllowlistAppList(kApp1);
-  AppTimeLimitsAllowlistPolicyWrapper wrapper(&builder.value());
+  AppTimeLimitsAllowlistPolicyWrapper wrapper(&builder.dict());
   registry().OnTimeLimitAllowlistChanged(wrapper);
 
   // Set initial limit.
@@ -637,7 +637,7 @@ TEST_F(AppActivityRegistryTest, RestoredApplicationInformation) {
 
   // Now let's test that the app activity are stored appropriately.
   const base::Value::List& list =
-      prefs()->GetValueList(prefs::kPerAppTimeLimitsAppActivities);
+      prefs()->GetList(prefs::kPerAppTimeLimitsAppActivities);
 
   const std::vector<PersistedAppInfo> app_infos =
       PersistedAppInfo::PersistedAppInfosFromList(
@@ -679,7 +679,7 @@ TEST_F(AppActivityRegistryTest, RemoveUninstalledApplications) {
 
   // Now let's test that the app activity are stored appropriately.
   const base::Value::List& list =
-      prefs()->GetValueList(prefs::kPerAppTimeLimitsAppActivities);
+      prefs()->GetList(prefs::kPerAppTimeLimitsAppActivities);
 
   const std::vector<PersistedAppInfo> app_infos =
       PersistedAppInfo::PersistedAppInfosFromList(
@@ -696,7 +696,7 @@ TEST_F(AppActivityRegistryTest, RemoveUninstalledApplications) {
   registry().OnSuccessfullyReported(base::Time::Now());
 
   const base::Value::List& new_list =
-      prefs()->GetValueList(prefs::kPerAppTimeLimitsAppActivities);
+      prefs()->GetList(prefs::kPerAppTimeLimitsAppActivities);
 
   const std::vector<PersistedAppInfo> final_app_infos =
       PersistedAppInfo::PersistedAppInfosFromList(
@@ -727,7 +727,7 @@ TEST_F(AppActivityRegistryTest, RemoveOldEntries) {
 
   // Now let's test that the app activity are stored appropriately.
   const base::Value::List& list =
-      prefs()->GetValueList(prefs::kPerAppTimeLimitsAppActivities);
+      prefs()->GetList(prefs::kPerAppTimeLimitsAppActivities);
 
   const std::vector<PersistedAppInfo> app_infos =
       PersistedAppInfo::PersistedAppInfosFromList(

@@ -1,4 +1,4 @@
-# Copyright 2021 The Chromium Authors. All rights reserved.
+# Copyright 2021 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 """Definitions of builders in the chromium.memory builder group."""
@@ -375,6 +375,8 @@ linux_memory_builder(
         category = "lacros|asan",
         short_name = "asan",
     ),
+    cores = 16,
+    ssd = True,
     # TODO(crbug.com/1324240) Enable when it's stable.
     sheriff_rotations = args.ignore_default(None),
     tree_closing = False,
@@ -643,7 +645,6 @@ ci.builder(
         category = "iOS",
         short_name = "asn",
     ),
-    goma_backend = goma.backend.RBE_PROD,
     sheriff_rotations = args.ignore_default(sheriff_rotations.IOS),
     cores = None,
     os = os.MAC_12,

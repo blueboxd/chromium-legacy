@@ -115,7 +115,19 @@ EBreakBetween CalculateBreakBetweenValue(NGLayoutInputNode child,
     return EBreakBetween::kAuto;
   EBreakBetween break_before = JoinFragmentainerBreakValues(
       child.Style().BreakBefore(), layout_result.InitialBreakBefore());
-  return builder.JoinedBreakBetweenValue(break_before);
+  break_before = builder.JoinedBreakBetweenValue(break_before);
+  const NGConstraintSpace& space = builder.ConstraintSpace();
+  if (space.IsPaginated() &&
+      !IsForcedBreakValue(builder.ConstraintSpace(), break_before)) {
+    AtomicString start_page_name = layout_result.StartPageName();
+    if (!start_page_name)
+      start_page_name = child.PageName();
+    // If the page name propagated from the child differs from what we already
+    // have, we need to break before the child.
+    if (start_page_name != builder.PreviousPageName())
+      return EBreakBetween::kPage;
+  }
+  return break_before;
 }
 
 bool IsBreakableAtStartOfResumedContainer(
@@ -289,6 +301,13 @@ void SetupSpaceBuilderForFragmentation(const NGConstraintSpace& parent_space,
   if (parent_space.IsInColumnBfc() && !is_new_fc)
     builder->SetIsInColumnBfc();
   builder->SetMinBreakAppeal(parent_space.MinBreakAppeal());
+
+  if (parent_space.IsPaginated()) {
+    if (AtomicString page_name = child.PageName())
+      builder->SetPageName(page_name);
+    else
+      builder->SetPageName(parent_space.PageName());
+  }
 }
 
 void SetupFragmentBuilderForFragmentation(
@@ -360,6 +379,11 @@ void SetupFragmentBuilderForFragmentation(
     builder->PropagateTallestUnbreakableBlockSize(unbreakable.block_start);
     builder->PropagateTallestUnbreakableBlockSize(unbreakable.block_end);
   }
+
+  if (space.IsPaginated()) {
+    if (const AtomicString page_name = node.PageName())
+      builder->SetStartPageNameIfNeeded(page_name);
+  }
 }
 
 NGBreakStatus FinishFragmentation(NGBlockNode node,
@@ -387,6 +411,12 @@ NGBreakStatus FinishFragmentation(NGBlockNode node,
   LayoutUnit desired_intrinsic_block_size = builder->IntrinsicBlockSize();
 
   LayoutUnit final_block_size = desired_block_size;
+
+  if (space.IsPaginated() && !builder->PageName()) {
+    // Descendants take precedence, but if none of them propagated a page name,
+    // use the one specified on this element, if any.
+    builder->SetPageName(node.PageName());
+  }
 
   if (builder->FoundColumnSpanner())
     builder->SetDidBreakSelf();
@@ -1313,13 +1343,18 @@ bool CanPaintMultipleFragments(const LayoutObject& layout_object) {
 
   // It's somewhat problematic and strange to repeat most kinds of
   // LayoutReplaced (how would that make sense for iframes, for instance?). For
-  // now, just allow regular images. We may consider expanding this list in the
-  // future. One reason for being extra strict for the time being is legacy
-  // layout / paint code, but it may be that it doesn't make a lot of sense to
-  // repeat too many types of replaced content, even if we should become
-  // technically capable of doing it.
-  if (layout_box->IsLayoutReplaced())
-    return layout_box->IsLayoutImage() && !layout_box->IsMedia();
+  // now, just allow regular images and SVGs. We may consider expanding this
+  // list in the future. One reason for being extra strict for the time being is
+  // legacy layout / paint code, but it may be that it doesn't make a lot of
+  // sense to repeat too many types of replaced content, even if we should
+  // become technically capable of doing it.
+  if (layout_box->IsLayoutReplaced()) {
+    if (layout_box->IsLayoutImage() && !layout_box->IsMedia())
+      return true;
+    if (layout_box->IsSVGRoot())
+      return true;
+    return false;
+  }
 
   if (auto* element = DynamicTo<Element>(layout_box->GetNode())) {
     // We're already able to support *some* types of form controls, but for now,

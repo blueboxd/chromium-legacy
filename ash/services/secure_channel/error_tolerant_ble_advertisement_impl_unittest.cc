@@ -1,4 +1,4 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -59,14 +59,16 @@ class SecureChannelErrorTolerantBleAdvertisementImplTest
         fake_synchronizer_->GetAdvertisementData(command_index);
 
     // First, verify that the service UUID list is correct.
-    std::unique_ptr<device::BluetoothAdvertisement::UUIDList> service_uuids =
+    absl::optional<device::BluetoothAdvertisement::UUIDList> service_uuids =
         data.service_uuids();
+    ASSERT_TRUE(service_uuids);
     EXPECT_EQ(1u, service_uuids->size());
     EXPECT_EQ(kAdvertisingServiceUuid, service_uuids->at(0));
 
     // Then, verify that the service data is correct.
-    std::unique_ptr<device::BluetoothAdvertisement::ServiceData> service_data =
+    absl::optional<device::BluetoothAdvertisement::ServiceData> service_data =
         data.service_data();
+    ASSERT_TRUE(service_data);
     EXPECT_EQ(1u, service_data->size());
 
     ErrorTolerantBleAdvertisementImpl* derived_type =

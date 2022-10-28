@@ -1,4 +1,4 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -25,7 +25,6 @@
 #include "base/timer/wall_clock_timer.h"
 #include "base/values.h"
 #include "chrome/browser/ash/login/users/mock_user_manager.h"
-#include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/ash/system/automatic_reboot_manager_observer.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_browser_process.h"
@@ -36,6 +35,7 @@
 #include "components/prefs/testing_pref_service.h"
 #include "components/session_manager/core/session_manager.h"
 #include "components/session_manager/session_manager_types.h"
+#include "components/user_manager/fake_user_manager.h"
 #include "components/user_manager/scoped_user_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -344,7 +344,7 @@ void AutomaticRebootManagerBasicTest::SetUp() {
   AutomaticRebootManager::RegisterPrefs(local_state_.registry());
 
   update_engine_client_ = UpdateEngineClient::InitializeFakeForTest();
-  PowerManagerClient::InitializeFake();
+  chromeos::PowerManagerClient::InitializeFake();
 
   EXPECT_CALL(*mock_user_manager_, IsUserLoggedIn())
      .WillRepeatedly(ReturnPointee(&is_user_logged_in_));
@@ -367,9 +367,9 @@ void AutomaticRebootManagerBasicTest::TearDown() {
     task_runner_->RunUntilIdle();
   }
 
-  PowerManagerClient::Shutdown();
+  chromeos::PowerManagerClient::Shutdown();
   UpdateEngineClient::Shutdown();
-  TestingBrowserProcess::GetGlobal()->SetLocalState(NULL);
+  TestingBrowserProcess::GetGlobal()->SetLocalState(nullptr);
 }
 
 void AutomaticRebootManagerBasicTest::SetUpdateRebootNeededUptime(
@@ -386,8 +386,9 @@ void AutomaticRebootManagerBasicTest::SetRebootAfterUpdate(
       prefs::kRebootAfterUpdate,
       std::make_unique<base::Value>(reboot_after_update));
   task_runner_->RunUntilIdle();
-  EXPECT_EQ(expect_reboot ? 1 : 0,
-            FakePowerManagerClient::Get()->num_request_restart_calls());
+  EXPECT_EQ(
+      expect_reboot ? 1 : 0,
+      chromeos::FakePowerManagerClient::Get()->num_request_restart_calls());
 }
 
 void AutomaticRebootManagerBasicTest::SetUptimeLimit(
@@ -402,8 +403,9 @@ void AutomaticRebootManagerBasicTest::SetUptimeLimit(
         std::make_unique<base::Value>(static_cast<int>(limit.InSeconds())));
   }
   task_runner_->RunUntilIdle();
-  EXPECT_EQ(expect_reboot ? 1 : 0,
-            FakePowerManagerClient::Get()->num_request_restart_calls());
+  EXPECT_EQ(
+      expect_reboot ? 1 : 0,
+      chromeos::FakePowerManagerClient::Get()->num_request_restart_calls());
 }
 
 void AutomaticRebootManagerBasicTest::NotifyUpdateRebootNeeded() {
@@ -411,22 +413,25 @@ void AutomaticRebootManagerBasicTest::NotifyUpdateRebootNeeded() {
   automatic_reboot_manager_->UpdateStatusChanged(
       update_engine_client_->GetLastStatus());
   task_runner_->RunUntilIdle();
-  EXPECT_EQ(0, FakePowerManagerClient::Get()->num_request_restart_calls());
+  EXPECT_EQ(
+      0, chromeos::FakePowerManagerClient::Get()->num_request_restart_calls());
 }
 
 void AutomaticRebootManagerBasicTest::NotifyTerminating(bool expect_reboot) {
   automatic_reboot_manager_->OnAppTerminating();
   task_runner_->RunUntilIdle();
-  EXPECT_EQ(expect_reboot ? 1 : 0,
-            FakePowerManagerClient::Get()->num_request_restart_calls());
+  EXPECT_EQ(
+      expect_reboot ? 1 : 0,
+      chromeos::FakePowerManagerClient::Get()->num_request_restart_calls());
 }
 
 void AutomaticRebootManagerBasicTest::FastForwardBy(
     const base::TimeDelta& delta,
     bool expect_reboot) {
   task_runner_->FastForwardBy(delta);
-  EXPECT_EQ(expect_reboot ? 1 : 0,
-            FakePowerManagerClient::Get()->num_request_restart_calls());
+  EXPECT_EQ(
+      expect_reboot ? 1 : 0,
+      chromeos::FakePowerManagerClient::Get()->num_request_restart_calls());
 }
 
 void AutomaticRebootManagerBasicTest::SleepFor(const base::TimeDelta& delta,
@@ -442,15 +447,17 @@ void AutomaticRebootManagerBasicTest::SleepFor(const base::TimeDelta& delta,
     automatic_reboot_manager_->grace_end_timer_->OnResume();
   }
   task_runner_->RunUntilIdle();
-  EXPECT_EQ(expect_reboot ? 1 : 0,
-            FakePowerManagerClient::Get()->num_request_restart_calls());
+  EXPECT_EQ(
+      expect_reboot ? 1 : 0,
+      chromeos::FakePowerManagerClient::Get()->num_request_restart_calls());
 }
 
 void AutomaticRebootManagerBasicTest::FastForwardUntilNoTasksRemain(
     bool expect_reboot) {
   task_runner_->FastForwardUntilNoTasksRemain();
-  EXPECT_EQ(expect_reboot ? 1 : 0,
-            FakePowerManagerClient::Get()->num_request_restart_calls());
+  EXPECT_EQ(
+      expect_reboot ? 1 : 0,
+      chromeos::FakePowerManagerClient::Get()->num_request_restart_calls());
 }
 
 void AutomaticRebootManagerBasicTest::ExpectRebootRequest(
@@ -478,8 +485,9 @@ void AutomaticRebootManagerBasicTest::CreateAutomaticRebootManager(
       task_runner_->GetMockClock(), task_runner_->GetMockTickClock());
   automatic_reboot_manager_observer_.Init(automatic_reboot_manager_.get());
   task_runner_->RunUntilIdle();
-  EXPECT_EQ(expect_reboot ? 1 : 0,
-            FakePowerManagerClient::Get()->num_request_restart_calls());
+  EXPECT_EQ(
+      expect_reboot ? 1 : 0,
+      chromeos::FakePowerManagerClient::Get()->num_request_restart_calls());
 
   uptime_processing_delay_ =
       base::TimeTicks() -
@@ -564,8 +572,8 @@ void AutomaticRebootManagerBasicTest::LogIn() {
   const AccountId account_id =
       AccountId::FromUserEmailGaiaId("email", "123456");
   session_manager_.CreateSession(
-      account_id, ProfileHelper::GetUserIdHashByUserIdForTesting("email"),
-      true);
+      account_id,
+      user_manager::FakeUserManager::GetFakeUsernameHash(account_id), true);
   session_manager_.SessionStarted();
   session_manager_.SetSessionState(session_manager::SessionState::ACTIVE);
 }
@@ -704,7 +712,7 @@ TEST_F(AutomaticRebootManagerBasicTest, UserActivityResetsIdleTimer) {
     FastForwardBy(base::Seconds(50), false);
 
     // Simulate user activity.
-    automatic_reboot_manager_->OnUserActivity(NULL);
+    automatic_reboot_manager_->OnUserActivity(nullptr);
   }
 
   // Fast forward the uptime by 60 seconds without simulating user activity.
@@ -1658,7 +1666,7 @@ TEST_P(AutomaticRebootManagerTest, PolicyAfterUpdateInGracePeriod) {
   FastForwardBy(base::Hours(6), false);
 
   // Simulate user activity.
-  automatic_reboot_manager_->OnUserActivity(NULL);
+  automatic_reboot_manager_->OnUserActivity(nullptr);
 
   // Enable automatic reboot after an update has been applied. Verify that a
   // reboot is requested but the device does not reboot immediately.
@@ -1697,7 +1705,7 @@ TEST_P(AutomaticRebootManagerTest, PolicyAfterUpdateAfterGracePeriod) {
   FastForwardBy(base::Days(10) - base::Hours(6), false);
 
   // Simulate user activity.
-  automatic_reboot_manager_->OnUserActivity(NULL);
+  automatic_reboot_manager_->OnUserActivity(nullptr);
 
   // Enable automatic rebooting after an update has been applied. Verify that
   // a reboot is requested and unless a non-kiosk-app session is in progress,

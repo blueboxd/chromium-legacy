@@ -1,6 +1,8 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+
+import {LocaleInfo} from './locale_info.js';
 
 /**
  * EditingUtil provides utility and helper methods for editing-related
@@ -29,10 +31,15 @@ export class EditingUtil {
     deletePhrase = deletePhrase.trim();
     insertPhrase = insertPhrase.trim();
 
-    // Find the right-most occurrence of `deletePhrase`. Require `deletePhrase`
-    // to be separated by word boundaries. If we're deleting text, prefer
-    // the RegExps that include a leading/trailing space to preserve spacing.
-    const re = EditingUtil.getPhraseRegex_(deletePhrase);
+    // Find the right-most occurrence of `deletePhrase`. If we're deleting text,
+    // prefer the RegExps that include a leading/trailing space to preserve
+    // spacing.
+    let re;
+    if (LocaleInfo.considerSpaces()) {
+      re = EditingUtil.getPhraseRegex_(deletePhrase);
+    } else {
+      re = EditingUtil.getPhraseRegexNoWordBoundaries_(deletePhrase);
+    }
     const reWithLeadingSpace =
         EditingUtil.getPhraseRegexLeadingSpace_(deletePhrase);
     const reWithTrailingSpace =
@@ -82,9 +89,16 @@ export class EditingUtil {
     insertPhrase = insertPhrase.trim();
     beforePhrase = beforePhrase.trim();
 
-    const re = EditingUtil.getPhraseRegex_(beforePhrase);
-    // Runs when a regex match occurs and returns the replacement string.
-    const replacer = () => `${insertPhrase} ${beforePhrase}`;
+    let re;
+    let replacer;
+    if (LocaleInfo.considerSpaces()) {
+      re = EditingUtil.getPhraseRegex_(beforePhrase);
+      replacer = () => `${insertPhrase} ${beforePhrase}`;
+    } else {
+      re = EditingUtil.getPhraseRegexNoWordBoundaries_(beforePhrase);
+      replacer = () => `${insertPhrase}${beforePhrase}`;
+    }
+
     const newLeft = leftOfCaret.replace(re, replacer);
     const newIndex = re.test(leftOfCaret) ?
         re.exec(leftOfCaret).index + insertPhrase.length :
@@ -112,8 +126,15 @@ export class EditingUtil {
     startPhrase = startPhrase.trim();
     endPhrase = endPhrase.trim();
 
-    const startRe = EditingUtil.getPhraseRegex_(startPhrase);
-    const endRe = EditingUtil.getPhraseRegex_(endPhrase);
+    let startRe;
+    let endRe;
+    if (LocaleInfo.considerSpaces()) {
+      startRe = EditingUtil.getPhraseRegex_(startPhrase);
+      endRe = EditingUtil.getPhraseRegex_(endPhrase);
+    } else {
+      startRe = EditingUtil.getPhraseRegexNoWordBoundaries_(startPhrase);
+      endRe = EditingUtil.getPhraseRegexNoWordBoundaries_(endPhrase);
+    }
     const start = leftOfCaret.search(startRe);
     let end = leftOfCaret.search(endRe);
     if (start === -1 || end === -1) {
@@ -279,6 +300,7 @@ export class EditingUtil {
   }
 
   /**
+   * TODO(akihiroota): Break regex construction into smaller chunks.
    * Returns a RegExp that matches on the right-most occurrence of a phrase.
    * The returned RegExp is case insensitive and requires that `phrase` is
    * separated by word boundaries.
@@ -288,6 +310,17 @@ export class EditingUtil {
    */
   static getPhraseRegex_(phrase) {
     return new RegExp(`(\\b${phrase}\\b)(?!.*\\b\\1\\b)`, 'i');
+  }
+
+  /**
+   * Similar to above, but doesn't include word boundaries. This is useful for
+   * languages that don't use spaces e.g. Japanese.
+   * @param {string} phrase
+   * @return {!RegExp}
+   * @private
+   */
+  static getPhraseRegexNoWordBoundaries_(phrase) {
+    return new RegExp(`(${phrase})(?!.*\\1)`, 'i');
   }
 
   /**

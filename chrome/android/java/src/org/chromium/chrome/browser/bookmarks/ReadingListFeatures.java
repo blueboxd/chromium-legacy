@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -32,14 +32,6 @@ public class ReadingListFeatures {
     private static final int DEFAULT_SESSION_LENGTH_SECONDS = (int) TimeUnit.HOURS.toSeconds(1);
 
     private ReadingListFeatures() {}
-
-    public static boolean isReadingListEnabled() {
-        return FeatureList.isInitialized()
-                && ChromeFeatureList.isEnabled(ChromeFeatureList.READ_LATER)
-                && ChromeFeatureList.getFieldTrialParamByFeatureAsInt(
-                           ChromeFeatureList.READ_LATER, "read_later_min_version", 0)
-                <= VERSION;
-    }
 
     /** Returns whether Reading list items should open in a custom tab. */
     public static boolean shouldUseCustomTab() {
@@ -76,5 +68,13 @@ public class ReadingListFeatures {
         return isReadingListEnabled()
                 && ChromeFeatureList.getFieldTrialParamByFeatureAsBoolean(
                         ChromeFeatureList.READ_LATER, "allow_bookmark_type_swapping", false);
+    }
+
+    private static boolean isReadingListEnabled() {
+        return FeatureList.isInitialized()
+                && ChromeFeatureList.isEnabled(ChromeFeatureList.READ_LATER)
+                && ChromeFeatureList.getFieldTrialParamByFeatureAsInt(
+                           ChromeFeatureList.READ_LATER, "read_later_min_version", 0)
+                <= VERSION;
     }
 }

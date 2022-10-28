@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -244,6 +244,7 @@ class AuthenticatorBlePermissionMacSheetModel
   // AuthenticatorSheetModelBase:
   const gfx::VectorIcon& GetStepIllustration(
       ImageColorScheme color_scheme) const override;
+  bool ShouldFocusBackArrow() const override;
   std::u16string GetStepTitle() const override;
   std::u16string GetStepDescription() const override;
   bool IsAcceptButtonVisible() const override;
@@ -485,17 +486,32 @@ class AuthenticatorSelectAccountSheetModel
   // gathering user verification and generating an assertion signature.
   // `kPreUserVerification` is only possible with platform authenticators
   // for which we can silently enumerate credentials.
-  enum Mode {
-    kPostUserVerification,
+  enum UserVerificationMode {
     kPreUserVerification,
+    kPostUserVerification,
+  };
+
+  // Whether the user needs to select an account from a list of many or they
+  // merely need to confirm a single possible choice.
+  enum SelectionType {
+    kSingleAccount,
+    kMultipleAccounts,
   };
 
   AuthenticatorSelectAccountSheetModel(
       AuthenticatorRequestDialogModel* dialog_model,
-      Mode mode);
+      UserVerificationMode mode,
+      SelectionType type);
   ~AuthenticatorSelectAccountSheetModel() override;
 
-  // Set the index of the currently selected row.
+  SelectionType selection_type() const;
+
+  // Returns the single available credential if `type()` is
+  // `kSingleAccount` and must not be called otherwise.
+  const device::DiscoverableCredentialMetadata& SingleCredential() const;
+
+  // Set the index of the currently selected row. Only valid to call for
+  // `kMultipleAccount`.
   void SetCurrentSelection(int selected);
 
   // AuthenticatorSheetModelBase:
@@ -511,7 +527,8 @@ class AuthenticatorSelectAccountSheetModel
   bool IsAcceptButtonEnabled() const override;
   std::u16string GetAcceptButtonLabel() const override;
 
-  const Mode mode_;
+  const UserVerificationMode user_verification_mode_;
+  const SelectionType selection_type_;
   size_t selected_ = 0;
 };
 
@@ -564,6 +581,28 @@ class AuthenticatorQRSheetModel : public AuthenticatorSheetModelBase {
       ImageColorScheme color_scheme) const override;
   std::u16string GetStepTitle() const override;
   std::u16string GetStepDescription() const override;
+};
+
+class AuthenticatorCreatePasskeySheetModel
+    : public AuthenticatorSheetModelBase {
+ public:
+  explicit AuthenticatorCreatePasskeySheetModel(
+      AuthenticatorRequestDialogModel* dialog_model);
+  ~AuthenticatorCreatePasskeySheetModel() override;
+
+ private:
+  // AuthenticatorSheetModelBase:
+  const gfx::VectorIcon& GetStepIllustration(
+      ImageColorScheme color_scheme) const override;
+  std::u16string GetStepTitle() const override;
+  std::u16string GetStepDescription() const override;
+  bool IsAcceptButtonVisible() const override;
+  bool IsAcceptButtonEnabled() const override;
+  void OnAccept() override;
+  std::u16string GetAcceptButtonLabel() const override;
+  ui::MenuModel* GetOtherMechanismsMenuModel() override;
+
+  std::unique_ptr<OtherMechanismsMenuModel> other_mechanisms_menu_model_;
 };
 
 #endif  // CHROME_BROWSER_UI_WEBAUTHN_SHEET_MODELS_H_

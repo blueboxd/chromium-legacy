@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,15 +13,16 @@
 #include "base/bind.h"
 #include "base/check.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "chromeos/services/bluetooth_config/public/cpp/cros_bluetooth_config_util.h"
+#include "chromeos/ash/services/bluetooth_config/public/cpp/cros_bluetooth_config_util.h"
 #include "device/bluetooth/chromeos/bluetooth_utils.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace ash {
+
 namespace {
 
-using chromeos::bluetooth_config::GetPairedDeviceName;
-using chromeos::bluetooth_config::mojom::PairedBluetoothDevicePropertiesPtr;
+using bluetooth_config::GetPairedDeviceName;
+using bluetooth_config::mojom::PairedBluetoothDevicePropertiesPtr;
 
 const char kBluetoothToastIdPrefix[] = "cros_bluetooth_device_toast_id-";
 
@@ -88,7 +89,7 @@ void BluetoothDeviceStatusUiHandler::ShowToast(
 }
 
 std::string BluetoothDeviceStatusUiHandler::GetToastId(
-    const chromeos::bluetooth_config::mojom::PairedBluetoothDeviceProperties*
+    const bluetooth_config::mojom::PairedBluetoothDeviceProperties*
         paired_device_properties) {
   return kBluetoothToastIdPrefix +
          base::ToLowerASCII(paired_device_properties->device_properties->id);

@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -80,6 +80,7 @@
 #include "ui/color/color_provider.h"
 #include "ui/native_theme/native_theme.h"
 #include "ui/resources/grit/webui_generated_resources.h"
+#include "ui/webui/color_change_listener/color_change_handler.h"
 #include "url/url_util.h"
 
 #if !defined(OFFICIAL_BUILD)
@@ -611,17 +612,17 @@ void NewTabPageUI::ResetProfilePrefs(PrefService* prefs) {
 }
 
 // static
-bool NewTabPageUI::IsDriveModuleEnabled(Profile* profile) {
+bool NewTabPageUI::IsDriveModuleEnabledForProfile(Profile* profile) {
   // TODO(crbug.com/1321896): Explore not requiring sync for the drive
   // module to be enabled.
   auto* sync_service = SyncServiceFactory::GetForProfile(profile);
-  if (!base::FeatureList::IsEnabled(ntp_features::kNtpDriveModule) ||
-      !sync_service || !sync_service->IsSyncFeatureEnabled()) {
+  if (!IsDriveModuleEnabled() || !sync_service ||
+      !sync_service->IsSyncFeatureEnabled()) {
     return false;
   }
-  if (base::GetFieldTrialParamValueByFeature(
+  if (!base::GetFieldTrialParamByFeatureAsBool(
           ntp_features::kNtpDriveModule,
-          ntp_features::kNtpDriveModuleManagedUsersOnlyParam) != "true") {
+          ntp_features::kNtpDriveModuleManagedUsersOnlyParam, true)) {
     return true;
   }
   // TODO(crbug.com/1213351): Stop calling the private method
@@ -641,6 +642,13 @@ void NewTabPageUI::BindInterface(
   }
 
   page_factory_receiver_.Bind(std::move(pending_receiver));
+}
+
+void NewTabPageUI::BindInterface(
+    mojo::PendingReceiver<color_change_listener::mojom::PageHandler>
+        pending_receiver) {
+  color_provider_handler_ = std::make_unique<ui::ColorChangeHandler>(
+      web_ui()->GetWebContents(), std::move(pending_receiver));
 }
 
 void NewTabPageUI::BindInterface(
@@ -846,7 +854,8 @@ void NewTabPageUI::OnTilesVisibilityPrefChanged() {
 void NewTabPageUI::OnLoad() {
   base::Value::Dict update;
   update.Set("navigationStartTime", navigation_start_time_.ToJsTime());
-  bool driveModuleEnabled = NewTabPageUI::IsDriveModuleEnabled(profile_);
+  bool driveModuleEnabled =
+      NewTabPageUI::IsDriveModuleEnabledForProfile(profile_);
   bool anyModuleEnabled = driveModuleEnabled;
   for (const auto& nameFeature : kModuleFeatures) {
     anyModuleEnabled |= base::FeatureList::IsEnabled(nameFeature.second);

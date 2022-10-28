@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -90,13 +90,6 @@ bool ShouldIncludeNetworkInList(const NetworkState* network_state,
     // Tether network should not be included since they should only be shown
     // to the user as Tether networks.
     return false;
-  }
-
-  if (network_state->type() == shill::kTypeVPN) {
-    if (network_state->GetVpnProviderType() == shill::kProviderIKEv2 &&
-        !base::FeatureList::IsEnabled(features::kEnableIkev2Vpn)) {
-      return false;
-    }
   }
 
   return true;
@@ -1208,6 +1201,15 @@ void NetworkStateHandler::SetNetworkThrottlingStatus(
 void NetworkStateHandler::SetFastTransitionStatus(bool enabled) {
   NET_LOG(USER) << "SetFastTransitionStatus: " << enabled;
   shill_property_handler_->SetFastTransitionStatus(enabled);
+}
+
+void NetworkStateHandler::RequestPortalDetection() {
+  if (default_network_path_.empty()) {
+    return;
+  }
+  NET_LOG(USER) << "RequestPortalDetection for "
+                << NetworkPathId(default_network_path_);
+  shill_property_handler_->RequestPortalDetection(default_network_path_);
 }
 
 const NetworkState* NetworkStateHandler::GetEAPForEthernet(

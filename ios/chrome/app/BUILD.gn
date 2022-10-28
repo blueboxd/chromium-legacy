@@ -1,4 +1,4 @@
-# Copyright 2015 The Chromium Authors. All rights reserved.
+# Copyright 2015 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -13,9 +13,27 @@ import("//ios/build/config.gni")
 import("//ios/chrome/features.gni")
 import("//ios/public/provider/chrome/browser/build_config.gni")
 
-buildflag_header("buildflags") {
+declare_args() {
+  # Controls whether fast_app_terminate_buildflags is enabled
+  # (see crbug.com/1328891 for details).
+  fast_app_terminate_enabled = -1
+}
+
+# If fast_app_terminate_enabled is not enabled, default to true,
+# except in debug mode (as this makes it difficult to debug the
+# app termination crashes).
+if (fast_app_terminate_enabled == -1) {
+  fast_app_terminate_enabled = !is_debug
+}
+
+buildflag_header("background_mode_buildflags") {
   header = "background_mode_buildflags.h"
   flags = [ "IOS_BACKGROUND_MODE_ENABLED=$ios_enable_background_mode" ]
+}
+
+buildflag_header("fast_app_terminate_buildflags") {
+  header = "fast_app_terminate_buildflags.h"
+  flags = [ "FAST_APP_TERMINATE_ENABLED=$fast_app_terminate_enabled" ]
 }
 
 source_set("app") {
@@ -256,12 +274,30 @@ source_set("first_run_app_state_agent") {
     "//ios/chrome/browser/ui/commands:commands",
     "//ios/chrome/browser/ui/first_run",
     "//ios/chrome/browser/ui/first_run:field_trial",
+    "//ios/chrome/browser/ui/first_run:field_trial_constants",
     "//ios/chrome/browser/ui/first_run:first_run_provider",
     "//ios/chrome/browser/ui/first_run:utils",
     "//ios/chrome/browser/ui/main:browser_interface_provider",
     "//ios/chrome/browser/ui/main:observing_scene_agent",
     "//ios/chrome/browser/ui/main:scene_state_header",
     "//ios/chrome/browser/ui/screen:screen_provider",
+  ]
+}
+
+source_set("post_restore_app_agent") {
+  configs += [ "//build/config/compiler:enable_arc" ]
+  sources = [
+    "post_restore_app_agent.h",
+    "post_restore_app_agent.mm",
+  ]
+  deps = [
+    "//base",
+    "//ios/chrome/app/application_delegate:app_state_header",
+    "//ios/chrome/app/application_delegate:application_delegate_internal",
+    "//ios/chrome/browser/application_context:application_context",
+    "//ios/chrome/browser/promos_manager:promos_manager",
+    "//ios/chrome/browser/signin:signin_util",
+    "//ios/chrome/browser/ui/post_restore_signin:features",
   ]
 }
 
@@ -309,9 +345,11 @@ source_set("app_internal") {
     ":app_metrics_app_state_agent",
     ":blocking_scene_commands",
     ":enterprise_app_agent",
+    ":fast_app_terminate_buildflags",
     ":feed_app_agent",
     ":first_run_app_state_agent",
     ":mode",
+    ":post_restore_app_agent",
     ":safe_mode_app_state_agent",
     ":tests_hook",
     "//base",
@@ -364,6 +402,7 @@ source_set("app_internal") {
     "//ios/chrome/browser/favicon",
     "//ios/chrome/browser/feature_engagement",
     "//ios/chrome/browser/first_run",
+    "//ios/chrome/browser/flags:system_flags",
     "//ios/chrome/browser/geolocation",
     "//ios/chrome/browser/history",
     "//ios/chrome/browser/mailto_handler",
@@ -375,6 +414,7 @@ source_set("app_internal") {
     "//ios/chrome/browser/ntp:features",
     "//ios/chrome/browser/omaha",
     "//ios/chrome/browser/passwords",
+    "//ios/chrome/browser/push_notification:push_notification_service",
     "//ios/chrome/browser/reading_list",
     "//ios/chrome/browser/screenshot",
     "//ios/chrome/browser/search_engines",
@@ -415,11 +455,10 @@ source_set("app_internal") {
     "//ios/chrome/common/intents",
     "//ios/components/cookie_util",
     "//ios/net",
-    "//ios/public/provider/chrome/browser",
     "//ios/public/provider/chrome/browser/app_distribution:app_distribution_api",
     "//ios/public/provider/chrome/browser/overrides:overrides_api",
     "//ios/public/provider/chrome/browser/ui_utils:ui_utils_api",
-    "//ios/public/provider/chrome/browser/user_feedback",
+    "//ios/public/provider/chrome/browser/user_feedback:user_feedback_api",
     "//ios/third_party/material_components_ios",
     "//ios/web/common:features",
     "//ios/web/common:uikit",

@@ -1,17 +1,15 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #import "ios/chrome/browser/metrics/ios_feed_enabled_metrics_provider.h"
 
 #import "base/test/metrics/histogram_tester.h"
-#import "base/test/scoped_feature_list.h"
 #import "components/feed/core/shared_prefs/pref_names.h"
 #import "components/metrics/metrics_log_uploader.h"
 #import "components/prefs/pref_registry_simple.h"
 #import "components/prefs/testing_pref_service.h"
-#import "ios/chrome/browser/pref_names.h"
-#import "ios/chrome/browser/ui/ntp/new_tab_page_feature.h"
+#import "ios/chrome/browser/prefs/pref_names.h"
 #import "testing/platform_test.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -37,10 +35,6 @@ class IOSFeedEnabledMetricsProviderTest : public PlatformTest {
 
 // Tests the implementation of ProvideCurrentSessionData
 TEST_F(IOSFeedEnabledMetricsProviderTest, ProvideCurrentSessionData) {
-  // TODO(crbug.com/1369142): Remove this when the issue is fixed.
-  base::test::ScopedFeatureList local_feature;
-  local_feature.InitAndDisableFeature(kDisableFeediOS14);
-
   IOSFeedEnabledMetricsProvider provider(&testing_pref_service_);
   provider.ProvideCurrentSessionData(nullptr /* uma_proto */);
   histogram_tester_.ExpectBucketCount("ContentSuggestions.Feed.CanBeShown",

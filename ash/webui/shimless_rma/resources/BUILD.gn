@@ -1,4 +1,4 @@
-# Copyright 2021 The Chromium Authors. All rights reserved.
+# Copyright 2021 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -162,8 +162,9 @@ js_library("shimless_rma") {
     ":wrapup_restock_page",
     ":wrapup_wait_for_manual_wp_enable_page",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
-    "//ui/webui/resources/cr_elements/cr_button:cr_button",
   ]
+  externs_list =
+      [ "//ui/webui/resources/cr_elements/cr_button/cr_button_externs.js" ]
 }
 
 js_library("base_page") {
@@ -178,7 +179,7 @@ js_library("critical_error_page") {
     ":mojo_interface_provider",
     ":shimless_rma_types",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
-    "//ui/webui/resources/js:i18n_behavior.m",
+    "//ui/webui/resources/cr_elements:i18n_behavior",
   ]
 }
 
@@ -188,21 +189,21 @@ js_library("hardware_error_page") {
     ":mojo_interface_provider",
     ":shimless_rma_types",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
-    "//ui/webui/resources/js:i18n_behavior.m",
+    "//ui/webui/resources/cr_elements:i18n_behavior",
   ]
 }
 
 js_library("data") {
   deps = [
     ":shimless_rma_types",
-    "//ui/webui/resources/cr_components/chromeos/network:onc_mojo.m",
+    "//ui/webui/resources/cr_components/chromeos/network:onc_mojo",
   ]
 }
 
 js_library("fake_data") {
   deps = [
     ":shimless_rma_types",
-    "//ui/webui/resources/cr_components/chromeos/network:onc_mojo.m",
+    "//ui/webui/resources/cr_components/chromeos/network:onc_mojo",
   ]
 }
 
@@ -231,9 +232,9 @@ js_library("onboarding_choose_destination_page") {
     ":mojo_interface_provider",
     ":shimless_rma_types",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
-    "//ui/webui/resources/cr_elements/cr_radio_button:cr_radio_button",
-    "//ui/webui/resources/js:i18n_behavior.m",
+    "//ui/webui/resources/cr_elements:i18n_behavior",
   ]
+  externs_list = [ "//ui/webui/resources/cr_elements/cr_radio_button/cr_radio_button_externs.js" ]
 }
 
 js_library("onboarding_choose_wipe_device_page") {
@@ -260,8 +261,9 @@ js_library("onboarding_enter_rsu_wp_disable_code_page") {
     ":mojo_interface_provider",
     ":shimless_rma_types",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
-    "//ui/webui/resources/cr_elements/cr_input:cr_input",
   ]
+  externs_list =
+      [ "//ui/webui/resources/cr_elements/cr_input/cr_input_externs.js" ]
 }
 
 js_library("onboarding_landing_page") {
@@ -282,8 +284,8 @@ js_library("onboarding_select_components_page") {
     ":repair_component_chip",
     ":shimless_rma_types",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
+    "//ui/webui/resources/cr_elements:i18n_behavior",
     "//ui/webui/resources/js:assert.m",
-    "//ui/webui/resources/js:i18n_behavior.m",
   ]
 }
 
@@ -294,14 +296,16 @@ js_library("onboarding_network_page") {
     ":mojo_interface_provider",
     ":shimless_rma_types",
     "//chromeos/services/network_config/public/mojom:mojom_js_library_for_compile",
-    "//ui/webui/resources/cr_components/chromeos/network:network_config.m",
-    "//ui/webui/resources/cr_components/chromeos/network:network_list.m",
-    "//ui/webui/resources/cr_components/chromeos/network:onc_mojo.m",
-    "//ui/webui/resources/cr_elements/cr_button:cr_button",
-    "//ui/webui/resources/cr_elements/cr_dialog:cr_dialog",
+    "//ui/webui/resources/cr_components/chromeos/network:network_config",
+    "//ui/webui/resources/cr_components/chromeos/network:network_list",
+    "//ui/webui/resources/cr_components/chromeos/network:onc_mojo",
+    "//ui/webui/resources/cr_elements:i18n_behavior",
     "//ui/webui/resources/js:assert.m",
-    "//ui/webui/resources/js:i18n_behavior.m",
     "//ui/webui/resources/js:util.m",
+  ]
+  externs_list = [
+    "//ui/webui/resources/cr_elements/cr_button/cr_button_externs.js",
+    "//ui/webui/resources/cr_elements/cr_dialog/cr_dialog_externs.js",
   ]
 }
 
@@ -312,7 +316,7 @@ js_library("onboarding_update_page") {
     ":shimless_rma_types",
     "//third_party/polymer/v3_0/components-chromium/paper-spinner:paper-spinner-lite",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
-    "//ui/webui/resources/js:i18n_behavior.m",
+    "//ui/webui/resources/cr_elements:i18n_behavior",
   ]
 }
 
@@ -323,8 +327,9 @@ js_library("onboarding_wait_for_manual_wp_disable_page") {
     ":mojo_interface_provider",
     ":shimless_rma_types",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
-    "//ui/webui/resources/cr_elements/cr_button:cr_button",
   ]
+  externs_list =
+      [ "//ui/webui/resources/cr_elements/cr_button/cr_button_externs.js" ]
 }
 
 js_library("onboarding_wp_disable_complete_page") {
@@ -342,7 +347,7 @@ js_library("reboot_page") {
     ":mojo_interface_provider",
     ":shimless_rma_types",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
-    "//ui/webui/resources/js:i18n_behavior.m",
+    "//ui/webui/resources/cr_elements:i18n_behavior",
   ]
 }
 
@@ -436,9 +441,11 @@ js_library("wrapup_repair_complete_page") {
     ":mojo_interface_provider",
     ":shimless_rma_types",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
-    "//ui/webui/resources/cr_elements/cr_button:cr_button",
-    "//ui/webui/resources/cr_elements/cr_dialog:cr_dialog",
-    "//ui/webui/resources/js:i18n_behavior.m",
+    "//ui/webui/resources/cr_elements:i18n_behavior",
+  ]
+  externs_list = [
+    "//ui/webui/resources/cr_elements/cr_button/cr_button_externs.js",
+    "//ui/webui/resources/cr_elements/cr_dialog/cr_dialog_externs.js",
   ]
 }
 
@@ -448,8 +455,9 @@ js_library("wrapup_restock_page") {
     ":mojo_interface_provider",
     ":shimless_rma_types",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
-    "//ui/webui/resources/cr_elements/cr_dialog:cr_dialog",
   ]
+  externs_list =
+      [ "//ui/webui/resources/cr_elements/cr_dialog/cr_dialog_externs.js" ]
 }
 
 js_library("wrapup_finalize_page") {
@@ -458,8 +466,10 @@ js_library("wrapup_finalize_page") {
     ":mojo_interface_provider",
     ":shimless_rma_types",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
-    "//ui/webui/resources/cr_elements/cr_button:cr_button",
-    "//ui/webui/resources/cr_elements/cr_dialog:cr_dialog",
+  ]
+  externs_list = [
+    "//ui/webui/resources/cr_elements/cr_button/cr_button_externs.js",
+    "//ui/webui/resources/cr_elements/cr_dialog/cr_dialog_externs.js",
   ]
 }
 
@@ -469,8 +479,9 @@ js_library("wrapup_wait_for_manual_wp_enable_page") {
     ":mojo_interface_provider",
     ":shimless_rma_types",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
-    "//ui/webui/resources/cr_elements/cr_dialog:cr_dialog",
   ]
+  externs_list =
+      [ "//ui/webui/resources/cr_elements/cr_dialog/cr_dialog_externs.js" ]
 }
 
 js_library("shimless_rma_types") {

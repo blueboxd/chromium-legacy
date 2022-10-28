@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -71,7 +71,7 @@ class AppShimRegistry {
       const base::FilePath& user_data_dir);
 
   // For logging and debug purposes.
-  base::Value AsDebugValue() const;
+  base::Value::Dict AsDebugDict() const;
 
  protected:
   friend class base::NoDestructor<AppShimRegistry>;

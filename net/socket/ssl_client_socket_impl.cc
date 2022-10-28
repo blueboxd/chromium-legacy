@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -602,9 +602,8 @@ bool SSLClientSocketImpl::GetSSLInfo(SSLInfo* ssl_info) {
   ssl_info->peer_signature_algorithm =
       SSL_get_peer_signature_algorithm(ssl_.get());
 
-  SSLConnectionStatusSetCipherSuite(
-      static_cast<uint16_t>(SSL_CIPHER_get_id(cipher)),
-      &ssl_info->connection_status);
+  SSLConnectionStatusSetCipherSuite(SSL_CIPHER_get_protocol_id(cipher),
+                                    &ssl_info->connection_status);
   SSLConnectionStatusSetVersion(GetNetSSLVersion(ssl_.get()),
                                 &ssl_info->connection_status);
 
@@ -1254,9 +1253,8 @@ ssl_verify_result_t SSLClientSocketImpl::HandleVerifyResult() {
   // Enforce keyUsage extension for RSA leaf certificates chaining up to known
   // roots.
   // TODO(crbug.com/795089): Enforce this unconditionally.
-  if (server_cert_verify_result_.is_issued_by_known_root) {
-    SSL_set_enforce_rsa_key_usage(ssl_.get(), 1);
-  }
+  SSL_set_enforce_rsa_key_usage(
+      ssl_.get(), server_cert_verify_result_.is_issued_by_known_root);
 
   // If the connection was good, check HPKP and CT status simultaneously,
   // but prefer to treat the HPKP error as more serious, if there was one.

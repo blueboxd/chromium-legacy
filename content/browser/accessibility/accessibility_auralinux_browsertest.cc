@@ -2066,11 +2066,13 @@ IN_PROC_BROWSER_TEST_F(AccessibilityAuraLinuxBrowserTest,
   AtkObject* document = GetRendererAccessible();
   ASSERT_TRUE(ATK_IS_COMPONENT(document));
 
-  auto* node = static_cast<ui::AXPlatformNodeAuraLinux*>(
-      ui::AXPlatformNode::FromNativeViewAccessible(document));
-  std::pair<int, int> offsets = node->GetSelectionOffsetsForAtk();
-  EXPECT_EQ(0, offsets.first);
-  EXPECT_EQ(3, offsets.second);
+  {
+    auto* node = static_cast<ui::AXPlatformNodeAuraLinux*>(
+        ui::AXPlatformNode::FromNativeViewAccessible(document));
+    std::pair<int, int> offsets = node->GetSelectionOffsetsForAtk();
+    EXPECT_EQ(0, offsets.first);
+    EXPECT_EQ(3, offsets.second);
+  }
 
   std::vector<int> expected = {12, 18, 14};  // text length of each child
   int number_of_children = atk_object_get_n_accessible_children(document);
@@ -2122,7 +2124,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityAuraLinuxBrowserTest,
 
   // Find a node to hit test. Note that this is a really simple page,
   // so synchronous hit testing will work fine.
-  BrowserAccessibility* node = manager->GetRoot();
+  BrowserAccessibility* node = manager->GetBrowserAccessibilityRoot();
   while (node && node->GetRole() != ax::mojom::Role::kButton)
     node = manager->NextInTreeOrder(node);
   DCHECK(node);
@@ -2135,7 +2137,8 @@ IN_PROC_BROWSER_TEST_F(AccessibilityAuraLinuxBrowserTest,
   ui::AXPlatformNodeAuraLinux* root_platform_node =
       static_cast<ui::AXPlatformNodeAuraLinux*>(
           ui::AXPlatformNode::FromNativeViewAccessible(
-              manager->GetRoot()->GetNativeViewAccessible()));
+              manager->GetBrowserAccessibilityRoot()
+                  ->GetNativeViewAccessible()));
 
   // First test that calling accHitTest on the root node returns the button.
   {

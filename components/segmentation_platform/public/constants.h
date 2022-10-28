@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -41,9 +41,34 @@ const char kChromeLowUserEngagementUmaName[] = "ChromeLowUserEngagement";
 const char kFeedUserSegmentationKey[] = "feed_user_segment";
 const char kFeedUserSegmentUmaName[] = "FeedUserSegment";
 
+// The key is used to decide whether the user is interested in shopping or not.
+const char kShoppingUserSegmentationKey[] = "shopping_user";
+const char kShoppingUserUmaName[] = "ShoppingUser";
+
 // The key is used to show a contextual page action.
 const char kContextualPageActionsKey[] = "contextual_page_actions";
 const char kContextualPageActionsUmaName[] = "ContextualPageActions";
+
+// Determine power users of the browser app.
+const char kPowerUserKey[] = "power_user";
+const char kPowerUserUmaName[] = "PowerUser";
+
+// The key is used to decide whether the user is active on multiple synced
+// devices.
+const char kCrossDeviceUserKey[] = "cross_device_user";
+const char kCrossDeviceUserUmaName[] = "CrossDeviceUser";
+
+// Keys related to users of chrome features.
+const char kFrequentFeatureUserKey[] = "frequent_feature_user";
+const char kFrequentFeatureUserUmaName[] = "FrequentFeatureUser";
+
+// This key is used to decide whether the user uses Chrome intentionally.
+const char kIntentionalUserKey[] = "intentional_user";
+const char kIntentionalUserUmaName[] = "IntentionalUser";
+
+// Key for user segment that is more likely to use resume features in chrome.
+const char kResumeHeavyUserKey[] = "resume_heavy_user";
+const char kResumeHeavyUserUmaName[] = "ResumeHeavyUser";
 
 // The key provide a list of segment IDs, separated by commas, whose ML model
 // execution results are allowed to be uploaded through UKM.

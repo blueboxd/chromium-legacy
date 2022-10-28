@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -19,7 +19,6 @@ enum SecurityLevel;
 }
 
 // Use a LocationIconView to display an icon on the leading side of the edit
-// field. It shows the user's current action (while the user is editing), or the
 // page security status (after navigation has completed), or extension name (if
 // the URL is a chrome-extension:// URL).
 class LocationIconView : public IconLabelBubbleView {

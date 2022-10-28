@@ -1,4 +1,4 @@
-// Copyright 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,21 +9,26 @@
 
 #include <string>
 
+class ChromeBrowserState;
 class GURL;
 
-// Returns whether |url| is an external file reference.
+// Returns whether `url` is an external file reference.
 bool UrlIsExternalFileReference(const GURL& url);
 
 // Returns true if the scheme has a chrome scheme.
 bool UrlHasChromeScheme(const GURL& url);
 bool UrlHasChromeScheme(NSURL* url);
 
-// Returns YES if |url| matches chrome://newtab.
+// Returns YES if `url` matches chrome://newtab.
 bool IsURLNtp(const GURL& url);
 
-// Returns true if |scheme| is handled in Chrome, or by default handlers in
+// Returns true if `scheme` is handled in Chrome, or by default handlers in
 // net::URLRequest.
 bool IsHandledProtocol(const std::string& scheme);
+
+// Whether or not, by default, `url` should be loaded using Desktop Mode.
+bool ShouldLoadUrlInDesktopMode(const GURL& url,
+                                ChromeBrowserState* browser_state);
 
 // Singleton object that generates constants for Chrome iOS applications.
 // Behavior of this object can be overridden by unit tests.

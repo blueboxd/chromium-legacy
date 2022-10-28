@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -14,6 +14,8 @@ export interface ReadingListApiProxy {
   openURL(url: Url, markAsRead: boolean, clickModifiers: ClickModifiers): void;
 
   updateReadStatus(url: Url, read: boolean): void;
+
+  markCurrentTabAsRead(): void;
 
   addCurrentTab(): void;
 
@@ -55,6 +57,10 @@ export class ReadingListApiProxyImpl implements ReadingListApiProxy {
 
   updateReadStatus(url: Url, read: boolean) {
     this.handler.updateReadStatus(url, read);
+  }
+
+  markCurrentTabAsRead() {
+    this.handler.markCurrentTabAsRead();
   }
 
   addCurrentTab() {

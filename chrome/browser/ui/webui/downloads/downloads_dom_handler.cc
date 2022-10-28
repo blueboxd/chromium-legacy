@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -433,7 +433,7 @@ void DownloadsDOMHandler::DangerPromptDone(
     DownloadDangerPrompt::Action action) {
   if (action != DownloadDangerPrompt::ACCEPT)
     return;
-  download::DownloadItem* item = NULL;
+  download::DownloadItem* item = nullptr;
   if (GetMainNotifierManager())
     item = GetMainNotifierManager()->GetDownload(download_id);
   if (!item && GetOriginalNotifierManager())
@@ -475,7 +475,7 @@ download::DownloadItem* DownloadsDOMHandler::GetDownloadByStringId(
 }
 
 download::DownloadItem* DownloadsDOMHandler::GetDownloadById(uint32_t id) {
-  download::DownloadItem* item = NULL;
+  download::DownloadItem* item = nullptr;
   if (GetMainNotifierManager())
     item = GetMainNotifierManager()->GetDownload(id);
   if (!item && GetOriginalNotifierManager())

@@ -1,4 +1,4 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -125,6 +125,8 @@ std::string BuildHtml(bool allow_access_requests,
                                         reason, second_custodian.empty())));
   strings.Set("blockReasonHeader",
               l10n_util::GetStringUTF8(IDS_SUPERVISED_USER_BLOCK_HEADER));
+  strings.Set("siteBlockHeader",
+              l10n_util::GetStringUTF8(IDS_GENERIC_SITE_BLOCK_HEADER));
 
   strings.Set("showFeedbackLink", is_automatically_blocked);
   strings.Set("feedbackLink",
@@ -144,6 +146,9 @@ std::string BuildHtml(bool allow_access_requests,
   strings.Set(
       "localApprovalsButton",
       l10n_util::GetStringUTF8(IDS_BLOCK_INTERSTITIAL_ASK_IN_PERSON_BUTTON));
+  strings.Set("localApprovalsRemoteRequestSentButton",
+              l10n_util::GetStringUTF8(
+                  IDS_BLOCK_INTERSTITIAL_ASK_IN_PERSON_INSTEAD_BUTTON));
   strings.Set("showDetailsLink",
               l10n_util::GetStringUTF8(IDS_BLOCK_INTERSTITIAL_SHOW_DETAILS));
   strings.Set("hideDetailsLink",

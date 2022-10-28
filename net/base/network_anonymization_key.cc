@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 #include "net/base/network_anonymization_key.h"
@@ -26,6 +26,9 @@ NetworkAnonymizationKey::NetworkAnonymizationKey() = default;
 
 NetworkAnonymizationKey::NetworkAnonymizationKey(
     const NetworkAnonymizationKey& network_anonymization_key) = default;
+
+NetworkAnonymizationKey::NetworkAnonymizationKey(
+    NetworkAnonymizationKey&& network_anonymization_key) = default;
 
 NetworkAnonymizationKey::~NetworkAnonymizationKey() = default;
 
@@ -75,6 +78,13 @@ bool NetworkAnonymizationKey::IsTransient() const {
 bool NetworkAnonymizationKey::GetIsCrossSite() const {
   DCHECK(IsCrossSiteFlagSchemeEnabled() && is_cross_site_.has_value());
   return is_cross_site_.value();
+}
+
+const absl::optional<SchemefulSite>& NetworkAnonymizationKey::GetFrameSite()
+    const {
+  // Frame site will be empty if double-keying is enabled.
+  CHECK(NetworkAnonymizationKey::IsFrameSiteEnabled());
+  return frame_site_;
 }
 
 bool NetworkAnonymizationKey::IsFrameSiteEnabled() {

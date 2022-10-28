@@ -60,6 +60,7 @@ class CORE_EXPORT MouseEventManager final
 
   WebInputEventResult DispatchMouseClickIfNeeded(
       Element* mouse_release_target,
+      Element* captured_click_target,
       const WebMouseEvent& mouse_event,
       const PointerId& pointer_id,
       const String& pointer_type);
@@ -139,7 +140,7 @@ class CORE_EXPORT MouseEventManager final
   Node* MousePressNode();
   void SetMousePressNode(Node*);
 
-  Element* MouseDownElement();
+  Element* ClickElement();
 
   void SetClickElement(Element*);
   void SetClickCount(int);
@@ -227,18 +228,12 @@ class CORE_EXPORT MouseEventManager final
   unsigned captures_dragging_ : 1;
   unsigned mouse_down_may_start_drag_ : 1;
 
-  // TODO(crbug.com/1220669): Do we need both |mouse_press_node_| and
-  // |mouse_down_element_|?
   Member<Node> mouse_press_node_;
 
   int click_count_;
   Member<Element> click_element_;
-  // This element should be mostly the same as click_element_. Only when
-  // click_element_ is set to null due to DOM manipulation mouse_down_element_
-  // remains unchanged.
-  Member<Element> mouse_down_element_;
 
-  gfx::Point mouse_down_pos_;  // In our view's coords.
+  gfx::Point mouse_down_pos_;
   base::TimeTicks mouse_down_timestamp_;
   WebMouseEvent mouse_down_;
 

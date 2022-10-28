@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -306,11 +306,11 @@ void FlossManagerClient::RemoveManager() {
   }
 }
 
-// The manager can manage multiple adapters so ignore the adapter path given
+// The manager can manage multiple adapters so ignore the adapter index given
 // here. It is unused.
 void FlossManagerClient::Init(dbus::Bus* bus,
                               const std::string& service_name,
-                              const std::string& adapter_path) {
+                              const int adapter_index) {
   bus_ = bus;
   service_name_ = service_name;
 
@@ -591,11 +591,6 @@ void FlossManagerClient::ObjectRemoved(const dbus::ObjectPath& object_path,
   DVLOG(0) << __func__ << ": " << object_path.value() << ", " << interface_name;
 
   RemoveManager();
-}
-
-// static
-dbus::ObjectPath FlossManagerClient::GenerateAdapterPath(int adapter) {
-  return dbus::ObjectPath(base::StringPrintf(kAdapterObjectFormat, adapter));
 }
 
 // static

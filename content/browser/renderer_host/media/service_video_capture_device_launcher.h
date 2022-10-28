@@ -12,7 +12,6 @@
 #include "content/public/browser/video_capture_device_launcher.h"
 #include "media/base/scoped_async_trace.h"
 #include "mojo/public/cpp/bindings/remote.h"
-#include "services/video_capture/public/mojom/device_factory.mojom.h"
 #include "third_party/blink/public/common/mediastream/media_stream_request.h"
 
 namespace content {
@@ -64,7 +63,7 @@ class CONTENT_EXPORT ServiceVideoCaptureDeviceLauncher
   ConnectToDeviceFactoryCB connect_to_source_provider_cb_;
   scoped_refptr<RefCountedVideoSourceProvider> service_connection_;
   State state_;
-  base::SequenceChecker sequence_checker_;
+  SEQUENCE_CHECKER(sequence_checker_);
   base::OnceClosure done_cb_;
   raw_ptr<Callbacks> callbacks_;
 };

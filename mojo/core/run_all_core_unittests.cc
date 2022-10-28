@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -41,7 +41,6 @@ base::FilePath GetMojoCoreLibraryPath() {
 
 int main(int argc, char** argv) {
   base::TestSuite test_suite(argc, argv);
-  base::test::ScopedFeatureList feature_list;
 
   MojoInitializeFlags flags = MOJO_INITIALIZE_FLAG_NONE;
   const base::CommandLine& command_line =
@@ -52,10 +51,6 @@ int main(int argc, char** argv) {
   absl::optional<base::FilePath> library_path;
   if (command_line.HasSwitch(switches::kMojoUseExplicitLibraryPath))
     library_path = GetMojoCoreLibraryPath();
-
-  feature_list.InitFromCommandLine(
-      command_line.GetSwitchValueASCII(switches::kEnableFeatures),
-      command_line.GetSwitchValueASCII(switches::kDisableFeatures));
 
   if (command_line.HasSwitch(switches::kMojoLoadBeforeInit)) {
     CHECK_EQ(MOJO_RESULT_OK, mojo::LoadCoreLibrary(library_path));

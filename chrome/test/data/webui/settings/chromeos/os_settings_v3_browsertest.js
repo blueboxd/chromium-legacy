@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -15,8 +15,6 @@ GEN('#include "chrome/common/chrome_features.h"');
 GEN('#include "components/app_restore/features.h"');
 GEN('#include "content/public/test/browser_test.h"');
 GEN('#include "ui/accessibility/accessibility_features.h"');
-
-/* eslint-disable no-var */
 
 /** Test fixture for shared Polymer 3 elements. */
 var OSSettingsV3BrowserTest = class extends PolymerTest {
@@ -115,7 +113,6 @@ var OSSettingsNearbyShareSubPageV3Test = class extends OSSettingsV3BrowserTest {
 
 TEST_F('OSSettingsNearbyShareSubPageV3Test', 'All', () => mocha.run());
 
-// eslint-disable-next-line no-var
 var OSSettingsPeoplePageOsSyncV3Test = class extends OSSettingsV3BrowserTest {
   /** @override */
   get browsePreload() {
@@ -332,8 +329,7 @@ TEST_F('OSSettingsCrostiniExtraContainerPageV3Test', 'AllJsTests', () => {
  ],
  ['CupsPrinterEntry', 'cups_printer_entry_tests.js'],
  ['CupsPrinterLandingPage', 'cups_printer_landing_page_tests.js'],
- // TODO(crbug/1240970): Re-enable once flakiness is fixed.
- // ['CupsPrinterPage', 'cups_printer_page_tests.js'],
+ ['CupsPrinterPage', 'cups_printer_page_tests.js'],
  ['DateTimePage', 'date_time_page_tests.js'],
  ['EsimInstallErrorDialog', 'esim_install_error_dialog_test.js'],
  ['EsimRemoveProfileDialog', 'esim_remove_profile_dialog_test.js'],
@@ -353,6 +349,11 @@ TEST_F('OSSettingsCrostiniExtraContainerPageV3Test', 'AllJsTests', () => {
  ['InternetPage', 'internet_page_tests.js'],
  ['KerberosAccounts', 'kerberos_accounts_test.js'],
  ['KerberosPage', 'kerberos_page_test.js'],
+ [
+   'KeyboardAndTextInputPage',
+   'keyboard_and_text_input_page_tests.js',
+   {enabled: ['features::kAccessibilityOSSettingsVisibility']},
+ ],
  ['KeyboardShortcutBanner', 'keyboard_shortcut_banner_test.js'],
  ['LockScreenPage', 'lock_screen_tests.js'],
  ['ManageAccessibilityPage', 'manage_accessibility_page_tests.js'],
@@ -420,13 +421,7 @@ TEST_F('OSSettingsCrostiniExtraContainerPageV3Test', 'AllJsTests', () => {
  ['OSSettingsMenu', 'os_settings_menu_test.js'],
  ['ParentalControlsPage', 'parental_controls_page_test.js'],
  ['PeoplePage', 'os_people_page_test.js'],
- ['PeoplePageChangePicture', 'people_page_change_picture_test.js'],
  ['PeoplePageQuickUnlock', 'quick_unlock_authenticate_browsertest_chromeos.js'],
- [
-   'PersonalizationPage',
-   'personalization_page_test.js',
-   {disabled: ['ash::features::kPersonalizationHub']},
- ],
  [
    'PersonalizationPageWithPersonalizationHub',
    'personalization_page_with_personalization_hub_test.js',

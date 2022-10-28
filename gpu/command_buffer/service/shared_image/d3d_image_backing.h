@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,8 +12,7 @@
 
 #include "base/memory/scoped_refptr.h"
 #include "components/viz/common/resources/resource_format.h"
-#include "gpu/command_buffer/service/dxgi_shared_handle_manager.h"
-#include "gpu/command_buffer/service/mailbox_manager.h"
+#include "gpu/command_buffer/service/dxgi_keyed_mutex_manager.h"
 #include "gpu/command_buffer/service/memory_tracking.h"
 #include "gpu/command_buffer/service/shared_context_state.h"
 #include "gpu/command_buffer/service/shared_image/shared_image_manager.h"
@@ -64,7 +63,7 @@ class GPU_GLES2_EXPORT D3DImageBacking
       SkAlphaType alpha_type,
       uint32_t usage,
       Microsoft::WRL::ComPtr<ID3D11Texture2D> d3d11_texture,
-      scoped_refptr<DXGISharedHandleState> dxgi_shared_handle_state);
+      scoped_refptr<DXGIKeyedMutexState> dxgi_keyed_mutex_state);
 
   // TODO(sunnyps): Remove this after migrating DXVA decoder to EGLImage.
   static std::unique_ptr<D3DImageBacking> CreateFromGLTexture(
@@ -86,9 +85,9 @@ class GPU_GLES2_EXPORT D3DImageBacking
       uint32_t usage,
       Microsoft::WRL::ComPtr<ID3D11Texture2D> d3d11_texture,
       unsigned array_slice,
-      scoped_refptr<DXGISharedHandleState> dxgi_shared_handle_state = nullptr);
+      scoped_refptr<DXGIKeyedMutexState> dxgi_keyed_mutex_state = nullptr);
 
-  static std::unique_ptr<D3DImageBacking> CreateFromSharedMemoryHandle(
+  static std::unique_ptr<D3DImageBacking> CreateForSharedMemory(
       const Mailbox& mailbox,
       viz::ResourceFormat format,
       const gfx::Size& size,
@@ -96,8 +95,7 @@ class GPU_GLES2_EXPORT D3DImageBacking
       GrSurfaceOrigin surface_origin,
       SkAlphaType alpha_type,
       uint32_t usage,
-      Microsoft::WRL::ComPtr<ID3D11Texture2D> d3d11_texture,
-      gfx::GpuMemoryBufferHandle shared_memory_handle);
+      Microsoft::WRL::ComPtr<ID3D11Texture2D> d3d11_texture);
 
   D3DImageBacking(const D3DImageBacking&) = delete;
   D3DImageBacking& operator=(const D3DImageBacking&) = delete;
@@ -107,8 +105,8 @@ class GPU_GLES2_EXPORT D3DImageBacking
   // SharedImageBacking implementation.
   SharedImageBackingType GetType() const override;
   void Update(std::unique_ptr<gfx::GpuFence> in_fence) override;
-  bool CopyToGpuMemoryBuffer() override;
-  bool ProduceLegacyMailbox(MailboxManager* mailbox_manager) override;
+  bool UploadFromMemory(const SkPixmap& pixmap) override;
+  bool ReadbackToMemory(SkPixmap& pixmap) override;
   bool PresentSwapChain() override;
   std::unique_ptr<DawnImageRepresentation> ProduceDawn(
       SharedImageManager* manager,
@@ -116,7 +114,7 @@ class GPU_GLES2_EXPORT D3DImageBacking
       WGPUDevice device,
       WGPUBackendType backend_type) override;
   void OnMemoryDump(const std::string& dump_name,
-                    base::trace_event::MemoryAllocatorDump* dump,
+                    base::trace_event::MemoryAllocatorDumpGuid client_guid,
                     base::trace_event::ProcessMemoryDump* pmd,
                     uint64_t client_tracing_id) override;
 
@@ -126,9 +124,9 @@ class GPU_GLES2_EXPORT D3DImageBacking
   bool BeginAccessD3D11();
   void EndAccessD3D11();
 
-  scoped_refptr<DXGISharedHandleState> dxgi_shared_handle_state_for_testing()
+  scoped_refptr<DXGIKeyedMutexState> dxgi_keyed_mutex_state_for_testing()
       const {
-    return dxgi_shared_handle_state_;
+    return dxgi_keyed_mutex_state_;
   }
 
   Microsoft::WRL::ComPtr<ID3D11Texture2D> d3d11_texture_for_testing() const {
@@ -160,8 +158,7 @@ class GPU_GLES2_EXPORT D3DImageBacking
       uint32_t usage,
       Microsoft::WRL::ComPtr<ID3D11Texture2D> d3d11_texture,
       scoped_refptr<gles2::TexturePassthrough> gl_texture,
-      scoped_refptr<DXGISharedHandleState> dxgi_shared_handle_state = {},
-      gfx::GpuMemoryBufferHandle shared_memory_handle = {},
+      scoped_refptr<DXGIKeyedMutexState> dxgi_keyed_mutex_state = {},
       Microsoft::WRL::ComPtr<IDXGISwapChain1> swap_chain = nullptr,
       bool is_back_buffer = false);
 
@@ -172,8 +169,6 @@ class GPU_GLES2_EXPORT D3DImageBacking
 
   ID3D11Texture2D* GetOrCreateStagingTexture();
 
-  bool UploadToGpuIfNeeded();
-
   // Texture could be nullptr if an empty backing is needed for testing.
   Microsoft::WRL::ComPtr<ID3D11Texture2D> d3d11_texture_;
 
@@ -183,10 +178,7 @@ class GPU_GLES2_EXPORT D3DImageBacking
   // Holds DXGI shared handle and the keyed mutex if present.  Can be shared
   // between plane shared image backings of a multi-plane texture, or between
   // backings created from duplicated handles that refer to the same texture.
-  scoped_refptr<DXGISharedHandleState> dxgi_shared_handle_state_;
-
-  // Shared memory handle from CreateFromSharedMemoryHandle.
-  gfx::GpuMemoryBufferHandle shared_memory_handle_;
+  scoped_refptr<DXGIKeyedMutexState> dxgi_keyed_mutex_state_;
 
   // Swap chain corresponding to this backing.
   Microsoft::WRL::ComPtr<IDXGISwapChain1> swap_chain_;
@@ -204,10 +196,6 @@ class GPU_GLES2_EXPORT D3DImageBacking
 
   // Staging texture used for copy to/from shared memory GMB.
   Microsoft::WRL::ComPtr<ID3D11Texture2D> staging_texture_;
-
-  // Tracks if we should upload from shared memory GMB to the GPU texture on the
-  // next BeginAccess.
-  bool needs_upload_to_gpu_ = false;
 };
 
 }  // namespace gpu

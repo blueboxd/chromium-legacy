@@ -4,12 +4,14 @@
 
 #include "services/network/public/cpp/first_party_sets_mojom_traits.h"
 
-#include "base/stl_util.h"
+#include "base/containers/flat_map.h"
+#include "base/types/optional_util.h"
 #include "mojo/public/cpp/bindings/enum_traits.h"
 #include "net/base/schemeful_site.h"
-#include "net/cookies/first_party_set_entry.h"
-#include "net/cookies/first_party_set_metadata.h"
-#include "net/cookies/same_party_context.h"
+#include "net/first_party_sets/first_party_set_entry.h"
+#include "net/first_party_sets/first_party_set_metadata.h"
+#include "net/first_party_sets/public_sets.h"
+#include "net/first_party_sets/same_party_context.h"
 #include "services/network/public/cpp/schemeful_site_mojom_traits.h"
 #include "services/network/public/mojom/first_party_sets.mojom-shared.h"
 
@@ -33,6 +35,9 @@ bool EnumTraits<network::mojom::SiteType, net::SiteType>::FromMojom(
     case network::mojom::SiteType::kAssociated:
       *out = net::SiteType::kAssociated;
       return true;
+    case network::mojom::SiteType::kService:
+      *out = net::SiteType::kService;
+      return true;
   }
   return false;
 }
@@ -45,6 +50,8 @@ EnumTraits<network::mojom::SiteType, net::SiteType>::ToMojom(
       return network::mojom::SiteType::kPrimary;
     case net::SiteType::kAssociated:
       return network::mojom::SiteType::kAssociated;
+    case net::SiteType::kService:
+      return network::mojom::SiteType::kService;
   }
   NOTREACHED();
   return network::mojom::SiteType::kPrimary;
@@ -128,8 +135,25 @@ bool StructTraits<network::mojom::FirstPartySetMetadataDataView,
     return false;
 
   *out_metadata =
-      net::FirstPartySetMetadata(context, base::OptionalOrNullptr(frame_entry),
-                                 base::OptionalOrNullptr(top_frame_entry));
+      net::FirstPartySetMetadata(context, base::OptionalToPtr(frame_entry),
+                                 base::OptionalToPtr(top_frame_entry));
+
+  return true;
+}
+
+bool StructTraits<network::mojom::PublicFirstPartySetsDataView,
+                  net::PublicSets>::
+    Read(network::mojom::PublicFirstPartySetsDataView public_sets,
+         net::PublicSets* out_public_sets) {
+  base::flat_map<net::SchemefulSite, net::FirstPartySetEntry> entries;
+  if (!public_sets.ReadSets(&entries))
+    return false;
+
+  base::flat_map<net::SchemefulSite, net::SchemefulSite> aliases;
+  if (!public_sets.ReadAliases(&aliases))
+    return false;
+
+  *out_public_sets = net::PublicSets(entries, aliases);
 
   return true;
 }

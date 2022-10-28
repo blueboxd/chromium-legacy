@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -696,10 +696,10 @@ void ArCoreGl::GetFrameData(
   // Warn the compositor that we're expecting to have data to submit this frame.
   if (ar_compositor_) {
     base::TimeDelta frametime = EstimatedArCoreFrameTime();
-    base::TimeTicks now = base::TimeTicks::Now();
     base::TimeDelta render_margin =
         kScheduleFrametimeMarginForRender * frametime;
-    base::TimeTicks deadline = now + (frametime - render_margin);
+    base::TimeTicks deadline =
+        base::TimeTicks::Now() + (frametime - render_margin);
     ar_compositor_->RequestBeginFrame(frametime, deadline);
   }
 
@@ -1807,6 +1807,12 @@ void ArCoreGl::Resume() {
 
   arcore_->Resume();
   is_paused_ = false;
+
+  // This call appears to fix a spurious ARCoreError "texture names are not
+  // set" aka AR_ERROR_TEXTURE_NOT_SET. The documentation mentions that
+  // the texture contents aren't valid across pause/resume, but it's unclear
+  // why that also makes the registered texture name invalid.
+  arcore_->SetCameraTexture(ar_image_transport_->GetCameraTextureId());
 }
 
 void ArCoreGl::OnBindingDisconnect() {

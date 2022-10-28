@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,7 +7,7 @@
  * 'site-details-permission' handles showing the state of one permission, such
  * as Geolocation, for a given origin.
  */
-import 'chrome://resources/cr_elements/md_select_css.m.js';
+import 'chrome://resources/cr_elements/md_select.css.js';
 import 'chrome://resources/polymer/v3_0/iron-icon/iron-icon.js';
 import '../settings_shared.css.js';
 import '../settings_vars.css.js';

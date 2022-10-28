@@ -1,4 +1,4 @@
-# Copyright 2014 The Chromium Authors. All rights reserved.
+# Copyright 2014 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -8,7 +8,6 @@ import("//components/vector_icons/vector_icons.gni")
 import("//device/vr/buildflags/buildflags.gni")
 import("//extensions/buildflags/buildflags.gni")
 import("//testing/libfuzzer/fuzzer_test.gni")
-import("//third_party/protobuf/proto_library.gni")
 
 if (is_android) {
   import("//build/config/android/rules.gni")
@@ -58,6 +57,8 @@ aggregate_vector_icons("omnibox_vector_icons") {
     "offline_pin.icon",
     "page.icon",
     "pedal.icon",
+    "price_tracking_disabled.icon",
+    "price_tracking_enabled_filled.icon",
     "product.icon",
     "share.icon",
     "star.icon",
@@ -254,10 +255,10 @@ static_library("browser") {
     "//components/omnibox/resources:omnibox_resources",
     "//components/security_state/core",
     "//third_party/metrics_proto",
+    "//third_party/omnibox_proto",
     "//url",
   ]
   deps = [
-    ":in_memory_url_index_cache_proto",
     "//components/bookmarks/browser",
     "//components/component_updater",
     "//components/dom_distiller/core:core",
@@ -505,16 +506,14 @@ if (is_android) {
   }
 }
 
-proto_library("in_memory_url_index_cache_proto") {
-  sources = [ "in_memory_url_index_cache.proto" ]
-}
-
 static_library("test_support") {
   testonly = true
   sources = [
     "fake_autocomplete_provider.h",
     "fake_autocomplete_provider_client.cc",
     "fake_autocomplete_provider_client.h",
+    "fake_tab_matcher.cc",
+    "fake_tab_matcher.h",
     "history_index_restore_observer.cc",
     "history_index_restore_observer.h",
     "history_test_util.cc",
@@ -523,6 +522,8 @@ static_library("test_support") {
     "in_memory_url_index_test_util.h",
     "mock_autocomplete_provider_client.cc",
     "mock_autocomplete_provider_client.h",
+    "mock_tab_matcher.cc",
+    "mock_tab_matcher.h",
     "shortcuts_provider_test_util.cc",
     "shortcuts_provider_test_util.h",
     "test_location_bar_model.cc",

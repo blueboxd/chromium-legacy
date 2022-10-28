@@ -364,16 +364,9 @@ void LayoutNGMixin<Base>::UpdateOutOfFlowBlockLayout() {
       NGBlockNode(this), static_position,
       DynamicTo<LayoutInline>(css_container));
 
-  absl::optional<LogicalSize> initial_containing_block_fixed_size;
-  auto* layout_view = DynamicTo<LayoutView>(container);
-  if (layout_view && !Base::GetDocument().Printing()) {
-    if (LocalFrameView* frame_view = layout_view->GetFrameView()) {
-      PhysicalSize size(
-          frame_view->LayoutViewport()->ExcludeScrollbars(frame_view->Size()));
-      initial_containing_block_fixed_size =
-          size.ConvertToLogical(container->Style()->GetWritingMode());
-    }
-  }
+  absl::optional<LogicalSize> initial_containing_block_fixed_size =
+      NGOutOfFlowLayoutPart::InitialContainingBlockFixedSize(
+          NGBlockNode(container));
   // We really only want to lay out ourselves here, so we pass |this| to
   // Run(). Otherwise, NGOutOfFlowLayoutPart may also lay out other objects
   // it discovers that are part of the same containing block, but those
@@ -453,7 +446,7 @@ const NGLayoutResult* LayoutNGMixin<Base>::UpdateInFlowBlockLayout() {
   // The baseline of SVG <text> doesn't affect other boxes.
   if (is_layout_root && previous_result && !Base::IsNGSVGText()) {
     if (To<NGPhysicalBoxFragment>(previous_result->PhysicalFragment())
-            .Baseline() != physical_fragment.Baseline()) {
+            .FirstBaseline() != physical_fragment.FirstBaseline()) {
       if (auto* containing_block = Base::ContainingBlock()) {
         containing_block->SetNeedsLayout(
             layout_invalidation_reason::kChildChanged, kMarkContainerChain);

@@ -152,6 +152,10 @@
 #include "remoting/host/win/session_desktop_environment.h"
 #endif  // BUILDFLAG(IS_WIN)
 
+#if defined(REMOTING_USE_WAYLAND)
+#include "remoting/host/linux/wayland_manager.h"
+#endif  // defined(REMOTING_USE_WAYLAND)
+
 using remoting::protocol::PairingRegistry;
 using remoting::protocol::NetworkSettings;
 
@@ -329,27 +333,27 @@ class HostProcess : public ConfigWatcher::Delegate,
   bool ApplyConfig(const base::Value& config);
 
   // Handles policy updates, by calling On*PolicyUpdate methods.
-  void OnPolicyUpdate(std::unique_ptr<base::DictionaryValue> policies);
+  void OnPolicyUpdate(base::Value::Dict policies);
   void OnPolicyError();
   void ReportPolicyErrorAndRestartHost();
   void ApplyHostDomainListPolicy();
   void ApplyUsernamePolicy();
   void ApplyAllowRemoteAccessConnections();
-  bool OnClientDomainListPolicyUpdate(base::DictionaryValue* policies);
-  bool OnHostDomainListPolicyUpdate(base::DictionaryValue* policies);
-  bool OnUsernamePolicyUpdate(base::DictionaryValue* policies);
-  bool OnNatPolicyUpdate(base::DictionaryValue* policies);
-  bool OnRelayPolicyUpdate(base::DictionaryValue* policies);
-  bool OnUdpPortPolicyUpdate(base::DictionaryValue* policies);
-  bool OnCurtainPolicyUpdate(base::DictionaryValue* policies);
-  bool OnHostTokenUrlPolicyUpdate(base::DictionaryValue* policies);
-  bool OnPairingPolicyUpdate(base::DictionaryValue* policies);
-  bool OnGnubbyAuthPolicyUpdate(base::DictionaryValue* policies);
-  bool OnFileTransferPolicyUpdate(base::DictionaryValue* policies);
-  bool OnEnableUserInterfacePolicyUpdate(base::DictionaryValue* policies);
-  bool OnAllowRemoteAccessConnections(base::DictionaryValue* policies);
-  bool OnMaxSessionDurationPolicyUpdate(base::DictionaryValue* policies);
-  bool OnMaxClipboardSizePolicyUpdate(base::DictionaryValue* policies);
+  bool OnClientDomainListPolicyUpdate(const base::Value::Dict& policies);
+  bool OnHostDomainListPolicyUpdate(const base::Value::Dict& policies);
+  bool OnUsernamePolicyUpdate(const base::Value::Dict& policies);
+  bool OnNatPolicyUpdate(const base::Value::Dict& policies);
+  bool OnRelayPolicyUpdate(const base::Value::Dict& policies);
+  bool OnUdpPortPolicyUpdate(const base::Value::Dict& policies);
+  bool OnCurtainPolicyUpdate(const base::Value::Dict& policies);
+  bool OnHostTokenUrlPolicyUpdate(const base::Value::Dict& policies);
+  bool OnPairingPolicyUpdate(const base::Value::Dict& policies);
+  bool OnGnubbyAuthPolicyUpdate(const base::Value::Dict& policies);
+  bool OnFileTransferPolicyUpdate(const base::Value::Dict& policies);
+  bool OnEnableUserInterfacePolicyUpdate(const base::Value::Dict& policies);
+  bool OnAllowRemoteAccessConnections(const base::Value::Dict& policies);
+  bool OnMaxSessionDurationPolicyUpdate(const base::Value::Dict& policies);
+  bool OnMaxClipboardSizePolicyUpdate(const base::Value::Dict& policies);
 
   void InitializeSignaling();
 
@@ -426,7 +430,7 @@ class HostProcess : public ConfigWatcher::Delegate,
   ThirdPartyAuthConfig third_party_auth_config_;
   bool security_key_auth_policy_enabled_ = false;
   bool security_key_extension_supported_ = true;
-  int max_session_duration_minutes_ = 0;
+  absl::optional<int> max_session_duration_minutes_;
 
   // Used to specify which window to stream, if enabled.
   webrtc::WindowId window_id_ = 0;
@@ -937,6 +941,10 @@ void HostProcess::StartOnUiThread() {
       base::BindRepeating(&HostProcess::OnPolicyUpdate, base::Unretained(this)),
       base::BindRepeating(&HostProcess::OnPolicyError, base::Unretained(this)));
 
+#if defined(REMOTING_USE_WAYLAND)
+  WaylandManager::Get()->Init(context_->ui_task_runner());
+#endif  // defined(REMOTING_USE_WAYLAND
+
 #if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
   // If an audio pipe is specific on the command-line then initialize
   // AudioCapturerLinux to capture from it.
@@ -1164,8 +1172,7 @@ bool HostProcess::ApplyConfig(const base::Value& config) {
   return true;
 }
 
-void HostProcess::OnPolicyUpdate(
-    std::unique_ptr<base::DictionaryValue> policies) {
+void HostProcess::OnPolicyUpdate(base::Value::Dict policies) {
   if (!context_->network_task_runner()->BelongsToCurrentThread()) {
     context_->network_task_runner()->PostTask(
         FROM_HERE, base::BindOnce(&HostProcess::OnPolicyUpdate, this,
@@ -1174,22 +1181,22 @@ void HostProcess::OnPolicyUpdate(
   }
 
   bool restart_required = false;
-  restart_required |= OnClientDomainListPolicyUpdate(policies.get());
-  restart_required |= OnHostDomainListPolicyUpdate(policies.get());
-  restart_required |= OnCurtainPolicyUpdate(policies.get());
+  restart_required |= OnClientDomainListPolicyUpdate(policies);
+  restart_required |= OnHostDomainListPolicyUpdate(policies);
+  restart_required |= OnCurtainPolicyUpdate(policies);
   // Note: UsernamePolicyUpdate must run after OnCurtainPolicyUpdate.
-  restart_required |= OnUsernamePolicyUpdate(policies.get());
-  restart_required |= OnNatPolicyUpdate(policies.get());
-  restart_required |= OnRelayPolicyUpdate(policies.get());
-  restart_required |= OnUdpPortPolicyUpdate(policies.get());
-  restart_required |= OnHostTokenUrlPolicyUpdate(policies.get());
-  restart_required |= OnPairingPolicyUpdate(policies.get());
-  restart_required |= OnGnubbyAuthPolicyUpdate(policies.get());
-  restart_required |= OnFileTransferPolicyUpdate(policies.get());
-  restart_required |= OnEnableUserInterfacePolicyUpdate(policies.get());
-  restart_required |= OnAllowRemoteAccessConnections(policies.get());
-  restart_required |= OnMaxSessionDurationPolicyUpdate(policies.get());
-  restart_required |= OnMaxClipboardSizePolicyUpdate(policies.get());
+  restart_required |= OnUsernamePolicyUpdate(policies);
+  restart_required |= OnNatPolicyUpdate(policies);
+  restart_required |= OnRelayPolicyUpdate(policies);
+  restart_required |= OnUdpPortPolicyUpdate(policies);
+  restart_required |= OnHostTokenUrlPolicyUpdate(policies);
+  restart_required |= OnPairingPolicyUpdate(policies);
+  restart_required |= OnGnubbyAuthPolicyUpdate(policies);
+  restart_required |= OnFileTransferPolicyUpdate(policies);
+  restart_required |= OnEnableUserInterfacePolicyUpdate(policies);
+  restart_required |= OnAllowRemoteAccessConnections(policies);
+  restart_required |= OnMaxSessionDurationPolicyUpdate(policies);
+  restart_required |= OnMaxClipboardSizePolicyUpdate(policies);
 
   policy_state_ = POLICY_LOADED;
 
@@ -1263,17 +1270,18 @@ void HostProcess::ApplyAllowRemoteAccessConnections() {
 }
 
 bool HostProcess::OnHostDomainListPolicyUpdate(
-    base::DictionaryValue* policies) {
+    const base::Value::Dict& policies) {
   // Returns false: never restart the host after this policy update.
   DCHECK(context_->network_task_runner()->BelongsToCurrentThread());
 
-  const base::ListValue* list;
-  if (!policies->GetList(policy::key::kRemoteAccessHostDomainList, &list)) {
+  const base::Value::List* list =
+      policies.FindList(policy::key::kRemoteAccessHostDomainList);
+  if (!list) {
     return false;
   }
 
   host_domain_list_.clear();
-  for (const auto& value : list->GetListDeprecated()) {
+  for (const auto& value : *list) {
     host_domain_list_.push_back(value.GetString());
   }
 
@@ -1282,17 +1290,17 @@ bool HostProcess::OnHostDomainListPolicyUpdate(
 }
 
 bool HostProcess::OnClientDomainListPolicyUpdate(
-    base::DictionaryValue* policies) {
+    const base::Value::Dict& policies) {
   // Returns true if the host has to be restarted after this policy update.
   DCHECK(context_->network_task_runner()->BelongsToCurrentThread());
-  const base::ListValue* list;
-  if (!policies->GetList(policy::key::kRemoteAccessHostClientDomainList,
-                         &list)) {
+  const base::Value::List* list =
+      policies.FindList(policy::key::kRemoteAccessHostClientDomainList);
+  if (!list) {
     return false;
   }
 
   client_domain_list_.clear();
-  for (const auto& value : list->GetListDeprecated()) {
+  for (const auto& value : *list) {
     client_domain_list_.push_back(value.GetString());
   }
 
@@ -1339,13 +1347,13 @@ void HostProcess::ApplyUsernamePolicy() {
   }
 }
 
-bool HostProcess::OnUsernamePolicyUpdate(base::DictionaryValue* policies) {
+bool HostProcess::OnUsernamePolicyUpdate(const base::Value::Dict& policies) {
   // Returns false: never restart the host after this policy update.
   DCHECK(context_->network_task_runner()->BelongsToCurrentThread());
 
 #if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_MAC)
   absl::optional<bool> host_username_match_required =
-      policies->FindBoolKey(policy::key::kRemoteAccessHostMatchUsername);
+      policies.FindBool(policy::key::kRemoteAccessHostMatchUsername);
   if (!host_username_match_required.has_value())
     return false;
 
@@ -1355,12 +1363,12 @@ bool HostProcess::OnUsernamePolicyUpdate(base::DictionaryValue* policies) {
   return false;
 }
 
-bool HostProcess::OnNatPolicyUpdate(base::DictionaryValue* policies) {
+bool HostProcess::OnNatPolicyUpdate(const base::Value::Dict& policies) {
   // Returns true if the host has to be restarted after this policy update.
   DCHECK(context_->network_task_runner()->BelongsToCurrentThread());
 
   absl::optional<bool> allow_nat_traversal =
-      policies->FindBoolKey(policy::key::kRemoteAccessHostFirewallTraversal);
+      policies.FindBool(policy::key::kRemoteAccessHostFirewallTraversal);
   if (!allow_nat_traversal.has_value())
     return false;
 
@@ -1373,12 +1381,12 @@ bool HostProcess::OnNatPolicyUpdate(base::DictionaryValue* policies) {
   return true;
 }
 
-bool HostProcess::OnRelayPolicyUpdate(base::DictionaryValue* policies) {
+bool HostProcess::OnRelayPolicyUpdate(const base::Value::Dict& policies) {
   // Returns true if the host has to be restarted after this policy update.
   DCHECK(context_->network_task_runner()->BelongsToCurrentThread());
 
-  absl::optional<bool> allow_relay = policies->FindBoolKey(
-      policy::key::kRemoteAccessHostAllowRelayedConnection);
+  absl::optional<bool> allow_relay =
+      policies.FindBool(policy::key::kRemoteAccessHostAllowRelayedConnection);
   if (!allow_relay.has_value())
     return false;
 
@@ -1391,12 +1399,12 @@ bool HostProcess::OnRelayPolicyUpdate(base::DictionaryValue* policies) {
   return true;
 }
 
-bool HostProcess::OnUdpPortPolicyUpdate(base::DictionaryValue* policies) {
+bool HostProcess::OnUdpPortPolicyUpdate(const base::Value::Dict& policies) {
   // Returns true if the host has to be restarted after this policy update.
   DCHECK(context_->network_task_runner()->BelongsToCurrentThread());
 
   const std::string* string_value =
-      policies->FindStringKey(policy::key::kRemoteAccessHostUdpPortRange);
+      policies.FindString(policy::key::kRemoteAccessHostUdpPortRange);
   if (!string_value) {
     return false;
   }
@@ -1409,12 +1417,12 @@ bool HostProcess::OnUdpPortPolicyUpdate(base::DictionaryValue* policies) {
   return true;
 }
 
-bool HostProcess::OnCurtainPolicyUpdate(base::DictionaryValue* policies) {
+bool HostProcess::OnCurtainPolicyUpdate(const base::Value::Dict& policies) {
   // Returns true if the host has to be restarted after this policy update.
   DCHECK(context_->network_task_runner()->BelongsToCurrentThread());
 
   absl::optional<bool> curtain_required =
-      policies->FindBoolKey(policy::key::kRemoteAccessHostRequireCurtain);
+      policies.FindBool(policy::key::kRemoteAccessHostRequireCurtain);
   if (!curtain_required.has_value())
     return false;
 
@@ -1449,8 +1457,9 @@ bool HostProcess::OnCurtainPolicyUpdate(base::DictionaryValue* policies) {
   return true;
 }
 
-bool HostProcess::OnHostTokenUrlPolicyUpdate(base::DictionaryValue* policies) {
-  switch (ThirdPartyAuthConfig::Parse(*policies, &third_party_auth_config_)) {
+bool HostProcess::OnHostTokenUrlPolicyUpdate(
+    const base::Value::Dict& policies) {
+  switch (ThirdPartyAuthConfig::Parse(policies, &third_party_auth_config_)) {
     case ThirdPartyAuthConfig::NoPolicy:
       return false;
     case ThirdPartyAuthConfig::ParsingSuccess:
@@ -1467,11 +1476,11 @@ bool HostProcess::OnHostTokenUrlPolicyUpdate(base::DictionaryValue* policies) {
   }
 }
 
-bool HostProcess::OnPairingPolicyUpdate(base::DictionaryValue* policies) {
+bool HostProcess::OnPairingPolicyUpdate(const base::Value::Dict& policies) {
   DCHECK(context_->network_task_runner()->BelongsToCurrentThread());
 
   absl::optional<bool> allow_pairing =
-      policies->FindBoolKey(policy::key::kRemoteAccessHostAllowClientPairing);
+      policies.Find(policy::key::kRemoteAccessHostAllowClientPairing);
   if (!allow_pairing.has_value())
     return false;
 
@@ -1484,11 +1493,11 @@ bool HostProcess::OnPairingPolicyUpdate(base::DictionaryValue* policies) {
   return true;
 }
 
-bool HostProcess::OnGnubbyAuthPolicyUpdate(base::DictionaryValue* policies) {
+bool HostProcess::OnGnubbyAuthPolicyUpdate(const base::Value::Dict& policies) {
   DCHECK(context_->network_task_runner()->BelongsToCurrentThread());
 
   absl::optional<bool> security_key_auth_policy_enabled =
-      policies->FindBoolKey(policy::key::kRemoteAccessHostAllowGnubbyAuth);
+      policies.Find(policy::key::kRemoteAccessHostAllowGnubbyAuth);
   if (!security_key_auth_policy_enabled.has_value())
     return false;
 
@@ -1502,11 +1511,12 @@ bool HostProcess::OnGnubbyAuthPolicyUpdate(base::DictionaryValue* policies) {
   return true;
 }
 
-bool HostProcess::OnFileTransferPolicyUpdate(base::DictionaryValue* policies) {
+bool HostProcess::OnFileTransferPolicyUpdate(
+    const base::Value::Dict& policies) {
   DCHECK(context_->network_task_runner()->BelongsToCurrentThread());
 
   absl::optional<bool> file_transfer_enabled =
-      policies->FindBoolKey(policy::key::kRemoteAccessHostAllowFileTransfer);
+      policies.Find(policy::key::kRemoteAccessHostAllowFileTransfer);
   if (!file_transfer_enabled.has_value())
     return false;
 
@@ -1524,11 +1534,11 @@ bool HostProcess::OnFileTransferPolicyUpdate(base::DictionaryValue* policies) {
 }
 
 bool HostProcess::OnEnableUserInterfacePolicyUpdate(
-    base::DictionaryValue* policies) {
+    const base::Value::Dict& policies) {
   DCHECK(context_->network_task_runner()->BelongsToCurrentThread());
 
   absl::optional<bool> enable_user_interface =
-      policies->FindBoolKey(policy::key::kRemoteAccessHostEnableUserInterface);
+      policies.Find(policy::key::kRemoteAccessHostEnableUserInterface);
   if (!enable_user_interface)
     return false;
 
@@ -1546,18 +1556,19 @@ bool HostProcess::OnEnableUserInterfacePolicyUpdate(
 }
 
 bool HostProcess::OnMaxSessionDurationPolicyUpdate(
-    base::DictionaryValue* policies) {
+    const base::Value::Dict& policies) {
   DCHECK(context_->network_task_runner()->BelongsToCurrentThread());
 
-  if (!policies->GetInteger(
-          policy::key::kRemoteAccessHostMaximumSessionDurationMinutes,
-          &max_session_duration_minutes_)) {
+  absl::optional<int> value = policies.FindInt(
+      policy::key::kRemoteAccessHostMaximumSessionDurationMinutes);
+  if (!value)
     return false;
-  }
+
+  max_session_duration_minutes_ = *value;
 
   if (max_session_duration_minutes_ > 0) {
     HOST_LOG << "Policy sets maximum session duration to "
-             << max_session_duration_minutes_ << " minutes.";
+             << max_session_duration_minutes_.value() << " minutes.";
   } else {
     HOST_LOG << "Policy does not set a maximum session duration.";
   }
@@ -1567,17 +1578,16 @@ bool HostProcess::OnMaxSessionDurationPolicyUpdate(
 }
 
 bool HostProcess::OnMaxClipboardSizePolicyUpdate(
-    base::DictionaryValue* policies) {
+    const base::Value::Dict& policies) {
   DCHECK(context_->network_task_runner()->BelongsToCurrentThread());
 
-  int max_clipboard_size;
-  if (!policies->GetInteger(policy::key::kRemoteAccessHostClipboardSizeBytes,
-                            &max_clipboard_size)) {
+  absl::optional<int> max_clipboard_size =
+      policies.FindInt(policy::key::kRemoteAccessHostClipboardSizeBytes);
+  if (!max_clipboard_size)
     return false;
-  }
 
-  if (max_clipboard_size >= 0) {
-    max_clipboard_size_ = max_clipboard_size;
+  if (*max_clipboard_size >= 0) {
+    max_clipboard_size_ = *max_clipboard_size;
     HOST_LOG << "Policy sets maximum clipboard size to "
              << max_clipboard_size_.value() << " bytes.";
   } else {
@@ -1590,11 +1600,11 @@ bool HostProcess::OnMaxClipboardSizePolicyUpdate(
 }
 
 bool HostProcess::OnAllowRemoteAccessConnections(
-    base::DictionaryValue* policies) {
+    const base::Value::Dict& policies) {
   // Returns false: never restart the host after this policy update.
   DCHECK(context_->network_task_runner()->BelongsToCurrentThread());
 
-  absl::optional<bool> allow_remote_access_connections = policies->FindBoolKey(
+  absl::optional<bool> allow_remote_access_connections = policies.FindBool(
       policy::key::kRemoteAccessHostAllowRemoteAccessConnections);
   if (!allow_remote_access_connections.has_value())
     return false;
@@ -1752,9 +1762,9 @@ void HostProcess::StartHost() {
 
   host_->AddExtension(std::make_unique<TestEchoExtension>());
 
-  if (max_session_duration_minutes_ > 0) {
+  if (max_session_duration_minutes_ && max_session_duration_minutes_ > 0) {
     host_->SetMaximumSessionDuration(
-        base::Minutes(max_session_duration_minutes_));
+        base::Minutes(max_session_duration_minutes_.value()));
   }
 
   host_status_logger_ = std::make_unique<HostStatusLogger>(

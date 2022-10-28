@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,6 +10,10 @@
 #include "content/public/browser/browser_thread.h"
 
 namespace enterprise_connectors {
+namespace {
+
+ContentAnalysisSdkManager* sdk_manager_for_testing = nullptr;
+}
 
 ContentAnalysisSdkManager::WrappedClient::WrappedClient(
     std::unique_ptr<content_analysis::sdk::Client> client)
@@ -19,8 +23,16 @@ ContentAnalysisSdkManager::WrappedClient::~WrappedClient() = default;
 
 // static
 ContentAnalysisSdkManager* ContentAnalysisSdkManager::Get() {
+  if (sdk_manager_for_testing)
+    return sdk_manager_for_testing;
   static base::NoDestructor<ContentAnalysisSdkManager> manager;
   return manager.get();
+}
+
+// static
+void ContentAnalysisSdkManager::SetManagerForTesting(
+    ContentAnalysisSdkManager* manager) {
+  sdk_manager_for_testing = manager;
 }
 
 ContentAnalysisSdkManager::ContentAnalysisSdkManager() = default;

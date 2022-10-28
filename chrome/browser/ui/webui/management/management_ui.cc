@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -30,15 +30,18 @@
 #include "chrome/browser/ash/policy/core/browser_policy_connector_ash.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
-#include "chrome/browser/chromeos/policy/dlp/dlp_reporting_manager.h"
-#include "chrome/browser/chromeos/policy/dlp/dlp_rules_manager.h"
-#include "chrome/browser/chromeos/policy/dlp/dlp_rules_manager_factory.h"
 #include "chrome/grit/chromium_strings.h"
 #include "ui/chromeos/devicetype_utils.h"
 #else  // BUILDFLAG(IS_CHROMEOS_ASH)
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/policy/chrome_browser_policy_connector.h"
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+
+#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
+#include "chrome/browser/chromeos/policy/dlp/dlp_reporting_manager.h"
+#include "chrome/browser/chromeos/policy/dlp/dlp_rules_manager.h"
+#include "chrome/browser/chromeos/policy/dlp/dlp_rules_manager_factory.h"
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
 
 namespace {
 
@@ -72,6 +75,8 @@ content::WebUIDataSource* CreateManagementUIHtmlSource(Profile* profile) {
     {kManagementPrinting, IDS_MANAGEMENT_REPORT_PRINTING},
     {kManagementReportDeviceAudioStatus,
      IDS_MANAGEMENT_REPORT_DEVICE_AUDIO_STATUS},
+    {kManagementReportDeviceGraphicsStatus,
+     IDS_MANAGEMENT_REPORT_DEVICE_GRAPHICS_STATUS},
     {kManagementReportDevicePeripherals,
      IDS_MANAGEMENT_REPORT_DEVICE_PERIPHERALS},
     {kManagementReportPrintJobs, IDS_MANAGEMENT_REPORT_PRINT_JOBS},
@@ -147,6 +152,9 @@ content::WebUIDataSource* CreateManagementUIHtmlSource(Profile* profile) {
                     chrome::kLearnMoreEnterpriseURL);
   source->AddString("managementAccountLearnMoreUrl",
                     chrome::kManagedUiLearnMoreUrl);
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+
+#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
   const size_t dlp_events_count =
       policy::DlpRulesManagerFactory::GetForPrimaryProfile() &&
               policy::DlpRulesManagerFactory::GetForPrimaryProfile()
@@ -158,9 +166,6 @@ content::WebUIDataSource* CreateManagementUIHtmlSource(Profile* profile) {
   source->AddString(kManagementReportDlpEvents,
                     l10n_util::GetPluralStringFUTF16(
                         IDS_MANAGEMENT_REPORT_DLP_EVENTS, dlp_events_count));
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
-
-#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
   source->AddString("pluginVmDataCollection",
                     l10n_util::GetStringFUTF16(
                         IDS_MANAGEMENT_REPORT_PLUGIN_VM,

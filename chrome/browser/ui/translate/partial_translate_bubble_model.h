@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -20,6 +20,9 @@
 class PartialTranslateBubbleModel : public TranslateLanguageListModel {
  public:
   enum ViewState {
+    // The view state while waiting for translation.
+    VIEW_STATE_WAITING,
+
     // The view state before translating.
     VIEW_STATE_BEFORE_TRANSLATE,
 
@@ -52,7 +55,7 @@ class PartialTranslateBubbleModel : public TranslateLanguageListModel {
   virtual void SetViewState(ViewState view_state) = 0;
 
   // Shows an error.
-  virtual void ShowError(translate::TranslateErrors::Type error_type) = 0;
+  virtual void ShowError(translate::TranslateErrors error_type) = 0;
 
   // TranslateLanguageListModel:
   int GetNumberOfSourceLanguages() const override = 0;
@@ -63,6 +66,10 @@ class PartialTranslateBubbleModel : public TranslateLanguageListModel {
   void UpdateSourceLanguageIndex(int index) override = 0;
   int GetTargetLanguageIndex() const override = 0;
   void UpdateTargetLanguageIndex(int index) override = 0;
+
+  // Returns the source and target language codes.
+  virtual std::string GetSourceLanguageCode() const = 0;
+  virtual std::string GetTargetLanguageCode() const = 0;
 
   // Starts translating the selected text.
   virtual void Translate() = 0;

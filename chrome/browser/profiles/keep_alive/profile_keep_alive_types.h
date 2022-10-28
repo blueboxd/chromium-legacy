@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -118,7 +118,11 @@ enum class ProfileKeepAliveOrigin {
   // UI bubble that may outlive the Browser, especially on Mac.
   kDiceWebSigninInterceptionBubble = 27,
 
-  kMaxValue = kDiceWebSigninInterceptionBubble,
+  // Waiting for History menu entries to populate, so we have
+  // something to show after the profile is destroyed. macOS-specific.
+  kHistoryMenuBridge = 28,
+
+  kMaxValue = kHistoryMenuBridge,
 };
 
 std::ostream& operator<<(std::ostream& out,

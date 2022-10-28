@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -28,24 +28,28 @@ void HeadlessScriptControllerImpl::StartScript(
     const base::flat_map<std::string, std::string>& script_parameters,
     base::OnceCallback<void(ScriptResult)> script_ended_callback) {
   StartScript(script_parameters, std::move(script_ended_callback),
-              /*use_autofill_assistant_onboarding=*/false, base::DoNothing());
+              /*use_autofill_assistant_onboarding = */ false, base::DoNothing(),
+              /*suppress_browsing_features = */ true);
 }
 
 void HeadlessScriptControllerImpl::StartScript(
     const base::flat_map<std::string, std::string>& script_parameters,
     base::OnceCallback<void(ScriptResult)> script_ended_callback,
     bool use_autofill_assistant_onboarding,
-    base::OnceCallback<void()> onboarding_successful_callback) {
+    base::OnceCallback<void()> onboarding_successful_callback,
+    bool suppress_browsing_features) {
   StartScript(script_parameters, std::move(script_ended_callback),
               use_autofill_assistant_onboarding,
               std::move(onboarding_successful_callback),
-              /* service= */ nullptr, /* web_controller= */ nullptr);
+              suppress_browsing_features,
+              /*service = */ nullptr, /*web_controller = */ nullptr);
 }
 void HeadlessScriptControllerImpl::StartScript(
     const base::flat_map<std::string, std::string>& script_parameters,
     base::OnceCallback<void(ScriptResult)> script_ended_callback,
     bool use_autofill_assistant_onboarding,
     base::OnceCallback<void()> onboarding_successful_callback,
+    bool suppress_browsing_features,
     std::unique_ptr<Service> service,
     std::unique_ptr<WebController> web_controller) {
   // This HeadlessScriptController is currently executing a script, so we return
@@ -57,18 +61,18 @@ void HeadlessScriptControllerImpl::StartScript(
 
   script_ended_callback_ = std::move(script_ended_callback);
   onboarding_successful_callback_ = std::move(onboarding_successful_callback);
-  auto parameters = std::make_unique<ScriptParameters>(script_parameters);
   auto trigger_context = std::make_unique<TriggerContext>(
-      std::move(parameters),
-      /* experiment_ids = */ "",
-      starter_->GetPlatformDependencies()->IsCustomTab(*web_contents_),
-      /*onboarding_shown = */ false,
-      /*is_direct_action = */ false,
-      /* initial_url = */ "",
-      /* is_in_chrome_triggered = */ true,
-      /* is_externally_triggered = */ true,
-      /* skip_autofill_assistant_onboarding = */
-      !use_autofill_assistant_onboarding);
+      std::make_unique<ScriptParameters>(script_parameters),
+      TriggerContext::Options{
+          /*experiment_ids = */ "",
+          starter_->GetPlatformDependencies()->IsCustomTab(*web_contents_),
+          /*onboarding_shown = */ false,
+          /*is_direct_action = */ false,
+          /*initial_url = */ "",
+          /*is_in_chrome_triggered = */ true,
+          /*is_externally_triggered = */ true,
+          /*skip_autofill_assistant_onboarding = */
+          !use_autofill_assistant_onboarding, suppress_browsing_features});
   starter_->CanStart(
       std::move(trigger_context),
       base::BindOnce(&HeadlessScriptControllerImpl::OnReadyToStart,

@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -15,6 +15,7 @@
 #include "ash/public/cpp/app_list/app_list_types.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
+#include "ash/style/ash_color_id.h"
 #include "ash/style/ash_color_provider.h"
 #include "ash/style/dark_light_mode_controller_impl.h"
 #include "base/run_loop.h"
@@ -252,20 +253,13 @@ class AssistantInteractionCounter
   assistant::ScopedAssistantInteractionSubscriber interaction_observer_{this};
 };
 
-TEST_F(AssistantPageNonBubbleTest, ShouldStartInPeekingState) {
+TEST_F(AssistantPageNonBubbleTest, ShouldStartInFullscreenAllAppsState) {
   DoNotShowOnboardingViews();
 
   ShowAssistantUi();
 
-  EXPECT_EQ(AppListViewState::kPeeking, app_list_view()->app_list_state());
-}
-
-TEST_F(AssistantPageNonBubbleTest, ShouldStartInHalfState) {
-  SetOnboardingMode(AssistantOnboardingMode::kEducation);
-
-  ShowAssistantUi();
-
-  EXPECT_EQ(AppListViewState::kHalf, app_list_view()->app_list_state());
+  EXPECT_EQ(AppListViewState::kFullscreenAllApps,
+            app_list_view()->app_list_state());
 }
 
 TEST_F(AssistantPageNonBubbleTest, ShouldStartAtMinimumHeight) {
@@ -930,14 +924,13 @@ TEST_F(AssistantPageNonBubbleTest, ThemeDarkLightMode) {
 
   ASSERT_FALSE(features::IsBackgroundBlurEnabled());
 
+  ShowAssistantUi();
+
   // Confirm that our opacity matches with that of AppListView using.
   const SkColor shield_layer_color_95_light =
-      ColorProvider::Get()->GetShieldLayerColor(
-          ColorProvider::ShieldLayerType::kShield95);
+      page_view()->GetColorProvider()->GetColor(kColorAshShieldAndBase95);
   EXPECT_EQ(SkColorGetA(shield_layer_color_95_light),
             static_cast<uint32_t>(AppListView::kAppListOpacity * 255));
-
-  ShowAssistantUi();
 
   ASSERT_FALSE(Shell::Get()->IsInTabletMode());
   EXPECT_FLOAT_EQ(page_view()->layer()->background_blur(), 0.0f);
@@ -948,8 +941,7 @@ TEST_F(AssistantPageNonBubbleTest, ThemeDarkLightMode) {
       prefs::kDarkModeEnabled, true);
 
   const SkColor shield_layer_color_95_dark =
-      ColorProvider::Get()->GetShieldLayerColor(
-          ColorProvider::ShieldLayerType::kShield95);
+      page_view()->GetColorProvider()->GetColor(kColorAshShieldAndBase95);
   EXPECT_EQ(page_view()->layer()->GetTargetColor(), shield_layer_color_95_dark);
 
   // Simulate the case where tablet mode is enabled in the middle of a session.
@@ -968,14 +960,14 @@ TEST_F(AssistantPageNonBubbleTest, ThemeDarkLightModeWithBlur) {
       Shell::Get()->session_controller()->GetActivePrefService());
   ASSERT_TRUE(features::IsBackgroundBlurEnabled());
 
+  ShowAssistantUi();
+
   // Confirm that our opacity matches with that of AppListView using.
   const SkColor shield_layer_color_80_light =
-      ColorProvider::Get()->GetShieldLayerColor(
-          ColorProvider::ShieldLayerType::kShield80);
+      page_view()->GetColorProvider()->GetColor(kColorAshShieldAndBase80);
   EXPECT_EQ(SkColorGetA(shield_layer_color_80_light),
             static_cast<uint32_t>(AppListView::kAppListOpacityWithBlur * 255));
 
-  ShowAssistantUi();
   ASSERT_FALSE(Shell::Get()->IsInTabletMode());
   EXPECT_FLOAT_EQ(page_view()->layer()->background_blur(), 0.0f);
 
@@ -984,10 +976,9 @@ TEST_F(AssistantPageNonBubbleTest, ThemeDarkLightModeWithBlur) {
 
   Shell::Get()->session_controller()->GetActivePrefService()->SetBoolean(
       prefs::kDarkModeEnabled, true);
-  const SkColor shield_layer_color_80_dark =
-      ColorProvider::Get()->GetShieldLayerColor(
-          ColorProvider::ShieldLayerType::kShield80);
 
+  const SkColor shield_layer_color_80_dark =
+      page_view()->GetColorProvider()->GetColor(kColorAshShieldAndBase80);
   EXPECT_EQ(page_view()->layer()->GetTargetColor(), shield_layer_color_80_dark);
 
   // Simulate the case where tablet mode is enabled in the middle of a session.

@@ -31,6 +31,7 @@
 #include "content/public/common/content_features.h"
 #include "net/cookies/canonical_cookie.h"
 #include "services/network/public/mojom/cookie_manager.mojom.h"
+#include "third_party/blink/public/mojom/back_forward_cache_not_restored_reasons.mojom.h"
 #include "third_party/blink/public/mojom/page/page.mojom.h"
 #include "third_party/perfetto/include/perfetto/tracing/traced_value_forward.h"
 #include "url/gurl.h"
@@ -340,6 +341,8 @@ class CONTENT_EXPORT BackForwardCacheImpl
       BackForwardCacheCanStoreDocumentResult& eviction_reason);
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(BackForwardCacheMetricsTest, AllFeaturesCovered);
+
   // Destroys all evicted frames in the BackForwardCache.
   void DestroyEvictedFrames();
 
@@ -410,6 +413,12 @@ class CONTENT_EXPORT BackForwardCacheImpl
   // Returns true if the flag is on for pages with cache-control:no-store to
   // get restored from back/forward cache unless cookies change.
   static bool AllowStoringPagesWithCacheControlNoStore();
+
+  enum RequestedFeatures { kAll, kOnlySticky };
+  static BlockListedFeatures GetAllowedFeatures(
+      RequestedFeatures requested_features);
+  static BlockListedFeatures GetDisallowedFeatures(
+      RequestedFeatures requested_features);
 
   // Contains the set of stored Entries.
   // Invariant:
@@ -563,6 +572,12 @@ class CONTENT_EXPORT BackForwardCacheCanStoreTreeResult {
     return document_result_;
   }
 
+  // Populate NotRestoredReasons mojom struct based on the existing tree of
+  // reason to report to the renderer. This will not contain cross-origin
+  // subtree's information to avoid cross-origin information leak.
+  blink::mojom::BackForwardCacheNotRestoredReasonsPtr
+  GetWebExposedNotRestoredReasons();
+
   // Flatten the tree and return a flattened list of not restored reasons that
   // includes all the reasons in the tree.
   const BackForwardCacheCanStoreDocumentResult FlattenTree();
@@ -601,12 +616,13 @@ class CONTENT_EXPORT BackForwardCacheCanStoreTreeResult {
 
   // See |IsSameOrigin|
   const bool is_same_origin_;
-
+  // The id, name and src attribute of the frame owner of this subtree's root
+  // document.
+  const std::string id_;
+  const std::string name_;
+  const std::string src_;
   // See |GetUrl|
   const GURL url_;
-
-  // TODO(crbug.com/1278620): Add the value of the id attribute of the iframe
-  // element.
 };
 
 }  // namespace content

@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -225,7 +225,7 @@ void SearchPermissionsService::InitializeSettingsIfNeeded() {
 
 SearchPermissionsService::PrefValue SearchPermissionsService::GetDSEPref() {
   const base::Value::Dict& dict =
-      pref_service_->GetValueDict(prefs::kDSEPermissionsSettings);
+      pref_service_->GetDict(prefs::kDSEPermissionsSettings);
 
   PrefValue pref;
   const std::string* dse_name = dict.FindString(kDSENameKey);

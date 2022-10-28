@@ -1,4 +1,4 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -137,9 +137,8 @@ class ASH_EXPORT AppListFolderView
   // Virtual keyboard
   int GetYOffsetForFolder();
 
-  // Force the folder `shadow_` to recalculate bounds after a virtual keyboard
-  // repositioned the view.
-  void UpdateShadowForVirtualKeyboard();
+  // Recalculates and updates the bounds of the folder `shadow_`  .
+  void UpdateShadowBounds();
 
   // Returns true if this view's child views are in animation for opening or
   // closing the folder.

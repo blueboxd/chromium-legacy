@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -135,9 +135,6 @@ class ASH_PUBLIC_EXPORT SystemTrayClient {
 
   // Shows the Firmware update app.
   virtual void ShowFirmwareUpdate() = 0;
-
-  // Attempts to restart the system for update.
-  virtual void RequestRestartForUpdate() = 0;
 
   // Sets the UI locale to |locale_iso_code| and exit the session to take
   // effect.

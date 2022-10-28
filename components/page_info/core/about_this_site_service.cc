@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -28,9 +28,6 @@ void RecordAboutThisSiteInteraction(AboutThisSiteInteraction interaction) {
 }
 
 }  // namespace
-
-const char kBannerInteractionHistogram[] =
-    "Privacy.AboutThisSite.BannerInteraction";
 
 // These values are persisted to logs. Entries should not be renumbered and
 // numeric values should never be reused.
@@ -119,28 +116,17 @@ absl::optional<proto::SiteInfo> AboutThisSiteService::GetAboutThisSiteInfo(
   return absl::nullopt;
 }
 
-bool AboutThisSiteService::CanShowBanner(GURL url) {
-  return !dismissed_banners_.contains(url::Origin::Create(url));
-}
-
-void AboutThisSiteService::OnBannerDismissed(GURL url,
-                                             ukm::SourceId source_id) {
-  base::UmaHistogramEnumeration(kBannerInteractionHistogram,
-                                BannerInteraction::kDismissed);
-  dismissed_banners_.insert(url::Origin::Create(url));
-}
-
-void AboutThisSiteService::OnBannerURLOpened(GURL url,
-                                             ukm::SourceId source_id) {
-  base::UmaHistogramEnumeration(kBannerInteractionHistogram,
-                                BannerInteraction::kUrlOpened);
-}
-
 // static
 void AboutThisSiteService::OnAboutThisSiteRowClicked(bool with_description) {
   RecordAboutThisSiteInteraction(
       with_description ? AboutThisSiteInteraction::kClickedWithDescription
                        : AboutThisSiteInteraction::kClickedWithoutDescription);
+}
+
+// static
+void AboutThisSiteService::OnOpenedDirectlyFromSidePanel() {
+  RecordAboutThisSiteInteraction(
+      AboutThisSiteInteraction::kOpenedDirectlyFromSidePanel);
 }
 
 base::WeakPtr<AboutThisSiteService> AboutThisSiteService::GetWeakPtr() {

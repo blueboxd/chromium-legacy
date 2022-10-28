@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -35,6 +35,10 @@ extern const char kTemporaryDeviceTrustSigningKeyLabel[];
 
 // Permanent label for the secure enclave device trust signing key.
 extern const char kDeviceTrustSigningKeyLabel[];
+
+// The keychain-access-group for the secure enclave device trust signing key
+// This allows all Chrome applications access to modify this key.
+extern const char kKeychainAccessGroup[];
 #endif
 
 }  // namespace constants

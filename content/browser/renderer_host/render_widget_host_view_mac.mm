@@ -53,6 +53,7 @@
 #include "skia/ext/skia_utils_mac.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/input/web_input_event.h"
+#include "third_party/blink/public/mojom/input/input_handler.mojom.h"
 #include "third_party/blink/public/mojom/widget/record_content_to_visible_time_request.mojom.h"
 #import "ui/base/clipboard/clipboard_util_mac.h"
 #include "ui/base/cocoa/animation_utils.h"
@@ -406,6 +407,13 @@ void RenderWidgetHostViewMac::InitAsPopup(
   // Use transparent background color for the popup in order to avoid flashing
   // the white background on popup open when dark color-scheme is used.
   SetContentBackgroundColor(SK_ColorTRANSPARENT);
+
+  // If HiDPI capture mode is active for the parent, propagate the scale
+  // override to the popup window also. Its content was created assuming
+  // that the new window will share the parent window's scale. See
+  // https://crbug.com/1354703 .
+  scale_override_for_capture_ =
+      popup_parent_host_view_->GetScaleOverrideForCapture();
 
   // This path is used by the time/date picker.
   ns_view_->InitAsPopup(pos, popup_parent_host_view_->ns_view_id_);
@@ -821,10 +829,8 @@ void RenderWidgetHostViewMac::UpdateScreenInfo() {
     display::ScreenInfos new_screen_infos = original_screen_infos_;
     const float old_device_scale_factor =
         new_screen_infos.current().device_scale_factor;
-    // On MacOS, device_scale_factor needs to be an integer value, so
-    // we need to round the final scale to the nearest whole number.
     new_screen_infos.mutable_current().device_scale_factor =
-        std::round(old_device_scale_factor * scale_override_for_capture_);
+        old_device_scale_factor * scale_override_for_capture_;
     if (screen_infos_ != new_screen_infos) {
       DVLOG(1) << __func__ << ": Overriding device_scale_factor from "
                << old_device_scale_factor << " to "
@@ -1371,9 +1377,13 @@ void RenderWidgetHostViewMac::GestureEventAck(
   switch (event.GetType()) {
     case WebInputEvent::Type::kGestureScrollBegin:
     case WebInputEvent::Type::kGestureScrollUpdate:
-    case WebInputEvent::Type::kGestureScrollEnd:
-      [GetInProcessNSView() processedGestureScrollEvent:event
-                                               consumed:consumed];
+    case WebInputEvent::Type::kGestureScrollEnd: {
+      auto input_event = std::make_unique<blink::WebCoalescedInputEvent>(
+          event.Clone(), std::vector<std::unique_ptr<blink::WebInputEvent>>{},
+          std::vector<std::unique_ptr<blink::WebInputEvent>>{},
+          ui::LatencyInfo());
+      ns_view_->GestureScrollEventAck(std::move(input_event), consumed);
+    }
       return;
     default:
       break;
@@ -1401,7 +1411,10 @@ void RenderWidgetHostViewMac::ProcessAckedTouchEvent(
 
 void RenderWidgetHostViewMac::DidOverscroll(
     const ui::DidOverscrollParams& params) {
-  [GetInProcessNSView() processedOverscroll:params];
+  ns_view_->DidOverscroll(blink::mojom::DidOverscrollParams::New(
+      params.accumulated_overscroll, params.latest_overscroll_delta,
+      params.current_fling_velocity, params.causal_event_viewport_point,
+      params.overscroll_behavior));
 }
 
 std::unique_ptr<SyntheticGestureTarget>
@@ -1595,9 +1608,13 @@ void RenderWidgetHostViewMac::ShowSharePicker(
 // RenderWidgetHostNSViewHostHelper and mojom::RenderWidgetHostNSViewHost
 // implementation:
 
+id RenderWidgetHostViewMac::GetAccessibilityElement() {
+  return GetNativeViewAccessible();
+}
+
 id RenderWidgetHostViewMac::GetRootBrowserAccessibilityElement() {
   if (auto* manager = host()->GetRootBrowserAccessibilityManager())
-    return manager->GetRoot()->GetNativeViewAccessible();
+    return manager->GetBrowserAccessibilityRoot()->GetNativeViewAccessible();
   return nil;
 }
 
@@ -2099,6 +2116,15 @@ void RenderWidgetHostViewMac::StartSpeaking() {
 
 void RenderWidgetHostViewMac::StopSpeaking() {
   ui::TextServicesContextMenu::StopSpeaking();
+}
+
+void RenderWidgetHostViewMac::GetRenderWidgetAccessibilityToken(
+    GetRenderWidgetAccessibilityTokenCallback callback) {
+  base::ProcessId pid = getpid();
+  id element_id = GetNativeViewAccessible();
+  std::vector<uint8_t> token =
+      ui::RemoteAccessibility::GetTokenForLocalElement(element_id);
+  std::move(callback).Run(pid, token);
 }
 
 void RenderWidgetHostViewMac::SetRemoteAccessibilityWindowToken(

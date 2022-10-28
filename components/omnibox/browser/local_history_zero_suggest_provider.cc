@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -36,8 +36,8 @@
 #include "components/omnibox/browser/omnibox_prefs.h"
 #include "components/omnibox/browser/zero_suggest_provider.h"
 #include "components/omnibox/common/omnibox_features.h"
-#include "components/search_engines/omnibox_focus_type.h"
 #include "components/search_engines/template_url_service.h"
+#include "third_party/metrics_proto/omnibox_focus_type.pb.h"
 #include "url/gurl.h"
 
 using metrics::OmniboxInputType;
@@ -83,7 +83,7 @@ bool AllowLocalHistoryZeroSuggestSuggestions(AutocompleteProviderClient* client,
 
   // Allow local history query suggestions only when the omnibox is empty and is
   // focused from the NTP.
-  return input.focus_type() == OmniboxFocusType::ON_FOCUS &&
+  return input.focus_type() == metrics::OmniboxFocusType::INTERACTION_FOCUS &&
          input.type() == OmniboxInputType::EMPTY &&
          BaseSearchProvider::IsNTPPage(input.current_page_classification());
 }
@@ -240,11 +240,11 @@ void LocalHistoryZeroSuggestProvider::QueryURLDatabase(
         /*input_text=*/base::ASCIIToUTF16(std::string()));
 
     // Only provide a group ID, as the client does not know the header or the
-    // priority for SuggestionGroupId::kPersonalizedZeroSuggest. The suggestion
+    // priority for omnibox::GroupId::PERSONALIZED_ZERO_SUGGEST. The suggestion
     // group info will either be provided by the server (i.e., on SRP/Web) or
     // this group ID will be dropped (i.e., on NTP).
     suggestion.set_suggestion_group_id(
-        SuggestionGroupId::kPersonalizedZeroSuggest);
+        omnibox::GroupId::PERSONALIZED_ZERO_SUGGEST);
 
     AutocompleteMatch match = BaseSearchProvider::CreateSearchSuggestion(
         this, input, /*in_keyword_mode=*/false, suggestion,

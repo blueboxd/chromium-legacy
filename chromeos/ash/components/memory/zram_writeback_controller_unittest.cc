@@ -1,4 +1,4 @@
-// Copyright (c) 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -99,7 +99,7 @@ class ZramWritebackControllerTest : public testing::Test {
   MockZramWritebackPolicy* policy() { return policy_; }
   MockZramWritebackBackend* backend() { return backend_; }
   ZramWritebackController* controller() { return controller_.get(); }
-  base::test::TaskEnvironment* task_env() { return &task_environment_; };
+  base::test::TaskEnvironment* task_env() { return &task_environment_; }
 
  private:
   // Capture only for the mock.

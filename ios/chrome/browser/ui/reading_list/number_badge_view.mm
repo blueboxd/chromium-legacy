@@ -1,4 +1,4 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,7 +6,7 @@
 
 #import <Foundation/Foundation.h>
 
-#include "base/format_macros.h"
+#import "base/format_macros.h"
 #import "ios/chrome/browser/ui/reading_list/text_badge_view.h"
 #import "ios/chrome/common/material_timing.h"
 
@@ -15,7 +15,7 @@
 #endif
 
 namespace {
-const CGFloat kAnimationDuration = ios::material::kDuration3;
+const CGFloat kAnimationDuration = kMaterialDuration3;
 // The margin on all sides of the label.
 const CGFloat kLabelMargin = 2.5f;
 }  // namespace

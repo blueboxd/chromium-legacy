@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -641,9 +641,9 @@ BookmarkModelMerger::RemoteForest BookmarkModelMerger::BuildRemoteForest(
 
   // All remaining entries in |updates_per_parent_guid| must be unreachable from
   // permanent entities, since otherwise they would have been moved away.
-  for (const auto& [parent_guid, updates] :
+  for (const auto& [parent_guid, updates_for_guid] :
        grouped_updates.updates_per_parent_guid) {
-    for (const UpdateResponseData& update : updates) {
+    for (const UpdateResponseData& update : updates_for_guid) {
       if (update.entity.specifics.has_bookmark()) {
         LogProblematicBookmark(RemoteBookmarkUpdateError::kMissingParentEntity);
         tracker_for_recording_ignored_updates

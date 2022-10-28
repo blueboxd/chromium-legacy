@@ -82,13 +82,13 @@
               'device_type': 'sailfish',
             },
           ],
-          'shards': 2,
+          'shards': 3,
           'quickrun_shards': 6,
         },
       },
       'android-pie-x86-fyi-rel-reviver': {
         'swarming': {
-          'shards': 2,
+          'shards': 3,
         },
       },
       'android-pie-x86-rel': {
@@ -223,7 +223,6 @@
   },
   'blink_web_tests': {
     'remove_from': [
-      'Mac10.11 Tests',
       'Win 7 Tests x64 (1)',  # 64-bit win is unsupported by the layout tests.
       'Win7 Tests (1)',
       'Win10 Tests x64 (dbg)',
@@ -255,18 +254,6 @@
           'shards': 12,
         },
       },
-<<<<<<< HEAD
-=======
-      # TODO (crbug.com/1294574) Re-enable once fixed
-      'Mac Builder Next': {
-        'experiment_percentage': 0,
-      },
-      'Mac10.12 Tests': {
-        'swarming': {
-          'shards': 25,
-        },
-      },
->>>>>>> parent of 1850ac6c4e215... Remove Mac10.11-Tests and Mac10.12-Tests
       'Mac10.13 Tests': {
         'swarming': {
           'dimension_sets': [
@@ -380,6 +367,12 @@
           'shards': 8,
         },
       },
+      'WebKit Win10': {
+        'args': [
+	  '--exit-after-n-crashes-or-timeouts',
+	  '150',
+        ],
+      },
       'Win10 Tests x64': {
         'args': [
           '--target',
@@ -395,6 +388,15 @@
           '--target',
           'Debug_x64',
         ],
+      },
+      'Win10 Tests x64 (py2 less)': {
+        'args': [
+          '--target',
+          'Release_x64',
+        ],
+        'swarming': {
+          "shards": 12
+        },
       },
       'Win11 Tests x64': {
         'args': [
@@ -439,14 +441,27 @@
           'shards': 1,
         },
       },
+      'fuchsia-x64-cast-receiver-rel': {
+        'args': [
+          '--platform=fuchsia',
+          '--jobs=1',
+        ],
+        'swarming': {
+          'shards': 1,
+        },
+      },
+      'fuchsia-x64-rel': {
+        'args': [
+          '--platform=fuchsia',
+          '--jobs=1',
+        ],
+        'swarming': {
+          'shards': 1,
+        },
+      },
       'linux-autofill-assistant': {
         'args': [
           '--release',
-        ],
-      },
-      'linux-bfcache-rel': {
-        'args': [
-          '--flag-specific=enable-back-forward-cache-same-site',
         ],
       },
       'linux-blink-animation-use-time-delta': {
@@ -480,22 +495,22 @@
           'shards': 8,
         },
       },
-      'mac10.13-blink-rel-dummy': {
+      'mac10.13-blink-rel': {
         'swarming': {
           'shards': 1,
         },
       },
-      'mac10.14-blink-rel-dummy': {
+      'mac10.14-blink-rel': {
         'swarming': {
           'shards': 1,
         },
       },
-      'mac10.15-blink-rel-dummy': {
+      'mac10.15-blink-rel': {
         'swarming': {
           'shards': 8,
         },
       },
-      'mac11.0-blink-rel-dummy': {
+      'mac11.0-blink-rel': {
         'swarming': {
           'shards': 5,
           'hard_timeout': 1800,
@@ -691,6 +706,15 @@
           'Debug_x64',
         ],
       },
+      'Win10 Tests x64 (py2 less)': {
+        'args': [
+          '--target',
+          'Release_x64',
+        ],
+        'swarming': {
+          "shards": 18
+        },
+      },
       'Win11 Tests x64': {
         'args': [
           '--target',
@@ -718,6 +742,24 @@
           'shards': 1,
         },
       },
+      'fuchsia-x64-cast-receiver-rel': {
+        'args': [
+          '--platform=fuchsia',
+          '--jobs=1',
+        ],
+        'swarming': {
+          'shards': 1,
+        },
+      },
+      'fuchsia-x64-rel': {
+        'args': [
+          '--platform=fuchsia',
+          '--jobs=1',
+        ],
+        'swarming': {
+          'shards': 1,
+        },
+      },
       'linux-autofill-assistant': {
         'args': [
           '--release',
@@ -725,7 +767,6 @@
       },
       'linux-bfcache-rel': {
         'args': [
-          '--flag-specific=enable-back-forward-cache-same-site',
           # TODO(crbug.com/1255537): Re-enable the test.
           '--ignore-tests=external/wpt/html/browsers/browsing-the-web/back-forward-cache/events.html',
         ],
@@ -761,22 +802,22 @@
           'shards': 12,
         },
       },
-      'mac10.13-blink-rel-dummy': {
+      'mac10.13-blink-rel': {
         'swarming': {
           'shards': 1,
         },
       },
-      'mac10.14-blink-rel-dummy': {
+      'mac10.14-blink-rel': {
         'swarming': {
           'shards': 1,
         },
       },
-      'mac10.15-blink-rel-dummy': {
+      'mac10.15-blink-rel': {
         'swarming': {
           'shards': 12,
         },
       },
-      'mac11.0-blink-rel-dummy': {
+      'mac11.0-blink-rel': {
         'swarming': {
           'shards': 7,
           'hard_timeout': 1800,
@@ -813,7 +854,6 @@
       'CrWinAsan(dll)', # https://crbug.com/935598
       'linux-win_cross-rel',
       'ToTLinuxTSan',  # https://crbug.com/368525
-      'Mac10.11 Tests', # https://crbug.com/1263696
       # TODO(crbug.com/1171053): Enable the suite in 'Mac10.15 Tests' once it's
       # off CQ.
       'Mac10.13 Tests', # https://crbug.com/1042757
@@ -864,6 +904,11 @@
           'shards': 30, # https://crbug.com/1103330
         },
       },
+      'Linux CFI': {
+        'swarming': {
+          'shards': 20,  # https://crbug.com/1361973
+        },
+      },
       'Linux Chromium OS ASan LSan Tests (1)': {
         # These are very slow on the ASAN trybot for some reason.
         # crbug.com/1257927
@@ -891,6 +936,11 @@
         'args': [
           '--test-launcher-filter-file=../../testing/buildbot/filters/chromeos.msan.browser_tests.oobe_negative.filter',
         ],
+      },
+      'Linux MSan Tests': {
+        'swarming': {
+          'shards': 12,
+        },
       },
       'Linux Tests': {
         'swarming': {
@@ -922,20 +972,6 @@
         ],
         'experiment_percentage': 100, # https://crbug.com/1251657
       },
-      # TODO(crbug.com/1232535) Remove once the bug is resolved.
-      'Mac10.11 Tests': {
-        'args': [
-          '--test-launcher-print-timestamps',
-        ],
-      },
-      # crbug.com/1300822
-      'Mac10.12 Tests': {
-         # crbug.com/1307029
-        'experiment_percentage': 100,
-        'swarming': {
-          'shards': 20,
-        },
-      },
       'Mac10.15 Tests': {
         # crbug.com/1042757
         'swarming': {
@@ -956,6 +992,9 @@
       },
       'Mac12 Tests': {
         'ci_only': True,
+        'swarming': {
+          'shards': 20,  # crbug.com/1361887
+        },
       },
       'Mac12 Tests (dbg)': {
         # crbug.com/1042757
@@ -1050,6 +1089,12 @@
         ],
         'swarming': {
           'shards': 50,
+        },
+      },
+      # asan tests is slower.
+      'linux-lacros-asan-lsan-rel': {
+        'swarming': {
+          'shards': 20,
         },
       },
       'linux-lacros-tester-rel': {
@@ -1180,6 +1225,12 @@
           # This bot sets symbol_level=2, which doesn't fit inside a normal VM.
           '--strip-chrome',
         ],
+      },
+      'chromeos-eve-chrome': {
+        'swarming': {
+          # Increased timeout to 2 hours due to shard timeout.
+          'hard_timeout': 7200,
+        }
       },
       # TODO(crbug.com/1141234): Move out of experimental if/when the bots are
       # stable.
@@ -1809,7 +1860,6 @@
   },
   'content_shell_crash_test': {
     'remove_from': [
-      'Mac10.11 Tests',  # crbug.com/1138050
       'android-marshmallow-x86-rel-non-cq', # crbug.com/1084353
       'android-nougat-x86-rel', # crbug.com/1084353
     ],
@@ -2499,15 +2549,10 @@
       },
     },
   },
-  'lacros_all_tast_tests eve': {
-    'remove_from': [
-      'lacros-amd64-generic-rel',
-    ]
-  },
   'lacros_all_tast_tests jacuzzi': {
     'modifications': {
       'lacros-arm-generic-rel': {
-        'experiment_percentage': 5,
+        'experiment_percentage': 100,
       },
     },
   },
@@ -2632,6 +2677,8 @@
     'remove_from': [
       # TODO(crbug.com/1201887): Remove once tests are stable.
       'Fuchsia x64',
+      'fuchsia-x64-cast-receiver-rel',
+      'fuchsia-x64-rel',
     ],
   },
   'mojo_test_apk': {
@@ -3062,7 +3109,10 @@
       },
     },
     'remove_from': [
-      'Fuchsia x64',  # https://crbug.com/1302427
+      # TODO(https://crbug.com/1302427): Remove once tests pass.
+      'Fuchsia x64',
+      'fuchsia-x64-cast-receiver-rel',
+      'fuchsia-x64-rel',
     ],
     'replacements': {
       # The V8 builders pass the V8 revision for ${got_revision}, so instead
@@ -3150,7 +3200,10 @@
       },
     },
     'remove_from': [
-      'Fuchsia x64',  # https://crbug.com/1302427
+      # TODO(https://crbug.com/1302427): Remove once tests pass.
+      'Fuchsia x64',
+      'fuchsia-x64-cast-receiver-rel',
+      'fuchsia-x64-rel',
     ],
   },
   'services_unittests': {
@@ -3335,14 +3388,9 @@
           '--jobs=1',
         ],
       },
-      # Disable parallelism on all Mac bots.
-      'Mac10.11 Tests': {
+      'Linux Tests (py2 less)': {
         'args': [
-          '--jobs=1',
-        ],
-      },
-      'Mac10.12 Tests': {
-        'args': [
+          '--xvfb',
           '--jobs=1',
         ],
       },
@@ -3390,7 +3438,6 @@
       'android-marshmallow-arm64-rel',
       'android-pie-arm64-rel',
       # crbug.com/936540
-      'Mac10.11 Tests',
       'Mac10.13 Tests',
       'Mac10.15 Tests',
       # TODO crbug.com/1277277
@@ -3419,9 +3466,6 @@
       'chromeos-kevin-chrome',
       'chromeos-kevin-rel',
 
-      # crbug.com/936540
-      'Mac10.11 Tests',
-
       'Win10 Tests x64',
       'Win11 Tests x64',
       'win10-rel-no-external-ip',
@@ -3438,6 +3482,14 @@
     ],
   },
   'trace_test': {
+    'remove_from': [
+      # Trace tests currently don't work on non-rooted devices due to a private
+      # directory being used for storing the trace config file.
+      # TODO(crbug.com/1358240): Enable this test on these bots once tracing is
+      # updated to work properly without root.
+      'Android FYI Release (Samsung A13)',
+      'Android FYI Release (Samsung A23)',
+    ],
     'modifications': {
       'fuchsia-fyi-x64-rel': { # https://crbug.com/1269976
         'experiment_percentage': 100,
@@ -3642,7 +3694,7 @@
       },
     },
   },
-  'web_engine_integration_tests': {
+  'web_engine_integration_tests_cfv1': {
     'modifications': {
       'fuchsia-code-coverage': {
         'swarming': {
@@ -3946,6 +3998,9 @@
     },
   },
   'weblayer_browsertests': {
+    'remove_from': [
+      'android-pie-arm64-rel', # crbug.com/1354867
+    ],
     'modifications': {
       'android-11-x86-rel': {
         'args': [
@@ -3959,46 +4014,25 @@
           '--gtest_filter=-DownloadBrowserTest.OverrideDownloadDirectory',
         ],
       },
-      'android-pie-arm64-rel': {
-        # TODO(crbug.com/1111436): Move this back to walleye if/when additional
-        # capacity has been deployed.
-        'swarming': {
-          'quickrun_shards': 2,
-          'dimension_sets': [
-            {
-              'device_type': 'sailfish',
-            },
-          ],
-        },
-      },
     },
   },
   'weblayer_bundle_test': {
     'remove_from': [
       'android-marshmallow-x86-rel-non-cq', # crbug.com/1088013
+      'android-pie-arm64-rel', # crbug.com/1354867
       'android-11-x86-rel', # crbug.com/1165280
     ],
   },
   'weblayer_instrumentation_test_apk': {
     'remove_from': [
       'android-marshmallow-x86-rel-non-cq', # crbug.com/1088013
+      'android-pie-arm64-rel', # crbug.com/1354867
       'android-11-x86-rel', # crbug.com/1165280
     ],
     'modifications': {
       'android-marshmallow-arm64-rel': {
         'swarming': {
           'quickrun_shards': 2,
-        },
-      },
-      'android-pie-arm64-rel': {
-        # TODO(crbug.com/1111436): Move this back to walleye if/when additional
-        # capacity has been deployed.
-        'swarming': {
-          'dimension_sets': [
-            {
-              'device_type': 'sailfish',
-            },
-          ],
         },
       },
     },

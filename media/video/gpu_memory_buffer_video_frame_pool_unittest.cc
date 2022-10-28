@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -417,11 +417,11 @@ TEST_F(GpuMemoryBufferVideoFramePoolTest,
     const auto* v_memory = reinterpret_cast<uint8_t*>(
         mock_gpu_factories_->created_memory_buffers()[2]->memory(0));
 
-    const uint16_t* y_plane_data = reinterpret_cast<uint16_t*>(
+    const uint16_t* y_plane_data = reinterpret_cast<const uint16_t*>(
         software_frame->visible_data(VideoFrame::kYPlane));
-    const uint16_t* u_plane_data = reinterpret_cast<uint16_t*>(
+    const uint16_t* u_plane_data = reinterpret_cast<const uint16_t*>(
         software_frame->visible_data(VideoFrame::kUPlane));
-    const uint16_t* v_plane_data = reinterpret_cast<uint16_t*>(
+    const uint16_t* v_plane_data = reinterpret_cast<const uint16_t*>(
         software_frame->visible_data(VideoFrame::kVPlane));
 
     // Y plane = 17x17 = 289, U and V plan = 9x9.
@@ -828,11 +828,11 @@ TEST_F(GpuMemoryBufferVideoFramePoolTest,
     const uint16_t* uv_memory = reinterpret_cast<uint16_t*>(
         mock_gpu_factories_->created_memory_buffers()[0]->memory(1));
 
-    const uint16_t* y_plane_data = reinterpret_cast<uint16_t*>(
+    const uint16_t* y_plane_data = reinterpret_cast<const uint16_t*>(
         software_frame->visible_data(VideoFrame::kYPlane));
-    const uint16_t* u_plane_data = reinterpret_cast<uint16_t*>(
+    const uint16_t* u_plane_data = reinterpret_cast<const uint16_t*>(
         software_frame->visible_data(VideoFrame::kUPlane));
-    const uint16_t* v_plane_data = reinterpret_cast<uint16_t*>(
+    const uint16_t* v_plane_data = reinterpret_cast<const uint16_t*>(
         software_frame->visible_data(VideoFrame::kVPlane));
 
     // Y plane = 7x7 = 49, U and V plan = 4x4 = 16.

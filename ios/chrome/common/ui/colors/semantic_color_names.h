@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -58,19 +58,19 @@ extern NSString* const kSolidPrimaryColor;
 // standard buttons and controls.
 extern NSString* const kBlueColor;
 // Lighter blue color sometimes used as background for buttons or views where
-// the main content is |kBlueColor| (e.g the background of the collections
+// the main content is `kBlueColor` (e.g the background of the collections
 // shortcuts on the NTP).
 extern NSString* const kBlueHaloColor;
 
-// Other shades of blue from the palette.
+// Blue palette
 extern NSString* const kBlue500Color;
-// Blue 700 light/ Blue 200 dark.
+extern NSString* const kBlue600Color;
 extern NSString* const kBlue700Color;
 
 // Standard green color.
 extern NSString* const kGreenColor;
 
-// Other shades of green from the palette.
+// Green palette.
 extern NSString* const kGreen50Color;
 extern NSString* const kGreen500Color;
 extern NSString* const kGreen700Color;
@@ -79,14 +79,23 @@ extern NSString* const kGreen700Color;
 // destructive controls.
 extern NSString* const kRedColor;
 
-// Other shades of red from the palette.
+// Red palette
 extern NSString* const kRed500Color;
+extern NSString* const kRed600Color;
 
-// Purple 600.
+// Pink palette.
+extern NSString* const kPink400Color;
+extern NSString* const kPink500Color;
+
+// Purple palette.
+extern NSString* const kPurple500Color;
 extern NSString* const kPurple600Color;
 
-// Yellow 500.
+// Yellow palette.
 extern NSString* const kYellow500Color;
+
+// Orange palette.
+extern NSString* const kOrange500Color;
 
 // Grey Color Palette.
 extern NSString* const kGrey50Color;

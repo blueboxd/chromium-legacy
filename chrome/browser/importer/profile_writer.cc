@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -160,7 +160,7 @@ void ProfileWriter::AddBookmarks(
   model->BeginExtensiveChanges();
 
   std::set<const BookmarkNode*> folders_added_to;
-  const BookmarkNode* top_level_folder = NULL;
+  const BookmarkNode* top_level_folder = nullptr;
   for (std::vector<ImportedBookmarkEntry>::const_iterator bookmark =
            reordered_bookmarks.begin();
        bookmark != reordered_bookmarks.end(); ++bookmark) {
@@ -168,7 +168,7 @@ void ProfileWriter::AddBookmarks(
     if (!bookmark->is_folder && !bookmark->url.is_valid())
       continue;
 
-    const BookmarkNode* parent = NULL;
+    const BookmarkNode* parent = nullptr;
     if (import_to_top_level && (add_all_to_top_level || bookmark->in_toolbar)) {
       // Add directly to the bookmarks bar.
       parent = bookmark_bar;

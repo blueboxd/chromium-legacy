@@ -87,15 +87,6 @@ AX_BASE_EXPORT bool IsSelectiveUIAEnablementEnabled();
 #endif  // BUILDFLAG(IS_WIN)
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-// Enables ability to choose new continuous mouse following mode in Magnifier
-// settings.
-AX_BASE_EXPORT extern const base::Feature
-    kMagnifierContinuousMouseFollowingModeSetting;
-
-// Returns true if the feature to allow choosing the new continuous mouse
-// following mode in Magnifier settings is enabled.
-AX_BASE_EXPORT bool IsMagnifierContinuousMouseFollowingModeSettingEnabled();
-
 // Enables ability to resize Docked Magnifier.
 AX_BASE_EXPORT extern const base::Feature kDockedMagnifierResizing;
 
@@ -132,6 +123,35 @@ AX_BASE_EXPORT extern const base::Feature kAccessibilityOSSettingsVisibility;
 // Returns true if improved Accessibility OS Settings visibility is enabled.
 AX_BASE_EXPORT bool IsAccessibilityOSSettingsVisibilityEnabled();
 
+// Enables the experimental Accessibility Service.
+AX_BASE_EXPORT extern const base::Feature kAccessibilityService;
+
+// Returns true if the Accessibility Service enabled.
+AX_BASE_EXPORT bool IsAccessibilityServiceEnabled();
+
+// Enables the experimental color enhancements settings.
+AX_BASE_EXPORT extern const base::Feature
+    kExperimentalAccessibilityColorEnhancementSettings;
+
+// Returns true if the experimental color enhancements settings are enabled.
+AX_BASE_EXPORT bool
+AreExperimentalAccessibilityColorEnhancementSettingsEnabled();
+
+// Enables Select-to-Speak settings page migration from extension options page
+// to Chrome OS settings page.
+AX_BASE_EXPORT extern const base::Feature
+    kAccessibilitySelectToSpeakPageMigration;
+
+// Returns true if Select-to-Speak settings page migration enabled.
+AX_BASE_EXPORT bool IsAccessibilitySelectToSpeakPageMigrationEnabled();
+
+// Enables AccessibilitySelectToSpeakPrefsMigration.
+AX_BASE_EXPORT extern const base::Feature
+    kAccessibilitySelectToSpeakPrefsMigration;
+
+// Returns true if AccessibilitySelectToSpeakPrefsMigration enabled.
+AX_BASE_EXPORT bool IsAccessibilitySelectToSpeakPrefsMigrationEnabled();
+
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 // Enables Get Image Descriptions to augment existing images labels,
@@ -160,6 +180,12 @@ AX_BASE_EXPORT extern const base::Feature kEnableAriaElementReflection;
 // Returns true if ARIA element reflection is enabled.
 AX_BASE_EXPORT bool IsAriaElementReflectionEnabled();
 
+// Experiment to increase the cost of SendPendingAccessibilityEvents.
+AX_BASE_EXPORT extern const base::Feature kAblateSendPendingAccessibilityEvents;
+
+// Returns true if |kAblateSendPendingAccessibilityEvents| is enabled.
+AX_BASE_EXPORT bool IsAblateSendPendingAccessibilityEventsEnabled();
+
 #if BUILDFLAG(IS_ANDROID)
 // Compute the AXMode based on AccessibilityServiceInfo. If disabled,
 // the AXMode is either entirely on or entirely off.
@@ -167,6 +193,11 @@ AX_BASE_EXPORT extern const base::Feature kComputeAXMode;
 
 // Returns true if the IChromeAccessible COM API is enabled.
 AX_BASE_EXPORT bool IsComputeAXModeEnabled();
+
+AX_BASE_EXPORT extern const base::Feature kOptimizeAccessibilityUiThreadWork;
+
+bool IsOptimizeAccessibilityUiThreadWorkEnabled();
+
 #endif  // BUILDFLAG(IS_ANDROID)
 
 #if !BUILDFLAG(IS_ANDROID)
@@ -196,6 +227,14 @@ AX_BASE_EXPORT bool IsScreenAIServiceNeeded();
 
 // If enabled, ScreenAI library writes some debug data in /tmp.
 AX_BASE_EXPORT bool IsScreenAIDebugModeEnabled();
+
+// If enabled, ScreenAI library uses Layout Extraction output, and if disabled,
+// uses OCR output.
+// TODO(https://crbug.com/1278249): Remove this flag after the two outputs are
+// merged in the library.
+AX_BASE_EXPORT extern const base::Feature kScreenAIUseLayoutExtraction;
+
+AX_BASE_EXPORT bool IsScreenAIUseLayoutExtractionEnabled();
 
 // Enables a feature whereby inaccessible (i.e. untagged) PDFs are made
 // accessible using an optical character recognition service. Due to the size of

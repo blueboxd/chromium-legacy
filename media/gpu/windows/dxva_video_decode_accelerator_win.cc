@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -3274,8 +3274,8 @@ DXVAVideoDecodeAccelerator::GetSharedImagesFromPictureBuffer(
 
     gpu::SharedImageStub* shared_image_stub = client_->GetSharedImageStub();
     DCHECK(shared_image_stub);
-    const bool success = shared_image_stub->factory()->RegisterBacking(
-        std::move(shared_image), /* legacy_mailbox */ true);
+    const bool success =
+        shared_image_stub->factory()->RegisterBacking(std::move(shared_image));
     if (!success) {
       RETURN_AND_NOTIFY_ON_FAILURE(false, "Failed to register shared image",
                                    PLATFORM_FAILURE, {});

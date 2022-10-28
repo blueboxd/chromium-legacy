@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -32,6 +32,9 @@ class AppServiceAppItem : public ChromeAppListItem,
 
   void OnAppUpdate(const apps::AppUpdate& app_update);
 
+  // app_list::AppContextMenuDelegate overrides:
+  void ExecuteLaunchCommand(int event_flags) override;
+
  private:
   void OnAppUpdate(const apps::AppUpdate& app_update, bool in_constructor);
 
@@ -42,9 +45,6 @@ class AppServiceAppItem : public ChromeAppListItem,
   void GetContextMenuModel(ash::AppListItemContext item_context,
                            GetMenuModelCallback callback) override;
   app_list::AppContextMenu* GetAppContextMenu() override;
-
-  // app_list::AppContextMenuDelegate overrides:
-  void ExecuteLaunchCommand(int event_flags) override;
 
   // Resets the `is_new_install` property and records metrics.
   void ResetIsNewInstall();

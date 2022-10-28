@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,10 +7,7 @@
 #include "ash/constants/ash_features.h"
 #include "ash/public/cpp/app_list/vector_icons/vector_icons.h"
 #include "ash/public/cpp/style/dark_light_mode_controller.h"
-#include "base/callback_forward.h"
 #include "base/strings/strcat.h"
-#include "base/strings/string_util.h"
-#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/bitmap_fetcher/bitmap_fetcher.h"
 #include "chrome/browser/chromeos/launcher_search/search_util.h"
 #include "chrome/browser/profiles/profile.h"
@@ -27,10 +24,8 @@
 #include "extensions/common/image_util.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/gfx/image/image_skia_operations.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "url/gurl.h"
-#include "url/url_canon.h"
 
 using CrosApiSearchResult = crosapi::mojom::SearchResult;
 
@@ -73,17 +68,13 @@ ash::SearchResultTags TagsForTextWithMatchTags(
 
 OmniboxResult::OmniboxResult(Profile* profile,
                              AppListControllerDelegate* list_controller,
-                             base::RepeatingClosure remove_closure,
                              crosapi::mojom::SearchResultPtr search_result,
-                             const std::u16string& query,
-                             bool is_zero_suggestion)
+                             const std::u16string& query)
     : consumer_receiver_(this, std::move(search_result->receiver)),
       profile_(profile),
       list_controller_(list_controller),
       search_result_(std::move(search_result)),
-      remove_closure_(std::move(remove_closure)),
       query_(query),
-      is_zero_suggestion_(is_zero_suggestion),
       contents_(search_result_->contents.value_or(u"")),
       description_(search_result_->description.value_or(u"")) {
   SetDisplayType(DisplayType::kList);
@@ -119,12 +110,8 @@ OmniboxResult::OmniboxResult(Profile* profile,
   UpdateIcon();
   UpdateTitleAndDetails();
 
-  if (is_zero_suggestion_) {
-    DCHECK(!ash::features::IsProductivityLauncherEnabled());
-    InitializeButtonActions({ash::SearchResultActionType::kRemove,
-                             ash::SearchResultActionType::kAppend});
-  } else if (crosapi::OptionalBoolIsTrue(search_result_->is_omnibox_search) &&
-             ash::features::IsProductivityLauncherEnabled()) {
+  if (crosapi::OptionalBoolIsTrue(search_result_->is_omnibox_search) &&
+      ash::features::IsProductivityLauncherEnabled()) {
     InitializeButtonActions({ash::SearchResultActionType::kRemove});
   }
 
@@ -142,17 +129,6 @@ void OmniboxResult::Open(int event_flags) {
                             crosapi::PageTransitionToUiPageTransition(
                                 search_result_->page_transition),
                             ui::DispositionFromEventFlags(event_flags));
-}
-
-void OmniboxResult::InvokeAction(ash::SearchResultActionType action) {
-  switch (action) {
-    case ash::SearchResultActionType::kRemove:
-      remove_closure_.Run();
-      break;
-    case ash::SearchResultActionType::kAppend:
-    case ash::SearchResultActionType::kSearchResultActionTypeMax:
-      NOTREACHED();
-  }
 }
 
 ash::SearchResultType OmniboxResult::GetSearchResultType() const {
@@ -238,11 +214,17 @@ void OmniboxResult::UpdateTitleAndDetails() {
                                           search_result_->contents_type));
 
     if (IsRichEntity()) {
-      SetDetails(description_);
+      // Append the search engine to the description.
+      const std::u16string description_with_search_context =
+          l10n_util::GetStringFUTF16(
+              IDS_APP_LIST_QUERY_SEARCH_DESCRIPTION, description_,
+              GetDefaultSearchEngineName(
+                  TemplateURLServiceFactory::GetForProfile(profile_)));
+      SetDetails(description_with_search_context);
       SetDetailsTags(TagsForTextWithMatchTags(
           query_, description_, search_result_->description_type));
 
-      // Append the search engine to the accessible name only.
+      // Append the search engine to the accessible name.
       const std::u16string accessible_name =
           details().empty() ? title()
                             : base::StrCat({title(), u", ", details()});

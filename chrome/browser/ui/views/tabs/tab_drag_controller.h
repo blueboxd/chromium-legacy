@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -474,7 +474,7 @@ class TabDragController : public views::WidgetObserver {
                                           std::vector<gfx::Rect>* drag_bounds);
 
   // Calculates and returns the dragged bounds for the non-maximize dragged
-  // browser window. Taks into consideration the initial drag offset so that
+  // browser window. Takes into consideration the initial drag offset so that
   // the dragged tab remains under the |point_in_screen|.
   gfx::Rect CalculateNonMaximizedDraggedBrowserBounds(
       views::Widget* widget,
@@ -648,7 +648,7 @@ class TabDragController : public views::WidgetObserver {
   // The selection model of |attached_context_| before the tabs were attached.
   ui::ListSelectionModel selection_model_before_attach_;
 
-  // What should occur during ConinueDragging when a tab is attempted to be
+  // What should occur during ContinueDragging when a tab is attempted to be
   // detached.
   DetachBehavior detach_behavior_;
 
@@ -719,6 +719,13 @@ class TabDragController : public views::WidgetObserver {
   // the TabStrip is being removed from `attached_context_` so that it can be
   // inserted back into `source_context_`.
   bool is_removing_last_tab_for_revert_ = false;
+
+  // Use a base::WeakAutoReset to set this to true when calling methods that
+  // theoretically could lead to ending the drag, but should not. For example,
+  // methods that synthesize events, take/release capture, etc., where whether
+  // or not they destroy `this` might depend on platform behavior or other
+  // external factors. Destruction while this is true will DCHECK.
+  bool expect_stay_alive_ = false;
 
   base::WeakPtrFactory<TabDragController> weak_factory_{this};
 };

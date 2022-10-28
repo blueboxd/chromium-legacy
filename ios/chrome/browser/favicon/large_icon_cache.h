@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -34,7 +34,7 @@ class LargeIconCache : public KeyedService {
 
   ~LargeIconCache() override;
 
-  // |LargeIconService| does everything on callbacks, and iOS needs to load the
+  // `LargeIconService` does everything on callbacks, and iOS needs to load the
   // icons immediately on page load. This caches the LargeIconResult so we can
   // immediately load.
   void SetCachedResult(const GURL& url, const favicon_base::LargeIconResult&);

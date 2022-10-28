@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -32,6 +32,7 @@ bool GetPageURLAndCheckTrustLevel(web::WebState* web_state,
 }  // namespace password_manager
 
 namespace web {
+class WebFrame;
 class WebState;
 }  // namespace web
 
@@ -40,7 +41,7 @@ class WebState;
 // Called when the password form is submitted.
 - (void)formHelper:(PasswordFormHelper*)formHelper
      didSubmitForm:(const autofill::FormData&)form
-       inMainFrame:(BOOL)inMainFrame;
+           inFrame:(web::WebFrame*)frame;
 @end
 
 // Handles common form processing logic of password controller for both
@@ -69,16 +70,14 @@ class WebState;
 // Uses JavaScript to find password forms. Calls |completionHandler| with the
 // extracted information used for matching and saving passwords. Calls
 // |completionHandler| with an empty vector if no password forms are found.
-- (void)findPasswordFormsWithCompletionHandler:
-    (nullable void (^)(const std::vector<autofill::FormData>&,
-                       uint32_t))completionHandler;
+- (void)findPasswordFormsInFrame:(web::WebFrame*)frame
+               completionHandler:
+                   (nullable void (^)(const std::vector<autofill::FormData>&,
+                                      uint32_t))completionHandler;
 
 // Autofills credentials into the page. Credentials and input fields are
 // specified by |formData|. Invokes |completionHandler| when finished with YES
 // if successful and NO otherwise.
-// TODO(crbug.com/1344776) after the cross origin iframe support is implemented
-// to trigger filling directly in |frame| instead of triggering the filling
-// recursively from the main frame.
 - (void)fillPasswordForm:(const autofill::PasswordFormFillData&)formData
                  inFrame:(web::WebFrame*)frame
        completionHandler:(nullable void (^)(BOOL))completionHandler;
@@ -87,9 +86,6 @@ class WebState;
 // for (optional as @"") confirm password field |confirmPasswordIdentifier| in
 // the form identified by |formData|. Invokes |completionHandler| with true if
 // any fields were filled, false otherwise.
-// TODO(crbug.com/1344776) after the cross origin iframe support is implemented
-// to trigger filling directly in |frame| instead of triggering the filling
-// recursively from the main frame.
 - (void)fillPasswordForm:(autofill::FormRendererId)formIdentifier
                       inFrame:(web::WebFrame*)frame
         newPasswordIdentifier:(autofill::FieldRendererId)newPasswordIdentifier
@@ -102,9 +98,6 @@ class WebState;
 // Credentials and input fields are specified by |fillData|. |uniqueFieldID|
 // specifies the unput on which the suggestion was accepted. Invokes
 // |completionHandler| when finished with YES if successful and NO otherwise.
-// TODO(crbug.com/1344776) after the cross origin iframe support is implemented
-// to trigger filling directly in |frame| instead of triggering the filling
-// recursively from the main frame.
 - (void)fillPasswordFormWithFillData:(const password_manager::FillData&)fillData
                              inFrame:(web::WebFrame*)frame
                     triggeredOnField:(autofill::FieldRendererId)uniqueFieldID
@@ -114,6 +107,7 @@ class WebState;
 // |completionHandler| with the populated |FormData| data structure. |found| is
 // YES if the current form was found successfully, NO otherwise.
 - (void)extractPasswordFormData:(autofill::FormRendererId)formIdentifier
+                        inFrame:(web::WebFrame*)frame
               completionHandler:
                   (void (^)(BOOL found,
                             const autofill::FormData& form))completionHandler;

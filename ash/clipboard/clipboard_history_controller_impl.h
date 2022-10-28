@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -146,8 +146,6 @@ class ASH_EXPORT ClipboardHistoryControllerImpl
 
   // ClipboardHistoryController:
   bool CanShowMenu() const override;
-  bool ShouldShowNewFeatureBadge() const override;
-  void MarkNewFeatureBadgeShown() override;
   void OnScreenshotNotificationCreated() override;
   std::unique_ptr<ScopedClipboardHistoryPause> CreateScopedPause() override;
   void GetHistoryValues(const std::set<std::string>& item_id_filter,

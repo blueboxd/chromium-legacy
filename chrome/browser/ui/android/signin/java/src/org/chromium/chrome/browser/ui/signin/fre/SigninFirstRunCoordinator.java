@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -31,9 +31,10 @@ public class SigninFirstRunCoordinator {
 
         /**
          * Notifies when the user accepts the terms of service.
-         * @param allowCrashUpload Whether the user has opted into uploading crash reports and UMA.
+         * @param allowMetricsAndCrashUploading Whether the user has opted into uploading crash
+         *         reports and UMA.
          * */
-        void acceptTermsOfService(boolean allowCrashUpload);
+        void acceptTermsOfService(boolean allowMetricsAndCrashUploading);
 
         /** Called when the interaction with the page is over and the next page should be shown. */
         void advanceToNextPage();

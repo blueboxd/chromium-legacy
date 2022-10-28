@@ -1,27 +1,27 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #import "ios/chrome/browser/https_upgrades/https_only_mode_upgrade_tab_helper.h"
 
-#include "base/test/metrics/histogram_tester.h"
-#include "base/test/scoped_feature_list.h"
-#include "base/test/task_environment.h"
-#include "components/prefs/pref_service.h"
-#include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
-#include "ios/chrome/browser/https_upgrades/https_upgrade_service_factory.h"
-#include "ios/chrome/browser/pref_names.h"
+#import "base/test/metrics/histogram_tester.h"
+#import "base/test/scoped_feature_list.h"
+#import "base/test/task_environment.h"
+#import "components/prefs/pref_service.h"
+#import "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
+#import "ios/chrome/browser/https_upgrades/https_upgrade_service_factory.h"
+#import "ios/chrome/browser/prefs/pref_names.h"
 #import "ios/chrome/browser/prerender/fake_prerender_service.h"
 #import "ios/chrome/browser/prerender/prerender_service.h"
 #import "ios/chrome/browser/prerender/prerender_service_factory.h"
-#include "ios/components/security_interstitials/https_only_mode/https_only_mode_container.h"
-#include "ios/components/security_interstitials/https_only_mode/https_upgrade_service.h"
-#include "ios/components/security_interstitials/https_only_mode/https_upgrade_test_util.h"
+#import "ios/components/security_interstitials/https_only_mode/https_only_mode_container.h"
+#import "ios/components/security_interstitials/https_only_mode/https_upgrade_service.h"
+#import "ios/components/security_interstitials/https_only_mode/https_upgrade_test_util.h"
 #import "ios/web/public/navigation/web_state_policy_decider.h"
 #import "ios/web/public/test/fakes/fake_navigation_manager.h"
 #import "ios/web/public/test/fakes/fake_web_state.h"
 #import "net/base/mac/url_conversions.h"
-#include "testing/platform_test.h"
+#import "testing/platform_test.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -65,7 +65,7 @@ class HttpsOnlyModeUpgradeTabHelperTest : public PlatformTest {
   }
 
   // Helper function that calls into WebState::ShouldAllowResponse with the
-  // given |url| and |for_main_frame|, waits for the callback with the decision
+  // given `url` and `for_main_frame`, waits for the callback with the decision
   // to be called, and returns the decision.
   web::WebStatePolicyDecider::PolicyDecision ShouldAllowResponseUrl(
       const GURL& url,

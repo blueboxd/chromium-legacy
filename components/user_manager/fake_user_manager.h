@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,6 +10,7 @@
 #include <string>
 
 #include "base/memory/raw_ptr.h"
+#include "base/strings/string_piece.h"
 #include "components/account_id/account_id.h"
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_manager_base.h"
@@ -26,6 +27,10 @@ class USER_MANAGER_EXPORT FakeUserManager : public UserManagerBase {
   FakeUserManager& operator=(const FakeUserManager&) = delete;
 
   ~FakeUserManager() override;
+
+  // Returns the fake username hash for testing.
+  // Valid AccountId must be used, otherwise DCHECKed.
+  static std::string GetFakeUsernameHash(const AccountId& account_id);
 
   // Create and add a new user. Created user is not affiliated with the domain,
   // that owns the device.

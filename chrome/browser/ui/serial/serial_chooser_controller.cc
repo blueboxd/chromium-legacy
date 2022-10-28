@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/ranges/algorithm.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/unguessable_token.h"
 #include "chrome/browser/chooser_controller/title_util.h"
@@ -146,9 +147,8 @@ void SerialChooserController::OnPortAdded(
 
 void SerialChooserController::OnPortRemoved(
     const device::mojom::SerialPortInfo& port) {
-  const auto it = std::find_if(
-      ports_.begin(), ports_.end(),
-      [&port](const auto& ptr) { return ptr->token == port.token; });
+  const auto it = base::ranges::find(ports_, port.token,
+                                     &device::mojom::SerialPortInfo::token);
   if (it != ports_.end()) {
     const size_t index = it - ports_.begin();
     ports_.erase(it);

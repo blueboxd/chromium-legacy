@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -21,6 +21,7 @@
 #include "chrome/browser/ui/views/location_bar/intent_chip_button.h"
 #include "chrome/browser/ui/web_applications/app_browser_controller.h"
 #include "chrome/browser/ui/web_applications/test/web_app_navigation_browsertest.h"
+#include "chrome/browser/web_applications/test/app_registry_cache_waiter.h"
 #include "chrome/browser/web_applications/test/web_app_install_test_utils.h"
 #include "chrome/browser/web_applications/user_display_mode.h"
 #include "chrome/browser/web_applications/web_app_id.h"
@@ -28,6 +29,7 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/feature_engagement/public/feature_constants.h"
 #include "components/feature_engagement/test/test_tracker.h"
+#include "components/user_education/test/feature_promo_test_util.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -79,8 +81,15 @@ class IntentChipButtonBrowserTest
     : public web_app::WebAppNavigationBrowserTest {
  public:
   IntentChipButtonBrowserTest() {
-    scoped_feature_list_.InitAndEnableFeature(
-        apps::features::kLinkCapturingUiUpdate);
+    scoped_feature_list_.InitWithFeatures(
+        /*enabled_features=*/{apps::features::kLinkCapturingUiUpdate},
+        /*disabled_features=*/{apps::features::kIntentChipSkipsPicker,
+                               apps::features::kIntentChipAppIcon});
+  }
+
+  void SetUpOnMainThread() override {
+    web_app::WebAppNavigationBrowserTest::SetUpOnMainThread();
+    InstallTestWebApp();
   }
 
   void TearDownOnMainThread() override {
@@ -125,6 +134,8 @@ class IntentChipButtonBrowserTest
 
     overlapping_app_id_ =
         web_app::test::InstallWebApp(profile(), std::move(web_app_info));
+    DCHECK(!overlapping_app_id_.empty());
+    web_app::AppReadinessWaiter(profile(), overlapping_app_id_).Await();
   }
 
 #if BUILDFLAG(IS_CHROMEOS)
@@ -150,8 +161,6 @@ class IntentChipButtonBrowserTest
 
 IN_PROC_BROWSER_TEST_F(IntentChipButtonBrowserTest,
                        NavigationToInScopeLinkShowsIntentChip) {
-  InstallTestWebApp();
-
   const GURL in_scope_url =
       https_server().GetURL(GetAppUrlHost(), GetInScopeUrlPath());
   ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), in_scope_url));
@@ -168,8 +177,6 @@ IN_PROC_BROWSER_TEST_F(IntentChipButtonBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(IntentChipButtonBrowserTest,
                        NavigationToOutOfScopeLinkDoesNotShowsIntentChip) {
-  InstallTestWebApp();
-
   const GURL out_of_scope_url =
       https_server().GetURL(GetAppUrlHost(), GetOutOfScopeUrlPath());
   ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), out_of_scope_url));
@@ -179,8 +186,6 @@ IN_PROC_BROWSER_TEST_F(IntentChipButtonBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(IntentChipButtonBrowserTest,
                        IconVisibilityAfterTabSwitching) {
-  InstallTestWebApp();
-
   const GURL in_scope_url =
       https_server().GetURL(GetAppUrlHost(), GetInScopeUrlPath());
   const GURL out_of_scope_url =
@@ -204,7 +209,6 @@ IN_PROC_BROWSER_TEST_F(IntentChipButtonBrowserTest,
 // Using the Intent Chip for an app which is set as preferred should launch
 // directly into the app. Preferred apps are only available on ChromeOS.
 IN_PROC_BROWSER_TEST_F(IntentChipButtonBrowserTest, OpensAppForPreferredApp) {
-  InstallTestWebApp();
   SetSupportedLinksPreference();
 
   const GURL in_scope_url =
@@ -220,7 +224,6 @@ IN_PROC_BROWSER_TEST_F(IntentChipButtonBrowserTest, OpensAppForPreferredApp) {
 
 IN_PROC_BROWSER_TEST_F(IntentChipButtonBrowserTest,
                        ShowsIntentChipExpandedForPreferredApp) {
-  InstallTestWebApp();
   SetSupportedLinksPreference();
 
   const GURL in_scope_url =
@@ -256,8 +259,6 @@ class IntentChipButtonSkipIntentPickerBrowserTest
 
 IN_PROC_BROWSER_TEST_F(IntentChipButtonSkipIntentPickerBrowserTest,
                        ClickingChipOpensApp) {
-  InstallTestWebApp();
-
   const GURL in_scope_url =
       https_server().GetURL(GetAppUrlHost(), GetInScopeUrlPath());
   ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), in_scope_url));
@@ -279,7 +280,6 @@ IN_PROC_BROWSER_TEST_F(IntentChipButtonSkipIntentPickerBrowserTest,
 #endif
 IN_PROC_BROWSER_TEST_F(IntentChipButtonSkipIntentPickerBrowserTest,
                        MAYBE_ShowsIntentPickerWhenMultipleApps) {
-  InstallTestWebApp();
   InstallOverlappingApp();
 
   const GURL in_scope_url =
@@ -302,8 +302,6 @@ IN_PROC_BROWSER_TEST_F(IntentChipButtonSkipIntentPickerBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(IntentChipButtonSkipIntentPickerBrowserTest,
                        ShowsIntentChipCollapsed) {
-  InstallTestWebApp();
-
   const GURL in_scope_url =
       https_server().GetURL(GetAppUrlHost(), GetInScopeUrlPath());
   const GURL out_of_scope_url =
@@ -384,25 +382,14 @@ class IntentChipButtonIPHBubbleBrowserTest
 };
 
 IN_PROC_BROWSER_TEST_F(IntentChipButtonIPHBubbleBrowserTest, ShowAndCloseIPH) {
-  InstallTestWebApp();
-
   const GURL in_scope_url =
       https_server().GetURL(GetAppUrlHost(), GetInScopeUrlPath());
 
   auto lock = BrowserFeaturePromoController::BlockActiveWindowCheckForTesting();
-  BrowserFeaturePromoController* const promo_controller =
-      static_cast<BrowserFeaturePromoController*>(
-          browser()->window()->GetFeaturePromoController());
-  feature_engagement::Tracker* tracker =
-      promo_controller->feature_engagement_tracker();
-  base::RunLoop init_loop;
-  tracker->AddOnInitializedCallback(
-      base::BindLambdaForTesting([&init_loop](bool success) {
-        DCHECK(success);
-        init_loop.Quit();
-      }));
-  init_loop.Run();
-  ASSERT_TRUE(tracker->IsInitialized());
+  BrowserView* const browser_view =
+      BrowserView::GetBrowserViewForBrowser(browser());
+  ASSERT_TRUE(user_education::test::WaitForFeatureEngagementReady(
+      browser_view->GetFeaturePromoController()));
 
   NavigateToLaunchingPage(browser());
   content::WebContents* web_contents =
@@ -419,14 +406,14 @@ IN_PROC_BROWSER_TEST_F(IntentChipButtonIPHBubbleBrowserTest, ShowAndCloseIPH) {
   chip_loop.Run();
 
   // Check if the IPH bubble is showing.
-  EXPECT_TRUE(promo_controller->IsPromoActive(
+  EXPECT_TRUE(browser_view->IsFeaturePromoActive(
       feature_engagement::kIPHIntentChipFeature));
 
   // When we click on the intent chip, the IPH should disappear.
   ClickIntentChip();
 
   // Check the IPH is no longer showing.
-  EXPECT_FALSE(promo_controller->IsPromoActive(
+  EXPECT_FALSE(browser_view->IsFeaturePromoActive(
       feature_engagement::kIPHIntentChipFeature));
 }
 
@@ -453,7 +440,6 @@ class IntentChipButtonAppIconBrowserTest : public IntentChipButtonBrowserTest {
 };
 
 IN_PROC_BROWSER_TEST_F(IntentChipButtonAppIconBrowserTest, ShowsAppIconInChip) {
-  InstallTestWebApp();
   InstallOverlappingApp();
 
   const GURL root_url = https_server().GetURL(GetAppUrlHost(), "/");
@@ -509,8 +495,6 @@ class IntentChipWithInfoBarBrowserTest : public IntentChipButtonBrowserTest {
 
 IN_PROC_BROWSER_TEST_F(IntentChipWithInfoBarBrowserTest,
                        ShowsInfoBarOnAppOpen) {
-  InstallTestWebApp();
-
   const GURL in_scope_url =
       https_server().GetURL(GetAppUrlHost(), GetInScopeUrlPath());
   ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), in_scope_url));
@@ -541,8 +525,6 @@ class IntentChipWithAutoDisplayBrowserTest
 
 IN_PROC_BROWSER_TEST_F(IntentChipWithAutoDisplayBrowserTest,
                        ShowsIntentPickerOnNavigation) {
-  InstallTestWebApp();
-
   const GURL in_scope_url =
       https_server().GetURL(GetAppUrlHost(), GetInScopeUrlPath());
 

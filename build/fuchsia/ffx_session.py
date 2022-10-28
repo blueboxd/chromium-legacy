@@ -1,5 +1,5 @@
 #!/usr/bin/env vpython3
-# Copyright 2022 The Chromium Authors. All rights reserved.
+# Copyright 2022 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 """A helper tool for running Fuchsia's `ffx`.
@@ -26,6 +26,9 @@ import log_manager
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__),
                                              'test')))
 from compatible_utils import parse_host_port
+
+RUN_SUMMARY_SCHEMA = \
+  'https://fuchsia.dev/schema/ffx_test/run_summary-8d1dd964.json'
 
 
 def get_ffx_path():
@@ -415,18 +418,14 @@ class FfxSession():
     """
     self._log_manager = log_manager
     self._ffx = FfxRunner(log_manager)
-    self._structured_output_config = None
     self._own_output_dir = False
     self._output_dir = None
     self._run_summary = None
     self._suite_summary = None
     self._custom_artifact_directory = None
+    self._debug_data_directory = None
 
   def __enter__(self):
-    # Enable experimental structured output for ffx.
-    self._structured_output_config = self._ffx.scoped_config(
-        'test.experimental_structured_output', 'true')
-    self._structured_output_config.__enter__()
     if self._log_manager.IsLoggingEnabled():
       # Use a subdir of the configured log directory to hold test outputs.
       self._output_dir = os.path.join(self._log_manager.GetLogDirectory(),
@@ -451,9 +450,6 @@ class FfxSession():
       shutil.rmtree(self._output_dir, ignore_errors=True)
       self._own_output_dir = False
     self._output_dir = None
-    # Restore the previous experimental structured output setting.
-    self._structured_output_config.__exit__(exc_type, exc_val, exc_tb)
-    self._structured_output_config = None
     return False
 
   def get_output_dir(self):
@@ -471,8 +467,8 @@ class FfxSession():
       A subprocess.Popen object.
     """
     command = [
-        'test', 'run', '--output-directory', self._output_dir, component_uri,
-        '--'
+        '--config', 'test.experimental_structured_output=false', 'test', 'run',
+        '--output-directory', self._output_dir, component_uri, '--'
     ]
     command.extend(package_args)
     return ffx_target.open_ffx(command)
@@ -502,47 +498,36 @@ class FfxSession():
                     str(value_error))
       return
 
-    assert self._run_summary['version'] == '0', \
+    assert self._run_summary['schema_id'] == RUN_SUMMARY_SCHEMA, \
       'Unsupported version found in %s' % run_summary_path
 
-    # There should be precisely one suite for the test that ran. Find and parse
-    # its file.
-    suite_summary_filename = self._run_summary.get('suites',
-                                                   [{}])[0].get('summary')
-    if not suite_summary_filename:
-      logging.error('Failed to find suite zero\'s summary filename in %s',
-                    run_summary_path)
-      return
-    suite_summary_path = os.path.join(self._output_dir, suite_summary_filename)
-    try:
-      with open(suite_summary_path) as suite_summary_file:
-        self._suite_summary = json.load(suite_summary_file)
-    except IOError as io_error:
-      logging.error('Error reading suite summary file: %s', str(io_error))
-      return
-    except ValueError as value_error:
-      logging.error('Error parsing suite summary file %s: %s',
-                    suite_summary_path, str(value_error))
-      return
+    run_artifact_dir = self._run_summary.get('data', {})['artifact_dir']
+    for artifact_path, artifact in self._run_summary.get(
+        'data', {})['artifacts'].items():
+      if artifact['artifact_type'] == 'DEBUG':
+        self._debug_data_directory = os.path.join(self._output_dir,
+                                                  run_artifact_dir,
+                                                  artifact_path)
+        break
 
-    assert self._suite_summary['version'] == '0', \
-      'Unsupported version found in %s' % suite_summary_path
+    # There should be precisely one suite for the test that ran.
+    self._suite_summary = self._run_summary.get('data', {}).get('suites',
+                                                                [{}])[0]
 
     # Get the top-level directory holding all artifacts for this suite.
     artifact_dir = self._suite_summary.get('artifact_dir')
     if not artifact_dir:
       logging.error('Failed to find suite\'s artifact_dir in %s',
-                    suite_summary_path)
+                    run_summary_path)
       return
 
-    # Get the path corresponding to the CUSTOM artifact.
+    # Get the path corresponding to artifacts
     for artifact_path, artifact in self._suite_summary['artifacts'].items():
-      if artifact['artifact_type'] != 'CUSTOM':
-        continue
-      self._custom_artifact_directory = os.path.join(self._output_dir,
-                                                     artifact_dir,
-                                                     artifact_path)
-      break
+      if artifact['artifact_type'] == 'CUSTOM':
+        self._custom_artifact_directory = os.path.join(self._output_dir,
+                                                       artifact_dir,
+                                                       artifact_path)
+        break
 
   def get_custom_artifact_directory(self):
     """Returns the full path to the directory holding custom artifacts emitted
@@ -550,6 +535,13 @@ class FfxSession():
     """
     self._parse_test_outputs()
     return self._custom_artifact_directory
+
+  def get_debug_data_directory(self):
+    """Returns the full path to the directory holding custom artifacts emitted
+    by the test, or None if the path cannot be determined.
+    """
+    self._parse_test_outputs()
+    return self._debug_data_directory
 
 
 def make_arg_parser():

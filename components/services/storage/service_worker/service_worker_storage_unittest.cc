@@ -1,4 +1,4 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -59,6 +59,8 @@ mojom::ServiceWorkerRegistrationDataPtr CreateRegistrationData(
   data->script = script_url;
   data->navigation_preload_state = blink::mojom::NavigationPreloadState::New();
   data->is_active = true;
+  data->policy_container_policies =
+      blink::mojom::PolicyContainerPolicies::New();
 
   int64_t resources_total_size_bytes = 0;
   for (auto& resource : resources) {
@@ -302,6 +304,22 @@ class ServiceWorkerStorageTest : public testing::Test {
     base::RunLoop loop;
     storage()->UpdateToActiveState(
         registration_id, key,
+        base::BindLambdaForTesting([&](ServiceWorkerDatabase::Status status) {
+          result = status;
+          loop.Quit();
+        }));
+    loop.Run();
+    return result;
+  }
+
+  ServiceWorkerDatabase::Status UpdateFetchHandlerType(
+      int64_t registration_id,
+      const blink::StorageKey& key,
+      blink::mojom::ServiceWorkerFetchHandlerType fetch_handler_type) {
+    ServiceWorkerDatabase::Status result;
+    base::RunLoop loop;
+    storage()->UpdateFetchHandlerType(
+        registration_id, key, fetch_handler_type,
         base::BindLambdaForTesting([&](ServiceWorkerDatabase::Status status) {
           result = status;
           loop.Quit();
@@ -568,6 +586,11 @@ TEST_F(ServiceWorkerStorageTest, DisabledStorage) {
       ServiceWorkerDatabase::Status::kErrorDisabled);
 
   EXPECT_EQ(UpdateToActiveState(kRegistrationId, kKey),
+            ServiceWorkerDatabase::Status::kErrorDisabled);
+
+  EXPECT_EQ(UpdateFetchHandlerType(
+                kRegistrationId, kKey,
+                blink::mojom::ServiceWorkerFetchHandlerType::kNotSkippable),
             ServiceWorkerDatabase::Status::kErrorDisabled);
 
   EXPECT_EQ(DeleteRegistration(kRegistrationId, kKey),
@@ -843,6 +866,8 @@ class ServiceWorkerStorageDiskTest : public ServiceWorkerStorageTest {
     data->navigation_preload_state =
         blink::mojom::NavigationPreloadState::New();
     data->resources_total_size_bytes = kScriptSize;
+    data->policy_container_policies =
+        blink::mojom::PolicyContainerPolicies::New();
 
     std::vector<ResourceRecord> resources;
     resources.push_back(CreateResourceRecord(1, kScript, kScriptSize));

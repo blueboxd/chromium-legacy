@@ -1,4 +1,4 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -69,7 +69,7 @@ class LacrosLauncher : public crosapi::BrowserManagerObserver {
     }
 
     callback_ = std::move(callback);
-    browser_manager()->InitializeAndStart();
+    browser_manager()->InitializeAndStartIfNeeded();
     browser_manager_observation_.Observe(browser_manager());
   }
 

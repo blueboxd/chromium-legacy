@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -102,10 +102,6 @@ TEST_F(FencedFramesPageLoadMetricsObserverTest, Foreground) {
   tester()->histogram_tester().ExpectTotalCount(
       ::internal::kHistogramFencedFramesNavigationToFirstContentfulPaint, 1);
   tester()->histogram_tester().ExpectTotalCount(
-      ::internal::
-          kHistogramFencedFramesNavigationToFirstContentfulPaintBackground,
-      0);
-  tester()->histogram_tester().ExpectTotalCount(
       ::internal::kHistogramFencedFramesNavigationToLargestContentfulPaint2, 1);
   tester()->histogram_tester().ExpectTotalCount(
       ::internal::kHistogramFencedFramesFirstInputDelay4, 1);
@@ -147,10 +143,6 @@ TEST_F(FencedFramesPageLoadMetricsObserverTest, Background) {
       ::internal::kHistogramFencedFramesNavigationToFirstImagePaint, 0);
   tester()->histogram_tester().ExpectTotalCount(
       ::internal::kHistogramFencedFramesNavigationToFirstContentfulPaint, 0);
-  tester()->histogram_tester().ExpectTotalCount(
-      ::internal::
-          kHistogramFencedFramesNavigationToFirstContentfulPaintBackground,
-      1);
   tester()->histogram_tester().ExpectTotalCount(
       ::internal::kHistogramFencedFramesNavigationToLargestContentfulPaint2, 0);
   tester()->histogram_tester().ExpectTotalCount(

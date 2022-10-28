@@ -1,12 +1,12 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #import "ios/chrome/browser/download/download_manager_tab_helper.h"
 
-#include "base/check_op.h"
-#include "base/memory/ptr_util.h"
-#include "base/notreached.h"
+#import "base/check_op.h"
+#import "base/memory/ptr_util.h"
+#import "base/notreached.h"
 #import "ios/chrome/browser/download/download_manager_tab_helper_delegate.h"
 #import "ios/web/public/download/download_task.h"
 

@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -59,9 +59,9 @@ public class LinkToTextIPHController {
                 if (!LinkToTextHelper.hasTextFragment(url)) return;
 
                 Profile profile = profileSupplier.get();
-                // In some cases, ProfileSupplier.get() will return null or will not be initialized
-                // in Native. See https://crbug.com/1346710 and https://crbug.com/1353138.
-                if (profile == null || !profile.isNativeInitialized()) {
+                // In some cases, ProfileSupplier.get() will return null. See
+                // https://crbug.com/1346710 and https://crbug.com/1353138.
+                if (profile == null) {
                     profile = Profile.getLastUsedRegularProfile();
                 }
                 if (profile == null) {

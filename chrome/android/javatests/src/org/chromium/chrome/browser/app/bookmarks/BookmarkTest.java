@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -115,7 +115,6 @@ import org.chromium.components.browser_ui.widget.selectable_list.SelectableListT
 import org.chromium.components.browser_ui.widget.selectable_list.SelectableListToolbar.ViewType;
 import org.chromium.components.embedder_support.util.UrlConstants;
 import org.chromium.components.power_bookmarks.PowerBookmarkMeta;
-import org.chromium.components.power_bookmarks.PowerBookmarkType;
 import org.chromium.components.power_bookmarks.ShoppingSpecifics;
 import org.chromium.components.profile_metrics.BrowserProfileType;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
@@ -305,7 +304,6 @@ public class BookmarkTest {
 
     @Test
     @SmallTest
-    @Features.DisableFeatures({ChromeFeatureList.READ_LATER})
     public void testAddBookmark() throws Exception {
         mActivityTestRule.loadUrl(mTestPage);
         // Check partner bookmarks are lazily loaded.
@@ -337,7 +335,7 @@ public class BookmarkTest {
 
     @Test
     @SmallTest
-    @Features.DisableFeatures({ChromeFeatureList.READ_LATER})
+    @Features.DisableFeatures({ChromeFeatureList.BOOKMARKS_REFRESH})
     public void testAddBookmarkSnackbar() {
         mActivityTestRule.loadUrl(mTestPage);
         // Check partner bookmarks are lazily loaded.
@@ -370,7 +368,6 @@ public class BookmarkTest {
 
     @Test
     @SmallTest
-    @Features.DisableFeatures({ChromeFeatureList.READ_LATER})
     public void testAddBookmarkToOtherFolder() {
         mActivityTestRule.loadUrl(mTestPage);
         readPartnerBookmarks();
@@ -447,7 +444,6 @@ public class BookmarkTest {
 
     @Test
     @MediumTest
-    @Features.EnableFeatures({ChromeFeatureList.READ_LATER})
     @Restriction({UiRestriction.RESTRICTION_TYPE_PHONE})
     public void testOpenBookmarkManagerWhenDefaultToRootEnabled()
             throws InterruptedException, ExecutionException {
@@ -1107,7 +1103,6 @@ public class BookmarkTest {
 
     @Test
     @SmallTest
-    @Features.EnableFeatures({ChromeFeatureList.READ_LATER})
     public void testReadingListItemsInSelectionMode() throws Exception {
         addReadingListBookmark(TEST_PAGE_TITLE_GOOGLE, mTestUrlA);
         BookmarkPromoHeader.forcePromoStateForTests(SyncPromoState.NO_PROMO);
@@ -1200,8 +1195,8 @@ public class BookmarkTest {
 
     @Test
     @SmallTest
-    @Features.EnableFeatures({ChromeFeatureList.READ_LATER})
     @DisabledTest(message = "https://crbug.com/1231219")
+    @Features.EnableFeatures({ChromeFeatureList.READ_LATER})
     public void testSearchReadingList_Deletion() throws Exception {
         addReadingListBookmark(TEST_PAGE_TITLE_GOOGLE, mTestUrlA);
         BookmarkPromoHeader.forcePromoStateForTests(SyncPromoState.NO_PROMO);
@@ -1231,7 +1226,6 @@ public class BookmarkTest {
 
     @Test
     @SmallTest
-    @Features.EnableFeatures({ChromeFeatureList.READ_LATER})
     @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
     public void testReadingListEmptyView() throws Exception {
         BookmarkPromoHeader.forcePromoStateForTests(SyncPromoState.NO_PROMO);
@@ -1254,7 +1248,6 @@ public class BookmarkTest {
 
     @Test
     @SmallTest
-    @Features.EnableFeatures({ChromeFeatureList.READ_LATER})
     public void testReadingListOpenInCCT() throws Exception {
         addReadingListBookmark(TEST_PAGE_TITLE_GOOGLE, mTestUrlA);
         BookmarkPromoHeader.forcePromoStateForTests(SyncPromoState.NO_PROMO);
@@ -1538,7 +1531,7 @@ public class BookmarkTest {
 
     @Test
     @MediumTest
-    @Features.DisableFeatures({ChromeFeatureList.READ_LATER})
+    @Features.DisableFeatures({ChromeFeatureList.SHOPPING_LIST})
     public void testTopLevelFolderUpdateAfterSync() throws Exception {
         // Set up the test and open the bookmark manager to the Mobile Bookmarks folder.
         readPartnerBookmarks();
@@ -1556,7 +1549,7 @@ public class BookmarkTest {
         });
 
         TestThreadUtils.runOnUiThreadBlocking(adapter::simulateSignInForTests);
-        Assert.assertEquals("Expected promo and \"Other Bookmarks\" folder to appear!", 3,
+        Assert.assertEquals("Expected promo and \"Other Bookmarks\" folder to appear!", 4,
                 adapter.getItemCount());
     }
 
@@ -1841,7 +1834,6 @@ public class BookmarkTest {
      */
     @Test
     @SmallTest
-    @Features.EnableFeatures({ChromeFeatureList.READ_LATER})
     @Features.DisableFeatures({ChromeFeatureList.SHOPPING_LIST})
     public void testReadingListFolderShown() throws Exception {
         BookmarkPromoHeader.forcePromoStateForTests(SyncPromoState.NO_PROMO);
@@ -1865,7 +1857,6 @@ public class BookmarkTest {
 
     @Test
     @SmallTest
-    @Features.EnableFeatures({ChromeFeatureList.READ_LATER})
     public void testReadingListFolderShownOneUnreadPage() throws Exception {
         BookmarkPromoHeader.forcePromoStateForTests(SyncPromoState.NO_PROMO);
         openBookmarkManager();
@@ -1880,7 +1871,6 @@ public class BookmarkTest {
 
     @Test
     @SmallTest
-    @Features.EnableFeatures({ChromeFeatureList.READ_LATER})
     public void testReadingListFolderShownMultipleUnreadPages() throws Exception {
         BookmarkPromoHeader.forcePromoStateForTests(SyncPromoState.NO_PROMO);
         openBookmarkManager();
@@ -1896,7 +1886,6 @@ public class BookmarkTest {
 
     @Test
     @SmallTest
-    @Features.EnableFeatures({ChromeFeatureList.READ_LATER})
     public void testShowBookmarkManagerReadingListPage() {
         BookmarkPromoHeader.forcePromoStateForTests(SyncPromoState.NO_PROMO);
         TestThreadUtils.runOnUiThreadBlocking(
@@ -2200,7 +2189,6 @@ public class BookmarkTest {
     @MediumTest
     @Restriction({UiRestriction.RESTRICTION_TYPE_PHONE})
     @Features.EnableFeatures({ChromeFeatureList.SHOPPING_LIST})
-    @Features.DisableFeatures({ChromeFeatureList.READ_LATER})
     public void testShoppingFilterInBookmarks() throws InterruptedException, ExecutionException {
         BookmarkPromoHeader.forcePromoStateForTests(SyncPromoState.NO_PROMO);
         openBookmarkManager();
@@ -2222,15 +2210,12 @@ public class BookmarkTest {
     @MediumTest
     @Restriction({UiRestriction.RESTRICTION_TYPE_PHONE})
     @Features.EnableFeatures({ChromeFeatureList.SHOPPING_LIST})
-    @Features.DisableFeatures({ChromeFeatureList.READ_LATER, ChromeFeatureList.SHOPPING_LIST})
+    @Features.DisableFeatures({ChromeFeatureList.SHOPPING_LIST})
     public void testShoppingDataPresentButFeatureDisabled()
             throws InterruptedException, ExecutionException {
         BookmarkId id = addBookmark(TEST_PAGE_TITLE_GOOGLE, mTestPage);
-        PowerBookmarkMeta.Builder meta =
-                PowerBookmarkMeta.newBuilder()
-                        .setType(PowerBookmarkType.SHOPPING)
-                        .setShoppingSpecifics(
-                                ShoppingSpecifics.newBuilder().setProductClusterId(1234L).build());
+        PowerBookmarkMeta.Builder meta = PowerBookmarkMeta.newBuilder().setShoppingSpecifics(
+                ShoppingSpecifics.newBuilder().setProductClusterId(1234L).build());
         TestThreadUtils.runOnUiThreadBlocking(
                 () -> { mBookmarkModel.setPowerBookmarkMeta(id, meta.build()); });
         BookmarkPromoHeader.forcePromoStateForTests(SyncPromoState.NO_PROMO);

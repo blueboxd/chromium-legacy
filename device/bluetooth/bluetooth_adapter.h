@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -373,6 +373,8 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapter
       base::OnceCallback<void(scoped_refptr<BluetoothAdvertisement>)>;
   using AdvertisementErrorCallback = BluetoothAdvertisement::ErrorCallback;
   using ConnectDeviceCallback = base::OnceCallback<void(BluetoothDevice*)>;
+  using ConnectDeviceErrorCallback =
+      base::OnceCallback<void(const std::string& error_message)>;
   using DiscoverySessionErrorCallback =
       base::OnceCallback<void(UMABluetoothDiscoverySessionOutcome)>;
   // The is_error bool is a flag to indicate if the result is an error(true)
@@ -639,7 +641,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapter
       const std::string& address,
       const absl::optional<BluetoothDevice::AddressType>& address_type,
       ConnectDeviceCallback callback,
-      ErrorCallback error_callback) = 0;
+      ConnectDeviceErrorCallback error_callback) = 0;
 #endif
 
   // Returns the list of pending advertisements that are not registered yet.

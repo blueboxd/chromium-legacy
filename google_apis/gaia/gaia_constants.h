@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -61,6 +61,7 @@ extern const char kPhotosModuleOAuth2Scope[];
 extern const char kPhotosModuleImageOAuth2Scope[];
 extern const char kSecureConnectOAuth2Scope[];
 extern const char kFeedOAuth2Scope[];
+extern const char kKAnonymityServiceOAuth2Scope[];
 
 // Used with uber auth tokens when needed.
 extern const char kGaiaSid[];

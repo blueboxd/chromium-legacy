@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -96,8 +96,6 @@ MixerInput::MixerInput(Source* source, FilterGroup* filter_group)
 }
 
 MixerInput::~MixerInput() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  SetFilterGroup(nullptr);
   source_->FinalizeAudioPlayback();
 }
 
@@ -118,6 +116,11 @@ void MixerInput::Initialize() {
 
   source_->InitializeAudioPlayback(source_read_size_, initial_rendering_delay);
   filter_group_->AddInput(this);
+}
+
+void MixerInput::Destroy() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  SetFilterGroup(nullptr);
 }
 
 void MixerInput::SetFilterGroup(FilterGroup* filter_group) {

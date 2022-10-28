@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,7 +6,7 @@
 #define IOS_COMPONENTS_SECURITY_INTERSTITIALS_SAFE_BROWSING_PENDING_UNSAFE_RESOURCE_STORAGE_H_
 
 #include "base/scoped_observation.h"
-#include "base/stl_util.h"
+#include "base/types/optional_util.h"
 #import "components/safe_browsing/ios/browser/safe_browsing_url_allow_list.h"
 #include "components/security_interstitials/core/unsafe_resource.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -23,14 +23,14 @@ class PendingUnsafeResourceStorage {
       const PendingUnsafeResourceStorage& other);
   ~PendingUnsafeResourceStorage();
 
-  // Constructs a storage holding |resource|.
+  // Constructs a storage holding `resource`.
   explicit PendingUnsafeResourceStorage(
       const security_interstitials::UnsafeResource& resource);
 
   // Returns the pending UnsafeResource, or null if the pending decision is
   // finished.
   const security_interstitials::UnsafeResource* resource() const {
-    return base::OptionalOrNullptr(resource_);
+    return base::OptionalToPtr(resource_);
   }
 
  private:
@@ -63,16 +63,16 @@ class PendingUnsafeResourceStorage {
         scoped_observation_{this};
   };
 
-  // Updates |policy_observer_| for the current value of |resource_|.
+  // Updates `policy_observer_` for the current value of `resource_`.
   void UpdatePolicyObserver();
 
-  // Resets |resource_| and destroys |policy_observer_|.
+  // Resets `resource_` and destroys `policy_observer_`.
   void ResetResource();
 
   // The resource being stored.  Contains no value after the pending decision
   // has been either allowed or disallowed.
   absl::optional<security_interstitials::UnsafeResource> resource_;
-  // The observer for |resource_|'s pending decision.
+  // The observer for `resource_`'s pending decision.
   absl::optional<ResourcePolicyObserver> policy_observer_;
 };
 

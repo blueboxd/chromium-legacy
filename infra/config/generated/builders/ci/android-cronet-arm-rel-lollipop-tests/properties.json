@@ -78,6 +78,6 @@
       "v.test_suite"
     ]
   },
-  "builder_group": "chromium.updater",
-  "recipe": "chromium"
+  "builder_group": "tryserver.chromium.mac",
+  "recipe": "chromium/compilator"
 }

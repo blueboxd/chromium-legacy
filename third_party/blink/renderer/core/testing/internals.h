@@ -30,7 +30,6 @@
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_value.h"
 #include "third_party/blink/renderer/core/css/css_computed_style_declaration.h"
-#include "third_party/blink/renderer/core/page/scrolling/scrolling_coordinator.h"
 #include "third_party/blink/renderer/core/testing/color_scheme_helper.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
@@ -102,7 +101,7 @@ class Internals final : public ScriptWrappable {
 
   String elementLayoutTreeAsText(Element*, ExceptionState&);
 
-  GCObservation* observeGC(ScriptValue);
+  GCObservation* observeGC(ScriptValue, ExceptionState&);
 
   bool isPreloaded(const String& url);
   bool isPreloadedBy(const String& url, Document*);
@@ -156,6 +155,7 @@ class Internals final : public ScriptWrappable {
   Node* previousInFlatTree(Node*, ExceptionState&);
 
   unsigned updateStyleAndReturnAffectedElementCount(ExceptionState&) const;
+  unsigned styleForElementCount(ExceptionState&) const;
   unsigned needsLayoutCount(ExceptionState&) const;
   unsigned layoutCountForTesting(ExceptionState&) const;
   unsigned hitTestCount(Document*, ExceptionState&) const;
@@ -610,7 +610,7 @@ class Internals final : public ScriptWrappable {
 
   void generateTestReport(const String& message);
 
-  void setIsAdFrame(HTMLIFrameElement* iframe, ExceptionState& exception_state);
+  void setIsAdFrame(Document* target_doc, ExceptionState& exception_state);
 
   ReadableStream* createReadableStream(ScriptState* script_state,
                                        int32_t queueSize,

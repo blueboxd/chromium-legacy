@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -77,7 +77,6 @@
 #include "ui/aura/test/test_window_delegate.h"
 #include "ui/aura/test/test_windows.h"
 #include "ui/aura/window.h"
-#include "ui/base/accelerators/accelerator.h"
 #include "ui/base/accelerators/media_keys_util.h"
 #include "ui/base/accelerators/test_accelerator_target.h"
 #include "ui/base/ime/ash/fake_ime_keyboard.h"
@@ -91,10 +90,8 @@
 #include "ui/display/test/display_manager_test_api.h"
 #include "ui/events/devices/device_data_manager_test_api.h"
 #include "ui/events/event.h"
-#include "ui/events/event_constants.h"
 #include "ui/events/event_sink.h"
 #include "ui/events/keycodes/dom/dom_code.h"
-#include "ui/events/keycodes/keyboard_codes_posix.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/message_center/message_center.h"
 #include "ui/views/widget/widget.h"
@@ -183,13 +180,13 @@ class DummyBrightnessControlDelegate : public BrightnessControlDelegate {
 
   ~DummyBrightnessControlDelegate() override = default;
 
-  void HandleBrightnessDown(const ui::Accelerator& accelerator) override {
+  void HandleBrightnessDown() override {
     ++handle_brightness_down_count_;
-    last_accelerator_ = accelerator;
+    last_accelerator_ = ui::Accelerator(ui::VKEY_BRIGHTNESS_DOWN, ui::EF_NONE);
   }
-  void HandleBrightnessUp(const ui::Accelerator& accelerator) override {
+  void HandleBrightnessUp() override {
     ++handle_brightness_up_count_;
-    last_accelerator_ = accelerator;
+    last_accelerator_ = ui::Accelerator(ui::VKEY_BRIGHTNESS_UP, ui::EF_NONE);
   }
   void SetBrightnessPercent(double percent, bool gradual) override {}
   void GetBrightnessPercent(
@@ -223,15 +220,16 @@ class DummyKeyboardBrightnessControlDelegate
 
   ~DummyKeyboardBrightnessControlDelegate() override = default;
 
-  void HandleKeyboardBrightnessDown(
-      const ui::Accelerator& accelerator) override {
+  void HandleKeyboardBrightnessDown() override {
     ++handle_keyboard_brightness_down_count_;
-    last_accelerator_ = accelerator;
+    last_accelerator_ =
+        ui::Accelerator(ui::VKEY_BRIGHTNESS_DOWN, ui::EF_ALT_DOWN);
   }
 
-  void HandleKeyboardBrightnessUp(const ui::Accelerator& accelerator) override {
+  void HandleKeyboardBrightnessUp() override {
     ++handle_keyboard_brightness_up_count_;
-    last_accelerator_ = accelerator;
+    last_accelerator_ =
+        ui::Accelerator(ui::VKEY_BRIGHTNESS_UP, ui::EF_ALT_DOWN);
   }
 
   void HandleToggleKeyboardBacklight() override {}
@@ -1439,91 +1437,30 @@ TEST_P(GlobalAcceleratorsToggleProductivityLauncher, ToggleLauncher) {
   GetAppListTestHelper()->CheckVisibility(false);
 }
 
-TEST_F(AcceleratorControllerTest, GlobalAcceleratorsToggleAppListFullscreen) {
+TEST_P(GlobalAcceleratorsToggleProductivityLauncher,
+       PreventProcessingShortcuts) {
   base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndDisableFeature(features::kProductivityLauncher);
+  feature_list.InitAndEnableFeature(features::kProductivityLauncher);
 
-  base::HistogramTester histogram_tester;
+  // Set Controller to block all shortcuts and try to toggle the productivity
+  // launcher
+  controller_->SetPreventProcessingAccelerators(true);
 
-  int toggle_count_total = 0;
-  int toggle_count_regular = 0;
-  int toggle_count_fullscreen = 0;
-
-  // Shift+VKEY_BROWSER_SEARCH should toggle the AppList in fullscreen mode.
-  EXPECT_TRUE(ProcessInController(
-      ui::Accelerator(ui::VKEY_BROWSER_SEARCH, ui::EF_SHIFT_DOWN)));
-  base::RunLoop().RunUntilIdle();
-  GetAppListTestHelper()->CheckVisibility(true);
-  GetAppListTestHelper()->CheckState(AppListViewState::kFullscreenAllApps);
-  histogram_tester.ExpectTotalCount("Apps.AppListShowSource",
-                                    ++toggle_count_total);
-  histogram_tester.ExpectBucketCount("Apps.AppListShowSource",
-                                     kSearchKeyFullscreen,
-                                     ++toggle_count_fullscreen);
-
-  EXPECT_TRUE(ProcessInController(
-      ui::Accelerator(ui::VKEY_BROWSER_SEARCH, ui::EF_SHIFT_DOWN)));
+  EXPECT_FALSE(
+      ProcessInController(ui::Accelerator(key_, ui::EF_NONE, key_state_)));
   base::RunLoop().RunUntilIdle();
   GetAppListTestHelper()->CheckVisibility(false);
 
-  // Shift+VKEY_BROWSER_SEARCH should transition from peeking to fullscreen
-  // mode.
-  EXPECT_TRUE(ProcessInController(
-      ui::Accelerator(ui::VKEY_BROWSER_SEARCH, ui::EF_NONE)));
-  base::RunLoop().RunUntilIdle();
-  GetAppListTestHelper()->CheckVisibility(true);
-  GetAppListTestHelper()->CheckState(AppListViewState::kPeeking);
-  histogram_tester.ExpectTotalCount("Apps.AppListShowSource",
-                                    ++toggle_count_total);
-  histogram_tester.ExpectBucketCount("Apps.AppListShowSource", kSearchKey,
-                                     ++toggle_count_regular);
+  // Allow all shortcuts and redo the test
+  controller_->SetPreventProcessingAccelerators(false);
 
-  EXPECT_TRUE(ProcessInController(
-      ui::Accelerator(ui::VKEY_BROWSER_SEARCH, ui::EF_SHIFT_DOWN)));
+  EXPECT_TRUE(
+      ProcessInController(ui::Accelerator(key_, ui::EF_NONE, key_state_)));
   base::RunLoop().RunUntilIdle();
   GetAppListTestHelper()->CheckVisibility(true);
-  GetAppListTestHelper()->CheckState(AppListViewState::kFullscreenAllApps);
-  histogram_tester.ExpectTotalCount("Apps.AppListShowSource",
-                                    ++toggle_count_total);
-  histogram_tester.ExpectBucketCount("Apps.AppListShowSource",
-                                     kSearchKeyFullscreen,
-                                     ++toggle_count_fullscreen);
-  // VKEY_BROWSER_SEARCH (no shift) should not return to peeking, but close the
-  // AppList.
-  EXPECT_TRUE(ProcessInController(
-      ui::Accelerator(ui::VKEY_BROWSER_SEARCH, ui::EF_NONE)));
-  base::RunLoop().RunUntilIdle();
-  GetAppListTestHelper()->CheckVisibility(false);
 
-  // Open AppList in peeking mode and type in the search box.
-  EXPECT_TRUE(ProcessInController(
-      ui::Accelerator(ui::VKEY_BROWSER_SEARCH, ui::EF_NONE)));
-  base::RunLoop().RunUntilIdle();
-  GetAppListTestHelper()->CheckVisibility(true);
-  GetAppListTestHelper()->CheckState(AppListViewState::kPeeking);
-  histogram_tester.ExpectTotalCount("Apps.AppListShowSource",
-                                    ++toggle_count_total);
-  histogram_tester.ExpectBucketCount("Apps.AppListShowSource", kSearchKey,
-                                     ++toggle_count_regular);
-  PressAndReleaseKey(ui::VKEY_0);
-  base::RunLoop().RunUntilIdle();
-  GetAppListTestHelper()->CheckVisibility(true);
-  GetAppListTestHelper()->CheckState(AppListViewState::kHalf);
-  // Shift+VKEY_BROWSER_SEARCH transitions to FULLSCREEN_SEARCH.
-  EXPECT_TRUE(ProcessInController(
-      ui::Accelerator(ui::VKEY_BROWSER_SEARCH, ui::EF_SHIFT_DOWN)));
-  base::RunLoop().RunUntilIdle();
-  GetAppListTestHelper()->CheckVisibility(true);
-  GetAppListTestHelper()->CheckState(AppListViewState::kFullscreenSearch);
-  histogram_tester.ExpectTotalCount("Apps.AppListShowSource",
-                                    ++toggle_count_total);
-  histogram_tester.ExpectBucketCount("Apps.AppListShowSource",
-                                     kSearchKeyFullscreen,
-                                     ++toggle_count_fullscreen);
-
-  // Shift+VKEY_BROWSER_SEARCH closes the AppList.
-  EXPECT_TRUE(ProcessInController(
-      ui::Accelerator(ui::VKEY_BROWSER_SEARCH, ui::EF_SHIFT_DOWN)));
+  EXPECT_TRUE(
+      ProcessInController(ui::Accelerator(key_, ui::EF_NONE, key_state_)));
   base::RunLoop().RunUntilIdle();
   GetAppListTestHelper()->CheckVisibility(false);
 }
@@ -2260,88 +2197,6 @@ TEST_F(AcceleratorControllerTest, ChangeIMEMode_SwitchesInputMethod) {
   ProcessInController(ui::Accelerator(ui::VKEY_MODECHANGE, ui::EF_NONE));
 
   EXPECT_EQ(1, client.next_ime_count_);
-}
-
-class AcceleratorControllerImprovedKeyboardShortcutsTest
-    : public AcceleratorControllerTest {
- public:
-  AcceleratorControllerImprovedKeyboardShortcutsTest() = default;
-  ~AcceleratorControllerImprovedKeyboardShortcutsTest() override = default;
-
-  class TestInputMethodManager : public input_method::MockInputMethodManager {
-   public:
-    void AddObserver(
-        input_method::InputMethodManager::Observer* observer) override {
-      observers_.AddObserver(observer);
-    }
-
-    void RemoveObserver(
-        input_method::InputMethodManager::Observer* observer) override {
-      observers_.RemoveObserver(observer);
-    }
-
-    // Calls all observers with Observer::InputMethodChanged
-    void NotifyInputMethodChanged() {
-      for (auto& observer : observers_) {
-        observer.InputMethodChanged(
-            /*manager=*/this, /*profile=*/nullptr, /*show_message=*/false);
-      }
-    }
-
-    bool ArePositionalShortcutsUsedByCurrentInputMethod() const override {
-      return use_positional_shortcuts_;
-    }
-
-    base::ObserverList<InputMethodManager::Observer>::Unchecked observers_;
-    bool use_positional_shortcuts_ = false;
-  };
-
-  void SetUp() override {
-    scoped_feature_list_.InitAndEnableFeature(
-        ::features::kImprovedKeyboardShortcuts);
-
-    // Setup our own |InputMethodManager| to test that the accelerator
-    // controller respects ArePositionalShortcutsUsedByCurrentInputMethod value
-    // from the |InputMethodManager|.
-    input_method_manager_ = new TestInputMethodManager();
-    input_method::InputMethodManager::Initialize(input_method_manager_);
-
-    AcceleratorControllerTest::SetUp();
-    EXPECT_TRUE(input_method_manager_->observers_.HasObserver(controller_));
-  }
-
-  void TearDown() override {
-    AcceleratorControllerTest::TearDown();
-    EXPECT_FALSE(input_method_manager_->observers_.HasObserver(controller_));
-
-    input_method::InputMethodManager::Shutdown();
-    input_method_manager_ = nullptr;
-  }
-
- protected:
-  TestInputMethodManager* input_method_manager_ = nullptr;  // Not owned.
-
- private:
-  base::test::ScopedFeatureList scoped_feature_list_;
-};
-
-TEST_F(AcceleratorControllerImprovedKeyboardShortcutsTest, InputMethodChanged) {
-  // Accelerator for Alt + Left Bracket on DE layout.
-  const ui::Accelerator accelerator = ui::Accelerator(
-      ui::VKEY_OEM_1, ui::DomCode::BRACKET_LEFT, ui::EF_ALT_DOWN);
-
-  // With positional shortcuts disabled, the accelerator should not match
-  // WINDOW_CYCLE_SNAP_LEFT.
-  input_method_manager_->use_positional_shortcuts_ = false;
-  input_method_manager_->NotifyInputMethodChanged();
-  EXPECT_FALSE(controller_->DoesAcceleratorMatchAction(accelerator,
-                                                       WINDOW_CYCLE_SNAP_LEFT));
-
-  // When enabled, accelerator should match WINDOW_CYCLE_SNAP_LEFT.
-  input_method_manager_->use_positional_shortcuts_ = true;
-  input_method_manager_->NotifyInputMethodChanged();
-  EXPECT_TRUE(controller_->DoesAcceleratorMatchAction(accelerator,
-                                                      WINDOW_CYCLE_SNAP_LEFT));
 }
 
 class AcceleratorControllerInputMethodTest : public AcceleratorControllerTest {

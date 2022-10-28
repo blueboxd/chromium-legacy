@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -317,7 +317,8 @@ TEST_F(SyncFileSystemServiceTest, DISABLED_InitializeForAppWithError) {
       SYNC_STATUS_FAILED);
 }
 
-TEST_F(SyncFileSystemServiceTest, SimpleLocalSyncFlow) {
+// Disabled due to flakiness: crbug.com/1345010
+TEST_F(SyncFileSystemServiceTest, DISABLED_SimpleLocalSyncFlow) {
   InitializeApp();
 
   StrictMock<MockSyncStatusObserver> status_observer;

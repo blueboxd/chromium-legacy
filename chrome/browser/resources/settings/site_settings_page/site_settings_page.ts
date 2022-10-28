@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,13 +10,13 @@
 
 import 'chrome://resources/cr_elements/cr_expand_button/cr_expand_button.js';
 import 'chrome://resources/cr_elements/cr_link_row/cr_link_row.js';
-import 'chrome://resources/cr_elements/shared_style_css.m.js';
+import 'chrome://resources/cr_elements/cr_shared_style.css.js';
 import 'chrome://resources/polymer/v3_0/iron-collapse/iron-collapse.js';
 import '../settings_shared.css.js';
 import './recent_site_permissions.js';
 
 import {assert} from 'chrome://resources/js/assert_ts.js';
-import {focusWithoutInk} from 'chrome://resources/js/cr/ui/focus_without_ink.m.js';
+import {focusWithoutInk} from 'chrome://resources/js/cr/ui/focus_without_ink.js';
 import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {FocusConfig} from '../focus_config.js';
@@ -430,7 +430,7 @@ export class SettingsSiteSettingsPageElement extends PolymerElement {
     // only fire once.
     assert(!oldConfig);
     this.focusConfig.set(routes.SITE_SETTINGS_ALL.path, () => {
-      const allSites = this.shadowRoot!.querySelector('#allSites');
+      const allSites = this.shadowRoot!.querySelector<HTMLElement>('#allSites');
       assert(!!allSites);
       focusWithoutInk(allSites);
     });

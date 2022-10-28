@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -58,6 +58,7 @@ class UserUninstalledPreinstalledWebAppPrefs {
                                          base::flat_set<GURL>& urls);
   int Size();
   bool RemoveByInstallUrl(const AppId& app_id, const GURL& install_url);
+  bool RemoveByAppId(const AppId& app_id);
   bool AppIdContainsAllUrls(
       const AppId& app_id,
       const base::flat_map<WebAppManagement::Type,

@@ -675,9 +675,11 @@ class AdAuctionServiceImplTest : public RenderViewHostTestHarness {
     base::RunLoop run_loop;
     absl::optional<GURL> maybe_url;
     interest_service->RunAdAuction(
-        auction_config,
+        auction_config, mojo::NullReceiver(),
         base::BindLambdaForTesting(
-            [&run_loop, &maybe_url](const absl::optional<GURL>& result) {
+            [&run_loop, &maybe_url](bool manually_aborted,
+                                    const absl::optional<GURL>& result) {
+              EXPECT_FALSE(manually_aborted);
               maybe_url = result;
               run_loop.Quit();
             }));
@@ -918,6 +920,10 @@ TEST_F(AdAuctionServiceImplTest, UpdateAllUpdatableFields) {
   network_responder_->RegisterUpdateResponse(
       kDailyUpdateUrlPath, base::StringPrintf(R"({
 "priority": 1.59,
+"enableBiddingSignalsPrioritization": true,
+"priorityVector": {"old1": 2, "new1": 1.1},
+"prioritySignalsOverrides": {"old2": 1, "new1": 1.1,
+                             "browserSignals.reserved":-1},
 "biddingLogicUrl": "%s/interest_group/new_bidding_logic.js",
 "biddingWasmHelperUrl":"%s/interest_group/new_bidding_wasm_helper_url.wasm",
 "trustedBiddingSignalsUrl":
@@ -935,6 +941,9 @@ TEST_F(AdAuctionServiceImplTest, UpdateAllUpdatableFields) {
 
   blink::InterestGroup interest_group = CreateInterestGroup();
   interest_group.priority = 2.0;
+  interest_group.enable_bidding_signals_prioritization = false;
+  interest_group.priority_vector = {{{"old1", 1}, {"old2", 2}}};
+  interest_group.priority_signals_overrides = {{{"old1", 1}, {"old2", 2}}};
   interest_group.daily_update_url = kUpdateUrlA;
   interest_group.bidding_url = kBiddingLogicUrlA;
   interest_group.trusted_bidding_signals_url = kTrustedBiddingSignalsUrlA;
@@ -957,6 +966,21 @@ TEST_F(AdAuctionServiceImplTest, UpdateAllUpdatableFields) {
   const auto& group = groups[0].interest_group;
   EXPECT_EQ(group.name, kInterestGroupName);
   EXPECT_EQ(group.priority, 1.59);
+  EXPECT_EQ(group.enable_bidding_signals_prioritization, true);
+
+  // The new value for `priority_vector` should completely replace the old one.
+  base::flat_map<std::string, double> expected_priority_vector{{"old1", 2},
+                                                               {"new1", 1.1}};
+  EXPECT_EQ(group.priority_vector, expected_priority_vector);
+
+  // The new value for `priority_signals_overrides` should be merged with the
+  // old one. Interest groups can use the "browserSignals." prefix, though it's
+  // not allowed in auctionConfig.prioritySignals fields.
+  base::flat_map<std::string, double> expected_priority_signals_overrides{
+      {"old1", 1}, {"old2", 1}, {"new1", 1.1}, {"browserSignals.reserved", -1}};
+  EXPECT_EQ(group.priority_signals_overrides,
+            expected_priority_signals_overrides);
+
   ASSERT_TRUE(group.bidding_url.has_value());
   EXPECT_EQ(group.bidding_url->spec(),
             base::StringPrintf("%s/interest_group/new_bidding_logic.js",
@@ -1218,16 +1242,139 @@ TEST_F(AdAuctionServiceImplTest, NoUpdateIfOptionalOwnerDoesntMatch) {
             "https://example.com/render");
 }
 
+TEST_F(AdAuctionServiceImplTest, UpdatePriorityVector) {
+  // These are all set in sequence, on top of each other, so if one update
+  // should fail to parse, the previous value should be unmodified.
+  const struct {
+    const char* priority_vector_value;
+    base::flat_map<std::string, double> expected_priority_vector;
+  } kTestCases[] = {
+      // Set one value.
+      {R"({"key1":1})", {{"key1", 1}}},
+      // Overwrite it.
+      {R"({"key1":2})", {{"key1", 2}}},
+
+      // Trying to set a value that's not a double should fail.
+      {R"({"key1":null})", {{"key1", 2}}},
+      {R"({"key1":"42"})", {{"key1", 2}}},
+      {R"({"key1":[42]})", {{"key1", 2}}},
+
+      // Setting the entire vector to something that isn't a dict should fail.
+      {R"(null)", {{"key1", 2}}},
+      {R"([])", {{"key1", 2}}},
+      {R"(5)", {{"key1", 2}}},
+
+      // Old values should not be preserved when setting new values, even when
+      // not explicitly overwriting the old key.
+      {R"({"key2":-2,"key3":0})", {{"key2", -2}, {"key3", 0}}},
+
+      // Empty value is valid.
+      {R"({})", {}},
+  };
+
+  blink::InterestGroup interest_group = CreateInterestGroup();
+  interest_group.daily_update_url = kUpdateUrlA;
+  interest_group.expiry = base::Time::Now() + base::Days(30);
+  JoinInterestGroupAndFlush(interest_group);
+
+  std::vector<StorageInterestGroup> groups =
+      GetInterestGroupsForOwner(kOriginA);
+  ASSERT_EQ(groups.size(), 1u);
+  EXPECT_EQ(groups[0].interest_group.priority_vector, absl::nullopt);
+
+  for (const auto& test_case : kTestCases) {
+    SCOPED_TRACE(test_case.priority_vector_value);
+
+    // Pass enough time so that update rate limits don't cause an update to
+    // fail.
+    task_environment()->FastForwardBy(
+        InterestGroupStorage::kUpdateSucceededBackoffPeriod);
+
+    // Set new update response, and update.
+    network_responder_->RegisterUpdateResponse(
+        kDailyUpdateUrlPath,
+        base::StringPrintf(R"({"priorityVector": %s})",
+                           test_case.priority_vector_value));
+    UpdateInterestGroupNoFlush();
+    task_environment()->RunUntilIdle();
+
+    groups = GetInterestGroupsForOwner(kOriginA);
+    ASSERT_EQ(groups.size(), 1u);
+    EXPECT_EQ(groups[0].interest_group.priority_vector,
+              test_case.expected_priority_vector);
+  }
+}
+
+TEST_F(AdAuctionServiceImplTest, UpdatePrioritySignalsOverrides) {
+  // These are all set in sequence, on top of each other, so if one update
+  // should fail to parse, the previous value should be unmodified.
+  const struct {
+    const char* priority_signals_overrides_value;
+    base::flat_map<std::string, double> expected_priority_signals_overrides;
+  } kTestCases[] = {
+      // Set one value.
+      {R"({"key1":1})", {{"key1", 1}}},
+      // Overwrite it.
+      {R"({"key1":2})", {{"key1", 2}}},
+
+      // Trying to set a value that's not a double or null should fail.
+      {R"({"key1":"42"})", {{"key1", 2}}},
+      {R"({"key1":[42]})", {{"key1", 2}}},
+
+      // Setting the entire vector to something that isn't a dict should fail.
+      {R"(null)", {{"key1", 2}}},
+      {R"([])", {{"key1", 2}}},
+      {R"(5)", {{"key1", 2}}},
+
+      // New values should be merged with old values.
+      {R"({"key2":-2,"key3":0})", {{"key1", 2}, {"key2", -2}, {"key3", 0}}},
+
+      // Setting a value to null should delete it.
+      {R"({"key2":null})", {{"key1", 2}, {"key3", 0}}},
+
+      // Empty value is valid, but has no effect.
+      {R"({})", {{"key1", 2}, {"key3", 0}}},
+  };
+
+  blink::InterestGroup interest_group = CreateInterestGroup();
+  interest_group.daily_update_url = kUpdateUrlA;
+  interest_group.expiry = base::Time::Now() + base::Days(30);
+  JoinInterestGroupAndFlush(interest_group);
+
+  std::vector<StorageInterestGroup> groups =
+      GetInterestGroupsForOwner(kOriginA);
+  ASSERT_EQ(groups.size(), 1u);
+  EXPECT_EQ(groups[0].interest_group.priority_signals_overrides, absl::nullopt);
+
+  for (const auto& test_case : kTestCases) {
+    SCOPED_TRACE(test_case.priority_signals_overrides_value);
+
+    // Pass enough time so that update rate limits don't cause an update to
+    // fail.
+    task_environment()->FastForwardBy(
+        InterestGroupStorage::kUpdateSucceededBackoffPeriod);
+
+    // Set new update response, and update.
+    network_responder_->RegisterUpdateResponse(
+        kDailyUpdateUrlPath,
+        base::StringPrintf(R"({"prioritySignalsOverrides": %s})",
+                           test_case.priority_signals_overrides_value));
+    UpdateInterestGroupNoFlush();
+    task_environment()->RunUntilIdle();
+
+    groups = GetInterestGroupsForOwner(kOriginA);
+    ASSERT_EQ(groups.size(), 1u);
+    EXPECT_EQ(groups[0].interest_group.priority_signals_overrides,
+              test_case.expected_priority_signals_overrides);
+  }
+}
+
 // Join 2 interest groups, each with the same owner, but with different update
 // URLs. Both interest groups should be updated correctly.
 TEST_F(AdAuctionServiceImplTest, UpdateMultipleInterestGroups) {
   constexpr char kGroupName1[] = "group1";
   constexpr char kGroupName2[] = "group2";
-  constexpr char kDailyUpdateUrlPath1[] =
-      "/interest_group/daily_update_partial1.json";
-  constexpr char kDailyUpdateUrlPath2[] =
-      "/interest_group/daily_update_partial2.json";
-  network_responder_->RegisterUpdateResponse(kDailyUpdateUrlPath1, R"({
+  network_responder_->RegisterUpdateResponse(kDailyUpdateUrlPath, R"({
 "ads": [{"renderUrl": "https://example.com/new_render1"}]
 })");
   network_responder_->RegisterUpdateResponse(kDailyUpdateUrlPath2, R"({
@@ -1236,7 +1383,7 @@ TEST_F(AdAuctionServiceImplTest, UpdateMultipleInterestGroups) {
 
   blink::InterestGroup interest_group = CreateInterestGroup();
   interest_group.name = kGroupName1;
-  interest_group.daily_update_url = kUrlA.Resolve(kDailyUpdateUrlPath1);
+  interest_group.daily_update_url = kUrlA.Resolve(kDailyUpdateUrlPath);
   interest_group.bidding_url = kBiddingLogicUrlA;
   interest_group.trusted_bidding_signals_url = kTrustedBiddingSignalsUrlA;
   interest_group.trusted_bidding_signals_keys.emplace();
@@ -3499,6 +3646,69 @@ function scoreAd(
             GURL("https://example.com/render"));
 }
 
+// Run ad auction when number of urn mappings has reached limit, the action
+// should fail.
+TEST_F(AdAuctionServiceImplTest,
+       RunAdAuctionExceedNumOfUrnMappingsLimitFailsAuction) {
+  constexpr char kBiddingScript[] = R"(
+function generateBid(
+    interestGroup, auctionSignals, perBuyerSignals, trustedBiddingSignals,
+    browserSignals) {
+  return {'ad': 'example', 'bid': 1, 'render': 'https://example.com/render'};
+}
+)";
+
+  constexpr char kDecisionScript[] = R"(
+function scoreAd(
+    adMetadata, bid, auctionConfig, trustedScoringSignals, browserSignals) {
+  return bid;
+}
+)";
+
+  network_responder_->RegisterScriptResponse(kBiddingUrlPath, kBiddingScript);
+  network_responder_->RegisterScriptResponse(kDecisionUrlPath, kDecisionScript);
+
+  blink::InterestGroup interest_group = CreateInterestGroup();
+  interest_group.bidding_url = kUrlA.Resolve(kBiddingUrlPath);
+  interest_group.ads.emplace();
+  blink::InterestGroup::Ad ad(
+      /*render_url=*/GURL("https://example.com/render"),
+      /*metadata=*/absl::nullopt);
+  interest_group.ads->emplace_back(std::move(ad));
+  JoinInterestGroupAndFlush(interest_group);
+  EXPECT_EQ(1, GetJoinCount(kOriginA, kInterestGroupName));
+
+  blink::AuctionConfig auction_config;
+  auction_config.seller = kOriginA;
+  auction_config.decision_logic_url = kUrlA.Resolve(kDecisionUrlPath);
+  auction_config.non_shared_params.interest_group_buyers = {kOriginA};
+
+  FencedFrameURLMapping& fenced_frame_urls_map =
+      static_cast<RenderFrameHostImpl*>(main_rfh())
+          ->GetPage()
+          .fenced_frame_urls_map();
+
+  // The map is not full initially.
+  EXPECT_FALSE(fenced_frame_urls_map.IsFull());
+
+  // Fill the map until its size reaches limit.
+  for (size_t i = 0; i < FencedFrameURLMapping::kMaxUrnMappingSize; ++i) {
+    const GURL test_url("https://" + base::NumberToString(i) + ".test");
+    absl::optional<GURL> urn_uuid =
+        fenced_frame_urls_map.AddFencedFrameURL(test_url);
+    ASSERT_TRUE(urn_uuid.has_value());
+    ASSERT_TRUE(fenced_frame_urls_map.IsMapped(urn_uuid.value()));
+  }
+
+  // Number of urn mapping has reached limit.
+  EXPECT_TRUE(fenced_frame_urls_map.IsFull());
+
+  absl::optional<GURL> auction_result =
+      RunAdAuctionAndFlush(std::move(auction_config));
+  // Auction failed because the number of urn mappings has reached limit.
+  ASSERT_EQ(auction_result, absl::nullopt);
+}
+
 // Runs an auction, and expects that the interest group that participated in
 // the auction gets updated after the auction completes.
 //
@@ -5169,9 +5379,10 @@ function reportResult() {}
 
   for (int i = 0; i < kNumAuctions; i++) {
     interest_service->RunAdAuction(
-        succeed_auction_config,
+        succeed_auction_config, mojo::NullReceiver(),
         base::BindLambdaForTesting(
             [&one_auction_complete](
+                bool manually_aborted,
                 const absl::optional<GURL>& ignored_result) {
               one_auction_complete.Run();
             }));

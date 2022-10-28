@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,25 +8,34 @@
 #include "base/strings/utf_string_conversions.h"
 #include "components/history_clusters/core/config.h"
 #include "components/history_clusters/core/history_clusters_service.h"
+#include "components/omnibox/browser/actions/history_clusters_action.h"
 #include "components/omnibox/browser/autocomplete_controller.h"
 #include "components/omnibox/browser/autocomplete_match.h"
 #include "components/omnibox/browser/autocomplete_match_classification.h"
 #include "components/omnibox/browser/autocomplete_match_type.h"
+#include "components/omnibox/browser/autocomplete_provider.h"
 #include "components/omnibox/browser/autocomplete_provider_client.h"
 #include "components/omnibox/browser/autocomplete_provider_listener.h"
-#include "components/omnibox/browser/search_provider.h"
 #include "components/omnibox/browser/suggestion_group.h"
 
 HistoryClusterProvider::HistoryClusterProvider(
     AutocompleteProviderClient* client,
     AutocompleteProviderListener* listener,
-    SearchProvider* search_provider)
+    AutocompleteProvider* search_provider,
+    AutocompleteProvider* history_url_provider,
+    AutocompleteProvider* history_quick_provider)
     : AutocompleteProvider(AutocompleteProvider::TYPE_HISTORY_CLUSTER_PROVIDER),
       client_(client),
-      search_provider_(search_provider) {
+      search_provider_(search_provider),
+      history_url_provider_(history_url_provider),
+      history_quick_provider_(history_quick_provider) {
   DCHECK(search_provider_);
+  DCHECK(history_url_provider_);
+  DCHECK(history_quick_provider_);
   AddListener(listener);
   search_provider_->AddListener(this);
+  history_url_provider_->AddListener(this);
+  history_quick_provider_->AddListener(this);
 }
 
 void HistoryClusterProvider::Start(const AutocompleteInput& input,
@@ -47,20 +56,51 @@ void HistoryClusterProvider::Start(const AutocompleteInput& input,
   done_ = false;
   input_ = input;
 
-  if (search_provider_->done())
+  if (AllProvidersDone())
     CreateMatches();
 }
 
 void HistoryClusterProvider::OnProviderUpdate(
     bool updated_matches,
     const AutocompleteProvider* provider) {
-  if (done_ || !search_provider_->done())
+  if (done_ || !AllProvidersDone())
     return;
   NotifyListeners(CreateMatches());
 }
 
+bool HistoryClusterProvider::AllProvidersDone() {
+  return search_provider_->done() && history_url_provider_->done() &&
+         history_quick_provider_->done();
+}
+
 bool HistoryClusterProvider::CreateMatches() {
   done_ = true;
+
+  // If there's a reasonably clear navigation intent, don't distract the user
+  // with a history cluster suggestion.
+  if (!history_clusters::GetConfig().omnibox_action_on_navigation_intents) {
+    // Helper to get the top relevance score looking at both providers.
+    const auto top_relevance =
+        [&](history_clusters::TopRelevanceFilter filter) {
+          return std::max(
+              {history_clusters::TopRelevance(
+                   search_provider_->matches().begin(),
+                   search_provider_->matches().end(), filter),
+               history_clusters::TopRelevance(
+                   history_url_provider_->matches().begin(),
+                   history_url_provider_->matches().end(), filter),
+               history_clusters::TopRelevance(
+                   history_quick_provider_->matches().begin(),
+                   history_quick_provider_->matches().end(), filter)});
+        };
+    if (history_clusters::IsNavigationIntent(
+            top_relevance(history_clusters::TopRelevanceFilter::
+                              FILTER_FOR_SEARCH_MATCHES),
+            top_relevance(history_clusters::TopRelevanceFilter::
+                              FILTER_FOR_NON_SEARCH_MATCHES))) {
+      return false;
+    }
+  }
 
   // Iterate search matches in their current order. This is usually highest to
   // lowest relevance with an exception for search-what-you-typed search
@@ -68,7 +108,12 @@ bool HistoryClusterProvider::CreateMatches() {
   for (const auto& search_match : search_provider_->matches()) {
     if (client_->GetHistoryClustersService()->DoesQueryMatchAnyCluster(
             base::UTF16ToUTF8(search_match.contents))) {
-      matches_.push_back(CreateMatch(search_match.contents));
+      client_->GetOmniboxTriggeredFeatureService()->FeatureTriggered(
+          OmniboxTriggeredFeatureService::Feature::kHistoryClusterSuggestion);
+      if (!history_clusters::GetConfig()
+               .omnibox_history_cluster_provider_counterfactual) {
+        matches_.push_back(CreateMatch(search_match.contents));
+      }
       return true;
     }
   }
@@ -80,16 +125,13 @@ AutocompleteMatch HistoryClusterProvider::CreateMatch(std::u16string text) {
   match.provider = this;
   match.type = AutocompleteMatch::Type::HISTORY_CLUSTER;
 
-  // 900 seems to work well in local tests. It's high enough to
-  // outscore search suggestions and therefore not be crowded out, but low
-  // enough to only display when there aren't too many strong navigation
-  // matches.
   // TODO(manukh): Currently, history cluster suggestions only display when the
   //  `text` is an exact match of a cluster keyword, and all cluster keywords
   //  are treated equal. Therefore, we're limited to using a static value.
   //  Ideally, relevance would depend on how many keywords matched, how
   //  significant the keywords were, how significant their clusters were etc.
-  match.relevance = 900;
+  match.relevance =
+      history_clusters::GetConfig().omnibox_history_cluster_provider_score;
 
   match.fill_into_edit = base::UTF8ToUTF16(base::StringPrintf(
       "chrome://history/journeys?q=%s", base::UTF16ToUTF8(text).c_str()));
@@ -108,10 +150,10 @@ AutocompleteMatch HistoryClusterProvider::CreateMatch(std::u16string text) {
   match.contents_class.push_back(
       ACMatchClassification(0, ACMatchClassification::URL));
 
-  match.suggestion_group_id = SuggestionGroupId::kHistoryCluster;
+  match.suggestion_group_id = omnibox::GroupId::HISTORY_CLUSTER;
   // Insert a corresponding SuggestionGroup with default values in the
   // suggestion groups map; otherwise the group ID will get dropped.
-  suggestion_groups_map_[SuggestionGroupId::kHistoryCluster];
+  suggestion_groups_map_[omnibox::GroupId::HISTORY_CLUSTER];
 
   return match;
 }

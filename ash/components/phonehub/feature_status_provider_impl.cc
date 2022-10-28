@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -131,7 +131,7 @@ FeatureStatusProviderImpl::FeatureStatusProviderImpl(
     multidevice_setup::MultiDeviceSetupClient* multidevice_setup_client,
     secure_channel::ConnectionManager* connection_manager,
     session_manager::SessionManager* session_manager,
-    PowerManagerClient* power_manager_client)
+    chromeos::PowerManagerClient* power_manager_client)
     : device_sync_client_(device_sync_client),
       multidevice_setup_client_(multidevice_setup_client),
       connection_manager_(connection_manager),

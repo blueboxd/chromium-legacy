@@ -9,7 +9,7 @@
  */
 
 import {assert, assertInstanceof} from 'chrome://resources/js/assert.m.js';
-import {decorate} from 'chrome://resources/js/cr/ui.m.js';
+import {decorate} from 'chrome://resources/js/cr/ui.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 
 import {EntryLocation} from '../../externs/entry_location.js';
@@ -116,23 +116,6 @@ util.htmlEscape = str => {
 };
 
 /**
- * @param {string} str String to unescape.
- * @return {string} Unescaped string.
- */
-util.htmlUnescape = str => {
-  return str.replace(/&(lt|gt|amp);/g, entity => {
-    switch (entity) {
-      case '&lt;':
-        return '<';
-      case '&gt;':
-        return '>';
-      case '&amp;':
-        return '&';
-    }
-  });
-};
-
-/**
  * Remove a file or a directory.
  * @param {Entry} entry The entry to remove.
  * @param {function()} onSuccess The success callback.
@@ -226,29 +209,6 @@ util.bytesToString = (bytes, addedPrecision = 0) => {
 util.getKeyModifiers = event => {
   return (event.ctrlKey ? 'Ctrl-' : '') + (event.altKey ? 'Alt-' : '') +
       (event.shiftKey ? 'Shift-' : '') + (event.metaKey ? 'Meta-' : '');
-};
-
-/**
- * @typedef {?{
- *   scaleX: number,
- *   scaleY: number,
- *   rotate90: number
- * }}
- */
-util.Transform;
-
-/**
- * @param {Element} element Element to transform.
- * @param {util.Transform} transform Transform object,
- *                           contains scaleX, scaleY and rotate90 properties.
- */
-util.applyTransform = (element, transform) => {
-  // The order of rotate and scale matters.
-  element.style.transform = transform ?
-      'rotate(' + transform.rotate90 * 90 + 'deg)' +
-          'scaleX(' + transform.scaleX + ') ' +
-          'scaleY(' + transform.scaleY + ') ' :
-      '';
 };
 
 /**
@@ -389,6 +349,7 @@ util.FileOperationType = {
   DELETE: 'DELETE',
   MOVE: 'MOVE',
   RESTORE: 'RESTORE',
+  RESTORE_TO_DESTINATION: 'RESTORE_TO_DESTINATION',
   ZIP: 'ZIP',
 };
 Object.freeze(util.FileOperationType);
@@ -906,8 +867,8 @@ util.getCurrentLocaleOrDefault = () => {
  */
 util.entriesToURLs = entries => {
   return entries.map(entry => {
-    // When building background.js, cachedUrl is not refered other than here.
-    // Thus closure compiler raises an error if we refer the property like
+    // When building file_manager_base.js, cachedUrl is not referred other than
+    // here. Thus closure compiler raises an error if we refer the property like
     // entry.cachedUrl.
     return entry['cachedUrl'] || entry.toURL();
   });
@@ -1309,14 +1270,6 @@ util.isCopyImageEnabled = () => {
 };
 
 /**
- * Returns true if filters in Recents view is enabled.
- * @return {boolean}
- */
-util.isRecentsFilterEnabled = () => {
-  return loadTimeData.getBoolean('FILTERS_IN_RECENTS_ENABLED');
-};
-
-/**
  * Returns true if filters in Recents view V2 is enabled.
  * @return {boolean}
  */
@@ -1332,14 +1285,6 @@ util.isRecentsFilterV2Enabled = () => {
 util.isTrashEnabled = () => {
   return loadTimeData.valueExists('FILES_TRASH_ENABLED') &&
       loadTimeData.getBoolean('FILES_TRASH_ENABLED');
-};
-
-/**
- * Returns true if Files SWA feature flag is enabled.
- * @return {boolean}
- */
-util.isSwaEnabled = () => {
-  return loadTimeData.getBoolean('FILES_SWA');
 };
 
 /**
@@ -1514,12 +1459,6 @@ util.doIfPrimaryContext = async (callback) => {
   if (guestMode) {
     callback();
     return true;
-  }
-  if (!window.isSWA) {
-    if (!chrome.extension.inIncognitoContext) {
-      callback();
-      return true;
-    }
   }
   return false;
 };

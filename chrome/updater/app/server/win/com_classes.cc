@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -152,6 +152,27 @@ HRESULT UpdaterImpl::GetVersion(BSTR* version) {
   // code duplication but it avoids the complexities of making this function
   // non-blocking.
   *version = base::win::ScopedBstr(kUpdaterVersionUtf16).Release();
+  return S_OK;
+}
+
+HRESULT UpdaterImpl::FetchPolicies(IUpdaterCallback* callback) {
+  scoped_refptr<ComServerApp> com_server = AppServerSingletonInstance();
+  com_server->main_task_runner()->PostTask(
+      FROM_HERE,
+      base::BindOnce(
+          [](scoped_refptr<UpdateService> update_service,
+             base::OnceCallback<void(int)> result_callback) {
+            update_service->FetchPolicies(std::move(result_callback));
+          },
+          com_server->update_service(),
+          base::BindPostTask(
+              base::ThreadPool::CreateSequencedTaskRunner(
+                  {base::MayBlock(),
+                   base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN}),
+              base::BindOnce(
+                  [](Microsoft::WRL::ComPtr<IUpdaterCallback> callback,
+                     int result) { callback->Run(result); },
+                  Microsoft::WRL::ComPtr<IUpdaterCallback>(callback)))));
   return S_OK;
 }
 

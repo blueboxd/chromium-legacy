@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,7 +7,6 @@
 #include <algorithm>
 
 #include "ash/constants/ash_constants.h"
-#include "ash/constants/ash_features.h"
 #include "ash/display/screen_orientation_controller.h"
 #include "ash/frame/non_client_frame_view_ash.h"
 #include "ash/public/cpp/ash_constants.h"
@@ -655,14 +654,19 @@ void ShellSurfaceBase::SetRestoreInfoWithWindowIdSource(
 }
 
 void ShellSurfaceBase::SetFloat() {
-  // TODO(crbug.com/1347534): This currently can unset float as well, but its
-  // necessary until configure request is ready otherwise the window will remain
-  // floated forever.
-  chromeos::FloatControllerBase::Get()->ToggleFloat(widget_->GetNativeWindow());
+  aura::Window* window = widget_->GetNativeWindow();
+  if (window->GetProperty(chromeos::kWindowStateTypeKey) !=
+      chromeos::WindowStateType::kFloated) {
+    chromeos::FloatControllerBase::Get()->ToggleFloat(window);
+  }
 }
 
 void ShellSurfaceBase::UnsetFloat() {
-  chromeos::FloatControllerBase::Get()->ToggleFloat(widget_->GetNativeWindow());
+  aura::Window* window = widget_->GetNativeWindow();
+  if (window->GetProperty(chromeos::kWindowStateTypeKey) ==
+      chromeos::WindowStateType::kFloated) {
+    chromeos::FloatControllerBase::Get()->ToggleFloat(window);
+  }
 }
 
 void ShellSurfaceBase::SetDisplay(int64_t display_id) {
@@ -1540,8 +1544,6 @@ void ShellSurfaceBase::UpdateShadow() {
 
 void ShellSurfaceBase::UpdateCornerRadius() {
   if (!widget_)
-    return;
-  if (!ash::features::IsPipRoundedCornersEnabled())
     return;
 
   ash::WindowState* window_state =

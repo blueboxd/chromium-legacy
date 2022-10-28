@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -974,10 +974,8 @@ TEST_F(PersonalDataManagerCleanerTest, ApplyDedupingRoutine_OncePerVersion) {
 TEST_F(PersonalDataManagerCleanerTest,
        RemoveInaccessibleProfileValuesOnStartup) {
   base::test::ScopedFeatureList feature;
-  feature.InitAndEnableFeatureWithParameters(
-      features::kAutofillRemoveInaccessibleProfileValues,
-      {{features::kAutofillRemoveInaccessibleProfileValuesOnStartup.name,
-        "true"}});
+  feature.InitAndEnableFeature(
+      features::kAutofillRemoveInaccessibleProfileValuesOnStartup);
 
   // Add a German and a US profile.
   AutofillProfile profile0(base::GenerateGUID(), test::kEmptyOrigin);

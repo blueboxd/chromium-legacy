@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -153,8 +153,8 @@ media::VideoCaptureParams MirrorSettings::GetVideoCaptureParams() {
 
 media::AudioParameters MirrorSettings::GetAudioCaptureParams() {
   media::AudioParameters params(media::AudioParameters::AUDIO_PCM_LOW_LATENCY,
-                                media::CHANNEL_LAYOUT_STEREO, kAudioTimebase,
-                                kAudioTimebase / 100);
+                                media::ChannelLayoutConfig::Stereo(),
+                                kAudioTimebase, kAudioTimebase / 100);
   DCHECK(params.IsValid());
   return params;
 }

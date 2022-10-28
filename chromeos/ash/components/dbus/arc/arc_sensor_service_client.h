@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -30,9 +30,10 @@ class COMPONENT_EXPORT(ASH_DBUS_ARC) ArcSensorServiceClient {
   static ArcSensorServiceClient* Get();
 
   // Bootstraps the Mojo connection between chrome and arc-sensor-service.
-  virtual void BootstrapMojoConnection(int fd,
-                                       const std::string& token,
-                                       VoidDBusMethodCallback callback) = 0;
+  virtual void BootstrapMojoConnection(
+      int fd,
+      const std::string& token,
+      chromeos::VoidDBusMethodCallback callback) = 0;
 
  protected:
   // Initialize() should be used instead.

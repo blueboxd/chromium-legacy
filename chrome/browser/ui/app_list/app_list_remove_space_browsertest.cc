@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -49,7 +49,7 @@ class AppListRemoveSpaceSyncCompatibilityTest
 
     // Create the app list view by triggering the accelerator to show it.
     ash::AcceleratorController::Get()->PerformActionIfEnabled(
-        ash::TOGGLE_APP_LIST_FULLSCREEN, {});
+        ash::TOGGLE_APP_LIST, {});
   }
 
   ash::AppListTestApi app_list_test_api_;

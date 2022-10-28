@@ -83,7 +83,8 @@ TestRenderFrameHost::TestRenderFrameHost(
                           frame_token,
                           /*renderer_initiated_creation_of_main_frame=*/false,
                           lifecycle_state,
-                          browsing_context_state),
+                          browsing_context_state,
+                          frame_tree_node->frame_owner_element_type()),
       child_creation_observer_(
           WebContents::FromRenderViewHost(render_view_host.get())),
       simulate_history_list_was_cleared_(false),
@@ -507,7 +508,7 @@ void TestRenderFrameHost::PrepareForCommitInternal(
   // TODO(carlosk): Ideally, it should be possible someday to
   // fully commit the navigation at this call to CallOnResponseStarted.
   url_loader->CallOnResponseStarted(std::move(response),
-                                    std::move(response_body));
+                                    std::move(response_body), absl::nullopt);
 }
 
 void TestRenderFrameHost::SimulateCommitProcessed(
@@ -585,7 +586,7 @@ void TestRenderFrameHost::SendCommitNavigation(
     blink::mojom::ServiceWorkerContainerInfoForClientPtr container_info,
     mojo::PendingRemote<network::mojom::URLLoaderFactory>
         prefetch_loader_factory,
-    const blink::ParsedPermissionsPolicy& permissions_policy,
+    const absl::optional<blink::ParsedPermissionsPolicy>& permissions_policy,
     blink::mojom::PolicyContainerPtr policy_container,
     const base::UnguessableToken& devtools_navigation_token) {
   CHECK(navigation_client);
@@ -623,13 +624,25 @@ TestRenderFrameHost::BuildDidCommitParams(bool did_create_new_entry,
   params->should_update_history = true;
   params->did_create_new_entry = did_create_new_entry;
   // See CalculateShouldReplaceCurrentEntry() in RenderFrameHostImpl on why we
-  // calculate "should_replace_current_entry" in this way.
+  // calculate "should_replace_current_entry" in this way. It's also important
+  // to note that CalculateShouldReplaceCurrentEntry relies on params set
+  // elsewhere, however.  ShouldMaintainTrivialSessionHistory reflects how the
+  // renderer would set the should_replace_current_entry param. Specifically,
+  // some features (eg fenced frames or prerendering) only maintain a single
+  // history entry and we want to ensure that should_replace_current_entry is
+  // true in these cases.
   params->should_replace_current_entry = false;
-  if (is_same_document) {
+  if (frame_tree_node()
+          ->navigator()
+          .controller()
+          .ShouldMaintainTrivialSessionHistory(frame_tree_node())) {
+    params->should_replace_current_entry = true;
+  } else if (is_same_document) {
     params->should_replace_current_entry |= (GetLastCommittedURL() == url);
   } else {
     params->should_replace_current_entry |=
-        (!is_main_frame() && frame_tree_node()->is_on_initial_empty_document());
+        (!IsOutermostMainFrame() &&
+         frame_tree_node()->is_on_initial_empty_document());
   }
   params->contents_mime_type = "text/html";
   params->method = "GET";

@@ -6,7 +6,9 @@
 
 #include "third_party/blink/renderer/core/layout/ng/ng_block_node.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_constraint_space.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_constraint_space_builder.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_layout_result.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_physical_box_fragment.h"
 
 namespace blink {
 
@@ -35,6 +37,36 @@ void LayoutNGView::UpdateBlockLayout(bool relayout_children) {
       NGConstraintSpace::CreateFromLayoutObject(*this);
 
   NGBlockNode(this).Layout(constraint_space);
+}
+
+MinMaxSizes LayoutNGView::ComputeIntrinsicLogicalWidths() const {
+  NOT_DESTROYED();
+  WritingMode writing_mode = StyleRef().GetWritingMode();
+
+  NGConstraintSpace space =
+      NGConstraintSpaceBuilder(writing_mode, StyleRef().GetWritingDirection(),
+                               /* is_new_fc */ true)
+          .ToConstraintSpace();
+
+  NGBlockNode node(const_cast<LayoutNGView*>(this));
+  DCHECK(node.CanUseNewLayout());
+  return node.ComputeMinMaxSizes(writing_mode, MinMaxSizesType::kContent, space)
+      .sizes;
+}
+
+AtomicString LayoutNGView::NamedPageAtIndex(wtf_size_t page_index) const {
+  // If LayoutNGView is enabled, but not LayoutNGPrinting, fall back to legacy.
+  if (!RuntimeEnabledFeatures::LayoutNGPrintingEnabled())
+    return LayoutView::NamedPageAtIndex(page_index);
+  if (!PhysicalFragmentCount())
+    return AtomicString();
+  DCHECK_EQ(PhysicalFragmentCount(), 1u);
+  const NGPhysicalBoxFragment& view_fragment = *GetPhysicalFragment(0);
+  const auto children = view_fragment.Children();
+  if (page_index >= children.size())
+    return AtomicString();
+  const auto& page_fragment = To<NGPhysicalBoxFragment>(*children[page_index]);
+  return page_fragment.PageName();
 }
 
 }  // namespace blink

@@ -1,4 +1,4 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -87,7 +87,7 @@ bool JavascriptErrorDetectingLogHandler(int severity,
                                         int line,
                                         size_t message_start,
                                         const std::string& str) {
-  if (file == NULL || std::string("CONSOLE") != file)
+  if (file == nullptr || std::string("CONSOLE") != file)
     return false;
 
   // TODO(crbug.com/918871): Fix AppRTC and stop ignoring this error.

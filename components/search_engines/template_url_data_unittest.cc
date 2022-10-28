@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -16,6 +16,7 @@ TEST(TemplateURLDataTest, Trim) {
       base::StringPiece(), base::StringPiece(), base::StringPiece(),
       base::StringPiece(), base::StringPiece(), base::StringPiece(),
       base::StringPiece(), base::StringPiece(), base::StringPiece(),
+      base::StringPiece(), base::StringPiece(), base::StringPiece16(),
       base::ListValue(), false, false, 0);
 
   EXPECT_EQ(u"shortname", data.short_name());

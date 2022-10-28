@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -36,7 +36,7 @@
 #include "base/debug/handle_hooks_win.h"
 #include "base/win/current_module.h"
 #if BUILDFLAG(USE_ALLOCATOR_SHIM)
-#include "base/allocator/allocator_shim.h"
+#include "base/allocator/partition_allocator/shim/allocator_shim.h"
 #endif
 
 #include <timeapi.h>
@@ -82,7 +82,7 @@ int ChromeMain(int argc, const char** argv) {
 #if BUILDFLAG(USE_ALLOCATOR_SHIM) && BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
   // Call this early on in order to configure heap workarounds. This must be
   // called from chrome.dll. This may be a NOP on some platforms.
-  base::allocator::ConfigurePartitionAlloc();
+  allocator_shim::ConfigurePartitionAlloc();
 #endif
 
   install_static::InitializeFromPrimaryModule();

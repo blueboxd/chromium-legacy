@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -131,6 +131,10 @@ enum class PrefetchProxyPrefetchStatus {
   // The prefetch was not made because the user requested that the browser use
   // less data.
   kPrefetchNotEligibleDataSaverEnabled = 37,
+
+  // The URL is not eligible to be prefetched, because in the default network
+  // context it is configured to use a proxy server.
+  kPrefetchNotEligibleExistingProxy = 38,
 };
 
 #endif  // CHROME_BROWSER_PRELOADING_PREFETCH_PREFETCH_PROXY_PREFETCH_PROXY_PREFETCH_STATUS_H_

@@ -138,9 +138,9 @@
 <translation id="1812527064848182527">альбомная</translation>
 <translation id="1829244130665387512">Пошук на старонцы</translation>
 <translation id="1834891354138622109">Слупок</translation>
-<translation id="1845944666972354496">Каб актываваць, націсніце двойчы</translation>
 <translation id="1846771122725914429">Дысплэй Брайля з падключэннем праз Bluetooth</translation>
 <translation id="1852018405765032699">Закрываць і адкрываць меню ChromeVox можна, дакрануўшыся да экрана чатырма пальцамі. Гэтыя меню змяшчаюць карысную інфармацыю пра каманды і кіраванне. Калі меню адкрыецца, для пераходу па яго пунктах праводзьце па экране адным пальцам, для актывацыі пункта меню дакраніцеся да яго двойчы. Каб працягнуць, націсніце на экран чатырма пальцамі.</translation>
+<translation id="1864430479908918647">Націсніце Пошук + Прабел</translation>
 <translation id="1865601187525349519">Канец тэксту</translation>
 <translation id="1876229593313240038">дакумент</translation>
 <translation id="1902396333223336119">Ячэйка</translation>
@@ -529,6 +529,7 @@
 <translation id="4479068155583208887">Карычнявата-чырвоны</translation>
 <translation id="4482330759234983253">Папярэдняя табліца</translation>
 <translation id="4491109536499578614">Відарыс</translation>
+<translation id="4507332368061453500">Доўга націскаць на бягучы элемент</translation>
 <translation id="4511186779140817916">Бланшыраваны міндаль</translation>
 <translation id="451510441928265982">Няма папярэдняга загалоўка ўзроўню 2</translation>
 <translation id="4515799157838123044">Зацямніць змесціва фону</translation>
@@ -597,7 +598,6 @@
 <translation id="4993152509206108683">Хуткасць у працэнтах: <ph name="PERCENT" /></translation>
 <translation id="4994420463726586413">Агучыць бягучы стан акумулятара</translation>
 <translation id="4997282455736854877"><ph name="NAME" />, выбрана кнопка-пераключальнік</translation>
-<translation id="5011664330025416377">Націсніце клавішы Пошук + Прабел, каб актываваць</translation>
 <translation id="5012724933919010465"><ph name="NAME" />, кнопка-пераключальнік у пункце меню выбрана</translation>
 <translation id="5020651427400641814">Уключыць вядзенне журнала маўлення</translation>
 <translation id="5041394372352067729">Перамясціць дысплэй Брайля ўверх старонкі</translation>
@@ -762,6 +762,7 @@
 <translation id="6100239002225743044">Перамясціць на адзін радок вышэй</translation>
 <translation id="6118126368611144850">Праграмы Android для Chrome. Калі ў вас на прыладзе ёсць Крама Play, вы можаце зірнуць на працу ChromeVox з праграмамі Android. Паспрабуйце эксперыментальную падтрымку: спампуйце Google Chrome Canary з Крамы Play.</translation>
 <translation id="611827076493383239">наведана</translation>
+<translation id="6119846243427417423">актываваць</translation>
 <translation id="6122013438240733403">кнопка</translation>
 <translation id="6132506484792346370">Звычайны ці камбінаваны спіс</translation>
 <translation id="613344593214611552">выдаліць папярэдні сказ</translation>
@@ -778,6 +779,7 @@
 <translation id="6236061028292614533">Наступны загаловак</translation>
 <translation id="6254901459154107917">Наступная тэкставая вобласць, якую можна рэдагаваць</translation>
 <translation id="6259464875943891919"><ph name="TYPE" />: выкананы выхад</translation>
+<translation id="6280088282605782512">Націсніце двойчы</translation>
 <translation id="6282062888058716985">нав</translation>
 <translation id="6295699829709583154">Асноўныя клавішы: Пошук</translation>
 <translation id="6305702903308659374">Прайграваць са звычайнай гучнасцю, нават калі ChromeVox чытае тэкст</translation>
@@ -981,6 +983,7 @@
 <translation id="7731785449856576010">Няма наступнага мультымедыйнага віджэта</translation>
 <translation id="7735498529470878067">Азнаямленне дотыкам можа дапамагчы вам хутка атрымаць уяўленне пра тое, што паказваецца на экране.</translation>
 <translation id="773906353055481349">Для пераходу па ячэйках націскайце Пошук + Ctrl + Alt і клавішы са стрэлкамі</translation>
+<translation id="7746976083433980639"><ph name="ACTION" /> – <ph name="LABEL" /></translation>
 <translation id="7763537600611320912">Спампоўванне файла "<ph name="FILE_NAME" />" пачалося</translation>
 <translation id="7768784765476638775">Чытаць уголас</translation>
 <translation id="7776293189010177726">Адкрыць меню ChromeVox</translation>

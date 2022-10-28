@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -36,21 +36,26 @@ class ChromeAccountManagerService : public KeyedService,
     virtual ~Observer() {}
 
     // Handles access token refresh failed events.
-    // |identity| is the the identity for which the access token refresh failed.
-    // |user_info| is the user info dictionary in the original notification. It
+    // `identity` is the the identity for which the access token refresh failed.
+    // `user_info` is the user info dictionary in the original notification. It
     // should not be accessed directly but via helper methods (like
     // ChromeIdentityService::IsInvalidGrantError).
     virtual void OnAccessTokenRefreshFailed(ChromeIdentity* identity,
                                             NSDictionary* user_info) {}
 
     // Handles identity list changed events.
-    // If |need_user_approval| is true, the user need to approve the new account
+    // If `need_user_approval` is true, the user need to approve the new account
     // list (related to SignedInAccountsViewController). Notifications with no
     // account list update are possible, this has to be handled by the observer.
     virtual void OnIdentityListChanged(bool need_user_approval) {}
 
     // Called when the identity is updated.
     virtual void OnIdentityChanged(ChromeIdentity* identity) {}
+
+    // Called when ChromeIdentityService is replaced. The value of
+    // `IsServiceSupported()` might have been updated.
+    // This can only happen for EGTests.
+    virtual void OnServiceSupportedChanged() {}
   };
 
   // Initializes the service.
@@ -67,13 +72,13 @@ class ChromeAccountManagerService : public KeyedService,
   // service.
   bool HasRestrictedIdentities() const;
 
-  // Returns whether |identity| is valid and known by the service.
+  // Returns whether `identity` is valid and known by the service.
   bool IsValidIdentity(ChromeIdentity* identity) const;
 
-  // Returns whether |email| is restricted.
+  // Returns whether `email` is restricted.
   bool IsEmailRestricted(base::StringPiece email) const;
 
-  // Returns the ChromeIdentity with gaia ID equals to |gaia_id| or nil if
+  // Returns the ChromeIdentity with gaia ID equals to `gaia_id` or nil if
   // no matching identity is found. There are two overloads to reduce the
   // need to convert between NSString* and std::string.
   ChromeIdentity* GetIdentityWithGaiaID(NSString* gaia_id) const;
@@ -89,7 +94,7 @@ class ChromeAccountManagerService : public KeyedService,
 
   // Returns the identity avatar. If the avatar is not available, it is fetched
   // in background (a notification will be received when it will be available),
-  // and the default avatar is returned (see |Observer::OnIdentityChanged()|).
+  // and the default avatar is returned (see `Observer::OnIdentityChanged()`).
   UIImage* GetIdentityAvatarWithIdentity(ChromeIdentity* identity,
                                          IdentityAvatarSize size);
 
@@ -120,7 +125,7 @@ class ChromeAccountManagerService : public KeyedService,
   // pref_service_ is null, no identity will be filtered.
   void UpdateRestriction();
 
-  // Returns a ResizedAvatarCache based on |avatar_size|.
+  // Returns a ResizedAvatarCache based on `avatar_size`.
   ResizedAvatarCache* GetAvatarCacheForIdentityAvatarSize(
       IdentityAvatarSize avatar_size);
 

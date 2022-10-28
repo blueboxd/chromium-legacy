@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,12 +8,12 @@
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "components/segmentation_platform/internal/constants.h"
-#include "components/segmentation_platform/public/segmentation_platform_service.h"
 
 namespace segmentation_platform {
 
-SelectedSegment::SelectedSegment(SegmentId segment_id)
-    : segment_id(segment_id), in_use(false) {}
+SelectedSegment::SelectedSegment(SegmentId segment_id,
+                                 absl::optional<float> rank)
+    : segment_id(segment_id), rank(rank), in_use(false) {}
 
 SelectedSegment::~SelectedSegment() = default;
 
@@ -32,6 +32,8 @@ void SegmentationResultPrefs::SaveSegmentationResultToPref(
 
   base::Value segmentation_result(base::Value::Type::DICTIONARY);
   segmentation_result.SetIntKey("segment_id", selected_segment->segment_id);
+  if (selected_segment->rank)
+    segmentation_result.SetDoubleKey("segment_rank", *selected_segment->rank);
   segmentation_result.SetBoolKey("in_use", selected_segment->in_use);
   segmentation_result.SetKey(
       "selection_time", base::TimeToValue(selected_segment->selection_time));
@@ -42,7 +44,7 @@ absl::optional<SelectedSegment>
 SegmentationResultPrefs::ReadSegmentationResultFromPref(
     const std::string& result_key) {
   const base::Value::Dict& dictionary =
-      prefs_->GetValueDict(kSegmentationResultPref);
+      prefs_->GetDict(kSegmentationResultPref);
 
   const base::Value* value = dictionary.Find(result_key);
   if (!value)
@@ -52,11 +54,14 @@ SegmentationResultPrefs::ReadSegmentationResultFromPref(
       base::Value::AsDictionaryValue(*value);
 
   absl::optional<int> segment_id = segmentation_result.FindIntKey("segment_id");
+  absl::optional<float> rank =
+      segmentation_result.FindDoubleKey("segment_rank");
   absl::optional<bool> in_use = segmentation_result.FindBoolKey("in_use");
   absl::optional<base::Time> selection_time =
       base::ValueToTime(segmentation_result.FindPath("selection_time"));
 
-  SelectedSegment selected_segment(static_cast<SegmentId>(segment_id.value()));
+  SelectedSegment selected_segment(static_cast<SegmentId>(segment_id.value()),
+                                   rank);
   if (in_use.has_value())
     selected_segment.in_use = in_use.value();
   if (selection_time.has_value())

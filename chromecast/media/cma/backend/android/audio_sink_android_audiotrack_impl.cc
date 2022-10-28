@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -149,7 +149,13 @@ AudioSinkAndroidAudioTrackImpl::GetAudioTrackTimestamp() {
       base::android::AttachCurrentThread(), j_audio_sink_audiotrack_impl_);
   return MediaPipelineBackendAndroid::AudioTrackTimestamp(
       direct_audio_track_timestamp_address_[0],
-      direct_audio_track_timestamp_address_[1]);
+      direct_audio_track_timestamp_address_[1],
+      direct_audio_track_timestamp_address_[2]);
+}
+
+int AudioSinkAndroidAudioTrackImpl::GetStartThresholdInFrames() {
+  return Java_AudioSinkAudioTrackImpl_getStartThresholdInFrames(
+      base::android::AttachCurrentThread(), j_audio_sink_audiotrack_impl_);
 }
 
 void AudioSinkAndroidAudioTrackImpl::FinalizeOnFeederThread() {

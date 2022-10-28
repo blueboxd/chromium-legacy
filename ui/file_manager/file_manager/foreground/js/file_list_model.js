@@ -3,8 +3,8 @@
 // found in the LICENSE file.
 
 import {assert} from 'chrome://resources/js/assert.m.js';
-import {ArrayDataModel} from 'chrome://resources/js/cr/ui/array_data_model.m.js';
 
+import {ArrayDataModel} from '../../common/js/array_data_model.js';
 import {FileExtensionType, FileType} from '../../common/js/file_type.js';
 import {getRecentDateBucket, getTranslationKeyForDateBucket} from '../../common/js/recent_date_bucket.js';
 import {str, strf, util} from '../../common/js/util.js';
@@ -671,6 +671,16 @@ export class FileListModel extends ArrayDataModel {
     if (snapshot.groups.length > 0) {
       // The last element is always the end of the last group.
       snapshot.groups[snapshot.groups.length - 1].endIndex = this.length - 1;
+    }
+  }
+
+  /**
+   * Refresh the group by data, e.g. when date modified changes due to
+   * timezone change.
+   */
+  refreshGroupBySnapshot() {
+    if (this.groupByField_ === GROUP_BY_FIELD_MODIFICATION_TIME) {
+      this.updateGroupBySnapshot_();
     }
   }
 

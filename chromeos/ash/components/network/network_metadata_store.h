@@ -1,4 +1,4 @@
-// Copyright (c) 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -153,6 +153,8 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkMetadataStore
                base::Value value);
   const base::Value* GetPref(const std::string& network_guid,
                              const std::string& key);
+  const base::Value::List* GetListPref(const std::string& network_guid,
+                                       const std::string& key);
   void UpdateExternalModifications(const std::string& network_guid,
                                    const std::string& field);
   void LogHiddenNetworkAge();

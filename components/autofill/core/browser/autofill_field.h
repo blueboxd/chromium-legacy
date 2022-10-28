@@ -1,4 +1,4 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -256,11 +256,11 @@ class AutofillField : public FormFieldData {
   AutofillType overall_type_;
 
   // The type of the field, as specified by the site author in HTML.
-  HtmlFieldType html_type_ = HTML_TYPE_UNSPECIFIED;
+  HtmlFieldType html_type_ = HtmlFieldType::kUnspecified;
 
   // The "mode" of the field, as specified by the site author in HTML.
   // Currently this is used to distinguish between billing and shipping fields.
-  HtmlFieldMode html_mode_ = HTML_MODE_NONE;
+  HtmlFieldMode html_mode_ = HtmlFieldMode::kNone;
 
   // The set of possible types for this field.
   ServerFieldTypeSet possible_types_;

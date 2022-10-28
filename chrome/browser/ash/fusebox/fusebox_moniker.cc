@@ -1,4 +1,4 @@
-// Copyright (c) 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -55,11 +55,12 @@ std::string MonikerMap::GetFilename(const Moniker& moniker) {
 MonikerMap::MonikerMap() = default;
 MonikerMap::~MonikerMap() = default;
 
-Moniker MonikerMap::CreateMoniker(storage::FileSystemURL target) {
+Moniker MonikerMap::CreateMoniker(storage::FileSystemURL target,
+                                  bool read_only) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   Moniker moniker = base::Token::CreateRandom();
-  map_.insert({moniker, std::move(target)});
+  map_.insert({moniker, std::make_pair(std::move(target), read_only)});
   return moniker;
 }
 
@@ -72,14 +73,14 @@ void MonikerMap::DestroyMoniker(const Moniker& moniker) {
   }
 }
 
-storage::FileSystemURL MonikerMap::Resolve(const Moniker& moniker) {
+MonikerMap::FSURLAndReadOnlyState MonikerMap::Resolve(const Moniker& moniker) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   auto iter = map_.find(moniker);
   if (iter != map_.end()) {
     return iter->second;
   }
-  return storage::FileSystemURL();
+  return std::make_pair(storage::FileSystemURL(), false);
 }
 
 }  // namespace fusebox

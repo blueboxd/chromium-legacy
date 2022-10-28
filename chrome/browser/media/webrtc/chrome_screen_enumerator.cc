@@ -1,8 +1,10 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome/browser/media/webrtc/chrome_screen_enumerator.h"
+
+#include <tuple>
 
 #include "base/feature_list.h"
 #include "base/task/bind_post_task.h"
@@ -13,6 +15,7 @@
 #include "content/public/browser/desktop_media_id.h"
 #include "content/public/common/content_features.h"
 #include "third_party/blink/public/mojom/mediastream/media_stream.mojom.h"
+#include "ui/gfx/geometry/point.h"
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "ash/shell.h"
@@ -59,7 +62,10 @@ blink::mojom::StreamDevicesSetPtr EnumerateScreensAsh(
   base::ranges::stable_sort(
       screens_with_metadata,
       [](const ScreenWithMetaData& lhs, const ScreenWithMetaData& rhs) {
-        return lhs.bounds.origin() < rhs.bounds.origin();
+        return std::make_tuple(lhs.bounds.origin().x(),
+                               lhs.bounds.origin().y()) <
+               std::make_tuple(rhs.bounds.origin().x(),
+                               rhs.bounds.origin().y());
       });
 
   blink::mojom::StreamDevicesSetPtr stream_devices_set =

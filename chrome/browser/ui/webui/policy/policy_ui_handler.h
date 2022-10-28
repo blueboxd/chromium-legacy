@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,6 +10,7 @@
 
 #include <memory>
 #include <string>
+#include <utility>
 
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_multi_source_observation.h"
@@ -17,12 +18,12 @@
 #include "build/branding_buildflags.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
+#include "chrome/browser/policy/value_provider/chrome_policies_value_provider.h"
 #include "chrome/browser/policy/value_provider/policy_value_provider.h"
 #include "components/policy/core/browser/policy_error_map.h"
 #include "components/policy/core/common/policy_map.h"
 #include "components/policy/core/common/policy_namespace.h"
 #include "components/policy/core/common/policy_service.h"
-#include "components/policy/core/common/schema_registry.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "content/public/browser/web_ui_message_handler.h"
@@ -30,24 +31,27 @@
 #include "ui/shell_dialogs/select_file_dialog.h"
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
-#include "chrome/browser/policy/value_provider/extension_policies_value_provider.h"
+class ExtensionPoliciesValueProvider;
 #endif
 
 #if BUILDFLAG(IS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
-#include "chrome/browser/policy/status_provider/updater_status_and_value_provider.h"
+class UpdaterStatusAndValueProvider;
 #endif  // BUILDFLAG(IS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
+
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+class AshLacrosPolicyStackBridge;
+#endif
+
+class ChromePoliciesValueProvider;
 
 class PrefChangeRegistrar;
 
 namespace policy {
-class PolicyMap;
 class PolicyStatusProvider;
 }
 
 // The JavaScript message handler for the chrome://policy page.
 class PolicyUIHandler : public content::WebUIMessageHandler,
-                        public policy::PolicyService::Observer,
-                        public policy::SchemaRegistry::Observer,
                         public policy::PolicyValueProvider::Observer,
                         public ui::SelectFileDialog::Listener {
  public:
@@ -64,14 +68,6 @@ class PolicyUIHandler : public content::WebUIMessageHandler,
   // content::WebUIMessageHandler implementation.
   void RegisterMessages() override;
 
-  // policy::PolicyService::Observer implementation.
-  void OnPolicyUpdated(const policy::PolicyNamespace& ns,
-                       const policy::PolicyMap& previous,
-                       const policy::PolicyMap& current) override;
-
-  // policy::SchemaRegistry::Observer implementation.
-  void OnSchemaRegistryUpdated(bool has_new_schemas) override;
-
   // policy::PolicyValueProvider::Observer implementation.
   void OnPolicyValueChanged() override;
 
@@ -84,16 +80,21 @@ class PolicyUIHandler : public content::WebUIMessageHandler,
 
  private:
   base::Value::Dict GetPolicyNames();
-  base::Value::List GetPolicyValues();
+  base::Value::Dict GetPolicyValues();
 
   void HandleExportPoliciesJson(const base::Value::List& args);
   void HandleListenPoliciesUpdates(const base::Value::List& args);
   void HandleReloadPolicies(const base::Value::List& args);
   void HandleCopyPoliciesJson(const base::Value::List& args);
 
-  // Send information about the current policy values to the UI. For each policy
-  // whose value has been set, a dictionary containing the value and additional
-  // metadata is sent.
+  // Send information about the current policy values to the UI. Information is
+  // sent in two parts to the UI:
+  // - A dictionary containing all available policy names
+  // - A dictionary containing the value and additional metadata for each
+  // policy whose value has been set and the list of available policy IDs.
+  // Policy values and names are sent separately because the UI displays the
+  // policies that has their values set and the policies without value
+  // separately.
   void SendPolicies();
 
   // Send the status of cloud policy to the UI.
@@ -101,23 +102,12 @@ class PolicyUIHandler : public content::WebUIMessageHandler,
 
   // Get the status of cloud policy. For each scope that has cloud policy
   // enabled (device and/or user), a dictionary containing status information.
-  // If |for_webui| is true, values needed for webui will be included
-  // additionally.
-  base::Value::Dict GetStatusValue(bool for_webui) const;
+  base::Value::Dict GetStatusValue() const;
 
   // Build a JSON string of all the policies.
   std::string GetPoliciesAsJson();
 
   void WritePoliciesToJSONFile(const base::FilePath& path);
-
-  void OnRefreshPoliciesDone();
-
-#if BUILDFLAG(IS_CHROMEOS_LACROS)
-  void OnGotDevicePolicy(base::Value::Dict device_policy,
-                         base::Value::Dict legend_data);
-  void OnGotDevicePolicyDeprecated(base::Value device_policy,
-                                   base::Value legend_data);
-#endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
 
   scoped_refptr<ui::SelectFileDialog> export_policies_select_file_dialog_;
 
@@ -127,6 +117,8 @@ class PolicyUIHandler : public content::WebUIMessageHandler,
   std::unique_ptr<policy::PolicyStatusProvider> user_status_provider_;
   std::unique_ptr<policy::PolicyStatusProvider> device_status_provider_;
   std::unique_ptr<policy::PolicyStatusProvider> machine_status_provider_;
+
+  std::unique_ptr<ChromePoliciesValueProvider> chrome_policies_value_provider_;
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   std::unique_ptr<ExtensionPoliciesValueProvider>
@@ -139,7 +131,10 @@ class PolicyUIHandler : public content::WebUIMessageHandler,
 #endif  // BUILDFLAG(IS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
-  base::Value::Dict device_policy_;
+  // AshLacrosPolicyStackBridge fetches device policies for Lacros from Ash and
+  // sends the signal to Ash to refresh policies. We will use it as device
+  // policy value and status provider for Lacros.
+  AshLacrosPolicyStackBridge* ash_lacros_policy_stack_bridge_;
 #endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
 
   std::unique_ptr<PrefChangeRegistrar> pref_change_registrar_;

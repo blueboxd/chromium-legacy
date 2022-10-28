@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,6 +8,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/themes/theme_service_factory.h"
+#include "chrome/browser/ui/browser_command_controller.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list.h"
@@ -85,6 +86,17 @@ class WebAppTabStripBrowserTest : public InProcessBrowserTest {
     return App{app_id, app_browser,
                BrowserView::GetBrowserViewForBrowser(app_browser),
                app_browser->tab_strip_model()->GetActiveWebContents()};
+  }
+
+  void OpenUrlAndWait(Browser* app_browser, GURL url) {
+    TabStripModel* tab_strip = app_browser->tab_strip_model();
+
+    content::WaitForLoadStop(tab_strip->GetActiveWebContents());
+
+    NavigateParams params(app_browser, url,
+                          ui::PageTransition::PAGE_TRANSITION_LINK);
+    params.disposition = WindowOpenDisposition::CURRENT_TAB;
+    ui_test_utils::NavigateToURL(&params);
   }
 
   SkColor GetTabColor(BrowserView* browser_view) {
@@ -383,6 +395,140 @@ IN_PROC_BROWSER_TEST_F(WebAppTabStripBrowserTest, ReparentingPinsHomeTab) {
   EXPECT_TRUE(tab_strip->IsTabPinned(0));
   EXPECT_EQ(tab_strip->GetWebContentsAt(0)->GetVisibleURL(),
             registrar().GetAppStartUrl(app_id));
+  EXPECT_EQ(tab_strip->active_index(), 0);
+}
+
+IN_PROC_BROWSER_TEST_F(WebAppTabStripBrowserTest, NavigationThrottle) {
+  GURL start_url =
+      embedded_test_server()->GetURL("/web_apps/tab_strip_customizations.html");
+  AppId app_id = InstallWebAppFromPage(browser(), start_url);
+  Browser* app_browser = FindWebAppBrowser(browser()->profile(), app_id);
+  TabStripModel* tab_strip = app_browser->tab_strip_model();
+
+  EXPECT_TRUE(registrar().IsTabbedWindowModeEnabled(app_id));
+
+  // Expect app opened with pinned home tab.
+  EXPECT_EQ(tab_strip->count(), 1);
+  EXPECT_TRUE(tab_strip->IsTabPinned(0));
+  EXPECT_EQ(tab_strip->GetWebContentsAt(0)->GetVisibleURL(), start_url);
+  EXPECT_EQ(tab_strip->active_index(), 0);
+
+  // Navigate to a non home tab URL.
+  OpenUrlAndWait(app_browser,
+                 embedded_test_server()->GetURL("/web_apps/get_manifest.html"));
+
+  // Expect URL to have opened in new tab.
+  EXPECT_EQ(tab_strip->count(), 2);
+  EXPECT_EQ(tab_strip->active_index(), 1);
+  EXPECT_EQ(tab_strip->GetWebContentsAt(0)->GetVisibleURL(), start_url);
+  EXPECT_EQ(tab_strip->GetWebContentsAt(1)->GetVisibleURL(),
+            embedded_test_server()->GetURL("/web_apps/get_manifest.html"));
+
+  // Navigate to home tab URL with query params.
+  OpenUrlAndWait(app_browser,
+                 embedded_test_server()->GetURL(
+                     "/web_apps/tab_strip_customizations.html?some_query"));
+
+  // Expect navigation to happen in home tab.
+  EXPECT_EQ(tab_strip->count(), 2);
+  EXPECT_EQ(tab_strip->active_index(), 0);
+  EXPECT_EQ(tab_strip->GetWebContentsAt(0)->GetVisibleURL(),
+            embedded_test_server()->GetURL(
+                "/web_apps/tab_strip_customizations.html?some_query"));
+
+  // Navigate to home tab URL with hash ref.
+  OpenUrlAndWait(app_browser,
+                 embedded_test_server()->GetURL(
+                     "/web_apps/tab_strip_customizations.html#some_hash"));
+
+  // Expect navigation to happen in home tab.
+  EXPECT_EQ(tab_strip->count(), 2);
+  EXPECT_EQ(tab_strip->active_index(), 0);
+  EXPECT_EQ(tab_strip->GetWebContentsAt(0)->GetVisibleURL(),
+            embedded_test_server()->GetURL(
+                "/web_apps/tab_strip_customizations.html#some_hash"));
+
+  // Navigate to a non home tab URL.
+  OpenUrlAndWait(app_browser, embedded_test_server()->GetURL(
+                                  "/web_apps/get_manifest.html?blah"));
+
+  // Expect URL to have opened in new tab.
+  EXPECT_EQ(tab_strip->count(), 3);
+  EXPECT_EQ(tab_strip->active_index(), 1);
+  EXPECT_EQ(tab_strip->GetWebContentsAt(0)->GetVisibleURL(),
+            embedded_test_server()->GetURL(
+                "/web_apps/tab_strip_customizations.html#some_hash"));
+  EXPECT_EQ(tab_strip->GetWebContentsAt(1)->GetVisibleURL(),
+            embedded_test_server()->GetURL("/web_apps/get_manifest.html?blah"));
+  EXPECT_EQ(tab_strip->GetWebContentsAt(2)->GetVisibleURL(),
+            embedded_test_server()->GetURL("/web_apps/get_manifest.html"));
+
+  // Navigate to home tab URL.
+  OpenUrlAndWait(app_browser, start_url);
+
+  // Expect navigation to happen in home tab.
+  EXPECT_EQ(tab_strip->count(), 3);
+  EXPECT_EQ(tab_strip->active_index(), 0);
+  EXPECT_EQ(tab_strip->GetWebContentsAt(0)->GetVisibleURL(), start_url);
+}
+
+IN_PROC_BROWSER_TEST_F(WebAppTabStripBrowserTest, OpenInChrome) {
+  GURL start_url =
+      embedded_test_server()->GetURL("/web_apps/tab_strip_customizations.html");
+  AppId app_id = InstallWebAppFromPage(browser(), start_url);
+  Browser* app_browser = LaunchWebAppBrowser(browser()->profile(), app_id);
+
+  EXPECT_TRUE(registrar().IsTabbedWindowModeEnabled(app_id));
+
+  // 'Open in Chrome' menu item should not be enabled for the pinned home tab.
+  EXPECT_FALSE(
+      app_browser->command_controller()->IsCommandEnabled(IDC_OPEN_IN_CHROME));
+
+  chrome::NewTab(app_browser);
+  // 'Open in Chrome' menu item should be enabled for other tabs.
+  EXPECT_TRUE(
+      app_browser->command_controller()->IsCommandEnabled(IDC_OPEN_IN_CHROME));
+}
+
+IN_PROC_BROWSER_TEST_F(WebAppTabStripBrowserTest,
+                       OnlyNavigateHomeTabIfDifferentUrl) {
+  GURL start_url =
+      embedded_test_server()->GetURL("/web_apps/tab_strip_customizations.html");
+  AppId app_id = InstallWebAppFromPage(browser(), start_url);
+  Browser* app_browser = FindWebAppBrowser(browser()->profile(), app_id);
+  TabStripModel* tab_strip = app_browser->tab_strip_model();
+
+  EXPECT_TRUE(registrar().IsTabbedWindowModeEnabled(app_id));
+
+  // Expect app opened with pinned home tab.
+  EXPECT_EQ(tab_strip->count(), 1);
+  EXPECT_TRUE(tab_strip->IsTabPinned(0));
+  EXPECT_EQ(tab_strip->GetWebContentsAt(0)->GetVisibleURL(), start_url);
+  EXPECT_EQ(tab_strip->active_index(), 0);
+
+  // Execute some JS to set a variable.
+  EXPECT_EQ(nullptr, EvalJs(tab_strip->GetWebContentsAt(0), "var test = 5"));
+
+  // Navigate to a non home tab URL.
+  OpenUrlAndWait(app_browser,
+                 embedded_test_server()->GetURL("/web_apps/get_manifest.html"));
+  EXPECT_EQ(tab_strip->count(), 2);
+  EXPECT_EQ(tab_strip->active_index(), 1);
+
+  // Navigate to home tab using the same URL.
+  OpenUrlAndWait(app_browser, start_url);
+
+  // Expect the JS variable to still be set, meaning the page was not navigated.
+  EXPECT_EQ(true, EvalJs(tab_strip->GetWebContentsAt(0), "test == 5"));
+  EXPECT_EQ(tab_strip->GetWebContentsAt(0)->GetVisibleURL(), start_url);
+  EXPECT_EQ(tab_strip->active_index(), 0);
+
+  // Launch the app to the home tab using the same URL.
+  app_browser = LaunchWebAppToURL(browser()->profile(), app_id, start_url);
+
+  // Expect the JS variable to still be set, meaning the page was not navigated.
+  EXPECT_EQ(true, EvalJs(tab_strip->GetWebContentsAt(0), "test == 5"));
+  EXPECT_EQ(tab_strip->GetWebContentsAt(0)->GetVisibleURL(), start_url);
   EXPECT_EQ(tab_strip->active_index(), 0);
 }
 

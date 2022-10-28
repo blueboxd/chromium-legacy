@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,8 +13,6 @@
 #include <vector>
 
 #include "ash/components/arc/net/always_on_vpn_manager.h"
-#include "ash/components/login/auth/authenticator.h"
-#include "ash/components/login/auth/public/user_context.h"
 #include "base/callback.h"
 #include "base/containers/flat_map.h"
 #include "base/containers/flat_set.h"
@@ -26,6 +24,8 @@
 #include "chrome/browser/ash/base/locale_util.h"
 #include "chrome/browser/ash/child_accounts/child_policy_observer.h"
 #include "chrome/browser/ash/hats/hats_notification_controller.h"
+#include "chromeos/ash/components/login/auth/authenticator.h"
+#include "chromeos/ash/components/login/auth/public/user_context.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 // TODO(https://crbug.com/1164001): move to forward declaration.
 #include "chrome/browser/ash/login/easy_unlock/easy_unlock_key_manager.h"
@@ -70,7 +70,8 @@ namespace test {
 class UserSessionManagerTestApi;
 }  // namespace test
 
-class UserSessionManagerDelegate {
+class UserSessionManagerDelegate
+    : public base::SupportsWeakPtr<UserSessionManagerDelegate> {
  public:
   // Called after profile is loaded and prepared for the session.
   // `browser_launched` will be true is browser has been launched, otherwise
@@ -106,7 +107,6 @@ class UserAuthenticatorObserver : public base::CheckedObserver {
 class UserSessionManager
     : public OAuth2LoginManager::Observer,
       public network::NetworkConnectionTracker::NetworkConnectionObserver,
-      public base::SupportsWeakPtr<UserSessionManager>,
       public UserSessionManagerDelegate,
       public user_manager::UserManager::UserSessionStateObserver,
       public user_manager::UserManager::Observer {
@@ -194,10 +194,7 @@ class UserSessionManager
                     StartSessionType start_session_type,
                     bool has_auth_cookies,
                     bool has_active_session,
-                    UserSessionManagerDelegate* delegate);
-
-  // Invalidates `delegate`, which was passed to StartSession method call.
-  void DelegateDeleted(UserSessionManagerDelegate* delegate);
+                    base::WeakPtr<UserSessionManagerDelegate> delegate);
 
   // Perform additional actions once system wide notification
   // "UserLoggedIn" has been sent.
@@ -358,6 +355,8 @@ class UserSessionManager
   // milestone.
   void MaybeShowHelpAppDiscoverNotification(Profile* profile);
 
+  base::WeakPtr<UserSessionManager> GetUserSessionManagerAsWeakPtr();
+
  protected:
   // Protected for testability reasons.
   UserSessionManager();
@@ -416,11 +415,6 @@ class UserSessionManager
 
   void StartCrosSession();
   void PrepareProfile(const base::FilePath& profile_path);
-
-  // Callback for asynchronous profile creation.
-  void OnProfileCreated(const UserContext& user_context,
-                        Profile* profile,
-                        Profile::CreateStatus status);
 
   // Callback for Profile::CREATE_STATUS_CREATED profile state.
   // Initializes basic preferences for newly created profile. Any other
@@ -554,7 +548,7 @@ class UserSessionManager
   HelpAppNotificationController* GetHelpAppNotificationController(
       Profile* profile);
 
-  UserSessionManagerDelegate* delegate_;
+  base::WeakPtr<UserSessionManagerDelegate> delegate_;
 
   // Used to listen to network changes.
   network::NetworkConnectionTracker* network_connection_tracker_;

@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -582,7 +582,7 @@ void MediaGalleriesPreferences::InitFromPrefs() {
 
   PrefService* prefs = profile_->GetPrefs();
   const base::Value::List& list =
-      prefs->GetValueList(prefs::kMediaGalleriesRememberedGalleries);
+      prefs->GetList(prefs::kMediaGalleriesRememberedGalleries);
 
   for (const auto& gallery_value : list) {
     if (!gallery_value.is_dict())
@@ -1036,7 +1036,7 @@ bool MediaGalleriesPreferences::NonAutoGalleryHasPermission(
              MediaGalleryPrefInfo::kAutoDetected);
   ExtensionPrefs* prefs = GetExtensionPrefs();
   const base::Value::Dict& extensions =
-      prefs->pref_service()->GetValueDict(extensions::pref_names::kExtensions);
+      prefs->pref_service()->GetDict(extensions::pref_names::kExtensions);
 
   for (const auto iter : extensions) {
     if (!crx_file::id_util::IdIsValid(iter.first)) {
@@ -1246,7 +1246,7 @@ void MediaGalleriesPreferences::RemoveGalleryPermissionsFromPrefs(
   DCHECK(IsInitialized());
   ExtensionPrefs* prefs = GetExtensionPrefs();
   const base::Value::Dict& extensions =
-      prefs->pref_service()->GetValueDict(extensions::pref_names::kExtensions);
+      prefs->pref_service()->GetDict(extensions::pref_names::kExtensions);
 
   for (const auto iter : extensions) {
     if (!crx_file::id_util::IdIsValid(iter.first)) {

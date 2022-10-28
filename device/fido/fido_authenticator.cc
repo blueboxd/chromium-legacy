@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -224,6 +224,10 @@ bool FidoAuthenticator::SupportsEnterpriseAttestation() const {
 }
 
 bool FidoAuthenticator::SupportsCredBlobOfSize(size_t num_bytes) const {
+  return false;
+}
+
+bool FidoAuthenticator::SupportsDevicePublicKey() const {
   return false;
 }
 

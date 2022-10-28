@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,33 +13,23 @@
 const CGFloat kSettingsRootSymbolImagePointSize = 18;
 
 // Custom symbol names.
+NSString* const kPrivacySymbol = @"checkerboard_shield";
 NSString* const kSyncDisabledSymbol = @"arrow_triangle_slash_circlepath";
+NSString* const kSafetyCheckSymbol = @"checkermark_shield";
 
 // Default symbol names.
 NSString* const kSyncErrorSymbol =
     @"exclamationmark.arrow.triangle.2.circlepath";
 NSString* const kSyncEnabledSymbol = @"arrow.triangle.2.circlepath";
 NSString* const kDefaultBrowserSymbol = @"app.badge.checkmark";
-NSString* const kPrivacySecuritySymbol = @"checkerboard.shield";
-
-namespace {
-
-// The default configuration with the given `pointSize` for the Settings root
-// screen.
-UIImageSymbolConfiguration* kDefaultSettingsRootSymbolConfiguration =
-    [UIImageSymbolConfiguration
-        configurationWithPointSize:kSettingsRootSymbolImagePointSize
-                            weight:UIImageSymbolWeightRegular
-                             scale:UIImageSymbolScaleMedium];
-
-}  // namespace
+NSString* const kDiscoverSymbol = @"flame";
 
 UIImage* DefaultSettingsRootSymbol(NSString* symbol_name) {
-  return DefaultSymbolWithConfiguration(
-      symbol_name, kDefaultSettingsRootSymbolConfiguration);
+  return DefaultSymbolWithPointSize(symbol_name,
+                                    kSettingsRootSymbolImagePointSize);
 }
 
 UIImage* CustomSettingsRootSymbol(NSString* symbol_name) {
-  return CustomSymbolWithConfiguration(symbol_name,
-                                       kDefaultSettingsRootSymbolConfiguration);
+  return CustomSymbolWithPointSize(symbol_name,
+                                   kSettingsRootSymbolImagePointSize);
 }

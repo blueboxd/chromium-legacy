@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,6 +10,7 @@
 
 #include "base/values.h"
 #include "chrome/browser/ash/app_mode/kiosk_app_data_base.h"
+#include "chrome/browser/web_applications/web_app_install_info.h"
 #include "components/account_id/account_id.h"
 #include "ui/gfx/image/image_skia.h"
 #include "url/gurl.h"
@@ -19,6 +20,8 @@ struct WebAppInstallInfo;
 namespace ash {
 
 class KioskAppDataDelegate;
+
+extern const int kWebKioskIconSize;
 
 class WebKioskAppData : public KioskAppDataBase {
  public:
@@ -58,6 +61,10 @@ class WebKioskAppData : public KioskAppDataBase {
   void SetStatus(Status status, bool notify = true);
 
   void UpdateFromWebAppInfo(const WebAppInstallInfo& app_info);
+
+  void UpdateAppInfo(const std::string& title,
+                     const GURL& start_url,
+                     const IconBitmaps& icon_bitmaps);
 
   void SetOnLoadedCallbackForTesting(base::OnceClosure callback);
 

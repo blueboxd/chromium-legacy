@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -65,6 +65,12 @@ AudioDecoderPipelineNode::GetAudioTrackTimestamp() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   return delegated_decoder_->GetAudioTrackTimestamp();
+}
+
+int AudioDecoderPipelineNode::GetStartThresholdInFrames() {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+
+  return delegated_decoder_->GetStartThresholdInFrames();
 }
 
 bool AudioDecoderPipelineNode::RequiresDecryption() {

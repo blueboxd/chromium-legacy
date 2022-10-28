@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,9 +6,9 @@
 #define CHROMEOS_ASH_SERVICES_ASSISTANT_PUBLIC_CPP_CONVERSATION_OBSERVER_H_
 
 #include "base/component_export.h"
-#include "chromeos/services/libassistant/public/cpp/assistant_interaction_metadata.h"
-#include "chromeos/services/libassistant/public/cpp/assistant_suggestion.h"
-#include "chromeos/services/libassistant/public/mojom/conversation_observer.mojom.h"
+#include "chromeos/ash/services/libassistant/public/cpp/assistant_interaction_metadata.h"
+#include "chromeos/ash/services/libassistant/public/cpp/assistant_suggestion.h"
+#include "chromeos/ash/services/libassistant/public/mojom/conversation_observer.mojom.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 
 namespace ash::assistant {

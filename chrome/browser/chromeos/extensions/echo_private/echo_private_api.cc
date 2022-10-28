@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -129,7 +129,7 @@ EchoPrivateGetRegistrationCodeFunction::Run() {
 
 void EchoPrivateGetRegistrationCodeFunction::RespondWithResult(
     const std::string& result) {
-  Respond(OneArgument(base::Value(result)));
+  Respond(WithArguments(result));
 }
 
 EchoPrivateSetOfferInfoFunction::EchoPrivateSetOfferInfoFunction() {}
@@ -142,8 +142,7 @@ ExtensionFunction::ResponseAction EchoPrivateSetOfferInfoFunction::Run() {
   EXTENSION_FUNCTION_VALIDATE(params);
 
   const std::string& service_id = params->id;
-  base::Value::Dict dict =
-      params->offer_info.additional_properties.GetDict().Clone();
+  base::Value::Dict dict = params->offer_info.additional_properties.Clone();
   chromeos::echo_offer::RemoveEmptyValueDicts(dict);
 
   PrefService* local_state = g_browser_process->local_state();
@@ -163,17 +162,16 @@ ExtensionFunction::ResponseAction EchoPrivateGetOfferInfoFunction::Run() {
 
   const std::string& service_id = params->id;
   PrefService* local_state = g_browser_process->local_state();
-  const base::Value& offer_infos =
-      local_state->GetValue(prefs::kEchoCheckedOffers);
-  DCHECK(offer_infos.is_dict());
+  const base::Value::Dict& offer_infos =
+      local_state->GetDict(prefs::kEchoCheckedOffers);
 
-  const base::Value* offer_info = offer_infos.FindDictKey("echo." + service_id);
-  if (!offer_info) {
+  const base::Value* offer_info = offer_infos.Find("echo." + service_id);
+  if (!offer_info || !offer_info->is_dict()) {
     return RespondNow(Error("Not found"));
   }
 
   echo_api::GetOfferInfo::Results::Result result;
-  result.additional_properties.MergeDictionary(offer_info);
+  result.additional_properties.Merge(offer_info->GetDict().Clone());
   return RespondNow(
       ArgumentList(echo_api::GetOfferInfo::Results::Create(result)));
 }
@@ -209,7 +207,7 @@ ExtensionFunction::ResponseAction EchoPrivateGetOobeTimestampFunction::Run() {
 
 void EchoPrivateGetOobeTimestampFunction::RespondWithResult(
     const std::string& timestamp) {
-  Respond(OneArgument(base::Value(timestamp)));
+  Respond(WithArguments(timestamp));
 }
 
 EchoPrivateGetUserConsentFunction::EchoPrivateGetUserConsentFunction() =
@@ -283,5 +281,5 @@ ExtensionFunction::ResponseAction EchoPrivateGetUserConsentFunction::Run() {
 }
 
 void EchoPrivateGetUserConsentFunction::Finalize(bool consent) {
-  Respond(OneArgument(base::Value(consent)));
+  Respond(WithArguments(consent));
 }

@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -45,6 +45,7 @@ class FakeWebState : public WebState {
   void DidCoverWebContent() override;
   void DidRevealWebContent() override;
   base::Time GetLastActiveTime() const final;
+  base::Time GetCreationTime() const final;
   void WasShown() override;
   void WasHidden() override;
   void SetKeepRenderProcessAlive(bool keep_alive) override;
@@ -110,6 +111,10 @@ class FakeWebState : public WebState {
       API_AVAILABLE(ios(15.0));
   NSDictionary<NSNumber*, NSNumber*>* GetStatesForAllPermissions()
       const override API_AVAILABLE(ios(15.0));
+  void DownloadCurrentPage(NSString* destination_file,
+                           id<CRWWebViewDownloadDelegate> delegate,
+                           void (^handler)(id<CRWWebViewDownload>)) override
+      API_AVAILABLE(ios(14.5));
 
   void AddPolicyDecider(WebStatePolicyDecider* decider) override;
   void RemovePolicyDecider(WebStatePolicyDecider* decider) override;
@@ -145,15 +150,15 @@ class FakeWebState : public WebState {
   void SetCanTakeSnapshot(bool can_take_snapshot);
 
   // Getters for test data.
-  // Uses |policy_deciders| to determine whether the navigation corresponding to
-  // |request| should be allowed. Calls |callback| with the decision. Defaults
+  // Uses `policy_deciders` to determine whether the navigation corresponding to
+  // `request` should be allowed. Calls `callback` with the decision. Defaults
   // to PolicyDecision::Allow().
   void ShouldAllowRequest(
       NSURLRequest* request,
       WebStatePolicyDecider::RequestInfo request_info,
       WebStatePolicyDecider::PolicyDecisionCallback callback);
-  // Uses |policy_deciders| to determine whether the navigation corresponding to
-  // |response| should be allowed. Calls |callback| with the decision. Defaults
+  // Uses `policy_deciders` to determine whether the navigation corresponding to
+  // `response` should be allowed. Calls `callback` with the decision. Defaults
   // to PolicyDecision::Allow().
   void ShouldAllowResponse(
       NSURLResponse* response,
@@ -190,6 +195,7 @@ class FakeWebState : public WebState {
   bool can_take_snapshot_ = false;
   bool is_closed_ = false;
   base::Time last_active_time_ = base::Time::Now();
+  base::Time creation_time_ = base::Time::Now();
   int navigation_item_count_ = 0;
   FaviconStatus favicon_status_;
   GURL url_;

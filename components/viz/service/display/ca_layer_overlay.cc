@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -45,37 +45,8 @@ const int kTooManyRenderPassDrawQuads = 30;
 // or equal to this number.
 const int kMaxNumVideos = 5;
 
-void RecordCALayerHistogram(gfx::CALayerResult result,
-                            bool odd_width,
-                            bool odd_height,
-                            bool odd_x,
-                            bool odd_y) {
+void RecordCALayerHistogram(gfx::CALayerResult result) {
   UMA_HISTOGRAM_ENUMERATION("Compositing.Renderer.CALayerResult", result);
-
-  // Record any odd sized and odd offset videos in the current frame.
-  gfx::OddSize size_enum;
-  if (odd_width && odd_height)
-    size_enum = gfx::OddSize::kOddWidthAndHeight;
-  else if (odd_width)
-    size_enum = gfx::OddSize::kOddWidthOnly;
-  else if (odd_height)
-    size_enum = gfx::OddSize::kOddHeightOnly;
-  else
-    size_enum = gfx::OddSize::kEvenWidthAndHeight;
-  UMA_HISTOGRAM_ENUMERATION("Compositing.Renderer.CALayer.OddSizedVideo",
-                            size_enum);
-
-  gfx::OddOffset offset_enum;
-  if (odd_x && odd_y)
-    offset_enum = gfx::OddOffset::kOddXAndY;
-  else if (odd_x)
-    offset_enum = gfx::OddOffset::kOddXOnly;
-  else if (odd_y)
-    offset_enum = gfx::OddOffset::kOddYOnly;
-  else
-    offset_enum = gfx::OddOffset::kEvenXAndY;
-  UMA_HISTOGRAM_ENUMERATION("Compositing.Renderer.CALayer.OddOffsetVideo",
-                            offset_enum);
 }
 
 bool FilterOperationSupported(const cc::FilterOperation& operation) {
@@ -213,33 +184,33 @@ gfx::CALayerResult FromYUVVideoQuad(DisplayResourceProvider* resource_provider,
   // gfx::ScaleRect (which would multiply by the reciprocal), to avoid
   // introducing excessive floating-point errors.
   gfx::RectF ya_contents_rect = {
-      (quad->ya_tex_coord_rect.x() / quad->ya_tex_size.width()),
-      (quad->ya_tex_coord_rect.y() / quad->ya_tex_size.height()),
-      (quad->ya_tex_coord_rect.width() / quad->ya_tex_size.width()),
-      (quad->ya_tex_coord_rect.height() / quad->ya_tex_size.height())};
+      (quad->ya_tex_coord_rect().x() / quad->ya_tex_size().width()),
+      (quad->ya_tex_coord_rect().y() / quad->ya_tex_size().height()),
+      (quad->ya_tex_coord_rect().width() / quad->ya_tex_size().width()),
+      (quad->ya_tex_coord_rect().height() / quad->ya_tex_size().height())};
   gfx::RectF uv_contents_rect = {
-      (quad->uv_tex_coord_rect.x() / quad->uv_tex_size.width()),
-      (quad->uv_tex_coord_rect.y() / quad->uv_tex_size.height()),
-      (quad->uv_tex_coord_rect.width() / quad->uv_tex_size.width()),
-      (quad->uv_tex_coord_rect.height() / quad->uv_tex_size.height())};
+      (quad->uv_tex_coord_rect().x() / quad->uv_tex_size().width()),
+      (quad->uv_tex_coord_rect().y() / quad->uv_tex_size().height()),
+      (quad->uv_tex_coord_rect().width() / quad->uv_tex_size().width()),
+      (quad->uv_tex_coord_rect().height() / quad->uv_tex_size().height())};
   // For odd-sized videos, |ya_tex_coord_rect| and |uv_tex_coord_rect| might not
   // be identical.
-  float tolerance_x = 1.5f / quad->uv_tex_size.width();
-  float tolerance_y = 1.5f / quad->uv_tex_size.height();
+  float tolerance_x = 1.5f / quad->uv_tex_size().width();
+  float tolerance_y = 1.5f / quad->uv_tex_size().height();
   if (!ya_contents_rect.ApproximatelyEqual(uv_contents_rect, tolerance_x,
                                            tolerance_y)) {
     return gfx::kCALayerFailedYUVTexcoordMismatch;
   }
 
   // Check any odd sized and odd offset video in the current frame.
-  if (quad->ya_tex_size.width() % 2)
+  if (quad->ya_tex_size().width() % 2)
     video_with_odd_width_out = true;
-  if (quad->ya_tex_size.height() % 2)
+  if (quad->ya_tex_size().height() % 2)
     video_with_odd_height_out = true;
   float integer = 0;
-  if (std::modf(quad->ya_tex_coord_rect.x() / 2.f, &integer) != 0)
+  if (std::modf(quad->ya_tex_coord_rect().x() / 2.f, &integer) != 0)
     video_with_odd_x_out = true;
-  if (std::modf(quad->ya_tex_coord_rect.y() / 2.f, &integer) != 0)
+  if (std::modf(quad->ya_tex_coord_rect().y() / 2.f, &integer) != 0)
     video_with_odd_y_out = true;
 
   ca_layer_overlay->contents_resource_id = y_resource_id;
@@ -531,7 +502,7 @@ bool CALayerOverlayProcessor::ProcessForCALayerOverlays(
   }
 
   if (result != gfx::kCALayerSuccess) {
-    RecordCALayerHistogram(result, false, false, false, false);
+    RecordCALayerHistogram(result);
     SaveCALayerResult(result);
     return false;
   }
@@ -584,10 +555,7 @@ bool CALayerOverlayProcessor::ProcessForCALayerOverlays(
     result = gfx::kCALayerFailedTooManyQuads;
   }
 
-  RecordCALayerHistogram(result, processor.video_with_odd_width(),
-                         processor.video_with_odd_height(),
-                         processor.video_with_odd_x(),
-                         processor.video_with_odd_y());
+  RecordCALayerHistogram(result);
   SaveCALayerResult(result);
 
   if (result != gfx::kCALayerSuccess) {

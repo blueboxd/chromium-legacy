@@ -23,7 +23,7 @@ chromium-metrics-reviews@google.com.
 <histograms>
 
 <histogram name="Compositing.Browser.GPUMemoryForTilingsInKb" units="Kb"
-    expires_after="2023-01-08">
+    expires_after="2023-03-12">
   <owner>pdr@chromium.org</owner>
   <owner>paint-dev@chromium.org</owner>
   <owner>sky@chromium.org</owner>
@@ -200,7 +200,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Compositing.DirectRenderer.PartialSwap.RootDamage" units="%"
-    expires_after="2022-12-25">
+    expires_after="2023-02-26">
   <owner>vasilyt@chromium.org</owner>
   <owner>backer@chromium.org</owner>
   <summary>
@@ -212,7 +212,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Compositing.DirectRenderer.PartialSwap.TotalDamage" units="%"
-    expires_after="2022-12-25">
+    expires_after="2023-02-26">
   <owner>vasilyt@chromium.org</owner>
   <owner>backer@chromium.org</owner>
   <summary>
@@ -220,6 +220,28 @@ chromium-metrics-reviews@google.com.
 
     This metric is reported only on platforms/devices that support partial swap
     and does not include &quot;empty swap&quot; (no frame damage) case.
+  </summary>
+</histogram>
+
+<histogram name="Compositing.DirectRenderer.SkipAllNonRootRenderPassesPerFrame"
+    enum="BooleanSkipped" expires_after="2023-04-01">
+  <owner>magchen@chromium.org</owner>
+  <owner>ccameron@chromium.org</owner>
+  <owner>graphics-dev@chromium.org</owner>
+  <summary>
+    Whether all non-root render passes in a frame are skipped. Logged once per
+    frame during DrawFrame for the frames with non-root render passes.
+  </summary>
+</histogram>
+
+<histogram name="Compositing.DirectRenderer.SkipNonRootRenderPass"
+    enum="BooleanSkipped" expires_after="2023-04-01">
+  <owner>magchen@chromium.org</owner>
+  <owner>ccameron@chromium.org</owner>
+  <owner>graphics-dev@chromium.org</owner>
+  <summary>
+    Logged for every non-root render pass in DrawRenderPass during DrawFrame.
+    True if there is no damages to the render pass and the rendering is skipped.
   </summary>
 </histogram>
 
@@ -316,6 +338,18 @@ chromium-metrics-reviews@google.com.
     flattening all possible render passes. If the value is more than one, then
     an intermediate rendering target must be used during the rendering of the
     frame for each render pass greater than one.
+  </summary>
+</histogram>
+
+<histogram
+    name="Compositing.Display.HardwareDisplayController.SchedulePageFlipResult"
+    enum="PageFlipResult" expires_after="2023-03-02">
+  <owner>jshargo@chromium.org</owner>
+  <owner>seanpaul@chromium.org</owner>
+  <owner>chromeos-gfx-compositor@chromium.org</owner>
+  <summary>
+    Logged once per frame, represents whether we could successfully schedule a
+    page flip, or what error we encountered along the way.
   </summary>
 </histogram>
 
@@ -516,26 +550,6 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Compositing.Renderer.CALayer.OddOffsetVideo" enum="OddOffset"
-    expires_after="2023-01-22">
-  <owner>magchen@chromium.org</owner>
-  <owner>ccameron@chromium.org</owner>
-  <summary>
-    Recorded whether the draw frame contains an odd offset video when processing
-    CALayerOverlay.
-  </summary>
-</histogram>
-
-<histogram name="Compositing.Renderer.CALayer.OddSizedVideo" enum="OddSize"
-    expires_after="2023-01-22">
-  <owner>magchen@chromium.org</owner>
-  <owner>ccameron@chromium.org</owner>
-  <summary>
-    Recorded whether the draw frame contains an odd sized video when processing
-    CALayerOverlay.
-  </summary>
-</histogram>
-
 <histogram name="Compositing.Renderer.CALayerResult" enum="CALayerResult"
     expires_after="2023-01-15">
   <owner>ccameron@chromium.org</owner>
@@ -600,7 +614,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Compositing.Renderer.LayersUpdateTime" units="microseconds"
-    expires_after="2022-12-18">
+    expires_after="2023-02-19">
   <owner>schenney@chromium.org</owner>
   <owner>paint-dev@chromium.org</owner>
   <summary>
@@ -651,7 +665,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Compositing.Renderer.NumActiveLayers" units="layers"
-    expires_after="2022-12-18">
+    expires_after="2023-02-19">
   <owner>schenney@chromium.org</owner>
   <owner>paint-dev@chromium.org</owner>
   <summary>
@@ -661,7 +675,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Compositing.Renderer.NumActivePictureLayers" units="layers"
-    expires_after="2022-12-18">
+    expires_after="2023-02-19">
   <owner>schenney@chromium.org</owner>
   <owner>paint-dev@chromium.org</owner>
   <summary>
@@ -699,8 +713,20 @@ chromium-metrics-reviews@google.com.
   <summary>Records if the TileDrawQuad is rendered with RawDraw.</summary>
 </histogram>
 
+<histogram name="Compositing.SkiaRenderer.SkipOverlayRenderPassDrawQuad"
+    enum="BooleanSkipped" expires_after="2023-04-01">
+  <owner>magchen@chromium.org</owner>
+  <owner>ccameron@chromium.org</owner>
+  <owner>graphics-dev@chromium.org</owner>
+  <summary>
+    Logged for every RenderPassDrawQuad in the overlay list during
+    ScheduleOverlays. An Overlay RenderPassDrawQuad is skipped if there is no
+    damages to the render pass and the RenderPassDrawQuad settings are the same.
+  </summary>
+</histogram>
+
 <histogram name="Compositing.SurfaceAggregator.AggregateUs"
-    units="microseconds" expires_after="2022-12-25">
+    units="microseconds" expires_after="2023-02-26">
   <owner>kylechar@chromium.org</owner>
   <owner>graphics-dev@chromium.org</owner>
   <summary>
@@ -726,7 +752,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Compositing.SurfaceAggregator.CopyUs" units="microseconds"
-    expires_after="2022-12-25">
+    expires_after="2023-02-26">
   <owner>kylechar@chromium.org</owner>
   <owner>jonross@chromium.org</owner>
   <summary>
@@ -760,17 +786,6 @@ chromium-metrics-reviews@google.com.
 
     Warning: This metric does not include reports from clients with
     low-resolution clocks.
-  </summary>
-</histogram>
-
-<histogram name="Compositing.SurfaceAggregator.FrameContainsVideo"
-    enum="TypeOfVideoInFrame" expires_after="2021-10-04">
-  <owner>vikassoni@chromium.org</owner>
-  <owner>khushalsagar@chromium.org</owner>
-  <summary>
-    Whether an aggregated frame contains video or not. This metric will be used
-    to analyze the percentage of displayed frame with video. This metric will be
-    extended in future to specify whether the video is inline or fullscreen.
   </summary>
 </histogram>
 
@@ -853,7 +868,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="CompositorLatency.Type" enum="FrameReportType"
-    expires_after="2022-12-18">
+    expires_after="2023-02-19">
   <owner>jonross@chromium.org</owner>
   <owner>graphics-dev@chromium.org</owner>
   <summary>
@@ -942,7 +957,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Graphics.Smoothness.95pctPercentDroppedFrames_1sWindow"
-    units="%" expires_after="2022-12-25">
+    units="%" expires_after="2023-02-26">
   <owner>jonross@chromium.org</owner>
   <owner>graphics-dev@chromium.org</owner>
   <summary>
@@ -1076,7 +1091,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Graphics.Smoothness.MaxPercentDroppedFrames_1sWindow"
-    units="%" expires_after="2022-12-18">
+    units="%" expires_after="2023-02-19">
   <owner>jonross@chromium.org</owner>
   <owner>graphics-dev@chromium.org</owner>
   <summary>
@@ -1090,7 +1105,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Graphics.Smoothness.MaxStale" units="ms"
-    expires_after="2022-12-18">
+    expires_after="2023-02-19">
   <owner>jonross@chromium.org</owner>
   <owner>mjzhang@chromium.org</owner>
   <owner>graphics-dev@chromium.org</owner>
@@ -1134,7 +1149,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Graphics.Smoothness.PercentDroppedFrames.AllAnimations"
-    units="%" expires_after="2022-12-18">
+    units="%" expires_after="2023-02-19">
   <owner>jonross@chromium.org</owner>
   <owner>graphics-dev@chromium.org</owner>
   <summary>
@@ -1155,7 +1170,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Graphics.Smoothness.PercentDroppedFrames.AllInteractions"
-    units="%" expires_after="2022-12-18">
+    units="%" expires_after="2023-02-19">
   <owner>jonross@chromium.org</owner>
   <owner>graphics-dev@chromium.org</owner>
   <summary>
@@ -1176,7 +1191,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Graphics.Smoothness.PercentDroppedFrames.AllSequences"
-    units="%" expires_after="2022-12-18">
+    units="%" expires_after="2023-02-19">
   <owner>jonross@chromium.org</owner>
   <owner>graphics-dev@chromium.org</owner>
   <summary>
@@ -1254,22 +1269,50 @@ chromium-metrics-reviews@google.com.
   </token>
 </histogram>
 
+<histogram name="Graphics.Smoothness.PercentDroppedFrames3.AllSequences"
+    units="%" expires_after="2023-05-11">
+  <owner>jonross@chromium.org</owner>
+  <owner>graphics-dev@chromium.org</owner>
+  <summary>
+    Tracks the percent of dropped frames for a sequence by aggregating all its
+    animations and interactions, where a sequence is a series of frames produced
+    which contain at least one of the animations/interactions. Such animations
+    and interactions encompass: Compositor-thread animations; Main-thread
+    animations; JS animations; scrolling; and pinch-gestures.
+
+    PercentDroppedFrames is measured by tracking the number of frames which were
+    not displayed on screen out of the total number of frames expected to be
+    produced and displayed. In other words, the lower this number is, the
+    smoother the experience.
+
+    Note that this metric is reported only when there are a sufficient number of
+    frames (&gt;= 100). If there are sequences with fewer frames, then these are
+    aggregated until an additional sequence completes where there are (&gt;=
+    100) frames available in total.
+
+    This is a new implementation of the older
+    Graphics.Smoothness.PercentDroppedFrames.AllInteractions metric.
+  </summary>
+</histogram>
+
 <histogram name="Graphics.Smoothness.PercentDroppedFrames3.{Thread}{Sequence}"
     units="%" expires_after="2023-05-11">
   <owner>jonross@chromium.org</owner>
   <owner>graphics-dev@chromium.org</owner>
   <summary>
-    Tracks the percent of dropped frames for a particular sequence of frames.
-    This metric aggregates data {Sequence}
+    Tracks the percent of dropped frames for a sequence by aggregating all
+    {Sequence}, where a sequence is a series of frames produced which contain at
+    least one of the aforementioned effects.
 
     PercentDroppedFrames is measured by tracking the number of frames which were
     not displayed on screen out of the total number of frames expected to be
     produced and displayed. In other words, the lower this number is, the
-    smoother experience.
+    smoother the experience.
 
-    Note that this metric is reported only when there are sufficient number of
+    Note that this metric is reported only when there are a sufficient number of
     frames (&gt;= 100). If there are sequences with fewer frames, then these are
-    aggregated until there are enough frames to produce the metric.
+    aggregated until an additional sequence completes where there are (&gt;=
+    100) frames available in total.
 
     This is a new implementation of the older
     Graphics.Smoothness.PercentDroppedFrames.AllInteractions metric.
@@ -1281,36 +1324,28 @@ chromium-metrics-reviews@google.com.
   </token>
   <token key="Sequence">
     <variant name="AllAnimations"
-        summary="reported from all types of animations (e.g. comositor-driven
-                 animations, main-thread driven animations, and raf-driven
-                 animations, etc.)."/>
+        summary="its animations (e.g. comositor-driven animations,
+                 main-thread driven animations, and raf-driven animations,
+                 etc.)"/>
     <variant name="AllInteractions"
-        summary="reported for all supported combinations of interaction types
-                 (e.g. scrolling, pinching, etc.) and input device types
-                 (e.g. touchscreen, touchpad, mousewheel, etc.)."/>
-    <variant name="AllSequences"
-        summary="from all animations and all interactions."/>
-    <variant name="CanvasAnimation"
-        summary="reported for all canvas animations."/>
+        summary="its supported combinations of interaction types (e.g.
+                 scrolling, pinching, etc.) and input device types (e.g.
+                 touchscreen, touchpad, mousewheel, etc.)"/>
+    <variant name="CanvasAnimation" summary="canvas animations"/>
     <variant name="CompositorAnimation"
-        summary="reported for all compositor thread driven animations."/>
-    <variant name="JSAnimation"
-        summary="reported for all JS driven animations."/>
+        summary="compositor thread driven animations"/>
+    <variant name="JSAnimation" summary="JS driven animations"/>
     <variant name="MainThreadAnimation"
-        summary="reported for all main thread driven animations."/>
-    <variant name="PinchZoom"
-        summary="reported for all pinch to zoom interctions."/>
-    <variant name="RAF" summary="reported for all raf driven animations."/>
-    <variant name="ScrollbarScroll"
-        summary="reported for all scrollbar scrolling."/>
+        summary="main thread driven animations"/>
+    <variant name="PinchZoom" summary="pinch to zoom interctions"/>
+    <variant name="RAF" summary="raf driven animations"/>
+    <variant name="ScrollbarScroll" summary="scrollbar scrolling"/>
     <variant name="SETCompositorAnimation"
-        summary="reported for all compositor animations during a shared
-                 element transition"/>
+        summary="compositor animations during a shared element transition"/>
     <variant name="SETMainThreadAnimation"
-        summary="reported for all main thread animations during a shared
-                 element transition"/>
-    <variant name="TouchScroll" summary="reported for all touch scrolling."/>
-    <variant name="WheelScroll" summary="reported for all wheel scrolling."/>
+        summary="main thread animations during a shared element transition"/>
+    <variant name="TouchScroll" summary="touch scrolling"/>
+    <variant name="WheelScroll" summary="wheel scrolling"/>
   </token>
 </histogram>
 

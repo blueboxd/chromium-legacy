@@ -182,8 +182,6 @@ std::string GetIpcTagAsString(IpcTag service) {
       return "CreateThread";
     case IpcTag::NTCREATESECTION:
       return "NtCreateSection";
-    case IpcTag::WS2SOCKET:
-      return "WSA_Socket";
     case IpcTag::LAST:
       DCHECK(false) << "Unknown IpcTag";
       return "Unknown";
@@ -371,31 +369,31 @@ base::Value::Dict GetHandlesToClose(const HandleMap& handle_map) {
 PolicyDiagnostic::PolicyDiagnostic(PolicyBase* policy) {
   DCHECK(policy);
   ConfigBase* config = policy->config();
-  // TODO(crbug/997273) Add more fields once webui plumbing is complete.
+
   process_id_ = base::strict_cast<uint32_t>(policy->target_->ProcessId());
-  lockdown_level_ = policy->lockdown_level_;
-  job_level_ = policy->job_level_;
+  lockdown_level_ = config->lockdown_level_;
+  job_level_ = config->job_level_;
   tag_ = policy->tag_;
 
   // Select the final integrity level.
-  if (policy->delayed_integrity_level_ == INTEGRITY_LEVEL_LAST)
-    desired_integrity_level_ = policy->integrity_level_;
+  if (config->delayed_integrity_level_ == INTEGRITY_LEVEL_LAST)
+    desired_integrity_level_ = config->integrity_level_;
   else
-    desired_integrity_level_ = policy->delayed_integrity_level_;
+    desired_integrity_level_ = config->delayed_integrity_level_;
 
-  desired_mitigations_ = policy->mitigations_ | policy->delayed_mitigations_;
+  desired_mitigations_ = config->mitigations_ | config->delayed_mitigations_;
 
-  if (policy->app_container_) {
-    app_container_sid_.emplace(policy->app_container_->GetPackageSid().Clone());
-    for (const auto& sid : policy->app_container_->GetCapabilities()) {
+  if (config->app_container_) {
+    app_container_sid_.emplace(config->app_container_->GetPackageSid().Clone());
+    for (const auto& sid : config->app_container_->GetCapabilities()) {
       capabilities_.push_back(sid.Clone());
     }
     for (const auto& sid :
-         policy->app_container_->GetImpersonationCapabilities()) {
+         config->app_container_->GetImpersonationCapabilities()) {
       initial_capabilities_.push_back(sid.Clone());
     }
 
-    app_container_type_ = policy->app_container_->GetAppContainerType();
+    app_container_type_ = config->app_container_->GetAppContainerType();
   }
 
   if (config->policy_) {
@@ -416,9 +414,12 @@ PolicyDiagnostic::PolicyDiagnostic(PolicyBase* policy) {
       }
     }
   }
-  is_csrss_connected_ = policy->is_csrss_connected_;
-  handles_to_close_.insert(policy->handle_closer_.handles_to_close_.begin(),
-                           policy->handle_closer_.handles_to_close_.end());
+  is_csrss_connected_ = config->is_csrss_connected();
+  auto* handle_closer = config->handle_closer();
+  if (handle_closer) {
+    handles_to_close_.insert(handle_closer->handles_to_close_.begin(),
+                             handle_closer->handles_to_close_.end());
+  }
 }
 
 PolicyDiagnostic::~PolicyDiagnostic() = default;

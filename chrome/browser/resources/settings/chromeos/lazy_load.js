@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -16,11 +16,13 @@ import './crostini_page/crostini_import_confirmation_dialog.js';
 import './crostini_page/crostini_page.js';
 import './crostini_page/crostini_port_forwarding.js';
 import './crostini_page/crostini_port_forwarding_add_port_dialog.js';
+import './crostini_page/crostini_shared_usb_devices.js';
 import './crostini_page/crostini_subpage.js';
 import './date_time_page/date_time_page.js';
 import './date_time_page/timezone_selector.js';
 import './guest_os/guest_os_container_select.js';
 import './guest_os/guest_os_shared_usb_devices.js';
+import './guest_os/guest_os_shared_usb_devices_add_dialog.js';
 import './guest_os/guest_os_shared_paths.js';
 import './os_a11y_page/os_a11y_page.js';
 import './os_a11y_page/manage_a11y_page.js';

@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -99,6 +99,12 @@ const ui::TemplateReplacements* SystemExtensionsDataSource::GetReplacements() {
 
 std::string SystemExtensionsDataSource::GetContentSecurityPolicy(
     network::mojom::CSPDirectiveName directive) {
+  // System extensions are unable to create trusted types policies and require
+  // disabling trusted types to run.
+  if (directive == network::mojom::CSPDirectiveName::RequireTrustedTypesFor ||
+      directive == network::mojom::CSPDirectiveName::TrustedTypes) {
+    return std::string();
+  }
   return content::URLDataSource::GetContentSecurityPolicy(directive);
 }
 

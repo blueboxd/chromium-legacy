@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -157,12 +157,11 @@ bool ChromeLabsButton::ShouldShowButton(const ChromeLabsBubbleViewModel* model,
     return false;
   }
 #endif
-  const std::vector<LabInfo>& all_labs = model->GetLabInfo();
 
-  return std::any_of(all_labs.begin(), all_labs.end(),
-                     [&profile](const LabInfo& lab) {
-                       return IsChromeLabsFeatureValid(lab, profile);
-                     });
+  return base::ranges::any_of(model->GetLabInfo(),
+                              [&profile](const LabInfo& lab) {
+                                return IsChromeLabsFeatureValid(lab, profile);
+                              });
 }
 
 BEGIN_METADATA(ChromeLabsButton, ToolbarButton)

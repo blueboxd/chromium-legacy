@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -27,7 +27,8 @@ VirtualCardEnrollIconView::VirtualCardEnrollIconView(
     : PageActionIconView(command_updater,
                          IDC_VIRTUAL_CARD_ENROLL,
                          icon_label_bubble_delegate,
-                         delegate) {}
+                         delegate,
+                         "VirtualCardEnroll") {}
 
 VirtualCardEnrollIconView::~VirtualCardEnrollIconView() = default;
 

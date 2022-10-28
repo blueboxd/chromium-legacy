@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -120,11 +120,10 @@ namespace file_tasks {
 extern const char kActionIdView[];
 extern const char kActionIdSend[];
 extern const char kActionIdSendMultiple[];
-extern const char kActionIdHandleOffice[];
 extern const char kActionIdWebDriveOfficeWord[];
 extern const char kActionIdWebDriveOfficeExcel[];
 extern const char kActionIdWebDriveOfficePowerPoint[];
-extern const char kActionIdUploadOfficeToDrive[];
+extern const char kActionIdOpenInOffice[];
 
 // Task types as explained in the comment above. Search for <task-type>.
 enum TaskType {
@@ -146,24 +145,34 @@ enum TaskType {
 TaskType StringToTaskType(const std::string& str);
 std::string TaskTypeToString(TaskType task_type);
 
-// UMA metric name that tracks the result of trying to enable the Web Drive
-// Office task.
-constexpr char kWebDriveOfficeMetricName[] =
-    "FileBrowser.OfficeFiles.WebDriveOffice";
+constexpr char kDriveErrorMetricName[] = "FileBrowser.OfficeFiles.Errors.Drive";
+constexpr char kDriveTaskResultMetricName[] =
+    "FileBrowser.OfficeFiles.TaskResult.Drive";
 
 // List of UMA enum value for Web Drive Office task results. The enum values
-// must be kept in sync with WebDriveOfficeTaskResult in
+// must be kept in sync with OfficeTaskResult in
 // tools/metrics/histograms/enums.xml.
-enum class WebDriveOfficeTaskResult {
-  AVAILABLE = 0,
-  FLAG_DISABLED = 1,
-  OFFLINE = 2,
-  NOT_ON_DRIVE = 3,
-  DRIVE_ERROR = 4,
-  DRIVE_METADATA_ERROR = 5,
-  INVALID_ALTERNATE_URL = 6,
-  DRIVE_ALTERNATE_URL = 7,
-  UNEXPECTED_ALTERNATE_URL = 8,
+enum class OfficeTaskResult {
+  FALLBACK_QUICKOFFICE = 0,
+  FALLBACK_OTHER = 1,
+  OPENED = 2,
+  MOVED = 3,
+  CANCELLED = 4,
+  FAILED = 5,
+  kMaxValue = FAILED,
+};
+
+// List of UMA enum values for Office File Handler task results for Drive. The
+// enum values must be kept in sync with OfficeDriveErrors in
+// tools/metrics/histograms/enums.xml.
+enum class OfficeDriveErrors {
+  OFFLINE = 0,
+  DRIVEFS_INTERFACE = 1,
+  TIMEOUT = 2,
+  NO_METADATA = 3,
+  INVALID_ALTERNATE_URL = 4,
+  DRIVE_ALTERNATE_URL = 5,
+  UNEXPECTED_ALTERNATE_URL = 6,
   kMaxValue = UNEXPECTED_ALTERNATE_URL,
 };
 
@@ -241,9 +250,6 @@ struct FullTaskDescriptor {
   bool is_file_extension_match;
 };
 
-// Returns true if the `task` is the generic task for Office files handling.
-bool IsHandleOfficeTask(const FullTaskDescriptor& task);
-
 // Update the default file handler for the given sets of suffixes and MIME
 // types.
 void UpdateDefaultTask(Profile* profile,
@@ -301,13 +307,6 @@ bool ExecuteFileTask(Profile* profile,
                      const TaskDescriptor& task,
                      const std::vector<storage::FileSystemURL>& file_urls,
                      FileTaskFinishedCallback done);
-
-// Finds the file browser handler tasks (app/extensions declaring
-// "file_browser_handlers" in manifest.json) that can be used with the
-// given files, appending them to the |result_list|.
-void FindFileBrowserHandlerTasks(Profile* profile,
-                                 const std::vector<GURL>& file_urls,
-                                 std::vector<FullTaskDescriptor>* result_list);
 
 // Callback function type for FindAllTypesOfTasks.
 typedef base::OnceCallback<void(

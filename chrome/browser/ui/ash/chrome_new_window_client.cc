@@ -1,4 +1,4 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -136,10 +136,6 @@ chrome::FeedbackSource MapToChromeSource(
 // given directory, instead of the default directory.
 bool OpenFilesSwa(Profile* const profile,
                   base::FilePath target_directory = {}) {
-  if (!ash::features::IsFileManagerSwaEnabled()) {
-    return false;
-  }
-
   GURL directory_url;
   if (!target_directory.empty() &&
       !file_manager::util::ConvertAbsoluteFilePathToFileSystemUrl(

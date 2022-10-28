@@ -1,11 +1,11 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome/browser/enterprise/connectors/device_trust/browser/mac_device_trust_connector_service.h"
 
-#include "chrome/browser/enterprise/connectors/connectors_prefs.h"
 #include "chrome/browser/enterprise/connectors/device_trust/browser/browser_device_trust_connector_service.h"
+#include "chrome/browser/enterprise/connectors/device_trust/prefs.h"
 #include "components/enterprise/browser/device_trust/device_trust_key_manager.h"
 #include "components/prefs/pref_service.h"
 
@@ -25,6 +25,12 @@ MacDeviceTrustConnectorService::~MacDeviceTrustConnectorService() = default;
 bool MacDeviceTrustConnectorService::IsConnectorEnabled() const {
   return BrowserDeviceTrustConnectorService::IsConnectorEnabled() &&
          !local_prefs_->GetBoolean(kDeviceTrustDisableKeyCreationPref);
+}
+
+void MacDeviceTrustConnectorService::OnConnectorEnabled() {
+  if (!local_prefs_->GetBoolean(kDeviceTrustDisableKeyCreationPref)) {
+    BrowserDeviceTrustConnectorService::OnConnectorEnabled();
+  }
 }
 
 }  // namespace enterprise_connectors

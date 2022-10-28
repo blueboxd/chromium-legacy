@@ -12,10 +12,11 @@
 #include "base/containers/flat_set.h"
 #include "base/memory/raw_ptr.h"
 #include "base/sequence_checker.h"
+#include "base/thread_annotations.h"
 #include "base/timer/elapsed_timer.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver.h"
-#include "net/cookies/first_party_sets_context_config.h"
+#include "net/first_party_sets/first_party_sets_context_config.h"
 #include "services/network/first_party_sets/first_party_sets_manager.h"
 #include "services/network/public/mojom/first_party_sets_access_delegate.mojom.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -30,7 +31,7 @@ namespace network {
 class FirstPartySetsAccessDelegate
     : public mojom::FirstPartySetsAccessDelegate {
  public:
-  using OwnersResult = FirstPartySetsManager::OwnersResult;
+  using EntriesResult = FirstPartySetsManager::EntriesResult;
   using FlattenedSets = FirstPartySetsManager::FlattenedSets;
 
   // Construct a FirstPartySetsAccessDelegate that provides customizations
@@ -52,7 +53,7 @@ class FirstPartySetsAccessDelegate
 
   bool is_enabled() const {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-    return context_config_.is_enabled() && manager_->is_enabled();
+    return enabled_ && manager_->is_enabled();
   }
 
   // Computes the First-Party Set metadata related to the given context.
@@ -67,21 +68,16 @@ class FirstPartySetsAccessDelegate
       const std::set<net::SchemefulSite>& party_context,
       base::OnceCallback<void(net::FirstPartySetMetadata)> callback);
 
-  // Batched version of `FindOwner`. Returns the mapping of sites to owners for
-  // the given input sites (if an owner exists).
-  //
-  // When FPS is disabled, returns an empty map.
-  // When FPS is enabled, this maps each input site to its owner (if one
-  // exists), and returns the resulting mapping. If a site isn't in a
-  // non-trivial First-Party Set, it is not added to the output map.
+  // Calls FirstPartySetsManager::FindEntries either asynchronously or
+  // synchronously, once initialization is complete.
   //
   // This may return a result synchronously, or asynchronously invoke `callback`
   // with the result. The callback will be invoked iff the return value is
   // nullopt; i.e. a result will be provided via return value or callback, but
   // not both, and not neither.
-  [[nodiscard]] absl::optional<OwnersResult> FindOwners(
+  [[nodiscard]] absl::optional<EntriesResult> FindEntries(
       const base::flat_set<net::SchemefulSite>& sites,
-      base::OnceCallback<void(OwnersResult)> callback);
+      base::OnceCallback<void(EntriesResult)> callback);
 
  private:
   // Same as `ComputeMetadata`, but plumbs the result into the callback. Must
@@ -92,11 +88,11 @@ class FirstPartySetsAccessDelegate
       const std::set<net::SchemefulSite>& party_context,
       base::OnceCallback<void(net::FirstPartySetMetadata)> callback) const;
 
-  // Same as `FindOwners`, but plumbs the result into the callback. Must only be
-  // called once the instance is fully initialized.
-  void FindOwnersAndInvoke(
+  // Same as `FindEntries`, but plumbs the result into the callback. Must only
+  // be called once the instance is fully initialized.
+  void FindEntriesAndInvoke(
       const base::flat_set<net::SchemefulSite>& sites,
-      base::OnceCallback<void(OwnersResult)> callback) const;
+      base::OnceCallback<void(EntriesResult)> callback) const;
 
   // Runs all pending queries. Must not be called until the instance is fully
   // initialized.
@@ -109,6 +105,10 @@ class FirstPartySetsAccessDelegate
   // service.
   const raw_ptr<FirstPartySetsManager> manager_
       GUARDED_BY_CONTEXT(sequence_checker_);
+
+  // Whether First-Party Sets is enabled for this context in particular. Note
+  // that this is unrelated to `manager_.is_enabled`.
+  bool enabled_ GUARDED_BY_CONTEXT(sequence_checker_) = false;
 
   // First-Party Sets configuration for this network context.
   net::FirstPartySetsContextConfig context_config_

@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -232,10 +232,10 @@ TEST_F(LayerTreeImplTest, HitTestingForSingleLayerAndHud) {
 
 TEST_F(LayerTreeImplTest, HitTestingForUninvertibleTransform) {
   gfx::Transform uninvertible_transform;
-  uninvertible_transform.matrix().setRC(0, 0, 0.0);
-  uninvertible_transform.matrix().setRC(1, 1, 0.0);
-  uninvertible_transform.matrix().setRC(2, 2, 0.0);
-  uninvertible_transform.matrix().setRC(3, 3, 0.0);
+  uninvertible_transform.set_rc(0, 0, 0.0);
+  uninvertible_transform.set_rc(1, 1, 0.0);
+  uninvertible_transform.set_rc(2, 2, 0.0);
+  uninvertible_transform.set_rc(3, 3, 0.0);
   ASSERT_FALSE(uninvertible_transform.IsInvertible());
 
   LayerImpl* root = root_layer();
@@ -1186,10 +1186,10 @@ TEST_F(LayerTreeImplTest,
   LayerImpl* root = root_layer();
 
   gfx::Transform uninvertible_transform;
-  uninvertible_transform.matrix().setRC(0, 0, 0.0);
-  uninvertible_transform.matrix().setRC(1, 1, 0.0);
-  uninvertible_transform.matrix().setRC(2, 2, 0.0);
-  uninvertible_transform.matrix().setRC(3, 3, 0.0);
+  uninvertible_transform.set_rc(0, 0, 0.0);
+  uninvertible_transform.set_rc(1, 1, 0.0);
+  uninvertible_transform.set_rc(2, 2, 0.0);
+  uninvertible_transform.set_rc(3, 3, 0.0);
   ASSERT_FALSE(uninvertible_transform.IsInvertible());
 
   TouchActionRegion touch_action_region;

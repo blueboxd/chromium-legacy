@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,7 +9,7 @@
 #include "ash/quick_pair/proto/fastpair_data.pb.h"
 #include "ash/quick_pair/repository/fast_pair/fast_pair_image_decoder.h"
 #include "ash/shell.h"
-#include "chromeos/services/bluetooth_config/public/cpp/device_image_info.h"
+#include "chromeos/ash/services/bluetooth_config/public/cpp/device_image_info.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
@@ -20,7 +20,7 @@ namespace ash {
 namespace quick_pair {
 
 // Alias DeviceImageInfo for convenience.
-using chromeos::bluetooth_config::DeviceImageInfo;
+using bluetooth_config::DeviceImageInfo;
 
 // static
 constexpr char DeviceImageStore::kDeviceImageStorePref[];
@@ -123,8 +123,8 @@ bool DeviceImageStore::EvictDeviceImages(const std::string& model_id) {
   return true;
 }
 
-absl::optional<chromeos::bluetooth_config::DeviceImageInfo>
-DeviceImageStore::GetImagesForDeviceModel(const std::string& model_id) {
+absl::optional<DeviceImageInfo> DeviceImageStore::GetImagesForDeviceModel(
+    const std::string& model_id) {
   // Lazily load saved images from prefs the first time we get an image.
   if (!loaded_images_from_prefs_) {
     loaded_images_from_prefs_ = true;
@@ -146,7 +146,7 @@ void DeviceImageStore::LoadPersistedImagesFromPrefs() {
     return;
   }
   const base::Value::Dict& device_image_store =
-      local_state->GetValueDict(kDeviceImageStorePref);
+      local_state->GetDict(kDeviceImageStorePref);
   for (std::pair<const std::string&, const base::Value&> record :
        device_image_store) {
     absl::optional<DeviceImageInfo> images =

@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -33,6 +33,7 @@
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_thread.h"
 #include "third_party/blink/public/common/browser_interface_broker_proxy.h"
+#include "third_party/blink/public/platform/scheduler/web_agent_group_scheduler.h"
 #include "third_party/blink/public/web/web_document.h"
 #include "third_party/blink/public/web/web_language_detection_details.h"
 #include "third_party/blink/public/web/web_local_frame.h"
@@ -345,7 +346,7 @@ bool TranslateAgent::ExecuteScriptAndGetBoolResult(const std::string& script,
   if (!main_frame)
     return fallback;
 
-  v8::HandleScope handle_scope(v8::Isolate::GetCurrent());
+  v8::HandleScope handle_scope(main_frame->GetAgentGroupScheduler()->Isolate());
   WebScriptSource source = WebScriptSource(WebString::FromASCII(script));
   v8::Local<v8::Value> result =
       main_frame->ExecuteScriptInIsolatedWorldAndReturnValue(
@@ -364,7 +365,7 @@ std::string TranslateAgent::ExecuteScriptAndGetStringResult(
   if (!main_frame)
     return std::string();
 
-  v8::Isolate* isolate = v8::Isolate::GetCurrent();
+  v8::Isolate* isolate = main_frame->GetAgentGroupScheduler()->Isolate();
   v8::HandleScope handle_scope(isolate);
   WebScriptSource source = WebScriptSource(WebString::FromASCII(script));
   v8::Local<v8::Value> result =
@@ -391,7 +392,7 @@ double TranslateAgent::ExecuteScriptAndGetDoubleResult(
   if (!main_frame)
     return 0.0;
 
-  v8::HandleScope handle_scope(v8::Isolate::GetCurrent());
+  v8::HandleScope handle_scope(main_frame->GetAgentGroupScheduler()->Isolate());
   WebScriptSource source = WebScriptSource(WebString::FromASCII(script));
   v8::Local<v8::Value> result =
       main_frame->ExecuteScriptInIsolatedWorldAndReturnValue(
@@ -410,7 +411,7 @@ int64_t TranslateAgent::ExecuteScriptAndGetIntegerResult(
   if (!main_frame)
     return 0;
 
-  v8::HandleScope handle_scope(v8::Isolate::GetCurrent());
+  v8::HandleScope handle_scope(main_frame->GetAgentGroupScheduler()->Isolate());
   WebScriptSource source = WebScriptSource(WebString::FromASCII(script));
   v8::Local<v8::Value> result =
       main_frame->ExecuteScriptInIsolatedWorldAndReturnValue(
@@ -496,7 +497,7 @@ void TranslateAgent::CheckTranslateStatus() {
   // First check if there was an error.
   if (HasTranslationFailed()) {
     NotifyBrowserTranslationFailed(
-        static_cast<translate::TranslateErrors::Type>(GetErrorCode()));
+        static_cast<translate::TranslateErrors>(GetErrorCode()));
     return;  // There was an error.
   }
 
@@ -545,8 +546,8 @@ void TranslateAgent::TranslatePageImpl(int count) {
   DCHECK_LT(count, kMaxTranslateInitCheckAttempts);
   if (!IsTranslateLibReady()) {
     // There was an error during initialization of library.
-    TranslateErrors::Type error =
-        static_cast<translate::TranslateErrors::Type>(GetErrorCode());
+    TranslateErrors error =
+        static_cast<translate::TranslateErrors>(GetErrorCode());
     if (error != TranslateErrors::NONE) {
       NotifyBrowserTranslationFailed(error);
       return;
@@ -585,8 +586,7 @@ void TranslateAgent::TranslatePageImpl(int count) {
       AdjustDelay(kTranslateStatusCheckDelayMs));
 }
 
-void TranslateAgent::NotifyBrowserTranslationFailed(
-    TranslateErrors::Type error) {
+void TranslateAgent::NotifyBrowserTranslationFailed(TranslateErrors error) {
   DCHECK(translate_callback_pending_);
   // Notify the browser there was an error.
   std::move(translate_callback_pending_)

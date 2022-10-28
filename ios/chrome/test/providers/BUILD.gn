@@ -1,4 +1,4 @@
-# Copyright 2022 The Chromium Authors. All rights reserved.
+# Copyright 2022 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -29,6 +29,7 @@ group("providers") {
     "//ios/chrome/test/providers/text_zoom",
     "//ios/chrome/test/providers/ui_utils",
     "//ios/chrome/test/providers/url_rewriters",
+    "//ios/chrome/test/providers/user_feedback",
     "//ios/chrome/test/providers/voice_search",
 
     # The provider API needs to provide MaterialDesignComponent API (as the

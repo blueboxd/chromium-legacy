@@ -1,22 +1,22 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #import "ios/chrome/browser/ui/settings/password/passwords_coordinator.h"
 
-#include "base/metrics/histogram_functions.h"
-#include "components/keyed_service/core/service_access_type.h"
-#include "components/password_manager/core/browser/password_manager_metrics_util.h"
+#import "base/metrics/histogram_functions.h"
+#import "components/keyed_service/core/service_access_type.h"
+#import "components/password_manager/core/browser/password_manager_metrics_util.h"
 #import "components/password_manager/core/browser/ui/credential_ui_entry.h"
-#include "components/password_manager/core/common/password_manager_features.h"
+#import "components/password_manager/core/common/password_manager_features.h"
 #import "ios/chrome/browser/favicon/favicon_loader.h"
-#include "ios/chrome/browser/favicon/ios_chrome_favicon_loader_factory.h"
+#import "ios/chrome/browser/favicon/ios_chrome_favicon_loader_factory.h"
 #import "ios/chrome/browser/main/browser.h"
-#include "ios/chrome/browser/passwords/ios_chrome_password_check_manager.h"
-#include "ios/chrome/browser/passwords/ios_chrome_password_check_manager_factory.h"
-#include "ios/chrome/browser/signin/identity_manager_factory.h"
-#include "ios/chrome/browser/sync/sync_service_factory.h"
-#include "ios/chrome/browser/sync/sync_setup_service_factory.h"
+#import "ios/chrome/browser/passwords/ios_chrome_password_check_manager.h"
+#import "ios/chrome/browser/passwords/ios_chrome_password_check_manager_factory.h"
+#import "ios/chrome/browser/signin/identity_manager_factory.h"
+#import "ios/chrome/browser/sync/sync_service_factory.h"
+#import "ios/chrome/browser/sync/sync_setup_service_factory.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/commands/command_dispatcher.h"
 #import "ios/chrome/browser/ui/settings/password/password_details/add_password_coordinator.h"
@@ -26,6 +26,8 @@
 #import "ios/chrome/browser/ui/settings/password/password_issues_coordinator.h"
 #import "ios/chrome/browser/ui/settings/password/password_manager_view_controller.h"
 #import "ios/chrome/browser/ui/settings/password/password_manager_view_controller_presentation_delegate.h"
+#import "ios/chrome/browser/ui/settings/password/password_settings/password_settings_coordinator.h"
+#import "ios/chrome/browser/ui/settings/password/password_settings/password_settings_coordinator_delegate.h"
 #import "ios/chrome/browser/ui/settings/password/passwords_consumer.h"
 #import "ios/chrome/browser/ui/settings/password/passwords_in_other_apps/passwords_in_other_apps_coordinator.h"
 #import "ios/chrome/browser/ui/settings/password/passwords_mediator.h"
@@ -41,6 +43,7 @@
     PasswordDetailsCoordinatorDelegate,
     PasswordIssuesCoordinatorDelegate,
     PasswordsInOtherAppsCoordinatorDelegate,
+    PasswordSettingsCoordinatorDelegate,
     PasswordsSettingsCommands,
     PasswordManagerViewControllerPresentationDelegate>
 
@@ -73,6 +76,9 @@
 // Coordinator for passwords in other apps promotion view.
 @property(nonatomic, strong)
     PasswordsInOtherAppsCoordinator* passwordsInOtherAppsCoordinator;
+
+@property(nonatomic, strong)
+    PasswordSettingsCoordinator* passwordSettingsCoordinator;
 
 @end
 
@@ -212,6 +218,15 @@
   [self.delegate passwordsCoordinatorDidRemove:self];
 }
 
+- (void)showPasswordSettingsSubmenu {
+  DCHECK(!self.passwordSettingsCoordinator);
+  self.passwordSettingsCoordinator = [[PasswordSettingsCoordinator alloc]
+      initWithBaseViewController:self.viewController
+                         browser:self.browser];
+  self.passwordSettingsCoordinator.delegate = self;
+  [self.passwordSettingsCoordinator start];
+}
+
 #pragma mark - PasswordIssuesCoordinatorDelegate
 
 - (void)passwordIssuesCoordinatorDidRemove:
@@ -282,6 +297,16 @@
   [self.passwordsInOtherAppsCoordinator stop];
   self.passwordsInOtherAppsCoordinator.delegate = nil;
   self.passwordsInOtherAppsCoordinator = nil;
+}
+
+#pragma mark - PasswordSettingsCoordinatorDelegate
+
+- (void)passwordSettingsCoordinatorDidRemove:
+    (PasswordSettingsCoordinator*)coordinator {
+  DCHECK_EQ(self.passwordSettingsCoordinator, coordinator);
+  [self.passwordSettingsCoordinator stop];
+  self.passwordSettingsCoordinator.delegate = nil;
+  self.passwordSettingsCoordinator = nil;
 }
 
 #pragma mark Private

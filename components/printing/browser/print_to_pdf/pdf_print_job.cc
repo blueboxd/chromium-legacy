@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -68,6 +68,9 @@ void PdfPrintJob::OnDidPrintWithParams(
         return;
       case printing::mojom::PrintFailureReason::kInvalidPageRange:
         FailJob(PdfPrintResult::kPageCountExceeded);
+        return;
+      case printing::mojom::PrintFailureReason::kPrintingInProgress:
+        FailJob(PdfPrintResult::kPrintingInProgress);
         return;
     }
   }

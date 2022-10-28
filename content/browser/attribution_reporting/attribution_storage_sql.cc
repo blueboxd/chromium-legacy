@@ -17,9 +17,9 @@
 #include "base/check_op.h"
 #include "base/containers/flat_set.h"
 #include "base/files/file_util.h"
+#include "base/functional/overloaded.h"
 #include "base/guid.h"
 #include "base/logging.h"
-#include "base/memory/raw_ptr.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/notreached.h"
@@ -59,11 +59,11 @@
 namespace content {
 
 // Version number of the database.
-const int AttributionStorageSql::kCurrentVersionNumber = 35;
+const int AttributionStorageSql::kCurrentVersionNumber = 36;
 
 // Earliest version which can use a |kCurrentVersionNumber| database
 // without failing.
-const int AttributionStorageSql::kCompatibleVersionNumber = 35;
+const int AttributionStorageSql::kCompatibleVersionNumber = 36;
 
 // Latest version of the database that cannot be upgraded to
 // |kCurrentVersionNumber| without razing the database.
@@ -302,13 +302,13 @@ absl::optional<StoredSourceData> ReadSourceFromStatement(
 
   StoredSource::Id source_id(statement.ColumnInt64(col++));
   uint64_t source_event_id = DeserializeUint64(statement.ColumnInt64(col++));
-  url::Origin impression_origin =
+  url::Origin source_origin =
       DeserializePotentiallyTrustworthyOrigin(statement.ColumnString(col++));
-  url::Origin conversion_origin =
+  url::Origin destination_origin =
       DeserializePotentiallyTrustworthyOrigin(statement.ColumnString(col++));
   url::Origin reporting_origin =
       DeserializePotentiallyTrustworthyOrigin(statement.ColumnString(col++));
-  base::Time impression_time = statement.ColumnTime(col++);
+  base::Time source_time = statement.ColumnTime(col++);
   base::Time expiry_time = statement.ColumnTime(col++);
   absl::optional<AttributionSourceType> source_type =
       DeserializeSourceType(statement.ColumnInt(col++));
@@ -321,7 +321,7 @@ absl::optional<StoredSourceData> ReadSourceFromStatement(
   absl::optional<AttributionAggregationKeys> aggregation_keys =
       AttributionAggregationKeys::Deserialize(statement.ColumnString(col++));
 
-  if (impression_origin.opaque() || conversion_origin.opaque() ||
+  if (source_origin.opaque() || destination_origin.opaque() ||
       reporting_origin.opaque() || !source_type.has_value() ||
       !attribution_logic.has_value() || num_conversions < 0 ||
       aggregatable_budget_consumed < 0 || !aggregation_keys.has_value()) {
@@ -344,9 +344,9 @@ absl::optional<StoredSourceData> ReadSourceFromStatement(
   return StoredSourceData{
       .source = StoredSource(
           CommonSourceInfo(
-              source_event_id, std::move(impression_origin),
-              std::move(conversion_origin), std::move(reporting_origin),
-              impression_time, expiry_time, *source_type, priority,
+              source_event_id, std::move(source_origin),
+              std::move(destination_origin), std::move(reporting_origin),
+              source_time, expiry_time, *source_type, priority,
               std::move(*filter_data), debug_key, std::move(*aggregation_keys)),
           *attribution_logic, *active_state, source_id),
       .num_conversions = num_conversions,
@@ -417,15 +417,14 @@ DestinationLimitResult GetDestinationLimitResult(
   }
 }
 
+bool g_run_in_memory = false;
+
 }  // namespace
 
 // static
 void AttributionStorageSql::RunInMemoryForTesting() {
-  g_run_in_memory_ = true;
+  g_run_in_memory = true;
 }
-
-// static
-bool AttributionStorageSql::g_run_in_memory_ = false;
 
 // static
 bool AttributionStorageSql::DeleteStorageForTesting(
@@ -436,91 +435,42 @@ bool AttributionStorageSql::DeleteStorageForTesting(
 AttributionStorageSql::AttributionStorageSql(
     const base::FilePath& path_to_database,
     std::unique_ptr<AttributionStorageDelegate> delegate)
-    : path_to_database_(g_run_in_memory_ ? base::FilePath(kInMemoryPath)
-                                         : DatabasePath(path_to_database)),
+    : path_to_database_(g_run_in_memory ? base::FilePath(kInMemoryPath)
+                                        : DatabasePath(path_to_database)),
       delegate_(std::move(delegate)),
       rate_limit_table_(delegate_.get()) {
   DCHECK(delegate_);
-  DETACH_FROM_SEQUENCE(sequence_checker_);
 }
 
 AttributionStorageSql::~AttributionStorageSql() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 }
 
-absl::optional<std::vector<StoredSource>>
-AttributionStorageSql::DeactivateSources(
-    const std::string& serialized_conversion_destination,
-    const std::string& serialized_reporting_origin,
-    int return_limit) {
-  std::vector<StoredSource> deactivated_sources;
-
-  if (return_limit != 0) {
-    // Get at most `return_limit` sources that will be deactivated. We do this
-    // first, instead of using a RETURNING clause in the UPDATE, because we
-    // cannot limit the number of returned results there, and we want to avoid
-    // bringing all results into memory.
-    static constexpr char kGetSourcesToReturnSql[] =
-        // clang-format off
-        "SELECT " ATTRIBUTION_SOURCE_COLUMNS_SQL("")
-        " FROM sources "
-        DCHECK_SQL_INDEXED_BY("sources_by_active_destination_site_reporting_origin")
-        "WHERE destination_site=? AND reporting_origin=? AND"
-        "((event_level_active=1 AND num_attributions>0)OR"
-        "(aggregatable_active=1 AND aggregatable_budget_consumed>0)) "
-        "LIMIT ?"; // clang-format on
-    sql::Statement get_statement(
-        db_->GetCachedStatement(SQL_FROM_HERE, kGetSourcesToReturnSql));
-    get_statement.BindString(0, serialized_conversion_destination);
-    get_statement.BindString(1, serialized_reporting_origin);
-    get_statement.BindInt(2, return_limit);
-
-    while (get_statement.Step()) {
-      absl::optional<StoredSourceData> source_data =
-          ReadSourceFromStatement(get_statement);
-      if (!source_data.has_value())
-        return absl::nullopt;
-
-      deactivated_sources.push_back(std::move(source_data->source));
-    }
-    if (!get_statement.Succeeded())
-      return absl::nullopt;
-
-    // If nothing was returned, we know the UPDATE below will do nothing, so
-    // just return early.
-    if (deactivated_sources.empty())
-      return deactivated_sources;
-  }
+bool AttributionStorageSql::DeactivateSources(
+    const std::vector<StoredSource::Id>& sources) {
+  sql::Transaction transaction(db_.get());
+  if (!transaction.Begin())
+    return false;
 
   static constexpr char kDeactivateSourcesSql[] =
       "UPDATE sources "
-      DCHECK_SQL_INDEXED_BY("sources_by_active_destination_site_reporting_origin")
       "SET event_level_active=0,aggregatable_active=0 "
-      "WHERE destination_site=? AND reporting_origin=? AND"
-      "((event_level_active=1 AND num_attributions>0)OR"
-      "(aggregatable_active=1 AND aggregatable_budget_consumed>0))";
-  sql::Statement deactivate_statement(
+      "WHERE source_id=?";
+  sql::Statement statement(
       db_->GetCachedStatement(SQL_FROM_HERE, kDeactivateSourcesSql));
-  deactivate_statement.BindString(0, serialized_conversion_destination);
-  deactivate_statement.BindString(1, serialized_reporting_origin);
 
-  if (!deactivate_statement.Run())
-    return absl::nullopt;
-
-  for (auto& deactivated_source : deactivated_sources) {
-    absl::optional<std::vector<uint64_t>> dedup_keys =
-        ReadDedupKeys(deactivated_source.source_id());
-    if (!dedup_keys.has_value())
-      return absl::nullopt;
-    deactivated_source.SetDedupKeys(std::move(*dedup_keys));
+  for (StoredSource::Id id : sources) {
+    statement.Reset(/*clear_bound_vars=*/true);
+    statement.BindInt64(0, *id);
+    if (!statement.Run())
+      return false;
   }
 
-  return deactivated_sources;
+  return transaction.Commit();
 }
 
 AttributionStorage::StoreSourceResult AttributionStorageSql::StoreSource(
-    const StorableSource& source,
-    int deactivated_source_return_limit) {
+    const StorableSource& source) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   // Force the creation of the database if it doesn't exist, as we need to
   // persist the source.
@@ -541,9 +491,9 @@ AttributionStorage::StoreSourceResult AttributionStorageSql::StoreSource(
 
   const CommonSourceInfo& common_info = source.common_info();
 
-  const std::string serialized_impression_origin =
-      SerializePotentiallyTrustworthyOrigin(common_info.impression_origin());
-  if (!HasCapacityForStoringSource(serialized_impression_origin)) {
+  const std::string serialized_source_origin =
+      SerializePotentiallyTrustworthyOrigin(common_info.source_origin());
+  if (!HasCapacityForStoringSource(serialized_source_origin)) {
     return StoreSourceResult(
         StorableSource::Result::kInsufficientSourceCapacity);
   }
@@ -581,26 +531,8 @@ AttributionStorage::StoreSourceResult AttributionStorageSql::StoreSource(
       return StoreSourceResult(StorableSource::Result::kInternalError);
   }
 
-  // Wrap the deactivation and insertion in the same transaction. If the
-  // deactivation fails, we do not want to store the new source as we may
-  // return the wrong set of sources for a trigger.
   sql::Transaction transaction(db_.get());
   if (!transaction.Begin())
-    return StoreSourceResult(StorableSource::Result::kInternalError);
-
-  const std::string serialized_conversion_destination =
-      common_info.ConversionDestination().Serialize();
-  const std::string serialized_reporting_origin =
-      SerializePotentiallyTrustworthyOrigin(common_info.reporting_origin());
-
-  // In the case where we get a new source for a given <reporting_origin,
-  // conversion_destination> we should mark all active, converted impressions
-  // with the matching <reporting_origin, conversion_destination> as not active.
-  absl::optional<std::vector<StoredSource>> deactivated_sources =
-      DeactivateSources(serialized_conversion_destination,
-                        serialized_reporting_origin,
-                        deactivated_source_return_limit);
-  if (!deactivated_sources.has_value())
     return StoreSourceResult(StorableSource::Result::kInternalError);
 
   AttributionStorageDelegate::RandomizedResponse randomized_response =
@@ -632,17 +564,18 @@ AttributionStorage::StoreSourceResult AttributionStorageSql::StoreSource(
       db_->GetCachedStatement(SQL_FROM_HERE, kInsertImpressionSql));
   statement.BindInt64(0, SerializeUint64(delegate_->SanitizeSourceEventId(
                              common_info.source_event_id())));
-  statement.BindString(1, serialized_impression_origin);
+  statement.BindString(1, serialized_source_origin);
   statement.BindString(2, SerializePotentiallyTrustworthyOrigin(
-                              common_info.conversion_origin()));
-  statement.BindString(3, serialized_conversion_destination);
-  statement.BindString(4, serialized_reporting_origin);
-  statement.BindTime(5, common_info.impression_time());
+                              common_info.destination_origin()));
+  statement.BindString(3, common_info.DestinationSite().Serialize());
+  statement.BindString(
+      4, SerializePotentiallyTrustworthyOrigin(common_info.reporting_origin()));
+  statement.BindTime(5, common_info.source_time());
   statement.BindTime(6, common_info.expiry_time());
   statement.BindInt(7, SerializeSourceType(common_info.source_type()));
   statement.BindInt(8, SerializeAttributionLogic(attribution_logic));
   statement.BindInt64(9, common_info.priority());
-  statement.BindString(10, common_info.ImpressionSite().Serialize());
+  statement.BindString(10, common_info.SourceSite().Serialize());
   statement.BindInt(11, num_conversions);
   statement.BindBool(12, event_level_active);
   statement.BindBool(13, aggregatable_active);
@@ -669,7 +602,7 @@ AttributionStorage::StoreSourceResult AttributionStorageSql::StoreSource(
   absl::optional<base::Time> min_fake_report_time;
 
   if (attribution_logic == StoredSource::AttributionLogic::kFalsely) {
-    const base::Time trigger_time = common_info.impression_time();
+    const base::Time trigger_time = common_info.source_time();
 
     for (const auto& fake_report : *randomized_response) {
       DCHECK_EQ(fake_report.trigger_data,
@@ -694,7 +627,6 @@ AttributionStorage::StoreSourceResult AttributionStorageSql::StoreSource(
     return StoreSourceResult(StorableSource::Result::kInternalError);
 
   return StoreSourceResult(StorableSource::Result::kSuccess,
-                           std::move(*deactivated_sources),
                            min_fake_report_time);
 }
 
@@ -854,8 +786,10 @@ CreateReportResult AttributionStorageSql::MaybeCreateAndStoreReport(
 
   absl::optional<StoredSource::Id> source_id_to_attribute;
   std::vector<StoredSource::Id> source_ids_to_delete;
+  std::vector<StoredSource::Id> source_ids_to_deactivate;
   if (!FindMatchingSourceForTrigger(trigger, source_id_to_attribute,
-                                    source_ids_to_delete)) {
+                                    source_ids_to_delete,
+                                    source_ids_to_deactivate)) {
     return assemble_report_result(EventLevelResult::kInternalError,
                                   AggregatableResult::kInternalError);
   }
@@ -982,8 +916,14 @@ CreateReportResult AttributionStorageSql::MaybeCreateAndStoreReport(
                                   AggregatableResult::kInternalError);
   }
 
+  // Deactivate all attributed sources.
+  if (!DeactivateSources(source_ids_to_deactivate)) {
+    return assemble_report_result(EventLevelResult::kInternalError,
+                                  AggregatableResult::kInternalError);
+  }
+
   // Based on the deletion logic here and the fact that we delete sources
-  // with |num_conversions > 0| or |aggregatable_budget_consumed > 0| when
+  // with |num_attributions > 0| or |aggregatable_budget_consumed > 0| when
   // there is a new matching source in |StoreSource()|, we should be
   // guaranteed that these sources all have |num_conversions == 0| and
   // |aggregatable_budget_consumed == 0|, and that they never contributed to a
@@ -1020,19 +960,19 @@ CreateReportResult AttributionStorageSql::MaybeCreateAndStoreReport(
 bool AttributionStorageSql::FindMatchingSourceForTrigger(
     const AttributionTrigger& trigger,
     absl::optional<StoredSource::Id>& source_id_to_attribute,
-    std::vector<StoredSource::Id>& source_ids_to_delete) {
+    std::vector<StoredSource::Id>& source_ids_to_delete,
+    std::vector<StoredSource::Id>& source_ids_to_deactivate) {
   const url::Origin& destination_origin = trigger.destination_origin();
-  DCHECK(!destination_origin.opaque());
-
   const url::Origin& reporting_origin = trigger.reporting_origin();
-  DCHECK(!reporting_origin.opaque());
 
   // Get all sources that match this <reporting_origin,
   // conversion_destination> pair. Only get sources that are active and not
   // past their expiry time. The sources are fetched in order so that the
-  // first one is the one that will be attributed; the others will be deleted.
+  // first one is the one that will be attributed; the others will be deleted or
+  // deactivated, depending on whether they have ever been attributed.
   static constexpr char kGetMatchingSourcesSql[] =
-      "SELECT source_id FROM sources "
+      "SELECT source_id,num_attributions,aggregatable_budget_consumed "
+      "FROM sources "
       DCHECK_SQL_INDEXED_BY("sources_by_active_destination_site_reporting_origin")
       "WHERE destination_site=? AND reporting_origin=? "
       "AND(event_level_active=1 OR aggregatable_active=1)"
@@ -1053,10 +993,17 @@ bool AttributionStorageSql::FindMatchingSourceForTrigger(
   // The first one returned will be attributed; it has the highest priority.
   source_id_to_attribute = StoredSource::Id(statement.ColumnInt64(0));
 
-  // Any others will be deleted.
+  // Any others will be deleted or deactivated.
   while (statement.Step()) {
     StoredSource::Id source_id(statement.ColumnInt64(0));
-    source_ids_to_delete.push_back(source_id);
+    int num_attributions = statement.ColumnInt(1);
+    int64_t aggregatable_budget_consumed = statement.ColumnInt64(2);
+
+    if (num_attributions > 0 || aggregatable_budget_consumed > 0) {
+      source_ids_to_deactivate.push_back(source_id);
+    } else {
+      source_ids_to_delete.push_back(source_id);
+    }
   }
   return statement.Succeeded();
 }
@@ -1552,41 +1499,27 @@ bool AttributionStorageSql::UpdateReportForSendFailure(
   if (!LazyInit(DbCreationPolicy::kIgnoreIfAbsent))
     return false;
 
-  struct Visitor {
-    raw_ptr<AttributionStorageSql> storage;
-    base::Time new_report_time;
+  auto [statement_id, sql_query, report_id_int] = absl::visit(
+      base::Overloaded{
+          [](AttributionReport::EventLevelData::Id id) {
+            static constexpr char kUpdateFailedReportSql[] =
+                ATTRIBUTION_UPDATE_FAILED_REPORT_SQL(
+                    ATTRIBUTION_CONVERSIONS_TABLE, "report_id");
+            return std::make_tuple(SQL_FROM_HERE, kUpdateFailedReportSql, *id);
+          },
+          [](AttributionReport::AggregatableAttributionData::Id id) {
+            static constexpr char kUpdateFailedReportSql[] =
+                ATTRIBUTION_UPDATE_FAILED_REPORT_SQL(
+                    ATTRIBUTION_AGGREGATABLE_REPORT_METADATA_TABLE,
+                    "aggregation_id");
+            return std::make_tuple(SQL_FROM_HERE, kUpdateFailedReportSql, *id);
+          },
+      },
+      report_id);
 
-    bool operator()(AttributionReport::EventLevelData::Id id) {
-      DCHECK_CALLED_ON_VALID_SEQUENCE(storage->sequence_checker_);
-      static constexpr char kUpdateFailedReportSql[] =
-          ATTRIBUTION_UPDATE_FAILED_REPORT_SQL(ATTRIBUTION_CONVERSIONS_TABLE,
-                                               "report_id");
-      return storage->UpdateReportForSendFailure(
-          SQL_FROM_HERE, kUpdateFailedReportSql, *id, new_report_time);
-    }
-
-    bool operator()(AttributionReport::AggregatableAttributionData::Id id) {
-      DCHECK_CALLED_ON_VALID_SEQUENCE(storage->sequence_checker_);
-      static constexpr char kUpdateFailedReportSql[] =
-          ATTRIBUTION_UPDATE_FAILED_REPORT_SQL(
-              ATTRIBUTION_AGGREGATABLE_REPORT_METADATA_TABLE, "aggregation_id");
-      return storage->UpdateReportForSendFailure(
-          SQL_FROM_HERE, kUpdateFailedReportSql, *id, new_report_time);
-    }
-  };
-
-  return absl::visit(
-      Visitor{.storage = this, .new_report_time = new_report_time}, report_id);
-}
-
-bool AttributionStorageSql::UpdateReportForSendFailure(
-    sql::StatementID id,
-    const char* sql,
-    int64_t report_id,
-    base::Time new_report_time) {
-  sql::Statement statement(db_->GetCachedStatement(id, sql));
+  sql::Statement statement(db_->GetCachedStatement(statement_id, sql_query));
   statement.BindTime(0, new_report_time);
-  statement.BindInt64(1, report_id);
+  statement.BindInt64(1, report_id_int);
   return statement.Run() && db_->GetLastChangeCount() == 1;
 }
 
@@ -1829,9 +1762,10 @@ bool AttributionStorageSql::HasCapacityForStoringSource(
     const std::string& serialized_origin) {
   static constexpr char kCountSourcesSql[] =
       // clang-format off
-      "SELECT COUNT(source_origin)FROM sources "
-      DCHECK_SQL_INDEXED_BY("sources_by_origin")
-      "WHERE source_origin=?";  // clang-format on
+      "SELECT COUNT(*)FROM sources "
+      DCHECK_SQL_INDEXED_BY("active_sources_by_source_origin")
+      "WHERE source_origin=? "
+      "AND(event_level_active=1 OR aggregatable_active=1)";  // clang-format on
 
   sql::Statement statement(
       db_->GetCachedStatement(SQL_FROM_HERE, kCountSourcesSql));
@@ -1962,7 +1896,7 @@ void AttributionStorageSql::HandleInitializationFailure(
 
 bool AttributionStorageSql::LazyInit(DbCreationPolicy creation_policy) {
   if (!db_init_status_) {
-    if (g_run_in_memory_) {
+    if (g_run_in_memory) {
       db_init_status_ = DbStatus::kDeferringCreation;
     } else {
       db_init_status_ = base::PathExists(path_to_database_)
@@ -1991,11 +1925,10 @@ bool AttributionStorageSql::LazyInit(DbCreationPolicy creation_policy) {
       .exclusive_locking = true, .page_size = 4096, .cache_size = 32});
   db_->set_histogram_tag("Conversions");
 
-  // Supply this callback with a weak_ptr to avoid calling the error callback
-  // after |this| has been deleted.
-  db_->set_error_callback(
-      base::BindRepeating(&AttributionStorageSql::DatabaseErrorCallback,
-                          weak_factory_.GetWeakPtr()));
+  // `base::Unretained()` is safe because the callback will only be called
+  // while the `sql::Database` in `db_` is alive, and this instance owns `db_`.
+  db_->set_error_callback(base::BindRepeating(
+      &AttributionStorageSql::DatabaseErrorCallback, base::Unretained(this)));
 
   if (path_to_database_.value() == kInMemoryPath) {
     if (!db_->OpenInMemory()) {
@@ -2011,12 +1944,14 @@ bool AttributionStorageSql::LazyInit(DbCreationPolicy creation_policy) {
       return false;
     }
     if (!db_->Open(path_to_database_)) {
+      DLOG(ERROR) << "Failed to open Conversion database";
       HandleInitializationFailure(InitStatus::kFailedToOpenDbFile);
       return false;
     }
   }
 
   if (!InitializeSchema(db_init_status_ == DbStatus::kDeferringCreation)) {
+    DLOG(ERROR) << "Failed to initialize schema for Conversion database";
     HandleInitializationFailure(InitStatus::kFailedToInitializeSchema);
     return false;
   }
@@ -2090,15 +2025,15 @@ bool AttributionStorageSql::CreateSchema() {
   // |attribution_logic| corresponds to the
   // |StoredSource::AttributionLogic| enum.
   // |source_site| is used to optimize the lookup of sources;
-  // |CommonSourceInfo::ImpressionSite| is always derived from the origin.
+  // |CommonSourceInfo::SourceSite| is always derived from the origin.
   // |filter_data| is a serialized `AttributionFilterData` used for source
   // matching.
   //
   // |source_id| uses AUTOINCREMENT to ensure that IDs aren't reused over
   // the lifetime of the DB.
   static constexpr char kImpressionTableSql[] =
-      "CREATE TABLE IF NOT EXISTS sources"
-      "(source_id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,"
+      "CREATE TABLE sources("
+      "source_id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,"
       "source_event_id INTEGER NOT NULL,"
       "source_origin TEXT NOT NULL,"
       "destination_origin TEXT NOT NULL,"
@@ -2127,8 +2062,7 @@ bool AttributionStorageSql::CreateSchema() {
   // need to distinguish between active and inactive reports, so include
   // |event_level_active| and |aggregatable_active| in the index.
   static constexpr char kConversionDestinationIndexSql[] =
-      "CREATE INDEX IF NOT EXISTS "
-      "sources_by_active_destination_site_reporting_origin "
+      "CREATE INDEX sources_by_active_destination_site_reporting_origin "
       "ON sources(event_level_active,aggregatable_active,"
       "destination_site,reporting_origin)";
   if (!db_->Execute(kConversionDestinationIndexSql))
@@ -2139,23 +2073,23 @@ bool AttributionStorageSql::CreateSchema() {
   // time. Both calls require only returning sources that expire after a
   // given time.
   static constexpr char kImpressionExpiryIndexSql[] =
-      "CREATE INDEX IF NOT EXISTS sources_by_expiry_time "
+      "CREATE INDEX sources_by_expiry_time "
       "ON sources(expiry_time)";
   if (!db_->Execute(kImpressionExpiryIndexSql))
     return false;
 
-  // Optimizes counting sources by source origin.
+  // Optimizes counting active sources by source origin.
   static constexpr char kImpressionOriginIndexSql[] =
-      "CREATE INDEX IF NOT EXISTS sources_by_origin "
-      "ON sources(source_origin)";
+      "CREATE INDEX active_sources_by_source_origin "
+      "ON sources(source_origin)"
+      "WHERE event_level_active=1 OR aggregatable_active=1";
   if (!db_->Execute(kImpressionOriginIndexSql))
     return false;
 
   // Optimizes `HasCapacityForUniqueDestinationLimitForPendingSource()`, which
   // only needs to examine active, unconverted sources.
   static constexpr char kImpressionSiteReportingOriginIndexSql[] =
-      "CREATE INDEX IF NOT EXISTS "
-      "active_unattributed_sources_by_site_reporting_origin "
+      "CREATE INDEX active_unattributed_sources_by_site_reporting_origin "
       "ON sources(source_site,reporting_origin)"
       "WHERE event_level_active=1 AND num_attributions=0 AND "
       "aggregatable_active=1 AND aggregatable_budget_consumed=0";
@@ -2174,8 +2108,8 @@ bool AttributionStorageSql::CreateSchema() {
   // |id| uses AUTOINCREMENT to ensure that IDs aren't reused over
   // the lifetime of the DB.
   static constexpr char kConversionTableSql[] =
-      "CREATE TABLE IF NOT EXISTS event_level_reports"
-      "(report_id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,"
+      "CREATE TABLE event_level_reports("
+      "report_id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,"
       "source_id INTEGER NOT NULL,"
       "trigger_data INTEGER NOT NULL,"
       "trigger_time INTEGER NOT NULL,"
@@ -2191,7 +2125,7 @@ bool AttributionStorageSql::CreateSchema() {
   // `GetAttributionReports()`. The reports with the earliest report times are
   // periodically fetched from storage to be sent.
   static constexpr char kConversionReportTimeIndexSql[] =
-      "CREATE INDEX IF NOT EXISTS event_level_reports_by_report_time "
+      "CREATE INDEX event_level_reports_by_report_time "
       "ON event_level_reports(report_time)";
   if (!db_->Execute(kConversionReportTimeIndexSql))
     return false;
@@ -2201,7 +2135,7 @@ bool AttributionStorageSql::CreateSchema() {
   // corresponding pending reports during calls to
   // `DeleteExpiredSources()`.
   static constexpr char kConversionImpressionIdIndexSql[] =
-      "CREATE INDEX IF NOT EXISTS event_level_reports_by_source_id "
+      "CREATE INDEX event_level_reports_by_source_id "
       "ON event_level_reports(source_id)";
   if (!db_->Execute(kConversionImpressionIdIndexSql))
     return false;
@@ -2210,8 +2144,8 @@ bool AttributionStorageSql::CreateSchema() {
     return false;
 
   static constexpr char kDedupKeyTableSql[] =
-      "CREATE TABLE IF NOT EXISTS dedup_keys"
-      "(source_id INTEGER NOT NULL,"
+      "CREATE TABLE dedup_keys("
+      "source_id INTEGER NOT NULL,"
       "dedup_key INTEGER NOT NULL,"
       "PRIMARY KEY(source_id,dedup_key))WITHOUT ROWID";
   if (!db_->Execute(kDedupKeyTableSql))
@@ -2238,7 +2172,7 @@ bool AttributionStorageSql::CreateSchema() {
   // `initial_report_time` is the report time initially scheduled by the
   // browser.
   static constexpr char kAggregatableReportMetadataTableSql[] =
-      "CREATE TABLE IF NOT EXISTS aggregatable_report_metadata("
+      "CREATE TABLE aggregatable_report_metadata("
       "aggregation_id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,"
       "source_id INTEGER NOT NULL,"
       "trigger_time INTEGER NOT NULL,"
@@ -2253,7 +2187,7 @@ bool AttributionStorageSql::CreateSchema() {
   // Optimizes aggregatable report look up by source id during calls to
   // `DeleteExpiredSources()`, `ClearAggregatableAttributionsForSourceIds()`.
   static constexpr char kAggregateSourceIdIndexSql[] =
-      "CREATE INDEX IF NOT EXISTS aggregate_source_id_idx "
+      "CREATE INDEX aggregate_source_id_idx "
       "ON aggregatable_report_metadata(source_id)";
   if (!db_->Execute(kAggregateSourceIdIndexSql))
     return false;
@@ -2262,7 +2196,7 @@ bool AttributionStorageSql::CreateSchema() {
   // data during calls to
   // `ClearAggregatableAttributionsForOriginsInRange()`.
   static constexpr char kAggregateTriggerTimeIndexSql[] =
-      "CREATE INDEX IF NOT EXISTS aggregate_trigger_time_idx "
+      "CREATE INDEX aggregate_trigger_time_idx "
       "ON aggregatable_report_metadata(trigger_time)";
   if (!db_->Execute(kAggregateTriggerTimeIndexSql))
     return false;
@@ -2271,7 +2205,7 @@ bool AttributionStorageSql::CreateSchema() {
   // time range during calls to
   // `GetAggregatableAttributionReportsInternal()`.
   static constexpr char kAggregateReportTimeIndexSql[] =
-      "CREATE INDEX IF NOT EXISTS aggregate_report_time_idx "
+      "CREATE INDEX aggregate_report_time_idx "
       "ON aggregatable_report_metadata(report_time)";
   if (!db_->Execute(kAggregateReportTimeIndexSql))
     return false;
@@ -2283,7 +2217,7 @@ bool AttributionStorageSql::CreateSchema() {
   // is a 128-bit unsigned integer.
   // `value` is the histogram value.
   static constexpr char kAggregatableContributionsTableSql[] =
-      "CREATE TABLE IF NOT EXISTS aggregatable_contributions("
+      "CREATE TABLE aggregatable_contributions("
       "contribution_id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,"
       "aggregation_id INTEGER NOT NULL,"
       "key_high_bits INTEGER NOT NULL,"
@@ -2295,7 +2229,7 @@ bool AttributionStorageSql::CreateSchema() {
   // Optimizes contribution look up by aggregation id during calls to
   // `DeleteAggregatableContributions()`.
   static constexpr char kContributionAggregationIdIndexSql[] =
-      "CREATE INDEX IF NOT EXISTS contribution_aggregation_id_idx "
+      "CREATE INDEX contribution_aggregation_id_idx "
       "ON aggregatable_contributions(aggregation_id)";
   if (!db_->Execute(kContributionAggregationIdIndexSql))
     return false;
@@ -2357,7 +2291,7 @@ AttributionStorageSql::HasCapacityForUniqueDestinationLimitForPendingSource(
   DCHECK_GT(max, 0);
 
   const std::string serialized_conversion_destination =
-      source.common_info().ConversionDestination().Serialize();
+      source.common_info().DestinationSite().Serialize();
 
   // Optimized by `kImpressionSiteReportingOriginIndexSql`.
   static constexpr char kSelectSourcesSql[] =
@@ -2368,10 +2302,10 @@ AttributionStorageSql::HasCapacityForUniqueDestinationLimitForPendingSource(
       "aggregatable_active=1 AND aggregatable_budget_consumed=0";
   sql::Statement statement(
       db_->GetCachedStatement(SQL_FROM_HERE, kSelectSourcesSql));
-  statement.BindString(0, source.common_info().ImpressionSite().Serialize());
+  statement.BindString(0, source.common_info().SourceSite().Serialize());
   statement.BindString(1, SerializePotentiallyTrustworthyOrigin(
                               source.common_info().reporting_origin()));
-  statement.BindTime(2, source.common_info().impression_time());
+  statement.BindTime(2, source.common_info().source_time());
 
   base::flat_set<std::string> destinations;
   while (statement.Step()) {

@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -43,6 +43,7 @@
 #include "net/test/embedded_test_server/http_response.h"
 #include "net/test/embedded_test_server/request_handler_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 class UserPolicySigninServiceTest;
 class SigninUIError;
@@ -116,6 +117,10 @@ class UserPolicySigninServiceTest : public InProcessBrowserTest {
 
   policy::PolicyService* GetPolicyService() {
     return profile()->GetProfilePolicyConnector()->policy_service();
+  }
+
+  signin::IdentityManager* identity_manager() {
+    return IdentityManagerFactory::GetForProfile(profile());
   }
 
   TurnSyncOnHelper* CreateTurnSyncOnHelper() {
@@ -216,11 +221,10 @@ class UserPolicySigninServiceTest : public InProcessBrowserTest {
 
     embedded_test_server_.StartAcceptingConnections();
 
-    account_info_ = signin::MakeAccountAvailable(
-        IdentityManagerFactory::GetForProfile(profile()), kTestEmail);
+    account_info_ =
+        signin::MakeAccountAvailable(identity_manager(), kTestEmail);
     signin::SetRefreshTokenForAccount(
-        IdentityManagerFactory::GetForProfile(profile()),
-        account_info_.account_id, kTestRefreshToken);
+        identity_manager(), account_info_.account_id, kTestRefreshToken);
     SetupFakeGaiaResponses();
   }
 
@@ -357,17 +361,17 @@ IN_PROC_BROWSER_TEST_F(UserPolicySigninServiceTest, BasicSignin) {
   CreateTurnSyncOnHelper();
   WaitForSyncConfirmation();
 
-  // Policies are applied even before the user confirms.
-  EXPECT_TRUE(
-      IdentityManagerFactory::GetForProfile(profile())->HasPrimaryAccount(
-          signin::ConsentLevel::kSync));
-  WaitForPrefValue(profile()->GetPrefs(), prefs::kShowHomeButton,
-                   base::Value(true));
+  // Policies are applied right before the sync confirmation is shown.
+  EXPECT_EQ(signin::ConsentLevel::kSignin,
+            signin::GetPrimaryAccountConsentLevel(identity_manager()));
+  EXPECT_TRUE(profile()->GetPrefs()->GetBoolean(prefs::kShowHomeButton));
 
-  // Confirm the signin.
+  // Opt-in to Sync.
   ConfirmSync(LoginUIService::SYNC_WITH_DEFAULT_SETTINGS);
   // Policy is still applied.
   EXPECT_TRUE(profile()->GetPrefs()->GetBoolean(prefs::kShowHomeButton));
+  EXPECT_EQ(signin::ConsentLevel::kSync,
+            signin::GetPrimaryAccountConsentLevel(identity_manager()));
 }
 
 IN_PROC_BROWSER_TEST_F(UserPolicySigninServiceTest, UndoSignin) {
@@ -377,18 +381,18 @@ IN_PROC_BROWSER_TEST_F(UserPolicySigninServiceTest, UndoSignin) {
   CreateTurnSyncOnHelper();
   WaitForSyncConfirmation();
 
-  // Policies are applied even before the user confirms.
-  EXPECT_TRUE(
-      IdentityManagerFactory::GetForProfile(profile())->HasPrimaryAccount(
-          signin::ConsentLevel::kSync));
-  WaitForPrefValue(profile()->GetPrefs(), prefs::kShowHomeButton,
-                   base::Value(true));
+  // Policies are applied right before the sync confirmation is shown.
+  EXPECT_EQ(signin::ConsentLevel::kSignin,
+            signin::GetPrimaryAccountConsentLevel(identity_manager()));
+  EXPECT_TRUE(profile()->GetPrefs()->GetBoolean(prefs::kShowHomeButton));
 
   // Cancel sync.
   ConfirmSync(LoginUIService::ABORT_SYNC);
   // Policy is reverted.
   WaitForPrefValue(profile()->GetPrefs(), prefs::kShowHomeButton,
                    base::Value(false));
+  EXPECT_EQ(absl::nullopt,
+            signin::GetPrimaryAccountConsentLevel(identity_manager()));
 }
 
 // Regression test for https://crbug.com/1061459
@@ -402,9 +406,8 @@ IN_PROC_BROWSER_TEST_F(UserPolicySigninServiceTest, ConcurrentSignin) {
   WaitForPolicyHanging();
 
   // User is not signed in, policy is not applied.
-  EXPECT_FALSE(
-      IdentityManagerFactory::GetForProfile(profile())->HasPrimaryAccount(
-          signin::ConsentLevel::kSync));
+  EXPECT_EQ(absl::nullopt,
+            signin::GetPrimaryAccountConsentLevel(identity_manager()));
   EXPECT_FALSE(profile()->GetPrefs()->GetBoolean(prefs::kShowHomeButton));
 
   // Restart a new signin flow and allow it to complete.
@@ -412,17 +415,17 @@ IN_PROC_BROWSER_TEST_F(UserPolicySigninServiceTest, ConcurrentSignin) {
   set_policy_hanging(false);
   WaitForSyncConfirmation();
 
-  // Policies are applied even before the user confirms.
-  EXPECT_TRUE(
-      IdentityManagerFactory::GetForProfile(profile())->HasPrimaryAccount(
-          signin::ConsentLevel::kSync));
-  WaitForPrefValue(profile()->GetPrefs(), prefs::kShowHomeButton,
-                   base::Value(true));
+  // Policies are applied right before the sync confirmation is shown.
+  EXPECT_EQ(signin::ConsentLevel::kSignin,
+            signin::GetPrimaryAccountConsentLevel(identity_manager()));
+  EXPECT_TRUE(profile()->GetPrefs()->GetBoolean(prefs::kShowHomeButton));
 
   // Confirm the signin.
   ConfirmSync(LoginUIService::SYNC_WITH_DEFAULT_SETTINGS);
   // Policy is still applied.
   EXPECT_TRUE(profile()->GetPrefs()->GetBoolean(prefs::kShowHomeButton));
+  EXPECT_EQ(signin::ConsentLevel::kSync,
+            signin::GetPrimaryAccountConsentLevel(identity_manager()));
 }
 
 // crbug.com/1230268 not working on Lacros.
@@ -440,22 +443,16 @@ IN_PROC_BROWSER_TEST_F(UserPolicySigninServiceTest,
   CreateTurnSyncOnHelper();
   WaitForSyncConfirmation();
 
-  // Policies are applied even before the user confirms.
-  EXPECT_TRUE(
-      IdentityManagerFactory::GetForProfile(profile())->HasPrimaryAccount(
-          signin::ConsentLevel::kSync));
-  WaitForPrefValue(profile()->GetPrefs(), prefs::kShowHomeButton,
-                   base::Value(true));
+  // Policies are applied right before the sync confirmation is shown.
+  EXPECT_EQ(signin::ConsentLevel::kSignin,
+            signin::GetPrimaryAccountConsentLevel(identity_manager()));
+  EXPECT_TRUE(profile()->GetPrefs()->GetBoolean(prefs::kShowHomeButton));
 
   // Cancel sync.
   ConfirmSync(LoginUIService::ABORT_SYNC);
 
-  EXPECT_TRUE(
-      IdentityManagerFactory::GetForProfile(profile())->HasPrimaryAccount(
-          signin::ConsentLevel::kSignin));
-  EXPECT_FALSE(
-      IdentityManagerFactory::GetForProfile(profile())->HasPrimaryAccount(
-          signin::ConsentLevel::kSync));
+  EXPECT_EQ(signin::ConsentLevel::kSignin,
+            signin::GetPrimaryAccountConsentLevel(identity_manager()));
   EXPECT_TRUE(
       chrome::enterprise_util::UserAcceptedAccountManagement(profile()));
   EXPECT_TRUE(chrome::enterprise_util::ProfileCanBeManaged(profile()));
@@ -463,14 +460,12 @@ IN_PROC_BROWSER_TEST_F(UserPolicySigninServiceTest,
   EXPECT_TRUE(profile()->GetPrefs()->GetBoolean(prefs::kShowHomeButton));
 
   // Signout
-  auto* accounts_mutator =
-      IdentityManagerFactory::GetForProfile(profile())->GetAccountsMutator();
+  auto* accounts_mutator = identity_manager()->GetAccountsMutator();
   accounts_mutator->RemoveAccount(
       account_id(), signin_metrics::SourceForRefreshTokenOperation::
                         kDiceResponseHandler_Signout);
-  EXPECT_FALSE(
-      IdentityManagerFactory::GetForProfile(profile())->HasPrimaryAccount(
-          signin::ConsentLevel::kSignin));
+  EXPECT_EQ(absl::nullopt,
+            signin::GetPrimaryAccountConsentLevel(identity_manager()));
   EXPECT_FALSE(
       chrome::enterprise_util::UserAcceptedAccountManagement(profile()));
   EXPECT_FALSE(chrome::enterprise_util::ProfileCanBeManaged(profile()));

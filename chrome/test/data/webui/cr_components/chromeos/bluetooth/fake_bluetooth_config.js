@@ -1,9 +1,9 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 import {stringToMojoString16} from 'chrome://resources/cr_components/chromeos/bluetooth/bluetooth_utils.js';
-import {AudioOutputCapability, BluetoothDeviceProperties, BluetoothDeviceStatusObserverInterface, BluetoothDiscoveryDelegateInterface, BluetoothModificationState, BluetoothSystemProperties, BluetoothSystemState, CrosBluetoothConfigInterface, DeviceConnectionState, DevicePairingHandlerReceiver, DeviceType, DiscoverySessionStatusObserverInterface, PairedBluetoothDeviceProperties, SystemPropertiesObserverInterface} from 'chrome://resources/mojo/chromeos/services/bluetooth_config/public/mojom/cros_bluetooth_config.mojom-webui.js';
+import {AudioOutputCapability, BluetoothDeviceProperties, BluetoothDeviceStatusObserverInterface, BluetoothDiscoveryDelegateInterface, BluetoothModificationState, BluetoothSystemProperties, BluetoothSystemState, CrosBluetoothConfigInterface, DeviceConnectionState, DevicePairingHandlerReceiver, DeviceType, DiscoverySessionStatusObserverInterface, PairedBluetoothDeviceProperties, SystemPropertiesObserverInterface} from 'chrome://resources/mojo/chromeos/ash/services/bluetooth_config/public/mojom/cros_bluetooth_config.mojom-webui.js';
 
 import {assertFalse, assertNotReached, assertTrue} from '../../../chai_assert.js';
 

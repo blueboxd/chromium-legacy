@@ -1,4 +1,4 @@
-// Copyright (c) 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -17,7 +17,7 @@
 #include "components/policy/core/common/policy_types.h"
 #include "components/policy/core/common/schema.h"
 #include "components/prefs/pref_value_map.h"
-#include "testing/gtest/include/gtest/gtest.h"
+#include "testing/gmock/include/gmock/gmock.h"
 
 namespace policy {
 
@@ -102,8 +102,9 @@ class TestSchemaValidatingPolicyHandler : public SchemaValidatingPolicyHandler {
   void ApplyPolicySettings(const policy::PolicyMap&, PrefValueMap*) override {}
 
   bool CheckAndGetValueForTest(const PolicyMap& policies,
+                               PolicyErrorMap* errors,
                                std::unique_ptr<base::Value>* value) {
-    return SchemaValidatingPolicyHandler::CheckAndGetValue(policies, nullptr,
+    return SchemaValidatingPolicyHandler::CheckAndGetValue(policies, errors,
                                                            value);
   }
 };
@@ -708,13 +709,13 @@ TEST(SchemaValidatingPolicyHandlerTest, CheckAndGetValueInvalid) {
   ASSERT_TRUE(parsed_json.is_dict());
 
   PolicyMap policy_map;
-  policy_map.LoadFrom(&base::Value::AsDictionaryValue(parsed_json),
-                      POLICY_LEVEL_RECOMMENDED, POLICY_SCOPE_USER,
-                      POLICY_SOURCE_CLOUD);
+  policy_map.LoadFrom(parsed_json.GetDict(), POLICY_LEVEL_RECOMMENDED,
+                      POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD);
 
   TestSchemaValidatingPolicyHandler handler(schema, SCHEMA_ALLOW_UNKNOWN);
   std::unique_ptr<base::Value> output_value;
-  EXPECT_FALSE(handler.CheckAndGetValueForTest(policy_map, &output_value));
+  EXPECT_FALSE(handler.CheckAndGetValueForTest(policy_map, /*errors=*/nullptr,
+                                               &output_value));
 }
 
 TEST(SchemaValidatingPolicyHandlerTest, CheckAndGetValueUnknown) {
@@ -750,15 +751,30 @@ TEST(SchemaValidatingPolicyHandlerTest, CheckAndGetValueUnknown) {
   ASSERT_TRUE(parsed_json->is_dict());
 
   PolicyMap policy_map;
-  policy_map.LoadFrom(&base::Value::AsDictionaryValue(*parsed_json),
-                      POLICY_LEVEL_RECOMMENDED, POLICY_SCOPE_USER,
-                      POLICY_SOURCE_CLOUD);
+  policy_map.LoadFrom(parsed_json->GetDict(), POLICY_LEVEL_RECOMMENDED,
+                      POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD);
 
   TestSchemaValidatingPolicyHandler handler(schema, SCHEMA_ALLOW_UNKNOWN);
+
+  // Test that CheckPolicySettings() is true but outputs warnings about unknown
+  // properties.
+  PolicyErrorMap error_map;
+  ASSERT_TRUE(handler.CheckPolicySettings(policy_map, &error_map));
+  EXPECT_THAT(error_map.GetErrors(kPolicyName),
+              testing::ElementsAre(testing::FieldsAre(
+                  testing::_, PolicyMap::MessageType::kWarning)));
+  error_map.Clear();
+
   std::unique_ptr<base::Value> output_value;
-  ASSERT_TRUE(handler.CheckAndGetValueForTest(policy_map, &output_value));
+  ASSERT_TRUE(
+      handler.CheckAndGetValueForTest(policy_map, &error_map, &output_value));
   ASSERT_TRUE(output_value);
   ASSERT_TRUE(output_value->is_dict());
+
+  // Test that CheckAndGetValue outputs warnings about unknown properties.
+  EXPECT_THAT(error_map.GetErrors(kPolicyName),
+              testing::ElementsAre(testing::FieldsAre(
+                  testing::_, PolicyMap::MessageType::kWarning)));
 
   // Test that CheckAndGetValue() actually dropped unknown properties.
   absl::optional<int> one_two_three = output_value->FindIntKey("OneToThree");
@@ -806,14 +822,13 @@ TEST(SimpleSchemaValidatingPolicyHandlerTest, CheckAndGetValue) {
   ASSERT_TRUE(parsed_json->is_dict());
 
   PolicyMap policy_map_recommended;
-  policy_map_recommended.LoadFrom(&base::Value::AsDictionaryValue(*parsed_json),
+  policy_map_recommended.LoadFrom(parsed_json->GetDict(),
                                   POLICY_LEVEL_RECOMMENDED, POLICY_SCOPE_USER,
                                   POLICY_SOURCE_CLOUD);
 
   PolicyMap policy_map_mandatory;
-  policy_map_mandatory.LoadFrom(&base::Value::AsDictionaryValue(*parsed_json),
-                                POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-                                POLICY_SOURCE_CLOUD);
+  policy_map_mandatory.LoadFrom(parsed_json->GetDict(), POLICY_LEVEL_MANDATORY,
+                                POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD);
 
   SimpleSchemaValidatingPolicyHandler handler_all(
       kPolicyName, kTestPref, schema, SCHEMA_STRICT,
@@ -898,9 +913,8 @@ TEST(SimpleJsonStringSchemaValidatingPolicyHandlerTest, ValidEmbeddedJson) {
   ASSERT_TRUE(parsed_json->is_dict());
 
   PolicyMap policy_map;
-  policy_map.LoadFrom(&base::Value::AsDictionaryValue(*parsed_json),
-                      POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-                      POLICY_SOURCE_CLOUD);
+  policy_map.LoadFrom(parsed_json->GetDict(), POLICY_LEVEL_MANDATORY,
+                      POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD);
 
   const base::Value* value_expected_in_pref =
       parsed_json->FindPath(kPolicyName);
@@ -926,9 +940,8 @@ TEST(SimpleJsonStringSchemaValidatingPolicyHandlerTest, InvalidEmbeddedJson) {
   ASSERT_TRUE(parsed_json->is_dict());
 
   PolicyMap policy_map;
-  policy_map.LoadFrom(&base::Value::AsDictionaryValue(*parsed_json),
-                      POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-                      POLICY_SOURCE_CLOUD);
+  policy_map.LoadFrom(parsed_json->GetDict(), POLICY_LEVEL_MANDATORY,
+                      POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD);
 
   const base::Value* value_expected_in_pref =
       parsed_json->FindPath(kPolicyName);
@@ -954,9 +967,8 @@ TEST(SimpleJsonStringSchemaValidatingPolicyHandlerTest, UnparsableJson) {
   ASSERT_TRUE(parsed_json->is_dict());
 
   PolicyMap policy_map;
-  policy_map.LoadFrom(&base::Value::AsDictionaryValue(*parsed_json),
-                      POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-                      POLICY_SOURCE_CLOUD);
+  policy_map.LoadFrom(parsed_json->GetDict(), POLICY_LEVEL_MANDATORY,
+                      POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD);
 
   const base::Value* value_expected_in_pref =
       parsed_json->FindPath(kPolicyName);
@@ -982,9 +994,8 @@ TEST(SimpleJsonStringSchemaValidatingPolicyHandlerTest, WrongType) {
   ASSERT_TRUE(parsed_json->is_dict());
 
   PolicyMap policy_map;
-  policy_map.LoadFrom(&base::Value::AsDictionaryValue(*parsed_json),
-                      POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-                      POLICY_SOURCE_CLOUD);
+  policy_map.LoadFrom(parsed_json->GetDict(), POLICY_LEVEL_MANDATORY,
+                      POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD);
 
   const base::Value* value_expected_in_pref =
       parsed_json->FindPath(kPolicyName);
@@ -1010,9 +1021,8 @@ TEST(SimpleJsonStringSchemaValidatingPolicyHandlerTest, WrongRootType) {
   ASSERT_TRUE(parsed_json->is_dict());
 
   PolicyMap policy_map;
-  policy_map.LoadFrom(&base::Value::AsDictionaryValue(*parsed_json),
-                      POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-                      POLICY_SOURCE_CLOUD);
+  policy_map.LoadFrom(parsed_json->GetDict(), POLICY_LEVEL_MANDATORY,
+                      POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD);
 
   PolicyErrorMap errors;
 

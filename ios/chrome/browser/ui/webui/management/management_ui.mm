@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,8 +13,7 @@
 #import "components/policy/core/common/cloud/user_cloud_policy_manager.h"
 #import "components/policy/proto/device_management_backend.pb.h"
 #import "components/strings/grit/components_strings.h"
-#include "components/strings/grit/components_strings.h"
-#import "ios/chrome/browser/application_context.h"
+#import "ios/chrome/browser/application_context/application_context.h"
 #import "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/chrome_url_constants.h"
 #import "ios/chrome/browser/policy/browser_policy_connector_ios.h"

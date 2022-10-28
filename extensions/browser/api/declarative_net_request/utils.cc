@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,6 +13,7 @@
 #include "base/files/file_util.h"
 #include "base/hash/hash.h"
 #include "base/metrics/histogram_functions.h"
+#include "base/ranges/algorithm.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -274,20 +275,18 @@ dnr_api::RequestDetails CreateRequestDetails(const WebRequestInfo& request) {
   details.url = request.url.spec();
 
   if (request.initiator) {
-    details.initiator =
-        std::make_unique<std::string>(request.initiator->Serialize());
+    details.initiator = request.initiator->Serialize();
   }
 
   details.method = request.method;
   details.frame_id = request.frame_data.frame_id;
   if (request.frame_data.document_id) {
-    details.document_id = std::make_unique<std::string>(
-        request.frame_data.document_id.ToString());
+    details.document_id = request.frame_data.document_id.ToString();
   }
   details.parent_frame_id = request.frame_data.parent_frame_id;
   if (request.frame_data.parent_document_id) {
-    details.parent_document_id = std::make_unique<std::string>(
-        request.frame_data.parent_document_id.ToString());
+    details.parent_document_id =
+        request.frame_data.parent_document_id.ToString();
   }
   details.tab_id = request.frame_data.tab_id;
   details.type = GetDNRResourceType(request.web_request_type);
@@ -719,12 +718,9 @@ flat_rule::RequestMethod GetRequestMethod(bool http_or_https,
            {HttpRequestHeaders::kConnectMethod,
             flat_rule::RequestMethod_CONNECT}});
 
-  DCHECK(std::all_of(kRequestMethods->begin(), kRequestMethods->end(),
-                     [](const auto& key_value) {
-                       auto method = key_value.first;
-                       return std::none_of(method.begin(), method.end(),
-                                           base::IsAsciiLower<char>);
-                     }));
+  DCHECK(base::ranges::all_of(*kRequestMethods, [](const auto& key_value) {
+    return base::ranges::none_of(key_value.first, base::IsAsciiLower<char>);
+  }));
 
   std::string normalized_method = base::ToUpperASCII(method);
   auto it = kRequestMethods->find(normalized_method);

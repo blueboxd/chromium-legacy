@@ -1,43 +1,43 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #import "ios/chrome/browser/ui/recent_tabs/recent_tabs_table_view_controller.h"
 
-#include "base/check_op.h"
-#include "base/mac/foundation_util.h"
-#include "base/metrics/histogram_macros.h"
-#include "base/metrics/user_metrics.h"
-#include "base/metrics/user_metrics_action.h"
-#include "base/notreached.h"
+#import "base/check_op.h"
+#import "base/mac/foundation_util.h"
+#import "base/metrics/histogram_macros.h"
+#import "base/metrics/user_metrics.h"
+#import "base/metrics/user_metrics_action.h"
+#import "base/notreached.h"
 #import "base/numerics/safe_conversions.h"
-#include "base/strings/sys_string_conversions.h"
-#include "base/time/time.h"
-#include "components/prefs/pref_service.h"
-#include "components/search_engines/template_url_service.h"
-#include "components/sessions/core/session_id.h"
-#include "components/sessions/core/tab_restore_service.h"
-#include "components/strings/grit/components_strings.h"
-#include "components/sync_sessions/open_tabs_ui_delegate.h"
-#include "components/sync_sessions/session_sync_service.h"
+#import "base/strings/sys_string_conversions.h"
+#import "base/time/time.h"
+#import "components/prefs/pref_service.h"
+#import "components/search_engines/template_url_service.h"
+#import "components/sessions/core/session_id.h"
+#import "components/sessions/core/tab_restore_service.h"
+#import "components/strings/grit/components_strings.h"
+#import "components/sync_sessions/open_tabs_ui_delegate.h"
+#import "components/sync_sessions/session_sync_service.h"
 #import "ios/chrome/app/tests_hook.h"
-#include "ios/chrome/browser/browser_state/chrome_browser_state.h"
+#import "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/drag_and_drop/drag_item_util.h"
 #import "ios/chrome/browser/drag_and_drop/table_view_url_drag_drop_handler.h"
 #import "ios/chrome/browser/main/browser.h"
 #import "ios/chrome/browser/metrics/new_tab_page_uma.h"
 #import "ios/chrome/browser/net/crurl.h"
-#include "ios/chrome/browser/search_engines/template_url_service_factory.h"
-#include "ios/chrome/browser/sessions/live_tab_context_browser_agent.h"
-#include "ios/chrome/browser/sessions/session_util.h"
-#include "ios/chrome/browser/signin/authentication_service_factory.h"
+#import "ios/chrome/browser/search_engines/template_url_service_factory.h"
+#import "ios/chrome/browser/sessions/live_tab_context_browser_agent.h"
+#import "ios/chrome/browser/sessions/session_util.h"
+#import "ios/chrome/browser/signin/authentication_service.h"
+#import "ios/chrome/browser/signin/authentication_service_factory.h"
 #import "ios/chrome/browser/signin/chrome_account_manager_service_factory.h"
-#include "ios/chrome/browser/sync/session_sync_service_factory.h"
-#include "ios/chrome/browser/sync/sync_observer_bridge.h"
-#include "ios/chrome/browser/sync/sync_service_factory.h"
+#import "ios/chrome/browser/sync/session_sync_service_factory.h"
+#import "ios/chrome/browser/sync/sync_observer_bridge.h"
+#import "ios/chrome/browser/sync/sync_service_factory.h"
 #import "ios/chrome/browser/tabs_search/tabs_search_service.h"
 #import "ios/chrome/browser/tabs_search/tabs_search_service_factory.h"
-#import "ios/chrome/browser/ui/alert_coordinator/action_sheet_coordinator.h"
 #import "ios/chrome/browser/ui/authentication/cells/signin_promo_view_configurator.h"
 #import "ios/chrome/browser/ui/authentication/cells/signin_promo_view_consumer.h"
 #import "ios/chrome/browser/ui/authentication/cells/table_view_signin_promo_item.h"
@@ -45,14 +45,16 @@
 #import "ios/chrome/browser/ui/authentication/signin/signin_utils.h"
 #import "ios/chrome/browser/ui/authentication/signin_presenter.h"
 #import "ios/chrome/browser/ui/authentication/signin_promo_view_mediator.h"
-#include "ios/chrome/browser/ui/commands/application_commands.h"
+#import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/commands/open_new_tab_command.h"
 #import "ios/chrome/browser/ui/commands/show_signin_command.h"
+#import "ios/chrome/browser/ui/icons/action_icon.h"
+#import "ios/chrome/browser/ui/icons/chrome_symbol.h"
 #import "ios/chrome/browser/ui/recent_tabs/recent_tabs_constants.h"
 #import "ios/chrome/browser/ui/recent_tabs/recent_tabs_menu_provider.h"
 #import "ios/chrome/browser/ui/recent_tabs/recent_tabs_presentation_delegate.h"
 #import "ios/chrome/browser/ui/recent_tabs/recent_tabs_table_view_controller_delegate.h"
-#include "ios/chrome/browser/ui/recent_tabs/synced_sessions.h"
+#import "ios/chrome/browser/ui/recent_tabs/synced_sessions.h"
 #import "ios/chrome/browser/ui/settings/sync/utils/sync_presenter.h"
 #import "ios/chrome/browser/ui/settings/sync/utils/sync_util.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_activity_indicator_header_footer_item.h"
@@ -67,24 +69,24 @@
 #import "ios/chrome/browser/ui/table_view/chrome_table_view_styler.h"
 #import "ios/chrome/browser/ui/table_view/table_view_favicon_data_source.h"
 #import "ios/chrome/browser/ui/table_view/table_view_utils.h"
-#include "ios/chrome/browser/ui/ui_feature_flags.h"
-#include "ios/chrome/browser/ui/util/ui_util.h"
+#import "ios/chrome/browser/ui/ui_feature_flags.h"
+#import "ios/chrome/browser/ui/util/ui_util.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #import "ios/chrome/browser/url_loading/url_loading_browser_agent.h"
 #import "ios/chrome/browser/url_loading/url_loading_params.h"
 #import "ios/chrome/browser/url_loading/url_loading_util.h"
-#include "ios/chrome/browser/web_state_list/web_state_list.h"
-#include "ios/chrome/browser/web_state_list/web_state_opener.h"
+#import "ios/chrome/browser/web_state_list/web_state_list.h"
+#import "ios/chrome/browser/web_state_list/web_state_opener.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
 #import "ios/chrome/common/ui/favicon/favicon_attributes.h"
 #import "ios/chrome/common/ui/favicon/favicon_view.h"
 #import "ios/chrome/common/ui/table_view/table_view_cells_constants.h"
-#include "ios/chrome/grit/ios_chromium_strings.h"
-#include "ios/chrome/grit/ios_strings.h"
+#import "ios/chrome/grit/ios_chromium_strings.h"
+#import "ios/chrome/grit/ios_strings.h"
 #import "ios/public/provider/chrome/browser/modals/modals_api.h"
 #import "ios/web/public/web_state.h"
-#include "ui/base/l10n/l10n_util.h"
-#include "ui/base/l10n/time_format.h"
+#import "ui/base/l10n/l10n_util.h"
+#import "ui/base/l10n/time_format.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -166,8 +168,6 @@ typedef std::pair<SessionID, TableViewURLItem*> RecentlyClosedTableViewItemPair;
 @property(nonatomic, assign) sessions::TabRestoreService* tabRestoreService;
 // The sync state.
 @property(nonatomic, assign) SessionsSyncUserState sessionState;
-// Handles displaying the context menu for all form factors.
-@property(nonatomic, strong) ActionSheetCoordinator* contextMenuCoordinator;
 @property(nonatomic, strong) SigninPromoViewMediator* signinPromoViewMediator;
 // The browser state used for many operations, derived from the one provided by
 // `self.browser`.
@@ -364,7 +364,11 @@ typedef std::pair<SessionID, TableViewURLItem*> RecentlyClosedTableViewItemPair;
   TableViewImageItem* historyItem =
       [[TableViewImageItem alloc] initWithType:ItemTypeShowFullHistory];
   historyItem.title = l10n_util::GetNSString(IDS_HISTORY_SHOWFULLHISTORY_LINK);
-  historyItem.image = [UIImage imageNamed:@"show_history"];
+
+  historyItem.image = UseSymbols()
+                          ? DefaultSymbolWithPointSize(kClockArrowSymbol,
+                                                       kSymbolActionPointSize)
+                          : [UIImage imageNamed:@"show_history"];
   if (self.styler.tintColor) {
     historyItem.textColor = self.styler.tintColor;
   } else {
@@ -522,39 +526,19 @@ typedef std::pair<SessionID, TableViewURLItem*> RecentlyClosedTableViewItemPair;
 // Remove all SessionSections from `self.tableViewModel` and `self.tableView`
 // Needs to be called inside a performBatchUpdates block.
 - (void)removeSessionSections {
-  // `_displayedTabs` has been updated by now, that means that
-  // `self.tableViewModel` does not reflect `_displayedTabs` data.
-  NSInteger firstSessionSectionIndex = 0;
-  NSInteger sectionCountToRemove = [self.tableViewModel numberOfSections];
-  if ([self.tableViewModel
-          hasSectionForSectionIdentifier:SectionIdentifierRecentlyClosedTabs]) {
-    sectionCountToRemove--;
-    // Recently closed section is before the remote session sections, do not
-    // remove it.
-    firstSessionSectionIndex++;
-  }
-  if ([self.tableViewModel
-          hasSectionForSectionIdentifier:SectionIdentifierSuggestedActions]) {
-    sectionCountToRemove--;
-  }
-
-  NSInteger sectionIndexToDelete = firstSessionSectionIndex;
-  for (NSInteger sessionSection = 0; sessionSection < sectionCountToRemove;
-       sessionSection++) {
-    NSInteger sectionIdentifierToRemove =
-        kFirstSessionSectionIdentifier + sessionSection;
-    // A SectionIdentifier could've been deleted previously, do not rely on
-    // these being in sequential order at this point.
-    if ([self.tableViewModel
-            hasSectionForSectionIdentifier:sectionIdentifierToRemove]) {
-      [self.tableView
-            deleteSections:[NSIndexSet indexSetWithIndex:sectionIndexToDelete]
-          withRowAnimation:UITableViewRowAnimationNone];
-      sectionIndexToDelete++;
-      [self.tableViewModel
-          removeSectionWithIdentifier:sectionIdentifierToRemove];
+  NSMutableIndexSet* indexesToBeDeleted = [NSMutableIndexSet indexSet];
+  for (NSInteger index = 0; index < [self.tableViewModel numberOfSections];
+       index++) {
+    NSInteger sectionIdentifier =
+        [self.tableViewModel sectionIdentifierForSectionIndex:index];
+    if (sectionIdentifier >= kFirstSessionSectionIdentifier) {
+      [self.tableViewModel removeSectionWithIdentifier:sectionIdentifier];
+      [indexesToBeDeleted addIndex:index];
     }
   }
+
+  [self.tableView deleteSections:indexesToBeDeleted
+                withRowAnimation:UITableViewRowAnimationNone];
 }
 
 #pragma mark Other Devices Section
@@ -588,12 +572,21 @@ typedef std::pair<SessionID, TableViewURLItem*> RecentlyClosedTableViewItemPair;
 
 // Adds Other Devices Section and its header.
 - (void)addOtherDevicesSectionForState:(SessionsSyncUserState)state {
+  AuthenticationService* authService =
+      AuthenticationServiceFactory::GetForBrowserState(self.browserState);
+  const AuthenticationService::ServiceStatus authServiceStatus =
+      authService->GetServiceStatus();
   // If sign-in is disabled through user Settings, do not show Other Devices
   // section. However, if sign-in is disabled by policy Chrome will
   // continue to show the Other Devices section with a specialized message.
-  const PrefService* prefs = self.browserState->GetPrefs();
-  if (!signin::IsSigninAllowed(prefs) && signin::IsSigninAllowedByPolicy()) {
-    return;
+  switch (authServiceStatus) {
+    case AuthenticationService::ServiceStatus::SigninDisabledByUser:
+    case AuthenticationService::ServiceStatus::SigninDisabledByInternal:
+      return;
+    case AuthenticationService::ServiceStatus::SigninDisabledByPolicy:
+    case AuthenticationService::ServiceStatus::SigninForcedByPolicy:
+    case AuthenticationService::ServiceStatus::SigninAllowed:
+      break;
   }
 
   TableViewModel* model = self.tableViewModel;
@@ -629,7 +622,8 @@ typedef std::pair<SessionID, TableViewURLItem*> RecentlyClosedTableViewItemPair;
   }
 
   if (!self.isSyncDisabledByAdministrator &&
-      signin::IsSigninAllowed(self.browserState->GetPrefs())) {
+      authServiceStatus !=
+          AuthenticationService::ServiceStatus::SigninDisabledByPolicy) {
     ItemType itemType;
     NSString* itemSubtitle;
     NSString* itemButtonText;
@@ -1051,7 +1045,6 @@ typedef std::pair<SessionID, TableViewURLItem*> RecentlyClosedTableViewItemPair;
 }
 
 - (void)dismissModals {
-  [self.contextMenuCoordinator stop];
   [self.signinPromoViewMediator disconnect];
   self.signinPromoViewMediator = nil;
   ios::provider::DismissModalsForTableView(self.tableView);
@@ -1606,7 +1599,7 @@ typedef std::pair<SessionID, TableViewURLItem*> RecentlyClosedTableViewItemPair;
       DisclosureDirection direction =
           collapsed ? DisclosureDirectionTrailing : DisclosureDirectionDown;
 
-      [disclosureHeaderView animateHighlightAndRotateToDirection:direction];
+      [disclosureHeaderView rotateToDirection:direction];
       disclosureItem.collapsed = collapsed;
     }
   }
@@ -1644,84 +1637,6 @@ typedef std::pair<SessionID, TableViewURLItem*> RecentlyClosedTableViewItemPair;
   };
 
   [self.tableView performBatchUpdates:tableUpdates completion:nil];
-}
-
-#pragma mark - Long press and context menus
-
-- (void)handleLongPress:(UILongPressGestureRecognizer*)sender {
-  if (sender.state != UIGestureRecognizerStateBegan)
-    return;
-
-  // Do not handle the long press and present the context menu if the recent
-  // tabs UI is not visible.
-  if (!self.viewLoaded || !self.view.window || self.presentedViewController)
-    return;
-
-  UIView* headerTapped = sender.view;
-  NSInteger tappedHeaderSectionIdentifier = headerTapped.tag;
-  NSInteger sectionIdentifier = tappedHeaderSectionIdentifier;
-  // Only handle LongPress for SessionHeaders.
-  if (![self isSessionSectionIdentifier:sectionIdentifier])
-    return;
-
-  // Highlight the section header being long pressed.
-  NSInteger section = [self.tableViewModel
-      sectionForSectionIdentifier:tappedHeaderSectionIdentifier];
-  ListItem* headerItem = [self.tableViewModel headerForSectionIndex:section];
-  UITableViewHeaderFooterView* headerView =
-      [self.tableView headerViewForSection:section];
-  if (headerItem.type == ItemTypeRecentlyClosedHeader ||
-      headerItem.type == ItemTypeSessionHeader) {
-    TableViewDisclosureHeaderFooterView* textHeaderView =
-        base::mac::ObjCCastStrict<TableViewDisclosureHeaderFooterView>(
-            headerView);
-    [textHeaderView animateHighlight];
-  }
-
-  // Get view coordinates in local space.
-  CGPoint viewCoordinate = [sender locationInView:self.tableView];
-  // Present sheet/popover using controller that is added to view hierarchy.
-  self.contextMenuCoordinator = [[ActionSheetCoordinator alloc]
-      initWithBaseViewController:self
-                         browser:self.browser
-                           title:nil
-                         message:nil
-                            rect:CGRectMake(viewCoordinate.x, viewCoordinate.y,
-                                            1.0, 1.0)
-                            view:self.tableView];
-
-  // Fill the sheet/popover with buttons.
-  __weak RecentTabsTableViewController* weakSelf = self;
-
-  // "Open all tabs" button.
-  NSString* openAllButtonLabel =
-      l10n_util::GetNSString(IDS_IOS_RECENT_TABS_OPEN_ALL_MENU_OPTION);
-  [self.contextMenuCoordinator
-      addItemWithTitle:openAllButtonLabel
-                action:^{
-                  [weakSelf
-                      openTabsFromSessionSectionIdentifier:sectionIdentifier];
-                }
-                 style:UIAlertActionStyleDefault];
-
-  // "Hide for now" button.
-  NSString* hideButtonLabel =
-      l10n_util::GetNSString(IDS_IOS_RECENT_TABS_HIDE_MENU_OPTION);
-  [self.contextMenuCoordinator
-      addItemWithTitle:hideButtonLabel
-                action:^{
-                  [weakSelf removeSessionAtTableSectionWithIdentifier:
-                                sectionIdentifier];
-                }
-                 style:UIAlertActionStyleDefault];
-
-  [self.contextMenuCoordinator start];
-}
-
-- (void)openTabsFromSessionSectionIdentifier:(NSInteger)sectionIdentifier {
-  synced_sessions::DistantSession const* session =
-      [self sessionForTableSectionWithIdentifier:sectionIdentifier];
-  [self.presentationDelegate openAllTabsFromSession:session];
 }
 
 #pragma mark - SigninPromoViewConsumer

@@ -1,16 +1,19 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome/updater/test/integration_tests_impl.h"
 
-#include <algorithm>
+#include <cstdint>
 #include <cstdlib>
 #include <memory>
 #include <string>
+#include <utility>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/containers/contains.h"
 #include "base/files/file_enumerator.h"
@@ -30,12 +33,13 @@
 #include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
-#include "base/synchronization/waitable_event.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/task/single_thread_task_runner_thread_mode.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
 #include "base/test/bind.h"
 #include "base/test/test_timeouts.h"
+#include "base/threading/platform_thread.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/values.h"
@@ -187,11 +191,11 @@ void RegisterApp(UpdaterScope scope, const std::string& app_id) {
   registration.version = base::Version("0.1");
   base::RunLoop loop;
   update_service->RegisterApp(
-      registration, base::BindOnce(base::BindLambdaForTesting(
-                        [&loop](const RegistrationResponse& response) {
-                          EXPECT_EQ(response.status_code, 0);
-                          loop.Quit();
-                        })));
+      registration,
+      base::BindLambdaForTesting([&loop](const RegistrationResponse& response) {
+        EXPECT_EQ(response.status_code, 0);
+        loop.Quit();
+      }));
   loop.Run();
 }
 
@@ -226,21 +230,18 @@ void PrintLog(UpdaterScope scope) {
   std::string contents;
   absl::optional<base::FilePath> path = GetDataDirPath(scope);
   EXPECT_TRUE(path);
+  VLOG(0) << "Contents of updater.log for " << GetTestName() << " in "
+          << path.value() << ":";
   if (path &&
       base::ReadFileToString(path->AppendASCII("updater.log"), &contents)) {
     const std::string demarcation(72, '=');
     VLOG(0) << demarcation;
-    VLOG(0) << "Contents of updater.log in " << path.value() << ":";
     VLOG(0) << contents;
     VLOG(0) << "End contents of updater.log.";
     VLOG(0) << demarcation;
   } else {
     VLOG(0) << "Failed to read updater.log file.";
   }
-}
-
-const testing::TestInfo* GetTestInfo() {
-  return testing::UnitTest::GetInstance()->current_test_info();
 }
 
 base::FilePath GetLogDestinationDir() {
@@ -255,10 +256,8 @@ void CopyLog(const base::FilePath& src_dir) {
   base::FilePath dest_dir = GetLogDestinationDir();
   if (!dest_dir.empty() && base::PathExists(dest_dir) &&
       base::PathExists(src_dir)) {
-    base::FilePath test_name_path = dest_dir.AppendASCII(base::StrCat(
-        {GetTestInfo()->test_suite_name(), ".", GetTestInfo()->name()}));
+    base::FilePath test_name_path = dest_dir.AppendASCII(GetTestName());
     EXPECT_TRUE(base::CreateDirectory(test_name_path));
-
     base::FilePath dest_file_path = test_name_path.AppendASCII("updater.log");
     base::FilePath log_path = src_dir.AppendASCII("updater.log");
     VLOG(0) << "Copying updater.log file. From: " << log_path
@@ -285,11 +284,11 @@ void RunWakeActive(UpdaterScope scope, int expected_exit_code) {
   {
     scoped_refptr<UpdateService> service = CreateUpdateServiceProxy(scope);
     base::RunLoop loop;
-    service->GetVersion(base::BindOnce(base::BindLambdaForTesting(
+    service->GetVersion(base::BindLambdaForTesting(
         [&loop, &active_version](const base::Version& version) {
           active_version = version;
           loop.Quit();
-        })));
+        }));
     loop.Run();
   }
   ASSERT_TRUE(active_version.IsValid());
@@ -312,8 +311,8 @@ void Update(UpdaterScope scope,
   update_service->Update(
       app_id, install_data_index, UpdateService::Priority::kForeground,
       UpdateService::PolicySameVersionUpdate::kNotAllowed, base::DoNothing(),
-      base::BindOnce(base::BindLambdaForTesting(
-          [&loop](UpdateService::Result result_unused) { loop.Quit(); })));
+      base::BindLambdaForTesting(
+          [&loop](UpdateService::Result result_unused) { loop.Quit(); }));
   loop.Run();
 }
 
@@ -322,8 +321,8 @@ void UpdateAll(UpdaterScope scope) {
   base::RunLoop loop;
   update_service->UpdateAll(
       base::DoNothing(),
-      base::BindOnce(base::BindLambdaForTesting(
-          [&loop](UpdateService::Result result_unused) { loop.Quit(); })));
+      base::BindLambdaForTesting(
+          [&loop](UpdateService::Result result_unused) { loop.Quit(); }));
   loop.Run();
 }
 
@@ -429,20 +428,25 @@ bool Run(UpdaterScope scope, base::CommandLine command_line, int* exit_code) {
   if (!process.IsValid())
     return false;
 
-  // TODO(crbug.com/1096654): Get the timeout from TestTimeouts.
-  return process.WaitForExitWithTimeout(base::Seconds(360), exit_code);
+  // macOS requires a larger timeout value for --install.
+  return process.WaitForExitWithTimeout(2 * TestTimeouts::action_max_timeout(),
+                                        exit_code);
 }
 
-bool WaitFor(base::RepeatingCallback<bool()> predicate) {
-  base::TimeTicks deadline =
-      base::TimeTicks::Now() + TestTimeouts::action_max_timeout();
+bool WaitFor(base::RepeatingCallback<bool()> predicate,
+             base::RepeatingClosure still_waiting) {
+  constexpr base::TimeDelta kOutputInterval = base::Seconds(10);
+  auto notify_next = base::TimeTicks::Now() + kOutputInterval;
+  const auto deadline = base::TimeTicks::Now() + TestTimeouts::action_timeout();
   while (base::TimeTicks::Now() < deadline) {
     if (predicate.Run())
       return true;
-
-    base::WaitableEvent().TimedWait(TestTimeouts::tiny_timeout());
+    if (notify_next < base::TimeTicks::Now()) {
+      still_waiting.Run();
+      notify_next += kOutputInterval;
+    }
+    base::PlatformThread::Sleep(TestTimeouts::tiny_timeout());
   }
-
   return false;
 }
 
@@ -675,10 +679,9 @@ std::vector<base::FilePath::StringType> GetTestProcessNames() {
       []() {
         const base::FilePath test_executable =
             base::FilePath::FromASCII(kExecutableName);
-        return test_executable.RemoveExtension()
-            .AppendASCII(kExecutableSuffix)
-            .Append(test_executable.Extension())
-            .value();
+        return base::StrCat({test_executable.RemoveExtension().value(),
+                             base::ASCIIToWide(kExecutableSuffix),
+                             test_executable.Extension()});
       }(),
   };
 #else
@@ -689,16 +692,17 @@ std::vector<base::FilePath::StringType> GetTestProcessNames() {
 
 void CleanProcesses() {
   for (const base::FilePath::StringType& process_name : GetTestProcessNames()) {
-    EXPECT_TRUE(KillProcesses(process_name, -1));
+    EXPECT_TRUE(KillProcesses(process_name, -1)) << process_name;
     EXPECT_TRUE(
-        WaitForProcessesToExit(process_name, TestTimeouts::action_timeout()));
-    EXPECT_FALSE(IsProcessRunning(process_name));
+        WaitForProcessesToExit(process_name, TestTimeouts::action_timeout()))
+        << process_name;
+    EXPECT_FALSE(IsProcessRunning(process_name)) << process_name;
   }
 }
 
 void ExpectCleanProcesses() {
   for (const base::FilePath::StringType& process_name : GetTestProcessNames()) {
-    EXPECT_FALSE(IsProcessRunning(process_name));
+    EXPECT_FALSE(IsProcessRunning(process_name)) << process_name;
   }
 }
 

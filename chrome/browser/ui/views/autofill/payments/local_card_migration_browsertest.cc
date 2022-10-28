@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -146,7 +146,7 @@ constexpr double kFakeGeolocationLongitude = 4.56;
 class PersonalDataLoadedObserverMock : public PersonalDataManagerObserver {
  public:
   PersonalDataLoadedObserverMock() = default;
-  ~PersonalDataLoadedObserverMock() = default;
+  ~PersonalDataLoadedObserverMock() override = default;
 
   MOCK_METHOD0(OnPersonalDataChanged, void());
 };

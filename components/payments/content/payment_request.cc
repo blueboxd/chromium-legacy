@@ -1,10 +1,9 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "components/payments/content/payment_request.h"
 
-#include <algorithm>
 #include <string>
 #include <utility>
 
@@ -12,6 +11,7 @@
 #include "base/containers/contains.h"
 #include "base/feature_list.h"
 #include "base/logging.h"
+#include "base/ranges/algorithm.h"
 #include "base/strings/string_util.h"
 #include "components/payments/content/can_make_payment_query_factory.h"
 #include "components/payments/content/content_payment_request_delegate.h"
@@ -164,10 +164,9 @@ void PaymentRequest::Init(
     return;
   }
 
-  if (std::any_of(method_data.begin(), method_data.end(),
-                  [](const auto& datum) {
-                    return !datum || datum->supported_method.empty();
-                  })) {
+  if (base::ranges::any_of(method_data, [](const auto& datum) {
+        return !datum || datum->supported_method.empty();
+      })) {
     log_.Error(errors::kMethodNameRequired);
     ResetAndDeleteThis();
     return;
@@ -212,14 +211,11 @@ void PaymentRequest::Init(
   GURL android_pay_url(methods::kAndroidPay);
   GURL google_play_billing_url(methods::kGooglePlayBilling);
   // Looking for payment methods that are NOT google-related payment methods.
-  auto non_google_it =
-      std::find_if(spec_->url_payment_method_identifiers().begin(),
-                   spec_->url_payment_method_identifiers().end(),
-                   [google_pay_url, android_pay_url,
-                    google_play_billing_url](const GURL& url) {
-                     return url != google_pay_url && url != android_pay_url &&
-                            url != google_play_billing_url;
-                   });
+  auto non_google_it = base::ranges::find_if(
+      spec_->url_payment_method_identifiers(), [&](const GURL& url) {
+        return url != google_pay_url && url != android_pay_url &&
+               url != google_play_billing_url;
+      });
   std::vector<JourneyLogger::PaymentMethodCategory> method_categories;
   if (base::Contains(spec_->url_payment_method_identifiers(), google_pay_url) ||
       base::Contains(spec_->url_payment_method_identifiers(),

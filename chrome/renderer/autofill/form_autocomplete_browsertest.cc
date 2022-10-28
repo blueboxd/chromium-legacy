@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright 2011 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -100,13 +100,13 @@ class FakeContentAutofillDriver : public mojom::AutofillDriver {
       const FormFieldData& field,
       const std::u16string& old_value) override {}
 
-  void AskForValuesToFill(const FormData& form,
-                          const FormFieldData& field,
-                          const gfx::RectF& bounding_box,
-                          int32_t query_id,
-                          bool autoselect_first_field,
-                          TouchToFillEligible touch_to_fill_eligible) override {
-  }
+  void AskForValuesToFill(
+      const FormData& form,
+      const FormFieldData& field,
+      const gfx::RectF& bounding_box,
+      int32_t query_id,
+      bool autoselect_first_field,
+      FormElementWasClicked form_element_was_clicked) override {}
 
   void HidePopup() override {}
 

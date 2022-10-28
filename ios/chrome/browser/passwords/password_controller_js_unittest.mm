@@ -1,4 +1,4 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,20 +7,20 @@
 #import "base/test/ios/wait_util.h"
 #import "components/autofill/ios/form_util/form_util_java_script_feature.h"
 #import "components/password_manager/ios/password_manager_java_script_feature.h"
-#include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
-#include "ios/chrome/browser/web/chrome_web_client.h"
-#include "ios/web/public/deprecated/url_verification_constants.h"
-#include "ios/web/public/js_messaging/web_frame.h"
-#include "ios/web/public/js_messaging/web_frame_util.h"
+#import "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
+#import "ios/chrome/browser/web/chrome_web_client.h"
+#import "ios/web/public/deprecated/url_verification_constants.h"
+#import "ios/web/public/js_messaging/web_frame.h"
+#import "ios/web/public/js_messaging/web_frame_util.h"
 #import "ios/web/public/js_messaging/web_frames_manager.h"
 #import "ios/web/public/test/scoped_testing_web_client.h"
 #import "ios/web/public/test/web_state_test_util.h"
 #import "ios/web/public/test/web_task_environment.h"
 #import "ios/web/public/web_state.h"
-#include "testing/gtest/include/gtest/gtest.h"
-#include "testing/gtest_mac.h"
+#import "testing/gtest/include/gtest/gtest.h"
+#import "testing/gtest_mac.h"
 
-#include "testing/platform_test.h"
+#import "testing/platform_test.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -63,7 +63,7 @@ class PasswordControllerJsTest : public PlatformTest {
     autofill::FormUtilJavaScriptFeature::GetInstance()
         ->SetUpForUniqueIDsWithInitialState(main_frame, next_available_id);
 
-    // Wait for |SetUpForUniqueIDsWithInitialState| to complete.
+    // Wait for `SetUpForUniqueIDsWithInitialState` to complete.
     success = WaitUntilConditionOrTimeout(kWaitForJSCompletionTimeout, ^bool {
       return [web::test::ExecuteJavaScript(@"document[__gCrWeb.fill.ID_SYMBOL]",
                                            web_state()) intValue] ==
@@ -118,8 +118,8 @@ NSString* const kEmailInputID = @"Email";
 NSString* const kPasswordInputID = @"Passwd";
 
 // Returns an autoreleased string of an HTML form that is similar to the
-// Google Accounts sign in form. |email| may be nil if the form does not
-// need to be pre-filled with the username. Use |isReadOnly| flag to indicate
+// Google Accounts sign in form. `email` may be nil if the form does not
+// need to be pre-filled with the username. Use `isReadOnly` flag to indicate
 // if the email field should be read-only.
 NSString* GAIASignInForm(NSString* formAction,
                          NSString* email,
@@ -961,7 +961,7 @@ TEST_F(PasswordControllerJsTest, FillOnlyPasswordField) {
                         @"__gCrWeb.passwords.fillPasswordForm(%@, '', '%@')",
                         form_fill_data, password],
           web_state()));
-  // Verifies that the sign-in form has been filled with |password|.
+  // Verifies that the sign-in form has been filled with `password`.
   EXPECT_NSEQ(password,
               web::test::ExecuteJavaScript(
                   @"document.getElementById('password').value", web_state()));

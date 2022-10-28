@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -42,8 +42,12 @@ class GuestOsMountProvider {
   // depending on the underlying VM.
   virtual VmType vm_type() = 0;
 
-  // Requests the provider to mount its volume.
-  void Mount(base::OnceCallback<void(bool)> callback);
+  // Requests the provider to mount its volume for `profile`. If `profile` is
+  // different than what `profile()` returns (e.g. we're mounting in incognito
+  // mode in which case `profile` is the off-the-record profile but `profile()`
+  // returns the original profile) then it'll mount for both.
+  // No-op if already mounted, so safe to call multiple times.
+  void Mount(Profile* profile, base::OnceCallback<void(bool)> callback);
 
   // Requests the provider to unmount.
   void Unmount();

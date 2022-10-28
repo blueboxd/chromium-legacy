@@ -1,4 +1,4 @@
-// Copyright (c) 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -89,19 +89,19 @@ class MockPipeline : public Pipeline {
   void Start(StartType start_type,
              Demuxer* demuxer,
              Client* client,
-             PipelineStatusCallback seek_cb) {
+             PipelineStatusCallback seek_cb) override {
     OnStart(start_type, demuxer, client, seek_cb);
   }
   MOCK_METHOD4(OnStart,
                void(StartType, Demuxer*, Client*, PipelineStatusCallback&));
   MOCK_METHOD0(Stop, void());
-  void Seek(base::TimeDelta time, PipelineStatusCallback seek_cb) {
+  void Seek(base::TimeDelta time, PipelineStatusCallback seek_cb) override {
     OnSeek(time, seek_cb);
   }
   MOCK_METHOD2(OnSeek, void(base::TimeDelta, PipelineStatusCallback&));
-  void Suspend(PipelineStatusCallback cb) { OnSuspend(cb); }
+  void Suspend(PipelineStatusCallback cb) override { OnSuspend(cb); }
   MOCK_METHOD1(OnSuspend, void(PipelineStatusCallback&));
-  void Resume(base::TimeDelta time, PipelineStatusCallback seek_cb) {
+  void Resume(base::TimeDelta time, PipelineStatusCallback seek_cb) override {
     OnResume(time, seek_cb);
   }
   MOCK_METHOD2(OnResume, void(base::TimeDelta, PipelineStatusCallback&));
@@ -163,14 +163,14 @@ class MockDemuxer : public Demuxer {
 
   // Demuxer implementation.
   std::string GetDisplayName() const override;
-  void Initialize(DemuxerHost* host, PipelineStatusCallback cb) {
+  void Initialize(DemuxerHost* host, PipelineStatusCallback cb) override {
     OnInitialize(host, cb);
   }
   MOCK_METHOD2(OnInitialize,
                void(DemuxerHost* host, PipelineStatusCallback& cb));
   MOCK_METHOD1(StartWaitingForSeek, void(base::TimeDelta));
   MOCK_METHOD1(CancelPendingSeek, void(base::TimeDelta));
-  void Seek(base::TimeDelta time, PipelineStatusCallback cb) {
+  void Seek(base::TimeDelta time, PipelineStatusCallback cb) override {
     OnSeek(time, cb);
   }
   MOCK_METHOD2(OnSeek, void(base::TimeDelta time, PipelineStatusCallback& cb));
@@ -435,7 +435,7 @@ class MockVideoRenderer : public VideoRenderer {
                   CdmContext* cdm_context,
                   RendererClient* client,
                   const TimeSource::WallClockTimeCB& wall_clock_time_cb,
-                  PipelineStatusCallback init_cb) {
+                  PipelineStatusCallback init_cb) override {
     OnInitialize(stream, cdm_context, client, wall_clock_time_cb, init_cb);
   }
   MOCK_METHOD5(OnInitialize,
@@ -465,7 +465,7 @@ class MockAudioRenderer : public AudioRenderer {
   void Initialize(DemuxerStream* stream,
                   CdmContext* cdm_context,
                   RendererClient* client,
-                  PipelineStatusCallback init_cb) {
+                  PipelineStatusCallback init_cb) override {
     OnInitialize(stream, cdm_context, client, init_cb);
   }
   MOCK_METHOD4(OnInitialize,
@@ -835,16 +835,15 @@ class MockStreamParser : public StreamParser {
   ~MockStreamParser() override;
 
   // StreamParser interface
-  MOCK_METHOD8(
-      Init,
-      void(InitCB init_cb,
-           const NewConfigCB& config_cb,
-           const NewBuffersCB& new_buffers_cb,
-           bool ignore_text_track,
-           const EncryptedMediaInitDataCB& encrypted_media_init_data_cb,
-           const NewMediaSegmentCB& new_segment_cb,
-           const EndMediaSegmentCB& end_of_segment_cb,
-           MediaLog* media_log));
+  MOCK_METHOD8(Init,
+               void(InitCB init_cb,
+                    NewConfigCB config_cb,
+                    NewBuffersCB new_buffers_cb,
+                    bool ignore_text_track,
+                    EncryptedMediaInitDataCB encrypted_media_init_data_cb,
+                    NewMediaSegmentCB new_segment_cb,
+                    EndMediaSegmentCB end_of_segment_cb,
+                    MediaLog* media_log));
   MOCK_METHOD0(Flush, void());
   MOCK_CONST_METHOD0(GetGenerateTimestampsFlag, bool());
   MOCK_METHOD2(Parse, bool(const uint8_t*, int));

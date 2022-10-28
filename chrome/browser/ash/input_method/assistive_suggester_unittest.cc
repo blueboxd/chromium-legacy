@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -492,6 +492,30 @@ TEST_F(AssistiveSuggesterTest, RecordsMultiWordTextInputAsEnabled) {
 }
 
 TEST_F(AssistiveSuggesterTest,
+       DiacriticsSuggestionNotTriggeredIfShiftDownAndShiftUp) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitWithFeatures(
+      /*enabled_features=*/{features::kDiacriticsOnPhysicalKeyboardLongpress},
+      /*disabled_features=*/{});
+  // TODO(b/242472734): Allow enabled suggestions passed without replace.
+  assistive_suggester_ = std::make_unique<AssistiveSuggester>(
+      suggestion_handler_.get(), profile_.get(),
+      std::make_unique<FakeSuggesterSwitch>(
+          EnabledSuggestions{.diacritic_suggestions = true}));
+  SetInputMethodOptions(*profile_, /*predictive_writing_enabled=*/false,
+                        /*diacritics_on_longpress_enabled=*/true);
+  assistive_suggester_->OnActivate(kUsEnglishEngineId);
+  assistive_suggester_->OnFocus(5);
+
+  EXPECT_FALSE(
+      assistive_suggester_->OnKeyEvent(PressKeyWithShift(ui::DomCode::US_A)));
+  EXPECT_FALSE(assistive_suggester_->OnKeyEvent(ReleaseKey(ui::DomCode::US_A)));
+  task_environment_.FastForwardBy(base::Seconds(1));
+
+  EXPECT_FALSE(suggestion_handler_->GetShowingSuggestion());
+}
+
+TEST_F(AssistiveSuggesterTest,
        DiacriticsSuggestionOnKeyDownLongpressForUSEnglish) {
   base::test::ScopedFeatureList feature_list;
   feature_list.InitWithFeatures(
@@ -508,10 +532,107 @@ TEST_F(AssistiveSuggesterTest,
   assistive_suggester_->OnFocus(5);
 
   EXPECT_FALSE(assistive_suggester_->OnKeyEvent(PressKey(ui::DomCode::US_A)));
+  assistive_suggester_->OnSurroundingTextChanged(u"a", 1, 1);
   task_environment_.FastForwardBy(base::Seconds(1));
 
   EXPECT_TRUE(suggestion_handler_->GetShowingSuggestion());
   EXPECT_EQ(suggestion_handler_->GetSuggestionText(), u"à;á;â;ä;æ;ã;å;ā");
+}
+
+TEST_F(
+    AssistiveSuggesterTest,
+    DiacriticsSuggestionDisabledOnKeyDownLongpressForLastSurroundingTextEmpty) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitWithFeatures(
+      /*enabled_features=*/{features::kDiacriticsOnPhysicalKeyboardLongpress},
+      /*disabled_features=*/{});
+  // TODO(b/242472734): Allow enabled suggestions passed without replace.
+  assistive_suggester_ = std::make_unique<AssistiveSuggester>(
+      suggestion_handler_.get(), profile_.get(),
+      std::make_unique<FakeSuggesterSwitch>(
+          EnabledSuggestions{.diacritic_suggestions = true}));
+  SetInputMethodOptions(*profile_, /*predictive_writing_enabled=*/false,
+                        /*diacritics_on_longpress_enabled=*/true);
+  assistive_suggester_->OnActivate(kUsEnglishEngineId);
+  assistive_suggester_->OnFocus(5);
+  assistive_suggester_->OnSurroundingTextChanged(u"", 0, 0);
+
+  EXPECT_FALSE(assistive_suggester_->OnKeyEvent(PressKey(ui::DomCode::US_A)));
+  task_environment_.FastForwardBy(base::Seconds(1));
+
+  EXPECT_FALSE(suggestion_handler_->GetShowingSuggestion());
+}
+
+TEST_F(
+    AssistiveSuggesterTest,
+    DiacriticsSuggestionDisabledOnKeyDownLongpressForLastSurroundingTextBeforeCursorNotMatch) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitWithFeatures(
+      /*enabled_features=*/{features::kDiacriticsOnPhysicalKeyboardLongpress},
+      /*disabled_features=*/{});
+  // TODO(b/242472734): Allow enabled suggestions passed without replace.
+  assistive_suggester_ = std::make_unique<AssistiveSuggester>(
+      suggestion_handler_.get(), profile_.get(),
+      std::make_unique<FakeSuggesterSwitch>(
+          EnabledSuggestions{.diacritic_suggestions = true}));
+  SetInputMethodOptions(*profile_, /*predictive_writing_enabled=*/false,
+                        /*diacritics_on_longpress_enabled=*/true);
+  assistive_suggester_->OnActivate(kUsEnglishEngineId);
+  assistive_suggester_->OnFocus(5);
+  assistive_suggester_->OnSurroundingTextChanged(u"xyz", 1, 1);
+
+  EXPECT_FALSE(assistive_suggester_->OnKeyEvent(PressKey(ui::DomCode::US_A)));
+  task_environment_.FastForwardBy(base::Seconds(1));
+
+  EXPECT_FALSE(suggestion_handler_->GetShowingSuggestion());
+}
+
+TEST_F(
+    AssistiveSuggesterTest,
+    DiacriticsSuggestionDisabledOnKeyDownLongpressForLastSurroundingTextCursorPosTooLarge) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitWithFeatures(
+      /*enabled_features=*/{features::kDiacriticsOnPhysicalKeyboardLongpress},
+      /*disabled_features=*/{});
+  // TODO(b/242472734): Allow enabled suggestions passed without replace.
+  assistive_suggester_ = std::make_unique<AssistiveSuggester>(
+      suggestion_handler_.get(), profile_.get(),
+      std::make_unique<FakeSuggesterSwitch>(
+          EnabledSuggestions{.diacritic_suggestions = true}));
+  SetInputMethodOptions(*profile_, /*predictive_writing_enabled=*/false,
+                        /*diacritics_on_longpress_enabled=*/true);
+  assistive_suggester_->OnActivate(kUsEnglishEngineId);
+  assistive_suggester_->OnFocus(5);
+  assistive_suggester_->OnSurroundingTextChanged(u"xyz", 10, 10);
+
+  EXPECT_FALSE(assistive_suggester_->OnKeyEvent(PressKey(ui::DomCode::US_A)));
+  task_environment_.FastForwardBy(base::Seconds(1));
+
+  EXPECT_FALSE(suggestion_handler_->GetShowingSuggestion());
+}
+
+TEST_F(
+    AssistiveSuggesterTest,
+    DiacriticsSuggestionDisabledOnKeyDownLongpressForLastSurroundingTextCursorPosZero) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitWithFeatures(
+      /*enabled_features=*/{features::kDiacriticsOnPhysicalKeyboardLongpress},
+      /*disabled_features=*/{});
+  // TODO(b/242472734): Allow enabled suggestions passed without replace.
+  assistive_suggester_ = std::make_unique<AssistiveSuggester>(
+      suggestion_handler_.get(), profile_.get(),
+      std::make_unique<FakeSuggesterSwitch>(
+          EnabledSuggestions{.diacritic_suggestions = true}));
+  SetInputMethodOptions(*profile_, /*predictive_writing_enabled=*/false,
+                        /*diacritics_on_longpress_enabled=*/true);
+  assistive_suggester_->OnActivate(kUsEnglishEngineId);
+  assistive_suggester_->OnFocus(5);
+  assistive_suggester_->OnSurroundingTextChanged(u"xyz", 0, 0);
+
+  EXPECT_FALSE(assistive_suggester_->OnKeyEvent(PressKey(ui::DomCode::US_A)));
+  task_environment_.FastForwardBy(base::Seconds(1));
+
+  EXPECT_FALSE(suggestion_handler_->GetShowingSuggestion());
 }
 
 TEST_F(AssistiveSuggesterTest, DiacriticsSuggestionOnKeyDownRecordsSuccess) {
@@ -530,6 +651,7 @@ TEST_F(AssistiveSuggesterTest, DiacriticsSuggestionOnKeyDownRecordsSuccess) {
   assistive_suggester_->OnFocus(5);
 
   EXPECT_FALSE(assistive_suggester_->OnKeyEvent(PressKey(ui::DomCode::US_A)));
+  assistive_suggester_->OnSurroundingTextChanged(u"a", 1, 1);
   task_environment_.FastForwardBy(base::Seconds(1));
   EXPECT_TRUE(assistive_suggester_->OnKeyEvent(PressKey(ui::DomCode::DIGIT1)));
 
@@ -599,8 +721,11 @@ TEST_F(AssistiveSuggesterTest,
   assistive_suggester_->OnFocus(5);
 
   EXPECT_FALSE(assistive_suggester_->OnKeyEvent(PressKey(ui::DomCode::US_A)));
-  EXPECT_FALSE(assistive_suggester_->OnKeyEvent(PressKey(ui::DomCode::US_O)));
-  EXPECT_FALSE(assistive_suggester_->OnKeyEvent(ReleaseKey(ui::DomCode::US_O)));
+  assistive_suggester_->OnSurroundingTextChanged(u"a", 1, 1);
+  EXPECT_FALSE(
+      assistive_suggester_->OnKeyEvent(PressKey(ui::DomCode::SHIFT_LEFT)));
+  EXPECT_FALSE(
+      assistive_suggester_->OnKeyEvent(ReleaseKey(ui::DomCode::SHIFT_LEFT)));
   task_environment_.FastForwardBy(base::Seconds(1));
   EXPECT_TRUE(suggestion_handler_->GetShowingSuggestion());
   EXPECT_EQ(suggestion_handler_->GetSuggestionText(), u"à;á;â;ä;æ;ã;å;ā");
@@ -654,6 +779,11 @@ TEST_F(AssistiveSuggesterTest,
       /*disabled_features=*/{});
   SetInputMethodOptions(*profile_, /*predictive_writing_enabled=*/false,
                         /*diacritics_on_longpress_enabled=*/true);
+  // TODO(b/242472734): Allow enabled suggestions passed without replace.
+  assistive_suggester_ = std::make_unique<AssistiveSuggester>(
+      suggestion_handler_.get(), profile_.get(),
+      std::make_unique<FakeSuggesterSwitch>(
+          EnabledSuggestions{.diacritic_suggestions = true}));
   assistive_suggester_->OnActivate(kUsEnglishEngineId);
   assistive_suggester_->OnFocus(5);
 
@@ -668,13 +798,39 @@ TEST_F(AssistiveSuggesterTest,
 }
 
 TEST_F(AssistiveSuggesterTest,
-       PropagateAlphaRepeatKeyIfDiacriticsOnLongpressDisabled) {
+       PropagateAlphaRepeatKeyIfDiacriticsOnLongpressDisabledViaSettings) {
   base::test::ScopedFeatureList feature_list;
   feature_list.InitWithFeatures(
       /*enabled_features=*/{features::kDiacriticsOnPhysicalKeyboardLongpress},
       /*disabled_features=*/{});
   SetInputMethodOptions(*profile_, /*predictive_writing_enabled=*/false,
                         /*diacritics_on_longpress_enabled=*/false);
+  // TODO(b/242472734): Allow enabled suggestions passed without replace.
+  assistive_suggester_ = std::make_unique<AssistiveSuggester>(
+      suggestion_handler_.get(), profile_.get(),
+      std::make_unique<FakeSuggesterSwitch>(
+          EnabledSuggestions{.diacritic_suggestions = false}));
+  assistive_suggester_->OnActivate(kUsEnglishEngineId);
+  assistive_suggester_->OnFocus(5);
+
+  // Returning false tells IME to propagate this event.
+  EXPECT_FALSE(assistive_suggester_->OnKeyEvent(
+      CreateRepeatKeyEvent(ui::DomCode::US_A)));
+}
+
+TEST_F(AssistiveSuggesterTest,
+       PropagateAlphaRepeatKeyIfDiacriticsOnLongpressDisabledDenylist) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitWithFeatures(
+      /*enabled_features=*/{features::kDiacriticsOnPhysicalKeyboardLongpress},
+      /*disabled_features=*/{});
+  SetInputMethodOptions(*profile_, /*predictive_writing_enabled=*/false,
+                        /*diacritics_on_longpress_enabled=*/false);
+  // TODO(b/242472734): Allow enabled suggestions passed without replace.
+  assistive_suggester_ = std::make_unique<AssistiveSuggester>(
+      suggestion_handler_.get(), profile_.get(),
+      std::make_unique<FakeSuggesterSwitch>(
+          EnabledSuggestions{.diacritic_suggestions = false}));
   assistive_suggester_->OnActivate(kUsEnglishEngineId);
   assistive_suggester_->OnFocus(5);
 
@@ -697,6 +853,50 @@ TEST_F(AssistiveSuggesterTest,
       CreateRepeatKeyEvent(ui::DomCode::ARROW_DOWN)));
 }
 
+TEST_F(AssistiveSuggesterTest, StoreLastEnabledSuggestionOnFocus) {
+  EnabledSuggestions enabled_suggestions = EnabledSuggestions{
+      .emoji_suggestions = true, .diacritic_suggestions = true};
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitWithFeatures(
+      /*enabled_features=*/{features::kDiacriticsOnPhysicalKeyboardLongpress},
+      /*disabled_features=*/{});
+  // TODO(b/242472734): Allow enabled suggestions passed without replace.
+  assistive_suggester_ = std::make_unique<AssistiveSuggester>(
+      suggestion_handler_.get(), profile_.get(),
+      std::make_unique<FakeSuggesterSwitch>(enabled_suggestions));
+  SetInputMethodOptions(*profile_, /*predictive_writing_enabled=*/false,
+                        /*diacritics_on_longpress_enabled=*/true);
+  assistive_suggester_->OnActivate(kUsEnglishEngineId);
+  assistive_suggester_->OnFocus(5);
+
+  EXPECT_TRUE(assistive_suggester_
+                  ->get_enabled_suggestion_from_last_onfocus_for_testing()
+                  .has_value());
+  EXPECT_EQ(*assistive_suggester_
+                 ->get_enabled_suggestion_from_last_onfocus_for_testing(),
+            enabled_suggestions);
+}
+
+TEST_F(AssistiveSuggesterTest, ClearLastEnabledSuggestionOnBlur) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitWithFeatures(
+      /*enabled_features=*/{features::kDiacriticsOnPhysicalKeyboardLongpress},
+      /*disabled_features=*/{});
+  // TODO(b/242472734): Allow enabled suggestions passed without replace.
+  assistive_suggester_ = std::make_unique<AssistiveSuggester>(
+      suggestion_handler_.get(), profile_.get(),
+      std::make_unique<FakeSuggesterSwitch>(EnabledSuggestions{
+          .emoji_suggestions = true, .diacritic_suggestions = true}));
+  SetInputMethodOptions(*profile_, /*predictive_writing_enabled=*/false,
+                        /*diacritics_on_longpress_enabled=*/true);
+  assistive_suggester_->OnActivate(kUsEnglishEngineId);
+  assistive_suggester_->OnFocus(5);
+  assistive_suggester_->OnBlur();
+
+  EXPECT_FALSE(assistive_suggester_
+                   ->get_enabled_suggestion_from_last_onfocus_for_testing()
+                   .has_value());
+}
 struct PersonalInfoTestCase {
   std::string test_name;
   std::u16string surrounding_text;

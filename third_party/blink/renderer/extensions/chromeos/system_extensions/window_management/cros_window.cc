@@ -48,6 +48,15 @@ void OnResponse(ScriptPromiseResolver* resolver,
 }
 }  // namespace
 
+// TODO(b/244243505): Write a test for unassigned properties.
+CrosWindow::CrosWindow(CrosWindowManagement* manager,
+                       const base::UnguessableToken id)
+    : window_management_(manager) {
+  auto new_info_ptr = mojom::blink::CrosWindowInfo::New();
+  new_info_ptr->id = id;
+  window_ = std::move(new_info_ptr);
+}
+
 CrosWindow::CrosWindow(CrosWindowManagement* manager,
                        mojom::blink::CrosWindowInfoPtr window)
     : window_management_(manager), window_(std::move(window)) {}
@@ -55,6 +64,10 @@ CrosWindow::CrosWindow(CrosWindowManagement* manager,
 void CrosWindow::Trace(Visitor* visitor) const {
   visitor->Trace(window_management_);
   ScriptWrappable::Trace(visitor);
+}
+
+void CrosWindow::Update(mojom::blink::CrosWindowInfoPtr window_info_ptr) {
+  window_ = std::move(window_info_ptr);
 }
 
 String CrosWindow::appId() {
@@ -204,6 +217,19 @@ ScriptPromise CrosWindow::minimize(ScriptState* script_state) {
   }
   auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   cros_window_management->Minimize(
+      window_->id, WTF::Bind(&OnResponse, WrapPersistent(resolver)));
+  return resolver->Promise();
+}
+
+ScriptPromise CrosWindow::restore(ScriptState* script_state) {
+  auto* cros_window_management =
+      window_management_->GetCrosWindowManagementOrNull();
+  if (!cros_window_management) {
+    return ScriptPromise();
+  }
+
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
+  cros_window_management->Restore(
       window_->id, WTF::Bind(&OnResponse, WrapPersistent(resolver)));
   return resolver->Promise();
 }

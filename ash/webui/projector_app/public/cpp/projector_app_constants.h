@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,16 +12,12 @@ namespace ash {
 extern const char kChromeUIProjectorAppHost[];
 extern const char kChromeUIProjectorAnnotatorHost[];
 
-extern const char kChromeUIUntrustedProjectorAppUrl[];
+extern const char kChromeUIUntrustedProjectorUrl[];
 extern const char kChromeUIUntrustedProjectorPwaUrl[];
 
 extern const char kChromeUITrustedProjectorUrl[];
-extern const char kChromeUITrustedProjectorAppUrl[];
-
 extern const char kChromeUITrustedAnnotatorUrl[];
 extern const char kChromeUIUntrustedAnnotatorUrl[];
-extern const char kChromeUITrustedAnnotatorAppUrl[];
-extern const char kChromeUIUntrustedAnnotatorAppUrl[];
 
 extern const char kChromeUITrustedProjectorSwaAppId[];
 

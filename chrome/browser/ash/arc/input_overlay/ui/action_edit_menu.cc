@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -151,11 +151,11 @@ void ActionEditMenu::InitActionTapEditMenu() {
   auto* action = anchor_view_->action();
   // It is possible that the action has no binding after customizing, such as
   // users bind the key to another action.
-  auto& binding = action->GetCurrentDisplayedBinding();
-  if (IsKeyboardBound(binding))
+  auto& input_binding = action->GetCurrentDisplayedInput();
+  if (IsKeyboardBound(input_binding))
     keyboard_key_->OnBinding();
-  if (IsMouseBound(binding)) {
-    switch (binding.mouse_action()) {
+  if (IsMouseBound(input_binding)) {
+    switch (input_binding.mouse_action()) {
       case MouseAction::PRIMARY_CLICK:
         mouse_left_->OnBinding();
         break;

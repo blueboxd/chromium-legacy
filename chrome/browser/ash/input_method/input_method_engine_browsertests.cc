@@ -1,4 +1,4 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -116,7 +116,8 @@ class InputMethodEngineBrowserTest
   }
 
   const extensions::Extension* LoadExtensionWithType(
-      const std::string& extension_name, TestType type) {
+      const std::string& extension_name,
+      TestType type) {
     switch (type) {
       case kTestTypeNormal:
         return LoadExtension(test_data_dir_.AppendASCII(extension_name));
@@ -128,7 +129,7 @@ class InputMethodEngineBrowserTest
             test_data_dir_.AppendASCII(extension_name));
     }
     NOTREACHED();
-    return NULL;
+    return nullptr;
   }
 
   const extensions::Extension* extension_;
@@ -136,7 +137,7 @@ class InputMethodEngineBrowserTest
 
 class KeyEventDoneCallback {
  public:
-  explicit KeyEventDoneCallback(bool expected_argument)
+  explicit KeyEventDoneCallback(ui::ime::KeyEventHandledState expected_argument)
       : expected_argument_(expected_argument) {}
 
   KeyEventDoneCallback(const KeyEventDoneCallback&) = delete;
@@ -144,7 +145,7 @@ class KeyEventDoneCallback {
 
   ~KeyEventDoneCallback() = default;
 
-  void Run(bool consumed) {
+  void Run(ui::ime::KeyEventHandledState consumed) {
     if (consumed == expected_argument_)
       run_loop_.Quit();
   }
@@ -152,7 +153,7 @@ class KeyEventDoneCallback {
   void WaitUntilCalled() { run_loop_.Run(); }
 
  private:
-  bool expected_argument_;
+  ui::ime::KeyEventHandledState expected_argument_;
   base::RunLoop run_loop_;
 };
 
@@ -193,8 +194,7 @@ INSTANTIATE_TEST_SUITE_P(InputMethodEngineComponentExtensionBrowserTest,
                          InputMethodEngineBrowserTest,
                          ::testing::Values(kTestTypeComponent));
 
-IN_PROC_BROWSER_TEST_P(InputMethodEngineBrowserTest,
-                       BasicScenarioTest) {
+IN_PROC_BROWSER_TEST_P(InputMethodEngineBrowserTest, BasicScenarioTest) {
   LoadTestInputMethod();
 
   InputMethodManager::Get()->GetActiveIMEState()->ChangeInputMethod(
@@ -228,7 +228,9 @@ IN_PROC_BROWSER_TEST_P(InputMethodEngineBrowserTest,
   ASSERT_TRUE(focus_listener.was_satisfied());
 
   // onKeyEvent should be fired if ProcessKeyEvent is called.
-  KeyEventDoneCallback callback(false);  // EchoBackIME doesn't consume keys.
+  KeyEventDoneCallback callback(
+      ui::ime::KeyEventHandledState::kNotHandled);  // EchoBackIME doesn't
+                                                    // consume keys.
   ExtensionTestMessageListener keyevent_listener("onKeyEvent");
   ui::KeyEvent key_event(ui::ET_KEY_PRESSED, ui::VKEY_A, ui::EF_NONE);
   ui::IMEEngineHandlerInterface::KeyEventDoneCallback keyevent_callback =
@@ -276,8 +278,7 @@ IN_PROC_BROWSER_TEST_P(InputMethodEngineBrowserTest,
   ui::IMEBridge::Get()->SetCandidateWindowHandler(nullptr);
 }
 
-IN_PROC_BROWSER_TEST_P(InputMethodEngineBrowserTest,
-                       APIArgumentTest) {
+IN_PROC_BROWSER_TEST_P(InputMethodEngineBrowserTest, APIArgumentTest) {
   // TODO(crbug.com/956825): Makes real end to end test without mocking the
   // input context handler. The test should mock the TextInputClient instance
   // hooked up with `InputMethodAsh`, or even using the real `TextInputClient`
@@ -300,8 +301,8 @@ IN_PROC_BROWSER_TEST_P(InputMethodEngineBrowserTest,
   ASSERT_TRUE(engine_handler);
 
   extensions::ExtensionHost* host =
-      extensions::ProcessManager::Get(profile())
-          ->GetBackgroundHostForExtension(extension_->id());
+      extensions::ProcessManager::Get(profile())->GetBackgroundHostForExtension(
+          extension_->id());
   ASSERT_TRUE(host);
 
   engine_handler->Enable("APIArgumentIME");
@@ -311,13 +312,13 @@ IN_PROC_BROWSER_TEST_P(InputMethodEngineBrowserTest,
 
   {
     SCOPED_TRACE("KeyDown, Ctrl:No, Alt:No, AltGr:No, Shift:No, Caps:No");
-    KeyEventDoneCallback callback(false);
+    KeyEventDoneCallback callback(ui::ime::KeyEventHandledState::kNotHandled);
     const std::string expected_value =
         "onKeyEvent::true:keydown:a:KeyA:false:false:false:false:false";
     ExtensionTestMessageListener keyevent_listener(expected_value);
 
-    ui::KeyEvent key_event(
-        ui::ET_KEY_PRESSED, ui::VKEY_A, ui::DomCode::US_A, ui::EF_NONE);
+    ui::KeyEvent key_event(ui::ET_KEY_PRESSED, ui::VKEY_A, ui::DomCode::US_A,
+                           ui::EF_NONE);
     ui::IMEEngineHandlerInterface::KeyEventDoneCallback keyevent_callback =
         base::BindOnce(&KeyEventDoneCallback::Run, base::Unretained(&callback));
     engine_handler->ProcessKeyEvent(key_event, std::move(keyevent_callback));
@@ -327,14 +328,12 @@ IN_PROC_BROWSER_TEST_P(InputMethodEngineBrowserTest,
   }
   {
     SCOPED_TRACE("KeyDown, Ctrl:Yes, Alt:No, AltGr:No, Shift:No, Caps:No");
-    KeyEventDoneCallback callback(false);
+    KeyEventDoneCallback callback(ui::ime::KeyEventHandledState::kNotHandled);
     const std::string expected_value =
         "onKeyEvent::true:keydown:a:KeyA:true:false:false:false:false";
     ExtensionTestMessageListener keyevent_listener(expected_value);
 
-    ui::KeyEvent key_event(ui::ET_KEY_PRESSED,
-                           ui::VKEY_A,
-                           ui::DomCode::US_A,
+    ui::KeyEvent key_event(ui::ET_KEY_PRESSED, ui::VKEY_A, ui::DomCode::US_A,
                            ui::EF_CONTROL_DOWN);
     ui::IMEEngineHandlerInterface::KeyEventDoneCallback keyevent_callback =
         base::BindOnce(&KeyEventDoneCallback::Run, base::Unretained(&callback));
@@ -345,14 +344,12 @@ IN_PROC_BROWSER_TEST_P(InputMethodEngineBrowserTest,
   }
   {
     SCOPED_TRACE("KeyDown, Ctrl:No, Alt:Yes, AltGr:No, Shift:No, Caps:No");
-    KeyEventDoneCallback callback(false);
+    KeyEventDoneCallback callback(ui::ime::KeyEventHandledState::kNotHandled);
     const std::string expected_value =
         "onKeyEvent::true:keydown:a:KeyA:false:true:false:false:false";
     ExtensionTestMessageListener keyevent_listener(expected_value);
 
-    ui::KeyEvent key_event(ui::ET_KEY_PRESSED,
-                           ui::VKEY_A,
-                           ui::DomCode::US_A,
+    ui::KeyEvent key_event(ui::ET_KEY_PRESSED, ui::VKEY_A, ui::DomCode::US_A,
                            ui::EF_ALT_DOWN);
     ui::IMEEngineHandlerInterface::KeyEventDoneCallback keyevent_callback =
         base::BindOnce(&KeyEventDoneCallback::Run, base::Unretained(&callback));
@@ -363,14 +360,12 @@ IN_PROC_BROWSER_TEST_P(InputMethodEngineBrowserTest,
   }
   {
     SCOPED_TRACE("KeyDown, Ctrl:No, Alt:No, AltGr:No, Shift:Yes, Caps:No");
-    KeyEventDoneCallback callback(false);
+    KeyEventDoneCallback callback(ui::ime::KeyEventHandledState::kNotHandled);
     const std::string expected_value =
         "onKeyEvent::true:keydown:A:KeyA:false:false:false:true:false";
     ExtensionTestMessageListener keyevent_listener(expected_value);
 
-    ui::KeyEvent key_event(ui::ET_KEY_PRESSED,
-                           ui::VKEY_A,
-                           ui::DomCode::US_A,
+    ui::KeyEvent key_event(ui::ET_KEY_PRESSED, ui::VKEY_A, ui::DomCode::US_A,
                            ui::EF_SHIFT_DOWN);
     ui::IMEEngineHandlerInterface::KeyEventDoneCallback keyevent_callback =
         base::BindOnce(&KeyEventDoneCallback::Run, base::Unretained(&callback));
@@ -381,7 +376,7 @@ IN_PROC_BROWSER_TEST_P(InputMethodEngineBrowserTest,
   }
   {
     SCOPED_TRACE("KeyDown, Ctrl:No, Alt:No, AltGr:No, Shift:No, Caps:Yes");
-    KeyEventDoneCallback callback(false);
+    KeyEventDoneCallback callback(ui::ime::KeyEventHandledState::kNotHandled);
     const std::string expected_value =
         "onKeyEvent::true:keydown:A:KeyA:false:false:false:false:true";
     ExtensionTestMessageListener keyevent_listener(expected_value);
@@ -397,14 +392,12 @@ IN_PROC_BROWSER_TEST_P(InputMethodEngineBrowserTest,
   }
   {
     SCOPED_TRACE("KeyDown, Ctrl:Yes, Alt:Yes, AltGr:No, Shift:No, Caps:No");
-    KeyEventDoneCallback callback(false);
+    KeyEventDoneCallback callback(ui::ime::KeyEventHandledState::kNotHandled);
     const std::string expected_value =
         "onKeyEvent::true:keydown:a:KeyA:true:true:false:false:false";
     ExtensionTestMessageListener keyevent_listener(expected_value);
 
-    ui::KeyEvent key_event(ui::ET_KEY_PRESSED,
-                           ui::VKEY_A,
-                           ui::DomCode::US_A,
+    ui::KeyEvent key_event(ui::ET_KEY_PRESSED, ui::VKEY_A, ui::DomCode::US_A,
                            ui::EF_ALT_DOWN | ui::EF_CONTROL_DOWN);
     ui::IMEEngineHandlerInterface::KeyEventDoneCallback keyevent_callback =
         base::BindOnce(&KeyEventDoneCallback::Run, base::Unretained(&callback));
@@ -415,7 +408,7 @@ IN_PROC_BROWSER_TEST_P(InputMethodEngineBrowserTest,
   }
   {
     SCOPED_TRACE("KeyDown, Ctrl:No, Alt:No, AltGr:No, Shift:Yes, Caps:Yes");
-    KeyEventDoneCallback callback(false);
+    KeyEventDoneCallback callback(ui::ime::KeyEventHandledState::kNotHandled);
     const std::string expected_value =
         "onKeyEvent::true:keydown:a:KeyA:false:false:false:true:true";
     ExtensionTestMessageListener keyevent_listener(expected_value);
@@ -431,7 +424,7 @@ IN_PROC_BROWSER_TEST_P(InputMethodEngineBrowserTest,
   }
   {
     SCOPED_TRACE("KeyDown, Ctrl:No, Alt:No, AltGr:Yes, Shift:No, Caps:No");
-    KeyEventDoneCallback callback(false);
+    KeyEventDoneCallback callback(ui::ime::KeyEventHandledState::kNotHandled);
     const std::string expected_value =
         "onKeyEvent::true:keydown:a:KeyA:false:false:true:false:false";
     ExtensionTestMessageListener keyevent_listener(expected_value);
@@ -476,15 +469,14 @@ IN_PROC_BROWSER_TEST_P(InputMethodEngineBrowserTest,
 
   for (size_t i = 0; i < std::size(kMediaKeyCases); ++i) {
     SCOPED_TRACE(std::string("KeyDown, ") + kMediaKeyCases[i].code);
-    KeyEventDoneCallback callback(false);
+    KeyEventDoneCallback callback(ui::ime::KeyEventHandledState::kNotHandled);
     const std::string expected_value = base::StringPrintf(
         "onKeyEvent::true:keydown:%s:%s:false:false:false:false:false",
         kMediaKeyCases[i].key, kMediaKeyCases[i].code);
     ExtensionTestMessageListener keyevent_listener(expected_value);
 
     ui::KeyEvent key_event(
-        ui::ET_KEY_PRESSED,
-        kMediaKeyCases[i].keycode,
+        ui::ET_KEY_PRESSED, kMediaKeyCases[i].keycode,
         ui::KeycodeConverter::CodeStringToDomCode(kMediaKeyCases[i].code),
         ui::EF_NONE);
     ui::IMEEngineHandlerInterface::KeyEventDoneCallback keyevent_callback =
@@ -506,8 +498,8 @@ IN_PROC_BROWSER_TEST_P(InputMethodEngineBrowserTest,
         "  text:'COMMIT_TEXT'"
         "});";
 
-    ASSERT_TRUE(content::ExecuteScript(host->host_contents(),
-                                       commit_text_test_script));
+    ASSERT_TRUE(
+        content::ExecuteScript(host->host_contents(), commit_text_test_script));
     EXPECT_EQ(1, mock_input_context->commit_text_call_count());
     EXPECT_EQ(u"COMMIT_TEXT", mock_input_context->last_commit_text());
   }
@@ -658,8 +650,7 @@ IN_PROC_BROWSER_TEST_P(InputMethodEngineBrowserTest,
     ASSERT_TRUE(content::ExecuteScript(host->host_contents(),
                                        commite_text_test_script));
     EXPECT_EQ(1, mock_input_context->update_preedit_text_call_count());
-    EXPECT_FALSE(
-        mock_input_context->last_update_composition_arg().is_visible);
+    EXPECT_FALSE(mock_input_context->last_update_composition_arg().is_visible);
     const ui::CompositionText& composition_text =
         mock_input_context->last_update_composition_arg().composition_text;
     EXPECT_TRUE(composition_text.text.empty());
@@ -836,8 +827,7 @@ IN_PROC_BROWSER_TEST_P(InputMethodEngineBrowserTest,
         "  }"
         "});";
     ASSERT_TRUE(content::ExecuteScript(
-        host->host_contents(),
-        set_candidate_window_properties_test_script));
+        host->host_contents(), set_candidate_window_properties_test_script));
     EXPECT_EQ(1, mock_candidate_window->update_lookup_table_call_count());
     EXPECT_TRUE(
         mock_candidate_window->last_update_lookup_table_arg().is_visible);
@@ -855,8 +845,7 @@ IN_PROC_BROWSER_TEST_P(InputMethodEngineBrowserTest,
         "  }"
         "});";
     ASSERT_TRUE(content::ExecuteScript(
-        host->host_contents(),
-        set_candidate_window_properties_test_script));
+        host->host_contents(), set_candidate_window_properties_test_script));
     EXPECT_EQ(1, mock_candidate_window->update_lookup_table_call_count());
 
     // window visibility is kept as before.
@@ -880,8 +869,7 @@ IN_PROC_BROWSER_TEST_P(InputMethodEngineBrowserTest,
         "  }"
         "});";
     ASSERT_TRUE(content::ExecuteScript(
-        host->host_contents(),
-        set_candidate_window_properties_test_script));
+        host->host_contents(), set_candidate_window_properties_test_script));
     EXPECT_EQ(1, mock_candidate_window->update_lookup_table_call_count());
 
     // window visibility is kept as before.
@@ -909,8 +897,7 @@ IN_PROC_BROWSER_TEST_P(InputMethodEngineBrowserTest,
         "  }"
         "});";
     ASSERT_TRUE(content::ExecuteScript(
-        host->host_contents(),
-        set_candidate_window_properties_test_script));
+        host->host_contents(), set_candidate_window_properties_test_script));
     EXPECT_EQ(1, mock_candidate_window->update_lookup_table_call_count());
 
     // window visibility is kept as before.
@@ -941,8 +928,7 @@ IN_PROC_BROWSER_TEST_P(InputMethodEngineBrowserTest,
         "  }"
         "});";
     ASSERT_TRUE(content::ExecuteScript(
-        host->host_contents(),
-        set_candidate_window_properties_test_script));
+        host->host_contents(), set_candidate_window_properties_test_script));
     EXPECT_EQ(1, mock_candidate_window->update_lookup_table_call_count());
 
     const ui::CandidateWindow& table =
@@ -962,8 +948,7 @@ IN_PROC_BROWSER_TEST_P(InputMethodEngineBrowserTest,
         "  }"
         "});";
     ASSERT_TRUE(content::ExecuteScript(
-        host->host_contents(),
-        set_candidate_window_properties_test_script));
+        host->host_contents(), set_candidate_window_properties_test_script));
     EXPECT_EQ(1, mock_candidate_window->update_lookup_table_call_count());
 
     // aux text visibility is kept as before.
@@ -1089,8 +1074,8 @@ IN_PROC_BROWSER_TEST_P(InputMethodEngineBrowserTest,
         "  contextID: engineBridge.getFocusedContextID().contextID,"
         "  candidateID: 2"
         "});";
-    ASSERT_TRUE(content::ExecuteScript(
-        host->host_contents(), set_cursor_position_test_script));
+    ASSERT_TRUE(content::ExecuteScript(host->host_contents(),
+                                       set_cursor_position_test_script));
     EXPECT_EQ(1, mock_candidate_window->update_lookup_table_call_count());
 
     // window visibility is kept as before.
@@ -1145,12 +1130,12 @@ IN_PROC_BROWSER_TEST_P(InputMethodEngineBrowserTest,
         "    checked: true"
         "  }]"
         "});";
-    ASSERT_TRUE(content::ExecuteScript(
-        host->host_contents(), set_menu_item_test_script));
+    ASSERT_TRUE(content::ExecuteScript(host->host_contents(),
+                                       set_menu_item_test_script));
 
     const ui::ime::InputMethodMenuItemList& props =
-        ui::ime::InputMethodMenuManager::GetInstance()->
-        GetCurrentInputMethodMenuItemList();
+        ui::ime::InputMethodMenuManager::GetInstance()
+            ->GetCurrentInputMethodMenuItemList();
     ASSERT_EQ(5U, props.size());
 
     EXPECT_EQ("ID0", props[0].key);
@@ -1178,8 +1163,8 @@ IN_PROC_BROWSER_TEST_P(InputMethodEngineBrowserTest,
         "  offset: 5,"
         "  length: 3"
         "});";
-    ASSERT_TRUE(content::ExecuteScript(
-        host->host_contents(), delete_surrounding_text_test_script));
+    ASSERT_TRUE(content::ExecuteScript(host->host_contents(),
+                                       delete_surrounding_text_test_script));
 
     EXPECT_EQ(1, mock_input_context->delete_surrounding_text_call_count());
     EXPECT_EQ(5, mock_input_context->last_delete_surrounding_text_arg().offset);

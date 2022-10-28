@@ -1,4 +1,4 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -498,6 +498,35 @@ void ServiceWorkerStorage::UpdateNavigationPreloadHeader(
       base::BindOnce(&ServiceWorkerDatabase::UpdateNavigationPreloadHeader,
                      base::Unretained(database_.get()), registration_id, key,
                      value),
+      std::move(callback));
+}
+
+void ServiceWorkerStorage::UpdateFetchHandlerType(
+    int64_t registration_id,
+    const blink::StorageKey& key,
+    blink::mojom::ServiceWorkerFetchHandlerType type,
+    DatabaseStatusCallback callback) {
+  switch (state_) {
+    case STORAGE_STATE_DISABLED:
+      std::move(callback).Run(ServiceWorkerDatabase::Status::kErrorDisabled);
+      return;
+    case STORAGE_STATE_INITIALIZING:
+      // Fall-through.
+    case STORAGE_STATE_UNINITIALIZED:
+      LazyInitialize(
+          base::BindOnce(&ServiceWorkerStorage::UpdateFetchHandlerType,
+                         weak_factory_.GetWeakPtr(), registration_id, key, type,
+                         std::move(callback)));
+      return;
+    case STORAGE_STATE_INITIALIZED:
+      break;
+  }
+
+  base::PostTaskAndReplyWithResult(
+      database_task_runner_.get(), FROM_HERE,
+      base::BindOnce(&ServiceWorkerDatabase::UpdateFetchHandlerType,
+                     base::Unretained(database_.get()), registration_id, key,
+                     type),
       std::move(callback));
 }
 

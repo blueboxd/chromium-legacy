@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,6 +11,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/callback_helpers.h"
+#include "base/containers/contains.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/sequenced_task_runner_handle.h"
@@ -18,7 +19,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part_ash.h"
 #include "chrome/browser/component_updater/cros_component_manager.h"
-#include "chromeos/dbus/dlcservice/dlcservice.pb.h"
+#include "chromeos/ash/components/dbus/dlcservice/dlcservice.pb.h"
 #include "content/public/browser/network_service_instance.h"
 #include "services/network/public/cpp/network_connection_tracker.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
@@ -53,7 +54,7 @@ void TerminaInstaller::InstallDlc(
     bool is_initial_install) {
   dlcservice::InstallRequest install_request;
   install_request.set_id(kCrostiniDlcName);
-  chromeos::DlcserviceClient::Get()->Install(
+  ash::DlcserviceClient::Get()->Install(
       install_request,
       base::BindOnce(&TerminaInstaller::OnInstallDlc,
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback),
@@ -64,7 +65,7 @@ void TerminaInstaller::InstallDlc(
 void TerminaInstaller::OnInstallDlc(
     base::OnceCallback<void(InstallResult)> callback,
     bool is_initial_install,
-    const chromeos::DlcserviceClient::InstallResult& result) {
+    const ash::DlcserviceClient::InstallResult& result) {
   CHECK(result.dlc_id == kCrostiniDlcName);
   InstallResult response;
   if (is_cancelled_) {
@@ -177,7 +178,7 @@ void TerminaInstaller::RemoveComponentIfPresent(
 
 void TerminaInstaller::RemoveDlcIfPresent(base::OnceCallback<void()> callback,
                                           UninstallResult* result) {
-  chromeos::DlcserviceClient::Get()->GetExistingDlcs(base::BindOnce(
+  ash::DlcserviceClient::Get()->GetExistingDlcs(base::BindOnce(
       [](base::WeakPtr<TerminaInstaller> weak_this,
          base::OnceCallback<void()> callback, UninstallResult* result,
          const std::string& err,
@@ -207,7 +208,7 @@ void TerminaInstaller::RemoveDlcIfPresent(base::OnceCallback<void()> callback,
 
 void TerminaInstaller::RemoveDlc(base::OnceCallback<void()> callback,
                                  UninstallResult* result) {
-  chromeos::DlcserviceClient::Get()->Uninstall(
+  ash::DlcserviceClient::Get()->Uninstall(
       kCrostiniDlcName,
       base::BindOnce(
           [](base::OnceCallback<void()> callback, UninstallResult* result,
@@ -227,9 +228,7 @@ void TerminaInstaller::RemoveDlc(base::OnceCallback<void()> callback,
 void TerminaInstaller::OnUninstallFinished(
     base::OnceCallback<void(bool)> callback,
     std::vector<UninstallResult> partial_results) {
-  bool result = std::all_of(partial_results.begin(), partial_results.end(),
-                            [](bool b) { return b; });
-  std::move(callback).Run(result);
+  std::move(callback).Run(!base::Contains(partial_results, 0));
 }
 
 base::FilePath TerminaInstaller::GetInstallLocation() {

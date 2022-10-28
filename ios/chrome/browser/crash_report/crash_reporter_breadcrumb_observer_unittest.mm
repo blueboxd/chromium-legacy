@@ -1,26 +1,26 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/breadcrumbs/core/crash_reporter_breadcrumb_observer.h"
+#import "components/breadcrumbs/core/crash_reporter_breadcrumb_observer.h"
 
 #import "base/strings/sys_string_conversions.h"
 #import "base/test/ios/wait_util.h"
-#include "base/test/task_environment.h"
-#include "components/breadcrumbs/core/breadcrumb_manager.h"
-#include "components/breadcrumbs/core/breadcrumb_manager_keyed_service.h"
-#include "components/breadcrumbs/core/crash_reporter_breadcrumb_constants.h"
-#include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
-#include "ios/chrome/browser/crash_report/breadcrumbs/breadcrumb_manager_keyed_service_factory.h"
+#import "base/test/task_environment.h"
+#import "components/breadcrumbs/core/breadcrumb_manager.h"
+#import "components/breadcrumbs/core/breadcrumb_manager_keyed_service.h"
+#import "components/breadcrumbs/core/crash_reporter_breadcrumb_constants.h"
+#import "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
+#import "ios/chrome/browser/crash_report/breadcrumbs/breadcrumb_manager_keyed_service_factory.h"
 #import "ios/chrome/browser/crash_report/crash_helper.h"
 #import "ios/chrome/test/ocmock/OCMockObject+BreakpadControllerTesting.h"
 #import "ios/testing/scoped_block_swizzler.h"
-#include "testing/gtest/include/gtest/gtest.h"
+#import "testing/gtest/include/gtest/gtest.h"
 #import "testing/gtest_mac.h"
-#include "testing/platform_test.h"
+#import "testing/platform_test.h"
 #import "third_party/breakpad/breakpad/src/client/ios/BreakpadController.h"
 #import "third_party/ocmock/OCMock/OCMock.h"
-#include "third_party/ocmock/gtest_support.h"
+#import "third_party/ocmock/gtest_support.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -28,7 +28,7 @@
 
 namespace {
 // Returns an OCMArg validator which checks that the parameter value is a string
-// containing |count| occurances of |substring|.
+// containing `count` occurances of `substring`.
 id StringParameterValidatorWithCountOfSubstring(NSUInteger count,
                                                 NSString* substring) {
   return [OCMArg checkWithBlock:^(id value) {
@@ -67,7 +67,7 @@ class CrashReporterBreadcrumbObserverTest : public PlatformTest {
         [OCMockObject mockForClass:[BreakpadController class]];
 
     // Swizzle +[BreakpadController sharedInstance] to return
-    // |mock_breakpad_controller_| instead of the normal singleton instance.
+    // `mock_breakpad_controller_` instead of the normal singleton instance.
     id implementation_block = ^BreakpadController*(id self) {
       return mock_breakpad_controller_;
     };
@@ -83,8 +83,8 @@ class CrashReporterBreadcrumbObserverTest : public PlatformTest {
   }
 
  protected:
-  // Returns the BreadcrumbManagerKeyedService for |browser_state|, and sets
-  // |crash_reporter_breadcrumb_observer_| as its observer.
+  // Returns the BreadcrumbManagerKeyedService for `browser_state`, and sets
+  // `crash_reporter_breadcrumb_observer_` as its observer.
   breadcrumbs::BreadcrumbManagerKeyedService* GetAndObserveBreadcrumbService(
       web::BrowserState* const browser_state) {
     breadcrumbs::BreadcrumbManagerKeyedService* const breadcrumb_service =
@@ -122,7 +122,7 @@ TEST_F(CrashReporterBreadcrumbObserverTest, EventsAttachedToCrashReport) {
     if (![value isKindOfClass:[NSString class]]) {
       return NO;
     }
-    const std::list<std::string> events = breadcrumb_service->GetEvents(0);
+    const std::list<std::string> events = breadcrumb_service->GetEvents();
     std::string expected_breadcrumbs;
     for (const auto& event : events) {
       expected_breadcrumbs += event + "\n";

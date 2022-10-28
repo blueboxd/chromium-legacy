@@ -1,4 +1,4 @@
-// Copyright (c) 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -19,9 +19,6 @@ namespace ash::string_matching {
 // A relevance of zero means the two strings are completely different to each
 // other. The higher the relevance score, the better the two strings are
 // matched. Matched portions of text are stored as index ranges.
-//
-// TODO(crbug.com/1018613): each of these functions have too many input params,
-// we should revise the structure and remove unnecessary ones.
 //
 // TODO(crbug.com/1336160): Terminology (for example: relevance vs. ratio) is
 // confusing and could be clarified.
@@ -84,7 +81,8 @@ class FuzzyTokenizedStringMatch {
   // Calculates and returns the relevance score of |query| relative to |text|.
   double Relevance(const TokenizedString& query,
                    const TokenizedString& text,
-                   bool use_weighted_ratio);
+                   bool use_weighted_ratio,
+                   bool strip_diacritics = false);
   const Hits& hits() const { return hits_; }
 
  private:

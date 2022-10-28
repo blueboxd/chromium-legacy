@@ -34,9 +34,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/libjingle_xmpp/xmllite/xmlelement.h"
 
-namespace remoting {
-
-namespace protocol {
+namespace remoting::protocol {
 
 class MockAuthenticator : public Authenticator {
  public:
@@ -144,6 +142,7 @@ class MockHostStub : public HostStub {
   MOCK_METHOD1(DeliverClientMessage, void(const ExtensionMessage& message));
   MOCK_METHOD1(SelectDesktopDisplay,
                void(const SelectDesktopDisplayRequest& message));
+  MOCK_METHOD1(SetVideoLayout, void(const VideoLayout& video_layout));
 };
 
 class MockClientStub : public ClientStub {
@@ -281,7 +280,6 @@ class SynchronousPairingRegistry : public PairingRegistry {
                 base::OnceClosure task) override;
 };
 
-}  // namespace protocol
-}  // namespace remoting
+}  // namespace remoting::protocol
 
 #endif  // REMOTING_PROTOCOL_PROTOCOL_MOCK_OBJECTS_H_

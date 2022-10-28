@@ -1,4 +1,4 @@
-# Copyright 2015 The Chromium Authors. All rights reserved.
+# Copyright 2015 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -95,6 +95,14 @@ cast_source_set("unittests") {
 
       # TODO(b/174874712): Remove the explicit gRPC dependency.
       "//third_party/grpc:grpc++",
+    ]
+  }
+
+  if(use_alsa) {
+    sources += [ "backend/alsa/scoped_alsa_mixer_unittest.cc" ]
+    deps += [
+      "//chromecast/media/cma/backend/alsa:volume_control",
+      "//media:test_support",
     ]
   }
 

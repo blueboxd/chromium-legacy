@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,23 +6,23 @@
 
 #import <Foundation/Foundation.h>
 
-#include "base/bind.h"
-#include "base/feature_list.h"
-#include "base/metrics/histogram_macros.h"
-#include "base/strings/sys_string_conversions.h"
-#include "components/safe_browsing/core/browser/safe_browsing_url_checker_impl.h"
-#include "components/safe_browsing/core/common/features.h"
-#include "components/safe_browsing/core/common/safebrowsing_constants.h"
+#import "base/bind.h"
+#import "base/feature_list.h"
+#import "base/metrics/histogram_macros.h"
+#import "base/strings/sys_string_conversions.h"
+#import "components/safe_browsing/core/browser/safe_browsing_url_checker_impl.h"
+#import "components/safe_browsing/core/common/features.h"
+#import "components/safe_browsing/core/common/safebrowsing_constants.h"
 #import "components/safe_browsing/ios/browser/safe_browsing_url_allow_list.h"
-#include "ios/components/security_interstitials/safe_browsing/safe_browsing_client.h"
+#import "ios/components/security_interstitials/safe_browsing/safe_browsing_client.h"
 #import "ios/components/security_interstitials/safe_browsing/safe_browsing_error.h"
-#include "ios/components/security_interstitials/safe_browsing/safe_browsing_service.h"
-#include "ios/components/security_interstitials/safe_browsing/safe_browsing_tab_helper_delegate.h"
+#import "ios/components/security_interstitials/safe_browsing/safe_browsing_service.h"
+#import "ios/components/security_interstitials/safe_browsing/safe_browsing_tab_helper_delegate.h"
 #import "ios/components/security_interstitials/safe_browsing/safe_browsing_unsafe_resource_container.h"
 #import "ios/web/public/navigation/navigation_context.h"
 #import "ios/web/public/navigation/navigation_item.h"
 #import "ios/web/public/navigation/navigation_manager.h"
-#include "ios/web/public/thread/web_task_traits.h"
+#import "ios/web/public/thread/web_task_traits.h"
 #import "net/base/mac/url_conversions.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -41,7 +41,7 @@ web::WebStatePolicyDecider::PolicyDecision CreateSafeBrowsingErrorDecision() {
                       userInfo:nil]);
 }
 
-// Returns a canonicalized version of |url| as used by the SafeBrowsingService.
+// Returns a canonicalized version of `url` as used by the SafeBrowsingService.
 GURL GetCanonicalizedUrl(const GURL& url) {
   std::string hostname;
   std::string path;
@@ -143,10 +143,10 @@ void SafeBrowsingTabHelper::PolicyDecider::UpdateForMainFrameDocumentChange() {
 }
 
 void SafeBrowsingTabHelper::PolicyDecider::UpdateForMainFrameServerRedirect() {
-  // The current |pending_main_frame_query_| is a server redirect from
-  // |previous_main_frame_query_|, so add the latter to the pending redirect
+  // The current `pending_main_frame_query_` is a server redirect from
+  // `previous_main_frame_query_`, so add the latter to the pending redirect
   // chain. However, when a URL redirects to itself, ShouldAllowRequest may not
-  // be called again, and in that case |previous_main_frame_query_| will not
+  // be called again, and in that case `previous_main_frame_query_` will not
   // have a new URL to add to the redirect chain.
   if (previous_main_frame_query_) {
     pending_main_frame_redirect_chain_.push_back(
@@ -182,7 +182,7 @@ void SafeBrowsingTabHelper::PolicyDecider::ShouldAllowRequest(
     pending_sub_frame_queries_.insert({request_url, SubFrameUrlQuery()});
   }
 
-  // If there is a pre-existing main frame unsafe resource for |request_url|
+  // If there is a pre-existing main frame unsafe resource for `request_url`
   // that haven't yet resulted in an error page, this resource can be used to
   // show the error page for the current load.  This can occur in back/forward
   // navigations to safe browsing error pages, where ShouldAllowRequest() is
@@ -273,12 +273,7 @@ void SafeBrowsingTabHelper::PolicyDecider::HandleMainFrameResponsePolicy(
   // When there's a server redirect, a ShouldAllowRequest call sometimes
   // doesn't happen for the target of the redirection. This seems to be fixed
   // in trunk WebKit.
-  if (pending_main_frame_redirect_chain_.empty()) {
-    // Only check that the hosts match, since a ServiceWorker that handles a
-    // request can set a different URL in the response that it produces, without
-    // triggering a redirect.
-    DCHECK_EQ(pending_main_frame_query_->url.host(), url.host());
-  } else {
+  if (!pending_main_frame_redirect_chain_.empty()) {
     bool matching_hosts = pending_main_frame_query_->url.host() == url.host();
     UMA_HISTOGRAM_BOOLEAN(
         "IOS.SafeBrowsing.RedirectedRequestResponseHostsMatch", matching_hosts);
@@ -307,10 +302,10 @@ void SafeBrowsingTabHelper::PolicyDecider::HandleSubFrameResponsePolicy(
     const GURL& url,
     web::WebStatePolicyDecider::PolicyDecisionCallback callback) {
   // Sub frame response policy decisions are expected to always be requested
-  // after a request policy decision for |url|. However, in some cases, WebKit
+  // after a request policy decision for `url`. However, in some cases, WebKit
   // changes the URL in between the request and response policy callbacks,
   // without triggering a new request policy callback. One such case is when the
-  // URL's query string changes. If |url| isn't found in any pending query,
+  // URL's query string changes. If `url` isn't found in any pending query,
   // start a new query for it now.
   auto it = pending_sub_frame_queries_.find(url);
   if (it == pending_sub_frame_queries_.end()) {
@@ -387,7 +382,7 @@ void SafeBrowsingTabHelper::PolicyDecider::OnSubFrameUrlQueryDecided(
   DCHECK(pending_sub_frame_queries_.find(url) !=
          pending_sub_frame_queries_.end());
 
-  // Store the decision for |url| and run all the response callbacks that have
+  // Store the decision for `url` and run all the response callbacks that have
   // been received before the URL check completion.
   SubFrameUrlQuery& sub_frame_query = pending_sub_frame_queries_[url];
   sub_frame_query.decision = decision;

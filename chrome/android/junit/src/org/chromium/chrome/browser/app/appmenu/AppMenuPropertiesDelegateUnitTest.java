@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -764,7 +764,6 @@ public class AppMenuPropertiesDelegateUnitTest {
         doReturn(mock(BookmarkId.class)).when(mBookmarkBridge).getUserBookmarkIdForTab(any());
         PowerBookmarkMeta meta =
                 PowerBookmarkMeta.newBuilder()
-                        .setType(PowerBookmarkType.SHOPPING)
                         .setShoppingSpecifics(
                                 ShoppingSpecifics.newBuilder().setIsPriceTracked(false).build())
                         .build();
@@ -788,7 +787,6 @@ public class AppMenuPropertiesDelegateUnitTest {
         doReturn(null).when(mBookmarkBridge).getUserBookmarkIdForTab(any());
         PowerBookmarkMeta meta =
                 PowerBookmarkMeta.newBuilder()
-                        .setType(PowerBookmarkType.SHOPPING)
                         .setShoppingSpecifics(
                                 ShoppingSpecifics.newBuilder().setIsPriceTracked(false).build())
                         .build();
@@ -800,29 +798,6 @@ public class AppMenuPropertiesDelegateUnitTest {
                 startPriceTrackingMenuItem, stopPriceTrackingMenuItem, mTab);
         verify(startPriceTrackingMenuItem).setVisible(true);
         verify(startPriceTrackingMenuItem).setEnabled(true);
-        verify(stopPriceTrackingMenuItem).setVisible(false);
-    }
-
-    @Test
-    public void enablePriceTrackingItemRow_BadType() {
-        setShoppingListItemRowEnabled(true);
-        PowerBookmarkUtils.setPriceTrackingEligibleForTesting(true);
-        doReturn(true).when(mBookmarkBridge).isEditBookmarksEnabled();
-
-        doReturn(mock(BookmarkId.class)).when(mBookmarkBridge).getUserBookmarkIdForTab(any());
-        PowerBookmarkMeta meta =
-                PowerBookmarkMeta.newBuilder()
-                        .setType(PowerBookmarkType.UNSPECIFIED)
-                        .setShoppingSpecifics(
-                                ShoppingSpecifics.newBuilder().setIsPriceTracked(false).build())
-                        .build();
-        doReturn(meta).when(mBookmarkBridge).getPowerBookmarkMeta(any());
-
-        MenuItem startPriceTrackingMenuItem = mock(MenuItem.class);
-        MenuItem stopPriceTrackingMenuItem = mock(MenuItem.class);
-        mAppMenuPropertiesDelegate.updatePriceTrackingMenuItemRow(
-                startPriceTrackingMenuItem, stopPriceTrackingMenuItem, mTab);
-        verify(startPriceTrackingMenuItem).setVisible(false);
         verify(stopPriceTrackingMenuItem).setVisible(false);
     }
 
@@ -845,7 +820,6 @@ public class AppMenuPropertiesDelegateUnitTest {
                 .getAvailableProductInfoForUrl(any());
         PowerBookmarkMeta meta =
                 PowerBookmarkMeta.newBuilder()
-                        .setType(PowerBookmarkType.SHOPPING)
                         .setShoppingSpecifics(ShoppingSpecifics.newBuilder()
                                                       .setIsPriceTracked(true)
                                                       .setProductClusterId(clusterId)

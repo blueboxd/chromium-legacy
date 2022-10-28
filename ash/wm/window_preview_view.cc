@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -49,8 +49,8 @@ WindowPreviewView::WindowPreviewView(aura::Window* window,
   DCHECK(window);
   aura::client::GetTransientWindowClient()->AddObserver(this);
 
-  for (auto* window : GetTransientTreeIterator(window_))
-    AddWindow(window);
+  for (auto* transient_window : GetTransientTreeIterator(window_))
+    AddWindow(transient_window);
 }
 
 WindowPreviewView::~WindowPreviewView() {

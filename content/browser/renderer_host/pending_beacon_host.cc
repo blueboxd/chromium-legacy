@@ -212,6 +212,6 @@ Beacon::GenerateResourceRequest() const {
   }
 
   return request;
-};
+}
 
 }  // namespace content

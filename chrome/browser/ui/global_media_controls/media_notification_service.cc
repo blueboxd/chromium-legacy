@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -308,11 +308,10 @@ bool MediaNotificationService::HasActiveControllableSessionForWebContents(
     content::WebContents* web_contents) const {
   DCHECK(web_contents);
   auto item_ids = media_session_item_producer_->GetActiveControllableItemIds();
-  return std::any_of(
-      item_ids.begin(), item_ids.end(), [web_contents](const auto& item_id) {
-        return web_contents ==
-               content::MediaSession::GetWebContentsFromRequestId(item_id);
-      });
+  return base::ranges::any_of(item_ids, [web_contents](const auto& item_id) {
+    return web_contents ==
+           content::MediaSession::GetWebContentsFromRequestId(item_id);
+  });
 }
 
 std::string

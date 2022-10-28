@@ -162,8 +162,8 @@ RenderFrameHost* CreateSubframe(WebContentsImpl* web_contents,
 std::vector<RenderFrameHostImpl*> CollectAllRenderFrameHosts(
     RenderFrameHostImpl* starting_rfh) {
   std::vector<RenderFrameHostImpl*> visited_frames;
-  starting_rfh->ForEachRenderFrameHost(base::BindLambdaForTesting(
-      [&](RenderFrameHostImpl* rfh) { visited_frames.push_back(rfh); }));
+  starting_rfh->ForEachRenderFrameHost(
+      [&](RenderFrameHostImpl* rfh) { visited_frames.push_back(rfh); });
   return visited_frames;
 }
 
@@ -172,16 +172,15 @@ CollectAllRenderFrameHostsIncludingSpeculative(
     RenderFrameHostImpl* starting_rfh) {
   std::vector<RenderFrameHostImpl*> visited_frames;
   starting_rfh->ForEachRenderFrameHostIncludingSpeculative(
-      base::BindLambdaForTesting(
-          [&](RenderFrameHostImpl* rfh) { visited_frames.push_back(rfh); }));
+      [&](RenderFrameHostImpl* rfh) { visited_frames.push_back(rfh); });
   return visited_frames;
 }
 
 std::vector<RenderFrameHostImpl*> CollectAllRenderFrameHosts(
     WebContentsImpl* web_contents) {
   std::vector<RenderFrameHostImpl*> visited_frames;
-  web_contents->ForEachRenderFrameHost(base::BindLambdaForTesting(
-      [&](RenderFrameHostImpl* rfh) { visited_frames.push_back(rfh); }));
+  web_contents->ForEachRenderFrameHost(
+      [&](RenderFrameHostImpl* rfh) { visited_frames.push_back(rfh); });
   return visited_frames;
 }
 
@@ -189,8 +188,7 @@ std::vector<RenderFrameHostImpl*>
 CollectAllRenderFrameHostsIncludingSpeculative(WebContentsImpl* web_contents) {
   std::vector<RenderFrameHostImpl*> visited_frames;
   web_contents->ForEachRenderFrameHostIncludingSpeculative(
-      base::BindLambdaForTesting(
-          [&](RenderFrameHostImpl* rfh) { visited_frames.push_back(rfh); }));
+      [&](RenderFrameHostImpl* rfh) { visited_frames.push_back(rfh); });
   return visited_frames;
 }
 
@@ -447,9 +445,14 @@ Shell* OpenPopup(const ToRenderFrameHost& opener,
   return new_shell_observer.GetShell();
 }
 
+FileChooserDelegate::FileChooserDelegate(std::vector<base::FilePath> files,
+                                         base::OnceClosure callback)
+    : files_(std::move(files)), callback_(std::move(callback)) {}
+
 FileChooserDelegate::FileChooserDelegate(const base::FilePath& file,
                                          base::OnceClosure callback)
-    : file_(file), callback_(std::move(callback)) {}
+    : FileChooserDelegate(std::vector<base::FilePath>(1, file),
+                          std::move(callback)) {}
 
 FileChooserDelegate::~FileChooserDelegate() = default;
 
@@ -457,16 +460,18 @@ void FileChooserDelegate::RunFileChooser(
     RenderFrameHost* render_frame_host,
     scoped_refptr<content::FileSelectListener> listener,
     const blink::mojom::FileChooserParams& params) {
-  // Send the selected file to the renderer process.
-  auto file_info = blink::mojom::FileChooserFileInfo::NewNativeFile(
-      blink::mojom::NativeFileInfo::New(file_, std::u16string()));
+  // Send the selected files to the renderer process.
   std::vector<blink::mojom::FileChooserFileInfoPtr> files;
-  files.push_back(std::move(file_info));
-  listener->FileSelected(std::move(files), base::FilePath(),
-                         blink::mojom::FileChooserParams::Mode::kOpen);
+  for (const auto& file : files_) {
+    auto file_info = blink::mojom::FileChooserFileInfo::NewNativeFile(
+        blink::mojom::NativeFileInfo::New(file, std::u16string()));
+    files.push_back(std::move(file_info));
+  }
+  listener->FileSelected(std::move(files), base::FilePath(), params.mode);
 
   params_ = params.Clone();
-  std::move(callback_).Run();
+  if (callback_)
+    std::move(callback_).Run();
 }
 
 FrameTestNavigationManager::FrameTestNavigationManager(

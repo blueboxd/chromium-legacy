@@ -1,4 +1,4 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -34,6 +34,8 @@ class GURL;
 @class CRWJSInjectionReceiver;
 @class CRWSessionStorage;
 @protocol CRWScrollableContent;
+@protocol CRWWebViewDownload;
+@protocol CRWWebViewDownloadDelegate;
 @protocol CRWWebViewProxy;
 typedef id<CRWWebViewProxy> CRWWebViewProxyType;
 @class UIView;
@@ -152,7 +154,10 @@ class WebState : public base::SupportsUserData {
         base::RepeatingCallback<void(mojo::GenericPendingReceiver*)>;
     void AddInterface(base::StringPiece interface_name, Callback callback);
 
-    // Attempts to bind |receiver| by matching its interface name against the
+    // Removes a callback added by AddInterface.
+    void RemoveInterface(base::StringPiece interface_name);
+
+    // Attempts to bind `receiver` by matching its interface name against the
     // callbacks registered on this InterfaceBinder.
     void BindInterface(mojo::GenericPendingReceiver receiver);
 
@@ -174,7 +179,7 @@ class WebState : public base::SupportsUserData {
   static std::unique_ptr<WebState> Create(const CreateParams& params);
 
   // Creates a new WebState from a serialized representation of the session.
-  // |session_storage| must not be nil.
+  // `session_storage` must not be nil.
   static std::unique_ptr<WebState> CreateWithStorageSession(
       const CreateParams& params,
       CRWSessionStorage* session_storage);
@@ -191,7 +196,7 @@ class WebState : public base::SupportsUserData {
   // Returns whether the WebState is realized.
   //
   // What does "realized" mean? When creating a WebState from session storage
-  // with |CreateWithStorageSession()|, it may not yet have been fully created.
+  // with `CreateWithStorageSession()`, it may not yet have been fully created.
   // Instead, it has all information to fully instantiate it and its history
   // available, but the underlying objects (WKWebView, NavigationManager, ...)
   // have not been created.
@@ -242,11 +247,14 @@ class WebState : public base::SupportsUserData {
   // created or shown with WasShown()).
   virtual base::Time GetLastActiveTime() const = 0;
 
+  // Get the creation time of the WebState.
+  virtual base::Time GetCreationTime() const = 0;
+
   // Must be called when the WebState becomes shown/hidden.
   virtual void WasShown() = 0;
   virtual void WasHidden() = 0;
 
-  // When |true|, attempt to prevent the WebProcess from suspending. Embedder
+  // When `true`, attempt to prevent the WebProcess from suspending. Embedder
   // must override WebClient::GetWindowedContainer to maintain this
   // functionality.
   virtual void SetKeepRenderProcessAlive(bool keep_alive) = 0;
@@ -300,11 +308,11 @@ class WebState : public base::SupportsUserData {
   // Gets the CRWJSInjectionReceiver associated with this WebState.
   virtual CRWJSInjectionReceiver* GetJSInjectionReceiver() const = 0;
 
-  // Loads |data| of type |mime_type| and replaces last committed URL with the
-  // given |url|.
+  // Loads `data` of type `mime_type` and replaces last committed URL with the
+  // given `url`.
   virtual void LoadData(NSData* data, NSString* mime_type, const GURL& url) = 0;
 
-  // DISCOURAGED. Prefer using |WebFrame CallJavaScriptFunction| instead because
+  // DISCOURAGED. Prefer using `WebFrame CallJavaScriptFunction` instead because
   // it restricts JavaScript execution to functions within __gCrWeb and can also
   // call those functions on any frame in the page. ExecuteJavaScript here can
   // execute arbitrary JavaScript code, which is not as safe and is restricted
@@ -319,7 +327,7 @@ class WebState : public base::SupportsUserData {
   virtual void ExecuteJavaScript(const std::u16string& javascript,
                                  JavaScriptResultCallback callback) = 0;
 
-  // Asynchronously executes |javaScript| in the main frame's context,
+  // Asynchronously executes `javaScript` in the main frame's context,
   // registering user interaction.
   virtual void ExecuteUserJavaScript(NSString* javaScript) = 0;
 
@@ -388,25 +396,25 @@ class WebState : public base::SupportsUserData {
 
   // Returns the WebState view of the current URL. Moreover, this method
   // will set the trustLevel enum to the appropriate level from a security point
-  // of view. The caller has to handle the case where |trust_level| is not
-  // appropriate.  Passing |null| will skip the trust check.
+  // of view. The caller has to handle the case where `trust_level` is not
+  // appropriate.  Passing `null` will skip the trust check.
   // TODO(crbug.com/457679): Figure out a clean API for this.
   virtual GURL GetCurrentURL(URLVerificationTrustLevel* trust_level) const = 0;
 
-  // Callback used to handle script commands. |message| is the JS message sent
-  // from the |sender_frame| in the page, |page_url| is the URL of page's main
-  // frame, |user_is_interacting| indicates if the user is interacting with the
+  // Callback used to handle script commands. `message` is the JS message sent
+  // from the `sender_frame` in the page, `page_url` is the URL of page's main
+  // frame, `user_is_interacting` indicates if the user is interacting with the
   // page.
-  // TODO(crbug.com/881813): remove |page_url|.
+  // TODO(crbug.com/881813): remove `page_url`.
   using ScriptCommandCallbackSignature = void(const base::Value& message,
                                               const GURL& page_url,
                                               bool user_is_interacting,
                                               web::WebFrame* sender_frame);
   using ScriptCommandCallback =
       base::RepeatingCallback<ScriptCommandCallbackSignature>;
-  // Registers |callback| for JS message whose 'command' matches
-  // |command_prefix|. The returned subscription should be stored by the caller.
-  // When the description object is destroyed, it will unregister |callback| if
+  // Registers `callback` for JS message whose 'command' matches
+  // `command_prefix`. The returned subscription should be stored by the caller.
+  // When the description object is destroyed, it will unregister `callback` if
   // this WebState is still alive, and do nothing if this WebState is already
   // destroyed. Therefore if the caller want to stop receiving JS messages it
   // can just destroy the subscription.
@@ -419,7 +427,7 @@ class WebState : public base::SupportsUserData {
 
   // Typically an embedder will:
   //    - Implement this method to receive notification of changes to the page's
-  //      |VisibleSecurityState|, updating security UI (e.g. a lock icon) to
+  //      `VisibleSecurityState`, updating security UI (e.g. a lock icon) to
   //      reflect the current security state of the page.
   // ...and optionally:
   //    - Invoke this method upon detection of an event that will change
@@ -441,14 +449,14 @@ class WebState : public base::SupportsUserData {
   // dialog.
   virtual bool CanTakeSnapshot() const = 0;
 
-  // Takes a snapshot of this WebState with |rect|. |rect| should be specified
-  // in the coordinate system of the view returned by GetView(). |callback| is
+  // Takes a snapshot of this WebState with `rect`. `rect` should be specified
+  // in the coordinate system of the view returned by GetView(). `callback` is
   // asynchronously invoked after performing the snapshot. Prior to iOS 11, the
   // callback is invoked with a nil snapshot.
   virtual void TakeSnapshot(const gfx::RectF& rect,
                             SnapshotCallback callback) = 0;
 
-  // Creates PDF representation of the web page and invokes the |callback| with
+  // Creates PDF representation of the web page and invokes the `callback` with
   // the NSData of the PDF or nil if a PDF couldn't be generated.
   virtual void CreateFullPagePdf(
       base::OnceCallback<void(NSData*)> callback) = 0;
@@ -486,6 +494,14 @@ class WebState : public base::SupportsUserData {
   // web::PermissionState before use.
   virtual NSDictionary<NSNumber*, NSNumber*>* GetStatesForAllPermissions() const
       API_AVAILABLE(ios(15.0)) = 0;
+
+  // Downloads the displayed webview at `destination_file`. `handler`
+  // is used to retrieve the CRWWebViewDownload, so the caller can manage the
+  // launched download.
+  virtual void DownloadCurrentPage(NSString* destination_file,
+                                   id<CRWWebViewDownloadDelegate> delegate,
+                                   void (^handler)(id<CRWWebViewDownload>))
+      API_AVAILABLE(ios(14.5)) = 0;
 
  protected:
   friend class WebStatePolicyDecider;

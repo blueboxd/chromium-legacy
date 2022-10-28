@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -19,6 +19,7 @@
 #include "base/threading/sequence_bound.h"
 #include "base/values.h"
 #include "build/build_config.h"
+#include "chrome/common/printing/printing_init.h"
 #include "chrome/services/printing/public/mojom/print_backend_service.mojom.h"
 #include "components/crash/core/common/crash_keys.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
@@ -394,6 +395,7 @@ PrintBackendServiceImpl::PrintBackendServiceImpl(
 PrintBackendServiceImpl::~PrintBackendServiceImpl() = default;
 
 void PrintBackendServiceImpl::Init(const std::string& locale) {
+  InitializeProcessForPrinting();
   print_backend_ = PrintBackend::CreateInstance(locale);
   context_delegate_.SetAppLocale(locale);
 }

@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -52,7 +52,7 @@
 #import "ios/chrome/browser/ui/icons/action_icon.h"
 #import "ios/chrome/browser/ui/icons/chrome_symbol.h"
 #import "ios/chrome/browser/ui/list_model/list_model.h"
-#import "ios/chrome/browser/ui/ntp/feed_metrics_recorder.h"
+#import "ios/chrome/browser/ui/ntp/metrics/feed_metrics_recorder.h"
 #import "ios/chrome/browser/ui/popup_menu/cells/popup_menu_navigation_item.h"
 #import "ios/chrome/browser/ui/popup_menu/cells/popup_menu_text_item.h"
 #import "ios/chrome/browser/ui/popup_menu/cells/popup_menu_tools_item.h"
@@ -72,9 +72,8 @@
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
 #import "ios/chrome/grit/ios_strings.h"
 #import "ios/components/webui/web_ui_url_constants.h"
-#import "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 #import "ios/public/provider/chrome/browser/text_zoom/text_zoom_api.h"
-#import "ios/public/provider/chrome/browser/user_feedback/user_feedback_provider.h"
+#import "ios/public/provider/chrome/browser/user_feedback/user_feedback_api.h"
 #import "ios/web/common/features.h"
 #import "ios/web/common/user_agent.h"
 #import "ios/web/public/favicon/favicon_status.h"
@@ -1170,9 +1169,7 @@ PopupMenuTextItem* CreateEnterpriseInfoItem(NSString* imageName,
   [actionsArray addObject:self.siteInformationItem];
 
   // Report an Issue.
-  if (ios::GetChromeBrowserProvider()
-          .GetUserFeedbackProvider()
-          ->IsUserFeedbackEnabled()) {
+  if (ios::provider::IsUserFeedbackSupported()) {
     TableViewItem* reportIssue = CreateTableViewItem(
         IDS_IOS_OPTIONS_REPORT_AN_ISSUE, PopupMenuActionReportIssue,
         @"popup_menu_report_an_issue", kToolsMenuReportAnIssueId);

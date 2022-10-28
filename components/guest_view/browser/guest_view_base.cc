@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -49,12 +49,8 @@ SetSizeParams::~SetSizeParams() = default;
 // toggled so the guest can change itself accordingly.
 class GuestViewBase::OwnerContentsObserver : public WebContentsObserver {
  public:
-  OwnerContentsObserver(GuestViewBase* guest,
-                        WebContents* embedder_web_contents)
-      : WebContentsObserver(embedder_web_contents),
-        is_fullscreen_(false),
-        destroyed_(false),
-        guest_(guest) {}
+  OwnerContentsObserver(GuestViewBase* guest, WebContents* owner_web_contents)
+      : WebContentsObserver(owner_web_contents), guest_(guest) {}
 
   OwnerContentsObserver(const OwnerContentsObserver&) = delete;
   OwnerContentsObserver& operator=(const OwnerContentsObserver&) = delete;
@@ -117,8 +113,8 @@ class GuestViewBase::OwnerContentsObserver : public WebContentsObserver {
   }
 
  private:
-  bool is_fullscreen_;
-  bool destroyed_;
+  bool is_fullscreen_ = false;
+  bool destroyed_ = false;
   raw_ptr<GuestViewBase> guest_;
 
   void Destroy() {
@@ -162,26 +158,18 @@ class GuestViewBase::OpenerLifetimeObserver : public WebContentsObserver {
 GuestViewBase::GuestViewBase(WebContents* owner_web_contents)
     : owner_web_contents_(owner_web_contents),
       browser_context_(owner_web_contents->GetBrowserContext()),
-      guest_instance_id_(GetGuestViewManager()->GetNextInstanceID()),
-      view_instance_id_(kInstanceIDNone),
-      element_instance_id_(kInstanceIDNone),
-      attach_in_progress_(false),
-      initialized_(false),
-      is_being_destroyed_(false),
-      guest_host_(nullptr),
-      auto_size_enabled_(false),
-      is_full_page_plugin_(false) {
+      guest_instance_id_(GetGuestViewManager()->GetNextInstanceID()) {
   SetOwnerHost();
 }
 
-GuestViewBase::~GuestViewBase() {}
+GuestViewBase::~GuestViewBase() {
+  // This is not necessarily redundant with the removal when the guest contents
+  // is destroyed, since we may never have initialized a guest WebContents.
+  GetGuestViewManager()->RemoveGuest(guest_instance_id_);
+}
 
 void GuestViewBase::Init(const base::Value::Dict& create_params,
                          WebContentsCreatedCallback callback) {
-  if (initialized_)
-    return;
-  initialized_ = true;
-
   if (!GetGuestViewManager()->IsGuestAvailableToContext(this)) {
     // The derived class did not create a WebContents so this class serves no
     // purpose. Let's self-destruct.
@@ -263,10 +251,9 @@ gfx::Size GuestViewBase::GetDefaultSize() const {
 }
 
 void GuestViewBase::SetSize(const SetSizeParams& params) {
-  bool enable_auto_size =
-      params.enable_auto_size ? *params.enable_auto_size : auto_size_enabled_;
-  gfx::Size min_size = params.min_size ? *params.min_size : min_auto_size_;
-  gfx::Size max_size = params.max_size ? *params.max_size : max_auto_size_;
+  bool enable_auto_size = params.enable_auto_size.value_or(auto_size_enabled_);
+  gfx::Size min_size = params.min_size.value_or(min_auto_size_);
+  gfx::Size max_size = params.max_size.value_or(max_auto_size_);
 
   if (params.normal_size)
     normal_size_ = *params.normal_size;
@@ -328,19 +315,26 @@ GuestViewBase* GuestViewBase::FromWebContents(const WebContents* web_contents) {
 }
 
 // static
-GuestViewBase* GuestViewBase::From(int owner_process_id,
-                                   int guest_instance_id) {
+GuestViewBase* GuestViewBase::FromRenderFrameHost(
+    content::RenderFrameHost* rfh) {
+  return FromWebContents(content::WebContents::FromRenderFrameHost(rfh));
+}
+
+// static
+GuestViewBase* GuestViewBase::FromRenderFrameHostId(
+    const content::GlobalRenderFrameHostId& rfh_id) {
+  return FromRenderFrameHost(content::RenderFrameHost::FromID(rfh_id));
+}
+
+// static
+GuestViewBase* GuestViewBase::FromInstanceID(int owner_process_id,
+                                             int guest_instance_id) {
   auto* host = content::RenderProcessHost::FromID(owner_process_id);
   if (!host)
     return nullptr;
 
-  WebContents* guest_web_contents =
-      GuestViewManager::FromBrowserContext(host->GetBrowserContext())
-          ->GetGuestByInstanceIDSafely(guest_instance_id, owner_process_id);
-  if (!guest_web_contents)
-    return nullptr;
-
-  return GuestViewBase::FromWebContents(guest_web_contents);
+  return GuestViewManager::FromBrowserContext(host->GetBrowserContext())
+      ->GetGuestByInstanceIDSafely(guest_instance_id, owner_process_id);
 }
 
 // static
@@ -352,7 +346,17 @@ WebContents* GuestViewBase::GetTopLevelWebContents(WebContents* web_contents) {
 
 // static
 bool GuestViewBase::IsGuest(WebContents* web_contents) {
-  return !!GuestViewBase::FromWebContents(web_contents);
+  return !!FromWebContents(web_contents);
+}
+
+// static
+bool GuestViewBase::IsGuest(content::RenderFrameHost* rfh) {
+  return !!FromRenderFrameHost(rfh);
+}
+
+// static
+bool GuestViewBase::IsGuest(const content::GlobalRenderFrameHostId& rfh_id) {
+  return !!FromRenderFrameHostId(rfh_id);
 }
 
 bool GuestViewBase::IsAutoSizeSupported() const {
@@ -371,7 +375,7 @@ GuestViewManager* GuestViewBase::GetGuestViewManager() {
   return GuestViewManager::FromBrowserContext(browser_context());
 }
 
-WebContents* GuestViewBase::CreateNewGuestWindow(
+std::unique_ptr<WebContents> GuestViewBase::CreateNewGuestWindow(
     const WebContents::CreateParams& create_params) {
   return GetGuestViewManager()->CreateGuestWithWebContentsParams(
       GetViewType(), owner_web_contents(), create_params);
@@ -430,10 +434,6 @@ void GuestViewBase::Destroy(bool also_delete) {
   // may wish to access their openers.
   weak_ptr_factory_.InvalidateWeakPtrs();
 
-  // Give the content module an opportunity to perform some cleanup.
-  guest_host_->WillDestroy();
-  guest_host_ = nullptr;
-
   g_webcontents_guestview_map.Get().erase(web_contents());
   GetGuestViewManager()->RemoveGuest(guest_instance_id_);
   pending_events_.clear();
@@ -449,29 +449,11 @@ void GuestViewBase::SetAttachParams(const base::Value::Dict& params) {
 }
 
 void GuestViewBase::SetOpener(GuestViewBase* guest) {
-  if (guest) {
-    opener_ = guest->weak_ptr_factory_.GetWeakPtr();
-    if (!attached()) {
-      opener_lifetime_observer_ =
-          std::make_unique<OpenerLifetimeObserver>(this);
-    }
-  } else {
-    opener_ = base::WeakPtr<GuestViewBase>();
-    opener_lifetime_observer_.reset();
+  DCHECK(guest);
+  opener_ = guest->weak_ptr_factory_.GetWeakPtr();
+  if (!attached()) {
+    opener_lifetime_observer_ = std::make_unique<OpenerLifetimeObserver>(this);
   }
-}
-
-void GuestViewBase::SetGuestHost(content::GuestHost* guest_host) {
-  guest_host_ = guest_host;
-}
-
-void GuestViewBase::WillAttach(WebContents* embedder_web_contents,
-                               int element_instance_id,
-                               bool is_full_page_plugin,
-                               base::OnceClosure completion_callback) {
-  WillAttach(embedder_web_contents, nullptr, element_instance_id,
-             is_full_page_plugin, std::move(completion_callback),
-             base::NullCallback());
 }
 
 void GuestViewBase::WillAttach(
@@ -836,11 +818,10 @@ void GuestViewBase::SetUpSizing(const base::Value::Dict& params) {
   }
 
   SetSizeParams set_size_params;
-  set_size_params.enable_auto_size = std::make_unique<bool>(auto_size_enabled);
-  set_size_params.min_size = std::make_unique<gfx::Size>(min_width, min_height);
-  set_size_params.max_size = std::make_unique<gfx::Size>(max_width, max_height);
-  set_size_params.normal_size =
-      std::make_unique<gfx::Size>(normal_width, normal_height);
+  set_size_params.enable_auto_size = auto_size_enabled;
+  set_size_params.min_size.emplace(min_width, min_height);
+  set_size_params.max_size.emplace(max_width, max_height);
+  set_size_params.normal_size.emplace(normal_width, normal_height);
 
   // Call SetSize to apply all the appropriate validation and clipping of
   // values.

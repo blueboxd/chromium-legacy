@@ -1,12 +1,12 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 console.info('start guest js');
 
-var embedder = null;
+let embedder = null;
 window.addEventListener('message', function(e) {
-  var data = JSON.parse(e.data)[0];
+  const data = JSON.parse(e.data)[0];
   window.console.info('guest gets message ' + data);
   if (data === 'create-channel') {
     embedder = e.source;
@@ -14,17 +14,17 @@ window.addEventListener('message', function(e) {
   }
 });
 
-var doPostMessage = function(msg) {
+function doPostMessage(msg) {
   window.console.info('guest posts message: ' + msg);
   embedder.postMessage(JSON.stringify([msg]), '*');
-};
+}
 
 document.body.style.background = '#EEEEEE';
 document.body.innerHTML +=
     '<input class="destination" id="dest">destination</input>';
 
-var destNode = document.getElementById('dest');
-var testStep = 0;
+const destNode = document.getElementById('dest');
+let testStep = 0;
 destNode.addEventListener('dragenter', function(e) {
   console.info('node drag enter');
   if (testStep === 0) {

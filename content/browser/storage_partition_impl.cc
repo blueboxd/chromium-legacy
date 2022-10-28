@@ -32,6 +32,7 @@
 #include "base/task/thread_pool.h"
 #include "base/threading/sequence_local_storage_slot.h"
 #include "base/time/default_clock.h"
+#include "base/types/optional_util.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "components/leveldb_proto/public/proto_database_provider.h"
@@ -335,7 +336,7 @@ void OnLocalStorageUsageInfo(
       base::BarrierClosure(infos.size(), std::move(done_callback));
   for (const StorageUsageInfo& info : infos) {
     if (storage_key_matcher &&
-        !storage_key_matcher.Run(blink::StorageKey(info.origin),
+        !storage_key_matcher.Run(info.storage_key,
                                  special_storage_policy.get())) {
       barrier.Run();
       continue;
@@ -343,10 +344,7 @@ void OnLocalStorageUsageInfo(
 
     if (info.last_modified >= delete_begin &&
         info.last_modified <= delete_end) {
-      dom_storage_context->DeleteLocalStorage(
-          // TODO(https://crbug.com/1199077): Pass the real StorageKey
-          // when StoragePartitionImpl is converted.
-          blink::StorageKey(info.origin), barrier);
+      dom_storage_context->DeleteLocalStorage(info.storage_key, barrier);
     } else {
       barrier.Run();
     }
@@ -1334,7 +1332,8 @@ void StoragePartitionImpl::Initialize(
 #else
         InterestGroupManagerImpl::ProcessMode::kDedicated,
 #endif
-        GetURLLoaderFactoryForBrowserProcess());
+        GetURLLoaderFactoryForBrowserProcess(),
+        browser_context_->CreateKAnonymityServiceDelegate());
   }
 
   // The Topics API is not available in Incognito mode.
@@ -2077,9 +2076,15 @@ void StoragePartitionImpl::OnClearSiteData(
   auto web_contents_getter = base::BindRepeating(
       GetWebContents, url_loader_network_observers_.current_context());
 
+  absl::optional<blink::StorageKey> storage_key = CalculateStorageKey(
+      url::Origin::Create(url),
+      cookie_partition_key.has_value()
+          ? base::OptionalToPtr(cookie_partition_key.value().nonce())
+          : nullptr);
+
   ClearSiteDataHandler::HandleHeader(
       browser_context_getter, web_contents_getter, url, header_value,
-      load_flags, cookie_partition_key, std::move(callback));
+      load_flags, cookie_partition_key, storage_key, std::move(callback));
 }
 
 #if BUILDFLAG(IS_ANDROID)
@@ -2918,6 +2923,22 @@ void StoragePartitionImpl::InitNetworkContext() {
   }
 }
 
+network::mojom::URLLoaderFactoryParamsPtr
+StoragePartitionImpl::CreateURLLoaderFactoryParams() {
+  network::mojom::URLLoaderFactoryParamsPtr params =
+      network::mojom::URLLoaderFactoryParams::New();
+  params->process_id = network::mojom::kBrowserProcessId;
+  params->automatically_assign_isolation_info = true;
+  params->is_corb_enabled = false;
+  params->is_trusted = true;
+  params->url_loader_network_observer =
+      CreateAuthCertObserverForServiceWorker();
+  params->disable_web_security =
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableWebSecurity);
+  return params;
+}
+
 network::mojom::URLLoaderFactory*
 StoragePartitionImpl::GetURLLoaderFactoryForBrowserProcessInternal() {
   // Create the URLLoaderFactory as needed, but make sure not to reuse a
@@ -2930,16 +2951,7 @@ StoragePartitionImpl::GetURLLoaderFactoryForBrowserProcessInternal() {
   }
 
   network::mojom::URLLoaderFactoryParamsPtr params =
-      network::mojom::URLLoaderFactoryParams::New();
-  params->process_id = network::mojom::kBrowserProcessId;
-  params->automatically_assign_isolation_info = true;
-  params->is_corb_enabled = false;
-  params->is_trusted = true;
-  params->url_loader_network_observer =
-      CreateAuthCertObserverForServiceWorker();
-  params->disable_web_security =
-      base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDisableWebSecurity);
+      CreateURLLoaderFactoryParams();
   url_loader_factory_for_browser_process_.reset();
   if (!GetCreateURLLoaderFactoryCallback()) {
     GetNetworkContext()->CreateURLLoaderFactory(
@@ -3025,6 +3037,25 @@ void StoragePartitionImpl::
         &StoragePartitionImpl::OnLocalTrustTokenFulfillerConnectionError,
         weak_factory_.GetWeakPtr()));
   }
+}
+
+absl::optional<blink::StorageKey> StoragePartitionImpl::CalculateStorageKey(
+    const url::Origin& origin,
+    const base::UnguessableToken* nonce) {
+  if (!blink::StorageKey::IsThirdPartyStoragePartitioningEnabled())
+    return absl::nullopt;
+
+  NavigationOrDocumentHandle* handle =
+      url_loader_network_observers_.current_context().navigation_or_document();
+  if (!handle)
+    return absl::nullopt;
+  FrameTreeNode* node = handle->GetFrameTreeNode();
+  if (!node)
+    return absl::nullopt;
+  RenderFrameHostImpl* frame_host = node->current_frame_host();
+  if (!frame_host)
+    return absl::nullopt;
+  return frame_host->CalculateStorageKey(origin, nonce);
 }
 
 StoragePartitionImpl::URLLoaderNetworkContext::URLLoaderNetworkContext(

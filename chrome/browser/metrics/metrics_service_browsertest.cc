@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -30,6 +30,7 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/metrics/enabled_state_provider.h"
 #include "components/metrics/metrics_pref_names.h"
 #include "components/metrics/metrics_reporting_default_state.h"
 #include "components/metrics/metrics_switches.h"
@@ -346,6 +347,7 @@ class MetricsServiceBrowserFilesTest : public InProcessBrowserTest {
   void SetUp() override {
     ChromeMetricsServiceAccessor::SetMetricsAndCrashReportingForTesting(
         &metrics_consent_);
+    metrics::EnabledStateProvider::SetIgnoreForceFieldTrialsForTesting(true);
     super::SetUp();
   }
 

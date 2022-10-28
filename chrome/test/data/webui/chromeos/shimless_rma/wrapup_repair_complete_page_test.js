@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -439,6 +439,48 @@ export function wrapupRepairCompletePageTest() {
 
     assertTrue(!!button);
     assertFalse(button.disabled);
+  });
+
+  test('ExternalDiskStateTrueShowsSaveLogsAndCancelButtons', async () => {
+    await initializeRepairCompletePage();
+    service.triggerExternalDiskObserver(true, 0);
+    await flushTasks();
+
+    const logConnectUsbMessageContainer =
+        component.shadowRoot.querySelector('#logConnectUsbMessageContainer');
+    assertTrue(!!logConnectUsbMessageContainer);
+    assertTrue(logConnectUsbMessageContainer.hidden);
+
+    const saveLogButtonContainer =
+        component.shadowRoot.querySelector('#saveLogButtonContainer');
+    assertTrue(!!saveLogButtonContainer);
+    assertFalse(saveLogButtonContainer.hidden);
+
+    const logSaveAttemptButtonContainer =
+        component.shadowRoot.querySelector('#logSaveAttemptButtonContainer');
+    assertTrue(!!logSaveAttemptButtonContainer);
+    assertTrue(logSaveAttemptButtonContainer.hidden);
+  });
+
+  test('ExternalDiskStateFalseShowsMissingUsbMessage', async () => {
+    await initializeRepairCompletePage();
+    service.triggerExternalDiskObserver(false, 0);
+    await flushTasks();
+
+    const logConnectUsbMessageContainer =
+        component.shadowRoot.querySelector('#logConnectUsbMessageContainer');
+    assertTrue(!!logConnectUsbMessageContainer);
+    assertFalse(logConnectUsbMessageContainer.hidden);
+
+    const saveLogButtonContainer =
+        component.shadowRoot.querySelector('#saveLogButtonContainer');
+    assertTrue(!!saveLogButtonContainer);
+    assertTrue(saveLogButtonContainer.hidden);
+
+    const logSaveAttemptButtonContainer =
+        component.shadowRoot.querySelector('#logSaveAttemptButtonContainer');
+    assertTrue(!!logSaveAttemptButtonContainer);
+    assertTrue(logSaveAttemptButtonContainer.hidden);
   });
 
   test('DialogCloses', async () => {

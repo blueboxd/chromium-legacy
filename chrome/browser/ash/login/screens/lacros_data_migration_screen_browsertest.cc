@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -97,12 +97,20 @@ class LacrosDataMigrationScreenTest : public OobeBaseTest {
     OobeBaseTest::SetUpOnMainThread();
   }
 
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    OobeBaseTest::SetUpCommandLine(command_line);
+
+    command_line->AppendSwitchASCII(switches::kBrowserDataMigrationMode,
+                                    "copy");
+  }
+
   bool is_attempt_restart_called() const { return is_attempt_restart_called_; }
 
  protected:
   FakeMigrator* fake_migrator() { return fake_migrator_; }
-  FakePowerManagerClient* power_manager_client() {
-    return static_cast<FakePowerManagerClient*>(PowerManagerClient::Get());
+  chromeos::FakePowerManagerClient* power_manager_client() {
+    return static_cast<chromeos::FakePowerManagerClient*>(
+        chromeos::PowerManagerClient::Get());
   }
   void OnAttemptRestartCalled() { is_attempt_restart_called_ = true; }
 

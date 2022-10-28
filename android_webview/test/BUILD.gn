@@ -1,4 +1,4 @@
-# Copyright 2015 The Chromium Authors. All rights reserved.
+# Copyright 2015 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -67,12 +67,12 @@ script_test("system_webview_finch_smoke_tests") {
   data_deps = [
     "//android_webview:system_webview_apk",
     "//android_webview/tools/system_webview_shell:system_webview_shell_apk",
-    "//testing:run_wpt_tests",
+    "//third_party/blink/tools:wpt_tests_android_isolate",
   ]
 }
 
 script_test("system_webview_wpt") {
-  script = "//testing/scripts/run_wpt_tests.py"
+  script = "//third_party/blink/tools/run_wpt_tests.py"
   args = [
     "--product",
     "android_webview",
@@ -80,8 +80,6 @@ script_test("system_webview_wpt") {
     "@WrappedPath(apks/SystemWebView.apk)",
     "--browser-apk",
     "@WrappedPath(apks/SystemWebViewShell.apk)",
-    "--webdriver-binary",
-    "@WrappedPath(clang_x64/chromedriver)",
     "-v",
   ]
   data_deps = [

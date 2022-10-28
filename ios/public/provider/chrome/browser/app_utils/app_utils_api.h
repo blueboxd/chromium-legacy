@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -26,7 +26,7 @@ void AppendSwitchesFromExperimentalSettings(
     NSUserDefaults* experimental_settings,
     base::CommandLine* command_line);
 
-// Attaches any embedder-specific browser agents to the given |browser|.
+// Attaches any embedder-specific browser agents to the given `browser`.
 void AttachBrowserAgents(Browser* browser);
 
 }  // namespace provider

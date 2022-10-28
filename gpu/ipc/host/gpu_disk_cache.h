@@ -1,4 +1,4 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -64,9 +64,6 @@ class GpuDiskCache : public base::RefCounted<GpuDiskCache> {
   // ERR_IO_PENDING, the |callback| will be invoked when all entries have
   // been written to the cache.
   int SetCacheCompleteCallback(net::CompletionOnceCallback callback);
-
-  // Returns the size which should be used for the gpu disk cache.
-  static size_t CacheSizeBytes();
 
  private:
   friend class base::RefCounted<GpuDiskCache>;

@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -24,6 +24,7 @@
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "chrome/browser/ui/webui/chromeos/parent_access/parent_access_dialog.h"
+#include "chrome/browser/ui/webui/chromeos/parent_access/parent_access_ui.mojom.h"
 #endif
 
 namespace {
@@ -47,8 +48,15 @@ void WebApprovalsManager::RequestLocalApproval(
     ApprovalRequestInitiatedCallback callback) {
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   // TODO(crbug.com/1233615): pass completion_callback.
+  // TODO(b/195316776): Pass in relevant local web approvals params instead of
+  // an empty object.
+  parent_access_ui::mojom::ParentAccessParamsPtr params =
+      parent_access_ui::mojom::ParentAccessParams::New(
+          parent_access_ui::mojom::ParentAccessParams::FlowType::kWebsiteAccess,
+          parent_access_ui::mojom::FlowTypeParams::NewWebApprovalsParams(
+              parent_access_ui::mojom::WebApprovalsParams::New()));
   chromeos::ParentAccessDialog::ShowError result =
-      chromeos::ParentAccessDialog::Show();
+      chromeos::ParentAccessDialog::Show(std::move(params));
 
   if (result != chromeos::ParentAccessDialog::ShowError::kNone) {
     LOG(ERROR) << "Error showing ParentAccessDialog: " << result;

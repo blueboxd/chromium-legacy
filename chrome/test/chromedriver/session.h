@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -102,6 +102,7 @@ struct Session {
   std::string GetCurrentFrameId() const;
   std::vector<WebDriverLog*> GetAllLogs() const;
 
+  bool BidiMapperIsLaunched() const;
   void OnBidiResponse(const std::string& payload);
   void AddBidiConnection(int connection_id,
                          SendTextFunc send_response,
@@ -114,9 +115,11 @@ struct Session {
   bool webSocketUrl = false;
   bool quit;
   bool detach;
+  bool bidi_mapper_is_launched_ = false;
   int awaited_bidi_response_id = -1;
   std::unique_ptr<Chrome> chrome;
   std::string window;
+  std::string bidi_mapper_web_view_id;
   int sticky_modifiers;
   // List of input sources for each active input. Everytime a new input source
   // is added, there must be a corresponding entry made in input_state_table.
@@ -174,7 +177,7 @@ struct Session {
   std::vector<BidiConnection> bidi_connections_;
   // If there is no active connections the messages from Chrome are accumulated
   // in this queue until a connection is created or the queue overflows.
-  std::queue<std::string> bidi_response_queue_;
+  std::queue<base::Value> bidi_response_queue_;
 };
 
 Session* GetThreadLocalSession();

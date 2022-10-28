@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,7 +10,7 @@
 import 'chrome://resources/cr_elements/cr_button/cr_button.js';
 import 'chrome://resources/cr_elements/cr_icon_button/cr_icon_button.js';
 import 'chrome://resources/js/action_link.js';
-import 'chrome://resources/cr_elements/action_link_css.m.js';
+import 'chrome://resources/cr_elements/action_link.css.js';
 import 'chrome://resources/polymer/v3_0/iron-flex-layout/iron-flex-layout-classes.js';
 import 'chrome://resources/polymer/v3_0/iron-icon/iron-icon.js';
 import 'chrome://resources/cr_elements/cr_action_menu/cr_action_menu.js';
@@ -23,9 +23,9 @@ import '../../controls/settings_toggle_button.js';
 import '../../settings_shared.css.js';
 
 import {assert} from 'chrome://resources/js/assert.m.js';
-import {focusWithoutInk} from 'chrome://resources/js/cr/ui/focus_without_ink.m.js';
-import {I18nBehavior, I18nBehaviorInterface} from 'chrome://resources/js/i18n_behavior.m.js';
-import {html, mixinBehaviors, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {focusWithoutInk} from 'chrome://resources/js/cr/ui/focus_without_ink_js.js';
+import {I18nBehavior, I18nBehaviorInterface} from 'chrome://resources/cr_elements/i18n_behavior.js';
+import {mixinBehaviors, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {loadTimeData} from '../../i18n_setup.js';
 import {Setting} from '../../mojom-webui/setting.mojom-webui.js';
@@ -38,6 +38,7 @@ import {RouteObserverBehavior, RouteObserverBehaviorInterface} from '../route_ob
 
 import {LanguagesMetricsProxy, LanguagesMetricsProxyImpl, LanguagesPageInteraction} from './languages_metrics_proxy.js';
 import {LanguageHelper, LanguagesModel, LanguageState} from './languages_types.js';
+import {getTemplate} from './os_languages_page_v2.html.js';
 
 /**
  * @type {number} Millisecond delay that can be used when closing an action
@@ -65,7 +66,7 @@ class OsSettingsLanguagesPageV2Element extends
   }
 
   static get template() {
-    return html`{__html_template__}`;
+    return getTemplate();
   }
 
   static get properties() {
@@ -262,7 +263,7 @@ class OsSettingsLanguagesPageV2Element extends
 
   /**
    * Handler for changes to the translate checkbox.
-   * @param {!{target: !Element}} e
+   * @param {{target: !Element}} e
    * @private
    */
   onTranslateCheckboxChange_(e) {

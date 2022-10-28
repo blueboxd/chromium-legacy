@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -17,7 +17,6 @@ class NetworkError {
     UI_STATE_SIGNIN,
     UI_STATE_SUPERVISED,
     UI_STATE_KIOSK_MODE,
-    UI_STATE_LOCAL_STATE_ERROR,
     UI_STATE_AUTO_ENROLLMENT_ERROR,
     UI_STATE_ROLLBACK_ERROR,
   };

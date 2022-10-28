@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -71,6 +71,7 @@
 #include "chrome/browser/ui/webui/chromeos/login/core_oobe_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/device_disabled_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/gaia_screen_handler.h"
+#include "chrome/browser/ui/webui/chromeos/login/lacros_data_backward_migration_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/lacros_data_migration_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
 #include "chrome/browser/ui/webui/chromeos/login/user_creation_screen_handler.h"
@@ -243,6 +244,10 @@ void ShowLoginWizardFinish(
     display_host = new LoginDisplayHostMojo(DisplayedScreen::SIGN_IN_SCREEN);
     DCHECK(session_manager::SessionManager::Get());
     session_manager::SessionManager::Get()->NotifyLoginOrLockScreenVisible();
+  } else if (first_screen == LacrosDataBackwardMigrationScreenView::kScreenId) {
+    display_host = new LoginDisplayHostMojo(DisplayedScreen::SIGN_IN_SCREEN);
+    DCHECK(session_manager::SessionManager::Get());
+    session_manager::SessionManager::Get()->NotifyLoginOrLockScreenVisible();
   } else {
     display_host = new LoginDisplayHostWebUI();
   }
@@ -334,18 +339,18 @@ void TriggerShowLoginWizardFinish(
 // if no policy-specified locale is set.
 std::string GetManagedLoginScreenLocale() {
   auto* cros_settings = CrosSettings::Get();
-  const base::ListValue* login_screen_locales = nullptr;
+  const base::Value::List* login_screen_locales = nullptr;
   if (!cros_settings->GetList(kDeviceLoginScreenLocales, &login_screen_locales))
     return std::string();
 
   // Currently, only the first element is used. The setting is a list for future
   // compatibility, if dynamically switching locales on the login screen will be
   // implemented.
-  if (login_screen_locales->GetListDeprecated().empty() ||
-      !login_screen_locales->GetListDeprecated()[0].is_string())
+  if (login_screen_locales->empty() ||
+      !login_screen_locales->front().is_string())
     return std::string();
 
-  return login_screen_locales->GetListDeprecated()[0].GetString();
+  return login_screen_locales->front().GetString();
 }
 
 // Disables virtual keyboard overscroll. Login UI will scroll user pods
@@ -383,8 +388,6 @@ PrefService* GetLocalState() {
 
 // static
 const char LoginDisplayHostWebUI::kShowLoginWebUIid[] = "ShowLoginWebUI";
-
-bool LoginDisplayHostWebUI::disable_restrictive_proxy_check_for_test_ = false;
 
 // A class to handle special menu key for keyboard driven OOBE.
 class LoginDisplayHostWebUI::KeyboardDrivenOobeKeyHandler
@@ -885,9 +888,6 @@ void LoginDisplayHostWebUI::InitLoginWindowAndView() {
   login_view_ = new WebUILoginView(WebUILoginView::WebViewSettings(),
                                    weak_factory_.GetWeakPtr());
   login_view_->Init();
-  if (disable_restrictive_proxy_check_for_test_) {
-    DisableRestrictiveProxyCheckForTest();
-  }
 
   login_window_->SetVisibilityAnimationDuration(
       base::Milliseconds(kLoginFadeoutTransitionDurationMs));
@@ -966,19 +966,6 @@ void LoginDisplayHostWebUI::OnLoginPromptVisible() {
 void LoginDisplayHostWebUI::CreateExistingUserController() {
   existing_user_controller_ = std::make_unique<ExistingUserController>();
   login_display_->set_delegate(existing_user_controller_.get());
-}
-
-// static
-void LoginDisplayHostWebUI::DisableRestrictiveProxyCheckForTest() {
-  if (default_host() && default_host()->GetOobeUI()) {
-    default_host()
-        ->GetOobeUI()
-        ->GetView<GaiaScreenHandler>()
-        ->DisableRestrictiveProxyCheckForTest();
-    disable_restrictive_proxy_check_for_test_ = false;
-  } else {
-    disable_restrictive_proxy_check_for_test_ = true;
-  }
 }
 
 void LoginDisplayHostWebUI::ShowGaiaDialog(const AccountId& prefilled_account) {

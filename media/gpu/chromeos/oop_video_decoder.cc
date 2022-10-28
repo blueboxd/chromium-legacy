@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -164,7 +164,7 @@ void OOPVideoDecoder::Initialize(const VideoDecoderConfig& config,
                                  InitCB init_cb,
                                  const OutputCB& output_cb,
                                  const WaitingCB& waiting_cb) {
-  VLOGF(2);
+  DVLOGF(2) << config.AsHumanReadableString();
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   CHECK(!init_cb_);
@@ -222,7 +222,8 @@ void OOPVideoDecoder::OnInitializeDone(const DecoderStatus& status,
   CHECK(!has_error_);
 
   if (!status.is_ok() ||
-      (decoder_type != VideoDecoderType::kVaapi &&
+      (decoder_type != VideoDecoderType::kVda &&
+       decoder_type != VideoDecoderType::kVaapi &&
        decoder_type != VideoDecoderType::kV4L2) ||
       (decoder_type_ != VideoDecoderType::kUnknown &&
        decoder_type_ != decoder_type)) {
@@ -235,7 +236,7 @@ void OOPVideoDecoder::OnInitializeDone(const DecoderStatus& status,
 
 void OOPVideoDecoder::Decode(scoped_refptr<DecoderBuffer> buffer,
                              DecodeCB decode_cb) {
-  VLOGF(2);
+  DVLOGF(4);
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   CHECK(!init_cb_);
@@ -279,6 +280,7 @@ void OOPVideoDecoder::Decode(scoped_refptr<DecoderBuffer> buffer,
 void OOPVideoDecoder::OnDecodeDone(uint64_t decode_id,
                                    bool is_flushing,
                                    const DecoderStatus& status) {
+  DVLOGF(4);
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   CHECK(!has_error_);
@@ -306,7 +308,7 @@ void OOPVideoDecoder::OnDecodeDone(uint64_t decode_id,
 }
 
 void OOPVideoDecoder::Reset(base::OnceClosure reset_cb) {
-  VLOGF(2);
+  DVLOGF(2);
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   CHECK(!init_cb_);
@@ -427,7 +429,7 @@ void OOPVideoDecoder::OnVideoFrameDecoded(
     const scoped_refptr<VideoFrame>& frame,
     bool can_read_without_stalling,
     const base::UnguessableToken& release_token) {
-  VLOGF(2);
+  DVLOGF(4);
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   CHECK(!has_error_);
@@ -451,7 +453,7 @@ void OOPVideoDecoder::OnVideoFrameDecoded(
 }
 
 void OOPVideoDecoder::OnWaiting(WaitingReason reason) {
-  VLOGF(2);
+  DVLOGF(4);
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   CHECK(!has_error_);

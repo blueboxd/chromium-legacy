@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -123,7 +123,7 @@ struct COMPONENT_EXPORT(DEVICE_FIDO) Components {
   // request_type contains the hinted type of the request. This can
   // be used to guide UI ahead of receiving the actual request. This defaults to
   // `kGetAssertion` if not present or if the value in the QR code is unknown.
-  FidoRequestType request_type = FidoRequestType::kGetAssertion;
+  CableRequestType request_type = CableRequestType::kGetAssertion;
 };
 
 COMPONENT_EXPORT(DEVICE_FIDO)
@@ -132,7 +132,7 @@ absl::optional<Components> Parse(const std::string& qr_url);
 // Encode returns the contents of a QR code that represents |qr_key|.
 COMPONENT_EXPORT(DEVICE_FIDO)
 std::string Encode(base::span<const uint8_t, kQRKeySize> qr_key,
-                   FidoRequestType request_type);
+                   CableRequestType request_type);
 
 // BytesToDigits returns a base-10 encoding of |in|.
 COMPONENT_EXPORT(DEVICE_FIDO)
@@ -183,12 +183,12 @@ void Derive(uint8_t* out,
 // client payload to give the phone an early hint about the type of request.
 // This lets it craft better UI.
 COMPONENT_EXPORT(DEVICE_FIDO)
-const char* RequestTypeToString(FidoRequestType request_type);
+const char* RequestTypeToString(CableRequestType request_type);
 
 // RequestTypeFromString performs the inverse of `RequestTypeToString`. If the
 // value of `s` is unknown, `kGetAssertion` is returned.
 COMPONENT_EXPORT(DEVICE_FIDO)
-FidoRequestType RequestTypeFromString(const std::string& s);
+CableRequestType RequestTypeFromString(const std::string& s);
 
 // Derive derives a sub-secret from a secret and nonce. It is not possible to
 // learn anything about |secret| from the value of the sub-secret, assuming that
@@ -243,21 +243,14 @@ class COMPONENT_EXPORT(DEVICE_FIDO) Crypter {
   bool Decrypt(base::span<const uint8_t> ciphertext,
                std::vector<uint8_t>* out_plaintext);
 
-  // Encrypt and decrypt with big-endian nonces and no additional data. This
-  // is the format in the spec and that we want to transition to.
-  void UseNewConstruction();
-
   // IsCounterpartyOfForTesting returns true if |other| is the mirror-image of
   // this object. (I.e. read/write keys are equal but swapped.)
   bool IsCounterpartyOfForTesting(const Crypter& other) const;
-
-  bool& GetNewConstructionFlagForTesting();
 
  private:
   const std::array<uint8_t, 32> read_key_, write_key_;
   uint32_t read_sequence_num_ = 0;
   uint32_t write_sequence_num_ = 0;
-  bool new_construction_ = false;
 };
 
 // HandshakeHash is the hashed transcript of a handshake. This can be used as a

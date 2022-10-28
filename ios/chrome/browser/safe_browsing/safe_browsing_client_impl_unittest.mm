@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -26,7 +26,7 @@ class SafeBrowsingClientImplTest : public PlatformTest {
                                        prerender_service_.get()))),
         web_state_(base::WrapUnique(new web::FakeWebState())) {}
 
-  // Configures |prerender_service_| to prerender |web_state_|.
+  // Configures `prerender_service_` to prerender `web_state_`.
   void PrerenderWebState() const {
     FakePrerenderService* fake_prerender_service =
         static_cast<FakePrerenderService*>(prerender_service_.get());

@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -189,6 +189,26 @@ void AwAutofillClient::ScanCreditCard(CreditCardScanCallback callback) {
   NOTIMPLEMENTED();
 }
 
+bool AwAutofillClient::IsFastCheckoutSupported() {
+  return false;
+}
+
+bool AwAutofillClient::IsFastCheckoutTriggerForm(
+    const autofill::FormData& form,
+    const autofill::FormFieldData& field) {
+  return false;
+}
+
+bool AwAutofillClient::ShowFastCheckout(
+    base::WeakPtr<autofill::FastCheckoutDelegate> delegate) {
+  NOTREACHED();
+  return false;
+}
+
+void AwAutofillClient::HideFastCheckout() {
+  NOTREACHED();
+}
+
 bool AwAutofillClient::IsTouchToFillCreditCardSupported() {
   return false;
 }
@@ -374,7 +394,11 @@ void AwAutofillClient::ShowAutofillPopupImpl(
     ScopedJavaLocalRef<jstring> name =
         ConvertUTF16ToJavaString(env, suggestions[i].main_text.value);
     ScopedJavaLocalRef<jstring> label =
-        ConvertUTF16ToJavaString(env, suggestions[i].label);
+        base::android::ConvertUTF8ToJavaString(env, std::string());
+    // For Android, we only show the primary/first label in the matrix.
+    if (!suggestions[i].labels.empty())
+      label = ConvertUTF16ToJavaString(env, suggestions[i].labels[0][0].value);
+
     Java_AwAutofillClient_addToAutofillSuggestionArray(
         env, data_array, i, name, label, suggestions[i].frontend_id);
   }

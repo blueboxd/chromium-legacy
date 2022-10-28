@@ -16,19 +16,24 @@ suppress_flakes.py \
   --project chrome-unexpected-pass-data \
   --sample-period 5
 """
-
 import argparse
+import os
+import sys
 
-from flake_suppressor import expectations
-from flake_suppressor import queries
-from flake_suppressor import result_output
-from flake_suppressor import results as results_module
+CHROMIUM_SRC_DIR = os.path.join(os.path.dirname(__file__), '..', '..', '..')
+sys.path.append(os.path.join(CHROMIUM_SRC_DIR, 'testing'))
+
+# pylint: disable=wrong-import-position
+from flake_suppressor_common import expectations
+from flake_suppressor_common import result_output
+from flake_suppressor_common import results as results_module
+from flake_suppressor_common import tag_utils as common_tag_utils
+from flake_suppressor import gpu_queries
+from flake_suppressor import gpu_tag_utils as tag_utils
+# pylint: enable=wrong-import-position
 
 
 def ParseArgs():
-  # TODO(crbug.com/1192733): Add flaky and failure thresholds, likely in the
-  # form of % of failures out of the total runs for a (test, tags) combination.
-  # <1% can be ignored, > 50% can be treated as a failure instead of a flake.
   parser = argparse.ArgumentParser(
       description=('Script for automatically suppressing flaky/failing GPU '
                    'Telemetry-based tests.'))
@@ -105,9 +110,11 @@ def ParseArgs():
 
 def main():
   args = ParseArgs()
+  common_tag_utils.SetTagUtilsImplementation(tag_utils.GpuTagUtils)
   if not args.bypass_up_to_date_check:
     expectations.AssertCheckoutIsUpToDate()
-  querier_instance = queries.BigQueryQuerier(args.sample_period, args.project)
+  querier_instance = gpu_queries.GpuBigQueryQuerier(args.sample_period,
+                                                    args.project)
   results = querier_instance.GetFlakyOrFailingCiTests()
   results.extend(querier_instance.GetFlakyOrFailingTryTests())
   aggregated_results = results_module.AggregateResults(results)

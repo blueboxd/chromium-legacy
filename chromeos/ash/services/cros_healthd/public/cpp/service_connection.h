@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -21,8 +21,7 @@
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
-namespace chromeos {
-namespace cros_healthd {
+namespace ash::cros_healthd {
 
 // Encapsulates a connection to the Chrome OS cros_healthd daemon via its Mojo
 // interface.
@@ -345,6 +344,15 @@ class ServiceConnection {
       pid_t process_id,
       mojom::CrosHealthdProbeService::ProbeProcessInfoCallback callback) = 0;
 
+  // Gathers information about multiple/ all processes on the device. See
+  // src/chromeos/ash/services/cros_healthd/public/mojom/cros_healthd.mojom for
+  // details.
+  virtual void ProbeMultipleProcessInfo(
+      const absl::optional<std::vector<uint32_t>>& process_ids,
+      bool ignore_single_process_info,
+      mojom::CrosHealthdProbeService::ProbeMultipleProcessInfoCallback
+          callback) = 0;
+
   // Binds |service| to an implementation of CrosHealthdDiagnosticsService. In
   // production, this implementation is provided by cros_healthd. See
   // src/chromeos/ash/services/cros_healthd/public/mojom/cros_healthd.mojom for
@@ -373,9 +381,7 @@ class ServiceConnection {
 
   // Sends the ChromiumDataCollector interface to cros_healthd.
   virtual void SendChromiumDataCollector(
-      mojo::PendingRemote<
-          chromeos::cros_healthd::internal::mojom::ChromiumDataCollector>
-          remote) = 0;
+      mojo::PendingRemote<internal::mojom::ChromiumDataCollector> remote) = 0;
 
   // Fetch touchpad stack driver library name.
   virtual std::string FetchTouchpadLibraryName() = 0;
@@ -390,14 +396,6 @@ class ServiceConnection {
   virtual ~ServiceConnection() = default;
 };
 
-}  // namespace cros_healthd
-}  // namespace chromeos
-
-// TODO(https://crbug.com/1164001): remove when moved to ash.
-namespace ash {
-namespace cros_healthd {
-using ::chromeos::cros_healthd::ServiceConnection;
-}  // namespace cros_healthd
-}  // namespace ash
+}  // namespace ash::cros_healthd
 
 #endif  // CHROMEOS_ASH_SERVICES_CROS_HEALTHD_PUBLIC_CPP_SERVICE_CONNECTION_H_

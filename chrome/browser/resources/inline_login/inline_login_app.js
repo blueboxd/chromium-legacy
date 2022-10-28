@@ -1,19 +1,19 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 import 'chrome://resources/polymer/v3_0/paper-spinner/paper-spinner-lite.js';
 import 'chrome://resources/cr_elements/cr_button/cr_button.js';
-import 'chrome://resources/cr_elements/icons.m.js';
+import 'chrome://resources/cr_elements/icons.html.js';
 import 'chrome://resources/polymer/v3_0/iron-icon/iron-icon.js';
 import 'chrome://resources/cr_elements/cr_view_manager/cr_view_manager.js';
 
 import {isChromeOS} from '//resources/js/cr.m.js';
-import {I18nBehavior} from 'chrome://resources/js/i18n_behavior.m.js';
+import {I18nBehavior} from 'chrome://resources/cr_elements/i18n_behavior.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {isRTL} from 'chrome://resources/js/util.m.js';
-import {WebUIListenerBehavior} from 'chrome://resources/js/web_ui_listener_behavior.m.js';
-import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {WebUIListenerBehavior} from 'chrome://resources/cr_elements/web_ui_listener_behavior.js';
+import {Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 // <if expr="chromeos_ash">
 import './arc_account_picker/arc_account_picker_app.js';
@@ -27,6 +27,7 @@ import {getAccountAdditionOptionsFromJSON} from './arc_account_picker/arc_util.j
 
 import {AuthCompletedCredentials, Authenticator, AuthParams} from './gaia_auth_host/authenticator.m.js';
 import {InlineLoginBrowserProxy, InlineLoginBrowserProxyImpl} from './inline_login_browser_proxy.js';
+import {getTemplate} from './inline_login_app.html.js';
 
 /**
  * @fileoverview Inline login WebUI in various signin flows for ChromeOS and
@@ -45,7 +46,7 @@ const View = {
 Polymer({
   is: 'inline-login-app',
 
-  _template: html`{__html_template__}`,
+  _template: getTemplate(),
 
   behaviors: [WebUIListenerBehavior, I18nBehavior],
 

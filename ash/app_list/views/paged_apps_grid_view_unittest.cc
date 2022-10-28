@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -25,13 +25,13 @@
 #include "ash/public/cpp/pagination/pagination_model.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
-#include "ash/test/layer_animation_stopped_waiter.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "base/test/bind.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
+#include "ui/compositor/test/layer_animation_stopped_waiter.h"
 #include "ui/gfx/geometry/vector2d.h"
 #include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/animation/bounds_animator.h"
@@ -118,6 +118,37 @@ class PagedAppsGridViewTestBase : public AshTestBase {
 
   bool IsRowChangeAnimatorAnimating() {
     return GetPagedAppsGridView()->row_change_animator_->IsAnimating();
+  }
+
+  void WaitForItemLayerAnimations() {
+    ui::LayerAnimationStoppedWaiter animation_waiter;
+    const views::ViewModelT<AppListItemView>* view_model =
+        GetPagedAppsGridView()->view_model();
+
+    for (size_t i = 0; i < view_model->view_size(); i++) {
+      if (view_model->view_at(i)->layer())
+        animation_waiter.Wait(view_model->view_at(i)->layer());
+    }
+  }
+
+  // Enter cardified state by dragging item at index 1.
+  void BeginEnteringCardifiedState() {
+    EXPECT_GE(GetPagedAppsGridView()->view_model()->view_size(), 2u);
+    auto* generator = GetEventGenerator();
+    AppListItemView* item_view =
+        GetPagedAppsGridView()->view_model()->view_at(1);
+
+    generator->MoveMouseTo(item_view->GetBoundsInScreen().CenterPoint());
+    generator->PressLeftButton();
+    item_view->FireMouseDragTimerForTest();
+    generator->MoveMouseBy(100, 100);
+    EXPECT_TRUE(GetPagedAppsGridView()->cardified_state_for_testing());
+  }
+
+  // Exit cardified state by releasing the item drag.
+  void BeginExitingCardifiedState() {
+    GetEventGenerator()->ReleaseLeftButton();
+    EXPECT_FALSE(GetPagedAppsGridView()->cardified_state_for_testing());
   }
 
   std::unique_ptr<test::AppsGridViewTestApi> grid_test_api_;
@@ -509,10 +540,7 @@ TEST_F(PagedAppsGridViewTest, SortAppsMakesA11yAnnouncement) {
   helper->AddAppItems(5);
   helper->GetAppsContainerView()->ResetForShowApps();
 
-  AppsContainerView* container_view = helper->GetAppsContainerView();
-  views::View* announcement_view = container_view->toast_container()
-                                       ->a11y_announcer_for_test()
-                                       ->announcement_view_for_test();
+  views::View* announcement_view = helper->GetAccessibilityAnnounceView();
   ASSERT_TRUE(announcement_view);
 
   // Add a callback to wait for an accessibility event.
@@ -671,7 +699,8 @@ TEST_F(PagedAppsGridViewTest, CloseReorderToast) {
 
   // Wait for the toast to finish fade out animation.
   EXPECT_EQ(toast_container->toast_view()->layer()->GetTargetOpacity(), 0.0f);
-  LayerAnimationStoppedWaiter().Wait(toast_container->toast_view()->layer());
+  ui::LayerAnimationStoppedWaiter().Wait(
+      toast_container->toast_view()->layer());
 
   const views::ViewModelT<AppListItemView>* view_model =
       GetPagedAppsGridView()->view_model();
@@ -763,12 +792,7 @@ TEST_F(PagedAppsGridViewTest, DestroyLayersOnDragLastItemFromFolder) {
   for (size_t i = 0; i < view_model->view_size(); i++)
     EXPECT_TRUE(view_model->view_at(i)->layer());
 
-  // Wait for each item's layer animation to complete.
-  LayerAnimationStoppedWaiter animation_waiter;
-  for (size_t i = 0; i < view_model->view_size(); i++) {
-    if (view_model->view_at(i)->layer())
-      animation_waiter.Wait(view_model->view_at(i)->layer());
-  }
+  WaitForItemLayerAnimations();
 
   // When each item's layer animation is complete, their layers should have been
   // removed.
@@ -813,12 +837,7 @@ TEST_F(PagedAppsGridViewTest, QuicklyDragAndDropItem) {
 
   EXPECT_FALSE(IsRowChangeAnimatorAnimating());
 
-  // Wait for each item's layer animation to complete.
-  LayerAnimationStoppedWaiter animation_waiter;
-  for (size_t i = 0; i < view_model->view_size(); i++) {
-    if (view_model->view_at(i)->layer())
-      animation_waiter.Wait(view_model->view_at(i)->layer());
-  }
+  WaitForItemLayerAnimations();
 
   // When each item's layer animation is complete, their layers should have been
   // removed.
@@ -875,12 +894,7 @@ TEST_F(PagedAppsGridViewTest, QuicklyDragAndDropItemToNewRow) {
   EXPECT_TRUE(IsRowChangeAnimatorAnimating());
   EXPECT_EQ(1, GetNumberOfRowChangeLayersForTest());
 
-  // Wait for each item's layer animation to complete.
-  LayerAnimationStoppedWaiter animation_waiter;
-  for (size_t i = 0; i < view_model->view_size(); i++) {
-    if (view_model->view_at(i)->layer())
-      animation_waiter.Wait(view_model->view_at(i)->layer());
-  }
+  WaitForItemLayerAnimations();
 
   // When each item's layer animation is complete, their layers should have been
   // removed.
@@ -894,6 +908,46 @@ TEST_F(PagedAppsGridViewTest, QuicklyDragAndDropItemToNewRow) {
   // Now that cardified item animations are complete, make sure that
   // `OnCardifiedStateEnded()` is only called once.
   EXPECT_EQ(1, number_of_times_cardified_state_ended);
+}
+
+TEST_F(PagedAppsGridViewTest, CardifiedEnterAnimationInterruptedByExit) {
+  ui::ScopedAnimationDurationScaleMode scope_duration(
+      ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
+  app_list_test_model_->PopulateApps(5);
+  UpdateLayout();
+
+  AppListItemView* item_view = GetPagedAppsGridView()->view_model()->view_at(0);
+
+  BeginEnteringCardifiedState();
+
+  // Check that the first item completes the entering cardified state animation.
+  EXPECT_TRUE(item_view->layer()->GetAnimator()->is_animating());
+  WaitForItemLayerAnimations();
+  EXPECT_FALSE(item_view->layer()->GetAnimator()->is_animating());
+
+  BeginExitingCardifiedState();
+
+  // With the item view animating from its completed cardified position, to the
+  // non-cardified position, check that the layer transform is not identity.
+  EXPECT_TRUE(item_view->layer()->GetAnimator()->is_animating());
+  EXPECT_FALSE(item_view->layer()->transform().IsIdentity());
+
+  WaitForItemLayerAnimations();
+  EXPECT_FALSE(item_view->layer());
+
+  BeginEnteringCardifiedState();
+  // Exit cardified state, without waiting for the enter animation to complete.
+  BeginExitingCardifiedState();
+
+  // With the item view animating from its current position at the start of the
+  // begin cardified state, to its non-cardified position, the layer transform
+  // should be the identity transform, indicating a smoothly interrupted
+  // animation.
+  EXPECT_TRUE(item_view->layer()->GetAnimator()->is_animating());
+  EXPECT_TRUE(item_view->layer()->transform().IsIdentity());
+
+  WaitForItemLayerAnimations();
+  EXPECT_FALSE(item_view->layer());
 }
 
 }  // namespace ash

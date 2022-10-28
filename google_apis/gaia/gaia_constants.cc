@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -163,6 +163,10 @@ const char kPhotosModuleImageOAuth2Scope[] =
 
 // OAuth 2 scope for the Discover feed.
 const char kFeedOAuth2Scope[] = "https://www.googleapis.com/auth/googlenow";
+
+// OAuth 2 scope for the k-Anonymity Service API.
+const char kKAnonymityServiceOAuth2Scope[] =
+    "https://www.googleapis.com/auth/chromekanonymity";
 
 // Used to mint uber auth tokens when needed.
 const char kGaiaSid[] = "sid";

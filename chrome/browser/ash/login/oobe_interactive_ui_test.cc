@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -919,10 +919,9 @@ class OobeZeroTouchInteractiveUITest : public OobeInteractiveUITest {
     AttestationClient::Get()
         ->GetTestInterface()
         ->AllowlistSignSimpleChallengeKey(
-            /*username=*/"", attestation::GetKeyNameForProfile(
-                                 chromeos::attestation::
-                                     PROFILE_ENTERPRISE_ENROLLMENT_CERTIFICATE,
-                                 ""));
+            /*username=*/"",
+            attestation::GetKeyNameForProfile(
+                attestation::PROFILE_ENTERPRISE_ENROLLMENT_CERTIFICATE, ""));
     OobeInteractiveUITest::SetUpOnMainThread();
     policy_test_server_mixin_.ConfigureFakeStatisticsForZeroTouch(
         &fake_statistics_provider_);

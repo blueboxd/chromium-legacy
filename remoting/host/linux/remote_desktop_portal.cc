@@ -42,16 +42,16 @@ RemoteDesktopPortal::RemoteDesktopPortal(
     webrtc::ScreenCastPortal::PortalNotifier* notifier)
     : notifier_(notifier) {
   screencast_portal_ = std::make_unique<webrtc::ScreenCastPortal>(
-      webrtc::ScreenCastPortal::CaptureSourceType::kAnyScreenContent, this,
-      OnScreenCastPortalProxyRequested, OnSourcesRequestResponseSignal, this);
+      webrtc::CaptureType::kScreen, this, OnScreenCastPortalProxyRequested,
+      OnSourcesRequestResponseSignal, this);
   DETACH_FROM_SEQUENCE(sequence_checker_);
 }
 
 RemoteDesktopPortal::~RemoteDesktopPortal() {
-  Cleanup();
+  Stop();
 }
 
-void RemoteDesktopPortal::Cleanup() {
+void RemoteDesktopPortal::Stop() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (context_) {
     g_main_context_pop_thread_default(context_);
@@ -399,7 +399,7 @@ void RemoteDesktopPortal::OnPortalDone(RequestResponse result) {
   LOG(INFO) << "Remote desktop portal setup is done: "
             << webrtc::xdg_portal::RequestResponseToString(result);
   if (result != RequestResponse::kSuccess) {
-    Cleanup();
+    Stop();
   }
 }
 

@@ -1,4 +1,4 @@
-// Copyright 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -17,7 +17,6 @@
 #include "ash/components/arc/arc_prefs.h"
 #include "ash/components/arc/arc_util.h"
 #include "ash/components/arc/session/arc_bridge_service.h"
-#include "ash/components/geolocation/simple_geolocation_provider.h"
 #include "ash/components/settings/cros_settings_names.h"
 #include "ash/components/settings/cros_settings_provider.h"
 #include "ash/components/settings/timezone_settings.h"
@@ -82,7 +81,9 @@
 #include "chrome/browser/ash/login/screens/hid_detection_screen.h"
 #include "chrome/browser/ash/login/screens/kiosk_autolaunch_screen.h"
 #include "chrome/browser/ash/login/screens/kiosk_enable_screen.h"
+#include "chrome/browser/ash/login/screens/lacros_data_backward_migration_screen.h"
 #include "chrome/browser/ash/login/screens/lacros_data_migration_screen.h"
+#include "chrome/browser/ash/login/screens/local_state_error_screen.h"
 #include "chrome/browser/ash/login/screens/locale_switch_screen.h"
 #include "chrome/browser/ash/login/screens/management_transition_screen.h"
 #include "chrome/browser/ash/login/screens/marketing_opt_in_screen.h"
@@ -154,7 +155,9 @@
 #include "chrome/browser/ui/webui/chromeos/login/hid_detection_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/kiosk_autolaunch_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/kiosk_enable_screen_handler.h"
+#include "chrome/browser/ui/webui/chromeos/login/lacros_data_backward_migration_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/lacros_data_migration_screen_handler.h"
+#include "chrome/browser/ui/webui/chromeos/login/local_state_error_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/locale_switch_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/management_transition_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/marketing_opt_in_screen_handler.h"
@@ -189,6 +192,7 @@
 #include "chromeos/ash/components/audio/cras_audio_handler.h"
 #include "chromeos/ash/components/dbus/session_manager/session_manager_client.h"
 #include "chromeos/ash/components/dbus/update_engine/update_engine_client.h"
+#include "chromeos/ash/components/geolocation/simple_geolocation_provider.h"
 #include "chromeos/ash/components/network/network_handler.h"
 #include "chromeos/ash/components/network/network_handler_callbacks.h"
 #include "chromeos/ash/components/network/network_state.h"
@@ -267,6 +271,7 @@ const StaticOobeScreenId kScreensWithHiddenStatusArea[] = {
     chromeos::ManagementTransitionScreenView::kScreenId,
     chromeos::TpmErrorView::kScreenId,
     chromeos::WrongHWIDScreenView::kScreenId,
+    chromeos::LocalStateErrorScreenView::kScreenId,
 };
 
 bool IsResumableOobeScreen(OobeScreenId screen_id) {
@@ -361,8 +366,6 @@ OobeScreenId PrefToScreenId(const std::string& pref_value) {
 }
 
 bool IsGaiaPageDefaultsToSAML() {
-  if (!features::IsRedirectToDefaultIdPEnabled())
-    return false;
   int authentication_behavior = 0;
   bool authentication_behavior_set = CrosSettings::Get()->GetInteger(
       kLoginAuthenticationBehavior, &authentication_behavior);
@@ -584,7 +587,7 @@ WizardController::CreateScreens() {
   }
 
   append(std::make_unique<NetworkScreen>(
-      oobe_ui->GetView<NetworkScreenHandler>(),
+      oobe_ui->GetView<NetworkScreenHandler>()->AsWeakPtr(),
       base::BindRepeating(&WizardController::OnNetworkScreenExit,
                           weak_factory_.GetWeakPtr())));
   append(std::make_unique<EulaScreen>(
@@ -622,7 +625,7 @@ WizardController::CreateScreens() {
       base::BindRepeating(&WizardController::OnKioskEnableScreenExit,
                           weak_factory_.GetWeakPtr())));
   append(std::make_unique<KioskAutolaunchScreen>(
-      oobe_ui->GetView<KioskAutolaunchScreenHandler>(),
+      oobe_ui->GetView<KioskAutolaunchScreenHandler>()->AsWeakPtr(),
       base::BindRepeating(&WizardController::OnKioskAutolaunchScreenExit,
                           weak_factory_.GetWeakPtr())));
   append(std::make_unique<LocaleSwitchScreen>(
@@ -634,7 +637,7 @@ WizardController::CreateScreens() {
       base::BindRepeating(&WizardController::OnTermsOfServiceScreenExit,
                           weak_factory_.GetWeakPtr())));
   append(std::make_unique<SyncConsentScreen>(
-      oobe_ui->GetView<SyncConsentScreenHandler>(),
+      oobe_ui->GetView<SyncConsentScreenHandler>()->AsWeakPtr(),
       base::BindRepeating(&WizardController::OnSyncConsentScreenExit,
                           weak_factory_.GetWeakPtr())));
   append(std::make_unique<ArcTermsOfServiceScreen>(
@@ -655,10 +658,15 @@ WizardController::CreateScreens() {
                           weak_factory_.GetWeakPtr())));
   append(std::make_unique<LacrosDataMigrationScreen>(
       oobe_ui->GetView<LacrosDataMigrationScreenHandler>()));
+  append(std::make_unique<LacrosDataBackwardMigrationScreen>(
+      oobe_ui->GetView<LacrosDataBackwardMigrationScreenHandler>()
+          ->AsWeakPtr()));
+  append(std::make_unique<LocalStateErrorScreen>(
+      oobe_ui->GetView<LocalStateErrorScreenHandler>()->AsWeakPtr()));
 
   if (HIDDetectionScreen::CanShowScreen()) {
     append(std::make_unique<HIDDetectionScreen>(
-        oobe_ui->GetView<HIDDetectionScreenHandler>(),
+        oobe_ui->GetView<HIDDetectionScreenHandler>()->AsWeakPtr(),
         base::BindRepeating(&WizardController::OnHidDetectionScreenExit,
                             weak_factory_.GetWeakPtr())));
   }
@@ -773,7 +781,7 @@ WizardController::CreateScreens() {
 
   if (chromeos::features::IsOobeConsolidatedConsentEnabled()) {
     append(std::make_unique<ConsolidatedConsentScreen>(
-        oobe_ui->GetView<ConsolidatedConsentScreenHandler>(),
+        oobe_ui->GetView<ConsolidatedConsentScreenHandler>()->AsWeakPtr(),
         base::BindRepeating(&WizardController::OnConsolidatedConsentScreenExit,
                             weak_factory_.GetWeakPtr())));
 
@@ -796,7 +804,7 @@ WizardController::CreateScreens() {
 
   if (switches::IsRevenBranding()) {
     append(std::make_unique<HWDataCollectionScreen>(
-        oobe_ui->GetView<HWDataCollectionScreenHandler>(),
+        oobe_ui->GetView<HWDataCollectionScreenHandler>()->AsWeakPtr(),
         base::BindRepeating(&WizardController::OnHWDataCollectionScreenExit,
                             weak_factory_.GetWeakPtr())));
   }
@@ -1046,6 +1054,10 @@ void WizardController::ShowActiveDirectoryPasswordChangeScreen(
 
 void WizardController::ShowLacrosDataMigrationScreen() {
   SetCurrentScreen(GetScreen(LacrosDataMigrationScreenView::kScreenId));
+}
+
+void WizardController::ShowLacrosDataBackwardMigrationScreen() {
+  SetCurrentScreen(GetScreen(LacrosDataBackwardMigrationScreenView::kScreenId));
 }
 
 void WizardController::ShowGuestTosScreen() {
@@ -1543,12 +1555,8 @@ void WizardController::OnEnrollmentScreenExit(EnrollmentScreen::Result result) {
     case EnrollmentScreen::Result::BACK:
     case EnrollmentScreen::Result::SKIPPED_FOR_TESTS:
       PerformOOBECompletedActions();
-      if (prescribed_enrollment_config_.is_forced()) {
-        LOG(WARNING) << "User trying to skip enrollment screen";
-        ShowPackagedLicenseScreen();
-      } else {
-        ShowLoginScreen();
-      }
+      DCHECK(!prescribed_enrollment_config_.is_forced());
+      ShowLoginScreen();
       break;
     case EnrollmentScreen::Result::TPM_ERROR:
       DCHECK(switches::IsTpmDynamic());
@@ -1898,9 +1906,11 @@ void WizardController::OnOobeFlowFinished() {
 
   // Launch browser and delete login host controller.
   content::GetUIThreadTaskRunner({})->PostTask(
-      FROM_HERE, base::BindOnce(&UserSessionManager::DoBrowserLaunch,
-                                UserSessionManager::GetInstance()->AsWeakPtr(),
-                                ProfileManager::GetActiveUserProfile()));
+      FROM_HERE,
+      base::BindOnce(
+          &UserSessionManager::DoBrowserLaunch,
+          UserSessionManager::GetInstance()->GetUserSessionManagerAsWeakPtr(),
+          ProfileManager::GetActiveUserProfile()));
 }
 
 void WizardController::OnDeviceDisabledChecked(bool device_disabled) {
@@ -1972,6 +1982,46 @@ void WizardController::StartTimezoneResolve() {
     return;
   }
 
+  net::PartialNetworkTrafficAnnotationTag partial_traffic_annotation =
+      net::DefinePartialNetworkTrafficAnnotation(
+          "wizard_controller", "simple_geolocation_request", R"(
+          semantics {
+            sender: "Wizard Controller"
+            description:
+              "Determine the user's timezone based on their geolocation. "
+              "Wizard controller will use the default geolocation API "
+              "(https://www.googleapis.com/geolocation/v1/geolocate) "
+              "to determine approximate device location based on source "
+              "IP address which will later be used to query device time zone."
+            trigger:
+              "Wizard controller will trigger this API after login for screens "
+              "with region-specific content."
+            data:
+              "No wifi access point or mobile network information will be sent "
+              "with this request."
+            destination: GOOGLE_OWNED_SERVICE
+          }
+          policy {
+            cookies_allowed: NO
+            setting:
+              "A user can enable or disabled automatic timezone detection in "
+              "Chrome OS settings under 'Advanced' -> 'Date and Time' -> "
+              "'Timezone' by specifying a fixed timezone under 'Choose from "
+              "list' if the timezone resolver is not configured by policy. On "
+              "the signin screen this resolver is controlled by the "
+              "ResolveDeviceTimezoneByGeolocationMethod browser setting."
+            policy_exception_justification:
+              "You can disable this request by setting the "
+              "SystemTimezoneAutomaticDetection policy to 'Never auto-detect "
+              "timezone'."
+          # TODO(b/210911671): Add the following policies once they are
+          # supported.
+          # chrome_policy {
+          #   SystemTimezone {
+          #     AutomaticTimezoneDetectionType: DISABLED
+          #   }
+          # }
+          })");
   auto& testing_factory = GetSharedURLLoaderFactoryForTesting();
   geolocation_provider_ = std::make_unique<SimpleGeolocationProvider>(
       testing_factory ? testing_factory
@@ -1980,7 +2030,7 @@ void WizardController::StartTimezoneResolve() {
   geolocation_provider_->RequestGeolocation(
       base::Seconds(kResolveTimeZoneTimeoutSeconds),
       false /* send_wifi_geolocation_data */,
-      false /* send_cellular_geolocation_data */,
+      false /* send_cellular_geolocation_data */, partial_traffic_annotation,
       base::BindOnce(&WizardController::OnLocationResolved,
                      weak_factory_.GetWeakPtr()));
 }
@@ -2101,18 +2151,16 @@ void WizardController::OnHIDScreenNecessityCheck(bool screen_needed) {
 }
 
 void WizardController::UpdateOobeConfiguration() {
-  wizard_context_->configuration = base::Value(base::Value::Type::DICTIONARY);
-  configuration::FilterConfiguration(
-      OobeConfiguration::Get()->GetConfiguration(),
-      configuration::ConfigurationHandlerSide::HANDLER_CPP,
-      wizard_context_->configuration);
-  auto* requisition_value = wizard_context_->configuration.FindKeyOfType(
-      configuration::kDeviceRequisition, base::Value::Type::STRING);
+  wizard_context_->configuration = configuration::FilterConfiguration(
+      OobeConfiguration::Get()->configuration(),
+      configuration::ConfigurationHandlerSide::HANDLER_CPP);
+  auto* requisition_value = wizard_context_->configuration.FindString(
+      configuration::kDeviceRequisition);
   if (requisition_value) {
     VLOG(1) << "Using Device Requisition from configuration"
-            << requisition_value->GetString();
+            << *requisition_value;
     policy::EnrollmentRequisitionManager::SetDeviceRequisition(
-        requisition_value->GetString());
+        *requisition_value);
   } else if (policy::EnrollmentRequisitionManager::IsMeetDevice()) {
     VLOG(1)
         << "Using default Device Requisition value for CFM build configuration"
@@ -2121,15 +2169,14 @@ void WizardController::UpdateOobeConfiguration() {
         policy::EnrollmentRequisitionManager::kRemoraRequisition);
   }
 
-  auto* network_config_value = wizard_context_->configuration.FindKeyOfType(
-      configuration::kNetworkConfig, base::Value::Type::STRING);
-  if (network_config_value) {
-    std::string network_config = network_config_value->GetString();
+  auto* network_config =
+      wizard_context_->configuration.FindString(configuration::kNetworkConfig);
+  if (network_config) {
     auto rollback_network_config = std::make_unique<mojo::Remote<
         chromeos::rollback_network_config::mojom::RollbackNetworkConfig>>();
     rollback_network_config::BindToInProcessInstance(
         rollback_network_config->BindNewPipeAndPassReceiver());
-    rollback_network_config->get()->RollbackConfigImport(network_config,
+    rollback_network_config->get()->RollbackConfigImport(*network_config,
                                                          base::DoNothing());
   }
 }
@@ -2217,6 +2264,8 @@ void WizardController::AdvanceToScreen(OobeScreenId screen_id) {
     ShowManagementTransitionScreen();
   } else if (screen_id == LacrosDataMigrationScreenView::kScreenId) {
     ShowLacrosDataMigrationScreen();
+  } else if (screen_id == LacrosDataBackwardMigrationScreenView::kScreenId) {
+    ShowLacrosDataBackwardMigrationScreen();
   } else if (screen_id == GuestTosScreenView::kScreenId) {
     ShowGuestTosScreen();
   } else if (screen_id == ConsolidatedConsentScreenView::kScreenId) {
@@ -2237,7 +2286,8 @@ void WizardController::AdvanceToScreen(OobeScreenId screen_id) {
              screen_id == HWDataCollectionView::kScreenId ||
              screen_id == SmartPrivacyProtectionView::kScreenId ||
              screen_id == ThemeSelectionScreenView::kScreenId ||
-             screen_id == SamlConfirmPasswordView::kScreenId) {
+             screen_id == SamlConfirmPasswordView::kScreenId ||
+             screen_id == LocalStateErrorScreenView::kScreenId) {
     SetCurrentScreen(GetScreen(screen_id));
   } else {
     NOTREACHED();
@@ -2265,10 +2315,6 @@ void WizardController::SimulateDemoModeSetupForTesting(
     demo_setup_controller_ = std::make_unique<DemoSetupController>();
   if (demo_config.has_value())
     demo_setup_controller_->set_demo_config(*demo_config);
-}
-
-void WizardController::ShowErrorScreen() {
-  SetCurrentScreen(GetScreen(ErrorScreenView::kScreenId));
 }
 
 void WizardController::OnAccessibilityStatusChanged(
@@ -2326,9 +2372,7 @@ void WizardController::AutoLaunchKioskApp(KioskAppType app_type) {
   if (status == CrosSettingsProvider::PERMANENTLY_UNTRUSTED) {
     // If the `cros_settings_` are permanently untrusted, show an error message
     // and refuse to auto-launch the kiosk app.
-    GetErrorScreen()->SetUIState(NetworkError::UI_STATE_LOCAL_STATE_ERROR);
-    GetLoginDisplayHost()->SetStatusAreaVisible(false);
-    ShowErrorScreen();
+    AdvanceToScreen(LocalStateErrorScreenView::kScreenId);
     return;
   }
 
@@ -2401,9 +2445,7 @@ void WizardController::OnLocalStateInitialized(bool /* succeeded */) {
       PrefService::INITIALIZATION_STATUS_ERROR) {
     return;
   }
-  GetErrorScreen()->SetUIState(NetworkError::UI_STATE_LOCAL_STATE_ERROR);
-  GetLoginDisplayHost()->SetStatusAreaVisible(false);
-  ShowErrorScreen();
+  AdvanceToScreen(LocalStateErrorScreenView::kScreenId);
 }
 
 void WizardController::PrepareFirstRunPrefs() {
@@ -2569,7 +2611,7 @@ void WizardController::MaybeTakeTPMOwnership() {
     return;
 
   DCHECK(chromeos::features::IsOobeConsolidatedConsentEnabled());
-  TpmManagerClient::Get()->TakeOwnership(::tpm_manager::TakeOwnershipRequest(),
-                                         base::DoNothing());
+  chromeos::TpmManagerClient::Get()->TakeOwnership(
+      ::tpm_manager::TakeOwnershipRequest(), base::DoNothing());
 }
 }  // namespace ash

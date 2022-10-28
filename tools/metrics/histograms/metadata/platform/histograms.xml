@@ -118,7 +118,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Platform.Chaps.ReinitializingToken"
-    enum="ChapsReinitializingToken" expires_after="2022-12-18">
+    enum="ChapsReinitializingToken" expires_after="2023-02-19">
   <owner>chenyian@google.com</owner>
   <owner>cros-hwsec-userland-eng+uma@google.com</owner>
   <summary>
@@ -127,7 +127,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Platform.Chaps.TPMAvailability" enum="ChapsTPMAvailability"
-    expires_after="2022-12-18">
+    expires_after="2023-02-19">
   <owner>chenyian@google.com</owner>
   <owner>cros-hwsec-userland-eng+uma@google.com</owner>
   <summary>Each sample is the TPM Availability status.</summary>
@@ -297,6 +297,58 @@ chromium-metrics-reviews@google.com.
   <summary>Result of a detachable base RW firmware update.</summary>
 </histogram>
 
+<histogram name="Platform.Discod.AutoWbBwUtilization" units="%"
+    expires_after="2023-09-01">
+  <owner>dlunev@chromium.org</owner>
+  <owner>chromeos-storage@google.com</owner>
+  <summary>
+    Emits when io-burst-triggered Write Boost expires. Specifies how well the
+    Write Boost is utilized, i.e. amount of cycles with bandwidth over trigger
+    threshold divided by total amount of cycles Write Boost was enabled.
+  </summary>
+</histogram>
+
+<histogram name="Platform.Discod.AutoWbOnCycles" units="cycles"
+    expires_after="2023-09-01">
+  <owner>dlunev@chromium.org</owner>
+  <owner>chromeos-storage@google.com</owner>
+  <summary>
+    Emits when io-burst-triggered Write Boost expires. Specifies length of
+    io-burst-triggered Write Booster period.
+  </summary>
+</histogram>
+
+<histogram name="Platform.Discod.BurstResult" enum="DiscodBurstResult"
+    expires_after="2023-09-01">
+  <owner>dlunev@chromium.org</owner>
+  <owner>chromeos-storage@google.com</owner>
+  <summary>
+    Emits when the io-burst ends or when the burst triggers WriteBoost.
+    Specifies if the burst resulted in enabling Write Booster.
+  </summary>
+</histogram>
+
+<histogram name="Platform.Discod.ExplicitWbBwUtilization" units="%"
+    expires_after="2023-09-01">
+  <owner>dlunev@chromium.org</owner>
+  <owner>chromeos-storage@google.com</owner>
+  <summary>
+    Emits when application-triggered Write Boost expires. Specifies how well the
+    Write Boost is utilized, i.e. amount of cycles with bandwidth over trigger
+    threshold divided by total amount of cycles Write Boost was enabled.
+  </summary>
+</histogram>
+
+<histogram name="Platform.Discod.ExplicitWbOnCycles" units="cycles"
+    expires_after="2023-09-01">
+  <owner>dlunev@chromium.org</owner>
+  <owner>chromeos-storage@google.com</owner>
+  <summary>
+    Emits when applications-triggered Write Boost expires. Specifies length of
+    application-triggered Write Booster period.
+  </summary>
+</histogram>
+
 <histogram name="Platform.DiskUsage.NumUserHomeDirectories"
     units="home directories" expires_after="2023-02-12">
   <owner>achuith@chromium.org</owner>
@@ -364,8 +416,9 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Platform.Emmc.LifeUsed" enum="EmmcLifeUsed"
-    expires_after="2023-02-12">
+    expires_after="2023-09-12">
   <owner>gwendal@google.com</owner>
+  <owner>chromeos-storage@google.com</owner>
   <summary>
     eMMC [5.0] Device lifetime estimation for flash. This field provides an
     estimated indication about the device lifetime that is reflected by the
@@ -375,8 +428,9 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Platform.FileSystem.ErrorCount" units="errors"
-    expires_after="2022-10-01">
+    expires_after="2023-09-01">
   <owner>gwendal@google.com</owner>
+  <owner>chromeos-storage@google.com</owner>
   <summary>
     Number of file system errors, as reported by dumpe2fs &quot;FS Error
     count&quot; field. Reported once per boot.
@@ -384,8 +438,9 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Platform.FileSystem.FsckNeeded" enum="Boolean"
-    expires_after="2022-10-01">
+    expires_after="2023-09-01">
   <owner>gwendal@google.com</owner>
+  <owner>chromeos-storage@google.com</owner>
   <summary>
     True when kernel reports that the file system needs deep recovery. File
     system has corruption the kernel can not fix by itself. Reported once per
@@ -394,8 +449,9 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Platform.FileSystem.RecoveryNeeded" enum="Boolean"
-    expires_after="2022-10-01">
+    expires_after="2023-09-01">
   <owner>gwendal@google.com</owner>
+  <owner>chromeos-storage@google.com</owner>
   <summary>
     True when kernel reports that the file system needed recovery at boot. It
     indicates the filesytem was not properly unmounted, but was recovered.
@@ -596,6 +652,19 @@ chromium-metrics-reviews@google.com.
   <summary>
     The size in KiB of the hibernate image we wrote on ChromeOS devices.
     Reported at hibernate.
+  </summary>
+</histogram>
+
+<histogram name="Platform.Hibernate.LoginToResumeReady" units="ms"
+    expires_after="2023-09-10">
+  <owner>asavery@chromium.org</owner>
+  <owner>evgreen@chromium.org</owner>
+  <summary>
+    The time between when hiberman receives the request to resume, and when
+    resume is ready to launch. This represents an approximation of how long the
+    user had to wait for a hibernate resume to occur. Recorded when resume is
+    ready, and reported when hiberman flushes metrics at the completion of
+    resume.
   </summary>
 </histogram>
 
@@ -923,8 +992,8 @@ chromium-metrics-reviews@google.com.
   <owner>cros-reporting-team@google.com</owner>
   <summary>
     The amount of disk storage that the Missive daemon has been using for
-    storing encrypted records. This is reported once every 10 minutes and only
-    if the Missive daemon is running.
+    storing encrypted records. This is reported once every hour and only if the
+    Missive daemon is running.
   </summary>
 </histogram>
 
@@ -991,7 +1060,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Platform.MountEncrypted.EncryptionKeyStatus"
-    enum="MountEncryptedEncryptionKeyStatus" expires_after="2023-01-01">
+    enum="MountEncryptedEncryptionKeyStatus" expires_after="2023-03-05">
   <owner>apronin@chromium.org</owner>
   <owner>mnissler@chromium.org</owner>
   <owner>cros-hwsec+uma@chromium.org</owner>
@@ -1003,7 +1072,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Platform.MountEncrypted.SystemKeyStatus"
-    enum="MountEncryptedSystemKeyStatus" expires_after="2023-01-01">
+    enum="MountEncryptedSystemKeyStatus" expires_after="2023-03-05">
   <owner>apronin@chromium.org</owner>
   <owner>mnissler@chromium.org</owner>
   <owner>cros-hwsec+uma@chromium.org</owner>
@@ -1043,8 +1112,9 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Platform.ReadSectorsLong" units="sectors per second"
-    expires_after="2022-10-01">
+    expires_after="2023-09-01">
   <owner>gwendal@google.com</owner>
+  <owner>chromeos-storage@google.com</owner>
   <summary>
     Number of disk sectors per second read by Chrome OS in a long interval
     (currently 30s)
@@ -1052,8 +1122,9 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Platform.ReadSectorsShort" units="sectors per second"
-    expires_after="2022-12-04">
+    expires_after="2023-09-04">
   <owner>gwendal@google.com</owner>
+  <owner>chromeos-storage@google.com</owner>
   <summary>
     Number of disk sectors per second read by Chrome OS in a short interval
     (currently 1s, sampled every 30s)
@@ -1061,9 +1132,10 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Platform.SATA.AvailableReservedSpace" units="%"
-    expires_after="2022-10-21">
+    expires_after="2023-09-08">
   <owner>asavery@chromium.org</owner>
   <owner>gwendal@chromium.org</owner>
+  <owner>chromeos-storage@google.com</owner>
   <summary>
     The remaining reserved space (SMART 232). The value counts down typically
     from 100 to 0, sent at boot.
@@ -1071,9 +1143,10 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Platform.SATA.LogicalSectorsRead" units="512-byte sectors"
-    expires_after="2022-10-21">
+    expires_after="2023-09-08">
   <owner>asavery@chromium.org</owner>
   <owner>gwendal@chromium.org</owner>
+  <owner>chromeos-storage@google.com</owner>
   <summary>
     The total number of 512-byte sectors written during the lifetime of the
     device, sent at boot.
@@ -1081,9 +1154,10 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Platform.SATA.LogicalSectorsWritten" units="512-byte sectors"
-    expires_after="2022-10-21">
+    expires_after="2023-09-08">
   <owner>asavery@chromium.org</owner>
   <owner>gwendal@chromium.org</owner>
+  <owner>chromeos-storage@google.com</owner>
   <summary>
     The total number of 512-byte sectors written during the lifetime of the
     device, sent at boot.
@@ -1091,9 +1165,10 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Platform.SATA.PercentageUsed" units="%"
-    expires_after="2022-12-25">
+    expires_after="2023-09-08">
   <owner>asavery@chromium.org</owner>
   <owner>gwendal@chromium.org</owner>
+  <owner>chromeos-storage@google.com</owner>
   <summary>
     Percentage Used Endurance Indicator. A value of 0 indicates a new device, a
     value of 100 indicates the device is at the end of its lifespan as projected
@@ -1103,14 +1178,16 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Platform.SmartTransferErrors" units="units"
-    expires_after="2030-07-08">
+    expires_after="2023-09-08">
   <owner>gwendal@google.com</owner>
+  <owner>chromeos-storage@google.com</owner>
   <summary>Disk communication errors (SMART 199), sent at boot.</summary>
 </histogram>
 
 <histogram name="Platform.SmartUncorrectableErrors" units="units"
-    expires_after="2030-07-08">
+    expires_after="2023-09-08">
   <owner>gwendal@google.com</owner>
+  <owner>chromeos-storage@google.com</owner>
   <summary>Uncorrectable disk errors (SMART 187), sent at boot.</summary>
 </histogram>
 
@@ -1131,25 +1208,28 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Platform.StatefulFormat" enum="StatefulFormat"
-    expires_after="2022-12-25">
+    expires_after="2023-09-25">
   <owner>sarthakkukreti@chromium.org</owner>
   <owner>gwendal@chromium.org</owner>
+  <owner>chromeos-storage@google.com</owner>
   <summary>Chrome OS stateful partition format. Sampled once per boot.</summary>
 </histogram>
 
 <histogram name="Platform.StatefulFreeSpace" units="MB"
-    expires_after="2022-10-21">
+    expires_after="2023-09-21">
   <owner>asavery@chromium.org</owner>
   <owner>gwendal@chromium.org</owner>
+  <owner>chromeos-storage@google.com</owner>
   <summary>
     Chrome OS stateful partition space free. Sampled once daily.
   </summary>
 </histogram>
 
 <histogram name="Platform.StatefulLifetimeWrites" units="GiB"
-    expires_after="2022-12-25">
+    expires_after="2023-02-26">
   <owner>asavery@chromium.org</owner>
   <owner>gwendal@chromium.org</owner>
+  <owner>chromeos-storage@google.com</owner>
   <summary>
     Chrome OS stateful partition lifetime writes. Sampled once daily.
   </summary>
@@ -1159,6 +1239,7 @@ chromium-metrics-reviews@google.com.
     expires_after="2022-10-21">
   <owner>asavery@chromium.org</owner>
   <owner>gwendal@chromium.org</owner>
+  <owner>chromeos-storage@google.com</owner>
   <summary>
     The amount of time in hours since the last trim when chromeos-trim triggers
     a trim for the stateful partition. The chromeos-trim script is run daily,
@@ -1172,6 +1253,7 @@ chromium-metrics-reviews@google.com.
     expires_after="2022-10-21">
   <owner>asavery@chromium.org</owner>
   <owner>gwendal@chromium.org</owner>
+  <owner>chromeos-storage@google.com</owner>
   <summary>
     The amount of data in the stateful partition that is erased when
     chromeos-trim triggers a trim. The chromeos-trim script is run daily, but a
@@ -1188,18 +1270,20 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Platform.StatefulUsedSpace" units="GB"
-    expires_after="2030-08-29">
+    expires_after="2023-09-29">
   <owner>asavery@chromium.org</owner>
   <owner>gwendal@chromium.org</owner>
+  <owner>chromeos-storage@google.com</owner>
   <summary>
     Chrome OS stateful partition space used. Sampled once daily.
   </summary>
 </histogram>
 
 <histogram name="Platform.StatefulWritesDaily" units="KiB"
-    expires_after="2022-12-25">
+    expires_after="2023-02-26">
   <owner>asavery@chromium.org</owner>
   <owner>gwendal@chromium.org</owner>
+  <owner>chromeos-storage@google.com</owner>
   <summary>
     Chrome OS stateful partition KiB writes per day. Sampled once daily.
   </summary>
@@ -1217,9 +1301,10 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Platform.Storage.Nvme.PercentageUsed" units="%"
-    expires_after="2022-12-25">
+    expires_after="2023-09-25">
   <owner>asavery@chromium.org</owner>
   <owner>gwendal@chromium.org</owner>
+  <owner>chromeos-storage@google.com</owner>
   <summary>
     Vendor specific estimate of the percentage of NVM subsystem life used based
     on the actual usage and the manufacturer's prediction of NVM life. A value
@@ -1230,9 +1315,10 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Platform.Storage.Ufs.LifeUsed" enum="EmmcLifeUsed"
-    expires_after="2022-10-21">
+    expires_after="2023-09-21">
   <owner>asavery@chromium.org</owner>
   <owner>gwendal@chromium.org</owner>
+  <owner>chromeos-storage@google.com</owner>
   <summary>
     UFS Device life time estimation. This field provides an indication of the
     device life time based on the amount of performed program/erase cycles. The
@@ -1240,9 +1326,9 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Platform.SwapInDaily" units="pages" expires_after="2022-12-25">
+<histogram name="Platform.SwapInDaily" units="pages" expires_after="2023-02-26">
   <owner>asavery@chromium.org</owner>
-  <owner>chromeos-storage@google.com</owner>
+  <owner>chromeos-memory@google.com</owner>
   <summary>Number of pages swapped IN over a day, sampled daily.</summary>
 </histogram>
 
@@ -1265,9 +1351,9 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Platform.SwapOutDaily" units="pages"
-    expires_after="2022-12-25">
+    expires_after="2023-02-26">
   <owner>asavery@chromium.org</owner>
-  <owner>chromeos-storage@google.com</owner>
+  <owner>chromeos-memory@google.com</owner>
   <summary>Number of pages swapped OUT over a day, sampled daily.</summary>
 </histogram>
 
@@ -1290,7 +1376,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Platform.TPM.AuthErrorCode" enum="TPMResultCodeEnum"
-    expires_after="2023-01-01">
+    expires_after="2023-03-05">
   <owner>yich@google.com</owner>
   <owner>cros-hwsec-userland-eng+uma@google.com</owner>
   <summary>
@@ -1321,7 +1407,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Platform.TPM.DictionaryAttackCounter" units="units"
-    expires_after="2023-01-01">
+    expires_after="2023-03-05">
   <owner>cylai@chromium.org</owner>
   <owner>cros-hwsec-userland-eng+uma@google.com</owner>
   <summary>
@@ -1331,7 +1417,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Platform.TPM.DictionaryAttackResetStatus"
-    enum="CrosTPMDictionaryAttackResetStatusEnum" expires_after="2022-12-18">
+    enum="CrosTPMDictionaryAttackResetStatusEnum" expires_after="2023-02-19">
   <owner>cylai@chromium.org</owner>
   <owner>cros-hwsec-userland-eng+uma@google.com</owner>
   <summary>
@@ -1341,7 +1427,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Platform.TPM.ErrorCode" enum="TPMResultCodeEnum"
-    expires_after="2023-01-01">
+    expires_after="2023-03-05">
   <owner>yich@google.com</owner>
   <owner>cros-hwsec-userland-eng+uma@google.com</owner>
   <summary>
@@ -1387,6 +1473,16 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="Platform.TPM.PowerWashResult" enum="TPMPowerWashResult"
+    expires_after="2023-02-18">
+  <owner>chenyian@google.com</owner>
+  <owner>cros-hwsec-userland-eng+uma@google.com</owner>
+  <summary>
+    Report if TPM clear is success or not after a power wash. TPM should not be
+    owned after the power wash.
+  </summary>
+</histogram>
+
 <histogram name="Platform.TPM.TimeToTakeOwnership" units="ms"
     expires_after="2023-02-12">
   <owner>yich@google.com</owner>
@@ -1411,7 +1507,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Platform.TPM.VersionFingerprint" enum="TPMVersionFingerprint"
-    expires_after="2022-12-25">
+    expires_after="2023-02-26">
   <owner>mnissler@chromium.org</owner>
   <owner>cros-hwsec+uma@chromium.org</owner>
   <summary>
@@ -1435,14 +1531,14 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Platform.Trunks.FirstTimeoutWritingCommand"
-    enum="TPMCommandCode" expires_after="2022-12-18">
+    enum="TPMCommandCode" expires_after="2023-02-19">
   <owner>chingkang@chromium.org</owner>
   <owner>cros-hwsec+uma@chromium.org</owner>
   <summary>Command code of the first timeout writing TPM command</summary>
 </histogram>
 
 <histogram name="Platform.Trunks.FirstTimeoutWritingTime" units="seconds"
-    expires_after="2022-12-11">
+    expires_after="2023-03-05">
   <owner>chingkang@chromium.org</owner>
   <owner>cros-hwsec+uma@chromium.org</owner>
   <summary>System uptime when first timeout writing TPM command occurs</summary>
@@ -1459,7 +1555,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Platform.U2F.Command" enum="Cr50U2FCommands"
-    expires_after="2022-12-11">
+    expires_after="2023-02-19">
   <owner>cylai@chromium.org</owner>
   <owner>cros-hwsec-userland-eng+uma@google.com</owner>
   <summary>Records occurrences of U2F commands sent to cr50.</summary>
@@ -1569,6 +1665,7 @@ chromium-metrics-reviews@google.com.
 <histogram name="Platform.WriteSectorsLong" units="sectors per second"
     expires_after="2022-10-01">
   <owner>gwendal@google.com</owner>
+  <owner>chromeos-storage@google.com</owner>
   <summary>
     Number of disk sectors per second written by Chrome OS in a long interval
     (currently 30s)
@@ -1578,6 +1675,7 @@ chromium-metrics-reviews@google.com.
 <histogram name="Platform.WriteSectorsShort" units="sectors per second"
     expires_after="2022-12-04">
   <owner>gwendal@google.com</owner>
+  <owner>chromeos-storage@google.com</owner>
   <summary>
     Number of disk sectors per second written by Chrome OS in a short interval
     (currently 1s, sampled every 30s)
@@ -1761,28 +1859,6 @@ chromium-metrics-reviews@google.com.
   <summary>
     Errors returned by CreateFile on Windows that PlatformFileError doesn't yet
     support.
-  </summary>
-</histogram>
-
-<histogram name="PlatformThread.Mac.AttemptedRealtimePeriod"
-    units="microseconds" expires_after="2022-08-28">
-  <owner>olka@chromium.org</owner>
-  <owner>handellm@chromium.org</owner>
-  <summary>
-    Realtime period the thread is attempted to be configured with. Zero means
-    the default empirical configuration is used. Reported only on Mac.
-  </summary>
-</histogram>
-
-<histogram name="PlatformThread.Mac.SucceededRealtimePeriod"
-    units="microseconds" expires_after="2022-09-11">
-  <owner>olka@chromium.org</owner>
-  <owner>handellm@chromium.org</owner>
-  <summary>
-    Realtime thread period logged if it was applied successfully. Zero means the
-    default empirical configuration is used. Comparison with
-    PlatformThread.Mac.AttemptedRealtimePeriod may point to problematic
-    configurations. Reported only on Mac.
   </summary>
 </histogram>
 

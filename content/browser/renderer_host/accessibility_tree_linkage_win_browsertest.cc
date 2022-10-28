@@ -8,6 +8,7 @@
 #include "content/browser/renderer_host/legacy_render_widget_host_win.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_view_aura.h"
+#include "content/public/browser/browser_accessibility_state.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/content_browser_test.h"
@@ -72,6 +73,8 @@ class AccessibilityTreeLinkageWinBrowserTest
 };
 
 IN_PROC_BROWSER_TEST_P(AccessibilityTreeLinkageWinBrowserTest, Linkage) {
+  testing::ScopedContentAXModeSetter ax_mode_setter(ui::kAXModeBasic.mode());
+
   EXPECT_TRUE(NavigateToURL(shell(), GURL(url::kAboutBlankURL)));
 
   GetParentWindow()->SetProperty(
@@ -90,7 +93,7 @@ IN_PROC_BROWSER_TEST_P(AccessibilityTreeLinkageWinBrowserTest, Linkage) {
   EXPECT_EQ(native_view_accessible, GetView()
                                         ->host()
                                         ->GetRootBrowserAccessibilityManager()
-                                        ->GetRoot()
+                                        ->GetBrowserAccessibilityRoot()
                                         ->GetNativeViewAccessible());
 
   // Used by LegacyRenderWidgetHostHWND to find the parent of the UIA fragment
@@ -115,6 +118,6 @@ IN_PROC_BROWSER_TEST_P(AccessibilityTreeLinkageWinBrowserTest, Linkage) {
 
 INSTANTIATE_TEST_SUITE_P(All,
                          AccessibilityTreeLinkageWinBrowserTest,
-                         testing::ValuesIn(kTestParameters));
+                         ::testing::ValuesIn(kTestParameters));
 
 }  // namespace content

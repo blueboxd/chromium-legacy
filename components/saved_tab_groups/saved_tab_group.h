@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -57,11 +57,11 @@ class SavedTabGroup {
   SavedTabGroup& SetTitle(std::u16string title) {
     title_ = title;
     return *this;
-  };
+  }
   SavedTabGroup& SetColor(tab_groups::TabGroupColorId color) {
     color_ = color;
     return *this;
-  };
+  }
   SavedTabGroup& SetLocalGroupId(
       absl::optional<tab_groups::TabGroupId> tab_group_id) {
     tab_group_id_ = tab_group_id;

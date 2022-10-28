@@ -1,4 +1,4 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -30,6 +30,8 @@
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_animator.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
+#include "ui/compositor/test/layer_animation_stopped_waiter.h"
+#include "ui/compositor/test/test_utils.h"
 #include "ui/display/manager/display_manager.h"
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/widget/widget.h"
@@ -50,6 +52,19 @@ constexpr char kToastDismissedWithin7s[] =
 
 constexpr char kToastDismissedAfter7s[] =
     "Ash.NotifierFramework.Toast.Dismissed.After7s";
+
+// Wait for the layer animation to be completed.
+void WaitForAnimationEnded(ui::Layer* layer) {
+  ui::LayerAnimationStoppedWaiter animation_waiter;
+  animation_waiter.Wait(layer);
+
+  // Force a frame then wait, ensuring there is one more frame presented after
+  // animation finishes to allow animation throughput data to be passed from
+  // cc to ui.
+  ui::Compositor* compositor = layer->GetCompositor();
+  compositor->ScheduleFullRedraw();
+  EXPECT_TRUE(ui::WaitForNextFrameToBePresented(compositor));
+}
 
 }  // namespace
 
@@ -552,8 +567,9 @@ TEST_F(ToastManagerImplTest,
   // toast with another toast.
   ReplaceToast(id1, /*text=*/"TEXT1_updated2", ToastData::kInfiniteDuration);
 
-  // Wait until the first toast's closing animation has finished.
-  task_environment()->FastForwardBy(base::Seconds(1));
+  // Wait until the first toast's closing animation has finished. See
+  // crbug/1347919
+  WaitForAnimationEnded(GetCurrentWidget()->GetLayer());
 
   // Confirm that the most recent toast content is visible. The toast serial
   // should be different, indicating the original toast's timeout won't close
@@ -561,9 +577,10 @@ TEST_F(ToastManagerImplTest,
   EXPECT_EQ(u"TEXT1_updated2", GetCurrentText());
   EXPECT_EQ(2, GetToastSerial());
 
-  // Cancel the shown toast and wait for the animation to finish.
+  // Cancel the shown toast and wait for the animation to finish. See
+  // crbug/1347919.
   CancelToast(id1);
-  task_environment()->FastForwardBy(base::Seconds(2));
+  WaitForAnimationEnded(GetCurrentWidget()->GetLayer());
 
   // Confirm that the toast now showing corresponds with id2.
   EXPECT_EQ(u"TEXT2", GetCurrentText());

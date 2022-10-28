@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -55,7 +55,7 @@ class FakeServerProxy : public ServerProxy {
 class MockServerProxy : public FakeServerProxy {
  public:
   MockServerProxy();
-  virtual ~MockServerProxy();
+  ~MockServerProxy() override;
 
   void DeferToFake(bool result);
   MOCK_METHOD2(SendEnrollRequest, void(const std::string&, DataCallback));
@@ -82,7 +82,7 @@ class MockObserver {
 class MockAttestationFlow : public AttestationFlow {
  public:
   MockAttestationFlow();
-  virtual ~MockAttestationFlow();
+  ~MockAttestationFlow() override;
 
   MOCK_METHOD6(GetCertificate,
                void(AttestationCertificateProfile,

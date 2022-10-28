@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -653,17 +653,17 @@ bool AccessibilityBridge::UpdateAXTreeID(const ui::AXTreeID& tree_id) {
   auto old_tree_iter = ax_trees_.find(old_tree_id);
   if (old_tree_iter != ax_trees_.end()) {
     // This AXTree has changed its AXTreeID. Update the map with the new key.
-    auto data = std::move(old_tree_iter->second);
+    auto tree_data = std::move(old_tree_iter->second);
     ax_trees_.erase(old_tree_iter);
-    ax_trees_[tree_id] = std::move(data);
+    ax_trees_[tree_id] = std::move(tree_data);
 
     // If this tree is connected to a parent tree or is the parent tree of
     // another tree, also update its ID in the tree connections map.
     auto connected_tree_iter = tree_connections_.find(old_tree_id);
     if (connected_tree_iter != tree_connections_.end()) {
-      auto data = std::move(connected_tree_iter->second);
+      auto connected_tree_data = std::move(connected_tree_iter->second);
       tree_connections_.erase(connected_tree_iter);
-      tree_connections_[tree_id] = std::move(data);
+      tree_connections_[tree_id] = std::move(connected_tree_data);
       MaybeDisconnectTreeFromParentTree(ax_trees_[tree_id].get());
     }
     for (auto& kv : tree_connections_) {

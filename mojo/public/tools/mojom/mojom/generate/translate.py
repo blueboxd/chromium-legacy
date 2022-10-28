@@ -1,4 +1,4 @@
-# Copyright 2013 The Chromium Authors. All rights reserved.
+# Copyright 2013 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 """Convert parse tree to AST.
@@ -174,6 +174,7 @@ _EXTENSIBLE_ENUMS_MISSING_DEFAULT = (
     'x:arc.mojom.WebApkInstallResult',
     'x:ash.ime.mojom.InputFieldType',
     'x:ash.ime.mojom.PersonalizationMode',
+    'x:ash.language.mojom.FeatureId',
     'x:blink.mojom.ScrollRestorationType',
     'x:chrome_cleaner.mojom.PromptAcceptance',
     'x:chromeos.cdm.mojom.CdmKeyStatus',
@@ -191,7 +192,6 @@ _EXTENSIBLE_ENUMS_MISSING_DEFAULT = (
     'x:chromeos.cfm.mojom.LoggerState',
     'x:chromeos.cros_healthd.mojom.CryptoAlgorithm',
     'x:chromeos.cros_healthd.mojom.EncryptionState',
-    'x:chromeos.language.mojom.FeatureId',
     'x:chromeos.machine_learning.mojom.AnnotationUsecase',
     'x:chromeos.machine_learning.mojom.BuiltinModelId',
     'x:chromeos.machine_learning.mojom.CreateGraphExecutorResult',
@@ -236,8 +236,6 @@ _EXTENSIBLE_ENUMS_MISSING_DEFAULT = (
     'x:cros.mojom.CameraMetadataSectionStart',
     'x:cros.mojom.CameraMetadataTag',
     'x:cros.mojom.HalPixelFormat',
-    'x:crosapi.mojom.AccountAdditionResult.Status',
-    'x:crosapi.mojom.AccountType',
     'x:crosapi.mojom.AllowedPaths',
     'x:crosapi.mojom.BrowserAppInstanceType',
     'x:crosapi.mojom.CreationResult',
@@ -246,7 +244,6 @@ _EXTENSIBLE_ENUMS_MISSING_DEFAULT = (
     'x:crosapi.mojom.DlpRestrictionLevel',
     'x:crosapi.mojom.ExoImeSupport',
     'x:crosapi.mojom.FullscreenVisibility',
-    'x:crosapi.mojom.GoogleServiceAuthError.InvalidGaiaCredentialsReason',
     'x:crosapi.mojom.GoogleServiceAuthError.State',
     'x:crosapi.mojom.IsInstallableResult',
     'x:crosapi.mojom.KeyTag',

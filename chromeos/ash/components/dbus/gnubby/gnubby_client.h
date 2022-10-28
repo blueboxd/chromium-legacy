@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,7 +13,8 @@
 
 namespace ash {
 // GnubbyClient is used to communicate with the Gnubby service.
-class COMPONENT_EXPORT(ASH_DBUS_GNUBBY) GnubbyClient : public DBusClient {
+class COMPONENT_EXPORT(ASH_DBUS_GNUBBY) GnubbyClient
+    : public chromeos::DBusClient {
  public:
   // Interface for observing changes in Gnubby Client
   class Observer {

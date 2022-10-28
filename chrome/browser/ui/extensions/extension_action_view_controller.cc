@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -319,6 +319,15 @@ void ExtensionActionViewController::UpdateState() {
   view_delegate_->UpdateState();
 }
 
+void ExtensionActionViewController::UpdateHoverCard(
+    ToolbarActionView* action_view,
+    ToolbarActionHoverCardUpdateType update_type) {
+  if (!ExtensionIsValid())
+    return;
+
+  extensions_container_->UpdateToolbarActionHoverCard(action_view, update_type);
+}
+
 void ExtensionActionViewController::RegisterCommand() {
   if (!ExtensionIsValid())
     return;
@@ -371,6 +380,52 @@ bool ExtensionActionViewController::GetExtensionCommand(
   return command_service->GetExtensionActionCommand(
       extension_->id(), extension_action_->action_type(),
       CommandService::ACTIVE, command, nullptr);
+}
+
+ToolbarActionViewController::HoverCardState
+ExtensionActionViewController::GetHoverCardState(
+    content::WebContents* web_contents) const {
+  DCHECK(ExtensionIsValid());
+  DCHECK(web_contents);
+
+  url::Origin origin =
+      web_contents->GetPrimaryMainFrame()->GetLastCommittedOrigin();
+  extensions::PermissionsManager::UserSiteSetting site_setting =
+      extensions::PermissionsManager::Get(browser_->profile())
+          ->GetUserSiteSetting(origin);
+
+  // Compute hover card status based on:
+  // 1. Extension wants site access: user site settings takes precedence
+  // over the extension's site access.
+  // 2. Extension does not want access: if all extensions are blocked display
+  // such message because a) user could wrongly infer that an extension that
+  // does not want access has access if we only show the blocked message for
+  // extensions that want access; and b) it helps us work around tricky
+  // calculations where we get into collisions between withheld and denied
+  // permission. Otherwise, it should display "does not want access".
+  auto site_interaction = GetSiteInteraction(web_contents);
+  switch (site_interaction) {
+    case extensions::SitePermissionsHelper::SiteInteraction::kGranted:
+      return site_setting == extensions::PermissionsManager::UserSiteSetting::
+                                 kGrantAllExtensions
+                 ? HoverCardState::kAllExtensionsAllowed
+                 : HoverCardState::kExtensionHasAccess;
+
+    case extensions::SitePermissionsHelper::SiteInteraction::kWithheld:
+    case extensions::SitePermissionsHelper::SiteInteraction::kActiveTab:
+      return site_setting == extensions::PermissionsManager::UserSiteSetting::
+                                 kBlockAllExtensions
+                 ? HoverCardState::kAllExtensionsBlocked
+                 : HoverCardState::kExtensionRequestsAccess;
+
+    case extensions::SitePermissionsHelper::SiteInteraction::kNone:
+      // kNone site interaction includes extensions that don't want access when
+      // user site setting is "block all extensions".
+      return site_setting == extensions::PermissionsManager::UserSiteSetting::
+                                 kBlockAllExtensions
+                 ? HoverCardState::kAllExtensionsBlocked
+                 : HoverCardState::kExtensionDoesNotWantAccess;
+  }
 }
 
 bool ExtensionActionViewController::CanHandleAccelerators() const {

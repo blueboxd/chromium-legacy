@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,10 +9,13 @@
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/bluetooth/bluetooth_chooser_context_factory.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/content_settings/cookie_settings_factory.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/content_settings/page_specific_content_settings_delegate.h"
 #include "chrome/browser/permissions/permission_decision_auto_blocker_factory.h"
 #include "chrome/browser/permissions/permission_manager_factory.h"
+#include "chrome/browser/privacy_sandbox/privacy_sandbox_service.h"
+#include "chrome/browser/privacy_sandbox/privacy_sandbox_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/safe_browsing/chrome_password_protection_service.h"
 #include "chrome/browser/ssl/security_state_tab_helper.h"
@@ -37,10 +40,6 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_features.h"
 #include "url/origin.h"
-
-#if BUILDFLAG(FULL_SAFE_BROWSING)
-#include "chrome/browser/safe_browsing/chrome_password_protection_service.h"
-#endif
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "chrome/browser/ui/webui/settings/ash/app_management/app_management_uma.h"
@@ -165,6 +164,17 @@ permissions::PermissionResult ChromePageInfoDelegate::GetPermissionResult(
 }
 
 #if !BUILDFLAG(IS_ANDROID)
+void ChromePageInfoDelegate::FocusWebContents() {
+  Browser* browser = chrome::FindBrowserWithWebContents(web_contents_);
+  browser->ActivateContents(web_contents_);
+}
+
+absl::optional<std::u16string> ChromePageInfoDelegate::GetFpsOwner(
+    const GURL& site_url) {
+  return PrivacySandboxServiceFactory::GetForProfile(GetProfile())
+      ->GetFirstPartySetOwnerForDisplay(site_url);
+}
+
 bool ChromePageInfoDelegate::CreateInfoBarDelegate() {
   infobars::ContentInfoBarManager* infobar_manager =
       infobars::ContentInfoBarManager::FromWebContents(web_contents_);
@@ -173,6 +183,16 @@ bool ChromePageInfoDelegate::CreateInfoBarDelegate() {
     return true;
   }
   return false;
+}
+
+std::unique_ptr<content_settings::CookieControlsController>
+ChromePageInfoDelegate::CreateCookieControlsController() {
+  Profile* profile = GetProfile();
+  return std::make_unique<content_settings::CookieControlsController>(
+      CookieSettingsFactory::GetForProfile(profile),
+      profile->IsOffTheRecord()
+          ? CookieSettingsFactory::GetForProfile(profile->GetOriginalProfile())
+          : nullptr);
 }
 
 void ChromePageInfoDelegate::ShowSiteSettings(const GURL& site_url) {
@@ -188,12 +208,15 @@ void ChromePageInfoDelegate::ShowCookiesSettings() {
   chrome::ShowSettingsSubPage(browser, chrome::kCookieSettingsSubPage);
 }
 
-void ChromePageInfoDelegate::ShowAllSitesSettings() {
+void ChromePageInfoDelegate::ShowAllSitesSettingsFilteredByFpsOwner(
+    const std::u16string& fps_owner) {
   Browser* browser = chrome::FindBrowserWithWebContents(web_contents_);
-  chrome::ShowSettingsSubPage(browser, chrome::kAllSitesSettingsSubpage);
+  chrome::ShowAllSitesSettingsFilteredByFpsOwner(browser,
+                                                 base::UTF16ToUTF8(fps_owner));
 }
 
 void ChromePageInfoDelegate::OpenCookiesDialog() {
+  FocusWebContents();
   TabDialogs::FromWebContents(web_contents_)->ShowCollectedCookies();
 }
 
@@ -203,6 +226,7 @@ void ChromePageInfoDelegate::OpenCertificateDialog(
   DCHECK(certificate);
   DCHECK(top_window);
 
+  FocusWebContents();
   ShowCertificateViewer(web_contents_, top_window, certificate);
 }
 

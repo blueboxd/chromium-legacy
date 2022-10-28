@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,19 +13,17 @@
 #include "base/check.h"
 #include "base/i18n/number_formatting.h"
 #include "base/strings/string_number_conversions.h"
-#include "chromeos/services/bluetooth_config/public/cpp/cros_bluetooth_config_util.h"
+#include "chromeos/ash/services/bluetooth_config/public/cpp/cros_bluetooth_config_util.h"
 #include "mojo/public/cpp/bindings/clone_traits.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace ash {
-namespace {
-using chromeos::bluetooth_config::GetPairedDeviceName;
-using chromeos::bluetooth_config::mojom::BluetoothModificationState;
-using chromeos::bluetooth_config::mojom::BluetoothSystemPropertiesPtr;
-using chromeos::bluetooth_config::mojom::BluetoothSystemState;
-using chromeos::bluetooth_config::mojom::DeviceConnectionState;
-using chromeos::bluetooth_config::mojom::PairedBluetoothDeviceProperties;
-}  // namespace
+
+using bluetooth_config::GetPairedDeviceName;
+using bluetooth_config::mojom::BluetoothModificationState;
+using bluetooth_config::mojom::BluetoothSystemPropertiesPtr;
+using bluetooth_config::mojom::BluetoothSystemState;
+using bluetooth_config::mojom::DeviceConnectionState;
 
 BluetoothFeaturePodController::BluetoothFeaturePodController(
     UnifiedSystemTrayController* tray_controller)
@@ -71,7 +69,7 @@ SystemTrayItemUmaType BluetoothFeaturePodController::GetUmaType() const {
 BluetoothFeaturePodController::BluetoothDeviceNameAndBatteryInfo::
     BluetoothDeviceNameAndBatteryInfo(
         const std::u16string& device_name,
-        chromeos::bluetooth_config::mojom::DeviceBatteryInfoPtr battery_info)
+        bluetooth_config::mojom::DeviceBatteryInfoPtr battery_info)
     : device_name(device_name), battery_info(std::move(battery_info)) {}
 
 BluetoothFeaturePodController::BluetoothDeviceNameAndBatteryInfo::
@@ -192,8 +190,7 @@ void BluetoothFeaturePodController::UpdateButtonStateIfExists() {
   button_->SetEnabled(modification_state_ ==
                       BluetoothModificationState::kCanModifyBluetooth);
   button_->SetToggled(
-      ::chromeos::bluetooth_config::IsBluetoothEnabledOrEnabling(
-          system_state_));
+      bluetooth_config::IsBluetoothEnabledOrEnabling(system_state_));
   button_->SetVisible(true);
 
   button_->SetVectorIcon(ComputeButtonIcon());

@@ -1,4 +1,4 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -277,7 +277,7 @@ void DownloadDangerPromptViews::RunDone(Action action) {
             show_context_
                 ? ClientSafeBrowsingReportRequest::DANGEROUS_DOWNLOAD_BY_API
                 : ClientSafeBrowsingReportRequest::DANGEROUS_DOWNLOAD_RECOVERY;
-        SendSafeBrowsingDownloadReport(report_type, accept, *download_);
+        SendSafeBrowsingDownloadReport(report_type, accept, download_);
       }
     }
     download_->RemoveObserver(this);

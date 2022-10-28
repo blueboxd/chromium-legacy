@@ -33,6 +33,8 @@ class VIEWS_EXPORT BubbleDialogModelHost : public BubbleDialogDelegate,
  public:
   enum class FieldType { kText, kControl, kMenuItem };
 
+  class ContentsView;
+
   class VIEWS_EXPORT CustomView : public ui::DialogModelCustomField::Field {
    public:
     CustomView(std::unique_ptr<View> view, FieldType field_type);
@@ -78,12 +80,13 @@ class VIEWS_EXPORT BubbleDialogModelHost : public BubbleDialogDelegate,
   View* GetInitiallyFocusedView() override;
   void OnWidgetInitialized() override;
 
+  View* GetContentsViewForTesting();
+
   // ui::DialogModelHost:
   void Close() override;
   void OnFieldAdded(ui::DialogModelField* field) override;
 
  private:
-  class ContentsView;
   // TODO(pbos): Consider externalizing this functionality into a different
   // format that could feasibly be adopted by LayoutManagers. This is used for
   // BoxLayouts (but could be others) to agree on columns' preferred width as a
@@ -125,7 +128,7 @@ class VIEWS_EXPORT BubbleDialogModelHost : public BubbleDialogDelegate,
   void OnWindowClosing();
 
   void AddInitialFields();
-  void AddOrUpdateBodyText(ui::DialogModelBodyText* model_field);
+  void AddOrUpdateParagraph(ui::DialogModelParagraph* model_field);
   void AddOrUpdateCheckbox(ui::DialogModelCheckbox* model_field);
   void AddOrUpdateCombobox(ui::DialogModelCombobox* model_field);
   void AddOrUpdateMenuItem(ui::DialogModelMenuItem* model_field);
@@ -147,6 +150,9 @@ class VIEWS_EXPORT BubbleDialogModelHost : public BubbleDialogDelegate,
       const ui::DialogModelLabel& dialog_label);
   std::unique_ptr<Label> CreateLabelForDialogModelLabel(
       const ui::DialogModelLabel& dialog_label);
+  std::unique_ptr<View> CreateViewForParagraphWithHeader(
+      const ui::DialogModelLabel& dialog_label,
+      const std::u16string header);
 
   void AddDialogModelHostField(std::unique_ptr<View> view,
                                const DialogModelHostField& field_view_info);

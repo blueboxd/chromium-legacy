@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -19,6 +19,12 @@ extern NSString* const kPlusCircleFillSymbol;
 extern NSString* const kPopupBadgeMinusSymbol;
 extern NSString* const kPhotoBadgePlusSymbol;
 extern NSString* const kPhotoBadgeMagnifyingglassSymbol;
+extern NSString* const kReadingListSymbol;
+extern NSString* const kRecentTabsSymbol;
+extern NSString* const kLanguageSymbol;
+extern NSString* const kPasswordSymbol;
+extern NSString* const kCameraLensSymbol;
+
 // Default symbol names.
 extern NSString* const kCreditCardSymbol;
 extern NSString* const kMicrophoneFillSymbol;
@@ -26,6 +32,9 @@ extern NSString* const kMicrophoneSymbol;
 extern NSString* const kEllipsisCircleFillSymbol;
 extern NSString* const kPinSymbol;
 extern NSString* const kPinFillSymbol;
+extern NSString* const kIPhoneSymbol;
+extern NSString* const kIPadSymbol;
+extern NSString* const kLaptopSymbol;
 extern NSString* const kGearShapeSymbol;
 extern NSString* const kShareSymbol;
 extern NSString* const kXMarkSymbol;
@@ -33,6 +42,7 @@ extern NSString* const kPlusSymbol;
 extern NSString* const kSearchSymbol;
 extern NSString* const kCheckmarkSymbol;
 extern NSString* const kArrowDownCircleFillSymbol;
+extern NSString* const kSecureSymbol;
 extern NSString* const kWarningSymbol;
 extern NSString* const kWarningFillSymbol;
 extern NSString* const kHelpFillSymbol;
@@ -42,6 +52,10 @@ extern NSString* const kFailMarkCircleFillSymbol;
 extern NSString* const kTrashSymbol;
 extern NSString* const kInfoCircleSymbol;
 extern NSString* const kClockArrowSymbol;
+extern NSString* const kWifiSymbol;
+
+// The corner radius of the symbol with a colorful background.
+extern const CGFloat kColorfulBackgroundSymbolCornerRadius;
 
 // Returns a SF symbol named `symbol_name` configured with the given
 // `configuration`.

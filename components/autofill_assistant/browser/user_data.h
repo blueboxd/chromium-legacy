@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -174,6 +174,9 @@ struct UserDataMetrics {
       Metrics::CollectUserDataResult::FAILURE;
 
   Metrics::UserDataSource user_data_source = Metrics::UserDataSource::UNKNOWN;
+
+  int number_of_profiles_deduplicated_for_contact = 0;
+  int number_of_profiles_deduplicated_for_address = 0;
 
   // Selection states.
   Metrics::UserDataSelectionState contact_selection_state =

@@ -57,6 +57,7 @@
 #include "third_party/blink/public/common/web_preferences/web_preferences.h"
 #include "third_party/blink/public/mojom/frame/frame_replication_state.mojom-blink.h"
 #include "third_party/blink/public/mojom/input/focus_type.mojom-blink.h"
+#include "third_party/blink/public/mojom/window_features/window_features.mojom-blink.h"
 #include "third_party/blink/public/platform/interface_registry.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/scheduler/web_thread_scheduler.h"
@@ -74,6 +75,7 @@
 #include "third_party/blink/public/web/web_input_element.h"
 #include "third_party/blink/public/web/web_local_frame_client.h"
 #include "third_party/blink/public/web/web_meaningful_layout.h"
+#include "third_party/blink/public/web/web_navigation_type.h"
 #include "third_party/blink/public/web/web_node.h"
 #include "third_party/blink/public/web/web_plugin.h"
 #include "third_party/blink/public/web/web_range.h"
@@ -1483,7 +1485,6 @@ void WebView::ApplyWebPreferences(const web_pref::WebPreferences& prefs,
   settings->SetDownloadableBinaryFontsEnabled(prefs.remote_fonts_enabled);
   settings->SetJavaScriptCanAccessClipboard(
       prefs.javascript_can_access_clipboard);
-  RuntimeEnabledFeatures::SetXSLTEnabled(prefs.xslt_enabled);
   settings->SetDNSPrefetchingEnabled(prefs.dns_prefetching_enabled);
   blink::WebNetworkStateNotifier::SetSaveDataEnabled(prefs.data_saver_enabled);
   settings->SetLocalStorageEnabled(prefs.local_storage_enabled);
@@ -1839,6 +1840,12 @@ void WebView::ApplyWebPreferences(const web_pref::WebPreferences& prefs,
     }
   }
 #endif
+
+  // Disabling the StrictMimetypeCheckForWorkerScriptsEnabled enterprise policy
+  // overrides the corresponding RuntimeEnabledFeature (via its Pref).
+  if (!prefs.strict_mime_type_check_for_worker_scripts_enabled) {
+    RuntimeEnabledFeatures::SetStrictMimeTypesForWorkersEnabled(false);
+  }
 }
 
 void WebViewImpl::ThemeChanged() {
@@ -2502,7 +2509,7 @@ void WebViewImpl::SetPageLifecycleStateInternal(
       }
     }
 
-    DispatchPageshow(page_restore_params->navigation_start);
+    DispatchPersistedPageshow(page_restore_params->navigation_start);
 
     Scheduler()->SetPageBackForwardCached(new_state->is_in_back_forward_cache);
     if (MainFrame()->IsWebLocalFrame()) {
@@ -2583,7 +2590,16 @@ void WebViewImpl::DispatchPagehide(
   }
 }
 
-void WebViewImpl::DispatchPageshow(base::TimeTicks navigation_start) {
+void WebViewImpl::DispatchPersistedPageshow(base::TimeTicks navigation_start) {
+  // Reset NotRestoredReasons for successful back/forward cache restore here,
+  // so that we set a new value for NotRestoredReasons every time main-frame
+  // history navigation is completed. For history navigation that is not
+  // restored from back/forward cache, we set a new value in
+  // |CommitNavigationWithParams()|.
+  if (MainFrame()->IsWebLocalFrame()) {
+    MainFrame()->ToWebLocalFrame()->SetNotRestoredReasons(nullptr);
+  }
+
   for (Frame* frame = GetPage()->MainFrame(); frame;
        frame = frame->Tree().TraverseNext()) {
     auto* local_frame = DynamicTo<LocalFrame>(frame);
@@ -2944,9 +2960,12 @@ void WebViewImpl::Show(const LocalFrameToken& opener_frame_token,
   DCHECK(local_main_frame_host_remote_);
   DCHECK(web_widget_);
   web_widget_->SetPendingWindowRect(adjusted_rect);
+  mojom::blink::WindowFeaturesPtr window_features =
+      mojom::blink::WindowFeatures::New();
+  window_features->bounds = requested_rect;
   local_main_frame_host_remote_->ShowCreatedWindow(
-      opener_frame_token, NavigationPolicyToDisposition(policy), requested_rect,
-      opened_by_user_gesture,
+      opener_frame_token, NavigationPolicyToDisposition(policy),
+      std::move(window_features), opened_by_user_gesture,
       WTF::Bind(&WebViewImpl::DidShowCreatedWindow, WTF::Unretained(this)));
 
   MainFrameDevToolsAgentImpl()->DidShowNewWindow();

@@ -1,4 +1,4 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -213,7 +213,7 @@ absl::optional<bool> GetDictationOfflineNudgePrefForLocale(
   if (dictation_locale.empty()) {
     return absl::nullopt;
   }
-  const base::Value::Dict& offline_nudges = profile->GetPrefs()->GetValueDict(
+  const base::Value::Dict& offline_nudges = profile->GetPrefs()->GetDict(
       prefs::kAccessibilityDictationLocaleOfflineNudge);
   return offline_nudges.FindBoolByDottedPath(dictation_locale);
 }
@@ -314,7 +314,7 @@ AccessibilityStatusEventDetails::AccessibilityStatusEventDetails(
 
 // static
 void AccessibilityManager::Initialize() {
-  CHECK(g_accessibility_manager == NULL);
+  CHECK(g_accessibility_manager == nullptr);
   g_accessibility_manager = new AccessibilityManager();
 }
 
@@ -322,7 +322,7 @@ void AccessibilityManager::Initialize() {
 void AccessibilityManager::Shutdown() {
   CHECK(g_accessibility_manager);
   delete g_accessibility_manager;
-  g_accessibility_manager = NULL;
+  g_accessibility_manager = nullptr;
 }
 
 // static
@@ -1431,7 +1431,7 @@ void AccessibilityManager::SetProfile(Profile* profile) {
     profile_observation_.Observe(profile);
   }
 
-  bool had_profile = (profile_ != NULL);
+  bool had_profile = (profile_ != nullptr);
   profile_ = profile;
 
   if (!had_profile && profile)

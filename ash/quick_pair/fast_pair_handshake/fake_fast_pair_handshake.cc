@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -34,9 +34,8 @@ FakeFastPairHandshake::~FakeFastPairHandshake() = default;
 
 void FakeFastPairHandshake::InvokeCallback(
     absl::optional<PairFailure> failure) {
-  bool has_failure = failure.has_value();
-  std::move(on_complete_callback_).Run(device_, std::move(failure));
-  completed_successfully_ = !has_failure;
+  completed_successfully_ = !failure.has_value();
+  std::move(on_complete_callback_).Run(device_, failure);
 }
 
 }  // namespace quick_pair

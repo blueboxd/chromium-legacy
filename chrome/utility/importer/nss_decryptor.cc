@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -114,7 +114,7 @@ std::u16string NSSDecryptor::Decrypt(const std::string& crypt) const {
     if (!base::Base64Decode(crypt, &decoded_data))
       return std::u16string();
     PK11SlotInfo* slot = GetKeySlotForDB();
-    SECStatus result = PK11_Authenticate(slot, PR_TRUE, NULL);
+    SECStatus result = PK11_Authenticate(slot, PR_TRUE, nullptr);
     if (result != SECSuccess) {
       FreeSlot(slot);
       return std::u16string();
@@ -128,7 +128,7 @@ std::u16string NSSDecryptor::Decrypt(const std::string& crypt) const {
     reply.data = nullptr;
     reply.len = 0;
 #if BUILDFLAG(USE_NSS_CERTS)
-    result = PK11SDR_DecryptWithSlot(slot, &request, &reply, NULL);
+    result = PK11SDR_DecryptWithSlot(slot, &request, &reply, nullptr);
 #else
     result = PK11SDR_Decrypt(&request, &reply, NULL);
 #endif  // BUILDFLAG(USE_NSS_CERTS)

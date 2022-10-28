@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -19,7 +19,6 @@
 #include "ash/constants/ash_features.h"
 #include "ash/constants/ash_switches.h"
 #include "ash/focus_cycler.h"
-#include "ash/high_contrast/high_contrast_controller.h"
 #include "ash/host/ash_window_tree_host.h"
 #include "ash/keyboard/arc/arc_virtual_keyboard_container_layout_manager.h"
 #include "ash/keyboard/keyboard_controller_impl.h"
@@ -1151,6 +1150,7 @@ void RootWindowController::CreateContainers() {
                       non_lock_screen_containers);
   wm::SetChildWindowVisibilityChangesAnimated(float_container);
   float_container->SetProperty(wm::kUsesScreenCoordinatesKey, true);
+  window_util::SetChildrenUseExtendedHitRegionForWindow(float_container);
 
   aura::Window* app_list_container =
       CreateContainer(kShellWindowId_AppListContainer, "AppListContainer",

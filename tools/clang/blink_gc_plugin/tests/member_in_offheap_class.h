@@ -12,40 +12,48 @@ namespace blink {
 class HeapObject : public GarbageCollected<HeapObject> { };
 
 class OffHeapObject {
-public:
- void Trace(Visitor*) const;
+  USING_FAST_MALLOC();
 
-private:
-    Member<HeapObject> m_obj; // Must not contain Member.
-    WeakMember<HeapObject> m_weak;  // Must not contain WeakMember.
-    Persistent<HeapVector<Member<HeapObject> > > m_objs; // OK
+ public:
+  void Trace(Visitor*) const;
+
+ private:
+  Member<HeapObject> m_obj;       // Must not contain Member.
+  WeakMember<HeapObject> m_weak;  // Must not contain WeakMember.
+  Persistent<HeapVector<Member<HeapObject>>> m_objs;  // OK
 };
 
 class StackObject {
-    STACK_ALLOCATED();
-private:
-    HeapObject* m_obj; // OK
-    HeapVector<Member<OffHeapObject>> m_heapVectorMemberOff; // NOT OK
+  STACK_ALLOCATED();
+
+ private:
+  HeapObject* m_obj;                                        // OK
+  HeapVector<Member<OffHeapObject>> m_heapVectorMemberOff;  // NOT OK
+};
+
+class DerivedStackObject : public StackObject {
+ private:
+  HeapObject* m_obj1;                                        // OK
+  HeapVector<Member<OffHeapObject>> m_heapVectorMemberOff1;  // NOT OK
 };
 
 class PartObject {
-    DISALLOW_NEW();
-public:
- void Trace(Visitor*) const;
+  DISALLOW_NEW();
 
-private:
-    Member<HeapObject> m_obj; // OK
+ public:
+  virtual void Trace(Visitor*) const;
+
+ private:
+  Member<HeapObject> m_obj;  // OK
 };
 
-class InlineObject {
-    DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
-public:
- void Trace(Visitor*) const;
+class DerivedPartObject : public PartObject {
+ public:
+  void Trace(Visitor*) const override;
 
-private:
-    Member<HeapObject> m_obj; // OK
+ private:
+  Member<HeapObject> m_obj1;  // OK
 };
-
 }
 
 #endif

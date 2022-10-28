@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,10 +12,12 @@
 #include "ash/login/ui/lock_screen.h"
 #include "ash/login/ui/non_accessible_view.h"
 #include "ash/public/cpp/login_types.h"
+#include "ash/public/cpp/style/color_provider.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/style/ash_color_provider.h"
+#include "ash/style/color_util.h"
 #include "base/bind.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -401,8 +403,8 @@ class LoginPasswordView::EasyUnlockIcon : public views::ImageButton {
         // This is the default case in terms of icon and color.
         break;
       case EasyUnlockIconState::LOCKED_TO_BE_ACTIVATED:
-        color = AshColorProvider::GetDisabledColor(
-            color_provider->GetContentLayerColor(
+        color =
+            ColorUtil::GetDisabledColor(color_provider->GetContentLayerColor(
                 AshColorProvider::ContentLayerType::kIconColorPrimary));
         break;
       case EasyUnlockIconState::LOCKED_WITH_PROXIMITY_HINT:
@@ -478,16 +480,16 @@ class LoginPasswordView::DisplayPasswordButton
 
   void UpdateIcons(const LoginPalette& palette) {
     auto color = palette.button_enabled_color;
-    const gfx::ImageSkia invisible_icon = gfx::CreateVectorIcon(
-        kLockScreenPasswordInvisibleIcon, kIconSizeDp, color);
-    const gfx::ImageSkia visible_icon = gfx::CreateVectorIcon(
-        kLockScreenPasswordVisibleIcon, kIconSizeDp, color);
-    const gfx::ImageSkia visible_icon_disabled =
-        gfx::CreateVectorIcon(kLockScreenPasswordVisibleIcon, kIconSizeDp,
-                              AshColorProvider::GetDisabledColor(color));
-    SetImage(views::Button::STATE_NORMAL, visible_icon);
-    SetImage(views::Button::STATE_DISABLED, visible_icon_disabled);
-    SetToggledImage(views::Button::STATE_NORMAL, &invisible_icon);
+    const ui::ImageModel invisible_icon = ui::ImageModel::FromVectorIcon(
+        kLockScreenPasswordInvisibleIcon, color, kIconSizeDp);
+    const ui::ImageModel visible_icon = ui::ImageModel::FromVectorIcon(
+        kLockScreenPasswordVisibleIcon, color, kIconSizeDp);
+    const ui::ImageModel visible_icon_disabled = ui::ImageModel::FromVectorIcon(
+        kLockScreenPasswordVisibleIcon, ColorUtil::GetDisabledColor(color),
+        kIconSizeDp);
+    SetImageModel(views::Button::STATE_NORMAL, visible_icon);
+    SetImageModel(views::Button::STATE_DISABLED, visible_icon_disabled);
+    SetToggledImageModel(views::Button::STATE_NORMAL, invisible_icon);
   }
 };
 
@@ -968,7 +970,7 @@ void LoginPasswordView::SetCapsLockHighlighted(bool highlight) {
   is_capslock_higlight_ = highlight;
   SkColor color = palette_.button_enabled_color;
   if (!highlight)
-    color = AshColorProvider::GetDisabledColor(color);
+    color = ColorUtil::GetDisabledColor(color);
   capslock_icon_->SetImage(
       gfx::CreateVectorIcon(kLockScreenCapsLockIcon, kIconSizeDp, color));
 }

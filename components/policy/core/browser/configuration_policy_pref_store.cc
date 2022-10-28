@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -30,7 +30,7 @@ void LogErrors(std::unique_ptr<PolicyErrorMap> errors,
   DCHECK(errors->IsReady());
   for (auto& pair : *errors) {
     std::u16string policy = base::ASCIIToUTF16(pair.first);
-    DLOG(WARNING) << "Policy " << policy << ": " << pair.second;
+    DLOG(WARNING) << "Policy " << policy << ": " << pair.second.message;
   }
   for (const auto& policy : deprecated_policies) {
     VLOG(1) << "Policy " << policy << " has been deprecated.";

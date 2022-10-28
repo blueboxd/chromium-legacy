@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -66,7 +66,8 @@ class CrosSettingsTest : public testing::Test {
     fake_session_manager_client_.set_device_policy(device_policy_.GetBlob());
     owner_key_util_->SetPublicKeyFromPrivateKey(
         *device_policy_.GetSigningKey());
-    owner_key_util_->SetPrivateKey(device_policy_.GetSigningKey());
+    owner_key_util_->ImportPrivateKeyAndSetPublicKey(
+        device_policy_.GetSigningKey());
     OwnerSettingsServiceAshFactory::GetInstance()->SetOwnerKeyUtilForTesting(
         owner_key_util_);
     DeviceSettingsService::Get()->SetSessionManager(
@@ -132,7 +133,7 @@ class CrosSettingsTest : public testing::Test {
 
   bool IsAllowlisted(const std::string& username) {
     return CrosSettings::Get()->FindEmailInList(kAccountsPrefUsers, username,
-                                                NULL);
+                                                nullptr);
   }
 
   bool IsUserAllowed(const std::string& username,

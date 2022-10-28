@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -114,10 +114,10 @@ bool PrivacySandboxSettings::IsTopicsAllowedForContext(
 }
 
 bool PrivacySandboxSettings::IsTopicAllowed(const CanonicalTopic& topic) {
-  auto* blocked_topics =
+  const auto& blocked_topics =
       pref_service_->GetList(prefs::kPrivacySandboxBlockedTopics);
 
-  for (const auto& item : blocked_topics->GetList()) {
+  for (const auto& item : blocked_topics) {
     auto blocked_topic =
         CanonicalTopic::FromValue(*item.GetDict().Find(kBlockedTopicsTopicKey));
     if (!blocked_topic)
@@ -179,25 +179,25 @@ base::Time PrivacySandboxSettings::TopicsDataAccessibleSince() const {
       prefs::kPrivacySandboxTopicsDataAccessibleSince);
 }
 
-bool PrivacySandboxSettings::IsConversionMeasurementAllowed(
+bool PrivacySandboxSettings::IsAttributionReportingAllowed(
     const url::Origin& top_frame_origin,
     const url::Origin& reporting_origin) const {
   return IsPrivacySandboxEnabledForContext(reporting_origin.GetURL(),
                                            top_frame_origin);
 }
 
-bool PrivacySandboxSettings::ShouldSendConversionReport(
-    const url::Origin& impression_origin,
-    const url::Origin& conversion_origin,
+bool PrivacySandboxSettings::MaySendAttributionReport(
+    const url::Origin& source_origin,
+    const url::Origin& destination_origin,
     const url::Origin& reporting_origin) const {
-  // The |reporting_origin| needs to have been accessible in both impression
-  // and conversion contexts. These are both checked when they occur, but
-  // user settings may have changed between then and when the conversion report
+  // The |reporting_origin| needs to have been accessible in both source
+  // and trigger contexts. These are both checked when they occur, but
+  // user settings may have changed between then and when the attribution report
   // is sent.
   return IsPrivacySandboxEnabledForContext(reporting_origin.GetURL(),
-                                           impression_origin) &&
+                                           source_origin) &&
          IsPrivacySandboxEnabledForContext(reporting_origin.GetURL(),
-                                           conversion_origin);
+                                           destination_origin);
 }
 
 void PrivacySandboxSettings::SetFledgeJoiningAllowed(

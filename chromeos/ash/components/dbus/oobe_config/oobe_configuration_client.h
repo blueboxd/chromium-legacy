@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -18,7 +18,7 @@ namespace ash {
 // This configuration comes either from the state before power wash, or from
 // USB stick during USB-based enrollment flow.
 class COMPONENT_EXPORT(ASH_DBUS_OOBE_CONFIG) OobeConfigurationClient
-    : public DBusClient {
+    : public chromeos::DBusClient {
  public:
   using ConfigurationCallback =
       base::OnceCallback<void(bool has_configuration,

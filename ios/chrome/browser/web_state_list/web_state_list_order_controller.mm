@@ -1,13 +1,13 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #import "ios/chrome/browser/web_state_list/web_state_list_order_controller.h"
 
-#include <cstdint>
-#include <set>
+#import <cstdint>
+#import <set>
 
-#include "base/check_op.h"
+#import "base/check_op.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
 #import "ios/chrome/browser/web_state_list/web_state_list_removing_indexes.h"
 #import "ios/chrome/browser/web_state_list/web_state_opener.h"
@@ -18,7 +18,7 @@
 
 namespace {
 
-// Find the index of next non-removed WebState opened by |web_state|. It
+// Find the index of next non-removed WebState opened by `web_state`. It
 // may return WebStateList::kInvalidIndex if there is no such indexes.
 int FindIndexOfNextNonRemovedWebStateOpenedBy(
     const WebStateListRemovingIndexes& removing_indexes,

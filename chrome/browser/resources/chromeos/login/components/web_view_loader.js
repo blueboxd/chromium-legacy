@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -97,7 +97,13 @@ const OobeWebViewLoadResult = {
         js: CLEAR_ANCHORS_CONTENT_SCRIPT,
       }]);
       webview.addEventListener('contentload', () => {
-        webview.executeScript(CLEAR_ANCHORS_CONTENT_SCRIPT);
+        webview.executeScript(CLEAR_ANCHORS_CONTENT_SCRIPT, () => {
+          if (chrome.runtime.lastError) {
+            console.error(
+                'Clear anchors script failed: ' +
+                chrome.runtime.lastError.message);
+          }
+        });
       });
     }
     if (inject_css) {

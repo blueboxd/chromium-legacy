@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,9 +11,9 @@ import '../../settings_shared.css.js';
 import './os_saved_devices_list_item.js';
 import 'chrome://resources/polymer/v3_0/iron-list/iron-list.js';
 
-import {CrScrollableBehavior, CrScrollableBehaviorInterface} from 'chrome://resources/cr_elements/cr_scrollable_behavior.m.js';
-import {I18nBehavior, I18nBehaviorInterface} from 'chrome://resources/js/i18n_behavior.m.js';
-import {WebUIListenerBehavior, WebUIListenerBehaviorInterface} from 'chrome://resources/js/web_ui_listener_behavior.m.js';
+import {CrScrollableBehavior, CrScrollableBehaviorInterface} from 'chrome://resources/cr_elements/cr_scrollable_behavior.js';
+import {I18nBehavior, I18nBehaviorInterface} from 'chrome://resources/cr_elements/i18n_behavior.js';
+import {WebUIListenerBehavior, WebUIListenerBehaviorInterface} from 'chrome://resources/cr_elements/web_ui_listener_behavior.js';
 import {html, mixinBehaviors, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {OsBluetoothDevicesSubpageBrowserProxy, OsBluetoothDevicesSubpageBrowserProxyImpl} from './os_bluetooth_devices_subpage_browser_proxy.js';
@@ -44,9 +44,9 @@ class SettingsSavedDevicesListElement extends
   static get properties() {
     return {
       /**
-       * @protected {Array<!FastPairSavedDevice>}
+       * @public {Array<!FastPairSavedDevice>}
        */
-      devices_: {
+      devices: {
         type: Array,
         observer: 'onDevicesChanged_',
         value: [],
@@ -74,9 +74,9 @@ class SettingsSavedDevicesListElement extends
    */
   removeSavedDevice_(/** @type {CustomEvent} */ event) {
     this.browserProxy_.deleteFastPairSavedDevice(event.detail.key);
-    for (let i = 0; i < this.devices_.length; i++) {
-      if (this.devices_[i].accountKey === event.detail.key) {
-        this.devices_.splice(i, 1);
+    for (let i = 0; i < this.devices.length; i++) {
+      if (this.devices[i].accountKey === event.detail.key) {
+        this.splice('devices', i, 1);
         break;
       }
     }

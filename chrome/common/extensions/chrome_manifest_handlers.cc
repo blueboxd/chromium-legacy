@@ -1,4 +1,4 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -16,7 +16,6 @@
 #include "chrome/common/extensions/api/url_handlers/url_handlers_parser.h"
 #include "chrome/common/extensions/chrome_manifest_url_handlers.h"
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
-#include "chrome/common/extensions/manifest_handlers/linked_app_icons.h"
 #include "chrome/common/extensions/manifest_handlers/minimum_chrome_version_checker.h"
 #include "chrome/common/extensions/manifest_handlers/natively_connectable_handler.h"
 #include "chrome/common/extensions/manifest_handlers/settings_overrides_handler.h"
@@ -47,7 +46,6 @@ void RegisterChromeManifestHandlers() {
   registry->RegisterHandler(std::make_unique<AppLaunchManifestHandler>());
   registry->RegisterHandler(std::make_unique<DevToolsPageHandler>());
   registry->RegisterHandler(std::make_unique<HomepageURLHandler>());
-  registry->RegisterHandler(std::make_unique<LinkedAppIconsHandler>());
   registry->RegisterHandler(std::make_unique<MinimumChromeVersionChecker>());
   registry->RegisterHandler(std::make_unique<NativelyConnectableHandler>());
   registry->RegisterHandler(std::make_unique<OmniboxHandler>());

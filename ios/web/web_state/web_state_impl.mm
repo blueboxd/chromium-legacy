@@ -1,14 +1,14 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #import "ios/web/web_state/web_state_impl.h"
 
-#include <stddef.h>
-#include <stdint.h>
+#import <stddef.h>
+#import <stdint.h>
 
 #import "base/compiler_specific.h"
-#include "base/debug/dump_without_crashing.h"
+#import "base/debug/dump_without_crashing.h"
 #import "base/feature_list.h"
 #import "ios/web/common/features.h"
 #import "ios/web/public/js_messaging/web_frame.h"
@@ -19,6 +19,7 @@
 #import "ios/web/web_state/ui/crw_web_controller.h"
 #import "ios/web/web_state/web_state_impl_realized_web_state.h"
 #import "ios/web/web_state/web_state_impl_serialized_data.h"
+#import "net/base/mac/url_conversions.h"
 #import "url/gurl.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -309,6 +310,10 @@ void WebStateImpl::WebFrameBecameUnavailable(const std::string& frame_id) {
   RealizedState()->WebFrameBecameUnavailable(frame_id);
 }
 
+void WebStateImpl::RetrieveExistingFrames() {
+  RealizedState()->RetrieveExistingFrames();
+}
+
 void WebStateImpl::RemoveAllWebFrames() {
   RealizedState()->RemoveAllWebFrames();
 }
@@ -389,6 +394,10 @@ void WebStateImpl::DidRevealWebContent() {
 base::Time WebStateImpl::GetLastActiveTime() const {
   return LIKELY(pimpl_) ? pimpl_->GetLastActiveTime()
                         : saved_->GetLastActiveTime();
+}
+
+base::Time WebStateImpl::GetCreationTime() const {
+  return LIKELY(pimpl_) ? pimpl_->GetCreationTime() : saved_->GetCreationTime();
 }
 
 void WebStateImpl::WasShown() {
@@ -658,6 +667,19 @@ void WebStateImpl::RemovePolicyDecider(WebStatePolicyDecider* decider) {
   // deciders. This makes the call here odd looking, but it's really just
   // managing the list, not setting observers on deciders.
   policy_deciders_.RemoveObserver(decider);
+}
+
+void WebStateImpl::DownloadCurrentPage(NSString* destination_file,
+                                       id<CRWWebViewDownloadDelegate> delegate,
+                                       void (^handler)(id<CRWWebViewDownload>))
+    API_AVAILABLE(ios(14.5)) {
+  CRWWebController* web_controller = GetWebController();
+  NSURLRequest* request =
+      [NSURLRequest requestWithURL:net::NSURLWithGURL(GetLastCommittedURL())];
+  [web_controller downloadCurrentPageWithRequest:request
+                                 destinationPath:destination_file
+                                        delegate:delegate
+                                         handler:handler];
 }
 
 #pragma mark - WebStateImpl private methods

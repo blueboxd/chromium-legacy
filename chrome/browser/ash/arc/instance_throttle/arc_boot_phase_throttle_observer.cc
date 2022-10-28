@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -146,7 +146,8 @@ void ArcBootPhaseThrottleObserver::MaybeSetActive() {
 
   auto* session_manager = ArcSessionManager::Get();
   DCHECK(session_manager);
-  const bool opt_in_boot = !session_manager->is_directly_started();
+  const bool opt_in_boot =
+      !session_manager->skipped_terms_of_service_negotiation();
 
   // ARC should be always be unthrottled during boot if ARC is enabled by
   // managed policy, or if this is the opt-in boot. Else, only unthrottle ARC

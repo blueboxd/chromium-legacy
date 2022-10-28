@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -123,7 +123,8 @@ class AutofillPopupControllerImpl : public AutofillPopupController {
   const Suggestion& GetSuggestionAt(int row) const override;
   std::u16string GetSuggestionMainTextAt(int row) const override;
   std::u16string GetSuggestionMinorTextAt(int row) const override;
-  const std::u16string& GetSuggestionLabelAt(int row) const override;
+  std::vector<std::vector<Suggestion::Text>> GetSuggestionLabelsAt(
+      int row) const override;
   bool GetRemovalConfirmationText(int list_index,
                                   std::u16string* title,
                                   std::u16string* body) override;
@@ -178,8 +179,13 @@ class AutofillPopupControllerImpl : public AutofillPopupController {
   class AutofillPopupViewPtr {
    public:
     AutofillPopupViewPtr() = default;
-    AutofillPopupViewPtr(nullptr_t) : ptr_(nullptr) {}
-    AutofillPopupViewPtr(AutofillPopupView* ptr) : ptr_(ptr) {}
+    AutofillPopupViewPtr(const AutofillPopupViewPtr&) = delete;
+    AutofillPopupViewPtr& operator=(const AutofillPopupViewPtr&) = delete;
+
+    AutofillPopupViewPtr& operator=(AutofillPopupView* ptr) {
+      ptr_ = ptr;
+      return *this;
+    }
 
     explicit operator bool() const { return ptr_; }
 
@@ -228,7 +234,7 @@ class AutofillPopupControllerImpl : public AutofillPopupController {
 
   PopupControllerCommon controller_common_;
   raw_ptr<content::WebContents> web_contents_;
-  AutofillPopupViewPtr view_ = nullptr;  // Weak reference.
+  AutofillPopupViewPtr view_;
   base::WeakPtr<AutofillPopupDelegate> delegate_;
 
   // If set to true, the popup will never be hidden because of stale data or if

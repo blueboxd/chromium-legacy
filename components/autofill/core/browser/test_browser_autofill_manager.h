@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -56,7 +56,7 @@ class TestBrowserAutofillManager : public BrowserAutofillManager {
       const gfx::RectF& bounding_box,
       int query_id,
       bool autoselect_first_suggestion,
-      TouchToFillEligible touch_to_fill_eligible) override;
+      FormElementWasClicked form_element_was_clicked) override;
   void OnJavaScriptChangedAutofilledValue(
       const FormData& form,
       const FormFieldData& field,
@@ -83,6 +83,14 @@ class TestBrowserAutofillManager : public BrowserAutofillManager {
   // Unique to TestBrowserAutofillManager:
 
   int GetPackedCreditCardID(int credit_card_id);
+
+  void AddSeenForm(const FormData& form,
+                   const std::vector<ServerFieldType>& field_types,
+                   bool preserve_values_in_form_structure = false) {
+    AddSeenForm(form, /*heuristic_types=*/field_types,
+                /*server_types=*/field_types,
+                preserve_values_in_form_structure);
+  }
 
   void AddSeenForm(const FormData& form,
                    const std::vector<ServerFieldType>& heuristic_types,
@@ -114,13 +122,13 @@ class TestBrowserAutofillManager : public BrowserAutofillManager {
   const std::string GetSubmittedFormSignature();
 
   // Helper to skip irrelevant params.
-  void OnAskForValuesToFillTest(
-      const FormData& form,
-      const FormFieldData& field,
-      int query_id = 0,
-      const gfx::RectF& bounding_box = {},
-      bool autoselect_first_suggestion = false,
-      TouchToFillEligible touch_to_fill_eligible = TouchToFillEligible(false));
+  void OnAskForValuesToFillTest(const FormData& form,
+                                const FormFieldData& field,
+                                int query_id = 0,
+                                const gfx::RectF& bounding_box = {},
+                                bool autoselect_first_suggestion = false,
+                                FormElementWasClicked form_element_was_clicked =
+                                    FormElementWasClicked(false));
 
   void SetAutofillProfileEnabled(bool profile_enabled);
 

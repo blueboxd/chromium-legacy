@@ -1,8 +1,9 @@
-# Copyright 2021 The Chromium Authors. All rights reserved.
+# Copyright 2021 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
 import("//build/config/chromeos/ui_mode.gni")
+import("//mojo/public/tools/bindings/mojom.gni")
 
 assert(is_chromeos_ash)
 
@@ -26,6 +27,7 @@ source_set("window_management") {
     "//ash",
     "//chrome/browser/ash/system_extensions",
     "//chrome/browser/profiles:profile",
+    "//chrome/browser/ui",
     "//components/keyed_service/content",
     "//components/services/app_service/public/cpp:instance_update",
     "//components/services/app_service/public/mojom",
@@ -45,8 +47,11 @@ source_set("browser_tests") {
   defines = [ "HAS_OUT_OF_PROC_TEST_RUNNER" ]
 
   deps = [
+    ":test_helper",
+    ":test_helper_js_data_deps",
     ":window_management",
     "//chrome/browser/ash/system_extensions",
+    "//chrome/browser/ash/system_extensions/api/test_support",
     "//chrome/browser/ash/system_web_apps/test_support",
     "//chrome/browser/ui/ash/system_web_apps",
     "//chrome/browser/web_applications:web_applications_test_support",
@@ -57,5 +62,17 @@ source_set("browser_tests") {
   data = [
     "//third_party/blink/web_tests/resources/testharness.js",
     "//third_party/blink/web_tests/resources/testharness-helpers.js",
+    "//chrome/browser/ash/system_extensions/api/window_management/test/",
+  ]
+}
+
+mojom("test_helper") {
+  testonly = true
+  sources = [ "cros_window_management_test_helper.test-mojom" ]
+
+  public_deps = [
+    "//mojo/public/mojom/base",
+    "//ui/events/mojom",
+    "//ui/gfx/geometry/mojom",
   ]
 }

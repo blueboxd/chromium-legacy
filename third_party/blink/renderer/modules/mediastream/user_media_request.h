@@ -32,6 +32,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIASTREAM_USER_MEDIA_REQUEST_H_
 
 #include "third_party/blink/public/common/privacy_budget/identifiable_surface.h"
+#include "third_party/blink/public/mojom/mediastream/media_stream.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_typedefs.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context_lifecycle_observer.h"
 #include "third_party/blink/renderer/modules/mediastream/media_stream.h"
@@ -150,6 +151,26 @@ class MODULES_EXPORT UserMediaRequest final
 
   void set_exclude_system_audio(bool value) { exclude_system_audio_ = value; }
   bool exclude_system_audio() const { return exclude_system_audio_; }
+  void set_exclude_self_browser_surface(bool value) {
+    exclude_self_browser_surface_ = value;
+  }
+  bool exclude_self_browser_surface() const {
+    return exclude_self_browser_surface_;
+  }
+  void set_preferred_display_surface(
+      mojom::blink::PreferredDisplaySurface value) {
+    preferred_display_surface_ = value;
+  }
+  mojom::blink::PreferredDisplaySurface preferred_display_surface() const {
+    return preferred_display_surface_;
+  }
+  void set_dynamic_surface_switching_requested(bool value) {
+    dynamic_surface_switching_requested_ = value;
+  }
+  bool dynamic_surface_switching_requested() const {
+    return dynamic_surface_switching_requested_;
+  }
+
   bool auto_select_all_screens() const { return auto_select_all_screens_; }
 
   // Mark this request as an GetOpenDevice request for initializing a
@@ -171,6 +192,10 @@ class MODULES_EXPORT UserMediaRequest final
     return !!transferred_track_session_id_;
   }
   void SetTransferredTrackComponent(MediaStreamComponent* component);
+  // Completes the re-creation of the transferred MediaStreamTrack by
+  // constructing the MediaStreamTrackImpl object.
+  void FinalizeTransferredTrackInitialization(
+      const MediaStreamDescriptorVector& streams_descriptors);
 
   void Trace(Visitor*) const override;
 
@@ -180,6 +205,10 @@ class MODULES_EXPORT UserMediaRequest final
   MediaConstraints video_;
   const bool should_prefer_current_tab_ = false;
   bool exclude_system_audio_ = false;
+  bool exclude_self_browser_surface_ = false;
+  mojom::blink::PreferredDisplaySurface preferred_display_surface_ =
+      mojom::blink::PreferredDisplaySurface::NO_PREFERENCE;
+  bool dynamic_surface_switching_requested_ = true;
   const bool auto_select_all_screens_ = false;
   bool should_disable_hardware_noise_suppression_;
   bool has_transient_user_activation_ = false;

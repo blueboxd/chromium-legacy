@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 #include <memory>
@@ -93,8 +93,7 @@ IN_PROC_BROWSER_TEST_F(ClearBrowsingDataHandlerBrowserTest, GetInstalledApps) {
   ASSERT_TRUE(call_data.arg2()->GetBool());
 
   // Get results from JS callback.
-  const base::span<const base::Value> result =
-      call_data.arg3()->GetListDeprecated();
+  const base::Value::List& result = call_data.arg3()->GetList();
   ASSERT_EQ(1U, result.size());
   auto& installed_app = result.back();
   ASSERT_EQ(url.host(), *(installed_app.FindStringKey("registerableDomain")));

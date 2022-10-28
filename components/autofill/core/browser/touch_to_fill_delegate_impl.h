@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,6 +12,7 @@
 
 namespace autofill {
 
+class AutofillDriver;
 class BrowserAutofillManager;
 
 // Delegate for in-browser Touch To Fill (TTF) surface display and selection.
@@ -47,6 +48,9 @@ class TouchToFillDelegateImpl : public TouchToFillDelegate {
 
   // Resets the delegate to its starting state (e.g. on navigation).
   virtual void Reset();
+
+  // TouchToFillDelegate:
+  AutofillDriver* GetDriver() override;
 
  private:
   base::WeakPtr<TouchToFillDelegateImpl> GetWeakPtr();

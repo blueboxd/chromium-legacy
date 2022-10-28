@@ -1,4 +1,4 @@
-// Copyright (c) 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -50,6 +50,8 @@ SequenceMatcher::SequenceMatcher(const std::u16string& first_string,
   }
   use_edit_distance_ = use_edit_distance;
 }
+
+SequenceMatcher::~SequenceMatcher() = default;
 
 // Compute the longest common substring, with optimisations for:
 //

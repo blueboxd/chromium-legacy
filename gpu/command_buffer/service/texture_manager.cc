@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -1938,10 +1938,6 @@ void Texture::SetLevelImageState(GLenum target, GLint level, ImageState state) {
   Texture::LevelInfo& info = face_infos_[face_index].level_infos[level];
   DCHECK_EQ(info.target, target);
   DCHECK_EQ(info.level, level);
-  // Workaround for StreamTexture which must be re-copied on each access.
-  // TODO(ericrk): Remove this once SharedImage transition is complete.
-  if (info.image && !info.image->HasMutableState())
-    return;
   info.image_state = state;
 }
 

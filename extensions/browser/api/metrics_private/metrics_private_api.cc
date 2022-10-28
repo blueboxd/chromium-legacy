@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -32,7 +32,6 @@ namespace RecordUserAction = api::metrics_private::RecordUserAction;
 namespace RecordValue = api::metrics_private::RecordValue;
 namespace RecordBoolean = api::metrics_private::RecordBoolean;
 namespace RecordEnumerationValue = api::metrics_private::RecordEnumerationValue;
-namespace RecordSparseHashable = api::metrics_private::RecordSparseHashable;
 namespace RecordSparseValueWithHashMetricName =
     api::metrics_private::RecordSparseValueWithHashMetricName;
 namespace RecordSparseValueWithPersistentHash =
@@ -82,14 +81,11 @@ MetricsPrivateGetVariationParamsFunction::Run() {
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
   GetVariationParams::Results::Params result;
-  std::unique_ptr<base::DictionaryValue> dict;
   if (variations::GetVariationParams(params->name,
                                      &result.additional_properties)) {
-    dict = result.ToValue();
+    return RespondNow(OneArgument(base::Value(result.ToValue())));
   }
-  return RespondNow(
-      dict ? OneArgument(base::Value::FromUniquePtrValue(std::move(dict)))
-           : NoArguments());
+  return RespondNow(NoArguments());
 }
 
 ExtensionFunction::ResponseAction
@@ -150,15 +146,6 @@ ExtensionFunction::ResponseAction MetricsPrivateRecordValueFunction::Run() {
       type == "histogram-linear" ? base::LINEAR_HISTOGRAM : base::HISTOGRAM);
   RecordValue(params->metric.metric_name, histogram_type, params->metric.min,
               params->metric.max, params->metric.buckets, params->value);
-  return RespondNow(NoArguments());
-}
-
-ExtensionFunction::ResponseAction
-MetricsPrivateRecordSparseHashableFunction::Run() {
-  auto params = RecordSparseHashable::Params::Create(args());
-  EXTENSION_FUNCTION_VALIDATE(params);
-  base::UmaHistogramSparse(params->metric_name,
-                           base::PersistentHash(params->value));
   return RespondNow(NoArguments());
 }
 
@@ -330,7 +317,7 @@ MetricsPrivateGetHistogramFunction::GetHistogram(const std::string& name) {
     result.buckets.push_back(std::move(bucket));
   }
 
-  return OneArgument(base::Value::FromUniquePtrValue(result.ToValue()));
+  return OneArgument(base::Value(result.ToValue()));
 }
 
 }  // namespace extensions

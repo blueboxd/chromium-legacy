@@ -1,4 +1,4 @@
-# Copyright 2020 The Chromium Authors. All rights reserved.
+# Copyright 2020 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -40,7 +40,7 @@ def angle_mac_builder(*, name, **kwargs):
     return try_.builder(name = name, **kwargs)
 
 def angle_ios_builder(*, name, **kwargs):
-    kwargs.setdefault("xcode", xcode.x12a7209)
+    kwargs.setdefault("xcode", xcode.x14main)
     return angle_mac_builder(name = name, **kwargs)
 
 angle_ios_builder(

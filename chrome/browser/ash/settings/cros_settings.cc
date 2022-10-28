@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -171,23 +171,24 @@ bool CrosSettings::GetString(const std::string& path,
 }
 
 bool CrosSettings::GetList(const std::string& path,
-                           const base::ListValue** out_value) const {
+                           const base::Value::List** out_value) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   const base::Value* value = GetPref(path);
   if (value && value->is_list()) {
-    *out_value = &base::Value::AsListValue(*value);
+    *out_value = &value->GetList();
     return true;
   }
   return false;
 }
 
-bool CrosSettings::GetDictionary(
-    const std::string& path,
-    const base::DictionaryValue** out_value) const {
+bool CrosSettings::GetDictionary(const std::string& path,
+                                 const base::Value::Dict** out_value) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   const base::Value* value = GetPref(path);
-  if (value)
-    return value->GetAsDictionary(out_value);
+  if (value && value->is_dict()) {
+    *out_value = &value->GetDict();
+    return true;
+  }
   return false;
 }
 
@@ -218,18 +219,18 @@ bool CrosSettings::FindEmailInList(const std::string& path,
                                    bool* wildcard_match) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  const base::ListValue* list;
+  const base::Value::List* list;
   if (!GetList(path, &list)) {
     if (wildcard_match)
       *wildcard_match = false;
     return false;
   }
 
-  return FindEmailInList(list->GetListDeprecated(), email, wildcard_match);
+  return FindEmailInList(*list, email, wildcard_match);
 }
 
 // static
-bool CrosSettings::FindEmailInList(const base::Value::ConstListView& list,
+bool CrosSettings::FindEmailInList(const base::Value::List& list,
                                    const std::string& email,
                                    bool* wildcard_match) {
   std::string canonicalized_email(

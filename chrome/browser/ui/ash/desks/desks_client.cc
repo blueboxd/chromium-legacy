@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,9 +9,14 @@
 #include "ash/constants/ash_features.h"
 #include "ash/public/cpp/desk_template.h"
 #include "ash/public/cpp/session/session_controller.h"
+#include "ash/shell.h"
 #include "ash/wm/desks/desk.h"
+#include "ash/wm/desks/desks_bar_view.h"
 #include "ash/wm/desks/desks_controller.h"
 #include "ash/wm/desks/templates/saved_desk_util.h"
+#include "ash/wm/overview/overview_controller.h"
+#include "ash/wm/overview/overview_grid.h"
+#include "ash/wm/overview/overview_session.h"
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/guid.h"
@@ -231,7 +236,8 @@ void DesksClient::OnActiveUserSessionChanged(const AccountId& account_id) {
 }
 
 void DesksClient::CaptureActiveDeskAndSaveTemplate(
-    CaptureActiveDeskAndSaveTemplateCallback callback) {
+    CaptureActiveDeskAndSaveTemplateCallback callback,
+    ash::DeskTemplateType template_type) {
   if (!active_profile_) {
     std::move(callback).Run(/*desk_template=*/nullptr, kNoCurrentUserError);
     return;
@@ -240,11 +246,11 @@ void DesksClient::CaptureActiveDeskAndSaveTemplate(
   desks_controller_->CaptureActiveDeskAsTemplate(
       base::BindOnce(&DesksClient::OnCapturedDeskTemplate,
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback)),
-      ash::DeskTemplateType::kTemplate,
+      template_type,
       /*root_window_to_show=*/nullptr);
 }
 
-void DesksClient::UpdateDeskTemplate(const std::string& template_uuid,
+void DesksClient::UpdateDeskTemplate(const base::GUID& template_uuid,
                                      const std::u16string& template_name,
                                      UpdateDeskTemplateCallback callback) {
   if (!active_profile_) {
@@ -252,13 +258,23 @@ void DesksClient::UpdateDeskTemplate(const std::string& template_uuid,
     return;
   }
 
-  GetDeskModel()->GetEntryByUUID(
-      template_uuid, base::BindOnce(&DesksClient::OnGetTemplateToBeUpdated,
-                                    weak_ptr_factory_.GetWeakPtr(),
-                                    template_name, std::move(callback)));
+  desks_storage::DeskModel::GetEntryByUuidResult result =
+      GetDeskModel()->GetEntryByUUID(template_uuid);
+
+  if (result.status != desks_storage::DeskModel::GetEntryByUuidStatus::kOk) {
+    std::move(callback).Run(kStorageError);
+    return;
+  }
+
+  result.entry->set_template_name(template_name);
+
+  GetDeskModel()->AddOrUpdateEntry(
+      std::move(result.entry),
+      base::BindOnce(&DesksClient::OnUpdateDeskTemplate,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }
 
-void DesksClient::DeleteDeskTemplate(const std::string& template_uuid,
+void DesksClient::DeleteDeskTemplate(const base::GUID& template_uuid,
                                      DeleteDeskTemplateCallback callback) {
   if (!active_profile_) {
     std::move(callback).Run(std::string(kNoCurrentUserError));
@@ -288,7 +304,7 @@ void DesksClient::GetDeskTemplates(GetDeskTemplatesCallback callback) {
                       : ""));
 }
 
-void DesksClient::GetTemplateJson(const std::string uuid,
+void DesksClient::GetTemplateJson(const base::GUID& uuid,
                                   Profile* profile,
                                   GetTemplateJsonCallback callback) {
   if (!active_profile_ || active_profile_ != profile) {
@@ -307,7 +323,7 @@ void DesksClient::GetTemplateJson(const std::string uuid,
 }
 
 void DesksClient::LaunchDeskTemplate(
-    const std::string& template_uuid,
+    const base::GUID& template_uuid,
     LaunchDeskCallback callback,
     const std::u16string& customized_desk_name) {
   base::Time launch_started = base::Time::Now();
@@ -325,11 +341,12 @@ void DesksClient::LaunchDeskTemplate(
     return;
   }
 
-  GetDeskModel()->GetEntryByUUID(
-      template_uuid,
-      base::BindOnce(&DesksClient::OnGetTemplateForDeskLaunch,
-                     weak_ptr_factory_.GetWeakPtr(), std::move(callback),
-                     customized_desk_name, launch_started));
+  desks_storage::DeskModel::GetEntryByUuidResult result =
+      GetDeskModel()->GetEntryByUUID(template_uuid);
+
+  OnGetTemplateForDeskLaunch(std::move(callback), customized_desk_name,
+                             launch_started, result.status,
+                             std::move(result.entry));
 }
 
 void DesksClient::LaunchEmptyDesk(LaunchDeskCallback callback,
@@ -550,22 +567,74 @@ void DesksClient::OnGetTemplateForDeskLaunch(
   // that apps appear on the right desk even if the user switches to another.
   saved_desk->SetDeskIndex(desks_controller_->GetDeskIndex(new_desk));
 
+  const auto saved_desk_type = saved_desk->type();
+  const auto uuid = saved_desk->uuid();
+
   // Launch the windows as specified in the saved desk to a new desk.
   LaunchAppsFromTemplate(std::move(saved_desk), time_launch_started,
                          base::TimeDelta());
-  std::move(callback).Run("", new_desk->uuid());
+  if (saved_desk_type == ash::DeskTemplateType::kSaveAndRecall) {
+    GetDeskModel()->DeleteEntry(
+        uuid, base::BindOnce(&DesksClient::OnRecallSavedDesk,
+                             weak_ptr_factory_.GetWeakPtr(),
+                             std::move(callback), new_desk->uuid()));
+  } else {
+    std::move(callback).Run("", new_desk->uuid());
+  }
 }
 
 void DesksClient::OnCaptureActiveDeskAndSaveTemplate(
     DesksClient::CaptureActiveDeskAndSaveTemplateCallback callback,
     std::unique_ptr<ash::DeskTemplate> desk_template,
     desks_storage::DeskModel::AddOrUpdateEntryStatus status) {
-  std::move(callback).Run(
-      std::move(desk_template),
-      std::string(status !=
-                          desks_storage::DeskModel::AddOrUpdateEntryStatus::kOk
-                      ? kNoSavedTemplatesError
-                      : ""));
+  if (status != desks_storage::DeskModel::AddOrUpdateEntryStatus::kOk) {
+    std::move(callback).Run(std::move(desk_template), kNoSavedTemplatesError);
+    return;
+  }
+  const auto saved_desk_type = desk_template->type();
+
+  if (saved_desk_type == ash::DeskTemplateType::kSaveAndRecall) {
+    // TODO(aprilzhou): Now it's the exact copy from ash/wm/desks/templates/
+    // saved_desk_presenter.cc:Showlibrary. Should be removed once we provide
+    // API to manage saved desk name.
+    auto* overview_controller = ash::Shell::Get()->overview_controller();
+    auto* overview_session = overview_controller->overview_session();
+    if (!overview_session) {
+      if (!overview_controller->StartOverview(
+              ash::OverviewStartAction::kDevTools,
+              ash::OverviewEnterExitType::kImmediateEnterWithoutFocus)) {
+        // If for whatever reason we didn't enter overview mode, bail.
+        std::move(callback).Run(std::move(desk_template), "");
+        return;
+      }
+      overview_session = overview_controller->overview_session();
+      DCHECK(overview_session);
+    }
+
+    auto* overview_grid = overview_session->GetGridWithRootWindow(
+        ash::Shell::GetPrimaryRootWindow());
+    overview_session->ShowDesksTemplatesGrids(
+        overview_grid->desks_bar_view()->IsZeroState(), desk_template->uuid(),
+        desk_template->template_name(), ash::Shell::GetPrimaryRootWindow());
+
+    // We have successfully created a *new* desk template for Save & Recall,
+    // so we are now going to close all the windows on the active desk and
+    // also remove the desk.
+    auto* active_desk = desks_controller_->active_desk();
+
+    // If this is the only desk, we have to create a new desk before we can
+    // remove the current one.
+    if (!desks_controller_->CanRemoveDesks())
+      desks_controller_->NewDesk(
+          ash::DesksCreationRemovalSource::kSaveAndRecall);
+
+    // Remove the current desk, this will be done without animation.
+    desks_controller_->RemoveDesk(
+        active_desk, ash::DesksCreationRemovalSource::kSaveAndRecall,
+        ash::DeskCloseType::kCloseAllWindows);
+  }
+
+  std::move(callback).Run(std::move(desk_template), "");
 }
 
 void DesksClient::OnDeleteDeskTemplate(
@@ -577,6 +646,17 @@ void DesksClient::OnDeleteDeskTemplate(
                       : ""));
 }
 
+void DesksClient::OnRecallSavedDesk(
+    DesksClient::LaunchDeskCallback callback,
+    const base::GUID& desk_id,
+    desks_storage::DeskModel::DeleteEntryStatus status) {
+  std::move(callback).Run(
+      std::string(status != desks_storage::DeskModel::DeleteEntryStatus::kOk
+                      ? kNoCurrentUserError
+                      : ""),
+      desk_id);
+}
+
 void DesksClient::OnUpdateDeskTemplate(
     DesksClient::UpdateDeskTemplateCallback callback,
     desks_storage::DeskModel::AddOrUpdateEntryStatus status) {
@@ -584,23 +664,6 @@ void DesksClient::OnUpdateDeskTemplate(
       status != desks_storage::DeskModel::AddOrUpdateEntryStatus::kOk
           ? kStorageError
           : ""));
-}
-
-void DesksClient::OnGetTemplateToBeUpdated(
-    const std::u16string& template_name,
-    DesksClient::UpdateDeskTemplateCallback callback,
-    desks_storage::DeskModel::GetEntryByUuidStatus status,
-    std::unique_ptr<ash::DeskTemplate> entry) {
-  if (status != desks_storage::DeskModel::GetEntryByUuidStatus::kOk) {
-    std::move(callback).Run(kStorageError);
-    return;
-  }
-
-  entry->set_template_name(template_name);
-  GetDeskModel()->AddOrUpdateEntry(
-      std::move(entry),
-      base::BindOnce(&DesksClient::OnUpdateDeskTemplate,
-                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }
 
 void DesksClient::OnCapturedDeskTemplate(

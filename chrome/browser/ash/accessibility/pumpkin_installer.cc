@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -39,7 +39,7 @@ void PumpkinInstaller::MaybeInstall(InstalledCallback on_installed,
   on_error_ = std::move(on_error);
 
   pending_dlc_request_ = true;
-  chromeos::DlcserviceClient::Get()->GetDlcState(
+  DlcserviceClient::Get()->GetDlcState(
       kPumpkinDlcName,
       base::BindOnce(&PumpkinInstaller::MaybeInstallHelper, GetWeakPtr()));
 }
@@ -71,14 +71,14 @@ void PumpkinInstaller::MaybeInstallHelper(
   pending_dlc_request_ = true;
   dlcservice::InstallRequest install_request;
   install_request.set_id(kPumpkinDlcName);
-  chromeos::DlcserviceClient::Get()->Install(
+  DlcserviceClient::Get()->Install(
       install_request,
       base::BindOnce(&PumpkinInstaller::OnInstalled, GetWeakPtr()),
       base::BindRepeating(&PumpkinInstaller::OnProgress, GetWeakPtr()));
 }
 
 void PumpkinInstaller::OnInstalled(
-    const chromeos::DlcserviceClient::InstallResult& install_result) {
+    const DlcserviceClient::InstallResult& install_result) {
   pending_dlc_request_ = false;
   base::UmaHistogramBoolean(kInstallationMetricName,
                             install_result.error == dlcservice::kErrorNone);

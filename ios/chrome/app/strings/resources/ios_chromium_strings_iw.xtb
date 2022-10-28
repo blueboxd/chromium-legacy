@@ -67,6 +67,7 @@
 <translation id="5308226104666789935">‏Chromium לא יכול לחפש עדכונים</translation>
 <translation id="5396916991083608703">‏להגדיר את Chromium כדפדפן ברירת המחדל?</translation>
 <translation id="5521125884468363740">‏כדי לראות את הכרטיסיות שלך מכל מקום שבו פתחת את Chromium יש להיכנס לחשבון ולהפעיל את הסנכרון</translation>
+<translation id="5522297504975449419">‏חלק מהתכונות של Chromium לא יהיו זמינות יותר.</translation>
 <translation id="5573014823074921752">‏טיפ למשתמשי Chromium: כדי לקבל אפשרויות נוספות של כרטיסיות, יש ללחוץ לחיצה ארוכה על הלחצן 'הצגת כרטיסיות' בסרגל הכלים, שנמצא בחלק התחתון או העליון של המסך.</translation>
 <translation id="5700709190537129682">‏Chromium לא יכול לבדוק את הסיסמאות שלך</translation>
 <translation id="5777187867430702742">‏דף Chromium</translation>
@@ -95,6 +96,7 @@
 <translation id="7175400662502680481">הסיסמה שלך נחשפה בעקבות פרצה באבטחת מידע. לפי מנהל הסיסמאות, מומלץ לשנות אותה עכשיו.</translation>
 <translation id="7208566199746267865">‏Chromium מאפשר גישה לחשבונות באינטרנט וכך חוסך לך זמן. ניתן להוסיף או להסיר חשבונות בקטע 'הגדרות'.</translation>
 <translation id="725427773388857052">‏Chromium יכול להגן עליך מפני פרצות באבטחת מידע, אתרים לא בטוחים וסכנות נוספות</translation>
+<translation id="7255976941681861701">‏היכרות עם תפריט Chromium החדש</translation>
 <translation id="7269362888766543920">‏תוספים מסוימים גורמים ל-Chromium לקרוס. כדאי להסיר אותם.</translation>
 <translation id="7313655110045230863">‏כדי להגדיר את Chromium כדפדפן ברירת המחדל, יש לפתוח את ההגדרות. יש להקיש על 'אפליקציית ברירת מחדל לדפדפן' ואז לבחור ב-Chromium.</translation>
 <translation id="7337881442233988129">Chromium</translation>
@@ -113,7 +115,6 @@
 <translation id="7980860476903281594">‏המיקום שלך ישותף על ידי Chromium עם אתרים שיאושרו על ידך.</translation>
 <translation id="8013573822802650211">‏כדי לראות את הכרטיסיות שלך מכל מקום שבו פתחת את Chromium יש להיכנס לחשבון בכל המכשירים</translation>
 <translation id="8073677936375100957">‏למחוק את נתוני Chromium שלך מהמכשיר הזה?</translation>
-<translation id="8175055321229419309">‏טיפ: <ph name="BEGIN_LINK" />העבר את Chromium לשורת המשימות<ph name="END_LINK" /></translation>
 <translation id="8240981428553046115">‏Chromium לא הצליח לחפש עדכונים. אפשר לנסות שוב מאוחר יותר.</translation>
 <translation id="8308172444429103994">‏טיפ ל-Chromium. כדי להיכנס לחשבון מהר יותר, אפשר לבחור את הסיסמה השמורה בחלק העליון של המקלדת.</translation>
 <translation id="858114650497379505">‏יש לך אפשרות להשתמש בסיסמאות ששמרת במנהל הסיסמאות באפליקציות אחרות ב-iPhone.</translation>

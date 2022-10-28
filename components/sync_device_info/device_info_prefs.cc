@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -62,7 +62,7 @@ DeviceInfoPrefs::~DeviceInfoPrefs() = default;
 bool DeviceInfoPrefs::IsRecentLocalCacheGuid(
     const std::string& cache_guid) const {
   const base::Value::List& recent_local_cache_guids =
-      pref_service_->GetValueList(kDeviceInfoRecentGUIDsWithTimestamps);
+      pref_service_->GetList(kDeviceInfoRecentGUIDsWithTimestamps);
 
   for (const auto& v : recent_local_cache_guids) {
     if (MatchesGuidInDictionary(v, cache_guid)) {

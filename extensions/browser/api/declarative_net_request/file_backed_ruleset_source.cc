@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -428,14 +428,12 @@ bool FileBackedRulesetSource::SerializeRulesToJSON(
     std::string* json) const {
   DCHECK_LE(rules.size(), rule_count_limit());
 
-  std::unique_ptr<base::Value> rules_value =
+  base::Value::List rules_value =
       json_schema_compiler::util::CreateValueFromArray(rules);
-  DCHECK(rules_value);
-  DCHECK(rules_value->is_list());
 
   JSONStringValueSerializer serializer(json);
   serializer.set_pretty_print(false);
-  return serializer.Serialize(*rules_value);
+  return serializer.Serialize(rules_value);
 }
 
 LoadRulesetResult FileBackedRulesetSource::CreateVerifiedMatcher(

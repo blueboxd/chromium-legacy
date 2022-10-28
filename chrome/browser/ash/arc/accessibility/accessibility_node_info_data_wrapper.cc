@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -112,7 +112,8 @@ bool AccessibilityNodeInfoDataWrapper::IsAccessibilityFocusableContainer()
     return false;
 
   return GetProperty(AXBooleanProperty::SCREEN_READER_FOCUSABLE) ||
-         IsFocusable() || IsClickable() || IsToplevelScrollItem();
+         IsFocusable() || IsClickable() || IsLongClickable() ||
+         IsToplevelScrollItem();
   // TODO(hirokisato): probably check long clickable as well.
 }
 
@@ -402,6 +403,11 @@ void AccessibilityNodeInfoDataWrapper::Serialize(
   if (IsClickable())
     out_data->AddBoolAttribute(ax::mojom::BoolAttribute::kClickable, true);
 
+  if (IsLongClickable()) {
+    out_data->AddBoolAttribute(ax::mojom::BoolAttribute::kLongClickable, true);
+    out_data->AddAction(ax::mojom::Action::kLongClick);
+  }
+
   if (GetProperty(AXBooleanProperty::SELECTED)) {
     if (ui::IsSelectSupported(out_data->role)) {
       out_data->AddBoolAttribute(ax::mojom::BoolAttribute::kSelected, true);
@@ -460,6 +466,25 @@ void AccessibilityNodeInfoDataWrapper::Serialize(
   if (HasStandardAction(AXActionType::COLLAPSE)) {
     out_data->AddAction(ax::mojom::Action::kCollapse);
     out_data->AddState(ax::mojom::State::kExpanded);
+  }
+
+  if (node_ptr_->standard_actions) {
+    for (mojom::AccessibilityActionInAndroidPtr& android_action :
+         node_ptr_->standard_actions.value()) {
+      if (android_action->label.has_value()) {
+        const std::string& label = android_action->label.value();
+        const auto action_id =
+            static_cast<mojom::AccessibilityActionType>(android_action->id);
+        if (action_id == mojom::AccessibilityActionType::CLICK) {
+          out_data->AddStringAttribute(
+              ax::mojom::StringAttribute::kDoDefaultLabel, label);
+        }
+        if (action_id == mojom::AccessibilityActionType::LONG_CLICK) {
+          out_data->AddStringAttribute(
+              ax::mojom::StringAttribute::kLongClickLabel, label);
+        }
+      }
+    }
   }
 
   // Custom actions.
@@ -735,6 +760,11 @@ bool AccessibilityNodeInfoDataWrapper::IsClickable() const {
          HasStandardAction(AXActionType::CLICK);
 }
 
+bool AccessibilityNodeInfoDataWrapper::IsLongClickable() const {
+  return GetProperty(AXBooleanProperty::LONG_CLICKABLE) ||
+         HasStandardAction(AXActionType::LONG_CLICK);
+}
+
 bool AccessibilityNodeInfoDataWrapper::IsFocusable() const {
   return GetProperty(AXBooleanProperty::FOCUSABLE) ||
          HasStandardAction(AXActionType::FOCUS) ||
@@ -782,7 +812,7 @@ bool AccessibilityNodeInfoDataWrapper::HasImportantPropertyInternal() const {
     return true;
   }
 
-  if (IsFocusable() || IsClickable())
+  if (IsFocusable() || IsClickable() || IsLongClickable())
     return true;
 
   // These properties are sorted in the same order of mojom file.

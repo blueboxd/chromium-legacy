@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,11 +8,12 @@
 #include "chromeos/ash/components/local_search_service/shared_structs.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace chromeos {
-namespace local_search_service {
+namespace ash::local_search_service {
 
 namespace {
+
 constexpr double kDefaultWeight = 1.0;
+
 }  // namespace
 
 TEST(ContentExtractionUtilsTest, ConsolidateTokenTest) {
@@ -132,5 +133,4 @@ TEST(ContentExtractionUtilsTest, NormalizerTest) {
       u"day la mot trinh duyet tuyet voi va muotma");
 }
 
-}  // namespace local_search_service
-}  // namespace chromeos
+}  // namespace ash::local_search_service

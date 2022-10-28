@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -114,7 +114,7 @@ LoginState::LoggedInUserType ChromeUserManager::GetLoggedInUserType(
 // static
 ChromeUserManager* ChromeUserManager::Get() {
   user_manager::UserManager* user_manager = user_manager::UserManager::Get();
-  return user_manager ? static_cast<ChromeUserManager*>(user_manager) : NULL;
+  return user_manager ? static_cast<ChromeUserManager*>(user_manager) : nullptr;
 }
 
 }  // namespace ash

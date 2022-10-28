@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,6 +9,8 @@
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/ui/color/chrome_color_id.h"
 #include "chrome/browser/ui/color/chrome_color_provider_utils.h"
+#include "chrome/browser/ui/color/new_tab_page_color_mixer.h"
+#include "components/search/ntp_features.h"
 #include "ui/color/color_id.h"
 #include "ui/color/color_mixer.h"
 #include "ui/color/color_provider.h"
@@ -125,7 +127,7 @@ ui::ColorTransform GetGtkToolbarTopSeparatorColorTransform(
 
 void AddNativeChromeColorMixer(ui::ColorProvider* provider,
                                const ui::ColorProviderManager::Key& key) {
-  if (key.system_theme == ui::ColorProviderManager::SystemTheme::kDefault)
+  if (key.system_theme == ui::SystemTheme::kDefault)
     return;
 
   ui::ColorMixer& mixer = provider->AddMixer();
@@ -164,4 +166,10 @@ void AddNativeChromeColorMixer(ui::ColorProvider* provider,
       GetGtkToolbarTopSeparatorColorTransform(true);
   mixer[kColorToolbarTopSeparatorFrameInactive] =
       GetGtkToolbarTopSeparatorColorTransform(false);
+
+  // Explicitly override certain colors for the NTP to those corresponding to
+  // the light theme. See crbug.com/998903. This logic will be removed once the
+  // NewTabPage comprehensive theming experiment has completed.
+  if (!base::FeatureList::IsEnabled(ntp_features::kNtpComprehensiveTheming))
+    AddWebThemeNewTabPageColors(mixer, false);
 }

@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -90,7 +90,7 @@ class BlockingLoginTest
       public content::NotificationObserver,
       public testing::WithParamInterface<BlockingLoginTestParam> {
  public:
-  BlockingLoginTest() : profile_added_(NULL) {}
+  BlockingLoginTest() : profile_added_(nullptr) {}
 
   BlockingLoginTest(const BlockingLoginTest&) = delete;
   BlockingLoginTest& operator=(const BlockingLoginTest&) = delete;

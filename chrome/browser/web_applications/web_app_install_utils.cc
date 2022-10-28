@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -41,6 +41,7 @@
 #include "chrome/browser/web_applications/os_integration/web_app_file_handler_manager.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/browser/web_applications/web_app_chromeos_data.h"
+#include "chrome/browser/web_applications/web_app_constants.h"
 #include "chrome/browser/web_applications/web_app_icon_generator.h"
 #include "chrome/browser/web_applications/web_app_install_params.h"
 #include "chrome/browser/web_applications/web_app_sources.h"
@@ -720,7 +721,6 @@ void PopulateProductIcons(WebAppInstallInfo* web_app_info,
       web_app_info->title.empty()
           ? GenerateIconLetterFromUrl(web_app_info->start_url)
           : GenerateIconLetterFromAppName(web_app_info->title);
-  web_app_info->generated_icon_color = SK_ColorTRANSPARENT;
   // Ensure that all top-level icons that are in web_app_info with  Purpose::ANY
   // are present, by generating icons for any sizes that have failed to
   // download. This ensures that the created manifest for the web app does not
@@ -729,7 +729,7 @@ void PopulateProductIcons(WebAppInstallInfo* web_app_info,
   // not necessary and would simplify this code path to remove.
   SizeToBitmap size_to_icons = ResizeIconsAndGenerateMissing(
       square_icons_any, SizesToGenerate(), icon_letter,
-      &web_app_info->generated_icon_color, &web_app_info->is_generated_icon);
+      &web_app_info->is_generated_icon);
 
   for (auto& item : size_to_icons) {
     // Retain any bitmaps provided as input to the installation.
@@ -819,34 +819,32 @@ webapps::WebappInstallSource ConvertExternalInstallSourceToInstallSource(
       return webapps::WebappInstallSource::SYSTEM_DEFAULT;
     case ExternalInstallSource::kArc:
       return webapps::WebappInstallSource::ARC;
-    default:
-      NOTREACHED();
-      return webapps::WebappInstallSource::SYNC;
+    case ExternalInstallSource::kKiosk:
+      return webapps::WebappInstallSource::KIOSK;
+    case ExternalInstallSource::kExternalLockScreen:
+      return webapps::WebappInstallSource::EXTERNAL_LOCK_SCREEN;
   }
 }
 
 webapps::WebappUninstallSource ConvertExternalInstallSourceToUninstallSource(
     ExternalInstallSource external_install_source) {
-  webapps::WebappUninstallSource uninstall_source;
   switch (external_install_source) {
     case ExternalInstallSource::kInternalDefault:
-      uninstall_source = webapps::WebappUninstallSource::kInternalPreinstalled;
-      break;
+      return webapps::WebappUninstallSource::kInternalPreinstalled;
     case ExternalInstallSource::kExternalDefault:
-      uninstall_source = webapps::WebappUninstallSource::kExternalPreinstalled;
-      break;
+      return webapps::WebappUninstallSource::kExternalPreinstalled;
     case ExternalInstallSource::kExternalPolicy:
-      uninstall_source = webapps::WebappUninstallSource::kExternalPolicy;
-      break;
+      return webapps::WebappUninstallSource::kExternalPolicy;
     case ExternalInstallSource::kSystemInstalled:
-      uninstall_source = webapps::WebappUninstallSource::kSystemPreinstalled;
-      break;
+      return webapps::WebappUninstallSource::kSystemPreinstalled;
     case ExternalInstallSource::kArc:
-      uninstall_source = webapps::WebappUninstallSource::kArc;
-      break;
+      return webapps::WebappUninstallSource::kArc;
+    case ExternalInstallSource::kKiosk:
+      NOTREACHED() << "Kiosk apps should not be uninstalled";
+      return webapps::WebappUninstallSource::kUnknown;
+    case ExternalInstallSource::kExternalLockScreen:
+      return webapps::WebappUninstallSource::kExternalLockScreen;
   }
-
-  return uninstall_source;
 }
 
 WebAppManagement::Type ConvertInstallSurfaceToWebAppSource(
@@ -869,6 +867,9 @@ WebAppManagement::Type ConvertInstallSurfaceToWebAppSource(
     case webapps::WebappInstallSource::CHROME_SERVICE:
       return WebAppManagement::kSync;
 
+    case webapps::WebappInstallSource::ISOLATED_APP_DEV_INSTALL:
+      return WebAppManagement::kCommandLine;
+
     case webapps::WebappInstallSource::INTERNAL_DEFAULT:
     case webapps::WebappInstallSource::EXTERNAL_DEFAULT:
       return WebAppManagement::kDefault;
@@ -876,6 +877,10 @@ WebAppManagement::Type ConvertInstallSurfaceToWebAppSource(
     case webapps::WebappInstallSource::EXTERNAL_POLICY:
       return WebAppManagement::kPolicy;
 
+    case webapps::WebappInstallSource::KIOSK:
+      return WebAppManagement::kKiosk;
+
+    case webapps::WebappInstallSource::EXTERNAL_LOCK_SCREEN:
     case webapps::WebappInstallSource::SYSTEM_DEFAULT:
       return WebAppManagement::kSystem;
 
@@ -1056,7 +1061,7 @@ bool CanWebAppUpdateIdentity(const WebApp* web_app) {
           features::kWebAppManifestPolicyAppIdentityUpdate)) {
     return true;
   }
-  return web_app->IsPreinstalledApp();
+  return web_app->IsPreinstalledApp() || web_app->IsKioskInstalledApp();
 }
 
 void ApplyParamsToWebAppInstallInfo(const WebAppInstallParams& install_params,

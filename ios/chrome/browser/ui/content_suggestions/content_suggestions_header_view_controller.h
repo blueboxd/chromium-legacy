@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -20,6 +20,7 @@
 @protocol FakeboxFocuser;
 @protocol NewTabPageControllerDelegate;
 @protocol OmniboxCommands;
+@protocol LensCommands;
 @class PrimaryToolbarViewController;
 class ReadingListModel;
 
@@ -36,9 +37,12 @@ class ReadingListModel;
                          bundle:(NSBundle*)nibBundleOrNil NS_UNAVAILABLE;
 - (instancetype)initWithCoder:(NSCoder*)aDecoder NS_UNAVAILABLE;
 
-@property(nonatomic, weak)
-    id<ApplicationCommands, BrowserCommands, OmniboxCommands, FakeboxFocuser>
-        dispatcher;
+@property(nonatomic, weak) id<ApplicationCommands,
+                              BrowserCommands,
+                              OmniboxCommands,
+                              FakeboxFocuser,
+                              LensCommands>
+    dispatcher;
 @property(nonatomic, weak) id<ContentSuggestionsHeaderViewControllerDelegate>
     delegate;
 @property(nonatomic, weak) id<ContentSuggestionsHeaderCommands> commandHandler;
@@ -48,15 +52,12 @@ class ReadingListModel;
 // Whether the Google logo or doodle is being shown.
 @property(nonatomic, assign) BOOL logoIsShowing;
 
-// `YES` if a what's new promo can be displayed.
-@property(nonatomic, assign) BOOL promoCanShow;
-
 // `YES` if the omnibox should be focused on when the view appears for voice
 // over.
 @property(nonatomic, assign) BOOL focusOmniboxWhenViewAppears;
 
-// `YES` if the Start Surface is currently being shown.
-@property(nonatomic, assign) BOOL isStartShowing;
+// `YES` if Google is the default search engine.
+@property(nonatomic, assign) BOOL isGoogleDefaultSearchEngine;
 
 // The base view controller from which to present UI.
 @property(nonatomic, weak) UIViewController* baseViewController;

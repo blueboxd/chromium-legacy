@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,8 +6,8 @@
 
 #import "ios/chrome/browser/ui/table_view/cells/table_view_info_button_cell.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_info_button_item_delegate.h"
-#include "ios/chrome/grit/ios_strings.h"
-#include "ui/base/l10n/l10n_util.h"
+#import "ios/chrome/grit/ios_strings.h"
+#import "ui/base/l10n/l10n_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -52,8 +52,10 @@
   cell.isButtonSelectedForVoiceOver = self.accessibilityActivationPointOnButton;
   cell.selectionStyle = UITableViewCellSelectionStyleNone;
 
-  // Update the icon image, if one is present.
-  [cell setIconImage:self.image withTintColor:self.tintColor];
+  [cell setIconImage:self.iconImage
+            tintColor:self.iconTintColor
+      backgroundColor:self.iconBackgroundColor
+         cornerRadius:self.iconCornerRadius];
 
   // Updates if the cells UI button should be hidden.
   [cell hideUIButton:self.infoButtonIsHidden];

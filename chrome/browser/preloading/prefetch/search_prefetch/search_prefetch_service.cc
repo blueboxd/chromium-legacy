@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -787,7 +787,7 @@ void SearchPrefetchService::AddCacheEntry(const GURL& navigation_url,
 bool SearchPrefetchService::LoadFromPrefs() {
   prefetch_cache_.clear();
   const base::Value::Dict& dictionary =
-      profile_->GetPrefs()->GetValueDict(prefetch::prefs::kCachePrefPath);
+      profile_->GetPrefs()->GetDict(prefetch::prefs::kCachePrefPath);
 
   auto* template_url_service =
       TemplateURLServiceFactory::GetForProfile(profile_);

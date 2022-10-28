@@ -1,4 +1,4 @@
-// Copyright (c) 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -206,9 +206,9 @@ struct GetSlotStartResult final {
 PA_SCAN_INLINE GetSlotStartResult
 GetSlotStartInSuperPage(uintptr_t maybe_inner_address) {
   PA_SCAN_DCHECK(IsManagedByNormalBuckets(maybe_inner_address));
-  // Don't use SlotSpanMetadata::FromSlotInnerAddr() or
-  // PartitionPage::FromAddr(), because they expect an address within a super
-  // page payload area, which we don't know yet if |maybe_inner_address| is.
+  // Don't use SlotSpanMetadata/PartitionPage::FromAddr() and family, because
+  // they expect an address within a super page payload area, which we don't
+  // know yet if |maybe_inner_address| is.
   const uintptr_t super_page = maybe_inner_address & kSuperPageBaseMask;
 
   const uintptr_t partition_page_index =

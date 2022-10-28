@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/run_loop.h"
+#include "base/test/bind.h"
 #include "base/test/mock_callback.h"
 #include "base/values.h"
 #include "chromeos/ash/components/dbus/shill/shill_client_unittest_base.h"
@@ -312,6 +313,23 @@ TEST_F(ShillServiceClientTest, GetEapPassphrase) {
 
   // Run the message loop.
   base::RunLoop().RunUntilIdle();
+}
+
+TEST_F(ShillServiceClientTest, RequestPortalDetection) {
+  // Create response.
+  std::unique_ptr<dbus::Response> response(dbus::Response::CreateEmpty());
+  PrepareForMethodCall(shill::kRequestPortalDetectionFunction,
+                       base::BindRepeating(&ExpectNoArgument), response.get());
+  // Call method.
+  base::RunLoop run_loop;
+  client_->RequestPortalDetection(dbus::ObjectPath(kExampleServicePath),
+                                  base::BindLambdaForTesting([&](bool success) {
+                                    EXPECT_TRUE(success);
+                                    run_loop.QuitClosure();
+                                  }));
+
+  // Run the message loop.
+  run_loop.RunUntilIdle();
 }
 
 TEST_F(ShillServiceClientTest, RequestTrafficCounters) {

@@ -52,6 +52,7 @@
 ./tools/manifest/jsonlib.py
 ./tools/manifest/log.py
 ./tools/manifest/manifest.py
+./tools/manifest/requirements.txt
 ./tools/manifest/sourcefile.py
 ./tools/manifest/testpaths.py
 ./tools/manifest/typedata.py
@@ -260,8 +261,10 @@
 ./tools/wptrunner/wptrunner/testdriver-vendor.js
 ./tools/wptrunner/wptrunner/config.py
 ./tools/wptrunner/wptrunner/testharnessreport-servodriver.js
+./tools/wptrunner/wptrunner/testharnessreport-content-shell.js
 ./tools/wptrunner/wptrunner/testharness_runner.html
 ./tools/wptrunner/wptrunner/executors/executorselenium.py
+./tools/wptrunner/wptrunner/executors/executorcontentshell.py
 ./tools/wptrunner/wptrunner/executors/test-wait.js
 ./tools/wptrunner/wptrunner/executors/executoropera.py
 ./tools/wptrunner/wptrunner/executors/window-loaded.js
@@ -308,6 +311,7 @@
 ./tools/wptrunner/wptrunner/manifestexpected.py
 ./tools/wptrunner/wptrunner/stability.py
 ./tools/wptrunner/wptrunner/browsers/edgechromium.py
+./tools/wptrunner/wptrunner/browsers/content_shell.py
 ./tools/wptrunner/wptrunner/browsers/servodriver.py
 ./tools/wptrunner/wptrunner/browsers/ie.py
 ./tools/wptrunner/wptrunner/browsers/sauce.py

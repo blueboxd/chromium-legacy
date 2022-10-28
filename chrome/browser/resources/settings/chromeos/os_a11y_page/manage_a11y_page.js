@@ -1,4 +1,4 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,16 +10,16 @@
 
 import 'chrome://resources/cr_elements/cr_icon_button/cr_icon_button.js';
 import 'chrome://resources/cr_elements/cr_link_row/cr_link_row.js';
-import 'chrome://resources/cr_elements/icons.m.js';
-import 'chrome://resources/cr_elements/shared_vars_css.m.js';
+import 'chrome://resources/cr_elements/icons.html.js';
+import 'chrome://resources/cr_elements/cr_shared_vars.css.js';
 import '../../controls/settings_slider.js';
 import '../../controls/settings_toggle_button.js';
 import '../../settings_shared.css.js';
 import 'chrome://resources/cr_components/localized_link/localized_link.js';
 
-import {I18nBehavior, I18nBehaviorInterface} from 'chrome://resources/js/i18n_behavior.m.js';
+import {I18nBehavior, I18nBehaviorInterface} from 'chrome://resources/cr_elements/i18n_behavior.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
-import {WebUIListenerBehavior, WebUIListenerBehaviorInterface} from 'chrome://resources/js/web_ui_listener_behavior.m.js';
+import {WebUIListenerBehavior, WebUIListenerBehaviorInterface} from 'chrome://resources/cr_elements/web_ui_listener_behavior.js';
 import {html, mixinBehaviors, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {Setting} from '../../mojom-webui/setting.mojom-webui.js';
@@ -226,15 +226,6 @@ class SettingsManageA11YPageElement extends SettingsManageA11YPageElementBase {
       },
 
       /** @protected */
-      isMagnifierContinuousMouseFollowingModeSettingEnabled_: {
-        type: Boolean,
-        value() {
-          return loadTimeData.getBoolean(
-              'isMagnifierContinuousMouseFollowingModeSettingEnabled');
-        },
-      },
-
-      /** @protected */
       isAccessibilityOSSettingsVisibilityEnabled_: {
         type: Boolean,
         value() {
@@ -423,7 +414,8 @@ class SettingsManageA11YPageElement extends SettingsManageA11YPageElementBase {
     /** @private {!DevicePageBrowserProxy} */
     this.deviceBrowserProxy_ = DevicePageBrowserProxyImpl.getInstance();
 
-    if (loadTimeData.getBoolean('isAccessibilityOSSettingsVisibilityEnabled')) {
+    if (loadTimeData.getBoolean('isAccessibilityOSSettingsVisibilityEnabled') &&
+        !this.isKioskModeActive_) {
       this.redirectToNewA11ySettings();
     }
   }
@@ -826,6 +818,12 @@ class SettingsManageA11YPageElement extends SettingsManageA11YPageElementBase {
   /** @private */
   onChangeDictationLocalesDialogClosed_() {
     this.showDictationLocaleMenu_ = false;
+  }
+
+  /** @private */
+  onAdditionalFeaturesClick_() {
+    window.open(
+        'https://chrome.google.com/webstore/category/collection/3p_accessibility_extensions');
   }
 }
 

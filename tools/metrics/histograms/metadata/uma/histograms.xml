@@ -198,7 +198,7 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="UMA.ClientIdCleared" enum="Boolean" expires_after="2022-12-04">
+<histogram name="UMA.ClientIdCleared" enum="Boolean" expires_after="2023-02-19">
   <owner>pdyson@chromium.org</owner>
   <owner>src/base/metrics/OWNERS</owner>
   <summary>
@@ -309,7 +309,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="UMA.FileMetricsProvider.InitialAccessResult"
-    enum="FileMetricsProviderAccessResult" expires_after="2022-10-04">
+    enum="FileMetricsProviderAccessResult" expires_after="2023-04-04">
   <owner>asvitkine@chromium.org</owner>
   <owner>src/base/metrics/OWNERS</owner>
   <summary>
@@ -343,7 +343,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="UMA.JavaCachingRecorder.DroppedHistogramSampleCount"
-    units="samples" expires_after="2022-12-25">
+    units="samples" expires_after="2023-02-26">
   <owner>bttk@chromium.org</owner>
   <owner>src/base/metrics/OWNERS</owner>
   <summary>
@@ -354,7 +354,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="UMA.JavaCachingRecorder.DroppedUserActionCount"
-    units="samples" expires_after="2022-12-25">
+    units="samples" expires_after="2023-02-26">
   <owner>bttk@chromium.org</owner>
   <owner>src/base/metrics/OWNERS</owner>
   <summary>
@@ -470,7 +470,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="UMA.LowEntropySourceValue" units="units"
-    expires_after="2022-10-04">
+    expires_after="2023-04-04">
   <owner>asvitkine@chromium.org</owner>
   <owner>mpearson@chromium.org</owner>
   <owner>src/base/metrics/OWNERS</owner>
@@ -511,7 +511,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="UMA.MetricsReporting.Toggle" enum="MetricsReportingChange"
-    expires_after="2022-12-25">
+    expires_after="2023-02-26">
   <owner>asvitkine@chromium.org</owner>
   <owner>src/base/metrics/OWNERS</owner>
   <summary>
@@ -533,7 +533,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="UMA.NegativeSamples.Histogram" enum="HistogramNameHash"
-    expires_after="2022-10-04">
+    expires_after="2023-04-04">
   <owner>asvitkine@chromium.org</owner>
   <owner>src/base/metrics/OWNERS</owner>
   <summary>
@@ -773,7 +773,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="UMA.StartupVisibility" enum="StartupVisibility"
-    expires_after="2023-01-01">
+    expires_after="2023-03-05">
   <owner>caitlinfischer@google.com</owner>
   <owner>src/base/metrics/OWNERS</owner>
   <summary>
@@ -815,7 +815,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="UMA.StructuredMetrics.InternalError2"
-    enum="StructuredMetricsInternalError2" expires_after="2023-01-01">
+    enum="StructuredMetricsInternalError2" expires_after="2023-03-05">
   <owner>tby@chromium.org</owner>
   <owner>rkaplow@chromium.org</owner>
   <owner>asvitkine@chromium.org</owner>
@@ -859,7 +859,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="UMA.TruncatedEvents.UserAction" units="events"
-    expires_after="2023-02-12">
+    expires_after="2023-03-12">
   <owner>rkaplow@chromium.org</owner>
   <owner>src/base/metrics/OWNERS</owner>
   <summary>

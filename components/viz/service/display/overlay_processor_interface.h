@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -200,8 +200,8 @@ class VIZ_SERVICE_EXPORT OverlayProcessorInterface {
   // If true, video capture is enabled for this frame.
   virtual void SetIsVideoCaptureEnabled(bool enabled) {}
 
-  // If true, video fullscreen mode is enabled for this frame.
-  virtual void SetIsVideoFullscreen(bool enabled) {}
+  // If true, page fullscreen mode is enabled for this frame.
+  virtual void SetIsPageFullscreen(bool enabled) {}
 
   virtual gfx::CALayerResult GetCALayerErrorCode() const;
 

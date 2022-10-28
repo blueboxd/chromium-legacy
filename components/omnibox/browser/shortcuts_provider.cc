@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -36,10 +36,14 @@
 #include "components/omnibox/browser/url_prefix.h"
 #include "components/omnibox/common/omnibox_features.h"
 #include "components/prefs/pref_service.h"
-#include "components/search_engines/omnibox_focus_type.h"
 #include "components/search_engines/template_url_service.h"
 #include "components/url_formatter/url_fixer.h"
+#include "third_party/metrics_proto/omnibox_focus_type.pb.h"
 #include "third_party/metrics_proto/omnibox_input_type.pb.h"
+
+#if !BUILDFLAG(IS_IOS)
+#include "components/history_clusters/core/config.h"
+#endif  // !BUILDFLAG(IS_IOS)
 
 namespace {
 
@@ -207,7 +211,7 @@ void ShortcutsProvider::Start(const AutocompleteInput& input,
   TRACE_EVENT0("omnibox", "ShortcutsProvider::Start");
   matches_.clear();
 
-  if (input.focus_type() == OmniboxFocusType::DEFAULT &&
+  if (input.focus_type() == metrics::OmniboxFocusType::INTERACTION_DEFAULT &&
       input.type() != metrics::OmniboxInputType::EMPTY &&
       !input.text().empty() && initialized_) {
     GetMatches(input);
@@ -267,6 +271,11 @@ void ShortcutsProvider::GetMatches(const AutocompleteInput& input) {
   // Get the shortcuts from the database with keys that partially or completely
   // match the search term.
   std::vector<ShortcutMatch> shortcut_matches;
+  // Track history cluster shortcuts separately, so they don't consume
+  // `provider_max_matches_`.
+  std::vector<ShortcutMatch> history_cluster_shortcut_matches;
+  // The number of history cluster shortcuts added to `shortcut_matches`. This
+  // is used to bump the `provider_max_matches_`.
   if (base::FeatureList::IsEnabled(omnibox::kAggregateShortcuts)) {
     // If `kAggregateShortcuts` is enabled, group the matching shortcuts by
     // stripped `destination_url`, score them together, and create a single
@@ -278,11 +287,24 @@ void ShortcutsProvider::GetMatches(const AutocompleteInput& input) {
          base::StartsWith(it->first, term_string, base::CompareCase::SENSITIVE);
          ++it) {
       const ShortcutsDatabase::Shortcut& shortcut = it->second;
+
+      // Allow `HISTORY_CLUSTER` suggestions only if the appropriate feature is
+      // enabled.
+#if !BUILDFLAG(IS_IOS)
+      if (!history_clusters::GetConfig()
+               .omnibox_history_cluster_provider_shortcuts &&
+          shortcut.match_core.type ==
+              AutocompleteMatch::Type::HISTORY_CLUSTER) {
+        continue;
+      }
+#endif  // !BUILDFLAG(IS_IOS)
+
       const GURL stripped_destination_url(AutocompleteMatch::GURLToStrippedGURL(
           shortcut.match_core.destination_url, input, template_url_service,
           shortcut.match_core.keyword));
       shortcuts_by_url[stripped_destination_url].push_back(&shortcut);
     }
+
     for (auto const& it : shortcuts_by_url) {
       int relevance =
           CalculateAggregateScore(term_string, it.second, max_relevance);
@@ -297,7 +319,14 @@ void ShortcutsProvider::GetMatches(const AutocompleteInput& input) {
         // are prefixes of each other.
         const ShortcutsDatabase::Shortcut* shortcut =
             ShortestShortcutContent(it.second);
-        shortcut_matches.emplace_back(relevance, it.first, shortcut);
+
+        if (shortcut->match_core.type ==
+            AutocompleteMatch::Type::HISTORY_CLUSTER) {
+          history_cluster_shortcut_matches.emplace_back(relevance, it.first,
+                                                        shortcut);
+        } else {
+          shortcut_matches.emplace_back(relevance, it.first, shortcut);
+        }
       }
     }
 
@@ -309,10 +338,20 @@ void ShortcutsProvider::GetMatches(const AutocompleteInput& input) {
          it != backend->shortcuts_map().end() &&
          base::StartsWith(it->first, term_string, base::CompareCase::SENSITIVE);
          ++it) {
+      const ShortcutsDatabase::Shortcut& shortcut = it->second;
+
+      // `kAggregateShortcuts` is launched. So rather than implement history
+      // cluster shortcuts logic, simply bypass history cluster suggestions when
+      // `kAggregateShortcuts` is disabled. This will prevent weird bugs if
+      // `kAggregateShortcuts` is unlaunched.
+      if (shortcut.match_core.type ==
+          AutocompleteMatch::Type::HISTORY_CLUSTER) {
+        continue;
+      }
+
       // Don't return shortcuts with zero relevance.
       int relevance = CalculateScore(term_string, it->second, max_relevance);
       if (relevance) {
-        const ShortcutsDatabase::Shortcut& shortcut = it->second;
         GURL stripped_destination_url(AutocompleteMatch::GURLToStrippedGURL(
             shortcut.match_core.destination_url, input, template_url_service,
             shortcut.match_core.keyword));
@@ -352,17 +391,38 @@ void ShortcutsProvider::GetMatches(const AutocompleteInput& input) {
     shortcut_matches.erase(shortcut_matches.begin() + provider_max_matches_,
                            shortcut_matches.end());
   }
+
   // Create and initialize autocomplete matches from shortcut matches.
-  // Also guarantee that all relevance scores are decreasing (but do not assign
-  // any scores below 1).
-  matches_.reserve(shortcut_matches.size());
-  for (ShortcutMatch& match : shortcut_matches) {
-    max_relevance = std::min(max_relevance, match.relevance);
-    matches_.push_back(ShortcutToACMatch(*match.shortcut, max_relevance, input,
-                                         fixed_up_input, term_string));
-    if (max_relevance > 1)
-      --max_relevance;
-  }
+  matches_.reserve(shortcut_matches.size() +
+                   history_cluster_shortcut_matches.size());
+  base::ranges::transform(
+      shortcut_matches, std::back_inserter(matches_),
+      [&](const auto& shortcut_match) {
+        // Guarantee that all relevance scores are decreasing (but do not assign
+        // any scores below 1). Only do this for non-history cluster shortcuts.
+        max_relevance = std::min(max_relevance, shortcut_match.relevance);
+        int relevance = max_relevance;
+        if (max_relevance > 1)
+          --max_relevance;
+
+        return ShortcutToACMatch(*shortcut_match.shortcut, relevance, input,
+                                 fixed_up_input, term_string);
+      });
+  base::ranges::transform(
+      history_cluster_shortcut_matches, std::back_inserter(matches_),
+      [&](const auto& shortcut_match) {
+        auto match = ShortcutToACMatch(*shortcut_match.shortcut,
+                                       shortcut_match.relevance, input,
+                                       fixed_up_input, term_string);
+
+        // Set the `suggestion_group_id` to guarantee ordering last.
+        match.suggestion_group_id = omnibox::GroupId::HISTORY_CLUSTER;
+        // Insert a corresponding SuggestionGroup with default values in the
+        // suggestion groups map; otherwise the group ID will get dropped.
+        suggestion_groups_map_[omnibox::GroupId::HISTORY_CLUSTER];
+
+        return match;
+      });
 }
 
 AutocompleteMatch ShortcutsProvider::ShortcutToACMatch(

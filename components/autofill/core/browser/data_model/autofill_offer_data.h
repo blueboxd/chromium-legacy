@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -157,7 +157,7 @@ class AutofillOfferData {
 
   // The specific type of offer, which informs decisions made by other classes,
   // such as UI rendering or metrics.
-  OfferType offer_type_;
+  OfferType offer_type_ = OfferType::UNKNOWN;
 
   // The unique server ID for this offer data.
   int64_t offer_id_;

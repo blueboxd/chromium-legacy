@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -66,17 +66,30 @@ NetInternalsDnsViewTest.prototype = {
   },
 };
 
-TEST_F('NetInternalsDnsViewTest', 'ResolveSingleHost', function() {
-  this.runMochaTest(dns_view_test.TestNames.ResolveSingleHost);
-});
+TEST_F(
+    'NetInternalsDnsViewTest', 'ResolveSingleHostWithoutMetadata', function() {
+      this.runMochaTest(
+          dns_view_test.TestNames.ResolveSingleHostWithoutMetadata);
+    });
 
-// TODO(crbug.com/1351249): Enable this test after making
-// RuleBasedHostResolverProc support multiple addresses.
-/*
-TEST_F('NetInternalsDnsViewTest','ResolveMultipleHost', function() {
-  this.runMochaTest(dns_view_test.TestNames.ResolveMultipleHost);
-});
-*/
+TEST_F(
+    'NetInternalsDnsViewTest', 'ResolveSingleHostWithHTTP2Metadata',
+    function() {
+      this.runMochaTest(dns_view_test.TestNames.ResolveSingleHostWithHTTP2Alpn);
+    });
+
+TEST_F(
+    'NetInternalsDnsViewTest', 'ResolveSingleHostWithHTTP3Metadata',
+    function() {
+      this.runMochaTest(dns_view_test.TestNames.ResolveSingleHostWithHTTP3Alpn);
+    });
+
+TEST_F(
+    'NetInternalsDnsViewTest', 'ResolveMultipleHostWithMultipleAlpns',
+    function() {
+      this.runMochaTest(
+          dns_view_test.TestNames.ResolveMultipleHostWithMultipleAlpns);
+    });
 
 TEST_F('NetInternalsDnsViewTest', 'ErrorNameNotResolved', function() {
   this.runMochaTest(dns_view_test.TestNames.ErrorNameNotResolved);

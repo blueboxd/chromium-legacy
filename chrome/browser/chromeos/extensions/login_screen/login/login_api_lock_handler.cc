@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,11 +6,11 @@
 
 #include <utility>
 
-#include "ash/components/login/auth/public/user_context.h"
 #include "base/bind.h"
 #include "base/no_destructor.h"
 #include "chrome/browser/ash/login/lock/screen_locker.h"
 #include "chrome/browser/ui/ash/session_controller_client_impl.h"
+#include "chromeos/ash/components/login/auth/public/user_context.h"
 
 namespace chromeos {
 

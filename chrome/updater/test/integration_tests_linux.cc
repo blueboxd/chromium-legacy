@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -32,8 +32,9 @@ absl::optional<base::FilePath> GetInstalledExecutablePath(UpdaterScope scope) {
   return absl::nullopt;
 }
 
-void WaitForUpdaterExit(UpdaterScope scope) {
+bool WaitForUpdaterExit(UpdaterScope scope) {
   NOTREACHED();
+  return false;
 }
 
 absl::optional<base::FilePath> GetDataDirPath(UpdaterScope scope) {
@@ -102,7 +103,7 @@ void UninstallApp(UpdaterScope scope, const std::string& app_id) {
   NOTREACHED();
 }
 
-void RunOfflineInstall(UpdaterScope scope) {
+void RunOfflineInstall(UpdaterScope scope, bool is_silent_install) {
   NOTREACHED();
 }
 

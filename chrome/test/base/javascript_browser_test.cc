@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -79,7 +79,7 @@ void JavaScriptBrowserTest::SetUpOnMainThread() {
 void JavaScriptBrowserTest::BuildJavascriptLibraries(
     std::vector<std::u16string>* libraries) {
   base::ScopedAllowBlockingForTesting allow_blocking;
-  ASSERT_TRUE(libraries != NULL);
+  ASSERT_TRUE(libraries != nullptr);
   std::vector<base::FilePath>::iterator user_libraries_iterator;
   for (user_libraries_iterator = user_libraries_.begin();
        user_libraries_iterator != user_libraries_.end();

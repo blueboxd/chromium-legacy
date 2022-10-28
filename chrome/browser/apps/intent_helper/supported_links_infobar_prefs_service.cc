@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -79,7 +79,7 @@ SupportedLinksInfoBarPrefsService::~SupportedLinksInfoBarPrefsService() =
 bool SupportedLinksInfoBarPrefsService::ShouldHideInfoBarForApp(
     const std::string& app_id) {
   const base::Value::Dict& base_pref =
-      profile_->GetPrefs()->GetValueDict(kSupportedLinksAppPrefsKey);
+      profile_->GetPrefs()->GetDict(kSupportedLinksAppPrefsKey);
   const base::Value::Dict* app_value = base_pref.FindDict(app_id);
 
   if (app_value == nullptr) {

@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,16 +7,16 @@
 #include <memory>
 #include <utility>
 
-#include "base/allocator/allocator_shim_default_dispatch_to_partition_alloc.h"
 #include "base/allocator/partition_allocator/partition_alloc.h"
 #include "base/allocator/partition_allocator/partition_alloc_base/compiler_specific.h"
 #include "base/allocator/partition_allocator/partition_alloc_base/logging.h"
 #include "base/allocator/partition_allocator/partition_alloc_buildflags.h"
 #include "base/allocator/partition_allocator/partition_alloc_config.h"
+#include "base/allocator/partition_allocator/shim/allocator_shim_default_dispatch_to_partition_alloc.h"
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-#if BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC) && \
+#if BUILDFLAG(ENABLE_PARTITION_ALLOC_AS_MALLOC_SUPPORT) && \
     defined(PA_THREAD_CACHE_SUPPORTED)
 #include "base/allocator/partition_allocator/thread_cache.h"
 #endif
@@ -104,7 +104,7 @@ TEST_F(MemoryReclaimerTest, Reclaim) {
   }
 }
 
-#if BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC) && \
+#if BUILDFLAG(ENABLE_PARTITION_ALLOC_AS_MALLOC_SUPPORT) && \
     defined(PA_THREAD_CACHE_SUPPORTED)
 
 namespace {
@@ -117,7 +117,7 @@ PA_NOINLINE void FreeForTest(void* data) {
 
 TEST_F(MemoryReclaimerTest, DoNotAlwaysPurgeThreadCache) {
   // Make sure the thread cache is enabled in the main partition.
-  base::internal::PartitionAllocMalloc::Allocator()
+  allocator_shim::internal::PartitionAllocMalloc::Allocator()
       ->EnableThreadCacheIfSupported();
 
   for (size_t i = 0; i < ThreadCache::kDefaultSizeThreshold; i++) {
@@ -145,7 +145,7 @@ TEST_F(MemoryReclaimerTest, DoNotAlwaysPurgeThreadCache) {
   EXPECT_LT(tcache->CachedMemory(), cached_size / 2);
 }
 
-#endif  // BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC) && \
+#endif  // BUILDFLAG(ENABLE_PARTITION_ALLOC_AS_MALLOC_SUPPORT) && \
         // defined(PA_THREAD_CACHE_SUPPORTED)
 
 }  // namespace partition_alloc

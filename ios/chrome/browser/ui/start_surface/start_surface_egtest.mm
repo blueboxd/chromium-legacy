@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,15 +7,15 @@
 #import "base/test/ios/wait_util.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_feature.h"
 #import "ios/chrome/browser/ui/start_surface/start_surface_features.h"
-#include "ios/chrome/grit/ios_strings.h"
+#import "ios/chrome/grit/ios_strings.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
 #import "ios/testing/earl_grey/app_launch_manager.h"
-#include "ios/testing/earl_grey/earl_grey_test.h"
-#include "net/test/embedded_test_server/embedded_test_server.h"
-#include "ui/base/l10n/l10n_util.h"
+#import "ios/testing/earl_grey/earl_grey_test.h"
+#import "net/test/embedded_test_server/embedded_test_server.h"
+#import "ui/base/l10n/l10n_util.h"
 
 namespace {
 // The delay to wait for an element to appear before tapping on it.
@@ -36,20 +36,15 @@ const CGFloat kWaitElementTimeout = 2;
   AppLaunchConfiguration config;
   config.relaunch_policy = ForceRelaunchByCleanShutdown;
   config.additional_args.push_back(
-      "--enable-features=" + std::string(kStartSurface.name) + "<" +
-      std::string(kStartSurface.name));
-  config.additional_args.push_back(
-      "--force-fieldtrials=" + std::string(kStartSurface.name) + "/Test");
-  config.additional_args.push_back(
-      "--force-fieldtrial-params=" + std::string(kStartSurface.name) +
-      ".Test:" + std::string(kReturnToStartSurfaceInactiveDurationInSeconds) +
-      "/" + "0");
+      std::string("--force-fieldtrial-params=StartSurface.ShrinkLogo:"
+                  "ReturnToStartSurfaceInactiveDurationInSeconds/0"));
   return config;
 }
 
 // Tests that navigating to a page and restarting upon cold start, an NTP page
 // is opened with the Return to Recent Tab tile.
-- (void)testColdStartOpenStartSurface {
+// TODO(crbug.com/1323001): Fix flakiness.
+- (void)DISABLED_testColdStartOpenStartSurface {
   GREYAssertTrue(self.testServer->Start(), @"Test server failed to start.");
   const GURL destinationUrl = self.testServer->GetURL("/pony.html");
   [ChromeEarlGrey loadURL:destinationUrl];
@@ -72,18 +67,17 @@ const CGFloat kWaitElementTimeout = 2;
 // Tests that navigating to a page and then backgrounding and foregrounding, an
 // NTP page is opened. Then, switching to the last tab and then back to the NTP
 // does not show the Return to Recent Tab tile.
-- (void)testWarmStartOpenStartSurface {
+// TODO(crbug.com/1323001): Fix flakiness.
+- (void)DISABLED_testWarmStartOpenStartSurface {
   GREYAssertTrue(self.testServer->Start(), @"Test server failed to start.");
   const GURL destinationUrl = self.testServer->GetURL("/pony.html");
   [ChromeEarlGrey loadURL:destinationUrl];
 
   [[AppLaunchManager sharedManager] backgroundAndForegroundApp];
 
-  // Give time for NTP to be fully loaded so all elements are accessible.
-  base::test::ios::SpinRunLoopWithMinDelay(base::Seconds(0.5));
-  [[EarlGrey
-      selectElementWithMatcher:grey_accessibilityLabel(l10n_util::GetNSString(
-                                   IDS_IOS_RETURN_TO_RECENT_TAB_TITLE))]
+  [ChromeEarlGreyUI waitForAppToIdle];
+  // Assert NTP is visible by checking that the fake omnibox is here.
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::FakeOmnibox()]
       assertWithMatcher:grey_sufficientlyVisible()];
   int start_index = [ChromeEarlGrey indexOfActiveNormalTab];
 
@@ -110,7 +104,8 @@ const CGFloat kWaitElementTimeout = 2;
 // Tests that navigating to a page and restarting upon cold start, an NTP page
 // is opened with the Return to Recent Tab tile. Then, removing that last tab
 // also removes the tile while that NTP is still being shown.
-- (void)testRemoveRecentTabRemovesReturnToRecenTabTile {
+// TODO(crbug.com/1323001): Fix flakiness.
+- (void)DISABLED_testRemoveRecentTabRemovesReturnToRecenTabTile {
   GREYAssertTrue(self.testServer->Start(), @"Test server failed to start.");
   const GURL destinationUrl = self.testServer->GetURL("/pony.html");
   [ChromeEarlGrey loadURL:destinationUrl];
@@ -118,8 +113,7 @@ const CGFloat kWaitElementTimeout = 2;
   int non_start_tab_index = [ChromeEarlGrey indexOfActiveNormalTab];
   [[AppLaunchManager sharedManager] backgroundAndForegroundApp];
 
-  // Give time for NTP to be fully loaded so all elements are accessible.
-  base::test::ios::SpinRunLoopWithMinDelay(base::Seconds(0.5));
+  [ChromeEarlGreyUI waitForAppToIdle];
   GREYAssertEqual([ChromeEarlGrey mainTabCount], 2,
                   @"Two tabs were expected to be open");
   // Assert NTP is visible by checking that the fake omnibox is here.

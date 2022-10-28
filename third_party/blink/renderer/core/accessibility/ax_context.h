@@ -12,8 +12,6 @@
 
 namespace blink {
 
-class AXObjectCache;
-
 // An AXContext enables accessibility support in a Document for as
 // long as the AXContext is alive. While the AXContext exists,
 // Document::ExistingAXObjectCache will always return a valid
@@ -39,9 +37,11 @@ class CORE_EXPORT AXContext {
 
   const ui::AXMode& GetAXMode() { return ax_mode_; }
 
+  void SetAXMode(const ui::AXMode&);
+
  protected:
   WeakPersistent<Document> document_;
-  const ui::AXMode ax_mode_;
+  ui::AXMode ax_mode_;
 };
 
 }  // namespace blink

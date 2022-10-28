@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -408,7 +408,7 @@ class NearbyConnectionsManagerImplTest : public testing::Test {
   testing::NiceMock<ash::nearby::MockNearbyProcessManager>
       nearby_process_manager_;
   NearbyConnectionsManagerImpl nearby_connections_manager_{
-      &nearby_process_manager_};
+      &nearby_process_manager_, kServiceId};
 };
 
 TEST_F(NearbyConnectionsManagerImplTest, DiscoveryFlow) {

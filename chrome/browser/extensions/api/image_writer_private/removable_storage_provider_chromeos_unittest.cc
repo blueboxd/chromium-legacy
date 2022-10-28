@@ -1,13 +1,13 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include <stdint.h>
 
-#include "ash/components/disks/mock_disk_mount_manager.h"
 #include "base/bind.h"
 #include "base/run_loop.h"
 #include "chrome/browser/extensions/api/image_writer_private/removable_storage_provider.h"
+#include "chromeos/ash/components/disks/mock_disk_mount_manager.h"
 #include "content/public/test/browser_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

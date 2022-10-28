@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -49,6 +49,7 @@ class DesktopMediaPickerDialogView : public views::DialogDelegateView,
   void AcceptSpecificSource(content::DesktopMediaID source);
   void Reject();
   void OnSourceListLayoutChanged();
+  void OnDelegatedSourceListDismissed();
 
   // Relevant for UMA. (E.g. for DesktopMediaPickerViews to report
   // when the dialog gets dismissed.)
@@ -65,6 +66,7 @@ class DesktopMediaPickerDialogView : public views::DialogDelegateView,
   bool Accept() override;
   bool Cancel() override;
   bool ShouldShowCloseButton() const override;
+  void OnWidgetInitialized() override;
 
  private:
   friend class DesktopMediaPickerViewsTestApi;
@@ -90,6 +92,8 @@ class DesktopMediaPickerDialogView : public views::DialogDelegateView,
 
   void SetAudioCheckboxAt(int index);
 
+  void MaybeSetAudioCheckboxMaxSize();
+
   void OnSourceTypeSwitched(int index);
 
   int GetSelectedTabIndex() const;
@@ -100,7 +104,10 @@ class DesktopMediaPickerDialogView : public views::DialogDelegateView,
   DesktopMediaList::Type GetSelectedSourceListType() const;
 
   const raw_ptr<content::WebContents> web_contents_;
+  const bool is_get_display_media_call_;
   const bool audio_requested_;
+  const bool suppress_local_audio_playback_;  // Effective only if audio shared.
+  const content::GlobalRenderFrameHostId capturer_global_id_;
 
   raw_ptr<DesktopMediaPickerViews> parent_;
 
@@ -150,6 +157,8 @@ class DesktopMediaPickerViews : public DesktopMediaPicker {
   friend class DesktopMediaPickerViewsTestApi;
 
   DoneCallback callback_;
+
+  bool is_get_display_media_call_ = false;
 
   // The |dialog_| is owned by the corresponding views::Widget instance.
   // When DesktopMediaPickerViews is destroyed the |dialog_| is destroyed

@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -585,7 +585,7 @@ TEST_F(PrefServiceSyncableMergeTest, ManagedListPreferences) {
   ASSERT_TRUE(managed_prefs_->GetValue(kListPrefName, &managed_prefs_result));
   EXPECT_EQ(managed_value, *managed_prefs_result);
   // Get should return the managed value, too.
-  EXPECT_EQ(managed_value, *prefs_.Get(kListPrefName));
+  EXPECT_EQ(managed_value, prefs_.GetValue(kListPrefName));
   // Verify the user pref value has the change.
   EXPECT_EQ(sync_value, *prefs_.GetUserPrefValue(kListPrefName));
 }

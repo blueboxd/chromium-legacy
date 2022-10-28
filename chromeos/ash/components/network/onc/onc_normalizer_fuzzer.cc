@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -23,7 +23,8 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
 
   for (bool remove_recommended_fields : {false, true}) {
     Normalizer normalizer(remove_recommended_fields);
-    normalizer.NormalizeObject(&kNetworkConfigurationSignature, *parsed_json);
+    normalizer.NormalizeObject(&chromeos::onc::kNetworkConfigurationSignature,
+                               *parsed_json);
   }
 
   return 0;

@@ -1,17 +1,17 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome/browser/ui/views/lens/lens_side_panel_view.h"
 
 #include "base/bind.h"
-#include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/lens/lens_side_panel_helper.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "components/strings/grit/components_strings.h"
+#include "components/vector_icons/vector_icons.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -120,8 +120,8 @@ void LensSidePanelView::OnThemeChanged() {
   // own fill color. The same applies to the dark mode icon.
   const SkColor color = color_provider->GetColor(ui::kColorIcon);
   const gfx::VectorIcon& icon = GetNativeTheme()->ShouldUseDarkColors()
-                                    ? kGoogleLensFullLogoDarkIcon
-                                    : kGoogleLensFullLogoIcon;
+                                    ? vector_icons::kGoogleLensFullLogoDarkIcon
+                                    : vector_icons::kGoogleLensFullLogoIcon;
   const gfx::ImageSkia image = gfx::ImageSkiaOperations::CreateTiledImage(
       gfx::CreateVectorIcon(icon, color), 0, 0, kGoogleLensLogoWidth,
       kGoogleLensLogoHeight);
@@ -186,15 +186,12 @@ void LensSidePanelView::CreateAndInstallHeader(
   AddChildView(std::move(header));
 }
 
-void LensSidePanelView::UpdateLaunchButtonState() {
-  auto last_committed_url = web_view_->GetWebContents()->GetLastCommittedURL();
-  launch_button_->SetEnabled(lens::IsValidLensResultUrl(last_committed_url));
-}
-
-void LensSidePanelView::SetContentVisible(bool visible) {
+void LensSidePanelView::SetContentAndNewTabButtonVisible(
+    bool visible,
+    bool enable_new_tab_button) {
   web_view_->SetVisible(visible);
   loading_indicator_web_view_->SetVisible(!visible);
-  LensSidePanelView::UpdateLaunchButtonState();
+  launch_button_->SetEnabled(enable_new_tab_button);
 }
 
 LensSidePanelView::~LensSidePanelView() = default;

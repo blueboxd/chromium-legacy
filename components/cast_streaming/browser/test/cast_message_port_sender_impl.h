@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -29,7 +29,7 @@ class CastMessagePortSenderImpl final
       delete;
 
   // openscreen::cast::MessagePort implementation.
-  void SetClient(Client* client, std::string client_sender_id) override;
+  void SetClient(Client& client) override;
   void ResetClient() override;
   void PostMessage(const std::string& sender_id,
                    const std::string& message_namespace,

@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -222,7 +222,12 @@ void FamilyInfoFetcher::OnSimpleLoaderCompleteInternal(
     scopes.insert(GaiaConstants::kKidFamilyReadonlyOAuth2Scope);
     CoreAccountId primary_account_id =
         identity_manager_->GetPrimaryAccountId(signin::ConsentLevel::kSignin);
-    DCHECK(!primary_account_id.empty());
+    if (primary_account_id.empty()) {
+      DLOG(WARNING) << "Primary account removed";
+      consumer_->OnFailure(ErrorCode::kTokenError);
+      return;
+    }
+
     identity_manager_->RemoveAccessTokenFromCache(primary_account_id, scopes,
                                                   access_token_);
     StartFetchingAccessToken();

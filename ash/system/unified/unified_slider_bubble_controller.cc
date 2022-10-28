@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -106,10 +106,12 @@ void UnifiedSliderBubbleController::OnOutputMuteChanged(bool mute_on) {
 }
 
 void UnifiedSliderBubbleController::OnInputMuteChanged(bool mute_on) {
-  if (!features::IsMicMuteNotificationsEnabled())
-    return;
-
-  ShowBubble(SLIDER_TYPE_MIC);
+  // We will display the mic mute toast only when the device has an
+  // internal/external microphone attached.
+  if (features::IsMicMuteNotificationsEnabled() &&
+      CrasAudioHandler::Get()->HasActiveInputDeviceForSimpleUsage()) {
+    ShowBubble(SLIDER_TYPE_MIC);
+  }
 }
 
 void UnifiedSliderBubbleController::OnDisplayBrightnessChanged(bool by_user) {

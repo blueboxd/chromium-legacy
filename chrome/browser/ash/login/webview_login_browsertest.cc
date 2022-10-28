@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,7 +6,6 @@
 #include <iterator>
 #include <string>
 
-#include "ash/components/login/auth/public/user_context.h"
 #include "ash/components/tpm/tpm_token_loader.h"
 #include "ash/constants/ash_features.h"
 #include "ash/constants/ash_switches.h"
@@ -75,6 +74,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "chromeos/ash/components/dbus/session_manager/fake_session_manager_client.h"
+#include "chromeos/ash/components/login/auth/public/user_context.h"
 #include "chromeos/dbus/tpm_manager/fake_tpm_manager_client.h"
 #include "chromeos/dbus/tpm_manager/tpm_manager_client.h"
 #include "components/account_id/account_id.h"
@@ -353,14 +353,14 @@ class WebviewLoginTest : public OobeBaseTest {
 
     auto* login_main_frame =
         GetLoginUI()->GetWebContents()->GetPrimaryMainFrame();
-    login_main_frame->ForEachRenderFrameHost(
-        base::BindLambdaForTesting([&](content::RenderFrameHost* rfh) {
+    login_main_frame->ForEachRenderFrameHostWithAction(
+        [&](content::RenderFrameHost* rfh) {
           if (rfh->GetStoragePartition() == storage_partition) {
             web_view_found = true;
             return content::RenderFrameHost::FrameIterationAction::kStop;
           }
           return content::RenderFrameHost::FrameIterationAction::kContinue;
-        }));
+        });
 
     return web_view_found;
   }
@@ -818,9 +818,8 @@ class ReauthEndpointWebviewLoginTest : public WebviewLoginTest {
     // TODO(https://crbug.com/1153912) Makes tests work with
     // kParentAccessCodeForOnlineLogin enabled.
     scoped_feature_list_.Reset();
-    scoped_feature_list_.InitWithFeatures(
-        {features::kGaiaReauthEndpoint},
-        {::features::kParentAccessCodeForOnlineLogin});
+    scoped_feature_list_.InitAndDisableFeature(
+        ::features::kParentAccessCodeForOnlineLogin);
   }
   ~ReauthEndpointWebviewLoginTest() override = default;
 
@@ -1684,8 +1683,8 @@ class WebviewClientCertsTokenLoadingLoginTest
     // At very early stage, the system slot is being initialized becuase fake
     // tpm manager tells the TPM is owned by default. So, it has to be overriden
     // here instead of in the test body or `SetUpOnMainThread()`.
-    TpmManagerClient::InitializeFake();
-    TpmManagerClient::Get()
+    chromeos::TpmManagerClient::InitializeFake();
+    chromeos::TpmManagerClient::Get()
         ->GetTestInterface()
         ->mutable_nonsensitive_status_reply()
         ->set_is_owned(false);
@@ -1841,11 +1840,13 @@ IN_PROC_BROWSER_TEST_F(WebviewClientCertsTokenLoadingLoginTest,
 
   // Report the TPM as ready, triggering the system token initialization by
   // SystemTokenCertDBInitializer.
-  TpmManagerClient::Get()
+  chromeos::TpmManagerClient::Get()
       ->GetTestInterface()
       ->mutable_nonsensitive_status_reply()
       ->set_is_owned(true);
-  TpmManagerClient::Get()->GetTestInterface()->EmitOwnershipTakenSignal();
+  chromeos::TpmManagerClient::Get()
+      ->GetTestInterface()
+      ->EmitOwnershipTakenSignal();
 
   absl::optional<net::SSLInfo> ssl_info =
       RequestClientCertTestPageInFrame(test::OobeJS(), kSigninWebview);
@@ -1863,11 +1864,13 @@ IN_PROC_BROWSER_TEST_F(WebviewClientCertsTokenLoadingLoginTest,
 
   // Report the TPM as ready, triggering the system token initialization by
   // SystemTokenCertDBInitializer.
-  TpmManagerClient::Get()
+  chromeos::TpmManagerClient::Get()
       ->GetTestInterface()
       ->mutable_nonsensitive_status_reply()
       ->set_is_owned(false);
-  TpmManagerClient::Get()->GetTestInterface()->EmitOwnershipTakenSignal();
+  chromeos::TpmManagerClient::Get()
+      ->GetTestInterface()
+      ->EmitOwnershipTakenSignal();
 
   EXPECT_FALSE(IsTpmTokenEnabled());
   EXPECT_FALSE(IsSystemSlotAvailable());

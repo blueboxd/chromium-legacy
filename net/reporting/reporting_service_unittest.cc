@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -281,7 +281,16 @@ TEST_P(ReportingServiceTest, SendReportsAndRemoveSource) {
       context()->cache()->GetExpiredSources().contains(*kReportingSource_));
 }
 
-TEST_P(ReportingServiceTest, SendReportsAndRemoveSourceWithPendingReports) {
+// Flaky in ChromeOS: crbug.com/1356127
+#if BUILDFLAG(IS_CHROMEOS)
+#define MAYBE_SendReportsAndRemoveSourceWithPendingReports \
+  DISABLED_SendReportsAndRemoveSourceWithPendingReports
+#else
+#define MAYBE_SendReportsAndRemoveSourceWithPendingReports \
+  SendReportsAndRemoveSourceWithPendingReports
+#endif
+TEST_P(ReportingServiceTest,
+       MAYBE_SendReportsAndRemoveSourceWithPendingReports) {
   base::test::ScopedFeatureList feature_list;
   feature_list.InitAndEnableFeature(net::features::kDocumentReporting);
   auto parsed_header =

@@ -2,10 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {addEntries, ENTRIES, EntryType, getCaller, pending, repeatUntil, RootPath, sendTestMessage, TestEntryInfo} from '../test_util.js';
+import {DialogType} from '../dialog_type.js';
+import {addEntries, ENTRIES, RootPath} from '../test_util.js';
 import {testcase} from '../testcase.js';
 
-import {expandTreeItem, IGNORE_APP_ERRORS, mountCrostini, navigateWithDirectoryTree, openNewWindow, remoteCall, setupAndWaitUntilReady} from './background.js';
+import {navigateWithDirectoryTree, openNewWindow, remoteCall, setupAndWaitUntilReady} from './background.js';
 import {DOWNLOADS_FAKE_TASKS} from './tasks.js';
 import {BASIC_ANDROID_ENTRY_SET, BASIC_LOCAL_ENTRY_SET} from './test_data.js';
 
@@ -146,7 +147,7 @@ testcase.trashPermanentlyDelete = async () => {
 };
 
 /**
- * Delete files then restore via toast 'Undo'.
+ * Delete files then restore via progress center panel button 'Undo'.
  */
 testcase.trashRestoreFromToast = async () => {
   const appId = await setupAndWaitUntilReady(
@@ -161,9 +162,14 @@ testcase.trashRestoreFromToast = async () => {
   await remoteCall.waitForElementLost(
       appId, '#file-list [file-name="hello.txt"]');
 
-  // Wait for the undo toast and click undo.
-  await remoteCall.waitAndClickElement(
-      appId, ['#toast', '#action:not([hidden])']);
+  // Wait for the a success progress panel item to appear.
+  await remoteCall.waitForElement(
+      appId, ['#progress-panel', 'xf-panel-item[status="success"]']);
+
+  // Press the "Undo"" button on the success feedback panel.
+  chrome.test.assertTrue(await remoteCall.callRemoteTestUtil(
+      'fakeMouseClick', appId,
+      [['#progress-panel', 'xf-panel-item', 'xf-button#primary-action']]));
 
   // Wait for file to reappear in list.
   await remoteCall.waitForElement(appId, '#file-list [file-name="hello.txt"]');
@@ -253,7 +259,7 @@ testcase.trashRestoreFromTrashShortcut = async () => {
 };
 
 /**
- * Delete files (move them into trash) then empty trash using toolbar.
+ * Delete files (move them into trash) then empty trash using the banner.
  */
 testcase.trashEmptyTrash = async () => {
   const appId = await setupAndWaitUntilReady(
@@ -274,7 +280,8 @@ testcase.trashEmptyTrash = async () => {
       appId, '#file-list [file-name="hello.txt"]');
 
   // Empty trash and confirm delete (dialog shown).
-  await remoteCall.waitAndClickElement(appId, '#empty-trash-button');
+  await remoteCall.waitAndClickElement(
+      appId, ['trash-banner', 'cr-button[command="#empty-trash"]']);
   await remoteCall.waitAndClickElement(
       appId, '.files-confirm-dialog .cr-dialog-ok');
 
@@ -635,4 +642,200 @@ testcase.trashDragDropNonModifiableEntriesCantBeTrashed = async () => {
   // Ensure the Downloads entry doesn't exist in Trash.
   await remoteCall.waitForElement(appId, `[scan-completed="Trash"]`);
   await remoteCall.waitForFiles(appId, []);
+};
+
+/**
+ * Tests the Trash root is not visible when opening Files app as a select file
+ * dialog.
+ */
+testcase.trashDontShowTrashRootOnSelectFileDialog = async () => {
+  // Open Files app on Downloads as a select file dialog.
+  const appId = await setupAndWaitUntilReady(
+      RootPath.DOWNLOADS, BASIC_LOCAL_ENTRY_SET, [],
+      {type: DialogType.SELECT_OPEN_FILE});
+
+  // Navigate to the My files directory to ensure the directory tree has fully
+  // loaded and wait for My files to finish scanning.
+  await navigateWithDirectoryTree(appId, '/My files');
+  await remoteCall.waitForElement(appId, `[scan-completed="My files"]`);
+
+  // Ensure the Trash root entry is not visible on the page.
+  await remoteCall.waitForElementLost(
+      appId, '#directory-tree [entry-label="Trash"]');
+};
+
+/**
+ * Tests the Trash root is not visible when Files app is used as a select file
+ * dialog within Android applications.
+ */
+testcase.trashDontShowTrashRootWhenOpeningAsAndroidFilePicker = async () => {
+  // Open Files app on Downloads as an Android file picker.
+  const appId = await setupAndWaitUntilReady(
+      RootPath.DOWNLOADS, BASIC_LOCAL_ENTRY_SET, [],
+      {volumeFilter: ['media-store-files-only']});
+
+  // Navigate to the My files directory to ensure the directory tree has fully
+  // loaded and wait for My files to finish scanning.
+  await navigateWithDirectoryTree(appId, '/My files');
+  await remoteCall.waitForElement(appId, `[scan-completed="My files"]`);
+
+  // Ensure the Trash root entry is not visible on the page.
+  await remoteCall.waitForElementLost(
+      appId, '#directory-tree [entry-label="Trash"]');
+};
+
+/**
+ * Tests that a trashed file with a deletion date >30 days gets permanently
+ * removed.
+ */
+testcase.trashEnsureOldEntriesArePeriodicallyRemoved = async () => {
+  const appId =
+      await setupAndWaitUntilReady(RootPath.DOWNLOADS, [ENTRIES.hello], []);
+  const fileNameSelector = '#file-list [file-name="hello.txt"]';
+
+  // Select hello.txt and make sure a default task is executed when double
+  // clicking.
+  await remoteCall.waitAndClickElement(appId, fileNameSelector);
+  await remoteCall.waitAndClickElement(appId, '#move-to-trash-button');
+  await remoteCall.waitForElementLost(appId, fileNameSelector);
+
+  // Navigate to /Trash and ensure the file is there and has not been deleted,
+  // the deletion date is well within the periodic deletion boundaries.
+  await navigateWithDirectoryTree(appId, '/Trash');
+  await remoteCall.waitForElement(appId, fileNameSelector);
+
+  // Navigate away from /Trash (to /My files) as the periodic removal will only
+  // be kicked off on initial directory scan.
+  await navigateWithDirectoryTree(appId, '/My files');
+
+  // Overwrite the existing .trashinfo file with an older one that is outside
+  // the 30 day window and should trigger periodic removal.
+  await addEntries(['local'], [
+    ENTRIES.trashRootDirectory,
+    ENTRIES.trashInfoDirectory,
+    ENTRIES.oldTrashInfoFile,
+  ]);
+
+  // Navigate to /Trash and ensure the file has been removed.
+  await navigateWithDirectoryTree(appId, '/Trash');
+  await remoteCall.waitForElement(appId, `[scan-completed="Trash"]`);
+  await remoteCall.waitForElementLost(appId, fileNameSelector);
+
+  // Expect no feedback panel element to appear as the IOTask was kicked off
+  // with notifications disabled.
+  await remoteCall.waitForElementLost(
+      appId, ['#progress-panel', 'xf-panel-item']);
+};
+
+/**
+ * Tests that dragging and dropping out of the Trash root restore files to the
+ * location that was requested (i.e. the drop target).
+ */
+testcase.trashDragDropOutOfTrashPerformsRestoration = async () => {
+  const appId = await setupAndWaitUntilReady(
+      RootPath.DOWNLOADS, BASIC_LOCAL_ENTRY_SET, []);
+
+  // Select hello.txt and send it to the Trash.
+  await remoteCall.waitAndClickElement(
+      appId, '#file-list [file-name="hello.txt"]');
+  await remoteCall.waitAndClickElement(appId, '#move-to-trash-button');
+  await remoteCall.waitForElementLost(
+      appId, '#file-list [file-name="hello.txt"]');
+
+  // Navigate to the Trash root.
+  await navigateWithDirectoryTree(appId, '/Trash');
+
+  // Wait for the element to appear in the Trash.
+  await remoteCall.waitForElement(appId, '#file-list [file-name="hello.txt"]');
+
+  // Send a dragdrop event that emulates dragging the hello.txt onto the "My
+  // files" root in the directory tree.
+  const skipDrop = false;
+  chrome.test.assertTrue(
+      await remoteCall.callRemoteTestUtil(
+          'fakeDragAndDrop', appId,
+          [
+            '#file-list [file-name="hello.txt"] .entry-name',
+            '#directory-tree [entry-label="My files"]',
+            skipDrop,
+          ]),
+      'fakeDragLeaveOrDrop failed');
+
+  // Wait for the element to disappear from the file list.
+  await remoteCall.waitForElementLost(
+      appId, '#file-list [file-name="hello.txt"]');
+
+  // A feedback panel item should be created to indicate the restoring function.
+  await remoteCall.waitForElement(appId, ['#progress-panel', 'xf-panel-item']);
+
+  // Navigate to the "My files" root and ensure the file exists there now.
+  await navigateWithDirectoryTree(appId, '/My files');
+  await remoteCall.waitForElement(appId, '#file-list [file-name="hello.txt"]');
+};
+
+/**
+ * Tests that the Cut command should be enabled whilst the copy command should
+ * be disabled.
+ */
+testcase.trashCopyShouldBeDisabledCutShouldBeEnabled = async () => {
+  const appId = await setupAndWaitUntilReady(
+      RootPath.DOWNLOADS, BASIC_LOCAL_ENTRY_SET, []);
+
+  const fileSelector = '#file-list [file-name="hello.txt"]';
+
+  // Select hello.txt and send it to the Trash.
+  await remoteCall.waitAndClickElement(appId, fileSelector);
+  await remoteCall.waitAndClickElement(appId, '#move-to-trash-button');
+  await remoteCall.waitForElementLost(appId, fileSelector);
+
+  // Navigate to the Trash root.
+  await navigateWithDirectoryTree(appId, '/Trash');
+
+  // Wait for the element to appear in the Trash and right click it to get
+  // access to the context menu.
+  await remoteCall.waitAndRightClick(appId, fileSelector);
+
+  // Wait for the context menu to appear.
+  const contextMenuSelector = '#file-context-menu:not([hidden])';
+  await remoteCall.waitForElement(appId, contextMenuSelector);
+
+  // Ensure the cut command is enabled and the copy command is disabled.
+  await remoteCall.waitForElement(
+      appId,
+      contextMenuSelector + ' [command="#cut"]:not([hidden]):not([disabled])');
+  await remoteCall.waitForElement(
+      appId,
+      contextMenuSelector + ' [command="#copy"][disabled]:not([hidden])');
+};
+
+/**
+ * Tests that the "Moving to trash" visual signal that is shown whilst a trash
+ * operation is in progress, does not contain the "Undo" button.
+ */
+testcase.trashRestorationDialogInProgressDoesntShowUndo = async () => {
+  const appId = await setupAndWaitUntilReady(
+      RootPath.DOWNLOADS, BASIC_LOCAL_ENTRY_SET, []);
+
+  // Tell the progress center to never finish the operation which leaves the in
+  // progress visual signal visible.
+  await remoteCall.callRemoteTestUtil(
+      'progressCenterNeverNotifyCompleted', appId, []);
+
+  // Select hello.txt and send it to the Trash.
+  await remoteCall.waitAndClickElement(
+      appId, '#file-list [file-name="hello.txt"]');
+  await remoteCall.waitAndClickElement(appId, '#move-to-trash-button');
+  await remoteCall.waitForElementLost(
+      appId, '#file-list [file-name="hello.txt"]');
+
+  // A feedback panel item should be created to indicate the item is being sent
+  // to the trash with only a secondary action.
+  const cancelButton = await remoteCall.waitForElement(
+      appId,
+      ['#progress-panel', 'xf-panel-item', 'xf-button#secondary-action']);
+  await remoteCall.waitForElementLost(
+      appId, ['#progress-panel', 'xf-panel-item', 'xf-button#primary-action']);
+
+  // Ensure the secondary action is of the category cancel.
+  chrome.test.assertEq(cancelButton.attributes['data-category'], 'cancel');
 };

@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -76,6 +76,7 @@ class COMPONENT_EXPORT(RMAD) FakeRmadClient : public RmadClient {
       rmad::ProvisionStatus::Error error);
   void TriggerHardwareWriteProtectionStateObservation(bool enabled);
   void TriggerPowerCableStateObservation(bool plugged_in);
+  void TriggerExternalDiskStateObservation(bool detected_);
   void TriggerHardwareVerificationResultObservation(
       bool is_compliant,
       const std::string& error_str);

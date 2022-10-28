@@ -1,4 +1,4 @@
-# Copyright 2022 The Chromium Authors. All rights reserved.
+# Copyright 2022 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -6,9 +6,38 @@ import("//chrome/browser/resources/tools/build_webui.gni")
 
 build_webui("build") {
   grd_prefix = "password_manager"
-  static_files = [ "password_manager.html" ]
-  web_component_files = [ "password_manager_app.ts" ]
-  non_web_component_files = [ "password_manager.ts" ]
+  static_files = [
+    "password_manager.html",
+    "manifest.webmanifest",
+  ]
+  web_component_files = [
+    "password_manager_app.ts",
+    "side_bar.ts",
+    "toolbar.ts",
+    "settings_section.ts",
+    "passwords_section.ts",
+    "prefs/pref_toggle_button.ts",
+  ]
+  non_web_component_files = [
+    "password_manager_proxy.ts",
+    "password_manager.ts",
+    "router.ts",
+  ]
+
+  # Files that are passed as input to css_to_wrapper().
+  css_files = [
+    "shared_style.css",
+    "shared_vars.css",
+  ]
+
+  icons_html_files = [ "icons.html" ]
+
+  ts_composite = true
+
+  ts_definitions = [
+    "//tools/typescript/definitions/passwords_private.d.ts",
+    "//tools/typescript/definitions/runtime.d.ts",
+  ]
 
   ts_deps = [
     "//third_party/polymer/v3_0:library",

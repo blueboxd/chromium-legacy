@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -52,7 +52,7 @@ TEST_F(FileSystemProviderOperationsConfigureTest, Execute) {
   util::LoggingDispatchEventImpl dispatcher(true /* dispatch_reply */);
   util::StatusCallbackLog callback_log;
 
-  Configure configure(NULL, file_system_info_,
+  Configure configure(nullptr, file_system_info_,
                       base::BindOnce(&util::LogStatusCallback, &callback_log));
   configure.SetDispatchEventImplForTesting(
       base::BindRepeating(&util::LoggingDispatchEventImpl::OnDispatchEventImpl,
@@ -81,7 +81,7 @@ TEST_F(FileSystemProviderOperationsConfigureTest, Execute_NoListener) {
   util::LoggingDispatchEventImpl dispatcher(false /* dispatch_reply */);
   util::StatusCallbackLog callback_log;
 
-  Configure configure(NULL, file_system_info_,
+  Configure configure(nullptr, file_system_info_,
                       base::BindOnce(&util::LogStatusCallback, &callback_log));
   configure.SetDispatchEventImplForTesting(
       base::BindRepeating(&util::LoggingDispatchEventImpl::OnDispatchEventImpl,
@@ -94,7 +94,7 @@ TEST_F(FileSystemProviderOperationsConfigureTest, OnSuccess) {
   util::LoggingDispatchEventImpl dispatcher(true /* dispatch_reply */);
   util::StatusCallbackLog callback_log;
 
-  Configure configure(NULL, file_system_info_,
+  Configure configure(nullptr, file_system_info_,
                       base::BindOnce(&util::LogStatusCallback, &callback_log));
   configure.SetDispatchEventImplForTesting(
       base::BindRepeating(&util::LoggingDispatchEventImpl::OnDispatchEventImpl,
@@ -113,7 +113,7 @@ TEST_F(FileSystemProviderOperationsConfigureTest, OnError) {
   util::LoggingDispatchEventImpl dispatcher(true /* dispatch_reply */);
   util::StatusCallbackLog callback_log;
 
-  Configure configure(NULL, file_system_info_,
+  Configure configure(nullptr, file_system_info_,
                       base::BindOnce(&util::LogStatusCallback, &callback_log));
   configure.SetDispatchEventImplForTesting(
       base::BindRepeating(&util::LoggingDispatchEventImpl::OnDispatchEventImpl,

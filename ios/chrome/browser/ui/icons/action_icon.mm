@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -29,3 +29,5 @@ NSString* const kFindInPageActionSymbol = @"doc.text.magnifyingglass";
 NSString* const kZoomTextActionSymbol = @"plus.magnifyingglass";
 NSString* const kSaveImageActionSymbol = @"square.and.arrow.down";
 NSString* const kOpenImageActionSymbol = @"arrow.up.right.square";
+NSString* const kQRCodeSymbol = @"qrcode";
+NSString* const kPrinterSymbol = @"printer";

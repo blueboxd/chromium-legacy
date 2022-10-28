@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,20 +8,20 @@
 #import <memory>
 #import <utility>
 
-#include "base/check.h"
+#import "base/check.h"
 #import "base/ios/block_types.h"
-#include "base/mac/foundation_util.h"
-#include "base/strings/sys_string_conversions.h"
+#import "base/mac/foundation_util.h"
+#import "base/strings/sys_string_conversions.h"
 #import "components/send_tab_to_self/entry_point_display_reason.h"
 #import "components/send_tab_to_self/metrics_util.h"
 #import "components/send_tab_to_self/send_tab_to_self_model.h"
-#include "components/send_tab_to_self/send_tab_to_self_sync_service.h"
+#import "components/send_tab_to_self/send_tab_to_self_sync_service.h"
 #import "components/send_tab_to_self/target_device_info.h"
 #import "components/signin/public/base/consent_level.h"
 #import "components/signin/public/base/signin_metrics.h"
 #import "components/sync/driver/sync_service.h"
 #import "components/sync/driver/sync_service_observer.h"
-#include "ios/chrome/browser/browser_state/chrome_browser_state.h"
+#import "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/chrome_url_constants.h"
 #import "ios/chrome/browser/main/browser.h"
 #import "ios/chrome/browser/send_tab_to_self/send_tab_to_self_browser_agent.h"
@@ -29,7 +29,7 @@
 #import "ios/chrome/browser/signin/authentication_service_factory.h"
 #import "ios/chrome/browser/signin/chrome_account_manager_service.h"
 #import "ios/chrome/browser/signin/chrome_account_manager_service_factory.h"
-#include "ios/chrome/browser/sync/send_tab_to_self_sync_service_factory.h"
+#import "ios/chrome/browser/sync/send_tab_to_self_sync_service_factory.h"
 #import "ios/chrome/browser/sync/sync_service_factory.h"
 #import "ios/chrome/browser/ui/authentication/signin_presenter.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
@@ -44,10 +44,10 @@
 #import "ios/chrome/browser/ui/send_tab_to_self/send_tab_to_self_modal_presentation_controller.h"
 #import "ios/chrome/browser/ui/send_tab_to_self/send_tab_to_self_table_view_controller.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
-#include "ios/chrome/grit/ios_strings.h"
+#import "ios/chrome/grit/ios_strings.h"
 #import "ios/public/provider/chrome/browser/signin/chrome_identity.h"
 #import "third_party/abseil-cpp/absl/types/optional.h"
-#include "ui/base/l10n/l10n_util.h"
+#import "ui/base/l10n/l10n_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -64,9 +64,9 @@ class TargetDeviceListWaiter : public syncer::SyncServiceObserver {
   using GetDisplayReasonCallback = base::RepeatingCallback<
       absl::optional<send_tab_to_self::EntryPointDisplayReason>()>;
 
-  // Queries |get_display_reason_callback| until it indicates the device list is
+  // Queries `get_display_reason_callback` until it indicates the device list is
   // known (i.e. until it returns kOfferFeature or kInformNoTargetDevice), then
-  // calls |on_list_known_callback|. Destroying the object aborts the waiting.
+  // calls `on_list_known_callback`. Destroying the object aborts the waiting.
   TargetDeviceListWaiter(
       syncer::SyncService* sync_service,
       const GetDisplayReasonCallback& get_display_reason_callback,

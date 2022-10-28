@@ -1,5 +1,5 @@
-# Copyright 2017 The Chromium Authors.All rights reserved.
-# Use of this source code is governed by a BSD - style license that can be
+# Copyright 2017 The Chromium Authors
+# Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
 import("//mojo/public/tools/bindings/mojom.gni")
@@ -272,6 +272,7 @@ static_library("prediction") {
     "//components/crx_file",
     "//components/download/public/background_service:public",
     "//components/optimization_guide/core",
+    "//components/optimization_guide/optimization_guide_internals/webui:mojo_bindings",
     "//components/optimization_guide/proto:optimization_guide_proto",
     "//components/prefs",
     "//components/services/unzip/public/cpp",

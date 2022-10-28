@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,6 +12,7 @@
 #include "base/metrics/histogram_functions.h"
 #include "chrome/browser/web_applications/externally_installed_prefs_migration_metrics.h"
 #include "chrome/browser/web_applications/user_uninstalled_preinstalled_web_app_prefs.h"
+#include "chrome/browser/web_applications/web_app_constants.h"
 #include "chrome/browser/web_applications/web_app_install_utils.h"
 #include "chrome/browser/web_applications/web_app_prefs_utils.h"
 #include "chrome/browser/web_applications/web_app_registry_update.h"
@@ -54,13 +55,18 @@ constexpr char kExtensionId[] = "extension_id";
 constexpr char kInstallSource[] = "install_source";
 constexpr char kIsPlaceholder[] = "is_placeholder";
 
+constexpr char kAppIdDeleted[] =
+    "WebApp.ExternalPrefs.CorruptionFixedRemovedAppId";
+constexpr char kInstallUrlsDeleted[] =
+    "WebApp.ExternalPrefs.CorruptionFixedInstallUrlsDeleted";
+
 // Returns the base::Value in |pref_service| corresponding to our stored dict
 // for |app_id|, or nullptr if it doesn't exist.
 const base::Value* GetPreferenceValue(const PrefService* pref_service,
                                       const AppId& app_id) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   const base::Value::Dict& urls_to_dicts =
-      pref_service->GetValueDict(prefs::kWebAppsExtensionIDs);
+      pref_service->GetDict(prefs::kWebAppsExtensionIDs);
   // Do a simple O(N) scan for app_id being a value in each dictionary's
   // key/value pairs. We expect both N and the number of times
   // GetPreferenceValue is called to be relatively small in practice. If they
@@ -76,6 +82,41 @@ const base::Value* GetPreferenceValue(const PrefService* pref_service,
     }
   }
   return nullptr;
+}
+// Correct any corruption that has occurred due to Lacros processes starting in
+// inconsistent ways. https://crbug.com/1359205.
+void FixMigrationCorruptionFromLacrosSwitch(PrefService* pref_service,
+                                            const WebAppRegistrar& registrar) {
+  UserUninstalledPreinstalledWebAppPrefs preinstalled_prefs(pref_service);
+  int install_urls_fixed = 0;
+  int app_ids_removed = 0;
+  for (const AppId& app_id : registrar.GetAppIds()) {
+    if (!registrar.IsInstalledByDefaultManagement(app_id)) {
+      continue;
+    }
+    const WebApp* web_app = registrar.GetAppById(app_id);
+    DCHECK(web_app);
+    auto default_config_it = web_app->management_to_external_config_map().find(
+        WebAppManagement::kDefault);
+    // If there is no external config or the install urls are empty, just treat
+    // it as a valid install. The preinstall manager should add to the install
+    // urls when it synchronizes.
+    if (default_config_it ==
+            web_app->management_to_external_config_map().end() ||
+        default_config_it->second.install_urls.empty()) {
+      if (preinstalled_prefs.RemoveByAppId(app_id))
+        ++app_ids_removed;
+      continue;
+    }
+    // Remove all install urls that are legitimately installed. If they are all
+    // removed, then the pref is removed entirely.
+    for (const GURL& install_url : default_config_it->second.install_urls) {
+      if (preinstalled_prefs.RemoveByInstallUrl(app_id, install_url))
+        ++install_urls_fixed;
+    }
+  }
+  base::UmaHistogramCounts100(kAppIdDeleted, app_ids_removed);
+  base::UmaHistogramCounts100(kInstallUrlsDeleted, install_urls_fixed);
 }
 
 }  // namespace
@@ -111,7 +152,7 @@ ExternallyInstalledWebAppPrefs::BuildAppIdsMap(
     const PrefService* pref_service,
     ExternalInstallSource install_source) {
   const base::Value::Dict& urls_to_dicts =
-      pref_service->GetValueDict(prefs::kWebAppsExtensionIDs);
+      pref_service->GetDict(prefs::kWebAppsExtensionIDs);
 
   base::flat_map<AppId, base::flat_set<GURL>> ids_to_urls;
 
@@ -169,7 +210,7 @@ absl::optional<AppId> ExternallyInstalledWebAppPrefs::LookupAppId(
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   const base::Value* v =
-      pref_service_->GetValueDict(prefs::kWebAppsExtensionIDs).Find(url.spec());
+      pref_service_->GetDict(prefs::kWebAppsExtensionIDs).Find(url.spec());
   if (v && v->is_dict()) {
     v = v->FindKey(kExtensionId);
     if (v && v->is_string()) {
@@ -184,7 +225,7 @@ absl::optional<AppId> ExternallyInstalledWebAppPrefs::LookupPlaceholderAppId(
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   const base::Value* entry =
-      pref_service_->GetValueDict(prefs::kWebAppsExtensionIDs).Find(url.spec());
+      pref_service_->GetDict(prefs::kWebAppsExtensionIDs).Find(url.spec());
   if (!entry)
     return absl::nullopt;
 
@@ -199,8 +240,7 @@ void ExternallyInstalledWebAppPrefs::SetIsPlaceholder(const GURL& url,
                                                       bool is_placeholder) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  DCHECK(pref_service_->GetValueDict(prefs::kWebAppsExtensionIDs)
-             .Find(url.spec()));
+  DCHECK(pref_service_->GetDict(prefs::kWebAppsExtensionIDs).Find(url.spec()));
   DictionaryPrefUpdate update(pref_service_, prefs::kWebAppsExtensionIDs);
   base::Value* map = update.Get();
 
@@ -225,7 +265,7 @@ ExternallyInstalledWebAppPrefs::ParsedPrefs
 ExternallyInstalledWebAppPrefs::ParseExternalPrefsToWebAppData(
     PrefService* pref_service) {
   const base::Value::Dict& urls_to_dicts =
-      pref_service->GetValueDict(prefs::kWebAppsExtensionIDs);
+      pref_service->GetDict(prefs::kWebAppsExtensionIDs);
   ParsedPrefs ids_to_parsed_data;
 
   for (auto it : urls_to_dicts) {
@@ -315,6 +355,8 @@ void ExternallyInstalledWebAppPrefs::MigrateExternalPrefData(
       }
     }
   }
+
+  FixMigrationCorruptionFromLacrosSwitch(pref_service, registrar);
 }
 
 // static

@@ -1,20 +1,20 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <string>
+#import <string>
 
-#include "base/strings/sys_string_conversions.h"
+#import "base/strings/sys_string_conversions.h"
 #import "base/test/ios/wait_util.h"
-#include "components/policy/policy_constants.h"
+#import "components/policy/policy_constants.h"
 #import "ios/chrome/browser/policy/policy_app_interface.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
-#include "ios/testing/earl_grey/app_launch_configuration.h"
+#import "ios/testing/earl_grey/app_launch_configuration.h"
 #import "ios/testing/earl_grey/earl_grey_test.h"
-#include "net/base/net_errors.h"
-#include "net/test/embedded_test_server/embedded_test_server.h"
+#import "net/base/net_errors.h"
+#import "net/test/embedded_test_server/embedded_test_server.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -22,7 +22,7 @@
 
 namespace {
 
-// Waits until |url| has the expected blocked state.
+// Waits until `url` has the expected blocked state.
 void WaitForURLBlockedStatus(const GURL& url, bool blocked) {
   NSString* nsurl = base::SysUTF8ToNSString(url.spec());
   GREYAssertTrue(base::test::ios::WaitUntilConditionOrTimeout(

@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,10 +6,12 @@
 #include <string>
 
 #include "base/base_paths.h"
+#include "base/base_switches.h"
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/check_op.h"
 #include "base/command_line.h"
+#include "base/feature_list.h"
 #include "base/files/file_path.h"
 #include "base/notreached.h"
 #include "base/path_service.h"
@@ -23,6 +25,7 @@
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "build/build_config.h"
 #include "mojo/core/core.h"
+#include "mojo/core/embedder/embedder.h"
 #include "mojo/core/node_controller.h"
 #include "mojo/core/test/mojo_test_base.h"
 #include "mojo/public/c/system/invitation.h"
@@ -265,21 +268,25 @@ TEST_F(InvitationTest, ClosedInvitationClosesAttachments) {
 }
 
 TEST_F(InvitationTest, AttachNameInUse) {
+  constexpr uint32_t kName0 = 0;
+  constexpr uint32_t kName1 = 1;
   MojoHandle invitation;
   EXPECT_EQ(MOJO_RESULT_OK, MojoCreateInvitation(nullptr, &invitation));
 
   MojoHandle pipe0 = MOJO_HANDLE_INVALID;
-  EXPECT_EQ(MOJO_RESULT_OK, MojoAttachMessagePipeToInvitation(
-                                invitation, "x", 1, nullptr, &pipe0));
+  EXPECT_EQ(MOJO_RESULT_OK,
+            MojoAttachMessagePipeToInvitation(invitation, &kName0,
+                                              sizeof(kName0), nullptr, &pipe0));
   EXPECT_NE(MOJO_HANDLE_INVALID, pipe0);
 
   MojoHandle pipe1 = MOJO_HANDLE_INVALID;
-  EXPECT_EQ(
-      MOJO_RESULT_ALREADY_EXISTS,
-      MojoAttachMessagePipeToInvitation(invitation, "x", 1, nullptr, &pipe1));
+  EXPECT_EQ(MOJO_RESULT_ALREADY_EXISTS,
+            MojoAttachMessagePipeToInvitation(invitation, &kName0,
+                                              sizeof(kName0), nullptr, &pipe1));
   EXPECT_EQ(MOJO_HANDLE_INVALID, pipe1);
-  EXPECT_EQ(MOJO_RESULT_OK, MojoAttachMessagePipeToInvitation(
-                                invitation, "y", 1, nullptr, &pipe1));
+  EXPECT_EQ(MOJO_RESULT_OK,
+            MojoAttachMessagePipeToInvitation(invitation, &kName1,
+                                              sizeof(kName1), nullptr, &pipe1));
   EXPECT_NE(MOJO_HANDLE_INVALID, pipe1);
 
   EXPECT_EQ(MOJO_RESULT_OK, MojoClose(invitation));
@@ -335,6 +342,13 @@ base::Process InvitationTest::LaunchChildTestClient(
     NOTREACHED() << "Named pipe support does not exist for Mojo on Fuchsia.";
 #endif  //  !BUILDFLAG(IS_FUCHSIA)
   }
+
+  std::string enable_features;
+  std::string disable_features;
+  base::FeatureList::GetInstance()->GetCommandLineFeatureOverrides(
+      &enable_features, &disable_features);
+  command_line.AppendSwitchASCII(switches::kEnableFeatures, enable_features);
+  command_line.AppendSwitchASCII(switches::kDisableFeatures, disable_features);
 
   base::Process child_process = base::SpawnMultiProcessTestChild(
       test_client_name, command_line, launch_options);
@@ -532,6 +546,7 @@ DEFINE_TEST_CLIENT(SendInvitationMultiplePipesClient) {
   ASSERT_EQ(MOJO_RESULT_OK,
             MojoExtractMessagePipeFromInvitation(invitation, &pipe_names[1], 4,
                                                  nullptr, &pipes[1]));
+  EXPECT_EQ(MOJO_RESULT_OK, MojoClose(invitation));
 
   WaitForSignals(pipes[0], MOJO_HANDLE_SIGNAL_READABLE);
   WaitForSignals(pipes[1], MOJO_HANDLE_SIGNAL_READABLE);
@@ -541,6 +556,8 @@ DEFINE_TEST_CLIENT(SendInvitationMultiplePipesClient) {
   WriteMessage(pipes[1], kTestMessage4);
   WaitForSignals(pipes[0], MOJO_HANDLE_SIGNAL_PEER_CLOSED);
   WaitForSignals(pipes[1], MOJO_HANDLE_SIGNAL_PEER_CLOSED);
+  EXPECT_EQ(MOJO_RESULT_OK, MojoClose(pipes[0]));
+  EXPECT_EQ(MOJO_RESULT_OK, MojoClose(pipes[1]));
 }
 
 #if !BUILDFLAG(IS_FUCHSIA)
@@ -678,6 +695,8 @@ TEST_F(InvitationTest, ProcessErrors) {
       child_process, TestTimeouts::action_timeout(), &wait_result);
   child_process.Close();
   EXPECT_EQ(0, wait_result);
+
+  EXPECT_EQ(MOJO_RESULT_OK, MojoClose(pipe));
 }
 
 DEFINE_TEST_CLIENT(ProcessErrorsClient) {
@@ -695,6 +714,7 @@ DEFINE_TEST_CLIENT(ProcessErrorsClient) {
   // Wait for our goodbye before exiting.
   WaitForSignals(pipe, MOJO_HANDLE_SIGNAL_READABLE);
   EXPECT_EQ(kDisconnectMessage, ReadMessage(pipe));
+  EXPECT_EQ(MOJO_RESULT_OK, MojoClose(pipe));
 }
 
 // Temporary removed support for reinvitation for non-isolated connections.
@@ -782,6 +802,12 @@ DEFINE_TEST_CLIENT(ReinvitationClient) {
 }
 
 TEST_F(InvitationTest, SendIsolatedInvitation) {
+  if (IsMojoIpczEnabled()) {
+    // TODO(http://crbug.com/1299283): Enable this test with MojoIpcz once
+    // support for isolated connections is implemented.
+    GTEST_SKIP() << "MojoIpcz does not yet support isolated invitations.";
+  }
+
   MojoHandle primordial_pipe;
   base::Process child_process = LaunchChildTestClient(
       "SendIsolatedInvitationClient", &primordial_pipe, 1,
@@ -819,6 +845,12 @@ DEFINE_TEST_CLIENT(SendIsolatedInvitationClient) {
 }
 
 TEST_F(InvitationTest, SendMultipleIsolatedInvitations) {
+  if (IsMojoIpczEnabled()) {
+    // TODO(http://crbug.com/1299283): Enable this test with MojoIpcz once
+    // support for isolated connections is implemented.
+    GTEST_SKIP() << "MojoIpcz does not yet support isolated invitations.";
+  }
+
   // We send a secondary transport to the client process so we can send a second
   // isolated invitation.
   base::CommandLine command_line =
@@ -882,6 +914,8 @@ DEFINE_TEST_CLIENT(SendMultipleIsolatedInvitationsClient) {
   invitation = AcceptInvitation(MOJO_ACCEPT_INVITATION_FLAG_ISOLATED,
                                 kSecondaryChannelHandleSwitch);
   WaitForSignals(primordial_pipe, MOJO_HANDLE_SIGNAL_PEER_CLOSED);
+  EXPECT_EQ(MOJO_RESULT_OK, MojoClose(primordial_pipe));
+
   primordial_pipe = MOJO_HANDLE_INVALID;
   ASSERT_EQ(MOJO_RESULT_OK,
             MojoExtractMessagePipeFromInvitation(invitation, &pipe_name, 4,
@@ -896,6 +930,12 @@ DEFINE_TEST_CLIENT(SendMultipleIsolatedInvitationsClient) {
 }
 
 TEST_F(InvitationTest, SendIsolatedInvitationWithDuplicateName) {
+  if (IsMojoIpczEnabled()) {
+    // TODO(http://crbug.com/1299283): Enable this test with MojoIpcz once
+    // support for isolated connections is implemented.
+    GTEST_SKIP() << "MojoIpcz does not yet support isolated invitations.";
+  }
+
   PlatformChannel channel1;
   PlatformChannel channel2;
   MojoHandle pipe0, pipe1;
@@ -913,9 +953,17 @@ TEST_F(InvitationTest, SendIsolatedInvitationWithDuplicateName) {
       MOJO_SEND_INVITATION_FLAG_ISOLATED, nullptr, 0, kConnectionName);
 
   WaitForSignals(pipe0, MOJO_HANDLE_SIGNAL_PEER_CLOSED);
+  EXPECT_EQ(MOJO_RESULT_OK, MojoClose(pipe0));
+  EXPECT_EQ(MOJO_RESULT_OK, MojoClose(pipe1));
 }
 
 TEST_F(InvitationTest, SendIsolatedInvitationToSelf) {
+  if (IsMojoIpczEnabled()) {
+    // TODO(http://crbug.com/1299283): Enable this test with MojoIpcz once
+    // support for isolated connections is implemented.
+    GTEST_SKIP() << "MojoIpcz does not yet support isolated invitations.";
+  }
+
   PlatformChannel channel;
   MojoHandle pipe0, pipe1;
   SendInvitationToClient(channel.TakeLocalEndpoint().TakePlatformHandle(),
@@ -951,6 +999,12 @@ TEST_F(InvitationTest, BrokenInvitationTransportBreaksAttachedPipe) {
 }
 
 TEST_F(InvitationTest, BrokenIsolatedInvitationTransportBreaksAttachedPipe) {
+  if (IsMojoIpczEnabled()) {
+    // TODO(http://crbug.com/1299283): Enable this test with MojoIpcz once
+    // support for isolated connections is implemented.
+    GTEST_SKIP() << "MojoIpcz does not yet support isolated invitations.";
+  }
+
   MojoHandle primordial_pipe;
   base::Process child_process = LaunchChildTestClient(
       "BrokenTransportClient", &primordial_pipe, 1, TransportType::kChannel,

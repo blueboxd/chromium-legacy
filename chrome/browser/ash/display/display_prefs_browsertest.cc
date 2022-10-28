@@ -1,4 +1,4 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -32,7 +32,7 @@ class DisplayPrefsBrowserTest : public InProcessBrowserTest {
         ash::Shell::Get()->display_manager()->GetDisplayAt(index).id();
 
     const base::Value::Dict& display_properties =
-        local_state_->GetValueDict(ash::prefs::kDisplayProperties);
+        local_state_->GetDict(ash::prefs::kDisplayProperties);
     return display_properties.FindDict(base::NumberToString(display_id));
   }
 

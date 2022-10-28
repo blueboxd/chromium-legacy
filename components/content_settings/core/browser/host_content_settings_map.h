@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -25,6 +25,7 @@
 #include "components/content_settings/core/browser/user_modifiable_provider.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_constraints.h"
+#include "components/content_settings/core/common/content_settings_metadata.h"
 #include "components/content_settings/core/common/content_settings_pattern.h"
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "components/keyed_service/core/refcounted_keyed_service.h"
@@ -91,8 +92,7 @@ class HostContentSettingsMap : public content_settings::Observer,
   // Adds a new provider for |type|. This should be used instead of
   // |RegisterProvider|, not in addition.
   //
-  // Providers added via this method will be queried when
-  // |GetSettingLastModifiedDate| is called and their settings may be cleared by
+  // Providers added via this method may be cleared by
   // |ClearSettingsForOneTypeWithPredicate| if they were recently modified.
   void RegisterUserModifiableProvider(
       ProviderType type,
@@ -264,16 +264,6 @@ class HostContentSettingsMap : public content_settings::Observer,
   // This should only be called on the UI thread.
   void ClearSettingsForOneType(ContentSettingsType content_type);
 
-  // Return the |last_modified| date of a content setting. This will only return
-  // valid values for settings from the PreferenceProvider. Settings from other
-  // providers will return base::Time().
-  //
-  // This may be called on any thread.
-  base::Time GetSettingLastModifiedDate(
-      const ContentSettingsPattern& primary_pattern,
-      const ContentSettingsPattern& secondary_pattern,
-      ContentSettingsType content_type) const;
-
   using PatternSourcePredicate = base::RepeatingCallback<bool(
       const ContentSettingsPattern& primary_pattern,
       const ContentSettingsPattern& secondary_pattern)>;
@@ -332,13 +322,6 @@ class HostContentSettingsMap : public content_settings::Observer,
   void AllowInvalidSecondaryPatternForTesting(bool allow) {
     allow_invalid_secondary_pattern_for_testing_ = allow;
   }
-
-  // Retrieves the expiration time associated with the given setting granted
-  // for the |primary_url|, |secondary_url|, and |content_type| in the default
-  // scope. Null time means no expiration. Only use for testing.
-  base::Time GetExpirationForTesting(GURL& primary_url,
-                                     GURL& secondary_url,
-                                     ContentSettingsType content_type);
 
  private:
   friend class base::RefCountedThreadSafe<HostContentSettingsMap>;
@@ -405,7 +388,7 @@ class HostContentSettingsMap : public content_settings::Observer,
       bool include_incognito,
       ContentSettingsPattern* primary_pattern,
       ContentSettingsPattern* secondary_pattern,
-      content_settings::SessionModel* session_model);
+      content_settings::RuleMetaData* metadata);
 
   static base::Value GetContentSettingValueAndPatterns(
       content_settings::RuleIterator* rule_iterator,
@@ -413,7 +396,7 @@ class HostContentSettingsMap : public content_settings::Observer,
       const GURL& secondary_url,
       ContentSettingsPattern* primary_pattern,
       ContentSettingsPattern* secondary_pattern,
-      content_settings::SessionModel* session_model);
+      content_settings::RuleMetaData* metadata);
 
   // Migrate requesting and top level origin content settings to remove all
   // settings that have a top level pattern. If there is a pattern set for

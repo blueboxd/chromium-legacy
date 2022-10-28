@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -16,6 +16,8 @@ COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const char kAssistPersonalInfoEnabled[];
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const char kAssistPredictiveWritingEnabled[];
+COMPONENT_EXPORT(ASH_CONSTANTS)
+extern const char kCalendarIntegrationEnabled[];
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const char kESimRefreshedEuiccs[];
 COMPONENT_EXPORT(ASH_CONSTANTS)
@@ -127,6 +129,14 @@ COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const char kAccessibilityAutoclickMovementThreshold[];
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const char kAccessibilityAutoclickMenuPosition[];
+COMPONENT_EXPORT(ASH_CONSTANTS)
+extern const char kAccessibilityGreyscaleAmount[];
+COMPONENT_EXPORT(ASH_CONSTANTS)
+extern const char kAccessibilitySaturationAmount[];
+COMPONENT_EXPORT(ASH_CONSTANTS)
+extern const char kAccessibilitySepiaAmount[];
+COMPONENT_EXPORT(ASH_CONSTANTS)
+extern const char kAccessibilityHueRotationAmount[];
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const char kAccessibilityCaretHighlightEnabled[];
 COMPONENT_EXPORT(ASH_CONSTANTS)
@@ -341,6 +351,7 @@ extern const char kSystemTrayExpanded[];
 
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kUserCameraAllowed[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kUserMicrophoneAllowed[];
+COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kUserGeolocationAllowed[];
 
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kTapDraggingEnabled[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kTouchpadEnabled[];
@@ -470,6 +481,8 @@ extern const char kChromadToCloudMigrationEnabled[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kFilesAppFolderShortcuts[];
 
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kFilesAppUIPrefsMigrated[];
+
+COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kFilesAppTrashEnabled[];
 
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const char kLoginScreenWebUILazyLoading[];

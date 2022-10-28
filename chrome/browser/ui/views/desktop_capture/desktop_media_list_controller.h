@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -38,6 +38,7 @@ class DesktopMediaListController : public DesktopMediaListObserver,
     virtual void OnSourceNameChanged(size_t index) = 0;
     virtual void OnSourceThumbnailChanged(size_t index) = 0;
     virtual void OnSourcePreviewChanged(size_t index) = 0;
+    virtual void OnDelegatedSourceListSelection() = 0;
   };
 
   // The abstract interface implemented by any view controlled by this
@@ -53,6 +54,8 @@ class DesktopMediaListController : public DesktopMediaListObserver,
     // Returns the SourceListListener to use to notify this ListView of changes
     // to the backing DesktopMediaList.
     virtual SourceListListener* GetSourceListListener() = 0;
+
+    virtual void ClearSelection() = 0;
 
    protected:
     ListView() = default;
@@ -81,9 +84,13 @@ class DesktopMediaListController : public DesktopMediaListObserver,
   // Focuses this controller's view.
   void FocusView();
 
+  void HideView();
+
   // Returns the DesktopMediaID corresponding to the current selection in this
   // controller's view, if there is one.
   absl::optional<content::DesktopMediaID> GetSelection() const;
+
+  void ClearSelection();
 
   // These three methods are called by the view to inform the controller of
   // events. The first two indicate changes in the visual state of the view; the
@@ -113,6 +120,8 @@ class DesktopMediaListController : public DesktopMediaListObserver,
   // Used in tests.
   void Reject();
 
+  void StartUpdatingInternal();
+
   // DesktopMediaListObserver:
   void OnSourceAdded(int index) override;
   void OnSourceRemoved(int index) override;
@@ -120,6 +129,8 @@ class DesktopMediaListController : public DesktopMediaListObserver,
   void OnSourceNameChanged(int index) override;
   void OnSourceThumbnailChanged(int index) override;
   void OnSourcePreviewChanged(size_t index) override;
+  void OnDelegatedSourceListSelection() override;
+  void OnDelegatedSourceListDismissed() override;
 
   // ViewObserver:
   void OnViewIsDeleting(views::View* view) override;
@@ -132,6 +143,8 @@ class DesktopMediaListController : public DesktopMediaListObserver,
   raw_ptr<ListView> view_ = nullptr;
   base::ScopedMultiSourceObservation<views::View, views::ViewObserver>
       view_observations_{this};
+  bool is_updating_ = false;
+  content::DesktopMediaID dialog_window_id_;
 
   // Auto-selection. Used only in tests.
   const std::string auto_select_tab_;        // Only tabs, by title.

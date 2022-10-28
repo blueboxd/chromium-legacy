@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,7 +7,6 @@
 #include "ash/components/arc/arc_util.h"
 #include "ash/components/arc/session/arc_session_runner.h"
 #include "ash/components/arc/test/fake_arc_session.h"
-#include "ash/components/disks/disk_mount_manager.h"
 #include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
@@ -16,13 +15,11 @@
 #include "chrome/browser/ash/arc/session/arc_session_manager.h"
 #include "chrome/browser/ash/arc/test/test_arc_session_manager.h"
 #include "chrome/browser/ash/crostini/crostini_manager.h"
-#include "chrome/browser/ash/crostini/crostini_pref_names.h"
 #include "chrome/browser/ash/crostini/crostini_util.h"
 #include "chrome/browser/ash/file_manager/fake_disk_mount_manager.h"
 #include "chrome/browser/ash/file_manager/path_util.h"
 #include "chrome/browser/ash/file_manager/volume_manager.h"
 #include "chrome/browser/ash/file_manager/volume_manager_factory.h"
-#include "chrome/browser/ash/file_system_provider/service_factory.h"
 #include "chrome/browser/ash/guest_os/guest_os_pref_names.h"
 #include "chrome/browser/ash/guest_os/public/guest_os_service.h"
 #include "chrome/browser/ash/guest_os/public/guest_os_wayland_server.h"
@@ -38,18 +35,18 @@
 #include "chromeos/ash/components/dbus/concierge/concierge_client.h"
 #include "chromeos/ash/components/dbus/concierge/fake_concierge_client.h"
 #include "chromeos/ash/components/dbus/debug_daemon/debug_daemon_client.h"
+#include "chromeos/ash/components/dbus/dlcservice/dlcservice_client.h"
 #include "chromeos/ash/components/dbus/seneschal/fake_seneschal_client.h"
 #include "chromeos/ash/components/dbus/seneschal/seneschal_client.h"
 #include "chromeos/ash/components/dbus/seneschal/seneschal_service.pb.h"
 #include "chromeos/ash/components/dbus/vm_plugin_dispatcher/vm_plugin_dispatcher_client.h"
-#include "chromeos/dbus/dlcservice/dlcservice_client.h"
+#include "chromeos/ash/components/disks/disk_mount_manager.h"
 #include "components/account_id/account_id.h"
 #include "components/drive/drive_pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "components/user_manager/scoped_user_manager.h"
 #include "content/public/test/browser_task_environment.h"
-#include "storage/browser/file_system/external_mount_points.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
@@ -92,7 +89,7 @@ class GuestOsSharePathTest : public testing::Test {
       bool success,
       const std::string& failure_reason) {
     const base::Value::Dict& prefs =
-        profile()->GetPrefs()->GetValueDict(prefs::kGuestOSPathsSharedToVms);
+        profile()->GetPrefs()->GetDict(prefs::kGuestOSPathsSharedToVms);
 
     const base::Value::List* shared_path_list =
         prefs.FindList(shared_path_.value());
@@ -154,11 +151,9 @@ class GuestOsSharePathTest : public testing::Test {
   void SharePersistedPathsCallback(bool success,
                                    const std::string& failure_reason) {
     EXPECT_TRUE(success);
-    EXPECT_EQ(profile()
-                  ->GetPrefs()
-                  ->GetValueDict(prefs::kGuestOSPathsSharedToVms)
-                  .size(),
-              2U);
+    EXPECT_EQ(
+        profile()->GetPrefs()->GetDict(prefs::kGuestOSPathsSharedToVms).size(),
+        2U);
     run_loop()->Quit();
   }
 
@@ -181,7 +176,7 @@ class GuestOsSharePathTest : public testing::Test {
       bool success,
       const std::string& failure_reason) {
     const base::Value::Dict& prefs =
-        profile()->GetPrefs()->GetValueDict(prefs::kGuestOSPathsSharedToVms);
+        profile()->GetPrefs()->GetDict(prefs::kGuestOSPathsSharedToVms);
     if (expected_persist == Persist::YES) {
       EXPECT_NE(prefs.Find(path.value()), nullptr);
     } else {
@@ -282,7 +277,7 @@ class GuestOsSharePathTest : public testing::Test {
             component_updater::CrOSComponentManager::Error::NONE,
             base::FilePath("/install/path"), base::FilePath("/mount/path")));
     browser_part_.InitializeCrosComponentManager(component_manager_);
-    chromeos::DlcserviceClient::InitializeFake();
+    ash::DlcserviceClient::InitializeFake();
 
     run_loop_ = std::make_unique<base::RunLoop>();
     profile_ = std::make_unique<TestingProfile>();
@@ -327,7 +322,7 @@ class GuestOsSharePathTest : public testing::Test {
     scoped_user_manager_.reset();
     profile_.reset();
     ash::disks::DiskMountManager::Shutdown();
-    chromeos::DlcserviceClient::Shutdown();
+    ash::DlcserviceClient::Shutdown();
     browser_part_.ShutdownCrosComponentManager();
     component_manager_.reset();
   }
@@ -619,6 +614,21 @@ TEST_F(GuestOsSharePathTest, SuccessSystemFonts) {
   run_loop()->Run();
 }
 
+TEST_F(GuestOsSharePathTest, SuccessGuestOs) {
+  SetUpVolume();
+  file_manager::VolumeManager::Get(profile())->AddSftpGuestOsVolume(
+      "name", base::FilePath("/media/fuse/whatever"), base::FilePath("/meh"),
+      guest_os::VmType::UNKNOWN);
+  guest_os_share_path_->SharePath(
+      "vm-running", base::FilePath("/media/fuse/whatever"), PERSIST_NO,
+      base::BindOnce(&GuestOsSharePathTest::SharePathCallback,
+                     base::Unretained(this), "vm-running", Persist::NO,
+                     SeneschalClientCalled::YES,
+                     &vm_tools::seneschal::SharePathRequest::GUEST_OS_FILES, "",
+                     Success::YES, ""));
+  run_loop()->Run();
+}
+
 TEST_F(GuestOsSharePathTest, SharePathErrorSeneschal) {
   features_.InitWithFeatures({features::kCrostini}, {});
   GetFakeUserManager()->LoginUser(account_id_);
@@ -736,7 +746,7 @@ TEST_F(GuestOsSharePathTest, RegisterPersistedPaths) {
 
   guest_os_share_path_->RegisterPersistedPath("v1", base::FilePath("/a/a/a"));
   const base::Value::Dict& prefs =
-      profile()->GetPrefs()->GetValueDict(prefs::kGuestOSPathsSharedToVms);
+      profile()->GetPrefs()->GetDict(prefs::kGuestOSPathsSharedToVms);
   EXPECT_EQ(prefs.size(), 1U);
   EXPECT_EQ(prefs.FindList("/a/a/a")->size(), 1U);
   EXPECT_EQ(prefs.FindList("/a/a/a")->front().GetString(), "v1");

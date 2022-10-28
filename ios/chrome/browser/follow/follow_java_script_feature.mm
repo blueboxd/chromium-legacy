@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,7 +9,7 @@
 #endif
 
 #import "ios/web/public/js_messaging/web_frame_util.h"
-#include "ios/web/public/web_state.h"
+#import "ios/web/public/web_state.h"
 #import "net/base/mac/url_conversions.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -63,13 +63,13 @@ void FollowJavaScriptFeature::HandleResponse(const GURL& url,
   if (response && response->is_list()) {
     for (const auto& link : response->GetListDeprecated()) {
       if (link.is_string()) {
-        NSURL* url = net::NSURLWithGURL(GURL(link.GetString()));
-        if (url) {
+        NSURL* nsurl = net::NSURLWithGURL(GURL(link.GetString()));
+        if (nsurl) {
           if (!rss_urls) {
             rss_urls = [[NSMutableArray alloc] init];
           }
 
-          [rss_urls addObject:url];
+          [rss_urls addObject:nsurl];
         }
       }
     }

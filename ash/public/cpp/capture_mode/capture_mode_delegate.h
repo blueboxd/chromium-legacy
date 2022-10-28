@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -172,6 +172,10 @@ class ASH_PUBLIC_EXPORT CaptureModeDelegate {
   // Returns true if camera support is disabled by admins via
   // the `SystemFeaturesDisableList` policy, false otherwise.
   virtual bool IsCameraDisabledByPolicy() const = 0;
+
+  // Returns true if audio recording is disabled by admins via the
+  // `AudioCaptureAllowed` policy.
+  virtual bool IsAudioCaptureDisabledByPolicy() const = 0;
 };
 
 }  // namespace ash

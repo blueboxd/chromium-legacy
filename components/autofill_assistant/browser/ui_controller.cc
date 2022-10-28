@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -1114,10 +1114,8 @@ void UiController::InitFromParameters(const TriggerContext& trigger_context) {
   if (details->UpdateFromParameters(trigger_context.GetScriptParameters()))
     SetDetails(std::move(details), base::TimeDelta());
 
-  const absl::optional<bool> enable_tts =
-      trigger_context.GetScriptParameters().GetEnableTts();
-  if (enable_tts && enable_tts.value() &&
-      !client_->IsSpokenFeedbackAccessibilityServiceEnabled()) {
+  const bool enable_tts = trigger_context.GetScriptParameters().GetEnableTts();
+  if (enable_tts && !client_->IsSpokenFeedbackAccessibilityServiceEnabled()) {
     tts_enabled_ = true;
     for (UiControllerObserver& observer : observers_) {
       observer.OnTtsButtonVisibilityChanged(/* visible= */ true);
@@ -1196,6 +1194,7 @@ bool UiController::SupportsExternalActions() {
 
 void UiController::ExecuteExternalAction(
     const external::Action& external_action,
+    bool is_interrupt,
     base::OnceCallback<void(ExternalActionDelegate::DomUpdateCallback)>
         start_dom_checks_callback,
     base::OnceCallback<void(const external::Result& result)>

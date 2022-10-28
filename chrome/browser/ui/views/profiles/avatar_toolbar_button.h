@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -91,11 +91,6 @@ class AvatarToolbarButton : public ToolbarButton,
                                const gfx::Image& profile_identity_image) const;
 
   void SetInsets();
-
-  // Attempts to show the in-product help for profile switching. This function
-  // should only be called after the backend is initialized. Otherwise prefer
-  // calling MaybeShowProfileSwitchIPH().
-  void MaybeShowProfileSwitchIPHInitialized(bool success);
 
   std::unique_ptr<AvatarToolbarButtonDelegate> delegate_;
 

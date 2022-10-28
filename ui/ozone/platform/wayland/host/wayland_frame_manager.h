@@ -57,7 +57,7 @@ struct WaylandFrame {
   friend class WaylandFrameManager;
 
   uint32_t frame_id;
-  raw_ptr<WaylandSurface> root_surface;
+  raw_ptr<WaylandSurface, DanglingUntriaged> root_surface;
   wl::WaylandOverlayConfig root_config;
   base::circular_deque<std::pair<WaylandSubsurface*, wl::WaylandOverlayConfig>>
       subsurfaces_to_overlays;
@@ -190,6 +190,9 @@ class WaylandFrameManager {
 
   // Non-owned pointer to the main connection.
   const raw_ptr<WaylandConnection> connection_;
+
+  // Set when invalid frame data is sent and the gpu process must be terminated.
+  std::string fatal_error_message_;
 
   base::WeakPtrFactory<WaylandFrameManager> weak_factory_;
 };

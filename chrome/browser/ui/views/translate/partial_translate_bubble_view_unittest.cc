@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -35,7 +35,7 @@ class FakePartialTranslateBubbleModel : public PartialTranslateBubbleModel {
     current_view_state_ = view_state;
   }
 
-  void ShowError(translate::TranslateErrors::Type error_type) override {}
+  void ShowError(translate::TranslateErrors error_type) override {}
 
   int GetNumberOfSourceLanguages() const override { return 1000; }
 
@@ -56,6 +56,10 @@ class FakePartialTranslateBubbleModel : public PartialTranslateBubbleModel {
   int GetTargetLanguageIndex() const override { return 2; }
 
   void UpdateTargetLanguageIndex(int index) override {}
+
+  std::string GetSourceLanguageCode() const override { return "en"; }
+
+  std::string GetTargetLanguageCode() const override { return "en"; }
 
   void Translate() override { translate_called_ = true; }
 

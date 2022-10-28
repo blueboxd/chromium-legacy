@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -14,6 +14,7 @@
 #include "base/logging.h"
 #include "base/metrics/field_trial_param_associator.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/no_destructor.h"
 #include "base/notreached.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/process/memory.h"
@@ -77,6 +78,18 @@ const size_t kFieldTrialAllocationSize = 128 << 10;  // 128 KiB
 #if BUILDFLAG(IS_MAC)
 constexpr MachPortsForRendezvous::key_type kFieldTrialRendezvousKey = 'fldt';
 #endif
+
+class SessionEntropyProvider : public FieldTrial::EntropyProvider {
+ public:
+  SessionEntropyProvider() = default;
+  ~SessionEntropyProvider() override = default;
+
+  double GetEntropyForTrial(StringPiece trial_name,
+                            uint32_t randomization_seed) const override {
+    DCHECK_EQ(randomization_seed, 0u);
+    return RandDouble();
+  }
+};
 
 // Writes out string1 and then string2 to pickle.
 void WriteStringPair(Pickle* pickle,
@@ -284,8 +297,8 @@ void FieldTrial::Disable() {
   }
 }
 
-int FieldTrial::AppendGroup(const std::string& name,
-                            Probability group_probability) {
+void FieldTrial::AppendGroup(const std::string& name,
+                             Probability group_probability) {
   // When the group choice was previously forced, we only need to return the
   // the id of the chosen group, and anything can be returned for the others.
   if (forced_) {
@@ -295,12 +308,13 @@ int FieldTrial::AppendGroup(const std::string& name,
       // forced trial, it will not have the same value as the default group
       // number returned from the non-forced |FactoryGetFieldTrial()| call,
       // which takes care to ensure that this does not happen.
-      return group_;
+      return;
     }
     DCHECK_NE(next_group_number_, group_);
     // We still return different numbers each time, in case some caller need
     // them to be different.
-    return next_group_number_++;
+    next_group_number_++;
+    return;
   }
 
   DCHECK_LE(group_probability, divisor_);
@@ -316,19 +330,19 @@ int FieldTrial::AppendGroup(const std::string& name,
     // This is the group that crossed the random line, so we do the assignment.
     SetGroupChoice(name, next_group_number_);
   }
-  return next_group_number_++;
+  next_group_number_++;
+  return;
 }
 
-int FieldTrial::group() {
+void FieldTrial::Activate() {
   FinalizeGroupChoice();
   if (trial_registered_)
     FieldTrialList::NotifyFieldTrialGroupSelection(this);
-  return group_;
 }
 
 const std::string& FieldTrial::group_name() {
-  // Call |group()| to ensure group gets assigned and observers are notified.
-  group();
+  // Call |Activate()| to ensure group gets assigned and observers are notified.
+  Activate();
   DCHECK(!group_name_.empty());
   return group_name_;
 }
@@ -351,7 +365,10 @@ void FieldTrial::SetForced() {
 
 // static
 void FieldTrial::EnableBenchmarking() {
-  DCHECK_EQ(0u, FieldTrialList::GetFieldTrialCount());
+  // We don't need to see field trials created via CreateFieldTrial() for
+  // benchmarking, because such field trials have only a single group and are
+  // not affected by randomization that |enable_benchmarking_| would disable.
+  DCHECK_EQ(0u, FieldTrialList::GetRandomizedFieldTrialCount());
   enable_benchmarking_ = true;
 }
 
@@ -480,71 +497,21 @@ FieldTrial* FieldTrialList::FactoryGetFieldTrial(
     StringPiece trial_name,
     FieldTrial::Probability total_probability,
     StringPiece default_group_name,
-    FieldTrial::RandomizationType randomization_type,
-    int* default_group_number) {
-  return FactoryGetFieldTrialWithRandomizationSeed(
-      trial_name, total_probability, default_group_name, randomization_type, 0,
-      default_group_number, nullptr);
-}
-
-// static
-FieldTrial* FieldTrialList::FactoryGetFieldTrialWithRandomizationSeed(
-    StringPiece trial_name,
-    FieldTrial::Probability total_probability,
-    StringPiece default_group_name,
-    FieldTrial::RandomizationType randomization_type,
-    uint32_t randomization_seed,
-    int* default_group_number,
-    const FieldTrial::EntropyProvider* override_entropy_provider) {
-  if (default_group_number)
-    *default_group_number = FieldTrial::kDefaultGroupNumber;
+    const FieldTrial::EntropyProvider& entropy_provider,
+    uint32_t randomization_seed) {
   // Check if the field trial has already been created in some other way.
   FieldTrial* existing_trial = Find(trial_name);
   if (existing_trial) {
     CHECK(existing_trial->forced_);
-    // If the default group name differs between the existing forced trial
-    // and this trial, then use a different value for the default group number.
-    if (default_group_number &&
-        default_group_name != existing_trial->default_group_name()) {
-      // If the new default group number corresponds to the group that was
-      // chosen for the forced trial (which has been finalized when it was
-      // forced), then set the default group number to that.
-      if (default_group_name == existing_trial->group_name_internal()) {
-        *default_group_number = existing_trial->group_;
-      } else {
-        // Otherwise, use |kNonConflictingGroupNumber| (-2) for the default
-        // group number, so that it does not conflict with the |AppendGroup()|
-        // result for the chosen group.
-        const int kNonConflictingGroupNumber = -2;
-        static_assert(
-            kNonConflictingGroupNumber != FieldTrial::kDefaultGroupNumber,
-            "The 'non-conflicting' group number conflicts");
-        static_assert(kNonConflictingGroupNumber != FieldTrial::kNotFinalized,
-                      "The 'non-conflicting' group number conflicts");
-        *default_group_number = kNonConflictingGroupNumber;
-      }
-    }
     return existing_trial;
   }
 
-  double entropy_value;
-  if (randomization_type == FieldTrial::ONE_TIME_RANDOMIZED) {
-    // If an override entropy provider is given, use it.
-    const FieldTrial::EntropyProvider* entropy_provider =
-        override_entropy_provider ? override_entropy_provider
-                                  : GetEntropyProviderForOneTimeRandomization();
-    CHECK(entropy_provider);
-    entropy_value = entropy_provider->GetEntropyForTrial(trial_name,
-                                                         randomization_seed);
-  } else {
-    DCHECK_EQ(FieldTrial::SESSION_RANDOMIZED, randomization_type);
-    DCHECK_EQ(0U, randomization_seed);
-    entropy_value = RandDouble();
-  }
+  double entropy_value =
+      entropy_provider.GetEntropyForTrial(trial_name, randomization_seed);
 
   FieldTrial* field_trial = new FieldTrial(trial_name, total_probability,
                                            default_group_name, entropy_value);
-  FieldTrialList::Register(field_trial);
+  FieldTrialList::Register(field_trial, /*is_randomized_trial=*/true);
   return field_trial;
 }
 
@@ -554,14 +521,6 @@ FieldTrial* FieldTrialList::Find(StringPiece trial_name) {
     return nullptr;
   AutoLock auto_lock(global_->lock_);
   return global_->PreLockedFind(trial_name);
-}
-
-// static
-int FieldTrialList::FindValue(StringPiece trial_name) {
-  FieldTrial* field_trial = Find(trial_name);
-  if (field_trial)
-    return field_trial->group();
-  return FieldTrial::kNotFinalized;
 }
 
 // static
@@ -906,7 +865,9 @@ FieldTrial* FieldTrialList::CreateFieldTrial(StringPiece name,
   }
   const int kTotalProbability = 100;
   field_trial = new FieldTrial(name, kTotalProbability, group_name, 0);
-  FieldTrialList::Register(field_trial);
+  // The group choice will be finalized in this method. So
+  // |is_randomized_trial| should be false.
+  FieldTrialList::Register(field_trial, /*is_randomized_trial=*/false);
   // Force the trial, which will also finalize the group choice.
   field_trial->SetForced();
   return field_trial;
@@ -928,7 +889,7 @@ void FieldTrialList::RemoveObserver(Observer* observer) {
   AutoLock auto_lock(global_->lock_);
   Erase(global_->observers_, observer);
   DCHECK_EQ(global_->num_ongoing_notify_field_trial_group_selection_calls_, 0)
-      << "Cannot call RemoveObserver while accessing FieldTrial::group().";
+      << "Cannot call RemoveObserver while accessing FieldTrial::group_name().";
 }
 
 // static
@@ -987,6 +948,14 @@ size_t FieldTrialList::GetFieldTrialCount() {
     return 0;
   AutoLock auto_lock(global_->lock_);
   return global_->registered_.size();
+}
+
+// static
+size_t FieldTrialList::GetRandomizedFieldTrialCount() {
+  if (!global_)
+    return 0;
+  AutoLock auto_lock(global_->lock_);
+  return global_->num_registered_randomized_trials_;
 }
 
 // static
@@ -1118,14 +1087,21 @@ FieldTrialList::GetAllFieldTrialsFromPersistentAllocator(
 }
 
 // static
-const FieldTrial::EntropyProvider*
+const FieldTrial::EntropyProvider&
 FieldTrialList::GetEntropyProviderForOneTimeRandomization() {
-  if (!global_) {
-    used_without_global_ = true;
-    return nullptr;
-  }
+  // It's invalid to call this when we haven't created the global list with
+  // support for one-time randomization. CHECK that we don't return a null
+  // reference, which would generate a confusing error later.
+  CHECK(global_->entropy_provider_);
+  return *global_->entropy_provider_;
+}
 
-  return global_->entropy_provider_.get();
+// static
+const FieldTrial::EntropyProvider&
+FieldTrialList::GetEntropyProviderForSessionRandomization() {
+  static const base::NoDestructor<SessionEntropyProvider>
+      session_entropy_provider;
+  return *session_entropy_provider;
 }
 
 // static
@@ -1334,10 +1310,10 @@ bool FieldTrialList::CreateTrialsFromSharedMemoryMapping(
     FieldTrial* trial = CreateFieldTrial(trial_name, group_name);
     trial->ref_ = mem_iter.GetAsReference(entry);
     if (subtle::NoBarrier_Load(&entry->activated)) {
-      // Call |group()| to mark the trial as "used" and notify observers, if
-      // any. This is useful to ensure that field trials created in child
+      // Mark the trial as "used" and notify observers, if any.
+      // This is useful to ensure that field trials created in child
       // processes are properly reported in crash reports.
-      trial->group();
+      trial->Activate();
     }
   }
   return true;
@@ -1459,7 +1435,7 @@ FieldTrial* FieldTrialList::PreLockedFind(StringPiece name) {
 }
 
 // static
-void FieldTrialList::Register(FieldTrial* trial) {
+void FieldTrialList::Register(FieldTrial* trial, bool is_randomized_trial) {
   if (!global_) {
     used_without_global_ = true;
     return;
@@ -1469,6 +1445,9 @@ void FieldTrialList::Register(FieldTrial* trial) {
   trial->AddRef();
   trial->SetTrialRegistered();
   global_->registered_[trial->trial_name()] = trial;
+
+  if (is_randomized_trial)
+    ++global_->num_registered_randomized_trials_;
 }
 
 // static
@@ -1493,10 +1472,10 @@ bool FieldTrialList::CreateTrialsFromFieldTrialStatesInternal(
     if (!trial)
       return false;
     if (entry.activated) {
-      // Call |group()| to mark the trial as "used" and notify observers, if
-      // any. This is useful to ensure that field trials created in child
+      // Mark the trial as "used" and notify observers, if any.
+      // This is useful to ensure that field trials created in child
       // processes are properly reported in crash reports.
-      trial->group();
+      trial->Activate();
     }
   }
   return true;

@@ -1,4 +1,4 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,6 +9,7 @@
 #include "base/test/test_suite.h"
 #include "mojo/core/embedder/embedder.h"
 #include "mojo/core/embedder/scoped_ipc_support.h"
+#include "third_party/ipcz/src/test/multinode_test.h"
 #include "third_party/ipcz/src/test_buildflags.h"
 
 #if BUILDFLAG(ENABLE_IPCZ_MULTIPROCESS_TESTS)
@@ -21,6 +22,7 @@ int main(int argc, char** argv) {
 #endif
 
   base::TestSuite test_suite(argc, argv);
+  ipcz::test::RegisterMultinodeTests();
   mojo::core::Init();
   base::TestIOThread test_io_thread(base::TestIOThread::kAutoStart);
   mojo::core::ScopedIPCSupport ipc_support(

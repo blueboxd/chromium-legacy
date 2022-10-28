@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,7 +12,7 @@
 #include "base/test/task_environment.h"
 #include "base/timer/timer.h"
 #include "components/signin/public/identity_manager/identity_test_environment.h"
-#include "components/sync/driver/test_sync_service.h"
+#include "components/sync/test/test_sync_service.h"
 #include "services/network/test/test_url_loader_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -62,6 +62,12 @@ class SyncSessionDurationsMetricsRecorderTest : public testing::Test {
   }
 
   std::string GetSessionHistogramName(const std::string& histogram_suffix) {
+    return std::string("Session.TotalDurationMax1Day.") + histogram_suffix;
+  }
+
+  // TODO(https://crbug.com/1355203): Deprecate this method.
+  std::string GetSessionHistogramLegacyName(
+      const std::string& histogram_suffix) {
     return std::string("Session.TotalDuration.") + histogram_suffix;
   }
 
@@ -72,6 +78,8 @@ class SyncSessionDurationsMetricsRecorderTest : public testing::Test {
     for (const std::string& histogram_suffix : histogram_suffixes) {
       ht.ExpectTimeBucketCount(GetSessionHistogramName(histogram_suffix),
                                expected_session_time, 1);
+      ht.ExpectTimeBucketCount(GetSessionHistogramLegacyName(histogram_suffix),
+                               expected_session_time, 1);
     }
   }
 
@@ -79,6 +87,7 @@ class SyncSessionDurationsMetricsRecorderTest : public testing::Test {
                         const std::vector<std::string>& histogram_suffixes) {
     for (const std::string& histogram_suffix : histogram_suffixes) {
       ht.ExpectTotalCount(GetSessionHistogramName(histogram_suffix), 1);
+      ht.ExpectTotalCount(GetSessionHistogramLegacyName(histogram_suffix), 1);
     }
   }
 
@@ -86,6 +95,7 @@ class SyncSessionDurationsMetricsRecorderTest : public testing::Test {
                        const std::vector<std::string>& histogram_suffixes) {
     for (const std::string& histogram_suffix : histogram_suffixes) {
       ht.ExpectTotalCount(GetSessionHistogramName(histogram_suffix), 0);
+      ht.ExpectTotalCount(GetSessionHistogramLegacyName(histogram_suffix), 0);
     }
   }
 

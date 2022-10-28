@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,12 +13,27 @@
 #include "components/segmentation_platform/internal/execution/processing/feature_processor_state.h"
 #include "components/segmentation_platform/internal/metadata/metadata_utils.h"
 #include "components/segmentation_platform/internal/stats.h"
+#include "components/segmentation_platform/public/proto/aggregation.pb.h"
 #include "components/segmentation_platform/public/proto/model_metadata.pb.h"
 
 namespace segmentation_platform::processing {
 
+namespace {
+
+proto::UMAFeature GetAsUMA(const Data& data) {
+  DCHECK(data.input_feature.has_value() || data.output_feature.has_value());
+
+  if (data.input_feature.has_value()) {
+    return data.input_feature->uma_feature();
+  }
+
+  return data.output_feature->uma_output().uma_feature();
+}
+
+}  // namespace
+
 UmaFeatureProcessor::UmaFeatureProcessor(
-    base::flat_map<FeatureIndex, proto::UMAFeature>&& uma_features,
+    base::flat_map<FeatureIndex, Data>&& uma_features,
     SignalDatabase* signal_database,
     FeatureAggregator* feature_aggregator,
     const base::Time prediction_time,
@@ -42,24 +57,8 @@ void UmaFeatureProcessor::Process(
 }
 
 void UmaFeatureProcessor::ProcessNextUmaFeature() {
-  // Process the feature list.
-  absl::optional<proto::UMAFeature> next_feature;
-  FeatureIndex index;
-  while (!uma_features_.empty()) {
-    auto it = uma_features_.begin();
-    if (it->second.bucket_count() == 0) {
-      // Skip collection-only features.
-      uma_features_.erase(it);
-    } else {
-      next_feature = std::move(it->second);
-      index = it->first;
-      uma_features_.erase(it);
-      break;
-    }
-  }
-
   // Processing of the feature list has completed.
-  if (!next_feature.has_value() || feature_processor_state_->error()) {
+  if (uma_features_.empty() || feature_processor_state_->error()) {
     base::SequencedTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::BindOnce(std::move(callback_),
                                   std::move(feature_processor_state_),
@@ -67,8 +66,14 @@ void UmaFeatureProcessor::ProcessNextUmaFeature() {
     return;
   }
 
+  // Process the feature list.
+  const auto& it = uma_features_.begin();
+  const proto::UMAFeature& next_feature = GetAsUMA(it->second);
+  FeatureIndex index = it->first;
+  uma_features_.erase(it);
+
   // Validate the proto::UMAFeature metadata.
-  if (metadata_utils::ValidateMetadataUmaFeature(next_feature.value()) !=
+  if (metadata_utils::ValidateMetadataUmaFeature(next_feature) !=
       metadata_utils::ValidationResult::kValidationSuccess) {
     feature_processor_state_->SetError(
         stats::FeatureProcessingError::kUmaValidationError);
@@ -76,7 +81,7 @@ void UmaFeatureProcessor::ProcessNextUmaFeature() {
     return;
   }
 
-  ProcessSingleUmaFeature(index, next_feature.value());
+  ProcessSingleUmaFeature(index, next_feature);
 }
 
 void UmaFeatureProcessor::ProcessSingleUmaFeature(
@@ -134,13 +139,22 @@ void UmaFeatureProcessor::OnGetSamplesForUmaFeature(
   // process it synchronously, and insert it into the
   // FeatureProcessorState::input_tensor so we can later pass it to the ML model
   // executor.
-  std::vector<float> feature_data = feature_aggregator_->Process(
+  absl::optional<std::vector<float>> result = feature_aggregator_->Process(
       feature.type(), feature.aggregation(), feature.bucket_count(),
       prediction_time_, bucket_duration_, samples);
 
-  DCHECK_EQ(feature.tensor_length(), feature_data.size());
-  result_[index] =
-      std::vector<ProcessedValue>(feature_data.begin(), feature_data.end());
+  // If no feature data is available, use the default values specified instead.
+  if (result.has_value()) {
+    const std::vector<float>& feature_data = result.value();
+    DCHECK_EQ(feature.tensor_length(), feature_data.size());
+    result_[index] =
+        std::vector<ProcessedValue>(feature_data.begin(), feature_data.end());
+  } else {
+    DCHECK_EQ(feature.tensor_length(),
+              static_cast<unsigned int>(feature.default_values_size()));
+    result_[index] = std::vector<ProcessedValue>(
+        feature.default_values().begin(), feature.default_values().end());
+  }
 
   stats::RecordModelExecutionDurationFeatureProcessing(segment_id_,
                                                        timer.Elapsed());

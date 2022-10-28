@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,9 +13,16 @@ namespace chromeos::wm::features {
 COMPONENT_EXPORT(CHROMEOS_UI_WM)
 extern const base::Feature kFloatWindow;
 
+COMPONENT_EXPORT(CHROMEOS_UI_WM)
+extern const base::Feature kPartialSplit;
+
 // Checks if the float feature is enabled. On ash, this checks the feature flag.
 // On lacros, this checks the lacros service.
 COMPONENT_EXPORT(CHROMEOS_UI_WM) bool IsFloatWindowEnabled();
+
+// Checks if partial split is enabled. On ash, this checks the feature flag.
+// False otherwise.
+COMPONENT_EXPORT(CHROMEOS_UI_WM) bool IsPartialSplitEnabled();
 
 }  // namespace chromeos::wm::features
 

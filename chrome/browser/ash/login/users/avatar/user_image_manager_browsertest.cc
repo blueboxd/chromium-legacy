@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -90,13 +90,13 @@ policy::CloudPolicyStore* GetStoreForUser(const user_manager::User* user) {
   Profile* profile = ProfileHelper::Get()->GetProfileByUser(user);
   if (!profile) {
     ADD_FAILURE();
-    return NULL;
+    return nullptr;
   }
   policy::UserCloudPolicyManagerAsh* policy_manager =
       profile->GetUserCloudPolicyManagerAsh();
   if (!policy_manager) {
     ADD_FAILURE();
-    return NULL;
+    return nullptr;
   }
   return policy_manager->core()->store();
 }
@@ -223,7 +223,7 @@ class UserImageManagerTestBase : public LoginManagerTest,
                            int image_index,
                            const base::FilePath& image_path) {
     const base::Value::Dict& images_pref =
-        local_state_->GetValueDict(UserImageManagerImpl::kUserImageProperties);
+        local_state_->GetDict(UserImageManagerImpl::kUserImageProperties);
     const base::Value::Dict* image_properties =
         images_pref.FindDict(account_id.GetUserEmail());
     ASSERT_TRUE(image_properties);

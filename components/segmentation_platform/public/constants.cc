@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -26,8 +26,20 @@ const char* SegmentationKeyToUmaName(const std::string& segmentation_key) {
     return kChromeLowUserEngagementUmaName;
   } else if (segmentation_key == kFeedUserSegmentationKey) {
     return kFeedUserSegmentUmaName;
+  } else if (segmentation_key == kShoppingUserSegmentationKey) {
+    return kShoppingUserUmaName;
   } else if (segmentation_key == kContextualPageActionsKey) {
     return kContextualPageActionsUmaName;
+  } else if (segmentation_key == kPowerUserKey) {
+    return kPowerUserUmaName;
+  } else if (segmentation_key == kCrossDeviceUserKey) {
+    return kCrossDeviceUserUmaName;
+  } else if (segmentation_key == kFrequentFeatureUserKey) {
+    return kFrequentFeatureUserUmaName;
+  } else if (segmentation_key == kIntentionalUserKey) {
+    return kIntentionalUserUmaName;
+  } else if (segmentation_key == kResumeHeavyUserKey) {
+    return kResumeHeavyUserUmaName;
   } else if (base::StartsWith(segmentation_key, "test_key")) {
     return "TestKey";
   }
@@ -59,9 +71,21 @@ std::string SegmentIdToHistogramVariant(proto::SegmentId segment_id) {
       return "ChromeLowUserEngagement";
     case proto::SegmentId::OPTIMIZATION_TARGET_SEGMENTATION_FEED_USER:
       return "FeedUserSegment";
+    case proto::SegmentId::OPTIMIZATION_TARGET_SEGMENTATION_SHOPPING_USER:
+      return "ShoppingUser";
     case proto::SegmentId::
         OPTIMIZATION_TARGET_CONTEXTUAL_PAGE_ACTION_PRICE_TRACKING:
       return "ContextualPageActionPriceTracking";
+    case proto::SegmentId::POWER_USER_SEGMENT:
+      return "PowerUserSegment";
+    case proto::SegmentId::CROSS_DEVICE_USER_SEGMENT:
+      return "CrossDeviceUser";
+    case proto::SegmentId::FREQUENT_FEATURE_USER_SEGMENT:
+      return "FrequentFeatureUserSegment";
+    case proto::SegmentId::INTENTIONAL_USER_SEGMENT:
+      return "IntentionalUser";
+    case proto::SegmentId::RESUME_HEAVY_USER_SEGMENT:
+      return "ResumeHeavyUserSegment";
     default:
       // This case is reached when UNKNOWN segment is valid, in case of boolean
       // segment results.

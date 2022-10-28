@@ -24,13 +24,13 @@
 #include "base/feature_list.h"
 #include "base/location.h"
 #include "base/notreached.h"
-#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
+#include "base/types/optional_util.h"
 #include "build/build_config.h"
 #include "gin/array_buffer.h"
 #include "gin/public/gin_embedders.h"
@@ -1397,10 +1397,10 @@ bool PDFiumEngine::NavigateToLinkDestination(
       return true;
 
     if (disposition == WindowOpenDisposition::CURRENT_TAB) {
-      client_->NavigateToDestination(
-          target.page, base::OptionalOrNullptr(target.x_in_pixels),
-          base::OptionalOrNullptr(target.y_in_pixels),
-          base::OptionalOrNullptr(target.zoom));
+      client_->NavigateToDestination(target.page,
+                                     base::OptionalToPtr(target.x_in_pixels),
+                                     base::OptionalToPtr(target.y_in_pixels),
+                                     base::OptionalToPtr(target.zoom));
     } else {
       std::string parameters = base::StringPrintf("#page=%d", target.page + 1);
       parameters += base::StringPrintf(

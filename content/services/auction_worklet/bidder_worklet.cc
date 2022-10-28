@@ -15,11 +15,10 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
-#include "base/logging.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/strings/strcat.h"
-#include "base/strings/stringprintf.h"
+#include "base/task/bind_post_task.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
 #include "content/services/auction_worklet/auction_v8_helper.h"
@@ -36,6 +35,8 @@
 #include "content/services/auction_worklet/worklet_loader.h"
 #include "gin/converter.h"
 #include "gin/dictionary.h"
+#include "mojo/public/cpp/bindings/associated_remote.h"
+#include "mojo/public/cpp/bindings/pending_associated_remote.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/bindings/struct_ptr.h"
@@ -192,7 +193,8 @@ void BidderWorklet::GenerateBid(
     mojom::BiddingBrowserSignalsPtr bidding_browser_signals,
     base::Time auction_start_time,
     uint64_t trace_id,
-    GenerateBidCallback generate_bid_callback) {
+    mojo::PendingAssociatedRemote<mojom::GenerateBidClient>
+        generate_bid_client) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(user_sequence_checker_);
 
   generate_bid_tasks_.emplace_front();
@@ -211,14 +213,18 @@ void BidderWorklet::GenerateBid(
       std::move(bidding_browser_signals);
   generate_bid_task->auction_start_time = auction_start_time;
   generate_bid_task->trace_id = trace_id;
-  generate_bid_task->callback = std::move(generate_bid_callback);
+  generate_bid_task->generate_bid_client.Bind(std::move(generate_bid_client));
+  // Deleting `generate_bid_task` will destroy `generate_bid_client` and thus
+  // abort this callback, so it's safe to use Unretained(this) and
+  // `generate_bid_task` here.
+  generate_bid_task->generate_bid_client.set_disconnect_handler(
+      base::BindOnce(&BidderWorklet::OnGenerateBidClientDestroyed,
+                     base::Unretained(this), generate_bid_task));
 
   const auto& trusted_bidding_signals_keys =
       generate_bid_task->bidder_worklet_non_shared_params
           ->trusted_bidding_signals_keys;
-  if (trusted_signals_request_manager_ &&
-      trusted_bidding_signals_keys.has_value() &&
-      !trusted_bidding_signals_keys->empty()) {
+  if (trusted_signals_request_manager_) {
     TRACE_EVENT_NESTABLE_ASYNC_BEGIN0("fledge", "request_bidding_signals",
                                       trace_id);
     generate_bid_task->trusted_bidding_signals_request =
@@ -232,7 +238,13 @@ void BidderWorklet::GenerateBid(
 
   TRACE_EVENT_NESTABLE_ASYNC_BEGIN0("fledge", "waiting_for_bidder_script",
                                     trace_id);
-  GenerateBidIfReady(generate_bid_task);
+  // Deleting `generate_bid_task` will destroy `generate_bid_client` and thus
+  // abort this callback, so it's safe to use Unretained(this) and
+  // `generate_bid_task` here.
+  generate_bid_task->generate_bid_client->OnBiddingSignalsReceived(
+      /*priority_vector=*/{},
+      base::BindOnce(&BidderWorklet::SignalsReceivedCallback,
+                     base::Unretained(this), generate_bid_task));
 }
 
 void BidderWorklet::SendPendingSignalsRequests() {
@@ -461,9 +473,14 @@ void BidderWorklet::V8State::GenerateBid(
     base::Time auction_start_time,
     scoped_refptr<TrustedSignals::Result> trusted_bidding_signals_result,
     uint64_t trace_id,
+    base::ScopedClosureRunner cleanup_generate_bid_task,
     GenerateBidCallbackInternal callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(v8_sequence_checker_);
   TRACE_EVENT_NESTABLE_ASYNC_END0("fledge", "post_v8_task", trace_id);
+
+  // Don't need to run `cleanup_generate_bid_task` if this method is invoked;
+  // it's bound to the closure to clean things up if this method got cancelled.
+  cleanup_generate_bid_task.ReplaceClosure(base::OnceClosure());
 
   // Can't make a bid without any ads.
   if (!bidder_worklet_non_shared_params->ads) {
@@ -518,6 +535,9 @@ void BidderWorklet::V8State::GenerateBid(
           "owner", url::Origin::Create(script_source_url_).Serialize()) ||
       !interest_group_dict.Set("name",
                                bidder_worklet_non_shared_params->name) ||
+      !interest_group_dict.Set("useBiddingSignalsPrioritization",
+                               bidder_worklet_non_shared_params
+                                   ->enable_bidding_signals_prioritization) ||
       !interest_group_dict.Set("biddingLogicUrl", script_source_url_.spec()) ||
       (wasm_helper_url_ &&
        !interest_group_dict.Set("biddingWasmHelperUrl",
@@ -536,6 +556,23 @@ void BidderWorklet::V8State::GenerateBid(
            interest_group_object))) {
     PostErrorBidCallbackToUserThread(std::move(callback));
     return;
+  }
+
+  if (bidder_worklet_non_shared_params->priority_vector) {
+    v8::Local<v8::Object> priority_vector = v8::Object::New(isolate);
+    gin::Dictionary priority_vector_dict(isolate, priority_vector);
+    for (const auto& pair :
+         *bidder_worklet_non_shared_params->priority_vector) {
+      if (!priority_vector_dict.Set(pair.first, pair.second)) {
+        PostErrorBidCallbackToUserThread(std::move(callback));
+        return;
+      }
+    }
+    if (!v8_helper_->InsertValue("priorityVector", priority_vector,
+                                 interest_group_object)) {
+      PostErrorBidCallbackToUserThread(std::move(callback));
+      return;
+    }
   }
 
   if (bidder_worklet_non_shared_params->trusted_bidding_signals_keys) {
@@ -592,7 +629,9 @@ void BidderWorklet::V8State::GenerateBid(
 
   v8::Local<v8::Value> trusted_signals;
   absl::optional<uint32_t> bidding_signals_data_version;
-  if (!trusted_bidding_signals_result) {
+  if (!trusted_bidding_signals_result ||
+      !bidder_worklet_non_shared_params->trusted_bidding_signals_keys ||
+      bidder_worklet_non_shared_params->trusted_bidding_signals_keys->empty()) {
     trusted_signals = v8::Null(isolate);
   } else {
     trusted_signals = trusted_bidding_signals_result->GetBiddingSignals(
@@ -880,26 +919,92 @@ void BidderWorklet::OnTrustedBiddingSignalsDownloaded(
   TRACE_EVENT_NESTABLE_ASYNC_BEGIN0("fledge", "waiting_for_bidder_script",
                                     task->trace_id);
 
+  const TrustedSignals::Result::PriorityVector* priority_vector = nullptr;
+  if (result) {
+    priority_vector =
+        result->GetPriorityVector(task->bidder_worklet_non_shared_params->name);
+  }
+
   task->trusted_bidding_signals_error_msg = std::move(error_msg);
-  task->trusted_bidding_signals_result = std::move(result);
+  // Only hold onto `result` if it has information that needs to be passed to
+  // generateBid().
+  if (task->bidder_worklet_non_shared_params->trusted_bidding_signals_keys &&
+      !task->bidder_worklet_non_shared_params->trusted_bidding_signals_keys
+           ->empty()) {
+    task->trusted_bidding_signals_result = std::move(result);
+  }
   task->trusted_bidding_signals_request.reset();
 
+  // Deleting `generate_bid_task` will destroy `generate_bid_client` and thus
+  // abort this callback, so it's safe to use Unretained(this) and
+  // `generate_bid_task` here.
+  task->generate_bid_client->OnBiddingSignalsReceived(
+      priority_vector ? *priority_vector
+                      : TrustedSignals::Result::PriorityVector(),
+      base::BindOnce(&BidderWorklet::SignalsReceivedCallback,
+                     base::Unretained(this), task));
+}
+
+void BidderWorklet::OnGenerateBidClientDestroyed(
+    GenerateBidTaskList::iterator task) {
+  // If the task hasn't received the signals called callback or the code hasn't
+  // loaded, it hasn't posted a task to run off-thread, so can be safely
+  // deleted, as everything else, including fetching trusted bidding signals,
+  // can be safely cancelled.
+  if (!task->signals_received_callback_invoked || !IsCodeReady()) {
+    generate_bid_tasks_.erase(task);
+  } else {
+    // Otherwise, there should be a pending V8 call. Try to cancel that, but if
+    // it already started, it will just run and invoke the GenerateBidClient's
+    // OnGenerateBidComplete() method, which will safely do nothing since the
+    // pipe is now closed.
+    DCHECK_NE(task->task_id, base::CancelableTaskTracker::kBadTaskId);
+    cancelable_task_tracker_.TryCancel(task->task_id);
+  }
+}
+
+void BidderWorklet::SignalsReceivedCallback(
+    GenerateBidTaskList::iterator task) {
+  DCHECK(!task->signals_received_callback_invoked);
+  task->signals_received_callback_invoked = true;
   GenerateBidIfReady(task);
 }
 
 void BidderWorklet::GenerateBidIfReady(GenerateBidTaskList::iterator task) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(user_sequence_checker_);
-  if (task->trusted_bidding_signals_request || !IsCodeReady())
+  if (!task->signals_received_callback_invoked || !IsCodeReady())
     return;
+
+  // If there was a trusted signals request, it should have already completed
+  // and been cleaned up before `signals_received_callback_invoked` was set to
+  // true.
+  DCHECK(!task->trusted_bidding_signals_request);
 
   TRACE_EVENT_NESTABLE_ASYNC_END0("fledge", "waiting_for_bidder_script",
                                   task->trace_id);
   TRACE_EVENT_NESTABLE_ASYNC_BEGIN0("fledge", "post_v8_task", task->trace_id);
 
-  // Other than the callback field, no fields of `task` are needed after this
-  // point, so can consume them instead of copying them.
-  v8_runner_->PostTask(
-      FROM_HERE,
+  // Normally the PostTask below will eventually get `task` cleaned up once it
+  // posts back to DeliverBidCallbackOnUserThread with its results, but that
+  // won't happen if it gets cancelled. To deal with that, a ScopedClosureRunner
+  // is passed to ask for `task` to get cleaned up in case the
+  // V8State::GenerateBid closure gets destroyed without running.
+  base::OnceClosure cleanup_generate_bid_task = base::BindPostTask(
+      base::SequencedTaskRunnerHandle::Get(),
+      base::BindOnce(&BidderWorklet::CleanUpBidTaskOnUserThread,
+                     weak_ptr_factory_.GetWeakPtr(), task));
+
+  // Other than the `generate_bid_client` and `task_id` fields, no fields of
+  // `task` are needed after this point, so can consume them instead of copying
+  // them.
+  //
+  // Since `signals_received_callback_invoked` and IsCodeReady() are true, the
+  // GenerateBidTask won't be deleted on the main thread during this call, even
+  // if the GenerateBidClient pipe is deleted by the caller (unless the
+  // BidderWorklet  itself is deleted). Therefore, it's safe to post a callback
+  // with the `task`  iterator the v8 thread.
+  task->task_id = cancelable_task_tracker_.PostTask(
+      v8_runner_.get(), FROM_HERE,
       base::BindOnce(
           &BidderWorklet::V8State::GenerateBid,
           base::Unretained(v8_state_.get()),
@@ -912,6 +1017,7 @@ void BidderWorklet::GenerateBidIfReady(GenerateBidTaskList::iterator task) {
           std::move(task->browser_signal_top_level_seller_origin),
           std::move(task->bidding_browser_signals), task->auction_start_time,
           std::move(task->trusted_bidding_signals_result), task->trace_id,
+          base::ScopedClosureRunner(std::move(cleanup_generate_bid_task)),
           base::BindOnce(&BidderWorklet::DeliverBidCallbackOnUserThread,
                          weak_ptr_factory_.GetWeakPtr(), task)));
 }
@@ -925,8 +1031,8 @@ void BidderWorklet::RunReportWin(ReportWinTaskList::iterator task) {
 
   // Other than the callback field, no fields of `task` are needed after this
   // point, so can consume them instead of copying them.
-  v8_runner_->PostTask(
-      FROM_HERE,
+  cancelable_task_tracker_.PostTask(
+      v8_runner_.get(), FROM_HERE,
       base::BindOnce(
           &BidderWorklet::V8State::ReportWin, base::Unretained(v8_state_.get()),
           std::move(task->interest_group_name),
@@ -961,11 +1067,17 @@ void BidderWorklet::DeliverBidCallbackOnUserThread(
     error_msgs.emplace_back(
         std::move(task->trusted_bidding_signals_error_msg).value());
   }
-  std::move(task->callback)
-      .Run(std::move(bid), bidding_signals_data_version.value_or(0),
-           bidding_signals_data_version.has_value(), debug_loss_report_url,
-           debug_win_report_url, set_priority.value_or(0),
-           set_priority.has_value(), std::move(pa_requests), error_msgs);
+  task->generate_bid_client->OnGenerateBidComplete(
+      std::move(bid), bidding_signals_data_version.value_or(0),
+      bidding_signals_data_version.has_value(), debug_loss_report_url,
+      debug_win_report_url, set_priority.value_or(0), set_priority.has_value(),
+      std::move(pa_requests), error_msgs);
+  generate_bid_tasks_.erase(task);
+}
+
+void BidderWorklet::CleanUpBidTaskOnUserThread(
+    GenerateBidTaskList::iterator task) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(user_sequence_checker_);
   generate_bid_tasks_.erase(task);
 }
 

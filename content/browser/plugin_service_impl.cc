@@ -38,6 +38,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_constants.h"
+#include "content/public/common/content_plugin_info.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/process_type.h"
 #include "content/public/common/webplugininfo.h"
@@ -110,14 +111,14 @@ void PluginServiceImpl::Init() {
   PluginList::Singleton()->set_will_load_plugins_callback(base::BindRepeating(
       &WillLoadPluginsCallback, &plugin_list_sequence_checker_));
 
-  RegisterPepperPlugins();
+  RegisterPlugins();
 }
 
+#if BUILDFLAG(ENABLE_PPAPI)
 PpapiPluginProcessHost* PluginServiceImpl::FindPpapiPluginProcess(
     const base::FilePath& plugin_path,
     const base::FilePath& profile_data_directory,
     const absl::optional<url::Origin>& origin_lock) {
-#if BUILDFLAG(ENABLE_PPAPI)
   for (PpapiPluginProcessHostIterator iter; !iter.Done(); ++iter) {
     if (iter->plugin_path() == plugin_path &&
         iter->profile_data_directory() == profile_data_directory &&
@@ -125,7 +126,6 @@ PpapiPluginProcessHost* PluginServiceImpl::FindPpapiPluginProcess(
       return *iter;
     }
   }
-#endif  // BUILDFLAG(ENABLE_PPAPI)
   return nullptr;
 }
 
@@ -134,7 +134,6 @@ PpapiPluginProcessHost* PluginServiceImpl::FindOrStartPpapiPluginProcess(
     const base::FilePath& plugin_path,
     const base::FilePath& profile_data_directory,
     const absl::optional<url::Origin>& origin_lock) {
-#if BUILDFLAG(ENABLE_PPAPI)
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   if (filter_ && !filter_->CanLoadPlugin(render_process_id, plugin_path)) {
@@ -143,7 +142,7 @@ PpapiPluginProcessHost* PluginServiceImpl::FindOrStartPpapiPluginProcess(
   }
 
   // Validate that the plugin is actually registered.
-  const PepperPluginInfo* info = GetRegisteredPpapiPluginInfo(plugin_path);
+  const ContentPluginInfo* info = GetRegisteredPluginInfo(plugin_path);
   if (!info) {
     VLOG(1) << "Unable to find ppapi plugin registration for: "
             << plugin_path.MaybeAsASCII();
@@ -171,9 +170,6 @@ PpapiPluginProcessHost* PluginServiceImpl::FindOrStartPpapiPluginProcess(
   }
 
   return plugin_host;
-#else
-  return nullptr;
-#endif  // BUILDFLAG(ENABLE_PPAPI)
 }
 
 void PluginServiceImpl::OpenChannelToPpapiPlugin(
@@ -182,7 +178,6 @@ void PluginServiceImpl::OpenChannelToPpapiPlugin(
     const base::FilePath& profile_data_directory,
     const absl::optional<url::Origin>& origin_lock,
     PpapiPluginProcessHost::PluginClient* client) {
-#if BUILDFLAG(ENABLE_PPAPI)
   PpapiPluginProcessHost* plugin_host = FindOrStartPpapiPluginProcess(
       render_process_id, plugin_path, profile_data_directory, origin_lock);
   if (plugin_host) {
@@ -191,8 +186,8 @@ void PluginServiceImpl::OpenChannelToPpapiPlugin(
     // Send error.
     client->OnPpapiChannelOpened(IPC::ChannelHandle(), base::kNullProcessId, 0);
   }
-#endif  // BUILDFLAG(ENABLE_PPAPI)
 }
+#endif  // BUILDFLAG(ENABLE_PPAPI)
 
 bool PluginServiceImpl::GetPluginInfoArray(
     const GURL& url,
@@ -274,23 +269,25 @@ void PluginServiceImpl::GetPlugins(GetPluginsCallback callback) {
       std::move(callback));
 }
 
-void PluginServiceImpl::RegisterPepperPlugins() {
+void PluginServiceImpl::RegisterPlugins() {
 #if BUILDFLAG(ENABLE_PPAPI)
-  ComputePepperPluginList(&ppapi_plugins_);
-  for (const auto& plugin : ppapi_plugins_)
-    RegisterInternalPlugin(plugin.ToWebPluginInfo(), /*add_at_beginning=*/true);
+  ComputePepperPluginList(&plugins_);
+#else
+  GetContentClient()->AddPlugins(&plugins_);
 #endif  // BUILDFLAG(ENABLE_PPAPI)
+  for (const auto& plugin : plugins_)
+    RegisterInternalPlugin(plugin.ToWebPluginInfo(), /*add_at_beginning=*/true);
 }
 
 // There should generally be very few plugins so a brute-force search is fine.
-const PepperPluginInfo* PluginServiceImpl::GetRegisteredPpapiPluginInfo(
+const ContentPluginInfo* PluginServiceImpl::GetRegisteredPluginInfo(
     const base::FilePath& plugin_path) {
-#if BUILDFLAG(ENABLE_PPAPI)
-  for (auto& plugin : ppapi_plugins_) {
+  for (auto& plugin : plugins_) {
     if (plugin.path == plugin_path)
       return &plugin;
   }
 
+#if BUILDFLAG(ENABLE_PPAPI)
   // We did not find the plugin in our list. But wait! the plugin can also
   // be a latecomer, as it happens with pepper flash. This information
   // can be obtained from the PluginList singleton and we can use it to
@@ -299,11 +296,11 @@ const PepperPluginInfo* PluginServiceImpl::GetRegisteredPpapiPluginInfo(
   WebPluginInfo webplugin_info;
   if (!GetPluginInfoByPath(plugin_path, &webplugin_info))
     return nullptr;
-  PepperPluginInfo new_pepper_info;
+  ContentPluginInfo new_pepper_info;
   if (!MakePepperPluginInfo(webplugin_info, &new_pepper_info))
     return nullptr;
-  ppapi_plugins_.push_back(new_pepper_info);
-  return &ppapi_plugins_.back();
+  plugins_.push_back(new_pepper_info);
+  return &plugins_.back();
 #else
   return nullptr;
 #endif  // BUILDFLAG(ENABLE_PPAPI)

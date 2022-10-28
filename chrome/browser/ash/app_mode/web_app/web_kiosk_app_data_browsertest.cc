@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -61,7 +61,7 @@ void PopulateIcon(WebAppInstallInfo* web_app_info,
 
 const std::string* GetLastIconUrlForAppId() {
   return g_browser_process->local_state()
-      ->GetValueDict(WebKioskAppManager::kWebKioskDictionaryName)
+      ->GetDict(WebKioskAppManager::kWebKioskDictionaryName)
       .FindDict(KioskAppDataBase::kKeyApps)
       ->FindDict(kAppId)
       ->FindString(kLastIconUrlKey);

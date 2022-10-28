@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -28,10 +28,10 @@ TemplateURLServiceClientImpl::~TemplateURLServiceClientImpl() {}
 
 void TemplateURLServiceClientImpl::Shutdown() {
   // TemplateURLServiceClientImpl is owned by TemplateURLService which is a
-  // KeyedService with a dependency on HistoryService, thus |history_service_|
+  // KeyedService with a dependency on HistoryService, thus `history_service_`
   // outlives the ChromeTemplateURLServiceClient.
   //
-  // Remove self from |history_service_| observers in the shutdown phase of the
+  // Remove self from `history_service_` observers in the shutdown phase of the
   // two-phases since KeyedService are not supposed to use a dependend service
   // after the Shutdown call.
   if (history_service_) {

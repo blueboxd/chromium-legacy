@@ -1,4 +1,4 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,8 +11,8 @@ import 'chrome://resources/cr_elements/cr_button/cr_button.js';
 import 'chrome://resources/cr_elements/cr_dialog/cr_dialog.js';
 import 'chrome://resources/cr_elements/cr_lazy_render/cr_lazy_render.js';
 import 'chrome://resources/cr_elements/cr_search_field/cr_search_field.js';
-import 'chrome://resources/cr_elements/shared_vars_css.m.js';
-import 'chrome://resources/cr_elements/md_select_css.m.js';
+import 'chrome://resources/cr_elements/cr_shared_vars.css.js';
+import 'chrome://resources/cr_elements/md_select.css.js';
 import 'chrome://resources/polymer/v3_0/iron-icon/iron-icon.js';
 import 'chrome://resources/polymer/v3_0/iron-list/iron-list.js';
 import '../settings_shared.css.js';
@@ -149,6 +149,14 @@ export class AllSitesElement extends AllSitesElementBase {
       },
 
       /**
+       * Whether First Party Sets are enabled.
+       */
+      enableFirstPartySetsUI_: {
+        type: Boolean,
+        value: () => loadTimeData.getBoolean('firstPartySetsUIEnabled'),
+      },
+
+      /**
        * All possible sort methods.
        */
       sortMethods_: {
@@ -164,13 +172,13 @@ export class AllSitesElement extends AllSitesElementBase {
 
       /**
        * Used to track the last-focused element across rows for the
-       * focusRowBehavior.
+       * FocusRowMixin.
        */
       lastFocused_: Object,
 
       /**
        * Used to track whether the list of row items has been blurred for the
-       * focusRowBehavior.
+       * FocusRowMixin.
        */
       listBlurred_: Boolean,
 
@@ -201,6 +209,7 @@ export class AllSitesElement extends AllSitesElementBase {
   private filteredList_: SiteGroup[];
   subpageRoute: Route;
   filter: string;
+  private enableFirstPartySetsUI_: boolean;
   private selectedItem_: SelectedItem|null;
   private listBlurred_: boolean;
   private actionMenuModel_: ActionMenuModel|null;
@@ -310,9 +319,19 @@ export class AllSitesElement extends AllSitesElementBase {
       siteGroupMap: Map<string, SiteGroup>, searchQuery: string): SiteGroup[] {
     const result = [];
     for (const [_etldPlus1, siteGroup] of siteGroupMap) {
-      if (siteGroup.origins.find(
-              originInfo => originInfo.origin.includes(searchQuery))) {
-        result.push(siteGroup);
+      if (this.filter.startsWith('related:')) {
+        const fpsOwnerFilter =
+            this.filter.substring(this.filter.indexOf(':') + 1);
+        // Checking `siteGroup.fpsOwner` to ensure that we're not matching with
+        // site entries that are not a member of a first party set.
+        if (siteGroup.fpsOwner && siteGroup.fpsOwner === fpsOwnerFilter) {
+          result.push(siteGroup);
+        }
+      } else {
+        if (siteGroup.origins.find(
+                originInfo => originInfo.origin.includes(searchQuery))) {
+          result.push(siteGroup);
+        }
       }
     }
     return this.sortSiteGroupList_(result);
@@ -454,8 +473,22 @@ export class AllSitesElement extends AllSitesElementBase {
     this.$.menu.get().showAt(target);
   }
 
+  private onShowRelatedSites_() {
+    this.$.menu.get().close();
+    const siteGroup = this.filteredList_[this.actionMenuModel_!.index];
+    const searchParams = new URLSearchParams(
+        'searchSubpage=' +
+        encodeURIComponent('related:' + siteGroup.fpsOwner!));
+    const currentRoute = Router.getInstance().getCurrentRoute();
+    Router.getInstance().navigateTo(currentRoute, searchParams);
+  }
+
   private onRemoveSite_(e: RemoveSiteEvent) {
     this.actionMenuModel_ = e.detail;
+    this.$.confirmRemoveSite.get().showModal();
+  }
+
+  private onRemove_() {
     this.$.confirmRemoveSite.get().showModal();
   }
 
@@ -467,6 +500,8 @@ export class AllSitesElement extends AllSitesElementBase {
       etldPlus1: siteGroupToUpdate.etldPlus1,
       hasInstalledPWA: siteGroupToUpdate.hasInstalledPWA,
       numCookies: siteGroupToUpdate.numCookies,
+      fpsOwner: siteGroupToUpdate.fpsOwner,
+      fpsNumMembers: siteGroupToUpdate.fpsNumMembers,
       origins: [],
     };
 
@@ -500,6 +535,9 @@ export class AllSitesElement extends AllSitesElementBase {
       siteGroupToUpdate.origins.forEach(originEntry => {
         this.resetPermissionsForOrigin_(originEntry.origin);
       });
+      if (updatedSiteGroup.fpsOwner) {
+        this.decrementFpsNumMembers_(updatedSiteGroup.fpsOwner);
+      }
     }
 
     this.updateSiteGroup_(index, updatedSiteGroup);
@@ -811,6 +849,20 @@ export class AllSitesElement extends AllSitesElementBase {
   }
 
   /**
+   * Decrements the number of fps members for a given owner eTLD+1 by 1.
+   * @param fpsOwner The first party set owner.
+   */
+  private decrementFpsNumMembers_(fpsOwner: string) {
+    this.filteredList_.forEach((siteGroup, index) => {
+      if (siteGroup.fpsOwner === fpsOwner) {
+        this.set(
+            'filteredList_.' + index + '.fpsNumMembers',
+            siteGroup.fpsNumMembers! - 1);
+      }
+    });
+  }
+
+  /**
    * Resets all permission settings for a single origin.
    */
   private resetPermissionsForOrigin_(origin: string) {
@@ -830,6 +882,8 @@ export class AllSitesElement extends AllSitesElementBase {
       etldPlus1: siteGroupToUpdate.etldPlus1,
       hasInstalledPWA: false,
       numCookies: siteGroupToUpdate.numCookies,
+      fpsOwner: siteGroupToUpdate.fpsOwner,
+      fpsNumMembers: siteGroupToUpdate.fpsNumMembers,
       origins: [],
     };
 
@@ -903,6 +957,8 @@ export class AllSitesElement extends AllSitesElementBase {
       etldPlus1: siteGroupToUpdate.etldPlus1,
       hasInstalledPWA: siteGroupToUpdate.hasInstalledPWA,
       numCookies: 0,
+      fpsOwner: siteGroupToUpdate.fpsOwner,
+      fpsNumMembers: siteGroupToUpdate.fpsNumMembers,
       origins: [],
     };
 
@@ -934,6 +990,8 @@ export class AllSitesElement extends AllSitesElementBase {
       etldPlus1: siteGroupToUpdate.etldPlus1,
       hasInstalledPWA: false,
       numCookies: 0,
+      fpsOwner: siteGroupToUpdate.fpsOwner,
+      fpsNumMembers: siteGroupToUpdate.fpsNumMembers,
       origins: [],
     };
 

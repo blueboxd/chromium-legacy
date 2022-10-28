@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,6 +12,7 @@
 #include "ash/shell.h"
 #include "ash/system/privacy_hub/privacy_hub_controller.h"
 #include "ash/test/ash_test_base.h"
+#include "base/test/scoped_feature_list.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "components/prefs/pref_service.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -21,6 +22,8 @@ using testing::_;
 
 namespace ash {
 
+namespace {
+
 class MockSwitchAPI : public CameraPrivacySwitchAPI {
  public:
   MOCK_METHOD(void,
@@ -29,8 +32,24 @@ class MockSwitchAPI : public CameraPrivacySwitchAPI {
               (override));
 };
 
+class MockFrontendAPI : public PrivacyHubDelegate {
+ public:
+  MOCK_METHOD(void,
+              CameraHardwareToggleChanged,
+              (cros::mojom::CameraPrivacySwitchState state),
+              (override));
+  void AvailabilityOfMicrophoneChanged(bool) override {}
+  void MicrophoneHardwareToggleChanged(bool) override {}
+};
+
+}  // namespace
+
 class PrivacyHubCameraControllerTests : public AshTestBase {
  protected:
+  PrivacyHubCameraControllerTests() {
+    scoped_feature_list_.InitAndEnableFeature(ash::features::kCrosPrivacyHub);
+  }
+
   void SetUserPref(bool allowed) {
     Shell::Get()->session_controller()->GetActivePrefService()->SetBoolean(
         prefs::kUserCameraAllowed, allowed);
@@ -43,13 +62,15 @@ class PrivacyHubCameraControllerTests : public AshTestBase {
     auto mock_switch = std::make_unique<::testing::NiceMock<MockSwitchAPI>>();
     mock_switch_ = mock_switch.get();
 
-    controller_ =
-        Shell::Get()->privacy_hub_controller()->CameraControllerForTest();
+    Shell::Get()->privacy_hub_controller()->set_frontend(&mock_frontend_);
+    controller_ = &Shell::Get()->privacy_hub_controller()->camera_controller();
     controller_->SetCameraPrivacySwitchAPIForTest(std::move(mock_switch));
   }
 
+  ::testing::NiceMock<MockFrontendAPI> mock_frontend_;
   ::testing::NiceMock<MockSwitchAPI>* mock_switch_;
   CameraPrivacySwitchController* controller_;
+  base::test::ScopedFeatureList scoped_feature_list_;
 };
 
 // Test reaction on UI action.
@@ -80,6 +101,17 @@ TEST_F(PrivacyHubCameraControllerTests, UIAction) {
                  : CameraSWPrivacySwitchSetting::kDisabled;
     EXPECT_EQ(captured_val, expected_val);
   }
+}
+
+TEST_F(PrivacyHubCameraControllerTests, OnCameraHardwarePrivacySwitchChanged) {
+  EXPECT_CALL(mock_frontend_, CameraHardwareToggleChanged(
+                                  cros::mojom::CameraPrivacySwitchState::OFF));
+  CameraPrivacySwitchController& controller =
+      Shell::Get()->privacy_hub_controller()->camera_controller();
+  controller.OnCameraHWPrivacySwitchStatusChanged(
+      0, cros::mojom::CameraPrivacySwitchState::OFF);
+  EXPECT_EQ(cros::mojom::CameraPrivacySwitchState::OFF,
+            controller.HWSwitchState());
 }
 
 }  // namespace ash

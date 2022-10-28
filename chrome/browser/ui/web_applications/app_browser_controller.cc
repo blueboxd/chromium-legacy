@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -425,14 +425,6 @@ void AppBrowserController::OnTabStripModelChanged(
 
 CustomThemeSupplier* AppBrowserController::GetThemeSupplier() const {
   return theme_pack_.get();
-}
-
-bool AppBrowserController::ShouldUseSystemTheme() const {
-#if BUILDFLAG(IS_LINUX)
-  return browser_->profile()->GetPrefs()->GetBoolean(prefs::kUsesSystemTheme);
-#else
-  return false;
-#endif
 }
 
 bool AppBrowserController::ShouldUseCustomFrame() const {

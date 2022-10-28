@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -367,11 +367,7 @@ bool JobTaskSource::WillReEnqueue(TimeTicks now,
 // This is a no-op.
 void JobTaskSource::OnBecomeReady() {}
 
-TaskSourceSortKey JobTaskSource::GetSortKey(
-    bool disable_fair_scheduling) const {
-  if (disable_fair_scheduling) {
-    return TaskSourceSortKey(priority_racy(), ready_time_);
-  }
+TaskSourceSortKey JobTaskSource::GetSortKey() const {
   return TaskSourceSortKey(priority_racy(), ready_time_,
                            TS_UNCHECKED_READ(state_).Load().worker_count());
 }

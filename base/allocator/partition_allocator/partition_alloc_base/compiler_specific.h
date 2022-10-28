@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,10 +6,6 @@
 #define BASE_ALLOCATOR_PARTITION_ALLOCATOR_PARTITION_ALLOC_BASE_COMPILER_SPECIFIC_H_
 
 #include "build/build_config.h"
-
-#if defined(COMPILER_MSVC) && !defined(__clang__)
-#error "Only clang-cl is supported on Windows, see https://crbug.com/988071"
-#endif
 
 // This is a wrapper around `__has_cpp_attribute`, which can be used to test for
 // the presence of an attribute. In case the compiler does not support this

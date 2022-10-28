@@ -1,4 +1,4 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -1473,8 +1473,7 @@ class PrerenderTaskBrowserTest : public TaskManagerBrowserTest {
         /*enabled_features=*/
         {
             {features::kBackForwardCache,
-             {{"enable_same_site", "true"},
-              {"TimeToLiveInBackForwardCacheInSeconds", "3600"}}},
+             {{"TimeToLiveInBackForwardCacheInSeconds", "3600"}}},
             {features::kOmniboxTriggerForPrerender2, {}},
         },
         /*disabled_features=*/{});

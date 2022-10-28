@@ -1,12 +1,12 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include <memory>
 
 #include "components/permissions/android/permission_prompt/permission_dialog.h"
-#include "components/permissions/android/permission_prompt/permission_infobar.h"
 #include "components/permissions/android/permission_prompt/permission_message.h"
+#include "components/permissions/android/permission_prompt/permission_prompt_infobar.h"
 #include "components/permissions/permission_prompt.h"
 #include "content/public/browser/web_contents.h"
 
@@ -22,7 +22,7 @@ std::unique_ptr<PermissionPrompt> PermissionPrompt::Create(
   if (message_ui)
     return message_ui;
 
-  auto infobar = PermissionInfobar::Create(web_contents, delegate);
+  auto infobar = PermissionPromptInfoBar::Create(web_contents, delegate);
   if (infobar)
     return infobar;
 

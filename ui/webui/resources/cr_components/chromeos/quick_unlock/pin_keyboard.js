@@ -22,7 +22,18 @@
  *    </pin-keyboard>
  */
 
-(function() {
+import 'chrome://resources/cr_elements/cr_button/cr_button.js';
+import 'chrome://resources/cr_elements/cr_icon_button/cr_icon_button.js';
+import 'chrome://resources/cr_elements/cr_input/cr_input.js';
+import 'chrome://resources/cr_elements/icons.html.js';
+import 'chrome://resources/cr_elements/cr_shared_vars.css.js';
+import 'chrome://resources/polymer/v3_0/paper-styles/color.js';
+import 'chrome://resources/polymer/v3_0/iron-icon/iron-icon.js';
+import './pin_keyboard_icon.js';
+
+import {html, Polymer} from '//resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+
+import {I18nBehavior} from '../../../cr_elements/i18n_behavior.js';
 
 /**
  * Once auto backspace starts, the time between individual backspaces.
@@ -76,6 +87,7 @@ function receivedEventFromKeyboard(event) {
 }
 
 Polymer({
+  _template: html`{__html_template__}`,
   is: 'pin-keyboard',
 
   behaviors: [
@@ -558,4 +570,3 @@ Polymer({
         (/** @type {CrInputElement} */ (this.$.pinInput)).inputElement;
   },
 });
-})();

@@ -1,17 +1,17 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #import "ios/chrome/browser/ui/commands/command_dispatcher.h"
 
-#include <objc/runtime.h>
+#import <objc/runtime.h>
 
-#include <ostream>
-#include <unordered_map>
-#include <vector>
+#import <ostream>
+#import <unordered_map>
+#import <vector>
 
-#include "base/check.h"
-#include "base/strings/sys_string_conversions.h"
+#import "base/check.h"
+#import "base/strings/sys_string_conversions.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."

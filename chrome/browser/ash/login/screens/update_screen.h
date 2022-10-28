@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -61,7 +61,7 @@ namespace ash {
 // delayed until the Internet connectivity is established.
 class UpdateScreen : public BaseScreen,
                      public VersionUpdater::Delegate,
-                     public PowerManagerClient::Observer {
+                     public chromeos::PowerManagerClient::Observer {
  public:
   using TView = UpdateView;
   using Result = VersionUpdater::Result;
@@ -83,15 +83,13 @@ class UpdateScreen : public BaseScreen,
   base::OneShotTimer* GetErrorMessageTimerForTesting();
   VersionUpdater* GetVersionUpdaterForTesting();
 
-
   // VersionUpdater::Delegate:
   void OnWaitForRebootTimeElapsed() override;
   void PrepareForUpdateCheck() override;
   void ShowErrorMessage() override;
-  void UpdateErrorMessage(
-      const NetworkPortalDetector::CaptivePortalStatus status,
-      const NetworkError::ErrorState& error_state,
-      const std::string& network_name) override;
+  void UpdateErrorMessage(NetworkState::PortalState state,
+                          NetworkError::ErrorState error_state,
+                          const std::string& network_name) override;
   void DelayErrorMessage() override;
   void UpdateInfoChanged(
       const VersionUpdater::UpdateInfo& update_info) override;
@@ -111,6 +109,10 @@ class UpdateScreen : public BaseScreen,
   void set_wait_before_reboot_time_for_testing(
       base::TimeDelta wait_before_reboot_time) {
     wait_before_reboot_time_ = wait_before_reboot_time;
+  }
+
+  void set_show_delay_for_testing(base::TimeDelta show_delay) {
+    show_delay_ = show_delay;
   }
 
   base::OneShotTimer* GetWaitRebootTimerForTesting() {
@@ -223,6 +225,9 @@ class UpdateScreen : public BaseScreen,
   // Time in seconds after which we initiate reboot.
   base::TimeDelta wait_before_reboot_time_;
 
+  // Time to delay showing the screen.
+  base::TimeDelta show_delay_;
+
   const base::TickClock* tick_clock_;
 
   base::TimeTicks start_update_downloading_;
@@ -238,7 +243,8 @@ class UpdateScreen : public BaseScreen,
   base::CallbackListSubscription accessibility_subscription_;
 
   // PowerManagerClient::Observer is used only when screen is shown.
-  base::ScopedObservation<PowerManagerClient, PowerManagerClient::Observer>
+  base::ScopedObservation<chromeos::PowerManagerClient,
+                          chromeos::PowerManagerClient::Observer>
       power_manager_subscription_{this};
 
   base::WeakPtrFactory<UpdateScreen> weak_factory_{this};

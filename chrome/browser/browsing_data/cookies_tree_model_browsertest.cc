@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -19,12 +19,12 @@ namespace {
 // each frame in the active web contents for |browser|.
 void EnsurePageAccessedStorage(content::WebContents* web_contents) {
   web_contents->GetPrimaryMainFrame()->ForEachRenderFrameHost(
-      base::BindRepeating([](content::RenderFrameHost* frame) {
+      [](content::RenderFrameHost* frame) {
         EXPECT_TRUE(
             content::EvalJs(frame,
                             "(async () => { return await accessStorage();})()")
                 .value.GetBool());
-      }));
+      });
 }
 
 std::vector<CookieTreeNode*> GetAllChildNodes(CookieTreeNode* node) {

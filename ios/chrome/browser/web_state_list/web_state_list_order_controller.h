@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -25,7 +25,7 @@ class WebStateListOrderController {
   // Determines where to shift the active index after a WebState is closed.
   // The returned index will either be WebStateList::kInvalidIndex or in be
   // in range for the WebStateList once the element has been removed (i.e.
-  // this function accounts for the fact that the element at |removing_index|
+  // this function accounts for the fact that the element at `removing_index`
   // will be removed from the WebStateList).
   int DetermineNewActiveIndex(
       int active_index,

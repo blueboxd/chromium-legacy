@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -70,7 +70,7 @@ bool GetVirtualKeyboardFeatureValue(PrefService* prefs,
                                     const std::string& feature_path) {
   DCHECK(prefs);
   const base::Value::Dict& features =
-      prefs->GetValueDict(prefs::kAccessibilityVirtualKeyboardFeatures);
+      prefs->GetDict(prefs::kAccessibilityVirtualKeyboardFeatures);
 
   return features.FindBool(feature_path).value_or(false);
 }

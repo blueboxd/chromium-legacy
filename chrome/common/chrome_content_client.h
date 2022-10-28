@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -19,9 +19,9 @@
 #include "content/public/common/content_client.h"
 #include "ppapi/buildflags/buildflags.h"
 
-#if BUILDFLAG(ENABLE_PPAPI)
-#include "content/public/common/pepper_plugin_info.h"
-#endif  // BUILDFLAG(ENABLE_PPAPI)
+#if BUILDFLAG(ENABLE_NACL)
+#include "content/public/common/content_plugin_info.h"
+#endif  // BUILDFLAG(ENABLE_NACL)
 
 namespace embedder_support {
 class OriginTrialPolicyImpl;
@@ -34,10 +34,6 @@ class ChromeContentClient : public content::ContentClient {
   // currently present in this installation of Chrome, but which can be fetched
   // on-demand and therefore should still appear in navigator.plugins.
   static const base::FilePath::CharType kNotPresent[];
-#endif
-
-#if BUILDFLAG(ENABLE_NACL)
-  static const base::FilePath::CharType kNaClPluginFileName[];
 #endif
 
   static const char kPDFExtensionPluginName[];
@@ -53,26 +49,14 @@ class ChromeContentClient : public content::ContentClient {
   // the split DLL.
 #if BUILDFLAG(ENABLE_NACL)
   static void SetNaClEntryFunctions(
-      content::PepperPluginInfo::GetInterfaceFunc get_interface,
-      content::PepperPluginInfo::PPP_InitializeModuleFunc initialize_module,
-      content::PepperPluginInfo::PPP_ShutdownModuleFunc shutdown_module);
+      content::ContentPluginInfo::GetInterfaceFunc get_interface,
+      content::ContentPluginInfo::PPP_InitializeModuleFunc initialize_module,
+      content::ContentPluginInfo::PPP_ShutdownModuleFunc shutdown_module);
 #endif
-
-#if BUILDFLAG(ENABLE_PPAPI)
-  // This returns the most recent plugin based on the plugin versions. In the
-  // event of a tie, a debug plugin will be considered more recent than a
-  // non-debug plugin.
-  // It does not make sense to call this on a vector that contains more than one
-  // plugin type. This function may return a nullptr if given an empty vector.
-  // The method is only visible for testing purposes.
-  static content::PepperPluginInfo* FindMostRecentPlugin(
-      const std::vector<std::unique_ptr<content::PepperPluginInfo>>& plugins);
-#endif  // BUILDFLAG(ENABLE_PPAPI)
 
   void SetActiveURL(const GURL& url, std::string top_origin) override;
   void SetGpuInfo(const gpu::GPUInfo& gpu_info) override;
-  void AddPepperPlugins(
-      std::vector<content::PepperPluginInfo>* plugins) override;
+  void AddPlugins(std::vector<content::ContentPluginInfo>* plugins) override;
   void AddContentDecryptionModules(
       std::vector<content::CdmInfo>* cdms,
       std::vector<media::CdmHostFilePath>* cdm_host_file_paths) override;

@@ -1,10 +1,11 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include <utility>
 
 #include "components/autofill/core/common/password_generation_util.h"
+#include "components/autofill/core/common/unique_ids.h"
 #include "components/device_reauth/biometric_authenticator.h"
 #include "components/password_manager/core/browser/http_auth_manager.h"
 #include "components/password_manager/core/browser/password_form_manager_for_ui.h"
@@ -159,7 +160,8 @@ network::mojom::NetworkContext* PasswordManagerClient::GetNetworkContext()
 }
 
 WebAuthnCredentialsDelegate*
-PasswordManagerClient::GetWebAuthnCredentialsDelegate() {
+PasswordManagerClient::GetWebAuthnCredentialsDelegateForDriver(
+    PasswordManagerDriver* driver) {
   return nullptr;
 }
 

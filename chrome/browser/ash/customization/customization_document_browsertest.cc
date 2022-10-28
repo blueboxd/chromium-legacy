@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -235,7 +235,7 @@ IN_PROC_BROWSER_TEST_P(CustomizationVPDTest, GetUILanguageList) {
       << "', locales=" << Print(locales);
 
   std::unique_ptr<base::ListValue> ui_language_list =
-      GetUILanguageList(NULL, "", input_method::InputMethodManager::Get());
+      GetUILanguageList(nullptr, "", input_method::InputMethodManager::Get());
   EXPECT_GE(ui_language_list->GetListDeprecated().size(), locales.size())
       << "Test failed for initial_locale='" << GetParam() << "'";
 

@@ -34,8 +34,8 @@
 #include "third_party/blink/renderer/platform/heap/thread_state.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/privacy_budget/identifiability_digest_helpers.h"
+#include "third_party/blink/renderer/platform/scheduler/public/main_thread.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
-#include "third_party/blink/renderer/platform/scheduler/public/thread.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
 
@@ -281,6 +281,12 @@ ScriptPromise GPU::requestAdapter(ScriptState* script_state,
       resolver->Resolve(v8::Null(script_state->GetIsolate()));
       return promise;
     } else {
+      // Get an identifying token from the execution context to be sent to the
+      // GPU process so that it can be cross-referenced against the browser
+      // process to get an isolation key for caching purposes.
+      context_provider->WebGPUInterface()->SetExecutionContextToken(
+          execution_context->GetExecutionContextToken());
+
       // Make a new DawnControlClientHolder with the context provider we just
       // made and set the lost context callback
       dawn_control_client_ = DawnControlClientHolder::Create(

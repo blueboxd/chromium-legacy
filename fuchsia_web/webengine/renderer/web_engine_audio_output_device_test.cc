@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -89,8 +89,10 @@ class WebEngineAudioOutputDeviceTest : public testing::Test {
  protected:
   void Initialize() {
     output_device_->Initialize(
-        media::AudioParameters(media::AudioParameters::AUDIO_PCM_LOW_LATENCY,
-                               kChannelLayout, kSampleRate, kFramesPerPeriod),
+        media::AudioParameters(
+            media::AudioParameters::AUDIO_PCM_LOW_LATENCY,
+            media::ChannelLayoutConfig::FromLayout<kChannelLayout>(),
+            kSampleRate, kFramesPerPeriod),
         &renderer_);
 
     task_environment_.RunUntilIdle();

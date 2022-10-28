@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,7 +10,6 @@
 #include "base/check_op.h"
 #include "base/mac/foundation_util.h"
 #include "base/mac/scoped_cftyperef.h"
-#include "base/notreached.h"
 #include "device/fido/mac/credential_store.h"
 #include "device/fido/mac/keychain.h"
 
@@ -172,9 +171,6 @@ OSStatus FakeKeychain::ItemDelete(CFDictionaryRef query) {
       return errSecSuccess;
     }
   }
-  // We only delete known items by credential ID currently, so not finding one
-  // would be odd.
-  NOTREACHED();
   return errSecItemNotFound;
 }
 

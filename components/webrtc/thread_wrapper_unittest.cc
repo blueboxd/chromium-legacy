@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -21,10 +21,9 @@
 #include "third_party/webrtc_overrides/test/metronome_like_task_queue_test.h"
 
 using ::blink::MetronomeLikeTaskQueueTest;
-using ::testing::DoAll;
 using ::testing::InSequence;
-using ::testing::InvokeWithoutArgs;
-using ::testing::Mock;
+using ::testing::Invoke;
+using ::testing::MockFunction;
 
 namespace webrtc {
 
@@ -53,28 +52,14 @@ ACTION(DeleteMessageData) {
   delete arg0->pdata;
 }
 
-// Helper class used in the Dispose test.
-class DeletableObject {
- public:
-  DeletableObject(bool* deleted) : deleted_(deleted) { *deleted = false; }
-
-  ~DeletableObject() { *deleted_ = true; }
-
- private:
-  raw_ptr<bool> deleted_;
-};
-
 class ThreadWrapperTest : public testing::Test {
  public:
-  // This method is used by the SendDuringSend test. It sends message to the
-  // main thread synchronously using Send().
+  // This method is used by the BlockingCallDuringBlockingCall test.
+  // It sends message to the main thread synchronously using BlockingCall().
   void PingMainThread() {
-    rtc::MessageData* data = new rtc::MessageData();
-    MockMessageHandler handler;
-
-    EXPECT_CALL(handler, OnMessage(MatchMessage(&handler, kTestMessage2, data)))
-        .WillOnce(DeleteMessageData());
-    thread_->Send(RTC_FROM_HERE, &handler, kTestMessage2, data);
+    MockFunction<void()> handler;
+    EXPECT_CALL(handler, Call);
+    thread_->BlockingCall(handler.AsStdFunction());
   }
 
  protected:
@@ -82,12 +67,12 @@ class ThreadWrapperTest : public testing::Test {
 
   void SetUp() override {
     ThreadWrapper::EnsureForCurrentMessageLoop();
-    thread_ = rtc::Thread::Current();
+    thread_ = ThreadWrapper::current();
   }
 
   // ThreadWrapper destroys itself when |message_loop_| is destroyed.
   base::test::SingleThreadTaskEnvironment task_environment_;
-  raw_ptr<rtc::Thread> thread_;
+  raw_ptr<ThreadWrapper> thread_;
   MockMessageHandler handler1_;
   MockMessageHandler handler2_;
 };
@@ -98,10 +83,10 @@ TEST_F(ThreadWrapperTest, Post) {
   rtc::MessageData* data3 = new rtc::MessageData();
   rtc::MessageData* data4 = new rtc::MessageData();
 
-  thread_->Post(RTC_FROM_HERE, &handler1_, kTestMessage1, data1);
-  thread_->Post(RTC_FROM_HERE, &handler1_, kTestMessage2, data2);
-  thread_->Post(RTC_FROM_HERE, &handler2_, kTestMessage1, data3);
-  thread_->Post(RTC_FROM_HERE, &handler2_, kTestMessage1, data4);
+  thread_->Post(RTC_FROM_HERE, &handler1_, kTestMessage1, data1, false);
+  thread_->Post(RTC_FROM_HERE, &handler1_, kTestMessage2, data2, false);
+  thread_->Post(RTC_FROM_HERE, &handler2_, kTestMessage1, data3, false);
+  thread_->Post(RTC_FROM_HERE, &handler2_, kTestMessage1, data4, false);
 
   InSequence in_seq;
 
@@ -158,12 +143,12 @@ TEST_F(ThreadWrapperTest, PostDelayed) {
 }
 
 TEST_F(ThreadWrapperTest, Clear) {
-  thread_->Post(RTC_FROM_HERE, &handler1_, kTestMessage1, NULL);
-  thread_->Post(RTC_FROM_HERE, &handler1_, kTestMessage2, NULL);
-  thread_->Post(RTC_FROM_HERE, &handler2_, kTestMessage1, NULL);
-  thread_->Post(RTC_FROM_HERE, &handler2_, kTestMessage2, NULL);
+  thread_->Post(RTC_FROM_HERE, &handler1_, kTestMessage1, NULL, false);
+  thread_->Post(RTC_FROM_HERE, &handler1_, kTestMessage2, NULL, false);
+  thread_->Post(RTC_FROM_HERE, &handler2_, kTestMessage1, NULL, false);
+  thread_->Post(RTC_FROM_HERE, &handler2_, kTestMessage2, NULL, false);
 
-  thread_->Clear(&handler1_, kTestMessage2);
+  thread_->Clear(&handler1_, kTestMessage2, nullptr);
 
   InSequence in_seq;
 
@@ -191,7 +176,7 @@ TEST_F(ThreadWrapperTest, ClearDelayed) {
   thread_->PostDelayed(RTC_FROM_HERE, kTestDelayMs4, &handler2_, kTestMessage1,
                        NULL);
 
-  thread_->Clear(&handler1_, kTestMessage2);
+  thread_->Clear(&handler1_, kTestMessage2, nullptr);
 
   InSequence in_seq;
 
@@ -218,25 +203,22 @@ TEST_F(ThreadWrapperTest, ClearDestroyed) {
   {
     MockMessageHandler handler;
     handler_ptr = &handler;
-    thread_->Post(RTC_FROM_HERE, &handler, kTestMessage1, NULL);
+    thread_->Post(RTC_FROM_HERE, &handler, kTestMessage1, NULL, false);
   }
   rtc::MessageList removed;
   thread_->Clear(handler_ptr, rtc::MQID_ANY, &removed);
   DCHECK_EQ(0U, removed.size());
 }
 
-// Verify that Send() calls handler synchronously when called on the
+// Verify that BlockingCall() calls handler synchronously when called on the
 // same thread.
-TEST_F(ThreadWrapperTest, SendSameThread) {
-  rtc::MessageData* data = new rtc::MessageData();
-
-  EXPECT_CALL(handler1_,
-              OnMessage(MatchMessage(&handler1_, kTestMessage1, data)))
-      .WillOnce(DeleteMessageData());
-  thread_->Send(RTC_FROM_HERE, &handler1_, kTestMessage1, data);
+TEST_F(ThreadWrapperTest, BlockingCallSameThread) {
+  MockFunction<void()> handler;
+  EXPECT_CALL(handler, Call);
+  thread_->BlockingCall(handler.AsStdFunction());
 }
 
-void InitializeWrapperForNewThread(rtc::Thread** thread,
+void InitializeWrapperForNewThread(ThreadWrapper** thread,
                                    base::WaitableEvent* done_event) {
   ThreadWrapper::EnsureForCurrentMessageLoop();
   ThreadWrapper::current()->set_send_allowed(true);
@@ -244,9 +226,9 @@ void InitializeWrapperForNewThread(rtc::Thread** thread,
   done_event->Signal();
 }
 
-// Verify that Send() calls handler synchronously when called for a
+// Verify that BlockingCall() calls handler synchronously when called for a
 // different thread.
-TEST_F(ThreadWrapperTest, SendToOtherThread) {
+TEST_F(ThreadWrapperTest, BlockingCallToOtherThread) {
   ThreadWrapper::current()->set_send_allowed(true);
 
   base::Thread second_thread("adWrapperTest");
@@ -255,29 +237,24 @@ TEST_F(ThreadWrapperTest, SendToOtherThread) {
   base::WaitableEvent initialized_event(
       base::WaitableEvent::ResetPolicy::MANUAL,
       base::WaitableEvent::InitialState::NOT_SIGNALED);
-  rtc::Thread* target;
+  ThreadWrapper* target;
   second_thread.task_runner()->PostTask(
       FROM_HERE, base::BindOnce(&InitializeWrapperForNewThread, &target,
                                 &initialized_event));
   initialized_event.Wait();
 
-  ASSERT_TRUE(target != NULL);
+  ASSERT_TRUE(target != nullptr);
 
-  rtc::MessageData* data = new rtc::MessageData();
-
-  EXPECT_CALL(handler1_,
-              OnMessage(MatchMessage(&handler1_, kTestMessage1, data)))
-      .WillOnce(DeleteMessageData());
-  target->Send(RTC_FROM_HERE, &handler1_, kTestMessage1, data);
-
-  Mock::VerifyAndClearExpectations(&handler1_);
+  MockFunction<void()> handler;
+  EXPECT_CALL(handler, Call);
+  target->BlockingCall(handler.AsStdFunction());
 }
 
-// Verify that thread handles Send() while another Send() is
-// pending. The test creates second thread and Send()s kTestMessage1
-// to that thread. kTestMessage1 handler calls PingMainThread() which
-// tries to Send() kTestMessage2 to the main thread.
-TEST_F(ThreadWrapperTest, SendDuringSend) {
+// Verify that thread handles BlockingCall() while another BlockingCall() is
+// pending. The test creates second thread and BlockingCall()s
+// to that thread. handler calls PingMainThread() on the BlockingCall which
+// tries to BlockingCall() to the main thread.
+TEST_F(ThreadWrapperTest, BlockingCallDuringBlockingCall) {
   ThreadWrapper::current()->set_send_allowed(true);
 
   base::Thread second_thread("adWrapperTest");
@@ -286,32 +263,18 @@ TEST_F(ThreadWrapperTest, SendDuringSend) {
   base::WaitableEvent initialized_event(
       base::WaitableEvent::ResetPolicy::MANUAL,
       base::WaitableEvent::InitialState::NOT_SIGNALED);
-  rtc::Thread* target;
+  ThreadWrapper* target;
   second_thread.task_runner()->PostTask(
       FROM_HERE, base::BindOnce(&InitializeWrapperForNewThread, &target,
                                 &initialized_event));
   initialized_event.Wait();
 
-  ASSERT_TRUE(target != NULL);
+  ASSERT_TRUE(target != nullptr);
 
-  rtc::MessageData* data = new rtc::MessageData();
-
-  EXPECT_CALL(handler1_,
-              OnMessage(MatchMessage(&handler1_, kTestMessage1, data)))
-      .WillOnce(
-          DoAll(InvokeWithoutArgs(this, &ThreadWrapperTest::PingMainThread),
-                DeleteMessageData()));
-  target->Send(RTC_FROM_HERE, &handler1_, kTestMessage1, data);
-
-  Mock::VerifyAndClearExpectations(&handler1_);
-}
-
-TEST_F(ThreadWrapperTest, Dispose) {
-  bool deleted_ = false;
-  thread_->Dispose(new DeletableObject(&deleted_));
-  EXPECT_FALSE(deleted_);
-  base::RunLoop().RunUntilIdle();
-  EXPECT_TRUE(deleted_);
+  MockFunction<void()> handler;
+  EXPECT_CALL(handler, Call)
+      .WillOnce(Invoke(this, &ThreadWrapperTest::PingMainThread));
+  target->BlockingCall(handler.AsStdFunction());
 }
 
 // Provider needed for the MetronomeLikeTaskQueueTest suite.

@@ -1,10 +1,11 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome/browser/ash/input_method/autocorrect_manager.h"
 
 #include "ash/constants/ash_features.h"
+#include "base/callback_helpers.h"
 #include "base/feature_list.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/numerics/safe_conversions.h"
@@ -46,6 +47,42 @@ void LogAssistiveAutocorrectDelay(base::TimeDelta delay) {
   }
 }
 
+void LogAssistiveAutocorrectActionLatency(AutocorrectActions action,
+                                          base::TimeDelta time_delta,
+                                          bool virtual_keyboard_visible) {
+  switch (action) {
+    case AutocorrectActions::kUnderlined:
+    case AutocorrectActions::kWindowShown:
+      // Skip non-terminal actions.
+      return;
+    case AutocorrectActions::kUserAcceptedAutocorrect:
+      base::UmaHistogramMediumTimes(
+          "InputMethod.Assistive.AutocorrectV2.Latency.Accept", time_delta);
+      break;
+    case AutocorrectActions::kReverted:
+    case AutocorrectActions::kUserActionClearedUnderline:
+      base::UmaHistogramMediumTimes(
+          "InputMethod.Assistive.AutocorrectV2.Latency.Reject", time_delta);
+      break;
+    case AutocorrectActions::kUserExitedTextFieldWithUnderline:
+      base::UmaHistogramMediumTimes(
+          "InputMethod.Assistive.AutocorrectV2.Latency.ExitField", time_delta);
+      break;
+    default:
+      LOG(ERROR) << "Invalid AutocorrectActions: action=" << (int)action;
+      return;
+  }
+
+  // Record the duration of the pending autocorrect for VK and PK.
+  if (virtual_keyboard_visible) {
+    base::UmaHistogramMediumTimes(
+        "InputMethod.Assistive.AutocorrectV2.Latency.VkPending", time_delta);
+  } else {
+    base::UmaHistogramMediumTimes(
+        "InputMethod.Assistive.AutocorrectV2.Latency.PkPending", time_delta);
+  }
+}
+
 void RecordAssistiveCoverage(AssistiveType type) {
   base::UmaHistogramEnumeration("InputMethod.Assistive.Coverage", type);
 }
@@ -54,14 +91,30 @@ void RecordAssistiveSuccess(AssistiveType type) {
   base::UmaHistogramEnumeration("InputMethod.Assistive.Success", type);
 }
 
-constexpr int kKeysUntilUnderlineHides = 4;
+bool IsAutocorrectSuggestionInSurroundingText(
+    const std::u16string& surrounding_text,
+    const gfx::Range& autocorrect_range,
+    const std::u16string& suggested_text) {
+  if (autocorrect_range.is_empty() ||
+      suggested_text.length() != autocorrect_range.length() ||
+      autocorrect_range.end() > surrounding_text.length()) {
+    return false;
+  }
+
+  return surrounding_text.substr(autocorrect_range.start(),
+                                 autocorrect_range.length()) == suggested_text;
+}
+
 constexpr int kDistanceUntilUnderlineHides = 3;
+constexpr int kMaxValidationTries = 4;
 
 }  // namespace
 
 AutocorrectManager::AutocorrectManager(
     SuggestionHandlerInterface* suggestion_handler)
     : suggestion_handler_(suggestion_handler) {}
+
+AutocorrectManager::~AutocorrectManager() = default;
 
 void AutocorrectManager::HandleAutocorrect(const gfx::Range autocorrect_range,
                                            const std::u16string& original_text,
@@ -75,41 +128,73 @@ void AutocorrectManager::HandleAutocorrect(const gfx::Range autocorrect_range,
     return;
   }
 
+  if (pending_autocorrect_.has_value()) {
+    AcceptOrClearPendingAutocorrect();
+  }
+
+  if (autocorrect_range.is_empty() ||
+      autocorrect_range.length() != current_text.length() ||
+      original_text.empty()) {
+    // TODO(b/161490813): record metrics for invalid arguments.
+    input_context->SetAutocorrectRange(gfx::Range(), base::DoNothing());
+    return;
+  }
+
+  input_context->SetAutocorrectRange(
+      autocorrect_range,
+      base::BindOnce(&AutocorrectManager::ProcessSetAutocorrectRangeDone,
+                     weak_ptr_factory_.GetWeakPtr(), autocorrect_range,
+                     original_text, current_text));  // show underline
+}
+
+void AutocorrectManager::ProcessSetAutocorrectRangeDone(
+    const gfx::Range& autocorrect_range,
+    const std::u16string& original_text,
+    const std::u16string& current_text,
+    bool set_range_success) {
+  if (!set_range_success) {
+    // TODO(b/161490813): record metrics for failed set range calls.
+    return;
+  }
+
   in_diacritical_autocorrect_session_ =
       IsCurrentInputMethodExperimentalMultilingual() &&
       diacritics_insensitive_string_comparator_.Equal(original_text,
                                                       current_text);
 
-  original_text_ = original_text;
-  key_presses_until_underline_hide_ = kKeysUntilUnderlineHides;
+  bool virtual_keyboard_visible =
+      ChromeKeyboardControllerClient::HasInstance() &&
+      ChromeKeyboardControllerClient::Get()->is_keyboard_visible();
 
-  if (autocorrect_pending_) {
-    AcceptOrClearPendingAutocorrect();
-  }
+  pending_autocorrect_ = AutocorrectManager::PendingAutocorrectState(
+      /*original_text=*/original_text, /*suggested_text=*/current_text,
+      /*start_time=*/base::TimeTicks::Now(),
+      /*virtual_keyboard_visible=*/virtual_keyboard_visible);
 
-  input_context->SetAutocorrectRange(autocorrect_range);  // show underline
-
-  if (autocorrect_range.is_empty()) {
-    return;
-  }
-
-  autocorrect_pending_ = true;
   LogAssistiveAutocorrectAction(AutocorrectActions::kUnderlined);
   RecordAssistiveCoverage(AssistiveType::kAutocorrectUnderlined);
-  autocorrect_time_ = base::TimeTicks::Now();
 }
 
 void AutocorrectManager::LogAssistiveAutocorrectAction(
     AutocorrectActions action) {
-  // TODO(b/161490813): Add a new metric to measure the impact of new changes.
-  //   The new metric should have separate buckets for vk and pk.
   base::UmaHistogramEnumeration("InputMethod.Assistive.Autocorrect.Actions",
                                 action);
 
-  if (ChromeKeyboardControllerClient::HasInstance() &&
-      ChromeKeyboardControllerClient::Get()->is_keyboard_visible()) {
+  if (pending_autocorrect_.has_value()) {
+    LogAssistiveAutocorrectActionLatency(
+        action, base::TimeTicks::Now() - pending_autocorrect_->start_time,
+        pending_autocorrect_->virtual_keyboard_visible);
+  }
+
+  if (pending_autocorrect_.has_value() &&
+      pending_autocorrect_->virtual_keyboard_visible) {
     base::UmaHistogramEnumeration(
         "InputMethod.Assistive.Autocorrect.Actions.VK", action);
+    base::UmaHistogramEnumeration(
+        "InputMethod.Assistive.AutocorrectV2.Actions.VK", action);
+  } else {
+    base::UmaHistogramEnumeration(
+        "InputMethod.Assistive.AutocorrectV2.Actions.PK", action);
   }
 
   if (IsCurrentInputMethodExperimentalMultilingual()) {
@@ -125,64 +210,112 @@ void AutocorrectManager::LogAssistiveAutocorrectAction(
 }
 
 bool AutocorrectManager::OnKeyEvent(const ui::KeyEvent& event) {
-  if (!autocorrect_pending_ || event.type() != ui::ET_KEY_PRESSED) {
+  // OnKeyEvent is only used for interacting with the undo UI.
+  if (!pending_autocorrect_.has_value() ||
+      !pending_autocorrect_->undo_window_visible ||
+      event.type() != ui::ET_KEY_PRESSED) {
     return false;
   }
-  if (event.code() == ui::DomCode::ARROW_UP && window_visible_) {
+
+  if (event.code() == ui::DomCode::ARROW_UP) {
     HighlightUndoButton();
     return true;
   }
-  if (event.code() == ui::DomCode::ENTER && window_visible_ &&
-      button_highlighted_) {
+  if (event.code() == ui::DomCode::ENTER &&
+      pending_autocorrect_->undo_button_highlighted) {
     UndoAutocorrect();
     return true;
   }
-  if (key_presses_until_underline_hide_ >= 0) {
-    --key_presses_until_underline_hide_;
-  }
 
-  // TODO(b/161490813): Move the logic to OnSurroundingTextChanged.
-  //   There are issues with the current logic:
-  //   1. This logic does not clear autocorrect for VK as OnKeyEvent is only
-  //      called for PK key presses.
-  //   2. It causes a difference between the behaviour of Autocorrect for VK
-  //      and PK.
-  //   3. If a user changes the autocorrect suggestion and clears it, the logic
-  //      will not count the "cleared" metric unless the user adds a few more
-  //      characters. Meanwhile, other logics such as undo or OnFocus might
-  //      process the pending autocorrect and make measurements inaccurate.
-  if (key_presses_until_underline_hide_ == 0) {
-    AcceptOrClearPendingAutocorrect();
-  }
   return false;
 }
 
 void AutocorrectManager::OnSurroundingTextChanged(const std::u16string& text,
                                                   const int cursor_pos,
                                                   const int anchor_pos) {
-  if (!autocorrect_pending_) {
+  if (error_on_hiding_undo_window_) {
+    HideUndoWindow();
+  }
+  if (!pending_autocorrect_.has_value()) {
     return;
   }
+
   std::string error;
   ui::IMEInputContextHandlerInterface* input_context =
       ui::IMEBridge::Get()->GetInputContextHandler();
-  const gfx::Range range = input_context->GetAutocorrectRange();
-  const uint32_t cursor_pos_unsigned = base::checked_cast<uint32_t>(cursor_pos);
-  if (!range.is_empty() &&
-      (cursor_pos_unsigned + kDistanceUntilUnderlineHides < range.start() ||
-       cursor_pos_unsigned > range.end() + kDistanceUntilUnderlineHides)) {
+
+  // Null input context invalidates the range so consider the pending
+  // range as implicitly rejected/cleared.
+  if (!input_context) {
     AcceptOrClearPendingAutocorrect();
+    return;
   }
-  // Explanation of checks:
-  // 1) Check there is an autocorrect range
-  // 2) Check cursor is in range
-  // 3) Ensure there is no selection (selection UI clashes with autocorrect
-  //    UI).
-  if (!range.is_empty() && cursor_pos_unsigned >= range.start() &&
+
+  if (!pending_autocorrect_->is_validated) {
+    // Validate that the surrounding text matches with pending autocorrect
+    // suggestion. Because of delays in update of surrounding text and
+    // autocorrect range, the validation waits until all these information are
+    // matching with each others (a.k.a. updated). This is necessary for
+    // implementation of autocorrect interactions such as implicit acceptance.
+    pending_autocorrect_->is_validated =
+        IsAutocorrectSuggestionInSurroundingText(
+            text, input_context->GetAutocorrectRange(),
+            pending_autocorrect_->suggested_text);
+    pending_autocorrect_->validation_tries++;
+
+    if (!pending_autocorrect_->is_validated) {
+      // Clear suggestion if multiple trials of validation fails.
+      // This is a guard to prevent unwanted situation that can keep
+      // autocorrect suggestion pending forever.
+      if (pending_autocorrect_->validation_tries >= kMaxValidationTries) {
+        AcceptOrClearPendingAutocorrect();
+      }
+      return;
+    }
+  }
+
+  const gfx::Range range = input_context->GetAutocorrectRange();
+  const uint32_t cursor_pos_unsigned
+      = base::checked_cast<uint32_t>(cursor_pos);
+
+  // If range is empty, it means user has mutated suggestion. So, clear range
+  // and consider autocorrect suggestion as implicitly rejected.
+  if (range.is_empty()) {
+    AcceptOrClearPendingAutocorrect();
+    return;
+  }
+
+  // If it is the first call of the event after handling autocorrect range,
+  // initialize the variables and do not process the empty range as it is
+  // potentially stale.
+  if (pending_autocorrect_->num_inserted_chars < 0) {
+    pending_autocorrect_->num_inserted_chars = 0;
+  } else if (text.length() > pending_autocorrect_->text_length) {
+    // TODO(b/161490813): Fix double counting of emojis and some CJK chars.
+    // TODO(b/161490813): Fix logic for text replace.
+
+    // Count characters added between two calls of the event.
+    pending_autocorrect_->num_inserted_chars += text.length() -
+        pending_autocorrect_->text_length;
+  }
+  pending_autocorrect_->text_length = text.length();
+
+  // If the number of added characters after setting the pending range is above
+  // the threshold, then accept the pending range.
+  if (pending_autocorrect_->num_inserted_chars >=
+      kDistanceUntilUnderlineHides) {
+    AcceptOrClearPendingAutocorrect();
+    return;
+  }
+
+  // If cursor is inside autocorrect range (inclusive), show undo window and
+  // record relevant metrics.
+  if (cursor_pos_unsigned >= range.start() &&
       cursor_pos_unsigned <= range.end() && cursor_pos == anchor_pos) {
     ShowUndoWindow(range, text);
-    key_presses_until_underline_hide_ = kKeysUntilUnderlineHides;
   } else {
+    // Ensure undo window is hidden when cursor is not inside the autocorrect
+    // range.
     HideUndoWindow();
   }
 }
@@ -194,17 +327,37 @@ void AutocorrectManager::OnFocus(int context_id) {
                        base::Unretained(this)));
   }
 
-  if (autocorrect_pending_) {
-    // TODO(b/149796494): move this to onblur()
+  context_id_ = context_id;
+  ProcessTextFieldChange();
+}
+
+void AutocorrectManager::OnBlur() {
+  ProcessTextFieldChange();
+}
+
+void AutocorrectManager::ProcessTextFieldChange() {
+  ui::IMEInputContextHandlerInterface* input_context =
+    ui::IMEBridge::Get()->GetInputContextHandler();
+
+  // Clear autocorrect range if any.
+  if (input_context) {
+    HideUndoWindow();
+    input_context->SetAutocorrectRange(gfx::Range(), base::DoNothing());
+  }
+
+  if (pending_autocorrect_.has_value()) {
     LogAssistiveAutocorrectAction(
         AutocorrectActions::kUserExitedTextFieldWithUnderline);
-    autocorrect_pending_ = false;
-    key_presses_until_underline_hide_ = -1;
+    pending_autocorrect_.reset();
   }
-  context_id_ = context_id;
 }
 
 void AutocorrectManager::UndoAutocorrect() {
+  if (!pending_autocorrect_.has_value() ||
+      !pending_autocorrect_->is_validated) {
+    return;
+  }
+
   HideUndoWindow();
 
   ui::IMEInputContextHandlerInterface* input_context =
@@ -215,7 +368,7 @@ void AutocorrectManager::UndoAutocorrect() {
     input_context->SetComposingRange(autocorrect_range.start(),
                                      autocorrect_range.end(), {});
     input_context->CommitText(
-        original_text_,
+        pending_autocorrect_->original_text,
         ui::TextInputClient::InsertTextCursorBehavior::kMoveCursorAfterText);
   } else {
     // NOTE: GetSurroundingTextInfo() could return a stale cache that no longer
@@ -235,20 +388,24 @@ void AutocorrectManager::UndoAutocorrect() {
 
     // Replace with the original text.
     input_context->CommitText(
-        original_text_,
+        pending_autocorrect_->original_text,
         ui::TextInputClient::InsertTextCursorBehavior::kMoveCursorAfterText);
   }
 
-  autocorrect_pending_ = false;
   LogAssistiveAutocorrectAction(AutocorrectActions::kReverted);
   RecordAssistiveCoverage(AssistiveType::kAutocorrectReverted);
   RecordAssistiveSuccess(AssistiveType::kAutocorrectReverted);
-  LogAssistiveAutocorrectDelay(base::TimeTicks::Now() - autocorrect_time_);
+  LogAssistiveAutocorrectDelay(
+    base::TimeTicks::Now() - pending_autocorrect_->start_time);
+
+  pending_autocorrect_.reset();
 }
 
 void AutocorrectManager::ShowUndoWindow(
   gfx::Range range, const std::u16string& text) {
-  if (window_visible_) {
+  if (!pending_autocorrect_.has_value() ||
+      !pending_autocorrect_->is_validated ||
+      pending_autocorrect_->undo_window_visible) {
     return;
   }
 
@@ -259,19 +416,35 @@ void AutocorrectManager::ShowUndoWindow(
   properties.type = ui::ime::AssistiveWindowType::kUndoWindow;
   properties.visible = true;
   properties.announce_string = l10n_util::GetStringFUTF16(
-      IDS_SUGGESTION_AUTOCORRECT_UNDO_WINDOW_SHOWN, original_text_,
+      IDS_SUGGESTION_AUTOCORRECT_UNDO_WINDOW_SHOWN,
+      pending_autocorrect_->original_text,
       autocorrected_text);
-  button_highlighted_ = false;
-  // TODO(b/161490813): Handle error.
   suggestion_handler_->SetAssistiveWindowProperties(context_id_, properties,
                                                     &error);
-  LogAssistiveAutocorrectAction(AutocorrectActions::kWindowShown);
-  RecordAssistiveCoverage(AssistiveType::kAutocorrectWindowShown);
-  window_visible_ = true;
+
+  if (!error.empty()) {
+    LOG(ERROR) << "Failed to show autocorrect undo window.";
+    return;
+  }
+
+  // Showing a new undo window overrides the current shown undo window. So
+  // there is no need to first trying to hide the previous one.
+  error_on_hiding_undo_window_ = false;
+
+  if (!pending_autocorrect_->window_shown_logged) {
+    LogAssistiveAutocorrectAction(AutocorrectActions::kWindowShown);
+    RecordAssistiveCoverage(AssistiveType::kAutocorrectWindowShown);
+    pending_autocorrect_->window_shown_logged = true;
+  }
+
+  pending_autocorrect_->undo_button_highlighted = false;
+  pending_autocorrect_->undo_window_visible = true;
 }
 
 void AutocorrectManager::HideUndoWindow() {
-  if (!window_visible_) {
+  if (!error_on_hiding_undo_window_ &&
+      (!pending_autocorrect_.has_value() ||
+       !pending_autocorrect_->undo_window_visible)) {
     return;
   }
 
@@ -279,31 +452,50 @@ void AutocorrectManager::HideUndoWindow() {
   AssistiveWindowProperties properties;
   properties.type = ui::ime::AssistiveWindowType::kUndoWindow;
   properties.visible = false;
-  button_highlighted_ = false;
-  // TODO(b/161490813): Handle error.
   suggestion_handler_->SetAssistiveWindowProperties(context_id_, properties,
                                                     &error);
-  window_visible_ = false;
+
+  if (!error.empty()) {
+    LOG(ERROR) << "Failed to hide autocorrect undo window.";
+    error_on_hiding_undo_window_ = true;
+    return;
+  }
+
+  error_on_hiding_undo_window_ = false;
+
+  if (pending_autocorrect_.has_value()) {
+    pending_autocorrect_->undo_button_highlighted = false;
+    pending_autocorrect_->undo_window_visible = false;
+  }
 }
 
 void AutocorrectManager::HighlightUndoButton() {
-  if (button_highlighted_) {
+  if (!pending_autocorrect_.has_value() ||
+      !pending_autocorrect_->undo_window_visible ||
+      pending_autocorrect_->undo_button_highlighted) {
     return;
   }
 
   std::string error;
-  auto button = ui::ime::AssistiveWindowButton();
+  ui::ime::AssistiveWindowButton button = ui::ime::AssistiveWindowButton();
   button.id = ui::ime::ButtonId::kUndo;
   button.window_type = ui::ime::AssistiveWindowType::kUndoWindow;
   button.announce_string = l10n_util::GetStringFUTF16(
-      IDS_SUGGESTION_AUTOCORRECT_UNDO_BUTTON, original_text_);
+      IDS_SUGGESTION_AUTOCORRECT_UNDO_BUTTON,
+      pending_autocorrect_->original_text);
   suggestion_handler_->SetButtonHighlighted(context_id_, button, true,
                                             &error);
-  button_highlighted_ = true;
+
+  if (!error.empty()) {
+    LOG(ERROR) << "Failed to highlight undo button.";
+    return;
+  }
+
+  pending_autocorrect_->undo_button_highlighted = true;
 }
 
 void AutocorrectManager::AcceptOrClearPendingAutocorrect() {
-  if (!autocorrect_pending_) {
+  if (!pending_autocorrect_.has_value()) {
     return;
   }
 
@@ -311,18 +503,29 @@ void AutocorrectManager::AcceptOrClearPendingAutocorrect() {
   ui::IMEInputContextHandlerInterface* input_context =
       ui::IMEBridge::Get()->GetInputContextHandler();
 
-  // Non-empty autocorrect range means that the user has not modified
-  // autocorrect suggestion to invalidate it. So, it is considered as accepted.
-  if (input_context && !input_context->GetAutocorrectRange().is_empty()) {
-    input_context->SetAutocorrectRange(gfx::Range()); // clear underline
+  if (!pending_autocorrect_->is_validated) {
+    // TODO(b/161490813): Record metric for invalid range.
+    LogAssistiveAutocorrectAction(
+        AutocorrectActions::kUserActionClearedUnderline);
+  } else if (input_context &&
+             !input_context->GetAutocorrectRange().is_empty()) {
+    // Non-empty autocorrect range means that the user has not modified
+    // autocorrect suggestion to invalidate it. So, it is considered as
+    // accepted.
     LogAssistiveAutocorrectAction(
       AutocorrectActions::kUserAcceptedAutocorrect);
   } else {
     LogAssistiveAutocorrectAction(
       AutocorrectActions::kUserActionClearedUnderline);
   }
+
+  if (input_context) {
+    input_context->SetAutocorrectRange(gfx::Range(),
+                                       base::DoNothing());  // clear underline
+  }
+
   HideUndoWindow();
-  autocorrect_pending_ = false;
+  pending_autocorrect_.reset();
 }
 
 void AutocorrectManager::OnTextFieldContextualInfoChanged(
@@ -334,6 +537,22 @@ void AutocorrectManager::OnTextFieldContextualInfoChanged(
 bool AutocorrectManager::DisabledByRule() {
   return disabled_by_rule_;
 }
+
+AutocorrectManager::PendingAutocorrectState::PendingAutocorrectState(
+    const std::u16string& original_text,
+    const std::u16string& suggested_text,
+    const base::TimeTicks& start_time,
+    bool virtual_keyboard_visible)
+    : original_text(original_text),
+      suggested_text(suggested_text),
+      start_time(start_time),
+      virtual_keyboard_visible(virtual_keyboard_visible) {}
+
+AutocorrectManager::PendingAutocorrectState::PendingAutocorrectState(
+  const PendingAutocorrectState& other) = default;
+
+AutocorrectManager::PendingAutocorrectState::~PendingAutocorrectState() =
+    default;
 
 }  // namespace input_method
 }  // namespace ash

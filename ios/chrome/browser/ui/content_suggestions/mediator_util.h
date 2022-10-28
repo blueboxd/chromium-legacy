@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -20,9 +20,6 @@ ContentSuggestionsSectionInformation* ReturnToRecentTabSectionInformation();
 // Creates and returns a SectionInfo for the section containing the logo and
 // omnibox.
 ContentSuggestionsSectionInformation* LogoSectionInformation();
-
-// Creates and returns a SectionInfo for the What's New promo section.
-ContentSuggestionsSectionInformation* PromoSectionInformation();
 
 // Creates and returns a SectionInfo for the Most Visited section.
 ContentSuggestionsSectionInformation* MostVisitedSectionInformation();

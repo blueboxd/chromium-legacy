@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -117,13 +117,12 @@ base::RepeatingCallbackList<void(bool)>& GetClosingAllBrowsersCallbackList() {
 bool SetLocaleForNextStart(PrefService* local_state) {
   // If a policy mandates the login screen locale, use it.
   ash::CrosSettings* cros_settings = ash::CrosSettings::Get();
-  const base::ListValue* login_screen_locales = nullptr;
+  const base::Value::List* login_screen_locales = nullptr;
   if (cros_settings->GetList(ash::kDeviceLoginScreenLocales,
                              &login_screen_locales) &&
-      !login_screen_locales->GetListDeprecated().empty() &&
-      login_screen_locales->GetListDeprecated()[0].is_string()) {
-    std::string login_screen_locale =
-        login_screen_locales->GetListDeprecated()[0].GetString();
+      !login_screen_locales->empty() &&
+      login_screen_locales->front().is_string()) {
+    std::string login_screen_locale = login_screen_locales->front().GetString();
     local_state->SetString(language::prefs::kApplicationLocale,
                            login_screen_locale);
     return true;

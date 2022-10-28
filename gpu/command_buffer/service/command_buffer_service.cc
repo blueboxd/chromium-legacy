@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -30,9 +30,6 @@
 
 #include "base/no_destructor.h"
 #include "base/process/process_metrics.h"
-#include "base/trace_event/memory_dump_manager.h"
-#include "base/trace_event/memory_dump_provider.h"
-#include "base/trace_event/memory_dump_request_args.h"
 #include "base/trace_event/process_memory_dump.h"
 #endif
 

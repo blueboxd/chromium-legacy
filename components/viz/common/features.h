@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -54,7 +54,16 @@ VIZ_COMMON_EXPORT extern const base::Feature kMacCAOverlayQuad;
 VIZ_COMMON_EXPORT extern const base::FeatureParam<int> kMacCAOverlayQuadMaxNum;
 #endif
 
+#if BUILDFLAG(IS_APPLE) || defined(USE_OZONE)
+VIZ_COMMON_EXPORT extern const base::Feature kCanSkipRenderPassOverlay;
+#endif
+
 VIZ_COMMON_EXPORT extern const base::Feature kDrawPredictedInkPoint;
+VIZ_COMMON_EXPORT extern const base::Feature
+    kAllowUndamagedNonrootRenderPassToSkip;
+VIZ_COMMON_EXPORT extern const base::Feature kAggressiveFrameCulling;
+VIZ_COMMON_EXPORT extern const base::Feature kEagerSurfaceGarbageCollection;
+
 VIZ_COMMON_EXPORT extern const char kDraw1Point12Ms[];
 VIZ_COMMON_EXPORT extern const char kDraw2Points6Ms[];
 VIZ_COMMON_EXPORT extern const char kDraw1Point6Ms[];
@@ -79,7 +88,7 @@ VIZ_COMMON_EXPORT bool ShouldUseRealBuffersForPageFlipTest();
 VIZ_COMMON_EXPORT bool ShouldWebRtcLogCapturePipeline();
 #if BUILDFLAG(IS_WIN)
 VIZ_COMMON_EXPORT bool ShouldUseSetPresentDuration();
-#endif  // BUILDFLAG(IS_WIN)
+#endif  // BUILDFLAG(IS_WIN)y
 VIZ_COMMON_EXPORT absl::optional<int> ShouldDrawPredictedInkPoints();
 VIZ_COMMON_EXPORT std::string InkPredictor();
 VIZ_COMMON_EXPORT bool ShouldUsePlatformDelegatedInk();

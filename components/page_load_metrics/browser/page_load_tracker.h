@@ -1,4 +1,4 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -239,6 +239,7 @@ class PageLoadTracker : public PageLoadMetricsUpdateDispatcher::Client,
   absl::optional<base::TimeDelta> GetTimeToFirstBackground() const override;
   absl::optional<base::TimeDelta> GetTimeToFirstForeground() const override;
   PrerenderingState GetPrerenderingState() const override;
+  absl::optional<base::TimeDelta> GetActivationStart() const override;
   const BackForwardCacheRestore& GetBackForwardCacheRestore(
       size_t index) const override;
   bool StartedInForeground() const override;
@@ -336,7 +337,7 @@ class PageLoadTracker : public PageLoadMetricsUpdateDispatcher::Client,
   PageEndReason page_end_reason() const { return page_end_reason_; }
   base::TimeTicks page_end_time() const { return page_end_time_; }
 
-  void AddObserver(std::unique_ptr<PageLoadMetricsObserver> observer);
+  void AddObserver(std::unique_ptr<PageLoadMetricsObserverInterface> observer);
   base::WeakPtr<PageLoadMetricsObserverInterface> FindObserver(
       char const* name);
 
@@ -403,6 +404,9 @@ class PageLoadTracker : public PageLoadMetricsUpdateDispatcher::Client,
   // Called when V8 per-frame memory usage updates are available.
   void OnV8MemoryChanged(const std::vector<MemoryUpdate>& memory_updates);
 
+  // Called when a `SharedStorageWorkletHost` is created.
+  void OnSharedStorageWorkletHostCreated();
+
   // Checks if this tracker is for outermost pages.
   bool IsOutermostTracker() const { return !parent_tracker_; }
 
@@ -456,9 +460,6 @@ class PageLoadTracker : public PageLoadMetricsUpdateDispatcher::Client,
                                InvokeCallback callback,
                                bool permit_forwarding);
 
-  void AddObserverInterface(
-      std::unique_ptr<PageLoadMetricsObserverInterface> observer);
-
   // Whether we stopped tracking this navigation after it was initiated. We may
   // stop tracking a navigation if it doesn't meet the criteria for tracking
   // metrics in DidFinishNavigation.
@@ -511,6 +512,7 @@ class PageLoadTracker : public PageLoadMetricsUpdateDispatcher::Client,
   PrerenderingState prerendering_state_ = PrerenderingState::kNoPrerendering;
   // Holds the page's visibility at activation.
   PageVisibility visibility_at_activation_ = PageVisibility::kNotInitialized;
+  absl::optional<base::TimeDelta> activation_start_ = absl::nullopt;
 
   mojom::PageLoadTimingPtr last_dispatched_merged_page_timing_;
   blink::MobileFriendliness latest_mobile_friendliness_;

@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -25,6 +25,8 @@ class ChromeShellDelegate : public ash::ShellDelegate {
   bool CanShowWindowForUser(const aura::Window* window) const override;
   std::unique_ptr<ash::CaptureModeDelegate> CreateCaptureModeDelegate()
       const override;
+  std::unique_ptr<ash::GlanceablesDelegate> CreateGlanceablesDelegate(
+      ash::GlanceablesController* controller) const override;
   ash::AccessibilityDelegate* CreateAccessibilityDelegate() override;
   std::unique_ptr<ash::BackGestureContextualNudgeDelegate>
   CreateBackGestureContextualNudgeDelegate(

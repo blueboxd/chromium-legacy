@@ -1111,20 +1111,21 @@ void NGColumnLayoutAlgorithm::PropagateBaselineFromChild(
     const NGPhysicalBoxFragment& child,
     LayoutUnit block_offset) {
   // Bail if a baseline was already found.
-  if (container_builder_.Baseline())
+  if (container_builder_.FirstBaseline())
     return;
 
   // According to the spec, multicol containers have no "last baseline set", so,
   // unless we're looking for a "first baseline set", we have no work to do.
-  if (ConstraintSpace().BaselineAlgorithmType() !=
-      NGBaselineAlgorithmType::kFirstLine)
+  if (ConstraintSpace().BaselineAlgorithmType() ==
+      NGBaselineAlgorithmType::kInlineBlock)
     return;
 
   NGBoxFragment logical_fragment(ConstraintSpace().GetWritingDirection(),
                                  child);
 
   if (auto baseline = logical_fragment.FirstBaseline())
-    container_builder_.SetBaseline(block_offset + *baseline);
+    container_builder_.SetFirstBaseline(block_offset + *baseline);
+  container_builder_.SetUseLastBaselineForInlineBaseline();
 }
 
 LayoutUnit NGColumnLayoutAlgorithm::CalculateBalancedColumnBlockSize(

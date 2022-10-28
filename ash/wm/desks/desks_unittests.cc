@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,8 +8,6 @@
 #include "ash/accessibility/accessibility_controller_impl.h"
 #include "ash/accessibility/sticky_keys/sticky_keys_controller.h"
 #include "ash/app_list/app_list_controller_impl.h"
-#include "ash/app_list/app_list_presenter_impl.h"
-#include "ash/app_list/views/app_list_view.h"
 #include "ash/constants/ash_features.h"
 #include "ash/constants/ash_pref_names.h"
 #include "ash/display/screen_orientation_controller.h"
@@ -17,7 +15,6 @@
 #include "ash/keyboard/ui/keyboard_ui_controller.h"
 #include "ash/keyboard/ui/test/keyboard_test_util.h"
 #include "ash/multi_user/multi_user_window_manager_impl.h"
-#include "ash/public/cpp/app_list/app_list_types.h"
 #include "ash/public/cpp/ash_prefs.h"
 #include "ash/public/cpp/event_rewriter_controller.h"
 #include "ash/public/cpp/multi_user_window_manager.h"
@@ -39,6 +36,7 @@
 #include "ash/shell.h"
 #include "ash/style/ash_color_provider.h"
 #include "ash/style/close_button.h"
+#include "ash/style/color_util.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/desks/desk.h"
 #include "ash/wm/desks/desk_action_context_menu.h"
@@ -54,10 +52,10 @@
 #include "ash/wm/desks/desks_test_util.h"
 #include "ash/wm/desks/desks_util.h"
 #include "ash/wm/desks/expanded_desks_bar_button.h"
-#include "ash/wm/desks/persistent_desks_bar_button.h"
-#include "ash/wm/desks/persistent_desks_bar_context_menu.h"
-#include "ash/wm/desks/persistent_desks_bar_controller.h"
-#include "ash/wm/desks/persistent_desks_bar_view.h"
+#include "ash/wm/desks/persistent_desks_bar/persistent_desks_bar_button.h"
+#include "ash/wm/desks/persistent_desks_bar/persistent_desks_bar_context_menu.h"
+#include "ash/wm/desks/persistent_desks_bar/persistent_desks_bar_controller.h"
+#include "ash/wm/desks/persistent_desks_bar/persistent_desks_bar_view.h"
 #include "ash/wm/desks/root_window_desk_switch_animator_test_api.h"
 #include "ash/wm/desks/scroll_arrow_button.h"
 #include "ash/wm/desks/zero_state_button.h"
@@ -115,7 +113,6 @@
 #include "ui/events/devices/device_data_manager_test_api.h"
 #include "ui/events/devices/input_device.h"
 #include "ui/events/event_constants.h"
-#include "ui/events/gesture_detection/gesture_configuration.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/point_conversions.h"
@@ -184,10 +181,12 @@ void CloseDeskFromMiniView(const DeskMiniView* desk_mini_view,
   const gfx::Point mini_view_center =
       desk_mini_view->GetBoundsInScreen().CenterPoint();
   event_generator->MoveMouseTo(mini_view_center);
-  EXPECT_TRUE(desk_mini_view->close_desk_button()->GetVisible());
+  const CloseButton* close_button =
+      GetCloseDeskButtonForMiniView(desk_mini_view);
+  EXPECT_TRUE(close_button->GetVisible());
+
   // Move to the center of the close button and click.
-  event_generator->MoveMouseTo(
-      desk_mini_view->close_desk_button()->GetBoundsInScreen().CenterPoint());
+  event_generator->MoveMouseTo(close_button->GetBoundsInScreen().CenterPoint());
   event_generator->ClickLeftButton();
 }
 
@@ -213,40 +212,6 @@ void SendAccessibleActionToView(views::View* view, ax::mojom::Action action) {
   ui::AXActionData action_data;
   action_data.action = action;
   view->HandleAccessibleAction(action_data);
-}
-
-void WaitForMilliseconds(int milliseconds) {
-  base::RunLoop run_loop;
-  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE, run_loop.QuitClosure(), base::Milliseconds(milliseconds));
-  run_loop.Run();
-}
-
-void LongGestureTap(const gfx::Point& screen_location,
-                    ui::test::EventGenerator* event_generator,
-                    bool release_touch = true) {
-  // Temporarily reconfigure gestures so that the long tap takes 2 milliseconds.
-  ui::GestureConfiguration* gesture_config =
-      ui::GestureConfiguration::GetInstance();
-  const int old_long_press_time_in_ms = gesture_config->long_press_time_in_ms();
-  const base::TimeDelta old_short_press_time =
-      gesture_config->short_press_time();
-  const int old_show_press_delay_in_ms =
-      gesture_config->show_press_delay_in_ms();
-  gesture_config->set_long_press_time_in_ms(1);
-  gesture_config->set_short_press_time(base::Milliseconds(1));
-  gesture_config->set_show_press_delay_in_ms(1);
-
-  event_generator->set_current_screen_location(screen_location);
-  event_generator->PressTouch();
-  WaitForMilliseconds(2);
-
-  gesture_config->set_long_press_time_in_ms(old_long_press_time_in_ms);
-  gesture_config->set_short_press_time(old_short_press_time);
-  gesture_config->set_show_press_delay_in_ms(old_show_press_delay_in_ms);
-
-  if (release_touch)
-    event_generator->ReleaseTouch();
 }
 
 void GestureTapOnView(const views::View* view,
@@ -584,19 +549,17 @@ TEST_F(DesksTest, DesksBarViewDeskCreation) {
   EXPECT_FALSE(new_desk_button->GetEnabled());
   EXPECT_EQ(views::Button::STATE_DISABLED, new_desk_button->GetState());
 
-  // Hover over one of the mini_views, and expect that the close button
+  // Hover over one of the mini_views, and expect that the desk action interface
   // becomes visible.
   const auto* mini_view = desks_bar_view->mini_views().front();
-  EXPECT_FALSE(mini_view->close_desk_button()->GetVisible());
+  EXPECT_FALSE(GetDeskActionVisibilityForMiniView(mini_view));
   const gfx::Point mini_view_center =
       mini_view->GetBoundsInScreen().CenterPoint();
   event_generator->MoveMouseTo(mini_view_center);
-  EXPECT_TRUE(mini_view->close_desk_button()->GetVisible());
+  EXPECT_TRUE(GetDeskActionVisibilityForMiniView(mini_view));
 
   // Use the close button to close the desk.
-  event_generator->MoveMouseTo(
-      mini_view->close_desk_button()->GetBoundsInScreen().CenterPoint());
-  event_generator->ClickLeftButton();
+  CloseDeskFromMiniView(mini_view, event_generator);
 
   // The new desk button is now enabled again.
   EXPECT_EQ(desks_util::kMaxNumberOfDesks - 1, controller->desks().size());
@@ -1160,7 +1123,7 @@ TEST_F(DesksTest, ActivateDeskFromOverview) {
     EXPECT_EQ(0, controller->GetActiveDeskIndex());
     auto* mini_view = desks_bar_view->mini_views().back();
     EXPECT_EQ(desk_4, mini_view->desk());
-    EXPECT_FALSE(mini_view->close_desk_button()->GetVisible());
+    EXPECT_FALSE(GetDeskActionVisibilityForMiniView(mini_view));
     DeskSwitchAnimationWaiter waiter;
     ClickOnView(mini_view, event_generator);
     waiter.Wait();
@@ -1964,7 +1927,7 @@ TEST_F(DesksTest, NewDeskButtonStateAndColor) {
       AshColorProvider::Get()->GetControlsLayerColor(
           AshColorProvider::ControlsLayerType::kControlBackgroundColorInactive);
   const SkColor disabled_background_color =
-      AshColorProvider::GetDisabledColor(background_color);
+      ColorUtil::GetDisabledColor(background_color);
   EXPECT_TRUE(new_desk_button->GetEnabled());
   EXPECT_EQ(background_color, DesksTestApi::GetNewDeskButtonBackgroundColor());
 
@@ -2262,7 +2225,7 @@ PrefService* GetPrimaryUserPrefService() {
 void VerifyDesksRestoreData(PrefService* user_prefs,
                             const std::vector<std::string>& desks_names) {
   const base::Value::List& desks_restore_names =
-      user_prefs->GetValueList(prefs::kDesksNamesList);
+      user_prefs->GetList(prefs::kDesksNamesList);
   ASSERT_EQ(desks_names.size(), desks_restore_names.size());
 
   size_t index = 0;
@@ -3188,6 +3151,11 @@ TEST_F(TabletModeDesksTest, RestoringUnsnappableWindowsInSplitView) {
 }
 
 TEST_F(DesksTest, MiniViewsTouchGestures) {
+  // TODO(crbug.com/1361138): Figure out how to accommodate the context menu in
+  // CloseAll.
+  base::test::ScopedFeatureList desks_close_all_disabler;
+  desks_close_all_disabler.InitAndDisableFeature(features::kDesksCloseAll);
+
   auto* controller = DesksController::Get();
   NewDesk();
   NewDesk();
@@ -3204,31 +3172,33 @@ TEST_F(DesksTest, MiniViewsTouchGestures) {
   auto* desk_2_mini_view = desks_bar_view->mini_views()[1];
   auto* desk_3_mini_view = desks_bar_view->mini_views()[2];
 
-  // Long gesture tapping on one mini_view shows its close button, and hides
-  // those of other mini_views.
+  // Long gesture tapping on one mini_view shows its desk action interface, and
+  // hides those of other mini_views.
   auto* event_generator = GetEventGenerator();
   LongGestureTap(desk_1_mini_view->GetBoundsInScreen().CenterPoint(),
                  event_generator);
-  EXPECT_TRUE(desk_1_mini_view->close_desk_button()->GetVisible());
-  EXPECT_FALSE(desk_2_mini_view->close_desk_button()->GetVisible());
-  EXPECT_FALSE(desk_3_mini_view->close_desk_button()->GetVisible());
+  EXPECT_TRUE(GetDeskActionVisibilityForMiniView(desk_1_mini_view));
+  EXPECT_FALSE(GetDeskActionVisibilityForMiniView(desk_2_mini_view));
+  EXPECT_FALSE(GetDeskActionVisibilityForMiniView(desk_3_mini_view));
   LongGestureTap(desk_2_mini_view->GetBoundsInScreen().CenterPoint(),
                  event_generator);
-  EXPECT_FALSE(desk_1_mini_view->close_desk_button()->GetVisible());
-  EXPECT_TRUE(desk_2_mini_view->close_desk_button()->GetVisible());
-  EXPECT_FALSE(desk_3_mini_view->close_desk_button()->GetVisible());
+  EXPECT_FALSE(GetDeskActionVisibilityForMiniView(desk_1_mini_view));
+  EXPECT_TRUE(GetDeskActionVisibilityForMiniView(desk_2_mini_view));
+  EXPECT_FALSE(GetDeskActionVisibilityForMiniView(desk_3_mini_view));
 
-  // Tapping on the visible close button, closes the desk rather than switches
-  // to that desk.
-  GestureTapOnView(desk_2_mini_view->close_desk_button(), event_generator);
+  // Tapping on the visible close button closes the desk rather than
+  // switches to that desk.
+  GestureTapOnView(GetCloseDeskButtonForMiniView(desk_2_mini_view),
+                   event_generator);
   ASSERT_EQ(2u, controller->desks().size());
   ASSERT_EQ(2u, desks_bar_view->mini_views().size());
   EXPECT_TRUE(overview_controller->InOverviewSession());
 
-  // Tapping on the invisible close button should not result in closing that
-  // desk; rather activating that desk.
-  EXPECT_FALSE(desk_1_mini_view->close_desk_button()->GetVisible());
-  GestureTapOnView(desk_1_mini_view->close_desk_button(), event_generator);
+  // Tapping on the invisible close button should not result in closing
+  // that desk; rather activating that desk.
+  EXPECT_FALSE(GetDeskActionVisibilityForMiniView(desk_1_mini_view));
+  GestureTapOnView(GetCloseDeskButtonForMiniView(desk_1_mini_view),
+                   event_generator);
   ASSERT_EQ(2u, controller->desks().size());
   EXPECT_FALSE(overview_controller->InOverviewSession());
   EXPECT_TRUE(controller->desks()[0]->is_active());
@@ -5366,6 +5336,51 @@ TEST_F(DesksTest, DesksBarZeroState) {
   EXPECT_TRUE(zero_state_new_desk_button->GetVisible());
 }
 
+// Tests that buttons in the desk bar are shown and hidden correctly when
+// transitioning into zero state to ensure ChromeVox navigation works properly.
+// Regression test for https://crbug.com/1351501.
+TEST_F(DesksTest, DesksBarButtonVisibility) {
+  auto* controller = DesksController::Get();
+
+  // Create a new desk so when we enter overview mode the desks bar is in the
+  // expanded state.
+  NewDesk();
+  ASSERT_EQ(2u, controller->desks().size());
+
+  // Enter overview mode and check that the desks bar is in the expanded state.
+  auto* overview_controller = Shell::Get()->overview_controller();
+  EnterOverview();
+  EXPECT_TRUE(overview_controller->InOverviewSession());
+  const auto* desks_bar_view =
+      GetOverviewGridForRoot(Shell::GetPrimaryRootWindow())->desks_bar_view();
+  ASSERT_TRUE(desks_bar_view);
+  ASSERT_FALSE(desks_bar_view->IsZeroState());
+
+  // Verify that the expanded state button is visible, while the zero state
+  // buttons are not visible.
+  auto* expanded_state_new_desk_button =
+      desks_bar_view->expanded_state_new_desk_button();
+  auto* zero_state_new_desk_button =
+      desks_bar_view->zero_state_new_desk_button();
+  auto* zero_state_default_desk_button =
+      desks_bar_view->zero_state_default_desk_button();
+  EXPECT_TRUE(expanded_state_new_desk_button->GetVisible());
+  EXPECT_FALSE(zero_state_new_desk_button->GetVisible());
+  EXPECT_FALSE(zero_state_default_desk_button->GetVisible());
+
+  // Close a desk and check that the desks bar switches into zero state.
+  auto* mini_view = desks_bar_view->mini_views().front();
+  CloseDeskFromMiniView(mini_view, GetEventGenerator());
+  ASSERT_EQ(1u, controller->desks().size());
+  ASSERT_TRUE(desks_bar_view->IsZeroState());
+
+  // Verify that the expanded state button is not visible, while the zero state
+  // buttons are visible.
+  EXPECT_FALSE(expanded_state_new_desk_button->GetVisible());
+  EXPECT_TRUE(zero_state_new_desk_button->GetVisible());
+  EXPECT_TRUE(zero_state_default_desk_button->GetVisible());
+}
+
 TEST_F(DesksTest, NewDeskButton) {
   auto* controller = DesksController::Get();
   EnterOverview();
@@ -5536,6 +5551,11 @@ TEST_F(DesksTest, ReorderDesksByMouse) {
 }
 
 TEST_F(DesksTest, ReorderDesksByGesture) {
+  // TODO(crbug.com/1361138): Figure out how to accommodate the context menu in
+  // CloseAll.
+  base::test::ScopedFeatureList desks_close_all_disabler;
+  desks_close_all_disabler.InitAndDisableFeature(features::kDesksCloseAll);
+
   auto* desks_controller = DesksController::Get();
 
   EnterOverview();
@@ -5688,6 +5708,11 @@ TEST_F(DesksTest, ReorderDesksByKeyboard) {
 
 // Test reordering desks in RTL mode.
 TEST_F(DesksTest, ReorderDesksInRTLMode) {
+  // TODO(crbug.com/1361138): Figure out how to accommodate the context menu in
+  // CloseAll.
+  base::test::ScopedFeatureList desks_close_all_disabler;
+  desks_close_all_disabler.InitAndDisableFeature(features::kDesksCloseAll);
+
   // Turn on RTL mode.
   const bool default_rtl = base::i18n::IsRTL();
   base::i18n::SetRTLForTesting(true);
@@ -6185,6 +6210,31 @@ TEST_F(DesksTest, PrimaryUserHasUsedDesksRecently) {
   desks_restore_util::OverrideClockForTesting(nullptr);
 }
 
+// Tests that a desk's close button is visible in tablet mode after long
+// pressing on the desk's preview.
+TEST_F(DesksTest, CloseButtonShowsAfterLongPressInTabletMode) {
+  base::test::ScopedFeatureList desks_close_all_disabler;
+  desks_close_all_disabler.InitAndDisableFeature(features::kDesksCloseAll);
+
+  TabletModeControllerTestApi().EnterTabletMode();
+
+  NewDesk();
+  ASSERT_EQ(2u, DesksController::Get()->desks().size());
+
+  EnterOverview();
+  ASSERT_TRUE(Shell::Get()->overview_controller()->InOverviewSession());
+
+  // Long-tapping the desk preview should show the close button for the desk.
+  const DeskMiniView* mini_view = GetPrimaryRootDesksBarView()->mini_views()[0];
+  const DeskPreviewView* desk_preview_view = mini_view->desk_preview();
+  const gfx::Point desk_preview_view_center =
+      desk_preview_view->GetBoundsInScreen().CenterPoint();
+  auto* event_generator = GetEventGenerator();
+  LongGestureTap(desk_preview_view_center, event_generator);
+
+  EXPECT_TRUE(mini_view->close_desk_button()->GetVisible());
+}
+
 class DesksBentoBarTest : public DesksTest {
  public:
   DesksBentoBarTest() {
@@ -6600,64 +6650,8 @@ TEST_F(PersistentDesksBarTest, BentoBarWithShelfAlignment) {
   EXPECT_TRUE(IsWidgetVisible());
 }
 
-// Tests that the bar will only be created when the app list is not in
-// fullscreen mode. This test can be deleted when ProductivityLauncher is the
-// default.
-TEST_F(PersistentDesksBarTest, AppListFullscreen) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndDisableFeature(features::kProductivityLauncher);
-
-  AppListControllerImpl* app_list_controller =
-      Shell::Get()->app_list_controller();
-  AppListView* app_list_view =
-      app_list_controller->fullscreen_presenter()->GetView();
-
-  // The bar should be created when the app list view remains null.
-  NewDesk();
-  EXPECT_EQ(2u, DesksController::Get()->desks().size());
-  EXPECT_TRUE(GetBarWidget());
-  EXPECT_TRUE(IsWidgetVisible());
-
-  // The bar should be created when the app list view is created and
-  // showing in kPeeking mode.
-  app_list_controller->ShowAppList();
-  app_list_view = app_list_controller->fullscreen_presenter()->GetView();
-  ASSERT_TRUE(app_list_view);
-  EXPECT_TRUE(app_list_view->app_list_state() == AppListViewState::kPeeking);
-  EXPECT_TRUE(GetBarWidget());
-  EXPECT_TRUE(IsWidgetVisible());
-
-  // The bar should be created when the app list is in kHalf mode.
-  app_list_view->SetState(AppListViewState::kHalf);
-  EXPECT_TRUE(app_list_view->app_list_state() == AppListViewState::kHalf);
-  EXPECT_TRUE(GetBarWidget());
-  EXPECT_TRUE(IsWidgetVisible());
-
-  // The bar should be destroyed when the app list is in kFullscreenSearch mode.
-  app_list_view->SetState(AppListViewState::kFullscreenSearch);
-  EXPECT_TRUE(app_list_view->app_list_state() ==
-              AppListViewState::kFullscreenSearch);
-  EXPECT_FALSE(GetBarWidget());
-
-  // The bar should be destroyed when the app list is in kFullscreenAllApps
-  // mode.
-  app_list_view->SetState(AppListViewState::kFullscreenAllApps);
-  EXPECT_TRUE(app_list_view->app_list_state() ==
-              AppListViewState::kFullscreenAllApps);
-  EXPECT_FALSE(GetBarWidget());
-
-  // The bar should be created when the app list is dismissed.
-  app_list_controller->DismissAppList();
-  EXPECT_TRUE(app_list_view->app_list_state() == AppListViewState::kClosed);
-  EXPECT_TRUE(GetBarWidget());
-  EXPECT_TRUE(IsWidgetVisible());
-}
-
-// Tests that the bar is not affected by ProductivityLauncher.
-TEST_F(PersistentDesksBarTest, ProductivityLauncher) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(features::kProductivityLauncher);
-
+// Tests that the bar is not affected by the launcher opening.
+TEST_F(PersistentDesksBarTest, BarStaysOpenWhenLauncherOpens) {
   AppListControllerImpl* app_list_controller =
       Shell::Get()->app_list_controller();
 
@@ -7579,7 +7573,7 @@ TEST_F(DesksCloseAllTest, HideCombineDesksOptionWhenNoWindowsOnDesk) {
   // We need to hover over the desk preview to properly check the combine desks
   // button's visibility.
   DeskMiniView* mini_view = GetPrimaryRootDesksBarView()->mini_views()[0];
-  CloseButton* combine_desks_button =
+  const CloseButton* combine_desks_button =
       mini_view->desk_action_view()->combine_desks_button();
   gfx::Point desk_preview_view_center =
       mini_view->desk_preview()->GetBoundsInScreen().CenterPoint();
@@ -7601,6 +7595,9 @@ TEST_F(DesksCloseAllTest, HideCombineDesksOptionWhenNoWindowsOnDesk) {
   EnterOverview();
   ASSERT_TRUE(Shell::Get()->overview_controller()->InOverviewSession());
   mini_view = GetPrimaryRootDesksBarView()->mini_views()[0];
+
+  // Closing and reopening overview will invalidate the
+  // `combine_desks_button` object, so we need to get another one.
   combine_desks_button = mini_view->desk_action_view()->combine_desks_button();
   desk_preview_view_center =
       mini_view->desk_preview()->GetBoundsInScreen().CenterPoint();
@@ -7840,9 +7837,9 @@ TEST_F(DesksCloseAllTest, CombineDesksTooltipIsUpdatedOnUserActions) {
   DeskMiniView* mini_view_2 = desks_bar_view->mini_views()[1];
   DeskNameView* desk_name_view_1 = mini_view_1->desk_name_view();
   DeskNameView* desk_name_view_2 = mini_view_2->desk_name_view();
-  CloseButton* combine_desks_button_1 =
+  const CloseButton* combine_desks_button_1 =
       mini_view_1->desk_action_view()->combine_desks_button();
-  CloseButton* combine_desks_button_2 =
+  const CloseButton* combine_desks_button_2 =
       mini_view_2->desk_action_view()->combine_desks_button();
 
   const std::u16string tooltip_prefix = u"Combine with ";

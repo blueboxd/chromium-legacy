@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -24,6 +24,11 @@ autofill_assistant::external::ProfileProto CreateProfileProto(
 // set, `network` and `server_id`.
 autofill_assistant::external::CreditCardProto CreateCreditCardProto(
     const autofill::CreditCard& credit_card);
+
+// Complete = contains name, street address, country code, zip code, email and
+// phone number.
+bool IsCompleteAddressProfile(const autofill::AutofillProfile* profile,
+                              const std::string& app_locale);
 
 }  // namespace fast_checkout
 

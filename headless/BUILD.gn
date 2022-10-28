@@ -1,4 +1,4 @@
-# Copyright 2015 The Chromium Authors. All rights reserved.
+# Copyright 2015 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -306,6 +306,8 @@ source_set("headless_shared_sources") {
     "app/headless_shell_switches.h",
     "lib/headless_content_client.cc",
     "lib/headless_content_client.h",
+    "lib/headless_content_main_delegate.cc",
+    "lib/headless_content_main_delegate.h",
     "public/headless_browser.cc",
     "public/headless_browser.h",
     "public/headless_export.h",
@@ -349,6 +351,22 @@ source_set("headless_shared_sources") {
 
   configs += [ ":inside_headless_component" ]
   configs += [ ":headless_defines_config" ]
+
+  # TODO(caseq): this is only here because headless_content_main_delegate.cc is here.
+  # Move it to the browser-specific part.
+  if (headless_use_embedded_resources) {
+    defines += [ "HEADLESS_USE_EMBEDDED_RESOURCES" ]
+    deps += [
+      ":embedded_resource_pack_data",
+      ":embedded_resource_pack_strings",
+    ]
+    sources += [
+      "$root_gen_dir/headless/embedded_resource_pack_data.cc",
+      "$root_gen_dir/headless/embedded_resource_pack_data.h",
+      "$root_gen_dir/headless/embedded_resource_pack_strings.cc",
+      "$root_gen_dir/headless/embedded_resource_pack_strings.h",
+    ]
+  }
 }
 
 # Code that is not needed in a renderer process.
@@ -505,8 +523,6 @@ component("headless_non_renderer") {
     sources += [
       "lib/browser/headless_content_browser_client.cc",
       "lib/browser/headless_content_browser_client.h",
-      "lib/headless_content_main_delegate.cc",
-      "lib/headless_content_main_delegate.h",
       "lib/renderer/headless_content_renderer_client.cc",
       "lib/renderer/headless_content_renderer_client.h",
       "lib/utility/headless_content_utility_client.cc",
@@ -627,8 +643,6 @@ if (!is_component_build) {
     sources = [
       "lib/browser/headless_web_contents_impl.cc",
       "lib/browser/headless_web_contents_impl.h",
-      "lib/headless_content_main_delegate.cc",
-      "lib/headless_content_main_delegate.h",
       "lib/renderer/headless_content_renderer_client.cc",
       "lib/renderer/headless_content_renderer_client.h",
       "lib/utility/headless_content_utility_client.cc",
@@ -678,22 +692,6 @@ if (!is_component_build) {
     configs += [ ":headless_defines_config" ]
     if (is_mac || is_win || is_linux || is_chromeos) {
       deps += [ "//components/crash/core/app" ]
-    }
-
-    # TODO(caseq): this is only here because we build headless_content_main_delegate.cc in renderer.
-    # Move it to the browser-specific part.
-    if (headless_use_embedded_resources) {
-      defines += [ "HEADLESS_USE_EMBEDDED_RESOURCES" ]
-      deps += [
-        ":embedded_resource_pack_data",
-        ":embedded_resource_pack_strings",
-      ]
-      sources += [
-        "$root_gen_dir/headless/embedded_resource_pack_data.cc",
-        "$root_gen_dir/headless/embedded_resource_pack_data.h",
-        "$root_gen_dir/headless/embedded_resource_pack_strings.cc",
-        "$root_gen_dir/headless/embedded_resource_pack_strings.h",
-      ]
     }
   }
 } else {
@@ -832,6 +830,7 @@ test("headless_browsertests") {
 
     additional_manifest_fragments = [
       "//build/config/fuchsia/test/fonts.shard.test-cml",
+      "//build/config/fuchsia/test/mark_vmo_executable.shard.test-cml",
       "//build/config/fuchsia/test/network.shard.test-cml",
       "//third_party/fuchsia-sdk/sdk/pkg/vulkan/client.shard.cml",
     ]
@@ -948,6 +947,7 @@ static_library("headless_shell_lib") {
   deps = [
     "//build:branding_buildflags",
     "//components/embedder_support",
+    "//components/policy/content",
     "//components/security_state/content",
     "//content",
     "//content/public/app",
@@ -1008,6 +1008,9 @@ static_library("headless_shell_lib") {
 }
 
 executable("headless_shell") {
+  configs -= [ "//build/config/compiler:thinlto_optimize_default" ]
+  configs += [ "//build/config/compiler:thinlto_optimize_max" ]
+
   sources = [ "app/headless_shell_main.cc" ]
   defines = []
 

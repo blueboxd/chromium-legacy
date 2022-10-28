@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -35,6 +35,7 @@ extern const base::Feature kNtpDriveModule;
 #if !defined(OFFICIAL_BUILD)
 extern const base::Feature kNtpDummyModules;
 #endif
+extern const base::Feature kNtpComprehensiveTheming;
 extern const base::Feature kNtpLogo;
 extern const base::Feature kNtpMiddleSlotPromo;
 extern const base::Feature kNtpMiddleSlotPromoDismissal;

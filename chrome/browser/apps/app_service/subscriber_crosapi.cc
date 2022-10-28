@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -64,8 +64,14 @@ void SubscriberCrosapi::RegisterAppServiceProxyFromCrosapi(
       &SubscriberCrosapi::OnCrosapiDisconnected, base::Unretained(this)));
 }
 
-void SubscriberCrosapi::OnApps(const std::vector<AppPtr>& deltas) {
+void SubscriberCrosapi::OnApps(const std::vector<AppPtr>& deltas,
+                               AppType app_type,
+                               bool should_notify_initialized) {
   if (!subscriber_.is_bound()) {
+    return;
+  }
+
+  if (!Accepts(app_type)) {
     return;
   }
 
@@ -76,10 +82,29 @@ void SubscriberCrosapi::OnApps(const std::vector<AppPtr>& deltas) {
     }
   }
 
-  // Apps are sent to Lacros side for preferred apps only, so we don't need to
-  // set initialized status.
-  subscriber_->OnApps(std::move(apps), AppType::kUnknown,
-                      /*should_notify_initialized=*/false);
+  subscriber_->OnApps(std::move(apps), app_type, should_notify_initialized);
+}
+
+void SubscriberCrosapi::InitializeApps() {
+  // For each app type that has already been initialized, republish their apps
+  // to Lacros as initialized. App types that are yet to initialize will
+  // initialize via OnApps() in the usual way.
+
+  // Sort apps by app type.
+  std::vector<AppPtr> all_apps = proxy_->AppRegistryCache().GetAllApps();
+  base::flat_map<AppType, std::vector<AppPtr>> app_type_apps;
+  for (AppPtr& app : all_apps) {
+    if (Accepts(app->app_type)) {
+      app_type_apps[app->app_type].push_back(std::move(app));
+    }
+  }
+
+  for (AppType app_type : proxy_->AppRegistryCache().InitializedAppTypes()) {
+    if (Accepts(app_type)) {
+      OnApps(std::move(app_type_apps[app_type]), app_type,
+             /*should_notify_initialized=*/true);
+    }
+  }
 }
 
 void SubscriberCrosapi::InitializePreferredApps(PreferredApps preferred_apps) {
@@ -147,11 +172,14 @@ void SubscriberCrosapi::RegisterAppServiceSubscriber(
   subscriber_.set_disconnect_handler(base::BindOnce(
       &SubscriberCrosapi::OnSubscriberDisconnected, base::Unretained(this)));
 
-  mojo::Remote<apps::mojom::AppService>& app_service = proxy_->AppService();
-  DCHECK(app_service.is_bound());
-  mojo::PendingRemote<apps::mojom::Subscriber> app_service_subscriber;
-  receivers_.Add(this, app_service_subscriber.InitWithNewPipeAndPassReceiver());
-  app_service->RegisterSubscriber(std::move(app_service_subscriber), nullptr);
+  if (!base::FeatureList::IsEnabled(kStopMojomAppService)) {
+    mojo::Remote<apps::mojom::AppService>& app_service = proxy_->AppService();
+    DCHECK(app_service.is_bound());
+    mojo::PendingRemote<apps::mojom::Subscriber> app_service_subscriber;
+    receivers_.Add(this,
+                   app_service_subscriber.InitWithNewPipeAndPassReceiver());
+    app_service->RegisterSubscriber(std::move(app_service_subscriber), nullptr);
+  }
 
   proxy_->RegisterCrosApiSubScriber(this);
 }

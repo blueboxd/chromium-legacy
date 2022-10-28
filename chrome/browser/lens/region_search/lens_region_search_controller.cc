@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -16,6 +16,7 @@
 #include "chrome/browser/ui/tab_contents/core_tab_helper.h"
 #include "components/lens/lens_entrypoints.h"
 #include "components/lens/lens_features.h"
+#include "components/lens/lens_rendering_environment.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "ui/gfx/image/image_util.h"
@@ -195,12 +196,13 @@ void LensRegionSearchController::OnCaptureCompleted(
         lens::features::IsLensFullscreenSearchEnabled()
             ? lens::EntryPoint::CHROME_FULLSCREEN_SEARCH_MENU_ITEM
             : lens::EntryPoint::CHROME_REGION_SEARCH_MENU_ITEM;
-    bool use_side_panel = lens::features::IsLensSidePanelEnabled() &&
-                          !lens::features::IsLensFullscreenSearchEnabled();
-    core_tab_helper->SearchWithLensInNewTab(image, captured_image.Size(),
-                                            entry_point, use_side_panel);
+    core_tab_helper->SearchWithLens(
+        image, captured_image.Size(), entry_point,
+        /* is_region_search_request= */ true,
+        /* is_side_panel_enabled_for_feature= */
+        lens::features::IsLensSidePanelEnabledForRegionSearch());
   } else {
-    core_tab_helper->SearchByImageInNewTab(image, captured_image.Size());
+    core_tab_helper->SearchByImage(image, captured_image.Size());
   }
 
   RecordCaptureResult(lens::LensRegionSearchCaptureResult::SUCCESS);

@@ -1,12 +1,19 @@
-# Copyright 2019 The Chromium Authors. All rights reserved.
+# Copyright 2019 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
 # Contains flags that are applied only when ENABLE_DCHECK=false.
 
+# TODO(https://crbug.com/1038372): Remove base after downstream migrates.
 -checkdiscard @org.chromium.base.annotations.CheckDiscard class ** {
+  *;
+}
+-checkdiscard @org.chromium.build.annotations.CheckDiscard class ** {
   *;
 }
 -checkdiscard class ** {
   @org.chromium.base.annotations.CheckDiscard *;
+}
+-checkdiscard class ** {
+  @org.chromium.build.annotations.CheckDiscard *;
 }

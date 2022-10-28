@@ -1,4 +1,4 @@
-// Copyright (c) 2016 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -57,7 +57,7 @@ ExtensionFunction::ResponseAction ClipboardSetImageDataFunction::Run() {
 
   // Fill in the omitted additional data items with empty data.
   if (!params->additional_items)
-    params->additional_items = std::make_unique<AdditionalDataItemList>();
+    params->additional_items.emplace();
 
   if (!IsAdditionalItemsParamValid(*params->additional_items)) {
     return RespondNow(Error("Unsupported additionalItems parameter data."));

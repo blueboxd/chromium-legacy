@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -48,7 +48,7 @@ class SafeBrowsingMetricsCollectorTest : public ::testing::Test {
       UserState state,
       EventType event_type) {
     const base::Value::Dict& state_dict =
-        pref_service_.GetValueDict(prefs::kSafeBrowsingEventTimestamps);
+        pref_service_.GetDict(prefs::kSafeBrowsingEventTimestamps);
     const base::Value::Dict* event_dict =
         state_dict.FindDict(base::NumberToString(static_cast<int>(state)));
     DCHECK(event_dict);

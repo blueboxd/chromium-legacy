@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,6 +13,7 @@
 #include "base/callback_helpers.h"
 #include "base/check.h"
 #include "base/check_op.h"
+#include "base/files/file_util.h"
 #include "base/run_loop.h"
 #include "base/test/bind.h"
 #include "build/build_config.h"
@@ -64,6 +65,8 @@
 
 #if BUILDFLAG(IS_MAC)
 #include <ImageIO/ImageIO.h>
+
+#include "base/mac/foundation_util.h"
 #import "skia/ext/skia_utils_mac.h"
 #endif
 
@@ -105,15 +108,20 @@ SkColor GetIconTopLeftColor(const base::FilePath& shortcut_path) {
   base::FilePath icon_path =
       shortcut_path.AppendASCII("Contents/Resources/app.icns");
   base::ScopedCFTypeRef<CFDictionaryRef> empty_dict(
-      CFDictionaryCreate(NULL, NULL, NULL, 0, NULL, NULL));
-  base::ScopedCFTypeRef<CFURLRef> url(CFURLCreateFromFileSystemRepresentation(
-      NULL, (const UInt8*)icon_path.value().c_str(), icon_path.value().length(),
-      false));
-  CGImageSourceRef source = CGImageSourceCreateWithURL(url, NULL);
+      CFDictionaryCreate(nullptr, nullptr, nullptr, 0, nullptr, nullptr));
+  base::ScopedCFTypeRef<CFURLRef> url = base::mac::FilePathToCFURL(icon_path);
+  base::ScopedCFTypeRef<CGImageSourceRef> source(
+      CGImageSourceCreateWithURL(url, nullptr));
+  if (!source)
+    return 0;
   // Get the first icon in the .icns file (index 0)
   base::ScopedCFTypeRef<CGImageRef> cg_image(
       CGImageSourceCreateImageAtIndex(source, 0, empty_dict));
+  if (!cg_image)
+    return 0;
   SkBitmap bitmap = skia::CGImageToSkBitmap(cg_image);
+  if (bitmap.empty())
+    return 0;
   return bitmap.getColor(0, 0);
 #else
 #if BUILDFLAG(IS_WIN)
@@ -447,6 +455,19 @@ void UpdateAwaiter::AwaitUpdate() {
 void UpdateAwaiter::OnWebAppManifestUpdated(const AppId& app_id,
                                             base::StringPiece old_name) {
   run_loop_.Quit();
+}
+
+base::FilePath CreateTestFileWithExtension(base::StringPiece extension) {
+  // CreateTemporaryFile blocks, temporarily allow blocking.
+  base::ScopedAllowBlockingForTesting allow_blocking;
+
+  // In order to test file handling, we need to be able to supply a file
+  // extension for the temp file.
+  base::FilePath test_file_path;
+  base::CreateTemporaryFile(&test_file_path);
+  base::FilePath new_file_path = test_file_path.AddExtensionASCII(extension);
+  EXPECT_TRUE(base::ReplaceFile(test_file_path, new_file_path, nullptr));
+  return new_file_path;
 }
 
 }  // namespace web_app

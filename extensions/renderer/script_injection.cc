@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -18,7 +18,6 @@
 #include "base/values.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_thread.h"
-#include "content/public/renderer/v8_value_converter.h"
 #include "extensions/common/extension_features.h"
 #include "extensions/common/extension_messages.h"
 #include "extensions/common/identifiability_metrics.h"
@@ -313,6 +312,17 @@ void ScriptInjection::InjectJs(std::set<std::string>* executing_scripts,
       should_execute_asynchronously
           ? blink::mojom::EvaluationTiming::kAsynchronous
           : blink::mojom::EvaluationTiming::kSynchronous;
+  // Historically, when `kSynchronous` is used, we did not block the load
+  // event. We preserve this here for now to ensure we don't break anything.
+  // However, this is probably wrong, since the execution context could be
+  // paused, triggering an asynchronous execution of the script even when
+  // `kSynchronous` is used.
+  // TODO(crbug.com/1354639): Change this to block the load event, even with
+  // `kSynchronous`.
+  blink::mojom::LoadEventBlockingOption blocking_option =
+      should_execute_asynchronously
+          ? blink::mojom::LoadEventBlockingOption::kBlock
+          : blink::mojom::LoadEventBlockingOption::kDoNotBlock;
 
   int32_t world_id = blink::kMainDOMWorldId;
   switch (injector_->GetExecutionWorld()) {
@@ -329,16 +339,15 @@ void ScriptInjection::InjectJs(std::set<std::string>* executing_scripts,
   }
   render_frame_->GetWebFrame()->RequestExecuteScript(
       world_id, sources, injector_->IsUserGesture(), execution_option,
-      blink::mojom::LoadEventBlockingOption::kBlock,
+      blocking_option,
       base::BindOnce(&ScriptInjection::OnJsInjectionCompleted,
                      weak_ptr_factory_.GetWeakPtr()),
       blink::BackForwardCacheAware::kPossiblyDisallow,
-      injector_->ShouldWaitForPromise());
+      injector_->ExpectsResults(), injector_->ShouldWaitForPromise());
 }
 
-void ScriptInjection::OnJsInjectionCompleted(
-    const blink::WebVector<v8::Local<v8::Value>>& results,
-    base::TimeTicks start_time) {
+void ScriptInjection::OnJsInjectionCompleted(absl::optional<base::Value> value,
+                                             base::TimeTicks start_time) {
   DCHECK(!did_inject_js_);
 
   base::TimeTicks timestamp(base::TimeTicks::Now());
@@ -370,26 +379,7 @@ void ScriptInjection::OnJsInjectionCompleted(
     }
   }
 
-  if (injector_->ExpectsResults() ==
-      blink::mojom::WantResultOption::kWantResult) {
-    if (!results.empty() && !results.back().IsEmpty()) {
-      // Right now, we only support returning single results (per frame).
-      // It's safe to always use the main world context when converting
-      // here. V8ValueConverterImpl shouldn't actually care about the
-      // context scope, and it switches to v8::Object's creation context
-      // when encountered.
-      v8::Local<v8::Context> context =
-          render_frame_->GetWebFrame()->MainWorldScriptContext();
-      // We use the final result, since it is the most meaningful (the result
-      // after running all scripts). Additionally, the final script can
-      // reference values from the previous scripts, so could return them if
-      // desired.
-      execution_result_ = content::V8ValueConverter::Create()->FromV8Value(
-          results.back(), context);
-    }
-    if (!execution_result_.get())
-      execution_result_ = std::make_unique<base::Value>();
-  }
+  execution_result_ = std::move(value);
   did_inject_js_ = true;
   if (host_id().type == mojom::HostID::HostType::kExtensions)
     RecordContentScriptInjection(ukm_source_id_, host_id().id);

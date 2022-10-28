@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -124,26 +124,11 @@ void ShellVirtualKeyboardDelegate::RestrictFeatures(
     OnRestrictFeaturesCallback callback) {
   // Return the given parameter as is, since there's no stored values.
   api::virtual_keyboard::FeatureRestrictions update;
-  if (params.restrictions.spell_check_enabled) {
-    update.spell_check_enabled =
-        std::make_unique<bool>(*params.restrictions.spell_check_enabled);
-  }
-  if (params.restrictions.auto_complete_enabled) {
-    update.auto_complete_enabled =
-        std::make_unique<bool>(*params.restrictions.auto_complete_enabled);
-  }
-  if (params.restrictions.auto_correct_enabled) {
-    update.auto_correct_enabled =
-        std::make_unique<bool>(*params.restrictions.auto_correct_enabled);
-  }
-  if (params.restrictions.voice_input_enabled) {
-    update.voice_input_enabled =
-        std::make_unique<bool>(*params.restrictions.voice_input_enabled);
-  }
-  if (params.restrictions.handwriting_enabled) {
-    update.handwriting_enabled =
-        std::make_unique<bool>(*params.restrictions.handwriting_enabled);
-  }
+  update.spell_check_enabled = params.restrictions.spell_check_enabled;
+  update.auto_complete_enabled = params.restrictions.auto_complete_enabled;
+  update.auto_correct_enabled = params.restrictions.auto_correct_enabled;
+  update.voice_input_enabled = params.restrictions.voice_input_enabled;
+  update.handwriting_enabled = params.restrictions.handwriting_enabled;
   std::move(callback).Run(std::move(update));
 }
 

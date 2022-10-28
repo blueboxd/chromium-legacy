@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -186,6 +186,7 @@ class DownloadDisplayControllerTest : public testing::Test {
     EXPECT_CALL(item(index), GetId())
         .WillRepeatedly(Return(static_cast<uint32_t>(items_.size() + 1)));
     EXPECT_CALL(item(index), GetState()).WillRepeatedly(Return(state));
+    EXPECT_CALL(item(index), IsPaused()).WillRepeatedly(Return(false));
     EXPECT_CALL(item(index), GetStartTime())
         .WillRepeatedly(Return(base::Time::Now()));
     EXPECT_CALL(item(index), GetDangerType())
@@ -380,6 +381,24 @@ TEST_F(DownloadDisplayControllerTest, UpdateToolbarButtonState) {
 
   InitDownloadItem(FILE_PATH_LITERAL("/foo/bar.pdf"),
                    download::DownloadItem::IN_PROGRESS);
+  EXPECT_TRUE(VerifyDisplayState(/*shown=*/true, /*detail_shown=*/true,
+                                 /*icon_state=*/DownloadIconState::kProgress,
+                                 /*is_active=*/true));
+
+  EXPECT_CALL(item(0), IsPaused()).WillRepeatedly(Return(true));
+  UpdateDownloadItem(/*item_index=*/0, DownloadState::IN_PROGRESS);
+  EXPECT_TRUE(VerifyDisplayState(/*shown=*/true, /*detail_shown=*/true,
+                                 /*icon_state=*/DownloadIconState::kProgress,
+                                 /*is_active=*/true));
+  EXPECT_CALL(item(1), IsPaused()).WillRepeatedly(Return(true));
+  UpdateDownloadItem(/*item_index=*/1, DownloadState::IN_PROGRESS);
+  // The download display is not active anymore, because all in progress
+  // downloads are paused.
+  EXPECT_TRUE(VerifyDisplayState(/*shown=*/true, /*detail_shown=*/true,
+                                 /*icon_state=*/DownloadIconState::kProgress,
+                                 /*is_active=*/false));
+  EXPECT_CALL(item(0), IsPaused()).WillRepeatedly(Return(false));
+  UpdateDownloadItem(/*item_index=*/0, DownloadState::IN_PROGRESS);
   EXPECT_TRUE(VerifyDisplayState(/*shown=*/true, /*detail_shown=*/true,
                                  /*icon_state=*/DownloadIconState::kProgress,
                                  /*is_active=*/true));
@@ -692,7 +711,7 @@ TEST_F(DownloadDisplayControllerTest, OnButtonPressed_IconStateComplete) {
                                  /*icon_state=*/DownloadIconState::kComplete,
                                  /*is_active=*/true));
 
-  controller().OnButtonPressed();
+  controller().HandleButtonPressed();
 
   EXPECT_TRUE(VerifyDisplayState(/*shown=*/true, /*detail_shown=*/true,
                                  /*icon_state=*/DownloadIconState::kComplete,

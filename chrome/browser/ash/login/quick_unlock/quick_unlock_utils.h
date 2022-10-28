@@ -1,4 +1,4 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -131,8 +131,6 @@ FingerprintLocation GetFingerprintLocation();
 // Add fingerprint animations and illustrations. Used for the Fingerprint setup
 // screen and the settings.
 void AddFingerprintResources(content::WebUIDataSource* html_source);
-
-bool IsLeftOfPowerButtonTopRightFingerprint();
 
 }  // namespace quick_unlock
 }  // namespace ash

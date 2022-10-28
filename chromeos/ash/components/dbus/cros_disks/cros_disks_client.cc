@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -207,7 +207,7 @@ class CrosDisksClientImpl : public CrosDisksClient {
              const std::vector<std::string>& mount_options,
              MountAccessMode access_mode,
              RemountOption remount,
-             VoidDBusMethodCallback callback) override {
+             chromeos::VoidDBusMethodCallback callback) override {
     dbus::MethodCall method_call(cros_disks::kCrosDisksInterface,
                                  cros_disks::kMount);
     dbus::MessageWriter writer(&method_call);
@@ -265,7 +265,7 @@ class CrosDisksClientImpl : public CrosDisksClient {
   void Format(const std::string& device_path,
               const std::string& filesystem,
               const std::string& label,
-              VoidDBusMethodCallback callback) override {
+              chromeos::VoidDBusMethodCallback callback) override {
     format_start_time_[device_path] = base::TimeTicks::Now();
     dbus::MethodCall method_call(cros_disks::kCrosDisksInterface,
                                  cros_disks::kFormat);
@@ -300,7 +300,7 @@ class CrosDisksClientImpl : public CrosDisksClient {
 
   void Rename(const std::string& device_path,
               const std::string& volume_name,
-              VoidDBusMethodCallback callback) override {
+              chromeos::VoidDBusMethodCallback callback) override {
     dbus::MethodCall method_call(cros_disks::kCrosDisksInterface,
                                  cros_disks::kRename);
     dbus::MessageWriter writer(&method_call);
@@ -388,12 +388,13 @@ class CrosDisksClientImpl : public CrosDisksClient {
   };
 
   // Handles the result of D-Bus method call with no return value.
-  void OnVoidMethod(VoidDBusMethodCallback callback, dbus::Response* response) {
+  void OnVoidMethod(chromeos::VoidDBusMethodCallback callback,
+                    dbus::Response* response) {
     std::move(callback).Run(response);
   }
 
   // Handles the result of Mount and calls |callback|.
-  void OnMount(VoidDBusMethodCallback callback,
+  void OnMount(chromeos::VoidDBusMethodCallback callback,
                base::Time start_time,
                dbus::Response* response) {
     UMA_HISTOGRAM_MEDIUM_TIMES("CrosDisksClient.MountTime",
@@ -693,6 +694,71 @@ std::ostream& operator<<(std::ostream& out, const MountError error) {
   }
 
   return out << std::underlying_type_t<MountError>(error);
+}
+
+std::ostream& operator<<(std::ostream& out, const RenameError error) {
+  switch (error) {
+#define PRINT_ERROR(s) \
+  case RenameError::s: \
+    return out << #s;
+    PRINT_ERROR(kNone)
+    PRINT_ERROR(kUnknown)
+    PRINT_ERROR(kInternal)
+    PRINT_ERROR(kInvalidDevicePath)
+    PRINT_ERROR(kDeviceBeingRenamed)
+    PRINT_ERROR(kUnsupportedFilesystem)
+    PRINT_ERROR(kRenameProgramNotFound)
+    PRINT_ERROR(kRenameProgramFailed)
+    PRINT_ERROR(kDeviceNotAllowed)
+    PRINT_ERROR(kLongName)
+    PRINT_ERROR(kInvalidCharacter)
+#undef PRINT_ERROR
+  }
+
+  return out << std::underlying_type_t<RenameError>(error);
+}
+
+std::ostream& operator<<(std::ostream& out, const FormatError error) {
+  switch (error) {
+#define PRINT_ERROR(s) \
+  case FormatError::s: \
+    return out << #s;
+    PRINT_ERROR(kNone)
+    PRINT_ERROR(kUnknown)
+    PRINT_ERROR(kInternal)
+    PRINT_ERROR(kInvalidDevicePath)
+    PRINT_ERROR(kDeviceBeingFormatted)
+    PRINT_ERROR(kUnsupportedFilesystem)
+    PRINT_ERROR(kFormatProgramNotFound)
+    PRINT_ERROR(kFormatProgramFailed)
+    PRINT_ERROR(kDeviceNotAllowed)
+    PRINT_ERROR(kInvalidOptions)
+    PRINT_ERROR(kLongName)
+    PRINT_ERROR(kInvalidCharacter)
+    PRINT_ERROR(kCount)
+#undef PRINT_ERROR
+  }
+
+  return out << std::underlying_type_t<FormatError>(error);
+}
+
+std::ostream& operator<<(std::ostream& out, const PartitionError error) {
+  switch (error) {
+#define PRINT_ERROR(s)    \
+  case PartitionError::s: \
+    return out << #s;
+    PRINT_ERROR(kNone)
+    PRINT_ERROR(kUnknown)
+    PRINT_ERROR(kInternal)
+    PRINT_ERROR(kInvalidDevicePath)
+    PRINT_ERROR(kDeviceBeingPartitioned)
+    PRINT_ERROR(kProgramNotFound)
+    PRINT_ERROR(kProgramFailed)
+    PRINT_ERROR(kDeviceNotAllowed)
+#undef PRINT_ERROR
+  }
+
+  return out << std::underlying_type_t<PartitionError>(error);
 }
 
 std::ostream& operator<<(std::ostream& out, const MountEntry& entry) {

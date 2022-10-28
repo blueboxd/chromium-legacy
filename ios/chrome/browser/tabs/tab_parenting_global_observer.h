@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -26,11 +26,11 @@ class TabParentingGlobalObserver {
   TabParentingGlobalObserver& operator=(const TabParentingGlobalObserver&) =
       delete;
 
-  // Registers |cb| to be invoked when a tab is parented.
+  // Registers `cb` to be invoked when a tab is parented.
   base::CallbackListSubscription RegisterCallback(
       const OnTabParentedCallback& cb);
 
-  // Called to notify all registered callbacks that |web_state| was parented.
+  // Called to notify all registered callbacks that `web_state` was parented.
   void OnTabParented(web::WebState* web_state);
 
  private:

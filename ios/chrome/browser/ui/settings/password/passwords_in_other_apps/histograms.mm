@@ -1,10 +1,10 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #import "ios/chrome/browser/ui/settings/password/passwords_in_other_apps/histograms.h"
 
-#include <string>
+#import <string>
 #import "base/metrics/histogram_functions.h"
 #import "ios/chrome/browser/ui/settings/utils/password_auto_fill_status_manager.h"
 

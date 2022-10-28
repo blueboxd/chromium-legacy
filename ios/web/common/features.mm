@@ -1,10 +1,10 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ios/web/common/features.h"
+#import "ios/web/common/features.h"
 
-#include "base/metrics/field_trial_params.h"
+#import "base/metrics/field_trial_params.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -37,9 +37,6 @@ const base::Feature kRecordSnapshotSize{"RecordSnapshotSize",
 const base::Feature kSetRequestAttribution{"SetRequestAttribution",
                                            base::FEATURE_ENABLED_BY_DEFAULT};
 
-const base::Feature kDisableNonHTMLScreenshotOnIOS15{
-    "DisableNonHTMLScreenshotOnIOS15", base::FEATURE_ENABLED_BY_DEFAULT};
-
 const base::Feature kIOSSharedHighlightingColorChange{
     "IOSSharedHighlightingColorChange", base::FEATURE_ENABLED_BY_DEFAULT};
 
@@ -58,13 +55,6 @@ const base::Feature kUseLoadSimulatedRequestForOfflinePage{
 
 const base::Feature kEnableWebPageAnnotations{
     "EnableWebPageAnnotations", base::FEATURE_DISABLED_BY_DEFAULT};
-
-bool ShouldTakeScreenshotOnNonHTMLContent() {
-  if (@available(iOS 15, *)) {
-    return !base::FeatureList::IsEnabled(kDisableNonHTMLScreenshotOnIOS15);
-  }
-  return true;
-}
 
 bool IsMediaPermissionsControlEnabled() {
   if (@available(iOS 15, *)) {

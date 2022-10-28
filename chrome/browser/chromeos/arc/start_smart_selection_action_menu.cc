@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -169,7 +169,7 @@ void StartSmartSelectionActionMenu::ExecuteCommand(int command_id) {
         CreateIntent(std::move(actions_[index].action_intent),
                      std::move(actions_[index].activity)),
         apps::LaunchSource::kFromSmartTextContextMenu,
-        std::make_unique<apps::WindowInfo>(display.id()));
+        std::make_unique<apps::WindowInfo>(display.id()), base::DoNothing());
   } else {
     apps::AppServiceProxyFactory::GetForProfile(profile)->LaunchAppWithIntent(
         actions_[index].app_id, ui::EF_NONE,
@@ -177,7 +177,7 @@ void StartSmartSelectionActionMenu::ExecuteCommand(int command_id) {
             CreateIntent(std::move(actions_[index].action_intent),
                          std::move(actions_[index].activity))),
         apps::mojom::LaunchSource::kFromSmartTextContextMenu,
-        apps::MakeWindowInfo(display.id()));
+        apps::MakeWindowInfo(display.id()), {});
   }
 }
 

@@ -1,4 +1,4 @@
-// Copyright (c) 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,6 +10,7 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/cpu_reduction_experiment.h"
 #include "base/hash/md5_constexpr.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
@@ -52,6 +53,17 @@ Scheduler::SchedulingState::SchedulingState() = default;
 Scheduler::SchedulingState::SchedulingState(const SchedulingState& other) =
     default;
 Scheduler::SchedulingState::~SchedulingState() = default;
+
+Scheduler::ScopedAddWaitingPriority::ScopedAddWaitingPriority(
+    Scheduler* scheduler,
+    SequenceId sequence_id,
+    SchedulingPriority priority)
+    : scheduler_(scheduler), sequence_id_(sequence_id), priority_(priority) {
+  scheduler_->AddWaitingPriority(sequence_id_, priority_);
+}
+Scheduler::ScopedAddWaitingPriority::~ScopedAddWaitingPriority() {
+  scheduler_->RemoveWaitingPriority(sequence_id_, priority_);
+}
 
 void Scheduler::SchedulingState::WriteIntoTrace(
     perfetto::TracedValue context) const {
@@ -320,9 +332,11 @@ void Scheduler::Sequence::PropagatePriority(SchedulingPriority priority) {
 }
 
 void Scheduler::Sequence::AddWaitingPriority(SchedulingPriority priority) {
-  TRACE_EVENT2("gpu", "Scheduler::Sequence::RemoveWaitingPriority",
-               "sequence_id", sequence_id_.GetUnsafeValue(), "new_priority",
+  TRACE_EVENT2("gpu", "Scheduler::Sequence::AddWaitingPriority", "sequence_id",
+               sequence_id_.GetUnsafeValue(), "new_priority",
                SchedulingPriorityToString(priority));
+
+  scheduler_->lock_.AssertAcquired();
 
   waiting_priority_counts_[static_cast<int>(priority)]++;
 
@@ -337,7 +351,7 @@ void Scheduler::Sequence::RemoveWaitingPriority(SchedulingPriority priority) {
   TRACE_EVENT2("gpu", "Scheduler::Sequence::RemoveWaitingPriority",
                "sequence_id", sequence_id_.GetUnsafeValue(), "new_priority",
                SchedulingPriorityToString(priority));
-
+  scheduler_->lock_.AssertAcquired();
   DCHECK(waiting_priority_counts_[static_cast<int>(priority)] > 0);
   waiting_priority_counts_[static_cast<int>(priority)]--;
 
@@ -489,7 +503,7 @@ void Scheduler::ScheduleTaskHelper(Task task) {
   uint32_t order_num = sequence->ScheduleTask(std::move(task.closure),
                                               std::move(task.report_callback));
 
-  for (const SyncToken& sync_token : task.sync_token_fences) {
+  for (const SyncToken& sync_token : ReduceSyncTokens(task.sync_token_fences)) {
     SequenceId release_sequence_id =
         sync_point_manager_->GetSyncTokenReleaseSequenceId(sync_token);
     // base::Unretained is safe here since all sequences and corresponding sync
@@ -536,6 +550,22 @@ bool Scheduler::ShouldYield(SequenceId sequence_id) {
   DCHECK(next_sequence->scheduled());
 
   return running_sequence->ShouldYieldTo(next_sequence);
+}
+
+void Scheduler::AddWaitingPriority(SequenceId sequence_id,
+                                   SchedulingPriority priority) {
+  base::AutoLock auto_lock(lock_);
+  Sequence* sequence = GetSequence(sequence_id);
+  if (sequence)
+    sequence->AddWaitingPriority(priority);
+}
+
+void Scheduler::RemoveWaitingPriority(SequenceId sequence_id,
+                                      SchedulingPriority priority) {
+  base::AutoLock auto_lock(lock_);
+  Sequence* sequence = GetSequence(sequence_id);
+  if (sequence)
+    sequence->RemoveWaitingPriority(priority);
 }
 
 void Scheduler::SyncTokenFenceReleased(const SyncToken& sync_token,
@@ -617,7 +647,7 @@ void Scheduler::RunNextTask() {
   auto* thread_state = &per_thread_state_map_[task_runner];
 
   const bool log_histograms =
-      thread_state->cpu_reduction_experiment_filter.ShouldLogHistograms();
+      base::ShouldLogHistogramForCpuReductionExperiment();
 
   if (log_histograms) {
     UMA_HISTOGRAM_CUSTOM_MICROSECONDS_TIMES(
@@ -641,8 +671,6 @@ void Scheduler::RunNextTask() {
                   &SchedulingState::Comparator);
     scheduling_queue.pop_back();
   }
-
-  base::ElapsedTimer task_timer;
 
   Sequence* sequence = GetSequence(state.sequence_id);
   DCHECK(sequence);
@@ -719,12 +747,6 @@ void Scheduler::RunNextTask() {
       std::push_heap(scheduling_queue.begin(), scheduling_queue.end(),
                      &SchedulingState::Comparator);
     }
-  }
-
-  if (log_histograms) {
-    UMA_HISTOGRAM_CUSTOM_MICROSECONDS_TIMES(
-        "GPU.Scheduler.RunTaskTime", task_timer.Elapsed(),
-        base::Microseconds(10), base::Seconds(30), 100);
   }
 
   // Avoid scheduling another RunNextTask if we're done with all tasks.

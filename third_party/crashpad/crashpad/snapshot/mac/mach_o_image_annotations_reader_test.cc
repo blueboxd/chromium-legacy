@@ -1,4 +1,4 @@
-// Copyright 2014 The Crashpad Authors. All rights reserved.
+// Copyright 2014 The Crashpad Authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -470,16 +470,13 @@ TEST(MachOImageAnnotationsReader, CrashAbort) {
   test_mach_o_image_annotations_reader.Run();
 }
 
-// Flaky on ASAN https://crbug.com/844396
-// Flaky in general https://crbug.com/1334418
-TEST(MachOImageAnnotationsReader, DISABLED_CrashModuleInitialization) {
+TEST(MachOImageAnnotationsReader, CrashModuleInitialization) {
   TestMachOImageAnnotationsReader test_mach_o_image_annotations_reader(
       TestMachOImageAnnotationsReader::kCrashModuleInitialization);
   test_mach_o_image_annotations_reader.Run();
 }
 
-// Flaky in general https://crbug.com/1334418
-TEST(MachOImageAnnotationsReader, DISABLED_CrashDyld) {
+TEST(MachOImageAnnotationsReader, CrashDyld) {
   TestMachOImageAnnotationsReader test_mach_o_image_annotations_reader(
       TestMachOImageAnnotationsReader::kCrashDyld);
   test_mach_o_image_annotations_reader.Run();

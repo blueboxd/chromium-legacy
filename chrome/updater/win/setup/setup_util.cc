@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,25 +7,35 @@
 #include <regstr.h>
 #include <shlobj.h>
 #include <windows.h>
+#include <wrl/client.h>
+#include <wrl/implements.h>
 
 #include <string>
 #include <unordered_map>
 #include <vector>
 
+#include "base/callback_helpers.h"
 #include "base/check.h"
+#include "base/check_op.h"
 #include "base/command_line.h"
 #include "base/containers/contains.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/no_destructor.h"
+#include "base/path_service.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_split.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/synchronization/waitable_event.h"
+#include "base/task/thread_pool.h"
+#include "base/threading/thread_restrictions.h"
+#include "base/win/registry.h"
 #include "base/win/win_util.h"
 #include "chrome/installer/util/install_service_work_item.h"
 #include "chrome/installer/util/registry_util.h"
 #include "chrome/installer/util/work_item_list.h"
+#include "chrome/updater/app/server/win/com_classes.h"
 #include "chrome/updater/app/server/win/updater_idl.h"
 #include "chrome/updater/app/server/win/updater_internal_idl.h"
 #include "chrome/updater/app/server/win/updater_legacy_idl.h"
@@ -377,6 +387,59 @@ bool UnregisterUserRunAtStartup(const std::wstring& run_value_name) {
 
   return installer::DeleteRegistryValue(HKEY_CURRENT_USER, REGSTR_PATH_RUN, 0,
                                         run_value_name);
+}
+
+void CheckComInterfaceTypeLib(UpdaterScope scope, bool is_internal) {
+  for (const auto& iid : GetInterfaces(is_internal)) {
+    const HKEY root = UpdaterScopeToHKeyRoot(scope);
+    const std::wstring iid_reg_path = GetComIidRegistryPath(iid);
+    const std::wstring typelib_reg_path = GetComTypeLibRegistryPath(iid);
+    const std::wstring iid_string = base::win::WStringFromGUID(iid);
+
+    std::wstring val;
+    {
+      const auto& path = iid_reg_path + L"\\ProxyStubClsid32";
+      CHECK_EQ(
+          base::win::RegKey(root, path.c_str(), KEY_READ).ReadValue(L"", &val),
+          ERROR_SUCCESS)
+          << ": " << root << ": " << path << ": " << iid_string;
+      CHECK_EQ(val, L"{00020424-0000-0000-C000-000000000046}");
+    }
+
+    {
+      const auto& path = iid_reg_path + L"\\TypeLib";
+      CHECK_EQ(
+          base::win::RegKey(root, path.c_str(), KEY_READ).ReadValue(L"", &val),
+          ERROR_SUCCESS)
+          << ": " << root << ": " << path << ": " << iid_string;
+      CHECK_EQ(val, iid_string);
+    }
+
+    const std::wstring typelib_reg_path_win32 =
+        typelib_reg_path + L"\\1.0\\0\\win32";
+    const std::wstring typelib_reg_path_win64 =
+        typelib_reg_path + L"\\1.0\\0\\win64";
+
+    for (const auto& path : {typelib_reg_path_win32, typelib_reg_path_win64}) {
+      std::wstring typelib_path;
+      CHECK_EQ(base::win::RegKey(root, path.c_str(), KEY_READ)
+                   .ReadValue(L"", &typelib_path),
+               ERROR_SUCCESS)
+          << ": " << root << ": " << path << ": " << iid_string;
+
+      Microsoft::WRL::ComPtr<ITypeLib> type_lib;
+      HRESULT hr = ::LoadTypeLib(typelib_path.c_str(), &type_lib);
+      CHECK(SUCCEEDED(hr)) << " ::LoadTypeLib failed: " << typelib_path << ": "
+                           << std::hex << hr;
+
+      Microsoft::WRL::ComPtr<ITypeInfo> type_info;
+      hr = type_lib->GetTypeInfoOfGuid(iid, &type_info);
+      CHECK(SUCCEEDED(hr)) << " ::GetTypeInfoOfGuid failed"
+                           << ": " << std::hex << hr
+                           << ": Typelib path: " << typelib_path
+                           << ": IID: " << iid_string;
+    }
+  }
 }
 
 }  // namespace updater

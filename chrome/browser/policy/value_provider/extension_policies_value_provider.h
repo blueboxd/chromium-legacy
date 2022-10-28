@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -31,9 +31,8 @@ class ExtensionPoliciesValueProvider
   ~ExtensionPoliciesValueProvider() override;
 
   // PolicyValueProvider overrides.
-  // Appends each individual extension policy as a separate entry at the end of
-  // `out_policy_values`.
-  void GetValues(base::Value::List& out_policy_values) override;
+  // Returns each individual extension policy in a dictionary.
+  base::Value::Dict GetValues() override;
 
   base::Value::Dict GetNames() override;
 

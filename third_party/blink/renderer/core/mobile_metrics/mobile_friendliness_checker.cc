@@ -6,6 +6,7 @@
 
 #include <cmath>
 
+#include "base/metrics/histogram_functions.h"
 #include "third_party/blink/public/common/mobile_metrics/mobile_friendliness.h"
 #include "third_party/blink/public/mojom/mobile_metrics/mobile_friendliness.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_get_root_node_options.h"
@@ -15,6 +16,7 @@
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/frame/page_scale_constraints_set.h"
 #include "third_party/blink/renderer/core/frame/root_frame_viewport.h"
+#include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/frame/viewport_data.h"
 #include "third_party/blink/renderer/core/frame/visual_viewport.h"
 #include "third_party/blink/renderer/core/html/forms/html_form_control_element.h"
@@ -33,6 +35,7 @@
 #include "third_party/blink/renderer/platform/graphics/paint/geometry_mapper.h"
 #include "third_party/blink/renderer/platform/graphics/paint/transform_paint_property_node.h"
 #include "third_party/blink/renderer/platform/heap/visitor.h"
+#include "third_party/blink/renderer/platform/instrumentation/histogram.h"
 #include "third_party/blink/renderer/platform/wtf/math_extras.h"
 #include "ui/display/screen_info.h"
 
@@ -313,10 +316,13 @@ int ExtractAndCountAllTapTargets(
 
   // Simultaneously iterate front-to-back and back-to-front to consider
   // both page headers and footers using the same time budget.
+  bool success_in_time = true;
   for (const LayoutObject *forward = root, *backward = root;
        forward && backward;) {
-    if (base::TimeTicks::Now() - started > kTimeBudgetForTapTargetExtraction)
-      return static_cast<int>(tap_targets.size());
+    if (base::TimeTicks::Now() - started > kTimeBudgetForTapTargetExtraction) {
+      success_in_time = false;
+      break;
+    }
 
     blink::GetRootNodeOptions options;
     if (forward->GetNode() != nullptr &&
@@ -350,6 +356,9 @@ int ExtractAndCountAllTapTargets(
     }
   }
 
+  base::UmaHistogramBoolean(
+      "Blink.MobileMetrics.BadTapTargetRatioExtractionSucceed",
+      success_in_time);
   return static_cast<int>(tap_targets.size());
 }
 
@@ -435,7 +444,9 @@ MobileFriendlinessChecker* MobileFriendlinessChecker::Create(
   // it's not useful to generate mobile friendliness metrics for
   // devtools, svg, etc.
   if (!frame_view.GetFrame().Client()->IsLocalFrameClientImpl() ||
-      !frame_view.GetFrame().IsOutermostMainFrame()) {
+      !frame_view.GetFrame().IsOutermostMainFrame() ||
+      !frame_view.GetPage()->GetSettings().GetViewportEnabled() ||
+      !frame_view.GetPage()->GetSettings().GetViewportMetaEnabled()) {
     return nullptr;
   }
   return MakeGarbageCollected<MobileFriendlinessChecker>(frame_view);
@@ -464,6 +475,8 @@ MobileFriendlinessChecker* MobileFriendlinessChecker::From(
 // go/bad-tap-target-ukm
 int MobileFriendlinessChecker::ComputeBadTapTargetsRatio() {
   DCHECK(frame_view_->GetFrame().IsOutermostMainFrame());
+  SCOPED_BLINK_UMA_HISTOGRAM_TIMER_HIGHRES(
+      "Blink.MobileMetrics.BadTapTargetsRatioTime");
   base::TimeTicks started = base::TimeTicks::Now();
   constexpr float kOneDipInMm = 0.15875;
 

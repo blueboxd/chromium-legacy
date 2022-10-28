@@ -1,4 +1,4 @@
-# Copyright 2017 The Chromium Authors. All rights reserved.
+# Copyright 2017 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -23,6 +23,7 @@ source_set("location_bar") {
   deps = [
     ":constants",
     ":location_bar_model_delegate",
+    "resources:location_bar_camera_lens",
     "resources:location_bar_connection_dangerous",
     "resources:location_bar_connection_info",
     "resources:location_bar_connection_offline",
@@ -61,7 +62,6 @@ source_set("location_bar") {
     "//ios/chrome/browser/ui/default_promo:utils",
     "//ios/chrome/browser/ui/elements",
     "//ios/chrome/browser/ui/fullscreen",
-    "//ios/chrome/browser/ui/fullscreen:feature_flags",
     "//ios/chrome/browser/ui/fullscreen:ui",
     "//ios/chrome/browser/ui/icons:symbols",
     "//ios/chrome/browser/ui/main:default_browser_scene_agent",

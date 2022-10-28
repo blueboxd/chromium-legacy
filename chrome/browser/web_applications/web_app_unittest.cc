@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -193,6 +193,9 @@ TEST(WebAppTest, WasInstalledByUser) {
   app.AddSource(WebAppManagement::kSystem);
   EXPECT_FALSE(app.WasInstalledByUser());
 
+  app.AddSource(WebAppManagement::kKiosk);
+  EXPECT_FALSE(app.WasInstalledByUser());
+
   app.AddSource(WebAppManagement::kPolicy);
   EXPECT_FALSE(app.WasInstalledByUser());
 
@@ -203,6 +206,9 @@ TEST(WebAppTest, WasInstalledByUser) {
   EXPECT_FALSE(app.WasInstalledByUser());
 
   app.RemoveSource(WebAppManagement::kSystem);
+  EXPECT_FALSE(app.WasInstalledByUser());
+
+  app.RemoveSource(WebAppManagement::kKiosk);
   EXPECT_FALSE(app.WasInstalledByUser());
 
   app.RemoveSource(WebAppManagement::kPolicy);
@@ -229,6 +235,8 @@ TEST(WebAppTest, CanUserUninstallWebApp) {
 
   app.AddSource(WebAppManagement::kPolicy);
   EXPECT_FALSE(app.CanUserUninstallWebApp());
+  app.AddSource(WebAppManagement::kKiosk);
+  EXPECT_FALSE(app.CanUserUninstallWebApp());
   app.AddSource(WebAppManagement::kSystem);
   EXPECT_FALSE(app.CanUserUninstallWebApp());
 
@@ -240,6 +248,9 @@ TEST(WebAppTest, CanUserUninstallWebApp) {
   EXPECT_FALSE(app.CanUserUninstallWebApp());
 
   app.RemoveSource(WebAppManagement::kSystem);
+  EXPECT_FALSE(app.CanUserUninstallWebApp());
+
+  app.RemoveSource(WebAppManagement::kKiosk);
   EXPECT_FALSE(app.CanUserUninstallWebApp());
 
   app.RemoveSource(WebAppManagement::kPolicy);
@@ -301,8 +312,8 @@ TEST(WebAppTest, IsolationDataStartsEmpty) {
 TEST(WebAppTest, IsolationDataDebugValue) {
   WebApp app{GenerateAppId(/*manifest_id=*/absl::nullopt,
                            GURL("https://example.com"))};
-  app.SetIsolationData(WebApp::IsolationData(
-      WebApp::IsolationData::InstalledBundle{.path = "random_path"}));
+  app.SetIsolationData(
+      IsolationData(IsolationData::InstalledBundle{.path = "random_path"}));
 
   EXPECT_TRUE(app.isolation_data().has_value());
 

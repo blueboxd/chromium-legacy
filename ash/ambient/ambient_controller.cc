@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -907,11 +907,6 @@ AmbientAnimationTheme AmbientController::GetCurrentTheme() const {
     current_theme = *current_theme_from_pref_;
   }
   return current_theme;
-}
-
-void AmbientController::set_backend_controller_for_testing(
-    std::unique_ptr<AmbientBackendController> backend_controller) {
-  ambient_backend_controller_ = std::move(backend_controller);
 }
 
 }  // namespace ash

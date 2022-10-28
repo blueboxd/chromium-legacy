@@ -31,14 +31,13 @@ class AttributionInternalsHandlerImpl
   AttributionInternalsHandlerImpl(
       WebUI* web_ui,
       mojo::PendingReceiver<attribution_internals::mojom::Handler> receiver);
-  AttributionInternalsHandlerImpl(
-      const AttributionInternalsHandlerImpl& other) = delete;
-  AttributionInternalsHandlerImpl& operator=(
-      const AttributionInternalsHandlerImpl& other) = delete;
-  AttributionInternalsHandlerImpl(AttributionInternalsHandlerImpl&& other) =
+  AttributionInternalsHandlerImpl(const AttributionInternalsHandlerImpl&) =
       delete;
   AttributionInternalsHandlerImpl& operator=(
-      AttributionInternalsHandlerImpl&& other) = delete;
+      const AttributionInternalsHandlerImpl&) = delete;
+  AttributionInternalsHandlerImpl(AttributionInternalsHandlerImpl&&) = delete;
+  AttributionInternalsHandlerImpl& operator=(
+      AttributionInternalsHandlerImpl&&) = delete;
   ~AttributionInternalsHandlerImpl() override;
 
   // mojom::AttributionInternalsHandler:
@@ -65,7 +64,6 @@ class AttributionInternalsHandlerImpl
   // AttributionObserver:
   void OnSourcesChanged() override;
   void OnReportsChanged(AttributionReport::ReportType report_type) override;
-  void OnSourceDeactivated(const StoredSource& deactivated_source) override;
   void OnSourceHandled(const StorableSource& source,
                        StorableSource::Result result) override;
   void OnReportSent(const AttributionReport& report,

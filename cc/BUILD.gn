@@ -1,5 +1,5 @@
-# Copyright 2014 The Chromium Authors.All rights reserved.
-# Use of this source code is governed by a BSD - style license that can be
+# Copyright 2014 The Chromium Authors
+# Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 import("//build/config/sanitizers/sanitizers.gni")
 import("//gpu/vulkan/features.gni")
@@ -734,6 +734,7 @@ cc_test("cc_unittests") {
     "metrics/compositor_frame_reporting_controller_unittest.cc",
     "metrics/compositor_timing_history_unittest.cc",
     "metrics/dropped_frame_counter_unittest.cc",
+    "metrics/event_metrics_unittest.cc",
     "metrics/events_metrics_manager_unittest.cc",
     "metrics/frame_info_unittest.cc",
     "metrics/frame_sequence_metrics_unittest.cc",
@@ -911,6 +912,7 @@ cc_test("cc_unittests") {
 
     additional_manifest_fragments = [
       "//build/config/fuchsia/test/fonts.shard.test-cml",
+      "//build/config/fuchsia/test/mark_vmo_executable.shard.test-cml",
       "//third_party/fuchsia-sdk/sdk/pkg/vulkan/client.shard.cml",
     ]
   }

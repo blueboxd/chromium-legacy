@@ -140,8 +140,6 @@ ResourceLoadPriority TypeToPriority(ResourceType type) {
       // Also parser-blocking scripts (set explicitly in loadPriority)
       return ResourceLoadPriority::kVeryHigh;
     case ResourceType::kXSLStyleSheet:
-      DCHECK(RuntimeEnabledFeatures::XSLTEnabled());
-      [[fallthrough]];
     case ResourceType::kRaw:
     case ResourceType::kScript:
       // Also visible resources/images (set explicitly in loadPriority)
@@ -325,8 +323,6 @@ mojom::blink::RequestContextType ResourceFetcher::DetermineRequestContext(
          (type == ResourceType::kImage && is_image_set == kImageIsImageSet));
   switch (type) {
     case ResourceType::kXSLStyleSheet:
-      DCHECK(RuntimeEnabledFeatures::XSLTEnabled());
-      [[fallthrough]];
     case ResourceType::kCSSStyleSheet:
       return mojom::blink::RequestContextType::STYLE;
     case ResourceType::kScript:
@@ -362,8 +358,6 @@ network::mojom::RequestDestination ResourceFetcher::DetermineRequestDestination(
     ResourceType type) {
   switch (type) {
     case ResourceType::kXSLStyleSheet:
-      DCHECK(RuntimeEnabledFeatures::XSLTEnabled());
-      [[fallthrough]];
     case ResourceType::kCSSStyleSheet:
       return network::mojom::RequestDestination::kStyle;
     case ResourceType::kScript:
@@ -628,7 +622,8 @@ void ResourceFetcher::DidLoadResourceFromMemoryCache(
     // they're used.
     scoped_refptr<ResourceTimingInfo> info = ResourceTimingInfo::Create(
         resource->Options().initiator_info.name, base::TimeTicks::Now(),
-        request.GetRequestContext(), request.GetRequestDestination());
+        request.GetRequestContext(), request.GetRequestDestination(),
+        request.GetMode());
     // TODO(yoav): Getting the original URL before redirects here is only needed
     // until Out-of-Blink CORS lands: https://crbug.com/736308
     info->SetInitialURL(
@@ -1354,7 +1349,8 @@ void ResourceFetcher::StorePerformanceTimingInitiatorInformation(
   scoped_refptr<ResourceTimingInfo> info = ResourceTimingInfo::Create(
       fetch_initiator, base::TimeTicks::Now(),
       resource->GetResourceRequest().GetRequestContext(),
-      resource->GetResourceRequest().GetRequestDestination());
+      resource->GetResourceRequest().GetRequestDestination(),
+      resource->GetResourceRequest().GetMode());
 
   if (render_blocking_behavior == RenderBlockingBehavior::kBlocking)
     info->SetRenderBlockingStatus(/*render_blocking_status=*/true);

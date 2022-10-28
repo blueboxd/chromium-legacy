@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -98,6 +98,10 @@ class VisitAnnotationsDatabase {
 
   // Get a `ClusterVisit`.
   ClusterVisit GetClusterVisit(VisitID visit_id);
+
+  // Get `VisitID`s for duplicate cluster visits.
+  std::vector<VisitID> GetDuplicateClusterVisitIdsForClusterVisit(
+      int64_t visit_id);
 
   // Return the ID of the cluster containing `visit_id`. Returns 0 if `visit_id`
   // is not in a cluster.`

@@ -1,4 +1,4 @@
-// Copyright (c) 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -33,6 +33,7 @@
 #include "ui/native_theme/native_theme.h"
 #include "ui/native_theme/native_theme_observer.h"
 #include "ui/webui/mojo_web_ui_controller.h"
+#include "ui/webui/resources/cr_components/color_change_listener/color_change_listener.mojom.h"
 #include "ui/webui/resources/cr_components/customize_themes/customize_themes.mojom.h"
 #include "ui/webui/resources/cr_components/most_visited/most_visited.mojom.h"
 
@@ -45,6 +46,10 @@ class NavigationHandle;
 class WebContents;
 class WebUI;
 }  // namespace content
+
+namespace ui {
+class ColorChangeHandler;
+}  // namespace ui
 
 class ChromeCustomizeThemesHandler;
 #if !defined(OFFICIAL_BUILD)
@@ -86,12 +91,18 @@ class NewTabPageUI
   static bool IsNewTabPageOrigin(const GURL& url);
   static void RegisterProfilePrefs(PrefRegistrySimple* registry);
   static void ResetProfilePrefs(PrefService* prefs);
-  static bool IsDriveModuleEnabled(Profile* profile);
+  static bool IsDriveModuleEnabledForProfile(Profile* profile);
 
   // Instantiates the implementor of the mojom::PageHandlerFactory mojo
   // interface passing the pending receiver that will be internally bound.
   void BindInterface(
       mojo::PendingReceiver<new_tab_page::mojom::PageHandlerFactory>
+          pending_receiver);
+
+  // Instantiates the implementor of the mojom::PageHandler mojo interface
+  // passing the pending receiver that will be internally bound.
+  void BindInterface(
+      mojo::PendingReceiver<color_change_listener::mojom::PageHandler>
           pending_receiver);
 
   // Instantiates the implementor of the realbox::mojom::PageHandler mojo
@@ -210,6 +221,7 @@ class NewTabPageUI
   mojo::Receiver<new_tab_page::mojom::PageHandlerFactory>
       page_factory_receiver_;
   std::unique_ptr<ChromeCustomizeThemesHandler> customize_themes_handler_;
+  std::unique_ptr<ui::ColorChangeHandler> color_provider_handler_;
   mojo::Receiver<customize_themes::mojom::CustomizeThemesHandlerFactory>
       customize_themes_factory_receiver_;
   std::unique_ptr<MostVisitedHandler> most_visited_page_handler_;

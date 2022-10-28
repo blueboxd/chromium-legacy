@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -17,6 +17,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/ranges/algorithm.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
@@ -223,9 +224,8 @@ AccountInfo AccountTrackerService::GetAccountInfo(
 AccountInfo AccountTrackerService::FindAccountInfoByGaiaId(
     const std::string& gaia_id) const {
   if (!gaia_id.empty()) {
-    const auto iterator = std::find_if(
-        accounts_.begin(), accounts_.end(),
-        [&gaia_id](const auto& pair) { return pair.second.gaia == gaia_id; });
+    const auto iterator = base::ranges::find(
+        accounts_, gaia_id, [](const auto& pair) { return pair.second.gaia; });
     if (iterator != accounts_.end())
       return iterator->second;
   }
@@ -236,8 +236,8 @@ AccountInfo AccountTrackerService::FindAccountInfoByGaiaId(
 AccountInfo AccountTrackerService::FindAccountInfoByEmail(
     const std::string& email) const {
   if (!email.empty()) {
-    const auto iterator = std::find_if(
-        accounts_.begin(), accounts_.end(), [&email](const auto& pair) {
+    const auto iterator =
+        base::ranges::find_if(accounts_, [&email](const auto& pair) {
           return gaia::AreEmailsSame(pair.second.email, email);
         });
     if (iterator != accounts_.end())
@@ -584,8 +584,7 @@ void AccountTrackerService::RemoveAccountImageFromDisk(
 }
 
 void AccountTrackerService::LoadFromPrefs() {
-  const base::Value::List& list =
-      pref_service_->GetValueList(prefs::kAccountInfo);
+  const base::Value::List& list = pref_service_->GetList(prefs::kAccountInfo);
   std::set<CoreAccountId> to_remove;
   for (size_t i = 0; i < list.size(); ++i) {
     const base::Value::Dict* dict = list[i].GetIfDict();

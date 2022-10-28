@@ -1,4 +1,4 @@
-# Copyright 2021 The Chromium Authors. All rights reserved.
+# Copyright 2021 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -291,6 +291,7 @@ template("cargo_crate") {
         if (defined(invoker.build_deps)) {
           deps = invoker.build_deps
         }
+        rustenv = _rustenv
         forward_variables_from(invoker,
                                [
                                  "features",

@@ -1,4 +1,4 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -18,7 +18,7 @@ BrandcodedDefaultSettings::BrandcodedDefaultSettings(const std::string& prefs) {
   if (!prefs.empty()) {
     JSONStringValueDeserializer json(prefs);
     std::string error;
-    std::unique_ptr<base::Value> root(json.Deserialize(NULL, &error));
+    std::unique_ptr<base::Value> root(json.Deserialize(nullptr, &error));
     if (!root.get()) {
       VLOG(1) << "Failed to parse brandcode prefs file: " << error;
       return;
@@ -67,14 +67,13 @@ absl::optional<bool> BrandcodedDefaultSettings::GetShowHomeButton() const {
 bool BrandcodedDefaultSettings::GetExtensions(
     std::vector<std::string>* extension_ids) const {
   DCHECK(extension_ids);
-  base::DictionaryValue* extensions = NULL;
+  base::DictionaryValue* extensions = nullptr;
   if (master_dictionary_ &&
       master_dictionary_->GetDictionary(
           installer::initial_preferences::kExtensionsBlock, &extensions)) {
-    for (base::DictionaryValue::Iterator extension_id(*extensions);
-         !extension_id.IsAtEnd(); extension_id.Advance()) {
-      if (crx_file::id_util::IdIsValid(extension_id.key()))
-        extension_ids->push_back(extension_id.key());
+    for (const auto extension_id : extensions->GetDict()) {
+      if (crx_file::id_util::IdIsValid(extension_id.first))
+        extension_ids->push_back(extension_id.first);
     }
     return true;
   }

@@ -1,16 +1,17 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "components/viz/test/test_in_process_context_provider.h"
 
 #include <stdint.h>
+
 #include <memory>
 #include <utility>
 
 #include "base/lazy_instance.h"
-#include "base/stl_util.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/types/optional_util.h"
 #include "components/viz/common/gpu/context_cache_controller.h"
 #include "components/viz/common/resources/platform_color.h"
 #include "components/viz/service/display/display_compositor_memory_and_task_controller.h"
@@ -173,7 +174,7 @@ ContextCacheController* TestInProcessContextProvider::CacheController() {
 }
 
 base::Lock* TestInProcessContextProvider::GetLock() {
-  return base::OptionalOrNullptr(context_lock_);
+  return base::OptionalToPtr(context_lock_);
 }
 
 const gpu::Capabilities& TestInProcessContextProvider::ContextCapabilities()

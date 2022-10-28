@@ -27,8 +27,10 @@
 #include "content/browser/devtools/protocol/tracing_handler.h"
 #include "content/browser/devtools/render_frame_devtools_agent_host.h"
 #include "content/browser/devtools/service_worker_devtools_agent_host.h"
+#include "content/browser/devtools/web_contents_devtools_agent_host.h"
 #include "content/browser/devtools/worker_devtools_agent_host.h"
 #include "content/browser/devtools/worker_devtools_manager.h"
+#include "content/browser/portal/portal.h"
 #include "content/browser/renderer_host/frame_tree_node.h"
 #include "content/browser/renderer_host/navigation_request.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
@@ -58,15 +60,22 @@ namespace devtools_instrumentation {
 namespace {
 
 template <typename Handler, typename... MethodArgs, typename... Args>
+void DispatchToAgents(DevToolsAgentHostImpl* host,
+                      void (Handler::*method)(MethodArgs...),
+                      Args&&... args) {
+  if (!host)
+    return;
+  for (auto* h : Handler::ForAgentHost(host))
+    (h->*method)(std::forward<Args>(args)...);
+}
+
+template <typename Handler, typename... MethodArgs, typename... Args>
 void DispatchToAgents(FrameTreeNode* frame_tree_node,
                       void (Handler::*method)(MethodArgs...),
                       Args&&... args) {
   DevToolsAgentHostImpl* agent_host =
       RenderFrameDevToolsAgentHost::GetFor(frame_tree_node);
-  if (!agent_host)
-    return;
-  for (auto* h : Handler::ForAgentHost(agent_host))
-    (h->*method)(std::forward<Args>(args)...);
+  DispatchToAgents(agent_host, method, std::forward<Args>(args)...);
 }
 
 template <typename Handler, typename... MethodArgs, typename... Args>
@@ -166,8 +175,8 @@ std::string FederatedAuthRequestResultToProtocol(
   namespace FederatedAuthRequestIssueReasonEnum =
       protocol::Audits::FederatedAuthRequestIssueReasonEnum;
   switch (result) {
-    case FederatedAuthRequestResult::kApprovalDeclined: {
-      return FederatedAuthRequestIssueReasonEnum::ApprovalDeclined;
+    case FederatedAuthRequestResult::kShouldEmbargo: {
+      return FederatedAuthRequestIssueReasonEnum::ShouldEmbargo;
     }
     case FederatedAuthRequestResult::kErrorDisabledInSettings: {
       return FederatedAuthRequestIssueReasonEnum::DisabledInSettings;
@@ -231,6 +240,8 @@ std::string FederatedAuthRequestResultToProtocol(
     case FederatedAuthRequestResult::kErrorCanceled: {
       return FederatedAuthRequestIssueReasonEnum::Canceled;
     }
+    case FederatedAuthRequestResult::kErrorRpPageNotVisible:
+      return FederatedAuthRequestIssueReasonEnum::RpPageNotVisible;
     case FederatedAuthRequestResult::kError: {
       return FederatedAuthRequestIssueReasonEnum::ErrorIdToken;
     }
@@ -309,6 +320,11 @@ void BackForwardCacheNotUsed(
 
 void DidActivatePrerender(const NavigationRequest& nav_request) {
   FrameTreeNode* ftn = nav_request.frame_tree_node();
+  WebContentsImpl* web_contents = WebContentsImpl::FromFrameTreeNode(ftn);
+  // Record prerender activation here because users don't necessarily open
+  // DevTools when the activation is triggered. If the DevTools is not opened at
+  // the moment, recording the activation here will still preserve the signal.
+  web_contents->set_last_navigation_was_prerender_activation_for_devtools();
   DispatchToAgents(ftn, &protocol::PageHandler::DidActivatePrerender,
                    nav_request);
 }
@@ -316,11 +332,11 @@ void DidActivatePrerender(const NavigationRequest& nav_request) {
 void DidCancelPrerender(const GURL& prerendering_url,
                         FrameTreeNode* ftn,
                         PrerenderHost::FinalStatus status,
-                        const std::string& reason_details) {
+                        const std::string& disallowed_api_method) {
   std::string initiating_frame_id = ftn->devtools_frame_token().ToString();
   DispatchToAgents(ftn, &protocol::PageHandler::DidCancelPrerender,
                    prerendering_url, initiating_frame_id, status,
-                   reason_details);
+                   disallowed_api_method);
 }
 
 namespace {
@@ -1043,11 +1059,16 @@ bool HandleCertificateError(WebContents* web_contents,
 
 namespace {
 void UpdatePortals(RenderFrameHostImpl* render_frame_host_impl) {
-  auto* agent_host = static_cast<RenderFrameDevToolsAgentHost*>(
-      RenderFrameDevToolsAgentHost::GetFor(
-          render_frame_host_impl->frame_tree_node()));
-  if (agent_host)
+  if (auto* agent_host = static_cast<RenderFrameDevToolsAgentHost*>(
+          RenderFrameDevToolsAgentHost::GetFor(
+              render_frame_host_impl->frame_tree_node()))) {
     agent_host->UpdatePortals();
+  }
+  if (auto* agent_host = WebContentsDevToolsAgentHost::GetFor(
+          WebContentsImpl::FromFrameTreeNode(
+              render_frame_host_impl->frame_tree_node()))) {
+    agent_host->PortalUpdated();
+  }
 }
 }  // namespace
 
@@ -1059,8 +1080,12 @@ void PortalDetached(RenderFrameHostImpl* render_frame_host_impl) {
   UpdatePortals(render_frame_host_impl);
 }
 
-void PortalActivated(RenderFrameHostImpl* render_frame_host_impl) {
-  UpdatePortals(render_frame_host_impl);
+void PortalActivated(Portal& portal) {
+  WebContents* host_contents = portal.GetPortalHostContents();
+  UpdatePortals(reinterpret_cast<RenderFrameHostImpl*>(
+      host_contents->GetPrimaryMainFrame()));
+  if (auto* host = WebContentsDevToolsAgentHost::GetFor(host_contents))
+    host->PortalActivated(portal);
 }
 
 void FencedFrameCreated(
@@ -1412,6 +1437,30 @@ void OnServiceWorkerMainScriptFetchingFailed(
   }
 }
 
+namespace {
+
+// Only assign request id if there's an enabled agent host.
+void MaybeAssignResourceRequestId(DevToolsAgentHostImpl* host,
+                                  const std::string& id,
+                                  network::ResourceRequest& request) {
+  DCHECK(!request.devtools_request_id.has_value());
+  for (auto* network_handler : protocol::NetworkHandler::ForAgentHost(host)) {
+    if (network_handler->enabled()) {
+      request.devtools_request_id = id;
+      return;
+    }
+  }
+}
+
+}  // namespace
+
+void MaybeAssignResourceRequestId(FrameTreeNode* ftn,
+                                  const std::string& id,
+                                  network::ResourceRequest& request) {
+  if (auto* host = RenderFrameDevToolsAgentHost::GetFor(ftn))
+    MaybeAssignResourceRequestId(host, id, request);
+}
+
 void OnServiceWorkerMainScriptRequestWillBeSent(
     const GlobalRenderFrameHostId& requesting_frame_id,
     const ServiceWorkerContextWrapper* context_wrapper,
@@ -1437,11 +1486,12 @@ void OnServiceWorkerMainScriptRequestWillBeSent(
           ->GetDevToolsAgentHostForNewInstallingWorker(context_wrapper,
                                                        version_id);
   DCHECK(agent_host);
-  request.devtools_request_id = agent_host->devtools_worker_token().ToString();
+  const std::string request_id = agent_host->devtools_worker_token().ToString();
+  MaybeAssignResourceRequestId(agent_host, request_id, request);
   for (auto* network_handler :
        protocol::NetworkHandler::ForAgentHost(agent_host)) {
     network_handler->RequestSent(
-        request.devtools_request_id.value(),
+        request_id,
         /*loader_id=*/"", request.headers, *request_info,
         protocol::Network::Initiator::TypeEnum::Other,
         requesting_frame->GetLastCommittedURL(),
@@ -1479,12 +1529,17 @@ void OnWorkerMainScriptLoadingFinished(
 void OnWorkerMainScriptRequestWillBeSent(
     FrameTreeNode* ftn,
     const base::UnguessableToken& worker_token,
-    const network::ResourceRequest& request) {
+    network::ResourceRequest& request) {
   DCHECK(ftn);
 
   auto timestamp = base::TimeTicks::Now();
   network::mojom::URLRequestDevToolsInfoPtr request_info =
       network::ExtractDevToolsInfo(request);
+
+  auto* owner_host = RenderFrameDevToolsAgentHost::GetFor(ftn);
+  if (!owner_host)
+    return;
+  MaybeAssignResourceRequestId(owner_host, worker_token.ToString(), request);
   DispatchToAgents(
       ftn, &protocol::NetworkHandler::RequestSent, worker_token.ToString(),
       /*loader_id=*/"", request.headers, *request_info,

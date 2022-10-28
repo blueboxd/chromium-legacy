@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -647,6 +647,17 @@ class MEDIA_GPU_EXPORT V4L2Device
     kJpegDecoder,
     kJpegEncoder,
   };
+
+  inline static constexpr char kLibV4l2Path[] =
+#if defined(__aarch64__)
+      "/usr/lib64/libv4l2.so";
+#else
+      "/usr/lib/libv4l2.so";
+#endif
+
+  // Returns true iff libv4l2 should be used to interact with the V4L2 driver.
+  // This method is thread-safe.
+  static bool UseLibV4L2();
 
   // Create and initialize an appropriate V4L2Device instance for the current
   // platform, or return nullptr if not available.

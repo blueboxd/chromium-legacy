@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -401,12 +401,18 @@ UmaPageLoadMetricsObserver::UmaPageLoadMetricsObserver()
 
 UmaPageLoadMetricsObserver::~UmaPageLoadMetricsObserver() {}
 
-// TODO(https://crbug.com/1317494): Audit and use appropriate policy.
+const char* UmaPageLoadMetricsObserver::GetObserverName() const {
+  static const char kName[] = "UmaPageLoadMetricsObserver";
+  return kName;
+}
+
 page_load_metrics::PageLoadMetricsObserver::ObservePolicy
 UmaPageLoadMetricsObserver::OnFencedFramesStart(
     content::NavigationHandle* navigation_handle,
     const GURL& currently_committed_url) {
-  return STOP_OBSERVING;
+  // This class needs forwarding for the events OnLoadedResource and
+  // OnV8MemoryChanged.
+  return FORWARD_OBSERVING;
 }
 
 page_load_metrics::PageLoadMetricsObserver::ObservePolicy
@@ -1278,8 +1284,8 @@ void UmaPageLoadMetricsObserver::OnV8MemoryChanged(
     if (!render_frame_host)
       continue;
 
-    if (!render_frame_host->GetParent()) {
-      // |render_frame_host| is the main frame.
+    if (!render_frame_host->GetParentOrOuterDocument()) {
+      // |render_frame_host| is the outermost main frame.
       main_frame_memory_usage_.UpdateUsage(update.delta_bytes);
     } else {
       aggregate_subframe_memory_usage_.UpdateUsage(update.delta_bytes);

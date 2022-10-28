@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -88,7 +88,7 @@ class ContentAutofillDriverBrowserTest : public InProcessBrowserTest,
         std::make_unique<testing::NiceMock<MockAutofillClient>>();
     content::WebContents* web_contents =
         browser()->tab_strip_model()->GetActiveWebContents();
-    ASSERT_TRUE(web_contents != NULL);
+    ASSERT_TRUE(web_contents != nullptr);
     Observe(web_contents);
     prefs::RegisterProfilePrefs(autofill_client().GetPrefRegistry());
 
@@ -283,7 +283,8 @@ IN_PROC_BROWSER_TEST_F(ContentAutofillDriverPrerenderBrowserTest,
   // method will be called upon navigation.
   ContentAutofillDriverFactory::FromWebContents(web_contents())
       ->DriverForFrame(web_contents()->GetPrimaryMainFrame())
-      ->SetFormToBeProbablySubmitted(absl::make_optional<FormData>());
+      ->renderer_events()
+      .SetFormToBeProbablySubmitted(absl::make_optional<FormData>());
 
   base::HistogramTester histogram_tester;
 

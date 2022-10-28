@@ -1,4 +1,4 @@
-// Copyright (c) 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,6 +12,7 @@
 
 #include "base/allocator/partition_allocator/address_pool_manager.h"
 #include "base/allocator/partition_allocator/address_pool_manager_types.h"
+#include "base/allocator/partition_allocator/freeslot_bitmap_constants.h"
 #include "base/allocator/partition_allocator/partition_address_space.h"
 #include "base/allocator/partition_allocator/partition_alloc_base/bits.h"
 #include "base/allocator/partition_allocator/partition_alloc_base/compiler_specific.h"
@@ -20,6 +21,7 @@
 #include "base/allocator/partition_allocator/partition_alloc_base/thread_annotations.h"
 #include "base/allocator/partition_allocator/partition_alloc_buildflags.h"
 #include "base/allocator/partition_allocator/partition_alloc_check.h"
+#include "base/allocator/partition_allocator/partition_alloc_config.h"
 #include "base/allocator/partition_allocator/partition_alloc_constants.h"
 #include "base/allocator/partition_allocator/partition_alloc_forward.h"
 #include "base/allocator/partition_allocator/partition_bucket.h"
@@ -27,9 +29,12 @@
 #include "base/allocator/partition_allocator/partition_tag_bitmap.h"
 #include "base/allocator/partition_allocator/partition_tag_types.h"
 #include "base/allocator/partition_allocator/reservation_offset_table.h"
-#include "base/allocator/partition_allocator/starscan/state_bitmap.h"
 #include "base/allocator/partition_allocator/tagging.h"
 #include "build/build_config.h"
+
+#if BUILDFLAG(STARSCAN)
+#include "base/allocator/partition_allocator/starscan/state_bitmap.h"
+#endif  // BUILDFLAG(STARSCAN)
 
 #if BUILDFLAG(PUT_REF_COUNT_IN_PREVIOUS_SLOT)
 #include "base/allocator/partition_allocator/partition_ref_count.h"
@@ -85,8 +90,10 @@ PA_ALWAYS_INLINE uintptr_t SuperPagesEndFromExtent(
          (extent->number_of_consecutive_super_pages * kSuperPageSize);
 }
 
+#if BUILDFLAG(STARSCAN)
 using AllocationStateMap =
     StateBitmap<kSuperPageSize, kSuperPageAlignment, kAlignment>;
+#endif  // BUILDFLAG(STARSCAN)
 
 // Metadata of the slot span.
 //
@@ -309,7 +316,7 @@ struct SlotSpanMetadata {
   //
   // Note, this declaration is kept in the header as opposed to an anonymous
   // namespace so the getter can be fully inlined.
-  static inline SlotSpanMetadata sentinel_slot_span_;
+  static SlotSpanMetadata sentinel_slot_span_;
   // For the sentinel.
   constexpr SlotSpanMetadata() noexcept
       : marked_full(0),
@@ -437,6 +444,8 @@ PartitionSuperPageToExtent(uintptr_t super_page) {
       PartitionSuperPageToMetadataArea<thread_safe>(super_page));
 }
 
+#if BUILDFLAG(STARSCAN)
+
 // Size that should be reserved for state bitmap (if present) inside a super
 // page. Elements of a super page are partition-page-aligned, hence the returned
 // size is a multiple of partition page size.
@@ -457,13 +466,24 @@ CommittedStateBitmapSize() {
 PA_ALWAYS_INLINE uintptr_t SuperPageStateBitmapAddr(uintptr_t super_page) {
   PA_DCHECK(!(super_page % kSuperPageAlignment));
   return super_page + PartitionPageSize() +
-         (IsManagedByNormalBuckets(super_page) ? ReservedTagBitmapSize() : 0);
+         (IsManagedByNormalBuckets(super_page)
+              ? ReservedTagBitmapSize() + ReservedFreeSlotBitmapSize()
+              : 0);
 }
+
 PA_ALWAYS_INLINE AllocationStateMap* SuperPageStateBitmap(
     uintptr_t super_page) {
   return reinterpret_cast<AllocationStateMap*>(
       SuperPageStateBitmapAddr(super_page));
 }
+#else
+
+PAGE_ALLOCATOR_CONSTANTS_DECLARE_CONSTEXPR PA_ALWAYS_INLINE size_t
+ReservedStateBitmapSize() {
+  return 0ull;
+}
+
+#endif  // BUILDFLAG(STARSCAN)
 
 // Returns the address of the tag bitmap of the `super_page`. Caller must ensure
 // that bitmap exists.
@@ -473,17 +493,31 @@ PA_ALWAYS_INLINE uintptr_t SuperPageTagBitmapAddr(uintptr_t super_page) {
   return super_page + PartitionPageSize();
 }
 
+PA_ALWAYS_INLINE uintptr_t
+SuperPagePayloadStartOffset(bool is_managed_by_normal_buckets,
+                            bool with_quarantine) {
+  return PartitionPageSize() +
+         (is_managed_by_normal_buckets
+              ? (ReservedTagBitmapSize() + ReservedFreeSlotBitmapSize())
+              : 0) +
+         (with_quarantine ? ReservedStateBitmapSize() : 0);
+}
+
 PA_ALWAYS_INLINE uintptr_t SuperPagePayloadBegin(uintptr_t super_page,
                                                  bool with_quarantine) {
   PA_DCHECK(!(super_page % kSuperPageAlignment));
-  return super_page + PartitionPageSize() +
-         (IsManagedByNormalBuckets(super_page) ? ReservedTagBitmapSize() : 0) +
-         (with_quarantine ? ReservedStateBitmapSize() : 0);
+  return super_page +
+         SuperPagePayloadStartOffset(IsManagedByNormalBuckets(super_page),
+                                     with_quarantine);
+}
+
+PA_ALWAYS_INLINE uintptr_t SuperPagePayloadEndOffset() {
+  return kSuperPageSize - PartitionPageSize();
 }
 
 PA_ALWAYS_INLINE uintptr_t SuperPagePayloadEnd(uintptr_t super_page) {
   PA_DCHECK(!(super_page % kSuperPageAlignment));
-  return super_page + kSuperPageSize - PartitionPageSize();
+  return super_page + SuperPagePayloadEndOffset();
 }
 
 PA_ALWAYS_INLINE size_t SuperPagePayloadSize(uintptr_t super_page,
@@ -876,6 +910,7 @@ PA_ALWAYS_INLINE void SlotSpanMetadata<thread_safe>::Reset() {
   next_slot_span = nullptr;
 }
 
+#if BUILDFLAG(STARSCAN)
 // Returns the state bitmap from an address within a normal-bucket super page.
 // It's the caller's responsibility to ensure that the bitmap exists.
 PA_ALWAYS_INLINE AllocationStateMap* StateBitmapFromAddr(uintptr_t address) {
@@ -883,6 +918,7 @@ PA_ALWAYS_INLINE AllocationStateMap* StateBitmapFromAddr(uintptr_t address) {
   uintptr_t super_page = address & kSuperPageBaseMask;
   return SuperPageStateBitmap(super_page);
 }
+#endif  // BUILDFLAG(STARSCAN)
 
 // Iterates over all slot spans in a super-page. |Callback| must return true if
 // early return is needed.

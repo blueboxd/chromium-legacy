@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -15,17 +15,19 @@
 #include "ash/app_list/views/app_list_bubble_search_page.h"
 #include "ash/app_list/views/result_selection_controller.h"
 #include "ash/app_list/views/search_box_view.h"
+#include "ash/app_list/views/search_result_image_list_view.h"
+#include "ash/app_list/views/search_result_image_view_delegate.h"
 #include "ash/app_list/views/search_result_list_view.h"
 #include "ash/app_list/views/search_result_page_view.h"
 #include "ash/constants/ash_features.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
-#include "ash/test/layer_animation_stopped_waiter.h"
 #include "base/test/scoped_feature_list.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
+#include "ui/compositor/test/layer_animation_stopped_waiter.h"
 #include "ui/compositor/test/test_utils.h"
 #include "ui/events/keycodes/keyboard_codes_posix.h"
 #include "ui/views/controls/button/label_button.h"
@@ -35,6 +37,7 @@
 namespace {
 
 int kDefaultSearchItems = 3;
+const uint64_t kSearchResultImageViewResultCount = 4;
 const int kResultContainersCount = static_cast<int>(
     ash::SearchResultListView::SearchResultListType::kMaxValue);
 
@@ -50,7 +53,7 @@ class ProductivityLauncherSearchViewTest
  public:
   ProductivityLauncherSearchViewTest()
       : AshTestBase((base::test::TaskEnvironment::TimeSource::MOCK_TIME)),
-        tablet_mode_(GetParam()) {
+        test_under_tablet_(GetParam()) {
     scoped_feature_list_.InitAndEnableFeature(features::kProductivityLauncher);
   }
   ProductivityLauncherSearchViewTest(
@@ -62,9 +65,11 @@ class ProductivityLauncherSearchViewTest
   void SetUp() override {
     AshTestBase::SetUp();
 
-    if (tablet_mode_)
+    if (test_under_tablet_)
       Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
   }
+
+  bool tablet_mode() const { return test_under_tablet_; }
 
   void SetUpSearchResults(SearchModel::SearchResults* results,
                           int init_id,
@@ -120,7 +125,7 @@ class ProductivityLauncherSearchViewTest
   }
 
   ProductivityLauncherSearchView* GetProductivityLauncherSearchView() {
-    if (tablet_mode_) {
+    if (tablet_mode()) {
       return GetAppListTestHelper()
           ->GetFullscreenSearchResultPageView()
           ->productivity_launcher_search_view_for_test();
@@ -129,7 +134,7 @@ class ProductivityLauncherSearchViewTest
   }
 
   bool IsSearchResultPageVisible() {
-    if (tablet_mode_) {
+    if (tablet_mode()) {
       return GetAppListTestHelper()
           ->GetFullscreenSearchResultPageView()
           ->GetVisible();
@@ -149,19 +154,100 @@ class ProductivityLauncherSearchViewTest
   }
 
   SearchBoxView* GetSearchBoxView() {
-    if (tablet_mode_)
+    if (tablet_mode())
       return GetAppListTestHelper()->GetSearchBoxView();
     return GetAppListTestHelper()->GetBubbleSearchBoxView();
   }
 
  private:
-  const bool tablet_mode_;
+  const bool test_under_tablet_;
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+// An extension of ProductivityLauncherSearchViewTest to test launcher image
+// search.
+class SearchResultImageViewTest : public ProductivityLauncherSearchViewTest {
+ public:
+  SearchResultImageViewTest() {
+    scoped_feature_list_.InitAndEnableFeature(
+        features::kProductivityLauncherImageSearch);
+  }
+
+ private:
   base::test::ScopedFeatureList scoped_feature_list_;
 };
 
 INSTANTIATE_TEST_SUITE_P(Tablet,
                          ProductivityLauncherSearchViewTest,
                          testing::Bool());
+
+INSTANTIATE_TEST_SUITE_P(Tablet, SearchResultImageViewTest, testing::Bool());
+
+TEST_P(SearchResultImageViewTest, ImageListViewVisible) {
+  GetAppListTestHelper()->ShowAppList();
+
+  // Press a key to start a search.
+  PressAndReleaseKey(ui::VKEY_A);
+  // Populate answer card result.
+  auto* test_helper = GetAppListTestHelper();
+  SearchModel::SearchResults* results = test_helper->GetSearchResults();
+  SetUpAnswerCardResult(results, 1, 1);
+  GetProductivityLauncherSearchView()->OnSearchResultContainerResultsChanged();
+
+  // Check result container visibility.
+  std::vector<SearchResultContainerView*> result_containers =
+      GetProductivityLauncherSearchView()->result_container_views_for_test();
+  ASSERT_EQ(static_cast<int>(result_containers.size()), kResultContainersCount);
+  // Answer card container should be visible.
+  EXPECT_TRUE(result_containers[0]->GetVisible());
+  // Best Match container should not be visible.
+  EXPECT_FALSE(result_containers[1]->GetVisible());
+  // SearchResultImageListView container should be visible.
+  EXPECT_TRUE(result_containers[2]->GetVisible());
+
+  std::vector<SearchResultImageView*> search_result_image_views =
+      static_cast<SearchResultImageListView*>(result_containers[2])
+          ->GetSearchResultImageViews();
+
+  // The SearchResultImageListView should have four visible result views.
+  EXPECT_EQ(kSearchResultImageViewResultCount,
+            search_result_image_views.size());
+  for (auto* search_result_image_view : search_result_image_views) {
+    EXPECT_TRUE(search_result_image_view->GetVisible());
+  }
+}
+
+TEST_P(SearchResultImageViewTest, ShowContextMenu) {
+  GetAppListTestHelper()->ShowAppList();
+
+  // Press a key to start a search.
+  PressAndReleaseKey(ui::VKEY_A);
+  GetProductivityLauncherSearchView()->OnSearchResultContainerResultsChanged();
+
+  // Check result container visibility.
+  std::vector<SearchResultContainerView*> result_containers =
+      GetProductivityLauncherSearchView()->result_container_views_for_test();
+  ASSERT_EQ(static_cast<int>(result_containers.size()), kResultContainersCount);
+
+  // SearchResultImageListView container should be visible.
+  ASSERT_TRUE(result_containers[2]->GetVisible());
+  auto* search_result_image_view =
+      static_cast<SearchResultImageListView*>(result_containers[2])
+          ->GetResultViewAt(2);
+  ASSERT_TRUE(search_result_image_view->GetVisible());
+
+  // Perform a long tap on `search_result_image_view`.
+  auto image_view_center_point =
+      search_result_image_view->GetBoundsInScreen().CenterPoint();
+  auto* event_generator = GetEventGenerator();
+  ui::GestureEvent long_tap(image_view_center_point.x(),
+                            image_view_center_point.y(), 0, base::TimeTicks(),
+                            ui::GestureEventDetails(ui::ET_GESTURE_LONG_TAP));
+  event_generator->Dispatch(&long_tap);
+
+  // The `SearchResultImageViewDelegate` should be showing a context menu.
+  EXPECT_TRUE(SearchResultImageViewDelegate::Get()->HasActiveContextMenu());
+}
 
 TEST_P(ProductivityLauncherSearchViewTest, AnimateSearchResultView) {
   // Enable animations.
@@ -195,9 +281,9 @@ TEST_P(ProductivityLauncherSearchViewTest, AnimateSearchResultView) {
   EXPECT_LT(result_containers[2]->GetResultViewAt(0)->layer()->opacity(), 1.0f);
   EXPECT_TRUE(result_containers[3]->GetVisible());
   EXPECT_LT(result_containers[3]->GetResultViewAt(0)->layer()->opacity(), 1.0f);
-  LayerAnimationStoppedWaiter().Wait(
+  ui::LayerAnimationStoppedWaiter().Wait(
       result_containers[2]->GetResultViewAt(0)->layer());
-  LayerAnimationStoppedWaiter().Wait(
+  ui::LayerAnimationStoppedWaiter().Wait(
       result_containers[3]->GetResultViewAt(0)->layer());
   EXPECT_EQ(result_containers[3]->GetResultViewAt(0)->layer()->opacity(), 1.0f);
   EXPECT_EQ(result_containers[3]->GetResultViewAt(0)->layer()->opacity(), 1.0f);

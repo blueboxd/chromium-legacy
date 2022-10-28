@@ -80,12 +80,14 @@ class HeaderRewritingURLLoaderClient : public network::mojom::URLLoaderClient {
     url_loader_client_->OnReceiveEarlyHints(std::move(early_hints));
   }
 
-  void OnReceiveResponse(network::mojom::URLResponseHeadPtr response_head,
-                         mojo::ScopedDataPipeConsumerHandle body) override {
+  void OnReceiveResponse(
+      network::mojom::URLResponseHeadPtr response_head,
+      mojo::ScopedDataPipeConsumerHandle body,
+      absl::optional<mojo_base::BigBuffer> cached_metadata) override {
     DCHECK(url_loader_client_.is_bound());
     url_loader_client_->OnReceiveResponse(
-        rewrite_header_callback_.Run(std::move(response_head)),
-        std::move(body));
+        rewrite_header_callback_.Run(std::move(response_head)), std::move(body),
+        std::move(cached_metadata));
   }
 
   void OnReceiveRedirect(
@@ -102,11 +104,6 @@ class HeaderRewritingURLLoaderClient : public network::mojom::URLLoaderClient {
     DCHECK(url_loader_client_.is_bound());
     url_loader_client_->OnUploadProgress(current_position, total_size,
                                          std::move(ack_callback));
-  }
-
-  void OnReceiveCachedMetadata(mojo_base::BigBuffer data) override {
-    DCHECK(url_loader_client_.is_bound());
-    url_loader_client_->OnReceiveCachedMetadata(std::move(data));
   }
 
   void OnTransferSizeUpdated(int32_t transfer_size_diff) override {
@@ -135,6 +132,26 @@ void RestoreRequestBody(network::ResourceRequestBody* body,
 
   elements[0] = network::DataElement(std::move(original_body));
 }
+
+// As a workaround for the future timestamp set by the sender, we adjust the
+// time if it happens for a machine without a timer consistent across
+// processes.  (See crbug.com/1342408)
+blink::mojom::ServiceWorkerFetchEventTimingPtr AdjustTimingIfNeededCrBug1342408(
+    blink::mojom::ServiceWorkerFetchEventTimingPtr timing) {
+  base::TimeTicks now = base::TimeTicks::Now();
+  const char* kMetricsName = "ServiceWorker.WorkaroundForCrBug1342408Applied";
+  if (base::TimeTicks::IsConsistentAcrossProcesses() ||
+      timing->respond_with_settled_time <= now) {
+    base::UmaHistogramBoolean(kMetricsName, false);
+    return timing;
+  }
+  auto diff = timing->respond_with_settled_time - now;
+  timing->dispatch_event_time -= diff;
+  timing->respond_with_settled_time -= diff;
+  base::UmaHistogramBoolean(kMetricsName, true);
+  return timing;
+}
+
 }  // namespace
 
 // A ServiceWorkerStreamCallback implementation which waits for completion of
@@ -404,6 +421,9 @@ void ServiceWorkerSubresourceLoader::OnResponseStream(
     blink::mojom::FetchAPIResponsePtr response,
     blink::mojom::ServiceWorkerStreamHandlePtr body_as_stream,
     blink::mojom::ServiceWorkerFetchEventTimingPtr timing) {
+  // TODO(crbug.com/1342408): remove the following workaround when we can always
+  // expect CPUs have invariant TSC.
+  timing = AdjustTimingIfNeededCrBug1342408(std::move(timing));
   TRACE_EVENT_WITH_FLOW0(
       "ServiceWorker", "ServiceWorkerSubresourceLoader::OnResponseStream",
       TRACE_ID_WITH_SCOPE(kServiceWorkerSubresourceLoaderScope,
@@ -486,6 +506,10 @@ void ServiceWorkerSubresourceLoader::StartResponse(
   response_head_->load_timing.receive_headers_end =
       response_head_->load_timing.receive_headers_start;
   response_source_ = response->response_source;
+
+  // Constructed subresource responses are always same-origin as the requesting
+  // client.
+  response_head_->timing_allow_passed = true;
 
   // Handle a redirect response. ComputeRedirectInfo returns non-null redirect
   // info if the given response is a redirect.
@@ -571,11 +595,13 @@ void ServiceWorkerSubresourceLoader::CommitResponseHeaders() {
 }
 
 void ServiceWorkerSubresourceLoader::CommitResponseBody(
-    mojo::ScopedDataPipeConsumerHandle response_body) {
+    mojo::ScopedDataPipeConsumerHandle response_body,
+    absl::optional<mojo_base::BigBuffer> cached_metadata) {
   TransitionToStatus(Status::kSentBody);
   // TODO(kinuko): Fill the ssl_info.
   url_loader_client_->OnReceiveResponse(response_head_.Clone(),
-                                        std::move(response_body));
+                                        std::move(response_body),
+                                        std::move(cached_metadata));
 }
 
 void ServiceWorkerSubresourceLoader::CommitEmptyResponseAndComplete() {
@@ -588,7 +614,7 @@ void ServiceWorkerSubresourceLoader::CommitEmptyResponseAndComplete() {
   }
 
   producer_handle.reset();  // The data pipe is empty.
-  CommitResponseBody(std::move(consumer_handle));
+  CommitResponseBody(std::move(consumer_handle), absl::nullopt);
   CommitCompleted(net::OK);
 }
 
@@ -779,13 +805,7 @@ void ServiceWorkerSubresourceLoader::OnSideDataReadingComplete(
   side_data_reading_complete_ = true;
 
   DCHECK(data_pipe.is_valid());
-  CommitResponseBody(std::move(data_pipe));
-
-  // See https://crbug.com/1294238. The cached meta data needs to be sent after
-  // the response head.
-  if (metadata.has_value()) {
-    url_loader_client_->OnReceiveCachedMetadata(std::move(metadata.value()));
-  }
+  CommitResponseBody(std::move(data_pipe), std::move(metadata));
 
   // If the blob reading completed before the side data reading, then we
   // must manually finalize the blob reading now.

@@ -1,10 +1,9 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome/browser/ui/webauthn/sheet_models.h"
 
-#include <algorithm>
 #include <memory>
 #include <string>
 #include <utility>
@@ -14,7 +13,7 @@
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/notreached.h"
-#include "base/strings/string_number_conversions.h"
+#include "base/ranges/algorithm.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/app/vector_icons/vector_icons.h"
@@ -160,9 +159,9 @@ bool AuthenticatorMechanismSelectorSheetModel::IsManageDevicesButtonVisible()
     const {
   // If any phones are shown then also show a button that goes to the settings
   // page to manage them.
-  return std::any_of(
-      dialog_model()->mechanisms().begin(), dialog_model()->mechanisms().end(),
-      [](const AuthenticatorRequestDialogModel::Mechanism& mechanism) -> bool {
+  return base::ranges::any_of(
+      dialog_model()->mechanisms(),
+      [](const AuthenticatorRequestDialogModel::Mechanism& mechanism) {
         return absl::holds_alternative<
             AuthenticatorRequestDialogModel::Mechanism::Phone>(mechanism.type);
       });
@@ -499,6 +498,10 @@ void AuthenticatorBlePowerOnAutomaticSheetModel::OnAccept() {
 
 // AuthenticatorBlePermissionMacSheetModel
 // ------------------------------------
+
+bool AuthenticatorBlePermissionMacSheetModel::ShouldFocusBackArrow() const {
+  return true;
+}
 
 const gfx::VectorIcon&
 AuthenticatorBlePermissionMacSheetModel::GetStepIllustration(
@@ -1174,25 +1177,42 @@ void AuthenticatorResidentCredentialConfirmationSheetView::OnAccept() {
 
 AuthenticatorSelectAccountSheetModel::AuthenticatorSelectAccountSheetModel(
     AuthenticatorRequestDialogModel* dialog_model,
-    Mode mode)
-    : AuthenticatorSheetModelBase(dialog_model), mode_(mode) {}
+    UserVerificationMode mode,
+    SelectionType type)
+    : AuthenticatorSheetModelBase(dialog_model),
+      user_verification_mode_(mode),
+      selection_type_(type) {}
 
 AuthenticatorSelectAccountSheetModel::~AuthenticatorSelectAccountSheetModel() =
     default;
 
+AuthenticatorSelectAccountSheetModel::SelectionType
+AuthenticatorSelectAccountSheetModel::selection_type() const {
+  return selection_type_;
+}
+
+const device::DiscoverableCredentialMetadata&
+AuthenticatorSelectAccountSheetModel::SingleCredential() const {
+  DCHECK_EQ(selection_type_, kSingleAccount);
+  DCHECK_EQ(dialog_model()->creds().size(), 1u);
+  return dialog_model()->creds().at(0);
+}
+
 void AuthenticatorSelectAccountSheetModel::SetCurrentSelection(int selected) {
+  DCHECK_EQ(selection_type_, kMultipleAccounts);
   DCHECK_LE(0, selected);
   DCHECK_LT(static_cast<size_t>(selected), dialog_model()->creds().size());
   selected_ = selected;
 }
 
 void AuthenticatorSelectAccountSheetModel::OnAccept() {
-  switch (mode_) {
+  const size_t index = selection_type_ == kMultipleAccounts ? selected_ : 0;
+  switch (user_verification_mode_) {
     case kPreUserVerification:
-      dialog_model()->OnAccountPreselectedIndex(selected_);
+      dialog_model()->OnAccountPreselectedIndex(index);
       break;
     case kPostUserVerification:
-      dialog_model()->OnAccountSelected(selected_);
+      dialog_model()->OnAccountSelected(index);
       break;
   }
 }
@@ -1205,19 +1225,51 @@ AuthenticatorSelectAccountSheetModel::GetStepIllustration(
 }
 
 std::u16string AuthenticatorSelectAccountSheetModel::GetStepTitle() const {
+  if (base::FeatureList::IsEnabled(
+          device::kWebAuthnNewDiscoverableCredentialsUi)) {
+    switch (selection_type_) {
+      case kSingleAccount:
+        // TODO(1358719): i18n
+        return u"Use this passkey?";
+      case kMultipleAccounts:
+        // TODO(1358719): i18n
+        return u"Choose a passkey";
+    }
+  }
   return l10n_util::GetStringUTF16(IDS_WEBAUTHN_SELECT_ACCOUNT);
 }
 
 std::u16string AuthenticatorSelectAccountSheetModel::GetStepDescription()
     const {
+  if (base::FeatureList::IsEnabled(
+          device::kWebAuthnNewDiscoverableCredentialsUi)) {
+    switch (selection_type_) {
+      case kSingleAccount:
+        // TODO(1358719): i18n
+        return u"This passkey will be used for " +
+               GetRelyingPartyIdString(dialog_model());
+      case kMultipleAccounts:
+        // TODO(1358719): i18n
+        return u"Which passkey would you like to use for " +
+               GetRelyingPartyIdString(dialog_model()) + u"?";
+    }
+  }
   return std::u16string();
 }
 
 bool AuthenticatorSelectAccountSheetModel::IsAcceptButtonVisible() const {
+  if (base::FeatureList::IsEnabled(
+          device::kWebAuthnNewDiscoverableCredentialsUi)) {
+    return selection_type_ == kSingleAccount;
+  }
   return false;
 }
 
 bool AuthenticatorSelectAccountSheetModel::IsAcceptButtonEnabled() const {
+  if (base::FeatureList::IsEnabled(
+          device::kWebAuthnNewDiscoverableCredentialsUi)) {
+    return selection_type_ == kSingleAccount;
+  }
   return false;
 }
 
@@ -1328,4 +1380,63 @@ std::u16string AuthenticatorQRSheetModel::GetStepTitle() const {
 
 std::u16string AuthenticatorQRSheetModel::GetStepDescription() const {
   return l10n_util::GetStringUTF16(IDS_BROWSER_SHARING_QR_CODE_DIALOG_TOOLTIP);
+}
+
+// AuthenticatorCreatePasskeySheetModel
+// --------------------------------------------------
+
+AuthenticatorCreatePasskeySheetModel::AuthenticatorCreatePasskeySheetModel(
+    AuthenticatorRequestDialogModel* dialog_model)
+    : AuthenticatorSheetModelBase(dialog_model),
+      other_mechanisms_menu_model_(
+          std::make_unique<OtherMechanismsMenuModel>(dialog_model)) {}
+
+AuthenticatorCreatePasskeySheetModel::~AuthenticatorCreatePasskeySheetModel() =
+    default;
+
+const gfx::VectorIcon&
+AuthenticatorCreatePasskeySheetModel::GetStepIllustration(
+    ImageColorScheme color_scheme) const {
+  return color_scheme == ImageColorScheme::kDark ? kWebauthnWelcomeDarkIcon
+                                                 : kWebauthnWelcomeIcon;
+}
+
+std::u16string AuthenticatorCreatePasskeySheetModel::GetStepTitle() const {
+  // TODO(1358719): i18n
+  return u"Create a passkey";
+}
+
+std::u16string AuthenticatorCreatePasskeySheetModel::GetStepDescription()
+    const {
+  if (dialog_model()->transport_availability()->is_off_the_record_context) {
+    // TODO(1358719): i18n
+    return u"This passkey will be used for " +
+           GetRelyingPartyIdString(dialog_model()) +
+           u". It will be stored after you exit incognito mode.";
+  }
+  // TODO(1358719): i18n
+  return u"This passkey will be used for " +
+         GetRelyingPartyIdString(dialog_model());
+}
+
+bool AuthenticatorCreatePasskeySheetModel::IsAcceptButtonVisible() const {
+  return true;
+}
+
+bool AuthenticatorCreatePasskeySheetModel::IsAcceptButtonEnabled() const {
+  return true;
+}
+
+std::u16string AuthenticatorCreatePasskeySheetModel::GetAcceptButtonLabel()
+    const {
+  return l10n_util::GetStringUTF16(IDS_WEBAUTHN_CONTINUE);
+}
+
+void AuthenticatorCreatePasskeySheetModel::OnAccept() {
+  dialog_model()->HideDialogAndDispatchToPlatformAuthenticator();
+}
+
+ui::MenuModel*
+AuthenticatorCreatePasskeySheetModel::GetOtherMechanismsMenuModel() {
+  return other_mechanisms_menu_model_.get();
 }

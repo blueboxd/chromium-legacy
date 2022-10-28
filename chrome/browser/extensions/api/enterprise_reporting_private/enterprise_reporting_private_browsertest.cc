@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 #include "chrome/browser/extensions/api/enterprise_reporting_private/enterprise_reporting_private_api.h"
@@ -82,6 +82,16 @@ constexpr char kOtherServiceProvider[] = R"({
 
 constexpr char kAnotherServiceProvider[] = R"({
       "service_provider": "another",
+      "enable": [
+        {
+          "url_list": ["*"],
+          "tags": ["dlp", "malware"]
+        }
+      ]
+    })";
+
+constexpr char kAndAnotherServiceProvider[] = R"({
+      "service_provider": "and_another",
       "enable": [
         {
           "url_list": ["*"],
@@ -243,6 +253,7 @@ IN_PROC_BROWSER_TEST_P(
   EXPECT_TRUE(info.on_file_attached_providers.empty());
   EXPECT_TRUE(info.on_file_downloaded_providers.empty());
   EXPECT_TRUE(info.on_bulk_data_entry_providers.empty());
+  EXPECT_TRUE(info.on_print_providers.empty());
   EXPECT_EQ(enterprise_reporting_private::REALTIME_URL_CHECK_MODE_DISABLED,
             info.realtime_url_check_mode);
   EXPECT_TRUE(info.on_security_event_providers.empty());
@@ -278,7 +289,7 @@ class EnterpriseReportingPrivateGetContextInfoChromeOSFirewallTest
 #if BUILDFLAG(IS_WIN)
     EXPECT_TRUE(*info.chrome_cleanup_enabled);
 #else
-    EXPECT_EQ(nullptr, info.chrome_cleanup_enabled.get());
+    EXPECT_FALSE(info.chrome_cleanup_enabled.has_value());
 #endif
   }
 
@@ -287,7 +298,7 @@ class EnterpriseReportingPrivateGetContextInfoChromeOSFirewallTest
 #if BUILDFLAG(IS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
     EXPECT_TRUE(*info.third_party_blocking_enabled);
 #else
-    EXPECT_EQ(info.third_party_blocking_enabled, nullptr);
+    EXPECT_FALSE(info.third_party_blocking_enabled.has_value());
 #endif
   }
 };
@@ -311,6 +322,7 @@ IN_PROC_BROWSER_TEST_P(
   EXPECT_TRUE(info.on_file_attached_providers.empty());
   EXPECT_TRUE(info.on_file_downloaded_providers.empty());
   EXPECT_TRUE(info.on_bulk_data_entry_providers.empty());
+  EXPECT_TRUE(info.on_print_providers.empty());
   EXPECT_EQ(enterprise_reporting_private::REALTIME_URL_CHECK_MODE_DISABLED,
             info.realtime_url_check_mode);
   EXPECT_TRUE(info.on_security_event_providers.empty());
@@ -377,6 +389,7 @@ IN_PROC_BROWSER_TEST_P(EnterpriseReportingPrivateGetContextInfoBrowserTest,
   EXPECT_TRUE(info.on_file_attached_providers.empty());
   EXPECT_TRUE(info.on_file_downloaded_providers.empty());
   EXPECT_TRUE(info.on_bulk_data_entry_providers.empty());
+  EXPECT_TRUE(info.on_print_providers.empty());
   EXPECT_EQ(enterprise_reporting_private::REALTIME_URL_CHECK_MODE_DISABLED,
             info.realtime_url_check_mode);
   EXPECT_TRUE(info.on_security_event_providers.empty());
@@ -395,13 +408,13 @@ IN_PROC_BROWSER_TEST_P(EnterpriseReportingPrivateGetContextInfoBrowserTest,
 #if BUILDFLAG(IS_WIN)
   EXPECT_TRUE(*info.chrome_cleanup_enabled);
 #else
-  EXPECT_EQ(nullptr, info.chrome_cleanup_enabled.get());
+  EXPECT_FALSE(info.chrome_cleanup_enabled.has_value());
 #endif
   EXPECT_FALSE(info.chrome_remote_desktop_app_blocked);
 #if BUILDFLAG(IS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
   EXPECT_TRUE(*info.third_party_blocking_enabled);
 #else
-  EXPECT_EQ(info.third_party_blocking_enabled, nullptr);
+  EXPECT_FALSE(info.third_party_blocking_enabled.has_value());
 #endif
 }
 
@@ -426,6 +439,7 @@ IN_PROC_BROWSER_TEST_F(EnterpriseReportingPrivateGetContextInfoBaseBrowserTest,
 
   EXPECT_EQ(0UL, info.on_file_downloaded_providers.size());
   EXPECT_EQ(0UL, info.on_bulk_data_entry_providers.size());
+  EXPECT_EQ(0UL, info.on_print_providers.size());
 
   EXPECT_EQ(1UL, info.on_file_attached_providers.size());
   EXPECT_EQ("google", info.on_file_attached_providers[0]);
@@ -452,6 +466,7 @@ IN_PROC_BROWSER_TEST_F(EnterpriseReportingPrivateGetContextInfoBaseBrowserTest,
 
   EXPECT_EQ(0UL, info.on_file_attached_providers.size());
   EXPECT_EQ(0UL, info.on_bulk_data_entry_providers.size());
+  EXPECT_EQ(0UL, info.on_print_providers.size());
 
   EXPECT_EQ(1UL, info.on_file_downloaded_providers.size());
   EXPECT_EQ("google", info.on_file_downloaded_providers[0]);
@@ -478,9 +493,37 @@ IN_PROC_BROWSER_TEST_F(EnterpriseReportingPrivateGetContextInfoBaseBrowserTest,
 
   EXPECT_EQ(0UL, info.on_file_downloaded_providers.size());
   EXPECT_EQ(0UL, info.on_file_attached_providers.size());
+  EXPECT_EQ(0UL, info.on_print_providers.size());
 
   EXPECT_EQ(1UL, info.on_bulk_data_entry_providers.size());
   EXPECT_EQ("google", info.on_bulk_data_entry_providers[0]);
+}
+
+IN_PROC_BROWSER_TEST_F(EnterpriseReportingPrivateGetContextInfoBaseBrowserTest,
+                       TestPrintProviderName) {
+  SetupDMToken();
+  safe_browsing::SetAnalysisConnector(browser()->profile()->GetPrefs(),
+                                      enterprise_connectors::PRINT,
+                                      kGoogleServiceProvider);
+
+  auto function =
+      base::MakeRefCounted<EnterpriseReportingPrivateGetContextInfoFunction>();
+  auto context_info_value = std::unique_ptr<base::Value>(
+      extension_function_test_utils::RunFunctionAndReturnSingleResult(
+          function.get(),
+          /*args*/ "[]", browser()));
+  ASSERT_TRUE(context_info_value.get());
+
+  enterprise_reporting_private::ContextInfo info;
+  ASSERT_TRUE(enterprise_reporting_private::ContextInfo::Populate(
+      *context_info_value, &info));
+
+  EXPECT_EQ(0UL, info.on_file_downloaded_providers.size());
+  EXPECT_EQ(0UL, info.on_file_attached_providers.size());
+  EXPECT_EQ(0UL, info.on_bulk_data_entry_providers.size());
+
+  EXPECT_EQ(1UL, info.on_print_providers.size());
+  EXPECT_EQ("google", info.on_print_providers[0]);
 }
 
 IN_PROC_BROWSER_TEST_F(EnterpriseReportingPrivateGetContextInfoBaseBrowserTest,
@@ -495,6 +538,9 @@ IN_PROC_BROWSER_TEST_F(EnterpriseReportingPrivateGetContextInfoBaseBrowserTest,
   safe_browsing::SetAnalysisConnector(browser()->profile()->GetPrefs(),
                                       enterprise_connectors::FILE_DOWNLOADED,
                                       kAnotherServiceProvider);
+  safe_browsing::SetAnalysisConnector(browser()->profile()->GetPrefs(),
+                                      enterprise_connectors::PRINT,
+                                      kAndAnotherServiceProvider);
 
   auto function =
       base::MakeRefCounted<EnterpriseReportingPrivateGetContextInfoFunction>();
@@ -516,6 +562,9 @@ IN_PROC_BROWSER_TEST_F(EnterpriseReportingPrivateGetContextInfoBaseBrowserTest,
 
   EXPECT_EQ(1UL, info.on_file_downloaded_providers.size());
   EXPECT_EQ("another", info.on_file_downloaded_providers[0]);
+
+  EXPECT_EQ(1UL, info.on_print_providers.size());
+  EXPECT_EQ("and_another", info.on_print_providers[0]);
 }
 
 IN_PROC_BROWSER_TEST_F(EnterpriseReportingPrivateGetContextInfoBaseBrowserTest,

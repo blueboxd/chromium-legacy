@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,8 +6,9 @@
 
 #include <utility>
 
-#include "base/stl_util.h"
+#include "base/containers/contains.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/types/optional_util.h"
 #include "components/autofill/core/browser/autofill_address_util.h"
 #include "components/autofill/core/common/autofill_constants.h"
 #include "components/grit/components_scaled_resources.h"
@@ -82,11 +83,8 @@ std::u16string AutofillSaveUpdateAddressProfileDelegateIOS::GetSubtitle() {
   DCHECK(original_profile_);
   std::vector<ProfileValueDifference> differences =
       GetProfileDifferenceForUi(original_profile_.value(), profile_, locale_);
-  bool address_updated =
-      std::find_if(differences.begin(), differences.end(),
-                   [](const ProfileValueDifference& diff) {
-                     return diff.type == ADDRESS_HOME_ADDRESS;
-                   }) != differences.end();
+  bool address_updated = base::Contains(differences, ADDRESS_HOME_ADDRESS,
+                                        &ProfileValueDifference::type);
   return GetProfileDescription(
       original_profile_.value(), locale_,
       /*include_address_and_contacts=*/!address_updated);
@@ -106,7 +104,7 @@ const AutofillProfile* AutofillSaveUpdateAddressProfileDelegateIOS::GetProfile()
 
 const AutofillProfile*
 AutofillSaveUpdateAddressProfileDelegateIOS::GetOriginalProfile() const {
-  return base::OptionalOrNullptr(original_profile_);
+  return base::OptionalToPtr(original_profile_);
 }
 
 std::u16string AutofillSaveUpdateAddressProfileDelegateIOS::GetProfileInfo(

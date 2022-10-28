@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -34,6 +34,16 @@ public interface FastCheckoutComponent {
          * selected.
          */
         void onDismissed();
+
+        /**
+         * Opens the Autofill profile settings menu.
+         */
+        void openAutofillProfileSettings();
+
+        /**
+         * Opens the credit card settings menu.
+         */
+        void openCreditCardSettings();
     }
 
     /**
@@ -48,4 +58,9 @@ public interface FastCheckoutComponent {
      * Displays the given options in a new bottom sheet.
      */
     void showOptions(FastCheckoutAutofillProfile[] profiles, FastCheckoutCreditCard[] creditCards);
+
+    /**
+     * Hides the bottom sheet. No-op if the sheet is already hidden.
+     */
+    void destroy();
 }

@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,7 +8,7 @@
 #import "ios/chrome/browser/ui/ntp/feed_management/feed_management_view_controller.h"
 #import "ios/chrome/browser/ui/ntp/feed_management/follow_management_mediator.h"
 #import "ios/chrome/browser/ui/ntp/feed_management/follow_management_view_controller.h"
-#import "ios/chrome/browser/ui/ntp/feed_metrics_recorder.h"
+#import "ios/chrome/browser/ui/ntp/metrics/feed_metrics_recorder.h"
 #import "ios/chrome/browser/ui/table_view/table_view_navigation_controller.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)

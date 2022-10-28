@@ -1,10 +1,9 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "ash/wm/desks/desk.h"
 
-#include <algorithm>
 #include <utility>
 
 #include "ash/constants/app_types.h"
@@ -29,6 +28,7 @@
 #include "base/containers/contains.h"
 #include "base/containers/cxx20_erase.h"
 #include "base/metrics/histogram_functions.h"
+#include "base/ranges/algorithm.h"
 #include "base/strings/stringprintf.h"
 #include "chromeos/ui/base/window_properties.h"
 #include "components/app_restore/full_restore_utils.h"
@@ -77,7 +77,8 @@ void UpdateBackdropController(aura::Window* desk_container) {
 bool IsOverviewUiWindow(aura::Window* window) {
   return window->GetId() == kShellWindowId_DesksBarWindow ||
          window->GetId() == kShellWindowId_SaveDeskButtonContainer ||
-         window->GetId() == kShellWindowId_OverviewNoWindowsLabelWindow;
+         window->GetId() == kShellWindowId_OverviewNoWindowsLabelWindow ||
+         window->GetId() == kShellWindowId_SavedDeskLibraryWindow;
 }
 
 // Returns true if |window| can be managed by the desk, and therefore can be
@@ -360,11 +361,10 @@ base::AutoReset<bool> Desk::GetScopedNotifyContentChangedDisabler() {
 }
 
 bool Desk::ContainsAppWindows() const {
-  return std::find_if(windows_.begin(), windows_.end(),
-                      [](aura::Window* window) {
-                        return window->GetProperty(aura::client::kAppType) !=
-                               static_cast<int>(AppType::NON_APP);
-                      }) != windows_.end();
+  return base::ranges::any_of(windows_, [](aura::Window* window) {
+    return window->GetProperty(aura::client::kAppType) !=
+           static_cast<int>(AppType::NON_APP);
+  });
 }
 
 void Desk::SetName(std::u16string new_name, bool set_by_user) {

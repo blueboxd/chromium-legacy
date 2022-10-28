@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,6 +6,7 @@
 #define COMPONENTS_SEGMENTATION_PLATFORM_INTERNAL_SELECTION_SEGMENT_SCORE_PROVIDER_H_
 
 #include "base/callback.h"
+#include "base/containers/flat_set.h"
 #include "components/segmentation_platform/public/proto/segmentation_platform.pb.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
@@ -40,7 +41,8 @@ class SegmentScoreProvider {
 
   // Creates the instance.
   static std::unique_ptr<SegmentScoreProvider> Create(
-      SegmentInfoDatabase* segment_database);
+      SegmentInfoDatabase* segment_database,
+      base::flat_set<proto::SegmentId> segment_ids);
 
   // Called to initialize the manager. Reads results from the database into
   // memory on startup. Must be invoked before calling any other method.

@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -262,9 +262,11 @@ public class ContextualSearchTriggerTest extends ContextualSearchInstrumentation
     @SmallTest
     @Feature({"ContextualSearch"})
     @ParameterAnnotations.UseMethodParameter(FeatureParamProvider.class)
-    @DisableIf.Build(sdk_is_greater_than = Build.VERSION_CODES.O, message = "crbug.com/1071080")
-    public void testLongPressGestureFollowedByScrollMaintainsSelection(
-            @EnabledFeature int enabledFeature) throws Exception {
+    @DisableIf.Build(sdk_is_greater_than = Build.VERSION_CODES.M,
+            message = "crbug.com/1071080, crbug.com/1362185")
+    public void
+    testLongPressGestureFollowedByScrollMaintainsSelection(@EnabledFeature int enabledFeature)
+            throws Exception {
         longPressNode("intelligence");
         waitForPanelToPeek();
         scrollBasePage();
@@ -295,12 +297,27 @@ public class ContextualSearchTriggerTest extends ContextualSearchInstrumentation
     @Feature({"ContextualSearch"})
     @Restriction(Restriction.RESTRICTION_TYPE_NON_LOW_END_DEVICE)
     @Features.EnableFeatures(ChromeFeatureList.CONTEXTUAL_SEARCH_SUPPRESS_SHORT_VIEW)
-    public void testIsSuppressedOnViewHeight() {
-        // Should not be suppressed with a large value (in pixels).
-        final int ridiculouslyShort = 100;
-        Assert.assertFalse(mContextualSearchManager.isSuppressed(ridiculouslyShort));
-        final int ridiculouslyTall = 50000;
-        Assert.assertTrue(mContextualSearchManager.isSuppressed(ridiculouslyTall));
+    public void testIsSuppressedOnViewHeight_ridiculouslyShort() {
+        FeatureList.TestValues testValues = new FeatureList.TestValues();
+        testValues.addFieldTrialParamOverride(
+                ChromeFeatureList.CONTEXTUAL_SEARCH_SUPPRESS_SHORT_VIEW,
+                ContextualSearchFieldTrial.CONTEXTUAL_SEARCH_MINIMUM_PAGE_HEIGHT_NAME, "100");
+        FeatureList.setTestValues(testValues);
+        Assert.assertFalse(mContextualSearchManager.isSuppressed());
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"ContextualSearch"})
+    @Restriction(Restriction.RESTRICTION_TYPE_NON_LOW_END_DEVICE)
+    @Features.EnableFeatures(ChromeFeatureList.CONTEXTUAL_SEARCH_SUPPRESS_SHORT_VIEW)
+    public void testIsSuppressedOnViewHeight_ridiculouslyTall() {
+        FeatureList.TestValues testValues = new FeatureList.TestValues();
+        testValues.addFieldTrialParamOverride(
+                ChromeFeatureList.CONTEXTUAL_SEARCH_SUPPRESS_SHORT_VIEW,
+                ContextualSearchFieldTrial.CONTEXTUAL_SEARCH_MINIMUM_PAGE_HEIGHT_NAME, "500000");
+        FeatureList.setTestValues(testValues);
+        Assert.assertTrue(mContextualSearchManager.isSuppressed());
     }
 
     //============================================================================================

@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -100,4 +100,7 @@ message HistorySpecifics {
 
   // Whether a password field was found on the page.
   optional SyncEnums.PasswordState password_state = 16;
+
+  // URL of the favicon for this page.
+  optional string favicon_url = 17;
 }

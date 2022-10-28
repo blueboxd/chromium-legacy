@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,8 +11,8 @@ class DownloadResult {
  public:
   DownloadResult();
 
-  // Constructs a new DownloadResult object. |error_code| value of net::OK
-  // indicates success while other values indicate a failure. |can_retry|
+  // Constructs a new DownloadResult object. `error_code` value of net::OK
+  // indicates success while other values indicate a failure. `can_retry`
   // indicates if a download can be retried or not and depends on if a
   // WKDownload can return resumed data.
   explicit DownloadResult(int error_code, bool can_retry = true);
@@ -20,11 +20,10 @@ class DownloadResult {
   ~DownloadResult();
 
   // Returns whether the download can be retried. Only meaningful
-  // if |is_successful()| is false.
+  // if `is_successful()` is false.
   bool can_retry() const;
 
-  // Returns the underlying error code. Only meaningful if
-  // |is_successful()| is false.
+  // Returns whether the download was a success.
   bool is_successful() const;
 
   // Returns error code in object

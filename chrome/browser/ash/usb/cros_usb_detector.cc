@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,8 +11,6 @@
 
 #include "ash/components/arc/arc_features.h"
 #include "ash/components/arc/arc_util.h"
-#include "ash/components/disks/disk.h"
-#include "ash/components/disks/disk_mount_manager.h"
 #include "ash/constants/ash_features.h"
 #include "ash/constants/notifier_catalogs.h"
 #include "ash/public/cpp/notification_utils.h"
@@ -39,6 +37,8 @@
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/ash/components/dbus/cicerone/cicerone_client.h"
 #include "chromeos/ash/components/dbus/concierge/concierge_client.h"
+#include "chromeos/ash/components/disks/disk.h"
+#include "chromeos/ash/components/disks/disk_mount_manager.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "components/vector_icons/vector_icons.h"
 #include "content/public/browser/device_service.h"
@@ -167,7 +167,20 @@ class CrosUsbNotificationDelegate
              const absl::optional<std::u16string>& reply) override {
     disposition_ = CrosUsbNotificationClosed::kUnknown;
     if (button_index && *button_index < static_cast<int>(vm_names_.size())) {
-      HandleConnectToVm(vm_names_[*button_index]);
+      if (vm_names_[*button_index] == crostini::kCrostiniDefaultVmName) {
+        // When multi-container is enabled, show the settings page instead of
+        // directly attaching the device to the VM. Otherwise, the device is
+        // attached to the default container in the VM.
+        if (crostini::CrostiniFeatures::Get()->IsMultiContainerAllowed(
+                profile())) {
+          HandleShowSettings(
+              chromeos::settings::mojom::kCrostiniUsbPreferencesSubpagePath);
+        } else {
+          HandleConnectToGuest(crostini::DefaultContainerId());
+        }
+      } else {
+        HandleConnectToGuest(vm_names_[*button_index]);
+      }
     } else {
       HandleShowSettings(settings_sub_page_);
     }
@@ -180,15 +193,18 @@ class CrosUsbNotificationDelegate
 
  private:
   ~CrosUsbNotificationDelegate() override = default;
-  void HandleConnectToVm(const std::string& vm_name) {
+  void HandleConnectToGuest(const guest_os::GuestId& guest_id) {
     disposition_ = CrosUsbNotificationClosed::kConnectToLinux;
     CrosUsbDetector* detector = CrosUsbDetector::Get();
     if (detector) {
-      detector->AttachUsbDeviceToGuest(guest_os::GuestId(vm_name, ""), guid_,
-                                       base::DoNothing());
+      detector->AttachUsbDeviceToGuest(guest_id, guid_, base::DoNothing());
       return;
     }
     Close(false);
+  }
+
+  void HandleConnectToGuest(const std::string& vm_name) {
+    HandleConnectToGuest(guest_os::GuestId(vm_name, ""));
   }
 
   void HandleShowSettings(const std::string& sub_page) {
@@ -387,10 +403,14 @@ CrosUsbDeviceInfo::CrosUsbDeviceInfo(
     std::string guid,
     std::u16string label,
     absl::optional<guest_os::GuestId> shared_guest_id,
+    uint16_t vendor_id,
+    uint16_t product_id,
     bool prompt_before_sharing)
     : guid(guid),
       label(label),
       shared_guest_id(shared_guest_id),
+      vendor_id(vendor_id),
+      product_id(product_id),
       prompt_before_sharing(prompt_before_sharing) {}
 CrosUsbDeviceInfo::CrosUsbDeviceInfo(const CrosUsbDeviceInfo&) = default;
 CrosUsbDeviceInfo::~CrosUsbDeviceInfo() = default;
@@ -494,6 +514,7 @@ std::vector<CrosUsbDeviceInfo> CrosUsbDetector::GetShareableDevices() const {
       continue;
     result.emplace_back(
         device.info->guid, device.label, device.shared_guest_id,
+        device.info->vendor_id, device.info->product_id,
         /*prompt_before_sharing=*/
         device.shared_guest_id.has_value() || !device.mount_points.empty());
   }

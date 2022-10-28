@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -24,7 +24,7 @@ class FakeUpdateEngineClient;
 
 // UpdateEngineClient is used to communicate with the update engine.
 class COMPONENT_EXPORT(ASH_DBUS_UPDATE_ENGINE) UpdateEngineClient
-    : public DBusClient {
+    : public chromeos::DBusClient {
  public:
   // The result code used for RequestUpdateCheck().
   enum UpdateCheckResult {
@@ -189,8 +189,11 @@ class COMPONENT_EXPORT(ASH_DBUS_UPDATE_ENGINE) UpdateEngineClient
   virtual void IsFeatureEnabled(const std::string& feature,
                                 IsFeatureEnabledCallback callback) = 0;
 
-  // Apply a downloaded but deferred update. Runs callback on failure.
-  virtual void ApplyDeferredUpdate(base::OnceClosure failure_callback) = 0;
+  // Apply a downloaded but deferred update. When `shutdown_after_update` is set
+  // to true, shutdown after applying the update, otherwise reboot. The callback
+  // will run on dbus call failure.
+  virtual void ApplyDeferredUpdate(bool shutdown_after_update,
+                                   base::OnceClosure failure_callback) = 0;
 
  protected:
   // Initialize() should be used instead.

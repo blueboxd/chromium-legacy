@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -1117,6 +1117,13 @@ void ShimlessRmaService::CalibrationOverallProgress(
 
 void ShimlessRmaService::ProvisioningProgress(
     const rmad::ProvisionStatus& status) {
+  if (status.status() ==
+          rmad::ProvisionStatus::RMAD_PROVISION_STATUS_FAILED_BLOCKING ||
+      status.status() ==
+          rmad::ProvisionStatus::RMAD_PROVISION_STATUS_FAILED_NON_BLOCKING) {
+    LOG(ERROR) << "Provisioning failed with error " << status.error();
+  }
+
   last_provisioning_progress_ = status;
   if (provisioning_observer_.is_bound()) {
     provisioning_observer_->OnProvisioningUpdated(
@@ -1138,6 +1145,13 @@ void ShimlessRmaService::PowerCableState(bool plugged_in) {
   }
 }
 
+void ShimlessRmaService::ExternalDiskState(bool detected) {
+  last_external_disk_state_ = detected;
+  if (external_disk_state_observer_.is_bound()) {
+    external_disk_state_observer_->OnExternalDiskStateChanged(detected);
+  }
+}
+
 void ShimlessRmaService::HardwareVerificationResult(
     const rmad::HardwareVerificationResult& result) {
   last_hardware_verification_result_ = result;
@@ -1149,6 +1163,13 @@ void ShimlessRmaService::HardwareVerificationResult(
 
 void ShimlessRmaService::FinalizationProgress(
     const rmad::FinalizeStatus& status) {
+  if (status.status() ==
+          rmad::FinalizeStatus::RMAD_FINALIZE_STATUS_FAILED_BLOCKING ||
+      status.status() ==
+          rmad::FinalizeStatus::RMAD_FINALIZE_STATUS_FAILED_NON_BLOCKING) {
+    LOG(ERROR) << "Finalization failed with error " << status.error();
+  }
+
   last_finalization_progress_ = status;
   if (finalization_observer_.is_bound()) {
     finalization_observer_->OnFinalizationUpdated(
@@ -1220,12 +1241,22 @@ void ShimlessRmaService::ObservePowerCableState(
   }
 }
 
+void ShimlessRmaService::ObserveExternalDiskState(
+    ::mojo::PendingRemote<mojom::ExternalDiskStateObserver> observer) {
+  external_disk_state_observer_.Bind(std::move(observer));
+  if (last_external_disk_state_) {
+    external_disk_state_observer_->OnExternalDiskStateChanged(
+        *last_external_disk_state_);
+  }
+}
+
 void ShimlessRmaService::ObserveHardwareVerificationStatus(
     ::mojo::PendingRemote<mojom::HardwareVerificationStatusObserver> observer) {
   hardware_verification_observers_.Add(std::move(observer));
   if (last_hardware_verification_result_) {
-    for (auto& observer : hardware_verification_observers_) {
-      observer->OnHardwareVerificationResult(
+    for (auto& hardware_verification_observer :
+         hardware_verification_observers_) {
+      hardware_verification_observer->OnHardwareVerificationResult(
           last_hardware_verification_result_->is_compliant(),
           last_hardware_verification_result_->error_str());
     }
@@ -1312,6 +1343,9 @@ void ShimlessRmaService::OnGetStateResponse(
       state_proto_.state_case() == rmad::RmadState::kWelcome &&
       mojo_state_ == mojom::State::kWelcomeScreen) {
     user_has_seen_network_page_ = false;
+    state_proto_.mutable_welcome()->set_choice(
+        rmad::WelcomeState::RMAD_CHOICE_FINALIZE_REPAIR);
+
     mojo_state_ = mojom::State::kConfigureNetwork;
     std::move(callback).Run(
         CreateStateResult(mojom::State::kConfigureNetwork,

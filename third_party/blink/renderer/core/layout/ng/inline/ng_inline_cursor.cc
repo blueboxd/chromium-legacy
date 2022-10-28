@@ -107,6 +107,7 @@ bool ShouldIgnoreForPositionForPoint(const NGFragmentItem& item) {
       // All/LayoutViewHitTestTest.PseudoElementAfter* needs this.
       return item.IsGeneratedText();
     case NGFragmentItem::kLine:
+    case NGFragmentItem::kInvalid:
       NOTREACHED();
       break;
   }
@@ -846,6 +847,7 @@ PositionWithAffinity NGInlineCursor::PositionForPointInChild(
       DCHECK(child_item.GetLayoutObject()->IsLayoutInline()) << child_item;
       break;
     case NGFragmentItem::kLine:
+    case NGFragmentItem::kInvalid:
       NOTREACHED();
       break;
   }
@@ -1064,7 +1066,10 @@ void NGInlineCursor::MoveToFirstNonPseudoLeaf() {
         // We ignore line break character, e.g. newline with white-space:pre,
         // like |MoveToLastNonPseudoLeaf()| as consistency.
         // See |ParameterizedVisibleUnitsLineTest.EndOfLineWithWhiteSpacePre|
-        continue;
+        auto next = cursor;
+        next.MoveToNext();
+        if (next)
+          continue;
       }
       *this = cursor;
       return;

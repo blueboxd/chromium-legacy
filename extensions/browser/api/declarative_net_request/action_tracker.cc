@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -432,8 +432,7 @@ void ActionTracker::DispatchOnRuleMatchedDebugIfNeeded(
   matched_rule_info_debug.request = std::move(request_details);
 
   base::Value::List args;
-  args.Append(
-      base::Value::FromUniquePtrValue(matched_rule_info_debug.ToValue()));
+  args.Append(matched_rule_info_debug.ToValue());
 
   auto event = std::make_unique<Event>(
       events::DECLARATIVE_NET_REQUEST_ON_RULE_MATCHED_DEBUG,

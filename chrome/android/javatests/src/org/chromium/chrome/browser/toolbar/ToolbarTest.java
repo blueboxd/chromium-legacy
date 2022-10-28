@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -100,19 +100,19 @@ public class ToolbarTest {
 
         assertNull("The scrim should be null.", scrimCoordinator.getViewForTesting());
         assertFalse("All tabs should not currently be obscured.",
-                activity.getTabObscuringHandler().areAllTabsObscured());
+                activity.getTabObscuringHandler().isTabContentObscured());
 
         ThreadUtils.runOnUiThreadBlocking(() -> toolbarManager.setUrlBarFocus(true, 0));
 
         assertNotNull("The scrim should not be null.", scrimCoordinator.getViewForTesting());
         assertTrue("All tabs should currently be obscured.",
-                activity.getTabObscuringHandler().areAllTabsObscured());
+                activity.getTabObscuringHandler().isTabContentObscured());
 
         ThreadUtils.runOnUiThreadBlocking(() -> toolbarManager.setUrlBarFocus(false, 0));
 
         assertNull("The scrim should be null.", scrimCoordinator.getViewForTesting());
         assertFalse("All tabs should not currently be obscured.",
-                activity.getTabObscuringHandler().areAllTabsObscured());
+                activity.getTabObscuringHandler().isTabContentObscured());
     }
 
     @Test

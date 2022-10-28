@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -409,6 +409,18 @@ class PasswordsPrivateAddPasswordFunction : public ExtensionFunction {
 
  protected:
   ~PasswordsPrivateAddPasswordFunction() override = default;
+
+  // ExtensionFunction overrides.
+  ResponseAction Run() override;
+};
+
+class PasswordsPrivateExtendAuthValidityFunction : public ExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("passwordsPrivate.extendAuthValidity",
+                             PASSWORDSPRIVATE_EXTENDAUTHVALIDITY)
+
+ protected:
+  ~PasswordsPrivateExtendAuthValidityFunction() override = default;
 
   // ExtensionFunction overrides.
   ResponseAction Run() override;

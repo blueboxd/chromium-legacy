@@ -1,4 +1,4 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -45,6 +45,9 @@ enum GamepadSource {
 struct PadState {
   PadState();
   ~PadState();
+
+  // Index of the slot occupied by this gamepad.
+  int pad_index;
 
   // Which data fetcher provided this gamepad's data.
   GamepadSource source;

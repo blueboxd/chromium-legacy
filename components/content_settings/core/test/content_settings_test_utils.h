@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,6 +10,7 @@
 #include "base/values.h"
 #include "components/content_settings/core/browser/content_settings_utils.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
+#include "components/content_settings/core/common/content_settings_metadata.h"
 
 namespace content_settings {
 
@@ -28,14 +29,21 @@ class TestUtils {
                                             const GURL& primary_url,
                                             const GURL& secondary_url,
                                             ContentSettingsType content_type,
-                                            bool include_incognito);
+                                            bool include_incognito,
+                                            RuleMetaData* metadata = nullptr);
 
-  static ContentSetting GetContentSetting(
-      const ProviderInterface* provider,
+  static ContentSetting GetContentSetting(const ProviderInterface* provider,
+                                          const GURL& primary_url,
+                                          const GURL& secondary_url,
+                                          ContentSettingsType content_type,
+                                          bool include_incognito,
+                                          RuleMetaData* metadata = nullptr);
+
+  static base::Time GetLastModified(
+      const content_settings::ProviderInterface* provider,
       const GURL& primary_url,
       const GURL& secondary_url,
-      ContentSettingsType content_type,
-      bool include_incognito);
+      ContentSettingsType type);
 
   // This wrapper exists only to make
   // HostContentSettingsMap::GetContentSettingValueAndPatterns public for use in
@@ -45,7 +53,8 @@ class TestUtils {
       const GURL& primary_url,
       const GURL& secondary_url,
       ContentSettingsPattern* primary_pattern,
-      ContentSettingsPattern* secondary_pattern);
+      ContentSettingsPattern* secondary_pattern,
+      RuleMetaData* metadata = nullptr);
 
   // Replace a provider with a different instance for testing purposes
   static void OverrideProvider(

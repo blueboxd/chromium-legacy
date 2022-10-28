@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,22 +10,18 @@
 #include "ash/test/ash_test_base.h"
 #include "ash/test/ash_test_helper.h"
 #include "base/test/scoped_feature_list.h"
-#include "chromeos/services/bluetooth_config/fake_bluetooth_device_status_notifier.h"
-#include "chromeos/services/bluetooth_config/public/mojom/cros_bluetooth_config.mojom.h"
+#include "chromeos/ash/services/bluetooth_config/fake_bluetooth_device_status_notifier.h"
+#include "chromeos/ash/services/bluetooth_config/public/mojom/cros_bluetooth_config.mojom.h"
 #include "testing/gmock/include/gmock/gmock.h"
-
-using chromeos::bluetooth_config::mojom::BatteryProperties;
-using chromeos::bluetooth_config::mojom::BluetoothDeviceProperties;
-using chromeos::bluetooth_config::mojom::DeviceBatteryInfo;
-using chromeos::bluetooth_config::mojom::DeviceBatteryInfoPtr;
-using chromeos::bluetooth_config::mojom::DeviceConnectionState;
-using chromeos::bluetooth_config::mojom::PairedBluetoothDeviceProperties;
-using chromeos::bluetooth_config::mojom::PairedBluetoothDevicePropertiesPtr;
-using testing::NiceMock;
 
 namespace ash {
 
 namespace {
+
+using bluetooth_config::mojom::BluetoothDeviceProperties;
+using bluetooth_config::mojom::PairedBluetoothDeviceProperties;
+using bluetooth_config::mojom::PairedBluetoothDevicePropertiesPtr;
+using ::testing::NiceMock;
 
 class MockBluetoothDeviceStatusUiHandler
     : public BluetoothDeviceStatusUiHandler {
@@ -74,7 +70,7 @@ class BluetoothDeviceStatusUiHandlerTest : public AshTestBase {
   }
 
  private:
-  chromeos::bluetooth_config::FakeBluetoothDeviceStatusNotifier*
+  bluetooth_config::FakeBluetoothDeviceStatusNotifier*
   fake_device_status_notifier() {
     return ash_test_helper()
         ->bluetooth_config_test_helper()

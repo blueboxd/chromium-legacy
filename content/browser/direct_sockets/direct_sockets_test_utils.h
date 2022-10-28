@@ -43,7 +43,7 @@ class MockHostResolver : public network::mojom::HostResolver {
   MockHostResolver(const MockHostResolver&) = delete;
   MockHostResolver& operator=(const MockHostResolver&) = delete;
 
-  void ResolveHost(const ::net::HostPortPair& host,
+  void ResolveHost(network::mojom::HostResolverHostPtr host,
                    const ::net::NetworkIsolationKey& network_isolation_key,
                    network::mojom::ResolveHostParametersPtr optional_parameters,
                    ::mojo::PendingRemote<network::mojom::ResolveHostClient>
@@ -199,9 +199,9 @@ class IsolatedAppContentBrowserClient : public ContentBrowserClient {
   bool ShouldUrlUseApplicationIsolationLevel(BrowserContext* browser_context,
                                              const GURL& url) override;
 
-  blink::ParsedPermissionsPolicy GetPermissionsPolicyForIsolatedApp(
-      content::BrowserContext* browser_context,
-      const url::Origin& app_origin) override;
+  absl::optional<blink::ParsedPermissionsPolicy>
+  GetPermissionsPolicyForIsolatedApp(content::BrowserContext* browser_context,
+                                     const url::Origin& app_origin) override;
 };
 
 }  // namespace content::test

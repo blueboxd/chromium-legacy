@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -115,10 +115,16 @@ std::vector<gfx::Rect> CollectCollisionRects(
     auto* hotseat_widget = shelf->hotseat_widget();
     if (hotseat_widget) {
       auto* hotseat_window = hotseat_widget->GetNativeWindow();
-      gfx::Rect hotseat_rect{root_window->bounds().x(),
-                             hotseat_window->GetTargetBounds().y(),
-                             root_window->bounds().width(),
-                             hotseat_window->GetTargetBounds().height()};
+      gfx::Rect hotseat_rect =
+          shelf->IsHorizontalAlignment()
+              ? gfx::Rect(root_window->bounds().x(),
+                          hotseat_window->GetTargetBounds().y(),
+                          root_window->bounds().width(),
+                          hotseat_window->GetTargetBounds().height())
+              : gfx::Rect(hotseat_window->GetTargetBounds().x(),
+                          root_window->bounds().y(),
+                          hotseat_window->GetTargetBounds().width(),
+                          root_window->bounds().height());
       if (hotseat_widget->state() != HotseatState::kHidden &&
           hotseat_widget->state() != HotseatState::kNone &&
           !ShouldIgnoreWindowForCollision(hotseat_window, priority)) {

@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -99,7 +99,7 @@ void ClientControlledState::HandleTransitionEvents(WindowState* window_state,
     case WM_EVENT_SNAP_SECONDARY: {
       WindowStateType next_state =
           GetResolvedNextWindowStateType(window_state, event);
-      UpdateWindowForTransitionEvents(window_state, next_state, event_type);
+      UpdateWindowForTransitionEvents(window_state, next_state, event);
       break;
     }
     case WM_EVENT_FLOAT:
@@ -107,7 +107,7 @@ void ClientControlledState::HandleTransitionEvents(WindowState* window_state,
       break;
     case WM_EVENT_RESTORE:
       UpdateWindowForTransitionEvents(
-          window_state, window_state->GetRestoreWindowState(), event_type);
+          window_state, window_state->GetRestoreWindowState(), event);
       break;
     case WM_EVENT_SHOW_INACTIVE:
       NOTREACHED();
@@ -167,8 +167,8 @@ void ClientControlledState::HandleCompoundEvents(WindowState* window_state,
   switch (event->type()) {
     case WM_EVENT_TOGGLE_MAXIMIZE_CAPTION:
       if (window_state->IsFullscreen()) {
-        const WMEvent event(WM_EVENT_TOGGLE_FULLSCREEN);
-        window_state->OnWMEvent(&event);
+        const WMEvent wm_event(WM_EVENT_TOGGLE_FULLSCREEN);
+        window_state->OnWMEvent(&wm_event);
       } else if (window_state->IsMaximized()) {
         window_state->Restore();
       } else if (window_state->IsNormalOrSnapped()) {
@@ -178,8 +178,8 @@ void ClientControlledState::HandleCompoundEvents(WindowState* window_state,
       break;
     case WM_EVENT_TOGGLE_MAXIMIZE:
       if (window_state->IsFullscreen()) {
-        const WMEvent event(WM_EVENT_TOGGLE_FULLSCREEN);
-        window_state->OnWMEvent(&event);
+        const WMEvent wm_event(WM_EVENT_TOGGLE_FULLSCREEN);
+        window_state->OnWMEvent(&wm_event);
       } else if (window_state->IsMaximized()) {
         window_state->Restore();
       } else if (window_state->CanMaximize()) {
@@ -316,7 +316,8 @@ WindowStateType ClientControlledState::GetResolvedNextWindowStateType(
 void ClientControlledState::UpdateWindowForTransitionEvents(
     WindowState* window_state,
     chromeos::WindowStateType next_state_type,
-    WMEventType event_type) {
+    const WMEvent* event) {
+  const WMEventType event_type = event->type();
   aura::Window* window = window_state->window();
 
   if (next_state_type == WindowStateType::kPrimarySnapped ||
@@ -335,8 +336,20 @@ void ClientControlledState::UpdateWindowForTransitionEvents(
           window_state->GetStateType(), next_state_type);
 
       // Get the desired window bounds for the snap state.
-      gfx::Rect bounds =
-          GetSnappedWindowBoundsInParent(window, next_state_type);
+      const bool is_restoring =
+          window_state->window()->GetProperty(aura::client::kIsRestoringKey) ||
+          event_type == WM_EVENT_RESTORE;
+      // TODO(b/246683799): Investigate why window_state->snap_ratio() can be
+      // empty.
+      const float snap_ratio_to_restore =
+          event->IsSnapInfoAvailable()
+              ? WindowSnapWMEvent::GetFloatValueForSnapRatio(
+                    static_cast<const WindowSnapWMEvent*>(event)->snap_ratio())
+              : (is_restoring && window_state->snap_ratio().has_value()
+                     ? window_state->snap_ratio().value()
+                     : kDefaultPositionRatio);
+      gfx::Rect bounds = GetSnappedWindowBoundsInParent(window, next_state_type,
+                                                        snap_ratio_to_restore);
       // We don't want Unminimize() to restore the pre-snapped state during the
       // transition. See crbug.com/1031313 for why we need this.
       // kRestoreShowStateKey property will be updated properly after the window

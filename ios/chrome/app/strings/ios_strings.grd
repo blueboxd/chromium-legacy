@@ -156,6 +156,9 @@ locale.  The strings in this file are specific to iOS.
       <message name="IDS_IOS_ACCNAME_VOICE_SEARCH" desc="The accessibility label for the voice search button in the location bar [Length: unlimited]">
         Voice Search
       </message>
+      <message name="IDS_IOS_ACCNAME_LENS" desc="The accessibility label for the Lens button in the location bar [Length: unlimited]">
+        Lens
+      </message>
       <message name="IDS_IOS_ACCOUNT_CONSISTENCY_CONFIRMATION_SCROLL_BUTTON" desc="Title of the button to scroll the confirmation screen when it is too small to show everything at once. [Length: 20m] [iOS only]">
         More
       </message>
@@ -1336,6 +1339,9 @@ See your search engine’s instructions for deleting your search history, if app
       <message name="IDS_IOS_MANUAL_FALLBACK_MANAGE_PASSWORDS" desc="The title for the button in the manual fallback UI that takes the user to the passwords settings. In this screen they see all the passwords and can erase them. Note it is different from IDS_IOS_MANUAL_FALLBACK_USE_OTHER_PASSWORD_WITH_DOTS [30em]">
         Manage Passwords...
       </message>
+      <message name="IDS_IOS_MANUAL_FALLBACK_MANAGE_SETTINGS" desc="The title for the button in the manual fallback UI that takes the user to the passwords settings. In this screen they can manage the settings for their passwords. Note it is different from IDS_IOS_MANUAL_FALLBACK_USE_OTHER_PASSWORD_WITH_DOTS [30em]">
+        Manage Settings...
+      </message>
       <message name="IDS_IOS_MANUAL_FALLBACK_NO_USERNAME" desc="The title for disabled buttons on the manual fallback passwords UI when a credential doesn't contains a username. [30em]">
         No Username
       </message>
@@ -1622,6 +1628,9 @@ While in Incognito, sites can't use cookies to see your browsing activity across
       </message>
       <message name="IDS_IOS_OPTIONS_PRIVACY_GOOGLE_SERVICES_FOOTER" desc="Footer to invite the user to open the Sync and Google Services settings.">
         For more settings that relate to privacy, security, and data collection, see <ph name="BEGIN_LINK">BEGIN_LINK</ph>Sync and Google Services<ph name="END_LINK">END_LINK</ph>.
+      </message>
+      <message name="IDS_IOS_PRICE_NOTIFICATIONS_PRICE_TRACKING_TITLE" desc="Title for Price Tracking Notifications settings menu row.">
+        Tracking Price
       </message>
       <message name="IDS_IOS_PRIVACY_SAFE_BROWSING_ENHANCED_PROTECTION_SUMMARY" desc="Summary for Privacy Safe Browsing enhanced protection mode.">
         Faster, proactive protection against dangerous websites, downloads, and extensions. Warns you about password breaches. Requires browsing data to be sent to Google.
@@ -2077,9 +2086,6 @@ While in Incognito, sites can't use cookies to see your browsing activity across
       </message>
       <message name="IDS_IOS_RECENT_TABS_HIDE_MENU_OPTION" desc="Context menu option to remove a foreign session. [Length: 15em] [iOS only]">
         Hide for now
-      </message>
-      <message name="IDS_IOS_RECENT_TABS_OPEN_ALL_MENU_OPTION" desc="Context menu option to open all tabs from a foreign session. [Length: 15em] [iOS only]">
-        Open all
       </message>
       <message name="IDS_IOS_RECENT_TABS_OTHER_DEVICES" desc="The name of the section informing the user on how to view tabs from other devices.[Length: 25em]">
         Other Devices
@@ -3104,12 +3110,6 @@ Your data was encrypted with your sync passphrase on <ph name="TIME">$2<ex>Sept 
       <message name="IDS_IOS_TERMS_OF_SERVICE" desc="The label to access the terms of service, displayed in the application settings, with no product name. [Length: 30em] [iOS only]">
         Terms of Service
       </message>
-      <message name="IDS_IOS_REVIEW_UPDATED_CHROME_TOS" desc="Text displayed on the New Tab Page to notify users of upcoming changes to the Terms of Serice">
-        Chrome’s Terms of Service are changing March 31. <ph name="BEGIN_LINK"><ex>BEGIN_LINK</ex>BEGIN_LINK</ph>Please review<ph name="END_LINK"><ex>END_LINK</ex>END_LINK</ph>
-      </message>
-      <message name="IDS_IOS_SET_DEFAULT_BROWSER" desc="Text displayed on the New Tab Page to notify users of the ability to set Chrome as the default browser">
-          New: Open sites in Chrome automatically by making it your Default Browser App. <ph name="BEGIN_LINK"><ex>BEGIN_LINK</ex>BEGIN_LINK</ph>Open Settings<ph name="END_LINK"><ex>END_LINK</ex>END_LINK</ph>
-      </message>
       <message name="IDS_IOS_TEXT_ZOOM_ZOOM_IN" desc="Accessibility label for a button allowing the user to zoom in." meaning="User is asking page to zoom in">
         Zoom In
       </message>
@@ -3522,6 +3522,9 @@ New Search
       </message>
       <message name="IDS_IOS_KEYBOARD_ACCESSORY_VIEW_PASTE_SEARCH" desc="Accessibility label for a button that starts a Paste and Search [iOS only]">
         Paste and Search
+      </message>
+      <message name="IDS_IOS_OVERFLOW_MENU_CAROUSEL_TIP" desc="The text of the tip explaining to the user they can use the carousel in the overflow menu.">
+        Your saved bookmarks, passwords, settings, and more are now here
       </message>
     </messages>
   </release>

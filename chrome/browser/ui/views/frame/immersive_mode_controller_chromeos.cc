@@ -1,4 +1,4 @@
-// Copyright 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -30,7 +30,6 @@
 
 #if !BUILDFLAG(IS_CHROMEOS_LACROS)
 #include "chrome/browser/ui/ash/window_pin_util.h"
-#include "chromeos/ui/base/window_state_type.h"
 #else
 #include "chrome/browser/ui/lacros/window_properties.h"
 #endif

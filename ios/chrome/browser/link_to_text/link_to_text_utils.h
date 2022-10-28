@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -15,18 +15,18 @@ class TimeDelta;
 
 namespace link_to_text {
 
-// Attempts to convert a numerical |status| value from the
+// Attempts to convert a numerical `status` value from the
 // text-fragments-polyfill library into a LinkGenerationOutcome enum
 // value, representing outcomes for that library.
 absl::optional<LinkGenerationOutcome> ParseStatus(
     absl::optional<double> status);
 
-// Converts a given text-fragments-polyfill library error |outcome| to its
+// Converts a given text-fragments-polyfill library error `outcome` to its
 // LinkGenerationError counterpart.
 shared_highlighting::LinkGenerationError OutcomeToError(
     LinkGenerationOutcome outcome);
 
-// Returns YES if |latency| exceeds the timeout limit for link generation.
+// Returns YES if `latency` exceeds the timeout limit for link generation.
 BOOL IsLinkGenerationTimeout(base::TimeDelta latency);
 
 }  // namespace link_to_text

@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -124,6 +124,8 @@ class ProjectorCaptureModeIntegrationHelper {
   // Sets up the projector feature. Must be called after `AshTestBase::SetUp()`
   // has been called.
   void SetUp();
+
+  bool CanStartProjectorSession() const;
 
   // Starts a new projector capture session.
   void StartProjectorModeSession();

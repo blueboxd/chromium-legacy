@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,13 +8,16 @@
 #include <string>
 
 #include "ash/components/settings/timezone_settings.h"
+#include "ash/constants/ash_pref_names.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
 #include "ash/style/ash_color_provider.h"
+#include "ash/style/color_util.h"
 #include "ash/system/time/date_helper.h"
 #include "base/i18n/time_formatting.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/time/time.h"
+#include "components/prefs/pref_service.h"
 #include "components/user_manager/user_type.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/icu/source/i18n/unicode/gregocal.h"
@@ -139,6 +142,22 @@ std::u16string GetMonthNameAndYear(const base::Time date) {
       DateHelper::GetInstance()->month_name_year_formatter(), date);
 }
 
+std::u16string GetTwelveHourClockHours(const base::Time date) {
+  return calendar_utils::FormatDate(
+      DateHelper::GetInstance()->twelve_hour_clock_hours_formatter(), date);
+}
+
+std::u16string GetTwentyFourHourClockHours(const base::Time date) {
+  return calendar_utils::FormatDate(
+      DateHelper::GetInstance()->twenty_four_hour_clock_hours_formatter(),
+      date);
+}
+
+std::u16string GetMinutes(const base::Time date) {
+  return calendar_utils::FormatDate(
+      DateHelper::GetInstance()->minutes_formatter(), date);
+}
+
 std::u16string FormatTwelveHourClockTimeInterval(const base::Time& start_time,
                                                  const base::Time& end_time) {
   return calendar_utils::FormatInterval(
@@ -196,7 +215,7 @@ SkColor GetDisabledTextColor() {
   const ash::AshColorProvider* color_provider = ash::AshColorProvider::Get();
   const SkColor primary_color = color_provider->GetContentLayerColor(
       AshColorProvider::ContentLayerType::kTextColorPrimary);
-  return color_provider->GetDisabledColor(primary_color);
+  return ColorUtil::GetDisabledColor(primary_color);
 }
 
 base::Time GetFirstDayOfMonth(const base::Time& date) {
@@ -233,11 +252,21 @@ ASH_EXPORT base::Time GetStartOfNextMonthUTC(base::Time date) {
   return GetStartOfMonthUTC(GetStartOfMonthUTC(date) + base::Days(33));
 }
 
+ASH_EXPORT bool ShouldFetchEvents() {
+  return IsActiveUser() && !IsDisabledByAdmin();
+}
+
 ASH_EXPORT bool IsActiveUser() {
   absl::optional<user_manager::UserType> user_type =
       Shell::Get()->session_controller()->GetUserType();
   return (user_type && *user_type == user_manager::USER_TYPE_REGULAR) &&
          !Shell::Get()->session_controller()->IsUserSessionBlocked();
+}
+
+ASH_EXPORT bool IsDisabledByAdmin() {
+  auto* pref_service =
+      Shell::Get()->session_controller()->GetActivePrefService();
+  return !pref_service->GetBoolean(prefs::kCalendarIntegrationEnabled);
 }
 
 base::TimeDelta GetTimeDifference(base::Time date) {

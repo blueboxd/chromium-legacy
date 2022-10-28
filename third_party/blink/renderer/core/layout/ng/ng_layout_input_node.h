@@ -16,6 +16,7 @@
 #include "third_party/blink/renderer/core/layout/ng/list/layout_ng_outside_list_marker.h"
 #include "third_party/blink/renderer/platform/geometry/layout_unit.h"
 #include "third_party/blink/renderer/platform/text/writing_mode.h"
+#include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
 
 namespace blink {
 
@@ -96,6 +97,7 @@ class CORE_EXPORT NGLayoutInputNode {
     return box_->CanContainFixedPositionObjects();
   }
   bool IsBody() const { return IsBlock() && box_->IsBody(); }
+  bool IsView() const { return IsBlock() && box_->IsLayoutNGView(); }
   bool IsDocumentElement() const { return box_->IsDocumentElement(); }
   bool IsFlexItem() const { return IsBlock() && box_->IsFlexItemIncludingNG(); }
   bool IsFlexibleBox() const {
@@ -184,9 +186,17 @@ class CORE_EXPORT NGLayoutInputNode {
     return box_->GetNGPaginationBreakability() == LayoutBox::kForbidBreaks;
   }
 
+  AtomicString PageName() const {
+    return IsBlock() ? Style().Page() : AtomicString();
+  }
+
   bool IsScrollContainer() const {
     return IsBlock() && box_->IsScrollContainer();
   }
+
+  // Return true if this is the document root and it is paginated. A paginated
+  // root establishes a fragmentation context.
+  bool IsPaginatedRoot() const;
 
   bool CreatesNewFormattingContext() const {
     return IsBlock() && box_->CreatesNewFormattingContext();

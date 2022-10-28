@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,9 +13,9 @@ namespace chromecast {
 // static
 std::unique_ptr<StreamingController> StreamingControllerBase::Create(
     std::unique_ptr<cast_api_bindings::MessagePort> message_port,
-    CastWebContents* cast_web_contents) {
+    content::WebContents* web_contents) {
   return std::make_unique<StreamingControllerRemoting>(std::move(message_port),
-                                                       cast_web_contents);
+                                                       web_contents);
 }
 
 }  // namespace chromecast

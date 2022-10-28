@@ -1,14 +1,16 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "ash/session/session_controller_impl.h"
 
-#include <algorithm>
 #include <memory>
 #include <string>
 #include <utility>
 
+#include "ash/constants/ash_features.h"
+#include "ash/glanceables/glanceables_controller.h"
+#include "ash/glanceables/signout_screenshot_handler.h"
 #include "ash/metrics/user_metrics_recorder.h"
 #include "ash/public/cpp/session/session_activation_observer.h"
 #include "ash/public/cpp/session/session_controller_client.h"
@@ -20,7 +22,7 @@
 #include "ash/session/teleport_warning_dialog.h"
 #include "ash/shell.h"
 #include "ash/system/power/power_event_observer.h"
-#include "ash/system/screen_security/screen_switch_check_controller.h"
+#include "ash/system/privacy/screen_switch_check_controller.h"
 #include "ash/wm/lock_state_controller.h"
 #include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/window_util.h"
@@ -28,6 +30,7 @@
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/logging.h"
+#include "base/ranges/algorithm.h"
 #include "components/account_id/account_id.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
@@ -39,7 +42,10 @@ using session_manager::SessionState;
 namespace ash {
 
 SessionControllerImpl::SessionControllerImpl()
-    : fullscreen_controller_(std::make_unique<FullscreenController>(this)) {}
+    : fullscreen_controller_(std::make_unique<FullscreenController>(this)) {
+  if (features::AreGlanceablesEnabled())
+    signout_screenshot_handler_ = std::make_unique<SignoutScreenshotHandler>();
+}
 
 SessionControllerImpl::~SessionControllerImpl() {
   // Abort pending start lock request.
@@ -132,11 +138,10 @@ const UserSession* SessionControllerImpl::GetUserSession(
 
 const UserSession* SessionControllerImpl::GetUserSessionByAccountId(
     const AccountId& account_id) const {
-  auto it =
-      std::find_if(user_sessions_.begin(), user_sessions_.end(),
-                   [&account_id](const std::unique_ptr<UserSession>& session) {
-                     return session->user_info.account_id == account_id;
-                   });
+  auto it = base::ranges::find(user_sessions_, account_id,
+                               [](const std::unique_ptr<UserSession>& session) {
+                                 return session->user_info.account_id;
+                               });
   if (it == user_sessions_.end())
     return nullptr;
 
@@ -144,10 +149,8 @@ const UserSession* SessionControllerImpl::GetUserSessionByAccountId(
 }
 
 const UserSession* SessionControllerImpl::GetPrimaryUserSession() const {
-  auto it = std::find_if(user_sessions_.begin(), user_sessions_.end(),
-                         [this](const std::unique_ptr<UserSession>& session) {
-                           return session->session_id == primary_session_id_;
-                         });
+  auto it = base::ranges::find(user_sessions_, primary_session_id_,
+                               &UserSession::session_id);
   if (it == user_sessions_.end())
     return nullptr;
 
@@ -214,8 +217,37 @@ void SessionControllerImpl::HideLockScreen() {
 }
 
 void SessionControllerImpl::RequestSignOut() {
+  if (features::AreGlanceablesEnabled() &&
+      Shell::Get()->glanceables_controller()->ShouldTakeSignoutScreenshot()) {
+    DCHECK(IsActiveUserSessionStarted());
+    signout_screenshot_handler_->TakeScreenshot(
+        base::BindOnce(&SessionControllerImpl::ProceedWithSignOut,
+                       weak_ptr_factory_.GetWeakPtr()));
+    return;
+  }
+  ProceedWithSignOut();
+}
+
+void SessionControllerImpl::ProceedWithSignOut() {
   if (client_)
     client_->RequestSignOut();
+}
+
+void SessionControllerImpl::RequestRestartForUpdate() {
+  if (features::AreGlanceablesEnabled() &&
+      Shell::Get()->glanceables_controller()->ShouldTakeSignoutScreenshot()) {
+    DCHECK(IsActiveUserSessionStarted());
+    signout_screenshot_handler_->TakeScreenshot(
+        base::BindOnce(&SessionControllerImpl::ProceedWithRestartToUpdate,
+                       weak_ptr_factory_.GetWeakPtr()));
+    return;
+  }
+  ProceedWithRestartToUpdate();
+}
+
+void SessionControllerImpl::ProceedWithRestartToUpdate() {
+  if (client_)
+    client_->RequestRestartForUpdate();
 }
 
 void SessionControllerImpl::AttemptRestartChrome() {
@@ -292,11 +324,8 @@ void SessionControllerImpl::SetSessionInfo(const SessionInfo& info) {
 }
 
 void SessionControllerImpl::UpdateUserSession(const UserSession& user_session) {
-  auto it = std::find_if(
-      user_sessions_.begin(), user_sessions_.end(),
-      [&user_session](const std::unique_ptr<UserSession>& session) {
-        return session->session_id == user_session.session_id;
-      });
+  auto it = base::ranges::find(user_sessions_, user_session.session_id,
+                               &UserSession::session_id);
   if (it == user_sessions_.end()) {
     AddUserSession(user_session);
     return;
@@ -320,11 +349,11 @@ void SessionControllerImpl::SetUserSessionOrder(
   // Adjusts |user_sessions_| to match the given order.
   std::vector<std::unique_ptr<UserSession>> sessions;
   for (const auto& session_id : user_session_order) {
-    auto it =
-        std::find_if(user_sessions_.begin(), user_sessions_.end(),
-                     [session_id](const std::unique_ptr<UserSession>& session) {
-                       return session && session->session_id == session_id;
-                     });
+    auto it = base::ranges::find_if(
+        user_sessions_,
+        [session_id](const std::unique_ptr<UserSession>& session) {
+          return session && session->session_id == session_id;
+        });
     if (it == user_sessions_.end()) {
       LOG(ERROR) << "Unknown session id =" << session_id;
       continue;
@@ -453,6 +482,11 @@ void SessionControllerImpl::ClearUserSessionsForTest() {
   last_active_user_prefs_ = nullptr;
   active_session_id_ = 0u;
   primary_session_id_ = 0u;
+}
+
+void SessionControllerImpl::SetSignoutScreenshotHandlerForTest(
+    std::unique_ptr<SignoutScreenshotHandler> handler) {
+  signout_screenshot_handler_ = std::move(handler);
 }
 
 void SessionControllerImpl::SetIsDemoSession() {

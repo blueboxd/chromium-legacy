@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -88,6 +88,7 @@ constexpr struct GamepadInfo {
     {0x045e, 0x0719, kXInputTypeXbox360},
     {0x045e, 0x0b00, kXInputTypeXboxOne},
     {0x045e, 0x0b05, kXInputTypeNone},
+    {0x045e, 0x0b06, kXInputTypeXboxOne},
     {0x045e, 0x0b0a, kXInputTypeXboxOne},
     {0x045e, 0x0b0c, kXInputTypeNone},
     {0x045e, 0x0b12, kXInputTypeXboxOne},

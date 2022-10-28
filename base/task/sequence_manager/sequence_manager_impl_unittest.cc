@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -260,6 +260,8 @@ class FixtureWithMockMessagePump : public Fixture {
       : call_counting_clock_(&mock_clock_), wake_up_type_(wake_up_type) {
     if (wake_up_type_ == WakeUpType::kAlign)
       feature_list_.InitAndEnableFeature(kAlignWakeUps);
+    else
+      feature_list_.InitAndDisableFeature(kAlignWakeUps);
     // A null clock triggers some assertions.
     mock_clock_.Advance(Milliseconds(1));
 

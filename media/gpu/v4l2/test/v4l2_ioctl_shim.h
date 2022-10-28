@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -30,7 +30,7 @@ class MmapedBuffer : public base::RefCounted<MmapedBuffer> {
     const size_t length;
     size_t bytes_used;
 
-    MmapedPlane(void* start, size_t len) : start_addr(start), length(len){};
+    MmapedPlane(void* start, size_t len) : start_addr(start), length(len) {}
 
     void CopyIn(const uint8_t* frame_data, size_t frame_size) {
       LOG_ASSERT(frame_size < length)
@@ -212,6 +212,11 @@ class V4L2IoctlShim {
   // Allocates buffers for the given |queue|.
   [[nodiscard]] bool QueryAndMmapQueueBuffers(
       std::unique_ptr<V4L2Queue>& queue) const;
+
+  enum class DeviceType {
+    kDecoder,
+    kMedia,
+  };
 
  private:
   // Queries |v4l_fd| to see if it can use the specified |fourcc| format

@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -62,10 +62,11 @@ class WebViewPermissionHelper {
                         PermissionResponseCallback callback,
                         bool allowed_by_default);
 
-  static WebViewPermissionHelper* FromWebContents(
-      content::WebContents* web_contents);
-  static WebViewPermissionHelper* FromFrameID(int render_process_id,
-                                              int render_frame_id);
+  static WebViewPermissionHelper* FromRenderFrameHost(
+      content::RenderFrameHost* rfh);
+  static WebViewPermissionHelper* FromRenderFrameHostId(
+      const content::GlobalRenderFrameHostId& rfh_id);
+
   void RequestMediaAccessPermission(content::WebContents* source,
                                     const content::MediaStreamRequest& request,
                                     content::MediaResponseCallback callback);

@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -14,6 +14,7 @@
 
 namespace {
 const char kIdpOriginKey[] = "idp-origin";
+const char kIdpSigninStatusKey[] = "idp-signin-status";
 }  // namespace
 
 FederatedIdentitySharingPermissionContext::
@@ -28,16 +29,47 @@ FederatedIdentitySharingPermissionContext::
     ~FederatedIdentitySharingPermissionContext() = default;
 
 bool FederatedIdentitySharingPermissionContext::HasSharingPermission(
-    const url::Origin& relying_party,
+    const url::Origin& relying_party_requester,
+    const url::Origin& relying_party_embedder,
     const url::Origin& identity_provider,
     const std::string& account_id) {
-  return HasPermission(relying_party, relying_party, identity_provider,
-                       account_id);
+  return HasPermission(relying_party_requester, relying_party_embedder,
+                       identity_provider, account_id);
 }
 
 void FederatedIdentitySharingPermissionContext::GrantSharingPermission(
-    const url::Origin& relying_party,
+    const url::Origin& relying_party_requester,
+    const url::Origin& relying_party_embedder,
     const url::Origin& identity_provider,
     const std::string& account_id) {
-  GrantPermission(relying_party, relying_party, identity_provider, account_id);
+  GrantPermission(relying_party_requester, relying_party_embedder,
+                  identity_provider, account_id);
+}
+
+absl::optional<bool>
+FederatedIdentitySharingPermissionContext::GetIdpSigninStatus(
+    const url::Origin& idp_origin) {
+  auto granted_object = GetGrantedObject(idp_origin, idp_origin.Serialize());
+
+  if (!granted_object)
+    return absl::nullopt;
+
+  return granted_object->value.GetDict().FindBool(kIdpSigninStatusKey);
+}
+
+void FederatedIdentitySharingPermissionContext::SetIdpSigninStatus(
+    const url::Origin& idp_origin,
+    bool idp_signin_status) {
+  auto granted_object = GetGrantedObject(idp_origin, idp_origin.Serialize());
+  if (granted_object) {
+    base::Value new_object = granted_object->value.Clone();
+    new_object.GetDict().Set(kIdpSigninStatusKey, idp_signin_status);
+    UpdateObjectPermission(idp_origin, granted_object->value,
+                           std::move(new_object));
+  } else {
+    base::Value::Dict new_object;
+    new_object.Set(kIdpOriginKey, idp_origin.Serialize());
+    new_object.Set(kIdpSigninStatusKey, base::Value(idp_signin_status));
+    GrantObjectPermission(idp_origin, base::Value(std::move(new_object)));
+  }
 }

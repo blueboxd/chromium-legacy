@@ -522,9 +522,9 @@ bool DocumentTransitionStyleTracker::Start() {
 
   if (found_new_tags) {
     VectorOf<std::pair<AtomicString, int>> new_tag_pairs;
-    int next_index = 0;
+    int next_tag_index = 0;
     for (const auto& root_tag : AllRootTags())
-      new_tag_pairs.push_back(std::make_pair(root_tag, ++next_index));
+      new_tag_pairs.push_back(std::make_pair(root_tag, ++next_tag_index));
     for (auto& [tag, data] : element_data_map_)
       new_tag_pairs.push_back(std::make_pair(tag, data->element_index));
 
@@ -720,7 +720,12 @@ void DocumentTransitionStyleTracker::RunPostPrePaintSteps() {
       continue;
     }
 
-    const float device_pixel_ratio = document_->DevicePixelRatio();
+    // Use the document element's effective zoom, since that's what the parent
+    // effective zoom would be.
+    const float device_pixel_ratio = document_->documentElement()
+                                         ->GetLayoutObject()
+                                         ->StyleRef()
+                                         .EffectiveZoom();
     TransformationMatrix viewport_matrix =
         layout_object->LocalToAbsoluteTransform();
     viewport_matrix.Zoom(1.0 / device_pixel_ratio);
@@ -1024,7 +1029,7 @@ const String& DocumentTransitionStyleTracker::UAStyleSheet() {
                            const String& tag,
                            const TransformationMatrix& source_matrix,
                            const LayoutSize& source_size) {
-    builder.Append("@keyframes page-transition-container-anim-");
+    builder.Append("@keyframes -ua-page-transition-container-anim-");
     builder.Append(tag);
     builder.AppendFormat(
         R"CSS({
@@ -1042,7 +1047,7 @@ const String& DocumentTransitionStyleTracker::UAStyleSheet() {
         source_size.Width().ToFloat(), source_size.Height().ToFloat());
 
     append_selector("html::page-transition-container", tag);
-    builder.Append("{ animation: page-transition-container-anim-");
+    builder.Append("{ animation: -ua-page-transition-container-anim-");
     builder.Append(tag);
     builder.Append(" 0.25s both }");
 
@@ -1104,7 +1109,12 @@ const String& DocumentTransitionStyleTracker::UAStyleSheet() {
       add_plus_lighter(root_tag);
   }
 
-  float device_pixel_ratio = document_->DevicePixelRatio();
+  // Use the document element's effective zoom, since that's what the parent
+  // effective zoom would be.
+  float device_pixel_ratio = document_->documentElement()
+                                 ->GetLayoutObject()
+                                 ->StyleRef()
+                                 .EffectiveZoom();
   for (auto& entry : element_data_map_) {
     const auto& document_transition_tag = entry.key.GetString();
     auto& element_data = entry.value;

@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -94,11 +94,15 @@ void TrainingDataCollectorImpl::OnModelMetadataUpdated() {
 }
 
 void TrainingDataCollectorImpl::OnServiceInitialized() {
-  if (!SegmentationUkmHelper::GetInstance()->allowed_segment_ids().empty()) {
-    segment_info_database_->GetAllSegmentInfo(
-        base::BindOnce(&TrainingDataCollectorImpl::OnGetSegmentsInfoList,
-                       weak_ptr_factory_.GetWeakPtr()));
+  base::flat_set<SegmentId> segment_ids =
+      SegmentationUkmHelper::GetInstance()->allowed_segment_ids();
+  if (segment_ids.empty()) {
+    return;
   }
+  segment_info_database_->GetSegmentInfoForSegments(
+      segment_ids,
+      base::BindOnce(&TrainingDataCollectorImpl::OnGetSegmentsInfoList,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 void TrainingDataCollectorImpl::OnGetSegmentsInfoList(
@@ -106,15 +110,14 @@ void TrainingDataCollectorImpl::OnGetSegmentsInfoList(
   histogram_signal_handler_->AddObserver(this);
 
   DCHECK(segments);
-  const base::flat_set<SegmentId>& allowed_ids =
-      SegmentationUkmHelper::GetInstance()->allowed_segment_ids();
   for (const auto& segment : *segments) {
+    const proto::SegmentInfo& segment_info = segment.second;
+
     // Skip the segment if it is not in allowed list.
-    if (!allowed_ids.contains(static_cast<int>(segment.first))) {
+    if (!SegmentationUkmHelper::GetInstance()->CanUploadTensors(segment_info)) {
       continue;
     }
 
-    const proto::SegmentInfo& segment_info = segment.second;
     // Validate segment info.
     auto validation_result = metadata_utils::ValidateSegmentInfo(segment_info);
     if (validation_result !=

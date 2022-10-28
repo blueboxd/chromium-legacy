@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -57,22 +57,22 @@ void DeviceLocalAccountExtensionTracker::UpdateFromStore() {
   // TODO(binjin): Use two policy handlers here after
   // ExtensionManagementPolicyHandler is introduced.
   extensions::ExtensionInstallForceListPolicyHandler policy_handler;
-  if (!policy_handler.CheckPolicySettings(policy_map, NULL))
+  if (!policy_handler.CheckPolicySettings(policy_map, nullptr))
     return;
 
   PrefValueMap pref_value_map;
   policy_handler.ApplyPolicySettings(policy_map, &pref_value_map);
 
-  const base::Value* value = NULL;
-  const base::DictionaryValue* dict = NULL;
+  const base::Value* value = nullptr;
+  const base::DictionaryValue* dict = nullptr;
   if (!pref_value_map.GetValue(extensions::pref_names::kInstallForceList,
                                &value) ||
       !value->GetAsDictionary(&dict)) {
     return;
   }
 
-  for (base::DictionaryValue::Iterator it(*dict); !it.IsAtEnd(); it.Advance()) {
-    PolicyNamespace ns(POLICY_DOMAIN_EXTENSIONS, it.key());
+  for (const auto item : dict->GetDict()) {
+    PolicyNamespace ns(POLICY_DOMAIN_EXTENSIONS, item.first);
     if (schema_registry_->schema_map()->GetSchema(ns)) {
       // Important detail: Don't register the component again if it already
       // has a schema! If the session already started for this public session

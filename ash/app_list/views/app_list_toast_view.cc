@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -257,7 +257,7 @@ void AppListToastView::SetButton(
   toast_button_ =
       AddChildView(std::make_unique<AppListToastView::ToastPillButton>(
           view_delegate_, button_callback, button_text,
-          PillButton::Type::kIconless,
+          PillButton::Type::kDefaultWithoutIcon,
           /*icon=*/nullptr));
   toast_button_->SetBorder(views::NullBorder());
 }

@@ -41,6 +41,7 @@
 #include "third_party/blink/renderer/core/html/plugin_document.h"
 #include "third_party/blink/renderer/core/input/event_handler.h"
 #include "third_party/blink/renderer/core/inspector/inspector_trace_events.h"
+#include "third_party/blink/renderer/core/layout/deferred_shaping_controller.h"
 #include "third_party/blink/renderer/core/layout/geometry/transform_state.h"
 #include "third_party/blink/renderer/core/layout/hit_test_result.h"
 #include "third_party/blink/renderer/core/layout/layout_counter.h"
@@ -102,6 +103,9 @@ class HitTestLatencyRecorder {
 LayoutView::LayoutView(ContainerNode* document)
     : LayoutBlockFlow(document),
       frame_view_(To<Document>(document)->View()),
+      deferred_shaping_controller_(
+          MakeGarbageCollected<DeferredShapingController>(
+              *To<Document>(document))),
       layout_state_(nullptr),
       layout_quote_head_(nullptr),
       layout_counter_count_(0),
@@ -129,6 +133,7 @@ LayoutView::~LayoutView() = default;
 
 void LayoutView::Trace(Visitor* visitor) const {
   visitor->Trace(frame_view_);
+  visitor->Trace(deferred_shaping_controller_);
   visitor->Trace(fragmentation_context_);
   visitor->Trace(layout_quote_head_);
   visitor->Trace(svg_text_descendants_);
@@ -344,7 +349,8 @@ void LayoutView::UpdateLayout() {
   }
 
   if (PageLogicalHeight() && ShouldUsePrintingLayout()) {
-    named_pages_mapper_ = std::make_unique<NamedPagesMapper>();
+    if (!RuntimeEnabledFeatures::LayoutNGPrintingEnabled())
+      named_pages_mapper_ = std::make_unique<NamedPagesMapper>();
     intrinsic_logical_widths_ = LogicalWidth();
     if (!fragmentation_context_) {
       fragmentation_context_ =
@@ -717,6 +723,12 @@ void LayoutView::CalculateScrollbarModes(
     v_mode = mojom::blink::ScrollbarMode::kAlwaysOn;
 
 #undef RETURN_SCROLLBAR_MODE
+}
+
+AtomicString LayoutView::NamedPageAtIndex(wtf_size_t page_index) const {
+  if (named_pages_mapper_)
+    return named_pages_mapper_->NamedPageAtIndex(page_index);
+  return AtomicString();
 }
 
 PhysicalRect LayoutView::DocumentRect() const {

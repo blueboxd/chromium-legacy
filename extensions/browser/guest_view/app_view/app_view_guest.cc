@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -51,7 +51,7 @@ struct ResponseInfo {
         app_view_guest(app_view_guest),
         callback(std::move(callback)) {}
 
-  ~ResponseInfo() {}
+  ~ResponseInfo() = default;
 };
 
 using PendingResponseMap = std::map<int, std::unique_ptr<ResponseInfo>>;
@@ -96,7 +96,7 @@ bool AppViewGuest::CompletePendingRequest(
       url, response_info->guest_extension.get(),
       std::move(response_info->callback));
 
-  response_map->erase(guest_instance_id);
+  response_map->erase(it);
   return true;
 }
 
@@ -277,11 +277,10 @@ void AppViewGuest::LaunchAppAndFireEvent(
       std::make_unique<ResponseInfo>(extension, weak_ptr_factory_.GetWeakPtr(),
                                      std::move(callback))));
 
-  std::unique_ptr<base::DictionaryValue> embed_request(
-      new base::DictionaryValue());
-  embed_request->SetIntKey(appview::kGuestInstanceID, guest_instance_id());
-  embed_request->SetStringKey(appview::kEmbedderID, owner_host());
-  embed_request->SetKey(appview::kData, base::Value(std::move(data)));
+  base::Value::Dict embed_request;
+  embed_request.Set(appview::kGuestInstanceID, guest_instance_id());
+  embed_request.Set(appview::kEmbedderID, owner_host());
+  embed_request.Set(appview::kData, std::move(data));
   AppRuntimeEventRouter::DispatchOnEmbedRequestedEvent(
       browser_context(), std::move(embed_request), extension);
 }

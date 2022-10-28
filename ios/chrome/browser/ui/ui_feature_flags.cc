@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -77,9 +77,6 @@ const base::Feature kEnableShortenedPasswordAutoFillInstruction{
     "EnableShortenedPasswordAutoFillInstruction",
     base::FEATURE_ENABLED_BY_DEFAULT};
 
-const base::Feature kAddSettingForDefaultPageMode{
-    "DefaultRequestedMode", base::FEATURE_DISABLED_BY_DEFAULT};
-
 const base::Feature kUseSFSymbols{"UseSFSymbols",
                                   base::FEATURE_DISABLED_BY_DEFAULT};
 
@@ -97,6 +94,3 @@ const base::Feature kMapsExperienceKit{"MapsExperienceKit",
 
 const base::Feature kEnableMiniMap{"EnableMiniMap",
                                    base::FEATURE_DISABLED_BY_DEFAULT};
-
-const base::Feature kSendVariationDataWithSearchByImage{
-    "SendVariationDataWithSearchByImage", base::FEATURE_ENABLED_BY_DEFAULT};

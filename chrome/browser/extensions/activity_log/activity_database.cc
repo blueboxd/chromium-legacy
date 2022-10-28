@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -151,9 +151,8 @@ sql::Database* ActivityDatabase::GetSqlConnection() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (valid_db_) {
     return &db_;
-  } else {
-    return NULL;
   }
+  return nullptr;
 }
 
 void ActivityDatabase::Close() {

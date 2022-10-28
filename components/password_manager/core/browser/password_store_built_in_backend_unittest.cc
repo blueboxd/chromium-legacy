@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -71,13 +71,6 @@ constexpr PasswordFormData kTestCredentials[] = {
 constexpr auto kLatencyDelta = base::Milliseconds(123u);
 constexpr auto kStart = base::Time::FromTimeT(1000);
 constexpr auto kEnd = base::Time::FromTimeT(2000);
-
-class MockPasswordStoreConsumer : public PasswordStoreConsumer {
-  MOCK_METHOD(void,
-              OnGetPasswordStoreResults,
-              (std::vector<std::unique_ptr<PasswordForm>> results),
-              (override));
-};
 
 class MockPasswordStoreBackendTester {
  public:
@@ -293,7 +286,6 @@ TEST_F(PasswordStoreBuiltInBackendTest, GetAllLoginsAsync) {
   RunUntilIdle();
 
   // Verify that the store returns all test credentials.
-  MockPasswordStoreConsumer mock_consumer;
   std::vector<std::unique_ptr<PasswordForm>> expected_results;
   for (const auto& credential : all_credentials)
     expected_results.push_back(std::make_unique<PasswordForm>(*credential));

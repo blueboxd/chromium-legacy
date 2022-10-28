@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -142,8 +142,7 @@ class BrowserTabStripController::TabContextMenuContents
   bool IsCommandIdAlerted(int command_id) const override {
     return command_id == TabStripModel::CommandAddToNewGroup &&
            controller_->GetBrowser()->window()->IsFeaturePromoActive(
-               feature_engagement::kIPHDesktopTabGroupsNewGroupFeature,
-               /* include_continued_promos =*/true);
+               feature_engagement::kIPHDesktopTabGroupsNewGroupFeature);
   }
 
   bool GetAcceleratorForCommandId(int command_id,

@@ -20,6 +20,7 @@
 #include "third_party/blink/renderer/core/style/style_overflow_clip_margin.h"
 #include "third_party/blink/renderer/platform/graphics/overlay_scrollbar_clip_behavior.h"
 #include "third_party/blink/renderer/platform/wtf/casting.h"
+#include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
 
 namespace blink {
 
@@ -93,14 +94,14 @@ class CORE_EXPORT NGPhysicalBoxFragment final : public NGPhysicalFragment {
   // from deleted nodes or LayoutObjects. Also see |PostLayoutChildren()|.
   base::span<const NGLink> Children() const {
     DCHECK(children_valid_);
-    return base::make_span(children_, const_num_children_);
+    return base::make_span(children_);
   }
 
   // Similar to |Children()| but all children are the latest generation of
   // post-layout, and therefore all descendants are safe.
   NGPhysicalFragment::PostLayoutChildLinkList PostLayoutChildren() const {
     DCHECK(children_valid_);
-    return PostLayoutChildLinkList(const_num_children_, children_);
+    return PostLayoutChildLinkList(children_.size(), children_.data());
   }
 
   // This exposes a mutable part of the fragment for |NGOutOfFlowLayoutPart|.
@@ -124,7 +125,7 @@ class CORE_EXPORT NGPhysicalBoxFragment final : public NGPhysicalFragment {
 
   MutableChildrenForOutOfFlow GetMutableChildrenForOutOfFlow() const {
     DCHECK(children_valid_);
-    return MutableChildrenForOutOfFlow(children_, const_num_children_);
+    return MutableChildrenForOutOfFlow(children_.data(), children_.size());
   }
 
   // Returns |NGFragmentItems| if this fragment has one.
@@ -133,9 +134,9 @@ class CORE_EXPORT NGPhysicalBoxFragment final : public NGPhysicalFragment {
     return const_has_fragment_items_ ? ComputeItemsAddress() : nullptr;
   }
 
-  absl::optional<LayoutUnit> Baseline() const {
-    if (has_baseline_)
-      return baseline_;
+  absl::optional<LayoutUnit> FirstBaseline() const {
+    if (has_first_baseline_)
+      return first_baseline_;
     return absl::nullopt;
   }
 
@@ -143,6 +144,10 @@ class CORE_EXPORT NGPhysicalBoxFragment final : public NGPhysicalFragment {
     if (has_last_baseline_)
       return last_baseline_;
     return absl::nullopt;
+  }
+
+  bool UseLastBaselineForInlineBaseline() const {
+    return use_last_baseline_for_inline_baseline_;
   }
 
   LogicalRect TableGridRect() const {
@@ -183,6 +188,15 @@ class CORE_EXPORT NGPhysicalBoxFragment final : public NGPhysicalFragment {
     return const_has_rare_data_
                ? &ComputeRareDataAddress()->table_section_row_offsets
                : nullptr;
+  }
+
+  // The name of the page (if any) to which this fragment belongs. The page name
+  // is propagated all the way up to the page fragment, which is needed in order
+  // to support e.g. page orientation. See https://drafts.csswg.org/css-page-3
+  AtomicString PageName() const {
+    if (!const_has_rare_data_)
+      return AtomicString();
+    return ComputeRareDataAddress()->page_name;
   }
 
   // Returns the layout-overflow for this fragment.
@@ -299,11 +313,11 @@ class CORE_EXPORT NGPhysicalBoxFragment final : public NGPhysicalFragment {
     return static_cast<NGInkOverflow::Type>(ink_overflow_type_);
   }
   bool IsInkOverflowComputed() const {
-    return InkOverflowType() != NGInkOverflow::kNotSet &&
-           InkOverflowType() != NGInkOverflow::kInvalidated;
+    return InkOverflowType() != NGInkOverflow::Type::kNotSet &&
+           InkOverflowType() != NGInkOverflow::Type::kInvalidated;
   }
   bool HasInkOverflow() const {
-    return InkOverflowType() != NGInkOverflow::kNone;
+    return InkOverflowType() != NGInkOverflow::Type::kNone;
   }
 
   // 3 types of ink overflows:
@@ -435,8 +449,7 @@ class CORE_EXPORT NGPhysicalBoxFragment final : public NGPhysicalFragment {
     }
     base::span<NGLink> Children() const {
       DCHECK(fragment_.children_valid_);
-      return base::make_span(fragment_.children_,
-                             fragment_.const_num_children_);
+      return base::make_span(fragment_.children_);
     }
 
    private:
@@ -468,8 +481,7 @@ class CORE_EXPORT NGPhysicalBoxFragment final : public NGPhysicalFragment {
   void Dispose();
 
  private:
-  static size_t AdditionalByteSize(wtf_size_t num_fragment_items,
-                                   wtf_size_t num_children,
+  static size_t AdditionalByteSize(bool has_fragment_items,
                                    bool has_layout_overflow,
                                    bool has_borders,
                                    bool has_padding,
@@ -500,27 +512,27 @@ class CORE_EXPORT NGPhysicalBoxFragment final : public NGPhysicalFragment {
     // Table-section rare-data.
     wtf_size_t table_section_start_row_index;
     Vector<LayoutUnit> table_section_row_offsets;
+
+    // Pagination data.
+    AtomicString page_name;
   };
 
   const NGFragmentItems* ComputeItemsAddress() const {
     DCHECK(const_has_fragment_items_ || has_layout_overflow_ || has_borders_ ||
            has_padding_ || has_inflow_bounds_ || const_has_rare_data_);
-    const NGLink* children_end = children_ + const_num_children_;
-    return reinterpret_cast<const NGFragmentItems*>(
-        base::bits::AlignUp(reinterpret_cast<const uint8_t*>(children_end),
-                            alignof(NGFragmentItems)));
+    return reinterpret_cast<const NGFragmentItems*>(base::bits::AlignUp(
+        reinterpret_cast<const uint8_t*>(this + 1), alignof(NGFragmentItems)));
   }
 
   const PhysicalRect* ComputeLayoutOverflowAddress() const {
     DCHECK(has_layout_overflow_ || has_borders_ || has_padding_ ||
            has_inflow_bounds_ || const_has_rare_data_);
     const NGFragmentItems* items = ComputeItemsAddress();
-    const uint8_t* uint8_t_items = reinterpret_cast<const uint8_t*>(items);
-    if (const_has_fragment_items_)
-      uint8_t_items += items->ByteSize();
-
+    const uint8_t* unaligned_layout_overflow =
+        const_has_fragment_items_ ? reinterpret_cast<const uint8_t*>(items + 1)
+                                  : reinterpret_cast<const uint8_t*>(items);
     return reinterpret_cast<const PhysicalRect*>(
-        base::bits::AlignUp(uint8_t_items, alignof(PhysicalRect)));
+        base::bits::AlignUp(unaligned_layout_overflow, alignof(PhysicalRect)));
   }
 
   const NGPhysicalBoxStrut* ComputeBordersAddress() const {
@@ -567,6 +579,9 @@ class CORE_EXPORT NGPhysicalBoxFragment final : public NGPhysicalFragment {
   }
 
   void SetInkOverflow(const PhysicalRect& self, const PhysicalRect& contents);
+  void SetInkOverflowType(NGInkOverflow::Type type) {
+    ink_overflow_type_ = static_cast<unsigned>(type);
+  }
   PhysicalRect RecalcContentsInkOverflow();
   PhysicalRect ComputeSelfInkOverflow() const;
 
@@ -612,12 +627,10 @@ class CORE_EXPORT NGPhysicalBoxFragment final : public NGPhysicalFragment {
   unsigned has_descendants_for_table_part_ : 1;
   unsigned is_fragmentation_context_root_ : 1;
 
-  const wtf_size_t const_num_children_;
-
-  LayoutUnit baseline_;
+  LayoutUnit first_baseline_;
   LayoutUnit last_baseline_;
   NGInkOverflow ink_overflow_;
-  NGLink children_[];
+  HeapVector<NGLink> children_;
   // fragment_items, borders, padding, and rare_data are after |children_| if
   // they are not empty/initial.
 };

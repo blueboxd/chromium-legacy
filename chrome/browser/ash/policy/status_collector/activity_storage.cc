@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -252,7 +252,7 @@ void ActivityStorage::ForEachActivityPeriodFromPref(
     const base::RepeatingCallback<
         void(const int64_t, const int64_t, const std::string&)>& f) const {
   const base::Value::Dict& stored_activity_periods =
-      pref_service_->GetValueDict(pref_name_);
+      pref_service_->GetDict(pref_name_);
   for (const auto item : stored_activity_periods) {
     int64_t timestamp;
     std::string activity_id;

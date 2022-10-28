@@ -41,7 +41,6 @@ using OperationResult = storage::SharedStorageManager::OperationResult;
 using GetResult = storage::SharedStorageManager::GetResult;
 
 SharedStorageURNMappingResult CalculateSharedStorageURNMappingResult(
-    bool script_execution_succeeded,
     const url::Origin& shared_storage_origin,
     std::vector<blink::mojom::SharedStorageUrlWithMetadataPtr>
         urls_with_metadata,
@@ -51,13 +50,8 @@ SharedStorageURNMappingResult CalculateSharedStorageURNMappingResult(
   DCHECK(!failed_due_to_no_budget);
   DCHECK_GT(urls_with_metadata.size(), 0u);
   DCHECK_LT(index, urls_with_metadata.size());
-  DCHECK(script_execution_succeeded || index == 0);
 
-  double budget_to_charge =
-      (urls_with_metadata.size() > 1u)
-          ? (script_execution_succeeded ? std::log2(urls_with_metadata.size())
-                                        : 1.0)
-          : 0.0;
+  double budget_to_charge = std::log2(urls_with_metadata.size());
 
   // If we are running out of budget, consider this mapping to be failed. Use
   // the default URL, and there's no need to further charge the budget.
@@ -95,11 +89,29 @@ SharedStorageWorkletHost::SharedStorageWorkletHost(
           document_service.render_frame_host().GetBrowserContext()),
       shared_storage_origin_(
           document_service.render_frame_host().GetLastCommittedOrigin()),
-      main_frame_origin_(document_service.main_frame_origin()) {}
+      main_frame_origin_(document_service.main_frame_origin()),
+      creation_time_(base::TimeTicks::Now()) {
+  GetContentClient()->browser()->OnSharedStorageWorkletHostCreated(
+      &(document_service.render_frame_host()));
+}
 
 SharedStorageWorkletHost::~SharedStorageWorkletHost() {
   base::UmaHistogramEnumeration("Storage.SharedStorage.Worklet.DestroyedStatus",
                                 destroyed_status_);
+
+  base::TimeDelta elapsed_time_since_creation =
+      base::TimeTicks::Now() - creation_time_;
+  if (pending_operations_count_ > 0 ||
+      last_operation_finished_time_.is_null() ||
+      elapsed_time_since_creation.is_zero()) {
+    base::UmaHistogramCounts100(
+        "Storage.SharedStorage.Worklet.Timing.UsefulResourceDuration", 100);
+  } else {
+    base::UmaHistogramCounts100(
+        "Storage.SharedStorage.Worklet.Timing.UsefulResourceDuration",
+        100 * (last_operation_finished_time_ - creation_time_) /
+            elapsed_time_since_creation);
+  }
 
   if (!page_)
     return;
@@ -114,8 +126,7 @@ SharedStorageWorkletHost::~SharedStorageWorkletHost() {
     page_->fenced_frame_urls_map().OnSharedStorageURNMappingResultDetermined(
         urn_uuid,
         CalculateSharedStorageURNMappingResult(
-            /*script_execution_succeeded=*/false, shared_storage_origin_,
-            std::move(it->second),
+            shared_storage_origin_, std::move(it->second),
             /*index=*/0, /*budget_remaining=*/0.0, failed_due_to_no_budget));
 
     it = unresolved_urns_.erase(it);
@@ -171,6 +182,7 @@ void SharedStorageWorkletHost::RunOperationOnWorklet(
 
   if (add_module_state_ != AddModuleState::kInitiated) {
     OnRunOperationOnWorkletFinished(
+        base::TimeTicks::Now(),
         /*success=*/false,
         /*error_message=*/
         "sharedStorage.worklet.addModule() has to be called before "
@@ -181,7 +193,7 @@ void SharedStorageWorkletHost::RunOperationOnWorklet(
   GetAndConnectToSharedStorageWorkletService()->RunOperation(
       name, serialized_data,
       base::BindOnce(&SharedStorageWorkletHost::OnRunOperationOnWorkletFinished,
-                     weak_ptr_factory_.GetWeakPtr()));
+                     weak_ptr_factory_.GetWeakPtr(), base::TimeTicks::Now()));
 }
 
 void SharedStorageWorkletHost::RunURLSelectionOperationOnWorklet(
@@ -227,7 +239,7 @@ void SharedStorageWorkletHost::RunURLSelectionOperationOnWorklet(
       base::BindOnce(
           &SharedStorageWorkletHost::
               OnRunURLSelectionOperationOnWorkletScriptExecutionFinished,
-          weak_ptr_factory_.GetWeakPtr(), urn_uuid));
+          weak_ptr_factory_.GetWeakPtr(), urn_uuid, base::TimeTicks::Now()));
 }
 
 bool SharedStorageWorkletHost::HasPendingOperations() {
@@ -535,6 +547,7 @@ void SharedStorageWorkletHost::OnAddModuleOnWorkletFinished(
 }
 
 void SharedStorageWorkletHost::OnRunOperationOnWorkletFinished(
+    base::TimeTicks start_time,
     bool success,
     const std::string& error_message) {
   if (!success) {
@@ -549,12 +562,16 @@ void SharedStorageWorkletHost::OnRunOperationOnWorkletFinished(
     }
   }
 
+  base::UmaHistogramLongTimes(
+      "Storage.SharedStorage.Document.Timing.Run.ExecutedInWorklet",
+      base::TimeTicks::Now() - start_time);
   DecrementPendingOperationsCount();
 }
 
 void SharedStorageWorkletHost::
     OnRunURLSelectionOperationOnWorkletScriptExecutionFinished(
         const GURL& urn_uuid,
+        base::TimeTicks start_time,
         bool success,
         const std::string& error_message,
         uint32_t index) {
@@ -578,12 +595,13 @@ void SharedStorageWorkletHost::
       shared_storage_origin_,
       base::BindOnce(&SharedStorageWorkletHost::
                          OnRunURLSelectionOperationOnWorkletFinished,
-                     weak_ptr_factory_.GetWeakPtr(), urn_uuid, success,
-                     error_message, index));
+                     weak_ptr_factory_.GetWeakPtr(), urn_uuid, start_time,
+                     success, error_message, index));
 }
 
 void SharedStorageWorkletHost::OnRunURLSelectionOperationOnWorkletFinished(
     const GURL& urn_uuid,
+    base::TimeTicks start_time,
     bool script_execution_succeeded,
     const std::string& script_execution_error_message,
     uint32_t index,
@@ -599,9 +617,8 @@ void SharedStorageWorkletHost::OnRunURLSelectionOperationOnWorkletFinished(
     bool failed_due_to_no_budget = false;
     SharedStorageURNMappingResult mapping_result =
         CalculateSharedStorageURNMappingResult(
-            script_execution_succeeded, shared_storage_origin_,
-            std::move(urls_with_metadata), index, budget_result.bits,
-            failed_due_to_no_budget);
+            shared_storage_origin_, std::move(urls_with_metadata), index,
+            budget_result.bits, failed_due_to_no_budget);
 
     if (document_service_) {
       DCHECK(!IsInKeepAlivePhase());
@@ -630,6 +647,9 @@ void SharedStorageWorkletHost::OnRunURLSelectionOperationOnWorkletFinished(
         urn_uuid, std::move(mapping_result));
   }
 
+  base::UmaHistogramLongTimes(
+      "Storage.SharedStorage.Document.Timing.SelectURL.ExecutedInWorklet",
+      base::TimeTicks::Now() - start_time);
   DecrementPendingOperationsCount();
 }
 
@@ -666,7 +686,14 @@ void SharedStorageWorkletHost::DecrementPendingOperationsCount() {
   base::CheckedNumeric<uint32_t> count = pending_operations_count_;
   pending_operations_count_ = (--count).ValueOrDie();
 
-  if (!IsInKeepAlivePhase() || pending_operations_count_)
+  if (pending_operations_count_)
+    return;
+
+  // This time will be overridden if another operation is subsequently queued
+  // and completed.
+  last_operation_finished_time_ = base::TimeTicks::Now();
+
+  if (!IsInKeepAlivePhase())
     return;
 
   FinishKeepAlive(/*timeout_reached=*/false);

@@ -8,32 +8,27 @@
 #include <utility>
 
 #include "base/command_line.h"
-#include "base/environment.h"
-#include "base/nix/xdg_util.h"
 #include "base/no_destructor.h"
 #include "build/build_config.h"
 #include "ui/linux/cursor_theme_manager_observer.h"
-
-namespace {
-
-std::unique_ptr<ui::LinuxUi>& GetLinuxUiInstance() {
-  static base::NoDestructor<std::unique_ptr<ui::LinuxUi>> linux_ui;
-  return *linux_ui;
-}
-
-}  // namespace
+#include "ui/linux/linux_ui_getter.h"
 
 namespace ui {
 
+namespace {
+
+LinuxUi* g_linux_ui = nullptr;
+
+}  // namespace
+
 // static
-std::unique_ptr<LinuxUi> LinuxUi::SetInstance(
-    std::unique_ptr<LinuxUi> instance) {
-  return std::exchange(GetLinuxUiInstance(), std::move(instance));
+LinuxUi* LinuxUi::SetInstance(LinuxUi* instance) {
+  return std::exchange(g_linux_ui, instance);
 }
 
 // static
 LinuxUi* LinuxUi::instance() {
-  return GetLinuxUiInstance().get();
+  return g_linux_ui;
 }
 
 LinuxUi::LinuxUi() = default;
@@ -47,16 +42,6 @@ LinuxUi::CmdLineArgs::CmdLineArgs(CmdLineArgs&&) = default;
 LinuxUi::CmdLineArgs& LinuxUi::CmdLineArgs::operator=(CmdLineArgs&&) = default;
 
 LinuxUi::CmdLineArgs::~CmdLineArgs() = default;
-
-void LinuxUi::AddWindowButtonOrderObserver(
-    WindowButtonOrderObserver* observer) {
-  window_button_order_observer_list_.AddObserver(observer);
-}
-
-void LinuxUi::RemoveWindowButtonOrderObserver(
-    WindowButtonOrderObserver* observer) {
-  window_button_order_observer_list_.RemoveObserver(observer);
-}
 
 void LinuxUi::AddDeviceScaleFactorObserver(
     DeviceScaleFactorObserver* observer) {
@@ -82,37 +67,6 @@ void LinuxUi::RemoveCursorThemeObserver(CursorThemeManagerObserver* observer) {
   cursor_theme_observer_list_.RemoveObserver(observer);
 }
 
-ui::NativeTheme* LinuxUi::GetNativeTheme(aura::Window* window) const {
-  return GetNativeTheme(use_system_theme_callback_.is_null() ||
-                        use_system_theme_callback_.Run(window));
-}
-
-void LinuxUi::SetUseSystemThemeCallback(UseSystemThemeCallback callback) {
-  use_system_theme_callback_ = std::move(callback);
-}
-
-bool LinuxUi::GetDefaultUsesSystemTheme() const {
-  std::unique_ptr<base::Environment> env = base::Environment::Create();
-
-  // TODO(https://crbug.com/1317782): This logic won't be necessary after
-  // the GTK/QT backend is chosen based on the environment.
-  switch (base::nix::GetDesktopEnvironment(env.get())) {
-    case base::nix::DESKTOP_ENVIRONMENT_CINNAMON:
-    case base::nix::DESKTOP_ENVIRONMENT_DEEPIN:
-    case base::nix::DESKTOP_ENVIRONMENT_GNOME:
-    case base::nix::DESKTOP_ENVIRONMENT_PANTHEON:
-    case base::nix::DESKTOP_ENVIRONMENT_UKUI:
-    case base::nix::DESKTOP_ENVIRONMENT_UNITY:
-    case base::nix::DESKTOP_ENVIRONMENT_XFCE:
-      return true;
-    case base::nix::DESKTOP_ENVIRONMENT_KDE3:
-    case base::nix::DESKTOP_ENVIRONMENT_KDE4:
-    case base::nix::DESKTOP_ENVIRONMENT_KDE5:
-    case base::nix::DESKTOP_ENVIRONMENT_OTHER:
-      return false;
-  }
-}
-
 // static
 LinuxUi::CmdLineArgs LinuxUi::CopyCmdLine(
     const base::CommandLine& command_line) {
@@ -132,6 +86,34 @@ LinuxUi::CmdLineArgs LinuxUi::CopyCmdLine(
   cmd_line.argc = cmd_line.argv.size();
 
   return cmd_line;
+}
+
+LinuxUiTheme::LinuxUiTheme() = default;
+
+LinuxUiTheme::~LinuxUiTheme() = default;
+
+// static
+LinuxUiTheme* LinuxUiTheme::GetForWindow(aura::Window* window) {
+  if (auto* getter = LinuxUiGetter::instance())
+    return getter->GetForWindow(window);
+  return nullptr;
+}
+
+// static
+LinuxUiTheme* LinuxUiTheme::GetForProfile(Profile* profile) {
+  if (auto* getter = LinuxUiGetter::instance())
+    return getter->GetForProfile(profile);
+  return nullptr;
+}
+
+void LinuxUiTheme::AddWindowButtonOrderObserver(
+    WindowButtonOrderObserver* observer) {
+  window_button_order_observer_list_.AddObserver(observer);
+}
+
+void LinuxUiTheme::RemoveWindowButtonOrderObserver(
+    WindowButtonOrderObserver* observer) {
+  window_button_order_observer_list_.RemoveObserver(observer);
 }
 
 }  // namespace ui

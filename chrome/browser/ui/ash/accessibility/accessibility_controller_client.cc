@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,6 +6,7 @@
 
 #include "ash/public/cpp/accessibility_controller.h"
 #include "ash/public/cpp/accessibility_controller_enums.h"
+#include "ash/wm/desks/templates/saved_desk_util.h"
 #include "chrome/browser/ash/accessibility/accessibility_manager.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/aura/accessibility/automation_manager_aura.h"
@@ -77,8 +78,10 @@ void AccessibilityControllerClient::TriggerAccessibilityAlert(
     case ash::AccessibilityAlert::WORKSPACE_FULLSCREEN_STATE_EXITED:
       msg = IDS_A11Y_ALERT_WORKSPACE_FULLSCREEN_STATE_EXITED;
       break;
-    case ash::AccessibilityAlert::DESK_TEMPLATES_MODE_ENTERED:
-      msg = IDS_A11Y_ALERT_DESK_TEMPLATES_MODE_ENTERED;
+    case ash::AccessibilityAlert::SAVED_DESKS_MODE_ENTERED:
+      msg = ash::saved_desk_util::AreDesksTemplatesEnabled()
+                ? IDS_A11Y_ALERT_SAVED_DESKS_LIBRARY_MODE_ENTERED
+                : IDS_A11Y_ALERT_SAVED_DESKS_SAVED_FOR_LATER_MODE_ENTERED;
       break;
     case ash::AccessibilityAlert::NONE:
       msg = 0;

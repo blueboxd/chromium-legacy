@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -22,6 +22,7 @@
 #include "base/threading/thread_local.h"
 #include "base/trace_event/interned_args_helper.h"
 #include "base/trace_event/typed_macros.h"
+#include "build/build_config.h"
 #include "mojo/public/cpp/bindings/associated_group.h"
 #include "mojo/public/cpp/bindings/associated_group_controller.h"
 #include "mojo/public/cpp/bindings/interface_endpoint_controller.h"
@@ -875,6 +876,12 @@ bool InterfaceEndpointClient::HandleValidatedMessage(Message* message) {
               perfetto::StaticString{method_name_callback_(*message)},
               [&](perfetto::EventContext& ctx) {
                 auto* info = ctx.event()->set_chrome_mojo_event_info();
+#if BUILDFLAG(IS_ANDROID) && defined(ARCH_CPU_ARM64)
+                // ARM64 Android - set the interface tag unconditionally.
+                // TODO(kraskevich): Remove this special case once we're
+                // fully confident in crrev.com/c/3763052.
+                info->set_mojo_interface_tag(interface_name_);
+#else
                 // Generate mojo interface tag only for local traces.
                 //
                 // This saves trace buffer space for field traces. The
@@ -886,6 +893,7 @@ bool InterfaceEndpointClient::HandleValidatedMessage(Message* message) {
                 if (!ctx.ShouldFilterDebugAnnotations()) {
                   info->set_mojo_interface_tag(interface_name_);
                 }
+#endif  // BUILDFLAG(IS_ANDROID) && defined(ARCH_CPU_ARM64)
                 const auto method_info = method_info_callback_(*message);
                 if (method_info) {
                   info->set_ipc_hash((*method_info)());

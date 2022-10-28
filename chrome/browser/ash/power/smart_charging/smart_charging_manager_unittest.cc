@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,15 +9,20 @@
 #include "base/test/test_mock_time_task_runner.h"
 #include "base/time/clock.h"
 #include "base/timer/timer.h"
-#include "chrome/browser/ash/power/smart_charging/user_charging_event.pb.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chromeos/dbus/power/fake_power_manager_client.h"
+#include "chromeos/dbus/power_manager/user_charging_event.pb.h"
 #include "components/session_manager/core/session_manager.h"
 #include "ui/events/keycodes/dom/dom_code.h"
 
 namespace ash {
 namespace power {
 namespace {
+
+using PastEvent = power_manager::PastChargingEvents::Event;
+using EventReason = power_manager::UserChargingEvent::Event::Reason;
+using UserChargingEvent = power_manager::UserChargingEvent;
+
 PastEvent CreateEvent(int time,
                       int battery_percent,
                       int timezone,
@@ -45,7 +50,7 @@ class SmartChargingManagerTest : public ChromeRenderViewHostTestHarness {
 
   void SetUp() override {
     ChromeRenderViewHostTestHarness::SetUp();
-    PowerManagerClient::InitializeFake();
+    chromeos::PowerManagerClient::InitializeFake();
 
     mojo::PendingRemote<viz::mojom::VideoDetectorObserver> observer;
     auto periodic_timer = std::make_unique<base::RepeatingTimer>();
@@ -58,7 +63,7 @@ class SmartChargingManagerTest : public ChromeRenderViewHostTestHarness {
 
   void TearDown() override {
     smart_charging_manager_.reset();
-    PowerManagerClient::Shutdown();
+    chromeos::PowerManagerClient::Shutdown();
     ChromeRenderViewHostTestHarness::TearDown();
   }
 
@@ -82,7 +87,7 @@ class SmartChargingManagerTest : public ChromeRenderViewHostTestHarness {
     power_manager::PowerSupplyProperties proto;
     proto.set_external_power(power);
     proto.set_battery_percent(battery_percent);
-    FakePowerManagerClient::Get()->UpdatePowerProperties(proto);
+    chromeos::FakePowerManagerClient::Get()->UpdatePowerProperties(proto);
   }
 
   void ReportBrightnessChangeEvent(const double level) {
@@ -101,14 +106,15 @@ class SmartChargingManagerTest : public ChromeRenderViewHostTestHarness {
         power_manager::SuspendImminent::LID_CLOSED);
   }
 
-  void ReportLidEvent(const PowerManagerClient::LidState state) {
-    FakePowerManagerClient::Get()->SetLidState(state,
-                                               base::TimeTicks::UnixEpoch());
+  void ReportLidEvent(const chromeos::PowerManagerClient::LidState state) {
+    chromeos::FakePowerManagerClient::Get()->SetLidState(
+        state, base::TimeTicks::UnixEpoch());
   }
 
-  void ReportTabletModeEvent(const PowerManagerClient::TabletMode mode) {
-    FakePowerManagerClient::Get()->SetTabletMode(mode,
-                                                 base::TimeTicks::UnixEpoch());
+  void ReportTabletModeEvent(
+      const chromeos::PowerManagerClient::TabletMode mode) {
+    chromeos::FakePowerManagerClient::Get()->SetTabletMode(
+        mode, base::TimeTicks::UnixEpoch());
   }
 
   void ReportVideoStart() { smart_charging_manager_->OnVideoActivityStarted(); }
@@ -325,8 +331,8 @@ TEST_F(SmartChargingManagerTest, VideoDuration) {
 }
 
 TEST_F(SmartChargingManagerTest, DeviceMode) {
-  ReportLidEvent(PowerManagerClient::LidState::OPEN);
-  ReportTabletModeEvent(PowerManagerClient::TabletMode::UNSUPPORTED);
+  ReportLidEvent(chromeos::PowerManagerClient::LidState::OPEN);
+  ReportTabletModeEvent(chromeos::PowerManagerClient::TabletMode::UNSUPPORTED);
 
   ReportPowerChangeEvent(power_manager::PowerSupplyProperties::AC, 15.0f);
   EXPECT_EQ(GetUserChargingEvent().features().device_mode(),
@@ -505,8 +511,8 @@ TEST_F(SmartChargingManagerTest, LastChargeRelatedFeatures) {
   const auto features = GetUserChargingEvent().features();
 
   EXPECT_TRUE(features.halt_from_last_charge());
-  EXPECT_EQ(features.time_since_last_charge(), 38);
-  EXPECT_EQ(features.duration_of_last_charge(), 58);
+  EXPECT_EQ(features.time_since_last_charge_minutes(), 38);
+  EXPECT_EQ(features.duration_of_last_charge_minutes(), 58);
   EXPECT_EQ(features.battery_percentage_before_last_charge(), 23);
   EXPECT_EQ(features.battery_percentage_of_last_charge(), 80);
 }

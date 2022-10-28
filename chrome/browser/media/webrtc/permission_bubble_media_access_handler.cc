@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -38,7 +38,6 @@
 
 #include "chrome/browser/media/webrtc/screen_capture_permission_handler_android.h"
 #include "components/permissions/permission_uma_util.h"
-#include "components/permissions/permission_util.h"
 #include "content/public/common/content_features.h"
 #endif  // BUILDFLAG(IS_ANDROID)
 

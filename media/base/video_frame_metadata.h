@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -26,6 +26,9 @@ struct MEDIA_EXPORT VideoFrameMetadata {
 
   // Merges internal values from |metadata_source|.
   void MergeMetadataFrom(const VideoFrameMetadata& metadata_source);
+
+  // CLear metadata fields that only make sense for texture backed frames.
+  void ClearTextureFrameMedatada();
 
   // Sources of VideoFrames use this marker to indicate that the associated
   // VideoFrame can be overlaid, case in which its contents do not need to be

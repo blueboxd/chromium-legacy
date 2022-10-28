@@ -1,10 +1,11 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome/browser/ui/views/extensions/extensions_toolbar_controls.h"
 
 #include "base/test/metrics/user_action_tester.h"
+#include "chrome/browser/extensions/extension_action_runner.h"
 #include "chrome/browser/extensions/extension_context_menu_model.h"
 #include "chrome/browser/extensions/site_permissions_helper.h"
 #include "chrome/browser/ui/views/extensions/extensions_request_access_button.h"
@@ -164,14 +165,14 @@ TEST_F(ExtensionsToolbarControlsUnitTest,
   web_contents_tester->NavigateAndCommit(url_b);
   EXPECT_TRUE(IsSiteAccessButtonVisible());
 
-  // TODO(crbug.com/1304959): Remove the only extension that requests access to
-  // the current site to verify no extension has access to the current
-  // site. Uninstall extension in unit tests is flaky.
+  // Remove the only extension that has access to the current site.
+  UninstallExtension(extension_all_urls->id());
+  LayoutContainerIfNecessary();
+  EXPECT_FALSE(IsSiteAccessButtonVisible());
 }
 
-// TODO(crbug.com/1321562) Disabled for flakiness.
 TEST_F(ExtensionsToolbarControlsUnitTest,
-       DISABLED_RequestAccessButtonVisibility_NavigationBetweenPages) {
+       RequestAccessButtonVisibility_NavigationBetweenPages) {
   content::WebContentsTester* web_contents_tester =
       AddWebContentsAndGetTester();
   const GURL url_a("http://www.a.com");
@@ -196,10 +197,8 @@ TEST_F(ExtensionsToolbarControlsUnitTest,
   EXPECT_FALSE(IsRequestAccessButtonVisible());
 }
 
-// TODO(crbug.com/1321562) Disabled for flakiness.
-TEST_F(
-    ExtensionsToolbarControlsUnitTest,
-    DISABLED_RequestAccessButtonVisibility_ContextMenuChangesHostPermissions) {
+TEST_F(ExtensionsToolbarControlsUnitTest,
+       RequestAccessButtonVisibility_ContextMenuChangesHostPermissions) {
   content::WebContentsTester* web_contents_tester =
       AddWebContentsAndGetTester();
   const GURL url_a("http://www.a.com");
@@ -220,6 +219,13 @@ TEST_F(
       extension.get(), browser(), extensions::ExtensionContextMenuModel::PINNED,
       nullptr, true,
       extensions::ExtensionContextMenuModel::ContextMenuSource::kToolbarAction);
+
+  // Changing the context menu may trigger the reload page bubble. Accept it so
+  // permissions are updated.
+  extensions::ExtensionActionRunner* runner =
+      extensions::ExtensionActionRunner::GetForWebContents(
+          browser()->tab_strip_model()->GetActiveWebContents());
+  runner->accept_bubble_for_testing(true);
 
   // Change the extension to run only on click using the context
   // menu. The extension should request access to the current site.
@@ -247,9 +253,8 @@ TEST_F(
   }
 }
 
-// TODO(crbug.com/1321562) Disabled for flakiness.
 TEST_F(ExtensionsToolbarControlsUnitTest,
-       DISABLED_RequestAccessButtonVisibility_MultipleExtensions) {
+       RequestAccessButtonVisibility_MultipleExtensions) {
   content::WebContentsTester* web_contents_tester =
       AddWebContentsAndGetTester();
   const GURL url_a("http://www.a.com");
@@ -291,9 +296,10 @@ TEST_F(ExtensionsToolbarControlsUnitTest,
       request_access_button()->GetText(),
       l10n_util::GetStringFUTF16Int(IDS_EXTENSIONS_REQUEST_ACCESS_BUTTON, 1));
 
-  // TODO(crbug.com/1304959): Remove the only extension that requests access to
-  // the current site to verify no extension should have access to the current
-  // site. Uninstall extension in unit tests is flaky.
+  // Remove the only extension that requests access to the current site.
+  UninstallExtension(extension_all_urls->id());
+  LayoutContainerIfNecessary();
+  EXPECT_FALSE(IsSiteAccessButtonVisible());
 }
 
 // TODO(crbug.com/3671898): Add a test that checks the correct dialog is open
@@ -302,10 +308,8 @@ TEST_F(ExtensionsToolbarControlsUnitTest,
 // Tests that extensions with activeTab and requested url with withheld access
 // are taken into account for the request access button visibility, but not the
 // ones with just activeTab.
-// TODO(crbug.com/1339370): Withholding host permissions is flaky when the test
-// is run multiple times.
 TEST_F(ExtensionsToolbarControlsUnitTest,
-       DISABLED_RequestAccessButtonVisibility_ActiveTabExtensions) {
+       RequestAccessButtonVisibility_ActiveTabExtensions) {
   content::WebContentsTester* web_contents_tester =
       AddWebContentsAndGetTester();
   const GURL requested_url("http://www.requested-url.com");
@@ -383,10 +387,8 @@ TEST_F(ExtensionsToolbarControlsUnitTest,
   }
 }
 
-// TODO(crbug.com/1339370): Withholding host permissions is flaky when the test
-// is run multiple times.
 TEST_F(ExtensionsToolbarControlsUnitTest,
-       DISABLED_RequestAccessButton_OnPressedExecuteAction) {
+       RequestAccessButton_OnPressedExecuteAction) {
   content::WebContentsTester* web_contents_tester =
       AddWebContentsAndGetTester();
 

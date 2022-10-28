@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 #include "components/autofill/core/browser/ui/suggestion_selection.h"
@@ -470,11 +470,15 @@ TEST_F(SuggestionSelectionTest,
           AllOf(Field(&Suggestion::main_text,
                       Suggestion::Text(u"Jon Snow",
                                        Suggestion::Text::IsPrimary(true))),
-                Field(&Suggestion::label, u"2 Beyond-the-Wall Rd")),
+                Field(&Suggestion::labels,
+                      std::vector<std::vector<Suggestion::Text>>{
+                          {Suggestion::Text(u"2 Beyond-the-Wall Rd")}})),
           AllOf(Field(&Suggestion::main_text,
                       Suggestion::Text(u"Jon Snow",
                                        Suggestion::Text::IsPrimary(true))),
-                Field(&Suggestion::label, u"1 Winterfell Ln"))));
+                Field(&Suggestion::labels,
+                      std::vector<std::vector<Suggestion::Text>>{
+                          {Suggestion::Text(u"1 Winterfell Ln")}}))));
 }
 
 TEST_F(SuggestionSelectionTest,
@@ -493,15 +497,20 @@ TEST_F(SuggestionSelectionTest,
           AllOf(Field(&Suggestion::main_text,
                       Suggestion::Text(u"Sansa",
                                        Suggestion::Text::IsPrimary(true))),
-                Field(&Suggestion::label, u"1 Winterfell Ln")),
+                Field(&Suggestion::labels,
+                      std::vector<std::vector<Suggestion::Text>>{
+                          {Suggestion::Text(u"1 Winterfell Ln")}})),
           AllOf(Field(&Suggestion::main_text,
                       Suggestion::Text(u"Sansa",
                                        Suggestion::Text::IsPrimary(true))),
-                Field(&Suggestion::label, u"")),
+                Field(&Suggestion::labels,
+                      std::vector<std::vector<Suggestion::Text>>{})),
           AllOf(Field(&Suggestion::main_text,
                       Suggestion::Text(u"Brienne",
                                        Suggestion::Text::IsPrimary(true))),
-                Field(&Suggestion::label, u"1 Winterfell Ln"))));
+                Field(&Suggestion::labels,
+                      std::vector<std::vector<Suggestion::Text>>{
+                          {Suggestion::Text(u"1 Winterfell Ln")}}))));
 }
 
 TEST_F(SuggestionSelectionTest, PrepareSuggestions_SameStringInValueAndLabel) {
@@ -515,7 +524,8 @@ TEST_F(SuggestionSelectionTest, PrepareSuggestions_SameStringInValueAndLabel) {
                   Field(&Suggestion::main_text,
                         Suggestion::Text(u"4 Mañana Road",
                                          Suggestion::Text::IsPrimary(true))),
-                  Field(&Suggestion::label, std::u16string()))));
+                  Field(&Suggestion::labels,
+                        std::vector<std::vector<Suggestion::Text>>{}))));
 }
 
 }  // namespace suggestion_selection

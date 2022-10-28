@@ -263,7 +263,7 @@ MediaStreamTrackImpl::MediaStreamTrackImpl(
     : ready_state_(ready_state),
       component_(component),
       execution_context_(context) {
-  component_->Source()->AddObserver(this);
+  component_->AddSourceObserver(this);
 
   // If the source is already non-live at this point, the observer won't have
   // been called. Update the muted state manually.
@@ -644,9 +644,6 @@ MediaTrackSettings* MediaStreamTrackImpl::getSettings() const {
       case media::mojom::DisplayCaptureSurfaceType::WINDOW:
         value = "window";
         break;
-      case media::mojom::DisplayCaptureSurfaceType::APPLICATION:
-        value = "application";
-        break;
       case media::mojom::DisplayCaptureSurfaceType::BROWSER:
         value = "browser";
         break;
@@ -851,14 +848,10 @@ std::unique_ptr<AudioSourceProvider> MediaStreamTrackImpl::CreateWebAudioSource(
                                                context_sample_rate));
 }
 
-absl::optional<base::UnguessableToken>
-MediaStreamTrackImpl::serializable_session_id() const {
+absl::optional<const MediaStreamDevice> MediaStreamTrackImpl::device() const {
   if (!component_->Source()->GetPlatformSource())
     return absl::nullopt;
-  return component_->Source()
-      ->GetPlatformSource()
-      ->device()
-      .serializable_session_id();
+  return component_->Source()->GetPlatformSource()->device();
 }
 
 void MediaStreamTrackImpl::BeingTransferred(
@@ -866,11 +859,12 @@ void MediaStreamTrackImpl::BeingTransferred(
   // Creates a clone track to keep a reference in the renderer while
   // KeepDeviceAliveForTransfer is being called.
   MediaStreamTrack* cloned_track = clone(GetExecutionContext());
-  WebPlatformMediaStreamSource* platform_source =
-      cloned_track->Component()->Source()->GetPlatformSource();
-  if (platform_source) {
-    platform_source->KeepDeviceAliveForTransfer(
-        serializable_session_id().value(), transfer_id,
+
+  UserMediaClient* user_media_client =
+      UserMediaClient::From(To<LocalDOMWindow>(GetExecutionContext()));
+  if (user_media_client) {
+    user_media_client->KeepDeviceAliveForTransfer(
+        device()->serializable_session_id().value(), transfer_id,
         WTF::Bind(
             [](MediaStreamTrack* cloned_track,
                ExecutionContext* execution_context, bool device_found) {

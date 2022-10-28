@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -42,6 +42,7 @@
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/image/image_skia.h"
+#include "ui/gfx/text_elider.h"
 #include "ui/views/animation/bounds_animator.h"
 #include "ui/views/animation/ink_drop.h"
 #include "ui/views/background.h"
@@ -302,7 +303,10 @@ void ShowWebAppDetailedInstallDialog(
                             gfx::Size(kIconSize, kIconSize));
 
   auto title = install_info->title;
-  auto description = install_info->description;
+  auto start_url_host = install_info->start_url.host();
+  const std::u16string description = gfx::TruncateString(
+      install_info->description, webapps::kMaximumDescriptionLength,
+      gfx::CHARACTER_BREAK);
 
   auto delegate =
       std::make_unique<web_app::WebAppDetailedInstallDialogDelegate>(
@@ -312,9 +316,12 @@ void ShowWebAppDetailedInstallDialog(
   auto dialog_model =
       ui::DialogModel::Builder(std::move(delegate))
           .SetIcon(ui::ImageModel::FromImageSkia(icon_image))
-          .SetTitle(title)  // TODO(pbos): Add secondary-title support for
-                            // base::UTF8ToUTF16(install_info->start_url.host())
-          .AddBodyText(ui::DialogModelLabel(description))
+          .SetTitle(title)
+          .SetSubtitle(base::UTF8ToUTF16(start_url_host))
+          .AddParagraph(
+              ui::DialogModelLabel(description).set_is_secondary(),
+              l10n_util::GetStringUTF16(
+                  IDS_WEB_APP_DETAILED_INSTALL_DIALOG_DESCRIPTION_TITLE))
           .AddOkButton(
               base::BindOnce(
                   &web_app::WebAppDetailedInstallDialogDelegate::OnAccept,

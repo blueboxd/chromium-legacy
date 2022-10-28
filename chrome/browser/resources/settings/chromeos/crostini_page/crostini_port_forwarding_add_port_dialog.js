@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,7 +11,7 @@
 import 'chrome://resources/cr_elements/cr_button/cr_button.js';
 import 'chrome://resources/cr_elements/cr_dialog/cr_dialog.js';
 import 'chrome://resources/cr_elements/cr_input/cr_input.js';
-import 'chrome://resources/cr_elements/md_select_css.m.js';
+import 'chrome://resources/cr_elements/md_select.css.js';
 import '../../settings_shared.css.js';
 import '../guest_os/guest_os_container_select.js';
 
@@ -19,7 +19,7 @@ import {html, microTask, PolymerElement} from 'chrome://resources/polymer/v3_0/p
 
 import {ContainerInfo, GuestId} from '../guest_os/guest_os_browser_proxy.js';
 
-import {CrostiniBrowserProxy, CrostiniBrowserProxyImpl, CrostiniPortProtocol, CrostiniPortSetting, DEFAULT_CONTAINER_ID, DEFAULT_CROSTINI_VM, MAX_VALID_PORT_NUMBER, MIN_VALID_PORT_NUMBER, PortState} from './crostini_browser_proxy.js';
+import {CrostiniBrowserProxy, CrostiniBrowserProxyImpl, CrostiniPortProtocol, CrostiniPortSetting, DEFAULT_CROSTINI_GUEST_ID, DEFAULT_CROSTINI_VM, MAX_VALID_PORT_NUMBER, MIN_VALID_PORT_NUMBER, PortState} from './crostini_browser_proxy.js';
 
 /** @polymer */
 class CrostiniPortForwardingAddPortDialog extends PolymerElement {
@@ -71,7 +71,7 @@ class CrostiniPortForwardingAddPortDialog extends PolymerElement {
       containerId_: {
         type: Object,
         value() {
-          return DEFAULT_CONTAINER_ID;
+          return DEFAULT_CROSTINI_GUEST_ID;
         },
       },
 

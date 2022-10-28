@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,13 +8,12 @@
 #include <string>
 
 #include "base/callback.h"
+#include "components/cast_receiver/common/public/status.h"
 #include "third_party/cast_core/public/src/proto/common/application_config.pb.h"
 #include "third_party/cast_core/public/src/proto/runtime/runtime_service.grpc.pb.h"
 #include "url/gurl.h"
 
 namespace chromecast {
-
-class CastWebContents;
 
 // This represents an application that can be hosted by RuntimeService.  Its
 // lifecycle is very simple: Load() -> Launch() -> Destruction.  Implementations
@@ -22,22 +21,15 @@ class CastWebContents;
 // For example, Launch needs to respond with SetApplicationStatus.
 class RuntimeApplication {
  public:
-  using StatusCallback = base::OnceCallback<void(grpc::Status)>;
+  using StatusCallback = base::OnceCallback<void(cast_receiver::Status)>;
 
   RuntimeApplication() = default;
   virtual ~RuntimeApplication() = 0;
 
-  // NOTE: These fields are the empty string until after Load().
-  virtual const cast::common::ApplicationConfig& GetAppConfig() const = 0;
-
-  // NOTE: These fields are the empty string until after Load().
+  // NOTE: These fields are the empty string until after Load() is called.
+  virtual const std::string& GetDisplayName() const = 0;
+  virtual const std::string& GetAppId() const = 0;
   virtual const std::string& GetCastSessionId() const = 0;
-
-  // Returns the root instance of CastWebContents.
-  virtual CastWebContents* GetCastWebContents() = 0;
-
-  // Returns the Cast media service endpoint for MZ.
-  virtual const std::string& GetCastMediaServiceEndpoint() const = 0;
 
   // Called before Launch() to perform any pre-launch loading that is
   // necessary. The |callback| will be called indicating if the operation

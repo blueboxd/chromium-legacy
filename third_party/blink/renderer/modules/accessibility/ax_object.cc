@@ -748,7 +748,8 @@ bool AXObject::IsRoot() const {
 }
 
 void AXObject::SetParent(AXObject* new_parent) const {
-#if DCHECK_IS_ON()
+// TODO(crbug.com/1353205): Re-enable DCHECK for all platforms.
+#if DCHECK_IS_ON() && !BUILDFLAG(IS_CHROMEOS_ASH)
   if (!new_parent && !IsRoot()) {
     std::ostringstream message;
     message << "Parent cannot be null, except at the root. "
@@ -1218,10 +1219,7 @@ void AXObject::Serialize(ui::AXNodeData* node_data,
   node_data->role = ComputeFinalRoleForSerialization();
   node_data->id = AXObjectID();
 
-  DCHECK(!IsDetached()) << "Do not serialize detached nodes: "
-                        << ToString(true, true);
-  DCHECK(AccessibilityIsIncludedInTree())
-      << "Do not serialize unincluded nodes: " << ToString(true, true);
+  PreSerializationConsistencyCheck();
 
   // Serialize a few things that we need even for ignored nodes.
   bool is_focusable = CanSetFocusAttribute();
@@ -1310,6 +1308,17 @@ void AXObject::Serialize(ui::AXNodeData* node_data,
     SerializeLiveRegionAttributes(node_data);
 
   SerializeOtherScreenReaderAttributes(node_data);
+
+  if (accessibility_mode.has_mode(ui::AXMode::kPDF))
+    return;
+
+  // Return early. The following attributes are unnecessary for ignored nodes.
+  // Exception: focusable ignored nodes are fully serialized, so that reasonable
+  // verbalizations can be made if they actually receive focus.
+  if (AccessibilityIsIgnored() &&
+      !node_data->HasState(ax::mojom::blink::State::kFocusable)) {
+    return;
+  }
 }
 
 void AXObject::SerializeBoundingBoxAttributes(ui::AXNodeData& dst) const {
@@ -1354,6 +1363,17 @@ void AXObject::PopulateAXRelativeBounds(ui::AXRelativeBounds& bounds,
 
   if (!container_transform.IsIdentity())
     bounds.transform = std::make_unique<gfx::Transform>(container_transform);
+}
+
+void AXObject::MarkAllImageAXObjectsDirty(
+    ax::mojom::blink::Action event_from_action) {
+  if (RoleValue() == ax::mojom::blink::Role::kImage) {
+    AXObjectCache().MarkAXObjectDirtyWithCleanLayoutAndEvent(
+        this, ax::mojom::blink::EventFrom::kNone, event_from_action);
+  }
+
+  for (auto& child : UnignoredChildren())
+    child->MarkAllImageAXObjectsDirty(event_from_action);
 }
 
 void AXObject::SerializeActionAttributes(ui::AXNodeData* node_data) {
@@ -1636,8 +1656,7 @@ void AXObject::SerializeNameAndDescriptionAttributes(
 
 void AXObject::SerializeScreenReaderAttributes(ui::AXNodeData* node_data) {
   String display_style;
-  Node* node = GetNode();
-  if (node && !node->IsDocumentNode()) {
+  if (Node* node = GetNode(); node && !node->IsDocumentNode()) {
     if (const ComputedStyle* computed_style = node->GetComputedStyle()) {
       display_style = CSSProperty::Get(CSSPropertyID::kDisplay)
                           .CSSValueFromComputedStyle(
@@ -3385,7 +3404,7 @@ bool AXObject::IsFocusableStyleUsingBestAvailableState() const {
 
   // The best available source of information is now the AX tree, so use that to
   // figure out whether we have focusable style.
-  return element->IsBaseElementFocusableStyle(GetLayoutObject());
+  return element->IsBaseElementFocusableStyle();
 }
 
 bool AXObject::CanSetFocusAttribute() const {
@@ -4276,8 +4295,7 @@ bool DoesUndoRolePresentation(const AtomicString& name) {
       HashSet<AtomicString>, aria_global_properties,
       ({
         "ARIA-ATOMIC",
-        // TODO(accessibility/ARIA 1.3) Add (and test in aria-global.html)
-        // "ARIA-BRAILLEROLEDESCRIPTION",
+        "ARIA-BRAILLEROLEDESCRIPTION",
         "ARIA-BUSY",
         "ARIA-CONTROLS",
         "ARIA-CURRENT",
@@ -5878,6 +5896,7 @@ bool AXObject::PerformAction(const ui::AXActionData& action_data) {
     case ax::mojom::blink::Action::kStartDuckingMedia:
     case ax::mojom::blink::Action::kStopDuckingMedia:
     case ax::mojom::blink::Action::kSuspendMedia:
+    case ax::mojom::blink::Action::kLongClick:
       return false;
   }
 }
@@ -6657,11 +6676,13 @@ const AXObject* AXObject::LowestCommonAncestor(const AXObject& first,
 
 void AXObject::PreSerializationConsistencyCheck() {
 #if defined(AX_FAIL_FAST_BUILD)
-  if (!AXObjectCache().IsFrozen())
-    return;  // Only perform checks if tree is frozen.
+  DCHECK(!IsDetached()) << "Do not serialize detached nodes: "
+                        << ToString(true, true);
+  DCHECK(AccessibilityIsIncludedInTree())
+      << "Do not serialize unincluded nodes: " << ToString(true, true);
   SANITIZER_CHECK(!IsDetached());
   // Extra checks that only occur during serialization.
-  SANITIZER_CHECK_EQ(cached_is_aria_hidden_, !!FindAncestorWithAriaHidden(this))
+  SANITIZER_CHECK_EQ(IsAriaHidden(), !!FindAncestorWithAriaHidden(this))
       << "IsAriaHidden() doesn't match existence of an aria-hidden ancestor: "
       << ToString(true);
 #endif

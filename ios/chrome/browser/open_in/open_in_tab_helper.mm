@@ -1,24 +1,24 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #import "ios/chrome/browser/open_in/open_in_tab_helper.h"
 
-#include "base/memory/ptr_util.h"
-#include "base/metrics/histogram_functions.h"
-#include "base/metrics/user_metrics.h"
-#include "base/metrics/user_metrics_action.h"
-#include "base/strings/sys_string_conversions.h"
-#include "ios/chrome/browser/ui/ui_feature_flags.h"
-#include "ios/chrome/grit/ios_strings.h"
+#import "base/memory/ptr_util.h"
+#import "base/metrics/histogram_functions.h"
+#import "base/metrics/user_metrics.h"
+#import "base/metrics/user_metrics_action.h"
+#import "base/strings/sys_string_conversions.h"
+#import "ios/chrome/browser/ui/ui_feature_flags.h"
+#import "ios/chrome/grit/ios_strings.h"
 #import "ios/web/public/navigation/navigation_context.h"
 #import "ios/web/public/navigation/navigation_item.h"
 #import "ios/web/public/navigation/navigation_manager.h"
 #import "ios/web/public/web_state.h"
-#include "net/base/filename_util.h"
-#include "net/http/http_response_headers.h"
-#include "ui/base/l10n/l10n_util.h"
-#include "url/gurl.h"
+#import "net/base/filename_util.h"
+#import "net/http/http_response_headers.h"
+#import "ui/base/l10n/l10n_util.h"
+#import "url/gurl.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -112,7 +112,7 @@ void OpenInTabHelper::HandleExportableFile() {
   base::UmaHistogramEnumeration("IOS.OpenIn.MimeType", mime_type);
   base::RecordAction(base::UserMetricsAction("IOS.OpenIn.Presented"));
 
-  // Try to generate a filename by first looking at |content_disposition_|, then
+  // Try to generate a filename by first looking at `content_disposition_`, then
   // at the last component of WebState's last committed URL and if both of these
   // fail use the default filename "document".
   std::string content_disposition;

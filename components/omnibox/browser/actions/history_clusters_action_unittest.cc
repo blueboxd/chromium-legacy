@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -319,6 +319,14 @@ TEST_F(HistoryClustersActionTest, AttachHistoryClustersActions) {
          .expect_history_clusters_action = true},
     });
   }
+}
+
+TEST_F(HistoryClustersActionTest, AttachHistoryClustersActions_AllowEntities) {
+  search_actions_config_.omnibox_action_on_entities = true;
+  SetUpWithConfig(search_actions_config_);
+  TestAttachHistoryClustersActions(
+      {{.type = AutocompleteMatchType::Type::SEARCH_SUGGEST_ENTITY,
+        .expect_history_clusters_action = true}});
 }
 
 }  // namespace history_clusters

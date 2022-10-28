@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -86,7 +86,7 @@ const char kMoveToAccountStoreOfferedCountKey[] =
 // storage exists. Used for metrics.
 int GetNumberOfOptedInAccounts(const PrefService* pref_service) {
   const base::Value::Dict& global_pref =
-      pref_service->GetValueDict(prefs::kAccountStoragePerAccountSettings);
+      pref_service->GetDict(prefs::kAccountStoragePerAccountSettings);
   int count = 0;
   for (auto entry : global_pref) {
     if (entry.second.GetDict()
@@ -104,7 +104,7 @@ class AccountStorageSettingsReader {
   AccountStorageSettingsReader(const PrefService* prefs,
                                const GaiaIdHash& gaia_id_hash) {
     const base::Value::Dict& global_pref =
-        prefs->GetValueDict(prefs::kAccountStoragePerAccountSettings);
+        prefs->GetDict(prefs::kAccountStoragePerAccountSettings);
     account_settings_ = global_pref.FindDict(gaia_id_hash.ToBase64());
   }
 
@@ -235,7 +235,7 @@ bool ShouldShowAccountStorageReSignin(const PrefService* pref_service,
   // Show the opt-in if any known previous user opted into using the account
   // storage before and might want to access it again.
   return base::ranges::any_of(
-      pref_service->GetValueDict(prefs::kAccountStoragePerAccountSettings),
+      pref_service->GetDict(prefs::kAccountStoragePerAccountSettings),
       [](const std::pair<std::string, const base::Value&>& p) {
         return p.second.GetDict()
             .FindBool(kAccountStorageOptedInKey)
@@ -284,11 +284,7 @@ void OptOutOfAccountStorageAndClearSettings(
       base::FeatureList::IsEnabled(features::kEnablePasswordsAccountStorage));
 
   std::string gaia_id = sync_service->GetAccountInfo().gaia;
-  bool account_exists = !gaia_id.empty();
-  base::UmaHistogramBoolean(
-      "PasswordManager.AccountStorage.SignedInAccountFoundDuringOptOut",
-      account_exists);
-  if (!account_exists) {
+  if (gaia_id.empty()) {
     // In rare cases, it could happen that the account went away since the
     // opt-out UI was triggered.
     return;

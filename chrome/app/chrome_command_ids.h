@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -227,6 +227,8 @@
 #define IDC_LACROS_DATA_MIGRATION      40265
 #endif
 
+#define IDC_PERFORMANCE                40266
+
 // Spell-check
 // Insert any additional suggestions before _LAST; these have to be consecutive.
 #define IDC_SPELLCHECK_SUGGESTION_0     41000
@@ -384,6 +386,8 @@
 #define IDC_BOOKMARK_BAR_SHOW_APPS_SHORTCUT 51014
 #define IDC_BOOKMARK_BAR_SHOW_READING_LIST 51015
 #define IDC_BOOKMARK_BAR_SHOW_MANAGED_BOOKMARKS 51016
+#define IDC_BOOKMARK_BAR_TRACK_PRICE_FOR_SHOPPING_BOOKMARK 51017
+#define IDC_BOOKMARK_BAR_UNTRACK_PRICE_FOR_SHOPPING_BOOKMARK 51018
 // Context menu items for Sharing
 #define IDC_CONTENT_CONTEXT_SHARING_CLICK_TO_CALL_SINGLE_DEVICE 51030
 #define IDC_CONTENT_CONTEXT_SHARING_CLICK_TO_CALL_MULTIPLE_DEVICES 51031

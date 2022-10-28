@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -35,7 +35,7 @@ class MockCameraHalServer : public cros::mojom::CameraHalServer {
   MockCameraHalServer(const MockCameraHalServer&) = delete;
   MockCameraHalServer& operator=(const MockCameraHalServer&) = delete;
 
-  ~MockCameraHalServer() = default;
+  ~MockCameraHalServer() override = default;
 
   void CreateChannel(
       mojo::PendingReceiver<cros::mojom::CameraModule> camera_module_receiver,
@@ -74,7 +74,7 @@ class MockCameraHalClient : public cros::mojom::CameraHalClient {
   MockCameraHalClient(const MockCameraHalClient&) = delete;
   MockCameraHalClient& operator=(const MockCameraHalClient&) = delete;
 
-  ~MockCameraHalClient() = default;
+  ~MockCameraHalClient() override = default;
 
   void SetUpChannel(
       mojo::PendingRemote<cros::mojom::CameraModule> camera_module) override {

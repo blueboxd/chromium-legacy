@@ -91,6 +91,7 @@ class TestResultsFetcher(object):
             return '%s/%s/layout-test-results' % (url_base, build_number)
         return self.accumulated_results_url_base(builder_name)
 
+    @memoized
     def get_artifact_list_for_test(self, host, result_name):
         """Fetches the list of artifacts for a test-result.
         """
@@ -340,7 +341,7 @@ class TestResultsFetcher(object):
         filename_pattern = re.compile(r'wpt_reports_(.*)\.json')
         url_to_index = {}
         for artifact in artifacts:
-            filename_match = filename_pattern.match(artifact['artifactId'])
+            filename_match = filename_pattern.fullmatch(artifact['artifactId'])
             if filename_match:
                 url_to_index[artifact['fetchUrl']] = filename_match[0]
         return sorted(url_to_index, key=url_to_index.get)

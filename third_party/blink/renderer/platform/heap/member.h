@@ -182,9 +182,16 @@ class MemberConstructTraits {
 
  public:
   template <typename... Args>
+  static T* Construct(void* location, Args&&... args) {
+    // `Construct()` creates a new Member which must not be visible to the
+    // concurrent marker yet, similar to regular ctors in Member.
+    return new (NotNullTag::kNotNull, location) T(std::forward<Args>(args)...);
+  }
+
+  template <typename... Args>
   static T* ConstructAndNotifyElement(void* location, Args&&... args) {
-    // ConstructAndNotifyElement updates an existing Member which might
-    // also be comncurrently traced while we update it. The regular ctors
+    // `ConstructAndNotifyElement()` updates an existing Member which might
+    // also be concurrently traced while we update it. The regular ctors
     // for Member don't use an atomic write which can lead to data races.
     T* object = new (NotNullTag::kNotNull, location)
         T(std::forward<Args>(args)..., typename T::AtomicInitializerTag());
@@ -197,6 +204,11 @@ class MemberConstructTraits {
   }
 
   static void NotifyNewElements(T* array, size_t len) {
+    // Checking the first element is sufficient for determining whether a
+    // marking or generational barrier is required.
+    if (LIKELY((len == 0) || !blink::WriteBarrier::IsWriteBarrierNeeded(array)))
+      return;
+
     while (len-- > 0) {
       blink::WriteBarrier::DispatchForObject(array);
       array++;

@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -42,8 +42,8 @@ void CreateFirstRunFieldTrial(base::FeatureList* feature_list) {
   scoped_refptr<base::FieldTrial> trial(
       base::FieldTrialList::FactoryGetFieldTrial(
           kInstantTetheringTrialName, 100 /* total_probability */,
-          kInstantTetheringGroupName, base::FieldTrial::ONE_TIME_RANDOMIZED,
-          nullptr /* default_group_number */));
+          kInstantTetheringGroupName,
+          base::FieldTrialList::GetEntropyProviderForOneTimeRandomization()));
   feature_list->RegisterFieldTrialOverride(
       features::kInstantTethering.name,
       base::FeatureList::OVERRIDE_ENABLE_FEATURE, trial.get());

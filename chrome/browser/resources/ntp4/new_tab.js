@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,7 +8,7 @@ import {assert} from 'chrome://resources/js/assert.m.js';
 import {addWebUIListener} from 'chrome://resources/js/cr.m.js';
 import {getUrlForCss} from 'chrome://resources/js/icon.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
-import {parseHtmlSubset} from 'chrome://resources/js/parse_html_subset.m.js';
+import {parseHtmlSubset} from 'chrome://resources/js/parse_html_subset.js';
 import {$, appendParam, getRequiredElement} from 'chrome://resources/js/util.m.js';
 
 import {AppInfo} from './app_info.js';

@@ -20,53 +20,61 @@
 
 namespace blink {
 
-class LocalDOMWindow;
 class ScriptState;
+enum class ExecuteScriptPolicy;
 
+// PausableScriptExecutor executes scripts possibly with various capabilities:
+// - Executes with user activation (`UserActivationOption`, Window only)
+// - Executes sync/async (`EvaluationTiming`)
+// - Delays the load event (`LoadEventBlockingOption`, Window only)
+// - Converts results to `base::Value` (`WantResultOption`)
+// - Waits for promise resolution (`PromiseResultOption`)
 class CORE_EXPORT PausableScriptExecutor final
     : public GarbageCollected<PausableScriptExecutor>,
       public ExecutionContextLifecycleObserver {
  public:
-  static void CreateAndRun(LocalDOMWindow*,
-                           v8::Local<v8::Context>,
+  static void CreateAndRun(v8::Local<v8::Context>,
                            v8::Local<v8::Function>,
                            v8::Local<v8::Value> receiver,
                            int argc,
                            v8::Local<v8::Value> argv[],
+                           mojom::blink::WantResultOption,
+                           WebScriptExecutionCallback);
+  static void CreateAndRun(ScriptState*,
+                           Vector<WebScriptSource>,
+                           ExecuteScriptPolicy,
+                           mojom::blink::UserActivationOption,
+                           mojom::blink::EvaluationTiming,
+                           mojom::blink::LoadEventBlockingOption,
+                           mojom::blink::WantResultOption,
+                           mojom::blink::PromiseResultOption,
                            WebScriptExecutionCallback);
 
   class Executor : public GarbageCollected<Executor> {
    public:
     virtual ~Executor() = default;
 
-    virtual Vector<v8::Local<v8::Value>> Execute(LocalDOMWindow*) = 0;
+    virtual Vector<v8::Local<v8::Value>> Execute(ScriptState*) = 0;
 
     virtual void Trace(Visitor* visitor) const {}
   };
 
-  PausableScriptExecutor(LocalDOMWindow*,
-                         scoped_refptr<DOMWrapperWorld>,
-                         Vector<WebScriptSource>,
+  PausableScriptExecutor(ScriptState*,
                          mojom::blink::UserActivationOption,
-                         WebScriptExecutionCallback);
-  PausableScriptExecutor(LocalDOMWindow*,
-                         ScriptState*,
+                         mojom::blink::LoadEventBlockingOption,
+                         mojom::blink::WantResultOption,
+                         mojom::blink::PromiseResultOption,
                          WebScriptExecutionCallback,
                          Executor*);
   ~PausableScriptExecutor() override;
 
-  void Run();
-  void RunAsync(mojom::blink::LoadEventBlockingOption);
   void ContextDestroyed() override;
 
   void Trace(Visitor*) const override;
 
-  void set_wait_for_promise(
-      mojom::blink::PromiseResultOption wait_for_promise) {
-    wait_for_promise_ = wait_for_promise;
-  }
-
  private:
+  void Run();
+  void RunAsync();
   void PostExecuteAndDestroySelf(ExecutionContext* context);
   void ExecuteAndDestroySelf();
   void Dispose();
@@ -76,15 +84,16 @@ class CORE_EXPORT PausableScriptExecutor final
   Member<ScriptState> script_state_;
   WebScriptExecutionCallback callback_;
   base::TimeTicks start_time_;
-  mojom::blink::LoadEventBlockingOption blocking_option_;
+  const mojom::blink::UserActivationOption user_activation_option_;
+  const mojom::blink::LoadEventBlockingOption blocking_option_;
+  const mojom::blink::WantResultOption want_result_option_;
+  // Whether to wait for a promise to resolve, if the executed script evaluates
+  // to a promise.
+  const mojom::blink::PromiseResultOption wait_for_promise_;
+
   TaskHandle task_handle_;
 
   Member<Executor> executor_;
-
-  // Whether to wait for a promise to resolve, if the executed script evaluates
-  // to a promise.
-  mojom::blink::PromiseResultOption wait_for_promise_ =
-      mojom::blink::PromiseResultOption::kDoNotWait;
 
   // A keepalive used when waiting on promises to settle.
   SelfKeepAlive<PausableScriptExecutor> keep_alive_;

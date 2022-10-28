@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,10 +6,26 @@
  * @fileoverview Offline message screen implementation.
  */
 
-/* #js_imports_placeholder */
+import '//resources/js/action_link.js';
+import '//resources/polymer/v3_0/iron-icon/iron-icon.js';
+import '//resources/polymer/v3_0/iron-iconset-svg/iron-iconset-svg.js';
+import '../../components/buttons/oobe_back_button.m.js';
+import '../../components/buttons/oobe_text_button.m.js';
+import '../../components/common_styles/common_styles.m.js';
+import '../../components/dialogs/oobe_adaptive_dialog.m.js';
+import '../../components/network_select_login.m.js';
+
+import {SanitizeInnerHtmlOpts} from '//resources/js/parse_html_subset.js';
+import {html, mixinBehaviors, PolymerElement} from '//resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+
+import {LoginScreenBehavior, LoginScreenBehaviorInterface} from '../../components/behaviors/login_screen_behavior.m.js';
+import {OobeDialogHostBehavior} from '../../components/behaviors/oobe_dialog_host_behavior.m.js';
+import {OobeI18nBehavior, OobeI18nBehaviorInterface} from '../../components/behaviors/oobe_i18n_behavior.m.js';
+import {OOBE_UI_STATE} from '../../components/display_manager_types.m.js';
+import {Oobe} from '../../cr_ui.m.js';
+
 
 const USER_ACTION_LAUNCH_OOBE_GUEST = 'launch-oobe-guest';
-const USER_ACTION_LOCAL_STATE_POWERWASH = 'local-state-error-powerwash';
 const USER_ACTION_SHOW_CAPTIVE_PORTAL = 'show-captive-portal';
 const USER_ACTION_OPEN_INTERNET_DIALOG = 'open-internet-dialog';
 const USER_ACTION_OFFLINE_LOGIN = 'offline-login';
@@ -23,7 +39,6 @@ const ERROR_SCREEN_UI_STATE = {
   UPDATE: 'ui-state-update',
   SIGNIN: 'ui-state-signin',
   KIOSK_MODE: 'ui-state-kiosk-mode',
-  LOCAL_STATE_ERROR: 'ui-state-local-state-error',
   AUTO_ENROLLMENT_ERROR: 'ui-state-auto-enrollment-error',
   ROLLBACK_ERROR: 'ui-state-rollback-error',
   SUPERVISED_USER_CREATION_FLOW: 'ui-state-supervised',
@@ -37,7 +52,6 @@ const ErrorMessageUIState = [
   ERROR_SCREEN_UI_STATE.SIGNIN,
   ERROR_SCREEN_UI_STATE.SUPERVISED_USER_CREATION_FLOW,
   ERROR_SCREEN_UI_STATE.KIOSK_MODE,
-  ERROR_SCREEN_UI_STATE.LOCAL_STATE_ERROR,
   ERROR_SCREEN_UI_STATE.AUTO_ENROLLMENT_ERROR,
   ERROR_SCREEN_UI_STATE.ROLLBACK_ERROR,
 ];
@@ -74,9 +88,9 @@ const ERROR_STATES = [
  * @implements {OobeI18nBehaviorInterface}
  * @implements {LoginScreenBehaviorInterface}
  */
-const ErrorMessageScreenBase = Polymer.mixinBehaviors(
+const ErrorMessageScreenBase = mixinBehaviors(
     [OobeI18nBehavior, OobeDialogHostBehavior, LoginScreenBehavior],
-    Polymer.Element);
+    PolymerElement);
 
 /**
  * @polymer
@@ -86,7 +100,9 @@ class ErrorMessageScreen extends ErrorMessageScreenBase {
     return 'error-message-element';
   }
 
-  /* #html_template_placeholder */
+  static get template() {
+    return html`{__html_template__}`;
+  }
 
   /** @override */
   get EXTERNAL_API() {
@@ -200,9 +216,7 @@ class ErrorMessageScreen extends ErrorMessageScreenBase {
     } else if (this.isOneOf_(this.uiState_, 'ui-state-auto-enrollment-error') &&
         this.isOneOf_(this.errorState_, 'offline', 'portal', 'proxy')) {
       return this.i18n('autoEnrollmentErrorMessageTitle');
-    } else if (
-        this.isOneOf_(this.uiState_, 'ui-state-local-state-error') ||
-        this.isOneOf_(this.errorState_, 'proxy', 'auth-ext-timeout')) {
+    } else if (this.isOneOf_(this.errorState_, 'proxy', 'auth-ext-timeout')) {
       return this.i18n('loginErrorTitle');
     } else if (this.isOneOf_(this.errorState_, 'kiosk-online')) {
       return this.i18n('kioskOnlineTitle');
@@ -267,10 +281,6 @@ class ErrorMessageScreen extends ErrorMessageScreenBase {
 
   okButtonClicked() {
     this.userActed('cancel-reset');
-  }
-
-  powerwashButtonClicked() {
-    this.userActed(USER_ACTION_LOCAL_STATE_POWERWASH);
   }
 
   onNetworkConnected_() {

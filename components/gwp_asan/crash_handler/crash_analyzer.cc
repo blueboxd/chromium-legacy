@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -237,12 +237,12 @@ bool CrashAnalyzer::AnalyzeCrashedAllocator(
   }
 
   // Read the allocator's slot_to_metadata mapping.
-  auto slot_to_metadata =
-      std::make_unique<AllocatorState::MetadataIdx[]>(valid_state.total_pages);
-  if (!process_snapshot.Memory()->Read(
-          valid_state.slot_to_metadata_addr,
-          sizeof(AllocatorState::MetadataIdx) * valid_state.total_pages,
-          slot_to_metadata.get())) {
+  auto slot_to_metadata = std::make_unique<AllocatorState::MetadataIdx[]>(
+      valid_state.total_reserved_pages);
+  if (!process_snapshot.Memory()->Read(valid_state.slot_to_metadata_addr,
+                                       sizeof(AllocatorState::MetadataIdx) *
+                                           valid_state.total_reserved_pages,
+                                       slot_to_metadata.get())) {
     proto->set_internal_error("Failed to read slot_to_metadata.");
     ReportHistogram(
         allocator,

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# Copyright (c) 2012 The Chromium Authors. All rights reserved.
+# Copyright 2012 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 """code generator for GLES2 command buffers."""
@@ -4018,11 +4018,6 @@ _FUNCTION_INFO = {
     'extension_flag': 'khr_parallel_shader_compile',
   },
   'CreateAndTexStorage2DSharedImageCHROMIUM': {
-    'type': 'NoCommand',
-    'extension': "CHROMIUM_shared_image",
-    'trace_level': 2,
-  },
-  'CreateAndTexStorage2DSharedImageWithInternalFormatCHROMIUM': {
     'type': 'NoCommand',
     'extension': "CHROMIUM_shared_image",
     'trace_level': 2,

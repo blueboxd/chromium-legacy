@@ -1,19 +1,19 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {fakeFeedbackContext, fakePngData, fakeSearchResponse} from 'chrome://os-feedback/fake_data.js';
+import {fakeFeedbackContext, fakeInternalUserFeedbackContext, fakePngData, fakeSearchResponse} from 'chrome://os-feedback/fake_data.js';
 import {FakeFeedbackServiceProvider} from 'chrome://os-feedback/fake_feedback_service_provider.js';
 import {FakeHelpContentProvider} from 'chrome://os-feedback/fake_help_content_provider.js';
 import {AdditionalContextQueryParam, FeedbackFlowElement, FeedbackFlowState} from 'chrome://os-feedback/feedback_flow.js';
-import {FeedbackAppExitPath, FeedbackContext, SendReportStatus} from 'chrome://os-feedback/feedback_types.js';
+import {FeedbackAppExitPath, FeedbackAppHelpContentOutcome, FeedbackAppPreSubmitAction, FeedbackContext, SendReportStatus} from 'chrome://os-feedback/feedback_types.js';
 import {OS_FEEDBACK_TRUSTED_ORIGIN} from 'chrome://os-feedback/help_content.js';
 import {setFeedbackServiceProviderForTesting, setHelpContentProviderForTesting} from 'chrome://os-feedback/mojo_interface_provider.js';
 import {SearchPageElement} from 'chrome://os-feedback/search_page.js';
 import {getDeepActiveElement} from 'chrome://resources/js/util.m.js';
 
 import {assertEquals, assertFalse, assertTrue} from '../../chai_assert.js';
-import {eventToPromise, flushTasks} from '../../test_util.js';
+import {eventToPromise, flushTasks, isVisible} from '../../test_util.js';
 
 export function FeedbackFlowTestSuite() {
   /** @type {?FeedbackFlowElement} */
@@ -82,6 +82,20 @@ export function FeedbackFlowTestSuite() {
     isCalled ?
         assertTrue(feedbackServiceProvider.isRecordExitPathCalled(exitPath)) :
         assertFalse(feedbackServiceProvider.isRecordExitPathCalled(exitPath));
+  }
+
+
+  /**
+   * @param {boolean} isCalled
+   * @param {FeedbackAppHelpContentOutcome} outcome
+   * @private
+   */
+  function verifyHelpContentOutcomeMetricCalled(isCalled, outcome) {
+    isCalled ?
+        assertTrue(feedbackServiceProvider.isHelpContentOutcomeMetricEmitted(
+            outcome)) :
+        assertFalse(
+            feedbackServiceProvider.isHelpContentOutcomeMetricEmitted(outcome));
   }
 
   /**
@@ -179,6 +193,13 @@ export function FeedbackFlowTestSuite() {
   test('NavigateFromSearchPageToShareDataPage', async () => {
     await initializePage();
 
+    verifyHelpContentOutcomeMetricCalled(
+        false, FeedbackAppHelpContentOutcome.kContinueHelpContentClicked);
+    verifyHelpContentOutcomeMetricCalled(
+        false, FeedbackAppHelpContentOutcome.kContinueNoHelpContentClicked);
+
+    page.setHelpContentClickedForTesting(true);
+
     let activePage = page.shadowRoot.querySelector('.iron-selected');
     assertTrue(!!activePage);
     assertEquals('searchPage', activePage.id);
@@ -224,6 +245,12 @@ export function FeedbackFlowTestSuite() {
     assertTrue(!!screenshotImg.src);
     // Verify that the src of the screenshot image is set.
     assertTrue(screenshotImg.src.startsWith('blob:chrome://os-feedback/'));
+    // Verify that click continue after viewing helpcontent will emit the
+    // correct metric.
+    verifyHelpContentOutcomeMetricCalled(
+        true, FeedbackAppHelpContentOutcome.kContinueHelpContentClicked);
+    verifyHelpContentOutcomeMetricCalled(
+        false, FeedbackAppHelpContentOutcome.kContinueNoHelpContentClicked);
   });
 
   // Test the navigation from share data page back to search page when click
@@ -280,6 +307,74 @@ export function FeedbackFlowTestSuite() {
     assertTrue(!!activePage);
     assertEquals('confirmationPage', activePage.id);
     assertEquals(SendReportStatus.kSuccess, activePage.sendReportStatus);
+  });
+
+  // Test the bluetooth logs will show up if logged with internal account and
+  // input description is related.
+  test('ShowBluetoothLogsWithRelatedDescription', async () => {
+    feedbackServiceProvider = new FakeFeedbackServiceProvider();
+    feedbackServiceProvider.setFakeFeedbackContext(
+        fakeInternalUserFeedbackContext);
+    setFeedbackServiceProviderForTesting(feedbackServiceProvider);
+    await initializePage();
+
+    // Check the bluetooth checkbox component hidden when input is not related
+    // to bluetooth.
+    let activePage = page.shadowRoot.querySelector('.iron-selected');
+    assertTrue(!!activePage);
+    assertEquals('searchPage', activePage.id);
+
+    activePage.shadowRoot.querySelector('textarea').value = 'abc';
+    activePage.shadowRoot.querySelector('#buttonContinue').click();
+    await flushTasks();
+
+    activePage = page.shadowRoot.querySelector('.iron-selected');
+    assertEquals('shareDataPage', activePage.id);
+    const bluetoothCheckbox =
+        activePage.shadowRoot.querySelector('#bluetoothCheckboxContainer');
+    assertTrue(!!bluetoothCheckbox);
+    assertFalse(isVisible(bluetoothCheckbox));
+
+    activePage.shadowRoot.querySelector('#buttonBack').click();
+    await flushTasks();
+
+    // Go back to search page and set description input related to bluetooth.
+    activePage = page.shadowRoot.querySelector('.iron-selected');
+    assertTrue(!!activePage);
+    assertEquals('searchPage', activePage.id);
+
+    const descriptionElement = activePage.shadowRoot.querySelector('textarea');
+    descriptionElement.value = 'bluetooth';
+
+    activePage.shadowRoot.querySelector('#buttonContinue').click();
+    await flushTasks();
+
+    activePage = page.shadowRoot.querySelector('.iron-selected');
+    assertTrue(!!activePage);
+    assertEquals('shareDataPage', activePage.id);
+
+    assertTrue(!!bluetoothCheckbox);
+    assertTrue(isVisible(bluetoothCheckbox));
+  });
+
+  // Test the bluetooth logs will not show up if not logged with an Internal
+  // google account.
+  test('BluetoothHiddenWithoutInternalAccount', async () => {
+    await initializePage();
+
+    // Set input description related to bluetooth.
+    let activePage = page.shadowRoot.querySelector('.iron-selected');
+
+    activePage.shadowRoot.querySelector('textarea').value = 'bluetooth';
+    activePage.shadowRoot.querySelector('#buttonContinue').click();
+    await flushTasks();
+
+    activePage = page.shadowRoot.querySelector('.iron-selected');
+    assertEquals('shareDataPage', activePage.id);
+    const bluetoothCheckbox =
+        activePage.shadowRoot.querySelector('#bluetoothCheckboxContainer');
+    assertTrue(!!bluetoothCheckbox);
+    assertFalse(isVisible(bluetoothCheckbox));
   });
 
   // Test the navigation from confirmation page to search page after the
@@ -376,7 +471,8 @@ export function FeedbackFlowTestSuite() {
     assertEquals(1, feedbackServiceProvider.getFeedbackContextCallCount());
   });
 
-  // Test that the extra diagnostics gets set when query parameter is non-empty.
+  // Test that the extra diagnostics and category tag get set
+  // when query parameter is non-empty.
   test(
       'AdditionalContextParametersProvidedInUrl_FeedbackContext_Matches',
       async () => {
@@ -388,6 +484,8 @@ export function FeedbackFlowTestSuite() {
         queryParams.set(
             AdditionalContextQueryParam.DESCRIPTION_TEMPLATE,
             description_template);
+        const category_tag = 'some%20category%20tag';
+        queryParams.set(AdditionalContextQueryParam.CATEGORY_TAG, category_tag);
         // Replace current querystring with the new one.
         window.history.replaceState(null, '', '?' + queryParams.toString());
         await initializePage();
@@ -402,6 +500,8 @@ export function FeedbackFlowTestSuite() {
             feedbackContext.extraDiagnostics);
         assertEquals(
             decodeURIComponent(description_template), descriptionElement.value);
+        assertEquals(
+            decodeURIComponent(category_tag), feedbackContext.categoryTag);
       });
 
   // Test that the extra diagnostics gets set when query parameter is empty.
@@ -423,6 +523,7 @@ export function FeedbackFlowTestSuite() {
         assertEquals(fakeFeedbackContext.email, feedbackContext.email);
         assertEquals('', feedbackContext.extraDiagnostics);
         assertEquals('', descriptionElement.value);
+        assertEquals('', feedbackContext.categoryTag);
       });
 
   /**
@@ -434,6 +535,13 @@ export function FeedbackFlowTestSuite() {
     // clicked;
     let helpContentClicked = false;
     await initializePage();
+
+    assertEquals(
+        0,
+        feedbackServiceProvider.getRecordPreSubmitActionCallCount(
+            FeedbackAppPreSubmitAction.kViewedHelpContent));
+    assertEquals(
+        0, feedbackServiceProvider.getRecordHelpContentSearchResultCount());
 
     // Get Search Page.
     const SearchPage = getSearchPage();
@@ -448,6 +556,9 @@ export function FeedbackFlowTestSuite() {
       if ('help-content-clicked-for-testing' === event.data.id &&
           OS_FEEDBACK_TRUSTED_ORIGIN === event.origin) {
         helpContentClicked = true;
+        feedbackServiceProvider.recordPreSubmitAction(
+            FeedbackAppPreSubmitAction.kViewedHelpContent);
+        feedbackServiceProvider.recordHelpContentSearchResultCount();
       }
     });
 
@@ -461,6 +572,15 @@ export function FeedbackFlowTestSuite() {
     await eventToPromise('message', window);
     // Verify that help content have been clicked.
     assertTrue(helpContentClicked);
+    // Verify that viewedHelpContent metrics is emitted.
+    assertEquals(
+        1,
+        feedbackServiceProvider.getRecordPreSubmitActionCallCount(
+            FeedbackAppPreSubmitAction.kViewedHelpContent));
+    // Verify that clicks the help content will emit the
+    // recordHelpContentSearchResult metric.
+    assertEquals(
+        1, feedbackServiceProvider.getRecordHelpContentSearchResultCount());
   });
 
   // Test that correct exitPathMetrics is emitted when user clicks help content
@@ -476,9 +596,41 @@ export function FeedbackFlowTestSuite() {
   // without clicking any help contents.
   test('QuitSearchPageNoHelpContentClicked', async () => {
     await initializePage();
+    verifyHelpContentOutcomeMetricCalled(
+        false, FeedbackAppHelpContentOutcome.kQuitHelpContentClicked);
+    verifyHelpContentOutcomeMetricCalled(
+        false, FeedbackAppHelpContentOutcome.kQuitNoHelpContentClicked);
+
+    // This will emit an close-app event with no help content clicked.
     verifyExitPathMetricsEmitted(
         FeedbackFlowState.SEARCH,
         FeedbackAppExitPath.kQuitSearchPageNoHelpContentClicked, false);
+
+    // Verify that close app without viewing helpcontent will emit the
+    // correct metric.
+    verifyHelpContentOutcomeMetricCalled(
+        false, FeedbackAppHelpContentOutcome.kQuitHelpContentClicked);
+    verifyHelpContentOutcomeMetricCalled(
+        true, FeedbackAppHelpContentOutcome.kQuitNoHelpContentClicked);
+  });
+
+  // Test that correct metrics are emitted when user quits on
+  // search page because no help content is shown.
+  test('QuitSearchPagesetNoHelpContentDisplayed', async () => {
+    await initializePage();
+    page.setNoHelpContentDisplayedForTesting(true);
+
+    verifyRecordExitPathCalled(
+        false, FeedbackAppExitPath.kQuitNoHelpContentDisplayed);
+    verifyHelpContentOutcomeMetricCalled(
+        false, FeedbackAppHelpContentOutcome.kQuitNoHelpContentDisplayed);
+
+    window.dispatchEvent(new CustomEvent('beforeunload'));
+
+    verifyRecordExitPathCalled(
+        true, FeedbackAppExitPath.kQuitNoHelpContentDisplayed);
+    verifyHelpContentOutcomeMetricCalled(
+        true, FeedbackAppHelpContentOutcome.kQuitNoHelpContentDisplayed);
   });
 
   // Test that correct exitPathMetrics is emitted when user quits on share data
@@ -515,5 +667,29 @@ export function FeedbackFlowTestSuite() {
     verifyExitPathMetricsEmitted(
         FeedbackFlowState.CONFIRMATION,
         FeedbackAppExitPath.kSuccessNoHelpContentClicked, false);
+  });
+
+  // Test that correct helpContentOutcomeMetrics is emitted when user click
+  // continue when there is no help content shown.
+  test('HelpContentOutcomeContinuesetNoHelpContentDisplayed', async () => {
+    await initializePage();
+    page.setNoHelpContentDisplayedForTesting(true);
+    verifyHelpContentOutcomeMetricCalled(
+        false, FeedbackAppHelpContentOutcome.kContinueNoHelpContentDisplayed);
+
+    // Now on search page.
+    const activePage = page.shadowRoot.querySelector('.iron-selected');
+    assertTrue(!!activePage);
+    assertEquals('searchPage', activePage.id);
+    const inputElement = activePage.shadowRoot.querySelector('textarea');
+    const continueButton =
+        activePage.shadowRoot.querySelector('#buttonContinue');
+
+    // Enter some text.
+    inputElement.value = 'abc';
+    continueButton.click();
+
+    verifyHelpContentOutcomeMetricCalled(
+        true, FeedbackAppHelpContentOutcome.kContinueNoHelpContentDisplayed);
   });
 }

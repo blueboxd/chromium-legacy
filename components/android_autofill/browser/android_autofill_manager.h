@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -112,7 +112,7 @@ class AndroidAutofillManager : public AutofillManager {
       const gfx::RectF& bounding_box,
       int query_id,
       bool autoselect_first_suggestion,
-      TouchToFillEligible touch_to_fill_eligible) override;
+      FormElementWasClicked form_element_was_clicked) override;
 
   void OnFocusOnFormFieldImpl(const FormData& form,
                               const FormFieldData& field,

@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,7 +12,7 @@ extension UIView {
   /// Whether all instances of UIView will notify key-value observers for their `window` property.
   ///
   /// Default is `false`.
-  @objc static var cr_supportsWindowObserving: Bool {
+  @objc public static var cr_supportsWindowObserving: Bool {
     get {
       return swizzled
     }
@@ -58,10 +58,4 @@ extension UIView {
     cr_didMoveToWindow()
     didChangeValue(forKey: "window")
   }
-}
-
-/// TODO(crbug.com/1316061): This extension is just a pretext to force swiftc to import the bridging
-/// header `util_swift_bridge.h`, and transitively, UIKit/UIKit.h.
-extension CrBug1316061View {
-  @objc func doNothing() {}
 }

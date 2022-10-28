@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -116,15 +116,18 @@ PrintManagementUI::PrintManagementUI(
           kChromeUIPrintManagementHost);
   html_source->OverrideContentSecurityPolicy(
       network::mojom::CSPDirectiveName::ScriptSrc,
-      "script-src chrome://resources chrome://test 'self';");
+      "script-src chrome://resources chrome://test chrome://webui-test "
+      "'self';");
   html_source->DisableTrustedTypesCSP();
 
   const auto resources = base::make_span(kAshPrintManagementResources,
                                          kAshPrintManagementResourcesSize);
-  SetUpWebUIDataSource(html_source, resources, IDR_PRINT_MANAGEMENT_INDEX_HTML);
+  SetUpWebUIDataSource(html_source, resources,
+                       IDR_ASH_PRINT_MANAGEMENT_INDEX_HTML);
 
-  html_source->AddResourcePath("printing_manager.mojom-lite.js",
-                               IDR_PRINTING_MANAGER_MOJO_LITE_JS);
+  html_source->AddResourcePath(
+      "printing_manager.mojom-webui.js",
+      IDR_ASH_PRINT_MANAGEMENT_PRINTING_MANAGER_MOJOM_WEBUI_JS);
 
   AddPrintManagementStrings(html_source);
 }

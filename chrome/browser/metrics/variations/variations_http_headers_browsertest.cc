@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -39,7 +39,6 @@
 #include "components/optimization_guide/proto/hints.pb.h"
 #include "components/prefs/pref_service.h"
 #include "components/signin/public/identity_manager/identity_test_utils.h"
-#include "components/variations/net/variations_http_headers.h"
 #include "components/variations/proto/study.pb.h"
 #include "components/variations/variations.mojom.h"
 #include "components/variations/variations_associated_data.h"
@@ -635,9 +634,8 @@ IN_PROC_BROWSER_TEST_F(VariationsHttpHeadersBrowserTest,
   // either uses a different API or tighten the current API to set up a field
   // trial that can only be made with the low entropy provider.
   scoped_refptr<base::FieldTrial> trial =
-      base::FieldTrialList::FactoryGetFieldTrialWithRandomizationSeed(
-          "t1", 100, "default", base::FieldTrial::ONE_TIME_RANDOMIZED, 0,
-          /*default_group_number=*/nullptr, low_entropy_provider.get());
+      base::FieldTrialList::FactoryGetFieldTrial("t1", 100, "default",
+                                                 *low_entropy_provider);
   for (int i = 1; i < 101; ++i) {
     const std::string group_name = base::StringPrintf("%d", i);
     variations::AssociateGoogleVariationID(
@@ -647,7 +645,7 @@ IN_PROC_BROWSER_TEST_F(VariationsHttpHeadersBrowserTest,
   }
   // Activate the trial. This corresponds to ACTIVATE_ON_STARTUP for server-side
   // studies.
-  trial->group();
+  trial->Activate();
 
   ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), GetGoogleUrl()));
   absl::optional<std::string> header =

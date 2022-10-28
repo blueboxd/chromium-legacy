@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/layout/ng/ng_physical_box_fragment.h"
 
+#include "base/ranges/algorithm.h"
 #include "third_party/blink/renderer/core/dom/document_lifecycle.h"
 #include "third_party/blink/renderer/core/html/shadow/shadow_element_utils.h"
 #include "third_party/blink/renderer/core/layout/geometry/writing_mode_converter.h"
@@ -356,8 +357,9 @@ NGPhysicalFragment::NGPhysicalFragment(NGContainerFragmentBuilder* builder,
       is_legacy_layout_root_(false),
       is_painted_atomically_(false),
       has_collapsed_borders_(builder->has_collapsed_borders_),
-      has_baseline_(false),
+      has_first_baseline_(false),
       has_last_baseline_(false),
+      use_last_baseline_for_inline_baseline_(false),
       has_fragmented_out_of_flow_data_(
           !builder->oof_positioned_fragmentainer_descendants_.IsEmpty() ||
           !builder->multicols_with_pending_oofs_.IsEmpty()),
@@ -366,7 +368,7 @@ NGPhysicalFragment::NGPhysicalFragment(NGContainerFragmentBuilder* builder,
           builder->HasOutOfFlowInFragmentainerSubtree()),
       break_token_(std::move(builder->break_token_)),
       oof_data_(builder->oof_positioned_descendants_.IsEmpty() &&
-                        builder->anchor_query_.IsEmpty() &&
+                        !builder->AnchorQuery() &&
                         !has_fragmented_out_of_flow_data_
                     ? nullptr
                     : OutOfFlowDataFromBuilder(builder)) {
@@ -405,12 +407,11 @@ NGPhysicalFragment::OutOfFlowData* NGPhysicalFragment::OutOfFlowDataFromBuilder(
     }
   }
 
-  if (!builder->anchor_query_.IsEmpty()) {
+  if (const NGLogicalAnchorQuery* anchor_query = builder->AnchorQuery()) {
     DCHECK(RuntimeEnabledFeatures::CSSAnchorPositioningEnabled());
     if (!oof_data)
       oof_data = MakeGarbageCollected<OutOfFlowData>();
-
-    oof_data->anchor_query.SetFromLogical(builder->anchor_query_, converter);
+    oof_data->anchor_query.SetFromLogical(*anchor_query, converter);
   }
 
   return oof_data;
@@ -445,8 +446,10 @@ NGPhysicalFragment::NGPhysicalFragment(const NGPhysicalFragment& other)
       is_legacy_layout_root_(other.is_legacy_layout_root_),
       is_painted_atomically_(other.is_painted_atomically_),
       has_collapsed_borders_(other.has_collapsed_borders_),
-      has_baseline_(other.has_baseline_),
+      has_first_baseline_(other.has_first_baseline_),
       has_last_baseline_(other.has_last_baseline_),
+      use_last_baseline_for_inline_baseline_(
+          other.use_last_baseline_for_inline_baseline_),
       has_fragmented_out_of_flow_data_(other.has_fragmented_out_of_flow_data_),
       has_out_of_flow_fragment_child_(other.has_out_of_flow_fragment_child_),
       has_out_of_flow_in_fragmentainer_subtree_(
@@ -778,11 +781,10 @@ void NGPhysicalFragment::AddOutlineRectsForNormalChildren(
       // Don't add |Children()|. If |this| has |NGFragmentItems|, children are
       // either line box, which we already handled in items, or OOF, which we
       // should ignore.
-      DCHECK(std::all_of(PostLayoutChildren().begin(),
-                         PostLayoutChildren().end(), [](const NGLink& child) {
-                           return child->IsLineBox() ||
-                                  child->IsOutOfFlowPositioned();
-                         }));
+      DCHECK(
+          base::ranges::all_of(PostLayoutChildren(), [](const NGLink& child) {
+            return child->IsLineBox() || child->IsOutOfFlowPositioned();
+          }));
       return;
     }
   }
@@ -865,6 +867,9 @@ void NGPhysicalFragment::AddOutlineRectsForCursor(
         }
         break;
       }
+      case NGFragmentItem::kInvalid:
+        NOTREACHED();
+        break;
     }
     cursor->MoveToNext();
   }
@@ -1121,6 +1126,10 @@ void ShowFragmentTree(const blink::LayoutObject& root,
             << blink::NGPhysicalFragment::DumpFragmentTree(root, dump_flags,
                                                            target)
                    .Utf8();
+}
+
+void ShowEntireFragmentTree(const blink::LayoutObject& target) {
+  ShowFragmentTree(*target.View());
 }
 
 void ShowEntireFragmentTree(const blink::NGPhysicalFragment* target) {

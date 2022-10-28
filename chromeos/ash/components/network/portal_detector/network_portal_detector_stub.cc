@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,16 +10,6 @@ NetworkPortalDetectorStub::NetworkPortalDetectorStub() = default;
 
 NetworkPortalDetectorStub::~NetworkPortalDetectorStub() = default;
 
-void NetworkPortalDetectorStub::AddObserver(Observer* observer) {}
-
-void NetworkPortalDetectorStub::AddAndFireObserver(Observer* observer) {
-  if (observer)
-    observer->OnPortalDetectionCompleted(nullptr,
-                                         CAPTIVE_PORTAL_STATUS_UNKNOWN);
-}
-
-void NetworkPortalDetectorStub::RemoveObserver(Observer* observer) {}
-
 NetworkPortalDetector::CaptivePortalStatus
 NetworkPortalDetectorStub::GetCaptivePortalStatus() {
   return CAPTIVE_PORTAL_STATUS_UNKNOWN;
@@ -30,7 +20,5 @@ bool NetworkPortalDetectorStub::IsEnabled() {
 }
 
 void NetworkPortalDetectorStub::Enable() {}
-
-void NetworkPortalDetectorStub::StartPortalDetection() {}
 
 }  // namespace ash

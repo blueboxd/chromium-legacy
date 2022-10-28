@@ -1,4 +1,4 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -17,6 +17,7 @@ extern const base::Feature kBootCompletedBroadcastFeature;
 extern const base::Feature kCustomTabsExperimentFeature;
 extern const base::Feature kDocumentsProviderUnknownSizeFeature;
 extern const base::Feature kEnableArcNearbyShare;
+extern const base::Feature kEnableArcNearbyShareFuseBox;
 extern const base::Feature kEnablePerVmCoreScheduling;
 extern const base::Feature kEnableTTSCaching;
 extern const base::Feature kEnableTTSCacheSetup;
@@ -24,7 +25,9 @@ extern const base::Feature kEnableUnifiedAudioFocusFeature;
 extern const base::Feature kEnableUnmanagedToManagedTransitionFeature;
 extern const base::Feature kEnableUsap;
 extern const base::Feature kEnableVirtioBlkForData;
-extern const base::FeatureParam<bool> kEnableVirtioBlkForDataUseLvm;
+extern const base::Feature kFixupWindowFeature;
+extern const base::Feature kVirtioBlkDataConfigOverride;
+extern const base::FeatureParam<bool> kVirtioBlkDataConfigUseLvm;
 extern const base::Feature kFilePickerExperimentFeature;
 extern const base::Feature kGameModeFeature;
 extern const base::Feature kGmsCoreLowMemoryKillerProtection;
@@ -34,6 +37,7 @@ extern const base::FeatureParam<int> kGuestZramSwappiness;
 extern const base::Feature kLockGuestMemory;
 extern const base::Feature kLogdConfig;
 extern const base::FeatureParam<int> kLogdConfigSize;
+extern const base::Feature kLvmApplicationContainers;
 extern const base::Feature kKeyboardShortcutHelperIntegrationFeature;
 extern const base::Feature kNativeBridgeToggleFeature;
 extern const base::Feature kOutOfProcessVideoDecoding;

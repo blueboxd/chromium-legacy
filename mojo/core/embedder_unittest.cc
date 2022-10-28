@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -26,6 +26,8 @@
 #include "base/test/test_timeouts.h"
 #include "build/build_config.h"
 #include "mojo/core/core.h"
+#include "mojo/core/embedder/embedder.h"
+#include "mojo/core/ipcz_driver/shared_buffer.h"
 #include "mojo/core/shared_buffer_dispatcher.h"
 #include "mojo/core/test/mojo_test_base.h"
 #include "mojo/public/c/system/core.h"
@@ -41,6 +43,12 @@ namespace {
 
 template <typename T>
 MojoResult CreateSharedBufferFromRegion(T&& region, MojoHandle* handle) {
+  if (IsMojoIpczEnabled()) {
+    *handle = ipcz_driver::SharedBuffer::Box(
+        ipcz_driver::SharedBuffer::MakeForRegion(std::move(region)));
+    return MOJO_RESULT_OK;
+  }
+
   scoped_refptr<SharedBufferDispatcher> buffer;
   MojoResult result =
       SharedBufferDispatcher::CreateFromPlatformSharedMemoryRegion(
@@ -54,13 +62,21 @@ MojoResult CreateSharedBufferFromRegion(T&& region, MojoHandle* handle) {
 
 template <typename T>
 MojoResult ExtractRegionFromSharedBuffer(MojoHandle handle, T* region) {
-  scoped_refptr<Dispatcher> dispatcher =
-      Core::Get()->GetAndRemoveDispatcher(handle);
-  if (!dispatcher || dispatcher->GetType() != Dispatcher::Type::SHARED_BUFFER)
-    return MOJO_RESULT_INVALID_ARGUMENT;
+  base::subtle::PlatformSharedMemoryRegion platform_region;
+  if (IsMojoIpczEnabled()) {
+    platform_region =
+        std::move(ipcz_driver::SharedBuffer::Unbox(handle)->region());
+  } else {
+    scoped_refptr<Dispatcher> dispatcher =
+        Core::Get()->GetAndRemoveDispatcher(handle);
+    if (!dispatcher || dispatcher->GetType() != Dispatcher::Type::SHARED_BUFFER)
+      return MOJO_RESULT_INVALID_ARGUMENT;
 
-  auto* buffer = static_cast<SharedBufferDispatcher*>(dispatcher.get());
-  *region = T::Deserialize(buffer->PassPlatformSharedMemoryRegion());
+    auto* buffer = static_cast<SharedBufferDispatcher*>(dispatcher.get());
+    platform_region = buffer->PassPlatformSharedMemoryRegion();
+  }
+
+  *region = T::Deserialize(std::move(platform_region));
   return MOJO_RESULT_OK;
 }
 
@@ -263,6 +279,7 @@ DEFINE_TEST_CLIENT_TEST_WITH_PIPE(MultiprocessChannelsClient,
   ASSERT_FALSE(state.satisfiable_signals & MOJO_HANDLE_SIGNAL_READABLE);
   ASSERT_FALSE(state.satisfiable_signals & MOJO_HANDLE_SIGNAL_WRITABLE);
   ASSERT_EQ(MOJO_RESULT_OK, MojoClose(mp1));
+  ASSERT_EQ(MOJO_RESULT_OK, MojoClose(client_mp));
 }
 
 TEST_F(EmbedderTest, MultiprocessBaseSharedMemory) {
@@ -338,9 +355,7 @@ DEFINE_TEST_CLIENT_TEST_WITH_PIPE(MultiprocessSharedMemoryClient,
 
   EXPECT_EQ("bye", ReadMessage(client_mp));
 
-  // 6. Close |sb1|. Should fail because |ExtractRegionFromSharedBuffer()|
-  // should have closed the handle.
-  EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT, MojoClose(sb1));
+  ASSERT_EQ(MOJO_RESULT_OK, MojoClose(client_mp));
 }
 
 #if BUILDFLAG(IS_MAC)
@@ -418,6 +433,7 @@ DEFINE_TEST_CLIENT_TEST_WITH_PIPE(MultiprocessMixMachAndFdsClient,
 
   // 3. Say bye!
   WriteMessage(client_mp, "bye");
+  ASSERT_EQ(MOJO_RESULT_OK, MojoClose(client_mp));
 }
 
 #endif  // BUILDFLAG(IS_MAC)

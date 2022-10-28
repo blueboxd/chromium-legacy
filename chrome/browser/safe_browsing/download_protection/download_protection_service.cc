@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -145,8 +145,8 @@ void MaybeLogSecuritySensitiveDownloadEvent(
 
 }  // namespace
 
-const void* const DownloadProtectionService::kDownloadPingTokenKey =
-    &kDownloadPingTokenKey;
+const void* const DownloadProtectionService::kDownloadProtectionDataKey =
+    &kDownloadProtectionDataKey;
 
 DownloadProtectionService::DownloadProtectionService(
     SafeBrowsingService* sb_service)
@@ -438,27 +438,54 @@ void DownloadProtectionService::ShowDetailsForDownload(
                              ui::PAGE_TRANSITION_LINK, false));
 }
 
-void DownloadProtectionService::SetDownloadPingToken(
+void DownloadProtectionService::SetDownloadProtectionData(
     download::DownloadItem* item,
-    const std::string& token) {
+    const std::string& token,
+    const ClientDownloadResponse::Verdict& verdict,
+    const ClientDownloadResponse::TailoredVerdict& tailored_verdict) {
   if (item) {
-    item->SetUserData(kDownloadPingTokenKey,
-                      std::make_unique<DownloadPingToken>(token));
+    item->SetUserData(kDownloadProtectionDataKey,
+                      std::make_unique<DownloadProtectionData>(
+                          token, verdict, tailored_verdict));
   }
 }
 
 std::string DownloadProtectionService::GetDownloadPingToken(
     const download::DownloadItem* item) {
-  base::SupportsUserData::Data* token_data =
-      item->GetUserData(kDownloadPingTokenKey);
-  if (token_data)
-    return static_cast<DownloadPingToken*>(token_data)->token_string();
+  base::SupportsUserData::Data* protection_data =
+      item->GetUserData(kDownloadProtectionDataKey);
+  if (protection_data)
+    return static_cast<DownloadProtectionData*>(protection_data)
+        ->token_string();
   else
     return std::string();
 }
 
+ClientDownloadResponse::Verdict
+DownloadProtectionService::GetDownloadProtectionVerdict(
+    const download::DownloadItem* item) {
+  base::SupportsUserData::Data* protection_data =
+      item->GetUserData(kDownloadProtectionDataKey);
+  if (protection_data)
+    return static_cast<DownloadProtectionData*>(protection_data)->verdict();
+  else
+    return ClientDownloadResponse::SAFE;
+}
+
+ClientDownloadResponse::TailoredVerdict
+DownloadProtectionService::GetDownloadProtectionTailoredVerdict(
+    const download::DownloadItem* item) {
+  base::SupportsUserData::Data* protection_data =
+      item->GetUserData(kDownloadProtectionDataKey);
+  if (protection_data)
+    return static_cast<DownloadProtectionData*>(protection_data)
+        ->tailored_verdict();
+  else
+    return ClientDownloadResponse::TailoredVerdict();
+}
+
 void DownloadProtectionService::MaybeSendDangerousDownloadOpenedReport(
-    const download::DownloadItem* item,
+    download::DownloadItem* item,
     bool show_download_in_folder) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   std::string token = GetDownloadPingToken(item);
@@ -473,29 +500,22 @@ void DownloadProtectionService::MaybeSendDangerousDownloadOpenedReport(
   if (browser_context->IsOffTheRecord())
     return;
 
-  // Only report downloads that are known to be dangerous.
-  if (!item->IsDangerous())
+  // Only report downloads that are known to be dangerous or was dangerous but
+  // was validated by the user.
+  if (!item->IsDangerous() &&
+      item->GetDangerType() != download::DOWNLOAD_DANGER_TYPE_USER_VALIDATED)
     return;
 
   OnDangerousDownloadOpened(item, profile);
   if (sb_service_ &&
       !token.empty() &&  // Only dangerous downloads have token stored.
       profile && (IsExtendedReportingEnabled(*profile->GetPrefs()))) {
-    auto report = std::make_unique<ClientSafeBrowsingReportRequest>();
-    report->set_url(item->GetURL().spec());
-    report->set_type(
-        ClientSafeBrowsingReportRequest::DANGEROUS_DOWNLOAD_OPENED);
-    report->set_token(token);
-    report->set_show_download_in_folder(show_download_in_folder);
     // If the download is opened, it indicates the user has bypassed the warning
-    // and decided to proceed.
-    report->set_did_proceed(true);
-    report->set_download_verdict(
-        DownloadDangerTypeToDownloadResponseVerdict(item->GetDangerType()));
-
-    ReportThreatDetailsResult result =
-        sb_service_->SendDownloadReport(profile, std::move(report));
-    DCHECK(result == ReportThreatDetailsResult::SUCCESS);
+    // and decided to proceed, so setting did_proceed to true.
+    bool is_successful = sb_service_->SendDownloadReport(
+        item, ClientSafeBrowsingReportRequest::DANGEROUS_DOWNLOAD_OPENED,
+        /*did_proceed=*/true, show_download_in_folder);
+    DCHECK(is_successful);
   }
 }
 

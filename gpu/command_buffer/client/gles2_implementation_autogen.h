@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -1158,10 +1158,6 @@ void FramebufferTextureMultiviewOVR(GLenum target,
 void MaxShaderCompilerThreadsKHR(GLuint count) override;
 
 GLuint CreateAndTexStorage2DSharedImageCHROMIUM(const GLbyte* mailbox) override;
-
-GLuint CreateAndTexStorage2DSharedImageWithInternalFormatCHROMIUM(
-    const GLbyte* mailbox,
-    GLenum internalformat) override;
 
 void BeginSharedImageAccessDirectCHROMIUM(GLuint texture, GLenum mode) override;
 

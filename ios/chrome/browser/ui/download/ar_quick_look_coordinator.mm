@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,11 +7,11 @@
 #import <ARKit/ARKit.h>
 #import <QuickLook/QuickLook.h>
 
-#include <memory>
+#import <memory>
 
-#include "base/ios/block_types.h"
-#include "base/metrics/histogram_functions.h"
-#include "base/scoped_observation.h"
+#import "base/ios/block_types.h"
+#import "base/metrics/histogram_functions.h"
+#import "base/scoped_observation.h"
 #import "ios/chrome/browser/download/ar_quick_look_tab_helper.h"
 #import "ios/chrome/browser/download/ar_quick_look_tab_helper_delegate.h"
 #import "ios/chrome/browser/main/browser.h"

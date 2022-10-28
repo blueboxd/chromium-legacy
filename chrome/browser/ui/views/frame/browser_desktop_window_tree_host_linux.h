@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -57,6 +57,11 @@ class BrowserDesktopWindowTreeHostLinux
   void UpdateFrameHints();
 
  private:
+  // DesktopWindowTreeHostPlatform:
+  void AddAdditionalInitProperties(
+      const views::Widget::InitParams& params,
+      ui::PlatformWindowInitProperties* properties) override;
+
   // BrowserDesktopWindowTreeHost:
   DesktopWindowTreeHost* AsDesktopWindowTreeHost() override;
   int GetMinimizeButtonOffset() const override;
@@ -82,6 +87,7 @@ class BrowserDesktopWindowTreeHostLinux
   void OnBoundsChanged(const BoundsChange& change) override;
   void OnWindowStateChanged(ui::PlatformWindowState old_state,
                             ui::PlatformWindowState new_state) override;
+  void OnWindowTiledStateChanged(ui::WindowTiledEdges new_tiled_edges) override;
 
   // ui::NativeThemeObserver:
   void OnNativeThemeUpdated(ui::NativeTheme* observed_theme) override;

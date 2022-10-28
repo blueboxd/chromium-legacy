@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -42,11 +42,10 @@ function createCheckPasswordSection(): SettingsPasswordCheckElement {
  * Helper method used to create a compromised list item.
  */
 function createLeakedPasswordItem(
-    entry: chrome.passwordsPrivate.PasswordUiEntry,
-    mutingEnabled = false): PasswordCheckListItemElement {
+    entry: chrome.passwordsPrivate.PasswordUiEntry):
+    PasswordCheckListItemElement {
   const leakedPasswordItem = document.createElement('password-check-list-item');
   leakedPasswordItem.item = entry;
-  leakedPasswordItem.mutingEnabled = mutingEnabled;
   document.body.appendChild(leakedPasswordItem);
   flush();
   return leakedPasswordItem;
@@ -448,8 +447,7 @@ suite('PasswordsCheckSection', function() {
     assertTrue(isElementVisible(section.$.noCompromisedCredentials));
   });
 
-  // Test verifies that compromised credentials are displayed in a proper way
-  // when dismiss compromised passwords option is disabled.
+  // Test verifies that compromised credentials are displayed in a proper way.
   test('someCompromisedCredentials', async function() {
     const leakedPasswords = [
       makeCompromisedCredential(
@@ -475,45 +473,9 @@ suite('PasswordsCheckSection', function() {
   });
 
   // Test verifies that compromised credentials are displayed in a proper way
-  // when dismiss compromised passwords option is disabled but muted
-  // passwords exist.
-  test('dontShowMutedPasswordsWhenOptionDisabled', async function() {
-    loadTimeData.overrideValues({showDismissCompromisedPasswordOption: false});
-    const leakedPasswords = [
-      makeCompromisedCredential(
-          /*url*/ 'one.com', /*username*/ 'test4',
-          /*type*/ CompromiseType.PHISHED, /*id*/ 1,
-          /*elapsedMinSinceCompromise*/ 1),
-      makeCompromisedCredential(
-          /*url*/ 'two.com', /*username*/ 'test3',
-          /*type*/ CompromiseType.LEAKED, /*id*/ 2,
-          /*elapsedMinSinceCompromise*/ 2),
-      makeCompromisedCredential(
-          /*url*/ 'three.com', /*username*/ 'test2',
-          /*type*/ CompromiseType.LEAKED,
-          /*id*/ 3, /*elapsedMinSinceCompromise*/ 3, /*isMuted*/ true),
-      makeCompromisedCredential(
-          /*url*/ 'four.com', /*username*/ 'test1',
-          /*type*/ CompromiseType.LEAKED, /*id*/ 4,
-          /*elapsedMinSinceCompromise*/ 4, /*isMuted*/ true),
-    ];
-    passwordManager.data.leakedCredentials = leakedPasswords;
-    const checkPasswordSection = createCheckPasswordSection();
-    await passwordManager.whenCalled('getCompromisedCredentials');
-    flush();
-    assertFalse(checkPasswordSection.$.compromisedCredentialsBody.hidden);
-    assertTrue(checkPasswordSection.$.noCompromisedCredentials.hidden);
-    assertFalse(!!checkPasswordSection.shadowRoot!.querySelector(
-        '#expandMutedLeakedCredentials'));
-    validateLeakedPasswordsList(checkPasswordSection, leakedPasswords);
-    validateLeakedPasswordsList(checkPasswordSection, [], /*isMuted*/ true);
-  });
-
-  // Test verifies that compromised credentials are displayed in a proper way
   // when dismiss compromised passwords option is enabled and dismissed
   // passwords exist.
   test('showMutedPasswordsWhenOptionEnabled', async function() {
-    loadTimeData.overrideValues({showDismissCompromisedPasswordOption: true});
     const leakedPasswords = [
       makeCompromisedCredential(
           /*url*/ 'one.com', /*username*/ 'test4',
@@ -573,8 +535,10 @@ suite('PasswordsCheckSection', function() {
         /*url*/ 'one.com', /*username*/ 'test4',
         /*type*/ CompromiseType.LEAKED);
     const passwordCheckListItem = createLeakedPasswordItem(password);
-    passwordCheckListItem.shadowRoot!
-        .querySelector<HTMLElement>('#changePasswordButton')!.click();
+    const button = passwordCheckListItem.shadowRoot!.querySelector<HTMLElement>(
+        '#changePasswordButton');
+    assertTrue(!!button);
+    button.click();
 
     const url = await testOpenWindowProxy.whenCalled('openURL');
     const interaction =
@@ -583,34 +547,68 @@ suite('PasswordsCheckSection', function() {
     assertEquals(PasswordCheckInteraction.CHANGE_PASSWORD, interaction);
   });
 
-  // Verify that for a leaked password the More Actions menu opens when the
-  // button is clicked.
-  // If dismiss compromised password option is disabled no buttons for muting or
-  // restoring must be displayed.
-  test('moreActionsMenu', async function() {
-    loadTimeData.overrideValues({showDismissCompromisedPasswordOption: false});
-    passwordManager.data.leakedCredentials = [
-      makeCompromisedCredential(
-          /*url*/ 'google.com', /*username*/ 'jdoerrie',
-          /*type*/ CompromiseType.LEAKED),
-    ];
-    const checkPasswordSection = createCheckPasswordSection();
-    await passwordManager.whenCalled('getCompromisedCredentials');
-    flush();
-    assertFalse(checkPasswordSection.$.compromisedCredentialsBody.hidden);
-    const listElement = checkPasswordSection.shadowRoot!.querySelector(
-        'password-check-list-item')!;
-    const menu = checkPasswordSection.$.moreActionsMenu;
+  // Verify that a click on "Change password" starts an Automatic Password
+  // Change flow.
+  test(
+      'changePasswordOpensAutomaticPasswordChangeAndRecordsAction',
+      async function() {
+        const password = makeCompromisedCredential(
+            /*url*/ 'one.com', /*username*/ 'test4',
+            /*type*/ CompromiseType.LEAKED);
+        password.hasStartableScript = true;
+        const passwordCheckListItem = createLeakedPasswordItem(password);
+        const button =
+            passwordCheckListItem.shadowRoot!.querySelector<HTMLElement>(
+                '#changePasswordButton');
+        assertTrue(!!button);
+        button.click();
 
-    assertFalse(menu.open);
-    listElement.$.more.click();
-    flush();
-    assertTrue(menu.open);
+        const credentialApc =
+            await passwordManager.whenCalled('startAutomatedPasswordChange');
+        assertEquals(credentialApc, password);
+        const interaction =
+            await passwordManager.whenCalled('recordPasswordCheckInteraction');
+        assertEquals(
+            PasswordCheckInteraction.CHANGE_PASSWORD_AUTOMATICALLY,
+            interaction);
+      });
 
-    assertFalse(!!checkPasswordSection.shadowRoot!.querySelector(
-        '#menuMuteCompromisedPassword'));
-    assertFalse(!!checkPasswordSection.shadowRoot!.querySelector(
-        '#menuUnmuteMutedCompromisedPassword'));
+  // Verify that elements without a startable script have the correct icon.
+  test('iconIsCorrectForPasswordWithoutScript', async function() {
+    const password = makeCompromisedCredential(
+        /*url*/ 'one.com', /*username*/ 'test4',
+        /*type*/ CompromiseType.LEAKED);
+    password.hasStartableScript = false;
+    const passwordCheckListItem = createLeakedPasswordItem(password);
+
+    const manualChangeIcon =
+        passwordCheckListItem.shadowRoot!.querySelector<HTMLElement>(
+            '#change-password-link-icon');
+    assertTrue(!!manualChangeIcon);
+
+    const automatedChangeIcon =
+        passwordCheckListItem.shadowRoot!.querySelector<HTMLElement>(
+            '#change-password-automatically-icon');
+    assertFalse(!!automatedChangeIcon);
+  });
+
+  // Verify that elements with a startable script have the correct icon.
+  test('iconIsCorrectForPasswordWithScript', async function() {
+    const password = makeCompromisedCredential(
+        /*url*/ 'one.com', /*username*/ 'test4',
+        /*type*/ CompromiseType.LEAKED);
+    password.hasStartableScript = true;
+    const passwordCheckListItem = createLeakedPasswordItem(password);
+
+    const manualChangeIcon =
+        passwordCheckListItem.shadowRoot!.querySelector<HTMLElement>(
+            '#change-password-link-icon');
+    assertFalse(!!manualChangeIcon);
+
+    const automatedChangeIcon =
+        passwordCheckListItem.shadowRoot!.querySelector<HTMLElement>(
+            '#change-password-automatically-icon');
+    assertTrue(!!automatedChangeIcon);
   });
 
   // Verify that for a leaked password the More Actions menu opens when the
@@ -618,7 +616,6 @@ suite('PasswordsCheckSection', function() {
   // If dismiss compromised password option is enabled and if the clicked item
   // is a leaked password: Menu must have a dismiss button.
   test('moreActionsMenuWithMuteButton', async function() {
-    loadTimeData.overrideValues({showDismissCompromisedPasswordOption: true});
     passwordManager.data.leakedCredentials = [
       makeCompromisedCredential(
           /*url*/ 'google.com', /*username*/ 'derinel',
@@ -650,7 +647,6 @@ suite('PasswordsCheckSection', function() {
   // and if the clicked item is a leaked password: Menu must have a disabled
   // dismiss button.
   test('moreActionsMenuWithMuteButtonDisabled', async function() {
-    loadTimeData.overrideValues({showDismissCompromisedPasswordOption: true});
     passwordManager.data.leakedCredentials = [
       makeCompromisedCredential(
           /*url*/ 'google.com', /*username*/ 'derinel',
@@ -688,7 +684,6 @@ suite('PasswordsCheckSection', function() {
   // If dismiss compromised password option is enabled and if the clicked item
   // is a leaked password: Menu must have a dismiss button.
   test('moreActionsMenuWithUnmuteButton', async function() {
-    loadTimeData.overrideValues({showDismissCompromisedPasswordOption: true});
     passwordManager.data.leakedCredentials = [
       makeCompromisedCredential(
           /*url*/ 'google.com', /*username*/ 'derinel',
@@ -720,7 +715,6 @@ suite('PasswordsCheckSection', function() {
   // if the clicked item is a leaked password: Menu must have a disabled dismiss
   // button.
   test('moreActionsMenuWithUnmuteButtonDisabled', async function() {
-    loadTimeData.overrideValues({showDismissCompromisedPasswordOption: true});
     passwordManager.data.leakedCredentials = [
       makeCompromisedCredential(
           /*url*/ 'google.com', /*username*/ 'derinel',
@@ -758,7 +752,6 @@ suite('PasswordsCheckSection', function() {
   // If dismiss compromised password option is enabled and if the clicked item
   // is a weak password: Menu should not have mute / dismiss buttons.
   test('moreActionsMenuForWeakPasswords', async function() {
-    loadTimeData.overrideValues({showDismissCompromisedPasswordOption: true});
     passwordManager.data.weakCredentials = [
       makeInsecureCredential(/*url*/ 'google.com', /*username*/ 'derinel'),
     ];
@@ -800,7 +793,6 @@ suite('PasswordsCheckSection', function() {
   // Test verifies that clicking dismiss button is calling proper proxy
   // function.
   test('mutePasswordButtonCallsBackend', async function() {
-    loadTimeData.overrideValues({showDismissCompromisedPasswordOption: true});
     passwordManager.data.leakedCredentials = [makeCompromisedCredential(
         /*url*/ 'google.com', /*username*/ 'username',
         /*type*/ CompromiseType.LEAKED)];
@@ -827,7 +819,6 @@ suite('PasswordsCheckSection', function() {
   // Test verifies that clicking restore button is calling proper proxy
   // function.
   test('unmutePasswordButtonCallsBackend', async function() {
-    loadTimeData.overrideValues({showDismissCompromisedPasswordOption: true});
     passwordManager.data.leakedCredentials = [makeCompromisedCredential(
         /*url*/ 'google.com', /*username*/ 'username',
         /*type*/ CompromiseType.LEAKED,
@@ -998,30 +989,14 @@ suite('PasswordsCheckSection', function() {
         'icon-weak-cta'));
   });
 
-  // Test that leaked muted password items have a strong CTA when the dismiss
-  // compromised passwords option is disabled.
-  test('showStrongCtaOnMutedLeaksIfDismissOptionDisabled', function() {
-    const passwordCheckListItem =
-        createLeakedPasswordItem(makeCompromisedCredential(
-            /*url*/ 'one.com', /*username*/ 'test6', CompromiseType.LEAKED,
-            /*id*/ 1, /*elapsedMinSinceCompromise*/ 1, /*isMuted*/ true));
-    const shadowRoot = passwordCheckListItem.shadowRoot!;
-    assertTrue(
-        shadowRoot.querySelector('#changePasswordButton')!.classList.contains(
-            'action-button'));
-    assertFalse(shadowRoot.querySelector('iron-icon')!.classList.contains(
-        'icon-weak-cta'));
-  });
-
   // Test that leaked muted password items have a weak CTA when the dismiss
   // compromised passwords option is enabled.
   test('showWeakCtaOnMutedLeaksIfDismissOptionEnabled', function() {
-    const passwordCheckListItem = createLeakedPasswordItem(
-        makeCompromisedCredential(
+    const passwordCheckListItem =
+        createLeakedPasswordItem(makeCompromisedCredential(
             /*url*/ 'one.com', /*username*/ 'test6',
             /*type*/ CompromiseType.LEAKED,
-            /*id*/ 1, /*elapsedMinSinceCompromise*/ 1, /*isMuted*/ true),
-        /*mutingEnabled*/ true);
+            /*id*/ 1, /*elapsedMinSinceCompromise*/ 1, /*isMuted*/ true));
     const shadowRoot = passwordCheckListItem.shadowRoot!;
     assertFalse(
         shadowRoot.querySelector('#changePasswordButton')!.classList.contains(
@@ -1163,7 +1138,6 @@ suite('PasswordsCheckSection', function() {
   // when the dismiss compromised passwords option is enabled. Shows only the
   // weak password count.
   test('doNotShowInsecurePasswordCount', async function() {
-    loadTimeData.overrideValues({showDismissCompromisedPasswordOption: true});
     const data = passwordManager.data;
     data.leakedCredentials = [
       makeCompromisedCredential(

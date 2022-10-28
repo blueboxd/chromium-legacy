@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/platform/mediastream/transferred_media_stream_component.h"
 
 #include "base/synchronization/lock.h"
+#include "third_party/blink/public/platform/modules/mediastream/web_media_stream_audio_sink.h"
 #include "third_party/blink/public/platform/web_audio_source_provider.h"
 #include "third_party/blink/renderer/platform/mediastream/media_stream_source.h"
 
@@ -16,7 +17,39 @@ TransferredMediaStreamComponent::TransferredMediaStreamComponent(
 
 void TransferredMediaStreamComponent::SetImplementation(
     MediaStreamComponent* component) {
+  MediaStreamTrackPlatform::CaptureHandle old_capture_handle =
+      GetCaptureHandle();
+  MediaStreamSource::ReadyState old_ready_state = GetReadyState();
+
   component_ = component;
+
+  // Observers may dispatch events which create and add new Observers. Such
+  // observers are added directly to the implementation since component_ is
+  // now set.
+  bool capture_handle_changed =
+      old_capture_handle.origin != GetCaptureHandle().origin ||
+      old_capture_handle.handle != GetCaptureHandle().handle;
+  for (MediaStreamSource::Observer* observer : observers_) {
+    if (capture_handle_changed) {
+      observer->SourceChangedCaptureHandle();
+    }
+    if (old_ready_state != GetReadyState()) {
+      observer->SourceChangedState();
+    }
+    component->AddSourceObserver(observer);
+  }
+  observers_.clear();
+
+  for (const auto& call : add_video_sink_calls_) {
+    component_->AddSink(call.sink, call.callback, call.is_secure,
+                        call.uses_alpha);
+  }
+  add_video_sink_calls_.clear();
+
+  for (auto* call : add_audio_sink_calls_) {
+    component_->AddSink(call);
+  }
+  add_audio_sink_calls_.clear();
 }
 
 MediaStreamComponent* TransferredMediaStreamComponent::Clone(
@@ -76,7 +109,7 @@ MediaStreamSource::ReadyState TransferredMediaStreamComponent::GetReadyState()
     return component_->GetReadyState();
   }
   // TODO(crbug.com/1288839): Return the transferred value
-  return MediaStreamSource::ReadyState::kReadyStateEnded;
+  return MediaStreamSource::ReadyState::kReadyStateLive;
 }
 
 bool TransferredMediaStreamComponent::Remote() const {
@@ -134,16 +167,6 @@ MediaStreamTrackPlatform* TransferredMediaStreamComponent::GetPlatformTrack()
   return nullptr;
 }
 
-[[deprecated]] void TransferredMediaStreamComponent::SetPlatformTrack(
-    std::unique_ptr<MediaStreamTrackPlatform> platform_track) {
-  if (component_) {
-    component_->SetPlatformTrack(std::move(platform_track));
-    return;
-  }
-  // TODO(https://crbug.com/1288839): Save and forward to component_ once it's
-  // initialized.
-}
-
 void TransferredMediaStreamComponent::GetSettings(
     MediaStreamTrackPlatform::Settings& settings) {
   if (component_) {
@@ -180,6 +203,38 @@ void TransferredMediaStreamComponent::SetCreationFrame(
   }
   // TODO(https://crbug.com/1288839): Save and forward to component_ once it's
   // initialized.
+}
+
+void TransferredMediaStreamComponent::AddSourceObserver(
+    MediaStreamSource::Observer* observer) {
+  if (component_) {
+    component_->AddSourceObserver(observer);
+  } else {
+    observers_.push_back(observer);
+  }
+}
+
+void TransferredMediaStreamComponent::AddSink(
+    WebMediaStreamSink* sink,
+    const VideoCaptureDeliverFrameCB& callback,
+    MediaStreamVideoSink::IsSecure is_secure,
+    MediaStreamVideoSink::UsesAlpha uses_alpha) {
+  DCHECK_EQ(MediaStreamSource::kTypeVideo, GetSourceType());
+  if (component_) {
+    component_->AddSink(sink, callback, is_secure, uses_alpha);
+    return;
+  }
+  add_video_sink_calls_.emplace_back(
+      AddSinkArgs{sink, std::move(callback), is_secure, uses_alpha});
+}
+
+void TransferredMediaStreamComponent::AddSink(WebMediaStreamAudioSink* sink) {
+  DCHECK_EQ(MediaStreamSource::kTypeAudio, GetSourceType());
+  if (component_) {
+    component_->AddSink(sink);
+    return;
+  }
+  add_audio_sink_calls_.emplace_back(sink);
 }
 
 String TransferredMediaStreamComponent::ToString() const {

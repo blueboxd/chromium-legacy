@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -66,6 +66,7 @@ class TriggerScriptCoordinator : public content::WebContentsObserver {
       std::unique_ptr<WebController> web_controller,
       std::unique_ptr<ServiceRequestSender> request_sender,
       const GURL& get_trigger_scripts_server,
+      const GURL& get_trigger_scripts_by_hash_prefix_server_,
       std::unique_ptr<StaticTriggerConditions> static_trigger_conditions,
       std::unique_ptr<DynamicTriggerConditions> dynamic_trigger_conditions,
       ukm::UkmRecorder* ukm_recorder,
@@ -126,7 +127,13 @@ class TriggerScriptCoordinator : public content::WebContentsObserver {
   friend class TriggerScriptCoordinatorTest;
 
   // From content::WebContentsObserver.
+  // By default, DidFinishNavigation will be used and the other one will early
+  // return. In case DidNavigation will not work properly, we a feature toggle
+  // to invert the situation.
+  void DidFinishNavigation(
+      content::NavigationHandle* navigation_handle) override;
   void PrimaryPageChanged(content::Page& page) override;
+
   void OnVisibilityChanged(content::Visibility visibility) override;
   void WebContentsDestroyed() override;
 
@@ -142,6 +149,11 @@ class TriggerScriptCoordinator : public content::WebContentsObserver {
       int http_status,
       const std::string& response,
       const ServiceRequestSender::ResponseInfo& response_info);
+  void OnGetTriggerScriptsByHashPrefix(
+      int http_status,
+      const std::string& response,
+      const ServiceRequestSender::ResponseInfo& response_info);
+  bool ShouldGetTriggerScriptsByHashPrefix();
   void RegisterExperimentSyntheticFieldTrial(
       const ScriptParameters& parameters) const;
   GURL GetCurrentURL() const;
@@ -210,6 +222,10 @@ class TriggerScriptCoordinator : public content::WebContentsObserver {
 
   // The URL of the server that should be contacted by |request_sender_|.
   GURL get_trigger_scripts_server_;
+
+  // The URL of the server that should be contacted by |request_sender_|
+  // to get the trigger scripts in a privacy-sensitive way.
+  GURL get_trigger_scripts_by_hash_prefix_server_;
 
   // The web controller to evaluate element conditions.
   std::unique_ptr<WebController> web_controller_;

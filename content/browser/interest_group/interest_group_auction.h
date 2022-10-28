@@ -26,6 +26,7 @@
 #include "content/services/auction_worklet/public/mojom/bidder_worklet.mojom.h"
 #include "content/services/auction_worklet/public/mojom/private_aggregation_request.mojom-forward.h"
 #include "content/services/auction_worklet/public/mojom/seller_worklet.mojom.h"
+#include "mojo/public/cpp/bindings/associated_receiver_set.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
 #include "services/network/public/mojom/client_security_state.mojom.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -153,8 +154,10 @@ class CONTENT_EXPORT InterestGroupAuction
 
   struct BidState {
     BidState();
-    BidState(BidState&&);
     ~BidState();
+
+    BidState(BidState&&);
+    BidState& operator=(BidState&&);
 
     // Disable copy and assign, since this struct owns a
     // auction_worklet::mojom::BiddingInterestGroupPtr, and mojo classes are not
@@ -171,6 +174,12 @@ class CONTENT_EXPORT InterestGroupAuction
     void EndTracing();
 
     StorageInterestGroup bidder;
+
+    // This starts off as the base priority of the interest group, but is
+    // updated by sparse vector multiplications using first the priority vector
+    // from the interest group, and then the one received from the trusted
+    // server, if appropriate.
+    double calculated_priority;
 
     // Holds a reference to the BidderWorklet, once created.
     std::unique_ptr<AuctionWorkletManager::WorkletHandle> worklet_handle;
@@ -190,6 +199,22 @@ class CONTENT_EXPORT InterestGroupAuction
     // absl::nullopt means no ID is currently assigned, and there's no pending
     // event.
     absl::optional<uint64_t> trace_id;
+
+    // ReceiverId for use as a GenerateBidClient. Only populated while
+    // generateBid() is running.
+    absl::optional<mojo::ReceiverId> generate_bid_client_receiver_id;
+
+    // True when OnBiddingSignalsReceived() has been invoked. Needed to
+    // correctly handle the case the bidder worklet pipe is closed before
+    // OnBiddingSignalsReceived() is invoked.
+    bool bidding_signals_received = false;
+
+    // Callback to resume generating a bid after OnBiddingSignalsReceived() has
+    // been invoked. Only used when `enabled_bidding_signals_prioritization` is
+    // true for any interest group with the same owner, while waiting for all
+    // interest groups to receive their final priorities. In other cases, the
+    // callback is invoked immediately.
+    base::OnceClosure resume_generate_bid_callback;
 
     // True if the worklet successfully made a bid.
     bool made_bid = false;
@@ -610,8 +635,9 @@ class CONTENT_EXPORT InterestGroupAuction
       base::OnceClosure worklet_available_callback,
       AuctionWorkletManager::FatalErrorCallback fatal_error_callback);
 
-  // Replace `${}` placeholders in debug report URLs for post auction signals
-  // if exist.
+  // Replaces `${}` placeholders in a debug report URL's query string for post
+  // auction signals if exist. Only replaces unescaped placeholder ${}, but
+  // not escaped placeholder (i.e., %24%7B%7D).
   static GURL FillPostAuctionSignals(const GURL& url,
                                      const PostAuctionSignals& signals,
                                      const absl::optional<PostAuctionSignals>&
@@ -702,7 +728,8 @@ class CONTENT_EXPORT InterestGroupAuction
   int num_owners_loaded_ = 0;
 
   // The number of buyers with InterestGroups participating in an auction.
-  // Includes buyers from nested component auctions. Double-counts buyers in
+  // Includes buyers from nested component auctions, but excludes buyers with
+  // no ads or no script URL. Double-counts buyers that participate in
   // multiple Auctions.
   int num_owners_with_interest_groups_ = 0;
 

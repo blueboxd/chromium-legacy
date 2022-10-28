@@ -1,20 +1,20 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #import "ios/chrome/browser/ui/settings/content_settings/block_popups_table_view_controller.h"
 
-#include "base/logging.h"
+#import "base/logging.h"
 #import "base/mac/foundation_util.h"
-#include "base/strings/sys_string_conversions.h"
-#include "base/values.h"
-#include "components/content_settings/core/browser/host_content_settings_map.h"
-#include "components/content_settings/core/common/content_settings.h"
-#include "components/content_settings/core/common/content_settings_pattern.h"
-#include "components/content_settings/core/common/pref_names.h"
-#include "components/prefs/pref_service.h"
-#include "ios/chrome/browser/browser_state/chrome_browser_state.h"
-#include "ios/chrome/browser/content_settings/host_content_settings_map_factory.h"
+#import "base/strings/sys_string_conversions.h"
+#import "base/values.h"
+#import "components/content_settings/core/browser/host_content_settings_map.h"
+#import "components/content_settings/core/common/content_settings.h"
+#import "components/content_settings/core/common/content_settings_pattern.h"
+#import "components/content_settings/core/common/pref_names.h"
+#import "components/prefs/pref_service.h"
+#import "ios/chrome/browser/browser_state/chrome_browser_state.h"
+#import "ios/chrome/browser/content_settings/host_content_settings_map_factory.h"
 #import "ios/chrome/browser/net/crurl.h"
 #import "ios/chrome/browser/ui/settings/elements/enterprise_info_popover_view_controller.h"
 #import "ios/chrome/browser/ui/settings/settings_navigation_controller.h"
@@ -26,11 +26,11 @@
 #import "ios/chrome/browser/ui/table_view/cells/table_view_switch_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_text_header_footer_item.h"
 #import "ios/chrome/browser/ui/table_view/table_view_utils.h"
-#include "ios/chrome/browser/ui/ui_feature_flags.h"
-#include "ios/chrome/grit/ios_strings.h"
+#import "ios/chrome/browser/ui/ui_feature_flags.h"
+#import "ios/chrome/grit/ios_strings.h"
 #import "net/base/mac/url_conversions.h"
-#include "ui/base/l10n/l10n_util.h"
-#include "ui/base/l10n/l10n_util_mac.h"
+#import "ui/base/l10n/l10n_util.h"
+#import "ui/base/l10n/l10n_util_mac.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -59,10 +59,10 @@ typedef NS_ENUM(NSInteger, ItemType) {
   ChromeBrowserState* _browserState;  // weak
 
   // List of url patterns that are allowed to display popups.
-  base::ListValue _exceptions;
+  base::Value::List _exceptions;
 
   // List of url patterns set by policy that are allowed to display popups.
-  base::ListValue _allowPopupsByPolicy;
+  base::Value::List _allowPopupsByPolicy;
 
   // The observable boolean that binds to the "Disable Popups" setting state.
   ContentSettingBackedBoolean* _disablePopupsSetting;
@@ -134,8 +134,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   }
 
   if ([self popupsCurrentlyBlocked] &&
-      (_exceptions.GetListDeprecated().size() ||
-       _allowPopupsByPolicy.GetListDeprecated().size())) {
+      (_exceptions.size() || _allowPopupsByPolicy.size())) {
     [self populateExceptionsItems];
   }
 }
@@ -145,7 +144,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
 }
 
 - (BOOL)editButtonEnabled {
-  return _exceptions.GetListDeprecated().size() > 0;
+  return _exceptions.size() > 0;
 }
 
 // Override.
@@ -221,7 +220,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   [self deleteItemAtIndexPaths:@[ indexPath ]];
   if (![self.tableViewModel
           hasSectionForSectionIdentifier:SectionIdentifierExceptions] ||
-      !_exceptions.GetListDeprecated().size()) {
+      !_exceptions.size()) {
     self.navigationItem.rightBarButtonItem.enabled = NO;
   }
 }
@@ -297,10 +296,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
   for (NSIndexPath* indexPath in indexPaths) {
     size_t urlIndex = indexPath.item;
     std::string urlToRemove;
-    base::Value::ListView exceptions_view = _exceptions.GetListDeprecated();
-    if (urlIndex < exceptions_view.size() &&
-        exceptions_view[urlIndex].is_string()) {
-      urlToRemove = exceptions_view[urlIndex].GetString();
+    if (urlIndex < _exceptions.size() && _exceptions[urlIndex].is_string()) {
+      urlToRemove = _exceptions[urlIndex].GetString();
     }
 
     // Remove the exception for the site by resetting its popup setting to the
@@ -312,7 +309,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
             CONTENT_SETTING_DEFAULT);
 
     // Remove the site from `_exceptions`.
-    _exceptions.EraseListIter(exceptions_view.begin() + urlIndex);
+    _exceptions.erase(_exceptions.begin() + urlIndex);
   }
   [self.tableView
       performBatchUpdates:^{
@@ -390,7 +387,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   [model setHeader:header forSectionWithIdentifier:SectionIdentifierExceptions];
 
   // Populate the exception items set by the user.
-  for (const base::Value& exception : _exceptions.GetListDeprecated()) {
+  for (const base::Value& exception : _exceptions) {
     std::string allowed_url;
     if (exception.is_string())
       allowed_url = exception.GetString();
@@ -401,7 +398,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   }
 
   // Populate the allowed popup items set by the policy.
-  for (const base::Value& l : _allowPopupsByPolicy.GetListDeprecated()) {
+  for (const base::Value& l : _allowPopupsByPolicy) {
     std::string allowed_url_by_policy;
     if (l.is_string())
       allowed_url_by_policy = l.GetString();
@@ -413,8 +410,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
 }
 
 - (void)layoutSections:(BOOL)blockPopupsIsOn {
-  BOOL hasExceptions = _exceptions.GetListDeprecated().size() ||
-                       _allowPopupsByPolicy.GetListDeprecated().size();
+  BOOL hasExceptions = _exceptions.size() || _allowPopupsByPolicy.size();
   BOOL exceptionsListShown = [self.tableViewModel
       hasSectionForSectionIdentifier:SectionIdentifierExceptions];
 

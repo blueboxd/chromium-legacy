@@ -44,11 +44,27 @@ ClientIdData::ClientIdData(const GURL& terms_of_service_url,
                            const GURL& privacy_policy_url)
     : terms_of_service_url{terms_of_service_url},
       privacy_policy_url(privacy_policy_url) {}
+ClientIdData::ClientIdData(const ClientIdData& other) = default;
+ClientIdData::~ClientIdData() = default;
 
 IdentityProviderMetadata::IdentityProviderMetadata() = default;
 IdentityProviderMetadata::~IdentityProviderMetadata() = default;
 IdentityProviderMetadata::IdentityProviderMetadata(
     const IdentityProviderMetadata& other) = default;
+
+IdentityProviderData::IdentityProviderData(
+    const std::string& idp_for_display,
+    const std::vector<IdentityRequestAccount>& accounts,
+    const IdentityProviderMetadata& idp_metadata,
+    const ClientIdData& client_id_data)
+    : idp_for_display{idp_for_display},
+      accounts{accounts},
+      idp_metadata{idp_metadata},
+      client_id_data{client_id_data} {}
+
+IdentityProviderData::IdentityProviderData(const IdentityProviderData& other) =
+    default;
+IdentityProviderData::~IdentityProviderData() = default;
 
 int IdentityRequestDialogController::GetBrandIconIdealSize() {
   return 0;
@@ -59,13 +75,19 @@ int IdentityRequestDialogController::GetBrandIconMinimumSize() {
 }
 
 void IdentityRequestDialogController::ShowAccountsDialog(
-    content::WebContents* rp_web_contents,
-    const GURL& idp_signin_url,
-    base::span<const IdentityRequestAccount> accounts,
-    const IdentityProviderMetadata& idp_metadata,
-    const ClientIdData& client_id_data,
+    WebContents* rp_web_contents,
+    const std::string& rp_for_display,
+    const std::vector<IdentityProviderData>& identity_provider_data,
     IdentityRequestAccount::SignInMode sign_in_mode,
     AccountSelectionCallback on_selected,
+    DismissCallback dismiss_callback) {
+  std::move(dismiss_callback).Run(DismissReason::OTHER);
+}
+
+void IdentityRequestDialogController::ShowFailureDialog(
+    WebContents* rp_web_contents,
+    const std::string& rp_for_display,
+    const std::string& idp_for_display,
     DismissCallback dismiss_callback) {
   std::move(dismiss_callback).Run(DismissReason::OTHER);
 }

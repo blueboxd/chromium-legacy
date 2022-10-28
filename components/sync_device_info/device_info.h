@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -14,10 +14,6 @@
 #include "base/time/time.h"
 #include "components/sync/base/model_type.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
-
-namespace base {
-class DictionaryValue;
-}
 
 namespace sync_pb {
 enum SharingSpecificFields_EnabledFeatures : int;
@@ -177,12 +173,6 @@ class DeviceInfo {
   // Returns the data types for which this device receives invalidations.
   const ModelTypeSet& interested_data_types() const;
 
-  // Gets the OS in string form.
-  std::string GetOSString() const;
-
-  // Gets the device type in string form.
-  std::string GetDeviceTypeString() const;
-
   // Apps can set ids for a device that is meaningful to them but
   // not unique enough so the user can be tracked. Exposing |guid|
   // would lead to a stable unique id for a device which can potentially
@@ -202,10 +192,6 @@ class DeviceInfo {
   void set_fcm_registration_token(const std::string& fcm_token);
 
   void set_interested_data_types(const ModelTypeSet& data_types);
-
-  // Converts the |DeviceInfo| values to a JS friendly DictionaryValue,
-  // which extension APIs can expose to third party apps.
-  std::unique_ptr<base::DictionaryValue> ToValue() const;
 
  private:
   const std::string guid_;

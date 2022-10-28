@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -188,11 +188,11 @@ class ExtensionSettingsApiTest : public ExtensionApiTest {
     loop.Run();
   }
 
-  void SetPolicies(const base::DictionaryValue& policies) {
+  void SetPolicies(const base::Value::Dict& policies) {
     std::unique_ptr<policy::PolicyBundle> bundle(new policy::PolicyBundle());
     policy::PolicyMap& policy_map = bundle->Get(policy::PolicyNamespace(
         policy::POLICY_DOMAIN_EXTENSIONS, kManagedStorageExtensionId));
-    policy_map.LoadFrom(&policies, policy::POLICY_LEVEL_MANDATORY,
+    policy_map.LoadFrom(policies, policy::POLICY_LEVEL_MANDATORY,
                         policy::POLICY_SCOPE_USER, policy::POLICY_SOURCE_CLOUD);
     policy_provider_.UpdatePolicy(std::move(bundle));
   }
@@ -211,7 +211,7 @@ class ExtensionSettingsApiTest : public ExtensionApiTest {
 
     // Only load the extension after the listeners have been set up, to avoid
     // initialisation race conditions.
-    const Extension* extension = NULL;
+    const Extension* extension = nullptr;
     if (extension_dir) {
       extension = LoadExtension(
           test_data_dir_.AppendASCII("settings").AppendASCII(*extension_dir),
@@ -729,7 +729,7 @@ IN_PROC_BROWSER_TEST_P(ExtensionSettingsManagedStorageApiTest, ManagedStorage) {
                                     .Build())
                    .Build())
           .Build();
-  SetPolicies(*policy);
+  SetPolicies(policy->GetDict());
   // Now run the extension.
   ASSERT_TRUE(RunExtensionTest("settings/managed_storage")) << message_;
 }
@@ -749,7 +749,7 @@ IN_PROC_BROWSER_TEST_P(ExtensionSettingsManagedStorageApiTest,
           .Set("changes-policy", "bbb")
           .Set("deleted-policy", "ccc")
           .Build();
-  SetPolicies(*policy);
+  SetPolicies(policy->GetDict());
 
   ExtensionTestMessageListener ready_listener("ready");
   // Load the extension to install the event listener and wait for the
@@ -769,7 +769,7 @@ IN_PROC_BROWSER_TEST_P(ExtensionSettingsManagedStorageApiTest,
       .Set("changes-policy", "ddd")
       .Set("new-policy", "eee")
       .Build();
-  SetPolicies(*policy);
+  SetPolicies(policy->GetDict());
   EXPECT_TRUE(events_result_catcher_.GetNextResult())
       << events_result_catcher_.message();
 }

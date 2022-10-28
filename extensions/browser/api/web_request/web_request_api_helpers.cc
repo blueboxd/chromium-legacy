@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,7 +7,6 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include <algorithm>
 #include <cmath>
 #include <tuple>
 #include <utility>
@@ -124,7 +123,7 @@ void RecordDNRRequestHeaderChanged(RequestHeaderType type) {
 }
 
 bool IsStringLowerCaseASCII(base::StringPiece s) {
-  return std::none_of(s.begin(), s.end(), base::IsAsciiUpper<char>);
+  return base::ranges::none_of(s, base::IsAsciiUpper<char>);
 }
 
 constexpr auto kRequestHeaderEntries =
@@ -1239,10 +1238,8 @@ void MergeOnBeforeSendHeadersResponses(
   };
 
   // Some sanity checks.
-  DCHECK(std::all_of(removed_headers->begin(), removed_headers->end(),
-                     IsStringLowerCaseASCII));
-  DCHECK(std::all_of(set_headers->begin(), set_headers->end(),
-                     IsStringLowerCaseASCII));
+  DCHECK(base::ranges::all_of(*removed_headers, IsStringLowerCaseASCII));
+  DCHECK(base::ranges::all_of(*set_headers, IsStringLowerCaseASCII));
   DCHECK(base::ranges::includes(
       *set_headers,
       base::STLSetUnion<std::set<std::string>>(
@@ -1465,7 +1462,7 @@ void MergeCookiesInOnHeadersReceivedResponses(
     return;
 
   // Only create a copy if we really want to modify the response headers.
-  if (override_response_headers->get() == NULL) {
+  if (override_response_headers->get() == nullptr) {
     *override_response_headers = base::MakeRefCounted<net::HttpResponseHeaders>(
         original_response_headers->raw_headers());
   }
@@ -1608,7 +1605,7 @@ void MergeOnHeadersReceivedResponses(
   MergeRedirectUrlOfResponses(request.url, deltas, &new_url, ignored_actions);
   if (new_url.is_valid()) {
     // Only create a copy if we really want to modify the response headers.
-    if (override_response_headers->get() == NULL) {
+    if (override_response_headers->get() == nullptr) {
       *override_response_headers =
           base::MakeRefCounted<net::HttpResponseHeaders>(
               original_response_headers->raw_headers());
@@ -1656,12 +1653,9 @@ void MergeOnHeadersReceivedResponses(
         modified_header_names.insert(header.first);
     }
 
-    DCHECK(std::all_of(modified_header_names.begin(),
-                       modified_header_names.end(), IsStringLowerCaseASCII));
-    DCHECK(std::all_of(added_header_names.begin(), added_header_names.end(),
-                       IsStringLowerCaseASCII));
-    DCHECK(std::all_of(removed_header_names.begin(), removed_header_names.end(),
-                       IsStringLowerCaseASCII));
+    DCHECK(base::ranges::all_of(modified_header_names, IsStringLowerCaseASCII));
+    DCHECK(base::ranges::all_of(added_header_names, IsStringLowerCaseASCII));
+    DCHECK(base::ranges::all_of(removed_header_names, IsStringLowerCaseASCII));
 
     record_response_headers(modified_header_names,
                             &RecordResponseHeaderChanged);

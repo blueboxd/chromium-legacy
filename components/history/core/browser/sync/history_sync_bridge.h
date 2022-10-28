@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -55,6 +55,9 @@ class HistorySyncBridge : public syncer::ModelTypeSyncBridge,
   void GetAllDataForDebugging(DataCallback callback) override;
   std::string GetClientTag(const syncer::EntityData& entity_data) override;
   std::string GetStorageKey(const syncer::EntityData& entity_data) override;
+  syncer::ConflictResolution ResolveConflict(
+      const std::string& storage_key,
+      const syncer::EntityData& remote_data) const override;
 
   // HistoryBackendObserver:
   void OnURLVisited(HistoryBackend* history_backend,
@@ -101,10 +104,6 @@ class HistorySyncBridge : public syncer::ModelTypeSyncBridge,
   // (because before that, the cache GUID isn't known).
   std::string GetLocalCacheGuid() const;
 
-  // For each entry in `visits`, queries the corresponding URLRow from the
-  // history backend.
-  std::vector<URLRow> QueryURLsForVisits(const std::vector<VisitRow>& visits);
-
   // A non-owning pointer to the backend, which we're syncing local changes from
   // and sync changes to. Never null.
   const raw_ptr<HistoryBackendForSync> history_backend_;
@@ -119,7 +118,7 @@ class HistorySyncBridge : public syncer::ModelTypeSyncBridge,
 
   // HistoryBackend uses SequencedTaskRunner, so this makes sure
   // HistorySyncBridge is used on the correct sequence.
-  base::SequenceChecker sequence_checker_;
+  SEQUENCE_CHECKER(sequence_checker_);
 
   // Tracks observed history backend, for receiving updates from history
   // backend.

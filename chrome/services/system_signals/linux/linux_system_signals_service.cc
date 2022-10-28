@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "components/device_signals/core/common/common_types.h"
+#include "components/device_signals/core/system_signals/executable_metadata_service.h"
 #include "components/device_signals/core/system_signals/file_system_service.h"
 #include "components/device_signals/core/system_signals/linux/linux_platform_delegate.h"
 #include "components/device_signals/core/system_signals/platform_delegate.h"
@@ -18,7 +19,10 @@ LinuxSystemSignalsService::LinuxSystemSignalsService(
     : LinuxSystemSignalsService(
           std::move(receiver),
           device_signals::FileSystemService::Create(
-              std::make_unique<device_signals::LinuxPlatformDelegate>())) {}
+              std::make_unique<device_signals::LinuxPlatformDelegate>(),
+              device_signals::ExecutableMetadataService::Create(
+                  std::make_unique<device_signals::LinuxPlatformDelegate>()))) {
+}
 
 LinuxSystemSignalsService::LinuxSystemSignalsService(
     mojo::PendingReceiver<device_signals::mojom::SystemSignalsService> receiver,

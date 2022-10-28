@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,6 +8,7 @@ import {Url} from 'chrome://resources/mojo/url/mojom/url.mojom-webui.js';
 
 import {UserImage} from '../personalization_app.mojom-webui.js';
 import {PersonalizationState} from '../personalization_state.js';
+import {getSanitizedDefaultImageUrl} from '../utils.js';
 
 /**
  * @fileoverview Utility functions to derive a user image URL to display from
@@ -63,9 +64,12 @@ function bufferToPngObjectUrl(value: BigBuffer): Url|null {
  */
 export function selectUserImageUrl(state: PersonalizationState): Url|null {
   const userImage = state.user.image;
+  const placeHolderUrl = {
+    url: 'chrome://theme/IDR_PROFILE_AVATAR_PLACEHOLDER_LARGE',
+  };
 
   if (!userImage) {
-    return null;
+    return placeHolderUrl;
   }
 
   // Generated types for |userImage| are incorrect for mojom unions. Only one
@@ -73,19 +77,18 @@ export function selectUserImageUrl(state: PersonalizationState): Url|null {
   // to do exhaustiveness checking in the switch/case.
   assert(Object.keys(userImage).length === 1, 'only one key is set');
   const key = Object.keys(userImage)[0] as keyof UserImage;
-
   switch (key) {
     case 'invalidImage':
-      return null;
+      return placeHolderUrl;
     case 'defaultImage':
-      return userImage.defaultImage!.url;
+      return getSanitizedDefaultImageUrl(userImage.defaultImage!.url);
     case 'profileImage':
       return state.user.profileImage;
     case 'externalImage':
       return bufferToPngObjectUrl(userImage.externalImage!);
     default:
       console.error('Unknown image type received', key);
-      return null;
+      return placeHolderUrl;
   }
 }
 

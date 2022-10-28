@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -70,9 +70,10 @@ class ChromeOSPermissionMessageUnittest : public testing::Test {
                .SetManifestKey(
                    "externally_connectable",
                    extensions::DictionaryBuilder()
-                       .Set("matches", extensions::ListBuilder()
-                                           .Append("*://www.google.com/*")
-                                           .Build())
+                       .Set("matches",
+                            extensions::ListBuilder()
+                                .Append("*://googlechromelabs.github.io/*")
+                                .Build())
                        .Build())
                .SetID(kChromeOSSystemExtensionId)  // only allowlisted id
                .SetLocation(ManifestLocation::kInternal)

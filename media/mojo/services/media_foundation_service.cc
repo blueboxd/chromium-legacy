@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -318,6 +318,10 @@ absl::optional<CdmCapability> GetCdmCapability(
       // IsTypeSupported() does not support querying profiling, in general
       // assume all relevant profiles are supported.
       VideoCodecInfo video_codec_info;
+
+      // `supports_clear_lead` should be set to false until detection for clear
+      // lead support is fixed and the query works as expected.
+      video_codec_info.supports_clear_lead = false;
 
 #if BUILDFLAG(ENABLE_PLATFORM_DOLBY_VISION) && BUILDFLAG(ENABLE_PLATFORM_HEVC)
       // Dolby Vision on Windows only support profile 4/5/8 now.

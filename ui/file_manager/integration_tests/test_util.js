@@ -201,24 +201,6 @@ export async function sendBrowserTestCommand(command, callback, opt_debug) {
 }
 
 /**
- * Waits for an app window with the URL |windowUrl|.
- * @param {string} windowUrl URL of the app window to wait for.
- * @return {Promise} Promise to be fulfilled with the window ID of the
- *     app window.
- */
-export function waitForAppWindow(windowUrl) {
-  const caller = getCaller();
-  const command = {'name': 'getAppWindowId', 'windowUrl': windowUrl};
-  return repeatUntil(async () => {
-    const result = await sendTestMessage(command);
-    if (result == 'none') {
-      return pending(caller, 'getAppWindowId ' + windowUrl);
-    }
-    return result;
-  });
-}
-
-/**
  * Get all the browser windows.
  * @param {number} expectedInitialCount The number of windows expected before
  *     opening a new one.
@@ -1585,6 +1567,35 @@ export const ENTRIES = {
     nameText: 'invalidLastModifiedDate.txt',
     sizeText: '51 bytes',
     typeText: 'Plain text',
+  }),
+
+  trashRootDirectory: new TestEntryInfo({
+    type: EntryType.DIRECTORY,
+    targetPath: '.Trash',
+    lastModifiedTime: 'Jan 1, 1980, 11:59 PM',
+    nameText: '.Trash',
+    sizeText: '--',
+    typeText: 'Folder',
+  }),
+
+  trashInfoDirectory: new TestEntryInfo({
+    type: EntryType.DIRECTORY,
+    targetPath: '.Trash/info',
+    lastModifiedTime: 'Jan 1, 1980, 11:59 PM',
+    nameText: 'info',
+    sizeText: '--',
+    typeText: 'Folder',
+  }),
+
+  oldTrashInfoFile: new TestEntryInfo({
+    type: EntryType.FILE,
+    sourceFileName: 'old_file.trashinfo',
+    targetPath: '.Trash/info/hello.txt.trashinfo',
+    lastModifiedTime: 'Jan 1, 1980, 11:59 PM',
+    mimeType: 'text/plan',
+    nameText: 'hello.txt.trashinfo',
+    sizeText: '64 bytes',
+    typeText: 'TRASHINFO',
   }),
 };
 

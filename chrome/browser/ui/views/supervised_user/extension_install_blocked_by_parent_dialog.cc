@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -65,7 +65,7 @@ void ShowExtensionInstallBlockedByParentDialog(
           .SetTitle(GetTitle(action, extension_type))
           .SetIcon(ui::ImageModel::FromImageSkia(gfx::CreateVectorIcon(
               chromeos::kNotificationSupervisedUserIcon, ui::kColorIcon)))
-          .AddBodyText(
+          .AddParagraph(
               ui::DialogModelLabel(GetBodyText(action, extension_type)))
           .AddOkButton(base::DoNothing(), l10n_util::GetStringUTF16(IDS_OK))
           .SetDialogDestroyingCallback(std::move(done_callback))

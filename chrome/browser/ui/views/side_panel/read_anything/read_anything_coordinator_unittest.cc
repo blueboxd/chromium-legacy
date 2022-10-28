@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -107,8 +107,8 @@ TEST_F(ReadAnythingCoordinatorTest, ActivatesAndDeactivatesController) {
   side_panel_coordinator_->Close();
   EXPECT_FALSE(IsControllerActive());
 
-  SidePanelEntry* entry =
-      side_panel_registry_->GetEntryForId(SidePanelEntry::Id::kReadAnything);
+  SidePanelEntry* entry = side_panel_registry_->GetEntryForKey(
+      SidePanelEntry::Key(SidePanelEntry::Id::kReadAnything));
   entry->OnEntryShown();
   EXPECT_TRUE(IsControllerActive());
   entry->OnEntryHidden();

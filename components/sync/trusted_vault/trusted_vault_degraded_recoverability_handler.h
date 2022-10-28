@@ -1,4 +1,4 @@
-// Copyright (c) 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -39,20 +39,23 @@ class TrustedVaultDegradedRecoverabilityHandler {
     virtual void WriteDegradedRecoverabilityState(
         const sync_pb::LocalTrustedVaultDegradedRecoverabilityState&
             degraded_recoverability_state) = 0;
-    virtual void OnDegradedRecoverabilityChanged(bool value) = 0;
+    virtual void OnDegradedRecoverabilityChanged() = 0;
   };
 
   // `connection` and `delegate` must not be null and must outlive this object.
   TrustedVaultDegradedRecoverabilityHandler(
       TrustedVaultConnection* connection,
       Delegate* delegate,
-      const CoreAccountInfo& account_info);
+      const CoreAccountInfo& account_info,
+      const sync_pb::LocalTrustedVaultDegradedRecoverabilityState&
+          degraded_recoverability_state);
   TrustedVaultDegradedRecoverabilityHandler(
       const TrustedVaultDegradedRecoverabilityHandler&) = delete;
   TrustedVaultDegradedRecoverabilityHandler& operator=(
       const TrustedVaultDegradedRecoverabilityHandler&) = delete;
   ~TrustedVaultDegradedRecoverabilityHandler();
 
+  void HintDegradedRecoverabilityChanged();
   void StartLongIntervalRefreshing();
   void StartShortIntervalRefreshing();
   void RefreshImmediately();

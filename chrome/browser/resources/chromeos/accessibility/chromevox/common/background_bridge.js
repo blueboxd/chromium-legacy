@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -312,6 +312,15 @@ BackgroundBridge.PanelBackground = {
   },
 
   /**
+   * Adds an event listener to detect panel collapse.
+   */
+  async setPanelCollapseWatcher() {
+    return BridgeHelper.sendMessage(
+        BridgeConstants.PanelBackground.TARGET,
+        BridgeConstants.PanelBackground.Action.SET_PANEL_COLLAPSE_WATCHER);
+  },
+
+  /**
    * Sets the current ChromeVox focus to the current ISearch node.
    * @return {!Promise}
    */
@@ -322,7 +331,7 @@ BackgroundBridge.PanelBackground = {
   },
 
   /**
-   * Listens for focus events, and returns once the target is not the panel.
+   * Wait for the promise to notify panel collapse to resolved
    */
   async waitForPanelCollapse() {
     return BridgeHelper.sendMessage(

@@ -1,4 +1,4 @@
-# Copyright 2021 The Chromium Authors. All rights reserved.
+# Copyright 2021 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -10,6 +10,8 @@ visibility = [ "//fuchsia_web/*" ]
 source_set("test_support") {
   testonly = true
   sources = [
+    "fake_feedback_service.cc",
+    "fake_feedback_service.h",
     "fit_adapter.h",
     "frame_test_util.cc",
     "frame_test_util.h",
@@ -17,17 +19,29 @@ source_set("test_support") {
     "test_devtools_list_fetcher.h",
     "test_navigation_listener.cc",
     "test_navigation_listener.h",
+    "test_realm_support.cc",
+    "test_realm_support.h",
     "url_request_rewrite_test_util.cc",
     "url_request_rewrite_test_util.h",
   ]
   public_deps = [
     "//base",
+    "//third_party/abseil-cpp:absl",
+    "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.feedback",
+    "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.mem",
+    "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.web",
+    "//third_party/fuchsia-sdk/sdk/pkg/fidl_cpp",
+    "//third_party/fuchsia-sdk/sdk/pkg/fit",
+    "//third_party/fuchsia-sdk/sdk/pkg/sys_component_cpp_testing",
+  ]
+  deps = [
     "//fuchsia_web/common",
     "//net",
     "//net:test_support",
-    "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.mem",
-    "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.modular",
-    "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.web",
+    "//net/traffic_annotation:test_support",
+    "//testing/gtest",
+    "//third_party/fuchsia-sdk/sdk/pkg/fidl_cpp_base",
+    "//third_party/fuchsia-sdk/sdk/pkg/sys_cpp",
     "//url",
   ]
 }

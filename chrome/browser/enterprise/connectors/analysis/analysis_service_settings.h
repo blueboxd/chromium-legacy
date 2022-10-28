@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -55,6 +55,8 @@ class AnalysisServiceSettings {
   bool GetBypassJustificationRequired(const std::string& tag);
 
   std::string service_provider_name() const { return service_provider_name_; }
+
+  const AnalysisConfig* GetAnalysisConfig() const { return analysis_config_; }
 
  private:
   // The setting to apply when a specific URL pattern is matched.

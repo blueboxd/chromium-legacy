@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,25 +11,21 @@
 #include "ash/public/cpp/app_list/app_list_features.h"
 #include "base/containers/flat_map.h"
 #include "base/containers/flat_set.h"
-#include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/strings/string_util.h"
-#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/search/common/icon_constants.h"
 #include "chrome/browser/ui/app_list/search/search_tags_util.h"
 #include "chrome/browser/ui/settings_window_manager_chromeos.h"
+#include "chrome/browser/ui/webui/settings/ash/hierarchy.h"
+#include "chrome/browser/ui/webui/settings/ash/os_settings_manager.h"
+#include "chrome/browser/ui/webui/settings/ash/os_settings_manager_factory.h"
 #include "chrome/browser/ui/webui/settings/ash/search/search_handler.h"
-#include "chrome/browser/ui/webui/settings/chromeos/hierarchy.h"
-#include "chrome/browser/ui/webui/settings/chromeos/os_settings_manager.h"
-#include "chrome/browser/ui/webui/settings/chromeos/os_settings_manager_factory.h"
 #include "chrome/browser/web_applications/web_app_id_constants.h"
 #include "components/services/app_service/public/cpp/app_registry_cache.h"
 #include "components/services/app_service/public/cpp/app_types.h"
 #include "ui/gfx/image/image_skia.h"
-#include "url/gurl.h"
 
 namespace app_list {
 namespace {
@@ -207,22 +203,6 @@ OsSettingsProvider::OsSettingsProvider(Profile* profile)
       /*allow_placeholder_icon=*/false,
       base::BindOnce(&OsSettingsProvider::OnLoadIcon,
                      weak_factory_.GetWeakPtr()));
-
-  // Set parameters from Finch. Reasonable defaults are set in the header.
-  accept_alternate_matches_ = base::GetFieldTrialParamByFeatureAsBool(
-      app_list_features::kLauncherSettingsSearch, "accept_alternate_matches",
-      accept_alternate_matches_);
-  min_query_length_ = base::GetFieldTrialParamByFeatureAsInt(
-      app_list_features::kLauncherSettingsSearch, "min_query_length",
-      min_query_length_);
-  min_query_length_for_alternates_ = base::GetFieldTrialParamByFeatureAsInt(
-      app_list_features::kLauncherSettingsSearch,
-      "min_query_length_for_alternates", min_query_length_for_alternates_);
-  min_score_ = base::GetFieldTrialParamByFeatureAsDouble(
-      app_list_features::kLauncherSettingsSearch, "min_score", min_score_);
-  min_score_for_alternates_ = base::GetFieldTrialParamByFeatureAsDouble(
-      app_list_features::kLauncherSettingsSearch, "min_score_for_alternates",
-      min_score_for_alternates_);
 }
 
 OsSettingsProvider::~OsSettingsProvider() = default;

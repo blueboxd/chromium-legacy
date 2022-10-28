@@ -30,6 +30,7 @@
 #include "ui/gfx/image/image_skia.h"
 #include "ui/native_theme/common_theme.h"
 #include "ui/native_theme/native_theme_features.h"
+#include "ui/native_theme/native_theme_fluent.h"
 #include "ui/native_theme/overlay_scrollbar_constants_aura.h"
 
 namespace ui {
@@ -53,6 +54,8 @@ const SkScalar kScrollRadius =
 #if !BUILDFLAG(IS_APPLE)
 // static
 NativeTheme* NativeTheme::GetInstanceForWeb() {
+  if (IsFluentScrollbarEnabled())
+    return NativeThemeFluent::web_instance();
   return NativeThemeAura::web_instance();
 }
 
@@ -75,8 +78,8 @@ NativeTheme* NativeTheme::GetInstanceForDarkUI() {
 
 NativeThemeAura::NativeThemeAura(bool use_overlay_scrollbars,
                                  bool should_only_use_dark_colors,
-                                 bool is_custom_system_theme)
-    : NativeThemeBase(should_only_use_dark_colors, is_custom_system_theme),
+                                 ui::SystemTheme system_theme)
+    : NativeThemeBase(should_only_use_dark_colors, system_theme),
       use_overlay_scrollbars_(use_overlay_scrollbars) {
 // We don't draw scrollbar buttons.
 #if BUILDFLAG(IS_CHROMEOS)

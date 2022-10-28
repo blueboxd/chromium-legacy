@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -73,7 +73,7 @@ public class PrivacyGuideFragment extends Fragment {
         getLayoutInflater().inflate(R.layout.privacy_guide_steps, content);
 
         mViewPager = (ViewPager2) mView.findViewById(R.id.review_viewpager);
-        mPagerAdapter = new PrivacyGuidePagerAdapter(mBottomSheetController);
+        mPagerAdapter = new PrivacyGuidePagerAdapter(this, new StepDisplayHandlerImpl());
         mViewPager.setAdapter(mPagerAdapter);
         mViewPager.setUserInputEnabled(false);
 
@@ -117,6 +117,13 @@ public class PrivacyGuideFragment extends Fragment {
         mNextButton.setVisibility(View.VISIBLE);
         if (prevIdx == 0) {
             mBackButton.setVisibility(View.INVISIBLE);
+        }
+    }
+
+    @Override
+    public void onAttachFragment(@NonNull Fragment childFragment) {
+        if (childFragment instanceof SafeBrowsingFragment) {
+            ((SafeBrowsingFragment) childFragment).setBottomSheetController(mBottomSheetController);
         }
     }
 

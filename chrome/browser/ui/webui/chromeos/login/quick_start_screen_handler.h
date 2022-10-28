@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,9 +6,10 @@
 #define CHROME_BROWSER_UI_WEBUI_CHROMEOS_LOGIN_QUICK_START_SCREEN_HANDLER_H_
 
 #include "base/memory/weak_ptr.h"
+#include "base/values.h"
+#include "chrome/browser/ash/login/oobe_quick_start/verification_shapes.h"
 #include "chrome/browser/ash/login/oobe_screen.h"
 #include "chrome/browser/ui/webui/chromeos/login/base_screen_handler.h"
-#include "chromeos/ash/components/oobe_quick_start/verification_shapes.h"
 
 namespace login {
 class LocalizedValuesBuilder;
@@ -25,6 +26,7 @@ class QuickStartView : public base::SupportsWeakPtr<QuickStartView> {
 
   virtual void Show() = 0;
   virtual void SetShapes(const ash::quick_start::ShapeList& shape_list) = 0;
+  virtual void SetQRCode(base::Value::List blob) = 0;
 };
 
 // WebUI implementation of QuickStartView.
@@ -43,6 +45,7 @@ class QuickStartScreenHandler : public QuickStartView,
   // QuickStartView:
   void Show() override;
   void SetShapes(const ash::quick_start::ShapeList& shape_list) override;
+  void SetQRCode(base::Value::List blob) override;
 
   // BaseScreenHandler:
   void DeclareLocalizedValues(

@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -331,12 +331,12 @@ void AddPrintPreviewStrings(content::WebUIDataSource* source) {
 #endif
 
   // Register strings for the PDF viewer, so that $i18n{} replacements work.
-  base::Value pdf_strings(base::Value::Type::DICTIONARY);
+  base::Value::Dict pdf_strings;
   pdf_extension_util::AddStrings(
       pdf_extension_util::PdfViewerContext::kPrintPreview, &pdf_strings);
   pdf_extension_util::AddAdditionalData(/*enable_annotations=*/false,
                                         &pdf_strings);
-  source->AddLocalizedStrings(pdf_strings.GetDict());
+  source->AddLocalizedStrings(pdf_strings);
 }
 
 void AddPrintPreviewFlags(content::WebUIDataSource* source, Profile* profile) {

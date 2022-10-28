@@ -1,35 +1,35 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_app_interface.h"
 
-#include "base/command_line.h"
-#include "base/files/file_util.h"
+#import "base/command_line.h"
+#import "base/files/file_util.h"
 #import "base/ios/ios_util.h"
-#include "base/json/json_string_value_serializer.h"
-#include "base/mac/foundation_util.h"
-#include "base/strings/sys_string_conversions.h"
+#import "base/json/json_string_value_serializer.h"
+#import "base/mac/foundation_util.h"
+#import "base/strings/sys_string_conversions.h"
 #import "base/test/ios/wait_util.h"
-#include "base/test/scoped_feature_list.h"
-#include "base/values.h"
-#include "components/autofill/core/browser/personal_data_manager.h"
-#include "components/autofill/core/common/autofill_features.h"
-#include "components/browsing_data/core/pref_names.h"
-#include "components/content_settings/core/browser/host_content_settings_map.h"
-#include "components/metrics/demographics/demographic_metrics_provider.h"
-#include "components/password_manager/core/common/password_manager_features.h"
-#include "components/prefs/pref_service.h"
-#include "components/sync/base/pref_names.h"
-#include "components/unified_consent/unified_consent_service.h"
+#import "base/test/scoped_feature_list.h"
+#import "base/values.h"
+#import "components/autofill/core/browser/personal_data_manager.h"
+#import "components/autofill/core/common/autofill_features.h"
+#import "components/browsing_data/core/pref_names.h"
+#import "components/content_settings/core/browser/host_content_settings_map.h"
+#import "components/metrics/demographics/demographic_metrics_provider.h"
+#import "components/password_manager/core/common/password_manager_features.h"
+#import "components/prefs/pref_service.h"
+#import "components/sync/base/pref_names.h"
+#import "components/unified_consent/unified_consent_service.h"
 #import "components/url_param_filter/core/url_param_classifications_loader.h"
-#include "components/variations/variations_associated_data.h"
-#include "components/variations/variations_ids_provider.h"
+#import "components/variations/variations_associated_data.h"
+#import "components/variations/variations_ids_provider.h"
 #import "ios/chrome/app/main_controller.h"
-#include "ios/chrome/browser/application_context.h"
-#include "ios/chrome/browser/autofill/personal_data_manager_factory.h"
-#include "ios/chrome/browser/browser_state/chrome_browser_state.h"
-#include "ios/chrome/browser/content_settings/host_content_settings_map_factory.h"
+#import "ios/chrome/browser/application_context/application_context.h"
+#import "ios/chrome/browser/autofill/personal_data_manager_factory.h"
+#import "ios/chrome/browser/browser_state/chrome_browser_state.h"
+#import "ios/chrome/browser/content_settings/host_content_settings_map_factory.h"
 #import "ios/chrome/browser/ntp/features.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/default_promo/default_browser_utils.h"
@@ -46,7 +46,7 @@
 #import "ios/chrome/test/app/bookmarks_test_util.h"
 #import "ios/chrome/test/app/browsing_data_test_util.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
-#include "ios/chrome/test/app/navigation_test_util.h"
+#import "ios/chrome/test/app/navigation_test_util.h"
 #import "ios/chrome/test/app/signin_test_util.h"
 #import "ios/chrome/test/app/sync_test_util.h"
 #import "ios/chrome/test/app/tab_test_util.h"
@@ -57,23 +57,22 @@
 #import "ios/testing/hardware_keyboard_util.h"
 #import "ios/testing/nserror_util.h"
 #import "ios/testing/open_url_context.h"
-#include "ios/testing/verify_custom_webkit.h"
+#import "ios/testing/verify_custom_webkit.h"
 #import "ios/web/common/features.h"
 #import "ios/web/js_messaging/web_view_js_utils.h"
-#import "ios/web/public/deprecated/crw_js_injection_receiver.h"
 #import "ios/web/public/js_messaging/web_frame.h"
 #import "ios/web/public/js_messaging/web_frame_util.h"
 #import "ios/web/public/navigation/navigation_manager.h"
 #import "ios/web/public/test/earl_grey/js_test_util.h"
 #import "ios/web/public/test/element_selector.h"
-#include "ios/web/public/test/url_test_util.h"
+#import "ios/web/public/test/url_test_util.h"
 #import "ios/web/public/test/web_view_content_test_util.h"
 #import "ios/web/public/test/web_view_interaction_test_util.h"
 #import "ios/web/public/ui/crw_web_view_proxy.h"
 #import "ios/web/public/ui/crw_web_view_scroll_view_proxy.h"
 #import "ios/web/public/web_client.h"
 #import "ios/web/public/web_state.h"
-#include "net/base/mac/url_conversions.h"
+#import "net/base/mac/url_conversions.h"
 #import "services/metrics/public/cpp/ukm_recorder.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -87,7 +86,7 @@ using base::test::ios::WaitUntilConditionOrTimeout;
 
 namespace {
 
-// Returns a JSON-encoded string representing the given |pref|. If |pref| is
+// Returns a JSON-encoded string representing the given `pref`. If `pref` is
 // nullptr, returns a string representing a base::Value of type NONE.
 NSString* SerializedPref(const PrefService::Preference* pref) {
   base::Value none_value(base::Value::Type::NONE);
@@ -100,7 +99,7 @@ NSString* SerializedPref(const PrefService::Preference* pref) {
   serializer.Serialize(*value);
   return base::SysUTF8ToNSString(serialized_value);
 }
-// Returns a JSON-encoded string representing the given |value|. If |value| is
+// Returns a JSON-encoded string representing the given `value`. If `value` is
 // nullptr, returns a string representing a base::Value of type NONE.
 NSString* SerializedValue(const base::Value* value) {
   base::Value none_value(base::Value::Type::NONE);
@@ -381,7 +380,7 @@ NSString* SerializedValue(const base::Value* value) {
   return nil;
 }
 
-// Returns screen position of the given |windowNumber|
+// Returns screen position of the given `windowNumber`
 + (CGRect)screenPositionOfScreenWithNumber:(int)windowNumber {
   NSArray<SceneState*>* connectedScenes =
       chrome_test_util::GetMainController().appState.connectedScenes;
@@ -965,74 +964,39 @@ NSString* SerializedValue(const base::Value* value) {
 
 #pragma mark - JavaScript Utilities (EG2)
 
-+ (id)executeJavaScript:(NSString*)javaScript error:(NSError**)outError {
-  __block bool handlerCalled = false;
-  __block id blockResult = nil;
-  __block NSError* blockError = nil;
-  [chrome_test_util::GetCurrentWebState()->GetJSInjectionReceiver()
-      executeJavaScript:javaScript
-      completionHandler:^(id result, NSError* error) {
-        handlerCalled = true;
-        blockResult = [result copy];
-        blockError = [error copy];
-      }];
++ (JavaScriptExecutionResult*)executeJavaScript:(NSString*)javaScript {
+  __block web::WebFrame* main_frame = nullptr;
+  bool completed =
+      WaitUntilConditionOrTimeout(kWaitForJSCompletionTimeout, ^bool {
+        main_frame = web::GetMainFrame(chrome_test_util::GetCurrentWebState());
+        return main_frame != nullptr;
+      });
 
-  bool completed = WaitUntilConditionOrTimeout(kWaitForJSCompletionTimeout, ^{
+  if (!main_frame) {
+    DLOG(ERROR) << "No main web frame exists.";
+    return [[JavaScriptExecutionResult alloc] initWithResult:nil
+                                         successfulExecution:NO];
+  }
+
+  std::u16string script = base::SysNSStringToUTF16(javaScript);
+  __block bool handlerCalled = false;
+  __block NSString* blockResult = nil;
+  __block NSError* blockError = nil;
+  main_frame->ExecuteJavaScript(
+      script, base::BindOnce(^(const base::Value* value, NSError* error) {
+        handlerCalled = true;
+        blockError = error;
+        blockResult = SerializedValue(value);
+      }));
+
+  completed = WaitUntilConditionOrTimeout(kWaitForJSCompletionTimeout, ^{
     return handlerCalled;
   });
 
-  if (completed) {
-    NSError* __autoreleasing autoreleasedError = blockError;
-    *outError = autoreleasedError;
-  } else {
-    NSString* errorDescription = [NSString
-        stringWithFormat:@"Did not complete execution of JavaScript: %@",
-                         javaScript];
-    NSError* __autoreleasing autoreleasedError =
-        testing::NSErrorWithLocalizedDescription(errorDescription);
-    *outError = autoreleasedError;
-  }
-  return blockResult;
-}
-
-+ (JavaScriptExecutionResult*)executeJavaScript:(NSString*)javaScript {
-  __block bool handlerCalled = false;
-  __block NSString* blockResult = nil;
-  __block bool blockError = false;
-
-  web::WebFrame* web_frame =
-      web::GetMainFrame(chrome_test_util::GetCurrentWebState());
-
-  if (web_frame) {
-    std::u16string script = base::SysNSStringToUTF16(javaScript);
-    web_frame->ExecuteJavaScript(
-        script, base::BindOnce(^(const base::Value* value, bool error) {
-          handlerCalled = true;
-          blockError = error;
-          blockResult = SerializedValue(value);
-        }));
-
-    bool completed = WaitUntilConditionOrTimeout(kWaitForJSCompletionTimeout, ^{
-      return handlerCalled;
-    });
-
-    BOOL success = completed && !blockError;
-
-    JavaScriptExecutionResult* result =
-        [[JavaScriptExecutionResult alloc] initWithResult:blockResult
-                                      successfulExecution:success];
-    return result;
-  }
-
-  NSError* error = nil;
-  id output = [self executeJavaScript:javaScript error:&error];
-  std::unique_ptr<base::Value> value = web::ValueResultFromWKResult(output);
-
-  NSString* callbackResult = SerializedValue(value.get());
-  BOOL success = error ? false : true;
+  BOOL success = completed && !blockError;
 
   JavaScriptExecutionResult* result =
-      [[JavaScriptExecutionResult alloc] initWithResult:callbackResult
+      [[JavaScriptExecutionResult alloc] initWithResult:blockResult
                                     successfulExecution:success];
   return result;
 }
@@ -1056,10 +1020,6 @@ NSString* SerializedValue(const base::Value* value) {
 }
 
 #pragma mark - Check features (EG2)
-
-+ (BOOL)isBlockNewTabPagePendingLoadEnabled {
-  return base::FeatureList::IsEnabled(kBlockNewTabPagePendingLoad);
-}
 
 + (BOOL)isVariationEnabled:(int)variationID {
   variations::VariationsIdsProvider* provider =
@@ -1204,6 +1164,16 @@ NSString* SerializedValue(const base::Value* value) {
       base::SysNSStringToUTF8(prefName).c_str(), value);
 }
 
++ (void)clearUserPrefWithName:(NSString*)prefName {
+  PrefService* prefs = chrome_test_util::GetOriginalBrowserState()->GetPrefs();
+  prefs->ClearPref(base::SysNSStringToUTF8(prefName));
+}
+
++ (void)commitPendingUserPrefsWrite {
+  PrefService* prefs = chrome_test_util::GetOriginalBrowserState()->GetPrefs();
+  prefs->CommitPendingWrite();
+}
+
 + (void)resetBrowsingDataPrefs {
   PrefService* prefs = chrome_test_util::GetOriginalBrowserState()->GetPrefs();
   prefs->ClearPref(browsing_data::prefs::kDeleteBrowsingHistory);
@@ -1247,12 +1217,24 @@ NSString* SerializedValue(const base::Value* value) {
   [[UIPasteboard generalPasteboard] setURLs:nil];
 }
 
++ (void)clearPasteboard {
+  [[UIPasteboard generalPasteboard] setItems:@[]];
+}
+
++ (BOOL)pasteboardHasImages {
+  return [UIPasteboard.generalPasteboard hasImages];
+}
+
 + (NSArray<NSString*>*)pasteboardStrings {
   return [UIPasteboard generalPasteboard].strings;
 }
 
 + (NSString*)pasteboardURLSpec {
   return [UIPasteboard generalPasteboard].URL.absoluteString;
+}
+
++ (void)copyTextToPasteboard:(NSString*)text {
+  [UIPasteboard.generalPasteboard setString:text];
 }
 
 #pragma mark - Watcher utilities
@@ -1320,8 +1302,8 @@ int watchRunNumber = 0;
       });
 }
 
-// Looks for a button (based on traits) with the given |label|,
-// recursively in the given |views|.
+// Looks for a button (based on traits) with the given `label`,
+// recursively in the given `views`.
 + (void)findButtonsWithLabelsInViews:(NSArray<UIView*>*)views {
   if (!watchingButtons.count)
     return;
@@ -1332,7 +1314,7 @@ int watchRunNumber = 0;
   }
 }
 
-// Checks if the given |view| is a button (based on traits) with the
+// Checks if the given `view` is a button (based on traits) with the
 // given accessibility label.
 + (void)buttonsWithLabelsMatchView:(UIView*)view {
   if (![view respondsToSelector:@selector(accessibilityLabel)])

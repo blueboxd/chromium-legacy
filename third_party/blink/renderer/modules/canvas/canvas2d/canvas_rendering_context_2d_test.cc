@@ -1524,7 +1524,7 @@ TEST_P(CanvasRenderingContext2DTestAccelerated, DrawImage_Video_Flush) {
   gfx::Size visible_size(10, 10);
   scoped_refptr<media::VideoFrame> media_frame =
       media::VideoFrame::WrapVideoFrame(
-          media::VideoFrame::CreateBlackFrame(/*coded_size=*/gfx::Size(16, 16)),
+          media::VideoFrame::CreateBlackFrame(/*size=*/gfx::Size(16, 16)),
           media::PIXEL_FORMAT_I420,
           /*visible_rect=*/gfx::Rect(visible_size),
           /*natural_size=*/visible_size);
@@ -1600,9 +1600,7 @@ class CanvasRenderingContext2DTestSwapChain
     : public CanvasRenderingContext2DTestAccelerated {
  protected:
   CanvasRenderingContext2DTestSwapChain()
-      : CanvasRenderingContext2DTestAccelerated() {
-    feature_list_.InitAndEnableFeature(features::kLowLatencyCanvas2dSwapChain);
-  }
+      : CanvasRenderingContext2DTestAccelerated() {}
 
   scoped_refptr<viz::TestContextProvider> CreateContextProvider() override {
     auto context_provider = viz::TestContextProvider::Create();

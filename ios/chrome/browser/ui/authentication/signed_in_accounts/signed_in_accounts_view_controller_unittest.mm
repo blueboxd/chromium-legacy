@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -56,7 +56,7 @@ class SignedInAccountsViewControllerTest : public BlockCleanupTest {
             browser_state_.get());
     AuthenticationService* auth_service =
         AuthenticationServiceFactory::GetForBrowserState(browser_state_.get());
-    auth_service->SignIn(account_manager_service->GetDefaultIdentity(), nil);
+    auth_service->SignIn(account_manager_service->GetDefaultIdentity());
   }
 
  protected:

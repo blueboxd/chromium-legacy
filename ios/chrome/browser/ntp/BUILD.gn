@@ -1,4 +1,4 @@
-# Copyright 2018 The Chromium Authors. All rights reserved.
+# Copyright 2018 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -20,6 +20,7 @@ source_set("ntp") {
     "//ios/chrome/browser",
     "//ios/chrome/browser/browser_state",
     "//ios/chrome/browser/discover_feed:constants",
+    "//ios/chrome/browser/flags:system_flags",
     "//ios/chrome/browser/ui:feature_flags",
     "//ios/components/webui:url_constants",
     "//ios/web/common:features",
@@ -37,8 +38,8 @@ source_set("features") {
   deps = [
     "//base",
     "//components/version_info:channel",
-    "//ios/chrome/app:buildflags",
-    "//ios/chrome/browser:utils",
+    "//ios/chrome/app:background_mode_buildflags",
+    "//ios/chrome/browser/flags:system_flags",
     "//ios/chrome/common",
   ]
 }

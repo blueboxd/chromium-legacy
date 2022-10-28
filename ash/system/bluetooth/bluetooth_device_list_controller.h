@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,7 +9,7 @@
 #include <vector>
 
 #include "ash/ash_export.h"
-#include "chromeos/services/bluetooth_config/public/mojom/cros_bluetooth_config.mojom.h"
+#include "chromeos/ash/services/bluetooth_config/public/mojom/cros_bluetooth_config.mojom.h"
 
 namespace ash {
 
@@ -21,8 +21,8 @@ class BluetoothDetailedView;
 // instances of implementations of this class.
 class ASH_EXPORT BluetoothDeviceListController {
  public:
-  using PairedBluetoothDevicePropertiesPtrs = std::vector<
-      chromeos::bluetooth_config::mojom::PairedBluetoothDevicePropertiesPtr>;
+  using PairedBluetoothDevicePropertiesPtrs =
+      std::vector<bluetooth_config::mojom::PairedBluetoothDevicePropertiesPtr>;
 
   class Factory {
    public:

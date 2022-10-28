@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,16 +9,23 @@
 // NOTE: This mojom should be kept in sync with the copy in Chromium OS's repo
 // in src/platform2/diagnostics/mojom/external/cros_healthd_internal.mojom.
 
-module chromeos.cros_healthd.internal.mojom;
+module ash.cros_healthd.internal.mojom;
+
+import "chromeos/components/sensors/mojom/sensor.mojom";
 
 // Collects data from chromium to Healthd.
 //
-// NextMinVersion: 1, NextIndex: 2
+// NextMinVersion: 2, NextIndex: 3
 interface ChromiumDataCollector {
   // Get touchscreen devices info.
   GetTouchscreenDevices@0() => (array<TouchscreenDevice> devices);
   // Get the touchpad library name.
   GetTouchpadLibraryName@1() => (string library_name);
+  // TODO(b/244284172): Deprecate it once we could get SensorService via mojo
+  // service manager.
+  // Bind SensorService pending receiver.
+  [MinVersion=1] BindSensorService@2(
+    pending_receiver<chromeos.sensors.mojom.SensorService> receiver);
 };
 
 // Data of a touch screen device in chromium.

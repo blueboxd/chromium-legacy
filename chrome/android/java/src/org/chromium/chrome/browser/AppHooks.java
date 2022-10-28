@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -203,8 +203,7 @@ public abstract class AppHooks {
      * Only applicable when the user has a policy active, that is tracking the activity.
      */
     public PolicyAuditor getPolicyAuditor() {
-        // This class has a protected constructor to prevent accidental instantiation.
-        return new PolicyAuditor() {};
+        return null;
     }
 
     public void registerPolicyProviders(CombinedPolicyProvider combinedProvider) {

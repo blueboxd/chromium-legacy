@@ -89,6 +89,8 @@ class CONTENT_EXPORT PermissionController
   // RenderFrameHost. This API takes into account the lifecycle state of a given
   // document (i.e. whether it's in back-forward cache or being prerendered) in
   // addition to its origin.
+  // WARNING: Permission requests order is not guaranteed.
+  // TODO(crbug.com/1363094): Migrate to `std::set`.
   virtual void RequestPermissionsFromCurrentDocument(
       const std::vector<blink::PermissionType>& permission,
       RenderFrameHost* render_frame_host,
@@ -99,6 +101,16 @@ class CONTENT_EXPORT PermissionController
   // Sets the permission back to its default for the `origin`.
   virtual void ResetPermission(blink::PermissionType permission,
                                const url::Origin& origin) = 0;
+
+  virtual SubscriptionId SubscribePermissionStatusChange(
+      blink::PermissionType permission,
+      RenderProcessHost* render_process_host,
+      const url::Origin& requesting_origin,
+      const base::RepeatingCallback<void(blink::mojom::PermissionStatus)>&
+          callback) = 0;
+
+  virtual void UnsubscribePermissionStatusChange(
+      SubscriptionId subscription_id) = 0;
 };
 
 }  // namespace content

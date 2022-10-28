@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -34,7 +34,10 @@ DesktopMediaListController::DesktopMediaListController(
               switches::kThisTabCaptureAutoAccept)),
       auto_reject_this_tab_capture_(
           base::CommandLine::ForCurrentProcess()->HasSwitch(
-              switches::kThisTabCaptureAutoReject)) {}
+              switches::kThisTabCaptureAutoReject)) {
+  DCHECK(dialog_);
+  DCHECK(media_list_);
+}
 
 DesktopMediaListController::~DesktopMediaListController() = default;
 
@@ -63,18 +66,41 @@ std::unique_ptr<views::View> DesktopMediaListController::CreateTabListView(
 
 void DesktopMediaListController::StartUpdating(
     content::DesktopMediaID dialog_window_id) {
-  media_list_->SetViewDialogWindowId(dialog_window_id);
+  dialog_window_id_ = dialog_window_id;
+  // Defer calling StartUpdating on media lists with a delegated source list
+  // until the first time they are focused.
+  if (!media_list_->IsSourceListDelegated())
+    StartUpdatingInternal();
+}
+
+void DesktopMediaListController::StartUpdatingInternal() {
+  is_updating_ = true;
+  media_list_->SetViewDialogWindowId(dialog_window_id_);
   media_list_->StartUpdating(this);
 }
 
 void DesktopMediaListController::FocusView() {
   if (view_)
     view_->RequestFocus();
+
+  if (media_list_->IsSourceListDelegated() && !is_updating_)
+    StartUpdatingInternal();
+
+  media_list_->FocusList();
+}
+
+void DesktopMediaListController::HideView() {
+  media_list_->HideList();
 }
 
 absl::optional<content::DesktopMediaID>
 DesktopMediaListController::GetSelection() const {
   return view_ ? view_->GetSelection() : absl::nullopt;
+}
+
+void DesktopMediaListController::ClearSelection() {
+  if (view_)
+    view_->ClearSelection();
 }
 
 void DesktopMediaListController::OnSourceListLayoutChanged() {
@@ -168,6 +194,18 @@ void DesktopMediaListController::OnSourcePreviewChanged(size_t index) {
   if (view_) {
     view_->GetSourceListListener()->OnSourcePreviewChanged(index);
   }
+}
+
+void DesktopMediaListController::OnDelegatedSourceListSelection() {
+  DCHECK(media_list_->IsSourceListDelegated());
+  if (view_) {
+    view_->GetSourceListListener()->OnDelegatedSourceListSelection();
+  }
+}
+
+void DesktopMediaListController::OnDelegatedSourceListDismissed() {
+  DCHECK(media_list_->IsSourceListDelegated());
+  dialog_->OnDelegatedSourceListDismissed();
 }
 
 void DesktopMediaListController::OnViewIsDeleting(views::View* view) {

@@ -54,7 +54,6 @@ namespace {
 
 struct SameSizeAsStringImpl {
 #if DCHECK_IS_ON()
-  ThreadRestrictionVerifier verifier;
   unsigned int ref_count_change_count;
 #endif
   int fields[3];
@@ -671,21 +670,19 @@ wtf_size_t StringImpl::ToUInt(NumberParsingOptions options, bool* ok) const {
 }
 
 wtf_size_t StringImpl::HexToUIntStrict(bool* ok) {
+  constexpr auto kStrict = NumberParsingOptions::Strict();
   if (Is8Bit()) {
-    return HexCharactersToUInt(Characters8(), length_,
-                               NumberParsingOptions::kStrict, ok);
+    return HexCharactersToUInt(Characters8(), length_, kStrict, ok);
   }
-  return HexCharactersToUInt(Characters16(), length_,
-                             NumberParsingOptions::kStrict, ok);
+  return HexCharactersToUInt(Characters16(), length_, kStrict, ok);
 }
 
 uint64_t StringImpl::HexToUInt64Strict(bool* ok) {
+  constexpr auto kStrict = NumberParsingOptions::Strict();
   if (Is8Bit()) {
-    return HexCharactersToUInt64(Characters8(), length_,
-                                 NumberParsingOptions::kStrict, ok);
+    return HexCharactersToUInt64(Characters8(), length_, kStrict, ok);
   }
-  return HexCharactersToUInt64(Characters16(), length_,
-                               NumberParsingOptions::kStrict, ok);
+  return HexCharactersToUInt64(Characters16(), length_, kStrict, ok);
 }
 
 int64_t StringImpl::ToInt64(NumberParsingOptions options, bool* ok) const {

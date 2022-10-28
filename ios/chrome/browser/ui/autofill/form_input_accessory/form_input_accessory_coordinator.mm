@@ -1,33 +1,33 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #import "ios/chrome/browser/ui/autofill/form_input_accessory/form_input_accessory_coordinator.h"
 
-#include <vector>
+#import <vector>
 
-#include "base/bind.h"
-#include "base/ios/ios_util.h"
-#include "base/mac/foundation_util.h"
-#include "base/metrics/histogram_macros.h"
-#include "base/strings/utf_string_conversions.h"
-#include "base/threading/sequenced_task_runner_handle.h"
-#include "base/time/time.h"
-#include "components/autofill/core/browser/personal_data_manager.h"
-#include "components/autofill/core/common/autofill_features.h"
-#include "components/feature_engagement/public/event_constants.h"
-#include "components/feature_engagement/public/feature_constants.h"
-#include "components/feature_engagement/public/tracker.h"
-#include "components/keyed_service/core/service_access_type.h"
-#include "components/password_manager/core/browser/manage_passwords_referrer.h"
-#include "components/password_manager/core/browser/password_ui_utils.h"
+#import "base/bind.h"
+#import "base/ios/ios_util.h"
+#import "base/mac/foundation_util.h"
+#import "base/metrics/histogram_macros.h"
+#import "base/strings/utf_string_conversions.h"
+#import "base/threading/sequenced_task_runner_handle.h"
+#import "base/time/time.h"
+#import "components/autofill/core/browser/personal_data_manager.h"
+#import "components/autofill/core/common/autofill_features.h"
+#import "components/feature_engagement/public/event_constants.h"
+#import "components/feature_engagement/public/feature_constants.h"
+#import "components/feature_engagement/public/tracker.h"
+#import "components/keyed_service/core/service_access_type.h"
+#import "components/password_manager/core/browser/manage_passwords_referrer.h"
+#import "components/password_manager/core/browser/password_ui_utils.h"
 #import "components/password_manager/ios/password_generation_provider.h"
-#include "components/strings/grit/components_strings.h"
-#include "ios/chrome/browser/autofill/personal_data_manager_factory.h"
-#include "ios/chrome/browser/browser_state/chrome_browser_state.h"
-#include "ios/chrome/browser/feature_engagement/tracker_factory.h"
+#import "components/strings/grit/components_strings.h"
+#import "ios/chrome/browser/autofill/personal_data_manager_factory.h"
+#import "ios/chrome/browser/browser_state/chrome_browser_state.h"
+#import "ios/chrome/browser/feature_engagement/tracker_factory.h"
 #import "ios/chrome/browser/main/browser.h"
-#include "ios/chrome/browser/passwords/ios_chrome_password_store_factory.h"
+#import "ios/chrome/browser/passwords/ios_chrome_password_store_factory.h"
 #import "ios/chrome/browser/passwords/password_tab_helper.h"
 #import "ios/chrome/browser/ui/alert_coordinator/alert_coordinator.h"
 #import "ios/chrome/browser/ui/autofill/form_input_accessory/form_input_accessory_mediator.h"
@@ -50,16 +50,16 @@
 #import "ios/chrome/browser/ui/main/scene_state.h"
 #import "ios/chrome/browser/ui/main/scene_state_browser_agent.h"
 #import "ios/chrome/browser/ui/util/layout_guide_names.h"
-#include "ios/chrome/browser/ui/util/ui_util.h"
+#import "ios/chrome/browser/ui/util/ui_util.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #import "ios/chrome/browser/ui/util/util_swift.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
 #import "ios/chrome/common/ui/reauthentication/reauthentication_module.h"
-#include "ios/chrome/grit/ios_chromium_strings.h"
-#include "ios/chrome/grit/ios_strings.h"
+#import "ios/chrome/grit/ios_chromium_strings.h"
+#import "ios/chrome/grit/ios_strings.h"
 #import "ios/web/public/web_state.h"
-#include "ui/base/device_form_factor.h"
-#include "ui/base/l10n/l10n_util_mac.h"
+#import "ui/base/device_form_factor.h"
+#import "ui/base/l10n/l10n_util_mac.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -80,7 +80,6 @@ const CGFloat kIPHVerticalOffset = -5;
 
 // Returns BubbleViewType param from kBubbleRichIPH feature flag.
 BubbleViewType BubbleTypeFromFeature() {
-  DCHECK(base::FeatureList::IsEnabled(kBubbleRichIPH));
   std::string bubbleTypeName = base::GetFieldTrialParamValueByFeature(
       kBubbleRichIPH, kBubbleRichIPHParameterName);
   if (bubbleTypeName == kBubbleRichIPHParameterExplicitDismissal) {
@@ -239,16 +238,7 @@ BubbleViewType BubbleTypeFromFeature() {
   [self.formInputAccessoryViewController reset];
 
   self.formInputViewController = nil;
-  if (@available(iOS 16, *)) {
-    @try {
-      [GetFirstResponder() reloadInputViews];
-    } @catch (NSException* e) {
-      // TODO(crbug.com/1334530) iOS 16 beta 5 is still throwing an
-      // NSInternalInconsistencyException.
-    }
-  } else {
-    [GetFirstResponder() reloadInputViews];
-  }
+  [GetFirstResponder() reloadInputViews];
 }
 
 #pragma mark - Presenting Children
@@ -350,7 +340,6 @@ BubbleViewType BubbleTypeFromFeature() {
 }
 
 - (void)showPasswordSuggestionIPHIfNeeded {
-  DCHECK(base::FeatureList::IsEnabled(kBubbleRichIPH));
   if (self.bubblePresenter) {
     // Already showing a bubble.
     return;
@@ -360,6 +349,7 @@ BubbleViewType BubbleTypeFromFeature() {
   base::SequencedTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE, base::BindOnce(^{
         [weakSelf tryPresentingBubble];
+        [weakSelf notifyPasswordSuggestionsShown];
       }),
       kPasswordSuggestionHighlightDelay);
 }
@@ -665,6 +655,17 @@ BubbleViewType BubbleTypeFromFeature() {
   const base::Feature& feature =
       feature_engagement::kIPHPasswordSuggestionsFeature;
   if (!tracker || !tracker->ShouldTriggerHelpUI(feature)) {
+    return;
+  }
+
+  // Return if the user shouldn't see an IPH.
+  // This is done after ShouldTriggerHelpUI so that metrics regarding IPH are
+  // logged similarly for experimental groups and for the control group.
+  if (!base::FeatureList::IsEnabled(kBubbleRichIPH)) {
+    // Immediately mark the IPH as dismissed. It is required everytime
+    // ShouldTriggerHelpUI returns `true`.
+    [self IPHDidDismissWithSnoozeAction:feature_engagement::Tracker::
+                                            SnoozeAction::DISMISSED];
     return;
   }
 

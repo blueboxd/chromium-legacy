@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -114,7 +114,7 @@ void DispatchEventToExtensionsImpl(Profile* profile,
         extension->permissions_data()->HasAPIPermission(permission) &&
         (!incognito || util::IsIncognitoEnabled(extension->id(), profile))) {
       // Inject level of control key-value.
-      base::Value::ListView args_list = args->GetListDeprecated();
+      base::Value::List& args_list = args->GetList();
       DCHECK(!args_list.empty());
       DCHECK(args_list[0].is_dict());
 

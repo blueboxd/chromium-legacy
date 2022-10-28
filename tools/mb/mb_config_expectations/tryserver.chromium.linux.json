@@ -2,7 +2,8 @@
   "cast-binary-size": {
     "gn_args": {
       "dcheck_always_on": false,
-      "is_chromecast": true,
+      "enable_cast_receiver": true,
+      "is_castos": true,
       "is_component_build": false,
       "is_debug": false,
       "symbol_level": 1,
@@ -235,7 +236,7 @@
       "is_component_build": false,
       "is_debug": false,
       "symbol_level": 0,
-      "use_goma": true
+      "use_remoteexec": true
     }
   },
   "linux-annotator-rel": {
@@ -422,8 +423,8 @@
       "pdf_enable_xfa": true,
       "proprietary_codecs": true,
       "symbol_level": 0,
-      "use_goma": true,
-      "use_libfuzzer": true
+      "use_libfuzzer": true,
+      "use_remoteexec": true
     }
   },
   "linux-mbi-mode-per-render-process-host-rel": {
@@ -461,6 +462,21 @@
     }
   },
   "linux-rel": {
+    "gn_args": {
+      "coverage_instrumentation_input_file": "//.code-coverage/files_to_instrument.txt",
+      "dcheck_always_on": true,
+      "devtools_skip_typecheck": false,
+      "ffmpeg_branding": "Chrome",
+      "is_component_build": false,
+      "is_debug": false,
+      "proprietary_codecs": true,
+      "symbol_level": 0,
+      "use_clang_coverage": true,
+      "use_dummy_lastchange": true,
+      "use_remoteexec": true
+    }
+  },
+  "linux-rel-inverse-fyi": {
     "gn_args": {
       "coverage_instrumentation_input_file": "//.code-coverage/files_to_instrument.txt",
       "dcheck_always_on": true,
@@ -526,24 +542,6 @@
       "symbol_level": 0,
       "use_bundled_weston": true,
       "use_dummy_lastchange": true,
-      "use_goma": true
-    }
-  },
-  "linux-wayland-rel-reclient": {
-    "gn_args": {
-      "dcheck_always_on": true,
-      "ffmpeg_branding": "Chrome",
-      "is_component_build": false,
-      "is_debug": false,
-      "ozone_auto_platforms": false,
-      "ozone_platform": "wayland",
-      "ozone_platform_headless": true,
-      "ozone_platform_wayland": true,
-      "proprietary_codecs": true,
-      "remoting_use_wayland": true,
-      "symbol_level": 0,
-      "use_bundled_weston": true,
-      "use_dummy_lastchange": true,
       "use_remoteexec": true
     }
   },
@@ -554,6 +552,15 @@
       "is_debug": false,
       "is_msan": true,
       "msan_track_origins": 2,
+      "use_goma": true
+    }
+  },
+  "linux-wpt-content-shell-fyi-rel": {
+    "gn_args": {
+      "dcheck_always_on": true,
+      "is_component_build": false,
+      "is_debug": false,
+      "symbol_level": 0,
       "use_goma": true
     }
   },
@@ -600,7 +607,7 @@
       "is_debug": false,
       "is_lsan": true,
       "symbol_level": 1,
-      "use_goma": true
+      "use_remoteexec": true
     }
   },
   "linux_chromium_cfi_rel_ng": {
@@ -673,7 +680,7 @@
       "is_component_build": true,
       "is_debug": true,
       "symbol_level": 1,
-      "use_goma": true
+      "use_remoteexec": true
     }
   },
   "linux_chromium_compile_rel_ng": {
@@ -723,7 +730,7 @@
       "is_debug": false,
       "is_tsan": true,
       "symbol_level": 1,
-      "use_goma": true
+      "use_remoteexec": true
     }
   },
   "linux_chromium_ubsan_rel_ng": {
@@ -742,7 +749,7 @@
       "is_component_build": false,
       "is_debug": false,
       "symbol_level": 0,
-      "use_goma": true
+      "use_remoteexec": true
     }
   },
   "linux_optional_gpu_tests_rel": {
@@ -754,7 +761,7 @@
       "is_debug": false,
       "proprietary_codecs": true,
       "symbol_level": 1,
-      "use_goma": true
+      "use_remoteexec": true
     }
   },
   "linux_upload_clang": {

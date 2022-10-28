@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -31,7 +31,7 @@
 #endif
 
 #if BUILDFLAG(IS_APPLE)
-#include "base/allocator/allocator_interception_mac.h"
+#include "base/allocator/partition_allocator/shim/allocator_interception_mac.h"
 #endif
 
 namespace heap_profiling {
@@ -57,7 +57,7 @@ void ProfilingClient::StartProfiling(mojom::ProfilingParamsPtr params,
   //
   // Wth PartitionAlloc, the shims are already in place, calling this leads to
   // an infinite loop.
-  base::allocator::PeriodicallyShimNewMallocZones();
+  allocator_shim::PeriodicallyShimNewMallocZones();
 #endif  // BUILDFLAG(IS_APPLE) && !BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
 
 #if BUILDFLAG(IS_ANDROID) && BUILDFLAG(CAN_UNWIND_WITH_CFI_TABLE) && \

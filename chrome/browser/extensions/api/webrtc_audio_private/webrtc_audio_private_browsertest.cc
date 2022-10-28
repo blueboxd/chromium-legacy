@@ -1,4 +1,4 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -148,15 +148,14 @@ IN_PROC_BROWSER_TEST_F(WebrtcAudioPrivateTest, GetSinks) {
   JSONWriter::Write(*result, &result_string);
   VLOG(2) << result_string;
 
-  EXPECT_EQ(devices.size(), sink_list.GetListDeprecated().size());
+  EXPECT_EQ(devices.size(), sink_list.GetList().size());
 
   // Iterate through both lists in lockstep and compare. The order
   // should be identical.
   size_t ix = 0;
   AudioDeviceDescriptions::const_iterator it = devices.begin();
-  for (; ix < sink_list.GetListDeprecated().size() && it != devices.end();
-       ++ix, ++it) {
-    const base::Value& value = sink_list.GetListDeprecated()[ix];
+  for (; ix < sink_list.GetList().size() && it != devices.end(); ++ix, ++it) {
+    const base::Value& value = sink_list.GetList()[ix];
     EXPECT_TRUE(value.is_dict());
     const base::Value::Dict& dict = value.GetDict();
     const std::string* sink_id = dict.FindString("sinkId");

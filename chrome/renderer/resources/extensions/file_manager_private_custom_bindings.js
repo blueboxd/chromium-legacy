@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -384,6 +384,9 @@ apiBridge.registerCustomHook(function(bindingsAPI) {
         }
         if (params.password) {
           newParams.password = params.password;
+        }
+        if (params.showNotification !== undefined) {
+          newParams.showNotification = params.showNotification;
         }
         fileManagerPrivateInternal.startIOTask(type, urls, newParams, callback);
       });

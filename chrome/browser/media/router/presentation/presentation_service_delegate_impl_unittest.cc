@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -69,8 +69,9 @@ void EnableTabMirroringForOrigin(PrefService* prefs,
                                  const std::string& origin) {
   ListPrefUpdate update(prefs,
                         media_router::prefs::kMediaRouterTabMirroringSources);
-  if (!base::Contains(update->GetListDeprecated(), base::Value(origin)))
-    update->Append(origin);
+  base::Value::List& list = update->GetList();
+  if (!base::Contains(list, base::Value(origin)))
+    list.Append(origin);
 }
 #endif
 
@@ -799,7 +800,7 @@ TEST_F(PresentationServiceDelegateImplTest, AutoJoinRequest) {
   {
     ListPrefUpdate update(profile()->GetPrefs(),
                           prefs::kMediaRouterTabMirroringSources);
-    update->EraseListValue(base::Value(origin));
+    update->GetList().EraseValue(base::Value(origin));
   }
 
   // Auto-join requests should now go through.
@@ -835,8 +836,7 @@ TEST_F(PresentationServiceDelegateImplIncognitoTest, AutoJoinRequest) {
   // Setting the pref in OffTheRecord shouldn't set it for the regular
   // profile.
   const base::Value::List& non_off_the_record_origins =
-      profile()->GetPrefs()->GetValueList(
-          prefs::kMediaRouterTabMirroringSources);
+      profile()->GetPrefs()->GetList(prefs::kMediaRouterTabMirroringSources);
   EXPECT_FALSE(base::Contains(non_off_the_record_origins, base::Value(origin)));
 
   // Auto-join requests should be rejected.
@@ -857,7 +857,7 @@ TEST_F(PresentationServiceDelegateImplIncognitoTest, AutoJoinRequest) {
     ListPrefUpdate update(
         profile()->GetPrimaryOTRProfile(/*create_if_needed=*/true)->GetPrefs(),
         prefs::kMediaRouterTabMirroringSources);
-    update->EraseListValue(base::Value(origin));
+    update->GetList().EraseValue(base::Value(origin));
   }
 
   // Auto-join requests should now go through.

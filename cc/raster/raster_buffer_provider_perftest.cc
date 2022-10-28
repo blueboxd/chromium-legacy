@@ -1,10 +1,11 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include <stddef.h>
 #include <stdint.h>
 
+#include "base/containers/contains.h"
 #include "base/memory/raw_ptr.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/time/time.h"
@@ -311,13 +312,8 @@ class RasterBufferProviderPerfTestBase {
 
       for (auto& decode_task : raster_task->dependencies()) {
         // Add decode task if it doesn't already exist in graph.
-        auto decode_it =
-            std::find_if(graph->nodes.begin(), graph->nodes.end(),
-                         [decode_task](const TaskGraph::Node& node) {
-                           return node.task == decode_task;
-                         });
-
-        if (decode_it == graph->nodes.end()) {
+        if (!base::Contains(graph->nodes, decode_task,
+                            &TaskGraph::Node::task)) {
           graph->nodes.push_back(
               TaskGraph::Node(decode_task.get(), 0u /* group */, priority, 0u));
         }

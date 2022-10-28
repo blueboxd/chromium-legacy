@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -387,8 +387,8 @@ bool BackGestureEventHandler::MaybeHandleBackGesture(
               } else {
                 // Complete as exiting the fullscreen mode of the underneath
                 // window.
-                const WMEvent event(WM_EVENT_TOGGLE_FULLSCREEN);
-                top_window_state->OnWMEvent(&event);
+                const WMEvent wm_event(WM_EVENT_TOGGLE_FULLSCREEN);
+                top_window_state->OnWMEvent(&wm_event);
                 RecordEndScenarioType(
                     BackGestureEndScenarioType::kExitFullscreen);
               }

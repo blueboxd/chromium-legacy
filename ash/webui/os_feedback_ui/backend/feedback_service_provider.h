@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -44,6 +44,9 @@ class FeedbackServiceProvider
       os_feedback_ui::mojom::FeedbackAppPreSubmitAction action) override;
   void RecordExitPath(
       os_feedback_ui::mojom::FeedbackAppExitPath exit_path) override;
+  void RecordHelpContentOutcome(
+      os_feedback_ui::mojom::FeedbackAppHelpContentOutcome outcome) override;
+  void RecordHelpContentSearchResultCount(int count) override;
 
   void BindInterface(
       mojo::PendingReceiver<os_feedback_ui::mojom::FeedbackServiceProvider>
@@ -55,7 +58,10 @@ class FeedbackServiceProvider
       this};
   // Timestamp of when the app was opened. Used to calculate a duration for
   // metrics.
-  base::Time open_timestamp_;
+  base::Time app_open_timestamp_;
+  base::Time share_data_page_open_timestamp_;
+  base::Time share_data_page_close_timestamp_;
+  bool feedback_sent;
   base::WeakPtrFactory<FeedbackServiceProvider> weak_ptr_factory_{this};
 };
 

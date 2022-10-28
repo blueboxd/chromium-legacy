@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -152,10 +152,24 @@ void WaitForRefreshTokensLoaded(IdentityManager* identity_manager) {
   DCHECK(identity_manager->AreRefreshTokensLoaded());
 }
 
+absl::optional<signin::ConsentLevel> GetPrimaryAccountConsentLevel(
+    IdentityManager* identity_manager) {
+  if (!identity_manager->HasPrimaryAccount(signin::ConsentLevel::kSignin)) {
+    return absl::nullopt;
+  }
+
+  return identity_manager->HasPrimaryAccount(signin::ConsentLevel::kSync)
+             ? signin::ConsentLevel::kSync
+             : signin::ConsentLevel::kSignin;
+}
+
 CoreAccountInfo SetPrimaryAccount(IdentityManager* identity_manager,
                                   const std::string& email,
                                   ConsentLevel consent_level) {
-  DCHECK(!identity_manager->HasPrimaryAccount(consent_level));
+  DCHECK(
+      !identity_manager->HasPrimaryAccount(consent_level) ||
+      (identity_manager->GetPrimaryAccountInfo(consent_level).email != email &&
+       consent_level == ConsentLevel::kSignin));
 
   AccountInfo account_info =
       EnsureAccountExists(identity_manager->GetAccountTrackerService(), email);

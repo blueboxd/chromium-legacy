@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,7 +8,7 @@
 #include <memory>
 
 #include "ash/ash_export.h"
-#include "chromeos/services/bluetooth_config/public/mojom/cros_bluetooth_config.mojom.h"
+#include "chromeos/ash/services/bluetooth_config/public/mojom/cros_bluetooth_config.mojom.h"
 #include "ui/gfx/vector_icon_types.h"
 
 namespace views {
@@ -38,8 +38,8 @@ class ASH_EXPORT BluetoothDetailedView {
     virtual void OnToggleClicked(bool new_state) = 0;
     virtual void OnPairNewDeviceRequested() = 0;
     virtual void OnDeviceListItemSelected(
-        const chromeos::bluetooth_config::mojom::
-            PairedBluetoothDevicePropertiesPtr& device) = 0;
+        const bluetooth_config::mojom::PairedBluetoothDevicePropertiesPtr&
+            device) = 0;
   };
 
   class Factory {

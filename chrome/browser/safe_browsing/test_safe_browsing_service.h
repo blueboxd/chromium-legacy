@@ -1,4 +1,4 @@
-// Copyright (c) 2016 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -86,9 +86,13 @@ class TestSafeBrowsingService : public SafeBrowsingService,
   // SafeBrowsingService overrides
   ~TestSafeBrowsingService() override;
   SafeBrowsingUIManager* CreateUIManager() override;
-  PingManager::ReportThreatDetailsResult SendDownloadReport(
-      Profile* profile,
-      std::unique_ptr<ClientSafeBrowsingReportRequest> report) override;
+#if BUILDFLAG(FULL_SAFE_BROWSING)
+  bool SendDownloadReport(
+      download::DownloadItem* download,
+      ClientSafeBrowsingReportRequest::ReportType report_type,
+      bool did_proceed,
+      absl::optional<bool> show_download_in_folder) override;
+#endif
 
   // ServicesDelegate::ServicesCreator:
   bool CanCreateDatabaseManager() override;

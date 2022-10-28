@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -133,7 +133,7 @@ MATCHER_P2(MatchesEncoderInfo,
 class MockVideoEncodeAcceleratorClient : public VideoEncodeAccelerator::Client {
  public:
   MockVideoEncodeAcceleratorClient() = default;
-  virtual ~MockVideoEncodeAcceleratorClient() = default;
+  ~MockVideoEncodeAcceleratorClient() override = default;
 
   MOCK_METHOD3(RequireBitstreamBuffers,
                void(unsigned int, const gfx::Size&, size_t));
@@ -506,7 +506,7 @@ class VaapiVideoEncodeAcceleratorTest
     std::vector<gfx::Size> svc_resolutions =
         GetDefaultSVCResolutions(num_spatial_layers);
     // Create Surfaces.
-    for (size_t i = 0; i < num_spatial_layers; ++i) {
+    for (size_t i = num_spatial_layers - 1; i != std::variant_npos; --i) {
       if (i < num_spatial_layers - 1) {
         if (va_vpp_dest_surface_ids_[i] == VA_INVALID_ID) {
           EXPECT_CALL(
@@ -529,10 +529,10 @@ class VaapiVideoEncodeAcceleratorTest
                     return va_surfaces;
                   }));
         }
-        absl::optional<gfx::Rect> default_rect = gfx::Rect(kDefaultEncodeSize);
+        absl::optional<gfx::Rect> src_rect = gfx::Rect(svc_resolutions[i + 1]);
         absl::optional<gfx::Rect> layer_rect = gfx::Rect(svc_resolutions[i]);
         EXPECT_CALL(*mock_vpp_vaapi_wrapper_,
-                    DoBlitSurface(_, _, default_rect, layer_rect,
+                    DoBlitSurface(_, _, src_rect, layer_rect,
                                   VideoRotation::VIDEO_ROTATION_0))
             .WillOnce(Return(true));
       }
@@ -563,9 +563,6 @@ class VaapiVideoEncodeAcceleratorTest
                   return va_surfaces;
                 }));
       }
-    }
-
-    for (size_t i = 0; i < num_spatial_layers; ++i) {
     }
 
     // Create CodedBuffers in creating EncodeJobs.

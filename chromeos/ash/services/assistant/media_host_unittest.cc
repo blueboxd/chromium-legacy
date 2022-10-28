@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,9 +13,9 @@
 #include "chromeos/ash/services/assistant/test_support/libassistant_media_controller_mock.h"
 #include "chromeos/ash/services/assistant/test_support/mock_assistant_interaction_subscriber.h"
 #include "chromeos/ash/services/assistant/test_support/scoped_assistant_browser_delegate.h"
+#include "chromeos/ash/services/libassistant/public/mojom/android_app_info.mojom-shared.h"
+#include "chromeos/ash/services/libassistant/public/mojom/android_app_info.mojom.h"
 #include "chromeos/services/assistant/public/shared/utils.h"
-#include "chromeos/services/libassistant/public/mojom/android_app_info.mojom-shared.h"
-#include "chromeos/services/libassistant/public/mojom/android_app_info.mojom.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

@@ -381,6 +381,8 @@ PhysicalRect ComputeColumnsRect(const NGPhysicalBoxFragment& fragment) {
 // background to prevent it from covering the collapsed borders around the cell.
 // TODO(crbug.com/1181813): Investigate other methods.
 class TableCellBackgroundClipper {
+  STACK_ALLOCATED();
+
  public:
   TableCellBackgroundClipper(
       GraphicsContext& context,
@@ -529,7 +531,7 @@ void NGTablePainter::PaintCollapsedBorders(const PaintInfo& paint_info,
   DrawingRecorder recorder(paint_info.context, layout_table, paint_info.phase,
                            visual_rect);
   AutoDarkMode auto_dark_mode(PaintAutoDarkMode(
-      fragment_.Style(), DarkModeFilter::ElementRole::kBackground));
+      fragment_.Style(), DarkModeFilter::ElementRole::kBorder));
 
   const wtf_size_t edges_per_row = collapsed_borders->EdgesPerRow();
   const wtf_size_t total_row_count =

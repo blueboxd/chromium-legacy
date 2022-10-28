@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 #
-# Copyright 2013 The Chromium Authors. All rights reserved.
+# Copyright 2013 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -502,7 +502,7 @@ def _RunCompiler(changes,
           # Reuse old .info file.
           save_info_file = False
 
-          build_utils.ExtractAll(jar_path, classes_dir)
+          build_utils.ExtractAll(jar_path, classes_dir, pattern='*.class')
 
     if save_info_file:
       info_file_context = _InfoFileContext(options.chromium_code,

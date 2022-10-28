@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -38,8 +38,9 @@
 #include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/widget/widget.h"
 
-#if BUILDFLAG(USE_GTK)
+#if BUILDFLAG(IS_LINUX)
 #include "ui/linux/linux_ui.h"
+#include "ui/linux/linux_ui_getter.h"
 #endif
 
 #if defined(USE_AURA)
@@ -208,10 +209,10 @@ class OmniboxPopupContentsViewTest : public InProcessBrowserTest {
 
   void UseDefaultTheme() {
     // Some test relies on the light/dark variants of the result background to
-    // be different. But when using the GTK theme on Linux, these colors will be
-    // the same. Ensure we're not using the system (GTK) theme, which may be
+    // be different. But when using the system theme on Linux, these colors will
+    // be the same. Ensure we're not using the system theme, which may be
     // conditionally enabled depending on the environment.
-#if BUILDFLAG(USE_GTK)
+#if BUILDFLAG(IS_LINUX)
     // Normally it would be sufficient to call ThemeService::UseDefaultTheme()
     // which sets the kUsesSystemTheme user pref on the browser's profile.
     // However BrowserThemeProvider::GetColorProviderColor() currently does not
@@ -219,8 +220,7 @@ class OmniboxPopupContentsViewTest : public InProcessBrowserTest {
     // NativeThemeGtk instance will always be returned.
     // TODO(crbug.com/1304441): Remove this once GTK passthrough is fully
     // supported.
-    ui::LinuxUi::instance()->SetUseSystemThemeCallback(
-        base::BindRepeating([](aura::Window* window) { return false; }));
+    ui::LinuxUiGetter::set_instance(nullptr);
     ui::NativeTheme::GetInstanceForNativeUi()->NotifyOnNativeThemeUpdated();
 
     ThemeService* theme_service =
@@ -230,7 +230,7 @@ class OmniboxPopupContentsViewTest : public InProcessBrowserTest {
       theme_service->UseDefaultTheme();
     }
     ASSERT_TRUE(theme_service->UsingDefaultTheme());
-#endif  // BUILDFLAG(USE_GTK)
+#endif  // BUILDFLAG(IS_LINUX)
   }
 };
 
@@ -620,7 +620,7 @@ IN_PROC_BROWSER_TEST_F(OmniboxPopupContentsViewTest,
   matches.push_back(match);
   results.AppendMatches(matches);
   results.SortAndCull(input, nullptr);
-  autocomplete_controller->NotifyChanged(true);
+  autocomplete_controller->NotifyChanged();
 
   // Check that arrowing up and down emits the event.
   TestAXEventObserver observer;
@@ -629,7 +629,7 @@ IN_PROC_BROWSER_TEST_F(OmniboxPopupContentsViewTest,
   EXPECT_EQ(observer.value_changed_count(), 0);
   EXPECT_EQ(observer.active_descendant_changed_count(), 0);
 
-  // This is equiverlent of the user arrowing down in the omnibox.
+  // This is equivalent of the user arrowing down in the omnibox.
   edit_model()->SetPopupSelection(OmniboxPopupSelection(1));
   EXPECT_EQ(observer.selected_children_changed_count(), 1);
   EXPECT_EQ(observer.selection_changed_count(), 1);
@@ -644,7 +644,7 @@ IN_PROC_BROWSER_TEST_F(OmniboxPopupContentsViewTest,
   EXPECT_EQ(observer.active_descendant_changed_count(), 2);
 
   // TODO(accessibility) Test that closing the popup fires an activedescendant
-  // changed event.
+  //  changed event.
 
   // Check accessibility of list box while it's open.
   ui::AXNodeData popup_node_data_while_open;

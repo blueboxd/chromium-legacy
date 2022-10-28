@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -137,10 +137,9 @@ class EventServiceListSizeMatcher
       *listener << "event's service list argument is not a ListValue";
       return false;
     }
-    *listener << "number of services is "
-              << services->GetListDeprecated().size();
+    *listener << "number of services is " << services->GetList().size();
     return static_cast<testing::Matcher<size_t>>(testing::Eq(expected_size_))
-        .MatchAndExplain(services->GetListDeprecated().size(), listener);
+        .MatchAndExplain(services->GetList().size(), listener);
   }
 
   virtual void DescribeTo(::std::ostream* os) const {

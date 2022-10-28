@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -317,6 +317,8 @@ void CheckStableMemoryMetrics(const base::HistogramTester& histogram_tester,
   // Shared memory footprint can be below 1 MB, which is reported as zero.
   CheckMemoryMetric("Memory.Total.SharedMemoryFootprint", histogram_tester,
                     count, ValueRestriction::NONE);
+  CheckMemoryMetric("Memory.Total.TileMemory", histogram_tester, count,
+                    ValueRestriction::ABOVE_ZERO);
 }
 
 void CheckAllMemoryMetrics(const base::HistogramTester& histogram_tester,

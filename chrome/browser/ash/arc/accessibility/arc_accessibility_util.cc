@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -186,7 +186,7 @@ absl::optional<mojom::AccessibilityActionType> ConvertToAndroidAction(
       return arc::mojom::AccessibilityActionType::COLLAPSE;
     case ax::mojom::Action::kExpand:
       return arc::mojom::AccessibilityActionType::EXPAND;
-    case ax::mojom::Action::kShowContextMenu:
+    case ax::mojom::Action::kLongClick:
       return arc::mojom::AccessibilityActionType::LONG_CLICK;
     default:
       return absl::nullopt;
@@ -233,7 +233,7 @@ ax::mojom::Action ConvertToChromeAction(
     case arc::mojom::AccessibilityActionType::EXPAND:
       return ax::mojom::Action::kExpand;
     case arc::mojom::AccessibilityActionType::LONG_CLICK:
-      return ax::mojom::Action::kShowContextMenu;
+      return ax::mojom::Action::kLongClick;
     // Below are actions not mapped in ConvertToAndroidAction().
     case arc::mojom::AccessibilityActionType::CLEAR_FOCUS:
     case arc::mojom::AccessibilityActionType::SELECT:

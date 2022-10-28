@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,9 +11,10 @@ import '../../settings_shared.css.js';
 import './os_saved_devices_list.js';
 
 import {FastPairSavedDevicesUiEvent, recordSavedDevicesUiEventMetrics} from 'chrome://resources/cr_components/chromeos/bluetooth/bluetooth_metrics_utils.js';
-import {I18nBehavior, I18nBehaviorInterface} from 'chrome://resources/js/i18n_behavior.m.js';
+import {assertNotReached} from 'chrome://resources/js/assert.m.js';
+import {I18nBehavior, I18nBehaviorInterface} from 'chrome://resources/cr_elements/i18n_behavior.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
-import {WebUIListenerBehavior, WebUIListenerBehaviorInterface} from 'chrome://resources/js/web_ui_listener_behavior.m.js';
+import {WebUIListenerBehavior, WebUIListenerBehaviorInterface} from 'chrome://resources/cr_elements/web_ui_listener_behavior.js';
 import {html, mixinBehaviors, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {Route, Router} from '../../router.js';
@@ -21,7 +22,7 @@ import {routes} from '../os_route.js';
 import {RouteObserverBehavior, RouteObserverBehaviorInterface} from '../route_observer_behavior.js';
 
 import {OsBluetoothDevicesSubpageBrowserProxy, OsBluetoothDevicesSubpageBrowserProxyImpl} from './os_bluetooth_devices_subpage_browser_proxy.js';
-import {FastPairSavedDevice} from './settings_fast_pair_constants.js';
+import {FastPairSavedDevice, FastPairSavedDevicesOptInStatus} from './settings_fast_pair_constants.js';
 
 /**
  * @constructor
@@ -52,16 +53,6 @@ class SettingsBluetoothSavedDevicesSubpageElement extends
   static get properties() {
     return {
       /**
-       * @protected
-       */
-      savedDevicesSublabel_: {
-        type: String,
-        value() {
-          return loadTimeData.getString('sublabelWithEmail');
-        },
-      },
-
-      /**
        * @protected {!Array<!FastPairSavedDevice>}
        */
       savedDevices_: {
@@ -70,14 +61,36 @@ class SettingsBluetoothSavedDevicesSubpageElement extends
       },
 
       /** @protected */
-      noSavedDeviceslabel_: {
-        type: String,
-        value() {
-          return loadTimeData.getString('noDevicesWithEmail');
-        },
+      showSavedDevicesErrorLabel_: {
+        type: Boolean,
+        value: false,
       },
 
+      /** @protected */
+      showSavedDevicesLoadingLabel_: {
+        type: Boolean,
+        notify: true,
+        value: true,
+      },
+
+      /** @protected */
+      shouldShowDeviceList_: {
+        type: Boolean,
+        value: false,
+      },
+
+      /** @protected */
+      shouldShowNoDevicesLabel_: {
+        type: Boolean,
+        value: false,
+      },
     };
+  }
+
+  static get observers() {
+    return [
+      'evaluateLabels_(showSavedDevicesLoadingLabel_, showSavedDevicesErrorLabel_, savedDevices_.*)',
+    ];
   }
 
   constructor() {
@@ -92,6 +105,9 @@ class SettingsBluetoothSavedDevicesSubpageElement extends
     super.ready();
     this.addWebUIListener(
         'fast-pair-saved-devices-list', this.getSavedDevices_.bind(this));
+    this.addWebUIListener(
+        'fast-pair-saved-devices-opt-in-status',
+        this.getOptInStatus_.bind(this));
     recordSavedDevicesUiEventMetrics(
         FastPairSavedDevicesUiEvent.SETTINGS_SAVED_DEVICE_LIST_SUBPAGE_SHOWN);
   }
@@ -110,6 +126,18 @@ class SettingsBluetoothSavedDevicesSubpageElement extends
   }
 
   /**
+   * @private
+   */
+  getOptInStatus_(optInStatus) {
+    if (optInStatus ===
+        FastPairSavedDevicesOptInStatus
+            .STATUS_ERROR_RETRIEVING_FROM_FOOTPRINTS_SERVER) {
+      this.showSavedDevicesErrorLabel_ = true;
+    }
+    this.showSavedDevicesLoadingLabel_ = false;
+  }
+
+  /**
    * RouteObserverBehaviorInterface override
    * @param {!Route} route
    * @param {!Route=} oldRoute
@@ -117,20 +145,39 @@ class SettingsBluetoothSavedDevicesSubpageElement extends
   currentRouteChanged(route, oldRoute) {
     // If we're navigating to the Saved Devices page, fetch the devices.
     if (route === routes.BLUETOOTH_SAVED_DEVICES) {
+      this.showSavedDevicesErrorLabel_ = false;
+      this.showSavedDevicesLoadingLabel_ = true;
       this.parentNode.pageTitle =
           loadTimeData.getString('savedDevicesPageName');
       this.browserProxy_.requestFastPairSavedDevices();
       return;
     }
   }
-  /**
-   * @param {!Array<!FastPairSavedDevice>}
-   *     devices
-   * @return boolean
-   * @private
-   */
-  shouldShowDeviceList_(devices) {
-    return devices.length > 0;
+
+  /** @private */
+  evaluateLabels_() {
+    this.shouldShowDeviceList_ =
+        !this.showSavedDevicesLoadingLabel_ && this.savedDevices_.length > 0;
+    this.shouldShowNoDevicesLabel_ = !this.showSavedDevicesLoadingLabel_ &&
+        !this.showSavedDevicesErrorLabel_ && this.savedDevices_.length === 0;
+  }
+
+  /** @private */
+  computeSavedDevicesSublabel_() {
+    this.evaluateLabels_();
+    if (this.shouldShowDeviceList_) {
+      return loadTimeData.getString('sublabelWithEmail');
+    }
+    if (this.shouldShowNoDevicesLabel_) {
+      return loadTimeData.getString('noDevicesWithEmail');
+    }
+    if (this.showSavedDevicesLoadingLabel_) {
+      return loadTimeData.getString('loadingDevicesWithEmail');
+    }
+    if (this.showSavedDevicesErrorLabel_) {
+      return loadTimeData.getString('savedDevicesErrorWithEmail');
+    }
+    assertNotReached();
   }
 }
 

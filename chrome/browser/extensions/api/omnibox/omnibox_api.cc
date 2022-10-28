@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -52,7 +52,7 @@ std::unique_ptr<omnibox::SuggestResult> GetOmniboxDefaultSuggestion(
   ExtensionPrefs* prefs = ExtensionPrefs::Get(profile);
 
   std::unique_ptr<omnibox::SuggestResult> suggestion;
-  const base::DictionaryValue* dict = NULL;
+  const base::DictionaryValue* dict = nullptr;
   if (prefs && prefs->ReadPrefAsDictionary(extension_id,
                                            kOmniboxDefaultSuggestion,
                                            &dict)) {
@@ -72,12 +72,13 @@ bool SetOmniboxDefaultSuggestion(
   if (!prefs)
     return false;
 
-  std::unique_ptr<base::DictionaryValue> dict = suggestion.ToValue();
+  base::Value::Dict dict = suggestion.ToValue();
   // Add the content field so that the dictionary can be used to populate an
   // omnibox::SuggestResult.
-  dict->SetKey(kSuggestionContent, base::Value(base::Value::Type::STRING));
-  prefs->UpdateExtensionPref(extension_id, kOmniboxDefaultSuggestion,
-                             std::move(dict));
+  dict.Set(kSuggestionContent, base::Value(base::Value::Type::STRING));
+  prefs->UpdateExtensionPref(
+      extension_id, kOmniboxDefaultSuggestion,
+      base::Value::ToUniquePtrValue(base::Value(std::move(dict))));
 
   return true;
 }
@@ -324,8 +325,7 @@ void OmniboxSendSuggestionsFunction::OnParsedDescriptionsAndStyles(
     params_->suggest_results[i].description =
         base::UTF16ToUTF8(result.descriptions_and_styles[i].description);
     params_->suggest_results[i].description_styles =
-        std::make_unique<std::vector<api::omnibox::MatchClassification>>(
-            std::move(result.descriptions_and_styles[i].styles));
+        std::move(result.descriptions_and_styles[i].styles);
   }
 
   NotifySuggestionsReady();
@@ -369,8 +369,7 @@ void OmniboxSetDefaultSuggestionFunction::OnParsedDescriptionAndStyles(
 
   omnibox::DefaultSuggestResult default_suggestion;
   default_suggestion.description = base::UTF16ToUTF8(single_result.description);
-  default_suggestion.description_styles =
-      std::make_unique<std::vector<api::omnibox::MatchClassification>>();
+  default_suggestion.description_styles.emplace();
   default_suggestion.description_styles->swap(single_result.styles);
   SetDefaultSuggestion(default_suggestion);
   Respond(NoArguments());

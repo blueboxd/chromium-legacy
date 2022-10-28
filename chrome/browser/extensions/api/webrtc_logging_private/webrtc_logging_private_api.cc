@@ -1,4 +1,4 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -139,7 +139,7 @@ content::RenderProcessHost* WebrtcLoggingPrivateFunction::RphFromRequest(
 
   // If |guest_process_id| is defined, directly use this id to find the
   // corresponding RenderProcessHost.
-  if (request.guest_process_id.get()) {
+  if (request.guest_process_id) {
     content::RenderProcessHost* rph =
         content::RenderProcessHost::FromID(*request.guest_process_id);
     if (!rph) {
@@ -152,7 +152,7 @@ content::RenderProcessHost* WebrtcLoggingPrivateFunction::RphFromRequest(
 
   // Otherwise, use the |tab_id|. If there's no |target_viewview|, no |tab_id|,
   // and no |guest_process_id|, we can't look up the RenderProcessHost.
-  if (!request.tab_id.get()) {
+  if (!request.tab_id) {
     *error = "No webview, tab ID, or guest process ID specified.";
     return nullptr;
   }
@@ -229,7 +229,7 @@ void WebrtcLoggingPrivateFunctionWithUploadCallback::FireCallback(
   if (success) {
     api::webrtc_logging_private::UploadResult result;
     result.report_id = report_id;
-    Respond(OneArgument(base::Value::FromUniquePtrValue(result.ToValue())));
+    Respond(OneArgument(base::Value(result.ToValue())));
   } else {
     Respond(Error(error_message));
   }
@@ -250,7 +250,7 @@ void WebrtcLoggingPrivateFunctionWithRecordingDoneCallback::FireCallback(
   result.prefix_path = prefix_path;
   result.did_stop = did_stop;
   result.did_manual_stop = did_manual_stop;
-  Respond(OneArgument(base::Value::FromUniquePtrValue(result.ToValue())));
+  Respond(OneArgument(base::Value(result.ToValue())));
 }
 
 ExtensionFunction::ResponseAction
@@ -570,7 +570,7 @@ void WebrtcLoggingPrivateStartEventLoggingFunction::FireCallback(
     DCHECK(error_message.empty());
     api::webrtc_logging_private::StartEventLoggingResult result;
     result.log_id = log_id;
-    Respond(OneArgument(base::Value::FromUniquePtrValue(result.ToValue())));
+    Respond(OneArgument(base::Value(result.ToValue())));
   } else {
     DCHECK(log_id.empty());
     DCHECK(!error_message.empty());

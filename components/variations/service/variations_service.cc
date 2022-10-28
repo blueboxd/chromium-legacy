@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,19 +11,14 @@
 #include <vector>
 
 #include "base/base64.h"
-#include "base/base_switches.h"
 #include "base/bind.h"
-#include "base/build_time.h"
 #include "base/callback.h"
 #include "base/command_line.h"
-#include "base/debug/crash_logging.h"
 #include "base/feature_list.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/observer_list.h"
-#include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
-#include "base/system/sys_info.h"
 #include "base/timer/elapsed_timer.h"
 #include "base/trace_event/trace_event.h"
 #include "base/values.h"
@@ -33,7 +28,6 @@
 #include "build/chromeos_buildflags.h"
 #include "components/encrypted_messages/encrypted_message.pb.h"
 #include "components/encrypted_messages/message_encrypter.h"
-#include "components/metrics/clean_exit_beacon.h"
 #include "components/metrics/metrics_state_manager.h"
 #include "components/network_time/network_time_tracker.h"
 #include "components/pref_registry/pref_registry_syncable.h"
@@ -42,30 +36,21 @@
 #include "components/variations/pref_names.h"
 #include "components/variations/proto/variations_seed.pb.h"
 #include "components/variations/seed_response.h"
-#include "components/variations/variations_seed_processor.h"
 #include "components/variations/variations_seed_simulator.h"
 #include "components/variations/variations_switches.h"
 #include "components/variations/variations_url_constants.h"
 #include "components/version_info/channel.h"
 #include "components/version_info/version_info.h"
-#include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
-#include "net/base/network_change_notifier.h"
 #include "net/base/url_util.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_status_code.h"
-#include "net/http/http_util.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/simple_url_loader.h"
 #include "services/network/public/mojom/url_response_head.mojom.h"
-#include "ui/base/device_form_factor.h"
 #include "url/gurl.h"
-
-#if BUILDFLAG(IS_ANDROID)
-#include "components/variations/android/variations_seed_bridge.h"
-#endif  // BUILDFLAG(IS_ANDROID)
 
 namespace variations {
 namespace {
@@ -248,14 +233,18 @@ bool IsFetchingEnabled() {
   return true;
 }
 
+// Returns the already downloaded first run seed, and clear the seed from the
+// native-side prefs. At this point, the seed has already been fetched from the
+// native seed storage, so it's no longer needed there. This is done regardless
+// if we fail or succeed below - since if we succeed, we're good to go and if we
+// fail, we probably don't want to keep around the bad content anyway.
 std::unique_ptr<SeedResponse> MaybeImportFirstRunSeed(
+    VariationsServiceClient* client,
     PrefService* local_state) {
-#if BUILDFLAG(IS_ANDROID)
   if (!local_state->HasPrefPath(prefs::kVariationsSeedSignature)) {
-    DVLOG(1) << "Importing first run seed from Java preferences.";
-    return android::GetVariationsFirstRunSeed();
+    DVLOG(1) << "Importing first run seed from native preferences.";
+    return client->TakeSeedFromNativeVariationsSeedStore();
   }
-#endif
   return nullptr;
 }
 
@@ -352,12 +341,13 @@ VariationsService::VariationsService(
       policy_pref_service_(local_state),
       resource_request_allowed_notifier_(std::move(notifier)),
       safe_seed_manager_(local_state),
-      field_trial_creator_(client_.get(),
-                           std::make_unique<VariationsSeedStore>(
-                               local_state,
-                               MaybeImportFirstRunSeed(local_state),
-                               /*signature_verification_enabled=*/true),
-                           ui_string_overrider) {
+      field_trial_creator_(
+          client_.get(),
+          std::make_unique<VariationsSeedStore>(
+              local_state,
+              MaybeImportFirstRunSeed(client_.get(), local_state),
+              /*signature_verification_enabled=*/true),
+          ui_string_overrider) {
   DCHECK(client_);
   DCHECK(resource_request_allowed_notifier_);
 
@@ -995,13 +985,12 @@ std::string VariationsService::GetStoredPermanentCountry() {
   if (!variations_overridden_country.empty())
     return variations_overridden_country;
 
-  const base::Value* list_value =
+  const auto& list_value =
       local_state_->GetList(prefs::kVariationsPermanentConsistencyCountry);
   std::string stored_country;
 
-  base::Value::ConstListView list_view = list_value->GetListDeprecated();
-  if (list_view.size() == 2 && list_view[1].is_string()) {
-    stored_country = list_view[1].GetString();
+  if (list_value.size() == 2 && list_value[1].is_string()) {
+    stored_country = list_value[1].GetString();
   }
 
   return stored_country;

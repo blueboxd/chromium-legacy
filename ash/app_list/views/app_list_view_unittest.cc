@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -23,7 +23,6 @@
 #include "ash/app_list/views/apps_grid_view.h"
 #include "ash/app_list/views/apps_grid_view_test_api.h"
 #include "ash/app_list/views/contents_view.h"
-#include "ash/app_list/views/expand_arrow_view.h"
 #include "ash/app_list/views/folder_background_view.h"
 #include "ash/app_list/views/folder_header_view.h"
 #include "ash/app_list/views/page_switcher.h"
@@ -64,6 +63,7 @@
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/test/views_test_base.h"
+#include "ui/views/test/views_test_utils.h"
 #include "ui/views/view_model.h"
 
 namespace ash {
@@ -290,7 +290,7 @@ class AppListViewTest : public views::ViewsTestBase {
     else
       contents_view->SetActiveState(state);
 
-    contents_view->Layout();
+    views::test::RunScheduledLayout(contents_view);
     return IsStateShown(state);
   }
 
@@ -742,7 +742,6 @@ class AppListViewFocusTest : public views::ViewsTestBase,
     suggestions_container_ = contents_view()
                                  ->apps_container_view()
                                  ->suggestion_chip_container_view_for_test();
-    expand_arrow_view_ = contents_view()->expand_arrow_view();
 
     // Add suggestion apps, a folder with apps and other app list items.
     const int kSuggestionAppNum = 3;
@@ -910,20 +909,6 @@ class AppListViewFocusTest : public views::ViewsTestBase,
     }
   }
 
-  void TestSelectionTraversal(const std::vector<views::View*>& view_list,
-                              ui::KeyboardCode key_code,
-                              bool shift_down) {
-    ResultSelectionController* selection_controller =
-        contents_view()
-            ->search_result_page_view()
-            ->result_selection_controller();
-    EXPECT_EQ(view_list[0], selection_controller->selected_result());
-    for (size_t i = 1; i < view_list.size(); ++i) {
-      SimulateKeyPress(key_code, shift_down);
-      EXPECT_EQ(view_list[i], selection_controller->selected_result());
-    }
-  }
-
   // Test the behavior triggered by left and right key when focus is on the
   // |textfield|. Does not insert text.
   void TestLeftAndRightKeyTraversalOnTextfield(views::Textfield* textfield) {
@@ -1081,8 +1066,6 @@ class AppListViewFocusTest : public views::ViewsTestBase,
     return view_->GetWidget()->GetFocusManager()->GetFocusedView();
   }
 
-  ExpandArrowView* expand_arrow_view() { return expand_arrow_view_; }
-
  protected:
   bool is_rtl_ = false;
   base::test::ScopedFeatureList scoped_feature_list_;
@@ -1094,7 +1077,6 @@ class AppListViewFocusTest : public views::ViewsTestBase,
   // Owned by view hierarchy. May be null for ProductivityLauncher, which does
   // not use suggestion chips.
   SearchResultContainerView* suggestions_container_ = nullptr;
-  ExpandArrowView* expand_arrow_view_ = nullptr;  // Owned by view hierarchy.
 
   std::unique_ptr<AppListTestViewDelegate> delegate_;
   std::unique_ptr<AppsGridViewTestApi> test_api_;
@@ -1134,7 +1116,6 @@ TEST_P(AppListViewPeekingFocusTest, LinearFocusTraversalInPeekingState) {
   forward_view_list.push_back(search_box_view()->search_box());
   for (auto* v : GetAllSuggestions())
     forward_view_list.push_back(v);
-  forward_view_list.push_back(expand_arrow_view());
   forward_view_list.push_back(search_box_view()->search_box());
   std::vector<views::View*> backward_view_list = forward_view_list;
   std::reverse(backward_view_list.begin(), backward_view_list.end());
@@ -1191,141 +1172,6 @@ TEST_P(AppListViewFocusTest, LinearFocusTraversalInFullscreenAllAppsState) {
                      ui::VKEY_LEFT, false);
 }
 
-// Tests focus traversal in HALF state with opened search box using |VKEY_TAB|.
-TEST_F(AppListViewPeekingFocusTest, TabFocusTraversalInHalfState) {
-  Show();
-
-  // Type something in search box to transition to HALF state and populate
-  // fake search results.
-  search_box_view()->search_box()->InsertText(
-      u"test",
-      ui::TextInputClient::InsertTextCursorBehavior::kMoveCursorAfterText);
-  EXPECT_EQ(app_list_view()->app_list_state(), ash::AppListViewState::kHalf);
-  constexpr int kTileResults = 3;
-  constexpr int kListResults = 2;
-  SetUpSearchResults(kTileResults, kListResults);
-
-  std::vector<views::View*> forward_view_list;
-
-  const std::vector<SearchResultTileItemView*>& tile_views =
-      GetSearchResultTileItemListView()->tile_views_for_test();
-  for (int i = 0; i < kTileResults; ++i)
-    forward_view_list.push_back(tile_views[i]);
-
-  SearchResultListView* list_view = GetSearchResultListView();
-  for (int i = 0; i < kListResults; ++i)
-    forward_view_list.push_back(list_view->GetResultViewAt(i));
-
-  // The selected view will always be a result when using
-  // |result_selection_controller|
-  forward_view_list.push_back(nullptr);
-
-  std::vector<views::View*> backward_view_list = forward_view_list;
-  std::reverse(backward_view_list.begin(), backward_view_list.end());
-
-  // Test traversal triggered by tab.
-  EXPECT_TRUE(search_box_view()->search_box()->HasFocus());
-  TestSelectionTraversal(forward_view_list, ui::VKEY_TAB, false);
-  EXPECT_TRUE(search_box_view()->close_button()->HasFocus());
-
-  // Focus cycles from the close button to the first result.
-  TestSelectionTraversal({nullptr, forward_view_list[0]}, ui::VKEY_TAB, false);
-  EXPECT_TRUE(search_box_view()->search_box()->HasFocus());
-
-  // The shift+tab key should move focus back to the close button.
-  TestSelectionTraversal({forward_view_list[0], nullptr}, ui::VKEY_TAB, true);
-  EXPECT_TRUE(search_box_view()->close_button()->HasFocus());
-
-  // Test traversal triggered by shift+tab.
-  TestSelectionTraversal(backward_view_list, ui::VKEY_TAB, true);
-  EXPECT_TRUE(search_box_view()->search_box()->HasFocus());
-}
-
-// Tests return key with search box close button focused (with app list view in
-// half state):
-// *   search box text is cleared
-// *   search box gets focus, but it's not active
-// *   subsequent tab keys move focus to app list folder view.
-TEST_F(AppListViewPeekingFocusTest, CloseButtonClearsSearchOnEnter) {
-  Show();
-
-  // Type something in search box to transition to HALF state and populate
-  // fake search results.
-  search_box_view()->search_box()->InsertText(
-      u"test",
-      ui::TextInputClient::InsertTextCursorBehavior::kMoveCursorAfterText);
-  EXPECT_EQ(app_list_view()->app_list_state(), ash::AppListViewState::kHalf);
-  constexpr int kTileResults = 3;
-  constexpr int kListResults = 2;
-  SetUpSearchResults(kTileResults, kListResults);
-
-  const std::vector<SearchResultTileItemView*>& tile_views =
-      GetSearchResultTileItemListView()->tile_views_for_test();
-  ASSERT_FALSE(tile_views.empty());
-  views::View* first_result_view = tile_views[0];
-
-  // Shift+Tab to focus close button.
-  TestSelectionTraversal({first_result_view, nullptr}, ui::VKEY_TAB, true);
-  EXPECT_TRUE(search_box_view()->close_button()->HasFocus());
-
-  // Enter - it should clear the search box.
-  SimulateKeyPress(ui::VKEY_RETURN, false /*shift_down*/);
-  EXPECT_TRUE(search_box_view()->search_box()->HasFocus());
-  EXPECT_EQ(std::u16string(), search_box_view()->search_box()->GetText());
-  EXPECT_FALSE(search_box_view()->is_search_box_active());
-  EXPECT_FALSE(contents_view()->search_result_page_view()->GetVisible());
-  ResultSelectionController* selection_controller =
-      contents_view()->search_result_page_view()->result_selection_controller();
-  EXPECT_EQ(nullptr, selection_controller->selected_result());
-
-  // Tab traversal continues with app list folder items.
-  std::vector<views::View*> forward_view_list;
-  forward_view_list.push_back(search_box_view()->search_box());
-  const views::ViewModelT<AppListItemView>* view_model =
-      app_list_folder_view()->items_grid_view()->view_model();
-  for (const auto& entry : view_model->entries())
-    forward_view_list.push_back(entry.view);
-  TestFocusTraversal(forward_view_list, ui::VKEY_TAB, false);
-}
-
-// Tests focus traversal in HALF state with opened search box using |VKEY_LEFT|
-// and |VKEY_RIGHT|.
-TEST_P(AppListViewPeekingFocusTest, LeftRightFocusTraversalInHalfState) {
-  Show();
-
-  // Type something in search box to transition to HALF state and populate
-  // fake search results.
-  // Type something in textfield.
-  std::u16string text = is_rtl_ ? u"اختبار" : u"test";
-  search_box_view()->search_box()->InsertText(
-      text,
-      ui::TextInputClient::InsertTextCursorBehavior::kMoveCursorAfterText);
-  EXPECT_EQ(app_list_view()->app_list_state(), ash::AppListViewState::kHalf);
-
-  constexpr int kTileResults = 6;
-  SetUpSearchResults(kTileResults, 0);
-
-  std::vector<views::View*> forward_view_list;
-  const std::vector<SearchResultTileItemView*>& tile_views =
-      GetSearchResultTileItemListView()->tile_views_for_test();
-  forward_view_list.push_back(tile_views[0]);
-
-  for (int i = 1; i < kTileResults; ++i)
-    forward_view_list.push_back(tile_views[i]);
-
-  forward_view_list.push_back(tile_views[0]);
-
-  TestSelectionTraversal(forward_view_list,
-                         is_rtl_ ? ui::VKEY_LEFT : ui::VKEY_RIGHT, false);
-
-  std::vector<views::View*> backward_view_list = forward_view_list;
-
-  std::reverse(backward_view_list.begin(), backward_view_list.end());
-
-  TestSelectionTraversal(backward_view_list,
-                         is_rtl_ ? ui::VKEY_RIGHT : ui::VKEY_LEFT, false);
-}
-
 // Tests the linear focus traversal in FULLSCREEN_ALL_APPS state within folder.
 TEST_P(AppListViewFocusTest, LinearFocusTraversalInFolder) {
   Show();
@@ -1361,31 +1207,6 @@ TEST_P(AppListViewFocusTest, LinearFocusTraversalInFolder) {
   // Test traversal triggered by left.
   TestFocusTraversal(is_rtl_ ? forward_view_list : backward_view_list,
                      ui::VKEY_LEFT, false);
-}
-
-// Tests the vertical focus traversal by in PEEKING state.
-TEST_P(AppListViewPeekingFocusTest, VerticalFocusTraversalInPeekingState) {
-  Show();
-  SetAppListState(ash::AppListViewState::kPeeking);
-
-  std::vector<views::View*> forward_view_list;
-  forward_view_list.push_back(search_box_view()->search_box());
-  const std::vector<views::View*> suggestions = GetAllSuggestions();
-  forward_view_list.push_back(suggestions[0]);
-  forward_view_list.push_back(expand_arrow_view());
-  forward_view_list.push_back(search_box_view()->search_box());
-
-  // Test traversal triggered by down.
-  TestFocusTraversal(forward_view_list, ui::VKEY_DOWN, false);
-
-  std::vector<views::View*> backward_view_list;
-  backward_view_list.push_back(search_box_view()->search_box());
-  backward_view_list.push_back(expand_arrow_view());
-  backward_view_list.push_back(suggestions.back());
-  backward_view_list.push_back(search_box_view()->search_box());
-
-  // Test traversal triggered by up.
-  TestFocusTraversal(backward_view_list, ui::VKEY_UP, false);
 }
 
 // Tests the vertical focus traversal in FULLSCREEN_ALL_APPS state.
@@ -1424,47 +1245,6 @@ TEST_P(AppListViewFocusTest, VerticalFocusTraversalInFullscreenAllAppsState) {
 
   // Test traversal triggered by up.
   TestFocusTraversal(backward_view_list, ui::VKEY_UP, false);
-}
-
-// Tests the vertical focus traversal in HALF state with opened search box.
-TEST_F(AppListViewPeekingFocusTest, VerticalFocusTraversalInHalfState) {
-  Show();
-
-  // Type something in search box to transition to HALF state and populate
-  // fake search results.
-  search_box_view()->search_box()->InsertText(
-      u"test",
-      ui::TextInputClient::InsertTextCursorBehavior::kMoveCursorAfterText);
-  EXPECT_EQ(app_list_view()->app_list_state(), ash::AppListViewState::kHalf);
-  constexpr int kTileResults = 3;
-  constexpr int kListResults = 2;
-  SetUpSearchResults(kTileResults, kListResults);
-
-  std::vector<views::View*> forward_view_list;
-
-  const std::vector<SearchResultTileItemView*>& tile_views =
-      GetSearchResultTileItemListView()->tile_views_for_test();
-  forward_view_list.push_back(tile_views[0]);
-
-  SearchResultListView* list_view = GetSearchResultListView();
-  for (int i = 0; i < kListResults; ++i)
-    forward_view_list.push_back(list_view->GetResultViewAt(i));
-
-  contents_view()
-      ->search_result_page_view()
-      ->result_selection_controller()
-      ->ResetSelection(nullptr, false);
-
-  // Test traversal triggered by down.
-  TestSelectionTraversal(forward_view_list, ui::VKEY_DOWN, false);
-
-  std::vector<views::View*> backward_view_list;
-  for (int i = kListResults - 1; i >= 0; --i)
-    backward_view_list.push_back(list_view->GetResultViewAt(i));
-  backward_view_list.push_back(tile_views[kTileResults - 1]);
-
-  // Test traversal triggered by up.
-  TestSelectionTraversal(backward_view_list, ui::VKEY_UP, false);
 }
 
 // Tests the vertical focus traversal in FULLSCREEN_ALL_APPS state in the first
@@ -1556,62 +1336,6 @@ TEST_F(AppListViewPeekingFocusTest,
   TestFocusTraversal(backward_view_list, ui::VKEY_UP, false);
 }
 
-// Tests that the focus is set back onto search box after all state transitions
-// besides those going to/from an activated folder.
-TEST_F(AppListViewPeekingFocusTest, FocusResetAfterStateTransition) {
-  Show();
-
-  // Type something in search box to transition to HALF state and populate
-  // fake search results.
-  search_box_view()->search_box()->InsertText(
-      u"test",
-      ui::TextInputClient::InsertTextCursorBehavior::kMoveCursorAfterText);
-  const int kTileResults = 3;
-  const int kListResults = 2;
-  SetUpSearchResults(kTileResults, kListResults);
-
-  EXPECT_EQ(app_list_view()->app_list_state(), ash::AppListViewState::kHalf);
-  EXPECT_EQ(search_box_view()->search_box(), focused_view());
-
-  // Move focus to the first search result, then transition to PEEKING state.
-  SimulateKeyPress(ui::VKEY_TAB, false);
-  SimulateKeyPress(ui::VKEY_TAB, false);
-
-  SetAppListState(ash::AppListViewState::kPeeking);
-  EXPECT_EQ(app_list_view()->app_list_state(), ash::AppListViewState::kPeeking);
-  EXPECT_EQ(search_box_view()->search_box(), focused_view());
-
-  // Move focus to the first suggestion app, then transition to
-  // FULLSCREEN_ALL_APPS state.
-  SimulateKeyPress(ui::VKEY_TAB, false);
-  SetAppListState(ash::AppListViewState::kFullscreenAllApps);
-  EXPECT_EQ(app_list_view()->app_list_state(),
-            ash::AppListViewState::kFullscreenAllApps);
-  EXPECT_EQ(search_box_view()->search_box(), focused_view());
-
-  // Move focus to the folder and open it.
-  folder_item_view()->RequestFocus();
-  SimulateKeyPress(ui::VKEY_RETURN, false);
-
-  //  Test that the first item in the folder is focused.
-  EXPECT_TRUE(contents_view()->apps_container_view()->IsInFolderView());
-  EXPECT_EQ(app_list_folder_view()->items_grid_view()->view_model()->view_at(0),
-            focused_view());
-
-  // Close the folder.
-  SimulateKeyPress(ui::VKEY_ESCAPE, false);
-
-  // Test that focus is on the previously activated folder item
-  EXPECT_EQ(folder_item_view(), focused_view());
-
-  // Transition to PEEKING state.
-  SetAppListState(ash::AppListViewState::kPeeking);
-
-  // Test that the searchbox is focused.
-  EXPECT_EQ(app_list_view()->app_list_state(), ash::AppListViewState::kPeeking);
-  EXPECT_EQ(search_box_view()->search_box(), focused_view());
-}
-
 // Tests that key event which is not handled by focused view will be redirected
 // to search box when search box view is active (but not focused).
 TEST_F(AppListViewFocusTest, RedirectFocusToSearchBox) {
@@ -1683,7 +1407,6 @@ TEST_F(AppListViewFocusTest, CtrlASelectsAllTextInSearchbox) {
   search_box_view()->search_box()->InsertText(
       u"test",
       ui::TextInputClient::InsertTextCursorBehavior::kMoveCursorAfterText);
-  EXPECT_EQ(app_list_view()->app_list_state(), ash::AppListViewState::kHalf);
   constexpr int kTileResults = 3;
   constexpr int kListResults = 2;
   SetUpSearchResults(kTileResults, kListResults);
@@ -1807,10 +1530,10 @@ TEST_F(AppListViewFocusTest, HittingEnterWhenFocusOnSearchBox) {
 
 // Tests that search box becomes focused when it is activated.
 TEST_F(AppListViewFocusTest, SetFocusOnSearchboxWhenActivated) {
-  Show();
+  app_list_view()->Show(AppListViewState::kFullscreenAllApps,
+                        /*is_side_shelf=*/false);
 
   // Press tab several times to move focus out of the search box.
-  SimulateKeyPress(ui::VKEY_TAB, false);
   SimulateKeyPress(ui::VKEY_TAB, false);
   SimulateKeyPress(ui::VKEY_TAB, false);
   EXPECT_FALSE(search_box_view()->search_box()->HasFocus());
@@ -2009,42 +1732,6 @@ TEST_F(AppListViewPeekingTest, EmptySearchTextStillPeeking) {
   ASSERT_EQ(ash::AppListViewState::kPeeking, view_->app_list_state());
 }
 
-TEST_F(AppListViewPeekingTest, UpwardMouseWheelScrollTransitionsToFullscreen) {
-  base::HistogramTester histogram_tester;
-
-  Initialize(false /*is_tablet_mode*/);
-  delegate_->GetTestModel()->PopulateApps(kInitialItems);
-  Show();
-  EXPECT_EQ(AppListViewState::kPeeking, view_->app_list_state());
-
-  view_->HandleScroll(gfx::Point(0, 0), gfx::Vector2d(0, 30),
-                      ui::ET_MOUSEWHEEL);
-
-  EXPECT_EQ(ash::AppListViewState::kFullscreenAllApps, view_->app_list_state());
-  // This should use animation instead of drag.
-  // TODO(oshima): Test AnimationSmoothness.
-  histogram_tester.ExpectTotalCount(
-      "Apps.StateTransition.Drag.PresentationTime.ClamshellMode", 0);
-
-  auto grid_bounds = gfx::RectF(apps_grid_view()->bounds());
-  views::View::ConvertRectToTarget(apps_grid_view(), view_, &grid_bounds);
-
-  view_->HandleScroll(gfx::ToRoundedPoint(grid_bounds.CenterPoint()),
-                      gfx::Vector2d(0, 30), ui::ET_MOUSEWHEEL);
-  EXPECT_EQ(ash::AppListViewState::kFullscreenAllApps, view_->app_list_state());
-
-  // Scrolls inside or to the side of the apps grid should not dismiss.
-  view_->HandleScroll(
-      gfx::ToRoundedPoint(grid_bounds.left_center()) + gfx::Vector2d(-20, 0),
-      gfx::Vector2d(0, -30), ui::ET_MOUSEWHEEL);
-  ASSERT_EQ(0, delegate_->dismiss_count());
-
-  // Scroll above the app list should dismiss.
-  view_->HandleScroll(gfx::Point(0, 0), gfx::Vector2d(0, -30),
-                      ui::ET_MOUSEWHEEL);
-  ASSERT_EQ(1, delegate_->dismiss_count());
-}
-
 TEST_F(AppListViewPeekingTest,
        DownwardMouseWheelScrollDismissesPeekingLauncher) {
   Initialize(false /*is_tablet_mode*/);
@@ -2059,22 +1746,6 @@ TEST_F(AppListViewPeekingTest,
   EXPECT_EQ(1, delegate_->dismiss_count());
 }
 
-TEST_F(AppListViewPeekingTest, UpwardGestureScrollTransitionsToFullscreen) {
-  base::HistogramTester histogram_tester;
-  Initialize(false /*is_tablet_mode*/);
-  delegate_->GetTestModel()->PopulateApps(kInitialItems);
-  Show();
-  EXPECT_EQ(AppListViewState::kPeeking, view_->app_list_state());
-
-  view_->HandleScroll(gfx::Point(0, 0), gfx::Vector2d(0, 30), ui::ET_SCROLL);
-
-  EXPECT_EQ(ash::AppListViewState::kFullscreenAllApps, view_->app_list_state());
-  // This should use animation instead of drag.
-  // TODO(oshima): Test AnimationSmoothness.
-  histogram_tester.ExpectTotalCount(
-      "Apps.StateTransition.Drag.PresentationTime.ClamshellMode", 0);
-}
-
 TEST_F(AppListViewPeekingTest, DownwardGestureScrollDismissesPeekingLauncher) {
   Initialize(false /*is_tablet_mode*/);
   delegate_->GetTestModel()->PopulateApps(kInitialItems);
@@ -2085,21 +1756,6 @@ TEST_F(AppListViewPeekingTest, DownwardGestureScrollDismissesPeekingLauncher) {
   EXPECT_EQ(0, delegate_->dismiss_count());
   view_->HandleScroll(gfx::Point(0, 0), gfx::Vector2d(0, -30), ui::ET_SCROLL);
   EXPECT_EQ(1, delegate_->dismiss_count());
-}
-
-// Tests that typing text after opening transitions from peeking to half.
-TEST_F(AppListViewPeekingTest, TypingPeekingToHalf) {
-  Initialize(false /*is_tablet_mode*/);
-  views::Textfield* search_box =
-      view_->app_list_main_view()->search_box_view()->search_box();
-
-  Show();
-  search_box->SetText(std::u16string());
-  search_box->InsertText(
-      u"nice",
-      ui::TextInputClient::InsertTextCursorBehavior::kMoveCursorAfterText);
-
-  ASSERT_EQ(ash::AppListViewState::kHalf, view_->app_list_state());
 }
 
 // Tests that typing when in fullscreen changes the state to fullscreen search.
@@ -2122,16 +1778,15 @@ TEST_F(AppListViewPeekingTest, TypingFullscreenToFullscreenSearch) {
 // Tests that in tablet mode, typing changes the state to fullscreen search.
 TEST_F(AppListViewTest, TypingTabletModeFullscreenSearch) {
   Initialize(true /*is_tablet_mode*/);
-  views::Textfield* search_box =
-      view_->app_list_main_view()->search_box_view()->search_box();
-
   Show();
-  search_box->SetText(std::u16string());
-  search_box->InsertText(
-      u"cool!",
-      ui::TextInputClient::InsertTextCursorBehavior::kMoveCursorAfterText);
+  SetTextInSearchBox(u"cool!");
+  EXPECT_EQ(ash::AppListViewState::kFullscreenSearch, view_->app_list_state());
 
-  ASSERT_EQ(ash::AppListViewState::kFullscreenSearch, view_->app_list_state());
+  view_->SetState(AppListViewState::kFullscreenAllApps);
+  // The state should also change to fullscreen search if the user enters white
+  // space query.
+  SetTextInSearchBox(u" ");
+  EXPECT_EQ(ash::AppListViewState::kFullscreenSearch, view_->app_list_state());
 }
 
 // Tests that pressing escape when in peeking closes the app list.
@@ -2142,17 +1797,6 @@ TEST_F(AppListViewPeekingTest, EscapeKeyPeekingToClosed) {
   view_->AcceleratorPressed(ui::Accelerator(ui::VKEY_ESCAPE, ui::EF_NONE));
 
   ASSERT_EQ(1, delegate_->dismiss_count());
-}
-
-// Tests that pressing escape when in half screen changes the state to peeking.
-TEST_F(AppListViewPeekingTest, EscapeKeyHalfToPeeking) {
-  Initialize(false /*is_tablet_mode*/);
-
-  Show();
-  SetTextInSearchBox(u"doggie");
-  view_->AcceleratorPressed(ui::Accelerator(ui::VKEY_ESCAPE, ui::EF_NONE));
-
-  ASSERT_EQ(ash::AppListViewState::kPeeking, view_->app_list_state());
 }
 
 // Tests that pressing escape when in fullscreen changes the state to closed.
@@ -2283,26 +1927,6 @@ TEST_F(AppListViewPeekingTest, AppsGridViewVisibilityOnReopening) {
   EXPECT_TRUE(IsViewVisibleOnScreen(apps_grid_view()));
 }
 
-TEST_F(AppListViewPeekingTest, AppsGridViewExpandHintingOnReopening) {
-  ui::ScopedAnimationDurationScaleMode non_zero_duration(
-      ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
-  Initialize(false /*is_tablet_mode*/);
-
-  Show();
-  view_->SetState(ash::AppListViewState::kPeeking);
-  EXPECT_TRUE(
-      contents_view()->expand_arrow_view()->IsHintingAnimationRunningForTest());
-
-  view_->SetState(ash::AppListViewState::kClosed);
-  EXPECT_FALSE(
-      contents_view()->expand_arrow_view()->IsHintingAnimationRunningForTest());
-
-  Show();
-  view_->SetState(ash::AppListViewState::kPeeking);
-  EXPECT_TRUE(
-      contents_view()->expand_arrow_view()->IsHintingAnimationRunningForTest());
-}
-
 // Tests that going into a folder view, then setting the AppListState to PEEKING
 // hides the folder view.
 TEST_F(AppListViewPeekingTest, FolderViewToPeeking) {
@@ -2377,76 +2001,6 @@ TEST_F(AppListViewPeekingTest, TapAndClickWithinAppsGridView) {
   ASSERT_EQ(2, delegate_->dismiss_count());
 }
 
-// Tests that search box should not become a rectangle during drag.
-TEST_F(AppListViewPeekingTest, SearchBoxCornerRadiusDuringDragging) {
-  base::HistogramTester histogram_tester;
-  Initialize(false /*is_tablet_mode*/);
-  delegate_->GetTestModel()->PopulateApps(kInitialItems);
-  Show();
-  view_->SetState(ash::AppListViewState::kFullscreenAllApps);
-  EXPECT_EQ(ash::AppListViewState::kFullscreenAllApps, view_->app_list_state());
-  histogram_tester.ExpectTotalCount(
-      "Apps.StateTransition.Drag.PresentationTime.ClamshellMode", 0);
-
-  // Send SCROLL_START and SCROLL_UPDATE events, simulating dragging the
-  // launcher.
-  base::TimeTicks timestamp = base::TimeTicks::Now();
-  gfx::Point start = view_->GetWidget()->GetWindowBoundsInScreen().top_right();
-  int delta_y = 1;
-  ui::GestureEvent start_event = ui::GestureEvent(
-      start.x(), start.y(), ui::EF_NONE, timestamp,
-      ui::GestureEventDetails(ui::ET_GESTURE_SCROLL_BEGIN, 0, delta_y));
-  view_->OnGestureEvent(&start_event);
-  histogram_tester.ExpectTotalCount(
-      "Apps.StateTransition.Drag.PresentationTime.ClamshellMode", 0);
-
-  // Drag down the launcher.
-  timestamp += base::Milliseconds(25);
-  delta_y += 10;
-  start.Offset(0, 1);
-  ui::GestureEvent update_event = ui::GestureEvent(
-      start.x(), start.y(), ui::EF_NONE, timestamp,
-      ui::GestureEventDetails(ui::ET_GESTURE_SCROLL_UPDATE, 0, delta_y));
-  view_->OnGestureEvent(&update_event);
-
-  EXPECT_TRUE(IsStateShown(ash::AppListState::kStateApps));
-  EXPECT_EQ(kSearchBoxBorderCornerRadius,
-            search_box_view()->GetSearchBoxBorderCornerRadiusForState(
-                ash::AppListState::kStateApps));
-
-  // Search box should keep |kSearchBoxCornerRadiusFullscreen| corner radius
-  // during drag.
-  EXPECT_TRUE(SetAppListState(ash::AppListState::kStateSearchResults));
-  EXPECT_TRUE(view_->is_in_drag());
-  EXPECT_EQ(kSearchBoxBorderCornerRadius,
-            search_box_view()->GetSearchBoxBorderCornerRadiusForState(
-                ash::AppListState::kStateSearchResults));
-  histogram_tester.ExpectTotalCount(
-      "Apps.StateTransition.Drag.PresentationTime.ClamshellMode", 1);
-  histogram_tester.ExpectTotalCount(
-      "Apps.StateTransition.Drag.PresentationTime.MaxLatency.ClamshellMode", 0);
-
-  // Ends to drag the launcher.
-  EXPECT_TRUE(SetAppListState(ash::AppListState::kStateApps));
-  timestamp += base::Milliseconds(25);
-  start.Offset(0, 1);
-  ui::GestureEvent end_event =
-      ui::GestureEvent(start.x(), start.y() + delta_y, ui::EF_NONE, timestamp,
-                       ui::GestureEventDetails(ui::ET_GESTURE_END));
-  view_->OnGestureEvent(&end_event);
-
-  // Search box should keep |kSearchBoxCornerRadiusFullscreen| corner radius
-  // if launcher drag finished.
-  EXPECT_FALSE(view_->is_in_drag());
-  EXPECT_EQ(kSearchBoxBorderCornerRadius,
-            search_box_view()->GetSearchBoxBorderCornerRadiusForState(
-                ash::AppListState::kStateApps));
-  histogram_tester.ExpectTotalCount(
-      "Apps.StateTransition.Drag.PresentationTime.ClamshellMode", 1);
-  histogram_tester.ExpectTotalCount(
-      "Apps.StateTransition.Drag.PresentationTime.MaxLatency.ClamshellMode", 1);
-}
-
 // Tests displaying the app list and performs a standard set of checks on its
 // top level views.
 TEST_F(AppListViewPeekingTest, DisplayTest) {
@@ -2513,7 +2067,7 @@ TEST_F(AppListViewPeekingTest, PageSwitchingAnimationTest) {
   ContentsView* contents_view = main_view->contents_view();
 
   contents_view->SetActiveState(ash::AppListState::kStateApps);
-  contents_view->Layout();
+  views::test::RunScheduledLayout(contents_view);
   EXPECT_TRUE(IsStateShown(ash::AppListState::kStateApps));
 
   // Change pages. Animation start triggers layout, and updates the page UI.
@@ -2548,7 +2102,7 @@ TEST_F(AppListViewTest, DISABLED_SearchResultsTest) {
 
   // Show the search results.
   contents_view->ShowSearchResults(true);
-  contents_view->Layout();
+  views::test::RunScheduledLayout(contents_view);
   EXPECT_TRUE(
       contents_view->IsStateActive(ash::AppListState::kStateSearchResults));
 
@@ -2556,12 +2110,12 @@ TEST_F(AppListViewTest, DISABLED_SearchResultsTest) {
 
   // Hide the search results.
   contents_view->ShowSearchResults(false);
-  contents_view->Layout();
+  views::test::RunScheduledLayout(contents_view);
 
   // Check that we return to the page that we were on before the search.
   EXPECT_TRUE(IsStateShown(ash::AppListState::kStateApps));
 
-  view_->Layout();
+  views::test::RunScheduledLayout(view_);
   EXPECT_TRUE(IsStateShown(ash::AppListState::kStateApps));
 
   std::u16string search_text = u"test";
@@ -2572,7 +2126,7 @@ TEST_F(AppListViewTest, DISABLED_SearchResultsTest) {
   // Check that the current search is using |search_text|.
   EXPECT_EQ(search_text, main_view->search_box_view()->search_box()->GetText());
   EXPECT_EQ(search_text, main_view->search_box_view()->current_query());
-  contents_view->Layout();
+  views::test::RunScheduledLayout(contents_view);
   EXPECT_TRUE(
       contents_view->IsStateActive(ash::AppListState::kStateSearchResults));
   EXPECT_TRUE(CheckSearchBoxWidget(contents_view->GetSearchBoxBounds(
@@ -2580,7 +2134,7 @@ TEST_F(AppListViewTest, DISABLED_SearchResultsTest) {
 
   // Check that typing into the search box triggers the search page.
   EXPECT_TRUE(SetAppListState(ash::AppListState::kStateApps));
-  contents_view->Layout();
+  views::test::RunScheduledLayout(contents_view);
   EXPECT_TRUE(IsStateShown(ash::AppListState::kStateApps));
   EXPECT_TRUE(CheckSearchBoxWidget(
       contents_view->GetSearchBoxBounds(ash::AppListState::kStateApps)));
@@ -2594,7 +2148,7 @@ TEST_F(AppListViewTest, DISABLED_SearchResultsTest) {
   EXPECT_EQ(new_search_text,
             main_view->search_box_view()->search_box()->GetText());
   EXPECT_EQ(search_text, main_view->search_box_view()->current_query());
-  contents_view->Layout();
+  views::test::RunScheduledLayout(contents_view);
   EXPECT_TRUE(IsStateShown(ash::AppListState::kStateSearchResults));
   EXPECT_TRUE(CheckSearchBoxWidget(contents_view->GetSearchBoxBounds(
       ash::AppListState::kStateSearchResults)));
@@ -2855,140 +2409,6 @@ TEST_F(AppListViewTest, EscapeKeyInEmbeddedAssistantUIReturnsToAppList) {
   EXPECT_EQ(ash::AppListViewState::kFullscreenAllApps, view_->app_list_state());
 }
 
-// Tests that pressing escape in embedded Assistant UI returns to peeking
-// if the Assistant UI was launched from half screen.
-TEST_F(AppListViewPeekingTest, EscapeKeyInEmbeddedAssistantUIReturnsToPeeking) {
-  Initialize(false /*is_tablet_mode*/);
-  Show();
-
-  // Enter half screen search by entering text
-  SetTextInSearchBox(u"search query");
-  // From there we launch the Assistant UI
-  contents_view()->ShowEmbeddedAssistantUI(true);
-
-  // We press escape to leave the Assistant UI
-  view_->AcceleratorPressed(ui::Accelerator(ui::VKEY_ESCAPE, ui::EF_NONE));
-
-  // And we should be back in the peeking state
-  EXPECT_FALSE(contents_view()->IsShowingSearchResults());
-  EXPECT_EQ(ash::AppListViewState::kPeeking, view_->app_list_state());
-}
-
-// Tests that clicking empty region in AppListview when showing Assistant UI
-// should go back to peeking state.
-TEST_F(AppListViewPeekingTest, ClickOutsideEmbeddedAssistantUIToPeeking) {
-  Initialize(false /*is_tablet_mode*/);
-  Show();
-
-  // Set search_box_view active.
-  ui::KeyEvent key_event(ui::ET_KEY_PRESSED, ui::VKEY_RETURN, ui::EF_NONE);
-  view_->GetWidget()->OnKeyEvent(&key_event);
-
-  contents_view()->ShowEmbeddedAssistantUI(true);
-  EXPECT_TRUE(contents_view()->IsShowingEmbeddedAssistantUI());
-
-  // Click on the same empty region, the AppList should be peeking state.
-  const gfx::Point empty_region = view_->GetBoundsInScreen().origin();
-  ui::MouseEvent mouse_click(ui::ET_MOUSE_PRESSED, empty_region, empty_region,
-                             base::TimeTicks(), 0, 0);
-  auto mouse_click_dispatcher_api =
-      std::make_unique<ui::Event::DispatcherApi>(&mouse_click);
-  mouse_click_dispatcher_api->set_target(view_);
-  view_->OnMouseEvent(&mouse_click);
-  ui::MouseEvent mouse_release(ui::ET_MOUSE_RELEASED, empty_region,
-                               empty_region, base::TimeTicks(), 0, 0);
-  mouse_click_dispatcher_api =
-      std::make_unique<ui::Event::DispatcherApi>(&mouse_release);
-  mouse_click_dispatcher_api->set_target(view_);
-  view_->OnMouseEvent(&mouse_release);
-  EXPECT_EQ(ash::AppListViewState::kPeeking, view_->app_list_state());
-}
-
-// Tests that expand arrow is not visible when showing embedded Assistant UI.
-// ProductivityLauncher does not have an expand arrow.
-TEST_F(AppListViewPeekingTest, ExpandArrowNotVisibleInEmbeddedAssistantUI) {
-  Initialize(false /*is_tablet_mode*/);
-  Show();
-
-  // Set search_box_view active.
-  ui::KeyEvent key_event(ui::ET_KEY_PRESSED, ui::VKEY_RETURN, ui::EF_NONE);
-  view_->GetWidget()->OnKeyEvent(&key_event);
-
-  contents_view()->ShowEmbeddedAssistantUI(true);
-  EXPECT_TRUE(contents_view()->IsShowingEmbeddedAssistantUI());
-  EXPECT_EQ(0.0f,
-            contents_view()->expand_arrow_view()->layer()->GetTargetOpacity());
-}
-
-// Tests the expand arrow view opacity updates correctly when transitioning
-// between various app list view states. ProductivityLauncher does not have an
-// expand arrow.
-TEST_F(AppListViewPeekingTest, ExpandArrowViewVisibilityTest) {
-  Initialize(false /*is_tablet_mode*/);
-  Show();
-
-  view_->SetState(ash::AppListViewState::kClosed);
-  // Expand arrow should not be visible when  app list view state is closed.
-  ASSERT_EQ(contents_view()->expand_arrow_view()->layer()->opacity(), 0.0f);
-  // Expand arrow view should be visible for peeking launcher.
-  view_->SetState(ash::AppListViewState::kPeeking);
-  ASSERT_EQ(contents_view()->expand_arrow_view()->layer()->opacity(), 1.0f);
-
-  // Expand arrow view should not be visible for half launcher when showing
-  // embedded assistant.
-  contents_view()->ShowEmbeddedAssistantUI(true);
-  ASSERT_EQ(contents_view()->expand_arrow_view()->layer()->opacity(), 0.0f);
-  // Expand arrow should become visible when hiding the assistant view.
-  contents_view()->ShowEmbeddedAssistantUI(false);
-  EXPECT_TRUE(contents_view()->expand_arrow_view()->GetVisible());
-  ASSERT_EQ(contents_view()->expand_arrow_view()->layer()->opacity(), 1.0f);
-
-  // Typing text in the search box should hide the expand arrow view.
-  SetTextInSearchBox(u"https://youtu.be/dQw4w9WgXcQ");
-  ASSERT_EQ(contents_view()->expand_arrow_view()->layer()->opacity(), 0.0f);
-  // Pressing escape should show the expand arrow view again.
-  view_->AcceleratorPressed(ui::Accelerator(ui::VKEY_ESCAPE, ui::EF_NONE));
-  ASSERT_EQ(contents_view()->expand_arrow_view()->layer()->opacity(), 1.0f);
-}
-
-// Tests the expand arrow view opacity updates correctly when transitioning
-// between various app list view states with app list state animations enabled.
-// ProductivityLauncher does not have an expand arrow.
-TEST_F(AppListViewPeekingTest,
-       ExpandArrowViewVisibilityWithStateAnimationsTest) {
-  Initialize(false /*is_tablet_mode*/);
-  Show();
-
-  ui::ScopedAnimationDurationScaleMode non_zero_duration_mode(
-      ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
-
-  // Expand arrow view should be visible for peeking launcher.
-  EXPECT_EQ(1.0f,
-            contents_view()->expand_arrow_view()->layer()->GetTargetOpacity());
-
-  // Expand arrow view should not be visible for half launcher when showing
-  // embedded assistant.
-  contents_view()->ShowEmbeddedAssistantUI(true);
-  EXPECT_EQ(0.0f,
-            contents_view()->expand_arrow_view()->layer()->GetTargetOpacity());
-
-  // Expand arrow should become visible when hiding the assistant view.
-  contents_view()->ShowEmbeddedAssistantUI(false);
-  EXPECT_TRUE(contents_view()->expand_arrow_view()->GetVisible());
-  EXPECT_EQ(1.0f,
-            contents_view()->expand_arrow_view()->layer()->GetTargetOpacity());
-
-  // Typing text in the search box should hide the expand arrow view.
-  SetTextInSearchBox(u"https://youtu.be/dQw4w9WgXcQ");
-  EXPECT_EQ(0.0f,
-            contents_view()->expand_arrow_view()->layer()->GetTargetOpacity());
-
-  // Pressing escape should show the expand arrow view again.
-  view_->AcceleratorPressed(ui::Accelerator(ui::VKEY_ESCAPE, ui::EF_NONE));
-  EXPECT_EQ(1.0f,
-            contents_view()->expand_arrow_view()->layer()->GetTargetOpacity());
-}
-
 // Tests that search box is not visible when showing embedded Assistant UI.
 // ProductivityLauncher has tests for this in AppListBubbleViewTest.
 TEST_F(AppListViewPeekingTest, SearchBoxViewNotVisibleInEmbeddedAssistantUI) {
@@ -3001,16 +2421,6 @@ TEST_F(AppListViewPeekingTest, SearchBoxViewNotVisibleInEmbeddedAssistantUI) {
 
   EXPECT_TRUE(contents_view()->IsShowingEmbeddedAssistantUI());
   EXPECT_FALSE(search_box_view()->GetWidget()->IsVisible());
-}
-
-// Tests that the expand arrow cannot be seen when opening the app list with
-// side shelf enabled. ProductivityLauncher does not have an expand arrow.
-TEST_F(AppListViewPeekingTest, ExpandArrowNotVisibleWithSideShelf) {
-  Initialize(false /*is_tablet_mode*/);
-
-  Show(true /*is_side_shelf*/);
-
-  EXPECT_EQ(0.0f, contents_view()->expand_arrow_view()->layer()->opacity());
 }
 
 TEST_F(ProductivityLauncherAppListViewLayoutTest, RegularLandscapeScreen) {

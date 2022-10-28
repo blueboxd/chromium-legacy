@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -33,7 +33,8 @@ class ProcessHostedContentTypesAggregator
   void OnTakenFromGraph(Graph* graph) override;
 
   // PageNodeObserver:
-  void OnTypeChanged(const PageNode* page_node) override;
+  void OnTypeChanged(const PageNode* page_node,
+                     PageType previous_type) override;
 
   // FrameNodeObserver:
   void OnFrameNodeAdded(const FrameNode* frame_node) override;

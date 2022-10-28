@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -16,15 +16,15 @@ class WebStateImpl;
 // Class that can serialize and deserialize session information.
 class SessionStorageBuilder {
  public:
-  // Creates a serializable session storage from |web_state|,
-  // |navigation_manager| and |session_certificate_policy_cache|.
+  // Creates a serializable session storage from `web_state`,
+  // `navigation_manager` and `session_certificate_policy_cache`.
   static CRWSessionStorage* BuildStorage(
       const WebStateImpl& web_state,
       const NavigationManagerImpl& navigation_manager,
       const SessionCertificatePolicyCacheImpl&
           session_certificate_policy_cache);
 
-  // Populates |web_state| and it's |navigation_manager| with |storage|'s
+  // Populates `web_state` and it's `navigation_manager` with `storage`'s
   // session information.
   static void ExtractSessionState(WebStateImpl& web_state,
                                   NavigationManagerImpl& navigation_manager,

@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -232,8 +232,8 @@ class SelectDirectoryDialog : public ui::SelectFileDialog::Listener,
     select_file_dialog_->SelectFile(
         ui::SelectFileDialog::SELECT_FOLDER,
         l10n_util::GetStringUTF16(IDS_MEDIA_GALLERIES_DIALOG_ADD_GALLERY_TITLE),
-        default_path, NULL, 0, base::FilePath::StringType(),
-        platform_util::GetTopLevel(web_contents_->GetNativeView()), NULL);
+        default_path, nullptr, 0, base::FilePath::StringType(),
+        platform_util::GetTopLevel(web_contents_->GetNativeView()), nullptr);
   }
 
   // ui::SelectFileDialog::Listener implementation.
@@ -691,8 +691,7 @@ void MediaGalleriesGetMetadataFunction::GetMetadata(
     metadata.mime_type = mime_type;
 
     base::Value::Dict result_dictionary;
-    result_dictionary.Set(kMetadataKey,
-                          base::Value::FromUniquePtrValue(metadata.ToValue()));
+    result_dictionary.Set(kMetadataKey, metadata.ToValue());
     Respond(WithArguments(std::move(result_dictionary)));
     return;
   }
@@ -732,8 +731,7 @@ void MediaGalleriesGetMetadataFunction::OnSafeMediaMetadataParserDone(
 
   base::Value::Dict result_dictionary;
   result_dictionary.Set(kMetadataKey,
-                        base::Value::FromUniquePtrValue(
-                            SerializeMediaMetadata(std::move(metadata))));
+                        SerializeMediaMetadata(std::move(metadata)));
 
   if (attached_images->empty()) {
     Respond(WithArguments(std::move(result_dictionary)));
@@ -880,10 +878,9 @@ void MediaGalleriesAddGalleryWatchFunction::HandleResponse(
   }
 
   result.success = error.empty();
-  Respond(error.empty()
-              ? WithArguments(base::Value::FromUniquePtrValue(result.ToValue()))
-              : ErrorWithArguments(AddGalleryWatch::Results::Create(result),
-                                   error));
+  Respond(error.empty() ? WithArguments(result.ToValue())
+                        : ErrorWithArguments(
+                              AddGalleryWatch::Results::Create(result), error));
 }
 
 ///////////////////////////////////////////////////////////////////////////////

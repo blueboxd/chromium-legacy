@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -60,12 +60,12 @@ class MinimumVersionPolicyHandlerTest
   void TearDown() override;
 
   // MinimumVersionPolicyHandler::Delegate:
-  bool IsKioskMode() const;
-  bool IsDeviceEnterpriseManaged() const;
-  base::Version GetCurrentVersion() const;
-  bool IsUserEnterpriseManaged() const;
-  bool IsUserLoggedIn() const;
-  bool IsLoginInProgress() const;
+  bool IsKioskMode() const override;
+  bool IsDeviceEnterpriseManaged() const override;
+  base::Version GetCurrentVersion() const override;
+  bool IsUserEnterpriseManaged() const override;
+  bool IsUserLoggedIn() const override;
+  bool IsLoginInProgress() const override;
   MOCK_METHOD0(ShowUpdateRequiredScreen, void());
   MOCK_METHOD0(RestartToLoginScreen, void());
   MOCK_METHOD0(HideUpdateRequiredScreenIfShown, void());

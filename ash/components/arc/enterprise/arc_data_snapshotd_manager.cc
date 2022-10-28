@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -253,7 +253,7 @@ ArcDataSnapshotdManager::Snapshot::CreateForTesting(
 
 void ArcDataSnapshotdManager::Snapshot::Parse() {
   const base::Value::Dict& dict =
-      local_state_->GetValueDict(arc::prefs::kArcSnapshotInfo);
+      local_state_->GetDict(arc::prefs::kArcSnapshotInfo);
   {
     const auto* found = dict.FindDict(kPrevious);
     if (found)

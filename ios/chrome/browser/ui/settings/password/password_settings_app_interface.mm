@@ -1,35 +1,38 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ios/chrome/browser/ui/settings/password/password_settings_app_interface.h"
+#import "ios/chrome/browser/ui/settings/password/password_settings_app_interface.h"
 
 #import <MaterialComponents/MaterialSnackbar.h>
 
-#include "base/strings/stringprintf.h"
-#include "base/strings/sys_string_conversions.h"
-#include "base/strings/utf_string_conversions.h"
+#import "base/mac/foundation_util.h"
+#import "base/strings/stringprintf.h"
+#import "base/strings/sys_string_conversions.h"
+#import "base/strings/utf_string_conversions.h"
 #import "base/test/ios/wait_util.h"
-#include "components/keyed_service/core/service_access_type.h"
-#include "components/password_manager/core/browser/password_form.h"
-#include "components/password_manager/core/browser/password_store_consumer.h"
-#include "components/password_manager/core/browser/password_store_interface.h"
-#include "components/password_manager/core/common/password_manager_pref_names.h"
-#include "components/prefs/pref_service.h"
-#include "ios/chrome/browser/browser_state/chrome_browser_state.h"
-#include "ios/chrome/browser/passwords/ios_chrome_password_store_factory.h"
+#import "components/keyed_service/core/service_access_type.h"
+#import "components/password_manager/core/browser/password_form.h"
+#import "components/password_manager/core/browser/password_store_consumer.h"
+#import "components/password_manager/core/browser/password_store_interface.h"
+#import "components/password_manager/core/common/password_manager_pref_names.h"
+#import "components/prefs/pref_service.h"
+#import "ios/chrome/browser/browser_state/chrome_browser_state.h"
+#import "ios/chrome/browser/passwords/ios_chrome_password_store_factory.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
 #import "ios/chrome/test/app/password_test_util.h"
-#include "url/gurl.h"
-#include "url/origin.h"
+#import "url/gurl.h"
+#import "url/origin.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
 
-using password_manager::PasswordForm;
 using chrome_test_util::SetUpAndReturnMockReauthenticationModule;
 using chrome_test_util::SetUpAndReturnMockReauthenticationModuleForExport;
+using chrome_test_util::
+    SetUpAndReturnMockReauthenticationModuleForExportFromSettings;
+using password_manager::PasswordForm;
 
 namespace {
 
@@ -147,6 +150,8 @@ bool ClearPasswordStore() {
 @implementation PasswordSettingsAppInterface
 
 static MockReauthenticationModule* _mockReauthenticationModule;
+static std::unique_ptr<ScopedPasswordSettingsReauthModuleOverride>
+    _scopedReauthOverride;
 
 + (void)setUpMockReauthenticationModule {
   _mockReauthenticationModule = SetUpAndReturnMockReauthenticationModule();
@@ -159,11 +164,28 @@ static MockReauthenticationModule* _mockReauthenticationModule;
 
 + (void)mockReauthenticationModuleExpectedResult:
     (ReauthenticationResult)expectedResult {
-  _mockReauthenticationModule.expectedResult = expectedResult;
+  if (_mockReauthenticationModule) {
+    _mockReauthenticationModule.expectedResult = expectedResult;
+  }
+  if (_scopedReauthOverride) {
+    MockReauthenticationModule* mockModule =
+        base::mac::ObjCCastStrict<MockReauthenticationModule>(
+            _scopedReauthOverride->module);
+    mockModule.expectedResult = expectedResult;
+  }
 }
 
 + (void)mockReauthenticationModuleCanAttempt:(BOOL)canAttempt {
   _mockReauthenticationModule.canAttempt = canAttempt;
+}
+
++ (void)setUpMockReauthenticationModuleForExportFromSettings {
+  _scopedReauthOverride =
+      SetUpAndReturnMockReauthenticationModuleForExportFromSettings();
+}
+
++ (void)removeMockReauthenticationModuleForExportFromSettings {
+  _scopedReauthOverride = nullptr;
 }
 
 + (void)dismissSnackBar {

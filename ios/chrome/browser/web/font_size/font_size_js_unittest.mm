@@ -1,21 +1,21 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #import <Foundation/Foundation.h>
-#include <stddef.h>
+#import <stddef.h>
 
-#include "base/ios/ios_util.h"
-#include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
+#import "base/ios/ios_util.h"
+#import "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #import "ios/web/public/test/fakes/fake_web_client.h"
 #import "ios/web/public/test/js_test_util.h"
 #import "ios/web/public/test/scoped_testing_web_client.h"
 #import "ios/web/public/test/web_state_test_util.h"
 #import "ios/web/public/test/web_task_environment.h"
-#include "testing/gtest/include/gtest/gtest.h"
+#import "testing/gtest/include/gtest/gtest.h"
 #import "testing/gtest_mac.h"
-#include "testing/platform_test.h"
-#include "ui/base/device_form_factor.h"
+#import "testing/platform_test.h"
+#import "ui/base/device_form_factor.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -38,7 +38,7 @@ class FontSizeJsTest : public PlatformTest {
   FontSizeJsTest(const FontSizeJsTest&) = delete;
   FontSizeJsTest& operator=(const FontSizeJsTest&) = delete;
 
-  // Find DOM element by |element_id| and get computed font size in px.
+  // Find DOM element by `element_id` and get computed font size in px.
   float GetElementFontSize(NSString* element_id) {
     NSNumber* res = web::test::ExecuteJavaScript(
         [NSString
@@ -50,10 +50,10 @@ class FontSizeJsTest : public PlatformTest {
     return res.floatValue;
   }
 
-  // Wraps |html| in <html> and loads. Adds <meta name='viewport'
+  // Wraps `html` in <html> and loads. Adds <meta name='viewport'
   // content='initial-scale=1.0'> to avoid implicit font size inflation (e.g.
   // for <div style='font-size:10px'>d<div style='font-size:10px'>d</div></div>
-  // the |GetElementFontSize| returns 17px instead of 10px under default
+  // the `GetElementFontSize` returns 17px instead of 10px under default
   // viewport and '-webkit-text-size-adjust=auto'). Setting
   // '-webkit-text-size-adjust=none' also works.
   void LoadHtml(NSString* html) {
@@ -72,8 +72,8 @@ class FontSizeJsTest : public PlatformTest {
                                  web_state());
   }
 
-  // Executes JavaScript "__gCrWeb.font_size.adjustFontSize(|scale|)" to
-  // adjust font size to |scale|% and return if it is executed without
+  // Executes JavaScript "__gCrWeb.font_size.adjustFontSize(`scale`)" to
+  // adjust font size to `scale|% and return if it is executed without
   // exception.
   [[nodiscard]] bool AdjustFontSize(int scale) {
     id script_result = web::test::ExecuteJavaScript(

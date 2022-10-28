@@ -1,15 +1,15 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome/browser/media/router/providers/cast/app_activity.h"
 
-#include <algorithm>
 #include <memory>
 #include <vector>
 
 #include "base/bind.h"
 #include "base/containers/contains.h"
+#include "base/ranges/algorithm.h"
 #include "chrome/browser/media/router/providers/cast/cast_activity_manager.h"
 #include "chrome/browser/media/router/providers/cast/cast_session_client.h"
 #include "components/cast_channel/enum_table.h"
@@ -73,7 +73,7 @@ cast_channel::Result AppActivity::SendAppMessageToReceiver(
       cast_channel_id(),
       cast_channel::CreateCastMessage(
           message_namespace, cast_message.app_message_body(),
-          cast_message.client_id(), session->transport_id()));
+          cast_message.client_id(), session->destination_id()));
 }
 
 absl::optional<int> AppActivity::SendMediaRequestToReceiver(
@@ -83,7 +83,7 @@ absl::optional<int> AppActivity::SendMediaRequestToReceiver(
     return absl::nullopt;
   return message_handler_->SendMediaRequest(
       cast_channel_id(), cast_message.v2_message_body(),
-      cast_message.client_id(), session->transport_id());
+      cast_message.client_id(), session->destination_id());
 }
 
 void AppActivity::SendSetVolumeRequestToReceiver(
@@ -118,7 +118,7 @@ void AppActivity::CreateMediaController(
                       cast_channel::V2MessageType::kMediaGetStatus>());
       message_handler_->SendMediaRequest(cast_channel_id(), status_request,
                                          media_controller_->sender_id(),
-                                         session->transport_id());
+                                         session->destination_id());
     }
   }
 }
@@ -161,13 +161,13 @@ bool AppActivity::CanJoinSession(const CastMediaSource& cast_source,
 bool AppActivity::HasJoinableClient(AutoJoinPolicy policy,
                                     const url::Origin& origin,
                                     int frame_tree_node_id) const {
-  return std::any_of(connected_clients_.begin(), connected_clients_.end(),
-                     [policy, &origin, frame_tree_node_id](const auto& client) {
-                       return IsAutoJoinAllowed(
-                           policy, origin, frame_tree_node_id,
-                           client.second->origin(),
-                           client.second->frame_tree_node_id());
-                     });
+  return base::ranges::any_of(
+      connected_clients_,
+      [policy, &origin, frame_tree_node_id](const auto& client) {
+        return IsAutoJoinAllowed(policy, origin, frame_tree_node_id,
+                                 client.second->origin(),
+                                 client.second->frame_tree_node_id());
+      });
 }
 
 }  // namespace media_router

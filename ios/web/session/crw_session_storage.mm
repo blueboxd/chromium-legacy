@@ -1,13 +1,14 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #import "ios/web/public/session/crw_session_storage.h"
 
 #import "base/mac/foundation_util.h"
-#include "base/memory/ptr_util.h"
-#include "base/metrics/histogram_functions.h"
-#include "ios/web/common/features.h"
+#import "base/memory/ptr_util.h"
+#import "base/metrics/histogram_functions.h"
+#import "base/time/time.h"
+#import "ios/web/common/features.h"
 #import "ios/web/navigation/nscoder_util.h"
 #import "ios/web/public/session/crw_session_certificate_policy_cache_storage.h"
 #import "ios/web/session/crw_session_user_data.h"
@@ -29,6 +30,7 @@ NSString* const kUserAgentKey = @"userAgentKey";
 NSString* const kStableIdentifierKey = @"stableIdentifier";
 NSString* const kSerializedUserDataKey = @"serializedUserData";
 NSString* const kLastActiveTimeKey = @"lastActiveTime";
+NSString* const kCreationTimeKey = @"creationTime";
 
 // Deprecated, used for backward compatibility.
 // TODO(crbug.com/1278308): Remove this key.
@@ -138,9 +140,13 @@ NSString* const kTabIdKey = @"TabId";
     DCHECK(_stableIdentifier.length);
 
     if ([decoder containsValueForKey:kLastActiveTimeKey]) {
-      const int64_t lastActiveTimeDelta =
-          [decoder decodeInt64ForKey:kLastActiveTimeKey];
-      _lastActiveTime = base::Time() + base::Microseconds(lastActiveTimeDelta);
+      _lastActiveTime = base::Time::FromDeltaSinceWindowsEpoch(
+          base::Microseconds([decoder decodeInt64ForKey:kLastActiveTimeKey]));
+    }
+
+    if ([decoder containsValueForKey:kCreationTimeKey]) {
+      _creationTime = base::Time::FromDeltaSinceWindowsEpoch(
+          base::Microseconds([decoder decodeInt64ForKey:kCreationTimeKey]));
     }
   }
   return self;
@@ -168,9 +174,14 @@ NSString* const kTabIdKey = @"TabId";
   [coder encodeObject:_stableIdentifier forKey:kStableIdentifierKey];
 
   if (!_lastActiveTime.is_null()) {
-    const base::TimeDelta lastActiveTimeDelta = _lastActiveTime - base::Time();
-    [coder encodeInt64:lastActiveTimeDelta.InMicroseconds()
-                forKey:kLastActiveTimeKey];
+    [coder
+        encodeInt64:_lastActiveTime.ToDeltaSinceWindowsEpoch().InMicroseconds()
+             forKey:kLastActiveTimeKey];
+  }
+
+  if (!_creationTime.is_null()) {
+    [coder encodeInt64:_creationTime.ToDeltaSinceWindowsEpoch().InMicroseconds()
+                forKey:kCreationTimeKey];
   }
 }
 

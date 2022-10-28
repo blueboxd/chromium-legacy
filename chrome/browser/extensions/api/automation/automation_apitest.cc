@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -653,7 +653,7 @@ IN_PROC_BROWSER_TEST_F(AutomationApiTest, DISABLED_TextareaAppendPerf) {
 
   int renderer_total_dur = 0;
   int automation_total_dur = 0;
-  for (const base::Value& event : trace_events->GetListDeprecated()) {
+  for (const base::Value& event : trace_events->GetList()) {
     const std::string* cat = event.FindStringKey("cat");
     if (!cat || *cat != "accessibility")
       continue;

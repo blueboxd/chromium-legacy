@@ -68,6 +68,7 @@ class AnimationTimeline;
 struct ElementId;
 class Layer;
 struct OverscrollBehavior;
+class ScopedPauseRendering;
 }
 
 namespace display {
@@ -116,6 +117,7 @@ struct WebWindowFeatures;
 namespace mojom {
 namespace blink {
 class TextAutosizerPageInfo;
+class WindowFeatures;
 }
 }  // namespace mojom
 
@@ -182,35 +184,19 @@ class CORE_EXPORT ChromeClient : public GarbageCollected<ChromeClient> {
   // local main frames.
   virtual void BeginLifecycleUpdates(LocalFrame& main_frame) = 0;
 
-  // Start or stop compositor commits from occurring, with a timeout before they
-  // are allowed again. Document lifecycle updates are still allowed during this
-  // time, which will update compositor state, but this prevents the state from
-  // being committed to the compositor thread and generating visual updates.
-  //
-  // These may only be called for the main frame, and takes it as
-  // reference to make it clear that callers may only call this while a local
-  // main frame is present and the state does not persist between instances of
-  // local main frames.
-  //
-  // Returns false if commits were already deferred, indicating that the call
-  // was a no-op.
-  struct DeferredCommitObserver : public GarbageCollectedMixin {
-    virtual void WillStartDeferringCommits(cc::PaintHoldingReason) {}
-    virtual void WillStopDeferringCommits(cc::PaintHoldingCommitTrigger) {}
+  // Notifies clients immediately before a newly committed main frame is pushed
+  // to the compositor thread.
+  struct CORE_EXPORT CommitObserver : public GarbageCollectedMixin {
+    virtual void WillCommitCompositorFrame() {}
 
    protected:
-    virtual ~DeferredCommitObserver() = default;
+    virtual ~CommitObserver() = default;
   };
 
-  virtual void RegisterForDeferredCommitObservation(
-      DeferredCommitObserver*) = 0;
-  virtual void UnregisterFromDeferredCommitObservation(
-      DeferredCommitObserver*) = 0;
+  virtual void RegisterForCommitObservation(CommitObserver*) = 0;
+  virtual void UnregisterFromCommitObservation(CommitObserver*) = 0;
 
-  virtual void OnDeferCommitsChanged(
-      bool defer_status,
-      cc::PaintHoldingReason reason,
-      absl::optional<cc::PaintHoldingCommitTrigger> trigger) = 0;
+  virtual void WillCommitCompositorFrame() = 0;
 
   virtual bool StartDeferringCommits(LocalFrame& main_frame,
                                      base::TimeDelta timeout,
@@ -218,12 +204,21 @@ class CORE_EXPORT ChromeClient : public GarbageCollected<ChromeClient> {
   virtual void StopDeferringCommits(LocalFrame& main_frame,
                                     cc::PaintHoldingCommitTrigger) = 0;
 
+  virtual std::unique_ptr<cc::ScopedPauseRendering> PauseRendering(
+      LocalFrame& main_frame) = 0;
+
   // Start a system drag and drop operation.
+  //
+  // The `cursor_offset` is the offset of the drag-point from the top-left of
+  // `drag_image`, which may not be the same as the top-left of
+  // `drag_obj_rect`.  For details, see the function header comment for:
+  // `blink::DragController::StartDrag()`.
   virtual void StartDragging(LocalFrame*,
                              const WebDragData&,
                              DragOperationsMask,
                              const SkBitmap& drag_image,
-                             const gfx::Point& drag_image_offset) = 0;
+                             const gfx::Vector2d& cursor_offset,
+                             const gfx::Rect& drag_obj_rect) = 0;
   virtual bool AcceptsLoadDrops() const = 0;
 
   // The LocalFrame pointer provides the ChromeClient with context about which
@@ -248,7 +243,7 @@ class CORE_EXPORT ChromeClient : public GarbageCollected<ChromeClient> {
   virtual void Show(LocalFrame& frame,
                     LocalFrame& opener_frame,
                     NavigationPolicy navigation_policy,
-                    const gfx::Rect& initial_rect,
+                    const mojom::blink::WindowFeatures& window_features,
                     bool consumed_user_gesture) = 0;
 
   // All the parameters should be in viewport space. That is, if an event

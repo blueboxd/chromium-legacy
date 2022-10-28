@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,7 +7,6 @@ GEN_INCLUDE(['//chrome/test/data/webui/polymer_browser_test_base.js']);
 GEN('#include "content/public/test/browser_test.h"');
 
 // SetTimeDialogBrowserTest tests the "Set Time" web UI dialog.
-// eslint-disable-next-line no-var
 var SetTimeDialogBrowserTest = class extends PolymerTest {
   /** @override */
   get browsePreload() {

@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -15,7 +15,7 @@
 #include "components/guest_view/common/guest_view_constants.h"
 #include "components/zoom/zoom_observer.h"
 #include "content/public/browser/browser_plugin_guest_delegate.h"
-#include "content/public/browser/guest_host.h"
+#include "content/public/browser/global_routing_id.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -30,19 +30,18 @@ class GuestViewEvent;
 class GuestViewManager;
 
 // A struct of parameters for SetSize(). The parameters are all declared as
-// scoped pointers since they are all optional. Null pointers indicate that the
-// parameter has not been provided, and the last used value should be used. Note
-// that when |enable_auto_size| is true, providing |normal_size| is not
-// meaningful. This is because the normal size of the guestview is overridden
-// whenever autosizing occurs.
+// optionals. Nullopts indicate that the parameter has not been provided, and
+// the last used value should be used. Note that when |enable_auto_size| is
+// true, providing |normal_size| is not meaningful. This is because the normal
+// size of the guestview is overridden whenever autosizing occurs.
 struct SetSizeParams {
   SetSizeParams();
   ~SetSizeParams();
 
-  std::unique_ptr<bool> enable_auto_size;
-  std::unique_ptr<gfx::Size> min_size;
-  std::unique_ptr<gfx::Size> max_size;
-  std::unique_ptr<gfx::Size> normal_size;
+  absl::optional<bool> enable_auto_size;
+  absl::optional<gfx::Size> min_size;
+  absl::optional<gfx::Size> max_size;
+  absl::optional<gfx::Size> normal_size;
 };
 
 // A GuestViewBase is the base class browser-side API implementation for a
@@ -56,10 +55,15 @@ class GuestViewBase : public content::BrowserPluginGuestDelegate,
                       public content::WebContentsObserver,
                       public zoom::ZoomObserver {
  public:
+  static GuestViewBase* FromInstanceID(int owner_process_id, int instance_id);
+
+  // Prefer using FromRenderFrameHost. See https://crbug.com/1362569.
   static GuestViewBase* FromWebContents(
       const content::WebContents* web_contents);
 
-  static GuestViewBase* From(int owner_process_id, int instance_id);
+  static GuestViewBase* FromRenderFrameHost(content::RenderFrameHost* rfh);
+  static GuestViewBase* FromRenderFrameHostId(
+      const content::GlobalRenderFrameHostId& rfh_id);
 
   GuestViewBase(const GuestViewBase&) = delete;
   GuestViewBase& operator=(const GuestViewBase&) = delete;
@@ -71,6 +75,8 @@ class GuestViewBase : public content::BrowserPluginGuestDelegate,
       content::WebContents* web_contents);
 
   static bool IsGuest(content::WebContents* web_contents);
+  static bool IsGuest(content::RenderFrameHost* rfh);
+  static bool IsGuest(const content::GlobalRenderFrameHostId& rfh_id);
 
   // Returns the name of the derived type of this GuestView.
   virtual const char* GetViewType() const = 0;
@@ -120,8 +126,6 @@ class GuestViewBase : public content::BrowserPluginGuestDelegate,
   // and normal sizes.
   void SetSize(const SetSizeParams& params);
 
-  bool initialized() const { return initialized_; }
-
   content::WebContents* embedder_web_contents() const {
     return attached() ? owner_web_contents_.get() : nullptr;
   }
@@ -158,6 +162,8 @@ class GuestViewBase : public content::BrowserPluginGuestDelegate,
 
   // Returns the user browser context of the embedder.
   content::BrowserContext* browser_context() const { return browser_context_; }
+
+  GuestViewManager* GetGuestViewManager();
 
   // Returns the URL of the owner WebContents' SiteInstance.
   // WARNING: Be careful using this with GuestViews where
@@ -326,16 +332,11 @@ class GuestViewBase : public content::BrowserPluginGuestDelegate,
 
   // TODO(533069): Remove since BrowserPlugin has been removed.
   void DidAttach();
-  void WillAttach(content::WebContents* embedder_web_contents,
-                  int browser_plugin_instance_id,
-                  bool is_full_page_plugin,
-                  base::OnceClosure completion_callback);
 
   // BrowserPluginGuestDelegate implementation.
-  content::WebContents* CreateNewGuestWindow(
+  std::unique_ptr<content::WebContents> CreateNewGuestWindow(
       const content::WebContents::CreateParams& create_params) final;
   content::WebContents* GetOwnerWebContents() final;
-  void SetGuestHost(content::GuestHost* guest_host) final;
 
   // WebContentsDelegate implementation.
   void ActivateContents(content::WebContents* contents) final;
@@ -388,7 +389,6 @@ class GuestViewBase : public content::BrowserPluginGuestDelegate,
 
   void UpdateGuestSize(const gfx::Size& new_size, bool due_to_auto_resize);
 
-  GuestViewManager* GetGuestViewManager();
   void SetOwnerHost();
 
   // TODO(ekaramad): Revisit this once MimeHandlerViewGuest is frame-based
@@ -415,24 +415,20 @@ class GuestViewBase : public content::BrowserPluginGuestDelegate,
 
   // |view_instance_id_| is an identifier that's unique within a particular
   // embedder RenderViewHost for a particular <*view> instance.
-  int view_instance_id_;
+  int view_instance_id_ = kInstanceIDNone;
 
   // |element_instance_id_| is an identifer that's unique to a particular
   // GuestViewContainer element.
-  int element_instance_id_;
+  int element_instance_id_ = kInstanceIDNone;
 
   // |attach_in_progress_| is used to make sure that attached() doesn't return
   // true until after DidAttach() is called, since that's when we are guaranteed
   // that the contentWindow for cross-process-iframe based guests will become
   // valid.
-  bool attach_in_progress_;
-
-  // |initialized_| indicates whether GuestViewBase::Init has been called for
-  // this object.
-  bool initialized_;
+  bool attach_in_progress_ = false;
 
   // Indicates that this guest is in the process of being destroyed.
-  bool is_being_destroyed_;
+  bool is_being_destroyed_ = false;
 
   // This is a queue of Events that are destined to be sent to the embedder once
   // the guest is attached to a particular embedder.
@@ -460,11 +456,8 @@ class GuestViewBase : public content::BrowserPluginGuestDelegate,
   // element may not match the size of the guest.
   gfx::Size guest_size_;
 
-  // A pointer to the guest_host.
-  raw_ptr<content::GuestHost> guest_host_;
-
   // Indicates whether autosize mode is enabled or not.
-  bool auto_size_enabled_;
+  bool auto_size_enabled_ = false;
 
   // The maximum size constraints of the container element in autosize mode.
   gfx::Size max_auto_size_;
@@ -476,7 +469,7 @@ class GuestViewBase : public content::BrowserPluginGuestDelegate,
   gfx::Size normal_size_;
 
   // Whether the guest view is inside a plugin document.
-  bool is_full_page_plugin_;
+  bool is_full_page_plugin_ = false;
 
   // This is used to ensure pending tasks will not fire after this object is
   // destroyed.

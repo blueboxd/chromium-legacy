@@ -423,6 +423,24 @@ class GpuIntegrationTest(
         return True
     return False
 
+  # pylint: disable=no-self-use
+  def _DetermineRetryWorkaround(self, exception: Exception) -> bool:
+    """Potentially allows retries depending on the exception type.
+
+    This is a temporary workaround for flaky timeouts in the WebGPU CTS which
+    should not be kept long term. See crbug.com/1353938.
+
+    Args:
+      exception: The exception the test failed with.
+
+    Returns:
+      A boolean indicating whether a retry on failure should be forced.
+    """
+    del exception
+    return False
+
+  # pylint: enable=no-self-use
+
   def _EnsureScreenOn(self) -> None:
     """Ensures the screen is on for applicable platforms."""
     os_name = self.browser.platform.GetOSName()
@@ -447,7 +465,13 @@ class GpuIntegrationTest(
       self.programmaticSkipIsExpected = True
       # pylint: enable=attribute-defined-outside-init
       raise
-    except Exception:
+    except Exception as e:
+      if not should_retry_on_failure and self._DetermineRetryWorkaround(e):
+        should_retry_on_failure = True
+        # Notify typ that it should retry this test.
+        # pylint: disable=attribute-defined-outside-init
+        self.retryOnFailure = True
+        # pylint: enable=attribute-defined-outside-init
       if ResultType.Failure in expected_results or should_retry_on_failure:
         self._HandleExpectedFailureOrFlake(test_name, expected_crashes,
                                            should_retry_on_failure)
@@ -757,6 +781,7 @@ class GpuIntegrationTest(
       gpu_tags.append(gpu_helper.GetCommandDecoder(gpu_info))
       gpu_tags.append(gpu_helper.GetOOPCanvasStatus(gpu_info.feature_status))
       gpu_tags.append(gpu_helper.GetAsanStatus(gpu_info))
+      gpu_tags.append(gpu_helper.GetTargetCpuStatus(gpu_info))
       if gpu_info and gpu_info.devices:
         for ii in range(0, len(gpu_info.devices)):
           gpu_vendor = gpu_helper.GetGpuVendorString(gpu_info, ii)
@@ -850,6 +875,8 @@ class GpuIntegrationTest(
          'llvm-10.0.0)-(0x0000c0de)))'),
         ('google-vulkan-1.1.0-(swiftshader-device-('
          'llvm-10.0.0)-(0x0000c0de))'),
+        'google-0xc0de',
+        'chromium-os',  # ChromeOS
         'cros-chrome',  # ChromeOS
         'web-engine-shell',  # Fuchsia
         'cast-streaming-shell',  # Syonymous with cast_streaming suite

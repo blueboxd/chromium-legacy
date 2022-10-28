@@ -1,11 +1,11 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "components/payments/content/secure_payment_confirmation_app_factory.h"
 
 #include <stdint.h>
-#include <algorithm>
+
 #include <memory>
 #include <string>
 #include <utility>
@@ -14,6 +14,7 @@
 #include "base/check.h"
 #include "base/containers/contains.h"
 #include "base/feature_list.h"
+#include "base/ranges/algorithm.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "components/payments/content/payment_manifest_web_data_service.h"
@@ -32,6 +33,7 @@
 #include "services/data_decoder/public/cpp/decode_image.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/mojom/payments/payment_request.mojom.h"
+#include "url/gurl.h"
 #include "url/origin.h"
 
 namespace payments {
@@ -40,6 +42,18 @@ namespace {
 // Arbitrarily chosen limit of 1 hour. Keep in sync with
 // secure_payment_confirmation_helper.cc.
 constexpr int64_t kMaxTimeoutInMilliseconds = 1000 * 60 * 60;
+
+// Determine whether an RP ID is a 'valid domain' as per the URL spec:
+// https://url.spec.whatwg.org/#valid-domain
+//
+// TODO(crbug.com/1354209): This is a workaround to a lack of support for 'valid
+// domain's in the //url code.
+bool IsValidDomain(const std::string& rp_id) {
+  // A valid domain, such as 'site.example', should be a URL host (and nothing
+  // more of the URL!) that is not an IP address.
+  GURL url("https://" + rp_id);
+  return url.is_valid() && url.host() == rp_id && !url.HostIsIPAddress();
+}
 
 bool IsValid(const mojom::SecurePaymentConfirmationRequestPtr& request,
              std::string* error_message) {
@@ -89,7 +103,7 @@ bool IsValid(const mojom::SecurePaymentConfirmationRequestPtr& request,
     return false;
   }
 
-  if (request->rp_id.empty()) {
+  if (!IsValidDomain(request->rp_id)) {
     *error_message = errors::kRpIdRequired;
     return false;
   }
@@ -176,7 +190,7 @@ SecurePaymentConfirmationAppFactory::SecurePaymentConfirmationAppFactory()
     : PaymentAppFactory(PaymentApp::Type::INTERNAL) {}
 
 SecurePaymentConfirmationAppFactory::~SecurePaymentConfirmationAppFactory() {
-  std::for_each(requests_.begin(), requests_.end(), [&](const auto& pair) {
+  base::ranges::for_each(requests_, [&](const auto& pair) {
     if (pair.second->web_data_service)
       pair.second->web_data_service->CancelRequest(pair.first);
   });

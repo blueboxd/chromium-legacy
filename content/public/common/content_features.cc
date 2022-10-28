@@ -203,9 +203,6 @@ const base::Feature kClearCrossSiteCrossBrowsingContextGroupWindowName{
     "ClearCrossSiteCrossBrowsingContextGroupWindowName",
     base::FEATURE_DISABLED_BY_DEFAULT};
 
-const base::Feature kClickPointerEvent{"ClickPointerEvent",
-                                       base::FEATURE_ENABLED_BY_DEFAULT};
-
 const base::Feature kCompositeBGColorAnimation{
     "CompositeBGColorAnimation", base::FEATURE_DISABLED_BY_DEFAULT};
 
@@ -357,6 +354,10 @@ const base::Feature kFedCmManifestValidation{"FedCmManifestValidation",
 const base::Feature kFedCmMultipleIdentityProviders{
     "FedCmMultipleIdentityProviders", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Field trial boolean parameter which indicates whether IdpSigninStatus API is
+// used in FedCM API.
+const char kFedCmIdpSigninStatusFieldTrialParamName[] = "IdpSigninStatus";
+
 // Enables usage of First Party Sets to determine cookie availability.
 constexpr base::Feature kFirstPartySets{"FirstPartySets",
                                         base::FEATURE_DISABLED_BY_DEFAULT};
@@ -365,6 +366,11 @@ constexpr base::Feature kFirstPartySets{"FirstPartySets",
 // feature.
 const base::FeatureParam<bool> kFirstPartySetsIsDogfooder{
     &kFirstPartySets, "FirstPartySetsIsDogfooder", false};
+
+// Controls how many sites are allowed to be in the Associated subset (ignoring
+// ccTLD aliases).
+const base::FeatureParam<int> kFirstPartySetsMaxAssociatedSites{
+    &kFirstPartySets, "FirstPartySetsMaxAssociatedSites", 3};
 
 // Whether to initialize the font manager when the renderer starts on a
 // background thread.
@@ -473,6 +479,13 @@ const base::Feature kInstalledAppsInCbd{"InstalledAppsInCbd",
 // general overview.
 const base::Feature kIsolatedWebApps{"IsolatedWebApps",
                                      base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Enables process isolation of fenced content (content inside fenced frames)
+// from non-fenced content. See
+// https://github.com/WICG/fenced-frame/blob/master/explainer/process_isolation.md
+// for rationale and more details.
+const base::Feature kIsolateFencedFrames{"IsolateFencedFrames",
+                                         base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Alternative to switches::kIsolateOrigins, for turning on origin isolation.
 // List of origins to isolate has to be specified via
@@ -885,11 +898,6 @@ const base::Feature kSharedArrayBufferOnDesktop{
 const base::Feature kSignedExchangeReportingForDistributors{
     "SignedExchangeReportingForDistributors", base::FEATURE_ENABLED_BY_DEFAULT};
 
-// Subresource prefetching+loading via Signed HTTP Exchange
-// https://www.chromestatus.com/feature/5126805474246656
-const base::Feature kSignedExchangeSubresourcePrefetch{
-    "SignedExchangeSubresourcePrefetch", base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Origin-Signed HTTP Exchanges (for WebPackage Loading)
 // https://www.chromestatus.com/feature/5745285984681984
 const base::Feature kSignedHTTPExchange{"SignedHTTPExchange",
@@ -902,8 +910,16 @@ const base::Feature kSignedHTTPExchangePingValidity{
 // Delays RenderProcessHost shutdown by a few seconds to allow the subframe's
 // process to be potentially reused. This aims to reduce process churn in
 // navigations where the source and destination share subframes.
-const base::Feature kSubframeShutdownDelay{"SubframeShutdownDelay",
-                                           base::FEATURE_DISABLED_BY_DEFAULT};
+// This is enabled only on platforms where the behavior leads to performance
+// gains, i.e., those where process startup is expensive.
+const base::Feature kSubframeShutdownDelay {
+  "SubframeShutdownDelay",
+#if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN)
+      base::FEATURE_ENABLED_BY_DEFAULT
+#else
+      base::FEATURE_DISABLED_BY_DEFAULT
+#endif  // BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN)
+};
 const base::FeatureParam<SubframeShutdownDelayType>::Option delay_types[] = {
     {SubframeShutdownDelayType::kConstant, "constant"},
     {SubframeShutdownDelayType::kConstantLong, "constant-long"},
@@ -1074,6 +1090,10 @@ const base::Feature kVideoPlaybackQuality{"VideoPlaybackQuality",
 const base::Feature kV8VmFuture{"V8VmFuture",
                                 base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enables experimental JavaScript shared memory features.
+const base::Feature kJavaScriptExperimentalSharedMemory{
+    "JavaScriptExperimentalSharedMemory", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enable window controls overlays for desktop PWAs
 const base::Feature kWebAppWindowControlsOverlay{
     "WebAppWindowControlsOverlay", base::FEATURE_ENABLED_BY_DEFAULT};
@@ -1202,6 +1222,11 @@ const base::Feature kWebXrArModule{"WebXRARModule",
                                    base::FEATURE_ENABLED_BY_DEFAULT};
 
 #if BUILDFLAG(IS_ANDROID)
+// Allows the experimental approach of proactively generating an accessibility
+// tree asynchronously off the main thread, before the framework requests it.
+const base::Feature kAccessibilityAsyncTreeConstruction{
+    "AccessibilityAsyncTreeConstruction", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Allows the use of page zoom in place of accessibility text autosizing, and
 // updated UI to replace existing Chrome Accessibility Settings.
 const base::Feature kAccessibilityPageZoom{"AccessibilityPageZoom",
@@ -1212,6 +1237,11 @@ const base::Feature kAccessibilityPageZoom{"AccessibilityPageZoom",
 const base::Feature kBackgroundMediaRendererHasModerateBinding{
     "BackgroundMediaRendererHasModerateBinding",
     base::FEATURE_DISABLED_BY_DEFAULT};
+
+// When this feature is enabled a cap is placed on the number of bindings held
+// by the BindingManager.
+const base::Feature kBindingManagerConnectionLimit{
+    "BindingManagerConnectionLimit", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // When this feature is enabled the BindingManager for non-low-end devices will
 // use a not perceptible binding for background renderers on Android Q+.
@@ -1251,6 +1281,10 @@ const base::Feature kWarmUpNetworkProcess{"WarmUpNetworkProcess",
 // using the kEnableExperimentalWebPlatformFeatures flag.
 // https://w3c.github.io/web-nfc/
 const base::Feature kWebNfc{"WebNFC", base::FEATURE_ENABLED_BY_DEFAULT};
+
+// Throttle begin frame if Android WebView isn't getting draws.
+const base::Feature kWebViewThrottleBackgroundBeginFrame{
+    "WebViewThrottleBackgroundBeginFrame", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // When the context menu is triggered, the browser allows motion in a small
 // region around the initial touch location menu to allow for finger jittering.

@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -61,9 +61,9 @@ class CrossOtrTabHelperTest
   }
 
  protected:
-  web::FakeWebState* web_state() { return web_state_; };
-  CrossOtrTabHelper* observer() { return observer_; };
-  web::FakeNavigationContext* context() { return &context_; };
+  web::FakeWebState* web_state() { return web_state_; }
+  CrossOtrTabHelper* observer() { return observer_; }
+  web::FakeNavigationContext* context() { return &context_; }
   bool IsExperimental() {
     return GetParam() == ClassificationExperimentStatus::EXPERIMENTAL;
   }

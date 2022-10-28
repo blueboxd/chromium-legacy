@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,7 +13,7 @@ namespace reporting {
 
 AudioEventsObserver::AudioEventsObserver()
     : CrosHealthdEventsObserverBase<
-          chromeos::cros_healthd::mojom::CrosHealthdAudioObserver>(this) {}
+          ash::cros_healthd::mojom::CrosHealthdAudioObserver>(this) {}
 
 AudioEventsObserver::~AudioEventsObserver() = default;
 
@@ -29,7 +29,8 @@ void AudioEventsObserver::OnSevereUnderrun() {
 }
 
 void AudioEventsObserver::AddObserver() {
-  chromeos::cros_healthd::ServiceConnection::GetInstance()->AddAudioObserver(
+  ash::cros_healthd::ServiceConnection::GetInstance()->AddAudioObserver(
       BindNewPipeAndPassRemote());
 }
+
 }  // namespace reporting

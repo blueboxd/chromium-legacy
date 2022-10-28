@@ -56,7 +56,7 @@
 #include "third_party/blink/public/platform/web_effective_connection_type.h"
 #include "third_party/blink/public/platform/web_url_loader_client.h"
 #include "third_party/blink/public/platform/web_url_request.h"
-#include "third_party/blink/renderer/bindings/core/v8/source_location.h"
+#include "third_party/blink/renderer/bindings/core/v8/capture_source_location.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/scriptable_document_parser.h"
 #include "third_party/blink/renderer/core/fileapi/file_reader_loader.h"
@@ -76,6 +76,7 @@
 #include "third_party/blink/renderer/core/workers/worker_global_scope.h"
 #include "third_party/blink/renderer/core/xmlhttprequest/xml_http_request.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
+#include "third_party/blink/renderer/platform/bindings/source_location.h"
 #include "third_party/blink/renderer/platform/blob/blob_data.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_initiator_info.h"
@@ -91,6 +92,7 @@
 #include "third_party/blink/renderer/platform/loader/fetch/unique_identifier.h"
 #include "third_party/blink/renderer/platform/network/http_header_map.h"
 #include "third_party/blink/renderer/platform/network/network_state_notifier.h"
+#include "third_party/blink/renderer/platform/scheduler/public/main_thread.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread_scheduler.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
@@ -717,8 +719,8 @@ static std::unique_ptr<protocol::Network::ResourceTiming> BuildObjectForTiming(
       .setRequestTime(timing.RequestTime().since_origin().InSecondsF())
       .setProxyStart(timing.CalculateMillisecondDelta(timing.ProxyStart()))
       .setProxyEnd(timing.CalculateMillisecondDelta(timing.ProxyEnd()))
-      .setDnsStart(timing.CalculateMillisecondDelta(timing.DnsStart()))
-      .setDnsEnd(timing.CalculateMillisecondDelta(timing.DnsEnd()))
+      .setDnsStart(timing.CalculateMillisecondDelta(timing.DomainLookupStart()))
+      .setDnsEnd(timing.CalculateMillisecondDelta(timing.DomainLookupEnd()))
       .setConnectStart(timing.CalculateMillisecondDelta(timing.ConnectStart()))
       .setConnectEnd(timing.CalculateMillisecondDelta(timing.ConnectEnd()))
       .setSslStart(timing.CalculateMillisecondDelta(timing.SslStart()))
@@ -1639,8 +1641,8 @@ InspectorNetworkAgent::BuildInitiatorObject(
   if (!was_requested_by_stylesheet) {
     std::unique_ptr<v8_inspector::protocol::Runtime::API::StackTrace>
         current_stack_trace =
-            SourceLocation::Capture(document ? document->GetExecutionContext()
-                                             : nullptr)
+            CaptureSourceLocation(document ? document->GetExecutionContext()
+                                           : nullptr)
                 ->BuildInspectorObject(max_async_depth);
     if (current_stack_trace) {
       std::unique_ptr<protocol::Network::Initiator> initiator_object =
@@ -1691,7 +1693,7 @@ void InspectorNetworkAgent::WillCreateWebSocket(
   *devtools_token = devtools_token_;
   std::unique_ptr<v8_inspector::protocol::Runtime::API::StackTrace>
       current_stack_trace =
-          SourceLocation::Capture(execution_context)->BuildInspectorObject();
+          CaptureSourceLocation(execution_context)->BuildInspectorObject();
   if (!current_stack_trace) {
     GetFrontend()->webSocketCreated(
         IdentifiersFactory::SubresourceRequestId(identifier),
@@ -1824,7 +1826,7 @@ void InspectorNetworkAgent::WebTransportCreated(
     const KURL& request_url) {
   std::unique_ptr<v8_inspector::protocol::Runtime::API::StackTrace>
       current_stack_trace =
-          SourceLocation::Capture(execution_context)->BuildInspectorObject();
+          CaptureSourceLocation(execution_context)->BuildInspectorObject();
   if (!current_stack_trace) {
     GetFrontend()->webTransportCreated(
         IdentifiersFactory::SubresourceRequestId(transport_id),

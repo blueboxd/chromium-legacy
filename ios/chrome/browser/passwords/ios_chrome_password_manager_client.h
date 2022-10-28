@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -107,6 +107,7 @@ class IOSChromePasswordManagerClient
   const password_manager::PasswordFeatureManager* GetPasswordFeatureManager()
       const override;
   PrefService* GetPrefs() const override;
+  PrefService* GetLocalStatePrefs() const override;
   const syncer::SyncService* GetSyncService() const override;
   password_manager::PasswordStoreInterface* GetProfilePasswordStore()
       const override;
@@ -161,12 +162,14 @@ class IOSChromePasswordManagerClient
       const std::string& username,
       const std::vector<password_manager::MatchingReusedCredential>&
           matching_reused_credentials,
-      bool password_field_exists) override;
+      bool password_field_exists,
+      uint64_t reused_password_hash,
+      const std::string& domain) override;
 
   void LogPasswordReuseDetectedEvent() override;
 
-  // Shows the password protection UI. |warning_text| is the displayed text.
-  // |callback| is invoked when the user dismisses the UI.
+  // Shows the password protection UI. `warning_text` is the displayed text.
+  // `callback` is invoked when the user dismisses the UI.
   void NotifyUserPasswordProtectionWarning(
       const std::u16string& warning_text,
       base::OnceCallback<void(safe_browsing::WarningAction)> callback);

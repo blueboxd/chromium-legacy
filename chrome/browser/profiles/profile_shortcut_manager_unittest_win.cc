@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -279,7 +279,8 @@ class ProfileShortcutManagerTest : public testing::Test {
         base::ThreadPool::CreateCOMSTATaskRunner({base::MayBlock()}).get(),
         location,
         base::BindOnce(&ShellUtil::CreateOrUpdateShortcut, shortcut_location,
-                       properties, ShellUtil::SHELL_SHORTCUT_CREATE_ALWAYS),
+                       properties, ShellUtil::SHELL_SHORTCUT_CREATE_ALWAYS,
+                       /*pinned=*/nullptr),
         base::BindOnce([](bool succeeded) { EXPECT_TRUE(succeeded); }));
     task_environment_.RunUntilIdle();
   }

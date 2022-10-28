@@ -291,6 +291,11 @@ void WebContentsViewAndroid::SetOverscrollControllerEnabled(bool enabled) {
 
 void WebContentsViewAndroid::OnCapturerCountChanged() {}
 
+void WebContentsViewAndroid::FullscreenStateChanged(bool is_fullscreen) {
+  if (select_popup_)
+    select_popup_->HideMenu();
+}
+
 void WebContentsViewAndroid::ShowContextMenu(RenderFrameHost& render_frame_host,
                                              const ContextMenuParams& params) {
   if (is_active_drag_ && drag_exceeded_movement_threshold_)
@@ -333,7 +338,8 @@ void WebContentsViewAndroid::StartDragging(
     const DropData& drop_data,
     blink::DragOperationsMask allowed_ops,
     const gfx::ImageSkia& image,
-    const gfx::Vector2d& image_offset,
+    const gfx::Vector2d& cursor_offset,
+    const gfx::Rect& drag_obj_rect,
     const blink::mojom::DragEventSourceInfo& event_info,
     RenderWidgetHostImpl* source_rwh) {
   if (!IsDragEnabledForDropData(drop_data)) {
@@ -361,6 +367,9 @@ void WebContentsViewAndroid::StartDragging(
     dummy_bitmap.eraseColor(0);
     bitmap = &dummy_bitmap;
   }
+
+  // TODO(crbug.com/1302094): The params `cursor_offset` and `drag_obj_rect`
+  // are unused.
 
   ScopedJavaLocalRef<jobject> jdrop_data = ToJavaDropData(drop_data);
   if (!native_view->StartDragAndDrop(gfx::ConvertToJavaBitmap(*bitmap),

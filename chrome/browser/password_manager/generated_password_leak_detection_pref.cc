@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -108,12 +108,11 @@ GeneratedPasswordLeakDetectionPref::GetPrefObject() const {
   auto pref_object = std::make_unique<settings_api::PrefObject>();
   pref_object->key = kGeneratedPasswordLeakDetectionPref;
   pref_object->type = settings_api::PREF_TYPE_BOOLEAN;
-  pref_object->value =
-      std::make_unique<base::Value>(backing_preference->GetValue()->GetBool() &&
-                                    IsUserAllowedToUseLeakDetection(profile_));
+  pref_object->value = base::Value(backing_preference->GetValue()->GetBool() &&
+                                   IsUserAllowedToUseLeakDetection(profile_));
   pref_object->user_control_disabled =
-      std::make_unique<bool>(!IsSafeBrowsingStandard(profile_) ||
-                             !IsUserAllowedToUseLeakDetection(profile_));
+      !IsSafeBrowsingStandard(profile_) ||
+      !IsUserAllowedToUseLeakDetection(profile_);
   if (!backing_preference->IsUserModifiable()) {
     pref_object->enforcement = settings_api::Enforcement::ENFORCEMENT_ENFORCED;
     extensions::settings_private::GeneratedPref::ApplyControlledByFromPref(
@@ -121,8 +120,8 @@ GeneratedPasswordLeakDetectionPref::GetPrefObject() const {
   } else if (backing_preference->GetRecommendedValue()) {
     pref_object->enforcement =
         settings_api::Enforcement::ENFORCEMENT_RECOMMENDED;
-    pref_object->recommended_value = std::make_unique<base::Value>(
-        backing_preference->GetRecommendedValue()->GetBool());
+    pref_object->recommended_value =
+        base::Value(backing_preference->GetRecommendedValue()->GetBool());
   }
 
   return pref_object;

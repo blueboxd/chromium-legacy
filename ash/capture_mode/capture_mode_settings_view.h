@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -82,13 +82,6 @@ class ASH_EXPORT CaptureModeSettingsView
   // CaptureModeCameraController::Observer:
   void OnAvailableCamerasChanged(const CameraInfoList& cameras) override;
   void OnSelectedCameraChanged(const CameraId& camera_id) override;
-
-  // For tests only:
-  CaptureModeMenuGroup* GetAudioInputMenuGroupForTesting() {
-    return audio_input_menu_group_;
-  }
-  views::View* GetMicrophoneOptionForTesting();
-  views::View* GetOffOptionForTesting();
 
  private:
   friend class CaptureModeSettingsTestApi;

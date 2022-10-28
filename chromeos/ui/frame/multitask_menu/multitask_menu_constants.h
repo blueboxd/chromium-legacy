@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,7 +11,8 @@
 
 namespace chromeos {
 
-constexpr gfx::Size kMultitaskButtonSize(108, 72);
+constexpr gfx::Size kMultitaskButtonLandscapeSize(108, 72);
+constexpr gfx::Size kMultitaskButtonPortraitSize(72, 108);
 constexpr gfx::Insets kMultitaskBaseButtonMargin(4);
 constexpr int kMultitaskBaseButtonBorderRadius = 7;
 constexpr int kButtonBorderSize = 1;

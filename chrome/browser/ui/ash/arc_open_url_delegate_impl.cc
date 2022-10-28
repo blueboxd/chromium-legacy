@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -59,6 +59,7 @@
 #include "net/base/url_util.h"
 #include "storage/browser/file_system/file_system_context.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
+#include "ui/accessibility/accessibility_features.h"
 #include "ui/base/window_open_disposition.h"
 #include "url/gurl.h"
 #include "url/url_constants.h"
@@ -78,8 +79,6 @@ constexpr auto kOSSettingsMap = base::MakeFixedFlatMap<ChromePage,
      chromeos::settings::mojom::kBluetoothDevicesSubpagePath},
     {ChromePage::BLUETOOTHDEVICES,
      chromeos::settings::mojom::kBluetoothDevicesSubpagePath},
-    {ChromePage::CHANGEPICTURE,
-     chromeos::settings::mojom::kChangePictureSubpagePath},
     {ChromePage::CUPSPRINTERS,
      chromeos::settings::mojom::kPrintingDetailsSubpagePath},
     {ChromePage::DATETIME, chromeos::settings::mojom::kDateAndTimeSectionPath},
@@ -166,7 +165,8 @@ GURL ConvertToMonikerFileUrl(Profile* profile, GURL external_file_url) {
     return external_file_url;
   }
 
-  fusebox::Moniker moniker = fusebox_server->CreateMoniker(fs_url);
+  constexpr bool kReadOnly = true;
+  fusebox::Moniker moniker = fusebox_server->CreateMoniker(fs_url, kReadOnly);
 
   // Keep the Moniker alive for the same time as a file shared through the Web
   // Share API. We could be cleverer about scheduling the clean up, but "destroy
@@ -410,8 +410,13 @@ void ArcOpenUrlDelegateImpl::OpenArcCustomTab(
 void ArcOpenUrlDelegateImpl::OpenChromePageFromArc(ChromePage page) {
   if (auto* it = kOSSettingsMap.find(page); it != kOSSettingsMap.end()) {
     Profile* profile = ProfileManager::GetActiveUserProfile();
+    std::string sub_page = it->second;
+    if (features::IsAccessibilityOSSettingsVisibilityEnabled() &&
+        it->first == ChromePage::MANAGEACCESSIBILITY) {
+      sub_page = chromeos::settings::mojom::kAccessibilitySectionPath;
+    }
     chrome::SettingsWindowManager::GetInstance()->ShowOSSettings(profile,
-                                                                 it->second);
+                                                                 sub_page);
     return;
   }
 
@@ -478,10 +483,11 @@ void ArcOpenUrlDelegateImpl::OpenAppWithIntent(
 
   if (base::FeatureList::IsEnabled(apps::kAppServiceLaunchWithoutMojom)) {
     proxy->LaunchAppWithIntent(app_id, event_flags, std::move(intent),
-                               apps::LaunchSource::kFromArc);
+                               apps::LaunchSource::kFromArc, nullptr,
+                               base::DoNothing());
   } else {
-    proxy->LaunchAppWithIntent(app_id, event_flags,
-                               apps::ConvertIntentToMojomIntent(intent),
-                               apps::mojom::LaunchSource::kFromArc);
+    proxy->LaunchAppWithIntent(
+        app_id, event_flags, apps::ConvertIntentToMojomIntent(intent),
+        apps::mojom::LaunchSource::kFromArc, nullptr, {});
   }
 }

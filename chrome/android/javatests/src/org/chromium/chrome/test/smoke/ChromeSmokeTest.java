@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -23,7 +23,6 @@ import org.junit.runner.RunWith;
 import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.Criteria;
 import org.chromium.base.test.util.CriteriaHelper;
-import org.chromium.base.test.util.DisabledTest;
 import org.chromium.chrome.R;
 import org.chromium.chrome.test.pagecontroller.rules.ChromeUiApplicationTestRule;
 import org.chromium.chrome.test.pagecontroller.rules.ChromeUiAutomatorTestRule;
@@ -165,8 +164,6 @@ public class ChromeSmokeTest {
                 ChromeUiApplicationTestRule.PACKAGE_NAME_ARG, "org.chromium.chrome");
     }
 
-    // Test is flaky: https://crbug.com/1335513
-    @DisabledTest
     @Test
     public void testHello() {
         Context context = InstrumentationRegistry.getContext();

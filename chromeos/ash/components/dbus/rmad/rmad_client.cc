@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -80,6 +80,7 @@ class RmadClientImpl : public RmadClient {
   void ErrorReceived(dbus::Signal* signal);
   void HardwareWriteProtectionStateReceived(dbus::Signal* signal);
   void PowerCableStateReceived(dbus::Signal* signal);
+  void ExternalDiskStatusReceived(dbus::Signal* signal);
   void ProvisioningProgressReceived(dbus::Signal* signal);
   void HardwareVerificationResultReceived(dbus::Signal* signal);
   void FinalizationProgressReceived(dbus::Signal* signal);
@@ -134,6 +135,8 @@ void RmadClientImpl::Init(dbus::Bus* bus) {
       {rmad::kHardwareWriteProtectionStateSignal,
        &RmadClientImpl::HardwareWriteProtectionStateReceived},
       {rmad::kPowerCableStateSignal, &RmadClientImpl::PowerCableStateReceived},
+      {rmad::kExternalDiskDetectedSignal,
+       &RmadClientImpl::ExternalDiskStatusReceived},
       {rmad::kProvisioningProgressSignal,
        &RmadClientImpl::ProvisioningProgressReceived},
       {rmad::kHardwareVerificationResultSignal,
@@ -301,6 +304,21 @@ void RmadClientImpl::PowerCableStateReceived(dbus::Signal* signal) {
   }
 }
 
+void RmadClientImpl::ExternalDiskStatusReceived(dbus::Signal* signal) {
+  DCHECK_EQ(signal->GetMember(), rmad::kExternalDiskDetectedSignal);
+  dbus::MessageReader reader(signal);
+  bool detected;
+  if (!reader.PopBool(&detected)) {
+    LOG(ERROR) << "Unable to decode detected bool from " << signal->GetMember()
+               << " signal";
+    return;
+  }
+  DCHECK(!reader.HasMoreData());
+  for (auto& observer : observers_) {
+    observer.ExternalDiskState(detected);
+  }
+}
+
 void RmadClientImpl::ProvisioningProgressReceived(dbus::Signal* signal) {
   DCHECK_EQ(signal->GetMember(), rmad::kProvisioningProgressSignal);
   dbus::MessageReader reader(signal);
@@ -313,13 +331,16 @@ void RmadClientImpl::ProvisioningProgressReceived(dbus::Signal* signal) {
   DCHECK(!reader.HasMoreData());
   int32_t status;
   double progress;
-  if (!sub_reader.PopInt32(&status) || !sub_reader.PopDouble(&progress)) {
+  int32_t error;
+  if (!sub_reader.PopInt32(&status) || !sub_reader.PopDouble(&progress) ||
+      !sub_reader.PopInt32(&error)) {
     LOG(ERROR) << "Unable to decode signal for " << signal->GetMember();
     return;
   }
   rmad::ProvisionStatus signal_proto;
   signal_proto.set_status(static_cast<rmad::ProvisionStatus::Status>(status));
   signal_proto.set_progress(progress);
+  signal_proto.set_error(static_cast<rmad::ProvisionStatus::Error>(error));
   for (auto& observer : observers_) {
     observer.ProvisioningProgress(signal_proto);
   }
@@ -362,13 +383,16 @@ void RmadClientImpl::FinalizationProgressReceived(dbus::Signal* signal) {
   DCHECK(!reader.HasMoreData());
   int32_t status;
   double progress;
-  if (!sub_reader.PopInt32(&status) || !sub_reader.PopDouble(&progress)) {
+  int32_t error;
+  if (!sub_reader.PopInt32(&status) || !sub_reader.PopDouble(&progress) ||
+      !sub_reader.PopInt32(&error)) {
     LOG(ERROR) << "Unable to decode signal for " << signal->GetMember();
     return;
   }
   rmad::FinalizeStatus signal_proto;
   signal_proto.set_status(static_cast<rmad::FinalizeStatus::Status>(status));
   signal_proto.set_progress(progress);
+  signal_proto.set_error(static_cast<rmad::FinalizeStatus::Error>(error));
   for (auto& observer : observers_) {
     observer.FinalizationProgress(signal_proto);
   }

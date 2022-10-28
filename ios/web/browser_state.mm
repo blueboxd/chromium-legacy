@@ -1,32 +1,32 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ios/web/public/browser_state.h"
+#import "ios/web/public/browser_state.h"
 
-#include <memory>
+#import <memory>
 
-#include "base/bind.h"
-#include "base/callback_helpers.h"
-#include "base/guid.h"
-#include "base/location.h"
-#include "base/memory/ref_counted.h"
-#include "base/metrics/histogram_functions.h"
-#include "base/process/process_handle.h"
-#include "base/token.h"
-#include "components/leveldb_proto/public/proto_database_provider.h"
-#include "ios/web/public/init/network_context_owner.h"
-#include "ios/web/public/security/certificate_policy_cache.h"
-#include "ios/web/public/thread/web_task_traits.h"
-#include "ios/web/public/thread/web_thread.h"
+#import "base/bind.h"
+#import "base/callback_helpers.h"
+#import "base/guid.h"
+#import "base/location.h"
+#import "base/memory/ref_counted.h"
+#import "base/metrics/histogram_functions.h"
+#import "base/process/process_handle.h"
+#import "base/token.h"
+#import "components/leveldb_proto/public/proto_database_provider.h"
+#import "ios/web/public/init/network_context_owner.h"
+#import "ios/web/public/security/certificate_policy_cache.h"
+#import "ios/web/public/thread/web_task_traits.h"
+#import "ios/web/public/thread/web_thread.h"
 #import "ios/web/web_state/ui/wk_content_rule_list_provider.h"
-#include "ios/web/web_state/ui/wk_web_view_configuration_provider.h"
-#include "ios/web/webui/url_data_manager_ios_backend.h"
-#include "mojo/public/cpp/bindings/remote.h"
-#include "net/url_request/url_request_context_getter.h"
-#include "net/url_request/url_request_context_getter_observer.h"
-#include "services/network/network_context.h"
-#include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
+#import "ios/web/web_state/ui/wk_web_view_configuration_provider.h"
+#import "ios/web/webui/url_data_manager_ios_backend.h"
+#import "mojo/public/cpp/bindings/remote.h"
+#import "net/url_request/url_request_context_getter.h"
+#import "net/url_request/url_request_context_getter_observer.h"
+#import "services/network/network_context.h"
+#import "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -94,7 +94,7 @@ BrowserState::~BrowserState() {
 
   // Delete the URLDataManagerIOSBackend instance on the IO thread if it has
   // been created. Note that while this check can theoretically race with a
-  // call to |GetURLDataManagerIOSBackendOnIOThread()|, if any clients of this
+  // call to `GetURLDataManagerIOSBackendOnIOThread()`, if any clients of this
   // BrowserState are still accessing it on the IO thread at this point,
   // they're going to have a bad time anyway.
   if (url_data_manager_ios_backend_) {

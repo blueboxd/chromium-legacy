@@ -1,4 +1,4 @@
-// Copyright 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -17,7 +17,9 @@
 #include "cc/cc_export.h"
 #include "components/viz/service/display/direct_renderer.h"
 #include "components/viz/service/display/display_resource_provider_skia.h"
+#include "components/viz/service/display_embedder/buffer_queue.h"
 #include "components/viz/service/viz_service_export.h"
+#include "gpu/command_buffer/common/mailbox.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "ui/gfx/color_conversion_sk_filter_cache.h"
 #include "ui/gfx/geometry/mask_filter_info.h"
@@ -70,6 +72,9 @@ class VIZ_SERVICE_EXPORT SkiaRenderer : public DirectRenderer {
       bool create_if_necessary) override;
   void SetDelegatedInkMetadata(
       std::unique_ptr<gfx::DelegatedInkMetadata> metadata) override;
+  gfx::Rect GetCurrentFramebufferDamage() const override;
+  void Reshape(const OutputSurface::ReshapeParams& reshape_params) override;
+  void EnsureMinNumberOfBuffers(int n) override;
 
  protected:
   bool CanPartialSwap() override;
@@ -110,6 +115,8 @@ class VIZ_SERVICE_EXPORT SkiaRenderer : public DirectRenderer {
   enum class BypassMode;
   struct DrawQuadParams;
   struct DrawRPDQParams;
+  struct RenderPassOverlayParams;
+  struct OverlayLock;
   class ScopedSkImageBuilder;
   class ScopedYUVSkImageBuilder;
 
@@ -260,7 +267,28 @@ class VIZ_SERVICE_EXPORT SkiaRenderer : public DirectRenderer {
   // be sent to GPU scheduler.
   void FlushOutputSurface();
 
+  struct RenderPassBacking {
+    gfx::Size size;
+    bool generate_mipmap;
+    gfx::ColorSpace color_space;
+    ResourceFormat format;
+    gpu::Mailbox mailbox;
+    bool is_root;
+  };
+
 #if BUILDFLAG(IS_APPLE) || defined(USE_OZONE)
+  bool CanSkipRenderPassOverlay(
+      AggregatedRenderPassId render_pass_id,
+      const AggregatedRenderPassDrawQuad* rpdq,
+      RenderPassOverlayParams** output_render_pass_overlay);
+
+  RenderPassOverlayParams* GetOrCreateRenderPassOverlayBacking(
+      AggregatedRenderPassId render_pass_id,
+      const AggregatedRenderPassDrawQuad* rpdq,
+      ResourceFormat buffer_format,
+      gfx::ColorSpace color_space,
+      const gfx::Size& buffer_size);
+
   void PrepareRenderPassOverlay(
       OverlayProcessorInterface::PlatformOverlayCandidate* overlay);
 #endif
@@ -274,14 +302,26 @@ class VIZ_SERVICE_EXPORT SkiaRenderer : public DirectRenderer {
     return static_cast<DisplayResourceProviderSkia*>(resource_provider_);
   }
 
+#if defined(USE_OZONE)
+  // Gets a cached or new mailbox for a 1x1 shared image of the specified color.
+  // There will only be one allocated image for a given color at any time which
+  // can be reused for same-colored quads in the same frame or across frames.
+  const gpu::Mailbox GetImageMailboxForColor(const SkColor4f& color);
+
+  // Append a viewport sized transparent solid color overlay to overlay_list if
+  // capabilities().needs_background_image = true.
+  void MaybeScheduleBackgroundImage(
+      OverlayProcessorInterface::CandidateList& candidate_list);
+
+  // Given locks that have either been swapped or skipped, if any correspond to
+  // solid color mailboxes, decrement their use_count in |solid_color_buffers_|.
+  // If capabilities().supports_non_backed_solid_color_overlays = true, there is
+  // nothing to be done.
+  void MaybeDecrementSolidColorBuffers(
+      std::vector<OverlayLock>& finished_locks);
+#endif
+
   // A map from RenderPass id to the texture used to draw the RenderPass from.
-  struct RenderPassBacking {
-    gfx::Size size;
-    bool generate_mipmap;
-    gfx::ColorSpace color_space;
-    ResourceFormat format;
-    gpu::Mailbox mailbox;
-  };
   base::flat_map<AggregatedRenderPassId, RenderPassBacking>
       render_pass_backings_;
   sk_sp<SkColorSpace> RenderPassBackingSkColorSpace(
@@ -326,8 +366,6 @@ class VIZ_SERVICE_EXPORT SkiaRenderer : public DirectRenderer {
 
   // Specific for SkDDL.
   const raw_ptr<SkiaOutputSurface> skia_output_surface_;
-
-  const bool is_using_raw_draw_;
 
   // Lock set for resources that are used for the current frame. All resources
   // in this set will be unlocked with a sync token when the frame is done in
@@ -415,17 +453,42 @@ class VIZ_SERVICE_EXPORT SkiaRenderer : public DirectRenderer {
   base::flat_set<OverlayLock, OverlayLockComparator>
       awaiting_release_overlay_locks_;
 
-  // Tracks render pass overlay backings that are currently in use and available
-  // for re-using via mailboxes. RenderPassBacking.generate_mipmap is not used.
-  std::vector<RenderPassBacking> in_flight_render_pass_overlay_backings_;
-  std::vector<RenderPassBacking> available_render_pass_overlay_backings_;
+  // Tracks RenderPassDrawQuad and render pass overlay backings that are
+  // currently in use and available for re-using via mailboxes.
+  // RenderPassBacking.generate_mipmap is not used.
+  std::vector<RenderPassOverlayParams> in_flight_render_pass_overlay_backings_;
+  std::vector<RenderPassOverlayParams> available_render_pass_overlay_backings_;
+
+  // A feature flag that allows unchanged render pass draw quad in the overlay
+  // list to skip.
+  const bool can_skip_render_pass_overlay_;
 #endif  // BUILDFLAG(IS_APPLE) || defined(USE_OZONE)
+
+  const bool is_using_raw_draw_;
 
   gfx::ColorConversionSkFilterCache color_filter_cache_;
 
   bool UsingSkiaForDelegatedInk() const;
   uint32_t debug_tint_modulate_count_ = 0;
   bool use_real_color_space_for_stream_video_ = false;
+
+  // Used to get mailboxes for the root render pass when
+  // capabilities().renderer_allocates_images = true.
+  std::unique_ptr<BufferQueue> buffer_queue_;
+
+#if defined(USE_OZONE)
+  struct SolidColorBuffer {
+    gpu::Mailbox mailbox;
+    int use_count;
+  };
+
+  // Solid color buffers allocated on necessary platforms. The same image
+  // can be reused for multiple same-color quads, and use count is tracked.
+  // Entries will be erased and their SharedImages destroyed in the next
+  // SwapBuffers() if their use_count reaches 0.
+  // TODO(crbug.com/1342015): Move this to SkColor4f.
+  base::flat_map<SkColor, SolidColorBuffer> solid_color_buffers_;
+#endif
 };
 
 }  // namespace viz

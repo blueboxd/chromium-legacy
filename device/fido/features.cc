@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -39,8 +39,17 @@ extern const base::Feature kWebAuthnGoogleCorpRemoteDesktopClientPrivilege{
 extern const base::Feature kWebAuthPasskeysUI{
     "WebAuthenticationPasskeysUI", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// TODO(1358719): Resolve all i18n TODOs before default enabling.
 extern const base::Feature kWebAuthnNewDiscoverableCredentialsUi{
     "WebAuthenticationNewDiscoverableCredentialsUi",
     base::FEATURE_DISABLED_BY_DEFAULT};
+
+extern const base::Feature kWebAuthnNoEmptyDisplayNameCBOR{
+    "WebAuthenticationNoEmptyDisplayNameCBOR",
+    base::FEATURE_ENABLED_BY_DEFAULT};
+
+extern const base::Feature kWebAuthnNonDiscoverableMakeCredentialQRFlag{
+    "WebAuthenticationNonDiscoverableMakeCredentialQRFlag",
+    base::FEATURE_ENABLED_BY_DEFAULT};
 
 }  // namespace device

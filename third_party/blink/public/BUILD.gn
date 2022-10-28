@@ -3,10 +3,10 @@
 # found in the LICENSE file.
 
 import("//build/buildflag_header.gni")
-import("//build/config/dcheck_always_on.gni")
 import("//build/config/devtools.gni")
 import("//mojo/public/tools/bindings/mojom.gni")
 import("//third_party/blink/public/public_features.gni")
+import("//third_party/blink/renderer/build/scripts/scripts.gni")
 import("//third_party/blink/renderer/config.gni")
 import("//third_party/blink/renderer/core/core.gni")
 import("//third_party/webrtc/webrtc.gni")
@@ -17,6 +17,8 @@ if (is_android) {
   import("//build/config/android/config.gni")
   import("//build/config/android/rules.gni")
 }
+
+blink_public_output_dir = "$root_gen_dir/third_party/blink/public"
 
 group("blink") {
   public_deps = [ ":blink_headers" ]
@@ -138,6 +140,7 @@ source_set("blink_headers") {
     "platform/modules/mediastream/web_media_stream_track.h",
     "platform/modules/mediastream/web_media_stream_video_renderer.h",
     "platform/modules/mediastream/web_platform_media_stream_source.h",
+    "platform/modules/remoteplayback/remote_playback_source.h",
     "platform/modules/remoteplayback/web_remote_playback_client.h",
     "platform/modules/service_worker/web_service_worker_error.h",
     "platform/modules/service_worker/web_service_worker_fetch_context.h",
@@ -306,6 +309,7 @@ source_set("blink_headers") {
     "web/web_crypto_normalize.h",
     "web/web_css_origin.h",
     "web/web_custom_element.h",
+    "web/web_disallow_transition_scope.h",
     "web/web_document.h",
     "web/web_document_loader.h",
     "web/web_dom_activity_logger.h",
@@ -330,7 +334,6 @@ source_set("blink_headers") {
     "web/web_frame_widget.h",
     "web/web_heap.h",
     "web/web_history_commit_type.h",
-    "web/web_history_entry.h",
     "web/web_history_item.h",
     "web/web_hit_test_result.h",
     "web/web_image.h",
@@ -342,6 +345,7 @@ source_set("blink_headers") {
     "web/web_lifecycle_update.h",
     "web/web_local_frame.h",
     "web/web_local_frame_client.h",
+    "web/web_local_frame_observer.h",
     "web/web_manifest_manager.h",
     "web/web_meaningful_layout.h",
     "web/web_media_inspector.h",
@@ -402,10 +406,6 @@ source_set("blink_headers") {
     "web/web_window_features.h",
   ]
 
-  if (is_debug || dcheck_always_on) {
-    sources += [ "web/web_disallow_transition_scope.h" ]
-  }
-
   if (is_mac) {
     sources += [
       "platform/mac/web_sandbox_support.h",
@@ -436,6 +436,7 @@ source_set("blink_headers") {
   public_deps = [
     ":devtools_inspector_resources_grit",
     ":resources_grit",
+    ":runtime_features_for_public",
     "//net",
     "//services/network/public/mojom:mojom_shared",
     "//services/service_manager/public/cpp",
@@ -475,6 +476,30 @@ source_set("blink_headers") {
   ]
 }
 
+blink_python_runner("runtime_features_for_public") {
+  script = "../renderer/build/scripts/make_runtime_features_for_public.py"
+
+  runtime_enabled_features_json5 =
+      "../renderer/platform/runtime_enabled_features.json5"
+  inputs =
+      scripts_for_json5_files + [
+        runtime_enabled_features_json5,
+        "../renderer/build/scripts/templates/features_generated.h.tmpl",
+        "../renderer/build/scripts/templates/web_runtime_features_base.h.tmpl",
+      ]
+
+  outputs = [
+    "$blink_public_output_dir/common/features_generated.h",
+    "$blink_public_output_dir/platform/web_runtime_features_base.h",
+  ]
+
+  args = [
+    rebase_path(runtime_enabled_features_json5, root_build_dir),
+    "--output_dir",
+    rebase_path(blink_public_output_dir, root_build_dir),
+  ]
+}
+
 devtools_frontend_path = "//$devtools_root_location"
 
 group("blink_devtools_frontend_resources") {
@@ -494,7 +519,7 @@ group("blink_generate_devtools_grd") {
   public_deps = [ "$devtools_frontend_path:generate_devtools_grd" ]
 }
 
-resources_out_dir = "$root_gen_dir/third_party/blink/public/resources"
+resources_out_dir = "$blink_public_output_dir/resources"
 
 grit("resources") {
   output_dir = resources_out_dir

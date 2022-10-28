@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -15,11 +15,20 @@
 #include "components/autofill/core/browser/test_autofill_driver.h"
 #include "components/autofill/core/browser/test_autofill_manager_waiter.h"
 #include "components/autofill/core/browser/test_personal_data_manager.h"
+#include "components/autofill/core/browser/ui/suggestion.h"
 #include "form_structure_test_api.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace autofill {
+
+namespace {
+
+FormStructureTestApi test_api(FormStructure* form_structure) {
+  return FormStructureTestApi(form_structure);
+}
+
+}  // namespace
 
 TestBrowserAutofillManager::TestBrowserAutofillManager(
     TestAutofillDriver* driver,
@@ -75,12 +84,12 @@ void TestBrowserAutofillManager::OnAskForValuesToFill(
     const gfx::RectF& bounding_box,
     int query_id,
     bool autoselect_first_suggestion,
-    TouchToFillEligible touch_to_fill_eligible) {
+    FormElementWasClicked form_element_was_clicked) {
   TestAutofillManagerWaiter waiter(*this,
                                    {&Observer::OnAfterAskForValuesToFill});
   AutofillManager::OnAskForValuesToFill(form, field, bounding_box, query_id,
                                         autoselect_first_suggestion,
-                                        touch_to_fill_eligible);
+                                        form_element_was_clicked);
   ASSERT_TRUE(waiter.Wait());
 }
 
@@ -173,8 +182,8 @@ int TestBrowserAutofillManager::GetPackedCreditCardID(int credit_card_id) {
   std::string credit_card_guid =
       base::StringPrintf("00000000-0000-0000-0000-%012d", credit_card_id);
 
-  return suggestion_generator()->MakeFrontendId(credit_card_guid,
-                                                std::string());
+  return suggestion_generator()->MakeFrontendId(
+      Suggestion::BackendId(credit_card_guid), Suggestion::BackendId());
 }
 
 void TestBrowserAutofillManager::AddSeenForm(
@@ -222,9 +231,8 @@ void TestBrowserAutofillManager::SetSeenFormPredictions(
     const std::vector<ServerFieldType>& server_types) {
   FormStructure* form_structure = FindCachedFormByRendererId(form_id);
   ASSERT_TRUE(form_structure);
-  FormStructureTestApi(form_structure)
-      .SetFieldTypes(heuristic_types, server_types);
-  form_structure->identify_sections_for_testing();
+  test_api(form_structure).SetFieldTypes(heuristic_types, server_types);
+  test_api(form_structure).IdentifySections(/*ignore_autocomplete=*/false);
 }
 
 void TestBrowserAutofillManager::AddSeenFormStructure(
@@ -247,12 +255,12 @@ void TestBrowserAutofillManager::OnAskForValuesToFillTest(
     int query_id,
     const gfx::RectF& bounding_box,
     bool autoselect_first_suggestion,
-    TouchToFillEligible touch_to_fill_eligible) {
+    FormElementWasClicked form_element_was_clicked) {
   TestAutofillManagerWaiter waiter(
       *this, {&AutofillManager::Observer::OnAfterAskForValuesToFill});
   BrowserAutofillManager::OnAskForValuesToFill(
       form, field, bounding_box, query_id, autoselect_first_suggestion,
-      touch_to_fill_eligible);
+      form_element_was_clicked);
   ASSERT_TRUE(waiter.Wait());
 }
 

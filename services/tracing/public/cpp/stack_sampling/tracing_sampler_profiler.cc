@@ -408,6 +408,22 @@ bool IsStackSamplingSupported() {
 }
 #endif
 
+perfetto::StaticString UnwinderTypeToString(
+    const TracingSamplerProfiler::UnwinderType unwinder_type) {
+  switch (unwinder_type) {
+    case TracingSamplerProfiler::UnwinderType::kUnknown:
+      return "TracingSamplerProfiler (unknown unwinder)";
+    case TracingSamplerProfiler::UnwinderType::kArm64Android:
+      return "TracingSamplerProfiler (default arm64 android unwinder)";
+    case TracingSamplerProfiler::UnwinderType::kCfiAndroid:
+      return "TracingSamplerProfiler (default cfi android unwinder)";
+    case TracingSamplerProfiler::UnwinderType::kCustomAndroid:
+      return "TracingSamplerProfiler (custom android unwinder)";
+    case TracingSamplerProfiler::UnwinderType::kDefault:
+      return "TracingSamplerProfiler (default unwinder)";
+  }
+}
+
 }  // namespace
 
 TracingSamplerProfiler::TracingProfileBuilder::BufferedSample::BufferedSample(
@@ -533,6 +549,8 @@ void TracingSamplerProfiler::TracingProfileBuilder::WriteSampleToTrace(
 #else
     update_packet(trace_writer_->NewTracePacket());
 #endif
+    TRACE_EVENT_INSTANT(TRACE_DISABLED_BY_DEFAULT("cpu_profiler"),
+                        UnwinderTypeToString(unwinder_type_));
     reset_incremental_state_ = false;
   }
 
@@ -572,6 +590,11 @@ void TracingSamplerProfiler::TracingProfileBuilder::SetTraceWriter(
   trace_writer_ = std::move(writer);
 }
 #endif
+
+void TracingSamplerProfiler::TracingProfileBuilder::SetUnwinderType(
+    const TracingSamplerProfiler::UnwinderType unwinder_type) {
+  unwinder_type_ = unwinder_type;
+}
 
 TracingSamplerProfiler::StackProfileWriter::StackProfileWriter(
     bool enable_filtering)
@@ -903,6 +926,7 @@ void TracingSamplerProfiler::StartTracing(
     core_unwinders_factory = core_unwinders_factory_function_.Run();
   }
   if (core_unwinders_factory) {
+    profile_builder->SetUnwinderType(UnwinderType::kCustomAndroid);
     profiler_ = std::make_unique<base::StackSamplingProfiler>(
         sampled_thread_token_, params, std::move(profile_builder),
         std::move(core_unwinders_factory));
@@ -914,11 +938,13 @@ void TracingSamplerProfiler::StartTracing(
       unwinders.push_back(std::make_unique<UnwinderArm64>());
       return unwinders;
     };
+    profile_builder->SetUnwinderType(UnwinderType::kArm64Android);
     profiler_ = std::make_unique<base::StackSamplingProfiler>(
         sampled_thread_token_, params, std::move(profile_builder),
         base::BindOnce(create_unwinders));
 #elif ANDROID_CFI_UNWINDING_SUPPORTED
     auto* module_cache = profile_builder->GetModuleCache();
+    profile_builder->SetUnwinderType(UnwinderType::kCfiAndroid);
     profiler_ = std::make_unique<base::StackSamplingProfiler>(
         sampled_thread_token_, params, std::move(profile_builder),
         std::make_unique<StackSamplerAndroid>(sampled_thread_token_,
@@ -926,6 +952,7 @@ void TracingSamplerProfiler::StartTracing(
 #endif
   }
 #else   // BUILDFLAG(IS_ANDROID)
+  profile_builder->SetUnwinderType(UnwinderType::kDefault);
   profiler_ = std::make_unique<base::StackSamplingProfiler>(
       sampled_thread_token_, params, std::move(profile_builder));
 #endif  // BUILDFLAG(IS_ANDROID)

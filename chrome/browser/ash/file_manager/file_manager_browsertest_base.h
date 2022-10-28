@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -87,14 +87,8 @@ class FileManagerBrowserTestBase : public content::DevToolsAgentHostObserver,
     // Whether Drive should act as if offline.
     bool offline = false;
 
-    // Whether test needs the files-swa feature.
-    bool files_swa = false;
-
     // Whether test needs the files-app-experimental feature.
     bool files_experimental = false;
-
-    // Whether test needs the media-swa apps.
-    bool media_swa = false;
 
     // Whether test needs a native SMB file system provider.
     bool native_smb = true;
@@ -136,14 +130,14 @@ class FileManagerBrowserTestBase : public content::DevToolsAgentHostObserver,
     // Whether test should run Android with the virtio-blk for /data.
     bool enable_virtio_blk_for_data = false;
 
-    // Whether test needs the files-filters-in-recents flag.
-    bool enable_filters_in_recents = false;
-
     // Whether test needs the files-filters-in-recents-v2 flag.
     bool enable_filters_in_recents_v2 = false;
 
     // Whether test should run with the DriveFsMirroring flag.
     bool enable_mirrorsync = false;
+
+    // Whether test should enable the file transfer connector.
+    bool enable_file_transfer_connector = false;
   };
 
   FileManagerBrowserTestBase(const FileManagerBrowserTestBase&) = delete;
@@ -213,6 +207,12 @@ class FileManagerBrowserTestBase : public content::DevToolsAgentHostObserver,
   virtual bool HandleDlpCommands(const std::string& name,
                                  const base::Value::Dict& value,
                                  std::string* output);
+
+  // Checks if the command is from enterprise connectors. If so, handles it and
+  // returns true, otherwise it returns false.
+  virtual bool HandleEnterpriseConnectorCommands(const std::string& name,
+                                                 const base::Value::Dict& value,
+                                                 std::string* output);
 
   // Called during setup if needed, to create a drive integration service for
   // the given |profile|. Caller owns the return result.

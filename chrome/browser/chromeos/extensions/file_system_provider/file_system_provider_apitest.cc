@@ -1,4 +1,4 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -147,8 +147,7 @@ class FileSystemProviderApiTest : public ExtensionApiTest {
     display_service_ = std::make_unique<NotificationDisplayServiceTester>(
         browser()->profile());
 
-    user_manager_.AddUser(AccountId::FromUserEmailGaiaId(
-        browser()->profile()->GetProfileUserName(), "12345"));
+    user_manager_.AddUser(AccountId::FromUserEmailGaiaId("test@test", "12345"));
   }
 
   std::unique_ptr<NotificationDisplayServiceTester> display_service_;

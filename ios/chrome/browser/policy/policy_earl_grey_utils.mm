@@ -1,11 +1,11 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #import "ios/chrome/browser/policy/policy_earl_grey_utils.h"
 
-#include "base/json/json_string_value_serializer.h"
-#include "base/strings/sys_string_conversions.h"
+#import "base/json/json_string_value_serializer.h"
+#import "base/strings/sys_string_conversions.h"
 #import "ios/chrome/browser/policy/policy_app_interface.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -13,8 +13,8 @@
 #endif
 
 namespace {
-// Returns a JSON-encoded string representing the given |base::Value|. If
-// |value| is nullptr, returns a string representing a |base::Value| of type
+// Returns a JSON-encoded string representing the given `base::Value`. If
+// `value` is nullptr, returns a string representing a `base::Value` of type
 // NONE.
 std::string SerializeValue(const base::Value value) {
   std::string serialized_value;

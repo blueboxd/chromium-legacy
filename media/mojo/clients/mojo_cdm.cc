@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,9 +12,9 @@
 #include "base/callback_helpers.h"
 #include "base/location.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/stl_util.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/types/optional_util.h"
 #include "build/build_config.h"
 #include "media/base/cdm_context.h"
 #include "media/base/cdm_key_information.h"
@@ -57,7 +57,7 @@ MojoCdm::MojoCdm(mojo::Remote<mojom::ContentDecryptionModule> remote_cdm,
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(cdm_id_);
   DVLOG(2) << __func__ << " cdm_id: "
-           << CdmContext::CdmIdToString(base::OptionalOrNullptr(cdm_id_));
+           << CdmContext::CdmIdToString(base::OptionalToPtr(cdm_id_));
   DCHECK(session_message_cb_);
   DCHECK(session_closed_cb_);
   DCHECK(session_keys_change_cb_);
@@ -275,7 +275,7 @@ absl::optional<base::UnguessableToken> MojoCdm::GetCdmId() const {
   // Can be called on a different thread.
   base::AutoLock auto_lock(lock_);
   DVLOG(2) << __func__ << ": cdm_id="
-           << CdmContext::CdmIdToString(base::OptionalOrNullptr(cdm_id_));
+           << CdmContext::CdmIdToString(base::OptionalToPtr(cdm_id_));
   return cdm_id_;
 }
 

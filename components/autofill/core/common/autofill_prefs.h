@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -32,7 +32,6 @@ extern const char kAutofillCreditCardSigninPromoImpressionCount[];
 // kAutofillProfileEnabled instead.
 extern const char kAutofillEnabledDeprecated[];
 extern const char kAutofillIBANEnabled[];
-extern const char kAutofillJapanCityFieldMigratedDeprecated[];
 extern const char kAutofillLastVersionDeduped[];
 extern const char kAutofillLastVersionDisusedAddressesDeleted[];
 extern const char kAutofillLastVersionDisusedCreditCardsDeleted[];

@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -22,6 +22,9 @@
 #include "ui/aura/window.h"
 #elif BUILDFLAG(IS_CHROMEOS_ASH)
 #include "chrome/browser/ash/policy/dlp/dlp_files_controller.h"
+#include "chrome/browser/chromeos/policy/dlp/dlp_rules_manager.h"
+#include "chrome/browser/chromeos/policy/dlp/dlp_rules_manager_factory.h"
+#include "chrome/browser/chromeos/policy/dlp/dlp_warn_dialog.h"
 #include "chrome/browser/profiles/profile.h"
 #endif
 
@@ -96,7 +99,7 @@ DownloadFilePicker::DownloadFilePicker(download::DownloadItem* item,
   select_file_dialog_->SelectFile(
       ui::SelectFileDialog::SELECT_SAVEAS_FILE, std::u16string(),
       suggested_path_, &file_type_info, 0, base::FilePath::StringType(),
-      owning_window, NULL);
+      owning_window, nullptr);
 }
 
 DownloadFilePicker::~DownloadFilePicker() {
@@ -115,26 +118,34 @@ void DownloadFilePicker::OnFileSelected(const base::FilePath& path) {
           : nullptr;
   if (web_contents && !path.empty()) {
     DCHECK(download_item_);
-    dlp_files_controller_.emplace();
-    dlp_files_controller_->IsFilesTransferRestricted(
-        Profile::FromBrowserContext(web_contents->GetBrowserContext()),
-        {download_item_->GetURL()}, path.value(),
-        base::BindOnce(&DownloadFilePicker::CompleteFileSelection,
-                       base::Unretained(this), path));
+
+    policy::DlpFilesController* files_controller = nullptr;
+    policy::DlpRulesManager* rules_manager =
+        policy::DlpRulesManagerFactory::GetForPrimaryProfile();
+
+    if (rules_manager)
+      files_controller = rules_manager->GetDlpFilesController();
+
+    if (files_controller) {
+      files_controller->CheckIfDownloadAllowed(
+          download_item_->GetURL(), path,
+          base::BindOnce(&DownloadFilePicker::CompleteFileSelection,
+                         base::Unretained(this), path));
+    } else {
+      CompleteFileSelection(path, /*is_allowed=*/true);
+    }
     return;
   }
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
-  CompleteFileSelection(path, std::vector<GURL>());
+  CompleteFileSelection(path, /*is_allowed=*/true);
   // Deletes |this|
 }
 
-void DownloadFilePicker::CompleteFileSelection(
-    const base::FilePath& path,
-    const std::vector<GURL>& restricted_sources) {
+void DownloadFilePicker::CompleteFileSelection(const base::FilePath& path,
+                                               bool is_allowed) {
   base::FilePath selected_path(path);
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-  dlp_files_controller_.reset();
-  if (!restricted_sources.empty())
+  if (!is_allowed)
     selected_path.clear();
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
   std::move(file_selected_callback_)

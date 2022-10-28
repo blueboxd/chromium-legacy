@@ -1,11 +1,10 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include <memory>
 
 #include "base/bind.h"
-#include "base/run_loop.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/values.h"
 #include "components/commerce/core/commerce_feature_list.h"
@@ -35,10 +34,10 @@ class ShoppingServiceMetricsTest : public ShoppingServiceTestBase {
  public:
   ShoppingServiceMetricsTest() {
     og_response_with_image_ =
-        opt_guide_->BuildPriceTrackingResponse("", kImageUrl, 0, 0, "");
+        opt_guide_->BuildPriceTrackingResponse("", kImageUrl, 0, 0, "us");
 
     og_response_no_image_ =
-        opt_guide_->BuildPriceTrackingResponse("", "", 0, 0, "");
+        opt_guide_->BuildPriceTrackingResponse("", "", 0, 0, "us");
   }
   ShoppingServiceMetricsTest(const ShoppingServiceMetricsTest&) = delete;
   ShoppingServiceMetricsTest operator=(const ShoppingServiceMetricsTest&) =
@@ -75,9 +74,7 @@ TEST_F(ShoppingServiceMetricsTest,
       shopping_service_->GetAvailableProductInfoForUrl(GURL(kProductUrl));
   ASSERT_NE(kImageUrl, cached_info->image_url);
 
-  base::RunLoop run_loop;
   DidFinishLoad(&web);
-  run_loop.RunUntilIdle();
 
   // After the page has loaded and the on-page js has run, we should have the
   // on-page image.
@@ -111,9 +108,7 @@ TEST_F(ShoppingServiceMetricsTest,
       shopping_service_->GetAvailableProductInfoForUrl(GURL(kProductUrl));
   ASSERT_EQ(kImageUrl, cached_info->image_url.spec());
 
-  base::RunLoop run_loop;
   DidFinishLoad(&web);
-  run_loop.RunUntilIdle();
 
   // After the page has loaded and the on-page js has run, we should have the
   // on-page image.
@@ -147,9 +142,7 @@ TEST_F(ShoppingServiceMetricsTest, TestImageAvailabilityNoServerImage) {
       shopping_service_->GetAvailableProductInfoForUrl(GURL(kProductUrl));
   ASSERT_NE(kImageUrl, cached_info->image_url);
 
-  base::RunLoop run_loop;
   DidFinishLoad(&web);
-  run_loop.RunUntilIdle();
 
   // After the page has loaded and the on-page js has run, we should have the
   // on-page image.
@@ -182,9 +175,7 @@ TEST_F(ShoppingServiceMetricsTest, TestImageAvailabilityNoLocalImage) {
       shopping_service_->GetAvailableProductInfoForUrl(GURL(kProductUrl));
   ASSERT_EQ(kImageUrl, cached_info->image_url);
 
-  base::RunLoop run_loop;
   DidFinishLoad(&web);
-  run_loop.RunUntilIdle();
 
   // After the page has loaded and the on-page js has run, we should not have
   // detected another image and report "server only".

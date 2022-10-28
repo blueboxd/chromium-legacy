@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -321,7 +321,7 @@ TEST(WindowSizerTestCommon, AdjustFitSize) {
     gfx::Rect window_bounds;
     WindowSizerTestUtil::GetWindowBounds(
         p1024x768, p1024x768, gfx::Rect(), gfx::Rect(), gfx::Rect(), DEFAULT,
-        NULL, gfx::Rect(-10, -10, 1024 + 20, 768 + 20), &window_bounds);
+        nullptr, gfx::Rect(-10, -10, 1024 + 20, 768 + 20), &window_bounds);
     EXPECT_EQ("0,0 1024x768", window_bounds.ToString());
   }
 
@@ -329,7 +329,7 @@ TEST(WindowSizerTestCommon, AdjustFitSize) {
     gfx::Rect window_bounds;
     WindowSizerTestUtil::GetWindowBounds(
         p1024x768, p1024x768, gfx::Rect(), gfx::Rect(), gfx::Rect(), DEFAULT,
-        NULL, gfx::Rect(1020, 700, 100, 100), &window_bounds);
+        nullptr, gfx::Rect(1020, 700, 100, 100), &window_bounds);
     EXPECT_EQ("924,668 100x100", window_bounds.ToString());
   }
 }

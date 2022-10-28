@@ -1,4 +1,4 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -683,6 +683,44 @@ void CrasAudioHandler::AdjustOutputVolumeByPercent(int adjust_by_percent) {
   SetOutputVolumePercent(output_volume_ + adjust_by_percent);
 }
 
+void CrasAudioHandler::IncreaseOutputVolumeByOneStep() {
+  // Set all active devices to the same volume.
+  for (const auto& item : audio_devices_) {
+    const AudioDevice& device = item.second;
+    if (!device.is_input && device.active) {
+      int32_t volume_level =
+          std::round((double)output_volume_ *
+                     (double)device.number_of_volume_steps * 0.01);
+      if (volume_level == 0 && output_volume_ > 0) {
+        volume_level = 1;
+      }
+      // increase one level and convert to volume
+      output_volume_ = std::min(
+          100,
+          static_cast<int>(std::floor(((double)(volume_level + 1)) /
+                                      device.number_of_volume_steps * 100)));
+      SetOutputNodeVolumePercent(device.id, output_volume_);
+    }
+  }
+}
+
+void CrasAudioHandler::DecreaseOutputVolumeByOneStep() {
+  // Set all active devices to the same volume.
+  for (const auto& item : audio_devices_) {
+    const AudioDevice& device = item.second;
+    if (!device.is_input && device.active) {
+      int32_t volume_level =
+          std::round((double)output_volume_ *
+                     (double)device.number_of_volume_steps * 0.01);
+      // decrease one level and convert to volume
+      output_volume_ = std::max(
+          0, static_cast<int>(std::floor(((double)(volume_level - 1)) /
+                                         device.number_of_volume_steps * 100)));
+      SetOutputNodeVolumePercent(device.id, output_volume_);
+    }
+  }
+}
+
 void CrasAudioHandler::SetOutputMute(bool mute_on) {
   if (!SetOutputMuteInternal(mute_on))
     return;
@@ -720,6 +758,15 @@ void CrasAudioHandler::SetInputMute(bool mute_on) {
 void CrasAudioHandler::SetActiveDevice(const AudioDevice& active_device,
                                        bool notify,
                                        DeviceActivateType activate_by) {
+  if (activate_by == ACTIVATE_BY_USER) {
+    if (active_device.is_input) {
+      base::RecordAction(
+          base::UserMetricsAction("StatusArea_Audio_SwitchInputDevice"));
+    } else {
+      base::RecordAction(
+          base::UserMetricsAction("StatusArea_Audio_SwitchOutputDevice"));
+    }
+  }
   if (active_device.is_input)
     CrasAudioClient::Get()->SetActiveInputNode(active_device.id);
   else
@@ -1885,6 +1932,15 @@ bool CrasAudioHandler::HasDualInternalMic() const {
   return has_front_mic && has_rear_mic;
 }
 
+bool CrasAudioHandler::HasActiveInputDeviceForSimpleUsage() const {
+  const AudioDevice* active_input_device =
+      GetDeviceFromId(active_input_node_id_);
+  if (active_input_device) {
+    return active_input_device->is_for_simple_usage();
+  }
+  return false;
+}
+
 bool CrasAudioHandler::IsFrontOrRearMic(const AudioDevice& device) const {
   return device.is_input && (device.type == AudioDeviceType::kFrontMic ||
                              device.type == AudioDeviceType::kRearMic);
@@ -1918,7 +1974,8 @@ CrasAudioHandler::ClientType CrasAudioHandler::ConvertClientTypeStringToEnum(
     return ClientType::VM_TERMINA;
   } else if (client_type_str == "CRAS_CLIENT_TYPE_CHROME") {
     return ClientType::CHROME;
-  } else if (client_type_str == "CRAS_CLIENT_TYPE_ARC") {
+  } else if (client_type_str == "CRAS_CLIENT_TYPE_ARC" ||
+             client_type_str == "CRAS_CLIENT_TYPE_ARCVM") {
     return ClientType::ARC;
   } else if (client_type_str == "CRAS_CLIENT_TYPE_BOREALIS") {
     return ClientType::VM_BOREALIS;

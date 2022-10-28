@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -20,12 +20,13 @@ class COMPONENT_EXPORT(ASH_DBUS_ARC) FakeArcMidisClient
 
   ~FakeArcMidisClient() override = default;
 
-  // DBusClient override:
+  // chromeos::DBusClient override:
   void Init(dbus::Bus* bus) override;
 
   // ArcMidisClient override:
-  void BootstrapMojoConnection(base::ScopedFD fd,
-                               VoidDBusMethodCallback callback) override;
+  void BootstrapMojoConnection(
+      base::ScopedFD fd,
+      chromeos::VoidDBusMethodCallback callback) override;
 };
 
 }  // namespace ash

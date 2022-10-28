@@ -1,4 +1,4 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -158,7 +158,7 @@ void InlineLoginHandler::ContinueHandleInitializeMessage() {
   params.Set("readOnlyEmail", !read_only_email.empty());
 
   SetExtraInitParams(params);
-  FireWebUIListener("load-auth-extension", base::Value(std::move(params)));
+  FireWebUIListener("load-auth-extension", params);
 }
 
 void InlineLoginHandler::HandleCompleteLoginMessage(

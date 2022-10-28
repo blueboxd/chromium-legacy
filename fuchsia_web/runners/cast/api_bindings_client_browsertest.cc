@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -151,6 +151,10 @@ IN_PROC_BROWSER_TEST_F(ApiBindingsClientTest,
   StartClient(
       true, base::BindOnce([](bool* error_signaled) { *error_signaled = true; },
                            base::Unretained(&error_signaled)));
+
+  // Verify that the error is signalled asynchronously.
+  EXPECT_FALSE(error_signaled);
+  base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(error_signaled);
 }
 

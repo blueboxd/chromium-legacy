@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,56 +6,55 @@
 
 #include <array>
 
-#include "base/metrics/field_trial_params.h"
-#include "base/strings/strcat.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "components/segmentation_platform/internal/metadata/metadata_writer.h"
-#include "components/segmentation_platform/public/config.h"
+#include "components/segmentation_platform/public/constants.h"
 #include "components/segmentation_platform/public/model_provider.h"
 #include "components/segmentation_platform/public/proto/model_metadata.pb.h"
 
 namespace segmentation_platform {
 
 namespace {
+
+// List of sub-segments for Feed segment.
+enum class FeedUserSubsegment {
+  kUnknown = 0,
+  kOther = 1,
+
+  // Legacy groups, split into feed engagement types below.
+  kDeprecatedActiveOnFeedOnly = 2,
+  kDeprecatedActiveOnFeedAndNtpFeatures = 3,
+
+  // Recorded when no feed usage was observed.
+  kNoFeedAndNtpFeatures = 4,
+  kMvtOnly = 5,
+  kReturnToCurrentTabOnly = 6,
+  kUsedNtpWithoutModules = 7,
+  kNoNTPOrHomeOpened = 8,
+
+  // Cut-off after which the model returns Feed user as final segment.
+
+  // Feed engagement combined with NTP features.
+  kNtpAndFeedEngaged = 9,
+  kNtpAndFeedEngagedSimple = 10,
+  kNtpAndFeedScrolled = 11,
+  kNtpAndFeedInteracted = 12,
+  kNoNtpAndFeedEngaged = 13,
+  kNoNtpAndFeedEngagedSimple = 14,
+  kNoNtpAndFeedScrolled = 15,
+  kNoNtpAndFeedInteracted = 16,
+  kMaxValue = kNoNtpAndFeedInteracted
+};
+
+#define RANK(x) static_cast<int>(x)
+
 using proto::SegmentId;
 
 // Default parameters for Chrome Start model.
 constexpr SegmentId kFeedUserSegmentId =
     SegmentId::OPTIMIZATION_TARGET_SEGMENTATION_FEED_USER;
-constexpr proto::TimeUnit kFeedUserTimeUnit = proto::TimeUnit::DAY;
-constexpr uint64_t kFeedUserBucketDuration = 1;
 constexpr int64_t kFeedUserSignalStorageLength = 28;
 constexpr int64_t kFeedUserMinSignalCollectionLength = 7;
-constexpr int64_t kFeedUserResultTTL = 1;
-
-// Discrete mapping parameters.
-constexpr char kFeedUserDiscreteMappingKey[] = "feed_user_segment";
-constexpr float kFeedUserDiscreteMappingMinResult = 0.8;
-constexpr int64_t kFeedUserDiscreteMappingRank = 1;
-constexpr std::pair<float, int> kDiscreteMappings[] = {
-    {kFeedUserDiscreteMappingMinResult, kFeedUserDiscreteMappingRank}};
-
-#define RANK(x) static_cast<int>(FeedUserSubsegment::x)
-
-static constexpr std::array<std::pair<float, /*FeedUserSubsegment*/ int>, 16>
-    kFeedUserScoreToSubGroup = {{
-        {1.0, RANK(kDeprecatedActiveOnFeedOnly)},
-        {0.98, RANK(kNtpAndFeedEngaged)},
-        {0.96, RANK(kNtpAndFeedEngagedSimple)},
-        {0.94, RANK(kNtpAndFeedScrolled)},
-        {0.92, RANK(kNtpAndFeedInteracted)},
-        {0.90, RANK(kNoNtpAndFeedEngaged)},
-        {0.88, RANK(kNoNtpAndFeedEngagedSimple)},
-        {0.86, RANK(kNoNtpAndFeedScrolled)},
-        {0.84, RANK(kNoNtpAndFeedInteracted)},
-        {0.8, RANK(kDeprecatedActiveOnFeedAndNtpFeatures)},
-        {0.7, RANK(kNoFeedAndNtpFeatures)},
-        {0.5, RANK(kMvtOnly)},
-        {0.4, RANK(kReturnToCurrentTabOnly)},
-        {0.2, RANK(kUsedNtpWithoutModules)},
-        {0.1, RANK(kNoNTPOrHomeOpened)},
-        {0.0, RANK(kUnknown)},
-    }};
 
 // InputFeatures.
 
@@ -95,16 +94,6 @@ constexpr std::array<MetadataWriter::UMAFeature, 11> kFeedUserUMAFeatures = {
         kFeedEngagementScrolled.data(),
         kFeedEngagementScrolled.size()),
 };
-
-float GetScoreForSubsegment(FeedUserSubsegment subgroup) {
-  for (const auto& score_and_type : kFeedUserScoreToSubGroup) {
-    if (score_and_type.second == static_cast<int>(subgroup)) {
-      return score_and_type.first;
-    }
-  }
-  NOTREACHED();
-  return 0;
-}
 
 // Any updates to these strings need to also update the field trials allowlist
 // in go/segmentation-field-trials-map.
@@ -153,8 +142,8 @@ FeedUserSegment::FeedUserSegment() : ModelProvider(kFeedUserSegmentId) {}
 
 absl::optional<std::string> FeedUserSegment::GetSubsegmentName(
     int subsegment_rank) {
-  DCHECK(RANK(kUnknown) <= subsegment_rank &&
-         subsegment_rank <= RANK(kMaxValue));
+  DCHECK(RANK(FeedUserSubsegment::kUnknown) <= subsegment_rank &&
+         subsegment_rank <= RANK(FeedUserSubsegment::kMaxValue));
   FeedUserSubsegment subgroup =
       static_cast<FeedUserSubsegment>(subsegment_rank);
   return FeedUserSubsegmentToString(subgroup);
@@ -164,19 +153,13 @@ void FeedUserSegment::InitAndFetchModel(
     const ModelUpdatedCallback& model_updated_callback) {
   proto::SegmentationModelMetadata chrome_start_metadata;
   MetadataWriter writer(&chrome_start_metadata);
-  writer.SetSegmentationMetadataConfig(
-      kFeedUserTimeUnit, kFeedUserBucketDuration, kFeedUserSignalStorageLength,
-      kFeedUserMinSignalCollectionLength, kFeedUserResultTTL);
+  writer.SetDefaultSegmentationMetadataConfig(
+      kFeedUserMinSignalCollectionLength, kFeedUserSignalStorageLength);
 
-  // Set discrete mapping.
-  writer.AddDiscreteMappingEntries(kFeedUserDiscreteMappingKey,
-                                   kDiscreteMappings, 1);
-
-  // Add subsegment mapping.
-  writer.AddDiscreteMappingEntries(
-      base::StrCat(
-          {kFeedUserDiscreteMappingKey, kSubsegmentDiscreteMappingSuffix}),
-      kFeedUserScoreToSubGroup.data(), kFeedUserScoreToSubGroup.size());
+  // All values greater than or equal to kNtpAndFeedEngaged will map to true.
+  writer.AddBooleanSegmentDiscreteMappingWithSubsegments(
+      kFeedUserSegmentationKey, RANK(FeedUserSubsegment::kNtpAndFeedEngaged),
+      RANK(FeedUserSubsegment::kMaxValue));
 
   // Set features.
   writer.AddUmaFeatures(kFeedUserUMAFeatures.data(),
@@ -236,7 +219,7 @@ void FeedUserSegment::ExecuteModelWithInput(const std::vector<float>& inputs,
     segment = segment = FeedUserSubsegment::kNoNTPOrHomeOpened;
   }
 
-  float result = GetScoreForSubsegment(segment);
+  float result = RANK(segment);
   base::SequencedTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::BindOnce(std::move(callback), result));
 }

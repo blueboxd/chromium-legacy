@@ -1,12 +1,12 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #import "ios/chrome/browser/ui/thumb_strip/thumb_strip_coordinator.h"
 
-#include "base/metrics/histogram_functions.h"
+#import "base/metrics/histogram_functions.h"
 #import "ios/chrome/browser/main/browser.h"
-#include "ios/chrome/browser/overlays/public/overlay_presentation_context.h"
+#import "ios/chrome/browser/overlays/public/overlay_presentation_context.h"
 #import "ios/chrome/browser/ui/commands/command_dispatcher.h"
 #import "ios/chrome/browser/ui/commands/thumb_strip_commands.h"
 #import "ios/chrome/browser/ui/gestures/view_revealing_vertical_pan_handler.h"

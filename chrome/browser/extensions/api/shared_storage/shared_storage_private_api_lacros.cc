@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -67,13 +67,13 @@ ExtensionFunction::ResponseAction SharedStoragePrivateSetFunction::Run() {
   return RespondLater();
 }
 
-void SharedStoragePrivateSetFunction::OnGet(base::DictionaryValue to_add,
+void SharedStoragePrivateSetFunction::OnGet(base::Value::Dict to_add,
                                             absl::optional<base::Value> items) {
   if (!items) {
     LOG(ERROR) << kErrorFetching;
     return Respond(Error(kErrorFetching));
   }
-  items->MergeDictionary(&to_add);
+  items->GetDict().Merge(std::move(to_add));
   auto* lacros_service = chromeos::LacrosService::Get();
   if (!lacros_service ||
       !lacros_service->IsAvailable<crosapi::mojom::Prefs>()) {

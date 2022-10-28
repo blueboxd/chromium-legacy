@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -85,8 +85,8 @@ bool RotateDeviceTrustKey(
       dm_server_url, *dm_token, *decoded_nonce,
       base::BindOnce(
           [](bool& rotation_result, base::OnceClosure quit_closure,
-             bool result) {
-            rotation_result = result;
+             KeyRotationManager::Result result) {
+            rotation_result = (result == KeyRotationManager::Result::SUCCEEDED);
             std::move(quit_closure).Run();
           },
           std::ref(rotation_result), run_loop.QuitClosure()));

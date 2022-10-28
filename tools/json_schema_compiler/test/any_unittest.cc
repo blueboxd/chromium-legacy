@@ -16,8 +16,8 @@ TEST(JsonSchemaCompilerAnyTest, AnyTypePopulate) {
     any_type_dict.Set("any", "value");
     base::Value any_type_value(std::move(any_type_dict));
     EXPECT_TRUE(test::api::any::AnyType::Populate(any_type_value, &any_type));
-    std::unique_ptr<base::Value> any_type_to_value(any_type.ToValue());
-    EXPECT_EQ(any_type_value, *any_type_to_value.get());
+    base::Value::Dict any_type_to_value(any_type.ToValue());
+    EXPECT_EQ(any_type_value, any_type_to_value);
   }
   {
     test::api::any::AnyType any_type;
@@ -25,8 +25,8 @@ TEST(JsonSchemaCompilerAnyTest, AnyTypePopulate) {
     any_type_dict.Set("any", 5);
     base::Value any_type_value(std::move(any_type_dict));
     EXPECT_TRUE(test::api::any::AnyType::Populate(any_type_value, &any_type));
-    std::unique_ptr<base::Value> any_type_to_value(any_type.ToValue());
-    EXPECT_EQ(any_type_value, *any_type_to_value.get());
+    base::Value::Dict any_type_to_value(any_type.ToValue());
+    EXPECT_EQ(any_type_value, any_type_to_value);
   }
 }
 
@@ -36,7 +36,7 @@ TEST(JsonSchemaCompilerAnyTest, OptionalAnyParamsCreate) {
     std::unique_ptr<test::api::any::OptionalAny::Params> params(
         test::api::any::OptionalAny::Params::Create(params_value));
     EXPECT_TRUE(params.get());
-    EXPECT_FALSE(params->any_name.get());
+    EXPECT_FALSE(params->any_name);
   }
   {
     base::Value::List params_value;

@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -3145,7 +3145,6 @@ void MaxShaderCompilerThreadsKHR(GLuint count) {
 }
 
 void CreateAndTexStorage2DSharedImageINTERNALImmediate(GLuint texture,
-                                                       GLenum internalformat,
                                                        const GLbyte* mailbox) {
   const uint32_t size = gles2::cmds::
       CreateAndTexStorage2DSharedImageINTERNALImmediate::ComputeSize();
@@ -3153,7 +3152,7 @@ void CreateAndTexStorage2DSharedImageINTERNALImmediate(GLuint texture,
       GetImmediateCmdSpaceTotalSize<
           gles2::cmds::CreateAndTexStorage2DSharedImageINTERNALImmediate>(size);
   if (c) {
-    c->Init(texture, internalformat, mailbox);
+    c->Init(texture, mailbox);
   }
 }
 

@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,7 +7,7 @@
 
 #include "base/callback.h"
 #include "base/memory/weak_ptr.h"
-#include "chromeos/dbus/dlcservice/dlcservice_client.h"
+#include "chromeos/ash/components/dbus/dlcservice/dlcservice_client.h"
 
 namespace ash {
 
@@ -38,8 +38,7 @@ class PumpkinInstaller {
   // DLC from the DLC service.
   void MaybeInstallHelper(const std::string& error,
                           const dlcservice::DlcState& dlc_state);
-  void OnInstalled(
-      const chromeos::DlcserviceClient::InstallResult& install_result);
+  void OnInstalled(const DlcserviceClient::InstallResult& install_result);
   void OnProgress(double progress);
   void OnError(const std::string& error);
   base::WeakPtr<PumpkinInstaller> GetWeakPtr();

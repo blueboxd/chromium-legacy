@@ -1,4 +1,4 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -138,6 +138,8 @@ class SiteSettingsHandler
   FRIEND_TEST_ALL_PREFIXES(SiteSettingsHandlerTest,
                            IncludeWebUISchemesInGetOriginPermissions);
   FRIEND_TEST_ALL_PREFIXES(SiteSettingsHandlerTest, HandleGetUsageInfo);
+  FRIEND_TEST_ALL_PREFIXES(SiteSettingsHandlerTest,
+                           HandleGetFpsMembershipLabel);
   FRIEND_TEST_ALL_PREFIXES(SiteSettingsHandlerTest, NonTreeModelDeletion);
   FRIEND_TEST_ALL_PREFIXES(SiteSettingsHandlerTest, FirstPartySetsMembership);
 
@@ -167,6 +169,9 @@ class SiteSettingsHandler
   // Asynchronously fetches the usage for a given origin. Replies back with
   // OnGetUsageInfo above.
   void HandleFetchUsageTotal(const base::Value::List& args);
+
+  // Asynchronously fetches the fps membership information label.
+  void HandleGetFpsMembershipLabel(const base::Value::List& args);
 
   // Deletes the storage being used for a given host.
   void HandleClearUnpartitionedUsage(const base::Value::List& args);
@@ -217,6 +222,8 @@ class SiteSettingsHandler
 
   // Returns the list of chooser exceptions for a given chooser type.
   void HandleGetChooserExceptionList(const base::Value::List& args);
+
+  void HandleGetReviewNotificationPermissions(const base::Value::List& args);
 
   // Gets and sets a list of ContentSettingTypes for an origin.
   // TODO(https://crbug.com/739241): Investigate replacing the

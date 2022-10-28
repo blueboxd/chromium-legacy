@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -87,7 +87,8 @@ class ArcAppShortcutsSearchProviderTest
         app_info.version_name, false /* sticky */,
         true /* notifications_enabled */, true /* app_ready */,
         false /* suspended */, false /* shortcut */, launchable,
-        ArcAppListPrefs::WindowLayout(), app_size_in_bytes, data_size_in_bytes);
+        app_info.need_fixup, ArcAppListPrefs::WindowLayout(), app_size_in_bytes,
+        data_size_in_bytes);
     const std::string app_id =
         ArcAppListPrefs::GetAppId(app_info.package_name, app_info.activity);
     EXPECT_TRUE(prefs->GetApp(app_id));

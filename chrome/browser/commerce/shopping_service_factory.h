@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,6 +7,10 @@
 
 #include "base/no_destructor.h"
 #include "chrome/browser/profiles/profile_keyed_service_factory.h"
+
+namespace content {
+class BrowserContext;
+}  // namespace content
 
 namespace commerce {
 
@@ -23,6 +27,12 @@ class ShoppingServiceFactory : public ProfileKeyedServiceFactory {
       content::BrowserContext* context);
   static ShoppingService* GetForBrowserContextIfExists(
       content::BrowserContext* context);
+
+  // Associates |testing_factory| with |context| and immediately returns the
+  // created KeyedService. Since the factory will be used immediately, it may
+  // not be empty.
+  KeyedService* SetTestingFactoryAndUse(content::BrowserContext* context,
+                                        TestingFactory testing_factory);
 
  private:
   friend class base::NoDestructor<ShoppingServiceFactory>;

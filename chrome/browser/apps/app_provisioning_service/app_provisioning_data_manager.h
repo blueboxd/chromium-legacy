@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -15,6 +15,11 @@
 
 namespace apps {
 
+struct ComponentFileContents {
+  std::string app_with_locale_pb;
+  std::string deduplication_pb;
+};
+
 // The AppProvisioningDataManager parses the updates received from the Component
 // Updater and forwards the data in the desired format to the relevant service.
 // E.g. Component Updater sends through new discovery app data, after parsing
@@ -26,8 +31,8 @@ class AppProvisioningDataManager {
    public:
     virtual void OnAppWithLocaleListUpdated(
         const proto::AppWithLocaleList& app_with_locale_list) {}
-    virtual void OnDuplicatedAppsMapUpdated(
-        const proto::DuplicatedAppsMap& duplicated_apps_map) {}
+    virtual void OnDuplicatedGroupListUpdated(
+        const proto::DuplicatedGroupList& duplicated_group_list) {}
   };
 
   static AppProvisioningDataManager* Get();
@@ -41,11 +46,12 @@ class AppProvisioningDataManager {
 
   static AppProvisioningDataManager* GetInstance();  // Singleton
 
-  // Update the internal list from a binary proto fetched from the network.
+  // Update the internal list from the binary proto files fetched from the
+  // network.
   // Same integrity checks apply. This can be called multiple times with new
   // protos.
-  void PopulateFromDynamicUpdate(const std::string& binary_pb,
-                                 const base::FilePath& data_dir);
+  void PopulateFromDynamicUpdate(const ComponentFileContents& component_files,
+                                 const base::FilePath& install_dir);
 
   const base::FilePath& GetDataFilePath();
 
@@ -64,7 +70,7 @@ class AppProvisioningDataManager {
 
   // The latest app data. Starts out as null.
   std::unique_ptr<proto::AppWithLocaleList> app_with_locale_list_;
-  std::unique_ptr<proto::DuplicatedAppsMap> duplicated_apps_map_;
+  std::unique_ptr<proto::DuplicatedGroupList> duplicated_group_list_;
 
   base::ObserverList<Observer> observers_;
 

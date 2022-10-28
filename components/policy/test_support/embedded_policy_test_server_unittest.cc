@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,7 +8,6 @@
 #if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
 #include "components/policy/proto/chrome_extension_policy.pb.h"
 #endif  // !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
-#include "components/policy/test_support/embedded_policy_test_server.h"
 #include "components/policy/test_support/embedded_policy_test_server_test_base.h"
 #include "components/policy/test_support/policy_storage.h"
 #include "components/policy/test_support/test_server_helpers.h"

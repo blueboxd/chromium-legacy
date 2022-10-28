@@ -1,10 +1,11 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "ash/app_menu/notification_overflow_view.h"
 
 #include "ash/public/cpp/app_menu_constants.h"
+#include "base/ranges/algorithm.h"
 #include "ui/base/models/menu_separator_types.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
@@ -101,10 +102,8 @@ void NotificationOverflowView::AddIcon(
 }
 
 void NotificationOverflowView::RemoveIcon(const std::string& notification_id) {
-  auto it = std::find_if(image_views_.begin(), image_views_.end(),
-                         [notification_id](const auto& item) {
-                           return item->notification_id() == notification_id;
-                         });
+  auto it = base::ranges::find(image_views_, notification_id,
+                               &NotificationOverflowImageView::notification_id);
   if (it != image_views_.end()) {
     RemoveChildViewT(*it);
     image_views_.erase(it);

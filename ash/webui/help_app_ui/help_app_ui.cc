@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -111,15 +111,13 @@ void HelpAppUI::BindInterface(
 }
 
 void HelpAppUI::BindInterface(
-    mojo::PendingReceiver<chromeos::local_search_service::mojom::Index>
-        index_receiver) {
+    mojo::PendingReceiver<local_search_service::mojom::Index> index_receiver) {
   if (base::FeatureList::IsEnabled(features::kEnableLocalSearchService)) {
-    auto* const factory = chromeos::local_search_service::
-        LocalSearchServiceProxyFactory::GetForBrowserContext(
-            web_ui()->GetWebContents()->GetBrowserContext());
+    auto* const factory = local_search_service::LocalSearchServiceProxyFactory::
+        GetForBrowserContext(web_ui()->GetWebContents()->GetBrowserContext());
     factory->SetLocalState(delegate_->GetLocalState());
-    factory->GetIndex(chromeos::local_search_service::IndexId::kHelpApp,
-                      chromeos::local_search_service::Backend::kInvertedIndex,
+    factory->GetIndex(local_search_service::IndexId::kHelpApp,
+                      local_search_service::Backend::kInvertedIndex,
                       std::move(index_receiver));
   }
 }

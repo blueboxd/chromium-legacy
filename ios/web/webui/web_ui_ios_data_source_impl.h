@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -79,7 +79,7 @@ class WebUIIOSDataSourceImpl : public URLDataSourceIOSImpl,
   // IO thread. The map is safe to read from multiple threads as long as no
   // further changes are made to it after initialization.
   ui::TemplateReplacements replacements_;
-  // The |replacements_| is intended to replace |localized_strings_|.
+  // The `replacements_` is intended to replace `localized_strings_`.
   base::Value::Dict localized_strings_;
   bool deny_xframe_options_;
   bool load_time_data_defaults_added_;

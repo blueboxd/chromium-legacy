@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -113,6 +113,9 @@ class DownloadItemModelData : public base::SupportsUserData::Data {
   // then as all in-progress downloads are.
   absl::optional<base::Time> ephemeral_warning_ui_shown_time_;
 
+  // Was the UI actioned on.
+  bool actioned_on_ = false;
+
  private:
   DownloadItemModelData();
 
@@ -133,7 +136,7 @@ DownloadItemModelData* DownloadItemModelData::GetOrCreate(
     DownloadItem* download) {
   DownloadItemModelData* data =
       static_cast<DownloadItemModelData*>(download->GetUserData(kKey));
-  if (data == NULL) {
+  if (data == nullptr) {
     data = new DownloadItemModelData();
     data->should_show_in_shelf_ = !download->IsTransient();
     download->SetUserData(kKey, base::WrapUnique(data));
@@ -410,6 +413,16 @@ bool DownloadItemModel::WasUINotified() const {
 void DownloadItemModel::SetWasUINotified(bool was_ui_notified) {
   DownloadItemModelData* data = DownloadItemModelData::GetOrCreate(download_);
   data->was_ui_notified_ = was_ui_notified;
+}
+
+bool DownloadItemModel::WasActionedOn() const {
+  const DownloadItemModelData* data = DownloadItemModelData::Get(download_);
+  return data && data->actioned_on_;
+}
+
+void DownloadItemModel::SetActionedOn(bool actioned_on) {
+  DownloadItemModelData* data = DownloadItemModelData::GetOrCreate(download_);
+  data->actioned_on_ = actioned_on;
 }
 
 bool DownloadItemModel::WasUIWarningShown() const {
@@ -818,26 +831,13 @@ void DownloadItemModel::ExecuteCommand(DownloadCommands* download_commands,
                download::IsDownloadBubbleEnabled(profile()));
         safe_browsing::SafeBrowsingService* sb_service =
             g_browser_process->safe_browsing_service();
-        // Compiles the dangerous download warning report.
-        auto report =
-            std::make_unique<safe_browsing::ClientSafeBrowsingReportRequest>();
-        report->set_type(safe_browsing::ClientSafeBrowsingReportRequest::
-                             DANGEROUS_DOWNLOAD_WARNING);
-        report->set_download_verdict(
-            safe_browsing::DownloadDangerTypeToDownloadResponseVerdict(
-                GetDangerType()));
-        report->set_url(GetURL().spec());
-        report->set_did_proceed(true);
-        std::string token =
-            safe_browsing::DownloadProtectionService::GetDownloadPingToken(
-                download_);
         if (sb_service) {
-          if (!token.empty())
-            report->set_token(token);
-
-          ReportThreatDetailsResult result =
-              sb_service->SendDownloadReport(profile(), std::move(report));
-          DCHECK(result == ReportThreatDetailsResult::SUCCESS);
+          bool is_successful = sb_service->SendDownloadReport(
+              download_,
+              safe_browsing::ClientSafeBrowsingReportRequest::
+                  DANGEROUS_DOWNLOAD_WARNING,
+              /*did_proceed=*/true, /*show_download_in_folder=*/absl::nullopt);
+          DCHECK(is_successful);
         }
       }
 #endif

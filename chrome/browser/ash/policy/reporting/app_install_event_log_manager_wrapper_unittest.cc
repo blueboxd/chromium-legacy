@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -113,9 +113,9 @@ class AppInstallEventLogManagerWrapperTest : public testing::Test {
 
   void VerifyLogFileAndPrefsNotCleared() {
     EXPECT_TRUE(base::PathExists(log_file_path_));
-    EXPECT_EQ(app_list_, profile_.GetPrefs()->GetValueList(
+    EXPECT_EQ(app_list_, profile_.GetPrefs()->GetList(
                              arc::prefs::kArcPushInstallAppsRequested));
-    EXPECT_EQ(app_list_, profile_.GetPrefs()->GetValueList(
+    EXPECT_EQ(app_list_, profile_.GetPrefs()->GetList(
                              arc::prefs::kArcPushInstallAppsPending));
   }
 

@@ -1,11 +1,7 @@
-// Copyright (c) 2016 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/components/hid_detection/bluetooth_hid_detector.h"
-#include "ash/components/hid_detection/fake_hid_detection_manager.h"
-#include "ash/components/hid_detection/hid_detection_manager.h"
-#include "ash/components/hid_detection/hid_detection_utils.h"
 #include "ash/constants/ash_features.h"
 #include "ash/constants/ash_switches.h"
 #include "base/bind.h"
@@ -31,6 +27,10 @@
 #include "chrome/browser/ui/webui/chromeos/login/hid_detection_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/network_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/welcome_screen_handler.h"
+#include "chromeos/ash/components/hid_detection/bluetooth_hid_detector.h"
+#include "chromeos/ash/components/hid_detection/fake_hid_detection_manager.h"
+#include "chromeos/ash/components/hid_detection/hid_detection_manager.h"
+#include "chromeos/ash/components/hid_detection/hid_detection_utils.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/test_launcher.h"
 #include "device/bluetooth/test/mock_bluetooth_device.h"
@@ -62,6 +62,8 @@ const test::UIPath kHidTouchscreenEntry = {"hid-detection",
 const test::UIPath kHidMouseTick = {"hid-detection", "mouse-tick"};
 const test::UIPath kHidKeyboardTick = {"hid-detection", "keyboard-tick"};
 const test::UIPath kHidPairingDialog = {"hid-detection", "hid-pin-popup"};
+const test::UIPath kHidPairingDialogEnterCodePage = {"hid-detection",
+                                                     "hid-pairing-enter-code"};
 
 InputState GetHidInputState(
     device::mojom::InputDeviceType connected_hid_device_type) {
@@ -126,8 +128,9 @@ class HIDDetectionScreenChromeboxTest
 
   HIDDetectionScreen* hid_detection_screen() { return hid_detection_screen_; }
   HIDDetectionScreenHandler* handler() {
-    return static_cast<HIDDetectionScreenHandler*>(
-        hid_detection_screen()->view_);
+    return LoginDisplayHost::default_host()
+        ->GetOobeUI()
+        ->GetHandler<HIDDetectionScreenHandler>();
   }
 
   void ContinueToWelcomeScreen() {
@@ -504,7 +507,7 @@ IN_PROC_BROWSER_TEST_P(HIDDetectionScreenChromeboxTest, MouseKeyboardStates) {
   }
 
   ForceStopHidDetectionIfRevamp();
-};
+}
 
 IN_PROC_BROWSER_TEST_P(HIDDetectionScreenChromeboxTest,
                        BluetoothPairingDialog) {
@@ -530,6 +533,14 @@ IN_PROC_BROWSER_TEST_P(HIDDetectionScreenChromeboxTest,
             handler()->num_keys_entered_pin_code_for_test());
   EXPECT_EQ(kTestPinCode, handler()->keyboard_pin_code_for_test());
   test::OobeJS().ExpectDialogOpen(kHidPairingDialog);
+  EXPECT_EQ(kTestPinCode, test::OobeJS().GetAttributeString(
+                              "code", kHidPairingDialogEnterCodePage));
+  EXPECT_EQ(kTestKeyboardName,
+            test::OobeJS().GetAttributeString("deviceName",
+                                              kHidPairingDialogEnterCodePage));
+  EXPECT_EQ(strlen(kTestPinCode),
+            test::OobeJS().GetAttributeInt("numKeysEntered",
+                                           kHidPairingDialogEnterCodePage));
 
   SimulatePairingCodeNotRequired();
   EXPECT_EQ("pairing", handler()->keyboard_state_for_test());

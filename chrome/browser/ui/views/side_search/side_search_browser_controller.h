@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,6 +12,7 @@
 #include "chrome/browser/ui/side_search/side_search_metrics.h"
 #include "chrome/browser/ui/side_search/side_search_tab_contents_helper.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "ui/views/controls/label.h"
 #include "ui/views/controls/webview/unhandled_keyboard_event_handler.h"
 #include "ui/views/focus/external_focus_tracker.h"
 #include "ui/views/view.h"
@@ -32,11 +33,6 @@ class SideSearchBrowserController
       public content::WebContentsObserver,
       public views::ViewObserver {
  public:
-  enum SideSearchViewID {
-    VIEW_ID_NONE = 0,
-    VIEW_ID_SIDE_PANEL_TITLE_LABEL,
-  };
-
   SideSearchBrowserController(SidePanel* side_panel, BrowserView* browser_view);
   SideSearchBrowserController(const SideSearchBrowserController&) = delete;
   SideSearchBrowserController& operator=(const SideSearchBrowserController&) =
@@ -108,7 +104,8 @@ class SideSearchBrowserController
   raw_ptr<ToolbarButton> toolbar_button_ = nullptr;
   raw_ptr<SidePanel> const side_panel_;
   raw_ptr<BrowserView> const browser_view_;
-  raw_ptr<views::WebView> const web_view_;
+  raw_ptr<views::Label> title_label_;
+  raw_ptr<views::WebView> web_view_;
 
   // Used to test whether or not the side panel was available the last time
   // `UpdateSidePanel()` was called. i.e. whether the ability for the user to

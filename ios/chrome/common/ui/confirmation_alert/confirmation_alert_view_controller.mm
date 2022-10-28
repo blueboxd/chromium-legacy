@@ -1,16 +1,16 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #import "ios/chrome/common/ui/confirmation_alert/confirmation_alert_view_controller.h"
 
-#include "base/check.h"
+#import "base/check.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
 #import "ios/chrome/common/ui/confirmation_alert/confirmation_alert_action_handler.h"
 #import "ios/chrome/common/ui/elements/gradient_view.h"
 #import "ios/chrome/common/ui/util/button_util.h"
 #import "ios/chrome/common/ui/util/constraints_ui_util.h"
-#include "ios/chrome/common/ui/util/dynamic_type_util.h"
+#import "ios/chrome/common/ui/util/dynamic_type_util.h"
 #import "ios/chrome/common/ui/util/pointer_interaction_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -477,7 +477,7 @@ const CGFloat kFaviconBadgeSideLength = 24;
 }
 
 // Helper to create the image view enclosed in a frame with a shadow and a
-// corner badge with a green checkmark. |self.imageView| is set in this method.
+// corner badge with a green checkmark. `self.imageView` is set in this method.
 - (UIView*)createImageContainerViewWithShadowAndBadge {
   UIImageView* faviconBadgeView = [[UIImageView alloc] init];
   faviconBadgeView.translatesAutoresizingMaskIntoConstraints = NO;

@@ -1,4 +1,4 @@
-// Copyright (c) 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -104,18 +104,8 @@ void IconManagerWriteGeneratedIcons(
     const AppId& app_id,
     const std::vector<GeneratedIconsInfo>& icons_info);
 
-// Favicons are read on WebAppIconManager startup, awaits
-// WebAppIconManager::favicon_read_callback_ synchronously.
-void IconManagerStartAndAwaitFaviconAny(WebAppIconManager& icon_manager,
-                                        const AppId& app_id);
-
-// Monochrome favicons are read on WebAppIconManager startup, awaits
-// WebAppIconManager::favicon_monochrome_read_callback_ synchronously.
-void IconManagerStartAndAwaitFaviconMonochrome(WebAppIconManager& icon_manager,
-                                               const AppId& app_id);
-
 // Synchronous read of an app icon pixel.
-SkColor IconManagerReadAppIconPixel(const WebAppIconManager& icon_manager,
+SkColor IconManagerReadAppIconPixel(WebAppIconManager& icon_manager,
                                     const AppId& app_id,
                                     SquareSizePx size_px,
                                     int x = 0,

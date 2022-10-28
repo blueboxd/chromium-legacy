@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,10 +6,10 @@
 
 #import <XCTest/XCTest.h>
 
-#include "base/command_line.h"
-#include "base/feature_list.h"
+#import "base/command_line.h"
+#import "base/feature_list.h"
 #import "base/ios/crb_protocol_observers.h"
-#include "base/strings/sys_string_conversions.h"
+#import "base/strings/sys_string_conversions.h"
 #import "ios/testing/earl_grey/app_launch_manager_app_interface.h"
 #import "ios/testing/earl_grey/base_earl_grey_test_case_app_interface.h"
 #import "ios/testing/earl_grey/coverage_utils.h"
@@ -252,6 +252,11 @@ bool LaunchArgumentsAreEqual(NSArray<NSString*>* args1,
     if (@available(iOS 14, *)) {
       [BaseEarlGreyTestCaseAppInterface enableFastAnimation];
     }
+
+    // Wait for application to settle before continuing on with test.
+    GREYWaitForAppToIdle(@"App failed to idle BEFORE test body started.\n\n"
+                         @"**** Check that the prior test left the app in a"
+                         @"clean state. ****");
   }
 }
 

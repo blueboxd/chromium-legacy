@@ -1,4 +1,4 @@
-# Copyright 2020 The Chromium Authors. All rights reserved.
+# Copyright 2020 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -98,7 +98,10 @@ luci.notifier(
 luci.notifier(
     name = "metadata-mapping",
     on_new_status = ["FAILURE"],
-    notify_emails = ["chromium-component-mapping@google.com"],
+    notify_emails = [
+        "chromium-component-mapping@google.com",
+        "chanli@google.com",
+    ],
 )
 
 luci.notifier(

@@ -1,4 +1,4 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -260,14 +260,7 @@ const NSTimeInterval kSyncOperationTimeout = 10.0;
 }
 
 // Tests that signing out from a managed user account clears the user's data.
-// TODO(crbug.com/1352968): Flaky on iOS simulator.
-#if TARGET_IPHONE_SIMULATOR
-#define MAYBE_testsSignOutFromManagedAccount \
-  DISABLED_testsSignOutFromManagedAccount
-#else
-#define MAYBE_testsSignOutFromManagedAccount testsSignOutFromManagedAccount
-#endif
-- (void)MAYBE_testsSignOutFromManagedAccount {
+- (void)testsSignOutFromManagedAccount {
   // Sign In `fakeManagedIdentity`.
   [SigninEarlGreyUI
       signinWithFakeIdentity:[FakeChromeIdentity fakeManagedIdentity]];
@@ -338,15 +331,7 @@ const NSTimeInterval kSyncOperationTimeout = 10.0;
 
 // Tests that users data is cleared out when the signed in account disappear and
 // it is a managed account. Regression test for crbug.com/1208381.
-// TODO(crbug.com/1352968): Flaky on iOS simulator.
-#if TARGET_IPHONE_SIMULATOR
-#define MAYBE_testsManagedAccountRemovedFromAnotherGoogleApp \
-  DISABLED_testsManagedAccountRemovedFromAnotherGoogleApp
-#else
-#define MAYBE_testsManagedAccountRemovedFromAnotherGoogleApp \
-  testsManagedAccountRemovedFromAnotherGoogleApp
-#endif
-- (void)MAYBE_testsManagedAccountRemovedFromAnotherGoogleApp {
+- (void)testsManagedAccountRemovedFromAnotherGoogleApp {
   // Sign In `fakeManagedIdentity`.
   FakeChromeIdentity* fakeIdentity = [FakeChromeIdentity fakeManagedIdentity];
   [SigninEarlGreyUI signinWithFakeIdentity:fakeIdentity];

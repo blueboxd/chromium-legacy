@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -75,6 +75,7 @@ bool ExtensionAppRunsInOS(const std::string& app_id) {
 #endif
 
         extension_misc::kGoogleKeepAppId, extension_misc::kCalculatorAppId,
+        extension_misc::kTextEditorAppId,
         extension_misc::kInAppPaymentsSupportAppId,
         extension_misc::kIdentityApiUiAppId
   });

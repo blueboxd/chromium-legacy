@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,7 +9,7 @@ import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min
 
 import {assertEquals, assertGT} from '../../chai_assert.js';
 
-import {deepQuerySelector, waitWithTimeout} from './emoji_picker_test_util.js';
+import {deepQuerySelector, waitForCondition, waitWithTimeout} from './emoji_picker_test_util.js';
 
 const ACTIVE_CATEGORY_BUTTON = 'category-button-active';
 
@@ -64,9 +64,11 @@ suite('emoji-search', () => {
 
   test(
       'If matching, search should return both emoji and emoticon results.',
-      () => {
-        emojiSearch.search = 'face';
-        flush();
+      async () => {
+        emojiSearch.setSearchQuery('face');
+        await waitForCondition(
+            () => findInEmojiPicker(
+                'emoji-search', 'emoji-group[category="emoji"]'));
         const emojiResults = findInEmojiPicker('emoji-search', 'emoji-group')
                                  .shadowRoot.querySelectorAll('.emoji-button');
         assertGT(emojiResults.length, 0);
@@ -79,11 +81,11 @@ suite('emoji-search', () => {
 
   test(
       'Search should display meaningful output when no result is found.',
-      () => {
-        emojiSearch.search = 'zyxt';
-        flush();
+      async () => {
+        emojiSearch.setSearchQuery('zyxt');
+        await waitForCondition(
+            () => findInEmojiPicker('emoji-search', '.no-result'));
         const message = findInEmojiPicker('emoji-search', '.no-result');
-        assert(message);
         assertEquals(message.innerText, 'No result found');
       });
 
@@ -91,8 +93,9 @@ suite('emoji-search', () => {
       'If there is only one emoji returned, pressing Enter triggers the ' +
           'clicking event.',
       async () => {
-        emojiSearch.search = 'zombi';
-        await flush();
+        emojiSearch.setSearchQuery('zombi');
+        await waitForCondition(
+            () => findInEmojiPicker('emoji-search', 'emoji-group'));
         const enterEvent = new KeyboardEvent(
             'keydown', {cancelable: true, key: 'Enter', keyCode: 13});
         const buttonClickPromise = new Promise(
@@ -112,8 +115,9 @@ suite('emoji-search', () => {
       'If there is only emoticon returned, pressing Enter triggers the ' +
           'clicking event.',
       async () => {
-        emojiSearch.search = 'cat';
-        await flush();
+        emojiSearch.setSearchQuery('cat');
+        await waitForCondition(
+            () => findInEmojiPicker('emoji-search', 'emoji-group'));
         const enterEvent = new KeyboardEvent(
             'keydown', {cancelable: true, key: 'Enter', keyCode: 13});
 
@@ -129,4 +133,17 @@ suite('emoji-search', () => {
             buttonClickPromise, 1000,
             'Failed to receive emoji button click event.');
       });
+
+  test('Search only emoji groups are discoverable through search', async () => {
+    emojiSearch.setSearchQuery('gamma');
+    await waitForCondition(
+        () => findInEmojiPicker('emoji-search', 'emoji-group'));
+    const emojiResults =
+        findInEmojiPicker('emoji-search', 'emoji-group[category="symbol"]')
+            .shadowRoot.querySelectorAll('.emoji-button');
+    assertEquals(
+        emojiResults.length,
+        4,  // normal, italic, bold and san-serif bold
+    );
+  });
 });

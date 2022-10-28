@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -35,10 +35,10 @@
 #include "ash/test/ash_test_base.h"
 #include "ash/test/ash_test_helper.h"
 #include "base/memory/scoped_refptr.h"
-#include "chromeos/services/bluetooth_config/adapter_state_controller.h"
-#include "chromeos/services/bluetooth_config/fake_adapter_state_controller.h"
-#include "chromeos/services/bluetooth_config/fake_discovery_session_manager.h"
-#include "chromeos/services/bluetooth_config/public/mojom/cros_bluetooth_config.mojom.h"
+#include "chromeos/ash/services/bluetooth_config/adapter_state_controller.h"
+#include "chromeos/ash/services/bluetooth_config/fake_adapter_state_controller.h"
+#include "chromeos/ash/services/bluetooth_config/fake_discovery_session_manager.h"
+#include "chromeos/ash/services/bluetooth_config/public/mojom/cros_bluetooth_config.mojom.h"
 #include "components/prefs/pref_registry.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/testing_pref_service.h"
@@ -140,7 +140,7 @@ class MediatorTest : public AshTestBase {
   }
 
  protected:
-  chromeos::bluetooth_config::FakeDiscoverySessionManager*
+  bluetooth_config::FakeDiscoverySessionManager*
   fake_discovery_session_manager() {
     return ash_test_helper()
         ->bluetooth_config_test_helper()
@@ -155,8 +155,7 @@ class MediatorTest : public AshTestBase {
   MockPairerBroker* mock_pairer_broker_;
   MockUIBroker* mock_ui_broker_;
   MockFastPairRepository* mock_fast_pair_repository_;
-  chromeos::bluetooth_config::FakeAdapterStateController
-      fake_adapter_state_controller_;
+  bluetooth_config::FakeAdapterStateController fake_adapter_state_controller_;
   std::unique_ptr<MockQuickPairBrowserDelegate> browser_delegate_;
   TestingPrefServiceSimple pref_service_;
   std::unique_ptr<Mediator> mediator_;
@@ -171,86 +170,6 @@ TEST_F(MediatorTest, TogglesScanningWhenFastPairEnabledChanges) {
   feature_status_tracker_->SetIsFastPairEnabled(true);
   EXPECT_CALL(*mock_scanner_broker_, StopScanning);
   feature_status_tracker_->SetIsFastPairEnabled(false);
-
-  // When one or more discovery sessions are active, don't toggle
-  // scanning when fast pair enabled changes.
-  EXPECT_CALL(*mock_scanner_broker_, StopScanning);
-  SetHasAtLeastOneDiscoverySessionChanged(true);
-  EXPECT_CALL(*mock_scanner_broker_, StopScanning);
-  feature_status_tracker_->SetIsFastPairEnabled(true);
-  EXPECT_CALL(*mock_scanner_broker_, StopScanning);
-  feature_status_tracker_->SetIsFastPairEnabled(false);
-  EXPECT_CALL(*mock_scanner_broker_, StopScanning);
-  feature_status_tracker_->SetIsFastPairEnabled(true);
-  EXPECT_CALL(*mock_scanner_broker_, StopScanning);
-  feature_status_tracker_->SetIsFastPairEnabled(false);
-}
-
-TEST_F(MediatorTest, TogglesScanningWhenHasAtLeastOneDiscoverySessionChanges) {
-  EXPECT_CALL(*mock_scanner_broker_, StartScanning);
-  feature_status_tracker_->SetIsFastPairEnabled(true);
-  EXPECT_CALL(*mock_scanner_broker_, StopScanning);
-  SetHasAtLeastOneDiscoverySessionChanged(true);
-  EXPECT_CALL(*mock_scanner_broker_, StartScanning);
-  SetHasAtLeastOneDiscoverySessionChanged(false);
-  EXPECT_CALL(*mock_scanner_broker_, StopScanning);
-  SetHasAtLeastOneDiscoverySessionChanged(true);
-
-  // When fast pair is disabled, don't toggle scanning when "we have at
-  // least one discovery session" changes.
-  EXPECT_CALL(*mock_scanner_broker_, StopScanning);
-  feature_status_tracker_->SetIsFastPairEnabled(false);
-  EXPECT_CALL(*mock_scanner_broker_, StopScanning);
-  SetHasAtLeastOneDiscoverySessionChanged(false);
-  EXPECT_CALL(*mock_scanner_broker_, StopScanning);
-  SetHasAtLeastOneDiscoverySessionChanged(true);
-  EXPECT_CALL(*mock_scanner_broker_, StopScanning);
-  SetHasAtLeastOneDiscoverySessionChanged(false);
-}
-
-TEST_F(MediatorTest,
-       CancelsPairingsWhenHasAtLeastOneDiscoverySessionChangesNotPairing) {
-  // Start with fast pair enabled and one handshake in progress.
-  feature_status_tracker_->SetIsFastPairEnabled(true);
-  FastPairHandshakeLookup::GetInstance()->Create(adapter_, device_,
-                                                 base::DoNothing());
-  EXPECT_TRUE(FastPairHandshakeLookup::GetInstance()->Get(device_));
-
-  // When one or more discovery sessions are active, stop scanning and dismiss
-  // notifications. If we aren't actively pairing, dismiss all handshakes.
-  EXPECT_CALL(*mock_pairer_broker_, IsPairing).WillOnce(Return(false));
-  EXPECT_CALL(*mock_scanner_broker_, StopScanning);
-  EXPECT_CALL(*mock_pairer_broker_, StopPairing);
-  EXPECT_CALL(*mock_ui_broker_, RemoveNotifications);
-  SetHasAtLeastOneDiscoverySessionChanged(true);
-  EXPECT_FALSE(FastPairHandshakeLookup::GetInstance()->Get(device_));
-
-  // When no discovery sessions are active, resume scanning.
-  EXPECT_CALL(*mock_scanner_broker_, StartScanning);
-  SetHasAtLeastOneDiscoverySessionChanged(false);
-}
-
-TEST_F(MediatorTest,
-       CancelsPairingsWhenHasAtLeastOneDiscoverySessionChangesIsPairing) {
-  // Start with fast pair enabled and one handshake in progress.
-  feature_status_tracker_->SetIsFastPairEnabled(true);
-  FastPairHandshakeLookup::GetInstance()->Create(adapter_, device_,
-                                                 base::DoNothing());
-  EXPECT_TRUE(FastPairHandshakeLookup::GetInstance()->Get(device_));
-
-  // When one or more discovery sessions are active, stop scanning and dismiss
-  // notifications. Simulate the case where the user has already begun pairing
-  // before opening Settings, or has initiated V1 device pair.
-  EXPECT_CALL(*mock_pairer_broker_, IsPairing).WillOnce(Return(true));
-  EXPECT_CALL(*mock_scanner_broker_, StopScanning);
-  EXPECT_CALL(*mock_pairer_broker_, StopPairing).Times(0);
-  EXPECT_CALL(*mock_ui_broker_, RemoveNotifications);
-  SetHasAtLeastOneDiscoverySessionChanged(true);
-  EXPECT_TRUE(FastPairHandshakeLookup::GetInstance()->Get(device_));
-
-  // When no discovery sessions are active, resume scanning.
-  EXPECT_CALL(*mock_scanner_broker_, StartScanning);
-  SetHasAtLeastOneDiscoverySessionChanged(false);
 }
 
 TEST_F(MediatorTest, CancelsPairingsWhenFastPairDisabled) {
@@ -604,7 +523,7 @@ TEST_F(MediatorTest, PairingFailedAction_Dismissed) {
 
 TEST_F(MediatorTest, FastPairBluetoothConfigDelegate) {
   feature_status_tracker_->SetIsFastPairEnabled(true);
-  chromeos::bluetooth_config::FastPairDelegate* delegate =
+  bluetooth_config::FastPairDelegate* delegate =
       mediator_->GetFastPairDelegate();
   delegate->SetDeviceNameManager(nullptr);
   delegate->SetAdapterStateController(nullptr);
@@ -619,17 +538,17 @@ TEST_F(MediatorTest,
   FastPairHandshakeLookup::GetInstance()->Create(adapter_, device_,
                                                  base::DoNothing());
 
-  chromeos::bluetooth_config::FastPairDelegate* delegate =
+  bluetooth_config::FastPairDelegate* delegate =
       mediator_->GetFastPairDelegate();
   delegate->SetDeviceNameManager(nullptr);
 
   // Mediator should not observe changes to the adapter state before the
   // AdapterStateController is set and the observation is created.
   fake_adapter_state_controller_.SetSystemState(
-      chromeos::bluetooth_config::mojom::BluetoothSystemState::kDisabling);
+      bluetooth_config::mojom::BluetoothSystemState::kDisabling);
   EXPECT_TRUE(FastPairHandshakeLookup::GetInstance()->Get(device_));
   fake_adapter_state_controller_.SetSystemState(
-      chromeos::bluetooth_config::mojom::BluetoothSystemState::kEnabled);
+      bluetooth_config::mojom::BluetoothSystemState::kEnabled);
   EXPECT_TRUE(FastPairHandshakeLookup::GetInstance()->Get(device_));
 
   // After the AdapterStateController is set, we should be notified and
@@ -643,7 +562,7 @@ TEST_F(MediatorTest,
   EXPECT_CALL(*mock_pairer_broker_, StopPairing);
   EXPECT_CALL(*mock_ui_broker_, RemoveNotifications);
   fake_adapter_state_controller_.SetSystemState(
-      chromeos::bluetooth_config::mojom::BluetoothSystemState::kDisabling);
+      bluetooth_config::mojom::BluetoothSystemState::kDisabling);
   EXPECT_FALSE(FastPairHandshakeLookup::GetInstance()->Get(device_));
 
   delegate->SetAdapterStateController(nullptr);

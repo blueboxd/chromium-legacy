@@ -1,24 +1,24 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ios/web/js_messaging/web_frame_impl.h"
+#import "ios/web/js_messaging/web_frame_impl.h"
 
 #import <Foundation/Foundation.h>
 
-#include "base/bind.h"
-#include "base/ios/ios_util.h"
-#include "base/json/json_writer.h"
-#include "base/logging.h"
-#include "base/strings/string_util.h"
-#include "base/strings/sys_string_conversions.h"
-#include "base/values.h"
+#import "base/bind.h"
+#import "base/ios/ios_util.h"
+#import "base/json/json_writer.h"
+#import "base/logging.h"
+#import "base/strings/string_util.h"
+#import "base/strings/sys_string_conversions.h"
+#import "base/values.h"
 #import "ios/web/js_messaging/java_script_content_world.h"
 #import "ios/web/js_messaging/java_script_feature_manager.h"
 #import "ios/web/js_messaging/web_view_js_utils.h"
-#include "ios/web/public/thread/web_task_traits.h"
-#include "ios/web/public/thread/web_thread.h"
-#include "url/gurl.h"
+#import "ios/web/public/thread/web_task_traits.h"
+#import "ios/web/public/thread/web_thread.h"
+#import "url/gurl.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -26,8 +26,8 @@
 
 namespace {
 
-// Creates a JavaScript string for executing the function __gCrWeb.|name| with
-// |parameters|.
+// Creates a JavaScript string for executing the function __gCrWeb.`name` with
+// `parameters`.
 NSString* CreateFunctionCallWithParamaters(
     const std::string& name,
     const std::vector<base::Value>& parameters) {
@@ -199,10 +199,10 @@ bool WebFrameImpl::ExecuteJavaScript(
   void (^completion_handler)(id, NSError*) = ^void(id value, NSError* error) {
     if (error) {
       LogScriptWarning(ns_script, error);
-      std::move(internal_callback).Run(nullptr, true);
+      std::move(internal_callback).Run(nullptr, error);
     } else {
       std::move(internal_callback)
-          .Run(ValueResultFromWKResult(value).get(), false);
+          .Run(ValueResultFromWKResult(value).get(), nil);
     }
   };
 
@@ -219,7 +219,7 @@ WebFrameImpl::ExecuteJavaScriptCallbackAdapter(
   // __block keyword to be able to run the callback inside
   // the completion handler.
   __block auto internal_callback = std::move(callback);
-  return base::BindOnce(^(const base::Value* value, bool error) {
+  return base::BindOnce(^(const base::Value* value, NSError* error) {
     if (!error) {
       std::move(internal_callback).Run(value);
     }

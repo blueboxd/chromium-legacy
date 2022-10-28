@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -316,7 +316,7 @@ base::CancelableTaskTracker::TaskId HistoryService::GetMostRecentClusters(
       backend_task_runner_.get(), FROM_HERE,
       base::BindOnce(&HistoryBackend::GetMostRecentClusters, history_backend_,
                      inclusive_min_time, exclusive_max_time, max_clusters,
-                     /*include_keywords=*/true),
+                     /*include_keywords_and_duplicates=*/true),
       std::move(callback));
 }
 
@@ -483,6 +483,33 @@ void HistoryService::SetBrowsingTopicsAllowed(ContextID context_id,
   ScheduleTask(PRIORITY_NORMAL,
                base::BindOnce(&HistoryBackend::SetBrowsingTopicsAllowed,
                               history_backend_, context_id, nav_entry_id, url));
+}
+
+void HistoryService::SetPageLanguageForVisit(ContextID context_id,
+                                             int nav_entry_id,
+                                             const GURL& url,
+                                             const std::string& page_language) {
+  TRACE_EVENT0("browser", "HistoryService::SetPageLanguageForVisit");
+  DCHECK(backend_task_runner_) << "History service being called after cleanup";
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  ScheduleTask(
+      PRIORITY_NORMAL,
+      base::BindOnce(&HistoryBackend::SetPageLanguageForVisit, history_backend_,
+                     context_id, nav_entry_id, url, page_language));
+}
+
+void HistoryService::SetPasswordStateForVisit(
+    ContextID context_id,
+    int nav_entry_id,
+    const GURL& url,
+    VisitContentAnnotations::PasswordState password_state) {
+  TRACE_EVENT0("browser", "HistoryService::SetPasswordStateForVisit");
+  DCHECK(backend_task_runner_) << "History service being called after cleanup";
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  ScheduleTask(PRIORITY_NORMAL,
+               base::BindOnce(&HistoryBackend::SetPasswordStateForVisit,
+                              history_backend_, context_id, nav_entry_id, url,
+                              password_state));
 }
 
 void HistoryService::AddContentModelAnnotationsForVisit(

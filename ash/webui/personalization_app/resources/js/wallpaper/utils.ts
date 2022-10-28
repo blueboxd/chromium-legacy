@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -92,7 +92,10 @@ export function getWallpaperLayoutEnum(layout: string): WallpaperLayout {
 
 /** Returns a css variable to control the animation delay. */
 export function getLoadingPlaceholderAnimationDelay(index: number): string {
-  return `--animation-delay: ${index * 83}ms;`;
+  // 48 is chosen because 4 and 3 are both factors, and it's large enough
+  // that 48 grid items don't fit on one screen.
+  const wrapped = index % 48;
+  return `--animation-delay: ${wrapped * 83}ms;`;
 }
 
 /**

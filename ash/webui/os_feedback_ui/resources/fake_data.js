@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -55,6 +55,9 @@ export const fakeHelpContentList = [
   },
 ];
 
+/** @type {!HelpContentList} */
+export const fakeEmptyHelpContentList = [];
+
 /** @type {!SearchRequest} */
 export const fakeSearchRequest = {
   maxResults: 5,
@@ -67,16 +70,31 @@ export const fakeSearchResponse = {
   totalResults: 10,
 };
 
+/** @type {!SearchResponse} */
+export const fakeEmptySearchResponse = {
+  results: fakeEmptyHelpContentList,
+  totalResults: 0,
+};
+
 /** @type {!FeedbackContext} */
 export const fakeFeedbackContext = {
   email: 'test.user2@test.com',
   pageUrl: {url: 'chrome://tab/'},
+  isInternalAccount: false,
 };
 
 /** @type {!FeedbackContext} */
 export const fakeEmptyFeedbackContext = {
   email: '',
   pageUrl: {url: ''},
+  isInternalAccount: false,
+};
+
+/** @type {!FeedbackContext} */
+export const fakeInternalUserFeedbackContext = {
+  email: 'test.user@google.com',
+  pageUrl: {url: 'chrome://tab/'},
+  isInternalAccount: true,
 };
 
 /** @type {!Array<number>} */

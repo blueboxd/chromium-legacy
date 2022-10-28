@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -266,6 +266,59 @@ message GetCapabilitiesByHashPrefixResponseProto {
   // prefixes. Clients are expected to match the returned urls to determine
   // which responses they are interested in.
   repeated MatchInfoProto match_info = 1;
+}
+
+message GetNoRoundTripScriptsByHashPrefixRequestProto {
+  // The number of leading bits to consider from hash_prefix. The remaining
+  // trailing bits from hash_prefix should be ignored.
+  optional uint32 hash_prefix_length = 1;
+
+  // The CityHash64 of the URL of interest. Only the first hash_prefix_length
+  // bits are meaningful.
+  optional uint64 hash_prefix = 2;
+
+  // The client context.
+  optional ClientContextProto client_context = 3;
+
+  // Optional script parameters. Note that only a subset of parameters are
+  // allowed to be sent from the client.
+  repeated ScriptParameterProto script_parameters = 4;
+
+  // CUP-signed version of this proto. When set, the rest of the fields should
+  // be ignored.
+  optional CUPRequestData cup_data = 5;
+}
+
+message GetNoRoundTripScriptsByHashPrefixResponseProto {
+  // CUP-signed version of this proto. When set, the rest of the fields in
+  // ScriptActionRequestProto should be ignored.
+  optional CUPResponseData cup_data = 1;
+
+  message MatchInfo {
+    message RoutineScript {
+      optional string script_path = 1;
+      // The set of actions to execute. If the last executed action is not a
+      // stop action or a stop action inside a JS flow action the script will
+      // fail.
+      optional ActionsResponseProto action_response = 2;
+    }
+
+    // The domain for the script
+    optional string domain = 1;
+
+    // The response of the supports site request for this domain.
+    optional SupportsScriptResponseProto supports_site_response = 2;
+
+    // The scripts for the domain. Can contain one main script and several
+    // interrupt scripts.
+    repeated RoutineScript routine_scripts = 3;
+  }
+  // List of potential scripts matches for the request URL hash prefix. Callers
+  // should inspect each element of the list to find the exact match, if any.
+  repeated MatchInfo match_infos = 2;
+
+  // Mentions non-fatal errors, such as an empty request.
+  repeated string warnings = 3;
 }
 
 // Request to get user data.
@@ -794,6 +847,47 @@ message ActionsResponseProto {
   optional bytes report_token = 14;
 
   reserved 1, 6 to 10;
+}
+
+// A privacy sensitive way to look up Trigger Scripts. Allows querying for
+// scripts by hashing the requested domain urls and sending only some of
+// the leading bits, such that the recipient will be unable to reconstruct the
+// original URL.
+message GetTriggerScriptsByHashPrefixRequestProto {
+  // Required. Number of bits in each hash prefix. Value must be in the range
+  // [15, 64].
+  optional uint32 hash_prefix_length = 1;
+  // Required. Hash prefixes for requested urls. The prefix will be taken as the
+  // first `hash_prefix_length` number of bits of this uint64. Other bits will
+  // be ignored. CityHash64 should be used to calculate the hashes. Encoding of
+  // the domain url prior to hashing should be UTF-8, it should include the
+  // http(s) header and exclude the last '/' character.
+  // Examples:
+  // - https://www.exampledomain.com
+  // - https://example.domain.com
+  // - https://domain.com
+  repeated uint64 hash_prefix = 2 [packed = true];
+  // The client context of the device for which you want to know script
+  // capabilities.
+  // NOTE: Currently, this will only contain the Chrome version number, locale
+  // and country for privacy reasons.
+  optional ClientContextProto client_context = 3;
+  // There is only a subset of parameters allowed to be sent from the client.
+  // INTENT parameter is required.
+  repeated ScriptParameterProto script_parameters = 4;
+}
+
+message GetTriggerScriptsByHashPrefixResponseProto {
+  message MatchInfoProto {
+    // The domain for which this trigger script is available.
+    optional string domain = 1;
+    optional GetTriggerScriptsResponseProto trigger_scripts_response = 2;
+  }
+  // Match information for the requested hash prefixes. No correlation should
+  // be assumed between the order of returned info and the order of requested
+  // prefixes. Clients are expected to match the returned urls to determine
+  // which responses they are interested in.
+  repeated MatchInfoProto match_info = 1;
 }
 
 // RPC request to fetch the available trigger scripts for a particular domain.
@@ -3118,7 +3212,7 @@ message SaveSubmittedPasswordProto {
     // If the same password was used and therefore the credential is still
     // insecure, the action succeeds to avoid script termination.
     // Instead it returns a result flagging the re-use of the
-    // password so that the Autobot flow can try again.
+    // password so that the AutofillAssistant flow can try again.
     optional bool used_same_password = 1;
     // If the new credential is still leaked, return a result flag that states
     // this. The flow can choose to react to this, e.g. prompting the user
@@ -3599,6 +3693,8 @@ message JsFlowProto {
   // The JS flow to execute in a sandbox. If present
   // ActionsResponseProto::js_flow_library needs to be evaluated first.
   optional string js_flow = 1;
+
+  reserved 2;
 }
 
 // Action which forwards a proto to the owner of the |HeadlessScriptController|

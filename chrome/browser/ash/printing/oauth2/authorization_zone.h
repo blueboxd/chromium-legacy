@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -90,7 +90,7 @@ class AuthorizationZone {
       const std::string& endpoint_access_token) = 0;
   // This method must be called when the Authorization Zone becomes untrusted.
   // The method cancels all existing sessions and calls all pending callbacks
-  // in the object with status StatusCode::kUnknownAuthorizationServer.
+  // in the object with status StatusCode::kUntrustedAuthorizationServer.
   virtual void MarkAuthorizationZoneAsUntrusted() = 0;
 
  protected:

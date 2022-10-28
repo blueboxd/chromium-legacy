@@ -1,4 +1,4 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,6 +11,7 @@
 #include "base/containers/contains.h"
 #include "base/feature_list.h"
 #include "base/i18n/case_conversion.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/notreached.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
@@ -407,7 +408,7 @@ std::u16string Address::GetInfoImpl(const AutofillType& type,
                 structured_address_.GetValueForType(ADDRESS_HOME_COUNTRY))
           : country_code_;
 
-  if (type.html_type() == HTML_TYPE_COUNTRY_CODE) {
+  if (type.html_type() == HtmlFieldType::kCountryCode) {
     return base::ASCIIToUTF16(country_code);
   }
 
@@ -427,7 +428,7 @@ bool Address::SetInfoWithVerificationStatusImpl(const AutofillType& type,
   bool use_structured_address =
       structured_address::StructuredAddressesEnabled();
 
-  if (type.html_type() == HTML_TYPE_COUNTRY_CODE) {
+  if (type.html_type() == HtmlFieldType::kCountryCode) {
     std::string country_code = base::ToUpperASCII(base::UTF16ToASCII(value));
     if (!data_util::IsValidCountryCode(country_code)) {
       // To counteract the misuse of autocomplete=country attribute when used
@@ -435,12 +436,14 @@ bool Address::SetInfoWithVerificationStatusImpl(const AutofillType& type,
       // it is tested if a country code can be derived from the value when it is
       // interpreted as a full country name. Otherwise an empty string is
       // assigned to |country_code|.
-      CountryNames* country_names =
-          !value.empty() ? CountryNames::GetInstance() : nullptr;
-      country_code = country_names
-                         ? country_names->GetCountryCodeForLocalizedCountryName(
-                               value, locale)
-                         : std::string();
+      if (!value.empty()) {
+        DetectionOfCountryName source = DetectionOfCountryName::kNotFound;
+        country_code =
+            CountryNames::GetInstance()->GetCountryCodeForLocalizedCountryName(
+                value, locale, &source);
+        base::UmaHistogramEnumeration(
+            "Autofill.CountryCodeResolution.WhenSettingCountryCode", source);
+      }
     }
 
     // TODO(crbug.com/1130194): Clean legacy implementation once structured
@@ -454,16 +457,20 @@ bool Address::SetInfoWithVerificationStatusImpl(const AutofillType& type,
     return !country_code.empty();
   }
 
-  if (type.html_type() == HTML_TYPE_FULL_ADDRESS) {
+  if (type.html_type() == HtmlFieldType::kFullAddress) {
     // Parsing a full address is too hard.
     return false;
   }
 
   ServerFieldType storable_type = type.GetStorableType();
   if (storable_type == ADDRESS_HOME_COUNTRY && !value.empty()) {
+    DetectionOfCountryName source = DetectionOfCountryName::kNotFound;
     std::string country_code =
         CountryNames::GetInstance()->GetCountryCodeForLocalizedCountryName(
-            value, locale);
+            value, locale, &source);
+    base::UmaHistogramEnumeration(
+        "Autofill.CountryCodeResolution.WhenSettingCountryName", source);
+
     // TODO(crbug.com/1130194): Clean legacy implementation once structured
     // addresses are fully launched.
     if (use_structured_address) {

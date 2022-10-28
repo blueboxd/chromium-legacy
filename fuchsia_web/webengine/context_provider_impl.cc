@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -37,10 +37,6 @@ void ContextProviderImpl::Create(
   } else {
     context_request.Close(result);
   }
-}
-
-void ContextProviderImpl::set_config_for_test(base::Value config) {
-  web_instance_host_.set_config_for_test(std::move(config));  // IN-TEST
 }
 
 fuchsia::web::Debug* ContextProviderImpl::debug_api() {

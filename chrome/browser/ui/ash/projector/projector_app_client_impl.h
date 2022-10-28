@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -63,6 +63,7 @@ class ProjectorAppClientImpl : public ash::ProjectorAppClient {
       ash::AnnotatorMessageHandler* handler) override;
   void SetTool(const ash::AnnotatorTool& tool) override;
   void Clear() override;
+  void NotifyAppUIActive(bool active) override;
 
   ash::AnnotatorMessageHandler* get_annotator_message_handler_for_test() {
     return annotator_message_handler_;

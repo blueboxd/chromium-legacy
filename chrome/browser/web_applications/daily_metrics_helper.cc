@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -160,7 +160,7 @@ void EmitRecord(DailyInteraction record, Profile* profile) {
 
 void EmitRecords(Profile* profile) {
   const base::Value::Dict& urls_to_features =
-      profile->GetPrefs()->GetValueDict(prefs::kWebAppsDailyMetrics);
+      profile->GetPrefs()->GetDict(prefs::kWebAppsDailyMetrics);
 
   for (const auto iter : urls_to_features) {
     const std::string& url = iter.first;
@@ -180,7 +180,7 @@ void UpdateRecord(DailyInteraction& record, PrefService* prefs) {
   DCHECK(record.start_url.is_valid());
   const std::string& url = record.start_url.spec();
   const base::Value::Dict& urls_to_features =
-      prefs->GetValueDict(prefs::kWebAppsDailyMetrics);
+      prefs->GetDict(prefs::kWebAppsDailyMetrics);
   const base::Value::Dict* existing_val = urls_to_features.FindDict(url);
   if (existing_val) {
     // Sum duration and session values from existing record.

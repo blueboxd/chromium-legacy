@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -1500,6 +1500,29 @@ TEST(IDNSpoofCheckerNoFixtureTest, MaybeRemoveDiacritics) {
   EXPECT_EQ(u"नागरी́.com", diacritics_not_removed);
   EXPECT_EQ(IDNSpoofChecker::Result::kDangerousPattern,
             non_lgc_result.spoof_check_result);
+}
+
+TEST(IDNSpoofCheckerNoFixtureTest, GetDeviationCharacter) {
+  IDNSpoofChecker checker;
+  EXPECT_EQ(IDNA2008DeviationCharacter::kNone,
+            checker.GetDeviationCharacter(u"example.com"));
+  // These test cases are from
+  // https://www.unicode.org/reports/tr46/tr46-27.html#Table_Deviation_Characters.
+  // faß.de:
+  EXPECT_EQ(IDNA2008DeviationCharacter::kEszett,
+            checker.GetDeviationCharacter(u"fa\u00df.de"));
+  // βόλος.com:
+  EXPECT_EQ(
+      IDNA2008DeviationCharacter::kGreekFinalSigma,
+      checker.GetDeviationCharacter(u"\u03b2\u03cc\u03bb\u03bf\u03c2.com"));
+  // ශ්‍රී.com:
+  EXPECT_EQ(
+      IDNA2008DeviationCharacter::kZeroWidthJoiner,
+      checker.GetDeviationCharacter(u"\u0dc1\u0dca\u200d\u0dbb\u0dd3.com"));
+  // نامه<ZWNJ>ای.com:
+  EXPECT_EQ(IDNA2008DeviationCharacter::kZeroWidthNonJoiner,
+            checker.GetDeviationCharacter(
+                u"\u0646\u0627\u0645\u0647\u200c\u0627\u06cc.com"));
 }
 
 }  // namespace url_formatter

@@ -393,6 +393,7 @@
 <translation id="430793432425771671">সকলো ছিংক কৰক</translation>
 <translation id="4309403553630140242">অধিক তথ্যৰ বাবে দুবাৰ টিপক</translation>
 <translation id="430967081421617822">সকলো সময়তে</translation>
+<translation id="4324952538601951430">আপোনাৰ ছেভ কৰি ৰখা বুকমাৰ্ক, পাছৱৰ্ড, ছেটিঙ আৰু বহুতো বস্তু এতিয়া ইয়াত আছে</translation>
 <translation id="4334428914252001502">১টা নপঢ়া প্ৰবন্ধ।</translation>
 <translation id="4338650699862464074">আপুনি চোৱা পৃষ্ঠাসমূহৰ ইউআৰএলবোৰ Googleলৈ পঠিয়ায়।</translation>
 <translation id="4343046787186034850">কেমেৰা আৰু মাইক্ৰ’ফ’ন এক্সেছৰ অনুমতি দিয়া হৈছে</translation>
@@ -658,7 +659,7 @@
 
 আপোনাৰ ছিংক পাছফ্ৰেজৰ সৈতে নিজৰ ডেটা <ph name="TIME" />ত এনক্ৰিপ্ট কৰা হৈছিল। ছিংক আৰম্ভ কৰিবলৈ এইটো দিয়ক।</translation>
 <translation id="6418346271604475326">PDF সাজু কৰি থকা হৈছে</translation>
-<translation id="6434591244308415567">আসোঁৱাহ হৈছে। পাছত আকৌ চেষ্টা কৰক।</translation>
+<translation id="6434591244308415567">আসোঁৱাহ হৈছে। পিছত আকৌ চেষ্টা কৰক।</translation>
 <translation id="6439338047467462846">সকলোকে অনুমতি দিয়ক</translation>
 <translation id="6445051938772793705">দেশ</translation>
 <translation id="6445981559479772097">বাৰ্তা পঠিওৱা হ’ল৷</translation>
@@ -766,7 +767,6 @@
 <translation id="7192050974311852563">ল’গ কৰা প্ৰক্ৰিয়া আৰম্ভ কৰক</translation>
 <translation id="7203585745079012652">সঁহাৰিটো কৈ দিয়ক</translation>
 <translation id="7207023858769244910">আপোনাৰ আগ্ৰহৰ ওপৰত ভিত্তি কৰি সমল লাভ কৰিবলৈ ছিংক কৰক।</translation>
-<translation id="7207383424303353046">নতুন: Chromeক আপোনাৰ ডিফ’ল্ট ব্ৰাউজাৰ এপ্‌ বনাই ছাইটসমূহ স্বয়ংক্ৰিয়ভাৱে তাত খোলক। <ph name="BEGIN_LINK" />ছেটিংসমূহ খোলক<ph name="END_LINK" /></translation>
 <translation id="721597782417389033">কার্ডৰ উপনাম অমান্য</translation>
 <translation id="722454870747268814">নতুন ইনক’গ্নিট’ টেব</translation>
 <translation id="7265758999917665941">এই ছাইটটোৰ বাবে কেতিয়াও নহয়</translation>
@@ -916,7 +916,6 @@
 <translation id="8533670235862049797">সুৰক্ষিত ব্ৰাউজিং অন আছে</translation>
 <translation id="8534481786647257214">Google+ প’ষ্ট সম্পূৰ্ণ হ’ল৷</translation>
 <translation id="8548878600947630424">পৃষ্ঠাত বিচাৰক...</translation>
-<translation id="8574235780160508979">৩১ মাৰ্চৰ পৰা Chromeৰ সেৱাৰ চর্তাৱলী সলনি হ’ব। <ph name="BEGIN_LINK" />অনুগ্ৰহ কৰি পৰ্যালোচনা কৰক<ph name="END_LINK" /></translation>
 <translation id="8588404856427128947">অফ আছে</translation>
 <translation id="8590913940444621808">কেতিয়াও নুসুধিব</translation>
 <translation id="8591976964826315682">ইনক’গনিট’ত তৃতীয় পক্ষৰ কুকিসমূহ অৱৰোধ কৰক</translation>

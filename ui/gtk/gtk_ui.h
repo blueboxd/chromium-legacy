@@ -16,7 +16,7 @@
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/font_render_params.h"
 #include "ui/gtk/gtk_ui_platform.h"
-#include "ui/linux/linux_ui_base.h"
+#include "ui/linux/linux_ui.h"
 #include "ui/linux/window_frame_provider.h"
 #include "ui/views/window/frame_buttons.h"
 
@@ -37,7 +37,7 @@ class NativeThemeGtk;
 class SettingsProvider;
 
 // Interface to GTK desktop features.
-class GtkUi : public ui::LinuxUiBase {
+class GtkUi : public ui::LinuxUiAndTheme {
  public:
   GtkUi();
 
@@ -57,11 +57,29 @@ class GtkUi : public ui::LinuxUiBase {
   void SetWindowFrameAction(WindowFrameActionSource source,
                             WindowFrameAction action);
 
-  // ui::LinuxInputMethodContextFactory:
+  // ui::LinuxUi:
+  bool Initialize() override;
+  base::TimeDelta GetCursorBlinkInterval() const override;
+  gfx::Image GetIconForContentType(const std::string& content_type,
+                                   int size,
+                                   float scale) const override;
+  float GetDeviceScaleFactor() const override;
+  base::flat_map<std::string, std::string> GetKeyboardLayoutMap() override;
+#if BUILDFLAG(ENABLE_PRINTING)
+  printing::PrintDialogLinuxInterface* CreatePrintDialog(
+      printing::PrintingContextLinux* context) override;
+  gfx::Size GetPdfPaperSize(printing::PrintingContextLinux* context) override;
+#endif
+  ui::SelectFileDialog* CreateSelectFileDialog(
+      void* listener,
+      std::unique_ptr<ui::SelectFilePolicy> policy) const override;
+  std::string GetCursorThemeName() override;
+  int GetCursorThemeSize() override;
   std::unique_ptr<ui::LinuxInputMethodContext> CreateInputMethodContext(
       ui::LinuxInputMethodContextDelegate* delegate) const override;
-
-  // gfx::LinuxFontDelegate:
+  bool GetTextEditCommandsForEvent(
+      const ui::Event& event,
+      std::vector<ui::TextEditCommandAuraLinux>* commands) override;
   gfx::FontRenderParams GetDefaultFontRenderParams() const override;
   void GetDefaultFontDescription(
       std::string* family_out,
@@ -69,14 +87,10 @@ class GtkUi : public ui::LinuxUiBase {
       int* style_out,
       int* weight_out,
       gfx::FontRenderParams* params_out) const override;
+  bool AnimationsEnabled() const override;
 
-  // ui::ShellDialogLinux:
-  ui::SelectFileDialog* CreateSelectFileDialog(
-      void* listener,
-      std::unique_ptr<ui::SelectFilePolicy> policy) const override;
-
-  // ui::LinuxUi:
-  bool Initialize() override;
+  // ui::LinuxUiTheme:
+  ui::NativeTheme* GetNativeTheme() const override;
   bool GetColor(int id, SkColor* color, bool use_custom_frame) const override;
   bool GetDisplayProperty(int id, int* result) const override;
   SkColor GetFocusRingColor() const override;
@@ -84,33 +98,11 @@ class GtkUi : public ui::LinuxUiBase {
   SkColor GetActiveSelectionFgColor() const override;
   SkColor GetInactiveSelectionBgColor() const override;
   SkColor GetInactiveSelectionFgColor() const override;
-  base::TimeDelta GetCursorBlinkInterval() const override;
-  gfx::Image GetIconForContentType(const std::string& content_type,
-                                   int size,
-                                   float scale) const override;
   WindowFrameAction GetWindowFrameAction(
       WindowFrameActionSource source) override;
-  float GetDeviceScaleFactor() const override;
   bool PreferDarkTheme() const override;
-  bool AnimationsEnabled() const override;
   std::unique_ptr<ui::NavButtonProvider> CreateNavButtonProvider() override;
   ui::WindowFrameProvider* GetWindowFrameProvider(bool solid_frame) override;
-  base::flat_map<std::string, std::string> GetKeyboardLayoutMap() override;
-  std::string GetCursorThemeName() override;
-  int GetCursorThemeSize() override;
-  ui::NativeTheme* GetNativeThemeImpl() const override;
-
-  // ui::TextEditKeybindingDelegate:
-  bool GetTextEditCommandsForEvent(
-      const ui::Event& event,
-      std::vector<ui::TextEditCommandAuraLinux>* commands) override;
-
-#if BUILDFLAG(ENABLE_PRINTING)
-  // printing::PrintingContextLinuxDelegate:
-  printing::PrintDialogLinuxInterface* CreatePrintDialog(
-      printing::PrintingContextLinux* context) override;
-  gfx::Size GetPdfPaperSize(printing::PrintingContextLinux* context) override;
-#endif
 
  private:
   using TintMap = std::map<int, color_utils::HSL>;

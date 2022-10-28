@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,6 +7,9 @@
 #include <string>
 #include <utility>
 
+#include "chrome/browser/bookmarks/bookmark_model_factory.h"
+#include "chrome/browser/browser_process.h"
+#include "chrome/browser/commerce/shopping_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/ui/webui/favicon_source.h"
@@ -16,7 +19,9 @@
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/side_panel_resources.h"
 #include "chrome/grit/side_panel_resources_map.h"
+#include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/common/bookmark_pref_names.h"
+#include "components/commerce/core/shopping_service.h"
 #include "components/commerce/core/webui/shopping_list_handler.h"
 #include "components/favicon_base/favicon_url_parser.h"
 #include "components/prefs/pref_service.h"
@@ -43,6 +48,10 @@ BookmarksSidePanelUI::BookmarksSidePanelUI(content::WebUI* web_ui)
       {"tooltipClose", IDS_CLOSE},
       {"tooltipDelete", IDS_DELETE},
       {"shoppingListFolderTitle", IDS_SIDE_PANEL_TRACKED_PRODUCTS},
+      {"shoppingListTrackPriceButtonDescription",
+       IDS_PRICE_TRACKING_TRACK_PRODUCT_ACCESSIBILITY},
+      {"shoppingListUntrackPriceButtonDescription",
+       IDS_PRICE_TRACKING_UNTRACK_PRODUCT_ACCESSIBILITY},
   };
   for (const auto& str : kLocalizedStrings)
     webui::AddLocalizedString(source, str.name, str.id);
@@ -94,7 +103,14 @@ void BookmarksSidePanelUI::CreateBookmarksPageHandler(
 }
 
 void BookmarksSidePanelUI::CreateShoppingListHandler(
+    mojo::PendingRemote<shopping_list::mojom::Page> page,
     mojo::PendingReceiver<shopping_list::mojom::ShoppingListHandler> receiver) {
-  shopping_list_handler_ =
-      std::make_unique<commerce::ShoppingListHandler>(std::move(receiver));
+  Profile* const profile = Profile::FromWebUI(web_ui());
+  bookmarks::BookmarkModel* bookmark_model =
+      BookmarkModelFactory::GetForBrowserContext(profile);
+  commerce::ShoppingService* shopping_service =
+      commerce::ShoppingServiceFactory::GetForBrowserContext(profile);
+  shopping_list_handler_ = std::make_unique<commerce::ShoppingListHandler>(
+      std::move(page), std::move(receiver), bookmark_model, shopping_service,
+      g_browser_process->GetApplicationLocale());
 }

@@ -1,20 +1,25 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #ifndef CHROME_BROWSER_WEB_APPLICATIONS_COMMANDS_INSTALL_ISOLATED_APP_COMMAND_H_
 #define CHROME_BROWSER_WEB_APPLICATIONS_COMMANDS_INSTALL_ISOLATED_APP_COMMAND_H_
 
+#include <memory>
+#include <ostream>
 #include <string>
 
 #include "base/callback.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
 #include "base/strings/string_piece_forward.h"
+#include "base/types/expected.h"
 #include "base/values.h"
 #include "chrome/browser/web_applications/commands/web_app_command.h"
+#include "chrome/browser/web_applications/os_integration/os_integration_manager.h"
+#include "chrome/browser/web_applications/web_app_id.h"
 #include "chrome/browser/web_applications/web_app_install_info.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
+#include "components/webapps/browser/install_result_code.h"
 #include "third_party/blink/public/mojom/manifest/manifest.mojom-forward.h"
 
 class GURL;
@@ -28,9 +33,15 @@ class WebAppUrlLoader;
 
 enum class WebAppUrlLoaderResult;
 
-enum class InstallIsolatedAppCommandResult {
-  kOk,
-  kUnknownError,
+struct InstallIsolatedAppCommandSuccess {};
+struct InstallIsolatedAppCommandError {
+  std::string message;
+
+  friend std::ostream& operator<<(std::ostream& os,
+                                  const InstallIsolatedAppCommandError& error) {
+    return os << "InstallIsolatedAppCommandError { message = \""
+              << error.message << "\" }.";
+  }
 };
 
 class InstallIsolatedAppCommand : public WebAppCommand {
@@ -45,10 +56,12 @@ class InstallIsolatedAppCommand : public WebAppCommand {
   //
   // The `id` in the application's manifest must equal "/".
   explicit InstallIsolatedAppCommand(
-      base::StringPiece application_url,
+      const GURL& application_url,
       WebAppUrlLoader& url_loader,
       WebAppInstallFinalizer& install_finalizer,
-      base::OnceCallback<void(InstallIsolatedAppCommandResult)> callback);
+      base::OnceCallback<void(base::expected<InstallIsolatedAppCommandSuccess,
+                                             InstallIsolatedAppCommandError>)>
+          callback);
   ~InstallIsolatedAppCommand() override;
 
   Lock& lock() const override;
@@ -63,13 +76,16 @@ class InstallIsolatedAppCommand : public WebAppCommand {
       std::unique_ptr<WebAppDataRetriever> data_retriever);
 
  private:
-  void ReportFailure();
+  void ReportFailure(base::StringPiece message);
   void ReportSuccess();
-  void Report(bool success);
 
-  void DownloadIcons();
+  void DownloadIcons(WebAppInstallInfo install_info);
+  void OnGetIcons(WebAppInstallInfo install_info,
+                  IconsDownloadedResult result,
+                  std::map<GURL, std::vector<SkBitmap>> icons_map,
+                  std::map<GURL, int /*http_status_code*/> icons_http_results);
 
-  void LoadUrl(GURL url);
+  void LoadUrl();
   void OnLoadUrl(WebAppUrlLoaderResult result);
 
   void CheckInstallabilityAndRetrieveManifest();
@@ -78,23 +94,28 @@ class InstallIsolatedAppCommand : public WebAppCommand {
       const GURL& manifest_url,
       bool valid_manifest_for_web_app,
       bool is_installable);
-  absl::optional<WebAppInstallInfo> CreateInstallInfoFromManifest(
+  base::expected<WebAppInstallInfo, std::string> CreateInstallInfoFromManifest(
       const blink::mojom::Manifest& manifest,
       const GURL& manifest_url);
   void FinalizeInstall(const WebAppInstallInfo& info);
+  void OnFinalizeInstall(const AppId& unused_app_id,
+                         webapps::InstallResultCode install_result_code,
+                         OsHooksErrors unused_os_hooks_errors);
 
   SEQUENCE_CHECKER(sequence_checker_);
 
   std::unique_ptr<SharedWebContentsWithAppLock> lock_;
 
-  std::string url_;
+  GURL url_;
 
   WebAppUrlLoader& url_loader_;
   WebAppInstallFinalizer& install_finalizer_;
 
   std::unique_ptr<WebAppDataRetriever> data_retriever_;
 
-  base::OnceCallback<void(InstallIsolatedAppCommandResult)> callback_;
+  base::OnceCallback<void(base::expected<InstallIsolatedAppCommandSuccess,
+                                         InstallIsolatedAppCommandError>)>
+      callback_;
 
   base::WeakPtrFactory<InstallIsolatedAppCommand> weak_factory_{this};
 };

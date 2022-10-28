@@ -1,14 +1,16 @@
-# Copyright 2017 The Chromium Authors. All rights reserved.
+# Copyright 2017 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
 import("//build/config/chromeos/ui_mode.gni")
+import("//build/util/branding.gni")
 import("//components/vector_icons/vector_icons.gni")
 
 aggregate_vector_icons("components_vector_icons") {
   icon_directory = "."
 
   sources = [
+    "${branding_path_component}/product.icon",
     "account_circle.icon",
     "ads.icon",
     "ads_click.icon",
@@ -63,6 +65,7 @@ aggregate_vector_icons("components_vector_icons") {
     "history.icon",
     "https_valid.icon",
     "https_valid_arrow.icon",
+    "image_search.icon",
     "info_outline.icon",
     "insert_drive_file_outline.icon",
     "keyboard.icon",
@@ -91,7 +94,7 @@ aggregate_vector_icons("components_vector_icons") {
     "notifications_off.icon",
     "open_in_new.icon",
     "page_info_content_paste.icon",
-    "palette.icon",
+    "passkey.icon",
     "pause.icon",
     "photo.icon",
     "play_arrow.icon",
@@ -111,8 +114,6 @@ aggregate_vector_icons("components_vector_icons") {
     "sms.icon",
     "submenu_arrow.icon",
     "sync.icon",
-    "text_decrease.icon",
-    "text_increase.icon",
     "troubleshoot.icon",
     "usb.icon",
     "videocam.icon",
@@ -129,6 +130,23 @@ aggregate_vector_icons("components_vector_icons") {
 
   if (is_chromeos_ash) {
     sources += [ "videogame_asset_outline.icon" ]
+  }
+
+  if (is_chrome_branded) {
+    sources += [
+      "google_chrome/assistant.icon",
+      "google_chrome/google_calendar.icon",
+      "google_chrome/google_g_logo.icon",
+      "google_chrome/google_g_logo_monochrome.icon",
+      "google_chrome/google_keep_note.icon",
+      "google_chrome/google_lens_full_logo.icon",
+      "google_chrome/google_lens_full_logo_dark.icon",
+      "google_chrome/google_lens_logo.icon",
+      "google_chrome/google_password_manager.icon",
+      "google_chrome/google_pay_logo.icon",
+      "google_chrome/google_sites.icon",
+      "google_chrome/google_super_g.icon",
+    ]
   }
 }
 

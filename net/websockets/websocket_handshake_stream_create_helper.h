@@ -1,4 +1,4 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -58,9 +58,10 @@ class NET_EXPORT_PRIVATE WebSocketHandshakeStreamCreateHelper
       std::set<std::string> dns_aliases) override;
 
  private:
-  const raw_ptr<WebSocketStream::ConnectDelegate> connect_delegate_;
+  const raw_ptr<WebSocketStream::ConnectDelegate, DanglingUntriaged>
+      connect_delegate_;
   const std::vector<std::string> requested_subprotocols_;
-  const raw_ptr<WebSocketStreamRequestAPI> request_;
+  const raw_ptr<WebSocketStreamRequestAPI, DanglingUntriaged> request_;
 };
 
 }  // namespace net

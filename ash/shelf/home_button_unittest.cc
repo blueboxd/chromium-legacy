@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -258,48 +258,6 @@ TEST_P(HomeButtonTest, ClipRectDoesNotClipHomeButtonBounds) {
 
     EXPECT_TRUE(clip_rect_bounds().Contains(home_button_bounds()));
   }
-}
-
-TEST_P(HomeButtonTest, SwipeUpToOpenFullscreenAppList) {
-  // ProductivityLauncher does not support shelf drags to show app list.
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndDisableFeature(features::kProductivityLauncher);
-
-  Shelf* shelf = GetPrimaryShelf();
-  EXPECT_EQ(ShelfAlignment::kBottom, shelf->alignment());
-
-  // Start the drags from the center of the shelf.
-  const ShelfView* shelf_view = shelf->GetShelfViewForTesting();
-  gfx::Point start =
-      gfx::Point(shelf_view->width() / 2, shelf_view->height() / 2);
-  views::View::ConvertPointToScreen(shelf_view, &start);
-  // Swiping up less than the threshold should trigger a peeking app list.
-  gfx::Point end = start;
-  end.set_y(shelf->GetIdealBounds().bottom() -
-            AppListView::kDragSnapToPeekingThreshold + 10);
-  GetEventGenerator()->GestureScrollSequence(
-      start, end, base::Milliseconds(100), 4 /* steps */);
-  GetAppListTestHelper()->WaitUntilIdle();
-  GetAppListTestHelper()->CheckVisibility(true);
-  GetAppListTestHelper()->CheckState(AppListViewState::kPeeking);
-
-  // Closing the app list.
-  GetAppListTestHelper()->DismissAndRunLoop();
-  GetAppListTestHelper()->CheckVisibility(false);
-  GetAppListTestHelper()->CheckState(AppListViewState::kClosed);
-
-  // Swiping above the threshold should trigger a fullscreen app list.
-  end.set_y(shelf->GetIdealBounds().bottom() -
-            AppListView::kDragSnapToPeekingThreshold - 10);
-  GetEventGenerator()->GestureScrollSequence(
-      start, end, base::Milliseconds(100), 4 /* steps */);
-  base::RunLoop().RunUntilIdle();
-  GetAppListTestHelper()->WaitUntilIdle();
-  GetAppListTestHelper()->CheckVisibility(true);
-  GetAppListTestHelper()->CheckState(AppListViewState::kFullscreenAllApps);
-
-  // Dismiss the app list to avoid cleanup issues with ProductivityLauncher.
-  GetAppListTestHelper()->Dismiss();
 }
 
 TEST_P(HomeButtonTest, ClickToOpenAppList) {

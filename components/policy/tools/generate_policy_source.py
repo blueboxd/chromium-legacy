@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# Copyright (c) 2012 The Chromium Authors. All rights reserved.
+# Copyright 2012 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 '''python3 %(prog)s [options]
@@ -1544,7 +1544,7 @@ RESERVED_IDS = 2
 # level of ChromeSettingsProto and CloudPolicySettings, whereas all policies
 # with ID > |_LAST_TOP_LEVEL_POLICY_ID| are nested into sub-protos. See
 # https://crbug.com/1237044 for more details.
-_LAST_TOP_LEVEL_POLICY_ID = 1015
+_LAST_TOP_LEVEL_POLICY_ID = 1040
 
 # The approximate number of policies in one nested chunk for user policies with
 # ID > |_LAST_TOP_LEVEL_POLICY_ID|. See https://crbug.com/1237044 for more

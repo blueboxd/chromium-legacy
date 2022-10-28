@@ -51,6 +51,7 @@
 #include "net/dns/public/doh_provider_entry.h"
 #include "net/dns/system_dns_config_change_notifier.h"
 #include "net/dns/test_dns_config_service.h"
+#include "net/first_party_sets/public_sets.h"
 #include "net/http/http_auth_handler_factory.h"
 #include "net/log/file_net_log_observer.h"
 #include "net/log/net_log.h"
@@ -73,7 +74,6 @@
 #include "services/network/public/cpp/load_info_util.h"
 #include "services/network/public/cpp/network_switches.h"
 #include "services/network/public/cpp/parsed_headers.h"
-#include "services/network/public/mojom/first_party_sets.mojom.h"
 #include "services/network/public/mojom/key_pinning.mojom.h"
 #include "services/network/public/mojom/network_service_test.mojom.h"
 #include "services/network/url_loader.h"
@@ -468,21 +468,6 @@ void NetworkService::DeregisterNetworkContext(NetworkContext* network_context) {
   network_contexts_.erase(network_context);
 }
 
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-void NetworkService::ReinitializeLogging(mojom::LoggingSettingsPtr settings) {
-  logging::LoggingSettings logging_settings;
-  logging_settings.logging_dest = settings->logging_dest;
-  base::ScopedFD log_file_descriptor = settings->log_file_descriptor.TakeFD();
-  logging_settings.log_file = fdopen(log_file_descriptor.release(), "a");
-  if (!logging_settings.log_file) {
-    LOG(ERROR) << "Failed to open new log file handle";
-    return;
-  }
-  if (!logging::InitLogging(logging_settings))
-    LOG(ERROR) << "Unable to reinitialize logging";
-}
-#endif
-
 void NetworkService::CreateNetLogEntriesForActiveObjects(
     net::NetLog::ThreadSafeObserver* observer) {
   std::set<net::URLRequestContext*> contexts;
@@ -805,7 +790,7 @@ void NetworkService::BindTestInterface(
   }
 }
 
-void NetworkService::SetFirstPartySets(mojom::PublicFirstPartySetsPtr sets) {
+void NetworkService::SetFirstPartySets(net::PublicSets sets) {
   first_party_sets_manager_->SetCompleteSets(std::move(sets));
 }
 

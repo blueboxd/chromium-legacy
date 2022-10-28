@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,6 +7,10 @@
 
 #include "ash/ash_export.h"
 #include "ash/system/tray/tray_item_view.h"
+
+namespace views {
+class BoxLayout;
+}  // namespace views
 
 namespace ash {
 class Shelf;
@@ -36,12 +40,18 @@ class ASH_EXPORT PrivacyIndicatorsTrayItemView : public TrayItemView {
   void HandleLocaleChange() override;
   gfx::Size CalculatePreferredSize() const override;
   void OnThemeChanged() override;
+  void OnBoundsChanged(const gfx::Rect& previous_bounds) override;
   std::u16string GetTooltipText(const gfx::Point& p) const override;
   views::View* GetTooltipHandlerForPoint(const gfx::Point& point) override;
   const char* GetClassName() const override;
 
   // Update the icons for the children views.
   void UpdateIcons();
+
+  // Update the bounds insets based on shelf alignment.
+  void UpdateBoundsInset();
+
+  views::BoxLayout* layout_manager_ = nullptr;
 
   // Owned by the views hierarchy.
   views::ImageView* camera_icon_ = nullptr;

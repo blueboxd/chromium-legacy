@@ -1,13 +1,14 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_view_controller.h"
 
-#include "base/mac/foundation_util.h"
-#include "base/metrics/user_metrics.h"
-#include "base/metrics/user_metrics_action.h"
-#include "components/strings/grit/components_strings.h"
+#import "base/mac/foundation_util.h"
+#import "base/metrics/user_metrics.h"
+#import "base/metrics/user_metrics_action.h"
+#import "components/strings/grit/components_strings.h"
+#import "ios/chrome/browser/drag_and_drop/url_drag_drop_handler.h"
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_cells_constants.h"
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_module_container.h"
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_most_visited_action_item.h"
@@ -18,7 +19,6 @@
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_selection_actions.h"
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_shortcut_tile_view.h"
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_tile_layout_util.h"
-#import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_whats_new_view.h"
 #import "ios/chrome/browser/ui/content_suggestions/cells/query_suggestion_view.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_collection_utils.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_commands.h"
@@ -32,12 +32,14 @@
 #import "ios/chrome/browser/ui/toolbar/public/toolbar_utils.h"
 #import "ios/chrome/browser/ui/ui_feature_flags.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
+#import "ios/chrome/browser/url_loading/url_loading_browser_agent.h"
+#import "ios/chrome/browser/url_loading/url_loading_params.h"
 #import "ios/chrome/common/material_timing.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
 #import "ios/chrome/common/ui/favicon/favicon_view.h"
 #import "ios/chrome/common/ui/util/constraints_ui_util.h"
-#include "ui/base/l10n/l10n_util.h"
-#include "url/gurl.h"
+#import "ui/base/l10n/l10n_util.h"
+#import "url/gurl.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -47,9 +49,6 @@ namespace {
 // The width of the modules.
 const int kModuleWidthCompact = 343;
 const int kModuleWidthRegular = 432;
-
-// The height of the modules;
-const int kModuleHeight = 139;
 
 // The spacing between the modules.
 const float kModuleVerticalSpacing = 16.0f;
@@ -76,10 +75,10 @@ CGFloat ModuleVerticalSpacing() {
 
 @interface ContentSuggestionsViewController () <
     UIGestureRecognizerDelegate,
-    ContentSuggestionsSelectionActions>
+    ContentSuggestionsSelectionActions,
+    URLDropDelegate>
 
-// Whether an item of type ItemTypePromo has already been added to the model.
-@property(nonatomic, assign) BOOL promoAdded;
+@property(nonatomic, strong) URLDragDropHandler* dragDropHandler;
 
 // StackView holding all subviews.
 @property(nonatomic, strong) UIStackView* verticalStackView;
@@ -90,17 +89,13 @@ CGFloat ModuleVerticalSpacing() {
 // The UITapGestureRecognizer for the Return To Recent Tab tile.
 @property(nonatomic, strong)
     UITapGestureRecognizer* returnToRecentTabTapRecognizer;
-// The UITapGestureRecognizer for the NTP promo view.
-@property(nonatomic, strong) UITapGestureRecognizer* promoTapRecognizer;
 
 // The Return To Recent Tab view.
 @property(nonatomic, strong)
     ContentSuggestionsReturnToRecentTabView* returnToRecentTabTile;
-// Module container of |returnToRecentTabTile|.
+// Module container of `returnToRecentTabTile`.
 @property(nonatomic, strong)
     ContentSuggestionsModuleContainer* returnToRecentTabContainer;
-// The WhatsNew view.
-@property(nonatomic, strong) ContentSuggestionsWhatsNewView* whatsNewView;
 // StackView holding all of `mostVisitedViews`.
 @property(nonatomic, strong) UIStackView* mostVisitedStackView;
 // Module Container for the Most Visited Tiles.
@@ -148,6 +143,11 @@ CGFloat ModuleVerticalSpacing() {
 
 - (void)viewDidLoad {
   [super viewDidLoad];
+
+  self.dragDropHandler = [[URLDragDropHandler alloc] init];
+  self.dragDropHandler.dropDelegate = self;
+  [self.view addInteraction:[[UIDropInteraction alloc]
+                                initWithDelegate:self.dragDropHandler]];
 
   if (IsContentSuggestionsUIModuleRefreshEnabled()) {
     self.view.backgroundColor = [UIColor clearColor];
@@ -208,22 +208,9 @@ CGFloat ModuleVerticalSpacing() {
     }
     CGFloat cardWidth = content_suggestions::searchFieldWidth(
         self.view.bounds.size.width, self.traitCollection);
-    [NSLayoutConstraint activateConstraints:@[
-      [parentView.widthAnchor constraintEqualToConstant:cardWidth],
-      [parentView.heightAnchor
-          constraintEqualToConstant:kReturnToRecentTabSize.height]
-    ]];
-  }
-  if (self.whatsNewView) {
-    [self addUIElement:self.whatsNewView withCustomBottomSpacing:0];
-    CGFloat width =
-        MostVisitedTilesContentHorizontalSpace(self.traitCollection);
-    CGSize size =
-        MostVisitedCellSize(self.traitCollection.preferredContentSizeCategory);
-    [NSLayoutConstraint activateConstraints:@[
-      [self.whatsNewView.widthAnchor constraintEqualToConstant:width],
-      [self.whatsNewView.heightAnchor constraintEqualToConstant:size.height]
-    ]];
+    [NSLayoutConstraint
+        activateConstraints:@[ [parentView.widthAnchor
+                                constraintEqualToConstant:cardWidth] ]];
   }
   if (IsContentSuggestionsUIModuleRefreshEnabled() ||
       [self.mostVisitedViews count] > 0) {
@@ -232,7 +219,6 @@ CGFloat ModuleVerticalSpacing() {
     self.mostVisitedStackView.distribution = UIStackViewDistributionFillEqually;
     self.mostVisitedStackView.spacing = horizontalSpacing;
 
-    UIView* parentView = self.mostVisitedStackView;
     if (IsContentSuggestionsUIModuleRefreshEnabled()) {
       self.mostVisitedStackView.backgroundColor =
           ntp_home::kNTPBackgroundColor();
@@ -252,30 +238,30 @@ CGFloat ModuleVerticalSpacing() {
           [self.mostVisitedViews addObject:view];
         }
       }
-      parentView = self.mostVisitedModuleContainer;
       [self.verticalStackView
           addArrangedSubview:self.mostVisitedModuleContainer];
+      CGFloat width =
+          GetModuleWidthForHorizontalTraitCollection(self.traitCollection);
+      self.mostVisitedContainerWidthAnchor =
+          [self.mostVisitedModuleContainer.widthAnchor
+              constraintEqualToConstant:width];
+      [NSLayoutConstraint
+          activateConstraints:@[ self.mostVisitedContainerWidthAnchor ]];
     } else {
       self.mostVisitedStackView.alignment = UIStackViewAlignmentTop;
       [self addUIElement:self.mostVisitedStackView
           withCustomBottomSpacing:kMostVisitedBottomMargin];
+      CGFloat width =
+          MostVisitedTilesContentHorizontalSpace(self.traitCollection);
+      CGFloat height =
+          MostVisitedCellSize(self.traitCollection.preferredContentSizeCategory)
+              .height;
+      [NSLayoutConstraint activateConstraints:@[
+        [self.mostVisitedStackView.widthAnchor constraintEqualToConstant:width],
+        [self.mostVisitedStackView.heightAnchor
+            constraintGreaterThanOrEqualToConstant:height]
+      ]];
     }
-    CGFloat width =
-        IsContentSuggestionsUIModuleRefreshEnabled()
-            ? GetModuleWidthForHorizontalTraitCollection(self.traitCollection)
-            : MostVisitedTilesContentHorizontalSpace(self.traitCollection);
-    CGFloat height =
-        IsContentSuggestionsUIModuleRefreshEnabled()
-            ? kModuleHeight
-            : MostVisitedCellSize(
-                  self.traitCollection.preferredContentSizeCategory)
-                  .height;
-    self.mostVisitedContainerWidthAnchor =
-        [parentView.widthAnchor constraintEqualToConstant:width];
-    [NSLayoutConstraint activateConstraints:@[
-      self.mostVisitedContainerWidthAnchor,
-      [parentView.heightAnchor constraintGreaterThanOrEqualToConstant:height]
-    ]];
     [self populateMostVisitedModule];
   }
   BOOL noTrendingQueriesToShow =
@@ -304,12 +290,8 @@ CGFloat ModuleVerticalSpacing() {
             constraintEqualToConstant:
                 GetModuleWidthForHorizontalTraitCollection(
                     self.traitCollection)];
-    [NSLayoutConstraint activateConstraints:@[
-      self.trendingQueriesContainerWidthAnchor,
-      [self.trendingQueriesModuleContainer.heightAnchor
-          constraintEqualToConstant:[self.trendingQueriesModuleContainer
-                                            calculateIntrinsicHeight]]
-    ]];
+    [NSLayoutConstraint
+        activateConstraints:@[ self.trendingQueriesContainerWidthAnchor ]];
     [self populateTrendingQueriesModule];
   }
   if (self.shortcutsViews) {
@@ -338,33 +320,32 @@ CGFloat ModuleVerticalSpacing() {
       index++;
     }
 
-    UIView* parentView = self.shortcutsStackView;
     if (IsContentSuggestionsUIModuleRefreshEnabled()) {
       self.shortcutsModuleContainer = [[ContentSuggestionsModuleContainer alloc]
           initWithContentView:self.shortcutsStackView
                    moduleType:ContentSuggestionsModuleTypeShortcuts];
-      parentView = self.shortcutsModuleContainer;
       [self.verticalStackView addArrangedSubview:self.shortcutsModuleContainer];
+      CGFloat width =
+          GetModuleWidthForHorizontalTraitCollection(self.traitCollection);
+      self.shortcutsContainerWidthAnchor =
+          [self.shortcutsModuleContainer.widthAnchor
+              constraintEqualToConstant:width];
+      [NSLayoutConstraint
+          activateConstraints:@[ self.shortcutsContainerWidthAnchor ]];
     } else {
       [self addUIElement:self.shortcutsStackView
           withCustomBottomSpacing:kMostVisitedBottomMargin];
+      CGFloat width =
+          MostVisitedTilesContentHorizontalSpace(self.traitCollection);
+      CGFloat height =
+          MostVisitedCellSize(self.traitCollection.preferredContentSizeCategory)
+              .height;
+      [NSLayoutConstraint activateConstraints:@[
+        [self.shortcutsStackView.widthAnchor constraintEqualToConstant:width],
+        [self.shortcutsStackView.heightAnchor
+            constraintGreaterThanOrEqualToConstant:height]
+      ]];
     }
-    CGFloat width =
-        IsContentSuggestionsUIModuleRefreshEnabled()
-            ? GetModuleWidthForHorizontalTraitCollection(self.traitCollection)
-            : MostVisitedTilesContentHorizontalSpace(self.traitCollection);
-    CGFloat height =
-        IsContentSuggestionsUIModuleRefreshEnabled()
-            ? kModuleHeight
-            : MostVisitedCellSize(
-                  self.traitCollection.preferredContentSizeCategory)
-                  .height;
-    self.shortcutsContainerWidthAnchor =
-        [parentView.widthAnchor constraintEqualToConstant:width];
-    [NSLayoutConstraint activateConstraints:@[
-      self.shortcutsContainerWidthAnchor,
-      [parentView.heightAnchor constraintGreaterThanOrEqualToConstant:height]
-    ]];
   }
 }
 
@@ -383,6 +364,16 @@ CGFloat ModuleVerticalSpacing() {
              ntp_home::FakeOmniboxAccessibilityID() &&
          touch.view.superview.accessibilityIdentifier !=
              ntp_home::FakeOmniboxAccessibilityID();
+}
+
+#pragma mark - URLDropDelegate
+
+- (BOOL)canHandleURLDropInView:(UIView*)view {
+  return YES;
+}
+
+- (void)view:(UIView*)view didDropURL:(const GURL&)URL atPoint:(CGPoint)point {
+  self.urlLoadingBrowserAgent->Load(UrlLoadParams::InCurrentTab(URL));
 }
 
 #pragma mark - UITraitEnvironment
@@ -407,12 +398,10 @@ CGFloat ModuleVerticalSpacing() {
 
 - (void)showReturnToRecentTabTileWithConfig:
     (ContentSuggestionsReturnToRecentTabItem*)config {
-  if (self.returnToRecentTabTile) {
+  if (self.returnToRecentTabTile &&
+      IsContentSuggestionsUIModuleRefreshEnabled()) {
     [self.returnToRecentTabTile removeFromSuperview];
-
-    if (IsContentSuggestionsUIModuleRefreshEnabled()) {
-      [self.returnToRecentTabContainer removeFromSuperview];
-    }
+    [self.returnToRecentTabContainer removeFromSuperview];
   }
 
   self.returnToRecentTabTile = [[ContentSuggestionsReturnToRecentTabView alloc]
@@ -473,21 +462,6 @@ CGFloat ModuleVerticalSpacing() {
     // Remove module container.
     [self.returnToRecentTabContainer removeFromSuperview];
   }
-}
-
-- (void)showWhatsNewViewWithConfig:(ContentSuggestionsWhatsNewItem*)config {
-  self.whatsNewView =
-      [[ContentSuggestionsWhatsNewView alloc] initWithConfiguration:config];
-  self.promoTapRecognizer = [[UITapGestureRecognizer alloc]
-      initWithTarget:self
-              action:@selector(contentSuggestionsElementTapped:)];
-  [self.whatsNewView addGestureRecognizer:self.promoTapRecognizer];
-  self.promoTapRecognizer.enabled = YES;
-}
-
-- (void)hideWhatsNewView {
-  [self.whatsNewView removeFromSuperview];
-  self.whatsNewView = nil;
 }
 
 - (void)setMostVisitedTilesWithConfigs:
@@ -644,11 +618,6 @@ CGFloat ModuleVerticalSpacing() {
   if (self.returnToRecentTabTile) {
     height += (ReturnToRecentTabHeight() + ModuleVerticalSpacing());
   }
-  if (self.whatsNewView) {
-    height += MostVisitedCellSize(
-                  UIApplication.sharedApplication.preferredContentSizeCategory)
-                  .height;
-  }
   return height;
 }
 
@@ -688,7 +657,7 @@ CGFloat ModuleVerticalSpacing() {
     }
     BOOL touchBegan = state == UIGestureRecognizerStateBegan;
     [UIView transitionWithView:returnToRecentTabView
-                      duration:ios::material::kDuration8
+                      duration:kMaterialDuration8
                        options:UIViewAnimationOptionCurveEaseInOut
                     animations:^{
                       weakRecentTabView.backgroundColor =
@@ -708,9 +677,6 @@ CGFloat ModuleVerticalSpacing() {
       }
       [self.suggestionCommandHandler openMostRecentTab];
     }
-  } else if ([sender.view
-                 isKindOfClass:[ContentSuggestionsWhatsNewView class]]) {
-    [self.suggestionCommandHandler handlePromoTapped];
   } else if ([sender.view isKindOfClass:[QuerySuggestionView class]]) {
     QuerySuggestionView* querySuggestionView =
         static_cast<QuerySuggestionView*>(sender.view);
@@ -744,9 +710,6 @@ CGFloat ModuleVerticalSpacing() {
     // Find correct insertion position in the stack.
     int insertionIndex = 0;
     if (self.returnToRecentTabTile) {
-      insertionIndex++;
-    }
-    if (self.whatsNewView) {
       insertionIndex++;
     }
     [self.verticalStackView insertArrangedSubview:self.mostVisitedStackView

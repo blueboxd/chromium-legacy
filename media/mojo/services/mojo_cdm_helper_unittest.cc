@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -79,9 +79,6 @@ class TestFrameInterfaceFactory : public mojom::FrameInterfaceFactory {
       mojo::PendingRemote<mojom::MuteStateObserver> observer) override {}
   void CreateDCOMPSurfaceRegistry(
       mojo::PendingReceiver<mojom::DCOMPSurfaceRegistry> receiver) override {}
-  void RegisterGpuInfoObserver(
-      mojo::PendingRemote<media::mojom::GpuInfoObserver> observer,
-      RegisterGpuInfoObserverCallback callback) override {}
 #endif  // BUILDFLAG(IS_WIN)
   void GetCdmOrigin(GetCdmOriginCallback callback) override {}
   void BindEmbedderReceiver(mojo::GenericPendingReceiver) override {}

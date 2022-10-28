@@ -1,6 +1,6 @@
 <!-- mdformat off(generated) -->
 <!-- mdlint off(generated) -->
-Version: 8
+Version: 7
 
 SHA 256 Hash | Subject | NotBefore | NotAfter
 ---|---|---|---

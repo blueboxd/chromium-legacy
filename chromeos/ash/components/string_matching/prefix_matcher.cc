@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -55,6 +55,7 @@ PrefixMatcher::PrefixMatcher(const TokenizedString& query,
       text_iter_(text),
       current_match_(gfx::Range::InvalidRange()),
       current_relevance_(constants::kNoMatchScore) {}
+PrefixMatcher::~PrefixMatcher() = default;
 
 bool PrefixMatcher::Match() {
   while (!RunMatch()) {

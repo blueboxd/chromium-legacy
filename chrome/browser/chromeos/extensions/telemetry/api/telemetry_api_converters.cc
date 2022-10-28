@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -30,12 +30,10 @@ namespace unchecked {
 telemetry_api::CpuCStateInfo UncheckedConvertPtr(
     telemetry_service::ProbeCpuCStateInfoPtr input) {
   telemetry_api::CpuCStateInfo result;
-  if (input->name.has_value()) {
-    result.name = std::make_unique<std::string>(input->name.value());
-  }
+  result.name = input->name;
   if (input->time_in_state_since_last_boot_us) {
-    result.time_in_state_since_last_boot_us = std::make_unique<double_t>(
-        input->time_in_state_since_last_boot_us->value);
+    result.time_in_state_since_last_boot_us =
+        input->time_in_state_since_last_boot_us->value;
   }
   return result;
 }
@@ -44,20 +42,17 @@ telemetry_api::LogicalCpuInfo UncheckedConvertPtr(
     telemetry_service::ProbeLogicalCpuInfoPtr input) {
   telemetry_api::LogicalCpuInfo result;
   if (input->max_clock_speed_khz) {
-    result.max_clock_speed_khz =
-        std::make_unique<int32_t>(input->max_clock_speed_khz->value);
+    result.max_clock_speed_khz = input->max_clock_speed_khz->value;
   }
   if (input->scaling_max_frequency_khz) {
-    result.scaling_max_frequency_khz =
-        std::make_unique<int32_t>(input->scaling_max_frequency_khz->value);
+    result.scaling_max_frequency_khz = input->scaling_max_frequency_khz->value;
   }
   if (input->scaling_current_frequency_khz) {
     result.scaling_current_frequency_khz =
-        std::make_unique<int32_t>(input->scaling_current_frequency_khz->value);
+        input->scaling_current_frequency_khz->value;
   }
   if (input->idle_time_ms) {
-    result.idle_time_ms =
-        std::make_unique<double_t>(input->idle_time_ms->value);
+    result.idle_time_ms = input->idle_time_ms->value;
   }
   result.c_states = ConvertPtrVector<telemetry_api::CpuCStateInfo>(
       std::move(input->c_states));
@@ -67,10 +62,7 @@ telemetry_api::LogicalCpuInfo UncheckedConvertPtr(
 telemetry_api::PhysicalCpuInfo UncheckedConvertPtr(
     telemetry_service::ProbePhysicalCpuInfoPtr input) {
   telemetry_api::PhysicalCpuInfo result;
-  if (input->model_name.has_value()) {
-    result.model_name =
-        std::make_unique<std::string>(input->model_name.value());
-  }
+  result.model_name = input->model_name;
   result.logical_cpus = ConvertPtrVector<telemetry_api::LogicalCpuInfo>(
       std::move(input->logical_cpus));
   return result;
@@ -79,52 +71,35 @@ telemetry_api::PhysicalCpuInfo UncheckedConvertPtr(
 telemetry_api::BatteryInfo UncheckedConvertPtr(
     telemetry_service::ProbeBatteryInfoPtr input) {
   telemetry_api::BatteryInfo result;
-  if (input->vendor.has_value()) {
-    result.vendor =
-        std::make_unique<std::string>(std::move(input->vendor.value()));
-  }
-  if (input->model_name.has_value()) {
-    result.model_name =
-        std::make_unique<std::string>(std::move(input->model_name.value()));
-  }
-  if (input->technology.has_value()) {
-    result.technology =
-        std::make_unique<std::string>(std::move(input->technology.value()));
-  }
-  if (input->status.has_value()) {
-    result.status =
-        std::make_unique<std::string>(std::move(input->status.value()));
-  }
+  result.vendor = std::move(input->vendor);
+  result.model_name = std::move(input->model_name);
+  result.technology = std::move(input->technology);
+  result.status = std::move(input->status);
   if (input->cycle_count) {
-    result.cycle_count = std::make_unique<double_t>(input->cycle_count->value);
+    result.cycle_count = input->cycle_count->value;
   }
   if (input->voltage_now) {
-    result.voltage_now = std::make_unique<double_t>(input->voltage_now->value);
+    result.voltage_now = input->voltage_now->value;
   }
   if (input->charge_full_design) {
-    result.charge_full_design =
-        std::make_unique<double_t>(input->charge_full_design->value);
+    result.charge_full_design = input->charge_full_design->value;
   }
   if (input->charge_full) {
-    result.charge_full = std::make_unique<double_t>(input->charge_full->value);
+    result.charge_full = input->charge_full->value;
   }
   if (input->voltage_min_design) {
-    result.voltage_min_design =
-        std::make_unique<double_t>(input->voltage_min_design->value);
+    result.voltage_min_design = input->voltage_min_design->value;
   }
   if (input->charge_now) {
-    result.charge_now = std::make_unique<double_t>(input->charge_now->value);
+    result.charge_now = input->charge_now->value;
   }
   if (input->current_now) {
-    result.current_now = std::make_unique<double_t>(input->current_now->value);
+    result.current_now = input->current_now->value;
   }
   if (input->temperature) {
-    result.temperature = std::make_unique<double_t>(input->temperature->value);
+    result.temperature = input->temperature->value;
   }
-  if (input->manufacture_date.has_value()) {
-    result.manufacture_date =
-        std::make_unique<std::string>(input->manufacture_date.value());
-  }
+  result.manufacture_date = std::move(input->manufacture_date);
 
   return result;
 }
@@ -133,25 +108,10 @@ telemetry_api::OsVersionInfo UncheckedConvertPtr(
     telemetry_service::ProbeOsVersionPtr input) {
   telemetry_api::OsVersionInfo result;
 
-  if (input->release_milestone) {
-    result.release_milestone =
-        std::make_unique<std::string>(input->release_milestone.value());
-  }
-
-  if (input->build_number) {
-    result.build_number =
-        std::make_unique<std::string>(input->build_number.value());
-  }
-
-  if (input->patch_number) {
-    result.patch_number =
-        std::make_unique<std::string>(input->patch_number.value());
-  }
-
-  if (input->release_channel) {
-    result.release_channel =
-        std::make_unique<std::string>(input->release_channel.value());
-  }
+  result.release_milestone = input->release_milestone;
+  result.build_number = input->build_number;
+  result.patch_number = input->patch_number;
+  result.release_channel = input->release_channel;
 
   return result;
 }
@@ -160,11 +120,10 @@ telemetry_api::StatefulPartitionInfo UncheckedConvertPtr(
     telemetry_service::ProbeStatefulPartitionInfoPtr input) {
   telemetry_api::StatefulPartitionInfo result;
   if (input->available_space) {
-    result.available_space =
-        std::make_unique<double_t>(input->available_space->value);
+    result.available_space = input->available_space->value;
   }
   if (input->total_space) {
-    result.total_space = std::make_unique<double_t>(input->total_space->value);
+    result.total_space = input->total_space->value;
   }
 
   return result;

@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,7 +13,9 @@
 #include "base/strings/strcat.h"
 #include "base/strings/string_util.h"
 #include "base/test/bind.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
+#include "base/time/time.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
@@ -50,6 +52,7 @@
 #include "net/ssl/ssl_info.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/events/devices/device_data_manager.h"
 #include "ui/events/devices/device_data_manager_test_api.h"
 #include "ui/events/devices/touchscreen_device.h"
 
@@ -96,11 +99,10 @@ base::FilePath GetDataFilePath(const base::FilePath& relative_path,
 }
 
 #if BUILDFLAG(IS_CHROMEOS)
-void ExpectInitialManifestFieldsFromBasicWebApp(
-    const WebAppIconManager& icon_manager,
-    const WebApp* web_app,
-    const GURL& expect_start_url,
-    const GURL& expect_scope) {
+void ExpectInitialManifestFieldsFromBasicWebApp(WebAppIconManager& icon_manager,
+                                                const WebApp* web_app,
+                                                const GURL& expect_start_url,
+                                                const GURL& expect_scope) {
   // Manifest fields:
   EXPECT_EQ(web_app->untranslated_name(), "Basic web app");
   EXPECT_EQ(web_app->start_url().spec(), expect_start_url);
@@ -181,7 +183,8 @@ class PreinstalledWebAppManagerBrowserTestBase
               CreateFakeSslInfoCertificate(&ssl_info);
 
               content::URLLoaderInterceptor::WriteResponse(
-                  path, params->client.get(), /*headers=*/nullptr, ssl_info);
+                  path, params->client.get(), /*headers=*/nullptr, ssl_info,
+                  params->url_request.url);
 
               return /*intercepted=*/true;
             }));
@@ -195,7 +198,7 @@ class PreinstalledWebAppManagerBrowserTestBase
     return WebAppProvider::GetForTest(browser()->profile())->registrar();
   }
 
-  const WebAppIconManager& icon_manager() {
+  WebAppIconManager& icon_manager() {
     return WebAppProvider::GetForTest(browser()->profile())->icon_manager();
   }
 
@@ -714,6 +717,7 @@ IN_PROC_BROWSER_TEST_P(
 IN_PROC_BROWSER_TEST_P(PreinstalledWebAppManagerTestWithExternalPrefRead,
                        DisableForPreinstalledAppsInConfig) {
   PreinstalledWebAppManager::BypassOfflineManifestRequirementForTesting();
+  base::HistogramTester tester;
   ASSERT_TRUE(embedded_test_server()->Start());
 
   const auto manifest = base::ReplaceStringPlaceholders(
@@ -742,6 +746,15 @@ IN_PROC_BROWSER_TEST_P(PreinstalledWebAppManagerTestWithExternalPrefRead,
   EXPECT_FALSE(registrar().IsInstalled(app_id));
   EXPECT_EQ(disabled_configs.size(), 1u);
   EXPECT_EQ(disabled_configs.back().second, GetAppUrl().spec() + kErrorMessage);
+
+  // Verify that only the kPreinstalledAppUninstalledByUserNoOverride enum is
+  // filled, which is sample 15. Check enum DisabledReason in
+  // preinstalled_web_app_manager.cc for more information.
+  tester.ExpectBucketCount("WebApp.Preinstalled.DisabledReason",
+                           /*kPreinstalledAppUninstalledByUserNoOverride=*/15,
+                           /*expected_count=*/1);
+  tester.ExpectTotalCount("WebApp.Preinstalled.DisabledReason",
+                          /*expected_count=*/1);
 }
 
 // Preinstalled apps which are user uninstalled are included
@@ -1170,6 +1183,38 @@ IN_PROC_BROWSER_TEST_F(PreinstalledWebAppManagerBrowserTest,
             webapps::InstallResultCode::kSuccessNewInstall);
   EXPECT_TRUE(registrar().IsInstalled(app_id));
   EXPECT_EQ(disabled_configs.size(), 3u);
+}
+
+IN_PROC_BROWSER_TEST_F(PreinstalledWebAppManagerBrowserTest,
+                       DisableIfTouchscreenWithStylusStartupDelay) {
+  PreinstalledWebAppManager::BypassOfflineManifestRequirementForTesting();
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  const auto manifest = base::ReplaceStringPlaceholders(
+      R"({
+        "app_url": "$1",
+        "launch_container": "window",
+        "disable_if_touchscreen_with_stylus_not_supported": true,
+        "user_type": ["unmanaged"]
+      })",
+      {GetAppUrl().spec()}, nullptr);
+  AppId app_id = GenerateAppId(/*manifest_id=*/absl::nullopt, GetAppUrl());
+
+  // Clear out the device list and re-initialize it after a delay. Web app
+  // installation should wait for this to be ready.
+  ui::DeviceDataManager::GetInstance()->ResetDeviceListsForTest();
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE, base::BindLambdaForTesting([]() {
+        // Create a built-in touchscreen device with stylus support
+        // and add it to the device.
+        ui::DeviceDataManagerTestApi().SetTouchscreenDevices({CreateTouchDevice(
+            ui::InputDeviceType::INPUT_DEVICE_INTERNAL, true)});
+        ui::DeviceDataManagerTestApi().OnDeviceListsComplete();
+      }),
+      base::Milliseconds(500));
+
+  EXPECT_EQ(SyncPreinstalledAppConfig(GetAppUrl(), manifest),
+            webapps::InstallResultCode::kSuccessNewInstall);
 }
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)

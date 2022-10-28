@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -36,6 +36,9 @@ extern const base::Feature kMojoInlineMessagePayloads;
 
 COMPONENT_EXPORT(MOJO_CORE_EMBEDDER_FEATURES)
 extern const base::Feature kMojoAvoidRandomPipeId;
+
+COMPONENT_EXPORT(MOJO_CORE_EMBEDDER_FEATURES)
+extern const base::Feature kMojoIpcz;
 
 }  // namespace core
 }  // namespace mojo

@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,18 +12,9 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using testing::ElementsAre;
+namespace ash::converters {
 
-namespace ash {
-
-// TODO(https://crbug.com/1164001): Remove if cros_healthd::mojom moved to ash.
-namespace cros_healthd {
-namespace mojom = ::chromeos::cros_healthd::mojom;
-}  // namespace cros_healthd
-
-namespace converters {
-
-namespace cros_healthd = ::ash::cros_healthd;
+using ::testing::ElementsAre;
 
 // Note: in some tests we intentionally use New() with no arguments for
 // cros_healthd::mojom types, because there can be some fields that we don't
@@ -874,5 +865,4 @@ TEST(ProbeServiceConverters, TelemetryInfoPtrWithNullFields) {
                 crosapi::mojom::ProbeSystemResultPtr(nullptr)));
 }
 
-}  // namespace converters
-}  // namespace ash
+}  // namespace ash::converters

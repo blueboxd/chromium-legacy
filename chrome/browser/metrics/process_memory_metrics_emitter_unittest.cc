@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -334,7 +334,7 @@ void PopulateRendererMetrics(GlobalMemoryDumpPtr& global_dump,
                        metrics_mb_or_count["SharedMemoryFootprint"] * 1024,
                        metrics_mb_or_count["PrivateSwapFootprint"] * 1024
 #else
-      metrics_mb_or_count["SharedMemoryFootprint"] * 1024
+                       metrics_mb_or_count["SharedMemoryFootprint"] * 1024
 #endif
       );
   pmd->os_dump = std::move(os_dump);
@@ -920,6 +920,13 @@ TEST_F(ProcessMemoryMetricsEmitterTest, RendererAndTotalHistogramsAreRecorded) {
   MetricMap expected_metrics = GetExpectedRendererMetrics();
   PopulateRendererMetrics(global_dump, expected_metrics, kTestRendererPid201);
   PopulateRendererMetrics(global_dump, expected_metrics, kTestRendererPid202);
+
+  constexpr uint64_t kMiB = 1024 * 1024;
+  SetAllocatorDumpMetric(global_dump->process_dumps[0], "cc/tile_memory",
+                         "size", 12 * kMiB);
+  SetAllocatorDumpMetric(global_dump->process_dumps[1], "cc/tile_memory",
+                         "size", 22 * kMiB);
+
   global_dump->aggregated_metrics->native_library_resident_kb =
       kNativeLibraryResidentMemoryFootprint;
   global_dump->aggregated_metrics->native_library_not_resident_ordered_kb =
@@ -943,6 +950,16 @@ TEST_F(ProcessMemoryMetricsEmitterTest, RendererAndTotalHistogramsAreRecorded) {
       "Memory.NativeLibrary.NotResidentOrderedCodeMemoryFootprint", 0);
   histograms.ExpectTotalCount(
       "Memory.NativeLibrary.ResidentNotOrderedCodeMemoryFootprint", 0);
+#if BUILDFLAG(IS_ANDROID)
+  histograms.ExpectTotalCount(
+      "Memory.Total.PrivateMemoryFootprintExcludingWaivedRenderers", 0);
+  histograms.ExpectTotalCount(
+      "Memory.Total.RendererPrivateMemoryFootprintExcludingWaived", 0);
+  histograms.ExpectTotalCount(
+      "Memory.Total.PrivateMemoryFootprintVisibleOrHigherPriorityRenderers", 0);
+  histograms.ExpectTotalCount(
+      "Memory.Total.RendererPrivateMemoryFootprintVisibleOrHigherPriority", 0);
+#endif
 
   // Simulate some metrics emission.
   scoped_refptr<ProcessMemoryMetricsEmitterFake> emitter =
@@ -977,6 +994,9 @@ TEST_F(ProcessMemoryMetricsEmitterTest, RendererAndTotalHistogramsAreRecorded) {
   histograms.ExpectUniqueSample("Memory.Total.ResidentSet",
                                 2 * kTestRendererResidentSet, 1);
 #endif
+
+  histograms.ExpectUniqueSample("Memory.Total.TileMemory", 12 + 22, 1);
+
   histograms.ExpectUniqueSample(
       "Memory.NativeLibrary.MappedAndResidentMemoryFootprint3",
       kNativeLibraryResidentMemoryFootprint, 1);
@@ -986,6 +1006,20 @@ TEST_F(ProcessMemoryMetricsEmitterTest, RendererAndTotalHistogramsAreRecorded) {
   histograms.ExpectUniqueSample(
       "Memory.NativeLibrary.ResidentNotOrderedCodeMemoryFootprint",
       kNativeLibraryResidentNotOrderedCodeFootprint, 1);
+#if BUILDFLAG(IS_ANDROID)
+  // Expect values of 0 as the Renderer is not in the list of active processes
+  // and is therefore considered UNBOUND and will not emit these values.
+  histograms.ExpectUniqueSample(
+      "Memory.Total.PrivateMemoryFootprintExcludingWaivedRenderers", 0, 1);
+  histograms.ExpectUniqueSample(
+      "Memory.Total.RendererPrivateMemoryFootprintExcludingWaived", 0, 1);
+  histograms.ExpectUniqueSample(
+      "Memory.Total.PrivateMemoryFootprintVisibleOrHigherPriorityRenderers", 0,
+      1);
+  histograms.ExpectUniqueSample(
+      "Memory.Total.RendererPrivateMemoryFootprintVisibleOrHigherPriority", 0,
+      1);
+#endif
 }
 
 TEST_F(ProcessMemoryMetricsEmitterTest, MainFramePMFEmitted) {

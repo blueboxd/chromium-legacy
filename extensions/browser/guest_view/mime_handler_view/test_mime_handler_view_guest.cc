@@ -1,10 +1,11 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "extensions/browser/guest_view/mime_handler_view/test_mime_handler_view_guest.h"
 
 #include "base/bind.h"
+#include "base/test/test_timeouts.h"
 #include "base/time/time.h"
 #include "components/guest_view/browser/test_guest_view_manager.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -73,6 +74,21 @@ void TestMimeHandlerViewGuest::DidAttachToEmbedder() {
   MimeHandlerViewGuest::DidAttachToEmbedder();
   if (created_message_loop_runner_.get())
     created_message_loop_runner_->Quit();
+}
+
+void TestMimeHandlerViewGuest::WaitForGuestLoadStartThenStop(
+    GuestViewBase* guest_view) {
+  auto* guest_contents = guest_view->web_contents();
+
+  while (!guest_contents->IsLoading() &&
+         !guest_contents->GetController().GetLastCommittedEntry()) {
+    base::RunLoop run_loop;
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+        FROM_HERE, run_loop.QuitClosure(), TestTimeouts::tiny_timeout());
+    run_loop.Run();
+  }
+
+  ASSERT_TRUE(content::WaitForLoadStop(guest_contents));
 }
 
 void TestMimeHandlerViewGuest::CallBaseCreateWebContents(

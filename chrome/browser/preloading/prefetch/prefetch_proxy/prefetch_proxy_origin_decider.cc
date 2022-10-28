@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -80,7 +80,7 @@ void PrefetchProxyOriginDecider::LoadFromPrefs() {
   origin_retry_afters_.clear();
 
   const base::Value::Dict& dictionary =
-      pref_service_->GetValueDict(prefetch::prefs::kRetryAfterPrefPath);
+      pref_service_->GetDict(prefetch::prefs::kRetryAfterPrefPath);
 
   for (auto element : dictionary) {
     GURL url_origin(element.first);

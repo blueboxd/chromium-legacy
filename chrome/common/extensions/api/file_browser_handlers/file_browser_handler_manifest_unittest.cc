@@ -1,4 +1,4 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -130,7 +130,7 @@ TEST_F(FileBrowserHandlerManifestTest, ValidFileBrowserHandler) {
   ASSERT_TRUE(extension.get());
   FileBrowserHandler::List* handlers =
       FileBrowserHandler::GetHandlers(extension.get());
-  ASSERT_TRUE(handlers != NULL);
+  ASSERT_TRUE(handlers != nullptr);
   ASSERT_EQ(1U, handlers->size());
   const FileBrowserHandler* action = handlers->at(0).get();
 
@@ -181,7 +181,7 @@ TEST_F(FileBrowserHandlerManifestTest, ValidFileBrowserHandlerMIMETypes) {
   ASSERT_TRUE(extension.get());
   FileBrowserHandler::List* handlers =
       FileBrowserHandler::GetHandlers(extension.get());
-  ASSERT_TRUE(handlers != NULL);
+  ASSERT_TRUE(handlers != nullptr);
   ASSERT_EQ(1U, handlers->size());
   const FileBrowserHandler* action = handlers->at(0).get();
 
@@ -227,7 +227,7 @@ TEST_F(FileBrowserHandlerManifestTest, ValidFileBrowserHandlerWithCreate) {
   ASSERT_TRUE(extension.get());
   FileBrowserHandler::List* handlers =
       FileBrowserHandler::GetHandlers(extension.get());
-  ASSERT_TRUE(handlers != NULL);
+  ASSERT_TRUE(handlers != nullptr);
   ASSERT_EQ(1U, handlers->size());
   const FileBrowserHandler* action = handlers->at(0).get();
   const extensions::URLPatternSet& patterns = action->file_url_patterns();

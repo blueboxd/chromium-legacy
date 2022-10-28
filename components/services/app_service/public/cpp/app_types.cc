@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -40,7 +40,9 @@ APP_ENUM_TO_STRING(InstallReason,
                    kDefault,
                    kSync,
                    kUser,
-                   kSubApp)
+                   kSubApp,
+                   kKiosk,
+                   kCommandLine)
 APP_ENUM_TO_STRING(InstallSource,
                    kUnknown,
                    kSystem,
@@ -241,6 +243,10 @@ InstallReason ConvertMojomInstallReasonToInstallReason(
       return InstallReason::kUser;
     case apps::mojom::InstallReason::kSubApp:
       return InstallReason::kSubApp;
+    case apps::mojom::InstallReason::kKiosk:
+      return InstallReason::kKiosk;
+    case apps::mojom::InstallReason::kCommandLine:
+      return InstallReason::kCommandLine;
   }
 }
 
@@ -263,6 +269,10 @@ apps::mojom::InstallReason ConvertInstallReasonToMojomInstallReason(
       return apps::mojom::InstallReason::kUser;
     case InstallReason::kSubApp:
       return apps::mojom::InstallReason::kSubApp;
+    case InstallReason::kKiosk:
+      return apps::mojom::InstallReason::kKiosk;
+    case InstallReason::kCommandLine:
+      return apps::mojom::InstallReason::kCommandLine;
   }
 }
 

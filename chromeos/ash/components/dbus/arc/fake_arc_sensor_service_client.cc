@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -37,7 +37,7 @@ FakeArcSensorServiceClient* FakeArcSensorServiceClient::Get() {
 void FakeArcSensorServiceClient::BootstrapMojoConnection(
     int fd,
     const std::string& token,
-    VoidDBusMethodCallback callback) {
+    chromeos::VoidDBusMethodCallback callback) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::BindOnce(std::move(callback), true));
 }

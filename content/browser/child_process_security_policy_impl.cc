@@ -4,7 +4,6 @@
 
 #include "content/browser/child_process_security_policy_impl.h"
 
-#include <algorithm>
 #include <tuple>
 #include <utility>
 
@@ -19,6 +18,7 @@
 #include "base/logging.h"
 #include "base/memory/raw_ptr.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/ranges/algorithm.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
@@ -790,7 +790,7 @@ void ChildProcessSecurityPolicyImpl::AddForTesting(
     BrowserContext* browser_context) {
   Add(child_id, browser_context);
   LockProcess(IsolationContext(BrowsingInstanceId(1), browser_context,
-                               /*is_guest=*/false),
+                               /*is_guest=*/false, /*is_fenced=*/false),
               child_id, /*is_process_used=*/false,
               ProcessLock::CreateAllowAnySite(
                   StoragePartitionConfig::CreateDefault(browser_context),
@@ -1249,10 +1249,10 @@ bool ChildProcessSecurityPolicyImpl::CanReadFile(int child_id,
 bool ChildProcessSecurityPolicyImpl::CanReadAllFiles(
     int child_id,
     const std::vector<base::FilePath>& files) {
-  return std::all_of(files.begin(), files.end(),
-                     [this, child_id](const base::FilePath& file) {
-                       return CanReadFile(child_id, file);
-                     });
+  return base::ranges::all_of(files,
+                              [this, child_id](const base::FilePath& file) {
+                                return CanReadFile(child_id, file);
+                              });
 }
 
 bool ChildProcessSecurityPolicyImpl::CanReadRequestBody(
@@ -1679,17 +1679,18 @@ bool ChildProcessSecurityPolicyImpl::CanAccessDataForMaybeOpaqueOrigin(
         failure_reason += base::StringPrintf(
             "[BI=%d]", browsing_instance_id.GetUnsafeValue());
 
-        // Use the actual process lock's state to compute `is_guest` for the
-        // expected process lock's `isolation_context`.  Guest status doesn't
-        // currently influence the outcome of this access check, and even if it
-        // did, `url` wouldn't be sufficient to tell whether the request
-        // belongs solely to a guest (or non-guest) process.  Note that a guest
-        // isn't allowed to access data outside of its own StoragePartition,
-        // but this is enforced by other means (e.g., resource access APIs
-        // can't name an alternate StoragePartition).
-        IsolationContext isolation_context(browsing_instance_id,
-                                           browser_or_resource_context,
-                                           actual_process_lock.is_guest());
+        // Use the actual process lock's state to compute `is_guest` and
+        // `is_fenced` for the expected process lock's `isolation_context`.
+        // Guest status and fenced status doesn't currently influence the
+        // outcome of this access check, and even if it did, `url` wouldn't be
+        // sufficient to tell whether the request belongs solely to a guest (or
+        // non-guest) or fenced process.  Note that a guest isn't allowed to
+        // access data outside of its own StoragePartition, but this is enforced
+        // by other means (e.g., resource access APIs can't name an alternate
+        // StoragePartition).
+        IsolationContext isolation_context(
+            browsing_instance_id, browser_or_resource_context,
+            actual_process_lock.is_guest(), actual_process_lock.is_fenced());
 
         // NOTE: If we're on the IO thread, the call to
         // ProcessLock::Create() below will return a ProcessLock with
@@ -2120,7 +2121,8 @@ bool ChildProcessSecurityPolicyImpl::IsGloballyIsolatedOriginForTesting(
   BrowserOrResourceContext no_browser_context;
   BrowsingInstanceId null_browsing_instance_id;
   IsolationContext isolation_context(null_browsing_instance_id,
-                                     no_browser_context, /*is_guest=*/false);
+                                     no_browser_context, /*is_guest=*/false,
+                                     /*is_fenced=*/false);
   return IsIsolatedOrigin(isolation_context, origin, false);
 }
 
@@ -2364,11 +2366,8 @@ ChildProcessSecurityPolicyImpl::LookupOriginIsolationState(
     return nullptr;
   }
   auto& origin_list = it_isolation_by_browsing_instance->second;
-  auto it_origin_list =
-      std::find_if(origin_list.begin(), origin_list.end(),
-                   [&origin](const OriginAgentClusterOptInEntry entry) {
-                     return entry.origin == origin;
-                   });
+  auto it_origin_list = base::ranges::find(
+      origin_list, origin, &OriginAgentClusterOptInEntry::origin);
   if (it_origin_list != origin_list.end())
     return &(it_origin_list->oac_isolation_state);
   return nullptr;
@@ -2567,10 +2566,8 @@ void ChildProcessSecurityPolicyImpl::AddOriginIsolationStateForBrowsingInstance(
   // We only support adding new entries, not modifying existing ones. If at
   // some point in the future we allow isolation status to change during the
   // lifetime of a BrowsingInstance, then this will need to be updated.
-  if (std::find_if(it->second.begin(), it->second.end(),
-                   [&origin](const OriginAgentClusterOptInEntry entry) {
-                     return entry.origin == origin;
-                   }) == it->second.end()) {
+  if (!base::Contains(it->second, origin,
+                      &OriginAgentClusterOptInEntry::origin)) {
     it->second.emplace_back(
         is_origin_agent_cluster
             ? OriginAgentClusterIsolationState::CreateForOriginAgentCluster(

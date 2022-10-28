@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -829,6 +829,15 @@ class TabListMediator {
 
         if (mTabModelSelector.getTabModelFilterProvider().getCurrentTabModelFilter()
                         instanceof TabGroupModelFilter) {
+            // TODO(ckitagawa): When undoing the grouping of multiple groups this doesn't update the
+            // UI correctly. Specifically it only shows a single tab for each group that was undone.
+            // However, upon refreshing the TabSwitcher everything looks correct. Ask someone who
+            // might know more why and if they have guidance on how to fix?
+            //
+            // I suspect that TabGroupModelFilter#undoGroupedTab wasn't designed to undo a group
+            // action that aggregated multiple groups together and so
+            // TabGroupModelFilter#didMoveTab is not calling this observer in a way that results
+            // in the UI showing the now re-separated groups.
             mTabGroupObserver = new EmptyTabGroupModelFilterObserver() {
                 @Override
                 public void didMoveWithinGroup(
@@ -1020,8 +1029,8 @@ class TabListMediator {
                 }
 
                 @Override
-                public void didCreateGroup(
-                        List<Tab> tabs, List<Integer> tabOriginalIndex, boolean isSameGroup) {}
+                public void didCreateGroup(List<Tab> tabs, List<Integer> tabOriginalIndex,
+                        List<Integer> tabOriginalRootId) {}
             };
 
             ((TabGroupModelFilter) mTabModelSelector.getTabModelFilterProvider().getTabModelFilter(

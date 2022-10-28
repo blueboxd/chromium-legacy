@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -21,9 +21,9 @@
 #include "base/gtest_prod_util.h"
 #include "base/memory/raw_ptr.h"
 #include "base/numerics/clamped_math.h"
-#include "base/stl_util.h"
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
+#include "base/types/optional_util.h"
 #include "base/values.h"
 #include "net/base/address_family.h"
 #include "net/base/connection_endpoint_metadata.h"
@@ -33,8 +33,8 @@
 #include "net/base/net_errors.h"
 #include "net/base/net_export.h"
 #include "net/base/network_isolation_key.h"
-#include "net/dns/host_resolver_results.h"
 #include "net/dns/public/dns_query_type.h"
+#include "net/dns/public/host_resolver_results.h"
 #include "net/dns/public/host_resolver_source.h"
 #include "net/log/net_log_capture_mode.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -188,7 +188,7 @@ class NET_EXPORT HostCache {
     absl::optional<std::vector<HostResolverEndpointResult>> GetEndpoints()
         const;
     const std::vector<IPEndPoint>* ip_endpoints() const {
-      return base::OptionalOrNullptr(ip_endpoints_);
+      return base::OptionalToPtr(ip_endpoints_);
     }
     void set_ip_endpoints(
         absl::optional<std::vector<IPEndPoint>> ip_endpoints) {
@@ -198,7 +198,7 @@ class NET_EXPORT HostCache {
         const;
     void ClearMetadatas() { endpoint_metadatas_.reset(); }
     const std::set<std::string>* aliases() const {
-      return base::OptionalOrNullptr(aliases_);
+      return base::OptionalToPtr(aliases_);
     }
     void set_aliases(std::set<std::string> aliases) {
       aliases_ = std::move(aliases);
@@ -217,7 +217,7 @@ class NET_EXPORT HostCache {
       hostnames_ = std::move(hostnames);
     }
     const std::vector<bool>* https_record_compatibility() const {
-      return base::OptionalOrNullptr(https_record_compatibility_);
+      return base::OptionalToPtr(https_record_compatibility_);
     }
     void set_https_record_compatibility(
         absl::optional<std::vector<bool>> https_record_compatibility) {

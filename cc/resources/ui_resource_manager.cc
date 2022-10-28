@@ -1,13 +1,13 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "cc/resources/ui_resource_manager.h"
 
-#include <algorithm>
 #include <utility>
 
 #include "base/check.h"
+#include "base/containers/contains.h"
 #include "base/containers/cxx20_erase.h"
 #include "cc/resources/scoped_ui_resource.h"
 
@@ -52,12 +52,8 @@ void UIResourceManager::RecreateUIResources() {
     UIResourceId uid = resource.first;
     const UIResourceClientData& data = resource.second;
     bool resource_lost = true;
-    auto it = std::find_if(ui_resource_request_queue_.begin(),
-                           ui_resource_request_queue_.end(),
-                           [uid](const UIResourceRequest& request) {
-                             return request.GetId() == uid;
-                           });
-    if (it == ui_resource_request_queue_.end()) {
+    if (!base::Contains(ui_resource_request_queue_, uid,
+                        &UIResourceRequest::GetId)) {
       UIResourceRequest request(UIResourceRequest::UI_RESOURCE_CREATE, uid,
                                 data.client->GetBitmap(uid, resource_lost));
       ui_resource_request_queue_.push_back(request);

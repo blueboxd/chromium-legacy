@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -1190,6 +1190,10 @@ TEST_P(NetworkErrorLoggingServiceTest, StatusAsValue) {
       }
       )json");
   EXPECT_EQ(expected, actual);
+}
+
+TEST_P(NetworkErrorLoggingServiceTest, InvalidHeaderData) {
+  service()->OnHeader(kNik_, kOrigin_, kServerIP_, "0");
 }
 
 TEST_P(NetworkErrorLoggingServiceTest, NoReportingService_SignedExchange) {

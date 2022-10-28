@@ -35,6 +35,7 @@
 #include "ui/views/layout/layout_provider.h"
 #include "ui/views/style/platform_style.h"
 #include "ui/views/test/views_test_base.h"
+#include "ui/views/test/views_test_utils.h"
 #include "ui/views/test/widget_test.h"
 #include "ui/views/view_test_api.h"
 #include "ui/views/widget/widget_utils.h"
@@ -62,6 +63,8 @@ class TestLabelButton : public LabelButton {
 
   TestLabelButton(const TestLabelButton&) = delete;
   TestLabelButton& operator=(const TestLabelButton&) = delete;
+
+  void SetMultiLine(bool multi_line) { label()->SetMultiLine(multi_line); }
 
   using LabelButton::GetVisualState;
   using LabelButton::image;
@@ -219,27 +222,37 @@ TEST_F(LabelButtonTest, LabelPreferredSizeWithMaxWidth) {
       10, 30, 50, 70, 90, 110, 130, 170, 200, 500,
   };
 
-  for (bool set_image = false; button_->GetImage(Button::STATE_NORMAL).isNull();
-       set_image = true) {
-    if (set_image)
-      button_->SetImage(Button::STATE_NORMAL, CreateTestImage(16, 16));
+  for (bool is_multiline : {false, true}) {
+    button_->SetMultiLine(is_multiline);
+    for (bool set_image : {false, true}) {
+      if (set_image)
+        button_->SetImage(Button::STATE_NORMAL, CreateTestImage(16, 16));
 
-    bool preferred_size_is_sometimes_narrower_than_max = false;
+      bool preferred_size_is_sometimes_narrower_than_max = false;
+      bool preferred_height_shrinks_as_max_width_grows = false;
 
-    for (size_t i = 0; i < std::size(text_cases); ++i) {
-      for (size_t j = 0; j < std::size(width_cases); ++j) {
-        button_->SetText(ASCIIToUTF16(text_cases[i]));
-        button_->SetMaxSize(gfx::Size(width_cases[j], 30));
+      for (size_t i = 0; i < std::size(text_cases); ++i) {
+        for (size_t j = 0; j < std::size(width_cases); ++j) {
+          const gfx::Size old_preferred_size = button_->GetPreferredSize();
 
-        const gfx::Size preferred_size = button_->GetPreferredSize();
-        EXPECT_LE(preferred_size.width(), width_cases[j]);
+          button_->SetText(ASCIIToUTF16(text_cases[i]));
+          button_->SetMaxSize(gfx::Size(width_cases[j], 30));
 
-        if (preferred_size.width() < width_cases[j])
-          preferred_size_is_sometimes_narrower_than_max = true;
+          const gfx::Size preferred_size = button_->GetPreferredSize();
+          EXPECT_LE(preferred_size.width(), width_cases[j]);
+
+          if (preferred_size.width() < width_cases[j])
+            preferred_size_is_sometimes_narrower_than_max = true;
+
+          if (preferred_size.height() < old_preferred_size.height())
+            preferred_height_shrinks_as_max_width_grows = true;
+        }
       }
-    }
 
-    EXPECT_TRUE(preferred_size_is_sometimes_narrower_than_max);
+      EXPECT_TRUE(preferred_size_is_sometimes_narrower_than_max);
+      if (is_multiline)
+        EXPECT_TRUE(preferred_height_shrinks_as_max_width_grows);
+    }
   }
 }
 
@@ -429,12 +442,12 @@ TEST_F(LabelButtonTest, ImageAlignmentWithMultilineLabel) {
   button_->SetImage(Button::STATE_NORMAL, image);
 
   button_->SetBoundsRect(gfx::Rect(button_->GetPreferredSize()));
-  RunScheduledLayout(button_);
+  views::test::RunScheduledLayout(button_);
   int y_origin_centered = button_->image()->origin().y();
 
   button_->SetBoundsRect(gfx::Rect(button_->GetPreferredSize()));
   button_->SetImageCentered(false);
-  RunScheduledLayout(button_);
+  views::test::RunScheduledLayout(button_);
   int y_origin_not_centered = button_->image()->origin().y();
 
   EXPECT_LT(y_origin_not_centered, y_origin_centered);
@@ -467,17 +480,17 @@ TEST_F(LabelButtonTest, LabelAndImage) {
   gfx::Size button_size = button_->GetPreferredSize();
   button_size.Enlarge(50, 0);
   button_->SetSize(button_size);
-  RunScheduledLayout(button_);
+  views::test::RunScheduledLayout(button_);
   EXPECT_LT(button_->image()->bounds().right(), button_->label()->bounds().x());
   int left_align_label_midpoint = button_->label()->bounds().CenterPoint().x();
   button_->SetHorizontalAlignment(gfx::ALIGN_CENTER);
-  RunScheduledLayout(button_);
+  views::test::RunScheduledLayout(button_);
   EXPECT_LT(button_->image()->bounds().right(), button_->label()->bounds().x());
   int center_align_label_midpoint =
       button_->label()->bounds().CenterPoint().x();
   EXPECT_LT(left_align_label_midpoint, center_align_label_midpoint);
   button_->SetHorizontalAlignment(gfx::ALIGN_RIGHT);
-  RunScheduledLayout(button_);
+  views::test::RunScheduledLayout(button_);
   EXPECT_LT(button_->label()->bounds().right(), button_->image()->bounds().x());
 
   button_->SetText(std::u16string());
@@ -525,7 +538,7 @@ TEST_F(LabelButtonTest, LabelWrapAndImageAlignment) {
   gfx::Size preferred_size = button_->GetPreferredSize();
   preferred_size.set_height(button_->GetHeightForWidth(preferred_size.width()));
   button_->SetSize(preferred_size);
-  RunScheduledLayout(button_);
+  views::test::RunScheduledLayout(button_);
 
   EXPECT_EQ(preferred_size.width(),
             image.width() + image_spacing + text_wrap_width);
@@ -635,7 +648,7 @@ TEST_F(LabelButtonTest, ChangeTextSize) {
   // is increased.
   button_->SetText(longer_text);
   EXPECT_TRUE(ViewTestApi(button_).needs_layout());
-  RunScheduledLayout(button_);
+  views::test::RunScheduledLayout(button_);
   EXPECT_GT(button_->label()->bounds().width(), original_label_width * 2);
   EXPECT_GT(button_->GetPreferredSize().width(), original_width * 2);
 
@@ -643,7 +656,7 @@ TEST_F(LabelButtonTest, ChangeTextSize) {
   // text is restored.
   button_->SetText(text);
   EXPECT_TRUE(ViewTestApi(button_).needs_layout());
-  RunScheduledLayout(button_);
+  views::test::RunScheduledLayout(button_);
   EXPECT_EQ(original_label_width, button_->label()->bounds().width());
   EXPECT_EQ(original_width, button_->GetPreferredSize().width());
 }
@@ -727,7 +740,7 @@ TEST_F(LabelButtonTest, ImageOrLabelGetClipped) {
   // The border size + the content height is more than button's preferred size.
   button_->SetBorder(CreateEmptyBorder(
       gfx::Insets::TLBR(image_size / 2, 0, image_size / 2, 0)));
-  RunScheduledLayout(button_);
+  views::test::RunScheduledLayout(button_);
 
   // Ensure that content (image and label) doesn't get clipped by the border.
   EXPECT_GE(button_->image()->height(), image_size);

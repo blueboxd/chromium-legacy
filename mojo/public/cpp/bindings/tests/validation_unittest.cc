@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -25,7 +25,6 @@
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/bindings/tests/validation_test_input_parser.h"
-#include "mojo/public/cpp/system/core.h"
 #include "mojo/public/cpp/system/message.h"
 #include "mojo/public/cpp/test_support/test_support.h"
 #include "mojo/public/interfaces/bindings/tests/validation_test_associated_interfaces.mojom.h"

@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -19,6 +19,26 @@
 #include "content/public/browser/web_contents.h"
 #include "net/http/http_response_headers.h"
 #include "url/gurl.h"
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "chrome/browser/ash/profiles/profile_helper.h"
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+
+namespace {
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+enterprise_connectors::DTOrigin GetAttestationFlowOrigin(
+    content::BrowserContext* context) {
+  if (context->IsOffTheRecord() && ash::ProfileHelper::IsSigninProfile(
+                                       Profile::FromBrowserContext(context))) {
+    return enterprise_connectors::DTOrigin::kLoginScreen;
+  }
+
+  return enterprise_connectors::DTOrigin::kInSession;
+}
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+
+}  // namespace
 
 namespace enterprise_connectors {
 
@@ -85,6 +105,11 @@ DeviceTrustNavigationThrottle::AddHeadersIfNeeded() {
 
   // If we are starting an attestation flow.
   if (navigation_handle()->GetResponseHeaders() == nullptr) {
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+    LogOrigin(GetAttestationFlowOrigin(
+        navigation_handle()->GetWebContents()->GetBrowserContext()));
+    LogEnrollmentStatus();
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
     LogAttestationFunnelStep(DTAttestationFunnelStep::kAttestationFlowStarted);
     navigation_handle()->SetRequestHeader(kDeviceTrustHeader,
                                           kDeviceTrustHeaderValue);

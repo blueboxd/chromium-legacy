@@ -1,4 +1,4 @@
-/* Copyright 2016 The Chromium Authors. All rights reserved.
+/* Copyright 2016 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -160,6 +160,7 @@ h1 {
   cursor: pointer;
   font: inherit;
   height: 40px;
+  overflow: hidden;
   padding-inline-start: var(--section-padding);
   text-align: start;
   width: 100%;

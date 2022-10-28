@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -38,6 +38,7 @@
 #include "components/content_settings/core/browser/website_settings_info.h"
 #include "components/content_settings/core/browser/website_settings_registry.h"
 #include "components/content_settings/core/common/content_settings.h"
+#include "components/content_settings/core/common/content_settings_metadata.h"
 #include "components/content_settings/core/common/content_settings_pattern.h"
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "components/content_settings/core/common/content_settings_utils.h"
@@ -688,26 +689,6 @@ void HostContentSettingsMap::RecordExceptionMetrics() {
   }
 }
 
-base::Time HostContentSettingsMap::GetExpirationForTesting(
-    GURL& primary_url,
-    GURL& secondary_url,
-    ContentSettingsType content_type) {
-  content_settings::PatternPair patterns = GetPatternsForContentSettingsType(
-      primary_url, secondary_url, content_type);
-
-  std::unique_ptr<content_settings::RuleIterator> iterator =
-      pref_provider_->GetRuleIterator(content_type, /* off_the_record */ false);
-  while (iterator->HasNext()) {
-    content_settings::Rule rule = iterator->Next();
-    if (rule.primary_pattern == patterns.first &&
-        rule.secondary_pattern == patterns.second) {
-      return rule.expiration;
-    }
-  }
-
-  return base::Time();
-}
-
 void HostContentSettingsMap::AddObserver(content_settings::Observer* observer) {
   observers_.AddObserver(observer);
 }
@@ -729,19 +710,6 @@ void HostContentSettingsMap::ClearSettingsForOneType(
   FlushLossyWebsiteSettings();
 }
 
-base::Time HostContentSettingsMap::GetSettingLastModifiedDate(
-    const ContentSettingsPattern& primary_pattern,
-    const ContentSettingsPattern& secondary_pattern,
-    ContentSettingsType content_type) const {
-  base::Time most_recent_time;
-  for (auto* provider : user_modifiable_providers_) {
-    base::Time time = provider->GetWebsiteSettingLastModified(
-        primary_pattern, secondary_pattern, content_type);
-    most_recent_time = std::max(time, most_recent_time);
-  }
-  return most_recent_time;
-}
-
 void HostContentSettingsMap::ClearSettingsForOneTypeWithPredicate(
     ContentSettingsType content_type,
     base::Time begin_time,
@@ -759,11 +727,10 @@ void HostContentSettingsMap::ClearSettingsForOneTypeWithPredicate(
     if (pattern_predicate.is_null() ||
         pattern_predicate.Run(setting.primary_pattern,
                               setting.secondary_pattern)) {
-      for (auto* provider : user_modifiable_providers_) {
-        base::Time last_modified = provider->GetWebsiteSettingLastModified(
-            setting.primary_pattern, setting.secondary_pattern, content_type);
-        if (last_modified >= begin_time &&
-            (last_modified < end_time || end_time.is_null())) {
+      base::Time last_modified = setting.metadata.last_modified;
+      if (last_modified >= begin_time &&
+          (last_modified < end_time || end_time.is_null())) {
+        for (auto* provider : user_modifiable_providers_) {
           provider->SetWebsiteSetting(setting.primary_pattern,
                                       setting.secondary_pattern, content_type,
                                       base::Value(), {});
@@ -819,8 +786,9 @@ void HostContentSettingsMap::AddSettingsForOneType(
     // We may be adding settings for only specific rule types. If that's the
     // case and this setting isn't a match, don't add it. We will also avoid
     // adding any expired rules since they are no longer valid.
-    if ((!rule.expiration.is_null() && (rule.expiration < base::Time::Now())) ||
-        (session_model && (session_model != rule.session_model))) {
+    if ((!rule.metadata.expiration.is_null() &&
+         (rule.metadata.expiration < base::Time::Now())) ||
+        (session_model && (session_model != rule.metadata.session_model))) {
       continue;
     }
 
@@ -837,7 +805,7 @@ void HostContentSettingsMap::AddSettingsForOneType(
     settings->emplace_back(rule.primary_pattern, rule.secondary_pattern,
                            std::move(value),
                            kProviderNamesSourceMap[provider_type].provider_name,
-                           incognito, rule.expiration);
+                           incognito, rule.metadata);
   }
 }
 
@@ -915,11 +883,11 @@ base::Value HostContentSettingsMap::GetWebsiteSettingInternal(
   UsedContentSettingsProviders();
   ContentSettingsPattern* primary_pattern = nullptr;
   ContentSettingsPattern* secondary_pattern = nullptr;
-  content_settings::SessionModel* session_model = nullptr;
+  content_settings::RuleMetaData* metadata = nullptr;
   if (info) {
     primary_pattern = &info->primary_pattern;
     secondary_pattern = &info->secondary_pattern;
-    session_model = &info->session_model;
+    metadata = &info->metadata;
   }
 
   // The list of |content_settings_providers_| is ordered according to their
@@ -928,7 +896,7 @@ base::Value HostContentSettingsMap::GetWebsiteSettingInternal(
   for (; it != content_settings_providers_.end(); ++it) {
     base::Value value = GetContentSettingValueAndPatterns(
         it->second.get(), primary_url, secondary_url, content_type,
-        is_off_the_record_, primary_pattern, secondary_pattern, session_model);
+        is_off_the_record_, primary_pattern, secondary_pattern, metadata);
     if (!value.is_none()) {
       if (info)
         info->source = kProviderNamesSourceMap[it->first].provider_source;
@@ -953,7 +921,7 @@ base::Value HostContentSettingsMap::GetContentSettingValueAndPatterns(
     bool include_incognito,
     ContentSettingsPattern* primary_pattern,
     ContentSettingsPattern* secondary_pattern,
-    content_settings::SessionModel* session_model) {
+    content_settings::RuleMetaData* metadata) {
   // TODO(crbug.com/1336617): Remove this check once we figure out what is
   // wrong.
   CHECK(provider);
@@ -966,7 +934,7 @@ base::Value HostContentSettingsMap::GetContentSettingValueAndPatterns(
         provider->GetRuleIterator(content_type, true /* incognito */));
     base::Value value = GetContentSettingValueAndPatterns(
         incognito_rule_iterator.get(), primary_url, secondary_url,
-        primary_pattern, secondary_pattern, session_model);
+        primary_pattern, secondary_pattern, metadata);
     if (!value.is_none())
       return value;
   }
@@ -975,7 +943,7 @@ base::Value HostContentSettingsMap::GetContentSettingValueAndPatterns(
       provider->GetRuleIterator(content_type, false /* incognito */));
   base::Value value = GetContentSettingValueAndPatterns(
       rule_iterator.get(), primary_url, secondary_url, primary_pattern,
-      secondary_pattern, session_model);
+      secondary_pattern, metadata);
   if (!value.is_none() && include_incognito) {
     value = ProcessIncognitoInheritanceBehavior(content_type, std::move(value));
   }
@@ -989,20 +957,20 @@ base::Value HostContentSettingsMap::GetContentSettingValueAndPatterns(
     const GURL& secondary_url,
     ContentSettingsPattern* primary_pattern,
     ContentSettingsPattern* secondary_pattern,
-    content_settings::SessionModel* session_model) {
+    content_settings::RuleMetaData* metadata) {
   if (rule_iterator) {
     while (rule_iterator->HasNext()) {
       const content_settings::Rule& rule = rule_iterator->Next();
       if (rule.primary_pattern.Matches(primary_url) &&
           rule.secondary_pattern.Matches(secondary_url) &&
-          (rule.expiration.is_null() ||
-           (rule.expiration > base::Time::Now()))) {
+          (rule.metadata.expiration.is_null() ||
+           (rule.metadata.expiration > base::Time::Now()))) {
         if (primary_pattern)
           *primary_pattern = rule.primary_pattern;
         if (secondary_pattern)
           *secondary_pattern = rule.secondary_pattern;
-        if (session_model)
-          *session_model = rule.session_model;
+        if (metadata)
+          *metadata = rule.metadata;
         return rule.value.Clone();
       }
     }

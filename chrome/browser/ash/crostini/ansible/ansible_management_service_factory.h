@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -23,6 +23,9 @@ class AnsibleManagementServiceFactory : public ProfileKeyedServiceFactory {
       delete;
   AnsibleManagementServiceFactory& operator=(
       const AnsibleManagementServiceFactory&) = delete;
+
+  KeyedService* SetTestingFactoryAndUse(content::BrowserContext* context,
+                                        TestingFactory testing_factory);
 
  private:
   friend class base::NoDestructor<AnsibleManagementServiceFactory>;

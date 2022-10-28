@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,12 +6,12 @@
 
 #import <UIKit/UIKit.h>
 
-#include "base/check_op.h"
+#import "base/check_op.h"
 #import "base/test/ios/wait_util.h"
 #import "ios/chrome/browser/ui/gestures/layout_switcher.h"
 #import "ios/chrome/browser/ui/gestures/layout_switcher_provider.h"
 #import "ios/chrome/browser/ui/gestures/view_revealing_animatee.h"
-#include "testing/platform_test.h"
+#import "testing/platform_test.h"
 #import "third_party/ocmock/OCMock/OCMock.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)

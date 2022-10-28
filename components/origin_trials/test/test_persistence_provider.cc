@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -24,7 +24,7 @@ TestPersistenceProvider::GetPersistentTrialTokens(
 
 void TestPersistenceProvider::SavePersistentTrialTokens(
     const url::Origin& origin,
-    const base::flat_set<origin_trials::PersistedTrialToken> tokens) {
+    const base::flat_set<origin_trials::PersistedTrialToken>& tokens) {
   if (tokens.empty()) {
     storage_.erase(origin);
   } else {

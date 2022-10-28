@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -30,19 +30,20 @@ class ASH_EXPORT BrowserAcceleratorConfiguration
 
   // AcceleratorConfiguration:
   const std::vector<AcceleratorInfo>& GetConfigForAction(
-      AcceleratorAction actionId) override;
+      AcceleratorActionId action_id) override;
   bool IsMutable() const override;
   AcceleratorConfigResult AddUserAccelerator(
-      AcceleratorAction action,
+      AcceleratorActionId action_id,
       const ui::Accelerator& accelerator) override;
   AcceleratorConfigResult RemoveAccelerator(
-      AcceleratorAction action,
+      AcceleratorActionId action_id,
       const ui::Accelerator& accelerator) override;
   AcceleratorConfigResult ReplaceAccelerator(
-      AcceleratorAction action,
+      AcceleratorActionId action_id,
       const ui::Accelerator& old_acc,
       const ui::Accelerator& new_acc) override;
-  AcceleratorConfigResult RestoreDefault(AcceleratorAction action) override;
+  AcceleratorConfigResult RestoreDefault(
+      AcceleratorActionId action_id) override;
   AcceleratorConfigResult RestoreAllDefaults() override;
 
  private:

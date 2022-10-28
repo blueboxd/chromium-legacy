@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,7 +12,7 @@
 #include "base/sequence_checker.h"
 #include "chrome/browser/ash/attestation/tpm_challenge_key_result.h"
 #include "chrome/browser/ash/attestation/tpm_challenge_key_subtle.h"
-#include "chromeos/dbus/constants/attestation_constants.h"
+#include "chromeos/ash/components/dbus/constants/attestation_constants.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
 class Profile;

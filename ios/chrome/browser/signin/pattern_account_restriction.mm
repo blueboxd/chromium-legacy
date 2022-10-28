@@ -1,11 +1,11 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #import "ios/chrome/browser/signin/pattern_account_restriction.h"
 
-#include "base/strings/string_util.h"
-#include "base/values.h"
+#import "base/strings/string_util.h"
+#import "base/values.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -93,10 +93,10 @@ bool ArePatternsValid(const base::Value* value) {
 }
 
 absl::optional<PatternAccountRestriction> PatternAccountRestrictionFromValue(
-    const base::Value::ConstListView& value) {
+    const base::Value::List& list) {
   std::vector<Pattern> patterns;
-  patterns.reserve(value.size());
-  for (const base::Value& item : value) {
+  patterns.reserve(list.size());
+  for (const base::Value& item : list) {
     if (!item.is_string())
       continue;
     auto maybe_pattern = PatternFromString(item.GetString());

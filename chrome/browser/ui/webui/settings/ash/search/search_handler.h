@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -107,7 +107,7 @@ class SearchHandler : public mojom::SearchHandler,
   SearchTagRegistry* search_tag_registry_;
   OsSettingsSections* sections_;
   Hierarchy* hierarchy_;
-  mojo::Remote<local_search_service::mojom::Index> index_remote_;
+  mojo::Remote<ash::local_search_service::mojom::Index> index_remote_;
 
   // Note: Expected to have multiple clients, so ReceiverSet/RemoteSet are used.
   mojo::ReceiverSet<mojom::SearchHandler> receivers_;

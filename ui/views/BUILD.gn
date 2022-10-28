@@ -265,6 +265,7 @@ component("views") {
     "widget/native_widget_private.h",
     "widget/root_view.h",
     "widget/root_view_targeter.h",
+    "widget/sublevel_manager.h",
     "widget/tooltip_manager.h",
     "widget/unique_widget_ptr.h",
     "widget/widget.h",
@@ -469,6 +470,7 @@ component("views") {
     "widget/native_widget_private.cc",
     "widget/root_view.cc",
     "widget/root_view_targeter.cc",
+    "widget/sublevel_manager.cc",
     "widget/tooltip_manager.cc",
     "widget/unique_widget_ptr.cc",
     "widget/widget.cc",
@@ -601,7 +603,6 @@ component("views") {
 
   if (is_mac) {
     public += [
-      "cocoa/immersive_mode_delegate_mac.h",
       "cocoa/native_widget_mac_ns_window_host.h",
       "controls/menu/menu_closure_animation_mac.h",
       "controls/menu/menu_cocoa_watcher_mac.h",
@@ -610,6 +611,7 @@ component("views") {
       "event_monitor_mac.h",
       "widget/native_widget_mac.h",
       "widget/widget_utils_mac.h",
+      "window/native_frame_view_mac.h",
     ]
     sources += [
       "accessibility/ax_virtual_view_mac.mm",
@@ -638,6 +640,7 @@ component("views") {
       "views_touch_selection_controller_factory_mac.cc",
       "widget/native_widget_mac.mm",
       "widget/widget_utils_mac.mm",
+      "window/native_frame_view_mac.mm",
     ]
     public_deps += [ "//components/remote_cocoa/common:mojo" ]
     deps += [
@@ -839,7 +842,10 @@ component("views") {
           "widget/desktop_aura/window_event_filter_lacros.cc",
           "widget/desktop_aura/window_event_filter_lacros.h",
         ]
-        deps += [ "//ui/base:hit_test" ]
+        deps += [
+          "//chromeos/ui/base",
+          "//ui/base:hit_test",
+        ]
       }
       if (is_linux || is_chromeos_lacros || is_fuchsia) {
         public += [
@@ -1002,6 +1008,8 @@ source_set("test_support") {
     "test/views_test_base.h",
     "test/views_test_helper.cc",
     "test/views_test_helper.h",
+    "test/views_test_utils.cc",
+    "test/views_test_utils.h",
     "test/widget_animation_waiter.cc",
     "test/widget_animation_waiter.h",
     "test/widget_test.cc",
@@ -1209,6 +1217,7 @@ test("views_unittests") {
     "widget/drop_helper_unittest.cc",
     "widget/native_widget_unittest.cc",
     "widget/root_view_unittest.cc",
+    "widget/sublevel_manager_unittest.cc",
     "widget/unique_widget_ptr_unittest.cc",
     "widget/widget_delegate_unittest.cc",
     "widget/widget_unittest.cc",
@@ -1351,6 +1360,7 @@ test("views_unittests") {
 
     additional_manifest_fragments = [
       "//build/config/fuchsia/test/fonts.shard.test-cml",
+      "//build/config/fuchsia/test/mark_vmo_executable.shard.test-cml",
       "//build/config/fuchsia/test/present_view.shard.test-cml",
       "//third_party/fuchsia-sdk/sdk/pkg/vulkan/client.shard.cml",
     ]

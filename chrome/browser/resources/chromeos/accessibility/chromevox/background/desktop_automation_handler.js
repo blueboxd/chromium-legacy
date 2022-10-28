@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -448,6 +448,28 @@ export class DesktopAutomationHandler extends DesktopAutomationInterface {
    */
   ignoreDocumentSelectionFromAction(val) {
     this.shouldIgnoreDocumentSelectionFromAction_ = val;
+  }
+
+  /** @override */
+  onNativeNextOrPreviousCharacter() {
+    if (this.textEditHandler) {
+      this.textEditHandler.injectInferredIntents([{
+        command: chrome.automation.IntentCommandType.MOVE_SELECTION,
+        textBoundary: chrome.automation.IntentTextBoundaryType.CHARACTER,
+      }]);
+    }
+  }
+
+  /** @override */
+  onNativeNextOrPreviousWord(isNext) {
+    if (this.textEditHandler) {
+      this.textEditHandler.injectInferredIntents([{
+        command: chrome.automation.IntentCommandType.MOVE_SELECTION,
+        textBoundary: isNext ?
+            chrome.automation.IntentTextBoundaryType.WORD_END :
+            chrome.automation.IntentTextBoundaryType.WORD_START,
+      }]);
+    }
   }
 
   /**

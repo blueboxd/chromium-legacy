@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -14,12 +14,10 @@
 #include "base/allocator/partition_allocator/allocation_guard.h"
 #include "base/allocator/partition_allocator/dangling_raw_ptr_checks.h"
 #include "base/allocator/partition_allocator/memory_reclaimer.h"
+#include "base/allocator/partition_allocator/partition_alloc_buildflags.h"
 #include "base/allocator/partition_allocator/partition_alloc_check.h"
 #include "base/allocator/partition_allocator/partition_alloc_config.h"
 #include "base/allocator/partition_allocator/partition_lock.h"
-#include "base/allocator/partition_allocator/starscan/pcscan.h"
-#include "base/allocator/partition_allocator/starscan/stats_collector.h"
-#include "base/allocator/partition_allocator/starscan/stats_reporter.h"
 #include "base/allocator/partition_allocator/thread_cache.h"
 #include "base/bind.h"
 #include "base/callback.h"
@@ -40,6 +38,12 @@
 #include "base/timer/timer.h"
 #include "base/trace_event/base_tracing.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
+
+#if BUILDFLAG(STARSCAN)
+#include "base/allocator/partition_allocator/starscan/pcscan.h"
+#include "base/allocator/partition_allocator/starscan/stats_collector.h"
+#include "base/allocator/partition_allocator/starscan/stats_reporter.h"
+#endif  // BUILDFLAG(STARSCAN)
 
 namespace base {
 namespace allocator {

@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -14,6 +14,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/thread_checker.h"
+#include "base/trace_event/memory_allocator_dump_guid.h"
 #include "build/build_config.h"
 #include "components/viz/common/resources/resource_format.h"
 #include "gpu/command_buffer/common/mailbox.h"
@@ -30,7 +31,6 @@
 namespace base {
 namespace trace_event {
 class ProcessMemoryDump;
-class MemoryAllocatorDump;
 }  // namespace trace_event
 }  // namespace base
 
@@ -39,7 +39,6 @@ class GpuFence;
 }  // namespace gfx
 
 namespace gpu {
-class MailboxManager;
 class SharedContextState;
 class SharedImageManager;
 class SharedImageRepresentation;
@@ -99,10 +98,16 @@ class GPU_GLES2_EXPORT SharedImageBacking {
   const Mailbox& mailbox() const { return mailbox_; }
   size_t estimated_size() const { return estimated_size_; }
   bool is_thread_safe() const { return !!lock_; }
+  bool is_ref_counted() const { return is_ref_counted_; }
+
   void OnContextLost();
 
   // Creates SkImageInfo matching backing size, format, alpha and color space.
   SkImageInfo AsSkImageInfo() const;
+
+  // Disables reference counting for backing. No references should be added,
+  // either before or after this is called.
+  void SetNotRefCounted();
 
   // Concrete functions to manage a ref count.
   void AddRef(SharedImageRepresentation* representation);
@@ -140,6 +145,9 @@ class GPU_GLES2_EXPORT SharedImageBacking {
   // if they support `SHARED_IMAGE_USAGE_CPU_UPLOAD`.
   virtual bool UploadFromMemory(const SkPixmap& pixmap);
 
+  // Reads back pixels from GPU texture into memory in `pixmap`.
+  virtual bool ReadbackToMemory(SkPixmap& pixmap);
+
   // Copy from the backing's GPU texture to its GpuMemoryBuffer if present. This
   // is needed on Windows where the renderer process can only create shared
   // memory GMBs and an explicit copy is needed. Returns true on success.
@@ -151,16 +159,16 @@ class GPU_GLES2_EXPORT SharedImageBacking {
 
   virtual void MarkForDestruction() {}
 
-  // Allows the backing to attach additional data to the dump or dump
-  // additional sub paths.
-  virtual void OnMemoryDump(const std::string& dump_name,
-                            base::trace_event::MemoryAllocatorDump* dump,
-                            base::trace_event::ProcessMemoryDump* pmd,
-                            uint64_t client_tracing_id);
-
-  // Prepares the backing for use with the legacy mailbox system.
-  // TODO(ericrk): Remove this once the new codepath is complete.
-  virtual bool ProduceLegacyMailbox(MailboxManager* mailbox_manager) = 0;
+  // Produces a MemoryAllocatorDump with `dump_name` and creates a shared
+  // ownership edge to `client_guid`. Subclasses can extend this function to
+  // add additional ownership edges linked to `client_guid` but they must call
+  // SharedImageBacking::OnMemoryDump() first (or do something equivalent) to
+  // create a MemoryAllocatorDump and ownership edge.
+  virtual void OnMemoryDump(
+      const std::string& dump_name,
+      base::trace_event::MemoryAllocatorDumpGuid client_guid,
+      base::trace_event::ProcessMemoryDump* pmd,
+      uint64_t client_tracing_id);
 
   // Reports the estimated size of the backing for the purpose of memory
   // tracking.
@@ -181,12 +189,13 @@ class GPU_GLES2_EXPORT SharedImageBacking {
   friend class SharedImageManager;
   friend class CompoundImageBacking;
 
+  // Memory dump importance values for shared ownership edges.
+  static constexpr int kNonOwningEdgeImportance = 0;
+  static constexpr int kOwningEdgeImportance = 2;
+
   virtual std::unique_ptr<GLTextureImageRepresentation> ProduceGLTexture(
       SharedImageManager* manager,
       MemoryTypeTracker* tracker);
-  virtual std::unique_ptr<GLTextureImageRepresentation>
-  ProduceRGBEmulationGLTexture(SharedImageManager* manager,
-                               MemoryTypeTracker* tracker);
   virtual std::unique_ptr<GLTexturePassthroughImageRepresentation>
   ProduceGLTexturePassthrough(SharedImageManager* manager,
                               MemoryTypeTracker* tracker);
@@ -276,6 +285,8 @@ class GPU_GLES2_EXPORT SharedImageBacking {
   const SkAlphaType alpha_type_;
   const uint32_t usage_;
   const size_t estimated_size_;
+
+  bool is_ref_counted_ = true;
 
   raw_ptr<SharedImageFactory> factory_ = nullptr;
 

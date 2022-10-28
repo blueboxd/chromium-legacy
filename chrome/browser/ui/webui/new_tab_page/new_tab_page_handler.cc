@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -257,40 +257,6 @@ new_tab_page::mojom::ThemePtr MakeTheme(
   }
 
   theme->most_visited = std::move(most_visited);
-
-  auto search_box = realbox::mojom::SearchBoxTheme::New();
-  search_box->bg = color_provider.GetColor(kColorNewTabPageSearchBoxBackground);
-  search_box->bg_hovered =
-      color_provider.GetColor(kColorNewTabPageSearchBoxBackgroundHovered);
-  search_box->border_color =
-      webui::GetNativeTheme(web_contents)->UserHasContrastPreference()
-          ? color_provider.GetColor(kColorLocationBarBorder)
-          : SkColorSetRGB(218, 220, 224);  // google-grey-300
-  search_box->icon = color_provider.GetColor(kColorOmniboxResultsIcon);
-  search_box->icon_selected =
-      color_provider.GetColor(kColorOmniboxResultsIconSelected);
-  search_box->is_dark = !color_utils::IsDark(text_color);
-  search_box->ntp_bg = color_provider.GetColor(kColorNewTabPageBackground);
-  search_box->placeholder = color_provider.GetColor(kColorOmniboxTextDimmed);
-  search_box->results_bg =
-      color_provider.GetColor(kColorOmniboxResultsBackground);
-  search_box->results_bg_hovered =
-      color_provider.GetColor(kColorOmniboxResultsBackgroundHovered);
-  search_box->results_bg_selected =
-      color_provider.GetColor(kColorOmniboxResultsBackgroundSelected);
-  search_box->results_dim =
-      color_provider.GetColor(kColorOmniboxResultsTextDimmed);
-  search_box->results_dim_selected =
-      color_provider.GetColor(kColorOmniboxResultsTextDimmedSelected);
-  search_box->results_text = color_provider.GetColor(kColorOmniboxText);
-  search_box->results_text_selected =
-      color_provider.GetColor(kColorOmniboxResultsTextSelected);
-  search_box->results_url = color_provider.GetColor(kColorOmniboxResultsUrl);
-  search_box->results_url_selected =
-      color_provider.GetColor(kColorOmniboxResultsUrlSelected);
-  search_box->text = color_provider.GetColor(kColorOmniboxText);
-  theme->search_box = std::move(search_box);
-
   return theme;
 }
 
@@ -625,8 +591,7 @@ void NewTabPageHandler::ChooseLocalCustomBackground(
       nullptr);
 }
 
-void NewTabPageHandler::GetPromo(GetPromoCallback callback) {
-  promo_callbacks_.push_back(std::move(callback));
+void NewTabPageHandler::UpdatePromoData() {
   if (promo_service_->promo_data().has_value()) {
     OnPromoDataUpdated();
   }
@@ -679,7 +644,7 @@ void NewTabPageHandler::UpdateDisabledModules() {
   // (if invisible) or no modules (if visible).
   if (!profile_->GetPrefs()->IsManagedPreference(prefs::kNtpModulesVisible)) {
     const auto& module_ids_value =
-        profile_->GetPrefs()->GetValueList(prefs::kNtpDisabledModules);
+        profile_->GetPrefs()->GetList(prefs::kNtpDisabledModules);
     for (const auto& id : module_ids_value) {
       module_ids.push_back(id.GetString());
     }
@@ -713,7 +678,7 @@ void NewTabPageHandler::GetModulesOrder(GetModulesOrderCallback callback) {
   // First, apply order as set by the last drag&drop interaction.
   if (base::FeatureList::IsEnabled(ntp_features::kNtpModulesDragAndDrop)) {
     const auto& module_ids_value =
-        profile_->GetPrefs()->GetValueList(prefs::kNtpModulesOrder);
+        profile_->GetPrefs()->GetList(prefs::kNtpModulesOrder);
     for (const auto& id : module_ids_value) {
       module_ids.push_back(id.GetString());
     }
@@ -818,6 +783,8 @@ void NewTabPageHandler::OnPromoDataUpdated() {
       UMA_HISTOGRAM_MEDIUM_TIMES(
           "NewTabPage.Promos.RequestLatency2.SuccessWithoutPromo", duration);
     } else {
+      DCHECK(promo_service_->promo_status() !=
+             PromoService::Status::NOT_UPDATED);
       UMA_HISTOGRAM_MEDIUM_TIMES("NewTabPage.Promos.RequestLatency2.Failure",
                                  duration);
     }
@@ -825,14 +792,12 @@ void NewTabPageHandler::OnPromoDataUpdated() {
   }
 
   const auto& data = promo_service_->promo_data();
-  for (auto& callback : promo_callbacks_) {
-    if (data.has_value()) {
-      std::move(callback).Run(MakePromo(data.value()));
-    } else {
-      std::move(callback).Run(nullptr);
-    }
+  if (data.has_value() &&
+      promo_service_->promo_status() != PromoService::Status::OK_BUT_BLOCKED) {
+    page_->SetPromo(MakePromo(data.value()));
+  } else {
+    page_->SetPromo(nullptr);
   }
-  promo_callbacks_.clear();
 }
 
 void NewTabPageHandler::OnPromoServiceShuttingDown() {

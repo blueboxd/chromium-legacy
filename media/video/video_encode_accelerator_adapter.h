@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,6 +11,7 @@
 #include "base/containers/circular_deque.h"
 #include "base/containers/queue.h"
 #include "base/memory/raw_ptr.h"
+#include "base/memory/read_only_shared_memory_region.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/unsafe_shared_memory_pool.h"
 #include "base/synchronization/lock.h"
@@ -79,6 +80,8 @@ class MEDIA_EXPORT VideoEncodeAcceleratorAdapter
   static void DestroyAsync(std::unique_ptr<VideoEncodeAcceleratorAdapter> self);
 
  private:
+  class GpuMemoryBufferVideoFramePool;
+  class ReadOnlyRegionPool;
   enum class State {
     kNotInitialized,
     kWaitingForFirstFrame,
@@ -119,10 +122,10 @@ class MEDIA_EXPORT VideoEncodeAcceleratorAdapter
       const gfx::Size& size,
       scoped_refptr<VideoFrame> src_frame);
 
+  scoped_refptr<ReadOnlyRegionPool> input_pool_;
   scoped_refptr<base::UnsafeSharedMemoryPool> output_pool_;
-  scoped_refptr<base::UnsafeSharedMemoryPool> input_pool_;
   std::unique_ptr<base::UnsafeSharedMemoryPool::Handle> output_handle_holder_;
-  size_t input_buffer_size_;
+  scoped_refptr<GpuMemoryBufferVideoFramePool> gmb_frame_pool_;
 
   std::unique_ptr<VideoEncodeAccelerator> accelerator_;
   raw_ptr<GpuVideoAcceleratorFactories> gpu_factories_;

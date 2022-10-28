@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -291,6 +291,6 @@ bool RecipesService::IsTaskDismissed(const std::string& task_name) {
     return false;
   }
   const base::Value::List& dismissed_tasks =
-      profile_->GetPrefs()->GetValueList(kDismissedTasksPrefName);
+      profile_->GetPrefs()->GetList(kDismissedTasksPrefName);
   return base::Contains(dismissed_tasks, base::Value(task_name));
 }

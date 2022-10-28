@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -14,7 +14,7 @@ import './security_keys_set_pin_dialog.js';
 import './security_keys_reset_dialog.js';
 
 import {assert} from 'chrome://resources/js/assert_ts.js';
-import {focusWithoutInk} from 'chrome://resources/js/cr/ui/focus_without_ink.m.js';
+import {focusWithoutInk} from 'chrome://resources/js/cr/ui/focus_without_ink.js';
 import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {loadTimeData} from '../i18n_setup.js';
@@ -97,7 +97,8 @@ class SecurityKeysSubpageElement extends PolymerElement {
   private onCredentialManagementDialogClosed_() {
     this.showCredentialManagementDialog_ = false;
     const toFocus =
-        this.shadowRoot!.querySelector('#credentialManagementButton');
+        this.shadowRoot!.querySelector<HTMLElement>(
+            '#credentialManagementButton');
     assert(toFocus);
     focusWithoutInk(toFocus);
   }
@@ -117,7 +118,8 @@ class SecurityKeysSubpageElement extends PolymerElement {
 
   private onBioEnrollDialogClosed_() {
     this.showBioEnrollDialog_ = false;
-    const toFocus = this.shadowRoot!.querySelector('#bioEnrollButton');
+    const toFocus =
+        this.shadowRoot!.querySelector<HTMLElement>('#bioEnrollButton');
     assert(toFocus);
     focusWithoutInk(toFocus);
   }

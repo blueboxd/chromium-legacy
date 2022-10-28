@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 package org.chromium.chrome.browser.signin;
@@ -69,6 +69,7 @@ import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.signin.services.IdentityServicesProvider;
 import org.chromium.chrome.browser.signin.services.SigninMetricsUtils.State;
 import org.chromium.chrome.browser.sync.SyncService;
+import org.chromium.chrome.browser.ui.signin.SyncConsentFragmentBase.SyncDataRowClicked;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.chrome.test.util.ActivityTestUtils;
@@ -80,6 +81,7 @@ import org.chromium.chrome.test.util.browser.signin.SigninTestRule;
 import org.chromium.components.externalauth.ExternalAuthUtils;
 import org.chromium.components.signin.base.CoreAccountInfo;
 import org.chromium.components.signin.identitymanager.ConsentLevel;
+import org.chromium.components.signin.identitymanager.IdentityManager;
 import org.chromium.components.signin.metrics.SigninAccessPoint;
 import org.chromium.content_public.browser.test.NativeLibraryTestUtils;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
@@ -583,6 +585,50 @@ public class SyncConsentFragmentTest {
 
     @Test
     @LargeTest
+    @EnableFeatures({ChromeFeatureList.ALLOW_SYNC_OFF_FOR_CHILD_ACCOUNTS})
+    public void testClickingSettingsThenCancelForChildIsNoOp() {
+        CoreAccountInfo accountInfo = mSigninTestRule.addChildTestAccountThenWaitForSignin();
+        // Check the user is not consented to sync.
+        CriteriaHelper.pollUiThread(() -> {
+            return !IdentityServicesProvider.get()
+                            .getSigninManager(Profile.getLastUsedRegularProfile())
+                            .getIdentityManager()
+                            .hasPrimaryAccount(ConsentLevel.SYNC);
+        });
+        mSyncConsentActivity = ActivityTestUtils.waitForActivity(
+                InstrumentationRegistry.getInstrumentation(), SyncConsentActivity.class, () -> {
+                    SyncConsentActivityLauncherImpl.get().launchActivityForPromoDefaultFlow(
+                            mChromeActivityTestRule.getActivity(), SigninAccessPoint.SETTINGS,
+                            accountInfo.getEmail());
+                });
+        onView(withId(R.id.signin_details_description)).perform(clickOnClickableSpan());
+        // Wait for the sync consent to be set.
+        CriteriaHelper.pollUiThread(() -> {
+            return IdentityServicesProvider.get()
+                    .getSigninManager(Profile.getLastUsedRegularProfile())
+                    .getIdentityManager()
+                    .hasPrimaryAccount(ConsentLevel.SYNC);
+        });
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            assertTrue(SyncService.get().isSyncRequested());
+            assertFalse(SyncService.get().isFirstSetupComplete());
+        });
+        // Click the cancel button to exit the activity.
+        onView(withId(R.id.cancel_button)).perform(click());
+        // Check that the sync consent has been cleared (but the user is still signed in), and that
+        // the sync service state changes have been undone.
+        CriteriaHelper.pollUiThread(() -> {
+            IdentityManager identityManager =
+                    IdentityServicesProvider.get()
+                            .getSigninManager(Profile.getLastUsedRegularProfile())
+                            .getIdentityManager();
+            return identityManager.hasPrimaryAccount(ConsentLevel.SIGNIN)
+                    && !identityManager.hasPrimaryAccount(ConsentLevel.SYNC);
+        });
+    }
+
+    @Test
+    @LargeTest
     @EnableFeatures({ChromeFeatureList.TANGIBLE_SYNC})
     public void testTangibleSyncConsentFragmentWhenSelectedAccountIsRemoved() {
         mSigninTestRule.addAccount("test.default.account@gmail.com");
@@ -862,6 +908,109 @@ public class SyncConsentFragmentTest {
                 mHistogramTestRule.getHistogramValueCount(
                         "Signin.AddAccountState", State.NULL_ACCOUNT_NAME));
         assertEquals(4, mHistogramTestRule.getHistogramTotalCount("Signin.AddAccountState"));
+    }
+
+    @Test
+    @MediumTest
+    @EnableFeatures({ChromeFeatureList.TANGIBLE_SYNC})
+    public void testTangibleSyncConsentFragmentBookmarkRowClicked() {
+        mSigninTestRule.addAccount(AccountManagerTestRule.TEST_ACCOUNT_EMAIL);
+        mSyncConsentActivity = ActivityTestUtils.waitForActivity(
+                InstrumentationRegistry.getInstrumentation(), SyncConsentActivity.class, () -> {
+                    SyncConsentActivityLauncherImpl.get().launchActivityForPromoDefaultFlow(
+                            mChromeActivityTestRule.getActivity(),
+                            SigninAccessPoint.BOOKMARK_MANAGER,
+                            AccountManagerTestRule.TEST_ACCOUNT_EMAIL);
+                });
+
+        onView(withId(R.id.bookmarks_row)).perform(click());
+
+        assertEquals(1,
+                mHistogramTestRule.getHistogramValueCount(
+                        "Signin.SyncConsentScreen.DataRowClicked", SyncDataRowClicked.BOOKMARKS));
+        assertEquals(1,
+                mHistogramTestRule.getHistogramTotalCount(
+                        "Signin.SyncConsentScreen.DataRowClicked"));
+    }
+
+    @Test
+    @MediumTest
+    @EnableFeatures({ChromeFeatureList.TANGIBLE_SYNC})
+    public void testTangibleSyncConsentFragmentAutofillRowClicked() {
+        mSigninTestRule.addAccount(AccountManagerTestRule.TEST_ACCOUNT_EMAIL);
+        mSyncConsentActivity = ActivityTestUtils.waitForActivity(
+                InstrumentationRegistry.getInstrumentation(), SyncConsentActivity.class, () -> {
+                    SyncConsentActivityLauncherImpl.get().launchActivityForPromoDefaultFlow(
+                            mChromeActivityTestRule.getActivity(),
+                            SigninAccessPoint.BOOKMARK_MANAGER,
+                            AccountManagerTestRule.TEST_ACCOUNT_EMAIL);
+                });
+
+        onView(withId(R.id.autofill_row)).perform(click());
+
+        assertEquals(1,
+                mHistogramTestRule.getHistogramValueCount(
+                        "Signin.SyncConsentScreen.DataRowClicked", SyncDataRowClicked.AUTOFILL));
+        assertEquals(1,
+                mHistogramTestRule.getHistogramTotalCount(
+                        "Signin.SyncConsentScreen.DataRowClicked"));
+    }
+
+    @Test
+    @MediumTest
+    @EnableFeatures({ChromeFeatureList.TANGIBLE_SYNC})
+    public void testTangibleSyncConsentFragmentHistoryRowClicked() {
+        mSigninTestRule.addAccount(AccountManagerTestRule.TEST_ACCOUNT_EMAIL);
+        mSyncConsentActivity = ActivityTestUtils.waitForActivity(
+                InstrumentationRegistry.getInstrumentation(), SyncConsentActivity.class, () -> {
+                    SyncConsentActivityLauncherImpl.get().launchActivityForPromoDefaultFlow(
+                            mChromeActivityTestRule.getActivity(),
+                            SigninAccessPoint.BOOKMARK_MANAGER,
+                            AccountManagerTestRule.TEST_ACCOUNT_EMAIL);
+                });
+
+        onView(withId(R.id.history_row)).perform(click());
+
+        assertEquals(1,
+                mHistogramTestRule.getHistogramValueCount(
+                        "Signin.SyncConsentScreen.DataRowClicked", SyncDataRowClicked.HISTORY));
+        assertEquals(1,
+                mHistogramTestRule.getHistogramTotalCount(
+                        "Signin.SyncConsentScreen.DataRowClicked"));
+    }
+
+    @Test
+    @MediumTest
+    @EnableFeatures({ChromeFeatureList.TANGIBLE_SYNC})
+    public void testTangibleSyncConsentFragmentSyncRowClickOnlyRecordedOnce() {
+        mSigninTestRule.addAccount(AccountManagerTestRule.TEST_ACCOUNT_EMAIL);
+        mSyncConsentActivity = ActivityTestUtils.waitForActivity(
+                InstrumentationRegistry.getInstrumentation(), SyncConsentActivity.class, () -> {
+                    SyncConsentActivityLauncherImpl.get().launchActivityForPromoDefaultFlow(
+                            mChromeActivityTestRule.getActivity(),
+                            SigninAccessPoint.BOOKMARK_MANAGER,
+                            AccountManagerTestRule.TEST_ACCOUNT_EMAIL);
+                });
+
+        onView(withId(R.id.bookmarks_row)).perform(click());
+        onView(withId(R.id.bookmarks_row)).perform(click());
+        onView(withId(R.id.autofill_row)).perform(click());
+        onView(withId(R.id.autofill_row)).perform(click());
+        onView(withId(R.id.history_row)).perform(click());
+        onView(withId(R.id.history_row)).perform(click());
+
+        assertEquals(1,
+                mHistogramTestRule.getHistogramValueCount(
+                        "Signin.SyncConsentScreen.DataRowClicked", SyncDataRowClicked.BOOKMARKS));
+        assertEquals(1,
+                mHistogramTestRule.getHistogramValueCount(
+                        "Signin.SyncConsentScreen.DataRowClicked", SyncDataRowClicked.AUTOFILL));
+        assertEquals(1,
+                mHistogramTestRule.getHistogramValueCount(
+                        "Signin.SyncConsentScreen.DataRowClicked", SyncDataRowClicked.HISTORY));
+        assertEquals(3,
+                mHistogramTestRule.getHistogramTotalCount(
+                        "Signin.SyncConsentScreen.DataRowClicked"));
     }
 
     private ViewAction clickOnClickableSpan() {

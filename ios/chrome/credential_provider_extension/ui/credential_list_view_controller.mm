@@ -1,13 +1,13 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #import "ios/chrome/credential_provider_extension/ui/credential_list_view_controller.h"
 
-#include "base/mac/foundation_util.h"
-#include "base/numerics/safe_conversions.h"
-#include "ios/chrome/common/app_group/app_group_constants.h"
-#include "ios/chrome/common/app_group/app_group_metrics.h"
+#import "base/mac/foundation_util.h"
+#import "base/numerics/safe_conversions.h"
+#import "ios/chrome/common/app_group/app_group_constants.h"
+#import "ios/chrome/common/app_group/app_group_metrics.h"
 #import "ios/chrome/common/credential_provider/credential.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
 #import "ios/chrome/common/ui/elements/highlight_button.h"
@@ -434,8 +434,8 @@ UIColor* BackgroundColor() {
   [self.delegate showDetailsForCredential:credential];
 }
 
-// Returns number of sections to display based on |suggestedPasswords| and
-// |allPasswords|. If no sections with data, returns 1 for the 'no data' banner.
+// Returns number of sections to display based on `suggestedPasswords` and
+// `allPasswords`. If no sections with data, returns 1 for the 'no data' banner.
 - (int)numberOfSections {
   if ([self numberOfRowsInSuggestedPasswordSection] == 0 ||
       [self.allPasswords count] == 0) {

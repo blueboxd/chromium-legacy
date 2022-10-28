@@ -1,4 +1,4 @@
-# Copyright 2020 The Chromium Authors. All rights reserved.
+# Copyright 2020 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -57,6 +57,8 @@ source_set("permissions") {
     "contexts/webxr_permission_context.h",
     "contexts/window_placement_permission_context.cc",
     "contexts/window_placement_permission_context.h",
+    "notification_permission_review_service.cc",
+    "notification_permission_review_service.h",
     "notifications_engagement_service.cc",
     "notifications_engagement_service.h",
     "object_permission_context_base.cc",
@@ -102,6 +104,8 @@ source_set("permissions") {
     "request_type.h",
     "switches.cc",
     "switches.h",
+    "unused_site_permissions_service.cc",
+    "unused_site_permissions_service.h",
   ]
   deps = [
     "//base",
@@ -153,13 +157,13 @@ source_set("permissions") {
       "android/permission_prompt/permission_dialog.h",
       "android/permission_prompt/permission_dialog_delegate.cc",
       "android/permission_prompt/permission_dialog_delegate.h",
-      "android/permission_prompt/permission_infobar.cc",
-      "android/permission_prompt/permission_infobar.h",
       "android/permission_prompt/permission_message.cc",
       "android/permission_prompt/permission_message.h",
       "android/permission_prompt/permission_prompt_android.cc",
       "android/permission_prompt/permission_prompt_android.h",
       "android/permission_prompt/permission_prompt_android_factory.cc",
+      "android/permission_prompt/permission_prompt_infobar.cc",
+      "android/permission_prompt/permission_prompt_infobar.h",
       "android/permissions_android_feature_list.cc",
       "android/permissions_android_feature_list.h",
       "contexts/geolocation_permission_context_android.cc",

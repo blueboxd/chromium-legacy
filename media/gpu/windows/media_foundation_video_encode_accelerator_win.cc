@@ -1,4 +1,4 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -79,6 +79,12 @@ constexpr const wchar_t* const kMediaFoundationVideoEncoderDLLs[] = {
     L"mfplat.dll",
 };
 
+static const CLSID kIntelAV1HybridEncoderCLSID = {
+    0x62c053ce,
+    0x5357,
+    0x4794,
+    {0x8c, 0x5a, 0xfb, 0xef, 0xfe, 0xff, 0xb8, 0x2d}};
+
 eAVEncH264VProfile GetH264VProfile(VideoCodecProfile profile,
                                    bool is_constrained_h264) {
   switch (profile) {
@@ -115,6 +121,8 @@ bool IsSvcSupported(IMFActivate* activate) {
   // More info: https://crbug.com/1253748
   return false;
 #else
+  // crbug.com/1350257
+  TRACE_EVENT0("catan_investigation", "IsSvcSupported");
   Microsoft::WRL::ComPtr<IMFTransform> encoder;
   Microsoft::WRL::ComPtr<ICodecAPI> codec_api;
   HRESULT hr = activate->ActivateObject(IID_PPV_ARGS(&encoder));
@@ -314,26 +322,7 @@ MediaFoundationVideoEncodeAccelerator::GetSupportedProfiles() {
   SupportedProfiles profiles;
 
   for (auto codec : {VideoCodec::kH264, VideoCodec::kVP9, VideoCodec::kAV1}) {
-    auto codec_profiles = GetSupportedProfilesForCodec(codec, true);
-    profiles.insert(profiles.end(), codec_profiles.begin(),
-                    codec_profiles.end());
-  }
-
-  ReleaseEncoderResources();
-  return profiles;
-}
-
-VideoEncodeAccelerator::SupportedProfiles
-MediaFoundationVideoEncodeAccelerator::GetSupportedProfilesLight() {
-  TRACE_EVENT0(
-      "gpu,startup",
-      "MediaFoundationVideoEncodeAccelerator::GetSupportedProfilesLight");
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-
-  SupportedProfiles profiles;
-
-  for (auto codec : {VideoCodec::kH264, VideoCodec::kVP9, VideoCodec::kAV1}) {
-    auto codec_profiles = GetSupportedProfilesForCodec(codec, false);
+    auto codec_profiles = GetSupportedProfilesForCodec(codec);
     profiles.insert(profiles.end(), codec_profiles.begin(),
                     codec_profiles.end());
   }
@@ -344,8 +333,7 @@ MediaFoundationVideoEncodeAccelerator::GetSupportedProfilesLight() {
 
 VideoEncodeAccelerator::SupportedProfiles
 MediaFoundationVideoEncodeAccelerator::GetSupportedProfilesForCodec(
-    VideoCodec codec,
-    bool populate_svc_info) {
+    VideoCodec codec) {
   SupportedProfiles profiles;
   if ((codec == VideoCodec::kVP9 &&
        !base::FeatureList::IsEnabled(kMediaFoundationVP9Encoding)) ||
@@ -367,10 +355,8 @@ MediaFoundationVideoEncodeAccelerator::GetSupportedProfilesForCodec(
   if (pp_activate) {
     for (UINT32 i = 0; i < encoder_count; i++) {
       if (pp_activate[i]) {
-        if (populate_svc_info && !svc_supported &&
-            IsSvcSupported(pp_activate[i])) {
+        if (!svc_supported && IsSvcSupported(pp_activate[i]))
           svc_supported = true;
-        }
 
         // Release the enumerated instances if any.
         // According to Windows Dev Center,
@@ -682,6 +668,16 @@ bool MediaFoundationVideoEncodeAccelerator::ActivateAsyncEncoder(
   // Try to create the encoder with priority according to merit value.
   HRESULT hr = E_FAIL;
   for (UINT32 i = 0; i < encoder_count; i++) {
+    // Skip flawky Intel hybrid AV1 encoder.
+    if (codec_ == VideoCodec::kAV1) {
+      // Get the CLSID GUID of the HMFT.
+      GUID mft_guid = {0};
+      pp_activate[i]->GetGUID(MFT_TRANSFORM_CLSID_Attribute, &mft_guid);
+      if (mft_guid == kIntelAV1HybridEncoderCLSID) {
+        DLOG(WARNING) << "Skipped Intel hybrid AV1 encoder MFT.";
+        continue;
+      }
+    }
     if (FAILED(hr)) {
       DCHECK(!encoder_);
       DCHECK(!activate_);

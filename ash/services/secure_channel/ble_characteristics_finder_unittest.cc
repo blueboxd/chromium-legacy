@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -121,7 +121,7 @@ class SecureChannelBluetoothLowEnergyCharacteristicFinderTest
         .WillByDefault(Return(std::vector<BluetoothRemoteGattService*>()));
   }
 
-  void SetUp() {
+  void SetUp() override {
     EXPECT_CALL(*adapter_, AddObserver(_)).Times(AtLeast(1));
     EXPECT_CALL(*adapter_, RemoveObserver(_)).Times(AtLeast(1));
 

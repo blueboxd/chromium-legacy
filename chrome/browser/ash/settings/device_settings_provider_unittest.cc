@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -99,10 +99,8 @@ class DeviceSettingsProviderTest : public DeviceSettingsTestBase {
     proto->set_report_boot_mode(enable_reporting);
     proto->set_report_location(enable_reporting);
     proto->set_report_network_configuration(enable_reporting);
-    proto->set_report_network_interfaces(enable_reporting);
     proto->set_report_network_status(enable_reporting);
     proto->set_report_users(enable_reporting);
-    proto->set_report_hardware_status(enable_reporting);
     proto->set_report_session_status(enable_reporting);
     proto->set_report_graphics_status(enable_reporting);
     proto->set_report_crash_report_info(enable_reporting);
@@ -190,10 +188,8 @@ class DeviceSettingsProviderTest : public DeviceSettingsTestBase {
         // Device location reporting is not currently supported.
         // kReportDeviceLocation,
         kReportDeviceNetworkConfiguration,
-        kReportDeviceNetworkInterfaces,
         kReportDeviceNetworkStatus,
         kReportDeviceUsers,
-        kReportDeviceHardwareStatus,
         kReportDevicePeripherals,
         kReportDevicePowerStatus,
         kReportDeviceStorageStatus,
@@ -558,7 +554,8 @@ TEST_F(DeviceSettingsProviderTest, SetPrefFailed) {
 }
 
 TEST_F(DeviceSettingsProviderTest, SetPrefSucceed) {
-  owner_key_util_->SetPrivateKey(device_policy_->GetSigningKey());
+  owner_key_util_->ImportPrivateKeyAndSetPublicKey(
+      device_policy_->GetSigningKey());
   InitOwner(AccountId::FromUserEmail(device_policy_->policy_data().username()),
             true);
   FlushDeviceSettings();
@@ -587,7 +584,8 @@ TEST_F(DeviceSettingsProviderTest, SetPrefSucceed) {
 }
 
 TEST_F(DeviceSettingsProviderTest, SetPrefTwice) {
-  owner_key_util_->SetPrivateKey(device_policy_->GetSigningKey());
+  owner_key_util_->ImportPrivateKeyAndSetPublicKey(
+      device_policy_->GetSigningKey());
   InitOwner(AccountId::FromUserEmail(device_policy_->policy_data().username()),
             true);
   FlushDeviceSettings();
@@ -773,6 +771,27 @@ TEST_F(DeviceSettingsProviderTest, DecodeReportingSettings) {
   // correctly.
   SetReportingSettings(false, status_frequency);
   VerifyReportingSettings(false, status_frequency);
+}
+
+TEST_F(DeviceSettingsProviderTest,
+       DecodeReportingSignalStrengthEventDrivenTelemetrySetting) {
+  em::DeviceReportingProto* proto =
+      device_policy_->payload().mutable_device_reporting();
+  proto->mutable_report_signal_strength_event_driven_telemetry()->add_entries(
+      "https_latency");
+  proto->mutable_report_signal_strength_event_driven_telemetry()->add_entries(
+      "network_telemetry");
+
+  BuildAndInstallDevicePolicy();
+
+  base::Value::List signal_strength_telemetry_list;
+  signal_strength_telemetry_list.Append("https_latency");
+  signal_strength_telemetry_list.Append("network_telemetry");
+  base::Value signal_strength_telemetry_list_value =
+      base::Value(std::move(signal_strength_telemetry_list));
+
+  VerifyPolicyValue(kReportDeviceSignalStrengthEventDrivenTelemetry,
+                    &signal_strength_telemetry_list_value);
 }
 
 TEST_F(DeviceSettingsProviderTest, DecodeHeartbeatSettings) {

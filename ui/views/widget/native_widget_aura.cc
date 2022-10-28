@@ -516,9 +516,12 @@ gfx::Rect NativeWidgetAura::GetRestoredBounds() const {
 
 std::string NativeWidgetAura::GetWorkspace() const {
   int desk_index = window_->GetProperty(aura::client::kWindowWorkspaceKey);
-  return desk_index == aura::client::kWindowWorkspaceUnassignedWorkspace
-             ? std::string()
-             : base::NumberToString(desk_index);
+  if (desk_index == aura::client::kWindowWorkspaceUnassignedWorkspace ||
+      desk_index == aura::client::kWindowWorkspaceVisibleOnAllWorkspaces) {
+    return std::string();
+  }
+
+  return base::NumberToString(desk_index);
 }
 
 void NativeWidgetAura::SetBounds(const gfx::Rect& bounds) {
@@ -713,7 +716,7 @@ void NativeWidgetAura::Restore() {
 
 void NativeWidgetAura::SetFullscreen(bool fullscreen,
                                      int64_t target_display_id) {
-  // The `target_display_id` argument is unsupported in Aura.
+  // TODO(crbug.com/1034783) Support `target_display_id` on this platform.
   DCHECK_EQ(target_display_id, display::kInvalidDisplayId);
   if (!window_ || IsFullscreen() == fullscreen)
     return;  // Nothing to do.
@@ -1131,10 +1134,19 @@ void NativeWidgetAura::OnTransientParentChanged(aura::Window* new_parent) {
 
 NativeWidgetAura::~NativeWidgetAura() {
   destroying_ = true;
-  if (ownership_ == Widget::InitParams::NATIVE_WIDGET_OWNS_WIDGET)
-    delete delegate_;
-  else
+  if (ownership_ == Widget::InitParams::NATIVE_WIDGET_OWNS_WIDGET) {
+    // `drop_helper_` and `window_reorderer_` hold a pointer to `delegate_`'s
+    // root view. Reset them before deleting `delegate_` to avoid holding a
+    // briefly dangling ptr.
+    drop_helper_.reset();
+    window_reorderer_.reset();
+    //  Use `ClearAndDelete` here to stop referencing the underlying pointer and
+    //  free its memory. Compared to raw delete calls, this avoids the raw_ptr
+    //  to be temporarily dangling.
+    delegate_.ClearAndDelete();
+  } else {
     CloseNow();
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////

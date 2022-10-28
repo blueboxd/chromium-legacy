@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,9 +7,6 @@
 
 #include "ash/components/arc/enterprise/arc_data_snapshotd_manager.h"
 #include "ash/components/arc/test/arc_util_test_support.h"
-#include "ash/components/login/auth/public/key.h"
-#include "ash/components/login/auth/public/user_context.h"
-#include "ash/components/login/auth/stub_authenticator_builder.h"
 #include "ash/components/settings/cros_settings_names.h"
 #include "ash/components/settings/cros_settings_provider.h"
 #include "ash/constants/ash_features.h"
@@ -75,6 +72,9 @@
 #include "chromeos/ash/components/dbus/authpolicy/fake_authpolicy_client.h"
 #include "chromeos/ash/components/dbus/session_manager/fake_session_manager_client.h"
 #include "chromeos/ash/components/dbus/userdataauth/fake_userdataauth_client.h"
+#include "chromeos/ash/components/login/auth/public/key.h"
+#include "chromeos/ash/components/login/auth/public/user_context.h"
+#include "chromeos/ash/components/login/auth/stub_authenticator_builder.h"
 #include "chromeos/ash/components/network/network_state_test_helper.h"
 #include "chromeos/dbus/power/fake_power_manager_client.h"
 #include "chromeos/strings/grit/chromeos_strings.h"
@@ -1317,12 +1317,14 @@ IN_PROC_BROWSER_TEST_F(ExistingUserControllerAuthFailureTest, TpmError) {
   OobeScreenWaiter(TpmErrorView::kScreenId).Wait();
   EXPECT_TRUE(LoginScreenTestApi::IsOobeDialogVisible());
 
-  EXPECT_EQ(0, FakePowerManagerClient::Get()->num_request_restart_calls());
+  EXPECT_EQ(
+      0, chromeos::FakePowerManagerClient::Get()->num_request_restart_calls());
 
   test::TapOnPathAndWaitForOobeToBeDestroyed(
       {"tpm-error-message", "restartButton"});
 
-  EXPECT_EQ(1, FakePowerManagerClient::Get()->num_request_restart_calls());
+  EXPECT_EQ(
+      1, chromeos::FakePowerManagerClient::Get()->num_request_restart_calls());
 }
 
 IN_PROC_BROWSER_TEST_F(ExistingUserControllerAuthFailureTest, OwnerRequired) {

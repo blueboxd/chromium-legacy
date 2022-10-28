@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,7 +13,7 @@ import 'chrome://resources/mojo/mojo/public/mojom/base/string16.mojom-lite.js';
 import './file_path.mojom-lite.js';
 import './mojom/shimless_rma.mojom-lite.js';
 
-import {OncMojo} from 'chrome://resources/cr_components/chromeos/network/onc_mojo.m.js';
+import {OncMojo} from 'chrome://resources/cr_components/chromeos/network/onc_mojo.js';
 
 /**
  * @typedef {ash.shimlessRma.mojom.StateResult}
@@ -261,6 +261,27 @@ export const PowerCableStateObserverReceiver =
  */
 export const PowerCableStateObserverInterface =
     ash.shimlessRma.mojom.PowerCableStateObserverInterface;
+
+/**
+ * Type alias for ExternalDiskStateObserverRemote.
+ * @typedef {ash.shimlessRma.mojom.ExternalDiskStateObserverRemote}
+ */
+export const ExternalDiskStateObserverRemote =
+    ash.shimlessRma.mojom.ExternalDiskStateObserverRemote;
+
+/**
+ * Type alias for ExternalDiskStateObserverReceiver.
+ * @typedef {ash.shimlessRma.mojom.ExternalDiskStateObserverReceiver}
+ */
+export const ExternalDiskStateObserverReceiver =
+    ash.shimlessRma.mojom.ExternalDiskStateObserverReceiver;
+
+/**
+ * Type alias for ExternalDiskStateObserverInterface.
+ * @typedef {ash.shimlessRma.mojom.ExternalDiskStateObserverInterface}
+ */
+export const ExternalDiskStateObserverInterface =
+    ash.shimlessRma.mojom.ExternalDiskStateObserverInterface;
 
 /**
  * Type alias for HardwareVerificationStatusObserverRemote.

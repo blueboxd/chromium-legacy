@@ -17,8 +17,8 @@
     width: 32px;
   }
 
-  /* Entity matches feature a dominant color background until image loads. */
-  :host-context(ntp-realbox-match[is-rich-suggestion][has-image]) #container {
+  /* Entities may feature a dominant color background until image loads. */
+  :host-context(ntp-realbox-match[has-image]) #container {
     background-color: var(--container-bg-color);
   }
 
@@ -49,7 +49,7 @@
     -webkit-mask-position: center;
     -webkit-mask-repeat: no-repeat;
     -webkit-mask-size: 16px;
-    background-color: var(--search-box-icon, var(--google-grey-700));
+    background-color: var(--color-realbox-search-icon-background);
     background-position: center center;
     background-repeat: no-repeat;
     background-size: 16px;

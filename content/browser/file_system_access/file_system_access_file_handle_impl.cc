@@ -373,6 +373,7 @@ void FileSystemAccessFileHandleImpl::IsSameEntry(
 void FileSystemAccessFileHandleImpl::IsSameEntryImpl(
     IsSameEntryCallback callback,
     FileSystemAccessTransferTokenImpl* other) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (!other) {
     std::move(callback).Run(
         file_system_access_error::FromStatus(
@@ -381,24 +382,13 @@ void FileSystemAccessFileHandleImpl::IsSameEntryImpl(
     return;
   }
 
-  if (other->type() != FileSystemAccessPermissionContext::HandleType::kFile) {
-    std::move(callback).Run(file_system_access_error::Ok(), false);
-    return;
-  }
-
-  const storage::FileSystemURL& url1 = url();
-  const storage::FileSystemURL& url2 = other->url();
-
-  // If two URLs are of a different type they are definitely not related.
-  if (url1.type() != url2.type()) {
-    std::move(callback).Run(file_system_access_error::Ok(), false);
-    return;
-  }
-
-  // Otherwise compare path.
-  const base::FilePath& path1 = url1.path();
-  const base::FilePath& path2 = url2.path();
-  std::move(callback).Run(file_system_access_error::Ok(), path1 == path2);
+  // The two handles are the same if they serialize to the same value.
+  auto serialization = manager()->SerializeURL(
+      url(), FileSystemAccessPermissionContext::HandleType::kFile);
+  auto other_serialization =
+      manager()->SerializeURL(other->url(), other->type());
+  std::move(callback).Run(file_system_access_error::Ok(),
+                          serialization == other_serialization);
 }
 
 void FileSystemAccessFileHandleImpl::Transfer(

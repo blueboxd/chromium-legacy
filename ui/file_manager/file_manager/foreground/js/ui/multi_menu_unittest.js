@@ -3,9 +3,9 @@
 // found in the LICENSE file.
 
 import {assert} from 'chrome://resources/js/assert.m.js';
-import {decorate} from 'chrome://resources/js/cr/ui.m.js';
-import {Command} from 'chrome://resources/js/cr/ui/command.js';
-import {Menu} from 'chrome://resources/js/cr/ui/menu.js';
+import {decorate} from 'chrome://resources/js/cr/ui.js';
+import {Command} from './command.js';
+import {Menu} from './menu.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {assertEquals, assertFalse, assertTrue} from 'chrome://webui-test/chai_assert.js';
 

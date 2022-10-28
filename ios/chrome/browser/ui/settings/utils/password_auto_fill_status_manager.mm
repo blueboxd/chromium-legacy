@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,7 +6,7 @@
 
 #import <AuthenticationServices/AuthenticationServices.h>
 #import <UIKit/UIKit.h>
-#include "base/check.h"
+#import "base/check.h"
 #import "ios/chrome/browser/ui/settings/utils/password_auto_fill_status_observer.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)

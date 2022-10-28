@@ -119,7 +119,8 @@ void SignedExchangeLoader::OnReceiveEarlyHints(
 
 void SignedExchangeLoader::OnReceiveResponse(
     network::mojom::URLResponseHeadPtr response_head,
-    mojo::ScopedDataPipeConsumerHandle body) {
+    mojo::ScopedDataPipeConsumerHandle body,
+    absl::optional<mojo_base::BigBuffer> cached_metadata) {
   // Must not be called because this SignedExchangeLoader and the client
   // endpoints were bound after OnReceiveResponse() is called.
   NOTREACHED();
@@ -142,11 +143,6 @@ void SignedExchangeLoader::OnUploadProgress(
   NOTREACHED();
 }
 
-void SignedExchangeLoader::OnReceiveCachedMetadata(mojo_base::BigBuffer data) {
-  // CachedMetadata for Signed Exchange is not supported.
-  NOTREACHED();
-}
-
 void SignedExchangeLoader::OnTransferSizeUpdated(int32_t transfer_size_diff) {
   // TODO(https://crbug.com/803774): Implement this to progressively update the
   // encoded data length in DevTools.
@@ -159,8 +155,7 @@ void SignedExchangeLoader::OnStartLoadingResponseBody(
       outer_request_.throttling_profile_id,
       (outer_request_.trusted_params &&
        !outer_request_.trusted_params->isolation_info.IsEmpty())
-          ? outer_request_.trusted_params->isolation_info.frame_origin()
-                    .has_value()
+          ? net::IsolationInfo::IsFrameSiteEnabled()
                 ? net::IsolationInfo::Create(
                       net::IsolationInfo::RequestType::kOther,
                       *outer_request_.trusted_params->isolation_info
@@ -335,7 +330,7 @@ void SignedExchangeLoader::OnHTTPExchangeFound(
   }
 
   client_->OnReceiveResponse(std::move(inner_response_head_shown_to_client),
-                             std::move(consumer_handle));
+                             std::move(consumer_handle), absl::nullopt);
 
   body_data_pipe_adapter_ = std::make_unique<network::SourceStreamToDataPipe>(
       std::move(payload_stream), std::move(producer_handle));

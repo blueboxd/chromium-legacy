@@ -1,4 +1,4 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,7 +10,7 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/logging.h"
-#include "base/stl_util.h"
+#include "base/types/optional_util.h"
 #include "media/base/content_decryption_module.h"
 #include "media/mojo/common/media_type_converters.h"
 #include "media/mojo/common/mojo_decoder_buffer_converter.h"
@@ -65,7 +65,7 @@ void MojoAudioDecoderService::Initialize(
 
   if (config.is_encrypted() && !cdm_context) {
     DVLOG(1) << "CdmContext for "
-             << CdmContext::CdmIdToString(base::OptionalOrNullptr(cdm_id))
+             << CdmContext::CdmIdToString(base::OptionalToPtr(cdm_id))
              << " not found for encrypted audio";
     OnInitialized(std::move(callback),
                   DecoderStatus::Codes::kUnsupportedEncryptionMode);

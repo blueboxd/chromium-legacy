@@ -1,4 +1,4 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -49,6 +49,11 @@
 namespace {
 
 const int kModalDialogWidth = 448;
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX) || \
+    BUILDFLAG(IS_CHROMEOS_LACROS)
+const int kEnterpriseConfirmationDialogWidth = 512;
+const int kEnterpriseConfirmationDialogHeight = 576;
+#endif
 const int kSyncConfirmationDialogWidth = 512;
 const int kSyncConfirmationDialogHeight = 487;
 const int kSigninErrorDialogHeight = 164;
@@ -140,10 +145,15 @@ SigninViewControllerDelegateViews::CreateReauthConfirmationWebView(
 std::unique_ptr<views::WebView>
 SigninViewControllerDelegateViews::CreateProfileCustomizationWebView(
     Browser* browser,
+    bool is_local_profile_creation,
     bool show_profile_switch_iph) {
+  GURL url = GURL(chrome::kChromeUIProfileCustomizationURL);
+  if (is_local_profile_creation) {
+    url = AppendProfileCustomizationQueryParams(
+        url, ProfileCustomizationStyle::kLocalProfileCreation);
+  }
   std::unique_ptr<views::WebView> web_view = CreateDialogWebView(
-      browser, GURL(chrome::kChromeUIProfileCustomizationURL),
-      ProfileCustomizationUI::kPreferredHeight,
+      browser, url, ProfileCustomizationUI::kPreferredHeight,
       ProfileCustomizationUI::kPreferredWidth,
       InitializeSigninWebDialogUI(false));
 
@@ -172,7 +182,7 @@ SigninViewControllerDelegateViews::CreateEnterpriseConfirmationWebView(
     signin::SigninChoiceCallback callback) {
   std::unique_ptr<views::WebView> web_view = CreateDialogWebView(
       browser, GURL(chrome::kChromeUIEnterpriseProfileWelcomeURL),
-      kSyncConfirmationDialogHeight, kSyncConfirmationDialogWidth,
+      kEnterpriseConfirmationDialogHeight, kEnterpriseConfirmationDialogWidth,
       InitializeSigninWebDialogUI(false));
 
   EnterpriseProfileWelcomeUI* web_dialog_ui =
@@ -257,12 +267,12 @@ void SigninViewControllerDelegateViews::AddNewContents(
     std::unique_ptr<content::WebContents> new_contents,
     const GURL& target_url,
     WindowOpenDisposition disposition,
-    const gfx::Rect& initial_rect,
+    const blink::mojom::WindowFeatures& window_features,
     bool user_gesture,
     bool* was_blocked) {
   // Allows the Gaia reauth page to open links in a new tab.
   chrome::AddWebContents(browser_, source, std::move(new_contents), target_url,
-                         disposition, initial_rect);
+                         disposition, window_features);
 }
 
 web_modal::WebContentsModalDialogHost*
@@ -436,10 +446,11 @@ SigninViewControllerDelegate::CreateReauthConfirmationDelegate(
 SigninViewControllerDelegate*
 SigninViewControllerDelegate::CreateProfileCustomizationDelegate(
     Browser* browser,
+    bool is_local_profile_creation,
     bool show_profile_switch_iph) {
   return new SigninViewControllerDelegateViews(
       SigninViewControllerDelegateViews::CreateProfileCustomizationWebView(
-          browser, show_profile_switch_iph),
+          browser, is_local_profile_creation, show_profile_switch_iph),
       browser, ui::MODAL_TYPE_WINDOW, false, false);
 }
 #endif  // BUILDFLAG(ENABLE_DICE_SUPPORT) || BUILDFLAG(IS_CHROMEOS_LACROS)

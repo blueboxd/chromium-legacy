@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,11 +6,12 @@
  * @fileoverview 'settings-textarea' is a component similar to native textarea,
  * and inherits styling from cr-input.
  */
-import '//resources/cr_elements/hidden_style_css.m.js';
-import '//resources/cr_elements/shared_style_css.m.js';
+import '//resources/cr_elements/cr_hidden_style.css.js';
+import '//resources/cr_elements/cr_shared_style.css.js';
 import '//resources/cr_elements/cr_input/cr_input_style.css.js';
 
 import {PolymerElement} from '//resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+
 import {getTemplate} from './settings_textarea.html.js';
 
 export interface SettingsTextareaElement {

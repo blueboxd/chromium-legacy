@@ -1,4 +1,4 @@
-# Copyright 2014 The Chromium Authors. All rights reserved.
+# Copyright 2014 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -355,6 +355,7 @@ static_library("browser") {
       "password_scripts_fetcher_impl.cc",
       "password_scripts_fetcher_impl.h",
     ]
+    deps += [ "//components/autofill_assistant/browser/public" ]
   }
 
   if (!is_android && !is_ios) {
@@ -530,6 +531,8 @@ static_library("test_support") {
     "mock_password_scripts_fetcher.h",
     "mock_password_store_backend.cc",
     "mock_password_store_backend.h",
+    "mock_password_store_consumer.cc",
+    "mock_password_store_consumer.h",
     "mock_password_store_interface.cc",
     "mock_password_store_interface.h",
     "mock_password_sync_metadata_store.cc",
@@ -593,6 +596,7 @@ bundle_data("unit_tests_bundle_data") {
   sources = [
     "//components/test/data/password_manager/affiliation_db_v1.sql",
     "//components/test/data/password_manager/affiliation_db_v2.sql",
+    "//components/test/data/password_manager/affiliation_db_v3.sql",
     "//components/test/data/password_manager/login_db_v1.sql",
     "//components/test/data/password_manager/login_db_v10.sql",
     "//components/test/data/password_manager/login_db_v11.sql",

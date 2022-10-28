@@ -1,4 +1,4 @@
-# Copyright 2022 The Chromium Authors. All rights reserved.
+# Copyright 2022 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -9,13 +9,16 @@ source_set("promos_manager") {
   ]
   frameworks = [ "Foundation.framework" ]
   configs += [ "//build/config/compiler:enable_arc" ]
+  public_deps = [
+    "//base",
+    "//third_party/abseil-cpp:absl",
+  ]
   deps = [
     ":constants",
     ":features",
     ":types",
-    "//base",
     "//components/prefs",
-    "//ios/chrome/browser:pref_names",
+    "//ios/chrome/browser/prefs:pref_names",
   ]
 }
 
@@ -31,26 +34,13 @@ source_set("types") {
   deps = [ ":constants" ]
 }
 
-source_set("promos_manager_scene_agent") {
-  configs += [ "//build/config/compiler:enable_arc" ]
-  sources = [
-    "promos_manager_scene_agent.h",
-    "promos_manager_scene_agent.mm",
-  ]
-  deps = [
-    "//base",
-    "//ios/chrome/app/application_delegate:app_state_header",
-    "//ios/chrome/browser/ui/main:observing_scene_agent",
-    "//ios/chrome/browser/ui/main:scene_state_header",
-  ]
-}
-
 source_set("constants") {
   sources = [
     "constants.cc",
     "constants.h",
   ]
   configs += [ "//build/config/compiler:enable_arc" ]
+  public_deps = [ "//third_party/abseil-cpp:absl" ]
   deps = [ "//base" ]
 }
 
@@ -80,8 +70,9 @@ source_set("unit_tests") {
     "//base/test:test_support",
     "//components/prefs",
     "//components/prefs:test_support",
-    "//ios/chrome/browser:pref_names",
+    "//ios/chrome/browser/prefs:pref_names",
     "//testing/gmock",
     "//testing/gtest",
+    "//third_party/abseil-cpp:absl",
   ]
 }

@@ -6,6 +6,8 @@
 
 #include "base/check.h"
 #include "build/build_config.h"
+#include "media/base/audio_parameters.h"
+#include "media/base/channel_layout.h"
 #include "third_party/blink/public/mojom/mediastream/media_stream.mojom.h"
 
 namespace blink {
@@ -58,6 +60,19 @@ bool IsDeviceMediaType(mojom::MediaStreamType type) {
           type == mojom::MediaStreamType::DEVICE_VIDEO_CAPTURE);
 }
 
+bool IsMediaStreamDeviceTransferrable(const MediaStreamDevice& device) {
+  // Return |false| if |device.type| is not a valid MediaStreamType or is of
+  // device capture type.
+  if (device.type == mojom::MediaStreamType::NO_SERVICE ||
+      device.type == mojom::MediaStreamType::NUM_MEDIA_TYPES ||
+      IsDeviceMediaType(device.type)) {
+    return false;
+  }
+  const auto& info = device.display_media_info;
+  return info && info->display_surface ==
+                     media::mojom::DisplayCaptureSurfaceType::BROWSER;
+}
+
 MediaStreamDevice::MediaStreamDevice()
     : type(mojom::MediaStreamType::NO_SERVICE),
       video_facing(media::MEDIA_VIDEO_FACING_NONE) {}
@@ -84,18 +99,19 @@ MediaStreamDevice::MediaStreamDevice(
       group_id(group_id),
       name(name) {}
 
-MediaStreamDevice::MediaStreamDevice(mojom::MediaStreamType type,
-                                     const std::string& id,
-                                     const std::string& name,
-                                     int sample_rate,
-                                     int channel_layout,
-                                     int frames_per_buffer)
+MediaStreamDevice::MediaStreamDevice(
+    mojom::MediaStreamType type,
+    const std::string& id,
+    const std::string& name,
+    int sample_rate,
+    const media::ChannelLayoutConfig& channel_layout_config,
+    int frames_per_buffer)
     : type(type),
       id(id),
       video_facing(media::MEDIA_VIDEO_FACING_NONE),
       name(name),
       input(media::AudioParameters::AUDIO_FAKE,
-            static_cast<media::ChannelLayout>(channel_layout),
+            channel_layout_config,
             sample_rate,
             frames_per_buffer) {
   DCHECK(input.IsValid());

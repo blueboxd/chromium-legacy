@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -558,7 +558,7 @@ void CollectedCookiesViews::EnableControls() {
     }
   }
   block_allowed_button_->SetEnabled(enable_allowed_buttons);
-  delete_allowed_button_->SetEnabled(node != NULL);
+  delete_allowed_button_->SetEnabled(node != nullptr);
 
   bool enable_blocked_buttons = false;
   node = blocked_cookies_tree_->GetSelectedNode();

@@ -1,14 +1,14 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome/browser/ash/chromebox_for_meetings/logger/cfm_logger_service.h"
 
-#include "ash/services/chromebox_for_meetings/public/mojom/meet_devices_logger.mojom-shared.h"
 #include "base/bind.h"
 #include "chrome/browser/ash/chromebox_for_meetings/logger/reporting_pipeline.h"
 #include "chromeos/ash/components/chromebox_for_meetings/features.h"
 #include "chromeos/ash/components/dbus/chromebox_for_meetings/cfm_hotline_client.h"
+#include "chromeos/ash/services/chromebox_for_meetings/public/mojom/meet_devices_logger.mojom-shared.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
 
 namespace ash::cfm {

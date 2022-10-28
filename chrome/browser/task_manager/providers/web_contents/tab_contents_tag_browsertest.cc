@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -330,8 +330,8 @@ IN_PROC_BROWSER_TEST_F(TabContentsTagTest, NavigateToPageNoFavicon) {
     // When ProactivelySwapBrowsingInstance or RenderDocument is enabled on
     // same-site main frame navigations, we'll get a new task because we are
     // changing RenderFrameHosts. Note that the previous page's task might still
-    // be around if the previous page is saved in the back-forward cache.
-    if (content::BackForwardCache::IsSameSiteBackForwardCacheFeatureEnabled()) {
+    // be around if the previous page is saved in the back/forward cache.
+    if (content::BackForwardCache::IsBackForwardCacheFeatureEnabled()) {
       ASSERT_EQ(2U, task_manager.tasks().size());
       ASSERT_EQ(
           l10n_util::GetStringFUTF16(IDS_TASK_MANAGER_BACK_FORWARD_CACHE_PREFIX,

@@ -6,7 +6,23 @@
  * @fileoverview Polymer element for displaying and modifying cellular sim info.
  */
 
-(function() {
+import '../../../cr_elements/cr_toggle/cr_toggle.js';
+import '../../../cr_elements/icons.html.js';
+import '../../../cr_elements/cr_button/cr_button.js';
+import '//resources/polymer/v3_0/iron-flex-layout/iron-flex-layout-classes.js';
+import '//resources/polymer/v3_0/iron-icon/iron-icon.js';
+import '//resources/polymer/v3_0/paper-tooltip/paper-tooltip.js';
+import './network_password_input.js';
+import './network_shared_css.js';
+import './sim_lock_dialogs.js';
+
+import {isActiveSim} from '//resources/cr_components/chromeos/network/cellular_utils.js';
+import {html, Polymer} from '//resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+
+import {I18nBehavior} from '../../../cr_elements/i18n_behavior.js';
+import {loadTimeData} from '../../../js/load_time_data.m.js';
+
+import {OncMojo} from './onc_mojo.js';
 
 const TOGGLE_DEBOUNCE_MS = 500;
 
@@ -24,6 +40,7 @@ const State = {
 };
 
 Polymer({
+  _template: html`{__html_template__}`,
   is: 'network-siminfo',
 
   behaviors: [I18nBehavior],
@@ -341,4 +358,3 @@ Polymer({
     return state1 === state2;
   },
 });
-})();

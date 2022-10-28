@@ -1,8 +1,9 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 import 'chrome://diagnostics/memory_card.js';
+import 'chrome://resources/cr_elements/cr_button/cr_button.js';
 
 import {MemoryUsage} from 'chrome://diagnostics/diagnostics_types.js';
 import {convertKibToGibDecimalString} from 'chrome://diagnostics/diagnostics_utils.js';

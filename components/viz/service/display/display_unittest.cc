@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -59,6 +59,7 @@
 #include "components/viz/test/fake_skia_output_surface.h"
 #include "components/viz/test/mock_compositor_frame_sink_client.h"
 #include "components/viz/test/test_gles2_interface.h"
+#include "components/viz/test/test_surface_id_allocator.h"
 #include "components/viz/test/viz_test_suite.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -4332,6 +4333,209 @@ TEST_F(DisplayTest, DisplaySizeMismatch) {
   }
 }
 
+TEST_F(DisplayTest, PixelMovingForegroundFilterTest) {
+  RendererSettings settings;
+  settings.partial_swap_enabled = true;
+  id_allocator_.GenerateId();
+  const LocalSurfaceId local_surface_id(
+      id_allocator_.GetCurrentLocalSurfaceId());
+
+  // Set up first display.
+  SetUpSoftwareDisplay(settings);
+  StubDisplayClient client;
+  display_->Initialize(&client, manager_.surface_manager());
+  display_->SetLocalSurfaceId(local_surface_id, 1.f);
+
+  // Create frame sink for a sub surface.
+  TestSurfaceIdAllocator sub_surface_id1(kAnotherFrameSinkId);
+  auto sub_support1 = std::make_unique<CompositorFrameSinkSupport>(
+      nullptr, &manager_, kAnotherFrameSinkId, /*is_root=*/false);
+
+  // Create frame sink for another sub surface.
+  TestSurfaceIdAllocator sub_surface_id2(kAnotherFrameSinkId2);
+  auto sub_support2 = std::make_unique<CompositorFrameSinkSupport>(
+      nullptr, &manager_, kAnotherFrameSinkId2, /*is_root=*/false);
+
+  // Main surface M, damage D, sub-surface B with foreground filter.
+  //   +-----------+
+  //   | +----+   M|
+  //   | |B +-|-+  |
+  //   | +--|-+ |  |
+  //   |    |  D|  |
+  //   |    +---+  |
+  //   +-----------+
+  const gfx::Size display_size(100, 100);
+  const gfx::Rect damage_rect(20, 20, 40, 40);
+  display_->Resize(display_size);
+  const gfx::Rect sub_surface_rect(5, 5, 25, 25);
+  const gfx::Rect no_damage;
+
+  CompositorRenderPassId::Generator render_pass_id_generator;
+  for (size_t frame_num = 1; frame_num <= 2; ++frame_num) {
+    bool first_frame = frame_num == 1;
+    ResetDamageForTest();
+    {
+      // Sub-surface with pixel-moving foreground filter - drop shadow filter
+      CompositorRenderPassList pass_list;
+      auto bd_pass = CompositorRenderPass::Create();
+      cc::FilterOperations foreground_filters;
+      foreground_filters.Append(cc::FilterOperation::CreateDropShadowFilter(
+          gfx::Point(5, 10), 2.f, SkColors::kTransparent));
+      bd_pass->SetAll(
+          render_pass_id_generator.GenerateNextId(), sub_surface_rect,
+          no_damage, gfx::Transform(), foreground_filters,
+          cc::FilterOperations(), gfx::RRectF(gfx::RectF(sub_surface_rect), 0),
+          SubtreeCaptureId(), sub_surface_rect.size(),
+          SharedElementResourceId(), false, false, false, false, false);
+      pass_list.push_back(std::move(bd_pass));
+
+      CompositorFrame frame = CompositorFrameBuilder()
+                                  .SetRenderPassList(std::move(pass_list))
+                                  .Build();
+      sub_support1->SubmitCompositorFrame(sub_surface_id1.local_surface_id(),
+                                          std::move(frame));
+    }
+
+    {
+      // Sub-surface with damage.
+      CompositorRenderPassList pass_list;
+      auto other_pass = CompositorRenderPass::Create();
+      other_pass->output_rect = gfx::Rect(display_size);
+      other_pass->damage_rect = damage_rect;
+      other_pass->id = render_pass_id_generator.GenerateNextId();
+      pass_list.push_back(std::move(other_pass));
+
+      CompositorFrame frame = CompositorFrameBuilder()
+                                  .SetRenderPassList(std::move(pass_list))
+                                  .Build();
+      sub_support2->SubmitCompositorFrame(sub_surface_id2.local_surface_id(),
+                                          std::move(frame));
+    }
+
+    {
+      auto frame = CompositorFrameBuilder()
+                       .AddRenderPass(
+                           RenderPassBuilder(display_size)
+                               .AddSurfaceQuad(
+                                   sub_surface_rect,
+                                   SurfaceRange(absl::nullopt, sub_surface_id1),
+                                   {.allow_merge = false})
+                               .AddSurfaceQuad(
+                                   gfx::Rect(display_size),
+                                   SurfaceRange(absl::nullopt, sub_surface_id2),
+                                   {.allow_merge = false})
+                               .SetDamageRect(damage_rect))
+                       .Build();
+      support_->SubmitCompositorFrame(local_surface_id, std::move(frame));
+
+      scheduler_->reset_swapped_for_test();
+      display_->DrawAndSwap({base::TimeTicks::Now(), base::TimeTicks::Now()});
+      EXPECT_TRUE(scheduler_->swapped());
+      EXPECT_EQ(frame_num, output_surface_->num_sent_frames());
+      EXPECT_EQ(display_size, software_output_device_->viewport_pixel_size());
+
+      auto expected_damage =
+          first_frame ? gfx::Rect(display_size) : damage_rect;
+      EXPECT_EQ(expected_damage, software_output_device_->damage_rect());
+      // The scissor rect is expanded by direct_renderer to include the
+      // overlapping pixel-moving foreground filter surface.
+      auto expected_scissor_rect =
+          first_frame ? gfx::Rect(display_size) : gfx::Rect(0, 0, 60, 60);
+      EXPECT_EQ(
+          expected_scissor_rect,
+          display_->renderer_for_testing()->GetLastRootScissorRectForTesting());
+    }
+  }
+}
+
+TEST_F(DisplayTest, CanSkipRenderPass) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(
+      features::kAllowUndamagedNonrootRenderPassToSkip);
+
+  id_allocator_.GenerateId();
+  const LocalSurfaceId local_surface_id(
+      id_allocator_.GetCurrentLocalSurfaceId());
+
+  // Set up first display.
+  SetUpSoftwareDisplay(RendererSettings());
+  StubDisplayClient client;
+  display_->Initialize(&client, manager_.surface_manager());
+  display_->SetLocalSurfaceId(local_surface_id, 1.f);
+
+  // Create frame sink for a sub surface.
+  TestSurfaceIdAllocator sub_surface_id1(kAnotherFrameSinkId);
+  auto sub_support1 = std::make_unique<CompositorFrameSinkSupport>(
+      nullptr, &manager_, kAnotherFrameSinkId, /*is_root=*/false);
+
+  // generate render pass id for the nonroot render pass.
+  CompositorRenderPassId::Generator render_pass_id_generator;
+  auto id_1 = render_pass_id_generator.GenerateNextId();
+
+  const gfx::Size display_size(100, 100);
+  const gfx::Rect root_damage_rect(20, 20, 40, 40);
+  display_->Resize(display_size);
+  const gfx::Rect sub_surface_rect(5, 5, 60, 60);
+  const gfx::Rect sub_surface_damage_rect(10, 10, 30, 30);
+
+  for (size_t frame_num = 1; frame_num <= 3; ++frame_num) {
+    ResetDamageForTest();
+
+    // Nonroot render pass with id_1. No update for frame #3.
+    if (frame_num != 3) {
+      CompositorRenderPassList pass_list;
+      auto bd_pass = CompositorRenderPass::Create();
+      bd_pass->output_rect = sub_surface_rect;
+      bd_pass->damage_rect = sub_surface_damage_rect;
+      bd_pass->has_damage_from_contributing_content = true;
+      bd_pass->id = id_1;
+      pass_list.push_back(std::move(bd_pass));
+
+      CompositorFrame frame = CompositorFrameBuilder()
+                                  .SetRenderPassList(std::move(pass_list))
+                                  .Build();
+
+      sub_support1->SubmitCompositorFrame(sub_surface_id1.local_surface_id(),
+                                          std::move(frame));
+    }
+
+    // Root render pass
+    {
+      auto frame =
+          CompositorFrameBuilder()
+              .AddRenderPass(RenderPassBuilder(display_size)
+                                 .AddSurfaceQuad(sub_surface_rect,
+                                                 SurfaceRange(absl::nullopt,
+                                                              sub_surface_id1),
+                                                 {.allow_merge = false})
+                                 .SetDamageRect(root_damage_rect))
+              .Build();
+      support_->SubmitCompositorFrame(local_surface_id, std::move(frame));
+
+      scheduler_->reset_swapped_for_test();
+      display_->DrawAndSwap({base::TimeTicks::Now(), base::TimeTicks::Now()});
+      EXPECT_TRUE(scheduler_->swapped());
+
+      // Number of skipped non-root render passes.
+      auto* skipped = display_->renderer_for_testing()
+                          ->GetLastSkippedRenderPassIdsForTesting();
+
+      if (frame_num != 3) {
+        // Whether the render pass can be skpped or not depends on the flag
+        // pass->has_damage_from_contributing_content and the render pass
+        // damage rect.
+        EXPECT_EQ(0u, skipped->size());
+      } else {
+        // No frame update for the sub surface. The nonroot render pass damage
+        // rect will be zero. pass->has_damage_from_contributing_content becomes
+        // false when there is no frame update. The associated non-render pass
+        // can be skipped.
+        EXPECT_EQ(1u, skipped->size());
+      }
+    }
+  }
+}
+
 class SkiaDelegatedInkRendererTest : public DisplayTest {
  public:
   void SetUp() override { EnablePrediction(); }
@@ -4594,10 +4798,10 @@ TEST_F(SkiaDelegatedInkRendererTest, SkiaDelegatedInkRendererFilteringPoints) {
   const int kPointsBeyondMaxAllowed = 2;
   StoreAlreadyCreatedDelegatedInkPoints();
   while (ink_points_size() <
-         kMaximumDelegatedInkPointsStored + kPointsBeyondMaxAllowed)
+         gfx::kMaximumNumberOfDelegatedInkPoints + kPointsBeyondMaxAllowed)
     CreateAndStoreDelegatedInkPointFromPreviousPoint(kPointerId);
 
-  EXPECT_EQ(kMaximumDelegatedInkPointsStored,
+  EXPECT_EQ(gfx::kMaximumNumberOfDelegatedInkPoints,
             StoredPointsForPointerId(kPointerId));
   EXPECT_EQ(ink_point(kPointsBeyondMaxAllowed).point(),
             GetPointsForPointerId(kPointerId).begin()->second);

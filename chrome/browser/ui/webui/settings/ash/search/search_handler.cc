@@ -1,41 +1,42 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome/browser/ui/webui/settings/ash/search/search_handler.h"
 
-#include <algorithm>
-
+#include "base/ranges/algorithm.h"
 #include "base/strings/string_number_conversions.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/ui/webui/settings/ash/hierarchy.h"
+#include "chrome/browser/ui/webui/settings/ash/os_settings_sections.h"
 #include "chrome/browser/ui/webui/settings/ash/search/search_concept.h"
 #include "chrome/browser/ui/webui/settings/ash/search/search_result_icon.mojom.h"
-#include "chrome/browser/ui/webui/settings/chromeos/hierarchy.h"
-#include "chrome/browser/ui/webui/settings/chromeos/os_settings_sections.h"
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/ash/components/local_search_service/public/cpp/local_search_service_proxy.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace chromeos {
 namespace settings {
+
 namespace {
+
+// TODO(https://crbug.com/1164001): remove after migrating this file to ns ash.
+namespace local_search_service = ::ash::local_search_service;
 
 bool ContainsSectionResult(const std::vector<mojom::SearchResultPtr>& results,
                            mojom::Section section) {
-  return std::find_if(
-             results.begin(), results.end(), [section](const auto& result) {
-               return result->type == mojom::SearchResultType::kSection &&
-                      section == result->id->get_section();
-             }) != results.end();
+  return base::ranges::find_if(results, [section](const auto& result) {
+           return result->type == mojom::SearchResultType::kSection &&
+                  section == result->id->get_section();
+         }) != results.end();
 }
 
 bool ContainsSubpageResult(const std::vector<mojom::SearchResultPtr>& results,
                            mojom::Subpage subpage) {
-  return std::find_if(
-             results.begin(), results.end(), [subpage](const auto& result) {
-               return result->type == mojom::SearchResultType::kSubpage &&
-                      subpage == result->id->get_subpage();
-             }) != results.end();
+  return base::ranges::find_if(results, [subpage](const auto& result) {
+           return result->type == mojom::SearchResultType::kSubpage &&
+                  subpage == result->id->get_subpage();
+         }) != results.end();
 }
 
 }  // namespace

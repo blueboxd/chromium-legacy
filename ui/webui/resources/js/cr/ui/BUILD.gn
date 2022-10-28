@@ -5,31 +5,20 @@
 import("//build/config/chromeos/ui_mode.gni")
 import("//third_party/closure_compiler/compile_js.gni")
 import("//tools/grit/preprocess_if_expr.gni")
+import("//ui/webui/resources/include_polymer.gni")
 import("//ui/webui/resources/tools/generate_grd.gni")
-import("../../../tools/js_modulizer.gni")
 import("../../cr.gni")
 
 preprocess_folder = "$root_gen_dir/ui/webui/resources/preprocessed/js/cr/ui"
-preprocess_src_manifest = "preprocessed_src_manifest.json"
-preprocess_gen_manifest = "preprocessed_gen_manifest.json"
-
-generate_grd("build_grdp") {
-  grd_prefix = "webui_js_cr_ui"
-  out_grd = "$target_gen_dir/resources.grdp"
-  public_deps = [ ":preprocess" ]
-  manifest_files = [
-    "$target_gen_dir/$preprocess_gen_manifest",
-    "$target_gen_dir/$preprocess_src_manifest",
-  ]
-  resource_path_prefix = "js/cr/ui"
+if (is_chromeos_ash) {
+  preprocess_src_manifest = "preprocessed_src_manifest.json"
 }
 
 group("preprocess") {
-  public_deps = [
-    ":preprocess_generated",
-    ":preprocess_src",
-    ":preprocess_src_ts",
-  ]
+  public_deps = [ ":preprocess_src_ts" ]
+  if (is_chromeos_ash) {
+    public_deps += [ ":preprocess_src" ]
+  }
 }
 
 # TS files are passed to a separate target so that they are not listed in the
@@ -40,406 +29,82 @@ preprocess_if_expr("preprocess_src_ts") {
   in_files = [
     "drag_wrapper.ts",
     "focus_grid.ts",
+    "focus_outline_manager.ts",
+    "focus_row.ts",
+    "keyboard_shortcut_list.ts",
     "store_ts.ts",
   ]
-}
 
-preprocess_if_expr("preprocess_src") {
-  in_folder = "./"
-  out_folder = "$preprocess_folder"
-  out_manifest = "$target_gen_dir/$preprocess_src_manifest"
-
-  in_files = [ "keyboard_shortcut_list.js" ]
-
-  if (!is_android) {
-    # The files below are deprecated, and are included on non-CrOS builds only
-    # for the old NTP (chrome://apps) page.
+  if (include_polymer) {
     in_files += [
-      "command.js",
-      "context_menu_handler.js",
-      "menu_button.js",
-      "menu_item.js",
-      "menu.js",
-      "position_util.js",
+      "focus_row_mixin.ts",
+      "focus_without_ink.ts",
     ]
   }
+}
 
-  if (is_chromeos_ash) {
-    in_files += [
-      "array_data_model.js",
-      "focus_manager.js",
-      "focus_outline_manager.js",
-      "focus_row.js",
+# JS files for Chrome OS only.
+if (is_chromeos_ash) {
+  generate_grd("build_grdp") {
+    grd_prefix = "webui_js_cr_ui"
+    out_grd = "$target_gen_dir/resources.grdp"
+    public_deps = [ ":preprocess_src" ]
+    manifest_files = [ "$target_gen_dir/$preprocess_src_manifest" ]
+    resource_path_prefix = "js/cr/ui"
+  }
+
+  preprocess_if_expr("preprocess_src") {
+    in_folder = "./"
+    out_folder = "$preprocess_folder"
+    out_manifest = "$target_gen_dir/$preprocess_src_manifest"
+
+    in_files = [
+      "focus_without_ink_js.js",
       "focus_row_behavior.js",
-      "focus_without_ink.js",
-      "grid.js",
-      "list_item.js",
-      "list.js",
-      "list_selection_controller.js",
-      "list_selection_model.js",
-      "list_single_selection_model.js",
+      "focus_row_js.js",
+      "keyboard_shortcut_list_js.js",
       "store_client.js",
       "store.js",
     ]
   }
-}
 
-preprocess_if_expr("preprocess_generated") {
-  deps = [ ":modulize" ]
-  in_folder = target_gen_dir
-  out_folder = "$preprocess_folder"
-  out_manifest = "$target_gen_dir/$preprocess_gen_manifest"
-  in_files = [
-    "focus_outline_manager.m.js",
-    "focus_row.m.js",
-  ]
-
-  if (!is_android) {
-    in_files += [
-      "focus_row_behavior.m.js",
-      "focus_without_ink.m.js",
-    ]
-  }
-
-  if (is_chromeos_ash) {
-    in_files += [
-      "array_data_model.m.js",
-      "grid.m.js",
-      "list_item.m.js",
-      "list.m.js",
-      "list_selection_controller.m.js",
-      "list_selection_model.m.js",
-      "list_single_selection_model.m.js",
-    ]
-  }
-}
-
-group("closure_compile") {
-  deps = [ ":ui_resources_modules" ]
-  if (is_chromeos_ash) {
-    deps += [ ":ui_resources" ]
-  }
-}
-
-if (is_chromeos_ash) {
-  js_type_check("ui_resources") {
-    uses_legacy_modules = true
+  js_type_check("closure_compile_modules") {
+    is_polymer3 = true
     deps = [
-      ":array_data_model",
-      ":focus_manager",
-      ":focus_outline_manager",
-      ":focus_row",
       ":focus_row_behavior",
-      ":focus_without_ink",
-      ":grid",
-      ":list",
-      ":list_item",
-      ":list_selection_controller",
-      ":list_selection_model",
-      ":list_single_selection_model",
-    ]
-  }
-
-  js_library("array_data_model") {
-    deps = [
-      "..:event_target",
-      "../..:cr",
-    ]
-  }
-
-  js_library("focus_manager") {
-    deps = [ "../..:cr" ]
-  }
-
-  js_library("focus_outline_manager") {
-    deps = [ "../..:cr" ]
-  }
-
-  if (is_chromeos_ash) {
-    js_library("focus_row_behavior") {
-      deps = [
-        ":focus_row",
-        ":focus_without_ink",
-      ]
-    }
-  }
-
-  js_library("focus_row") {
-    deps = [
-      "../..:assert",
-      "../..:cr",
-      "../..:event_tracker",
-      "../..:util",
-    ]
-  }
-
-  js_library("focus_without_ink") {
-    deps = [
-      "..:ui",
-      "../..:cr",
-    ]
-  }
-
-  if (is_chromeos_ash) {
-    js_library("grid") {
-      deps = [ ":list" ]
-    }
-  }
-
-  if (is_chromeos_ash) {
-    js_library("list") {
-      deps = [
-        ":array_data_model",
-        ":list_item",
-        ":list_selection_controller",
-        ":list_selection_model",
-      ]
-    }
-
-    js_library("list_item") {
-      deps = [ "../..:cr" ]
-    }
-
-    js_library("list_selection_controller") {
-      deps = [
-        ":list_selection_model",
-        "../..:cr",
-      ]
-    }
-
-    js_library("list_selection_model") {
-      deps = [
-        "..:event_target",
-        "../..:cr",
-      ]
-    }
-
-    js_library("list_single_selection_model") {
-      deps = [
-        "..:event_target",
-        "../..:cr",
-      ]
-    }
-  }
-}
-
-js_modulizer("modulize") {
-  input_files = [
-    "array_data_model.js",
-    "focus_outline_manager.js",
-    "focus_row.js",
-    "focus_row_behavior.js",
-    "focus_without_ink.js",
-    "grid.js",
-    "list.js",
-    "list_item.js",
-    "list_selection_controller.js",
-    "list_selection_model.js",
-    "list_single_selection_model.js",
-  ]
-  namespace_rewrites = cr_namespace_rewrites
-}
-
-js_type_check("ui_resources_modules") {
-  is_polymer3 = true
-  deps = [
-    ":focus_outline_manager.m",
-    ":focus_row.m",
-    ":focus_row_behavior.m",
-    ":focus_without_ink.m",
-  ]
-  if (is_chromeos_ash) {
-    deps += [
-      ":array_data_model.m",
-      ":command",
-      ":context_menu_handler",
-      ":grid.m",
-      ":keyboard_shortcut_list",
-      ":list.m",
-      ":list_item.m",
-      ":list_selection_controller.m",
-      ":list_selection_model.m",
-      ":list_single_selection_model.m",
-      ":menu",
-      ":menu_button",
-      ":menu_item",
-      ":position_util",
+      ":focus_row_js",
+      ":focus_without_ink_js",
+      ":keyboard_shortcut_list_js",
       ":store",
       ":store_client",
     ]
   }
-}
 
-if (is_chromeos_ash) {
-  js_library("array_data_model.m") {
-    sources =
-        [ "$root_gen_dir/ui/webui/resources/js/cr/ui/array_data_model.m.js" ]
+  js_library("focus_row_js") {
     deps = [
-      "..:event_target.m",
       "../..:assert.m",
+      "../..:event_tracker",
+      "../..:util.m",
     ]
-
-    extra_deps = [ ":modulize" ]
   }
 
-  js_library("command") {
+  js_library("focus_row_behavior") {
     deps = [
-      ":keyboard_shortcut_list",
-      "../:ui.m",
+      ":focus_row_js",
+      ":focus_without_ink_js",
       "../..:assert.m",
-      "../..:cr.m",
+      "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
     ]
   }
 
-  js_library("context_menu_handler") {
+  js_library("focus_without_ink_js") {
     deps = [
-      ":menu",
-      ":menu_button",
-      ":menu_item",
-      ":position_util",
-      "..:event_target.m",
-      "../:ui.m",
-      "../..:assert.m",
-      "../..:cr.m",
-      "../..:event_tracker.m",
-    ]
-  }
-}
-
-js_library("focus_outline_manager.m") {
-  sources =
-      [ "$root_gen_dir/ui/webui/resources/js/cr/ui/focus_outline_manager.m.js" ]
-  extra_deps = [ ":modulize" ]
-}
-
-js_library("focus_row.m") {
-  deps = [
-    "../..:assert.m",
-    "../..:event_tracker.m",
-    "../..:util.m",
-  ]
-  sources = [ "$root_gen_dir/ui/webui/resources/js/cr/ui/focus_row.m.js" ]
-  extra_deps = [ ":modulize" ]
-}
-
-js_library("focus_row_behavior.m") {
-  deps = [
-    ":focus_row.m",
-    ":focus_without_ink.m",
-    "../..:assert.m",
-    "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
-  ]
-  sources =
-      [ "$root_gen_dir/ui/webui/resources/js/cr/ui/focus_row_behavior.m.js" ]
-  extra_deps = [ ":modulize" ]
-}
-
-js_library("focus_without_ink.m") {
-  deps = [
-    "../..:assert.m",
-    "../..:cr.m",
-  ]
-  sources =
-      [ "$root_gen_dir/ui/webui/resources/js/cr/ui/focus_without_ink.m.js" ]
-  extra_deps = [ ":modulize" ]
-}
-
-if (is_chromeos_ash) {
-  js_library("grid.m") {
-    sources = [ "$root_gen_dir/ui/webui/resources/js/cr/ui/grid.m.js" ]
-    deps = [
-      ":list.m",
-      ":list_item.m",
-      ":list_selection_controller.m",
-      ":list_selection_model.m",
-      "../:ui.m",
-    ]
-    extra_deps = [ ":modulize" ]
-  }
-
-  js_library("keyboard_shortcut_list") {
-  }
-
-  js_library("list.m") {
-    sources = [ "$root_gen_dir/ui/webui/resources/js/cr/ui/list.m.js" ]
-    deps = [
-      ":array_data_model.m",
-      ":list_item.m",
-      ":list_selection_controller.m",
-      ":list_selection_model.m",
-      "../:ui.m",
-      "../..:cr.m",
-    ]
-    extra_deps = [ ":modulize" ]
-  }
-
-  js_library("list_item.m") {
-    sources = [ "$root_gen_dir/ui/webui/resources/js/cr/ui/list_item.m.js" ]
-    deps = [ "../..:cr.m" ]
-    extra_deps = [ ":modulize" ]
-  }
-
-  js_library("list_selection_controller.m") {
-    sources = [ "$root_gen_dir/ui/webui/resources/js/cr/ui/list_selection_controller.m.js" ]
-    deps = [
-      ":list_selection_model.m",
-      "../..:cr.m",
-    ]
-    extra_deps = [ ":modulize" ]
-  }
-
-  js_library("list_selection_model.m") {
-    sources = [
-      "$root_gen_dir/ui/webui/resources/js/cr/ui/list_selection_model.m.js",
-    ]
-    deps = [
-      "..:event_target.m",
-      "../..:cr.m",
-    ]
-    extra_deps = [ ":modulize" ]
-  }
-
-  js_library("list_single_selection_model.m") {
-    sources = [ "$root_gen_dir/ui/webui/resources/js/cr/ui/list_single_selection_model.m.js" ]
-    deps = [
-      "..:event_target.m",
-      "../..:cr.m",
-    ]
-    extra_deps = [ ":modulize" ]
-  }
-
-  js_library("menu") {
-    deps = [
-      ":menu_item",
-      "../:ui.m",
       "../..:assert.m",
       "../..:cr.m",
     ]
   }
 
-  js_library("menu_button") {
-    deps = [
-      ":menu",
-      ":menu_item",
-      ":position_util",
-      "../:ui.m",
-      "../..:assert.m",
-      "../..:cr.m",
-      "../..:event_tracker.m",
-    ]
-  }
-
-  js_library("menu_item") {
-    deps = [
-      ":command",
-      "../:ui.m",
-      "../..:assert.m",
-      "../..:cr.m",
-      "../..:load_time_data.m",
-    ]
-  }
-
-  js_library("position_util") {
+  js_library("keyboard_shortcut_list_js") {
   }
 
   js_library("store") {

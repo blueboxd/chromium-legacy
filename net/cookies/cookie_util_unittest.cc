@@ -1,8 +1,7 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <algorithm>
 #include <memory>
 #include <string>
 #include <tuple>
@@ -20,7 +19,7 @@
 #include "net/cookies/cookie_constants.h"
 #include "net/cookies/cookie_options.h"
 #include "net/cookies/cookie_util.h"
-#include "net/cookies/same_party_context.h"
+#include "net/first_party_sets/same_party_context.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -505,11 +504,8 @@ class CookieUtilComputeSameSiteContextTest
     std::vector<SiteForCookies> cross_site_sfc;
     std::vector<SiteForCookies> same_site_sfc = GetSameSiteSitesForCookies();
     for (const SiteForCookies& sfc : GetAllSitesForCookies()) {
-      if (std::none_of(same_site_sfc.begin(), same_site_sfc.end(),
-                       [&sfc](const SiteForCookies& s) {
-                         return sfc.RepresentativeUrl() ==
-                                s.RepresentativeUrl();
-                       })) {
+      if (!base::Contains(same_site_sfc, sfc.RepresentativeUrl(),
+                          &SiteForCookies::RepresentativeUrl)) {
         cross_site_sfc.push_back(sfc);
       }
     }

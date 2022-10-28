@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -47,8 +47,13 @@ class COMPONENT_EXPORT(DEVICE_FIDO) AttestationObject {
   // Replaces the attestation statement with a “none” attestation, and replaces
   // device AAGUID with zero bytes (unless |erase_aaguid| is kInclude) as
   // specified for step 20.3 in
-  // https://w3c.github.io/webauthn/#createCredential.
-  void EraseAttestationStatement(AAGUID erase_aaguid);
+  // https://w3c.github.io/webauthn/#createCredential. Returns true if any
+  // modifications needed to be made and false otherwise.
+  bool EraseAttestationStatement(AAGUID erase_aaguid);
+
+  // EraseExtension deletes the named extension. It returns true iff the
+  // extension was present.
+  bool EraseExtension(base::StringPiece name);
 
   // Returns true if the attestation is a "self" attestation, i.e. is just the
   // private key signing itself to show that it is fresh. See

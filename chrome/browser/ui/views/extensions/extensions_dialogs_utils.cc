@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -46,6 +46,7 @@ views::View* GetDialogAnchorView(
 }  // namespace
 
 ExtensionsToolbarContainer* GetExtensionsToolbarContainer(Browser* browser) {
+  CHECK(browser);
   BrowserView* const browser_view =
       BrowserView::GetBrowserViewForBrowser(browser);
   return GetExtensionsToolbarContainer(browser_view);
@@ -53,6 +54,7 @@ ExtensionsToolbarContainer* GetExtensionsToolbarContainer(Browser* browser) {
 
 ExtensionsToolbarContainer* GetExtensionsToolbarContainer(
     gfx::NativeWindow parent) {
+  CHECK(parent);
   BrowserView* const browser_view =
       BrowserView::GetBrowserViewForNativeWindow(parent);
   return GetExtensionsToolbarContainer(browser_view);
@@ -63,12 +65,9 @@ ExtensionsToolbarContainer* GetExtensionsToolbarContainer(
 // "action" action based on the web contents.
 ui::ImageModel GetIcon(ToolbarActionViewController* action,
                        content::WebContents* web_contents) {
-  return ui::ImageModel::FromImageSkia(
-      action
-          ->GetIcon(web_contents,
-                    gfx::Size(extension_misc::EXTENSION_ICON_SMALLISH,
-                              extension_misc::EXTENSION_ICON_SMALLISH))
-          .AsImageSkia());
+  return ui::ImageModel::FromImage(action->GetIcon(
+      web_contents, gfx::Size(extension_misc::EXTENSION_ICON_SMALLISH,
+                              extension_misc::EXTENSION_ICON_SMALLISH)));
 }
 
 std::u16string GetCurrentHost(content::WebContents* web_contents) {
@@ -88,7 +87,8 @@ std::u16string GetCurrentHost(content::WebContents* web_contents) {
 void ShowDialog(gfx::NativeWindow parent,
                 const extensions::ExtensionId& extension_id,
                 std::unique_ptr<ui::DialogModel> dialog_model) {
-  ExtensionsToolbarContainer* container = GetExtensionsToolbarContainer(parent);
+  ExtensionsToolbarContainer* const container =
+      parent ? GetExtensionsToolbarContainer(parent) : nullptr;
   if (container && container->GetVisible()) {
     ShowDialog(container, {extension_id}, std::move(dialog_model));
   } else {

@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -30,6 +30,9 @@ std::string Screen2xSnapshotToViewHierarchy(const ui::AXTreeUpdate& snapshot);
 // Returns a map of Screen2x role strings to Chrome roles.
 const std::map<std::string, ax::mojom::Role>&
 GetScreen2xToChromeRoleConversionMapForTesting();
+
+// Resets the node id generator to start from 1 again.
+void ResetNodeIDForTesting();
 
 }  // namespace screen_ai
 

@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,11 +6,10 @@
 
 #include <stddef.h>
 
-#include <algorithm>
-
 #include "base/check_op.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "base/i18n/char_iterator.h"
 #include "base/ranges/algorithm.h"
 #include "base/strings/escape.h"
 #include "base/strings/string_number_conversions.h"
@@ -352,8 +351,7 @@ bool HasPort(const std::string& original_text,
   //
   // https://url.spec.whatwg.org/#url-port-string says that "A URL-port string
   // must be zero or more ASCII digits".
-  if (!std::all_of(port_piece.begin(), port_piece.end(),
-                   base::IsAsciiDigit<char>)) {
+  if (!base::ranges::all_of(port_piece, base::IsAsciiDigit<char>)) {
     return false;
   }
 
@@ -491,10 +489,13 @@ std::string SegmentURLInternal(std::string* text, url::Parsed* parts) {
 
   // We need to add a scheme in order for ParseStandardURL to be happy.
   // Find the first non-whitespace character.
-  std::string::iterator first_nonwhite = text->begin();
-  while ((first_nonwhite != text->end()) &&
-         base::IsUnicodeWhitespace(*first_nonwhite))
-    ++first_nonwhite;
+  std::string::iterator first_nonwhite = text->end();
+  for (base::i18n::UTF8CharIterator iter(*text); !iter.end(); iter.Advance()) {
+    if (!base::IsUnicodeWhitespace(iter.get())) {
+      first_nonwhite = text->begin() + iter.array_pos();
+      break;
+    }
+  }
 
   // Construct the text to parse by inserting the scheme.
   std::string inserted_text(scheme);

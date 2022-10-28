@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -89,6 +89,9 @@ void ExoAppTypeResolver::PopulateProperties(
       exo::kProtectedNativePixmapQueryDelegate,
       reinterpret_cast<exo::ProtectedNativePixmapQueryDelegate*>(
           &protected_native_pixmap_query_client_));
+
+  out_properties_container.SetProperty(
+      chromeos::kShouldHaveHighlightBorderOverlay, true);
 
   if (task_id.has_value())
     out_properties_container.SetProperty(app_restore::kWindowIdKey, *task_id);

@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -153,6 +153,18 @@ void TestControllerAsh::ClickWindow(const std::string& window_id) {
   if (!destroyed) {
     DispatchMouseEvent(window, ui::ET_MOUSE_RELEASED, center);
   }
+}
+
+void TestControllerAsh::ConnectToNetwork(const std::string& service_path) {
+  ash::ShillServiceClient::Get()->Connect(
+      dbus::ObjectPath(service_path), base::DoNothing(),
+      ash::ShillServiceClient::ErrorCallback());
+}
+
+void TestControllerAsh::DisconnectFromNetwork(const std::string& service_path) {
+  ash::ShillServiceClient::Get()->Disconnect(
+      dbus::ObjectPath(service_path), base::DoNothing(),
+      ash::ShillServiceClient::ErrorCallback());
 }
 
 void TestControllerAsh::DoesItemExistInShelf(

@@ -1,9 +1,10 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "components/autofill/core/browser/autofill_test_utils.h"
 
+#include <cstdint>
 #include <string>
 
 #include "base/guid.h"
@@ -74,30 +75,49 @@ std::string GetRandomCardNumber() {
 
 }  // namespace
 
+AutofillEnvironment* AutofillEnvironment::current_instance_ = nullptr;
+
+AutofillEnvironment& AutofillEnvironment::GetCurrent(
+    const base::Location& location) {
+  CHECK(current_instance_)
+      << location.ToString() << " "
+      << "tried to access the current AutofillEnvironment, but none "
+         "exists. Add an autofill::test::AutofillEnvironment member to "
+         "test your test fixture.";
+  return *current_instance_;
+}
+
+AutofillEnvironment::AutofillEnvironment() {
+  CHECK(!current_instance_) << "An autofill::test::AutofillEnvironment has "
+                               "already been registered.";
+  current_instance_ = this;
+}
+
+AutofillEnvironment::~AutofillEnvironment() {
+  CHECK_EQ(current_instance_, this);
+  current_instance_ = nullptr;
+}
+
+LocalFrameToken AutofillEnvironment::NextLocalFrameToken() {
+  return LocalFrameToken(base::UnguessableToken::Deserialize(
+      ++local_frame_token_counter_high_, ++local_frame_token_counter_low_));
+}
+
+FormRendererId AutofillEnvironment::NextFormRendererId() {
+  return FormRendererId(++form_renderer_id_counter_);
+}
+
+FieldRendererId AutofillEnvironment::NextFieldRendererId() {
+  return FieldRendererId(++field_renderer_id_counter_);
+}
+
 LocalFrameToken MakeLocalFrameToken(RandomizeFrame randomize) {
   if (*randomize) {
-    return LocalFrameToken(base::UnguessableToken::Create());
+    return LocalFrameToken(
+        AutofillEnvironment::GetCurrent().NextLocalFrameToken());
   } else {
     return LocalFrameToken(base::UnguessableToken::Deserialize(98765, 43210));
   }
-}
-
-FormRendererId MakeFormRendererId() {
-  static uint32_t counter = 10;
-  return FormRendererId(counter++);
-}
-
-FieldRendererId MakeFieldRendererId() {
-  static uint32_t counter = 10;
-  return FieldRendererId(counter++);
-}
-
-FormGlobalId MakeFormGlobalId(RandomizeFrame randomize) {
-  return {MakeLocalFrameToken(randomize), MakeFormRendererId()};
-}
-
-FieldGlobalId MakeFieldGlobalId(RandomizeFrame randomize) {
-  return {MakeLocalFrameToken(randomize), MakeFieldRendererId()};
 }
 
 FormData WithoutValues(FormData form) {
@@ -170,6 +190,31 @@ void CreateTestFormField(const char* label,
   field->is_focusable = true;
 }
 
+void CreateTestFormField(const char* label,
+                         const char* name,
+                         const char* value,
+                         const char* type,
+                         const char* autocomplete,
+                         FormFieldData* field) {
+  CreateTestFormField(label, name, value, type, field);
+  field->autocomplete_attribute = autocomplete;
+  field->parsed_autocomplete =
+      ParseAutocompleteAttribute(autocomplete, field->max_length);
+}
+
+void CreateTestFormField(const char* label,
+                         const char* name,
+                         const char* value,
+                         const char* type,
+                         const char* autocomplete,
+                         uint64_t max_length,
+                         FormFieldData* field) {
+  // First, set the `max_length`, as the `parsed_autocomplete` is set based on
+  // this value.
+  field->max_length = max_length;
+  CreateTestFormField(label, name, value, type, autocomplete, field);
+}
+
 void CreateTestSelectField(const char* label,
                            const char* name,
                            const char* value,
@@ -188,6 +233,21 @@ void CreateTestSelectField(const char* label,
         .content = base::UTF8ToUTF16(contents[i]),
     });
   }
+}
+
+void CreateTestSelectField(const char* label,
+                           const char* name,
+                           const char* value,
+                           const char* autocomplete,
+                           const std::vector<const char*>& values,
+                           const std::vector<const char*>& contents,
+                           size_t select_size,
+                           FormFieldData* field) {
+  CreateTestSelectField(label, name, value, values, contents, select_size,
+                        field);
+  field->autocomplete_attribute = autocomplete;
+  field->parsed_autocomplete =
+      ParseAutocompleteAttribute(autocomplete, field->max_length);
 }
 
 void CreateTestSelectField(const std::vector<const char*>& values,

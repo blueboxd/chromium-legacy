@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -163,6 +163,7 @@ void HandleResponseFromSDK(
     ContentAnalysisSdkManager::Get()->ResetClient(
         SDKConfigFromRequest(request.get()));
   }
+
   request->FinishRequest(result, std::move(response));
 }
 
@@ -190,6 +191,10 @@ void DoLocalContentAnalysis(
     sdk_request.set_text_content(std::move(data.contents));
   } else if (!data.path.empty()) {
     sdk_request.set_file_path(data.path.AsUTF8Unsafe());
+  } else if (data.page.IsValid()) {
+    auto mapping = data.page.Map();
+    sdk_request.mutable_text_content()->assign(mapping.GetMemoryAs<char>(),
+                                               mapping.size());
   } else {
     NOTREACHED();
   }

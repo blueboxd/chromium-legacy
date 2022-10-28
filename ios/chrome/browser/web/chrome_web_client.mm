@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -17,22 +17,20 @@
 #import "components/autofill/ios/browser/autofill_java_script_feature.h"
 #import "components/autofill/ios/browser/suggestion_controller_java_script_feature.h"
 #import "components/autofill/ios/form_util/form_handlers_java_script_feature.h"
-#import "components/content_settings/core/browser/host_content_settings_map.h"
 #import "components/dom_distiller/core/url_constants.h"
 #import "components/google/core/common/google_util.h"
 #import "components/password_manager/core/common/password_manager_features.h"
 #import "components/password_manager/ios/password_manager_java_script_feature.h"
 #import "components/strings/grit/components_strings.h"
 #import "components/version_info/version_info.h"
-#import "ios/chrome/browser/application_context.h"
+#import "ios/chrome/browser/application_context/application_context.h"
 #import "ios/chrome/browser/browser_about_rewriter.h"
 #import "ios/chrome/browser/browser_state/chrome_browser_state.h"
-#import "ios/chrome/browser/chrome_switches.h"
 #import "ios/chrome/browser/chrome_url_constants.h"
-#import "ios/chrome/browser/content_settings/host_content_settings_map_factory.h"
+#import "ios/chrome/browser/chrome_url_util.h"
+#import "ios/chrome/browser/flags/chrome_switches.h"
 #import "ios/chrome/browser/follow/follow_java_script_feature.h"
 #import "ios/chrome/browser/https_upgrades/https_upgrade_service_factory.h"
-#import "ios/chrome/browser/ios_chrome_main_parts.h"
 #import "ios/chrome/browser/link_to_text/link_to_text_java_script_feature.h"
 #import "ios/chrome/browser/ntp/browser_policy_new_tab_page_rewriter.h"
 #import "ios/chrome/browser/ntp/new_tab_page_tab_helper.h"
@@ -47,6 +45,7 @@
 #import "ios/chrome/browser/ssl/ios_ssl_error_handler.h"
 #import "ios/chrome/browser/ui/elements/windowed_container_view.h"
 #import "ios/chrome/browser/ui/ui_feature_flags.h"
+#import "ios/chrome/browser/web/chrome_main_parts.h"
 #import "ios/chrome/browser/web/error_page_controller_bridge.h"
 #import "ios/chrome/browser/web/error_page_util.h"
 #import "ios/chrome/browser/web/features.h"
@@ -196,18 +195,6 @@ std::string GetMobileProduct() {
 std::string GetDesktopProduct() {
   return base::StringPrintf(kProductTagWithPlaceholder,
                             version_info::GetMajorVersionNumber().c_str());
-}
-
-// Whether the desktop user agent should be used by default.
-bool ShouldUseDesktop(web::WebState* web_state, const GURL& url) {
-  ChromeBrowserState* browser_state =
-      ChromeBrowserState::FromBrowserState(web_state->GetBrowserState());
-  HostContentSettingsMap* settings_map =
-      ios::HostContentSettingsMapFactory::GetForBrowserState(browser_state);
-  ContentSetting setting = settings_map->GetContentSetting(
-      url, url, ContentSettingsType::REQUEST_DESKTOP_SITE);
-
-  return setting == CONTENT_SETTING_ALLOW;
 }
 
 // If `url` is an offline URL, returns the associated online URL. If it is not
@@ -430,14 +417,19 @@ bool ChromeWebClient::EnableLongPressUIContextMenu() const {
 web::UserAgentType ChromeWebClient::GetDefaultUserAgent(
     web::WebState* web_state,
     const GURL& url) const {
-  bool use_desktop_agent = ShouldUseDesktop(web_state, url);
+  ChromeBrowserState* browser_state =
+      ChromeBrowserState::FromBrowserState(web_state->GetBrowserState());
+
+  bool use_desktop_agent = ShouldLoadUrlInDesktopMode(url, browser_state);
   return use_desktop_agent ? web::UserAgentType::DESKTOP
                            : web::UserAgentType::MOBILE;
 }
 
 void ChromeWebClient::LogDefaultUserAgent(web::WebState* web_state,
                                           const GURL& url) const {
-  bool use_desktop_agent = ShouldUseDesktop(web_state, url);
+  ChromeBrowserState* browser_state =
+      ChromeBrowserState::FromBrowserState(web_state->GetBrowserState());
+  bool use_desktop_agent = ShouldLoadUrlInDesktopMode(url, browser_state);
   base::UmaHistogramBoolean("IOS.PageLoad.DefaultModeMobile",
                             !use_desktop_agent);
 }

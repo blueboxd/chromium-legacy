@@ -1,16 +1,16 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome/browser/extensions/api/printing/printing_api_utils.h"
 
-#include <algorithm>
 #include <memory>
 #include <utility>
 #include <vector>
 
 #include "base/containers/contains.h"
 #include "base/json/json_reader.h"
+#include "base/ranges/algorithm.h"
 #include "base/values.h"
 #include "chromeos/crosapi/mojom/local_printer.mojom.h"
 #include "chromeos/printing/printer_configuration.h"
@@ -89,9 +89,7 @@ idl::Printer PrinterToIdl(
       DoesPrinterMatchDefaultPrinterRules(printer, default_printer_rules);
   auto it = recently_used_ranks.find(printer.id);
   if (it != recently_used_ranks.end())
-    idl_printer.recently_used_rank = std::make_unique<int>(it->second);
-  else
-    idl_printer.recently_used_rank = nullptr;
+    idl_printer.recently_used_rank = it->second;
   return idl_printer;
 }
 
@@ -243,8 +241,8 @@ bool CheckSettingsAndCapabilitiesCompatibility(
 
   const printing::PrintSettings::RequestedMedia& requested_media =
       settings.requested_media();
-  return std::any_of(
-      capabilities.papers.begin(), capabilities.papers.end(),
+  return base::ranges::any_of(
+      capabilities.papers,
       [&requested_media](
           const printing::PrinterSemanticCapsAndDefaults::Paper& paper) {
         return paper.size_um == requested_media.size_microns &&

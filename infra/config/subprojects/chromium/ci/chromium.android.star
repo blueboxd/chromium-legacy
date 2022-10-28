@@ -1,4 +1,4 @@
-# Copyright 2021 The Chromium Authors. All rights reserved.
+# Copyright 2021 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 """Definitions of builders in the chromium.android builder group."""
@@ -67,7 +67,7 @@ ci.builder(
     ),
     # Higher build timeout since dbg ASAN builds can take a while on a clobber
     # build.
-    execution_timeout = 4 * time.hour,
+    execution_timeout = 5 * time.hour,
     tree_closing = True,
 )
 
@@ -332,6 +332,8 @@ ci.builder(
     tree_closing = True,
 )
 
+# This builder should be used for trybot mirroring when no need to compile all.
+# See the builder "Android x64 Builder All Targets (dbg)" for more details.
 ci.builder(
     name = "Android x64 Builder (dbg)",
     branch_selector = branches.STANDARD_MILESTONE,
@@ -359,6 +361,23 @@ ci.builder(
     console_view_entry = consoles.console_view_entry(
         category = "builder|x86",
         short_name = "64",
+    ),
+    cq_mirrors_console_view = "mirrors",
+    execution_timeout = 7 * time.hour,
+)
+
+# Similar to crbug.com/1246468#c34, as android has some non standard
+# buildchains, `mb analyze` will not be able to filter out compile targets when
+# running a trybot and thus tries to compile everythings. If the builder
+# specifies `all` target, the compile time can take 5+ hours.
+# So this builder matches "Android x64 Builder (dbg)", but compiles everything.
+ci.builder(
+    name = "Android x64 Builder All Targets (dbg)",
+    branch_selector = branches.STANDARD_MILESTONE,
+    builder_spec = builder_config.copy_from("ci/Android x64 Builder (dbg)"),
+    console_view_entry = consoles.console_view_entry(
+        category = "builder|x86",
+        short_name = "64-all",
     ),
     cq_mirrors_console_view = "mirrors",
     execution_timeout = 7 * time.hour,
@@ -684,7 +703,7 @@ ci.builder(
 )
 
 ci.builder(
-    name = "android-12l-x86-rel",
+    name = "android-12l-x64-dbg-tests",
     builder_spec = builder_config.builder_spec(
         execution_mode = builder_config.execution_mode.TEST,
         gclient_config = builder_config.gclient_config(
@@ -699,15 +718,14 @@ ci.builder(
             apply_configs = [
                 "download_vr_test_apks",
             ],
-            build_config = builder_config.build_config.RELEASE,
-            target_bits = 32,
+            build_config = builder_config.build_config.DEBUG,
+            target_bits = 64,
             target_platform = builder_config.target_platform.ANDROID,
         ),
         android_config = builder_config.android_config(
-            config = "main_builder_mb",
+            config = "x64_builder_mb",
         ),
         build_gs_bucket = "chromium-android-archive",
-        run_tests_serially = True,
     ),
     console_view_entry = consoles.console_view_entry(
         category = "tester|tablet",
@@ -716,7 +734,7 @@ ci.builder(
     # TODO: This can be reduced when builder works.
     execution_timeout = 4 * time.hour,
     sheriff_rotations = args.ignore_default(None),
-    triggered_by = ["ci/Android arm Builder (dbg)"],
+    triggered_by = ["ci/Android x64 Builder (dbg)"],
 )
 
 ci.builder(
@@ -1281,6 +1299,34 @@ ci.builder(
         category = "builder_tester|x86",
         short_name = "M_non-cq",
     ),
+)
+
+ci.builder(
+    name = "android-nougat-x86-rel",
+    builder_spec = builder_config.builder_spec(
+        gclient_config = builder_config.gclient_config(
+            config = "chromium",
+            apply_configs = ["android", "enable_reclient", "enable_wpr_tests"],
+        ),
+        chromium_config = builder_config.chromium_config(
+            config = "android",
+            build_config = builder_config.build_config.RELEASE,
+            target_bits = 32,
+            target_platform = builder_config.target_platform.ANDROID,
+        ),
+        android_config = builder_config.android_config(
+            config = "x86_builder_mb",
+        ),
+        build_gs_bucket = "chromium-android-archive",
+    ),
+    console_view_entry = consoles.console_view_entry(
+        category = "builder_tester|x86",
+        short_name = "N",
+    ),
+    execution_timeout = 4 * time.hour,
+    # TODO(crbug/1303439): Add this builder to sheriff once the success rate is
+    # close to 90%.
+    sheriff_rotations = args.ignore_default(None),
 )
 
 ci.thin_tester(

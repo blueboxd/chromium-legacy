@@ -1,25 +1,25 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #import "ios/web/navigation/crw_wk_navigation_handler.h"
 
-#include "base/scoped_observation.h"
+#import "base/scoped_observation.h"
 #import "base/test/ios/wait_util.h"
-#include "base/test/scoped_feature_list.h"
-#include "ios/web/common/features.h"
+#import "base/test/scoped_feature_list.h"
+#import "ios/web/common/features.h"
 #import "ios/web/public/navigation/https_upgrade_type.h"
 #import "ios/web/public/navigation/navigation_context.h"
 #import "ios/web/public/navigation/navigation_item.h"
 #import "ios/web/public/test/fakes/fake_web_client.h"
 #import "ios/web/public/test/navigation_test_util.h"
-#include "ios/web/public/web_state_observer.h"
+#import "ios/web/public/web_state_observer.h"
 #import "ios/web/security/wk_web_view_security_util.h"
 #import "ios/web/test/web_int_test.h"
 #import "ios/web/web_view/error_translation_util.h"
 #import "net/base/mac/url_conversions.h"
-#include "net/test/embedded_test_server/default_handlers.h"
-#include "net/test/embedded_test_server/embedded_test_server.h"
+#import "net/test/embedded_test_server/default_handlers.h"
+#import "net/test/embedded_test_server/embedded_test_server.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -121,7 +121,7 @@ class CRWKNavigationHandlerIntTest : public WebIntTest {
     scoped_observer.Observe(web_state());
     web_state()->GetNavigationManager()->LoadURLWithParams(params);
 
-    // Need to use a pointer to |observer| as the block wants to capture it by
+    // Need to use a pointer to `observer` as the block wants to capture it by
     // value (even if marked with __block) which would not work.
     FailedWebStateObserver* observer_ptr = &observer;
     EXPECT_TRUE(
@@ -164,6 +164,30 @@ TEST_F(CRWKNavigationHandlerIntTest, ReloadWithDifferentUserAgent) {
         NavigationItem* item_after_reload =
             web_state()->GetNavigationManager()->GetVisibleItem();
         return item_after_reload->GetUserAgentType() == UserAgentType::DESKTOP;
+      }));
+}
+
+// Tests that reloading a failed page that should not have a User Agent doesn't
+// trigger a DCHECK (preventing crbug.com/1360567).
+TEST_F(CRWKNavigationHandlerIntTest, ReloadNONEUserAgentErrorPage) {
+  FakeWebClient* web_client = GetWebClient();
+  web_client->SetDefaultUserAgent(UserAgentType::MOBILE);
+
+  GURL url("testwebui://extensions");
+  ASSERT_TRUE(LoadUrl(url));
+
+  NavigationItem* item = web_state()->GetNavigationManager()->GetVisibleItem();
+  EXPECT_EQ(UserAgentType::NONE, item->GetUserAgentType());
+
+  web_state()->GetNavigationManager()->Reload(ReloadType::NORMAL,
+                                              /* check_for_repost = */ true);
+
+  // Make sure the load has time to start.
+  base::test::ios::SpinRunLoopWithMinDelay(base::Milliseconds(10));
+
+  EXPECT_TRUE(base::test::ios::WaitUntilConditionOrTimeout(
+      base::test::ios::kWaitForPageLoadTimeout, ^{
+        return !web_state()->IsLoading();
       }));
 }
 

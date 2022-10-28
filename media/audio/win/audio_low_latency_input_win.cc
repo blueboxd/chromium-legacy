@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -14,7 +14,6 @@
 #include <memory>
 #include <utility>
 
-#include "base/command_line.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
@@ -424,9 +423,8 @@ AudioInputStream::OpenOutcome WASAPIAudioInputStream::Open() {
     }
   }
 
-  const base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();
   use_fake_audio_capture_timestamps_ =
-      cmd_line->HasSwitch(switches::kUseFakeAudioCaptureTimestamps);
+      base::FeatureList::IsEnabled(media::kUseFakeAudioCaptureTimestamps);
   if (use_fake_audio_capture_timestamps_) {
     SendLogMessage("%s => (WARNING: capture timestamps will be fake)",
                    __func__);
@@ -651,15 +649,13 @@ void WASAPIAudioInputStream::Close() {
     base::UmaHistogramBoolean("Media.Audio.RawProcessingSupportedWin",
                               raw_processing_supported_);
 
+    // These UMAs are deprecated but keep adding the information as text logs
+    // for debugging purposes.
     for (auto const& type : default_effect_types_) {
-      base::UmaHistogramSparse("Media.Audio.Capture.Win.DefaultEffectType",
-                               type);
       SendLogMessage("%s => (Media.Audio.Capture.Win.DefaultEffectType=%s)",
                      __func__, EffectTypeToString(type));
     }
-
     for (auto const& type : raw_effect_types_) {
-      base::UmaHistogramSparse("Media.Audio.Capture.Win.RawEffectType", type);
       SendLogMessage("%s => (Media.Audio.Capture.Win.RawEffectType=%s)",
                      __func__, EffectTypeToString(type));
     }
@@ -1464,10 +1460,12 @@ void WASAPIAudioInputStream::SetupConverterAndStoreFormatInfo() {
   double new_frames_per_buffer =
       input_format_.Format.nSamplesPerSec / buffer_ratio;
 
-  const auto input_layout = GuessChannelLayout(input_format_.Format.nChannels);
-  DCHECK_NE(CHANNEL_LAYOUT_UNSUPPORTED, input_layout);
-  const auto output_layout = GuessChannelLayout(output_format_.nChannels);
-  DCHECK_NE(CHANNEL_LAYOUT_UNSUPPORTED, output_layout);
+  const auto input_layout =
+      ChannelLayoutConfig::Guess(input_format_.Format.nChannels);
+  DCHECK_NE(CHANNEL_LAYOUT_UNSUPPORTED, input_layout.channel_layout());
+  const auto output_layout =
+      ChannelLayoutConfig::Guess(output_format_.nChannels);
+  DCHECK_NE(CHANNEL_LAYOUT_UNSUPPORTED, output_layout.channel_layout());
 
   const AudioParameters input(AudioParameters::AUDIO_PCM_LOW_LATENCY,
                               input_layout, input_format_.Format.nSamplesPerSec,

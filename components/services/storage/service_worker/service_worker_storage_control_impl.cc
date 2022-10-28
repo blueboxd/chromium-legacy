@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -245,6 +245,15 @@ void ServiceWorkerStorageControlImpl::UpdateNavigationPreloadHeader(
     UpdateNavigationPreloadHeaderCallback callback) {
   storage_->UpdateNavigationPreloadHeader(registration_id, key, value,
                                           std::move(callback));
+}
+
+void ServiceWorkerStorageControlImpl::UpdateFetchHandlerType(
+    int64_t registration_id,
+    const blink::StorageKey& key,
+    blink::mojom::ServiceWorkerFetchHandlerType type,
+    UpdateFetchHandlerTypeCallback callback) {
+  storage_->UpdateFetchHandlerType(registration_id, key, type,
+                                   std::move(callback));
 }
 
 void ServiceWorkerStorageControlImpl::GetNewRegistrationId(

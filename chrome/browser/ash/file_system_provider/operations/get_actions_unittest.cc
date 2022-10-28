@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -117,7 +117,7 @@ TEST_F(FileSystemProviderOperationsGetActionsTest, Execute) {
   util::LoggingDispatchEventImpl dispatcher(true /* dispatch_reply */);
   CallbackLogger callback_logger;
 
-  GetActions get_actions(NULL, file_system_info_, entry_paths_,
+  GetActions get_actions(nullptr, file_system_info_, entry_paths_,
                          base::BindOnce(&CallbackLogger::OnGetActions,
                                         base::Unretained(&callback_logger)));
   get_actions.SetDispatchEventImplForTesting(
@@ -151,7 +151,7 @@ TEST_F(FileSystemProviderOperationsGetActionsTest, Execute_NoListener) {
   util::LoggingDispatchEventImpl dispatcher(false /* dispatch_reply */);
   CallbackLogger callback_logger;
 
-  GetActions get_actions(NULL, file_system_info_, entry_paths_,
+  GetActions get_actions(nullptr, file_system_info_, entry_paths_,
                          base::BindOnce(&CallbackLogger::OnGetActions,
                                         base::Unretained(&callback_logger)));
   get_actions.SetDispatchEventImplForTesting(
@@ -165,7 +165,7 @@ TEST_F(FileSystemProviderOperationsGetActionsTest, OnSuccess) {
   util::LoggingDispatchEventImpl dispatcher(true /* dispatch_reply */);
   CallbackLogger callback_logger;
 
-  GetActions get_actions(NULL, file_system_info_, entry_paths_,
+  GetActions get_actions(nullptr, file_system_info_, entry_paths_,
                          base::BindOnce(&CallbackLogger::OnGetActions,
                                         base::Unretained(&callback_logger)));
   get_actions.SetDispatchEventImplForTesting(
@@ -224,7 +224,7 @@ TEST_F(FileSystemProviderOperationsGetActionsTest, OnError) {
   util::LoggingDispatchEventImpl dispatcher(true /* dispatch_reply */);
   CallbackLogger callback_logger;
 
-  GetActions get_actions(NULL, file_system_info_, entry_paths_,
+  GetActions get_actions(nullptr, file_system_info_, entry_paths_,
                          base::BindOnce(&CallbackLogger::OnGetActions,
                                         base::Unretained(&callback_logger)));
   get_actions.SetDispatchEventImplForTesting(

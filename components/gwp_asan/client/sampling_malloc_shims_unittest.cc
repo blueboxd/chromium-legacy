@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,8 +9,8 @@
 #include <memory>
 #include <string>
 
-#include "base/allocator/allocator_shim.h"
 #include "base/allocator/buildflags.h"
+#include "base/allocator/partition_allocator/shim/allocator_shim.h"
 #include "base/callback_helpers.h"
 #include "base/memory/page_size.h"
 #include "base/strings/string_number_conversions.h"
@@ -63,12 +63,13 @@ class SamplingMallocShimsTest : public base::MultiProcessTest {
  public:
   static void multiprocessTestSetup() {
 #if BUILDFLAG(IS_APPLE)
-    base::allocator::InitializeAllocatorShim();
+    allocator_shim::InitializeAllocatorShim();
 #endif  // BUILDFLAG(IS_APPLE)
     crash_reporter::InitializeCrashKeys();
     InstallMallocHooks(AllocatorState::kMaxMetadata,
-                       AllocatorState::kMaxMetadata, AllocatorState::kMaxSlots,
-                       kSamplingFrequency, base::DoNothing());
+                       AllocatorState::kMaxMetadata,
+                       AllocatorState::kMaxRequestedSlots, kSamplingFrequency,
+                       base::DoNothing());
   }
 
  protected:

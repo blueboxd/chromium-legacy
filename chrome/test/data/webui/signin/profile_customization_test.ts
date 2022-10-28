@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,6 +7,7 @@ import 'chrome://profile-customization/profile_customization_app.js';
 import {ProfileCustomizationAppElement} from 'chrome://profile-customization/profile_customization_app.js';
 import {ProfileCustomizationBrowserProxyImpl} from 'chrome://profile-customization/profile_customization_browser_proxy.js';
 import {CrButtonElement} from 'chrome://resources/cr_elements/cr_button/cr_button.js';
+import {CrIconButtonElement} from 'chrome://resources/cr_elements/cr_icon_button/cr_icon_button.js';
 import {webUIListenerCallback} from 'chrome://resources/js/cr.m.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {assertEquals, assertFalse, assertTrue} from 'chrome://webui-test/chai_assert.js';
@@ -134,9 +135,15 @@ import {TestProfileCustomizationBrowserProxy} from './test_profile_customization
     });
 
     // Checks that the Skip button is present when the page is displayed in a
-    // dialog
+    // dialog.
     test('HasSkipButton', function() {
       assertEquals(inDialogDesign, isChildVisible(app, '#skipButton'));
+    });
+
+    // Checks that there is no Delete Profile button in the default Profile
+    // Customization page.
+    test('DeleteProfileButtonNotVisible', function() {
+      assertFalse(isChildVisible(app, '#deleteProfileButton'));
     });
 
     // Checks that clicking the Skip button triggers the correct browser proxy
@@ -183,8 +190,38 @@ suite(`LocalProfileCreationTest`, function() {
     assertEquals(app.$.title.innerText, WELCOME_TITLE);
     assertFalse(isChildVisible(app, '#workBadge'));
     assertTrue(isChildVisible(app, '#customizeAvatarIcon'));
+    assertTrue(isChildVisible(app, '#deleteProfileButton'));
     assertFalse(isChildVisible(app, '#skipButton'));
-    // TODO(https://crbug.com/1282157): Verify that the avatar selector is
-    // displayed on customizeAvatarIcon click once implemented.
+
+    const activeView = 'active';
+    const profileCustomizationDialog =
+        app.shadowRoot!.querySelector<HTMLElement>('#customizeDialog')!;
+    const avatarSelectionDialog =
+        app.shadowRoot!.querySelector<HTMLElement>('#selectAvatarDialog')!;
+    assertTrue(profileCustomizationDialog.classList.contains(activeView));
+    assertFalse(avatarSelectionDialog.classList.contains(activeView));
+
+    // Open avatar customization.
+    const avatarCustomizationButton =
+        app.shadowRoot!.querySelector<CrIconButtonElement>(
+            '#customizeAvatarIcon')!;
+    avatarCustomizationButton.click();
+    assertFalse(profileCustomizationDialog.classList.contains(activeView));
+    assertTrue(avatarSelectionDialog.classList.contains(activeView));
+
+    const selectAvatarConfirmButton =
+        app.shadowRoot!.querySelector<CrButtonElement>(
+            '#selectAvatarConfirmButton')!;
+    selectAvatarConfirmButton.click();
+    assertTrue(profileCustomizationDialog.classList.contains(activeView));
+    assertFalse(avatarSelectionDialog.classList.contains(activeView));
+  });
+
+  test('ClickDeleteProfileButton', function() {
+    assertTrue(isChildVisible(app, '#deleteProfileButton'));
+    const deleteProfileButton =
+        app.shadowRoot!.querySelector<CrButtonElement>('#deleteProfileButton')!;
+    deleteProfileButton.click();
+    return browserProxy.whenCalled('deleteProfile');
   });
 });

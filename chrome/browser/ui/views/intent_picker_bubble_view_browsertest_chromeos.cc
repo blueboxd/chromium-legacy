@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -18,6 +18,7 @@
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
+#include "chrome/browser/apps/intent_helper/intent_picker_features.h"
 #include "chrome/browser/apps/intent_helper/metrics/intent_handling_metrics.h"
 #include "chrome/browser/ash/arc/arc_util.h"
 #include "chrome/browser/ash/arc/session/arc_session_manager.h"
@@ -132,6 +133,11 @@ class WidgetDestroyedWaiter : public views::WidgetObserver {
 
 class IntentPickerBubbleViewBrowserTestChromeOS : public InProcessBrowserTest {
  public:
+  IntentPickerBubbleViewBrowserTestChromeOS() {
+    // TODO(crbug.com/1357905): Run relevant tests against the updated UI.
+    feature_list_.InitAndDisableFeature(apps::features::kLinkCapturingUiUpdate);
+  }
+
   void SetUpCommandLine(base::CommandLine* command_line) override {
     arc::SetArcAvailableCommandLineForTesting(command_line);
   }
@@ -322,6 +328,7 @@ class IntentPickerBubbleViewBrowserTestChromeOS : public InProcessBrowserTest {
   }
 
  private:
+  base::test::ScopedFeatureList feature_list_;
   apps::AppServiceProxy* app_service_proxy_ = nullptr;
   std::unique_ptr<arc::FakeIntentHelperInstance> intent_helper_instance_;
   std::unique_ptr<arc::FakeAppInstance> app_instance_;
@@ -330,8 +337,15 @@ class IntentPickerBubbleViewBrowserTestChromeOS : public InProcessBrowserTest {
 };
 
 // Test that the intent picker bubble will pop out for ARC apps.
+//
+// TODO(https://crbug.com/1361934): Fix timeouts under MSAN.
+#if defined(MEMORY_SANITIZER)
+#define MAYBE_BubblePopOut DISABLED_BubblePopOut
+#else
+#define MAYBE_BubblePopOut BubblePopOut
+#endif
 IN_PROC_BROWSER_TEST_F(IntentPickerBubbleViewBrowserTestChromeOS,
-                       BubblePopOut) {
+                       MAYBE_BubblePopOut) {
   GURL test_url(InScopeAppUrl());
   std::string app_name = "test_name";
   auto app_id = AddArcAppWithIntentFilter(app_name, test_url);
@@ -1061,8 +1075,15 @@ IN_PROC_BROWSER_TEST_F(IntentPickerBubbleViewBrowserTestChromeOS,
 }
 
 // Test that remember by choice checkbox works for open ARC app option.
+//
+// TODO(https://crbug.com/1361934): Fix timeouts under MSAN.
+#if defined(MEMORY_SANITIZER)
+#define MAYBE_RememberOpenARCApp DISABLED_RememberOpenARCApp
+#else
+#define MAYBE_RememberOpenARCApp RememberOpenARCApp
+#endif
 IN_PROC_BROWSER_TEST_F(IntentPickerBubbleViewBrowserTestChromeOS,
-                       RememberOpenARCApp) {
+                       MAYBE_RememberOpenARCApp) {
   GURL test_url(InScopeAppUrl());
   std::string app_name = "test_name";
   auto app_id = AddArcAppWithIntentFilter(app_name, test_url);
@@ -1146,8 +1167,15 @@ IN_PROC_BROWSER_TEST_F(IntentPickerBubbleViewBrowserTestChromeOS,
 }
 
 // Test that remember by choice checkbox works for open PWA option.
+//
+// TODO(https://crbug.com/1361934): Fix timeouts under MSAN.
+#if defined(MEMORY_SANITIZER)
+#define MAYBE_RememberOpenPWA DISABLED_RememberOpenPWA
+#else
+#define MAYBE_RememberOpenPWA RememberOpenPWA
+#endif
 IN_PROC_BROWSER_TEST_F(IntentPickerBubbleViewBrowserTestChromeOS,
-                       RememberOpenPWA) {
+                       MAYBE_RememberOpenPWA) {
   base::HistogramTester histogram_tester;
 
   GURL test_url(InScopeAppUrl());
@@ -1206,14 +1234,15 @@ IN_PROC_BROWSER_TEST_F(IntentPickerBubbleViewBrowserTestChromeOS,
       apps::IntentHandlingMetrics::LinkCapturingEvent::kSettingsChanged, 1);
 }
 
-class IntentPickerBrowserTestPrerendering
+class IntentPickerBubbleViewPrerenderingBrowserTestChromeOS
     : public IntentPickerBubbleViewBrowserTestChromeOS {
  public:
-  IntentPickerBrowserTestPrerendering()
+  IntentPickerBubbleViewPrerenderingBrowserTestChromeOS()
       : prerender_helper_(base::BindRepeating(
-            &IntentPickerBrowserTestPrerendering::web_contents,
+            &IntentPickerBubbleViewPrerenderingBrowserTestChromeOS::
+                web_contents,
             base::Unretained(this))) {}
-  ~IntentPickerBrowserTestPrerendering() override = default;
+  ~IntentPickerBubbleViewPrerenderingBrowserTestChromeOS() override = default;
 
  protected:
   content::WebContents* web_contents() {
@@ -1226,8 +1255,16 @@ class IntentPickerBrowserTestPrerendering
 // Simulates prerendering an app URL that the user has opted into always
 // launching an app window for. In this case, the prerender should be canceled
 // and the app shouldn't be opened.
-IN_PROC_BROWSER_TEST_F(IntentPickerBrowserTestPrerendering,
-                       AppLaunchURLCancelsPrerendering) {
+//
+// TODO(https://crbug.com/1361934): Fix timeouts under MSAN.
+#if defined(MEMORY_SANITIZER)
+#define MAYBE_AppLaunchURLCancelsPrerendering \
+  DISABLED_AppLaunchURLCancelsPrerendering
+#else
+#define MAYBE_AppLaunchURLCancelsPrerendering AppLaunchURLCancelsPrerendering
+#endif
+IN_PROC_BROWSER_TEST_F(IntentPickerBubbleViewPrerenderingBrowserTestChromeOS,
+                       MAYBE_AppLaunchURLCancelsPrerendering) {
   // Prerendering is currently limited to same-origin pages so we need to start
   // it from an arbitrary page on the same origin, rather than about:blank.
   const GURL kInitialUrl = embedded_test_server()->GetURL("/empty.html");

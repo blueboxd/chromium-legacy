@@ -14,10 +14,6 @@
 #include "content/public/browser/web_contents_user_data.h"
 #include "third_party/blink/public/mojom/conversions/conversions.mojom.h"
 
-namespace url {
-class Origin;
-}  // namespace url
-
 namespace content {
 
 class WebContents;
@@ -31,10 +27,10 @@ class CONTENT_EXPORT AttributionHost
       public blink::mojom::ConversionHost {
  public:
   explicit AttributionHost(WebContents* web_contents);
-  AttributionHost(const AttributionHost& other) = delete;
-  AttributionHost& operator=(const AttributionHost& other) = delete;
-  AttributionHost(AttributionHost&& other) = delete;
-  AttributionHost& operator=(AttributionHost&& other) = delete;
+  AttributionHost(const AttributionHost&) = delete;
+  AttributionHost& operator=(const AttributionHost&) = delete;
+  AttributionHost(AttributionHost&&) = delete;
+  AttributionHost& operator=(AttributionHost&&) = delete;
   ~AttributionHost() override;
 
   static void BindReceiver(
@@ -57,12 +53,6 @@ class CONTENT_EXPORT AttributionHost
   void DidRedirectNavigation(NavigationHandle* navigation_handle) override;
   void DidFinishNavigation(NavigationHandle* navigation_handle) override;
 
-  // Returns the top frame origin corresponding to the current target frame.
-  // Returns nullptr and reports a bad message if the top frame origin is not
-  // potentially trustworthy or the current target frame is not a secure
-  // context.
-  [[nodiscard]] const url::Origin* TopFrameOriginForSecureContext();
-
   // Notifies the `AttributionDataHostManager` that a navigation with an
   // associated `AttributionDataHost` failed, if necessary.
   void MaybeNotifyFailedSourceNavigation(NavigationHandle* navigation_handle);
@@ -79,8 +69,8 @@ class CONTENT_EXPORT AttributionHost
   //
   // A flat_map is used as the number of ongoing impression navigations is
   // expected to be very small in a given WebContents.
-  using NavigationImpressionOriginMap = base::flat_map<int64_t, url::Origin>;
-  NavigationImpressionOriginMap navigation_impression_origins_;
+  using NavigationSourceOriginMap = base::flat_map<int64_t, url::Origin>;
+  NavigationSourceOriginMap navigation_source_origins_;
 
   RenderFrameHostReceiverSet<blink::mojom::ConversionHost> receivers_;
 

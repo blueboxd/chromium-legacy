@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -54,7 +54,7 @@ constexpr const base::TimeDelta kWaitBeforeRebootTime = base::Seconds(2);
 // its login page before error message appears.
 constexpr const base::TimeDelta kDelayErrorMessage = base::Seconds(10);
 
-constexpr const base::TimeDelta kShowDelay = base::Microseconds(400);
+constexpr const base::TimeDelta kDefaultShowDelay = base::Microseconds(400);
 
 // When battery percent is lower and DISCHARGING warn user about it.
 const double kInsufficientBatteryPercent = 50;
@@ -117,6 +117,7 @@ UpdateScreen::UpdateScreen(base::WeakPtr<UpdateView> view,
           std::make_unique<ErrorScreensHistogramHelper>("Update")),
       version_updater_(std::make_unique<VersionUpdater>(this)),
       wait_before_reboot_time_(kWaitBeforeRebootTime),
+      show_delay_(kDefaultShowDelay),
       tick_clock_(base::DefaultTickClock::GetInstance()) {}
 
 UpdateScreen::~UpdateScreen() = default;
@@ -153,9 +154,9 @@ void UpdateScreen::ShowImpl() {
                             weak_factory_.GetWeakPtr()));
   }
   if (!power_manager_subscription_.IsObserving()) {
-    power_manager_subscription_.Observe(PowerManagerClient::Get());
+    power_manager_subscription_.Observe(chromeos::PowerManagerClient::Get());
   }
-  PowerManagerClient::Get()->RequestStatusUpdate();
+  chromeos::PowerManagerClient::Get()->RequestStatusUpdate();
 #if !BUILDFLAG(GOOGLE_CHROME_BRANDING)
   if (view_) {
     view_->SetCancelUpdateShortcutEnabled(true);
@@ -170,7 +171,7 @@ void UpdateScreen::ShowImpl() {
   if (is_opt_out_enabled_) {
     MakeSureScreenIsShown();
   } else {
-    show_timer_.Start(FROM_HERE, kShowDelay,
+    show_timer_.Start(FROM_HERE, show_delay_,
                       base::BindOnce(&UpdateScreen::MakeSureScreenIsShown,
                                      weak_factory_.GetWeakPtr()));
   }
@@ -264,12 +265,12 @@ void UpdateScreen::ShowErrorMessage() {
   histogram_helper_->OnErrorShow(error_screen_->GetErrorState());
 }
 
-void UpdateScreen::UpdateErrorMessage(
-    const NetworkPortalDetector::CaptivePortalStatus status,
-    const NetworkError::ErrorState& error_state,
-    const std::string& network_name) {
+void UpdateScreen::UpdateErrorMessage(NetworkState::PortalState state,
+                                      NetworkError::ErrorState error_state,
+                                      const std::string& network_name) {
   error_screen_->SetErrorState(error_state, network_name);
-  if (status == NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_PORTAL) {
+  if (state == NetworkState::PortalState::kPortal ||
+      state == NetworkState::PortalState::kPortalSuspected) {
     if (is_first_portal_notification_) {
       is_first_portal_notification_ = false;
       error_screen_->FixCaptivePortal();
@@ -459,7 +460,7 @@ void UpdateScreen::UpdateBatteryWarningVisibility() {
   if (!view_)
     return;
   const absl::optional<power_manager::PowerSupplyProperties>& proto =
-      PowerManagerClient::Get()->GetLastStatus();
+      chromeos::PowerManagerClient::Get()->GetLastStatus();
   if (!proto.has_value())
     return;
   view_->ShowLowBatteryWarningMessage(

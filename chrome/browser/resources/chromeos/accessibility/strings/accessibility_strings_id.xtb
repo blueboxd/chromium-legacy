@@ -138,9 +138,9 @@
 <translation id="1812527064848182527">lanskap</translation>
 <translation id="1829244130665387512">Cari di halaman</translation>
 <translation id="1834891354138622109">Kolom</translation>
-<translation id="1845944666972354496">Ketuk dua kali untuk mengaktifkan</translation>
 <translation id="1846771122725914429">Penampil Braille Bluetooth</translation>
 <translation id="1852018405765032699">Mengetuk layar dengan empat jari akan membuka dan menutup menu ChromeVox. Menu ini berisi informasi bermanfaat tentang perintah dan pintasan. Setelah menu terbuka, Anda dapat menggeser dengan satu jari untuk membuka item, dan mengetuk dua kali untuk mengaktifkan item. Untuk melanjutkan, ketuk layar dengan empat jari.</translation>
+<translation id="1864430479908918647">Tekan Penelusuran+Spasi</translation>
 <translation id="1865601187525349519">Akhir teks</translation>
 <translation id="1876229593313240038">doc</translation>
 <translation id="1902396333223336119">Sel</translation>
@@ -238,6 +238,7 @@
 <translation id="2619344480613750862">Anda juga dapat berpindah-pindah bagian pada layar. Misalnya, Anda dapat berpindah di antara peluncur, rak, dan tab Chrome. Untuk berpindah ke bagian berikutnya, geser dari kiri ke kanan dengan empat jari. Coba sekarang untuk melanjutkan.</translation>
 <translation id="2624431853467395961">Buka mode pembelajaran</translation>
 <translation id="2626530649491650971">dapat diklik</translation>
+<translation id="263637551280112393">Tekan tombol Penelusuran+Shift+Spasi</translation>
 <translation id="2637227747952042642">Matematika</translation>
 <translation id="2638785836053527382">Download <ph name="FILE_NAME" /> dilanjutkan</translation>
 <translation id="2639750663247012216">Pengubah ChromeVox</translation>
@@ -529,6 +530,7 @@
 <translation id="4479068155583208887">Fire Brick</translation>
 <translation id="4482330759234983253">Tabel sebelumnya</translation>
 <translation id="4491109536499578614">Gambar</translation>
+<translation id="4507332368061453500">Klik lama item saat ini</translation>
 <translation id="4511186779140817916">Blanched Almond</translation>
 <translation id="451510441928265982">Tidak ada judul level 2 sebelumnya</translation>
 <translation id="4515799157838123044">Tutupi konten di latar belakang</translation>
@@ -597,7 +599,6 @@
 <translation id="4993152509206108683">Tingkat kecepatan <ph name="PERCENT" /> persen</translation>
 <translation id="4994420463726586413">Ucapkan status baterai saat ini</translation>
 <translation id="4997282455736854877"><ph name="NAME" />, tombol radio dipilih</translation>
-<translation id="5011664330025416377">Tekan Search+Space untuk mengaktifkan</translation>
 <translation id="5012724933919010465"><ph name="NAME" />, tombol pilihan item menu dipilih</translation>
 <translation id="5020651427400641814">Aktifkan penyimpanan log ucapan</translation>
 <translation id="5041394372352067729">Pindahkan penampil braille ke bagian atas halaman</translation>
@@ -650,6 +651,7 @@
 <translation id="5355014376930441909">Tidak ada bagian berikutnya</translation>
 <translation id="5368000168321181111">Earcons tidak aktif</translation>
 <translation id="5368505757342402527">Download <ph name="FILE_NAME" /> <ph name="PROGRESS" />% selesai. Sekitar <ph name="TIME" /> <ph name="UNITS" /> lagi.</translation>
+<translation id="5381388086899614489">klik lama</translation>
 <translation id="5400836586163650660">Grey</translation>
 <translation id="5402367795255837559">Braille</translation>
 <translation id="5402791055281059602">Notifikasi modal</translation>
@@ -762,6 +764,7 @@
 <translation id="6100239002225743044">Naikkan satu baris</translation>
 <translation id="6118126368611144850">Aplikasi Android untuk Chrome. Jika memiliki Play Store di perangkat, Anda dapat mengetahui lebih awal tentang ChromeVox dengan aplikasi Android. Coba dukungan eksperimental dengan mendownload Google Chrome Canary dari Play Store.</translation>
 <translation id="611827076493383239">vtd</translation>
+<translation id="6119846243427417423">aktifkan</translation>
 <translation id="6122013438240733403">btn</translation>
 <translation id="6132506484792346370">Kotak daftar atau kotak kombo</translation>
 <translation id="613344593214611552">hapus kalimat sebelumnya</translation>
@@ -778,6 +781,7 @@
 <translation id="6236061028292614533">Judul berikutnya</translation>
 <translation id="6254901459154107917">Area teks yang dapat diedit berikutnya</translation>
 <translation id="6259464875943891919">Keluar <ph name="TYPE" />.</translation>
+<translation id="6280088282605782512">Ketuk dua kali</translation>
 <translation id="6282062888058716985">nav</translation>
 <translation id="6295699829709583154">Tombol Penting: Penelusuran</translation>
 <translation id="6305702903308659374">Putar dengan volume normal meskipun ChromeVox sedang berbicara</translation>
@@ -980,6 +984,7 @@
 <translation id="7731785449856576010">Tidak ada widget media berikutnya</translation>
 <translation id="7735498529470878067">Fitur Sentuh untuk Pelajari dapat membantu Anda memahami dengan cepat apa yang ada di layar.</translation>
 <translation id="773906353055481349">Tekan Search+Ctrl+Alt dengan tombol panah untuk memilih sel</translation>
+<translation id="7746976083433980639"><ph name="ACTION" /> untuk <ph name="LABEL" /></translation>
 <translation id="7763537600611320912">Download <ph name="FILE_NAME" /> dimulai</translation>
 <translation id="7768784765476638775">Klik untuk diucapkan</translation>
 <translation id="7776293189010177726">Membuka menu ChromeVox</translation>

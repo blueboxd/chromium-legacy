@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -113,7 +113,6 @@ enum AcceleratorAction {
   TAKE_SCREENSHOT,
   TAKE_WINDOW_SCREENSHOT,
   TOGGLE_APP_LIST,
-  TOGGLE_APP_LIST_FULLSCREEN,
   TOGGLE_CALENDAR,
   TOGGLE_CAPS_LOCK,
   TOGGLE_CLIPBOARD_HISTORY,
@@ -152,6 +151,12 @@ enum AcceleratorAction {
   DEBUG_PRINT_VIEW_HIERARCHY,
   DEBUG_PRINT_WINDOW_HIERARCHY,
   DEBUG_SHOW_TOAST,
+  // TODO(crbug.com/1336836): Remove fling accelerators after float is released.
+  DEBUG_FLOAT_FLING_LEFT,
+  DEBUG_FLOAT_FLING_RIGHT,
+  DEBUG_TOGGLE_DARK_MODE,
+  DEBUG_TOGGLE_DYNAMIC_COLOR,
+  DEBUG_TOGGLE_GLANCEABLES,
   DEBUG_TOGGLE_SHOW_DEBUG_BORDERS,
   DEBUG_TOGGLE_SHOW_FPS_COUNTER,
   DEBUG_TOGGLE_SHOW_PAINT_RECTS,

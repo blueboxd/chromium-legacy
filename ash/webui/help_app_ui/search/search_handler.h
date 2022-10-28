@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -72,7 +72,7 @@ class SearchHandler : public mojom::SearchHandler,
       const local_search_service::Result& result) const;
 
   SearchTagRegistry* search_tag_registry_;
-  mojo::Remote<chromeos::local_search_service::mojom::Index> index_remote_;
+  mojo::Remote<local_search_service::mojom::Index> index_remote_;
 
   // Whether or not the first Update has finished yet, which means the Search
   // Handler is ready to search.

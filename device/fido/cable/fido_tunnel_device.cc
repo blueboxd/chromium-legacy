@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -140,7 +140,7 @@ FidoTunnelDevice::FidoTunnelDevice(
 }
 
 FidoTunnelDevice::FidoTunnelDevice(
-    FidoRequestType request_type,
+    CableRequestType request_type,
     network::mojom::NetworkContext* network_context,
     std::unique_ptr<Pairing> pairing,
     base::OnceClosure pairing_is_invalid)

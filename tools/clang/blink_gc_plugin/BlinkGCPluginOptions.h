@@ -49,11 +49,35 @@ struct BlinkGCPluginOptions {
   // TODO(chromium:1283720): Enable this checks once all violations are handled.
   bool enable_members_on_stack_check = false;
 
+  // Whether to fix to the bugs of RecordInfo::IsConsideredAbstract(). This is
+  // passed to IsConsideredAbstract() when checking manual dispatch, to let the
+  // function
+  // - not to consider a class abstract if the class has the implicit default
+  //   constructor
+  // - check public Create methods instead of any Create methods.
+  // If IsConsideredAbstract() returns false, the class is required to be
+  // checked in the class's or its ancestor class's TraceAfterDispatch() and
+  // FinalizeGarbageCollectionObject() methods.
+  //
+  // This is disabled by default until the plugin is pushed to goma and
+  // developers and we ensure there are no violations.
+  bool fix_bugs_of_is_considered_abstract = false;
+
   std::set<std::string> ignored_classes;
   std::set<std::string> checked_namespaces;
-  std::vector<std::string> ignored_directories;
-  // |allowed_directories| overrides |ignored_directories|.
-  std::vector<std::string> allowed_directories;
+  std::vector<std::string> ignored_paths;
+  // |allowed_paths| overrides |ignored_paths|.
+  std::vector<std::string> allowed_paths;
+
+  // For the default malloc, the following conditions are checked in addition
+  // to the conditions above.
+  std::set<std::string> checked_namespaces_for_default_malloc;
+  std::vector<std::string> ignored_paths_for_default_malloc;
+  std::vector<std::string> always_ignored_paths_for_default_malloc;
+  // |allowed_paths_for_default_malloc| overrides
+  // |ignore_paths_for_default_malloc|, but doesn't override
+  // |always_ignored_paths_for_default_malloc|.
+  std::vector<std::string> allowed_paths_for_default_malloc;
 };
 
 #endif  // TOOLS_BLINK_GC_PLUGIN_BLINK_GC_PLUGIN_OPTIONS_H_

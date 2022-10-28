@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -64,10 +64,10 @@
 #include "chrome/browser/ui/views/tabs/tab_scrubber_chromeos.h"
 #include "chromeos/ash/components/network/network_connect.h"
 #include "chromeos/ash/components/network/portal_detector/network_portal_detector.h"
+#include "chromeos/ash/services/bluetooth_config/fast_pair_delegate.h"
+#include "chromeos/ash/services/bluetooth_config/in_process_instance.h"
 #include "chromeos/components/quick_answers/public/cpp/controller/quick_answers_controller.h"
 #include "chromeos/components/quick_answers/quick_answers_client.h"
-#include "chromeos/services/bluetooth_config/fast_pair_delegate.h"
-#include "chromeos/services/bluetooth_config/in_process_instance.h"
 #include "components/crash/core/common/crash_key.h"
 #include "components/session_manager/core/session_manager.h"
 #include "components/session_manager/core/session_manager_observer.h"
@@ -242,12 +242,12 @@ void ChromeBrowserMainExtraPartsAsh::PreProfileInit() {
   desks_client_ = std::make_unique<DesksClient>();
 
   if (ash::features::IsBluetoothRevampEnabled()) {
-    chromeos::bluetooth_config::FastPairDelegate* delegate =
+    ash::bluetooth_config::FastPairDelegate* delegate =
         ash::features::IsFastPairEnabled()
             ? ash::Shell::Get()->quick_pair_mediator()->GetFastPairDelegate()
             : nullptr;
 
-    chromeos::bluetooth_config::Initialize(delegate);
+    ash::bluetooth_config::Initialize(delegate);
   }
 }
 
@@ -289,12 +289,8 @@ void ChromeBrowserMainExtraPartsAsh::PostProfileInit(Profile* profile,
   // NetworkPortalDetector instance may be replaced.
   if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
           ::switches::kTestType)) {
-    ash::NetworkPortalDetector* detector =
-        ash::network_portal_detector::GetInstance();
-    CHECK(detector);
     network_portal_notification_controller_ =
-        std::make_unique<chromeos::NetworkPortalNotificationController>(
-            detector);
+        std::make_unique<ash::NetworkPortalNotificationController>();
   }
 
   ash_web_view_factory_ = std::make_unique<AshWebViewFactoryImpl>();
@@ -316,7 +312,7 @@ void ChromeBrowserMainExtraPartsAsh::PostBrowserStart() {
 
 void ChromeBrowserMainExtraPartsAsh::PostMainMessageLoopRun() {
   if (ash::features::IsBluetoothRevampEnabled())
-    chromeos::bluetooth_config::Shutdown();
+    ash::bluetooth_config::Shutdown();
 
   // Disable event dispatch before Exo starts closing windows to prevent
   // synthetic events from being dispatched. crbug.com/874156 and

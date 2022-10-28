@@ -1,4 +1,4 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -392,8 +392,6 @@ TEST_F(FileManagerFileTaskPreferencesTest,
 // Test that for changes of default app for PDF files, a metric is recorded.
 TEST_F(FileManagerFileTaskPreferencesTest,
        UpdateDefaultTask_RecordsPdfDefaultAppChanges) {
-  base::test::ScopedFeatureList scoped_feature_list{
-      ash::features::kMediaAppHandlesPdf};
   base::UserActionTester user_action_tester;
 
   // Non-PDF file types are not recorded.
@@ -492,8 +490,8 @@ TEST_F(FileManagerFileTaskPreferencesTest,
   const std::string* default_task_id =
       profile()
           ->GetTestingPrefService()
-          ->GetDictionary(prefs::kDefaultTasksByMimeType)
-          ->FindStringKey(mime_type);
+          ->GetDict(prefs::kDefaultTasksByMimeType)
+          .FindString(mime_type);
   ASSERT_EQ(*default_task_id, files_task_id);
 }
 
@@ -543,96 +541,6 @@ class FileManagerFileTasksComplexTest : public testing::Test {
   base::CommandLine command_line_;
   extensions::ExtensionService* extension_service_;  // Owned by test_profile_;
 };
-
-// The basic logic is similar to a test case for FindFileHandlerTasks above.
-TEST_F(FileManagerFileTasksComplexTest, FindFileBrowserHandlerTasks) {
-  // Copied from FindFileHandlerTasks test above.
-  const char kFooId[] = "hhgbjpmdppecanaaogonaigmmifgpaph";
-  const char kBarId[] = "odlhccgofgkadkkhcmhgnhgahonahoca";
-
-  // Foo.app can handle ".txt" and ".html".
-  // This one is an extension, and has "file_browser_handlers"
-  extensions::ExtensionBuilder foo_app;
-  foo_app.SetManifest(
-      extensions::DictionaryBuilder()
-          .Set("name", "Foo")
-          .Set("version", "1.0.0")
-          .Set("manifest_version", 2)
-          .Set("permissions",
-               extensions::ListBuilder().Append("fileBrowserHandler").Build())
-          .Set("file_browser_handlers",
-               extensions::ListBuilder()
-                   .Append(
-                       extensions::DictionaryBuilder()
-                           .Set("id", "open")
-                           .Set("default_title", "open")
-                           .Set("file_filters", extensions::ListBuilder()
-                                                    .Append("filesystem:*.txt")
-                                                    .Append("filesystem:*.html")
-                                                    .Build())
-                           .Build())
-                   .Build())
-          .Build());
-  foo_app.SetID(kFooId);
-  extension_service_->AddExtension(foo_app.Build().get());
-
-  // Bar.app can only handle ".txt".
-  extensions::ExtensionBuilder bar_app;
-  bar_app.SetManifest(
-      extensions::DictionaryBuilder()
-          .Set("name", "Bar")
-          .Set("version", "1.0.0")
-          .Set("manifest_version", 2)
-          .Set("permissions",
-               extensions::ListBuilder().Append("fileBrowserHandler").Build())
-          .Set("file_browser_handlers",
-               extensions::ListBuilder()
-                   .Append(
-                       extensions::DictionaryBuilder()
-                           .Set("id", "open")
-                           .Set("default_title", "open")
-                           .Set("file_filters", extensions::ListBuilder()
-                                                    .Append("filesystem:*.txt")
-                                                    .Build())
-                           .Build())
-                   .Build())
-          .Build());
-  bar_app.SetID(kBarId);
-  extension_service_->AddExtension(bar_app.Build().get());
-
-  // Find apps for a ".txt" file. Foo.app and Bar.app should be found.
-  std::vector<GURL> file_urls;
-  file_urls.emplace_back("filesystem:chrome-extension://id/dir/foo.txt");
-
-  std::vector<FullTaskDescriptor> tasks;
-  FindFileBrowserHandlerTasks(test_profile_.get(), file_urls, &tasks);
-  ASSERT_EQ(2U, tasks.size());
-  // Sort the app IDs, as the order is not guaranteed.
-  std::vector<std::string> app_ids;
-  app_ids.push_back(tasks[0].task_descriptor.app_id);
-  app_ids.push_back(tasks[1].task_descriptor.app_id);
-  std::sort(app_ids.begin(), app_ids.end());
-  // Confirm that both Foo.app and Bar.app are found.
-  EXPECT_EQ(kFooId, app_ids[0]);
-  EXPECT_EQ(kBarId, app_ids[1]);
-
-  // Find apps for ".txt" and ".html" files. Only Foo.app should be found.
-  file_urls.clear();
-  file_urls.emplace_back("filesystem:chrome-extension://id/dir/foo.txt");
-  file_urls.emplace_back("filesystem:chrome-extension://id/dir/foo.html");
-  tasks.clear();
-  FindFileBrowserHandlerTasks(test_profile_.get(), file_urls, &tasks);
-  ASSERT_EQ(1U, tasks.size());
-  // Confirm that only Foo.app is found.
-  EXPECT_EQ(kFooId, tasks[0].task_descriptor.app_id);
-
-  // Add an ".png" file. No tasks should be found.
-  file_urls.emplace_back("filesystem:chrome-extension://id/dir/foo.png");
-  tasks.clear();
-  FindFileBrowserHandlerTasks(test_profile_.get(), file_urls, &tasks);
-  // Confirm no tasks are found.
-  ASSERT_TRUE(tasks.empty());
-}
 
 // Test using the test extension system, which needs lots of setup.
 class FileManagerFileTasksCrostiniTest

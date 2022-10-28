@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -46,7 +46,7 @@ void ProfileReportGeneratorDesktop::GetExtensionRequest(
   if (!profile_->GetPrefs()->GetBoolean(prefs::kCloudExtensionRequestEnabled))
     return;
   const base::Value::Dict& pending_requests =
-      profile_->GetPrefs()->GetValueDict(prefs::kCloudExtensionRequestIds);
+      profile_->GetPrefs()->GetDict(prefs::kCloudExtensionRequestIds);
 
   // In case a corrupted profile prefs causing |pending_requests| to be null.
 

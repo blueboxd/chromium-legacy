@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -29,6 +29,8 @@
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "chrome/browser/ash/profiles/profile_helper.h"
+#include "components/account_id/account_id.h"
+#include "components/user_manager/fake_user_manager.h"
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
@@ -96,8 +98,8 @@ TestingProfile* TestingProfileManager::CreateTestingProfile(
             : profile_name;
     profile_path =
         profile_path.Append(ash::ProfileHelper::Get()->GetUserProfileDir(
-            ash::ProfileHelper::GetUserIdHashByUserIdForTesting(
-                AccountId::FromUserEmail(fake_email).GetUserEmail())));
+            user_manager::FakeUserManager::GetFakeUsernameHash(
+                AccountId::FromUserEmail(fake_email))));
   } else {
     profile_path = profile_path.AppendASCII(profile_name);
   }

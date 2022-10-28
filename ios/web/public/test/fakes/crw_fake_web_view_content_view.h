@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,12 +10,12 @@
 // A test version of CRWWebViewContentView.
 @interface CRWFakeWebViewContentView : CRWWebViewContentView
 
-// Initializes the TestWebViewContentView.  Since |webView| and |scrollView| may
+// Initializes the TestWebViewContentView.  Since `webView` and `scrollView` may
 // be mock objects, they will not be added as subviews.
 - (instancetype)initWithMockWebView:(id)webView scrollView:(id)scrollView;
 
-// TestWebViewContentViews should be initialized via |-initWithMockWebView:
-// scrollView:|.
+// TestWebViewContentViews should be initialized via `-initWithMockWebView:
+// scrollView:`.
 - (instancetype)initWithWebView:(UIView*)webView
                      scrollView:(UIScrollView*)scrollView
                 fullscreenState:(CrFullscreenState)fullscreenState

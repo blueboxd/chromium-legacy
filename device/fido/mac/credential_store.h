@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -34,7 +34,8 @@ namespace device::fido::mac {
 struct COMPONENT_EXPORT(DEVICE_FIDO) Credential {
   Credential(base::ScopedCFTypeRef<SecKeyRef> private_key,
              std::vector<uint8_t> credential_id,
-             CredentialMetadata metadata);
+             CredentialMetadata metadata,
+             std::string rp_id);
   Credential(const Credential&);
   Credential(Credential&& other);
   Credential& operator=(const Credential&);
@@ -53,6 +54,8 @@ struct COMPONENT_EXPORT(DEVICE_FIDO) Credential {
   std::vector<uint8_t> credential_id;
 
   CredentialMetadata metadata;
+
+  std::string rp_id;
 };
 
 // TouchIdCredentialStore allows operations on Touch ID platform authenticator
@@ -113,10 +116,11 @@ class COMPONENT_EXPORT(DEVICE_FIDO) TouchIdCredentialStore
       const std::vector<PublicKeyCredentialDescriptor>& descriptors) const;
 
   // FindResidentCredentials returns the client-side discoverable credentials
-  // for the given |rp_id|, or base::nulltopt if an error occurred.
+  // for the given |rp_id|. If |rp_id| is not specified, all resident
+  // credentials are returned. base::nulltopt is returned if an error occurred.
   API_AVAILABLE(macosx(10.12.2))
   absl::optional<std::list<Credential>> FindResidentCredentials(
-      const std::string& rp_id) const;
+      const absl::optional<std::string>& rp_id) const;
 
   // UnsealMetadata returns the CredentialMetadata for the given credential's
   // ID if it was encoded for the given RP ID, or absl::nullopt otherwise.
@@ -144,6 +148,8 @@ class COMPONENT_EXPORT(DEVICE_FIDO) TouchIdCredentialStore
   bool DeleteCredentialsSync(base::Time created_not_before,
                              base::Time created_not_after);
 
+  bool DeleteCredentialById(base::span<const uint8_t> credential_id) const;
+
   size_t CountCredentialsSync(base::Time created_not_before,
                               base::Time created_not_after);
 
@@ -155,10 +161,8 @@ class COMPONENT_EXPORT(DEVICE_FIDO) TouchIdCredentialStore
  private:
   API_AVAILABLE(macosx(10.12.2))
   absl::optional<std::list<Credential>> FindCredentialsImpl(
-      const std::string& rp_id,
+      const absl::optional<std::string>& rp_id,
       const std::set<std::vector<uint8_t>>& credential_ids) const;
-
-  bool DeleteCredentialById(base::span<const uint8_t> credential_id) const;
 
   AuthenticatorConfig config_;
   LAContext* authentication_context_ = nullptr;

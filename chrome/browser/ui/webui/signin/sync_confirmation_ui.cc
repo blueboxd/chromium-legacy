@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -139,7 +139,7 @@ void SyncConfirmationUI::InitializeForSyncConfirmation(
                         IDS_SYNC_CONFIRMATION_TURN_ON_SYNC_BUTTON_LABEL);
       AddStringResource(source, "syncConfirmationUndoLabel", IDS_NO_THANKS);
       AddStringResource(source, "syncConfirmationSettingsLabel",
-                        IDS_SYNC_CONFIRMATION_MANAGE_SYNC_BUTTON_LABEL);
+                        IDS_SYNC_CONFIRMATION_SETTINGS_BUTTON_LABEL);
 
       source->AddResourcePath(
           "images/sync_confirmation_signin_intercept_illustration.svg",

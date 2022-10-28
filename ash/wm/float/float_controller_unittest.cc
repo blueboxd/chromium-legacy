@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,22 +13,27 @@
 #include "ash/screen_util.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
+#include "ash/wm/cursor_manager_chromeos.h"
+#include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/overview/overview_test_util.h"
 #include "ash/wm/splitview/split_view_metrics_controller.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/window_positioning_utils.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/work_area_insets.h"
+#include "base/command_line.h"
 #include "base/test/scoped_feature_list.h"
 #include "chromeos/ui/base/window_state_type.h"
 #include "chromeos/ui/frame/immersive/immersive_fullscreen_controller.h"
+#include "chromeos/ui/wm/constants.h"
 #include "chromeos/ui/wm/features.h"
 #include "ui/aura/test/test_window_delegate.h"
 #include "ui/base/hit_test.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_animator.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
-#include "ui/display/test/display_manager_test_api.h"
+#include "ui/display/display_switches.h"
+#include "ui/views/test/views_test_utils.h"
 #include "ui/wm/core/window_util.h"
 
 namespace ash {
@@ -41,7 +46,7 @@ NonClientFrameViewAsh* SetUpAndGetFrame(aura::Window* window) {
   // us HTCLIENT.
   auto* frame = NonClientFrameViewAsh::Get(window);
   DCHECK(frame);
-  frame->Layout();
+  views::test::RunScheduledLayout(frame);
   return frame;
 }
 
@@ -99,6 +104,22 @@ TEST_F(WindowFloatTest, WindowFloatingSwitch) {
   EXPECT_FALSE(WindowState::Get(window_2.get())->IsFloated());
 }
 
+// Tests that double clicking on the caption maximizes a floated window.
+// Regression test for https://crbug.com/1357049.
+TEST_F(WindowFloatTest, DoubleClickOnCaption) {
+  std::unique_ptr<aura::Window> window = CreateFloatedWindow();
+
+  // Double click on the caption. The window should be maximized now.
+  auto* frame = NonClientFrameViewAsh::Get(window.get());
+  HeaderView* header_view = frame->GetHeaderView();
+  auto* event_generator = GetEventGenerator();
+  event_generator->set_current_screen_location(
+      header_view->GetBoundsInScreen().CenterPoint());
+  event_generator->DoubleClickLeftButton();
+
+  EXPECT_TRUE(WindowState::Get(window.get())->IsMaximized());
+}
+
 // Tests that a floated window animates to and from overview.
 TEST_F(WindowFloatTest, FloatWindowAnimatesInOverview) {
   std::unique_ptr<aura::Window> floated_window = CreateFloatedWindow();
@@ -129,32 +150,30 @@ TEST_F(WindowFloatTest, FloatWindowAnimatesInOverview) {
 // Test when float a window in clamshell mode, window will change to default
 // float bounds in certain conditions.
 TEST_F(WindowFloatTest, WindowFloatingResize) {
-  UpdateDisplay("800x600");
-  std::unique_ptr<views::Widget> widget = CreateTestWidget();
-  widget->SetBounds(gfx::Rect(0, 0, 200, 200));
-  FloatController* controller = Shell::Get()->float_controller();
+  std::unique_ptr<aura::Window> window = CreateAppWindow(gfx::Rect(200, 200));
 
-  // Float Maximized window.
-  widget->Maximize();
+  // Float maximized window.
+  auto* window_state = WindowState::Get(window.get());
+  window_state->Maximize();
   PressAndReleaseKey(ui::VKEY_F, ui::EF_ALT_DOWN | ui::EF_COMMAND_DOWN);
-  EXPECT_TRUE(WindowState::Get(widget->GetNativeWindow())->IsFloated());
+  EXPECT_TRUE(window_state->IsFloated());
   gfx::Rect default_float_bounds =
-      controller->GetPreferredFloatWindowClamshellBounds(
-          widget->GetNativeWindow());
-  EXPECT_EQ(widget->GetWindowBoundsInScreen(), default_float_bounds);
+      FloatController::GetPreferredFloatWindowClamshellBounds(window.get());
+  EXPECT_EQ(default_float_bounds, window->GetBoundsInScreen());
   // Unfloat.
   PressAndReleaseKey(ui::VKEY_F, ui::EF_ALT_DOWN | ui::EF_COMMAND_DOWN);
-  EXPECT_FALSE(WindowState::Get(widget->GetNativeWindow())->IsFloated());
-  EXPECT_TRUE(widget->IsMaximized());
+  EXPECT_FALSE(window_state->IsFloated());
+  EXPECT_TRUE(window_state->IsMaximized());
 
-  // Float Full screen window.
-  widget->SetFullscreen(true);
+  // Float full screen window.
+  const WMEvent fullscreen_event(WM_EVENT_FULLSCREEN);
+  window_state->OnWMEvent(&fullscreen_event);
   PressAndReleaseKey(ui::VKEY_F, ui::EF_ALT_DOWN | ui::EF_COMMAND_DOWN);
-  EXPECT_TRUE(WindowState::Get(widget->GetNativeWindow())->IsFloated());
-  EXPECT_EQ(widget->GetWindowBoundsInScreen(), default_float_bounds);
+  EXPECT_TRUE(window_state->IsFloated());
+  EXPECT_EQ(default_float_bounds, window->GetBoundsInScreen());
   // Unfloat.
   PressAndReleaseKey(ui::VKEY_F, ui::EF_ALT_DOWN | ui::EF_COMMAND_DOWN);
-  EXPECT_FALSE(WindowState::Get(widget->GetNativeWindow())->IsFloated());
+  EXPECT_FALSE(window_state->IsFloated());
   // TODO(crbug.com/1330999): This should return to Fullscreen state after
   // the change.
 
@@ -162,47 +181,96 @@ TEST_F(WindowFloatTest, WindowFloatingResize) {
   // Minimized window can't be floated, but when a floated window enter/exit
   // minimized state, it remains floated.
   PressAndReleaseKey(ui::VKEY_F, ui::EF_ALT_DOWN | ui::EF_COMMAND_DOWN);
-  EXPECT_TRUE(WindowState::Get(widget->GetNativeWindow())->IsFloated());
-  gfx::Rect curr_bounds = widget->GetWindowBoundsInScreen();
-  widget->Minimize();
-  widget->Restore();
-  EXPECT_EQ(widget->GetWindowBoundsInScreen(), curr_bounds);
-  EXPECT_TRUE(WindowState::Get(widget->GetNativeWindow())->IsFloated());
+  EXPECT_TRUE(window_state->IsFloated());
+  const gfx::Rect curr_bounds = window->GetBoundsInScreen();
+  window_state->Minimize();
+  window_state->Restore();
+  EXPECT_EQ(curr_bounds, window->GetBoundsInScreen());
+  EXPECT_TRUE(window_state->IsFloated());
 
   // Float Snapped window.
   // Create a snap enabled window.
-  auto window = CreateAppWindow(default_float_bounds, AppType::BROWSER);
+  auto window2 = CreateAppWindow(default_float_bounds);
+  auto* window_state2 = WindowState::Get(window2.get());
   AcceleratorControllerImpl* acc_controller =
       Shell::Get()->accelerator_controller();
 
   // Snap Left.
   acc_controller->PerformActionIfEnabled(WINDOW_CYCLE_SNAP_LEFT, {});
   ASSERT_EQ(chromeos::WindowStateType::kPrimarySnapped,
-            WindowState::Get(window.get())->GetStateType());
+            window_state2->GetStateType());
   PressAndReleaseKey(ui::VKEY_F, ui::EF_ALT_DOWN | ui::EF_COMMAND_DOWN);
-  EXPECT_TRUE(WindowState::Get(window.get()));
-  EXPECT_EQ(window->bounds(), default_float_bounds);
+  EXPECT_EQ(default_float_bounds, window2->GetBoundsInScreen());
+
   // Unfloat.
   PressAndReleaseKey(ui::VKEY_F, ui::EF_ALT_DOWN | ui::EF_COMMAND_DOWN);
   // Window back to snapped state.
   ASSERT_EQ(chromeos::WindowStateType::kPrimarySnapped,
-            WindowState::Get(window.get())->GetStateType());
+            window_state2->GetStateType());
 
   // Snap Right.
   acc_controller->PerformActionIfEnabled(WINDOW_CYCLE_SNAP_RIGHT, {});
   ASSERT_EQ(chromeos::WindowStateType::kSecondarySnapped,
-            WindowState::Get(window.get())->GetStateType());
+            WindowState::Get(window2.get())->GetStateType());
   PressAndReleaseKey(ui::VKEY_F, ui::EF_ALT_DOWN | ui::EF_COMMAND_DOWN);
-  EXPECT_TRUE(WindowState::Get(window.get()));
-  EXPECT_EQ(window->bounds(), default_float_bounds);
+  EXPECT_EQ(default_float_bounds, window2->GetBoundsInScreen());
+
   // Unfloat.
   PressAndReleaseKey(ui::VKEY_F, ui::EF_ALT_DOWN | ui::EF_COMMAND_DOWN);
   // Window back to snapped state.
-  ASSERT_EQ(chromeos::WindowStateType::kSecondarySnapped,
-            WindowState::Get(window.get())->GetStateType());
+  EXPECT_EQ(chromeos::WindowStateType::kSecondarySnapped,
+            window_state2->GetStateType());
 }
 
-using TabletWindowFloatTest = WindowFloatTest;
+// Tests that after we drag a floated window to another display and then
+// maximize, the window is on the correct display. Regression test for
+// https://crbug.com/1360551.
+TEST_F(WindowFloatTest, DragToOtherDisplayThenMaximize) {
+  UpdateDisplay("1200x800,1201+0-1200x800");
+
+  std::unique_ptr<aura::Window> window = CreateFloatedWindow();
+  ASSERT_EQ(Shell::GetAllRootWindows()[0], window->GetRootWindow());
+
+  // Drag the window to the secondary display. Note that the event generator
+  // does not update the display associated with the cursor, so we have to
+  // manually do it here.
+  auto* frame = NonClientFrameViewAsh::Get(window.get());
+  HeaderView* header_view = frame->GetHeaderView();
+  auto* event_generator = GetEventGenerator();
+  event_generator->set_current_screen_location(
+      header_view->GetBoundsInScreen().CenterPoint());
+  const gfx::Point point(1600, 400);
+  Shell::Get()->cursor_manager()->SetDisplay(
+      display::Screen::GetScreen()->GetDisplayNearestPoint(point));
+  event_generator->DragMouseTo(point);
+
+  // Tests that the floated window is on the secondary display and remained
+  // floated.
+  ASSERT_EQ(Shell::GetAllRootWindows()[1], window->GetRootWindow());
+  WindowState* window_state = WindowState::Get(window.get());
+  ASSERT_TRUE(window_state->IsFloated());
+
+  // Maximize the window. Test that it stays on the secondary display.
+  const WMEvent maximize(WM_EVENT_MAXIMIZE);
+  window_state->OnWMEvent(&maximize);
+  EXPECT_EQ(Shell::GetAllRootWindows()[1], window->GetRootWindow());
+}
+
+class TabletWindowFloatTest : public WindowFloatTest {
+ public:
+  TabletWindowFloatTest() = default;
+  TabletWindowFloatTest(const TabletWindowFloatTest&) = delete;
+  TabletWindowFloatTest& operator=(const TabletWindowFloatTest&) = delete;
+  ~TabletWindowFloatTest() override = default;
+
+  // WindowFloatTest:
+  void SetUp() override {
+    // This allows us to snap to the bottom in portrait mode.
+    base::CommandLine::ForCurrentProcess()->AppendSwitch(
+        ::switches::kUseFirstDisplayAsInternal);
+    WindowFloatTest::SetUp();
+  }
+};
 
 TEST_F(TabletWindowFloatTest, TabletClamshellTransition) {
   auto window1 = CreateFloatedWindow();
@@ -319,16 +387,10 @@ TEST_F(TabletWindowFloatTest, Rotation) {
   std::unique_ptr<aura::Window> window = CreateFloatedWindow();
   const gfx::Rect no_rotation_bounds = window->bounds();
 
-  // Set the primary display as the internal display so that the orientation
-  // controller can rotate it.
-  display::test::ScopedSetInternalDisplayId scoped_set_internal(
-      Shell::Get()->display_manager(),
-      display::Screen::GetScreen()->GetPrimaryDisplay().id());
-  ScreenOrientationControllerTestApi orientation_test_api(
-      Shell::Get()->screen_orientation_controller());
-
   // First rotate to landscape secondary orientation. The float bounds should
   // be the same.
+  ScreenOrientationControllerTestApi orientation_test_api(
+      Shell::Get()->screen_orientation_controller());
   orientation_test_api.SetDisplayRotation(
       display::Display::ROTATE_180, display::Display::RotationSource::ACTIVE);
   EXPECT_EQ(window->bounds(), no_rotation_bounds);
@@ -351,6 +413,30 @@ TEST_F(TabletWindowFloatTest, Rotation) {
               shelf_size);
 }
 
+// Tests that dragged float window follows the mouse/touch. Regression test for
+// https://crbug.com/1362727.
+TEST_F(TabletWindowFloatTest, Dragging) {
+  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
+
+  std::unique_ptr<aura::Window> window = CreateFloatedWindow();
+  NonClientFrameViewAsh* frame = SetUpAndGetFrame(window.get());
+
+  // Start dragging in the center of the header. When moving the touch, the
+  // header should move with the touch such that the touch remains in the center
+  // of the header.
+  HeaderView* header_view = frame->GetHeaderView();
+  auto* event_generator = GetEventGenerator();
+  event_generator->PressTouch(header_view->GetBoundsInScreen().CenterPoint());
+
+  // Drag to several points. Verify the header is aligned with the new touch
+  // point.
+  for (const gfx::Point& point :
+       {gfx::Point(10, 10), gfx::Point(100, 10), gfx::Point(400, 400)}) {
+    event_generator->MoveTouch(point);
+    EXPECT_EQ(point, header_view->GetBoundsInScreen().CenterPoint());
+  }
+}
+
 // Tests that on drag release, the window sticks to one of the four corners of
 // the work area.
 TEST_F(TabletWindowFloatTest, DraggingMagnetism) {
@@ -362,7 +448,7 @@ TEST_F(TabletWindowFloatTest, DraggingMagnetism) {
   std::unique_ptr<aura::Window> window = CreateFloatedWindow();
   NonClientFrameViewAsh* frame = SetUpAndGetFrame(window.get());
 
-  const int padding = FloatController::kFloatWindowPaddingDp;
+  const int padding = chromeos::wm::kFloatedWindowPaddingDp;
   const int shelf_size = ShelfConfig::Get()->shelf_size();
 
   // The default location is in the bottom right.
@@ -386,11 +472,12 @@ TEST_F(TabletWindowFloatTest, DraggingMagnetism) {
   EXPECT_EQ(gfx::Point(padding, padding), window->bounds().origin());
 
   // Switch to portrait orientation and move the mouse somewhere in the bottom
-  // left. Test that on release, it magentizes to the bottom left.
+  // left, but not too bottom that it falls into the snap region. Test that on
+  // release, it magentizes to the bottom left.
   UpdateDisplay("1000x1600");
   event_generator->set_current_screen_location(
       header_view->GetBoundsInScreen().CenterPoint());
-  event_generator->DragMouseTo(110, 1590);
+  event_generator->DragMouseTo(110, 1490);
   EXPECT_EQ(gfx::Point(padding, 1600 - shelf_size - padding),
             window->bounds().bottom_left());
 }
@@ -434,7 +521,7 @@ TEST_F(TabletWindowFloatTest, DraggingSnapping) {
 
 // Tests the functionality of tucking a window in tablet mode. Tucking a window
 // is hiding partially offscreen to the side.
-TEST_F(TabletWindowFloatTest, TuckedWindow) {
+TEST_F(TabletWindowFloatTest, TuckedWindowTopLeft) {
   Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
 
   std::unique_ptr<aura::Window> window = CreateFloatedWindow();
@@ -447,9 +534,18 @@ TEST_F(TabletWindowFloatTest, TuckedWindow) {
   GetEventGenerator()->GestureScrollSequence(
       header_center, header_center - gfx::Vector2d(10, 10),
       base::Milliseconds(10), /*steps=*/2);
-  EXPECT_TRUE(Shell::Get()->float_controller()->IsFloatedWindowTuckedForTablet(
-      window.get()));
+  auto* float_controller = Shell::Get()->float_controller();
+  EXPECT_TRUE(float_controller->IsFloatedWindowTuckedForTablet(window.get()));
   EXPECT_EQ(100, window->bounds().right());
+
+  // Verify that the handle is aligned with the tucked window.
+  views::Widget* tuck_handle_widget =
+      float_controller->GetTuckHandleWidgetForTesting(window.get());
+  ASSERT_TRUE(tuck_handle_widget);
+  EXPECT_EQ(window->bounds().right(),
+            tuck_handle_widget->GetWindowBoundsInScreen().x());
+  EXPECT_EQ(window->bounds().CenterPoint().y(),
+            tuck_handle_widget->GetWindowBoundsInScreen().CenterPoint().y());
 
   // Tests that after we exit tablet mode, the window is untucked and fully
   // visible, but is still floated.
@@ -457,6 +553,101 @@ TEST_F(TabletWindowFloatTest, TuckedWindow) {
   EXPECT_TRUE(WindowState::Get(window.get())->IsFloated());
   EXPECT_TRUE(screen_util::GetDisplayBoundsInParent(window.get())
                   .Contains(window->bounds()));
+}
+
+TEST_F(TabletWindowFloatTest, TuckedWindowTopRight) {
+  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
+
+  std::unique_ptr<aura::Window> window = CreateFloatedWindow();
+  NonClientFrameViewAsh* frame = SetUpAndGetFrame(window.get());
+
+  // Generate a fling to the top right corner. Tests that the window is tucked,
+  // and 100 pixels are visible to the user.
+  const gfx::Point header_center =
+      frame->GetHeaderView()->GetBoundsInScreen().CenterPoint();
+  const gfx::Rect work_area = WorkAreaInsets::ForWindow(window->GetRootWindow())
+                                  ->user_work_area_bounds();
+  GetEventGenerator()->GestureScrollSequence(
+      header_center, work_area.top_right(), base::Milliseconds(10),
+      /*steps=*/2);
+  auto* float_controller = Shell::Get()->float_controller();
+  EXPECT_TRUE(float_controller->IsFloatedWindowTuckedForTablet(window.get()));
+
+  EXPECT_EQ(work_area.right() - 100, window->bounds().x());
+
+  // Verify that the handle is aligned with the tucked window.
+  views::Widget* tuck_handle_widget =
+      float_controller->GetTuckHandleWidgetForTesting(window.get());
+  ASSERT_TRUE(tuck_handle_widget);
+  EXPECT_EQ(window->bounds().x(),
+            tuck_handle_widget->GetWindowBoundsInScreen().right());
+  EXPECT_EQ(window->bounds().CenterPoint().y(),
+            tuck_handle_widget->GetWindowBoundsInScreen().CenterPoint().y());
+}
+
+using TabletWindowFloatSplitviewTest = TabletWindowFloatTest;
+
+// Tests the expected behaviour when a window is floated when there are snapped
+// windows on each side.
+TEST_F(TabletWindowFloatSplitviewTest, BothSnappedToFloat) {
+  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
+
+  // Create two windows and snap one on each side.
+  auto left_window = CreateAppWindow();
+  const WindowSnapWMEvent snap_left(WM_EVENT_SNAP_PRIMARY);
+  WindowState::Get(left_window.get())->OnWMEvent(&snap_left);
+
+  auto right_window = CreateAppWindow();
+  const WindowSnapWMEvent snap_right(WM_EVENT_SNAP_SECONDARY);
+  WindowState::Get(right_window.get())->OnWMEvent(&snap_right);
+
+  auto* split_view_controller =
+      SplitViewController::Get(Shell::GetPrimaryRootWindow());
+  ASSERT_TRUE(split_view_controller->BothSnapped());
+
+  // Float the left window. Verify that it is floated, the right window becomes
+  // maximized and that we are no longer in splitview.
+  wm::ActivateWindow(left_window.get());
+  PressAndReleaseKey(ui::VKEY_F, ui::EF_ALT_DOWN | ui::EF_COMMAND_DOWN);
+  EXPECT_TRUE(WindowState::Get(left_window.get())->IsFloated());
+  EXPECT_TRUE(WindowState::Get(right_window.get())->IsMaximized());
+  EXPECT_FALSE(split_view_controller->InSplitViewMode());
+}
+
+// Tests the expected behaviour when a window is floated then snapped.
+TEST_F(TabletWindowFloatSplitviewTest, FloatToSnapped) {
+  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
+
+  std::unique_ptr<aura::Window> window = CreateFloatedWindow();
+
+  auto* split_view_controller =
+      SplitViewController::Get(Shell::GetPrimaryRootWindow());
+
+  // If there are no other windows, expect to enter overview. The hotseat will
+  // extended and users can pick a second app from there.
+  const WindowSnapWMEvent snap_left(WM_EVENT_SNAP_PRIMARY);
+  WindowState::Get(window.get())->OnWMEvent(&snap_left);
+  ASSERT_TRUE(Shell::Get()->overview_controller()->InOverviewSession());
+  ASSERT_TRUE(split_view_controller->InSplitViewMode());
+
+  // Float the window so we can snap it again. Assert that we are still in
+  // overview, but no longer in splitview.
+  PressAndReleaseKey(ui::VKEY_F, ui::EF_ALT_DOWN | ui::EF_COMMAND_DOWN);
+  ASSERT_TRUE(WindowState::Get(window.get())->IsFloated());
+  ASSERT_TRUE(Shell::Get()->overview_controller()->InOverviewSession());
+  ASSERT_FALSE(split_view_controller->InSplitViewMode());
+
+  // Create a second window.
+  auto other_window = CreateAppWindow();
+  wm::ActivateWindow(window.get());
+
+  // Tests that when we snap `window` now, `other_window` will get snapped to
+  // the opposite side.
+  WindowState::Get(window.get())->OnWMEvent(&snap_left);
+  EXPECT_FALSE(Shell::Get()->overview_controller()->InOverviewSession());
+  EXPECT_TRUE(split_view_controller->BothSnapped());
+  EXPECT_EQ(split_view_controller->left_window(), window.get());
+  EXPECT_EQ(split_view_controller->right_window(), other_window.get());
 }
 
 }  // namespace ash

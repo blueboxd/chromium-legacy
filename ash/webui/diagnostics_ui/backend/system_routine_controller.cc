@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -26,11 +26,11 @@
 #include "services/device/public/mojom/wake_lock_provider.mojom.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
-namespace ash {
-namespace diagnostics {
+namespace ash::diagnostics {
+
 namespace {
 
-namespace healthd = ::chromeos::cros_healthd::mojom;
+namespace healthd = cros_healthd::mojom;
 
 constexpr uint32_t kBatteryDurationInSeconds = 30;
 constexpr uint32_t kBatteryChargeMinimumPercent = 0;
@@ -171,14 +171,14 @@ void SystemRoutineController::GetSupportedRoutines(
 
 void SystemRoutineController::BindInterface(
     mojo::PendingReceiver<mojom::SystemRoutineController> pending_receiver) {
-  DCHECK(!ReceiverIsBound());
+  receiver_.reset();
   receiver_.Bind(std::move(pending_receiver));
   receiver_.set_disconnect_handler(
       base::BindOnce(&SystemRoutineController::OnBoundInterfaceDisconnect,
                      base::Unretained(this)));
 }
 
-bool SystemRoutineController::ReceiverIsBound() {
+bool SystemRoutineController::IsReceiverBoundForTesting() {
   return receiver_.is_bound();
 }
 
@@ -755,5 +755,4 @@ void SystemRoutineController::ReleaseWakeLock() {
   wake_lock_->CancelWakeLock();
 }
 
-}  // namespace diagnostics
-}  // namespace ash
+}  // namespace ash::diagnostics

@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -39,7 +39,6 @@
 #include "base/trace_event/process_memory_dump.h"
 #include "base/trace_event/trace_event.h"
 #include "base/unguessable_token.h"
-#include "build/build_config.h"
 #include "gpu/command_buffer/common/mailbox.h"
 #include "gpu/command_buffer/service/image_factory.h"
 #include "gpu/command_buffer/service/mailbox_manager.h"
@@ -140,10 +139,6 @@ class GPU_IPC_SERVICE_EXPORT GpuChannelMessageFilter
   void BindGpuChannel(
       mojo::PendingAssociatedReceiver<mojom::GpuChannel> receiver) {
     receiver_.Bind(std::move(receiver));
-  }
-
-  ImageDecodeAcceleratorStub* image_decode_accelerator_stub() const {
-    return image_decode_accelerator_stub_.get();
   }
 
  private:
@@ -758,12 +753,6 @@ mojom::GpuChannel& GpuChannel::GetGpuChannelForTesting() {
   return *filter_;
 }
 
-ImageDecodeAcceleratorStub*
-GpuChannel::GetImageDecodeAcceleratorStubForTesting() const {
-  DCHECK(filter_);
-  return filter_->image_decode_accelerator_stub();
-}
-
 bool GpuChannel::CreateSharedImageStub() {
   // SharedImageInterfaceProxy/Stub is a singleton per channel, using a reserved
   // route.
@@ -1032,6 +1021,15 @@ void GpuChannel::ReleaseSysmemBufferCollection(
 }
 #endif  // BUILDFLAG(IS_FUCHSIA)
 
+absl::optional<gpu::GpuDiskCacheHandle> GpuChannel::GetCacheHandleForType(
+    gpu::GpuDiskCacheType type) {
+  auto it = caches_.find(type);
+  if (it == caches_.end()) {
+    return {};
+  }
+  return it->second;
+}
+
 void GpuChannel::RegisterCacheHandle(const gpu::GpuDiskCacheHandle& handle) {
   gpu::GpuDiskCacheType type = gpu::GetHandleType(handle);
 
@@ -1049,11 +1047,11 @@ void GpuChannel::RegisterCacheHandle(const gpu::GpuDiskCacheHandle& handle) {
 void GpuChannel::CacheBlob(gpu::GpuDiskCacheType type,
                            const std::string& key,
                            const std::string& shader) {
-  auto it = caches_.find(type);
-  if (it == caches_.end()) {
+  auto handle = GetCacheHandleForType(type);
+  if (!handle) {
     return;
   }
-  gpu_channel_manager_->delegate()->StoreBlobToDisk(it->second, key, shader);
+  gpu_channel_manager_->delegate()->StoreBlobToDisk(*handle, key, shader);
 }
 
 uint64_t GpuChannel::GetMemoryUsage() const {

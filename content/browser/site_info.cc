@@ -7,6 +7,7 @@
 #include "base/command_line.h"
 #include "base/containers/contains.h"
 #include "base/debug/dump_without_crashing.h"
+#include "base/ranges/algorithm.h"
 #include "base/strings/escape.h"
 #include "base/strings/string_split.h"
 #include "base/strings/stringprintf.h"
@@ -50,8 +51,9 @@ bool IsWebUIAndUsesTLDForProcessLockURL(const GURL& url) {
   WebUIDomains domains = GetWebUIDomains(url);
   // This only applies to WebUI urls with two or more non-empty domains.
   return domains.size() >= 2 &&
-         std::all_of(domains.begin(), domains.end(),
-                     [](const std::string& domain) { return !domain.empty(); });
+         base::ranges::all_of(domains, [](const std::string& domain) {
+           return !domain.empty();
+         });
 }
 
 // For WebUI URLs of the form chrome://foo.bar/ creates the appropriate process
@@ -177,14 +179,15 @@ bool GetGuestPartitionConfigForSite(
 // static
 SiteInfo SiteInfo::CreateForErrorPage(
     const StoragePartitionConfig storage_partition_config,
-    bool is_guest) {
+    bool is_guest,
+    bool is_fenced) {
   return SiteInfo(GetErrorPageSiteAndLockURL(), GetErrorPageSiteAndLockURL(),
                   false /* requires_origin_keyed_process */,
                   false /* is_sandboxed */, UrlInfo::kInvalidUniqueSandboxId,
                   storage_partition_config,
                   WebExposedIsolationInfo::CreateNonIsolated(), is_guest,
                   false /* does_site_request_dedicated_process_for_coop */,
-                  false /* is_jit_disabled */, false /* is_pdf */);
+                  false /* is_jit_disabled */, false /* is_pdf */, is_fenced);
 }
 
 // static
@@ -199,14 +202,14 @@ SiteInfo SiteInfo::CreateForDefaultSiteInstance(
   bool is_jit_disabled = GetContentClient()->browser()->IsJitDisabledForSite(
       browser_context, GURL());
 
-  return SiteInfo(SiteInstanceImpl::GetDefaultSiteURL(),
-                  SiteInstanceImpl::GetDefaultSiteURL(),
-                  false /* requires_origin_keyed_process */,
-                  false /* is_sandboxed */, UrlInfo::kInvalidUniqueSandboxId,
-                  storage_partition_config, web_exposed_isolation_info,
-                  isolation_context.is_guest(),
-                  false /* does_site_request_dedicated_process_for_coop */,
-                  is_jit_disabled, false /* is_pdf */);
+  return SiteInfo(
+      SiteInstanceImpl::GetDefaultSiteURL(),
+      SiteInstanceImpl::GetDefaultSiteURL(),
+      false /* requires_origin_keyed_process */, false /* is_sandboxed */,
+      UrlInfo::kInvalidUniqueSandboxId, storage_partition_config,
+      web_exposed_isolation_info, isolation_context.is_guest(),
+      false /* does_site_request_dedicated_process_for_coop */, is_jit_disabled,
+      false /* is_pdf */, isolation_context.is_fenced());
 }
 
 // static
@@ -231,13 +234,15 @@ SiteInfo SiteInfo::CreateForGuest(
           ? GURL()
           : GetSiteURLForGuestPartitionConfig(partition_config);
 
+  // TODO(crbug.com/1340662): Investigate whether we want fenced frames
+  // isolated within guests. If we do, we need to plumb the value for is_fenced.
   return SiteInfo(
       guest_site_url, guest_site_url, false /* requires_origin_keyed_process */,
       false /* is_sandboxed */, UrlInfo::kInvalidUniqueSandboxId,
       partition_config, WebExposedIsolationInfo::CreateNonIsolated(),
       true /* is_guest */,
       false /* does_site_request_dedicated_process_for_coop */,
-      false /* is_jit_disabled */, false /* is_pdf */);
+      false /* is_jit_disabled */, false /* is_pdf */, false /*is_fenced*/);
 }
 
 // static
@@ -296,7 +301,8 @@ SiteInfo SiteInfo::CreateInternal(const IsolationContext& isolation_context,
 
   if (url_info.url.SchemeIs(kChromeErrorScheme)) {
     return CreateForErrorPage(storage_partition_config.value(),
-                              /*is_guest=*/isolation_context.is_guest());
+                              /*is_guest=*/isolation_context.is_guest(),
+                              /*is_fenced=*/isolation_context.is_fenced());
   }
   // We should only set |requires_origin_keyed_process| if we are actually
   // creating separate SiteInstances for OAC isolation. When we do same-process
@@ -346,7 +352,7 @@ SiteInfo SiteInfo::CreateInternal(const IsolationContext& isolation_context,
                       WebExposedIsolationInfo::CreateNonIsolated()),
                   isolation_context.is_guest(),
                   does_site_request_dedicated_process_for_coop, is_jitless,
-                  url_info.is_pdf);
+                  url_info.is_pdf, isolation_context.is_fenced());
 }
 
 // static
@@ -365,7 +371,8 @@ SiteInfo::SiteInfo(const GURL& site_url,
                    bool is_guest,
                    bool does_site_request_dedicated_process_for_coop,
                    bool is_jit_disabled,
-                   bool is_pdf)
+                   bool is_pdf,
+                   bool is_fenced)
     : site_url_(site_url),
       process_lock_url_(process_lock_url),
       requires_origin_keyed_process_(requires_origin_keyed_process),
@@ -377,7 +384,8 @@ SiteInfo::SiteInfo(const GURL& site_url,
       does_site_request_dedicated_process_for_coop_(
           does_site_request_dedicated_process_for_coop),
       is_jit_disabled_(is_jit_disabled),
-      is_pdf_(is_pdf) {
+      is_pdf_(is_pdf),
+      is_fenced_(is_fenced) {
   DCHECK(is_sandboxed_ ||
          unique_sandbox_id_ == UrlInfo::kInvalidUniqueSandboxId);
 }
@@ -397,7 +405,8 @@ SiteInfo::SiteInfo(BrowserContext* browser_context)
           /*is_guest=*/false,
           /*does_site_request_dedicated_process_for_coop=*/false,
           /*is_jit_disabled=*/false,
-          /*is_pdf=*/false) {}
+          /*is_pdf=*/false,
+          /*is_fenced=*/false) {}
 
 // static
 auto SiteInfo::MakeSecurityPrincipalKey(const SiteInfo& site_info) {
@@ -407,21 +416,21 @@ auto SiteInfo::MakeSecurityPrincipalKey(const SiteInfo& site_info) {
   // site-isolated due to COOP should still share a SiteInstance with other
   // same-site frames in the BrowsingInstance, even if those frames lack the
   // COOP isolation request.
-  return std::tie(site_info.site_url_.possibly_invalid_spec(),
-                  site_info.process_lock_url_.possibly_invalid_spec(),
-                  // Here we only compare |requires_origin_keyed_process_| since
-                  // we currently don't create SiteInfos where
-                  // |is_origin_agent_cluster_| differs from
-                  // |requires_origin_keyed_process_|. In fact, we don't even
-                  // have |is_origin_agent_cluster| in SiteInfo at this time,
-                  // but that could change.
-                  // TODO(wjmaclean): Update this if we ever start to create
-                  // separate SiteInfos for same-process OriginAgentCluster.
-                  site_info.requires_origin_keyed_process_,
-                  site_info.is_sandboxed_, site_info.unique_sandbox_id_,
-                  site_info.storage_partition_config_,
-                  site_info.web_exposed_isolation_info_, site_info.is_guest_,
-                  site_info.is_jit_disabled_, site_info.is_pdf_);
+  return std::tie(
+      site_info.site_url_.possibly_invalid_spec(),
+      site_info.process_lock_url_.possibly_invalid_spec(),
+      // Here we only compare |requires_origin_keyed_process_| since
+      // we currently don't create SiteInfos where
+      // |is_origin_agent_cluster_| differs from
+      // |requires_origin_keyed_process_|. In fact, we don't even
+      // have |is_origin_agent_cluster| in SiteInfo at this time,
+      // but that could change.
+      // TODO(wjmaclean): Update this if we ever start to create
+      // separate SiteInfos for same-process OriginAgentCluster.
+      site_info.requires_origin_keyed_process_, site_info.is_sandboxed_,
+      site_info.unique_sandbox_id_, site_info.storage_partition_config_,
+      site_info.web_exposed_isolation_info_, site_info.is_guest_,
+      site_info.is_jit_disabled_, site_info.is_pdf_, site_info.is_fenced_);
 }
 
 SiteInfo SiteInfo::GetNonOriginKeyedEquivalentForMetrics(
@@ -451,7 +460,8 @@ SiteInfo SiteInfo::GetNonOriginKeyedEquivalentForMetrics(
     if (policy->GetMatchingProcessIsolatedOrigin(
             IsolationContext(BrowsingInstanceId(0),
                              isolation_context.browser_or_resource_context(),
-                             isolation_context.is_guest()),
+                             isolation_context.is_guest(),
+                             isolation_context.is_fenced()),
             url::Origin::Create(process_lock_url_),
             false /* origin_requests_isolation */, &result_origin)) {
       non_oac_site_info.process_lock_url_ = result_origin.GetURL();
@@ -496,7 +506,8 @@ bool SiteInfo::IsExactMatch(const SiteInfo& other) const {
       is_guest_ == other.is_guest_ &&
       does_site_request_dedicated_process_for_coop_ ==
           other.does_site_request_dedicated_process_for_coop_ &&
-      is_jit_disabled_ == other.is_jit_disabled_ && is_pdf_ == other.is_pdf_;
+      is_jit_disabled_ == other.is_jit_disabled_ && is_pdf_ == other.is_pdf_ &&
+      is_fenced_ == other.is_fenced_;
 
   if (is_match) {
     // If all the fields match, then the "same principal" subset must also
@@ -518,7 +529,8 @@ auto SiteInfo::MakeProcessLockComparisonKey() const {
   // leads to crashes in https://crbug.com/1279453.
   return std::tie(process_lock_url_, requires_origin_keyed_process_,
                   is_sandboxed_, unique_sandbox_id_, is_pdf_, is_guest_,
-                  web_exposed_isolation_info_, storage_partition_config_);
+                  web_exposed_isolation_info_, storage_partition_config_,
+                  is_fenced_);
 }
 
 int SiteInfo::ProcessLockCompareTo(const SiteInfo& other) const {
@@ -588,6 +600,9 @@ std::string SiteInfo::GetDebugString() const {
     if (storage_partition_config_.in_memory())
       debug_string += ", in-memory";
   }
+
+  if (is_fenced_)
+    debug_string += ", is_fenced";
 
   return debug_string;
 }
@@ -751,6 +766,7 @@ void SiteInfo::WriteIntoTrace(perfetto::TracedValue context) const {
   dict.Add("requires_origin_keyed_process", requires_origin_keyed_process_);
   dict.Add("is_sandboxed", is_sandboxed_);
   dict.Add("is_guest", is_guest_);
+  dict.Add("is_fenced", is_fenced_);
 }
 
 bool SiteInfo::is_error_page() const {

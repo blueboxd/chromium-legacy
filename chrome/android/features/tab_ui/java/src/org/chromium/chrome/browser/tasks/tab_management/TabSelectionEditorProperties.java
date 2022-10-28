@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -53,9 +53,14 @@ public class TabSelectionEditorProperties {
     public static final PropertyModel.WritableIntPropertyKey TOOLBAR_ACTION_BUTTON_VISIBILITY =
             new PropertyModel.WritableIntPropertyKey();
 
+    public static final PropertyModel
+            .WritableObjectPropertyKey<TabSelectionEditorToolbar.RelatedTabCountProvider>
+                    RELATED_TAB_COUNT_PROVIDER = new PropertyModel.WritableObjectPropertyKey<>();
+
     public static final PropertyKey[] ALL_KEYS = new PropertyKey[] {IS_VISIBLE,
             TOOLBAR_ACTION_BUTTON_LISTENER, TOOLBAR_ACTION_BUTTON_TEXT,
             TOOLBAR_ACTION_BUTTON_ENABLING_THRESHOLD, TOOLBAR_NAVIGATION_LISTENER, PRIMARY_COLOR,
             TOOLBAR_BACKGROUND_COLOR, TOOLBAR_GROUP_TEXT_TINT, TOOLBAR_GROUP_BUTTON_TINT,
-            TOOLBAR_ACTION_BUTTON_DESCRIPTION_RESOURCE_ID, TOOLBAR_ACTION_BUTTON_VISIBILITY};
+            TOOLBAR_ACTION_BUTTON_DESCRIPTION_RESOURCE_ID, TOOLBAR_ACTION_BUTTON_VISIBILITY,
+            RELATED_TAB_COUNT_PROVIDER};
 }

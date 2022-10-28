@@ -19,6 +19,7 @@
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
+#include "ui/accessibility/ax_selection.h"
 #include "ui/accessibility/platform/ax_platform_node_delegate.h"
 #include "ui/accessibility/platform/compute_attributes.h"
 #include "ui/gfx/geometry/rect_conversions.h"
@@ -273,7 +274,7 @@ std::string AccessibilityTreeFormatterBlink::DumpInternalAccessibilityTree(
   ui::AXTreeManager* ax_mgr = ui::AXTreeManager::FromID(tree_id);
   DCHECK(ax_mgr);
   SetPropertyFilters(property_filters, kFiltersDefaultSet);
-  base::Value dict = BuildTreeForNode(ax_mgr->GetRootAsAXNode());
+  base::Value dict = BuildTreeForNode(ax_mgr->GetRoot());
   return FormatTree(dict);
 }
 
@@ -423,7 +424,7 @@ void AccessibilityTreeFormatterBlink::AddProperties(
   }
 
   //  Check for relevant rich text selection info in AXTreeData
-  ui::AXTree::Selection unignored_selection =
+  ui::AXSelection unignored_selection =
       node.manager()->ax_tree()->GetUnignoredSelection();
   int anchor_id = unignored_selection.anchor_object_id;
   if (id == anchor_id) {
@@ -558,7 +559,7 @@ void AccessibilityTreeFormatterBlink::AddProperties(
         if (ui::IsNodeIdIntListAttribute(attr)) {
           ui::AXTreeID tree_id = node.tree()->GetAXTreeID();
           ui::AXNode* target =
-              ui::AXTreeManager::FromID(tree_id)->GetNodeFromTree(node.id());
+              ui::AXTreeManager::FromID(tree_id)->GetNode(node.id());
 
           if (target)
             value_list.Append(ui::ToString(target->GetRole()));
@@ -573,8 +574,7 @@ void AccessibilityTreeFormatterBlink::AddProperties(
   }
 
   //  Check for relevant rich text selection info in AXTreeData
-  ui::AXTree::Selection unignored_selection =
-      node.tree()->GetUnignoredSelection();
+  ui::AXSelection unignored_selection = node.tree()->GetUnignoredSelection();
   int anchor_id = unignored_selection.anchor_object_id;
   if (id == anchor_id) {
     int anchor_offset = unignored_selection.anchor_offset;

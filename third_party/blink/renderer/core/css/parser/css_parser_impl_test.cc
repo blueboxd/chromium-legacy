@@ -179,25 +179,6 @@ TEST(CSSParserImplTest, AtPropertyOffsets) {
   EXPECT_EQ(test_css_parser_observer.rule_body_end_, 19u);
 }
 
-TEST(CSSParserImplTest, AtScrollTimelineOffsets) {
-  ScopedCSSScrollTimelineForTest scoped_feature(true);
-
-  String sheet_text = "@scroll-timeline test { }";
-  auto* context = MakeGarbageCollected<CSSParserContext>(
-      kHTMLStandardMode, SecureContextMode::kInsecureContext);
-  auto* style_sheet = MakeGarbageCollected<StyleSheetContents>(context);
-  TestCSSParserObserver test_css_parser_observer;
-  CSSParserImpl::ParseStyleSheetForInspector(sheet_text, context, style_sheet,
-                                             test_css_parser_observer);
-  EXPECT_EQ(style_sheet->ChildRules().size(), 1u);
-  EXPECT_EQ(test_css_parser_observer.rule_type_,
-            StyleRule::RuleType::kScrollTimeline);
-  EXPECT_EQ(test_css_parser_observer.rule_header_start_, 17u);
-  EXPECT_EQ(test_css_parser_observer.rule_header_end_, 22u);
-  EXPECT_EQ(test_css_parser_observer.rule_body_start_, 23u);
-  EXPECT_EQ(test_css_parser_observer.rule_body_end_, 24u);
-}
-
 TEST(CSSParserImplTest, AtCounterStyleOffsets) {
   String sheet_text = "@counter-style test { }";
   auto* context = MakeGarbageCollected<CSSParserContext>(
@@ -519,7 +500,7 @@ TEST(CSSParserImplTest, LayeredImportRulesMultipleLayers) {
     ASSERT_TRUE(parsed->IsLayered());
     ASSERT_EQ(1u, parsed->GetLayerName().size());
     EXPECT_EQ(g_empty_atom, parsed->GetLayerName()[0]);
-    EXPECT_EQ("layer", parsed->MediaQueries()->MediaText());
+    EXPECT_EQ("not all", parsed->MediaQueries()->MediaText());
   }
 
   {
@@ -539,7 +520,7 @@ TEST(CSSParserImplTest, LayeredImportRulesMultipleLayers) {
     ASSERT_TRUE(parsed->IsLayered());
     ASSERT_EQ(1u, parsed->GetLayerName().size());
     EXPECT_EQ("bar", parsed->GetLayerName()[0]);
-    EXPECT_EQ("layer", parsed->MediaQueries()->MediaText());
+    EXPECT_EQ("not all", parsed->MediaQueries()->MediaText());
   }
 }
 
@@ -554,7 +535,8 @@ TEST(CSSParserImplTest, CorrectAtRuleOrderingWithLayers) {
   auto* context = MakeGarbageCollected<CSSParserContext>(
       kHTMLStandardMode, SecureContextMode::kInsecureContext);
   auto* sheet = MakeGarbageCollected<StyleSheetContents>(context);
-  CSSParserImpl::ParseStyleSheet(sheet_text, context, sheet);
+  CSSParserImpl::ParseStyleSheet(sheet_text, context, sheet,
+                                 /*use_arena=*/true);
 
   // All rules should parse successfully.
   EXPECT_EQ(1u, sheet->PreImportLayerStatementRules().size());
@@ -575,7 +557,8 @@ TEST(CSSParserImplTest, EmptyLayerStatementsAtWrongPositions) {
     auto* context = MakeGarbageCollected<CSSParserContext>(
         kHTMLStandardMode, SecureContextMode::kInsecureContext);
     auto* sheet = MakeGarbageCollected<StyleSheetContents>(context);
-    CSSParserImpl::ParseStyleSheet(sheet_text, context, sheet);
+    CSSParserImpl::ParseStyleSheet(sheet_text, context, sheet,
+                                   /*use_arena=*/true);
 
     EXPECT_EQ(1u, sheet->PreImportLayerStatementRules().size());
     EXPECT_EQ(1u, sheet->ChildRules().size());
@@ -597,7 +580,8 @@ TEST(CSSParserImplTest, EmptyLayerStatementsAtWrongPositions) {
     auto* context = MakeGarbageCollected<CSSParserContext>(
         kHTMLStandardMode, SecureContextMode::kInsecureContext);
     auto* sheet = MakeGarbageCollected<StyleSheetContents>(context);
-    CSSParserImpl::ParseStyleSheet(sheet_text, context, sheet);
+    CSSParserImpl::ParseStyleSheet(sheet_text, context, sheet,
+                                   /*use_arena=*/true);
 
     EXPECT_EQ(1u, sheet->PreImportLayerStatementRules().size());
     EXPECT_EQ(1u, sheet->ImportRules().size());
@@ -618,7 +602,8 @@ TEST(CSSParserImplTest, EmptyLayerStatementAfterRegularRule) {
   auto* context = MakeGarbageCollected<CSSParserContext>(
       kHTMLStandardMode, SecureContextMode::kInsecureContext);
   auto* sheet = MakeGarbageCollected<StyleSheetContents>(context);
-  CSSParserImpl::ParseStyleSheet(sheet_text, context, sheet);
+  CSSParserImpl::ParseStyleSheet(sheet_text, context, sheet,
+                                 /*use_arena=*/true);
 
   EXPECT_EQ(0u, sheet->PreImportLayerStatementRules().size());
   EXPECT_EQ(2u, sheet->ChildRules().size());

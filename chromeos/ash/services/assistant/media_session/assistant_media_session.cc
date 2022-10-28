@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,7 +11,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chromeos/ash/services/assistant/media_host.h"
 #include "chromeos/ash/services/assistant/public/cpp/assistant_browser_delegate.h"
-#include "chromeos/services/libassistant/public/mojom/media_controller.mojom.h"
+#include "chromeos/ash/services/libassistant/public/mojom/media_controller.mojom.h"
 #include "services/media_session/public/cpp/features.h"
 
 // A macro which ensures we are running on the main thread.

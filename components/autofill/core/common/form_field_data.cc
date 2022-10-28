@@ -1,4 +1,4 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -28,9 +28,6 @@ namespace {
 // Increment this anytime pickle format is modified as well as provide
 // deserialization routine from previous kFormFieldDataPickleVersion format.
 const int kFormFieldDataPickleVersion = 9;
-
-// Default section name for the fields.
-static constexpr char kDefaultSection[] = "-default";
 
 void WriteSelectOption(const SelectOption& option, base::Pickle* pickle) {
   pickle->WriteString16(option.value);
@@ -241,10 +238,49 @@ auto IdentityTuple(const FormFieldData& f) {
       SimilarityTuple(f),
       std::tie(f.autocomplete_attribute, f.placeholder, f.max_length,
                f.css_classes, f.is_focusable, f.should_autocomplete, f.role,
-               f.text_direction));
+               f.text_direction, f.options));
 }
 
 }  // namespace
+
+bool operator==(const SelectOption& lhs, const SelectOption& rhs) {
+  return std::tie(lhs.value, lhs.content) == std::tie(rhs.value, rhs.content);
+}
+
+bool operator!=(const SelectOption& lhs, const SelectOption& rhs) {
+  return !(lhs == rhs);
+}
+
+Section Section::FromAutocomplete(Section::Autocomplete autocomplete) {
+  Section section;
+  if (autocomplete.section.empty() && autocomplete.mode == HtmlFieldMode::kNone)
+    return section;
+  section.value_ = std::move(autocomplete);
+  return section;
+}
+
+Section Section::FromFieldIdentifier(
+    const FormFieldData& field,
+    base::flat_map<LocalFrameToken, size_t>& frame_token_ids) {
+  Section section;
+  // Set the section's value based on the field identifiers: the field's name,
+  // mapped frame id, renderer id. We do not use LocalFrameTokens but instead
+  // map them to consecutive integers using `frame_token_ids`, which uniquely
+  // identify a frame within a given FormStructure. Since we do not intend to
+  // compare sections from different FormStructures, this is sufficient.
+  //
+  // We intentionally do not include the LocalFrameToken in the section
+  // because frame tokens should not be sent to a renderer.
+  //
+  // TODO(crbug.com/1257141): Remove special handling of FrameTokens.
+  size_t generated_frame_id =
+      frame_token_ids.emplace(field.host_frame, frame_token_ids.size())
+          .first->second;
+  section.value_ =
+      FieldIdentifier(base::UTF16ToUTF8(field.name), generated_frame_id,
+                      field.unique_renderer_id);
+  return section;
+}
 
 Section::Section() = default;
 Section::Section(const Section& section) = default;
@@ -282,8 +318,7 @@ bool operator<(const Section::FieldIdentifier& a,
 }
 
 bool operator==(const Section& a, const Section& b) {
-  return std::tie(a.field_type_group_, a.prefix_) ==
-         std::tie(b.field_type_group_, b.prefix_);
+  return a.value_ == b.value_;
 }
 
 bool operator!=(const Section& a, const Section& b) {
@@ -291,72 +326,49 @@ bool operator!=(const Section& a, const Section& b) {
 }
 
 bool operator<(const Section& a, const Section& b) {
-  return std::tie(a.field_type_group_, a.prefix_) <
-         std::tie(b.field_type_group_, b.prefix_);
+  return a.value_ < b.value_;
+}
+
+Section::operator bool() const {
+  return !is_default();
 }
 
 bool Section::is_from_autocomplete() const {
-  return absl::holds_alternative<Autocomplete>(prefix_);
+  return absl::holds_alternative<Autocomplete>(value_);
 }
 
-void Section::set_field_type_group(FieldTypeGroupSuffix field_type_group) {
-  field_type_group_ = field_type_group;
+bool Section::is_from_fieldidentifier() const {
+  return absl::holds_alternative<FieldIdentifier>(value_);
 }
 
-void Section::SetPrefixToCreditCard() {
-  prefix_ = CreditCard();
-}
-
-bool Section::SetPrefixFromAutocomplete(Autocomplete autocomplete) {
-  if (autocomplete.section.empty() && autocomplete.mode == HTML_MODE_NONE)
-    return false;
-  prefix_ = std::move(autocomplete);
-  return true;
-}
-
-void Section::SetPrefixFromFieldIdentifier(
-    const FormFieldData& field,
-    base::flat_map<LocalFrameToken, size_t>& frame_token_ids) {
-  size_t generated_frame_id =
-      frame_token_ids.emplace(field.host_frame, frame_token_ids.size())
-          .first->second;
-  prefix_ = FieldIdentifier(base::UTF16ToUTF8(field.name), generated_frame_id,
-                            field.unique_renderer_id);
+bool Section::is_default() const {
+  return absl::holds_alternative<Default>(value_);
 }
 
 std::string Section::ToString() const {
+  constexpr char kDefaultSection[] = "-default";
+
   std::string section_name;
-  if (const Autocomplete* autocomplete = absl::get_if<Autocomplete>(&prefix_)) {
+  if (const Autocomplete* autocomplete = absl::get_if<Autocomplete>(&value_)) {
     // To prevent potential section name collisions, append `kDefaultSection`
     // suffix to fields without a `HtmlFieldMode`. Without this, 'autocomplete'
     // attribute values "section--shipping street-address" and "shipping
     // street-address" would have the same prefix.
     section_name =
         autocomplete->section +
-        (autocomplete->mode != HTML_MODE_NONE
+        (autocomplete->mode != HtmlFieldMode::kNone
              ? "-" + std::string(HtmlFieldModeToStringPiece(autocomplete->mode))
              : kDefaultSection);
   } else if (const FieldIdentifier* f =
-                 absl::get_if<FieldIdentifier>(&prefix_)) {
+                 absl::get_if<FieldIdentifier>(&value_)) {
     FieldIdentifier field_identifier = *f;
     section_name = base::StrCat(
         {field_identifier.field_name, "_",
          base::NumberToString(field_identifier.local_frame_id), "_",
          base::NumberToString(field_identifier.field_renderer_id.value())});
-  } else if (absl::holds_alternative<CreditCard>(prefix_)) {
-    section_name = "credit-card";
   }
 
-  section_name = section_name.empty() ? kDefaultSection : section_name;
-  switch (field_type_group_) {
-    case FieldTypeGroupSuffix::kNoGroup:
-      return section_name;
-    case FieldTypeGroupSuffix::kDefault:
-      return section_name + kDefaultSection;
-    case FieldTypeGroupSuffix::kCreditCard:
-      return section_name + "-cc";
-  }
-  NOTREACHED();
+  return section_name.empty() ? kDefaultSection : section_name;
 }
 
 LogBuffer& operator<<(LogBuffer& buffer, const Section& section) {
@@ -427,6 +439,7 @@ void SerializeFormFieldData(const FormFieldData& field_data,
   pickle->WriteString16(field_data.name);
   pickle->WriteString16(field_data.value);
   pickle->WriteString(field_data.form_control_type);
+  // We don't serialize the `parsed_autocomplete`. See http://crbug.com/1353392.
   pickle->WriteString(field_data.autocomplete_attribute);
   pickle->WriteUInt64(field_data.max_length);
   pickle->WriteBool(field_data.is_autofilled);
@@ -591,6 +604,11 @@ std::ostream& operator<<(std::ostream& os, const FormFieldData& field) {
             << "value='" << field.value << "' "
             << "control='" << field.form_control_type << "' "
             << "autocomplete='" << field.autocomplete_attribute << "' "
+            << "parsed_autocomplete='"
+            << (field.parsed_autocomplete
+                    ? field.parsed_autocomplete->ToString()
+                    : "")
+            << "' "
             << "placeholder='" << field.placeholder << "' "
             << "max_length=" << field.max_length << " "
             << "css_classes='" << field.css_classes << "' "
@@ -628,6 +646,9 @@ LogBuffer& operator<<(LogBuffer& buffer, const FormFieldData& field) {
   buffer << Tr{} << "Label:" << truncated_label;
   buffer << Tr{} << "Form control type:" << field.form_control_type;
   buffer << Tr{} << "Autocomplete attribute:" << field.autocomplete_attribute;
+  buffer << Tr{} << "Parsed autocomplete attribute:"
+         << (field.parsed_autocomplete ? field.parsed_autocomplete->ToString()
+                                       : "");
   buffer << Tr{} << "Aria label:" << field.aria_label;
   buffer << Tr{} << "Aria description:" << field.aria_description;
   buffer << Tr{} << "Section:" << field.section;

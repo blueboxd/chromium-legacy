@@ -46,8 +46,7 @@ class LayoutFrame final : public LayoutEmbeddedContent {
     NOT_DESTROYED();
     return type == kLayoutObjectFrame || LayoutEmbeddedContent::IsOfType(type);
   }
-
-  void UpdateFromElement() override;
+  void UpdateLayout() override;
 };
 
 template <>

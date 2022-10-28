@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,6 +9,7 @@
 #include "base/notreached.h"
 #include "base/strings/strcat.h"
 #include "components/segmentation_platform/public/config.h"
+#include "components/segmentation_platform/public/constants.h"
 #include "components/segmentation_platform/public/proto/segmentation_platform.pb.h"
 #include "components/segmentation_platform/public/proto/types.pb.h"
 
@@ -68,7 +69,13 @@ bool IsBooleanSegment(const std::string& segmentation_key) {
   return segmentation_key == kChromeStartAndroidSegmentationKey ||
          segmentation_key == kQueryTilesSegmentationKey ||
          segmentation_key == kChromeLowUserEngagementSegmentationKey ||
-         segmentation_key == kFeedUserSegmentationKey;
+         segmentation_key == kFeedUserSegmentationKey ||
+         segmentation_key == kPowerUserKey ||
+         segmentation_key == kShoppingUserSegmentationKey ||
+         segmentation_key == kCrossDeviceUserKey ||
+         segmentation_key == kFrequentFeatureUserKey ||
+         segmentation_key == kIntentionalUserKey ||
+         segmentation_key == kResumeHeavyUserKey;
 }
 
 BooleanSegmentSwitch GetBooleanSegmentSwitch(SegmentId new_selection,

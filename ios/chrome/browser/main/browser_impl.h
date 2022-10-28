@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -23,7 +23,7 @@ class WebStateListDelegate;
 // See src/docs/ios/objects.md for more information.
 class BrowserImpl : public Browser {
  public:
-  // Constructs a BrowserImpl attached to |browser_state|.
+  // Constructs a BrowserImpl attached to `browser_state`.
   BrowserImpl(ChromeBrowserState* browser_state);
 
   BrowserImpl(const BrowserImpl&) = delete;

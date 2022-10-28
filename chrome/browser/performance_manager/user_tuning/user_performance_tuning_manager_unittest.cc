@@ -1,15 +1,17 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/performance_manager/user_tuning/user_performance_tuning_manager.h"
+#include "chrome/browser/performance_manager/public/user_tuning/user_performance_tuning_manager.h"
 
 #include "base/power_monitor/power_monitor.h"
 #include "base/power_monitor/power_monitor_source.h"
 #include "base/run_loop.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
-#include "chrome/browser/performance_manager/user_tuning/fake_frame_throttling_delegate.h"
+#include "chrome/browser/performance_manager/test_support/fake_frame_throttling_delegate.h"
+#include "chrome/browser/performance_manager/test_support/fake_high_efficiency_mode_toggle_delegate.h"
+#include "chrome/browser/performance_manager/test_support/fake_power_monitor_source.h"
 #include "components/performance_manager/public/features.h"
 #include "components/performance_manager/public/user_tuning/prefs.h"
 #include "components/prefs/testing_pref_service.h"
@@ -17,26 +19,6 @@
 
 namespace performance_manager::user_tuning {
 namespace {
-
-class FakePowerMonitorSource : public base::PowerMonitorSource {
- public:
-  bool IsOnBatteryPower() override { return on_battery_power_; }
-
-  void SetOnBatteryPower(bool on_battery_power) {
-    on_battery_power_ = on_battery_power;
-    ProcessPowerEvent(POWER_STATE_EVENT);
-  }
-
-  bool on_battery_power_ = false;
-};
-
-class FakeHighEfficiencyModeToggleDelegate
-    : public performance_manager::user_tuning::UserPerformanceTuningManager::
-          HighEfficiencyModeToggleDelegate {
- public:
-  void ToggleHighEfficiencyMode(bool enabled) override {}
-  ~FakeHighEfficiencyModeToggleDelegate() override = default;
-};
 
 class QuitRunLoopObserverBase : public performance_manager::user_tuning::
                                     UserPerformanceTuningManager::Observer {
@@ -47,14 +29,6 @@ class QuitRunLoopObserverBase : public performance_manager::user_tuning::
   ~QuitRunLoopObserverBase() override = default;
 
   void Quit() { quit_closure_.Run(); }
-
-  // UserPeformanceTuningManager::Observer implementation:
-  void OnBatterySaverModeChanged(bool) override {}
-  void OnExternalPowerConnectedChanged(bool) override {}
-  void OnBatteryThresholdReached() override {}
-  void OnMemoryThresholdReached() override {}
-  void OnTabCountThresholdReached() override {}
-  void OnJankThresholdReached() override {}
 
  private:
   base::RepeatingClosure quit_closure_;
@@ -104,7 +78,7 @@ class UserPerformanceTuningManagerTest : public testing::Test {
           }) {
     feature_list_.InitWithFeaturesAndParameters(features_and_params, {});
     manager_.reset(new UserPerformanceTuningManager(
-        &local_state_,
+        &local_state_, nullptr,
         std::make_unique<FakeFrameThrottlingDelegate>(&throttling_enabled_),
         std::make_unique<FakeHighEfficiencyModeToggleDelegate>()));
     manager()->Start();

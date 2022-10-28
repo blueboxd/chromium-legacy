@@ -54,6 +54,10 @@ namespace blink {
 
 const char SpeechSynthesis::kSupplementName[] = "SpeechSynthesis";
 
+SpeechSynthesisBase* SpeechSynthesis::Create(LocalDOMWindow& window) {
+  return MakeGarbageCollected<SpeechSynthesis>(window);
+}
+
 SpeechSynthesis* SpeechSynthesis::speechSynthesis(LocalDOMWindow& window) {
   SpeechSynthesis* synthesis =
       Supplement<LocalDOMWindow>::From<SpeechSynthesis>(window);
@@ -124,7 +128,7 @@ void SpeechSynthesis::RecordVoicesForIdentifiability() const {
       .Record(GetSupplementable()->UkmRecorder());
 }
 
-bool SpeechSynthesis::speaking() const {
+bool SpeechSynthesis::Speaking() const {
   // If we have a current speech utterance, then that means we're assumed to be
   // in a speaking state. This state is independent of whether the utterance
   // happens to be paused.
@@ -139,6 +143,15 @@ bool SpeechSynthesis::pending() const {
 
 bool SpeechSynthesis::paused() const {
   return is_paused_;
+}
+
+void SpeechSynthesis::Speak(const String& text, const String& lang) {
+  ScriptState* script_state =
+      ToScriptStateForMainWorld(GetSupplementable()->GetFrame());
+  SpeechSynthesisUtterance* utterance =
+      SpeechSynthesisUtterance::Create(GetSupplementable(), text);
+  utterance->setLang(lang);
+  speak(script_state, utterance);
 }
 
 void SpeechSynthesis::speak(ScriptState* script_state,
@@ -167,7 +180,7 @@ void SpeechSynthesis::speak(ScriptState* script_state,
     StartSpeakingImmediately();
 }
 
-void SpeechSynthesis::cancel() {
+void SpeechSynthesis::Cancel() {
   // Remove all the items from the utterance queue. The platform
   // may still have references to some of these utterances and may
   // fire events on them asynchronously.
@@ -178,7 +191,7 @@ void SpeechSynthesis::cancel() {
     mojom_synthesis->Cancel();
 }
 
-void SpeechSynthesis::pause() {
+void SpeechSynthesis::Pause() {
   if (is_paused_)
     return;
 
@@ -187,7 +200,7 @@ void SpeechSynthesis::pause() {
     mojom_synthesis->Pause();
 }
 
-void SpeechSynthesis::resume() {
+void SpeechSynthesis::Resume() {
   if (!CurrentSpeechUtterance())
     return;
 
@@ -260,6 +273,9 @@ void SpeechSynthesis::HandleSpeakingCompleted(
     SpeechSynthesisUtterance* utterance,
     bool error_occurred) {
   DCHECK(utterance);
+
+  // Special handling for audio descriptions.
+  SpeechSynthesisBase::HandleSpeakingCompleted();
 
   bool should_start_speaking = false;
   // If the utterance that completed was the one we're currently speaking,
@@ -338,6 +354,7 @@ void SpeechSynthesis::Trace(Visitor* visitor) const {
   visitor->Trace(utterance_queue_);
   Supplement<LocalDOMWindow>::Trace(visitor);
   EventTargetWithInlineData::Trace(visitor);
+  SpeechSynthesisBase::Trace(visitor);
 }
 
 bool SpeechSynthesis::GetElapsedTimeMillis(double* millis) {

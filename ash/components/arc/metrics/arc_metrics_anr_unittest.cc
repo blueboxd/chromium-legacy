@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -254,6 +254,27 @@ TEST_F(ArcMetricsAnrTest, ForPeriod) {
     FastForwardBy(base::Minutes(5));
   }
   tester.ExpectTotalCount("Arc.Anr.Per4Hours", 3);
+}
+
+// Test that the class also records UMA stats with the suffix given.
+TEST_F(ArcMetricsAnrTest, SuffixedUmaRecording) {
+  base::HistogramTester tester;
+
+  std::unique_ptr<ArcMetricsAnr> anrs =
+      std::make_unique<ArcMetricsAnr>(prefs());
+
+  anrs->Report(GetAnr(mojom::AnrSource::OTHER, mojom::AnrType::UNKNOWN));
+  anrs->set_uma_suffix(".FirstBootAfterUpdate");
+  anrs->Report(GetAnr(mojom::AnrSource::ARC_APP_LAUNCHER,
+                      mojom::AnrType::FOREGROUND_SERVICE));
+
+  FastForwardBy(base::Minutes(10));
+  EXPECT_EQ(2, tester.GetTotalSum("Arc.Anr.First10MinutesAfterStart"));
+  EXPECT_EQ(2, tester.GetTotalSum(
+                   "Arc.Anr.First10MinutesAfterStart.FirstBootAfterUpdate"));
+  FastForwardBy(base::Hours(4));
+  EXPECT_EQ(2, tester.GetTotalSum("Arc.Anr.Per4Hours"));
+  EXPECT_EQ(2, tester.GetTotalSum("Arc.Anr.Per4Hours.FirstBootAfterUpdate"));
 }
 
 }  // namespace

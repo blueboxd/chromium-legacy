@@ -1,5 +1,5 @@
-# Copyright 2016 The Chromium Authors.All rights reserved.
-# Use of this source code is governed by a BSD - style license that can be
+# Copyright 2016 The Chromium Authors
+# Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
 import("//build/config/chrome_build.gni")
@@ -102,6 +102,7 @@ aggregate_vector_icons("ash_vector_icons") {
     "hide_closed_caption.icon",
     "holding_space.icon",
     "holding_space_download.icon",
+    "holding_space_rebrand.icon",
     "hollow_check_circle.icon",
     "ime_menu_emoticon.icon",
     "ime_menu_microphone.icon",
@@ -197,6 +198,7 @@ aggregate_vector_icons("ash_vector_icons") {
     "notification_charging_usb_c.icon",
     "notification_chromevox.icon",
     "notification_keyboard.icon",
+    "notification_linux.icon",
     "notification_low_power_charger.icon",
     "notification_monitor_warning.icon",
     "notification_multi_device_setup.icon",
@@ -242,8 +244,10 @@ aggregate_vector_icons("ash_vector_icons") {
     "phone_hub_silence_phone.icon",
     "pin_request_lock.icon",
     "pinned.icon",
+    "privacy_indicators.icon",
     "privacy_indicators_camera.icon",
     "privacy_indicators_microphone.icon",
+    "privacy_indicators_screen_share.icon",
     "privacy_screen.icon",
     "remove_outline.icon",
     "reorder.icon",

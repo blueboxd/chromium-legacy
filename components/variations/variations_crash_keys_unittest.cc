@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -56,7 +56,7 @@ TEST_F(VariationsCrashKeysTest, BasicFunctionality) {
       SyntheticTrialsActiveGroupIdProvider::GetInstance());
 
   // Start with 2 trials, one active and one not
-  base::FieldTrialList::CreateFieldTrial("Trial1", "Group1")->group();
+  base::FieldTrialList::CreateFieldTrial("Trial1", "Group1")->Activate();
   base::FieldTrialList::CreateFieldTrial("Trial2", "Group2");
 
   InitCrashKeys();
@@ -92,7 +92,7 @@ TEST_F(VariationsCrashKeysTest, BasicFunctionality) {
             info.experiment_list);
 
   // Add another regular trial.
-  base::FieldTrialList::CreateFieldTrial("Trial4", "Group4")->group();
+  base::FieldTrialList::CreateFieldTrial("Trial4", "Group4")->Activate();
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ("4", GetNumExperimentsCrashKey());
   EXPECT_EQ(

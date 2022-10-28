@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,8 +13,8 @@
 #include "base/bind.h"
 #include "base/check_op.h"
 #include "base/containers/span.h"
-#include "base/lazy_instance.h"
 #include "base/location.h"
+#include "base/no_destructor.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/task/task_runner.h"
 #include "base/threading/thread.h"
@@ -92,12 +92,10 @@ class CryptoThreadPool {
   base::Thread worker_thread_;
 };
 
-base::LazyInstance<CryptoThreadPool>::Leaky crypto_thread_pool =
-    LAZY_INSTANCE_INITIALIZER;
-
 bool CryptoThreadPool::PostTask(const base::Location& from_here,
                                 base::OnceClosure task) {
-  return crypto_thread_pool.Get().worker_thread_.task_runner()->PostTask(
+  static base::NoDestructor<CryptoThreadPool> crypto_thread_pool;
+  return crypto_thread_pool->worker_thread_.task_runner()->PostTask(
       from_here, std::move(task));
 }
 

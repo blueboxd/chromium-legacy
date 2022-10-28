@@ -1,4 +1,4 @@
-// Copyright 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,8 +7,6 @@
 
 #include <memory>
 
-#include "ash/components/disks/disk.h"
-#include "ash/components/disks/mock_disk_mount_manager.h"
 #include "ash/constants/ash_features.h"
 #include "base/base64.h"
 #include "base/bind.h"
@@ -28,6 +26,7 @@
 #include "chrome/browser/ash/file_manager/volume_manager.h"
 #include "chrome/browser/ash/file_system_provider/icon_set.h"
 #include "chrome/browser/ash/file_system_provider/provided_file_system_info.h"
+#include "chrome/browser/ash/policy/dlp/dlp_files_controller.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/extensions/file_manager/event_router.h"
 #include "chrome/browser/chromeos/extensions/file_manager/event_router_factory.h"
@@ -43,6 +42,8 @@
 #include "chrome/common/extensions/api/file_system_provider_capabilities/file_system_provider_capabilities_handler.h"
 #include "chromeos/ash/components/dbus/concierge/concierge_service.pb.h"
 #include "chromeos/ash/components/dbus/cros_disks/cros_disks_client.h"
+#include "chromeos/ash/components/disks/disk.h"
+#include "chromeos/ash/components/disks/mock_disk_mount_manager.h"
 #include "chromeos/dbus/dlp/dlp_client.h"
 #include "chromeos/dbus/dlp/dlp_service.pb.h"
 #include "components/drive/drive_pref_names.h"
@@ -198,6 +199,7 @@ class FileManagerPrivateApiTest : public extensions::ExtensionApiTest {
   void SetUpOnMainThread() override {
     extensions::ExtensionApiTest::SetUpOnMainThread();
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
+    ASSERT_TRUE(non_watchable_dir_.CreateUniqueTempDir());
 
     event_router_ = file_manager::EventRouterFactory::GetForProfile(profile());
   }
@@ -342,7 +344,8 @@ class FileManagerPrivateApiTest : public extensions::ExtensionApiTest {
   }
 
   base::ScopedTempDir temp_dir_;
-  ash::disks::MockDiskMountManager* disk_mount_manager_mock_;
+  base::ScopedTempDir non_watchable_dir_;
+  ash::disks::MockDiskMountManager* disk_mount_manager_mock_ = nullptr;
   DiskMountManager::Disks volumes_;
   DiskMountManager::MountPoints mount_points_;
   file_manager::EventRouter* event_router_ = nullptr;
@@ -471,6 +474,19 @@ IN_PROC_BROWSER_TEST_F(FileManagerPrivateApiTest, Permissions) {
   ASSERT_EQ(1u, extension->install_warnings().size());
   const extensions::InstallWarning& warning = extension->install_warnings()[0];
   EXPECT_EQ("fileManagerPrivate", warning.key);
+}
+
+IN_PROC_BROWSER_TEST_F(FileManagerPrivateApiTest, AddFileWatch) {
+  // Add a filesystem and Volume that is not watchable.
+  AddLocalFileSystem(browser()->profile(), non_watchable_dir_.GetPath());
+
+  // Add a filesystem and Volume that is watchable.
+  const base::FilePath downloads_dir = temp_dir_.GetPath();
+  ASSERT_TRUE(file_manager::VolumeManager::Get(browser()->profile())
+                  ->RegisterDownloadsDirectoryForTesting(downloads_dir));
+
+  ASSERT_TRUE(RunExtensionTest("file_browser/add_file_watch", {},
+                               {.load_as_component = true}));
 }
 
 IN_PROC_BROWSER_TEST_F(FileManagerPrivateApiTest, ContentChecksum) {
@@ -703,12 +719,19 @@ class FileManagerPrivateApiDlpTest : public FileManagerPrivateApiTest {
     mock_rules_manager_ = dlp_rules_manager.get();
     ON_CALL(*mock_rules_manager_, IsFilesPolicyEnabled)
         .WillByDefault(testing::Return(true));
+
+    files_controller_ =
+        std::make_unique<policy::DlpFilesController>(*mock_rules_manager_);
+    ON_CALL(*mock_rules_manager_, GetDlpFilesController)
+        .WillByDefault(testing::Return(files_controller_.get()));
+
     return dlp_rules_manager;
   }
 
  protected:
   base::ScopedTempDir drive_path_;
   policy::MockDlpRulesManager* mock_rules_manager_ = nullptr;
+  std::unique_ptr<policy::DlpFilesController> files_controller_;
   base::test::ScopedFeatureList scoped_feature_list_;
 };
 
@@ -838,6 +861,33 @@ IN_PROC_BROWSER_TEST_F(FileManagerPrivateApiDlpTest, DlpRestrictionDetails) {
                                {.load_as_component = true}));
 }
 
+IN_PROC_BROWSER_TEST_F(FileManagerPrivateApiDlpTest, DlpBlockedComponents) {
+  policy::DlpRulesManagerFactory::GetInstance()->SetTestingFactory(
+      browser()->profile(),
+      base::BindRepeating(&FileManagerPrivateApiDlpTest::SetDlpRulesManager,
+                          base::Unretained(this)));
+  ASSERT_TRUE(policy::DlpRulesManagerFactory::GetForPrimaryProfile());
+  EXPECT_CALL(*mock_rules_manager_, IsFilesPolicyEnabled).Times(1);
+
+  policy::DlpRulesManager::AggregatedComponents components;
+  components[policy::DlpRulesManager::Level::kBlock].insert(
+      policy::DlpRulesManager::Component::kArc);
+  components[policy::DlpRulesManager::Level::kBlock].insert(
+      policy::DlpRulesManager::Component::kCrostini);
+  components[policy::DlpRulesManager::Level::kBlock].insert(
+      policy::DlpRulesManager::Component::kPluginVm);
+  components[policy::DlpRulesManager::Level::kBlock].insert(
+      policy::DlpRulesManager::Component::kUsb);
+  components[policy::DlpRulesManager::Level::kAllow].insert(
+      policy::DlpRulesManager::Component::kDrive);
+  EXPECT_CALL(*mock_rules_manager_, GetAggregatedComponents)
+      .WillOnce(testing::Return(components));
+
+  EXPECT_TRUE(RunExtensionTest("file_browser/dlp_metadata",
+                               {.custom_arg = "blocked_components"},
+                               {.load_as_component = true}));
+}
+
 IN_PROC_BROWSER_TEST_F(FileManagerPrivateApiDlpTest, DlpMetadata_Disabled) {
   policy::DlpRulesManagerFactory::GetInstance()->SetTestingFactory(
       browser()->profile(),
@@ -846,7 +896,7 @@ IN_PROC_BROWSER_TEST_F(FileManagerPrivateApiDlpTest, DlpMetadata_Disabled) {
   ASSERT_TRUE(policy::DlpRulesManagerFactory::GetForPrimaryProfile());
   ON_CALL(*mock_rules_manager_, IsFilesPolicyEnabled)
       .WillByDefault(testing::Return(false));
-  EXPECT_CALL(*mock_rules_manager_, IsFilesPolicyEnabled).Times(2);
+  EXPECT_CALL(*mock_rules_manager_, IsFilesPolicyEnabled).Times(3);
   // We should not get to the point of checking DLP.
   EXPECT_CALL(*mock_rules_manager_, IsRestrictedByAnyRule).Times(0);
   EXPECT_CALL(*mock_rules_manager_, GetAggregatedComponents).Times(0);

@@ -33,9 +33,8 @@ TEST(IdlCompiler, Basics) {
   MyType1 a;
   a.x = 5;
   a.y = std::string("foo");
-  std::unique_ptr<base::DictionaryValue> serialized = a.ToValue();
   MyType1 b;
-  EXPECT_TRUE(MyType1::Populate(*serialized.get(), &b));
+  EXPECT_TRUE(MyType1::Populate(base::Value(a.ToValue()), &b));
   EXPECT_EQ(a.x, b.x);
   EXPECT_EQ(a.y, b.y);
 
@@ -85,7 +84,7 @@ TEST(IdlCompiler, OptionalArguments) {
   base::Value::List list;
   std::unique_ptr<Function7::Params> f7_params =
       Function7::Params::Create(list);
-  EXPECT_EQ(nullptr, f7_params->arg.get());
+  EXPECT_FALSE(f7_params->arg.has_value());
   list.Append(7);
   f7_params = Function7::Params::Create(list);
   EXPECT_EQ(7, *(f7_params->arg));
@@ -97,7 +96,7 @@ TEST(IdlCompiler, OptionalArguments) {
   std::unique_ptr<Function8::Params> f8_params =
       Function8::Params::Create(list);
   EXPECT_EQ(8, f8_params->arg1);
-  EXPECT_EQ(nullptr, f8_params->arg2.get());
+  EXPECT_FALSE(f8_params->arg2.has_value());
   list.Append("foo");
   f8_params = Function8::Params::Create(list);
   EXPECT_EQ(8, f8_params->arg1);
@@ -159,8 +158,8 @@ TEST(IdlCompiler, ArrayTypes) {
   a.y = std::string("foo");
   b.y = std::string("bar");
   base::Value::List sublist2;
-  sublist2.Append(base::Value::FromUniquePtrValue(a.ToValue()));
-  sublist2.Append(base::Value::FromUniquePtrValue(b.ToValue()));
+  sublist2.Append(base::Value(a.ToValue()));
+  sublist2.Append(base::Value(b.ToValue()));
   list.Append(std::move(sublist2));
   std::unique_ptr<Function11::Params> f11_params =
       Function11::Params::Create(list);
@@ -176,19 +175,18 @@ TEST(IdlCompiler, ObjectTypes) {
   // Test the FooType type.
   FooType f1;
   f1.x = 3;
-  std::unique_ptr<base::DictionaryValue> serialized_foo = f1.ToValue();
   FooType f2;
-  EXPECT_TRUE(FooType::Populate(*serialized_foo.get(), &f2));
+  EXPECT_TRUE(FooType::Populate(base::Value(f1.ToValue()), &f2));
   EXPECT_EQ(f1.x, f2.x);
 
   // Test the BarType type.
   BarType b1;
-  b1.x = std::make_unique<base::Value>(7);
-  std::unique_ptr<base::DictionaryValue> serialized_bar = b1.ToValue();
+  b1.x = base::Value(7);
   BarType b2;
-  EXPECT_TRUE(BarType::Populate(*serialized_bar.get(), &b2));
-  ASSERT_TRUE(b2.x->is_int());
-  EXPECT_EQ(7, b2.x->GetInt());
+  EXPECT_TRUE(BarType::Populate(base::Value(b1.ToValue()), &b2));
+  ASSERT_TRUE(b2.x.is_int());
+  EXPECT_EQ(7, b2.x.GetInt());
+  EXPECT_FALSE(b2.y.has_value());
 
   // Test the params to the ObjectFunction1 function.
   base::Value::Dict icon_props_dict;
@@ -201,9 +199,10 @@ TEST(IdlCompiler, ObjectTypes) {
   std::unique_ptr<ObjectFunction1::Params> params =
       ObjectFunction1::Params::Create(list);
   ASSERT_TRUE(params.get() != nullptr);
-  std::string tmp;
-  EXPECT_TRUE(params->icon.additional_properties.GetString("hello", &tmp));
-  EXPECT_EQ("world", tmp);
+  const std::string* tmp =
+      params->icon.additional_properties.FindString("hello");
+  ASSERT_TRUE(tmp);
+  EXPECT_EQ("world", *tmp);
 }
 
 TEST(IdlCompiler, PropertyValues) {

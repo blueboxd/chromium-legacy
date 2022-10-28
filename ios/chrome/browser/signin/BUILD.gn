@@ -1,4 +1,4 @@
-# Copyright 2016 The Chromium Authors. All rights reserved.
+# Copyright 2016 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -19,8 +19,6 @@ source_set("signin") {
     "authentication_service_factory.h",
     "authentication_service_factory.mm",
     "authentication_service_observer.h",
-    "authentication_service_observer_bridge.h",
-    "authentication_service_observer_bridge.mm",
     "chrome_account_manager_service.h",
     "chrome_account_manager_service.mm",
     "chrome_account_manager_service_factory.h",
@@ -78,6 +76,7 @@ source_set("signin") {
     "//ios/chrome/browser/browser_state",
     "//ios/chrome/browser/content_settings",
     "//ios/chrome/browser/crash_report",
+    "//ios/chrome/browser/flags:system_flags",
     "//ios/chrome/browser/main:public",
     "//ios/chrome/browser/policy:policy_util",
     "//ios/chrome/browser/reading_list:reading_list_remover",
@@ -149,6 +148,12 @@ source_set("signin_util_internal") {
   ]
 }
 
+source_set("system_identity") {
+  configs += [ "//build/config/compiler:enable_arc" ]
+  sources = [ "system_identity.h" ]
+  frameworks = [ "Foundation.framework" ]
+}
+
 source_set("trusted_vault") {
   configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
@@ -179,7 +184,7 @@ source_set("trusted_vault_factory") {
     ":trusted_vault",
     "//base",
     "//components/keyed_service/ios",
-    "//ios/chrome/browser:application_context",
+    "//ios/chrome/browser/application_context",
     "//ios/chrome/browser/browser_state",
     "//ios/public/provider/chrome/browser/signin:trusted_vault_api",
   ]
@@ -230,7 +235,6 @@ source_set("unit_tests") {
   testonly = true
   sources = [
     "account_consistency_browser_agent_unittest.mm",
-    "authentication_service_observer_bridge_unittest.mm",
     "authentication_service_unittest.mm",
     "chrome_account_manager_service_observer_bridge_unittest.mm",
     "chrome_account_manager_service_unittest.mm",
@@ -261,6 +265,7 @@ source_set("unit_tests") {
     "//ios/chrome/browser/browser_state:browser_state_impl",
     "//ios/chrome/browser/browser_state:test_support",
     "//ios/chrome/browser/content_settings",
+    "//ios/chrome/browser/flags:system_flags",
     "//ios/chrome/browser/main:test_support",
     "//ios/chrome/browser/policy:policy_util",
     "//ios/chrome/browser/prefs:browser_prefs",

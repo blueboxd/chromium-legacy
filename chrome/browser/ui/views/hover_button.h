@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -111,7 +111,7 @@ class HoverButton : public views::LabelButton {
                            NotifyClickExecutesAction);
   FRIEND_TEST_ALL_PREFIXES(ExtensionsMenuItemViewTest,
                            UpdatesToDisplayCorrectActionTitle);
-  FRIEND_TEST_ALL_PREFIXES(AccountSelectionBubbleViewTest, MultipleAccounts);
+  friend class AccountSelectionBubbleViewTest;
   friend class PageInfoBubbleViewBrowserTest;
 
   raw_ptr<views::StyledLabel> title_ = nullptr;

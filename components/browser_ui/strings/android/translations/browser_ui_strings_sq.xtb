@@ -30,6 +30,7 @@
 <translation id="1717218214683051432">Sensorët e lëvizjes</translation>
 <translation id="1743802530341753419">Pyet përpara se sajtet të lejohen të lidhen me një pajisje (rekomandohet)</translation>
 <translation id="1779089405699405702">Dekoduesi i imazheve</translation>
+<translation id="1785415724048343560">Rekomandohet për përvojën më të mirë</translation>
 <translation id="1818308510395330587">Për të lejuar që <ph name="APP_NAME" /> të përdorë AR, aktivizo gjithashtu kamerën në <ph name="BEGIN_LINK" />Cilësimet e Android<ph name="END_LINK" />.</translation>
 <translation id="1864927262126810325">Nga <ph name="SOURCE_NAME" /></translation>
 <translation id="1887786770086287077">Qasja te vendndodhja është joaktive për këtë pajisje. Aktivizoje te <ph name="BEGIN_LINK" />Cilësimet e Android<ph name="END_LINK" />.</translation>
@@ -79,6 +80,7 @@
 <translation id="2653659639078652383">Dërgoje</translation>
 <translation id="2677748264148917807">Largohu</translation>
 <translation id="2687403674020088961">Blloko të gjitha kukit (nuk rekomandohet)</translation>
+<translation id="2692299144678073135">Lejo që sajtet e lidhura të të kujtojnë nëpër sajte</translation>
 <translation id="2704606927547763573">Kopjuar</translation>
 <translation id="2713106313042589954">Çaktivizo kamerën</translation>
 <translation id="2717722538473713889">Adresat e email-it</translation>
@@ -101,6 +103,7 @@
 <translation id="3115898365077584848">Shfaq informacionin</translation>
 <translation id="3123473560110926937">Bllokuar në disa sajte</translation>
 <translation id="3143754809889689516">Luaj nga fillimi</translation>
+<translation id="3162899666601560689">Sajtet mund t'i përdorin kukit për të përmirësuar përvojën e shfletimit, për shembull për të të mbajtur të identifikuar ose për të kujtuar artikujt në karrocën e blerjeve</translation>
 <translation id="3198916472715691905">Të dhënat e ruajtura <ph name="STORAGE_AMOUNT" /></translation>
 <translation id="3203366800380907218">Nga uebi</translation>
 <translation id="321187648315454507">Për të lejuar që <ph name="APP_NAME" /> të të dërgojë njoftime, aktivizo gjithashtu njoftimet në <ph name="BEGIN_LINK" />Cilësimet e Android<ph name="END_LINK" />.</translation>
@@ -138,6 +141,7 @@
 <translation id="4002066346123236978">Titulli</translation>
 <translation id="4008040567710660924">Lejo kukit për një sajt specifik.</translation>
 <translation id="4046123991198612571">Kënga tjetër</translation>
+<translation id="4048876521107516222">Sajtet e lidhura përdorin kukit për të ndihmuar për gjëra të tilla si p.sh. për të të mbajtur të identifikuar</translation>
 <translation id="4149994727733219643">Pamje e thjeshtuar për faqet e uebit</translation>
 <translation id="4165986682804962316">Cilësimet e sajtit</translation>
 <translation id="4169549551965910670">U lidh me një pajisje USB</translation>
@@ -149,6 +153,7 @@
 <translation id="429312253194641664">Një sajt po luan media</translation>
 <translation id="42981349822642051">Zgjero</translation>
 <translation id="4336434711095810371">Pastro të gjitha të dhënat</translation>
+<translation id="4338831206024587507">Të gjitha sajtet nën domenin <ph name="DOMAIN" /></translation>
 <translation id="4402755511846832236">Blloko sajtet që të mos e dinë kur ti e përdor këtë pajisje në mënyrë aktive</translation>
 <translation id="4428065317363009941">Personalizimi i reklamave</translation>
 <translation id="4434045419905280838">Dritaret kërcyese dhe ridrejtimet</translation>
@@ -164,6 +169,7 @@
 <translation id="4751476147751820511">Sensorët e lëvizjes ose të dritës</translation>
 <translation id="4811450222531576619">Mëso rreth burimit të saj dhe temës</translation>
 <translation id="4836046166855586901">Pyet kur një sajt kërkon të dijë kur ti e përdor këtë pajisje në mënyrë aktive</translation>
+<translation id="483914009762354899">Përfshi të gjitha sajtet nën këtë domen</translation>
 <translation id="4883854917563148705">Cilësimet e menaxhuara nuk mund të rivendosen</translation>
 <translation id="4887024562049524730">Pyet përpara se sajtet të lejohen të përdorin pajisjen e realitetit virtual dhe të dhënat e tua (rekomandohet)</translation>
 <translation id="4962975101802056554">Anulo të gjitha lejet për pajisjen</translation>
@@ -219,6 +225,7 @@
 <translation id="5887687176710214216">Vizituar së fundi dje</translation>
 <translation id="5916664084637901428">Aktiv</translation>
 <translation id="5922853908706496913">Po ndan ekranin tënd</translation>
+<translation id="5922967540311291836">Blloko kukit e palëve të treta</translation>
 <translation id="5939518447894949180">Rivendos</translation>
 <translation id="5975083100439434680">Zvogëlo</translation>
 <translation id="5976059395673079613"><ph name="PERMISSION" /> - <ph name="WARNING_MESSAGE" /></translation>
@@ -302,6 +309,7 @@
 <translation id="7791543448312431591">Shtoje</translation>
 <translation id="780301667611848630">Jo, faleminderit</translation>
 <translation id="7804248752222191302">Një sajt po përdor kamerën tënde</translation>
+<translation id="7816129586531226979">Sajtet e lidhura mund të të kujtojnë nëpër sajte</translation>
 <translation id="7817023149356982970">Do të dalësh nga ky sajt.</translation>
 <translation id="7828557259026017104">Kukit janë skedarë të krijuar nga sajtet e uebit që viziton ti. Përdori ato për të kujtuar preferencat e tua. Kukit e palëve të treta krijohen nga sajte të tjera. Këto sajte zotërojnë disa nga përmbajtjet, si p.sh. reklamat ose imazhet që ti shikon në faqen e uebit që viziton.</translation>
 <translation id="7835852323729233924">Po luan media</translation>
@@ -309,6 +317,7 @@
 <translation id="7846076177841592234">Anulo zgjedhjen</translation>
 <translation id="7846621471902887024">Do të dalësh nga të gjitha sajtet.</translation>
 <translation id="7882806643839505685">Lejo tingullin për një sajt specifik.</translation>
+<translation id="789180354981963912">Blloko kukit e palëve të treta në modalitetin "e fshehtë"</translation>
 <translation id="7940722705963108451">Më kujto</translation>
 <translation id="7986741934819883144">Zgjidh një kontakt</translation>
 <translation id="7999064672810608036">Je i sigurt që dëshiron t'i pastrosh të gjitha të dhënat lokale, duke përfshirë kukit, dhe të rivendosësh të gjitha lejet për këtë sajt uebi?</translation>
@@ -331,6 +340,7 @@
 <translation id="8284326494547611709">Titrat</translation>
 <translation id="8300705686683892304">Menaxhuar nga aplikacioni</translation>
 <translation id="8324158725704657629">Mos pyet më</translation>
+<translation id="834785183489258869">Në modalitetin "e fshehtë", sajtet nuk mund t'i përdorin kukit e tua për të parë aktivitetin e shfletimit nëpër sajte të ndryshme, p.sh. për të personalizuar reklamat. Veçoritë në disa sajte mund të mos funksionojnë.</translation>
 <translation id="8372893542064058268">Lejo "Sinkronizimin në sfond" për një sajt specifik.</translation>
 <translation id="8376384591331888629">Duke përfshirë kukit e palëve të treta në këtë sajt</translation>
 <translation id="83792324527827022">Një sajt po përdor kamerën dhe mikrofonin tënd</translation>

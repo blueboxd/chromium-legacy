@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,7 +12,7 @@ namespace ash {
 
 namespace feature_discovery {
 enum class TrackableFeature;
-};  // namespace feature_discovery
+}  // namespace feature_discovery
 
 // A singleton class that records feature discovery duration when the following
 // conditions are met:

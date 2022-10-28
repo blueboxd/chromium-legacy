@@ -138,7 +138,6 @@
 <translation id="1812527064848182527">לרוחב</translation>
 <translation id="1829244130665387512">חיפוש בדף</translation>
 <translation id="1834891354138622109">עמודה</translation>
-<translation id="1845944666972354496">אפשר להפעיל באמצעות לחיצה פעמיים</translation>
 <translation id="1846771122725914429">‏צג ברייל תואם Bluetooth</translation>
 <translation id="1852018405765032699">‏כדי לפתוח ולסגור את התפריטים של ChromeVox, מקישים על המסך בעזרת ארבע אצבעות. התפריטים האלה כוללים מידע שימושי לגבי פקודות ומקשי קיצור. אחרי שפותחים את התפריטים, אפשר להחליק בעזרת אצבע אחת כדי לעבור בין פריטים וללחוץ פעמיים כדי להפעיל פריטים. כדי להמשיך יש להקיש על המסך בעזרת ארבע אצבעות.</translation>
 <translation id="1865601187525349519">סוף הטקסט</translation>
@@ -529,6 +528,7 @@
 <translation id="4479068155583208887">אדום קיר-לבנים</translation>
 <translation id="4482330759234983253">הטבלה הקודמת</translation>
 <translation id="4491109536499578614">תמונה</translation>
+<translation id="4507332368061453500">יש ללחוץ לחיצה ארוכה על הפריט הנוכחי</translation>
 <translation id="4511186779140817916">שקד לבן</translation>
 <translation id="451510441928265982">אין כותרת קודמת מרמה 2</translation>
 <translation id="4515799157838123044">הצללת תוכן הרקע</translation>
@@ -597,7 +597,6 @@
 <translation id="4993152509206108683"><ph name="PERCENT" /> אחוזים מקצב הדיבור</translation>
 <translation id="4994420463726586413">הקראת מצב הסוללה הנוכחי</translation>
 <translation id="4997282455736854877"><ph name="NAME" />, לחצן בחירה מסומן</translation>
-<translation id="5011664330025416377">‏כדי להפעיל, יש להקיש על Search+מקש הרווח</translation>
 <translation id="5012724933919010465"><ph name="NAME" />, סימנת את לחצן הבחירה של האפשרות בתפריט</translation>
 <translation id="5020651427400641814">הפעלה של תיעוד דיבור</translation>
 <translation id="5041394372352067729">העברת תצוגת ברייל לחלק העליון של הדף</translation>
@@ -762,6 +761,7 @@
 <translation id="6100239002225743044">העברת הסמן שורה אחת למעלה</translation>
 <translation id="6118126368611144850">‏אפליקציות Android ל-Chrome. אם במכשיר מותקנת האפליקציה של חנות Play, אפשר לקבל הצצה אל ChromeVox עם אפליקציות Android. ניתן לנסות את התמיכה הניסיונית על-ידי הורדת Google Chrome Canary מחנות Play.</translation>
 <translation id="611827076493383239">vtd</translation>
+<translation id="6119846243427417423">הפעלה</translation>
 <translation id="6122013438240733403">btn</translation>
 <translation id="6132506484792346370">תיבת רשימה או תיבה משולבת</translation>
 <translation id="613344593214611552">delete the previous sentence</translation>

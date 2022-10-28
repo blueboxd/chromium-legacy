@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,10 +8,12 @@
 
 #include "base/bind.h"
 #include "base/feature_list.h"
+#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "base/values.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/browser/bookmark_utils.h"
@@ -22,6 +24,7 @@
 #include "components/commerce/core/proto/merchant_trust.pb.h"
 #include "components/commerce/core/proto/price_tracking.pb.h"
 #include "components/commerce/core/shopping_bookmark_model_observer.h"
+#include "components/commerce/core/shopping_power_bookmark_data_provider.h"
 #include "components/commerce/core/subscriptions/commerce_subscription.h"
 #include "components/commerce/core/subscriptions/subscriptions_manager.h"
 #include "components/commerce/core/web_wrapper.h"
@@ -29,8 +32,11 @@
 #include "components/optimization_guide/core/new_optimization_guide_decider.h"
 #include "components/optimization_guide/core/optimization_guide_util.h"
 #include "components/optimization_guide/proto/hints.pb.h"
+#include "components/power_bookmarks/core/power_bookmark_service.h"
 #include "components/power_bookmarks/core/power_bookmark_utils.h"
 #include "components/power_bookmarks/core/proto/power_bookmark_meta.pb.h"
+#include "components/power_bookmarks/core/proto/shopping_specifics.pb.h"
+#include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/session_proto_db/session_proto_storage.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
@@ -63,10 +69,12 @@ ShoppingService::ShoppingService(
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     SessionProtoStorage<
         commerce_subscription_db::CommerceSubscriptionContentProto>*
-        subscription_proto_db)
+        subscription_proto_db,
+    power_bookmarks::PowerBookmarkService* power_bookmark_service)
     : opt_guide_(opt_guide),
       pref_service_(pref_service),
       bookmark_model_(bookmark_model),
+      power_bookmark_service_(power_bookmark_service),
       weak_ptr_factory_(this) {
   // Register for the types of information we're allowed to receive from
   // optimization guide.
@@ -86,14 +94,26 @@ ShoppingService::ShoppingService(
     opt_guide_->RegisterOptimizationTypes(types);
   }
 
-  if (identity_manager && subscription_proto_db) {
+  if (identity_manager) {
+    account_checker_ = base::WrapUnique(
+        new AccountChecker(pref_service, identity_manager, url_loader_factory));
+  }
+
+  if (identity_manager && account_checker_ && subscription_proto_db) {
     subscriptions_manager_ = std::make_unique<SubscriptionsManager>(
-        identity_manager, std::move(url_loader_factory), subscription_proto_db);
+        identity_manager, url_loader_factory, subscription_proto_db,
+        account_checker_.get());
   }
 
   if (bookmark_model) {
     shopping_bookmark_observer_ =
         std::make_unique<ShoppingBookmarkModelObserver>(bookmark_model, this);
+  }
+
+  if (power_bookmark_service_ && IsProductInfoApiEnabled()) {
+    shopping_power_bookmark_data_provider_ =
+        std::make_unique<ShoppingPowerBookmarkDataProvider>(
+            power_bookmark_service_, this);
   }
 }
 
@@ -102,6 +122,10 @@ void ShoppingService::RegisterPrefs(PrefRegistrySimple* registry) {
   // features can be correctly set up while waiting for the server response.
   registry->RegisterBooleanPref(commerce::kWebAndAppActivityEnabledForShopping,
                                 true);
+
+  registry->RegisterBooleanPref(
+      commerce::kPriceEmailNotificationsEnabled, true,
+      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
 }
 
 void ShoppingService::WebWrapperCreated(WebWrapper* web) {}
@@ -283,7 +307,8 @@ void ShoppingService::GetProductInfoForUrl(const GURL& url,
     absl::optional<ProductInfo> info;
     // Make a copy based on the cached value.
     info.emplace(*cached_info);
-    std::move(callback).Run(url, info);
+    base::SequencedTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::BindOnce(std::move(callback), url, info));
     return;
   }
 
@@ -380,7 +405,8 @@ void ShoppingService::HandleOptGuideProductInfoResponse(
   std::unique_ptr<ProductInfo> info = OptGuideResultToProductInfo(metadata);
 
   absl::optional<ProductInfo> optional_info;
-  if (info) {
+  // The product info is considered valid only if it has a country code.
+  if (info && !info->country_code.empty()) {
     optional_info.emplace(*info);
     UpdateProductInfoCache(url, true, std::move(info));
   }

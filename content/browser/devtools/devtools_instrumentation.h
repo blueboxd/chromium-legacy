@@ -60,6 +60,7 @@ class FrameTreeNode;
 class NavigationHandle;
 class NavigationRequest;
 class NavigationThrottle;
+class Portal;
 class RenderFrameHostImpl;
 class RenderProcessHost;
 class SharedWorkerHost;
@@ -163,6 +164,9 @@ void OnPrefetchBodyDataReceived(FrameTreeNode* frame_tree_node,
                                 bool is_base64_encoded);
 
 void OnResetNavigationRequest(NavigationRequest* navigation_request);
+void MaybeAssignResourceRequestId(FrameTreeNode* ftn,
+                                  const std::string& id,
+                                  network::ResourceRequest& request);
 void OnNavigationRequestWillBeSent(const NavigationRequest& navigation_request);
 void OnNavigationResponseReceived(
     const NavigationRequest& nav_request,
@@ -183,13 +187,14 @@ void BackForwardCacheNotUsed(
 void DidActivatePrerender(const NavigationRequest& nav_request);
 
 // This function reports cancellation status to DevTools with the
-// `reason_details`, which is used to give users more information about the
-// cancellation details, and reason_details will be formatted for display in
-// the DevTools. See the DevTools implementation for the format.
+// `disallowed_api_method`, which is used to give users more information about
+// the cancellation details if the prerendering uses disallowed API method, and
+// disallowed_api_method will be formatted for display in the DevTools. See the
+// DevTools implementation for the format.
 void DidCancelPrerender(const GURL& prerendering_url,
                         FrameTreeNode* ftn,
                         PrerenderHost::FinalStatus status,
-                        const std::string& reason_details);
+                        const std::string& disallowed_api_method);
 
 void OnSignedExchangeReceived(
     FrameTreeNode* frame_tree_node,
@@ -265,7 +270,9 @@ bool HandleCertificateError(WebContents* web_contents,
 
 void PortalAttached(RenderFrameHostImpl* render_frame_host_impl);
 void PortalDetached(RenderFrameHostImpl* render_frame_host_impl);
-void PortalActivated(RenderFrameHostImpl* render_frame_host_impl);
+// This receives the _old_ portal being activated just before actual
+// tab contents is swapped by the embedder.
+void PortalActivated(Portal& portal);
 
 void FencedFrameCreated(
     base::SafeRef<RenderFrameHostImpl> owner_render_frame_host,
@@ -328,6 +335,13 @@ void OnServiceWorkerMainScriptRequestWillBeSent(
     int64_t version_id,
     network::ResourceRequest& request);
 
+// Fires `Network.onRequestWillBeSent` event for a dedicated worker and shared
+// worker main script. Used for PlzDedicatedWorker/PlzSharedWorker.
+void OnWorkerMainScriptRequestWillBeSent(
+    FrameTreeNode* ftn,
+    const base::UnguessableToken& worker_token,
+    network::ResourceRequest& request);
+
 // Fires `Network.onLoadingFailed` event for a dedicated worker main script.
 // Used for PlzDedicatedWorker.
 void OnWorkerMainScriptLoadingFailed(
@@ -343,13 +357,6 @@ void OnWorkerMainScriptLoadingFinished(
     FrameTreeNode* ftn,
     const base::UnguessableToken& worker_token,
     const network::URLLoaderCompletionStatus& status);
-
-// Fires `Network.onRequestWillBeSent` event for a dedicated worker and shared
-// worker main script. Used for PlzDedicatedWorker/PlzSharedWorker.
-void OnWorkerMainScriptRequestWillBeSent(
-    FrameTreeNode* ftn,
-    const base::UnguessableToken& worker_token,
-    const network::ResourceRequest& request);
 
 // Adds a message from a worklet to the devtools console. This is specific to
 // FLEDGE auction worklet and shared storage worklet where the message may

@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -45,13 +45,13 @@ class PermissionsOverlayTabHelperTest : public PlatformTest {
 
   ~PermissionsOverlayTabHelperTest() override {
     InfoBarManagerImpl::FromWebState(&web_state_)->ShutDown();
-    // Observer should be removed before |scoped_feature_list_| is reset.
+    // Observer should be removed before `scoped_feature_list_` is reset.
     web_state_.RemoveObserver(
         PermissionsOverlayTabHelper::FromWebState(&web_state_));
   }
 
  protected:
-  // Returns InfoBarManager attached to |web_state()|.
+  // Returns InfoBarManager attached to `web_state()`.
   infobars::InfoBarManager* infobar_manager() {
     return InfoBarManagerImpl::FromWebState(&web_state_);
   }

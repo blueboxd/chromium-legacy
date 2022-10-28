@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -103,7 +103,7 @@ class PA_COMPONENT_EXPORT(PARTITION_ALLOC) AddressPoolManagerBitmap {
         brp_pool_bits_)[address >> kBitShiftOfBRPPoolBitmap];
   }
 
-#if BUILDFLAG(USE_BACKUP_REF_PTR)
+#if BUILDFLAG(ENABLE_BACKUP_REF_PTR_SUPPORT)
   static void BanSuperPageFromBRPPool(uintptr_t address) {
     brp_forbidden_super_page_map_[address >> kSuperPageShift].store(
         true, std::memory_order_relaxed);
@@ -127,7 +127,7 @@ class PA_COMPONENT_EXPORT(PARTITION_ALLOC) AddressPoolManagerBitmap {
   }
 
   static void IncrementBlocklistHitCount() { ++blocklist_hit_count_; }
-#endif  // BUILDFLAG(USE_BACKUP_REF_PTR)
+#endif  // BUILDFLAG(ENABLE_BACKUP_REF_PTR_SUPPORT)
 
  private:
   friend class AddressPoolManager;
@@ -137,25 +137,25 @@ class PA_COMPONENT_EXPORT(PARTITION_ALLOC) AddressPoolManagerBitmap {
   static std::bitset<kRegularPoolBits> regular_pool_bits_
       PA_GUARDED_BY(GetLock());
   static std::bitset<kBRPPoolBits> brp_pool_bits_ PA_GUARDED_BY(GetLock());
-#if BUILDFLAG(USE_BACKUP_REF_PTR)
+#if BUILDFLAG(ENABLE_BACKUP_REF_PTR_SUPPORT)
   static std::array<std::atomic_bool, kAddressSpaceSize / kSuperPageSize>
       brp_forbidden_super_page_map_;
   static std::atomic_size_t blocklist_hit_count_;
-#endif  // BUILDFLAG(USE_BACKUP_REF_PTR)
+#endif  // BUILDFLAG(ENABLE_BACKUP_REF_PTR_SUPPORT)
 };
 
 }  // namespace internal
 
 // Returns false for nullptr.
 PA_ALWAYS_INLINE bool IsManagedByPartitionAlloc(uintptr_t address) {
-  // When USE_BACKUP_REF_PTR is off, BRP pool isn't used.
+  // When ENABLE_BACKUP_REF_PTR_SUPPORT is off, BRP pool isn't used.
   // No need to add IsManagedByConfigurablePool, because Configurable Pool
   // doesn't exist on 32-bit.
-#if !BUILDFLAG(USE_BACKUP_REF_PTR)
+#if !BUILDFLAG(ENABLE_BACKUP_REF_PTR_SUPPORT)
   PA_DCHECK(!internal::AddressPoolManagerBitmap::IsManagedByBRPPool(address));
 #endif
   return internal::AddressPoolManagerBitmap::IsManagedByRegularPool(address)
-#if BUILDFLAG(USE_BACKUP_REF_PTR)
+#if BUILDFLAG(ENABLE_BACKUP_REF_PTR_SUPPORT)
          || internal::AddressPoolManagerBitmap::IsManagedByBRPPool(address)
 #endif
       ;

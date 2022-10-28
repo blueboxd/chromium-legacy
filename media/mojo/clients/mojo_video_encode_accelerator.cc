@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/memory/raw_ptr.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "gpu/ipc/client/gpu_channel_host.h"
@@ -16,7 +17,6 @@
 #include "media/base/video_frame.h"
 #include "media/gpu/gpu_video_accelerator_util.h"
 #include "media/mojo/clients/mojo_media_log_service.h"
-#include "media/mojo/common/mojo_shared_buffer_video_frame.h"
 #include "media/mojo/mojom/video_encoder_info.mojom.h"
 #include "mojo/public/cpp/bindings/associated_receiver.h"
 #include "mojo/public/cpp/bindings/pending_associated_receiver.h"
@@ -159,40 +159,22 @@ void MojoVideoEncodeAccelerator::Encode(scoped_refptr<VideoFrame> frame,
                frame->timestamp());
   DVLOG(2) << __func__ << " tstamp=" << frame->timestamp();
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  size_t num_planes = VideoFrame::NumPlanes(frame->format());
-  DCHECK_EQ(num_planes, frame->layout().num_planes());
+  DCHECK_EQ(VideoFrame::NumPlanes(frame->format()),
+            frame->layout().num_planes());
   DCHECK(vea_.is_bound());
 
-  // GPU memory path: Pass-through.
-  if (frame->storage_type() == VideoFrame::STORAGE_GPU_MEMORY_BUFFER) {
-    vea_->Encode(frame, force_keyframe,
-                 base::BindOnce([](scoped_refptr<VideoFrame>) {}, frame));
-    return;
-  }
-
-  // Mappable memory path: Copy buffer to shared memory.
+  UMA_HISTOGRAM_ENUMERATION("Media.MojoVideoEncodeAccelerator.InputStorageType",
+                            frame->storage_type(),
+                            static_cast<int>(VideoFrame::STORAGE_MAX) + 1);
   if (frame->format() != PIXEL_FORMAT_I420 &&
       frame->format() != PIXEL_FORMAT_NV12) {
     DLOG(ERROR) << "Unexpected pixel format: "
                 << VideoPixelFormatToString(frame->format());
     return;
   }
-  if (frame->storage_type() != VideoFrame::STORAGE_SHMEM &&
-      frame->storage_type() != VideoFrame::STORAGE_UNOWNED_MEMORY) {
-    DLOG(ERROR) << "Unexpected storage type: "
-                << VideoFrame::StorageTypeToString(frame->storage_type());
-    return;
-  }
 
-  scoped_refptr<MojoSharedBufferVideoFrame> mojo_frame =
-      MojoSharedBufferVideoFrame::CreateFromYUVFrame(*frame);
-  if (!mojo_frame) {
-    DLOG(ERROR) << "Failed creating MojoSharedBufferVideoFrame from YUV";
-    return;
-  }
-  vea_->Encode(
-      std::move(mojo_frame), force_keyframe,
-      base::BindOnce([](scoped_refptr<VideoFrame>) {}, std::move(frame)));
+  vea_->Encode(frame, force_keyframe,
+               base::BindOnce([](scoped_refptr<VideoFrame>) {}, frame));
 }
 
 void MojoVideoEncodeAccelerator::UseOutputBitstreamBuffer(

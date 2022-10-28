@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -218,8 +218,8 @@ class HttpCache::WorkItem {
 
  private:
   WorkItemOperation operation_;
-  raw_ptr<Transaction> transaction_;
-  raw_ptr<ActiveEntry*> entry_;
+  raw_ptr<Transaction, DanglingUntriaged> transaction_;
+  raw_ptr<ActiveEntry*, DanglingUntriaged> entry_;
   CompletionOnceCallback callback_;  // User callback.
 };
 
@@ -987,6 +987,8 @@ void HttpCache::WritersDoneWritingToEntry(ActiveEntry* entry,
   DCHECK(entry->writers);
   DCHECK(entry->writers->IsEmpty());
   DCHECK(success || make_readers.empty());
+
+  entry->writers_done_writing_to_entry_history = absl::make_optional(success);
 
   if (!success && should_keep_entry) {
     // Restart already validated transactions so that they are able to read

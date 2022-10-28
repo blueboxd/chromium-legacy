@@ -1,4 +1,4 @@
-// Copyright 2011 The Chromium Authors. All rights reserved.
+// Copyright 2011 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -476,10 +476,11 @@ bool LayerTreeHost::IsUsingLayerLists() const {
 }
 
 void LayerTreeHost::CommitComplete(const CommitTimestamps& commit_timestamps) {
-  // This DCHECK ensures that commit_completion_event_.Wait() will not block.
   DCHECK(IsMainThread());
-  DCHECK(!in_commit());
-  WaitForCommitCompletion(/* for_protected_sequence */ false);
+  // At this point, commit_completion_event_ could be for the *next* commit, and
+  // may not yet have been signaled.
+  if (commit_completion_event_ && commit_completion_event_->IsSignaled())
+    WaitForCommitCompletion(/* for_protected_sequence */ false);
   client_->DidCommit(commit_timestamps.start, commit_timestamps.finish);
   if (did_complete_scale_animation_) {
     client_->DidCompletePageScaleAnimation();
@@ -609,7 +610,7 @@ void LayerTreeHost::DidLoseLayerTreeFrameSink() {
 }
 
 ScopedDeferMainFrameUpdate::ScopedDeferMainFrameUpdate(LayerTreeHost* host)
-    : host_(host->defer_main_frame_update_weak_ptr_factory_.GetWeakPtr()) {
+    : host_(host->weak_ptr_factory_.GetWeakPtr()) {
   host->defer_main_frame_update_count_++;
   host->UpdateDeferMainFrameUpdateInternal();
 }
@@ -627,6 +628,26 @@ std::unique_ptr<ScopedDeferMainFrameUpdate>
 LayerTreeHost::DeferMainFrameUpdate() {
   DCHECK(IsMainThread());
   return std::make_unique<ScopedDeferMainFrameUpdate>(this);
+}
+
+ScopedPauseRendering::ScopedPauseRendering(LayerTreeHost* host)
+    : host_(host->weak_ptr_factory_.GetWeakPtr()) {
+  host->pause_rendering_count_++;
+  host->proxy_->SetPauseRendering(true);
+}
+
+ScopedPauseRendering::~ScopedPauseRendering() {
+  LayerTreeHost* host = host_.get();
+  if (host) {
+    DCHECK_GT(host->pause_rendering_count_, 0u);
+    if (--host->pause_rendering_count_ == 0)
+      host->proxy_->SetPauseRendering(false);
+  }
+}
+
+std::unique_ptr<ScopedPauseRendering> LayerTreeHost::PauseRendering() {
+  DCHECK(IsMainThread());
+  return std::make_unique<ScopedPauseRendering>(this);
 }
 
 void LayerTreeHost::OnDeferMainFrameUpdatesChanged(bool defer_status) {
@@ -648,6 +669,10 @@ void LayerTreeHost::StopDeferringCommits(PaintHoldingCommitTrigger trigger) {
 bool LayerTreeHost::IsDeferringCommits() const {
   DCHECK(IsMainThread());
   return proxy_->IsDeferringCommits();
+}
+
+bool LayerTreeHost::IsRenderingPaused() const {
+  return pause_rendering_count_ > 0;
 }
 
 void LayerTreeHost::OnDeferCommitsChanged(

@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -79,7 +79,7 @@ class AppInstallControllerImpl : public AppInstallController {
 
 }  // namespace
 
-scoped_refptr<App> MakeAppInstall() {
+scoped_refptr<App> MakeAppInstall(bool /*is_silent_install*/) {
   return base::MakeRefCounted<AppInstall>(
       base::BindRepeating(
           [](const std::string& /*app_name*/) -> std::unique_ptr<SplashScreen> {
@@ -222,7 +222,7 @@ void AppInstall::WakeCandidateDone() {
 }
 #endif  // BUILDFLAG(IS_LINUX)
 
-void AppInstall::RegisterUpdater() {
+void AppInstall::FetchPolicies() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
 #if BUILDFLAG(IS_MAC)
@@ -231,6 +231,22 @@ void AppInstall::RegisterUpdater() {
   update_service_ = CreateUpdateServiceProxy(
       updater_scope(), external_constants_->OverinstallTimeout());
 #endif
+
+  update_service_->FetchPolicies(base::BindOnce(
+      [](scoped_refptr<AppInstall> app_install, int result) {
+        if (result != kErrorOk) {
+          LOG(ERROR) << "FetchPolicies failed: " << result;
+          app_install->Shutdown(result);
+          return;
+        }
+
+        app_install->RegisterUpdater();
+      },
+      base::WrapRefCounted(this)));
+}
+
+void AppInstall::RegisterUpdater() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   RegistrationRequest request;
   request.app_id = kUpdaterAppId;

@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -75,29 +75,37 @@ class DeskModel {
     kFailure,
   };
 
-  DeskModel();
-  DeskModel(const DeskModel&) = delete;
-  DeskModel& operator=(const DeskModel&) = delete;
-  virtual ~DeskModel();
-
   // Stores GetAllEntries result.
   struct GetAllEntriesResult {
     GetAllEntriesResult(GetAllEntriesStatus status,
                         std::vector<const ash::DeskTemplate*> entries);
+    GetAllEntriesResult(GetAllEntriesResult& other);
     ~GetAllEntriesResult();
 
     GetAllEntriesStatus status;
     std::vector<const ash::DeskTemplate*> entries;
   };
 
+  // Stores GetEntryByUuid result.
+  struct GetEntryByUuidResult {
+    GetEntryByUuidResult(GetEntryByUuidStatus status,
+                         std::unique_ptr<ash::DeskTemplate> entry);
+    ~GetEntryByUuidResult();
+
+    GetEntryByUuidStatus status;
+    std::unique_ptr<ash::DeskTemplate> entry;
+  };
+
+  DeskModel();
+  DeskModel(const DeskModel&) = delete;
+  DeskModel& operator=(const DeskModel&) = delete;
+  virtual ~DeskModel();
+
   // TODO(crbug.com/1320805): Once DeskSyncBridge is set to support saved desk,
   // add methods to support operations on both types of templates.
   // Returns all entries in the model.
   virtual GetAllEntriesResult GetAllEntries() = 0;
 
-  using GetEntryByUuidCallback =
-      base::OnceCallback<void(GetEntryByUuidStatus status,
-                              std::unique_ptr<ash::DeskTemplate> entry)>;
   // Get a specific desk template by `uuid`. Actual storage backend does not
   // need to keep desk templates in memory. The storage backend could load the
   // specified desk template into memory and then call the `callback` with a
@@ -107,8 +115,7 @@ class DeskModel {
   // but could not be loaded/parsed, `callback` will be called with `kFailure`
   // and a nullptr. An asynchronous `callback` is used here to accommodate
   // storage backend that need to perform asynchronous I/O.
-  virtual void GetEntryByUUID(const std::string& uuid,
-                              GetEntryByUuidCallback callback) = 0;
+  virtual GetEntryByUuidResult GetEntryByUUID(const base::GUID& uuid) = 0;
 
   using AddOrUpdateEntryCallback =
       base::OnceCallback<void(AddOrUpdateEntryStatus status)>;
@@ -127,7 +134,7 @@ class DeskModel {
                               const std::string& json_representation)>;
   // Retrieves a template based on its `uuid`, if found returns a std::string
   // containing the json representation of the template queried.
-  virtual void GetTemplateJson(const std::string& uuid,
+  virtual void GetTemplateJson(const base::GUID& uuid,
                                apps::AppRegistryCache* app_cache,
                                GetTemplateJsonCallback callback);
 
@@ -135,7 +142,7 @@ class DeskModel {
       base::OnceCallback<void(DeleteEntryStatus status)>;
   // Remove entry with `uuid` from entries. If the entry with `uuid` does not
   // exist, then the deletion is considered a success.
-  virtual void DeleteEntry(const std::string& uuid,
+  virtual void DeleteEntry(const base::GUID& uuid,
                            DeleteEntryCallback callback) = 0;
 
   // Delete all entries.
@@ -199,7 +206,7 @@ class DeskModel {
   // Finds the admin desk template with the given `uuid`. Returns `nullptr`
   // if none is found.
   std::unique_ptr<ash::DeskTemplate> GetAdminDeskTemplateByUUID(
-      const std::string& uuid) const;
+      const base::GUID& uuid) const;
 
   // The observers.
   base::ObserverList<DeskModelObserver>::Unchecked observers_;

@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -379,8 +379,7 @@ TEST_P(PersonalizationAppWallpaperProviderImplTest, SelectWallpaper) {
   EXPECT_EQ(
       ash::WallpaperInfo(
           {AccountId::FromUserEmailGaiaId(kFakeTestEmail, kTestGaiaId),
-           absl::make_optional(image_info.asset_id), image_info.image_url,
-           "collection_id",
+           image_info.asset_id, image_info.image_url, "collection_id",
            ash::WallpaperLayout::WALLPAPER_LAYOUT_CENTER_CROPPED,
            /*preview_mode=*/false, /*from_user=*/true,
            /*daily_refresh_enabled=*/false, image_info.unit_id, variants}),
@@ -406,8 +405,7 @@ TEST_P(PersonalizationAppWallpaperProviderImplTest, PreviewWallpaper) {
   EXPECT_EQ(
       ash::WallpaperInfo(
           {AccountId::FromUserEmailGaiaId(kFakeTestEmail, kTestGaiaId),
-           absl::make_optional(image_info.asset_id), image_info.image_url,
-           "collection_id",
+           image_info.asset_id, image_info.image_url, "collection_id",
            ash::WallpaperLayout::WALLPAPER_LAYOUT_CENTER_CROPPED,
            /*preview_mode=*/true, /*from_user=*/true,
            /*daily_refresh_enabled=*/false, image_info.unit_id, variants}),
@@ -429,8 +427,8 @@ TEST_P(PersonalizationAppWallpaperProviderImplTest,
 
   test_wallpaper_controller()->SetOnlineWallpaper(
       {AccountId::FromUserEmailGaiaId(kFakeTestEmail, kTestGaiaId),
-       absl::make_optional(image_info.asset_id), image_info.image_url,
-       "collection_id", ash::WallpaperLayout::WALLPAPER_LAYOUT_CENTER_CROPPED,
+       image_info.asset_id, image_info.image_url, "collection_id",
+       ash::WallpaperLayout::WALLPAPER_LAYOUT_CENTER_CROPPED,
        /*preview_mode=*/false, /*from_user=*/true,
        /*daily_refresh_enabled=*/false, image_info.unit_id, variants},
       base::DoNothing());

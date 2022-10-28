@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -28,7 +28,7 @@ struct MaybeRe2 {
 
 std::string RemoveWhitespace(const std::string& value) {
   std::string copy = value;
-  base::EraseIf(copy, base::IsUnicodeWhitespace<char>);
+  base::EraseIf(copy, base::IsAsciiWhitespace<char>);
   return copy;
 }
 

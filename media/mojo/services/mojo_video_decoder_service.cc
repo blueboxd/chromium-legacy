@@ -1,4 +1,4 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,9 +11,9 @@
 #include "base/callback_helpers.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_functions.h"
-#include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/types/optional_util.h"
 #include "media/base/decoder_buffer.h"
 #include "media/base/simple_sync_token_client.h"
 #include "media/base/video_decoder.h"
@@ -203,14 +203,14 @@ void MojoVideoDecoderService::Initialize(
     InitializeCallback callback) {
   DVLOG(1) << __func__ << " config = " << config.AsHumanReadableString()
            << ", cdm_id = "
-           << CdmContext::CdmIdToString(base::OptionalOrNullptr(cdm_id));
+           << CdmContext::CdmIdToString(base::OptionalToPtr(cdm_id));
   DCHECK(!init_cb_);
   DCHECK(callback);
 
   TRACE_EVENT_ASYNC_BEGIN2(
       "media", kInitializeTraceName, this, "config",
       config.AsHumanReadableString(), "cdm_id",
-      CdmContext::CdmIdToString(base::OptionalOrNullptr(cdm_id)));
+      CdmContext::CdmIdToString(base::OptionalToPtr(cdm_id)));
 
   init_cb_ = std::move(callback);
 
@@ -251,7 +251,7 @@ void MojoVideoDecoderService::Initialize(
 
   if (config.is_encrypted() && !cdm_context) {
     DVLOG(1) << "CdmContext for "
-             << CdmContext::CdmIdToString(base::OptionalOrNullptr(cdm_id))
+             << CdmContext::CdmIdToString(base::OptionalToPtr(cdm_id))
              << " not found for encrypted video";
     OnDecoderInitialized(DecoderStatus::Codes::kUnsupportedEncryptionMode);
     return;

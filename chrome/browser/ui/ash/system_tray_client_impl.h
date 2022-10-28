@@ -1,4 +1,4 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -97,7 +97,6 @@ class SystemTrayClientImpl : public ash::SystemTrayClient,
   void ShowNetworkSettings(const std::string& network_id) override;
   void ShowMultiDeviceSetup() override;
   void ShowFirmwareUpdate() override;
-  void RequestRestartForUpdate() override;
   void SetLocaleAndExit(const std::string& locale_iso_code) override;
   void ShowAccessCodeCastingDialog(
       AccessCodeCastDialogOpenLocation open_location) override;

@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,8 +10,8 @@
 #import "base/ios/block_types.h"
 
 // Detects freezes of the main thread.
-// This class that the main thread runloop is run at least every
-// |TimeoutForMainThreadFreezeDetection|. If this is not the case, a
+// This class checks that the main thread runloop is run at least every
+// `TimeoutForMainThreadFreezeDetection`. If this is not the case, a
 // NSUserDefault flag is raised and a crash report is generated capturing the
 // stack of the main frame at that time.
 // The report is deleted if the main thread recovers.

@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -14,6 +14,10 @@ namespace features {
 // Feature that enables Fast Checkout experiences on Android to help users
 // speed up the checkout process.
 extern const base::Feature kFastCheckout;
+
+// Force enables fast checkout capabilities for every domain, regardless of
+// the server response. The flag is meant for end-to-end testing purposes only.
+extern const base::Feature kForceEnableFastCheckoutCapabilities;
 #endif  // BUILDFLAG(IS_ANDROID)
 
 }  // namespace features

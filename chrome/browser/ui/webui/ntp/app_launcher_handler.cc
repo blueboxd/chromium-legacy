@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -669,7 +669,7 @@ void AppLauncherHandler::FillAppDictionary(base::Value::Dict* dictionary) {
                                          deprecated_app_ids_.size()));
 
   const base::Value::List& app_page_names =
-      prefs->GetValueList(prefs::kNtpAppPageNames);
+      prefs->GetList(prefs::kNtpAppPageNames);
   if (!app_page_names.size()) {
     ListPrefUpdate update(prefs, prefs::kNtpAppPageNames);
     base::Value* list = update.Get();
@@ -991,7 +991,7 @@ void AppLauncherHandler::HandleUninstallApp(const base::Value::List& args) {
     } else {
       auto uninstall_success_callback = base::BindOnce(
           [](base::WeakPtr<AppLauncherHandler> app_launcher_handler,
-             bool success) {
+             webapps::UninstallResultCode code) {
             if (app_launcher_handler) {
               app_launcher_handler->CleanupAfterUninstall();
             }

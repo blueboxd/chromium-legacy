@@ -4,8 +4,8 @@
 
 #include "services/network/public/cpp/resource_request.h"
 
-#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/types/optional_util.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "net/base/load_flags.h"
 #include "net/log/net_log_source.h"
@@ -244,8 +244,6 @@ bool ResourceRequest::EqualsForTesting(const ResourceRequest& request) const {
              request.custom_proxy_post_cache_headers.ToString() &&
          fetch_window_id == request.fetch_window_id &&
          devtools_request_id == request.devtools_request_id &&
-         is_signed_exchange_prefetch_cache_enabled ==
-             request.is_signed_exchange_prefetch_cache_enabled &&
          is_fetch_like_api == request.is_fetch_like_api &&
          is_favicon == request.is_favicon &&
          recursive_prefetch_token == request.recursive_prefetch_token &&
@@ -306,7 +304,7 @@ ScopedResourceRequestCrashKeys::ScopedResourceRequestCrashKeys(
     const network::ResourceRequest& request)
     : url_(GetRequestUrlCrashKey(), request.url.possibly_invalid_spec()),
       request_initiator_(GetRequestInitiatorCrashKey(),
-                         base::OptionalOrNullptr(request.request_initiator)),
+                         base::OptionalToPtr(request.request_initiator)),
       resource_type_(GetRequestResourceTypeCrashKey(),
                      base::NumberToString(request.resource_type)) {}
 

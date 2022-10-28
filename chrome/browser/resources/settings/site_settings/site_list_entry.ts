@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,26 +7,26 @@
  * 'site-list-entry' shows an Allowed and Blocked site for a given category.
  */
 import 'chrome://resources/cr_elements/cr_icon_button/cr_icon_button.js';
-import 'chrome://resources/cr_elements/icons.m.js';
-import 'chrome://resources/cr_elements/policy/cr_policy_pref_indicator.m.js';
-import 'chrome://resources/cr_elements/policy/cr_tooltip_icon.m.js';
+import 'chrome://resources/cr_elements/icons.html.js';
+import 'chrome://resources/cr_elements/policy/cr_policy_pref_indicator.js';
+import 'chrome://resources/cr_elements/policy/cr_tooltip_icon.js';
 import 'chrome://resources/polymer/v3_0/iron-icon/iron-icon.js';
 import '../icons.html.js';
 import '../settings_shared.css.js';
 import '../site_favicon.js';
 
 import {assert, assertNotReached} from 'chrome://resources/js/assert_ts.js';
-import {FocusRowBehavior} from 'chrome://resources/js/cr/ui/focus_row_behavior.m.js';
-import {mixinBehaviors, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {FocusRowMixin} from 'chrome://resources/js/cr/ui/focus_row_mixin.js';
+import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
-import {BaseMixin, BaseMixinInterface} from '../base_mixin.js';
+import {BaseMixin} from '../base_mixin.js';
 import {loadTimeData} from '../i18n_setup.js';
 import {routes} from '../route.js';
 import {Router} from '../router.js';
 
 import {ChooserType, ContentSettingsTypes, SITE_EXCEPTION_WILDCARD} from './constants.js';
 import {getTemplate} from './site_list_entry.html.js';
-import {SiteSettingsMixin, SiteSettingsMixinInterface} from './site_settings_mixin.js';
+import {SiteSettingsMixin} from './site_settings_mixin.js';
 import {SiteException} from './site_settings_prefs_browser_proxy.js';
 
 export interface SiteListEntryElement {
@@ -37,9 +37,7 @@ export interface SiteListEntryElement {
 }
 
 const SiteListEntryElementBase =
-    mixinBehaviors(
-        [FocusRowBehavior], BaseMixin(SiteSettingsMixin(PolymerElement))) as
-    {new (): PolymerElement & BaseMixinInterface & SiteSettingsMixinInterface};
+    FocusRowMixin(BaseMixin(SiteSettingsMixin(PolymerElement)));
 
 export class SiteListEntryElement extends SiteListEntryElementBase {
   static get is() {

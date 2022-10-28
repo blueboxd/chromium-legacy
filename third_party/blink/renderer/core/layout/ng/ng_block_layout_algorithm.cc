@@ -817,7 +817,7 @@ const NGLayoutResult* NGBlockLayoutAlgorithm::FinishLayout(
     if (auto baseline_offset = layout_block->BaselineForEmptyLine(
             layout_block->IsHorizontalWritingMode() ? kHorizontalLine
                                                     : kVerticalLine))
-      container_builder_.SetBaseline(*baseline_offset);
+      container_builder_.SetBaselines(*baseline_offset);
   }
 
   // Collapse annotation overflow and padding.
@@ -1025,6 +1025,10 @@ const NGLayoutResult* NGBlockLayoutAlgorithm::FinishLayout(
 
   // Adjust the position of the final baseline if needed.
   container_builder_.SetLastBaselineToBlockEndMarginEdgeIfNeeded();
+  if (ConstraintSpace().BaselineAlgorithmType() ==
+      NGBaselineAlgorithmType::kInlineBlock) {
+    container_builder_.SetUseLastBaselineForInlineBaseline();
+  }
 
   // An exclusion space is confined to nodes within the same formatting context.
   if (ConstraintSpace().IsNewFormattingContext())
@@ -1928,7 +1932,7 @@ NGLayoutResult::EStatus NGBlockLayoutAlgorithm::FinishInflow(
       new_child_space = CreateConstraintSpaceForChild(
           child, *child_data, ChildAvailableSize(), /* is_new_fc */ false,
           child_bfc_block_offset);
-      auto minimum_top = CreateMinimumTopScopeForChild(child, *child_data);
+      auto minimum_top2 = CreateMinimumTopScopeForChild(child, *child_data);
       layout_result = LayoutInflow(new_child_space, child_break_token,
                                    early_break_, column_spanner_path_, &child,
                                    inline_child_layout_context);
@@ -2724,7 +2728,7 @@ NGBlockLayoutAlgorithm::CreateMinimumTopScopeForChild(
     const NGLayoutInputNode child,
     const NGInflowChildData& child_data) const {
   LayoutUnit minimum_top =
-      Node().GetLayoutBox()->GetFrameView()->CurrentMinimumTop();
+      DeferredShapingController::From(Node()).CurrentMinimumTop();
   if (Node().CreatesNewFormattingContext()) {
     minimum_top += child_data.bfc_offset_estimate.block_offset;
   } else {
@@ -2737,12 +2741,6 @@ NGBlockLayoutAlgorithm::CreateMinimumTopScopeForChild(
 void NGBlockLayoutAlgorithm::PropagateBaselineFromChild(
     const NGPhysicalFragment& child,
     LayoutUnit block_offset) {
-  // Check if we've already found an appropriate baseline.
-  if (container_builder_.Baseline() &&
-      ConstraintSpace().BaselineAlgorithmType() ==
-          NGBaselineAlgorithmType::kFirstLine)
-    return;
-
   if (child.IsLineBox()) {
     const auto& line_box = To<NGPhysicalLineBoxFragment>(child);
 
@@ -2768,14 +2766,9 @@ void NGBlockLayoutAlgorithm::PropagateBaselineFromChild(
         block_offset + (Style().IsFlippedLinesWritingMode() ? metrics.descent
                                                             : metrics.ascent);
 
-    if (!container_builder_.Baseline())
-      container_builder_.SetBaseline(baseline);
-
-    // Set the last baseline only if required.
-    if (ConstraintSpace().BaselineAlgorithmType() !=
-        NGBaselineAlgorithmType::kFirstLine)
-      container_builder_.SetLastBaseline(baseline);
-
+    if (!container_builder_.FirstBaseline())
+      container_builder_.SetFirstBaseline(baseline);
+    container_builder_.SetLastBaseline(baseline);
     return;
   }
 
@@ -2787,27 +2780,32 @@ void NGBlockLayoutAlgorithm::PropagateBaselineFromBlockChild(
     LayoutUnit block_offset) {
   DCHECK(child.IsBox());
 
-  // When computing the baseline for an inline-block, table's don't contribute
-  // to any baselines.
-  if (child.IsTableNG() && ConstraintSpace().BaselineAlgorithmType() !=
-                               NGBaselineAlgorithmType::kFirstLine) {
+  // When computing baselines for an inline-block, table's don't contribute any
+  // baselines.
+  if (child.IsTableNG() && ConstraintSpace().BaselineAlgorithmType() ==
+                               NGBaselineAlgorithmType::kInlineBlock) {
     return;
   }
 
+  const auto& physical_fragment = To<NGPhysicalBoxFragment>(child);
   NGBoxFragment fragment(ConstraintSpace().GetWritingDirection(),
-                         To<NGPhysicalBoxFragment>(child));
+                         physical_fragment);
 
-  if (!container_builder_.Baseline()) {
-    if (auto baseline = fragment.FirstBaseline())
-      container_builder_.SetBaseline(block_offset + *baseline);
+  if (!container_builder_.FirstBaseline()) {
+    if (auto first_baseline = fragment.FirstBaseline())
+      container_builder_.SetFirstBaseline(block_offset + *first_baseline);
   }
 
-  // Set the last baseline only if required.
-  if (ConstraintSpace().BaselineAlgorithmType() !=
-      NGBaselineAlgorithmType::kFirstLine) {
-    if (auto last_baseline = fragment.Baseline())
-      container_builder_.SetLastBaseline(block_offset + *last_baseline);
-  }
+  // Counter-intuitively, when computing baselines for an inline-block, some
+  // fragments use their first-baseline for the container's last-baseline.
+  bool use_last_baseline = ConstraintSpace().BaselineAlgorithmType() ==
+                               NGBaselineAlgorithmType::kDefault ||
+                           physical_fragment.UseLastBaselineForInlineBaseline();
+
+  const auto last_baseline =
+      use_last_baseline ? fragment.LastBaseline() : fragment.FirstBaseline();
+  if (last_baseline)
+    container_builder_.SetLastBaseline(block_offset + *last_baseline);
 }
 
 bool NGBlockLayoutAlgorithm::ResolveBfcBlockOffset(
@@ -3076,7 +3074,7 @@ void NGBlockLayoutAlgorithm::HandleRubyText(NGBlockNode ruby_text_child) {
   // RubyText provides baseline if RubyBase didn't.
   // This behavior doesn't make much sense, but it's compatible with the legacy
   // layout.
-  if (!container_builder_.Baseline())
+  if (!container_builder_.FirstBaseline())
     PropagateBaselineFromChild(ruby_text_fragment, ruby_text_box_top);
 }
 
@@ -3118,7 +3116,7 @@ void NGBlockLayoutAlgorithm::HandleTextControlPlaceholder(
   }
   // Usually another child provides the baseline. However it doesn't if
   // another child is out-of-flow.
-  if (!container_builder_.Baseline()) {
+  if (!container_builder_.FirstBaseline()) {
     container_builder_.AddResult(*result, offset);
     return;
   }
@@ -3130,7 +3128,7 @@ void NGBlockLayoutAlgorithm::HandleTextControlPlaceholder(
   // |fragment| has no FirstBaseline() if it consists of only white-spaces.
   if (fragment.FirstBaseline().has_value()) {
     offset.block_offset =
-        *container_builder_.Baseline() - *fragment.FirstBaseline();
+        *container_builder_.FirstBaseline() - *fragment.FirstBaseline();
   }
   container_builder_.AddResult(*result, offset);
 

@@ -1,4 +1,4 @@
-// Copyright (c) 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -26,17 +26,7 @@
 
 namespace partition_alloc::internal {
 
-#if BUILDFLAG(USE_BACKUP_REF_PTR)
-
-namespace {
-
-[[noreturn]] PA_NOINLINE PA_NOT_TAIL_CALLED void
-DoubleFreeOrCorruptionDetected() {
-  PA_NO_CODE_FOLDING();
-  PA_IMMEDIATE_CRASH();
-}
-
-}  // namespace
+#if BUILDFLAG(ENABLE_BACKUP_REF_PTR_SUPPORT)
 
 // Special-purpose atomic reference count class used by BackupRefPtrImpl.
 // The least significant bit of the count is reserved for tracking the liveness
@@ -183,7 +173,7 @@ class PA_COMPONENT_EXPORT(PARTITION_ALLOC) PartitionRefCount {
         count_.fetch_and(~kMemoryHeldByAllocatorBit, std::memory_order_release);
 
     if (PA_UNLIKELY(!(old_count & kMemoryHeldByAllocatorBit)))
-      DoubleFreeOrCorruptionDetected();
+      DoubleFreeOrCorruptionDetected(old_count);
 
     if (PA_LIKELY(old_count == kMemoryHeldByAllocatorBit)) {
       std::atomic_thread_fence(std::memory_order_acquire);
@@ -220,6 +210,23 @@ class PA_COMPONENT_EXPORT(PARTITION_ALLOC) PartitionRefCount {
     if (alive)
       CheckCookieIfSupported();
     return alive;
+  }
+
+  // GWP-ASan slots are assigned an extra reference (note `kPtrInc` below) to
+  // make sure the `raw_ptr<T>` release operation will never attempt to call the
+  // PA `free` on such a slot. GWP-ASan takes the extra reference into account
+  // when determining whether the slot can be reused.
+  PA_ALWAYS_INLINE void InitalizeForGwpAsan() {
+#if defined(PA_REF_COUNT_CHECK_COOKIE)
+    brp_cookie_ = CalculateCookie();
+#endif
+    count_.store(kPtrInc | kMemoryHeldByAllocatorBit,
+                 std::memory_order_release);
+  }
+
+  PA_ALWAYS_INLINE bool CanBeReusedByGwpAsan() {
+    return count_.load(std::memory_order_acquire) ==
+           (kPtrInc | kMemoryHeldByAllocatorBit);
   }
 
 #if defined(PA_REF_COUNT_STORE_REQUESTED_SIZE)
@@ -280,16 +287,19 @@ class PA_COMPONENT_EXPORT(PARTITION_ALLOC) PartitionRefCount {
   }
 #endif  // defined(PA_REF_COUNT_CHECK_COOKIE)
 
+  [[noreturn]] PA_NOINLINE PA_NOT_TAIL_CALLED void
+  DoubleFreeOrCorruptionDetected(CountType count) {
+    PA_DEBUG_DATA_ON_STACK("refcount", count);
+    PA_NO_CODE_FOLDING();
+    PA_IMMEDIATE_CRASH();
+  }
+
   // Note that in free slots, this is overwritten by encoded freelist
   // pointer(s). The way the pointers are encoded on 64-bit little-endian
   // architectures, count_ happens stay even, which works well with the
   // double-free-detection in ReleaseFromAllocator(). Don't change the layout of
   // this class, to preserve this functionality.
-#if BUILDFLAG(ENABLE_DANGLING_RAW_PTR_CHECKS)
-  std::atomic<uint64_t> count_{kMemoryHeldByAllocatorBit};
-#else
-  std::atomic<uint32_t> count_{kMemoryHeldByAllocatorBit};
-#endif
+  std::atomic<CountType> count_{kMemoryHeldByAllocatorBit};
 
 #if defined(PA_REF_COUNT_CHECK_COOKIE)
   static constexpr uint32_t kCookieSalt = 0xc01dbeef;
@@ -418,12 +428,12 @@ PA_ALWAYS_INLINE PartitionRefCount* PartitionRefCountPointer(
 static_assert(sizeof(PartitionRefCount) <= kInSlotRefCountBufferSize,
               "PartitionRefCount should fit into the in-slot buffer.");
 
-#else  // BUILDFLAG(USE_BACKUP_REF_PTR)
+#else  // BUILDFLAG(ENABLE_BACKUP_REF_PTR_SUPPORT)
 
 static constexpr size_t kInSlotRefCountBufferSize = 0;
 constexpr size_t kPartitionRefCountOffsetAdjustment = 0;
 
-#endif  // BUILDFLAG(USE_BACKUP_REF_PTR)
+#endif  // BUILDFLAG(ENABLE_BACKUP_REF_PTR_SUPPORT)
 
 constexpr size_t kPartitionRefCountSizeAdjustment = kInSlotRefCountBufferSize;
 

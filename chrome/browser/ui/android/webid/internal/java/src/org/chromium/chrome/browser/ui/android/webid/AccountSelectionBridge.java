@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -99,12 +99,12 @@ class AccountSelectionBridge implements AccountSelectionComponent.Delegate {
     }
 
     @Override
-    public void onAccountSelected(Account account) {
+    public void onAccountSelected(GURL idpConfigUrl, Account account) {
         if (mNativeView != 0) {
             // This call passes the account fields directly as String and GURL parameters as an
             // optimization to avoid needing multiple JNI getters on the Account class on for each
             // field.
-            AccountSelectionBridgeJni.get().onAccountSelected(mNativeView,
+            AccountSelectionBridgeJni.get().onAccountSelected(mNativeView, idpConfigUrl,
                     account.getStringFields(), account.getPictureUrl(), account.isSignIn());
         }
     }
@@ -121,8 +121,8 @@ class AccountSelectionBridge implements AccountSelectionComponent.Delegate {
 
     @NativeMethods
     interface Natives {
-        void onAccountSelected(long nativeAccountSelectionViewAndroid, String[] accountFields,
-                GURL accountPictureUrl, boolean isSignedIn);
+        void onAccountSelected(long nativeAccountSelectionViewAndroid, GURL idpConfigUrl,
+                String[] accountFields, GURL accountPictureUrl, boolean isSignedIn);
         void onDismiss(long nativeAccountSelectionViewAndroid,
                 @IdentityRequestDialogDismissReason int dismissReason);
         void onAutoSignInCancelled(long nativeAccountSelectionViewAndroid);

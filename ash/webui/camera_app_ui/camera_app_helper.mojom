@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -193,8 +193,9 @@ interface CameraAppHelper {
 
   // Registers a callback which will be resolved once the document scanner is
   // ready or when it fails to load. If the document scanner is not supported on
-  // the device, it returns false immediately.
-  RegisterDocumentScannerReadyCallback() => (bool is_loaded);
+  // the device, it returns false immediately. If the document scanner fails to
+  // load in the previous round, it retries upon the call.
+  CheckDocumentModeReadiness() => (bool is_loaded);
 
   // Returns the detected document corners from given |jpeg_data|.
   // The amount of corners will be either 0, indicating there are no corners
@@ -217,6 +218,12 @@ interface CameraAppHelper {
                     DocumentOutputFormat output_format)
       => (array<uint8> doc_data);
 
-  // Converts the given |jpeg_data| to PDF format.
-  ConvertToPdf(array<uint8> jpeg_data) => (array<uint8> pdf_data);
+  // Converts the given |jpegs_data| to PDF format.
+  ConvertToPdf(array<array<uint8>> jpegs_data) => (array<uint8> pdf_data);
+
+  // Triggers HaTS survey for the camera app if all the conditions match:
+  // 1. The camera app session is longer than 15 seconds
+  // 2. The user is chosen to take the survey
+  // 3. The user hasn't done any survey recently
+  MaybeTriggerSurvey();
 };

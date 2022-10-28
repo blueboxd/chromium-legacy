@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import './menu_container.js';
+import './cluster_menu.js';
 import './search_query.js';
 import './history_clusters_shared_style.css.js';
 import './shared_vars.css.js';
 import './url_visit.js';
-import '../../cr_elements/cr_icons_css.m.js';
+import '../../cr_elements/cr_icons.css.js';
 import 'chrome://resources/polymer/v3_0/iron-collapse/iron-collapse.js';
 
 import {I18nMixin} from 'chrome://resources/js/i18n_mixin.js';
@@ -69,7 +69,7 @@ class HistoryClusterElement extends HistoryClusterElementBase {
       /**
        * Whether the cluster is in the side panel.
        */
-      inSidePanel: {
+      inSidePanel_: {
         type: Boolean,
         value: () => loadTimeData.getBoolean('inSidePanel'),
         reflectToAttribute: true,
@@ -123,11 +123,11 @@ class HistoryClusterElement extends HistoryClusterElementBase {
 
   cluster: Cluster;
   index: number;
-  inSidePanel: boolean;
   query: string;
   private callbackRouter_: PageCallbackRouter;
   private expanded_: boolean;
   private hiddenVisits_: URLVisit[];
+  private inSidePanel_: boolean;
   private onVisitsRemovedListenerId_: number|null = null;
   private unusedLabel_: string;
   private visibleVisits_: URLVisit[];
@@ -311,7 +311,7 @@ class HistoryClusterElement extends HistoryClusterElementBase {
       return 'no_label';
     }
 
-    const label = this.inSidePanel ? this.$.labelSidePanel : this.$.label;
+    const label = this.inSidePanel_ ? this.$.labelSidePanel : this.$.label;
     insertHighlightedTextWithMatchesIntoElement(
         label, this.cluster.label!, this.cluster.labelMatchPositions);
     return this.cluster.label!;

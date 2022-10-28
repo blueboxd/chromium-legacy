@@ -30,6 +30,7 @@
 <translation id="1717218214683051432">움직임 감지 센서</translation>
 <translation id="1743802530341753419">사이트에서 내 기기에 연결하도록 허용하기 전에 확인(권장)</translation>
 <translation id="1779089405699405702">이미지 디코더</translation>
+<translation id="1785415724048343560">최적의 경험을 위해 권장됨</translation>
 <translation id="1818308510395330587"><ph name="APP_NAME" />에서 AR을 사용하려면 <ph name="BEGIN_LINK" />Android 설정<ph name="END_LINK" />에서도 카메라를 사용 설정하세요.</translation>
 <translation id="1864927262126810325">출처: <ph name="SOURCE_NAME" /></translation>
 <translation id="1887786770086287077">이 기기의 위치 액세스가 사용 중지되었습니다. <ph name="BEGIN_LINK" />Android 설정<ph name="END_LINK" />에서 사용 설정하세요.</translation>
@@ -79,6 +80,7 @@
 <translation id="2653659639078652383">제출</translation>
 <translation id="2677748264148917807">나가기</translation>
 <translation id="2687403674020088961">모든 쿠키 차단(권장되지 않음)</translation>
+<translation id="2692299144678073135">관련 사이트에서 나를 기억하도록 허용</translation>
 <translation id="2704606927547763573">복사됨</translation>
 <translation id="2713106313042589954">카메라 끄기</translation>
 <translation id="2717722538473713889">이메일 주소</translation>
@@ -101,6 +103,7 @@
 <translation id="3115898365077584848">정보 표시</translation>
 <translation id="3123473560110926937">일부 사이트에서 차단됨</translation>
 <translation id="3143754809889689516">처음부터 재생</translation>
+<translation id="3162899666601560689">사이트에서 사용자의 로그인 상태를 유지하거나 장바구니에 담긴 상품을 기억하는 등 탐색 환경을 개선하기 위해 쿠키를 사용할 수 있습니다.</translation>
 <translation id="3198916472715691905">저장 데이터 <ph name="STORAGE_AMOUNT" /></translation>
 <translation id="3203366800380907218">웹에서 찾은 정보</translation>
 <translation id="321187648315454507"><ph name="APP_NAME" />에서 알림을 전송하도록 허용하려면 <ph name="BEGIN_LINK" />Android 설정<ph name="END_LINK" />에서도 알림을 사용 설정하세요.</translation>
@@ -138,6 +141,7 @@
 <translation id="4002066346123236978">제목</translation>
 <translation id="4008040567710660924">특정 사이트의 쿠키를 허용합니다.</translation>
 <translation id="4046123991198612571">다음 트랙</translation>
+<translation id="4048876521107516222">관련 사이트에서 로그인 유지 등을 목적으로 쿠키를 사용합니다.</translation>
 <translation id="4149994727733219643">웹페이지 간단히 보기</translation>
 <translation id="4165986682804962316">사이트 설정</translation>
 <translation id="4169549551965910670">USB 기기에 연결되었습니다.</translation>
@@ -149,6 +153,7 @@
 <translation id="429312253194641664">사이트에서 미디어 재생 중</translation>
 <translation id="42981349822642051">펼치기</translation>
 <translation id="4336434711095810371">모든 데이터 삭제</translation>
+<translation id="4338831206024587507"><ph name="DOMAIN" />의 모든 사이트</translation>
 <translation id="4402755511846832236">사용자가 현재 기기를 사용 중인지 사이트에서 알 수 없도록 차단합니다.</translation>
 <translation id="4428065317363009941">광고 개인 최적화</translation>
 <translation id="4434045419905280838">팝업 및 리디렉션</translation>
@@ -164,6 +169,7 @@
 <translation id="4751476147751820511">모션 또는 조도 센서</translation>
 <translation id="4811450222531576619">출처와 주제에 관해 자세히 알아보기</translation>
 <translation id="4836046166855586901">사용자가 현재 기기를 사용 중인지 사이트에서 알고자 할 때 확인</translation>
+<translation id="483914009762354899">이 도메인의 모든 사이트 포함</translation>
 <translation id="4883854917563148705">관리 설정은 재설정할 수 없습니다.</translation>
 <translation id="4887024562049524730">사이트에서 내 가상 현실 기기 및 데이터를 사용하도록 허용하기 전에 확인(권장)</translation>
 <translation id="4962975101802056554">기기에서 모든 권한을 취소합니다.</translation>
@@ -219,6 +225,7 @@
 <translation id="5887687176710214216">최근 방문: 어제</translation>
 <translation id="5916664084637901428">사용</translation>
 <translation id="5922853908706496913">화면 공유</translation>
+<translation id="5922967540311291836">서드 파티 쿠키 차단:</translation>
 <translation id="5939518447894949180">초기화</translation>
 <translation id="5975083100439434680">축소</translation>
 <translation id="5976059395673079613"><ph name="PERMISSION" /> - <ph name="WARNING_MESSAGE" /></translation>
@@ -302,6 +309,7 @@
 <translation id="7791543448312431591">추가</translation>
 <translation id="780301667611848630">취소</translation>
 <translation id="7804248752222191302">사이트에서 카메라 사용 중</translation>
+<translation id="7816129586531226979">관련 사이트에서 나를 기억할 수 있음</translation>
 <translation id="7817023149356982970">이 사이트에서 로그아웃됩니다.</translation>
 <translation id="7828557259026017104">쿠키는 방문한 웹사이트에서 생성된 파일로, 사이트에서 사용자의 설정을 기억하기 위해 사용합니다. 타사 쿠키는 다른 사이트, 즉 광고나 이미지 등 방문하는 웹페이지에 표시되는 일부 콘텐츠를 소유하는 사이트에 의해 생성됩니다.</translation>
 <translation id="7835852323729233924">재생 중인 미디어</translation>
@@ -309,6 +317,7 @@
 <translation id="7846076177841592234">선택 취소</translation>
 <translation id="7846621471902887024">모든 사이트에서 로그아웃됩니다.</translation>
 <translation id="7882806643839505685">특정 사이트에서 소리를 재생하도록 허용합니다.</translation>
+<translation id="789180354981963912">시크릿 모드에서 서드 파티 쿠키 차단:</translation>
 <translation id="7940722705963108451">알림</translation>
 <translation id="7986741934819883144">연락처 선택</translation>
 <translation id="7999064672810608036">쿠키를 포함하여 이 웹사이트의 모든 로컬 데이터를 삭제하고 모든 권한을 재설정하시겠습니까?</translation>
@@ -331,6 +340,7 @@
 <translation id="8284326494547611709">자막</translation>
 <translation id="8300705686683892304">앱에서 관리함</translation>
 <translation id="8324158725704657629">다시 묻지 않음</translation>
+<translation id="834785183489258869">시크릿 모드에 있는 동안에는 사이트에서 사용자의 다양한 사이트 탐색 활동 정보를 이용해 광고 맞춤설정 등의 작업을 하는 데 쿠키를 사용할 수 없습니다. 일부 사이트에서는 기능이 작동하지 않을 수 있습니다.</translation>
 <translation id="8372893542064058268">특정 사이트에서 백그라운드 동기화를 허용합니다.</translation>
 <translation id="8376384591331888629">이 사이트의 타사 쿠키 포함</translation>
 <translation id="83792324527827022">사이트에서 카메라와 마이크를 사용 중입니다.</translation>

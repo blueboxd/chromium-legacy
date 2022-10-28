@@ -1,4 +1,4 @@
-// Copyright 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -15,7 +15,9 @@
 
 #include "base/atomic_sequence_num.h"
 #include "base/bind.h"
+#include "base/containers/contains.h"
 #include "base/format_macros.h"
+#include "base/ranges/algorithm.h"
 #include "base/strings/stringprintf.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -294,11 +296,8 @@ void ResourcePool::OnResourceReleased(size_t unique_id,
   DCHECK(in_use_resources_.find(unique_id) == in_use_resources_.end());
 
   // TODO(danakj): Should busy_resources be a map?
-  auto busy_it = std::find_if(
-      busy_resources_.begin(), busy_resources_.end(),
-      [unique_id](const std::unique_ptr<PoolResource>& busy_resource) {
-        return busy_resource->unique_id() == unique_id;
-      });
+  auto busy_it =
+      base::ranges::find(busy_resources_, unique_id, &PoolResource::unique_id);
   // If the resource isn't busy then we made it available for reuse already
   // somehow, even though it was exported to the ResourceProvider, or we evicted
   // a resource that was still in use by the display compositor.
@@ -383,20 +382,12 @@ void ResourcePool::ReleaseResource(InUsePoolResource in_use_resource) {
 
     // Maybe this is a double free - see if the resource exists in our busy
     // list.
-    auto found_busy = std::find_if(
-        busy_resources_.begin(), busy_resources_.end(),
-        [pool_resource](const std::unique_ptr<PoolResource>& busy_resource) {
-          return busy_resource->unique_id() == pool_resource->unique_id();
-        });
-    CHECK(found_busy == busy_resources_.end());
+    CHECK(!base::Contains(busy_resources_, pool_resource->unique_id(),
+                          &PoolResource::unique_id));
 
     // Also check if the resource exists in our unused resources list.
-    auto found_unused = std::find_if(
-        unused_resources_.begin(), unused_resources_.end(),
-        [pool_resource](const std::unique_ptr<PoolResource>& unused_resource) {
-          return unused_resource->unique_id() == pool_resource->unique_id();
-        });
-    CHECK(found_unused == unused_resources_.end());
+    CHECK(!base::Contains(unused_resources_, pool_resource->unique_id(),
+                          &PoolResource::unique_id));
 
     // Resource doesn't exist in any of our lists. CHECK.
     CHECK(false);
@@ -583,7 +574,7 @@ bool ResourcePool::OnMemoryDump(const base::trace_event::MemoryDumpArgs& args,
                                 base::trace_event::ProcessMemoryDump* pmd) {
   if (args.level_of_detail == MemoryDumpLevelOfDetail::BACKGROUND) {
     std::string dump_name =
-        base::StringPrintf("cc/tile_memory/provider_%d", tracing_id_);
+        base::StringPrintf("cc/tile_memory/provider_0x%x", tracing_id_);
     MemoryAllocatorDump* dump = pmd->CreateAllocatorDump(dump_name);
     dump->AddScalar(MemoryAllocatorDump::kNameSize,
                     MemoryAllocatorDump::kUnitsBytes,
@@ -591,15 +582,15 @@ bool ResourcePool::OnMemoryDump(const base::trace_event::MemoryDumpArgs& args,
   } else {
     for (const auto& resource : unused_resources_) {
       resource->OnMemoryDump(pmd, tracing_id_, resource_provider_,
-                             true /* is_free */);
+                             true /* is_free */, false /* is_busy */);
     }
     for (const auto& resource : busy_resources_) {
       resource->OnMemoryDump(pmd, tracing_id_, resource_provider_,
-                             false /* is_free */);
+                             false /* is_free */, true /* is_busy */);
     }
     for (const auto& entry : in_use_resources_) {
       entry.second->OnMemoryDump(pmd, tracing_id_, resource_provider_,
-                                 false /* is_free */);
+                                 false /* is_free */, false /* is_busy */);
     }
   }
   return true;
@@ -635,7 +626,8 @@ void ResourcePool::PoolResource::OnMemoryDump(
     base::trace_event::ProcessMemoryDump* pmd,
     int tracing_id,
     const viz::ClientResourceProvider* resource_provider,
-    bool is_free) const {
+    bool is_free,
+    bool is_busy) const {
   // Resource IDs are not process-unique, so log with the ResourcePool's unique
   // tracing id.
   const std::string dump_name = base::StringPrintf(
@@ -665,6 +657,8 @@ void ResourcePool::PoolResource::OnMemoryDump(
 
   uint64_t free_size = is_free ? total_bytes : 0u;
   dump->AddScalar("free_size", MemoryAllocatorDump::kUnitsBytes, free_size);
+  uint64_t busy_size = is_busy ? total_bytes : 0u;
+  dump->AddScalar("busy_size", MemoryAllocatorDump::kUnitsBytes, busy_size);
 }
 
 }  // namespace cc

@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -60,8 +60,8 @@ class GLES2_IMPL_EXPORT QuerySyncManager {
 
     uint32_t index() const { return sync - bucket->syncs; }
 
-    Bucket* bucket = nullptr;
-    QuerySync* sync = nullptr;
+    raw_ptr<Bucket> bucket = nullptr;
+    raw_ptr<QuerySync> sync = nullptr;
     int32_t submit_count = 0;
   };
 

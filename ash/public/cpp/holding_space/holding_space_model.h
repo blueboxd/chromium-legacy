@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -110,6 +110,8 @@ class ASH_PUBLIC_EXPORT HoldingSpaceModel {
     bool invalidate_image_ = false;
   };
 
+  enum class Section { kDownload, kScreenCapture, kNone };
+
   HoldingSpaceModel();
   HoldingSpaceModel(const HoldingSpaceModel& other) = delete;
   HoldingSpaceModel& operator=(const HoldingSpaceModel& other) = delete;
@@ -174,6 +176,9 @@ class ASH_PUBLIC_EXPORT HoldingSpaceModel {
   void RemoveObserver(HoldingSpaceModelObserver* observer);
 
  private:
+  // Removes any items that exceed the `kMaxItemsPerSection` of that section.
+  void TrimToMaxItemsPerSection();
+
   // The list of items added to the model in the order they have been added to
   // the model.
   ItemList items_;

@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -57,10 +57,10 @@
 // the operation failed.
 + (NSError*)removeBrowsingCache;
 
-// Opens |URL| using some connected scene.
+// Opens `URL` using some connected scene.
 + (void)sceneOpenURL:(NSString*)spec;
 
-// Loads the URL |spec| in the current WebState with transition type
+// Loads the URL `spec` in the current WebState with transition type
 // ui::PAGE_TRANSITION_TYPED and returns without waiting for the page to load.
 + (void)startLoadingURL:(NSString*)spec;
 
@@ -75,11 +75,11 @@
 // Reloads the page without waiting for the page to load.
 + (void)startReloading;
 
-// Returns the NamedGuide with the given |name|, if one is attached to |view|
-// or one of |view|'s ancestors.  If no guide is found, returns nil.
+// Returns the NamedGuide with the given `name`, if one is attached to `view`
+// or one of `view`'s ancestors.  If no guide is found, returns nil.
 + (NamedGuide*)guideWithName:(NSString*)name view:(UIView*)view;
 
-// Loads |URL| as if it was opened from an external application.
+// Loads `URL` as if it was opened from an external application.
 + (void)openURLFromExternalApp:(NSString*)URL;
 
 // Programmatically dismisses settings screen.
@@ -138,7 +138,7 @@
 // Returns the opened URL.
 + (NSURL*)simulateExternalAppURLOpening;
 
-// Simulates opening a custom |URL| from another application.
+// Simulates opening a custom `URL` from another application.
 + (void)simulateExternalAppURLOpeningWithURL:(NSURL*)URL;
 
 // Simulates opening the add account sign-in flow from the web.
@@ -191,7 +191,7 @@
 
 #pragma mark - Window utilities (EG2)
 
-// Returns screen position of the given |windowNumber|
+// Returns screen position of the given `windowNumber`
 + (CGRect)screenPositionOfScreenWithNumber:(int)windowNumber;
 
 // Returns the number of windows, including background and disconnected or
@@ -218,7 +218,7 @@
 + (void)changeWindowWithNumber:(int)windowNumber
                    toNewNumber:(int)newWindowNumber;
 
-// Loads the URL |spec| in the current WebState in window with given number with
+// Loads the URL `spec` in the current WebState in window with given number with
 // transition type ui::PAGE_TRANSITION_TYPED and returns without waiting for the
 // page to load.
 + (void)startLoadingURL:(NSString*)spec inWindowWithNumber:(int)windowNumber;
@@ -232,7 +232,7 @@
 + (BOOL)waitForWindowIDInjectionIfNeededInWindowWithNumber:(int)windowNumber;
 
 // Returns YES if the current WebState in window with given number contains
-// |text|.
+// `text`.
 + (BOOL)webStateContainsText:(NSString*)text
           inWindowWithNumber:(int)windowNumber;
 
@@ -244,49 +244,49 @@
 
 #pragma mark - WebState Utilities (EG2)
 
-// Attempts to tap the element with |element_id| within window.frames[0] of the
+// Attempts to tap the element with `element_id` within window.frames[0] of the
 // current WebState using a JavaScript click() event. This only works on
 // same-origin iframes. If not succeed returns an NSError indicating why the
 // operation failed, otherwise nil.
 + (NSError*)tapWebStateElementInIFrameWithID:(NSString*)elementID;
 
-// Taps html element with |elementID| in the current web state.
+// Taps html element with `elementID` in the current web state.
 // If not succeed returns an NSError indicating why the
 // operation failed, otherwise nil.
 + (NSError*)tapWebStateElementWithID:(NSString*)elementID;
 
-// Waits for the current web state to contain an element matching |selector|.
+// Waits for the current web state to contain an element matching `selector`.
 // If not succeed returns an NSError indicating  why the operation failed,
 // otherwise nil.
 + (NSError*)waitForWebStateContainingElement:(ElementSelector*)selector;
 
 // Waits for the current web state to no longer contain an element matching
-// |selector|. On failure, returns an NSError, otherwise nil.
+// `selector`. On failure, returns an NSError, otherwise nil.
 + (NSError*)waitForWebStateNotContainingElement:(ElementSelector*)selector;
 
-// Waits for the current web state's frames to contain |text|.
+// Waits for the current web state's frames to contain `text`.
 // If not succeed returns an NSError indicating  why the operation failed,
 // otherwise nil.
 + (NSError*)waitForWebStateContainingTextInIFrame:(NSString*)text;
 
-// Attempts to submit form with |formID| in the current WebState.
+// Attempts to submit form with `formID` in the current WebState.
 // Returns nil on success, or else an NSError indicating why the operation
 // failed.
 + (NSError*)submitWebStateFormWithID:(NSString*)formID;
 
-// Returns YES if the current WebState contains an element matching |selector|.
+// Returns YES if the current WebState contains an element matching `selector`.
 + (BOOL)webStateContainsElement:(ElementSelector*)selector;
 
-// Returns YES if the current WebState contains |text|.
+// Returns YES if the current WebState contains `text`.
 + (BOOL)webStateContainsText:(NSString*)text;
 
-// Waits for the current WebState to contain loaded image with |imageID|.
+// Waits for the current WebState to contain loaded image with `imageID`.
 // When loaded, the image element will have the same size as actual image.
 // Returns nil if the condition is met within a timeout, or else an NSError
 // indicating why the operation failed.
 + (NSError*)waitForWebStateContainingLoadedImage:(NSString*)imageID;
 
-// Waits for the current WebState to contain a blocked image with |imageID|.
+// Waits for the current WebState to contain a blocked image with `imageID`.
 // When blocked, the image element will be smaller than the actual image size.
 // Returns nil if the condition is met within a timeout, or else an NSError
 // indicating why the operation failed.
@@ -346,7 +346,7 @@
 
 #pragma mark - URL Utilities (EG2)
 
-// Returns the title string to be used for a page with |URL| if that page
+// Returns the title string to be used for a page with `URL` if that page
 // doesn't specify a title.
 + (NSString*)displayTitleForURL:(NSString*)URL;
 
@@ -355,7 +355,7 @@
 // Clears fake sync server data if the server is running.
 + (void)clearSyncServerData;
 
-// Signs in with |identity| without sync consent.
+// Signs in with `identity` without sync consent.
 + (void)signInWithoutSyncWithIdentity:(FakeChromeIdentity*)identity;
 
 // Starts the sync server. The server should not be running when calling this.
@@ -388,10 +388,10 @@
 // real one.
 + (void)tearDownFakeSyncServer;
 
-// Gets the number of entities of the given |type|.
+// Gets the number of entities of the given `type`.
 + (int)numberOfSyncEntitiesWithType:(syncer::ModelType)type;
 
-// Injects a bookmark into the fake sync server with |URL| and |title|.
+// Injects a bookmark into the fake sync server with `URL` and `title`.
 + (void)addFakeSyncServerBookmarkWithURL:(NSString*)URL title:(NSString*)title;
 
 // Injects a legacy bookmark into the fake sync server. The legacy bookmark
@@ -415,15 +415,15 @@
 // Deletes typed URL from HistoryService.
 + (void)deleteHistoryServiceTypedURL:(NSString*)URL;
 
-// If the provided URL |spec| is either present or not present in HistoryService
-// (depending on |expectPresent|), return YES. If the present status of |spec|
+// If the provided URL `spec` is either present or not present in HistoryService
+// (depending on `expectPresent`), return YES. If the present status of `spec`
 // is not what is expected, or there is an error, return NO.
 + (BOOL)isTypedURL:(NSString*)spec presentOnClient:(BOOL)expectPresent;
 
-// Triggers a sync cycle for a |type|.
+// Triggers a sync cycle for a `type`.
 + (void)triggerSyncCycleForType:(syncer::ModelType)type;
 
-// Injects user demographics into the fake sync server. |rawBirthYear| is the
+// Injects user demographics into the fake sync server. `rawBirthYear` is the
 // true birth year, pre-noise, and the gender corresponds to the proto enum
 // UserDemographicsProto::Gender.
 + (void)
@@ -432,30 +432,30 @@
                                               (metrics::UserDemographicsProto::
                                                    Gender)gender;
 
-// Clears the autofill profile for the given |GUID|.
+// Clears the autofill profile for the given `GUID`.
 + (void)clearAutofillProfileWithGUID:(NSString*)GUID;
 
-// Injects an autofill profile into the fake sync server with |GUID| and
-// |full_name|.
+// Injects an autofill profile into the fake sync server with `GUID` and
+// `full_name`.
 + (void)addAutofillProfileToFakeSyncServerWithGUID:(NSString*)GUID
                                autofillProfileName:(NSString*)fullName;
 
-// Returns YES if there is an autofilll profile with the corresponding |GUID|
-// and |full_name|.
+// Returns YES if there is an autofilll profile with the corresponding `GUID`
+// and `full_name`.
 + (BOOL)isAutofillProfilePresentWithGUID:(NSString*)GUID
                      autofillProfileName:(NSString*)fullName;
 
-// Deletes an autofill profile from the fake sync server with |GUID|, if it
+// Deletes an autofill profile from the fake sync server with `GUID`, if it
 // exists. If it doesn't exist, nothing is done.
 + (void)deleteAutofillProfileFromFakeSyncServerWithGUID:(NSString*)GUID;
 
-// Verifies the sessions hierarchy on the Sync FakeServer. |specs| is
+// Verifies the sessions hierarchy on the Sync FakeServer. `specs` is
 // the collection of URLs that are to be expected for a single window. On
 // failure, returns a NSError describing the failure. See the
 // SessionsHierarchy class for documentation regarding the verification.
 + (NSError*)verifySessionsOnSyncServerWithSpecs:(NSArray<NSString*>*)specs;
 
-// Verifies that |count| entities of the given |type| and |name| exist on the
+// Verifies that `count` entities of the given `type` and `name` exist on the
 // sync FakeServer. Folders are not included in this count. Returns NSError
 // if there is a failure or if the count does not match.
 + (NSError*)verifyNumberOfSyncEntitiesWithType:(NSUInteger)type
@@ -468,15 +468,9 @@
 
 #pragma mark - JavaScript Utilities (EG2)
 
-// Executes JavaScript on current WebState, and waits for either the completion
-// or timeout. If execution does not complete within a timeout or JavaScript
-// exception is thrown, returns an NSError indicating why the operation failed,
-// otherwise returns object representing execution result.
-+ (id)executeJavaScript:(NSString*)javaScript error:(NSError**)error;
-
 // Executes JavaScript through the WebState's WebFrame and waits for either the
 // completion or timeout. If execution does not complete within a timeout or
-// JavaScript exception is thrown, |success| is NO.
+// JavaScript exception is thrown, `success` is NO.
 // otherwise returns object representing execution result.
 + (JavaScriptExecutionResult*)executeJavaScript:(NSString*)javaScript;
 
@@ -495,10 +489,7 @@
 // invoked from test code, as the EG test code runs in a separate process and
 // must query Chrome for the state.
 
-// Returns YES if BlockNewTabPagePendingLoad feature is enabled.
-+ (BOOL)isBlockNewTabPagePendingLoadEnabled [[nodiscard]];
-
-// Returns YES if |variationID| is enabled.
+// Returns YES if `variationID` is enabled.
 + (BOOL)isVariationEnabled:(int)variationID;
 
 // Returns YES if a variation triggering server-side behavior is enabled.
@@ -516,7 +507,7 @@
 // Returns YES if DemographicMetricsReporting feature is enabled.
 + (BOOL)isDemographicMetricsReportingEnabled [[nodiscard]];
 
-// Returns YES if the |launchSwitch| is found in host app launch switches.
+// Returns YES if the `launchSwitch` is found in host app launch switches.
 + (BOOL)appHasLaunchSwitch:(NSString*)launchSwitch;
 
 // Returns YES if custom WebKit frameworks were properly loaded, rather than
@@ -573,7 +564,7 @@
 // returns a Value of type NONE.
 + (NSString*)localStatePrefValue:(NSString*)prefName;
 
-// Sets the integer values for the local state pref with |prefName|. |value|
+// Sets the integer values for the local state pref with `prefName`. `value`
 // can be either a casted enum or any other numerical value. Local State
 // contains the preferences that are shared between all browser states.
 + (void)setIntegerValue:(int)value forLocalStatePref:(NSString*)prefName;
@@ -589,11 +580,18 @@
 // Sets the value of a integer user pref in the original browser state.
 + (void)setIntegerValue:(int)value forUserPref:(NSString*)prefName;
 
+// Clears the user pref of |prefName|.
++ (void)clearUserPrefWithName:(NSString*)prefName;
+
+// Commit synchronously the pending user prefs write. Waits until the disk write
+// operation is done.
++ (void)commitPendingUserPrefsWrite;
+
 // Resets the BrowsingDataPrefs, which defines if its selected or not when
 // clearing Browsing data.
 + (void)resetBrowsingDataPrefs;
 
-// Resets data for the local state pref with |prefName|.
+// Resets data for the local state pref with `prefName`.
 + (void)resetDataForLocalStatePref:(NSString*)prefName;
 
 #pragma mark - Unified Consent utilities
@@ -610,7 +608,7 @@
 // The input is similar to UIKeyCommand parameters, and is designed for testing
 // keyboard shortcuts.
 // Accepts any strings and also UIKeyInput{Up|Down|Left|Right}Arrow and
-// UIKeyInputEscape constants as |input|.
+// UIKeyInputEscape constants as `input`.
 + (void)simulatePhysicalKeyboardEvent:(NSString*)input
                                 flags:(UIKeyModifierFlags)flags;
 
@@ -618,6 +616,12 @@
 
 // Clears the URLs stored in the pasteboard, from the tested app's perspective.
 + (void)clearPasteboardURLs;
+
+// Clears the pasteboard, from the tested app's perspective.
++ (void)clearPasteboard;
+
+// Returns YES if general pasteboard images property contains a nonempty array.
++ (BOOL)pasteboardHasImages;
 
 // Retrieves the currently stored strings on the pasteboard from the tested
 // app's perspective.
@@ -627,18 +631,21 @@
 // perspective.
 + (NSString*)pasteboardURLSpec;
 
+// Copies `text` into the clipboard from the app's perspective.
++ (void)copyTextToPasteboard:(NSString*)text;
+
 #pragma mark - Watcher utilities
 
 // Starts monitoring for buttons (based on traits) with the given
-// (accessibility) |labels|. Monitoring will stop once all are found, or if
+// (accessibility) `labels`. Monitoring will stop once all are found, or if
 // timeout expires. If a previous set is currently being watched for it gets
 // replaced with this set. Note that timeout is best effort and can be a bit
 // longer than specified. This method returns immediately.
 + (void)watchForButtonsWithLabels:(NSArray<NSString*>*)labels
                           timeout:(NSTimeInterval)timeout;
 
-// Returns YES if the button with given (accessibility) |label| was observed at
-// some point since |watchForButtonsWithLabels:timeout:| was called.
+// Returns YES if the button with given (accessibility) `label` was observed at
+// some point since `watchForButtonsWithLabels:timeout:` was called.
 + (BOOL)watcherDetectedButtonWithLabel:(NSString*)label;
 
 // Clear the watcher list, stopping monitoring.
@@ -658,7 +665,7 @@
 + (void)disableDefaultBrowserPromo;
 
 #pragma mark - Url Param Classification utilities
-// Sets |contents| to be used by the url_param_filter::ClassificationsLoader.
+// Sets `contents` to be used by the url_param_filter::ClassificationsLoader.
 + (void)setUrlParamClassifications:(NSString*)contents;
 
 // Resets the stored classifications on the

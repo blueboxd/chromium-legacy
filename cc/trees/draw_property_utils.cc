@@ -1,10 +1,11 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "cc/trees/draw_property_utils.h"
 
 #include <stddef.h>
+
 #include <algorithm>
 #include <utility>
 #include <vector>
@@ -14,6 +15,7 @@
 #include "base/containers/stack.h"
 #include "base/logging.h"
 #include "base/notreached.h"
+#include "base/ranges/algorithm.h"
 #include "build/build_config.h"
 #include "cc/base/math_util.h"
 #include "cc/layers/draw_properties.h"
@@ -60,8 +62,8 @@ void PostConcatSurfaceContentsScale(const EffectNode* effect_node,
     return;
   }
   DCHECK(effect_node->HasRenderSurface());
-  transform->matrix().postScale(effect_node->surface_contents_scale.x(),
-                                effect_node->surface_contents_scale.y(), 1.f);
+  transform->PostScale(effect_node->surface_contents_scale.x(),
+                       effect_node->surface_contents_scale.y());
 }
 
 bool ConvertRectBetweenSurfaceSpaces(const PropertyTrees* property_trees,
@@ -1624,10 +1626,9 @@ bool LogDoubleBackgroundBlur(const LayerTreeImpl& layer_tree_impl,
           gfx::Rect screen_space_rect = MathUtil::MapEnclosingClippedRect(
               render_surface->screen_space_transform(),
               render_surface->content_rect());
-          auto it = std::find_if(
-              rects.begin(), rects.end(),
-              [&screen_space_rect](
-                  const std::pair<const LayerImpl*, gfx::Rect>& r) {
+          auto it = base::ranges::find_if(
+              rects, [&screen_space_rect](
+                         const std::pair<const LayerImpl*, gfx::Rect>& r) {
                 return r.second.Intersects(screen_space_rect);
               });
           if (rects.end() == it) {

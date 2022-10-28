@@ -1,6 +1,11 @@
-# Copyright 2016 The Chromium Authors. All rights reserved.
+# Copyright 2016 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
+
+# TODO(crbug.com/1344830): Migrate away from deprecated MDC APIs.
+config("disable_deprecated_declarations") {
+  cflags = [ "-Wno-deprecated-declarations" ]
+}
 
 source_set("start_suggest") {
   sources = [
@@ -99,8 +104,8 @@ source_set("content_suggestions") {
     "//ios/chrome/browser/ui/menu",
     "//ios/chrome/browser/ui/ntp",
     "//ios/chrome/browser/ui/ntp:logo",
-    "//ios/chrome/browser/ui/ntp:metrics",
     "//ios/chrome/browser/ui/ntp:ntp_internal",
+    "//ios/chrome/browser/ui/ntp/metrics",
     "//ios/chrome/browser/ui/overscroll_actions",
     "//ios/chrome/browser/ui/reading_list",
     "//ios/chrome/browser/ui/settings/utils:utils",
@@ -118,7 +123,10 @@ source_set("content_suggestions") {
     "//ui/base",
     "//ui/strings",
   ]
-  configs += [ "//build/config/compiler:enable_arc" ]
+  configs += [
+    ":disable_deprecated_declarations",
+    "//build/config/compiler:enable_arc",
+  ]
   public_deps = [ "//ios/third_party/material_components_ios" ]
 }
 
@@ -182,15 +190,16 @@ source_set("content_suggestions_ui") {
     "//components/strings",
     "//ios/chrome/app/strings",
     "//ios/chrome/browser",
+    "//ios/chrome/browser/drag_and_drop",
     "//ios/chrome/browser/ntp",
     "//ios/chrome/browser/ui:feature_flags",
     "//ios/chrome/browser/ui/collection_view",
     "//ios/chrome/browser/ui/commands",
-    "//ios/chrome/browser/ui/content_suggestions:metrics",
     "//ios/chrome/browser/ui/content_suggestions/cells",
     "//ios/chrome/browser/ui/content_suggestions/cells:constants",
     "//ios/chrome/browser/ui/content_suggestions/identifier",
     "//ios/chrome/browser/ui/elements",
+    "//ios/chrome/browser/ui/lens:lens_entrypoint",
     "//ios/chrome/browser/ui/list_model",
     "//ios/chrome/browser/ui/ntp",
     "//ios/chrome/browser/ui/ntp:logo",
@@ -201,17 +210,23 @@ source_set("content_suggestions_ui") {
     "//ios/chrome/browser/ui/toolbar/buttons",
     "//ios/chrome/browser/ui/toolbar/public",
     "//ios/chrome/browser/ui/util:util",
+    "//ios/chrome/browser/url_loading",
+    "//ios/chrome/browser/url_loading:url_loading_params_header",
     "//ios/chrome/common:timing",
     "//ios/chrome/common/ui/colors",
     "//ios/chrome/common/ui/elements",
     "//ios/chrome/common/ui/favicon",
     "//ios/chrome/common/ui/util",
     "//ios/public/provider/chrome/browser",
+    "//ios/public/provider/chrome/browser/lens:lens_api",
     "//ios/web/common",
     "//ui/base",
   ]
   public_deps = [ ":content_suggestions_ui_util" ]
-  configs += [ "//build/config/compiler:enable_arc" ]
+  configs += [
+    ":disable_deprecated_declarations",
+    "//build/config/compiler:enable_arc",
+  ]
 }
 
 source_set("content_suggestions_constant") {
@@ -318,7 +333,10 @@ source_set("unit_tests") {
     "//third_party/ocmock",
     "//third_party/ocmock",
   ]
-  configs += [ "//build/config/compiler:enable_arc" ]
+  configs += [
+    ":disable_deprecated_declarations",
+    "//build/config/compiler:enable_arc",
+  ]
 }
 
 source_set("eg2_tests") {
@@ -340,10 +358,12 @@ source_set("eg2_tests") {
     "//base/test:test_support",
     "//components/feed/core/shared_prefs:feed_shared_prefs",
     "//components/feed/core/v2/public/ios:feed_ios_public",
+    "//components/signin/internal/identity_manager",
     "//components/strings",
     "//ios/chrome/app/strings",
-    "//ios/chrome/browser:pref_names",
     "//ios/chrome/browser:utils",
+    "//ios/chrome/browser/flags:system_flags",
+    "//ios/chrome/browser/prefs:pref_names",
     "//ios/chrome/browser/ui:feature_flags",
     "//ios/chrome/browser/ui/authentication:eg_test_support+eg2",
     "//ios/chrome/browser/ui/content_suggestions/cells:constants",
@@ -355,6 +375,7 @@ source_set("eg2_tests") {
     "//ios/chrome/browser/ui/toolbar/public:constants",
     "//ios/chrome/test:eg_test_support+eg2",
     "//ios/chrome/test/earl_grey:eg_test_support+eg2",
+    "//ios/public/provider/chrome/browser/signin",
     "//ios/public/provider/chrome/browser/signin:fake_chrome_identity",
     "//ios/testing/earl_grey:eg_test_support+eg2",
     "//ios/third_party/earl_grey2:test_lib",
@@ -409,6 +430,7 @@ source_set("eg_app_support+eg2") {
     "//ios/chrome/browser",
     "//ios/chrome/browser:utils",
     "//ios/chrome/browser/browser_state",
+    "//ios/chrome/browser/flags:system_flags",
     "//ios/chrome/browser/ntp_snippets",
     "//ios/chrome/browser/search_engines",
     "//ios/chrome/browser/ui/ntp:constants",

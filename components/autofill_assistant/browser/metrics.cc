@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include <numeric>
+#include <vector>
 
 #include "base/containers/flat_map.h"
 #include "base/logging.h"
@@ -13,6 +14,7 @@
 #include "base/no_destructor.h"
 #include "components/autofill_assistant/browser/features.h"
 #include "components/autofill_assistant/browser/intent_strings.h"
+#include "components/autofill_assistant/browser/script_parameters.h"
 #include "components/autofill_assistant/browser/startup_util.h"
 #include "services/metrics/public/cpp/metrics_utils.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
@@ -58,6 +60,10 @@ const char kServiceRequestSuccessRetryCount[] =
     "Android.AutofillAssistant.ServiceRequestSender.SuccessRetryCount";
 const char kServiceRequestFailureRetryCount[] =
     "Android.AutofillAssistant.ServiceRequestSender.FailureRetryCount";
+const char kCudAutofillProfileDeduplicatedContact[] =
+    "Android.AutofillAssistant.Cud.AutofillProfileDeduplicatedContact";
+const char kCudAutofillProfileDeduplicatedAddress[] =
+    "Android.AutofillAssistant.Cud.AutofillProfileDeduplicatedAddress";
 static bool DROPOUT_RECORDED = false;
 
 std::string GetSuffixForIntent(const std::string& intent) {
@@ -295,6 +301,26 @@ void Metrics::RecordPaymentRequestAutofillChanged(
                                         NOTCHANGED_ADDITIONAL_ACTION_SELECTED);
       return;
   }
+}
+
+// static
+void Metrics::RecordCollectUserDataProfileDeduplicationForContact(
+    int number_of_profiles_deduplicated_for_contact) {
+  base::UmaHistogramEnumeration(
+      kCudAutofillProfileDeduplicatedContact,
+      Metrics::UserDataEntryCount(
+          ToEntryCountBucket(number_of_profiles_deduplicated_for_contact)));
+  return;
+}
+
+// static
+void Metrics::RecordCollectUserDataProfileDeduplicationForAddress(
+    int number_of_profiles_deduplicated_for_address) {
+  base::UmaHistogramEnumeration(
+      kCudAutofillProfileDeduplicatedAddress,
+      Metrics::UserDataEntryCount(
+          ToEntryCountBucket(number_of_profiles_deduplicated_for_address)));
+  return;
 }
 
 // static

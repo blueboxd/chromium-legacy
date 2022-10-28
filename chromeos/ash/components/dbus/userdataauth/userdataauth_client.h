@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -99,6 +99,10 @@ class COMPONENT_EXPORT(USERDATAAUTH_CLIENT) UserDataAuthClient {
       chromeos::DBusMethodCallback<::user_data_auth::UpdateAuthFactorReply>;
   using RemoveAuthFactorCallback =
       chromeos::DBusMethodCallback<::user_data_auth::RemoveAuthFactorReply>;
+  using ListAuthFactorsCallback =
+      chromeos::DBusMethodCallback<::user_data_auth::ListAuthFactorsReply>;
+  using GetRecoveryRequestCallback =
+      chromeos::DBusMethodCallback<::user_data_auth::GetRecoveryRequestReply>;
   using GetAuthSessionStatusCallback =
       chromeos::DBusMethodCallback<::user_data_auth::GetAuthSessionStatusReply>;
 
@@ -132,7 +136,7 @@ class COMPONENT_EXPORT(USERDATAAUTH_CLIENT) UserDataAuthClient {
 
   // Runs the callback as soon as the service becomes available.
   virtual void WaitForServiceToBeAvailable(
-      WaitForServiceToBeAvailableCallback callback) = 0;
+      chromeos::WaitForServiceToBeAvailableCallback callback) = 0;
 
   // Queries if user's vault is mounted.
   virtual void IsMounted(const ::user_data_auth::IsMountedRequest& request,
@@ -293,6 +297,12 @@ class COMPONENT_EXPORT(USERDATAAUTH_CLIENT) UserDataAuthClient {
   virtual void RemoveAuthFactor(
       const ::user_data_auth::RemoveAuthFactorRequest& request,
       RemoveAuthFactorCallback callback) = 0;
+
+  // This is called when a user authenticates with recovery to obtain the
+  // request to be sent to the recovery service.
+  virtual void GetRecoveryRequest(
+      const ::user_data_auth::GetRecoveryRequestRequest& request,
+      GetRecoveryRequestCallback callback) = 0;
 
   // This is called when a user wants to get an AuthSession status.
   virtual void GetAuthSessionStatus(

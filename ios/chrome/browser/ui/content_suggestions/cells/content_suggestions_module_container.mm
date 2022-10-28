@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,8 +10,8 @@
 #import "ios/chrome/browser/ui/image_util/image_util.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
 #import "ios/chrome/common/ui/util/constraints_ui_util.h"
-#include "ios/chrome/grit/ios_strings.h"
-#include "ui/base/l10n/l10n_util_mac.h"
+#import "ios/chrome/grit/ios_strings.h"
+#import "ui/base/l10n/l10n_util_mac.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -95,6 +95,7 @@ const float kTrendingQueriesContentHeight = 103;
           [UIFont preferredFontForTextStyle:UIFontTextStyleFootnote];
       self.title.textColor = [UIColor colorNamed:kTextSecondaryColor];
       self.title.accessibilityTraits |= UIAccessibilityTraitHeader;
+      self.title.accessibilityIdentifier = [self titleString];
       self.title.translatesAutoresizingMaskIntoConstraints = NO;
       [self addSubview:self.title];
       [NSLayoutConstraint activateConstraints:@[
@@ -136,8 +137,12 @@ const float kTrendingQueriesContentHeight = 103;
                                               constant:[self titleTopInset]],
       ]];
     }
+    // Height constraint must be flexible since on launch before the Feed
+    // CollectionView is used a native UICollectionView is the parent, and it
+    // can attempt to apply a large height constraint to the
+    // ContentSuggestionsViewController.
     self.heightConstraint = [self.heightAnchor
-        constraintEqualToConstant:[self calculateIntrinsicHeight]];
+        constraintGreaterThanOrEqualToConstant:[self calculateIntrinsicHeight]];
     self.heightConstraint.active = YES;
   }
   return self;

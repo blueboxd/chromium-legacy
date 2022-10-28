@@ -1,4 +1,4 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -180,7 +180,7 @@ class COMPONENT_EXPORT(AUTHPOLICY) FakeAuthPolicyClient
 
   enterprise_management::ChromeDeviceSettingsProto device_policy_;
 
-  std::vector<WaitForServiceToBeAvailableCallback>
+  std::vector<chromeos::WaitForServiceToBeAvailableCallback>
       wait_for_service_to_be_available_callbacks_;
 
   absl::optional<authpolicy::ErrorType> refresh_user_policy_error_;

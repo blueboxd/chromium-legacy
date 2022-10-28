@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,10 +6,10 @@
 
 #import <Foundation/Foundation.h>
 
-#include "base/strings/sys_string_conversions.h"
-#include "base/values.h"
-#include "ios/web/common/referrer_util.h"
-#include "ios/web/js_features/context_menu/context_menu_constants.h"
+#import "base/strings/sys_string_conversions.h"
+#import "base/values.h"
+#import "ios/web/common/referrer_util.h"
+#import "ios/web/js_features/context_menu/context_menu_constants.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -20,7 +20,7 @@ namespace web {
 ContextMenuParams ContextMenuParamsFromElementDictionary(base::Value* element) {
   ContextMenuParams params;
   if (!element || !element->is_dict()) {
-    // Invalid |element|.
+    // Invalid `element`.
     return params;
   }
 

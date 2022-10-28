@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -77,6 +77,7 @@ class MockPage : public new_tab_page::mojom::Page {
   MOCK_METHOD2(SetDisabledModules, void(bool, const std::vector<std::string>&));
   MOCK_METHOD1(SetModulesFreVisibility, void(bool));
   MOCK_METHOD1(CustomizeChromeSidePanelVisibilityChanged, void(bool));
+  MOCK_METHOD1(SetPromo, void(new_tab_page::mojom::PromoPtr));
 
   mojo::Receiver<new_tab_page::mojom::Page> receiver_{this};
 };
@@ -300,32 +301,6 @@ TEST_F(NewTabPageHandlerTest, SetTheme) {
       .WillByDefault(testing::Return(true));
   mock_color_provider_source_.SetColor(
       kColorNewTabPageMostVisitedTileBackground, SkColorSetRGB(0, 0, 4));
-  mock_color_provider_source_.SetColor(kColorNewTabPageSearchBoxBackground,
-                                       SkColorSetRGB(0, 0, 5));
-  mock_color_provider_source_.SetColor(kColorOmniboxResultsIcon,
-                                       SkColorSetRGB(0, 0, 6));
-  mock_color_provider_source_.SetColor(kColorOmniboxResultsIconSelected,
-                                       SkColorSetRGB(0, 0, 7));
-  mock_color_provider_source_.SetColor(kColorOmniboxTextDimmed,
-                                       SkColorSetRGB(0, 0, 8));
-  mock_color_provider_source_.SetColor(kColorOmniboxResultsBackground,
-                                       SkColorSetRGB(0, 0, 9));
-  mock_color_provider_source_.SetColor(kColorOmniboxResultsBackgroundHovered,
-                                       SkColorSetRGB(0, 0, 10));
-  mock_color_provider_source_.SetColor(kColorOmniboxResultsBackgroundSelected,
-                                       SkColorSetRGB(0, 0, 11));
-  mock_color_provider_source_.SetColor(kColorOmniboxResultsTextDimmed,
-                                       SkColorSetRGB(0, 0, 12));
-  mock_color_provider_source_.SetColor(kColorOmniboxResultsTextDimmedSelected,
-                                       SkColorSetRGB(0, 0, 13));
-  mock_color_provider_source_.SetColor(kColorOmniboxText,
-                                       SkColorSetRGB(0, 0, 14));
-  mock_color_provider_source_.SetColor(kColorOmniboxResultsTextSelected,
-                                       SkColorSetRGB(0, 0, 15));
-  mock_color_provider_source_.SetColor(kColorOmniboxResultsUrl,
-                                       SkColorSetRGB(0, 0, 16));
-  mock_color_provider_source_.SetColor(kColorOmniboxResultsUrlSelected,
-                                       SkColorSetRGB(0, 0, 17));
 
   theme_service_observer_->OnThemeChanged();
   mock_page_.FlushForTesting();
@@ -357,20 +332,6 @@ TEST_F(NewTabPageHandlerTest, SetTheme) {
   EXPECT_TRUE(theme->most_visited->use_white_tile_icon);
   EXPECT_TRUE(theme->most_visited->use_title_pill);
   EXPECT_EQ(false, theme->most_visited->is_dark);
-  EXPECT_EQ(SkColorSetRGB(0, 0, 5), theme->search_box->bg);
-  EXPECT_EQ(SkColorSetRGB(0, 0, 6), theme->search_box->icon);
-  EXPECT_EQ(SkColorSetRGB(0, 0, 7), theme->search_box->icon_selected);
-  EXPECT_EQ(SkColorSetRGB(0, 0, 8), theme->search_box->placeholder);
-  EXPECT_EQ(SkColorSetRGB(0, 0, 9), theme->search_box->results_bg);
-  EXPECT_EQ(SkColorSetRGB(0, 0, 10), theme->search_box->results_bg_hovered);
-  EXPECT_EQ(SkColorSetRGB(0, 0, 11), theme->search_box->results_bg_selected);
-  EXPECT_EQ(SkColorSetRGB(0, 0, 12), theme->search_box->results_dim);
-  EXPECT_EQ(SkColorSetRGB(0, 0, 13), theme->search_box->results_dim_selected);
-  EXPECT_EQ(SkColorSetRGB(0, 0, 14), theme->search_box->results_text);
-  EXPECT_EQ(SkColorSetRGB(0, 0, 15), theme->search_box->results_text_selected);
-  EXPECT_EQ(SkColorSetRGB(0, 0, 16), theme->search_box->results_url);
-  EXPECT_EQ(SkColorSetRGB(0, 0, 17), theme->search_box->results_url_selected);
-  EXPECT_EQ(SkColorSetRGB(0, 0, 14), theme->search_box->text);
 }
 
 TEST_F(NewTabPageHandlerTest, SetCustomBackground) {
@@ -549,7 +510,7 @@ TEST_F(NewTabPageHandlerTest, GetInteractiveDoodle) {
   EXPECT_EQ("alt text", doodle->description);
 }
 
-TEST_F(NewTabPageHandlerTest, GetPromo) {
+TEST_F(NewTabPageHandlerTest, UpdatePromoData) {
   PromoData promo_data;
   promo_data.middle_slot_json = R"({
     "part": [{
@@ -578,13 +539,13 @@ TEST_F(NewTabPageHandlerTest, GetPromo) {
   EXPECT_CALL(mock_promo_service_, Refresh).Times(1);
 
   new_tab_page::mojom::PromoPtr promo;
-  base::MockCallback<NewTabPageHandler::GetPromoCallback> callback;
-  EXPECT_CALL(callback, Run(testing::_))
+  EXPECT_CALL(mock_page_, SetPromo)
       .Times(1)
       .WillOnce(testing::Invoke([&promo](new_tab_page::mojom::PromoPtr arg) {
         promo = std::move(arg);
       }));
-  handler_->GetPromo(callback.Get());
+  handler_->UpdatePromoData();
+  mock_page_.FlushForTesting();
 
   ASSERT_TRUE(promo);
   EXPECT_EQ("foo", promo->id);

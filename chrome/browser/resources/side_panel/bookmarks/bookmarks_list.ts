@@ -1,11 +1,11 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 import './commerce/shopping_list.js';
 
 import {getInstance as getAnnouncerInstance} from 'chrome://resources/cr_elements/cr_a11y_announcer/cr_a11y_announcer.js';
-import {FocusOutlineManager} from 'chrome://resources/js/cr/ui/focus_outline_manager.m.js';
+import {FocusOutlineManager} from 'chrome://resources/js/cr/ui/focus_outline_manager.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {listenOnce} from 'chrome://resources/js/util.m.js';
 import {afterNextRender, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
@@ -124,7 +124,7 @@ export class BookmarksListElement extends PolymerElement {
       this.bookmarksDragManager_.startObserving();
     });
 
-    this.shoppingListApi_.getAllBookmarkProductInfo().then(res => {
+    this.shoppingListApi_.getAllPriceTrackedBookmarkProductInfo().then(res => {
       this.productInfos_ = res.productInfos;
     });
   }

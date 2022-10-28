@@ -4,7 +4,7 @@
 
 #include "third_party/blink/renderer/core/frame/remote_frame.h"
 
-#include "base/stl_util.h"
+#include "base/types/optional_util.h"
 #include "cc/layers/surface_layer.h"
 #include "services/network/public/mojom/web_sandbox_flags.mojom-blink.h"
 #include "third_party/blink/public/common/frame/frame_owner_element_type.h"
@@ -271,7 +271,7 @@ void RemoteFrame::Navigate(FrameLoadRequest& frame_request,
   params->initiator_policy_container_keep_alive_handle =
       std::move(initiator_policy_container_keep_alive_handle);
   params->initiator_frame_token =
-      base::OptionalFromPtr(base::OptionalOrNullptr(initiator_frame_token));
+      base::OptionalFromPtr(base::OptionalToPtr(initiator_frame_token));
   params->source_location = network::mojom::blink::SourceLocation::New();
 
   std::unique_ptr<SourceLocation> source_location =
@@ -771,47 +771,42 @@ void RemoteFrame::DidUpdateFramePolicy(const FramePolicy& frame_policy) {
 
 void RemoteFrame::UpdateOpener(
     const absl::optional<blink::FrameToken>& opener_frame_token) {
-  if (auto* web_frame = WebFrame::FromCoreFrame(this)) {
-    Frame* opener_frame = nullptr;
-    if (opener_frame_token)
-      opener_frame = Frame::ResolveFrame(opener_frame_token.value());
-    SetOpenerDoNotNotify(opener_frame);
-  }
+  Frame* opener_frame = nullptr;
+  if (opener_frame_token)
+    opener_frame = Frame::ResolveFrame(opener_frame_token.value());
+  SetOpenerDoNotNotify(opener_frame);
 }
 
-gfx::Size RemoteFrame::GetMainFrameViewportSize() const {
+gfx::Size RemoteFrame::GetOutermostMainFrameSize() const {
   HTMLFrameOwnerElement* owner = DeprecatedLocalOwner();
   DCHECK(owner);
   DCHECK(owner->GetDocument().GetFrame());
-  return owner->GetDocument().GetFrame()->GetMainFrameViewportSize();
+  return owner->GetDocument().GetFrame()->GetOutermostMainFrameSize();
 }
 
-gfx::Point RemoteFrame::GetMainFrameScrollPosition() const {
+gfx::Point RemoteFrame::GetOutermostMainFrameScrollPosition() const {
   HTMLFrameOwnerElement* owner = DeprecatedLocalOwner();
   DCHECK(owner);
   DCHECK(owner->GetDocument().GetFrame());
-  return owner->GetDocument().GetFrame()->GetMainFrameScrollPosition();
+  return owner->GetDocument().GetFrame()->GetOutermostMainFrameScrollPosition();
 }
 
 void RemoteFrame::SetOpener(Frame* opener_frame) {
   if (Opener() == opener_frame)
     return;
 
-  auto* web_frame = WebFrame::FromCoreFrame(this);
-  if (web_frame) {
-    // A proxy shouldn't normally be disowning its opener.  It is possible to
-    // get here when a proxy that is being detached clears its opener, in
-    // which case there is no need to notify the browser process.
-    if (opener_frame) {
-      // Only a LocalFrame (i.e., the caller of window.open) should be able to
-      // update another frame's opener.
-      DCHECK(opener_frame->IsLocalFrame());
-      GetRemoteFrameHostRemote().DidChangeOpener(
-          opener_frame
-              ? absl::optional<blink::LocalFrameToken>(
-                    opener_frame->GetFrameToken().GetAs<LocalFrameToken>())
-              : absl::nullopt);
-    }
+  // A proxy shouldn't normally be disowning its opener.  It is possible to
+  // get here when a proxy that is being detached clears its opener, in
+  // which case there is no need to notify the browser process.
+  if (opener_frame) {
+    // Only a LocalFrame (i.e., the caller of window.open) should be able to
+    // update another frame's opener.
+    DCHECK(opener_frame->IsLocalFrame());
+    GetRemoteFrameHostRemote().DidChangeOpener(
+        opener_frame
+            ? absl::optional<blink::LocalFrameToken>(
+                  opener_frame->GetFrameToken().GetAs<LocalFrameToken>())
+            : absl::nullopt);
   }
   SetOpenerDoNotNotify(opener_frame);
 }

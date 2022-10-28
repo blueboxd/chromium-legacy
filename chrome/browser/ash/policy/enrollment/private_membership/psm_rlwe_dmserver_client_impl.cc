@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -90,11 +90,6 @@ void PsmRlweDmserverClientImpl::CheckMembership(CompletionCallback callback) {
 
   on_completion_callback_ = std::move(callback);
 
-  // Start the protocol and its timeout timer.
-  psm_timeout_.Start(
-      FROM_HERE, kPsmTimeout,
-      base::BindOnce(&PsmRlweDmserverClientImpl::StoreErrorAndStop,
-                     base::Unretained(this), PsmResult::kTimeout));
   SendPsmRlweOprfRequest();
 }
 
@@ -107,9 +102,6 @@ void PsmRlweDmserverClientImpl::StoreErrorAndStop(PsmResult psm_result) {
   // Note that kUMAPsmResult histogram is only using initial enrollment as a
   // suffix until PSM support FRE.
   base::UmaHistogramEnumeration(kUMAPsmResult + uma_suffix_, psm_result);
-
-  // Stop the PSM timer.
-  psm_timeout_.Stop();
 
   // Stop the current |psm_request_job_|.
   psm_request_job_.reset();
@@ -305,9 +297,6 @@ void PsmRlweDmserverClientImpl::OnRlweQueryRequestCompletion(
       // Reset the |psm_request_job_| to allow another call to
       // CheckMembership.
       psm_request_job_.reset();
-
-      // Stop the PSM timer.
-      psm_timeout_.Stop();
 
       // Store the last PSM execution result.
       last_psm_execution_result_ =

@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,8 +12,6 @@ GEN('#include "chrome/browser/ui/ui_features.h"');
 GEN('#include "content/public/test/browser_test.h"');
 GEN('#include "build/chromeos_buildflags.h"');
 GEN('#include "crypto/crypto_buildflags.h"');
-
-/* eslint-disable no-var */
 
 /** Test fixture for shared Polymer 3 components. */
 var CrComponentsBrowserTest = class extends PolymerTest {

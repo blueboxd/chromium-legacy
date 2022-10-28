@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -137,7 +137,7 @@ BrowserPolicyConnectorAsh::BrowserPolicyConnectorAsh()
 
   // DBusThreadManager or DeviceSettingsService may be
   // uninitialized on unit tests.
-  if (chromeos::DBusThreadManager::IsInitialized() &&
+  if (ash::DBusThreadManager::IsInitialized() &&
       ash::DeviceSettingsService::IsInitialized()) {
     std::unique_ptr<DeviceCloudPolicyStoreAsh> device_cloud_policy_store =
         std::make_unique<DeviceCloudPolicyStoreAsh>(

@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -19,9 +19,6 @@
 namespace ash::cros_healthd {
 
 namespace {
-
-// TODO(https://crbug.com/1164001): remove after migration to namespace ash.
-namespace mojom = ::chromeos::cros_healthd::mojom;
 
 // Will destroy `handle` if it's not a valid platform handle.
 mojo::ScopedHandle CloneScopedHandle(mojo::ScopedHandle* handle) {
@@ -113,6 +110,11 @@ void FakeCrosHealthd::SetProbeTelemetryInfoResponseForTesting(
 void FakeCrosHealthd::SetProbeProcessInfoResponseForTesting(
     mojom::ProcessResultPtr& result) {
   process_response_.Swap(&result);
+}
+
+void FakeCrosHealthd::SetProbeMultipleProcessInfoResponseForTesting(
+    mojom::MultipleProcessResultPtr& result) {
+  multiple_process_response_.Swap(&result);
 }
 
 void FakeCrosHealthd::SetCallbackDelay(base::TimeDelta delay) {
@@ -385,9 +387,7 @@ void FakeCrosHealthd::GetSystemService(
 }
 
 void FakeCrosHealthd::SendChromiumDataCollector(
-    mojo::PendingRemote<
-        chromeos::cros_healthd::internal::mojom::ChromiumDataCollector>
-        remote) {
+    mojo::PendingRemote<internal::mojom::ChromiumDataCollector> remote) {
   NOTIMPLEMENTED();
 }
 
@@ -709,6 +709,16 @@ void FakeCrosHealthd::ProbeProcessInfo(const uint32_t process_id,
                                        ProbeProcessInfoCallback callback) {
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE, base::BindOnce(std::move(callback), process_response_.Clone()),
+      callback_delay_);
+}
+
+void FakeCrosHealthd::ProbeMultipleProcessInfo(
+    const absl::optional<std::vector<uint32_t>>& process_ids,
+    bool ignore_single_process_error,
+    ProbeMultipleProcessInfoCallback callback) {
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE,
+      base::BindOnce(std::move(callback), multiple_process_response_.Clone()),
       callback_delay_);
 }
 

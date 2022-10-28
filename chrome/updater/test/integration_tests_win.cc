@@ -1,18 +1,19 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include <shlobj.h>
 #include <wrl/client.h>
+#include <wrl/implements.h>
 
 #include <regstr.h>
 
-#include <algorithm>
 #include <iostream>
 #include <memory>
 #include <string>
 #include <vector>
 
+#include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/containers/contains.h"
 #include "base/files/file_path.h"
@@ -23,7 +24,9 @@
 #include "base/path_service.h"
 #include "base/process/launch.h"
 #include "base/process/process.h"
+#include "base/ranges/algorithm.h"
 #include "base/strings/strcat.h"
+#include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -32,6 +35,7 @@
 #include "base/task/thread_pool.h"
 #include "base/test/bind.h"
 #include "base/test/test_timeouts.h"
+#include "base/threading/platform_thread.h"
 #include "base/time/time.h"
 #include "base/timer/elapsed_timer.h"
 #include "base/values.h"
@@ -39,7 +43,9 @@
 #include "base/win/registry.h"
 #include "base/win/scoped_bstr.h"
 #include "base/win/scoped_variant.h"
+#include "base/win/win_util.h"
 #include "build/build_config.h"
+#include "chrome/updater/app/server/win/com_classes.h"
 #include "chrome/updater/app/server/win/updater_idl.h"
 #include "chrome/updater/app/server/win/updater_internal_idl.h"
 #include "chrome/updater/app/server/win/updater_legacy_idl.h"
@@ -315,8 +321,13 @@ void CheckInstallation(UpdaterScope scope,
       continue;
 
     EXPECT_TRUE(path);
-    EXPECT_TRUE(WaitFor(base::BindLambdaForTesting(
-        [&]() { return is_installed == base::PathExists(*path); })));
+    EXPECT_TRUE(WaitFor(base::BindLambdaForTesting([&]() {
+                          return is_installed == base::PathExists(*path);
+                        }),
+                        base::BindLambdaForTesting([&]() {
+                          VLOG(0) << "Still waiting for " << *path
+                                  << " where is_installed=" << is_installed;
+                        })));
   }
 }
 
@@ -433,8 +444,7 @@ void CallDispatchMethod(
       GetDispId(dispatch, method_name), IID_NULL, LOCALE_USER_DEFAULT,
       DISPATCH_METHOD, &dp, nullptr, nullptr, nullptr));
 
-  std::for_each(params.begin(), params.end(),
-                [&](auto& param) { ::VariantClear(&param); });
+  base::ranges::for_each(params, [&](auto& param) { ::VariantClear(&param); });
   return;
 }
 
@@ -510,7 +520,7 @@ void Clean(UpdaterScope scope) {
   }
 
   if (scope == UpdaterScope::kUser) {
-    base::win::RegKey(root, REGSTR_PATH_RUN, KEY_READ)
+    base::win::RegKey(root, REGSTR_PATH_RUN, KEY_WRITE)
         .DeleteValue(GetTaskNamePrefix(scope).c_str());
   }
 
@@ -628,8 +638,73 @@ void ExpectNotActive(UpdaterScope /*scope*/, const std::string& id) {
 
 // Waits for all updater processes to end, including the server process holding
 // the prefs lock.
-void WaitForUpdaterExit(UpdaterScope /*scope*/) {
-  WaitFor(base::BindRepeating([]() { return !IsUpdaterRunning(); }));
+bool WaitForUpdaterExit(UpdaterScope /*scope*/) {
+  return WaitFor(base::BindRepeating([]() { return !IsUpdaterRunning(); }),
+                 base::BindLambdaForTesting([]() {
+                   VLOG(0) << "Still waiting for updater to exit...";
+                 }));
+}
+
+// Verify registry entries for all interfaces.
+// IID entries under `Software\Classes\Interface`:
+// * ProxyStubClsid32 entry should point to the OLE automation marshaler
+// * TypeLib entry should be equal to the IID.
+//
+// TypeLib entries under `Software\Classes\TypeLib`:
+// * Read the typelib path under both `win32` and `win64`.
+// * Confirm that the typelib can be loaded using ::LoadTypeLib.
+// * Confirm that the typeinfo for each interface can be loaded from the
+// typelib.
+void VerifyInterfacesRegistryEntries(UpdaterScope scope) {
+  for (const auto is_internal : {true, false}) {
+    for (const auto& iid : GetInterfaces(is_internal)) {
+      const HKEY root = UpdaterScopeToHKeyRoot(scope);
+      const std::wstring iid_reg_path = GetComIidRegistryPath(iid);
+      const std::wstring typelib_reg_path = GetComTypeLibRegistryPath(iid);
+      const std::wstring iid_string = base::win::WStringFromGUID(iid);
+
+      std::wstring val;
+      {
+        const auto& path = iid_reg_path + L"\\ProxyStubClsid32";
+        EXPECT_EQ(base::win::RegKey(root, path.c_str(), KEY_READ)
+                      .ReadValue(L"", &val),
+                  ERROR_SUCCESS)
+            << ": " << root << ": " << path << ": " << iid_string;
+        EXPECT_EQ(val, L"{00020424-0000-0000-C000-000000000046}");
+      }
+
+      {
+        const auto& path = iid_reg_path + L"\\TypeLib";
+        EXPECT_EQ(base::win::RegKey(root, path.c_str(), KEY_READ)
+                      .ReadValue(L"", &val),
+                  ERROR_SUCCESS)
+            << ": " << root << ": " << path << ": " << iid_string;
+        EXPECT_EQ(val, iid_string);
+      }
+
+      const std::wstring typelib_reg_path_win32 =
+          typelib_reg_path + L"\\1.0\\0\\win32";
+      const std::wstring typelib_reg_path_win64 =
+          typelib_reg_path + L"\\1.0\\0\\win64";
+
+      for (const auto& path :
+           {typelib_reg_path_win32, typelib_reg_path_win64}) {
+        std::wstring typelib_path;
+        EXPECT_EQ(base::win::RegKey(root, path.c_str(), KEY_READ)
+                      .ReadValue(L"", &typelib_path),
+                  ERROR_SUCCESS)
+            << ": " << root << ": " << path << ": " << iid_string;
+
+        Microsoft::WRL::ComPtr<ITypeLib> type_lib;
+        EXPECT_HRESULT_SUCCEEDED(::LoadTypeLib(typelib_path.c_str(), &type_lib))
+            << ": Typelib path: " << typelib_path;
+
+        Microsoft::WRL::ComPtr<ITypeInfo> type_info;
+        EXPECT_HRESULT_SUCCEEDED(type_lib->GetTypeInfoOfGuid(iid, &type_info))
+            << ": Typelib path: " << typelib_path << ": IID: " << iid_string;
+      }
+    }
+  }
 }
 
 // Tests if the typelibs and some of the public, internal, and
@@ -661,14 +736,75 @@ void ExpectInterfacesRegistered(UpdaterScope scope) {
     EXPECT_HRESULT_SUCCEEDED(dispatch.As(&app_bundle));
   }
 
-  // IUpdaterInternal.
-  Microsoft::WRL::ComPtr<IUnknown> updater_internal_server;
-  ASSERT_HRESULT_SUCCEEDED(::CoCreateInstance(
-      scope == UpdaterScope::kSystem ? __uuidof(UpdaterInternalSystemClass)
-                                     : __uuidof(UpdaterInternalUserClass),
-      nullptr, CLSCTX_LOCAL_SERVER, IID_PPV_ARGS(&updater_internal_server)));
+  {  // IUpdaterInternal.
+    Microsoft::WRL::ComPtr<IUnknown> updater_internal_server;
+    ASSERT_HRESULT_SUCCEEDED(::CoCreateInstance(
+        scope == UpdaterScope::kSystem ? __uuidof(UpdaterInternalSystemClass)
+                                       : __uuidof(UpdaterInternalUserClass),
+        nullptr, CLSCTX_LOCAL_SERVER, IID_PPV_ARGS(&updater_internal_server)));
+    Microsoft::WRL::ComPtr<IUpdaterInternal> updater_internal;
+    EXPECT_HRESULT_SUCCEEDED(updater_internal_server.As(&updater_internal));
+  }
+
+  VerifyInterfacesRegistryEntries(scope);
+}
+
+void ExpectMarshalInterfaceSucceeds(UpdaterScope scope) {
+  // Create proxy/stubs for the IUpdaterInternal interface.
+  // Look up the ProxyStubClsid32.
+  CLSID psclsid = {};
+  EXPECT_HRESULT_SUCCEEDED(
+      ::CoGetPSClsid(__uuidof(IUpdaterInternal), &psclsid));
+  EXPECT_EQ(base::ToUpperASCII(base::win::WStringFromGUID(psclsid)),
+            L"{00020424-0000-0000-C000-000000000046}");
+
+  // Get the proxy/stub factory buffer.
+  Microsoft::WRL::ComPtr<IPSFactoryBuffer> psfb;
+  EXPECT_HRESULT_SUCCEEDED(
+      ::CoGetClassObject(psclsid, CLSCTX_INPROC, 0, IID_PPV_ARGS(&psfb)));
+
+  // Create the interface proxy.
+  Microsoft::WRL::ComPtr<IRpcProxyBuffer> proxy_buffer;
+  Microsoft::WRL::ComPtr<IUpdaterInternal> object;
+  EXPECT_HRESULT_SUCCEEDED(
+      psfb->CreateProxy(nullptr, __uuidof(IUpdaterInternal), &proxy_buffer,
+                        IID_PPV_ARGS_Helper(&object)));
+
+  // Create the interface stub.
+  Microsoft::WRL::ComPtr<IRpcStubBuffer> stub_buffer;
+  EXPECT_HRESULT_SUCCEEDED(
+      psfb->CreateStub(__uuidof(IUpdaterInternal), nullptr, &stub_buffer));
+
+  // Marshal and unmarshal an IUpdaterInternal object.
   Microsoft::WRL::ComPtr<IUpdaterInternal> updater_internal;
-  EXPECT_HRESULT_SUCCEEDED(updater_internal_server.As(&updater_internal));
+  EXPECT_HRESULT_SUCCEEDED(
+      Microsoft::WRL::MakeAndInitialize<UpdaterInternalImpl>(
+          &updater_internal));
+
+  Microsoft::WRL::ComPtr<IStream> stream;
+  EXPECT_HRESULT_SUCCEEDED(::CoMarshalInterThreadInterfaceInStream(
+      __uuidof(IUpdaterInternal), updater_internal.Get(), &stream));
+
+  base::WaitableEvent unmarshal_complete_event;
+
+  base::ThreadPool::CreateCOMSTATaskRunner({base::MayBlock()})
+      ->PostTask(
+          FROM_HERE,
+          base::BindOnce(
+              [](Microsoft::WRL::ComPtr<IStream> stream,
+                 base::WaitableEvent& event) {
+                const base::ScopedClosureRunner signal_event(base::BindOnce(
+                    [](base::WaitableEvent& event) { event.Signal(); },
+                    std::ref(event)));
+
+                Microsoft::WRL::ComPtr<IUpdaterInternal> updater_internal;
+                EXPECT_HRESULT_SUCCEEDED(::CoUnmarshalInterface(
+                    stream.Get(), IID_PPV_ARGS(&updater_internal)));
+              },
+              stream, std::ref(unmarshal_complete_event)));
+
+  EXPECT_TRUE(
+      unmarshal_complete_event.TimedWait(TestTimeouts::action_max_timeout()));
 }
 
 void InitializeBundle(UpdaterScope scope,
@@ -693,10 +829,9 @@ HRESULT DoLoopUntilDone(Microsoft::WRL::ComPtr<IAppBundleWeb> bundle,
                         int expected_final_state,
                         HRESULT expected_error_code) {
   bool done = false;
-  static constexpr base::TimeDelta kExpirationTimeout = base::Minutes(1);
+  static const base::TimeDelta kExpirationTimeout =
+      2 * TestTimeouts::action_max_timeout();
   base::ElapsedTimer timer;
-
-  EXPECT_TRUE(timer.Elapsed() < kExpirationTimeout);
 
   LONG state_value = 0;
   LONG error_code = 0;
@@ -833,15 +968,17 @@ HRESULT DoLoopUntilDone(Microsoft::WRL::ComPtr<IAppBundleWeb> bundle,
         break;
     }
 
-    // TODO(1245992): Remove this logging once we get some confidence that the
-    // code is working correctly and no further debugging is needed.
-    LOG(ERROR) << base::StringPrintf(L"[State: %d][%ls][%ls]\n", state_value,
+    // TODO(crbug.com/1245992): Remove this logging once the code is test
+    // flakiness is eliminated and no further debugging is needed.
+    LOG(ERROR) << base::StringPrintf(L"[State: %d][%ls]%ls", state_value,
                                      stateDescription.c_str(),
                                      extraData.c_str());
-    ::Sleep(100);
+    base::PlatformThread::Sleep(base::Seconds(1));
   }
 
-  EXPECT_TRUE(done);
+  EXPECT_TRUE(done)
+      << "The test timed out, consider increasing kExpirationTimeout which is: "
+      << kExpirationTimeout;
   EXPECT_EQ(expected_final_state, state_value);
   EXPECT_EQ(expected_error_code, error_code);
 
@@ -959,11 +1096,11 @@ void ExpectLegacyAppCommandWebSucceeds(UpdaterScope scope,
 
   std::vector<base::win::ScopedVariant> variant_params;
   variant_params.reserve(kMaxParameters);
-  std::transform(parameters.begin(), parameters.end(),
-                 std::back_inserter(variant_params), [](const auto& param) {
-                   return base::win::ScopedVariant(
-                       base::UTF8ToWide(param.GetString()).c_str());
-                 });
+  base::ranges::transform(parameters, std::back_inserter(variant_params),
+                          [](const auto& param) {
+                            return base::win::ScopedVariant(
+                                base::UTF8ToWide(param.GetString()).c_str());
+                          });
   for (size_t i = parameters.size(); i < kMaxParameters; ++i)
     variant_params.emplace_back(base::win::ScopedVariant::kEmptyVariant);
 
@@ -1078,7 +1215,8 @@ int RunVPythonCommand(const base::CommandLine& command_line) {
   int exit_code = -1;
   base::Process process = base::LaunchProcess(python_command, {});
   EXPECT_TRUE(process.IsValid());
-  EXPECT_TRUE(process.WaitForExitWithTimeout(base::Seconds(60), &exit_code));
+  EXPECT_TRUE(process.WaitForExitWithTimeout(TestTimeouts::action_timeout(),
+                                             &exit_code));
   return exit_code;
 }
 
@@ -1159,7 +1297,8 @@ void RunUninstallCmdLine(UpdaterScope scope) {
   EXPECT_TRUE(process.IsValid());
 
   int exit_code = 0;
-  EXPECT_TRUE(process.WaitForExitWithTimeout(base::Seconds(45), &exit_code));
+  EXPECT_TRUE(process.WaitForExitWithTimeout(TestTimeouts::action_timeout(),
+                                             &exit_code));
   EXPECT_EQ(0, exit_code);
 }
 
@@ -1219,7 +1358,6 @@ void ExpectLegacyUpdaterDataMigrated(UpdaterScope scope) {
   EXPECT_TRUE(persisted_data->GetBrandCode(kNoPVAppId).empty());
   EXPECT_TRUE(persisted_data->GetFingerprint(kNoPVAppId).empty());
 
-  const std::string kChromeAppId = "{8A69D345-D564-463C-AFF1-A69D9E530F96}";
   EXPECT_EQ(persisted_data->GetProductVersion(kChromeAppId),
             base::Version("99.0.0.1"));
   EXPECT_EQ(persisted_data->GetAP(kChromeAppId), "TestAP");
@@ -1243,7 +1381,7 @@ void UninstallApp(UpdaterScope scope, const std::string& app_id) {
   ASSERT_EQ(key.DeleteKey(base::SysUTF8ToWide(app_id).c_str()), ERROR_SUCCESS);
 }
 
-void RunOfflineInstall(UpdaterScope scope) {
+void RunOfflineInstall(UpdaterScope scope, bool is_silent_install) {
   constexpr wchar_t kTestAppID[] = L"{CDABE316-39CD-43BA-8440-6D1E0547AEE6}";
   constexpr char kManifestFormat[] =
       "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
@@ -1253,12 +1391,12 @@ void RunOfflineInstall(UpdaterScope scope) {
       "      <manifest version=\"1.2.3.4\">\n"
       "        <packages>\n"
       "          <package hash_sha256=\"sha256hash_foobar\"\n"
-      "            name=\"reg.exe\" required=\"true\" size=\"%lld\"/>\n"
+      "            name=\"cmd.exe\" required=\"true\" size=\"%lld\"/>\n"
       "        </packages>\n"
       "        <actions>\n"
       "          <action event=\"install\"\n"
-      "            run=\"reg.exe\"\n"
-      "            arguments=\"IMPORT %s /REG:32\"/>\n"
+      "            run=\"cmd.exe\"\n"
+      "            arguments=\"/c &quot;%ls&quot; \"/>\n"
       "        </actions>\n"
       "      </manifest>\n"
       "    </updatecheck>\n"
@@ -1273,47 +1411,71 @@ void RunOfflineInstall(UpdaterScope scope) {
 
   EXPECT_TRUE(DeleteRegKey(root, app_client_state_key));
 
-  base::FilePath reg_exe_path;
-  ASSERT_TRUE(base::PathService::Get(base::DIR_SYSTEM, &reg_exe_path));
-  reg_exe_path = reg_exe_path.Append(L"reg.exe");
-  ASSERT_TRUE(base::PathExists(reg_exe_path));
+  // Create a unique name for a shared event to be waited for in this process
+  // and signaled in the offline installer process to confirm the installer
+  // was run.
+  const std::wstring event_name = base::StrCat(
+      {L"OfflineInstallTest-", base::NumberToWString(::GetCurrentProcessId())});
+  NamedObjectAttributes attr;
+  GetNamedObjectAttributes(event_name.c_str(), scope, &attr);
+  base::WaitableEvent event(base::win::ScopedHandle(
+      ::CreateEvent(&attr.sa, FALSE, FALSE, attr.name.c_str())));
+  ASSERT_NE(event.handle(), nullptr);
 
   base::ScopedTempDir temp_dir;
   EXPECT_TRUE(temp_dir.CreateUniqueTempDir());
   const base::FilePath& offline_dir = temp_dir.GetPath();
 
-  // Create installer result reg file. These are 32-bit registry values and
-  // must be imported with flag `/REG:32`.
-  constexpr char kRegFileName[] = "InstallerResult.reg";
-  constexpr char kInstallerResultRegFileFormat[] =
-      "Windows Registry Editor Version 5.00\n"
-      "\n"
-      "[%s\\%ls]\n"
-      "\"InstallerResult\"=dword:00000000\n"
-      "\"InstallerError\"=dword:00000000\n"
-      "\"InstallerExtraCode1\"=dword:00000000\n"
-      "\"InstallerResultUIString\"=\"CoolApp\"\n"
-      "\"InstallerSuccessLaunchCmdLine\"=\"notepad.exe\"\n";
-  base::FilePath installer_result_path = offline_dir.AppendASCII(kRegFileName);
+  // Create a batch file as the installer script, which creates some registry
+  // values as the installation artifacts.
+  base::FilePath installer_path = offline_dir.AppendASCII("test_installer.bat");
   EXPECT_TRUE(base::WriteFile(
-      installer_result_path,
-      base::StringPrintf(kInstallerResultRegFileFormat,
-                         scope == UpdaterScope::kSystem ? "HKEY_LOCAL_MACHINE"
-                                                        : "HKEY_CURRENT_USER",
-                         app_client_state_key.c_str())));
+      installer_path,
+      [](UpdaterScope scope, const std::string& app_client_state_key,
+         const std::wstring& event_name) -> std::string {
+        const std::string reg_hive =
+            scope == UpdaterScope::kSystem ? "HKLM" : "HKCU";
+
+        base::CommandLine post_install_cmd(GetTestProcessCommandLine(scope));
+        post_install_cmd.AppendSwitchNative(kTestEventToSignal, event_name);
+        std::vector<std::string> commands;
+        const struct {
+          const char* value_name;
+          const char* type;
+          const std::string value;
+        } reg_items[5] = {
+            {"InstallerResult", "REG_DWORD", "0"},
+            {"InstallerError", "REG_DWORD", "0"},
+            {"InstallerExtraCode1", "REG_DWORD", "0"},
+            {"InstallerResultUIString", "REG_SZ", "CoolApp"},
+            {"InstallerSuccessLaunchCmdLine", "REG_SZ",
+             base::WideToASCII(post_install_cmd.GetCommandLineString())},
+        };
+        for (const auto& reg_item : reg_items) {
+          commands.push_back(base::StringPrintf(
+              "REG.exe ADD \"%s\\%s\" /v %s /t %s /d \"%s\" /f /reg:32",
+              reg_hive.c_str(), app_client_state_key.c_str(),
+              reg_item.value_name, reg_item.type, reg_item.value.c_str()));
+        }
+        return base::JoinString(commands, "\n");
+      }(scope, base::WideToASCII(app_client_state_key), attr.name)));
+
+  // The updater only allows `.exe` or `.msi` to run from the offline directory.
+  // Setup `cmd.exe` as the wrapper installer.
+  base::FilePath cmd_exe_path;
+  ASSERT_TRUE(base::PathService::Get(base::DIR_SYSTEM, &cmd_exe_path));
+  cmd_exe_path = cmd_exe_path.Append(L"cmd.exe");
+  ASSERT_TRUE(base::CopyFile(cmd_exe_path,
+                             offline_dir.Append(cmd_exe_path.BaseName())));
 
   // Create manifest file.
   base::FilePath manifest_path =
       offline_dir.Append(FILE_PATH_LITERAL("OfflineManifest.gup"));
   int64_t exe_size = 0;
-  EXPECT_TRUE(base::GetFileSize(reg_exe_path, &exe_size));
-  const std::string manifest =
-      base::StringPrintf(kManifestFormat, kTestAppID, exe_size, kRegFileName);
+  EXPECT_TRUE(base::GetFileSize(cmd_exe_path, &exe_size));
+  const std::string manifest = base::StringPrintf(
+      kManifestFormat, kTestAppID, exe_size, installer_path.value().c_str());
   EXPECT_TRUE(base::WriteFile(manifest_path, manifest));
-
-  // Copy app installer.
-  ASSERT_TRUE(base::CopyFile(reg_exe_path,
-                             offline_dir.Append(FILE_PATH_LITERAL("reg.exe"))));
 
   // Trigger offline install.
   const absl::optional<base::FilePath> updater_exe =
@@ -1334,57 +1496,69 @@ void RunOfflineInstall(UpdaterScope scope) {
       updater::kSessionIdSwitch, "{E85204C6-6F2F-40BF-9E6C-4952208BB977}");
   offline_install_cmd.AppendSwitchNative(updater::kOfflineDirSwitch,
                                          offline_dir.value());
+  if (is_silent_install)
+    offline_install_cmd.AppendSwitch(updater::kSilentSwitch);
 
   base::Process process = base::LaunchProcess(offline_install_cmd, {});
   EXPECT_TRUE(process.IsValid());
 
-  // Dismiss the installation completion dialog, then wait for the process exit.
-  EXPECT_TRUE(WaitFor(base::BindRepeating(
-      [](HKEY root, const wchar_t* test_key_name,
-         const wchar_t* test_value_name) {
-        // Enumerate the top-level dialogs to find the setup dialog.
-        WindowEnumerator(
-            ::GetDesktopWindow(), base::BindRepeating([](HWND hwnd) {
-              return WindowEnumerator::IsSystemDialog(hwnd) &&
-                     base::Contains(WindowEnumerator::GetWindowText(hwnd),
-                                    GetLocalizedStringF(
-                                        IDS_INSTALLER_DISPLAY_NAME_BASE,
-                                        GetLocalizedString(
-                                            IDS_FRIENDLY_COMPANY_NAME_BASE)));
-            }),
-            base::BindRepeating([](HWND hwnd) {
-              // Enumerates the dialog items to search for installation complete
-              // message. Once found, close the dialog.
-              WindowEnumerator(
-                  hwnd, base::BindRepeating([](HWND hwnd) {
-                    return base::Contains(
-                        WindowEnumerator::GetWindowText(hwnd),
-                        GetLocalizedString(
-                            IDS_BUNDLE_INSTALLED_SUCCESSFULLY_BASE));
-                  }),
-                  base::BindRepeating([](HWND hwnd) {
-                    ::PostMessage(::GetParent(hwnd), WM_CLOSE, 0, 0);
-                  }))
-                  .Run();
-            }))
-            .Run();
+  if (is_silent_install) {
+    EXPECT_TRUE(WaitForUpdaterExit(scope));
+  } else {
+    // Dismiss the installation completion dialog, then wait for the process
+    // exit.
+    EXPECT_TRUE(WaitFor(
+        base::BindRepeating([]() {
+          // Enumerate the top-level dialogs to find the setup dialog.
+          WindowEnumerator(
+              ::GetDesktopWindow(), base::BindRepeating([](HWND hwnd) {
+                return WindowEnumerator::IsSystemDialog(hwnd) &&
+                       base::Contains(WindowEnumerator::GetWindowText(hwnd),
+                                      GetLocalizedStringF(
+                                          IDS_INSTALLER_DISPLAY_NAME_BASE,
+                                          GetLocalizedString(
+                                              IDS_FRIENDLY_COMPANY_NAME_BASE)));
+              }),
+              base::BindRepeating([](HWND hwnd) {
+                // Enumerates the dialog items to search for installation
+                // complete message. Once found, close the dialog.
+                WindowEnumerator(
+                    hwnd, base::BindRepeating([](HWND hwnd) {
+                      return base::Contains(
+                          WindowEnumerator::GetWindowText(hwnd),
+                          GetLocalizedString(
+                              IDS_BUNDLE_INSTALLED_SUCCESSFULLY_BASE));
+                    }),
+                    base::BindRepeating([](HWND hwnd) {
+                      ::PostMessage(::GetParent(hwnd), WM_CLOSE, 0, 0);
+                    }))
+                    .Run();
+              }))
+              .Run();
 
-        if (IsUpdaterRunning())
-          return false;
+          return !IsUpdaterRunning();
+        }),
+        base::BindLambdaForTesting(
+            []() { VLOG(0) << "Still waiting for the process exit."; })));
+  }
 
-        // Wait for the app installer to write the expected reg value.
-        base::win::RegKey key;
-        std::wstring value;
-        return ERROR_SUCCESS ==
-                   key.Open(root, test_key_name, Wow6432(KEY_QUERY_VALUE)) &&
-               ERROR_SUCCESS == key.ReadValue(test_value_name, &value) &&
-               value == L"CoolApp";
-      },
-      root, app_client_state_key.c_str(), kRegValueInstallerResultUIString)));
+  // App installer should have created the expected reg value.
+  base::win::RegKey key;
+  std::wstring value;
+  EXPECT_EQ(
+      key.Open(root, app_client_state_key.c_str(), Wow6432(KEY_QUERY_VALUE)),
+      ERROR_SUCCESS);
+  EXPECT_EQ(key.ReadValue(kRegValueInstallerResultUIString, &value),
+            ERROR_SUCCESS);
+  EXPECT_EQ(value, L"CoolApp");
 
-  // notepad.exe was run as a post-install command via the installer result API.
-  // The process will be present until test completes.
-  EXPECT_TRUE(test::IsProcessRunning(L"notepad.exe"));
+  // TODO(crbug.com/1286580): Remove this `if` clause when the silent install
+  // launches post install command.
+  if (!is_silent_install) {
+    // Event should have been signaled by the post-install command via the
+    // installer result API.
+    EXPECT_TRUE(event.TimedWait(TestTimeouts::action_max_timeout()));
+  }
 
   EXPECT_TRUE(DeleteRegKey(root, app_client_state_key));
 }

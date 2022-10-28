@@ -1,16 +1,16 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome/browser/component_updater/metadata_table_chromeos.h"
 
-#include <algorithm>
 #include <memory>
 #include <utility>
 #include <vector>
 
 #include "base/hash/sha1.h"
 #include "base/memory/ptr_util.h"
+#include "base/ranges/algorithm.h"
 #include "base/strings/string_number_conversions.h"
 #include "components/component_updater/component_updater_paths.h"
 #include "components/prefs/pref_registry_simple.h"
@@ -129,12 +129,12 @@ bool MetadataTable::DeleteComponentForCurrentUser(
 
 bool MetadataTable::HasComponentForAnyUser(
     const std::string& component_name) const {
-  return std::any_of(installed_items_.begin(), installed_items_.end(),
-                     [&component_name](const base::Value& item) {
-                       const std::string& name = GetRequiredStringFromDict(
-                           item, kMetadataContentItemComponentKey);
-                       return name == component_name;
-                     });
+  return base::ranges::any_of(
+      installed_items_, [&component_name](const base::Value& item) {
+        const std::string& name =
+            GetRequiredStringFromDict(item, kMetadataContentItemComponentKey);
+        return name == component_name;
+      });
 }
 
 MetadataTable::MetadataTable() : pref_service_(nullptr) {
@@ -145,8 +145,7 @@ void MetadataTable::Load() {
   DCHECK(pref_service_);
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  const base::Value::Dict& dict =
-      pref_service_->GetValueDict(kMetadataPrefPath);
+  const base::Value::Dict& dict = pref_service_->GetDict(kMetadataPrefPath);
   const base::Value::List* installed_items = dict.FindList(kMetadataContentKey);
   if (installed_items) {
     installed_items_ = installed_items->Clone();

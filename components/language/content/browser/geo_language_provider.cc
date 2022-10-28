@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -77,7 +77,7 @@ void GeoLanguageProvider::StartUp(PrefService* const prefs) {
   prefs_ = prefs;
 
   const base::Value::List& cached_languages_list =
-      prefs_->GetValueList(kCachedGeoLanguagesPref);
+      prefs_->GetList(kCachedGeoLanguagesPref);
   for (const auto& language_value : cached_languages_list) {
     languages_.push_back(language_value.GetString());
   }

@@ -4,17 +4,11 @@
 
 import {assert, assertInstanceof} from 'chrome://resources/js/assert.m.js';
 import {dispatchSimpleEvent} from 'chrome://resources/js/cr.m.js';
-import {Grid, GridSelectionController} from 'chrome://resources/js/cr/ui/grid.m.js';
-import {List} from 'chrome://resources/js/cr/ui/list.m.js';
-import {ListItem} from 'chrome://resources/js/cr/ui/list_item.m.js';
-import {ListSelectionModel} from 'chrome://resources/js/cr/ui/list_selection_model.m.js';
 import {isRTL} from 'chrome://resources/js/util.m.js';
 
 import {AsyncUtil} from '../../../common/js/async_util.js';
 import {FileType} from '../../../common/js/file_type.js';
-import {importer} from '../../../common/js/importer_common.js';
 import {util} from '../../../common/js/util.js';
-import {importerHistoryInterfaces} from '../../../externs/background/import_history.js';
 import {FilesAppEntry} from '../../../externs/files_app_entry_interfaces.js';
 import {VolumeManager} from '../../../externs/volume_manager.js';
 import {FileListModel, GROUP_BY_FIELD_DIRECTORY, GROUP_BY_FIELD_MODIFICATION_TIME, GroupValue} from '../file_list_model.js';
@@ -25,6 +19,10 @@ import {A11yAnnounce} from './a11y_announce.js';
 import {DragSelector} from './drag_selector.js';
 import {filelist} from './file_table_list.js';
 import {FileTapHandler} from './file_tap_handler.js';
+import {Grid, GridSelectionController} from './grid.js';
+import {List} from './list.js';
+import {ListItem} from './list_item.js';
+import {ListSelectionModel} from './list_selection_model.js';
 
 
 // Align with CSS .grid-title.group-by-modificationTime.
@@ -66,19 +64,6 @@ export class FileGrid extends Grid {
      * */
     this.afterFiller_ = null;
 
-    /**
-     * Reflects the visibility of import status in the UI.  Assumption: import
-     * status is only enabled in import-eligible locations.  See
-     * ImportController#onDirectoryChanged.  For this reason, the code in this
-     * class checks if import status is visible, and if so, assumes that all the
-     * files are in an import-eligible location.
-     * TODO(kenobi): Clean this up once import status is queryable from
-     * metadata.
-     *
-     * @private {boolean}
-     */
-    this.importStatusVisible_ = true;
-
     /** @private {?MetadataModel} */
     this.metadataModel_ = null;
 
@@ -87,9 +72,6 @@ export class FileGrid extends Grid {
 
     /** @private {?VolumeManager} */
     this.volumeManager_ = null;
-
-    /** @private {?importerHistoryInterfaces.HistoryLoader} */
-    this.historyLoader_ = null;
 
     /** @private {?AsyncUtil.RateLimiter} */
     this.relayoutRateLimiter_ = null;
@@ -136,10 +118,9 @@ export class FileGrid extends Grid {
    * @param {!Element} element The grid to decorate.
    * @param {!MetadataModel} metadataModel File system metadata.
    * @param {!VolumeManager} volumeManager Volume manager instance.
-   * @param {!importerHistoryInterfaces.HistoryLoader} historyLoader
    * @param {!A11yAnnounce} a11y
    */
-  static decorate(element, metadataModel, volumeManager, historyLoader, a11y) {
+  static decorate(element, metadataModel, volumeManager, a11y) {
     if (Grid.decorate) {
       Grid.decorate(element);
     }
@@ -149,7 +130,6 @@ export class FileGrid extends Grid {
     self.setAttribute('aria-describedby', 'more-actions-info');
     self.metadataModel_ = metadataModel;
     self.volumeManager_ = volumeManager;
-    self.historyLoader_ = historyLoader;
     self.a11y = a11y;
 
     // Force the list's ending spacer to be tall enough to allow overscroll.
@@ -161,7 +141,6 @@ export class FileGrid extends Grid {
     self.listThumbnailLoader_ = null;
     self.beginIndex_ = 0;
     self.endIndex_ = 0;
-    self.importStatusVisible_ = true;
     self.onThumbnailLoadedBound_ = self.onThumbnailLoaded_.bind(self);
 
     self.itemConstructor = function(entry) {
@@ -706,6 +685,16 @@ export class FileGrid extends Grid {
     return new FileGridSelectionController(assert(sm), this);
   }
 
+  updateGroupHeading_() {
+    const fileListModel = /** @type {FileListModel} */ (this.dataModel);
+    if (fileListModel &&
+        fileListModel.groupByField === GROUP_BY_FIELD_MODIFICATION_TIME) {
+      // TODO(crbug.com/1353650): find a way to update heading instead of
+      // redraw.
+      this.redraw();
+    }
+  }
+
   /**
    * Updates items to reflect metadata changes.
    * @param {string} type Type of metadata changed.
@@ -726,6 +715,7 @@ export class FileGrid extends Grid {
       this.decorateThumbnailBox_(assert(listItem), entry);
       this.updateSharedStatus_(assert(listItem), entry);
     }
+    this.updateGroupHeading_();
   }
 
   /**
@@ -807,11 +797,6 @@ export class FileGrid extends Grid {
   decorateThumbnailBox_(li, entry) {
     const box =
         assertInstanceof(li.querySelector('.img-container'), HTMLDivElement);
-    if (this.importStatusVisible_ && importer.isEligibleType(entry)) {
-      this.historyLoader_.getHistory().then(FileGrid.applyHistoryBadges_.bind(
-          null,
-          /** @type {!FileEntry} */ (entry), box));
-    }
 
     if (entry.isDirectory) {
       this.setGenericThumbnail_(box, entry);
@@ -858,14 +843,6 @@ export class FileGrid extends Grid {
     if (icon) {
       icon.classList.toggle('shared', shared);
     }
-  }
-
-  /**
-   * Sets the visibility of the cloud import status column.
-   * @param {boolean} visible
-   */
-  setImportStatusVisible(visible) {
-    this.importStatusVisible_ = visible;
   }
 
   /**
@@ -965,41 +942,6 @@ export class FileGrid extends Grid {
       const icon = FileType.getIcon(entry, opt_mimeType, rootType);
       box.setAttribute('generic-thumbnail', icon);
     }
-  }
-
-  /**
-   * Applies cloud import history badges as appropriate for the Entry.
-   *
-   * @param {!FileEntry} entry
-   * @param {Element} box Box to decorate.
-   * @param {!importerHistoryInterfaces.ImportHistory} history
-   *
-   * @private
-   */
-  static applyHistoryBadges_(entry, box, history) {
-    history.wasImported(entry, importer.Destination.GOOGLE_DRIVE)
-        .then(imported => {
-          if (imported) {
-            // TODO(smckay): update badges when history changes
-            // "box" is currently the sibling of the elemement
-            // we want to style. So rather than employing
-            // a possibly-fragile sibling selector we just
-            // plop the imported class on the parent of both.
-            box.parentElement.classList.add('imported');
-          } else {
-            history.wasCopied(entry, importer.Destination.GOOGLE_DRIVE)
-                .then(copied => {
-                  if (copied) {
-                    // TODO(smckay): update badges when history changes
-                    // "box" is currently the sibling of the elemement
-                    // we want to style. So rather than employing
-                    // a possibly-fragile sibling selector we just
-                    // plop the imported class on the parent of both.
-                    box.parentElement.classList.add('copied');
-                  }
-                });
-          }
-        });
   }
 
   /**

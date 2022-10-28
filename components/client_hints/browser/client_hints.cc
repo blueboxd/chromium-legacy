@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -218,6 +218,15 @@ void ClientHints::SetAdditionalClientHints(
 
 void ClientHints::ClearAdditionalClientHints() {
   additional_hints_.clear();
+}
+
+void ClientHints::SetMostRecentMainFrameViewportSize(
+    const gfx::Size& viewport_size) {
+  viewport_size_ = viewport_size;
+}
+
+gfx::Size ClientHints::GetMostRecentMainFrameViewportSize() {
+  return viewport_size_;
 }
 
 }  // namespace client_hints

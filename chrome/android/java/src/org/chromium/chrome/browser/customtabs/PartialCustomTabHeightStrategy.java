@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,23 +11,21 @@ import android.animation.Animator.AnimatorListener;
 import android.animation.AnimatorListenerAdapter;
 import android.animation.ValueAnimator;
 import android.app.Activity;
-import android.content.Context;
 import android.content.res.Configuration;
 import android.graphics.Color;
 import android.graphics.Point;
-import android.graphics.Rect;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.GradientDrawable;
 import android.graphics.drawable.InsetDrawable;
 import android.os.Build;
+import android.os.Handler;
 import android.util.DisplayMetrics;
 import android.view.Display;
-import android.view.GestureDetector;
-import android.view.MotionEvent;
-import android.view.VelocityTracker;
+import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewStub;
+import android.view.Window;
 import android.view.WindowInsets;
 import android.view.WindowManager;
 import android.view.animation.AccelerateInterpolator;
@@ -38,22 +36,25 @@ import androidx.annotation.IntDef;
 import androidx.annotation.Nullable;
 import androidx.annotation.Px;
 import androidx.annotation.VisibleForTesting;
-import androidx.core.view.MotionEventCompat;
 import androidx.core.view.WindowCompat;
 import androidx.core.view.WindowInsetsCompat;
 import androidx.core.view.WindowInsetsControllerCompat;
 import androidx.swiperefreshlayout.widget.CircularProgressDrawable;
 
+import org.chromium.base.Consumer;
 import org.chromium.base.MathUtils;
 import org.chromium.base.SysUtils;
-import org.chromium.base.ThreadUtils;
+import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.customtabs.features.CustomTabNavigationBarController;
 import org.chromium.chrome.browser.customtabs.features.toolbar.CustomTabToolbar;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
+import org.chromium.chrome.browser.fullscreen.FullscreenManager;
+import org.chromium.chrome.browser.fullscreen.FullscreenOptions;
 import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
 import org.chromium.chrome.browser.lifecycle.ConfigurationChangedObserver;
 import org.chromium.chrome.browser.multiwindow.MultiWindowUtils;
+import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.ui.util.ColorUtils;
 
 import java.lang.annotation.Retention;
@@ -64,7 +65,10 @@ import java.lang.annotation.RetentionPolicy;
  * owned by the CustomTabActivity.
  */
 public class PartialCustomTabHeightStrategy extends CustomTabHeightStrategy
-        implements ConfigurationChangedObserver, ValueAnimator.AnimatorUpdateListener {
+        implements ConfigurationChangedObserver, ValueAnimator.AnimatorUpdateListener,
+                   PartialCustomTabHandleStrategy.DragEventCallback, FullscreenManager.Observer {
+    @VisibleForTesting
+    static final long SPINNER_TIMEOUT_MS = 500;
     /**
      * Minimal height the bottom sheet CCT should show is half of the display height.
      */
@@ -80,34 +84,35 @@ public class PartialCustomTabHeightStrategy extends CustomTabHeightStrategy
     private static final int SPINNER_FADEIN_DURATION_MS = 100;
     private static final int SPINNER_FADEOUT_DURATION_MS = 400;
 
-    private static final int FLING_VELOCITY_PIXELS_PER_MS = 1000;
-
     @IntDef({HeightStatus.TOP, HeightStatus.INITIAL_HEIGHT, HeightStatus.TRANSITION})
     @Retention(RetentionPolicy.SOURCE)
-    private @interface HeightStatus {
+    @interface HeightStatus {
         int TOP = 0;
         int INITIAL_HEIGHT = 1;
         int TRANSITION = 2;
     }
 
     private final Activity mActivity;
-    private final @Px int mMaxHeight;
-
-    private final @Px int mFullyExpandedAdjustmentHeight;
     private final Integer mNavigationBarColor;
     private final Integer mNavigationBarDividerColor;
     private final OnResizedCallback mOnResizedCallback;
     private final AnimatorListener mSpinnerFadeoutAnimatorListener;
     private final int mCachedHandleHeight;
-    private @Px int mInitialHeight;
+    private final boolean mIsFixedHeight;
+    private final @Px int mUnclampedInitialHeight;
+    private final FullscreenManager mFullscreenManager;
+
+    private @Px int mDisplayHeight;
+    private @Px int mFullyExpandedAdjustmentHeight;
+    private boolean mWindowAboveNavbar;
     private ValueAnimator mAnimator;
     private int mShadowOffset;
     private boolean mDrawOutlineShadow;
-    private @Px int mDisplayHeight;
 
     // ContentFrame + CoordinatorLayout - CompositorViewHolder
     //              + NavigationBar
     //              + Spinner
+    // When CCT_RESIZABLE_WINDOW_ABOVE_NAVBAR is disabled, We resize inner contents view.
     // Not just CompositorViewHolder but also CoordinatorLayout is resized because many UI
     // components such as BottomSheet, InfoBar, Snackbar are child views of CoordinatorLayout,
     // which makes them appear correctly at the bottom.
@@ -121,6 +126,8 @@ public class PartialCustomTabHeightStrategy extends CustomTabHeightStrategy
     // in landcape mode.
     private @Px int mNavbarHeight;
     private int mOrientation;
+
+    // Note: Do not use anywhere except in |onConfigurationChanged| as it might not be up-to-date.
     private boolean mIsInMultiWindowMode;
 
     private ImageView mSpinnerView;
@@ -132,12 +139,33 @@ public class PartialCustomTabHeightStrategy extends CustomTabHeightStrategy
     private Runnable mPositionUpdater;
     private boolean mStopShowingSpinner;
 
+    // Window attributes backed up for HTML fullscreen mode.
+    private WindowManager.LayoutParams mPreFullscreenAttrs;
+
     // Runnable finishing the activity after the exit animation. Non-null when PCCT is closing.
     @Nullable
     private Runnable mFinishRunnable;
 
     // Y offset when a dragging gesture starts.
     private int mDraggingStartY;
+    private float mOffsetY;
+
+    // Method to invoke to animate the tab. Animates by altering top y position by default,
+    // but using height for the close animation.
+    private Consumer<Integer> mTabAnimator = this::updateWindowPos;
+
+    // These values are persisted to logs. Entries should not be renumbered and
+    // numeric values should never be reused.
+    // This should be kept in sync with the definition |CustomTabsResizeType|
+    // in tools/metrics/histograms/enums.xml.
+    @IntDef({ResizeType.EXPANSION, ResizeType.MINIMIZATION, ResizeType.COUNT})
+    @Retention(RetentionPolicy.SOURCE)
+    @VisibleForTesting
+    @interface ResizeType {
+        int EXPANSION = 0;
+        int MINIMIZATION = 1;
+        int COUNT = 2;
+    }
 
     /** A callback to be called once the Custom Tab has been resized. */
     interface OnResizedCallback {
@@ -145,174 +173,29 @@ public class PartialCustomTabHeightStrategy extends CustomTabHeightStrategy
         void onResized(int size);
     }
 
-    /**
-     * Handling touch events for resizing the Window.
-     */
-    @VisibleForTesting
-    /* package */ class PartialCustomTabHandleStrategy
-            extends GestureDetector.SimpleOnGestureListener
-            implements CustomTabToolbar.HandleStrategy {
-        /**
-         * The base duration of the settling animation of the sheet. 218 ms is a spec for material
-         * design (this is the minimum time a user is guaranteed to pay attention to something).
-         */
-        private static final long BASE_ANIMATION_DURATION_MS = 218;
-
-        private static final int FLING_THRESHOLD_PX = 100;
-
-        private GestureDetector mGestureDetector;
-        private float mLastPosY;
-        private float mOffsetY;
-        private float mDeltaY;
-        private boolean mSeenFirstMoveOrDown;
-        private VelocityTracker mVelocityTracker;
-        private Runnable mCloseHandler;
-
-        public PartialCustomTabHandleStrategy(Context context) {
-            mGestureDetector = new GestureDetector(context, this, ThreadUtils.getUiThreadHandler());
-            mVelocityTracker = VelocityTracker.obtain();
-        }
-
-        @Override
-        public boolean onInterceptTouchEvent(MotionEvent event) {
-            return isFullHeight() ? false : mGestureDetector.onTouchEvent(event);
-        }
-
-        @Override
-        public boolean onTouchEvent(MotionEvent event) {
-            if (!ChromeFeatureList.sCctResizableAllowResizeByUserGesture.isEnabled()) {
-                return false;
-            }
-
-            if (mStatus == HeightStatus.TRANSITION) {
-                return true;
-            }
-            // We will get events directly even when onInterceptTouchEvent() didn't return true,
-            // because the sub View tree might not want this event, so check orientation and
-            // multi-window flags here again.
-            if (isFullHeight()) {
-                return true;
-            }
-
-            float y = event.getRawY();
-            switch (MotionEventCompat.getActionMasked(event)) {
-                case MotionEvent.ACTION_DOWN:
-                case MotionEvent.ACTION_MOVE:
-                    if (!mSeenFirstMoveOrDown) {
-                        mSeenFirstMoveOrDown = true;
-                        mVelocityTracker.clear();
-                        onMoveStart();
-                        mOffsetY = mActivity.getWindow().getAttributes().y - y;
-                        mLastPosY = y;
-                        mStopShowingSpinner = false;
-                    } else {
-                        mVelocityTracker.addMovement(event);
-                        updateWindowPos((int) (y + mOffsetY));
-                    }
-                    mDeltaY = y - mLastPosY;
-                    mLastPosY = y;
-                    return true;
-                case MotionEvent.ACTION_UP:
-                case MotionEvent.ACTION_CANCEL:
-                    if (mSeenFirstMoveOrDown) {
-                        mVelocityTracker.computeCurrentVelocity(FLING_VELOCITY_PIXELS_PER_MS);
-                        float v = Math.abs(mVelocityTracker.getYVelocity());
-                        int flingDist = Math.abs(v) < FLING_THRESHOLD_PX ? 0 : getFlingDistance(v);
-                        int direction = (int) Math.signum(mDeltaY);
-                        if (!handleAnimation(flingDist * direction)) mCloseHandler.run();
-                        mSeenFirstMoveOrDown = false;
-                    }
-                    return true;
-                default:
-                    return true;
-            }
-        }
-
-        @Override
-        public void setCloseClickHandler(Runnable handler) {
-            mCloseHandler = handler;
-        }
-
-        @Override
-        public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY) {
-            // Always intercept scroll events.
-            return true;
-        }
-
-        /**
-         * Gets the distance of a fling based on the velocity and the base animation time. This
-         * formula assumes the deceleration curve is quadratic (t^2), hence the displacement formula
-         * should be: displacement = initialVelocity * duration / 2.
-         * @param velocity The velocity of the fling.
-         * @return The distance the fling would cover.
-         */
-        private int getFlingDistance(float velocity) {
-            // This includes conversion from seconds to ms.
-            return (int) (velocity * BASE_ANIMATION_DURATION_MS / 2000f);
-        }
-
-        private boolean handleAnimation(int flingDistance) {
-            int currentY = mActivity.getWindow().getAttributes().y;
-            int finalY = currentY + flingDistance;
-            int topY = getFullyExpandedYCoordinateWithAdjustment();
-            int initialY = initialY();
-            int bottomY = mDisplayHeight - mNavbarHeight;
-
-            int start = 0;
-            int end = 0;
-            boolean playAnimation = true;
-
-            if (finalY == initialY) return false;
-
-            if (finalY < initialY) { // Move up
-                if (Math.abs(topY - finalY) < Math.abs(finalY - initialY)) {
-                    start = currentY;
-                    end = topY;
-                    mTargetStatus = HeightStatus.TOP;
-                } else {
-                    start = currentY;
-                    end = initialY;
-                    mTargetStatus = HeightStatus.INITIAL_HEIGHT;
-                }
-            } else { // Move down
-                // Prevents skipping intial state when swiping from the top.
-                if (mStatus == HeightStatus.TOP) finalY = Math.min(initialY, finalY);
-
-                if (Math.abs(initialY - finalY) < Math.abs(finalY - bottomY)) {
-                    start = currentY;
-                    end = initialY;
-                    mTargetStatus = HeightStatus.INITIAL_HEIGHT;
-                } else {
-                    playAnimation = false;
-                }
-            }
-            if (playAnimation) {
-                mAnimator.setIntValues(start, end);
-                mStatus = HeightStatus.TRANSITION;
-                mAnimator.start();
-            }
-            return playAnimation;
-        }
-    }
+    // The current height used to trigger onResizedCallback when it is resized.
+    // Used in 'window-above-navbar' version only.
+    private int mHeight;
 
     public PartialCustomTabHeightStrategy(Activity activity, @Px int initialHeight,
-            Integer navigationBarColor, Integer navigationBarDividerColor,
-            OnResizedCallback onResizedCallback, ActivityLifecycleDispatcher lifecycleDispatcher) {
+            Integer navigationBarColor, Integer navigationBarDividerColor, boolean isFixedHeight,
+            OnResizedCallback onResizedCallback, ActivityLifecycleDispatcher lifecycleDispatcher,
+            FullscreenManager fullscreenManager) {
+        mWindowAboveNavbar = ChromeFeatureList.sCctResizableWindowAboveNavbar.isEnabled();
         mActivity = activity;
-        mMaxHeight = getMaximumPossibleHeight();
-        mInitialHeight = MathUtils.clamp(
-                initialHeight, mMaxHeight, (int) (mMaxHeight * MINIMAL_HEIGHT_RATIO));
         mDisplayHeight = getDisplayHeight();
+        mUnclampedInitialHeight = initialHeight;
+        mIsFixedHeight = isFixedHeight;
         mOnResizedCallback = onResizedCallback;
-        // When the flag is enabled, we make the max snap point 10% shorter, so it will only occupy
-        // 90% of the height.
-        mFullyExpandedAdjustmentHeight = ChromeFeatureList.sCctResizable90MaximumHeight.isEnabled()
-                ? (int) ((mMaxHeight - getFullyExpandedYCoordinate()) * EXTRA_HEIGHT_RATIO)
-                : 0;
+        mFullscreenManager = fullscreenManager;
 
         mAnimator = new ValueAnimator();
         mAnimator.setDuration(SCROLL_DURATION_MS);
         mAnimator.addListener(new AnimatorListenerAdapter() {
+            @Override
+            public void onAnimationStart(Animator animation) {
+                mStatus = HeightStatus.TRANSITION;
+            }
             @Override
             public void onAnimationEnd(Animator animation) {
                 mStatus = mTargetStatus;
@@ -333,10 +216,8 @@ public class PartialCustomTabHeightStrategy extends CustomTabHeightStrategy
         mSpinnerFadeoutAnimatorListener = new AnimatorListener() {
             @Override
             public void onAnimationStart(Animator animator) {}
-
             @Override
             public void onAnimationRepeat(Animator animator) {}
-
             @Override
             public void onAnimationEnd(Animator animator) {
                 mSpinner.stop();
@@ -363,13 +244,13 @@ public class PartialCustomTabHeightStrategy extends CustomTabHeightStrategy
                 }
             });
         };
+        fullscreenManager.addObserver(this);
     }
 
     @Override
     public void onPostInflationStartup() {
         mContentFrame = (ViewGroup) mActivity.findViewById(android.R.id.content);
         mCoordinatorLayout = (ViewGroup) mActivity.findViewById(R.id.coordinator);
-
         // Elevate the main web contents area as high as the handle bar to have the shadow
         // effect look right.
         int ev = mActivity.getResources().getDimensionPixelSize(R.dimen.custom_tabs_elevation);
@@ -383,9 +264,8 @@ public class PartialCustomTabHeightStrategy extends CustomTabHeightStrategy
 
         // Expands to full height.
         int start = mActivity.getWindow().getAttributes().y;
-        int end = getFullyExpandedYCoordinateWithAdjustment();
+        int end = getFullyExpandedYWithAdjustment();
         mAnimator.setIntValues(start, end);
-        mStatus = HeightStatus.TRANSITION;
         mTargetStatus = HeightStatus.TOP;
         mAnimator.start();
     }
@@ -395,13 +275,22 @@ public class PartialCustomTabHeightStrategy extends CustomTabHeightStrategy
 
         initializeHeight();
         updateShadowOffset();
-
-        setContentsHeight();
-        updateNavbarVisibility(true);
+        if (mWindowAboveNavbar) {
+            maybeInvokeResizeCallback();
+        } else {
+            setContentsHeight();
+            updateNavbarVisibility(true);
+        }
     }
 
     private int initialY() {
-        return mDisplayHeight - mInitialHeight;
+        return mDisplayHeight - initialHeightInPortraitMode();
+    }
+
+    private int initialHeightInPortraitMode() {
+        assert !isFullHeight() : "initialHeightInPortraitMode() is used in portrait mode only";
+        return MathUtils.clamp(mUnclampedInitialHeight, mDisplayHeight - getStatusBarHeight(),
+                (int) (mDisplayHeight * MINIMAL_HEIGHT_RATIO));
     }
 
     private @Px int getNavbarHeight() {
@@ -447,11 +336,13 @@ public class PartialCustomTabHeightStrategy extends CustomTabHeightStrategy
         mToolbarView = toolbar;
         mToolbarColor = toolbar.getBackground().getColor();
         roundCorners(coordinatorView, toolbar, toolbarCornerRadius);
-        toolbar.setHandleStrategy(new PartialCustomTabHandleStrategy(mActivity));
+        toolbar.setHandleStrategy(new PartialCustomTabHandleStrategy(
+                mActivity, this::isFullHeight, () -> mStatus, this));
         updateDragBarVisibility();
     }
 
     // ConfigurationChangedObserver implementation.
+
     @Override
     public void onConfigurationChanged(Configuration newConfig) {
         boolean isInMultiWindow = MultiWindowUtils.getInstance().isInMultiWindowMode(mActivity);
@@ -475,8 +366,8 @@ public class PartialCustomTabHeightStrategy extends CustomTabHeightStrategy
     // ValueAnimator.AnimatorUpdateListener implementation.
     @Override
     public void onAnimationUpdate(ValueAnimator valueAnimator) {
-        int ypos = (int) valueAnimator.getAnimatedValue();
-        updateWindowPos(ypos);
+        int value = (int) valueAnimator.getAnimatedValue();
+        mTabAnimator.accept(value);
     }
 
     private void roundCorners(
@@ -540,59 +431,104 @@ public class PartialCustomTabHeightStrategy extends CustomTabHeightStrategy
     }
 
     private void initializeHeight() {
-        mActivity.getWindow().addFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL);
-        mActivity.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND);
+        Window window = mActivity.getWindow();
+        window.addFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL);
+        window.clearFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND);
 
         mNavbarHeight = getNavbarHeight();
-        int maxExpandedY = getFullyExpandedYCoordinate();
-        final @Px int height;
+
+        // When the flag is enabled, we make the max snap point 10% shorter, so it will only occupy
+        // 90% of the height.
+        mFullyExpandedAdjustmentHeight = ChromeFeatureList.sCctResizable90MaximumHeight.isEnabled()
+                ? (int) ((mDisplayHeight - getFullyExpandedY()) * EXTRA_HEIGHT_RATIO)
+                : 0;
+
+        int maxExpandedY = getFullyExpandedY();
+        @Px
+        int height = 0;
 
         if (isFullHeight()) {
             // Resizing by user dragging is not supported in landscape mode; no need to set
             // the status here.
-            height = mDisplayHeight - maxExpandedY;
-            mActivity.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS);
+            if (!mWindowAboveNavbar) {
+                height = mDisplayHeight;
+                mActivity.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS);
+            }
         } else {
-            height = mInitialHeight;
+            height = initialHeightInPortraitMode();
             mStatus = HeightStatus.INITIAL_HEIGHT;
-            mActivity.getWindow().addFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS);
+            if (!mWindowAboveNavbar) {
+                mActivity.getWindow().addFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS);
+            }
         }
 
-        WindowManager.LayoutParams attributes = mActivity.getWindow().getAttributes();
-        // TODO(jinsukkim): Handle multi-window mode.
-        if (attributes.height == height) return;
+        WindowManager.LayoutParams attrs = window.getAttributes();
+        if (attrs.height == height) return;
 
-        // We do not resize Window but just translate its vertical offset, and resize Coordinator-
-        // LayoutForPointer instead. This helps us work around the round-corner bug in Android S.
-        // See b/223536648.
-        attributes.y = Math.max(maxExpandedY, mDisplayHeight - height);
-        mActivity.getWindow().setAttributes(attributes);
-
+        if (mWindowAboveNavbar) {
+            // To avoid the bottom navigation bar area flickering when starting dragging, position
+            // web contents area right above the navigation bar so the two won't overlap. The
+            // navigation area now just shows whatever is underneath: 1) loading view/web contents
+            // while dragging 2) host app's navigation bar when at rest.
+            positionAtHeight(height);
+            mHeight = attrs.height;
+        } else {
+            // We do not resize Window but just translate its vertical offset, and resize
+            // CoordinatorLayoutForPointer instead. This helps us work around the round-corner bug
+            // in Android S. See b/223536648.
+            attrs.y = Math.max(maxExpandedY, mDisplayHeight - height);
+            window.setAttributes(attrs);
+        }
         updateDragBarVisibility();
+    }
+
+    private void positionAtHeight(int height) {
+        WindowManager.LayoutParams attrs = mActivity.getWindow().getAttributes();
+        if (isFullHeight()) {
+            attrs.height = MATCH_PARENT;
+            attrs.y = 0;
+            attrs.gravity = Gravity.NO_GRAVITY;
+        } else {
+            attrs.height = height - mNavbarHeight;
+            attrs.y = mNavbarHeight;
+            attrs.gravity = Gravity.BOTTOM;
+        }
+        mActivity.getWindow().setAttributes(attrs);
     }
 
     private void updateDragBarVisibility() {
         View dragBar = mActivity.findViewById(R.id.drag_bar);
         if (dragBar != null) dragBar.setVisibility(isFullHeight() ? View.GONE : View.VISIBLE);
+
+        View dragHandlebar = mActivity.findViewById(R.id.drag_handlebar);
+        if (dragHandlebar != null) {
+            dragHandlebar.setVisibility(isFixedHeight() ? View.GONE : View.VISIBLE);
+        }
     }
 
     private void updateShadowOffset() {
+        // TODO(jinsukkim): Remove the shadow when in full-height so there won't be a gap
+        //                  beneath the status bar.
         if (isFullHeight() || mDrawOutlineShadow) {
             mShadowOffset = 0;
         } else {
             mShadowOffset = mActivity.getResources().getDimensionPixelSize(
                     R.dimen.custom_tabs_shadow_offset);
         }
+        setTopMargins(mShadowOffset, getHandleHeight());
+        mToolbarCoordinator.requestLayout();
+    }
+
+    private void setTopMargins(int shadowOffset, int handleOffset) {
         View handleView = mActivity.findViewById(R.id.custom_tabs_handle_view);
         ViewGroup.MarginLayoutParams lp =
                 (ViewGroup.MarginLayoutParams) handleView.getLayoutParams();
-        lp.setMargins(0, mShadowOffset, 0, 0);
+        lp.setMargins(0, shadowOffset, 0, 0);
 
         // Make enough room for the handle View.
         ViewGroup.MarginLayoutParams mlp =
                 (ViewGroup.MarginLayoutParams) mToolbarCoordinator.getLayoutParams();
-        mlp.setMargins(0, getHandleHeight() + mShadowOffset, 0, 0);
-        mToolbarCoordinator.requestLayout();
+        mlp.setMargins(0, handleOffset, 0, 0);
     }
 
     private int getHandleHeight() {
@@ -600,25 +536,40 @@ public class PartialCustomTabHeightStrategy extends CustomTabHeightStrategy
     }
 
     private boolean isFullHeight() {
-        return mOrientation == Configuration.ORIENTATION_LANDSCAPE || mIsInMultiWindowMode;
+        return isLandscape() || MultiWindowUtils.getInstance().isInMultiWindowMode(mActivity);
+    }
+
+    private boolean isLandscape() {
+        return mOrientation == Configuration.ORIENTATION_LANDSCAPE;
+    }
+
+    private boolean isFixedHeight() {
+        return mIsFixedHeight;
     }
 
     private void updateWindowPos(@Px int y) {
         // Do not allow the Window to go above the minimum threshold capped by the status
         // bar and (optionally) the 90%-height adjustment.
-        int topY = getFullyExpandedYCoordinateWithAdjustment();
-        y = MathUtils.clamp(y, topY, mMaxHeight);
-        WindowManager.LayoutParams attributes = mActivity.getWindow().getAttributes();
-        if (attributes.y == y) return;
+        int topY = getFullyExpandedYWithAdjustment();
+        y = MathUtils.clamp(y, topY, mDisplayHeight);
+        Window window = mActivity.getWindow();
+        WindowManager.LayoutParams attrs = window.getAttributes();
+        if (attrs.y == y) return;
 
-        attributes.y = y;
-        mActivity.getWindow().setAttributes(attributes);
+        attrs.y = y;
+        window.setAttributes(attrs);
         if (mFinishRunnable != null) return;
+
+        int initialY = initialY();
+
+        // If the tab is not resizable then dragging it higher than the initial height will not be
+        // allowed. The tab can still be dragged down in order to be closed.
+        if (isFixedHeight() && y < initialY) return;
 
         // Starting dragging from INITIAL_HEIGHT state, we can hide the spinner if the tab:
         // 1) reaches full height
         // 2) is dragged below the initial height
-        if (mStatus == HeightStatus.INITIAL_HEIGHT && (y <= topY || y > initialY())
+        if (mStatus == HeightStatus.INITIAL_HEIGHT && (y <= topY || y > initialY)
                 && isSpinnerVisible()) {
             hideSpinnerView();
             if (y <= topY) {
@@ -633,10 +584,27 @@ public class PartialCustomTabHeightStrategy extends CustomTabHeightStrategy
         if (!mStopShowingSpinner && mStatus != HeightStatus.TRANSITION && !isSpinnerVisible()
                 && y < mDraggingStartY) {
             showSpinnerView();
+            if (mWindowAboveNavbar) {
+                // We do not have to keep the spinner till the end of dragging action in
+                // 'window-above-navbar' version since it doesn't have the flickering issue at
+                // the end. Keeping it visible up to 500ms is sufficient to hide the initial
+                // glitch that can briefly expose the host app screen at the beginning.
+                new Handler().postDelayed(() -> {
+                    hideSpinnerView();
+                    mStopShowingSpinner = true;
+                }, SPINNER_TIMEOUT_MS);
+            }
         }
         if (isSpinnerVisible()) {
             centerSpinnerVertically((ViewGroup.LayoutParams) mSpinnerView.getLayoutParams());
         }
+    }
+
+    private void updateWindowHeight(int height) {
+        Window window = mActivity.getWindow();
+        WindowManager.LayoutParams attrs = window.getAttributes();
+        attrs.height = height;
+        window.setAttributes(attrs);
     }
 
     private boolean isSpinnerVisible() {
@@ -644,8 +612,18 @@ public class PartialCustomTabHeightStrategy extends CustomTabHeightStrategy
     }
 
     private void onMoveStart() {
-        mDraggingStartY = mActivity.getWindow().getAttributes().y;
-        updateNavbarVisibility(false);
+        if (mWindowAboveNavbar) {
+            Window window = mActivity.getWindow();
+            window.addFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS);
+            WindowManager.LayoutParams attrs = window.getAttributes();
+            attrs.y = mDisplayHeight - attrs.height - mNavbarHeight;
+            attrs.height = mDisplayHeight;
+            attrs.gravity = Gravity.NO_GRAVITY;
+            window.setAttributes(attrs);
+            showNavbarButtons(false);
+        } else {
+            updateNavbarVisibility(false);
+        }
     }
 
     private void onMoveEnd() {
@@ -653,12 +631,28 @@ public class PartialCustomTabHeightStrategy extends CustomTabHeightStrategy
             mFinishRunnable.run();
             return;
         }
+
+        int draggingEndY = mActivity.getWindow().getAttributes().y;
+        if (mDraggingStartY >= 0 && mDraggingStartY != draggingEndY) {
+            RecordHistogram.recordEnumeratedHistogram("CustomTabs.ResizeType",
+                    mDraggingStartY < draggingEndY ? ResizeType.MINIMIZATION : ResizeType.EXPANSION,
+                    ResizeType.COUNT);
+        }
+
         hideSpinnerView();
-        updateNavbarVisibility(true);
+        if (mWindowAboveNavbar) {
+            Window window = mActivity.getWindow();
+            window.clearFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS);
+            positionAtHeight(mDisplayHeight - window.getAttributes().y);
+            showNavbarButtons(true);
+            maybeInvokeResizeCallback();
+        } else {
+            updateNavbarVisibility(true);
+        }
     }
 
     private void hideSpinnerView() {
-        setContentsHeight();
+        if (!mWindowAboveNavbar) setContentsHeight();
 
         // TODO(crbug.com/1328555): Look into observing a view resize event to ensure the fade
         // animation can always cover the transition artifact.
@@ -681,7 +675,11 @@ public class PartialCustomTabHeightStrategy extends CustomTabHeightStrategy
 
             // Toolbar should not be hidden by spinner screen.
             ViewGroup.MarginLayoutParams lp = new ViewGroup.MarginLayoutParams(MATCH_PARENT, 0);
-            lp.setMargins(0, mToolbarView.getHeight() + getHandleHeight() + mShadowOffset, 0, 0);
+            int topMargin = mToolbarView.getHeight() + mShadowOffset;
+            // See the comment below for why we add handle height.
+            if (!mWindowAboveNavbar) topMargin += getHandleHeight();
+            lp.setMargins(0, topMargin, 0, 0);
+
             mSpinner = new CircularProgressDrawable(mActivity);
             mSpinner.setStyle(CircularProgressDrawable.LARGE);
             mSpinnerView.setImageDrawable(mSpinner);
@@ -691,9 +689,14 @@ public class PartialCustomTabHeightStrategy extends CustomTabHeightStrategy
             mSpinner.setColorSchemeColors(colorList);
             centerSpinnerVertically(lp);
         }
-
         // Spinner view is added to ContentFrameLayout to hide both WebContents and navigation bar.
-        if (mSpinnerView.getParent() == null) mContentFrame.addView(mSpinnerView);
+        // For window-above-navbar, it should be added to CoordinatorLayoutForPointer to obscure
+        // the flickering at the beginning of dragging action. Their top positions differ by
+        // |getHandleHeight()| which is a top margin of CoordinatorLayoutForPointer.
+        if (mSpinnerView.getParent() == null) {
+            ViewGroup parent = mWindowAboveNavbar ? mCoordinatorLayout : mContentFrame;
+            parent.addView(mSpinnerView);
+        }
         mSpinnerView.clearAnimation();
         mSpinnerView.setAlpha(0.f);
         mSpinnerView.setVisibility(View.VISIBLE);
@@ -703,7 +706,7 @@ public class PartialCustomTabHeightStrategy extends CustomTabHeightStrategy
 
     private void centerSpinnerVertically(ViewGroup.LayoutParams lp) {
         int toolbarHeight = mToolbarView.getHeight();
-        int cctHeight = mMaxHeight - mActivity.getWindow().getAttributes().y - toolbarHeight;
+        int cctHeight = mDisplayHeight - mActivity.getWindow().getAttributes().y - toolbarHeight;
         lp.height = cctHeight;
         mSpinnerView.setLayoutParams(lp);
     }
@@ -808,6 +811,14 @@ public class PartialCustomTabHeightStrategy extends CustomTabHeightStrategy
         }
     }
 
+    private void maybeInvokeResizeCallback() {
+        WindowManager.LayoutParams attrs = mActivity.getWindow().getAttributes();
+        if (mHeight != attrs.height && attrs.height > 0) {
+            mOnResizedCallback.onResized(attrs.height);
+            mHeight = attrs.height;
+        }
+    }
+
     private void showNavbarButtons(boolean show) {
         View decorView = mActivity.getWindow().getDecorView();
         WindowInsetsControllerCompat controller =
@@ -820,21 +831,7 @@ public class PartialCustomTabHeightStrategy extends CustomTabHeightStrategy
         }
     }
 
-    private @Px int getMaximumPossibleHeight() {
-        @Px
-        int res = 0;
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-            Rect rect = mActivity.getWindowManager().getMaximumWindowMetrics().getBounds();
-            res = Math.max(rect.width(), rect.height());
-        } else {
-            DisplayMetrics displayMetrics = new DisplayMetrics();
-            mActivity.getWindowManager().getDefaultDisplay().getRealMetrics(displayMetrics);
-            res = Math.max(displayMetrics.widthPixels, displayMetrics.heightPixels);
-        }
-        return res;
-    }
-
-    // TODO(ctzsm): Explore the way to use androidx.window.WindowManager or
+    // TODO(jinsukkim): Explore the way to use androidx.window.WindowManager or
     // androidx.window.java.WindowInfoRepoJavaAdapter once the androidx API get finalized and is
     // available in Chromium to use #getCurrentWindowMetrics()/#currentWindowMetrics() to get the
     // height of the display our Window currently in.
@@ -849,7 +846,7 @@ public class PartialCustomTabHeightStrategy extends CustomTabHeightStrategy
         }
 
         DisplayMetrics displayMetrics = new DisplayMetrics();
-        if (mIsInMultiWindowMode) {
+        if (MultiWindowUtils.getInstance().isInMultiWindowMode(mActivity)) {
             mActivity.getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
         } else {
             mActivity.getWindowManager().getDefaultDisplay().getRealMetrics(displayMetrics);
@@ -877,18 +874,20 @@ public class PartialCustomTabHeightStrategy extends CustomTabHeightStrategy
         return statusBarHeight;
     }
 
-    private @Px int getFullyExpandedYCoordinate() {
+    private @Px int getFullyExpandedY() {
         return getStatusBarHeight();
     }
 
     @VisibleForTesting
     @Px
-    int getFullyExpandedYCoordinateWithAdjustment() {
+    int getFullyExpandedYWithAdjustment() {
         // Adding |mFullyExpandedAdjustmentHeight| to the y coordinate because the
         // coordinates system's origin is at the top left and y is growing in downward, larger y
         // means smaller height of the bottom sheet CCT.
-        return getFullyExpandedYCoordinate() + mFullyExpandedAdjustmentHeight;
+        return getFullyExpandedY() + mFullyExpandedAdjustmentHeight;
     }
+
+    // CustomTabHeightStrategy implementation
 
     @Override
     public boolean changeBackgroundColorForResizing() {
@@ -901,23 +900,112 @@ public class PartialCustomTabHeightStrategy extends CustomTabHeightStrategy
         if (mFinishRunnable != null) return;
 
         mFinishRunnable = finishRunnable;
-
-        int start = mActivity.getWindow().getAttributes().y;
-        int end = mDisplayHeight - mNavbarHeight;
-
-        if (isFullHeight()) {
-            mActivity.getWindow().addFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS);
+        WindowManager.LayoutParams attrs = mActivity.getWindow().getAttributes();
+        if (attrs.gravity == Gravity.BOTTOM) {
+            // Animate height for the tab at rest.
+            mTabAnimator = this::updateWindowHeight;
+            mAnimator.setIntValues(attrs.height, 0);
+        } else {
+            if (isFullHeight()) {
+                attrs.gravity = Gravity.BOTTOM;
+                mActivity.getWindow().setAttributes(attrs);
+                mTabAnimator = this::updateWindowHeight;
+                mAnimator.setIntValues(mDisplayHeight - mNavbarHeight, 0);
+            } else {
+                mAnimator.setIntValues(attrs.y, mDisplayHeight - mNavbarHeight);
+            }
         }
         mAnimator.setDuration(
                 mActivity.getResources().getInteger(android.R.integer.config_mediumAnimTime));
-        mAnimator.setIntValues(start, end);
         mAnimator.setInterpolator(new AccelerateInterpolator());
         mAnimator.start();
     }
 
     @Override
     public boolean canDrawOutsideScreen() {
-        return !isFullHeight();
+        return !mWindowAboveNavbar && !isFullHeight();
+    }
+
+    // DragEventCallback implementation
+
+    @Override
+    public void onDragStart(int y) {
+        onMoveStart();
+        Window window = mActivity.getWindow();
+        mDraggingStartY = window.getAttributes().y;
+        mOffsetY = mDraggingStartY - y;
+        mStopShowingSpinner = false;
+    }
+
+    @Override
+    public void onDragMove(int y) {
+        updateWindowPos((int) (y + mOffsetY));
+    }
+
+    @Override
+    public boolean onDragEnd(int flingDistance) {
+        int currentY = mActivity.getWindow().getAttributes().y;
+        int finalY = currentY + flingDistance;
+        int topY = getFullyExpandedYWithAdjustment();
+        int initialY = initialY();
+        int bottomY = mDisplayHeight - mNavbarHeight;
+        int animateEndY = -1;
+
+        if (finalY == initialY) return false;
+
+        if (finalY < initialY) { // Move up
+            if (Math.abs(topY - finalY) < Math.abs(finalY - initialY)) {
+                mTargetStatus = HeightStatus.TOP;
+                animateEndY = topY;
+            } else {
+                mTargetStatus = HeightStatus.INITIAL_HEIGHT;
+                animateEndY = initialY;
+            }
+        } else { // Move down
+            // Prevents skipping initial state when swiping from the top.
+            if (mStatus == HeightStatus.TOP) finalY = Math.min(initialY, finalY);
+
+            if (Math.abs(initialY - finalY) < Math.abs(finalY - bottomY)) {
+                mTargetStatus = HeightStatus.INITIAL_HEIGHT;
+                animateEndY = initialY;
+            }
+        }
+
+        if (animateEndY < 0) return false;
+
+        mAnimator.setIntValues(currentY, animateEndY);
+        mAnimator.start();
+        return true;
+    }
+
+    // FullscreenManager.Observer implementation
+
+    @Override
+    public void onEnterFullscreen(Tab tab, FullscreenOptions options) {
+        // TODO(jinsukkim): Handle fullscreen in non-'window-above-navbar' version as well.
+        if (mPreFullscreenAttrs != null || !mWindowAboveNavbar) return;
+        mPreFullscreenAttrs = mActivity.getWindow().getAttributes();
+        WindowManager.LayoutParams attrs = new WindowManager.LayoutParams();
+        attrs.copyFrom(mPreFullscreenAttrs);
+        attrs.x = 0;
+        attrs.y = 0;
+        attrs.height = MATCH_PARENT;
+        attrs.width = MATCH_PARENT;
+        mActivity.getWindow().setAttributes(attrs);
+        setTopMargins(0, 0);
+    }
+
+    @Override
+    public void onExitFullscreen(Tab tab) {
+        if (mPreFullscreenAttrs == null || !mWindowAboveNavbar) return;
+        mActivity.getWindow().setAttributes(mPreFullscreenAttrs);
+        mPreFullscreenAttrs = null;
+        setTopMargins(mShadowOffset, getHandleHeight());
+    }
+
+    @Override
+    public void destroy() {
+        mFullscreenManager.removeObserver(this);
     }
 
     @VisibleForTesting
@@ -936,5 +1024,17 @@ public class PartialCustomTabHeightStrategy extends CustomTabHeightStrategy
     @VisibleForTesting
     int getNavbarHeightForTesting() {
         return mNavbarHeight;
+    }
+
+    @VisibleForTesting
+    void setWindowAboveNavbarForTesting(boolean windowAboveNavbar) {
+        mWindowAboveNavbar = windowAboveNavbar;
+    }
+
+    @VisibleForTesting
+    PartialCustomTabHandleStrategy createHandleStrategyForTesting() {
+        // Pass null for context because we don't depend on the GestureDetector inside as we invoke
+        // MotionEvents directly in the tests.
+        return new PartialCustomTabHandleStrategy(null, this::isFullHeight, () -> mStatus, this);
     }
 }

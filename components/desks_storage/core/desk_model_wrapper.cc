@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -21,51 +21,47 @@ DeskModelWrapper::DeskModelWrapper(
 DeskModelWrapper::~DeskModelWrapper() = default;
 
 DeskModel::GetAllEntriesResult DeskModelWrapper::GetAllEntries() {
-  auto template_entries = std::vector<const ash::DeskTemplate*>();
-  auto desk_template_status =
-      GetDeskTemplateModel()->GetAllEntries(template_entries);
-  for (const auto& it : policy_entries_)
-    template_entries.push_back(it.get());
+  DeskModel::GetAllEntriesResult templates_result =
+      desk_template_model_->GetAllEntries();
 
-  if (desk_template_status != DeskModel::GetAllEntriesStatus::kOk) {
-    return DeskModel::GetAllEntriesResult(
-        DeskModel::GetAllEntriesStatus::kFailure, std::move(template_entries));
+  if (templates_result.status != DeskModel::GetAllEntriesStatus::kOk) {
+    return templates_result;
   }
 
-  auto save_and_recall_entries_result =
+  DeskModel::GetAllEntriesResult save_and_recall_result =
       save_and_recall_desks_model_->GetAllEntries();
 
-  if (save_and_recall_entries_result.status !=
-      DeskModel::GetAllEntriesStatus::kOk) {
-    return DeskModel::GetAllEntriesResult(save_and_recall_entries_result.status,
-                                          std::move(template_entries));
+  if (save_and_recall_result.status != DeskModel::GetAllEntriesStatus::kOk) {
+    return save_and_recall_result;
   }
 
-  auto all_entries = template_entries;
+  std::vector<const ash::DeskTemplate*>& all_entries = templates_result.entries;
 
-  for (auto* const entry : save_and_recall_entries_result.entries)
+  for (auto* const entry : save_and_recall_result.entries)
     all_entries.push_back(entry);
 
-  return DeskModel::GetAllEntriesResult(save_and_recall_entries_result.status,
+  for (const auto& it : policy_entries_)
+    all_entries.push_back(it.get());
+
+  return DeskModel::GetAllEntriesResult(DeskModel::GetAllEntriesStatus::kOk,
                                         std::move(all_entries));
 }
 
-void DeskModelWrapper::GetEntryByUUID(
-    const std::string& uuid,
-    DeskModel::GetEntryByUuidCallback callback) {
+DeskModel::GetEntryByUuidResult DeskModelWrapper::GetEntryByUUID(
+    const base::GUID& uuid) {
   // Check if this is an admin template uuid first.
   std::unique_ptr<ash::DeskTemplate> policy_entry =
       GetAdminDeskTemplateByUUID(uuid);
 
   if (policy_entry) {
-    std::move(callback).Run(GetEntryByUuidStatus::kOk, std::move(policy_entry));
-    return;
+    return DeskModel::GetEntryByUuidResult(GetEntryByUuidStatus::kOk,
+                                           std::move(policy_entry));
   }
 
   if (GetDeskTemplateModel()->HasUuid(uuid)) {
-    GetDeskTemplateModel()->GetEntryByUUID(uuid, std::move(callback));
+    return GetDeskTemplateModel()->GetEntryByUUID(uuid);
   } else {
-    save_and_recall_desks_model_->GetEntryByUUID(uuid, std::move(callback));
+    return save_and_recall_desks_model_->GetEntryByUUID(uuid);
   }
 }
 
@@ -81,20 +77,20 @@ void DeskModelWrapper::AddOrUpdateEntry(
   }
 }
 
-void DeskModelWrapper::DeleteEntry(const std::string& uuid_str,
+void DeskModelWrapper::DeleteEntry(const base::GUID& uuid,
                                    DeskModel::DeleteEntryCallback callback) {
   auto status = std::make_unique<DeskModel::DeleteEntryStatus>();
-  if (GetDeskTemplateModel()->HasUuid(uuid_str)) {
-    GetDeskTemplateModel()->DeleteEntry(uuid_str, std::move(callback));
+  if (GetDeskTemplateModel()->HasUuid(uuid)) {
+    GetDeskTemplateModel()->DeleteEntry(uuid, std::move(callback));
   } else {
-    save_and_recall_desks_model_->DeleteEntry(uuid_str, std::move(callback));
+    save_and_recall_desks_model_->DeleteEntry(uuid, std::move(callback));
   }
 }
 
 void DeskModelWrapper::DeleteAllEntries(
     DeskModel::DeleteEntryCallback callback) {
   DeskModel::DeleteEntryStatus desk_template_delete_status =
-      GetDeskTemplateModel()->DeleteAllEntries();
+      GetDeskTemplateModel()->DeleteAllEntriesSync();
   if (desk_template_delete_status != DeskModel::DeleteEntryStatus::kOk) {
     std::move(callback).Run(desk_template_delete_status);
     return;

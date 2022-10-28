@@ -1,8 +1,8 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <string>
+#import <string>
 
 #import "base/bind.h"
 #import "base/strings/escape.h"
@@ -11,12 +11,13 @@
 #import "base/strings/sys_string_conversions.h"
 #import "base/test/ios/wait_util.h"
 #import "base/test/metrics/histogram_tester.h"
+#import "components/omnibox/common/omnibox_features.h"
 #import "components/security_interstitials/core/https_only_mode_metrics.h"
 #import "components/security_interstitials/core/omnibox_https_upgrade_metrics.h"
 #import "ios/chrome/browser/https_upgrades/https_upgrade_app_interface.h"
 #import "ios/chrome/browser/https_upgrades/https_upgrade_test_helper.h"
 #import "ios/chrome/browser/metrics/metrics_app_interface.h"
-#import "ios/chrome/browser/pref_names.h"
+#import "ios/chrome/browser/prefs/pref_names.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_app_interface.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
@@ -60,6 +61,11 @@ const char kInterstitialText[] =
   config.relaunch_policy = NoForceRelaunchAndResetState;
   config.features_enabled.push_back(
       security_interstitials::features::kHttpsOnlyMode);
+  // Disable omnibox navigation upgrades.
+  // typed_navigation_upgrade_tab_helper_egtest.mm already has a
+  // test case with both features enabled.
+  // (test_TypeHTTPWithGoodHTTPS_HTTPSOnlyModeEnabled_ShouldUpgrade)
+  config.features_disabled.push_back(omnibox::kDefaultTypedNavigationsToHttps);
   return config;
 }
 

@@ -1,4 +1,4 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -66,7 +66,7 @@ class FakeNavigationManager : public NavigationManager {
   // GetItemAtIndex(), and GetCurrentItemIndex().
   void AddItem(const GURL& url, ui::PageTransition transition);
 
-  // Sets the index to be returned by GetLastCommittedItemIndex(). |index| must
+  // Sets the index to be returned by GetLastCommittedItemIndex(). `index` must
   // be either -1 or between 0 and GetItemCount()-1, inclusively.
   void SetLastCommittedItemIndex(const int index);
 

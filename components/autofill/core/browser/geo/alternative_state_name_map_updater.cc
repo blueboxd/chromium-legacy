@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -92,8 +92,8 @@ void AlternativeStateNameMapUpdater::PopulateAlternativeStateNameMap(
 
   CountryToStateNamesListMapping country_to_state_names_map;
   for (AutofillProfile* profile : profiles) {
-    const AutofillType country_code_type(HTML_TYPE_COUNTRY_CODE,
-                                         HTML_MODE_NONE);
+    const AutofillType country_code_type(HtmlFieldType::kCountryCode,
+                                         HtmlFieldMode::kNone);
     const AlternativeStateNameMap::CountryCode country(
         base::UTF16ToUTF8(profile->GetInfo(
             country_code_type, personal_data_manager_->app_locale())));

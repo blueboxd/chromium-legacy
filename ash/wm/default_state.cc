@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -27,6 +27,7 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "chromeos/ui/base/window_state_type.h"
+#include "chromeos/ui/wm/window_util.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_delegate.h"
@@ -39,19 +40,6 @@
 
 namespace ash {
 namespace {
-
-float GetFloatValueForSnapRatio(WindowSnapWMEvent::SnapRatio snap_ratio) {
-  switch (snap_ratio) {
-    case WindowSnapWMEvent::SnapRatio::kOneThirdSnapRatio:
-      return kOneThirdPositionRatio;
-    case WindowSnapWMEvent::SnapRatio::kDefaultSnapRatio:
-      return kDefaultPositionRatio;
-    case WindowSnapWMEvent::SnapRatio::kTwoThirdSnapRatio:
-      return kTwoThirdPositionRatio;
-    default:
-      return kDefaultPositionRatio;
-  }
-}
 
 using ::chromeos::WindowStateType;
 
@@ -246,19 +234,20 @@ void DefaultState::HandleCompoundEvents(WindowState* window_state,
   switch (event->type()) {
     case WM_EVENT_TOGGLE_MAXIMIZE_CAPTION:
       if (window_state->IsFullscreen()) {
-        const WMEvent event(WM_EVENT_TOGGLE_FULLSCREEN);
-        window_state->OnWMEvent(&event);
+        const WMEvent wm_event(WM_EVENT_TOGGLE_FULLSCREEN);
+        window_state->OnWMEvent(&wm_event);
       } else if (window_state->IsMaximized()) {
         window_state->Restore();
-      } else if (window_state->IsNormalOrSnapped()) {
+      } else if (window_state->IsNormalOrSnapped() ||
+                 window_state->IsFloated()) {
         if (window_state->CanMaximize())
           window_state->Maximize();
       }
       return;
     case WM_EVENT_TOGGLE_MAXIMIZE:
       if (window_state->IsFullscreen()) {
-        const WMEvent event(WM_EVENT_TOGGLE_FULLSCREEN);
-        window_state->OnWMEvent(&event);
+        const WMEvent wm_event(WM_EVENT_TOGGLE_FULLSCREEN);
+        window_state->OnWMEvent(&wm_event);
       } else if (window_state->IsMaximized()) {
         window_state->Restore();
       } else if (window_state->CanMaximize()) {
@@ -274,13 +263,13 @@ void DefaultState::HandleCompoundEvents(WindowState* window_state,
           screen_util::GetDisplayWorkAreaBoundsInParent(window);
       // Maximize vertically if:
       // - The window does not have a max height defined.
-      // - The window has the normal state type. Snapped windows are excluded
-      //   because they are already maximized vertically and reverting to the
-      //   restored bounds looks weird.
-      if (GetWindowMaximumSize(window).height() != 0 ||
-          !window_state->IsNormalStateType()) {
+      // - The window is floated or has the normal state type. Snapped windows
+      //   are excluded because they are already maximized vertically and
+      //   reverting to the restored bounds looks weird.
+      if (GetWindowMaximumSize(window).height() != 0)
         return;
-      }
+      if (!window_state->IsNormalStateType() && !window_state->IsFloated())
+        return;
       if (!window_state->VerticallyShrinkWindow(work_area)) {
         gfx::Rect restore_bounds = window->GetTargetBounds();
         const gfx::Rect new_bounds =
@@ -295,10 +284,10 @@ void DefaultState::HandleCompoundEvents(WindowState* window_state,
     case WM_EVENT_TOGGLE_HORIZONTAL_MAXIMIZE: {
       // Maximize horizontally if:
       // - The window does not have a max width defined.
-      // - The window is snapped or has the normal state type.
+      // - The window is snapped or floated or has the normal state type.
       if (GetWindowMaximumSize(window).width() != 0)
         return;
-      if (!window_state->IsNormalOrSnapped())
+      if (!window_state->IsNormalOrSnapped() && !window_state->IsFloated())
         return;
       gfx::Rect work_area =
           screen_util::GetDisplayWorkAreaBoundsInParent(window);
@@ -370,7 +359,7 @@ void DefaultState::HandleTransitionEvents(WindowState* window_state,
   const WMEventType type = event->type();
   // Not all windows can be floated.
   if (type == WM_EVENT_FLOAT &&
-      !FloatController::CanFloatWindowInClamshell(window_state->window())) {
+      !chromeos::wm::CanFloatWindow(window_state->window())) {
     return;
   }
 
@@ -378,7 +367,7 @@ void DefaultState::HandleTransitionEvents(WindowState* window_state,
     HandleWindowSnapping(window_state, type);
 
   if (next_state_type == current_state_type && window_state->IsSnapped()) {
-    float snap_ratio = GetFloatValueForSnapRatio(
+    float snap_ratio = WindowSnapWMEvent::GetFloatValueForSnapRatio(
         event->IsSnapInfoAvailable()
             ? static_cast<const WindowSnapWMEvent*>(event)->snap_ratio()
             : WindowSnapWMEvent::SnapRatio::kDefaultSnapRatio);
@@ -409,7 +398,7 @@ void DefaultState::HandleTransitionEvents(WindowState* window_state,
     EnterToNextState(
         window_state, next_state_type,
         event->IsSnapInfoAvailable()
-            ? absl::make_optional(GetFloatValueForSnapRatio(
+            ? absl::make_optional(WindowSnapWMEvent::GetFloatValueForSnapRatio(
                   static_cast<const WindowSnapWMEvent*>(event)->snap_ratio()))
             : (is_restoring ? window_state->snap_ratio()
                             : absl::make_optional(kDefaultPositionRatio)));
@@ -482,13 +471,13 @@ void DefaultState::EnterToNextState(WindowState* window_state,
   if (state_type_ == WindowStateType::kFloated) {
     DCHECK_EQ(next_state_type, WindowStateType::kFloated);
     // Add window to float container.
-    float_controller->Float(window);
+    float_controller->FloatImpl(window);
   }
 
   // Unfloat floated window when exiting float state to another state.
   if (previous_state_type == WindowStateType::kFloated) {
     // Remove float window from float container.
-    float_controller->Unfloat(window);
+    float_controller->UnfloatImpl(window);
   }
 
   // Don't update the window if the window is detached from parent.

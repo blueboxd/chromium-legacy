@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -173,13 +173,14 @@ std::unique_ptr<SharedImageBacking> OzoneImageBackingFactory::CreateSharedImage(
   return backing;
 }
 
-bool OzoneImageBackingFactory::IsSupported(uint32_t usage,
-                                           viz::ResourceFormat format,
-                                           bool thread_safe,
-                                           gfx::GpuMemoryBufferType gmb_type,
-                                           GrContextType gr_context_type,
-                                           bool* allow_legacy_mailbox,
-                                           bool is_pixel_used) {
+bool OzoneImageBackingFactory::IsSupported(
+    uint32_t usage,
+    viz::ResourceFormat format,
+    const gfx::Size& size,
+    bool thread_safe,
+    gfx::GpuMemoryBufferType gmb_type,
+    GrContextType gr_context_type,
+    base::span<const uint8_t> pixel_data) {
   if (gmb_type != gfx::EMPTY_BUFFER && gmb_type != gfx::NATIVE_PIXMAP) {
     return false;
   }
@@ -213,12 +214,11 @@ bool OzoneImageBackingFactory::IsSupported(uint32_t usage,
   constexpr uint32_t kPrimaryPlaneUsageFlags = SHARED_IMAGE_USAGE_DISPLAY |
                                                SHARED_IMAGE_USAGE_SCANOUT |
                                                SHARED_IMAGE_USAGE_RASTER;
-  if (usage != kPrimaryPlaneUsageFlags || gmb_type != gfx::NATIVE_PIXMAP) {
+  if (usage != kPrimaryPlaneUsageFlags || gmb_type != gfx::EMPTY_BUFFER) {
     return false;
   }
 #endif
 
-  *allow_legacy_mailbox = false;
   return true;
 }
 

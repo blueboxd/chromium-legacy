@@ -13,6 +13,7 @@
 #include "base/numerics/safe_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/browser/devtools/devtools_instrumentation.h"
+#include "content/browser/renderer_host/policy_container_host.h"
 #include "content/browser/service_worker/service_worker_cache_writer.h"
 #include "content/browser/service_worker/service_worker_consts.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
@@ -20,6 +21,7 @@
 #include "content/browser/service_worker/service_worker_loader_helpers.h"
 #include "content/browser/service_worker/service_worker_version.h"
 #include "content/public/browser/url_loader_throttles.h"
+#include "content/public/common/content_client.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
@@ -214,7 +216,8 @@ void ServiceWorkerNewScriptLoader::OnReceiveEarlyHints(
 
 void ServiceWorkerNewScriptLoader::OnReceiveResponse(
     network::mojom::URLResponseHeadPtr response_head,
-    mojo::ScopedDataPipeConsumerHandle body) {
+    mojo::ScopedDataPipeConsumerHandle body,
+    absl::optional<mojo_base::BigBuffer> cached_metadata) {
   DCHECK_EQ(LoaderState::kLoadingHeader, network_loader_state_);
   if (!version_->context() || version_->is_redundant()) {
     CommitCompleted(network::URLLoaderCompletionStatus(net::ERR_FAILED),
@@ -251,6 +254,21 @@ void ServiceWorkerNewScriptLoader::OnReceiveResponse(
       return;
     }
 
+    if (!GetContentClient()
+             ->browser()
+             ->ShouldServiceWorkerInheritPolicyContainerFromCreator(
+                 request_url_)) {
+      version_->set_policy_container_host(
+          base::MakeRefCounted<PolicyContainerHost>(
+              // TODO(crbug.com/1352929): Add DCHECK to parsed_headers
+              response_head->parsed_headers
+                  // This does not parse the referrer policy, which will be
+                  // updated in ServiceWorkerGlobalScope::Initialize
+                  ? PolicyContainerPolicies(request_url_, response_head.get(),
+                                            /*client=*/nullptr)
+                  : PolicyContainerPolicies()));
+    }
+
     version_->set_cross_origin_embedder_policy(
         response_head->parsed_headers
             ? response_head->parsed_headers->cross_origin_embedder_policy
@@ -276,7 +294,8 @@ void ServiceWorkerNewScriptLoader::OnReceiveResponse(
 
   if (!body) {
     client_->OnReceiveResponse(std::move(response_head),
-                               mojo::ScopedDataPipeConsumerHandle());
+                               mojo::ScopedDataPipeConsumerHandle(),
+                               std::move(cached_metadata));
     return;
   }
 
@@ -292,7 +311,8 @@ void ServiceWorkerNewScriptLoader::OnReceiveResponse(
 
   // Pass the consumer handle for responding with the response to the client.
   client_->OnReceiveResponse(std::move(response_head),
-                             std::move(client_consumer));
+                             std::move(client_consumer),
+                             std::move(cached_metadata));
 
   network_consumer_ = std::move(body);
   network_loader_state_ = LoaderState::kLoadingBody;
@@ -319,11 +339,6 @@ void ServiceWorkerNewScriptLoader::OnUploadProgress(
     OnUploadProgressCallback ack_callback) {
   client_->OnUploadProgress(current_position, total_size,
                             std::move(ack_callback));
-}
-
-void ServiceWorkerNewScriptLoader::OnReceiveCachedMetadata(
-    mojo_base::BigBuffer data) {
-  client_->OnReceiveCachedMetadata(std::move(data));
 }
 
 void ServiceWorkerNewScriptLoader::OnTransferSizeUpdated(

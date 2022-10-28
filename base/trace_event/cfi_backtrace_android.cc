@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -175,7 +175,7 @@ void CFIBacktraceAndroid::ParseCFITables() {
       reinterpret_cast<const uintptr_t*>(cfi_mmap_->data()) + 1;
   unw_index_row_count_ = unw_index_size;
   unw_index_indices_col_ = reinterpret_cast<const uint16_t*>(
-      unw_index_function_col_ + unw_index_row_count_);
+      (unw_index_function_col_ + unw_index_row_count_).get());
 
   // The UNW_DATA table data is right after the end of UNW_INDEX table.
   // Interpret the UNW_DATA table as an array of 2 byte numbers since the

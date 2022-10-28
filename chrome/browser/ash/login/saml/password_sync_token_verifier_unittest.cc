@@ -1,10 +1,9 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome/browser/ash/login/saml/password_sync_token_verifier.h"
 
-#include "ash/components/login/auth/public/user_context.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/time/default_clock.h"
 #include "chrome/browser/ash/login/login_pref_names.h"
@@ -15,6 +14,7 @@
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
+#include "chromeos/ash/components/login/auth/public/user_context.h"
 #include "components/user_manager/known_user.h"
 #include "components/user_manager/scoped_user_manager.h"
 #include "components/user_manager/user_names.h"

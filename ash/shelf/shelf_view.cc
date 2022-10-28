@@ -1,10 +1,9 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "ash/shelf/shelf_view.h"
 
-#include <algorithm>
 #include <memory>
 #include <utility>
 
@@ -478,11 +477,9 @@ ShelfAppButton* ShelfView::GetShelfItemViewWithContextMenu() {
 }
 
 void ShelfView::AnnounceShelfItemNotificationBadge(views::View* button) {
-  announcement_view_->GetViewAccessibility().OverrideName(
+  announcement_view_->GetViewAccessibility().AnnounceText(
       l10n_util::GetStringFUTF16(IDS_SHELF_ITEM_HAS_NOTIFICATION_BADGE,
                                  GetTitleForView(button)));
-  announcement_view_->NotifyAccessibilityEvent(ax::mojom::Event::kAlert,
-                                               /*send_native_event=*/true);
 }
 
 bool ShelfView::LocationInsideVisibleShelfItemBounds(
@@ -922,8 +919,6 @@ void ShelfView::CalculateIdealBounds() {
   const int button_spacing = ShelfConfig::Get()->button_spacing();
   UpdateSeparatorIndex();
 
-  const int hotseat_size = shelf_->hotseat_widget()->GetHotseatSize();
-
   // Don't show the separator if it isn't needed, or would appear after all
   // visible items.
   separator_->SetVisible(separator_index_.has_value() &&
@@ -975,22 +970,6 @@ void ShelfView::CalculateIdealBounds() {
       y = shelf()->PrimaryAxisValue(y, y + button_size + button_spacing);
     } else {
       view_model_->set_ideal_bounds(i, gfx::Rect(x, y, 0, 0));
-    }
-
-    if (i == separator_index_) {
-      // Place the separator halfway between the two icons it separates,
-      // vertically centered.
-      int half_space = button_spacing / 2;
-      int secondary_offset = (hotseat_size - kSeparatorSize) / 2;
-      x -= shelf()->PrimaryAxisValue(half_space, 0);
-      y -= shelf()->PrimaryAxisValue(0, half_space);
-      separator_->SetBounds(
-          x + shelf()->PrimaryAxisValue(0, secondary_offset),
-          y + shelf()->PrimaryAxisValue(secondary_offset, 0),
-          shelf()->PrimaryAxisValue(kSeparatorThickness, kSeparatorSize),
-          shelf()->PrimaryAxisValue(kSeparatorSize, kSeparatorThickness));
-      x += shelf()->PrimaryAxisValue(half_space, 0);
-      y += shelf()->PrimaryAxisValue(0, half_space);
     }
   }
 }
@@ -1372,6 +1351,7 @@ void ShelfView::LayoutToIdealBounds() {
 
   CalculateIdealBounds();
   views::ViewModelUtils::SetViewBoundsToIdealBounds(*view_model_);
+  UpdateSeparatorBounds(/*animate=*/false);
   UpdateVisibleShelfItemBoundsUnion();
 }
 
@@ -1403,7 +1383,40 @@ void ShelfView::AnimateToIdealBounds() {
     // padding of the first gets properly transferred to the new first item.
     view->SetBorder(nullptr);
   }
+
+  UpdateSeparatorBounds(/*animate=*/true);
   UpdateVisibleShelfItemBoundsUnion();
+}
+
+void ShelfView::UpdateSeparatorBounds(bool animate) {
+  if (!separator_index_.has_value() ||
+      separator_index_ >= view_model_->view_size()) {
+    return;
+  }
+
+  gfx::Rect icon_bounds_beside_separator =
+      view_model_->ideal_bounds(separator_index_.value());
+
+  // Calculate the position value on the secondary axis.
+  int secondary_offset =
+      (shelf_->hotseat_widget()->GetHotseatSize() - kSeparatorSize) / 2;
+
+  int separator_x =
+      shelf()->PrimaryAxisValue(icon_bounds_beside_separator.right() +
+                                    ShelfConfig::Get()->button_spacing() / 2,
+                                secondary_offset);
+  int separator_y = shelf()->PrimaryAxisValue(
+      secondary_offset, icon_bounds_beside_separator.bottom() +
+                            ShelfConfig::Get()->button_spacing() / 2);
+  gfx::Rect separator_bounds(
+      separator_x, separator_y,
+      shelf()->PrimaryAxisValue(kSeparatorThickness, kSeparatorSize),
+      shelf()->PrimaryAxisValue(kSeparatorSize, kSeparatorThickness));
+
+  if (animate)
+    bounds_animator_->AnimateViewTo(separator_, separator_bounds);
+  else
+    separator_->SetBoundsRect(separator_bounds);
 }
 
 void ShelfView::FadeIn(views::View* view) {
@@ -1573,10 +1586,13 @@ void ShelfView::MoveDragViewTo(int primary_axis_coordinate) {
     int ideal_bound_position = shelf()->PrimaryAxisValue(
         ideal_bound_center.x(), ideal_bound_center.y());
 
+    RelativePosition old_relative_position =
+        drag_view_relative_to_ideal_bounds_;
     drag_view_relative_to_ideal_bounds_ =
         drag_view_position < ideal_bound_position ? RelativePosition::kLeft
                                                   : RelativePosition::kRight;
-    if (target_index == current_item_index) {
+    if (target_index == current_item_index &&
+        old_relative_position != drag_view_relative_to_ideal_bounds_) {
       AnimateToIdealBounds();
       NotifyAccessibilityEvent(ax::mojom::Event::kChildrenChanged,
                                true /* send_native_event */);
@@ -1912,9 +1928,7 @@ void ShelfView::AnnounceShelfAlignment() {
       announcement = l10n_util::GetStringUTF16(IDS_SHELF_ALIGNMENT_RIGHT);
       break;
   }
-  announcement_view_->GetViewAccessibility().OverrideName(announcement);
-  announcement_view_->NotifyAccessibilityEvent(ax::mojom::Event::kAlert,
-                                               /*send_native_event=*/true);
+  announcement_view_->GetViewAccessibility().AnnounceText(announcement);
 }
 
 bool ShelfView::IsAnimating() const {
@@ -1940,9 +1954,7 @@ void ShelfView::AnnounceShelfAutohideBehavior() {
       announcement = l10n_util::GetStringUTF16(IDS_SHELF_STATE_ALWAYS_HIDDEN);
       break;
   }
-  announcement_view_->GetViewAccessibility().OverrideName(announcement);
-  announcement_view_->NotifyAccessibilityEvent(ax::mojom::Event::kAlert,
-                                               /*send_native_event=*/true);
+  announcement_view_->GetViewAccessibility().AnnounceText(announcement);
 }
 
 void ShelfView::AnnouncePinUnpinEvent(const ShelfItem& item, bool pinned) {
@@ -1953,9 +1965,7 @@ void ShelfView::AnnouncePinUnpinEvent(const ShelfItem& item, bool pinned) {
   std::u16string announcement = l10n_util::GetStringFUTF16(
       pinned ? IDS_SHELF_ITEM_WAS_PINNED : IDS_SHELF_ITEM_WAS_UNPINNED,
       item_title);
-  announcement_view_->GetViewAccessibility().OverrideName(announcement);
-  announcement_view_->NotifyAccessibilityEvent(ax::mojom::Event::kAlert,
-                                               /*send_native_event=*/true);
+  announcement_view_->GetViewAccessibility().AnnounceText(announcement);
 }
 
 void ShelfView::AnnounceSwapEvent(const ShelfItem& first_item,
@@ -1970,9 +1980,7 @@ void ShelfView::AnnounceSwapEvent(const ShelfItem& first_item,
           : second_item.title;
   std::u16string announcement = l10n_util::GetStringFUTF16(
       IDS_SHELF_ITEMS_WERE_SWAPPED, first_item_title, second_item_title);
-  announcement_view_->GetViewAccessibility().OverrideName(announcement);
-  announcement_view_->NotifyAccessibilityEvent(ax::mojom::Event::kAlert,
-                                               /*send_native_event=*/true);
+  announcement_view_->GetViewAccessibility().AnnounceText(announcement);
 }
 
 gfx::Rect ShelfView::GetBoundsForDragInsertInScreen() {
@@ -2484,12 +2492,8 @@ void ShelfView::OnBoundsAnimatorDone(views::BoundsAnimator* animator) {
       // previously hidden status can be shown again. Since the button itself
       // might have gone away or changed locations we check that the button
       // is still in the shelf and show its status again.
-      const auto& entries = view_model_->entries();
-      const auto iter = std::find_if(
-          entries.begin(), entries.end(), [this](const auto& entry) {
-            return entry.view == snap_back_from_rip_off_view_;
-          });
-      if (iter != entries.end())
+      if (base::Contains(view_model_->entries(), snap_back_from_rip_off_view_,
+                         &views::ViewModelBase::Entry::view))
         snap_back_from_rip_off_view_->ClearState(ShelfAppButton::STATE_HIDDEN);
 
       snap_back_from_rip_off_view_ = nullptr;

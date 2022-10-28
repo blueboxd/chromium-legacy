@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,6 +10,7 @@
 #include <string>
 #include <vector>
 
+#include "ash/constants/ash_features.h"
 #include "ash/constants/notifier_catalogs.h"
 #include "ash/public/cpp/notification_utils.h"
 #include "base/bind.h"
@@ -19,7 +20,6 @@
 #include "base/memory/ref_counted.h"
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/ash/mobile/mobile_activator.h"
-#include "chrome/browser/ash/net/network_portal_web_dialog.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/ash/profiles/signin_profile_handler.h"
 #include "chrome/browser/notifications/notification_handler.h"
@@ -43,50 +43,114 @@
 #include "ui/message_center/public/cpp/notifier_id.h"
 #include "ui/views/widget/widget.h"
 
-namespace chromeos {
+namespace ash {
 
 namespace {
 
 const char kNotifierNetworkPortalDetector[] = "ash.network.portal-detector";
+
+std::unique_ptr<message_center::Notification> CreatePost2022Notification(
+    const NetworkState* network,
+    scoped_refptr<message_center::NotificationDelegate> delegate,
+    message_center::NotifierId notifier_id,
+    bool is_wifi,
+    NetworkState::PortalState portal_state) {
+  int message;
+  message_center::ButtonInfo button;
+  message_center::RichNotificationData data;
+  switch (portal_state) {
+    case NetworkState::PortalState::kPortal:
+      message = IDS_NEW_PORTAL_DETECTION_NOTIFICATION_MESSAGE;
+      button.title = l10n_util::GetStringUTF16(
+          IDS_NEW_PORTAL_DETECTION_NOTIFICATION_BUTTON);
+      data.buttons.emplace_back(std::move(button));
+      break;
+    case NetworkState::PortalState::kPortalSuspected:
+      message = IDS_NEW_PORTAL_SUSPECTED_DETECTION_NOTIFICATION_MESSAGE;
+      button.title = l10n_util::GetStringUTF16(
+          IDS_NEW_PORTAL_SUSPECTED_DETECTION_NOTIFICATION_BUTTON);
+      data.buttons.emplace_back(std::move(button));
+      break;
+    case NetworkState::PortalState::kProxyAuthRequired:
+      message =
+          IDS_NEW_PORTAL_PROXY_AUTH_REQUIRED_DETECTION_NOTIFICATION_MESSAGE;
+      button.title = l10n_util::GetStringUTF16(
+          IDS_NEW_PORTAL_DETECTION_NOTIFICATION_BUTTON);
+      data.buttons.emplace_back(std::move(button));
+      break;
+    default:
+      NOTREACHED();
+      return nullptr;
+  }
+
+  std::unique_ptr<message_center::Notification> notification =
+      ash::CreateSystemNotification(
+          message_center::NOTIFICATION_TYPE_SIMPLE,
+          NetworkPortalNotificationController::kNotificationId,
+          l10n_util::GetStringUTF16(
+              is_wifi ? IDS_NEW_PORTAL_DETECTION_NOTIFICATION_TITLE_WIFI
+                      : IDS_NEW_PORTAL_DETECTION_NOTIFICATION_TITLE_WIRED),
+          l10n_util::GetStringFUTF16(message,
+                                     base::UTF8ToUTF16(network->name())),
+          /*display_source=*/std::u16string(), /*origin_url=*/GURL(),
+          notifier_id, data, std::move(delegate),
+          kNotificationCaptivePortalIcon,
+          message_center::SystemNotificationWarningLevel::NORMAL);
+  notification->set_never_timeout(true);
+  return notification;
+}
+
+std::unique_ptr<message_center::Notification> CreatePre2022Notification(
+    const NetworkState* network,
+    scoped_refptr<message_center::NotificationDelegate> delegate,
+    message_center::NotifierId notifier_id,
+    bool is_wifi) {
+  return ash::CreateSystemNotification(
+      message_center::NOTIFICATION_TYPE_SIMPLE,
+      NetworkPortalNotificationController::kNotificationId,
+      l10n_util::GetStringUTF16(
+          is_wifi ? IDS_PORTAL_DETECTION_NOTIFICATION_TITLE_WIFI
+                  : IDS_PORTAL_DETECTION_NOTIFICATION_TITLE_WIRED),
+      l10n_util::GetStringFUTF16(
+          is_wifi ? IDS_PORTAL_DETECTION_NOTIFICATION_MESSAGE_WIFI
+                  : IDS_PORTAL_DETECTION_NOTIFICATION_MESSAGE_WIRED,
+          base::UTF8ToUTF16(network->name())),
+      /*display_source=*/std::u16string(), /*origin_url=*/GURL(), notifier_id,
+      message_center::RichNotificationData(), std::move(delegate),
+      kNotificationCaptivePortalIcon,
+      message_center::SystemNotificationWarningLevel::WARNING);
+}
 
 void CloseNotification() {
   SystemNotificationHelper::GetInstance()->Close(
       NetworkPortalNotificationController::kNotificationId);
 }
 
-class NetworkPortalNotificationControllerDelegate
+}  // namespace
+
+class NetworkPortalNotificationController::Delegate
     : public message_center::NotificationDelegate {
  public:
-  explicit NetworkPortalNotificationControllerDelegate(
-      const std::string& guid,
+  explicit Delegate(
       base::WeakPtr<NetworkPortalNotificationController> controller)
-      : guid_(guid), clicked_(false), controller_(controller) {}
+      : controller_(controller) {}
 
-  NetworkPortalNotificationControllerDelegate(
-      const NetworkPortalNotificationControllerDelegate&) = delete;
-  NetworkPortalNotificationControllerDelegate& operator=(
-      const NetworkPortalNotificationControllerDelegate&) = delete;
+  Delegate(const Delegate&) = delete;
+  Delegate& operator=(const Delegate&) = delete;
 
   // Overridden from message_center::NotificationDelegate:
   void Click(const absl::optional<int>& button_index,
              const absl::optional<std::u16string>& reply) override;
 
  private:
-  ~NetworkPortalNotificationControllerDelegate() override {}
-
-  // GUID of the network this notification is generated for.
-  std::string guid_;
-
-  bool clicked_;
+  ~Delegate() override = default;
 
   base::WeakPtr<NetworkPortalNotificationController> controller_;
 };
 
-void NetworkPortalNotificationControllerDelegate::Click(
+void NetworkPortalNotificationController::Delegate::Click(
     const absl::optional<int>& button_index,
     const absl::optional<std::u16string>& reply) {
-  clicked_ = true;
-
   Profile* profile = ProfileManager::GetActiveUserProfile();
 
   const bool use_incognito_profile =
@@ -108,43 +172,39 @@ void NetworkPortalNotificationControllerDelegate::Click(
   CloseNotification();
 }
 
-}  // namespace
-
 // static
 const char NetworkPortalNotificationController::kNotificationId[] =
     "chrome://net/network_portal_detector";
 
-NetworkPortalNotificationController::NetworkPortalNotificationController(
-    NetworkPortalDetector* network_portal_detector)
-    : network_portal_detector_(network_portal_detector) {
-  if (network_portal_detector_) {  // May be null in tests.
-    network_portal_detector_->AddObserver(this);
-    DCHECK(session_manager::SessionManager::Get());
-    session_manager::SessionManager::Get()->AddObserver(this);
-  }
+NetworkPortalNotificationController::NetworkPortalNotificationController() {
+  if (NetworkHandler::IsInitialized())  // May be null in tests.
+    NetworkHandler::Get()->network_state_handler()->AddObserver(this);
+  DCHECK(session_manager::SessionManager::Get());
+  session_manager::SessionManager::Get()->AddObserver(this);
 }
 
 NetworkPortalNotificationController::~NetworkPortalNotificationController() {
-  if (network_portal_detector_) {
-    if (session_manager::SessionManager::Get())
-      session_manager::SessionManager::Get()->RemoveObserver(this);
-    network_portal_detector_->RemoveObserver(this);
+  if (NetworkHandler::IsInitialized()) {
+    NetworkHandler::Get()->network_state_handler()->RemoveObserver(this);
   }
+  if (session_manager::SessionManager::Get())
+    session_manager::SessionManager::Get()->RemoveObserver(this);
 }
 
-void NetworkPortalNotificationController::OnPortalDetectionCompleted(
-    const ash::NetworkState* network,
-    const NetworkPortalDetector::CaptivePortalStatus status) {
+void NetworkPortalNotificationController::PortalStateChanged(
+    const NetworkState* network,
+    NetworkState::PortalState portal_state) {
   if (!network ||
-      status != NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_PORTAL) {
+      (portal_state != NetworkState::PortalState::kPortal &&
+       portal_state != NetworkState::PortalState::kPortalSuspected &&
+       portal_state != NetworkState::PortalState::kProxyAuthRequired)) {
     last_network_guid_.clear();
 
     // In browser tests we initiate fake network portal detection, but network
     // state usually stays connected. This way, after dialog is shown, it is
     // immediately closed. The testing check below prevents dialog from closing.
-    if (dialog_ &&
-        (!ignore_no_network_for_testing_ ||
-         status == NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_ONLINE)) {
+    if (dialog_ && (!ignore_no_network_for_testing_ ||
+                    portal_state == NetworkState::PortalState::kOnline)) {
       dialog_->Close();
     }
 
@@ -153,7 +213,7 @@ void NetworkPortalNotificationController::OnPortalDetectionCompleted(
   }
 
   // Don't do anything if we're currently activating the device.
-  if (ash::MobileActivator::GetInstance()->RunningActivation())
+  if (MobileActivator::GetInstance()->RunningActivation())
     return;
 
   // Don't do anything if notification for |network| already was
@@ -163,14 +223,15 @@ void NetworkPortalNotificationController::OnPortalDetectionCompleted(
   last_network_guid_ = network->guid();
 
   std::unique_ptr<message_center::Notification> notification =
-      CreateDefaultCaptivePortalNotification(network);
+      CreateDefaultCaptivePortalNotification(network, portal_state);
+  DCHECK(notification) << "Notification not created for portal state: "
+                       << portal_state;
   SystemNotificationHelper::GetInstance()->Display(*notification);
 }
 
-void NetworkPortalNotificationController::OnShutdown() {
+void NetworkPortalNotificationController::OnShuttingDown() {
   CloseDialog();
-  network_portal_detector_->RemoveObserver(this);
-  network_portal_detector_ = nullptr;
+  NetworkHandler::Get()->network_state_handler()->RemoveObserver(this);
 }
 
 void NetworkPortalNotificationController::OnSessionStateChanged() {
@@ -194,35 +255,28 @@ void NetworkPortalNotificationController::OnDialogDestroyed(
     const NetworkPortalWebDialog* dialog) {
   if (dialog == dialog_) {
     dialog_ = nullptr;
-    ash::SigninProfileHandler::Get()->ClearSigninProfile(base::NullCallback());
+    SigninProfileHandler::Get()->ClearSigninProfile(base::NullCallback());
   }
 }
 
 std::unique_ptr<message_center::Notification>
 NetworkPortalNotificationController::CreateDefaultCaptivePortalNotification(
-    const ash::NetworkState* network) {
-  auto delegate =
-      base::MakeRefCounted<NetworkPortalNotificationControllerDelegate>(
-          network->guid(), weak_factory_.GetWeakPtr());
+    const NetworkState* network,
+    NetworkState::PortalState portal_state) {
+  auto delegate = base::MakeRefCounted<Delegate>(weak_factory_.GetWeakPtr());
   message_center::NotifierId notifier_id(
       message_center::NotifierType::SYSTEM_COMPONENT,
       kNotifierNetworkPortalDetector,
-      ash::NotificationCatalogName::kNetworkPortalDetector);
+      NotificationCatalogName::kNetworkPortalDetector);
   bool is_wifi = NetworkTypePattern::WiFi().MatchesType(network->type());
-  std::unique_ptr<message_center::Notification> notification =
-      ash::CreateSystemNotification(
-          message_center::NOTIFICATION_TYPE_SIMPLE, kNotificationId,
-          l10n_util::GetStringUTF16(
-              is_wifi ? IDS_PORTAL_DETECTION_NOTIFICATION_TITLE_WIFI
-                      : IDS_PORTAL_DETECTION_NOTIFICATION_TITLE_WIRED),
-          l10n_util::GetStringFUTF16(
-              is_wifi ? IDS_PORTAL_DETECTION_NOTIFICATION_MESSAGE_WIFI
-                      : IDS_PORTAL_DETECTION_NOTIFICATION_MESSAGE_WIRED,
-              base::UTF8ToUTF16(network->name())),
-          /*display_source=*/std::u16string(), /*origin_url=*/GURL(),
-          notifier_id, message_center::RichNotificationData(),
-          std::move(delegate), kNotificationCaptivePortalIcon,
-          message_center::SystemNotificationWarningLevel::WARNING);
+  std::unique_ptr<message_center::Notification> notification;
+  if (ash::features::IsCaptivePortalUI2022Enabled()) {
+    notification = CreatePost2022Notification(network, delegate, notifier_id,
+                                              is_wifi, portal_state);
+  } else {
+    notification =
+        CreatePre2022Notification(network, delegate, notifier_id, is_wifi);
+  }
   return notification;
 }
 
@@ -235,9 +289,8 @@ void NetworkPortalNotificationController::CloseDialog() {
     dialog_->Close();
 }
 
-const NetworkPortalWebDialog*
-NetworkPortalNotificationController::GetDialogForTesting() const {
-  return dialog_;
+bool NetworkPortalNotificationController::IsDialogShownForTesting() const {
+  return !!dialog_;
 }
 
-}  // namespace chromeos
+}  // namespace ash

@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -146,9 +146,9 @@ void RestorePrimaryUserDesks() {
     UMA_HISTOGRAM_BOOLEAN("Ash.Desks.UserHasUsedDesksRecently", true);
 
   const base::Value::List& desks_names_list =
-      primary_user_prefs->GetValueList(prefs::kDesksNamesList);
+      primary_user_prefs->GetList(prefs::kDesksNamesList);
   const base::Value::List& desks_metrics_list =
-      primary_user_prefs->GetValueList(prefs::kDesksMetricsList);
+      primary_user_prefs->GetList(prefs::kDesksMetricsList);
 
   // First create the same number of desks.
   const size_t restore_size = desks_names_list.size();
@@ -232,7 +232,7 @@ void RestorePrimaryUserDesks() {
 
   // Restore weekly active desks metrics.
   auto& weekly_active_desks_dict =
-      primary_user_prefs->GetValueDict(prefs::kDesksWeeklyActiveDesksMetrics);
+      primary_user_prefs->GetDict(prefs::kDesksWeeklyActiveDesksMetrics);
   const int report_time =
       weekly_active_desks_dict.FindIntByDottedPath(kReportTimeKey).value_or(-1);
   const int num_weekly_active_desks =

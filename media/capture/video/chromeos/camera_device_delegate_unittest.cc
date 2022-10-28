@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -50,7 +50,7 @@ class MockCameraDevice : public cros::mojom::Camera3DeviceOps {
   MockCameraDevice(const MockCameraDevice&) = delete;
   MockCameraDevice& operator=(const MockCameraDevice&) = delete;
 
-  ~MockCameraDevice() = default;
+  ~MockCameraDevice() override = default;
 
   void Initialize(
       mojo::PendingRemote<cros::mojom::Camera3CallbackOps> callback_ops,

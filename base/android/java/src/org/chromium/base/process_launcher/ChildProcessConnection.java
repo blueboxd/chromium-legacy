@@ -1,4 +1,4 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -1036,6 +1036,18 @@ public class ChildProcessConnection {
         if (mNotPerceptibleBindingCount == 0) {
             mNotPerceptibleBinding.unbindServiceConnection();
             updateBindingState();
+        }
+    }
+
+    /**
+     * @return the current connection binding state.
+     */
+    public @ChildBindingState int bindingStateCurrent() {
+        // WARNING: this method can be called from a thread other than the launcher thread.
+        // Note that it returns the current waived bound only state and is racy. This not really
+        // preventable without changing the caller's API, short of blocking.
+        synchronized (mBindingStateLock) {
+            return mBindingState;
         }
     }
 

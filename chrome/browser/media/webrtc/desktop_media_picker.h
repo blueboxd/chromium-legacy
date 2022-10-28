@@ -1,4 +1,4 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -65,6 +65,9 @@ class DesktopMediaPicker {
     // it sets them all to |checked|. This is used by Chromecasting.
     // It is mutually exclusive with |exclude_system_audio|.
     bool force_audio_checkboxes_to_default_checked = false;
+    // Indicates that, if audio ends up being captured, then local playback
+    // over the user's local speakers should be suppressed.
+    bool suppress_local_audio_playback = false;
     // This flag controls the behvior in the case where the picker is invoked to
     // select a screen and there is only one screen available.  If true, the
     // dialog is bypassed entirely and the screen is automatically selected.
@@ -76,6 +79,15 @@ class DesktopMediaPicker {
     // policies that may restrict the available choices, and a suitable warning
     // should be shown to the user.
     bool restricted_by_policy = false;
+    // Indicate which display surface should be most prominently offered in the
+    // picker.
+    blink::mojom::PreferredDisplaySurface preferred_display_surface =
+        blink::mojom::PreferredDisplaySurface::NO_PREFERENCE;
+    // True if the source of the call is getDisplayMedia(), false if it's
+    // another source, like an extension or ARC. This is useful for UMA that
+    // track the result of the picker, because the behavior with the
+    // Extension API is different, and could therefore lead to mismeasurement.
+    bool is_get_display_media_call = false;
   };
 
   // Creates a picker dialog/confirmation box depending on the value of

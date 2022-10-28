@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -37,7 +37,7 @@ class ASH_EXPORT NetworkListNetworkHeaderView : public NetworkListHeaderView {
       delete;
   ~NetworkListNetworkHeaderView() override;
 
-  virtual void SetToggleState(bool enabled, bool is_on);
+  virtual void SetToggleState(bool enabled, bool is_on, bool animate_toggle);
 
   void SetToggleVisibility(bool visible);
 
@@ -48,7 +48,7 @@ class ASH_EXPORT NetworkListNetworkHeaderView : public NetworkListHeaderView {
   // enabled/disable their respective technology.
   virtual void OnToggleToggled(bool is_on);
 
-  Delegate* delegate() const { return delegate_; };
+  Delegate* delegate() const { return delegate_; }
 
   TrayNetworkStateModel* model() { return model_; }
 

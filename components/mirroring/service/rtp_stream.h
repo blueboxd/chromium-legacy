@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -103,6 +103,10 @@ class COMPONENT_EXPORT(MIRRORING_SERVICE) AudioRtpStream
                    const base::TimeTicks& estimated_capture_time);
 
   void SetTargetPlayoutDelay(base::TimeDelta playout_delay);
+
+  // Get the real time encoder bitrate usage. Note that not all encoders support
+  // changing the bitrate in realtime.
+  int GetEncoderBitrate() const;
 
  private:
   const std::unique_ptr<media::cast::AudioSender> audio_sender_;

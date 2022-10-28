@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -153,18 +153,13 @@ void PersonalDataManagerCleaner::RemoveOrphanAutofillTableRows() {
 
 void PersonalDataManagerCleaner::RemoveInaccessibleProfileValues() {
   if (!base::FeatureList::IsEnabled(
-          features::kAutofillRemoveInaccessibleProfileValues) ||
-      !features::kAutofillRemoveInaccessibleProfileValuesOnStartup.Get()) {
+          features::kAutofillRemoveInaccessibleProfileValuesOnStartup)) {
     return;
   }
 
   for (const AutofillProfile* profile : personal_data_manager_->GetProfiles()) {
-    const std::string stored_country_code =
-        base::UTF16ToUTF8(profile->GetRawInfo(ADDRESS_HOME_COUNTRY));
-    const std::string country_code =
-        stored_country_code.empty() ? "US" : stored_country_code;
     const ServerFieldTypeSet inaccessible_fields =
-        profile->FindInaccessibleProfileValues(country_code);
+        profile->FindInaccessibleProfileValues();
     if (!inaccessible_fields.empty()) {
       // We need to create a copy, because otherwise the internally stored
       // profile in |personal_data_manager_| is modified, which should only

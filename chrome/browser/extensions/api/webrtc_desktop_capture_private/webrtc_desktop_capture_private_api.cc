@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -71,8 +71,11 @@ WebrtcDesktopCapturePrivateChooseDesktopMediaFunction::Run() {
   using Sources = std::vector<api::desktop_capture::DesktopCaptureSourceType>;
   Sources* sources = reinterpret_cast<Sources*>(&params->sources);
 
-  // TODO(crbug.com/1329129): Plumb systemAudio through here.
-  return Execute(*sources, /*exclude_system_audio=*/false, rfh, origin,
+  // TODO(crbug.com/1329129): Plumb systemAudio, selfBrowserSurface and
+  // suppressLocalAudioPlaybackIntended here.
+  return Execute(*sources, /*exclude_system_audio=*/false,
+                 /*exclude_self_browser_surface=*/false,
+                 /*suppress_local_audio_playback_intended=*/false, rfh, origin,
                  target_name);
 }
 

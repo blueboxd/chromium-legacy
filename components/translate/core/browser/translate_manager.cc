@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -95,22 +95,6 @@ void MoveSkippedLanguagesToEndIfNecessary(
 }
 
 }  // namespace
-
-const base::Feature kOverrideLanguagePrefsForHrefTranslate{
-    "OverrideLanguagePrefsForHrefTranslate", base::FEATURE_ENABLED_BY_DEFAULT};
-
-const base::Feature kOverrideSitePrefsForHrefTranslate{
-    "OverrideSitePrefsForHrefTranslate", base::FEATURE_DISABLED_BY_DEFAULT};
-
-const base::Feature kOverrideUnsupportedPageLanguageForHrefTranslate{
-    "OverrideUnsupportedPageLanguageForHrefTranslate",
-    base::FEATURE_ENABLED_BY_DEFAULT};
-
-const base::Feature kOverrideSimilarLanguagesForHrefTranslate{
-    "OverrideSimilarLanguagesForHrefTranslate",
-    base::FEATURE_ENABLED_BY_DEFAULT};
-
-const char kForceAutoTranslateKey[] = "force-auto-translate";
 
 TranslateManager::~TranslateManager() = default;
 
@@ -482,7 +466,7 @@ void TranslateManager::DoTranslatePage(const std::string& translate_script,
 }
 
 // Notifies |g_error_callback_list_| of translate errors.
-void TranslateManager::NotifyTranslateError(TranslateErrors::Type error_type) {
+void TranslateManager::NotifyTranslateError(TranslateErrors error_type) {
   if (!g_error_callback_list_ || error_type == TranslateErrors::NONE ||
       translate_driver_->IsIncognito()) {
     return;
@@ -523,7 +507,7 @@ void TranslateManager::NotifyLanguageDetected(
 
 void TranslateManager::PageTranslated(const std::string& source_lang,
                                       const std::string& target_lang,
-                                      TranslateErrors::Type error_type) {
+                                      TranslateErrors error_type) {
   if (error_type == TranslateErrors::NONE) {
     // The user could have updated the source language before translating, so
     // update the language state with both source and current.
@@ -1001,24 +985,6 @@ void TranslateManager::FilterForUserPrefs(
     decision->PreventAutoTranslate();
     decision->PreventShowingUI();
 
-    // Disable showing the translate UI for hrefTranslate unless hrefTranslate
-    // is supposed to override the language blocklist.
-    if (!base::FeatureList::IsEnabled(kOverrideLanguagePrefsForHrefTranslate)) {
-      decision->PreventShowingHrefTranslateUI();
-    }
-    // Disable auto-translating the page for hrefTranslate unless hrefTranslate
-    // is supposed to override the language blocklist for auto-translation as
-    // well. This is enabled by default, but the below if-statement also
-    // explicitly checks if the underlying base::Feature is enabled as well so
-    // that disabling the underlying base::Feature will also turn off forcing
-    // auto translation.
-    if (!base::FeatureList::IsEnabled(kOverrideLanguagePrefsForHrefTranslate) ||
-        !base::GetFieldTrialParamByFeatureAsBool(
-            kOverrideLanguagePrefsForHrefTranslate, kForceAutoTranslateKey,
-            true)) {
-      decision->PreventAutoHrefTranslate();
-    }
-
     // Disable showing the translate UI for a predefined target language unless
     // autotranslation to the predefined target language is enabled.
     if (!language_state_
@@ -1042,18 +1008,9 @@ void TranslateManager::FilterForUserPrefs(
     decision->PreventAutoTranslate();
     decision->PreventShowingUI();
 
-    // Disable showing the translate UI for hrefTranslate unless hrefTranslate
-    // is supposed to override the site blocklist.
-    if (!base::FeatureList::IsEnabled(kOverrideSitePrefsForHrefTranslate)) {
-      decision->PreventShowingHrefTranslateUI();
-    }
-    // Disable auto-translating the page for hrefTranslate unless hrefTranslate
-    // is supposed to override the site blocklist for auto-translation as well.
-    if (!base::GetFieldTrialParamByFeatureAsBool(
-            kOverrideSitePrefsForHrefTranslate, kForceAutoTranslateKey,
-            false)) {
-      decision->PreventAutoHrefTranslate();
-    }
+    // The site blocklist isn't overridden for hrefTranslate.
+    decision->PreventShowingHrefTranslateUI();
+    decision->PreventAutoHrefTranslate();
 
     // Disable showing the translate UI for a predefined target language unless
     // autotranslation to the predefined target language is enabled.
@@ -1096,42 +1053,15 @@ void TranslateManager::FilterForHrefTranslate(
     decision->PreventShowingHrefTranslateUI();
   }
 
-  if (!TranslateDownloadManager::IsSupportedLanguage(page_language_code)) {
-    // If the page language is unsupported or unknown, but hrefTranslate is
-    // present and the Feature is set such that translation should be attempted
-    // anyways, then as a last ditch effort assume that language detection was
-    // incorrect and send "und" as the source language to make the translate
-    // service attempt to detect the language as it processes the page content.
-    if (language_state_.navigation_from_google() &&
-        base::FeatureList::IsEnabled(
-            kOverrideUnsupportedPageLanguageForHrefTranslate)) {
+  if (!TranslateDownloadManager::IsSupportedLanguage(page_language_code) ||
+      page_language_code == decision->href_translate_target) {
+    if (language_state_.navigation_from_google()) {
+      // If hrefTranslate is present but the page language is unsupported,
+      // unknown, or seems to match the hrefTranslate target language, then as a
+      // last ditch effort assume that language detection was incorrect and send
+      // "und" as the source language to make the translate service attempt to
+      // detect the language as it processes the page content.
       decision->href_translate_source = translate::kUnknownLanguageCode;
-      if (!base::GetFieldTrialParamByFeatureAsBool(
-              kOverrideUnsupportedPageLanguageForHrefTranslate,
-              "force-auto-translate-for-unsupported-page-language", true)) {
-        decision->PreventAutoHrefTranslate();
-      }
-    } else {
-      decision->PreventAutoHrefTranslate();
-      decision->PreventShowingHrefTranslateUI();
-    }
-  }
-
-  if (page_language_code == decision->href_translate_target) {
-    // If the page language seems to match the hrefTranslate target language and
-    // the Feature is set such that translation should be attempted anyways,
-    // then as a last ditch effort assume that language detection was incorrect
-    // and send "und" as the source language to make the translate service
-    // attempt to detect the language as it processes the page content.
-    if (language_state_.navigation_from_google() &&
-        base::FeatureList::IsEnabled(
-            kOverrideSimilarLanguagesForHrefTranslate)) {
-      decision->href_translate_source = translate::kUnknownLanguageCode;
-      if (!base::GetFieldTrialParamByFeatureAsBool(
-              kOverrideSimilarLanguagesForHrefTranslate,
-              "force-auto-translate-for-similar-languages", true)) {
-        decision->PreventAutoHrefTranslate();
-      }
     } else {
       decision->PreventAutoHrefTranslate();
       decision->PreventShowingHrefTranslateUI();

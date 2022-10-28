@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,6 +10,7 @@
 
 #include "base/feature_list.h"
 #include "base/metrics/field_trial_params.h"
+#include "base/time/time.h"
 #include "build/build_config.h"
 
 #if BUILDFLAG(IS_ANDROID)
@@ -47,7 +48,10 @@ extern const base::Feature kIOSPasswordUISplit;
 extern const base::Feature kIOSPasswordManagerCrossOriginIframeSupport;
 #endif  // IS_IOS
 extern const base::Feature kMuteCompromisedPasswords;
+
+extern const base::FeatureParam<base::TimeDelta> kPasswordNotesAuthValidity;
 extern const base::Feature kPasswordNotes;
+
 extern const base::Feature kPasswordViewPageInSettings;
 extern const base::Feature kSendPasswords;
 extern const base::Feature kLeakDetectionUnauthenticated;
@@ -61,6 +65,7 @@ extern const base::Feature kPasswordManagerRedesign;
 #endif
 extern const base::Feature kPasswordReuseDetectionEnabled;
 extern const base::Feature kPasswordScriptsFetching;
+extern const base::Feature kPasswordsGrouping;
 extern const base::Feature kPasswordStrengthIndicator;
 extern const base::Feature kRecoverFromNeverSaveAndroid;
 #if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX)
@@ -78,10 +83,15 @@ extern const base::Feature kUnifiedPasswordManagerAndroid;
 extern const base::Feature kUnifiedPasswordManagerErrorMessages;
 extern const base::Feature kUnifiedPasswordManagerSyncUsingAndroidBackendOnly;
 #endif
-extern const base::Feature kUnifiedPasswordManagerDesktop;
 extern const base::Feature kUsernameFirstFlowFallbackCrowdsourcing;
 
 // All features parameters are in alphabetical order.
+
+// If `true`, then password change in settings will also be offered for
+// insecure credentials that are weak (and not phished or leaked).
+constexpr base::FeatureParam<bool>
+    kPasswordChangeInSettingsWeakCredentialsParam = {&kPasswordChangeInSettings,
+                                                     "weak_credentials", false};
 
 // True if the client is part of the live_experiment group for
 // |kPasswordDomainCapabilitiesFetching|, otherwise, the client is assumed to be

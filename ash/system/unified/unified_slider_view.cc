@@ -1,10 +1,11 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "ash/system/unified/unified_slider_view.h"
 
 #include "ash/style/ash_color_provider.h"
+#include "ash/style/color_util.h"
 #include "ash/system/tray/tray_popup_utils.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/compositor/layer.h"
@@ -41,7 +42,7 @@ class SystemSlider : public views::Slider {
 
   // views::Slider:
   SkColor GetTroughColor() const override {
-    return AshColorProvider::Get()->GetSecondToneColor(GetThumbColor());
+    return ColorUtil::GetSecondToneColor(GetThumbColor());
   }
 
   // views::View:

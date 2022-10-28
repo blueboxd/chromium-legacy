@@ -1,4 +1,4 @@
-// Copyright (c) 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -179,6 +179,7 @@ constexpr size_t kHighThresholdForAlternateDistribution =
 //     | Metadata page (4 KiB) |
 //     | Guard pages (8 KiB)   |
 //     | TagBitmap             |
+//     | Free Slot Bitmap      |
 //     | *Scan State Bitmap    |
 //     | Slot span             |
 //     | Slot span             |
@@ -188,8 +189,9 @@ constexpr size_t kHighThresholdForAlternateDistribution =
 //     +-----------------------+
 //
 // TagBitmap is only present when
-// defined(PA_USE_MTE_CHECKED_PTR_WITH_64_BITS_POINTERS) is true. State Bitmap
-// is inserted for partitions that may have quarantine enabled.
+// defined(PA_ENABLE_MTE_CHECKED_PTR_SUPPORT_WITH_64_BITS_POINTERS) is true.
+// Free Slot Bitmap is only present when USE_FREESLOT_BITMAP is true. State
+// Bitmap is inserted for partitions that may have quarantine enabled.
 //
 // If refcount_at_end_allocation is enabled, RefcountBitmap(4KiB) is inserted
 // after the Metadata page for BackupRefPtr. The guard pages after the bitmap

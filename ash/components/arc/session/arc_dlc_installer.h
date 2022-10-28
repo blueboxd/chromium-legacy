@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,7 +8,7 @@
 #include <string>
 
 #include "base/barrier_closure.h"
-#include "chromeos/dbus/dlcservice/dlcservice_client.h"
+#include "chromeos/ash/components/dbus/dlcservice/dlcservice_client.h"
 
 namespace arc {
 
@@ -17,7 +17,7 @@ namespace arc {
 constexpr char kHoudiniRvcDlc[] = "houdini-rvc-dlc";
 
 // ArcDlcInstaller is responsible for installing and uninstalling ARC DLCs
-// by using the chromeos::DlcserviceClient. The caller can also wait
+// by using the ash::DlcserviceClient. The caller can also wait
 // for the installation to complete by supplying a callback function.
 //
 // Semantics:
@@ -83,7 +83,7 @@ class ArcDlcInstaller {
   // installation.
   void OnDlcInstalled(
       const std::string& dlc,
-      const chromeos::DlcserviceClient::InstallResult& install_result);
+      const ash::DlcserviceClient::InstallResult& install_result);
 
   // Uninstalls all the installed ARC DLCs.
   void Uninstall();

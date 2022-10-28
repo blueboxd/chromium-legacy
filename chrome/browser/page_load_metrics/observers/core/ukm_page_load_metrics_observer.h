@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -203,6 +203,15 @@ class UkmPageLoadMetricsObserver
   // the page until the first time the page moves from the foreground to the
   // background.
   void ReportLayoutInstabilityAfterFirstForeground();
+
+  // Record some largest contentful paint metrics that have occurred on the
+  // page until the first time the page starts in the foreground and moves to
+  // the background.
+  void ReportLargestContentfulPaintAfterFirstForeground();
+
+  // Record some Responsiveness metrics that have occurred on the page until
+  // the first time the page moves from the foreground to the background.
+  void ReportResponsivenessAfterFirstForeground();
 
   // Guaranteed to be non-null during the lifetime of |this|.
   raw_ptr<network::NetworkQualityTracker> network_quality_tracker_;

@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,21 +6,14 @@
 
 #include <math.h>
 
-#include "ash/constants/ash_constants.h"
-#include "ash/constants/ash_features.h"
 #include "ash/shell.h"
 #include "ash/style/ash_color_id.h"
+#include "ash/style/color_util.h"
 #include "ash/style/dark_light_mode_controller_impl.h"
-#include "ash/wallpaper/wallpaper_controller_impl.h"
-#include "base/bind.h"
-#include "base/callback_helpers.h"
 #include "base/check_op.h"
-#include "base/feature_list.h"
-#include "base/strings/string_number_conversions.h"
 #include "ui/chromeos/styles/cros_styles.h"
 #include "ui/color/color_id.h"
 #include "ui/color/color_provider_manager.h"
-#include "ui/gfx/color_analysis.h"
 #include "ui/gfx/color_utils.h"
 
 namespace ash {
@@ -32,25 +25,6 @@ namespace {
 // Opacity of the light/dark indrop.
 constexpr float kLightInkDropOpacity = 0.08f;
 constexpr float kDarkInkDropOpacity = 0.06f;
-
-// The disabled color is always 38% opacity of the enabled color.
-constexpr float kDisabledColorOpacity = 0.38f;
-
-// Color of second tone is always 30% opacity of the color of first tone.
-constexpr float kSecondToneOpacity = 0.3f;
-
-// Different alpha values that can be used by Shield and Base layers.
-constexpr int kAlpha20 = 51;   // 20%
-constexpr int kAlpha40 = 102;  // 40%
-constexpr int kAlpha60 = 153;  // 60%
-constexpr int kAlpha80 = 204;  // 80%
-constexpr int kAlpha90 = 230;  // 90%
-constexpr int kAlpha95 = 242;  // 95%
-
-// Alpha value that is used to calculate themed color. Please see function
-// GetBackgroundThemedColor() about how the themed color is calculated.
-constexpr int kDarkBackgroundBlendAlpha = 127;   // 50%
-constexpr int kLightBackgroundBlendAlpha = 127;  // 50%
 
 AshColorProvider* g_instance = nullptr;
 
@@ -78,19 +52,6 @@ AshColorProvider* AshColorProvider::Get() {
   return g_instance;
 }
 
-// static
-SkColor AshColorProvider::GetDisabledColor(SkColor enabled_color) {
-  return SkColorSetA(enabled_color, std::round(SkColorGetA(enabled_color) *
-                                               kDisabledColorOpacity));
-}
-
-// static
-SkColor AshColorProvider::GetSecondToneColor(SkColor color_of_first_tone) {
-  return SkColorSetA(
-      color_of_first_tone,
-      std::round(SkColorGetA(color_of_first_tone) * kSecondToneOpacity));
-}
-
 SkColor AshColorProvider::GetShieldLayerColor(ShieldLayerType type) const {
   // TODO(crbug.com/1348365): Delete this function after all clients migrate.
   auto* color_provider = GetColorProvider();
@@ -113,26 +74,27 @@ SkColor AshColorProvider::GetShieldLayerColor(ShieldLayerType type) const {
 }
 
 SkColor AshColorProvider::GetBaseLayerColor(BaseLayerType type) const {
-  // TODO(minch): Get all the colors from `GetColorProvider` as
-  // `kInvertedTransparent80`.
-  const auto color = GetBackgroundColor();
+  // TODO(crbug.com/1350510): Delete this function after all clients migrate.
+  auto* color_provider = GetColorProvider();
+  DCHECK(color_provider);
+
   switch (type) {
     case BaseLayerType::kTransparent20:
-      return SkColorSetA(color, kAlpha20);
+      return color_provider->GetColor(kColorAshShieldAndBase20);
     case BaseLayerType::kTransparent40:
-      return SkColorSetA(color, kAlpha40);
+      return color_provider->GetColor(kColorAshShieldAndBase40);
     case BaseLayerType::kTransparent60:
-      return SkColorSetA(color, kAlpha60);
+      return color_provider->GetColor(kColorAshShieldAndBase60);
     case BaseLayerType::kTransparent80:
-      return SkColorSetA(color, kAlpha80);
+      return color_provider->GetColor(kColorAshShieldAndBase80);
     case BaseLayerType::kInvertedTransparent80:
-      return GetColorProvider()->GetColor(kColorAshInvertedShieldAndBase80);
+      return color_provider->GetColor(kColorAshInvertedShieldAndBase80);
     case BaseLayerType::kTransparent90:
-      return SkColorSetA(color, kAlpha90);
+      return color_provider->GetColor(kColorAshShieldAndBase90);
     case BaseLayerType::kTransparent95:
-      return SkColorSetA(color, kAlpha95);
+      return color_provider->GetColor(kColorAshShieldAndBase95);
     case BaseLayerType::kOpaque:
-      return SkColorSetA(color, SK_AlphaOPAQUE);
+      return color_provider->GetColor(kColorAshShieldAndBaseOpaque);
   }
 }
 
@@ -174,7 +136,6 @@ SkColor AshColorProvider::GetControlsLayerColor(ControlsLayerType type) const {
 }
 
 SkColor AshColorProvider::GetContentLayerColor(ContentLayerType type) const {
-  bool use_dark_color = IsDarkModeEnabled();
   auto* color_provider = GetColorProvider();
   switch (type) {
     case ContentLayerType::kSeparatorColor:
@@ -247,15 +208,9 @@ SkColor AshColorProvider::GetContentLayerColor(ContentLayerType type) const {
     case ContentLayerType::kTextColorSuggestion:
       return color_provider->GetColor(kColorAshTextColorSuggestion);
     case ContentLayerType::kTextColorPrimary:
-      // TODO(crbug.com/1346394): Change to `color_provider` when relevant
-      // callers are fixed.
-      return cros_styles::ResolveColor(ColorName::kTextColorPrimary,
-                                       use_dark_color);
+      return color_provider->GetColor(kColorAshTextColorPrimary);
     case ContentLayerType::kTextColorSecondary:
-      // TODO(crbug.com/1346394): Change to `color_provider` when relevant
-      // callers are fixed.
-      return cros_styles::ResolveColor(ColorName::kTextColorSecondary,
-                                       use_dark_color);
+      return color_provider->GetColor(kColorAshTextColorSecondary);
     case ContentLayerType::kTextColorAlert:
       return color_provider->GetColor(kColorAshTextColorAlert);
     case ContentLayerType::kTextColorWarning:
@@ -275,58 +230,22 @@ SkColor AshColorProvider::GetContentLayerColor(ContentLayerType type) const {
   }
 }
 
-SkColor AshColorProvider::GetActiveDialogTitleBarColor() const {
-  return cros_styles::ResolveColor(cros_styles::ColorName::kDialogTitleBarColor,
-                                   IsDarkModeEnabled());
-}
-
-SkColor AshColorProvider::GetInactiveDialogTitleBarColor() const {
-  // TODO(wenbojie): Use a different inactive color in future.
-  return GetActiveDialogTitleBarColor();
-}
-
 std::pair<SkColor, float> AshColorProvider::GetInkDropBaseColorAndOpacity(
     SkColor background_color) const {
   if (background_color == gfx::kPlaceholderColor)
     background_color = GetBackgroundColor();
 
   const bool is_dark = color_utils::IsDark(background_color);
-  const SkColor base_color = is_dark ? SK_ColorWHITE : SK_ColorBLACK;
+  const SkColor base_color =
+      GetColorProvider()->GetColor(kColorAshInkDropOpaqueColor);
   const float opacity = is_dark ? kLightInkDropOpacity : kDarkInkDropOpacity;
   return std::make_pair(base_color, opacity);
 }
 
 SkColor AshColorProvider::GetBackgroundColor() const {
-  return GetBackgroundThemedColorImpl(
+  return ColorUtil::GetBackgroundThemedColor(
       GetColorProvider()->GetColor(kColorAshShieldAndBaseOpaque),
       IsDarkModeEnabled());
-}
-
-SkColor AshColorProvider::GetBackgroundThemedColorImpl(
-    SkColor default_color,
-    bool use_dark_color) const {
-  // May be null in unit tests.
-  if (!Shell::HasInstance())
-    return default_color;
-  WallpaperControllerImpl* wallpaper_controller =
-      Shell::Get()->wallpaper_controller();
-  if (!wallpaper_controller)
-    return default_color;
-
-  color_utils::LumaRange luma_range = use_dark_color
-                                          ? color_utils::LumaRange::DARK
-                                          : color_utils::LumaRange::LIGHT;
-  SkColor muted_color =
-      wallpaper_controller->GetProminentColor(color_utils::ColorProfile(
-          luma_range, color_utils::SaturationRange::MUTED));
-  if (muted_color == kInvalidWallpaperColor)
-    return default_color;
-
-  return color_utils::GetResultingPaintColor(
-      SkColorSetA(use_dark_color ? SK_ColorBLACK : SK_ColorWHITE,
-                  use_dark_color ? kDarkBackgroundBlendAlpha
-                                 : kLightBackgroundBlendAlpha),
-      muted_color);
 }
 
 ui::ColorProvider* AshColorProvider::GetColorProvider() const {

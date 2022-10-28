@@ -1,30 +1,30 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <map>
-#include <tuple>
+#import <map>
+#import <tuple>
 
-#include "base/feature_list.h"
+#import "base/feature_list.h"
 #import "base/ios/ios_util.h"
-#include "base/strings/sys_string_conversions.h"
-#include "components/strings/grit/components_strings.h"
-#import "ios/chrome/browser/pref_names.h"
+#import "base/strings/sys_string_conversions.h"
+#import "components/strings/grit/components_strings.h"
+#import "ios/chrome/browser/prefs/pref_names.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_constants.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_feature.h"
 #import "ios/chrome/browser/ui/start_surface/start_surface_features.h"
 #import "ios/chrome/browser/ui/ui_feature_flags.h"
-#include "ios/chrome/grit/ios_strings.h"
+#import "ios/chrome/grit/ios_strings.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/chrome/test/earl_grey/web_http_server_chrome_test_case.h"
 #import "ios/chrome/test/scoped_eg_synchronization_disabler.h"
 #import "ios/testing/earl_grey/earl_grey_test.h"
-#include "ios/web/public/test/http_server/html_response_provider.h"
+#import "ios/web/public/test/http_server/html_response_provider.h"
 #import "ios/web/public/test/http_server/http_server.h"
-#include "ios/web/public/test/http_server/http_server_util.h"
-#include "ui/base/l10n/l10n_util.h"
+#import "ios/web/public/test/http_server/http_server_util.h"
+#import "ui/base/l10n/l10n_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -36,6 +36,16 @@
 @end
 
 @implementation BrowserViewControllerTestCase
+
+- (AppLaunchConfiguration)appConfigurationForTestCase {
+  AppLaunchConfiguration config;
+
+  config.features_enabled.push_back(kContentSuggestionsUIModuleRefresh);
+  // Enable arm that does not hide shortcuts.
+  config.features_enabled.push_back(kTrendingQueriesModule);
+  config.variations_enabled = {3350760};
+  return config;
+}
 
 // Tests that the NTP is interactable even when multiple NTP are opened during
 // the animation of the first NTP opening. See crbug.com/1032544.
@@ -170,12 +180,7 @@
   [[EarlGrey selectElementWithMatcher:chrome_test_util::OmniboxText(
                                           "https://anything")]
       assertWithMatcher:grey_notNil()];
-  // TODO(crbug.com/931280): This should be 1, but for the time being will be 2
-  // to work around an NTP bug.
-  int mainTabCount = 1;
-  if ([ChromeEarlGrey isBlockNewTabPagePendingLoadEnabled])
-    mainTabCount = 2;
-  [ChromeEarlGrey waitForMainTabCount:mainTabCount];
+  [ChromeEarlGrey waitForMainTabCount:1];
 }
 
 // Tests that BVC properly handles open URL. When BVC is showing a non-NTP

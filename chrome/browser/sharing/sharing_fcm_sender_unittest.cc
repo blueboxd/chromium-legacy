@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -21,8 +21,8 @@
 #include "chrome/browser/sharing/web_push/web_push_sender.h"
 #include "components/gcm_driver/crypto/gcm_encryption_result.h"
 #include "components/gcm_driver/fake_gcm_driver.h"
-#include "components/sync/driver/test_sync_service.h"
 #include "components/sync/model/model_type_controller_delegate.h"
+#include "components/sync/test/test_sync_service.h"
 #include "components/sync_device_info/device_info.h"
 #include "components/sync_device_info/fake_device_info_sync_service.h"
 #include "components/sync_device_info/fake_local_device_info_provider.h"
@@ -155,7 +155,7 @@ class MockVapidKeyManager : public VapidKeyManager {
   MockVapidKeyManager()
       : VapidKeyManager(/*sharing_sync_preference=*/nullptr,
                         /*sync_service=*/nullptr) {}
-  ~MockVapidKeyManager() {}
+  ~MockVapidKeyManager() override {}
 
   MOCK_METHOD0(GetOrCreateKey, crypto::ECPrivateKey*());
 };

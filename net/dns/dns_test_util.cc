@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -14,12 +14,12 @@
 #include "base/location.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/ranges/algorithm.h"
-#include "base/stl_util.h"
 #include "base/strings/strcat.h"
 #include "base/sys_byteorder.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
+#include "base/types/optional_util.h"
 #include "net/base/io_buffer.h"
 #include "net/base/ip_address.h"
 #include "net/base/ip_endpoint.h"
@@ -543,15 +543,14 @@ class MockDnsTransactionFactory::MockTransaction
       case MockDnsClientRule::ResultType::kFail: {
         int error = result_.net_error.value_or(ERR_NAME_NOT_RESOLVED);
         DCHECK_NE(error, OK);
-        std::move(callback_).Run(error,
-                                 base::OptionalOrNullptr(result_.response));
+        std::move(callback_).Run(error, base::OptionalToPtr(result_.response));
         break;
       }
       case MockDnsClientRule::ResultType::kEmpty:
       case MockDnsClientRule::ResultType::kOk:
       case MockDnsClientRule::ResultType::kMalformed:
         DCHECK(!result_.net_error.has_value());
-        std::move(callback_).Run(OK, base::OptionalOrNullptr(result_.response));
+        std::move(callback_).Run(OK, base::OptionalToPtr(result_.response));
         break;
       case MockDnsClientRule::ResultType::kTimeout:
         DCHECK(!result_.net_error.has_value());

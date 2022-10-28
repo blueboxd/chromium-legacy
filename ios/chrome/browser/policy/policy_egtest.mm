@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -18,11 +18,10 @@
 #import "components/policy/test_support/embedded_policy_test_server.h"
 #import "components/safe_browsing/core/common/features.h"
 #import "components/strings/grit/components_strings.h"
-#include "components/strings/grit/components_strings.h"
 #import "ios/chrome/browser/chrome_url_constants.h"
 #import "ios/chrome/browser/policy/policy_app_interface.h"
 #import "ios/chrome/browser/policy/policy_earl_grey_utils.h"
-#import "ios/chrome/browser/pref_names.h"
+#import "ios/chrome/browser/prefs/pref_names.h"
 #import "ios/chrome/browser/translate/translate_app_interface.h"
 #import "ios/chrome/browser/ui/authentication/signin_earl_grey.h"
 #import "ios/chrome/browser/ui/authentication/signin_earl_grey_ui_test_util.h"
@@ -155,7 +154,7 @@ NSString* const kDomain2 = @"domain2.com";
   // Use commandline args to insert fake policy data into NSUserDefaults. To the
   // app, this policy data will appear under the
   // "com.apple.configuration.managed" key.
-  AppLaunchConfiguration config = [super appConfigurationForTestCase];
+  AppLaunchConfiguration config;
   config.relaunch_policy = NoForceRelaunchAndResetState;
   config.features_enabled.push_back(safe_browsing::kEnhancedProtection);
   return config;

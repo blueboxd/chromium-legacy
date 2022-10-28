@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -171,7 +171,7 @@ CryptotokenPrivateIsAppIdHashInEnterpriseContextFunction::Run() {
   Profile* const profile = Profile::FromBrowserContext(browser_context());
   const PrefService* const prefs = profile->GetPrefs();
   const base::Value::List& permit_attestation =
-      prefs->GetValueList(prefs::kSecurityKeyPermitAttestation);
+      prefs->GetList(prefs::kSecurityKeyPermitAttestation);
 
   return RespondNow(ArgumentList(
       cryptotoken_private::IsAppIdHashInEnterpriseContext::Results::Create(
@@ -201,7 +201,7 @@ CryptotokenPrivateCanAppIdGetAttestationFunction::Run() {
   Profile* const profile = Profile::FromBrowserContext(browser_context());
   const PrefService* const prefs = profile->GetPrefs();
   const base::Value::List& permit_attestation =
-      prefs->GetValueList(prefs::kSecurityKeyPermitAttestation);
+      prefs->GetList(prefs::kSecurityKeyPermitAttestation);
 
   for (const auto& entry : permit_attestation) {
     if (entry.GetString() == app_id)

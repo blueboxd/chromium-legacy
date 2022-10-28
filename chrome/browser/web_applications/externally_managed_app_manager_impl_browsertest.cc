@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -16,9 +16,9 @@
 #include "chrome/browser/web_applications/external_install_options.h"
 #include "chrome/browser/web_applications/externally_managed_app_registration_task.h"
 #include "chrome/browser/web_applications/os_integration/os_integration_manager.h"
+#include "chrome/browser/web_applications/test/external_app_registration_waiter.h"
 #include "chrome/browser/web_applications/test/web_app_icon_test_utils.h"
 #include "chrome/browser/web_applications/test/web_app_install_test_utils.h"
-#include "chrome/browser/web_applications/test/web_app_registration_waiter.h"
 #include "chrome/browser/web_applications/test/web_app_test_utils.h"
 #include "chrome/browser/web_applications/user_display_mode.h"
 #include "chrome/browser/web_applications/web_app.h"
@@ -27,6 +27,7 @@
 #include "chrome/browser/web_applications/web_app_registrar.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/test/base/in_process_browser_test.h"
+#include "components/webapps/browser/features.h"
 #include "components/webapps/browser/install_result_code.h"
 #include "content/public/browser/service_worker_context.h"
 #include "content/public/browser/storage_partition.h"
@@ -458,7 +459,7 @@ IN_PROC_BROWSER_TEST_F(ExternallyManagedAppManagerImplBrowserTest,
   InstallApp(std::move(install_options));
   EXPECT_EQ(webapps::InstallResultCode::kSuccessNewInstall,
             result_code_.value());
-  WebAppRegistrationWaiter(&externally_managed_app_manager())
+  ExternalAppRegistrationWaiter(&externally_managed_app_manager())
       .AwaitNextRegistration(install_url, RegistrationResultCode::kSuccess);
   CheckServiceWorkerStatus(
       install_url,
@@ -480,7 +481,7 @@ IN_PROC_BROWSER_TEST_F(ExternallyManagedAppManagerImplBrowserTest,
   InstallApp(std::move(install_options));
   EXPECT_EQ(webapps::InstallResultCode::kSuccessNewInstall,
             result_code_.value());
-  WebAppRegistrationWaiter(&externally_managed_app_manager())
+  ExternalAppRegistrationWaiter(&externally_managed_app_manager())
       .AwaitNextRegistration(registration_url,
                              RegistrationResultCode::kSuccess);
   CheckServiceWorkerStatus(
@@ -500,7 +501,7 @@ IN_PROC_BROWSER_TEST_F(ExternallyManagedAppManagerImplBrowserTest,
   ExternalInstallOptions install_options = CreateInstallOptions(install_url);
   install_options.bypass_service_worker_check = true;
   install_options.load_and_await_service_worker_registration = false;
-  WebAppRegistrationWaiter waiter(&externally_managed_app_manager());
+  ExternalAppRegistrationWaiter waiter(&externally_managed_app_manager());
   InstallApp(std::move(install_options));
   waiter.AwaitRegistrationsComplete();
 
@@ -524,7 +525,7 @@ IN_PROC_BROWSER_TEST_F(ExternallyManagedAppManagerImplBrowserTest,
     InstallApp(std::move(install_options));
     EXPECT_EQ(webapps::InstallResultCode::kSuccessNewInstall,
               result_code_.value());
-    WebAppRegistrationWaiter(&externally_managed_app_manager())
+    ExternalAppRegistrationWaiter(&externally_managed_app_manager())
         .AwaitNextNonFailedRegistration(install_url);
     CheckServiceWorkerStatus(
         embedded_test_server()->GetURL("/web_apps/basic.html"),
@@ -543,7 +544,7 @@ IN_PROC_BROWSER_TEST_F(ExternallyManagedAppManagerImplBrowserTest,
     InstallApp(std::move(install_options));
     EXPECT_EQ(webapps::InstallResultCode::kSuccessNewInstall,
               result_code_.value());
-    WebAppRegistrationWaiter(&externally_managed_app_manager())
+    ExternalAppRegistrationWaiter(&externally_managed_app_manager())
         .AwaitNextRegistration(install_url,
                                RegistrationResultCode::kAlreadyRegistered);
   }
@@ -611,7 +612,7 @@ IN_PROC_BROWSER_TEST_F(ExternallyManagedAppManagerImplBrowserTest,
   InstallApp(std::move(install_options));
   EXPECT_EQ(webapps::InstallResultCode::kSuccessNewInstall,
             result_code_.value());
-  WebAppRegistrationWaiter(&externally_managed_app_manager())
+  ExternalAppRegistrationWaiter(&externally_managed_app_manager())
       .AwaitNextRegistration(url, RegistrationResultCode::kTimeout);
 }
 
@@ -676,6 +677,54 @@ IN_PROC_BROWSER_TEST_P(ExternallyManagedBrowserTestWithPrefMigrationRead,
 
 INSTANTIATE_TEST_SUITE_P(All,
                          ExternallyManagedBrowserTestWithPrefMigrationRead,
+                         ::testing::Bool());
+
+class ExternallyManagedAppManagerImplBrowserTestShortcut
+    : public ExternallyManagedAppManagerImplBrowserTest,
+      public testing::WithParamInterface<bool> {
+ public:
+  ExternallyManagedAppManagerImplBrowserTestShortcut() {
+    scoped_feature_list_.InitWithFeatures(
+        {webapps::features::kCreateShortcutIgnoresManifest}, {});
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+// Tests behavior when ExternalInstallOptions.install_as_shortcut is enabled
+IN_PROC_BROWSER_TEST_P(ExternallyManagedAppManagerImplBrowserTestShortcut,
+                       InstallAsShortcut) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL install_url(
+      embedded_test_server()->GetURL("/web_apps/different_start_url.html"));
+  GURL manifest_start_url(
+      embedded_test_server()->GetURL("/web_apps/basic.html"));
+
+  ExternalInstallOptions options =
+      CreateInstallOptions(install_url, ExternalInstallSource::kExternalPolicy);
+  options.install_as_shortcut = GetParam();
+
+  InstallApp(options);
+  ASSERT_EQ(webapps::InstallResultCode::kSuccessNewInstall,
+            result_code_.value());
+
+  // The main difference between a normal web app installation and a shortcut
+  // creation is that in the latter the start_url field of the page's manifest
+  // is ignored. Thus the installation URL is always used even when the
+  // manifest tells otherwise, as in the test page used here.
+
+  const bool startUrlIsInstallUrl =
+      registrar().GetAppByStartUrl(install_url) != nullptr;
+  const bool startUrlFromManifest =
+      registrar().GetAppByStartUrl(manifest_start_url) != nullptr;
+  EXPECT_NE(startUrlIsInstallUrl, startUrlFromManifest);
+
+  EXPECT_EQ(options.install_as_shortcut, startUrlIsInstallUrl);
+}
+
+INSTANTIATE_TEST_SUITE_P(All,
+                         ExternallyManagedAppManagerImplBrowserTestShortcut,
                          ::testing::Bool());
 
 }  // namespace web_app

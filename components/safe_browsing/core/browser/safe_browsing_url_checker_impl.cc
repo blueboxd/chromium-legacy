@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -253,13 +253,14 @@ void SafeBrowsingUrlCheckerImpl::OnCheckBrowseUrlResult(
 void SafeBrowsingUrlCheckerImpl::OnUrlResult(const GURL& url,
                                              SBThreatType threat_type,
                                              const ThreatMetadata& metadata,
-                                             bool is_from_real_time_check) {
+                                             bool is_from_real_time_check,
+                                             bool timed_out) {
   DCHECK_EQ(STATE_CHECKING_URL, state_);
   DCHECK_LT(next_index_, urls_.size());
   DCHECK_EQ(urls_[next_index_].url, url);
 
   timer_.Stop();
-  RecordCheckUrlTimeout(/*timed_out=*/false);
+  RecordCheckUrlTimeout(timed_out);
   if (urls_[next_index_].is_cached_safe_url) {
     UMA_HISTOGRAM_ENUMERATION("SafeBrowsing.RT.GetCache.FallbackThreatType",
                               threat_type, SB_THREAT_TYPE_MAX + 1);
@@ -339,8 +340,6 @@ void SafeBrowsingUrlCheckerImpl::OnUrlResult(const GURL& url,
 }
 
 void SafeBrowsingUrlCheckerImpl::OnTimeout() {
-  RecordCheckUrlTimeout(/*timed_out=*/true);
-
   if (can_check_db_) {
     database_manager_->CancelCheck(this);
   }
@@ -349,7 +348,8 @@ void SafeBrowsingUrlCheckerImpl::OnTimeout() {
   weak_factory_.InvalidateWeakPtrs();
 
   OnUrlResult(urls_[next_index_].url, safe_browsing::SB_THREAT_TYPE_SAFE,
-              ThreatMetadata(), /*is_from_real_time_check=*/false);
+              ThreatMetadata(), /*is_from_real_time_check=*/false,
+              /*timed_out=*/true);
 }
 
 void SafeBrowsingUrlCheckerImpl::CheckUrlImpl(const GURL& url,

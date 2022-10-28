@@ -1,4 +1,4 @@
-/* Copyright 2013 The Chromium Authors. All rights reserved.
+/* Copyright 2013 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file. */
 
@@ -35,7 +35,7 @@ button.white-button {
 }
 
 button.blue-button {
-  background-color: rgb(50, 100, 255);
+  background-color: rgb(26, 115, 232);
   border-color: rgb(43, 103, 206);
 }
 

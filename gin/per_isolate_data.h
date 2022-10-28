@@ -1,4 +1,4 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -88,8 +88,8 @@ class GIN_EXPORT PerIsolateData {
 
   // PerIsolateData doesn't actually own |isolate_|. Instead, the isolate is
   // owned by the IsolateHolder, which also owns the PerIsolateData.
-  raw_ptr<v8::Isolate> isolate_;
-  raw_ptr<v8::ArrayBuffer::Allocator> allocator_;
+  raw_ptr<v8::Isolate, DanglingUntriaged> isolate_;
+  raw_ptr<v8::ArrayBuffer::Allocator, DanglingUntriaged> allocator_;
   ObjectTemplateMap object_templates_;
   FunctionTemplateMap function_templates_;
   IndexedPropertyInterceptorMap indexed_interceptors_;

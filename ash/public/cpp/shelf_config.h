@@ -1,4 +1,4 @@
-// Copyright (c) 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -202,9 +202,6 @@ class ASH_EXPORT ShelfConfig : public TabletModeObserver,
 
   // Gets the current color for the shelf control buttons.
   SkColor GetShelfControlButtonColor() const;
-
-  // Gets the shelf color when the app list is open, used in clamshell mode.
-  SkColor GetShelfWithAppListColor() const;
 
   // Gets the shelf color when a window is maximized.
   SkColor GetMaximizedShelfColor() const;

@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -2151,7 +2151,7 @@ export class Output {
     const allMsgs = msgs.concat(delayedMsgs);
     for (const msg of allMsgs) {
       if (msg.msgId) {
-        const text = Msgs.getMsg(msg.msgId);
+        const text = Msgs.getMsg(msg.msgId, msg.subs);
         this.append_(buff, text, {annotation: [msg.props]});
         ruleStr.write('hint_: ' + text + '\n');
       } else if (msg.text) {
@@ -2229,6 +2229,7 @@ export class Output {
    * @param {EventType|OutputEventType} type
    * @return {!Array<{text: (string|undefined),
    *           msgId: (string|undefined),
+   *           subs: (Array<string>|undefined),
    *           outputFormat: (string|undefined)}>} Note that the above caller
    * expects one and only one key be set.
    * @private
@@ -2247,7 +2248,14 @@ export class Output {
       const isWithinVirtualKeyboard = AutomationUtil.getAncestors(node).find(
           n => n.role === RoleType.KEYBOARD);
       if (AutomationPredicate.clickable(node) && !isWithinVirtualKeyboard) {
-        ret.push({msgId: 'hint_double_tap'});
+        ret.push({
+          msgId: 'hint_actionable',
+          subs: [
+            Msgs.getMsg('action_double_tap', []),
+            node.doDefaultLabel ? node.doDefaultLabel :
+                                  Msgs.getMsg('label_activate', []),
+          ],
+        });
       }
 
       const enteredVirtualKeyboard =
@@ -2292,7 +2300,25 @@ export class Output {
     if (AutomationPredicate.checkable(node)) {
       ret.push({msgId: 'hint_checkable'});
     } else if (AutomationPredicate.clickable(node)) {
-      ret.push({msgId: 'hint_clickable'});
+      ret.push({
+        msgId: 'hint_actionable',
+        subs: [
+          Msgs.getMsg('action_search_plus_space', []),
+          node.doDefaultLabel ? node.doDefaultLabel :
+                                Msgs.getMsg('label_activate', []),
+        ],
+      });
+    }
+
+    if (AutomationPredicate.longClickable(node)) {
+      ret.push({
+        msgId: 'hint_actionable',
+        subs: [
+          Msgs.getMsg('action_search_plus_shift_plus_space', []),
+          node.longClickLabel ? node.longClickLabel :
+                                Msgs.getMsg('label_long_click', []),
+        ],
+      });
     }
 
     if (node.autoComplete === 'list' || node.autoComplete === 'both' ||

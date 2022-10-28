@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -245,7 +245,8 @@ class ContentDirectoryURLLoader final : public network::mojom::URLLoader {
       return;
     }
 
-    client_->OnReceiveResponse(std::move(response), std::move(consumer_handle));
+    client_->OnReceiveResponse(std::move(response), std::move(consumer_handle),
+                               absl::nullopt);
 
     // Start reading the contents of |mmap_| into the response DataPipe.
     body_writer_ =

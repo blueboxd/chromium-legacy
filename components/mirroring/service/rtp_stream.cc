@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -112,6 +112,10 @@ void AudioRtpStream::InsertAudio(std::unique_ptr<media::AudioBus> audio_bus,
 
 void AudioRtpStream::SetTargetPlayoutDelay(base::TimeDelta playout_delay) {
   audio_sender_->SetTargetPlayoutDelay(playout_delay);
+}
+
+int AudioRtpStream::GetEncoderBitrate() const {
+  return audio_sender_->GetEncoderBitrate();
 }
 
 }  // namespace mirroring

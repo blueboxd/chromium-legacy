@@ -1,15 +1,15 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #import "ios/chrome/browser/ssl/captive_portal_tab_helper.h"
 
-#include <memory>
+#import <memory>
 
-#include "base/memory/ptr_util.h"
+#import "base/memory/ptr_util.h"
 #import "components/url_param_filter/core/url_param_filterer.h"
 #import "ios/chrome/browser/web/web_navigation_util.h"
-#include "ios/web/public/browser_state.h"
+#import "ios/web/public/browser_state.h"
 #import "ios/web/public/web_state.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)

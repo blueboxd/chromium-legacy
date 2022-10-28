@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,7 +6,7 @@
 #define CHROMEOS_ASH_SERVICES_ASSISTANT_DEVICE_SETTINGS_HOST_H_
 
 #include "base/component_export.h"
-#include "chromeos/services/libassistant/public/mojom/device_settings_delegate.mojom.h"
+#include "chromeos/ash/services/libassistant/public/mojom/device_settings_delegate.mojom.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 

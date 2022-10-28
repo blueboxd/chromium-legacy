@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,10 +6,6 @@
 
 #include <algorithm>
 
-#include "ash/components/login/auth/authenticator.h"
-#include "ash/components/login/auth/extended_authenticator.h"
-#include "ash/components/login/auth/public/auth_failure.h"
-#include "ash/components/login/session/session_termination_manager.h"
 #include "ash/constants/ash_pref_names.h"
 #include "ash/public/cpp/login_screen.h"
 #include "ash/public/cpp/login_screen_model.h"
@@ -59,6 +55,10 @@
 #include "chromeos/ash/components/audio/sounds.h"
 #include "chromeos/ash/components/dbus/biod/constants.pb.h"
 #include "chromeos/ash/components/dbus/session_manager/session_manager_client.h"
+#include "chromeos/ash/components/login/auth/authenticator.h"
+#include "chromeos/ash/components/login/auth/extended_authenticator.h"
+#include "chromeos/ash/components/login/auth/public/auth_failure.h"
+#include "chromeos/ash/components/login/session/session_termination_manager.h"
 #include "components/password_manager/core/browser/hash_password_manager.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "components/session_manager/core/session_manager.h"
@@ -275,16 +275,12 @@ void ScreenLocker::OnAuthFailure(const AuthFailure& error) {
 }
 
 void ScreenLocker::OnAuthSuccess(const UserContext& user_context) {
-  if (unlock_started_) {
-    VLOG(1) << "OnAuthSuccess called while unlock is already runing";
-    return;
-  }
-
-  unlock_started_ = true;
   CHECK(!IsAuthTemporarilyDisabledForUser(user_context.GetAccountId()))
       << "Authentication is disabled for this user.";
 
   incorrect_passwords_count_ = 0;
+  DCHECK(!unlock_started_);
+  unlock_started_ = true;
   if (authentication_start_time_.is_null()) {
     if (user_context.GetAccountId().is_valid())
       LOG(ERROR) << "Start time is not set at authentication success";

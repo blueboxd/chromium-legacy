@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,7 +13,8 @@
 
 namespace content {
 class BrowserContext;
-}
+class WebContents;
+}  // namespace content
 
 class Profile;
 class PrefetchProxyOriginDecider;
@@ -43,6 +44,7 @@ class ChromePrefetchServiceDelegate : public content::PrefetchServiceDelegate {
   bool IsSomePreloadingEnabled() override;
   bool IsExtendedPreloadingEnabled() override;
   bool IsDomainInPrefetchAllowList(const GURL& referring_url) override;
+  void OnPrefetchLikely(content::WebContents* web_contents) override;
 
  private:
   // The profile that |this| is associated with.

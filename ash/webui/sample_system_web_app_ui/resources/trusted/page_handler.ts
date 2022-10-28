@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -36,6 +36,7 @@
  */
 
 import {PageCallbackRouter, PageHandlerFactory, PageHandlerRemote} from '/ash/webui/sample_system_web_app_ui/mojom/sample_system_web_app_ui.mojom-webui.js';
+import {startColorChangeUpdater} from 'chrome://resources/cr_components/color_change_listener/colors_css_updater.js';
 
 // Used to make calls on the remote PageHandler interface. Singleton that client
 // modules can use directly.
@@ -50,3 +51,5 @@ const factoryRemote = PageHandlerFactory.getRemote();
 factoryRemote.createPageHandler(
     pageHandler.$.bindNewPipeAndPassReceiver(),
     callbackRouter.$.bindNewPipeAndPassRemote());
+
+startColorChangeUpdater();

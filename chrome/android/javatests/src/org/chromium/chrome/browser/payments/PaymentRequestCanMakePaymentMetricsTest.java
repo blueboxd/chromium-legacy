@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -251,7 +251,6 @@ public class PaymentRequestCanMakePaymentMetricsTest implements MainActivityStar
     @Test
     @MediumTest
     @Feature({"Payments"})
-    @FlakyTest(message = "https://crbug.com/1222944")
     public void testNoQuery_UserAbort() throws TimeoutException {
         // Install the apps so CanMakePayment returns true.
         mPaymentRequestTestRule.addPaymentAppFactory(

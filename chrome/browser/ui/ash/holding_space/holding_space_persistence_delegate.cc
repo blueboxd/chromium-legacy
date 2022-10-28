@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,6 +8,8 @@
 #include "ash/public/cpp/holding_space/holding_space_image.h"
 #include "ash/public/cpp/holding_space/holding_space_item.h"
 #include "ash/public/cpp/holding_space/holding_space_progress.h"
+#include "base/containers/contains.h"
+#include "base/ranges/algorithm.h"
 #include "chrome/browser/ash/file_manager/path_util.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
@@ -81,10 +83,7 @@ void HoldingSpacePersistenceDelegate::OnHoldingSpaceItemsRemoved(
   update->GetList().EraseIf([&items](const base::Value& persisted_item) {
     const std::string& persisted_item_id = HoldingSpaceItem::DeserializeId(
         base::Value::AsDictionaryValue(persisted_item));
-    return std::any_of(items.begin(), items.end(),
-                       [&persisted_item_id](const HoldingSpaceItem* item) {
-                         return persisted_item_id == item->id();
-                       });
+    return base::Contains(items, persisted_item_id, &HoldingSpaceItem::id);
   });
 }
 
@@ -101,10 +100,10 @@ void HoldingSpacePersistenceDelegate::OnHoldingSpaceItemUpdated(
   // Attempt to find the finalized `item` in persistent storage.
   ListPrefUpdate update(profile()->GetPrefs(), kPersistencePath);
   base::Value::List& list = update->GetList();
-  auto item_it = std::find_if(
-      list.begin(), list.end(), [&item](const base::Value& persisted_item) {
-        return HoldingSpaceItem::DeserializeId(base::Value::AsDictionaryValue(
-                   persisted_item)) == item->id();
+  auto item_it = base::ranges::find(
+      list, item->id(), [](const base::Value& persisted_item) {
+        return HoldingSpaceItem::DeserializeId(
+            base::Value::AsDictionaryValue(persisted_item));
       });
 
   // If the finalized `item` already exists in persistent storage, update it.
@@ -133,7 +132,7 @@ void HoldingSpacePersistenceDelegate::RestoreModelFromPersistence() {
   DCHECK(model()->items().empty());
 
   const auto& persisted_holding_space_items =
-      profile()->GetPrefs()->GetValueList(kPersistencePath);
+      profile()->GetPrefs()->GetList(kPersistencePath);
 
   // If persistent storage is empty we can immediately notify the callback of
   // persistence restoration completion and quit early.

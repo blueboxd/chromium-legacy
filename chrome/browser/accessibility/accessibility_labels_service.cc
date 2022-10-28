@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -234,14 +234,11 @@ void AccessibilityLabelsService::EnableLabelsServiceOnce() {
   ui::AXActionData action_data;
   action_data.action = ax::mojom::Action::kAnnotatePageImages;
   web_contents->GetPrimaryMainFrame()->ForEachRenderFrameHost(
-      base::BindRepeating(
-          [](const ui::AXActionData& action_data,
-             content::RenderFrameHost* render_frame_host) {
-            if (render_frame_host->IsRenderFrameLive()) {
-              render_frame_host->AccessibilityPerformAction(action_data);
-            }
-          },
-          action_data));
+      [&action_data](content::RenderFrameHost* render_frame_host) {
+        if (render_frame_host->IsRenderFrameLive()) {
+          render_frame_host->AccessibilityPerformAction(action_data);
+        }
+      });
 #endif
 }
 
@@ -358,13 +355,10 @@ void JNI_ImageDescriptionsController_GetImageDescriptionsOnce(
   ui::AXActionData action_data;
   action_data.action = ax::mojom::Action::kAnnotatePageImages;
   web_contents->GetPrimaryMainFrame()->ForEachRenderFrameHost(
-      base::BindRepeating(
-          [](const ui::AXActionData& action_data,
-             content::RenderFrameHost* render_frame_host) {
-            if (render_frame_host->IsRenderFrameLive()) {
-              render_frame_host->AccessibilityPerformAction(action_data);
-            }
-          },
-          action_data));
+      [&action_data](content::RenderFrameHost* render_frame_host) {
+        if (render_frame_host->IsRenderFrameLive()) {
+          render_frame_host->AccessibilityPerformAction(action_data);
+        }
+      });
 }
 #endif

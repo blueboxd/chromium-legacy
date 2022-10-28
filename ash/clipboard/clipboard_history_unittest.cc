@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -298,7 +298,7 @@ TEST_F(ClipboardHistoryTest, PauseHistoryAllowReorders) {
 
   ScopedClipboardHistoryPauseImpl scoped_pause(
       clipboard_history(),
-      ClipboardHistoryUtil::PauseBehavior::kAllowReorderOnPaste);
+      clipboard_history_util::PauseBehavior::kAllowReorderOnPaste);
   WriteAndEnsureTextHistory(input_string1, expected_strings_reordered);
   // Clipboard history modifications made during a reorder-on-paste operation
   // should not count as copies (or pastes). A reorder is not a user action.
@@ -326,7 +326,7 @@ TEST_F(ClipboardHistoryTest, PauseHistoryNested) {
 
   // By default, pausing prevents clipboard history modifications.
   ScopedClipboardHistoryPauseImpl scoped_pause_default_1(
-      clipboard_history(), ClipboardHistoryUtil::PauseBehavior::kDefault);
+      clipboard_history(), clipboard_history_util::PauseBehavior::kDefault);
   WriteAndEnsureTextHistory(input_string3, expected_strings_initial);
   histogram_tester.ExpectTotalCount("Ash.ClipboardHistory.Operation", 0u);
 
@@ -336,7 +336,7 @@ TEST_F(ClipboardHistoryTest, PauseHistoryNested) {
     // overridden.
     ScopedClipboardHistoryPauseImpl scoped_pause_allow_reorders(
         clipboard_history(),
-        ClipboardHistoryUtil::PauseBehavior::kAllowReorderOnPaste);
+        clipboard_history_util::PauseBehavior::kAllowReorderOnPaste);
     WriteAndEnsureTextHistory(input_string1, expected_strings_reordered1);
     // Clipboard history modifications made during a reorder-on-paste operation
     // should not count as copies (or pastes). A reorder is not a user action.
@@ -346,7 +346,7 @@ TEST_F(ClipboardHistoryTest, PauseHistoryNested) {
       // Test that the newest behavior always applies, regardless of what order
       // behaviors were overridden.
       ScopedClipboardHistoryPauseImpl scoped_pause_default_2(
-          clipboard_history(), ClipboardHistoryUtil::PauseBehavior::kDefault);
+          clipboard_history(), clipboard_history_util::PauseBehavior::kDefault);
       WriteAndEnsureTextHistory(input_string3, expected_strings_reordered1);
       histogram_tester.ExpectTotalCount("Ash.ClipboardHistory.Operation", 0u);
     }
@@ -384,14 +384,14 @@ TEST_F(ClipboardHistoryTest, PauseHistoryResumeOutOfOrder) {
   histogram_tester.ExpectTotalCount("Ash.ClipboardHistory.Operation", 0u);
 
   auto scoped_pause_default = std::make_unique<ScopedClipboardHistoryPauseImpl>(
-      clipboard_history(), ClipboardHistoryUtil::PauseBehavior::kDefault);
+      clipboard_history(), clipboard_history_util::PauseBehavior::kDefault);
   WriteAndEnsureTextHistory(input_string3, expected_strings_initial);
   histogram_tester.ExpectTotalCount("Ash.ClipboardHistory.Operation", 0u);
 
   auto scoped_pause_allow_reorders =
       std::make_unique<ScopedClipboardHistoryPauseImpl>(
           clipboard_history(),
-          ClipboardHistoryUtil::PauseBehavior::kAllowReorderOnPaste);
+          clipboard_history_util::PauseBehavior::kAllowReorderOnPaste);
   WriteAndEnsureTextHistory(input_string1, expected_strings_reordered1);
   // Clipboard history modifications made during a reorder-on-paste operation
   // should not count as copies (or pastes). A reorder is not a user action.
@@ -439,6 +439,49 @@ TEST_F(ClipboardHistoryTest, DuplicateBitmap) {
   WriteAndEnsureBitmapHistory(input_bitmaps, expected_bitmaps);
 }
 
+// Tests that when a duplicate bitmap is written to clipboard history and the
+// first bitmap has been encoded to a PNG, the encoded PNG is still set on the
+// clipboard history item's data after deduplication.
+TEST_F(ClipboardHistoryTest, DuplicateBitmapEncodingPreserved) {
+  SkBitmap test_bitmap_1 = gfx::test::CreateBitmap(3, 2);
+  SkBitmap test_bitmap_2 = gfx::test::CreateBitmap(4, 3);
+
+  // Write image data to clipboard.
+  std::vector<SkBitmap> input_bitmaps{test_bitmap_1, test_bitmap_2};
+  std::vector<SkBitmap> expected_bitmaps{test_bitmap_2, test_bitmap_1};
+  WriteAndEnsureBitmapHistory(input_bitmaps, expected_bitmaps);
+
+  // Encode the image belonging to the data that will be written again.
+  const std::list<ClipboardHistoryItem>& items = GetClipboardHistoryItems();
+  ASSERT_EQ(items.size(), 2u);
+  const auto& data_to_duplicate = items.back().data();
+  const auto original_sequence_number_token =
+      data_to_duplicate.sequence_number_token();
+  const auto original_timestamp = items.back().time_copied();
+  EXPECT_FALSE(data_to_duplicate.maybe_png());
+  auto png = ui::ClipboardData::EncodeBitmapData(test_bitmap_1);
+  data_to_duplicate.SetPngDataAfterEncoding(png);
+  EXPECT_TRUE(data_to_duplicate.maybe_png());
+
+  // Write first image to clipboard again.
+  {
+    ui::ScopedClipboardWriter scw(ui::ClipboardBuffer::kCopyPaste);
+    scw.WriteImage(test_bitmap_1);
+  }
+  base::RunLoop().RunUntilIdle();
+
+  // Verify that the encoded image data was preserved while deduplicating data
+  // and reordering items in clipboard history.
+  ASSERT_EQ(items.size(), 2u);
+  EXPECT_GT(items.front().time_copied(), original_timestamp);
+  const auto& duplicated_data = items.front().data();
+  EXPECT_EQ(duplicated_data, data_to_duplicate);
+  EXPECT_NE(duplicated_data.sequence_number_token(),
+            original_sequence_number_token);
+  ASSERT_TRUE(duplicated_data.maybe_png());
+  EXPECT_EQ(*duplicated_data.maybe_png(), png);
+}
+
 // Tests that unrecognized custom data is omitted from clipboard history.
 TEST_F(ClipboardHistoryTest, BasicCustomData) {
   const std::unordered_map<std::u16string, std::u16string> input_data = {
@@ -460,19 +503,18 @@ TEST_F(ClipboardHistoryTest, BasicFileSystemData) {
   WriteAndEnsureCustomDataHistory(input_data, expected_data);
 }
 
-// Tests that the ClipboardHistoryDisplayFormat for HTML with no <img or <table
-// tags is text.
+// Tests that the display format for HTML with no <img> or <table> tags is text.
 TEST_F(ClipboardHistoryTest, DisplayFormatForPlainHTML) {
   ui::ClipboardData data;
   data.set_markup_data("plain html with no img or table tags");
 
-  EXPECT_EQ(ClipboardHistoryUtil::ClipboardHistoryDisplayFormat::kText,
-            ClipboardHistoryUtil::CalculateDisplayFormat(data));
+  EXPECT_EQ(clipboard_history_util::DisplayFormat::kText,
+            clipboard_history_util::CalculateDisplayFormat(data));
 
   data.set_markup_data("<img> </img>");
 
-  EXPECT_EQ(ClipboardHistoryUtil::ClipboardHistoryDisplayFormat::kHtml,
-            ClipboardHistoryUtil::CalculateDisplayFormat(data));
+  EXPECT_EQ(clipboard_history_util::DisplayFormat::kHtml,
+            clipboard_history_util::CalculateDisplayFormat(data));
 }
 
 // Tests that Ash.ClipboardHistory.ControlToVDelay is only recorded if

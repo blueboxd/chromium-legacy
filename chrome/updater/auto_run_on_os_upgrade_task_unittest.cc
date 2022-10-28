@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -38,7 +38,7 @@ constexpr wchar_t kCmdLineCreateHardcodedFile[] =
     L"cmd.exe /c \"echo HardcodedFile > HardcodedFile && exit 0\"";
 constexpr char kLastOSVersion[] = "last_os_version";
 
-};  // namespace
+}  // namespace
 
 class AutoRunOnOsUpgradeTaskTest : public testing::Test {
  protected:

@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,9 +6,9 @@
 
 #import <Foundation/Foundation.h>
 
-#include "base/test/scoped_feature_list.h"
+#import "base/test/scoped_feature_list.h"
 #import "components/safe_browsing/ios/browser/safe_browsing_url_allow_list.h"
-#include "components/security_interstitials/core/unsafe_resource.h"
+#import "components/security_interstitials/core/unsafe_resource.h"
 #import "ios/components/security_interstitials/safe_browsing/fake_safe_browsing_client.h"
 #import "ios/components/security_interstitials/safe_browsing/fake_safe_browsing_service.h"
 #import "ios/components/security_interstitials/safe_browsing/safe_browsing_error.h"
@@ -19,12 +19,12 @@
 #import "ios/web/public/test/fakes/fake_navigation_context.h"
 #import "ios/web/public/test/fakes/fake_navigation_manager.h"
 #import "ios/web/public/test/fakes/fake_web_state.h"
-#include "ios/web/public/test/web_task_environment.h"
+#import "ios/web/public/test/web_task_environment.h"
 #import "net/base/mac/url_conversions.h"
-#include "services/network/public/mojom/fetch_api.mojom.h"
-#include "testing/gtest/include/gtest/gtest.h"
+#import "services/network/public/mojom/fetch_api.mojom.h"
+#import "testing/gtest/include/gtest/gtest.h"
 #import "testing/gtest_mac.h"
-#include "testing/platform_test.h"
+#import "testing/platform_test.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -57,7 +57,7 @@ class SafeBrowsingTabHelperTest
   }
 
   // Helper function that calls into WebState::ShouldAllowRequest with the
-  // given |url| and |for_main_frame|.
+  // given `url` and `for_main_frame`.
   web::WebStatePolicyDecider::PolicyDecision ShouldAllowRequestUrl(
       const GURL& url,
       bool for_main_frame = true,
@@ -82,7 +82,7 @@ class SafeBrowsingTabHelperTest
   }
 
   // Helper function that calls into WebState::ShouldAllowResponse with the
-  // given |url| and |for_main_frame|, waits for the callback with the decision
+  // given `url` and `for_main_frame`, waits for the callback with the decision
   // to be called, and returns the decision.
   web::WebStatePolicyDecider::PolicyDecision ShouldAllowResponseUrl(
       const GURL& url,
@@ -130,7 +130,7 @@ class SafeBrowsingTabHelperTest
     web_state_.OnNavigationRedirected(&context);
   }
 
-  // Stores an UnsafeResource for |url| in the query manager.  It is expected
+  // Stores an UnsafeResource for `url` in the query manager.  It is expected
   // that an UnsafeResource is stored before check completion for unsafe URLs
   // that show an error page.
   void StoreUnsafeResource(const GURL& url, bool is_main_frame = true) {
@@ -766,7 +766,7 @@ TEST_P(SafeBrowsingTabHelperTest, ConsecutiveRequestsWithoutRedirect) {
   if (SafeBrowsingDecisionArrivesBeforeResponse())
     base::RunLoop().RunUntilIdle();
 
-  // Since there was no redirect, |url3| should be treated as safe.
+  // Since there was no redirect, `url3` should be treated as safe.
   web::WebStatePolicyDecider::PolicyDecision response_decision =
       ShouldAllowResponseUrl(url3);
   EXPECT_TRUE(response_decision.ShouldAllowNavigation());
@@ -931,7 +931,7 @@ TEST_P(SafeBrowsingTabHelperTest, UnsafeMainFrameRequestNotifiesClient) {
   EXPECT_TRUE(ShouldAllowRequestUrl(unsafe_url).ShouldAllowNavigation());
   StoreUnsafeResource(unsafe_url);
 
-  // When |unsafe_url| is determined to be unsafe, the client should be
+  // When `unsafe_url` is determined to be unsafe, the client should be
   // notified.
   EXPECT_FALSE(client_.main_frame_cancellation_decided_called());
   if (SafeBrowsingDecisionArrivesBeforeResponse()) {
@@ -955,7 +955,7 @@ TEST_P(SafeBrowsingTabHelperTest, UnsafeSubframeRequestNotifiesClient) {
 
   StoreUnsafeResource(unsafe_url, /*is_main_frame*/ false);
 
-  // When |unsafe_url| is determined to be unsafe, the client should be
+  // When `unsafe_url` is determined to be unsafe, the client should be
   // notified.
   EXPECT_FALSE(client_.sub_frame_cancellation_decided_called());
   if (SafeBrowsingDecisionArrivesBeforeResponse()) {

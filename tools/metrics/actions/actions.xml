@@ -3810,6 +3810,14 @@ should be able to be added at any place in this file.
   <description>Please enter the description of this user action.</description>
 </action>
 
+<action name="Autofill_BrandingTapped">
+  <owner>ginnyhuang@chromium.org</owner>
+  <description>
+    The user has tapped on the Chrome logo inside the input accessory bar for
+    autofill. (iOS only)
+  </description>
+</action>
+
 <action name="Autofill_ClearedForm">
   <owner>battre@chromium.org</owner>
   <description>
@@ -7263,6 +7271,15 @@ should be able to be added at any place in this file.
 <action name="DeleteWordForward">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
+</action>
+
+<action name="DemoMode.AttractLoop.Break">
+  <owner>lbowen@google.com</owner>
+  <owner>cros-demo-mode-eng@google.com</owner>
+  <description>
+    Recorded when exiting current Attract Loop by moving cursor, clicking mouse
+    or pressing key.
+  </description>
 </action>
 
 <action name="DemoMode.ExitFromShelf">
@@ -15712,6 +15729,17 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="LensUnifiedSidePanel.RemoveLensEntry_SearchEngineChanged">
+  <owner>stanfield@google.com</owner>
+  <owner>benwgold@google.com</owner>
+  <owner>juanmojica@google.com</owner>
+  <owner>schechter@google.com</owner>
+  <owner>apalanki@google.com</owner>
+  <description>
+    Search engine selection changed, so removing lens entry from the side panel.
+  </description>
+</action>
+
 <action name="LensUnifiedSidePanel.ResultLinkClick">
   <owner>stanfield@google.com</owner>
   <owner>benwgold@google.com</owner>
@@ -23854,61 +23882,73 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="OutdatedPluginInfobar.AllowThisTime">
+  <obsolete>Removed in M107</obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
 </action>
 
 <action name="OutdatedPluginInfobar.Closed">
+  <obsolete>Removed in M107</obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
 </action>
 
 <action name="OutdatedPluginInfobar.Dismissed">
+  <obsolete>Removed in M107</obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
 </action>
 
 <action name="OutdatedPluginInfobar.LearnMore">
+  <obsolete>Removed in M107</obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
 </action>
 
 <action name="OutdatedPluginInfobar.Shown">
+  <obsolete>Removed in M107</obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
 </action>
 
 <action name="OutdatedPluginInfobar.Shown.Java">
+  <obsolete>Removed in M107</obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
 </action>
 
 <action name="OutdatedPluginInfobar.Shown.QuickTime">
+  <obsolete>Removed in M107</obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
 </action>
 
 <action name="OutdatedPluginInfobar.Shown.Reader">
+  <obsolete>Removed in M107</obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
 </action>
 
 <action name="OutdatedPluginInfobar.Shown.RealPlayer">
+  <obsolete>Removed in M107</obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
 </action>
 
 <action name="OutdatedPluginInfobar.Shown.Shockwave">
+  <obsolete>Removed in M107</obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
 </action>
 
 <action name="OutdatedPluginInfobar.Shown.Silverlight">
+  <obsolete>Removed in M107</obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
 </action>
 
 <action name="OutdatedPluginInfobar.Update">
+  <obsolete>Removed in M107</obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
 </action>
@@ -24109,6 +24149,31 @@ should be able to be added at any place in this file.
   <owner>olesiamarukhno@google.com</owner>
   <owner>dullweber@chromium.org</owner>
   <description>Page Info Cookies subpage opened.</description>
+</action>
+
+<action name="PageInfo.CookiesSubpage.AllSitesFilteredOpened">
+  <owner>zsalata@google.com</owner>
+  <owner>olesiamarukhno@google.com</owner>
+  <owner>dullweber@chromium.org</owner>
+  <description>
+    Opened All sites with a filter for FPS from PageInfo.
+  </description>
+</action>
+
+<action name="PageInfo.CookiesSubpage.Opened">
+  <owner>zsalata@google.com</owner>
+  <owner>olesiamarukhno@google.com</owner>
+  <owner>dullweber@chromium.org</owner>
+  <description>Cookies subpage opened from PageInfo.</description>
+</action>
+
+<action name="PageInfo.CookiesSubpage.SettingsLinkClicked">
+  <owner>zsalata@google.com</owner>
+  <owner>olesiamarukhno@google.com</owner>
+  <owner>dullweber@chromium.org</owner>
+  <description>
+    Cookies settings link clicked in Cookies subpage from PageInfo.
+  </description>
 </action>
 
 <action name="PageInfo.ForgetSite.Cleared">
@@ -24479,6 +24544,32 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="PasswordProtection.Gaia.HashedPasswordSaved">
+  <owner>nwokedi@chromium.org</owner>
+  <owner>chrome-counter-abuse-alerts@google.com</owner>
+  <description>
+    Reported when a user's hashed gaia password is saved.
+  </description>
+</action>
+
+<action name="PasswordProtection.Gmail.ChangePasswordButtonClicked">
+  <owner>nwokedi@chromium.org</owner>
+  <owner>chrome-counter-abuse-alerts@google.com</owner>
+  <description>
+    Reported when a user clicks on the change password button for a Gmail
+    account.
+  </description>
+</action>
+
+<action name="PasswordProtection.GSuite.ChangePasswordButtonClicked">
+  <owner>nwokedi@chromium.org</owner>
+  <owner>chrome-counter-abuse-alerts@google.com</owner>
+  <description>
+    Reported when a user clicks on the change password button for a Gsuite
+    account.
+  </description>
+</action>
+
 <action name="PasswordProtection.Interstitial.ResetPassword">
   <owner>drubery@chromium.org</owner>
   <owner>chrome-safebrowsing-alerts@google.com</owner>
@@ -24514,6 +24605,23 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="PasswordProtection.NonGaiaEnterprise.ChangePasswordButtonClicked">
+  <owner>nwokedi@chromium.org</owner>
+  <owner>chrome-counter-abuse-alerts@google.com</owner>
+  <description>
+    Reported when a user clicks on the change password button for a
+    Non-Gaia-Enterprise account.
+  </description>
+</action>
+
+<action name="PasswordProtection.NonGaiaEnterprise.HashedPasswordSaved">
+  <owner>nwokedi@chromium.org</owner>
+  <owner>chrome-counter-abuse-alerts@google.com</owner>
+  <description>
+    Reported when a user's hashed non-gaia-enterprise password is saved.
+  </description>
+</action>
+
 <action name="PasswordProtection.PageInfo.ChangePasswordButtonClicked">
   <owner>drubery@chromium.org</owner>
   <owner>chrome-safebrowsing-alerts@google.com</owner>
@@ -24529,6 +24637,15 @@ should be able to be added at any place in this file.
   <description>
     Reported when the user clicks on the mark site as legitimate button on the
     page info bubble.
+  </description>
+</action>
+
+<action name="PasswordProtection.SavedPassword.ChangePasswordButtonClicked">
+  <owner>nwokedi@chromium.org</owner>
+  <owner>chrome-counter-abuse-alerts@google.com</owner>
+  <description>
+    Reported when a user clicks on the change password button for a saved
+    password.
   </description>
 </action>
 
@@ -26305,35 +26422,6 @@ should be able to be added at any place in this file.
   <owner>zentaro@chromium.org</owner>
   <owner>jimmyxgong@chromium.org</owner>
   <description>User pressed Search+9 to produce the F9 key.</description>
-</action>
-
-<action name="SearchResumptionModule.NTP.Click">
-  <owner>hanxi@chromium.org</owner>
-  <owner>spdonghao@chromium.org</owner>
-  <owner>xinyiji@chromium.org</owner>
-  <description>
-    The search suggestion on the search resumption module is clicked.
-  </description>
-</action>
-
-<action name="SearchResumptionModule.NTP.Collapse">
-  <owner>hanxi@chromium.org</owner>
-  <owner>spdonghao@chromium.org</owner>
-  <owner>xinyiji@chromium.org</owner>
-  <description>
-    Users click the header of the search resumption module to collapse the
-    suggestions.
-  </description>
-</action>
-
-<action name="SearchResumptionModule.NTP.Expand">
-  <owner>hanxi@chromium.org</owner>
-  <owner>spdonghao@chromium.org</owner>
-  <owner>xinyiji@chromium.org</owner>
-  <description>
-    Users click the header of the search resumption module to expand and show
-    the suggestions.
-  </description>
 </action>
 
 <action name="SearchWidget.SearchMade">
@@ -29964,9 +30052,20 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
-<action name="Signin_Signout_FromAccountListSettings">
+<action name="Signin_Signout">
   <owner>jlebel@chromium.org</owner>
-  <owner>fernandex@chromium.org</owner>
+  <owner>arthurmilchior@chromium.org</owner>
+  <description>
+    Recorded when the user signs out. Recorded for iOS only.
+  </description>
+</action>
+
+<action name="Signin_Signout_FromAccountListSettings">
+  <obsolete>
+    Removed since M107. Renamed without _FromAccountListSettings since the
+    action is called from anywhere.
+  </obsolete>
+  <owner>jlebel@chromium.org</owner>
   <owner>msarda@chromium.org</owner>
   <description>
     Recorded when the user signs out from the Account list view. Recorded for
@@ -29986,9 +30085,21 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
-<action name="Signin_SignoutClearData_FromAccountListSettings">
+<action name="Signin_SignoutClearData">
   <owner>jlebel@chromium.org</owner>
-  <owner>fernandex@chromium.org</owner>
+  <owner>arthurmilchior@chromium.org</owner>
+  <description>
+    Recorded when the user signs out and delete user data. Recorded for iOS
+    only.
+  </description>
+</action>
+
+<action name="Signin_SignoutClearData_FromAccountListSettings">
+  <obsolete>
+    Removed since M107. Renamed without _FromAccountListSettings since the
+    action is called from anywhere.
+  </obsolete>
+  <owner>jlebel@chromium.org</owner>
   <owner>msarda@chromium.org</owner>
   <description>
     Recorded when the user signs out and delete user data, from the Account list
@@ -30551,13 +30662,21 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="StatusArea_Audio_SwitchInputDevice">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <description>Please enter the description of this user action.</description>
+  <owner>judyhsiao@google.com</owner>
+  <owner>aaronyu@google.com</owner>
+  <owner>chromeos-audio-sw@google.com</owner>
+  <description>
+    User selected an audio input device from the SystemTray.
+  </description>
 </action>
 
 <action name="StatusArea_Audio_SwitchOutputDevice">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <description>Please enter the description of this user action.</description>
+  <owner>judyhsiao@google.com</owner>
+  <owner>aaronyu@google.com</owner>
+  <owner>chromeos-audio-sw@google.com</owner>
+  <description>
+    User selected an audio output device from the SystemTray.
+  </description>
 </action>
 
 <action name="StatusArea_Audio_Unmuted">
@@ -31840,6 +31959,12 @@ should be able to be added at any place in this file.
   <obsolete>Could not find traces of this used in code.</obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
+</action>
+
+<action name="TabContextMenu_CopyURL">
+  <owner>loubrett@google.com</owner>
+  <owner>desktop-pwas-team@google.com</owner>
+  <description>User selected Copy URL from tab context menu.</description>
 </action>
 
 <action name="TabContextMenu_Duplicate">
@@ -34065,6 +34190,7 @@ should be able to be added at any place in this file.
       label="For DownloadPageScreenshot feature."/>
   <suffix name="EphemeralTab" label="For Ephemeral Tab."/>
   <suffix name="ExploreSitesTile" label="For Explore Sites feature."/>
+  <suffix name="ExtensionsMenu" label="For Extensions menu opening."/>
   <suffix name="FeatureNotificationGuideDefaultBrowserNotificationShown"
       label="For feature notification guide default browser notification
              feature."/>
@@ -34150,6 +34276,8 @@ should be able to be added at any place in this file.
   <suffix name="SideSearch" label="For the side search feature."/>
   <suffix name="SideSearchAutoTriggering"
       label="For side search feature automatic triggering."/>
+  <suffix name="SideSearchPageActionLabel"
+      label="For side search feature page action label triggering."/>
   <suffix name="TabGroupsDragAndDrop" label="For drop-to-merge in tab group."/>
   <suffix name="TabGroupsQuicklyComparePages"
       label="For long press links to create tab groups."/>

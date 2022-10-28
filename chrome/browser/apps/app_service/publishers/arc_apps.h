@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -40,6 +40,7 @@
 #include "components/services/app_service/public/cpp/app_types.h"
 #include "components/services/app_service/public/cpp/instance_registry.h"
 #include "components/services/app_service/public/cpp/intent.h"
+#include "components/services/app_service/public/cpp/menu.h"
 #include "components/services/app_service/public/cpp/permission.h"
 #include "components/services/app_service/public/cpp/publisher_base.h"
 #include "components/services/app_service/public/mojom/app_service.mojom.h"
@@ -129,11 +130,16 @@ class ArcApps : public KeyedService,
                  UninstallSource uninstall_source,
                  bool clear_site_data,
                  bool report_abuse) override;
+  void GetMenuModel(const std::string& app_id,
+                    MenuType menu_type,
+                    int64_t display_id,
+                    base::OnceCallback<void(MenuItems)> callback) override;
   void OnPreferredAppSet(
       const std::string& app_id,
       IntentFilterPtr intent_filter,
       IntentPtr intent,
       ReplacedAppPreferences replaced_app_preferences) override;
+  void SetResizeLocked(const std::string& app_id, bool locked) override;
 
   // apps::mojom::Publisher overrides.
   void Connect(mojo::PendingRemote<apps::mojom::Subscriber> subscriber_remote,
@@ -203,8 +209,8 @@ class ArcApps : public KeyedService,
   void OnIntentFiltersUpdated(
       const absl::optional<std::string>& package_name) override;
   void OnArcSupportedLinksChanged(
-      const std::vector<arc::mojom::SupportedLinksPtr>& added,
-      const std::vector<arc::mojom::SupportedLinksPtr>& removed,
+      const std::vector<arc::mojom::SupportedLinksPackagePtr>& added,
+      const std::vector<arc::mojom::SupportedLinksPackagePtr>& removed,
       arc::mojom::SupportedLinkChangeSource source) override;
 
   // ash::ArcNotificationsHostInitializer::Observer overrides.
@@ -257,14 +263,14 @@ class ArcApps : public KeyedService,
       std::vector<apps::mojom::IntentFilterPtr>* intent_filters);
 
   void BuildMenuForShortcut(const std::string& package_name,
-                            apps::mojom::MenuItemsPtr menu_items,
-                            GetMenuModelCallback callback);
+                            MenuItems menu_items,
+                            base::OnceCallback<void(MenuItems)> callback);
 
   // Bound by |arc_app_shortcuts_request_|'s OnGetAppShortcutItems method.
   void OnGetAppShortcutItems(
       const base::TimeTicks start_time,
-      apps::mojom::MenuItemsPtr menu_items,
-      GetMenuModelCallback callback,
+      MenuItems menu_items,
+      base::OnceCallback<void(MenuItems)> callback,
       std::unique_ptr<apps::AppShortcutItems> app_shortcut_items);
 
   mojo::RemoteSet<apps::mojom::Subscriber> subscribers_;

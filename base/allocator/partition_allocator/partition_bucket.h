@@ -1,4 +1,4 @@
-// Copyright (c) 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -108,7 +108,8 @@ struct PartitionBucket {
     // Cannot overflow, num_system_pages_per_slot_span is a bitfield, and 255
     // pages fit in a size_t.
     static_assert(kPartitionNumSystemPagesPerSlotSpanBits <= 8, "");
-    return num_system_pages_per_slot_span << SystemPageShift();
+    return static_cast<size_t>(num_system_pages_per_slot_span)
+           << SystemPageShift();
   }
   PA_ALWAYS_INLINE size_t get_slots_per_span() const {
     size_t ret = GetSlotNumber(get_bytes_per_span());
@@ -160,7 +161,23 @@ struct PartitionBucket {
   // Sort the active slot span list in ascending freelist length.
   PA_COMPONENT_EXPORT(PARTITION_ALLOC) void SortActiveSlotSpans();
 
+  // We need `AllocNewSuperPageSpan` and `InitializeSlotSpan` to stay
+  // PA_ALWAYS_INLINE for speed, but we also need to use them from a separate
+  // compilation unit.
+  uintptr_t AllocNewSuperPageSpanForGwpAsan(PartitionRoot<thread_safe>* root,
+                                            size_t super_page_count,
+                                            unsigned int flags)
+      PA_EXCLUSIVE_LOCKS_REQUIRED(root->lock_);
+  void InitializeSlotSpanForGwpAsan(SlotSpanMetadata<thread_safe>* slot_span);
+
  private:
+  // Allocates several consecutive super pages. Returns the address of the first
+  // super page.
+  PA_ALWAYS_INLINE uintptr_t AllocNewSuperPageSpan(
+      PartitionRoot<thread_safe>* root,
+      size_t super_page_count,
+      unsigned int flags) PA_EXCLUSIVE_LOCKS_REQUIRED(root->lock_);
+
   // Allocates a new slot span with size |num_partition_pages| from the
   // current extent. Metadata within this slot span will be initialized.
   // Returns nullptr on error.
@@ -185,6 +202,12 @@ struct PartitionBucket {
   // freelist.
   PA_ALWAYS_INLINE void InitializeSlotSpan(
       SlotSpanMetadata<thread_safe>* slot_span);
+
+  // Initializes a super page. Returns the address of the super page's payload.
+  PA_ALWAYS_INLINE uintptr_t InitializeSuperPage(
+      PartitionRoot<thread_safe>* root,
+      uintptr_t super_page,
+      uintptr_t requested_address) PA_EXCLUSIVE_LOCKS_REQUIRED(root->lock_);
 
   // Commit 1 or more pages in |slot_span|, enough to get the next slot, which
   // is returned by this function. If more slots fit into the committed pages,

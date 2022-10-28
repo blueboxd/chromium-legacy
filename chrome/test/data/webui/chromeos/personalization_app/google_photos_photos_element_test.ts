@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import 'chrome://personalization/strings.m.js';
@@ -9,7 +9,7 @@ import {String16} from 'chrome://resources/mojo/mojo/public/mojom/base/string16.
 import {assertDeepEquals, assertEquals, assertNotEquals} from 'chrome://webui-test/chai_assert.js';
 import {waitAfterNextRender} from 'chrome://webui-test/test_util.js';
 
-import {baseSetup, initElement, teardownElement, toString16} from './personalization_app_test_utils.js';
+import {baseSetup, createSvgDataUrl, initElement, teardownElement, toString16} from './personalization_app_test_utils.js';
 import {TestPersonalizationStore} from './test_personalization_store.js';
 import {TestWallpaperProvider} from './test_wallpaper_interface_provider.js';
 
@@ -144,7 +144,7 @@ suite('GooglePhotosPhotosTest', function() {
         dedupKey: '1',
         name: '1',
         date: toString16('First row'),
-        url: {url: '1'},
+        url: {url: createSvgDataUrl('1')},
         location: '1',
       },
       // Second row.
@@ -153,7 +153,7 @@ suite('GooglePhotosPhotosTest', function() {
         dedupKey: '2',
         name: '2',
         date: toString16('Second row'),
-        url: {url: '2'},
+        url: {url: createSvgDataUrl('2')},
         location: '2',
       },
       {
@@ -161,7 +161,7 @@ suite('GooglePhotosPhotosTest', function() {
         dedupKey: '3',
         name: '3',
         date: toString16('Second row'),
-        url: {url: '3'},
+        url: {url: createSvgDataUrl('3')},
         location: '3',
       },
       // Third row.
@@ -170,7 +170,7 @@ suite('GooglePhotosPhotosTest', function() {
         dedupKey: '4',
         name: '4',
         date: toString16('Third row'),
-        url: {url: '4'},
+        url: {url: createSvgDataUrl('4')},
         location: '4',
       },
     ];
@@ -242,58 +242,56 @@ suite('GooglePhotosPhotosTest', function() {
   });
 
   [true, false].forEach(
-      (dismissFromUser: boolean) =>
-          test('displays error when photos fail to load', async () => {
-            // Set values returned by |wallpaperProvider|.
-            wallpaperProvider.setGooglePhotosPhotos(undefined);
+      (dismissFromUser:
+           boolean) => test('displays error when photos fail to load', async () => {
+        // Set values returned by |wallpaperProvider|.
+        wallpaperProvider.setGooglePhotosPhotos(undefined);
 
-            // Initialize |googlePhotosPhotosElement|.
-            googlePhotosPhotosElement =
-                initElement(GooglePhotosPhotos, {hidden: false});
-            await waitAfterNextRender(googlePhotosPhotosElement);
+        // Initialize |googlePhotosPhotosElement|.
+        googlePhotosPhotosElement =
+            initElement(GooglePhotosPhotos, {hidden: false});
+        await waitAfterNextRender(googlePhotosPhotosElement);
 
-            // Initialize Google Photos data in the |personalizationStore| and
-            // expect an |error|.
-            personalizationStore.expectAction(
-                PersonalizationActionName.SET_ERROR);
-            await initializeGooglePhotosData(
-                wallpaperProvider, personalizationStore);
-            await fetchGooglePhotosPhotos(
-                wallpaperProvider, personalizationStore);
-            const {error} =
-                await personalizationStore.waitForAction(
-                    PersonalizationActionName.SET_ERROR) as SetErrorAction;
+        // Initialize Google Photos data in the |personalizationStore| and
+        // expect an |error|.
+        personalizationStore.expectAction(PersonalizationActionName.SET_ERROR);
+        await initializeGooglePhotosData(
+            wallpaperProvider, personalizationStore);
+        await fetchGooglePhotosPhotos(wallpaperProvider, personalizationStore);
+        const {error} =
+            await personalizationStore.waitForAction(
+                PersonalizationActionName.SET_ERROR) as SetErrorAction;
 
-            // Verify |error| expectations.
-            assertEquals(
-                error.message,
-                'Couldn’t load images. Check your network connection or try loading the images again.');
-            assertEquals(error.dismiss?.message, 'Try again');
-            assertNotEquals(error.dismiss?.callback, undefined);
+        // Verify |error| expectations.
+        assertEquals(
+            error.message,
+            'Couldn’t load images. Check your network connection or try loading the images again.');
+        assertEquals(error.dismiss?.message, 'Try again');
+        assertNotEquals(error.dismiss?.callback, undefined);
 
-            wallpaperProvider.reset();
+        wallpaperProvider.reset();
 
-            // Simulate dismissal of |error| conditionally |fromUser| and verify
-            // expected interactions with wallpaper provider.
-            error.dismiss?.callback?.(/*fromUser=*/ dismissFromUser);
-            await new Promise<void>(resolve => setTimeout(resolve));
-            assertEquals(
-                wallpaperProvider.getCallCount('fetchGooglePhotosPhotos'),
-                dismissFromUser ? 1 : 0);
+        // Simulate dismissal of |error| conditionally |fromUser| and verify
+        // expected interactions with wallpaper provider.
+        error.dismiss?.callback?.(/*fromUser=*/ dismissFromUser);
+        await new Promise<void>(resolve => setTimeout(resolve));
+        assertEquals(
+            wallpaperProvider.getCallCount('fetchGooglePhotosPhotos'),
+            dismissFromUser ? 1 : 0);
 
-            wallpaperProvider.reset();
+        wallpaperProvider.reset();
 
-            // Simulate hiding |googlePhotosPhotosElement| and verify the
-            // |error| is dismissed though not |fromUser|.
-            const dismissCallbackPromise = new Promise<boolean>(resolve => {
-              personalizationStore.data.error!.dismiss!.callback = resolve;
-            });
-            googlePhotosPhotosElement.hidden = true;
-            assertEquals(await dismissCallbackPromise, /*fromUser=*/ false);
-            await new Promise<void>(resolve => setTimeout(resolve));
-            assertEquals(
-                wallpaperProvider.getCallCount('fetchGooglePhotosPhotos'), 0);
-          }));
+        // Simulate hiding |googlePhotosPhotosElement| and verify the
+        // |error| is dismissed though not |fromUser|.
+        const dismissCallbackPromise = new Promise<boolean>(resolve => {
+          personalizationStore.data.error!.dismiss!.callback = resolve;
+        });
+        googlePhotosPhotosElement.hidden = true;
+        assertEquals(await dismissCallbackPromise, /*fromUser=*/ false);
+        await new Promise<void>(resolve => setTimeout(resolve));
+        assertEquals(
+            wallpaperProvider.getCallCount('fetchGooglePhotosPhotos'), 0);
+      }));
 
   test('displays photos', async () => {
     const photos: GooglePhotosPhoto[] = [
@@ -303,7 +301,7 @@ suite('GooglePhotosPhotosTest', function() {
         dedupKey: '2d0d1595-14af-4471-b2db-b9c8eae3a491',
         name: 'foo',
         date: toString16('Wednesday, February 16, 2022'),
-        url: {url: 'foo.com'},
+        url: {url: createSvgDataUrl('svg-0')},
         location: undefined,
       },
       // Section of photos with one location.
@@ -312,7 +310,7 @@ suite('GooglePhotosPhotosTest', function() {
         dedupKey: '2cb1b955-0b7e-4f59-b9d0-802227aeeb28',
         name: 'bar',
         date: toString16('Friday, November 12, 2021'),
-        url: {url: 'bar.com'},
+        url: {url: createSvgDataUrl('svg-1')},
         location: 'home1',
       },
       {
@@ -320,7 +318,7 @@ suite('GooglePhotosPhotosTest', function() {
         dedupKey: 'd99eedfa-43e5-4bca-8882-b881222b8db9',
         name: 'baz',
         date: toString16('Friday, November 12, 2021'),
-        url: {url: 'baz.com'},
+        url: {url: createSvgDataUrl('svg-2')},
         location: 'home1',
       },
       // Section of photos with different locations.
@@ -329,7 +327,7 @@ suite('GooglePhotosPhotosTest', function() {
         dedupKey: 'ef8795ae-e6c8-4580-8184-0bcad20fd013',
         name: 'bare',
         date: toString16('Friday, July 16, 2021'),
-        url: {url: 'bare.com'},
+        url: {url: createSvgDataUrl('svg-3')},
         location: 'home2',
       },
       {
@@ -337,7 +335,7 @@ suite('GooglePhotosPhotosTest', function() {
         dedupKey: 'c8817402-822f-4ee8-9716-1f4b36c3263f',
         name: 'baze',
         date: toString16('Friday, July 16, 2021'),
-        url: {url: 'baze.com'},
+        url: {url: createSvgDataUrl('svg-4')},
         location: 'home3',
       },
     ];
@@ -384,18 +382,22 @@ suite('GooglePhotosPhotosTest', function() {
 
         // Verify that the expected date is rendered.
         if (rowIndex === 0) {
-          const dateEl = rowEl!.querySelector(`${photoRowInfo} .date`);
-          assertNotEquals(dateEl, null);
-          assertEquals(dateEl!.innerHTML, section.date);
+          const dateEl =
+              rowEl!.querySelector<HTMLSpanElement>(`${photoRowInfo} .date`);
+          assertNotEquals(dateEl, null, 'date element exists');
+          assertEquals(
+              dateEl!.innerText, section.date, 'date element has correct text');
         }
 
         // Verify that the expected location is rendered.
         if (rowIndex === 0) {
-          const locationEl = rowEl!.querySelector(`${photoRowInfo} .location`);
-          assertNotEquals(locationEl, null);
+          const locationEl = rowEl!.querySelector<HTMLSpanElement>(
+              `${photoRowInfo} .location`);
+          assertNotEquals(locationEl, null, 'location element exists');
           assertEquals(
-              locationEl!.innerHTML,
-              Array.from(section.locations).sort().join(' · '));
+              locationEl!.innerText.trim(),
+              Array.from(section.locations).sort().join(' · '),
+              'location element has correct text');
         }
 
         // Verify that the expected |photos| are rendered.
@@ -406,7 +408,7 @@ suite('GooglePhotosPhotosTest', function() {
                   WallpaperGridItem |
               null;
           assertNotEquals(photoEl, null);
-          assertEquals(photoEl!.imageSrc, photo.url.url);
+          assertDeepEquals(photoEl!.src, photo.url);
           assertEquals(photoEl!.primaryText, undefined);
           assertEquals(photoEl!.secondaryText, undefined);
         });
@@ -556,15 +558,15 @@ suite('GooglePhotosPhotosTest', function() {
   test('displays placeholders until photos are present', async () => {
     // Prepare Google Photos data.
     const photosCount = 5;
-    const photos: GooglePhotosPhoto[] =
-        Array.from({length: photosCount}, (_, i) => ({
-                                            id: `id-${i}`,
-                                            dedupKey: `dedupKey-${i}`,
-                                            name: `name-${i}`,
-                                            date: {data: []},
-                                            url: {url: `url-${i}`},
-                                            location: `location-${i}`,
-                                          }));
+    const photos: GooglePhotosPhoto[] = Array.from(
+        {length: photosCount}, (_, i) => ({
+                                 id: `id-${i}`,
+                                 dedupKey: `dedupKey-${i}`,
+                                 name: `name-${i}`,
+                                 date: {data: []},
+                                 url: {url: createSvgDataUrl(`url-${i}`)},
+                                 location: `location-${i}`,
+                               }));
 
     // Initialize |googlePhotosPhotosElement|.
     googlePhotosPhotosElement =
@@ -640,7 +642,7 @@ suite('GooglePhotosPhotosTest', function() {
             dedupKey: `dedupKey-${nextPhotoId}`,
             name: `name-${nextPhotoId}`,
             date: {data: []},
-            url: {url: `url-${nextPhotoId}`},
+            url: {url: createSvgDataUrl(`url-${nextPhotoId}`)},
             location: `location-${nextPhotoId++}`,
           };
         }));
@@ -812,7 +814,7 @@ suite('GooglePhotosPhotosTest', function() {
     const photoSelector = 'wallpaper-grid-item:not([hidden]).photo';
     const photoEls = querySelectorAll(photoSelector) as WallpaperGridItem[];
     assertEquals(photoEls.length, 1);
-    assertEquals(photoEls[0]!.imageSrc, photo.url.url);
+    assertDeepEquals(photoEls[0]!.src, photo.url);
     assertEquals(photoEls[0]!.primaryText, undefined);
     assertEquals(photoEls[0]!.secondaryText, undefined);
 

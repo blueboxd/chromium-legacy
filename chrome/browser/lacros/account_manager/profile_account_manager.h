@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -52,6 +52,9 @@ class ProfileAccountManager : public KeyedService,
                          const account_manager::Account& account) override;
   void OnAccountRemoved(const base::FilePath& profile_path,
                         const account_manager::Account& account) override;
+  void OnAuthErrorChanged(const base::FilePath& profile_path,
+                          const account_manager::AccountKey& account,
+                          const GoogleServiceAuthError& error) override;
 
   // account_manager::AccountManagerFacade:
   void AddObserver(

@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -41,6 +41,7 @@ class FakeSamlIdpMixin final : public InProcessBrowserTestMixin {
   void SetCookieValue(const std::string& cookie_value);
   void SetRequireHttpBasicAuth(bool require_http_basic_auth);
   void SetSamlResponseFile(const std::string& xml_file);
+  bool DeviceTrustHeaderRecieved() const;
   bool IsLastChallengeResponseExists() const;
   void AssertChallengeResponseMatchesTpmResponse() const;
 
@@ -49,6 +50,7 @@ class FakeSamlIdpMixin final : public InProcessBrowserTestMixin {
   GURL GetSamlPageUrl() const;
   GURL GetHttpSamlPageUrl() const;
   GURL GetSamlWithDeviceAttestationUrl() const;
+  GURL GetSamlWithDeviceTrustUrl() const;
 
  private:
   GURL GetSamlAuthPageUrl() const;
@@ -63,7 +65,8 @@ class FakeSamlIdpMixin final : public InProcessBrowserTestMixin {
     kLogin,
     kLoginAuth,
     kLoginWithDeviceAttestation,
-    kLoginCheckDeviceAnswer
+    kLoginCheckDeviceAnswer,
+    kLoginWithDeviceTrust
   };
 
   // Returns the RequestType that corresponds to `url`, or RequestType::Unknown
@@ -80,6 +83,10 @@ class FakeSamlIdpMixin final : public InProcessBrowserTestMixin {
   BuildResponseForLoginWithDeviceAttestation(
       const net::test_server::HttpRequest& request,
       const GURL& request_url) const;
+  std::unique_ptr<net::test_server::HttpResponse>
+  BuildResponseForLoginWithDeviceTrust(
+      const net::test_server::HttpRequest& request,
+      const GURL& request_url);
   std::unique_ptr<net::test_server::HttpResponse>
   BuildResponseForCheckDeviceAnswer(
       const net::test_server::HttpRequest& request,
@@ -107,6 +114,7 @@ class FakeSamlIdpMixin final : public InProcessBrowserTestMixin {
 
   bool require_http_basic_auth_ = false;
 
+  bool device_trust_header_recieved_ = false;
   absl::optional<std::string> challenge_response_;
 };
 

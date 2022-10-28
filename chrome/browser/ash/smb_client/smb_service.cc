@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -622,10 +622,10 @@ std::vector<SmbUrl> SmbService::GetPreconfiguredSharePaths(
     const std::string& policy_mode) const {
   std::vector<SmbUrl> preconfigured_urls;
 
-  const base::Value* preconfigured_shares = profile_->GetPrefs()->GetList(
+  const base::Value::List& preconfigured_shares = profile_->GetPrefs()->GetList(
       prefs::kNetworkFileSharesPreconfiguredShares);
 
-  for (const base::Value& info : preconfigured_shares->GetListDeprecated()) {
+  for (const base::Value& info : preconfigured_shares) {
     // |info| is a dictionary with entries for |share_url| and |mode|.
     const base::Value* share_url = info.FindKey(kShareUrlKey);
     const base::Value* mode = info.FindKey(kModeKey);

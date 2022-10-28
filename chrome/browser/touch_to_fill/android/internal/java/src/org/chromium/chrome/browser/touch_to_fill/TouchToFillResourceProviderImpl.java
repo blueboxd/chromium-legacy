@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -14,10 +14,5 @@ class TouchToFillResourceProviderImpl implements TouchToFillResourceProvider {
     @Override
     public @DrawableRes int getHeaderImageDrawableId() {
         return R.drawable.touch_to_fill_header_image;
-    }
-
-    @Override
-    public @DrawableRes int getWebAuthnIconId() {
-        return R.drawable.touch_to_fill_webauthn_icon;
     }
 }

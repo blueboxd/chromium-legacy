@@ -1,4 +1,4 @@
-# Copyright 2021 The Chromium Authors. All rights reserved.
+# Copyright 2021 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -78,9 +78,7 @@ js_type_check("closure_compile") {
 }
 
 js_library("enhanced_network_tts") {
-  deps = [
-    "//ash/components/enhanced_network_tts/mojom:mojom_js_library_for_compile",
-  ]
+  deps = [ "//chromeos/ash/components/enhanced_network_tts/mojom:mojom_js_library_for_compile" ]
   externs_list = [
     "mojo_bindings_externs.js",
     "$externs_path/tts.js",

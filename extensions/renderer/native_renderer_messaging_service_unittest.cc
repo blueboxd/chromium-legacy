@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -151,8 +151,8 @@ TEST_F(NativeRendererMessagingServiceTest, OpenMessagePort) {
   tab_connection_info.frame_id = 0;
   const int tab_id = 10;
   GURL source_url("http://example.com");
-  tab_connection_info.tab.Swap(
-      DictionaryBuilder().Set("tabId", tab_id).Build().get());
+  tab_connection_info.tab =
+      std::move(DictionaryBuilder().Set("tabId", tab_id).Build()->GetDict());
   ExtensionMsg_ExternalConnectionInfo external_connection_info;
   external_connection_info.target_id = extension()->id();
   external_connection_info.source_endpoint =
@@ -497,8 +497,8 @@ TEST_F(NativeRendererMessagingServiceTest, ReceiveOneTimeMessage) {
   tab_connection_info.frame_id = 0;
   const int tab_id = 10;
   GURL source_url("http://example.com");
-  tab_connection_info.tab.Swap(
-      DictionaryBuilder().Set("tabId", tab_id).Build().get());
+  tab_connection_info.tab =
+      std::move(DictionaryBuilder().Set("tabId", tab_id).Build()->GetDict());
   ExtensionMsg_ExternalConnectionInfo external_connection_info;
   external_connection_info.target_id = extension()->id();
   external_connection_info.source_endpoint =
@@ -570,8 +570,8 @@ TEST_F(NativeRendererMessagingServiceTest, TestExternalOneTimeMessages) {
     tab_connection_info.frame_id = 0;
     const int tab_id = 10;
     GURL source_url("http://example.com");
-    tab_connection_info.tab.Swap(
-        DictionaryBuilder().Set("tabId", tab_id).Build().get());
+    tab_connection_info.tab =
+        std::move(DictionaryBuilder().Set("tabId", tab_id).Build()->GetDict());
 
     ExtensionMsg_ExternalConnectionInfo external_connection_info;
     external_connection_info.target_id = extension()->id();

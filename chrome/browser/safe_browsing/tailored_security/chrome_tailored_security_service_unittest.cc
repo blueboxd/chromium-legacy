@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -71,7 +71,6 @@ class TestChromeTailoredSecurityService : public ChromeTailoredSecurityService {
   // This method is overridden so we can detect the number of times that the
   // dialog has been requested to be shown and what the last value was.
   void DisplayDesktopDialog(Browser* browser,
-                            content::WebContents* web_contents,
                             bool show_enable_dialog) override {
     previous_show_enable_dialog_value_ = show_enable_dialog;
     times_display_desktop_dialog_called_++;

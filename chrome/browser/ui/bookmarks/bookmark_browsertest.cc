@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -200,13 +200,12 @@ IN_PROC_BROWSER_TEST_F(BookmarkBrowsertest, MultiProfile) {
   Profile* profile2 = nullptr;
   g_browser_process->profile_manager()->CreateMultiProfileAsync(
       u"New Profile", 0, false,
-      base::BindLambdaForTesting(
-          [&](Profile* profile, Profile::CreateStatus status) {
-            if (status == Profile::CREATE_STATUS_INITIALIZED) {
-              profile2 = profile;
-              run_loop.Quit();
-            }
-          }));
+      base::BindLambdaForTesting([&](Profile* profile) {
+        if (profile) {
+          profile2 = profile;
+          run_loop.Quit();
+        }
+      }));
   run_loop.Run();
   BookmarkModel* bookmark_model2 = WaitForBookmarkModel(profile2);
 
@@ -596,40 +595,40 @@ IN_PROC_BROWSER_TEST_F(BookmarkBrowsertest, EmitUmaForDuplicates) {
   // The total number of bookmarks is 7, but it gets rounded down due to
   // bucketing.
   ASSERT_THAT(
-      histogram_tester()->GetAllSamples("Bookmarks.Count.OnProfileLoad"),
+      histogram_tester()->GetAllSamples("Bookmarks.Count.OnProfileLoad3"),
       testing::ElementsAre(base::Bucket(/*min=*/6, /*count=*/1)));
 
   // 2 bookmarks have URL http://b.com and 4 have http://c.com. This counts as 4
   // duplicates.
   EXPECT_THAT(histogram_tester()->GetAllSamples(
-                  "Bookmarks.Count.OnProfileLoad.DuplicateUrl2"),
+                  "Bookmarks.Count.OnProfileLoad.DuplicateUrl3"),
               testing::ElementsAre(base::Bucket(/*min=*/4, /*count=*/1)));
   // 3 bookmarks have the pair (http://c.com, title5). This counts as 2
   // duplicates when considering URLs and titles.
   EXPECT_THAT(histogram_tester()->GetAllSamples(
-                  "Bookmarks.Count.OnProfileLoad.DuplicateUrlAndTitle"),
+                  "Bookmarks.Count.OnProfileLoad.DuplicateUrlAndTitle3"),
               testing::ElementsAre(base::Bucket(/*min=*/2, /*count=*/1)));
   // Among the three above, only two have the same parent. This means only one
   // counts as duplicate when considering all three attributes.
   EXPECT_THAT(
       histogram_tester()->GetAllSamples(
-          "Bookmarks.Count.OnProfileLoad.DuplicateUrlAndTitleAndParent"),
+          "Bookmarks.Count.OnProfileLoad.DuplicateUrlAndTitleAndParent3"),
       testing::ElementsAre(base::Bucket(/*min=*/1, /*count=*/1)));
 
   // The remaining histograms are the result of substracting the number of
   // duplicates from the total, which is 7 despite the bucket for the first
   // histogram above suggesting 6.
   EXPECT_THAT(histogram_tester()->GetAllSamples(
-                  "Bookmarks.Count.OnProfileLoad.UniqueUrl"),
+                  "Bookmarks.Count.OnProfileLoad.UniqueUrl3"),
               testing::ElementsAre(base::Bucket(/*min=*/3, /*count=*/1)));
   EXPECT_THAT(histogram_tester()->GetAllSamples(
-                  "Bookmarks.Count.OnProfileLoad.UniqueUrlAndTitle"),
+                  "Bookmarks.Count.OnProfileLoad.UniqueUrlAndTitle3"),
               testing::ElementsAre(base::Bucket(/*min=*/5, /*count=*/1)));
   EXPECT_THAT(histogram_tester()->GetAllSamples(
-                  "Bookmarks.Count.OnProfileLoad.UniqueUrlAndTitleAndParent"),
+                  "Bookmarks.Count.OnProfileLoad.UniqueUrlAndTitleAndParent3"),
               testing::ElementsAre(base::Bucket(/*min=*/6, /*count=*/1)));
   EXPECT_THAT(histogram_tester()->GetAllSamples(
-                  "Bookmarks.Times.OnProfileLoad.TimeSinceAdded"),
+                  "Bookmarks.Times.OnProfileLoad.TimeSinceAdded3"),
               testing::ElementsAre(base::Bucket(/*min=*/0, /*count=*/1)));
 }
 

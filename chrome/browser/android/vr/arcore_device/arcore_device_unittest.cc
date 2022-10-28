@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -334,11 +334,11 @@ class ArCoreDeviceTest : public testing::Test {
     quit_closure = run_loop->QuitClosure();
 
     mojom::XRFrameDataPtr frame_data;
-    auto callback = [](base::OnceClosure quit_closure,
+    auto callback = [](base::OnceClosure run_loop_quit_closure,
                        mojom::XRFrameDataPtr* frame_data,
                        mojom::XRFrameDataPtr data) {
       *frame_data = std::move(data);
-      std::move(quit_closure).Run();
+      std::move(run_loop_quit_closure).Run();
     };
 
     // TODO(https://crbug.com/837834): verify GetFrameData fails if we

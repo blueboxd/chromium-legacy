@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -32,13 +32,13 @@ class FederatedIdentityActiveSessionPermissionContext
       const FederatedIdentityActiveSessionPermissionContext&) = delete;
 
   // content::FederatedIdentityActiveSessionPermissionContextDelegate:
-  bool HasActiveSession(const url::Origin& relying_party,
+  bool HasActiveSession(const url::Origin& relying_party_requester,
                         const url::Origin& identity_provider,
                         const std::string& account_identifier) override;
-  void GrantActiveSession(const url::Origin& relying_party,
+  void GrantActiveSession(const url::Origin& relying_party_requester,
                           const url::Origin& identity_provider,
                           const std::string& account_identifier) override;
-  void RevokeActiveSession(const url::Origin& relying_party,
+  void RevokeActiveSession(const url::Origin& relying_party_requester,
                            const url::Origin& identity_provider,
                            const std::string& account_identifier) override;
 };

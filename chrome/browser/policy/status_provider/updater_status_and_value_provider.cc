@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -20,11 +20,17 @@
 #include "chrome/browser/policy/chrome_policy_conversions_client.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/install_static/install_util.h"
+#include "components/policy/core/browser/policy_conversions.h"
+#include "components/policy/core/browser/webui/policy_status_provider.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
 
 namespace {
+
+constexpr char kUpdaterPoliciesId[] = "updater";
+constexpr char kUpdaterPoliciesName[] = "Google Update Policies";
+constexpr char kUpdaterPolicyStatusDescription[] = "statusUpdater";
 
 std::string GetActiveDirectoryDomain() {
   std::string domain;
@@ -68,19 +74,20 @@ base::Value::Dict UpdaterStatusAndValueProvider::GetStatus() {
     dict.Set("timeSinceLastRefresh",
              GetTimeSinceLastActionString(updater_status_->last_checked_time));
   }
+  if (dict.empty())
+    return {};
+
+  dict.Set(policy::kPolicyDescriptionKey, kUpdaterPolicyStatusDescription);
   return dict;
 }
 
-void UpdaterStatusAndValueProvider::GetValues(
-    base::Value::List& out_policy_values) {
+base::Value::Dict UpdaterStatusAndValueProvider::GetValues() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (!updater_policies_) {
-    return;
-  }
+  if (!updater_policies_)
+    return {};
 
   base::Value::Dict updater_policies_data;
-  updater_policies_data.Set("name", "Google Update Policies");
-  updater_policies_data.Set("id", "updater");
+  updater_policies_data.Set(policy::kNameKey, kUpdaterPoliciesName);
 
   auto client =
       std::make_unique<policy::ChromePolicyConversionsClient>(profile_);
@@ -88,10 +95,14 @@ void UpdaterStatusAndValueProvider::GetValues(
   client->SetDropDefaultValues(true);
   // TODO(b/241519819): Find an alternative to using PolicyConversionsClient
   // directly.
-  updater_policies_data.Set("policies", client->ConvertUpdaterPolicies(
-                                            updater_policies_->Clone(),
-                                            GetGoogleUpdatePolicySchemas()));
-  out_policy_values.Append(std::move(updater_policies_data));
+  updater_policies_data.Set(
+      policy::kPoliciesKey,
+      client->ConvertUpdaterPolicies(updater_policies_->Clone(),
+                                     GetGoogleUpdatePolicySchemas()));
+
+  base::Value::Dict policy_values;
+  policy_values.Set(kUpdaterPoliciesId, std::move(updater_policies_data));
+  return policy_values;
 }
 
 base::Value::Dict UpdaterStatusAndValueProvider::GetNames() {
@@ -99,9 +110,9 @@ base::Value::Dict UpdaterStatusAndValueProvider::GetNames() {
   base::Value::Dict names;
   if (updater_policies_) {
     base::Value::Dict updater_policies;
-    updater_policies.Set("name", "Google Update Policies");
-    updater_policies.Set("policyNames", GetGoogleUpdatePolicyNames());
-    names.Set("updater", std::move(updater_policies));
+    updater_policies.Set(policy::kNameKey, kUpdaterPoliciesName);
+    updater_policies.Set(policy::kPolicyNamesKey, GetGoogleUpdatePolicyNames());
+    names.Set(kUpdaterPoliciesId, std::move(updater_policies));
   }
   return names;
 }

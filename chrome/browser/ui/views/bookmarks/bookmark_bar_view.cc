@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,6 +12,7 @@
 #include <string>
 #include <utility>
 #include <vector>
+
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/check_op.h"
@@ -1189,7 +1190,8 @@ void BookmarkBarView::BookmarkNodeMoved(BookmarkModel* model,
 
 void BookmarkBarView::BookmarkNodeAdded(BookmarkModel* model,
                                         const BookmarkNode* parent,
-                                        size_t index) {
+                                        size_t index,
+                                        bool added_by_user) {
   // See comment in BookmarkNodeMoved() for details on this.
   InvalidateDrop();
   if (BookmarkNodeAddedImpl(model, parent, index))
@@ -1480,9 +1482,8 @@ void BookmarkBarView::Init() {
 }
 
 size_t BookmarkBarView::GetFirstHiddenNodeIndex() const {
-  const auto i =
-      std::find_if(bookmark_buttons_.cbegin(), bookmark_buttons_.cend(),
-                   [](const auto* button) { return !button->GetVisible(); });
+  const auto i = base::ranges::find_if_not(bookmark_buttons_,
+                                           &views::LabelButton::GetVisible);
   return i - bookmark_buttons_.cbegin();
 }
 
@@ -1875,8 +1876,7 @@ void BookmarkBarView::InvalidateDrop() {
 }
 
 const BookmarkNode* BookmarkBarView::GetNodeForSender(View* sender) const {
-  const auto i =
-      std::find(bookmark_buttons_.cbegin(), bookmark_buttons_.cend(), sender);
+  const auto i = base::ranges::find(bookmark_buttons_, sender);
   DCHECK(i != bookmark_buttons_.cend());
   size_t child = i - bookmark_buttons_.cbegin();
   return bookmark_model_->bookmark_bar_node()->children()[child].get();
@@ -2060,8 +2060,7 @@ void BookmarkBarView::InsertBookmarkButtonAtIndex(
 }
 
 size_t BookmarkBarView::GetIndexForButton(views::View* button) {
-  auto it =
-      std::find(bookmark_buttons_.cbegin(), bookmark_buttons_.cend(), button);
+  auto it = base::ranges::find(bookmark_buttons_, button);
   if (it == bookmark_buttons_.cend())
     return static_cast<size_t>(-1);
 

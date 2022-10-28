@@ -1,4 +1,4 @@
-// Copyright 2011 The Chromium Authors. All rights reserved.
+// Copyright 2011 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -24,6 +24,7 @@
 #include "base/memory/raw_ptr.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/notreached.h"
+#include "base/ranges/algorithm.h"
 #include "base/strings/stringprintf.h"
 #include "base/timer/elapsed_timer.h"
 #include "base/trace_event/trace_event.h"
@@ -623,19 +624,19 @@ void LayerTreeImpl::PullPropertiesFrom(
   TreeSynchronizer::PushLayerProperties(commit_state, unsafe_state, this);
   lifecycle().AdvanceTo(LayerTreeLifecycle::kSyncedLayerProperties);
 
-  PullLayerTreePropertiesFrom(commit_state);
-
-  PassSwapPromises(std::move(commit_state.swap_promises));
-  AppendEventsMetricsFromMainThread(std::move(commit_state.event_metrics));
-
-  set_ui_resource_request_queue(commit_state.ui_resource_request_queue);
-
   // This must happen after synchronizing property trees and after pushing
   // properties, which updates the clobber_active_value flag.
   // TODO(pdr): Enforce this comment with DCHECKS and a lifecycle state.
   property_trees()->scroll_tree_mutable().PushScrollUpdatesFromMainThread(
       unsafe_state.property_trees, this,
       settings().commit_fractional_scroll_deltas);
+
+  PullLayerTreePropertiesFrom(commit_state);
+
+  PassSwapPromises(std::move(commit_state.swap_promises));
+  AppendEventsMetricsFromMainThread(std::move(commit_state.event_metrics));
+
+  set_ui_resource_request_queue(commit_state.ui_resource_request_queue);
 
   // This must happen after synchronizing property trees and after push
   // properties, which updates property tree indices, but before animation
@@ -1484,20 +1485,23 @@ gfx::Rect LayerTreeImpl::RootScrollLayerDeviceViewportBounds() const {
 }
 
 void LayerTreeImpl::ApplySentScrollAndScaleDeltasFromAbortedCommit(
+    bool next_bmf,
     bool main_frame_applied_deltas) {
   DCHECK(IsActiveTree());
 
-  page_scale_factor()->AbortCommit(main_frame_applied_deltas);
-  top_controls_shown_ratio()->AbortCommit(main_frame_applied_deltas);
-  bottom_controls_shown_ratio()->AbortCommit(main_frame_applied_deltas);
-  elastic_overscroll()->AbortCommit(main_frame_applied_deltas);
+  page_scale_factor()->AbortCommit(next_bmf, main_frame_applied_deltas);
+  top_controls_shown_ratio()->AbortCommit(next_bmf, main_frame_applied_deltas);
+  bottom_controls_shown_ratio()->AbortCommit(next_bmf,
+                                             main_frame_applied_deltas);
+  elastic_overscroll()->AbortCommit(next_bmf, main_frame_applied_deltas);
 
   if (layer_list_.empty())
     return;
 
   property_trees()
       ->scroll_tree_mutable()
-      .ApplySentScrollDeltasFromAbortedCommit(main_frame_applied_deltas);
+      .ApplySentScrollDeltasFromAbortedCommit(next_bmf,
+                                              main_frame_applied_deltas);
 }
 
 void LayerTreeImpl::SetViewportPropertyIds(const ViewportPropertyIds& ids) {
@@ -1734,10 +1738,8 @@ LayerImpl* LayerTreeImpl::LayerById(int id) const {
 // TODO(masonf): If this shows up on profiles, this could use
 // a layer_element_map_ approach similar to LayerById().
 LayerImpl* LayerTreeImpl::LayerByElementId(ElementId element_id) const {
-  auto it =
-      std::find_if(rbegin(), rend(), [&element_id](LayerImpl* layer_impl) {
-        return layer_impl->element_id() == element_id;
-      });
+  auto it = base::ranges::find(base::Reversed(*this), element_id,
+                               &LayerImpl::element_id);
   if (it == rend())
     return nullptr;
   return *it;
@@ -2136,7 +2138,7 @@ void LayerTreeImpl::RegisterPictureLayerImpl(PictureLayerImpl* layer) {
 }
 
 void LayerTreeImpl::UnregisterPictureLayerImpl(PictureLayerImpl* layer) {
-  auto it = std::find(picture_layers_.begin(), picture_layers_.end(), layer);
+  auto it = base::ranges::find(picture_layers_, layer);
   DCHECK(it != picture_layers_.end());
   picture_layers_.erase(it);
 

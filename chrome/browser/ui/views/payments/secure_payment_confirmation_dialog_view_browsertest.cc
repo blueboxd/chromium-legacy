@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -64,7 +64,7 @@ class SecurePaymentConfirmationDialogViewTest
             web_contents->GetPrimaryMainFrame(), model_.GetWeakPtr(),
             GetWeakPtr());
 
-    // TODO(crbug.com/1175327): Ideally, we'd expect the browser window to be
+    // TODO(crbug.com/1360854): Ideally, we'd expect the browser window to be
     // active here and could check that |IsBrowserWindowActivate()| returned
     // true, but on wayland, windows cannot be activated as they are on other
     // platforms.

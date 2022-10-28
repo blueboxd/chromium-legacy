@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -22,6 +22,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothLowEnergyScanFilter {
   // for Generic Access Profile (GAP).
   enum class AdvertisementDataType {
     kFlags = 0x01,
+    kServiceUUIDs = 0x03,
     kShortenedLocalName = 0x08,
     kCompleteLocalName = 0x09,
     kListOf16BitServiceSolicitationUUIDs = 0x14,

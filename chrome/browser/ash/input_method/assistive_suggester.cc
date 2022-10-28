@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 #include "chrome/browser/ash/input_method/assistive_suggester.h"
@@ -42,7 +42,7 @@ using ime::TextSuggestionType;
 
 const char kMaxTextBeforeCursorLength = 50;
 
-constexpr base::TimeDelta kLongpressActivationDelay = base::Seconds(1);
+constexpr base::TimeDelta kLongpressActivationDelay = base::Milliseconds(500);
 
 // TODO(b/217560706): Make this different based on current engine after research
 // is conducted.
@@ -357,13 +357,21 @@ void AssistiveSuggester::OnFocus(int context_id) {
   emoji_suggester_.OnFocus(context_id);
   multi_word_suggester_.OnFocus(context_id);
   longpress_diacritics_suggester_.OnFocus(context_id);
+  enabled_suggestions_from_last_onfocus_ = absl::nullopt;
   suggester_switch_->FetchEnabledSuggestionsThen(
-      base::BindOnce(&AssistiveSuggester::RecordTextInputStateMetrics,
+      base::BindOnce(&AssistiveSuggester::HandleEnabledSuggestionsOnFocus,
                      weak_ptr_factory_.GetWeakPtr()));
+}
+
+void AssistiveSuggester::HandleEnabledSuggestionsOnFocus(
+    const AssistiveSuggesterSwitch::EnabledSuggestions& enabled_suggestions) {
+  enabled_suggestions_from_last_onfocus_ = enabled_suggestions;
+  AssistiveSuggester::RecordTextInputStateMetrics(enabled_suggestions);
 }
 
 void AssistiveSuggester::OnBlur() {
   focused_context_id_ = absl::nullopt;
+  enabled_suggestions_from_last_onfocus_ = absl::nullopt;
   personal_info_suggester_.OnBlur();
   emoji_suggester_.OnBlur();
   multi_word_suggester_.OnBlur();
@@ -404,61 +412,62 @@ bool AssistiveSuggester::OnKeyEvent(const ui::KeyEvent& event) {
     }
   }
 
-  if (IsDiacriticsOnPhysicalKeyboardLongpressEnabled()) {
-    // Longpress diacritics behaviour overrides the longpress to repeat key
-    // behaviour for alphabetical keys.
-    if (event.is_repeat() &&
-        kDefaultLongpressEnabledKeys.contains(event.GetCharacter())) {
-      return true;  // Do not propagate this event.
-    }
-    suggester_switch_->FetchEnabledSuggestionsThen(
-        base::BindOnce(&AssistiveSuggester::HandleLongpressEnabledKeyEvent,
-                       weak_ptr_factory_.GetWeakPtr(), event));
-  }
-  return false;
+  return AssistiveSuggester::HandleLongpressEnabledKeyEvent(event);
 }
 
-void AssistiveSuggester::HandleLongpressEnabledKeyEvent(
-    const ui::KeyEvent& event,
-    const AssistiveSuggesterSwitch::EnabledSuggestions& enabled_suggestions) {
+bool AssistiveSuggester::HandleLongpressEnabledKeyEvent(
+    const ui::KeyEvent& event) {
   if (!IsDiacriticsOnPhysicalKeyboardLongpressEnabled() ||
-      !enabled_suggestions.diacritic_suggestions ||
+      !enabled_suggestions_from_last_onfocus_ ||
+      !enabled_suggestions_from_last_onfocus_->diacritic_suggestions ||
       !kDefaultLongpressEnabledKeys.contains(event.GetCharacter())) {
-    return;
+    return false;
   }
 
-  const char c = event.GetCharacter();
+  // Longpress diacritics behaviour overrides the longpress to repeat key
+  // behaviour for alphabetical keys.
+  if (event.is_repeat() &&
+      kDefaultLongpressEnabledKeys.contains(event.GetCharacter())) {
+    return true;  // Do not propagate this event.
+  }
+
   // Process longpress keydown event.
-  if (current_longpress_char_ == absl::nullopt &&
+  if (current_longpress_keydown_ == absl::nullopt &&
       event.type() == ui::EventType::ET_KEY_PRESSED) {
-    current_longpress_char_ = c;
+    current_longpress_keydown_ = event;
     longpress_timer_.Start(
         FROM_HERE, kLongpressActivationDelay,
         base::BindOnce(&AssistiveSuggester::OnLongpressDetected,
                        weak_ptr_factory_.GetWeakPtr()));
-    return;
+    return false;
   }
 
   // Process longpress interrupted event (key press up before timer callback
   // fired)
-  if (current_longpress_char_.has_value() &&
+  if (current_longpress_keydown_.has_value() &&
       event.type() == ui::EventType::ET_KEY_RELEASED &&
-      *current_longpress_char_ == c) {
-    current_longpress_char_ = absl::nullopt;
+      current_longpress_keydown_->code() == event.code()) {
+    current_longpress_keydown_ = absl::nullopt;
     longpress_timer_.Stop();
-    return;
   }
+  return false;
 }
 
 void AssistiveSuggester::OnLongpressDetected() {
-  if (!current_longpress_char_.has_value()) {
+  if (!current_longpress_keydown_.has_value() ||
+      // If the following conditions are met, its possible the text box does not
+      // support IME operations.
+      last_surrounding_text_.empty() || last_cursor_pos_ <= 0 ||
+      last_surrounding_text_.length() < last_cursor_pos_ ||
+      last_surrounding_text_[last_cursor_pos_ - 1] !=
+          current_longpress_keydown_->GetCharacter()) {
     return;
   }
   if (longpress_diacritics_suggester_.TrySuggestOnLongpress(
-          *current_longpress_char_)) {
+          current_longpress_keydown_->GetCharacter())) {
     current_suggester_ = &longpress_diacritics_suggester_;
   }
-  current_longpress_char_ = absl::nullopt;
+  current_longpress_keydown_ = absl::nullopt;
 }
 
 void AssistiveSuggester::OnExternalSuggestionsUpdated(
@@ -560,6 +569,8 @@ bool AssistiveSuggester::WithinGrammarFragment(int cursor_pos, int anchor_pos) {
 void AssistiveSuggester::OnSurroundingTextChanged(const std::u16string& text,
                                                   int cursor_pos,
                                                   int anchor_pos) {
+  last_surrounding_text_ = text;
+  last_cursor_pos_ = cursor_pos;
   suggester_switch_->FetchEnabledSuggestionsThen(base::BindOnce(
       &AssistiveSuggester::ProcessOnSurroundingTextChanged,
       weak_ptr_factory_.GetWeakPtr(), text, cursor_pos, anchor_pos));

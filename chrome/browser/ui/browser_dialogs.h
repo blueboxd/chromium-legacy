@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -24,11 +24,6 @@
 #include "ui/base/interaction/element_identifier.h"
 #include "ui/base/models/dialog_model.h"
 #include "ui/gfx/native_widget_types.h"
-
-#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || \
-    (BUILDFLAG(IS_LINUX) && !BUILDFLAG(IS_CHROMEOS_LACROS))
-#include "chrome/browser/web_applications/web_app_id.h"
-#endif
 
 class Browser;
 class GURL;

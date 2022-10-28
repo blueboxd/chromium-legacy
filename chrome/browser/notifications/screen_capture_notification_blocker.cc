@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,6 +8,7 @@
 
 #include "base/feature_list.h"
 #include "base/metrics/histogram_functions.h"
+#include "base/ranges/algorithm.h"
 #include "base/strings/strcat.h"
 #include "chrome/browser/browser_features.h"
 #include "chrome/browser/media/webrtc/media_capture_devices_dispatcher.h"
@@ -68,8 +69,8 @@ bool ScreenCaptureNotificationBlocker::ShouldBlockNotification(
     return false;
 
   // Otherwise block all notifications that belong to non-capturing origins.
-  return std::none_of(
-      capturing_web_contents_.begin(), capturing_web_contents_.end(),
+  return base::ranges::none_of(
+      capturing_web_contents_,
       [&notification](content::WebContents* web_contents) {
         return url::IsSameOriginWith(notification.origin_url(),
                                      web_contents->GetLastCommittedURL());

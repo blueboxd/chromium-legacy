@@ -1,4 +1,4 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -22,7 +22,8 @@ ManagePasswordsIconViews::ManagePasswordsIconViews(
     : PageActionIconView(updater,
                          IDC_MANAGE_PASSWORDS_FOR_PAGE,
                          icon_label_bubble_delegate,
-                         page_action_icon_delegate) {
+                         page_action_icon_delegate,
+                         "ManagePasswords") {
   // Password icon should not be mirrored in RTL.
   image()->SetFlipCanvasOnPaintForRTLUI(false);
 }

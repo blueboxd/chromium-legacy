@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -20,7 +20,6 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/plugins/chrome_plugin_service_filter.h"
-#include "chrome/browser/plugins/plugin_finder.h"
 #include "chrome/browser/plugins/plugin_metadata.h"
 #include "chrome/browser/plugins/plugin_prefs.h"
 #include "chrome/browser/plugins/plugin_utils.h"
@@ -92,6 +91,42 @@ class PluginInfoHostImplShutdownNotifierFactory
 
   ~PluginInfoHostImplShutdownNotifierFactory() override {}
 };
+
+std::unique_ptr<PluginMetadata> GetPluginMetadata(const WebPluginInfo& plugin) {
+  // Gets the base name of the file path as the identifier.
+  std::string identifier = plugin.path.BaseName().AsUTF8Unsafe();
+
+  // Gets the plugin group name as the plugin name if it is not empty, or the
+  // filename without extension if the name is empty.
+  std::u16string group_name = plugin.name;
+  if (group_name.empty())
+    group_name = plugin.path.BaseName().RemoveExtension().AsUTF16Unsafe();
+
+  // Treat plugins as requiring authorization by default.
+  PluginMetadata::SecurityStatus security_status =
+      PluginMetadata::SECURITY_STATUS_REQUIRES_AUTHORIZATION;
+
+  // Handle the PDF plugins specially.
+  std::string plugin_name = base::UTF16ToUTF8(plugin.name);
+  if (plugin_name == ChromeContentClient::kPDFExtensionPluginName) {
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
+    identifier = "google-chrome-pdf";
+#else
+    identifier = "chromium-pdf";
+#endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
+    security_status = PluginMetadata::SECURITY_STATUS_FULLY_TRUSTED;
+  } else if (plugin_name == ChromeContentClient::kPDFInternalPluginName) {
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
+    identifier = "google-chrome-pdf-plugin";
+#else
+    identifier = "chromium-pdf-plugin";
+#endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
+    security_status = PluginMetadata::SECURITY_STATUS_FULLY_TRUSTED;
+  }
+
+  return std::make_unique<PluginMetadata>(identifier, group_name,
+                                          security_status);
+}
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 // Returns whether a request from a plugin to load |resource| from a renderer
@@ -197,10 +232,10 @@ void PluginInfoHostImpl::PluginsLoaded(
                                  &output->plugin, &output->actual_mime_type,
                                  &plugin_metadata)) {
     // TODO(crbug.com/1167278): Simplify this once PDF is the only "plugin."
-    context_.DecidePluginStatus(
-        params.url, params.main_frame_origin, output->plugin,
-        plugin_metadata->GetSecurityStatus(output->plugin),
-        plugin_metadata->identifier(), &output->status);
+    context_.DecidePluginStatus(params.url, params.main_frame_origin,
+                                output->plugin,
+                                plugin_metadata->security_status(),
+                                plugin_metadata->identifier(), &output->status);
   }
 
   GetPluginInfoFinish(params, std::move(output), std::move(callback),
@@ -219,15 +254,6 @@ void PluginInfoHostImpl::Context::DecidePluginStatus(
     return;
   }
 
-// This block is separate from the outdated check, because the deprecated UI
-// must take precedence over any content setting or HTML5 by Default.
-#if BUILDFLAG(ENABLE_PLUGINS)
-  if (security_status == PluginMetadata::SECURITY_STATUS_DEPRECATED) {
-    *status = chrome::mojom::PluginStatus::kDeprecated;
-    return;
-  }
-#endif
-
   ContentSetting plugin_setting = CONTENT_SETTING_DEFAULT;
   bool uses_default_content_setting = true;
   bool is_managed = false;
@@ -239,19 +265,6 @@ void PluginInfoHostImpl::Context::DecidePluginStatus(
       &is_managed);
 
   DCHECK(plugin_setting != CONTENT_SETTING_DEFAULT);
-
-#if BUILDFLAG(ENABLE_PLUGINS)
-  // Check if the plugin is outdated.
-  if (security_status == PluginMetadata::SECURITY_STATUS_OUT_OF_DATE &&
-      !allow_outdated_plugins_.GetValue()) {
-    if (allow_outdated_plugins_.IsManaged()) {
-      *status = chrome::mojom::PluginStatus::kOutdatedDisallowed;
-    } else {
-      *status = chrome::mojom::PluginStatus::kOutdatedBlocked;
-    }
-    return;
-  }
-#endif  // BUILDFLAG(ENABLE_PLUGINS)
 
   // Check if the plugin is crashing too much.
   if (PluginService::GetInstance()->IsPluginUnstable(plugin.path) &&
@@ -344,7 +357,7 @@ bool PluginInfoHostImpl::Context::FindEnabledPlugin(
   *plugin = matching_plugins[i];
   *actual_mime_type = mime_types[i];
   if (plugin_metadata)
-    *plugin_metadata = PluginFinder::GetInstance()->GetPluginMetadata(*plugin);
+    *plugin_metadata = GetPluginMetadata(*plugin);
 
   return enabled;
 }

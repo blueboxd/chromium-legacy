@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -103,7 +103,7 @@ class CertificateTransparencyBrowserTest : public CertVerifierBrowserTest {
 
     EXPECT_NO_FATAL_FAILURE(UpdateChromePolicy(policy_map));
 
-    const base::Value::List& pref_value = pref_service->GetValueList(pref_name);
+    const base::Value::List& pref_value = pref_service->GetList(pref_name);
     std::vector<std::string> pref_values;
     for (const auto& value : pref_value) {
       ASSERT_TRUE(value.is_string());

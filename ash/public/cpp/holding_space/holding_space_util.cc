@@ -1,13 +1,13 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "ash/public/cpp/holding_space/holding_space_util.h"
 
 #include "ash/public/cpp/holding_space/holding_space_constants.h"
+#include "base/containers/contains.h"
 
-namespace ash {
-namespace holding_space_util {
+namespace ash::holding_space_util {
 
 gfx::Size GetMaxImageSizeForType(HoldingSpaceItem::Type type) {
   gfx::Size max_size;
@@ -15,12 +15,14 @@ gfx::Size GetMaxImageSizeForType(HoldingSpaceItem::Type type) {
     case HoldingSpaceItem::Type::kArcDownload:
     case HoldingSpaceItem::Type::kDiagnosticsLog:
     case HoldingSpaceItem::Type::kDownload:
+    case HoldingSpaceItem::Type::kDriveSuggestion:
     case HoldingSpaceItem::Type::kLacrosDownload:
+    case HoldingSpaceItem::Type::kLocalSuggestion:
     case HoldingSpaceItem::Type::kNearbyShare:
+    case HoldingSpaceItem::Type::kPhoneHubCameraRoll:
     case HoldingSpaceItem::Type::kPinnedFile:
     case HoldingSpaceItem::Type::kPrintedPdf:
     case HoldingSpaceItem::Type::kScan:
-    case HoldingSpaceItem::Type::kPhoneHubCameraRoll:
       max_size =
           gfx::Size(kHoldingSpaceChipIconSize, kHoldingSpaceChipIconSize);
       break;
@@ -51,11 +53,8 @@ bool IsInProgressCommand(HoldingSpaceCommandId command_id) {
 bool SupportsInProgressCommand(const HoldingSpaceItem* item,
                                HoldingSpaceCommandId command_id) {
   DCHECK(IsInProgressCommand(command_id));
-  return std::any_of(
-      item->in_progress_commands().begin(), item->in_progress_commands().end(),
-      [&](const HoldingSpaceItem::InProgressCommand& in_progress_command) {
-        return in_progress_command.command_id == command_id;
-      });
+  return base::Contains(item->in_progress_commands(), command_id,
+                        &HoldingSpaceItem::InProgressCommand::command_id);
 }
 
 bool ExecuteInProgressCommand(const HoldingSpaceItem* item,
@@ -70,5 +69,60 @@ bool ExecuteInProgressCommand(const HoldingSpaceItem* item,
   return false;
 }
 
-}  // namespace holding_space_util
-}  // namespace ash
+// NOTE: These values are persisted to histograms and must remain unchanged.
+std::string ToString(HoldingSpaceItem::Type type) {
+  switch (type) {
+    case HoldingSpaceItem::Type::kArcDownload:
+      return "ArcDownload";
+    case HoldingSpaceItem::Type::kDiagnosticsLog:
+      return "DiagnosticsLog";
+    case HoldingSpaceItem::Type::kDownload:
+      return "Download";
+    case HoldingSpaceItem::Type::kDriveSuggestion:
+      return "DriveSuggestion";
+    case HoldingSpaceItem::Type::kLacrosDownload:
+      return "LacrosDownload";
+    case HoldingSpaceItem::Type::kLocalSuggestion:
+      return "LocalSuggestion";
+    case HoldingSpaceItem::Type::kNearbyShare:
+      return "NearbyShare";
+    case HoldingSpaceItem::Type::kPhoneHubCameraRoll:
+      return "PhoneHubCameraRoll";
+    case HoldingSpaceItem::Type::kPinnedFile:
+      return "PinnedFile";
+    case HoldingSpaceItem::Type::kPrintedPdf:
+      return "PrintedPdf";
+    case HoldingSpaceItem::Type::kScan:
+      return "Scan";
+    case HoldingSpaceItem::Type::kScreenRecording:
+      return "ScreenRecording";
+    case HoldingSpaceItem::Type::kScreenshot:
+      return "Screenshot";
+  }
+}
+
+std::set<HoldingSpaceItem::Type> DownloadSupportedTypes() {
+  return {HoldingSpaceItem::Type::kArcDownload,
+          HoldingSpaceItem::Type::kDiagnosticsLog,
+          HoldingSpaceItem::Type::kDownload,
+          HoldingSpaceItem::Type::kLacrosDownload,
+          HoldingSpaceItem::Type::kNearbyShare,
+          HoldingSpaceItem::Type::kPrintedPdf,
+          HoldingSpaceItem::Type::kScan,
+          HoldingSpaceItem::Type::kPhoneHubCameraRoll};
+}
+
+std::set<HoldingSpaceItem::Type> ScreenCaptureSupportedTypes() {
+  return {HoldingSpaceItem::Type::kScreenshot,
+          HoldingSpaceItem::Type::kScreenRecording};
+}
+
+bool IsDownloadType(HoldingSpaceItem::Type item_type) {
+  return base::Contains(DownloadSupportedTypes(), item_type);
+}
+
+bool IsScreenCaptureType(HoldingSpaceItem::Type item_type) {
+  return base::Contains(ScreenCaptureSupportedTypes(), item_type);
+}
+
+}  // namespace ash::holding_space_util

@@ -229,7 +229,7 @@ class WebResourceRequestSenderTest : public testing::Test,
     head->headers = new net::HttpResponseHeaders(raw_headers);
     head->mime_type = kTestPageMimeType;
     head->charset = kTestPageCharset;
-    client->OnReceiveResponse(std::move(head), std::move(body));
+    client->OnReceiveResponse(std::move(head), std::move(body), absl::nullopt);
   }
 
   std::unique_ptr<network::ResourceRequest> CreateResourceRequest() {
@@ -419,7 +419,8 @@ class TimeConversionTest : public WebResourceRequestSenderTest {
         std::move(loader_and_clients_[0].second));
     loader_and_clients_.clear();
     client->OnReceiveResponse(std::move(response_head),
-                              mojo::ScopedDataPipeConsumerHandle());
+                              mojo::ScopedDataPipeConsumerHandle(),
+                              absl::nullopt);
   }
 
   const network::mojom::URLResponseHead& response_info() const {
@@ -446,7 +447,7 @@ TEST_F(TimeConversionTest, DISABLED_ProperlyInitialized) {
 
   EXPECT_LT(base::TimeTicks(), response_info().load_timing.request_start);
   EXPECT_EQ(base::TimeTicks(),
-            response_info().load_timing.connect_timing.dns_start);
+            response_info().load_timing.connect_timing.domain_lookup_start);
   EXPECT_LE(request_start,
             response_info().load_timing.connect_timing.connect_start);
 }
@@ -460,7 +461,7 @@ TEST_F(TimeConversionTest, PartiallyInitialized) {
 
   EXPECT_EQ(base::TimeTicks(), response_info().load_timing.request_start);
   EXPECT_EQ(base::TimeTicks(),
-            response_info().load_timing.connect_timing.dns_start);
+            response_info().load_timing.connect_timing.domain_lookup_start);
 }
 
 TEST_F(TimeConversionTest, NotInitialized) {
@@ -470,7 +471,7 @@ TEST_F(TimeConversionTest, NotInitialized) {
 
   EXPECT_EQ(base::TimeTicks(), response_info().load_timing.request_start);
   EXPECT_EQ(base::TimeTicks(),
-            response_info().load_timing.connect_timing.dns_start);
+            response_info().load_timing.connect_timing.domain_lookup_start);
 }
 
 class CompletionTimeConversionTest : public WebResourceRequestSenderTest {
@@ -501,7 +502,7 @@ class CompletionTimeConversionTest : public WebResourceRequestSenderTest {
               MOJO_RESULT_OK);
 
     client->OnReceiveResponse(std::move(response_head),
-                              std::move(consumer_handle));
+                              std::move(consumer_handle), absl::nullopt);
     producer_handle.reset();  // The response is empty.
 
     network::URLLoaderCompletionStatus status;

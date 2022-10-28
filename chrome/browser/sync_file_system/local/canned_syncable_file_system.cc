@@ -1,4 +1,4 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -276,13 +276,16 @@ void CannedSyncableFileSystem::SetUp() {
 }
 
 void CannedSyncableFileSystem::TearDown() {
-  quota_manager_ = nullptr;
   file_system_context_ = nullptr;
 
   // Make sure we give some more time to finish tasks on other threads.
   EnsureLastTaskRuns(io_task_runner_.get());
   EnsureLastTaskRuns(file_task_runner_.get());
   base::ThreadPoolInstance::Get()->FlushForTesting();
+
+  // `quota_manager_` might be used by pending tasks, so wait to destroy this
+  // until after we've ensured all tasks have finished.
+  quota_manager_ = nullptr;
 }
 
 FileSystemURL CannedSyncableFileSystem::URL(const std::string& path) const {

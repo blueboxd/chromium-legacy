@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -14,7 +14,7 @@
 #import "components/prefs/pref_service.h"
 #import "components/signin/public/base/signin_metrics.h"
 #import "ios/chrome/browser/discover_feed/feed_constants.h"
-#import "ios/chrome/browser/pref_names.h"
+#import "ios/chrome/browser/prefs/pref_names.h"
 #import "ios/chrome/browser/signin/authentication_service.h"
 #import "ios/chrome/browser/signin/chrome_account_manager_service.h"
 #import "ios/chrome/browser/signin/chrome_account_manager_service_observer_bridge.h"
@@ -434,10 +434,21 @@ const char* AlreadySeenSigninViewPreferenceKey(
 
 + (BOOL)shouldDisplaySigninPromoViewWithAccessPoint:
             (signin_metrics::AccessPoint)accessPoint
+                              authenticationService:
+                                  (AuthenticationService*)authenticationService
                                         prefService:(PrefService*)prefService {
   // Checks if user can't sign in.
-  if (!signin::IsSigninAllowed(prefService)) {
-    return NO;
+  switch (authenticationService->GetServiceStatus()) {
+    case AuthenticationService::ServiceStatus::SigninForcedByPolicy:
+    case AuthenticationService::ServiceStatus::SigninAllowed:
+      // The user is allowed to sign-in, so the sign-in/sync promo can be
+      // displayed.
+      break;
+    case AuthenticationService::ServiceStatus::SigninDisabledByUser:
+    case AuthenticationService::ServiceStatus::SigninDisabledByPolicy:
+    case AuthenticationService::ServiceStatus::SigninDisabledByInternal:
+      // The user is not allowed to sign-in. The promo cannot be displayed.
+      return NO;
   }
 
   // Checks if the user has exceeded the max impression count.

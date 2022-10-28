@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,7 +10,6 @@
 #include <string>
 #include <vector>
 
-#include "ash/components/drivefs/drivefs_host.h"
 #include "base/callback.h"
 #include "base/feature_list.h"
 #include "base/memory/singleton.h"
@@ -19,6 +18,7 @@
 #include "base/observer_list_types.h"
 #include "base/time/time.h"
 #include "chrome/browser/profiles/profile_keyed_service_factory.h"
+#include "chromeos/ash/components/drivefs/drivefs_host.h"
 #include "components/drive/drive_notification_observer.h"
 #include "components/drive/file_errors.h"
 #include "components/drive/file_system_core_util.h"
@@ -266,6 +266,10 @@ class DriveIntegrationService : public KeyedService,
 
   // Returns whether mirroring is enabled.
   bool IsMirroringEnabled();
+
+  // Requests Drive to resync the office file at |local_path| from the cloud.
+  void ForceReSyncFile(const base::FilePath& local_path,
+                       base::OnceClosure callback);
 
  private:
   enum State {

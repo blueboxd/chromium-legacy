@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,8 +8,8 @@
 #include "chromeos/crosapi/mojom/sync.mojom-test-utils.h"
 #include "chromeos/crosapi/mojom/sync.mojom.h"
 #include "components/sync/base/user_selectable_type.h"
-#include "components/sync/driver/mock_sync_service.h"
-#include "components/sync/driver/sync_user_settings_mock.h"
+#include "components/sync/test/mock_sync_service.h"
+#include "components/sync/test/sync_user_settings_mock.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "testing/gmock/include/gmock/gmock.h"

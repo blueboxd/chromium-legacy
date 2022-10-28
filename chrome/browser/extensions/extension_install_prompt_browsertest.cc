@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -95,7 +95,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionInstallPromptBrowserTest, NoParent) {
 
   ScopedTestDialogAutoConfirm auto_confirm(ScopedTestDialogAutoConfirm::ACCEPT);
 
-  ExtensionInstallPrompt prompt(browser()->profile(), NULL);
+  ExtensionInstallPrompt prompt(browser()->profile(), nullptr);
   base::RunLoop run_loop;
   ExtensionInstallPromptTestHelper helper(run_loop.QuitClosure());
   prompt.ShowDialog(

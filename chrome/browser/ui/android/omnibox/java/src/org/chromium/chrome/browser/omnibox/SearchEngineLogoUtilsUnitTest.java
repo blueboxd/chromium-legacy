@@ -1,16 +1,18 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 package org.chromium.chrome.browser.omnibox;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.robolectric.Shadows.shadowOf;
@@ -330,6 +332,30 @@ public class SearchEngineLogoUtilsUnitTest {
         } catch (Exception e) {
             Assert.fail("No exception should be thrown.");
         }
+    }
+
+    @Test
+    public void needToCheckForSearchEnginePromo_resultCached() {
+        doThrow(RuntimeException.class)
+                .when(mLocaleManagerDelegate)
+                .needToCheckForSearchEnginePromo();
+        assertFalse(mSearchEngineLogoUtils.needToCheckForSearchEnginePromo());
+
+        Mockito.reset(mLocaleManagerDelegate);
+
+        doReturn(true).when(mLocaleManagerDelegate).needToCheckForSearchEnginePromo();
+
+        assertTrue(mSearchEngineLogoUtils.needToCheckForSearchEnginePromo());
+
+        Mockito.reset(mLocaleManagerDelegate);
+
+        doReturn(false).when(mLocaleManagerDelegate).needToCheckForSearchEnginePromo();
+
+        assertFalse(mSearchEngineLogoUtils.needToCheckForSearchEnginePromo());
+        assertFalse(mSearchEngineLogoUtils.needToCheckForSearchEnginePromo());
+        assertFalse(mSearchEngineLogoUtils.needToCheckForSearchEnginePromo());
+
+        verify(mLocaleManagerDelegate, times(1)).needToCheckForSearchEnginePromo();
     }
 
     private static Bitmap createSolidImage(int width, int height, int color) {

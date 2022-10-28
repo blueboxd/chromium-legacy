@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -132,17 +132,41 @@
   E_CPONLY(kColorNewTabButtonInkDropFrameActive) \
   E_CPONLY(kColorNewTabButtonInkDropFrameInactive) \
   /* New Tab Page colors. */ \
+  E_CPONLY(kColorNewTabPageActionButtonBorder) \
+  E_CPONLY(kColorNewTabPageActionButtonBorderHovered) \
+  E_CPONLY(kColorNewTabPageActiveBackground) \
   E_CPONLY(kColorNewTabPageBackground) \
+  E_CPONLY(kColorNewTabPageBackgroundOverride) \
+  E_CPONLY(kColorNewTabPageBorder) \
+  E_CPONLY(kColorNewTabPageChipBackground) \
+  E_CPONLY(kColorNewTabPageChipForeground) \
+  E_CPONLY(kColorNewTabPageControlBackgroundHovered) \
+  E_CPONLY(kColorNewTabPageControlBackgroundSelected) \
+  E_CPONLY(kColorNewTabPageFocusShadow) \
   E_CPONLY(kColorNewTabPageHeader) \
+  E_CPONLY(kColorNewTabPageIconButtonBackground) \
+  E_CPONLY(kColorNewTabPageIconButtonBackgroundActive) \
   E_CPONLY(kColorNewTabPageLink) \
   E_CPONLY(kColorNewTabPageLogo) \
   E_CPONLY(kColorNewTabPageLogoUnthemedDark) \
   E_CPONLY(kColorNewTabPageLogoUnthemedLight) \
+  E_CPONLY(kColorNewTabPageMicBorderColor) \
+  E_CPONLY(kColorNewTabPageMicIconColor) \
   E_CPONLY(kColorNewTabPageMostVisitedTileBackground) \
   E_CPONLY(kColorNewTabPageMostVisitedTileBackgroundUnthemed) \
-  E_CPONLY(kColorNewTabPageSectionBorder) \
+  E_CPONLY(kColorNewTabPageModuleIconContainerBackground) \
+  E_CPONLY(kColorNewTabPageModuleScrollButtonBackground) \
+  E_CPONLY(kColorNewTabPageModuleScrollButtonBackgroundHovered) \
+  E_CPONLY(kColorNewTabPagePrimaryForeground) \
   E_CPONLY(kColorNewTabPageSearchBoxBackground) \
   E_CPONLY(kColorNewTabPageSearchBoxBackgroundHovered) \
+  E_CPONLY(kColorNewTabPageSearchBoxResultsTextDimmedSelected) \
+  E_CPONLY(kColorNewTabPageSecondaryForeground) \
+  E_CPONLY(kColorNewTabPageSectionBorder) \
+  E_CPONLY(kColorNewTabPageSelectedBackground) \
+  E_CPONLY(kColorNewTabPageSelectedBorder) \
+  E_CPONLY(kColorNewTabPageSelectedForeground) \
+  E_CPONLY(kColorNewTabPageTagBackground) \
   E_CPONLY(kColorNewTabPageText) \
   E_CPONLY(kColorNewTabPageTextUnthemed) \
   E_CPONLY(kColorNewTabPageTextLight) \
@@ -228,6 +252,24 @@
   /* Quick Answers colors. */ \
   E_CPONLY(kColorQuickAnswersReportQueryButtonBackground) \
   E_CPONLY(kColorQuickAnswersReportQueryButtonForeground) \
+  /* Realbox colors. */ \
+  E_CPONLY(kColorRealboxBackground) \
+  E_CPONLY(kColorRealboxBackgroundHovered) \
+  E_CPONLY(kColorRealboxBorder) \
+  E_CPONLY(kColorRealboxForeground) \
+  E_CPONLY(kColorRealboxPlaceholder) \
+  E_CPONLY(kColorRealboxResultsBackground) \
+  E_CPONLY(kColorRealboxResultsBackgroundHovered) \
+  E_CPONLY(kColorRealboxResultsControlBackgroundHovered) \
+  E_CPONLY(kColorRealboxResultsDimSelected) \
+  E_CPONLY(kColorRealboxResultsForeground) \
+  E_CPONLY(kColorRealboxResultsForegroundDimmed) \
+  E_CPONLY(kColorRealboxResultsIcon) \
+  E_CPONLY(kColorRealboxResultsIconFocusedOutline) \
+  E_CPONLY(kColorRealboxResultsIconSelected) \
+  E_CPONLY(kColorRealboxResultsUrl) \
+  E_CPONLY(kColorRealboxResultsUrlSelected) \
+  E_CPONLY(kColorRealboxSearchIconBackground) \
   /* Screenshot captured bubble colors. */ \
   E_CPONLY(kColorScreenshotCapturedImageBackground) \
   E_CPONLY(kColorScreenshotCapturedImageBorder) \

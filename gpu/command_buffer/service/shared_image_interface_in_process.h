@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -18,7 +18,6 @@ class WaitableEvent;
 }
 
 namespace gpu {
-class MailboxManager;
 class SharedContextState;
 class SharedImageFactory;
 class SharedImageManager;
@@ -30,24 +29,14 @@ struct GpuPreferences;
 class GpuDriverBugWorkarounds;
 struct GpuFeatureInfo;
 class ImageFactory;
-class MemoryTracker;
 struct SyncToken;
 
 // This is an implementation of the SharedImageInterface to be used on the viz
 // compositor thread. This class also implements the corresponding parts
 // happening on gpu thread.
-// TODO(weiliangc): Currently this is implemented as backed by
-// InProcessCommandBuffer. Add constructor for using with SkiaRenderer.
 class GPU_GLES2_EXPORT SharedImageInterfaceInProcess
     : public SharedImageInterface {
  public:
-  // This is only implemented by InProcessCommandBuffer.
-  class GPU_GLES2_EXPORT CommandBufferHelper {
-   public:
-    virtual void SetError() = 0;
-    virtual void WrapTaskWithGpuCheck(base::OnceClosure task) = 0;
-  };
-
   // The callers must guarantee that the instances passed via pointers are kept
   // alive for as long as the instance of this class is alive. This can be
   // achieved by ensuring that the ownership of the created
@@ -55,26 +44,21 @@ class GPU_GLES2_EXPORT SharedImageInterfaceInProcess
   // pointers.
   SharedImageInterfaceInProcess(
       SingleTaskSequence* task_sequence,
-      DisplayCompositorMemoryAndTaskControllerOnGpu* display_controller,
-      raw_ptr<CommandBufferHelper> command_buffer_helper);
+      DisplayCompositorMemoryAndTaskControllerOnGpu* display_controller);
   // The callers must guarantee that the instances passed via pointers are kept
   // alive for as long as the instance of this class is alive. This can be
   // achieved by ensuring that the ownership of the created
   // SharedImageInterfaceInProcess is the same as the ownership of the passed in
   // pointers.
-  SharedImageInterfaceInProcess(
-      SingleTaskSequence* task_sequence,
-      SyncPointManager* sync_point_manager,
-      const GpuPreferences& gpu_preferences,
-      const GpuDriverBugWorkarounds& gpu_workarounds,
-      const GpuFeatureInfo& gpu_feature_info,
-      gpu::SharedContextState* context_state,
-      MailboxManager* mailbox_manager,
-      SharedImageManager* shared_image_manager,
-      ImageFactory* image_factory,
-      MemoryTracker* tracker,
-      bool is_for_display_compositor = false,
-      raw_ptr<CommandBufferHelper> command_buffer_helper = nullptr);
+  SharedImageInterfaceInProcess(SingleTaskSequence* task_sequence,
+                                SyncPointManager* sync_point_manager,
+                                const GpuPreferences& gpu_preferences,
+                                const GpuDriverBugWorkarounds& gpu_workarounds,
+                                const GpuFeatureInfo& gpu_feature_info,
+                                gpu::SharedContextState* context_state,
+                                SharedImageManager* shared_image_manager,
+                                ImageFactory* image_factory,
+                                bool is_for_display_compositor);
 
   SharedImageInterfaceInProcess(const SharedImageInterfaceInProcess&) = delete;
   SharedImageInterfaceInProcess& operator=(
@@ -246,7 +230,6 @@ class GPU_GLES2_EXPORT SharedImageInterfaceInProcess
   // SharedImageInterfaceInProcess.
   raw_ptr<SingleTaskSequence> task_sequence_;
   const CommandBufferId command_buffer_id_;
-  raw_ptr<CommandBufferHelper> command_buffer_helper_;
 
   base::OnceCallback<std::unique_ptr<SharedImageFactory>()> create_factory_;
 

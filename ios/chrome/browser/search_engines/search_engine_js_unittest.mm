@@ -1,21 +1,21 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/bind.h"
+#import "base/bind.h"
 #import "base/test/ios/wait_util.h"
-#include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
+#import "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #import "ios/chrome/browser/search_engines/search_engine_java_script_feature.h"
-#include "ios/chrome/browser/web/chrome_web_client.h"
+#import "ios/chrome/browser/web/chrome_web_client.h"
 #import "ios/web/public/test/js_test_util.h"
 #import "ios/web/public/test/scoped_testing_web_client.h"
 #import "ios/web/public/test/web_state_test_util.h"
 #import "ios/web/public/test/web_task_environment.h"
 #import "ios/web/public/test/web_view_interaction_test_util.h"
 #import "ios/web/public/web_state.h"
-#include "testing/gtest/include/gtest/gtest.h"
+#import "testing/gtest/include/gtest/gtest.h"
 #import "testing/gtest_mac.h"
-#include "testing/platform_test.h"
+#import "testing/platform_test.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -69,13 +69,13 @@ class SearchEngineJsTest : public PlatformTest,
     web_state_->SetKeepRenderProcessAlive(true);
   }
 
-  // Stores paramaeters passed to |SetSearchableUrl|.
+  // Stores paramaeters passed to `SetSearchableUrl`.
   struct ReceivedSearchableUrl {
     web::WebState* web_state;
     GURL searchable_url;
   };
 
-  // Stores paramaeters passed to |AddTemplateURLByOSDD|.
+  // Stores paramaeters passed to `AddTemplateURLByOSDD`.
   struct ReceivedTemplateUrlByOsdd {
     web::WebState* web_state;
     GURL template_page_url;
@@ -118,9 +118,9 @@ class SearchEngineJsTest : public PlatformTest,
   web::WebTaskEnvironment task_environment_;
   std::unique_ptr<TestChromeBrowserState> browser_state_;
   std::unique_ptr<web::WebState> web_state_;
-  // Details about the last received |SetSearchableUrl| call.
+  // Details about the last received `SetSearchableUrl` call.
   ReceivedSearchableUrl last_received_searchable_url_;
-  // Details about the last received |AddTemplateURLByOSDD| call.
+  // Details about the last received `AddTemplateURLByOSDD` call.
   ReceivedTemplateUrlByOsdd last_received_template_url_by_osdd_;
 };
 

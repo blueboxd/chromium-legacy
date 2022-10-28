@@ -1,4 +1,4 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -61,7 +61,7 @@ class SafeBrowsingApiHandlerBridge {
 // SafeBrowsingApiHandlerBridge. Intended for use only in tests.
 class UrlCheckInterceptor {
  public:
-  virtual ~UrlCheckInterceptor(){};
+  virtual ~UrlCheckInterceptor() {}
   virtual void Check(
       std::unique_ptr<SafeBrowsingApiHandlerBridge::ResponseCallback> callback,
       const GURL& url) const = 0;

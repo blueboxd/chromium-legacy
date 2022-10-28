@@ -1,16 +1,16 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #import "ios/web/js_messaging/web_frames_manager_java_script_feature.h"
 
 #import "base/strings/sys_string_conversions.h"
-#include "ios/web/js_messaging/web_frame_impl.h"
+#import "ios/web/js_messaging/web_frame_impl.h"
 #import "ios/web/js_messaging/web_view_web_state_map.h"
-#include "ios/web/public/browser_state.h"
+#import "ios/web/public/browser_state.h"
 #import "ios/web/public/js_messaging/java_script_feature_util.h"
-#include "ios/web/public/js_messaging/web_frame.h"
-#include "ios/web/public/js_messaging/web_frame_util.h"
+#import "ios/web/public/js_messaging/web_frame.h"
+#import "ios/web/public/js_messaging/web_frame_util.h"
 #import "ios/web/web_state/web_state_impl.h"
 #import "ios/web/web_view/wk_security_origin_util.h"
 
@@ -75,14 +75,6 @@ WebFramesManagerJavaScriptFeature::FromBrowserState(
   return feature;
 }
 
-void WebFramesManagerJavaScriptFeature::RegisterExistingFrames(
-    WebState* web_state) {
-  // This call must be sent to the webstate directly, because the result of this
-  // call will create the WebFrames. (Thus, the WebFrames do not yet exist to
-  // call into JavaScript at this point.)
-  web_state->ExecuteJavaScript(u"__gCrWeb.message.getExistingFrames();");
-}
-
 void WebFramesManagerJavaScriptFeature::ConfigureHandlers(
     WKUserContentController* user_content_controller) {
   // Reset the old handlers first as handlers with the same name can not be
@@ -108,7 +100,7 @@ void WebFramesManagerJavaScriptFeature::FrameAvailableMessageReceived(
   WebState* web_state = WebViewWebStateMap::FromBrowserState(browser_state_)
                             ->GetWebStateForWebView(message.webView);
   if (!web_state) {
-    // Ignore this message if |message.webView| is no longer associated with a
+    // Ignore this message if `message.webView` is no longer associated with a
     // WebState.
     return;
   }
@@ -127,10 +119,10 @@ void WebFramesManagerJavaScriptFeature::FrameAvailableMessageReceived(
     return;
   }
 
-  // Validate |frame_id| is a proper hex string.
+  // Validate `frame_id` is a proper hex string.
   for (const char& c : frame_id) {
     if (!base::IsHexDigit(c)) {
-      // Ignore frame if |frame_id| is malformed.
+      // Ignore frame if `frame_id` is malformed.
       return;
     }
   }
@@ -151,7 +143,7 @@ void WebFramesManagerJavaScriptFeature::FrameUnavailableMessageReceived(
   WebState* web_state = WebViewWebStateMap::FromBrowserState(browser_state_)
                             ->GetWebStateForWebView(message.webView);
   if (!web_state) {
-    // Ignore this message if |message.webView| is no longer associated with a
+    // Ignore this message if `message.webView` is no longer associated with a
     // WebState.
     return;
   }

@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -58,6 +58,9 @@ class SegmentationUkmHelper {
       const std::vector<int>& output_indexes,
       absl::optional<proto::PredictionResult> prediction_result,
       absl::optional<SelectedSegment> selected_segment);
+
+  // Returns whether a segment is allowed to upload training tensors.
+  bool CanUploadTensors(const proto::SegmentInfo& segment_info) const;
 
   // Helper method to encode a float number into int64.
   static int64_t FloatToInt64(float f);

@@ -1,4 +1,4 @@
-// Copyright 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -43,6 +43,7 @@
 #include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "base/callback_helpers.h"
+#include "base/ranges/algorithm.h"
 #include "base/run_loop.h"
 #include "base/scoped_observation.h"
 #include "base/test/metrics/histogram_tester.h"
@@ -592,10 +593,6 @@ IN_PROC_BROWSER_TEST_P(BrowserNonClientFrameViewChromeOSTest,
   auto* settings_manager = chrome::SettingsWindowManager::GetInstance();
   settings_manager->ShowOSSettings(browser()->profile());
 
-  // The above ShowOSSettings() should trigger an asynchronous call to launch
-  // OS Settings SWA. Flush Mojo calls so the browser window is created.
-  ash::FlushSystemWebAppLaunchesForTesting(browser()->profile());
-
   Browser* settings_browser =
       settings_manager->FindBrowserForProfile(browser()->profile());
 
@@ -761,12 +758,9 @@ class WebAppNonClientFrameViewAshTest
             frame->GetProcess()->GetID(), frame->GetRoutingID());
     content_settings->OnContentAllowed(ContentSettingsType::GEOLOCATION);
 
-    return *std::find_if(
-        content_setting_views_->begin(), content_setting_views_->end(),
-        [](const auto* view) {
-          return view->GetTypeForTesting() ==
-                 ContentSettingImageModel::ImageType::GEOLOCATION;
-        });
+    return *base::ranges::find(*content_setting_views_,
+                               ContentSettingImageModel::ImageType::GEOLOCATION,
+                               &ContentSettingImageView::GetTypeForTesting);
   }
 
   void SimulateClickOnView(views::View* view) {

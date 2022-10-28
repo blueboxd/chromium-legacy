@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -317,7 +317,7 @@ TEST(PasswordChangeSuccessTrackerImpl, DeletedOutdatedEventRecords) {
       std::move(flows));
 
   {
-    const base::Value::List& value = pref_service_.GetValueList(
+    const base::Value::List& value = pref_service_.GetList(
         password_manager::prefs::kPasswordChangeSuccessTrackerFlows);
     EXPECT_EQ(value.size(), 2u);
   }
@@ -333,7 +333,7 @@ TEST(PasswordChangeSuccessTrackerImpl, DeletedOutdatedEventRecords) {
   EXPECT_EQ(version.value(), PasswordChangeSuccessTrackerImpl::kTrackerVersion);
 
   {
-    const base::Value::List& value = pref_service_.GetValueList(
+    const base::Value::List& value = pref_service_.GetList(
         password_manager::prefs::kPasswordChangeSuccessTrackerFlows);
     EXPECT_TRUE(value.empty());
   }

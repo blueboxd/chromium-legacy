@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,6 +8,9 @@
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/webui/grit/ash_projector_app_trusted_resources.h"
 #include "ash/webui/grit/ash_projector_app_trusted_resources_map.h"
+#include "ash/webui/grit/ash_projector_common_resources.h"
+#include "ash/webui/grit/ash_projector_common_resources_map.h"
+#include "ash/webui/projector_app/projector_app_client.h"
 #include "ash/webui/projector_app/projector_message_handler.h"
 #include "ash/webui/projector_app/public/cpp/projector_app_constants.h"
 #include "components/prefs/pref_service.h"
@@ -28,12 +31,13 @@ content::WebUIDataSource* CreateProjectorHTMLSource() {
 
   source->AddResourcePaths(base::make_span(
       kAshProjectorAppTrustedResources, kAshProjectorAppTrustedResourcesSize));
-
-  source->AddResourcePath("", IDR_ASH_PROJECTOR_APP_TRUSTED_APP_EMBEDDER_HTML);
+  source->AddResourcePaths(base::make_span(kAshProjectorCommonResources,
+                                           kAshProjectorCommonResourcesSize));
+  source->AddResourcePath("", IDR_ASH_PROJECTOR_APP_TRUSTED_EMBEDDER_HTML);
   source->AddLocalizedString("appTitle", IDS_ASH_PROJECTOR_DISPLAY_SOURCE);
 
   std::string csp =
-      std::string("frame-src ") + kChromeUIUntrustedProjectorAppUrl + ";";
+      std::string("frame-src ") + kChromeUIUntrustedProjectorUrl + ";";
 
   source->OverrideContentSecurityPolicy(
       network::mojom::CSPDirectiveName::FrameSrc, csp);
@@ -57,9 +61,12 @@ TrustedProjectorUI::TrustedProjectorUI(content::WebUI* web_ui,
   // The requested WebUI is hosting the Projector SWA.
   web_ui->AddMessageHandler(
       std::make_unique<ProjectorMessageHandler>(pref_service));
+  ProjectorAppClient::Get()->NotifyAppUIActive(true);
 }
 
-TrustedProjectorUI::~TrustedProjectorUI() = default;
+TrustedProjectorUI::~TrustedProjectorUI() {
+  ProjectorAppClient::Get()->NotifyAppUIActive(false);
+}
 
 WEB_UI_CONTROLLER_TYPE_IMPL(TrustedProjectorUI)
 

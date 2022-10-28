@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -347,7 +347,7 @@ TEST_F(AppActivityTest, CloseConnectionOnReceiver) {
   AddMockClient("theClientId1");
 
   EXPECT_CALL(message_handler_, CloseConnection(kChannelId, "theClientId1",
-                                                session_->transport_id()));
+                                                session_->destination_id()));
   activity_->CloseConnectionOnReceiver("theClientId1");
 }
 

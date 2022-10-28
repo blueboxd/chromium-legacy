@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -73,6 +73,10 @@ const ModelTypeInfo kModelTypeInfoMap[] = {
      "Autofill Wallet Offer",
      sync_pb::EntitySpecifics::kAutofillOfferFieldNumber,
      ModelTypeForHistograms::kAutofillWalletOffer},
+    {AUTOFILL_WALLET_USAGE, "AUTOFILL_WALLET_USAGE",
+     "autofill_wallet_usage", "Autofill Wallet Usage",
+     sync_pb::EntitySpecifics::kAutofillWalletUsageFieldNumber,
+     ModelTypeForHistograms::kAutofillWalletUsage},
     {THEMES, "THEME", "themes", "Themes",
      sync_pb::EntitySpecifics::kThemeFieldNumber,
      ModelTypeForHistograms::kThemes},
@@ -166,6 +170,9 @@ const ModelTypeInfo kModelTypeInfoMap[] = {
      "printers_authorization_servers", "Printers Authorization Servers",
      sync_pb::EntitySpecifics::kPrintersAuthorizationServerFieldNumber,
      ModelTypeForHistograms::kPrintersAuthorizationServers},
+    {CONTACT_INFO, "CONTACT_INFO", "contact_info", "Contact Info",
+     sync_pb::EntitySpecifics::kContactInfoFieldNumber,
+     ModelTypeForHistograms::kContactInfo},
     // ---- Proxy types ----
     {PROXY_TABS, "", "", "Proxy tabs", -1, ModelTypeForHistograms::kProxyTabs},
     // ---- Control Types ----
@@ -177,11 +184,11 @@ const ModelTypeInfo kModelTypeInfoMap[] = {
 static_assert(std::size(kModelTypeInfoMap) == GetNumModelTypes(),
               "kModelTypeInfoMap should have GetNumModelTypes() elements");
 
-static_assert(40 == syncer::GetNumModelTypes(),
+static_assert(42 == syncer::GetNumModelTypes(),
               "When adding a new type, update enum SyncModelTypes in enums.xml "
               "and suffix SyncModelType in histograms.xml.");
 
-static_assert(40 == syncer::GetNumModelTypes(),
+static_assert(42 == syncer::GetNumModelTypes(),
               "When adding a new type, update kAllocatorDumpNameAllowlist in "
               "base/trace_event/memory_infra_background_allowlist.cc.");
 
@@ -214,6 +221,9 @@ void AddDefaultFieldValue(ModelType type, sync_pb::EntitySpecifics* specifics) {
       break;
     case AUTOFILL_WALLET_OFFER:
       specifics->mutable_autofill_offer();
+      break;
+    case AUTOFILL_WALLET_USAGE:
+      specifics->mutable_autofill_wallet_usage();
       break;
     case THEMES:
       specifics->mutable_theme();
@@ -309,6 +319,9 @@ void AddDefaultFieldValue(ModelType type, sync_pb::EntitySpecifics* specifics) {
     case HISTORY:
       specifics->mutable_history();
       break;
+    case CONTACT_INFO:
+      specifics->mutable_contact_info();
+      break;
   }
 }
 
@@ -328,7 +341,7 @@ int GetSpecificsFieldNumberFromModelType(ModelType model_type) {
 }
 
 ModelType GetModelTypeFromSpecifics(const sync_pb::EntitySpecifics& specifics) {
-  static_assert(40 == syncer::GetNumModelTypes(),
+  static_assert(42 == syncer::GetNumModelTypes(),
                 "When adding new protocol types, the following type lookup "
                 "logic must be updated.");
   if (specifics.has_bookmark())
@@ -407,6 +420,10 @@ ModelType GetModelTypeFromSpecifics(const sync_pb::EntitySpecifics& specifics) {
     return HISTORY;
   if (specifics.has_printers_authorization_server())
     return PRINTERS_AUTHORIZATION_SERVERS;
+  if (specifics.has_contact_info())
+    return CONTACT_INFO;
+  if (specifics.has_autofill_wallet_usage())
+    return AUTOFILL_WALLET_USAGE;
 
   // This client version doesn't understand |specifics|.
   DVLOG(1) << "Unknown datatype in sync proto.";
@@ -414,18 +431,22 @@ ModelType GetModelTypeFromSpecifics(const sync_pb::EntitySpecifics& specifics) {
 }
 
 ModelTypeSet EncryptableUserTypes() {
-  static_assert(40 == syncer::GetNumModelTypes(),
+  static_assert(42 == syncer::GetNumModelTypes(),
                 "If adding an unencryptable type, remove from "
                 "encryptable_user_types below.");
   ModelTypeSet encryptable_user_types = UserTypes();
   // Wallet data is not encrypted since it actually originates on the server.
   encryptable_user_types.Remove(AUTOFILL_WALLET_DATA);
   encryptable_user_types.Remove(AUTOFILL_WALLET_OFFER);
+  encryptable_user_types.Remove(AUTOFILL_WALLET_USAGE);
+  // Similarly, contact info is not encrypted since it originates on the server.
+  encryptable_user_types.Remove(CONTACT_INFO);
   // Commit-only types are never encrypted since they are consumed server-side.
   encryptable_user_types.RemoveAll(CommitOnlyTypes());
-  // Other types that are never encrypted because consumed server-side.
+  // History Sync is disabled if encryption is enabled.
   encryptable_user_types.Remove(HISTORY);
   encryptable_user_types.Remove(HISTORY_DELETE_DIRECTIVES);
+  // Never encrypted because consumed server-side.
   encryptable_user_types.Remove(DEVICE_INFO);
   // Never encrypted because also written server-side.
   encryptable_user_types.Remove(PRIORITY_PREFERENCES);
@@ -477,10 +498,10 @@ std::ostream& operator<<(std::ostream& out, ModelTypeSet model_type_set) {
   return out << ModelTypeSetToDebugString(model_type_set);
 }
 
-std::unique_ptr<base::ListValue> ModelTypeSetToValue(ModelTypeSet model_types) {
-  std::unique_ptr<base::ListValue> value(new base::ListValue());
+base::Value::List ModelTypeSetToValue(ModelTypeSet model_types) {
+  base::Value::List value;
   for (ModelType type : model_types) {
-    value->Append(ModelTypeToDebugString(type));
+    value.Append(ModelTypeToDebugString(type));
   }
   return value;
 }

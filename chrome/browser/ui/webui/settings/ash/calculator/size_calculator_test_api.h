@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,7 +8,7 @@
 #include <utility>
 
 #include "chrome/browser/ui/webui/settings/ash/calculator/size_calculator.h"
-#include "chrome/browser/ui/webui/settings/chromeos/device_storage_handler.h"
+#include "chrome/browser/ui/webui/settings/ash/device_storage_handler.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace chromeos {

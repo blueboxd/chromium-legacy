@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,6 +13,7 @@
 #include "base/numerics/safe_math.h"
 #include "base/rand_util.h"
 #include "build/build_config.h"
+#include "mojo/core/embedder/embedder.h"
 #include "mojo/core/test/mojo_test_base.h"
 #include "mojo/core/user_message_impl.h"
 #include "mojo/public/cpp/platform/platform_channel.h"
@@ -191,6 +192,10 @@ TEST_F(MessageTest, InvalidMessageObjects) {
 }
 
 TEST_F(MessageTest, SendLocalMessageWithContext) {
+  if (IsMojoIpczEnabled()) {
+    GTEST_SKIP() << "Lazy serialization is not supported by MojoIpcz.";
+  }
+
   // Simple write+read of a message with context. Verifies that such messages
   // are passed through a local pipe without serialization.
   auto message = std::make_unique<NeverSerializedMessage>();
@@ -239,6 +244,7 @@ DEFINE_TEST_CLIENT_TEST_WITH_PIPE(ReceiveMessageNoHandles, MessageTest, h) {
   MojoTestBase::WaitForSignals(h, MOJO_HANDLE_SIGNAL_READABLE);
   auto m = MojoTestBase::ReadMessage(h);
   EXPECT_EQ(kTestMessageWithContext1, m);
+  EXPECT_EQ(MOJO_RESULT_OK, MojoClose(h));
 }
 
 TEST_F(MessageTest, SerializeSimpleMessageNoHandlesWithContext) {
@@ -280,6 +286,8 @@ DEFINE_TEST_CLIENT_TEST_WITH_PIPE(ReceiveMessageOneHandle, MessageTest, h) {
   EXPECT_EQ(kTestMessageWithContext1, m);
   MojoTestBase::WriteMessage(h1, kTestMessageWithContext2);
   EXPECT_EQ(kTestQuitMessage, MojoTestBase::ReadMessage(h));
+  EXPECT_EQ(MOJO_RESULT_OK, MojoClose(h1));
+  EXPECT_EQ(MOJO_RESULT_OK, MojoClose(h));
 }
 
 TEST_F(MessageTest, SerializeSimpleMessageOneHandleWithContext) {
@@ -306,6 +314,11 @@ DEFINE_TEST_CLIENT_TEST_WITH_PIPE(ReceiveMessageWithHandles, MessageTest, h) {
   MojoTestBase::WriteMessage(handles[3], kTestMessageWithContext4);
 
   EXPECT_EQ(kTestQuitMessage, MojoTestBase::ReadMessage(h));
+  EXPECT_EQ(MOJO_RESULT_OK, MojoClose(h));
+  EXPECT_EQ(MOJO_RESULT_OK, MojoClose(handles[0]));
+  EXPECT_EQ(MOJO_RESULT_OK, MojoClose(handles[1]));
+  EXPECT_EQ(MOJO_RESULT_OK, MojoClose(handles[2]));
+  EXPECT_EQ(MOJO_RESULT_OK, MojoClose(handles[3]));
 }
 
 TEST_F(MessageTest, SerializeSimpleMessageWithHandlesWithContext) {
@@ -334,6 +347,10 @@ TEST_F(MessageTest, SerializeSimpleMessageWithHandlesWithContext) {
 #endif  // !BUILDFLAG(IS_IOS)
 
 TEST_F(MessageTest, SendLocalSimpleMessageWithHandlesWithContext) {
+  if (IsMojoIpczEnabled()) {
+    GTEST_SKIP() << "Lazy serialization is not supported by MojoIpcz.";
+  }
+
   auto message = std::make_unique<SimpleMessage>(kTestMessageWithContext1);
   auto* original_message = message.get();
   mojo::MessagePipe pipes[4];
@@ -370,6 +387,12 @@ TEST_F(MessageTest, SendLocalSimpleMessageWithHandlesWithContext) {
 }
 
 TEST_F(MessageTest, DropUnreadLocalMessageWithContext) {
+  if (IsMojoIpczEnabled()) {
+    // Lazy serialization is not supported on MojoIpcz, and messages are always
+    // serialized within WriteMessage if necessary.
+    GTEST_SKIP() << "Lazy serialization is not supported by MojoIpcz.";
+  }
+
   // Verifies that if a message is sent with context over a pipe and the
   // receiver closes without reading the message, the context is properly
   // cleaned up.
@@ -440,9 +463,17 @@ TEST_F(MessageTest, GetMessageDataWithHandles) {
                                h, &num_handles));
 
   EXPECT_EQ(MOJO_RESULT_OK, MojoDestroyMessage(message_handle));
+  EXPECT_EQ(MOJO_RESULT_OK, MojoClose(h[0]));
+  EXPECT_EQ(MOJO_RESULT_OK, MojoClose(h[1]));
 }
 
 TEST_F(MessageTest, ReadMessageWithContextAsSerializedMessage) {
+  if (IsMojoIpczEnabled()) {
+    // Lazy serialization is not supported on MojoIpcz, and messages are always
+    // serialized within WriteMessage if necessary.
+    GTEST_SKIP() << "Lazy serialization is not supported by MojoIpcz.";
+  }
+
   bool message_was_destroyed = false;
   std::unique_ptr<TestMessageBase> message =
       std::make_unique<NeverSerializedMessage>(
@@ -556,6 +587,7 @@ TEST_F(MessageTest, ForceSerializeMessageWithContext) {
   EXPECT_EQ(kTestMessage, MojoTestBase::ReadMessage(extracted_handle));
 
   EXPECT_EQ(MOJO_RESULT_OK, MojoDestroyMessage(message_handle));
+  EXPECT_EQ(MOJO_RESULT_OK, MojoClose(extracted_handle));
 }
 
 TEST_F(MessageTest, DoubleSerialize) {
@@ -816,6 +848,7 @@ TEST_F(MessageTest, CommitInvalidMessageContents) {
                                                   nullptr, nullptr, nullptr));
   UserMessageImpl::FailHandleSerializationForTesting(false);
   EXPECT_EQ(MOJO_RESULT_OK, MojoDestroyMessage(message));
+  EXPECT_EQ(MOJO_RESULT_OK, MojoClose(b));
 }
 
 #if !BUILDFLAG(IS_IOS)
@@ -875,6 +908,7 @@ DEFINE_TEST_CLIENT_TEST_WITH_PIPE(ReadAndIgnoreMessage, MessageTest, h) {
   MojoTestBase::ReadMessageWithHandles(h, handles, 5);
   for (size_t i = 0; i < 5; ++i)
     EXPECT_EQ(MOJO_RESULT_OK, MojoClose(handles[i]));
+  EXPECT_EQ(MOJO_RESULT_OK, MojoClose(h));
 }
 
 TEST_F(MessageTest, ExtendPayloadWithHandlesAttachedViaExtension) {
@@ -932,6 +966,7 @@ DEFINE_TEST_CLIENT_TEST_WITH_PIPE(ReadMessageAndCheckPipe, MessageTest, h) {
   EXPECT_EQ(kTestMessage, MojoTestBase::ReadMessage(handles[4]));
   for (size_t i = 0; i < 5; ++i)
     EXPECT_EQ(MOJO_RESULT_OK, MojoClose(handles[i]));
+  EXPECT_EQ(MOJO_RESULT_OK, MojoClose(h));
 }
 
 #endif  // !BUILDFLAG(IS_IOS)
@@ -962,6 +997,7 @@ TEST_F(MessageTest, PartiallySerializedMessagesDontLeakHandles) {
   EXPECT_EQ(MOJO_RESULT_OK, MojoDestroyMessage(message));
   EXPECT_EQ(MOJO_RESULT_OK,
             WaitForSignals(handles[1], MOJO_HANDLE_SIGNAL_PEER_CLOSED));
+  EXPECT_EQ(MOJO_RESULT_OK, MojoClose(handles[1]));
 }
 
 }  // namespace

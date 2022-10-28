@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,10 +6,12 @@
 
 #include <string>
 
+#include "ash/constants/ash_constants.h"
 #include "ash/public/cpp/notification_utils.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/gfx/vector_icon_types.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/public/cpp/notification.h"
 #include "ui/message_center/public/cpp/notification_types.h"
@@ -17,9 +19,6 @@
 namespace ash {
 
 namespace {
-
-const char kPrivacyIndicatorsNotificationIdPrefix[] = "privacy-indicators";
-const char kPrivacyIndicatorsNotifierId[] = "ash.privacy-indicators";
 
 // Keep track of the button indexes in the privacy indicators notification.
 enum PrivacyIndicatorsNotificationButton { kAppLaunch, kAppSettings };
@@ -72,25 +71,31 @@ void ModifyPrivacyIndicatorsNotification(
 
   std::u16string title;
   std::u16string message;
+  const gfx::VectorIcon* app_icon;
   if (camera_is_used && microphone_is_used) {
     title = l10n_util::GetStringUTF16(
         IDS_PRIVACY_NOTIFICATION_TITLE_CAMERA_AND_MIC);
     message = l10n_util::GetStringFUTF16(
         IDS_PRIVACY_NOTIFICATION_MESSAGE_CAMERA_AND_MIC, app_name_str);
+    app_icon = &kPrivacyIndicatorsIcon;
   } else if (camera_is_used) {
     title = l10n_util::GetStringUTF16(IDS_PRIVACY_NOTIFICATION_TITLE_CAMERA);
     message = l10n_util::GetStringFUTF16(
         IDS_PRIVACY_NOTIFICATION_MESSAGE_CAMERA, app_name_str);
+    app_icon = &kPrivacyIndicatorsCameraIcon;
   } else {
     title = l10n_util::GetStringUTF16(IDS_PRIVACY_NOTIFICATION_TITLE_MIC);
     message = l10n_util::GetStringFUTF16(IDS_PRIVACY_NOTIFICATION_MESSAGE_MIC,
                                          app_name_str);
+    app_icon = &kPrivacyIndicatorsMicrophoneIcon;
   }
 
   message_center::RichNotificationData optional_fields;
   optional_fields.pinned = true;
   // Make the notification low priority so that it is silently added (no popup).
   optional_fields.priority = message_center::LOW_PRIORITY;
+
+  optional_fields.parent_vector_small_image = &kPrivacyIndicatorsIcon;
 
   // Note: The order of buttons added here should match the order in
   // PrivacyIndicatorsNotificationButton.
@@ -108,7 +113,7 @@ void ModifyPrivacyIndicatorsNotification(
                                  kPrivacyIndicatorsNotifierId,
                                  NotificationCatalogName::kPrivacyIndicators),
       optional_fields,
-      /*delegate=*/delegate, kImeMenuMicrophoneIcon,
+      /*delegate=*/delegate, *app_icon,
       message_center::SystemNotificationWarningLevel::NORMAL);
 
   notification->set_accent_color_id(ui::kColorAshPrivacyIndicatorsBackground);

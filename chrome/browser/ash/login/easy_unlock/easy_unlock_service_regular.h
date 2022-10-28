@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -81,7 +81,7 @@ class EasyUnlockServiceRegular
       override;
   EasyUnlockService::Type GetType() const override;
   AccountId GetAccountId() const override;
-  const base::ListValue* GetRemoteDevices() const override;
+  const base::Value::List* GetRemoteDevices() const override;
   std::string GetChallenge() const override;
   std::string GetWrappedSecret() const override;
   void RecordEasySignInOutcome(const AccountId& account_id,

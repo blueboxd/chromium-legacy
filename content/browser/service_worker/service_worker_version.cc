@@ -20,6 +20,7 @@
 #include "base/location.h"
 #include "base/memory/ref_counted.h"
 #include "base/metrics/field_trial_params.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/observer_list.h"
 #include "base/strings/utf_string_conversions.h"
@@ -382,9 +383,9 @@ void ServiceWorkerVersion::RegisterStatusChangeCallback(
 ServiceWorkerVersionInfo ServiceWorkerVersion::GetInfo() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   ServiceWorkerVersionInfo info(
-      running_status(), status(), fetch_handler_existence(), script_url(),
-      scope(), key(), registration_id(), version_id(),
-      embedded_worker()->process_id(), embedded_worker()->thread_id(),
+      running_status(), status(), fetch_handler_type_, script_url(), scope(),
+      key(), registration_id(), version_id(), embedded_worker()->process_id(),
+      embedded_worker()->thread_id(),
       embedded_worker()->worker_devtools_agent_route_id(), ukm_source_id(),
       ancestor_frame_type_);
   for (const auto& controllee : controllee_map_) {
@@ -1216,6 +1217,18 @@ void ServiceWorkerVersion::OnStarted(
   blink::ServiceWorkerStatusCode status =
       mojo::ConvertTo<blink::ServiceWorkerStatusCode>(start_status);
 
+  // TODO(crbug.com/1360324): update the live version if it is feasible.
+  if (status == blink::ServiceWorkerStatusCode::kOk && fetch_handler_type_ &&
+      fetch_handler_type_ != fetch_handler_type) {
+    context_->registry()->UpdateFetchHandlerType(
+        registration_id_, key_, fetch_handler_type,
+        base::BindOnce([](blink::ServiceWorkerStatusCode status) {
+          // Ignore errors; bumping the update fetch handler type is
+          // just best-effort.
+        }));
+    base::UmaHistogramEnumeration(
+        "ServiceWorker.OnStarted.UpdatedFetchHandlerType", fetch_handler_type);
+  }
   if (status == blink::ServiceWorkerStatusCode::kOk && !fetch_handler_type_) {
     set_fetch_handler_type(fetch_handler_type);
   }
@@ -1725,12 +1738,17 @@ void ServiceWorkerVersion::OnSimpleEventFinished(
 void ServiceWorkerVersion::CountFeature(blink::mojom::WebFeature feature) {
   if (!used_features_.insert(feature).second)
     return;
+
+  // TODO(crbug.com/1253581 crbug.com/1021718): Speculative bug fix code.
+  // Take snapshot of the `controllee_map_` instead of iterating on it directly.
+  // This is to rule out the possibility of `controllee_map_` being modified
+  // while we call `CountFeature`.
+  std::vector<base::WeakPtr<ServiceWorkerContainerHost>> hosts_snapshot;
+  hosts_snapshot.reserve(controllee_map_.size());
   for (auto container_host_by_uuid : controllee_map_) {
-    const base::WeakPtr<ServiceWorkerContainerHost>& container_host =
-        container_host_by_uuid.second;
-    // TODO(crbug.com/1253581 crbug.com/1021718): controllee_map_ should be only
-    // containing live container hosts. The below "if" check is a workaround for
-    // unmatched AddControllee / RemoveControllee calls.
+    hosts_snapshot.push_back(container_host_by_uuid.second);
+  }
+  for (auto container_host : hosts_snapshot) {
     if (container_host)
       container_host->CountFeature(feature);
   }
@@ -1972,6 +1990,12 @@ void ServiceWorkerVersion::StartWorkerInternal() {
   params->provider_info = std::move(provider_info);
 
   params->ukm_source_id = ukm_source_id_;
+
+  // policy_container_host could be null for registration restored from old DB
+  if (policy_container_host_) {
+    params->policy_container =
+        policy_container_host_->CreatePolicyContainerForBlink();
+  }
 
   embedded_worker_->Start(std::move(params),
                           base::BindOnce(&ServiceWorkerVersion::OnStartSent,
@@ -2441,10 +2465,17 @@ void ServiceWorkerVersion::PrepareForUpdate(
     std::map<GURL, ServiceWorkerUpdateChecker::ComparedScriptInfo>
         compared_script_info_map,
     const GURL& updated_script_url,
+    scoped_refptr<PolicyContainerHost> policy_container_host,
     network::CrossOriginEmbedderPolicy cross_origin_embedder_policy) {
   compared_script_info_map_ = std::move(compared_script_info_map);
   updated_script_url_ = updated_script_url;
   set_cross_origin_embedder_policy(cross_origin_embedder_policy);
+  if (!GetContentClient()
+           ->browser()
+           ->ShouldServiceWorkerInheritPolicyContainerFromCreator(
+               updated_script_url)) {
+    set_policy_container_host(policy_container_host);
+  }
 }
 
 const std::map<GURL, ServiceWorkerUpdateChecker::ComparedScriptInfo>&

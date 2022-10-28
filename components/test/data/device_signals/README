@@ -1,0 +1,25 @@
+This directory contains some executable files for testing the Binary files
+signals extraction.
+
+Description of the files:
+
+signed.exe
+An executable file that was signed with a self-signed certificate.
+
+metadata.exe
+An executable file which exposes metadata such as:
+- File version: 1.0.0.1
+- Product version: 1.0.0.2
+- Product name: Test Product Name
+
+empty.exe
+An executable file which has no metadata and is not signed.
+
+Instructions for signing an executable:
+signed.exe:
+
+MakeCert -sv test.pvk test.cer (password: "password")
+Cert2SPC test.cer test.spc
+pvk2pfx -pvk test.pvk test.cer (export the private key with the cert)
+copy unsigned.exe signed.exe
+signtool sign /f test.pfx /p password signed.exe

@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,8 +11,6 @@ GEN('#include "build/build_config.h"');
 GEN('#include "chrome/browser/ui/ui_features.h"');
 GEN('#include "content/public/test/browser_test.h"');
 GEN('#include "build/chromeos_buildflags.h"');
-
-/* eslint-disable no-var */
 
 /** Test fixture for shared Polymer 3 elements. */
 var CrElementsBrowserTest = class extends PolymerTest {
@@ -161,6 +159,17 @@ TEST_F('CrElementsFingerprintProgressArcTest', 'MAYBE_Fingerprint', function() {
   mocha.run();
 });
 
+var CrElementsI18nBehaviorTest = class extends CrElementsBrowserTest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://test/test_loader.html?module=cr_elements/i18n_behavior_test.js';
+  }
+};
+
+TEST_F('CrElementsI18nBehaviorTest', 'All', function() {
+  mocha.run();
+});
+
 var CrElementsIconButtonTest = class extends CrElementsBrowserTest {
   /** @override */
   get browsePreload() {
@@ -228,6 +237,7 @@ TEST_F('CrElementsRadioGroupTest', 'All', function() {
   mocha.run();
 });
 
+GEN('#if BUILDFLAG(IS_CHROMEOS_ASH)');
 var CrElementsScrollableBehaviorTest = class extends CrElementsBrowserTest {
   /** @override */
   get browsePreload() {
@@ -236,6 +246,18 @@ var CrElementsScrollableBehaviorTest = class extends CrElementsBrowserTest {
 };
 
 TEST_F('CrElementsScrollableBehaviorTest', 'All', function() {
+  mocha.run();
+});
+GEN('#endif');
+
+var CrElementsScrollableMixinTest = class extends CrElementsBrowserTest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://test/test_loader.html?module=cr_elements/cr_scrollable_mixin_tests.js';
+  }
+};
+
+TEST_F('CrElementsScrollableMixinTest', 'All', function() {
   mocha.run();
 });
 
@@ -341,6 +363,7 @@ TEST_F('CrElementsPolicyPrefIndicatorTest', 'All', function() {
   mocha.run();
 });
 
+GEN('#if BUILDFLAG(IS_CHROMEOS_ASH)');
 var CrElementsPolicyIndicatorBehaviorTest =
     class extends CrElementsBrowserTest {
   /** @override */
@@ -350,6 +373,18 @@ var CrElementsPolicyIndicatorBehaviorTest =
 };
 
 TEST_F('CrElementsPolicyIndicatorBehaviorTest', 'All', function() {
+  mocha.run();
+});
+GEN('#endif');
+
+var CrElementsPolicyIndicatorMixinTest = class extends CrElementsBrowserTest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://test/test_loader.html?module=cr_elements/cr_policy_indicator_mixin_tests.js';
+  }
+};
+
+TEST_F('CrElementsPolicyIndicatorMixinTest', 'All', function() {
   mocha.run();
 });
 

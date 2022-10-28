@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,7 +7,7 @@
 #import <AuthenticationServices/AuthenticationServices.h>
 #import <UIKit/UIKit.h>
 
-#include "ios/chrome/common/app_group/app_group_constants.h"
+#import "ios/chrome/common/app_group/app_group_constants.h"
 #import "ios/chrome/common/credential_provider/constants.h"
 #import "ios/chrome/common/ui/confirmation_alert/confirmation_alert_action_handler.h"
 #import "ios/chrome/credential_provider_extension/password_util.h"
@@ -29,7 +29,7 @@
                                          CredentialListUIHandler,
                                          CredentialDetailsConsumerDelegate>
 
-// Base view controller from where |viewController| is presented.
+// Base view controller from where `viewController` is presented.
 @property(nonatomic, weak) UIViewController* baseViewController;
 
 // The view controller of this coordinator.
@@ -51,7 +51,7 @@
 // Coordinator that shows a view for the user to create a new password.
 @property(nonatomic, strong) NewPasswordCoordinator* createPasswordCoordinator;
 
-// Interface for |reauthenticationModule|, handling mostly the case when no
+// Interface for `reauthenticationModule`, handling mostly the case when no
 // hardware for authentication is available.
 @property(nonatomic, weak) ReauthenticationHandler* reauthenticationHandler;
 

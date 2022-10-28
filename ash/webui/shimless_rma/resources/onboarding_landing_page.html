@@ -14,7 +14,6 @@
 
   #unqualifiedComponentsLink {
     color: var(--cros-link-color);
-    text-decoration: none;
   }
 
   .button-spinner {
@@ -30,7 +29,7 @@
 
 <base-page>
   <div slot="left-pane">
-    <h1>[[i18n('welcomeTitleText')]]</h1>
+    <h1 tabindex="-1">[[i18n('welcomeTitleText')]]</h1>
     <div class="instructions">[[i18n('beginRmaWarningText')]]</div>
     <div id="verificationMessage" class="icon-message">
       <paper-spinner-lite id="busyIcon" class="small-spinner"
@@ -40,17 +39,19 @@
         icon$="[[getVerificationIcon_(isCompliant_)]]"
         hidden$="[[verificationInProgress_]]" class="small-icon">
       </iron-icon>
-      <span hidden$="[[!verificationInProgress_]]" class="instructions">
-        [[i18n('validatingComponentsText')]]
-      </span>
-      <span hidden$="[[verificationInProgress_]]" class="instructions">
-        <span hidden$="[[!isCompliant_]]">
-          [[i18n('validatedComponentsSuccessText')]]
+      <div aria-live="polite">
+        <span hidden$="[[!verificationInProgress_]]" class="instructions">
+          [[i18n('validatingComponentsText')]]
         </span>
-        <span inner-h-t-m-l="[[verificationFailedMessage_]]"
-            hidden$="[[isCompliant_]]" class="instructions">
+        <span hidden$="[[verificationInProgress_]]" class="instructions">
+          <span hidden$="[[!isCompliant_]]">
+            [[i18n('validatedComponentsSuccessText')]]
+          </span>
+          <span inner-h-t-m-l="[[verificationFailedMessage_]]"
+              hidden$="[[isCompliant_]]" class="instructions">
+          </span>
         </span>
-      </span>
+      </div>
     </div>
     <div id="navigationButtonWrapper">
       <cr-button id="getStartedButton" class="action-button"
@@ -75,7 +76,7 @@
     </div>
   </div>
   <div slot="right-pane">
-    <div class="illustration-wrapper">
+    <div class="illustration-wrapper" aria-hidden="true">
       <img class="illustration" src="illustrations/repair_start.svg"
           alt="[[i18n('repairStartAltText')]]">
     </div>

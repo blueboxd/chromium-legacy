@@ -1,11 +1,11 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #import "ios/chrome/browser/ui/fullscreen/animated_scoped_fullscreen_disabler.h"
 
-#include "base/callback.h"
-#include "base/check.h"
+#import "base/callback.h"
+#import "base/check.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_controller.h"
 #import "ios/chrome/common/material_timing.h"
 
@@ -139,7 +139,7 @@ void AnimatedScopedFullscreenDisabler::StartAnimation() {
     base::RepeatingClosure animation_completed = base::BindRepeating(
         &AnimatedScopedFullscreenDisabler::OnAnimationCompletion, weak_ptr);
 
-    [UIView animateWithDuration:ios::material::kDuration1
+    [UIView animateWithDuration:kMaterialDuration1
         animations:^{
           if (!animation_started.IsCancelled())
             animation_started.Run();

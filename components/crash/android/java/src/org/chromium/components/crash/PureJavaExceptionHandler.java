@@ -1,11 +1,11 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 package org.chromium.components.crash;
 
 import org.chromium.base.annotations.CalledByNative;
-import org.chromium.base.annotations.MainDex;
+import org.chromium.build.annotations.MainDex;
 
 /**
  * This UncaughtExceptionHandler will upload the stacktrace when there is an uncaught exception.
@@ -23,6 +23,7 @@ public class PureJavaExceptionHandler implements Thread.UncaughtExceptionHandler
     /** Interface to allow uploading reports. */
     public interface JavaExceptionReporter {
         void createAndUploadReport(Throwable e);
+        void postCreateAndUploadReport(Throwable e);
     }
 
     /** A factory interface to allow creating custom reporters. */

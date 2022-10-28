@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 #ifndef DEVICE_BLUETOOTH_FLOSS_FLOSS_SOCKET_MANAGER_H_
@@ -96,9 +96,7 @@ class DEVICE_BLUETOOTH_EXPORT FlossSocketManager : public FlossDBusClient {
     FlossSocket(FlossSocket&&);
     FlossSocket& operator=(FlossSocket&&) = default;
 
-    bool is_valid() const {
-      return id != FlossSocketManager::kInvalidSocketId;
-    };
+    bool is_valid() const { return id != FlossSocketManager::kInvalidSocketId; }
   };
 
   // Represents a result from any socket api call.
@@ -175,7 +173,7 @@ class DEVICE_BLUETOOTH_EXPORT FlossSocketManager : public FlossDBusClient {
   // Initializes the socket manager with given adapter.
   void Init(dbus::Bus* bus,
             const std::string& service_name,
-            const std::string& adapter_path) override;
+            const int adapter_index) override;
 
  protected:
   friend class FlossSocketManagerTest;
@@ -223,6 +221,15 @@ class DEVICE_BLUETOOTH_EXPORT FlossSocketManager : public FlossDBusClient {
   // Service which implements the SocketManager interface.
   std::string service_name_;
 
+  // Map of listening sockets to callbacks.
+  std::unordered_map<SocketId,
+                     std::pair<ConnectionStateChanged, ConnectionAccepted>>
+      listening_sockets_to_callbacks_;
+
+  // Map of connection sockets that haven't completed.
+  std::unordered_map<SocketId, ConnectionCompleted>
+      connecting_sockets_to_callbacks_;
+
  private:
   template <typename R, typename... Args>
   void CallSocketMethod(ResponseCallback<R> callback,
@@ -238,15 +245,6 @@ class DEVICE_BLUETOOTH_EXPORT FlossSocketManager : public FlossDBusClient {
   // All socket api calls require callback id since callbacks must take
   // ownership of the file descriptors. A value of zero is invalid.
   CallbackId callback_id_ = 0;
-
-  // Map of listening sockets to callbacks.
-  std::unordered_map<SocketId,
-                     std::pair<ConnectionStateChanged, ConnectionAccepted>>
-      listening_sockets_to_callbacks_;
-
-  // Map of connection sockets that haven't completed.
-  std::unordered_map<SocketId, ConnectionCompleted>
-      connecting_sockets_to_callbacks_;
 
   base::WeakPtrFactory<FlossSocketManager> weak_ptr_factory_{this};
 };

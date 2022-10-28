@@ -103,7 +103,6 @@ vs-chromium-project.txt
 /chrome/android/profiles/afdo.prof
 /chrome/android/profiles/local.txt
 /chrome/angle_unittests_run.xml
-/chrome/app/vector_icons/google_chrome/
 /chrome/build/pgo_profiles/
 /chrome/gl_tests_run.xml
 /chrome/gles2_conform_test_run.xml
@@ -213,6 +212,7 @@ vs-chromium-project.txt
 /components/site_isolation/internal
 /components/suggestions.xml
 /components/variations.xml
+/components/vector_icons/google_chrome/
 /components/zucchini/testdata/*.exe
 /content/browser/service_worker/proto.xml
 /content/content_browsertests_run.xml
@@ -273,6 +273,7 @@ vs-chromium-project.txt
 /ppapi/native_client/ppapi_lib.xml
 /remoting/android/internal/
 /remoting/appengine/
+/remoting/host/installer/chrome-remote-desktop_*.buildinfo
 /remoting/host/installer/linux/internal/
 /remoting/ios/internal/
 /remoting/internal/

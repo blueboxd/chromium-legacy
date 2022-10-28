@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -20,6 +20,7 @@
 #include "chrome/browser/extensions/api/extension_action/extension_action_api.h"
 #include "chrome/browser/extensions/api/feedback_private/chrome_feedback_private_delegate.h"
 #include "chrome/browser/extensions/api/file_system/chrome_file_system_delegate.h"
+#include "chrome/browser/extensions/api/file_system/consent_provider_impl.h"
 #include "chrome/browser/extensions/api/management/chrome_management_api_delegate.h"
 #include "chrome/browser/extensions/api/messaging/chrome_messaging_delegate.h"
 #include "chrome/browser/extensions/api/metrics_private/chrome_metrics_private_delegate.h"
@@ -119,7 +120,7 @@ void ChromeExtensionsAPIClient::AttachWebContentsHelpers(
     content::WebContents* web_contents) const {
   favicon::CreateContentFaviconDriverForWebContents(web_contents);
 #if BUILDFLAG(ENABLE_PRINTING)
-  printing::InitializePrinting(web_contents);
+  printing::InitializePrintingForWebContents(web_contents);
 #endif
 #if BUILDFLAG(ENABLE_PDF)
   pdf::PDFWebContentsHelper::CreateForWebContentsWithClient(
@@ -316,6 +317,18 @@ ChromeExtensionsAPIClient::CreateWebViewPermissionHelperDelegate(
   return new ChromeWebViewPermissionHelperDelegate(web_view_permission_helper);
 }
 
+#if BUILDFLAG(IS_CHROMEOS)
+std::unique_ptr<ConsentProvider>
+ChromeExtensionsAPIClient::CreateConsentProvider(
+    content::BrowserContext* browser_context) const {
+  auto consent_provider_delegate =
+      std::make_unique<file_system_api::ConsentProviderDelegate>(
+          Profile::FromBrowserContext(browser_context));
+  return std::make_unique<file_system_api::ConsentProviderImpl>(
+      std::move(consent_provider_delegate));
+}
+#endif  // BUILDFLAG(IS_CHROMEOS)
+
 scoped_refptr<ContentRulesRegistry>
 ChromeExtensionsAPIClient::CreateContentRulesRegistry(
     content::BrowserContext* browser_context,
@@ -338,10 +351,10 @@ bool ChromeExtensionsAPIClient::ShouldAllowDetachingUsb(int vid,
   // TOOD(huangs): Figure out how to do the following in Lacros, which does not
   // have access to ash::CrosSettings (https://crbug.com/1219329).
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-  const base::ListValue* policy_list;
+  const base::Value::List* policy_list;
   if (ash::CrosSettings::Get()->GetList(ash::kUsbDetachableAllowlist,
                                         &policy_list)) {
-    for (const auto& entry : policy_list->GetListDeprecated()) {
+    for (const auto& entry : *policy_list) {
       if (entry.FindIntKey(ash::kUsbDetachableAllowlistKeyVid) == vid &&
           entry.FindIntKey(ash::kUsbDetachableAllowlistKeyPid) == pid) {
         return true;

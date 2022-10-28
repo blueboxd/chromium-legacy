@@ -91,8 +91,8 @@ const NGLayoutResult* NGMathRadicalLayoutAlgorithm::Layout() {
         ComputeMarginsFor(constraint_space, base.Style(), ConstraintSpace());
     NGBoxFragment fragment(ConstraintSpace().GetWritingDirection(),
                            base_fragment);
-    base_ascent =
-        base_margins.block_start + fragment.BaselineOrSynthesize(baseline_type);
+    base_ascent = base_margins.block_start +
+                  fragment.FirstBaselineOrSynthesize(baseline_type);
     base_descent = fragment.BlockSize() + base_margins.BlockSum() - base_ascent;
   }
   if (index) {
@@ -109,7 +109,7 @@ const NGLayoutResult* NGMathRadicalLayoutAlgorithm::Layout() {
                            index_fragment);
     index_inline_size = fragment.InlineSize() + index_margins.InlineSum();
     index_ascent = index_margins.block_start +
-                   fragment.BaselineOrSynthesize(baseline_type);
+                   fragment.FirstBaselineOrSynthesize(baseline_type);
     index_descent =
         fragment.BlockSize() + index_margins.BlockSum() - index_ascent;
     horizontal = GetRadicalHorizontalParameters(Style());
@@ -180,7 +180,7 @@ const NGLayoutResult* NGMathRadicalLayoutAlgorithm::Layout() {
     index.StoreMargins(ConstraintSpace(), index_margins);
   }
 
-  container_builder_.SetBaseline(ascent);
+  container_builder_.SetBaselines(ascent);
 
   auto total_block_size = ascent + descent + BorderScrollbarPadding().block_end;
   LayoutUnit block_size = ComputeBlockSizeForFragment(
@@ -219,7 +219,7 @@ MinMaxSizesResult NGMathRadicalLayoutAlgorithm::ComputeMinMaxSizes(
     sizes.min_size +=
         std::max(-index_result.sizes.min_size, horizontal.kern_after_degree);
     sizes.max_size +=
-        std::max(index_result.sizes.max_size, horizontal.kern_after_degree);
+        std::max(-index_result.sizes.max_size, horizontal.kern_after_degree);
   }
   if (base) {
     if (HasBaseGlyphForRadical(Style())) {

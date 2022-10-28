@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -17,7 +17,7 @@ class WebState;
 class SerializableUserDataManager {
  public:
   // Returns the SerializableUserDataManager instance associated with
-  // |web_state|, instantiating one if necessary (only for non-const
+  // `web_state`, instantiating one if necessary (only for non-const
   // version).
   static SerializableUserDataManager* FromWebState(WebState* web_state);
   static const SerializableUserDataManager* FromWebState(
@@ -27,12 +27,12 @@ class SerializableUserDataManager {
   SerializableUserDataManager& operator=(const SerializableUserDataManager&) =
       delete;
 
-  // Adds |data| to the user data, allowing it to be encoded under |key|.
-  // |data| is expected to be non-nil.  If |key| has already been used, its
+  // Adds `data` to the user data, allowing it to be encoded under `key`.
+  // `data` is expected to be non-nil.  If `key` has already been used, its
   // associated value will be overwritten.
   virtual void AddSerializableData(id<NSCoding> data, NSString* key) = 0;
 
-  // Returns the value that has been stored under |key|.
+  // Returns the value that has been stored under `key`.
   virtual id<NSCoding> GetValueForSerializationKey(NSString* key) = 0;
 
   // Returns a representation of the user data that can be serialized as

@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,7 +10,7 @@
 #include "chromeos/ash/components/assistant/buildflags.h"
 #include "chromeos/ash/services/assistant/public/cpp/assistant_enums.h"
 #include "chromeos/ash/services/assistant/public/mojom/assistant_audio_decoder.mojom.h"
-#include "chromeos/services/libassistant/public/cpp/assistant_notification.h"
+#include "chromeos/ash/services/libassistant/public/cpp/assistant_notification.h"
 #include "chromeos/services/network_config/public/mojom/cros_network_config.mojom.h"
 #include "media/mojo/mojom/audio_stream_factory.mojom.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
@@ -21,7 +21,7 @@
 #include "ui/accessibility/mojom/ax_assistant_structure.mojom.h"
 
 #if BUILDFLAG(ENABLE_CROS_LIBASSISTANT)
-#include "chromeos/services/libassistant/public/mojom/service.mojom-forward.h"
+#include "chromeos/ash/services/libassistant/public/mojom/service.mojom-forward.h"
 #endif  // BUILDFLAG(ENABLE_CROS_LIBASSISTANT)
 
 namespace ash::assistant {

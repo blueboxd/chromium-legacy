@@ -1,15 +1,15 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_tile_constants.h"
 
-#include "base/notreached.h"
-#include "base/strings/sys_string_conversions.h"
-#include "base/strings/utf_string_conversions.h"
+#import "base/notreached.h"
+#import "base/strings/sys_string_conversions.h"
+#import "base/strings/utf_string_conversions.h"
 #import "ios/chrome/browser/ui/icons/chrome_symbol.h"
-#include "ios/chrome/grit/ios_strings.h"
-#include "ui/base/l10n/l10n_util.h"
+#import "ios/chrome/grit/ios_strings.h"
+#import "ui/base/l10n/l10n_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -65,27 +65,24 @@ UIImage* ImageForCollectionShortcutType(NTPCollectionShortcutType type) {
 }
 
 UIImage* SymbolForCollectionShortcutType(NTPCollectionShortcutType type) {
-  // TODO(crbug.com/1315544): use right SF symbols.
-  NSString* imageName = nil;
   switch (type) {
     case NTPCollectionShortcutTypeBookmark:
-      imageName = kContentSuggestionsBookmarksSymbol;
-      break;
+      return DefaultSymbolTemplateWithPointSize(
+          kContentSuggestionsBookmarksSymbol,
+          kSymbolContentSuggestionsPointSize);
     case NTPCollectionShortcutTypeReadingList:
-      imageName = kContentSuggestionsBookmarksSymbol;
-      break;
+      return CustomSymbolTemplateWithPointSize(
+          kReadingListSymbol, kSymbolContentSuggestionsPointSize);
     case NTPCollectionShortcutTypeRecentTabs:
-      imageName = kContentSuggestionsBookmarksSymbol;
-      break;
+      return CustomSymbolTemplateWithPointSize(
+          kRecentTabsSymbol, kSymbolContentSuggestionsPointSize);
     case NTPCollectionShortcutTypeHistory:
-      imageName = kContentSuggestionsBookmarksSymbol;
-      break;
+      return DefaultSymbolTemplateWithPointSize(
+          kClockArrowSymbol, kSymbolContentSuggestionsPointSize);
     case NTPCollectionShortcutTypeCount:
       NOTREACHED();
-      break;
+      return nil;
   }
-  return DefaultSymbolTemplateWithPointSize(imageName,
-                                            kSymbolContentSuggestionsPointSize);
 }
 
 NSString* AccessibilityLabelForReadingListCellWithCount(int count) {

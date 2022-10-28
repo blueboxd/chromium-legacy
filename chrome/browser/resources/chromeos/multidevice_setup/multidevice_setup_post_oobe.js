@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,9 +6,9 @@ import 'chrome://resources/cr_elements/cr_button/cr_button.js';
 import './strings.m.js';
 
 import {loadTimeData} from '//resources/js/load_time_data.m.js';
-import {PageName} from 'chrome://resources/cr_components/chromeos/multidevice_setup/multidevice_setup.m.js';
-import {MultiDeviceSetupDelegate} from 'chrome://resources/cr_components/chromeos/multidevice_setup/multidevice_setup_delegate.m.js';
-import {I18nBehavior} from 'chrome://resources/js/i18n_behavior.m.js';
+import {PageName} from 'chrome://resources/ash/common/multidevice_setup/multidevice_setup.js';
+import {MultiDeviceSetupDelegate} from 'chrome://resources/ash/common/multidevice_setup/multidevice_setup_delegate.js';
+import {I18nBehavior} from 'chrome://resources/cr_elements/i18n_behavior.js';
 import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {PostOobeDelegate} from './post_oobe_delegate.js';

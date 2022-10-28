@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,7 +6,6 @@
 
 #include <string>
 
-#include "ash/constants/ash_features.h"
 #include "ash/webui/file_manager/resources/grit/file_manager_swa_resources.h"
 #include "ash/webui/file_manager/url_constants.h"
 #include "base/strings/utf_string_conversions.h"
@@ -120,7 +119,16 @@ std::unique_ptr<WebAppInstallInfo> CreateWebAppInfoForFileManager() {
   AppendFileHandler(*info, "open-hosted-gslides", {"gslides"});
 
   // Drive & Office Docs:
-  AppendFileHandler(*info, ::file_manager::file_tasks::kActionIdHandleOffice,
+  AppendFileHandler(*info,
+                    ::file_manager::file_tasks::kActionIdWebDriveOfficeWord,
+                    {"doc", "docx"});
+  AppendFileHandler(*info,
+                    ::file_manager::file_tasks::kActionIdWebDriveOfficeExcel,
+                    {"xls", "xlsx"});
+  AppendFileHandler(
+      *info, ::file_manager::file_tasks::kActionIdWebDriveOfficePowerPoint,
+      {"ppt", "pptx"});
+  AppendFileHandler(*info, ::file_manager::file_tasks::kActionIdOpenInOffice,
                     {"doc", "docx", "xls", "xlsx", "ppt", "pptx"});
 
   // View in the browser (with mime-type):
@@ -163,7 +171,7 @@ bool FileManagerSystemAppDelegate::ShouldReuseExistingWindow() const {
 }
 
 bool FileManagerSystemAppDelegate::IsAppEnabled() const {
-  return ash::features::IsFileManagerSwaEnabled();
+  return true;
 }
 
 bool FileManagerSystemAppDelegate::ShouldShowNewWindowMenuOption() const {
@@ -172,8 +180,5 @@ bool FileManagerSystemAppDelegate::ShouldShowNewWindowMenuOption() const {
 
 std::vector<std::string>
 FileManagerSystemAppDelegate::GetAppIdsToUninstallAndReplace() const {
-  if (ash::features::IsFileManagerSwaEnabled()) {
-    return {extension_misc::kFilesManagerAppId};
-  }
-  return {};
+  return {extension_misc::kFilesManagerAppId};
 }

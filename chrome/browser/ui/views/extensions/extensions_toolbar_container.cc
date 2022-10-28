@@ -1,30 +1,33 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome/browser/ui/views/extensions/extensions_toolbar_container.h"
 
 #include <memory>
+
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/cxx17_backports.h"
 #include "base/feature_list.h"
 #include "base/no_destructor.h"
+#include "base/ranges/algorithm.h"
 #include "build/build_config.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/extensions/extension_action_view_controller.h"
 #include "chrome/browser/ui/extensions/settings_api_bubble_helpers.h"
 #include "chrome/browser/ui/layout_constants.h"
+#include "chrome/browser/ui/toolbar/toolbar_action_hover_card_types.h"
 #include "chrome/browser/ui/toolbar/toolbar_action_view_controller.h"
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/extensions/browser_action_drag_data.h"
 #include "chrome/browser/ui/views/extensions/extensions_menu_view.h"
 #include "chrome/browser/ui/views/extensions/extensions_request_access_button.h"
 #include "chrome/browser/ui/views/extensions/extensions_tabbed_menu_coordinator.h"
-#include "chrome/browser/ui/views/extensions/extensions_tabbed_menu_view.h"
 #include "chrome/browser/ui/views/extensions/extensions_toolbar_button.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
+#include "chrome/browser/ui/views/toolbar/toolbar_action_hover_card_controller.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_actions_bar_bubble_views.h"
 #include "chrome/browser/ui/views/web_apps/frame_toolbar/web_app_frame_toolbar_view.h"
 #include "extensions/common/extension_features.h"
@@ -106,9 +109,16 @@ ExtensionsToolbarContainer::ExtensionsToolbarContainer(Browser* browser,
                         extensions_tabbed_menu_coordinator_.get()),
                     std::make_unique<ExtensionsRequestAccessButton>(browser_))
               : nullptr),
-      display_mode_(display_mode) {
+      display_mode_(display_mode),
+      action_hover_card_controller_(
+          std::make_unique<ToolbarActionHoverCardController>(this)) {
   // The container shouldn't show unless / until we have extensions available.
   SetVisible(false);
+
+  // So we only get enter/exit messages when the mouse enters/exits the whole
+  // container, even if it is entering/exiting a specific toolbar action view,
+  // too.
+  SetNotifyEnterExitOnChild(true);
 
   model_observation_.Observe(model_.get());
   permissions_manager_observation_.Observe(
@@ -158,6 +168,10 @@ ExtensionsToolbarContainer::ExtensionsToolbarContainer(Browser* browser,
 }
 
 ExtensionsToolbarContainer::~ExtensionsToolbarContainer() {
+  // Eliminate the hover card first to avoid order-of-operation issues (e.g.
+  // avoid events during teardown).
+  action_hover_card_controller_.reset();
+
   // The child views hold pointers to the |actions_|, and thus need to be
   // destroyed before them.
   RemoveAllChildViews();
@@ -212,10 +226,8 @@ void ExtensionsToolbarContainer::ShowWidgetForExtension(
 views::Widget*
 ExtensionsToolbarContainer::GetAnchoredWidgetForExtensionForTesting(
     const std::string& extension_id) {
-  auto iter = std::find_if(anchored_widgets_.begin(), anchored_widgets_.end(),
-                           [extension_id](const auto& info) {
-                             return info.extension_id == extension_id;
-                           });
+  auto iter = base::ranges::find(anchored_widgets_, extension_id,
+                                 &AnchoredWidget::extension_id);
   return iter == anchored_widgets_.end() ? nullptr : iter->widget.get();
 }
 
@@ -273,13 +285,19 @@ void ExtensionsToolbarContainer::UpdateIconVisibility(
         break;
       case DisplayMode::kCompact:
       case DisplayMode::kAutoHide:
+        views::MinimumFlexSizeRule min_flex_rule =
+            views::MinimumFlexSizeRule::kPreferredSnapToZero;
+        BrowserView* const browser_view =
+            BrowserView::GetBrowserViewForBrowser(browser_);
+        if (browser_view->IsWindowControlsOverlayEnabled())
+          min_flex_rule = views::MinimumFlexSizeRule::kPreferred;
+
         // In compact/auto hide mode, the icon can still drop out, but receives
         // precedence over other actions.
         action_view->SetProperty(
             views::kFlexBehaviorKey,
-            views::FlexSpecification(
-                views::MinimumFlexSizeRule::kPreferredSnapToZero,
-                views::MaximumFlexSizeRule::kPreferred)
+            views::FlexSpecification(min_flex_rule,
+                                     views::MaximumFlexSizeRule::kPreferred)
                 .WithWeight(0)
                 .WithOrder(2));
         break;
@@ -297,9 +315,8 @@ void ExtensionsToolbarContainer::UpdateIconVisibility(
 
 void ExtensionsToolbarContainer::AnchorAndShowWidgetImmediately(
     views::Widget* widget) {
-  auto iter = std::find_if(
-      anchored_widgets_.begin(), anchored_widgets_.end(),
-      [widget](const auto& info) { return info.widget == widget; });
+  auto iter =
+      base::ranges::find(anchored_widgets_, widget, &AnchoredWidget::widget);
 
   if (iter == anchored_widgets_.end()) {
     // This should mean that the Widget destructed before we got to showing it.
@@ -502,9 +519,8 @@ void ExtensionsToolbarContainer::OnToolbarActionRemoved(
   // could be handled inside the model and be invisible to the container when
   // permissions are unchanged.
 
-  auto iter = std::find_if(
-      actions_.begin(), actions_.end(),
-      [action_id](const auto& item) { return item->GetId() == action_id; });
+  auto iter = base::ranges::find(actions_, action_id,
+                                 &ToolbarActionViewController::GetId);
   DCHECK(iter != actions_.end());
   // Ensure the action outlives the UI element to perform any cleanup.
   std::unique_ptr<ToolbarActionViewController> controller = std::move(*iter);
@@ -526,8 +542,17 @@ void ExtensionsToolbarContainer::OnToolbarActionRemoved(
 void ExtensionsToolbarContainer::OnToolbarActionUpdated(
     const ToolbarActionsModel::ActionId& action_id) {
   ToolbarActionViewController* action = GetActionForId(action_id);
-  if (action)
+  if (action) {
     action->UpdateState();
+    ToolbarActionView* action_view = GetViewForId(action_id);
+    // Only update hover card if it's currently showing for action, otherwise it
+    // would mistakenly show the hover card.
+    if (action_hover_card_controller_->IsHoverCardShowingForAction(
+            action_view)) {
+      action_hover_card_controller_->UpdateHoverCard(
+          action_view, ToolbarActionHoverCardUpdateType::kToolbarActionUpdated);
+    }
+  }
 
   UpdateControlsVisibility();
 }
@@ -547,6 +572,9 @@ void ExtensionsToolbarContainer::OnToolbarPinnedActionsChanged() {
 void ExtensionsToolbarContainer::OnUserPermissionsSettingsChanged(
     const extensions::PermissionsManager::UserPermissionsSettings& settings) {
   UpdateControlsVisibility();
+  // TODO(crbug.com/1351778): Update hover card. This will be slightly different
+  // than 'OnToolbarActionUpdated' since site settings update are not tied to a
+  // specific action.
 }
 
 void ExtensionsToolbarContainer::ReorderViews() {
@@ -616,11 +644,9 @@ void ExtensionsToolbarContainer::WriteDragDataForView(
     ui::OSExchangeData* data) {
   DCHECK(data);
 
-  auto it = std::find_if(model_->pinned_action_ids().cbegin(),
-                         model_->pinned_action_ids().cend(),
-                         [this, sender](const std::string& action_id) {
-                           return GetViewForId(action_id) == sender;
-                         });
+  auto it = base::ranges::find(
+      model_->pinned_action_ids(), sender,
+      [this](const std::string& action_id) { return GetViewForId(action_id); });
   DCHECK(it != model_->pinned_action_ids().cend());
 
   size_t index = it - model_->pinned_action_ids().cbegin();
@@ -650,11 +676,9 @@ bool ExtensionsToolbarContainer::CanStartDragForView(View* sender,
     return false;
 
   // Only pinned extensions should be draggable.
-  auto it = std::find_if(model_->pinned_action_ids().cbegin(),
-                         model_->pinned_action_ids().cend(),
-                         [this, sender](const std::string& action_id) {
-                           return GetViewForId(action_id) == sender;
-                         });
+  auto it = base::ranges::find(
+      model_->pinned_action_ids(), sender,
+      [this](const std::string& action_id) { return GetViewForId(action_id); });
   if (it == model_->pinned_action_ids().cend())
     return false;
 
@@ -749,9 +773,8 @@ views::View::DropCallback ExtensionsToolbarContainer::GetDropCallback(
 }
 
 void ExtensionsToolbarContainer::OnWidgetDestroying(views::Widget* widget) {
-  auto iter = std::find_if(
-      anchored_widgets_.begin(), anchored_widgets_.end(),
-      [widget](const auto& info) { return info.widget == widget; });
+  auto iter =
+      base::ranges::find(anchored_widgets_, widget, &AnchoredWidget::widget);
   DCHECK(iter != anchored_widgets_.end());
   iter->widget->RemoveObserver(this);
   const std::string extension_id = std::move(iter->extension_id);
@@ -778,11 +801,9 @@ gfx::ImageSkia ExtensionsToolbarContainer::GetExtensionIcon(
 void ExtensionsToolbarContainer::SetExtensionIconVisibility(
     ToolbarActionsModel::ActionId id,
     bool visible) {
-  auto it = std::find_if(model_->pinned_action_ids().cbegin(),
-                         model_->pinned_action_ids().cend(),
-                         [this, id](const std::string& action_id) {
-                           return GetViewForId(action_id) == GetViewForId(id);
-                         });
+  auto it = base::ranges::find(
+      model_->pinned_action_ids(), GetViewForId(id),
+      [this](const std::string& action_id) { return GetViewForId(action_id); });
   if (it == model_->pinned_action_ids().cend())
     return;
 
@@ -851,6 +872,27 @@ void ExtensionsToolbarContainer::OnMenuClosed() {
   UpdateContainerVisibility();
 }
 
+void ExtensionsToolbarContainer::WindowControlsOverlayEnabledChanged(
+    bool enabled) {
+  if (!main_item())
+    return;
+
+  UpdateContainerVisibility();
+
+  main_item()->ClearProperty(views::kFlexBehaviorKey);
+  views::MinimumFlexSizeRule min_flex_rule =
+      views::MinimumFlexSizeRule::kPreferredSnapToZero;
+
+  if (enabled)
+    min_flex_rule = views::MinimumFlexSizeRule::kPreferred;
+
+  main_item()->SetProperty(
+      views::kFlexBehaviorKey,
+      views::FlexSpecification(min_flex_rule,
+                               views::MaximumFlexSizeRule::kPreferred)
+          .WithOrder(1));
+}
+
 void ExtensionsToolbarContainer::MovePinnedAction(
     const ToolbarActionsModel::ActionId& action_id,
     size_t index,
@@ -885,6 +927,29 @@ void ExtensionsToolbarContainer::UpdateControlsVisibility() {
           ->GetUserSiteSetting(
               web_contents->GetPrimaryMainFrame()->GetLastCommittedOrigin());
   extensions_controls_->UpdateControls(actions_, site_setting, web_contents);
+}
+
+void ExtensionsToolbarContainer::UpdateToolbarActionHoverCard(
+    ToolbarActionView* action_view,
+    ToolbarActionHoverCardUpdateType update_type) {
+  action_hover_card_controller_->UpdateHoverCard(action_view, update_type);
+}
+
+void ExtensionsToolbarContainer::OnMouseExited(const ui::MouseEvent& event) {
+  UpdateToolbarActionHoverCard(nullptr,
+                               ToolbarActionHoverCardUpdateType::kHover);
+}
+
+void ExtensionsToolbarContainer::OnMouseMoved(const ui::MouseEvent& event) {
+  // Since we set the container's "notify enter exit on child" to true, we can
+  // get notified when the mouse enters a child view only if it originates from
+  // outside the container. This means that we a) can know when the mouse enters
+  // a toolbar action view (which is handled in such class) and b) cannot
+  // know when the mouse leaves a toolbar action view and enters a toolbar
+  // control. Therefore, listening for on mouse moved in the container reflects
+  // moving the mouse from toolbar action view to toolbar controls.
+  UpdateToolbarActionHoverCard(nullptr,
+                               ToolbarActionHoverCardUpdateType::kHover);
 }
 
 BEGIN_METADATA(ExtensionsToolbarContainer, ToolbarIconContainerView)

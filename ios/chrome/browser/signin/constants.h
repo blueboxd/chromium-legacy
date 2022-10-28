@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -50,7 +50,7 @@ enum class IdentityAvatarSize {
 namespace signin_ui {
 
 // Completion callback for a sign-in operation.
-// |success| is YES if the operation was successful.
+// `success` is YES if the operation was successful.
 typedef void (^CompletionCallback)(BOOL success);
 
 }  // namespace signin_ui

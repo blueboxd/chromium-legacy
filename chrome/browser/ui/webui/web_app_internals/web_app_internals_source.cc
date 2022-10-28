@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -36,8 +36,8 @@ namespace {
 // New fields must be added to BuildIndexJson().
 constexpr char kInstalledWebApps[] = "InstalledWebApps";
 constexpr char kPreinstalledWebAppConfigs[] = "PreinstalledWebAppConfigs";
-constexpr char kPreinstalledAppsUninstalledByUserConfigs[] =
-    "PreinstalledAppsUninstalledByUserConfigs";
+constexpr char kUserUninstalledPreinstalledWebAppPrefs[] =
+    "UserUninstalledPreinstalledWebAppPrefs";
 constexpr char kExternallyManagedWebAppPrefs[] = "ExternallyManagedWebAppPrefs";
 constexpr char kCommandManager[] = "CommandManager";
 constexpr char kIconErrorLog[] = "IconErrorLog";
@@ -65,7 +65,7 @@ base::Value BuildIndexJson() {
 
   index.Append(kInstalledWebApps);
   index.Append(kPreinstalledWebAppConfigs);
-  index.Append(kPreinstalledAppsUninstalledByUserConfigs);
+  index.Append(kUserUninstalledPreinstalledWebAppPrefs);
   index.Append(kExternallyManagedWebAppPrefs);
   index.Append(kCommandManager);
   index.Append(kIconErrorLog);
@@ -187,18 +187,18 @@ base::Value BuildPreinstalledWebAppConfigsJson(
 
 base::Value BuildExternallyManagedWebAppPrefsJson(Profile* profile) {
   base::Value root(base::Value::Type::DICTIONARY);
-  root.SetKey(kExternallyManagedWebAppPrefs,
-              base::Value(profile->GetPrefs()
-                              ->GetValueDict(prefs::kWebAppsExtensionIDs)
-                              .Clone()));
+  root.SetKey(
+      kExternallyManagedWebAppPrefs,
+      base::Value(
+          profile->GetPrefs()->GetDict(prefs::kWebAppsExtensionIDs).Clone()));
   return root;
 }
 
-base::Value BuildPreinstalledAppsUninstalledByUserJson(Profile* profile) {
+base::Value BuildUserUninstalledPreinstalledWebAppPrefsJson(Profile* profile) {
   base::Value::Dict root;
-  root.Set(kPreinstalledAppsUninstalledByUserConfigs,
+  root.Set(kUserUninstalledPreinstalledWebAppPrefs,
            profile->GetPrefs()
-               ->GetValueDict(prefs::kUserUninstalledPreinstalledWebAppPref)
+               ->GetDict(prefs::kUserUninstalledPreinstalledWebAppPref)
                .Clone());
   return base::Value(std::move(root));
 }
@@ -249,10 +249,10 @@ base::Value BuildInstallProcessErrorLogJson(web_app::WebAppProvider& provider) {
 }
 
 #if BUILDFLAG(IS_MAC)
-base::Value BuildAppShimRegistryLocalStorageJson() {
-  base::Value root(base::Value::Type::DICTIONARY);
-  root.SetKey(kAppShimRegistryLocalStorage,
-              AppShimRegistry::Get()->AsDebugValue());
+base::Value::Dict BuildAppShimRegistryLocalStorageJson() {
+  base::Value::Dict root;
+  root.Set(kAppShimRegistryLocalStorage,
+           AppShimRegistry::Get()->AsDebugDict().Clone());
   return root;
 }
 #endif
@@ -323,12 +323,12 @@ void WebAppInternalsSource::BuildWebAppInternalsJson(
     base::OnceCallback<void(base::Value root)> callback) {
   auto* provider = web_app::WebAppProvider::GetForLocalAppsUnchecked(profile);
 
-  base::Value root(base::Value::Type::LIST);
+  base::Value::List root;
   root.Append(BuildIndexJson());
   root.Append(BuildInstalledWebAppsJson(*provider));
   root.Append(BuildPreinstalledWebAppConfigsJson(*provider));
+  root.Append(BuildUserUninstalledPreinstalledWebAppPrefsJson(profile));
   root.Append(BuildExternallyManagedWebAppPrefsJson(profile));
-  root.Append(BuildPreinstalledAppsUninstalledByUserJson(profile));
   root.Append(BuildCommandManagerJson(*provider));
   root.Append(BuildIconErrorLogJson(*provider));
   root.Append(BuildInstallProcessErrorLogJson(*provider));
@@ -340,7 +340,7 @@ void WebAppInternalsSource::BuildWebAppInternalsJson(
       FROM_HERE, {base::TaskPriority::USER_VISIBLE, base::MayBlock()},
       base::BindOnce(&BuildWebAppDiskStateJson,
                      web_app::GetWebAppsRootDirectory(profile),
-                     std::move(root)),
+                     base::Value(std::move(root))),
       std::move(callback));
 }
 

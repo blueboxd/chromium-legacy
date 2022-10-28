@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -15,7 +15,6 @@
 #include <windows.h>
 #include <wrl/client.h>
 
-#include <algorithm>
 #include <iterator>
 #include <limits>
 #include <memory>
@@ -32,7 +31,9 @@
 #include "base/hash/md5.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/path_service.h"
+#include "base/ranges/algorithm.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
@@ -1242,11 +1243,10 @@ FilterTargetContains::FilterTargetContains(
 
 bool FilterTargetContains::Match(const base::FilePath& target_path,
                                  const std::wstring& args) const {
-  auto comparator = [&target_path](const auto& target_compare) {
-    return target_compare.EvaluatePath(target_path);
-  };
-  if (std::none_of(std::begin(desired_target_compare_),
-                   std::end(desired_target_compare_), comparator)) {
+  if (base::ranges::none_of(desired_target_compare_,
+                            [&target_path](const auto& target_compare) {
+                              return target_compare.EvaluatePath(target_path);
+                            })) {
     return false;
   }
   if (require_args_ && args.empty())
@@ -1847,6 +1847,19 @@ bool WriteUserChoiceValues(base::win::RegKey& user_choice_reg_key,
   return false;
 }
 
+enum class DirectSettingAttemptResult {
+  kSucceeded = 0,
+  kFailedSID = 1,
+  kFailedSalt = 2,
+  kFailedRegistrySet = 3,
+  kMaxValue = kFailedRegistrySet,
+};
+
+void ReportDirectSettingResult(DirectSettingAttemptResult result) {
+  base::UmaHistogramEnumeration("Windows.MakeChromeDefaultDirectly.Result",
+                                result);
+}
+
 }  // namespace
 
 const wchar_t* ShellUtil::kRegAppProtocolHandlers = L"\\AppProtocolHandlers";
@@ -2100,7 +2113,8 @@ bool ShellUtil::TranslateShortcutCreationOrUpdateInfo(
 
 bool ShellUtil::CreateOrUpdateShortcut(ShortcutLocation location,
                                        const ShortcutProperties& properties,
-                                       ShortcutOperation operation) {
+                                       ShortcutOperation operation,
+                                       bool* pinned) {
   // |pin_to_taskbar| is only acknowledged when first creating the shortcut.
   DCHECK(!properties.pin_to_taskbar ||
          operation == SHELL_SHORTCUT_CREATE_ALWAYS ||
@@ -2123,9 +2137,11 @@ bool ShellUtil::CreateOrUpdateShortcut(ShortcutLocation location,
 
   if (shortcut_operation == base::win::ShortcutOperation::kCreateAlways &&
       properties.pin_to_taskbar && CanPinShortcutToTaskbar()) {
-    bool pinned = PinShortcutToTaskbar(shortcut_path);
-    LOG_IF(ERROR, !pinned) << "Failed to pin to taskbar "
-                           << shortcut_path.value();
+    bool pin_succeeded = PinShortcutToTaskbar(shortcut_path);
+    LOG_IF(ERROR, !pin_succeeded)
+        << "Failed to pin to taskbar " << shortcut_path.value();
+    if (pinned)
+      *pinned = pin_succeeded;
   }
 
   return true;
@@ -2426,12 +2442,16 @@ bool ShellUtil::MakeChromeDefaultDirectly(int shell_change,
   std::wstring prog_id = GetBrowserProgId(suffix);
 
   std::wstring sid = GetSID();
-  if (sid.empty())
+  if (sid.empty()) {
+    ReportDirectSettingResult(DirectSettingAttemptResult::kFailedSID);
     return false;
+  }
 
   std::wstring shell_salt = GetShellUserChoiceSalt();
-  if (shell_salt.empty())
+  if (shell_salt.empty()) {
+    ReportDirectSettingResult(DirectSettingAttemptResult::kFailedSalt);
     return false;
+  }
 
   base::win::RegKey url_associations_key(
       HKEY_CURRENT_USER,
@@ -2446,6 +2466,7 @@ bool ShellUtil::MakeChromeDefaultDirectly(int shell_change,
                           KEY_READ | KEY_WRITE);
     if (!WriteUserChoiceValues(key, kBrowserProtocolAssociations[i], sid,
                                prog_id, shell_salt)) {
+      ReportDirectSettingResult(DirectSettingAttemptResult::kFailedRegistrySet);
       return false;
     }
   }
@@ -2463,12 +2484,14 @@ bool ShellUtil::MakeChromeDefaultDirectly(int shell_change,
                           KEY_READ | KEY_WRITE);
     if (!WriteUserChoiceValues(key, kDefaultFileAssociations[i], sid, prog_id,
                                shell_salt)) {
+      ReportDirectSettingResult(DirectSettingAttemptResult::kFailedRegistrySet);
       return false;
     }
   }
 
   ::SHChangeNotify(SHCNE_ASSOCCHANGED, SHCNF_IDLIST, nullptr, nullptr);
 
+  ReportDirectSettingResult(DirectSettingAttemptResult::kSucceeded);
   return true;
 }
 

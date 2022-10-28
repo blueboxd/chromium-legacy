@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/check.h"
+#include "base/ranges/algorithm.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/aura/window.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -45,7 +46,7 @@ constexpr int kSpacingBetweenButtons = 2;
 
 TouchSelectionMenuViews::TouchSelectionMenuViews(
     TouchSelectionMenuRunnerViews* owner,
-    ui::TouchSelectionMenuClient* client,
+    base::WeakPtr<ui::TouchSelectionMenuClient> client,
     aura::Window* context)
     : BubbleDialogDelegateView(nullptr, BubbleBorder::BOTTOM_CENTER),
       owner_(owner),
@@ -111,8 +112,7 @@ bool TouchSelectionMenuViews::IsMenuAvailable(
   const auto is_enabled = [client](MenuCommand command) {
     return client->IsCommandIdEnabled(command.command_id);
   };
-  return std::any_of(std::cbegin(kMenuCommands), std::cend(kMenuCommands),
-                     is_enabled);
+  return base::ranges::any_of(kMenuCommands, is_enabled);
 }
 
 void TouchSelectionMenuViews::CloseMenu() {
@@ -126,6 +126,7 @@ void TouchSelectionMenuViews::CloseMenu() {
 TouchSelectionMenuViews::~TouchSelectionMenuViews() = default;
 
 void TouchSelectionMenuViews::CreateButtons() {
+  DCHECK(client_);
   for (const auto& command : kMenuCommands) {
     if (client_->IsCommandIdEnabled(command.command_id)) {
       CreateButton(
@@ -184,11 +185,13 @@ void TouchSelectionMenuViews::WindowClosing() {
 
 void TouchSelectionMenuViews::ButtonPressed(int command,
                                             const ui::Event& event) {
+  DCHECK(client_);
   CloseMenu();
   client_->ExecuteCommand(command, event.flags());
 }
 
 void TouchSelectionMenuViews::EllipsisPressed(const ui::Event& event) {
+  DCHECK(client_);
   CloseMenu();
   client_->RunContextMenu();
 }

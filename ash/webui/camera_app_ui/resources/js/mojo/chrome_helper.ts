@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -312,10 +312,10 @@ export class ChromeHelper {
   }
 
   /**
-   * Waits until the document mode is ready. Returns false if it fails to load.
+   * Checks the document mode readiness. Returns false if it fails to load.
    */
-  async waitUntilDocumentModeReady(): Promise<boolean> {
-    const {isLoaded} = await this.remote.registerDocumentScannerReadyCallback();
+  async checkDocumentModeReadiness(): Promise<boolean> {
+    const {isLoaded} = await this.remote.checkDocumentModeReadiness();
     return isLoaded;
   }
 
@@ -367,10 +367,20 @@ export class ChromeHelper {
    * @param jpegBlob Blob in JPEG format.
    * @return Blob in PDF format.
    */
-  async convertToPdf(jpegBlob: Blob): Promise<Blob> {
-    const buffer = new Uint8Array(await jpegBlob.arrayBuffer());
-    const {pdfData} = await this.remote.convertToPdf(castToNumberArray(buffer));
+  async convertToPdf(jpegBlobs: Blob[]): Promise<Blob> {
+    const numArrays = await Promise.all(jpegBlobs.map(async (blob) => {
+      const buffer = new Uint8Array(await blob.arrayBuffer());
+      return castToNumberArray(buffer);
+    }));
+    const {pdfData} = await this.remote.convertToPdf(numArrays);
     return new Blob([new Uint8Array(pdfData)], {type: MimeType.PDF});
+  }
+
+  /**
+   * Tries to trigger HaTS survey for CCA.
+   */
+  maybeTriggerSurvey(): void {
+    this.remote.maybeTriggerSurvey();
   }
 
   /**

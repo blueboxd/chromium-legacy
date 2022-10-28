@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,9 +9,11 @@
 #include <string>
 
 #include "base/callback.h"
+#include "base/containers/contains.h"
 #include "base/logging.h"
 #include "base/types/expected.h"
 #include "dbus/bus.h"
+#include "dbus/exported_object.h"
 #include "dbus/message.h"
 #include "dbus/object_proxy.h"
 #include "device/bluetooth/bluetooth_device.h"
@@ -26,12 +28,15 @@ extern DEVICE_BLUETOOTH_EXPORT int kDBusTimeoutMs;
 extern DEVICE_BLUETOOTH_EXPORT const char kAdapterService[];
 extern DEVICE_BLUETOOTH_EXPORT const char kManagerService[];
 extern DEVICE_BLUETOOTH_EXPORT const char kAdapterInterface[];
+extern DEVICE_BLUETOOTH_EXPORT const char kGattInterface[];
 extern DEVICE_BLUETOOTH_EXPORT const char kManagerInterface[];
 extern DEVICE_BLUETOOTH_EXPORT const char kManagerObject[];
 extern DEVICE_BLUETOOTH_EXPORT const char kAdapterObjectFormat[];
+extern DEVICE_BLUETOOTH_EXPORT const char kGattObjectFormat[];
 
 // Other interfaces
 extern DEVICE_BLUETOOTH_EXPORT const char kSocketManagerInterface[];
+extern DEVICE_BLUETOOTH_EXPORT const char kGattClientInterface[];
 
 namespace adapter {
 extern DEVICE_BLUETOOTH_EXPORT const char kGetAddress[];
@@ -53,12 +58,19 @@ extern DEVICE_BLUETOOTH_EXPORT const char kConnectAllEnabledProfiles[];
 extern DEVICE_BLUETOOTH_EXPORT const char kDisconnectAllEnabledProfiles[];
 extern DEVICE_BLUETOOTH_EXPORT const char kRegisterCallback[];
 extern DEVICE_BLUETOOTH_EXPORT const char kRegisterConnectionCallback[];
+extern DEVICE_BLUETOOTH_EXPORT const char kRegisterScanner[];
+extern DEVICE_BLUETOOTH_EXPORT const char kUnregisterScanner[];
+extern DEVICE_BLUETOOTH_EXPORT const char kRegisterScannerCallback[];
+extern DEVICE_BLUETOOTH_EXPORT const char kUnregisterScannerCallback[];
+extern DEVICE_BLUETOOTH_EXPORT const char kStartScan[];
+extern DEVICE_BLUETOOTH_EXPORT const char kStopScan[];
 extern DEVICE_BLUETOOTH_EXPORT const char kCallbackInterface[];
 extern DEVICE_BLUETOOTH_EXPORT const char kConnectionCallbackInterface[];
 extern DEVICE_BLUETOOTH_EXPORT const char kSetPairingConfirmation[];
 extern DEVICE_BLUETOOTH_EXPORT const char kSetPin[];
 extern DEVICE_BLUETOOTH_EXPORT const char kSetPasskey[];
 extern DEVICE_BLUETOOTH_EXPORT const char kGetBondedDevices[];
+extern DEVICE_BLUETOOTH_EXPORT const char kGetConnectedDevices[];
 
 extern DEVICE_BLUETOOTH_EXPORT const char kOnAdapterPropertyChanged[];
 extern DEVICE_BLUETOOTH_EXPORT const char kOnAddressChanged[];
@@ -72,6 +84,9 @@ extern DEVICE_BLUETOOTH_EXPORT const char kOnSspRequest[];
 extern DEVICE_BLUETOOTH_EXPORT const char kOnBondStateChanged[];
 extern DEVICE_BLUETOOTH_EXPORT const char kOnDeviceConnected[];
 extern DEVICE_BLUETOOTH_EXPORT const char kOnDeviceDisconnected[];
+
+extern DEVICE_BLUETOOTH_EXPORT const char kOnScannerRegistered[];
+extern DEVICE_BLUETOOTH_EXPORT const char kOnScanResult[];
 }  // namespace adapter
 
 namespace manager {
@@ -109,6 +124,43 @@ extern DEVICE_BLUETOOTH_EXPORT const char kOnIncomingSocketClosed[];
 extern DEVICE_BLUETOOTH_EXPORT const char kOnHandleIncomingConnection[];
 extern DEVICE_BLUETOOTH_EXPORT const char kOnOutgoingConnectionResult[];
 }  // namespace socket_manager
+
+namespace gatt {
+extern DEVICE_BLUETOOTH_EXPORT const char kRegisterClient[];
+extern DEVICE_BLUETOOTH_EXPORT const char kUnregisterClient[];
+extern DEVICE_BLUETOOTH_EXPORT const char kClientConnect[];
+extern DEVICE_BLUETOOTH_EXPORT const char kClientDisconnect[];
+extern DEVICE_BLUETOOTH_EXPORT const char kRefreshDevice[];
+extern DEVICE_BLUETOOTH_EXPORT const char kDiscoverServices[];
+extern DEVICE_BLUETOOTH_EXPORT const char kDiscoverServiceByUuid[];
+extern DEVICE_BLUETOOTH_EXPORT const char kReadCharacteristic[];
+extern DEVICE_BLUETOOTH_EXPORT const char kReadUsingCharacteristicUuid[];
+extern DEVICE_BLUETOOTH_EXPORT const char kWriteCharacteristic[];
+extern DEVICE_BLUETOOTH_EXPORT const char kReadDescriptor[];
+extern DEVICE_BLUETOOTH_EXPORT const char kWriteDescriptor[];
+extern DEVICE_BLUETOOTH_EXPORT const char kRegisterForNotification[];
+extern DEVICE_BLUETOOTH_EXPORT const char kBeginReliableWrite[];
+extern DEVICE_BLUETOOTH_EXPORT const char kEndReliableWrite[];
+extern DEVICE_BLUETOOTH_EXPORT const char kReadRemoteRssi[];
+extern DEVICE_BLUETOOTH_EXPORT const char kConfigureMtu[];
+extern DEVICE_BLUETOOTH_EXPORT const char kConnectionParameterUpdate[];
+extern DEVICE_BLUETOOTH_EXPORT const char kCallbackInterface[];
+
+extern DEVICE_BLUETOOTH_EXPORT const char kOnClientRegistered[];
+extern DEVICE_BLUETOOTH_EXPORT const char kOnClientConnectionState[];
+extern DEVICE_BLUETOOTH_EXPORT const char kOnPhyUpdate[];
+extern DEVICE_BLUETOOTH_EXPORT const char kOnPhyRead[];
+extern DEVICE_BLUETOOTH_EXPORT const char kOnSearchComplete[];
+extern DEVICE_BLUETOOTH_EXPORT const char kOnCharacteristicRead[];
+extern DEVICE_BLUETOOTH_EXPORT const char kOnCharacteristicWrite[];
+extern DEVICE_BLUETOOTH_EXPORT const char kOnExecuteWrite[];
+extern DEVICE_BLUETOOTH_EXPORT const char kOnDescriptorRead[];
+extern DEVICE_BLUETOOTH_EXPORT const char kOnNotify[];
+extern DEVICE_BLUETOOTH_EXPORT const char kOnReadRemoteRssi[];
+extern DEVICE_BLUETOOTH_EXPORT const char kOnConfigureMtu[];
+extern DEVICE_BLUETOOTH_EXPORT const char kOnConnectionUpdated[];
+extern DEVICE_BLUETOOTH_EXPORT const char kOnServiceChanged[];
+}  // namespace gatt
 
 // BluetoothDevice structure for DBus apis.
 struct DEVICE_BLUETOOTH_EXPORT FlossDeviceId {
@@ -226,6 +278,12 @@ class DEVICE_BLUETOOTH_EXPORT FlossDBusClient {
     kWakelockError,
   };
 
+  enum class BluetoothTransport {
+    kAuto = 0,
+    kBrEdr = 1,
+    kLe = 2,
+  };
+
   // Error: DBus error.
   static const char kErrorDBus[];
 
@@ -244,6 +302,12 @@ class DEVICE_BLUETOOTH_EXPORT FlossDBusClient {
   // Error: does not exist.
   static const char DEVICE_BLUETOOTH_EXPORT kErrorDoesNotExist[];
 
+  // Convert adapter number to adapter object path.
+  static dbus::ObjectPath GenerateAdapterPath(int adapter_index);
+
+  // Convert adapter number to gatt object path.
+  static dbus::ObjectPath GenerateGattPath(int adapter_index);
+
   // Generalized DBus serialization (used for generalized method call
   // invocation).
   template <typename T>
@@ -258,6 +322,11 @@ class DEVICE_BLUETOOTH_EXPORT FlossDBusClient {
     WriteDBusParam(&variant, data);
     writer->CloseContainer(&variant);
   }
+
+  // Generalized write for std::vector.
+  template <typename T>
+  static void WriteDBusParam(dbus::MessageWriter* writer,
+                             const std::vector<T>& value);
 
   // Optional container type needs to be explicitly listed here.
   template <typename T>
@@ -328,9 +397,24 @@ class DEVICE_BLUETOOTH_EXPORT FlossDBusClient {
     return ReadDBusParam(&variant_reader, value);
   }
 
-  // Container type needs to be explicitly listed here.
+  // Specialization for vector of anything.
   template <typename T>
-  static bool ReadDBusParam(dbus::MessageReader* reader, std::vector<T>* value);
+  static bool ReadDBusParam(dbus::MessageReader* reader,
+                            std::vector<T>* value) {
+    dbus::MessageReader subreader(nullptr);
+    if (!reader->PopArray(&subreader))
+      return false;
+
+    while (subreader.HasMoreData()) {
+      T element;
+      if (!ReadDBusParam<T>(&subreader, &element))
+        return false;
+
+      value->emplace_back(std::move(element));
+    }
+
+    return true;
+  }
 
   // Optional container type needs to be explicitly implemented here.
   template <typename T>
@@ -372,6 +456,84 @@ class DEVICE_BLUETOOTH_EXPORT FlossDBusClient {
                                 T* first,
                                 Args*... args) {
     return ReadDBusParam(reader, first) && ReadAllDBusParams(reader, args...);
+  }
+
+  template <typename T>
+  using FieldReader = std::function<bool(dbus::MessageReader*, T* data)>;
+
+  // Useful to generate D-Bus reader of a struct. Example usage:
+  //
+  // template <>
+  // bool FlossDBusClient::ReadDBusParam(dbus::MessageReader* reader,
+  //                                     ScanResult* scan_result) {
+  //   static StructReader<ScanResult> struct_reader({
+  //       {"address", CreateFieldReader(&ScanResult::address)},
+  //       {"addr_type", CreateFieldReader(&ScanResult::addr_type)},
+  //       <just define more fields here>
+  //   });
+  //   return struct_reader.ReadDBusParam(reader, scan_result);
+  // }
+  template <typename T>
+  class StructReader {
+   private:
+    std::unordered_map<std::string, FieldReader<T>> fields_;
+
+   public:
+    explicit StructReader(
+        std::vector<std::pair<std::string, FieldReader<T>>> fields) {
+      for (auto const& kv : fields) {
+        fields_.insert(kv);
+      }
+    }
+
+    bool ReadDBusParam(dbus::MessageReader* reader, T* data) {
+      // Keep track of parsed fields to detect missing and duplicate fields.
+      std::unordered_set<std::string> parsed_fields;
+
+      dbus::MessageReader array_reader(nullptr);
+      if (!reader->PopArray(&array_reader))
+        return false;
+
+      // For each dictionary entry
+      while (array_reader.HasMoreData()) {
+        dbus::MessageReader entry_reader(nullptr);
+        if (!array_reader.PopDictEntry(&entry_reader))
+          return false;
+
+        std::string key;
+        if (!entry_reader.PopString(&key))
+          return false;
+
+        if (base::Contains(fields_, key)) {
+          dbus::MessageReader variant_reader(nullptr);
+          entry_reader.PopVariant(&variant_reader);
+
+          if (!fields_[key](&variant_reader, data))
+            return false;
+
+          if (base::Contains(parsed_fields, key))
+            return false;
+
+          parsed_fields.insert(key);
+        } else {
+          DBusTypeInfo type_info = GetDBusTypeInfo<T>();
+          VLOG(3) << "Does not know how to read field " << type_info.type_name
+                  << "." << key;
+        }
+      }
+
+      // All defined fields are required.
+      return parsed_fields.size() == fields_.size();
+    }
+  };
+
+  // S is the type of the container struct.
+  // T is the type of the field.
+  template <typename S, typename T>
+  static FieldReader<S> CreateFieldReader(T S::*field) {
+    return [field](dbus::MessageReader* reader, S* container) -> bool {
+      return FlossDBusClient::ReadDBusParam(reader, &(container->*field));
+    };
   }
 
   template <typename R, typename... Args>
@@ -417,7 +579,7 @@ class DEVICE_BLUETOOTH_EXPORT FlossDBusClient {
   // Common init signature for all clients.
   virtual void Init(dbus::Bus* bus,
                     const std::string& bluetooth_service_name,
-                    const std::string& bluetooth_adapter_path) = 0;
+                    const int adapter_index) = 0;
 
  protected:
   // Convert a dbus::ErrorResponse into a floss::Error struct.
@@ -462,6 +624,127 @@ class DEVICE_BLUETOOTH_EXPORT FlossDBusClient {
   void DefaultResponse(const std::string& caller,
                        dbus::Response* response,
                        dbus::ErrorResponse* error_response);
+};
+
+// Utility to keep a property that takes care of getting the initial value,
+// monitoring for updates, and notifying when value is updated.
+//
+// In Floss API, it is a pattern to abstract a value as a "property". These
+// values always have:
+// * A getter: A method exposed by Floss daemon to get current value.
+// * An update callback: A method to be called by Floss daemon to client when
+//   the value is updated.
+//
+// To simplify repetitive code performing common operations above, use this
+// utility by just specifying the property getter, update method, and the
+// interface names.
+//
+// |T| is the type of the property.
+template <typename T>
+class FlossProperty {
+ public:
+  // Instantiates a property, given:
+  // |interface| - The D-Bus interface of the getter.
+  // |callback_interface| - The D-Bus interface of the value update method.
+  // |getter| - The method name of the getter.
+  // |on_update| - The method name of the value update.
+  FlossProperty(const char* interface,
+                const char* callback_interface,
+                const char* getter,
+                const char* on_update)
+      : interface_(interface),
+        callback_interface_(callback_interface),
+        getter_(getter),
+        on_update_(on_update) {}
+
+  // Initializes the property. Once Init-ed, it takes care of getting the
+  // initial value, keeping it updated, notifying when there is an update.
+  // |bus| - D-Bus connection.
+  // |service_name| - Floss daemon D-Bus name.
+  // |path| - Object path where the getter is available.
+  // |callback_path| - Object path where the daemon calls back on value updates.
+  // |update_callback| - Caller can provide this to be notified when there are
+  //                     updates.
+  void Init(FlossDBusClient* client,
+            raw_ptr<dbus::Bus> bus,
+            const std::string& service_name,
+            const dbus::ObjectPath& path,
+            const dbus::ObjectPath& callback_path,
+            base::RepeatingCallback<void(const T&)> update_callback) {
+    update_callback_ = update_callback;
+
+    // Get the initial value.
+    client->CallMethod(base::BindOnce(&FlossProperty::OnGetInitialValue,
+                                      weak_ptr_factory_.GetWeakPtr()),
+                       bus, service_name, interface_, path, getter_);
+
+    // Listen for property updates.
+    dbus::ExportedObject* exported_object =
+        bus->GetExportedObject(callback_path);
+    if (!exported_object) {
+      LOG(ERROR) << "Could not export callback to listen for property updates"
+                 << callback_path.value();
+      return;
+    }
+
+    exported_object->ExportMethod(
+        callback_interface_, on_update_,
+        base::BindRepeating(&FlossProperty::OnValueUpdated,
+                            weak_ptr_factory_.GetWeakPtr()),
+        base::DoNothing());
+  }
+
+  // Returns the current value of this property.
+  const T& Get() const { return value_; }
+
+ private:
+  void OnGetInitialValue(DBusResult<T> ret) {
+    if (!ret.has_value()) {
+      LOG(ERROR) << "Error getting initial value";
+      return;
+    }
+
+    UpdateValue(std::move(*ret));
+  }
+
+  void OnValueUpdated(dbus::MethodCall* method_call,
+                      dbus::ExportedObject::ResponseSender response_sender) {
+    T data;
+    dbus::MessageReader reader(method_call);
+    if (!FlossDBusClient::ReadDBusParam(&reader, &data)) {
+      std::move(response_sender)
+          .Run(dbus::ErrorResponse::FromMethodCall(
+              method_call, floss::FlossDBusClient::kErrorInvalidParameters,
+              "Error parsing property value"));
+      return;
+    }
+
+    UpdateValue(std::move(data));
+
+    std::move(response_sender).Run(dbus::Response::FromMethodCall(method_call));
+  }
+
+  void UpdateValue(T val) {
+    value_ = std::move(val);
+    update_callback_.Run(value_);
+  }
+
+  // Interfaces.
+  const char* interface_;
+  const char* callback_interface_;
+
+  // Method names.
+  const char* getter_;
+  const char* on_update_;
+
+  // Keeps the property value.
+  T value_;
+
+  // To update caller when property is updated.
+  base::RepeatingCallback<void(const T&)> update_callback_;
+
+  // WeakPtrFactory must be last.
+  base::WeakPtrFactory<FlossProperty> weak_ptr_factory_{this};
 };
 
 }  // namespace floss

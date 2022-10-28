@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -30,6 +30,7 @@
 #include "ash/wm/wm_event.h"
 #include "base/bind.h"
 #include "base/containers/contains.h"
+#include "base/ranges/algorithm.h"
 #include "chromeos/ui/base/chromeos_ui_constants.h"
 #include "chromeos/ui/frame/interior_resize_handler_targeter.h"
 #include "ui/aura/client/aura_constants.h"
@@ -314,8 +315,7 @@ void ExpandArcPipWindow() {
     return;
 
   auto pip_window_iter =
-      std::find_if(pip_container->children().begin(),
-                   pip_container->children().end(), IsArcPipWindow);
+      base::ranges::find_if(pip_container->children(), IsArcPipWindow);
   if (pip_window_iter == pip_container->children().end())
     return;
 
@@ -416,9 +416,8 @@ gfx::RectF GetTransformedBounds(aura::Window* transformed_window,
       continue;
     }
     gfx::RectF window_bounds(window->GetTargetBounds());
-    gfx::Transform new_transform =
-        TransformAboutPivot(gfx::ToRoundedPoint(window_bounds.origin()),
-                            window->layer()->GetTargetTransform());
+    const gfx::Transform new_transform = TransformAboutPivot(
+        window_bounds.origin(), window->layer()->GetTargetTransform());
     new_transform.TransformRect(&window_bounds);
 
     // The preview title is shown above the preview window. Hide the window

@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -124,9 +124,11 @@ class COMPONENT_EXPORT(SHILL_CLIENT) ShillManagerClient {
     virtual void SetSimulateConfigurationResult(
         FakeShillSimulatedResult configuration_result) = 0;
 
-    // Makes SetTetheringEnabled succeed, fail, or timeout.
+    // Makes SetTetheringEnabled succeed, fail, or timeout and the enable
+    // tethering error string when it failed.
     virtual void SetSimulateTetheringEnableResult(
-        FakeShillSimulatedResult tethering_result) = 0;
+        FakeShillSimulatedResult tethering_result,
+        const std::string& enable_tethering_error) = 0;
 
     // Makes CheckTetheringReadiness succeed, fail, or timeout and the readiness
     // status if CheckTetheringReadiness succeeds.
@@ -203,20 +205,20 @@ class COMPONENT_EXPORT(SHILL_CLIENT) ShillManagerClient {
   // Calls Manager.ConfigureService with |properties| which must be a
   // dictionary value describing a Shill service.
   virtual void ConfigureService(const base::Value& properties,
-                                ObjectPathCallback callback,
+                                chromeos::ObjectPathCallback callback,
                                 ErrorCallback error_callback) = 0;
 
   // Calls Manager.ConfigureServiceForProfile for |profile_path| with
   // |properties| which must be a dictionary value describing a Shill service.
   virtual void ConfigureServiceForProfile(const dbus::ObjectPath& profile_path,
                                           const base::Value& properties,
-                                          ObjectPathCallback callback,
+                                          chromeos::ObjectPathCallback callback,
                                           ErrorCallback error_callback) = 0;
 
   // Calls Manager.GetService with |properties| which must be a dictionary value
   // describing a Service.
   virtual void GetService(const base::Value& properties,
-                          ObjectPathCallback callback,
+                          chromeos::ObjectPathCallback callback,
                           ErrorCallback error_callback) = 0;
 
   // Force a fresh WiFi scan if a WiFi device is available as a way of

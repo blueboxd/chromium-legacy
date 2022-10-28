@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -109,7 +109,7 @@ class ChromeTranslateClient
   bool ShowTranslateUI(translate::TranslateStep step,
                        const std::string& source_language,
                        const std::string& target_language,
-                       translate::TranslateErrors::Type error_type,
+                       translate::TranslateErrors error_type,
                        bool triggered_from_menu) override;
   bool IsTranslatableURL(const GURL& url) override;
   bool IsAutofillAssistantRunning() const override;
@@ -138,12 +138,11 @@ class ChromeTranslateClient
 
 #if !BUILDFLAG(IS_ANDROID)
   // Shows the Full Page Translate bubble.
-  ShowTranslateBubbleResult ShowBubble(
-      translate::TranslateStep step,
-      const std::string& source_language,
-      const std::string& target_language,
-      translate::TranslateErrors::Type error_type,
-      bool is_user_gesture);
+  ShowTranslateBubbleResult ShowBubble(translate::TranslateStep step,
+                                       const std::string& source_language,
+                                       const std::string& target_language,
+                                       translate::TranslateErrors error_type,
+                                       bool is_user_gesture);
 #endif
 
   std::unique_ptr<translate::ContentTranslateDriver> translate_driver_;

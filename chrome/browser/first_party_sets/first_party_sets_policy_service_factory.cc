@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -55,7 +55,7 @@ const base::Value::Dict* FirstPartySetsPolicyServiceFactory::GetPolicyIfEnabled(
     return nullptr;
   }
 
-  return &profile.GetPrefs()->GetValueDict(
+  return &profile.GetPrefs()->GetDict(
       first_party_sets::kFirstPartySetsOverrides);
 }
 
@@ -98,7 +98,9 @@ bool FirstPartySetsPolicyServiceFactory::ServiceIsCreatedWithBrowserContext()
 
 void FirstPartySetsPolicyServiceFactory::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
-  registry->RegisterBooleanPref(kFirstPartySetsEnabled, true);
+  registry->RegisterBooleanPref(
+      kFirstPartySetsEnabled, true,
+      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
   registry->RegisterDictionaryPref(kFirstPartySetsOverrides,
                                    base::DictionaryValue());
 }

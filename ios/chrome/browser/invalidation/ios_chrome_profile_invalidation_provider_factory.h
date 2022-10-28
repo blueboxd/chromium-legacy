@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -21,7 +21,7 @@ class ProfileInvalidationProvider;
 class IOSChromeProfileInvalidationProviderFactory
     : public BrowserStateKeyedServiceFactory {
  public:
-  // Returns the ProfileInvalidationProvider for the given |browser_state|,
+  // Returns the ProfileInvalidationProvider for the given `browser_state`,
   // lazily creating one first if required.
   static invalidation::ProfileInvalidationProvider* GetForBrowserState(
       ChromeBrowserState* browser_state);

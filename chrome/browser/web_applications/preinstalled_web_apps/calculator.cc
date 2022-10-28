@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -22,7 +22,6 @@ ExternalInstallOptions GetConfigForCalculator() {
       /*install_source=*/ExternalInstallSource::kExternalDefault);
 
   options.user_type_allowlist = {"unmanaged", "managed", "child"};
-  options.gate_on_feature = kDefaultCalculatorWebApp.name;
   options.uninstall_and_replace.push_back("joodangkbfjnajiiifokapkpmhfnpleo");
   options.expected_app_id = kCalculatorAppId;
   return options;

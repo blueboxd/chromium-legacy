@@ -1,4 +1,4 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -25,7 +25,7 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) MockManagedNetworkConfigurationHandler
   MockManagedNetworkConfigurationHandler& operator=(
       const MockManagedNetworkConfigurationHandler&) = delete;
 
-  virtual ~MockManagedNetworkConfigurationHandler();
+  ~MockManagedNetworkConfigurationHandler() override;
 
   // ManagedNetworkConfigurationHandler overrides
   MOCK_METHOD1(AddObserver, void(NetworkPolicyObserver* observer));

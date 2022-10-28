@@ -1,8 +1,8 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <iomanip>
+#import <iomanip>
 
 #import "ios/web/text_fragments/text_fragments_manager_impl.h"
 
@@ -192,7 +192,7 @@ void TextFragmentsManagerImpl::DoHighlight() {
 }
 
 // Returns false if fragments highlighting is not allowed in the current
-// |context|.
+// `context`.
 bool TextFragmentsManagerImpl::AreTextFragmentsAllowed(
     const web::NavigationContext* context) {
   if (!web_state_ || web_state_->HasOpener()) {

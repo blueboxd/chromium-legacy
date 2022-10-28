@@ -13,6 +13,7 @@
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/containers/flat_map.h"
+#include "base/functional/overloaded.h"
 #include "base/notreached.h"
 #include "base/ranges/algorithm.h"
 #include "base/time/time.h"
@@ -59,9 +60,9 @@ attribution_internals::mojom::WebUISourcePtr WebUISource(
     Attributability attributability,
     const std::vector<uint64_t>& dedup_keys) {
   return attribution_internals::mojom::WebUISource::New(
-      source.source_event_id(), source.impression_origin(),
-      source.ConversionDestination().Serialize(), source.reporting_origin(),
-      source.impression_time().ToJsTime(), source.expiry_time().ToJsTime(),
+      source.source_event_id(), source.source_origin(),
+      source.DestinationSite().Serialize(), source.reporting_origin(),
+      source.source_time().ToJsTime(), source.expiry_time().ToJsTime(),
       source.source_type(), source.priority(),
       WebUIDebugKey(source.debug_key()), dedup_keys,
       source.filter_data().filter_values(),
@@ -110,45 +111,40 @@ attribution_internals::mojom::WebUIReportPtr WebUIReport(
     const AttributionReport& report,
     bool is_debug_report,
     ReportStatusPtr status) {
-  struct Visitor {
-    StoredSource::AttributionLogic attribution_logic;
-
-    attribution_internals::mojom::WebUIReportDataPtr operator()(
-        const AttributionReport::EventLevelData& event_level_data) {
-      return attribution_internals::mojom::WebUIReportData::NewEventLevelData(
-          attribution_internals::mojom::WebUIReportEventLevelData::New(
-              event_level_data.priority,
-              attribution_logic ==
-                  StoredSource::AttributionLogic::kTruthfully));
-    }
-
-    attribution_internals::mojom::WebUIReportDataPtr operator()(
-        const AttributionReport::AggregatableAttributionData&
-            aggregatable_data) {
-      std::vector<
-          attribution_internals::mojom::AggregatableHistogramContributionPtr>
-          contributions;
-      base::ranges::transform(
-          aggregatable_data.contributions, std::back_inserter(contributions),
-          [](const auto& contribution) {
-            return attribution_internals::mojom::
-                AggregatableHistogramContribution::New(
-                    HexEncodeAggregationKey(contribution.key()),
-                    contribution.value());
-          });
-      return attribution_internals::mojom::WebUIReportData::
-          NewAggregatableAttributionData(
-              attribution_internals::mojom::
-                  WebUIReportAggregatableAttributionData::New(
-                      std::move(contributions)));
-    }
-  };
+  namespace ai_mojom = attribution_internals::mojom;
 
   const AttributionInfo& attribution_info = report.attribution_info();
 
-  attribution_internals::mojom::WebUIReportDataPtr data = absl::visit(
-      Visitor{.attribution_logic = attribution_info.source.attribution_logic()},
+  ai_mojom::WebUIReportDataPtr data = absl::visit(
+      base::Overloaded{
+          [attribution_info](
+              const AttributionReport::EventLevelData& event_level_data) {
+            return ai_mojom::WebUIReportData::NewEventLevelData(
+                ai_mojom::WebUIReportEventLevelData::New(
+                    event_level_data.priority,
+                    attribution_info.source.attribution_logic() ==
+                        StoredSource::AttributionLogic::kTruthfully));
+          },
+
+          [](const AttributionReport::AggregatableAttributionData&
+                 aggregatable_data) {
+            std::vector<ai_mojom::AggregatableHistogramContributionPtr>
+                contributions;
+            base::ranges::transform(
+                aggregatable_data.contributions,
+                std::back_inserter(contributions),
+                [](const auto& contribution) {
+                  return ai_mojom::AggregatableHistogramContribution::New(
+                      HexEncodeAggregationKey(contribution.key()),
+                      contribution.value());
+                });
+            return ai_mojom::WebUIReportData::NewAggregatableAttributionData(
+                ai_mojom::WebUIReportAggregatableAttributionData::New(
+                    std::move(contributions)));
+          },
+      },
       report.data());
+
   return attribution_internals::mojom::WebUIReport::New(
       report.ReportId(), report.ReportURL(is_debug_report),
       /*trigger_time=*/attribution_info.time.ToJsTime(),
@@ -186,10 +182,10 @@ void AttributionInternalsHandlerImpl::IsAttributionReportingEnabled(
   content::WebContents* contents = web_ui_->GetWebContents();
   bool attribution_reporting_enabled =
       AttributionManager::FromWebContents(contents) &&
-      GetContentClient()->browser()->IsConversionMeasurementOperationAllowed(
+      GetContentClient()->browser()->IsAttributionReportingOperationAllowed(
           contents->GetBrowserContext(),
-          ContentBrowserClient::ConversionMeasurementOperation::kAny,
-          /*impression_origin=*/nullptr, /*conversion_origin=*/nullptr,
+          ContentBrowserClient::AttributionReportingOperation::kAny,
+          /*source_origin=*/nullptr, /*destination_origin=*/nullptr,
           /*reporting_origin=*/nullptr);
   bool debug_mode = base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kAttributionReportingDebugMode);
@@ -271,17 +267,6 @@ void AttributionInternalsHandlerImpl::OnReportsChanged(
     observer->OnReportsChanged(report_type);
 }
 
-void AttributionInternalsHandlerImpl::OnSourceDeactivated(
-    const StoredSource& deactivated_source) {
-  auto source = WebUISource(deactivated_source.common_info(),
-                            Attributability::kReplacedByNewerSource,
-                            deactivated_source.dedup_keys());
-
-  for (auto& observer : observers_) {
-    observer->OnSourceRejectedOrDeactivated(source.Clone());
-  }
-}
-
 void AttributionInternalsHandlerImpl::OnSourceHandled(
     const StorableSource& source,
     StorableSource::Result result) {
@@ -310,7 +295,7 @@ void AttributionInternalsHandlerImpl::OnSourceHandled(
       WebUISource(source.common_info(), attributability, /*dedup_keys=*/{});
 
   for (auto& observer : observers_) {
-    observer->OnSourceRejectedOrDeactivated(web_ui_source.Clone());
+    observer->OnSourceRejected(web_ui_source.Clone());
   }
 }
 

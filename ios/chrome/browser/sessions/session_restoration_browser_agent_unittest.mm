@@ -1,42 +1,45 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #import <objc/runtime.h>
 
-#include "base/files/file_path.h"
-#include "base/run_loop.h"
-#include "base/strings/sys_string_conversions.h"
+#import "base/files/file_path.h"
+#import "base/run_loop.h"
+#import "base/strings/sys_string_conversions.h"
 #import "base/test/ios/wait_util.h"
-#include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
-#include "ios/chrome/browser/chrome_url_constants.h"
+#import "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
+#import "ios/chrome/browser/chrome_url_constants.h"
 #import "ios/chrome/browser/main/browser.h"
 #import "ios/chrome/browser/main/browser_web_state_list_delegate.h"
 #import "ios/chrome/browser/main/test_browser.h"
 #import "ios/chrome/browser/ntp/new_tab_page_tab_helper.h"
 #import "ios/chrome/browser/ntp/new_tab_page_tab_helper_delegate.h"
-#include "ios/chrome/browser/sessions/ios_chrome_session_tab_helper.h"
+#import "ios/chrome/browser/sessions/ios_chrome_session_tab_helper.h"
 #import "ios/chrome/browser/sessions/session_ios.h"
 #import "ios/chrome/browser/sessions/session_restoration_browser_agent.h"
-#include "ios/chrome/browser/sessions/session_restoration_observer.h"
+#import "ios/chrome/browser/sessions/session_restoration_observer.h"
 #import "ios/chrome/browser/sessions/session_window_ios.h"
 #import "ios/chrome/browser/sessions/test_session_service.h"
+#import "ios/chrome/browser/signin/authentication_service_factory.h"
+#import "ios/chrome/browser/signin/authentication_service_fake.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
 #import "ios/chrome/browser/web_state_list/web_state_list_delegate.h"
 #import "ios/chrome/browser/web_state_list/web_state_opener.h"
 #import "ios/chrome/browser/web_state_list/web_usage_enabler/web_usage_enabler_browser_agent.h"
+#import "ios/chrome/test/ios_chrome_scoped_testing_local_state.h"
 #import "ios/web/public/navigation/navigation_manager.h"
-#include "ios/web/public/navigation/referrer.h"
+#import "ios/web/public/navigation/referrer.h"
 #import "ios/web/public/session/crw_navigation_item_storage.h"
 #import "ios/web/public/session/crw_session_storage.h"
 #import "ios/web/public/session/serializable_user_data_manager.h"
-#include "ios/web/public/test/web_task_environment.h"
-#include "ios/web/public/thread/web_thread.h"
-#include "testing/gtest/include/gtest/gtest.h"
-#include "testing/gtest_mac.h"
-#include "testing/platform_test.h"
+#import "ios/web/public/test/web_task_environment.h"
+#import "ios/web/public/thread/web_thread.h"
+#import "testing/gtest/include/gtest/gtest.h"
+#import "testing/gtest_mac.h"
+#import "testing/platform_test.h"
 #import "third_party/ocmock/OCMock/OCMock.h"
-#include "third_party/ocmock/gtest_support.h"
+#import "third_party/ocmock/gtest_support.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -73,6 +76,11 @@ class SessionRestorationBrowserAgentTest : public PlatformTest {
     DCHECK_CURRENTLY_ON(web::WebThread::UI);
 
     TestChromeBrowserState::Builder test_cbs_builder;
+    test_cbs_builder.AddTestingFactory(
+        AuthenticationServiceFactory::GetInstance(),
+        base::BindRepeating(
+            &AuthenticationServiceFake::CreateAuthenticationService));
+
     chrome_browser_state_ = test_cbs_builder.Build();
 
     // This test requires that some TabHelpers are attached to the WebStates, so
@@ -109,8 +117,8 @@ class SessionRestorationBrowserAgentTest : public PlatformTest {
   NSString* session_id() { return session_identifier_; }
 
  protected:
-  // Creates a session window with |sessions_count| and mark the
-  // |selected_index| entry as selected.
+  // Creates a session window with `sessions_count` and mark the
+  // `selected_index` entry as selected.
   SessionWindowIOS* CreateSessionWindow(int sessions_count,
                                         int selected_index) {
     NSMutableArray<CRWSessionStorage*>* sessions = [NSMutableArray array];
@@ -160,6 +168,7 @@ class SessionRestorationBrowserAgentTest : public PlatformTest {
   }
 
   web::WebTaskEnvironment task_environment_;
+  IOSChromeScopedTestingLocalState scoped_testing_local_state_;
   std::unique_ptr<TestChromeBrowserState> chrome_browser_state_;
   std::unique_ptr<Browser> browser_;
 

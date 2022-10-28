@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,10 +6,14 @@
 #define FUCHSIA_WEB_COMMON_TEST_TEST_NAVIGATION_LISTENER_H_
 
 #include <fuchsia/web/cpp/fidl.h>
+
 #include <string>
+#include <vector>
 
 #include "base/callback.h"
-#include "url/gurl.h"
+#include "base/strings/string_piece.h"
+
+class GURL;
 
 // Observes navigation events and enables test code to block until a desired
 // navigational state is observed.

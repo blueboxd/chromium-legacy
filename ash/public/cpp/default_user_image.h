@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -50,6 +50,8 @@ struct ASH_PUBLIC_EXPORT DefaultUserImage {
 
   int index;
   std::u16string title;
+  // If the AvatarsCloudMigration feature flag is turned on, this is the gstatic
+  // URL of the image. Otherwise, this is the local resources URL of the image.
   GURL url;
   // Deprecated. Only used for older avatar images that users can no longer
   // select.

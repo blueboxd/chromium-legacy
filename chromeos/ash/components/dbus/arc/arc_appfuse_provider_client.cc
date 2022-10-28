@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -50,7 +50,7 @@ class ArcAppfuseProviderClientImpl : public ArcAppfuseProviderClient {
 
   void Unmount(uint32_t uid,
                int32_t mount_id,
-               VoidDBusMethodCallback callback) override {
+               chromeos::VoidDBusMethodCallback callback) override {
     dbus::MethodCall method_call(arc::appfuse::kArcAppfuseProviderInterface,
                                  arc::appfuse::kUnmountMethod);
     dbus::MessageWriter writer(&method_call);
@@ -81,7 +81,7 @@ class ArcAppfuseProviderClientImpl : public ArcAppfuseProviderClient {
                        weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
   }
 
-  // DBusClient override.
+  // chromeos::DBusClient override.
   void Init(dbus::Bus* bus) override {
     proxy_ = bus->GetObjectProxy(
         arc::appfuse::kArcAppfuseProviderServiceName,
@@ -90,7 +90,7 @@ class ArcAppfuseProviderClientImpl : public ArcAppfuseProviderClient {
 
  private:
   // Runs the callback with the method call result.
-  void OnVoidDBusMethod(VoidDBusMethodCallback callback,
+  void OnVoidDBusMethod(chromeos::VoidDBusMethodCallback callback,
                         dbus::Response* response) {
     std::move(callback).Run(response != nullptr);
   }

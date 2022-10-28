@@ -1,11 +1,11 @@
-# Copyright 2021 The Chromium Authors. All rights reserved.
+# Copyright 2021 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 """Definitions of builders in the tryserver.chromium.android builder group."""
 
 load("//lib/branches.star", "branches")
 load("//lib/builder_config.star", "builder_config")
-load("//lib/builders.star", "goma", "os")
+load("//lib/builders.star", "goma", "os", "reclient")
 load("//lib/try.star", "try_")
 load("//lib/consoles.star", "consoles")
 load("//project.star", "settings")
@@ -73,9 +73,10 @@ try_.compilator_builder(
 )
 
 try_.builder(
-    name = "android-12l-x86-rel",
+    name = "android-12l-x64-dbg",
     mirrors = [
-        "ci/android-12l-x86-rel",
+        "ci/Android x64 Builder (dbg)",
+        "ci/android-12l-x64-dbg-tests",
     ],
     tryjob = try_.job(
         experiment_percentage = 2,
@@ -121,6 +122,7 @@ try_.builder(
     },
     experiments = {
         "enable_weetbix_queries": 100,
+        "weetbix.retry_weak_exonerations": 100,
     },
     tryjob = try_.job(),
     ssd = True,
@@ -261,6 +263,7 @@ try_.orchestrator_builder(
     experiments = {
         "remove_src_checkout_experiment": 100,
         "enable_weetbix_queries": 100,
+        "weetbix.retry_weak_exonerations": 100,
     },
 )
 
@@ -291,6 +294,7 @@ try_.orchestrator_builder(
     tryjob = try_.job(),
     experiments = {
         "enable_weetbix_queries": 100,
+        "weetbix.retry_weak_exonerations": 100,
     },
 )
 
@@ -299,6 +303,42 @@ try_.compilator_builder(
     branch_selector = branches.STANDARD_MILESTONE,
     check_for_flakiness = True,
     main_list_view = "try",
+)
+
+# b/236070074: Experimental builder to test reclient migration
+try_.orchestrator_builder(
+    name = "android-marshmallow-x86-rel-reclient",
+    mirrors = [
+        "ci/android-marshmallow-x86-rel",
+    ],
+    try_settings = builder_config.try_settings(
+        rts_config = builder_config.rts_config(
+            condition = builder_config.rts_condition.QUICK_RUN_ONLY,
+        ),
+    ),
+    description_html = "Experimental shadow builder to test reclient migration. <br/>The bot is shadowing <a href=\"https://ci.chromium.org/p/chromium/builders/try/android-marshmallow-x86-rel\">android-marshmallow-x86-rel</a>.",
+    check_for_flakiness = True,
+    compilator = "android-marshmallow-x86-rel-reclient-compilator",
+    branch_selector = branches.STANDARD_MILESTONE,
+    main_list_view = "try",
+    use_java_coverage = True,
+    coverage_test_types = ["unit", "overall"],
+    tryjob = try_.job(
+        experiment_percentage = 5,
+    ),
+    experiments = {
+        "enable_weetbix_queries": 100,
+        "weetbix.retry_weak_exonerations": 100,
+    },
+)
+
+try_.compilator_builder(
+    name = "android-marshmallow-x86-rel-reclient-compilator",
+    branch_selector = branches.STANDARD_MILESTONE,
+    check_for_flakiness = True,
+    main_list_view = "try",
+    reclient_instance = reclient.instance.DEFAULT_UNTRUSTED,
+    reclient_jobs = reclient.jobs.HIGH_JOBS_FOR_CQ,
 )
 
 try_.builder(
@@ -392,6 +432,7 @@ try_.orchestrator_builder(
     tryjob = try_.job(),
     experiments = {
         "enable_weetbix_queries": 100,
+        "weetbix.retry_weak_exonerations": 100,
     },
 )
 
@@ -573,8 +614,11 @@ try_.builder(
 try_.builder(
     name = "android_compile_x64_dbg",
     branch_selector = branches.STANDARD_MILESTONE,
+    # Since we expect this builder to compile all, let it mirror
+    # "Android x64 Builder All Targets (dbg)" rather than
+    # "Android x64 Builder (dbg)"
     mirrors = [
-        "ci/Android x64 Builder (dbg)",
+        "ci/Android x64 Builder All Targets (dbg)",
     ],
     try_settings = builder_config.try_settings(
         include_all_triggered_testers = True,
@@ -638,6 +682,7 @@ try_.builder(
     tryjob = try_.job(),
     experiments = {
         "enable_weetbix_queries": 100,
+        "weetbix.retry_weak_exonerations": 100,
     },
 )
 
@@ -668,6 +713,7 @@ try_.builder(
     tryjob = try_.job(),
     experiments = {
         "enable_weetbix_queries": 100,
+        "weetbix.retry_weak_exonerations": 100,
     },
 )
 

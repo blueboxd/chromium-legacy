@@ -1,4 +1,4 @@
-# Copyright 2020 The Chromium Authors. All rights reserved.
+# Copyright 2020 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -67,7 +67,7 @@ js_library("battery_status_card") {
     ":percent_bar_chart",
     ":routine_section",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
-    "//ui/webui/resources/js:i18n_behavior.m",
+    "//ui/webui/resources/cr_elements:i18n_behavior",
     "//ui/webui/resources/js:load_time_data.m",
   ]
 }
@@ -76,8 +76,8 @@ js_library("cellular_info") {
   deps = [
     ":data_point",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
+    "//ui/webui/resources/cr_elements:i18n_behavior",
     "//ui/webui/resources/js:cr.m",
-    "//ui/webui/resources/js:i18n_behavior.m",
   ]
 }
 
@@ -90,7 +90,7 @@ js_library("connectivity_card") {
     ":routine_section",
     "//third_party/polymer/v3_0/components-chromium/iron-collapse:iron-collapse",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
-    "//ui/webui/resources/js:i18n_behavior.m",
+    "//ui/webui/resources/cr_elements:i18n_behavior",
   ]
 }
 
@@ -99,7 +99,7 @@ js_library("cpu_card") {
     ":data_point",
     ":mojo_interface_provider",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
-    "//ui/webui/resources/js:i18n_behavior.m",
+    "//ui/webui/resources/cr_elements:i18n_behavior",
     "//ui/webui/resources/js:load_time_data.m",
   ]
 }
@@ -119,7 +119,7 @@ js_library("diagnostics_app") {
     "//ash/webui/common/resources:navigation_view_panel",
     "//ash/webui/common/resources:page_toolbar",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
-    "//ui/webui/resources/js:i18n_behavior.m",
+    "//ui/webui/resources/cr_elements:i18n_behavior",
     "//ui/webui/resources/js:load_time_data.m",
   ]
 }
@@ -152,16 +152,17 @@ js_library("diagnostics_network_icon") {
   deps = [
     "//third_party/polymer/v3_0/components-chromium/paper-spinner:paper-spinner-lite",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
-    "//ui/webui/resources/cr_components/chromeos/network:network_icon.m",
-    "//ui/webui/resources/js:i18n_behavior.m",
+    "//ui/webui/resources/cr_components/chromeos/network:network_icon",
+    "//ui/webui/resources/cr_elements:i18n_behavior",
   ]
 }
 
 js_library("diagnostics_sticky_banner") {
   deps = [
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
-    "//ui/webui/resources/cr_elements/cr_button:cr_button",
   ]
+  externs_list =
+      [ "//ui/webui/resources/cr_elements/cr_button/cr_button_externs.js" ]
 }
 
 js_library("diagnostics_utils") {
@@ -172,7 +173,7 @@ js_library("ethernet_info") {
   deps = [
     ":data_point",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
-    "//ui/webui/resources/js:i18n_behavior.m",
+    "//ui/webui/resources/cr_elements:i18n_behavior",
   ]
 }
 
@@ -242,18 +243,20 @@ js_library("ip_config_info_drawer") {
     ":diagnostics_types",
     ":diagnostics_utils",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
-    "//ui/webui/resources/cr_elements/cr_button:cr_button",
-    "//ui/webui/resources/js:i18n_behavior.m",
+    "//ui/webui/resources/cr_elements:i18n_behavior",
     "//ui/webui/resources/js:load_time_data.m",
   ]
+  externs_list =
+      [ "//ui/webui/resources/cr_elements/cr_button/cr_button_externs.js" ]
 }
 
 js_library("keyboard_tester") {
   deps = [
     "//ash/webui/common/resources:keyboard_diagram",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
-    "//ui/webui/resources/cr_elements/cr_dialog:cr_dialog",
   ]
+  externs_list =
+      [ "//ui/webui/resources/cr_elements/cr_dialog/cr_dialog_externs.js" ]
 }
 
 js_library("memory_card") {
@@ -262,7 +265,7 @@ js_library("memory_card") {
     ":diagnostics_utils",
     ":mojo_interface_provider",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
-    "//ui/webui/resources/js:i18n_behavior.m",
+    "//ui/webui/resources/cr_elements:i18n_behavior",
     "//ui/webui/resources/js:load_time_data.m",
   ]
 }
@@ -291,7 +294,7 @@ js_library("network_card") {
     ":network_info",
     ":network_troubleshooting",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
-    "//ui/webui/resources/js:i18n_behavior.m",
+    "//ui/webui/resources/cr_elements:i18n_behavior",
   ]
 }
 
@@ -322,7 +325,7 @@ js_library("network_troubleshooting") {
   deps = [
     ":diagnostics_types",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
-    "//ui/webui/resources/js:i18n_behavior.m",
+    "//ui/webui/resources/cr_elements:i18n_behavior",
     "//ui/webui/resources/js:load_time_data.m",
   ]
 }
@@ -400,12 +403,13 @@ js_library("system_page") {
     ":mojo_interface_provider",
     ":overview_card",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
-    "//ui/webui/resources/cr_elements/cr_button:cr_button",
-    "//ui/webui/resources/js:i18n_behavior.m",
+    "//ui/webui/resources/cr_elements:i18n_behavior",
     "//ui/webui/resources/js:load_time_data.m",
   ]
-  externs_list =
-      [ "//ui/webui/resources/cr_elements/cr_toast/cr_toast_externs.js" ]
+  externs_list = [
+    "//ui/webui/resources/cr_elements/cr_button/cr_button_externs.js",
+    "//ui/webui/resources/cr_elements/cr_toast/cr_toast_externs.js",
+  ]
 }
 
 js_library("text_badge") {
@@ -419,7 +423,7 @@ js_library("wifi_info") {
     ":data_point",
     ":frequency_channel_utils",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
-    "//ui/webui/resources/js:i18n_behavior.m",
+    "//ui/webui/resources/cr_elements:i18n_behavior",
     "//ui/webui/resources/js:load_time_data.m",
   ]
 }

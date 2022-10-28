@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -319,6 +319,14 @@ class DictationTestBase
     // Put focus in the text box.
     ASSERT_NO_FATAL_FAILURE(ASSERT_TRUE(ui_test_utils::SendKeyPressToWindowSync(
         nullptr, ui::KeyboardCode::VKEY_TAB, false, false, false, false)));
+
+    // Increase Dictation's NO_FOCUSED_IME timeout to reduce flakiness on slower
+    // builds.
+    std::string script = R"(
+      accessibilityCommon.dictation_.increaseNoFocusedImeTimeoutForTesting_();
+      window.domAutomationController.send("done");
+    )";
+    ExecuteAccessibilityCommonScript(script);
   }
 
   void TearDownOnMainThread() override {
@@ -468,6 +476,13 @@ class DictationTestBase
   const base::flat_map<std::string, Dictation::LocaleData>
   GetAllSupportedLocales() {
     return Dictation::GetAllSupportedLocales();
+  }
+
+  void ExecuteAccessibilityCommonScript(const std::string& script) {
+    extensions::browsertest_util::ExecuteScriptInBackgroundPage(
+        /*context=*/browser()->profile(),
+        /*extension_id=*/extension_misc::kAccessibilityCommonExtensionId,
+        /*script=*/script);
   }
 
  private:
@@ -739,8 +754,7 @@ IN_PROC_BROWSER_TEST_P(DictationTest, StopListening) {
   WaitForRecognitionStopped();
 }
 
-// TODO(crbug.com/1354284): Disabled due to flakiness
-IN_PROC_BROWSER_TEST_P(DictationTest, DISABLED_SmartCapitalization) {
+IN_PROC_BROWSER_TEST_P(DictationTest, SmartCapitalization) {
   ToggleDictationWithKeystroke();
   WaitForRecognitionStarted();
   SendFinalResultAndWaitForTextAreaValue("This", "This");
@@ -757,6 +771,48 @@ IN_PROC_BROWSER_TEST_P(DictationTest, SmartCapitalizationWithComma) {
   WaitForRecognitionStarted();
   SendFinalResultAndWaitForTextAreaValue("Hello,", "Hello,");
   SendFinalResultAndWaitForTextAreaValue("world", "Hello, world");
+  ToggleDictationWithKeystroke();
+  WaitForRecognitionStopped();
+}
+
+class DictationWithAutoclickTest : public DictationTestBase {
+ public:
+  DictationWithAutoclickTest() = default;
+  ~DictationWithAutoclickTest() override = default;
+  DictationWithAutoclickTest(const DictationWithAutoclickTest&) = delete;
+  DictationWithAutoclickTest& operator=(const DictationWithAutoclickTest&) =
+      delete;
+
+ protected:
+  void SetUpOnMainThread() override {
+    // Setup Autoclick first, then setup Dictation. This is to ensure that
+    // Autoclick doesn't steal focus away from the textarea (either by clicking
+    // or via the presence of the Autoclick UI, which steals focus when
+    // initially shown).
+    GetActiveUserPrefs()->SetInteger(prefs::kAccessibilityAutoclickDelayMs,
+                                     90 * 1000);
+    GetActiveUserPrefs()->CommitPendingWrite();
+    GetManager()->EnableAutoclick(true);
+    EXPECT_TRUE(GetManager()->IsAutoclickEnabled());
+
+    DictationTestBase::SetUpOnMainThread();
+  }
+};
+
+INSTANTIATE_TEST_SUITE_P(
+    Network,
+    DictationWithAutoclickTest,
+    ::testing::Values(speech::SpeechRecognitionType::kNetwork));
+
+INSTANTIATE_TEST_SUITE_P(
+    OnDevice,
+    DictationWithAutoclickTest,
+    ::testing::Values(speech::SpeechRecognitionType::kOnDevice));
+
+IN_PROC_BROWSER_TEST_P(DictationWithAutoclickTest, CanDictate) {
+  ToggleDictationWithKeystroke();
+  WaitForRecognitionStarted();
+  SendFinalResultAndWaitForTextAreaValue("Hello world", "Hello world");
   ToggleDictationWithKeystroke();
   WaitForRecognitionStopped();
 }
@@ -809,10 +865,80 @@ IN_PROC_BROWSER_TEST_P(DictationJaTest, CanDictate) {
 IN_PROC_BROWSER_TEST_P(DictationJaTest, DeleteCharacter) {
   ToggleDictationWithKeystroke();
   WaitForRecognitionStarted();
-  // Dictate something.
+  // Dictate "tennis".
   SendFinalResultAndWaitForTextAreaValue("テニス", "テニス");
   // Perform the 'delete' command.
   SendFinalResultAndWaitForTextAreaValue("削除", "テニ");
+  ToggleDictationWithKeystroke();
+  WaitForRecognitionStopped();
+}
+
+IN_PROC_BROWSER_TEST_P(DictationJaTest, SmartDeletePhrase) {
+  ToggleDictationWithKeystroke();
+  WaitForRecognitionStarted();
+  // Dictate "I like basketball".
+  SendFinalResultAndWaitForTextAreaValue("私はバスケットボールが好きです。",
+                                         "私はバスケットボールが好きです。");
+  // Delete "I" e.g. the first two characters in the sentence.
+  SendFinalResultAndWaitForTextAreaValue("私はを削除",
+                                         "バスケットボールが好きです。");
+  ToggleDictationWithKeystroke();
+  WaitForRecognitionStopped();
+}
+
+IN_PROC_BROWSER_TEST_P(DictationJaTest, SmartReplacePhrase) {
+  ToggleDictationWithKeystroke();
+  WaitForRecognitionStarted();
+  // Dictate "I like basketball".
+  SendFinalResultAndWaitForTextAreaValue("私はバスケットボールが好きです。",
+                                         "私はバスケットボールが好きです。");
+  // Replace "basketball" with "tennis".
+  SendFinalResultAndWaitForTextAreaValue("バスケットボールをテニスに置き換え",
+                                         "私はテニスが好きです。");
+  ToggleDictationWithKeystroke();
+  WaitForRecognitionStopped();
+}
+
+IN_PROC_BROWSER_TEST_P(DictationJaTest, SmartInsertBefore) {
+  ToggleDictationWithKeystroke();
+  WaitForRecognitionStarted();
+  // Dictate "I like tennis".
+  SendFinalResultAndWaitForTextAreaValue("私はテニスが好きです。",
+                                         "私はテニスが好きです。");
+  // Insert "basketball and" before "tennis".
+  // Final text area value should be "I like basketball and tennis".
+  SendFinalResultAndWaitForTextAreaValue(
+      "バスケットボールとをテニスの前に挿入",
+      "私はバスケットボールとテニスが好きです。");
+  ToggleDictationWithKeystroke();
+  WaitForRecognitionStopped();
+}
+
+IN_PROC_BROWSER_TEST_P(DictationJaTest, SmartSelectBetweenAndDictate) {
+  ToggleDictationWithKeystroke();
+  WaitForRecognitionStarted();
+  // Dictate "I like tennis".
+  SendFinalResultAndWaitForTextAreaValue("私はテニスが好きです。",
+                                         "私はテニスが好きです。");
+  // Select the entire text using the SMART_SELECT_BETWEEN command.
+  SendFinalResultAndWaitForSelectionChanged("私はから好きですまで選択");
+  // Dictate "congratulations", which should replace the selected text.
+  SendFinalResultAndWaitForTextAreaValue("おめでとう", "おめでとう。");
+  ToggleDictationWithKeystroke();
+  WaitForRecognitionStopped();
+}
+
+IN_PROC_BROWSER_TEST_P(DictationJaTest, SmartSelectBetweenAndDelete) {
+  ToggleDictationWithKeystroke();
+  WaitForRecognitionStarted();
+  // Dictate "I like tennis".
+  SendFinalResultAndWaitForTextAreaValue("私はテニスが好きです。",
+                                         "私はテニスが好きです。");
+  // Select between "I" and "tennis" using the SMART_SELECT_BETWEEN command
+  // (roughly the first half of the text).
+  SendFinalResultAndWaitForSelectionChanged("私はからテニスまで選択");
+  // Perform the delete command.
+  SendFinalResultAndWaitForTextAreaValue("削除", "が好きです。");
   ToggleDictationWithKeystroke();
   WaitForRecognitionStopped();
 }
@@ -1552,14 +1678,6 @@ class DictationHiddenMacrosTest : public DictationTest {
                                     start_phrase, end_phrase);
     bounding_box_waiter.Wait();
     ASSERT_TRUE(selection_waiter.WaitForNotification());
-  }
-
- private:
-  void ExecuteAccessibilityCommonScript(const std::string& script) {
-    extensions::browsertest_util::ExecuteScriptInBackgroundPage(
-        /*context=*/browser()->profile(),
-        /*extension_id=*/extension_misc::kAccessibilityCommonExtensionId,
-        /*script=*/script);
   }
 };
 

@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -20,6 +20,7 @@
 #include "components/password_manager/core/common/password_manager_features.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/metadata/metadata_header_macros.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -58,7 +59,7 @@ class PasswordGenerationPopupViewViews::GeneratedPasswordBox
   // Fills the view with strings provided by |controller|.
   void Init(base::WeakPtr<PasswordGenerationPopupController> controller);
 
-  void UpdatePassword(const std::u16string& password) {
+  void UpdateGeneratedPassword(const std::u16string& password) {
     password_label_->SetText(password);
   }
 
@@ -102,14 +103,11 @@ void PasswordGenerationPopupViewViews::GeneratedPasswordBox::Init(
       views::BoxLayout::Orientation::kHorizontal));
   layout->set_cross_axis_alignment(
       views::BoxLayout::CrossAxisAlignment::kCenter);
-  if (base::FeatureList::IsEnabled(
-          password_manager::features::kUnifiedPasswordManagerDesktop)) {
-    AddChildView(
-        std::make_unique<views::ImageView>(ui::ImageModel::FromVectorIcon(
-            GooglePasswordManagerVectorIcon(), ui::kColorIcon, kIconSize)));
-    AddSpacerWithSize(AutofillPopupBaseView::GetHorizontalPadding(),
-                      /*resize=*/false, layout);
-  }
+  AddChildView(
+      std::make_unique<views::ImageView>(ui::ImageModel::FromVectorIcon(
+          GooglePasswordManagerVectorIcon(), ui::kColorIcon, kIconSize)));
+  AddSpacerWithSize(AutofillPopupBaseView::GetHorizontalPadding(),
+                    /*resize=*/false, layout);
 
   suggestion_label_ = AddChildView(std::make_unique<views::Label>(
       controller_->SuggestedText(), views::style::CONTEXT_DIALOG_BODY_TEXT,
@@ -203,12 +201,12 @@ void PasswordGenerationPopupViewViews::Hide() {
 void PasswordGenerationPopupViewViews::UpdateState() {
   RemoveAllChildViews();
   password_view_ = nullptr;
-  help_label_ = nullptr;
+  help_styled_label_ = nullptr;
   CreateLayoutAndChildren();
 }
 
-void PasswordGenerationPopupViewViews::UpdatePasswordValue() {
-  password_view_->UpdatePassword(controller_->password());
+void PasswordGenerationPopupViewViews::UpdateGeneratedPasswordValue() {
+  password_view_->UpdateGeneratedPassword(controller_->password());
   Layout();
 }
 
@@ -243,6 +241,22 @@ void PasswordGenerationPopupViewViews::CreateLayoutAndChildren() {
   const int kHorizontalMargin =
       provider->GetDistanceMetric(DISTANCE_UNRELATED_CONTROL_HORIZONTAL);
 
+  if (base::FeatureList::IsEnabled(
+          password_manager::features::kPasswordStrengthIndicator)) {
+    // TODO(crbug.com/1345766): Adjust according to the calculated password
+    // strength.
+    std::u16string password_strength_text =
+        l10n_util::GetStringUTF16(IDS_PASSWORD_WEAKNESS_INDICATOR);
+    auto* password_strength_label = AddChildView(std::make_unique<views::Label>(
+        password_strength_text, views::style::CONTEXT_DIALOG_BODY_TEXT,
+        views::style::STYLE_HIGHLIGHTED));
+    password_strength_label->SetMultiLine(true);
+    password_strength_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+    password_strength_label->SetBorder(views::CreateEmptyBorder(
+        gfx::Insets::TLBR(kVerticalPadding, kHorizontalMargin, kVerticalPadding,
+                          kHorizontalMargin)));
+  }
+
   password_view_ = new GeneratedPasswordBox();
   password_view_->SetBorder(views::CreateEmptyBorder(
       gfx::Insets::TLBR(kVerticalPadding, kHorizontalMargin, kVerticalPadding,
@@ -251,37 +265,24 @@ void PasswordGenerationPopupViewViews::CreateLayoutAndChildren() {
   AddChildView(password_view_.get());
   PasswordSelectionUpdated();
 
-  if (!base::FeatureList::IsEnabled(
-          password_manager::features::kUnifiedPasswordManagerDesktop)) {
-    help_label_ = new views::Label(controller_->HelpText(),
-                                   views::style::CONTEXT_DIALOG_BODY_TEXT,
-                                   views::style::STYLE_SECONDARY);
-    help_label_->SetMultiLine(true);
-    help_label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-    help_label_->SetBorder(views::CreateEmptyBorder(
-        gfx::Insets::TLBR(kVerticalPadding, kHorizontalMargin, kVerticalPadding,
-                          kHorizontalMargin)));
-    AddChildView(help_label_.get());
-  } else {
-    base::RepeatingClosure open_password_manager_closure = base::BindRepeating(
-        [](PasswordGenerationPopupViewViews* view) {
-          if (!view->controller_)
-            return;
-          view->controller_->OnGooglePasswordManagerLinkClicked();
-        },
-        base::Unretained(this));
+  base::RepeatingClosure open_password_manager_closure = base::BindRepeating(
+      [](PasswordGenerationPopupViewViews* view) {
+        if (!view->controller_)
+          return;
+        view->controller_->OnGooglePasswordManagerLinkClicked();
+      },
+      base::Unretained(this));
 
-    help_styled_label_ = AddChildView(CreateGooglePasswordManagerLabel(
-        /*text_message_id=*/
-        IDS_PASSWORD_GENERATION_PROMPT_GOOGLE_PASSWORD_MANAGER,
-        /*link_message_id=*/
-        IDS_PASSWORD_BUBBLES_PASSWORD_MANAGER_LINK_TEXT_SYNCED_TO_ACCOUNT,
-        controller_->GetPrimaryAccountEmail(), open_password_manager_closure));
+  help_styled_label_ = AddChildView(CreateGooglePasswordManagerLabel(
+      /*text_message_id=*/
+      IDS_PASSWORD_GENERATION_PROMPT_GOOGLE_PASSWORD_MANAGER,
+      /*link_message_id=*/
+      IDS_PASSWORD_BUBBLES_PASSWORD_MANAGER_LINK_TEXT_SYNCED_TO_ACCOUNT,
+      controller_->GetPrimaryAccountEmail(), open_password_manager_closure));
 
-    help_styled_label_->SetBorder(views::CreateEmptyBorder(
-        gfx::Insets::TLBR(kVerticalPadding, kHorizontalMargin, kVerticalPadding,
-                          kHorizontalMargin)));
-  }
+  help_styled_label_->SetBorder(views::CreateEmptyBorder(
+      gfx::Insets::TLBR(kVerticalPadding, kHorizontalMargin, kVerticalPadding,
+                        kHorizontalMargin)));
 }
 
 void PasswordGenerationPopupViewViews::OnThemeChanged() {
@@ -290,9 +291,7 @@ void PasswordGenerationPopupViewViews::OnThemeChanged() {
   password_view_->UpdateBackground(controller_->password_selected()
                                        ? GetSelectedBackgroundColor()
                                        : GetBackgroundColor());
-  if (help_label_) {
-    help_label_->SetBackgroundColor(GetFooterBackgroundColor());
-  } else if (help_styled_label_) {
+  if (help_styled_label_) {
     help_styled_label_->SetDisplayedOnBackgroundColor(
         GetFooterBackgroundColor());
   }

@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -23,7 +23,7 @@ class PartialTranslateBubbleModelImpl : public PartialTranslateBubbleModel {
   // PartialTranslateBubbleModel methods:
   ViewState GetViewState() const override;
   void SetViewState(ViewState view_state) override;
-  void ShowError(translate::TranslateErrors::Type error_type) override;
+  void ShowError(translate::TranslateErrors error_type) override;
   int GetNumberOfSourceLanguages() const override;
   int GetNumberOfTargetLanguages() const override;
   std::u16string GetSourceLanguageNameAt(int index) const override;
@@ -32,6 +32,8 @@ class PartialTranslateBubbleModelImpl : public PartialTranslateBubbleModel {
   void UpdateSourceLanguageIndex(int index) override;
   int GetTargetLanguageIndex() const override;
   void UpdateTargetLanguageIndex(int index) override;
+  std::string GetSourceLanguageCode() const override;
+  std::string GetTargetLanguageCode() const override;
   void Translate() override;
   void RevertTranslation() override;
   bool IsCurrentSelectionTranslated() const override;

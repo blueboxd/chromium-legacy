@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -55,7 +55,7 @@ void FastCheckoutViewImpl::OnDismiss(JNIEnv* env) {
 void FastCheckoutViewImpl::Show(
     const std::vector<autofill::AutofillProfile*>& autofill_profiles,
     const std::vector<autofill::CreditCard*>& credit_cards) {
-  if (!RecreateJavaObject()) {
+  if (!RecreateJavaObjectIfNecessary()) {
     // It's possible that the constructor cannot access the bottom sheet clank
     // component. That case may be temporary but we can't let users in a waiting
     // state so report that TouchToFill is dismissed in order to show the normal
@@ -89,15 +89,24 @@ void FastCheckoutViewImpl::Show(
       env, java_object_internal_, autofill_profiles_array, credit_cards_array);
 }
 
-bool FastCheckoutViewImpl::RecreateJavaObject() {
+void FastCheckoutViewImpl::OpenAutofillProfileSettings(JNIEnv* env) {
+  controller_->OpenAutofillProfileSettings();
+}
+
+void FastCheckoutViewImpl::OpenCreditCardSettings(JNIEnv* env) {
+  controller_->OpenCreditCardSettings();
+}
+
+bool FastCheckoutViewImpl::RecreateJavaObjectIfNecessary() {
   if (controller_->GetNativeView() == nullptr ||
       controller_->GetNativeView()->GetWindowAndroid() == nullptr) {
     return false;  // No window attached (yet or anymore).
   }
+
   if (java_object_internal_) {
-    Java_FastCheckoutBridge_destroy(AttachCurrentThread(),
-                                    java_object_internal_);
+    return true;
   }
+
   java_object_internal_ = Java_FastCheckoutBridge_create(
       AttachCurrentThread(), reinterpret_cast<intptr_t>(this),
       controller_->GetNativeView()->GetWindowAndroid()->GetJavaObject());

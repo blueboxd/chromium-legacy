@@ -1,4 +1,4 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,9 +7,11 @@
 #include <utility>
 
 #include "base/check.h"
+#include "base/containers/adapters.h"
 #include "base/feature_list.h"
 #include "base/notreached.h"
 #include "base/observer_list.h"
+#include "base/ranges/algorithm.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -283,11 +285,11 @@ void PaymentRequestSpec::StartWaitingForUpdateWith(
 bool PaymentRequestSpec::IsMixedCurrency() const {
   DCHECK(details_->display_items);
   const std::string& total_currency = details_->total->amount->currency;
-  return std::any_of(details_->display_items->begin(),
-                     details_->display_items->end(),
-                     [&total_currency](const mojom::PaymentItemPtr& item) {
-                       return item->amount->currency != total_currency;
-                     });
+  return base::ranges::any_of(
+      *details_->display_items,
+      [&total_currency](const mojom::PaymentItemPtr& item) {
+        return item->amount->currency != total_currency;
+      });
 }
 
 const mojom::PaymentItemPtr& PaymentRequestSpec::GetTotal(
@@ -393,8 +395,8 @@ void PaymentRequestSpec::UpdateSelectedShippingOption(bool after_update) {
   // As per the spec, the selected shipping option should initially be the last
   // one in the array that has its selected field set to true. If none are
   // selected by the merchant, |selected_shipping_option_| stays nullptr.
-  auto selected_shipping_option_it = std::find_if(
-      details_->shipping_options->rbegin(), details_->shipping_options->rend(),
+  auto selected_shipping_option_it = base::ranges::find_if(
+      base::Reversed(*details_->shipping_options),
       [](const payments::mojom::PaymentShippingOptionPtr& element) {
         return element->selected;
       });

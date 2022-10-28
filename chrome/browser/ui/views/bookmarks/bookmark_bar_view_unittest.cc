@@ -1,4 +1,4 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,6 +11,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/memory/raw_ptr.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/values.h"
 #include "build/build_config.h"
@@ -46,6 +47,7 @@
 #include "ui/gfx/geometry/point_f.h"
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/button/menu_button.h"
+#include "ui/views/test/views_test_utils.h"
 #include "ui/views/view_utils.h"
 #include "url/gurl.h"
 
@@ -108,7 +110,7 @@ class BookmarkBarViewBaseTest : public ChromeViewsTestBase {
                      !test_helper_->GetBookmarkButton(count - 1)->GetVisible());
          ++i) {
       bookmark_bar_view()->SetBounds(0, 0, start_width + i * 10, height);
-      bookmark_bar_view()->Layout();
+      views::test::RunScheduledLayout(bookmark_bar_view());
     }
   }
 
@@ -255,13 +257,13 @@ TEST_F(BookmarkBarViewTest, OverflowVisibility) {
   // Go really big, which should force all buttons to be added.
   bookmark_bar_view()->SetBounds(0, 0, 5000,
                                  bookmark_bar_view()->bounds().height());
-  bookmark_bar_view()->Layout();
+  views::test::RunScheduledLayout(bookmark_bar_view());
   EXPECT_EQ(6u, test_helper_->GetBookmarkButtonCount());
   EXPECT_FALSE(test_helper_->overflow_button()->GetVisible());
 
   bookmark_bar_view()->SetBounds(0, 0, width_for_one,
                                  bookmark_bar_view()->bounds().height());
-  bookmark_bar_view()->Layout();
+  views::test::RunScheduledLayout(bookmark_bar_view());
   EXPECT_TRUE(test_helper_->overflow_button()->GetVisible());
 }
 
@@ -277,7 +279,7 @@ TEST_F(BookmarkBarViewTest, ButtonsDynamicallyAddedAfterModelHasNodes) {
   // Go really big, which should force all buttons to be added.
   bookmark_bar_view()->SetBounds(0, 0, 5000,
                                  bookmark_bar_view()->bounds().height());
-  bookmark_bar_view()->Layout();
+  views::test::RunScheduledLayout(bookmark_bar_view());
   EXPECT_EQ(6u, test_helper_->GetBookmarkButtonCount());
 
   // Ensure buttons were added in the correct place.
@@ -300,7 +302,7 @@ TEST_F(BookmarkBarViewTest, ButtonsDynamicallyAdded) {
   // Go really big, which should force all buttons to be added.
   bookmark_bar_view()->SetBounds(0, 0, 5000,
                                  bookmark_bar_view()->bounds().height());
-  bookmark_bar_view()->Layout();
+  views::test::RunScheduledLayout(bookmark_bar_view());
   EXPECT_EQ(6u, test_helper_->GetBookmarkButtonCount());
   // Ensure buttons were added in the correct place.
   auto button_iter =
@@ -316,7 +318,7 @@ TEST_F(BookmarkBarViewTest, AddNodesWhenBarAlreadySized) {
   bookmark_bar_view()->SetBounds(0, 0, 5000,
                                  bookmark_bar_view()->bounds().height());
   AddNodesToBookmarkBarFromModelString("a b c d e f ");
-  bookmark_bar_view()->Layout();
+  views::test::RunScheduledLayout(bookmark_bar_view());
   EXPECT_EQ("a b c d e f", GetStringForVisibleButtons());
 }
 
@@ -373,40 +375,46 @@ TEST_F(BookmarkBarViewTest, ChangeTitle) {
   AddNodesToBookmarkBarFromModelString("a b c d e f ");
   EXPECT_EQ(0u, test_helper_->GetBookmarkButtonCount());
 
-  model()->SetTitle(bookmark_bar_node->children()[0].get(), u"a1");
+  model()->SetTitle(bookmark_bar_node->children()[0].get(), u"a1",
+                    bookmarks::metrics::BookmarkEditSource::kUser);
   EXPECT_EQ(0u, test_helper_->GetBookmarkButtonCount());
 
   // Make enough room for 1 node.
   SizeUntilButtonsVisible(1);
   EXPECT_EQ("a1", GetStringForVisibleButtons());
 
-  model()->SetTitle(bookmark_bar_node->children()[1].get(), u"b1");
+  model()->SetTitle(bookmark_bar_node->children()[1].get(), u"b1",
+                    bookmarks::metrics::BookmarkEditSource::kUser);
   EXPECT_EQ("a1", GetStringForVisibleButtons());
 
-  model()->SetTitle(bookmark_bar_node->children()[5].get(), u"f1");
+  model()->SetTitle(bookmark_bar_node->children()[5].get(), u"f1",
+                    bookmarks::metrics::BookmarkEditSource::kUser);
   EXPECT_EQ("a1", GetStringForVisibleButtons());
 
-  model()->SetTitle(bookmark_bar_node->children()[3].get(), u"d1");
+  model()->SetTitle(bookmark_bar_node->children()[3].get(), u"d1",
+                    bookmarks::metrics::BookmarkEditSource::kUser);
 
   // Make the second button visible, changes the title of the first to something
   // really long and make sure the second button hides.
   SizeUntilButtonsVisible(2);
   EXPECT_EQ("a1 b1", GetStringForVisibleButtons());
   model()->SetTitle(bookmark_bar_node->children()[0].get(),
-                    u"a_really_long_title");
+                    u"a_really_long_title",
+                    bookmarks::metrics::BookmarkEditSource::kUser);
   EXPECT_LE(1u, test_helper_->GetBookmarkButtonCount());
 
   // Change the title back and make sure the 2nd button is visible again. Don't
   // use GetStringForVisibleButtons() here as more buttons may have been
   // created.
-  model()->SetTitle(bookmark_bar_node->children()[0].get(), u"a1");
+  model()->SetTitle(bookmark_bar_node->children()[0].get(), u"a1",
+                    bookmarks::metrics::BookmarkEditSource::kUser);
   ASSERT_LE(2u, test_helper_->GetBookmarkButtonCount());
   EXPECT_TRUE(test_helper_->GetBookmarkButton(0)->GetVisible());
   EXPECT_TRUE(test_helper_->GetBookmarkButton(1)->GetVisible());
 
   bookmark_bar_view()->SetBounds(0, 0, 5000,
                                  bookmark_bar_view()->bounds().height());
-  bookmark_bar_view()->Layout();
+  views::test::RunScheduledLayout(bookmark_bar_view());
   EXPECT_EQ("a1 b1 c d1 e f1", GetStringForVisibleButtons());
 }
 

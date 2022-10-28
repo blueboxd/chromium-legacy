@@ -44,6 +44,7 @@
 #include "ui/compositor/test/in_process_context_provider.h"
 #include "ui/display/display_switches.h"
 #include "ui/gfx/buffer_format_util.h"
+#include "ui/gfx/geometry/skia_conversions.h"
 #include "ui/gfx/presentation_feedback.h"
 #include "ui/gfx/switches.h"
 #include "ui/gl/gl_implementation.h"
@@ -86,7 +87,7 @@ class InProcessContextFactory::PerCompositorData
   }
 #endif
   void SetDisplayColorMatrix(const gfx::Transform& matrix) override {
-    output_color_matrix_ = matrix.GetMatrixAsSkM44();
+    output_color_matrix_ = gfx::TransformToSkM44(matrix);
   }
   void SetDisplayColorSpaces(
       const gfx::DisplayColorSpaces& color_spaces) override {
@@ -134,6 +135,12 @@ class InProcessContextFactory::PerCompositorData
     vsync_interval_ = base::TimeDelta();
   }
 
+  void Bind(
+      mojo::PendingAssociatedReceiver<viz::mojom::DisplayPrivate> remote) {
+    receiver_.reset();
+    receiver_.Bind(std::move(remote));
+  }
+
   gpu::SurfaceHandle surface_handle() { return surface_handle_; }
   viz::BeginFrameSource* begin_frame_source() {
     return begin_frame_source_.get();
@@ -156,6 +163,8 @@ class InProcessContextFactory::PerCompositorData
   gfx::DisplayColorSpaces display_color_spaces_;
   base::TimeTicks vsync_timebase_;
   base::TimeDelta vsync_interval_;
+
+  mojo::AssociatedReceiver<viz::mojom::DisplayPrivate> receiver_{this};
 };
 
 InProcessContextFactory::InProcessContextFactory(
@@ -208,8 +217,10 @@ void InProcessContextFactory::CreateLayerTreeFrameSink(
   }
 
   PerCompositorData* data = per_compositor_data_[compositor.get()].get();
+  mojo::AssociatedRemote<viz::mojom::DisplayPrivate> display_private;
   if (!data)
     data = CreatePerCompositorData(compositor.get());
+  data->Bind(display_private.BindNewEndpointAndPassDedicatedReceiver());
 
   auto skia_deps = std::make_unique<viz::SkiaOutputSurfaceDependencyImpl>(
       viz::TestGpuServiceHolder::GetInstance()->gpu_service(),
@@ -257,7 +268,8 @@ void InProcessContextFactory::CreateLayerTreeFrameSink(
       compositor->frame_sink_id(), frame_sink_manager_, data->display(),
       SharedMainThreadContextProvider(), shared_worker_context_provider_,
       compositor->task_runner(), &gpu_memory_buffer_manager_);
-  compositor->SetLayerTreeFrameSink(std::move(layer_tree_frame_sink), data);
+  compositor->SetLayerTreeFrameSink(std::move(layer_tree_frame_sink),
+                                    std::move(display_private));
 
   data->Resize(compositor->size());
 }

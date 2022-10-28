@@ -15,6 +15,7 @@
 #include "mojo/public/cpp/bindings/remote.h"
 #include "net/log/net_log_with_source.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
+#include "net/url_request/redirect_info.h"
 #include "services/network/cors/preflight_controller.h"
 #include "services/network/public/cpp/cors/cors_error_status.h"
 #include "services/network/public/cpp/cross_origin_embedder_policy.h"
@@ -95,14 +96,15 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CorsURLLoader
 
   // mojom::URLLoaderClient overrides:
   void OnReceiveEarlyHints(mojom::EarlyHintsPtr early_hints) override;
-  void OnReceiveResponse(mojom::URLResponseHeadPtr head,
-                         mojo::ScopedDataPipeConsumerHandle body) override;
+  void OnReceiveResponse(
+      mojom::URLResponseHeadPtr head,
+      mojo::ScopedDataPipeConsumerHandle body,
+      absl::optional<mojo_base::BigBuffer> cached_metadata) override;
   void OnReceiveRedirect(const net::RedirectInfo& redirect_info,
                          mojom::URLResponseHeadPtr head) override;
   void OnUploadProgress(int64_t current_position,
                         int64_t total_size,
                         base::OnceCallback<void()> callback) override;
-  void OnReceiveCachedMetadata(mojo_base::BigBuffer data) override;
   void OnTransferSizeUpdated(int32_t transfer_size_diff) override;
   void OnComplete(const URLLoaderCompletionStatus& status) override;
 
@@ -157,6 +159,11 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CorsURLLoader
 
   bool PassesTimingAllowOriginCheck(
       const mojom::URLResponseHead& response) const;
+
+  bool PassesTimingAllowOriginCheck(const mojom::URLResponseHead& response,
+                                    const GURL&) const;
+
+  void CheckTainted(const net::RedirectInfo&);
 
   // Returns the client security state that applies to this request.
   // May return nullptr.

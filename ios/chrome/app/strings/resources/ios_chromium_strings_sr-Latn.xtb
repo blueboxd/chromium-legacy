@@ -67,6 +67,7 @@
 <translation id="5308226104666789935">Chromium ne može da traži ažuriranja</translation>
 <translation id="5396916991083608703">Želite da podesite Chromium kao podrazumevani?</translation>
 <translation id="5521125884468363740">Da biste videli kartice na bilo kojem uređaju na kom koristite Chromium, prijavite se i uključite sinhronizaciju</translation>
+<translation id="5522297504975449419">Neke Chromium funkcije više neće biti dostupne.</translation>
 <translation id="5573014823074921752">Savet za Chromium. Ako želite više opcija za kartice, dodirnite i zadržite dugme Prikaži kartice na traci s alatkama, koja se nalazi u dnu ili vrhu ekrana.</translation>
 <translation id="5700709190537129682">Chromium ne može da vam proverava lozinke</translation>
 <translation id="5777187867430702742">Chromium stranica</translation>
@@ -95,6 +96,7 @@
 <translation id="7175400662502680481">Vaša lozinka je otkrivena pri upadu u podatke. Menadžer lozinki preporučuje da je odmah promenite.</translation>
 <translation id="7208566199746267865">Chromium vam štedi vreme tako što postavlja naloge na veb. Možete da dodajete ili uklanjate naloge u podešavanjima.</translation>
 <translation id="725427773388857052">Chromium može da vas štiti od upada u podatke, nebezbednih veb-sajtova i drugih stvari.</translation>
+<translation id="7255976941681861701">Upoznajte novi Chromium meni</translation>
 <translation id="7269362888766543920">Neki programski dodaci izazivaju otkazivanje Chromium-a. Probajte da ih deinstalirate.</translation>
 <translation id="7313655110045230863">Da biste postavili Chromium za podrazumevani pregledač, otvorite podešavanja. Dodirnite podrazumevanu aplikaciju za pregledanje, pa izaberite Chromium.</translation>
 <translation id="7337881442233988129">Chromium</translation>
@@ -113,7 +115,6 @@
 <translation id="7980860476903281594">Chromium deli lokaciju sa sajtovima koje dozvolite.</translation>
 <translation id="8013573822802650211">Da biste videli kartice na bilo kojem uređaju na kom koristite Chromium, prijavite se na svim uređajima</translation>
 <translation id="8073677936375100957">Želite li da obrišete Chromium podatke sa ovog uređaja?</translation>
-<translation id="8175055321229419309">Savet: <ph name="BEGIN_LINK" />Premestite Chromium na dok<ph name="END_LINK" /></translation>
 <translation id="8240981428553046115">Chromium ne može da traži ažuriranja. Probajte ponovo kasnije.</translation>
 <translation id="8308172444429103994">Chromium savet. Prijavite se brže tako što ćete izabrati sačuvanu lozinku u vrhu tastature.</translation>
 <translation id="858114650497379505">Možete da koristite lozinke koje ste sačuvali u Menadžeru lozinki u drugim aplikacijama na iPhone-u.</translation>

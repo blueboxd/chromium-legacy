@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -27,8 +27,7 @@ class PageSwitcher : public views::View,
 
   PageSwitcher(PaginationModel* model,
                bool is_root_app_grid_page_switcher,
-               bool is_tablet_mode,
-               SkColor background_color = gfx::kPlaceholderColor);
+               bool is_tablet_mode);
   PageSwitcher(const PageSwitcher&) = delete;
   PageSwitcher& operator=(const PageSwitcher&) = delete;
   ~PageSwitcher() override;

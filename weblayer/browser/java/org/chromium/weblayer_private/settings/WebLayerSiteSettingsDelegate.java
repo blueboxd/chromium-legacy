@@ -72,6 +72,11 @@ public class WebLayerSiteSettingsDelegate
     }
 
     @Override
+    public boolean isPrivacySandboxFirstPartySetsUIFeatureEnabled() {
+        return false;
+    }
+
+    @Override
     public String getChannelIdForOrigin(String origin) {
         return null;
     }
@@ -137,6 +142,19 @@ public class WebLayerSiteSettingsDelegate
 
     @Override
     public void dismissPrivacySandboxSnackbar() {}
+
+    @Override
+    public boolean isFirstPartySetsDataAccessEnabled() {
+        return false;
+    }
+
+    @Override
+    public boolean isFirstPartySetsDataAccessManaged() {
+        return false;
+    }
+
+    @Override
+    public void setFirstPartySetsDataAccessEnabled(boolean enabled) {}
 
     @Override
     public boolean canLaunchClearBrowsingDataDialog() {
